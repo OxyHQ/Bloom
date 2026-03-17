@@ -16,11 +16,12 @@ Required:
 - `react-native >= 0.73`
 - `react-native-safe-area-context >= 5`
 
-Optional (native Dialog only):
+Optional:
 
-- `@gorhom/bottom-sheet >= 5`
-- `react-native-reanimated >= 3`
-- `react-native-gesture-handler >= 2`
+- `@gorhom/bottom-sheet >= 5` (native Dialog)
+- `react-native-reanimated >= 3` (native Dialog, Loading `top` variant)
+- `react-native-gesture-handler >= 2` (native Dialog)
+- `react-native-svg >= 13` (Avatar `squircle` shape)
 
 ## Usage
 
@@ -155,6 +156,114 @@ import { GroupedButtons } from '@oxyhq/bloom/grouped-buttons';
 </GroupedButtons>
 ```
 
+### Divider
+
+```tsx
+import { Divider } from '@oxyhq/bloom/divider';
+
+<Divider />
+<Divider spacing={16} color="#ccc" />
+<Divider vertical />
+```
+
+### RadioIndicator
+
+```tsx
+import { RadioIndicator } from '@oxyhq/bloom/radio-indicator';
+
+<RadioIndicator selected={isSelected} />
+<RadioIndicator selected={true} size={24} selectedColor="#007AFF" />
+```
+
+### Avatar
+
+Supports circle and squircle shapes. Squircle requires `react-native-svg`.
+
+```tsx
+import { Avatar } from '@oxyhq/bloom/avatar';
+
+<Avatar uri="https://example.com/photo.jpg" size={48} />
+<Avatar uri={userPhoto} shape="squircle" verified verifiedIcon={<BadgeIcon />} />
+<Avatar fallbackSource={require('./default.png')} />
+```
+
+### Loading
+
+4 variants: `spinner`, `top` (animated collapse/expand), `skeleton`, `inline`.
+
+```tsx
+import { Loading } from '@oxyhq/bloom/loading';
+
+<Loading />
+<Loading variant="spinner" text="Loading..." />
+<Loading variant="top" showLoading={isRefreshing} />
+<Loading variant="skeleton" lines={4} />
+<Loading variant="inline" text="Saving..." />
+```
+
+### Collapsible
+
+```tsx
+import { Collapsible } from '@oxyhq/bloom/collapsible';
+
+<Collapsible title="Advanced Options" defaultOpen={false}>
+  <Text>Hidden content here</Text>
+</Collapsible>
+```
+
+### ErrorBoundary
+
+```tsx
+import { ErrorBoundary } from '@oxyhq/bloom/error-boundary';
+
+<ErrorBoundary onError={(error) => logError(error)}>
+  <App />
+</ErrorBoundary>
+
+<ErrorBoundary
+  title="Oops!"
+  message="Something broke."
+  retryLabel="Retry"
+  fallback={<CustomFallback />}
+>
+  <RiskyComponent />
+</ErrorBoundary>
+```
+
+### PromptInput
+
+AI chat input with attachments, fullscreen expand, and submit/stop control.
+
+```tsx
+import {
+  PromptInput,
+  PromptInputTextarea,
+  PromptInputActions,
+  PromptInputAttachments,
+  PromptInputSubmitButton,
+} from '@oxyhq/bloom/prompt-input';
+
+// Simple mode — renders built-in layout
+<PromptInput
+  value={text}
+  onValueChange={setText}
+  onSubmit={handleSend}
+  isLoading={isGenerating}
+  onStop={handleStop}
+  placeholder="Ask anything..."
+/>
+
+// Compound mode — full control over layout
+<PromptInput value={text} onValueChange={setText} onSubmit={handleSend}>
+  <PromptInputAttachments />
+  <PromptInputTextarea placeholder="Type a message..." />
+  <PromptInputActions>
+    <MyAddButton />
+    <PromptInputSubmitButton isLoading={isGenerating} onStop={handleStop} />
+  </PromptInputActions>
+</PromptInput>
+```
+
 ## Sub-path exports
 
 ```ts
@@ -163,6 +272,13 @@ import * as Dialog from '@oxyhq/bloom/dialog';
 import * as Prompt from '@oxyhq/bloom/prompt';
 import { Button, IconButton } from '@oxyhq/bloom/button';
 import { GroupedButtons } from '@oxyhq/bloom/grouped-buttons';
+import { Divider } from '@oxyhq/bloom/divider';
+import { RadioIndicator } from '@oxyhq/bloom/radio-indicator';
+import { Avatar } from '@oxyhq/bloom/avatar';
+import { Loading } from '@oxyhq/bloom/loading';
+import { Collapsible } from '@oxyhq/bloom/collapsible';
+import { ErrorBoundary } from '@oxyhq/bloom/error-boundary';
+import { PromptInput, PromptInputTextarea } from '@oxyhq/bloom/prompt-input';
 ```
 
 ## Development

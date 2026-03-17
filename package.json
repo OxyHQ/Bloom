@@ -89,6 +89,83 @@
         "default": "./lib/commonjs/grouped-buttons/index.js"
       }
     },
+    "./divider": {
+      "react-native": "./src/divider/index.ts",
+      "import": {
+        "types": "./lib/typescript/module/divider/index.d.ts",
+        "default": "./lib/module/divider/index.js"
+      },
+      "require": {
+        "types": "./lib/typescript/commonjs/divider/index.d.ts",
+        "default": "./lib/commonjs/divider/index.js"
+      }
+    },
+    "./radio-indicator": {
+      "react-native": "./src/radio-indicator/index.ts",
+      "import": {
+        "types": "./lib/typescript/module/radio-indicator/index.d.ts",
+        "default": "./lib/module/radio-indicator/index.js"
+      },
+      "require": {
+        "types": "./lib/typescript/commonjs/radio-indicator/index.d.ts",
+        "default": "./lib/commonjs/radio-indicator/index.js"
+      }
+    },
+    "./collapsible": {
+      "react-native": "./src/collapsible/index.ts",
+      "import": {
+        "types": "./lib/typescript/module/collapsible/index.d.ts",
+        "default": "./lib/module/collapsible/index.js"
+      },
+      "require": {
+        "types": "./lib/typescript/commonjs/collapsible/index.d.ts",
+        "default": "./lib/commonjs/collapsible/index.js"
+      }
+    },
+    "./error-boundary": {
+      "react-native": "./src/error-boundary/index.ts",
+      "import": {
+        "types": "./lib/typescript/module/error-boundary/index.d.ts",
+        "default": "./lib/module/error-boundary/index.js"
+      },
+      "require": {
+        "types": "./lib/typescript/commonjs/error-boundary/index.d.ts",
+        "default": "./lib/commonjs/error-boundary/index.js"
+      }
+    },
+    "./avatar": {
+      "react-native": "./src/avatar/index.ts",
+      "import": {
+        "types": "./lib/typescript/module/avatar/index.d.ts",
+        "default": "./lib/module/avatar/index.js"
+      },
+      "require": {
+        "types": "./lib/typescript/commonjs/avatar/index.d.ts",
+        "default": "./lib/commonjs/avatar/index.js"
+      }
+    },
+    "./loading": {
+      "react-native": "./src/loading/index.ts",
+      "import": {
+        "types": "./lib/typescript/module/loading/index.d.ts",
+        "default": "./lib/module/loading/index.js"
+      },
+      "require": {
+        "types": "./lib/typescript/commonjs/loading/index.d.ts",
+        "default": "./lib/commonjs/loading/index.js"
+      }
+    },
+    "./prompt-input": {
+      "react-native": "./src/prompt-input/index.ts",
+      "import": {
+        "types": "./lib/typescript/module/prompt-input/index.d.ts",
+        "default": "./lib/module/prompt-input/index.js"
+      },
+      "require": {
+        "types": "./lib/typescript/commonjs/prompt-input/index.d.ts",
+        "default": "./lib/commonjs/prompt-input/index.js"
+      }
+    },
     "./package.json": "./package.json"
   },
   "files": [
@@ -103,7 +180,14 @@
     "dialog",
     "prompt",
     "button",
-    "theme"
+    "theme",
+    "avatar",
+    "loading",
+    "divider",
+    "collapsible",
+    "error-boundary",
+    "prompt-input",
+    "ai"
   ],
   "repository": {
     "type": "git",
@@ -127,6 +211,7 @@
     "react-native-gesture-handler": "^2.30.0",
     "react-native-reanimated": "^4.2.2",
     "react-native-safe-area-context": "~5.6.0",
+    "react-native-svg": "^15.15.3",
     "release-it": "^19.0.6",
     "typescript": "~5.9.2"
   },
@@ -136,7 +221,8 @@
     "react-native": ">=0.73.0",
     "react-native-gesture-handler": ">=2.0.0",
     "react-native-reanimated": ">=3.0.0",
-    "react-native-safe-area-context": ">=5.0.0"
+    "react-native-safe-area-context": ">=5.0.0",
+    "react-native-svg": ">=13.0.0"
   },
   "peerDependenciesMeta": {
     "@gorhom/bottom-sheet": {
@@ -146,6 +232,9 @@
       "optional": true
     },
     "react-native-gesture-handler": {
+      "optional": true
+    },
+    "react-native-svg": {
       "optional": true
     }
   },
