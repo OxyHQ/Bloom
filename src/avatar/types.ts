@@ -4,9 +4,15 @@ import type { ImageSourcePropType, StyleProp, ViewStyle, ImageStyle } from 'reac
 export type AvatarShape = 'circle' | 'squircle';
 
 export interface AvatarProps {
-  /** Image URI to display */
+  /**
+   * Flexible image source — accepts a URL string, an ImageSourcePropType
+   * (e.g. require('./img.png') or { uri: '...' }), or null/undefined.
+   * Takes precedence over the `uri` prop when both are provided.
+   */
+  source?: string | ImageSourcePropType | null;
+  /** Direct URI string. Use `source` for more flexible input. */
   uri?: string;
-  /** Fallback image source when uri is missing or errors (defaults to colored circle) */
+  /** Fallback image source when source/uri is missing or errors (defaults to colored circle) */
   fallbackSource?: ImageSourcePropType;
   /** Avatar size in pixels (defaults to 40) */
   size?: number;

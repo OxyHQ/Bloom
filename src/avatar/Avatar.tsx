@@ -101,6 +101,7 @@ function CircleFallback({ size, fallbackColor }: { size: number; fallbackColor: 
 }
 
 const AvatarComponent: React.FC<AvatarProps> = ({
+  source,
   uri,
   fallbackSource,
   size = 40,
@@ -115,13 +116,26 @@ const AvatarComponent: React.FC<AvatarProps> = ({
   const [errored, setErrored] = useState(false);
   const theme = useTheme();
   const radius = size / 2;
-  const effectiveUri = errored ? undefined : uri;
   const fallbackColor = theme.colors.backgroundTertiary;
+
+  // Resolve source prop: string → uri, object → ImageSourcePropType
+  const resolvedUri = useMemo(() => {
+    if (typeof source === 'string') return source;
+    return uri;
+  }, [source, uri]);
+
+  const resolvedImageSource = useMemo(() => {
+    if (source != null && typeof source !== 'string') return source;
+    return undefined;
+  }, [source]);
+
+  const effectiveUri = errored ? undefined : resolvedUri;
 
   const imageSource = useMemo(() => {
     if (effectiveUri) return { uri: effectiveUri };
+    if (resolvedImageSource) return resolvedImageSource;
     return fallbackSource;
-  }, [effectiveUri, fallbackSource]);
+  }, [effectiveUri, resolvedImageSource, fallbackSource]);
 
   const content = (
     <View style={[styles.container, { width: size, height: size }, style]} testID={testID}>
