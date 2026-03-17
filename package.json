@@ -1,0 +1,171 @@
+{
+  "name": "@oxyhq/bloom",
+  "version": "0.1.0",
+  "description": "Bloom UI — Oxy ecosystem component library for React Native + Expo + Web",
+  "main": "lib/commonjs/index.js",
+  "module": "lib/module/index.js",
+  "types": "lib/typescript/commonjs/index.d.ts",
+  "react-native": "src/index.ts",
+  "source": "src/index.ts",
+  "sideEffects": false,
+  "publishConfig": {
+    "access": "public"
+  },
+  "exports": {
+    ".": {
+      "react-native": "./src/index.ts",
+      "import": {
+        "types": "./lib/typescript/module/index.d.ts",
+        "default": "./lib/module/index.js"
+      },
+      "require": {
+        "types": "./lib/typescript/commonjs/index.d.ts",
+        "default": "./lib/commonjs/index.js"
+      }
+    },
+    "./theme": {
+      "react-native": "./src/theme/index.ts",
+      "import": {
+        "types": "./lib/typescript/module/theme/index.d.ts",
+        "default": "./lib/module/theme/index.js"
+      },
+      "require": {
+        "types": "./lib/typescript/commonjs/theme/index.d.ts",
+        "default": "./lib/commonjs/theme/index.js"
+      }
+    },
+    "./portal": {
+      "react-native": "./src/portal/index.ts",
+      "import": {
+        "types": "./lib/typescript/module/portal/index.d.ts",
+        "default": "./lib/module/portal/index.js"
+      },
+      "require": {
+        "types": "./lib/typescript/commonjs/portal/index.d.ts",
+        "default": "./lib/commonjs/portal/index.js"
+      }
+    },
+    "./dialog": {
+      "react-native": "./src/dialog/index.ts",
+      "import": {
+        "types": "./lib/typescript/module/dialog/index.d.ts",
+        "default": "./lib/module/dialog/index.js"
+      },
+      "require": {
+        "types": "./lib/typescript/commonjs/dialog/index.d.ts",
+        "default": "./lib/commonjs/dialog/index.js"
+      }
+    },
+    "./prompt": {
+      "react-native": "./src/prompt/index.ts",
+      "import": {
+        "types": "./lib/typescript/module/prompt/index.d.ts",
+        "default": "./lib/module/prompt/index.js"
+      },
+      "require": {
+        "types": "./lib/typescript/commonjs/prompt/index.d.ts",
+        "default": "./lib/commonjs/prompt/index.js"
+      }
+    },
+    "./button": {
+      "react-native": "./src/button/index.ts",
+      "import": {
+        "types": "./lib/typescript/module/button/index.d.ts",
+        "default": "./lib/module/button/index.js"
+      },
+      "require": {
+        "types": "./lib/typescript/commonjs/button/index.d.ts",
+        "default": "./lib/commonjs/button/index.js"
+      }
+    },
+    "./grouped-buttons": {
+      "react-native": "./src/grouped-buttons/index.ts",
+      "import": {
+        "types": "./lib/typescript/module/grouped-buttons/index.d.ts",
+        "default": "./lib/module/grouped-buttons/index.js"
+      },
+      "require": {
+        "types": "./lib/typescript/commonjs/grouped-buttons/index.d.ts",
+        "default": "./lib/commonjs/grouped-buttons/index.js"
+      }
+    },
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "src",
+    "lib"
+  ],
+  "keywords": [
+    "react-native",
+    "expo",
+    "ui",
+    "components",
+    "dialog",
+    "prompt",
+    "button",
+    "theme"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/OxyHQ/Bloom.git"
+  },
+  "license": "MIT",
+  "scripts": {
+    "build": "bob build",
+    "typescript": "tsc --noEmit",
+    "clean": "rm -rf lib",
+    "prepare": "bob build || true",
+    "release": "rm -rf lib && npm run build && release-it"
+  },
+  "devDependencies": {
+    "@gorhom/bottom-sheet": "^5.2.8",
+    "@types/react": "~19.1.0",
+    "@types/react-native": "*",
+    "react": "19.2.0",
+    "react-native": "0.83.2",
+    "react-native-builder-bob": "^0.40.16",
+    "react-native-gesture-handler": "^2.30.0",
+    "react-native-reanimated": "^4.2.2",
+    "react-native-safe-area-context": "~5.6.0",
+    "release-it": "^19.0.6",
+    "typescript": "~5.9.2"
+  },
+  "peerDependencies": {
+    "@gorhom/bottom-sheet": ">=5.0.0",
+    "react": ">=18.0.0",
+    "react-native": ">=0.73.0",
+    "react-native-gesture-handler": ">=2.0.0",
+    "react-native-reanimated": ">=3.0.0",
+    "react-native-safe-area-context": ">=5.0.0"
+  },
+  "peerDependenciesMeta": {
+    "@gorhom/bottom-sheet": {
+      "optional": true
+    },
+    "react-native-reanimated": {
+      "optional": true
+    },
+    "react-native-gesture-handler": {
+      "optional": true
+    }
+  },
+  "react-native-builder-bob": {
+    "source": "src",
+    "output": "lib",
+    "targets": [
+      [
+        "commonjs",
+        {
+          "esm": true
+        }
+      ],
+      [
+        "module",
+        {
+          "esm": true
+        }
+      ],
+      "typescript"
+    ]
+  }
+}

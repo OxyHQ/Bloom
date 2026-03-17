@@ -1,0 +1,6 @@
+__tests__/
+example/
+.github/
+tsconfig*.json
+.gitignore
+*.tsbuildinfo
