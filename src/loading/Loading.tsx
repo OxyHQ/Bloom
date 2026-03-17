@@ -1,7 +1,8 @@
 import React, { memo, useEffect, useMemo } from 'react';
-import { View, Text, ActivityIndicator, StyleSheet, type DimensionValue } from 'react-native';
+import { View, Text, StyleSheet, type DimensionValue } from 'react-native';
 
 import { useTheme } from '../theme/use-theme';
+import { SpinnerIcon } from './SpinnerIcon';
 import type {
   LoadingProps,
   SpinnerLoadingProps,
@@ -52,7 +53,7 @@ const SpinnerLoading: React.FC<SpinnerLoadingProps> = ({
 
   return (
     <View style={[styles.container, style]} testID={testID}>
-      {spinnerIcon ?? <ActivityIndicator size={effectiveIconSize > 30 ? 'large' : 'small'} color={spinnerColor} />}
+      {spinnerIcon ?? <SpinnerIcon size={effectiveIconSize} color={spinnerColor} />}
       {showText && text && (
         <Text
           style={[
@@ -92,7 +93,7 @@ const TopLoading: React.FC<TopLoadingProps> = ({
     return (
       <View style={[styles.topContainer, { height: targetHeight }, style]} testID={testID}>
         <View style={[styles.topLoadingView, { height: targetHeight }]}>
-          {spinnerIcon ?? <ActivityIndicator size={effectiveIconSize > 30 ? 'large' : 'small'} color={spinnerColor} />}
+          {spinnerIcon ?? <SpinnerIcon size={effectiveIconSize} color={spinnerColor} />}
         </View>
       </View>
     );
@@ -130,7 +131,7 @@ const TopLoading: React.FC<TopLoadingProps> = ({
   return (
     <Animated.View style={[styles.topContainer, containerAnimated]} testID={testID}>
       <Animated.View style={[styles.topLoadingView, { height: targetHeight }, innerAnimated, style]}>
-        {spinnerIcon ?? <ActivityIndicator size={effectiveIconSize > 30 ? 'large' : 'small'} color={spinnerColor} />}
+        {spinnerIcon ?? <SpinnerIcon size={effectiveIconSize} color={spinnerColor} />}
       </Animated.View>
     </Animated.View>
   );
@@ -188,7 +189,7 @@ const InlineLoading: React.FC<InlineLoadingProps> = ({
 
   return (
     <View style={[styles.inlineContainer, style]} testID={testID}>
-      {spinnerIcon ?? <ActivityIndicator size="small" color={spinnerColor} />}
+      {spinnerIcon ?? <SpinnerIcon size={SIZE_CONFIG.small.spinner} color={spinnerColor} />}
       {text && (
         <Text
           style={[

@@ -1,6 +1,6 @@
 {
   "name": "@oxyhq/bloom",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "Bloom UI — Oxy ecosystem component library for React Native + Expo + Web",
   "main": "lib/commonjs/index.js",
   "module": "lib/module/index.js",
@@ -153,6 +153,17 @@
       "require": {
         "types": "./lib/typescript/commonjs/loading/index.d.ts",
         "default": "./lib/commonjs/loading/index.js"
+      }
+    },
+    "./switch": {
+      "react-native": "./src/switch/index.ts",
+      "import": {
+        "types": "./lib/typescript/module/switch/index.d.ts",
+        "default": "./lib/module/switch/index.js"
+      },
+      "require": {
+        "types": "./lib/typescript/commonjs/switch/index.d.ts",
+        "default": "./lib/commonjs/switch/index.js"
       }
     },
     "./prompt-input": {
