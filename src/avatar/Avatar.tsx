@@ -2,6 +2,7 @@ import React, { memo, useMemo, useRef, useState } from 'react';
 import { View, Image, StyleSheet, TouchableOpacity } from 'react-native';
 
 import { useTheme } from '../theme/use-theme';
+import { useImageResolver } from '../image-resolver/context';
 import type { AvatarProps } from './types';
 
 // Squircle clip path normalized to 0–1 coordinate space (viewBox="0 0 1 1").
@@ -131,11 +132,20 @@ const AvatarComponent: React.FC<AvatarProps> = ({
     }
   }
 
-  // Resolve source prop: string → uri, object → ImageSourcePropType
+  const imageResolver = useImageResolver();
+
+  // Resolve source prop: string → uri, object → ImageSourcePropType.
+  // HTTP/data URLs pass through directly. Non-URL strings (e.g. file
+  // IDs) are resolved via the app-provided ImageResolver if available.
   const resolvedUri = useMemo(() => {
-    if (typeof source === 'string') return source;
+    if (typeof source === 'string') {
+      if (source.startsWith('http://') || source.startsWith('https://') || source.startsWith('data:')) {
+        return source;
+      }
+      return imageResolver?.(source);
+    }
     return uri;
-  }, [source, uri]);
+  }, [source, uri, imageResolver]);
 
   const resolvedImageSource = useMemo(() => {
     if (source != null && typeof source !== 'string') return source;
