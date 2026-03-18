@@ -19,3 +19,4 @@ export * as SegmentedControl from './segmented-control';
 export * from './search-input';
 export * as Admonition from './admonition';
 export * as Menu from './menu';
+export * as Tooltip from './tooltip';
