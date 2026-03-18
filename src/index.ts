@@ -15,3 +15,7 @@ export * as PromptInput from './prompt-input';
 export * from './switch';
 export * as Toast from './toast';
 export * as TextField from './text-field';
+export * as SegmentedControl from './segmented-control';
+export * from './search-input';
+export * as Admonition from './admonition';
+export * as Menu from './menu';
