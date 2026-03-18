@@ -60,6 +60,27 @@ export const borderRadius = {
 /**
  * Gradient definitions for icon system.
  */
+/**
+ * Animation timing and spring tokens.
+ * Centralized values ensure consistent motion across all components.
+ */
+export const animation = {
+  duration: {
+    instant: 100,
+    fast: 150,
+    normal: 200,
+    slow: 300,
+  },
+  spring: {
+    snappy: { friction: 8, tension: 100 },
+    gentle: { friction: 8, tension: 60 },
+    bouncy: { friction: 6, tension: 120 },
+  },
+} as const;
+
+/**
+ * Gradient definitions for icon system.
+ */
 export const gradients = {
   primary: {
     values: [

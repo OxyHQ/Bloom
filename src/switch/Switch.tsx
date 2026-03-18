@@ -2,6 +2,7 @@ import React, { memo, useEffect, useRef } from 'react';
 import { Pressable, Animated } from 'react-native';
 
 import { useTheme } from '../theme/use-theme';
+import { animation } from '../styles/tokens';
 import type { SwitchProps } from './types';
 
 const TRACK = { default: { w: 44, h: 26 }, sm: { w: 36, h: 22 } } as const;
@@ -19,8 +20,7 @@ const SwitchComponent = React.forwardRef<React.ElementRef<typeof Pressable>, Swi
       Animated.spring(anim, {
         toValue: value ? 1 : 0,
         useNativeDriver: false,
-        friction: 8,
-        tension: 60,
+        ...animation.spring.gentle,
       }).start();
     }, [value, anim]);
 
@@ -29,8 +29,7 @@ const SwitchComponent = React.forwardRef<React.ElementRef<typeof Pressable>, Swi
       Animated.spring(pressAnim, {
         toValue: 1,
         useNativeDriver: false,
-        friction: 8,
-        tension: 100,
+        ...animation.spring.snappy,
       }).start();
     };
 
@@ -38,8 +37,7 @@ const SwitchComponent = React.forwardRef<React.ElementRef<typeof Pressable>, Swi
       Animated.spring(pressAnim, {
         toValue: 0,
         useNativeDriver: false,
-        friction: 8,
-        tension: 60,
+        ...animation.spring.gentle,
       }).start();
     };
 
@@ -79,7 +77,7 @@ const SwitchComponent = React.forwardRef<React.ElementRef<typeof Pressable>, Swi
         onPressIn={onPressIn}
         onPressOut={onPressOut}
         style={[{ opacity: disabled ? 0.4 : 1 }, style]}
-        hitSlop={4}
+        hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
         testID={testID}
       >
         <Animated.View

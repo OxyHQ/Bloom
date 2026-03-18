@@ -1,7 +1,8 @@
-import React, { useMemo, memo } from 'react';
-import { TouchableOpacity, Text, Platform, type ViewStyle, type TextStyle } from 'react-native';
+import React, { useCallback, useMemo, useRef, memo } from 'react';
+import { Pressable, Text, Platform, Animated, type ViewStyle, type TextStyle } from 'react-native';
 
 import { useTheme } from '../theme/use-theme';
+import { animation } from '../styles/tokens';
 import type { ButtonProps } from './types';
 
 export type { ButtonProps, ButtonVariant, ButtonSize } from './types';
@@ -29,6 +30,9 @@ const SIZE_CONFIG = {
 
 const ICON_HIT_SLOP = { top: 10, bottom: 10, left: 10, right: 10 } as const;
 
+const PRESS_SCALE = 0.97;
+const SCALE_VARIANTS = new Set<string>(['primary', 'secondary']);
+
 const ButtonComponent: React.FC<ButtonProps> = ({
   onPress,
   children,
@@ -46,6 +50,26 @@ const ButtonComponent: React.FC<ButtonProps> = ({
   testID,
 }) => {
   const theme = useTheme();
+  const scaleAnim = useRef(new Animated.Value(1)).current;
+  const hasScaleFeedback = SCALE_VARIANTS.has(variant);
+
+  const onPressIn = useCallback(() => {
+    if (!hasScaleFeedback) return;
+    Animated.spring(scaleAnim, {
+      toValue: PRESS_SCALE,
+      useNativeDriver: true,
+      ...animation.spring.snappy,
+    }).start();
+  }, [scaleAnim, hasScaleFeedback]);
+
+  const onPressOut = useCallback(() => {
+    if (!hasScaleFeedback) return;
+    Animated.spring(scaleAnim, {
+      toValue: 1,
+      useNativeDriver: true,
+      ...animation.spring.gentle,
+    }).start();
+  }, [scaleAnim, hasScaleFeedback]);
 
   const baseStyles = useMemo((): ViewStyle => {
     const sizeConfig = SIZE_CONFIG[size];
@@ -120,26 +144,35 @@ const ButtonComponent: React.FC<ButtonProps> = ({
   }, [variant, size, theme]);
 
   const defaultHitSlop = variant === 'icon' ? ICON_HIT_SLOP : undefined;
+  const resolvedActiveOpacity = activeOpacity ?? (variant === 'icon' ? 0.7 : 0.8);
 
   return (
-    <TouchableOpacity
-      style={[baseStyles, disabled && { opacity: 0.5 }, style]}
-      onPress={onPress}
-      disabled={disabled}
-      activeOpacity={activeOpacity ?? (variant === 'icon' ? 0.7 : 0.8)}
-      hitSlop={hitSlop ?? defaultHitSlop}
-      accessibilityLabel={accessibilityLabel}
-      accessibilityHint={accessibilityHint}
-      accessibilityRole="button"
-      accessibilityState={{ disabled }}
-      testID={testID}
-    >
-      {iconPosition === 'left' && icon}
-      {children != null && (
-        <Text style={[computedTextStyle, textStyle]}>{children}</Text>
-      )}
-      {iconPosition === 'right' && icon}
-    </TouchableOpacity>
+    <Animated.View style={hasScaleFeedback ? { transform: [{ scale: scaleAnim }] } : undefined}>
+      <Pressable
+        style={({ pressed }) => [
+          baseStyles,
+          disabled && { opacity: 0.5 },
+          pressed && !hasScaleFeedback && { opacity: resolvedActiveOpacity },
+          style,
+        ]}
+        onPress={onPress}
+        onPressIn={onPressIn}
+        onPressOut={onPressOut}
+        disabled={disabled}
+        hitSlop={hitSlop ?? defaultHitSlop}
+        accessibilityLabel={accessibilityLabel}
+        accessibilityHint={accessibilityHint}
+        accessibilityRole="button"
+        accessibilityState={{ disabled }}
+        testID={testID}
+      >
+        {iconPosition === 'left' && icon}
+        {children != null && (
+          <Text style={[computedTextStyle, textStyle]}>{children}</Text>
+        )}
+        {iconPosition === 'right' && icon}
+      </Pressable>
+    </Animated.View>
   );
 };
 

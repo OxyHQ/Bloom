@@ -2,6 +2,7 @@ import React, { memo, useEffect, useMemo } from 'react';
 import { View, Text, StyleSheet, type DimensionValue } from 'react-native';
 
 import { useTheme } from '../theme/use-theme';
+import { animation } from '../styles/tokens';
 import { SpinnerIcon } from './SpinnerIcon';
 import type {
   LoadingProps,
@@ -108,7 +109,7 @@ const TopLoading: React.FC<TopLoadingProps> = ({
   // eslint-disable-next-line react-hooks/rules-of-hooks
   const translateY = useSharedValue(showLoading ? 0 : -targetHeight);
 
-  const timingConfig = { duration: 250, easing: Easing.out(Easing.cubic) };
+  const timingConfig = { duration: animation.duration.slow, easing: Easing.out(Easing.cubic) };
 
   // eslint-disable-next-line react-hooks/rules-of-hooks
   useEffect(() => {
