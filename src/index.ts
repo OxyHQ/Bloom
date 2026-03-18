@@ -20,3 +20,5 @@ export * from './search-input';
 export * as Admonition from './admonition';
 export * as Menu from './menu';
 export * as Tooltip from './tooltip';
+export * as Select from './select';
+export * as ContextMenu from './context-menu';
