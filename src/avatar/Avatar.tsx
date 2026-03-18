@@ -1,4 +1,4 @@
-import React, { memo, useMemo, useState } from 'react';
+import React, { memo, useMemo, useRef, useState } from 'react';
 import { View, Image, StyleSheet, TouchableOpacity } from 'react-native';
 
 import { useTheme } from '../theme/use-theme';
@@ -117,6 +117,19 @@ const AvatarComponent: React.FC<AvatarProps> = ({
   const theme = useTheme();
   const radius = size / 2;
   const fallbackColor = theme.colors.backgroundTertiary;
+
+  // Reset error state when source changes (e.g., list item recycling
+  // or async URL resolution replacing an initial file ID).
+  // Pattern from https://react.dev/learn/you-might-not-need-an-effect#adjusting-some-state-when-a-prop-changes
+  const prevSourceRef = useRef(source);
+  const prevUriRef = useRef(uri);
+  if (prevSourceRef.current !== source || prevUriRef.current !== uri) {
+    prevSourceRef.current = source;
+    prevUriRef.current = uri;
+    if (errored) {
+      setErrored(false);
+    }
+  }
 
   // Resolve source prop: string → uri, object → ImageSourcePropType
   const resolvedUri = useMemo(() => {
