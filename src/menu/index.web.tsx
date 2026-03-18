@@ -192,7 +192,13 @@ export function Item({ children, label, onPress, style, ...rest }: ItemProps) {
     [control, onPress],
   );
 
-  const isHighlighted = (hovered || focused) && !rest.disabled;
+  const isDisabled = Boolean(rest.disabled);
+  const isHighlighted = (hovered || focused) && !isDisabled;
+
+  const itemContextValue = useMemo(
+    () => ({ disabled: isDisabled }),
+    [isDisabled],
+  );
 
   return (
     <Pressable
@@ -216,7 +222,7 @@ export function Item({ children, label, onPress, style, ...rest }: ItemProps) {
         style,
       ]}
     >
-      <ItemContext.Provider value={{ disabled: Boolean(rest.disabled) }}>
+      <ItemContext.Provider value={itemContextValue}>
         {children}
       </ItemContext.Provider>
     </Pressable>

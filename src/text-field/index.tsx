@@ -12,6 +12,7 @@ import {
 
 import { useTheme } from '../theme/use-theme';
 import { useInteractionState } from '../hooks/useInteractionState';
+import { mergeRefs } from '../hooks/mergeRefs';
 import {
   atoms as a,
   web,
@@ -22,23 +23,6 @@ import {
 } from '../styles';
 import { type Props as SVGIconProps } from '../icons/common';
 import { Text } from '../typography';
-
-/**
- * Merges multiple React refs into a single callback ref.
- */
-function mergeRefs<T>(
-  refs: Array<React.Ref<T> | null | undefined>,
-): React.RefCallback<T> {
-  return (instance: T | null) => {
-    for (const ref of refs) {
-      if (typeof ref === 'function') {
-        ref(instance);
-      } else if (ref != null) {
-        (ref as React.MutableRefObject<T | null>).current = instance;
-      }
-    }
-  };
-}
 
 const Context = createContext<{
   inputRef: React.RefObject<TextInput | null> | null;

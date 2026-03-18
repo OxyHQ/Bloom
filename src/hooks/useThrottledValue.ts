@@ -1,31 +1,34 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
 /**
  * Returns a throttled version of the value that only updates at most once per `time` ms.
  */
 export function useThrottledValue<T>(value: T, time: number) {
-  const pendingValueRef = useRef(value);
   const [throttledValue, setThrottledValue] = useState(value);
+  const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
-    pendingValueRef.current = value;
-  }, [value]);
+    if (value === throttledValue) {
+      return;
+    }
 
-  const handleTick = useCallback(() => {
-    setThrottledValue(prev => {
-      if (pendingValueRef.current !== prev) {
-        return pendingValueRef.current;
-      }
-      return prev;
-    });
-  }, []);
+    if (timeoutRef.current !== null) {
+      // A timeout is already pending; it will pick up the latest value via closure.
+      return;
+    }
 
-  useEffect(() => {
-    const id = setInterval(handleTick, time);
+    timeoutRef.current = setTimeout(() => {
+      timeoutRef.current = null;
+      setThrottledValue(value);
+    }, time);
+
     return () => {
-      clearInterval(id);
+      if (timeoutRef.current !== null) {
+        clearTimeout(timeoutRef.current);
+        timeoutRef.current = null;
+      }
     };
-  }, [handleTick, time]);
+  }, [value, time, throttledValue]);
 
   return throttledValue;
 }

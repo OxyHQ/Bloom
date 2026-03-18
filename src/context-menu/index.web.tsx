@@ -19,6 +19,7 @@ import { useTheme } from '../theme/use-theme';
 import { Text } from '../typography';
 import { Portal } from '../portal';
 import { useInteractionState } from '../hooks/useInteractionState';
+import { ItemCtx, useItemContext } from './context';
 import type {
   ContextMenuContextValue,
   GroupProps,
@@ -31,7 +32,7 @@ import type {
 } from './types';
 
 // ---------------------------------------------------------------------------
-// Context
+// Web-specific context (extends base with position)
 // ---------------------------------------------------------------------------
 
 type Position = { x: number; y: number };
@@ -40,27 +41,14 @@ type WebContextMenuContextValue = ContextMenuContextValue & {
   position: Position | null;
 };
 
-const ContextMenuContext = createContext<WebContextMenuContextValue | null>(null);
-ContextMenuContext.displayName = 'ContextMenuContext';
+const WebContextMenuContext = createContext<WebContextMenuContextValue | null>(null);
+WebContextMenuContext.displayName = 'WebContextMenuContext';
 
-const ItemCtx = createContext<ItemContextValue | null>(null);
-ItemCtx.displayName = 'ContextMenuItemContext';
-
-function useContextMenuContext(): WebContextMenuContextValue {
-  const ctx = useContext(ContextMenuContext);
+function useWebContextMenuContext(): WebContextMenuContextValue {
+  const ctx = useContext(WebContextMenuContext);
   if (!ctx) {
     throw new Error(
       'ContextMenu components must be used within a ContextMenu.Root',
-    );
-  }
-  return ctx;
-}
-
-function useItemContext(): ItemContextValue {
-  const ctx = useContext(ItemCtx);
-  if (!ctx) {
-    throw new Error(
-      'ContextMenu.ItemText/ItemIcon must be used within a ContextMenu.Item',
     );
   }
   return ctx;
@@ -91,11 +79,11 @@ export function Root({ children }: { children: React.ReactNode }) {
    * without needing a stable identity on `open`.
    */
   return (
-    <ContextMenuContext.Provider value={ctx}>
+    <WebContextMenuContext.Provider value={ctx}>
       <SetPositionContext.Provider value={setPosition}>
         {children}
       </SetPositionContext.Provider>
-    </ContextMenuContext.Provider>
+    </WebContextMenuContext.Provider>
   );
 }
 
@@ -109,7 +97,7 @@ SetPositionContext.displayName = 'ContextMenuSetPositionContext';
 // ---------------------------------------------------------------------------
 
 export function Trigger({ children, label, hint, style }: TriggerProps) {
-  const ctx = useContextMenuContext();
+  const ctx = useWebContextMenuContext();
   const setPosition = useContext(SetPositionContext);
   const triggerRef = useRef<View>(null);
 
@@ -159,36 +147,37 @@ export function Trigger({ children, label, hint, style }: TriggerProps) {
 // ---------------------------------------------------------------------------
 
 export function Outer({ children, style }: OuterProps) {
-  const ctx = useContextMenuContext();
+  const ctx = useWebContextMenuContext();
   const theme = useTheme();
+  const { isOpen, close, position } = ctx;
 
   useEffect(() => {
-    if (!ctx.isOpen) return;
+    if (!isOpen) return;
 
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === 'Escape') {
-        ctx.close();
+        close();
       }
     };
     document.addEventListener('keydown', handleKeyDown);
     return () => document.removeEventListener('keydown', handleKeyDown);
-  }, [ctx]);
+  }, [isOpen, close]);
 
-  if (!ctx.isOpen || !ctx.position) return null;
+  if (!isOpen || !position) return null;
 
   return (
     <Portal>
       <Pressable
         style={styles.backdrop}
-        onPress={ctx.close}
+        onPress={close}
         accessibilityLabel="Close context menu"
       />
       <View
         style={[
           styles.dropdown,
           {
-            top: ctx.position.y,
-            left: ctx.position.x,
+            top: position.y,
+            left: position.x,
             backgroundColor: theme.isDark
               ? theme.colors.backgroundSecondary
               : theme.colors.background,
@@ -216,7 +205,7 @@ export function Item({
   style,
 }: ItemProps) {
   const theme = useTheme();
-  const ctx = useContextMenuContext();
+  const ctx = useWebContextMenuContext();
   const {
     state: hovered,
     onIn: onMouseEnter,

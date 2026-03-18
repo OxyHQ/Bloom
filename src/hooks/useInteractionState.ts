@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useState } from 'react';
+import { useCallback, useState } from 'react';
 
 export function useInteractionState() {
   const [state, setState] = useState(false);
@@ -10,12 +10,5 @@ export function useInteractionState() {
     setState(false);
   }, []);
 
-  return useMemo(
-    () => ({
-      state,
-      onIn,
-      onOut,
-    }),
-    [state, onIn, onOut],
-  );
+  return { state, onIn, onOut };
 }

@@ -1,3 +1,4 @@
+import React from 'react';
 import { StyleSheet, type TextProps } from 'react-native';
 import { type PathProps, type SvgProps } from 'react-native-svg';
 import { Defs, LinearGradient, Stop } from 'react-native-svg';
@@ -23,13 +24,9 @@ export const sizes = {
   '3xl': 48,
 } as const;
 
-let _idCounter = 0;
-function uniqueId(prefix: string): string {
-  return prefix + '_' + (++_idCounter);
-}
-
 export function useCommonSVGProps(props: Props) {
   const { colors } = useTheme();
+  const reactId = React.useId();
   const { fill, size, gradient, ...rest } = props;
   const style = StyleSheet.flatten(rest.style);
   const _size = Number(size ? sizes[size] : rest.width || sizes.md);
@@ -37,7 +34,7 @@ export function useCommonSVGProps(props: Props) {
   let gradientDef = null;
 
   if (gradient && gradients[gradient]) {
-    const id = uniqueId(gradient);
+    const id = `${reactId}-${gradient}`;
     const config = gradients[gradient];
     _fill = `url(#${id})`;
     gradientDef = (
