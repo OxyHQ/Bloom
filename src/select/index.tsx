@@ -17,6 +17,7 @@ import { useInteractionState } from '../hooks/useInteractionState';
 import {
   ChevronTopBottom_Stroke2_Corner0_Rounded as ChevronUpDownIcon,
 } from '../icons/Chevron';
+import { defaultItemValueExtractor, ItemContext, useItemContext } from './common';
 import type {
   ContentProps,
   IconProps,
@@ -28,6 +29,8 @@ import type {
   TriggerProps,
   ValueTextProps,
 } from './types';
+
+export { useItemContext };
 
 // ---------------------------------------------------------------------------
 // Context
@@ -254,28 +257,9 @@ function ContentInner<T>({
   );
 }
 
-function defaultItemValueExtractor(item: unknown): string {
-  if (item != null && typeof item === 'object' && 'value' in item) {
-    return String((item as { value: string }).value);
-  }
-  return String(item);
-}
-
 // ---------------------------------------------------------------------------
-// Item context
+// Item context + value extractor (shared across platforms)
 // ---------------------------------------------------------------------------
-
-const ItemContext = createContext<SelectItemContextValue>({
-  selected: false,
-  hovered: false,
-  focused: false,
-  pressed: false,
-});
-ItemContext.displayName = 'SelectItemContext';
-
-export function useItemContext(): SelectItemContextValue {
-  return useContext(ItemContext);
-}
 
 // ---------------------------------------------------------------------------
 // Item

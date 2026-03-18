@@ -17,6 +17,7 @@ import { useTheme } from '../theme/use-theme';
 import { Text } from '../typography';
 import * as Dialog from '../dialog';
 import { useInteractionState } from '../hooks/useInteractionState';
+import { ItemCtx, useItemContext } from './context';
 import type {
   ContextMenuContextValue,
   GroupProps,
@@ -29,32 +30,21 @@ import type {
 } from './types';
 
 // ---------------------------------------------------------------------------
-// Context
+// Native-specific context (extends base with Dialog control)
 // ---------------------------------------------------------------------------
 
-const ContextMenuContext = createContext<
-  (ContextMenuContextValue & { control: Dialog.DialogControlProps }) | null
->(null);
-ContextMenuContext.displayName = 'ContextMenuContext';
+type NativeContextMenuContextValue = ContextMenuContextValue & {
+  control: Dialog.DialogControlProps;
+};
 
-const ItemCtx = createContext<ItemContextValue | null>(null);
-ItemCtx.displayName = 'ContextMenuItemContext';
+const NativeContextMenuContext = createContext<NativeContextMenuContextValue | null>(null);
+NativeContextMenuContext.displayName = 'NativeContextMenuContext';
 
-function useContextMenuContext() {
-  const ctx = useContext(ContextMenuContext);
+function useNativeContextMenuContext(): NativeContextMenuContextValue {
+  const ctx = useContext(NativeContextMenuContext);
   if (!ctx) {
     throw new Error(
       'ContextMenu components must be used within a ContextMenu.Root',
-    );
-  }
-  return ctx;
-}
-
-function useItemContext(): ItemContextValue {
-  const ctx = useContext(ItemCtx);
-  if (!ctx) {
-    throw new Error(
-      'ContextMenu.ItemText/ItemIcon must be used within a ContextMenu.Item',
     );
   }
   return ctx;
@@ -78,9 +68,9 @@ export function Root({ children }: { children: React.ReactNode }) {
   );
 
   return (
-    <ContextMenuContext.Provider value={ctx}>
+    <NativeContextMenuContext.Provider value={ctx}>
       {children}
-    </ContextMenuContext.Provider>
+    </NativeContextMenuContext.Provider>
   );
 }
 
@@ -89,7 +79,7 @@ export function Root({ children }: { children: React.ReactNode }) {
 // ---------------------------------------------------------------------------
 
 export function Trigger({ children, label, hint, style }: TriggerProps) {
-  const { open } = useContextMenuContext();
+  const { open } = useNativeContextMenuContext();
   const { state: focused, onIn: onFocus, onOut: onBlur } = useInteractionState();
 
   return (
@@ -119,12 +109,12 @@ export function Trigger({ children, label, hint, style }: TriggerProps) {
 // ---------------------------------------------------------------------------
 
 export function Outer({ children, style }: OuterProps) {
-  const { control } = useContextMenuContext();
+  const { control } = useNativeContextMenuContext();
 
   return (
     <Dialog.Outer control={control} preventExpansion>
       <Dialog.Handle />
-      <ContextMenuContext.Provider
+      <NativeContextMenuContext.Provider
         value={{
           isOpen: true,
           open: () => control.open(),
@@ -135,7 +125,7 @@ export function Outer({ children, style }: OuterProps) {
         <Dialog.ScrollableInner label="Context menu">
           <View style={[styles.outerContent, style]}>{children}</View>
         </Dialog.ScrollableInner>
-      </ContextMenuContext.Provider>
+      </NativeContextMenuContext.Provider>
     </Dialog.Outer>
   );
 }
@@ -152,7 +142,7 @@ export function Item({
   style,
 }: ItemProps) {
   const theme = useTheme();
-  const { close } = useContextMenuContext();
+  const { close } = useNativeContextMenuContext();
   const { state: focused, onIn: onFocus, onOut: onBlur } = useInteractionState();
   const {
     state: pressed,

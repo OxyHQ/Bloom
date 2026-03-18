@@ -1,5 +1,4 @@
 import {
-  Children,
   createContext,
   useCallback,
   useContext,
@@ -20,13 +19,13 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useTheme } from '../theme/use-theme';
 import { atoms as a } from '../styles';
 import { Portal } from '../portal';
-import { Text } from '../typography';
 import {
   ARROW_HALF_SIZE,
   ARROW_SIZE,
   BUBBLE_MAX_WIDTH,
   MIN_EDGE_SPACE,
 } from './const';
+import { createTextBubble } from './TextBubble';
 
 /**
  * These are native specific values, not shared with web
@@ -391,17 +390,4 @@ function opposite(position: 'top' | 'bottom'): string {
   }
 }
 
-export function TextBubble({ children }: { children: React.ReactNode }) {
-  const c = Children.toArray(children);
-  return (
-    <Content label={c.join(' ')}>
-      <View style={[a.gap_xs]}>
-        {c.map((child, i) => (
-          <Text key={i} style={[a.text_sm, a.leading_snug]}>
-            {child}
-          </Text>
-        ))}
-      </View>
-    </Content>
-  );
-}
+export const TextBubble = createTextBubble(Content);

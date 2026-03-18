@@ -205,7 +205,7 @@ export function Item({
   style,
 }: ItemProps) {
   const theme = useTheme();
-  const ctx = useWebContextMenuContext();
+  const { close } = useWebContextMenuContext();
   const {
     state: hovered,
     onIn: onMouseEnter,
@@ -217,8 +217,8 @@ export function Item({
 
   const handlePress = useCallback(() => {
     onPress();
-    ctx.close();
-  }, [onPress, ctx]);
+    close();
+  }, [onPress, close]);
 
   const itemCtx = useMemo<ItemContextValue>(
     () => ({ disabled }),

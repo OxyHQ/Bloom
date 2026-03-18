@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useMemo, useState } from 'react';
+import React, { createContext, useContext, useId, useMemo, useState } from 'react';
 import { Pressable, StyleSheet, View } from 'react-native';
 
 import { useTheme } from '../theme/use-theme';
@@ -10,6 +10,7 @@ import {
   ChevronBottom_Stroke2_Corner0_Rounded as ChevronDownIcon,
 } from '../icons/Chevron';
 import { Check_Stroke2_Corner0_Rounded as CheckIcon } from '../icons/Check';
+import { defaultItemValueExtractor, ItemContext, useItemContext } from './common';
 import type {
   ContentProps,
   IconProps,
@@ -21,6 +22,8 @@ import type {
   TriggerProps,
   ValueTextProps,
 } from './types';
+
+export { useItemContext };
 
 // ---------------------------------------------------------------------------
 // Context
@@ -72,6 +75,7 @@ export function Root({ children, value, onValueChange, disabled }: RootProps) {
 export function Trigger({ children, label }: TriggerProps) {
   const ctx = useSelectContext();
   const theme = useTheme();
+  const triggerId = useId();
   const {
     state: hovered,
     onIn: onMouseEnter,
@@ -82,7 +86,7 @@ export function Trigger({ children, label }: TriggerProps) {
   if (typeof children === 'function') {
     return children({
       control: {
-        id: 'select-trigger',
+        id: triggerId,
         ref: { current: null },
         open: ctx.open,
         close: ctx.close,
@@ -208,28 +212,9 @@ export function Content<T>({
   );
 }
 
-function defaultItemValueExtractor(item: unknown): string {
-  if (item != null && typeof item === 'object' && 'value' in item) {
-    return String((item as { value: string }).value);
-  }
-  return String(item);
-}
-
 // ---------------------------------------------------------------------------
-// Item context
+// Item context + value extractor (shared across platforms)
 // ---------------------------------------------------------------------------
-
-const ItemContext = createContext<SelectItemContextValue>({
-  selected: false,
-  hovered: false,
-  focused: false,
-  pressed: false,
-});
-ItemContext.displayName = 'SelectItemContext';
-
-export function useItemContext(): SelectItemContextValue {
-  return useContext(ItemContext);
-}
 
 // ---------------------------------------------------------------------------
 // Item
