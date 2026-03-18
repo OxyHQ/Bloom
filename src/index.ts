@@ -13,3 +13,4 @@ export * from './avatar';
 export * from './loading';
 export * as PromptInput from './prompt-input';
 export * from './switch';
+export * as Toast from './toast';

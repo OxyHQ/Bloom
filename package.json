@@ -177,6 +177,17 @@
         "default": "./lib/commonjs/prompt-input/index.js"
       }
     },
+    "./toast": {
+      "react-native": "./src/toast/index.tsx",
+      "import": {
+        "types": "./lib/typescript/module/toast/index.d.ts",
+        "default": "./lib/module/toast/index.js"
+      },
+      "require": {
+        "types": "./lib/typescript/commonjs/toast/index.d.ts",
+        "default": "./lib/commonjs/toast/index.js"
+      }
+    },
     "./package.json": "./package.json"
   },
   "files": [
@@ -198,6 +209,7 @@
     "collapsible",
     "error-boundary",
     "prompt-input",
+    "toast",
     "ai"
   ],
   "repository": {
@@ -224,6 +236,8 @@
     "react-native-safe-area-context": "~5.6.0",
     "react-native-svg": "^15.15.3",
     "release-it": "^19.0.6",
+    "sonner": "^2.0.3",
+    "sonner-native": "^0.23.1",
     "typescript": "~5.9.2"
   },
   "peerDependencies": {
@@ -233,7 +247,9 @@
     "react-native-gesture-handler": ">=2.0.0",
     "react-native-reanimated": ">=3.0.0",
     "react-native-safe-area-context": ">=5.0.0",
-    "react-native-svg": ">=13.0.0"
+    "react-native-svg": ">=13.0.0",
+    "sonner": ">=2.0.0",
+    "sonner-native": ">=0.17.0"
   },
   "peerDependenciesMeta": {
     "@gorhom/bottom-sheet": {
@@ -246,6 +262,12 @@
       "optional": true
     },
     "react-native-svg": {
+      "optional": true
+    },
+    "sonner": {
+      "optional": true
+    },
+    "sonner-native": {
       "optional": true
     }
   },
@@ -269,6 +291,7 @@
     ]
   },
   "dependencies": {
+    "nanoid": "^5.1.5",
     "react-remove-scroll-bar": "^2.3.8"
   }
 }
