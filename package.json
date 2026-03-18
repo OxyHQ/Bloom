@@ -267,5 +267,8 @@
       ],
       "typescript"
     ]
+  },
+  "dependencies": {
+    "react-remove-scroll-bar": "^2.3.8"
   }
 }

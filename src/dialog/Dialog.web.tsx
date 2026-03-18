@@ -1,5 +1,6 @@
 import React, { createContext, useCallback, useContext, useEffect, useImperativeHandle, useMemo, useRef, useState } from 'react';
 import { Pressable, Text, View, type ViewStyle } from 'react-native';
+import { RemoveScrollBar } from 'react-remove-scroll-bar';
 
 import { useTheme } from '../theme/use-theme';
 import { Portal } from '../portal';
@@ -75,6 +76,7 @@ export function Outer({
     <Portal>
       <Context.Provider value={context}>
         <ClosingContext.Provider value={isClosing}>
+          <RemoveScrollBar />
           <Pressable
             onPress={() => close()}
             style={{
@@ -88,7 +90,7 @@ export function Outer({
               justifyContent: webOptions?.alignCenter ? 'center' : undefined,
               paddingHorizontal: 20,
               paddingVertical: '10vh' as unknown as number,
-              overflow: 'scroll',
+              overflow: 'auto' as ViewStyle['overflow'],
             }}
           >
             <DialogBackdrop isClosing={isClosing} />
