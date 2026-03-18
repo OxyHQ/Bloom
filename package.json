@@ -188,6 +188,182 @@
         "default": "./lib/commonjs/toast/index.js"
       }
     },
+    "./styles": {
+      "react-native": "./src/styles/index.ts",
+      "import": {
+        "types": "./lib/typescript/module/styles/index.d.ts",
+        "default": "./lib/module/styles/index.js"
+      },
+      "require": {
+        "types": "./lib/typescript/commonjs/styles/index.d.ts",
+        "default": "./lib/commonjs/styles/index.js"
+      }
+    },
+    "./hooks": {
+      "react-native": "./src/hooks/index.ts",
+      "import": {
+        "types": "./lib/typescript/module/hooks/index.d.ts",
+        "default": "./lib/module/hooks/index.js"
+      },
+      "require": {
+        "types": "./lib/typescript/commonjs/hooks/index.d.ts",
+        "default": "./lib/commonjs/hooks/index.js"
+      }
+    },
+    "./icons": {
+      "react-native": "./src/icons/index.ts",
+      "import": {
+        "types": "./lib/typescript/module/icons/index.d.ts",
+        "default": "./lib/module/icons/index.js"
+      },
+      "require": {
+        "types": "./lib/typescript/commonjs/icons/index.d.ts",
+        "default": "./lib/commonjs/icons/index.js"
+      }
+    },
+    "./typography": {
+      "react-native": "./src/typography/index.tsx",
+      "import": {
+        "types": "./lib/typescript/module/typography/index.d.ts",
+        "default": "./lib/module/typography/index.js"
+      },
+      "require": {
+        "types": "./lib/typescript/commonjs/typography/index.d.ts",
+        "default": "./lib/commonjs/typography/index.js"
+      }
+    },
+    "./skeleton": {
+      "react-native": "./src/skeleton/index.tsx",
+      "import": {
+        "types": "./lib/typescript/module/skeleton/index.d.ts",
+        "default": "./lib/module/skeleton/index.js"
+      },
+      "require": {
+        "types": "./lib/typescript/commonjs/skeleton/index.d.ts",
+        "default": "./lib/commonjs/skeleton/index.js"
+      }
+    },
+    "./grid": {
+      "react-native": "./src/grid/index.tsx",
+      "import": {
+        "types": "./lib/typescript/module/grid/index.d.ts",
+        "default": "./lib/module/grid/index.js"
+      },
+      "require": {
+        "types": "./lib/typescript/commonjs/grid/index.d.ts",
+        "default": "./lib/commonjs/grid/index.js"
+      }
+    },
+    "./fill": {
+      "react-native": "./src/fill/index.tsx",
+      "import": {
+        "types": "./lib/typescript/module/fill/index.d.ts",
+        "default": "./lib/module/fill/index.js"
+      },
+      "require": {
+        "types": "./lib/typescript/commonjs/fill/index.d.ts",
+        "default": "./lib/commonjs/fill/index.js"
+      }
+    },
+    "./icon-circle": {
+      "react-native": "./src/icon-circle/index.tsx",
+      "import": {
+        "types": "./lib/typescript/module/icon-circle/index.d.ts",
+        "default": "./lib/module/icon-circle/index.js"
+      },
+      "require": {
+        "types": "./lib/typescript/commonjs/icon-circle/index.d.ts",
+        "default": "./lib/commonjs/icon-circle/index.js"
+      }
+    },
+    "./text-field": {
+      "react-native": "./src/text-field/index.tsx",
+      "import": {
+        "types": "./lib/typescript/module/text-field/index.d.ts",
+        "default": "./lib/module/text-field/index.js"
+      },
+      "require": {
+        "types": "./lib/typescript/commonjs/text-field/index.d.ts",
+        "default": "./lib/commonjs/text-field/index.js"
+      }
+    },
+    "./segmented-control": {
+      "react-native": "./src/segmented-control/index.tsx",
+      "import": {
+        "types": "./lib/typescript/module/segmented-control/index.d.ts",
+        "default": "./lib/module/segmented-control/index.js"
+      },
+      "require": {
+        "types": "./lib/typescript/commonjs/segmented-control/index.d.ts",
+        "default": "./lib/commonjs/segmented-control/index.js"
+      }
+    },
+    "./search-input": {
+      "react-native": "./src/search-input/index.tsx",
+      "import": {
+        "types": "./lib/typescript/module/search-input/index.d.ts",
+        "default": "./lib/module/search-input/index.js"
+      },
+      "require": {
+        "types": "./lib/typescript/commonjs/search-input/index.d.ts",
+        "default": "./lib/commonjs/search-input/index.js"
+      }
+    },
+    "./admonition": {
+      "react-native": "./src/admonition/index.tsx",
+      "import": {
+        "types": "./lib/typescript/module/admonition/index.d.ts",
+        "default": "./lib/module/admonition/index.js"
+      },
+      "require": {
+        "types": "./lib/typescript/commonjs/admonition/index.d.ts",
+        "default": "./lib/commonjs/admonition/index.js"
+      }
+    },
+    "./menu": {
+      "react-native": "./src/menu/index.tsx",
+      "import": {
+        "types": "./lib/typescript/module/menu/index.d.ts",
+        "default": "./lib/module/menu/index.js"
+      },
+      "require": {
+        "types": "./lib/typescript/commonjs/menu/index.d.ts",
+        "default": "./lib/commonjs/menu/index.js"
+      }
+    },
+    "./tooltip": {
+      "react-native": "./src/tooltip/index.tsx",
+      "import": {
+        "types": "./lib/typescript/module/tooltip/index.d.ts",
+        "default": "./lib/module/tooltip/index.js"
+      },
+      "require": {
+        "types": "./lib/typescript/commonjs/tooltip/index.d.ts",
+        "default": "./lib/commonjs/tooltip/index.js"
+      }
+    },
+    "./select": {
+      "react-native": "./src/select/index.tsx",
+      "import": {
+        "types": "./lib/typescript/module/select/index.d.ts",
+        "default": "./lib/module/select/index.js"
+      },
+      "require": {
+        "types": "./lib/typescript/commonjs/select/index.d.ts",
+        "default": "./lib/commonjs/select/index.js"
+      }
+    },
+    "./context-menu": {
+      "react-native": "./src/context-menu/index.tsx",
+      "import": {
+        "types": "./lib/typescript/module/context-menu/index.d.ts",
+        "default": "./lib/module/context-menu/index.js"
+      },
+      "require": {
+        "types": "./lib/typescript/commonjs/context-menu/index.d.ts",
+        "default": "./lib/commonjs/context-menu/index.js"
+      }
+    },
     "./package.json": "./package.json"
   },
   "files": [
@@ -210,6 +386,18 @@
     "error-boundary",
     "prompt-input",
     "toast",
+    "icons",
+    "typography",
+    "skeleton",
+    "grid",
+    "text-field",
+    "segmented-control",
+    "search-input",
+    "admonition",
+    "menu",
+    "tooltip",
+    "select",
+    "context-menu",
     "ai"
   ],
   "repository": {
