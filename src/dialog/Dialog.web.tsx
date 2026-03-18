@@ -90,7 +90,7 @@ export function Outer({
               justifyContent: webOptions?.alignCenter ? 'center' : undefined,
               paddingHorizontal: 20,
               paddingVertical: '10vh' as unknown as number,
-              overflow: 'auto' as ViewStyle['overflow'],
+              ...({ overflowY: 'auto' } as Record<string, string>),
             }}
           >
             <DialogBackdrop isClosing={isClosing} />
