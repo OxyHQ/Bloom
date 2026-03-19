@@ -9,9 +9,6 @@ export interface AppColorPreset {
 
 export const APP_COLOR_NAMES: AppColorName[] = ['teal', 'blue', 'green', 'amber', 'red', 'purple', 'pink', 'sky', 'orange', 'mint'];
 
-/** Premium-exclusive color names, not shown in the standard picker */
-export const PREMIUM_COLOR_NAMES: AppColorName[] = ['oxy'];
-
 export const HEX_TO_APP_COLOR: Record<string, AppColorName> = {
   '#005c67': 'teal',
   '#1d9bf0': 'blue',
