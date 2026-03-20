@@ -48,6 +48,10 @@ export * as TextField from './text-field';
 export * as SegmentedControl from './segmented-control';
 export { SearchInput } from './search-input';
 
+// Bottom sheet
+export { BottomSheet } from './bottom-sheet';
+export type { BottomSheetRef, BottomSheetProps } from './bottom-sheet';
+
 // Overlay components
 export * as Admonition from './admonition';
 export * as Menu from './menu';
