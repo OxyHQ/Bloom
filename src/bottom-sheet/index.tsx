@@ -35,7 +35,19 @@ if (Platform.OS !== 'web') {
     }
 }
 
-const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
+/** Hook that returns current screen dimensions and updates on rotation/resize. */
+function useScreenDimensions() {
+    const [dimensions, setDimensions] = useState(() => Dimensions.get('window'));
+
+    useEffect(() => {
+        const subscription = Dimensions.addEventListener('change', ({ window }) => {
+            setDimensions(window);
+        });
+        return () => subscription.remove();
+    }, []);
+
+    return dimensions;
+}
 
 const SPRING_CONFIG = {
     damping: 25,
@@ -78,14 +90,22 @@ const BottomSheet = forwardRef((props: BottomSheetProps, ref: React.ForwardedRef
     } = props;
 
     const insets = useSafeAreaInsets();
-    const { colors } = useTheme();
+    const theme = useTheme();
+    const { colors } = theme;
+    const { height: screenHeight } = useScreenDimensions();
     const [visible, setVisible] = useState(false);
     const [rendered, setRendered] = useState(false); // keep mounted for exit animation
     const closeTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
     const hasClosedRef = useRef(false);
     const scrollViewRef = useRef<Animated.ScrollView>(null);
 
-    const translateY = useSharedValue(SCREEN_HEIGHT);
+    const screenHeightSV = useSharedValue(screenHeight);
+    // Keep shared value in sync when screen dimensions change (rotation/resize)
+    useEffect(() => {
+        screenHeightSV.value = screenHeight;
+    }, [screenHeight, screenHeightSV]);
+
+    const translateY = useSharedValue(screenHeight);
     const opacity = useSharedValue(0);
     const scrollOffsetY = useSharedValue(0);
     const isScrollAtTop = useSharedValue(true);
@@ -135,7 +155,7 @@ const BottomSheet = forwardRef((props: BottomSheetProps, ref: React.ForwardedRef
                     runOnJS(finishClose)();
                 }
             });
-            translateY.value = withSpring(SCREEN_HEIGHT, { ...SPRING_CONFIG, stiffness: 250 });
+            translateY.value = withSpring(screenHeight, { ...SPRING_CONFIG, stiffness: 250 });
 
             // Fallback timer to ensure close completes (especially on web)
             if (closeTimeoutRef.current) {
@@ -227,14 +247,14 @@ const BottomSheet = forwardRef((props: BottomSheetProps, ref: React.ForwardedRef
                     const velocity = event.velocityY;
                     const distance = translateY.value;
                     // Require a deeper pull to close (more like native bottom sheets)
-                    const closeThreshold = Math.max(140, SCREEN_HEIGHT * 0.25);
+                    const closeThreshold = Math.max(140, screenHeightSV.value * 0.25);
                     const fastSwipeThreshold = 900;
                     const shouldClose =
                         velocity > fastSwipeThreshold ||
                         (distance > closeThreshold && velocity > -300);
 
                     if (shouldClose) {
-                        translateY.value = withSpring(SCREEN_HEIGHT, {
+                        translateY.value = withSpring(screenHeightSV.value, {
                             ...SPRING_CONFIG,
                             velocity: velocity,
                         });
@@ -262,7 +282,7 @@ const BottomSheet = forwardRef((props: BottomSheetProps, ref: React.ForwardedRef
     }));
 
     const sheetStyle = useAnimatedStyle(() => {
-        const scale = interpolate(translateY.value, [0, SCREEN_HEIGHT], [1, 0.95]);
+        const scale = interpolate(translateY.value, [0, screenHeightSV.value], [1, 0.95]);
         return {
             transform: [
                 { translateY: translateY.value - keyboardHeight.value },
@@ -272,7 +292,7 @@ const BottomSheet = forwardRef((props: BottomSheetProps, ref: React.ForwardedRef
     });
 
     const sheetHeightStyle = useAnimatedStyle(() => ({
-        maxHeight: SCREEN_HEIGHT - keyboardHeight.value - insets.top - (detached ? insets.bottom + 16 : 0),
+        maxHeight: screenHeightSV.value - keyboardHeight.value - insets.top - (detached ? insets.bottom + 16 : 0),
     }), [insets.top, insets.bottom, detached]);
 
     const sheetMarginStyle = useAnimatedStyle(() => {
@@ -303,11 +323,10 @@ const BottomSheet = forwardRef((props: BottomSheetProps, ref: React.ForwardedRef
     });
 
     const dynamicStyles = useMemo(() => {
-        const isDark = colors.background === '#000000';
         return StyleSheet.create({
             handle: {
                 ...styles.handle,
-                backgroundColor: isDark ? '#444' : '#C7C7CC',
+                backgroundColor: theme.isDark ? '#444' : '#C7C7CC',
             },
             sheet: {
                 ...styles.sheet,
@@ -320,7 +339,7 @@ const BottomSheet = forwardRef((props: BottomSheetProps, ref: React.ForwardedRef
                 // The sheet extends behind safe area, and screens add padding as needed
             },
         });
-    }, [colors.background, detached]);
+    }, [colors.background, theme.isDark, detached]);
 
     if (!rendered) return null;
 
