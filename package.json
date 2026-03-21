@@ -386,6 +386,72 @@
         "default": "./lib/commonjs/context-menu/index.js"
       }
     },
+    "./card": {
+      "react-native": "./src/card/index.ts",
+      "import": {
+        "types": "./lib/typescript/module/card/index.d.ts",
+        "default": "./lib/module/card/index.js"
+      },
+      "require": {
+        "types": "./lib/typescript/commonjs/card/index.d.ts",
+        "default": "./lib/commonjs/card/index.js"
+      }
+    },
+    "./badge": {
+      "react-native": "./src/badge/index.ts",
+      "import": {
+        "types": "./lib/typescript/module/badge/index.d.ts",
+        "default": "./lib/module/badge/index.js"
+      },
+      "require": {
+        "types": "./lib/typescript/commonjs/badge/index.d.ts",
+        "default": "./lib/commonjs/badge/index.js"
+      }
+    },
+    "./chip": {
+      "react-native": "./src/chip/index.ts",
+      "import": {
+        "types": "./lib/typescript/module/chip/index.d.ts",
+        "default": "./lib/module/chip/index.js"
+      },
+      "require": {
+        "types": "./lib/typescript/commonjs/chip/index.d.ts",
+        "default": "./lib/commonjs/chip/index.js"
+      }
+    },
+    "./tabs": {
+      "react-native": "./src/tabs/index.ts",
+      "import": {
+        "types": "./lib/typescript/module/tabs/index.d.ts",
+        "default": "./lib/module/tabs/index.js"
+      },
+      "require": {
+        "types": "./lib/typescript/commonjs/tabs/index.d.ts",
+        "default": "./lib/commonjs/tabs/index.js"
+      }
+    },
+    "./checkbox": {
+      "react-native": "./src/checkbox/index.ts",
+      "import": {
+        "types": "./lib/typescript/module/checkbox/index.d.ts",
+        "default": "./lib/module/checkbox/index.js"
+      },
+      "require": {
+        "types": "./lib/typescript/commonjs/checkbox/index.d.ts",
+        "default": "./lib/commonjs/checkbox/index.js"
+      }
+    },
+    "./accordion": {
+      "react-native": "./src/accordion/index.ts",
+      "import": {
+        "types": "./lib/typescript/module/accordion/index.d.ts",
+        "default": "./lib/module/accordion/index.js"
+      },
+      "require": {
+        "types": "./lib/typescript/commonjs/accordion/index.d.ts",
+        "default": "./lib/commonjs/accordion/index.js"
+      }
+    },
     "./package.json": "./package.json"
   },
   "files": [
@@ -421,6 +487,12 @@
     "select",
     "context-menu",
     "bottom-sheet",
+    "card",
+    "badge",
+    "chip",
+    "tabs",
+    "checkbox",
+    "accordion",
     "ai"
   ],
   "repository": {
@@ -430,6 +502,7 @@
   "license": "MIT",
   "scripts": {
     "build": "bob build",
+    "test": "jest",
     "typescript": "tsc --noEmit",
     "clean": "rm -rf lib",
     "prepare": "bob build || true",
@@ -437,8 +510,11 @@
   },
   "devDependencies": {
     "@gorhom/bottom-sheet": "^5.2.8",
+    "@testing-library/react-native": "^13.3.3",
+    "@types/jest": "^30.0.0",
     "@types/react": "~19.1.0",
     "@types/react-native": "*",
+    "jest": "^30.3.0",
     "react": "19.2.0",
     "react-native": "0.83.2",
     "react-native-builder-bob": "^0.40.16",
@@ -449,6 +525,7 @@
     "release-it": "^19.0.6",
     "sonner": "^2.0.3",
     "sonner-native": "^0.23.1",
+    "ts-jest": "^29.4.6",
     "typescript": "~5.9.2"
   },
   "peerDependencies": {

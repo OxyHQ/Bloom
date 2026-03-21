@@ -52,6 +52,14 @@ export { SearchInput } from './search-input';
 export { BottomSheet } from './bottom-sheet';
 export type { BottomSheetRef, BottomSheetProps } from './bottom-sheet';
 
+// Data display
+export * from './card';
+export * from './badge';
+export * from './chip';
+export * as Tabs from './tabs';
+export * from './checkbox';
+export * as Accordion from './accordion';
+
 // Overlay components
 export * as Admonition from './admonition';
 export * as Menu from './menu';
