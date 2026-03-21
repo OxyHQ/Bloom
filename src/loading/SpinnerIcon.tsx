@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react';
-import { ActivityIndicator, View, type ViewStyle } from 'react-native';
+import { ActivityIndicator, type ViewStyle } from 'react-native';
 
 // Lazy-loaded dependencies for the SVG spinner.
 // Falls back to ActivityIndicator if react-native-svg or react-native-reanimated are not installed.
@@ -41,23 +41,22 @@ interface SpinnerIconProps {
   style?: ViewStyle;
 }
 
+type AnimatedSpinnerProps = SpinnerIconProps & {
+  svg: NonNullable<SvgModuleType>;
+  reanimated: NonNullable<ReanimatedType>;
+};
+
 /**
- * iOS-style SVG spinner with 8 rotating rectangles and an opacity gradient trail.
- * Requires react-native-svg and react-native-reanimated as peer dependencies.
- * Falls back to ActivityIndicator if either is missing.
+ * Inner component that unconditionally calls Reanimated hooks.
+ * Only rendered when both react-native-svg and react-native-reanimated are available.
  */
-export const SpinnerIcon: React.FC<SpinnerIconProps> = ({
+const AnimatedSpinner: React.FC<AnimatedSpinnerProps> = ({
   color = '#005c67',
   size = 26,
   style,
+  svg,
+  reanimated,
 }) => {
-  const svg = getSvgModule();
-  const reanimated = getReanimated();
-
-  if (!svg || !reanimated) {
-    return <ActivityIndicator size={size > 30 ? 'large' : 'small'} color={color} />;
-  }
-
   const { default: Svg, Rect } = svg;
   const {
     default: Animated,
@@ -68,19 +67,19 @@ export const SpinnerIcon: React.FC<SpinnerIconProps> = ({
     Easing,
   } = reanimated;
 
-  // eslint-disable-next-line react-hooks/rules-of-hooks
   const rotation = useSharedValue(0);
 
-  // eslint-disable-next-line react-hooks/rules-of-hooks
   useEffect(() => {
     rotation.value = withRepeat(
       withTiming(360, { duration: 400, easing: Easing.linear }),
       -1,
-      false
+      false,
     );
-  }, [rotation, withRepeat, withTiming, Easing]);
+    // Reanimated shared values are stable references; withRepeat/withTiming/Easing
+    // are module-level functions from the lazily-loaded module and are stable too.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
-  // eslint-disable-next-line react-hooks/rules-of-hooks
   const animatedStyle = useAnimatedStyle(() => ({
     transform: [{ rotate: `${rotation.value}deg` }],
   }));
@@ -109,6 +108,34 @@ export const SpinnerIcon: React.FC<SpinnerIconProps> = ({
         <Rect fill={color} height="10" opacity="0.875" rx="5" ry="5" transform="rotate(225 50 50)" width="28" x="67" y="45" />
       </Svg>
     </Animated.View>
+  );
+};
+
+/**
+ * iOS-style SVG spinner with 8 rotating rectangles and an opacity gradient trail.
+ * Requires react-native-svg and react-native-reanimated as peer dependencies.
+ * Falls back to ActivityIndicator if either is missing.
+ */
+export const SpinnerIcon: React.FC<SpinnerIconProps> = ({
+  color = '#005c67',
+  size = 26,
+  style,
+}) => {
+  const svg = getSvgModule();
+  const reanimated = getReanimated();
+
+  if (!svg || !reanimated) {
+    return <ActivityIndicator size={size > 30 ? 'large' : 'small'} color={color} />;
+  }
+
+  return (
+    <AnimatedSpinner
+      color={color}
+      size={size}
+      style={style}
+      svg={svg}
+      reanimated={reanimated}
+    />
   );
 };
 

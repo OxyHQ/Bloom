@@ -104,13 +104,13 @@ const BottomSheet = forwardRef((props: BottomSheetProps, ref: React.ForwardedRef
     }, []);
 
     // Dismiss callbacks
-    const safeClose = () => {
+    const safeClose = useCallback(() => {
         if (onDismissAttempt?.()) {
             onDismiss?.();
         } else if (!onDismissAttempt) {
             onDismiss?.();
         }
-    };
+    }, [onDismissAttempt, onDismiss]);
 
     const finishClose = useCallback(() => {
         if (hasClosedRef.current) return;
@@ -185,66 +185,76 @@ const BottomSheet = forwardRef((props: BottomSheetProps, ref: React.ForwardedRef
 
     const nativeGesture = useMemo(() => Gesture.Native(), []);
 
-    const panGesture = Gesture.Pan()
-        .enabled(enablePanDownToClose)
-        .simultaneousWithExternalGesture(nativeGesture)
-        .onStart(() => {
-            'worklet';
-            context.value = { y: translateY.value };
-            allowPanClose.value = scrollOffsetY.value <= 8;
-        })
-        .onUpdate((event) => {
-            'worklet';
-            if (!allowPanClose.value) {
-                return;
-            }
-            const newTranslateY = context.value.y + event.translationY;
-            // If user is scrolling down while content isn't at (or near) the top, let ScrollView handle it
-            const atTopOrNearTop = scrollOffsetY.value <= 8; // slightly larger tolerance for smoother handoff
-            if (event.translationY > 0 && !atTopOrNearTop) {
-                return;
-            }
-            if (newTranslateY >= 0) {
-                translateY.value = newTranslateY;
-            } else if (detached) {
-                // Only allow overdrag (pulling up beyond top) when detached
-                translateY.value = newTranslateY * 0.3;
-            } else {
-                // In normal mode, prevent overdrag - clamp to 0
-                translateY.value = 0;
-            }
-        })
-        .onEnd((event) => {
-            'worklet';
-            if (!allowPanClose.value) {
-                return;
-            }
-            const velocity = event.velocityY;
-            const distance = translateY.value;
-            // Require a deeper pull to close (more like native bottom sheets)
-            const closeThreshold = Math.max(140, SCREEN_HEIGHT * 0.25);
-            const fastSwipeThreshold = 900;
-            const shouldClose =
-                velocity > fastSwipeThreshold ||
-                (distance > closeThreshold && velocity > -300);
-
-            if (shouldClose) {
-                translateY.value = withSpring(SCREEN_HEIGHT, {
-                    ...SPRING_CONFIG,
-                    velocity: velocity,
-                });
-                opacity.value = withTiming(0, { duration: 250 }, (finished) => {
-                    if (finished) {
-                        runOnJS(finishClose)();
+    // Memoized pan gesture — recreating a Gesture.Pan() on every render causes
+    // gesture detach/reattach during animations and breaks React Compiler memoization.
+    const panGesture = useMemo(
+        () =>
+            Gesture.Pan()
+                .enabled(enablePanDownToClose)
+                .simultaneousWithExternalGesture(nativeGesture)
+                .onStart(() => {
+                    'worklet';
+                    context.value = { y: translateY.value };
+                    allowPanClose.value = scrollOffsetY.value <= 8;
+                })
+                .onUpdate((event) => {
+                    'worklet';
+                    if (!allowPanClose.value) {
+                        return;
                     }
-                });
-            } else {
-                translateY.value = withSpring(0, {
-                    ...SPRING_CONFIG,
-                    velocity: velocity,
-                });
-            }
-        });
+                    const newTranslateY = context.value.y + event.translationY;
+                    // If user is scrolling down while content isn't at (or near) the top, let ScrollView handle it
+                    const atTopOrNearTop = scrollOffsetY.value <= 8; // slightly larger tolerance for smoother handoff
+                    if (event.translationY > 0 && !atTopOrNearTop) {
+                        return;
+                    }
+                    if (newTranslateY >= 0) {
+                        translateY.value = newTranslateY;
+                    } else if (detached) {
+                        // Only allow overdrag (pulling up beyond top) when detached
+                        translateY.value = newTranslateY * 0.3;
+                    } else {
+                        // In normal mode, prevent overdrag - clamp to 0
+                        translateY.value = 0;
+                    }
+                })
+                .onEnd((event) => {
+                    'worklet';
+                    if (!allowPanClose.value) {
+                        return;
+                    }
+                    const velocity = event.velocityY;
+                    const distance = translateY.value;
+                    // Require a deeper pull to close (more like native bottom sheets)
+                    const closeThreshold = Math.max(140, SCREEN_HEIGHT * 0.25);
+                    const fastSwipeThreshold = 900;
+                    const shouldClose =
+                        velocity > fastSwipeThreshold ||
+                        (distance > closeThreshold && velocity > -300);
+
+                    if (shouldClose) {
+                        translateY.value = withSpring(SCREEN_HEIGHT, {
+                            ...SPRING_CONFIG,
+                            velocity: velocity,
+                        });
+                        opacity.value = withTiming(0, { duration: 250 }, (finished) => {
+                            if (finished) {
+                                runOnJS(finishClose)();
+                            }
+                        });
+                    } else {
+                        translateY.value = withSpring(0, {
+                            ...SPRING_CONFIG,
+                            velocity: velocity,
+                        });
+                    }
+                }),
+        // Shared values are stable refs; enablePanDownToClose and detached are the only
+        // JS-side values that change the gesture's behavior.
+        // finishClose is stable (useCallback with stable deps).
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+        [enablePanDownToClose, detached, nativeGesture, finishClose],
+    );
 
     const backdropStyle = useAnimatedStyle(() => ({
         opacity: opacity.value,
@@ -309,7 +319,7 @@ const BottomSheet = forwardRef((props: BottomSheetProps, ref: React.ForwardedRef
                 // The sheet extends behind safe area, and screens add padding as needed
             },
         });
-    }, [colors.background, detached, insets.bottom]);
+    }, [colors.background, detached]);
 
     if (!rendered) return null;
 

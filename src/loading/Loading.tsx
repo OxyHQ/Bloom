@@ -70,6 +70,66 @@ const SpinnerLoading: React.FC<SpinnerLoadingProps> = ({
   );
 };
 
+/**
+ * Inner component for TopLoading that requires react-native-reanimated.
+ * Extracted to a dedicated component so all hooks are called unconditionally,
+ * satisfying the Rules of Hooks and React Compiler requirements.
+ */
+type AnimatedTopLoadingProps = {
+  showLoading: boolean;
+  targetHeight: number;
+  effectiveIconSize: number;
+  spinnerColor: string;
+  spinnerIcon: React.ReactNode | undefined;
+  style: TopLoadingProps['style'];
+  testID: string | undefined;
+  reanimated: NonNullable<ReturnType<typeof getReanimated>>;
+};
+
+const AnimatedTopLoading: React.FC<AnimatedTopLoadingProps> = ({
+  showLoading,
+  targetHeight,
+  effectiveIconSize,
+  spinnerColor,
+  spinnerIcon,
+  style,
+  testID,
+  reanimated,
+}) => {
+  const { default: Animated, useAnimatedStyle, useSharedValue, withTiming, Easing } = reanimated;
+
+  const height = useSharedValue(showLoading ? targetHeight : 0);
+  const opacity = useSharedValue(showLoading ? 1 : 0);
+  const translateY = useSharedValue(showLoading ? 0 : -targetHeight);
+
+  useEffect(() => {
+    const timingConfig = { duration: animation.duration.slow, easing: Easing.out(Easing.cubic) };
+    height.value = withTiming(showLoading ? targetHeight : 0, timingConfig);
+    opacity.value = withTiming(showLoading ? 1 : 0, timingConfig);
+    translateY.value = withTiming(showLoading ? 0 : -targetHeight, timingConfig);
+    // Easing, withTiming: module-level constants from lazily-resolved reanimated, stable.
+    // height/opacity/translateY: shared value objects, stable references.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [showLoading, targetHeight]);
+
+  const containerAnimated = useAnimatedStyle(() => ({
+    height: height.value,
+  }));
+
+  const innerAnimated = useAnimatedStyle(() => ({
+    opacity: opacity.value,
+    transform: [{ translateY: translateY.value }],
+  }));
+
+  return (
+    <Animated.View style={[styles.topContainer, containerAnimated]} testID={testID}>
+      <Animated.View style={[styles.topLoadingView, { height: targetHeight }, innerAnimated, style]}>
+        {spinnerIcon ?? <SpinnerIcon size={effectiveIconSize} color={spinnerColor} />}
+      </Animated.View>
+    </Animated.View>
+  );
+};
+
 const TopLoading: React.FC<TopLoadingProps> = ({
   size = 'medium',
   color,
@@ -88,8 +148,8 @@ const TopLoading: React.FC<TopLoadingProps> = ({
 
   const reanimated = getReanimated();
 
-  // Non-animated fallback when reanimated is not available
   if (!reanimated) {
+    // Non-animated fallback when reanimated is not available
     if (!showLoading) return null;
     return (
       <View style={[styles.topContainer, { height: targetHeight }, style]} testID={testID}>
@@ -100,41 +160,17 @@ const TopLoading: React.FC<TopLoadingProps> = ({
     );
   }
 
-  const { default: Animated, useAnimatedStyle, useSharedValue, withTiming, Easing } = reanimated;
-
-  // eslint-disable-next-line react-hooks/rules-of-hooks
-  const height = useSharedValue(showLoading ? targetHeight : 0);
-  // eslint-disable-next-line react-hooks/rules-of-hooks
-  const opacity = useSharedValue(showLoading ? 1 : 0);
-  // eslint-disable-next-line react-hooks/rules-of-hooks
-  const translateY = useSharedValue(showLoading ? 0 : -targetHeight);
-
-  const timingConfig = { duration: animation.duration.slow, easing: Easing.out(Easing.cubic) };
-
-  // eslint-disable-next-line react-hooks/rules-of-hooks
-  useEffect(() => {
-    height.value = withTiming(showLoading ? targetHeight : 0, timingConfig);
-    opacity.value = withTiming(showLoading ? 1 : 0, timingConfig);
-    translateY.value = withTiming(showLoading ? 0 : -targetHeight, timingConfig);
-  }, [showLoading, targetHeight, height, opacity, translateY]);
-
-  // eslint-disable-next-line react-hooks/rules-of-hooks
-  const containerAnimated = useAnimatedStyle(() => ({
-    height: height.value,
-  }));
-
-  // eslint-disable-next-line react-hooks/rules-of-hooks
-  const innerAnimated = useAnimatedStyle(() => ({
-    opacity: opacity.value,
-    transform: [{ translateY: translateY.value }],
-  }));
-
   return (
-    <Animated.View style={[styles.topContainer, containerAnimated]} testID={testID}>
-      <Animated.View style={[styles.topLoadingView, { height: targetHeight }, innerAnimated, style]}>
-        {spinnerIcon ?? <SpinnerIcon size={effectiveIconSize} color={spinnerColor} />}
-      </Animated.View>
-    </Animated.View>
+    <AnimatedTopLoading
+      showLoading={showLoading}
+      targetHeight={targetHeight}
+      effectiveIconSize={effectiveIconSize}
+      spinnerColor={spinnerColor}
+      spinnerIcon={spinnerIcon}
+      style={style}
+      testID={testID}
+      reanimated={reanimated}
+    />
   );
 };
 
