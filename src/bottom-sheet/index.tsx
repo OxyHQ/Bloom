@@ -23,8 +23,10 @@ import Animated, {
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useTheme } from '../theme/use-theme';
 
-// Optional dependency — keyboard handling is skipped if not installed
-let useKeyboardHandler: ((handlers: Record<string, (e: { height: number }) => void>, deps: unknown[]) => void) | undefined;
+// Optional dependency — uses a no-op fallback if not installed
+// The hook is always called (Rules of Hooks) but does nothing without the library
+const noopKeyboardHandler = (_handlers: Record<string, (e: { height: number }) => void>, _deps: unknown[]) => {};
+let useKeyboardHandler: (handlers: Record<string, (e: { height: number }) => void>, deps: unknown[]) => void = noopKeyboardHandler;
 try {
     // eslint-disable-next-line @typescript-eslint/no-require-imports
     useKeyboardHandler = require('react-native-keyboard-controller').useKeyboardHandler;
@@ -90,18 +92,16 @@ const BottomSheet = forwardRef((props: BottomSheetProps, ref: React.ForwardedRef
     const keyboardHeight = useSharedValue(0);
     const context = useSharedValue({ y: 0 });
 
-    if (useKeyboardHandler) {
-        useKeyboardHandler({
-            onMove: (e) => {
-                'worklet';
-                keyboardHeight.value = e.height;
-            },
-            onEnd: (e) => {
-                'worklet';
-                keyboardHeight.value = e.height;
-            },
-        }, []);
-    }
+    useKeyboardHandler({
+        onMove: (e) => {
+            'worklet';
+            keyboardHeight.value = e.height;
+        },
+        onEnd: (e) => {
+            'worklet';
+            keyboardHeight.value = e.height;
+        },
+    }, []);
 
     // Dismiss callbacks
     const safeClose = () => {
