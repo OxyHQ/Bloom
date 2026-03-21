@@ -23,15 +23,16 @@ import Animated, {
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useTheme } from '../theme/use-theme';
 
-// Optional dependency — uses a no-op fallback if not installed
-// The hook is always called (Rules of Hooks) but does nothing without the library
+// Keyboard handler — only on native platforms. On web, keyboard events are handled by the browser.
 const noopKeyboardHandler = (_handlers: Record<string, (e: { height: number }) => void>, _deps: unknown[]) => {};
 let useKeyboardHandler: (handlers: Record<string, (e: { height: number }) => void>, deps: unknown[]) => void = noopKeyboardHandler;
-try {
-    // eslint-disable-next-line @typescript-eslint/no-require-imports
-    useKeyboardHandler = require('react-native-keyboard-controller').useKeyboardHandler;
-} catch {
-    // react-native-keyboard-controller not available
+if (Platform.OS !== 'web') {
+    try {
+        // eslint-disable-next-line @typescript-eslint/no-require-imports
+        useKeyboardHandler = require('react-native-keyboard-controller').useKeyboardHandler;
+    } catch {
+        // react-native-keyboard-controller not available
+    }
 }
 
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
