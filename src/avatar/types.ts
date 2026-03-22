@@ -26,6 +26,10 @@ export interface AvatarProps {
   style?: StyleProp<ViewStyle>;
   /** Image style (circle shape only) */
   imageStyle?: StyleProp<ImageStyle>;
+  /** Custom background color for the placeholder circle (overrides theme default) */
+  placeholderColor?: string;
+  /** Custom icon rendered inside the placeholder circle when no image is available */
+  placeholderIcon?: ReactNode;
   /** Press handler — wraps avatar in TouchableOpacity when provided */
   onPress?: () => void;
   testID?: string;

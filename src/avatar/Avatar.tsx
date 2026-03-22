@@ -37,18 +37,20 @@ function SquircleImage({
   fallbackSource,
   size,
   fallbackColor,
+  placeholderIcon,
   onError,
 }: {
   uri?: string;
   fallbackSource?: AvatarProps['fallbackSource'];
   size: number;
   fallbackColor: string;
+  placeholderIcon?: React.ReactNode;
   onError: () => void;
 }) {
   const svg = getSvgModule();
   if (!svg) {
     // Fallback to circle if react-native-svg is not installed
-    return <CircleFallback size={size} fallbackColor={fallbackColor} />;
+    return <CircleFallback size={size} fallbackColor={fallbackColor} icon={placeholderIcon} />;
   }
 
   const { default: Svg, Defs, ClipPath, Path, Image: SvgImage } = svg;
@@ -56,7 +58,7 @@ function SquircleImage({
 
   const href = uri ? { uri } : fallbackSource;
   if (!href) {
-    return <CircleFallback size={size} fallbackColor={fallbackColor} />;
+    return <CircleFallback size={size} fallbackColor={fallbackColor} icon={placeholderIcon} />;
   }
 
   return (
@@ -87,7 +89,7 @@ function SquircleImage({
   );
 }
 
-function CircleFallback({ size, fallbackColor }: { size: number; fallbackColor: string }) {
+function CircleFallback({ size, fallbackColor, icon }: { size: number; fallbackColor: string; icon?: React.ReactNode }) {
   const radius = size / 2;
   return (
     <View
@@ -96,8 +98,13 @@ function CircleFallback({ size, fallbackColor }: { size: number; fallbackColor: 
         height: size,
         borderRadius: radius,
         backgroundColor: fallbackColor,
+        justifyContent: 'center',
+        alignItems: 'center',
+        overflow: 'hidden',
       }}
-    />
+    >
+      {icon ?? null}
+    </View>
   );
 }
 
@@ -111,13 +118,15 @@ const AvatarComponent: React.FC<AvatarProps> = ({
   shape = 'circle',
   style,
   imageStyle,
+  placeholderColor,
+  placeholderIcon,
   onPress,
   testID,
 }) => {
   const [errored, setErrored] = useState(false);
   const theme = useTheme();
   const radius = size / 2;
-  const fallbackColor = theme.colors.backgroundTertiary;
+  const fallbackColor = placeholderColor || theme.colors.backgroundTertiary;
 
   // Reset error state when source changes (e.g., list item recycling
   // or async URL resolution replacing an initial file ID).
@@ -168,6 +177,7 @@ const AvatarComponent: React.FC<AvatarProps> = ({
           fallbackSource={fallbackSource}
           size={size}
           fallbackColor={fallbackColor}
+          placeholderIcon={placeholderIcon}
           onError={() => setErrored(true)}
         />
       ) : (
@@ -180,7 +190,7 @@ const AvatarComponent: React.FC<AvatarProps> = ({
               style={[StyleSheet.absoluteFillObject, { borderRadius: radius }, imageStyle]}
             />
           ) : (
-            <CircleFallback size={size} fallbackColor={fallbackColor} />
+            <CircleFallback size={size} fallbackColor={fallbackColor} icon={placeholderIcon} />
           )}
         </View>
       )}
