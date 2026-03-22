@@ -3,6 +3,7 @@ import { View, Image, StyleSheet, TouchableOpacity } from 'react-native';
 
 import { useTheme } from '../theme/use-theme';
 import { useImageResolver } from '../image-resolver/context';
+import { useAvatarPlaceholder } from './placeholder-context';
 import type { AvatarProps } from './types';
 
 // Squircle clip path normalized to 0–1 coordinate space (viewBox="0 0 1 1").
@@ -125,8 +126,10 @@ const AvatarComponent: React.FC<AvatarProps> = ({
 }) => {
   const [errored, setErrored] = useState(false);
   const theme = useTheme();
+  const placeholderConfig = useAvatarPlaceholder();
   const radius = size / 2;
   const fallbackColor = placeholderColor || theme.colors.backgroundTertiary;
+  const resolvedPlaceholderIcon = placeholderIcon ?? placeholderConfig?.icon?.(size * 0.6);
 
   // Reset error state when source changes (e.g., list item recycling
   // or async URL resolution replacing an initial file ID).
@@ -177,7 +180,7 @@ const AvatarComponent: React.FC<AvatarProps> = ({
           fallbackSource={fallbackSource}
           size={size}
           fallbackColor={fallbackColor}
-          placeholderIcon={placeholderIcon}
+          placeholderIcon={resolvedPlaceholderIcon}
           onError={() => setErrored(true)}
         />
       ) : (
@@ -190,7 +193,7 @@ const AvatarComponent: React.FC<AvatarProps> = ({
               style={[StyleSheet.absoluteFillObject, { borderRadius: radius }, imageStyle]}
             />
           ) : (
-            <CircleFallback size={size} fallbackColor={fallbackColor} icon={placeholderIcon} />
+            <CircleFallback size={size} fallbackColor={fallbackColor} icon={resolvedPlaceholderIcon} />
           )}
         </View>
       )}
