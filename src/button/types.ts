@@ -1,6 +1,6 @@
 import type { StyleProp, ViewStyle, TextStyle } from 'react-native';
 
-export type ButtonVariant = 'primary' | 'secondary' | 'icon' | 'ghost' | 'text';
+export type ButtonVariant = 'primary' | 'secondary' | 'inverse' | 'icon' | 'ghost' | 'text';
 
 export type ButtonSize = 'small' | 'medium' | 'large';
 

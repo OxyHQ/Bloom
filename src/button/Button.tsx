@@ -31,7 +31,7 @@ const SIZE_CONFIG = {
 const ICON_HIT_SLOP = { top: 10, bottom: 10, left: 10, right: 10 } as const;
 
 const PRESS_SCALE = 0.97;
-const SCALE_VARIANTS = new Set<string>(['primary', 'secondary']);
+const SCALE_VARIANTS = new Set<string>(['primary', 'secondary', 'inverse']);
 
 const ButtonComponent: React.FC<ButtonProps> = ({
   onPress,
@@ -97,6 +97,10 @@ const ButtonComponent: React.FC<ButtonProps> = ({
         styles.borderColor = theme.colors.border;
         styles.borderRadius = 20;
         break;
+      case 'inverse':
+        styles.backgroundColor = theme.colors.card;
+        styles.borderRadius = 20;
+        break;
       case 'icon':
         styles.backgroundColor = theme.colors.background;
         styles.borderWidth = 1;
@@ -133,6 +137,9 @@ const ButtonComponent: React.FC<ButtonProps> = ({
         break;
       case 'secondary':
         styles.color = theme.colors.text;
+        break;
+      case 'inverse':
+        styles.color = theme.colors.primary;
         break;
       case 'ghost':
       case 'text':
@@ -198,6 +205,11 @@ export const GhostButton = memo((props: Omit<ButtonProps, 'variant'>) => (
   <Button {...props} variant="ghost" />
 ));
 GhostButton.displayName = 'GhostButton';
+
+export const InverseButton = memo((props: Omit<ButtonProps, 'variant'>) => (
+  <Button {...props} variant="inverse" />
+));
+InverseButton.displayName = 'InverseButton';
 
 export const TextButton = memo((props: Omit<ButtonProps, 'variant'>) => (
   <Button {...props} variant="text" />
