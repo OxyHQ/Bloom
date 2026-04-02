@@ -98,7 +98,7 @@ const ButtonComponent: React.FC<ButtonProps> = ({
         styles.borderRadius = 20;
         break;
       case 'inverse':
-        styles.backgroundColor = theme.colors.card;
+        styles.backgroundColor = '#FFFFFF';
         styles.borderRadius = 20;
         break;
       case 'icon':
@@ -139,7 +139,7 @@ const ButtonComponent: React.FC<ButtonProps> = ({
         styles.color = theme.colors.text;
         break;
       case 'inverse':
-        styles.color = theme.colors.primary;
+        styles.color = '#000000';
         break;
       case 'ghost':
       case 'text':
