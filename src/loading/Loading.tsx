@@ -262,9 +262,9 @@ Loading.displayName = 'Loading';
 
 const styles = StyleSheet.create({
   container: {
-    flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
+    padding: 16,
   },
   text: {
     textAlign: 'center',
