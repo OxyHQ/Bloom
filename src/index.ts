@@ -60,6 +60,9 @@ export * as Tabs from './tabs';
 export * from './checkbox';
 export * as Accordion from './accordion';
 
+// Settings / Grouped list
+export * from './settings-list';
+
 // Overlay components
 export * as Admonition from './admonition';
 export * as Menu from './menu';

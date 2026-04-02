@@ -6,6 +6,9 @@ import { useImageResolver } from '../image-resolver/context';
 import { useAvatarPlaceholder } from './placeholder-context';
 import type { AvatarProps } from './types';
 
+// Built-in default avatar image — used when no source, fallbackSource, or placeholderIcon is provided
+const DEFAULT_AVATAR_IMAGE = require('./default-avatar.jpg');
+
 // Squircle clip path normalized to 0–1 coordinate space (viewBox="0 0 1 1").
 const SQUIRCLE_PATH =
   'M0 0.5 L0.00122 0.31674 L0.00489 0.25123 L0.01103 0.20331 L0.01969 0.16478 L0.03097 0.13257 L0.04495 0.10518 L0.0618 0.08177 L0.08177 0.0618 L0.10518 0.04495 L0.13257 0.03097 L0.16478 0.01969 L0.20331 0.01103 L0.25123 0.00489 L0.31674 0.00122 L0.5 0' +
@@ -104,7 +107,13 @@ function CircleFallback({ size, fallbackColor, icon }: { size: number; fallbackC
         overflow: 'hidden',
       }}
     >
-      {icon ?? null}
+      {icon ?? (
+        <Image
+          source={DEFAULT_AVATAR_IMAGE}
+          resizeMode="cover"
+          style={{ width: size, height: size, borderRadius: radius }}
+        />
+      )}
     </View>
   );
 }
