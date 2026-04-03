@@ -123,7 +123,7 @@ export function BloomThemeProvider({
   const rnScheme = useRNColorScheme();
 
   const mode = controlledMode ?? 'system';
-  const appColor = controlledPreset ?? 'teal';
+  const appColor = controlledPreset ?? 'oxy';
 
   const isAdaptive = mode === 'adaptive';
   const effectiveMode = isAdaptive ? 'system' : mode;

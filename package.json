@@ -1,6 +1,6 @@
 {
   "name": "@oxyhq/bloom",
-  "version": "0.1.22",
+  "version": "0.1.24",
   "description": "Bloom UI — Oxy ecosystem component library for React Native + Expo + Web",
   "main": "lib/commonjs/index.js",
   "module": "lib/module/index.js",
@@ -43,6 +43,17 @@
       "require": {
         "types": "./lib/typescript/commonjs/theme/index.d.ts",
         "default": "./lib/commonjs/theme/index.js"
+      }
+    },
+    "./color-presets": {
+      "react-native": "./src/theme/color-presets.ts",
+      "import": {
+        "types": "./lib/typescript/module/theme/color-presets.d.ts",
+        "default": "./lib/module/theme/color-presets.js"
+      },
+      "require": {
+        "types": "./lib/typescript/commonjs/theme/color-presets.d.ts",
+        "default": "./lib/commonjs/theme/color-presets.js"
       }
     },
     "./portal": {
