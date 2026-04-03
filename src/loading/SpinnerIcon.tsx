@@ -38,10 +38,12 @@ function getReanimated(): ReanimatedType | null {
 interface SpinnerIconProps {
   size?: number;
   color?: string;
+  className?: string;
   style?: ViewStyle;
 }
 
-type AnimatedSpinnerProps = SpinnerIconProps & {
+type AnimatedSpinnerProps = Omit<SpinnerIconProps, 'className'> & {
+  className?: string;
   svg: NonNullable<SvgModuleType>;
   reanimated: NonNullable<ReanimatedType>;
 };
@@ -51,8 +53,9 @@ type AnimatedSpinnerProps = SpinnerIconProps & {
  * Only rendered when both react-native-svg and react-native-reanimated are available.
  */
 const AnimatedSpinner: React.FC<AnimatedSpinnerProps> = ({
-  color = '#005c67',
+  color = 'currentColor',
   size = 26,
+  className,
   style,
   svg,
   reanimated,
@@ -97,7 +100,7 @@ const AnimatedSpinner: React.FC<AnimatedSpinnerProps> = ({
         style,
       ]}
     >
-      <Svg viewBox="0 0 100 100" width={size} height={size}>
+      <Svg viewBox="0 0 100 100" width={size} height={size} {...(className ? { className } as any : {})}>
         <Rect fill={color} height="10" opacity="0" rx="5" ry="5" transform="rotate(-90 50 50)" width="28" x="67" y="45" />
         <Rect fill={color} height="10" opacity="0.125" rx="5" ry="5" transform="rotate(-45 50 50)" width="28" x="67" y="45" />
         <Rect fill={color} height="10" opacity="0.25" rx="5" ry="5" transform="rotate(0 50 50)" width="28" x="67" y="45" />
@@ -117,8 +120,9 @@ const AnimatedSpinner: React.FC<AnimatedSpinnerProps> = ({
  * Falls back to ActivityIndicator if either is missing.
  */
 export const SpinnerIcon: React.FC<SpinnerIconProps> = ({
-  color = '#005c67',
+  color = 'currentColor',
   size = 26,
+  className,
   style,
 }) => {
   const svg = getSvgModule();
@@ -132,6 +136,7 @@ export const SpinnerIcon: React.FC<SpinnerIconProps> = ({
     <AnimatedSpinner
       color={color}
       size={size}
+      className={className}
       style={style}
       svg={svg}
       reanimated={reanimated}
