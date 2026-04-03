@@ -1,4 +1,4 @@
-import React, { createContext, useCallback, useEffect, useMemo } from 'react';
+import React, { createContext, useCallback, useContext, useEffect, useMemo } from 'react';
 import { useColorScheme as useRNColorScheme, Platform } from 'react-native';
 import { APP_COLOR_PRESETS, type AppColorName } from './color-presets';
 import { getAdaptiveColors } from './adaptive-colors';
@@ -21,6 +21,78 @@ function extractHue(hslVar: string): number {
 
 function hsl(h: number, s: number, l: number): string {
   return `hsl(${h}, ${s}%, ${l}%)`;
+}
+
+/** Build a Theme object from a color preset name and resolved light/dark mode. */
+export function buildTheme(appColor: AppColorName, resolved: 'light' | 'dark', isAdaptive: boolean = false): Theme {
+  const isDark = resolved === 'dark';
+
+  let themeColors: ThemeColors | undefined;
+
+  if (isAdaptive && Platform.OS !== 'web') {
+    const adaptive = getAdaptiveColors();
+    if (adaptive) {
+      themeColors = adaptive;
+    }
+  }
+
+  if (!themeColors) {
+    const preset = APP_COLOR_PRESETS[appColor];
+    const vars = resolved === 'light' ? preset.light : preset.dark;
+    const primaryHue = extractHue(vars['--primary']!);
+    const destructiveHue = extractHue(vars['--destructive']!);
+
+    const surface = hslVarToCSS(vars['--surface']!);
+    const background = hslVarToCSS(vars['--background']!);
+    const mutedForeground = hslVarToCSS(vars['--muted-foreground']!);
+
+    themeColors = {
+      background,
+      backgroundSecondary: surface,
+      backgroundTertiary: hslVarToCSS(vars['--muted']!),
+
+      text: hslVarToCSS(vars['--foreground']!),
+      textSecondary: mutedForeground,
+      textTertiary: mutedForeground,
+
+      border: hslVarToCSS(vars['--border']!),
+      borderLight: hslVarToCSS(vars['--input']!),
+
+      primary: preset.hex,
+      primaryLight: surface,
+      primaryDark: background,
+
+      secondary: preset.hex,
+
+      tint: preset.hex,
+      icon: mutedForeground,
+      iconActive: preset.hex,
+
+      success: '#10B981',
+      error: '#EF4444',
+      warning: '#F59E0B',
+      info: '#3B82F6',
+
+      primarySubtle: isDark ? hsl(primaryHue, 50, 10) : hsl(primaryHue, 70, 93),
+      primarySubtleForeground: isDark ? hsl(primaryHue, 70, 65) : hsl(primaryHue, 90, 25),
+      negative: hsl(destructiveHue, 84, 45),
+      negativeForeground: '#FFFFFF',
+      negativeSubtle: isDark ? hsl(destructiveHue, 50, 10) : hsl(destructiveHue, 90, 95),
+      negativeSubtleForeground: isDark ? hsl(destructiveHue, 70, 65) : hsl(destructiveHue, 80, 40),
+      contrast50: isDark ? hsl(primaryHue, 15, 12) : hsl(primaryHue, 10, 93),
+
+      card: surface,
+      shadow: isDark ? 'rgba(0, 0, 0, 0.3)' : 'rgba(0, 0, 0, 0.1)',
+      overlay: 'rgba(0, 0, 0, 0.5)',
+    };
+  }
+
+  return {
+    mode: resolved,
+    colors: themeColors,
+    isDark,
+    isLight: !isDark,
+  };
 }
 
 export interface BloomThemeContextValue {
@@ -80,77 +152,42 @@ export function BloomThemeProvider({
   );
 
   const contextValue = useMemo<BloomThemeContextValue>(() => {
-    const isDark = resolved === 'dark';
-
-    let themeColors: ThemeColors;
-
-    if (isAdaptive && Platform.OS !== 'web') {
-      const adaptive = getAdaptiveColors();
-      if (adaptive) {
-        themeColors = adaptive;
-      }
-    }
-
-    if (!themeColors!) {
-      const preset = APP_COLOR_PRESETS[appColor];
-      const vars = resolved === 'light' ? preset.light : preset.dark;
-      const primaryHue = extractHue(vars['--primary']!);
-      const destructiveHue = extractHue(vars['--destructive']!);
-
-      const surface = hslVarToCSS(vars['--surface']!);
-      const background = hslVarToCSS(vars['--background']!);
-      const mutedForeground = hslVarToCSS(vars['--muted-foreground']!);
-
-      themeColors = {
-        background,
-        backgroundSecondary: surface,
-        backgroundTertiary: hslVarToCSS(vars['--muted']!),
-
-        text: hslVarToCSS(vars['--foreground']!),
-        textSecondary: mutedForeground,
-        textTertiary: mutedForeground,
-
-        border: hslVarToCSS(vars['--border']!),
-        borderLight: hslVarToCSS(vars['--input']!),
-
-        primary: preset.hex,
-        primaryLight: surface,
-        primaryDark: background,
-
-        secondary: preset.hex,
-
-        tint: preset.hex,
-        icon: mutedForeground,
-        iconActive: preset.hex,
-
-        success: '#10B981',
-        error: '#EF4444',
-        warning: '#F59E0B',
-        info: '#3B82F6',
-
-        primarySubtle: isDark ? hsl(primaryHue, 50, 10) : hsl(primaryHue, 70, 93),
-        primarySubtleForeground: isDark ? hsl(primaryHue, 70, 65) : hsl(primaryHue, 90, 25),
-        negative: hsl(destructiveHue, 84, 45),
-        negativeForeground: '#FFFFFF',
-        negativeSubtle: isDark ? hsl(destructiveHue, 50, 10) : hsl(destructiveHue, 90, 95),
-        negativeSubtleForeground: isDark ? hsl(destructiveHue, 70, 65) : hsl(destructiveHue, 80, 40),
-        contrast50: isDark ? hsl(primaryHue, 15, 12) : hsl(primaryHue, 10, 93),
-
-        card: surface,
-        shadow: isDark ? 'rgba(0, 0, 0, 0.3)' : 'rgba(0, 0, 0, 0.1)',
-        overlay: 'rgba(0, 0, 0, 0.5)',
-      };
-    }
-
-    const theme: Theme = {
-      mode: resolved,
-      colors: themeColors,
-      isDark,
-      isLight: !isDark,
-    };
-
+    const theme = buildTheme(appColor, resolved, isAdaptive);
     return { theme, mode, colorPreset: appColor, setMode, setColorPreset };
   }, [resolved, appColor, isAdaptive, mode, setMode, setColorPreset]);
+
+  return (
+    <BloomThemeContext.Provider value={contextValue}>
+      {children}
+    </BloomThemeContext.Provider>
+  );
+}
+
+/**
+ * Scoped color override for a subtree.
+ * Inherits mode/dark from the parent BloomThemeProvider but overrides the color preset.
+ * Use this to tint a section of the UI (e.g. a visited user's profile) without
+ * affecting the rest of the app.
+ */
+export interface BloomColorScopeProps {
+  colorPreset: AppColorName;
+  children: React.ReactNode;
+}
+
+export function BloomColorScope({ colorPreset, children }: BloomColorScopeProps) {
+  const parent = useContext(BloomThemeContext);
+  if (!parent) {
+    throw new Error('BloomColorScope must be used within a <BloomThemeProvider>');
+  }
+
+  const contextValue = useMemo<BloomThemeContextValue>(() => {
+    const theme = buildTheme(colorPreset, parent.theme.mode as 'light' | 'dark');
+    return {
+      ...parent,
+      theme,
+      colorPreset,
+    };
+  }, [colorPreset, parent]);
 
   return (
     <BloomThemeContext.Provider value={contextValue}>

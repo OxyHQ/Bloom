@@ -1,5 +1,5 @@
-export { BloomThemeProvider } from './BloomThemeProvider';
-export type { BloomThemeProviderProps, BloomThemeContextValue } from './BloomThemeProvider';
+export { BloomThemeProvider, BloomColorScope, buildTheme } from './BloomThemeProvider';
+export type { BloomThemeProviderProps, BloomThemeContextValue, BloomColorScopeProps } from './BloomThemeProvider';
 export { useTheme, useThemeColor, useBloomTheme } from './use-theme';
 export type { Theme, ThemeColors, ThemeMode } from './types';
 export type { AppColorName, AppColorPreset } from './color-presets';
