@@ -50,7 +50,7 @@ const SpinnerLoading: React.FC<SpinnerLoadingProps> = ({
   const theme = useTheme();
   const sizeConfig = SIZE_CONFIG[size];
   const effectiveIconSize = iconSize ?? sizeConfig.spinner;
-  const spinnerColor = className ? undefined : (color ?? theme.colors.primary);
+  const spinnerColor = className ? 'currentColor' : (color ?? theme.colors.primary);
   const textColor = color ?? theme.colors.textSecondary;
 
   return (
