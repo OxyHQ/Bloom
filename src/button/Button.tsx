@@ -48,6 +48,7 @@ const ButtonComponent: React.FC<ButtonProps> = ({
   hitSlop,
   activeOpacity,
   testID,
+  className,
 }) => {
   const theme = useTheme();
   const scaleAnim = useRef(new Animated.Value(1)).current;
@@ -102,9 +103,6 @@ const ButtonComponent: React.FC<ButtonProps> = ({
         styles.borderRadius = 20;
         break;
       case 'icon':
-        styles.backgroundColor = theme.colors.background;
-        styles.borderWidth = 1;
-        styles.borderColor = theme.colors.border;
         styles.borderRadius = 100;
         styles.padding = 8;
         styles.width = sizeConfig.minHeight;
@@ -152,10 +150,12 @@ const ButtonComponent: React.FC<ButtonProps> = ({
 
   const defaultHitSlop = variant === 'icon' ? ICON_HIT_SLOP : undefined;
   const resolvedActiveOpacity = activeOpacity ?? (variant === 'icon' ? 0.7 : 0.8);
+  const resolvedClassName = className ?? (variant === 'icon' ? 'bg-background border border-border' : undefined);
 
   return (
     <Animated.View style={hasScaleFeedback ? { transform: [{ scale: scaleAnim }] } : undefined}>
       <Pressable
+        {...(resolvedClassName ? { className: resolvedClassName } as any : {})}
         style={({ pressed }) => [
           baseStyles,
           disabled && { opacity: 0.5 },
