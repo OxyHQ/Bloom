@@ -38,6 +38,7 @@ function getReanimated(): ReanimatedType | null {
 const SpinnerLoading: React.FC<SpinnerLoadingProps> = ({
   size = 'medium',
   color,
+  className,
   text,
   textStyle,
   style,
@@ -49,12 +50,12 @@ const SpinnerLoading: React.FC<SpinnerLoadingProps> = ({
   const theme = useTheme();
   const sizeConfig = SIZE_CONFIG[size];
   const effectiveIconSize = iconSize ?? sizeConfig.spinner;
-  const spinnerColor = color ?? theme.colors.primary;
+  const spinnerColor = className ? undefined : (color ?? theme.colors.primary);
   const textColor = color ?? theme.colors.textSecondary;
 
   return (
     <View style={[styles.container, style]} testID={testID}>
-      {spinnerIcon ?? <SpinnerIcon size={effectiveIconSize} color={spinnerColor} />}
+      {spinnerIcon ?? <SpinnerIcon size={effectiveIconSize} color={spinnerColor} className={className} />}
       {showText && text && (
         <Text
           style={[
