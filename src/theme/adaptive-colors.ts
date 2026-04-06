@@ -5,7 +5,9 @@ const c = (v: unknown): string => v as string;
 
 function getAndroidColors(): ThemeColors | null {
   try {
-    const { Color } = require('expo-router');
+    if (typeof require === 'undefined') return null;
+    const moduleName = 'expo-router';
+    const { Color } = require(moduleName);
     const d = Color.android.dynamic;
     return {
       background: c(d.surface),
@@ -45,7 +47,9 @@ function getAndroidColors(): ThemeColors | null {
 
 function getIOSColors(): ThemeColors | null {
   try {
-    const { Color } = require('expo-router');
+    if (typeof require === 'undefined') return null;
+    const moduleName = 'expo-router';
+    const { Color } = require(moduleName);
     const i = Color.ios;
     return {
       background: c(i.systemBackground),

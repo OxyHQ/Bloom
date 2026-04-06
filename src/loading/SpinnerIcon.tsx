@@ -15,7 +15,11 @@ function getSvgModule(): SvgModuleType | null {
   if (!svgModuleResolved) {
     svgModuleResolved = true;
     try {
-      svgModule = require('react-native-svg');
+      // Guard for ESM environments (Vite/browser) where require is not defined.
+      if (typeof require !== 'undefined') {
+        const moduleName = 'react-native-svg';
+        svgModule = require(moduleName);
+      }
     } catch {
       svgModule = null;
     }
@@ -27,7 +31,11 @@ function getReanimated(): ReanimatedType | null {
   if (!reanimatedResolved) {
     reanimatedResolved = true;
     try {
-      reanimatedModule = require('react-native-reanimated');
+      // Guard for ESM environments (Vite/browser) where require is not defined.
+      if (typeof require !== 'undefined') {
+        const moduleName = 'react-native-reanimated';
+        reanimatedModule = require(moduleName);
+      }
     } catch {
       reanimatedModule = null;
     }

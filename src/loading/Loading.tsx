@@ -27,7 +27,11 @@ function getReanimated(): ReanimatedType | null {
   if (!reanimatedResolved) {
     reanimatedResolved = true;
     try {
-      reanimatedModule = require('react-native-reanimated');
+      // Guard for ESM environments (Vite/browser) where require is not defined.
+      if (typeof require !== 'undefined') {
+        const moduleName = 'react-native-reanimated';
+        reanimatedModule = require(moduleName);
+      }
     } catch {
       reanimatedModule = null;
     }

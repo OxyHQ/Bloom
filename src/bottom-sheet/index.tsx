@@ -26,10 +26,10 @@ import { useTheme } from '../theme/use-theme';
 // Keyboard handler — only on native platforms. On web, keyboard events are handled by the browser.
 const noopKeyboardHandler = (_handlers: Record<string, (e: { height: number }) => void>, _deps: unknown[]) => {};
 let useKeyboardHandler: (handlers: Record<string, (e: { height: number }) => void>, deps: unknown[]) => void = noopKeyboardHandler;
-if (Platform.OS !== 'web') {
+if (Platform.OS !== 'web' && typeof require !== 'undefined') {
     try {
-        // eslint-disable-next-line @typescript-eslint/no-require-imports
-        useKeyboardHandler = require('react-native-keyboard-controller').useKeyboardHandler;
+        const moduleName = 'react-native-keyboard-controller';
+        useKeyboardHandler = require(moduleName).useKeyboardHandler;
     } catch {
         // react-native-keyboard-controller not available
     }

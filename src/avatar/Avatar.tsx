@@ -7,7 +7,8 @@ import { useAvatarPlaceholder } from './placeholder-context';
 import type { AvatarProps } from './types';
 
 // Built-in default avatar image — used when no source, fallbackSource, or placeholderIcon is provided
-const DEFAULT_AVATAR_IMAGE = require('./default-avatar.jpg');
+// ESM static import works in both Metro (RN 0.72+) and web bundlers (Vite, webpack).
+import DEFAULT_AVATAR_IMAGE from './default-avatar.jpg';
 
 // Squircle clip path normalized to 0–1 coordinate space (viewBox="0 0 1 1").
 const SQUIRCLE_PATH =
@@ -28,7 +29,12 @@ function getSvgModule(): SvgModuleType | null {
   if (!svgModuleResolved) {
     svgModuleResolved = true;
     try {
-      svgModule = require('react-native-svg');
+      // Guard for ESM environments (Vite/browser) where require is not defined.
+      // In React Native (Metro), require is always available.
+      if (typeof require !== 'undefined') {
+        const moduleName = 'react-native-svg';
+        svgModule = require(moduleName);
+      }
     } catch {
       svgModule = null;
     }
