@@ -57,13 +57,13 @@ describe('BloomThemeProvider', () => {
     expect(getByTestId('isLight').props.children).toBe('false');
   });
 
-  it('uses teal as default color preset', () => {
+  it('uses oxy as default color preset', () => {
     const { getByTestId } = render(
       <BloomThemeProvider>
         <BloomThemeDisplay />
       </BloomThemeProvider>,
     );
-    expect(getByTestId('ctx-preset').props.children).toBe('teal');
+    expect(getByTestId('ctx-preset').props.children).toBe('oxy');
   });
 
   it('applies the specified color preset', () => {

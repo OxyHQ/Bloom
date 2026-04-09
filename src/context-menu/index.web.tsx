@@ -152,7 +152,7 @@ export function Outer({ children, style }: OuterProps) {
   const { isOpen, close, position } = ctx;
 
   useEffect(() => {
-    if (!isOpen) return;
+    if (!isOpen || typeof document === 'undefined') return;
 
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === 'Escape') {

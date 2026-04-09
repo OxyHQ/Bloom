@@ -152,4 +152,3 @@ export * from './Wrench';
 export * from './Zap';
 export type { Props } from './common';
 export { sizes, useCommonSVGProps } from './common';
-export { createSinglePathSVG, createMultiPathSVG } from './TEMPLATE';

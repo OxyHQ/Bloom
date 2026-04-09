@@ -38,7 +38,7 @@ export function PromptInputTextarea({
 
   // Web-only: paste event listener for images
   useEffect(() => {
-    if (!onImagePaste) return;
+    if (!onImagePaste || typeof document === 'undefined') return;
 
     const handlePaste = (e: ClipboardEvent) => {
       const activeElement = document.activeElement;

@@ -15,7 +15,6 @@ export { useThrottledValue } from './hooks/useThrottledValue';
 // Icons
 export * as Icons from './icons';
 export { type Props as IconProps, sizes as iconSizes, useCommonSVGProps } from './icons/common';
-export { createSinglePathSVG, createMultiPathSVG } from './icons/TEMPLATE';
 
 // Core components
 export * from './portal';

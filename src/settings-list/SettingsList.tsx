@@ -32,14 +32,28 @@ export const SettingsListItem = memo<SettingsListItemProps>(function SettingsLis
   destructive = false,
   onPress,
   disabled = false,
+  accessibilityLabel,
+  accessibilityHint,
+  accessibilityRole,
+  leftInset,
 }) {
   const theme = useTheme();
   const hasChevron = showChevron ?? Boolean(onPress);
   const titleColor = destructive ? theme.colors.error : theme.colors.text;
   const pressedOpacity = disabled ? 1 : 0.6;
 
+  const role = accessibilityRole ?? (onPress ? 'button' : 'none');
+  const label = accessibilityLabel ?? title;
+
   const content = (
-    <View style={styles.itemContainer}>
+    <View
+      style={[
+        styles.itemContainer,
+        leftInset !== undefined ? { paddingLeft: leftInset } : undefined,
+      ]}
+      testID="settings-list-item-content"
+      data-left-inset={leftInset}
+    >
       {icon ? (
         <View style={styles.iconContainer}>{icon}</View>
       ) : null}
@@ -83,7 +97,11 @@ export const SettingsListItem = memo<SettingsListItemProps>(function SettingsLis
       <Pressable
         onPress={onPress}
         disabled={disabled}
-        android_ripple={{ color: theme.colors.border }}
+         android_ripple={{ color: theme.colors.border }}
+         accessibilityRole={role}
+         accessibilityLabel={label}
+         accessibilityHint={accessibilityHint}
+        accessibilityState={disabled ? { disabled: true } : undefined}
         style={({ pressed }) => [
           disabled && styles.disabled,
           pressed && { opacity: pressedOpacity },
@@ -94,7 +112,16 @@ export const SettingsListItem = memo<SettingsListItemProps>(function SettingsLis
     );
   }
 
-  return content;
+  return (
+    <View
+      accessibilityRole={role}
+      accessibilityLabel={label}
+      accessibilityHint={accessibilityHint}
+      accessibilityState={disabled ? { disabled: true } : undefined}
+    >
+      {content}
+    </View>
+  );
 });
 
 // ── SettingsListGroup ───────────────────────────────────────────

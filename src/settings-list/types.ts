@@ -19,6 +19,14 @@ export interface SettingsListItemProps {
   onPress?: () => void;
   /** Disabled state */
   disabled?: boolean;
+  /** Accessibility label override */
+  accessibilityLabel?: string;
+  /** Accessibility hint override */
+  accessibilityHint?: string;
+  /** Accessibility role override (defaults to button when pressable) */
+  accessibilityRole?: 'button' | 'link' | 'none';
+  /** Left inset to align text when no icon is provided */
+  leftInset?: number;
 }
 
 export interface SettingsListGroupProps {
