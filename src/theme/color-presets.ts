@@ -1,4 +1,4 @@
-export type AppColorName = 'teal' | 'blue' | 'green' | 'amber' | 'yellow' | 'red' | 'purple' | 'pink' | 'sky' | 'orange' | 'mint' | 'oxy';
+export type AppColorName = 'teal' | 'blue' | 'green' | 'amber' | 'yellow' | 'red' | 'purple' | 'pink' | 'sky' | 'orange' | 'mint' | 'oxy' | 'faircoin';
 
 export interface AppColorPreset {
   name: AppColorName;
@@ -7,7 +7,7 @@ export interface AppColorPreset {
   dark: Record<string, string>;
 }
 
-export const APP_COLOR_NAMES: AppColorName[] = ['teal', 'blue', 'green', 'amber', 'yellow', 'red', 'purple', 'pink', 'sky', 'orange', 'mint', 'oxy'];
+export const APP_COLOR_NAMES: AppColorName[] = ['teal', 'blue', 'green', 'amber', 'yellow', 'red', 'purple', 'pink', 'sky', 'orange', 'mint', 'oxy', 'faircoin'];
 
 export const HEX_TO_APP_COLOR: Record<string, AppColorName> = {
   '#005c67': 'teal',
@@ -22,6 +22,7 @@ export const HEX_TO_APP_COLOR: Record<string, AppColorName> = {
   '#f97316': 'orange',
   '#14b8a6': 'mint',
   '#c46ede': 'oxy',
+  '#9ffb50': 'faircoin',
 };
 
 export function hexToAppColorName(hex: string): AppColorName {
@@ -590,6 +591,52 @@ export const APP_COLOR_PRESETS: Record<AppColorName, AppColorPreset> = {
       '--input': '277 10% 23%',
       '--ring': '277 66% 56%',
       '--sidebar': '277 30% 8%',
+    },
+  },
+  faircoin: {
+    name: 'faircoin',
+    hex: '#9ffb50',
+    light: {
+      '--background': '0 0% 99%',
+      '--foreground': '0 0% 12%',
+      '--surface': '92 10% 97%',
+      '--surface-foreground': '0 0% 12%',
+      '--popover': '0 0% 100%',
+      '--popover-foreground': '0 0% 12%',
+      '--primary': '92 96% 65%',
+      '--primary-foreground': '0 0% 0%',
+      '--secondary': '92 8% 95%',
+      '--secondary-foreground': '0 0% 12%',
+      '--muted': '92 8% 95%',
+      '--muted-foreground': '92 5% 42%',
+      '--accent': '92 8% 95%',
+      '--accent-foreground': '0 0% 12%',
+      '--destructive': '0 84% 60%',
+      '--border': '92 8% 88%',
+      '--input': '92 8% 88%',
+      '--ring': '92 96% 65%',
+      '--sidebar': '92 10% 97%',
+    },
+    dark: {
+      '--background': '69 54% 8%',
+      '--foreground': '0 0% 93%',
+      '--surface': '69 30% 13%',
+      '--surface-foreground': '0 0% 93%',
+      '--popover': '69 30% 13%',
+      '--popover-foreground': '0 0% 93%',
+      '--primary': '92 96% 65%',
+      '--primary-foreground': '0 0% 0%',
+      '--secondary': '69 20% 15%',
+      '--secondary-foreground': '0 0% 93%',
+      '--muted': '69 18% 16%',
+      '--muted-foreground': '0 0% 46%',
+      '--accent': '69 18% 16%',
+      '--accent-foreground': '0 0% 93%',
+      '--destructive': '0 84% 60%',
+      '--border': '69 20% 18%',
+      '--input': '69 15% 20%',
+      '--ring': '92 96% 65%',
+      '--sidebar': '69 40% 6%',
     },
   },
 };
