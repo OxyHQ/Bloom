@@ -1,8 +1,8 @@
-import React, { createContext, useCallback, useContext, useEffect, useMemo } from 'react';
+import React, { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
 import { useColorScheme as useRNColorScheme, Platform } from 'react-native';
 import { APP_COLOR_PRESETS, type AppColorName } from './color-presets';
 import { getAdaptiveColors } from './adaptive-colors';
-import { applyDarkClass } from './apply-dark-class';
+import { applyDarkClass, applyColorPresetVars } from './apply-dark-class';
 import { setColorSchemeSafe } from './set-color-scheme-safe';
 import type { Theme, ThemeColors, ThemeMode } from './types';
 
@@ -121,9 +121,15 @@ export function BloomThemeProvider({
   children,
 }: BloomThemeProviderProps) {
   const rnScheme = useRNColorScheme();
+  const [internalPreset, setInternalPreset] = useState<AppColorName>(controlledPreset ?? 'oxy');
 
+  // Sync internal state when controlled prop changes
+  if (controlledPreset !== undefined && controlledPreset !== internalPreset) {
+    setInternalPreset(controlledPreset);
+  }
+
+  const appColor = internalPreset;
   const mode = controlledMode ?? 'system';
-  const appColor = controlledPreset ?? 'oxy';
 
   const isAdaptive = mode === 'adaptive';
   const effectiveMode = isAdaptive ? 'system' : mode;
@@ -134,7 +140,8 @@ export function BloomThemeProvider({
 
   useEffect(() => {
     applyDarkClass(resolved);
-  }, [resolved]);
+    applyColorPresetVars(appColor, resolved);
+  }, [resolved, appColor]);
 
   const setMode = useCallback(
     (newMode: ThemeMode) => {
@@ -146,6 +153,7 @@ export function BloomThemeProvider({
 
   const setColorPreset = useCallback(
     (preset: AppColorName) => {
+      setInternalPreset(preset);
       onColorPresetChange?.(preset);
     },
     [onColorPresetChange],
