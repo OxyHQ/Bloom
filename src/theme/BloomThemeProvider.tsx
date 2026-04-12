@@ -1,4 +1,4 @@
-import React, { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
+import React, { createContext, useCallback, useContext, useMemo, useRef, useState } from 'react';
 import { useColorScheme as useRNColorScheme, Platform } from 'react-native';
 import { APP_COLOR_PRESETS, type AppColorName } from './color-presets';
 import { getAdaptiveColors } from './adaptive-colors';
@@ -9,14 +9,14 @@ import type { Theme, ThemeColors, ThemeMode } from './types';
 function hslVarToCSS(value: string): string {
   const parts = value.split('/').map((s) => s.trim());
   if (parts.length === 2) {
-    const alpha = parseFloat(parts[1]!) / 100;
-    return `hsla(${parts[0]!.replace(/ /g, ', ')}, ${alpha})`;
+    const alpha = parseFloat(parts[1] ?? '100') / 100;
+    return `hsla(${(parts[0] ?? '').replace(/ /g, ', ')}, ${alpha})`;
   }
   return `hsl(${value.replace(/ /g, ', ')})`;
 }
 
 function extractHue(hslVar: string): number {
-  return parseInt(hslVar.split(' ')[0]!, 10);
+  return parseInt(hslVar.split(' ')[0] ?? '0', 10);
 }
 
 function hsl(h: number, s: number, l: number): string {
@@ -39,24 +39,24 @@ export function buildTheme(appColor: AppColorName, resolved: 'light' | 'dark', i
   if (!themeColors) {
     const preset = APP_COLOR_PRESETS[appColor];
     const vars = resolved === 'light' ? preset.light : preset.dark;
-    const primaryHue = extractHue(vars['--primary']!);
-    const destructiveHue = extractHue(vars['--destructive']!);
+    const primaryHue = extractHue(vars['--primary'] ?? '0 0% 0%');
+    const destructiveHue = extractHue(vars['--destructive'] ?? '0 0% 0%');
 
-    const surface = hslVarToCSS(vars['--surface']!);
-    const background = hslVarToCSS(vars['--background']!);
-    const mutedForeground = hslVarToCSS(vars['--muted-foreground']!);
+    const surface = hslVarToCSS(vars['--surface'] ?? '0 0% 0%');
+    const background = hslVarToCSS(vars['--background'] ?? '0 0% 0%');
+    const mutedForeground = hslVarToCSS(vars['--muted-foreground'] ?? '0 0% 50%');
 
     themeColors = {
       background,
       backgroundSecondary: surface,
-      backgroundTertiary: hslVarToCSS(vars['--muted']!),
+      backgroundTertiary: hslVarToCSS(vars['--muted'] ?? '0 0% 0%'),
 
-      text: hslVarToCSS(vars['--foreground']!),
+      text: hslVarToCSS(vars['--foreground'] ?? '0 0% 100%'),
       textSecondary: mutedForeground,
       textTertiary: mutedForeground,
 
-      border: hslVarToCSS(vars['--border']!),
-      borderLight: hslVarToCSS(vars['--input']!),
+      border: hslVarToCSS(vars['--border'] ?? '0 0% 20%'),
+      borderLight: hslVarToCSS(vars['--input'] ?? '0 0% 20%'),
 
       primary: preset.hex,
       primaryLight: surface,
@@ -123,7 +123,6 @@ export function BloomThemeProvider({
   const rnScheme = useRNColorScheme();
   const [internalPreset, setInternalPreset] = useState<AppColorName>(controlledPreset ?? 'oxy');
 
-  // Sync internal state when controlled prop changes
   if (controlledPreset !== undefined && controlledPreset !== internalPreset) {
     setInternalPreset(controlledPreset);
   }
@@ -138,10 +137,18 @@ export function BloomThemeProvider({
       ? (rnScheme === 'dark' ? 'dark' : 'light')
       : effectiveMode;
 
-  useEffect(() => {
+  // Apply native color scheme and CSS vars synchronously on first render
+  // and whenever the resolved mode or preset changes. Using a ref to track
+  // the last-applied values avoids calling side effects on every render
+  // while still applying them before the first paint.
+  const lastApplied = useRef<string>('');
+  const applyKey = `${resolved}:${appColor}`;
+  if (lastApplied.current !== applyKey) {
+    lastApplied.current = applyKey;
+    setColorSchemeSafe(effectiveMode);
     applyDarkClass(resolved);
     applyColorPresetVars(appColor, resolved);
-  }, [resolved, appColor]);
+  }
 
   const setMode = useCallback(
     (newMode: ThemeMode) => {
@@ -174,8 +181,6 @@ export function BloomThemeProvider({
 /**
  * Scoped color override for a subtree.
  * Inherits mode/dark from the parent BloomThemeProvider but overrides the color preset.
- * Use this to tint a section of the UI (e.g. a visited user's profile) without
- * affecting the rest of the app.
  */
 export interface BloomColorScopeProps {
   colorPreset: AppColorName;
