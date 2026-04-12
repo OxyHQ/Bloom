@@ -176,11 +176,14 @@ const BottomSheet = forwardRef((props: BottomSheetProps, ref: React.ForwardedRef
         }
     }, []);
 
-    // Apply web scrollbar styles when colors change
+    // Apply web scrollbar styles when colors change; clean up on unmount
     useEffect(() => {
         if (Platform.OS === 'web') {
             createWebScrollbarStyle(colors.border);
         }
+        return () => {
+            removeWebScrollbarStyle();
+        };
     }, [colors.border]);
 
     const present = useCallback(() => {
@@ -448,18 +451,19 @@ const styles = StyleSheet.create({
 const createWebScrollbarStyle = (borderColor: string) => {
     if (Platform.OS !== 'web' || typeof document === 'undefined') return;
 
-    const styleId = 'bottom-sheet-scrollbar-style';
-    let styleElement = document.getElementById(styleId) as HTMLStyleElement;
+    let styleElement = document.getElementById(SCROLLBAR_STYLE_ID) as HTMLStyleElement | null;
 
     if (!styleElement) {
         styleElement = document.createElement('style');
-        styleElement.id = styleId;
+        styleElement.id = SCROLLBAR_STYLE_ID;
         document.head.appendChild(styleElement);
     }
 
-    // Use theme border color for scrollbar
+    // Derive a slightly darker scrollbar hover color from the border color
     const scrollbarColor = borderColor;
-    const scrollbarHoverColor = borderColor === '#E5E5EA' ? '#C7C7CC' : '#555';
+    const scrollbarHoverColor = borderColor.startsWith('hsl')
+        ? borderColor.replace(/\)$/, ' / 0.7)')  // add alpha for hover
+        : '#888';
 
     styleElement.textContent = `
         .bottom-sheet-scrollview::-webkit-scrollbar {
@@ -477,6 +481,14 @@ const createWebScrollbarStyle = (borderColor: string) => {
             background: ${scrollbarHoverColor};
         }
     `;
+};
+
+const SCROLLBAR_STYLE_ID = 'bottom-sheet-scrollbar-style';
+
+/** Remove the injected scrollbar <style> tag on unmount. */
+const removeWebScrollbarStyle = () => {
+    if (Platform.OS !== 'web' || typeof document === 'undefined') return;
+    document.getElementById(SCROLLBAR_STYLE_ID)?.remove();
 };
 
 export default BottomSheet;

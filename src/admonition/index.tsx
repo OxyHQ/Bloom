@@ -44,6 +44,7 @@ export function Icon() {
 
   return <IconComponent fill={fillMap[type]} size="md" />;
 }
+Icon.displayName = 'Admonition.Icon';
 
 export function Content({
   children,
@@ -58,6 +59,7 @@ export function Content({
     </View>
   );
 }
+Content.displayName = 'Admonition.Content';
 
 export function Text({
   children,
@@ -72,6 +74,7 @@ export function Text({
     </BaseText>
   );
 }
+Text.displayName = 'Admonition.Text';
 
 export function Button({
   children,
@@ -83,6 +86,7 @@ export function Button({
     </BaseButton>
   );
 }
+Button.displayName = 'Admonition.Button';
 
 export function Row({
   children,
@@ -97,6 +101,7 @@ export function Row({
     </View>
   );
 }
+Row.displayName = 'Admonition.Row';
 
 export function Outer({
   children,
@@ -134,6 +139,7 @@ export function Outer({
     </AdmonitionContext.Provider>
   );
 }
+Outer.displayName = 'Admonition.Outer';
 
 /**
  * Simple all-in-one Admonition component for common use cases.
@@ -159,6 +165,7 @@ export function Admonition({
     </Outer>
   );
 }
+Admonition.displayName = 'Admonition';
 
 const styles = StyleSheet.create({
   outer: {

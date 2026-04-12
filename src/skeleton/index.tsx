@@ -65,6 +65,7 @@ export function Text({
     </View>
   );
 }
+Text.displayName = 'Skeleton.Text';
 
 export function Circle({
   children,
@@ -96,6 +97,7 @@ export function Circle({
     </Animated.View>
   );
 }
+Circle.displayName = 'Skeleton.Circle';
 
 export function Pill({
   size,
@@ -124,6 +126,7 @@ export function Pill({
     />
   );
 }
+Pill.displayName = 'Skeleton.Pill';
 
 export function Col({
   children,
@@ -134,6 +137,7 @@ export function Col({
 }) {
   return <View style={[styles.col, style]}>{children}</View>;
 }
+Col.displayName = 'Skeleton.Col';
 
 export function Row({
   children,
@@ -144,6 +148,7 @@ export function Row({
 }) {
   return <View style={[styles.row, style]}>{children}</View>;
 }
+Row.displayName = 'Skeleton.Row';
 
 const styles = StyleSheet.create({
   textOuter: {

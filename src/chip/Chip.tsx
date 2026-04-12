@@ -1,8 +1,8 @@
-import React, { memo, useMemo, useRef, useCallback } from 'react';
+import React, { memo, useMemo } from 'react';
 import { View, Text, Pressable, Animated, type ViewStyle, type TextStyle } from 'react-native';
 
 import { useTheme } from '../theme/use-theme';
-import { animation, borderRadius, space } from '../styles/tokens';
+import { usePressAnimation } from '../hooks/usePressAnimation';
 import type { ChipProps, ChipColor, ChipVariant } from './types';
 
 const SIZE_CONFIG = {
@@ -56,25 +56,9 @@ const ChipComponent: React.FC<ChipProps> = ({
   testID,
 }) => {
   const theme = useTheme();
-  const scaleAnim = useRef(new Animated.Value(1)).current;
+  const { scaleAnim, onPressIn, onPressOut } = usePressAnimation(PRESS_SCALE);
   const colors = useChipColors(color, variant, selected, theme);
   const sizeConfig = SIZE_CONFIG[size];
-
-  const onPressIn = useCallback(() => {
-    Animated.spring(scaleAnim, {
-      toValue: PRESS_SCALE,
-      useNativeDriver: true,
-      ...animation.spring.snappy,
-    }).start();
-  }, [scaleAnim]);
-
-  const onPressOut = useCallback(() => {
-    Animated.spring(scaleAnim, {
-      toValue: 1,
-      useNativeDriver: true,
-      ...animation.spring.gentle,
-    }).start();
-  }, [scaleAnim]);
 
   const containerStyle = useMemo((): ViewStyle => ({
     height: sizeConfig.height,

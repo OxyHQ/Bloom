@@ -4,8 +4,8 @@ import Svg, {Circle, Path} from 'react-native-svg'
 import {type Props, useCommonSVGProps} from './common'
 
 export const VerifiedCheck = forwardRef<Svg, Props>(
-  function LogoImpl(props, ref) {
-    const {fill, size, style, ...rest} = useCommonSVGProps(props)
+  function VerifiedCheckImpl(props, ref) {
+    const {fill, size, style, gradient, ...rest} = useCommonSVGProps(props)
 
     return (
       <Svg
@@ -16,6 +16,7 @@ export const VerifiedCheck = forwardRef<Svg, Props>(
         width={size}
         height={size}
         style={[style]}>
+        {gradient}
         <Circle cx="12" cy="12" r="11.5" fill={fill} />
         <Path
           fill="#fff"

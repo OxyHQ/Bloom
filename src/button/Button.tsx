@@ -1,8 +1,8 @@
-import React, { useCallback, useMemo, useRef, memo } from 'react';
+import React, { useMemo, memo } from 'react';
 import { Pressable, Text, Platform, Animated, type ViewStyle, type TextStyle } from 'react-native';
 
 import { useTheme } from '../theme/use-theme';
-import { animation } from '../styles/tokens';
+import { usePressAnimation } from '../hooks/usePressAnimation';
 import type { ButtonProps } from './types';
 
 export type { ButtonProps, ButtonVariant, ButtonSize } from './types';
@@ -51,26 +51,10 @@ const ButtonComponent: React.FC<ButtonProps> = ({
   className,
 }) => {
   const theme = useTheme();
-  const scaleAnim = useRef(new Animated.Value(1)).current;
   const hasScaleFeedback = SCALE_VARIANTS.has(variant);
-
-  const onPressIn = useCallback(() => {
-    if (!hasScaleFeedback) return;
-    Animated.spring(scaleAnim, {
-      toValue: PRESS_SCALE,
-      useNativeDriver: true,
-      ...animation.spring.snappy,
-    }).start();
-  }, [scaleAnim, hasScaleFeedback]);
-
-  const onPressOut = useCallback(() => {
-    if (!hasScaleFeedback) return;
-    Animated.spring(scaleAnim, {
-      toValue: 1,
-      useNativeDriver: true,
-      ...animation.spring.gentle,
-    }).start();
-  }, [scaleAnim, hasScaleFeedback]);
+  const { scaleAnim, onPressIn, onPressOut } = usePressAnimation(
+    hasScaleFeedback ? PRESS_SCALE : undefined,
+  );
 
   const baseStyles = useMemo((): ViewStyle => {
     const sizeConfig = SIZE_CONFIG[size];
@@ -155,7 +139,7 @@ const ButtonComponent: React.FC<ButtonProps> = ({
   return (
     <Animated.View style={hasScaleFeedback ? { transform: [{ scale: scaleAnim }] } : undefined}>
       <Pressable
-        {...(resolvedClassName ? { className: resolvedClassName } as any : {})}
+        {...(resolvedClassName ? { className: resolvedClassName } as Record<string, string> : {})}
         style={({ pressed }) => [
           baseStyles,
           disabled && { opacity: 0.5 },

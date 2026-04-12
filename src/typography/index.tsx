@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { memo } from 'react';
 import {
   Text as RNText,
   type TextProps as RNTextProps,
@@ -14,7 +14,7 @@ export type TextProps = RNTextProps;
 /**
  * Base text component with theme-aware default color.
  */
-export function Text({ children, style, ...rest }: TextProps) {
+const TextComponent = function Text({ children, style, ...rest }: TextProps) {
   const { colors } = useTheme();
 
   return (
@@ -24,11 +24,14 @@ export function Text({ children, style, ...rest }: TextProps) {
       {children}
     </RNText>
   );
-}
+};
+
+export const Text = memo(TextComponent);
+Text.displayName = 'Text';
 
 export { Text as Span };
 
-function createHeadingElement({ level }: { level: number }) {
+function createHeadingElement({ level }: { level: number }): React.FC<TextProps> {
   return function HeadingElement({ style, ...rest }: TextProps) {
     const extraProps: Record<string, unknown> =
       Platform.OS === 'web'
@@ -39,11 +42,17 @@ function createHeadingElement({ level }: { level: number }) {
 }
 
 export const H1 = createHeadingElement({ level: 1 });
+H1.displayName = 'H1';
 export const H2 = createHeadingElement({ level: 2 });
+H2.displayName = 'H2';
 export const H3 = createHeadingElement({ level: 3 });
+H3.displayName = 'H3';
 export const H4 = createHeadingElement({ level: 4 });
+H4.displayName = 'H4';
 export const H5 = createHeadingElement({ level: 5 });
+H5.displayName = 'H5';
 export const H6 = createHeadingElement({ level: 6 });
+H6.displayName = 'H6';
 
 export function P({ style, ...rest }: TextProps) {
   const extraProps: Record<string, unknown> =
@@ -56,3 +65,4 @@ export function P({ style, ...rest }: TextProps) {
     />
   );
 }
+P.displayName = 'P';

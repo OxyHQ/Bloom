@@ -1,10 +1,10 @@
-import React from 'react';
+import React, { memo } from 'react';
 import { View, type ViewStyle } from 'react-native';
 
 import { useTheme } from '../theme/use-theme';
 import { type Props as IconProps } from '../icons/common';
 
-export function IconCircle({
+const IconCircleComponent = function IconCircle({
   icon: Icon,
   size = 'xl',
   style,
@@ -33,4 +33,7 @@ export function IconCircle({
       <Icon size={size} style={[{ color: colors.primary }, iconStyle]} />
     </View>
   );
-}
+};
+
+export const IconCircle = memo(IconCircleComponent);
+IconCircle.displayName = 'IconCircle';

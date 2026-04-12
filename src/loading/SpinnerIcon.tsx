@@ -1,47 +1,15 @@
 import React, { useEffect } from 'react';
 import { ActivityIndicator, type ViewStyle } from 'react-native';
 
+import { lazyRequire } from '../utils/lazy-require';
+
 // Lazy-loaded dependencies for the SVG spinner.
 // Falls back to ActivityIndicator if react-native-svg or react-native-reanimated are not installed.
 type SvgModuleType = typeof import('react-native-svg');
 type ReanimatedType = typeof import('react-native-reanimated');
 
-let svgModule: SvgModuleType | null = null;
-let svgModuleResolved = false;
-let reanimatedModule: ReanimatedType | null = null;
-let reanimatedResolved = false;
-
-function getSvgModule(): SvgModuleType | null {
-  if (!svgModuleResolved) {
-    svgModuleResolved = true;
-    try {
-      // Guard for ESM environments (Vite/browser) where require is not defined.
-      if (typeof require !== 'undefined') {
-        const moduleName = 'react-native-svg';
-        svgModule = require(moduleName);
-      }
-    } catch {
-      svgModule = null;
-    }
-  }
-  return svgModule;
-}
-
-function getReanimated(): ReanimatedType | null {
-  if (!reanimatedResolved) {
-    reanimatedResolved = true;
-    try {
-      // Guard for ESM environments (Vite/browser) where require is not defined.
-      if (typeof require !== 'undefined') {
-        const moduleName = 'react-native-reanimated';
-        reanimatedModule = require(moduleName);
-      }
-    } catch {
-      reanimatedModule = null;
-    }
-  }
-  return reanimatedModule;
-}
+const getSvgModule = lazyRequire<SvgModuleType>('react-native-svg');
+const getReanimated = lazyRequire<ReanimatedType>('react-native-reanimated');
 
 interface SpinnerIconProps {
   size?: number;

@@ -43,3 +43,4 @@ export function PromptInputActions({
     </View>
   );
 }
+PromptInputActions.displayName = 'PromptInputActions';

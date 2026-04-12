@@ -1,10 +1,10 @@
-import React, { createContext, useContext, useMemo } from 'react';
+import React, { createContext, memo, useContext, useMemo } from 'react';
 import { View, type ViewStyle } from 'react-native';
 
 const GridContext = createContext({ gap: 0 });
 GridContext.displayName = 'GridContext';
 
-export function Row({
+const RowComponent = function Row({
   children,
   gap = 0,
   style,
@@ -29,9 +29,12 @@ export function Row({
       </View>
     </GridContext.Provider>
   );
-}
+};
 
-export function Col({
+export const Row = memo(RowComponent);
+Row.displayName = 'Row';
+
+const ColComponent = function Col({
   children,
   width = 1,
   style,
@@ -55,4 +58,7 @@ export function Col({
       {children}
     </View>
   );
-}
+};
+
+export const Col = memo(ColComponent);
+Col.displayName = 'Col';

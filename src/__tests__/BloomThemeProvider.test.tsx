@@ -72,8 +72,8 @@ describe('BloomThemeProvider', () => {
         <ThemeDisplay />
       </BloomThemeProvider>,
     );
-    // Blue preset hex is #1d9bf0 (case may vary)
-    expect(getByTestId('primary').props.children.toLowerCase()).toBe('#1d9bf0');
+    // Blue preset primary is HSL(205, 87%, 53%) derived from --primary CSS var
+    expect(getByTestId('primary').props.children).toBe('hsl(205, 87%, 53%)');
   });
 
   it('generates different background colors for light and dark modes', () => {
@@ -135,7 +135,7 @@ describe('useThemeColor', () => {
         <ColorDisplay colorKey="primary" />
       </BloomThemeProvider>,
     );
-    expect(getByTestId('color').props.children).toBe('#005c67');
+    expect(getByTestId('color').props.children).toBe('hsl(185, 100%, 20%)');
   });
 });
 

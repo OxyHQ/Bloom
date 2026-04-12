@@ -72,3 +72,4 @@ export function PromptInputSubmitButton({
     </TouchableOpacity>
   );
 }
+PromptInputSubmitButton.displayName = 'PromptInputSubmitButton';

@@ -261,3 +261,4 @@ export function PromptInput({
     </PromptInputContext.Provider>
   );
 }
+PromptInput.displayName = 'PromptInput';

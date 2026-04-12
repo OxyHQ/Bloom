@@ -1,6 +1,5 @@
 import React, { memo } from 'react';
 import { View, Text, Pressable, StyleSheet } from 'react-native';
-import Svg, { Path } from 'react-native-svg';
 
 import { useTheme } from '../theme/use-theme';
 import type {
@@ -9,14 +8,19 @@ import type {
   SettingsListDividerProps,
 } from './types';
 
-// ── Chevron icon (inline to avoid external dependency) ──────────
+// ── Chevron icon (unicode-based, no SVG dependency) ─────────────
 const Chevron = memo(({ size = 16, color }: { size?: number; color: string }) => (
-  <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
-    <Path
-      d="M9.29 6.71c-.39.39-.39 1.02 0 1.41L13.17 12l-3.88 3.88c-.39.39-.39 1.02 0 1.41.39.39 1.02.39 1.41 0l4.59-4.59c.39-.39.39-1.02 0-1.41L10.7 6.7c-.38-.38-1.02-.38-1.41.01z"
-      fill={color}
-    />
-  </Svg>
+  <Text
+    style={{
+      fontSize: size,
+      color,
+      lineHeight: size,
+      textAlign: 'center',
+      width: size,
+    }}
+  >
+    {'\u203A'}
+  </Text>
 ));
 Chevron.displayName = 'Chevron';
 

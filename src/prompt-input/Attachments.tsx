@@ -262,3 +262,4 @@ export function PromptInputAttachments({
     </ScrollView>
   );
 }
+PromptInputAttachments.displayName = 'PromptInputAttachments';

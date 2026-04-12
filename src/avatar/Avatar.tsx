@@ -3,6 +3,7 @@ import { View, Image, StyleSheet, TouchableOpacity } from 'react-native';
 
 import { useTheme } from '../theme/use-theme';
 import { useImageResolver } from '../image-resolver/context';
+import { lazyRequire } from '../utils/lazy-require';
 import { useAvatarPlaceholder } from './placeholder-context';
 import type { AvatarProps } from './types';
 
@@ -22,25 +23,7 @@ let clipIdCounter = 0;
 // Lazy-loaded SVG components for squircle shape.
 // Returns null if react-native-svg is not installed.
 type SvgModuleType = typeof import('react-native-svg');
-let svgModule: SvgModuleType | null = null;
-let svgModuleResolved = false;
-
-function getSvgModule(): SvgModuleType | null {
-  if (!svgModuleResolved) {
-    svgModuleResolved = true;
-    try {
-      // Guard for ESM environments (Vite/browser) where require is not defined.
-      // In React Native (Metro), require is always available.
-      if (typeof require !== 'undefined') {
-        const moduleName = 'react-native-svg';
-        svgModule = require(moduleName);
-      }
-    } catch {
-      svgModule = null;
-    }
-  }
-  return svgModule;
-}
+const getSvgModule = lazyRequire<SvgModuleType>('react-native-svg');
 
 function SquircleImage({
   uri,

@@ -58,7 +58,7 @@ export * from './Download';
 export * from './EditBig';
 export * from './Emoji';
 export * from './Envelope';
-export * from './EnveopeOpen';
+export * from './EnvelopeOpen';
 export * from './Explosion';
 export * from './Eye';
 export * from './EyeSlash';

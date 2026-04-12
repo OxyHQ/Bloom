@@ -100,3 +100,4 @@ export function PromptInputTextarea({
 
   return <View style={style}>{textInput}</View>;
 }
+PromptInputTextarea.displayName = 'PromptInputTextarea';

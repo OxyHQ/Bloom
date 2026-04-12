@@ -1,5 +1,5 @@
-import React, { memo, useCallback, useEffect, useRef, useState } from 'react';
-import { View, Text, TouchableOpacity, Animated, LayoutAnimation, Platform, UIManager } from 'react-native';
+import React, { memo, useCallback, useRef, useState } from 'react';
+import { View, Text, TouchableOpacity, Animated, LayoutAnimation, Platform, UIManager, StyleSheet } from 'react-native';
 
 import { useTheme } from '../theme/use-theme';
 import { animation } from '../styles/tokens';
@@ -25,23 +25,25 @@ const CollapsibleComponent: React.FC<CollapsibleProps> = ({
   const theme = useTheme();
   const chevronAnim = useRef(new Animated.Value(defaultOpen ? 1 : 0)).current;
 
-  useEffect(() => {
+  const handleToggle = useCallback(() => {
+    const nextOpen = !isOpen;
+
+    // Animate chevron rotation in the event handler, not via useEffect
     Animated.spring(chevronAnim, {
-      toValue: isOpen ? 1 : 0,
+      toValue: nextOpen ? 1 : 0,
       useNativeDriver: true,
       ...animation.spring.gentle,
     }).start();
-  }, [isOpen, chevronAnim]);
 
-  const handleToggle = useCallback(() => {
     LayoutAnimation.configureNext({
       duration: animation.duration.normal,
       update: { type: LayoutAnimation.Types.easeInEaseOut },
       create: { type: LayoutAnimation.Types.easeInEaseOut, property: LayoutAnimation.Properties.opacity },
       delete: { type: LayoutAnimation.Types.easeInEaseOut, property: LayoutAnimation.Properties.opacity },
     });
-    setIsOpen((prev) => !prev);
-  }, []);
+
+    setIsOpen(nextOpen);
+  }, [isOpen, chevronAnim]);
 
   const chevronRotation = chevronAnim.interpolate({
     inputRange: [0, 1],
@@ -55,32 +57,22 @@ const CollapsibleComponent: React.FC<CollapsibleProps> = ({
         activeOpacity={0.7}
         accessibilityRole="button"
         accessibilityState={{ expanded: isOpen }}
-        style={{
-          flexDirection: 'row',
-          alignItems: 'center',
-          paddingVertical: 12,
-          gap: 8,
-        }}
+        style={styles.trigger}
       >
         {chevronIcon ?? (
           <Animated.Text
-            style={{
-              fontSize: 16,
-              color: theme.colors.textSecondary,
-              transform: [{ rotate: chevronRotation }],
-            }}
+            style={[
+              styles.chevron,
+              { color: theme.colors.textSecondary, transform: [{ rotate: chevronRotation }] },
+            ]}
           >
             ›
           </Animated.Text>
         )}
         <Text
           style={[
-            {
-              fontSize: 16,
-              fontWeight: '600',
-              color: theme.colors.text,
-              flex: 1,
-            },
+            styles.title,
+            { color: theme.colors.text },
             titleStyle,
           ]}
         >
@@ -94,3 +86,20 @@ const CollapsibleComponent: React.FC<CollapsibleProps> = ({
 
 export const Collapsible = memo(CollapsibleComponent);
 Collapsible.displayName = 'Collapsible';
+
+const styles = StyleSheet.create({
+  trigger: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: 12,
+    gap: 8,
+  },
+  chevron: {
+    fontSize: 16,
+  },
+  title: {
+    fontSize: 16,
+    fontWeight: '600',
+    flex: 1,
+  },
+});

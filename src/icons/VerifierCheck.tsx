@@ -4,8 +4,8 @@ import Svg, {Path} from 'react-native-svg'
 import {type Props, useCommonSVGProps} from './common'
 
 export const VerifierCheck = forwardRef<Svg, Props>(
-  function LogoImpl(props, ref) {
-    const {fill, size, style, ...rest} = useCommonSVGProps(props)
+  function VerifierCheckImpl(props, ref) {
+    const {fill, size, style, gradient, ...rest} = useCommonSVGProps(props)
 
     return (
       <Svg
@@ -16,6 +16,7 @@ export const VerifierCheck = forwardRef<Svg, Props>(
         width={size}
         height={size}
         style={[style]}>
+        {gradient}
         <Path
           fill={fill}
           fillRule="evenodd"

@@ -3,9 +3,7 @@ import React, {
   memo,
   useCallback,
   useContext,
-  useEffect,
   useMemo,
-  useRef,
 } from 'react';
 import {
   View,
@@ -15,11 +13,11 @@ import {
   ScrollView,
   type ViewStyle,
   type TextStyle,
-  type LayoutChangeEvent,
 } from 'react-native';
 
 import { useTheme } from '../theme/use-theme';
-import { animation, borderRadius, space } from '../styles/tokens';
+import { usePressAnimation } from '../hooks/usePressAnimation';
+import { borderRadius, space } from '../styles/tokens';
 import type { TabsProps, TabProps, TabPanelProps, TabsVariant } from './types';
 
 interface TabsContextValue {
@@ -101,29 +99,13 @@ const TabComponent: React.FC<TabProps> = ({
   const theme = useTheme();
   const { value: selectedValue, onValueChange, variant } = useContext(TabsContext);
   const isSelected = value === selectedValue;
-  const scaleAnim = useRef(new Animated.Value(1)).current;
+  const { scaleAnim, onPressIn, onPressOut } = usePressAnimation(0.97);
 
   const handlePress = useCallback(() => {
     if (!disabled) {
       onValueChange(value);
     }
   }, [value, disabled, onValueChange]);
-
-  const onPressIn = useCallback(() => {
-    Animated.spring(scaleAnim, {
-      toValue: 0.97,
-      useNativeDriver: true,
-      ...animation.spring.snappy,
-    }).start();
-  }, [scaleAnim]);
-
-  const onPressOut = useCallback(() => {
-    Animated.spring(scaleAnim, {
-      toValue: 1,
-      useNativeDriver: true,
-      ...animation.spring.gentle,
-    }).start();
-  }, [scaleAnim]);
 
   const tabStyle = useMemo((): ViewStyle => {
     const base: ViewStyle = {

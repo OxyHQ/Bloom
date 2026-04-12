@@ -1,7 +1,7 @@
-import React from 'react';
+import React, { memo } from 'react';
 import { StyleSheet, View, type ViewStyle } from 'react-native';
 
-export function Fill({
+const FillComponent = function Fill({
   children,
   style,
 }: {
@@ -13,7 +13,10 @@ export function Fill({
       {children}
     </View>
   );
-}
+};
+
+export const Fill = memo(FillComponent);
+Fill.displayName = 'Fill';
 
 const fillStyles = StyleSheet.create({
   base: {

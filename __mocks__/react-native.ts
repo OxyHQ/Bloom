@@ -91,3 +91,11 @@ export const Platform = {
 };
 
 export const useColorScheme = () => 'light' as const;
+
+export const Appearance = {
+  getColorScheme: () => 'light' as 'light' | 'dark' | null,
+  setColorScheme: (_scheme: 'light' | 'dark' | 'system') => {},
+  addChangeListener: (_listener: (preferences: { colorScheme: 'light' | 'dark' | null }) => void) => ({
+    remove: jest.fn(),
+  }),
+};

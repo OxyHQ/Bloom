@@ -3,6 +3,7 @@ import { View, Text, StyleSheet, type DimensionValue } from 'react-native';
 
 import { useTheme } from '../theme/use-theme';
 import { animation } from '../styles/tokens';
+import { lazyRequire } from '../utils/lazy-require';
 import { SpinnerIcon } from './SpinnerIcon';
 import type {
   LoadingProps,
@@ -20,24 +21,7 @@ const SIZE_CONFIG = {
 
 // Lazy-loaded reanimated for the top variant
 type ReanimatedType = typeof import('react-native-reanimated');
-let reanimatedModule: ReanimatedType | null = null;
-let reanimatedResolved = false;
-
-function getReanimated(): ReanimatedType | null {
-  if (!reanimatedResolved) {
-    reanimatedResolved = true;
-    try {
-      // Guard for ESM environments (Vite/browser) where require is not defined.
-      if (typeof require !== 'undefined') {
-        const moduleName = 'react-native-reanimated';
-        reanimatedModule = require(moduleName);
-      }
-    } catch {
-      reanimatedModule = null;
-    }
-  }
-  return reanimatedModule;
-}
+const getReanimated = lazyRequire<ReanimatedType>('react-native-reanimated');
 
 const SpinnerLoading: React.FC<SpinnerLoadingProps> = ({
   size = 'medium',
