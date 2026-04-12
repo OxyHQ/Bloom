@@ -46,6 +46,8 @@ export function buildTheme(appColor: AppColorName, resolved: 'light' | 'dark', i
     const background = hslVarToCSS(vars['--background'] ?? '0 0% 0%');
     const mutedForeground = hslVarToCSS(vars['--muted-foreground'] ?? '0 0% 50%');
 
+    const primaryColor = hslVarToCSS(vars['--primary'] ?? '0 0% 50%');
+
     themeColors = {
       background,
       backgroundSecondary: surface,
@@ -58,15 +60,15 @@ export function buildTheme(appColor: AppColorName, resolved: 'light' | 'dark', i
       border: hslVarToCSS(vars['--border'] ?? '0 0% 20%'),
       borderLight: hslVarToCSS(vars['--input'] ?? '0 0% 20%'),
 
-      primary: preset.hex,
+      primary: primaryColor,
       primaryLight: surface,
       primaryDark: background,
 
-      secondary: preset.hex,
+      secondary: primaryColor,
 
-      tint: preset.hex,
+      tint: primaryColor,
       icon: mutedForeground,
-      iconActive: preset.hex,
+      iconActive: primaryColor,
 
       success: '#10B981',
       error: '#EF4444',
