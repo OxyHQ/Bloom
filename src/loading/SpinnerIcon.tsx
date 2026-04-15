@@ -76,8 +76,12 @@ const AnimatedSpinner: React.FC<AnimatedSpinnerProps> = ({
         style,
       ]}
     >
-      {/* @ts-expect-error className is added by NativeWind cssInterop at runtime */}
-      <Svg viewBox="0 0 100 100" width={size} height={size} className={className}>
+      <Svg
+        viewBox="0 0 100 100"
+        width={size}
+        height={size}
+        {...(className ? ({ className } as Record<string, string>) : {})}
+      >
         <Rect fill={color} height="10" opacity="0" rx="5" ry="5" transform="rotate(-90 50 50)" width="28" x="67" y="45" />
         <Rect fill={color} height="10" opacity="0.125" rx="5" ry="5" transform="rotate(-45 50 50)" width="28" x="67" y="45" />
         <Rect fill={color} height="10" opacity="0.25" rx="5" ry="5" transform="rotate(0 50 50)" width="28" x="67" y="45" />

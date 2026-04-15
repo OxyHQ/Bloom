@@ -18,9 +18,9 @@ Required:
 
 Optional:
 
-- `@gorhom/bottom-sheet >= 5` (native Dialog)
-- `react-native-reanimated >= 3` (native Dialog, Loading `top` variant)
-- `react-native-gesture-handler >= 2` (native Dialog)
+- `@gorhom/bottom-sheet >= 5` (native `Dialog` and `Prompt`) — also requires wrapping the app root with `BottomSheetModalProvider`, see [Dialog](#dialog).
+- `react-native-reanimated >= 3` (native `Dialog`, `BottomSheet`, Loading `top` variant)
+- `react-native-gesture-handler >= 2` (native `Dialog`, `BottomSheet`) — also requires wrapping the app root with `GestureHandlerRootView`, see [Dialog](#dialog).
 - `react-native-svg >= 13` (Avatar `squircle` shape)
 
 ## Usage
@@ -50,9 +50,43 @@ const theme = useTheme();
 
 4 modes: `light`, `dark`, `system`, `adaptive` (uses iOS/Android native dynamic colors when available).
 
+### Modal components: Dialog, Prompt, BottomSheet
+
+Bloom ships three components for modal/sheet presentation. Pick the one that matches your use case:
+
+| Component | Native | Web | Use when |
+|-----------|--------|-----|----------|
+| `Dialog` | Bottom sheet (Gorhom), dynamic height | Centered modal | You need a modal container with arbitrary content — forms, pickers, custom layouts |
+| `Prompt` | 40%-height bottom sheet (Gorhom) | Centered 320px modal | You need a confirmation dialog with title, description, and action buttons |
+| `BottomSheet` | Draggable sheet (Bloom's own, no Gorhom) | Same pattern via RN `Modal` | You need a bottom sheet without the Gorhom dependency, or with custom snap/scroll/keyboard control |
+
+`Prompt` is built on top of `Dialog` (so the provider requirements are the same). `BottomSheet` is a separate, standalone implementation.
+
 ### Dialog
 
-Platform-adaptive dialogs — bottom sheet on native, modal overlay on web.
+Platform-adaptive dialogs — bottom sheet on native, centered modal overlay on web.
+
+> **Required providers (native).** `Dialog` (and therefore `Prompt`) uses `@gorhom/bottom-sheet` on Android/iOS. Your app root **must** be wrapped with `GestureHandlerRootView` from `react-native-gesture-handler` and `BottomSheetModalProvider` from `@gorhom/bottom-sheet`. Without these, the dialog will silently fail to render.
+
+```tsx
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
+import { BottomSheetModalProvider } from '@gorhom/bottom-sheet';
+import { BloomThemeProvider } from '@oxyhq/bloom/theme';
+
+export default function Root() {
+  return (
+    <GestureHandlerRootView style={{ flex: 1 }}>
+      <BloomThemeProvider mode="system" colorPreset="oxy">
+        <BottomSheetModalProvider>
+          <App />
+        </BottomSheetModalProvider>
+      </BloomThemeProvider>
+    </GestureHandlerRootView>
+  );
+}
+```
+
+Basic usage:
 
 ```tsx
 import * as Dialog from '@oxyhq/bloom/dialog';
@@ -75,7 +109,17 @@ function MyComponent() {
 }
 ```
 
-On web, inject the CSS animations into your global styles:
+`Dialog.Outer` props:
+
+- `control` — from `useDialogControl()`.
+- `onClose?` — fires after the dialog has finished closing.
+- `testID?`
+- `webOptions?: { alignCenter?: boolean }` — center the dialog vertically on web instead of anchoring near the top.
+- `preventExpansion?: boolean` — on native, snaps the bottom sheet to a fixed `'40%'` height instead of dynamic sizing.
+
+On native, the sheet uses `enablePanDownToClose`, `enableDismissOnClose`, dynamic sizing, and is constrained to a max width of 500px on tablets.
+
+On web, inject the CSS animations into your global styles once:
 
 ```tsx
 import { BLOOM_DIALOG_CSS } from '@oxyhq/bloom/dialog';
@@ -86,7 +130,11 @@ import { BLOOM_DIALOG_CSS } from '@oxyhq/bloom/dialog';
 
 ### Prompt
 
-Confirmation dialogs built on top of Dialog.
+Confirmation dialogs built on top of `Dialog`. On native, constrained to a 40% bottom sheet (Gorhom); on web, a centered 320px modal. Same provider requirements as [Dialog](#dialog).
+
+`Prompt.Action` auto-closes the dialog after `onPress` by default. Pass `shouldCloseOnPress={false}` to keep it open (e.g. while an async operation is in flight).
+
+`Prompt.Basic` — one-shot confirm dialog:
 
 ```tsx
 import * as Prompt from '@oxyhq/bloom/prompt';
@@ -111,7 +159,18 @@ function DeleteButton() {
 }
 ```
 
-Or build custom prompts with compound components:
+`Prompt.Basic` props:
+
+- `control` — from `usePromptControl()`.
+- `title: string`
+- `description?: string`
+- `confirmButtonCta?: string` — defaults to `'Confirm'`.
+- `cancelButtonCta?: string` — defaults to `'Cancel'`.
+- `confirmButtonColor?: ActionColor` — defaults to `'primary'`.
+- `onConfirm: (e) => void`
+- `showCancel?: boolean` — defaults to `true`.
+
+Or compose with the compound components:
 
 ```tsx
 <Prompt.Outer control={control}>
@@ -125,6 +184,47 @@ Or build custom prompts with compound components:
   </Prompt.Actions>
 </Prompt.Outer>
 ```
+
+Exports: `usePromptControl`, `Outer`, `Content`, `TitleText`, `DescriptionText`, `Actions`, `Action`, `Cancel`, `Basic`.
+
+`ActionColor`: `'primary' | 'primary_subtle' | 'secondary' | 'negative' | 'negative_subtle'`.
+
+### BottomSheet
+
+A standalone, draggable bottom sheet built on React Native `Modal` + `react-native-reanimated` + `react-native-gesture-handler`. **Not** based on `@gorhom/bottom-sheet`, so it does not require `BottomSheetModalProvider`. Use it when the compound `Dialog` API doesn't fit, when you want to avoid the Gorhom dependency, or when you need direct control over scroll, keyboard handling, or detached presentation.
+
+```tsx
+import { useRef } from 'react';
+import { BottomSheet, type BottomSheetRef } from '@oxyhq/bloom/bottom-sheet';
+
+function Example() {
+  const sheetRef = useRef<BottomSheetRef>(null);
+
+  return (
+    <>
+      <Button onPress={() => sheetRef.current?.present()}>Open</Button>
+
+      <BottomSheet ref={sheetRef} onDismiss={() => console.log('dismissed')}>
+        <Text>Sheet content</Text>
+      </BottomSheet>
+    </>
+  );
+}
+```
+
+`BottomSheetRef` methods: `present()`, `dismiss()`, `close()`, `expand()`, `collapse()`, `scrollTo(y, animated?)`.
+
+`BottomSheetProps`:
+
+- `children`
+- `onDismiss?: () => void`
+- `enablePanDownToClose?: boolean` — defaults to `true`.
+- `enableHandlePanningGesture?: boolean` — defaults to `true`.
+- `onDismissAttempt?: () => boolean` — return `false` to veto a dismiss attempt.
+- `detached?: boolean` — when `true`, the sheet floats with horizontal margins and rounded corners on all sides; when `false`, it's flush to the bottom edges with rounded top corners only.
+- `backgroundComponent?` — custom background renderer.
+- `backdropComponent?` — custom backdrop renderer.
+- `style?`
 
 ### Button
 
@@ -270,6 +370,7 @@ import {
 import { BloomThemeProvider, useTheme } from '@oxyhq/bloom/theme';
 import * as Dialog from '@oxyhq/bloom/dialog';
 import * as Prompt from '@oxyhq/bloom/prompt';
+import { BottomSheet, type BottomSheetRef } from '@oxyhq/bloom/bottom-sheet';
 import { Button, IconButton } from '@oxyhq/bloom/button';
 import { GroupedButtons } from '@oxyhq/bloom/grouped-buttons';
 import { Divider } from '@oxyhq/bloom/divider';

@@ -1,5 +1,6 @@
 import React, { memo, useMemo, useRef, useState } from 'react';
-import { View, Image, StyleSheet, TouchableOpacity } from 'react-native';
+import { View, Image, StyleSheet, Text, TouchableOpacity } from 'react-native';
+import type { TextStyle } from 'react-native';
 
 import { useTheme } from '../theme/use-theme';
 import { useImageResolver } from '../image-resolver/context';
@@ -7,9 +8,35 @@ import { lazyRequire } from '../utils/lazy-require';
 import { useAvatarPlaceholder } from './placeholder-context';
 import type { AvatarProps } from './types';
 
-// Built-in default avatar image — used when no source, fallbackSource, or placeholderIcon is provided
-// ESM static import works in both Metro (RN 0.72+) and web bundlers (Vite, webpack).
-import DEFAULT_AVATAR_IMAGE from './default-avatar.jpg';
+// Google Contacts-inspired palette used to pick a deterministic background
+// color for name-based placeholder avatars.
+const NAME_AVATAR_COLORS = [
+  '#D93025', '#E8710A', '#F9AB00', '#1E8E3E', '#12B5CB',
+  '#1A73E8', '#7627BB', '#C5221F', '#0B8043', '#A142F4',
+] as const;
+
+function getInitial(name: string): string {
+  const trimmed = name.trim();
+  if (!trimmed) return '?';
+  const firstCodePoint = [...trimmed][0] ?? '?';
+  return firstCodePoint.toUpperCase();
+}
+
+function getNameColor(name: string): string {
+  let hash = 0;
+  for (let i = 0; i < name.length; i++) {
+    hash = (hash * 31 + name.charCodeAt(i)) | 0;
+  }
+  const index = Math.abs(hash) % NAME_AVATAR_COLORS.length;
+  // Palette has a fixed, non-empty length, so this lookup always succeeds.
+  return NAME_AVATAR_COLORS[index] ?? NAME_AVATAR_COLORS[0];
+}
+
+// Built-in default avatar image — used when no source, fallbackSource, or placeholderIcon is provided.
+// Sourced from a TypeScript module that exports an inlined base64 data URI, so no
+// `.jpg` asset import (and no ambient `*.jpg` module declaration) is required for
+// consumers compiling Bloom's source files directly.
+import DEFAULT_AVATAR_IMAGE from './default-avatar';
 
 // Squircle clip path normalized to 0–1 coordinate space (viewBox="0 0 1 1").
 const SQUIRCLE_PATH =
@@ -31,6 +58,7 @@ function SquircleImage({
   size,
   fallbackColor,
   placeholderIcon,
+  name,
   onError,
 }: {
   uri?: string;
@@ -38,12 +66,13 @@ function SquircleImage({
   size: number;
   fallbackColor: string;
   placeholderIcon?: React.ReactNode;
+  name?: string;
   onError: () => void;
 }) {
   const svg = getSvgModule();
   if (!svg) {
     // Fallback to circle if react-native-svg is not installed
-    return <CircleFallback size={size} fallbackColor={fallbackColor} icon={placeholderIcon} />;
+    return <CircleFallback size={size} fallbackColor={fallbackColor} icon={placeholderIcon} name={name} />;
   }
 
   const { default: Svg, Defs, ClipPath, Path, Image: SvgImage } = svg;
@@ -51,7 +80,7 @@ function SquircleImage({
 
   const href = uri ? { uri } : fallbackSource;
   if (!href) {
-    return <CircleFallback size={size} fallbackColor={fallbackColor} icon={placeholderIcon} />;
+    return <CircleFallback size={size} fallbackColor={fallbackColor} icon={placeholderIcon} name={name} />;
   }
 
   return (
@@ -82,8 +111,29 @@ function SquircleImage({
   );
 }
 
-function CircleFallback({ size, fallbackColor, icon }: { size: number; fallbackColor: string; icon?: React.ReactNode }) {
+function CircleFallback({
+  size,
+  fallbackColor,
+  icon,
+  name,
+}: {
+  size: number;
+  fallbackColor: string;
+  icon?: React.ReactNode;
+  name?: string;
+}) {
   const radius = size / 2;
+  // If a name is provided (and no custom icon was supplied), render a
+  // centered initial in white instead of the default avatar image.
+  const hasName = typeof name === 'string' && name.trim().length > 0;
+  const initialStyle: TextStyle = {
+    color: '#FFFFFF',
+    fontSize: Math.round(size * 0.42),
+    fontWeight: '600',
+    lineHeight: Math.round(size * 0.48),
+    textAlign: 'center',
+    includeFontPadding: false,
+  };
   return (
     <View
       style={{
@@ -96,13 +146,21 @@ function CircleFallback({ size, fallbackColor, icon }: { size: number; fallbackC
         overflow: 'hidden',
       }}
     >
-      {icon ?? (
+      {icon ?? (hasName ? (
+        <Text
+          allowFontScaling={false}
+          numberOfLines={1}
+          style={initialStyle}
+        >
+          {getInitial(name)}
+        </Text>
+      ) : (
         <Image
           source={DEFAULT_AVATAR_IMAGE}
           resizeMode="cover"
           style={{ width: size, height: size, borderRadius: radius }}
         />
-      )}
+      ))}
     </View>
   );
 }
@@ -119,6 +177,7 @@ const AvatarComponent: React.FC<AvatarProps> = ({
   imageStyle,
   placeholderColor,
   placeholderIcon,
+  name,
   onPress,
   testID,
 }) => {
@@ -126,8 +185,14 @@ const AvatarComponent: React.FC<AvatarProps> = ({
   const theme = useTheme();
   const placeholderConfig = useAvatarPlaceholder();
   const radius = size / 2;
-  const fallbackColor = placeholderColor || theme.colors.backgroundTertiary;
-  const resolvedPlaceholderIcon = placeholderIcon ?? placeholderConfig?.icon?.(size * 0.6);
+  const hasName = typeof name === 'string' && name.trim().length > 0;
+  // Priority: explicit placeholderColor > deterministic color from name > theme default.
+  const fallbackColor =
+    placeholderColor || (hasName ? getNameColor(name) : theme.colors.backgroundTertiary);
+  // When a name is provided, we render an initial instead of invoking the
+  // default placeholder-context icon. Explicit placeholderIcon still wins.
+  const resolvedPlaceholderIcon =
+    placeholderIcon ?? (hasName ? undefined : placeholderConfig?.icon?.(size * 0.6));
 
   // Reset error state when source changes (e.g., list item recycling
   // or async URL resolution replacing an initial file ID).
@@ -179,6 +244,7 @@ const AvatarComponent: React.FC<AvatarProps> = ({
           size={size}
           fallbackColor={fallbackColor}
           placeholderIcon={resolvedPlaceholderIcon}
+          name={name}
           onError={() => setErrored(true)}
         />
       ) : (
@@ -191,7 +257,12 @@ const AvatarComponent: React.FC<AvatarProps> = ({
               style={[StyleSheet.absoluteFillObject, { borderRadius: radius }, imageStyle]}
             />
           ) : (
-            <CircleFallback size={size} fallbackColor={fallbackColor} icon={resolvedPlaceholderIcon} />
+            <CircleFallback
+              size={size}
+              fallbackColor={fallbackColor}
+              icon={resolvedPlaceholderIcon}
+              name={name}
+            />
           )}
         </View>
       )}

@@ -20,6 +20,7 @@ import {
   platform,
   tokens,
   type TextStyleProp,
+  type ViewStyleProp,
 } from '../styles';
 import { type Props as SVGIconProps } from '../icons/common';
 import { Text } from '../typography';
@@ -46,7 +47,7 @@ const Context = createContext<{
 Context.displayName = 'TextFieldContext';
 
 export type RootProps = React.PropsWithChildren<
-  { isInvalid?: boolean } & TextStyleProp
+  { isInvalid?: boolean } & ViewStyleProp
 >;
 
 export function Root({ children, isInvalid = false, style }: RootProps) {

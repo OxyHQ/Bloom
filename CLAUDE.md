@@ -38,6 +38,14 @@ src/
 
 Components with `.web.tsx` variants: dialog, context-menu, menu, prompt-input/Textarea, select, toast, tooltip, theme/adaptive-colors.
 
+## Modal component architecture
+
+Bloom has three modal/sheet components. Don't confuse them — they have different implementations and different consumer requirements.
+
+- **`dialog/`** — platform-adaptive. On native uses `@gorhom/bottom-sheet` (`BottomSheetModal` with `enablePanDownToClose`, `enableDismissOnClose`, dynamic sizing, max width 500). On web uses `Portal` + `Pressable` overlay with CSS keyframe animations (consumer must inject `BLOOM_DIALOG_CSS`). The `preventExpansion` prop snaps the native sheet to a fixed `'40%'` snap point. The `webOptions.alignCenter` prop centers the dialog vertically on web. **Native consumers must wrap their app root with `GestureHandlerRootView` and `BottomSheetModalProvider`** — without these, `Dialog` (and `Prompt`) silently fail to render.
+- **`prompt/`** — thin wrapper over `dialog/` for confirmation dialogs. Always passes `preventExpansion` (40% sheet on native) and `webOptions.alignCenter: true` (centered 320px modal on web). Adds title, description, and action button primitives. `Prompt.Action` defaults to `shouldCloseOnPress={true}`. Same provider requirements as `dialog/`. `ActionColor` enum: `primary | primary_subtle | secondary | negative | negative_subtle`.
+- **`bottom-sheet/`** — standalone, NOT built on Gorhom. Uses RN `Modal` + `react-native-reanimated` + `react-native-gesture-handler` directly. Exposes a `BottomSheetRef` with `present/dismiss/close/expand/collapse/scrollTo`. Use this when the compound `Dialog` API doesn't fit, when avoiding the Gorhom dependency, or when fine-grained scroll/keyboard/detached behavior is needed. Does not require `BottomSheetModalProvider`.
+
 ## Build
 
 Uses `react-native-builder-bob` → `lib/` (commonjs + module + typescript).

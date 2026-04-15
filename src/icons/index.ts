@@ -150,5 +150,5 @@ export * from './Warning';
 export * from './Window';
 export * from './Wrench';
 export * from './Zap';
-export type { Props } from './common';
+export type { IconStyle, Props } from './common';
 export { sizes, useCommonSVGProps } from './common';

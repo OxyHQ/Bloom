@@ -30,6 +30,13 @@ export interface AvatarProps {
   placeholderColor?: string;
   /** Custom icon rendered inside the placeholder circle when no image is available */
   placeholderIcon?: ReactNode;
+  /**
+   * Contact/user name used to derive a deterministic initial and background color.
+   * When no image resolves (missing `source`/`uri` or image error), the Avatar renders
+   * a colored circle with the first letter of the name in white.
+   * Consumers can still override via `placeholderColor` / `placeholderIcon`.
+   */
+  name?: string;
   /** Press handler — wraps avatar in TouchableOpacity when provided */
   onPress?: () => void;
   testID?: string;
