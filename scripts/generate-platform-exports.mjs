@@ -1,0 +1,256 @@
+// @ts-check
+/**
+ * Generate the platform-aware bits of @oxyhq/bloom's published surface:
+ *
+ *   1. The `exports` field of `package.json`.
+ *   2. `src/index.web.ts` — the web variant of the root barrel.
+ *
+ * The single source of truth is the layout under `src/`. A subpath gets a
+ * `"browser"` export condition iff it appears in `WEB_FORKED_SUBPATHS`
+ * below — those are the entries whose source has a sibling `*.web.{ts,tsx}`
+ * file, which bob compiles to `*.web.js` next to the regular `*.js`.
+ *
+ * Why a script:
+ *   - The `exports` field has 40+ subpaths. Hand-editing it every time a
+ *     `.web.tsx` is added is the kind of thing that drifts.
+ *   - The root barrel `src/index.ts` re-exports every subpath; the web
+ *     barrel `src/index.web.ts` needs to differ from it on precisely the
+ *     lines that touch a web-forked subpath. Generating the web barrel from
+ *     `src/index.ts` keeps the two files in lockstep.
+ *
+ * Wired as a `prebuild` step so `bun run build` always picks up changes.
+ * The generated output is committed so diffs are reviewable.
+ */
+
+import { existsSync, readFileSync, statSync, writeFileSync } from 'node:fs';
+import { dirname, join, relative } from 'node:path';
+import { fileURLToPath } from 'node:url';
+
+const HERE = dirname(fileURLToPath(import.meta.url));
+const REPO_ROOT = join(HERE, '..');
+const SRC = join(REPO_ROOT, 'src');
+const PKG_PATH = join(REPO_ROOT, 'package.json');
+const ROOT_BARREL_PATH = join(SRC, 'index.ts');
+const ROOT_BARREL_WEB_PATH = join(SRC, 'index.web.ts');
+
+// --------------------------------------------------------------------------
+//  Public-API map
+// --------------------------------------------------------------------------
+
+/**
+ * Subpath -> source entry (relative to `src/`).
+ *
+ * Listed explicitly (rather than auto-discovered) so adding a folder under
+ * `src/` does not silently change the publishable surface. Order matches
+ * the order in which entries are written to `package.json` for diff
+ * readability.
+ */
+const SUBPATHS = /** @type {const} */ ([
+  ['.', 'index.ts'],
+  ['./image-resolver', 'image-resolver/index.ts'],
+  ['./theme', 'theme/index.ts'],
+  ['./color-presets', 'theme/color-presets.ts'],
+  ['./portal', 'portal/index.tsx'],
+  ['./dialog', 'dialog/index.ts'],
+  ['./prompt', 'prompt/index.ts'],
+  ['./button', 'button/index.ts'],
+  ['./grouped-buttons', 'grouped-buttons/index.ts'],
+  ['./divider', 'divider/index.ts'],
+  ['./radio-indicator', 'radio-indicator/index.ts'],
+  ['./collapsible', 'collapsible/index.ts'],
+  ['./error-boundary', 'error-boundary/index.ts'],
+  ['./avatar', 'avatar/index.ts'],
+  ['./loading', 'loading/index.ts'],
+  ['./switch', 'switch/index.ts'],
+  ['./prompt-input', 'prompt-input/index.ts'],
+  ['./toast', 'toast/index.tsx'],
+  ['./styles', 'styles/index.ts'],
+  ['./hooks', 'hooks/index.ts'],
+  ['./icons', 'icons/index.ts'],
+  ['./typography', 'typography/index.tsx'],
+  ['./skeleton', 'skeleton/index.tsx'],
+  ['./grid', 'grid/index.tsx'],
+  ['./fill', 'fill/index.tsx'],
+  ['./icon-circle', 'icon-circle/index.tsx'],
+  ['./text-field', 'text-field/index.tsx'],
+  ['./segmented-control', 'segmented-control/index.tsx'],
+  ['./search-input', 'search-input/index.tsx'],
+  ['./admonition', 'admonition/index.tsx'],
+  ['./menu', 'menu/index.tsx'],
+  ['./tooltip', 'tooltip/index.tsx'],
+  ['./select', 'select/index.tsx'],
+  ['./bottom-sheet', 'bottom-sheet/index.tsx'],
+  ['./context-menu', 'context-menu/index.tsx'],
+  ['./card', 'card/index.ts'],
+  ['./badge', 'badge/index.ts'],
+  ['./chip', 'chip/index.ts'],
+  ['./tabs', 'tabs/index.ts'],
+  ['./checkbox', 'checkbox/index.ts'],
+  ['./accordion', 'accordion/index.ts'],
+  ['./settings-list', 'settings-list/index.ts'],
+]);
+
+/**
+ * Subpaths whose default entry has a `.web.{ts,tsx}` sibling.
+ *
+ * The corresponding `.web` source files MUST exist (the script asserts this);
+ * if you remove a fork delete the entry here and re-run the script.
+ */
+const WEB_FORKED_SUBPATHS = new Set([
+  '.',
+  './dialog',
+  './menu',
+  './tooltip',
+  './select',
+  './context-menu',
+  './toast',
+]);
+
+// --------------------------------------------------------------------------
+//  Path helpers
+// --------------------------------------------------------------------------
+
+/**
+ * Given an `entrySrc` like `dialog/index.ts` or `theme/color-presets.ts`,
+ * compute the set of paths bob's output will land at, in both the regular
+ * and `.web` variants.
+ */
+function computePaths(entrySrc) {
+  const stem = entrySrc.replace(/\.tsx?$/, ''); // dialog/index | theme/color-presets
+  return {
+    webSource: `${stem}.web.ts`, // candidate web source file (we also accept .web.tsx)
+    webSourceTsx: `${stem}.web.tsx`,
+    libModule: `./lib/module/${stem}.js`,
+    libModuleWeb: `./lib/module/${stem}.web.js`,
+    libCommonjs: `./lib/commonjs/${stem}.js`,
+    libCommonjsWeb: `./lib/commonjs/${stem}.web.js`,
+    libTypesModule: `./lib/typescript/module/${stem}.d.ts`,
+    libTypesModuleWeb: `./lib/typescript/module/${stem}.web.d.ts`,
+    libTypesCjs: `./lib/typescript/commonjs/${stem}.d.ts`,
+  };
+}
+
+/** Resolve which `.web.{ts,tsx}` source actually exists for a forked subpath. */
+function assertWebSourceExists(name, paths) {
+  const tsCandidate = join(SRC, paths.webSource);
+  const tsxCandidate = join(SRC, paths.webSourceTsx);
+  if (!existsSync(tsCandidate) && !existsSync(tsxCandidate)) {
+    throw new Error(
+      `[generate-platform-exports] ${name} is listed as web-forked but ` +
+        `neither ${relative(REPO_ROOT, tsCandidate)} nor ${relative(REPO_ROOT, tsxCandidate)} exists.`,
+    );
+  }
+}
+
+// --------------------------------------------------------------------------
+//  exports map
+// --------------------------------------------------------------------------
+
+function buildExportsField() {
+  /** @type {Record<string, unknown>} */
+  const out = {};
+
+  for (const [name, entrySrc] of SUBPATHS) {
+    const paths = computePaths(entrySrc);
+    const hasFork = WEB_FORKED_SUBPATHS.has(name);
+
+    if (hasFork) assertWebSourceExists(name, paths);
+
+    /** @type {Record<string, unknown>} */
+    const entry = {
+      'react-native': `./src/${entrySrc}`,
+    };
+
+    if (hasFork) {
+      entry.browser = {
+        types: paths.libTypesModuleWeb,
+        import: paths.libModuleWeb,
+        require: paths.libCommonjsWeb,
+      };
+    }
+
+    entry.import = {
+      types: paths.libTypesModule,
+      default: paths.libModule,
+    };
+    entry.require = {
+      types: paths.libTypesCjs,
+      default: paths.libCommonjs,
+    };
+
+    out[name] = entry;
+  }
+
+  // Allow consumers / tooling to resolve the package.json itself.
+  out['./package.json'] = './package.json';
+
+  return out;
+}
+
+// --------------------------------------------------------------------------
+//  Root barrel (web variant)
+// --------------------------------------------------------------------------
+
+/**
+ * Rewrite `src/index.ts` into `src/index.web.ts` by retargeting every line
+ * that re-exports a web-forked subpath to its `.web` entry.
+ *
+ * The transform is purely textual and only touches lines of the form
+ * `from './<folder>'`. Lines that don't match are passed through verbatim.
+ */
+function buildRootWebBarrel(originalSource) {
+  const forkedFolderNames = [...WEB_FORKED_SUBPATHS]
+    .filter((s) => s !== '.')
+    .map((s) => s.replace(/^\.\//, ''));
+
+  const header = [
+    '// AUTO-GENERATED by scripts/generate-platform-exports.mjs — DO NOT EDIT.',
+    '// Source of truth: src/index.ts.',
+    '// Re-run `bun run generate:exports` (or any `bun run build`) after',
+    '// changing the root barrel or the set of web-forked subpaths.',
+    '',
+    '',
+  ].join('\n');
+
+  const transformed = originalSource
+    .split('\n')
+    .map((line) => {
+      const match = line.match(/from '\.\/([a-z-]+)'(\s*;?\s*)$/);
+      if (!match) return line;
+      const folder = match[1];
+      if (!forkedFolderNames.includes(folder)) return line;
+      return line.replace(`from './${folder}'`, `from './${folder}/index.web'`);
+    })
+    .join('\n');
+
+  return header + transformed;
+}
+
+// --------------------------------------------------------------------------
+//  Main
+// --------------------------------------------------------------------------
+
+function main() {
+  // 1. Regenerate src/index.web.ts FIRST so the exports-field assertion
+  //    that the file exists will pass.
+  const rootBarrel = readFileSync(ROOT_BARREL_PATH, 'utf8');
+  writeFileSync(ROOT_BARREL_WEB_PATH, buildRootWebBarrel(rootBarrel));
+  console.log(
+    `[generate-platform-exports] wrote ${relative(REPO_ROOT, ROOT_BARREL_WEB_PATH)} from ${relative(REPO_ROOT, ROOT_BARREL_PATH)}`,
+  );
+
+  // 2. Update `exports` in package.json.
+  const pkg = JSON.parse(readFileSync(PKG_PATH, 'utf8'));
+  pkg.exports = buildExportsField();
+  writeFileSync(PKG_PATH, JSON.stringify(pkg, null, 2) + '\n');
+  console.log(
+    `[generate-platform-exports] wrote ${SUBPATHS.length} subpaths to package.json#exports`,
+  );
+
+  // 3. Stat package.json so the size shows up in CI logs.
+  console.log(
+    `[generate-platform-exports] package.json is now ${statSync(PKG_PATH).size} bytes`,
+  );
+}
+
+main();
