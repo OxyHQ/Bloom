@@ -189,6 +189,40 @@ function buildExportsField() {
 }
 
 // --------------------------------------------------------------------------
+//  browser field
+// --------------------------------------------------------------------------
+
+/**
+ * Build the `package.json#browser` map.
+ *
+ * Internal sibling imports inside `lib/` (e.g. `Dialog.web.js` doing
+ * `import { Portal } from '../portal'`) bypass the `exports` map — that
+ * map only governs how *consumers* resolve subpaths of `@oxyhq/bloom`.
+ * For internal cross-subpath references we use the older but universally
+ * supported `browser` field, which remaps file paths inside the package.
+ *
+ * Vite, Webpack, Rolldown, esbuild, Metro and Browserify all honor this
+ * field for web targets. Native targets ignore it.
+ *
+ * Only web-forked subpaths need an entry. Format:
+ *
+ *   "./lib/module/<sub>/index.js": "./lib/module/<sub>/index.web.js"
+ *   "./lib/commonjs/<sub>/index.js": "./lib/commonjs/<sub>/index.web.js"
+ */
+function buildBrowserField() {
+  /** @type {Record<string, string>} */
+  const out = {};
+  for (const [name, entrySrc] of SUBPATHS) {
+    if (!WEB_FORKED_SUBPATHS.has(name)) continue;
+    if (name === '.') continue; // root is selected via `exports` only
+    const paths = computePaths(entrySrc);
+    out[paths.libModule] = paths.libModuleWeb;
+    out[paths.libCommonjs] = paths.libCommonjsWeb;
+  }
+  return out;
+}
+
+// --------------------------------------------------------------------------
 //  Root barrel (web variant)
 // --------------------------------------------------------------------------
 
@@ -240,12 +274,16 @@ function main() {
     `[generate-platform-exports] wrote ${relative(REPO_ROOT, ROOT_BARREL_WEB_PATH)} from ${relative(REPO_ROOT, ROOT_BARREL_PATH)}`,
   );
 
-  // 2. Update `exports` in package.json.
+  // 2. Update `exports` AND `browser` in package.json.
   const pkg = JSON.parse(readFileSync(PKG_PATH, 'utf8'));
   pkg.exports = buildExportsField();
+  pkg.browser = buildBrowserField();
   writeFileSync(PKG_PATH, JSON.stringify(pkg, null, 2) + '\n');
   console.log(
     `[generate-platform-exports] wrote ${SUBPATHS.length} subpaths to package.json#exports`,
+  );
+  console.log(
+    `[generate-platform-exports] wrote ${Object.keys(pkg.browser).length} entries to package.json#browser`,
   );
 
   // 3. Stat package.json so the size shows up in CI logs.
