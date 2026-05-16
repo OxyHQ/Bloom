@@ -2,6 +2,7 @@ import React, { useEffect, useRef } from 'react';
 import { Animated, View, type ViewStyle, type TextStyle, StyleSheet } from 'react-native';
 
 import { useTheme } from '../theme/use-theme';
+import { SUPPORTS_NATIVE_DRIVER } from '../styles/native-driver';
 
 const SHIMMER_DURATION = 1500;
 const SHIMMER_MIN_OPACITY = 0.4;
@@ -16,12 +17,12 @@ function useShimmer() {
         Animated.timing(opacity, {
           toValue: SHIMMER_MIN_OPACITY,
           duration: SHIMMER_DURATION / 2,
-          useNativeDriver: true,
+          useNativeDriver: SUPPORTS_NATIVE_DRIVER,
         }),
         Animated.timing(opacity, {
           toValue: SHIMMER_MAX_OPACITY,
           duration: SHIMMER_DURATION / 2,
-          useNativeDriver: true,
+          useNativeDriver: SUPPORTS_NATIVE_DRIVER,
         }),
       ]),
     );

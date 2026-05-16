@@ -98,6 +98,7 @@ const SUBPATHS = /** @type {const} */ ([
  */
 const WEB_FORKED_SUBPATHS = new Set([
   '.',
+  './portal',
   './dialog',
   './menu',
   './tooltip',

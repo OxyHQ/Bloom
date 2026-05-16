@@ -3,6 +3,7 @@ import { View, Text, Pressable, Animated, type ViewStyle } from 'react-native';
 
 import { useTheme } from '../theme/use-theme';
 import { animation, borderRadius, space } from '../styles/tokens';
+import { SUPPORTS_NATIVE_DRIVER } from '../styles/native-driver';
 import type { CheckboxProps } from './types';
 
 const SIZE_CONFIG = {
@@ -34,7 +35,7 @@ const CheckboxComponent: React.FC<CheckboxProps> = ({
   useEffect(() => {
     Animated.spring(scaleAnim, {
       toValue: checked || indeterminate ? 1 : 0,
-      useNativeDriver: true,
+      useNativeDriver: SUPPORTS_NATIVE_DRIVER,
       ...animation.spring.snappy,
     }).start();
   }, [checked, indeterminate, scaleAnim]);
@@ -48,7 +49,7 @@ const CheckboxComponent: React.FC<CheckboxProps> = ({
   const onPressIn = useCallback(() => {
     Animated.spring(pressAnim, {
       toValue: 0.9,
-      useNativeDriver: true,
+      useNativeDriver: SUPPORTS_NATIVE_DRIVER,
       ...animation.spring.snappy,
     }).start();
   }, [pressAnim]);
@@ -56,7 +57,7 @@ const CheckboxComponent: React.FC<CheckboxProps> = ({
   const onPressOut = useCallback(() => {
     Animated.spring(pressAnim, {
       toValue: 1,
-      useNativeDriver: true,
+      useNativeDriver: SUPPORTS_NATIVE_DRIVER,
       ...animation.spring.gentle,
     }).start();
   }, [pressAnim]);

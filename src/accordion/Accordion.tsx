@@ -3,6 +3,7 @@ import { View, Text, Pressable, Animated, type ViewStyle } from 'react-native';
 
 import { useTheme } from '../theme/use-theme';
 import { animation, borderRadius, space } from '../styles/tokens';
+import { SUPPORTS_NATIVE_DRIVER } from '../styles/native-driver';
 import type {
   AccordionProps,
   AccordionItemProps,
@@ -135,7 +136,7 @@ const AccordionTriggerComponent: React.FC<AccordionTriggerProps> = ({
   useEffect(() => {
     Animated.spring(rotateAnim, {
       toValue: isExpanded ? 1 : 0,
-      useNativeDriver: true,
+      useNativeDriver: SUPPORTS_NATIVE_DRIVER,
       ...animation.spring.snappy,
     }).start();
   }, [isExpanded, rotateAnim]);

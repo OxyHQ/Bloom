@@ -1,6 +1,6 @@
 {
   "name": "@oxyhq/bloom",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "description": "Bloom UI — Oxy ecosystem component library for React Native + Expo + Web",
   "main": "lib/commonjs/index.js",
   "module": "lib/module/index.js",
@@ -63,6 +63,11 @@
     },
     "./portal": {
       "react-native": "./src/portal/index.tsx",
+      "browser": {
+        "types": "./lib/typescript/module/portal/index.web.d.ts",
+        "import": "./lib/module/portal/index.web.js",
+        "require": "./lib/commonjs/portal/index.web.js"
+      },
       "import": {
         "types": "./lib/typescript/module/portal/index.d.ts",
         "default": "./lib/module/portal/index.js"
@@ -572,9 +577,11 @@
     "@testing-library/react-native": "^13.3.3",
     "@types/jest": "^30.0.0",
     "@types/react": "~19.1.0",
+    "@types/react-dom": "^19.2.3",
     "@types/react-native": "*",
     "jest": "^30.3.0",
     "react": "19.2.0",
+    "react-dom": "19.2.0",
     "react-native": "0.83.2",
     "react-native-builder-bob": "^0.40.16",
     "react-native-gesture-handler": "^2.30.0",
@@ -591,6 +598,7 @@
   "peerDependencies": {
     "@gorhom/bottom-sheet": ">=5.0.0",
     "react": ">=18.0.0",
+    "react-dom": ">=18.0.0",
     "react-native": ">=0.73.0",
     "react-native-gesture-handler": ">=2.0.0",
     "react-native-reanimated": ">=3.0.0",
@@ -601,6 +609,9 @@
   },
   "peerDependenciesMeta": {
     "@gorhom/bottom-sheet": {
+      "optional": true
+    },
+    "react-dom": {
       "optional": true
     },
     "react-native-reanimated": {

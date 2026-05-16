@@ -3,6 +3,7 @@ import { View, Text, TouchableOpacity, Animated, LayoutAnimation, Platform, UIMa
 
 import { useTheme } from '../theme/use-theme';
 import { animation } from '../styles/tokens';
+import { SUPPORTS_NATIVE_DRIVER } from '../styles/native-driver';
 import type { CollapsibleProps } from './types';
 
 if (Platform.OS === 'android' && UIManager.setLayoutAnimationEnabledExperimental) {
@@ -31,7 +32,7 @@ const CollapsibleComponent: React.FC<CollapsibleProps> = ({
     // Animate chevron rotation in the event handler, not via useEffect
     Animated.spring(chevronAnim, {
       toValue: nextOpen ? 1 : 0,
-      useNativeDriver: true,
+      useNativeDriver: SUPPORTS_NATIVE_DRIVER,
       ...animation.spring.gentle,
     }).start();
 

@@ -2,6 +2,7 @@ import { useCallback, useRef } from 'react';
 import { Animated } from 'react-native';
 
 import { animation } from '../styles/tokens';
+import { SUPPORTS_NATIVE_DRIVER } from '../styles/native-driver';
 
 /**
  * Hook that provides press-scale animation feedback.
@@ -19,7 +20,7 @@ export function usePressAnimation(pressScale: number | undefined = 0.97) {
     if (!enabled) return;
     Animated.spring(scaleAnim, {
       toValue: pressScale!,
-      useNativeDriver: true,
+      useNativeDriver: SUPPORTS_NATIVE_DRIVER,
       ...animation.spring.snappy,
     }).start();
   }, [scaleAnim, enabled, pressScale]);
@@ -28,7 +29,7 @@ export function usePressAnimation(pressScale: number | undefined = 0.97) {
     if (!enabled) return;
     Animated.spring(scaleAnim, {
       toValue: 1,
-      useNativeDriver: true,
+      useNativeDriver: SUPPORTS_NATIVE_DRIVER,
       ...animation.spring.gentle,
     }).start();
   }, [scaleAnim, enabled]);

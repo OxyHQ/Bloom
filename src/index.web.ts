@@ -22,7 +22,7 @@ export * as Icons from './icons';
 export { type Props as IconProps, sizes as iconSizes, useCommonSVGProps } from './icons/common';
 
 // Core components
-export * from './portal';
+export * from './portal/index.web';
 export * as Dialog from './dialog/index.web';
 export * as Prompt from './prompt';
 export * from './button';
