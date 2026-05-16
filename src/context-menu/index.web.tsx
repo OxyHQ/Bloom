@@ -17,7 +17,7 @@ import { Pressable, StyleSheet, View } from 'react-native';
 
 import { useTheme } from '../theme/use-theme';
 import { Text } from '../typography';
-import { Portal } from '../portal';
+import { Portal } from '../portal/index.web';
 import { useInteractionState } from '../hooks/useInteractionState';
 import { ItemCtx, useItemContext } from './context';
 import type {

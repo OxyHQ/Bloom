@@ -1,6 +1,6 @@
 {
   "name": "@oxyhq/bloom",
-  "version": "0.2.2",
+  "version": "0.2.3",
   "description": "Bloom UI — Oxy ecosystem component library for React Native + Expo + Web",
   "main": "lib/commonjs/index.js",
   "module": "lib/module/index.js",
@@ -652,21 +652,5 @@
   "dependencies": {
     "nanoid": "^5.1.5",
     "react-remove-scroll-bar": "^2.3.8"
-  },
-  "browser": {
-    "./lib/module/portal/index.js": "./lib/module/portal/index.web.js",
-    "./lib/commonjs/portal/index.js": "./lib/commonjs/portal/index.web.js",
-    "./lib/module/dialog/index.js": "./lib/module/dialog/index.web.js",
-    "./lib/commonjs/dialog/index.js": "./lib/commonjs/dialog/index.web.js",
-    "./lib/module/toast/index.js": "./lib/module/toast/index.web.js",
-    "./lib/commonjs/toast/index.js": "./lib/commonjs/toast/index.web.js",
-    "./lib/module/menu/index.js": "./lib/module/menu/index.web.js",
-    "./lib/commonjs/menu/index.js": "./lib/commonjs/menu/index.web.js",
-    "./lib/module/tooltip/index.js": "./lib/module/tooltip/index.web.js",
-    "./lib/commonjs/tooltip/index.js": "./lib/commonjs/tooltip/index.web.js",
-    "./lib/module/select/index.js": "./lib/module/select/index.web.js",
-    "./lib/commonjs/select/index.js": "./lib/commonjs/select/index.web.js",
-    "./lib/module/context-menu/index.js": "./lib/module/context-menu/index.web.js",
-    "./lib/commonjs/context-menu/index.js": "./lib/commonjs/context-menu/index.web.js"
   }
 }

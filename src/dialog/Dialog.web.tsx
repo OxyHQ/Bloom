@@ -3,7 +3,7 @@ import { Pressable, Text, View, type ViewStyle } from 'react-native';
 import { RemoveScrollBar } from 'react-remove-scroll-bar';
 
 import { useTheme } from '../theme/use-theme';
-import { Portal } from '../portal';
+import { Portal } from '../portal/index.web';
 import { Context, useDialogContext } from './context';
 import type { DialogControlProps, DialogInnerProps, DialogOuterProps } from './types';
 

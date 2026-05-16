@@ -13,7 +13,7 @@ import { Pressable, StyleSheet, View, type StyleProp, type ViewStyle } from 'rea
 
 import { useTheme } from '../theme/use-theme';
 import { Text } from '../typography';
-import { Portal } from '../portal';
+import { Portal } from '../portal/index.web';
 import type { DialogControlProps } from '../dialog/types';
 import {
   MenuContext,
