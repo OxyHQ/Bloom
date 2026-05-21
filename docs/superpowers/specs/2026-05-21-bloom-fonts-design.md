@@ -3,7 +3,7 @@
 **Date:** 2026-05-21
 **Author:** Nate
 **Status:** Approved (pending review)
-**Implemented in:** `@oxyhq/bloom@0.3.0`; asset-path bug fixed in `@oxyhq/bloom@0.3.1`
+**Implemented in:** `@oxyhq/bloom@0.3.0`; asset-path bug fixed in `@oxyhq/bloom@0.3.1`; Metro/woff2 file split landed in `@oxyhq/bloom@0.3.3`
 
 ## Summary
 
@@ -66,9 +66,11 @@ Bloom/
         InterVariable.ttf
         GeistMono-Variable.woff2
         GeistMono-Variable.ttf
-      index.ts                 # public exports
+      index.ts                 # public exports (native + default barrel)
+      index.web.ts             # web fork: routes applyFontFaces to .web variant (0.3.3)
       tokens.ts                # fontFamilies, fontCssVars
-      apply-font-faces.ts      # applyFontFaces() — web-only (Platform.OS check, no-op on native)
+      apply-font-faces.ts      # no-op stub — keeps `.woff2` imports out of the Metro graph (0.3.3)
+      apply-font-faces.web.ts  # real @font-face injection with woff2 imports (0.3.3)
       font-assets.ts           # FONT_ASSETS map (require() calls, native bundler picks them up)
       FontLoader.tsx           # web default: applies @font-face via useRef pattern, renders children
       FontLoader.native.tsx    # native: useFonts() hook, gates children on loaded
@@ -82,9 +84,11 @@ Bloom/
       Pre.tsx
 ```
 
-**Why this shape:** matches Bloom's existing conventions. `apply-font-faces.ts` mirrors `apply-dark-class.ts`/`applyColorPresetVars` (single file, internal `Platform.OS` check, no-op on native). `FontLoader.tsx`/`FontLoader.native.tsx` follows the same platform-split pattern already used by `dialog`, `menu`, `context-menu`, etc. — only the parts that genuinely diverge between platforms are split.
+**Why this shape:** matches Bloom's existing conventions. `FontLoader.tsx`/`FontLoader.native.tsx` follows the platform-split pattern used by `dialog`, `menu`, `context-menu`, etc. — only the parts that genuinely diverge between platforms are split. `apply-font-faces.{ts,web.ts}` uses the same pattern at file level (0.3.3) because Metro cannot parse the module-level `.woff2` imports the web variant needs (see Metro bundler note below).
 
 **Asset path note (0.3.1):** font binaries live at `src/fonts/assets/`, not the repo root. `react-native-builder-bob` copies all non-source files in `src/` to the matching path under `lib/commonjs/` and `lib/module/`, so after build the assets are at `lib/{commonjs,module}/fonts/assets/`. Source files therefore use `./assets/X.woff2` (a sibling import), which resolves correctly both before compile (from `src/fonts/`) and after compile (from `lib/{commonjs,module}/fonts/`). Earlier `0.3.0` placed assets at `Bloom/assets/fonts/` with `../../assets/fonts/X` imports — that pattern broke Vite/rolldown consumers because the compiled imports tried to resolve to `lib/assets/fonts/`, which didn't exist in the tarball.
+
+**Metro bundler note (0.3.3):** Metro parses module-level imports at bundle time. `.woff2` is **not** in Metro's default `assetExts`, so any source file that does `import x from './foo.woff2'` causes `Unable to resolve module ./foo.woff2` on iOS/Android — even when the surrounding code path is gated behind `if (Platform.OS !== 'web') return`. The `Platform.OS` check runs at *runtime*; the import resolution runs at *bundle time*. The fix in 0.3.3 splits the implementation into two files: `apply-font-faces.ts` (no-op stub, no imports) and `apply-font-faces.web.ts` (real injection, all four `.woff2` imports). Metro on native resolves `'./apply-font-faces'` to the stub. Web bundlers reach the `.web.ts` variant via two paths: (a) the `browser` condition in `package.json#exports['./fonts']` routes them to `fonts/index.web.js`, which imports `apply-font-faces.web.js` explicitly; and (b) `FontLoader.tsx` (web-default file, never picked by Metro because `FontLoader.native.tsx` exists) also imports `apply-font-faces.web` explicitly. Either path lands on the real implementation.
 
 ### Provider extension
 
@@ -104,10 +108,11 @@ Behavior:
 
 ### Platform split
 
-Two layers of platform handling, matching the conventions already present in Bloom:
+Three layers of platform handling, matching the conventions already present in Bloom:
 
-1. **`apply-font-faces.ts`** — single file, internal `Platform.OS !== 'web'` early return. Matches the `applyDarkClass` / `applyColorPresetVars` pattern (where web-only behavior is gated at the function boundary, not by separate files).
+1. **`apply-font-faces.ts` / `apply-font-faces.web.ts`** — file-level split (0.3.3). The native default is a no-op stub; the web variant performs the actual `@font-face` injection. The original design (≤ 0.3.2) used a single file with an internal `Platform.OS !== 'web'` early return, modeled on `applyDarkClass` / `applyColorPresetVars`. That broke Metro because Metro parses module-level `.woff2` imports at bundle time regardless of runtime guards; `.woff2` is not in Metro's default `assetExts`.
 2. **`FontLoader.tsx` / `FontLoader.native.tsx`** — file-level split via the `react-native` package.json field. Used because `useFonts` is a hook that only exists in `expo-font` and only makes sense on RN. This mirrors how `dialog`, `menu`, `context-menu`, etc. are split in Bloom today.
+3. **`fonts/index.ts` / `fonts/index.web.ts`** — barrel-level split (0.3.3). The web barrel imports `applyFontFaces` from `./apply-font-faces.web` explicitly; the default barrel imports from `./apply-font-faces` (the stub). The `browser` exports condition in `package.json` routes web bundlers to the `.web` barrel.
 
 Vite / Next / webpack resolve `FontLoader.tsx` (web default), never import `expo-font`. Metro resolves `FontLoader.native.tsx`. The provider imports `./FontLoader` — bundler picks the right file.
 
@@ -137,11 +142,22 @@ Native: components import `fontFamilies` and use the string directly in styles (
 
 ### Web font-face injection
 
-Follows the pattern of `apply-dark-class.ts` / `applyColorPresetVars`: single function, internal `Platform.OS` check, no-op on native. Called by `FontLoader.tsx` (web default) during render, not in an effect.
+Split across two files (0.3.3). The native default (`apply-font-faces.ts`) is a no-op stub with **zero imports** — Metro never sees a module-level `.woff2` reference. The web variant (`apply-font-faces.web.ts`) holds the real injection logic and is reached only by web bundlers via the package.json `browser` condition and an explicit `.web` import from `FontLoader.tsx`. Called by `FontLoader.tsx` (web default) during render, not in an effect.
 
 ```ts
-// src/fonts/apply-font-faces.ts
-import { Platform } from 'react-native';
+// src/fonts/apply-font-faces.ts — native default (no-op).
+//
+// MUST have zero `.woff2` imports. The web implementation lives in
+// `apply-font-faces.web.ts` and is selected by web bundlers via the
+// package.json `browser` condition.
+export function applyFontFaces(): void {
+  // intentionally empty
+}
+```
+
+```ts
+// src/fonts/apply-font-faces.web.ts — web implementation.
+/// <reference path="../assets.d.ts" />
 import blomusReg from './assets/BlomusModernus-Regular.woff2';
 import blomusBold from './assets/BlomusModernus-Bold.woff2';
 import interVar from './assets/InterVariable.woff2';
@@ -152,11 +168,11 @@ const STYLE_ID = 'bloom-fonts';
 
 /**
  * Inject @font-face rules and font CSS variables onto :root.
- * No-op on native and when document is unavailable.
+ * SSR-safe via the `typeof document === 'undefined'` guard.
  * Idempotent — safe to call multiple times.
  */
 export function applyFontFaces(): void {
-  if (Platform.OS !== 'web' || typeof document === 'undefined') return;
+  if (typeof document === 'undefined') return;
   if (document.getElementById(STYLE_ID)) return;
 
   const style = document.createElement('style');
@@ -175,6 +191,8 @@ export function applyFontFaces(): void {
   document.head.appendChild(style);
 }
 ```
+
+The triple-slash directive (`/// <reference path="../assets.d.ts" />`) makes the ambient `*.woff2` module declarations visible to downstream consumers that compile Bloom source directly (e.g. apps using TypeScript with `customConditions: ["react-native"]`, which makes the compiler skip `node_modules` and therefore miss the package-level `assets.d.ts`).
 
 ### Native font asset map
 
@@ -430,6 +448,7 @@ All five app agents run in parallel.
 | `expo-font` peer breaks web-only installs | Possible | Low | Mark optional in `peerDependenciesMeta` |
 | npm cache delay after publish | Certain | Low | Wait 1-2min before bumping in apps |
 | Side effect (style injection) runs during render | Low | Low | Same pattern already used by `BloomThemeProvider` for color vars; idempotent via `useRef` guard |
+| Metro fails to resolve `.woff2` on native (`.woff2` not in default `assetExts`) | Certain (regressed in ≤0.3.2) | High — blocks every Expo consumer | Fixed in 0.3.3 by splitting `apply-font-faces.ts` (no-op stub) and `apply-font-faces.web.ts` (real impl). Runtime `Platform.OS` checks do **not** prevent the issue — Metro parses module-level imports at bundle time. |
 
 ## Open questions
 

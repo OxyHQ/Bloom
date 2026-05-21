@@ -2,20 +2,18 @@
  * @jest-environment jsdom
  */
 
-import { Platform } from 'react-native';
-import { applyFontFaces } from '../fonts/apply-font-faces';
+// Import the web variant directly. The default `apply-font-faces.ts` is a
+// no-op stub that exists only so Metro never sees a module-level `.woff2`
+// import on native — the real font-face injection lives in
+// `apply-font-faces.web.ts`. Web bundlers select that file via extension
+// resolution; here we reach for it explicitly so the test exercises the
+// actual implementation under jsdom.
+import { applyFontFaces } from '../fonts/apply-font-faces.web';
 
-describe('applyFontFaces', () => {
-  const originalOS = Platform.OS;
-
+describe('applyFontFaces (web)', () => {
   beforeEach(() => {
     document.head.innerHTML = '';
     document.body.innerHTML = '';
-    Platform.OS = 'web';
-  });
-
-  afterAll(() => {
-    Platform.OS = originalOS;
   });
 
   it('injects a <style id="bloom-fonts"> element on first call', () => {

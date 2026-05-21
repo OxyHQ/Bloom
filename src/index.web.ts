@@ -78,4 +78,4 @@ export * as ContextMenu from './context-menu/index.web';
 export * as Code from './code';
 
 // Fonts
-export * as Fonts from './fonts';
+export * as Fonts from './fonts/index.web';

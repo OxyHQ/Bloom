@@ -107,6 +107,7 @@ const WEB_FORKED_SUBPATHS = new Set([
   './select',
   './context-menu',
   './toast',
+  './fonts',
 ]);
 
 // --------------------------------------------------------------------------

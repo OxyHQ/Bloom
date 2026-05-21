@@ -1,6 +1,6 @@
 {
   "name": "@oxyhq/bloom",
-  "version": "0.3.2",
+  "version": "0.3.3",
   "description": "Bloom UI — Oxy ecosystem component library for React Native + Expo + Web",
   "main": "lib/commonjs/index.js",
   "module": "lib/module/index.js",
@@ -527,6 +527,11 @@
     },
     "./fonts": {
       "react-native": "./src/fonts/index.ts",
+      "browser": {
+        "types": "./lib/typescript/module/fonts/index.web.d.ts",
+        "import": "./lib/module/fonts/index.web.js",
+        "require": "./lib/commonjs/fonts/index.web.js"
+      },
       "import": {
         "types": "./lib/typescript/module/fonts/index.d.ts",
         "default": "./lib/module/fonts/index.js"
