@@ -26,6 +26,7 @@ const config: Config = {
     'react-native-safe-area-context': '<rootDir>/__mocks__/react-native-safe-area-context.ts',
     'react-native-keyboard-controller': '<rootDir>/__mocks__/react-native-keyboard-controller.ts',
     '^react-native$': '<rootDir>/__mocks__/react-native.ts',
+    '\\.(woff2?|ttf|otf|eot)$': '<rootDir>/__mocks__/font-asset.ts',
   },
   setupFiles: ['<rootDir>/__mocks__/setup.ts'],
 };

@@ -4,6 +4,7 @@ import { APP_COLOR_PRESETS, type AppColorName } from './color-presets';
 import { getAdaptiveColors } from './adaptive-colors';
 import { applyDarkClass, applyColorPresetVars } from './apply-dark-class';
 import { setColorSchemeSafe } from './set-color-scheme-safe';
+import { FontLoader } from '../fonts/FontLoader';
 import type { Theme, ThemeColors, ThemeMode } from './types';
 
 function hslVarToCSS(value: string): string {
@@ -112,6 +113,18 @@ export interface BloomThemeProviderProps {
   colorPreset?: AppColorName;
   onModeChange?: (mode: ThemeMode) => void;
   onColorPresetChange?: (preset: AppColorName) => void;
+  /**
+   * Load and inject the Bloom font system (BlomusModernus + Inter Variable
+   * + Geist Mono Variable). Default true. Set to false to opt out — e.g.
+   * apps that already ship their own font loader.
+   */
+  fonts?: boolean;
+  /**
+   * Rendered while native fonts load. Ignored on web. Useful for matching
+   * an app-level splash screen so consumers don't see a system-font flash
+   * before the bundled fonts resolve.
+   */
+  onFontsLoading?: React.ReactNode;
   children: React.ReactNode;
 }
 
@@ -120,6 +133,8 @@ export function BloomThemeProvider({
   colorPreset: controlledPreset,
   onModeChange,
   onColorPresetChange,
+  fonts = true,
+  onFontsLoading,
   children,
 }: BloomThemeProviderProps) {
   const rnScheme = useRNColorScheme();
@@ -175,7 +190,9 @@ export function BloomThemeProvider({
 
   return (
     <BloomThemeContext.Provider value={contextValue}>
-      {children}
+      <FontLoader enabled={fonts} fallback={onFontsLoading}>
+        {children}
+      </FontLoader>
     </BloomThemeContext.Provider>
   );
 }

@@ -28,6 +28,7 @@ const createComponent = (name: string) => {
     if (accessibilityState) elementProps.accessibilityState = accessibilityState;
     if (disabled != null) elementProps.disabled = disabled;
     if (onPress) elementProps.onPress = disabled ? undefined : onPress;
+    if (style !== undefined) elementProps.style = style;
 
     return React.createElement(name, elementProps, children as React.ReactNode);
   });
@@ -84,9 +85,20 @@ export const StyleSheet = {
   hairlineWidth: 1,
 };
 
-export const Platform = {
-  OS: 'ios' as const,
-  select: (obj: Record<string, unknown>) => obj.ios ?? obj.default,
+type PlatformOS = 'ios' | 'android' | 'web' | 'windows' | 'macos';
+
+export const Platform: {
+  OS: PlatformOS;
+  select: (obj: Record<string, unknown>) => unknown;
+  Version: number;
+} = {
+  OS: 'ios',
+  select: (obj: Record<string, unknown>) => {
+    const os = Platform.OS;
+    if (os in obj) return obj[os];
+    if (os === 'web' && 'web' in obj) return obj.web;
+    return obj.default ?? obj.native;
+  },
   Version: 17,
 };
 

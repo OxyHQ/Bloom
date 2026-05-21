@@ -73,3 +73,9 @@ export * as Menu from './menu/index.web';
 export * as Tooltip from './tooltip/index.web';
 export * as Select from './select/index.web';
 export * as ContextMenu from './context-menu/index.web';
+
+// Code (mono)
+export * as Code from './code';
+
+// Fonts
+export * as Fonts from './fonts';

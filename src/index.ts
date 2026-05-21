@@ -68,3 +68,9 @@ export * as Menu from './menu';
 export * as Tooltip from './tooltip';
 export * as Select from './select';
 export * as ContextMenu from './context-menu';
+
+// Code (mono)
+export * as Code from './code';
+
+// Fonts
+export * as Fonts from './fonts';

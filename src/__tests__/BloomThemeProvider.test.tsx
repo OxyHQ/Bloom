@@ -158,3 +158,25 @@ describe('useBloomTheme', () => {
     spy.mockRestore();
   });
 });
+
+describe('BloomThemeProvider font integration', () => {
+  it('still renders children when fonts default is enabled', () => {
+    const { getByTestId } = render(
+      <BloomThemeProvider>
+        <ThemeDisplay />
+      </BloomThemeProvider>,
+    );
+    // In the node test environment without document, applyFontFaces is a
+    // no-op but the FontLoader still passes children through.
+    expect(getByTestId('mode').props.children).toBe('light');
+  });
+
+  it('still renders children when fonts={false}', () => {
+    const { getByTestId } = render(
+      <BloomThemeProvider fonts={false}>
+        <ThemeDisplay />
+      </BloomThemeProvider>,
+    );
+    expect(getByTestId('mode').props.children).toBe('light');
+  });
+});

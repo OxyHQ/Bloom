@@ -1,6 +1,6 @@
 {
   "name": "@oxyhq/bloom",
-  "version": "0.2.3",
+  "version": "0.3.0",
   "description": "Bloom UI — Oxy ecosystem component library for React Native + Expo + Web",
   "main": "lib/commonjs/index.js",
   "module": "lib/module/index.js",
@@ -514,11 +514,34 @@
         "default": "./lib/commonjs/settings-list/index.js"
       }
     },
+    "./code": {
+      "react-native": "./src/code/index.ts",
+      "import": {
+        "types": "./lib/typescript/module/code/index.d.ts",
+        "default": "./lib/module/code/index.js"
+      },
+      "require": {
+        "types": "./lib/typescript/commonjs/code/index.d.ts",
+        "default": "./lib/commonjs/code/index.js"
+      }
+    },
+    "./fonts": {
+      "react-native": "./src/fonts/index.ts",
+      "import": {
+        "types": "./lib/typescript/module/fonts/index.d.ts",
+        "default": "./lib/module/fonts/index.js"
+      },
+      "require": {
+        "types": "./lib/typescript/commonjs/fonts/index.d.ts",
+        "default": "./lib/commonjs/fonts/index.js"
+      }
+    },
     "./package.json": "./package.json"
   },
   "files": [
     "src",
-    "lib"
+    "lib",
+    "assets"
   ],
   "keywords": [
     "react-native",
@@ -555,6 +578,8 @@
     "tabs",
     "checkbox",
     "accordion",
+    "code",
+    "fonts",
     "ai"
   ],
   "repository": {
@@ -579,7 +604,9 @@
     "@types/react": "~19.1.0",
     "@types/react-dom": "^19.2.3",
     "@types/react-native": "*",
+    "expo-font": "^56.0.5",
     "jest": "^30.3.0",
+    "jest-environment-jsdom": "^30.4.1",
     "react": "19.2.0",
     "react-dom": "19.2.0",
     "react-native": "0.83.2",
@@ -597,6 +624,8 @@
   },
   "peerDependencies": {
     "@gorhom/bottom-sheet": ">=5.0.0",
+    "expo": "*",
+    "expo-font": "*",
     "react": ">=18.0.0",
     "react-dom": ">=18.0.0",
     "react-native": ">=0.73.0",
@@ -609,6 +638,12 @@
   },
   "peerDependenciesMeta": {
     "@gorhom/bottom-sheet": {
+      "optional": true
+    },
+    "expo": {
+      "optional": true
+    },
+    "expo-font": {
       "optional": true
     },
     "react-dom": {
