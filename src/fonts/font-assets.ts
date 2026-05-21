@@ -9,8 +9,8 @@
 // is never imported.
 
 export const FONT_ASSETS = {
-  BlomusModernus: require('../../assets/fonts/BlomusModernus-Regular.ttf'),
-  'BlomusModernus-Bold': require('../../assets/fonts/BlomusModernus-Bold.ttf'),
-  Inter: require('../../assets/fonts/InterVariable.ttf'),
-  'Geist Mono': require('../../assets/fonts/GeistMono-Variable.ttf'),
+  BlomusModernus: require('./assets/BlomusModernus-Regular.ttf'),
+  'BlomusModernus-Bold': require('./assets/BlomusModernus-Bold.ttf'),
+  Inter: require('./assets/InterVariable.ttf'),
+  'Geist Mono': require('./assets/GeistMono-Variable.ttf'),
 } as const;

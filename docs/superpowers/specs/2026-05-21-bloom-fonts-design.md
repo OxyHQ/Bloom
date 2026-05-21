@@ -3,6 +3,7 @@
 **Date:** 2026-05-21
 **Author:** Nate
 **Status:** Approved (pending review)
+**Implemented in:** `@oxyhq/bloom@0.3.0`; asset-path bug fixed in `@oxyhq/bloom@0.3.1`
 
 ## Summary
 
@@ -54,17 +55,17 @@ This includes three phases in a single rollout:
 
 ```
 Bloom/
-  assets/fonts/
-    BlomusModernus-Regular.woff2
-    BlomusModernus-Regular.ttf
-    BlomusModernus-Bold.woff2
-    BlomusModernus-Bold.ttf
-    InterVariable.woff2
-    InterVariable.ttf
-    GeistMono-Variable.woff2
-    GeistMono-Variable.ttf
   src/
     fonts/
+      assets/                  # font binaries live inside src/ so bob copies them
+        BlomusModernus-Regular.woff2
+        BlomusModernus-Regular.ttf
+        BlomusModernus-Bold.woff2
+        BlomusModernus-Bold.ttf
+        InterVariable.woff2
+        InterVariable.ttf
+        GeistMono-Variable.woff2
+        GeistMono-Variable.ttf
       index.ts                 # public exports
       tokens.ts                # fontFamilies, fontCssVars
       apply-font-faces.ts      # applyFontFaces() — web-only (Platform.OS check, no-op on native)
@@ -82,6 +83,8 @@ Bloom/
 ```
 
 **Why this shape:** matches Bloom's existing conventions. `apply-font-faces.ts` mirrors `apply-dark-class.ts`/`applyColorPresetVars` (single file, internal `Platform.OS` check, no-op on native). `FontLoader.tsx`/`FontLoader.native.tsx` follows the same platform-split pattern already used by `dialog`, `menu`, `context-menu`, etc. — only the parts that genuinely diverge between platforms are split.
+
+**Asset path note (0.3.1):** font binaries live at `src/fonts/assets/`, not the repo root. `react-native-builder-bob` copies all non-source files in `src/` to the matching path under `lib/commonjs/` and `lib/module/`, so after build the assets are at `lib/{commonjs,module}/fonts/assets/`. Source files therefore use `./assets/X.woff2` (a sibling import), which resolves correctly both before compile (from `src/fonts/`) and after compile (from `lib/{commonjs,module}/fonts/`). Earlier `0.3.0` placed assets at `Bloom/assets/fonts/` with `../../assets/fonts/X` imports — that pattern broke Vite/rolldown consumers because the compiled imports tried to resolve to `lib/assets/fonts/`, which didn't exist in the tarball.
 
 ### Provider extension
 
@@ -139,10 +142,10 @@ Follows the pattern of `apply-dark-class.ts` / `applyColorPresetVars`: single fu
 ```ts
 // src/fonts/apply-font-faces.ts
 import { Platform } from 'react-native';
-import blomusReg from '../../assets/fonts/BlomusModernus-Regular.woff2';
-import blomusBold from '../../assets/fonts/BlomusModernus-Bold.woff2';
-import interVar from '../../assets/fonts/InterVariable.woff2';
-import geistMono from '../../assets/fonts/GeistMono-Variable.woff2';
+import blomusReg from './assets/BlomusModernus-Regular.woff2';
+import blomusBold from './assets/BlomusModernus-Bold.woff2';
+import interVar from './assets/InterVariable.woff2';
+import geistMono from './assets/GeistMono-Variable.woff2';
 import { fontFamilies } from './tokens';
 
 const STYLE_ID = 'bloom-fonts';
@@ -180,10 +183,10 @@ export function applyFontFaces(): void {
 // On native, Metro picks up these requires from the .ttf files.
 // On web, this file is not imported (FontLoader.tsx default doesn't use it).
 export const FONT_ASSETS = {
-  'BlomusModernus':      require('../../assets/fonts/BlomusModernus-Regular.ttf'),
-  'BlomusModernus-Bold': require('../../assets/fonts/BlomusModernus-Bold.ttf'),
-  'Inter':               require('../../assets/fonts/InterVariable.ttf'),
-  'Geist Mono':          require('../../assets/fonts/GeistMono-Variable.ttf'),
+  'BlomusModernus':      require('./assets/BlomusModernus-Regular.ttf'),
+  'BlomusModernus-Bold': require('./assets/BlomusModernus-Bold.ttf'),
+  'Inter':               require('./assets/InterVariable.ttf'),
+  'Geist Mono':          require('./assets/GeistMono-Variable.ttf'),
 };
 ```
 
@@ -332,7 +335,7 @@ Web-only consumers (TNP via Vite) won't have `expo-font` installed; marking it o
 
 ## Phase 1 — Bloom changes
 
-1. Copy `BlomusModernus-{Regular,Bold}.{woff2,ttf}` from `/home/nate/Oxy/OxyFont/` to `/home/nate/Oxy/Bloom/assets/fonts/`.
+1. Copy `BlomusModernus-{Regular,Bold}.{woff2,ttf}` from `/home/nate/Oxy/OxyFont/` to `/home/nate/Oxy/Bloom/src/fonts/assets/`. (In `0.3.0` these lived at `Bloom/assets/fonts/`; `0.3.1` moved them into `src/fonts/assets/` so the compiled `lib/{commonjs,module}/fonts/apply-font-faces.js` import paths resolve correctly via bob's automatic non-source-file copy.)
 2. Download Inter Variable and Geist Mono Variable woff2 + ttf from official sources (`@fontsource-variable/inter`, `@fontsource-variable/geist-mono`) and place in the same folder.
 3. Create `src/fonts/`:
    - `tokens.ts` — `fontFamilies` and `fontCssVars`

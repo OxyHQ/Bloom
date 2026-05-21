@@ -1,8 +1,8 @@
 import { Platform } from 'react-native';
-import blomusReg from '../../assets/fonts/BlomusModernus-Regular.woff2';
-import blomusBold from '../../assets/fonts/BlomusModernus-Bold.woff2';
-import interVar from '../../assets/fonts/InterVariable.woff2';
-import geistMono from '../../assets/fonts/GeistMono-Variable.woff2';
+import blomusReg from './assets/BlomusModernus-Regular.woff2';
+import blomusBold from './assets/BlomusModernus-Bold.woff2';
+import interVar from './assets/InterVariable.woff2';
+import geistMono from './assets/GeistMono-Variable.woff2';
 import { fontFamilies } from './tokens';
 
 const STYLE_ID = 'bloom-fonts';
