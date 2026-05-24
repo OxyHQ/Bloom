@@ -84,7 +84,6 @@ export function Outer({
       ref={ref}
       onDismiss={handleDismiss}
       enablePanDownToClose
-      showHandle={false}
       style={sheetStyle}
     >
       <Context.Provider value={context}>

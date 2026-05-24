@@ -10,7 +10,7 @@ import {
     type ViewStyle,
     type StyleProp,
 } from 'react-native';
-import { Gesture, GestureDetector } from 'react-native-gesture-handler';
+import { Gesture, GestureDetector, GestureHandlerRootView } from 'react-native-gesture-handler';
 import Animated, {
     interpolate,
     runOnJS,
@@ -361,51 +361,56 @@ const BottomSheet = forwardRef((props: BottomSheetProps, ref: React.ForwardedRef
 
     return (
         <Modal visible={rendered} transparent animationType="none" statusBarTranslucent onRequestClose={dismiss}>
-            <View style={StyleSheet.absoluteFill}>
-                <Animated.View style={[styles.backdrop, backdropStyle]}>
-                    {backdropComponent ? (
-                        backdropComponent({ onPress: handleBackdropPress })
-                    ) : (
-                        <Pressable style={styles.backdropTouchable} onPress={handleBackdropPress}>
-                            <View style={StyleSheet.absoluteFill} />
-                        </Pressable>
-                    )}
-                </Animated.View>
-
-                <GestureDetector gesture={panGesture}>
-                    <Animated.View style={[dynamicStyles.sheet, sheetMarginStyle, sheetStyle, sheetHeightStyle, style]}>
-                        {backgroundComponent?.({ style: styles.background })}
-
-                        {showHandle && <View style={dynamicStyles.handle} />}
-
-                        <GestureDetector gesture={nativeGesture}>
-                            <Animated.ScrollView
-                                ref={scrollViewRef}
-                                style={[
-                                    styles.scrollView,
-                                    Platform.OS === 'web' && ({
-                                        scrollbarWidth: 'thin',
-                                        scrollbarColor: `${colors.border} transparent`,
-                                    } as ViewStyle),
-                                ]}
-                                contentContainerStyle={dynamicStyles.scrollContent}
-                                showsVerticalScrollIndicator={false}
-                                keyboardShouldPersistTaps="handled"
-                                onScroll={scrollHandler}
-                                scrollEventThrottle={16}
-                                {...(Platform.OS === 'web' ? { className: 'bottom-sheet-scrollview' } : undefined)}
-                                onLayout={() => {
-                                    if (Platform.OS === 'web') {
-                                        createWebScrollbarStyle(colors.border);
-                                    }
-                                }}
-                            >
-                                {children}
-                            </Animated.ScrollView>
-                        </GestureDetector>
+            {/* RN's Modal renders into its own native window. The app-root
+                GestureHandlerRootView does NOT extend into it, so pan gestures
+                silently no-op without this wrapper. */}
+            <GestureHandlerRootView style={styles.rootView}>
+                <View style={StyleSheet.absoluteFill}>
+                    <Animated.View style={[styles.backdrop, backdropStyle]}>
+                        {backdropComponent ? (
+                            backdropComponent({ onPress: handleBackdropPress })
+                        ) : (
+                            <Pressable style={styles.backdropTouchable} onPress={handleBackdropPress}>
+                                <View style={StyleSheet.absoluteFill} />
+                            </Pressable>
+                        )}
                     </Animated.View>
-                </GestureDetector>
-            </View>
+
+                    <GestureDetector gesture={panGesture}>
+                        <Animated.View style={[dynamicStyles.sheet, sheetMarginStyle, sheetStyle, sheetHeightStyle, style]}>
+                            {backgroundComponent?.({ style: styles.background })}
+
+                            {showHandle && <View style={dynamicStyles.handle} />}
+
+                            <GestureDetector gesture={nativeGesture}>
+                                <Animated.ScrollView
+                                    ref={scrollViewRef}
+                                    style={[
+                                        styles.scrollView,
+                                        Platform.OS === 'web' && ({
+                                            scrollbarWidth: 'thin',
+                                            scrollbarColor: `${colors.border} transparent`,
+                                        } as ViewStyle),
+                                    ]}
+                                    contentContainerStyle={dynamicStyles.scrollContent}
+                                    showsVerticalScrollIndicator={false}
+                                    keyboardShouldPersistTaps="handled"
+                                    onScroll={scrollHandler}
+                                    scrollEventThrottle={16}
+                                    {...(Platform.OS === 'web' ? { className: 'bottom-sheet-scrollview' } : undefined)}
+                                    onLayout={() => {
+                                        if (Platform.OS === 'web') {
+                                            createWebScrollbarStyle(colors.border);
+                                        }
+                                    }}
+                                >
+                                    {children}
+                                </Animated.ScrollView>
+                            </GestureDetector>
+                        </Animated.View>
+                    </GestureDetector>
+                </View>
+            </GestureHandlerRootView>
         </Modal>
     );
 });
@@ -413,6 +418,9 @@ const BottomSheet = forwardRef((props: BottomSheetProps, ref: React.ForwardedRef
 BottomSheet.displayName = 'BottomSheet';
 
 const styles = StyleSheet.create({
+    rootView: {
+        flex: 1,
+    },
     backdrop: {
         flex: 1,
         backgroundColor: 'rgba(0, 0, 0, 0.5)',
