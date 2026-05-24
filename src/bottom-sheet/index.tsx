@@ -86,6 +86,13 @@ export interface BottomSheetProps {
      * its own handle (e.g. an interactive close affordance) inside `children`.
      */
     showHandle?: boolean;
+    /**
+     * Opacity of the dimming backdrop behind the sheet (0–1). Defaults to `0.5`.
+     * Set to a higher value (e.g. `0.7`) when the sheet is presented over another
+     * bottom sheet (Dialog/Prompt cases) so the underlying handle/content does not
+     * bleed through.
+     */
+    backdropOpacity?: number;
 }
 
 const BottomSheet = forwardRef((props: BottomSheetProps, ref: React.ForwardedRef<BottomSheetRef>) => {
@@ -100,6 +107,7 @@ const BottomSheet = forwardRef((props: BottomSheetProps, ref: React.ForwardedRef
         onDismissAttempt,
         detached = false,
         showHandle = true,
+        backdropOpacity = 0.5,
     } = props;
 
     const insets = useSafeAreaInsets();
@@ -315,9 +323,12 @@ const BottomSheet = forwardRef((props: BottomSheetProps, ref: React.ForwardedRef
         [enablePanDownToClose, detached, nativeGesture, finishClose],
     );
 
+    // `opacity.value` drives the fade in/out (0 -> 1). `backdropOpacity` is the
+    // final dim level once fully visible. We multiply so the consumer-provided
+    // dim opacity applies smoothly across the animation.
     const backdropStyle = useAnimatedStyle(() => ({
-        opacity: opacity.value,
-    }));
+        opacity: opacity.value * backdropOpacity,
+    }), [backdropOpacity]);
 
     const sheetStyle = useAnimatedStyle(() => {
         const scale = interpolate(translateY.value, [0, screenHeightSV.value], [1, 0.95]);
@@ -444,8 +455,10 @@ const styles = StyleSheet.create({
         flex: 1,
     },
     backdrop: {
+        // Color is solid black; the dim level is driven by `backdropOpacity` via
+        // the animated `opacity` style on the wrapping <Animated.View>.
         flex: 1,
-        backgroundColor: 'rgba(0, 0, 0, 0.5)',
+        backgroundColor: '#000',
     },
     backdropTouchable: {
         flex: 1,

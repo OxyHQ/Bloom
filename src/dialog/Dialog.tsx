@@ -1,6 +1,5 @@
 import React, { useCallback, useImperativeHandle, useMemo, useRef } from 'react';
 import { Pressable, StyleSheet, View } from 'react-native';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { BottomSheet, type BottomSheetRef } from '../bottom-sheet';
 import { useTheme } from '../theme/use-theme';
@@ -68,8 +67,10 @@ export function Outer({
       {
         maxWidth: 500,
         backgroundColor: theme.colors.background,
-        borderTopLeftRadius: 20,
-        borderTopRightRadius: 20,
+        // All four corners rounded — Dialog uses BottomSheet in `detached` mode
+        // (floating card with safe-area margins), so we round the bottom too
+        // instead of leaving the default top-only radius.
+        borderRadius: 20,
       },
       // When the dialog should not be expandable to fill the screen, clamp the
       // sheet to a comfortable fixed height. Mirrors the historical gorhom
@@ -84,6 +85,10 @@ export function Outer({
       ref={ref}
       onDismiss={handleDismiss}
       enablePanDownToClose
+      detached
+      // Stronger dim so the underlying bottom-sheet's handle/content doesn't
+      // bleed through when a Dialog/Prompt is stacked over another sheet.
+      backdropOpacity={0.7}
       style={sheetStyle}
     >
       <Context.Provider value={context}>
@@ -99,13 +104,16 @@ export function Outer({
 }
 
 export function Inner({ children, style, header, contentContainerStyle }: DialogInnerProps) {
-  const insets = useSafeAreaInsets();
+  // Dialog renders inside a `detached` BottomSheet, which already adds
+  // `marginBottom: insets.bottom + 16` to the sheet container — the floating
+  // card sits ABOVE the system gesture bar, so we don't add `insets.bottom`
+  // here. Doing so double-padded the bottom on Android edge-to-edge displays.
   return (
     <>
       {header}
       <View
         style={[
-          { paddingTop: 20, paddingHorizontal: 20, paddingBottom: insets.bottom + 20 },
+          { paddingTop: 20, paddingHorizontal: 20, paddingBottom: 20 },
           contentContainerStyle,
           style,
         ]}
