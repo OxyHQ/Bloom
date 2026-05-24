@@ -4,7 +4,9 @@ import { Pressable, StyleSheet, View, type StyleProp, type ViewStyle } from 'rea
 import { useTheme } from '../theme/use-theme';
 import { Text } from '../typography';
 import { Button } from '../button';
-import * as Dialog from '../dialog';
+import { useDialogControl } from '../dialog/context';
+import { SheetShell } from '../dialog/SheetShell';
+import type { DialogControlProps } from '../dialog/types';
 import {
   MenuContext,
   ItemContext,
@@ -20,17 +22,17 @@ import type {
   TriggerProps,
 } from './types';
 
-export type { DialogControlProps as MenuControlProps } from '../dialog';
-export { useDialogControl as useMenuControl } from '../dialog';
+export type { DialogControlProps as MenuControlProps } from '../dialog/types';
+export { useDialogControl as useMenuControl } from '../dialog/context';
 export { useMenuContext };
 
 export function Root({
   children,
   control,
 }: React.PropsWithChildren<{
-  control?: Dialog.DialogControlProps;
+  control?: DialogControlProps;
 }>) {
-  const defaultControl = Dialog.useDialogControl();
+  const defaultControl = useDialogControl();
   const context = useMemo<MenuContextType>(
     () => ({
       control: control ?? defaultControl,
@@ -83,20 +85,14 @@ export function Outer({
   const context = useMenuContext();
 
   return (
-    <Dialog.Outer
-      control={context.control}
-      preventExpansion
-    >
-      <Dialog.Handle />
+    <SheetShell control={context.control} label="Menu">
       <MenuContext.Provider value={context}>
-        <Dialog.ScrollableInner label="Menu">
-          <View style={styles.outerContent}>
-            {children}
-            {showCancel && <Cancel />}
-          </View>
-        </Dialog.ScrollableInner>
+        <View style={styles.outerContent}>
+          {children}
+          {showCancel && <Cancel />}
+        </View>
       </MenuContext.Provider>
-    </Dialog.Outer>
+    </SheetShell>
   );
 }
 

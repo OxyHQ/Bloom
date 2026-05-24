@@ -9,7 +9,7 @@ import {
   Text as ToastText,
   ToastConfigProvider,
 } from './Toast';
-import type { BaseToastOptions } from './types';
+import type { BaseToastOptions, ToastType } from './types';
 
 export { DURATION } from './const';
 export { Action, Icon, Outer, Text, ToastConfigProvider } from './Toast';
@@ -30,22 +30,15 @@ export function ToastOutlet() {
   );
 }
 
-/**
- * Access the full Sonner API
- */
+/** Direct access to the underlying Sonner API. Use sparingly. */
 export const api: typeof sonner = sonner;
 
-/**
- * Show a toast notification.
- *
- * Pass a string for a simple text toast, or a React element for a custom toast.
- */
-export function show(
+function dispatch(
   content: React.ReactNode,
-  { type = 'default', ...options }: BaseToastOptions = {},
-) {
+  type: ToastType,
+  options: BaseToastOptions = {},
+): void {
   const id = nanoid();
-
   if (typeof content === 'string') {
     sonner(
       <ToastConfigProvider id={id} type={type}>
@@ -79,3 +72,30 @@ export function show(
     );
   }
 }
+
+/**
+ * Show a toast notification. Identical API to the native variant — see
+ * `./index.tsx` for the full usage docs.
+ */
+export interface ToastFn {
+  (content: React.ReactNode, options?: BaseToastOptions): void;
+  success: (content: React.ReactNode, options?: Omit<BaseToastOptions, 'type'>) => void;
+  error: (content: React.ReactNode, options?: Omit<BaseToastOptions, 'type'>) => void;
+  warning: (content: React.ReactNode, options?: Omit<BaseToastOptions, 'type'>) => void;
+  info: (content: React.ReactNode, options?: Omit<BaseToastOptions, 'type'>) => void;
+  dismiss: (id?: string | number) => void;
+}
+
+const toastImpl = ((content: React.ReactNode, options: BaseToastOptions = {}) => {
+  dispatch(content, options.type ?? 'default', options);
+}) as ToastFn;
+
+toastImpl.success = (content, options) => dispatch(content, 'success', options ?? {});
+toastImpl.error = (content, options) => dispatch(content, 'error', options ?? {});
+toastImpl.warning = (content, options) => dispatch(content, 'warning', options ?? {});
+toastImpl.info = (content, options) => dispatch(content, 'info', options ?? {});
+toastImpl.dismiss = (id) => sonner.dismiss(id);
+
+export const toast: ToastFn = toastImpl;
+export const show: ToastFn = toastImpl;
+export type Toast = ToastFn;

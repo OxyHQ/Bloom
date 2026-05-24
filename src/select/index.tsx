@@ -11,7 +11,9 @@ import { FlatList, Pressable, StyleSheet, View } from 'react-native';
 import { useTheme } from '../theme/use-theme';
 import { Text } from '../typography';
 import { Button } from '../button';
-import * as Dialog from '../dialog';
+import { useDialogContext, useDialogControl } from '../dialog/context';
+import { SheetShell } from '../dialog/SheetShell';
+import type { DialogControlProps } from '../dialog/types';
 import { RadioIndicator } from '../radio-indicator';
 import { useInteractionState } from '../hooks/useInteractionState';
 import {
@@ -37,7 +39,7 @@ export { useItemContext };
 // ---------------------------------------------------------------------------
 
 type SelectContextValue = {
-  control: Dialog.DialogControlProps;
+  control: DialogControlProps;
 } & Pick<RootProps, 'value' | 'onValueChange' | 'disabled'>;
 
 const SelectContext = createContext<SelectContextValue | null>(null);
@@ -61,7 +63,7 @@ function useSelectContext(): SelectContextValue {
 // ---------------------------------------------------------------------------
 
 export function Root({ children, value, onValueChange, disabled }: RootProps) {
-  const control = Dialog.useDialogControl();
+  const control = useDialogControl();
   const valueStoreState = useState<unknown>(undefined);
 
   const ctx = useMemo<SelectContextValue>(
@@ -187,23 +189,21 @@ export function Content<T>({
   }, [items, context.value, valueExtractor, setStoredValue]);
 
   return (
-    <Dialog.Outer control={control}>
-      <ContentInner
-        control={control}
-        items={items}
-        valueExtractor={valueExtractor}
-        {...props}
-        value={context.value}
-        onValueChange={context.onValueChange}
-        disabled={context.disabled}
-      />
-    </Dialog.Outer>
+    <ContentInner
+      control={control}
+      items={items}
+      valueExtractor={valueExtractor}
+      {...props}
+      value={context.value}
+      onValueChange={context.onValueChange}
+      disabled={context.disabled}
+    />
   );
 }
 
 type ContentInnerProps<T> = ContentProps<T> &
   Pick<RootProps, 'value' | 'onValueChange' | 'disabled'> & {
-    control: Dialog.DialogControlProps;
+    control: DialogControlProps;
   };
 
 function ContentInner<T>({
@@ -234,26 +234,26 @@ function ContentInner<T>({
   );
 
   return (
-    <SelectContext.Provider value={ctx}>
-      <Dialog.Handle />
-      <Dialog.Inner
-        label={label}
-        header={
-          <View style={styles.contentHeader}>
-            <Text style={[styles.contentHeaderText, { color: theme.colors.text }]}>
-              {label}
-            </Text>
-          </View>
-        }
-      >
+    <SheetShell
+      control={control}
+      label={label}
+      header={
+        <View style={styles.contentHeader}>
+          <Text style={[styles.contentHeaderText, { color: theme.colors.text }]}>
+            {label}
+          </Text>
+        </View>
+      }
+    >
+      <SelectContext.Provider value={ctx}>
         <FlatList
           data={items}
           renderItem={render}
           keyExtractor={valueExtractor}
           style={styles.flatList}
         />
-      </Dialog.Inner>
-    </SelectContext.Provider>
+      </SelectContext.Provider>
+    </SheetShell>
   );
 }
 
@@ -267,7 +267,7 @@ function ContentInner<T>({
 
 export function Item({ children, value, label, style }: ItemProps) {
   const theme = useTheme();
-  const { close } = Dialog.useDialogContext();
+  const { close } = useDialogContext();
   const { value: selectedValue, onValueChange } = useSelectContext();
   const { state: focused, onIn: onFocus, onOut: onBlur } = useInteractionState();
   const {

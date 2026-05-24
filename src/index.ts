@@ -18,8 +18,22 @@ export { type Props as IconProps, sizes as iconSizes, useCommonSVGProps } from '
 
 // Core components
 export * from './portal';
-export * as Dialog from './dialog';
-export * as Prompt from './prompt';
+export {
+  Dialog,
+  BloomDialogProvider,
+  alert,
+  useDialogContext,
+  useDialogControl,
+} from './dialog';
+export type {
+  AlertButton,
+  AlertButtonStyle,
+  DialogAction,
+  DialogActionColor,
+  DialogContextProps,
+  DialogControlProps,
+  DialogProps,
+} from './dialog';
 export * from './button';
 export * from './grouped-buttons';
 export * from './divider';
@@ -31,7 +45,7 @@ export * from './avatar';
 export * from './loading';
 export * as PromptInput from './prompt-input';
 export * from './switch';
-export * as Toast from './toast';
+export { toast, type Toast } from './toast';
 
 // Typography
 export * as Typography from './typography';

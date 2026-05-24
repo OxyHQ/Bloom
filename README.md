@@ -5,7 +5,7 @@ Shared UI component library for the Oxy ecosystem. Built for React Native + Expo
 ## Install
 
 ```sh
-npm install @oxyhq/bloom
+bun add @oxyhq/bloom
 ```
 
 ### Peer dependencies
@@ -18,10 +18,10 @@ Required:
 
 Optional:
 
-- `@gorhom/bottom-sheet >= 5` (native `Dialog` and `Prompt`) — also requires wrapping the app root with `BottomSheetModalProvider`, see [Dialog](#dialog).
 - `react-native-reanimated >= 3` (native `Dialog`, `BottomSheet`, Loading `top` variant)
 - `react-native-gesture-handler >= 2` (native `Dialog`, `BottomSheet`) — also requires wrapping the app root with `GestureHandlerRootView`, see [Dialog](#dialog).
 - `react-native-svg >= 13` (Avatar `squircle` shape)
+- `sonner >= 2` / `sonner-native >= 0.17` (`toast`)
 
 ## Usage
 
@@ -50,76 +50,107 @@ const theme = useTheme();
 
 4 modes: `light`, `dark`, `system`, `adaptive` (uses iOS/Android native dynamic colors when available).
 
-### Modal components: Dialog, Prompt, BottomSheet
+### Modal & feedback components: Dialog, BottomSheet, toast / alert
 
-Bloom ships three components for modal/sheet presentation. Pick the one that matches your use case:
+Bloom ships three primitives for modal, sheet, and feedback presentation. Pick the one that matches your use case:
 
 | Component | Native | Web | Use when |
 |-----------|--------|-----|----------|
-| `Dialog` | Bottom sheet (Gorhom), dynamic height | Centered modal | You need a modal container with arbitrary content — forms, pickers, custom layouts |
-| `Prompt` | 40%-height bottom sheet (Gorhom) | Centered 320px modal | You need a confirmation dialog with title, description, and action buttons |
-| `BottomSheet` | Draggable sheet (Bloom's own, no Gorhom) | Same pattern via RN `Modal` | You need a bottom sheet without the Gorhom dependency, or with custom snap/scroll/keyboard control |
-
-`Prompt` is built on top of `Dialog` (so the provider requirements are the same). `BottomSheet` is a separate, standalone implementation.
+| `Dialog` | Bottom-sheet card (Bloom's own) | Centered modal | Confirmation flows AND custom modal content — same component handles both |
+| `BottomSheet` | Draggable sheet | RN `Modal` polyfill | You need direct control over snap points, scroll handoff, keyboard, detached/flush layout |
+| `toast` / `alert` | Sonner-native + Bloom theme | Sonner + Bloom theme | Passive feedback (`toast`) or one-shot confirmations (`alert`) called imperatively from anywhere |
 
 ### Dialog
 
-Platform-adaptive dialogs — bottom sheet on native, centered modal overlay on web.
+A single `<Dialog>` component for both confirmation flows AND custom modal content. Bottom-sheet card on native, centered modal on web.
 
-> **Required providers (native).** `Dialog` (and therefore `Prompt`) uses `@gorhom/bottom-sheet` on Android/iOS. Your app root **must** be wrapped with `GestureHandlerRootView` from `react-native-gesture-handler` and `BottomSheetModalProvider` from `@gorhom/bottom-sheet`. Without these, the dialog will silently fail to render.
+> **Required providers (native).** Your app root **must** be wrapped with `GestureHandlerRootView` from `react-native-gesture-handler` for the bottom-sheet pan gestures to work.
 
 ```tsx
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
-import { BottomSheetModalProvider } from '@gorhom/bottom-sheet';
-import { BloomThemeProvider } from '@oxyhq/bloom/theme';
+import { BloomThemeProvider, BloomDialogProvider } from '@oxyhq/bloom';
 
 export default function Root() {
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
       <BloomThemeProvider mode="system" colorPreset="oxy">
-        <BottomSheetModalProvider>
+        <BloomDialogProvider>
           <App />
-        </BottomSheetModalProvider>
+        </BloomDialogProvider>
       </BloomThemeProvider>
     </GestureHandlerRootView>
   );
 }
 ```
 
-Basic usage:
+`BloomDialogProvider` powers the imperative `alert()` helper (see below) — mount it once near the app root.
+
+#### Declarative (the 90% case)
 
 ```tsx
-import * as Dialog from '@oxyhq/bloom/dialog';
+import { Dialog, useDialogControl } from '@oxyhq/bloom';
 
-function MyComponent() {
-  const control = Dialog.useDialogControl();
-
+function SignOutButton() {
+  const control = useDialogControl();
   return (
     <>
-      <Button onPress={() => control.open()}>Open</Button>
+      <Button onPress={() => control.open()}>Sign out</Button>
 
-      <Dialog.Outer control={control} onClose={() => console.log('closed')}>
-        <Dialog.Handle />
-        <Dialog.Inner label="My Dialog">
-          <Text>Dialog content</Text>
-        </Dialog.Inner>
-      </Dialog.Outer>
+      <Dialog
+        control={control}
+        title="Sign out?"
+        description="You'll need to enter your password to sign in again."
+        actions={[
+          { label: 'Sign out', color: 'destructive', onPress: doSignOut },
+          { label: 'Cancel', color: 'cancel' },
+        ]}
+      />
     </>
   );
 }
 ```
 
-`Dialog.Outer` props:
+#### Custom content
+
+Provide any JSX as `children`. Combine with `title` to keep a consistent header.
+
+```tsx
+<Dialog control={control} title="Pick a tag">
+  <YourCustomBody />
+</Dialog>
+```
+
+#### Pure custom
+
+Drop the declarative props entirely — `children` owns every pixel.
+
+```tsx
+<Dialog control={control}>
+  <YourEntirelyCustomLayout />
+</Dialog>
+```
+
+#### Props
 
 - `control` — from `useDialogControl()`.
-- `onClose?` — fires after the dialog has finished closing.
-- `testID?`
-- `webOptions?: { alignCenter?: boolean }` — center the dialog vertically on web instead of anchoring near the top.
-- `preventExpansion?: boolean` — on native, snaps the bottom sheet to a fixed `'40%'` height instead of dynamic sizing.
+- `title?: string` — header text.
+- `description?: string` — supporting copy rendered below the title.
+- `actions?: DialogAction[]` — confirmation buttons. Each action accepts:
+  - `label: string` — button text.
+  - `color?: 'default' | 'cancel' | 'destructive'` — defaults to `'default'`.
+  - `onPress?: (e) => void` — invoked after the dialog finishes closing.
+  - `disabled?: boolean`
+  - `shouldCloseOnPress?: boolean` — defaults to `true`. Set `false` while an async action is in flight.
+  - `testID?: string`
+- `children?: React.ReactNode` — custom content rendered after the description.
+- `onClose?: () => void` — fires after the dialog has finished closing.
+- `style?` — applied to the dialog content container.
+- `label?: string` — accessibility label.
+- `testID?: string`
 
-On native, the sheet uses `enablePanDownToClose`, `enableDismissOnClose`, dynamic sizing, and is constrained to a max width of 500px on tablets.
+#### Web setup
 
-On web, inject the CSS animations into your global styles once:
+Inject the CSS animations into your global styles once:
 
 ```tsx
 import { BLOOM_DIALOG_CSS } from '@oxyhq/bloom/dialog';
@@ -128,66 +159,49 @@ import { BLOOM_DIALOG_CSS } from '@oxyhq/bloom/dialog';
 <style>{BLOOM_DIALOG_CSS}</style>
 ```
 
-### Prompt
+### toast
 
-Confirmation dialogs built on top of `Dialog`. On native, constrained to a 40% bottom sheet (Gorhom); on web, a centered 320px modal. Same provider requirements as [Dialog](#dialog).
-
-`Prompt.Action` auto-closes the dialog after `onPress` by default. Pass `shouldCloseOnPress={false}` to keep it open (e.g. while an async operation is in flight).
-
-`Prompt.Basic` — one-shot confirm dialog:
+Passive notifications, sonner under the hood, themed by bloom.
 
 ```tsx
-import * as Prompt from '@oxyhq/bloom/prompt';
+import { toast } from '@oxyhq/bloom';
+import { ToastOutlet } from '@oxyhq/bloom/toast';
 
-function DeleteButton() {
-  const control = Prompt.usePromptControl();
+// Mount once near the app root, inside BloomThemeProvider:
+<ToastOutlet />
 
-  return (
-    <>
-      <Button onPress={() => control.open()}>Delete</Button>
-
-      <Prompt.Basic
-        control={control}
-        title="Delete item?"
-        description="This action cannot be undone."
-        confirmButtonCta="Delete"
-        confirmButtonColor="negative"
-        onConfirm={() => handleDelete()}
-      />
-    </>
-  );
-}
+// Anywhere in your app:
+toast('Saved');
+toast.success('Profile updated');
+toast.error('Network error', { duration: 5000 });
+toast.warning('Please verify your email');
+toast.info('A new version is available');
+toast.dismiss(id);
 ```
 
-`Prompt.Basic` props:
+`toast(content, options?)` accepts strings or React elements. `options.type` (`'default' | 'success' | 'error' | 'warning' | 'info'`) is overridden by the typed helpers above.
 
-- `control` — from `usePromptControl()`.
-- `title: string`
-- `description?: string`
-- `confirmButtonCta?: string` — defaults to `'Confirm'`.
-- `cancelButtonCta?: string` — defaults to `'Cancel'`.
-- `confirmButtonColor?: ActionColor` — defaults to `'primary'`.
-- `onConfirm: (e) => void`
-- `showCancel?: boolean` — defaults to `true`.
+### alert()
 
-Or compose with the compound components:
+Imperative one-shot confirmation dialogs, matching React Native's `Alert.alert(title, message?, buttons?)` signature. Calls are queued and rendered through `BloomDialogProvider` — you can call `alert()` from anywhere, including before the provider mounts (alerts queue and drain on subscribe).
 
 ```tsx
-<Prompt.Outer control={control}>
-  <Prompt.Content>
-    <Prompt.TitleText>Are you sure?</Prompt.TitleText>
-    <Prompt.DescriptionText>This is permanent.</Prompt.DescriptionText>
-  </Prompt.Content>
-  <Prompt.Actions>
-    <Prompt.Action cta="Confirm" color="negative" onPress={handleConfirm} />
-    <Prompt.Cancel />
-  </Prompt.Actions>
-</Prompt.Outer>
+import { alert } from '@oxyhq/bloom';
+
+alert('Sign out?', 'Are you sure you want to sign out of this device?', [
+  { text: 'Cancel', style: 'cancel' },
+  { text: 'Sign out', style: 'destructive', onPress: doSignOut },
+]);
+
+// Single OK button (default when no buttons passed):
+alert('Saved');
 ```
 
-Exports: `usePromptControl`, `Outer`, `Content`, `TitleText`, `DescriptionText`, `Actions`, `Action`, `Cancel`, `Basic`.
+Each button:
 
-`ActionColor`: `'primary' | 'primary_subtle' | 'secondary' | 'negative' | 'negative_subtle'`.
+- `text: string` — required label.
+- `style?: 'default' | 'cancel' | 'destructive'` — defaults to `'default'`.
+- `onPress?: () => void` — fires after the dialog finishes closing.
 
 ### BottomSheet
 
@@ -396,9 +410,9 @@ import {
 
 ```ts
 import { BloomThemeProvider, useTheme } from '@oxyhq/bloom/theme';
-import * as Dialog from '@oxyhq/bloom/dialog';
-import * as Prompt from '@oxyhq/bloom/prompt';
+import { Dialog, BloomDialogProvider, alert, useDialogControl } from '@oxyhq/bloom/dialog';
 import { BottomSheet, type BottomSheetRef } from '@oxyhq/bloom/bottom-sheet';
+import { toast, ToastOutlet } from '@oxyhq/bloom/toast';
 import { Button, IconButton } from '@oxyhq/bloom/button';
 import { GroupedButtons } from '@oxyhq/bloom/grouped-buttons';
 import { Divider } from '@oxyhq/bloom/divider';
@@ -413,10 +427,11 @@ import { PromptInput, PromptInputTextarea } from '@oxyhq/bloom/prompt-input';
 ## Development
 
 ```sh
-npm install
-npm run build        # react-native-builder-bob
-npm run typescript   # type-check
-npm run clean        # remove lib/
+bun install
+bun run build        # react-native-builder-bob
+bun run typescript   # type-check
+bun run test         # jest
+bun run clean        # remove lib/
 ```
 
 ## License

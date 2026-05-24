@@ -1,0 +1,154 @@
+/**
+ * Internal bottom-sheet shell shared by `Menu`, `Select` and `ContextMenu`.
+ *
+ * Not exported from the public `@oxyhq/bloom` surface — these three
+ * components historically used the low-level `Dialog.Outer / Inner /
+ * Handle` primitives, which are gone in 0.5.0. This shell captures the
+ * shared shape (BottomSheet + drag handle + close-on-tap context) in a
+ * single place so the three internal call sites stay symmetrical.
+ *
+ * Consumers needing the same behaviour for app code should use the public
+ * `BottomSheet` primitive directly.
+ */
+import React, { useCallback, useImperativeHandle, useMemo, useRef } from 'react';
+import { Pressable, StyleSheet, View, type StyleProp, type ViewStyle } from 'react-native';
+
+import { BottomSheet, type BottomSheetRef } from '../bottom-sheet';
+import { useTheme } from '../theme/use-theme';
+import { Context } from './context';
+import type { DialogControlProps } from './types';
+
+export interface SheetShellProps {
+  control: DialogControlProps;
+  label?: string;
+  header?: React.ReactNode;
+  onClose?: () => void;
+  /** Style overrides applied to the inner padded content container. */
+  contentStyle?: StyleProp<ViewStyle>;
+  children?: React.ReactNode;
+}
+
+/**
+ * Bottom-sheet shell with an embedded drag handle. Exposes the bloom
+ * dialog `close()` context to descendants — `Menu.Item`, `Select.Item`
+ * etc. rely on it to dismiss the sheet after selection.
+ */
+export function SheetShell({
+  control,
+  label,
+  header,
+  onClose,
+  contentStyle,
+  children,
+}: SheetShellProps) {
+  const theme = useTheme();
+  const ref = useRef<BottomSheetRef>(null);
+  const closeCallbacks = useRef<(() => void)[]>([]);
+
+  const callQueuedCallbacks = useCallback(() => {
+    const queued = closeCallbacks.current;
+    closeCallbacks.current = [];
+    for (const cb of queued) {
+      try {
+        cb();
+      } catch (e) {
+        if (typeof console !== 'undefined' && console.error) {
+          console.error('SheetShell close callback error:', e);
+        }
+      }
+    }
+  }, []);
+
+  const open = useCallback(() => {
+    ref.current?.present();
+  }, []);
+
+  const close = useCallback<DialogControlProps['close']>((cb) => {
+    if (typeof cb === 'function') {
+      closeCallbacks.current.push(cb);
+    }
+    ref.current?.dismiss();
+  }, []);
+
+  const handleDismiss = useCallback(() => {
+    callQueuedCallbacks();
+    onClose?.();
+  }, [callQueuedCallbacks, onClose]);
+
+  useImperativeHandle(control.ref, () => ({ open, close }), [open, close]);
+
+  const context = useMemo(
+    () => ({ close, isWithinDialog: true }),
+    [close],
+  );
+
+  const sheetStyle = useMemo(
+    () => ({
+      maxWidth: 500,
+      backgroundColor: theme.colors.background,
+      borderRadius: 20,
+    }),
+    [theme.colors.background],
+  );
+
+  return (
+    <BottomSheet
+      ref={ref}
+      onDismiss={handleDismiss}
+      enablePanDownToClose
+      detached
+      backdropOpacity={0.7}
+      style={sheetStyle}
+    >
+      <Context.Provider value={context}>
+        <SheetHandle onPress={() => close()} />
+        {header}
+        <View
+          accessibilityLabel={label}
+          style={[styles.body, { backgroundColor: theme.colors.background }, contentStyle]}
+        >
+          {children}
+        </View>
+      </Context.Provider>
+    </BottomSheet>
+  );
+}
+
+function SheetHandle({ onPress }: { onPress: () => void }) {
+  const theme = useTheme();
+  return (
+    <View style={styles.handleContainer}>
+      <Pressable
+        onPress={onPress}
+        accessibilityLabel="Dismiss"
+        accessibilityHint="Tap to close"
+        hitSlop={{ top: 10, bottom: 10, left: 40, right: 40 }}
+      >
+        <View style={[styles.handleBar, { backgroundColor: theme.colors.text }]} />
+      </Pressable>
+    </View>
+  );
+}
+
+const styles = StyleSheet.create({
+  handleContainer: {
+    position: 'absolute',
+    width: '100%',
+    alignItems: 'center',
+    zIndex: 10,
+    height: 20,
+  },
+  handleBar: {
+    top: 8,
+    width: 35,
+    height: 5,
+    borderRadius: 3,
+    alignSelf: 'center',
+    opacity: 0.5,
+  },
+  body: {
+    paddingTop: 20,
+    paddingHorizontal: 20,
+    paddingBottom: 20,
+  },
+});

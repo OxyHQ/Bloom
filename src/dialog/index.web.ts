@@ -1,13 +1,25 @@
 // Web variant of the `./dialog` barrel.
 //
-// The default barrel (`./index.ts`) re-exports from `./Dialog`, which on
-// native uses `react-native-safe-area-context` and Bloom's own `BottomSheet`
-// primitive. The web fork (`./Dialog.web`) is a pure-DOM modal overlay that
-// depends only on `react-remove-scroll-bar` and the in-package `Portal`.
+// The default barrel (`./index.ts`) re-exports from `./Dialog`, which uses
+// bloom's `BottomSheet` (a native-only primitive built on
+// react-native-gesture-handler + reanimated). The web fork (`./Dialog.web`)
+// is a pure-DOM modal overlay that renders into the bloom Portal.
 //
-// Web bundlers select this file via the `"browser"` condition in
+// Web bundlers select this file via the `"browser"` export condition in
 // `package.json`'s `exports['./dialog']`; native bundlers fall through to
-// the React Native build.
-export { Outer, Inner, ScrollableInner, Handle, Close, Backdrop } from './Dialog.web';
+// the React Native build above.
+export { Dialog, BLOOM_DIALOG_CSS } from './Dialog.web';
+export { BloomDialogProvider } from './BloomDialogProvider.web';
+export { alert } from './alert';
 export { useDialogContext, useDialogControl } from './context';
-export type { DialogControlProps, DialogOuterProps, DialogInnerProps, DialogContextProps } from './types';
+export type {
+  AlertButton,
+  AlertButtonStyle,
+} from './alert-store';
+export type {
+  DialogAction,
+  DialogActionColor,
+  DialogContextProps,
+  DialogControlProps,
+  DialogProps,
+} from './types';

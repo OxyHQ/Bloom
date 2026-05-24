@@ -10,7 +10,7 @@ import {
   Text as ToastText,
   ToastConfigProvider,
 } from './Toast';
-import type { BaseToastOptions } from './types';
+import type { BaseToastOptions, ToastType } from './types';
 
 export { DURATION } from './const';
 export { Action, Icon, Outer, Text, ToastConfigProvider } from './Toast';
@@ -33,21 +33,17 @@ function OuterWrapper({ children }: { children: React.ReactNode }) {
 }
 
 /**
- * Access the full Sonner API
+ * Direct access to the Sonner API. Use sparingly — `toast()` covers the
+ * common case and keeps the surface tied to bloom's themed look.
  */
 export const api = sonner;
 
-/**
- * Show a toast notification.
- *
- * Pass a string for a simple text toast, or a React element for a custom toast.
- */
-export function show(
+function dispatch(
   content: React.ReactNode,
-  { type = 'default', ...options }: BaseToastOptions = {},
-) {
+  type: ToastType,
+  options: BaseToastOptions = {},
+): void {
   const id = nanoid();
-
   if (typeof content === 'string') {
     sonner.custom(
       <ToastConfigProvider id={id} type={type}>
@@ -79,6 +75,54 @@ export function show(
     );
   }
 }
+
+/**
+ * Show a toast notification.
+ *
+ * Pass a string for a simple text toast, or a React element for a custom
+ * toast. The optional `options` argument accepts the standard Sonner
+ * options plus a bloom `type` (defaults to `'default'`).
+ *
+ * ```ts
+ * toast('Saved');
+ * toast.success('Profile updated');
+ * toast.error('Network error', { duration: 5000 });
+ * toast.dismiss(id);
+ * ```
+ *
+ * Pre-typed variants (`toast.success`, `toast.error`, `toast.warning`,
+ * `toast.info`) are aliases for the corresponding `type`.
+ */
+export interface ToastFn {
+  (content: React.ReactNode, options?: BaseToastOptions): void;
+  success: (content: React.ReactNode, options?: Omit<BaseToastOptions, 'type'>) => void;
+  error: (content: React.ReactNode, options?: Omit<BaseToastOptions, 'type'>) => void;
+  warning: (content: React.ReactNode, options?: Omit<BaseToastOptions, 'type'>) => void;
+  info: (content: React.ReactNode, options?: Omit<BaseToastOptions, 'type'>) => void;
+  dismiss: (id?: string | number) => void;
+}
+
+const toastImpl = ((content: React.ReactNode, options: BaseToastOptions = {}) => {
+  dispatch(content, options.type ?? 'default', options);
+}) as ToastFn;
+
+toastImpl.success = (content, options) => dispatch(content, 'success', options ?? {});
+toastImpl.error = (content, options) => dispatch(content, 'error', options ?? {});
+toastImpl.warning = (content, options) => dispatch(content, 'warning', options ?? {});
+toastImpl.info = (content, options) => dispatch(content, 'info', options ?? {});
+toastImpl.dismiss = (id) => sonner.dismiss(id);
+
+export const toast: ToastFn = toastImpl;
+
+/**
+ * Alias of `toast` kept for compatibility with the original 0.4.x surface
+ * where `show()` was the documented entry point. New code should prefer
+ * `toast()` directly.
+ */
+export const show: ToastFn = toastImpl;
+
+/** Re-export the Toast function type so callers can refer to it. */
+export type Toast = ToastFn;
 
 const wrapperStyles = StyleSheet.create({
   container: {

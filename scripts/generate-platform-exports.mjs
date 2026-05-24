@@ -52,7 +52,6 @@ const SUBPATHS = /** @type {const} */ ([
   ['./color-presets', 'theme/color-presets.ts'],
   ['./portal', 'portal/index.tsx'],
   ['./dialog', 'dialog/index.ts'],
-  ['./prompt', 'prompt/index.ts'],
   ['./button', 'button/index.ts'],
   ['./grouped-buttons', 'grouped-buttons/index.ts'],
   ['./divider', 'divider/index.ts'],

@@ -89,7 +89,7 @@ export interface BottomSheetProps {
     /**
      * Opacity of the dimming backdrop behind the sheet (0–1). Defaults to `0.5`.
      * Set to a higher value (e.g. `0.7`) when the sheet is presented over another
-     * bottom sheet (Dialog/Prompt cases) so the underlying handle/content does not
+     * bottom sheet (Dialog cases) so the underlying handle/content does not
      * bleed through.
      */
     backdropOpacity?: number;
@@ -300,8 +300,8 @@ const BottomSheet = forwardRef((props: BottomSheetProps, ref: React.ForwardedRef
 
     // On unmount: ensure pending close callbacks (e.g. consumer's `onDismiss`)
     // still fire if the BS is yanked mid-animation by a parent re-render.
-    // Without this, `Dialog.Outer.handleDismiss` never runs and queued
-    // callbacks like `Prompt.Action`'s post-close handler are silently lost.
+    // Without this, `Dialog`'s `handleDismiss` never runs and queued
+    // callbacks (post-close handlers) are silently lost.
     // Only fires when the sheet was actually rendered (open or closing) to
     // avoid spuriously calling onDismiss on bare unmount of a never-opened
     // sheet. Refs are read inside the cleanup, so latest values are captured.

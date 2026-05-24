@@ -1,6 +1,6 @@
 {
   "name": "@oxyhq/bloom",
-  "version": "0.4.0",
+  "version": "0.5.0",
   "description": "Bloom UI — Oxy ecosystem component library for React Native + Expo + Web",
   "main": "lib/commonjs/index.js",
   "module": "lib/module/index.js",
@@ -91,17 +91,6 @@
       "require": {
         "types": "./lib/typescript/commonjs/dialog/index.d.ts",
         "default": "./lib/commonjs/dialog/index.js"
-      }
-    },
-    "./prompt": {
-      "react-native": "./src/prompt/index.ts",
-      "import": {
-        "types": "./lib/typescript/module/prompt/index.d.ts",
-        "default": "./lib/module/prompt/index.js"
-      },
-      "require": {
-        "types": "./lib/typescript/commonjs/prompt/index.d.ts",
-        "default": "./lib/commonjs/prompt/index.js"
       }
     },
     "./button": {
@@ -553,7 +542,8 @@
     "ui",
     "components",
     "dialog",
-    "prompt",
+    "alert",
+    "toast",
     "button",
     "theme",
     "avatar",
@@ -562,7 +552,6 @@
     "collapsible",
     "error-boundary",
     "prompt-input",
-    "toast",
     "icons",
     "typography",
     "skeleton",

@@ -1,9 +1,10 @@
 /**
  * ContextMenu — Native implementation
  *
- * Opens a bottom-sheet menu via Bloom's Dialog when the user long-presses
- * the trigger.  The menu body is rendered through Bloom's Menu component
- * pattern using Dialog.Outer / Dialog.ScrollableInner.
+ * Opens a bottom-sheet menu when the user long-presses the trigger. The
+ * menu body uses bloom's internal `SheetShell` (a `BottomSheet`
+ * presentation primitive with the same drag-handle + close-on-tap
+ * semantics shared by `Menu` and `Select`).
  */
 import React, {
   createContext,
@@ -15,7 +16,9 @@ import { Pressable, StyleSheet, View } from 'react-native';
 
 import { useTheme } from '../theme/use-theme';
 import { Text } from '../typography';
-import * as Dialog from '../dialog';
+import { useDialogControl } from '../dialog/context';
+import { SheetShell } from '../dialog/SheetShell';
+import type { DialogControlProps } from '../dialog/types';
 import { useInteractionState } from '../hooks/useInteractionState';
 import { ItemCtx, useItemContext } from './context';
 import type {
@@ -34,7 +37,7 @@ import type {
 // ---------------------------------------------------------------------------
 
 type NativeContextMenuContextValue = ContextMenuContextValue & {
-  control: Dialog.DialogControlProps;
+  control: DialogControlProps;
 };
 
 const NativeContextMenuContext = createContext<NativeContextMenuContextValue | null>(null);
@@ -55,7 +58,7 @@ function useNativeContextMenuContext(): NativeContextMenuContextValue {
 // ---------------------------------------------------------------------------
 
 export function Root({ children }: { children: React.ReactNode }) {
-  const control = Dialog.useDialogControl();
+  const control = useDialogControl();
 
   const ctx = useMemo(
     () => ({
@@ -112,8 +115,7 @@ export function Outer({ children, style }: OuterProps) {
   const { control } = useNativeContextMenuContext();
 
   return (
-    <Dialog.Outer control={control} preventExpansion>
-      <Dialog.Handle />
+    <SheetShell control={control} label="Context menu">
       <NativeContextMenuContext.Provider
         value={{
           isOpen: true,
@@ -122,11 +124,9 @@ export function Outer({ children, style }: OuterProps) {
           control,
         }}
       >
-        <Dialog.ScrollableInner label="Context menu">
-          <View style={[styles.outerContent, style]}>{children}</View>
-        </Dialog.ScrollableInner>
+        <View style={[styles.outerContent, style]}>{children}</View>
       </NativeContextMenuContext.Provider>
-    </Dialog.Outer>
+    </SheetShell>
   );
 }
 
