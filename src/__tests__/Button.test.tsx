@@ -1,4 +1,5 @@
 import React from 'react';
+import { Text } from 'react-native';
 import { render, fireEvent } from '@testing-library/react-native';
 
 import { BloomThemeProvider } from '../theme/BloomThemeProvider';
@@ -57,6 +58,40 @@ describe('Button', () => {
     );
     const btn = getByTestId('dis-btn');
     expect(btn.props.accessibilityState).toEqual({ disabled: true });
+  });
+
+  it('keeps children mounted when loading so width is preserved', () => {
+    const { UNSAFE_queryAllByType } = renderWithTheme(
+      <Button loading>Submit</Button>,
+    );
+    // The text node remains in the tree even though it is visually hidden.
+    const texts = UNSAFE_queryAllByType(Text);
+    const hasSubmit = texts.some((node) =>
+      Array.isArray(node.props.children)
+        ? node.props.children.includes('Submit')
+        : node.props.children === 'Submit',
+    );
+    expect(hasSubmit).toBe(true);
+  });
+
+  it('disables the underlying Pressable when loading', () => {
+    const { getByTestId } = renderWithTheme(
+      <Button testID="loading-btn" loading>
+        Submit
+      </Button>,
+    );
+    const btn = getByTestId('loading-btn');
+    expect(btn.props.disabled).toBe(true);
+  });
+
+  it('marks loading state via accessibilityState busy + disabled', () => {
+    const { getByTestId } = renderWithTheme(
+      <Button testID="busy-btn" loading>
+        Submit
+      </Button>,
+    );
+    const btn = getByTestId('busy-btn');
+    expect(btn.props.accessibilityState).toEqual({ disabled: true, busy: true });
   });
 });
 

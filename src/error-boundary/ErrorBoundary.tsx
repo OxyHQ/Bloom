@@ -1,7 +1,6 @@
 import React, { Component, type ErrorInfo, type ReactNode } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 
-import { useTheme } from '../theme/use-theme';
 import type { ErrorBoundaryProps } from './types';
 
 interface ErrorBoundaryState {
@@ -9,6 +8,18 @@ interface ErrorBoundaryState {
   error: Error | null;
 }
 
+/**
+ * Default fallback UI used when an ErrorBoundary catches a render error.
+ *
+ * This component is the LAST line of defense — by the time it renders, the
+ * rest of the React tree has already crashed. It therefore MUST NOT depend
+ * on any other context provider (theme, navigation, router, etc.) because
+ * those providers may be unmounted, broken, or never have been part of
+ * the tree above the boundary.
+ *
+ * Use only literal styles and built-in React Native primitives. No hooks
+ * that read context, no upstream theming, no animation libraries.
+ */
 function DefaultFallback({
   title,
   message,
@@ -20,14 +31,12 @@ function DefaultFallback({
   retryLabel: string;
   onRetry: () => void;
 }) {
-  const theme = useTheme();
-
   return (
-    <View style={[styles.container, { backgroundColor: theme.colors.background }]}>
-      <Text style={[styles.title, { color: theme.colors.text }]}>{title}</Text>
-      <Text style={[styles.message, { color: theme.colors.textSecondary }]}>{message}</Text>
+    <View style={styles.container}>
+      <Text style={styles.title}>{title}</Text>
+      <Text style={styles.message}>{message}</Text>
       <TouchableOpacity
-        style={[styles.retryButton, { backgroundColor: theme.colors.primary }]}
+        style={styles.retryButton}
         onPress={onRetry}
         activeOpacity={0.7}
       >
@@ -77,18 +86,22 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
   }
 }
 
+// Literal colors only — must never depend on a theme provider. The neutral
+// palette is chosen to be readable on both light and dark device defaults.
 const styles = StyleSheet.create({
   container: {
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
     padding: 20,
+    backgroundColor: '#FFFFFF',
   },
   title: {
     fontSize: 24,
     fontWeight: 'bold',
     marginBottom: 12,
     textAlign: 'center',
+    color: '#111111',
   },
   message: {
     fontSize: 16,
@@ -96,6 +109,7 @@ const styles = StyleSheet.create({
     marginBottom: 24,
     lineHeight: 22,
     paddingHorizontal: 16,
+    color: '#555555',
   },
   retryButton: {
     paddingHorizontal: 24,
@@ -103,6 +117,7 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     minWidth: 120,
     alignItems: 'center',
+    backgroundColor: '#0066FF',
   },
   retryText: {
     color: '#FFFFFF',

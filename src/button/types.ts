@@ -17,6 +17,18 @@ export interface ButtonProps {
   icon?: React.ReactNode;
   iconPosition?: 'left' | 'right';
 
+  /**
+   * When true, displays a centered loading spinner overlay and prevents
+   * presses. Children remain in the layout (but visually hidden) so the
+   * button preserves its width. Use this for async actions like submit.
+   */
+  loading?: boolean;
+  /**
+   * Optional color override for the loading spinner. Defaults to the
+   * resolved button text color.
+   */
+  loadingColor?: string;
+
   accessibilityLabel?: string;
   accessibilityHint?: string;
   hitSlop?: { top: number; bottom: number; left: number; right: number };

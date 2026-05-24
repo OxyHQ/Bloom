@@ -3,15 +3,33 @@ import type { ThemeMode } from './types';
 
 /**
  * Safely set the color scheme via Appearance API.
- * On Android (RN 0.83+), Appearance.setColorScheme has a Kotlin non-null
- * annotation on `style`. Passing null for 'system' crashes.
- * Workaround: resolve the system preference and pass 'light'/'dark' instead.
  *
- * On react-native-web, Appearance.setColorScheme is not implemented at all
- * (it's `undefined`), which crashes with "setColorScheme is not a function".
- * Appearance.getColorScheme() still works on web, so reading the system
- * preference is fine — it's only the setter that's missing. The browser /
- * electron controls the color scheme anyway, so we just bail out on web.
+ * Behavior by mode:
+ * - 'light' / 'dark': set the explicit override.
+ * - 'system' / 'adaptive': leave the OS in control. We must NOT call
+ *   Appearance.setColorScheme(resolved) here — doing so installs an
+ *   app-level override that masks the OS preference. Once that override
+ *   is set, useColorScheme() / Appearance.getColorScheme() return the
+ *   frozen override instead of the live OS value, and the app stops
+ *   following dark↔light OS toggles until a cold restart.
+ *
+ *   On iOS we additionally pass 'unspecified' to clear any prior
+ *   override that may have been installed by a previous explicit mode.
+ *   'unspecified' is the documented sentinel that tells the native
+ *   Appearance module to fall back to the OS preference. (RN's JS
+ *   implementation forwards this straight through to the native
+ *   bridge; on iOS this clears the override.)
+ *
+ *   On Android (RN 0.83+) the native Kotlin signature has @NonNull on
+ *   `style` and rejects null, and 'unspecified' is not honored as a
+ *   clear-override sentinel on Android either. As a result, if a user
+ *   previously selected 'light' or 'dark' and then switches back to
+ *   'system' on Android, the override remains until the next cold
+ *   restart. Users who never explicitly overrode are unaffected because
+ *   we never install an override in system mode in the first place.
+ *
+ * On react-native-web, Appearance.setColorScheme is not implemented at
+ * all; the browser controls the color scheme, so we bail out on web.
  */
 export function setColorSchemeSafe(mode: ThemeMode) {
   if (Platform.OS === 'web') {
@@ -19,10 +37,16 @@ export function setColorSchemeSafe(mode: ThemeMode) {
   }
 
   const effectiveMode = mode === 'adaptive' ? 'system' : mode;
+
   if (effectiveMode === 'system') {
-    const resolved = Appearance.getColorScheme() ?? 'light';
-    Appearance.setColorScheme(resolved);
-  } else {
-    Appearance.setColorScheme(effectiveMode);
+    // Clear any prior app-level override so useColorScheme() tracks the
+    // OS. iOS honors 'unspecified' as a sentinel to fall back to the
+    // system preference; Android does not (see note above).
+    if (Platform.OS === 'ios') {
+      Appearance.setColorScheme('unspecified');
+    }
+    return;
   }
+
+  Appearance.setColorScheme(effectiveMode);
 }

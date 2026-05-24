@@ -1,5 +1,15 @@
 import React, { useMemo, memo } from 'react';
-import { Pressable, Text, Platform, Animated, type ViewStyle, type TextStyle } from 'react-native';
+import {
+  ActivityIndicator,
+  Animated,
+  Platform,
+  Pressable,
+  StyleSheet,
+  Text,
+  View,
+  type TextStyle,
+  type ViewStyle,
+} from 'react-native';
 
 import { useTheme } from '../theme/use-theme';
 import { usePressAnimation } from '../hooks/usePressAnimation';
@@ -43,6 +53,8 @@ const ButtonComponent: React.FC<ButtonProps> = ({
   textStyle,
   icon,
   iconPosition = 'left',
+  loading = false,
+  loadingColor,
   accessibilityLabel,
   accessibilityHint,
   hitSlop,
@@ -52,8 +64,9 @@ const ButtonComponent: React.FC<ButtonProps> = ({
 }) => {
   const theme = useTheme();
   const hasScaleFeedback = SCALE_VARIANTS.has(variant);
+  const isInteractionBlocked = disabled || loading;
   const { scaleAnim, onPressIn, onPressOut } = usePressAnimation(
-    hasScaleFeedback ? PRESS_SCALE : undefined,
+    hasScaleFeedback && !isInteractionBlocked ? PRESS_SCALE : undefined,
   );
 
   const baseStyles = useMemo((): ViewStyle => {
@@ -106,35 +119,45 @@ const ButtonComponent: React.FC<ButtonProps> = ({
     return styles;
   }, [variant, size, theme]);
 
-  const computedTextStyle = useMemo((): TextStyle => {
-    const sizeConfig = SIZE_CONFIG[size];
-    const styles: TextStyle = {
-      fontSize: sizeConfig.fontSize,
-      fontWeight: Platform.OS === 'web' ? 'bold' : '600',
-    };
-
+  const resolvedTextColor = useMemo((): string => {
     switch (variant) {
       case 'primary':
-        styles.color = theme.colors.card;
-        break;
+        return theme.colors.card;
       case 'secondary':
-        styles.color = theme.colors.text;
-        break;
+        return theme.colors.text;
       case 'inverse':
-        styles.color = '#000000';
-        break;
+        return '#000000';
       case 'ghost':
       case 'text':
-        styles.color = theme.colors.primary;
-        break;
+        return theme.colors.primary;
+      case 'icon':
+      default:
+        return theme.colors.text;
     }
+  }, [variant, theme]);
 
-    return styles;
-  }, [variant, size, theme]);
+  const computedTextStyle = useMemo((): TextStyle => {
+    const sizeConfig = SIZE_CONFIG[size];
+    return {
+      fontSize: sizeConfig.fontSize,
+      fontWeight: Platform.OS === 'web' ? 'bold' : '600',
+      color: resolvedTextColor,
+    };
+  }, [size, resolvedTextColor]);
 
   const defaultHitSlop = variant === 'icon' ? ICON_HIT_SLOP : undefined;
   const resolvedActiveOpacity = activeOpacity ?? (variant === 'icon' ? 0.7 : 0.8);
   const resolvedClassName = className ?? (variant === 'icon' ? 'bg-background border border-border' : undefined);
+
+  const content = (
+    <>
+      {iconPosition === 'left' && icon}
+      {children != null && (
+        <Text style={[computedTextStyle, textStyle]}>{children}</Text>
+      )}
+      {iconPosition === 'right' && icon}
+    </>
+  );
 
   return (
     <Animated.View style={hasScaleFeedback ? { transform: [{ scale: scaleAnim }] } : undefined}>
@@ -142,30 +165,57 @@ const ButtonComponent: React.FC<ButtonProps> = ({
         {...(resolvedClassName ? { className: resolvedClassName } as Record<string, string> : {})}
         style={({ pressed }) => [
           baseStyles,
-          disabled && { opacity: 0.5 },
-          pressed && !hasScaleFeedback && { opacity: resolvedActiveOpacity },
+          disabled && !loading && { opacity: 0.5 },
+          pressed && !hasScaleFeedback && !isInteractionBlocked && { opacity: resolvedActiveOpacity },
           style,
         ]}
-        onPress={onPress}
-        onPressIn={onPressIn}
-        onPressOut={onPressOut}
-        disabled={disabled}
+        onPress={isInteractionBlocked ? undefined : onPress}
+        onPressIn={isInteractionBlocked ? undefined : onPressIn}
+        onPressOut={isInteractionBlocked ? undefined : onPressOut}
+        disabled={isInteractionBlocked}
         hitSlop={hitSlop ?? defaultHitSlop}
         accessibilityLabel={accessibilityLabel}
         accessibilityHint={accessibilityHint}
         accessibilityRole="button"
-        accessibilityState={{ disabled }}
+        accessibilityState={loading ? { disabled: isInteractionBlocked, busy: true } : { disabled: isInteractionBlocked }}
         testID={testID}
       >
-        {iconPosition === 'left' && icon}
-        {children != null && (
-          <Text style={[computedTextStyle, textStyle]}>{children}</Text>
+        {loading ? (
+          <>
+            <View
+              style={styles.loadingHiddenContent}
+              importantForAccessibility="no-hide-descendants"
+              accessibilityElementsHidden
+            >
+              {content}
+            </View>
+            <View style={styles.loadingOverlay}>
+              <ActivityIndicator size="small" color={loadingColor ?? resolvedTextColor} />
+            </View>
+          </>
+        ) : (
+          content
         )}
-        {iconPosition === 'right' && icon}
       </Pressable>
     </Animated.View>
   );
 };
+
+const styles = StyleSheet.create({
+  loadingHiddenContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    opacity: 0,
+    pointerEvents: 'none',
+  },
+  loadingOverlay: {
+    ...StyleSheet.absoluteFillObject,
+    alignItems: 'center',
+    justifyContent: 'center',
+    pointerEvents: 'none',
+  },
+});
 
 export const Button = memo(ButtonComponent);
 Button.displayName = 'Button';

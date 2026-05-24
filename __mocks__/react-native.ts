@@ -41,6 +41,7 @@ export const Text = createComponent('Text');
 export const Pressable = createComponent('Pressable');
 export const TouchableOpacity = createComponent('TouchableOpacity');
 export const Modal = createComponent('Modal');
+export const ActivityIndicator = createComponent('ActivityIndicator');
 export const ScrollView = React.forwardRef((props: Record<string, unknown>, ref: unknown) => {
   return React.createElement('ScrollView', { ref, ...props }, props.children as React.ReactNode);
 });
