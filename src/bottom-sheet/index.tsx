@@ -146,6 +146,18 @@ const BottomSheet = forwardRef((props: BottomSheetProps, ref: React.ForwardedRef
         }
     }, [onDismissAttempt, onDismiss]);
 
+    // Mirror `safeClose` and `rendered` into refs so the unmount cleanup can
+    // fire the latest dismiss callback when needed, without re-binding the
+    // cleanup effect on every render.
+    const safeCloseRef = useRef(safeClose);
+    useEffect(() => {
+        safeCloseRef.current = safeClose;
+    }, [safeClose]);
+    const renderedRef = useRef(rendered);
+    useEffect(() => {
+        renderedRef.current = rendered;
+    }, [rendered]);
+
     const finishClose = useCallback(() => {
         if (hasClosedRef.current) return;
         hasClosedRef.current = true;
@@ -181,11 +193,21 @@ const BottomSheet = forwardRef((props: BottomSheetProps, ref: React.ForwardedRef
         }
     }, [visible, rendered, finishClose]);
 
-    // Clear pending timeout on unmount
+    // On unmount: ensure pending close callbacks (e.g. consumer's `onDismiss`)
+    // still fire if the BS is yanked mid-animation by a parent re-render.
+    // Without this, `Dialog.Outer.handleDismiss` never runs and queued
+    // callbacks like `Prompt.Action`'s post-close handler are silently lost.
+    // Only fires when the sheet was actually rendered (open or closing) to
+    // avoid spuriously calling onDismiss on bare unmount of a never-opened
+    // sheet. Refs are read inside the cleanup, so latest values are captured.
     useEffect(() => () => {
         if (closeTimeoutRef.current) {
             clearTimeout(closeTimeoutRef.current);
             closeTimeoutRef.current = null;
+        }
+        if (renderedRef.current && !hasClosedRef.current) {
+            hasClosedRef.current = true;
+            safeCloseRef.current();
         }
     }, []);
 

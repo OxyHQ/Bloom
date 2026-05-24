@@ -45,7 +45,6 @@ export function Outer({
       webOptions={{ alignCenter: true }}
       preventExpansion
     >
-      <Dialog.Handle />
       <PromptContext.Provider value={context}>
         <Dialog.ScrollableInner
           label=""

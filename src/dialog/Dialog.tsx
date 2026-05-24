@@ -105,7 +105,7 @@ export function Inner({ children, style, header, contentContainerStyle }: Dialog
       {header}
       <View
         style={[
-          { paddingTop: 20, paddingHorizontal: 20, paddingBottom: insets.bottom + insets.top },
+          { paddingTop: 20, paddingHorizontal: 20, paddingBottom: insets.bottom + 20 },
           contentContainerStyle,
           style,
         ]}
