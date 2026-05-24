@@ -10,7 +10,7 @@ import {
     type ViewStyle,
     type StyleProp,
 } from 'react-native';
-import { Gesture, GestureDetector, GestureHandlerRootView } from 'react-native-gesture-handler';
+import { Gesture, GestureDetector, GestureHandlerRootView, type GestureType } from 'react-native-gesture-handler';
 import Animated, {
     interpolate,
     runOnJS,
@@ -93,6 +93,52 @@ export interface BottomSheetProps {
      * bleed through.
      */
     backdropOpacity?: number;
+    /**
+     * When `true` (default), children are wrapped in an internal scrollable
+     * container — convenient for vertical content that can overflow.
+     *
+     * Set to `false` when the screen owns its own scrolling primitive
+     * (e.g. a `FlatList`, `SectionList`, or any other VirtualizedList).
+     * Nesting a VirtualizedList inside the internal ScrollView would break
+     * windowing/keyboard handling and trigger a React Native warning. In
+     * non-scrollable mode the screen receives the full available height
+     * (minus the drag handle) and must manage its own overflow.
+     */
+    scrollable?: boolean;
+    /**
+     * When `true`, the body pan uses RNGH's `manualActivation` and only
+     * activates when (a) the inner ScrollView is at the top AND (b) the user
+     * has moved their finger downward by > 8dp. This is the @gorhom/bottom-sheet
+     * coordination model — recommended for sheets containing scrollable content
+     * on Android (avoids stealing vertical events from the inner scroller).
+     *
+     * When `false` (default), the body pan is always active and gates on the
+     * scroll offset at `onStart` time. This is the legacy behavior, preserved
+     * for backwards compatibility with current bloom consumers.
+     *
+     * Enabling this also splits the drag handle into its own dedicated,
+     * unconditional pan so users can always grab the handle to drag — even
+     * when the inner ScrollView is mid-scroll.
+     */
+    manualActivation?: boolean;
+    /**
+     * When `true`, the backdrop dims proportionally with drag distance — the
+     * overlay fades from full opacity (sheet at rest) to 30% as the sheet is
+     * pulled down 40% of the screen height. iOS Photos style. The base
+     * `backdropOpacity` still controls the resting dim level.
+     *
+     * Defaults to `false` (constant opacity during drag).
+     */
+    dynamicBackdrop?: boolean;
+    /**
+     * Custom handle slot. When provided, replaces the default drag handle
+     * (the 36×5 pill). The rendered handle is wrapped in the dedicated handle
+     * gesture detector (when `manualActivation` is `true`) so it remains
+     * unconditionally draggable. `showHandle={false}` still suppresses any
+     * handle rendering — `handleComponent` is only consulted when
+     * `showHandle` is `true`.
+     */
+    handleComponent?: () => React.ReactNode;
 }
 
 const BottomSheet = forwardRef((props: BottomSheetProps, ref: React.ForwardedRef<BottomSheetRef>) => {
@@ -108,6 +154,10 @@ const BottomSheet = forwardRef((props: BottomSheetProps, ref: React.ForwardedRef
         detached = false,
         showHandle = true,
         backdropOpacity = 0.5,
+        scrollable = true,
+        manualActivation = false,
+        dynamicBackdrop = false,
+        handleComponent,
     } = props;
 
     const insets = useSafeAreaInsets();
@@ -119,6 +169,16 @@ const BottomSheet = forwardRef((props: BottomSheetProps, ref: React.ForwardedRef
     const closeTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
     const hasClosedRef = useRef(false);
     const scrollViewRef = useRef<Animated.ScrollView>(null);
+    /**
+     * Monotonically increasing counter that identifies "the current close
+     * attempt". Bumped every time the sheet re-opens (`present()`), so any
+     * in-flight `withTiming` completion callback or fallback timer from a
+     * PREVIOUS close cycle becomes a no-op. Without this guard, a stale
+     * `runOnJS(finishClose)` from an aborted close would fire `onDismiss`
+     * and unmount the sheet immediately after the user opens it again,
+     * causing "tap to open does nothing" reports in production.
+     */
+    const closeGenerationRef = useRef(0);
 
     const screenHeightSV = useSharedValue(screenHeight);
     // Keep shared value in sync when screen dimensions change (rotation/resize)
@@ -133,6 +193,21 @@ const BottomSheet = forwardRef((props: BottomSheetProps, ref: React.ForwardedRef
     const allowPanClose = useSharedValue(true);
     const keyboardHeight = useSharedValue(0);
     const context = useSharedValue({ y: 0 });
+    // Mirror of `closeGenerationRef` for worklet access. Bumped from the JS
+    // thread in lockstep with the ref so gesture worklets always see the
+    // current generation when they snapshot it on `onEnd`.
+    const closeGeneration = useSharedValue(0);
+    // Used by `manualActivation` body pan to track the touch's initial Y so
+    // it can compute downward distance for the activation decision.
+    const touchStartY = useSharedValue(0);
+
+    // Refs used to mark the handle pan and the body pan as mutually
+    // simultaneous (manualActivation mode only). Without this RNGH treats them
+    // as racing gestures and a touch that begins in the handle area could be
+    // claimed by whichever recognizer activates first — leading to
+    // inconsistent drag start.
+    const bodyPanRef = useRef<GestureType | undefined>(undefined);
+    const handlePanRef = useRef<GestureType | undefined>(undefined);
 
     useKeyboardHandler({
         onMove: (e) => {
@@ -166,7 +241,19 @@ const BottomSheet = forwardRef((props: BottomSheetProps, ref: React.ForwardedRef
         renderedRef.current = rendered;
     }, [rendered]);
 
-    const finishClose = useCallback(() => {
+    /**
+     * Commit a close. Two guards prevent stale callbacks from firing:
+     *   1. `hasClosedRef` — protects against the fallback timer AND the
+     *      animation callback both racing to call us within a single close
+     *      cycle.
+     *   2. `generation` — protects against a callback from a PREVIOUS close
+     *      cycle firing AFTER the user reopened. If the live generation has
+     *      advanced past the one captured when the close started, this
+     *      callback is from a cycle that the user has implicitly cancelled
+     *      by reopening — silently drop it.
+     */
+    const finishClose = useCallback((generation: number) => {
+        if (closeGenerationRef.current !== generation) return;
         if (hasClosedRef.current) return;
         hasClosedRef.current = true;
         safeClose();
@@ -180,26 +267,36 @@ const BottomSheet = forwardRef((props: BottomSheetProps, ref: React.ForwardedRef
                 closeTimeoutRef.current = null;
             }
             hasClosedRef.current = false;
+            // Bump generation: any pending close-completion callback from a
+            // prior cycle (animation or fallback timer) will now no-op when
+            // it eventually fires, because its captured generation is stale.
+            closeGenerationRef.current += 1;
+            closeGeneration.value = closeGenerationRef.current;
             opacity.value = withTiming(1, { duration: 250 });
             translateY.value = withSpring(0, SPRING_CONFIG);
         } else if (rendered) {
+            // Capture the generation for THIS close cycle so the animation
+            // callback (running on the UI thread, scheduled back to JS) and
+            // the fallback timer agree on which cycle they belong to.
+            const generation = closeGenerationRef.current;
             opacity.value = withTiming(0, { duration: 250 }, (finished) => {
                 if (finished) {
-                    runOnJS(finishClose)();
+                    runOnJS(finishClose)(generation);
                 }
             });
             translateY.value = withSpring(screenHeight, { ...SPRING_CONFIG, stiffness: 250 });
 
-            // Fallback timer to ensure close completes (especially on web)
+            // Fallback timer to ensure close completes (especially on web
+            // where reanimated callbacks occasionally drop on tab blur).
             if (closeTimeoutRef.current) {
                 clearTimeout(closeTimeoutRef.current);
             }
             closeTimeoutRef.current = setTimeout(() => {
-                finishClose();
+                finishClose(generation);
                 closeTimeoutRef.current = null;
             }, 300);
         }
-    }, [visible, rendered, finishClose]);
+    }, [visible, rendered, finishClose, screenHeight, closeGeneration, opacity, translateY]);
 
     // On unmount: ensure pending close callbacks (e.g. consumer's `onDismiss`)
     // still fire if the BS is yanked mid-animation by a parent re-render.
@@ -252,47 +349,61 @@ const BottomSheet = forwardRef((props: BottomSheetProps, ref: React.ForwardedRef
 
     const nativeGesture = useMemo(() => Gesture.Native(), []);
 
-    // Memoized pan gesture — recreating a Gesture.Pan() on every render causes
-    // gesture detach/reattach during animations and breaks React Compiler memoization.
-    const panGesture = useMemo(
-        () =>
-            Gesture.Pan()
+    // Body pan — two strategies, switched by `manualActivation`.
+    //
+    // (1) Legacy mode (`manualActivation: false`, the bloom 0.3.x default):
+    //     Pan is always active. We snapshot the scroll offset at `onStart`
+    //     and gate movement on `scrollOffsetY <= 8` during the gesture.
+    //     This is what current bloom consumers expect.
+    //
+    // (2) gorhom-style mode (`manualActivation: true`):
+    //     Pan uses `manualActivation(true)` and only flips to active when
+    //     the inner ScrollView is at the top AND the user has moved their
+    //     finger downward > 8dp. In every other case it fails, so the
+    //     ScrollView keeps full ownership of the touch. This is the only
+    //     RNGH 2.x pattern that does not steal vertical events from the
+    //     inner scroller on Android. Required for FileManagement /
+    //     PhotoPicker style sheets.
+    const panGesture = useMemo(() => {
+        if (manualActivation) {
+            return Gesture.Pan()
                 .enabled(enablePanDownToClose)
-                .simultaneousWithExternalGesture(nativeGesture)
-                .onStart(() => {
+                .withRef(bodyPanRef)
+                .manualActivation(true)
+                .simultaneousWithExternalGesture(scrollViewRef, handlePanRef)
+                .onTouchesDown((e) => {
                     'worklet';
+                    const t = e.changedTouches[0];
+                    if (t) touchStartY.value = t.absoluteY;
                     context.value = { y: translateY.value };
-                    allowPanClose.value = scrollOffsetY.value <= 8;
+                })
+                .onTouchesMove((e, state) => {
+                    'worklet';
+                    const t = e.changedTouches[0];
+                    if (!t) return;
+                    const dy = t.absoluteY - touchStartY.value;
+                    const atTop = scrollOffsetY.value <= 4;
+                    // Activate only when (at scroll top) AND (finger has moved
+                    // downward by > 8dp). Any other motion: fail so the
+                    // ScrollView claims the gesture.
+                    if (atTop && dy > 8) {
+                        state.activate();
+                    } else if (dy < -4 || !atTop) {
+                        state.fail();
+                    }
                 })
                 .onUpdate((event) => {
                     'worklet';
-                    if (!allowPanClose.value) {
-                        return;
-                    }
+                    if (event.translationY < 0) return;
                     const newTranslateY = context.value.y + event.translationY;
-                    // If user is scrolling down while content isn't at (or near) the top, let ScrollView handle it
-                    const atTopOrNearTop = scrollOffsetY.value <= 8; // slightly larger tolerance for smoother handoff
-                    if (event.translationY > 0 && !atTopOrNearTop) {
-                        return;
-                    }
                     if (newTranslateY >= 0) {
                         translateY.value = newTranslateY;
-                    } else if (detached) {
-                        // Only allow overdrag (pulling up beyond top) when detached
-                        translateY.value = newTranslateY * 0.3;
-                    } else {
-                        // In normal mode, prevent overdrag - clamp to 0
-                        translateY.value = 0;
                     }
                 })
                 .onEnd((event) => {
                     'worklet';
-                    if (!allowPanClose.value) {
-                        return;
-                    }
                     const velocity = event.velocityY;
                     const distance = translateY.value;
-                    // Require a deeper pull to close (more like native bottom sheets)
                     const closeThreshold = Math.max(140, screenHeightSV.value * 0.25);
                     const fastSwipeThreshold = 900;
                     const shouldClose =
@@ -300,35 +411,156 @@ const BottomSheet = forwardRef((props: BottomSheetProps, ref: React.ForwardedRef
                         (distance > closeThreshold && velocity > -300);
 
                     if (shouldClose) {
-                        translateY.value = withSpring(screenHeightSV.value, {
-                            ...SPRING_CONFIG,
-                            velocity: velocity,
-                        });
+                        // Snapshot the generation on the UI thread at the
+                        // moment the close gesture commits. The completion
+                        // callback only fires `finishClose` if no reopen
+                        // bumped the generation in between.
+                        const generation = closeGeneration.value;
+                        translateY.value = withSpring(screenHeightSV.value, { ...SPRING_CONFIG, velocity });
                         opacity.value = withTiming(0, { duration: 250 }, (finished) => {
-                            if (finished) {
-                                runOnJS(finishClose)();
-                            }
+                            if (finished) runOnJS(finishClose)(generation);
                         });
                     } else {
-                        translateY.value = withSpring(0, {
-                            ...SPRING_CONFIG,
-                            velocity: velocity,
-                        });
+                        translateY.value = withSpring(0, { ...SPRING_CONFIG, velocity });
                     }
-                }),
-        // Shared values are stable refs; enablePanDownToClose and detached are the only
-        // JS-side values that change the gesture's behavior.
-        // finishClose is stable (useCallback with stable deps).
+                });
+        }
+
+        // Legacy always-active pan (bloom 0.3.x behaviour).
+        return Gesture.Pan()
+            .enabled(enablePanDownToClose)
+            .simultaneousWithExternalGesture(nativeGesture)
+            .onStart(() => {
+                'worklet';
+                context.value = { y: translateY.value };
+                allowPanClose.value = scrollOffsetY.value <= 8;
+            })
+            .onUpdate((event) => {
+                'worklet';
+                if (!allowPanClose.value) {
+                    return;
+                }
+                const newTranslateY = context.value.y + event.translationY;
+                // If user is scrolling down while content isn't at (or near) the top, let ScrollView handle it
+                const atTopOrNearTop = scrollOffsetY.value <= 8; // slightly larger tolerance for smoother handoff
+                if (event.translationY > 0 && !atTopOrNearTop) {
+                    return;
+                }
+                if (newTranslateY >= 0) {
+                    translateY.value = newTranslateY;
+                } else if (detached) {
+                    // Only allow overdrag (pulling up beyond top) when detached
+                    translateY.value = newTranslateY * 0.3;
+                } else {
+                    // In normal mode, prevent overdrag - clamp to 0
+                    translateY.value = 0;
+                }
+            })
+            .onEnd((event) => {
+                'worklet';
+                if (!allowPanClose.value) {
+                    return;
+                }
+                const velocity = event.velocityY;
+                const distance = translateY.value;
+                // Require a deeper pull to close (more like native bottom sheets)
+                const closeThreshold = Math.max(140, screenHeightSV.value * 0.25);
+                const fastSwipeThreshold = 900;
+                const shouldClose =
+                    velocity > fastSwipeThreshold ||
+                    (distance > closeThreshold && velocity > -300);
+
+                if (shouldClose) {
+                    const generation = closeGeneration.value;
+                    translateY.value = withSpring(screenHeightSV.value, {
+                        ...SPRING_CONFIG,
+                        velocity: velocity,
+                    });
+                    opacity.value = withTiming(0, { duration: 250 }, (finished) => {
+                        if (finished) {
+                            runOnJS(finishClose)(generation);
+                        }
+                    });
+                } else {
+                    translateY.value = withSpring(0, {
+                        ...SPRING_CONFIG,
+                        velocity: velocity,
+                    });
+                }
+            });
+        // Shared values are stable refs; the listed deps are the only JS-side
+        // values that change the gesture's behavior. `finishClose` is stable
+        // (useCallback with stable deps).
         // eslint-disable-next-line react-hooks/exhaustive-deps
-        [enablePanDownToClose, detached, nativeGesture, finishClose],
-    );
+    }, [enablePanDownToClose, detached, manualActivation, nativeGesture, finishClose]);
+
+    // Dedicated handle pan — only built in `manualActivation` mode. Always
+    // active so users can drag the handle even while content is mid-scroll.
+    // In legacy mode the body pan already wraps the whole sheet (handle
+    // included), so no separate gesture is needed.
+    const handlePanGesture = useMemo(() => {
+        if (!manualActivation) return undefined;
+        return Gesture.Pan()
+            .enabled(enablePanDownToClose && enableHandlePanningGesture)
+            .withRef(handlePanRef)
+            .simultaneousWithExternalGesture(bodyPanRef)
+            .activeOffsetY([-8, 8])
+            .onStart(() => {
+                'worklet';
+                context.value = { y: translateY.value };
+            })
+            .onUpdate((event) => {
+                'worklet';
+                const newTranslateY = context.value.y + event.translationY;
+                if (newTranslateY >= 0) {
+                    translateY.value = newTranslateY;
+                } else if (detached) {
+                    translateY.value = newTranslateY * 0.3;
+                } else {
+                    translateY.value = 0;
+                }
+            })
+            .onEnd((event) => {
+                'worklet';
+                const velocity = event.velocityY;
+                const distance = translateY.value;
+                const closeThreshold = Math.max(140, screenHeightSV.value * 0.25);
+                const fastSwipeThreshold = 900;
+                const shouldClose =
+                    velocity > fastSwipeThreshold ||
+                    (distance > closeThreshold && velocity > -300);
+
+                if (shouldClose) {
+                    const generation = closeGeneration.value;
+                    translateY.value = withSpring(screenHeightSV.value, { ...SPRING_CONFIG, velocity });
+                    opacity.value = withTiming(0, { duration: 250 }, (finished) => {
+                        if (finished) runOnJS(finishClose)(generation);
+                    });
+                } else {
+                    translateY.value = withSpring(0, { ...SPRING_CONFIG, velocity });
+                }
+            });
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [manualActivation, enablePanDownToClose, enableHandlePanningGesture, detached, finishClose]);
 
     // `opacity.value` drives the fade in/out (0 -> 1). `backdropOpacity` is the
     // final dim level once fully visible. We multiply so the consumer-provided
-    // dim opacity applies smoothly across the animation.
-    const backdropStyle = useAnimatedStyle(() => ({
-        opacity: opacity.value * backdropOpacity,
-    }), [backdropOpacity]);
+    // dim opacity applies smoothly across the animation. When
+    // `dynamicBackdrop` is enabled, the dim also fades proportionally with
+    // drag distance (iOS Photos style).
+    const backdropStyle = useAnimatedStyle(() => {
+        const dragFactor = dynamicBackdrop
+            ? interpolate(
+                translateY.value,
+                [0, screenHeightSV.value * 0.4],
+                [1, 0.3],
+                'clamp',
+            )
+            : 1;
+        return {
+            opacity: opacity.value * backdropOpacity * dragFactor,
+        };
+    }, [backdropOpacity, dynamicBackdrop]);
 
     const sheetStyle = useAnimatedStyle(() => {
         const scale = interpolate(translateY.value, [0, screenHeightSV.value], [1, 0.95]);
@@ -392,6 +624,61 @@ const BottomSheet = forwardRef((props: BottomSheetProps, ref: React.ForwardedRef
 
     if (!rendered) return null;
 
+    // Default handle render — used when `handleComponent` is not provided.
+    const renderDefaultHandle = () => <View style={dynamicStyles.handle} />;
+    const handleNode = showHandle ? (handleComponent ? handleComponent() : renderDefaultHandle()) : null;
+
+    // In `manualActivation` mode the handle gets its own gesture detector
+    // sitting in a dedicated absolutely-positioned hit area at the top of the
+    // sheet. In legacy mode the handle is rendered inline as a decorative
+    // overlay (the body pan covers the entire sheet, handle included).
+    const handleSlot = handleNode && manualActivation && handlePanGesture ? (
+        <GestureDetector gesture={handlePanGesture}>
+            <View style={styles.handleHitArea} accessible accessibilityRole="adjustable">
+                {handleNode}
+            </View>
+        </GestureDetector>
+    ) : handleNode;
+
+    // Inner content: scrollable wraps in Animated.ScrollView, non-scrollable
+    // renders children directly. In legacy mode the scrollview is also
+    // wrapped in the `nativeGesture` detector for scroll/pan coordination.
+    const scrollViewNode = (
+        <Animated.ScrollView
+            ref={scrollViewRef}
+            style={[
+                styles.scrollView,
+                Platform.OS === 'web' && ({
+                    scrollbarWidth: 'thin',
+                    scrollbarColor: `${colors.border} transparent`,
+                } as ViewStyle),
+            ]}
+            contentContainerStyle={dynamicStyles.scrollContent}
+            showsVerticalScrollIndicator={false}
+            keyboardShouldPersistTaps="handled"
+            onScroll={scrollHandler}
+            scrollEventThrottle={16}
+            {...(Platform.OS === 'web' ? { className: 'bottom-sheet-scrollview' } : undefined)}
+            onLayout={() => {
+                if (Platform.OS === 'web') {
+                    createWebScrollbarStyle(colors.border);
+                }
+            }}
+        >
+            {children}
+        </Animated.ScrollView>
+    );
+
+    const bodyContent = scrollable
+        ? (manualActivation
+            // In manualActivation mode the scroll view is referenced by the
+            // pan's simultaneous list directly; no wrapping native gesture.
+            ? scrollViewNode
+            // Legacy mode: native gesture wraps the scroll view to coordinate
+            // with the always-active body pan.
+            : <GestureDetector gesture={nativeGesture}>{scrollViewNode}</GestureDetector>)
+        : <View style={styles.nonScrollableContent}>{children}</View>;
+
     return (
         <Modal visible={rendered} transparent animationType="none" statusBarTranslucent onRequestClose={dismiss}>
             {/* RN's Modal renders into its own native window. The app-root
@@ -413,33 +700,9 @@ const BottomSheet = forwardRef((props: BottomSheetProps, ref: React.ForwardedRef
                         <Animated.View style={[dynamicStyles.sheet, sheetMarginStyle, sheetStyle, sheetHeightStyle, style]}>
                             {backgroundComponent?.({ style: styles.background })}
 
-                            {showHandle && <View style={dynamicStyles.handle} />}
+                            {handleSlot}
 
-                            <GestureDetector gesture={nativeGesture}>
-                                <Animated.ScrollView
-                                    ref={scrollViewRef}
-                                    style={[
-                                        styles.scrollView,
-                                        Platform.OS === 'web' && ({
-                                            scrollbarWidth: 'thin',
-                                            scrollbarColor: `${colors.border} transparent`,
-                                        } as ViewStyle),
-                                    ]}
-                                    contentContainerStyle={dynamicStyles.scrollContent}
-                                    showsVerticalScrollIndicator={false}
-                                    keyboardShouldPersistTaps="handled"
-                                    onScroll={scrollHandler}
-                                    scrollEventThrottle={16}
-                                    {...(Platform.OS === 'web' ? { className: 'bottom-sheet-scrollview' } : undefined)}
-                                    onLayout={() => {
-                                        if (Platform.OS === 'web') {
-                                            createWebScrollbarStyle(colors.border);
-                                        }
-                                    }}
-                                >
-                                    {children}
-                                </Animated.ScrollView>
-                            </GestureDetector>
+                            {bodyContent}
                         </Animated.View>
                     </GestureDetector>
                 </View>
@@ -482,6 +745,7 @@ const styles = StyleSheet.create({
         borderTopLeftRadius: 24,
         borderTopRightRadius: 24,
     },
+    /** Legacy (non-manualActivation) handle: decorative overlay only. */
     handle: {
         position: 'absolute',
         top: 10,
@@ -492,6 +756,23 @@ const styles = StyleSheet.create({
         borderRadius: 3,
         zIndex: 100,
     },
+    /**
+     * Hit area for the drag handle in `manualActivation` mode. Absolutely
+     * positioned at the top of the sheet so the area visually "floats" above
+     * the content — content scrolls up underneath it (no layout offset)
+     * while the thumb can still grab the full-width 28dp strip to drag.
+     */
+    handleHitArea: {
+        position: 'absolute',
+        top: 0,
+        left: 0,
+        right: 0,
+        height: 28,
+        alignItems: 'center',
+        justifyContent: 'flex-start',
+        paddingTop: 6,
+        zIndex: 100,
+    },
     background: {
         ...StyleSheet.absoluteFillObject,
     },
@@ -500,6 +781,9 @@ const styles = StyleSheet.create({
     },
     scrollContent: {
         flexGrow: 1,
+    },
+    nonScrollableContent: {
+        flex: 1,
     },
 });
 

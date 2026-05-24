@@ -222,9 +222,37 @@ function Example() {
 - `enableHandlePanningGesture?: boolean` — defaults to `true`.
 - `onDismissAttempt?: () => boolean` — return `false` to veto a dismiss attempt.
 - `detached?: boolean` — when `true`, the sheet floats with horizontal margins and rounded corners on all sides; when `false`, it's flush to the bottom edges with rounded top corners only.
+- `showHandle?: boolean` — defaults to `true`. Toggles the drag handle pill at the top of the sheet.
+- `backdropOpacity?: number` — opacity (0–1) of the dimming backdrop once fully visible. Defaults to `0.5`. Use a higher value (e.g. `0.7`) when stacking a sheet over another sheet.
 - `backgroundComponent?` — custom background renderer.
 - `backdropComponent?` — custom backdrop renderer.
 - `style?`
+- `scrollable?: boolean` — defaults to `true`. When `false`, renders `children` directly without the internal `Animated.ScrollView` wrapper. **Required when the sheet's content owns its own scrolling primitive** (e.g. `FlatList`, `SectionList`, or any `VirtualizedList`) — nesting a virtualized list inside the internal ScrollView breaks windowing and triggers a React Native warning. Combine with `manualActivation` so the handle stays draggable while the inner list owns the scroll.
+- `manualActivation?: boolean` — defaults to `false`. When `true`, the body pan uses RNGH's `manualActivation` and only activates when (a) the inner ScrollView is at the top AND (b) the user has moved their finger downward by > 8dp. This is the `@gorhom/bottom-sheet` coordination model — recommended for sheets that contain a scrolling region on Android (the legacy always-active pan can steal vertical events from the inner scroller). Enabling this also gives the drag handle its own dedicated, unconditionally-active gesture so users can always grab the handle even mid-scroll.
+- `dynamicBackdrop?: boolean` — defaults to `false`. When `true`, the backdrop dims proportionally to drag distance — fades from full `backdropOpacity` (sheet at rest) to 30% as the sheet is pulled down 40% of the screen height. This is the iOS Photos / iMessage drag-to-dismiss look. The base `backdropOpacity` still controls the resting dim.
+- `handleComponent?: () => React.ReactNode` — custom drag-handle renderer. When provided (and `showHandle` is `true`), replaces the default 36×5 pill. In `manualActivation` mode the rendered handle sits inside the dedicated handle hit-area and gesture detector so it remains unconditionally draggable.
+
+**Pattern: sheet with a `FlatList` inside.** Use `scrollable={false}` so the BottomSheet doesn't wrap the list in its own ScrollView, plus `manualActivation` so the drag handle remains the dedicated drag-to-dismiss surface while the list owns vertical scroll:
+
+```tsx
+<BottomSheet ref={sheetRef} scrollable={false} manualActivation>
+  <FlatList data={items} renderItem={renderItem} />
+</BottomSheet>
+```
+
+**Pattern: iOS Photos-style backdrop dim.** Combine `manualActivation` (so the inner photo grid keeps scroll ownership) with `dynamicBackdrop` (so the overlay fades as the user pulls down):
+
+```tsx
+<BottomSheet
+  ref={sheetRef}
+  scrollable={false}
+  manualActivation
+  dynamicBackdrop
+  backdropOpacity={0.85}
+>
+  <PhotoGrid />
+</BottomSheet>
+```
 
 ### Button
 

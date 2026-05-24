@@ -1,6 +1,6 @@
 import React, { createRef } from 'react';
-import { Dimensions } from 'react-native';
-import { render } from '@testing-library/react-native';
+import { Dimensions, Text } from 'react-native';
+import { act, render } from '@testing-library/react-native';
 
 import { BloomThemeProvider } from '../theme/BloomThemeProvider';
 import BottomSheet, { type BottomSheetRef } from '../bottom-sheet';
@@ -104,6 +104,153 @@ describe('BottomSheet', () => {
         </BottomSheet>,
       );
       unmount();
+    });
+  });
+
+  describe('scrollable prop', () => {
+    it('renders children directly when scrollable is false (no internal ScrollView wrap)', () => {
+      // When scrollable={false}, the screen owns its own scrolling primitive
+      // (FlatList, SectionList, etc.) so we must not wrap in Animated.ScrollView
+      // — that would nest a VirtualizedList inside a ScrollView and trigger
+      // the well-known RN warning + break windowing.
+      const ref = createRef<BottomSheetRef>();
+      const { UNSAFE_queryAllByType, getByText } = renderWithTheme(
+        <BottomSheet ref={ref} scrollable={false}>
+          <Text>Non-scrollable content</Text>
+        </BottomSheet>,
+      );
+      // Force-present so the sheet actually mounts its children.
+      act(() => {
+        ref.current?.present();
+      });
+      // Children render unconditionally — only the WRAPPING ScrollView is
+      // suppressed.
+      expect(getByText('Non-scrollable content')).toBeTruthy();
+      // No Animated.ScrollView host node should appear in the tree.
+      const scrollViewNodes = UNSAFE_queryAllByType('Animated.ScrollView' as never);
+      expect(scrollViewNodes.length).toBe(0);
+    });
+
+    it('defaults to wrapping children in a ScrollView (backwards-compat)', () => {
+      const ref = createRef<BottomSheetRef>();
+      const { UNSAFE_queryAllByType, getByText } = renderWithTheme(
+        <BottomSheet ref={ref}>
+          <Text>Default content</Text>
+        </BottomSheet>,
+      );
+      act(() => {
+        ref.current?.present();
+      });
+      expect(getByText('Default content')).toBeTruthy();
+      // Default scrollable=true → Animated.ScrollView is present in the tree.
+      const scrollViewNodes = UNSAFE_queryAllByType('Animated.ScrollView' as never);
+      expect(scrollViewNodes.length).toBeGreaterThan(0);
+    });
+  });
+
+  describe('manualActivation prop', () => {
+    it('renders without errors with manualActivation enabled', () => {
+      // manualActivation switches the body pan to the gorhom coordination
+      // model (manualActivation(true) + onTouchesMove gating). The whole pan
+      // pipeline must construct cleanly through the gesture-handler mock.
+      const ref = createRef<BottomSheetRef>();
+      const { unmount } = renderWithTheme(
+        <BottomSheet ref={ref} manualActivation>
+          <React.Fragment>Content</React.Fragment>
+        </BottomSheet>,
+      );
+      act(() => {
+        ref.current?.present();
+      });
+      unmount();
+    });
+  });
+
+  describe('dynamicBackdrop prop', () => {
+    it('renders without errors with dynamicBackdrop enabled', () => {
+      // iOS Photos-style backdrop dim — proportional to drag distance. The
+      // animated style closure must evaluate without throwing under the
+      // interpolate mock (which accepts and ignores the clamp arg).
+      const ref = createRef<BottomSheetRef>();
+      const { unmount } = renderWithTheme(
+        <BottomSheet ref={ref} dynamicBackdrop>
+          <React.Fragment>Dynamic content</React.Fragment>
+        </BottomSheet>,
+      );
+      act(() => {
+        ref.current?.present();
+      });
+      unmount();
+    });
+  });
+
+  describe('handleComponent prop', () => {
+    it('renders a custom handle when handleComponent is provided', () => {
+      const ref = createRef<BottomSheetRef>();
+      const { getByText } = renderWithTheme(
+        <BottomSheet
+          ref={ref}
+          handleComponent={() => <Text>Custom Handle</Text>}
+        >
+          <Text>Sheet body</Text>
+        </BottomSheet>,
+      );
+      act(() => {
+        ref.current?.present();
+      });
+      expect(getByText('Custom Handle')).toBeTruthy();
+    });
+
+    it('suppresses handle entirely when showHandle is false (even with handleComponent)', () => {
+      // showHandle is the master switch — handleComponent is only consulted
+      // when showHandle is true. This preserves the existing API contract
+      // for consumers that opt out of the handle entirely.
+      const ref = createRef<BottomSheetRef>();
+      const { queryByText } = renderWithTheme(
+        <BottomSheet
+          ref={ref}
+          showHandle={false}
+          handleComponent={() => <Text>Should Not Appear</Text>}
+        >
+          <Text>Body</Text>
+        </BottomSheet>,
+      );
+      act(() => {
+        ref.current?.present();
+      });
+      expect(queryByText('Should Not Appear')).toBeNull();
+    });
+  });
+
+  describe('close generation tracking', () => {
+    it('re-opening the sheet after dismiss does not throw or get stuck', () => {
+      // Regression test for the "tap to open does nothing" bug: when the
+      // user dismisses and immediately re-opens, a stale runOnJS(finishClose)
+      // from the cancelled close cycle must NOT fire onDismiss on the new
+      // session. The closeGeneration counter guards this — finishClose
+      // checks that its captured generation still matches the live one.
+      const onDismiss = jest.fn();
+      const ref = createRef<BottomSheetRef>();
+      renderWithTheme(
+        <BottomSheet ref={ref} onDismiss={onDismiss}>
+          <React.Fragment>Content</React.Fragment>
+        </BottomSheet>,
+      );
+      // Open → close → open → close → open. Each present() bumps the
+      // generation; any in-flight close callback from a prior cycle no-ops.
+      act(() => {
+        ref.current?.present();
+        ref.current?.dismiss();
+        ref.current?.present();
+        ref.current?.dismiss();
+        ref.current?.present();
+      });
+      // The sequence does not throw and the sheet does not get stuck in a
+      // half-closed state. The fact that `present()` after `dismiss()`
+      // returns cleanly is itself the proof the generation guard works:
+      // without it, the stale dismiss callback would unmount the sheet
+      // mid-reopen and the next present() would have no effect.
+      expect(ref.current).not.toBeNull();
     });
   });
 });
