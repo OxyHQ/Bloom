@@ -14,7 +14,6 @@ export function Outer({
   control,
   onClose,
   testID,
-  preventExpansion,
 }: React.PropsWithChildren<DialogOuterProps>) {
   const theme = useTheme();
   const ref = useRef<BottomSheetRef>(null);
@@ -63,21 +62,15 @@ export function Outer({
   );
 
   const sheetStyle = useMemo(
-    () => [
-      {
-        maxWidth: 500,
-        backgroundColor: theme.colors.background,
-        // All four corners rounded — Dialog uses BottomSheet in `detached` mode
-        // (floating card with safe-area margins), so we round the bottom too
-        // instead of leaving the default top-only radius.
-        borderRadius: 20,
-      },
-      // When the dialog should not be expandable to fill the screen, clamp the
-      // sheet to a comfortable fixed height. Mirrors the historical gorhom
-      // behaviour where `preventExpansion` locked the sheet to a 40% snap point.
-      preventExpansion ? { height: '40%' as const } : null,
-    ],
-    [theme.colors.background, preventExpansion],
+    () => ({
+      maxWidth: 500,
+      backgroundColor: theme.colors.background,
+      // All four corners rounded — Dialog uses BottomSheet in `detached` mode
+      // (floating card with safe-area margins), so we round the bottom too
+      // instead of leaving the default top-only radius.
+      borderRadius: 20,
+    }),
+    [theme.colors.background],
   );
 
   return (

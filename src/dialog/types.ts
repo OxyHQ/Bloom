@@ -22,6 +22,11 @@ export type DialogOuterProps = {
   webOptions?: {
     alignCenter?: boolean;
   };
+  /**
+   * @deprecated No-op since 0.3.12. Bloom's BottomSheet sizes to its content by
+   * default (capped by safe-area `maxHeight`), so dialogs no longer expand to
+   * fill the screen and a manual lock is unnecessary.
+   */
   preventExpansion?: boolean;
 };
 
