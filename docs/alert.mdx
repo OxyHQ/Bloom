@@ -1,0 +1,76 @@
+---
+title: alert()
+description: Imperative one-shot confirmation dialogs, matching React Native's Alert.alert signature.
+order: 6
+---
+
+# alert()
+
+Imperative one-shot confirmation dialogs, matching React Native's `Alert.alert(title, message?, buttons?)` signature. Calls are queued and rendered through `BloomDialogProvider` — you can call `alert()` from anywhere, including before the provider mounts (alerts queue and drain on subscribe).
+
+## Setup
+
+Mount `BloomDialogProvider` once near your app root:
+
+```tsx
+import { BloomDialogProvider } from '@oxyhq/bloom';
+
+<BloomDialogProvider>
+  <App />
+</BloomDialogProvider>
+```
+
+See [Getting started](/docs/bloom/main/getting-started) for the full provider stack.
+
+## Usage
+
+```tsx
+import { alert } from '@oxyhq/bloom';
+
+alert('Sign out?', 'Are you sure you want to sign out of this device?', [
+  { text: 'Cancel', style: 'cancel' },
+  { text: 'Sign out', style: 'destructive', onPress: doSignOut },
+]);
+
+// Single OK button (default when no buttons passed):
+alert('Saved');
+```
+
+## Signature
+
+```ts
+function alert(
+  title: string,
+  message?: string,
+  buttons?: AlertButton[],
+  options?: { cancelable?: boolean }
+): void
+```
+
+### `AlertButton`
+
+| Prop | Type | Description |
+|------|------|-------------|
+| `text` | `string` | Required label. |
+| `style?` | `'default' \| 'cancel' \| 'destructive'` | Defaults to `'default'`. |
+| `onPress?` | `() => void` | Fires after the dialog finishes closing. |
+
+## Patterns
+
+### Drop-in replacement for `Alert.alert`
+
+If you're migrating from React Native's built-in `Alert`, you can swap the import:
+
+```diff
+-import { Alert } from 'react-native';
++import { alert } from '@oxyhq/bloom';
+
+-Alert.alert('Title', 'Message');
++alert('Title', 'Message');
+```
+
+`alert()` matches the same call signature, so existing call sites work unchanged.
+
+<Callout variant="warning" title="alert vs Dialog">
+`alert()` is for **imperative one-shot prompts** (e.g. confirming destructive actions from a deeply nested callback). When you need state-driven control over a dialog (open/close timing, busy states), use the declarative [`<Dialog>`](/docs/bloom/main/dialog) component instead.
+</Callout>

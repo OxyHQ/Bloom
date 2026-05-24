@@ -1,0 +1,81 @@
+---
+title: Getting started
+description: Install Bloom and wrap your app with the theme and dialog providers.
+order: 1
+---
+
+# Getting started
+
+## 1. Install
+
+```sh
+bun add @oxyhq/bloom
+```
+
+Install the optional peer dependencies you'll use. For the full dialog/sheet
+experience on native:
+
+```sh
+bun add react-native-gesture-handler react-native-reanimated react-native-safe-area-context react-native-svg sonner-native
+```
+
+On web:
+
+```sh
+bun add sonner
+```
+
+## 2. Wrap your app root
+
+```tsx
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
+import { BloomThemeProvider, BloomDialogProvider } from '@oxyhq/bloom';
+
+export default function Root() {
+  return (
+    <GestureHandlerRootView style={{ flex: 1 }}>
+      <BloomThemeProvider mode="system" colorPreset="teal">
+        <BloomDialogProvider>
+          <App />
+        </BloomDialogProvider>
+      </BloomThemeProvider>
+    </GestureHandlerRootView>
+  );
+}
+```
+
+- `BloomThemeProvider` is required — every Bloom component reads from it.
+- `BloomDialogProvider` is required only if you use `alert()`. Without it, `<Dialog>` still works on its own.
+- `GestureHandlerRootView` is required on native for any sheet-based component.
+
+<Callout variant="warning" title="Web setup">
+Inject the CSS animations into your global styles once:
+
+```tsx
+import { BLOOM_DIALOG_CSS } from '@oxyhq/bloom/dialog';
+
+// In your HTML head or global CSS file:
+<style>{BLOOM_DIALOG_CSS}</style>
+```
+</Callout>
+
+## 3. Use a component
+
+```tsx
+import { Button } from '@oxyhq/bloom/button';
+import { toast } from '@oxyhq/bloom';
+
+export function Hello() {
+  return <Button onPress={() => toast.success('Hello, Bloom!')}>Greet</Button>;
+}
+```
+
+## Recommended layout
+
+If your app supports both light and dark themes:
+
+```tsx
+<BloomThemeProvider mode="system" colorPreset="teal">
+```
+
+`mode="system"` follows the OS preference. `colorPreset` picks one of the 10 named palettes — see [Theme](/docs/bloom/main/theme) for the full list.

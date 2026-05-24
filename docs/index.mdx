@@ -1,0 +1,45 @@
+---
+title: Bloom
+description: Shared UI component library for the Oxy ecosystem. React Native + Expo + Web.
+order: 0
+---
+
+# Bloom
+
+Shared UI component library for the Oxy ecosystem. Built for React Native + Expo + Web.
+
+<Badge variant="success">v0.5</Badge> <Badge>MIT</Badge>
+
+## Install
+
+```sh
+bun add @oxyhq/bloom
+```
+
+### Peer dependencies
+
+Required:
+
+- `react >= 18`
+- `react-native >= 0.73`
+- `react-native-safe-area-context >= 5`
+
+Optional:
+
+- `react-native-reanimated >= 3` (native `Dialog`, `BottomSheet`, Loading `top` variant)
+- `react-native-gesture-handler >= 2` (native `Dialog`, `BottomSheet`) — also requires wrapping the app root with `GestureHandlerRootView`
+- `react-native-svg >= 13` (Avatar `squircle` shape)
+- `sonner >= 2` / `sonner-native >= 0.17` (`toast`)
+
+## What's inside
+
+Bloom ships modal primitives, form controls, layout helpers, typography, theming, and a portal system that works on both native and web. Everything is exported under a sub-path (`@oxyhq/bloom/dialog`, `@oxyhq/bloom/button`, etc.) so tree-shaking stays effective.
+
+## Next steps
+
+- [Getting started](/docs/bloom/main/getting-started) — wire up `BloomThemeProvider` and `BloomDialogProvider`.
+- [Theme](/docs/bloom/main/theme) — color presets, modes, design tokens.
+- [Dialog](/docs/bloom/main/dialog) — the unified Dialog API.
+- [BottomSheet](/docs/bloom/main/bottom-sheet) — gesture-driven sheet primitive.
+- [Toast](/docs/bloom/main/toast) — passive notifications.
+- [alert()](/docs/bloom/main/alert) — imperative one-shot confirmations.

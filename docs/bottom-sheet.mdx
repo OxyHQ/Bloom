@@ -1,0 +1,103 @@
+---
+title: BottomSheet
+description: A standalone, draggable bottom sheet built on RN Modal + Reanimated + Gesture Handler.
+order: 4
+---
+
+# BottomSheet
+
+A standalone, draggable bottom sheet built on React Native `Modal` + `react-native-reanimated` + `react-native-gesture-handler`. **Not** based on `@gorhom/bottom-sheet`, so it does not require `BottomSheetModalProvider`.
+
+Use it when the compound `Dialog` API doesn't fit, when you want to avoid the Gorhom dependency, or when you need direct control over scroll, keyboard handling, or detached presentation.
+
+## Basic usage
+
+```tsx
+import { useRef } from 'react';
+import { BottomSheet, type BottomSheetRef } from '@oxyhq/bloom/bottom-sheet';
+
+function Example() {
+  const sheetRef = useRef<BottomSheetRef>(null);
+
+  return (
+    <>
+      <Button onPress={() => sheetRef.current?.present()}>Open</Button>
+
+      <BottomSheet ref={sheetRef} onDismiss={() => console.log('dismissed')}>
+        <Text>Sheet content</Text>
+      </BottomSheet>
+    </>
+  );
+}
+```
+
+## Ref methods
+
+| Method | Description |
+|--------|-------------|
+| `present()` | Open the sheet. |
+| `dismiss()` | Close and call `onDismiss`. |
+| `close()` | Alias for `dismiss()`. |
+| `expand()` | Snap to the upper position. |
+| `collapse()` | Snap to the lower position. |
+| `scrollTo(y, animated?)` | Programmatic scroll within the internal ScrollView. |
+
+## Props
+
+| Prop | Type | Default | Description |
+|------|------|---------|-------------|
+| `children` | `ReactNode` | — | |
+| `onDismiss?` | `() => void` | — | Fires when the sheet finishes closing. |
+| `enablePanDownToClose?` | `boolean` | `true` | |
+| `enableHandlePanningGesture?` | `boolean` | `true` | |
+| `onDismissAttempt?` | `() => boolean` | — | Return `false` to veto a dismiss attempt. |
+| `detached?` | `boolean` | `false` | Float with horizontal margins and rounded corners on all sides. |
+| `showHandle?` | `boolean` | `true` | Toggle the drag handle pill. |
+| `backdropOpacity?` | `number` | `0.5` | Opacity (0–1) of the dimming backdrop once fully visible. |
+| `backgroundComponent?` | `ReactNode` | — | Custom background renderer. |
+| `backdropComponent?` | `ReactNode` | — | Custom backdrop renderer. |
+| `style?` | `StyleProp<ViewStyle>` | — | |
+| `scrollable?` | `boolean` | `true` | When `false`, renders `children` directly without an internal `Animated.ScrollView` wrapper. Required when the sheet's content owns its own scrolling primitive (e.g. `FlatList`). |
+| `manualActivation?` | `boolean` | `false` | When `true`, the body pan uses RNGH's `manualActivation` and only activates when the inner ScrollView is at the top AND the user has moved their finger downward by > 8dp. Recommended for sheets that contain a scrolling region on Android. |
+| `dynamicBackdrop?` | `boolean` | `false` | Backdrop dims proportionally to drag distance — fades from full `backdropOpacity` to 30% as the sheet is pulled down 40% of the screen height. iOS Photos / iMessage look. |
+| `handleComponent?` | `() => ReactNode` | — | Custom drag-handle renderer. Replaces the default 36×5 pill. |
+
+## Patterns
+
+### Sheet with a `FlatList` inside
+
+Use `scrollable={false}` so the BottomSheet doesn't wrap the list in its own ScrollView, plus `manualActivation` so the drag handle remains the dedicated drag-to-dismiss surface while the list owns vertical scroll:
+
+```tsx
+<BottomSheet ref={sheetRef} scrollable={false} manualActivation>
+  <FlatList data={items} renderItem={renderItem} />
+</BottomSheet>
+```
+
+### iOS Photos-style backdrop dim
+
+Combine `manualActivation` (so the inner photo grid keeps scroll ownership) with `dynamicBackdrop` (so the overlay fades as the user pulls down):
+
+```tsx
+<BottomSheet
+  ref={sheetRef}
+  scrollable={false}
+  manualActivation
+  dynamicBackdrop
+  backdropOpacity={0.85}
+>
+  <PhotoGrid />
+</BottomSheet>
+```
+
+### Detached "floating" presentation
+
+```tsx
+<BottomSheet ref={sheetRef} detached>
+  <PromptInput />
+</BottomSheet>
+```
+
+<Callout variant="info" title="Dialog vs BottomSheet">
+If you just need a confirmation flow or a small custom panel, prefer [Dialog](/docs/bloom/main/dialog) — it cross-platforms to a centered modal on web. Reach for `BottomSheet` only when you need direct gesture / scroll control on native.
+</Callout>

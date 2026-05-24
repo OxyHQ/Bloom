@@ -1,0 +1,67 @@
+---
+title: Theme
+description: Color presets, light/dark modes, and design tokens used by every Bloom component.
+order: 2
+---
+
+# Theme
+
+Wrap your app with `BloomThemeProvider`. It accepts controlled `mode` and `colorPreset` props — persist them however you like (AsyncStorage, Zustand, etc.).
+
+```tsx
+import { BloomThemeProvider } from '@oxyhq/bloom/theme';
+
+<BloomThemeProvider mode="system" colorPreset="teal">
+  <App />
+</BloomThemeProvider>
+```
+
+## Modes
+
+| Mode | Behavior |
+|------|----------|
+| `light` | Force light theme. |
+| `dark` | Force dark theme. |
+| `system` | Follow OS preference (`useColorScheme`). |
+| `adaptive` | iOS/Android native dynamic colors when available, falls back to `system`. |
+
+## Color presets
+
+10 named palettes:
+
+`teal` · `blue` · `green` · `amber` · `red` · `purple` · `pink` · `sky` · `orange` · `mint`
+
+Each preset has a tuned light + dark variant and a contrast-checked primary color.
+
+## Reading theme values
+
+```tsx
+import { useTheme } from '@oxyhq/bloom/theme';
+
+function MyComponent() {
+  const theme = useTheme();
+  return (
+    <View style={{ backgroundColor: theme.colors.surface }}>
+      <Text style={{ color: theme.colors.text }}>{theme.isDark ? 'Dark' : 'Light'}</Text>
+    </View>
+  );
+}
+```
+
+### Tokens
+
+Every preset exposes:
+
+- `colors.primary` — brand color.
+- `colors.background` — page background.
+- `colors.surface` — elevated surface (cards, sheets).
+- `colors.text` — body text.
+- `colors.muted` — secondary text.
+- `colors.border` — divider lines.
+- `colors.success` / `colors.warning` / `colors.danger` — semantic colors.
+- `isDark` — boolean.
+- `mode` — resolved mode (`'light' | 'dark'`).
+
+<Callout variant="info" title="Web CSS variables">
+On web, Bloom also writes the active palette to CSS variables on `:root`, so non-React surfaces (e.g. raw HTML pages) can theme themselves with `var(--bloom-primary)`.
+</Callout>

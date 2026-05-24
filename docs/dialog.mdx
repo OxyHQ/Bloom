@@ -1,0 +1,148 @@
+---
+title: Dialog
+description: A single <Dialog> for both confirmation flows and custom modal content.
+order: 3
+---
+
+# Dialog
+
+A single `<Dialog>` component for both confirmation flows AND custom modal content. Bottom-sheet card on native, centered modal on web. Same component, same props on every platform.
+
+<Callout variant="warning" title="Required providers (native)">
+Your app root **must** be wrapped with `GestureHandlerRootView` from `react-native-gesture-handler` for the bottom-sheet pan gestures to work. See [Getting started](/docs/bloom/main/getting-started).
+</Callout>
+
+## Declarative (the 90% case)
+
+```tsx
+import { Dialog, useDialogControl, Button } from '@oxyhq/bloom';
+
+function SignOutButton() {
+  const control = useDialogControl();
+  return (
+    <>
+      <Button onPress={() => control.open()}>Sign out</Button>
+
+      <Dialog
+        control={control}
+        title="Sign out?"
+        description="You'll need to enter your password to sign in again."
+        actions={[
+          { label: 'Sign out', color: 'destructive', onPress: doSignOut },
+          { label: 'Cancel', color: 'cancel' },
+        ]}
+      />
+    </>
+  );
+}
+```
+
+## Custom content
+
+Provide any JSX as `children`. Combine with `title` to keep a consistent header.
+
+```tsx
+<Dialog control={control} title="Pick a tag">
+  <YourCustomBody />
+</Dialog>
+```
+
+## Pure custom
+
+Drop the declarative props entirely — `children` owns every pixel.
+
+```tsx
+<Dialog control={control}>
+  <YourEntirelyCustomLayout />
+</Dialog>
+```
+
+## Props
+
+| Prop | Type | Description |
+|------|------|-------------|
+| `control` | `DialogControl` | Returned by `useDialogControl()`. |
+| `title?` | `string` | Header text. |
+| `description?` | `string` | Supporting copy rendered below the title. |
+| `actions?` | `DialogAction[]` | Confirmation buttons (see below). |
+| `children?` | `React.ReactNode` | Custom content rendered after the description. |
+| `onClose?` | `() => void` | Fires after the dialog has finished closing. |
+| `style?` | `StyleProp<ViewStyle>` | Applied to the dialog content container. |
+| `label?` | `string` | Accessibility label. |
+| `testID?` | `string` | RN testing ID. |
+
+### `DialogAction`
+
+| Prop | Type | Description |
+|------|------|-------------|
+| `label` | `string` | Button text. |
+| `color?` | `'default' \| 'cancel' \| 'destructive'` | Defaults to `'default'`. |
+| `onPress?` | `(e) => void` | Invoked **after** the dialog finishes closing. |
+| `disabled?` | `boolean` | |
+| `shouldCloseOnPress?` | `boolean` | Defaults to `true`. Set `false` while an async action is in flight. |
+| `testID?` | `string` | |
+
+## Web setup
+
+Inject the CSS animations into your global styles once:
+
+```tsx
+import { BLOOM_DIALOG_CSS } from '@oxyhq/bloom/dialog';
+
+// In your HTML head or global CSS file:
+<style>{BLOOM_DIALOG_CSS}</style>
+```
+
+## Examples
+
+### Three-action confirmation
+
+```tsx
+<Dialog
+  control={control}
+  title="Delete project?"
+  description="This will permanently delete the project and all of its files."
+  actions={[
+    { label: 'Delete', color: 'destructive', onPress: handleDelete },
+    { label: 'Archive', onPress: handleArchive },
+    { label: 'Cancel', color: 'cancel' },
+  ]}
+/>
+```
+
+### Async confirm with loading state
+
+```tsx
+const [busy, setBusy] = useState(false);
+
+<Dialog
+  control={control}
+  title="Submit?"
+  actions={[
+    {
+      label: busy ? 'Submitting…' : 'Submit',
+      disabled: busy,
+      shouldCloseOnPress: false, // keep dialog open while we work
+      onPress: async () => {
+        setBusy(true);
+        try {
+          await submit();
+          control.close();
+        } finally {
+          setBusy(false);
+        }
+      },
+    },
+    { label: 'Cancel', color: 'cancel' },
+  ]}
+/>
+```
+
+### Form inside a dialog
+
+```tsx
+<Dialog control={control} title="Add tag">
+  <TextField placeholder="Tag name" value={name} onChangeText={setName} />
+  <Button onPress={() => { save(name); control.close(); }}>Save</Button>
+</Dialog>
+```

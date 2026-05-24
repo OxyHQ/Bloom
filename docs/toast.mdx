@@ -1,0 +1,75 @@
+---
+title: Toast
+description: Passive notifications, sonner under the hood, themed by Bloom.
+order: 5
+---
+
+# Toast
+
+Passive notifications. Sonner under the hood (`sonner-native` on native, `sonner` on web), themed and bridged by Bloom so the API is identical on every platform.
+
+## Setup
+
+Mount the outlet once near the app root, inside `BloomThemeProvider`:
+
+```tsx
+import { ToastOutlet } from '@oxyhq/bloom/toast';
+
+<BloomThemeProvider>
+  <App />
+  <ToastOutlet />
+</BloomThemeProvider>
+```
+
+## API
+
+```tsx
+import { toast } from '@oxyhq/bloom';
+
+toast('Saved');
+toast.success('Profile updated');
+toast.error('Network error', { duration: 5000 });
+toast.warning('Please verify your email');
+toast.info('A new version is available');
+
+const id = toast('Uploading…');
+toast.dismiss(id);
+```
+
+`toast(content, options?)` accepts strings or React elements. `options.type` (`'default' | 'success' | 'error' | 'warning' | 'info'`) is overridden by the typed helpers above.
+
+## Options
+
+| Option | Type | Description |
+|--------|------|-------------|
+| `duration?` | `number` | Time in ms before auto-dismiss. Defaults to `4000`. |
+| `type?` | `'default' \| 'success' \| 'error' \| 'warning' \| 'info'` | Visual type. |
+| `id?` | `string` | Stable id (useful for updates). |
+| `description?` | `string` | Secondary text shown under the main label. |
+
+## Patterns
+
+### Promise toast
+
+```tsx
+toast.promise(saveProfile(), {
+  loading: 'Saving…',
+  success: 'Saved',
+  error: (err) => `Failed: ${err.message}`,
+});
+```
+
+### Action toast
+
+```tsx
+toast('Item moved to trash', {
+  action: {
+    label: 'Undo',
+    onClick: () => restore(item.id),
+  },
+});
+```
+
+<Callout variant="info" title="Toast vs alert()">
+Reach for `toast()` for passive feedback (the user doesn't have to react). Use [`alert()`](/docs/bloom/main/alert) when you need a one-shot confirmation that blocks the rest of the UI.
+</Callout>

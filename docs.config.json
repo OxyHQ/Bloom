@@ -1,0 +1,13 @@
+{
+  "package": "@oxyhq/bloom",
+  "displayName": "Bloom",
+  "shortName": "bloom",
+  "repo": "https://github.com/OxyHQ/Bloom",
+  "category": "ui-library",
+  "versions": ["main"],
+  "defaultVersion": "main",
+  "docsPath": "docs/",
+  "docsIgnore": ["superpowers"],
+  "typedoc": { "entry": "src/index.ts" },
+  "description": "Shared UI component library for React Native + Expo + Web."
+}
