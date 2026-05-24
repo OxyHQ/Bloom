@@ -70,10 +70,22 @@ export interface BottomSheetProps {
     enablePanDownToClose?: boolean;
     backgroundComponent?: (props: { style?: StyleProp<ViewStyle> }) => React.ReactElement | null;
     backdropComponent?: (props: { style?: StyleProp<ViewStyle>; onPress?: () => void }) => React.ReactElement | null;
+    /**
+     * Style applied to the sheet container (the outer Animated.View positioned at
+     * the bottom of the screen). Use this to override `maxWidth`, `height`,
+     * background color, border radius, etc. Composed AFTER the internal sheet
+     * styles so it can override them.
+     */
     style?: StyleProp<ViewStyle>;
     enableHandlePanningGesture?: boolean;
     onDismissAttempt?: () => boolean;
     detached?: boolean; // If true, shows with margins and rounded corners. If false, full width with rounded top only.
+    /**
+     * Whether to render the built-in (non-interactive) drag handle bar at the top
+     * of the sheet. Defaults to `true`. Set to `false` when the consumer renders
+     * its own handle (e.g. an interactive close affordance) inside `children`.
+     */
+    showHandle?: boolean;
 }
 
 const BottomSheet = forwardRef((props: BottomSheetProps, ref: React.ForwardedRef<BottomSheetRef>) => {
@@ -87,6 +99,7 @@ const BottomSheet = forwardRef((props: BottomSheetProps, ref: React.ForwardedRef
         enableHandlePanningGesture = true,
         onDismissAttempt,
         detached = false,
+        showHandle = true,
     } = props;
 
     const insets = useSafeAreaInsets();
@@ -360,10 +373,10 @@ const BottomSheet = forwardRef((props: BottomSheetProps, ref: React.ForwardedRef
                 </Animated.View>
 
                 <GestureDetector gesture={panGesture}>
-                    <Animated.View style={[dynamicStyles.sheet, sheetMarginStyle, sheetStyle, sheetHeightStyle]}>
+                    <Animated.View style={[dynamicStyles.sheet, sheetMarginStyle, sheetStyle, sheetHeightStyle, style]}>
                         {backgroundComponent?.({ style: styles.background })}
 
-                        <View style={dynamicStyles.handle} />
+                        {showHandle && <View style={dynamicStyles.handle} />}
 
                         <GestureDetector gesture={nativeGesture}>
                             <Animated.ScrollView

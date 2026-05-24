@@ -1,78 +1,14 @@
 import React, { useCallback, useImperativeHandle, useMemo, useRef } from 'react';
-import { Pressable, StyleSheet, View, type StyleProp, type ViewStyle } from 'react-native';
+import { Pressable, StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
+import { BottomSheet, type BottomSheetRef } from '../bottom-sheet';
 import { useTheme } from '../theme/use-theme';
-import { lazyRequire } from '../utils/lazy-require';
 import { Context, useDialogContext } from './context';
 import type { DialogControlProps, DialogInnerProps, DialogOuterProps } from './types';
 
 export { useDialogContext, useDialogControl } from './context';
 export type { DialogControlProps, DialogOuterProps, DialogInnerProps } from './types';
-
-// ---------------------------------------------------------------------------
-// Local types for @gorhom/bottom-sheet — declared here instead of imported so
-// that Bloom type-checks cleanly in downstream projects that do not install
-// this optional peer dependency. The module is still consumed at runtime via
-// `lazyRequire`, which returns `null` if the package is missing. In that case
-// Dialog.Outer renders nothing with a console warning, so consumers on native
-// MUST install @gorhom/bottom-sheet to use Bloom's Dialog on native.
-// ---------------------------------------------------------------------------
-type BottomSheetBackdropProps = {
-  animatedIndex: unknown;
-  animatedPosition: unknown;
-  style?: StyleProp<ViewStyle>;
-};
-
-type BottomSheetModalRef = {
-  present: () => void;
-  dismiss: () => void;
-};
-
-type BottomSheetModalProps = {
-  ref?: React.Ref<BottomSheetModalRef>;
-  enablePanDownToClose?: boolean;
-  enableDismissOnClose?: boolean;
-  enableDynamicSizing?: boolean;
-  snapPoints?: (string | number)[];
-  backgroundStyle?: StyleProp<ViewStyle>;
-  handleComponent?: React.ComponentType | (() => React.ReactNode) | null;
-  backdropComponent?: React.ComponentType<BottomSheetBackdropProps>;
-  onDismiss?: () => void;
-  style?: StyleProp<ViewStyle>;
-  children?: React.ReactNode;
-};
-
-type BottomSheetViewProps = {
-  testID?: string;
-  style?: StyleProp<ViewStyle>;
-  children?: React.ReactNode;
-};
-
-type BottomSheetBackdropComponentProps = BottomSheetBackdropProps & {
-  appearsOnIndex?: number;
-  disappearsOnIndex?: number;
-  pressBehavior?: 'none' | 'close' | 'collapse' | number;
-  opacity?: number;
-};
-
-type BottomSheetModule = {
-  BottomSheetModal: React.ComponentType<BottomSheetModalProps>;
-  BottomSheetView: React.ComponentType<BottomSheetViewProps>;
-  BottomSheetBackdrop: React.ComponentType<BottomSheetBackdropComponentProps>;
-};
-
-const getBottomSheetModule = lazyRequire<BottomSheetModule>('@gorhom/bottom-sheet');
-
-let warnedAboutMissingBottomSheet = false;
-function warnMissingBottomSheet(): void {
-  if (warnedAboutMissingBottomSheet) return;
-  warnedAboutMissingBottomSheet = true;
-  console.warn(
-    "[bloom] @gorhom/bottom-sheet is not installed. Bloom's native Dialog will not render. " +
-      'Install it as a peer dependency to enable Dialog on native, or rely on the web Dialog implementation on web.',
-  );
-}
 
 export function Outer({
   children,
@@ -82,7 +18,7 @@ export function Outer({
   preventExpansion,
 }: React.PropsWithChildren<DialogOuterProps>) {
   const theme = useTheme();
-  const ref = useRef<BottomSheetModalRef>(null);
+  const ref = useRef<BottomSheetRef>(null);
   const closeCallbacks = useRef<(() => void)[]>([]);
 
   const callQueuedCallbacks = useCallback(() => {
@@ -107,6 +43,10 @@ export function Outer({
     ref.current?.dismiss();
   }, []);
 
+  // onDismiss fires after the BottomSheet's close animation finishes — this is
+  // the integration point for the closeCallbacks queue. Consumers (e.g.
+  // Prompt.Action) rely on the queued callback running AFTER the sheet has
+  // visually closed so the screen transition feels natural.
   const handleDismiss = useCallback(() => {
     callQueuedCallbacks();
     onClose?.();
@@ -123,63 +63,39 @@ export function Outer({
     [close],
   );
 
-  const bottomSheet = getBottomSheetModule();
-
-  const renderBackdrop = useCallback(
-    (props: BottomSheetBackdropProps) => {
-      if (!bottomSheet) return null;
-      const { BottomSheetBackdrop } = bottomSheet;
-      return (
-        <BottomSheetBackdrop
-          {...props}
-          appearsOnIndex={0}
-          disappearsOnIndex={-1}
-          pressBehavior="close"
-          opacity={0.4}
-        />
-      );
-    },
-    [bottomSheet],
-  );
-
-  const renderHandle = useCallback(() => null, []);
-
-  if (!bottomSheet) {
-    // Optional peer `@gorhom/bottom-sheet` is not installed.
-    // Dialog.Outer is a no-op in this environment; consumers on native must
-    // install the peer to use Bloom's native Dialog implementation.
-    warnMissingBottomSheet();
-    return null;
-  }
-
-  const { BottomSheetModal, BottomSheetView } = bottomSheet;
-
-  return (
-    <BottomSheetModal
-      ref={ref}
-      enablePanDownToClose
-      enableDismissOnClose
-      enableDynamicSizing={!preventExpansion}
-      snapPoints={preventExpansion ? ['40%'] : undefined}
-      backgroundStyle={{
+  const sheetStyle = useMemo(
+    () => [
+      {
+        maxWidth: 500,
         backgroundColor: theme.colors.background,
         borderTopLeftRadius: 20,
         borderTopRightRadius: 20,
-      }}
-      handleComponent={renderHandle}
-      backdropComponent={renderBackdrop}
+      },
+      // When the dialog should not be expandable to fill the screen, clamp the
+      // sheet to a comfortable fixed height. Mirrors the historical gorhom
+      // behaviour where `preventExpansion` locked the sheet to a 40% snap point.
+      preventExpansion ? { height: '40%' as const } : null,
+    ],
+    [theme.colors.background, preventExpansion],
+  );
+
+  return (
+    <BottomSheet
+      ref={ref}
       onDismiss={handleDismiss}
-      style={{ maxWidth: 500, margin: 'auto' }}
+      enablePanDownToClose
+      showHandle={false}
+      style={sheetStyle}
     >
       <Context.Provider value={context}>
-        <BottomSheetView
+        <View
           testID={testID}
           style={{ backgroundColor: theme.colors.background }}
         >
           {children}
-        </BottomSheetView>
+        </View>
       </Context.Provider>
-    </BottomSheetModal>
+    </BottomSheet>
   );
 }
 

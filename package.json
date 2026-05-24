@@ -1,6 +1,6 @@
 {
   "name": "@oxyhq/bloom",
-  "version": "0.3.7",
+  "version": "0.3.8",
   "description": "Bloom UI — Oxy ecosystem component library for React Native + Expo + Web",
   "main": "lib/commonjs/index.js",
   "module": "lib/module/index.js",
@@ -602,7 +602,6 @@
     "release": "rm -rf lib && npm run build && release-it"
   },
   "devDependencies": {
-    "@gorhom/bottom-sheet": "^5.2.8",
     "@testing-library/react-native": "^13.3.3",
     "@types/jest": "^30.0.0",
     "@types/react": "~19.1.0",
@@ -627,7 +626,6 @@
     "typescript": "~5.9.2"
   },
   "peerDependencies": {
-    "@gorhom/bottom-sheet": ">=5.0.0",
     "expo": "*",
     "expo-font": "*",
     "react": ">=18.0.0",
@@ -641,9 +639,6 @@
     "sonner-native": ">=0.17.0"
   },
   "peerDependenciesMeta": {
-    "@gorhom/bottom-sheet": {
-      "optional": true
-    },
     "expo": {
       "optional": true
     },
