@@ -24,9 +24,13 @@ function fontFamilyStyle(
   if (Platform.OS === 'web') {
     return { fontFamily: `var(--bloom-font-${kind})` };
   }
-  if (kind === 'display') return { fontFamily: 'BlomusModernus' };
   if (kind === 'mono') return { fontFamily: 'Geist Mono' };
-  return { fontFamily: 'Inter' };
+  // `display` and `sans` both resolve to BlomusModernus on native — Bloom's
+  // default body font. The CSS stack in `tokens.ts` differs (display vs sans
+  // have different fallback chains for web), but on RN the literal family
+  // name is the only thing that matters; the .ttf is registered via
+  // `useFonts(FONT_ASSETS)` in `FontLoader.native.tsx`.
+  return { fontFamily: 'BlomusModernus' };
 }
 
 const SANS_FONT_FAMILY = fontFamilyStyle('sans');

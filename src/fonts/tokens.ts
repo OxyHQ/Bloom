@@ -10,7 +10,7 @@
 
 export const fontFamilies = {
   display: 'BlomusModernus, Georgia, "Times New Roman", serif',
-  sans: 'Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
+  sans: 'BlomusModernus, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
   mono: '"Geist Mono", ui-monospace, SFMono-Regular, Menlo, monospace',
 } as const;
 

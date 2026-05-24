@@ -27,9 +27,9 @@ type TextWithDefaults = typeof Text & {
 
 /**
  * Mutates `Text.defaultProps.style` so every native `<Text>` in the consuming
- * app inherits Bloom's sans font (Inter). The Bloom family name is prepended
- * to any existing default style so caller-provided `style` (which React
- * applies AFTER `defaultProps.style`) still wins for overrides.
+ * app inherits Bloom's default font (BlomusModernus). The Bloom family name
+ * is prepended to any existing default style so caller-provided `style`
+ * (which React applies AFTER `defaultProps.style`) still wins for overrides.
  *
  * Idempotent: re-invoking it after the first apply is a no-op because the
  * first style entry will already be the Bloom default we added.
@@ -37,7 +37,7 @@ type TextWithDefaults = typeof Text & {
 function applyDefaultTextFont(): void {
   const TextWithDefaults = Text as TextWithDefaults;
   const existing = TextWithDefaults.defaultProps?.style;
-  const bloomDefault: TextStyle = { fontFamily: 'Inter' };
+  const bloomDefault: TextStyle = { fontFamily: 'BlomusModernus' };
 
   // Detect whether we've already prepended ourselves. `existing` may be an
   // array (multiple style fragments), a single object, a registered style
@@ -79,8 +79,8 @@ function applyDefaultTextFont(): void {
  * provider tree ever flips `fonts` back on.
  *
  * Once the bundled fonts report `loaded === true`, this component also
- * mutates `Text.defaultProps.style` to prepend `{ fontFamily: 'Inter' }`
- * so every native `<Text>` in the consuming app inherits Bloom's sans
+ * mutates `Text.defaultProps.style` to prepend `{ fontFamily: 'BlomusModernus' }`
+ * so every native `<Text>` in the consuming app inherits Bloom's default
  * family without callers needing to import `<Text>` from `@oxyhq/bloom`.
  * The mutation is gated by a `useRef` so it runs at most once per
  * FontLoader instance, and the underlying apply is idempotent — the

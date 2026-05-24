@@ -86,7 +86,7 @@ describe('FontLoader (native)', () => {
     expect(getByText('content')).toBeTruthy();
   });
 
-  it('prepends Inter to Text.defaultProps.style once fonts are loaded', () => {
+  it('prepends BlomusModernus to Text.defaultProps.style once fonts are loaded', () => {
     setUseFontsResult([true, null]);
     render(
       <FontLoader enabled>
@@ -94,7 +94,7 @@ describe('FontLoader (native)', () => {
       </FontLoader>,
     );
     const defaults = (Text as TextWithDefaults).defaultProps;
-    expect(defaults?.style).toEqual({ fontFamily: 'Inter' });
+    expect(defaults?.style).toEqual({ fontFamily: 'BlomusModernus' });
   });
 
   it('does not touch Text.defaultProps until fonts are loaded', () => {
@@ -107,7 +107,7 @@ describe('FontLoader (native)', () => {
     expect((Text as TextWithDefaults).defaultProps?.style).toBeUndefined();
   });
 
-  it('preserves a pre-existing default style by appending it after Inter', () => {
+  it('preserves a pre-existing default style by appending it after BlomusModernus', () => {
     const preExisting = { color: '#abcdef' } as const;
     (Text as TextWithDefaults).defaultProps = { style: preExisting };
     setUseFontsResult([true, null]);
@@ -119,7 +119,7 @@ describe('FontLoader (native)', () => {
     const style = (Text as TextWithDefaults).defaultProps?.style;
     expect(Array.isArray(style)).toBe(true);
     if (Array.isArray(style)) {
-      expect(style[0]).toEqual({ fontFamily: 'Inter' });
+      expect(style[0]).toEqual({ fontFamily: 'BlomusModernus' });
       expect(style[1]).toBe(preExisting);
     }
   });
@@ -139,8 +139,8 @@ describe('FontLoader (native)', () => {
     );
     second.unmount();
     const style = (Text as TextWithDefaults).defaultProps?.style;
-    // Should still be the single, plain Inter object — not nested arrays
-    // or duplicated entries.
-    expect(style).toEqual({ fontFamily: 'Inter' });
+    // Should still be the single, plain BlomusModernus object — not nested
+    // arrays or duplicated entries.
+    expect(style).toEqual({ fontFamily: 'BlomusModernus' });
   });
 });
