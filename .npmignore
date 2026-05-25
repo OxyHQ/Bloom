@@ -1,6 +1,13 @@
 __tests__/
 example/
 .github/
+.storybook/
+storybook-static/
 tsconfig*.json
 .gitignore
 *.tsbuildinfo
+*.stories.ts
+*.stories.tsx
+*.stories.js
+*.stories.js.map
+*.stories.d.ts

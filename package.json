@@ -588,7 +588,9 @@
     "typescript": "tsc --noEmit",
     "clean": "rm -rf lib",
     "prepare": "bob build || true",
-    "release": "rm -rf lib && bun run build && release-it"
+    "release": "rm -rf lib && bun run build && release-it",
+    "storybook": "storybook dev -p 6006 --no-open",
+    "storybook:build": "storybook build -o storybook-static"
   },
   "release-it": {
     "git": {
@@ -605,11 +607,14 @@
     }
   },
   "devDependencies": {
+    "@storybook/addon-docs": "^10",
+    "@storybook/react-vite": "^10",
     "@testing-library/react-native": "^13.3.3",
     "@types/jest": "^30.0.0",
     "@types/react": "~19.1.0",
     "@types/react-dom": "^19.2.3",
     "@types/react-native": "*",
+    "@vitejs/plugin-react": "^6.0.2",
     "expo-font": "^56.0.5",
     "jest": "^30.3.0",
     "jest-environment-jsdom": "^30.4.1",
@@ -621,12 +626,15 @@
     "react-native-reanimated": "^4.2.2",
     "react-native-safe-area-context": "~5.6.0",
     "react-native-svg": "^15.15.3",
+    "react-native-web": "^0.21.2",
     "react-test-renderer": "^19.2.0",
     "release-it": "^19.0.6",
     "sonner": "^2.0.3",
     "sonner-native": "^0.23.1",
+    "storybook": "^10",
     "ts-jest": "^29.4.6",
-    "typescript": "~5.9.2"
+    "typescript": "~5.9.2",
+    "vite": "^7"
   },
   "peerDependencies": {
     "expo": "*",
@@ -670,6 +678,7 @@
   "react-native-builder-bob": {
     "source": "src",
     "output": "lib",
+    "exclude": "{**/{__tests__,__fixtures__,__mocks__}/**,**/*.stories.{ts,tsx},**/*.{test,spec}.{ts,tsx}}",
     "targets": [
       [
         "commonjs",
@@ -683,7 +692,12 @@
           "esm": true
         }
       ],
-      "typescript"
+      [
+        "typescript",
+        {
+          "project": "tsconfig.build.json"
+        }
+      ]
     ]
   },
   "dependencies": {
