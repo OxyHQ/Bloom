@@ -70,5 +70,6 @@
   "docsPath": "docs/",
   "docsIgnore": ["superpowers"],
   "typedoc": { "entry": "src/index.ts" },
-  "description": "Shared UI component library for React Native + Expo + Web."
+  "description": "Shared UI component library for React Native + Expo + Web.",
+  "versionsNote": "A handful of patch versions (0.1.5, 0.1.18, 0.1.19, 0.1.23, 0.1.34-0.1.36, 0.3.1, 0.3.4, 0.3.5) were published from local commits not preserved in git history. See npm for changelogs."
 }
