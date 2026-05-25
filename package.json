@@ -588,7 +588,21 @@
     "typescript": "tsc --noEmit",
     "clean": "rm -rf lib",
     "prepare": "bob build || true",
-    "release": "rm -rf lib && npm run build && release-it"
+    "release": "rm -rf lib && bun run build && release-it"
+  },
+  "release-it": {
+    "git": {
+      "tagName": "@oxyhq/bloom@${version}",
+      "tagAnnotation": "Release @oxyhq/bloom@${version}",
+      "commitMessage": "chore: release @oxyhq/bloom@${version}"
+    },
+    "github": {
+      "release": true,
+      "releaseName": "@oxyhq/bloom@${version}"
+    },
+    "npm": {
+      "publish": true
+    }
   },
   "devDependencies": {
     "@testing-library/react-native": "^13.3.3",
