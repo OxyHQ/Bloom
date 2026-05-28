@@ -7,12 +7,20 @@ import {
   useRef,
   useState,
 } from 'react';
-import { Platform, type StyleProp, Text, type TextStyle, View, type ViewStyle } from 'react-native';
+import {
+  Platform,
+  Pressable,
+  type PressableProps,
+  type StyleProp,
+  Text,
+  type TextStyle,
+  View,
+  type ViewStyle,
+} from 'react-native';
 import Animated, { Easing, LinearTransition } from 'react-native-reanimated';
 
 import { useTheme } from '../theme/use-theme';
 import { atoms as a, platform } from '../styles';
-import { Button, type ButtonProps } from '../button';
 
 const InternalContext = createContext<{
   type: 'tabs' | 'radio';
@@ -98,17 +106,27 @@ export function Root<T extends string>({
     };
   }, [value, selectedPosition, setSelectedPosition, onChange, type, size]);
 
+  // Height of the wrapping pill matches the active item height (item
+  // `minHeight` + 4px outer `p_xs` padding on both sides). Locking the
+  // outer View to this exact height keeps the control as a tight inline
+  // pill on every platform — without it, a parent column flex context
+  // (the default on a `<View>`) would let the Root stretch vertically
+  // and the items inside would inherit that stretched height, blowing
+  // the control up into a giant block on native.
+  const itemMinHeight = size === 'large' ? 40 : 32;
+  const pillHeight = itemMinHeight + 8;
+
   return (
     <View
       accessibilityLabel={label}
       accessibilityHint={accessibilityHint ?? ''}
       style={[
         a.w_full,
-        a.flex_1,
         a.relative,
         a.flex_row,
+        a.align_center,
         { backgroundColor: theme.colors.contrast50 },
-        { borderRadius: 14 },
+        { borderRadius: 14, height: pillHeight },
         a.p_xs,
         style,
       ]}
@@ -132,8 +150,20 @@ export function Item({
   style,
   children,
   onPress: onPressProp,
-  ...props
-}: { value: string; children: React.ReactNode } & Omit<ButtonProps, 'children'>) {
+  accessibilityLabel,
+  accessibilityHint,
+  testID,
+  disabled,
+}: {
+  value: string;
+  children: React.ReactNode;
+  style?: StyleProp<ViewStyle>;
+  onPress?: () => void;
+  accessibilityLabel?: string;
+  accessibilityHint?: string;
+  testID?: string;
+  disabled?: PressableProps['disabled'];
+}) {
   const [position, setPosition] = useState<{ x: number; width: number } | null>(
     null,
   );
@@ -171,9 +201,23 @@ export function Item({
     onPressProp?.();
   }, [ctx, value, position, onPressProp]);
 
+  // We render the segment as a flat `Pressable` (not Bloom's `Button`)
+  // for two reasons:
+  //   1. Layout: we need the touch target to participate directly in the
+  //      Root's row flex layout so `flex: 1` distributes the items
+  //      evenly on every platform. Bloom Button wraps its Pressable in
+  //      an Animated.View that doesn't forward layout-affecting styles,
+  //      which would collapse the segment to its natural text width.
+  //   2. Semantics: the Root carries `role="tablist"`/`"radiogroup"` and
+  //      each item carries `role="tab"`/`"radio"`. Bloom Button always
+  //      adds `accessibilityRole="button"` — that overrides the correct
+  //      a11y role for tablist children.
+  const itemRole = ctx.type === 'tabs' ? 'tab' : 'radio';
+  const itemMinHeight = ctx.size === 'large' ? 40 : 32;
+
   return (
     <View
-      style={[a.flex_1, a.flex_row]}
+      style={[a.flex_1, a.flex_row, a.align_stretch]}
       onLayout={evt => {
         const measuredPosition = {
           x: evt.nativeEvent.layout.x,
@@ -184,23 +228,30 @@ export function Item({
         }
         setPosition(measuredPosition);
       }}>
-      <Button
-        {...props}
+      <Pressable
         onPress={onPress}
-        accessibilityLabel={props.accessibilityLabel}
-        accessibilityHint={props.accessibilityHint}
-        style={[
+        accessibilityLabel={accessibilityLabel}
+        accessibilityHint={accessibilityHint}
+        accessibilityState={{ selected: active, disabled: !!disabled }}
+        role={itemRole}
+        disabled={disabled}
+        testID={testID}
+        style={({ pressed }) => [
           a.flex_1,
+          a.flex_row,
+          a.align_center,
+          a.justify_center,
           a.bg_transparent,
           a.px_sm,
           a.py_xs,
-          { minHeight: ctx.size === 'large' ? 40 : 32, borderRadius: 10 },
+          { minHeight: itemMinHeight, borderRadius: 10 },
+          pressed && !disabled && { opacity: 0.7 },
           style,
         ]}>
         <InternalItemContext.Provider value={{ active }}>
           {children}
         </InternalItemContext.Provider>
-      </Button>
+      </Pressable>
     </View>
   );
 }
