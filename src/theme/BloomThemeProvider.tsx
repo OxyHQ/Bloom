@@ -1,3 +1,8 @@
+// Side-effect import — must come first. Initializes react-native-css-interop's
+// `darkMode` flag to `'class'` at module load so its MutationObserver doesn't
+// throw "Cannot manually set color scheme, as dark mode is type 'media'" the
+// first time Bloom toggles the dark class on <html>. See ./init-css-interop.
+import './init-css-interop';
 import React, { createContext, useCallback, useContext, useMemo, useRef, useState } from 'react';
 import { useColorScheme as useRNColorScheme, Platform } from 'react-native';
 import { APP_COLOR_PRESETS, type AppColorName } from './color-presets';
