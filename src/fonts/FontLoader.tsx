@@ -1,10 +1,11 @@
 import React, { useRef } from 'react';
 // Reach for the web variant explicitly. The default `./apply-font-faces`
-// is a no-op stub that exists so Metro never sees the module-level
-// `.woff2` imports on native (Metro's default `assetExts` does not include
-// `.woff2`). This file (`FontLoader.tsx`) is only picked up by web
-// bundlers — Metro selects `FontLoader.native.tsx` on iOS/Android — so it
-// is safe to take a direct dependency on the web implementation here.
+// is a no-op stub on native — native loads its fonts via
+// `useFonts(FONT_ASSETS)` in `FontLoader.native.tsx` and has no use for
+// CSS `@font-face` injection. This file (`FontLoader.tsx`) is only picked
+// up by web bundlers — Metro selects `FontLoader.native.tsx` on iOS/Android
+// — so it is safe to take a direct dependency on the web implementation
+// here.
 import { applyFontFaces } from './apply-font-faces.web';
 
 export interface FontLoaderProps {

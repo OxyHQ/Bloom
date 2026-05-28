@@ -1,6 +1,6 @@
 {
   "name": "@oxyhq/bloom",
-  "version": "0.5.0",
+  "version": "0.5.1",
   "description": "Bloom UI — Oxy ecosystem component library for React Native + Expo + Web",
   "main": "lib/commonjs/index.js",
   "module": "lib/module/index.js",
@@ -582,10 +582,13 @@
   "license": "MIT",
   "scripts": {
     "generate:exports": "node scripts/generate-platform-exports.mjs",
-    "prebuild": "node scripts/generate-platform-exports.mjs",
+    "generate:font-data": "node scripts/generate-font-data.mjs",
+    "prebuild": "node scripts/generate-platform-exports.mjs && node scripts/generate-font-data.mjs",
     "build": "bob build",
     "test": "jest",
+    "pretest": "node scripts/generate-font-data.mjs",
     "typescript": "tsc --noEmit",
+    "pretypescript": "node scripts/generate-font-data.mjs",
     "clean": "rm -rf lib",
     "prepare": "bob build || true",
     "release": "rm -rf lib && bun run build && release-it",
@@ -678,7 +681,7 @@
   "react-native-builder-bob": {
     "source": "src",
     "output": "lib",
-    "exclude": "{**/{__tests__,__fixtures__,__mocks__}/**,**/*.stories.{ts,tsx},**/*.{test,spec}.{ts,tsx}}",
+    "exclude": "{**/{__tests__,__fixtures__,__mocks__}/**,**/*.stories.{ts,tsx},**/*.{test,spec}.{ts,tsx},**/*.woff2}",
     "targets": [
       [
         "commonjs",
