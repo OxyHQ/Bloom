@@ -328,6 +328,8 @@ const styles = StyleSheet.create({
     right: 0,
     bottom: 0,
     zIndex: 50,
+    // Opt back in from the Portal root's `pointer-events: none`.
+    pointerEvents: 'auto',
   },
   dropdown: {
     position: 'fixed' as 'absolute',
@@ -341,6 +343,8 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 4 },
     minWidth: 180,
     maxWidth: 280,
+    // Opt back in from the Portal root's `pointer-events: none`.
+    pointerEvents: 'auto',
   },
   item: {
     flexDirection: 'row',

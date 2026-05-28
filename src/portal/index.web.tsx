@@ -17,7 +17,20 @@ import React, { Fragment, memo, useLayoutEffect, useState } from 'react';
 import { createPortal } from 'react-dom';
 
 /**
- * Render children into a stable container at the end of `document.body`.
+ * Render children into a stable container appended to `document.body`.
+ *
+ * The container is positioned `fixed` and stretched edge-to-edge so it
+ * fills the viewport. This makes it a valid containing block for any
+ * portaled descendant that uses `position: absolute` (e.g. RN's
+ * `StyleSheet.absoluteFillObject`) — without it those children anchor to a
+ * zero-area block at the end of `<body>` and render off-screen.
+ *
+ * `pointer-events: none` lets clicks fall through to the underlying app
+ * while the portal is idle. Interactive descendants (backdrops, modal
+ * panels, dropdowns, etc.) must opt back in with `pointer-events: auto`
+ * (or RN's `pointerEvents="auto"` / `"box-only"`). Bloom's own overlay
+ * components do this on the elements they actually want to receive
+ * events.
  *
  * Lazy-creates the container on first mount so SSR (where `document` does
  * not exist) doesn't crash — the portal simply renders nothing on the
@@ -29,9 +42,16 @@ function getPortalRoot(): HTMLElement | null {
   if (!root) {
     root = document.createElement('div');
     root.id = 'bloom-portal-root';
-    // Sits above the document flow; individual portaled components can use
+    root.style.position = 'fixed';
+    root.style.top = '0';
+    root.style.left = '0';
+    root.style.right = '0';
+    root.style.bottom = '0';
+    // Idle portal must not intercept clicks on the underlying app.
+    // Children opt back in to receive events via their own pointer-events.
+    root.style.pointerEvents = 'none';
+    // Above the document flow; individual portaled components can use
     // their own z-index for stacking among themselves.
-    root.style.position = 'relative';
     root.style.zIndex = '999999';
     document.body.appendChild(root);
   }

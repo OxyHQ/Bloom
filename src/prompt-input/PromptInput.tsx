@@ -235,6 +235,9 @@ export function PromptInput({
               {
                 zIndex: 9998,
                 backgroundColor: theme.colors.background,
+                // Opt back in from the Portal root's `pointer-events: none`
+                // (web only — harmless on native).
+                pointerEvents: 'auto',
               },
             ]}
           >

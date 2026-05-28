@@ -134,6 +134,9 @@ export function Dialog({
           <RemoveScrollBar />
           <Pressable
             onPress={() => close()}
+            // `pointerEvents: 'auto'` opts back in from the Portal root's
+            // `pointer-events: none`, which is set so the idle portal
+            // doesn't intercept clicks on the underlying app.
             style={{
               position: 'fixed' as 'absolute',
               top: 0,
@@ -144,6 +147,7 @@ export function Dialog({
               alignItems: 'center',
               justifyContent: 'center',
               paddingHorizontal: 20,
+              pointerEvents: 'auto',
             }}
           >
             <DialogBackdrop isClosing={isClosing} />

@@ -338,6 +338,8 @@ const styles = StyleSheet.create({
     right: 0,
     bottom: 0,
     zIndex: 50,
+    // Opt back in from the Portal root's `pointer-events: none`.
+    pointerEvents: 'auto',
   },
   dropdown: {
     position: 'absolute',
@@ -350,6 +352,8 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.15,
     shadowRadius: 12,
     shadowOffset: { width: 0, height: 4 },
+    // Opt back in from the Portal root's `pointer-events: none`.
+    pointerEvents: 'auto',
   },
   item: {
     position: 'relative',
