@@ -45,7 +45,11 @@ export * from './divider';
 export * from './radio-indicator';
 export * from './collapsible';
 export { ErrorBoundary } from './error-boundary';
-export type { ErrorBoundaryProps } from './error-boundary';
+export type {
+  ErrorBoundaryProps,
+  ErrorBoundaryFallback,
+  ErrorBoundaryFallbackContext,
+} from './error-boundary';
 export * from './avatar';
 export * from './loading';
 export * as PromptInput from './prompt-input';

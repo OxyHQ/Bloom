@@ -6,6 +6,8 @@ import type { ErrorBoundaryProps } from './types';
 interface ErrorBoundaryState {
   hasError: boolean;
   error: Error | null;
+  errorInfo: ErrorInfo | null;
+  retryCount: number;
 }
 
 /**
@@ -52,24 +54,45 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
   state: ErrorBoundaryState = {
     hasError: false,
     error: null,
+    errorInfo: null,
+    retryCount: 0,
   };
 
-  static getDerivedStateFromError(error: Error): ErrorBoundaryState {
+  static getDerivedStateFromError(error: Error): Partial<ErrorBoundaryState> {
     return { hasError: true, error };
   }
 
   componentDidCatch(error: Error, errorInfo: ErrorInfo): void {
+    this.setState({ errorInfo });
     this.props.onError?.(error, errorInfo);
   }
 
   private handleRetry = (): void => {
-    this.setState({ hasError: false, error: null });
+    this.setState((prev) => ({
+      hasError: false,
+      error: null,
+      errorInfo: null,
+      retryCount: prev.retryCount + 1,
+    }));
   };
 
   render(): ReactNode {
-    if (this.state.hasError) {
-      if (this.props.fallback) {
-        return this.props.fallback;
+    if (this.state.hasError && this.state.error) {
+      const { fallback } = this.props;
+
+      if (typeof fallback === 'function') {
+        // Render-prop variant — invoke with error context.
+        return fallback({
+          error: this.state.error,
+          errorInfo: this.state.errorInfo,
+          retry: this.handleRetry,
+          retryCount: this.state.retryCount,
+        });
+      }
+
+      if (fallback !== undefined) {
+        // Static ReactNode variant (backward-compatible).
+        return fallback;
       }
 
       return (

@@ -1,2 +1,6 @@
 export { ErrorBoundary } from './ErrorBoundary';
-export type { ErrorBoundaryProps } from './types';
+export type {
+  ErrorBoundaryProps,
+  ErrorBoundaryFallback,
+  ErrorBoundaryFallbackContext,
+} from './types';

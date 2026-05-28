@@ -61,6 +61,15 @@ export const Animated = {
   timing: (_val: unknown, _config: Record<string, unknown>) => ({
     start: (cb?: () => void) => cb?.(),
   }),
+  loop: (_animation: { start: (cb?: () => void) => void; stop?: () => void }) => ({
+    start: (cb?: () => void) => cb?.(),
+    stop: () => {},
+  }),
+  sequence: (_animations: unknown[]) => ({
+    start: (cb?: () => void) => cb?.(),
+    stop: () => {},
+  }),
+  multiply: (a: unknown, _b: unknown) => a,
   createAnimatedComponent: (comp: unknown) => comp,
 };
 

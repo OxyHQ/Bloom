@@ -1,5 +1,12 @@
 import React, { useEffect, useRef } from 'react';
-import { Animated, View, type ViewStyle, type TextStyle, StyleSheet } from 'react-native';
+import {
+  Animated,
+  View,
+  type ViewStyle,
+  type TextStyle,
+  type DimensionValue,
+  StyleSheet,
+} from 'react-native';
 
 import { useTheme } from '../theme/use-theme';
 import { SUPPORTS_NATIVE_DRIVER } from '../styles/native-driver';
@@ -128,6 +135,52 @@ export function Pill({
   );
 }
 Pill.displayName = 'Skeleton.Pill';
+
+/**
+ * Generic rectangular shimmering placeholder. Use for image/card/banner
+ * placeholders where neither {@link Pill} (forced borderRadius: 999) nor
+ * {@link Circle} fit. Defaults to a small borderRadius (8). Pass `0` for
+ * sharp corners or any larger number / percentage string for custom shapes.
+ */
+export function Box({
+  width,
+  height,
+  borderRadius = 8,
+  blend,
+  style,
+}: {
+  /** Width as a number, percentage string, or any valid RN dimension. */
+  width?: DimensionValue;
+  /** Height as a number, percentage string, or any valid RN dimension. */
+  height?: DimensionValue;
+  /**
+   * Corner radius — number or percentage string. Defaults to 8. Pass 0 for
+   * sharp corners.
+   */
+  borderRadius?: ViewStyle['borderRadius'];
+  /** When true, dampens shimmer opacity (use for nested skeletons). */
+  blend?: boolean;
+  style?: ViewStyle | ViewStyle[];
+}) {
+  const { colors } = useTheme();
+  const shimmer = useShimmer();
+
+  return (
+    <Animated.View
+      style={[
+        {
+          backgroundColor: colors.contrast50,
+          width,
+          height,
+          borderRadius,
+          opacity: Animated.multiply(shimmer, blend ? 0.6 : 1),
+        },
+        style,
+      ]}
+    />
+  );
+}
+Box.displayName = 'Skeleton.Box';
 
 export function Col({
   children,
