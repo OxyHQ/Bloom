@@ -1,0 +1,136 @@
+---
+title: Loading
+description: Spinner, top bar, skeleton, and inline loading indicators with one consistent API.
+order: 13
+---
+
+# Loading
+
+One component, four variants. Pick the right one for the affordance:
+
+- `spinner` — centered, optional text, the default
+- `top` — sliding bar at the top of the screen for global progress
+- `skeleton` — pulsing line placeholders for content that's about to appear
+- `inline` — small spinner with a text label, for inline buttons or rows
+
+## Spinner (default)
+
+```tsx
+import { Loading } from '@oxyhq/bloom';
+
+<Loading variant="spinner" />
+<Loading variant="spinner" size="large" />
+<Loading variant="spinner" text="Loading…" />
+<Loading variant="spinner" text="Saving…" iconSize={32} />
+```
+
+## Top bar
+
+```tsx
+<Loading variant="top" showLoading={isFetching} />
+```
+
+Renders a fixed-height bar at the top of the parent. Use it as a global progress indicator (route transitions, background sync). Requires `react-native-reanimated`.
+
+## Skeleton
+
+```tsx
+<Loading variant="skeleton" lines={3} width="100%" />
+<Loading variant="skeleton" lines={1} width={120} lineHeight={20} />
+```
+
+Pulsing rectangles, sized like the content they're standing in for. Use it instead of a spinner when the layout would otherwise jump on first paint.
+
+## Inline
+
+```tsx
+<Loading variant="inline" text="Connecting…" />
+```
+
+Spinner + label rendered in a row — small enough to drop into a list row or a button.
+
+## NativeWind className
+
+For native-tailwind users, `className` overrides `color`:
+
+```tsx
+<Loading variant="spinner" className="text-primary" />
+```
+
+## Props
+
+### Shared
+
+| Prop | Type | Description |
+|------|------|-------------|
+| `variant?` | `'spinner' \| 'top' \| 'skeleton' \| 'inline'` | Default: `'spinner'`. |
+| `size?` | `'small' \| 'medium' \| 'large'` | Default: `'medium'`. |
+| `color?` | `string` | Spinner color. Defaults to theme primary. |
+| `className?` | `string` | NativeWind class. Overrides `color`. |
+| `style?` | `ViewStyle` | Container style. |
+| `showLoading?` | `boolean` | For animated variants — pause when false. |
+| `testID?` | `string` | |
+
+### `spinner`
+
+| Prop | Type | Description |
+|------|------|-------------|
+| `text?` | `string` | Optional label rendered under the spinner. |
+| `textStyle?` | `TextStyle` | Label style. |
+| `showText?` | `boolean` | Hide the label without removing layout. |
+| `iconSize?` | `number` | Override the size prop's default icon px. |
+| `spinnerIcon?` | `React.ReactNode` | Custom spinner (defaults to `ActivityIndicator`). |
+
+### `top`
+
+| Prop | Type | Description |
+|------|------|-------------|
+| `iconSize?` | `number` | |
+| `heightOffset?` | `number` | Offset from the top edge. |
+| `spinnerIcon?` | `React.ReactNode` | |
+
+### `skeleton`
+
+| Prop | Type | Description |
+|------|------|-------------|
+| `lines?` | `number` | Number of stacked rectangles. |
+| `width?` | `number \| string` | Width of each rectangle. |
+| `lineHeight?` | `number` | Height per rectangle. |
+
+### `inline`
+
+| Prop | Type | Description |
+|------|------|-------------|
+| `text?` | `string` | Label text. |
+| `textStyle?` | `TextStyle` | |
+| `spinnerIcon?` | `React.ReactNode` | |
+
+## Recipes
+
+### Lazy content with skeleton
+
+```tsx
+const { data, isPending } = useQuery({ queryKey: ['articles'], queryFn });
+
+if (isPending) {
+  return <Loading variant="skeleton" lines={5} width="100%" />;
+}
+return <ArticleList articles={data} />;
+```
+
+### Button busy state
+
+Most of the time you want `<Button loading>` instead of an inline `Loading` — it preserves width. Reach for `inline` only when you can't use `Button`.
+
+### Global top progress
+
+```tsx
+import { useIsFetching, useIsMutating } from '@tanstack/react-query';
+
+function GlobalProgress() {
+  const fetches = useIsFetching();
+  const mutations = useIsMutating();
+  const busy = fetches > 0 || mutations > 0;
+  return <Loading variant="top" showLoading={busy} />;
+}
+```

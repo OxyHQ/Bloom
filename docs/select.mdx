@@ -1,0 +1,158 @@
+---
+title: Select
+description: Single-choice picker — Trigger, Content, Item.
+order: 15
+---
+
+# Select
+
+A single-choice picker. Sheet on native, native `<select>` styling on web. Controlled or uncontrolled.
+
+`Select.Root` owns the value. `Select.Trigger` opens it. `Select.Content` renders the choices via a `FlatList`-style API. `Select.Item` is one row.
+
+## Basic
+
+```tsx
+import * as Select from '@oxyhq/bloom/select';
+
+const [country, setCountry] = useState('us');
+
+<Select.Root value={country} onValueChange={setCountry}>
+  <Select.Trigger label="Country">
+    {({ props }) => (
+      <Pressable {...props} style={styles.field}>
+        <Select.ValueText placeholder="Pick a country" />
+        <Select.Icon />
+      </Pressable>
+    )}
+  </Select.Trigger>
+
+  <Select.Content
+    label="Country"
+    items={countries}
+    renderItem={(item, _i, selected) => (
+      <Select.Item value={item.code} label={item.name}>
+        <Select.ItemText>{item.name}</Select.ItemText>
+        {selected === item.code ? <Select.ItemIndicator /> : null}
+      </Select.Item>
+    )}
+  />
+</Select.Root>
+```
+
+`Select.Trigger` accepts a render prop — wire `props` onto your pressable element. `Select.ValueText` reads from the root's value.
+
+## Disabled
+
+```tsx
+<Select.Root value={value} onValueChange={setValue} disabled>
+  …
+</Select.Root>
+```
+
+## Custom value rendering
+
+When items aren't plain `{ value, label }`, give `Select.ValueText` a child function:
+
+```tsx
+<Select.ValueText placeholder="Pick a user">
+  {(item) => item ? `${(item as User).name} (${(item as User).handle})` : ''}
+</Select.ValueText>
+```
+
+Same idea for items:
+
+```tsx
+<Select.Content
+  items={users}
+  valueExtractor={(u) => u.id}
+  renderItem={(u, _i, selected) => (
+    <Select.Item value={u.id} label={u.name}>
+      <Avatar uri={u.avatarUrl} size={24} />
+      <Select.ItemText>{u.name}</Select.ItemText>
+      {selected === u.id ? <Select.ItemIndicator /> : null}
+    </Select.Item>
+  )}
+/>
+```
+
+## Components
+
+### `Select.Root`
+
+| Prop | Type | Description |
+|------|------|-------------|
+| `value?` | `string` | Selected key (controlled). |
+| `onValueChange?` | `(value: string) => void` | |
+| `disabled?` | `boolean` | |
+| `children?` | `React.ReactNode` | |
+
+### `Select.Trigger`
+
+| Prop | Type | Description |
+|------|------|-------------|
+| `children` | `(p: TriggerChildProps) => ReactNode` | Render prop. |
+| `label` | `string` | Required accessibility label. |
+
+### `Select.ValueText`
+
+| Prop | Type | Description |
+|------|------|-------------|
+| `children?` | `(item) => ReactNode` | Custom display for the selected item. Defaults to `item => item.label`. |
+| `placeholder?` | `string` | Shown when nothing is selected. |
+| `style?` | `TextStyle` | |
+
+### `Select.Content`
+
+| Prop | Type | Description |
+|------|------|-------------|
+| `label?` | `string` | Sheet title (native) / aria-label (web). |
+| `items` | `T[]` | The choices. |
+| `renderItem` | `(item, i, selectedValue?) => ReactElement` | Use `Select.Item` inside. |
+| `valueExtractor?` | `(item: T) => string` | Defaults to `item => item.value`. |
+
+### `Select.Item`
+
+| Prop | Type | Description |
+|------|------|-------------|
+| `value` | `string` | Key. |
+| `label` | `string` | Required for accessibility. |
+| `children` | `React.ReactNode` | What's rendered inside the row. |
+| `style?` | `StyleProp<ViewStyle>` | |
+
+### `Select.ItemIndicator`
+
+Renders the checkmark (or custom icon) next to the selected item. Pass `icon` to override.
+
+## Recipes
+
+### With initial loading state
+
+```tsx
+<Select.Root value={value ?? ''} onValueChange={setValue} disabled={isPending}>
+  <Select.Trigger label="Project">
+    {({ props }) => (
+      <Pressable {...props} style={styles.field}>
+        {isPending ? (
+          <Loading variant="inline" text="Loading…" />
+        ) : (
+          <Select.ValueText placeholder="Pick a project" />
+        )}
+      </Pressable>
+    )}
+  </Select.Trigger>
+  …
+</Select.Root>
+```
+
+### Validation
+
+Pair `Select.Root` with `TextField.Root` outer chrome:
+
+```tsx
+<TextField.Root isInvalid={touched && !value}>
+  <Select.Root value={value} onValueChange={setValue}>
+    {/* trigger + content as usual */}
+  </Select.Root>
+</TextField.Root>
+```

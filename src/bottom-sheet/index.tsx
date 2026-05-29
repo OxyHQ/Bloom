@@ -774,7 +774,7 @@ const styles = StyleSheet.create({
         zIndex: 100,
     },
     background: {
-        ...StyleSheet.absoluteFillObject,
+        ...StyleSheet.absoluteFill,
     },
     scrollView: {
         flex: 1,

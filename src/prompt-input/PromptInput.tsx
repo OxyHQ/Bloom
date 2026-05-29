@@ -231,7 +231,7 @@ export function PromptInput({
         <Portal>
           <View
             style={[
-              StyleSheet.absoluteFillObject,
+              StyleSheet.absoluteFill,
               {
                 zIndex: 9998,
                 backgroundColor: theme.colors.background,

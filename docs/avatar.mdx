@@ -1,0 +1,125 @@
+---
+title: Avatar
+description: Image avatar with initials fallback, verified badge, and squircle option.
+order: 12
+---
+
+# Avatar
+
+Display a user's avatar. Accepts a URL, an `ImageSourcePropType`, or no image at all — falls back to a colored circle with the first letter of `name` (deterministic per name). Optional verified badge. Optional squircle shape.
+
+## Basic
+
+```tsx
+import { Avatar } from '@oxyhq/bloom';
+
+<Avatar uri="https://cloud.oxy.so/avatars/abc.png" size={48} />
+```
+
+## Initials fallback
+
+```tsx
+<Avatar name="Ada Lovelace" size={48} />
+```
+
+Picks a deterministic background color from the `name` so the same user always gets the same color. White letter on top.
+
+## Verified badge
+
+```tsx
+<Avatar uri={user.avatarUrl} verified size={64} />
+```
+
+Custom badge:
+
+```tsx
+<Avatar uri={user.avatarUrl} verified verifiedIcon={<StarIcon />} size={64} />
+```
+
+## Squircle shape
+
+```tsx
+<Avatar uri={user.avatarUrl} shape="squircle" size={56} />
+```
+
+Requires `react-native-svg`. Matches the iOS app-icon shape — a softened super-ellipse.
+
+## Pressable
+
+```tsx
+<Avatar uri={user.avatarUrl} size={40} onPress={() => navigate('Profile', { id: user.id })} />
+```
+
+Wraps the avatar in `TouchableOpacity` when `onPress` is set.
+
+## Custom placeholder
+
+```tsx
+<Avatar
+  placeholderColor={theme.colors.primary}
+  placeholderIcon={<PersonIcon />}
+  size={64}
+/>
+```
+
+When no `source`, `uri`, or `name` resolves, you can fully control the placeholder.
+
+## Props
+
+| Prop | Type | Default | Description |
+|------|------|---------|-------------|
+| `source?` | `string \| ImageSourcePropType \| null` | — | Flexible image source. Takes precedence over `uri`. |
+| `uri?` | `string` | — | Direct URI string. |
+| `fallbackSource?` | `ImageSourcePropType` | — | Shown when `source`/`uri` errors. |
+| `size?` | `number` | `40` | Diameter in dp. |
+| `verified?` | `boolean` | `false` | Show a verified badge bottom-right. |
+| `verifiedIcon?` | `React.ReactNode` | check icon | Custom badge node. |
+| `shape?` | `'circle' \| 'squircle'` | `'circle'` | `'squircle'` needs `react-native-svg`. |
+| `style?` | `StyleProp<ViewStyle>` | — | Container style. |
+| `imageStyle?` | `StyleProp<ImageStyle>` | — | Image style (circle only). |
+| `placeholderColor?` | `string` | derived | Override placeholder background. |
+| `placeholderIcon?` | `React.ReactNode` | initial | Override placeholder icon/letter. |
+| `name?` | `string` | — | Used to derive initials + a stable background color. |
+| `onPress?` | `() => void` | — | Wraps in `TouchableOpacity`. |
+| `testID?` | `string` | — | |
+
+## Recipes
+
+### Stacked avatars
+
+```tsx
+<View style={{ flexDirection: 'row' }}>
+  {users.slice(0, 3).map((u, i) => (
+    <View key={u.id} style={{ marginLeft: i === 0 ? 0 : -8 }}>
+      <Avatar uri={u.avatarUrl} name={u.name} size={32} style={{ borderWidth: 2, borderColor: theme.colors.background }} />
+    </View>
+  ))}
+  {users.length > 3 ? (
+    <View style={{ marginLeft: -8, /* counter chip */ }}>
+      <Text>+{users.length - 3}</Text>
+    </View>
+  ) : null}
+</View>
+```
+
+### Initials-only (no image)
+
+```tsx
+<Avatar name={user.displayName ?? 'Anonymous'} size={40} />
+```
+
+This is the recommended fallback when you don't have an avatar URL — never show a generic person silhouette unless you also have `placeholderColor` set to something brand-consistent.
+
+### With a status dot
+
+```tsx
+<View>
+  <Avatar uri={user.avatarUrl} size={48} />
+  <View style={{
+    position: 'absolute', bottom: 0, right: 0,
+    width: 12, height: 12, borderRadius: 6,
+    backgroundColor: theme.colors.positive,
+    borderWidth: 2, borderColor: theme.colors.background,
+  }} />
+</View>
+```

@@ -1,0 +1,183 @@
+---
+title: PromptInput
+description: AI chat input — textarea, actions, attachments, submit, stop, fullscreen.
+order: 17
+---
+
+# PromptInput
+
+The AI chat input component. Auto-resizing textarea, send / stop button, optional attachments, optional fullscreen toggle, configurable left-side actions, image paste on web, and a controlled or simple mode.
+
+## Simple mode
+
+The fastest path to a working prompt input:
+
+```tsx
+import { PromptInput } from '@oxyhq/bloom';
+
+const [value, setValue] = useState('');
+const [busy, setBusy] = useState(false);
+
+<PromptInput
+  value={value}
+  onValueChange={setValue}
+  placeholder="Ask anything…"
+  isLoading={busy}
+  onSubmit={async () => {
+    setBusy(true);
+    try { await ask(value); setValue(''); } finally { setBusy(false); }
+  }}
+  onStop={() => abortController.abort()}
+/>
+```
+
+That's it — textarea, submit button, stop button, all wired.
+
+## Compound mode
+
+For full control over layout, opt into the compound API:
+
+```tsx
+import * as Prompt from '@oxyhq/bloom/prompt-input';
+
+<Prompt.Root value={value} onValueChange={setValue} isLoading={busy} onSubmit={ask}>
+  <Prompt.Textarea placeholder="Ask anything…" />
+  <Prompt.Actions>
+    <Prompt.AttachmentButton onPress={pickFile} />
+    <View style={{ flex: 1 }} />
+    <Prompt.SubmitButton />
+  </Prompt.Actions>
+  <Prompt.Attachments />
+</Prompt.Root>
+```
+
+Compound mode lets you reorder actions, render extra buttons, swap icons, or render attachments somewhere else entirely.
+
+## Attachments
+
+```tsx
+const [attachments, setAttachments] = useState<Attachment[]>([]);
+
+<PromptInput
+  value={value}
+  onValueChange={setValue}
+  attachments={attachments}
+  onAddAttachment={(a) => setAttachments((prev) => [...prev, a])}
+  onRemoveAttachment={(id) => setAttachments((prev) => prev.filter((p) => p.id !== id))}
+  onUpdateAttachment={(id, u) => setAttachments((prev) => prev.map((p) => p.id === id ? { ...p, ...u } : p))}
+  onImagePaste={(files) => {
+    /* turn each File into an Attachment and call onAddAttachment */
+  }}
+/>
+```
+
+`onImagePaste` is web-only — the textarea swallows `paste` events and forwards image clipboard content.
+
+## Loading and stop
+
+`isLoading` toggles the right-side button between "submit" and "stop". Wire `onStop` to abort the in-flight request:
+
+```tsx
+const controllerRef = useRef<AbortController | null>(null);
+
+<PromptInput
+  isLoading={busy}
+  onSubmit={async () => {
+    controllerRef.current = new AbortController();
+    setBusy(true);
+    try {
+      await ask(value, { signal: controllerRef.current.signal });
+    } catch (err) {
+      if ((err as Error).name === 'AbortError') return; // user pressed stop
+      throw err;
+    } finally {
+      setBusy(false);
+    }
+  }}
+  onStop={() => controllerRef.current?.abort()}
+/>
+```
+
+## Empty action
+
+The right-side button defaults to the submit/stop pair. When the textarea is empty and not loading, you can render an alternate action (e.g. a mic for voice input):
+
+```tsx
+<PromptInput
+  value={value}
+  onValueChange={setValue}
+  emptyAction={<MicButton onPress={() => startListening()} />}
+/>
+```
+
+`emptyAction` only renders when `value` is empty and `isLoading` is false.
+
+## Fullscreen
+
+Tap the expand icon to swap the input into a fullscreen modal. Override the icons:
+
+```tsx
+<PromptInput
+  value={value}
+  onValueChange={setValue}
+  expandIcon={<MaximizeIcon />}
+  collapseIcon={<MinimizeIcon />}
+/>
+```
+
+## Props (simple mode)
+
+| Prop | Type | Description |
+|------|------|-------------|
+| `value?` | `string` | Controlled text value. |
+| `onValueChange?` | `(value: string) => void` | |
+| `isLoading?` | `boolean` | Show stop button instead of submit. |
+| `onSubmit?` | `() => void` | Submit handler. |
+| `onStop?` | `() => void` | Abort handler. |
+| `placeholder?` | `string` | Placeholder text. |
+| `maxHeight?` | `number` | Max textarea height before it scrolls. Default `240`. |
+| `disabled?` | `boolean` | |
+| `actionsLeft?` | `React.ReactNode` | Render extra buttons on the left of the actions bar. |
+| `emptyAction?` | `React.ReactNode` | Replaces the right-side button when empty + idle. |
+| `attachments?` | `Attachment[]` | Controlled attachments. |
+| `onAddAttachment?` | `(a: Attachment) => void` | |
+| `onRemoveAttachment?` | `(id: string) => void` | |
+| `onUpdateAttachment?` | `(id, updates) => void` | |
+| `onImagePaste?` | `(files: File[]) => void` | Web-only image paste. |
+| `disableKeyboardAvoidance?` | `boolean` | Skip the inner `KeyboardAvoidingView`. |
+| `expandIcon?` | `React.ReactNode` | Custom expand icon. |
+| `collapseIcon?` | `React.ReactNode` | Custom collapse icon. |
+| `testID?` | `string` | |
+
+## Recipes
+
+### Send on Enter, newline on Shift+Enter
+
+The textarea handles this on web automatically. On native, Enter inserts a newline (no software keyboard convention for "send" exists across iOS/Android). Drive submission via the submit button or an explicit toolbar action.
+
+### Disable submit while empty
+
+The submit button is disabled automatically when `value.trim()` is empty. No extra wiring required.
+
+### Custom left action (model picker)
+
+```tsx
+<PromptInput
+  value={value}
+  onValueChange={setValue}
+  actionsLeft={
+    <Select.Root value={model} onValueChange={setModel}>
+      <Select.Trigger label="Model">{({ props }) => <Button {...props}>{model}</Button>}</Select.Trigger>
+      <Select.Content
+        items={['gpt-4', 'gpt-3.5']}
+        renderItem={(m, _i, selected) => (
+          <Select.Item value={m} label={m}>
+            <Select.ItemText>{m}</Select.ItemText>
+            {selected === m ? <Select.ItemIndicator /> : null}
+          </Select.Item>
+        )}
+      />
+    </Select.Root>
+  }
+/>
+```

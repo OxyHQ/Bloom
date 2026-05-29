@@ -1,0 +1,182 @@
+---
+title: SettingsList
+description: iOS-style grouped settings list — items, groups, dividers.
+order: 18
+---
+
+# SettingsList
+
+iOS-style grouped settings list. Items, groups (with optional headers and footers), and dividers. Built for the dense, list-heavy screens common in account / preferences UIs.
+
+## Basic
+
+```tsx
+import * as SettingsList from '@oxyhq/bloom/settings-list';
+
+<SettingsList.Group title="General">
+  <SettingsList.Item
+    icon={<PersonIcon />}
+    title="Account"
+    value="ada@oxy.so"
+    onPress={() => navigate('Account')}
+  />
+  <SettingsList.Divider />
+  <SettingsList.Item
+    icon={<GlobeIcon />}
+    title="Language"
+    value="English"
+    onPress={() => navigate('Language')}
+  />
+</SettingsList.Group>
+```
+
+The group renders a rounded card on iOS-style platforms and on web. The first item rounds top corners, the last item rounds bottom corners.
+
+## With description
+
+```tsx
+<SettingsList.Item
+  icon={<ShieldIcon />}
+  title="Two-factor authentication"
+  description="Add a second sign-in step with an authenticator app."
+  value="On"
+  onPress={() => navigate('TwoFactor')}
+/>
+```
+
+`description` is multi-line and styled in muted text under the title.
+
+## Toggle row
+
+```tsx
+<SettingsList.Item
+  icon={<MoonIcon />}
+  title="Dark mode"
+  rightElement={<Switch value={darkMode} onValueChange={setDarkMode} />}
+/>
+```
+
+When `rightElement` is set, the chevron is hidden automatically (you can override with `showChevron`).
+
+## Destructive
+
+```tsx
+<SettingsList.Group title="Danger zone">
+  <SettingsList.Item
+    icon={<TrashIcon />}
+    title="Delete account"
+    destructive
+    onPress={confirmDelete}
+  />
+</SettingsList.Group>
+```
+
+`destructive` switches the title to the negative color and uses the destructive icon tint.
+
+## Disabled
+
+```tsx
+<SettingsList.Item
+  icon={<KeyIcon />}
+  title="Reset password"
+  description="Coming soon"
+  disabled
+/>
+```
+
+## Footer / header text
+
+```tsx
+<SettingsList.Group
+  title="Notifications"
+  footer="Push notifications require an enabled device permission."
+>
+  <SettingsList.Item title="Marketing emails" rightElement={<Switch value={mktg} onValueChange={setMktg} />} />
+  <SettingsList.Divider />
+  <SettingsList.Item title="Product updates" rightElement={<Switch value={prod} onValueChange={setProd} />} />
+</SettingsList.Group>
+```
+
+`title` is the group header (uppercase muted label on iOS-style platforms); `footer` is a soft explanatory line under the card.
+
+## Components
+
+### `SettingsList.Group`
+
+| Prop | Type | Description |
+|------|------|-------------|
+| `title?` | `string` | Section header. |
+| `footer?` | `string` | Section footer. |
+| `children` | `React.ReactNode` | `Item`, `Divider`. |
+| `style?` | `StyleProp<ViewStyle>` | Override group container style. |
+
+### `SettingsList.Item`
+
+| Prop | Type | Description |
+|------|------|-------------|
+| `icon?` | `React.ReactNode` | Leading icon. |
+| `title` | `string` | Primary label. |
+| `description?` | `string` | Multi-line secondary text. |
+| `value?` | `string` | Right-side value string. |
+| `rightElement?` | `React.ReactNode` | Replaces value / chevron with a custom node. |
+| `showChevron?` | `boolean` | Defaults to `true` when `onPress` is set. |
+| `destructive?` | `boolean` | Negative palette for title + icon. |
+| `onPress?` | `() => void` | Tap handler. |
+| `disabled?` | `boolean` | |
+| `accessibilityLabel?` | `string` | Override the derived label. |
+| `accessibilityHint?` | `string` | |
+| `accessibilityRole?` | `'button' \| 'link' \| 'none'` | Defaults to `'button'` when pressable. |
+| `leftInset?` | `number` | Left inset to align text when no icon is set. |
+
+### `SettingsList.Divider`
+
+| Prop | Type | Description |
+|------|------|-------------|
+| `inset?` | `number` | Left inset to align with text (default `52`). |
+
+## Recipes
+
+### Mixed read / link rows
+
+```tsx
+<SettingsList.Group title="About">
+  <SettingsList.Item title="Version" value="1.4.2" />
+  <SettingsList.Divider />
+  <SettingsList.Item title="Build" value="231" />
+  <SettingsList.Divider />
+  <SettingsList.Item title="Terms" onPress={() => navigate('Terms')} />
+  <SettingsList.Divider />
+  <SettingsList.Item title="Privacy" onPress={() => navigate('Privacy')} />
+</SettingsList.Group>
+```
+
+### Sign-out section
+
+```tsx
+<SettingsList.Group>
+  <SettingsList.Item
+    title="Sign out"
+    onPress={signOut}
+    accessibilityRole="button"
+  />
+</SettingsList.Group>
+```
+
+### Account switcher
+
+```tsx
+<SettingsList.Group title="Accounts">
+  {accounts.map((a, i) => (
+    <Fragment key={a.id}>
+      {i > 0 ? <SettingsList.Divider /> : null}
+      <SettingsList.Item
+        icon={<Avatar uri={a.avatarUrl} size={28} />}
+        title={a.name}
+        description={a.handle}
+        rightElement={a.id === activeId ? <CheckIcon /> : null}
+        onPress={() => switchTo(a.id)}
+      />
+    </Fragment>
+  ))}
+</SettingsList.Group>
+```

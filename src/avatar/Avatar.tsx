@@ -254,7 +254,7 @@ const AvatarComponent: React.FC<AvatarProps> = ({
               source={imageSource}
               onError={() => setErrored(true)}
               resizeMode="cover"
-              style={[StyleSheet.absoluteFillObject, { borderRadius: radius }, imageStyle]}
+              style={[StyleSheet.absoluteFill, { borderRadius: radius }, imageStyle]}
             />
           ) : (
             <CircleFallback

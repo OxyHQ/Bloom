@@ -1,0 +1,156 @@
+---
+title: Menu
+description: Compound menu — Trigger, Outer, Group, Item with icons.
+order: 14
+---
+
+# Menu
+
+A compound menu. Bottom-sheet on native, popover on web. Same API on every platform.
+
+`Menu.Trigger` opens it, `Menu.Outer` is the body, `Menu.Group` groups related items, `Menu.Item` is a row. Icons render via `Menu.ItemIcon`; labels via `Menu.ItemText`.
+
+## Basic
+
+```tsx
+import * as Menu from '@oxyhq/bloom/menu';
+
+<Menu.Root>
+  <Menu.Trigger label="Open menu">
+    {({ props }) => <Button {...props} icon={<DotsVerticalIcon />} variant="icon" />}
+  </Menu.Trigger>
+
+  <Menu.Outer>
+    <Menu.Group>
+      <Menu.Item label="Rename" onPress={rename}>
+        <Menu.ItemIcon icon={EditIcon} />
+        <Menu.ItemText>Rename</Menu.ItemText>
+      </Menu.Item>
+      <Menu.Item label="Delete" onPress={destroy}>
+        <Menu.ItemIcon icon={TrashIcon} />
+        <Menu.ItemText>Delete</Menu.ItemText>
+      </Menu.Item>
+    </Menu.Group>
+  </Menu.Outer>
+</Menu.Root>
+```
+
+`Menu.Trigger` accepts a render prop so you can attach the open handler to any pressable. Spread `props` onto your element and the menu handles the rest.
+
+## Disabled items
+
+```tsx
+<Menu.Item label="Coming soon" onPress={() => {}} disabled>
+  <Menu.ItemText>Coming soon</Menu.ItemText>
+</Menu.Item>
+```
+
+`disabled` blocks the press, drops opacity, and (on web) sets `aria-disabled`.
+
+## Groups
+
+```tsx
+<Menu.Outer>
+  <Menu.Group>
+    <Menu.Item label="Cut" onPress={cut}><Menu.ItemText>Cut</Menu.ItemText></Menu.Item>
+    <Menu.Item label="Copy" onPress={copy}><Menu.ItemText>Copy</Menu.ItemText></Menu.Item>
+    <Menu.Item label="Paste" onPress={paste}><Menu.ItemText>Paste</Menu.ItemText></Menu.Item>
+  </Menu.Group>
+  <Menu.Group>
+    <Menu.Item label="Delete" onPress={destroy}>
+      <Menu.ItemIcon icon={TrashIcon} fill={() => theme.colors.negative} />
+      <Menu.ItemText style={{ color: theme.colors.negative }}>Delete</Menu.ItemText>
+    </Menu.Item>
+  </Menu.Group>
+</Menu.Outer>
+```
+
+Each `Group` renders with a subtle separator on native, and a `<group role>` on web.
+
+## Trigger render prop
+
+```tsx
+<Menu.Trigger label="Account" hint="Open the account menu">
+  {({ props, state, control }) => (
+    <Pressable {...props} style={state.pressed ? styles.pressed : styles.idle}>
+      <Avatar uri={user.avatarUrl} size={32} />
+    </Pressable>
+  )}
+</Menu.Trigger>
+```
+
+- `props` — spread onto the pressable; carries `onPress`, focus handlers, and accessibility props.
+- `state` — `{ hovered, focused, pressed }` for visual feedback.
+- `control` — the `DialogControl` if you need imperative open/close.
+
+## Components
+
+### `Menu.Trigger`
+
+| Prop | Type | Description |
+|------|------|-------------|
+| `children` | `(props: TriggerChildProps) => ReactNode` | Render prop receiving `props`, `state`, `control`. |
+| `label` | `string` | Required accessibility label. |
+| `hint?` | `string` | Accessibility hint. |
+| `role?` | `AccessibilityRole` | Defaults to `'button'`. |
+
+### `Menu.Item`
+
+| Prop | Type | Description |
+|------|------|-------------|
+| `label` | `string` | Accessibility label. |
+| `onPress` | `(e: GestureResponderEvent) => void` | Press handler. |
+| `disabled?` | `boolean` | |
+| `style?` | `StyleProp<ViewStyle>` | |
+
+### `Menu.ItemIcon`
+
+| Prop | Type | Description |
+|------|------|-------------|
+| `icon` | `React.ComponentType<SVGIconProps>` | Bloom icon component. |
+| `position?` | `'left' \| 'right'` | Default: `'left'`. |
+| `fill?` | `(props: { disabled: boolean }) => string` | Compute the icon color based on disabled state. |
+
+### `Menu.ItemText`
+
+A `Text` wrapper that picks up the menu's typography defaults.
+
+### `Menu.Group`
+
+Visual + a11y group. Pass children freely.
+
+## Recipes
+
+### Conditional destructive item
+
+```tsx
+<Menu.Outer>
+  <Menu.Group>
+    {canEdit ? (
+      <Menu.Item label="Edit" onPress={edit}><Menu.ItemText>Edit</Menu.ItemText></Menu.Item>
+    ) : null}
+    {canDelete ? (
+      <Menu.Item label="Delete" onPress={destroy}>
+        <Menu.ItemIcon icon={TrashIcon} fill={() => theme.colors.negative} />
+        <Menu.ItemText style={{ color: theme.colors.negative }}>Delete</Menu.ItemText>
+      </Menu.Item>
+    ) : null}
+  </Menu.Group>
+</Menu.Outer>
+```
+
+### Imperative close
+
+```tsx
+<Menu.Trigger label="Actions">
+  {({ control }) => (
+    <Button onPress={() => control.open()}>Actions</Button>
+  )}
+</Menu.Trigger>
+
+// Inside an item handler:
+onPress: async () => {
+  await doThing();
+  control.close();
+}
+```

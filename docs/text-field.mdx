@@ -1,0 +1,143 @@
+---
+title: TextField
+description: Composable text input — Root, Input, Label, Icon, Suffix.
+order: 11
+---
+
+# TextField
+
+A composable text input. Wrap a `TextField.Root` around `TextField.Input` and optional `TextField.Label`, `TextField.Icon`, and `TextField.Suffix` to build the exact field your form needs. Tracks focus, hover, and invalid state for you so children can react via context.
+
+## Basic
+
+```tsx
+import * as TextField from '@oxyhq/bloom/text-field';
+
+<TextField.Root>
+  <TextField.Input
+    value={value}
+    onChangeText={setValue}
+    placeholder="Email"
+    keyboardType="email-address"
+  />
+</TextField.Root>
+```
+
+## With label and icon
+
+```tsx
+<TextField.Root>
+  <TextField.Icon icon={MailIcon} />
+  <TextField.Input value={email} onChangeText={setEmail} placeholder="Email" />
+</TextField.Root>
+```
+
+The `Root` lays children out in a row and auto-focuses the input on click (web).
+
+## Validation
+
+```tsx
+const [value, setValue] = useState('');
+const [touched, setTouched] = useState(false);
+const isInvalid = touched && !value.includes('@');
+
+<TextField.Root isInvalid={isInvalid}>
+  <TextField.Input
+    value={value}
+    onChangeText={setValue}
+    onBlur={() => setTouched(true)}
+    placeholder="Email"
+  />
+</TextField.Root>
+{isInvalid ? <Text style={{ color: theme.colors.negative }}>Enter a valid email</Text> : null}
+```
+
+`isInvalid` paints the root in the negative palette and is also exposed via context for custom children.
+
+## Multiline
+
+```tsx
+<TextField.Root style={{ minHeight: 96, alignItems: 'flex-start' }}>
+  <TextField.Input value={bio} onChangeText={setBio} multiline />
+</TextField.Root>
+```
+
+## Suffix
+
+```tsx
+<TextField.Root>
+  <TextField.Input value={url} onChangeText={setUrl} placeholder="example" />
+  <TextField.Suffix>.oxy.so</TextField.Suffix>
+</TextField.Root>
+```
+
+## Components
+
+### `TextField.Root`
+
+| Prop | Type | Description |
+|------|------|-------------|
+| `isInvalid?` | `boolean` | Paints the root in the negative palette and exposes via context. |
+| `style?` | `StyleProp<ViewStyle>` | Override the container style. |
+| `children?` | `React.ReactNode` | `Input`, `Label`, `Icon`, `Suffix`, custom. |
+
+### `TextField.Input`
+
+Accepts all of React Native's `TextInputProps`. Auto-styles to match the Bloom theme; hooks into the `Root`'s focus/hover state.
+
+### `TextField.Icon`
+
+| Prop | Type | Description |
+|------|------|-------------|
+| `icon` | `React.ComponentType<SVGIconProps>` | Bloom icon component. |
+| `position?` | `'left' \| 'right'` | Defaults to `'left'`. |
+
+### `TextField.Label`
+
+Accessibility label rendered visually hidden by default on native, styled inline on web.
+
+### `TextField.Suffix`
+
+Inline trailing text or node — domain suffixes, units, badges.
+
+## Hooks
+
+### `useSharedInputStyles()`
+
+Returns the style snippets the chrome uses for hover/focus/error so you can keep visual parity in custom inputs.
+
+## Accessibility
+
+- The whole `Root` is clickable on web — clicking anywhere focuses the input.
+- Labels participate in `accessibilityLabel` automatically.
+- Invalid state is announced via `aria-invalid` on web; on native, surface a separate error message under the field.
+
+## Recipes
+
+### Password with visibility toggle
+
+```tsx
+const [show, setShow] = useState(false);
+
+<TextField.Root>
+  <TextField.Input
+    value={password}
+    onChangeText={setPassword}
+    secureTextEntry={!show}
+    placeholder="Password"
+  />
+  <Button variant="icon" icon={show ? <EyeOffIcon /> : <EyeIcon />} onPress={() => setShow(!show)} />
+</TextField.Root>
+```
+
+### Search field with clear
+
+```tsx
+<TextField.Root>
+  <TextField.Icon icon={SearchIcon} />
+  <TextField.Input value={query} onChangeText={setQuery} placeholder="Search" />
+  {query.length > 0 ? (
+    <Button variant="icon" icon={<XIcon />} accessibilityLabel="Clear" onPress={() => setQuery('')} />
+  ) : null}
+</TextField.Root>
+```

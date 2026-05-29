@@ -1,0 +1,147 @@
+---
+title: ContextMenu
+description: Long-press menu (native) and right-click menu (web).
+order: 16
+---
+
+# ContextMenu
+
+A context menu. Long-press on native, right-click on web. Same API on every platform. Built from the same primitives as `Menu` so styling stays consistent.
+
+## Basic
+
+```tsx
+import * as ContextMenu from '@oxyhq/bloom/context-menu';
+
+<ContextMenu.Root>
+  <ContextMenu.Trigger label="Photo actions" hint="Long press to open">
+    {({ props }) => (
+      <Pressable {...props}>
+        <Image source={photo.source} style={styles.thumb} />
+      </Pressable>
+    )}
+  </ContextMenu.Trigger>
+
+  <ContextMenu.Outer>
+    <ContextMenu.Group>
+      <ContextMenu.Item label="Share" onPress={() => share(photo)}>
+        <ContextMenu.ItemIcon icon={ShareIcon} />
+        <ContextMenu.ItemText>Share</ContextMenu.ItemText>
+      </ContextMenu.Item>
+      <ContextMenu.Item label="Save to gallery" onPress={() => save(photo)}>
+        <ContextMenu.ItemIcon icon={DownloadIcon} />
+        <ContextMenu.ItemText>Save</ContextMenu.ItemText>
+      </ContextMenu.Item>
+      <ContextMenu.Item label="Delete" onPress={() => destroy(photo)}>
+        <ContextMenu.ItemIcon icon={TrashIcon} fill={() => theme.colors.negative} />
+        <ContextMenu.ItemText style={{ color: theme.colors.negative }}>Delete</ContextMenu.ItemText>
+      </ContextMenu.Item>
+    </ContextMenu.Group>
+  </ContextMenu.Outer>
+</ContextMenu.Root>
+```
+
+## Trigger render prop
+
+```tsx
+<ContextMenu.Trigger label="Message actions">
+  {({ props, state, isOpen }) => (
+    <Pressable
+      {...props}
+      style={[
+        styles.bubble,
+        isOpen && styles.bubbleActive,
+        state.pressed && styles.bubblePressed,
+      ]}
+    >
+      <Text>{message.body}</Text>
+    </Pressable>
+  )}
+</ContextMenu.Trigger>
+```
+
+- `props` — spread onto the pressable; carries `onPress`, `onLongPress`, focus handlers, and a11y props.
+- `state` — `{ hovered, focused, pressed }`.
+- `isOpen` — whether the menu is currently open. Useful for sticky visual treatments.
+
+## How activation works
+
+- **Native** — long-press (default ~500ms) opens the menu. `onPress` and `onLongPress` are both rendered into `props` so you can keep a regular tap action.
+- **Web** — right-click opens the menu. Optionally also `Ctrl+click` on Mac. Touch devices fall back to long-press.
+
+## Disabled items
+
+```tsx
+<ContextMenu.Item label="Edit" onPress={edit} disabled={!canEdit}>
+  <ContextMenu.ItemText>Edit</ContextMenu.ItemText>
+</ContextMenu.Item>
+```
+
+## Components
+
+### `ContextMenu.Trigger`
+
+| Prop | Type | Description |
+|------|------|-------------|
+| `children` | `(p: TriggerChildProps) => ReactNode` | Render prop. |
+| `label` | `string` | Required a11y label. |
+| `hint?` | `string` | A11y hint — e.g. "Long press to open menu". |
+| `role?` | `AccessibilityRole` | |
+| `style?` | `StyleProp<ViewStyle>` | |
+
+### `ContextMenu.Item`
+
+| Prop | Type | Description |
+|------|------|-------------|
+| `label` | `string` | Required a11y label. |
+| `onPress` | `(e?: GestureResponderEvent) => void` | |
+| `disabled?` | `boolean` | |
+| `style?` | `StyleProp<ViewStyle>` | |
+
+### `ContextMenu.ItemIcon`
+
+```tsx
+<ContextMenu.ItemIcon
+  icon={TrashIcon}
+  fill={({ disabled }) => disabled ? theme.colors.contrast200 : theme.colors.negative}
+/>
+```
+
+`fill` is a function so disabled state can downweight the color without an extra wrapper.
+
+### `ContextMenu.Group`
+
+Visual + a11y group. Use multiple groups to split destructive actions out from the main list (each group gets a subtle separator).
+
+## Recipes
+
+### Selection-aware menu
+
+```tsx
+const isSelected = selectedIds.includes(item.id);
+
+<ContextMenu.Outer>
+  <ContextMenu.Group>
+    <ContextMenu.Item
+      label={isSelected ? 'Deselect' : 'Select'}
+      onPress={() => toggleSelect(item.id)}
+    >
+      <ContextMenu.ItemText>{isSelected ? 'Deselect' : 'Select'}</ContextMenu.ItemText>
+    </ContextMenu.Item>
+  </ContextMenu.Group>
+</ContextMenu.Outer>
+```
+
+### Combine with a tap
+
+```tsx
+<ContextMenu.Trigger label="Article">
+  {({ props }) => (
+    <Pressable {...props} onPress={() => openArticle(article.id)}>
+      <Text>{article.title}</Text>
+    </Pressable>
+  )}
+</ContextMenu.Trigger>
+```
+
+`onPress` (your tap) coexists with the long-press / right-click that opens the menu — Bloom merges the handlers internally.

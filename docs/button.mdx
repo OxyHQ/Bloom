@@ -1,0 +1,135 @@
+---
+title: Button
+description: The all-purpose Bloom button — variants, sizes, loading state, icons.
+order: 10
+---
+
+# Button
+
+The all-purpose Bloom button. Variants for primary/secondary/inverse/icon/ghost/text actions, three sizes, loading state, optional icons on either side, and full accessibility props.
+
+## Basic
+
+```tsx
+import { Button } from '@oxyhq/bloom';
+
+<Button onPress={save}>Save</Button>
+```
+
+## Variants
+
+```tsx
+<Button variant="primary">Primary</Button>
+<Button variant="secondary">Secondary</Button>
+<Button variant="inverse">Inverse</Button>
+<Button variant="ghost">Ghost</Button>
+<Button variant="text">Text</Button>
+<Button variant="icon" icon={<XIcon />} accessibilityLabel="Close" />
+```
+
+`primary`, `secondary`, and `inverse` get a press-scale animation; the rest don't. `icon` renders as a square hit target — pair it with `accessibilityLabel`.
+
+## Sizes
+
+```tsx
+<Button size="small">Small</Button>
+<Button size="medium">Medium</Button>
+<Button size="large">Large</Button>
+```
+
+Heights are 32 / 40 / 48 dp; font sizes 14 / 15 / 16.
+
+## Loading
+
+```tsx
+const [busy, setBusy] = useState(false);
+
+<Button
+  loading={busy}
+  onPress={async () => {
+    setBusy(true);
+    try { await submit(); } finally { setBusy(false); }
+  }}
+>
+  Submit
+</Button>
+```
+
+When `loading` is true, a centered spinner appears, children stay in the layout (hidden) so width doesn't jump, and presses are blocked. `loadingColor` overrides the spinner color (defaults to the resolved text color).
+
+## With an icon
+
+```tsx
+<Button icon={<DownloadIcon />} iconPosition="left">Download</Button>
+<Button icon={<ArrowRightIcon />} iconPosition="right">Continue</Button>
+```
+
+## Disabled
+
+```tsx
+<Button disabled>Can't click me</Button>
+```
+
+`disabled` blocks presses, drops opacity, and removes the press animation.
+
+## Props
+
+| Prop | Type | Default | Description |
+|------|------|---------|-------------|
+| `onPress?` | `() => void` | — | Press handler. |
+| `children?` | `React.ReactNode` | — | Button label. Strings are auto-wrapped in `Text`. |
+| `disabled?` | `boolean` | `false` | Blocks presses + drops opacity. |
+| `variant?` | `'primary' \| 'secondary' \| 'inverse' \| 'icon' \| 'ghost' \| 'text'` | `'primary'` | Visual style. |
+| `size?` | `'small' \| 'medium' \| 'large'` | `'medium'` | Padding + font size + min height. |
+| `icon?` | `React.ReactNode` | — | Icon node rendered next to the label. |
+| `iconPosition?` | `'left' \| 'right'` | `'left'` | Which side of the label. |
+| `loading?` | `boolean` | `false` | Show centered spinner, block presses. |
+| `loadingColor?` | `string` | text color | Override the spinner color. |
+| `style?` | `StyleProp<ViewStyle>` | — | Outer container style. |
+| `textStyle?` | `StyleProp<TextStyle>` | — | Label style. |
+| `accessibilityLabel?` | `string` | — | Required for icon-only buttons. |
+| `accessibilityHint?` | `string` | — | |
+| `hitSlop?` | `{ top, bottom, left, right }` | — | Expand the touch target. |
+| `activeOpacity?` | `number` | `0.7` | Opacity while pressed (non-scale variants). |
+| `testID?` | `string` | — | RN testing id. |
+| `className?` | `string` | — | NativeWind class (web). |
+
+## Recipes
+
+### Destructive confirmation
+
+```tsx
+<Button variant="primary" style={{ backgroundColor: theme.colors.negative }} onPress={destroy}>
+  Delete forever
+</Button>
+```
+
+For most destructive actions, prefer a `<Dialog>` with `color: 'destructive'` actions over a destructive button in the main flow.
+
+### Submit button with promise
+
+```tsx
+const [busy, setBusy] = useState(false);
+
+<Button
+  loading={busy}
+  onPress={async () => {
+    setBusy(true);
+    try { await save(form); toast.success('Saved'); }
+    catch (err) { toast.error(extractErrorMessage(err)); }
+    finally { setBusy(false); }
+  }}
+>
+  Save changes
+</Button>
+```
+
+### Icon button row
+
+```tsx
+<View style={{ flexDirection: 'row', gap: 4 }}>
+  <Button variant="icon" icon={<BoldIcon />} accessibilityLabel="Bold" />
+  <Button variant="icon" icon={<ItalicIcon />} accessibilityLabel="Italic" />
+  <Button variant="icon" icon={<LinkIcon />} accessibilityLabel="Link" />
+</View>
+```

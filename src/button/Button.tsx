@@ -210,7 +210,7 @@ const styles = StyleSheet.create({
     pointerEvents: 'none',
   },
   loadingOverlay: {
-    ...StyleSheet.absoluteFillObject,
+    ...StyleSheet.absoluteFill,
     alignItems: 'center',
     justifyContent: 'center',
     pointerEvents: 'none',

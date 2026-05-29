@@ -8,10 +8,13 @@ export function useDelayedLoading(delay: number, initialState: boolean = true) {
   const [isLoading, setIsLoading] = useState(initialState);
 
   useEffect(() => {
-    let timeout: ReturnType<typeof setTimeout>;
-    if (isLoading) timeout = setTimeout(() => setIsLoading(false), delay);
+    if (!isLoading) return;
 
-    return () => timeout && clearTimeout(timeout);
+    const timeout = setTimeout(() => setIsLoading(false), delay);
+
+    return () => {
+      clearTimeout(timeout);
+    };
   }, [isLoading, delay]);
 
   return isLoading;

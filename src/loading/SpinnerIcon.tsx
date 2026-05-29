@@ -1,15 +1,24 @@
 import React, { useEffect } from 'react';
 import { ActivityIndicator, type ViewStyle } from 'react-native';
+import Animated, {
+  Easing,
+  useAnimatedStyle,
+  useSharedValue,
+  withRepeat,
+  withTiming,
+} from 'react-native-reanimated';
 
 import { lazyRequire } from '../utils/lazy-require';
 
-// Lazy-loaded dependencies for the SVG spinner.
-// Falls back to ActivityIndicator if react-native-svg or react-native-reanimated are not installed.
+// react-native-svg is loaded lazily so the loading module can fall back to
+// ActivityIndicator when the host app doesn't ship SVG support. Reanimated,
+// by contrast, MUST be statically imported: the worklets Babel plugin
+// performs build-time closure analysis (`__closure` metadata) that fails on
+// runtime requires, which would crash the UI thread with
+// "Tried to synchronously call a non-worklet function `addListener`".
 type SvgModuleType = typeof import('react-native-svg');
-type ReanimatedType = typeof import('react-native-reanimated');
 
 const getSvgModule = lazyRequire<SvgModuleType>('react-native-svg');
-const getReanimated = lazyRequire<ReanimatedType>('react-native-reanimated');
 
 interface SpinnerIconProps {
   size?: number;
@@ -21,12 +30,11 @@ interface SpinnerIconProps {
 type AnimatedSpinnerProps = Omit<SpinnerIconProps, 'className'> & {
   className?: string;
   svg: NonNullable<SvgModuleType>;
-  reanimated: NonNullable<ReanimatedType>;
 };
 
 /**
  * Inner component that unconditionally calls Reanimated hooks.
- * Only rendered when both react-native-svg and react-native-reanimated are available.
+ * Only rendered when react-native-svg is available.
  */
 const AnimatedSpinner: React.FC<AnimatedSpinnerProps> = ({
   color = 'currentColor',
@@ -34,17 +42,8 @@ const AnimatedSpinner: React.FC<AnimatedSpinnerProps> = ({
   className,
   style,
   svg,
-  reanimated,
 }) => {
   const { default: Svg, Rect } = svg;
-  const {
-    default: Animated,
-    useAnimatedStyle,
-    useSharedValue,
-    withRepeat,
-    withTiming,
-    Easing,
-  } = reanimated;
 
   const rotation = useSharedValue(0);
 
@@ -54,8 +53,8 @@ const AnimatedSpinner: React.FC<AnimatedSpinnerProps> = ({
       -1,
       false,
     );
-    // Reanimated shared values are stable references; withRepeat/withTiming/Easing
-    // are module-level functions from the lazily-loaded module and are stable too.
+    // rotation is a stable shared value reference; withRepeat/withTiming/Easing
+    // are module-level constants from a static import and are stable too.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -97,8 +96,8 @@ const AnimatedSpinner: React.FC<AnimatedSpinnerProps> = ({
 
 /**
  * iOS-style SVG spinner with 8 rotating rectangles and an opacity gradient trail.
- * Requires react-native-svg and react-native-reanimated as peer dependencies.
- * Falls back to ActivityIndicator if either is missing.
+ * Requires react-native-svg (lazy) and react-native-reanimated (static).
+ * Falls back to ActivityIndicator if react-native-svg is missing.
  */
 export const SpinnerIcon: React.FC<SpinnerIconProps> = ({
   color = 'currentColor',
@@ -107,9 +106,8 @@ export const SpinnerIcon: React.FC<SpinnerIconProps> = ({
   style,
 }) => {
   const svg = getSvgModule();
-  const reanimated = getReanimated();
 
-  if (!svg || !reanimated) {
+  if (!svg) {
     return <ActivityIndicator size={size > 30 ? 'large' : 'small'} color={color} />;
   }
 
@@ -120,7 +118,6 @@ export const SpinnerIcon: React.FC<SpinnerIconProps> = ({
       className={className}
       style={style}
       svg={svg}
-      reanimated={reanimated}
     />
   );
 };

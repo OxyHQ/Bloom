@@ -22,7 +22,7 @@ import { createPortal } from 'react-dom';
  * The container is positioned `fixed` and stretched edge-to-edge so it
  * fills the viewport. This makes it a valid containing block for any
  * portaled descendant that uses `position: absolute` (e.g. RN's
- * `StyleSheet.absoluteFillObject`) — without it those children anchor to a
+ * `StyleSheet.absoluteFill`) — without it those children anchor to a
  * zero-area block at the end of `<body>` and render off-screen.
  *
  * `pointer-events: none` lets clicks fall through to the underlying app

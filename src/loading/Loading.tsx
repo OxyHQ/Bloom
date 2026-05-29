@@ -1,9 +1,14 @@
 import React, { memo, useEffect, useMemo } from 'react';
 import { View, Text, StyleSheet, type DimensionValue } from 'react-native';
+import Animated, {
+  Easing,
+  useAnimatedStyle,
+  useSharedValue,
+  withTiming,
+} from 'react-native-reanimated';
 
 import { useTheme } from '../theme/use-theme';
 import { animation } from '../styles/tokens';
-import { lazyRequire } from '../utils/lazy-require';
 import { SpinnerIcon } from './SpinnerIcon';
 import type {
   LoadingProps,
@@ -18,10 +23,6 @@ const SIZE_CONFIG = {
   medium: { spinner: 24, text: 15 },
   large: { spinner: 44, text: 16 },
 } as const;
-
-// Lazy-loaded reanimated for the top variant
-type ReanimatedType = typeof import('react-native-reanimated');
-const getReanimated = lazyRequire<ReanimatedType>('react-native-reanimated');
 
 const SpinnerLoading: React.FC<SpinnerLoadingProps> = ({
   size = 'medium',
@@ -59,33 +60,21 @@ const SpinnerLoading: React.FC<SpinnerLoadingProps> = ({
   );
 };
 
-/**
- * Inner component for TopLoading that requires react-native-reanimated.
- * Extracted to a dedicated component so all hooks are called unconditionally,
- * satisfying the Rules of Hooks and React Compiler requirements.
- */
-type AnimatedTopLoadingProps = {
-  showLoading: boolean;
-  targetHeight: number;
-  effectiveIconSize: number;
-  spinnerColor: string;
-  spinnerIcon: React.ReactNode | undefined;
-  style: TopLoadingProps['style'];
-  testID: string | undefined;
-  reanimated: NonNullable<ReturnType<typeof getReanimated>>;
-};
-
-const AnimatedTopLoading: React.FC<AnimatedTopLoadingProps> = ({
-  showLoading,
-  targetHeight,
-  effectiveIconSize,
-  spinnerColor,
-  spinnerIcon,
+const TopLoading: React.FC<TopLoadingProps> = ({
+  size = 'medium',
+  color,
   style,
+  showLoading = true,
+  iconSize,
+  heightOffset = 0,
+  spinnerIcon,
   testID,
-  reanimated,
 }) => {
-  const { default: Animated, useAnimatedStyle, useSharedValue, withTiming, Easing } = reanimated;
+  const theme = useTheme();
+  const sizeConfig = SIZE_CONFIG[size];
+  const effectiveIconSize = iconSize ?? sizeConfig.spinner;
+  const targetHeight = Math.max(0, effectiveIconSize + sizeConfig.spinner + heightOffset);
+  const spinnerColor = color ?? theme.colors.primary;
 
   const height = useSharedValue(showLoading ? targetHeight : 0);
   const opacity = useSharedValue(showLoading ? 1 : 0);
@@ -96,7 +85,7 @@ const AnimatedTopLoading: React.FC<AnimatedTopLoadingProps> = ({
     height.value = withTiming(showLoading ? targetHeight : 0, timingConfig);
     opacity.value = withTiming(showLoading ? 1 : 0, timingConfig);
     translateY.value = withTiming(showLoading ? 0 : -targetHeight, timingConfig);
-    // Easing, withTiming: module-level constants from lazily-resolved reanimated, stable.
+    // Easing, withTiming: module-level constants from a static import, stable.
     // height/opacity/translateY: shared value objects, stable references.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [showLoading, targetHeight]);
@@ -116,50 +105,6 @@ const AnimatedTopLoading: React.FC<AnimatedTopLoadingProps> = ({
         {spinnerIcon ?? <SpinnerIcon size={effectiveIconSize} color={spinnerColor} />}
       </Animated.View>
     </Animated.View>
-  );
-};
-
-const TopLoading: React.FC<TopLoadingProps> = ({
-  size = 'medium',
-  color,
-  style,
-  showLoading = true,
-  iconSize,
-  heightOffset = 0,
-  spinnerIcon,
-  testID,
-}) => {
-  const theme = useTheme();
-  const sizeConfig = SIZE_CONFIG[size];
-  const effectiveIconSize = iconSize ?? sizeConfig.spinner;
-  const targetHeight = Math.max(0, effectiveIconSize + sizeConfig.spinner + heightOffset);
-  const spinnerColor = color ?? theme.colors.primary;
-
-  const reanimated = getReanimated();
-
-  if (!reanimated) {
-    // Non-animated fallback when reanimated is not available
-    if (!showLoading) return null;
-    return (
-      <View style={[styles.topContainer, { height: targetHeight }, style]} testID={testID}>
-        <View style={[styles.topLoadingView, { height: targetHeight }]}>
-          {spinnerIcon ?? <SpinnerIcon size={effectiveIconSize} color={spinnerColor} />}
-        </View>
-      </View>
-    );
-  }
-
-  return (
-    <AnimatedTopLoading
-      showLoading={showLoading}
-      targetHeight={targetHeight}
-      effectiveIconSize={effectiveIconSize}
-      spinnerColor={spinnerColor}
-      spinnerIcon={spinnerIcon}
-      style={style}
-      testID={testID}
-      reanimated={reanimated}
-    />
   );
 };
 
