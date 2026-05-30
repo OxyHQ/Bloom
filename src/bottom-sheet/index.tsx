@@ -192,7 +192,17 @@ const BottomSheet = forwardRef((props: BottomSheetProps, ref: React.ForwardedRef
     const isScrollAtTop = useSharedValue(true);
     const allowPanClose = useSharedValue(true);
     const keyboardHeight = useSharedValue(0);
-    const context = useSharedValue({ y: 0 });
+    // Stores the sheet's `translateY` captured at the moment a pan gesture
+    // begins, so `onUpdate` can offset from the starting position. This MUST
+    // be a primitive shared value, not an object-valued one. Under
+    // react-native-worklets 0.8.x (Reanimated 4), assigning a fresh object
+    // literal to an object-valued shared value's `.value` inside a worklet
+    // freezes the object (`freezeObjectInDev`) and routes the mutation through
+    // the serializer's listener machinery — which then tries to call the
+    // non-worklet `removeListener` synchronously on the UI thread and crashes
+    // ("Tried to synchronously call a non-worklet function `removeListener`").
+    // A scalar shared value sidesteps all object serialization.
+    const contextY = useSharedValue(0);
     // Mirror of `closeGenerationRef` for worklet access. Bumped from the JS
     // thread in lockstep with the ref so gesture worklets always see the
     // current generation when they snapshot it on `onEnd`.
@@ -375,7 +385,7 @@ const BottomSheet = forwardRef((props: BottomSheetProps, ref: React.ForwardedRef
                     'worklet';
                     const t = e.changedTouches[0];
                     if (t) touchStartY.value = t.absoluteY;
-                    context.value = { y: translateY.value };
+                    contextY.value = translateY.value;
                 })
                 .onTouchesMove((e, state) => {
                     'worklet';
@@ -395,7 +405,7 @@ const BottomSheet = forwardRef((props: BottomSheetProps, ref: React.ForwardedRef
                 .onUpdate((event) => {
                     'worklet';
                     if (event.translationY < 0) return;
-                    const newTranslateY = context.value.y + event.translationY;
+                    const newTranslateY = contextY.value + event.translationY;
                     if (newTranslateY >= 0) {
                         translateY.value = newTranslateY;
                     }
@@ -432,7 +442,7 @@ const BottomSheet = forwardRef((props: BottomSheetProps, ref: React.ForwardedRef
             .simultaneousWithExternalGesture(nativeGesture)
             .onStart(() => {
                 'worklet';
-                context.value = { y: translateY.value };
+                contextY.value = translateY.value;
                 allowPanClose.value = scrollOffsetY.value <= 8;
             })
             .onUpdate((event) => {
@@ -440,7 +450,7 @@ const BottomSheet = forwardRef((props: BottomSheetProps, ref: React.ForwardedRef
                 if (!allowPanClose.value) {
                     return;
                 }
-                const newTranslateY = context.value.y + event.translationY;
+                const newTranslateY = contextY.value + event.translationY;
                 // If user is scrolling down while content isn't at (or near) the top, let ScrollView handle it
                 const atTopOrNearTop = scrollOffsetY.value <= 8; // slightly larger tolerance for smoother handoff
                 if (event.translationY > 0 && !atTopOrNearTop) {
@@ -507,11 +517,11 @@ const BottomSheet = forwardRef((props: BottomSheetProps, ref: React.ForwardedRef
             .activeOffsetY([-8, 8])
             .onStart(() => {
                 'worklet';
-                context.value = { y: translateY.value };
+                contextY.value = translateY.value;
             })
             .onUpdate((event) => {
                 'worklet';
-                const newTranslateY = context.value.y + event.translationY;
+                const newTranslateY = contextY.value + event.translationY;
                 if (newTranslateY >= 0) {
                     translateY.value = newTranslateY;
                 } else if (detached) {
