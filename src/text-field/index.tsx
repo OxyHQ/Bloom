@@ -22,7 +22,7 @@ import {
   type TextStyleProp,
   type ViewStyleProp,
 } from '../styles';
-import { type Props as SVGIconProps } from '../icons/common';
+import { type IconStyle, type Props as SVGIconProps } from '../icons/common';
 import { Text } from '../typography';
 
 const Context = createContext<{
@@ -270,12 +270,11 @@ export function Icon({ icon: Comp }: { icon: React.ComponentType<SVGIconProps> }
   const ctx = useContext(Context);
 
   const { hover, focus, errorHover, errorFocus } = useMemo(() => {
-    return {
-      hover: { color: theme.colors.text } as TextStyle,
-      focus: { color: theme.colors.primary } as TextStyle,
-      errorHover: { color: theme.colors.error } as TextStyle,
-      errorFocus: { color: theme.colors.error } as TextStyle,
-    };
+    const hover: IconStyle = { color: theme.colors.text };
+    const focus: IconStyle = { color: theme.colors.primary };
+    const errorHover: IconStyle = { color: theme.colors.error };
+    const errorFocus: IconStyle = { color: theme.colors.error };
+    return { hover, focus, errorHover, errorFocus };
   }, [theme]);
 
   return (
