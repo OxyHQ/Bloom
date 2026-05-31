@@ -2,6 +2,7 @@ import React, { memo, useMemo } from 'react';
 import { View, Text, Pressable, Platform, type ViewStyle } from 'react-native';
 
 import { useTheme } from '../theme/use-theme';
+import { useInteractionState } from '../hooks/useInteractionState';
 import { borderRadius, space } from '../styles/tokens';
 import type {
   CardProps,
@@ -22,6 +23,11 @@ const CardRootComponent: React.FC<CardProps> = ({
   testID,
 }) => {
   const theme = useTheme();
+  // Drive the press-opacity via state instead of Pressable's function-form
+  // `style`, which NativeWind v4's css-interop swallows (dropping the base
+  // container style: background, radius, border, shadow).
+  const { state: pressed, onIn: onPressIn, onOut: onPressOut } =
+    useInteractionState();
 
   const containerStyle = useMemo((): ViewStyle => {
     const base: ViewStyle = {
@@ -58,13 +64,15 @@ const CardRootComponent: React.FC<CardProps> = ({
   if (onPress) {
     return (
       <Pressable
-        style={({ pressed }) => [
+        style={[
           containerStyle,
-          pressed && { opacity: 0.85 },
+          pressed && !disabled && { opacity: 0.85 },
           disabled && { opacity: 0.5 },
           style,
         ]}
         onPress={onPress}
+        onPressIn={disabled ? undefined : onPressIn}
+        onPressOut={disabled ? undefined : onPressOut}
         disabled={disabled}
         accessibilityLabel={accessibilityLabel}
         accessibilityRole="button"

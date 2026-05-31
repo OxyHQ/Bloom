@@ -2,6 +2,7 @@ import React, { memo } from 'react';
 import { View, Text, Pressable, StyleSheet } from 'react-native';
 
 import { useTheme } from '../theme/use-theme';
+import { useInteractionState } from '../hooks/useInteractionState';
 import type {
   SettingsListItemProps,
   SettingsListGroupProps,
@@ -45,6 +46,10 @@ export const SettingsListItem = memo<SettingsListItemProps>(function SettingsLis
   const hasChevron = showChevron ?? Boolean(onPress);
   const titleColor = destructive ? theme.colors.error : theme.colors.text;
   const pressedOpacity = disabled ? 1 : 0.6;
+  // Drive press-opacity via state, not Pressable's function-form `style`,
+  // which NativeWind v4's css-interop swallows.
+  const { state: pressed, onIn: onPressIn, onOut: onPressOut } =
+    useInteractionState();
 
   const role = accessibilityRole ?? (onPress ? 'button' : 'none');
   const label = accessibilityLabel ?? title;
@@ -100,13 +105,15 @@ export const SettingsListItem = memo<SettingsListItemProps>(function SettingsLis
     return (
       <Pressable
         onPress={onPress}
+        onPressIn={disabled ? undefined : onPressIn}
+        onPressOut={disabled ? undefined : onPressOut}
         disabled={disabled}
          android_ripple={{ color: theme.colors.border }}
          accessibilityRole={role}
          accessibilityLabel={label}
          accessibilityHint={accessibilityHint}
         accessibilityState={disabled ? { disabled: true } : undefined}
-        style={({ pressed }) => [
+        style={[
           disabled && styles.disabled,
           pressed && { opacity: pressedOpacity },
         ]}

@@ -20,6 +20,7 @@ import {
 import Animated, { Easing, LinearTransition } from 'react-native-reanimated';
 
 import { useTheme } from '../theme/use-theme';
+import { useInteractionState } from '../hooks/useInteractionState';
 import { atoms as a, platform } from '../styles';
 
 const InternalContext = createContext<{
@@ -167,6 +168,11 @@ export function Item({
   const [position, setPosition] = useState<{ x: number; width: number } | null>(
     null,
   );
+  // Drive press-opacity via state, not Pressable's function-form `style`:
+  // NativeWind v4's css-interop swallows the function form, which would drop
+  // the segment's base layout styles (flex_1, padding, minHeight, radius).
+  const { state: pressed, onIn: onPressIn, onOut: onPressOut } =
+    useInteractionState();
 
   const ctx = useContext(InternalContext);
   if (!ctx) {
@@ -230,13 +236,15 @@ export function Item({
       }}>
       <Pressable
         onPress={onPress}
+        onPressIn={disabled ? undefined : onPressIn}
+        onPressOut={disabled ? undefined : onPressOut}
         accessibilityLabel={accessibilityLabel}
         accessibilityHint={accessibilityHint}
         accessibilityState={{ selected: active, disabled: !!disabled }}
         role={itemRole}
         disabled={disabled}
         testID={testID}
-        style={({ pressed }) => [
+        style={[
           a.flex_1,
           a.flex_row,
           a.align_center,

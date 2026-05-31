@@ -2,6 +2,7 @@ import React, { createContext, memo, useCallback, useContext, useEffect, useMemo
 import { View, Text, Pressable, Animated, type ViewStyle } from 'react-native';
 
 import { useTheme } from '../theme/use-theme';
+import { useInteractionState } from '../hooks/useInteractionState';
 import { animation, borderRadius, space } from '../styles/tokens';
 import { SUPPORTS_NATIVE_DRIVER } from '../styles/native-driver';
 import type {
@@ -132,6 +133,11 @@ const AccordionTriggerComponent: React.FC<AccordionTriggerProps> = ({
   const { toggle } = useContext(AccordionContext);
   const { value, isExpanded, disabled } = useContext(AccordionItemContext);
   const rotateAnim = useRef(new Animated.Value(isExpanded ? 1 : 0)).current;
+  // Drive press-opacity via state, not Pressable's function-form `style`,
+  // which NativeWind v4's css-interop swallows (dropping the trigger's base
+  // layout: flexDirection, padding, gap).
+  const { state: pressed, onIn: onPressIn, onOut: onPressOut } =
+    useInteractionState();
 
   useEffect(() => {
     Animated.spring(rotateAnim, {
@@ -154,7 +160,7 @@ const AccordionTriggerComponent: React.FC<AccordionTriggerProps> = ({
 
   return (
     <Pressable
-      style={({ pressed }) => [
+      style={[
         {
           flexDirection: 'row',
           alignItems: 'center',
@@ -166,6 +172,8 @@ const AccordionTriggerComponent: React.FC<AccordionTriggerProps> = ({
         style,
       ]}
       onPress={handlePress}
+      onPressIn={disabled ? undefined : onPressIn}
+      onPressOut={disabled ? undefined : onPressOut}
       disabled={disabled}
       accessibilityRole="button"
       accessibilityState={{ expanded: isExpanded, disabled }}

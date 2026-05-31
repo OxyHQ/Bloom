@@ -13,6 +13,7 @@ import {
 
 import { useTheme } from '../theme/use-theme';
 import { usePressAnimation } from '../hooks/usePressAnimation';
+import { useInteractionState } from '../hooks/useInteractionState';
 import type { ButtonProps } from './types';
 
 export type { ButtonProps, ButtonVariant, ButtonSize } from './types';
@@ -65,9 +66,34 @@ const ButtonComponent: React.FC<ButtonProps> = ({
   const theme = useTheme();
   const hasScaleFeedback = SCALE_VARIANTS.has(variant);
   const isInteractionBlocked = disabled || loading;
-  const { scaleAnim, onPressIn, onPressOut } = usePressAnimation(
-    hasScaleFeedback && !isInteractionBlocked ? PRESS_SCALE : undefined,
-  );
+  const { scaleAnim, onPressIn: onScalePressIn, onPressOut: onScalePressOut } =
+    usePressAnimation(
+      hasScaleFeedback && !isInteractionBlocked ? PRESS_SCALE : undefined,
+    );
+  // Non-scale variants (icon/ghost/text) convey press feedback via an opacity
+  // dip. We drive it through component state + onPressIn/onPressOut rather than
+  // Pressable's function-form `style` because NativeWind v4's css-interop
+  // rewrites the `style` prop of every JSX element and swallows the function
+  // form, which would drop ALL base styles (background, radius, padding,
+  // minHeight). A static style array is merged correctly by css-interop.
+  const { state: pressed, onIn: onPressedIn, onOut: onPressedOut } =
+    useInteractionState();
+
+  const handlePressIn = useMemo(() => {
+    if (isInteractionBlocked) return undefined;
+    return () => {
+      onScalePressIn();
+      onPressedIn();
+    };
+  }, [isInteractionBlocked, onScalePressIn, onPressedIn]);
+
+  const handlePressOut = useMemo(() => {
+    if (isInteractionBlocked) return undefined;
+    return () => {
+      onScalePressOut();
+      onPressedOut();
+    };
+  }, [isInteractionBlocked, onScalePressOut, onPressedOut]);
 
   const baseStyles = useMemo((): ViewStyle => {
     const sizeConfig = SIZE_CONFIG[size];
@@ -163,15 +189,15 @@ const ButtonComponent: React.FC<ButtonProps> = ({
     <Animated.View style={hasScaleFeedback ? { transform: [{ scale: scaleAnim }] } : undefined}>
       <Pressable
         {...(resolvedClassName ? { className: resolvedClassName } as Record<string, string> : {})}
-        style={({ pressed }) => [
+        style={[
           baseStyles,
           disabled && !loading && { opacity: 0.5 },
           pressed && !hasScaleFeedback && !isInteractionBlocked && { opacity: resolvedActiveOpacity },
           style,
         ]}
         onPress={isInteractionBlocked ? undefined : onPress}
-        onPressIn={isInteractionBlocked ? undefined : onPressIn}
-        onPressOut={isInteractionBlocked ? undefined : onPressOut}
+        onPressIn={handlePressIn}
+        onPressOut={handlePressOut}
         disabled={isInteractionBlocked}
         hitSlop={hitSlop ?? defaultHitSlop}
         accessibilityLabel={accessibilityLabel}

@@ -8,6 +8,7 @@ import {
 } from 'react-native';
 
 import { useTheme } from '../theme/use-theme';
+import { useInteractionState } from '../hooks/useInteractionState';
 import type { ThemeColors } from '../theme/types';
 import { dismiss } from './sonner';
 import type { ToastType } from './types';
@@ -106,6 +107,11 @@ export function Action({
   const { colors } = useTheme();
   const { type, id } = useContext(ToastConfigContext);
   const actionColors = useActionColors({ type, colors });
+  // Drive the pressed visual via state, not Pressable's function-form `style`
+  // / function-children, which NativeWind v4's css-interop swallows (dropping
+  // the base button style: padding, radius, alignSelf).
+  const { state: pressed, onIn: onPressIn, onOut: onPressOut } =
+    useInteractionState();
 
   const handlePress = (e: GestureResponderEvent) => {
     dismiss(id);
@@ -116,7 +122,9 @@ export function Action({
     <Pressable
       {...rest}
       onPress={handlePress}
-      style={({ pressed }) => [
+      onPressIn={onPressIn}
+      onPressOut={onPressOut}
+      style={[
         styles.actionButton,
         {
           backgroundColor: pressed
@@ -124,19 +132,17 @@ export function Action({
             : actionColors.base.backgroundColor,
         },
       ]}>
-      {({ pressed }) => (
-        <RNText
-          style={[
-            styles.actionText,
-            {
-              color: pressed
-                ? actionColors.interacted.textColor
-                : actionColors.base.textColor,
-            },
-          ]}>
-          {children}
-        </RNText>
-      )}
+      <RNText
+        style={[
+          styles.actionText,
+          {
+            color: pressed
+              ? actionColors.interacted.textColor
+              : actionColors.base.textColor,
+          },
+        ]}>
+        {children}
+      </RNText>
     </Pressable>
   );
 }
