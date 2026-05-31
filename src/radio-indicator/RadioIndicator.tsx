@@ -15,6 +15,10 @@ const RadioIndicatorComponent: React.FC<RadioIndicatorProps> = ({
   const theme = useTheme();
   const resolvedSelectedColor = selectedColor ?? theme.colors.primary;
   const resolvedBorderColor = borderColor ?? theme.colors.border;
+  // The inner dot sits on `resolvedSelectedColor`. When that is the theme
+  // primary, use the preset's readable foreground (white for blue, black for
+  // yellow). A caller-supplied custom color falls back to white.
+  const dotColor = selectedColor == null ? theme.colors.primaryForeground : '#FFFFFF';
   const dotSize = size * 0.5;
 
   return (
@@ -40,7 +44,7 @@ const RadioIndicatorComponent: React.FC<RadioIndicatorProps> = ({
             width: dotSize,
             height: dotSize,
             borderRadius: dotSize / 2,
-            backgroundColor: '#FFFFFF',
+            backgroundColor: dotColor,
           }}
         />
       )}

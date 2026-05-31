@@ -37,7 +37,7 @@ export function PromptInputSubmitButton({
         testID={testID}
       >
         {stopIcon ?? (
-          <Text style={{ fontSize: 12, color: '#FFFFFF', fontWeight: '700' }}>■</Text>
+          <Text style={{ fontSize: 12, color: theme.colors.primaryForeground, fontWeight: '700' }}>■</Text>
         )}
       </TouchableOpacity>
     );
@@ -67,7 +67,7 @@ export function PromptInputSubmitButton({
       testID={testID}
     >
       {submitIcon ?? (
-        <Text style={{ fontSize: 16, color: '#FFFFFF', fontWeight: '700' }}>↑</Text>
+        <Text style={{ fontSize: 16, color: theme.colors.primaryForeground, fontWeight: '700' }}>↑</Text>
       )}
     </TouchableOpacity>
   );

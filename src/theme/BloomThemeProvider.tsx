@@ -53,6 +53,7 @@ export function buildTheme(appColor: AppColorName, resolved: 'light' | 'dark', i
     const mutedForeground = hslVarToCSS(vars['--muted-foreground'] ?? '0 0% 50%');
 
     const primaryColor = hslVarToCSS(vars['--primary'] ?? '0 0% 50%');
+    const primaryForeground = hslVarToCSS(vars['--primary-foreground'] ?? '0 0% 100%');
 
     themeColors = {
       background,
@@ -67,6 +68,7 @@ export function buildTheme(appColor: AppColorName, resolved: 'light' | 'dark', i
       borderLight: hslVarToCSS(vars['--input'] ?? '0 0% 20%'),
 
       primary: primaryColor,
+      primaryForeground,
       primaryLight: surface,
       primaryDark: background,
 

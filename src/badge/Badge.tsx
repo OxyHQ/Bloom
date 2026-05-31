@@ -32,10 +32,14 @@ function useColorPair(
   };
 
   const base = colorMap[color];
+  // A primary-colored solid badge needs the preset's readable foreground
+  // (white for blue, black for yellow). Semantic colors are fixed bright
+  // fills that always pair with white.
+  const solidForeground = base === theme.colors.primary ? theme.colors.primaryForeground : '#fff';
 
   switch (variant) {
     case 'solid':
-      return { bg: base, fg: '#fff' };
+      return { bg: base, fg: solidForeground };
     case 'subtle':
       return { bg: base + '20', fg: base };
     case 'outlined':

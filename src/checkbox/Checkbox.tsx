@@ -31,6 +31,10 @@ const CheckboxComponent: React.FC<CheckboxProps> = ({
   const pressAnim = useRef(new Animated.Value(1)).current;
   const sizeConfig = SIZE_CONFIG[size];
   const checkColor = color ?? theme.colors.primary;
+  // The checkmark sits on top of `checkColor`. When the box uses the theme
+  // primary, use the preset's readable foreground (white for blue, black for
+  // yellow). A caller-supplied custom color falls back to white.
+  const checkmarkColor = color == null ? theme.colors.primaryForeground : '#fff';
 
   useEffect(() => {
     Animated.spring(scaleAnim, {
@@ -117,7 +121,7 @@ const CheckboxComponent: React.FC<CheckboxProps> = ({
           <Text
             style={{
               fontSize: sizeConfig.checkmark,
-              color: '#fff',
+              color: checkmarkColor,
               fontWeight: '700',
               lineHeight: sizeConfig.checkmark + 2,
               textAlign: 'center',

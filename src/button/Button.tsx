@@ -122,7 +122,7 @@ const ButtonComponent: React.FC<ButtonProps> = ({
   const resolvedTextColor = useMemo((): string => {
     switch (variant) {
       case 'primary':
-        return theme.colors.card;
+        return theme.colors.primaryForeground;
       case 'secondary':
         return theme.colors.text;
       case 'inverse':

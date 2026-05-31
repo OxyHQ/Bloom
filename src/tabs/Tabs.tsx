@@ -154,7 +154,7 @@ const TabComponent: React.FC<TabProps> = ({
     };
 
     if (variant === 'outlined' && isSelected) {
-      base.color = '#fff';
+      base.color = theme.colors.primaryForeground;
     } else if (isSelected) {
       base.color = theme.colors.primary;
     } else {

@@ -13,6 +13,7 @@ export interface ThemeColors {
   borderLight: string;
 
   primary: string;
+  primaryForeground: string;
   primaryLight: string;
   primaryDark: string;
 

@@ -4,6 +4,7 @@ import {
   HEX_TO_APP_COLOR,
   hexToAppColorName,
 } from '../theme/color-presets';
+import { buildTheme } from '../theme/BloomThemeProvider';
 import type { Theme, ThemeColors, ThemeMode } from '../theme/types';
 
 describe('Theme system', () => {
@@ -43,6 +44,24 @@ describe('Theme system', () => {
         const preset = APP_COLOR_PRESETS[name]!;
         // Background should differ between light and dark
         expect(preset.light['--background']).not.toBe(preset.dark['--background']);
+      }
+    });
+  });
+
+  describe('buildTheme primaryForeground', () => {
+    it('resolves a readable foreground for the primary fill per preset', () => {
+      // blue's --primary-foreground is `0 0% 100%` → white
+      expect(buildTheme('blue', 'light').colors.primaryForeground).toBe('hsl(0, 0%, 100%)');
+      expect(buildTheme('blue', 'dark').colors.primaryForeground).toBe('hsl(0, 0%, 100%)');
+      // yellow's --primary-foreground is `0 0% 0%` → black
+      expect(buildTheme('yellow', 'light').colors.primaryForeground).toBe('hsl(0, 0%, 0%)');
+      expect(buildTheme('yellow', 'dark').colors.primaryForeground).toBe('hsl(0, 0%, 0%)');
+    });
+
+    it('sets a primaryForeground for every preset in both modes', () => {
+      for (const name of APP_COLOR_NAMES) {
+        expect(buildTheme(name, 'light').colors.primaryForeground).toBeTruthy();
+        expect(buildTheme(name, 'dark').colors.primaryForeground).toBeTruthy();
       }
     });
   });
@@ -124,6 +143,7 @@ function createMockColors(): ThemeColors {
     border: '#ccc',
     borderLight: '#ddd',
     primary: '#005c67',
+    primaryForeground: '#FFFFFF',
     primaryLight: '#e0f7fa',
     primaryDark: '#003d44',
     secondary: '#005c67',

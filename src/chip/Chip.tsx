@@ -28,10 +28,15 @@ function useChipColors(
   };
 
   const base = selected ? theme.colors.primary : colorMap[color];
+  // When the background is the theme primary, the readable text/icon color is
+  // preset-specific (white for blue, black for yellow). Semantic colors
+  // (success/warning/error) are fixed bright fills that always pair with white.
+  const isPrimaryBg = base === theme.colors.primary;
+  const solidForeground = isPrimaryBg ? theme.colors.primaryForeground : '#fff';
 
   switch (variant) {
     case 'solid':
-      return { bg: base, fg: '#fff', border: base };
+      return { bg: base, fg: solidForeground, border: base };
     case 'outlined':
       return { bg: 'transparent', fg: base, border: base };
     case 'soft':

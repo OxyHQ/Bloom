@@ -256,11 +256,11 @@ function getActionPalette(
     case 'cancel':
       return { background: colors.contrast50, foreground: colors.text };
     case 'default':
-      return { background: colors.primary, foreground: '#FFFFFF' };
+      return { background: colors.primary, foreground: colors.primaryForeground };
     /* c8 ignore next 2 -- TS exhaustiveness check guards this branch */
     default: {
       const _exhaustive: never = color;
-      return { background: colors.primary, foreground: '#FFFFFF' };
+      return { background: colors.primary, foreground: colors.primaryForeground };
     }
   }
 }
