@@ -245,7 +245,15 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   backdrop: {
-    ...StyleSheet.absoluteFillObject,
+    // Spell out the absolute-fill rect (matches `Fill`'s canonical style)
+    // rather than spreading the deprecated `StyleSheet.absoluteFillObject`,
+    // which RN 0.83's generated types no longer surface on the `StyleSheet`
+    // namespace and which downstream type-checks reject.
+    position: 'absolute',
+    top: 0,
+    right: 0,
+    bottom: 0,
+    left: 0,
   },
   // A subtle deepening on press confirms the tap-to-dismiss affordance.
   backdropPressed: {
