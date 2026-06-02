@@ -20,6 +20,8 @@ export { type Props as IconProps, sizes as iconSizes, useCommonSVGProps } from '
 export * from './portal';
 export {
   Dialog,
+  CenteredDialog,
+  CENTERED_DIALOG_BACKDROP_TESTID,
   BloomDialogProvider,
   alert,
   useDialogContext,
@@ -28,6 +30,7 @@ export {
 export type {
   AlertButton,
   AlertButtonStyle,
+  CenteredDialogProps,
   DialogAction,
   DialogActionColor,
   DialogContextProps,
