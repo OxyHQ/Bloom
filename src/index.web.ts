@@ -54,7 +54,7 @@ export type {
   ErrorBoundaryFallbackContext,
 } from './error-boundary';
 export * from './avatar';
-export * from './loading';
+export * from './loading/index.web';
 export * as PromptInput from './prompt-input';
 export * from './switch';
 export { toast, type Toast } from './toast/index.web';

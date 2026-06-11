@@ -18,7 +18,7 @@ Required:
 
 Optional:
 
-- `react-native-reanimated >= 3` (native `Dialog`, `BottomSheet`, Loading `top` variant)
+- `react-native-reanimated >= 3` (native `Dialog`, `BottomSheet`, and the native `Loading` spinner / `top` variant). Web never imports reanimated — `Loading` ships a CSS-animated web fork, so a plain web bundle needs none of these native peers.
 - `react-native-gesture-handler >= 2` (native `Dialog`, `BottomSheet`) — also requires wrapping the app root with `GestureHandlerRootView`, see [Dialog](#dialog).
 - `react-native-svg >= 13` (Avatar `squircle` shape)
 - `sonner >= 2` / `sonner-native >= 0.17` (`toast`)
@@ -342,6 +342,8 @@ import { Loading } from '@oxyhq/bloom/loading';
 <Loading variant="skeleton" lines={4} />
 <Loading variant="inline" text="Saving..." />
 ```
+
+Animation is platform-specific but the API and visuals are identical. On native, the spinner (used by `spinner`/`inline`) and the `top` collapse/expand are driven by `react-native-reanimated` (with `react-native-svg` for the spinner blades when available). On web, `Loading` resolves to a CSS-animated fork — a `@keyframes` rotation for the spinner and CSS transitions for the `top` variant — so it imports neither reanimated nor SVG and works in any web bundler (Vite, webpack, Metro-web) with no extra peers.
 
 ### Collapsible
 

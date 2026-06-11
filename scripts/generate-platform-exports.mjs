@@ -101,6 +101,7 @@ const WEB_FORKED_SUBPATHS = new Set([
   '.',
   './portal',
   './dialog',
+  './loading',
   './menu',
   './tooltip',
   './select',

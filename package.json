@@ -1,6 +1,6 @@
 {
   "name": "@oxyhq/bloom",
-  "version": "0.6.11",
+  "version": "0.6.12",
   "description": "Bloom UI — Oxy ecosystem component library for React Native + Expo + Web",
   "main": "lib/commonjs/index.js",
   "module": "lib/module/index.js",
@@ -172,6 +172,11 @@
     },
     "./loading": {
       "react-native": "./src/loading/index.ts",
+      "browser": {
+        "types": "./lib/typescript/module/loading/index.web.d.ts",
+        "import": "./lib/module/loading/index.web.js",
+        "require": "./lib/commonjs/loading/index.web.js"
+      },
       "import": {
         "types": "./lib/typescript/module/loading/index.d.ts",
         "default": "./lib/module/loading/index.js"
