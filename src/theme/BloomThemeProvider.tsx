@@ -3,107 +3,37 @@
 // throw "Cannot manually set color scheme, as dark mode is type 'media'" the
 // first time Bloom toggles the dark class on <html>. See ./init-css-interop.
 import './init-css-interop';
-import React, { createContext, useCallback, useContext, useMemo, useRef, useState } from 'react';
-import { useColorScheme as useRNColorScheme, Platform } from 'react-native';
-import { APP_COLOR_PRESETS, type AppColorName } from './color-presets';
-import { getAdaptiveColors } from './adaptive-colors';
-import { applyDarkClass, applyColorPresetVars } from './apply-dark-class';
-import { setColorSchemeSafe } from './set-color-scheme-safe';
+
+import React, {
+  createContext,
+  useCallback,
+  useContext,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from 'react';
+import { useColorScheme as useRNColorScheme } from 'react-native';
+
+import { useControllableState } from '../hooks/useControllableState';
 import { FontLoader } from '../fonts/FontLoader';
-import type { Theme, ThemeColors, ThemeMode } from './types';
 
-function hslVarToCSS(value: string): string {
-  const parts = value.split('/').map((s) => s.trim());
-  if (parts.length === 2) {
-    const alpha = parseFloat(parts[1] ?? '100') / 100;
-    return `hsla(${(parts[0] ?? '').replace(/ /g, ', ')}, ${alpha})`;
-  }
-  return `hsl(${value.replace(/ /g, ', ')})`;
-}
+import { applyDarkClass, applyColorPresetVars } from './apply-dark-class';
+import { buildTheme } from './build-theme';
+import { type AppColorName } from './color-presets';
+import {
+  readPersistedTheme,
+  readPersistedThemeSync,
+  writePersistedTheme,
+  type BloomThemeStorage,
+  type SyncReadResult,
+} from './persistence';
+import { setColorSchemeSafe } from './set-color-scheme-safe';
+import { useIsomorphicLayoutEffect } from './use-isomorphic-layout-effect';
+import type { Theme, ThemeMode } from './types';
 
-function extractHue(hslVar: string): number {
-  return parseInt(hslVar.split(' ')[0] ?? '0', 10);
-}
-
-function hsl(h: number, s: number, l: number): string {
-  return `hsl(${h}, ${s}%, ${l}%)`;
-}
-
-/** Build a Theme object from a color preset name and resolved light/dark mode. */
-export function buildTheme(appColor: AppColorName, resolved: 'light' | 'dark', isAdaptive: boolean = false): Theme {
-  const isDark = resolved === 'dark';
-
-  let themeColors: ThemeColors | undefined;
-
-  if (isAdaptive && Platform.OS !== 'web') {
-    const adaptive = getAdaptiveColors();
-    if (adaptive) {
-      themeColors = adaptive;
-    }
-  }
-
-  if (!themeColors) {
-    const preset = APP_COLOR_PRESETS[appColor];
-    const vars = resolved === 'light' ? preset.light : preset.dark;
-    const primaryHue = extractHue(vars['--primary'] ?? '0 0% 0%');
-    const destructiveHue = extractHue(vars['--destructive'] ?? '0 0% 0%');
-
-    const surface = hslVarToCSS(vars['--surface'] ?? '0 0% 0%');
-    const background = hslVarToCSS(vars['--background'] ?? '0 0% 0%');
-    const mutedForeground = hslVarToCSS(vars['--muted-foreground'] ?? '0 0% 50%');
-
-    const primaryColor = hslVarToCSS(vars['--primary'] ?? '0 0% 50%');
-    const primaryForeground = hslVarToCSS(vars['--primary-foreground'] ?? '0 0% 100%');
-
-    themeColors = {
-      background,
-      backgroundSecondary: surface,
-      backgroundTertiary: hslVarToCSS(vars['--muted'] ?? '0 0% 0%'),
-
-      text: hslVarToCSS(vars['--foreground'] ?? '0 0% 100%'),
-      textSecondary: mutedForeground,
-      textTertiary: mutedForeground,
-
-      border: hslVarToCSS(vars['--border'] ?? '0 0% 20%'),
-      borderLight: hslVarToCSS(vars['--input'] ?? '0 0% 20%'),
-
-      primary: primaryColor,
-      primaryForeground,
-      primaryLight: surface,
-      primaryDark: background,
-
-      secondary: primaryColor,
-
-      tint: primaryColor,
-      icon: mutedForeground,
-      iconActive: primaryColor,
-
-      success: '#10B981',
-      error: '#EF4444',
-      warning: '#F59E0B',
-      info: '#3B82F6',
-
-      primarySubtle: isDark ? hsl(primaryHue, 50, 10) : hsl(primaryHue, 70, 93),
-      primarySubtleForeground: isDark ? hsl(primaryHue, 70, 65) : hsl(primaryHue, 90, 25),
-      negative: hsl(destructiveHue, 84, 45),
-      negativeForeground: '#FFFFFF',
-      negativeSubtle: isDark ? hsl(destructiveHue, 50, 10) : hsl(destructiveHue, 90, 95),
-      negativeSubtleForeground: isDark ? hsl(destructiveHue, 70, 65) : hsl(destructiveHue, 80, 40),
-      contrast50: isDark ? hsl(primaryHue, 15, 12) : hsl(primaryHue, 10, 93),
-
-      card: surface,
-      shadow: isDark ? 'rgba(0, 0, 0, 0.3)' : 'rgba(0, 0, 0, 0.1)',
-      overlay: 'rgba(0, 0, 0, 0.5)',
-    };
-  }
-
-  return {
-    mode: resolved,
-    colors: themeColors,
-    isDark,
-    isLight: !isDark,
-  };
-}
+const DEFAULT_PRESET: AppColorName = 'oxy';
+const DEFAULT_MODE: ThemeMode = 'system';
 
 export interface BloomThemeContextValue {
   theme: Theme;
@@ -116,97 +46,235 @@ export interface BloomThemeContextValue {
 export const BloomThemeContext = createContext<BloomThemeContextValue | null>(null);
 
 export interface BloomThemeProviderProps {
+  /** Controlled mode. Omit to use Bloom's internal state (with optional persistence). */
   mode?: ThemeMode;
+  /** Controlled color preset. Omit to use Bloom's internal state. */
   colorPreset?: AppColorName;
+  /** Initial mode when uncontrolled and nothing is persisted yet. */
+  defaultMode?: ThemeMode;
+  /** Initial color preset when uncontrolled and nothing is persisted yet. */
+  defaultColorPreset?: AppColorName;
+
   onModeChange?: (mode: ThemeMode) => void;
   onColorPresetChange?: (preset: AppColorName) => void;
+
   /**
-   * Load and inject the Bloom font system (BlomusModernus + Inter Variable
-   * + Geist Mono Variable). Default true. Set to false to opt out — e.g.
-   * apps that already ship their own font loader.
+   * Persist mode + preset under this storage key. Bloom becomes the single
+   * source of truth — apps don't need their own theme store. Has no effect
+   * without `storage`.
    */
+  persistKey?: string;
+  /**
+   * Storage adapter paired with `persistKey`. Use `webLocalStorage` on web,
+   * or pass an `AsyncStorage`-compatible adapter on native.
+   */
+  storage?: BloomThemeStorage;
+  /**
+   * Block rendering until persisted state has been read. Default `true` when
+   * both `persistKey` and `storage` are provided, ensuring native apps don't
+   * flash the default palette. Web hydrates synchronously so this is a no-op
+   * there.
+   */
+  awaitHydration?: boolean;
+  /** Rendered while async hydration is pending. */
+  onHydrating?: React.ReactNode;
+
+  /** Load and inject Bloom's font system. Default `true`. */
   fonts?: boolean;
-  /**
-   * Rendered while native fonts load. Ignored on web. Useful for matching
-   * an app-level splash screen so consumers don't see a system-font flash
-   * before the bundled fonts resolve.
-   */
+  /** Rendered while native fonts load. Ignored on web. */
   onFontsLoading?: React.ReactNode;
+
   children: React.ReactNode;
+}
+
+interface ThemeStateOptions {
+  controlledMode?: ThemeMode;
+  controlledPreset?: AppColorName;
+  defaultMode: ThemeMode;
+  defaultPreset: AppColorName;
+  persistKey?: string;
+  storage?: BloomThemeStorage;
+  onModeChange?: (mode: ThemeMode) => void;
+  onColorPresetChange?: (preset: AppColorName) => void;
+}
+
+interface ThemeStateResult {
+  mode: ThemeMode;
+  colorPreset: AppColorName;
+  setMode: (mode: ThemeMode) => void;
+  setColorPreset: (preset: AppColorName) => void;
+  hydrated: boolean;
+}
+
+function useThemeState({
+  controlledMode,
+  controlledPreset,
+  defaultMode,
+  defaultPreset,
+  persistKey,
+  storage,
+  onModeChange,
+  onColorPresetChange,
+}: ThemeStateOptions): ThemeStateResult {
+  // Synchronous read happens once on first render. Succeeds on web with
+  // localStorage-backed adapters; async adapters rehydrate via the effect
+  // below. Lazy-initialized via `useState` so it runs exactly once per mount.
+  const [syncResult] = useState<SyncReadResult>(() =>
+    readPersistedThemeSync(persistKey, storage),
+  );
+  const syncState = syncResult.kind === 'sync' ? syncResult.state : null;
+
+  const initialMode = syncState?.mode ?? defaultMode;
+  const initialPreset = syncState?.colorPreset ?? defaultPreset;
+
+  // Hydrated immediately when persistence is off or the adapter resolved
+  // synchronously (including a null hit — that's a valid "no value" answer).
+  const [hydrated, setHydrated] = useState<boolean>(syncResult.kind !== 'async');
+
+  const [mode, setModeInternal] = useControllableState<ThemeMode>({
+    value: controlledMode,
+    defaultValue: initialMode,
+  });
+  const [colorPreset, setPresetInternal] = useControllableState<AppColorName>({
+    value: controlledPreset,
+    defaultValue: initialPreset,
+  });
+
+  // Refs let setMode/setColorPreset stay referentially stable. Callbacks
+  // memoized only by setters and storage identity won't churn the context
+  // value on every theme change.
+  const modeRef = useRef(mode);
+  modeRef.current = mode;
+  const presetRef = useRef(colorPreset);
+  presetRef.current = colorPreset;
+
+  // Async hydration for adapters that can't be read synchronously
+  // (AsyncStorage, MMKV via JSI fallback, etc).
+  useEffect(() => {
+    if (hydrated) return;
+    if (!persistKey || !storage) {
+      setHydrated(true);
+      return;
+    }
+
+    let cancelled = false;
+    readPersistedTheme(persistKey, storage).then((state) => {
+      if (cancelled) return;
+      if (state?.mode && controlledMode === undefined) {
+        setModeInternal(state.mode);
+        onModeChange?.(state.mode);
+      }
+      if (state?.colorPreset && controlledPreset === undefined) {
+        setPresetInternal(state.colorPreset);
+        onColorPresetChange?.(state.colorPreset);
+      }
+      setHydrated(true);
+    });
+
+    return () => {
+      cancelled = true;
+    };
+    // Hydration runs once per storage instance. controlledMode/Preset are
+    // captured by closure intentionally — switching controlled-ness mid-flight
+    // is unsupported and would invalidate the in-flight hydration anyway.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [persistKey, storage]);
+
+  const setMode = useCallback(
+    (next: ThemeMode) => {
+      setModeInternal(next);
+      onModeChange?.(next);
+      void writePersistedTheme(persistKey, storage, {
+        mode: next,
+        colorPreset: presetRef.current,
+      });
+    },
+    [setModeInternal, onModeChange, persistKey, storage],
+  );
+
+  const setColorPreset = useCallback(
+    (next: AppColorName) => {
+      setPresetInternal(next);
+      onColorPresetChange?.(next);
+      void writePersistedTheme(persistKey, storage, {
+        mode: modeRef.current,
+        colorPreset: next,
+      });
+    },
+    [setPresetInternal, onColorPresetChange, persistKey, storage],
+  );
+
+  return { mode, colorPreset, setMode, setColorPreset, hydrated };
 }
 
 export function BloomThemeProvider({
   mode: controlledMode,
   colorPreset: controlledPreset,
+  defaultMode = DEFAULT_MODE,
+  defaultColorPreset = DEFAULT_PRESET,
   onModeChange,
   onColorPresetChange,
+  persistKey,
+  storage,
+  awaitHydration,
+  onHydrating,
   fonts = true,
   onFontsLoading,
   children,
 }: BloomThemeProviderProps) {
   const rnScheme = useRNColorScheme();
-  const [internalPreset, setInternalPreset] = useState<AppColorName>(controlledPreset ?? 'oxy');
 
-  if (controlledPreset !== undefined && controlledPreset !== internalPreset) {
-    setInternalPreset(controlledPreset);
-  }
-
-  const appColor = internalPreset;
-  const mode = controlledMode ?? 'system';
+  const { mode, colorPreset, setMode, setColorPreset, hydrated } = useThemeState({
+    controlledMode,
+    controlledPreset,
+    defaultMode,
+    defaultPreset: defaultColorPreset,
+    persistKey,
+    storage,
+    onModeChange,
+    onColorPresetChange,
+  });
 
   const isAdaptive = mode === 'adaptive';
-  const effectiveMode = isAdaptive ? 'system' : mode;
+  const effectiveMode: Exclude<ThemeMode, 'adaptive'> = isAdaptive ? 'system' : mode;
   const resolved: 'light' | 'dark' =
-    effectiveMode === 'system'
-      ? (rnScheme === 'dark' ? 'dark' : 'light')
-      : effectiveMode;
+    effectiveMode === 'system' ? (rnScheme === 'dark' ? 'dark' : 'light') : effectiveMode;
 
-  // Apply native color scheme and CSS vars synchronously on first render
-  // and whenever the resolved mode or preset changes. Using a ref to track
-  // the last-applied values avoids calling side effects on every render
-  // while still applying them before the first paint.
-  const lastApplied = useRef<string>('');
-  const applyKey = `${resolved}:${appColor}`;
-  if (lastApplied.current !== applyKey) {
-    lastApplied.current = applyKey;
+  // Apply native color scheme, dark class, and CSS vars whenever the resolved
+  // mode or preset changes. `useIsomorphicLayoutEffect` runs before paint on
+  // both native and web, eliminating the previous render-time side effect.
+  useIsomorphicLayoutEffect(() => {
     setColorSchemeSafe(effectiveMode);
     applyDarkClass(resolved);
-    applyColorPresetVars(appColor, resolved);
-  }
+    applyColorPresetVars(colorPreset, resolved);
+  }, [effectiveMode, resolved, colorPreset]);
 
-  const setMode = useCallback(
-    (newMode: ThemeMode) => {
-      setColorSchemeSafe(newMode);
-      onModeChange?.(newMode);
-    },
-    [onModeChange],
+  const contextValue = useMemo<BloomThemeContextValue>(
+    () => ({
+      theme: buildTheme(colorPreset, resolved, isAdaptive),
+      mode,
+      colorPreset,
+      setMode,
+      setColorPreset,
+    }),
+    [colorPreset, resolved, isAdaptive, mode, setMode, setColorPreset],
   );
 
-  const setColorPreset = useCallback(
-    (preset: AppColorName) => {
-      setInternalPreset(preset);
-      onColorPresetChange?.(preset);
-    },
-    [onColorPresetChange],
-  );
-
-  const contextValue = useMemo<BloomThemeContextValue>(() => {
-    const theme = buildTheme(appColor, resolved, isAdaptive);
-    return { theme, mode, colorPreset: appColor, setMode, setColorPreset };
-  }, [resolved, appColor, isAdaptive, mode, setMode, setColorPreset]);
+  const shouldAwait = awaitHydration ?? Boolean(persistKey && storage);
+  const isGated = shouldAwait && !hydrated;
 
   return (
     <BloomThemeContext.Provider value={contextValue}>
       <FontLoader enabled={fonts} fallback={onFontsLoading}>
-        {children}
+        {isGated ? onHydrating ?? null : children}
       </FontLoader>
     </BloomThemeContext.Provider>
   );
 }
 
 /**
- * Scoped color override for a subtree.
- * Inherits mode/dark from the parent BloomThemeProvider but overrides the color preset.
+ * Scoped color override for a subtree. Inherits the resolved mode from the
+ * parent `BloomThemeProvider` but renders descendants with a different preset.
  */
 export interface BloomColorScopeProps {
   colorPreset: AppColorName;
@@ -220,17 +288,11 @@ export function BloomColorScope({ colorPreset, children }: BloomColorScopeProps)
   }
 
   const contextValue = useMemo<BloomThemeContextValue>(() => {
-    const theme = buildTheme(colorPreset, parent.theme.mode as 'light' | 'dark');
-    return {
-      ...parent,
-      theme,
-      colorPreset,
-    };
+    const theme = buildTheme(colorPreset, parent.theme.mode);
+    return { ...parent, theme, colorPreset };
   }, [colorPreset, parent]);
 
   return (
-    <BloomThemeContext.Provider value={contextValue}>
-      {children}
-    </BloomThemeContext.Provider>
+    <BloomThemeContext.Provider value={contextValue}>{children}</BloomThemeContext.Provider>
   );
 }

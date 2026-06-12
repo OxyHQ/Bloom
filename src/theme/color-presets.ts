@@ -1,13 +1,29 @@
 export type AppColorName = 'teal' | 'blue' | 'green' | 'amber' | 'yellow' | 'red' | 'purple' | 'pink' | 'sky' | 'orange' | 'mint' | 'oxy' | 'faircoin';
 
+/**
+ * Palette tokens for a single mode (light or dark) of a color preset.
+ *
+ * Keys carry a leading `--` for historical reasons (shadcn-style CSS variable
+ * names) — keep in mind the values are platform-agnostic **raw HSL triples**
+ * (e.g. `'185 100% 20%'` or `'185 100% 20% / 0.5'`), not CSS-resolved colors.
+ * The same map drives both:
+ *   - the web layer (written verbatim into `document.documentElement.style`
+ *     so Tailwind's `hsl(var(--primary))` plumbing picks them up), and
+ *   - the native layer (`buildTheme` resolves them into `hsl(...)` strings
+ *     consumable by React Native styles).
+ *
+ * The `--` prefix is an implementation detail we will drop in a future major.
+ */
+export type PresetTokens = Record<string, string>;
+
 export interface AppColorPreset {
   name: AppColorName;
   hex: string;
-  light: Record<string, string>;
-  dark: Record<string, string>;
+  light: PresetTokens;
+  dark: PresetTokens;
 }
 
-export const APP_COLOR_NAMES: AppColorName[] = ['teal', 'blue', 'green', 'amber', 'yellow', 'red', 'purple', 'pink', 'sky', 'orange', 'mint', 'oxy', 'faircoin'];
+export const APP_COLOR_NAMES: readonly AppColorName[] = ['teal', 'blue', 'green', 'amber', 'yellow', 'red', 'purple', 'pink', 'sky', 'orange', 'mint', 'oxy', 'faircoin'];
 
 export const HEX_TO_APP_COLOR: Record<string, AppColorName> = {
   '#005c67': 'teal',

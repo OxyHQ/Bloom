@@ -4,7 +4,7 @@ import {
   HEX_TO_APP_COLOR,
   hexToAppColorName,
 } from '../theme/color-presets';
-import { buildTheme } from '../theme/BloomThemeProvider';
+import { buildTheme } from '../theme/build-theme';
 import type { Theme, ThemeColors, ThemeMode } from '../theme/types';
 
 describe('Theme system', () => {
