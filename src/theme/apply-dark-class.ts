@@ -10,6 +10,11 @@ export function applyDarkClass(resolved: 'light' | 'dark') {
 /**
  * Apply a color preset's CSS custom properties to the document root.
  * No-op on native — only affects web.
+ *
+ * Values are written as raw HSL triples (e.g. `185 100% 20%`), matching the
+ * shadcn/Tailwind convention where stylesheets wrap them themselves with
+ * `hsl(var(--primary))`. Writing pre-resolved `hsl(...)` values here would
+ * produce invalid `hsl(hsl(...))` in consuming stylesheets and break theming.
  */
 export function applyColorPresetVars(preset: AppColorName, resolved: 'light' | 'dark') {
   if (Platform.OS !== 'web' || typeof document === 'undefined') return;
@@ -21,6 +26,6 @@ export function applyColorPresetVars(preset: AppColorName, resolved: 'light' | '
   const root = document.documentElement.style;
 
   for (const [key, value] of Object.entries(vars)) {
-    root.setProperty(key, `hsl(${value})`);
+    root.setProperty(key, value);
   }
 }
