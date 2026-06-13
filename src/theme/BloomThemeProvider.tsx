@@ -304,27 +304,4 @@ export function BloomThemeProvider({
   );
 }
 
-/**
- * Scoped color override for a subtree. Inherits the resolved mode from the
- * parent `BloomThemeProvider` but renders descendants with a different preset.
- */
-export interface BloomColorScopeProps {
-  colorPreset: AppColorName;
-  children: React.ReactNode;
-}
 
-export function BloomColorScope({ colorPreset, children }: BloomColorScopeProps) {
-  const parent = useContext(BloomThemeContext);
-  if (!parent) {
-    throw new Error('BloomColorScope must be used within a <BloomThemeProvider>');
-  }
-
-  const contextValue = useMemo<BloomThemeContextValue>(() => {
-    const theme = buildTheme(colorPreset, parent.theme.mode);
-    return { ...parent, theme, colorPreset };
-  }, [colorPreset, parent]);
-
-  return (
-    <BloomThemeContext.Provider value={contextValue}>{children}</BloomThemeContext.Provider>
-  );
-}

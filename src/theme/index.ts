@@ -1,9 +1,10 @@
-export { BloomThemeProvider, BloomColorScope } from './BloomThemeProvider';
+export { BloomThemeProvider } from './BloomThemeProvider';
 export type {
   BloomThemeProviderProps,
   BloomThemeContextValue,
-  BloomColorScopeProps,
 } from './BloomThemeProvider';
+export { BloomColorScope, useColorScopeStyle } from './color-scope';
+export type { BloomColorScopeProps } from './color-scope';
 export { buildTheme, STATUS_COLORS } from './build-theme';
 export { useTheme, useThemeColor, useBloomTheme } from './use-theme';
 export type { Theme, ThemeColors, ThemeMode } from './types';
