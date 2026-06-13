@@ -21,8 +21,25 @@ export interface BloomColorScopeProps {
   children: React.ReactNode;
 }
 
+/**
+ * On web, the single `asChild` child is frequently a react-native-web
+ * component (e.g. RN `<View>`) whose `style` prop is a *style array* (or a
+ * numeric registered-style id), not a plain `React.CSSProperties` object.
+ * react-native-web flattens nested style arrays, so the cloned child must
+ * receive an array — spreading an array into an object literal would copy its
+ * numeric indices as keys and crash RNW when it commits them to the DOM
+ * (`Failed to set an indexed property [0] on 'CSSStyleDeclaration'`).
+ */
+type WebStyle =
+  | React.CSSProperties
+  | number
+  | null
+  | undefined
+  | false
+  | ReadonlyArray<WebStyle>;
+
 interface StyleableProps {
-  style?: React.CSSProperties;
+  style?: WebStyle;
 }
 
 export function BloomColorScope({
@@ -58,10 +75,17 @@ export function BloomColorScope({
         'BloomColorScope with `asChild` requires a single React element child that accepts a `style` prop.',
       );
     }
+    // Merge as a style ARRAY (the RNW-safe form): scope vars first, then the
+    // caller's `style`, then the child's own `style` last so its explicit
+    // styles win. react-native-web flattens nested arrays correctly; spreading
+    // the child's style (which is often an RN style array or numeric id) into an
+    // object literal would copy numeric indices as keys and crash RNW.
     const childStyle = child.props.style;
-    const mergedStyle: React.CSSProperties = { ...varsStyle, ...style, ...childStyle };
+    const mergedStyle: WebStyle = [varsStyle, style, childStyle];
     content = cloneElement(child, { style: mergedStyle });
   } else {
+    // A plain DOM `<div>` does NOT accept style arrays — only the cloned child
+    // path can, so the wrapper keeps using an object spread.
     const mergedStyle: React.CSSProperties = { ...varsStyle, ...style };
     content = <div style={mergedStyle}>{children}</div>;
   }

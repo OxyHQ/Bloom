@@ -4,6 +4,7 @@ import { render } from '@testing-library/react-native';
 
 import { BloomThemeProvider } from '../theme/BloomThemeProvider';
 import { BloomColorScope } from '../theme/color-scope';
+import { BloomColorScope as BloomColorScopeWeb } from '../theme/color-scope/index.web';
 import { useBloomTheme } from '../theme/use-theme';
 
 function CurrentPreset() {
@@ -85,5 +86,71 @@ describe('BloomColorScope', () => {
       ),
     ).toThrow('BloomColorScope must be used within a <BloomThemeProvider>');
     consoleError.mockRestore();
+  });
+
+  // Web variant: regression for the production crash on mention.earth profile
+  // screens. On web the `asChild` child is frequently an RNW component whose
+  // `style` is a React Native style ARRAY. The web variant must merge styles as
+  // an array (RNW flattens it) and must NOT spread the array into an object
+  // literal — that copies the array's numeric indices as keys and makes RNW
+  // throw `Failed to set an indexed property [0] on 'CSSStyleDeclaration'`.
+  describe('web variant (index.web)', () => {
+    it('merges an array-valued child style without producing numeric index keys (asChild)', () => {
+      const { getByTestId } = render(
+        <BloomThemeProvider defaultColorPreset="blue" fonts={false}>
+          <BloomColorScopeWeb colorPreset="purple" asChild>
+            <StyledChild style={[{ padding: 8 }, { margin: 4 }]} />
+          </BloomColorScopeWeb>
+        </BloomThemeProvider>,
+      );
+
+      expect(getByTestId('preset').props.children).toBe('purple');
+
+      const mergedStyle = getByTestId('styled-child').props.style;
+      // The merge must be an array (the RNW-safe form), never an object literal
+      // with the array's numeric indices spread in as keys.
+      expect(Array.isArray(mergedStyle)).toBe(true);
+
+      // No numeric index keys must appear anywhere in the merged style. If the
+      // child array had been spread into an object literal, we'd see '0', '1'.
+      const collectKeys = (value: unknown): string[] => {
+        if (Array.isArray(value)) return value.flatMap(collectKeys);
+        if (value && typeof value === 'object') return Object.keys(value);
+        return [];
+      };
+      const keys = collectKeys(mergedStyle);
+      expect(keys).not.toContain('0');
+      expect(keys).not.toContain('1');
+
+      // The child's own array styles must be preserved (and win over scope vars).
+      const flat = (Array.isArray(mergedStyle) ? mergedStyle : [mergedStyle])
+        .flat(Infinity)
+        .filter((entry): entry is Record<string, unknown> => Boolean(entry) && typeof entry === 'object');
+      expect(flat).toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({ padding: 8 }),
+          expect.objectContaining({ margin: 4 }),
+        ]),
+      );
+    });
+
+    it('clones the single child and merges scope vars into its style array (asChild)', () => {
+      const { getByTestId } = render(
+        <BloomThemeProvider defaultColorPreset="blue" fonts={false}>
+          <BloomColorScopeWeb colorPreset="purple" asChild>
+            <StyledChild style={{ padding: 8 }} />
+          </BloomColorScopeWeb>
+        </BloomThemeProvider>,
+      );
+
+      const mergedStyle = getByTestId('styled-child').props.style;
+      expect(Array.isArray(mergedStyle)).toBe(true);
+      const flat = (Array.isArray(mergedStyle) ? mergedStyle : [mergedStyle])
+        .flat(Infinity)
+        .filter((entry): entry is Record<string, unknown> => Boolean(entry) && typeof entry === 'object');
+      expect(flat).toEqual(
+        expect.arrayContaining([expect.objectContaining({ padding: 8 })]),
+      );
+    });
   });
 });
