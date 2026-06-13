@@ -29,6 +29,9 @@ function createSyncStorage(initial?: PersistedThemeState): BloomThemeStorage & {
     setItem: (key, value) => {
       store[key] = value;
     },
+    removeItem: (key) => {
+      delete store[key];
+    },
   };
 }
 
@@ -212,6 +215,107 @@ describe('BloomThemeProvider — persistence', () => {
     );
 
     expect(getByTestId('mode').props.children).toBe('light');
+    expect(getByTestId('preset').props.children).toBe('oxy');
+  });
+});
+
+describe('BloomThemeProvider — resetTheme', () => {
+  function Harness({ onReady }: { onReady: (reset: () => void) => void }) {
+    const ctx = useBloomTheme();
+    React.useEffect(() => {
+      onReady(ctx.resetTheme);
+    }, [ctx.resetTheme, onReady]);
+    return (
+      <>
+        <Text testID="mode">{ctx.mode}</Text>
+        <Text testID="preset">{ctx.colorPreset}</Text>
+      </>
+    );
+  }
+
+  it('restores defaults and clears the persisted entry', async () => {
+    const storage = createSyncStorage({ mode: 'dark', colorPreset: 'blue' });
+    expect(storage.store['bloom-theme']).toBeDefined();
+
+    let resetFn: (() => void) | undefined;
+
+    const { getByTestId } = render(
+      <BloomThemeProvider
+        persistKey="bloom-theme"
+        storage={storage}
+        defaultMode="system"
+        defaultColorPreset="oxy"
+      >
+        <Harness onReady={(reset) => { resetFn = reset; }} />
+      </BloomThemeProvider>,
+    );
+
+    expect(getByTestId('mode').props.children).toBe('dark');
+    expect(getByTestId('preset').props.children).toBe('blue');
+
+    await act(async () => {
+      resetFn?.();
+    });
+
+    expect(getByTestId('mode').props.children).toBe('system');
+    expect(getByTestId('preset').props.children).toBe('oxy');
+
+    await waitFor(() => {
+      expect(storage.store['bloom-theme']).toBeUndefined();
+    });
+  });
+
+  it('uses removeItem when the adapter provides it', async () => {
+    const removeItem = jest.fn();
+    const storage: BloomThemeStorage = {
+      getItem: () => JSON.stringify({ mode: 'dark', colorPreset: 'blue' }),
+      setItem: () => undefined,
+      removeItem,
+    };
+
+    let resetFn: (() => void) | undefined;
+
+    render(
+      <BloomThemeProvider
+        persistKey="bloom-theme"
+        storage={storage}
+        defaultMode="system"
+        defaultColorPreset="oxy"
+      >
+        <Harness onReady={(reset) => { resetFn = reset; }} />
+      </BloomThemeProvider>,
+    );
+
+    await act(async () => {
+      resetFn?.();
+    });
+
+    await waitFor(() => {
+      expect(removeItem).toHaveBeenCalledWith('bloom-theme');
+    });
+  });
+
+  it('does nothing when mode is controlled', async () => {
+    const storage = createSyncStorage({ mode: 'dark', colorPreset: 'blue' });
+    let resetFn: (() => void) | undefined;
+
+    const { getByTestId } = render(
+      <BloomThemeProvider
+        persistKey="bloom-theme"
+        storage={storage}
+        mode="dark"
+        defaultMode="system"
+        defaultColorPreset="oxy"
+      >
+        <Harness onReady={(reset) => { resetFn = reset; }} />
+      </BloomThemeProvider>,
+    );
+
+    await act(async () => {
+      resetFn?.();
+    });
+
+    expect(getByTestId('mode').props.children).toBe('dark');
     expect(getByTestId('preset').props.children).toBe('oxy');
   });
 });

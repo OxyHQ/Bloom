@@ -20,6 +20,7 @@ const VALID_MODES = new Set<string>(['light', 'dark', 'system', 'adaptive']);
 export interface BloomThemeStorage {
   getItem(key: string): string | null | Promise<string | null>;
   setItem(key: string, value: string): void | Promise<void>;
+  removeItem?(key: string): void | Promise<void>;
 }
 
 export interface PersistedThemeState {
@@ -119,6 +120,23 @@ export async function writePersistedTheme(
   }
 }
 
+export async function removePersistedTheme(
+  persistKey: string | undefined,
+  storage: BloomThemeStorage | undefined,
+): Promise<void> {
+  if (!persistKey || !storage) return;
+
+  try {
+    if (typeof storage.removeItem === 'function') {
+      await storage.removeItem(persistKey);
+      return;
+    }
+    await storage.setItem(persistKey, '');
+  } catch {
+    // Best-effort cleanup.
+  }
+}
+
 /**
  * `localStorage`-backed storage adapter. Only defined on web; on native the
  * export is `undefined` so consumers pass an `AsyncStorage` adapter explicitly.
@@ -143,6 +161,13 @@ export const webLocalStorage: BloomThemeStorage | undefined = (() => {
         ls.setItem(key, value);
       } catch {
         // Swallow quota / privacy-mode errors.
+      }
+    },
+    removeItem: (key) => {
+      try {
+        ls.removeItem(key);
+      } catch {
+        // Swallow privacy-mode errors.
       }
     },
   };

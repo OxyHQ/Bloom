@@ -24,6 +24,7 @@ import { type AppColorName } from './color-presets';
 import {
   readPersistedTheme,
   readPersistedThemeSync,
+  removePersistedTheme,
   writePersistedTheme,
   type BloomThemeStorage,
   type SyncReadResult,
@@ -41,6 +42,12 @@ export interface BloomThemeContextValue {
   colorPreset: AppColorName;
   setMode: (mode: ThemeMode) => void;
   setColorPreset: (preset: AppColorName) => void;
+  /**
+   * Restore mode and color preset to the provider defaults
+   * (`defaultMode` / `defaultColorPreset`) and clear the persisted entry.
+   * Use this when signing out or otherwise resetting per-user state.
+   */
+  resetTheme: () => void;
 }
 
 export const BloomThemeContext = createContext<BloomThemeContextValue | null>(null);
@@ -103,6 +110,7 @@ interface ThemeStateResult {
   colorPreset: AppColorName;
   setMode: (mode: ThemeMode) => void;
   setColorPreset: (preset: AppColorName) => void;
+  resetTheme: () => void;
   hydrated: boolean;
 }
 
@@ -204,7 +212,30 @@ function useThemeState({
     [setPresetInternal, onColorPresetChange, persistKey, storage],
   );
 
-  return { mode, colorPreset, setMode, setColorPreset, hydrated };
+  const resetTheme = useCallback(() => {
+    if (controlledMode === undefined) {
+      setModeInternal(defaultMode);
+      onModeChange?.(defaultMode);
+    }
+    if (controlledPreset === undefined) {
+      setPresetInternal(defaultPreset);
+      onColorPresetChange?.(defaultPreset);
+    }
+    void removePersistedTheme(persistKey, storage);
+  }, [
+    controlledMode,
+    controlledPreset,
+    defaultMode,
+    defaultPreset,
+    setModeInternal,
+    setPresetInternal,
+    onModeChange,
+    onColorPresetChange,
+    persistKey,
+    storage,
+  ]);
+
+  return { mode, colorPreset, setMode, setColorPreset, resetTheme, hydrated };
 }
 
 export function BloomThemeProvider({
@@ -224,7 +255,7 @@ export function BloomThemeProvider({
 }: BloomThemeProviderProps) {
   const rnScheme = useRNColorScheme();
 
-  const { mode, colorPreset, setMode, setColorPreset, hydrated } = useThemeState({
+  const { mode, colorPreset, setMode, setColorPreset, resetTheme, hydrated } = useThemeState({
     controlledMode,
     controlledPreset,
     defaultMode,
@@ -256,8 +287,9 @@ export function BloomThemeProvider({
       colorPreset,
       setMode,
       setColorPreset,
+      resetTheme,
     }),
-    [colorPreset, resolved, isAdaptive, mode, setMode, setColorPreset],
+    [colorPreset, resolved, isAdaptive, mode, setMode, setColorPreset, resetTheme],
   );
 
   const shouldAwait = awaitHydration ?? Boolean(persistKey && storage);
