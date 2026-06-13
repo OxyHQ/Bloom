@@ -7,8 +7,11 @@ import type { AppColorName } from '../color-presets';
 import { buildNativePresetStyle } from './style-builder';
 
 export interface BloomColorScopeProps {
-  /** Preset to apply within this subtree. */
-  colorPreset: AppColorName;
+  /**
+   * Preset to apply within this subtree. When `undefined`, the scope is a
+   * no-op and children inherit the parent scope's preset unchanged.
+   */
+  colorPreset: AppColorName | undefined;
   /**
    * When `true`, do not render a wrapping `<View>`. The single child is cloned
    * with the scope's CSS vars merged into its `style` prop (Radix-style).
@@ -33,6 +36,8 @@ export function BloomColorScope({
   if (!parent) {
     throw new Error('BloomColorScope must be used within a <BloomThemeProvider>');
   }
+
+  if (!colorPreset) return <>{children}</>;
 
   const resolvedMode = parent.theme.mode;
 

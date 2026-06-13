@@ -48,6 +48,18 @@ describe('BloomColorScope', () => {
     );
   });
 
+  it('is a no-op when colorPreset is undefined (children inherit parent scope)', () => {
+    const { getByTestId } = render(
+      <BloomThemeProvider defaultColorPreset="blue" fonts={false}>
+        <BloomColorScope colorPreset={undefined}>
+          <CurrentPreset />
+        </BloomColorScope>
+      </BloomThemeProvider>,
+    );
+
+    expect(getByTestId('preset').props.children).toBe('blue');
+  });
+
   it('throws when asChild has multiple children', () => {
     const consoleError = jest.spyOn(console, 'error').mockImplementation(() => {});
     expect(() =>
