@@ -13,7 +13,13 @@ import React, {
   useRef,
   useState,
 } from 'react';
-import { useColorScheme as useRNColorScheme } from 'react-native';
+import {
+  Platform,
+  View,
+  useColorScheme as useRNColorScheme,
+  type StyleProp,
+  type ViewStyle,
+} from 'react-native';
 
 import { useControllableState } from '../hooks/useControllableState';
 import { FontLoader } from '../fonts/FontLoader';
@@ -21,6 +27,7 @@ import { FontLoader } from '../fonts/FontLoader';
 import { applyDarkClass, applyColorPresetVars } from './apply-dark-class';
 import { buildTheme } from './build-theme';
 import { type AppColorName } from './color-presets';
+import { buildNativePresetStyle } from './color-scope/style-builder';
 import {
   readPersistedTheme,
   readPersistedThemeSync,
@@ -90,6 +97,13 @@ export interface BloomThemeProviderProps {
   fonts?: boolean;
   /** Rendered while native fonts load. Ignored on web. */
   onFontsLoading?: React.ReactNode;
+
+  /**
+   * Style applied to the native `<View>` wrapper that carries the preset's
+   * CSS vars. Defaults to `{ flex: 1 }`. Ignored on web (the provider writes
+   * vars to `document.documentElement` instead of using a wrapper).
+   */
+  nativeWrapperStyle?: StyleProp<ViewStyle>;
 
   children: React.ReactNode;
 }
@@ -251,6 +265,7 @@ export function BloomThemeProvider({
   onHydrating,
   fonts = true,
   onFontsLoading,
+  nativeWrapperStyle,
   children,
 }: BloomThemeProviderProps) {
   const rnScheme = useRNColorScheme();
@@ -295,11 +310,24 @@ export function BloomThemeProvider({
   const shouldAwait = awaitHydration ?? Boolean(persistKey && storage);
   const isGated = shouldAwait && !hydrated;
 
+  const nativeVarsStyle = useMemo(
+    () => (Platform.OS === 'web' ? undefined : buildNativePresetStyle(colorPreset, resolved)),
+    [colorPreset, resolved],
+  );
+
+  const content = (
+    <FontLoader enabled={fonts} fallback={onFontsLoading}>
+      {isGated ? onHydrating ?? null : children}
+    </FontLoader>
+  );
+
   return (
     <BloomThemeContext.Provider value={contextValue}>
-      <FontLoader enabled={fonts} fallback={onFontsLoading}>
-        {isGated ? onHydrating ?? null : children}
-      </FontLoader>
+      {Platform.OS === 'web' ? (
+        content
+      ) : (
+        <View style={[{ flex: 1 }, nativeVarsStyle, nativeWrapperStyle]}>{content}</View>
+      )}
     </BloomThemeContext.Provider>
   );
 }

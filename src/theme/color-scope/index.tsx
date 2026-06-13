@@ -4,20 +4,7 @@ import { View, type StyleProp, type ViewStyle } from 'react-native';
 import { BloomThemeContext, type BloomThemeContextValue } from '../BloomThemeProvider';
 import { buildTheme } from '../build-theme';
 import type { AppColorName } from '../color-presets';
-import { lazyRequire } from '../../utils/lazy-require';
-import { buildScopeVars } from './style-builder';
-
-interface NativeWindVarsModule {
-  vars: (record: Record<string, string>) => StyleProp<ViewStyle>;
-}
-
-const getNativeWindVars = lazyRequire<NativeWindVarsModule>('nativewind');
-
-function presetStyle(colorPreset: AppColorName, mode: 'light' | 'dark'): StyleProp<ViewStyle> {
-  const module = getNativeWindVars();
-  if (!module || typeof module.vars !== 'function') return undefined;
-  return module.vars(buildScopeVars(colorPreset, mode));
-}
+import { buildNativePresetStyle } from './style-builder';
 
 export interface BloomColorScopeProps {
   /** Preset to apply within this subtree. */
@@ -51,7 +38,7 @@ export function BloomColorScope({
   }, [colorPreset, resolvedMode, parent]);
 
   const varsStyle = useMemo(
-    () => presetStyle(colorPreset, resolvedMode),
+    () => buildNativePresetStyle(colorPreset, resolvedMode),
     [colorPreset, resolvedMode],
   );
 
@@ -65,7 +52,7 @@ export function BloomColorScope({
 /**
  * Escape hatch for advanced cases where the wrapping element is owned by the
  * caller. Returns a stable native style object carrying the preset's CSS vars.
- * Returns `undefined` when nativewind is not installed.
+ * Returns `undefined` on web or when `nativewind` is not installed.
  */
 export function useColorScopeStyle(colorPreset: AppColorName): StyleProp<ViewStyle> {
   const parent = useContext(BloomThemeContext);
@@ -74,7 +61,7 @@ export function useColorScopeStyle(colorPreset: AppColorName): StyleProp<ViewSty
   }
   const resolvedMode = parent.theme.mode;
   return useMemo(
-    () => presetStyle(colorPreset, resolvedMode),
+    () => buildNativePresetStyle(colorPreset, resolvedMode),
     [colorPreset, resolvedMode],
   );
 }

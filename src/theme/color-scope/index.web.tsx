@@ -1,24 +1,29 @@
 import React, { useContext, useMemo } from 'react';
 
-import { BloomThemeContext } from '../BloomThemeProvider';
+import { BloomThemeContext, type BloomThemeContextValue } from '../BloomThemeProvider';
 import { buildTheme } from '../build-theme';
 import type { AppColorName } from '../color-presets';
-import { BloomThemeContextValue } from '../BloomThemeProvider';
 import { buildScopeVars } from './style-builder';
 
 export interface BloomColorScopeProps {
   /** Preset to apply within this subtree. */
   colorPreset: AppColorName;
   /**
-   * When `true`, do not render a wrapping element. The caller is responsible
-   * for placing the returned context provider over a DOM node that owns the
-   * CSS vars (via `useColorScopeStyle`).
+   * When `true`, do not render a wrapping element. The caller owns the
+   * DOM node that receives the CSS vars (via `useColorScopeStyle`).
    */
   asChild?: boolean;
+  /** Additional style applied to the wrapping `<div>`. Ignored with `asChild`. */
+  style?: React.CSSProperties;
   children: React.ReactNode;
 }
 
-export function BloomColorScope({ colorPreset, asChild = false, children }: BloomColorScopeProps) {
+export function BloomColorScope({
+  colorPreset,
+  asChild = false,
+  style,
+  children,
+}: BloomColorScopeProps) {
   const parent = useContext(BloomThemeContext);
   if (!parent) {
     throw new Error('BloomColorScope must be used within a <BloomThemeProvider>');
@@ -31,23 +36,21 @@ export function BloomColorScope({ colorPreset, asChild = false, children }: Bloo
     return { ...parent, theme, colorPreset };
   }, [colorPreset, resolvedMode, parent]);
 
-  const style = useMemo(
-    () => buildScopeVars(colorPreset, resolvedMode) as React.CSSProperties,
-    [colorPreset, resolvedMode],
+  const varsStyle = useMemo(
+    () => ({ ...(buildScopeVars(colorPreset, resolvedMode) as React.CSSProperties), ...style }),
+    [colorPreset, resolvedMode, style],
   );
 
   return (
     <BloomThemeContext.Provider value={contextValue}>
-      {asChild ? children : <div style={style}>{children}</div>}
+      {asChild ? children : <div style={varsStyle}>{children}</div>}
     </BloomThemeContext.Provider>
   );
 }
 
 /**
  * Escape hatch for advanced cases where the wrapping element is owned by the
- * caller (e.g. a Pressable, a NativeWind-styled View that already has a style
- * prop). Returns a stable React `style` object carrying every CSS custom
- * property of the preset.
+ * caller. Returns a stable React style object carrying the preset's CSS vars.
  */
 export function useColorScopeStyle(colorPreset: AppColorName): React.CSSProperties {
   const parent = useContext(BloomThemeContext);
