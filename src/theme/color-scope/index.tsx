@@ -1,4 +1,4 @@
-import React, { useContext, useMemo } from 'react';
+import React, { Children, cloneElement, isValidElement, useContext, useMemo } from 'react';
 import { View, type StyleProp, type ViewStyle } from 'react-native';
 
 import { BloomThemeContext, type BloomThemeContextValue } from '../BloomThemeProvider';
@@ -10,13 +10,17 @@ export interface BloomColorScopeProps {
   /** Preset to apply within this subtree. */
   colorPreset: AppColorName;
   /**
-   * When `true`, do not render a wrapping `<View>`. The caller owns the
-   * element that receives the CSS vars (via `useColorScopeStyle`).
+   * When `true`, do not render a wrapping `<View>`. The single child is cloned
+   * with the scope's CSS vars merged into its `style` prop (Radix-style).
    */
   asChild?: boolean;
-  /** Additional style applied to the wrapping `<View>`. Ignored with `asChild`. */
+  /** Additional style applied to the wrapping `<View>` (or merged into the cloned child with `asChild`). */
   style?: StyleProp<ViewStyle>;
   children: React.ReactNode;
+}
+
+interface StyleableProps {
+  style?: StyleProp<ViewStyle>;
 }
 
 export function BloomColorScope({
@@ -42,11 +46,22 @@ export function BloomColorScope({
     [colorPreset, resolvedMode],
   );
 
-  return (
-    <BloomThemeContext.Provider value={contextValue}>
-      {asChild ? children : <View style={[{ flex: 1 }, varsStyle, style]}>{children}</View>}
-    </BloomThemeContext.Provider>
-  );
+  let content: React.ReactNode;
+  if (asChild) {
+    const child = Children.only(children);
+    if (!isValidElement<StyleableProps>(child)) {
+      throw new Error(
+        'BloomColorScope with `asChild` requires a single React element child that accepts a `style` prop.',
+      );
+    }
+    const childStyle = child.props.style;
+    const mergedStyle: StyleProp<ViewStyle> = [varsStyle, style, childStyle];
+    content = cloneElement(child, { style: mergedStyle });
+  } else {
+    content = <View style={[{ flex: 1 }, varsStyle, style]}>{children}</View>;
+  }
+
+  return <BloomThemeContext.Provider value={contextValue}>{content}</BloomThemeContext.Provider>;
 }
 
 /**

@@ -1,4 +1,4 @@
-import React, { useContext, useMemo } from 'react';
+import React, { Children, cloneElement, isValidElement, useContext, useMemo } from 'react';
 
 import { BloomThemeContext, type BloomThemeContextValue } from '../BloomThemeProvider';
 import { buildTheme } from '../build-theme';
@@ -9,13 +9,17 @@ export interface BloomColorScopeProps {
   /** Preset to apply within this subtree. */
   colorPreset: AppColorName;
   /**
-   * When `true`, do not render a wrapping element. The caller owns the
-   * DOM node that receives the CSS vars (via `useColorScopeStyle`).
+   * When `true`, do not render a wrapping `<div>`. The single child is cloned
+   * with the scope's CSS vars merged into its `style` prop (Radix-style).
    */
   asChild?: boolean;
-  /** Additional style applied to the wrapping `<div>`. Ignored with `asChild`. */
+  /** Additional style applied to the wrapping `<div>` (or merged into the cloned child with `asChild`). */
   style?: React.CSSProperties;
   children: React.ReactNode;
+}
+
+interface StyleableProps {
+  style?: React.CSSProperties;
 }
 
 export function BloomColorScope({
@@ -37,15 +41,27 @@ export function BloomColorScope({
   }, [colorPreset, resolvedMode, parent]);
 
   const varsStyle = useMemo(
-    () => ({ ...(buildScopeVars(colorPreset, resolvedMode) as React.CSSProperties), ...style }),
-    [colorPreset, resolvedMode, style],
+    () => buildScopeVars(colorPreset, resolvedMode) as React.CSSProperties,
+    [colorPreset, resolvedMode],
   );
 
-  return (
-    <BloomThemeContext.Provider value={contextValue}>
-      {asChild ? children : <div style={varsStyle}>{children}</div>}
-    </BloomThemeContext.Provider>
-  );
+  let content: React.ReactNode;
+  if (asChild) {
+    const child = Children.only(children);
+    if (!isValidElement<StyleableProps>(child)) {
+      throw new Error(
+        'BloomColorScope with `asChild` requires a single React element child that accepts a `style` prop.',
+      );
+    }
+    const childStyle = child.props.style;
+    const mergedStyle: React.CSSProperties = { ...varsStyle, ...style, ...childStyle };
+    content = cloneElement(child, { style: mergedStyle });
+  } else {
+    const mergedStyle: React.CSSProperties = { ...varsStyle, ...style };
+    content = <div style={mergedStyle}>{children}</div>;
+  }
+
+  return <BloomThemeContext.Provider value={contextValue}>{content}</BloomThemeContext.Provider>;
 }
 
 /**

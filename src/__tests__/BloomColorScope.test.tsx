@@ -1,5 +1,5 @@
 import React from 'react';
-import { Text } from 'react-native';
+import { Text, View, type StyleProp, type ViewStyle } from 'react-native';
 import { render } from '@testing-library/react-native';
 
 import { BloomThemeProvider } from '../theme/BloomThemeProvider';
@@ -9,6 +9,10 @@ import { useBloomTheme } from '../theme/use-theme';
 function CurrentPreset() {
   const { colorPreset } = useBloomTheme();
   return <Text testID="preset">{colorPreset}</Text>;
+}
+
+function StyledChild({ style }: { style?: StyleProp<ViewStyle> }) {
+  return <View testID="styled-child" style={style}><CurrentPreset /></View>;
 }
 
 describe('BloomColorScope', () => {
@@ -27,16 +31,36 @@ describe('BloomColorScope', () => {
     expect(presets[1]).toBe('green');
   });
 
-  it('renders children directly with asChild (no wrapper element)', () => {
+  it('clones the single child and merges scope vars into its style (asChild)', () => {
     const { getByTestId } = render(
       <BloomThemeProvider defaultColorPreset="blue" fonts={false}>
         <BloomColorScope colorPreset="purple" asChild>
-          <CurrentPreset />
+          <StyledChild style={{ padding: 8 }} />
         </BloomColorScope>
       </BloomThemeProvider>,
     );
 
     expect(getByTestId('preset').props.children).toBe('purple');
+    const mergedStyle = getByTestId('styled-child').props.style;
+    expect(Array.isArray(mergedStyle)).toBe(true);
+    expect(mergedStyle).toEqual(
+      expect.arrayContaining([expect.objectContaining({ padding: 8 })]),
+    );
+  });
+
+  it('throws when asChild has multiple children', () => {
+    const consoleError = jest.spyOn(console, 'error').mockImplementation(() => {});
+    expect(() =>
+      render(
+        <BloomThemeProvider defaultColorPreset="blue" fonts={false}>
+          <BloomColorScope colorPreset="purple" asChild>
+            <CurrentPreset />
+            <CurrentPreset />
+          </BloomColorScope>
+        </BloomThemeProvider>,
+      ),
+    ).toThrow();
+    consoleError.mockRestore();
   });
 
   it('throws when used outside BloomThemeProvider', () => {
