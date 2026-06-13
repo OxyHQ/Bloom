@@ -25,6 +25,9 @@ export interface AppColorPreset {
 
 export const APP_COLOR_NAMES: readonly AppColorName[] = ['teal', 'blue', 'green', 'amber', 'yellow', 'red', 'purple', 'pink', 'sky', 'orange', 'mint', 'oxy', 'faircoin'];
 
+/** Premium-exclusive presets, hidden from the standard color picker. */
+export const PREMIUM_COLOR_NAMES: readonly AppColorName[] = ['oxy', 'faircoin'];
+
 export const HEX_TO_APP_COLOR: Record<string, AppColorName> = {
   '#005c67': 'teal',
   '#1d9bf0': 'blue',

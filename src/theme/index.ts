@@ -10,10 +10,16 @@ export type { Theme, ThemeColors, ThemeMode } from './types';
 export type { AppColorName, AppColorPreset, PresetTokens } from './color-presets';
 export {
   APP_COLOR_NAMES,
+  PREMIUM_COLOR_NAMES,
   APP_COLOR_PRESETS,
   HEX_TO_APP_COLOR,
   hexToAppColorName,
 } from './color-presets';
+export {
+  getPresetVars,
+  applyPresetVarsToDocument,
+} from './preset-vars';
+export type { PresetVarsOptions } from './preset-vars';
 export { applyDarkClass } from './apply-dark-class';
 export { setColorSchemeSafe } from './set-color-scheme-safe';
 export { initCssInteropDarkMode } from './init-css-interop';
