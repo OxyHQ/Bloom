@@ -3,14 +3,16 @@
  */
 
 // Exercises the WEB scroll-restoration hook (`scroll/index.web`) against the
-// exact failure mode it was written to survive: React Navigation's web stack
-// collapses a hidden background screen (forcing its `scrollTop` to 0) on push,
-// and a re-shown virtualized list re-lays out its rows — and thus reaches its
-// full scroll height — over SEVERAL frames after focus.
+// exact failure mode it was written to survive: the (expo-router-wrapped)
+// React Navigation web stack collapses a hidden background screen (forcing its
+// `scrollTop` to 0) on push, and a re-shown virtualized list re-lays out its
+// rows — and thus reaches its full scroll height — over SEVERAL frames after
+// focus.
 //
-// We mock `@react-navigation/native` so `useFocusEffect` runs the effect on
-// mount and its cleanup on unmount, and drive `requestAnimationFrame` manually
-// so the multi-frame restore is deterministic.
+// We mock `expo-router` (the module the hook imports its navigation hooks from)
+// so `useFocusEffect` runs the effect on mount and its cleanup on unmount, and
+// drive `requestAnimationFrame` manually so the multi-frame restore is
+// deterministic.
 
 import { createElement, useRef, type ReactNode } from 'react';
 import { act } from 'react';
@@ -21,22 +23,29 @@ import { createRoot, type Root } from 'react-dom/client';
 (globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT =
   true;
 
-// ---- React Navigation mock ------------------------------------------------
+// ---- expo-router mock ------------------------------------------------------
 // `useFocusEffect` here mirrors the real contract closely enough for this hook:
 // it runs the callback in a layout effect and runs the returned cleanup on
 // unmount. `useRoute` yields a stable per-test route key.
 
 let currentRouteKey = 'route-test';
 
-jest.mock('@react-navigation/native', () => {
-  const react = jest.requireActual<typeof import('react')>('react');
-  return {
-    useFocusEffect: (effect: () => undefined | (() => void)) => {
-      react.useEffect(effect, [effect]);
-    },
-    useRoute: () => ({ key: currentRouteKey, name: 'Test', params: {} }),
-  };
-});
+// `virtual: true` keeps the test isolated from the real (native-heavy)
+// `expo-router` package: only the two hooks the scroll primitive consumes are
+// stubbed, and jest never has to resolve the full module from disk.
+jest.mock(
+  'expo-router',
+  () => {
+    const react = jest.requireActual<typeof import('react')>('react');
+    return {
+      useFocusEffect: (effect: () => undefined | (() => void)) => {
+        react.useEffect(effect, [effect]);
+      },
+      useRoute: () => ({ key: currentRouteKey, name: 'Test', params: {} }),
+    };
+  },
+  { virtual: true },
+);
 
 // Imported AFTER the mock is registered.
 import {

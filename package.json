@@ -1,6 +1,6 @@
 {
   "name": "@oxyhq/bloom",
-  "version": "0.6.23",
+  "version": "0.6.24",
   "description": "Bloom UI — Oxy ecosystem component library for React Native + Expo + Web",
   "main": "lib/commonjs/index.js",
   "module": "lib/module/index.js",
@@ -631,7 +631,6 @@
     }
   },
   "devDependencies": {
-    "@react-navigation/native": "^7.0.0",
     "@storybook/addon-docs": "^10",
     "@storybook/react-vite": "^10",
     "@testing-library/react-native": "^13.3.3",
@@ -641,6 +640,7 @@
     "@types/react-native": "*",
     "@vitejs/plugin-react": "^6.0.2",
     "expo-font": "^56.0.5",
+    "expo-router": "^56.0.0",
     "jest": "^30.3.0",
     "jest-environment-jsdom": "^30.4.1",
     "react": "19.2.0",
@@ -662,9 +662,9 @@
     "vite": "^7"
   },
   "peerDependencies": {
-    "@react-navigation/native": ">=6.0.0",
     "expo": "*",
     "expo-font": "*",
+    "expo-router": ">=3.0.0",
     "react": ">=18.0.0",
     "react-dom": ">=18.0.0",
     "react-native": ">=0.73.0",
@@ -676,13 +676,13 @@
     "sonner-native": ">=0.17.0"
   },
   "peerDependenciesMeta": {
-    "@react-navigation/native": {
-      "optional": true
-    },
     "expo": {
       "optional": true
     },
     "expo-font": {
+      "optional": true
+    },
+    "expo-router": {
       "optional": true
     },
     "react-dom": {

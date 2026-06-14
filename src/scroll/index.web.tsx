@@ -3,14 +3,15 @@
  *
  * Mirrors the proven Bluesky pattern (`history.scrollRestoration = 'manual'`
  * plus an in-memory `Map<routeKey, offset>`) with two deliberate differences
- * forced by Oxy's layouts and the behaviour of React Navigation's web stack:
+ * forced by Oxy's layouts and the behaviour of the (expo-router-wrapped)
+ * React Navigation web stack:
  *
  *  1. Bluesky restores the WINDOW scroller, whereas Oxy apps keep multi-column
  *     layouts whose feed scrolls an INNER container. So we restore the offset
  *     of a caller-registered scrollable (a ref to an element / RN scroll
  *     component, or the `'window'` sentinel), keyed by the active route.
  *
- *  2. React Navigation's web stack HIDES the background screen on push. While
+ *  2. The web stack HIDES the background screen on push. While
  *     hidden, the previous screen's scroll container collapses
  *     (`scrollHeight === clientHeight`) and the navigator forces its
  *     `scrollTop` to 0. The screen is NOT unmounted, so a virtualized list
@@ -31,9 +32,17 @@
  *
  * Native bundlers use `./index.ts` (a no-op); web bundlers select this file via
  * the `"browser"` export condition in `package.json`.
+ *
+ * The navigation hooks are imported from `expo-router` (which re-exports
+ * `useFocusEffect` and `useRoute` from its bundled React Navigation core) rather
+ * than from `@react-navigation/native` directly. Every Oxy app uses expo-router
+ * as its router, so it is always a DIRECT, top-level dependency that resolves
+ * cleanly under Bun's isolated linker — whereas `@react-navigation/native` is
+ * only a nested/transitive dependency of expo-router and would fail to resolve
+ * when bundling those apps.
  */
 import { createContext, useCallback, useContext, useMemo, useRef } from 'react';
-import { useFocusEffect, useRoute } from '@react-navigation/native';
+import { useFocusEffect, useRoute } from 'expo-router';
 
 import { createScroller } from './scrollable.web';
 import { ScrollOffsetStore, deriveScrollKey } from './store';
@@ -147,7 +156,8 @@ export function useScrollRestoration(
 
   useFocusEffect(
     // The effect identity is intentionally stable across renders: it reads all
-    // varying inputs from refs. React Navigation re-runs it on each focus.
+    // varying inputs from refs. expo-router's `useFocusEffect` re-runs it on
+    // each focus.
     useCallback(
       () => {
         const key = scrollKeyRef.current;
