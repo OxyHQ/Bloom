@@ -1,6 +1,6 @@
 {
   "name": "@oxyhq/bloom",
-  "version": "0.6.21",
+  "version": "0.6.22",
   "description": "Bloom UI — Oxy ecosystem component library for React Native + Expo + Web",
   "main": "lib/commonjs/index.js",
   "module": "lib/module/index.js",
@@ -535,6 +535,22 @@
         "default": "./lib/commonjs/fonts/index.js"
       }
     },
+    "./scroll": {
+      "react-native": "./src/scroll/index.ts",
+      "browser": {
+        "types": "./lib/typescript/module/scroll/index.web.d.ts",
+        "import": "./lib/module/scroll/index.web.js",
+        "require": "./lib/commonjs/scroll/index.web.js"
+      },
+      "import": {
+        "types": "./lib/typescript/module/scroll/index.d.ts",
+        "default": "./lib/module/scroll/index.js"
+      },
+      "require": {
+        "types": "./lib/typescript/commonjs/scroll/index.d.ts",
+        "default": "./lib/commonjs/scroll/index.js"
+      }
+    },
     "./package.json": "./package.json"
   },
   "files": [
@@ -615,6 +631,7 @@
     }
   },
   "devDependencies": {
+    "@react-navigation/native": "^7.0.0",
     "@storybook/addon-docs": "^10",
     "@storybook/react-vite": "^10",
     "@testing-library/react-native": "^13.3.3",
@@ -645,6 +662,7 @@
     "vite": "^7"
   },
   "peerDependencies": {
+    "@react-navigation/native": ">=6.0.0",
     "expo": "*",
     "expo-font": "*",
     "react": ">=18.0.0",
@@ -658,6 +676,9 @@
     "sonner-native": ">=0.17.0"
   },
   "peerDependenciesMeta": {
+    "@react-navigation/native": {
+      "optional": true
+    },
     "expo": {
       "optional": true
     },
