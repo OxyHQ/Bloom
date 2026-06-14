@@ -2,12 +2,24 @@ import type { ScrollableHandle, ScrollRestorationTarget } from './types';
 
 /**
  * A normalized read/write interface over whatever the caller registered, so
- * the hook does not branch on target shape. Both methods are no-ops when the
- * underlying element is not yet (or no longer) attached.
+ * the hook does not branch on target shape. All methods are safe no-ops when
+ * the underlying element is not yet (or no longer) attached.
  */
 export interface ResolvedScroller {
   getOffset: () => number;
   setOffset: (offset: number) => void;
+  /**
+   * Whether the scroll container can currently hold a non-zero offset, i.e.
+   * its content is taller than its viewport (`scrollHeight > clientHeight`).
+   *
+   * React Navigation's web stack collapses a hidden background screen so its
+   * content height drops to the viewport height; while collapsed the container
+   * cannot be scrolled and its `scrollTop` is forced to 0. The hook uses this
+   * to ignore a spurious 0 read coming from a collapsed container rather than
+   * persisting it over a previously-saved good offset. The `'window'` scroller
+   * is never collapsed by the navigator, so it always reports `true`.
+   */
+  canScroll: () => boolean;
 }
 
 function isElement(value: unknown): value is HTMLElement {
@@ -59,6 +71,7 @@ export function createScroller(target: ScrollRestorationTarget): ResolvedScrolle
       setOffset: (offset) => {
         if (typeof window !== 'undefined') window.scrollTo(0, offset);
       },
+      canScroll: () => true,
     };
   }
 
@@ -70,6 +83,10 @@ export function createScroller(target: ScrollRestorationTarget): ResolvedScrolle
     setOffset: (offset) => {
       const element = resolveElement(target);
       if (element) element.scrollTop = offset;
+    },
+    canScroll: () => {
+      const element = resolveElement(target);
+      return element ? element.scrollHeight > element.clientHeight : false;
     },
   };
 }
