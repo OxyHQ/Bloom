@@ -1,5 +1,5 @@
 import { APP_COLOR_NAMES, APP_COLOR_PRESETS } from '../theme/color-presets';
-import { getPresetVars, hslTripletToRgb } from '../theme/preset-vars';
+import { getPresetVars, hslTripletToRgb, toWebColorValue } from '../theme/preset-vars';
 
 const EXTENDED_KEYS = [
   '--card',
@@ -95,5 +95,51 @@ describe('hslTripletToRgb', () => {
   it('emits rgb(r g b / a) for an alpha tail (decimal or percentage)', () => {
     expect(hslTripletToRgb('205 87% 53% / 0.5')).toBe('rgb(31 153 239 / 0.5)');
     expect(hslTripletToRgb('205 87% 53% / 50%')).toBe('rgb(31 153 239 / 0.5)');
+  });
+});
+
+describe('toWebColorValue (web var contract)', () => {
+  it('wraps a raw HSL triple base token in hsl()', () => {
+    expect(toWebColorValue('--background', '185 50% 5%')).toBe('hsl(185 50% 5%)');
+    expect(toWebColorValue('--primary', '185 100% 20%')).toBe('hsl(185 100% 20%)');
+    expect(toWebColorValue('--foreground', '0 0% 12%')).toBe('hsl(0 0% 12%)');
+  });
+
+  it('wraps a raw HSL triple with an alpha tail into modern hsl(H S% L% / A) syntax', () => {
+    expect(toWebColorValue('--ring', '0 0% 0% / 0.5')).toBe('hsl(0 0% 0% / 0.5)');
+  });
+
+  it('passes --color-* resolved rgb() vars through unchanged', () => {
+    expect(toWebColorValue('--color-primary', 'rgb(31 153 239)')).toBe('rgb(31 153 239)');
+    expect(toWebColorValue('--color-background', 'rgb(0 94 102 / 0.5)')).toBe(
+      'rgb(0 94 102 / 0.5)',
+    );
+  });
+
+  it('passes non-color tokens (radius / lengths) through unchanged', () => {
+    expect(toWebColorValue('--radius', '0.5rem')).toBe('0.5rem');
+    expect(toWebColorValue('--radius-lg', '12px')).toBe('12px');
+  });
+
+  it('passes already-resolved color values through unchanged', () => {
+    expect(toWebColorValue('--primary', 'rgb(31 153 239)')).toBe('rgb(31 153 239)');
+    expect(toWebColorValue('--primary', 'hsl(185 100% 20%)')).toBe('hsl(185 100% 20%)');
+    expect(toWebColorValue('--primary', '#1d9bf0')).toBe('#1d9bf0');
+  });
+
+  it('produces a full CSS color for every base preset token of every preset/mode', () => {
+    for (const name of APP_COLOR_NAMES) {
+      for (const mode of ['light', 'dark'] as const) {
+        const base = mode === 'light' ? APP_COLOR_PRESETS[name].light : APP_COLOR_PRESETS[name].dark;
+        for (const [key, value] of Object.entries(base)) {
+          const web = toWebColorValue(key, value);
+          // A bare triple (`185 50% 5%`) is INVALID CSS — the incident. Every
+          // base token must come out as a complete color the browser parses.
+          expect(web.startsWith('hsl(') || web.startsWith('rgb(') || web.startsWith('#')).toBe(
+            true,
+          );
+        }
+      }
+    }
   });
 });

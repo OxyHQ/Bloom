@@ -83,6 +83,53 @@ export function hslTripletToRgb(triplet: string): string {
   return `rgb(${red} ${green} ${blue})`;
 }
 
+/**
+ * Prefix that marks a Tailwind v4 resolved color var (`--color-primary`). These
+ * are already emitted as full `rgb(...)` colors by `getPresetVars` and must be
+ * written to web verbatim — wrapping them would corrupt the value.
+ */
+const RESOLVED_COLOR_VAR_PREFIX = '--color-';
+
+/**
+ * Matches a shadcn-style raw HSL triple — `H S% L%`, optionally with an alpha
+ * tail `H S% L% / A`. The value starts with a digit (or a leading `-`) and
+ * carries at least one `%` (the saturation/lightness units), which together
+ * distinguish a bare triple from an already-resolved CSS color (`rgb(...)`,
+ * `hsl(...)`, `#fff`, named colors) or a unitless/length token (`--radius`).
+ * Mirrors the triple shape parsed by `hslTripletToRgb`.
+ */
+const RAW_HSL_TRIPLE = /^-?\d[\d.]*\s+[\d.]+%/;
+
+/**
+ * Transform a single preset var into the value to write to a WEB element
+ * (`document.documentElement` or a `BloomColorScope` subtree element).
+ *
+ * The web apps (Vite + Tailwind v4 + shadcn) compile their `@theme inline`
+ * block so the color utilities reference the BASE token directly — e.g.
+ * `.bg-background { background-color: var(--background) }`. So on web the base
+ * `--x` tokens MUST resolve to a COMPLETE CSS color; a bare HSL triple
+ * (`185 50% 5%`) is invalid as a `background-color` value and renders
+ * transparent (the production incident this fixes). We therefore wrap raw
+ * triples in `hsl(...)`, preserving the exact preset color math (and any `/ A`
+ * alpha tail, valid in modern `hsl(H S% L% / A)` syntax) with zero rounding
+ * drift.
+ *
+ * Values that are already full colors pass through unchanged:
+ *   - `--color-*` resolved vars (already `rgb(...)` from `getPresetVars`),
+ *   - any value not shaped like a raw HSL triple (`--radius: 0.5rem`,
+ *     pre-resolved `rgb(...)`/`hsl(...)`, etc.).
+ *
+ * NATIVE never calls this — `getPresetVars` returns raw triples verbatim and
+ * `native-root-vars.native.ts` writes them through bloom's `hsl(var(--x))`
+ * native `global.css` indirection. Pure function — no side effects — so it is
+ * unit-testable in isolation.
+ */
+export function toWebColorValue(key: string, value: string): string {
+  if (key.startsWith(RESOLVED_COLOR_VAR_PREFIX)) return value;
+  if (!RAW_HSL_TRIPLE.test(value)) return value;
+  return `hsl(${value})`;
+}
+
 const RESOLVED_COLOR_MAP: Record<string, string> = {
   '--background': '--color-background',
   '--foreground': '--color-foreground',
@@ -183,6 +230,11 @@ export function getPresetVars(
  * on native. `BloomThemeProvider` already writes the base preset vars on web;
  * call this only when an app needs the extended (card/chart/sidebar) tokens on
  * the document root.
+ *
+ * The base raw-HSL-triple tokens are wrapped to full `hsl(...)` colors via
+ * `toWebColorValue` so `var(--x)` (the form Tailwind v4 `@theme inline`
+ * compiles to) resolves directly on web; `--color-*` rgb vars pass through. See
+ * `toWebColorValue` for the web var contract.
  */
 export function applyPresetVarsToDocument(
   colorName: AppColorName,
@@ -194,6 +246,6 @@ export function applyPresetVarsToDocument(
   const vars = getPresetVars(colorName, mode, options);
   const root = document.documentElement.style;
   for (const [key, value] of Object.entries(vars)) {
-    root.setProperty(key, value);
+    root.setProperty(key, toWebColorValue(key, value));
   }
 }

@@ -151,6 +151,20 @@ describe('BloomColorScope', () => {
       expect(flat).toEqual(
         expect.arrayContaining([expect.objectContaining({ padding: 8 })]),
       );
+
+      // Web var contract: the scoped base tokens (`--background`, `--primary`)
+      // must be full `hsl(...)` colors — never bare HSL triples — so the web
+      // apps' `var(--x)` color utilities resolve. (The production incident was a
+      // bare triple here too.)
+      const vars = Object.assign(
+        {},
+        ...flat.filter((entry) => '--background' in entry || '--primary' in entry),
+      ) as Record<string, unknown>;
+      const background = String(vars['--background'] ?? '');
+      const primary = String(vars['--primary'] ?? '');
+      expect(background.startsWith('hsl(')).toBe(true);
+      expect(primary.startsWith('hsl(')).toBe(true);
+      expect(/^-?\d[\d.]*\s+[\d.]+%/.test(background)).toBe(false);
     });
   });
 });

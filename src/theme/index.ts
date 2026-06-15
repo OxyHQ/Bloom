@@ -19,6 +19,7 @@ export {
 export {
   getPresetVars,
   applyPresetVarsToDocument,
+  toWebColorValue,
 } from './preset-vars';
 export type { PresetVarsOptions } from './preset-vars';
 export { applyDarkClass } from './apply-dark-class';
