@@ -18,4 +18,11 @@ describe('color-space', () => {
     expect(parseRgbString('rgb(31 153 239)')).toEqual({ r: 31, g: 153, b: 239 });
     expect(parseRgbString('rgb(31, 153, 239)')).toEqual({ r: 31, g: 153, b: 239 });
   });
+  it('throws loudly on non-rgb input instead of silently returning black', () => {
+    expect(() => parseRgbString('277 50% 5%')).toThrow(
+      'parseRgbString: expected an rgb() string, got: 277 50% 5%',
+    );
+    expect(() => parseRgbString('hsl(277 50% 5%)')).toThrow(/expected an rgb\(\) string/);
+    expect(() => parseRgbString('')).toThrow(/expected an rgb\(\) string/);
+  });
 });

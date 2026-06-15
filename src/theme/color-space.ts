@@ -30,9 +30,23 @@ export function srgbToRgbString({ r, g, b }: Rgb, alpha?: number): string {
     : `rgb(${r} ${g} ${b} / ${alpha})`;
 }
 
+/**
+ * Parse an `rgb(...)` / `rgba(...)` string into an {@link Rgb}.
+ *
+ * Contract: input MUST be an `rgb(...)` / `rgba(...)` string (e.g. a resolved
+ * token from `getResolvedTokens`). Both modern (`rgb(r g b)`) and legacy
+ * (`rgb(r, g, b)`) syntaxes are accepted. Anything else throws — this is a
+ * canonical-pipeline primitive and a non-rgb input signals a real bug at the
+ * call site, never a value to silently coerce to black.
+ *
+ * @throws {Error} if `s` is not an `rgb()` / `rgba()` string.
+ */
 export function parseRgbString(s: string): Rgb {
-  const m = s.match(/rgba?\(([^)]+)\)/i);
-  const [r, g, b] = (m?.[1] ?? '0 0 0').split(/[ ,/]+/).map((n) => parseInt(n, 10));
+  const inner = s.match(/rgba?\(([^)]+)\)/i)?.[1];
+  if (inner === undefined) {
+    throw new Error(`parseRgbString: expected an rgb() string, got: ${s}`);
+  }
+  const [r, g, b] = inner.split(/[ ,/]+/).map((n) => parseInt(n, 10));
   return { r: r ?? 0, g: g ?? 0, b: b ?? 0 };
 }
 
