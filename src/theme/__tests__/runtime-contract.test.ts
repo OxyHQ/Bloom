@@ -7,6 +7,7 @@ import { Platform } from 'react-native';
 
 import { buildTheme } from '../build-theme';
 import { applyColorPresetVars } from '../apply-dark-class';
+import { getResolvedTokens } from '../token-registry';
 
 // `@react-native/normalize-colors` is the exact parser React Native (native) and
 // react-native-web use behind `StyleSheet`/`processColor`. If it returns `null`
@@ -43,7 +44,20 @@ describe('web var(--primary) resolves to a real color (not a bare triple)', () =
   });
 });
 
-it('mislabeled aliases are fixed: secondary !== primary', () => {
-  const { colors } = buildTheme('oxy', 'light');
-  expect(colors.secondary).not.toBe(colors.primary);
+it('restored legacy alias invariants hold', () => {
+  // Pre-0.8.0 semantics, restored in 0.8.1: `secondary` mirrors `primary`,
+  // `card` and `primaryLight` are the page surface, `primaryDark` is the page
+  // background. All read straight from the same resolved rgb token map, so the
+  // alias values are byte-identical to their source tokens.
+  for (const preset of ['oxy', 'blue'] as const) {
+    for (const mode of ['light', 'dark'] as const) {
+      const { colors } = buildTheme(preset, mode);
+      const t = getResolvedTokens(preset, mode);
+      expect(colors.secondary).toBe(colors.primary);
+      expect(colors.secondary).toBe(t['--primary']);
+      expect(colors.card).toBe(t['--surface']);
+      expect(colors.primaryLight).toBe(t['--surface']);
+      expect(colors.primaryDark).toBe(t['--background']);
+    }
+  }
 });

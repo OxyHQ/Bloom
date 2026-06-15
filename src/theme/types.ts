@@ -14,12 +14,12 @@ export interface ThemeColors {
 
   primary: string;
   primaryForeground: string;
-  /** Preset accent tint (`--accent`) — a soft brand-tinted surface, NOT the page surface. */
+  /** Legacy alias: the page surface tint (`--surface`), NOT a brand accent. */
   primaryLight: string;
-  /** Focus-ring shade (`--ring`) — the preset's emphasized ring/border color, NOT the page background. */
+  /** Legacy alias: the page background (`--background`), NOT the focus ring. */
   primaryDark: string;
 
-  /** Preset secondary surface (`--secondary`) — a muted companion surface, NOT a mirror of `primary`. */
+  /** Legacy alias: mirrors `primary` (`--primary`) for backwards compatibility. */
   secondary: string;
 
   tint: string;
