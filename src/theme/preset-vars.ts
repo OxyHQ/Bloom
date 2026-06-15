@@ -67,7 +67,10 @@ export function getPresetVars(
 
   const extended: PresetTokens = {
     ...base,
-    '--card': isDark ? `${hue} 30% 10%` : '0 0% 100%',
+    // Light cards carry the same faint preset tint as `--popover` (H 12% 99%)
+    // so they read as part of the preset family rather than a pure-white slab —
+    // mirroring how dark cards (H 30% 10%) carry the accent hue into near-black.
+    '--card': isDark ? `${hue} 30% 10%` : `${hue} 12% 99%`,
     '--card-foreground': foreground,
     '--chart-1': `${hue} ${sat}% 85%`,
     '--chart-2': `${hue} ${sat}% 75%`,
