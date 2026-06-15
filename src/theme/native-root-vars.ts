@@ -1,3 +1,19 @@
+/// <reference path="../react-native-css.d.ts" />
+// The triple-slash reference above pins Bloom's ambient declaration for
+// `react-native-css/native-internal` (`src/react-native-css.d.ts`) into the
+// compilation graph of EVERY program that compiles THIS file — including
+// downstream consumers that resolve Bloom's `"react-native"` source export
+// condition (`./src/theme/index.ts` → `BloomThemeProvider` → this file). Without
+// it the ambient decl is only auto-loaded inside Bloom's own tsconfig
+// (`include: ["src"]`); a consumer's tsconfig never includes
+// `node_modules/@oxyhq/bloom/src/**`, and TypeScript does NOT auto-pick-up
+// ambient `.d.ts` files that live under `node_modules`, so
+// `react-native-css/native-internal` is unresolved (TS2307) unless the reference
+// travels with the source. react-native-css is intentionally NOT a Bloom
+// dependency — it arrives transitively via a host's NativeWind 5 install, or is
+// absent entirely for NativeWind 4 consumers — so the ambient declaration is the
+// only thing that can type this import, and it MUST reach the consumer. The
+// directive ships raw in `src/` (Bloom publishes `files: ["src", "lib"]`).
 import { rootVariables } from 'react-native-css/native-internal';
 
 import { buildScopeVars } from './color-scope/style-builder';
