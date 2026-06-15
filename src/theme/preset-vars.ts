@@ -9,6 +9,80 @@ function extractSat(hslVar: string): number {
   return parseInt(hslVar.split(' ')[1] ?? '0', 10);
 }
 
+/**
+ * Convert a shadcn-style HSL triple (`'H S% L%'`, optionally with an alpha tail
+ * `'H S% L% / A'`) into an sRGB `rgb(...)` string.
+ *
+ * Why rgb and not hsl (the native alpha-utility bug this fixes)
+ * -------------------------------------------------------------
+ * Tailwind v4 compiles an alpha-on-theme-color utility (`bg-primary/10`) into a
+ * `color-mix(... var(--color-primary) 10%, transparent)` declaration. On native,
+ * react-native-css resolves that `color-mix` at runtime via `colorjs.io/fn`, but
+ * its `color-mix` implementation registers ONLY the `sRGB`, `P3`, and `OKLab`
+ * color spaces — never `HSL`. So if `--color-primary` resolves to an `hsl(...)`
+ * string, `parse('hsl(...)')` throws, the mix is swallowed, and the utility
+ * silently produces no color. Emitting the resolved var as `rgb(...)` (a space
+ * colorjs.io always has registered) makes the alpha utilities resolve on native,
+ * matching web. Full (non-alpha) utilities already worked because React Native's
+ * native color parser handles `hsl()` directly; only `color-mix` was affected.
+ *
+ * Output is space-separated channels (`rgb(31 153 239)`), the modern CSS syntax
+ * parsed by both `colorjs.io/fn` (with only sRGB/P3/OKLab registered) and
+ * react-native-web / browsers. An alpha tail emits `rgb(r g b / a)`, likewise
+ * parsed by both.
+ *
+ * Pure function — standard HSL→sRGB conversion, channels rounded to integers.
+ * Tolerates a `deg` suffix on the hue and `%` suffixes on saturation/lightness.
+ */
+export function hslTripletToRgb(triplet: string): string {
+  const [colorPart, alphaPart] = triplet.split('/').map((part) => part.trim());
+  const channels = (colorPart ?? '').split(/\s+/).filter(Boolean);
+
+  const hue = parseFloat((channels[0] ?? '0').replace(/deg$/i, ''));
+  const sat = parseFloat((channels[1] ?? '0').replace('%', '')) / 100;
+  const light = parseFloat((channels[2] ?? '0').replace('%', '')) / 100;
+
+  const h = Number.isFinite(hue) ? hue : 0;
+  const s = Number.isFinite(sat) ? sat : 0;
+  const l = Number.isFinite(light) ? light : 0;
+
+  const chroma = (1 - Math.abs(2 * l - 1)) * s;
+  const huePrime = ((((h % 360) + 360) % 360) / 60);
+  const second = chroma * (1 - Math.abs((huePrime % 2) - 1));
+
+  let r = 0;
+  let g = 0;
+  let b = 0;
+  if (huePrime < 1) {
+    [r, g, b] = [chroma, second, 0];
+  } else if (huePrime < 2) {
+    [r, g, b] = [second, chroma, 0];
+  } else if (huePrime < 3) {
+    [r, g, b] = [0, chroma, second];
+  } else if (huePrime < 4) {
+    [r, g, b] = [0, second, chroma];
+  } else if (huePrime < 5) {
+    [r, g, b] = [second, 0, chroma];
+  } else {
+    [r, g, b] = [chroma, 0, second];
+  }
+
+  const match = l - chroma / 2;
+  const red = Math.round((r + match) * 255);
+  const green = Math.round((g + match) * 255);
+  const blue = Math.round((b + match) * 255);
+
+  if (alphaPart !== undefined && alphaPart !== '') {
+    const alpha = alphaPart.endsWith('%')
+      ? parseFloat(alphaPart) / 100
+      : parseFloat(alphaPart);
+    const safeAlpha = Number.isFinite(alpha) ? alpha : 1;
+    return `rgb(${red} ${green} ${blue} / ${safeAlpha})`;
+  }
+
+  return `rgb(${red} ${green} ${blue})`;
+}
+
 const RESOLVED_COLOR_MAP: Record<string, string> = {
   '--background': '--color-background',
   '--foreground': '--color-foreground',
@@ -34,11 +108,18 @@ const RESOLVED_COLOR_MAP: Record<string, string> = {
 
 export interface PresetVarsOptions {
   /**
-   * Also emit Tailwind v4 resolved `--color-*` vars (wrapped in `hsl(...)`)
+   * Also emit Tailwind v4 resolved `--color-*` vars (as sRGB `rgb(...)` strings)
    * alongside the raw HSL triples. Needed when scoping a subtree where
    * Tailwind's `@theme` block has already precomputed `--color-*` at `:root`,
    * so overriding `--background` alone wouldn't cascade to `bg-background`.
-   * Default `false`.
+   *
+   * The resolved vars are emitted as `rgb(...)` rather than `hsl(...)` so the
+   * alpha-on-theme-color utilities (`bg-primary/10`, `text-foreground/50`)
+   * resolve on native: Tailwind compiles those to a runtime `color-mix(...)` that
+   * react-native-css evaluates via `colorjs.io/fn`, which only registers the
+   * sRGB/P3/OKLab spaces (not HSL) — so an `hsl(...)` var would throw and the
+   * utility would silently render no color. See `hslTripletToRgb`. Default
+   * `false`.
    */
   includeResolvedColorVars?: boolean;
 }
@@ -92,7 +173,7 @@ export function getPresetVars(
   const resolved: PresetTokens = { ...extended };
   for (const [rawKey, colorKey] of Object.entries(RESOLVED_COLOR_MAP)) {
     const value = extended[rawKey];
-    if (value) resolved[colorKey] = `hsl(${value})`;
+    if (value) resolved[colorKey] = hslTripletToRgb(value);
   }
   return resolved;
 }

@@ -13,10 +13,13 @@ export function applyDarkClass(resolved: 'light' | 'dark') {
  * No-op on native — only affects web.
  *
  * Writes both the raw HSL triples (e.g. `--primary: 185 100% 20%`) and the
- * resolved `--color-*` vars (`--color-primary: hsl(185 100% 20%)`) so both
+ * resolved `--color-*` vars (`--color-primary: rgb(0 94 102)`) so both
  * shadcn-style `hsl(var(--primary))` plumbing and Tailwind v4 `@theme`
- * utilities resolve consistently. Includes extended tokens (card, chart-*,
- * content-area, sidebar-*) so consumer apps don't need to synthesize them.
+ * utilities resolve consistently. The resolved vars are emitted as `rgb(...)`
+ * (not `hsl(...)`) so the alpha utilities (`bg-primary/10`) resolve on native —
+ * see `getPresetVars` / `hslTripletToRgb`. Includes extended tokens (card,
+ * chart-*, content-area, sidebar-*) so consumer apps don't need to synthesize
+ * them.
  */
 export function applyColorPresetVars(preset: AppColorName, resolved: 'light' | 'dark') {
   if (Platform.OS !== 'web' || typeof document === 'undefined') return;

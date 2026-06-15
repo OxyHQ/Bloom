@@ -27,7 +27,8 @@ import { FontLoader } from '../fonts/FontLoader';
 import { applyDarkClass, applyColorPresetVars } from './apply-dark-class';
 import { buildTheme } from './build-theme';
 import { type AppColorName } from './color-presets';
-import { buildNativePresetStyle } from './color-scope/style-builder';
+import { buildScopeVars, getVariableContextProvider } from './color-scope/style-builder';
+import { applyNativeRootVars } from './native-root-vars';
 import {
   readPersistedTheme,
   readPersistedThemeSync,
@@ -295,6 +296,17 @@ export function BloomThemeProvider({
     applyColorPresetVars(colorPreset, resolved);
   }, [effectiveMode, resolved, colorPreset]);
 
+  // Native only: publish the preset vars into react-native-css's GLOBAL root
+  // variable family so they reach the ENTIRE app tree — navigator screens and
+  // every portal/modal/bottom-sheet that paints outside the provider's React
+  // subtree (and therefore never sees the `VariableContextProvider` vars below).
+  // Web writes the same vars to `document.documentElement` above, so this no-ops
+  // there. Runs before paint via `useIsomorphicLayoutEffect`, matching the
+  // sibling `applyColorPresetVars` side effect.
+  useIsomorphicLayoutEffect(() => {
+    applyNativeRootVars(colorPreset, resolved);
+  }, [colorPreset, resolved]);
+
   const contextValue = useMemo<BloomThemeContextValue>(
     () => ({
       theme: buildTheme(colorPreset, resolved, isAdaptive),
@@ -310,10 +322,15 @@ export function BloomThemeProvider({
   const shouldAwait = awaitHydration ?? Boolean(persistKey && storage);
   const isGated = shouldAwait && !hydrated;
 
-  const nativeVarsStyle = useMemo(
-    () => (Platform.OS === 'web' ? undefined : buildNativePresetStyle(colorPreset, resolved)),
+  // The full `--name -> value` record for the active preset. On native this is
+  // handed to `VariableContextProvider` so descendants resolve `var(--primary)`
+  // etc. through react-native-css's real VariableContext. Web writes these to
+  // `document.documentElement` via `applyColorPresetVars`, so it's unused there.
+  const nativeVars = useMemo(
+    () => (Platform.OS === 'web' ? null : buildScopeVars(colorPreset, resolved)),
     [colorPreset, resolved],
   );
+  const VariableProvider = getVariableContextProvider();
 
   const content = (
     <FontLoader enabled={fonts} fallback={onFontsLoading}>
@@ -321,12 +338,21 @@ export function BloomThemeProvider({
     </FontLoader>
   );
 
+  if (Platform.OS === 'web') {
+    return <BloomThemeContext.Provider value={contextValue}>{content}</BloomThemeContext.Provider>;
+  }
+
+  // The flex wrapper is still needed for layout; the preset vars now flow
+  // through `VariableContextProvider` rather than an (inert) inline-vars style.
+  // If NativeWind isn't installed the wrapper still renders so we never crash.
+  const nativeTree = <View style={[{ flex: 1 }, nativeWrapperStyle]}>{content}</View>;
+
   return (
     <BloomThemeContext.Provider value={contextValue}>
-      {Platform.OS === 'web' ? (
-        content
+      {VariableProvider && nativeVars ? (
+        <VariableProvider value={nativeVars}>{nativeTree}</VariableProvider>
       ) : (
-        <View style={[{ flex: 1 }, nativeVarsStyle, nativeWrapperStyle]}>{content}</View>
+        nativeTree
       )}
     </BloomThemeContext.Provider>
   );

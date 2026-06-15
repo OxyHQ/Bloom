@@ -21,6 +21,12 @@ const config: Config = {
   },
   testMatch: ['**/__tests__/**/*.(test|spec).(ts|tsx)'],
   moduleNameMapper: {
+    // react-native-css is a transitive (host-only) dep; `theme/native-root-vars.ts`
+    // statically imports its `native-internal` subpath. Map it so suites that pull
+    // `BloomThemeProvider` resolve. Suites asserting exact `.set` calls override
+    // this with a virtual `jest.doMock` inside `jest.isolateModules`.
+    '^react-native-css/native-internal$':
+      '<rootDir>/__mocks__/react-native-css-native-internal.ts',
     'react-native-reanimated': '<rootDir>/__mocks__/react-native-reanimated.ts',
     'react-native-gesture-handler': '<rootDir>/__mocks__/react-native-gesture-handler.ts',
     'react-native-safe-area-context': '<rootDir>/__mocks__/react-native-safe-area-context.ts',
