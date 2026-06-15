@@ -58,7 +58,36 @@ export interface BloomThemeContextValue {
   resetTheme: () => void;
 }
 
-export const BloomThemeContext = createContext<BloomThemeContextValue | null>(null);
+declare global {
+  // eslint-disable-next-line no-var
+  var __oxyhq_bloom_theme_context__:
+    | React.Context<BloomThemeContextValue | null>
+    | undefined;
+}
+
+/**
+ * `BloomThemeContext` is a `globalThis`-guarded singleton so that every physical
+ * copy of this module returns the SAME React context object.
+ *
+ * Why this is required: `package.json`'s `exports["./theme"]` ships a
+ * `react-native` → `./src/...` condition alongside the `import` → `./lib/module/...`
+ * and `require` → `./lib/commonjs/...` forks, so up to three physical copies of the
+ * theme module can coexist in a single bundle. A bundler can resolve them through
+ * DIFFERENT conditions across import paths — e.g. an app importing `@oxyhq/bloom/theme`
+ * lands on the `src` copy while `@oxyhq/bloom/toast`'s `Toast.tsx` imports
+ * `../theme/use-theme` relatively and lands on a different physical copy. With a plain
+ * module-level `createContext(...)`, each copy creates its OWN context object: the
+ * mounted `<BloomThemeProvider>` writes into context A while `useTheme`/`useBloomTheme`/
+ * `Toast`/`Dialog` read context B, so `useContext` returns `null` and they throw
+ * "must be used within a <BloomThemeProvider>" even when correctly wrapped. This is the
+ * same src-vs-lib dual-instance class react-native-css guards its `StyleCollection`/
+ * root-variable families against. Anchoring the context on `globalThis` (keyed by the
+ * `__oxyhq_bloom_theme_context__` property) collapses all copies onto one object. The
+ * `??=` runs `createContext` at most once per process.
+ */
+export const BloomThemeContext: React.Context<BloomThemeContextValue | null> =
+  (globalThis.__oxyhq_bloom_theme_context__ ??=
+    createContext<BloomThemeContextValue | null>(null));
 
 export interface BloomThemeProviderProps {
   /** Controlled mode. Omit to use Bloom's internal state (with optional persistence). */
