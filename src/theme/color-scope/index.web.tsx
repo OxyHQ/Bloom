@@ -3,27 +3,20 @@ import React, { Children, cloneElement, isValidElement, useContext, useMemo } fr
 import { BloomThemeContext, type BloomThemeContextValue } from '../BloomThemeProvider';
 import { buildTheme } from '../build-theme';
 import type { AppColorName } from '../color-presets';
-import { toWebColorValue } from '../preset-vars';
-import { buildScopeVars } from './style-builder';
+import { getResolvedTokens } from '../token-registry';
 
 /**
- * `buildScopeVars` returns the preset's tokens as platform-agnostic raw HSL
- * triples (shared with the native write path). On web they are scoped onto an
- * element's inline `style`, where Tailwind v4's compiled utilities read them as
- * `var(--x)` directly — so the base tokens MUST be full CSS colors. Wrap each
- * raw triple in `hsl(...)` via `toWebColorValue`; `--color-*` rgb vars and
- * non-color tokens pass through. See `toWebColorValue` in `../preset-vars`.
+ * `getResolvedTokens` returns every canonical token already resolved to an sRGB
+ * `rgb(...)` string — the SAME pipeline the document-root web writer and the
+ * native writer use. Scoped onto an element's inline `style`, Tailwind v4's
+ * compiled utilities read these as `var(--x)` directly, so each base token is a
+ * full CSS color with no per-value wrapping needed.
  */
 function buildWebScopeVars(
   colorPreset: AppColorName,
   mode: 'light' | 'dark',
 ): React.CSSProperties {
-  const raw = buildScopeVars(colorPreset, mode);
-  const out: Record<string, string> = {};
-  for (const [key, value] of Object.entries(raw)) {
-    out[key] = toWebColorValue(key, value);
-  }
-  return out as React.CSSProperties;
+  return getResolvedTokens(colorPreset, mode) as React.CSSProperties;
 }
 
 export interface BloomColorScopeProps {

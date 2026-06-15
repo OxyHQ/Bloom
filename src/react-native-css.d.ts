@@ -20,9 +20,9 @@
 declare module 'react-native-css/native-internal' {
   /**
    * A leaf style value. Mirrors react-native-css's `compiler.types`
-   * `StyleDescriptor`. Bloom only ever writes string color values (raw HSL
-   * triples for the `--*` vars, sRGB `rgb(...)` for the resolved `--color-*`
-   * vars), but the family is typed against the full descriptor union.
+   * `StyleDescriptor`. Bloom only ever writes string color values (sRGB
+   * `rgb(...)` strings from the single canonical token pipeline), but the family
+   * is typed against the full descriptor union.
    */
   type StyleDescriptor =
     | string

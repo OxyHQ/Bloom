@@ -16,12 +16,7 @@ export {
   HEX_TO_APP_COLOR,
   hexToAppColorName,
 } from './color-presets';
-export {
-  getPresetVars,
-  applyPresetVarsToDocument,
-  toWebColorValue,
-} from './preset-vars';
-export type { PresetVarsOptions } from './preset-vars';
+export { getPresetVars, applyPresetVarsToDocument } from './preset-vars';
 export { applyDarkClass } from './apply-dark-class';
 export { setColorSchemeSafe } from './set-color-scheme-safe';
 export { initCssInteropDarkMode } from './init-css-interop';

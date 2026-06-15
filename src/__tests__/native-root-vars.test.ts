@@ -52,16 +52,17 @@ describe('applyNativeRootVars (native variant)', () => {
       applyNativeRootVars('blue', 'light');
     });
 
-    // Keys are bare (no `--`), and the raw HSL triple is present unwrapped.
+    // Keys are bare (no `--`), and the value is the single canonical sRGB
+    // `rgb(...)` color from `getResolvedTokens` (`205 87% 53%` → `rgb(31 153 239)`).
+    // sRGB is the space react-native-css's `color-mix` resolver registers, so
+    // alpha utilities (`bg-primary/10`) resolve on native.
     expect(sets).toHaveProperty('primary');
     expect(sets).not.toHaveProperty('--primary');
-    expect(sets.primary).toEqual([['205 87% 53%']]);
+    expect(sets.primary).toEqual([['rgb(31 153 239)']]);
 
-    // Resolved Tailwind v4 `--color-*` vars are written too, also bare-keyed,
-    // and as sRGB `rgb(...)` (not `hsl(...)`) so native `color-mix` alpha
-    // utilities resolve — `205 87% 53%` → `rgb(31 153 239)`.
-    expect(sets).toHaveProperty('color-primary');
-    expect(sets['color-primary']).toEqual([['rgb(31 153 239)']]);
+    // The legacy resolved-color companion universe is gone — the base token IS
+    // rgb, so no `color-primary` companion is written.
+    expect(sets).not.toHaveProperty('color-primary');
 
     // Every value is a single-element value-array `[[value]]` of strings.
     for (const value of Object.values(sets)) {

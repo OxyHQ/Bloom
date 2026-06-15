@@ -1,7 +1,7 @@
 import type React from 'react';
 import { Platform, type StyleProp, type ViewStyle } from 'react-native';
 
-import { getPresetVars } from '../preset-vars';
+import { getResolvedTokens } from '../token-registry';
 import type { AppColorName } from '../color-presets';
 import { lazyRequire } from '../../utils/lazy-require';
 
@@ -25,14 +25,17 @@ const getNativeWindVars = lazyRequire<NativeWindVarsModule>('nativewind');
 
 /**
  * Build the CSS custom-property map for a preset, ready to be applied to a
- * subtree. Always includes the resolved `--color-*` vars so Tailwind v4
- * `@theme` utilities (e.g. `bg-background`) honour the scope.
+ * subtree. Every token is resolved to an sRGB `rgb(...)` string via
+ * `getResolvedTokens` — the single canonical token pipeline shared by web and
+ * native — so Tailwind v4 `@theme` utilities (e.g. `bg-background`) and
+ * `color-mix`-based alpha utilities (`bg-primary/10`) both resolve against the
+ * same color values. Keys retain the leading `--`.
  */
 export function buildScopeVars(
   colorPreset: AppColorName,
   mode: 'light' | 'dark',
 ): Record<string, string> {
-  return getPresetVars(colorPreset, mode, { includeResolvedColorVars: true });
+  return getResolvedTokens(colorPreset, mode);
 }
 
 /**

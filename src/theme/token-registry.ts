@@ -59,8 +59,7 @@ export type CanonicalToken = (typeof CANONICAL_TOKENS)[number];
  * tail `H S% L% / A`. The value starts with a digit (or a leading `-`) and
  * carries at least one `%` (the saturation/lightness units), which distinguishes
  * a bare triple from an already-resolved color (`rgb(...)`, `#fff`) or a
- * unitless/length token (`--radius: 0.5rem`). Kept in sync with the
- * `RAW_HSL_TRIPLE` matcher in `preset-vars.ts`.
+ * unitless/length token (`--radius: 0.5rem`).
  */
 const RAW_HSL_TRIPLE = /^-?\d[\d.]*\s+[\d.]+%/;
 
@@ -68,16 +67,17 @@ const RAW_HSL_TRIPLE = /^-?\d[\d.]*\s+[\d.]+%/;
  * Convert a shadcn-style HSL triple (`'H S% L%'`, optionally with an alpha tail
  * `'H S% L% / A'`) into an sRGB `rgb(...)` string.
  *
- * EXACT replica of `hslTripletToRgb` in `preset-vars.ts` — same parsing, same
- * HSL→sRGB math, same integer rounding, same modern space-separated output
- * (`rgb(r g b)` / `rgb(r g b / a)`). This is deliberate: the parity oracle
- * (`getPresetVars(..., { includeResolvedColorVars: true })`) resolves its
- * `--color-*` vars with `hslTripletToRgb`, converting raw triples HSL→sRGB
- * DIRECTLY. To reproduce that palette with ΔE = 0 the registry must run the
- * IDENTICAL conversion — routing through OKLCH would introduce rounding drift.
+ * Standard HSL→sRGB math with integer-rounded channels and modern
+ * space-separated output (`rgb(r g b)` / `rgb(r g b / a)`). This is the SINGLE
+ * conversion the whole library uses — web document writes, web scope vars, and
+ * native `rootVariables` all flow through `getResolvedTokens`, which calls this.
+ * The byte-for-byte output is frozen by the golden parity fixture
+ * (`__fixtures__/golden-resolved-tokens.json`), so the visible palette cannot
+ * drift.
  *
  * Task 2's `oklchToSrgb` (in `color-space.ts`) stays available for a FUTURE
- * OKLCH re-authoring of the seed palette; it is intentionally NOT used here.
+ * OKLCH re-authoring of the seed palette; it is intentionally NOT used here —
+ * routing through OKLCH would shift the rounded channels off the frozen palette.
  *
  * Pure function — no side effects.
  */
@@ -133,13 +133,16 @@ export function hslToSrgb(triple: string): string {
 /**
  * Resolve a preset's canonical runtime color tokens to sRGB `rgb(...)` strings.
  *
- * Takes the raw triple map from `getPresetVars(preset, mode)` (base + extended,
- * WITHOUT the `--color-*` companions) and converts every value that looks like
- * an HSL triple via `hslToSrgb`. Non-triple values (already-resolved colors,
- * length/radius tokens) pass through unchanged. Keys retain the `--` prefix.
+ * THE single source of runtime color tokens for the whole library, on BOTH web
+ * and native. Takes the raw triple map from `getPresetVars(preset, mode)` (base
+ * + extended) and converts every value that looks like an HSL triple via
+ * `hslToSrgb`. Non-triple values (already-resolved colors, length/radius tokens)
+ * pass through unchanged. Keys retain the `--` prefix, so each `--x` token IS a
+ * full CSS color — no resolved-color companion universe, no per-platform wrapping.
  *
- * The result reproduces the current palette EXACTLY (ΔE = 0 against the golden
- * oracle) because `hslToSrgb` mirrors the oracle's `hslTripletToRgb` math.
+ * The result is frozen by the golden parity fixture
+ * (`__fixtures__/golden-resolved-tokens.json`), guaranteeing the visible palette
+ * matches the previous resolved-color pipeline byte-for-byte.
  */
 export function getResolvedTokens(
   preset: AppColorName,

@@ -6,17 +6,17 @@ export type AppColorName = 'teal' | 'blue' | 'green' | 'amber' | 'yellow' | 'red
  * Keys carry a leading `--` for historical reasons (shadcn-style CSS variable
  * names) — keep in mind the values are platform-agnostic **raw HSL triples**
  * (e.g. `'185 100% 20%'` or `'185 100% 20% / 0.5'`), not CSS-resolved colors.
- * The same map drives both:
- *   - the web layer: the base `--x` tokens are wrapped to full `hsl(...)` colors
- *     (via `toWebColorValue`) before being written to `document.documentElement`
- *     / a `BloomColorScope` element, so `var(--x)` — the form Tailwind v4
- *     `@theme inline` compiles its color utilities to — resolves to a valid
- *     color directly; the resolved `--color-*` companions are written as
- *     `rgb(...)`, and
+ * The single canonical resolver `getResolvedTokens` (in `token-registry.ts`)
+ * converts this raw map to sRGB `rgb(...)` for every runtime write — the same
+ * values drive BOTH layers:
+ *   - the web layer: `getResolvedTokens`'s `rgb(...)` strings are written to
+ *     `document.documentElement` / a `BloomColorScope` element, so `var(--x)` —
+ *     the form Tailwind v4 `@theme inline` compiles its color utilities to —
+ *     resolves to a valid color directly, and
  *   - the native layer (`buildTheme` resolves the raw triples into `hsl(...)`
  *     strings consumable by React Native styles; `native-root-vars.native.ts`
- *     writes the raw triples through bloom's `hsl(var(--x))` `global.css`
- *     indirection).
+ *     writes the same canonical `rgb(...)` values into react-native-css's
+ *     `rootVariables` family).
  *
  * The `--` prefix is an implementation detail we will drop in a future major.
  */

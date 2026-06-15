@@ -16,8 +16,8 @@
 // directive ships raw in `src/` (Bloom publishes `files: ["src", "lib"]`).
 import { rootVariables } from 'react-native-css/native-internal';
 
-import { buildScopeVars } from './color-scope/style-builder';
 import { type AppColorName } from './color-presets';
+import { getResolvedTokens } from './token-registry';
 
 /**
  * Publish the active color preset's CSS custom properties into react-native-css's
@@ -41,18 +41,28 @@ import { type AppColorName } from './color-presets';
  * `BloomThemeProvider`'s `VariableContextProvider` only feeds path #1, so the navigator
  * host and every portal/modal — which render outside that subtree — never see the
  * preset vars and fall through to `rootVariables`/`universalVariables`. By default those
- * families hold only react-native-css's own `__rn-css-rem`/`__rn-css-color` entries
- * (Bloom's `global.css` defines the `hsl(var(--primary))` indirection but not the HSL
- * triples themselves — those are injected at runtime), so the whole tree below the
- * navigator renders monochrome. Writing the vars into `rootVariables` here is the
- * exact same mechanism react-native-css uses for compiled `:root {}` / `@theme` vars
- * (`StyleCollection.inject` does `rootVariables(name).set(valueArray)`), so portaled
- * content resolves the palette identically regardless of React-tree position.
+ * families hold only react-native-css's own `__rn-css-rem`/`__rn-css-color` entries, so
+ * the whole tree below the navigator renders monochrome until the palette is injected at
+ * runtime. Writing the vars into `rootVariables` here is the exact same mechanism
+ * react-native-css uses for compiled `:root {}` / `@theme` vars (`StyleCollection.inject`
+ * does `rootVariables(name).set(valueArray)`), so portaled content resolves the palette
+ * identically regardless of React-tree position.
  *
- * The raw tokens are written as HSL triples (`primary: '205 87% 53%'`) and the
- * resolved Tailwind v4 `--color-*` vars as sRGB `rgb(...)` (`color-primary:
- * 'rgb(31 153 239)'`) — the latter so `color-mix`-based alpha utilities resolve
- * on native (see `getPresetVars` / `hslTripletToRgb`).
+ * Consumer contract (CRITICAL — single canonical color pipeline)
+ * -------------------------------------------------------------
+ * Each base `--x` token is now written as a FULL `rgb(...)` color (not a raw HSL
+ * triple). A consuming app's Tailwind `@theme` must therefore reference these
+ * base tokens DIRECTLY (its Tailwind color var equals `var(--x)`) and must NOT
+ * wrap them in `hsl(...)`. The legacy `hsl(var(--x))` indirection (which assumed
+ * a raw triple) would produce the invalid `hsl(rgb(...))` and must be removed in
+ * every consumer. Web and native now share this one contract.
+ *
+ * Every token is written as an sRGB `rgb(...)` string from the single canonical
+ * token pipeline (`getResolvedTokens`) — `primary: 'rgb(31 153 239)'` — the SAME
+ * values web writes to `document.documentElement`. sRGB is the space
+ * react-native-css's `color-mix` resolver registers, so `color-mix`-based alpha
+ * utilities (`bg-primary/10`) resolve on native; full (non-alpha) utilities
+ * resolve directly through bloom's `global.css` `var(--x)` indirection.
  *
  * Why a STATIC `import`, not a runtime `require` (critical)
  * ---------------------------------------------------------
@@ -82,15 +92,15 @@ import { type AppColorName } from './color-presets';
  * `shared.rootVariables[name]`, and `@property --x` goes through
  * `name.startsWith("--") ? name.slice(2) : name`. The lookup side matches: a `var(--x)`
  * reference compiles to `[{}, "var", ident.slice(2)]`, so `varResolver` looks up the
- * bare name. `buildScopeVars` returns keys WITH the `--` prefix, so we strip it before
- * writing each entry.
+ * bare name. `getResolvedTokens` returns keys WITH the `--` prefix, so we strip it
+ * before writing each entry.
  *
  * Value shape
  * -----------
  * Each entry is a `VariableValue[]` — an array of `[value, mediaCondition?]` tuples.
  * Bloom's preset vars are unconditional, so each is a single-element `[[value]]`, e.g.
- * `rootVariables('primary').set([['205 87% 53%']])`. This is the same shape the compiler
- * emits for unconditional `:root` vars.
+ * `rootVariables('primary').set([['rgb(31 153 239)']])`. This is the same shape the
+ * compiler emits for unconditional `:root` vars.
  *
  * This is native-only and additive: the `VariableContextProvider` wrapper stays (it is
  * the correct, scoped mechanism for `BloomColorScope` subtree overrides and harmlessly
@@ -114,9 +124,9 @@ import { type AppColorName } from './color-presets';
 export function applyNativeRootVars(colorPreset: AppColorName, mode: 'light' | 'dark'): void {
   if (typeof rootVariables !== 'function') return;
 
-  const vars = buildScopeVars(colorPreset, mode);
+  const vars = getResolvedTokens(colorPreset, mode);
   for (const [key, value] of Object.entries(vars)) {
-    // The family is keyed by the bare name; `buildScopeVars` keys include `--`.
+    // The family is keyed by the bare name; `getResolvedTokens` keys include `--`.
     const name = key.startsWith('--') ? key.slice(2) : key;
     rootVariables(name).set([[value]]);
   }

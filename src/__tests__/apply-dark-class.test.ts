@@ -4,14 +4,13 @@
 
 import { Platform } from 'react-native';
 
-import { applyColorPresetVars, toWebColorValue } from '../theme/apply-dark-class';
+import { applyColorPresetVars } from '../theme/apply-dark-class';
 
-// `applyColorPresetVars` is the WEB write path that feeds the live document. It
-// regressed by writing the base `--x` tokens as bare HSL triples (`185 50% 5%`),
-// which the shadcn/Tailwind-v4 web apps consume directly as
-// `background-color: var(--background)` → invalid CSS → transparent → unstyled
-// app. These tests pin the corrected contract: base tokens are full `hsl(...)`
-// colors, `--color-*` companions stay `rgb(...)`.
+// `applyColorPresetVars` is the WEB write path that feeds the live document. The
+// single canonical token pipeline (`getResolvedTokens`) resolves every base
+// token to a full `rgb(...)` color, so the shadcn/Tailwind-v4 web apps that
+// consume `background-color: var(--background)` directly get a valid color (the
+// production incident was a bare HSL triple here). These tests pin that contract.
 
 describe('applyColorPresetVars — web document var contract', () => {
   const originalOS = Platform.OS;
@@ -26,11 +25,7 @@ describe('applyColorPresetVars — web document var contract', () => {
     document.documentElement.removeAttribute('style');
   });
 
-  it('re-exports toWebColorValue (helper is consumed by the web write paths)', () => {
-    expect(toWebColorValue('--background', '185 50% 5%')).toBe('hsl(185 50% 5%)');
-  });
-
-  it('writes base tokens to the document as full hsl() colors, not bare triples', () => {
+  it('writes base tokens to the document as full rgb() colors, not bare triples', () => {
     applyColorPresetVars('oxy', 'dark');
 
     const style = document.documentElement.style;
@@ -39,22 +34,32 @@ describe('applyColorPresetVars — web document var contract', () => {
     const foreground = style.getPropertyValue('--foreground').trim();
 
     expect(background).not.toBe('');
-    // The exact bug: a bare `H S% L%` triple. Must be a wrapped color now.
-    expect(background.startsWith('hsl(')).toBe(true);
+    // The exact bug: a bare `H S% L%` triple. Must be a resolved color now.
+    expect(background.startsWith('rgb(')).toBe(true);
     expect(background.endsWith(')')).toBe(true);
     expect(/^-?\d[\d.]*\s+[\d.]+%/.test(background)).toBe(false);
 
-    expect(primary.startsWith('hsl(')).toBe(true);
-    expect(foreground.startsWith('hsl(')).toBe(true);
+    expect(primary.startsWith('rgb(')).toBe(true);
+    expect(foreground.startsWith('rgb(')).toBe(true);
   });
 
-  it('keeps the resolved --color-* vars as rgb() full colors', () => {
+  it('writes the extended tokens (card/chart/sidebar) as rgb() colors too', () => {
     applyColorPresetVars('oxy', 'dark');
 
-    const colorPrimary = document.documentElement.style
-      .getPropertyValue('--color-primary')
-      .trim();
-    expect(colorPrimary.startsWith('rgb(')).toBe(true);
+    const style = document.documentElement.style;
+    expect(style.getPropertyValue('--card').trim().startsWith('rgb(')).toBe(true);
+    expect(style.getPropertyValue('--sidebar-primary').trim().startsWith('rgb(')).toBe(true);
+  });
+
+  it('does NOT emit any legacy resolved-color companion vars', () => {
+    applyColorPresetVars('oxy', 'dark');
+    const style = document.documentElement.style;
+    // The base `--x` token IS the color now; no resolved-color companion universe
+    // should be written. Scan every property that was set rather than referencing
+    // the legacy name literally.
+    const prefix = `--${'color'}-`;
+    const written = Array.from({ length: style.length }, (_, i) => style.item(i));
+    expect(written.some((name) => name.startsWith(prefix))).toBe(false);
   });
 
   it('no-ops on native (does not touch the document)', () => {
