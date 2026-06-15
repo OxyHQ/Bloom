@@ -40,8 +40,16 @@ export const View = createComponent('View');
 export const Text = createComponent('Text');
 export const Pressable = createComponent('Pressable');
 export const TouchableOpacity = createComponent('TouchableOpacity');
+export const TextInput = createComponent('TextInput');
 export const Modal = createComponent('Modal');
 export const ActivityIndicator = createComponent('ActivityIndicator');
+
+export const PanResponder = {
+  create: (config: Record<string, unknown>) => ({
+    panHandlers: {},
+    _config: config,
+  }),
+};
 export const ScrollView = React.forwardRef((props: Record<string, unknown>, ref: unknown) => {
   return React.createElement('ScrollView', { ref, ...props }, props.children as React.ReactNode);
 });
@@ -54,6 +62,12 @@ export const Animated = {
   Value: class AnimatedValue {
     _value: number;
     constructor(val: number) { this._value = val; }
+    setValue(val: number) { this._value = val; }
+    interpolate(_config: Record<string, unknown>) {
+      // Return a stand-in animated node; tests only assert structure, not
+      // interpolated output.
+      return new AnimatedValue(this._value);
+    }
   },
   spring: (_val: unknown, _config: Record<string, unknown>) => ({
     start: (cb?: () => void) => cb?.(),

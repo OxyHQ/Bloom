@@ -67,6 +67,16 @@ export { IconCircle } from './icon-circle';
 export * as TextField from './text-field';
 export * as SegmentedControl from './segmented-control';
 export { SearchInput } from './search-input';
+export { Label } from './label';
+export type { LabelProps } from './label';
+export { Field } from './field';
+export type { FieldProps } from './field';
+export { InputGroup } from './input-group';
+export type { InputGroupProps, InputGroupAddonProps } from './input-group';
+export { Slider } from './slider';
+export type { SliderProps } from './slider';
+export { Combobox } from './combobox';
+export type { ComboboxProps, ComboboxOption } from './combobox';
 
 // Bottom sheet
 export { BottomSheet } from './bottom-sheet';
@@ -82,6 +92,10 @@ export * as Accordion from './accordion';
 
 // Settings / Grouped list
 export * from './settings-list';
+export { Item } from './item';
+export type { ItemProps } from './item';
+export { Kbd } from './kbd';
+export type { KbdProps } from './kbd';
 
 // Overlay components
 export * as Admonition from './admonition';
@@ -89,6 +103,15 @@ export * as Menu from './menu';
 export * as Tooltip from './tooltip';
 export * as Select from './select';
 export * as ContextMenu from './context-menu';
+export * as Popover from './popover';
+export { AlertDialog, AlertDialogHost, confirm } from './alert-dialog';
+export type {
+  AlertDialogProps,
+  AlertDialogActionStyle,
+  ConfirmOptions,
+} from './alert-dialog';
+export { Command } from './command';
+export type { CommandProps, CommandItem } from './command';
 
 // Code (mono)
 export * as Code from './code';

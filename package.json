@@ -1,6 +1,6 @@
 {
   "name": "@oxyhq/bloom",
-  "version": "0.6.24",
+  "version": "0.7.0",
   "description": "Bloom UI — Oxy ecosystem component library for React Native + Expo + Web",
   "main": "lib/commonjs/index.js",
   "module": "lib/module/index.js",
@@ -431,6 +431,136 @@
         "default": "./lib/commonjs/context-menu/index.js"
       }
     },
+    "./popover": {
+      "react-native": "./src/popover/index.tsx",
+      "browser": {
+        "types": "./lib/typescript/module/popover/index.web.d.ts",
+        "import": "./lib/module/popover/index.web.js",
+        "require": "./lib/commonjs/popover/index.web.js"
+      },
+      "import": {
+        "types": "./lib/typescript/module/popover/index.d.ts",
+        "default": "./lib/module/popover/index.js"
+      },
+      "require": {
+        "types": "./lib/typescript/commonjs/popover/index.d.ts",
+        "default": "./lib/commonjs/popover/index.js"
+      }
+    },
+    "./alert-dialog": {
+      "react-native": "./src/alert-dialog/index.ts",
+      "browser": {
+        "types": "./lib/typescript/module/alert-dialog/index.web.d.ts",
+        "import": "./lib/module/alert-dialog/index.web.js",
+        "require": "./lib/commonjs/alert-dialog/index.web.js"
+      },
+      "import": {
+        "types": "./lib/typescript/module/alert-dialog/index.d.ts",
+        "default": "./lib/module/alert-dialog/index.js"
+      },
+      "require": {
+        "types": "./lib/typescript/commonjs/alert-dialog/index.d.ts",
+        "default": "./lib/commonjs/alert-dialog/index.js"
+      }
+    },
+    "./combobox": {
+      "react-native": "./src/combobox/index.ts",
+      "browser": {
+        "types": "./lib/typescript/module/combobox/index.web.d.ts",
+        "import": "./lib/module/combobox/index.web.js",
+        "require": "./lib/commonjs/combobox/index.web.js"
+      },
+      "import": {
+        "types": "./lib/typescript/module/combobox/index.d.ts",
+        "default": "./lib/module/combobox/index.js"
+      },
+      "require": {
+        "types": "./lib/typescript/commonjs/combobox/index.d.ts",
+        "default": "./lib/commonjs/combobox/index.js"
+      }
+    },
+    "./command": {
+      "react-native": "./src/command/index.ts",
+      "browser": {
+        "types": "./lib/typescript/module/command/index.web.d.ts",
+        "import": "./lib/module/command/index.web.js",
+        "require": "./lib/commonjs/command/index.web.js"
+      },
+      "import": {
+        "types": "./lib/typescript/module/command/index.d.ts",
+        "default": "./lib/module/command/index.js"
+      },
+      "require": {
+        "types": "./lib/typescript/commonjs/command/index.d.ts",
+        "default": "./lib/commonjs/command/index.js"
+      }
+    },
+    "./label": {
+      "react-native": "./src/label/index.ts",
+      "import": {
+        "types": "./lib/typescript/module/label/index.d.ts",
+        "default": "./lib/module/label/index.js"
+      },
+      "require": {
+        "types": "./lib/typescript/commonjs/label/index.d.ts",
+        "default": "./lib/commonjs/label/index.js"
+      }
+    },
+    "./kbd": {
+      "react-native": "./src/kbd/index.ts",
+      "import": {
+        "types": "./lib/typescript/module/kbd/index.d.ts",
+        "default": "./lib/module/kbd/index.js"
+      },
+      "require": {
+        "types": "./lib/typescript/commonjs/kbd/index.d.ts",
+        "default": "./lib/commonjs/kbd/index.js"
+      }
+    },
+    "./item": {
+      "react-native": "./src/item/index.ts",
+      "import": {
+        "types": "./lib/typescript/module/item/index.d.ts",
+        "default": "./lib/module/item/index.js"
+      },
+      "require": {
+        "types": "./lib/typescript/commonjs/item/index.d.ts",
+        "default": "./lib/commonjs/item/index.js"
+      }
+    },
+    "./field": {
+      "react-native": "./src/field/index.ts",
+      "import": {
+        "types": "./lib/typescript/module/field/index.d.ts",
+        "default": "./lib/module/field/index.js"
+      },
+      "require": {
+        "types": "./lib/typescript/commonjs/field/index.d.ts",
+        "default": "./lib/commonjs/field/index.js"
+      }
+    },
+    "./input-group": {
+      "react-native": "./src/input-group/index.ts",
+      "import": {
+        "types": "./lib/typescript/module/input-group/index.d.ts",
+        "default": "./lib/module/input-group/index.js"
+      },
+      "require": {
+        "types": "./lib/typescript/commonjs/input-group/index.d.ts",
+        "default": "./lib/commonjs/input-group/index.js"
+      }
+    },
+    "./slider": {
+      "react-native": "./src/slider/index.ts",
+      "import": {
+        "types": "./lib/typescript/module/slider/index.d.ts",
+        "default": "./lib/module/slider/index.js"
+      },
+      "require": {
+        "types": "./lib/typescript/commonjs/slider/index.d.ts",
+        "default": "./lib/commonjs/slider/index.js"
+      }
+    },
     "./card": {
       "react-native": "./src/card/index.ts",
       "import": {
@@ -594,6 +724,16 @@
     "accordion",
     "code",
     "fonts",
+    "popover",
+    "command",
+    "combobox",
+    "alert-dialog",
+    "slider",
+    "field",
+    "input-group",
+    "label",
+    "kbd",
+    "item",
     "ai"
   ],
   "repository": {
