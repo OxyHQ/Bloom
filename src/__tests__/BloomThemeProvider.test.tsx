@@ -72,8 +72,8 @@ describe('BloomThemeProvider', () => {
         <ThemeDisplay />
       </BloomThemeProvider>,
     );
-    // Blue preset primary is HSL(205, 87%, 53%) derived from --primary CSS var
-    expect(getByTestId('primary').props.children).toBe('hsl(205, 87%, 53%)');
+    // Blue preset primary is HSL(205, 87%, 53%) → canonical sRGB rgb(31 153 239)
+    expect(getByTestId('primary').props.children).toBe('rgb(31 153 239)');
   });
 
   it('generates different background colors for light and dark modes', () => {
@@ -135,7 +135,8 @@ describe('useThemeColor', () => {
         <ColorDisplay colorKey="primary" />
       </BloomThemeProvider>,
     );
-    expect(getByTestId('color').props.children).toBe('hsl(185, 100%, 20%)');
+    // teal preset primary HSL(185, 100%, 20%) → canonical sRGB rgb(0 94 102)
+    expect(getByTestId('color').props.children).toBe('rgb(0 94 102)');
   });
 });
 

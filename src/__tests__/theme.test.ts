@@ -50,12 +50,12 @@ describe('Theme system', () => {
 
   describe('buildTheme primaryForeground', () => {
     it('resolves a readable foreground for the primary fill per preset', () => {
-      // blue's --primary-foreground is `0 0% 100%` → white
-      expect(buildTheme('blue', 'light').colors.primaryForeground).toBe('hsl(0, 0%, 100%)');
-      expect(buildTheme('blue', 'dark').colors.primaryForeground).toBe('hsl(0, 0%, 100%)');
-      // yellow's --primary-foreground is `0 0% 0%` → black
-      expect(buildTheme('yellow', 'light').colors.primaryForeground).toBe('hsl(0, 0%, 0%)');
-      expect(buildTheme('yellow', 'dark').colors.primaryForeground).toBe('hsl(0, 0%, 0%)');
+      // blue's --primary-foreground is `0 0% 100%` → white (canonical sRGB rgb)
+      expect(buildTheme('blue', 'light').colors.primaryForeground).toBe('rgb(255 255 255)');
+      expect(buildTheme('blue', 'dark').colors.primaryForeground).toBe('rgb(255 255 255)');
+      // yellow's --primary-foreground is `0 0% 0%` → black (canonical sRGB rgb)
+      expect(buildTheme('yellow', 'light').colors.primaryForeground).toBe('rgb(0 0 0)');
+      expect(buildTheme('yellow', 'dark').colors.primaryForeground).toBe('rgb(0 0 0)');
     });
 
     it('sets a primaryForeground for every preset in both modes', () => {

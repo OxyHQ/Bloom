@@ -14,9 +14,12 @@ export interface ThemeColors {
 
   primary: string;
   primaryForeground: string;
+  /** Preset accent tint (`--accent`) — a soft brand-tinted surface, NOT the page surface. */
   primaryLight: string;
+  /** Focus-ring shade (`--ring`) — the preset's emphasized ring/border color, NOT the page background. */
   primaryDark: string;
 
+  /** Preset secondary surface (`--secondary`) — a muted companion surface, NOT a mirror of `primary`. */
   secondary: string;
 
   tint: string;
