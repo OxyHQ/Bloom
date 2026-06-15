@@ -1,10 +1,11 @@
 type SetCall = ReadonlyArray<readonly [string]>;
 
 /**
- * Verifies the native/default variant `theme/native-root-vars.ts` publishes the
+ * Verifies the native variant `theme/native-root-vars.native.ts` publishes the
  * active preset into react-native-css's GLOBAL `rootVariables` family with the
  * exact keying and value shape react-native-css itself uses for compiled `:root`
- * vars, and that the web fork `theme/native-root-vars.web.ts` is an inert no-op.
+ * vars, and that BOTH the platform-neutral default (`theme/native-root-vars.ts`)
+ * and the web fork (`theme/native-root-vars.web.ts`) are inert no-ops.
  *
  *  - keys are written WITHOUT the leading `--` (the family is keyed by the bare
  *    name — confirmed against react-native-css@3.0.7's compiler, which stores
@@ -12,6 +13,11 @@ type SetCall = ReadonlyArray<readonly [string]>;
  *  - each value is a single-element value-array `[[value]]` (`VariableValue[]`);
  *  - the native variant reaches react-native-css via a STATIC ESM import (so
  *    Metro resolves the `module` build — the SAME family the renderer reads);
+ *  - the default variant never imports react-native-css and writes nothing — it
+ *    is what `tsc` and non-Metro web bundlers (Vite/Rolldown) resolve, so
+ *    confining the `react-native-css/native-internal` import to the `.native`
+ *    variant keeps web bundling resolvable AND a NativeWind-4 consumer's `tsc`
+ *    from failing with TS2307;
  *  - the web variant never imports react-native-css and writes nothing.
  *
  * react-native-css is NOT a Bloom dependency (it arrives transitively via the
@@ -40,7 +46,7 @@ describe('applyNativeRootVars (native variant)', () => {
         { virtual: true },
       );
 
-      const { applyNativeRootVars } = require('../theme/native-root-vars') as {
+      const { applyNativeRootVars } = require('../theme/native-root-vars.native') as {
         applyNativeRootVars: (preset: string, mode: 'light' | 'dark') => void;
       };
       applyNativeRootVars('blue', 'light');
@@ -81,7 +87,7 @@ describe('applyNativeRootVars (native variant)', () => {
           }),
           { virtual: true },
         );
-        const { applyNativeRootVars } = require('../theme/native-root-vars') as {
+        const { applyNativeRootVars } = require('../theme/native-root-vars.native') as {
           applyNativeRootVars: (preset: string, mode: 'light' | 'dark') => void;
         };
         applyNativeRootVars('teal', mode);
@@ -99,10 +105,30 @@ describe('applyNativeRootVars (native variant)', () => {
         () => ({ rootVariables: undefined }),
         { virtual: true },
       );
+      const { applyNativeRootVars } = require('../theme/native-root-vars.native') as {
+        applyNativeRootVars: (preset: string, mode: 'light' | 'dark') => void;
+      };
+      expect(() => applyNativeRootVars('blue', 'light')).not.toThrow();
+    });
+  });
+});
+
+describe('applyNativeRootVars (default variant - tsc / web-bundler resolution)', () => {
+  beforeEach(() => {
+    jest.resetModules();
+  });
+
+  it('no-ops without importing react-native-css (keeps web bundling + tsc green)', () => {
+    // The platform-neutral default is what a consumer's `tsc` and non-Metro web
+    // bundlers (Vite/Rolldown) resolve. It must never touch react-native-css.
+    // Confining the `react-native-css/native-internal` import to the `.native`
+    // sibling fixes both the downstream TS2307 AND the Vite/Rolldown resolve fail.
+    jest.isolateModules(() => {
       const { applyNativeRootVars } = require('../theme/native-root-vars') as {
         applyNativeRootVars: (preset: string, mode: 'light' | 'dark') => void;
       };
       expect(() => applyNativeRootVars('blue', 'light')).not.toThrow();
+      expect(applyNativeRootVars('blue', 'light')).toBeUndefined();
     });
   });
 });
