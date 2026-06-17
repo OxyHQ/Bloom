@@ -10,9 +10,20 @@ import type {
 import type { Props as SVGIconProps } from '../icons/common';
 import type { DialogControlProps } from '../dialog/types';
 
+export type MenuAnchorRect = {
+  top: number;
+  left: number;
+  right: number;
+  bottom: number;
+  width: number;
+  height: number;
+};
+
 export type MenuContextType = {
   control: DialogControlProps;
   isOpen?: boolean;
+  triggerRef?: React.RefObject<unknown>;
+  dropdownRef?: React.RefObject<unknown>;
 };
 
 export type ItemContextType = {
@@ -27,6 +38,7 @@ export type TriggerChildProps = {
     pressed: boolean;
   };
   props: {
+    ref?: React.Ref<unknown>;
     onPress: () => void;
     onFocus?: () => void;
     onBlur?: () => void;

@@ -5,6 +5,7 @@ import React, {
   useCallback,
   useEffect,
   useId,
+  useLayoutEffect,
   useMemo,
   useRef,
   useState,
@@ -14,6 +15,7 @@ import { Pressable, StyleSheet, View, type StyleProp, type ViewStyle } from 'rea
 import { useTheme } from '../theme/use-theme';
 import { Text } from '../typography';
 import type { DialogControlProps } from '../dialog/types';
+import { Portal } from '../portal/index.web';
 import { createDropdownZIndex } from '../styles/z-index';
 import {
   MenuContext,
@@ -33,6 +35,8 @@ import type {
 export { useMenuContext };
 
 const menuZIndex = createDropdownZIndex();
+const VIEWPORT_GUTTER = 8;
+const MENU_OFFSET = 6;
 
 export type MenuControlProps = {
   id: string;
@@ -98,9 +102,16 @@ export function Root({
   const activeControl = control ?? defaultControl;
   const dialogControl = useMenuControlAsDialogControl(activeControl);
   const rootRef = useRef<View>(null);
+  const triggerRef = useRef<unknown>(null);
+  const dropdownRef = useRef<unknown>(null);
 
   const context = useMemo<MenuContextType>(
-    () => ({ control: dialogControl, isOpen: activeControl.isOpen }),
+    () => ({
+      control: dialogControl,
+      isOpen: activeControl.isOpen,
+      triggerRef,
+      dropdownRef,
+    }),
     [activeControl.isOpen, dialogControl],
   );
 
@@ -111,7 +122,9 @@ export function Root({
 
     const handlePointerDown = (event: PointerEvent) => {
       const rootNode = rootRef.current as unknown as HTMLElement | null;
-      if (rootNode?.contains(event.target as Node)) {
+      const dropdownNode = dropdownRef.current as HTMLElement | null;
+      const eventTarget = event.target as Node;
+      if (rootNode?.contains(eventTarget) || dropdownNode?.contains(eventTarget)) {
         return;
       }
       activeControl.close();
@@ -150,7 +163,7 @@ export function Trigger({
   role = 'button',
   hint,
 }: TriggerProps) {
-  const { control } = useMenuContext();
+  const { control, triggerRef } = useMenuContext();
   const [hovered, setHovered] = useState(false);
   const [focused, setFocused] = useState(false);
 
@@ -162,6 +175,7 @@ export function Trigger({
       pressed: false,
     },
     props: {
+      ref: triggerRef,
       onPress: () => control.open(),
       onFocus: () => setFocused(true),
       onBlur: () => setFocused(false),
@@ -181,29 +195,76 @@ export function Outer({
 }>) {
   const theme = useTheme();
   const context = useMenuContext();
-  const dropdownRef = useRef<View>(null);
+  const [position, setPosition] = useState<ViewStyle | null>(null);
+
+  useLayoutEffect(() => {
+    if (!context.isOpen || typeof window === 'undefined') {
+      return;
+    }
+
+    const triggerNode = context.triggerRef?.current as HTMLElement | null;
+    if (!triggerNode?.getBoundingClientRect) {
+      return;
+    }
+
+    const updatePosition = () => {
+      const rect = triggerNode.getBoundingClientRect();
+      const width = Math.max(180, rect.width);
+      const availableRight = window.innerWidth - VIEWPORT_GUTTER;
+      const left = Math.min(
+        Math.max(VIEWPORT_GUTTER, rect.right - width),
+        Math.max(VIEWPORT_GUTTER, availableRight - width),
+      );
+      const top = Math.min(
+        rect.bottom + MENU_OFFSET,
+        Math.max(VIEWPORT_GUTTER, window.innerHeight - VIEWPORT_GUTTER),
+      );
+
+      setPosition({
+        position: 'fixed' as 'absolute',
+        top,
+        left,
+        right: undefined,
+        bottom: undefined,
+        minWidth: width,
+      });
+    };
+
+    updatePosition();
+    window.addEventListener('resize', updatePosition);
+    window.addEventListener('scroll', updatePosition, true);
+
+    return () => {
+      window.removeEventListener('resize', updatePosition);
+      window.removeEventListener('scroll', updatePosition, true);
+    };
+  }, [context.isOpen, context.triggerRef]);
 
   if (!context.isOpen) {
     return null;
   }
 
   return (
-    <View
-      ref={dropdownRef}
-      style={[
-        styles.dropdown,
-        {
-          backgroundColor: theme.isDark
-            ? theme.colors.backgroundSecondary
-            : theme.colors.background,
-          borderColor: theme.colors.borderLight,
-          shadowColor: theme.colors.shadow,
-        },
-        style,
-      ]}
-    >
-      {children}
-    </View>
+    <Portal>
+      <View
+        ref={context.dropdownRef as React.Ref<View>}
+        style={[
+          styles.dropdown,
+          {
+            backgroundColor: theme.isDark
+              ? theme.colors.backgroundSecondary
+              : theme.colors.background,
+            borderColor: theme.colors.borderLight,
+            shadowColor: theme.colors.shadow,
+          },
+          style,
+          styles.portaledDropdown,
+          position,
+        ]}
+      >
+        {children}
+      </View>
+    </Portal>
   );
 }
 
@@ -336,6 +397,9 @@ const styles = StyleSheet.create({
     shadowRadius: 12,
     shadowOffset: { width: 0, height: 4 },
     minWidth: 180,
+  },
+  portaledDropdown: {
+    pointerEvents: 'auto',
   },
   webItem: {
     flexDirection: 'row',
