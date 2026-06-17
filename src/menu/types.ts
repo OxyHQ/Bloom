@@ -12,6 +12,7 @@ import type { DialogControlProps } from '../dialog/types';
 
 export type MenuContextType = {
   control: DialogControlProps;
+  isOpen?: boolean;
 };
 
 export type ItemContextType = {

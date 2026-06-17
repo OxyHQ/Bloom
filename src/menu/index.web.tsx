@@ -97,8 +97,8 @@ export function Root({
   const dialogControl = useMenuControlAsDialogControl(activeControl);
 
   const context = useMemo<MenuContextType>(
-    () => ({ control: dialogControl }),
-    [dialogControl],
+    () => ({ control: dialogControl, isOpen: activeControl.isOpen }),
+    [activeControl.isOpen, dialogControl],
   );
 
   return (
@@ -154,7 +154,12 @@ export function Outer({
   style?: StyleProp<ViewStyle>;
 }>) {
   const theme = useTheme();
+  const context = useMenuContext();
   const dropdownRef = useRef<View>(null);
+
+  if (!context.isOpen) {
+    return null;
+  }
 
   return (
     <View
