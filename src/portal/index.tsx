@@ -11,6 +11,7 @@ import React, {
   useState,
 } from 'react';
 import { View, StyleSheet, Platform } from 'react-native';
+import { Z_INDEX } from '../styles/z-index';
 
 type Component = React.ReactElement;
 
@@ -120,6 +121,6 @@ const styles = StyleSheet.create({
     right: 0,
     bottom: 0,
     pointerEvents: 'box-none',
-    zIndex: 999999,
+    zIndex: Z_INDEX.portalRoot,
   },
 });

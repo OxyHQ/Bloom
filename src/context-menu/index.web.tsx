@@ -19,6 +19,7 @@ import { useTheme } from '../theme/use-theme';
 import { Text } from '../typography';
 import { Portal } from '../portal/index.web';
 import { useInteractionState } from '../hooks/useInteractionState';
+import { createOverlayZIndex } from '../styles/z-index';
 import { ItemCtx, useItemContext } from './context';
 import type {
   ContextMenuContextValue,
@@ -30,6 +31,8 @@ import type {
   OuterProps,
   TriggerProps,
 } from './types';
+
+const contextMenuZIndex = createOverlayZIndex();
 
 // ---------------------------------------------------------------------------
 // Web-specific context (extends base with position)
@@ -327,13 +330,13 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
     bottom: 0,
-    zIndex: 50,
+    zIndex: contextMenuZIndex.backdrop,
     // Opt back in from the Portal root's `pointer-events: none`.
     pointerEvents: 'auto',
   },
   dropdown: {
     position: 'fixed' as 'absolute',
-    zIndex: 60,
+    zIndex: contextMenuZIndex.surface,
     borderRadius: 8,
     padding: 4,
     borderWidth: 1,

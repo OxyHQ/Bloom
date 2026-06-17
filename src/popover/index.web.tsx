@@ -11,6 +11,7 @@ import { Pressable, StyleSheet, View } from 'react-native';
 
 import { useTheme } from '../theme/use-theme';
 import { Portal } from '../portal/index.web';
+import { createOverlayZIndex } from '../styles/z-index';
 import { PopoverContext, usePopoverContext } from './context';
 import type {
   PopoverContentProps,
@@ -31,6 +32,8 @@ export type {
 } from './types';
 
 export { usePopoverContext };
+
+const popoverZIndex = createOverlayZIndex();
 
 /**
  * Web self-contained control. Unlike native (which proxies a `BottomSheet`
@@ -307,12 +310,12 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
     bottom: 0,
-    zIndex: 50,
+    zIndex: popoverZIndex.backdrop,
     pointerEvents: 'auto',
   },
   panel: {
     position: 'fixed' as 'absolute',
-    zIndex: 60,
+    zIndex: popoverZIndex.surface,
     borderRadius: 12,
     borderWidth: 1,
     paddingVertical: 4,

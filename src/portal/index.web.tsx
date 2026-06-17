@@ -15,6 +15,7 @@
  */
 import React, { Fragment, memo, useLayoutEffect, useState } from 'react';
 import { createPortal } from 'react-dom';
+import { Z_INDEX } from '../styles/z-index';
 
 /**
  * Render children into a stable container appended to `document.body`.
@@ -52,7 +53,7 @@ function getPortalRoot(): HTMLElement | null {
     root.style.pointerEvents = 'none';
     // Above the document flow; individual portaled components can use
     // their own z-index for stacking among themselves.
-    root.style.zIndex = '999999';
+    root.style.zIndex = String(Z_INDEX.portalRoot);
     document.body.appendChild(root);
   }
   return root;

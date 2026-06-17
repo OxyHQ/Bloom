@@ -3,6 +3,7 @@ import { Pressable, StyleSheet, View } from 'react-native';
 
 import { useTheme } from '../theme/use-theme';
 import { atoms as a, flatten } from '../styles';
+import { Z_INDEX } from '../styles/z-index';
 import {
   ARROW_SIZE,
   BUBBLE_MAX_WIDTH,
@@ -154,6 +155,6 @@ const webStyles = StyleSheet.create({
     left: 0,
     right: 0,
     bottom: 0,
-    zIndex: 40,
+    zIndex: Z_INDEX.tooltip,
   },
 });

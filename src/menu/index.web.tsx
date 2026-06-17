@@ -13,8 +13,8 @@ import { Pressable, StyleSheet, View, type StyleProp, type ViewStyle } from 'rea
 
 import { useTheme } from '../theme/use-theme';
 import { Text } from '../typography';
-import { Portal } from '../portal/index.web';
 import type { DialogControlProps } from '../dialog/types';
+import { createDropdownZIndex } from '../styles/z-index';
 import {
   MenuContext,
   ItemContext,
@@ -31,6 +31,8 @@ import type {
 } from './types';
 
 export { useMenuContext };
+
+const menuZIndex = createDropdownZIndex();
 
 export type MenuControlProps = {
   id: string;
@@ -95,25 +97,49 @@ export function Root({
   const defaultControl = useMenuControl();
   const activeControl = control ?? defaultControl;
   const dialogControl = useMenuControlAsDialogControl(activeControl);
+  const rootRef = useRef<View>(null);
 
   const context = useMemo<MenuContextType>(
     () => ({ control: dialogControl, isOpen: activeControl.isOpen }),
     [activeControl.isOpen, dialogControl],
   );
 
+  useEffect(() => {
+    if (!activeControl.isOpen || typeof document === 'undefined') {
+      return undefined;
+    }
+
+    const handlePointerDown = (event: PointerEvent) => {
+      const rootNode = rootRef.current as unknown as HTMLElement | null;
+      if (rootNode?.contains(event.target as Node)) {
+        return;
+      }
+      activeControl.close();
+    };
+
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        activeControl.close();
+      }
+    };
+
+    document.addEventListener('pointerdown', handlePointerDown, true);
+    document.addEventListener('keydown', handleKeyDown);
+
+    return () => {
+      document.removeEventListener('pointerdown', handlePointerDown, true);
+      document.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [activeControl]);
+
   return (
     <MenuContext.Provider value={context}>
-      {activeControl.isOpen && (
-        <Portal>
-          <Pressable
-            style={styles.backdrop}
-            onPress={() => activeControl.close()}
-            accessibilityHint=""
-            accessibilityLabel="Close menu"
-          />
-        </Portal>
-      )}
-      {children}
+      <View
+        ref={rootRef}
+        style={[styles.root, activeControl.isOpen && styles.openRoot]}
+      >
+        {children}
+      </View>
     </MenuContext.Provider>
   );
 }
@@ -294,21 +320,18 @@ export function Divider() {
 }
 
 const styles = StyleSheet.create({
-  backdrop: {
-    position: 'fixed' as 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-    zIndex: 50,
-    // Opt back in from the Portal root's `pointer-events: none`.
-    pointerEvents: 'auto',
+  root: {
+    position: 'relative',
+  },
+  openRoot: {
+    zIndex: menuZIndex.root,
   },
   dropdown: {
     borderRadius: 8,
     padding: 4,
     borderWidth: 1,
     overflow: 'hidden',
+    zIndex: menuZIndex.surface,
     shadowOpacity: 0.15,
     shadowRadius: 12,
     shadowOffset: { width: 0, height: 4 },

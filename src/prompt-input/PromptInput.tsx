@@ -11,6 +11,7 @@ import {
 
 import { useTheme } from '../theme/use-theme';
 import { Portal } from '../portal';
+import { Z_INDEX } from '../styles/z-index';
 import { PromptInputContext, type Attachment } from './context';
 import { PromptInputTextarea } from './Textarea';
 import { PromptInputActions } from './Actions';
@@ -198,7 +199,7 @@ export function PromptInput({
               position: 'absolute',
               top: 8,
               right: 8,
-              zIndex: 10,
+              zIndex: Z_INDEX.floating,
               backgroundColor: theme.colors.background,
               borderRadius: 9999,
               padding: 6,
@@ -233,7 +234,7 @@ export function PromptInput({
             style={[
               StyleSheet.absoluteFill,
               {
-                zIndex: 9998,
+                zIndex: Z_INDEX.fullscreen,
                 backgroundColor: theme.colors.background,
                 // Opt back in from the Portal root's `pointer-events: none`
                 // (web only — harmless on native).
@@ -247,7 +248,7 @@ export function PromptInput({
                 position: 'absolute',
                 top: 16,
                 right: 16,
-                zIndex: 50,
+                zIndex: Z_INDEX.fullscreenControl,
                 padding: 8,
                 backgroundColor: theme.colors.background,
                 borderRadius: 9999,

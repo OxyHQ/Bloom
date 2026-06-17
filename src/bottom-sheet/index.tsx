@@ -11,6 +11,7 @@ import {
     type StyleProp,
 } from 'react-native';
 import { Gesture, GestureDetector, GestureHandlerRootView, type GestureType } from 'react-native-gesture-handler';
+import { Z_INDEX } from '../styles/z-index';
 import Animated, {
     interpolate,
     runOnJS,
@@ -764,7 +765,7 @@ const styles = StyleSheet.create({
         width: 36,
         height: 5,
         borderRadius: 3,
-        zIndex: 100,
+        zIndex: Z_INDEX.sheetHandle,
     },
     /**
      * Hit area for the drag handle in `manualActivation` mode. Absolutely
@@ -781,7 +782,7 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         justifyContent: 'flex-start',
         paddingTop: 6,
-        zIndex: 100,
+        zIndex: Z_INDEX.sheetHandle,
     },
     background: {
         ...StyleSheet.absoluteFill,

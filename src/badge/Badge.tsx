@@ -2,6 +2,7 @@ import React, { memo, useMemo } from 'react';
 import { View, Text, type ViewStyle, type TextStyle } from 'react-native';
 
 import { useTheme } from '../theme/use-theme';
+import { Z_INDEX } from '../styles/z-index';
 import type { BadgeProps, BadgeColor, BadgeVariant } from './types';
 
 const SIZE_CONFIG = {
@@ -135,7 +136,7 @@ const BadgeComponent: React.FC<BadgeProps> = ({
           style={[
             {
               position: 'absolute',
-              zIndex: 1,
+              zIndex: Z_INDEX.raised,
               ...PLACEMENT_CONFIG[placement],
             },
             badgeStyle,

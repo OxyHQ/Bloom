@@ -4,6 +4,7 @@ import { Pressable, StyleSheet, View } from 'react-native';
 import { useTheme } from '../theme/use-theme';
 import { Text } from '../typography';
 import { Portal } from '../portal/index.web';
+import { createOverlayZIndex } from '../styles/z-index';
 import { RadioIndicator } from '../radio-indicator';
 import { useInteractionState } from '../hooks/useInteractionState';
 import {
@@ -24,6 +25,8 @@ import type {
 } from './types';
 
 export { useItemContext };
+
+const selectZIndex = createOverlayZIndex();
 
 // ---------------------------------------------------------------------------
 // Context
@@ -337,13 +340,13 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
     bottom: 0,
-    zIndex: 50,
+    zIndex: selectZIndex.backdrop,
     // Opt back in from the Portal root's `pointer-events: none`.
     pointerEvents: 'auto',
   },
   dropdown: {
     position: 'absolute',
-    zIndex: 60,
+    zIndex: selectZIndex.surface,
     borderRadius: 8,
     borderWidth: 1,
     overflow: 'hidden',

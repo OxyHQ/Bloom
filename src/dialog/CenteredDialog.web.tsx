@@ -5,6 +5,7 @@ import { RemoveScrollBar } from 'react-remove-scroll-bar';
 import { useInteractionStates } from '../hooks/useInteractionState';
 import { TimesLarge_Stroke2_Corner0_Rounded as CloseIcon } from '../icons/Times';
 import { Portal } from '../portal/index.web';
+import { createOverlayZIndex } from '../styles/z-index';
 import { useTheme } from '../theme/use-theme';
 import { Text } from '../typography';
 import type { CenteredDialogProps } from './centered-dialog-types';
@@ -18,6 +19,7 @@ import {
 
 const FADE_OUT_DURATION = 150;
 const CLOSE_HIT_SLOP = { top: 8, bottom: 8, left: 8, right: 8 } as const;
+const dialogZIndex = createOverlayZIndex();
 
 /** Stable testID for the dimmed backdrop. Overridden when a `testID` is set. */
 export const CENTERED_DIALOG_BACKDROP_TESTID = 'bloom-centered-dialog-backdrop';
@@ -312,7 +314,7 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
     bottom: 0,
-    zIndex: 50,
+    zIndex: dialogZIndex.backdrop,
     alignItems: 'center',
     justifyContent: 'center',
     pointerEvents: 'auto',
@@ -333,7 +335,7 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.18,
     shadowRadius: 24,
     shadowOffset: { width: 0, height: 8 },
-    zIndex: 60,
+    zIndex: dialogZIndex.surface,
   },
   header: {
     flexDirection: 'row',

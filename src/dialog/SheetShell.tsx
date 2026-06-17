@@ -14,6 +14,7 @@ import React, { useCallback, useImperativeHandle, useMemo, useRef } from 'react'
 import { Pressable, StyleSheet, View, type StyleProp, type ViewStyle } from 'react-native';
 
 import { BottomSheet, type BottomSheetRef } from '../bottom-sheet';
+import { Z_INDEX } from '../styles/z-index';
 import { useTheme } from '../theme/use-theme';
 import { Context } from './context';
 import type { DialogControlProps } from './types';
@@ -135,7 +136,7 @@ const styles = StyleSheet.create({
     position: 'absolute',
     width: '100%',
     alignItems: 'center',
-    zIndex: 10,
+    zIndex: Z_INDEX.floating,
     height: 20,
   },
   handleBar: {

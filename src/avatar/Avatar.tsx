@@ -4,6 +4,7 @@ import type { TextStyle } from 'react-native';
 
 import { useTheme } from '../theme/use-theme';
 import { useImageResolver } from '../image-resolver/context';
+import { Z_INDEX } from '../styles/z-index';
 import { lazyRequire } from '../utils/lazy-require';
 import { useAvatarPlaceholder } from './placeholder-context';
 import type { AvatarProps } from './types';
@@ -308,7 +309,7 @@ const styles = StyleSheet.create({
     right: -2,
     justifyContent: 'center',
     alignItems: 'center',
-    zIndex: 1,
+    zIndex: Z_INDEX.raised,
   },
   errorDetector: {
     position: 'absolute',

@@ -20,6 +20,7 @@ import {
 import { RemoveScrollBar } from 'react-remove-scroll-bar';
 
 import { Portal } from '../portal/index.web';
+import { createOverlayZIndex } from '../styles/z-index';
 import type { ThemeColors } from '../theme/types';
 import { useTheme } from '../theme/use-theme';
 import { Context, useDialogContext, useDialogControl } from './context';
@@ -31,6 +32,7 @@ import type {
 } from './types';
 
 const FADE_OUT_DURATION = 150;
+const dialogZIndex = createOverlayZIndex();
 
 const stopPropagation = (e: { stopPropagation: () => void }) => e.stopPropagation();
 
@@ -143,7 +145,7 @@ export function Dialog({
               left: 0,
               right: 0,
               bottom: 0,
-              zIndex: 50,
+              zIndex: dialogZIndex.backdrop,
               alignItems: 'center',
               justifyContent: 'center',
               paddingHorizontal: 20,
@@ -216,7 +218,7 @@ function DialogPanel({
           shadowRadius: 30,
           shadowOffset: { width: 0, height: 4 },
           padding: 20,
-          zIndex: 60,
+          zIndex: dialogZIndex.surface,
         },
         isClosing
           ? ({ animation: `bloomDialogZoomFadeOut ease-in ${FADE_OUT_DURATION}ms forwards` } as ViewStyle)

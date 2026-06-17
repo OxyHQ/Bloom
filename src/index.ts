@@ -2,7 +2,7 @@
 export * from './theme';
 
 // Styles & Utilities
-export { atoms, flatten } from './styles';
+export { atoms, flatten, Z_INDEX, zIndex } from './styles';
 export type { ViewStyleProp, TextStyleProp } from './styles';
 export * as tokens from './styles/tokens';
 export { web, native, ios, android, platform, select } from './styles/platform';
