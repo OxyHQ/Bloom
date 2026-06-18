@@ -11,8 +11,7 @@ import { type AppColorName } from './color-presets';
  *     `exports` `import`/`require` conditions to `lib/.../native-root-vars.js`.
  *
  * It deliberately does NOT import `react-native-css/native-internal`. That subpath
- * is native-only: it has no web build, and react-native-css is not even a Bloom
- * dependency. Statically importing it from a file a web bundler resolves breaks
+ * is native-only. Statically importing it from a file a web bundler resolves breaks
  * module resolution outright (the original report: `Rolldown failed to resolve
  * import "react-native-css/native-internal" from .../native-root-vars.js`).
  * Importing it from a file a consumer's `tsc` resolves breaks type-check (TS2307).

@@ -1,21 +1,20 @@
 /**
  * Ambient declaration for `react-native-css/native-internal`.
  *
- * react-native-css is NOT a Bloom dependency — it arrives transitively via the
- * host app's NativeWind install (NativeWind 5 is built on react-native-css@3).
- * Bloom's `native-root-vars.native.ts` statically imports `rootVariables` from
- * this subpath so Metro resolves the `import` export condition to the package's
+ * Bloom's native theme bridge statically imports `rootVariables` from this
+ * subpath so Metro resolves the `import` export condition to the package's
  * `module` build — the SAME family instance the react-native-css renderer
- * (`varResolver`) subscribes to. A runtime `require()` would resolve the
- * `require` condition to the separate `commonjs` build, whose `rootVariables`
- * is a distinct, un-observed family instance (see the file-level comment in
- * `native-root-vars.native.ts`).
+ * (`varResolver`) subscribes to. `react-native-css` is a direct Bloom dependency
+ * because this subpath is imported from published native source, including
+ * NativeWind 4 consumers whose test/native resolvers still select `.native.ts`.
+ * A runtime `require()` would resolve the `require` condition to the separate
+ * `commonjs` build, whose `rootVariables` is a distinct, un-observed family
+ * instance (see the file-level comment in `native-root-vars.native.ts`).
  *
- * Because the package isn't installed in Bloom, `tsc` can't see its published
- * types, so we declare the slice we use here — typed to match react-native-css
- * @3.0.7's `dist/typescript/.../native-internal/root.d.ts` exactly (no `any`,
- * no shims). This file is `.native`-only in spirit; the web fork never imports
- * the subpath, so on web bundlers the static import is never reached.
+ * We declare the slice we use here — typed to match react-native-css @3.0.7's
+ * `dist/typescript/.../native-internal/root.d.ts` exactly (no `any`, no shims).
+ * This file is `.native`-only in spirit; the web fork never imports the subpath,
+ * so on web bundlers the static import is never reached.
  */
 declare module 'react-native-css/native-internal' {
   /**

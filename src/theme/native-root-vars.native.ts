@@ -9,11 +9,11 @@
 // `node_modules/@oxyhq/bloom/src/**`, and TypeScript does NOT auto-pick-up
 // ambient `.d.ts` files that live under `node_modules`, so
 // `react-native-css/native-internal` is unresolved (TS2307) unless the reference
-// travels with the source. react-native-css is intentionally NOT a Bloom
-// dependency — it arrives transitively via a host's NativeWind 5 install, or is
-// absent entirely for NativeWind 4 consumers — so the ambient declaration is the
-// only thing that can type this import, and it MUST reach the consumer. The
-// directive ships raw in `src/` (Bloom publishes `files: ["src", "lib"]`).
+// travels with the source. Bloom now declares react-native-css directly because
+// this native source imports it; the ambient declaration still travels with
+// `src/` so consumer TypeScript programs that read Bloom source see the exact
+// subpath shape. The directive ships raw in `src/` (Bloom publishes
+// `files: ["src", "lib"]`).
 import { rootVariables } from 'react-native-css/native-internal';
 
 import { type AppColorName } from './color-presets';

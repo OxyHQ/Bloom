@@ -1,6 +1,6 @@
 {
   "name": "@oxyhq/bloom",
-  "version": "0.8.4",
+  "version": "0.8.5",
   "description": "Bloom UI — Oxy ecosystem component library for React Native + Expo + Web",
   "main": "lib/commonjs/index.js",
   "module": "lib/module/index.js",
@@ -871,6 +871,7 @@
   },
   "dependencies": {
     "nanoid": "^5.1.5",
+    "react-native-css": "3.0.7",
     "react-remove-scroll-bar": "^2.3.8"
   }
 }
