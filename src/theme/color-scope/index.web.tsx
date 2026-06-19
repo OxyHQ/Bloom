@@ -3,20 +3,19 @@ import React, { Children, cloneElement, isValidElement, useContext, useMemo } fr
 import { BloomThemeContext, type BloomThemeContextValue } from '../BloomThemeProvider';
 import { buildTheme } from '../build-theme';
 import type { AppColorName } from '../color-presets';
-import { getResolvedTokens } from '../token-registry';
+import { buildScopeVars } from './style-builder';
 
 /**
- * `getResolvedTokens` returns every canonical token already resolved to an sRGB
- * `rgb(...)` string — the SAME pipeline the document-root web writer and the
- * native writer use. Scoped onto an element's inline `style`, Tailwind v4's
- * compiled utilities read these as `var(--x)` directly, so each base token is a
- * full CSS color with no per-value wrapping needed.
+ * `buildScopeVars` returns every canonical token already resolved to an sRGB
+ * `rgb(...)` string, plus the `--color-*` aliases consumed by Tailwind v4
+ * utilities. Scoped onto an element's inline `style`, profile-level NativeWind
+ * classes resolve against the subtree preset instead of the document root.
  */
 function buildWebScopeVars(
   colorPreset: AppColorName,
   mode: 'light' | 'dark',
 ): React.CSSProperties {
-  return getResolvedTokens(colorPreset, mode) as React.CSSProperties;
+  return buildScopeVars(colorPreset, mode) as React.CSSProperties;
 }
 
 export interface BloomColorScopeProps {

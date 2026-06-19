@@ -1,7 +1,7 @@
 import type React from 'react';
 import { Platform, type StyleProp, type ViewStyle } from 'react-native';
 
-import { getResolvedTokens } from '../token-registry';
+import { CANONICAL_TOKENS, getResolvedTokens } from '../token-registry';
 import type { AppColorName } from '../color-presets';
 import { lazyRequire } from '../../utils/lazy-require';
 
@@ -25,17 +25,29 @@ const getNativeWindVars = lazyRequire<NativeWindVarsModule>('nativewind');
 
 /**
  * Build the CSS custom-property map for a preset, ready to be applied to a
- * subtree. Every token is resolved to an sRGB `rgb(...)` string via
- * `getResolvedTokens` — the single canonical token pipeline shared by web and
- * native — so Tailwind v4 `@theme` utilities (e.g. `bg-background`) and
- * `color-mix`-based alpha utilities (`bg-primary/10`) both resolve against the
- * same color values. Keys retain the leading `--`.
+ * subtree. Every canonical `--x` token is resolved to an sRGB `rgb(...)` string
+ * via `getResolvedTokens` — the single token pipeline shared by web and native.
+ *
+ * The returned map also includes Tailwind v4 `--color-x` aliases generated from
+ * those same canonical values. Scoped aliases are required on web because
+ * inherited custom properties like `--color-primary: var(--primary)` compute at
+ * the document root and would otherwise keep pointing at the app-wide preset.
  */
 export function buildScopeVars(
   colorPreset: AppColorName,
   mode: 'light' | 'dark',
 ): Record<string, string> {
-  return getResolvedTokens(colorPreset, mode);
+  const tokens = getResolvedTokens(colorPreset, mode);
+  const vars: Record<string, string> = { ...tokens };
+
+  for (const token of CANONICAL_TOKENS) {
+    const value = tokens[`--${token}`];
+    if (value !== undefined) {
+      vars[`--color-${token}`] = value;
+    }
+  }
+
+  return vars;
 }
 
 /**

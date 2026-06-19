@@ -60,6 +60,7 @@ Uses `react-native-builder-bob` → `lib/` (commonjs + module + typescript).
 - 12 built-in color presets: teal, blue, green, amber, red, purple, pink, sky, orange, mint, oxy
 - `useBloomTheme()` returns `{ theme, mode, colorPreset, setMode, setColorPreset }`
 - `BloomColorScope` overrides color for a subtree without affecting the rest of the app
+- `BloomColorScope` must emit both canonical tokens (`--primary`) and Tailwind v4 aliases (`--color-primary`) from the same resolver, so NativeWind classes inside scoped subtrees use the scoped preset instead of the app-wide root preset
 
 ```typescript
 // Basic usage

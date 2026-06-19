@@ -153,17 +153,25 @@ describe('BloomColorScope', () => {
       );
 
       // Web var contract: the scoped base tokens (`--background`, `--primary`)
-      // must be full `rgb(...)` colors from the single canonical pipeline —
-      // never bare HSL triples — so the web apps' `var(--x)` color utilities
-      // resolve. (The production incident was a bare triple here too.)
+      // must be full `rgb(...)` colors from the single canonical pipeline, and
+      // the scoped Tailwind v4 aliases (`--color-primary`) must be generated
+      // from those same values so NativeWind utilities resolve inside the
+      // subtree instead of inheriting the app-wide preset.
       const vars = Object.assign(
         {},
-        ...flat.filter((entry) => '--background' in entry || '--primary' in entry),
+        ...flat.filter(
+          (entry) =>
+            '--background' in entry ||
+            '--primary' in entry ||
+            '--color-primary' in entry,
+        ),
       ) as Record<string, unknown>;
       const background = String(vars['--background'] ?? '');
       const primary = String(vars['--primary'] ?? '');
+      const colorPrimary = String(vars['--color-primary'] ?? '');
       expect(background.startsWith('rgb(')).toBe(true);
       expect(primary.startsWith('rgb(')).toBe(true);
+      expect(colorPrimary).toBe(primary);
       expect(/^-?\d[\d.]*\s+[\d.]+%/.test(background)).toBe(false);
     });
   });
