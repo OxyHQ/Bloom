@@ -49,6 +49,10 @@ export type {
   ErrorBoundaryFallbackContext,
 } from './error-boundary';
 export * from './avatar';
+export { AvatarGroup } from './avatar-group';
+export type { AvatarGroupProps, AvatarGroupItem } from './avatar-group';
+export { UserHoverCard } from './user-hover-card';
+export type { UserHoverCardProps, UserHoverCardStat } from './user-hover-card';
 export * from './loading';
 export * as PromptInput from './prompt-input';
 export * from './switch';

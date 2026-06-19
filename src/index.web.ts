@@ -54,6 +54,10 @@ export type {
   ErrorBoundaryFallbackContext,
 } from './error-boundary';
 export * from './avatar';
+export { AvatarGroup } from './avatar-group/index.web';
+export type { AvatarGroupProps, AvatarGroupItem } from './avatar-group/index.web';
+export { UserHoverCard } from './user-hover-card';
+export type { UserHoverCardProps, UserHoverCardStat } from './user-hover-card';
 export * from './loading/index.web';
 export * as PromptInput from './prompt-input';
 export * from './switch';

@@ -1,6 +1,6 @@
 {
   "name": "@oxyhq/bloom",
-  "version": "0.8.6",
+  "version": "0.9.0",
   "description": "Bloom UI — Oxy ecosystem component library for React Native + Expo + Web",
   "main": "lib/commonjs/index.js",
   "module": "lib/module/index.js",
@@ -168,6 +168,33 @@
       "require": {
         "types": "./lib/typescript/commonjs/avatar/index.d.ts",
         "default": "./lib/commonjs/avatar/index.js"
+      }
+    },
+    "./avatar-group": {
+      "react-native": "./src/avatar-group/index.ts",
+      "browser": {
+        "types": "./lib/typescript/module/avatar-group/index.web.d.ts",
+        "import": "./lib/module/avatar-group/index.web.js",
+        "require": "./lib/commonjs/avatar-group/index.web.js"
+      },
+      "import": {
+        "types": "./lib/typescript/module/avatar-group/index.d.ts",
+        "default": "./lib/module/avatar-group/index.js"
+      },
+      "require": {
+        "types": "./lib/typescript/commonjs/avatar-group/index.d.ts",
+        "default": "./lib/commonjs/avatar-group/index.js"
+      }
+    },
+    "./user-hover-card": {
+      "react-native": "./src/user-hover-card/index.ts",
+      "import": {
+        "types": "./lib/typescript/module/user-hover-card/index.d.ts",
+        "default": "./lib/module/user-hover-card/index.js"
+      },
+      "require": {
+        "types": "./lib/typescript/commonjs/user-hover-card/index.d.ts",
+        "default": "./lib/commonjs/user-hover-card/index.js"
       }
     },
     "./loading": {
@@ -698,6 +725,8 @@
     "button",
     "theme",
     "avatar",
+    "avatar-group",
+    "user-hover-card",
     "loading",
     "divider",
     "collapsible",
