@@ -3,16 +3,21 @@ import type { StyleProp, ViewStyle } from 'react-native';
 
 /**
  * A single member of an {@link AvatarGroup}. Mirrors the minimal shape needed to
- * render an {@link Avatar} plus drive the optional hover card. `uri` is the
- * avatar image URL; `name`/`displayName` feed Avatar's deterministic
- * name-based placeholder when no image resolves.
+ * render an {@link Avatar} plus drive the optional hover card. `uri` carries the
+ * avatar value (routed into Avatar's `source` prop); `name`/`displayName`/
+ * `username` are used for the hover card and accessibility only.
  */
 export interface AvatarGroupItem {
   /** Stable identity used as a React key and passed back to handlers. */
   id?: string;
-  /** Avatar image URL (null/undefined → name-based placeholder). */
+  /**
+   * Avatar value, routed into {@link Avatar}'s `source` prop. Accepts a full
+   * image URL OR a resolver-handled id (e.g. an Oxy file ID) — non-URL strings
+   * resolve through the consumer's ImageResolver. Null/undefined renders
+   * Avatar's neutral default placeholder.
+   */
   uri?: string | null;
-  /** Fallback name used for the avatar placeholder when `displayName` is absent. */
+  /** Name used for the hover card / accessibility when `displayName` is absent. */
   name?: string;
   /** Canonical, already-resolved display name (preferred over `name`). */
   displayName?: string;
@@ -34,13 +39,14 @@ export interface AvatarGroupProps {
    */
   total?: number;
   /**
-   * Horizontal overlap between adjacent avatars in pixels. Defaults to ~35% of
+   * Horizontal overlap between adjacent avatars in pixels. Defaults to ~1/3 of
    * `size`. Larger values pull avatars closer together.
    */
   overlap?: number;
   /**
-   * Color of the ring/border drawn around each avatar so they separate cleanly.
-   * Defaults to the theme `card` surface color.
+   * Color of the thin ring/border drawn around each avatar so overlapping
+   * avatars separate cleanly. Defaults to the theme `background` color so the
+   * avatars read as punched out of the surface behind them.
    */
   ringColor?: string;
   /**

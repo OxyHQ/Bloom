@@ -11,8 +11,10 @@ export interface UserHoverCardStat {
 
 export interface UserHoverCardProps {
   /**
-   * Avatar image source — a URL string, or null/undefined to fall back to the
-   * deterministic name-based placeholder rendered by {@link Avatar}.
+   * Avatar image source. Accepts a full image URL OR a resolver-handled id
+   * (e.g. an Oxy file ID) — it is routed into {@link Avatar}'s `source` prop, so
+   * non-URL strings resolve through the consumer's ImageResolver. Null/undefined
+   * falls back to the deterministic name-based placeholder.
    */
   avatar?: string | null;
   /** Canonical, already-resolved display name (an API contract — render directly). */

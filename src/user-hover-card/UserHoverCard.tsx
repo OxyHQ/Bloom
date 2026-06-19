@@ -56,7 +56,7 @@ const UserHoverCardComponent: React.FC<UserHoverCardProps> = ({
 
   const identity = (
     <View style={styles.identityRow}>
-      <Avatar uri={avatar ?? undefined} name={displayName} size={AVATAR_SIZE} />
+      <Avatar source={avatar ?? undefined} name={displayName} size={AVATAR_SIZE} />
       <View style={styles.identityText}>
         <View style={styles.nameRow}>
           <Text
