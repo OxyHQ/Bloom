@@ -1,6 +1,6 @@
 {
   "name": "@oxyhq/bloom",
-  "version": "0.9.1",
+  "version": "0.10.0",
   "description": "Bloom UI — Oxy ecosystem component library for React Native + Expo + Web",
   "main": "lib/commonjs/index.js",
   "module": "lib/module/index.js",
@@ -95,6 +95,11 @@
     },
     "./button": {
       "react-native": "./src/button/index.ts",
+      "browser": {
+        "types": "./lib/typescript/module/button/index.web.d.ts",
+        "import": "./lib/module/button/index.web.js",
+        "require": "./lib/commonjs/button/index.web.js"
+      },
       "import": {
         "types": "./lib/typescript/module/button/index.d.ts",
         "default": "./lib/module/button/index.js"
@@ -802,6 +807,8 @@
   "devDependencies": {
     "@storybook/addon-docs": "^10",
     "@storybook/react-vite": "^10",
+    "@testing-library/dom": "^10.4.1",
+    "@testing-library/jest-dom": "^6.9.1",
     "@testing-library/react-native": "^13.3.3",
     "@types/jest": "^30.0.0",
     "@types/react": "~19.1.0",

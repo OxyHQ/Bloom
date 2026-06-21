@@ -114,6 +114,7 @@ const WEB_FORKED_SUBPATHS = new Set([
   '.',
   './portal',
   './dialog',
+  './button',
   './avatar-group',
   './loading',
   './menu',

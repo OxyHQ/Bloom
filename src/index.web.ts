@@ -42,7 +42,7 @@ export type {
   DialogControlProps,
   DialogProps,
 } from './dialog/index.web';
-export * from './button';
+export * from './button/index.web';
 export * from './grouped-buttons';
 export * from './divider';
 export * from './radio-indicator';

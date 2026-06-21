@@ -14,9 +14,29 @@ import {
 import { useTheme } from '../theme/use-theme';
 import { usePressAnimation } from '../hooks/usePressAnimation';
 import { useInteractionState } from '../hooks/useInteractionState';
-import type { ButtonProps } from './types';
+import type { ButtonProps, ButtonSize, ButtonVariant } from './types';
 
 export type { ButtonProps, ButtonVariant, ButtonSize } from './types';
+
+/**
+ * The shared {@link ButtonVariant}/{@link ButtonSize} types include web-only
+ * additions (shadcn variants + size aliases) so a single call site type-checks
+ * on both platforms. Native normalizes them to its own primitives:
+ *   - `outline → secondary`, `link → text`, `destructive → primary` (tinted)
+ *   - `sm|md|lg|icon` size aliases → `small|medium|large`
+ */
+type NativeVariant = 'primary' | 'secondary' | 'inverse' | 'icon' | 'ghost' | 'text';
+type NativeSize = 'small' | 'medium' | 'large';
+
+const SIZE_ALIAS: Record<ButtonSize, NativeSize> = {
+  small: 'small',
+  medium: 'medium',
+  large: 'large',
+  sm: 'small',
+  md: 'medium',
+  lg: 'large',
+  icon: 'medium',
+};
 
 const SIZE_CONFIG = {
   small: {
@@ -48,8 +68,8 @@ const ButtonComponent: React.FC<ButtonProps> = ({
   onPress,
   children,
   disabled = false,
-  variant = 'primary',
-  size = 'medium',
+  variant: variantProp = 'primary',
+  size: sizeProp = 'medium',
   style,
   textStyle,
   icon,
@@ -64,6 +84,23 @@ const ButtonComponent: React.FC<ButtonProps> = ({
   className,
 }) => {
   const theme = useTheme();
+  // The shadcn `size="icon"` shorthand also selects the icon variant unless an
+  // explicit variant was given by the caller.
+  const variant: NativeVariant = useMemo(() => {
+    if (sizeProp === 'icon' && variantProp === 'primary') return 'icon';
+    switch (variantProp) {
+      case 'outline':
+        return 'secondary';
+      case 'link':
+        return 'text';
+      case 'destructive':
+        return 'primary';
+      default:
+        return variantProp;
+    }
+  }, [variantProp, sizeProp]);
+  const isDestructive = variantProp === 'destructive';
+  const size: NativeSize = SIZE_ALIAS[sizeProp];
   const hasScaleFeedback = SCALE_VARIANTS.has(variant);
   const isInteractionBlocked = disabled || loading;
   const { scaleAnim, onPressIn: onScalePressIn, onPressOut: onScalePressOut } =
@@ -112,7 +149,9 @@ const ButtonComponent: React.FC<ButtonProps> = ({
 
     switch (variant) {
       case 'primary':
-        styles.backgroundColor = theme.colors.primary;
+        styles.backgroundColor = isDestructive
+          ? theme.colors.negative
+          : theme.colors.primary;
         styles.borderRadius = 20;
         break;
       case 'secondary':
@@ -143,12 +182,14 @@ const ButtonComponent: React.FC<ButtonProps> = ({
     }
 
     return styles;
-  }, [variant, size, theme]);
+  }, [variant, size, theme, isDestructive]);
 
   const resolvedTextColor = useMemo((): string => {
     switch (variant) {
       case 'primary':
-        return theme.colors.primaryForeground;
+        return isDestructive
+          ? theme.colors.negativeForeground
+          : theme.colors.primaryForeground;
       case 'secondary':
         return theme.colors.text;
       case 'inverse':
@@ -160,7 +201,7 @@ const ButtonComponent: React.FC<ButtonProps> = ({
       default:
         return theme.colors.text;
     }
-  }, [variant, theme]);
+  }, [variant, theme, isDestructive]);
 
   const computedTextStyle = useMemo((): TextStyle => {
     const sizeConfig = SIZE_CONFIG[size];
@@ -275,3 +316,21 @@ export const TextButton = memo((props: Omit<ButtonProps, 'variant'>) => (
   <Button {...props} variant="text" />
 ));
 TextButton.displayName = 'TextButton';
+
+// Web/shadcn-aligned variants. On native they normalize to existing primitives
+// (`outline → secondary`, `link → text`, `destructive → primary` tinted with the
+// negative token) inside `Button`, so these stay API-parallel with the web fork.
+export const OutlineButton = memo((props: Omit<ButtonProps, 'variant'>) => (
+  <Button {...props} variant="outline" />
+));
+OutlineButton.displayName = 'OutlineButton';
+
+export const LinkButton = memo((props: Omit<ButtonProps, 'variant'>) => (
+  <Button {...props} variant="link" />
+));
+LinkButton.displayName = 'LinkButton';
+
+export const DestructiveButton = memo((props: Omit<ButtonProps, 'variant'>) => (
+  <Button {...props} variant="destructive" />
+));
+DestructiveButton.displayName = 'DestructiveButton';
