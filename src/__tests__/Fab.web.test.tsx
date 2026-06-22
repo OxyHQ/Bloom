@@ -124,4 +124,18 @@ describe('Fab.web', () => {
     const c = mount(<Fab accessibilityLabel="Add" testID="my-fab" icon={<span>+</span>} />);
     expect(c.querySelector('[data-testid="my-fab"]')?.tagName).toBe('BUTTON');
   });
+
+  it('accepts a numeric size as a raw pixel diameter', () => {
+    const c = mount(<Fab accessibilityLabel="Add" size={48} icon={<span>+</span>} />);
+    const fab = getByRole(c, 'button');
+    expect(fab.style.width).toBe('48px');
+    expect(fab.style.height).toBe('48px');
+  });
+
+  it('keeps preset sizes working (medium = 56px diameter)', () => {
+    const c = mount(<Fab accessibilityLabel="Add" size="medium" icon={<span>+</span>} />);
+    const fab = getByRole(c, 'button');
+    expect(fab.style.width).toBe('56px');
+    expect(fab.style.height).toBe('56px');
+  });
 });

@@ -73,4 +73,21 @@ describe('Fab (native)', () => {
     );
     expect(getByText('★')).toBeTruthy();
   });
+
+  it('accepts a numeric size as a raw pixel diameter', () => {
+    const { getByTestId } = renderWithTheme(
+      <Fab testID="fab" size={48} accessibilityLabel="Add" icon={<Text>+</Text>} />,
+    );
+    // The Pressable's style is a flat-able array; the container object (first
+    // entry) carries the resolved geometry.
+    const style = getByTestId('fab').props.style as Array<
+      { width?: number; height?: number } | false
+    >;
+    const container = style.find(
+      (s): s is { width?: number; height?: number } =>
+        typeof s === 'object' && s !== null && 'width' in s,
+    );
+    expect(container?.width).toBe(48);
+    expect(container?.height).toBe(48);
+  });
 });

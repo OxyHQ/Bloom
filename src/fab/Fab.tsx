@@ -15,14 +15,40 @@ import type { FabPlacement, FabProps, FabSize, FabVariant } from './types';
 
 export type { FabProps, FabVariant, FabSize, FabPlacement } from './types';
 
-// Material-style FAB scale. `small` (40px, the compact FAB Mention uses) keeps a
-// full 24px icon box so the glyph reads clearly; `medium` (56px) is the
-// canonical FAB; `large` (64px) is the high-prominence action.
-const SIZE_CONFIG: Record<FabSize, { diameter: number; iconBox: number; fontSize: number }> = {
+interface ResolvedSize {
+  diameter: number;
+  iconBox: number;
+  fontSize: number;
+}
+
+// Material-style FAB scale. `small` (40px) keeps a full 24px icon box so the
+// glyph reads clearly; `medium` (56px) is the canonical FAB; `large` (64px) is
+// the high-prominence action.
+const SIZE_CONFIG: Record<FabSize, ResolvedSize> = {
   small: { diameter: 40, iconBox: 24, fontSize: 14 },
   medium: { diameter: 56, iconBox: 24, fontSize: 15 },
   large: { diameter: 64, iconBox: 28, fontSize: 16 },
 };
+
+const MIN_NUMERIC_ICON_BOX = 22;
+
+/**
+ * Resolve a `size` prop (preset name or raw pixel diameter) to concrete pixel
+ * geometry. A numeric size sets the diameter directly, derives the icon box as
+ * `round(size * 0.5)` (clamped to a sensible minimum) and lets the circle radius
+ * stay `size / 2` (the container uses a full pill radius, so any square stays a
+ * perfect circle).
+ */
+function resolveSize(size: FabSize | number): ResolvedSize {
+  if (typeof size === 'number') {
+    return {
+      diameter: size,
+      iconBox: Math.max(MIN_NUMERIC_ICON_BOX, Math.round(size * 0.5)),
+      fontSize: Math.max(13, Math.round(size * 0.27)),
+    };
+  }
+  return SIZE_CONFIG[size];
+}
 
 const PILL_RADIUS = 999;
 const PRESS_SCALE = 0.94;
@@ -71,7 +97,7 @@ const FabComponent: React.FC<FabProps> = ({
   zIndex = DEFAULT_Z_INDEX,
 }) => {
   const theme = useTheme();
-  const sizeConfig = SIZE_CONFIG[size];
+  const sizeConfig = useMemo(() => resolveSize(size), [size]);
   const isExtended = label != null && label.length > 0;
   const content = icon ?? children;
 
@@ -99,13 +125,13 @@ const FabComponent: React.FC<FabProps> = ({
       elevation: 6,
     };
     if (isExtended) {
-      base.paddingHorizontal = size === 'small' ? 14 : 20;
+      base.paddingHorizontal = sizeConfig.diameter <= 44 ? 14 : 20;
       base.gap = 8;
     } else {
       base.width = sizeConfig.diameter;
     }
     return base;
-  }, [resolvedColors.background, sizeConfig.diameter, theme.colors.shadow, isExtended, size]);
+  }, [resolvedColors.background, sizeConfig.diameter, theme.colors.shadow, isExtended]);
 
   const labelTextStyle = useMemo((): TextStyle => ({
     fontSize: sizeConfig.fontSize,

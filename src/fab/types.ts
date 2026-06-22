@@ -12,13 +12,19 @@ import type { StyleProp, ViewStyle, TextStyle } from 'react-native';
 export type FabVariant = 'primary' | 'secondary' | 'surface';
 
 /**
- * FAB sizes, matching Material-ish conventions but in Bloom's scale:
+ * FAB size presets, matching Material-ish conventions but in Bloom's scale:
  *   - `small`   — 40px (compact / dense layouts)
  *   - `medium`  — 56px (the canonical FAB; the default)
  *   - `large`   — 64px (high-prominence primary action)
  *
  * In the `extended` variant the height tracks the size but the FAB grows
  * horizontally to fit its icon + label as a pill.
+ *
+ * The `size` prop ALSO accepts a raw pixel `number` for an exact diameter
+ * between (or outside) the presets — e.g. `size={48}` for a FAB halfway between
+ * `small` and `medium`. A numeric size sets the diameter directly, derives the
+ * icon box as `round(size * 0.5)` (min 22px) and keeps the circle radius at
+ * `size / 2`.
  */
 export type FabSize = 'small' | 'medium' | 'large';
 
@@ -73,7 +79,11 @@ export interface FabProps {
   label?: string;
 
   variant?: FabVariant;
-  size?: FabSize;
+  /**
+   * A preset (`'small' | 'medium' | 'large'`) or a raw pixel diameter
+   * (`number`). Defaults to `'medium'`. See {@link FabSize}.
+   */
+  size?: FabSize | number;
 
   /**
    * Corner of the containing block to anchor to. Defaults to `'bottom-right'`.

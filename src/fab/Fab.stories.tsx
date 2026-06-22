@@ -48,6 +48,15 @@ export const Extended: Story = {
 };
 
 /**
+ * A raw pixel diameter via `size={number}` — here 48px, halfway between the
+ * `small` (40) and `medium` (56) presets. The icon box and font scale with the
+ * diameter automatically.
+ */
+export const NumericSize: Story = {
+  args: { size: 48 },
+};
+
+/**
  * The FAB anchored to the bottom-right of a CONSTRAINED column. On web the FAB
  * uses `position: sticky`, so it tracks the bottom of THIS column (not the
  * viewport) — exactly what a multi-column app layout needs.

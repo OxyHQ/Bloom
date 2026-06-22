@@ -14,14 +14,39 @@ import type { FabPlacement, FabProps, FabSize, FabVariant } from './types';
 
 export type { FabProps, FabVariant, FabSize, FabPlacement } from './types';
 
-// Material-style FAB scale. `small` (40px, the compact FAB Mention uses) keeps a
-// full 24px icon box so the glyph reads clearly; `medium` (56px) is the
-// canonical FAB; `large` (64px) is the high-prominence action.
-const SIZE_CONFIG: Record<FabSize, { diameter: number; iconBox: number; fontSize: number }> = {
+interface ResolvedSize {
+  diameter: number;
+  iconBox: number;
+  fontSize: number;
+}
+
+// Material-style FAB scale. `small` (40px) keeps a full 24px icon box so the
+// glyph reads clearly; `medium` (56px) is the canonical FAB; `large` (64px) is
+// the high-prominence action.
+const SIZE_CONFIG: Record<FabSize, ResolvedSize> = {
   small: { diameter: 40, iconBox: 24, fontSize: 14 },
   medium: { diameter: 56, iconBox: 24, fontSize: 15 },
   large: { diameter: 64, iconBox: 28, fontSize: 16 },
 };
+
+const MIN_NUMERIC_ICON_BOX = 22;
+
+/**
+ * Resolve a `size` prop (preset name or raw pixel diameter) to concrete pixel
+ * geometry. Mirrors the native `resolveSize` exactly so a numeric size renders
+ * identically on both platforms. A numeric size sets the diameter directly and
+ * derives the icon box as `round(size * 0.5)` (clamped to a sensible minimum).
+ */
+function resolveSize(size: FabSize | number): ResolvedSize {
+  if (typeof size === 'number') {
+    return {
+      diameter: size,
+      iconBox: Math.max(MIN_NUMERIC_ICON_BOX, Math.round(size * 0.5)),
+      fontSize: Math.max(13, Math.round(size * 0.27)),
+    };
+  }
+  return SIZE_CONFIG[size];
+}
 
 const PILL_RADIUS = 999;
 const PRESS_SCALE = 0.94;
@@ -176,7 +201,7 @@ const FabWebComponent: React.FC<FabProps> = ({
   const reactId = useId();
   const resolvedId = id ?? `bloom-fab-${reactId}`;
 
-  const sizeConfig = SIZE_CONFIG[size];
+  const sizeConfig = useMemo(() => resolveSize(size), [size]);
   const isExtended = label != null && label.length > 0;
   const content = icon ?? children;
   const variantColors = useMemo(() => resolveVariant(variant, theme.colors), [variant, theme.colors]);
@@ -202,8 +227,9 @@ const FabWebComponent: React.FC<FabProps> = ({
       ...placementStyle(placement, offset),
     };
     if (isExtended) {
-      base.paddingLeft = size === 'small' ? 14 : 20;
-      base.paddingRight = size === 'small' ? 14 : 20;
+      const pad = sizeConfig.diameter <= 44 ? 14 : 20;
+      base.paddingLeft = pad;
+      base.paddingRight = pad;
     } else {
       base.width = sizeConfig.diameter;
     }
@@ -218,7 +244,6 @@ const FabWebComponent: React.FC<FabProps> = ({
     placement,
     offset,
     isExtended,
-    size,
   ]);
 
   const handleClick = useCallback(
