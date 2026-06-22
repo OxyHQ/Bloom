@@ -1,6 +1,6 @@
 {
   "name": "@oxyhq/bloom",
-  "version": "0.10.0",
+  "version": "0.12.0",
   "description": "Bloom UI — Oxy ecosystem component library for React Native + Expo + Web",
   "main": "lib/commonjs/index.js",
   "module": "lib/module/index.js",
@@ -107,6 +107,22 @@
       "require": {
         "types": "./lib/typescript/commonjs/button/index.d.ts",
         "default": "./lib/commonjs/button/index.js"
+      }
+    },
+    "./fab": {
+      "react-native": "./src/fab/index.ts",
+      "browser": {
+        "types": "./lib/typescript/module/fab/index.web.d.ts",
+        "import": "./lib/module/fab/index.web.js",
+        "require": "./lib/commonjs/fab/index.web.js"
+      },
+      "import": {
+        "types": "./lib/typescript/module/fab/index.d.ts",
+        "default": "./lib/module/fab/index.js"
+      },
+      "require": {
+        "types": "./lib/typescript/commonjs/fab/index.d.ts",
+        "default": "./lib/commonjs/fab/index.js"
       }
     },
     "./grouped-buttons": {

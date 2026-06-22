@@ -38,6 +38,8 @@ export type {
   DialogProps,
 } from './dialog';
 export * from './button';
+export { Fab } from './fab';
+export type { FabProps, FabVariant, FabSize, FabPlacement } from './fab';
 export * from './grouped-buttons';
 export * from './divider';
 export * from './radio-indicator';
