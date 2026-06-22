@@ -61,6 +61,11 @@ const SIZE_CONFIG = {
 
 const ICON_HIT_SLOP = { top: 10, bottom: 10, left: 10, right: 10 } as const;
 
+// Fully-rounded (pill/capsule) corner radius. Large enough to stay a perfect
+// capsule at any button height. Shared by every text button variant so they all
+// read as pills; the icon variant keeps its own large radius to stay a circle.
+const PILL_RADIUS = 999;
+
 const PRESS_SCALE = 0.97;
 const SCALE_VARIANTS = new Set<string>(['primary', 'secondary', 'inverse']);
 
@@ -152,30 +157,31 @@ const ButtonComponent: React.FC<ButtonProps> = ({
         styles.backgroundColor = isDestructive
           ? theme.colors.negative
           : theme.colors.primary;
-        styles.borderRadius = 20;
+        styles.borderRadius = PILL_RADIUS;
         break;
       case 'secondary':
         styles.backgroundColor = 'transparent';
         styles.borderWidth = 1;
         styles.borderColor = theme.colors.border;
-        styles.borderRadius = 20;
+        styles.borderRadius = PILL_RADIUS;
         break;
       case 'inverse':
         styles.backgroundColor = '#FFFFFF';
-        styles.borderRadius = 20;
+        styles.borderRadius = PILL_RADIUS;
         break;
       case 'icon':
-        styles.borderRadius = 100;
+        styles.borderRadius = PILL_RADIUS;
         styles.padding = 8;
         styles.width = sizeConfig.minHeight;
         styles.height = sizeConfig.minHeight;
         break;
       case 'ghost':
         styles.backgroundColor = 'transparent';
-        styles.borderRadius = 8;
+        styles.borderRadius = PILL_RADIUS;
         break;
       case 'text':
         styles.backgroundColor = 'transparent';
+        styles.borderRadius = PILL_RADIUS;
         styles.paddingVertical = 4;
         styles.paddingHorizontal = 8;
         break;

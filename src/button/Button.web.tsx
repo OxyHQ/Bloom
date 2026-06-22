@@ -47,9 +47,12 @@ const SIZE_ALIAS: Record<ButtonSize, NativeSize> = {
   icon: 'medium',
 };
 
-const PILL_RADIUS = 20;
-const GHOST_RADIUS = 8;
-const ICON_RADIUS = 100;
+// Fully-rounded (pill/capsule) corner radius — large enough to stay a perfect
+// capsule at any button height. Mirrors native `PILL_RADIUS` so web and native
+// produce the SAME fully-rounded shape. The icon variant reuses it too: a square
+// button with this radius renders as a perfect circle.
+const PILL_RADIUS = 999;
+const ICON_RADIUS = PILL_RADIUS;
 const PRESS_SCALE = 0.97;
 
 /** Variants that get a tactile press-scale (matches native `SCALE_VARIANTS`). */
@@ -183,7 +186,7 @@ function resolveVariantStyle(
       };
     case 'ghost':
       return {
-        container: { backgroundColor: 'transparent', borderRadius: GHOST_RADIUS },
+        container: { backgroundColor: 'transparent', borderRadius: PILL_RADIUS },
         textColor: c.primary,
         ringColor: c.primary,
       };
@@ -206,7 +209,7 @@ function resolveVariantStyle(
     case 'link':
     default:
       return {
-        container: { backgroundColor: 'transparent', borderRadius: 0 },
+        container: { backgroundColor: 'transparent', borderRadius: PILL_RADIUS },
         textColor: c.primary,
         ringColor: c.primary,
       };
