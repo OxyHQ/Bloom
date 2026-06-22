@@ -84,10 +84,23 @@ describe('Fab.web', () => {
     expect(fab.style.alignSelf).toBe('flex-end');
   });
 
+  it('sets margin-top: auto for bottom placements so a short column pins the FAB to the bottom', () => {
+    const c = mount(<Fab accessibilityLabel="Add" icon={<span>+</span>} />);
+    expect(getByRole(c, 'button').style.marginTop).toBe('auto');
+  });
+
+  it('does NOT set margin-top: auto for top placements', () => {
+    const c = mount(<Fab accessibilityLabel="Add" placement="top-right" icon={<span>+</span>} />);
+    const fab = getByRole(c, 'button');
+    expect(fab.style.marginTop).toBe('');
+    expect(fab.style.top).toBe('16px');
+  });
+
   it('applies no positioning for placement="static"', () => {
     const c = mount(<Fab accessibilityLabel="Add" placement="static" icon={<span>+</span>} />);
     const fab = getByRole(c, 'button');
     expect(fab.style.position).toBe('');
+    expect(fab.style.marginTop).toBe('');
   });
 
   it('renders an extended label', () => {

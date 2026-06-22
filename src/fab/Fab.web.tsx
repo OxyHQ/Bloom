@@ -14,8 +14,11 @@ import type { FabPlacement, FabProps, FabSize, FabVariant } from './types';
 
 export type { FabProps, FabVariant, FabSize, FabPlacement } from './types';
 
+// Material-style FAB scale. `small` (40px, the compact FAB Mention uses) keeps a
+// full 24px icon box so the glyph reads clearly; `medium` (56px) is the
+// canonical FAB; `large` (64px) is the high-prominence action.
 const SIZE_CONFIG: Record<FabSize, { diameter: number; iconBox: number; fontSize: number }> = {
-  small: { diameter: 40, iconBox: 20, fontSize: 14 },
+  small: { diameter: 40, iconBox: 24, fontSize: 14 },
   medium: { diameter: 56, iconBox: 24, fontSize: 15 },
   large: { diameter: 64, iconBox: 28, fontSize: 16 },
 };
@@ -92,24 +95,35 @@ function useFabCss(): void {
  * CENTRAL CONTENT COLUMN as it scrolls and never escapes to the viewport edge /
  * over a side rail in a constrained multi-column app layout.
  *
- * To pin a sticky element to the BOTTOM of a column it must sit at the end of
- * the scroll content with `align-self: flex-end` (consumer column should be a
- * flex column) — documented in the component's usage story. We set `bottom`
- * and a self-alignment so the common case works with zero consumer CSS beyond a
- * `flex-col` column.
+ * Pinning a FAB to the BOTTOM of a column needs TWO mechanisms working together,
+ * because sticky alone is not enough:
+ *
+ *   1. `margin-top: auto` — in a flex COLUMN this consumes all the free vertical
+ *      space, pushing the FAB to the bottom of the container EVEN WHEN THE
+ *      CONTENT IS SHORT (e.g. an empty feed / loading spinner). Without it, a
+ *      short column leaves the FAB at its natural flow position (mid-column) —
+ *      which is exactly the "floating in the middle / broken" bug.
+ *   2. `position: sticky; bottom` — when the content is TALL and the column
+ *      scrolls, sticky keeps the FAB pinned to the bottom of the viewport as the
+ *      user scrolls, instead of scrolling away with the content.
+ *
+ * Horizontal placement uses `align-self` (sticky elements can't be pushed by
+ * `left`/`right` the way absolute ones are) plus an inline-edge margin for the
+ * `offset`. The consumer column MUST be a flex column that fills the available
+ * height, and the FAB MUST be its last child — documented in the usage story.
  */
 function placementStyle(placement: FabPlacement, offset: number): CSSProperties {
   if (placement === 'static') return {};
   const style: CSSProperties = { position: 'sticky' };
-  if (placement === 'bottom-right' || placement === 'bottom-left') {
+  const isBottom = placement === 'bottom-right' || placement === 'bottom-left';
+  if (isBottom) {
     style.bottom = offset;
+    // Push the FAB to the bottom of a (flex-column) container even when the
+    // content is too short to scroll, so it never floats mid-column.
+    style.marginTop = 'auto';
   } else {
     style.top = offset;
   }
-  // Sticky elements can't be pushed horizontally by left/right the way absolute
-  // ones are; we self-align within the (flex column) container instead, and add
-  // a horizontal margin for the offset so the FAB sits `offset` px from the
-  // column's inline edge.
   if (placement === 'bottom-right' || placement === 'top-right') {
     style.alignSelf = 'flex-end';
     style.marginRight = offset;

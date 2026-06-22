@@ -15,8 +15,11 @@ import type { FabPlacement, FabProps, FabSize, FabVariant } from './types';
 
 export type { FabProps, FabVariant, FabSize, FabPlacement } from './types';
 
+// Material-style FAB scale. `small` (40px, the compact FAB Mention uses) keeps a
+// full 24px icon box so the glyph reads clearly; `medium` (56px) is the
+// canonical FAB; `large` (64px) is the high-prominence action.
 const SIZE_CONFIG: Record<FabSize, { diameter: number; iconBox: number; fontSize: number }> = {
-  small: { diameter: 40, iconBox: 20, fontSize: 14 },
+  small: { diameter: 40, iconBox: 24, fontSize: 14 },
   medium: { diameter: 56, iconBox: 24, fontSize: 15 },
   large: { diameter: 64, iconBox: 28, fontSize: 16 },
 };

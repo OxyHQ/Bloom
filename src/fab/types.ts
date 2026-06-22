@@ -26,11 +26,14 @@ export type FabSize = 'small' | 'medium' | 'large';
  * Where the FAB anchors itself.
  *
  *   - `bottom-right` (default) / `bottom-left` / `top-right` / `top-left` —
- *     the FAB pins itself to that corner of its CONTAINING block. On web this
- *     uses `position: sticky` so it tracks the bottom of the scrolling column
- *     (NOT the viewport edge), which is exactly what a constrained multi-column
- *     app layout needs. On native it uses `position: absolute` within the
- *     nearest positioned ancestor.
+ *     the FAB pins itself to that corner of its CONTAINING block, never the
+ *     viewport. On native it uses `position: absolute` within the nearest
+ *     positioned ancestor. On web a `bottom-*` placement combines
+ *     `margin-top: auto` (pins to the bottom of a flex COLUMN even when the
+ *     content is short / not scrolling) with `position: sticky; bottom` (keeps
+ *     it visible while a tall column scrolls). The consumer column MUST be a
+ *     flex column that fills the available height and the FAB MUST be its last
+ *     child.
  *   - `static` — no positioning at all. The FAB is laid out inline and the
  *     consumer is fully responsible for placement (e.g. wrapping it in their
  *     own absolutely/sticky-positioned container). Use this when you need
@@ -38,7 +41,8 @@ export type FabSize = 'small' | 'medium' | 'large';
  *
  * CRITICAL: the positioned placements DO NOT use web `position: fixed` and are
  * never anchored to the viewport. They stay inside the containing column so the
- * FAB never escapes a constrained 3-column app layout and sits over a side rail.
+ * FAB never escapes a constrained 3-column app layout and sits over a side rail,
+ * and never float mid-column when the content is short.
  */
 export type FabPlacement =
   | 'bottom-right'
