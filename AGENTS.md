@@ -38,6 +38,10 @@ src/
 
 Components with `.web.tsx` variants: dialog, context-menu, menu, prompt-input/Textarea, select, toast, tooltip, theme/adaptive-colors.
 
+## Component Families
+
+Compound components are flat-prefixed exports (e.g. `Tabs`, `TabsTrigger`, `TabsContent`; `Menu`, `MenuItem`, `MenuTrigger`). Only the collection families `Icons`, `Typography`, `Skeleton`, `Grid`, `Code`, `Fonts` are namespaces. No deprecated/back-compat aliases — breaking renames are clean cuts.
+
 ## Overlay surface architecture (0.16.x — two canonical components)
 
 Only TWO overlay surface components exist. `CenteredDialog` and `ResponsiveSheet` were REMOVED (breaking, no shims) in 0.16.x.
