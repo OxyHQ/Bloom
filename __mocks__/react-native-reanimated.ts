@@ -1,5 +1,16 @@
+// `useSharedValue` must return a STABLE object across re-renders (the real
+// reanimated does — a shared value is a persistent box). Several components
+// (e.g. BottomSheet) capture a shared value in a `useMemo`/gesture closure and
+// later mutate `.value` from a different render; a fresh object per render would
+// desync those reads. Back it with a ref so identity is preserved per call site.
+const { useRef } = require('react') as typeof import('react');
+
 const Reanimated = {
-  useSharedValue: (init: unknown) => ({ value: init }),
+  useSharedValue: (init: unknown) => {
+    const ref = useRef<{ value: unknown } | null>(null);
+    if (ref.current === null) ref.current = { value: init };
+    return ref.current;
+  },
   useAnimatedStyle: (fn: () => Record<string, unknown>) => fn(),
   useAnimatedScrollHandler: () => jest.fn(),
   withSpring: (val: number) => val,

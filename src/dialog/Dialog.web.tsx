@@ -10,11 +10,8 @@ import React, {
 } from 'react';
 import {
   Pressable,
-  Text,
-  TouchableOpacity,
   useWindowDimensions,
   View,
-  type GestureResponderEvent,
   type StyleProp,
   type ViewStyle,
 } from 'react-native';
@@ -22,29 +19,24 @@ import { RemoveScrollBar } from 'react-remove-scroll-bar';
 
 import { Portal } from '../portal/index.web';
 import { createOverlayZIndex } from '../styles/z-index';
-import type { ThemeColors } from '../theme/types';
 import { useTheme } from '../theme/use-theme';
-import { Context, useDialogContext, useDialogControl } from './context';
+import { Context, useDialogControl } from './context';
+import { DialogBody } from './DialogContent';
+import { DialogBottomSheet } from './DialogBottomSheet';
 import {
   ANIMATION_DURATION,
   CENTER_FADE_OUT_DURATION,
   DEFAULT_CENTER_MAX_WIDTH,
-  DEFAULT_MAX_HEIGHT_RATIO,
   DEFAULT_SIDE_WIDTH,
   DIALOG_SHEET_BACKDROP_TESTID,
   EASE_OUT,
-  HANDLE_HEIGHT,
-  HANDLE_RADIUS,
-  HANDLE_WIDTH,
   PANEL_RADIUS,
   SHEET_BACKDROP_OPACITY,
   SIDE_SHEET_MIN_GUTTER,
   useResolvedPlacement,
-  type DialogPlacement,
 } from './placement';
 import type {
   DialogAction,
-  DialogActionColor,
   DialogControlProps,
   DialogInset,
   DialogProps,
@@ -61,9 +53,10 @@ const ClosingContext = createContext(false);
  * Web variant of `<Dialog>`.
  *
  * A centered modal card (default) rendered into the bloom Portal at the end of
- * `document.body`, or — when `placement` is `left`/`right`/`bottom` — an
- * anchored side-sheet or bottom-sheet. Same prop API as native, so call sites
- * are platform agnostic.
+ * `document.body`, an anchored side-sheet for `left`/`right`, or — for
+ * `bottom` — bloom's cross-platform `BottomSheet` (the SAME component native
+ * uses), so the bottom placement drags-to-dismiss on web too. Same prop API as
+ * native, so call sites are platform agnostic.
  *
  * Open/close is driven by EITHER the imperative `control` (legacy) OR the
  * controlled `open` prop. When `open` is provided it wins.
@@ -75,10 +68,32 @@ const ClosingContext = createContext(false);
  *
  * Web motion never uses reanimated `exiting` (which throws `removeChild` on
  * concurrent React unmounts): the centered card uses CSS keyframes and the
- * side/bottom modes use self-contained CSS transitions on a
- * mounted-through-exit node.
+ * side modes use self-contained CSS transitions on a mounted-through-exit
+ * node. The bottom placement animates via `BottomSheet`'s shared-value/gesture
+ * animation (no `exiting` layout animation).
  */
-export function Dialog({
+export function Dialog({ placement, ...rest }: DialogProps) {
+  const resolvedPlacement = useResolvedPlacement(placement);
+
+  // `bottom` routes to the shared cross-platform `BottomSheet` surface — the
+  // SAME component native uses — so drag-to-dismiss works on web too and there
+  // is no duplicated CSS slide-up sheet. `center` (default) and the side-sheets
+  // keep their DOM-portal implementation below. Each branch is its own
+  // component so the dispatcher only ever calls `useResolvedPlacement`, keeping
+  // the rules-of-hooks contract intact across a responsive placement change.
+  if (resolvedPlacement === 'bottom') {
+    return <DialogBottomSheet {...rest} />;
+  }
+  return <CenterOrSideDialog {...rest} placement={resolvedPlacement} />;
+}
+
+/**
+ * Web `center` (default) and `left`/`right` placements. The centered card is a
+ * DOM-portal modal; the side placements are CSS-transition sheets. The `bottom`
+ * placement is handled separately by `DialogBottomSheet` (bloom's cross-platform
+ * `BottomSheet`).
+ */
+function CenterOrSideDialog({
   control,
   open: controlledOpen,
   onClose,
@@ -89,9 +104,7 @@ export function Dialog({
   placement,
   width = DEFAULT_SIDE_WIDTH,
   maxWidth = DEFAULT_CENTER_MAX_WIDTH,
-  maxHeightRatio = DEFAULT_MAX_HEIGHT_RATIO,
   inset,
-  showHandle = true,
   dismissOnBackdrop = true,
   style,
   panelStyle,
@@ -100,11 +113,11 @@ export function Dialog({
   containerClassName,
   label,
   children,
-}: DialogProps) {
+}: Omit<DialogProps, 'placement'> & { placement: 'center' | 'left' | 'right' }) {
   // Controlled mode is opt-in: when `open` is a boolean the host owns the
   // visible state; otherwise the legacy imperative `control` path drives it.
   const isControlled = controlledOpen !== undefined;
-  const resolvedPlacement = useResolvedPlacement(placement);
+  const resolvedPlacement = placement;
 
   const [isOpen, setIsOpen] = useState(false);
   const [isClosing, setIsClosing] = useState(false);
@@ -272,9 +285,7 @@ export function Dialog({
             placement={resolvedPlacement}
             shown={!isClosing}
             width={width}
-            maxHeightRatio={maxHeightRatio}
             inset={inset}
-            showHandle={showHandle}
             dismissOnBackdrop={dismissOnBackdrop}
             onDismiss={close}
             panelStyle={panelStyle}
@@ -288,64 +299,6 @@ export function Dialog({
         </ClosingContext.Provider>
       </Context.Provider>
     </Portal>
-  );
-}
-
-/**
- * Renders the dialog's body: optional declarative title + description, any
- * `children`, then the action row. Shared by the centered panel and the
- * side/bottom sheet so all placements present identical content. The
- * `titleId`/`descriptionId` are wired by the caller onto the `role="dialog"`
- * element for `aria-labelledby` / `aria-describedby`.
- */
-function DialogBody({
-  titleId,
-  descriptionId,
-  title,
-  description,
-  actions,
-  children,
-}: {
-  titleId: string;
-  descriptionId: string;
-  title?: string;
-  description?: string;
-  actions?: DialogAction[];
-  children?: React.ReactNode;
-}) {
-  const theme = useTheme();
-  return (
-    <>
-      {title ? (
-        <Text
-          nativeID={titleId}
-          style={{
-            fontSize: 22,
-            fontWeight: '600',
-            color: theme.colors.text,
-            paddingBottom: description ? 4 : 16,
-            lineHeight: 30,
-          }}
-        >
-          {title}
-        </Text>
-      ) : null}
-      {description ? (
-        <Text
-          nativeID={descriptionId}
-          style={{
-            fontSize: 16,
-            color: theme.colors.textSecondary,
-            paddingBottom: 16,
-            lineHeight: 22,
-          }}
-        >
-          {description}
-        </Text>
-      ) : null}
-      {children}
-      {actions && actions.length > 0 ? <ActionRow actions={actions} /> : null}
-    </>
   );
 }
 
@@ -422,10 +375,13 @@ function DialogPanel({
 export { DIALOG_SHEET_BACKDROP_TESTID };
 
 /**
- * Side-sheet / bottom-sheet surface for the `left`/`right`/`bottom`
- * placements. Pure CSS transitions: the
- * node stays mounted through the exit while a `shown` flag drives the
+ * Side-sheet surface for the `left`/`right` placements. Pure CSS transitions:
+ * the node stays mounted through the exit while a `shown` flag drives the
  * transform/opacity, so both directions animate without reanimated `exiting`.
+ *
+ * The `bottom` placement is NOT handled here — it routes through
+ * `DialogBottomSheet` (bloom's cross-platform `BottomSheet`) so it shares one
+ * implementation with native and supports drag-to-dismiss on web.
  */
 function SheetSurface({
   testID,
@@ -436,9 +392,7 @@ function SheetSurface({
   placement,
   shown,
   width,
-  maxHeightRatio,
   inset,
-  showHandle,
   dismissOnBackdrop,
   onDismiss,
   panelStyle,
@@ -453,12 +407,10 @@ function SheetSurface({
   title?: string;
   description?: string;
   actions?: DialogAction[];
-  placement: Exclude<DialogPlacement, 'center'>;
+  placement: 'left' | 'right';
   shown: boolean;
   width: number;
-  maxHeightRatio: number;
   inset?: DialogInset;
-  showHandle: boolean;
   dismissOnBackdrop: boolean;
   onDismiss: () => void;
   panelStyle?: StyleProp<ViewStyle>;
@@ -471,7 +423,7 @@ function SheetSurface({
   const theme = useTheme();
   const titleId = useId();
   const descriptionId = useId();
-  const { width: viewportWidth, height: viewportHeight } = useWindowDimensions();
+  const { width: viewportWidth } = useWindowDimensions();
 
   // Defer the entry transition by a frame so the start state paints before the
   // browser animates to `shown`. `entered` is false on the first committed
@@ -489,7 +441,6 @@ function SheetSurface({
   }, []);
 
   const visible = shown && entered;
-  const isBottom = placement === 'bottom';
 
   const panelTransition = useMemo<ViewStyle>(
     () =>
@@ -512,19 +463,6 @@ function SheetSurface({
   );
 
   const panelGeometry = useMemo<ViewStyle>(() => {
-    if (isBottom) {
-      return {
-        left: 0,
-        right: 0,
-        bottom: 0,
-        maxHeight: Math.round(viewportHeight * maxHeightRatio),
-        borderTopLeftRadius: PANEL_RADIUS,
-        borderTopRightRadius: PANEL_RADIUS,
-        transform: [{ translateY: visible ? 0 : '100%' }],
-        opacity: visible ? 1 : 0,
-      } as ViewStyle;
-    }
-
     const insetTop = inset?.top ?? 0;
     const insetBottom = inset?.bottom ?? 0;
     const insetLeft = inset?.left ?? 0;
@@ -544,7 +482,7 @@ function SheetSurface({
       transform: [{ translateX: visible ? 0 : hiddenSign }],
       opacity: visible ? 1 : 0,
     } as ViewStyle;
-  }, [isBottom, visible, placement, width, inset, viewportWidth, viewportHeight, maxHeightRatio]);
+  }, [visible, placement, width, inset, viewportWidth]);
 
   const handleBackdropPress = useCallback(() => {
     if (dismissOnBackdrop) onDismiss();
@@ -590,11 +528,6 @@ function SheetSurface({
         ]}
         pointerEvents="auto"
       >
-        {isBottom && showHandle ? (
-          <View style={sheetStyles.handleRow} pointerEvents="none">
-            <View style={[sheetStyles.handle, { backgroundColor: theme.colors.border }]} />
-          </View>
-        ) : null}
         <View style={sheetStyles.body}>
           <DialogBody
             titleId={titleId}
@@ -630,88 +563,6 @@ function cancelFrame(token: FrameToken): void {
     return;
   }
   clearTimeout(token.timer);
-}
-
-function ActionRow({ actions }: { actions: DialogAction[] }) {
-  return (
-    <View style={{ width: '100%', gap: 8, justifyContent: 'flex-end' }}>
-      {actions.map((action, idx) => (
-        <ActionButton
-          key={`${action.label}-${idx}`}
-          action={action}
-        />
-      ))}
-    </View>
-  );
-}
-
-function ActionButton({ action }: { action: DialogAction }) {
-  const { close } = useDialogContext();
-  const theme = useTheme();
-  const color: DialogActionColor = action.color ?? 'default';
-  const shouldCloseOnPress = action.shouldCloseOnPress ?? true;
-
-  const { background, foreground } = getActionPalette(color, theme.colors);
-
-  const handlePress = useCallback(
-    (e: GestureResponderEvent) => {
-      const onPress = action.onPress;
-      if (color === 'cancel') {
-        close(onPress ? () => onPress(e) : undefined);
-        return;
-      }
-      if (shouldCloseOnPress) {
-        close(onPress ? () => onPress(e) : undefined);
-      } else {
-        onPress?.(e);
-      }
-    },
-    [action.onPress, close, color, shouldCloseOnPress],
-  );
-
-  return (
-    <TouchableOpacity
-      style={{
-        borderRadius: 9999,
-        alignItems: 'center',
-        justifyContent: 'center',
-        backgroundColor: background,
-        opacity: action.disabled ? 0.5 : 1,
-        paddingVertical: 12,
-        paddingHorizontal: 24,
-      }}
-      onPress={handlePress}
-      disabled={action.disabled}
-      activeOpacity={0.7}
-      testID={action.testID}
-    >
-      <Text style={{ fontSize: 16, fontWeight: '500', color: foreground }}>
-        {action.label}
-      </Text>
-    </TouchableOpacity>
-  );
-}
-
-function getActionPalette(
-  color: DialogActionColor,
-  colors: ThemeColors,
-): { background: string; foreground: string } {
-  switch (color) {
-    case 'destructive':
-      return {
-        background: colors.negative,
-        foreground: colors.negativeForeground,
-      };
-    case 'cancel':
-      return { background: colors.contrast50, foreground: colors.text };
-    case 'default':
-      return { background: colors.primary, foreground: colors.primaryForeground };
-    /* c8 ignore next 3 -- TS exhaustiveness guard */
-    default: {
-      const _exhaustive: never = color;
-      return { background: colors.primary, foreground: colors.primaryForeground };
-    }
-  }
 }
 
 function DialogBackdrop({ isClosing }: { isClosing: boolean }) {
@@ -790,18 +641,6 @@ const sheetStyles = {
     shadowOffset: { width: 0, height: 8 },
     zIndex: dialogZIndex.surface,
   } as ViewStyle,
-  handleRow: {
-    width: '100%',
-    alignItems: 'center',
-    paddingTop: 8,
-    paddingBottom: 4,
-  } as ViewStyle,
-  handle: {
-    width: HANDLE_WIDTH,
-    height: HANDLE_HEIGHT,
-    borderRadius: HANDLE_RADIUS,
-    opacity: 0.5,
-  } as ViewStyle,
   body: {
     padding: 20,
   } as ViewStyle,
@@ -818,8 +657,9 @@ const sheetStyles = {
  * @keyframes bloomDialogZoomFadeOut { from { opacity: 1; transform: scale(1); } to { opacity: 0; transform: scale(0.95); } }
  * ```
  *
- * The `left`/`right`/`bottom` placements do NOT depend on this — they animate
- * via self-contained inline CSS transitions and need no keyframe injection.
+ * The `left`/`right` placements do NOT depend on this — they animate via
+ * self-contained inline CSS transitions and need no keyframe injection. The
+ * `bottom` placement uses bloom's `BottomSheet` (reanimated) and needs none.
  */
 export const BLOOM_DIALOG_CSS = `
 @keyframes bloomDialogFadeIn { from { opacity: 0; } to { opacity: 1; } }

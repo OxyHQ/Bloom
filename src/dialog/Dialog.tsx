@@ -10,11 +10,8 @@ import React, {
 import {
   Pressable,
   StyleSheet,
-  Text,
-  TouchableOpacity,
   useWindowDimensions,
   View,
-  type GestureResponderEvent,
   type StyleProp,
   type ViewStyle,
 } from 'react-native';
@@ -29,12 +26,12 @@ import Animated, {
 
 import { BottomSheet, type BottomSheetRef } from '../bottom-sheet';
 import { Z_INDEX } from '../styles/z-index';
-import type { ThemeColors } from '../theme/types';
 import { useTheme } from '../theme/use-theme';
-import { Context, useDialogContext, useDialogControl } from './context';
+import { Context, useDialogControl } from './context';
+import { DialogBody } from './DialogContent';
+import { DialogBottomSheet } from './DialogBottomSheet';
 import {
   ANIMATION_DURATION,
-  DEFAULT_MAX_HEIGHT_RATIO,
   DEFAULT_SIDE_WIDTH,
   DIALOG_SHEET_BACKDROP_TESTID,
   PANEL_RADIUS,
@@ -44,7 +41,6 @@ import {
 } from './placement';
 import type {
   DialogAction,
-  DialogActionColor,
   DialogControlProps,
   DialogInset,
   DialogProps,
@@ -74,6 +70,31 @@ export { DIALOG_SHEET_BACKDROP_TESTID };
  *   3. Pure children — no `title`/`description`/`actions`.
  */
 export function Dialog({
+  placement,
+  ...rest
+}: DialogProps) {
+  const resolvedPlacement = useResolvedPlacement(placement);
+
+  // `bottom` routes to the shared cross-platform `BottomSheet` surface — one
+  // code path with drag-to-dismiss on web and native. `center` (default) and
+  // the side-sheets keep their existing native lifecycle below. Each branch is
+  // its own component so the dispatcher only ever calls `useResolvedPlacement`,
+  // keeping the rules-of-hooks contract intact across a responsive placement
+  // change.
+  if (resolvedPlacement === 'bottom') {
+    return <DialogBottomSheet {...rest} />;
+  }
+  return <CenteredOrSideDialog {...rest} placement={resolvedPlacement} />;
+}
+
+/**
+ * Native `center` and `left`/`right` placements. `center` uses bloom's
+ * `BottomSheet` in `detached` mode (a floating, content-hugging card that
+ * degrades from sheet to centered card via the 500px cap); the side placements
+ * use a reanimated drawer. These share one open/close lifecycle. The `bottom`
+ * placement is handled separately by `DialogBottomSheet`.
+ */
+function CenteredOrSideDialog({
   control,
   open: controlledOpen,
   onClose,
@@ -83,9 +104,7 @@ export function Dialog({
   actions,
   placement,
   width = DEFAULT_SIDE_WIDTH,
-  maxHeightRatio = DEFAULT_MAX_HEIGHT_RATIO,
   inset,
-  showHandle = true,
   dismissOnBackdrop = true,
   style,
   panelStyle,
@@ -94,10 +113,9 @@ export function Dialog({
   containerClassName,
   label,
   children,
-}: DialogProps) {
+}: Omit<DialogProps, 'placement'> & { placement: 'center' | 'left' | 'right' }) {
   const isControlled = controlledOpen !== undefined;
-  const resolvedPlacement = useResolvedPlacement(placement);
-  const isSide = resolvedPlacement === 'left' || resolvedPlacement === 'right';
+  const isSide = placement === 'left' || placement === 'right';
 
   // Imperative open state for the side placement (the BottomSheet path owns its
   // own visibility via its ref instead).
@@ -220,7 +238,7 @@ export function Dialog({
         <SideSheet
           open={sideOpen}
           onDismiss={handleDismiss}
-          side={resolvedPlacement}
+          side={placement}
           width={width}
           inset={inset}
           dismissOnBackdrop={dismissOnBackdrop}
@@ -242,19 +260,17 @@ export function Dialog({
     );
   }
 
-  const isBottom = resolvedPlacement === 'bottom';
-
   return (
     <BottomSheet
       ref={ref}
       onDismiss={handleDismiss}
       enablePanDownToClose
-      detached={!isBottom}
-      showHandle={isBottom ? showHandle : true}
+      detached
+      showHandle
       // Stronger dim when a Dialog is stacked over another sheet so the
       // underlying sheet's handle/content doesn't bleed through.
       backdropOpacity={0.7}
-      style={isBottom ? bottomSheetStyle(theme.colors.background, maxHeightRatio) : sheetStyle}
+      style={sheetStyle}
     >
       <Context.Provider value={context}>
         <View
@@ -277,71 +293,6 @@ export function Dialog({
         </View>
       </Context.Provider>
     </BottomSheet>
-  );
-}
-
-function bottomSheetStyle(background: string, maxHeightRatio: number): ViewStyle {
-  return {
-    backgroundColor: background,
-    borderTopLeftRadius: PANEL_RADIUS + 4,
-    borderTopRightRadius: PANEL_RADIUS + 4,
-    maxHeight: `${Math.round(maxHeightRatio * 100)}%`,
-  };
-}
-
-/**
- * Renders the dialog's body: optional declarative title + description, any
- * `children`, then the action row. Shared by all placements. The
- * `titleId`/`descriptionId` are wired by the caller for accessibility.
- */
-function DialogBody({
-  titleId,
-  descriptionId,
-  title,
-  description,
-  actions,
-  children,
-}: {
-  titleId: string;
-  descriptionId: string;
-  title?: string;
-  description?: string;
-  actions?: DialogAction[];
-  children?: React.ReactNode;
-}) {
-  const theme = useTheme();
-  return (
-    <>
-      {title ? (
-        <Text
-          nativeID={titleId}
-          style={{
-            fontSize: 22,
-            fontWeight: '600',
-            color: theme.colors.text,
-            paddingBottom: description ? 4 : 16,
-            lineHeight: 30,
-          }}
-        >
-          {title}
-        </Text>
-      ) : null}
-      {description ? (
-        <Text
-          nativeID={descriptionId}
-          style={{
-            fontSize: 16,
-            color: theme.colors.textSecondary,
-            paddingBottom: 16,
-            lineHeight: 22,
-          }}
-        >
-          {description}
-        </Text>
-      ) : null}
-      {children}
-      {actions && actions.length > 0 ? <ActionRow actions={actions} /> : null}
-    </>
   );
 }
 
@@ -514,89 +465,6 @@ function SideSheet({
       </Animated.View>
     </View>
   );
-}
-
-function ActionRow({ actions }: { actions: DialogAction[] }) {
-  return (
-    <View style={{ width: '100%', gap: 8, justifyContent: 'flex-end' }}>
-      {actions.map((action, idx) => (
-        <ActionButton
-          key={`${action.label}-${idx}`}
-          action={action}
-        />
-      ))}
-    </View>
-  );
-}
-
-function ActionButton({ action }: { action: DialogAction }) {
-  const { close } = useDialogContext();
-  const theme = useTheme();
-  const color: DialogActionColor = action.color ?? 'default';
-  const shouldCloseOnPress = action.shouldCloseOnPress ?? true;
-
-  const { background, foreground } = getActionPalette(color, theme.colors);
-
-  const handlePress = useCallback(
-    (e: GestureResponderEvent) => {
-      const onPress = action.onPress;
-      if (color === 'cancel') {
-        // Cancel always dismisses; consumer's onPress (rare) runs after.
-        close(onPress ? () => onPress(e) : undefined);
-        return;
-      }
-      if (shouldCloseOnPress) {
-        close(onPress ? () => onPress(e) : undefined);
-      } else {
-        onPress?.(e);
-      }
-    },
-    [action.onPress, close, color, shouldCloseOnPress],
-  );
-
-  return (
-    <TouchableOpacity
-      style={{
-        borderRadius: 9999,
-        alignItems: 'center',
-        justifyContent: 'center',
-        backgroundColor: background,
-        opacity: action.disabled ? 0.5 : 1,
-        paddingVertical: 12,
-        paddingHorizontal: 24,
-      }}
-      onPress={handlePress}
-      disabled={action.disabled}
-      activeOpacity={0.7}
-      testID={action.testID}
-    >
-      <Text style={{ fontSize: 16, fontWeight: '500', color: foreground }}>
-        {action.label}
-      </Text>
-    </TouchableOpacity>
-  );
-}
-
-function getActionPalette(
-  color: DialogActionColor,
-  colors: ThemeColors,
-): { background: string; foreground: string } {
-  switch (color) {
-    case 'destructive':
-      return {
-        background: colors.negative,
-        foreground: colors.negativeForeground,
-      };
-    case 'cancel':
-      return { background: colors.contrast50, foreground: colors.text };
-    case 'default':
-      return { background: colors.primary, foreground: colors.primaryForeground };
-    /* c8 ignore next 2 -- TS exhaustiveness check guards this branch */
-    default: {
-      const _exhaustive: never = color;
-      return { background: colors.primary, foreground: colors.primaryForeground };
-    }
-  }
 }
 
 const sideStyles = StyleSheet.create({
