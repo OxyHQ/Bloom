@@ -20,7 +20,7 @@ PopoverContext.displayName = 'PopoverContext';
 export function usePopoverContext(): PopoverContextValue {
   const ctx = useContext(PopoverContext);
   if (!ctx) {
-    throw new Error('Popover components must be used within a <Popover.Root>');
+    throw new Error('Popover components must be used within a <Popover>');
   }
   return ctx;
 }

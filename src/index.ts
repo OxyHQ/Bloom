@@ -110,7 +110,7 @@ export * from './menu';
 export * from './tooltip';
 export * from './select';
 export * from './context-menu';
-export * as Popover from './popover';
+export * from './popover';
 export { AlertDialog, AlertDialogHost, confirm } from './alert-dialog';
 export type {
   AlertDialogProps,

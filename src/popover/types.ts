@@ -53,7 +53,7 @@ export interface PopoverContentProps {
   testID?: string;
 }
 
-export interface PopoverRootProps {
+export interface PopoverProps {
   children: React.ReactNode;
   /** Optionally supply your own control (from `usePopoverControl`). */
   control?: PopoverControlProps;

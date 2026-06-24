@@ -17,7 +17,7 @@ import type {
   PopoverContentProps,
   PopoverControlProps,
   PopoverPlacement,
-  PopoverRootProps,
+  PopoverProps,
   PopoverTriggerProps,
 } from './types';
 
@@ -25,7 +25,7 @@ export type {
   PopoverControlProps,
   PopoverContentProps,
   PopoverTriggerProps,
-  PopoverRootProps,
+  PopoverProps,
   PopoverPlacement,
   PopoverTriggerRenderProps,
   PopoverTriggerState,
@@ -69,7 +69,7 @@ interface Rect {
   height: number;
 }
 
-export function Root({ children, control }: PopoverRootProps) {
+export function Popover({ children, control }: PopoverProps) {
   const id = useId();
   const [isOpen, setIsOpen] = useState(false);
   const triggerRef = useRef<View | null>(null);
@@ -121,7 +121,7 @@ export function Root({ children, control }: PopoverRootProps) {
   );
 }
 
-export function Trigger({ children, label }: PopoverTriggerProps) {
+export function PopoverTrigger({ children, label }: PopoverTriggerProps) {
   const { control, triggerRef, isOpen } = usePopoverContext();
   const [hovered, setHovered] = useState(false);
   const [focused, setFocused] = useState(false);
@@ -191,7 +191,7 @@ function resolvePosition(
   return { left, top };
 }
 
-export function Content({
+export function PopoverContent({
   children,
   label = 'Popover',
   placement = 'bottom-start',

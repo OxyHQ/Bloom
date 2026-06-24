@@ -7,7 +7,7 @@ import { PopoverContext, usePopoverContext } from './context';
 import type {
   PopoverContentProps,
   PopoverControlProps,
-  PopoverRootProps,
+  PopoverProps,
   PopoverTriggerProps,
 } from './types';
 
@@ -15,7 +15,7 @@ export type {
   PopoverControlProps,
   PopoverContentProps,
   PopoverTriggerProps,
-  PopoverRootProps,
+  PopoverProps,
   PopoverPlacement,
   PopoverTriggerRenderProps,
   PopoverTriggerState,
@@ -29,7 +29,7 @@ export { usePopoverContext };
  * established native-overlay convention, shared with `Menu`/`Select`). The
  * web fork (`index.web.tsx`) anchors a floating panel to the trigger.
  */
-export function Root({ children, control }: PopoverRootProps) {
+export function Popover({ children, control }: PopoverProps) {
   const defaultControl = useDialogControl();
   const triggerRef = useRef<View | null>(null);
   const [isOpen, setIsOpen] = useState(false);
@@ -64,7 +64,7 @@ export function Root({ children, control }: PopoverRootProps) {
   );
 }
 
-export function Trigger({ children, label }: PopoverTriggerProps) {
+export function PopoverTrigger({ children, label }: PopoverTriggerProps) {
   const { control, triggerRef } = usePopoverContext();
   const [focused, setFocused] = useState(false);
   const [pressed, setPressed] = useState(false);
@@ -89,7 +89,7 @@ export function Trigger({ children, label }: PopoverTriggerProps) {
   );
 }
 
-export function Content({
+export function PopoverContent({
   children,
   label = 'Popover',
   style,
