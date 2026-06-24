@@ -134,6 +134,18 @@ export type DialogProps = React.PropsWithChildren<{
   inset?: DialogInset;
   /** Whether to render the drag handle in bottom-sheet mode. Defaults to `true`. */
   showHandle?: boolean;
+  /**
+   * Inner padding (px) of the dialog content container, applied uniformly across
+   * every placement (centered panel, side-sheet body, bottom-sheet body).
+   * Defaults to `20`.
+   *
+   * The default chrome padding is correct for the declarative
+   * `title`/`description`/`actions` layout, but a host passing pure custom
+   * `children` that already own their insets can set `contentPadding={0}` to
+   * render flush content and manage padding itself. Omitting the prop keeps the
+   * 20px default on every surface.
+   */
+  contentPadding?: number;
   /** Whether tapping the backdrop dismisses the dialog. Defaults to `true`. */
   dismissOnBackdrop?: boolean;
   /**

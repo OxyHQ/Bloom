@@ -13,17 +13,12 @@ import { useTheme } from '../theme/use-theme';
 import { Context } from './context';
 import { DialogBody } from './DialogContent';
 import {
+  DEFAULT_DIALOG_CONTENT_PADDING,
   DEFAULT_MAX_HEIGHT_RATIO,
   PANEL_RADIUS,
   SHEET_BACKDROP_OPACITY,
 } from './placement';
 import type { DialogControlProps, DialogProps } from './types';
-
-/**
- * Padding of the bottom-sheet content container (px). Matches the side-sheet
- * and centered-panel body padding so every placement reads identically.
- */
-const SHEET_CONTENT_PADDING = 20;
 
 /**
  * Shared `BottomSheet`-backed surface for the `bottom` placement, used by BOTH
@@ -56,6 +51,7 @@ export function DialogBottomSheet({
   maxHeightRatio = DEFAULT_MAX_HEIGHT_RATIO,
   showHandle = true,
   dismissOnBackdrop = true,
+  contentPadding = DEFAULT_DIALOG_CONTENT_PADDING,
   style,
   panelStyle,
   panelClassName,
@@ -164,6 +160,21 @@ export function DialogBottomSheet({
     ];
   }, [theme.colors.background, maxHeightRatio, panelStyle]);
 
+  // Does this dialog render bloom's declarative chrome (title / description /
+  // actions), or is it pure custom `children`? Pure custom children own their
+  // own layout and scrolling, so we render them through a NON-scrollable
+  // BottomSheet body — otherwise the sheet's internal ScrollView would wrap a
+  // child that already contains its own scroller, producing a scroll-in-scroll
+  // (double scroll container). Declarative dialogs are short and keep the
+  // sheet's default scrollable body so they degrade gracefully on small
+  // viewports. This only changes what `DialogBottomSheet` passes to
+  // `BottomSheet`; the standalone `BottomSheet` API and its `scrollable` default
+  // are unchanged for direct consumers.
+  const hasDeclarativeChrome =
+    title !== undefined ||
+    description !== undefined ||
+    (actions !== undefined && actions.length > 0);
+
   return (
     <BottomSheet
       ref={ref}
@@ -171,6 +182,9 @@ export function DialogBottomSheet({
       onDismissAttempt={onDismissAttempt}
       enablePanDownToClose
       showHandle={showHandle}
+      // Pure custom children own scrolling → opt OUT of BottomSheet's internal
+      // ScrollView so there is exactly ONE scroll container (no scroll-in-scroll).
+      scrollable={hasDeclarativeChrome}
       // Stronger dim than a lone sheet so an underlying sheet's handle/content
       // doesn't bleed through when a Dialog is stacked over one.
       backdropOpacity={SHEET_BACKDROP_OPACITY + 0.3}
@@ -185,7 +199,7 @@ export function DialogBottomSheet({
           {...(containerClassName ? ({ className: containerClassName } as Record<string, string>) : {})}
           {...(panelClassName ? ({ className: panelClassName } as Record<string, string>) : {})}
           style={[
-            { padding: SHEET_CONTENT_PADDING },
+            { padding: contentPadding },
             // `containerStyle` carries the host's CSS-var theme scope; it wraps
             // the content subtree so descendants read the scoped palette.
             containerStyle,
@@ -225,6 +239,7 @@ export type DialogBottomSheetProps = Pick<
   | 'maxHeightRatio'
   | 'showHandle'
   | 'dismissOnBackdrop'
+  | 'contentPadding'
   | 'style'
   | 'panelStyle'
   | 'panelClassName'

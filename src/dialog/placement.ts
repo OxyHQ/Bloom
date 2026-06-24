@@ -60,6 +60,17 @@ export const DEFAULT_MAX_HEIGHT_RATIO = 0.9;
 /** Corner radius shared by the side-sheet panel and the bottom-sheet top. */
 export const PANEL_RADIUS = 20;
 
+/**
+ * Default inner padding (px) of the dialog content container, applied uniformly
+ * across every placement (centered panel, side-sheet body, bottom-sheet body)
+ * so the chrome reads identically regardless of which surface resolves. This is
+ * the legacy value — omitting the `contentPadding` prop keeps 20px everywhere,
+ * byte-for-byte unchanged. A host that owns its own insets (e.g. custom
+ * `children` that already manage padding) can override it via
+ * `Dialog`'s `contentPadding` prop (e.g. `contentPadding={0}`).
+ */
+export const DEFAULT_DIALOG_CONTENT_PADDING = 20;
+
 /** Open/close transition duration (ms). ~280ms ease-out reads smooth. */
 export const ANIMATION_DURATION = 280;
 

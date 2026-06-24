@@ -6,6 +6,34 @@ import { Dialog, useDialogControl } from '../dialog';
 import { BloomThemeProvider } from '../theme/BloomThemeProvider';
 
 /**
+ * Minimal shape of a `react-test-renderer` JSON node — enough to walk the tree
+ * by host `type` string without depending on `@types/react-test-renderer`.
+ */
+type RenderedNode = {
+  type: string;
+  children: Array<RenderedNode | string> | null;
+};
+
+/** Count host nodes of a given `type` in a rendered `toJSON()` tree. */
+function countNodesByType(
+  tree: RenderedNode | RenderedNode[] | null,
+  type: string,
+): number {
+  if (tree === null) return 0;
+  const roots = Array.isArray(tree) ? tree : [tree];
+  let count = 0;
+  for (const node of roots) {
+    if (node.type === type) count += 1;
+    if (node.children) {
+      for (const child of node.children) {
+        if (typeof child !== 'string') count += countNodesByType(child, type);
+      }
+    }
+  }
+  return count;
+}
+
+/**
  * The Dialog `bottom` placement must delegate to the shared cross-platform
  * `BottomSheet` (via `DialogBottomSheet`) — the SAME surface native and web use
  * — instead of a bespoke CSS slide-up sheet. These tests pin that delegation:
@@ -126,5 +154,106 @@ describe('Dialog bottom placement delegates to BottomSheet', () => {
     // content subtree. Both land on the sheet content container.
     expect(flattened.backgroundColor).toBe('rebeccapurple');
     expect(flattened.paddingTop).toBe(7);
+  });
+
+  it('applies the default 20px content padding when contentPadding is omitted', () => {
+    let control: ReturnType<typeof useDialogControl> | undefined;
+    const { getByTestId } = renderWithTheme(
+      <Harness>
+        {(c) => {
+          control = c;
+          return (
+            <Dialog control={c} placement="bottom" testID="default-pad">
+              <Text>Body</Text>
+            </Dialog>
+          );
+        }}
+      </Harness>,
+    );
+    act(() => {
+      control?.open();
+    });
+    const content = getByTestId('default-pad');
+    const flattened = Array.isArray(content.props.style)
+      ? Object.assign({}, ...content.props.style.filter(Boolean))
+      : content.props.style;
+    // Omitting `contentPadding` keeps the legacy 20px chrome padding.
+    expect(flattened.padding).toBe(20);
+  });
+
+  it('removes the body padding when contentPadding={0} (host owns its insets)', () => {
+    let control: ReturnType<typeof useDialogControl> | undefined;
+    const { getByTestId } = renderWithTheme(
+      <Harness>
+        {(c) => {
+          control = c;
+          return (
+            <Dialog control={c} placement="bottom" testID="flush-pad" contentPadding={0}>
+              <Text>Flush body</Text>
+            </Dialog>
+          );
+        }}
+      </Harness>,
+    );
+    act(() => {
+      control?.open();
+    });
+    const content = getByTestId('flush-pad');
+    const flattened = Array.isArray(content.props.style)
+      ? Object.assign({}, ...content.props.style.filter(Boolean))
+      : content.props.style;
+    // `contentPadding={0}` yields flush content the host pads itself.
+    expect(flattened.padding).toBe(0);
+  });
+
+  it('does NOT wrap pure custom children in a second scroll container (no scroll-in-scroll)', () => {
+    let control: ReturnType<typeof useDialogControl> | undefined;
+    const result = renderWithTheme(
+      <Harness>
+        {(c) => {
+          control = c;
+          return (
+            <Dialog control={c} placement="bottom">
+              <Text>Custom children own their own scrolling</Text>
+            </Dialog>
+          );
+        }}
+      </Harness>,
+    );
+    act(() => {
+      control?.open();
+    });
+    // Pure custom children → DialogBottomSheet passes `scrollable={false}` to
+    // BottomSheet, so the sheet does NOT add its internal ScrollView. A child
+    // that contains its own scroller is then the ONLY scroll container.
+    const tree: RenderedNode | RenderedNode[] | null = result.toJSON();
+    expect(countNodesByType(tree, 'Animated.ScrollView')).toBe(0);
+  });
+
+  it('keeps the internal scrollable body for declarative dialogs (title/description/actions)', () => {
+    let control: ReturnType<typeof useDialogControl> | undefined;
+    const result = renderWithTheme(
+      <Harness>
+        {(c) => {
+          control = c;
+          return (
+            <Dialog
+              control={c}
+              placement="bottom"
+              title="Confirm"
+              description="Short declarative body."
+              actions={[{ label: 'OK' }]}
+            />
+          );
+        }}
+      </Harness>,
+    );
+    act(() => {
+      control?.open();
+    });
+    // Declarative chrome → the default scrollable body is retained, so a long
+    // title/description list still scrolls gracefully on a small viewport.
+    const tree: RenderedNode | RenderedNode[] | null = result.toJSON();
+    expect(countNodesByType(tree, 'Animated.ScrollView')).toBe(1);
   });
 });

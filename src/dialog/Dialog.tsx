@@ -32,6 +32,7 @@ import { DialogBody } from './DialogContent';
 import { DialogBottomSheet } from './DialogBottomSheet';
 import {
   ANIMATION_DURATION,
+  DEFAULT_DIALOG_CONTENT_PADDING,
   DEFAULT_SIDE_WIDTH,
   DIALOG_SHEET_BACKDROP_TESTID,
   PANEL_RADIUS,
@@ -106,6 +107,7 @@ function CenteredOrSideDialog({
   width = DEFAULT_SIDE_WIDTH,
   inset,
   dismissOnBackdrop = true,
+  contentPadding = DEFAULT_DIALOG_CONTENT_PADDING,
   style,
   panelStyle,
   panelClassName,
@@ -242,6 +244,7 @@ function CenteredOrSideDialog({
           width={width}
           inset={inset}
           dismissOnBackdrop={dismissOnBackdrop}
+          contentPadding={contentPadding}
           testID={testID}
           label={label}
           title={title}
@@ -283,7 +286,7 @@ function CenteredOrSideDialog({
             // Detached BottomSheet already adds `marginBottom: insets.bottom + 16`
             // to the sheet container — the floating card sits ABOVE the
             // system gesture bar, so we don't add `insets.bottom` here.
-            { paddingTop: 20, paddingHorizontal: 20, paddingBottom: 20 },
+            { padding: contentPadding },
             { backgroundColor: theme.colors.background },
             style,
             panelStyle,
@@ -311,6 +314,7 @@ function SideSheet({
   width,
   inset,
   dismissOnBackdrop,
+  contentPadding,
   testID,
   label,
   title,
@@ -330,6 +334,7 @@ function SideSheet({
   width: number;
   inset?: DialogInset;
   dismissOnBackdrop: boolean;
+  contentPadding: number;
   testID?: string;
   label?: string;
   title?: string;
@@ -461,7 +466,7 @@ function SideSheet({
         ]}
         pointerEvents="auto"
       >
-        <View style={sideStyles.body}>{children}</View>
+        <View style={{ padding: contentPadding }}>{children}</View>
       </Animated.View>
     </View>
   );
@@ -483,9 +488,6 @@ const sideStyles = StyleSheet.create({
     shadowRadius: 24,
     shadowOffset: { width: 0, height: 8 },
     elevation: 12,
-  },
-  body: {
-    padding: 20,
   },
 });
 

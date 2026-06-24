@@ -27,6 +27,7 @@ import {
   ANIMATION_DURATION,
   CENTER_FADE_OUT_DURATION,
   DEFAULT_CENTER_MAX_WIDTH,
+  DEFAULT_DIALOG_CONTENT_PADDING,
   DEFAULT_SIDE_WIDTH,
   DIALOG_SHEET_BACKDROP_TESTID,
   EASE_OUT,
@@ -106,6 +107,7 @@ function CenterOrSideDialog({
   maxWidth = DEFAULT_CENTER_MAX_WIDTH,
   inset,
   dismissOnBackdrop = true,
+  contentPadding = DEFAULT_DIALOG_CONTENT_PADDING,
   style,
   panelStyle,
   panelClassName,
@@ -260,6 +262,7 @@ function CenterOrSideDialog({
                 actions={actions}
                 style={style}
                 maxWidth={maxWidth}
+                contentPadding={contentPadding}
                 isClosing={isClosing}
               >
                 {children}
@@ -287,6 +290,7 @@ function CenterOrSideDialog({
             width={width}
             inset={inset}
             dismissOnBackdrop={dismissOnBackdrop}
+            contentPadding={contentPadding}
             onDismiss={close}
             panelStyle={panelStyle}
             panelClassName={panelClassName}
@@ -310,6 +314,7 @@ function DialogPanel({
   actions,
   style,
   maxWidth,
+  contentPadding,
   isClosing,
   children,
 }: {
@@ -320,6 +325,7 @@ function DialogPanel({
   actions?: DialogAction[];
   style?: DialogProps['style'];
   maxWidth: number;
+  contentPadding: number;
   isClosing: boolean;
   children?: React.ReactNode;
 }) {
@@ -350,7 +356,7 @@ function DialogPanel({
           shadowOpacity: theme.isDark ? 0.4 : 0.1,
           shadowRadius: 30,
           shadowOffset: { width: 0, height: 4 },
-          padding: 20,
+          padding: contentPadding,
           zIndex: dialogZIndex.surface,
         },
         isClosing
@@ -394,6 +400,7 @@ function SheetSurface({
   width,
   inset,
   dismissOnBackdrop,
+  contentPadding,
   onDismiss,
   panelStyle,
   panelClassName,
@@ -412,6 +419,7 @@ function SheetSurface({
   width: number;
   inset?: DialogInset;
   dismissOnBackdrop: boolean;
+  contentPadding: number;
   onDismiss: () => void;
   panelStyle?: StyleProp<ViewStyle>;
   panelClassName?: string;
@@ -528,7 +536,7 @@ function SheetSurface({
         ]}
         pointerEvents="auto"
       >
-        <View style={sheetStyles.body}>
+        <View style={{ padding: contentPadding }}>
           <DialogBody
             titleId={titleId}
             descriptionId={descriptionId}
@@ -640,9 +648,6 @@ const sheetStyles = {
     shadowRadius: 24,
     shadowOffset: { width: 0, height: 8 },
     zIndex: dialogZIndex.surface,
-  } as ViewStyle,
-  body: {
-    padding: 20,
   } as ViewStyle,
 };
 
