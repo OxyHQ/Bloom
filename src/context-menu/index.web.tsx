@@ -23,13 +23,13 @@ import { createOverlayZIndex } from '../styles/z-index';
 import { ItemCtx, useItemContext } from './context';
 import type {
   ContextMenuContextValue,
-  GroupProps,
+  ContextMenuContentProps,
+  ContextMenuGroupProps,
+  ContextMenuItemIconProps,
+  ContextMenuItemProps,
+  ContextMenuItemTextProps,
+  ContextMenuTriggerProps,
   ItemContextValue,
-  ItemIconProps,
-  ItemProps,
-  ItemTextProps,
-  OuterProps,
-  TriggerProps,
 } from './types';
 
 const contextMenuZIndex = createOverlayZIndex();
@@ -51,17 +51,17 @@ function useWebContextMenuContext(): WebContextMenuContextValue {
   const ctx = useContext(WebContextMenuContext);
   if (!ctx) {
     throw new Error(
-      'ContextMenu components must be used within a ContextMenu.Root',
+      'ContextMenu components must be used within a <ContextMenu>',
     );
   }
   return ctx;
 }
 
 // ---------------------------------------------------------------------------
-// Root
+// ContextMenu (Root)
 // ---------------------------------------------------------------------------
 
-export function Root({ children }: { children: React.ReactNode }) {
+export function ContextMenu({ children }: { children: React.ReactNode }) {
   const [position, setPosition] = useState<Position | null>(null);
   const isOpen = position !== null;
 
@@ -70,7 +70,7 @@ export function Root({ children }: { children: React.ReactNode }) {
       isOpen,
       position,
       open: () => {
-        /* open is handled by the Trigger's contextmenu event */
+        /* open is handled by the ContextMenuTrigger's contextmenu event */
       },
       close: () => setPosition(null),
     }),
@@ -78,7 +78,7 @@ export function Root({ children }: { children: React.ReactNode }) {
   );
 
   /**
-   * We store the setPosition in a ref so the Trigger can call it
+   * We store the setPosition in a ref so the ContextMenuTrigger can call it
    * without needing a stable identity on `open`.
    */
   return (
@@ -96,10 +96,10 @@ const SetPositionContext = createContext<
 SetPositionContext.displayName = 'ContextMenuSetPositionContext';
 
 // ---------------------------------------------------------------------------
-// Trigger
+// ContextMenuTrigger
 // ---------------------------------------------------------------------------
 
-export function Trigger({ children, label, hint, style }: TriggerProps) {
+export function ContextMenuTrigger({ children, label, hint, style }: ContextMenuTriggerProps) {
   const ctx = useWebContextMenuContext();
   const setPosition = useContext(SetPositionContext);
   const triggerRef = useRef<View>(null);
@@ -146,10 +146,10 @@ export function Trigger({ children, label, hint, style }: TriggerProps) {
 }
 
 // ---------------------------------------------------------------------------
-// Outer
+// ContextMenuContent
 // ---------------------------------------------------------------------------
 
-export function Outer({ children, style }: OuterProps) {
+export function ContextMenuContent({ children, style }: ContextMenuContentProps) {
   const ctx = useWebContextMenuContext();
   const theme = useTheme();
   const { isOpen, close, position } = ctx;
@@ -197,16 +197,16 @@ export function Outer({ children, style }: OuterProps) {
 }
 
 // ---------------------------------------------------------------------------
-// Item
+// ContextMenuItem
 // ---------------------------------------------------------------------------
 
-export function Item({
+export function ContextMenuItem({
   children,
   label,
   onPress,
   disabled = false,
   style,
-}: ItemProps) {
+}: ContextMenuItemProps) {
   const theme = useTheme();
   const { close } = useWebContextMenuContext();
   const {
@@ -256,10 +256,10 @@ export function Item({
 }
 
 // ---------------------------------------------------------------------------
-// ItemText
+// ContextMenuItemText
 // ---------------------------------------------------------------------------
 
-export function ItemText({ children, style }: ItemTextProps) {
+export function ContextMenuItemText({ children, style }: ContextMenuItemTextProps) {
   const theme = useTheme();
   const { disabled } = useItemContext();
 
@@ -279,10 +279,10 @@ export function ItemText({ children, style }: ItemTextProps) {
 }
 
 // ---------------------------------------------------------------------------
-// ItemIcon
+// ContextMenuItemIcon
 // ---------------------------------------------------------------------------
 
-export function ItemIcon({ icon: Comp }: ItemIconProps) {
+export function ContextMenuItemIcon({ icon: Comp }: ContextMenuItemIconProps) {
   const theme = useTheme();
   const { disabled } = useItemContext();
 
@@ -295,18 +295,18 @@ export function ItemIcon({ icon: Comp }: ItemIconProps) {
 }
 
 // ---------------------------------------------------------------------------
-// Group
+// ContextMenuGroup
 // ---------------------------------------------------------------------------
 
-export function Group({ children }: GroupProps) {
+export function ContextMenuGroup({ children }: ContextMenuGroupProps) {
   return <>{children}</>;
 }
 
 // ---------------------------------------------------------------------------
-// Divider
+// ContextMenuDivider
 // ---------------------------------------------------------------------------
 
-export function Divider() {
+export function ContextMenuDivider() {
   const theme = useTheme();
 
   return (

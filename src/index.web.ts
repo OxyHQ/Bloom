@@ -114,7 +114,7 @@ export * from './admonition';
 export * from './menu/index.web';
 export * from './tooltip/index.web';
 export * from './select/index.web';
-export * as ContextMenu from './context-menu/index.web';
+export * from './context-menu/index.web';
 export * as Popover from './popover/index.web';
 export { AlertDialog, AlertDialogHost, confirm } from './alert-dialog/index.web';
 export type {

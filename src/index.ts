@@ -109,7 +109,7 @@ export * from './admonition';
 export * from './menu';
 export * from './tooltip';
 export * from './select';
-export * as ContextMenu from './context-menu';
+export * from './context-menu';
 export * as Popover from './popover';
 export { AlertDialog, AlertDialogHost, confirm } from './alert-dialog';
 export type {

@@ -3,7 +3,15 @@ import { Pressable, Text, View } from 'react-native';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
 import { useTheme } from '../theme/use-theme';
-import * as ContextMenu from './index';
+import {
+  ContextMenu,
+  ContextMenuContent,
+  ContextMenuDivider,
+  ContextMenuGroup,
+  ContextMenuItem,
+  ContextMenuItemText,
+  ContextMenuTrigger,
+} from './index';
 
 const meta: Meta = {
   title: 'Components/ContextMenu',
@@ -16,8 +24,8 @@ type Story = StoryObj;
 function TriggerSurface() {
   const theme = useTheme();
   return (
-    <ContextMenu.Root>
-      <ContextMenu.Trigger label="Long-press for actions">
+    <ContextMenu>
+      <ContextMenuTrigger label="Long-press for actions">
         {({ props }) => (
           <Pressable
             onPress={() => props.onPress?.()}
@@ -39,21 +47,21 @@ function TriggerSurface() {
             </Text>
           </Pressable>
         )}
-      </ContextMenu.Trigger>
-      <ContextMenu.Outer>
-        <ContextMenu.Group>
-          <ContextMenu.Item label="Open" onPress={() => {}}>
-            <ContextMenu.ItemText>Open</ContextMenu.ItemText>
-          </ContextMenu.Item>
-          <ContextMenu.Item label="Rename" onPress={() => {}}>
-            <ContextMenu.ItemText>Rename</ContextMenu.ItemText>
-          </ContextMenu.Item>
-          <ContextMenu.Item label="Delete" onPress={() => {}}>
-            <ContextMenu.ItemText>Delete</ContextMenu.ItemText>
-          </ContextMenu.Item>
-        </ContextMenu.Group>
-      </ContextMenu.Outer>
-    </ContextMenu.Root>
+      </ContextMenuTrigger>
+      <ContextMenuContent>
+        <ContextMenuGroup>
+          <ContextMenuItem label="Open" onPress={() => {}}>
+            <ContextMenuItemText>Open</ContextMenuItemText>
+          </ContextMenuItem>
+          <ContextMenuItem label="Rename" onPress={() => {}}>
+            <ContextMenuItemText>Rename</ContextMenuItemText>
+          </ContextMenuItem>
+          <ContextMenuItem label="Delete" onPress={() => {}}>
+            <ContextMenuItemText>Delete</ContextMenuItemText>
+          </ContextMenuItem>
+        </ContextMenuGroup>
+      </ContextMenuContent>
+    </ContextMenu>
   );
 }
 
