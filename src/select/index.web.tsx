@@ -11,20 +11,20 @@ import {
   ChevronBottom_Stroke2_Corner0_Rounded as ChevronDownIcon,
 } from '../icons/Chevron';
 import { Check_Stroke2_Corner0_Rounded as CheckIcon } from '../icons/Check';
-import { defaultItemValueExtractor, ItemContext, useItemContext } from './common';
+import { defaultItemValueExtractor, ItemContext, useSelectItemContext } from './common';
 import type {
-  ContentProps,
-  IconProps,
-  ItemIndicatorProps,
-  ItemProps,
-  ItemTextProps,
-  RootProps,
+  SelectContentProps,
+  SelectIconProps,
+  SelectItemIndicatorProps,
+  SelectItemProps,
+  SelectItemTextProps,
+  SelectProps,
   SelectItemContextValue,
-  TriggerProps,
-  ValueTextProps,
+  SelectTriggerProps,
+  SelectValueProps,
 } from './types';
 
-export { useItemContext };
+export { useSelectItemContext };
 
 const selectZIndex = createOverlayZIndex();
 
@@ -32,7 +32,7 @@ const selectZIndex = createOverlayZIndex();
 // Context
 // ---------------------------------------------------------------------------
 
-type SelectContextValue = Pick<RootProps, 'value' | 'onValueChange' | 'disabled'> & {
+type SelectContextValue = Pick<SelectProps, 'value' | 'onValueChange' | 'disabled'> & {
   isOpen: boolean;
   open: () => void;
   close: () => void;
@@ -44,16 +44,16 @@ SelectContext.displayName = 'SelectContext';
 function useSelectContext(): SelectContextValue {
   const ctx = useContext(SelectContext);
   if (!ctx) {
-    throw new Error('Select components must be used within a Select.Root');
+    throw new Error('Select components must be used within a Select');
   }
   return ctx;
 }
 
 // ---------------------------------------------------------------------------
-// Root
+// Select
 // ---------------------------------------------------------------------------
 
-export function Root({ children, value, onValueChange, disabled }: RootProps) {
+export function Select({ children, value, onValueChange, disabled }: SelectProps) {
   const [isOpen, setIsOpen] = useState(false);
 
   const ctx = useMemo<SelectContextValue>(
@@ -72,10 +72,10 @@ export function Root({ children, value, onValueChange, disabled }: RootProps) {
 }
 
 // ---------------------------------------------------------------------------
-// Trigger
+// SelectTrigger
 // ---------------------------------------------------------------------------
 
-export function Trigger({ children, label }: TriggerProps) {
+export function SelectTrigger({ children, label }: SelectTriggerProps) {
   const ctx = useSelectContext();
   const theme = useTheme();
   const triggerId = useId();
@@ -133,14 +133,14 @@ export function Trigger({ children, label }: TriggerProps) {
 }
 
 // ---------------------------------------------------------------------------
-// ValueText
+// SelectValue
 // ---------------------------------------------------------------------------
 
-export function ValueText({
+export function SelectValue({
   children: extractLabel,
   placeholder,
   style,
-}: ValueTextProps) {
+}: SelectValueProps) {
   const { value } = useSelectContext();
   const theme = useTheme();
 
@@ -161,24 +161,24 @@ export function ValueText({
 }
 
 // ---------------------------------------------------------------------------
-// Icon
+// SelectIcon
 // ---------------------------------------------------------------------------
 
-export function Icon({ style }: IconProps) {
+export function SelectIcon({ style }: SelectIconProps) {
   const theme = useTheme();
   return <ChevronDownIcon style={style} size="xs" fill={theme.colors.textSecondary} />;
 }
 
 // ---------------------------------------------------------------------------
-// Content
+// SelectContent
 // ---------------------------------------------------------------------------
 
-export function Content<T>({
+export function SelectContent<T>({
   items,
   renderItem,
   label = 'Select an option',
   valueExtractor = defaultItemValueExtractor,
-}: ContentProps<T>) {
+}: SelectContentProps<T>) {
   const ctx = useSelectContext();
   const theme = useTheme();
 
@@ -216,14 +216,10 @@ export function Content<T>({
 }
 
 // ---------------------------------------------------------------------------
-// Item context + value extractor (shared across platforms)
+// SelectItem
 // ---------------------------------------------------------------------------
 
-// ---------------------------------------------------------------------------
-// Item
-// ---------------------------------------------------------------------------
-
-export function Item({ ref, value, children, style }: ItemProps) {
+export function SelectItem({ ref, value, children, style }: SelectItemProps) {
   const theme = useTheme();
   const ctx = useSelectContext();
   const {
@@ -267,10 +263,10 @@ export function Item({ ref, value, children, style }: ItemProps) {
 }
 
 // ---------------------------------------------------------------------------
-// ItemText
+// SelectItemText
 // ---------------------------------------------------------------------------
 
-export function ItemText({ children, style }: ItemTextProps) {
+export function SelectItemText({ children, style }: SelectItemTextProps) {
   return (
     <Text style={[styles.itemText, ...(style ? [style] : [])]}>
       {children}
@@ -279,11 +275,11 @@ export function ItemText({ children, style }: ItemTextProps) {
 }
 
 // ---------------------------------------------------------------------------
-// ItemIndicator
+// SelectItemIndicator
 // ---------------------------------------------------------------------------
 
-export function ItemIndicator({ icon: IconComponent = CheckIcon }: ItemIndicatorProps) {
-  const { selected } = useItemContext();
+export function SelectItemIndicator({ icon: IconComponent = CheckIcon }: SelectItemIndicatorProps) {
+  const { selected } = useSelectItemContext();
 
   if (!selected) {
     return <View style={styles.itemIndicatorPlaceholder} />;
@@ -297,10 +293,10 @@ export function ItemIndicator({ icon: IconComponent = CheckIcon }: ItemIndicator
 }
 
 // ---------------------------------------------------------------------------
-// Separator
+// SelectSeparator
 // ---------------------------------------------------------------------------
 
-export function Separator() {
+export function SelectSeparator() {
   const theme = useTheme();
 
   return (

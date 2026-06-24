@@ -108,7 +108,7 @@ export type { KbdProps } from './kbd';
 export * from './admonition';
 export * from './menu';
 export * from './tooltip';
-export * as Select from './select';
+export * from './select';
 export * as ContextMenu from './context-menu';
 export * as Popover from './popover';
 export { AlertDialog, AlertDialogHost, confirm } from './alert-dialog';

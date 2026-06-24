@@ -28,6 +28,6 @@ export const ItemContext = createContext<SelectItemContextValue>({
 });
 ItemContext.displayName = 'SelectItemContext';
 
-export function useItemContext(): SelectItemContextValue {
+export function useSelectItemContext(): SelectItemContextValue {
   return useContext(ItemContext);
 }
