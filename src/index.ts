@@ -57,7 +57,7 @@ export type { AvatarGroupProps, AvatarGroupItem } from './avatar-group';
 export { UserHoverCard } from './user-hover-card';
 export type { UserHoverCardProps, UserHoverCardStat } from './user-hover-card';
 export * from './loading';
-export * as PromptInput from './prompt-input';
+export * from './prompt-input';
 export * from './switch';
 export { toast, type Toast } from './toast';
 
@@ -95,7 +95,7 @@ export * from './badge';
 export * from './chip';
 export * as Tabs from './tabs';
 export * from './checkbox';
-export * as Accordion from './accordion';
+export * from './accordion';
 
 // Settings / Grouped list
 export * from './settings-list';
