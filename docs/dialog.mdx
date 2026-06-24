@@ -1,12 +1,12 @@
 ---
 title: Dialog
-description: A single <Dialog> for both confirmation flows and custom modal content.
+description: A single <Dialog> for every overlay surface — centered modal, side-sheet, or bottom-sheet.
 order: 3
 ---
 
 # Dialog
 
-A single `<Dialog>` component for both confirmation flows AND custom modal content. Bottom-sheet card on native, centered modal on web. Same component, same props on every platform.
+A single `<Dialog>` component for every overlay surface — centered modal, side-sheet (left/right drawer), or bottom-sheet — controlled by the `placement` prop. Same component, same props on every platform.
 
 <Callout variant="warning" title="Required providers (native)">
 Your app root **must** be wrapped with `GestureHandlerRootView` from `react-native-gesture-handler` for the bottom-sheet pan gestures to work. See [Getting started](/docs/bloom/main/getting-started).
@@ -37,12 +37,43 @@ function SignOutButton() {
 }
 ```
 
-## Custom content
+## Controlled open state
 
-Provide any JSX as `children`. Combine with `title` to keep a consistent header.
+Pass `open` + `onClose` to drive the dialog from external state instead of `useDialogControl`:
 
 ```tsx
-<Dialog control={control} title="Pick a tag">
+<Dialog
+  placement="center"
+  open={isOpen}
+  onClose={() => setIsOpen(false)}
+  title="Confirm?"
+  actions={[
+    { label: 'OK', onPress: handleOk },
+    { label: 'Cancel', color: 'cancel' },
+  ]}
+/>
+```
+
+## Side-sheet (drawer)
+
+```tsx
+// Fixed left side-sheet
+<Dialog placement="left" control={control} title="Filters">
+  <FilterPanel />
+</Dialog>
+
+// Responsive: bottom-sheet on mobile, left drawer on desktop
+<Dialog placement={{ base: 'bottom', md: 'left' }} control={control} title="Filters">
+  <FilterPanel />
+</Dialog>
+```
+
+## Custom content
+
+Provide any JSX as `children`. Combine with `title` to keep a consistent header. Set `contentPadding={0}` when the children own their own insets.
+
+```tsx
+<Dialog control={control} title="Pick a tag" contentPadding={0}>
   <YourCustomBody />
 </Dialog>
 ```
@@ -59,17 +90,48 @@ Drop the declarative props entirely — `children` owns every pixel.
 
 ## Props
 
-| Prop | Type | Description |
-|------|------|-------------|
-| `control` | `DialogControl` | Returned by `useDialogControl()`. |
-| `title?` | `string` | Header text. |
-| `description?` | `string` | Supporting copy rendered below the title. |
-| `actions?` | `DialogAction[]` | Confirmation buttons (see below). |
-| `children?` | `React.ReactNode` | Custom content rendered after the description. |
-| `onClose?` | `() => void` | Fires after the dialog has finished closing. |
-| `style?` | `StyleProp<ViewStyle>` | Applied to the dialog content container. |
-| `label?` | `string` | Accessibility label. |
-| `testID?` | `string` | RN testing ID. |
+| Prop | Type | Default | Description |
+|------|------|---------|-------------|
+| `control?` | `DialogControl` | — | From `useDialogControl()`. Omit when using controlled `open`. |
+| `open?` | `boolean` | — | Controlled open state. When provided, wins over `control`. |
+| `placement?` | `DialogPlacement \| ResponsiveDialogPlacement` | `'center'` | Surface anchor. See [Placement](#placement). |
+| `title?` | `string` | — | Header text. |
+| `description?` | `string` | — | Supporting copy below the title. |
+| `actions?` | `DialogAction[]` | — | Confirmation buttons. See [DialogAction](#dialogaction). |
+| `children?` | `React.ReactNode` | — | Custom content rendered after the description. |
+| `onClose?` | `() => void` | — | Fires after the dialog finishes closing. In controlled mode, the host flips `open` to `false`. |
+| `contentPadding?` | `number` | `20` | Inner padding of the dialog body (px). Set `0` for custom children that own their insets. |
+| `width?` | `number` | `460` | Side-sheet width (px) on `left`/`right` placements. |
+| `maxWidth?` | `number` | `480` | Centered-card max width (px). |
+| `maxHeightRatio?` | `number` | `0.9` | Bottom-sheet max height as a fraction of the viewport height. |
+| `inset?` | `{ top?; bottom?; left?; right? }` | — | Side-sheet inset (px) from the overlay container edges. |
+| `showHandle?` | `boolean` | `true` | Show drag handle in bottom-sheet mode. |
+| `dismissOnBackdrop?` | `boolean` | `true` | Tap backdrop to dismiss. |
+| `panelStyle?` | `StyleProp<ViewStyle>` | — | Style for the panel surface. |
+| `panelClassName?` | `string` | — | NativeWind class for the panel surface. |
+| `containerStyle?` | `StyleProp<ViewStyle>` | — | Style for the root overlay (e.g. rail offset, theme-var scope). |
+| `containerClassName?` | `string` | — | NativeWind class for the root overlay. |
+| `label?` | `string` | — | Accessibility label. |
+| `testID?` | `string` | — | RN testing ID. |
+
+## Placement
+
+`placement` accepts a single value or a **responsive map** resolved by `useWindowDimensions()`:
+
+```ts
+type DialogPlacement = 'center' | 'left' | 'right' | 'bottom';
+
+type ResponsiveDialogPlacement =
+  | DialogPlacement
+  | { base: DialogPlacement; sm?: DialogPlacement; md?: DialogPlacement; lg?: DialogPlacement; xl?: DialogPlacement };
+```
+
+Breakpoints (px): `sm` 640 / `md` 768 / `lg` 1024 / `xl` 1280. The largest breakpoint whose min-width is `<=` the viewport wins; falls back to `base` below all breakpoints.
+
+Per-placement behavior:
+- `center` — DOM-portal modal (web) / detached floating card (native).
+- `left` / `right` — animated side-sheet anchored to the viewport edge.
+- `bottom` — reuses the cross-platform `BottomSheet` on BOTH web and native (drag-to-dismiss + internal scroll work everywhere). Custom `children` on bottom placement are rendered in a NON-scrollable body — children own scrolling.
 
 ### `DialogAction`
 
@@ -146,3 +208,36 @@ const [busy, setBusy] = useState(false);
   <Button onPress={() => { save(name); control.close(); }}>Save</Button>
 </Dialog>
 ```
+
+### Responsive drawer→sheet
+
+Bottom-sheet on small screens, left drawer on `md` and wider:
+
+```tsx
+<Dialog
+  placement={{ base: 'bottom', md: 'left' }}
+  control={control}
+  title="Store settings"
+  containerClassName="md:left-[4.75rem]"
+>
+  <SettingsPanel />
+</Dialog>
+```
+
+## Migration from CenteredDialog / ResponsiveSheet
+
+`CenteredDialog` and `ResponsiveSheet` were removed in 0.16.x.
+
+```tsx
+// Before
+<CenteredDialog visible={v} onClose={c}>…</CenteredDialog>
+// After
+<Dialog placement="center" open={v} onClose={c}>…</Dialog>
+
+// Before
+<ResponsiveSheet side="left" open={o} onClose={c}>…</ResponsiveSheet>
+// After
+<Dialog placement={{ base: 'bottom', md: 'left' }} open={o} onClose={c}>…</Dialog>
+```
+
+Removed exports: `CenteredDialog`, `CenteredDialogProps`, `BLOOM_CENTERED_DIALOG_CSS`, `CENTERED_DIALOG_BACKDROP_TESTID`, `ResponsiveSheet`, `@oxyhq/bloom/responsive-sheet` subpath.

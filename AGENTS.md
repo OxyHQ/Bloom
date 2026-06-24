@@ -38,13 +38,20 @@ src/
 
 Components with `.web.tsx` variants: dialog, context-menu, menu, prompt-input/Textarea, select, toast, tooltip, theme/adaptive-colors.
 
-## Modal component architecture
+## Overlay surface architecture (0.16.x — two canonical components)
 
-Bloom has three modal/sheet components. Don't confuse them — they have different implementations and different consumer requirements.
+Only TWO overlay surface components exist. `CenteredDialog` and `ResponsiveSheet` were REMOVED (breaking, no shims) in 0.16.x.
 
-- **`dialog/`** — platform-adaptive. On native uses `@gorhom/bottom-sheet` (`BottomSheetModal` with `enablePanDownToClose`, `enableDismissOnClose`, dynamic sizing, max width 500). On web uses `Portal` + `Pressable` overlay with CSS keyframe animations (consumer must inject `BLOOM_DIALOG_CSS`). The `preventExpansion` prop snaps the native sheet to a fixed `'40%'` snap point. The `webOptions.alignCenter` prop centers the dialog vertically on web. **Native consumers must wrap their app root with `GestureHandlerRootView` and `BottomSheetModalProvider`** — without these, `Dialog` (and `Prompt`) silently fail to render.
-- **`prompt/`** — thin wrapper over `dialog/` for confirmation dialogs. Always passes `preventExpansion` (40% sheet on native) and `webOptions.alignCenter: true` (centered 320px modal on web). Adds title, description, and action button primitives. `Prompt.Action` defaults to `shouldCloseOnPress={true}`. Same provider requirements as `dialog/`. `ActionColor` enum: `primary | primary_subtle | secondary | negative | negative_subtle`.
-- **`bottom-sheet/`** — standalone, NOT built on Gorhom. Uses RN `Modal` + `react-native-reanimated` + `react-native-gesture-handler` directly. Exposes a `BottomSheetRef` with `present/dismiss/close/expand/collapse/scrollTo`. Use this when the compound `Dialog` API doesn't fit, when avoiding the Gorhom dependency, or when fine-grained scroll/keyboard/detached behavior is needed. Does not require `BottomSheetModalProvider`.
+- **`dialog/`** (`@oxyhq/bloom/dialog`) — THE unified overlay. Renders as a centered modal, side-sheet (left/right), or bottom-sheet based on the `placement` prop. `placement` accepts `'center' | 'left' | 'right' | 'bottom'` or a responsive map `{ base; sm?; md?; lg?; xl? }` resolved by `useWindowDimensions()` against breakpoints sm 640 / md 768 / lg 1024 / xl 1280. Default placement: `'center'`. Two control models: imperative `control` (via `useDialogControl`) OR controlled `open` / `onClose`. Content modes: declarative (`title`/`description`/`actions`), custom `children`, or imperative `alert()`. Key props: `width` (side-sheet width, default 460), `maxWidth` (centered cap, default 480), `maxHeightRatio` (bottom-sheet height fraction, default 0.9), `inset {top,bottom,left,right}` (side-sheet inset from overlay edges), `showHandle` (bottom drag handle, default true), `dismissOnBackdrop` (default true), `panelStyle`/`panelClassName` (paint the surface), `containerStyle`/`containerClassName` (root overlay — e.g. rail offset / theme-var scope), `contentPadding` (body padding default 20; set 0 for custom children that own their padding), `label`. Bottom placement composes `BottomSheet` on BOTH web and native; custom `children` on bottom placement are NON-scrollable (children own scrolling). Consumer must inject `BLOOM_DIALOG_CSS` on web.
+- **`bottom-sheet/`** (`@oxyhq/bloom/bottom-sheet`) — standalone cross-platform component (web + native). Gesture drag-to-dismiss, internal scroll, snap. `style` paints the sheet surface; `scrollable` (default true) opts the internal ScrollView in/out. Exposes `BottomSheetRef` with `present/dismiss/close/expand/collapse/scrollTo`. `Dialog`'s bottom placement composes it internally.
+
+**REMOVED — do NOT use:**
+- `CenteredDialog`, `CenteredDialogProps`, `BLOOM_CENTERED_DIALOG_CSS`, `CENTERED_DIALOG_BACKDROP_TESTID` → use `<Dialog placement="center">`.
+- `ResponsiveSheet`, `@oxyhq/bloom/responsive-sheet` subpath → use `<Dialog placement={{ base:'bottom', md:'left' }}>`.
+
+`AlertDialog` and `Command` still exist with unchanged public APIs — they now build on `Dialog` internally.
+
+**Native consumers must wrap the app root with `GestureHandlerRootView`** for pan gestures to work (no longer requires `BottomSheetModalProvider` from Gorhom).
 
 ## Build
 

@@ -50,19 +50,21 @@ const theme = useTheme();
 
 4 modes: `light`, `dark`, `system`, `adaptive` (uses iOS/Android native dynamic colors when available).
 
-### Modal & feedback components: Dialog, BottomSheet, toast / alert
+### Overlay components: Dialog, BottomSheet, toast / alert
 
-Bloom ships three primitives for modal, sheet, and feedback presentation. Pick the one that matches your use case:
+Bloom ships **two** overlay surface components plus feedback helpers:
 
-| Component | Native | Web | Use when |
-|-----------|--------|-----|----------|
-| `Dialog` | Bottom-sheet card (Bloom's own) | Centered modal | Confirmation flows AND custom modal content — same component handles both |
-| `BottomSheet` | Draggable sheet | RN `Modal` polyfill | You need direct control over snap points, scroll handoff, keyboard, detached/flush layout |
-| `toast` / `alert` | Sonner-native + Bloom theme | Sonner + Bloom theme | Passive feedback (`toast`) or one-shot confirmations (`alert`) called imperatively from anywhere |
+| Component | Use when |
+|-----------|----------|
+| `Dialog` | All modal surfaces — centered card, side-sheet (left/right), or bottom-sheet — via the `placement` prop. Confirmation flows AND custom content. |
+| `BottomSheet` | You need direct control over snap points, scroll handoff, gesture coordination, or detached presentation. |
+| `toast` / `alert` | Passive feedback (`toast`) or one-shot confirmations (`alert`) called imperatively from anywhere. |
+
+> **Removed in 0.16.x:** `CenteredDialog` and `ResponsiveSheet` no longer exist. Migrate: `<CenteredDialog visible={v} onClose={c}>…</CenteredDialog>` → `<Dialog placement="center" open={v} onClose={c}>…</Dialog>`; `<ResponsiveSheet side="left" open={o} onClose={c}>…</ResponsiveSheet>` → `<Dialog placement={{ base:'bottom', md:'left' }} open={o} onClose={c}>…</Dialog>`.
 
 ### Dialog
 
-A single `<Dialog>` component for both confirmation flows AND custom modal content. Bottom-sheet card on native, centered modal on web.
+A single `<Dialog>` component for every overlay surface — centered modal, side-sheet, or bottom-sheet — selected by the `placement` prop. Same component and same props on every platform.
 
 > **Required providers (native).** Your app root **must** be wrapped with `GestureHandlerRootView` from `react-native-gesture-handler` for the bottom-sheet pan gestures to work.
 
@@ -83,7 +85,7 @@ export default function Root() {
 }
 ```
 
-`BloomDialogProvider` powers the imperative `alert()` helper (see below) — mount it once near the app root.
+`BloomDialogProvider` powers the imperative `alert()` helper — mount it once near the app root.
 
 #### Declarative (the 90% case)
 
@@ -110,12 +112,38 @@ function SignOutButton() {
 }
 ```
 
-#### Custom content
-
-Provide any JSX as `children`. Combine with `title` to keep a consistent header.
+#### Controlled open state
 
 ```tsx
-<Dialog control={control} title="Pick a tag">
+<Dialog
+  placement="center"
+  open={isOpen}
+  onClose={() => setIsOpen(false)}
+  title="Confirm?"
+  actions={[{ label: 'OK', onPress: handleOk }, { label: 'Cancel', color: 'cancel' }]}
+/>
+```
+
+#### Side-sheet (drawer)
+
+```tsx
+// Fixed left side-sheet
+<Dialog placement="left" control={control} title="Filters">
+  <FilterPanel />
+</Dialog>
+
+// Responsive: bottom-sheet on mobile, left drawer on desktop
+<Dialog placement={{ base: 'bottom', md: 'left' }} control={control} title="Filters">
+  <FilterPanel />
+</Dialog>
+```
+
+#### Custom content
+
+Provide any JSX as `children`. Combine with `title` to keep a consistent header. Set `contentPadding={0}` when the children own their own insets.
+
+```tsx
+<Dialog control={control} title="Pick a tag" contentPadding={0}>
   <YourCustomBody />
 </Dialog>
 ```
@@ -132,19 +160,29 @@ Drop the declarative props entirely — `children` owns every pixel.
 
 #### Props
 
-- `control` — from `useDialogControl()`.
+- `control?` — from `useDialogControl()`. Omit when using controlled `open` instead.
+- `open?` — controlled open state. When provided, wins over `control`.
+- `placement?` — `'center' | 'left' | 'right' | 'bottom'` or a responsive map `{ base; sm?; md?; lg?; xl? }`. Default: `'center'`. Breakpoints: sm 640 / md 768 / lg 1024 / xl 1280 px.
 - `title?: string` — header text.
 - `description?: string` — supporting copy rendered below the title.
-- `actions?: DialogAction[]` — confirmation buttons. Each action accepts:
-  - `label: string` — button text.
+- `actions?: DialogAction[]` — confirmation buttons. Each action:
+  - `label: string`
   - `color?: 'default' | 'cancel' | 'destructive'` — defaults to `'default'`.
   - `onPress?: (e) => void` — invoked after the dialog finishes closing.
   - `disabled?: boolean`
   - `shouldCloseOnPress?: boolean` — defaults to `true`. Set `false` while an async action is in flight.
   - `testID?: string`
 - `children?: React.ReactNode` — custom content rendered after the description.
-- `onClose?: () => void` — fires after the dialog has finished closing.
-- `style?` — applied to the dialog content container.
+- `onClose?: () => void` — fires after the dialog has finished closing. In controlled mode, the host must flip `open` to `false`.
+- `contentPadding?: number` — inner padding of the dialog body. Default `20`. Set `0` for custom children that own their own insets.
+- `width?: number` — side-sheet width (px). Default `460`.
+- `maxWidth?: number` — centered-card max width (px). Default `480`.
+- `maxHeightRatio?: number` — bottom-sheet height as a fraction of viewport height. Default `0.9`.
+- `inset?: { top?; bottom?; left?; right? }` — side-sheet inset (px) from the overlay container edges.
+- `showHandle?: boolean` — show drag handle in bottom-sheet mode. Default `true`.
+- `dismissOnBackdrop?: boolean` — tap backdrop to dismiss. Default `true`.
+- `panelStyle? / panelClassName?` — style/class for the panel surface.
+- `containerStyle? / containerClassName?` — style/class for the root overlay (e.g. rail offset, theme-var scope).
 - `label?: string` — accessibility label.
 - `testID?: string`
 

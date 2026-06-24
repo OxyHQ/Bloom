@@ -1,5 +1,38 @@
 # Migration Guide
 
+## 0.16.x — Overlay surface consolidation
+
+`CenteredDialog` and `ResponsiveSheet` are **removed** (breaking, no shims). The unified `Dialog` with its `placement` prop replaces both. `AlertDialog` and `Command` keep their existing public APIs.
+
+### Removed exports
+
+- `CenteredDialog`, `CenteredDialogProps`, `BLOOM_CENTERED_DIALOG_CSS`, `CENTERED_DIALOG_BACKDROP_TESTID` — removed from `@oxyhq/bloom` and `@oxyhq/bloom/dialog`.
+- `ResponsiveSheet` and the `@oxyhq/bloom/responsive-sheet` subpath — removed entirely.
+
+### Migration
+
+```tsx
+// CenteredDialog → Dialog with placement="center"
+// Before
+<CenteredDialog visible={v} onClose={c}>…</CenteredDialog>
+// After
+<Dialog placement="center" open={v} onClose={c}>…</Dialog>
+
+// ResponsiveSheet → Dialog with responsive placement
+// Before
+<ResponsiveSheet side="left" open={o} onClose={c}>…</ResponsiveSheet>
+// After
+<Dialog placement={{ base: 'bottom', md: 'left' }} open={o} onClose={c}>…</Dialog>
+```
+
+### `Dialog` placement API (new in 0.16.x)
+
+`placement` accepts `'center' | 'left' | 'right' | 'bottom'` or a responsive map `{ base; sm?; md?; lg?; xl? }`. Default: `'center'` (unchanged legacy behavior). Breakpoints: sm 640 / md 768 / lg 1024 / xl 1280 px, resolved by `useWindowDimensions()`.
+
+New layout props: `contentPadding` (body padding px, default 20; set `0` for custom children that own their padding), `inset {top,bottom,left,right}` (side-sheet inset from overlay edges), `width` (side-sheet width, default 460), `maxWidth` (centered cap, default 480), `maxHeightRatio` (bottom-sheet height fraction, default 0.9), `panelStyle`/`panelClassName` (paint the surface), `containerStyle`/`containerClassName` (root overlay — e.g. rail offset / theme-var scope).
+
+`bottom` placement composes `BottomSheet` on BOTH web and native. Custom `children` in bottom placement are NOT wrapped in a scrollable container — children own scrolling.
+
 ## 0.8.0
 
 The theming engine now uses a single canonical `rgb(...)` pipeline for both the
