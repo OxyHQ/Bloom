@@ -13,6 +13,11 @@ const Reanimated = {
     return outputRange[0]! + ratio * (outputRange[1]! - outputRange[0]!);
   },
   runOnJS: (fn: (...args: unknown[]) => void) => fn,
+  cancelAnimation: (_sv: unknown) => {},
+  Easing: {
+    out: (fn: unknown) => fn,
+    cubic: (t: number) => t * t * t,
+  },
   default: {
     View: 'Animated.View',
     ScrollView: 'Animated.ScrollView',
@@ -27,4 +32,6 @@ export const withSpring = Reanimated.withSpring;
 export const withTiming = Reanimated.withTiming;
 export const interpolate = Reanimated.interpolate;
 export const runOnJS = Reanimated.runOnJS;
+export const cancelAnimation = Reanimated.cancelAnimation;
+export const Easing = Reanimated.Easing;
 export default Reanimated.default;

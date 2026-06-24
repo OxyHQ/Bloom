@@ -2,6 +2,10 @@ import type { ReactNode } from 'react';
 import type { StyleProp, ViewStyle } from 'react-native';
 
 /**
+ * @deprecated Use `<Dialog placement="center">` instead. `CenteredDialog` is
+ * superseded by the centered placement of the canonical `<Dialog>` and is
+ * slated for removal in a future major.
+ *
  * Props for the declarative `<CenteredDialog>` primitive.
  *
  * This is the simple, controlled centered-modal surface — distinct from the

@@ -1,4 +1,4 @@
-export { Dialog } from './Dialog';
+export { Dialog, DIALOG_SHEET_BACKDROP_TESTID } from './Dialog';
 export { CenteredDialog, CENTERED_DIALOG_BACKDROP_TESTID } from './CenteredDialog';
 export { BloomDialogProvider } from './BloomDialogProvider';
 export { alert } from './alert';
@@ -12,6 +12,9 @@ export type {
   DialogActionColor,
   DialogContextProps,
   DialogControlProps,
+  DialogInset,
+  DialogPlacement,
   DialogProps,
+  ResponsiveDialogPlacement,
 } from './types';
 export type { CenteredDialogProps } from './centered-dialog-types';

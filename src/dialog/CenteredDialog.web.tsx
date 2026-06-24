@@ -27,6 +27,8 @@ export const CENTERED_DIALOG_BACKDROP_TESTID = 'bloom-centered-dialog-backdrop';
 const stopPropagation = (e: { stopPropagation: () => void }) => e.stopPropagation();
 
 /**
+ * @deprecated Use `<Dialog placement="center">` instead.
+ *
  * Web variant of `<CenteredDialog>`.
  *
  * A centered modal card rendered into the Bloom Portal at the end of

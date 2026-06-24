@@ -17,11 +17,14 @@ export interface ResponsiveSheetInset {
 }
 
 /**
+ * @deprecated Use `<Dialog placement={{ base: 'bottom', md: 'left' }}>` from
+ * `@oxyhq/bloom/dialog` instead. `ResponsiveSheet` is now a thin wrapper over
+ * `<Dialog>` retained for the migration window.
+ *
  * A responsive overlay sheet: an anchored side-sheet on wide screens and a
  * bottom-sheet (with drag handle) on small screens, switching by viewport
  * width. It is a plain controlled component — the host drives `open`/`onClose`
- * from its own state. It renders in place (no portal) so the host can scope it
- * inside a themed/positioned subtree.
+ * from its own state.
  */
 export interface ResponsiveSheetProps {
   /** Whether the sheet is open. Controlled by the host. */

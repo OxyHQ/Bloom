@@ -1,8 +1,8 @@
 import React from 'react';
 import { Text } from 'react-native';
-import { act, fireEvent, render } from '@testing-library/react-native';
+import { act, render } from '@testing-library/react-native';
 
-import { ResponsiveSheet, RESPONSIVE_SHEET_BACKDROP_TESTID } from '../responsive-sheet';
+import { ResponsiveSheet } from '../responsive-sheet';
 import { BloomThemeProvider } from '../theme/BloomThemeProvider';
 
 function renderWithTheme(ui: React.ReactElement) {
@@ -13,9 +13,25 @@ function renderWithTheme(ui: React.ReactElement) {
   );
 }
 
+function rerenderWithTheme(
+  rerender: ReturnType<typeof render>['rerender'],
+  ui: React.ReactElement,
+) {
+  rerender(
+    <BloomThemeProvider mode="light" colorPreset="teal">
+      {ui}
+    </BloomThemeProvider>,
+  );
+}
+
 const LABEL = 'Filters sheet';
 
-describe('ResponsiveSheet', () => {
+// `ResponsiveSheet` is now a deprecated thin wrapper over `<Dialog>`. These
+// tests verify the controlled wrapper contract it still owns (open/close
+// presence + delegation). The jest env reports a 375px-wide viewport (below
+// the default `md` breakpoint) so the wrapper resolves to the bottom-sheet
+// placement, which delegates to bloom's `BottomSheet`.
+describe('ResponsiveSheet (deprecated Dialog wrapper)', () => {
   it('renders children when open', () => {
     const { getByText } = renderWithTheme(
       <ResponsiveSheet open onClose={() => {}} label={LABEL}>
@@ -34,45 +50,7 @@ describe('ResponsiveSheet', () => {
     expect(queryByText('Sheet body')).toBeNull();
   });
 
-  // The backdrop animates its opacity from 0 -> BACKDROP_OPACITY on enter, so
-  // RNTL treats it as accessibility-hidden during the synchronous first frame.
-  // `includeHiddenElements` lets us assert its (real, interactive) press
-  // behavior without depending on the enter transition having committed.
-  const HIDDEN = { includeHiddenElements: true } as const;
-
-  it('calls onClose when the backdrop is pressed (default dismissOnBackdrop)', () => {
-    const onClose = jest.fn();
-    const { getByTestId } = renderWithTheme(
-      <ResponsiveSheet open onClose={onClose} label={LABEL}>
-        <Text>Sheet body</Text>
-      </ResponsiveSheet>,
-    );
-    fireEvent.press(getByTestId(RESPONSIVE_SHEET_BACKDROP_TESTID, HIDDEN));
-    expect(onClose).toHaveBeenCalledTimes(1);
-  });
-
-  it('does NOT call onClose on backdrop press when dismissOnBackdrop is false', () => {
-    const onClose = jest.fn();
-    const { getByTestId } = renderWithTheme(
-      <ResponsiveSheet open onClose={onClose} label={LABEL} dismissOnBackdrop={false}>
-        <Text>Sheet body</Text>
-      </ResponsiveSheet>,
-    );
-    fireEvent.press(getByTestId(RESPONSIVE_SHEET_BACKDROP_TESTID, HIDDEN));
-    expect(onClose).not.toHaveBeenCalled();
-  });
-
-  it('labels the panel and the dismiss backdrop distinctly', () => {
-    const { getByLabelText } = renderWithTheme(
-      <ResponsiveSheet open onClose={() => {}} label={LABEL}>
-        <Text>Sheet body</Text>
-      </ResponsiveSheet>,
-    );
-    expect(getByLabelText(LABEL, HIDDEN)).toBeTruthy();
-    expect(getByLabelText(`Dismiss ${LABEL}`, HIDDEN)).toBeTruthy();
-  });
-
-  it('keeps the panel mounted through the exit transition after closing', () => {
+  it('unmounts the body after a controlled close settles', () => {
     jest.useFakeTimers();
     try {
       const { getByText, queryByText, rerender } = renderWithTheme(
@@ -82,23 +60,29 @@ describe('ResponsiveSheet', () => {
       );
       expect(getByText('Sheet body')).toBeTruthy();
 
-      rerender(
-        <BloomThemeProvider mode="light" colorPreset="teal">
-          <ResponsiveSheet open={false} onClose={() => {}} label={LABEL}>
-            <Text>Sheet body</Text>
-          </ResponsiveSheet>
-        </BloomThemeProvider>,
+      rerenderWithTheme(
+        rerender,
+        <ResponsiveSheet open={false} onClose={() => {}} label={LABEL}>
+          <Text>Sheet body</Text>
+        </ResponsiveSheet>,
       );
-      // Still mounted immediately after close (exit transition in flight).
-      expect(getByText('Sheet body')).toBeTruthy();
 
-      // After the transition duration it unmounts.
+      // After the close animation/fallback settles the body is gone.
       act(() => {
-        jest.advanceTimersByTime(400);
+        jest.advanceTimersByTime(500);
       });
       expect(queryByText('Sheet body')).toBeNull();
     } finally {
       jest.useRealTimers();
     }
+  });
+
+  it('forwards a custom label to the dialog surface', () => {
+    const { getByLabelText } = renderWithTheme(
+      <ResponsiveSheet open onClose={() => {}} label={LABEL}>
+        <Text>Sheet body</Text>
+      </ResponsiveSheet>,
+    );
+    expect(getByLabelText(LABEL)).toBeTruthy();
   });
 });

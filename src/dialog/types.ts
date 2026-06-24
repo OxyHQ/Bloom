@@ -1,5 +1,21 @@
 import type { GestureResponderEvent, StyleProp, ViewStyle } from 'react-native';
 
+import type { ResponsiveDialogPlacement } from './placement';
+
+export type { DialogPlacement, ResponsiveDialogPlacement } from './placement';
+
+/**
+ * Side-sheet inset (px) from the root overlay's edges. Lets a host place a
+ * `left`/`right` placement "inside its own shell" — e.g. offset from the top
+ * by a header, or from the anchored edge by a nav rail.
+ */
+export type DialogInset = {
+  top?: number;
+  bottom?: number;
+  left?: number;
+  right?: number;
+};
+
 /**
  * Imperative open/close handle returned by `useDialogControl`.
  *
@@ -51,7 +67,14 @@ export type DialogAction = {
 /**
  * Props accepted by the unified `<Dialog>` component.
  *
- * Three usage modes — pick whichever fits the call site:
+ * Open/close is driven by EITHER of two mutually-exclusive modes:
+ *
+ *   - **Imperative `control`** (`useDialogControl()` + `control.open()` /
+ *     `control.close()`). The legacy default; unchanged.
+ *   - **Controlled `open`** (an `open` boolean + `onClose`). When `open` is
+ *     provided it wins and `control` is ignored.
+ *
+ * Rendering modes (orthogonal to open/close mode) — pick whichever fits:
  *
  *   1. **Declarative (`title` / `description` / `actions`).** Most common
  *      confirm/cancel surface. Bloom renders the title, description and
@@ -63,10 +86,26 @@ export type DialogAction = {
  *
  *   3. **Imperative `alert()`.** Bypass the JSX layer entirely — see the
  *      module-level `alert()` helper.
+ *
+ * `placement` controls the surface anchor — centered modal (default), an
+ * anchored side-sheet (`left`/`right`), or a bottom-sheet (`bottom`) — and may
+ * be a responsive map that collapses to a bottom-sheet on narrow viewports.
  */
 export type DialogProps = React.PropsWithChildren<{
-  control: DialogControlProps;
-  /** Fires after the dialog has finished closing. */
+  /**
+   * Imperative open/close handle from `useDialogControl()`. Optional — omit it
+   * when driving the dialog with the controlled `open` prop instead.
+   */
+  control?: DialogControlProps;
+  /**
+   * Controlled open state (opt-in). When provided, the dialog is driven by
+   * this boolean and `onClose`, and `control` is ignored.
+   */
+  open?: boolean;
+  /**
+   * Fires after the dialog has finished closing. In controlled mode it is the
+   * close request the host must answer by flipping `open` to `false`.
+   */
   onClose?: () => void;
   testID?: string;
   /** Optional dialog header text. Rendered above `description` / `children`. */
@@ -79,10 +118,37 @@ export type DialogProps = React.PropsWithChildren<{
    */
   actions?: DialogAction[];
   /**
+   * Surface anchor. Defaults to `'center'` (the centered modal — current
+   * behavior). `'left'`/`'right'` render an anchored side-sheet, `'bottom'` a
+   * bottom-sheet. A responsive map resolves by viewport width, e.g.
+   * `{ base: 'bottom', md: 'left' }` (drawer on wide, sheet on narrow).
+   */
+  placement?: ResponsiveDialogPlacement;
+  /** Side-sheet width (px) on wide screens. Defaults to `460`. */
+  width?: number;
+  /** Centered-card max width (px). Defaults to `480`. */
+  maxWidth?: number;
+  /** Bottom-sheet max height as a fraction of the viewport height. Defaults to `0.9`. */
+  maxHeightRatio?: number;
+  /** Side-sheet inset (px) from the root overlay's edges. */
+  inset?: DialogInset;
+  /** Whether to render the drag handle in bottom-sheet mode. Defaults to `true`. */
+  showHandle?: boolean;
+  /** Whether tapping the backdrop dismisses the dialog. Defaults to `true`. */
+  dismissOnBackdrop?: boolean;
+  /**
    * Style overrides applied to the inner content container on native (the
    * floating bottom-sheet card) and to the modal panel on web.
    */
   style?: StyleProp<ViewStyle>;
+  /** Style overrides for the side/bottom placement panel surface. */
+  panelStyle?: StyleProp<ViewStyle>;
+  /** NativeWind classes for the side/bottom placement panel surface. */
+  panelClassName?: string;
+  /** Style for the root overlay (theme-var scope, rail offset, etc.). */
+  containerStyle?: StyleProp<ViewStyle>;
+  /** NativeWind classes for the root overlay (e.g. `"md:left-[4.75rem]"`). */
+  containerClassName?: string;
   /** Accessibility label, applied to the dialog role on web. */
   label?: string;
 }>;

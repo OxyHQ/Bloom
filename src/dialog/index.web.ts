@@ -8,7 +8,7 @@
 // Web bundlers select this file via the `"browser"` export condition in
 // `package.json`'s `exports['./dialog']`; native bundlers fall through to
 // the React Native build above.
-export { Dialog, BLOOM_DIALOG_CSS } from './Dialog.web';
+export { Dialog, BLOOM_DIALOG_CSS, DIALOG_SHEET_BACKDROP_TESTID } from './Dialog.web';
 export {
   CenteredDialog,
   BLOOM_CENTERED_DIALOG_CSS,
@@ -26,6 +26,9 @@ export type {
   DialogActionColor,
   DialogContextProps,
   DialogControlProps,
+  DialogInset,
+  DialogPlacement,
   DialogProps,
+  ResponsiveDialogPlacement,
 } from './types';
 export type { CenteredDialogProps } from './centered-dialog-types';

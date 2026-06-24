@@ -25,6 +25,7 @@ export { type Props as IconProps, sizes as iconSizes, useCommonSVGProps } from '
 export * from './portal/index.web';
 export {
   Dialog,
+  DIALOG_SHEET_BACKDROP_TESTID,
   CenteredDialog,
   CENTERED_DIALOG_BACKDROP_TESTID,
   BloomDialogProvider,
@@ -40,7 +41,10 @@ export type {
   DialogActionColor,
   DialogContextProps,
   DialogControlProps,
+  DialogInset,
+  DialogPlacement,
   DialogProps,
+  ResponsiveDialogPlacement,
 } from './dialog/index.web';
 export * from './button/index.web';
 export { Fab } from './fab/index.web';

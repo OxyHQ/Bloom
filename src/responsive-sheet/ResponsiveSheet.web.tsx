@@ -1,6 +1,6 @@
 import React from 'react';
 
-import { Dialog } from '../dialog';
+import { Dialog } from '../dialog/index.web';
 import {
   BREAKPOINT_LG,
   BREAKPOINT_MD,
@@ -14,15 +14,9 @@ import type { ResponsiveSheetProps } from './types';
 /**
  * @deprecated Use `<Dialog placement={{ base: 'bottom', md: 'left' }}>` instead.
  *
- * `ResponsiveSheet` is now a thin wrapper that configures the canonical
- * `<Dialog>` — an anchored side-sheet on wide screens collapsing to a
- * bottom-sheet below the breakpoint. It holds ZERO motion/layout logic of its
- * own; it maps its props onto a responsive `Dialog` `placement`. The
- * `@oxyhq/bloom/responsive-sheet` subpath is retained for the migration window.
- *
- * This file is BOTH the package default entry (resolved by downstream `tsc`
- * and non-Metro web bundlers via the `browser` condition through `index.web`)
- * AND a clean delegation, so it carries no platform-specific imports.
+ * Web fork of the deprecated `ResponsiveSheet` wrapper. Identical delegation to
+ * the default fork, but imports the web `Dialog` explicitly so non-Metro web
+ * bundlers never follow the native (reanimated) `Dialog` sibling.
  */
 export function ResponsiveSheet({
   open,
@@ -62,12 +56,6 @@ export function ResponsiveSheet({
   );
 }
 
-/**
- * Build the `Dialog` `placement` map for a `ResponsiveSheet`: a bottom-sheet
- * below `breakpoint`, the anchored `side` at and above it. The `breakpoint`
- * (px) is bucketed to the nearest Tailwind key so the side-sheet engages at the
- * matching width.
- */
 function placementForSide(
   side: 'left' | 'right',
   breakpoint: number,

@@ -26,6 +26,8 @@ const CLOSE_HIT_SLOP = { top: 8, bottom: 8, left: 8, right: 8 } as const;
 export const CENTERED_DIALOG_BACKDROP_TESTID = 'bloom-centered-dialog-backdrop';
 
 /**
+ * @deprecated Use `<Dialog placement="center">` instead.
+ *
  * Native variant of `<CenteredDialog>`.
  *
  * A controlled, centered modal: a transparent RN `Modal` (fade animation,
