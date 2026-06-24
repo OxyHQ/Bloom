@@ -7,8 +7,8 @@ import React from 'react';
  * lightweight RN mock (`__mocks__/react-native.ts`) doesn't provide — so the
  * real module throws on import under `testEnvironment: 'node'`. Bloom icons
  * (`src/icons/*`) are built on these primitives via `createSinglePathSVG`,
- * so any component that renders an icon (e.g. `CenteredDialog`'s close
- * button, `SearchInput`'s clear button) needs them stubbed.
+ * so any component that renders an icon (e.g. `SearchInput`'s clear button)
+ * needs them stubbed.
  *
  * Each export is a thin host-component stand-in that forwards children and
  * `testID`, mirroring the style of the RN component mock. That's enough for

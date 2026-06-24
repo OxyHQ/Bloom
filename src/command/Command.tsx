@@ -14,10 +14,13 @@ import { Item } from '../item';
 import { Kbd } from '../kbd';
 import { SearchInput } from '../search-input';
 import { fontSize, space } from '../styles/tokens';
-import type { CenteredDialogProps } from '../dialog';
+import type { DialogProps } from '../dialog';
 import type { CommandItem, CommandProps } from './types';
 
-type CenteredDialogComponent = React.ComponentType<CenteredDialogProps>;
+type DialogComponent = React.ComponentType<DialogProps>;
+
+/** Centered command-palette max width (px). Matches the legacy palette card. */
+const COMMAND_MAX_WIDTH = 560;
 
 function defaultFilter(item: CommandItem, query: string): boolean {
   const q = query.trim().toLowerCase();
@@ -36,17 +39,17 @@ interface FlatEntry {
 }
 
 /**
- * Build the `Command` palette bound to a platform `CenteredDialog`. The
- * platform entry files (`index.ts` / `index.web.ts`) inject the correct one
- * (native RN `Modal` vs pure-DOM web overlay) — this repo never relies on
- * implicit `.web` resolution. The body is single-source.
+ * Build the `Command` palette bound to a platform `Dialog`. The platform entry
+ * files (`index.ts` / `index.web.ts`) inject the correct one (native
+ * `BottomSheet`-backed surface vs pure-DOM web overlay) — this repo never
+ * relies on implicit `.web` resolution. The body is single-source.
  *
- * `Command` is a ⌘K command palette built on Bloom's `CenteredDialog`,
+ * `Command` is a ⌘K command palette built on `<Dialog placement="center">`,
  * `SearchInput`, an `Item` results list and `Kbd` shortcut hints. Items group
  * by their `group` field (ungrouped first). On web the list is
  * keyboard-navigable (Up/Down/Enter); on native, tap to select.
  */
-export function createCommand(CenteredDialog: CenteredDialogComponent) {
+export function createCommand(Dialog: DialogComponent) {
   const Command = function Command({
     visible,
     onClose,
@@ -168,15 +171,16 @@ export function createCommand(CenteredDialog: CenteredDialogComponent) {
       : {};
 
   return (
-    <CenteredDialog
-      visible={visible}
+    <Dialog
+      open={visible}
       onClose={onClose}
-      dismissible
-      showClose={false}
-      maxWidth={560}
-      accessibilityLabel="Command palette"
-      cardStyle={style}
-      contentStyle={styles.content}
+      placement="center"
+      dismissOnBackdrop
+      maxWidth={COMMAND_MAX_WIDTH}
+      label="Command palette"
+      // The palette owns its own edge-to-edge layout (full-bleed search border,
+      // padded results) so the Dialog panel contributes no padding of its own.
+      style={[styles.panel, style]}
       testID={testID}>
       <View {...webKeyHandler}>
         <View style={[styles.searchWrap, { borderBottomColor: theme.colors.borderLight }]}>
@@ -200,6 +204,7 @@ export function createCommand(CenteredDialog: CenteredDialogComponent) {
         ) : (
           <ScrollView
             style={{ maxHeight: maxListHeight }}
+            contentContainerStyle={styles.list}
             keyboardShouldPersistTaps="handled"
             showsVerticalScrollIndicator={false}>
             {entries.map((entry, i) => {
@@ -238,7 +243,7 @@ export function createCommand(CenteredDialog: CenteredDialogComponent) {
           </ScrollView>
         )}
       </View>
-    </CenteredDialog>
+    </Dialog>
     );
   };
 
@@ -249,9 +254,15 @@ export function createCommand(CenteredDialog: CenteredDialogComponent) {
 export type CommandType = ReturnType<typeof createCommand>;
 
 const styles = StyleSheet.create({
-  content: {
-    paddingHorizontal: 0,
+  // Zero out the Dialog panel's default padding (longhands beat the web
+  // panel's `padding` shorthand and the native panel's longhand paddings) so
+  // the palette renders edge-to-edge.
+  panel: {
     paddingTop: 0,
+    paddingHorizontal: 0,
+    paddingBottom: space.xs,
+  },
+  list: {
     paddingBottom: space.xs,
   },
   searchWrap: {

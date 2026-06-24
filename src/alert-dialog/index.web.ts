@@ -1,8 +1,8 @@
-import { CenteredDialog } from '../dialog/index.web';
+import { Dialog } from '../dialog/index.web';
 import { createAlertDialog } from './AlertDialog';
 import { createAlertDialogHost } from './AlertDialogHost';
 
-export const AlertDialog = createAlertDialog(CenteredDialog);
+export const AlertDialog = createAlertDialog(Dialog);
 export const AlertDialogHost = createAlertDialogHost(AlertDialog);
 
 export { confirm } from './confirm-store';

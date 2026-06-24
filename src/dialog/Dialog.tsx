@@ -65,8 +65,7 @@ export { DIALOG_SHEET_BACKDROP_TESTID };
  *     centered card via the 500px cap; flush for bottom: a full-width sheet
  *     with a drag handle). Default behavior is unchanged.
  *   - `'left'` / `'right'` — an anchored side-sheet/drawer driven by
- *     reanimated (the `responsive-sheet` native technique). Exit animations
- *     are safe on native.
+ *     reanimated. Exit animations are safe on native.
  *
  * The component accepts three rendering modes simultaneously:
  *

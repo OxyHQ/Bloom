@@ -21,8 +21,6 @@ export * from './portal';
 export {
   Dialog,
   DIALOG_SHEET_BACKDROP_TESTID,
-  CenteredDialog,
-  CENTERED_DIALOG_BACKDROP_TESTID,
   BloomDialogProvider,
   alert,
   useDialogContext,
@@ -31,7 +29,6 @@ export {
 export type {
   AlertButton,
   AlertButtonStyle,
-  CenteredDialogProps,
   DialogAction,
   DialogActionColor,
   DialogContextProps,
@@ -91,14 +88,6 @@ export type { ComboboxProps, ComboboxOption } from './combobox';
 // Bottom sheet
 export { BottomSheet } from './bottom-sheet';
 export type { BottomSheetRef, BottomSheetProps } from './bottom-sheet';
-
-// Responsive sheet — side-sheet on wide screens, bottom-sheet on narrow.
-export { ResponsiveSheet, RESPONSIVE_SHEET_BACKDROP_TESTID } from './responsive-sheet';
-export type {
-  ResponsiveSheetProps,
-  ResponsiveSheetSide,
-  ResponsiveSheetInset,
-} from './responsive-sheet';
 
 // Data display
 export * from './card';

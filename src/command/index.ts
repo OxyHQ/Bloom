@@ -1,6 +1,6 @@
-import { CenteredDialog } from '../dialog/index';
+import { Dialog } from '../dialog/index';
 import { createCommand } from './Command';
 
-export const Command = createCommand(CenteredDialog);
+export const Command = createCommand(Dialog);
 
 export type { CommandProps, CommandItem } from './types';

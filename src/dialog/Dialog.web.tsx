@@ -75,8 +75,8 @@ const ClosingContext = createContext(false);
  *
  * Web motion never uses reanimated `exiting` (which throws `removeChild` on
  * concurrent React unmounts): the centered card uses CSS keyframes and the
- * side/bottom modes use self-contained CSS transitions (the `responsive-sheet`
- * technique) on a mounted-through-exit node.
+ * side/bottom modes use self-contained CSS transitions on a
+ * mounted-through-exit node.
  */
 export function Dialog({
   control,
@@ -184,9 +184,12 @@ export function Dialog({
 
   // Escape-to-close while open. The listener is intentionally scoped to the
   // open lifetime so stacked dialogs don't fight for the keydown — the
-  // top-most one wins via document-level event order.
+  // top-most one wins via document-level event order. Escape honors
+  // `dismissOnBackdrop`: a blocking dialog (e.g. an unanswered confirm) is not
+  // dismissible by Escape, matching the backdrop's behavior. The default
+  // (`dismissOnBackdrop` true) is unchanged — Escape still closes.
   useEffect(() => {
-    if (!isOpen || typeof document === 'undefined') return;
+    if (!isOpen || !dismissOnBackdrop || typeof document === 'undefined') return;
     const handler = (e: KeyboardEvent) => {
       if (e.key === 'Escape') {
         e.stopPropagation();
@@ -195,7 +198,7 @@ export function Dialog({
     };
     document.addEventListener('keydown', handler);
     return () => document.removeEventListener('keydown', handler);
-  }, [close, isOpen]);
+  }, [close, dismissOnBackdrop, isOpen]);
 
   useImperativeHandle(
     control?.ref,
@@ -420,7 +423,7 @@ export { DIALOG_SHEET_BACKDROP_TESTID };
 
 /**
  * Side-sheet / bottom-sheet surface for the `left`/`right`/`bottom`
- * placements. Pure CSS transitions (the `responsive-sheet` technique): the
+ * placements. Pure CSS transitions: the
  * node stays mounted through the exit while a `shown` flag drives the
  * transform/opacity, so both directions animate without reanimated `exiting`.
  */
