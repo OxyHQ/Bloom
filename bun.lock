@@ -61,8 +61,6 @@
         "expo-font",
         "expo-router",
         "react-dom",
-        "react-native-gesture-handler",
-        "react-native-reanimated",
         "react-native-svg",
         "sonner",
         "sonner-native",

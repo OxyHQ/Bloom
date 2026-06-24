@@ -1,5 +1,27 @@
 # Migration Guide
 
+## 0.18.1 — `react-native-reanimated` + `react-native-gesture-handler` are now required peers
+
+These two were previously declared as **optional** peer dependencies, but Bloom's core
+components (`BottomSheet`, `Dialog`/`AlertDialog`/`Command`, `Tooltip`, `Menu`/`Select`/
+`Popover`/`ContextMenu`, `SegmentedControl`, `Loading`) import them **statically** — so
+"optional" was inaccurate and a web/bundler consumer without them failed at build time
+(`[MISSING_EXPORT] "Gesture"/"interpolate" is not exported`) with no install-time signal.
+
+As of 0.18.1 they are **required peer dependencies** (`react-native-reanimated >=3`,
+`react-native-gesture-handler >=2`), so package managers warn when they are missing.
+
+**Action:** any consumer that renders the components above must have both installed.
+Expo/React Native apps already have them. **Web (Vite/Astro) consumers** that use these
+components must add them explicitly (they have web support via `react-native-web`):
+
+```
+bun add react-native-reanimated react-native-gesture-handler
+```
+
+Consumers that only use theme/CSS helpers (`BloomThemeProvider`, color utilities) do not
+render those components and can ignore the peer warning.
+
 ## 0.18.0 — Public API: compound components namespace → flat
 
 > (0.17.0 was taken by the non-breaking `useNavigationTheme` release; this breaking

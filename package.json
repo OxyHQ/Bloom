@@ -1,6 +1,6 @@
 {
   "name": "@oxyhq/bloom",
-  "version": "0.18.0",
+  "version": "0.18.1",
   "description": "Bloom UI — Oxy ecosystem component library for React Native + Expo + Web",
   "main": "lib/commonjs/index.js",
   "module": "lib/module/index.js",
@@ -878,12 +878,6 @@
       "optional": true
     },
     "react-dom": {
-      "optional": true
-    },
-    "react-native-reanimated": {
-      "optional": true
-    },
-    "react-native-gesture-handler": {
       "optional": true
     },
     "react-native-svg": {
