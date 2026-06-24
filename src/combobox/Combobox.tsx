@@ -59,7 +59,7 @@ function defaultFilter<T>(option: ComboboxOption<T>, query: string): boolean {
  * read the overlay control from `Popover` context (via an inner component) so
  * selecting an option reliably closes the overlay on every platform.
  */
-export function createCombobox(Popover: PopoverModule) {
+export function createCombobox(PopoverImpl: PopoverModule) {
   function ComboboxInner<T>({
     options,
     value,
@@ -80,7 +80,7 @@ export function createCombobox(Popover: PopoverModule) {
   > &
     Pick<ComboboxProps<T>, 'label' | 'query' | 'onQueryChange' | 'disabled'>) {
     const theme = useTheme();
-    const { control } = Popover.usePopoverContext();
+    const { control } = PopoverImpl.usePopoverContext();
     const searchRef = useRef<TextInput>(null);
 
     const [query, setQuery] = useControllableState<string>({
@@ -113,7 +113,7 @@ export function createCombobox(Popover: PopoverModule) {
 
     return (
       <>
-        <Popover.PopoverTrigger label={accessibleLabel}>
+        <PopoverImpl.PopoverTrigger label={accessibleLabel}>
           {({ props }) => (
             <Pressable
               {...props}
@@ -149,9 +149,9 @@ export function createCombobox(Popover: PopoverModule) {
               <ChevronUpDownIcon size="xs" fill={theme.colors.textSecondary} />
             </Pressable>
           )}
-        </Popover.PopoverTrigger>
+        </PopoverImpl.PopoverTrigger>
 
-        <Popover.PopoverContent label={accessibleLabel} placement="bottom-start" minWidth={240}>
+        <PopoverImpl.PopoverContent label={accessibleLabel} placement="bottom-start" minWidth={240}>
           <View style={styles.searchWrap}>
             <SearchInput
               ref={searchRef}
@@ -196,7 +196,7 @@ export function createCombobox(Popover: PopoverModule) {
               })}
             </ScrollView>
           )}
-        </Popover.PopoverContent>
+        </PopoverImpl.PopoverContent>
       </>
     );
   }
@@ -217,7 +217,7 @@ export function createCombobox(Popover: PopoverModule) {
     testID,
   }: ComboboxProps<T>) {
     return (
-      <Popover.Popover>
+      <PopoverImpl.Popover>
         <View style={style} testID={testID}>
           <ComboboxInner<T>
             options={options}
@@ -233,7 +233,7 @@ export function createCombobox(Popover: PopoverModule) {
             maxListHeight={maxListHeight}
           />
         </View>
-      </Popover.Popover>
+      </PopoverImpl.Popover>
     );
   }
 
