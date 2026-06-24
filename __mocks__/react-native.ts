@@ -101,6 +101,8 @@ export const Dimensions = {
   },
 };
 
+export const useWindowDimensions = () => ({ ...dimensionValues.window, scale: 1, fontScale: 1 });
+
 export const StyleSheet = {
   create: <T extends Record<string, unknown>>(styles: T): T => styles,
   absoluteFill: { position: 'absolute', left: 0, right: 0, top: 0, bottom: 0 },

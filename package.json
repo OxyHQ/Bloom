@@ -1,6 +1,6 @@
 {
   "name": "@oxyhq/bloom",
-  "version": "0.13.0",
+  "version": "0.14.0",
   "description": "Bloom UI — Oxy ecosystem component library for React Native + Expo + Web",
   "main": "lib/commonjs/index.js",
   "module": "lib/module/index.js",
@@ -463,6 +463,22 @@
         "default": "./lib/commonjs/bottom-sheet/index.js"
       }
     },
+    "./responsive-sheet": {
+      "react-native": "./src/responsive-sheet/index.ts",
+      "browser": {
+        "types": "./lib/typescript/module/responsive-sheet/index.web.d.ts",
+        "import": "./lib/module/responsive-sheet/index.web.js",
+        "require": "./lib/commonjs/responsive-sheet/index.web.js"
+      },
+      "import": {
+        "types": "./lib/typescript/module/responsive-sheet/index.d.ts",
+        "default": "./lib/module/responsive-sheet/index.js"
+      },
+      "require": {
+        "types": "./lib/typescript/commonjs/responsive-sheet/index.d.ts",
+        "default": "./lib/commonjs/responsive-sheet/index.js"
+      }
+    },
     "./context-menu": {
       "react-native": "./src/context-menu/index.tsx",
       "browser": {
@@ -766,6 +782,7 @@
     "select",
     "context-menu",
     "bottom-sheet",
+    "responsive-sheet",
     "card",
     "badge",
     "chip",

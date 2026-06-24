@@ -88,6 +88,14 @@ export type { ComboboxProps, ComboboxOption } from './combobox';
 export { BottomSheet } from './bottom-sheet';
 export type { BottomSheetRef, BottomSheetProps } from './bottom-sheet';
 
+// Responsive sheet — side-sheet on wide screens, bottom-sheet on narrow.
+export { ResponsiveSheet, RESPONSIVE_SHEET_BACKDROP_TESTID } from './responsive-sheet';
+export type {
+  ResponsiveSheetProps,
+  ResponsiveSheetSide,
+  ResponsiveSheetInset,
+} from './responsive-sheet';
+
 // Data display
 export * from './card';
 export * from './badge';
