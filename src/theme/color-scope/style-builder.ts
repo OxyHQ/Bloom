@@ -76,12 +76,12 @@ export function getVariableContextProvider(): VariableContextProviderComponent |
  * provider writes vars to `documentElement` instead) or when `nativewind` is
  * not installed.
  *
- * @deprecated Under react-native-css@3, `vars()` only propagates to a subtree
- * when applied to an interop className component (the runtime gates propagation
- * on matched className style rules). Applied to a plain `<View>` the vars are
- * dropped silently. Prefer wrapping children in `getVariableContextProvider()`.
- * Retained only as the escape-hatch contract of `useColorScopeStyle`, where the
- * caller owns the host element and is expected to be a className component.
+ * Caveat — prefer `getVariableContextProvider()`: under react-native-css@3,
+ * `vars()` only propagates to a subtree when applied to an interop className
+ * component (the runtime gates propagation on matched className style rules).
+ * Applied to a plain `<View>` the vars are dropped silently. This is retained
+ * as the escape-hatch contract of `useColorScopeStyle`, where the caller owns
+ * the host element and is expected to be a className component.
  */
 export function buildNativePresetStyle(
   colorPreset: AppColorName,
