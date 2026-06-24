@@ -79,7 +79,7 @@ Addon.displayName = 'InputGroup.Addon';
  * ```tsx
  * <InputGroup>
  *   <InputGroup.Addon>https://</InputGroup.Addon>
- *   <TextField.Input label="Domain" value={v} onChangeText={setV} />
+ *   <TextFieldInput label="Domain" value={v} onChangeText={setV} />
  *   <InputGroup.Addon divider>
  *     <Button size="small" variant="ghost" onPress={go}>Go</Button>
  *   </InputGroup.Addon>

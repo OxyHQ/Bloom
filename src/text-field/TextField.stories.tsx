@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { View } from 'react-native';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
-import * as TextField from './index';
+import { TextField, TextFieldInput, TextFieldLabel } from './index';
 
 const meta: Meta = {
   title: 'Components/TextField',
@@ -28,9 +28,9 @@ function ControlledField({
   const [value, setValue] = useState(initial);
   return (
     <View style={{ width: 320 }}>
-      <TextField.LabelText>{label}</TextField.LabelText>
-      <TextField.Root isInvalid={isInvalid}>
-        <TextField.Input
+      <TextFieldLabel>{label}</TextFieldLabel>
+      <TextField isInvalid={isInvalid}>
+        <TextFieldInput
           label={label}
           placeholder={placeholder}
           value={value}
@@ -38,7 +38,7 @@ function ControlledField({
           editable={editable}
           isInvalid={isInvalid}
         />
-      </TextField.Root>
+      </TextField>
     </View>
   );
 }

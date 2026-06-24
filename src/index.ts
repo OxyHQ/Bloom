@@ -71,7 +71,7 @@ export { Fill } from './fill';
 export { IconCircle } from './icon-circle';
 
 // Form components
-export * as TextField from './text-field';
+export * from './text-field';
 export * from './segmented-control';
 export { SearchInput } from './search-input';
 export { Label } from './label';

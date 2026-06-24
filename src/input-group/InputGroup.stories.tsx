@@ -3,7 +3,7 @@ import { View } from 'react-native';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
 import { InputGroup } from './InputGroup';
-import * as TextField from '../text-field';
+import { TextFieldInput } from '../text-field';
 import { Button } from '../button';
 import { Kbd } from '../kbd';
 
@@ -22,7 +22,7 @@ export const TextAddons: Story = {
       <View style={{ width: 360 }}>
         <InputGroup>
           <InputGroup.Addon>https://</InputGroup.Addon>
-          <TextField.Input label="Domain" value={v} onChangeText={setV} placeholder="oxy" />
+          <TextFieldInput label="Domain" value={v} onChangeText={setV} placeholder="oxy" />
           <InputGroup.Addon>.so</InputGroup.Addon>
         </InputGroup>
       </View>
@@ -36,7 +36,7 @@ export const ButtonAddon: Story = {
     return (
       <View style={{ width: 360 }}>
         <InputGroup>
-          <TextField.Input label="Invite" value={v} onChangeText={setV} placeholder="email" />
+          <TextFieldInput label="Invite" value={v} onChangeText={setV} placeholder="email" />
           <InputGroup.Addon divider noPadding>
             <Button variant="ghost" size="small" onPress={() => {}}>
               Send
@@ -54,7 +54,7 @@ export const ShortcutHint: Story = {
     return (
       <View style={{ width: 360 }}>
         <InputGroup>
-          <TextField.Input label="Search" value={v} onChangeText={setV} placeholder="Search…" />
+          <TextFieldInput label="Search" value={v} onChangeText={setV} placeholder="Search…" />
           <InputGroup.Addon>
             <Kbd size="sm">⌘K</Kbd>
           </InputGroup.Addon>
