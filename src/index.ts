@@ -105,7 +105,7 @@ export { Kbd } from './kbd';
 export type { KbdProps } from './kbd';
 
 // Overlay components
-export * as Admonition from './admonition';
+export * from './admonition';
 export * as Menu from './menu';
 export * as Tooltip from './tooltip';
 export * as Select from './select';

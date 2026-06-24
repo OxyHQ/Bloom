@@ -28,7 +28,7 @@ const ICON_MAP = {
   apology: EmojiSadIcon,
 } as const;
 
-export function Icon() {
+export function AdmonitionIcon() {
   const theme = useTheme();
   const { type } = useContext(AdmonitionContext);
 
@@ -44,9 +44,9 @@ export function Icon() {
 
   return <IconComponent fill={fillMap[type]} size="md" />;
 }
-Icon.displayName = 'Admonition.Icon';
+AdmonitionIcon.displayName = 'AdmonitionIcon';
 
-export function Content({
+export function AdmonitionContent({
   children,
   style,
 }: {
@@ -59,9 +59,9 @@ export function Content({
     </View>
   );
 }
-Content.displayName = 'Admonition.Content';
+AdmonitionContent.displayName = 'AdmonitionContent';
 
-export function Text({
+export function AdmonitionText({
   children,
   style,
 }: {
@@ -74,9 +74,9 @@ export function Text({
     </BaseText>
   );
 }
-Text.displayName = 'Admonition.Text';
+AdmonitionText.displayName = 'AdmonitionText';
 
-export function Button({
+export function AdmonitionButton({
   children,
   ...props
 }: Omit<ButtonProps, 'size' | 'variant'>) {
@@ -86,9 +86,9 @@ export function Button({
     </BaseButton>
   );
 }
-Button.displayName = 'Admonition.Button';
+AdmonitionButton.displayName = 'AdmonitionButton';
 
-export function Row({
+export function AdmonitionRow({
   children,
   style,
 }: {
@@ -101,9 +101,9 @@ export function Row({
     </View>
   );
 }
-Row.displayName = 'Admonition.Row';
+AdmonitionRow.displayName = 'AdmonitionRow';
 
-export function Outer({
+export function AdmonitionRoot({
   children,
   type = 'info',
   style,
@@ -139,11 +139,12 @@ export function Outer({
     </AdmonitionContext.Provider>
   );
 }
-Outer.displayName = 'Admonition.Outer';
+AdmonitionRoot.displayName = 'AdmonitionRoot';
 
 /**
  * Simple all-in-one Admonition component for common use cases.
- * For more control, compose with Outer, Row, Icon, Content, Text, and Button.
+ * For more control, compose with AdmonitionRoot, AdmonitionRow, AdmonitionIcon,
+ * AdmonitionContent, AdmonitionText, and AdmonitionButton.
  */
 export function Admonition({
   children,
@@ -155,14 +156,14 @@ export function Admonition({
   style?: StyleProp<ViewStyle>;
 }) {
   return (
-    <Outer type={type} style={style}>
-      <Row>
-        <Icon />
-        <Content>
-          <Text>{children}</Text>
-        </Content>
-      </Row>
-    </Outer>
+    <AdmonitionRoot type={type} style={style}>
+      <AdmonitionRow>
+        <AdmonitionIcon />
+        <AdmonitionContent>
+          <AdmonitionText>{children}</AdmonitionText>
+        </AdmonitionContent>
+      </AdmonitionRow>
+    </AdmonitionRoot>
   );
 }
 Admonition.displayName = 'Admonition';
