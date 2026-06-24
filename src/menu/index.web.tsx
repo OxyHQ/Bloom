@@ -25,11 +25,11 @@ import {
 } from './context';
 import type {
   MenuContextType,
-  GroupProps,
-  ItemIconProps,
-  ItemProps,
-  ItemTextProps,
-  TriggerProps,
+  MenuGroupProps,
+  MenuItemIconProps,
+  MenuItemProps,
+  MenuItemTextProps,
+  MenuTriggerProps,
 } from './types';
 
 export { useMenuContext };
@@ -92,7 +92,7 @@ function useMenuControlAsDialogControl(
   }, [menuControl]);
 }
 
-export function Root({
+export function Menu({
   children,
   control,
 }: React.PropsWithChildren<{
@@ -157,12 +157,12 @@ export function Root({
   );
 }
 
-export function Trigger({
+export function MenuTrigger({
   children,
   label,
   role = 'button',
   hint,
-}: TriggerProps) {
+}: MenuTriggerProps) {
   const { control, triggerRef } = useMenuContext();
   const [hovered, setHovered] = useState(false);
   const [focused, setFocused] = useState(false);
@@ -186,7 +186,7 @@ export function Trigger({
   });
 }
 
-export function Outer({
+export function MenuContent({
   children,
   style,
 }: React.PropsWithChildren<{
@@ -268,7 +268,7 @@ export function Outer({
   );
 }
 
-export function Item({ children, label, onPress, style, ...rest }: ItemProps) {
+export function MenuItem({ children, label, onPress, style, ...rest }: MenuItemProps) {
   const theme = useTheme();
   const { control } = useMenuContext();
   const [hovered, setHovered] = useState(false);
@@ -321,7 +321,7 @@ export function Item({ children, label, onPress, style, ...rest }: ItemProps) {
   );
 }
 
-export function ItemText({ children, style }: ItemTextProps) {
+export function MenuItemText({ children, style }: MenuItemTextProps) {
   const theme = useTheme();
   const { disabled } = useMenuItemContext();
 
@@ -338,7 +338,7 @@ export function ItemText({ children, style }: ItemTextProps) {
   );
 }
 
-export function ItemIcon({ icon: Comp, position = 'left', fill }: ItemIconProps) {
+export function MenuItemIcon({ icon: Comp, position = 'left', fill }: MenuItemIconProps) {
   const theme = useTheme();
   const { disabled } = useMenuItemContext();
 
@@ -363,11 +363,11 @@ export function ItemIcon({ icon: Comp, position = 'left', fill }: ItemIconProps)
   );
 }
 
-export function Group({ children }: GroupProps) {
+export function MenuGroup({ children }: MenuGroupProps) {
   return <>{children}</>;
 }
 
-export function Divider() {
+export function MenuDivider() {
   const theme = useTheme();
 
   return (

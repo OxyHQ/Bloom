@@ -31,7 +31,7 @@ export interface SheetShellProps {
 
 /**
  * Bottom-sheet shell with an embedded drag handle. Exposes the bloom
- * dialog `close()` context to descendants — `Menu.Item`, `Select.Item`
+ * dialog `close()` context to descendants — `MenuItem`, `Select.Item`
  * etc. rely on it to dismiss the sheet after selection.
  */
 export function SheetShell({

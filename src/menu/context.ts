@@ -11,7 +11,7 @@ ItemContext.displayName = 'BloomMenuItemContext';
 export function useMenuContext(): MenuContextType {
   const context = useContext(MenuContext);
   if (!context) {
-    throw new Error('useMenuContext must be used within a Menu.Root');
+    throw new Error('useMenuContext must be used within a Menu component');
   }
   return context;
 }
@@ -19,7 +19,7 @@ export function useMenuContext(): MenuContextType {
 export function useMenuItemContext(): ItemContextType {
   const context = useContext(ItemContext);
   if (!context) {
-    throw new Error('useMenuItemContext must be used within a Menu.Item');
+    throw new Error('useMenuItemContext must be used within a MenuItem component');
   }
   return context;
 }
