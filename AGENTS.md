@@ -40,7 +40,11 @@ Components with `.web.tsx` variants: dialog, context-menu, menu, prompt-input/Te
 
 ## Component Families
 
-Compound components are flat-prefixed exports (e.g. `Tabs`, `TabsTrigger`, `TabsContent`; `Menu`, `MenuItem`, `MenuTrigger`). Only the collection families `Icons`, `Typography`, `Skeleton`, `Grid`, `Code`, `Fonts` are namespaces. No deprecated/back-compat aliases — breaking renames are clean cuts.
+Compound components are flat-prefixed exports (e.g. `Tabs`, `TabsTrigger`, `TabsContent`; `Menu`, `MenuItem`, `MenuTrigger`). The collection families `Icons`, `Typography`, `Skeleton`, `Grid`, `Code`, `Fonts` stay namespaces. No deprecated/back-compat aliases — breaking renames are clean cuts.
+
+**Which pattern (the rule, so it's never ambiguous):**
+- **Flat-prefix** when the parts are the *fixed-arity pieces of ONE component* that are always composed together and have specific names (`SelectTrigger`, `SegmentedControlItem`). This is the shadcn/Radix convention.
+- **Namespace** when it's an *open/large set of sibling primitives* of the same kind whose members have **generic, collision-prone names** (`Text`, `Box`, `Row`, `Col`, `Title`) or **high cardinality** (hundreds of icons). Flattening these would either collide at the top level (`Skeleton.Text` vs `Typography.Text` vs RN `Text`) or pollute it (`Icons.*`). The namespace disambiguates for free, and because each family ships as a subpath export (`@oxyhq/bloom/skeleton`), `import * as` does **not** cost tree-shaking. Under this rule Skeleton (`Text/Box/Row/Col/Circle/Pill`) is correctly a namespace.
 
 ## Overlay surface architecture (0.16.x — two canonical components)
 
