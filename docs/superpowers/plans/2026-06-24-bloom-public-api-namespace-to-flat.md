@@ -555,7 +555,10 @@ git commit -m "test(bloom): public-API contract green; regenerate platform expor
 Prepend to `MIGRATION.md`:
 
 ```markdown
-## 0.17.x — Public API: compound components namespace → flat
+## 0.18.0 — Public API: compound components namespace → flat
+
+> (0.17.0 was taken by the non-breaking `useNavigationTheme` release; this breaking
+> change is therefore 0.18.0.)
 
 Compound components are no longer namespace objects. Each part is now a flat,
 prefixed top-level export (shadcn/MUI style). The six **collection** families stay
@@ -614,7 +617,8 @@ git commit -m "docs(bloom): note flat-export convention in AGENTS.md"
 
 This plan ends at a green, built, breaking Bloom. The rollout itself is NOT part of this
 plan and MUST follow the ecosystem workflow:
-1. Publish via the `publish` skill as a breaking bump (e.g. `0.17.0`).
+1. Publish via the `publish` skill as a breaking bump (`0.18.0` — `0.17.0` already
+   published as the `useNavigationTheme` feature).
 2. For each consumer (Mention, Allo, Homiio, and the Oxy apps that import a converted
    family), spawn the app agent to: bump `@oxyhq/bloom`, codemod call sites using the
    Task 13 table, run that app's `typescript` + build, then push via `test-build` →

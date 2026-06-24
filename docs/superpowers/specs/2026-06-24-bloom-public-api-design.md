@@ -276,7 +276,8 @@ import:
 ## 10. Versioning, migration & downstream rollout
 
 - **Breaking → minor-major per the repo's convention** (0.x line; this is a breaking
-  public-API change, treat as a notable bump, e.g. `0.17.0`). Decided at publish time
+  public-API change, treat as a notable bump → `0.18.0`, since `0.17.0` was already
+  published as the non-breaking `useNavigationTheme` feature). Decided at publish time
   via the `publish` skill.
 - **`MIGRATION.md`** gets a new "0.x — Public API: namespace → flat" section with a
   full before/after table (namespace call-site → flat call-site) generated from §6/§7.
