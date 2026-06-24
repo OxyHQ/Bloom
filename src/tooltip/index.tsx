@@ -72,16 +72,16 @@ TargetContext.displayName = 'TargetContext';
  *
  * Only really necessary on iOS but can work on Android.
  */
-export function SheetCompatProvider({
+export function TooltipSheetCompatProvider({
   children,
 }: {
   children: React.ReactNode;
 }) {
   return <>{children}</>;
 }
-SheetCompatProvider.displayName = 'TooltipSheetCompatProvider';
+TooltipSheetCompatProvider.displayName = 'TooltipSheetCompatProvider';
 
-export function Outer({
+export function Tooltip({
   children,
   position = 'bottom',
   visible: requestVisible,
@@ -131,7 +131,7 @@ export function Outer({
   );
 }
 
-export function Target({ children }: { children: React.ReactNode }) {
+export function TooltipTrigger({ children }: { children: React.ReactNode }) {
   const { shouldMeasure, setTargetMeasurements } = useContext(TargetContext);
   const [hasLayedOut, setHasLayedOut] = useState(false);
   const targetRef = useRef<View>(null);
@@ -156,7 +156,7 @@ export function Target({ children }: { children: React.ReactNode }) {
   );
 }
 
-export function Content({
+export function TooltipContent({
   children,
   label,
 }: {
@@ -390,4 +390,4 @@ function opposite(position: 'top' | 'bottom'): string {
   }
 }
 
-export const TextBubble = createTextBubble(Content);
+export const TooltipTextBubble = createTextBubble(TooltipContent);
