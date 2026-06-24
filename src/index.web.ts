@@ -98,7 +98,7 @@ export type { BottomSheetRef, BottomSheetProps } from './bottom-sheet';
 export * from './card';
 export * from './badge';
 export * from './chip';
-export * as Tabs from './tabs';
+export * from './tabs';
 export * from './checkbox';
 export * from './accordion';
 
