@@ -77,7 +77,7 @@ export { IconCircle } from './icon-circle';
 
 // Form components
 export * as TextField from './text-field';
-export * as SegmentedControl from './segmented-control';
+export * from './segmented-control';
 export { SearchInput } from './search-input';
 export { Label } from './label';
 export type { LabelProps } from './label';

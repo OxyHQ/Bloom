@@ -40,21 +40,21 @@ const InternalContext = createContext<{
  *
  * @example
  * ```tsx
- * <SegmentedControl.Root value={value} onChange={setValue}>
- *   <SegmentedControl.Item value="one">
- *     <SegmentedControl.ItemText value="one">
+ * <SegmentedControl value={value} onChange={setValue}>
+ *   <SegmentedControlItem value="one">
+ *     <SegmentedControlItemText value="one">
  *       One
- *     </SegmentedControl.ItemText>
- *   </SegmentedControl.Item>
- *   <SegmentedControl.Item value="two">
- *     <SegmentedControl.ItemText value="two">
+ *     </SegmentedControlItemText>
+ *   </SegmentedControlItem>
+ *   <SegmentedControlItem value="two">
+ *     <SegmentedControlItemText value="two">
  *       Two
- *     </SegmentedControl.ItemText>
- *   </SegmentedControl.Item>
- * </SegmentedControl.Root>
+ *     </SegmentedControlItemText>
+ *   </SegmentedControlItem>
+ * </SegmentedControl>
  * ```
  */
-export function Root<T extends string>({
+export function SegmentedControl<T extends string>({
   label,
   type = 'radio',
   size = 'large',
@@ -146,7 +146,7 @@ const InternalItemContext = createContext<{
   active: boolean;
 } | null>(null);
 
-export function Item({
+export function SegmentedControlItem({
   value,
   style,
   children,
@@ -177,7 +177,7 @@ export function Item({
   const ctx = useContext(InternalContext);
   if (!ctx) {
     throw new Error(
-      'SegmentedControl.Item must be used within a SegmentedControl.Root',
+      'SegmentedControlItem must be used within a SegmentedControl',
     );
   }
 
@@ -264,7 +264,7 @@ export function Item({
   );
 }
 
-export function ItemText({
+export function SegmentedControlItemText({
   style,
   children,
   ...props
@@ -276,7 +276,7 @@ export function ItemText({
   const ctx = useContext(InternalItemContext);
   if (!ctx) {
     throw new Error(
-      'SegmentedControl.ItemText must be used within a SegmentedControl.Item',
+      'SegmentedControlItemText must be used within a SegmentedControlItem',
     );
   }
 
