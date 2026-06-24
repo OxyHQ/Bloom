@@ -9,13 +9,13 @@ export interface TabsProps {
   onValueChange: (value: string) => void;
   /** Visual variant for the tab bar. */
   variant?: TabsVariant;
-  /** The tab items. Must be Tab components. */
+  /** The tab items. Must be TabsTrigger components. */
   children: React.ReactNode;
   style?: StyleProp<ViewStyle>;
   testID?: string;
 }
 
-export interface TabProps {
+export interface TabsTriggerProps {
   /** Unique value identifying this tab. */
   value: string;
   /** Tab label text. */
@@ -28,7 +28,7 @@ export interface TabProps {
   textStyle?: StyleProp<TextStyle>;
 }
 
-export interface TabPanelProps {
+export interface TabsContentProps {
   /** The tab value this panel corresponds to. */
   value: string;
   /** Panel content. */

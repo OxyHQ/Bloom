@@ -21,7 +21,7 @@ export function useContextMenuContext(): ContextMenuContextValue {
   const ctx = useContext(ContextMenuContext);
   if (!ctx) {
     throw new Error(
-      'ContextMenu components must be used within a ContextMenu.Root',
+      'ContextMenu components must be used within a <ContextMenu>',
     );
   }
   return ctx;
@@ -38,7 +38,7 @@ export function useItemContext(): ItemContextValue {
   const ctx = useContext(ItemCtx);
   if (!ctx) {
     throw new Error(
-      'ContextMenu.ItemText/ItemIcon must be used within a ContextMenu.Item',
+      'ContextMenuItemText/ContextMenuItemIcon must be used within a <ContextMenuItem>',
     );
   }
   return ctx;

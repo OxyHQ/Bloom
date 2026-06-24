@@ -4,7 +4,7 @@ import type { Meta, StoryObj } from '@storybook/react-vite';
 
 import { Field } from './Field';
 import { Switch } from '../switch';
-import * as TextField from '../text-field';
+import { TextFieldInput } from '../text-field';
 
 const meta: Meta = {
   title: 'Forms/Field',
@@ -20,7 +20,7 @@ export const WithInput: Story = {
     return (
       <View style={{ width: 360 }}>
         <Field label="Username" description="Choose a unique handle." required>
-          <TextField.Input label="Username" value={v} onChangeText={setV} placeholder="ada" />
+          <TextFieldInput label="Username" value={v} onChangeText={setV} placeholder="ada" />
         </Field>
       </View>
     );
@@ -33,7 +33,7 @@ export const WithError: Story = {
     return (
       <View style={{ width: 360 }}>
         <Field label="Email" error="Enter a valid email address.">
-          <TextField.Input label="Email" value={v} onChangeText={setV} isInvalid />
+          <TextFieldInput label="Email" value={v} onChangeText={setV} isInvalid />
         </Field>
       </View>
     );

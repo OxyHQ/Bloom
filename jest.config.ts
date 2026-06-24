@@ -34,8 +34,13 @@ const config: Config = {
     '^react-native-svg$': '<rootDir>/__mocks__/react-native-svg.ts',
     '^react-native$': '<rootDir>/__mocks__/react-native.ts',
     '\\.(woff2?|ttf|otf|eot)$': '<rootDir>/__mocks__/font-asset.ts',
+    '^nanoid/non-secure$': '<rootDir>/__mocks__/nanoid.ts',
+    '^sonner-native$': '<rootDir>/__mocks__/sonner-native.ts',
   },
   setupFiles: ['<rootDir>/__mocks__/setup.ts'],
+  transformIgnorePatterns: [
+    'node_modules/(?!(nanoid|sonner-native|react-native-web|@react-native|expo-linear-gradient))',
+  ],
 };
 
 export default config;

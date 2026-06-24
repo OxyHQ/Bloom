@@ -19,20 +19,20 @@ import { useInteractionState } from '../hooks/useInteractionState';
 import {
   ChevronTopBottom_Stroke2_Corner0_Rounded as ChevronUpDownIcon,
 } from '../icons/Chevron';
-import { defaultItemValueExtractor, ItemContext, useItemContext } from './common';
+import { defaultItemValueExtractor, ItemContext, useSelectItemContext } from './common';
 import type {
-  ContentProps,
-  IconProps,
-  ItemIndicatorProps,
-  ItemProps,
-  ItemTextProps,
-  RootProps,
+  SelectContentProps,
+  SelectIconProps,
+  SelectItemIndicatorProps,
+  SelectItemProps,
+  SelectItemTextProps,
+  SelectProps,
   SelectItemContextValue,
-  TriggerProps,
-  ValueTextProps,
+  SelectTriggerProps,
+  SelectValueProps,
 } from './types';
 
-export { useItemContext };
+export { useSelectItemContext };
 
 // ---------------------------------------------------------------------------
 // Context
@@ -40,7 +40,7 @@ export { useItemContext };
 
 type SelectContextValue = {
   control: DialogControlProps;
-} & Pick<RootProps, 'value' | 'onValueChange' | 'disabled'>;
+} & Pick<SelectProps, 'value' | 'onValueChange' | 'disabled'>;
 
 const SelectContext = createContext<SelectContextValue | null>(null);
 SelectContext.displayName = 'SelectContext';
@@ -53,16 +53,16 @@ ValueStoreContext.displayName = 'SelectValueStoreContext';
 function useSelectContext(): SelectContextValue {
   const ctx = useContext(SelectContext);
   if (!ctx) {
-    throw new Error('Select components must be used within a Select.Root');
+    throw new Error('Select components must be used within a Select');
   }
   return ctx;
 }
 
 // ---------------------------------------------------------------------------
-// Root
+// Select
 // ---------------------------------------------------------------------------
 
-export function Root({ children, value, onValueChange, disabled }: RootProps) {
+export function Select({ children, value, onValueChange, disabled }: SelectProps) {
   const control = useDialogControl();
   const valueStoreState = useState<unknown>(undefined);
 
@@ -81,10 +81,10 @@ export function Root({ children, value, onValueChange, disabled }: RootProps) {
 }
 
 // ---------------------------------------------------------------------------
-// Trigger
+// SelectTrigger
 // ---------------------------------------------------------------------------
 
-export function Trigger({ children, label }: TriggerProps) {
+export function SelectTrigger({ children, label }: SelectTriggerProps) {
   const { control } = useSelectContext();
   const { state: focused, onIn: onFocus, onOut: onBlur } = useInteractionState();
   const {
@@ -124,14 +124,14 @@ export function Trigger({ children, label }: TriggerProps) {
 }
 
 // ---------------------------------------------------------------------------
-// ValueText
+// SelectValue
 // ---------------------------------------------------------------------------
 
-export function ValueText({
+export function SelectValue({
   placeholder,
   children: extractLabel = defaultExtractLabel,
   style,
-}: ValueTextProps) {
+}: SelectValueProps) {
   const [storedValue] = useContext(ValueStoreContext);
   const theme = useTheme();
 
@@ -159,23 +159,23 @@ function defaultExtractLabel(item: unknown): React.ReactNode {
 }
 
 // ---------------------------------------------------------------------------
-// Icon
+// SelectIcon
 // ---------------------------------------------------------------------------
 
-export function Icon(_props: IconProps) {
+export function SelectIcon(_props: SelectIconProps) {
   const theme = useTheme();
   return <ChevronUpDownIcon size="sm" fill={theme.colors.textSecondary} />;
 }
 
 // ---------------------------------------------------------------------------
-// Content
+// SelectContent
 // ---------------------------------------------------------------------------
 
-export function Content<T>({
+export function SelectContent<T>({
   items,
   valueExtractor = defaultItemValueExtractor,
   ...props
-}: ContentProps<T>) {
+}: SelectContentProps<T>) {
   const { control, ...context } = useSelectContext();
   const [, setStoredValue] = useContext(ValueStoreContext);
 
@@ -189,7 +189,7 @@ export function Content<T>({
   }, [items, context.value, valueExtractor, setStoredValue]);
 
   return (
-    <ContentInner
+    <SelectContentInner
       control={control}
       items={items}
       valueExtractor={valueExtractor}
@@ -201,19 +201,19 @@ export function Content<T>({
   );
 }
 
-type ContentInnerProps<T> = ContentProps<T> &
-  Pick<RootProps, 'value' | 'onValueChange' | 'disabled'> & {
+type SelectContentInnerProps<T> = SelectContentProps<T> &
+  Pick<SelectProps, 'value' | 'onValueChange' | 'disabled'> & {
     control: DialogControlProps;
   };
 
-function ContentInner<T>({
+function SelectContentInner<T>({
   label = 'Select an option',
   items,
   renderItem,
   valueExtractor = defaultItemValueExtractor,
   control,
   ...contextValues
-}: ContentInnerProps<T>) {
+}: SelectContentInnerProps<T>) {
   const theme = useTheme();
 
   const render = useCallback(
@@ -258,14 +258,10 @@ function ContentInner<T>({
 }
 
 // ---------------------------------------------------------------------------
-// Item context + value extractor (shared across platforms)
+// SelectItem
 // ---------------------------------------------------------------------------
 
-// ---------------------------------------------------------------------------
-// Item
-// ---------------------------------------------------------------------------
-
-export function Item({ children, value, label, style }: ItemProps) {
+export function SelectItem({ children, value, label, style }: SelectItemProps) {
   const theme = useTheme();
   const { close } = useDialogContext();
   const { value: selectedValue, onValueChange } = useSelectContext();
@@ -311,11 +307,11 @@ export function Item({ children, value, label, style }: ItemProps) {
 }
 
 // ---------------------------------------------------------------------------
-// ItemText
+// SelectItemText
 // ---------------------------------------------------------------------------
 
-export function ItemText({ children, style }: ItemTextProps) {
-  const { selected } = useItemContext();
+export function SelectItemText({ children, style }: SelectItemTextProps) {
+  const { selected } = useSelectItemContext();
 
   return (
     <Text
@@ -331,11 +327,11 @@ export function ItemText({ children, style }: ItemTextProps) {
 }
 
 // ---------------------------------------------------------------------------
-// ItemIndicator
+// SelectItemIndicator
 // ---------------------------------------------------------------------------
 
-export function ItemIndicator({ icon: IconComponent }: ItemIndicatorProps) {
-  const { selected } = useItemContext();
+export function SelectItemIndicator({ icon: IconComponent }: SelectItemIndicatorProps) {
+  const { selected } = useSelectItemContext();
 
   if (IconComponent) {
     return (
@@ -349,10 +345,10 @@ export function ItemIndicator({ icon: IconComponent }: ItemIndicatorProps) {
 }
 
 // ---------------------------------------------------------------------------
-// Separator
+// SelectSeparator
 // ---------------------------------------------------------------------------
 
-export function Separator() {
+export function SelectSeparator() {
   const theme = useTheme();
 
   return (

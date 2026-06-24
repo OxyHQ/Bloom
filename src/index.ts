@@ -57,7 +57,7 @@ export type { AvatarGroupProps, AvatarGroupItem } from './avatar-group';
 export { UserHoverCard } from './user-hover-card';
 export type { UserHoverCardProps, UserHoverCardStat } from './user-hover-card';
 export * from './loading';
-export * as PromptInput from './prompt-input';
+export * from './prompt-input';
 export * from './switch';
 export { toast, type Toast } from './toast';
 
@@ -71,8 +71,8 @@ export { Fill } from './fill';
 export { IconCircle } from './icon-circle';
 
 // Form components
-export * as TextField from './text-field';
-export * as SegmentedControl from './segmented-control';
+export * from './text-field';
+export * from './segmented-control';
 export { SearchInput } from './search-input';
 export { Label } from './label';
 export type { LabelProps } from './label';
@@ -93,9 +93,9 @@ export type { BottomSheetRef, BottomSheetProps } from './bottom-sheet';
 export * from './card';
 export * from './badge';
 export * from './chip';
-export * as Tabs from './tabs';
+export * from './tabs';
 export * from './checkbox';
-export * as Accordion from './accordion';
+export * from './accordion';
 
 // Settings / Grouped list
 export * from './settings-list';
@@ -105,12 +105,12 @@ export { Kbd } from './kbd';
 export type { KbdProps } from './kbd';
 
 // Overlay components
-export * as Admonition from './admonition';
-export * as Menu from './menu';
-export * as Tooltip from './tooltip';
-export * as Select from './select';
-export * as ContextMenu from './context-menu';
-export * as Popover from './popover';
+export * from './admonition';
+export * from './menu';
+export * from './tooltip';
+export * from './select';
+export * from './context-menu';
+export * from './popover';
 export { AlertDialog, AlertDialogHost, confirm } from './alert-dialog';
 export type {
   AlertDialogProps,

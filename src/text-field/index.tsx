@@ -46,11 +46,11 @@ const Context = createContext<{
 });
 Context.displayName = 'TextFieldContext';
 
-export type RootProps = React.PropsWithChildren<
+export type TextFieldProps = React.PropsWithChildren<
   { isInvalid?: boolean } & ViewStyleProp
 >;
 
-export function Root({ children, isInvalid = false, style }: RootProps) {
+export function TextField({ children, isInvalid = false, style }: TextFieldProps) {
   const inputRef = useRef<TextInput>(null);
   const {
     state: hovered,
@@ -122,7 +122,7 @@ export function useSharedInputStyles() {
   }, [theme]);
 }
 
-export type InputProps = Omit<
+export type TextFieldInputProps = Omit<
   TextInputProps,
   'value' | 'onChangeText' | 'placeholder'
 > & {
@@ -134,7 +134,7 @@ export type InputProps = Omit<
   placeholder?: string | null | undefined;
 };
 
-export function Input({
+export function TextFieldInput({
   label,
   placeholder,
   value,
@@ -145,7 +145,7 @@ export function Input({
   inputRef,
   style,
   ...rest
-}: InputProps) {
+}: TextFieldInputProps) {
   const theme = useTheme();
   const ctx = useContext(Context);
   const withinRoot = Boolean(ctx.inputRef);
@@ -155,8 +155,8 @@ export function Input({
 
   if (!withinRoot) {
     return (
-      <Root isInvalid={isInvalid}>
-        <Input
+      <TextField isInvalid={isInvalid}>
+        <TextFieldInput
           label={label}
           placeholder={placeholder}
           value={value}
@@ -164,7 +164,7 @@ export function Input({
           isInvalid={isInvalid}
           {...rest}
         />
-      </Root>
+      </TextField>
     );
   }
 
@@ -246,7 +246,7 @@ export function Input({
   );
 }
 
-export function LabelText({
+export function TextFieldLabel({
   nativeID,
   children,
 }: React.PropsWithChildren<{ nativeID?: string }>) {
@@ -265,7 +265,7 @@ export function LabelText({
   );
 }
 
-export function Icon({ icon: Comp }: { icon: React.ComponentType<SVGIconProps> }) {
+export function TextFieldIcon({ icon: Comp }: { icon: React.ComponentType<SVGIconProps> }) {
   const theme = useTheme();
   const ctx = useContext(Context);
 
@@ -297,7 +297,7 @@ export function Icon({ icon: Comp }: { icon: React.ComponentType<SVGIconProps> }
   );
 }
 
-export function SuffixText({
+export function TextFieldSuffix({
   children,
   label,
   accessibilityHint,
@@ -330,7 +330,7 @@ export function SuffixText({
   );
 }
 
-export function GhostText({
+export function TextFieldGhost({
   children,
   value,
 }: {

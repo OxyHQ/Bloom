@@ -18,7 +18,7 @@ export type ItemContextValue = {
   disabled: boolean;
 };
 
-export type TriggerProps = {
+export type ContextMenuTriggerProps = {
   children: (props: TriggerChildProps) => React.ReactNode;
   label: string;
   /** Accessibility hint describing what long-pressing / right-clicking does. */
@@ -44,25 +44,25 @@ export type TriggerChildProps = {
   };
 };
 
-export type OuterProps = React.PropsWithChildren<{
+export type ContextMenuContentProps = React.PropsWithChildren<{
   style?: StyleProp<ViewStyle>;
 }>;
 
-export type ItemProps = React.PropsWithChildren<{
+export type ContextMenuItemProps = React.PropsWithChildren<{
   label: string;
   onPress: (e?: GestureResponderEvent) => void;
   disabled?: boolean;
   style?: StyleProp<ViewStyle>;
 }>;
 
-export type ItemTextProps = React.PropsWithChildren<{
+export type ContextMenuItemTextProps = React.PropsWithChildren<{
   style?: TextStyle;
 }>;
 
-export type ItemIconProps = {
+export type ContextMenuItemIconProps = {
   icon: React.ComponentType<SVGIconProps>;
 };
 
-export type GroupProps = React.PropsWithChildren<{
+export type ContextMenuGroupProps = React.PropsWithChildren<{
   style?: StyleProp<ViewStyle>;
 }>;

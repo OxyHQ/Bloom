@@ -7,6 +7,8 @@ export { BloomColorScope, useColorScopeStyle } from './color-scope';
 export type { BloomColorScopeProps } from './color-scope';
 export { buildTheme, STATUS_COLORS } from './build-theme';
 export { useTheme, useThemeColor, useBloomTheme } from './use-theme';
+export { useNavigationTheme } from './use-navigation-theme';
+export type { NavigationTheme, NavigationThemeFont } from './use-navigation-theme';
 export type { Theme, ThemeColors, ThemeMode } from './types';
 export type { AppColorName, AppColorPreset, PresetTokens } from './color-presets';
 export {

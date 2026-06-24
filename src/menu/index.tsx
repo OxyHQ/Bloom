@@ -15,18 +15,18 @@ import {
 } from './context';
 import type {
   MenuContextType,
-  GroupProps,
-  ItemIconProps,
-  ItemProps,
-  ItemTextProps,
-  TriggerProps,
+  MenuGroupProps,
+  MenuItemIconProps,
+  MenuItemProps,
+  MenuItemTextProps,
+  MenuTriggerProps,
 } from './types';
 
 export type { DialogControlProps as MenuControlProps } from '../dialog/types';
 export { useDialogControl as useMenuControl } from '../dialog/context';
 export { useMenuContext };
 
-export function Root({
+export function Menu({
   children,
   control,
 }: React.PropsWithChildren<{
@@ -47,12 +47,12 @@ export function Root({
   );
 }
 
-export function Trigger({
+export function MenuTrigger({
   children,
   label,
   role = 'button',
   hint,
-}: TriggerProps) {
+}: MenuTriggerProps) {
   const context = useMenuContext();
   const [focused, setFocused] = useState(false);
   const [pressed, setPressed] = useState(false);
@@ -75,7 +75,7 @@ export function Trigger({
   });
 }
 
-export function Outer({
+export function MenuContent({
   children,
   showCancel,
 }: React.PropsWithChildren<{
@@ -96,7 +96,7 @@ export function Outer({
   );
 }
 
-export function Item({ children, label, style, onPress, ...rest }: ItemProps) {
+export function MenuItem({ children, label, style, onPress, ...rest }: MenuItemProps) {
   const theme = useTheme();
   const context = useMenuContext();
   const [focused, setFocused] = useState(false);
@@ -148,7 +148,7 @@ export function Item({ children, label, style, onPress, ...rest }: ItemProps) {
   );
 }
 
-export function ItemText({ children, style }: ItemTextProps) {
+export function MenuItemText({ children, style }: MenuItemTextProps) {
   const theme = useTheme();
   const { disabled } = useMenuItemContext();
 
@@ -167,7 +167,7 @@ export function ItemText({ children, style }: ItemTextProps) {
   );
 }
 
-export function ItemIcon({ icon: Comp, fill }: ItemIconProps) {
+export function MenuItemIcon({ icon: Comp, fill }: MenuItemIconProps) {
   const theme = useTheme();
   const { disabled } = useMenuItemContext();
 
@@ -185,7 +185,7 @@ export function ItemIcon({ icon: Comp, fill }: ItemIconProps) {
   );
 }
 
-export function Group({ children, style }: GroupProps) {
+export function MenuGroup({ children, style }: MenuGroupProps) {
   const theme = useTheme();
 
   const childArray = React.Children.toArray(children).filter(isValidElement);
@@ -199,7 +199,7 @@ export function Group({ children, style }: GroupProps) {
       ]}
     >
       {childArray.map((child, i) => {
-        if (child.type === Item) {
+        if (child.type === MenuItem) {
           return (
             <Fragment key={i}>
               {i > 0 && (
@@ -225,7 +225,7 @@ export function Group({ children, style }: GroupProps) {
   );
 }
 
-export function Divider() {
+export function MenuDivider() {
   return null;
 }
 

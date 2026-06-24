@@ -23,13 +23,13 @@ import { useInteractionState } from '../hooks/useInteractionState';
 import { ItemCtx, useItemContext } from './context';
 import type {
   ContextMenuContextValue,
-  GroupProps,
+  ContextMenuContentProps,
+  ContextMenuGroupProps,
+  ContextMenuItemIconProps,
+  ContextMenuItemProps,
+  ContextMenuItemTextProps,
+  ContextMenuTriggerProps,
   ItemContextValue,
-  ItemIconProps,
-  ItemProps,
-  ItemTextProps,
-  OuterProps,
-  TriggerProps,
 } from './types';
 
 // ---------------------------------------------------------------------------
@@ -47,17 +47,17 @@ function useNativeContextMenuContext(): NativeContextMenuContextValue {
   const ctx = useContext(NativeContextMenuContext);
   if (!ctx) {
     throw new Error(
-      'ContextMenu components must be used within a ContextMenu.Root',
+      'ContextMenu components must be used within a <ContextMenu>',
     );
   }
   return ctx;
 }
 
 // ---------------------------------------------------------------------------
-// Root
+// ContextMenu (Root)
 // ---------------------------------------------------------------------------
 
-export function Root({ children }: { children: React.ReactNode }) {
+export function ContextMenu({ children }: { children: React.ReactNode }) {
   const control = useDialogControl();
 
   const ctx = useMemo(
@@ -78,10 +78,10 @@ export function Root({ children }: { children: React.ReactNode }) {
 }
 
 // ---------------------------------------------------------------------------
-// Trigger
+// ContextMenuTrigger
 // ---------------------------------------------------------------------------
 
-export function Trigger({ children, label, hint, style }: TriggerProps) {
+export function ContextMenuTrigger({ children, label, hint, style }: ContextMenuTriggerProps) {
   const { open } = useNativeContextMenuContext();
   const { state: focused, onIn: onFocus, onOut: onBlur } = useInteractionState();
 
@@ -108,10 +108,10 @@ export function Trigger({ children, label, hint, style }: TriggerProps) {
 }
 
 // ---------------------------------------------------------------------------
-// Outer  (the menu container — uses Bloom Dialog as a bottom sheet)
+// ContextMenuContent  (the menu container — uses Bloom Dialog as a bottom sheet)
 // ---------------------------------------------------------------------------
 
-export function Outer({ children, style }: OuterProps) {
+export function ContextMenuContent({ children, style }: ContextMenuContentProps) {
   const { control } = useNativeContextMenuContext();
 
   return (
@@ -131,16 +131,16 @@ export function Outer({ children, style }: OuterProps) {
 }
 
 // ---------------------------------------------------------------------------
-// Item
+// ContextMenuItem
 // ---------------------------------------------------------------------------
 
-export function Item({
+export function ContextMenuItem({
   children,
   label,
   onPress,
   disabled = false,
   style,
-}: ItemProps) {
+}: ContextMenuItemProps) {
   const theme = useTheme();
   const { close } = useNativeContextMenuContext();
   const { state: focused, onIn: onFocus, onOut: onBlur } = useInteractionState();
@@ -191,10 +191,10 @@ export function Item({
 }
 
 // ---------------------------------------------------------------------------
-// ItemText
+// ContextMenuItemText
 // ---------------------------------------------------------------------------
 
-export function ItemText({ children, style }: ItemTextProps) {
+export function ContextMenuItemText({ children, style }: ContextMenuItemTextProps) {
   const theme = useTheme();
   const { disabled } = useItemContext();
 
@@ -214,10 +214,10 @@ export function ItemText({ children, style }: ItemTextProps) {
 }
 
 // ---------------------------------------------------------------------------
-// ItemIcon
+// ContextMenuItemIcon
 // ---------------------------------------------------------------------------
 
-export function ItemIcon({ icon: Comp }: ItemIconProps) {
+export function ContextMenuItemIcon({ icon: Comp }: ContextMenuItemIconProps) {
   const theme = useTheme();
   const { disabled } = useItemContext();
 
@@ -230,18 +230,18 @@ export function ItemIcon({ icon: Comp }: ItemIconProps) {
 }
 
 // ---------------------------------------------------------------------------
-// Group
+// ContextMenuGroup
 // ---------------------------------------------------------------------------
 
-export function Group({ children, style }: GroupProps) {
+export function ContextMenuGroup({ children, style }: ContextMenuGroupProps) {
   return <View style={style}>{children}</View>;
 }
 
 // ---------------------------------------------------------------------------
-// Divider
+// ContextMenuDivider
 // ---------------------------------------------------------------------------
 
-export function Divider() {
+export function ContextMenuDivider() {
   const theme = useTheme();
 
   return (

@@ -18,7 +18,7 @@ import {
 import { useTheme } from '../theme/use-theme';
 import { usePressAnimation } from '../hooks/usePressAnimation';
 import { borderRadius, space } from '../styles/tokens';
-import type { TabsProps, TabProps, TabPanelProps, TabsVariant } from './types';
+import type { TabsProps, TabsTriggerProps, TabsContentProps, TabsVariant } from './types';
 
 interface TabsContextValue {
   value: string;
@@ -88,7 +88,7 @@ const TabsBarComponent: React.FC<TabsProps> = ({
   );
 };
 
-const TabComponent: React.FC<TabProps> = ({
+const TabComponent: React.FC<TabsTriggerProps> = ({
   value,
   label,
   icon,
@@ -182,7 +182,7 @@ const TabComponent: React.FC<TabProps> = ({
   );
 };
 
-const TabPanelComponent: React.FC<TabPanelProps> = ({ value, children, style }) => {
+const TabPanelComponent: React.FC<TabsContentProps> = ({ value, children, style }) => {
   const { value: selectedValue } = useContext(TabsContext);
 
   if (value !== selectedValue) return null;
@@ -190,11 +190,11 @@ const TabPanelComponent: React.FC<TabPanelProps> = ({ value, children, style }) 
   return <View style={style}>{children}</View>;
 };
 
-export const TabsBar = memo(TabsBarComponent);
-TabsBar.displayName = 'TabsBar';
+export const Tabs = memo(TabsBarComponent);
+Tabs.displayName = 'Tabs';
 
-export const Tab = memo(TabComponent);
-Tab.displayName = 'Tab';
+export const TabsTrigger = memo(TabComponent);
+TabsTrigger.displayName = 'TabsTrigger';
 
-export const TabPanel = memo(TabPanelComponent);
-TabPanel.displayName = 'TabPanel';
+export const TabsContent = memo(TabPanelComponent);
+TabsContent.displayName = 'TabsContent';

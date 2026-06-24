@@ -20,7 +20,7 @@ import {
 import { Check_Stroke2_Corner0_Rounded as CheckIcon } from '../icons/Check';
 import type {
   PopoverContentProps,
-  PopoverRootProps,
+  PopoverProps,
   PopoverTriggerProps,
 } from '../popover/types';
 import type { usePopoverContext as usePopoverContextType } from '../popover/context';
@@ -29,13 +29,13 @@ import type { ComboboxOption, ComboboxProps } from './types';
 /**
  * Structural shape of the `Popover` module, satisfied by both the native and
  * web platform forks. Defined explicitly (rather than `typeof import(...)`) so
- * the slightly different render-return types between forks (web `Content` may
- * return `null`) don't make the modules mutually unassignable.
+ * the slightly different render-return types between forks (web `PopoverContent`
+ * may return `null`) don't make the modules mutually unassignable.
  */
 interface PopoverModule {
-  Root: (props: PopoverRootProps) => React.ReactElement;
-  Trigger: (props: PopoverTriggerProps) => React.ReactElement;
-  Content: (props: PopoverContentProps) => React.ReactElement | null;
+  Popover: (props: PopoverProps) => React.ReactElement;
+  PopoverTrigger: (props: PopoverTriggerProps) => React.ReactElement;
+  PopoverContent: (props: PopoverContentProps) => React.ReactElement | null;
   usePopoverContext: typeof usePopoverContextType;
 }
 
@@ -59,7 +59,7 @@ function defaultFilter<T>(option: ComboboxOption<T>, query: string): boolean {
  * read the overlay control from `Popover` context (via an inner component) so
  * selecting an option reliably closes the overlay on every platform.
  */
-export function createCombobox(Popover: PopoverModule) {
+export function createCombobox(PopoverImpl: PopoverModule) {
   function ComboboxInner<T>({
     options,
     value,
@@ -80,7 +80,7 @@ export function createCombobox(Popover: PopoverModule) {
   > &
     Pick<ComboboxProps<T>, 'label' | 'query' | 'onQueryChange' | 'disabled'>) {
     const theme = useTheme();
-    const { control } = Popover.usePopoverContext();
+    const { control } = PopoverImpl.usePopoverContext();
     const searchRef = useRef<TextInput>(null);
 
     const [query, setQuery] = useControllableState<string>({
@@ -113,7 +113,7 @@ export function createCombobox(Popover: PopoverModule) {
 
     return (
       <>
-        <Popover.Trigger label={accessibleLabel}>
+        <PopoverImpl.PopoverTrigger label={accessibleLabel}>
           {({ props }) => (
             <Pressable
               {...props}
@@ -149,9 +149,9 @@ export function createCombobox(Popover: PopoverModule) {
               <ChevronUpDownIcon size="xs" fill={theme.colors.textSecondary} />
             </Pressable>
           )}
-        </Popover.Trigger>
+        </PopoverImpl.PopoverTrigger>
 
-        <Popover.Content label={accessibleLabel} placement="bottom-start" minWidth={240}>
+        <PopoverImpl.PopoverContent label={accessibleLabel} placement="bottom-start" minWidth={240}>
           <View style={styles.searchWrap}>
             <SearchInput
               ref={searchRef}
@@ -196,7 +196,7 @@ export function createCombobox(Popover: PopoverModule) {
               })}
             </ScrollView>
           )}
-        </Popover.Content>
+        </PopoverImpl.PopoverContent>
       </>
     );
   }
@@ -217,7 +217,7 @@ export function createCombobox(Popover: PopoverModule) {
     testID,
   }: ComboboxProps<T>) {
     return (
-      <Popover.Root>
+      <PopoverImpl.Popover>
         <View style={style} testID={testID}>
           <ComboboxInner<T>
             options={options}
@@ -233,7 +233,7 @@ export function createCombobox(Popover: PopoverModule) {
             maxListHeight={maxListHeight}
           />
         </View>
-      </Popover.Root>
+      </PopoverImpl.Popover>
     );
   }
 

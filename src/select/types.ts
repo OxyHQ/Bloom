@@ -3,14 +3,14 @@ import type { StyleProp, TextStyle, View, ViewStyle } from 'react-native';
 import type { Props as SVGIconProps } from '../icons/common';
 import type { DialogControlProps } from '../dialog/types';
 
-export type RootProps = {
+export type SelectProps = {
   children?: React.ReactNode;
   value?: string;
   onValueChange?: (value: string) => void;
   disabled?: boolean;
 };
 
-export type TriggerProps = {
+export type SelectTriggerProps = {
   children: React.ReactNode | ((props: TriggerChildProps) => React.ReactNode);
   label: string;
 };
@@ -31,12 +31,12 @@ export type TriggerChildProps = {
 };
 
 /**
- * Shows the currently selected value inside a `Select.Trigger`.
+ * Shows the currently selected value inside a `SelectTrigger`.
  *
  * Pass a `children` function to extract a display string from the selected
  * item when items are not plain `{ value, label }` objects.
  */
-export type ValueTextProps = {
+export type SelectValueProps = {
   /**
    * Extracts the display text from the currently-selected item.
    * Defaults to `item => item.label`.
@@ -46,11 +46,11 @@ export type ValueTextProps = {
   style?: TextStyle;
 };
 
-export type IconProps = {
+export type SelectIconProps = {
   style?: TextStyle;
 };
 
-export type ContentProps<T> = {
+export type SelectContentProps<T> = {
   /**
    * Label displayed at the top of the selection sheet (native) or
    * used as an ARIA label (web).
@@ -60,7 +60,7 @@ export type ContentProps<T> = {
   label?: string;
   /** The array of items to choose from. */
   items: T[];
-  /** Renders a single item. Use `Select.Item` inside this callback. */
+  /** Renders a single item. Use `SelectItem` inside this callback. */
   renderItem: (
     item: T,
     index: number,
@@ -73,7 +73,7 @@ export type ContentProps<T> = {
   valueExtractor?: (item: T) => string;
 };
 
-export type ItemProps = {
+export type SelectItemProps = {
   ref?: React.Ref<View>;
   value: string;
   label: string;
@@ -81,12 +81,12 @@ export type ItemProps = {
   style?: StyleProp<ViewStyle>;
 };
 
-export type ItemTextProps = {
+export type SelectItemTextProps = {
   children: React.ReactNode;
   style?: TextStyle;
 };
 
-export type ItemIndicatorProps = {
+export type SelectItemIndicatorProps = {
   icon?: React.ComponentType<SVGIconProps>;
 };
 

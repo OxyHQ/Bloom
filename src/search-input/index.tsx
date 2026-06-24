@@ -4,12 +4,12 @@ import { Platform, type TextInput, View } from 'react-native';
 import { useTheme } from '../theme/use-theme';
 import { atoms as a } from '../styles';
 import { Button } from '../button';
-import * as TextField from '../text-field';
+import { TextField, TextFieldIcon, TextFieldInput, type TextFieldInputProps } from '../text-field';
 import { MagnifyingGlass_Stroke2_Corner0_Rounded as MagnifyingGlassIcon } from '../icons/MagnifyingGlass';
 import { TimesLarge_Stroke2_Corner0_Rounded as X } from '../icons/Times';
 
-type SearchInputProps = Omit<TextField.InputProps, 'label'> & {
-  label?: TextField.InputProps['label'];
+type SearchInputProps = Omit<TextFieldInputProps, 'label'> & {
+  label?: TextFieldInputProps['label'];
   /**
    * Called when the user presses the clear (X) button.
    */
@@ -23,9 +23,9 @@ export const SearchInput = forwardRef<TextInput, SearchInputProps>(
 
     return (
       <View style={[a.w_full, a.relative]}>
-        <TextField.Root>
-          <TextField.Icon icon={MagnifyingGlassIcon} />
-          <TextField.Input
+        <TextField>
+          <TextFieldIcon icon={MagnifyingGlassIcon} />
+          <TextFieldInput
             inputRef={ref}
             label={label}
             value={value}
@@ -41,7 +41,7 @@ export const SearchInput = forwardRef<TextInput, SearchInputProps>(
             style={showClear ? { paddingRight: 24 } : undefined}
             {...rest}
           />
-        </TextField.Root>
+        </TextField>
 
         {showClear && (
           <View

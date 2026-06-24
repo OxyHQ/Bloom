@@ -27,16 +27,16 @@ TooltipContext.displayName = 'TooltipContext';
 /**
  * No-op on web. Portal Provider is only needed on native.
  */
-export function SheetCompatProvider({
+export function TooltipSheetCompatProvider({
   children,
 }: {
   children: React.ReactNode;
 }) {
   return <>{children}</>;
 }
-SheetCompatProvider.displayName = 'TooltipSheetCompatProvider';
+TooltipSheetCompatProvider.displayName = 'TooltipSheetCompatProvider';
 
-export function Outer({
+export function Tooltip({
   children,
   position = 'bottom',
   visible,
@@ -66,7 +66,7 @@ export function Outer({
   );
 }
 
-export function Target({ children }: { children: React.ReactNode }) {
+export function TooltipTrigger({ children }: { children: React.ReactNode }) {
   return (
     <View collapsable={false} style={a.relative}>
       {children}
@@ -74,7 +74,7 @@ export function Target({ children }: { children: React.ReactNode }) {
   );
 }
 
-export function Content({
+export function TooltipContent({
   children,
   label,
 }: {
@@ -146,7 +146,7 @@ export function Content({
   );
 }
 
-export const TextBubble = createTextBubble(Content);
+export const TooltipTextBubble = createTextBubble(TooltipContent);
 
 const webStyles = StyleSheet.create({
   backdrop: {

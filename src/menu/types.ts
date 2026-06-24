@@ -48,14 +48,14 @@ export type TriggerChildProps = {
   };
 };
 
-export type TriggerProps = {
+export type MenuTriggerProps = {
   children: (props: TriggerChildProps) => React.ReactNode;
   label: string;
   hint?: string;
   role?: AccessibilityRole;
 };
 
-export type ItemProps = React.PropsWithChildren<
+export type MenuItemProps = React.PropsWithChildren<
   Omit<PressableProps, 'style'> & {
     label: string;
     onPress: (e: GestureResponderEvent) => void;
@@ -63,16 +63,16 @@ export type ItemProps = React.PropsWithChildren<
   }
 >;
 
-export type ItemTextProps = React.PropsWithChildren<{
+export type MenuItemTextProps = React.PropsWithChildren<{
   style?: TextStyle;
 }>;
 
-export type ItemIconProps = {
+export type MenuItemIconProps = {
   icon: React.ComponentType<SVGIconProps>;
   position?: 'left' | 'right';
   fill?: (props: { disabled: boolean }) => string;
 };
 
-export type GroupProps = React.PropsWithChildren<{
+export type MenuGroupProps = React.PropsWithChildren<{
   style?: StyleProp<ViewStyle>;
 }>;

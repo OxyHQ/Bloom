@@ -2,7 +2,16 @@ import React, { useState } from 'react';
 import { View } from 'react-native';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
-import * as Select from './index';
+import {
+  Select,
+  SelectTrigger,
+  SelectValue,
+  SelectIcon,
+  SelectContent,
+  SelectItem,
+  SelectItemIndicator,
+  SelectItemText,
+} from './index';
 
 const meta: Meta = {
   title: 'Components/Select',
@@ -25,44 +34,44 @@ const FRUITS: Option[] = [
 function BasicSelect() {
   const [value, setValue] = useState<string>('apple');
   return (
-    <Select.Root value={value} onValueChange={setValue}>
-      <Select.Trigger label="Pick a fruit">
-        <Select.ValueText placeholder="Pick a fruit" />
-        <Select.Icon />
-      </Select.Trigger>
-      <Select.Content
+    <Select value={value} onValueChange={setValue}>
+      <SelectTrigger label="Pick a fruit">
+        <SelectValue placeholder="Pick a fruit" />
+        <SelectIcon />
+      </SelectTrigger>
+      <SelectContent
         label="Pick a fruit"
         items={FRUITS}
         renderItem={(item) => (
-          <Select.Item value={item.value} label={item.label}>
-            <Select.ItemIndicator />
-            <Select.ItemText>{item.label}</Select.ItemText>
-          </Select.Item>
+          <SelectItem value={item.value} label={item.label}>
+            <SelectItemIndicator />
+            <SelectItemText>{item.label}</SelectItemText>
+          </SelectItem>
         )}
       />
-    </Select.Root>
+    </Select>
   );
 }
 
 function UncontrolledSelect() {
   const [value, setValue] = useState<string | undefined>(undefined);
   return (
-    <Select.Root value={value} onValueChange={setValue}>
-      <Select.Trigger label="Pick a fruit">
-        <Select.ValueText placeholder="No fruit selected" />
-        <Select.Icon />
-      </Select.Trigger>
-      <Select.Content
+    <Select value={value} onValueChange={setValue}>
+      <SelectTrigger label="Pick a fruit">
+        <SelectValue placeholder="No fruit selected" />
+        <SelectIcon />
+      </SelectTrigger>
+      <SelectContent
         label="Pick a fruit"
         items={FRUITS}
         renderItem={(item) => (
-          <Select.Item value={item.value} label={item.label}>
-            <Select.ItemIndicator />
-            <Select.ItemText>{item.label}</Select.ItemText>
-          </Select.Item>
+          <SelectItem value={item.value} label={item.label}>
+            <SelectItemIndicator />
+            <SelectItemText>{item.label}</SelectItemText>
+          </SelectItem>
         )}
       />
-    </Select.Root>
+    </Select>
   );
 }
 
