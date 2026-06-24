@@ -1,5 +1,35 @@
 # Migration Guide
 
+## 0.18.0 — Public API: compound components namespace → flat
+
+> (0.17.0 was taken by the non-breaking `useNavigationTheme` release; this breaking
+> change is therefore 0.18.0.)
+
+Compound components are no longer namespace objects. Each part is now a flat,
+prefixed top-level export (shadcn/MUI style). The six **collection** families stay
+namespaced: `Icons`, `Typography`, `Skeleton`, `Grid`, `Code`, `Fonts`.
+
+There are no deprecated aliases — update call sites directly.
+
+| Before | After |
+|--------|-------|
+| `Tabs.TabsBar` | `Tabs` |
+| `Tabs.Tab` | `TabsTrigger` |
+| `Tabs.TabPanel` | `TabsContent` |
+| `Accordion.AccordionItem` | `AccordionItem` |
+| `Select.Root` / `.Trigger` / `.Content` / `.Item` | `Select` / `SelectTrigger` / `SelectContent` / `SelectItem` |
+| `Menu.Root` / `.Trigger` / `.Outer` / `.Item` | `Menu` / `MenuTrigger` / `MenuContent` / `MenuItem` |
+| `ContextMenu.Root` / `.Trigger` / `.Outer` / `.Item` | `ContextMenu` / `ContextMenuTrigger` / `ContextMenuContent` / `ContextMenuItem` |
+| `Popover.Root` / `.Trigger` / `.Content` | `Popover` / `PopoverTrigger` / `PopoverContent` |
+| `Tooltip.Outer` / `.Target` / `.Content` | `Tooltip` / `TooltipTrigger` / `TooltipContent` |
+| `SegmentedControl.Root` / `.Item` | `SegmentedControl` / `SegmentedControlItem` |
+| `TextField.Root` / `.Input` / `.LabelText` | `TextField` / `TextFieldInput` / `TextFieldLabel` |
+| `Admonition.Outer` / `.Icon` / `.Content` | `AdmonitionRoot` / `AdmonitionIcon` / `AdmonitionContent` |
+| `PromptInput.PromptInputTextarea` | `PromptInputTextarea` |
+
+Imports are unchanged in shape — still `import { … } from '@oxyhq/bloom'` or the
+matching subpath (`@oxyhq/bloom/select`, …). Only the names change.
+
 ## 0.16.x — Overlay surface consolidation
 
 `CenteredDialog` and `ResponsiveSheet` are **removed** (breaking, no shims). The unified `Dialog` with its `placement` prop replaces both. `AlertDialog` and `Command` keep their existing public APIs.
