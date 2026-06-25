@@ -1,6 +1,7 @@
-import { createContext, useContext, useMemo, useRef } from 'react';
+import { createContext, useContext, useEffect, useMemo, useRef } from 'react';
 import {
   type AccessibilityProps,
+  Animated,
   Platform,
   StyleSheet,
   TextInput,
@@ -9,6 +10,7 @@ import {
   View,
   type ViewStyle,
 } from 'react-native';
+import { useReducedMotion } from 'react-native-reanimated';
 
 import { useTheme } from '../theme/use-theme';
 import { useInteractionState } from '../hooks/useInteractionState';
@@ -132,6 +134,19 @@ export type TextFieldInputProps = Omit<
   isInvalid?: boolean;
   inputRef?: React.RefObject<TextInput | null> | React.ForwardedRef<TextInput>;
   placeholder?: string | null | undefined;
+  /**
+   * Render the field with a Material-style floating label. When `true`, the
+   * {@link label} sits inside the field as the placeholder while the input is
+   * empty AND unfocused; on focus OR when a value is present it animates up to a
+   * small caption pinned to the top of the field and the typed value shows
+   * below it. Opt-in — the default (`false`) keeps the existing chrome where the
+   * label lives above the field (`TextFieldLabel`) and the placeholder is plain.
+   *
+   * Cross-platform: the animation is driven by focus + value-presence state (no
+   * CSS `:placeholder-shown` / `peer-focus`), so web and native behave
+   * identically. Respects reduced-motion (snaps instead of animating).
+   */
+  floatingLabel?: boolean;
 };
 
 export function TextFieldInput({
@@ -144,6 +159,7 @@ export function TextFieldInput({
   isInvalid,
   inputRef,
   style,
+  floatingLabel = false,
   ...rest
 }: TextFieldInputProps) {
   const theme = useTheme();
@@ -162,6 +178,11 @@ export function TextFieldInput({
           value={value}
           onChangeText={onChangeText}
           isInvalid={isInvalid}
+          floatingLabel={floatingLabel}
+          style={style}
+          inputRef={inputRef}
+          onFocus={onFocus}
+          onBlur={onBlur}
           {...rest}
         />
       </TextField>
@@ -173,6 +194,26 @@ export function TextFieldInput({
       (ref): ref is NonNullable<typeof ref> => ref != null,
     ),
   );
+
+  if (floatingLabel) {
+    return (
+      <FloatingLabelInput
+        label={label}
+        value={value}
+        onChangeText={onChangeText}
+        onFocus={onFocus}
+        onBlur={onBlur}
+        isInvalid={isInvalid}
+        refs={refs}
+        style={style}
+        chromeHover={chromeHover}
+        chromeFocus={chromeFocus}
+        chromeError={chromeError}
+        chromeErrorHover={chromeErrorHover}
+        {...rest}
+      />
+    );
+  }
 
   const flattened: TextStyle = StyleSheet.flatten([
     a.relative,
@@ -240,6 +281,176 @@ export function TextFieldInput({
           (ctx.isInvalid || isInvalid) && (ctx.hovered || ctx.focused)
             ? chromeErrorHover
             : {},
+        ]}
+      />
+    </>
+  );
+}
+
+/** Vertical band the floating label travels between rest (centered) and floated (top). */
+const FLOAT_TRAVEL = 11;
+/** Resting label size (matches the input text) vs. floated caption size. */
+const FLOAT_LABEL_REST_SIZE = a.text_md.fontSize;
+const FLOAT_LABEL_FLOAT_SIZE = a.text_xs.fontSize;
+
+type FloatingLabelInputProps = Omit<
+  TextInputProps,
+  'value' | 'onChangeText' | 'placeholder'
+> & {
+  label: string;
+  value?: string;
+  onChangeText?: (value: string) => void;
+  isInvalid?: boolean;
+  refs: (instance: TextInput | null) => void;
+  chromeHover: ViewStyle;
+  chromeFocus: ViewStyle;
+  chromeError: ViewStyle;
+  chromeErrorHover: ViewStyle;
+};
+
+/**
+ * The floating-label rendering of {@link TextFieldInput}.
+ *
+ * State, not CSS, drives the motion so web and native behave identically:
+ * `floated = focused || hasValue`. A single `Animated.Value` (0 → rest, 1 →
+ * floated) interpolates the label's `top`, `fontSize`, and `color`; the same
+ * `Animated` API maps to CSS transforms on web via react-native-web, so no
+ * `:placeholder-shown` / `peer-focus` is needed. Reduced-motion snaps the value
+ * (duration 0) instead of animating.
+ *
+ * The native placeholder is intentionally suppressed — the floating label IS the
+ * placeholder at rest. The label still drives `accessibilityLabel`, and the
+ * chrome / focus / error / disabled infra is shared with the default variant.
+ */
+function FloatingLabelInput({
+  label,
+  value,
+  onChangeText,
+  onFocus,
+  onBlur,
+  isInvalid,
+  refs,
+  style,
+  chromeHover,
+  chromeFocus,
+  chromeError,
+  chromeErrorHover,
+  ...rest
+}: FloatingLabelInputProps) {
+  const theme = useTheme();
+  const ctx = useContext(Context);
+  const reduceMotion = useReducedMotion();
+
+  const hasValue = (value?.length ?? 0) > 0;
+  const floated = ctx.focused || hasValue;
+  const invalid = ctx.isInvalid || isInvalid;
+
+  const progress = useRef(new Animated.Value(floated ? 1 : 0)).current;
+
+  useEffect(() => {
+    const target = floated ? 1 : 0;
+    if (reduceMotion) {
+      progress.setValue(target);
+      return;
+    }
+    const timing = Animated.timing(progress, {
+      toValue: target,
+      duration: tokens.animation.duration.fast,
+      useNativeDriver: false,
+    });
+    timing.start();
+    return () => timing.stop();
+  }, [floated, reduceMotion, progress]);
+
+  const labelTop = progress.interpolate({
+    inputRange: [0, 1],
+    outputRange: [16, 16 - FLOAT_TRAVEL],
+  });
+  const labelSize = progress.interpolate({
+    inputRange: [0, 1],
+    outputRange: [FLOAT_LABEL_REST_SIZE, FLOAT_LABEL_FLOAT_SIZE],
+  });
+  const labelColor = progress.interpolate({
+    inputRange: [0, 1],
+    outputRange: [
+      theme.colors.textSecondary,
+      invalid ? theme.colors.negative : theme.colors.primary,
+    ],
+  });
+
+  const inputStyle: TextStyle = StyleSheet.flatten([
+    a.relative,
+    a.z_20,
+    a.flex_1,
+    a.text_md,
+    { color: theme.colors.text },
+    a.px_xs,
+    {
+      lineHeight: a.text_md.fontSize * 1.2,
+      minWidth: 0,
+      paddingTop: 26,
+      paddingBottom: 8,
+    },
+    android({ paddingTop: 24, paddingBottom: 6 }),
+    web({ paddingTop: 25, paddingBottom: 7 }),
+    style,
+  ]) as TextStyle;
+
+  return (
+    <>
+      <Animated.Text
+        accessibilityElementsHidden
+        importantForAccessibility="no-hide-descendants"
+        aria-hidden
+        numberOfLines={1}
+        style={[
+          a.absolute,
+          a.z_30,
+          a.pointer_events_none,
+          {
+            left: tokens.space.xs + tokens.space._2xs,
+            top: labelTop,
+            fontSize: labelSize,
+            color: labelColor,
+          },
+        ]}>
+        {label}
+      </Animated.Text>
+
+      <TextInput
+        accessibilityHint={undefined}
+        hitSlop={{ top: 20, bottom: 20, left: 20, right: 20 }}
+        {...rest}
+        accessibilityLabel={label}
+        ref={refs}
+        value={value}
+        onChangeText={onChangeText}
+        onFocus={(e) => {
+          ctx.onFocus();
+          onFocus?.(e);
+        }}
+        onBlur={(e) => {
+          ctx.onBlur();
+          onBlur?.(e);
+        }}
+        placeholder={undefined}
+        placeholderTextColor={theme.colors.textSecondary}
+        keyboardAppearance={theme.mode === 'light' ? 'light' : 'dark'}
+        style={inputStyle}
+      />
+
+      <View
+        style={[
+          a.z_10,
+          a.absolute,
+          a.inset_0,
+          { borderRadius: 10 },
+          { backgroundColor: theme.colors.contrast50 },
+          { borderColor: 'transparent', borderWidth: 2 },
+          ctx.hovered ? chromeHover : {},
+          ctx.focused ? chromeFocus : {},
+          invalid ? chromeError : {},
+          invalid && (ctx.hovered || ctx.focused) ? chromeErrorHover : {},
         ]}
       />
     </>

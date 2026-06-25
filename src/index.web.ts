@@ -103,6 +103,10 @@ export * as Skeleton from './skeleton';
 export * as Grid from './grid';
 export { Fill } from './fill';
 export { IconCircle } from './icon-circle';
+export { ConnectionDots } from './connection-dots/index.web';
+export type { ConnectionDotsProps } from './connection-dots/index.web';
+export { BenefitRow, BenefitList } from './benefit-list';
+export type { BenefitRowProps, BenefitListProps } from './benefit-list';
 
 // Form components
 export * from './text-field';

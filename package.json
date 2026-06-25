@@ -382,6 +382,33 @@
         "default": "./lib/commonjs/icon-circle/index.js"
       }
     },
+    "./connection-dots": {
+      "react-native": "./src/connection-dots/index.ts",
+      "browser": {
+        "types": "./lib/typescript/module/connection-dots/index.web.d.ts",
+        "import": "./lib/module/connection-dots/index.web.js",
+        "require": "./lib/commonjs/connection-dots/index.web.js"
+      },
+      "import": {
+        "types": "./lib/typescript/module/connection-dots/index.d.ts",
+        "default": "./lib/module/connection-dots/index.js"
+      },
+      "require": {
+        "types": "./lib/typescript/commonjs/connection-dots/index.d.ts",
+        "default": "./lib/commonjs/connection-dots/index.js"
+      }
+    },
+    "./benefit-list": {
+      "react-native": "./src/benefit-list/index.tsx",
+      "import": {
+        "types": "./lib/typescript/module/benefit-list/index.d.ts",
+        "default": "./lib/module/benefit-list/index.js"
+      },
+      "require": {
+        "types": "./lib/typescript/commonjs/benefit-list/index.d.ts",
+        "default": "./lib/commonjs/benefit-list/index.js"
+      }
+    },
     "./text-field": {
       "react-native": "./src/text-field/index.tsx",
       "import": {

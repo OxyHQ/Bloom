@@ -43,6 +43,34 @@ function ControlledField({
   );
 }
 
+function FloatingField({
+  label,
+  initial = '',
+  isInvalid,
+  editable = true,
+}: {
+  label: string;
+  initial?: string;
+  isInvalid?: boolean;
+  editable?: boolean;
+}) {
+  const [value, setValue] = useState(initial);
+  return (
+    <View style={{ width: 320 }}>
+      <TextField isInvalid={isInvalid}>
+        <TextFieldInput
+          floatingLabel
+          label={label}
+          value={value}
+          onChangeText={setValue}
+          editable={editable}
+          isInvalid={isInvalid}
+        />
+      </TextField>
+    </View>
+  );
+}
+
 export const Basic: Story = {
   render: () => (
     <ControlledField label="Username" placeholder="oxylander" />
@@ -85,6 +113,24 @@ export const Composition: Story = {
         initial="invalid-email"
         isInvalid
       />
+    </View>
+  ),
+};
+
+export const FloatingLabel: Story = {
+  render: () => <FloatingField label="Email" />,
+};
+
+export const FloatingLabelWithValue: Story = {
+  render: () => <FloatingField label="Email" initial="nate@oxy.so" />,
+};
+
+export const FloatingLabelComposition: Story = {
+  render: () => (
+    <View style={{ gap: 16 }}>
+      <FloatingField label="Full name" />
+      <FloatingField label="Email" initial="ada@oxy.so" />
+      <FloatingField label="Email" initial="invalid-email" isInvalid />
     </View>
   ),
 };

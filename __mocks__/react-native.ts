@@ -57,6 +57,7 @@ export const ScrollView = React.forwardRef((props: Record<string, unknown>, ref:
 
 export const Animated = {
   View: createComponent('Animated.View'),
+  Text: createComponent('Animated.Text'),
   ScrollView: React.forwardRef((props: Record<string, unknown>, ref: unknown) => {
     return React.createElement('Animated.ScrollView', { ref, ...props }, props.children as React.ReactNode);
   }),
@@ -72,9 +73,11 @@ export const Animated = {
   },
   spring: (_val: unknown, _config: Record<string, unknown>) => ({
     start: (cb?: () => void) => cb?.(),
+    stop: () => {},
   }),
   timing: (_val: unknown, _config: Record<string, unknown>) => ({
     start: (cb?: () => void) => cb?.(),
+    stop: () => {},
   }),
   loop: (_animation: { start: (cb?: () => void) => void; stop?: () => void }) => ({
     start: (cb?: () => void) => cb?.(),
@@ -137,4 +140,12 @@ export const Appearance = {
   addChangeListener: (_listener: (preferences: { colorScheme: 'light' | 'dark' | null }) => void) => ({
     remove: jest.fn(),
   }),
+};
+
+export const AccessibilityInfo = {
+  isReduceMotionEnabled: () => Promise.resolve(false),
+  addEventListener: (_event: string, _handler: (value: boolean) => void) => ({
+    remove: jest.fn(),
+  }),
+  announceForAccessibility: (_message: string) => {},
 };
