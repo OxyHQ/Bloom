@@ -50,6 +50,8 @@ const SUBPATHS = /** @type {const} */ ([
   ['./image-resolver', 'image-resolver/index.ts'],
   ['./theme', 'theme/index.ts'],
   ['./color-presets', 'theme/color-presets.ts'],
+  ['./design-tokens', 'design-tokens/index.ts'],
+  ['./tailwind-preset', 'design-tokens/tailwind-preset.ts'],
   ['./portal', 'portal/index.tsx'],
   ['./dialog', 'dialog/index.ts'],
   ['./button', 'button/index.ts'],

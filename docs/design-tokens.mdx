@@ -1,0 +1,100 @@
+---
+title: Design Tokens
+description: The centralized semantic Tailwind / NativeWind vocabulary shared by every Oxy app.
+---
+
+# Design Tokens
+
+`@oxyhq/bloom/design-tokens` ships the **Oxy Unified Design Language**: a
+namespaced, semantic set of utility classes (`bg-fill`, `text-text-tertiary`,
+`p-space-8`, `rounded-radius-20`, `text-body`, `font-body`, `shadow-s`) that
+resolve to the SAME class names on **web (Tailwind)** and **native (NativeWind)**.
+
+Color roles are aliases onto Bloom's existing resolved theme tokens
+(`--background`, `--surface`, `--primary`, …), so they follow the active
+light/dark mode and color preset automatically. The vocabulary is **additive** —
+existing utilities (`bg-background`, `text-muted-foreground`, `rounded-lg`) keep
+working.
+
+## Opt in
+
+### Native (NativeWind) and Tailwind v3 web
+
+Add the Bloom preset to your `tailwind.config.js`:
+
+```js
+const { bloomTailwindPreset } = require('@oxyhq/bloom/tailwind-preset');
+
+module.exports = {
+  presets: [bloomTailwindPreset],
+  content: [/* your existing globs */],
+  theme: { extend: {/* your existing app overrides */} },
+};
+```
+
+That single line adds every semantic utility. Your `BloomThemeProvider` already
+populates the underlying `--x` color tokens at runtime.
+
+### Tailwind v4 web (auth, console, website)
+
+Tailwind v4 apps configure tokens in CSS. Add the Bloom `@theme` block to your
+global stylesheet. Either inject it at build time:
+
+```ts
+import { bloomThemeBlock } from '@oxyhq/bloom/design-tokens';
+// write `bloomThemeBlock()` into your generated global.css
+```
+
+…or paste the output of `bloomThemeBlock()` once into your existing
+`@theme { … }`. The aliases are `--color-<role>: var(--canonical)` — direct
+`var(--x)` references (never `hsl(var(--x))`, per Bloom's web CSS-var contract).
+
+## Color roles
+
+| Utility | Role | Canonical token |
+| --- | --- | --- |
+| `bg-bg` | page background | `--background` |
+| `bg-fill` | default surface | `--card` |
+| `bg-fill-secondary` | muted fill | `--muted` |
+| `bg-fill-hover` | secondary hover | `--accent` |
+| `bg-fill-brand` | brand fill | `--primary` |
+| `bg-fill-brand-hover` | brand hover | `--ring` |
+| `bg-fill-inverse` | inverse fill | `--foreground` |
+| `bg-fill-inverse-hover` | inverse hover | `--muted-foreground` |
+| `bg-fill-placeholder` | disabled surface | `--muted` |
+| `text-text` | primary text | `--foreground` |
+| `text-text-secondary` | secondary text | `--muted-foreground` |
+| `text-text-tertiary` | tertiary text | `--muted-foreground` |
+| `text-text-inverse` | text on brand | `--primary-foreground` |
+| `text-text-fixed-light` | always-light text | `--primary-foreground` |
+| `text-text-placeholder` | placeholder text | `--muted-foreground` |
+| `border-border` | default border | `--border` |
+| `border-border-image` | hairline color | `--border` |
+| `border-border-secondary` | softer border | `--input` |
+| `border-border-input` | input border | `--input` |
+| `border-border-input-active` | focused input | `--ring` |
+
+## Scales
+
+- **Spacing** (px): `space-2/4/8/12/16/20/24/32` + `screen-margin` (20).
+  `p-space-8`, `gap-space-20`, `px-screen-margin`.
+- **Radius** (px): `radius-8/12/20/28/max`. `rounded-radius-20`.
+- **Hairline border**: `border-hairline` (0.5px), pair with `border-border-image`.
+- **Typography**: `text-<role>` (size/line-height) + `font-<role>`
+  (family/weight) for `caption, bodySmall, bodyTitleSmall, body, subtitle,
+  sectionTitle, headerBold, buttonLarge`.
+- **Shadow**: `shadow-s`, `shadow-m` (web box-shadow). On native surfaces apply
+  `bloomShadowStyle('s' | 'm')` (returns RN elevation/shadow props).
+
+### Type scale
+
+| Role | Size / line | Weight | Family |
+| --- | --- | --- | --- |
+| `caption` | 11 / 14 | 400 | sans |
+| `bodySmall` | 13 / 18 | 400 | sans |
+| `bodyTitleSmall` | 13 / 18 | 600 | sans |
+| `body` | 15 / 22 | 400 | sans |
+| `subtitle` | 17 / 24 | 500 | sans |
+| `sectionTitle` | 20 / 26 | 600 | sans |
+| `headerBold` | 28 / 34 | 700 | display |
+| `buttonLarge` | 17 / 22 | 600 | sans |

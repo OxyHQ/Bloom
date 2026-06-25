@@ -7,6 +7,35 @@ export type { ViewStyleProp, TextStyleProp } from './styles';
 export * as tokens from './styles/tokens';
 export { web, native, ios, android, platform, select } from './styles/platform';
 
+// Design tokens (Oxy Unified Design Language) — semantic Tailwind/NativeWind
+// vocabulary. The Tailwind preset is consumed from `@oxyhq/bloom/tailwind-preset`
+// in a config file; these named exports cover programmatic/runtime use.
+export {
+  bloomTailwindPreset,
+  bloomThemeCss,
+  bloomThemeBlock,
+  FILL_ROLES,
+  TEXT_ROLES,
+  BORDER_ROLES,
+  SPACING,
+  RADIUS,
+  BORDER_WIDTH,
+  TYPOGRAPHY,
+  FONT_FAMILY_VARS,
+  SHADOW_BOX,
+  bloomShadowStyle,
+} from './design-tokens';
+export type {
+  TailwindPreset,
+  TailwindPresetThemeExtend,
+  FillRole,
+  TextRole,
+  BorderRole,
+  TypeRole,
+  TypeRoleName,
+  ShadowRole,
+} from './design-tokens';
+
 // Hooks
 export { useInteractionState } from './hooks/useInteractionState';
 export { useDelayedLoading } from './hooks/useDelayedLoading';
