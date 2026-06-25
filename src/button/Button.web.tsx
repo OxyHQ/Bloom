@@ -89,7 +89,7 @@ const BLOOM_BUTTON_CSS = `
   margin: 0;
   border: none;
   background: transparent;
-  font-family: inherit;
+  font-family: var(--bloom-font-sans, inherit);
   text-decoration: none;
   cursor: pointer;
   user-select: none;
