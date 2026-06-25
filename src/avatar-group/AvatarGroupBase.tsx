@@ -42,6 +42,7 @@ interface AvatarGroupBaseProps extends AvatarGroupProps {
 const AvatarGroupBaseComponent: React.FC<AvatarGroupBaseProps> = ({
   items,
   size = 32,
+  variant = 'thumb',
   max = 5,
   total,
   overlap,
@@ -142,11 +143,13 @@ const AvatarGroupBaseComponent: React.FC<AvatarGroupBaseProps> = ({
               Route the item's avatar value through Avatar's `source` prop (not
               `uri`): full URLs pass through directly, while resolver-handled ids
               (e.g. Oxy file IDs) are resolved by the consumer's ImageResolver —
-              exactly like the original Mention stack. No `name` is passed, so a
-              missing avatar shows Avatar's neutral default placeholder rather
-              than a colored deterministic initial.
+              exactly like the original Mention stack. `variant` (default
+              `'thumb'`) is forwarded so the resolver builds a small rendition
+              for these stacked avatars. No `name` is passed, so a missing
+              avatar shows Avatar's neutral default placeholder rather than a
+              colored deterministic initial.
             */}
-            <Avatar source={item.uri ?? undefined} size={innerSize} />
+            <Avatar source={item.uri ?? undefined} variant={variant} size={innerSize} />
           </View>
         );
 

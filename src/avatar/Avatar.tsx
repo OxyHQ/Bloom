@@ -169,6 +169,7 @@ function CircleFallback({
 const AvatarComponent: React.FC<AvatarProps> = ({
   source,
   uri,
+  variant,
   fallbackSource,
   size = 40,
   verified = false,
@@ -195,14 +196,21 @@ const AvatarComponent: React.FC<AvatarProps> = ({
   const resolvedPlaceholderIcon =
     placeholderIcon ?? (hasName ? undefined : placeholderConfig?.icon?.(size * 0.6));
 
-  // Reset error state when source changes (e.g., list item recycling
-  // or async URL resolution replacing an initial file ID).
+  // Reset error state when source/uri/variant changes (e.g., list item
+  // recycling, async URL resolution replacing an initial file ID, or a
+  // different rendition being requested).
   // Pattern from https://react.dev/learn/you-might-not-need-an-effect#adjusting-some-state-when-a-prop-changes
   const prevSourceRef = useRef(source);
   const prevUriRef = useRef(uri);
-  if (prevSourceRef.current !== source || prevUriRef.current !== uri) {
+  const prevVariantRef = useRef(variant);
+  if (
+    prevSourceRef.current !== source ||
+    prevUriRef.current !== uri ||
+    prevVariantRef.current !== variant
+  ) {
     prevSourceRef.current = source;
     prevUriRef.current = uri;
+    prevVariantRef.current = variant;
     if (errored) {
       setErrored(false);
     }
@@ -211,17 +219,19 @@ const AvatarComponent: React.FC<AvatarProps> = ({
   const imageResolver = useImageResolver();
 
   // Resolve source prop: string → uri, object → ImageSourcePropType.
-  // HTTP/data URLs pass through directly. Non-URL strings (e.g. file
-  // IDs) are resolved via the app-provided ImageResolver if available.
+  // HTTP/data URLs pass through directly. Non-URL strings (e.g. Oxy file
+  // IDs) are resolved via the app-provided ImageResolver if available, with the
+  // requested `variant` forwarded so the resolver (the single URL chokepoint)
+  // can build the right rendition.
   const resolvedUri = useMemo(() => {
     if (typeof source === 'string') {
       if (source.startsWith('http://') || source.startsWith('https://') || source.startsWith('data:')) {
         return source;
       }
-      return imageResolver?.(source);
+      return imageResolver?.(source, variant);
     }
     return uri;
-  }, [source, uri, imageResolver]);
+  }, [source, uri, variant, imageResolver]);
 
   const resolvedImageSource = useMemo(() => {
     if (source != null && typeof source !== 'string') return source;

@@ -17,6 +17,12 @@ export interface UserHoverCardProps {
    * falls back to the deterministic name-based placeholder.
    */
   avatar?: string | null;
+  /**
+   * Rendition variant forwarded to {@link Avatar}'s `variant` prop when `avatar`
+   * is a bare file ID. Omit for the full-size rendition (the default for this
+   * larger identity avatar).
+   */
+  variant?: string;
   /** Canonical, already-resolved display name (an API contract — render directly). */
   displayName: string;
   /** Handle without the leading `@` (the component prefixes it). */

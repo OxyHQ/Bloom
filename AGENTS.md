@@ -46,6 +46,34 @@ Compound components are flat-prefixed exports (e.g. `Tabs`, `TabsTrigger`, `Tabs
 - **Flat-prefix** when the parts are the *fixed-arity pieces of ONE component* that are always composed together and have specific names (`SelectTrigger`, `SegmentedControlItem`). This is the shadcn/Radix convention.
 - **Namespace** when it's an *open/large set of sibling primitives* of the same kind whose members have **generic, collision-prone names** (`Text`, `Box`, `Row`, `Col`, `Title`) or **high cardinality** (hundreds of icons). Flattening these would either collide at the top level (`Skeleton.Text` vs `Typography.Text` vs RN `Text`) or pollute it (`Icons.*`). The namespace disambiguates for free, and because each family ships as a subpath export (`@oxyhq/bloom/skeleton`), `import * as` does **not** cost tree-shaking. Under this rule Skeleton (`Text/Box/Row/Col/Circle/Pill`) is correctly a namespace.
 
+## Media / Avatar resolution — ONE centralized chokepoint (0.19.0)
+
+All Oxy media URLs are built in EXACTLY ONE place: the SDK's `oxyServices.getFileDownloadUrl(id, variant)` (canonical `https://cloud.oxy.so/<id>?variant=` for public assets, signed `api.oxy.so/assets/<id>/stream` for private). Bloom never builds these URLs and never hardcodes a domain. The bridge is the **`ImageResolver`** (subpath `@oxyhq/bloom/image-resolver`).
+
+**The contract every app follows:**
+- Register ONE resolver at the app root, wiring Bloom → the SDK chokepoint, and pass it to `ImageResolverProvider`:
+  ```tsx
+  import { ImageResolverProvider } from '@oxyhq/bloom/image-resolver';
+
+  <ImageResolverProvider value={(id, variant) => oxyServices.getFileDownloadUrl(id, variant)}>
+    <App />
+  </ImageResolverProvider>
+  ```
+- Pass BARE Oxy file IDs (never a URL) to `<Avatar source={...}>`, with an optional `variant` to pick a rendition:
+  ```tsx
+  <Avatar source={fileId} variant="thumb" />   {/* lists / grids → small rendition */}
+  <Avatar source={fileId} />                    {/* full-size rendition */}
+  ```
+
+**Resolver signature (widened in 0.19.0, additive / non-breaking):**
+`ImageResolver = (id: string, variant?: string) => string | undefined`. Old `(id) => …` registrants still satisfy it (they ignore the 2nd arg → full-size). `Avatar` only calls the resolver for non-URL string `source`; a full `http(s)://`/`data:` URL or `{ uri }` object passes through untouched, ignoring `variant`.
+
+**Components that forward `variant`:** `Avatar` (`variant?`), `AvatarGroup` (`variant?`, default `'thumb'` since stacked avatars are small), `UserHoverCard` (`variant?`, default full). All route the value through `Avatar.source` → the resolver.
+
+**NEVER do this** (defeats centralization): hardcode `cdn.oxy.so` / `cloud.oxy.so` / `${oxyUrl}/media/...`, or call `getFileDownloadUrl(id, 'thumb')` yourself and pass `{ uri }` into `Avatar` to get a thumbnail — pass `source={id} variant="thumb"` instead so the single resolver builds the URL.
+
+`image-resolver/` is pure JS (a React context); it has NO `.web`/`.native` split and is a universal single-file subpath — correct, no platform fork needed.
+
 ## Overlay surface architecture (0.16.x — two canonical components)
 
 Only TWO overlay surface components exist. `CenteredDialog` and `ResponsiveSheet` were REMOVED (breaking, no shims) in 0.16.x.

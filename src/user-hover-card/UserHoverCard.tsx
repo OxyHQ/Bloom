@@ -19,6 +19,7 @@ const VERIFIED_SIZE = 16;
 
 const UserHoverCardComponent: React.FC<UserHoverCardProps> = ({
   avatar,
+  variant,
   displayName,
   username,
   bio,
@@ -56,7 +57,7 @@ const UserHoverCardComponent: React.FC<UserHoverCardProps> = ({
 
   const identity = (
     <View style={styles.identityRow}>
-      <Avatar source={avatar ?? undefined} name={displayName} size={AVATAR_SIZE} />
+      <Avatar source={avatar ?? undefined} variant={variant} name={displayName} size={AVATAR_SIZE} />
       <View style={styles.identityText}>
         <View style={styles.nameRow}>
           <Text

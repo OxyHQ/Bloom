@@ -38,6 +38,7 @@ const createComponent = (name: string) => {
 
 export const View = createComponent('View');
 export const Text = createComponent('Text');
+export const Image = createComponent('Image');
 export const Pressable = createComponent('Pressable');
 export const TouchableOpacity = createComponent('TouchableOpacity');
 export const TextInput = createComponent('TextInput');

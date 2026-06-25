@@ -30,6 +30,13 @@ export interface AvatarGroupProps {
   items: AvatarGroupItem[];
   /** Diameter of each avatar in pixels. */
   size?: number;
+  /**
+   * Rendition variant forwarded to each {@link Avatar}'s `variant` prop, which
+   * the consumer's ImageResolver uses to build the right rendition for file-ID
+   * items. Stacked avatars are small, so `'thumb'` is recommended. Defaults to
+   * `'thumb'`; pass `undefined` to request full-size renditions.
+   */
+  variant?: string;
   /** Maximum number of avatars to render before collapsing into the overflow chip. */
   max?: number;
   /**
