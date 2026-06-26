@@ -38,6 +38,10 @@ import React, { memo } from 'react';
 import { View, type StyleProp, type ViewStyle } from 'react-native';
 
 import { useTheme } from '../theme/use-theme';
+import {
+  ContentPanelNestingContext,
+  useContentPanelNestingGuard,
+} from './nesting-context';
 
 /** Width (in px) of the sticky gutter-mask box-shadow ring. */
 export const GUTTER_MASK_SPREAD = 40;
@@ -79,6 +83,9 @@ const ContentPanelComponent: React.FC<ContentPanelProps> = ({
   showStickyFrame,
   maskColor,
 }) => {
+  // Dev-only invariant — must run unconditionally before the early `!framed`
+  // return so the hook order stays stable across renders (rules of hooks).
+  useContentPanelNestingGuard();
   const { colors } = useTheme();
 
   if (!framed) {
@@ -91,12 +98,14 @@ const ContentPanelComponent: React.FC<ContentPanelProps> = ({
       .filter(Boolean)
       .join(' ');
     return (
-      <View
-        {...({ className: fullBleedClass } as Record<string, string>)}
-        style={[surfaceStyle, contentStyle]}
-      >
-        {children}
-      </View>
+      <ContentPanelNestingContext.Provider value={true}>
+        <View
+          {...({ className: fullBleedClass } as Record<string, string>)}
+          style={[surfaceStyle, contentStyle]}
+        >
+          {children}
+        </View>
+      </ContentPanelNestingContext.Provider>
     );
   }
 
@@ -106,37 +115,39 @@ const ContentPanelComponent: React.FC<ContentPanelProps> = ({
     .join(' ');
 
   return (
-    <View
-      {...({ className: surfaceClass } as Record<string, string>)}
-      style={surfaceStyle}
-    >
-      {/* (1) Bleed-mask overlay — gutter box-shadow ring, below chrome. */}
+    <ContentPanelNestingContext.Provider value={true}>
       <View
-        pointerEvents="none"
-        {...({
-          className:
-            'web:sticky web:top-2 z-30 h-[calc(100dvh-16px)] w-full rounded-radius-28 web:[margin-bottom:calc(-100dvh+16px)] web:[clip-path:inset(-12px)]',
-        } as Record<string, string>)}
-        style={{ boxShadow: `0 0 0 ${GUTTER_MASK_SPREAD}px ${maskColor ?? colors.background}` }}
-      />
-      {/* (2) Border-frame overlay — one continuous rounded border, above all. */}
-      {showStickyFrame !== false && (
+        {...({ className: surfaceClass } as Record<string, string>)}
+        style={surfaceStyle}
+      >
+        {/* (1) Bleed-mask overlay — gutter box-shadow ring, below chrome. */}
         <View
           pointerEvents="none"
           {...({
             className:
-              'web:sticky web:top-2 z-[120] h-[calc(100dvh-16px)] w-full rounded-radius-28 border border-border web:[margin-bottom:calc(-100dvh+16px)]',
+              'web:sticky web:top-2 z-30 h-[calc(100dvh-16px)] w-full rounded-radius-28 web:[margin-bottom:calc(-100dvh+16px)] web:[clip-path:inset(-12px)]',
           } as Record<string, string>)}
+          style={{ boxShadow: `0 0 0 ${GUTTER_MASK_SPREAD}px ${maskColor ?? colors.background}` }}
         />
-      )}
-      {/* Content wrapper — clipped to the rounded panel shape on web. */}
-      <View
-        {...({ className: contentClass } as Record<string, string>)}
-        style={contentStyle}
-      >
-        {children}
+        {/* (2) Border-frame overlay — one continuous rounded border, above all. */}
+        {showStickyFrame !== false && (
+          <View
+            pointerEvents="none"
+            {...({
+              className:
+                'web:sticky web:top-2 z-[120] h-[calc(100dvh-16px)] w-full rounded-radius-28 border border-border web:[margin-bottom:calc(-100dvh+16px)]',
+            } as Record<string, string>)}
+          />
+        )}
+        {/* Content wrapper — clipped to the rounded panel shape on web. */}
+        <View
+          {...({ className: contentClass } as Record<string, string>)}
+          style={contentStyle}
+        >
+          {children}
+        </View>
       </View>
-    </View>
+    </ContentPanelNestingContext.Provider>
   );
 };
 

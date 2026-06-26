@@ -23,6 +23,11 @@
 import React, { memo } from 'react';
 import { View, type StyleProp, type ViewStyle } from 'react-native';
 
+import {
+  ContentPanelNestingContext,
+  useContentPanelNestingGuard,
+} from './nesting-context';
+
 /**
  * Width (in px) of the WEB sticky gutter-mask box-shadow ring. Exported for
  * cross-platform API parity (it has no effect on native).
@@ -65,6 +70,9 @@ const ContentPanelComponent: React.FC<ContentPanelProps> = ({
   contentClassName,
   contentStyle,
 }) => {
+  // Dev-only invariant — a ContentPanel must never be nested inside another.
+  useContentPanelNestingGuard();
+
   const surfaceClass = [
     'flex-1',
     'rounded-radius-28',
@@ -74,17 +82,19 @@ const ContentPanelComponent: React.FC<ContentPanelProps> = ({
   const contentClass = ['flex-1', contentClassName].filter(Boolean).join(' ');
 
   return (
-    <View
-      {...({ className: surfaceClass } as Record<string, string>)}
-      style={surfaceStyle}
-    >
+    <ContentPanelNestingContext.Provider value={true}>
       <View
-        {...({ className: contentClass } as Record<string, string>)}
-        style={contentStyle}
+        {...({ className: surfaceClass } as Record<string, string>)}
+        style={surfaceStyle}
       >
-        {children}
+        <View
+          {...({ className: contentClass } as Record<string, string>)}
+          style={contentStyle}
+        >
+          {children}
+        </View>
       </View>
-    </View>
+    </ContentPanelNestingContext.Provider>
   );
 };
 
