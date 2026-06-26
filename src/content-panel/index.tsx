@@ -51,6 +51,11 @@ export interface ContentPanelProps {
    * is always part of the surface).
    */
   showStickyFrame?: boolean;
+  /**
+   * Color of the WEB sticky bleed-mask gutter ring. Accepted for cross-platform
+   * API parity — no-op on native (there is no bleed-mask), like `framed`.
+   */
+  maskColor?: string;
 }
 
 const ContentPanelComponent: React.FC<ContentPanelProps> = ({

@@ -58,6 +58,15 @@ export interface ContentPanelProps {
   contentStyle?: StyleProp<ViewStyle>;
   /** Render the sticky border frame (defaults to true when framed). */
   showStickyFrame?: boolean;
+  /**
+   * Color of the sticky bleed-mask gutter ring. The ring is meant to match the
+   * UNSCOPED outer gutter band (the app's background), so consumers that wrap
+   * `<ContentPanel>` in a `BloomColorScope` (e.g. a tinted per-profile color)
+   * should pass the unscoped background here — otherwise the internally-read
+   * scoped `background` token would tint the ring and leave a faint corner seam.
+   * Defaults to the current theme's `background` token.
+   */
+  maskColor?: string;
 }
 
 const ContentPanelComponent: React.FC<ContentPanelProps> = ({
@@ -68,6 +77,7 @@ const ContentPanelComponent: React.FC<ContentPanelProps> = ({
   contentClassName,
   contentStyle,
   showStickyFrame,
+  maskColor,
 }) => {
   const { colors } = useTheme();
 
@@ -107,7 +117,7 @@ const ContentPanelComponent: React.FC<ContentPanelProps> = ({
           className:
             'web:sticky web:top-2 z-30 h-[calc(100dvh-16px)] w-full rounded-radius-28 web:[margin-bottom:calc(-100dvh+16px)] web:[clip-path:inset(-12px)]',
         } as Record<string, string>)}
-        style={{ boxShadow: `0 0 0 ${GUTTER_MASK_SPREAD}px ${colors.background}` }}
+        style={{ boxShadow: `0 0 0 ${GUTTER_MASK_SPREAD}px ${maskColor ?? colors.background}` }}
       />
       {/* (2) Border-frame overlay — one continuous rounded border, above all. */}
       {showStickyFrame !== false && (
