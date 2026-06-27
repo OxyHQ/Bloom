@@ -984,5 +984,8 @@
     "nanoid": "^5.1.5",
     "react-native-css": "3.0.7",
     "react-remove-scroll-bar": "^2.3.8"
+  },
+  "overrides": {
+    "handlebars": "4.7.9"
   }
 }
