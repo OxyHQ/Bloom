@@ -1,0 +1,15 @@
+# Dependabot configuration for @oxyhq/bloom.
+#
+# Bloom uses Bun and tracks `bun.lock` only — there is NO `package-lock.json`.
+# Dependabot's npm updater does not support Bun, so an npm/npm_and_yarn
+# ecosystem here only produces stray `package-lock.json` edits that must not be
+# merged. JavaScript dependency refreshes are applied natively with
+# `bun update <pkg>` (or a surgical `bun.lock` bump) instead.
+#
+# Only GitHub Actions version updates are enabled.
+version: 2
+updates:
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
