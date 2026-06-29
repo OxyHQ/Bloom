@@ -149,3 +149,12 @@ export const AccessibilityInfo = {
   }),
   announceForAccessibility: (_message: string) => {},
 };
+
+export const Linking = {
+  openURL: jest.fn((_url: string) => Promise.resolve()),
+  canOpenURL: jest.fn((_url: string) => Promise.resolve(true)),
+  addEventListener: (_event: string, _handler: (event: { url: string }) => void) => ({
+    remove: jest.fn(),
+  }),
+  getInitialURL: () => Promise.resolve(null),
+};

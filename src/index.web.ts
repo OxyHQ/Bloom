@@ -134,6 +134,8 @@ export * from './chip';
 export * from './tabs';
 export * from './checkbox';
 export * from './accordion';
+export { LinkPreviewCard } from './link-preview';
+export type { LinkPreviewCardProps } from './link-preview';
 
 // Settings / Grouped list
 export * from './settings-list';

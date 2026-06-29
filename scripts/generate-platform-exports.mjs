@@ -104,6 +104,7 @@ const SUBPATHS = /** @type {const} */ ([
   ['./checkbox', 'checkbox/index.ts'],
   ['./accordion', 'accordion/index.ts'],
   ['./settings-list', 'settings-list/index.ts'],
+  ['./link-preview', 'link-preview/index.ts'],
   ['./code', 'code/index.ts'],
   ['./fonts', 'fonts/index.ts'],
   ['./scroll', 'scroll/index.ts'],
