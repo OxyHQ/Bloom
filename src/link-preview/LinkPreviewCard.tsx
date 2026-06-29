@@ -56,6 +56,7 @@ const LinkPreviewCardComponent: React.FC<LinkPreviewCardProps> = ({
   description,
   image,
   siteName,
+  coverFill = false,
   onPress,
   className,
   style,
@@ -107,7 +108,10 @@ const LinkPreviewCardComponent: React.FC<LinkPreviewCardProps> = ({
           resizeMode="cover"
           {...({ className: 'w-full' } as Record<string, string>)}
           style={{
-            height: COVER_IMAGE_HEIGHT,
+            // Fill-height mode: flex into the card's bounding height (supplied
+            // by the consumer via `style`), letting the text block stay a
+            // compact footer. Default mode: fixed intrinsic cover height.
+            ...(coverFill ? { flex: 1 } : { height: COVER_IMAGE_HEIGHT }),
             backgroundColor: colors.backgroundTertiary,
           }}
         />

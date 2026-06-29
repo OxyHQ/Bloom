@@ -1,5 +1,5 @@
 import React from 'react';
-import { Linking } from 'react-native';
+import { Image, Linking } from 'react-native';
 import { render, fireEvent } from '@testing-library/react-native';
 
 import { BloomThemeProvider } from '../theme/BloomThemeProvider';
@@ -56,5 +56,33 @@ describe('LinkPreviewCard', () => {
     fireEvent.press(getByLabelText('Open me'));
     expect(openURL).toHaveBeenCalledWith('https://example.com/open');
     openURL.mockRestore();
+  });
+
+  it('gives the cover image a fixed height by default (coverFill omitted)', () => {
+    const { UNSAFE_getByType } = renderWithTheme(
+      <LinkPreviewCard
+        url="https://example.com"
+        title="Fixed"
+        image="https://cdn.example.com/og.png"
+      />,
+    );
+    const imageStyle = UNSAFE_getByType(Image).props.style as Record<string, unknown>;
+    expect(imageStyle.height).toBe(160);
+    expect(imageStyle.flex).toBeUndefined();
+  });
+
+  it('flexes the cover image (no fixed height) when coverFill is true', () => {
+    const { UNSAFE_getByType } = renderWithTheme(
+      <LinkPreviewCard
+        url="https://example.com"
+        title="Fill"
+        image="https://cdn.example.com/og.png"
+        coverFill
+        style={{ height: 180 }}
+      />,
+    );
+    const imageStyle = UNSAFE_getByType(Image).props.style as Record<string, unknown>;
+    expect(imageStyle.flex).toBe(1);
+    expect(imageStyle.height).toBeUndefined();
   });
 });
