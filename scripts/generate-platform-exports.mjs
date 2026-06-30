@@ -109,6 +109,7 @@ const SUBPATHS = /** @type {const} */ ([
   ['./fonts', 'fonts/index.ts'],
   ['./scroll', 'scroll/index.ts'],
   ['./content-panel', 'content-panel/index.tsx'],
+  ['./list', 'list/index.tsx'],
 ]);
 
 /**
@@ -138,6 +139,7 @@ const WEB_FORKED_SUBPATHS = new Set([
   './fonts',
   './scroll',
   './content-panel',
+  './list',
 ]);
 
 // --------------------------------------------------------------------------

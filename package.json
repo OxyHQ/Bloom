@@ -1,6 +1,6 @@
 {
   "name": "@oxyhq/bloom",
-  "version": "0.24.1",
+  "version": "0.25.0",
   "description": "Bloom UI — Oxy ecosystem component library for React Native + Expo + Web",
   "main": "lib/commonjs/index.js",
   "module": "lib/module/index.js",
@@ -805,6 +805,22 @@
         "default": "./lib/commonjs/content-panel/index.js"
       }
     },
+    "./list": {
+      "react-native": "./src/list/index.tsx",
+      "browser": {
+        "types": "./lib/typescript/module/list/index.web.d.ts",
+        "import": "./lib/module/list/index.web.js",
+        "require": "./lib/commonjs/list/index.web.js"
+      },
+      "import": {
+        "types": "./lib/typescript/module/list/index.d.ts",
+        "default": "./lib/module/list/index.js"
+      },
+      "require": {
+        "types": "./lib/typescript/commonjs/list/index.d.ts",
+        "default": "./lib/commonjs/list/index.js"
+      }
+    },
     "./package.json": "./package.json"
   },
   "files": [
@@ -860,6 +876,8 @@
     "label",
     "kbd",
     "item",
+    "list",
+    "virtual-list",
     "ai"
   ],
   "repository": {
@@ -992,6 +1010,7 @@
     ]
   },
   "dependencies": {
+    "@tanstack/react-virtual": "^3.14.3",
     "nanoid": "^5.1.5",
     "react-native-css": "3.0.7",
     "react-remove-scroll-bar": "^2.3.8"

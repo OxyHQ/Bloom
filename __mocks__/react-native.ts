@@ -55,6 +55,39 @@ export const ScrollView = React.forwardRef((props: Record<string, unknown>, ref:
   return React.createElement('ScrollView', { ref, ...props }, props.children as React.ReactNode);
 });
 
+export const FlatList = React.forwardRef((props: Record<string, unknown>, ref: unknown) => {
+  const data = Array.isArray(props.data) ? (props.data as unknown[]) : [];
+  const renderItem = props.renderItem as
+    | ((info: { item: unknown; index: number }) => React.ReactNode)
+    | undefined;
+  const keyExtractor = props.keyExtractor as
+    | ((item: unknown, index: number) => string)
+    | undefined;
+  const renderSlot = (slot: unknown): React.ReactNode => {
+    if (!slot) return null;
+    if (React.isValidElement(slot)) return slot;
+    if (typeof slot === 'function') return (slot as () => React.ReactNode)();
+    return null;
+  };
+  const rows =
+    data.length === 0
+      ? renderSlot(props.ListEmptyComponent)
+      : data.map((item, index) =>
+          React.createElement(
+            'FlatListItem',
+            { key: keyExtractor ? keyExtractor(item, index) : String(index) },
+            renderItem ? renderItem({ item, index }) : null,
+          ),
+        );
+  return React.createElement(
+    'FlatList',
+    { ref, testID: props.testID },
+    renderSlot(props.ListHeaderComponent),
+    rows,
+    renderSlot(props.ListFooterComponent),
+  );
+});
+
 export const Animated = {
   View: createComponent('Animated.View'),
   Text: createComponent('Animated.Text'),
