@@ -1,6 +1,6 @@
 import React, { createRef } from 'react';
 import { Dimensions, Text } from 'react-native';
-import { act, render } from '@testing-library/react-native';
+import { act, render, within } from '@testing-library/react-native';
 
 import { BloomThemeProvider } from '../theme/BloomThemeProvider';
 import BottomSheet, { type BottomSheetRef } from '../bottom-sheet';
@@ -219,6 +219,32 @@ describe('BottomSheet', () => {
         ref.current?.present();
       });
       expect(queryByText('Should Not Appear')).toBeNull();
+    });
+  });
+
+  describe('keyboard provider (Modal native-root boundary)', () => {
+    it('re-establishes a KeyboardProvider inside the Modal and wraps the sheet content', () => {
+      // RN <Modal> mounts into a SEPARATE native root; the app-root
+      // react-native-keyboard-controller <KeyboardProvider>'s native context
+      // does not cross that boundary. The sheet must therefore re-establish a
+      // provider INSIDE the Modal so its own keyboard tracker (SheetKeyboardSync)
+      // AND any inputs in `children` find a real KeyboardContext (otherwise:
+      // "Couldn't find real values for KeyboardContext ..." warning + broken
+      // keyboard insets). This asserts the presented content is a DESCENDANT of
+      // that in-Modal provider.
+      const ref = createRef<BottomSheetRef>();
+      const { getByText, UNSAFE_getByType } = renderWithTheme(
+        <BottomSheet ref={ref}>
+          <Text>Keyboarded content</Text>
+        </BottomSheet>,
+      );
+      act(() => {
+        ref.current?.present();
+      });
+
+      const provider = UNSAFE_getByType('KeyboardProvider' as never);
+      expect(within(provider).getByText('Keyboarded content')).toBeTruthy();
+      expect(getByText('Keyboarded content')).toBeTruthy();
     });
   });
 

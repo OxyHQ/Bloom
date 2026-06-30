@@ -15,6 +15,7 @@ import { Z_INDEX } from '../styles/z-index';
 import Animated, {
     interpolate,
     runOnJS,
+    type SharedValue,
     useAnimatedScrollHandler,
     useAnimatedStyle,
     useSharedValue,
@@ -24,16 +25,62 @@ import Animated, {
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useTheme } from '../theme/use-theme';
 
-// Keyboard handler — only on native platforms. On web, keyboard events are handled by the browser.
+// Keyboard handling — only on native platforms. On web, keyboard events are
+// handled by the browser. `react-native-keyboard-controller` is an OPTIONAL
+// dependency: it is lazily `require`d below and everything no-ops when it is
+// absent (or on web).
 const noopKeyboardHandler = (_handlers: Record<string, (e: { height: number }) => void>, _deps: unknown[]) => {};
 let useKeyboardHandler: (handlers: Record<string, (e: { height: number }) => void>, deps: unknown[]) => void = noopKeyboardHandler;
+
+// react-native-keyboard-controller's <KeyboardProvider>. We re-establish it
+// INSIDE the sheet's RN <Modal> (see the render below): a <Modal> mounts into
+// its OWN native root, and neither the app-root GestureHandlerRootView nor the
+// app-root KeyboardProvider's native KeyboardControllerView extend across that
+// boundary. Without a provider inside the Modal, keyboard-controller consumers
+// (this sheet's keyboard tracker, plus any TextInputs in `children`) read the
+// default empty KeyboardContext — logging "Couldn't find real values for
+// KeyboardContext ..." — and receive no keyboard insets. When the optional
+// module is absent, or on web (no RN Modal native-window boundary, keyboard is
+// the browser's concern), this resolves to a passthrough that just renders its
+// children, so no provider is introduced where one isn't needed.
+const PassthroughKeyboardProvider = ({ children }: { children: React.ReactNode }) => <>{children}</>;
+let KeyboardProvider: React.ComponentType<{ children: React.ReactNode }> = PassthroughKeyboardProvider;
+
 if (Platform.OS !== 'web' && typeof require !== 'undefined') {
     try {
         const moduleName = 'react-native-keyboard-controller';
-        useKeyboardHandler = require(moduleName).useKeyboardHandler;
+        const keyboardController = require(moduleName);
+        useKeyboardHandler = keyboardController.useKeyboardHandler ?? noopKeyboardHandler;
+        KeyboardProvider = keyboardController.KeyboardProvider ?? PassthroughKeyboardProvider;
     } catch {
-        // react-native-keyboard-controller not available
+        // react-native-keyboard-controller not available — keep the no-op
+        // handler and passthrough provider.
     }
+}
+
+/**
+ * Registers the sheet's keyboard-height tracker. It lives in its own tiny
+ * component — rendered INSIDE the Modal, under the re-established
+ * <KeyboardProvider> — so `useKeyboardHandler` reads the in-Modal
+ * KeyboardContext whose native KeyboardControllerView actually receives the
+ * Modal window's keyboard insets (the app-root provider does not cross the
+ * Modal's native-window boundary). It writes the live keyboard height into the
+ * shared value that drives the sheet's translate/height styles. Renders
+ * nothing. No-ops when react-native-keyboard-controller isn't installed / on
+ * web (`useKeyboardHandler` is the module-level no-op there).
+ */
+function SheetKeyboardSync({ keyboardHeight }: { keyboardHeight: SharedValue<number> }) {
+    useKeyboardHandler({
+        onMove: (e) => {
+            'worklet';
+            keyboardHeight.value = e.height;
+        },
+        onEnd: (e) => {
+            'worklet';
+            keyboardHeight.value = e.height;
+        },
+    }, []);
+    return null;
 }
 
 /** Hook that returns current screen dimensions and updates on rotation/resize. */
@@ -220,16 +267,11 @@ const BottomSheet = forwardRef((props: BottomSheetProps, ref: React.ForwardedRef
     const bodyPanRef = useRef<GestureType | undefined>(undefined);
     const handlePanRef = useRef<GestureType | undefined>(undefined);
 
-    useKeyboardHandler({
-        onMove: (e) => {
-            'worklet';
-            keyboardHeight.value = e.height;
-        },
-        onEnd: (e) => {
-            'worklet';
-            keyboardHeight.value = e.height;
-        },
-    }, []);
+    // The sheet's keyboard-height tracker is registered by <SheetKeyboardSync>,
+    // rendered INSIDE the Modal under the re-established <KeyboardProvider> (see
+    // the render tree below). It must NOT be called here in the component body:
+    // this body runs OUTSIDE the Modal, where the keyboard-controller provider
+    // that actually receives the Modal window's insets is not reachable.
 
     // Dismiss callbacks
     const safeClose = useCallback(() => {
@@ -692,32 +734,42 @@ const BottomSheet = forwardRef((props: BottomSheetProps, ref: React.ForwardedRef
 
     return (
         <Modal visible={rendered} transparent animationType="none" statusBarTranslucent onRequestClose={dismiss}>
-            {/* RN's Modal renders into its own native window. The app-root
-                GestureHandlerRootView does NOT extend into it, so pan gestures
-                silently no-op without this wrapper. */}
-            <GestureHandlerRootView style={styles.rootView}>
-                <View style={StyleSheet.absoluteFill}>
-                    <Animated.View style={[styles.backdrop, backdropStyle]}>
-                        {backdropComponent ? (
-                            backdropComponent({ onPress: handleBackdropPress })
-                        ) : (
-                            <Pressable style={styles.backdropTouchable} onPress={handleBackdropPress}>
-                                <View style={StyleSheet.absoluteFill} />
-                            </Pressable>
-                        )}
-                    </Animated.View>
-
-                    <GestureDetector gesture={panGesture}>
-                        <Animated.View style={[dynamicStyles.sheet, sheetMarginStyle, sheetStyle, sheetHeightStyle, style]}>
-                            {backgroundComponent?.({ style: styles.background })}
-
-                            {handleSlot}
-
-                            {bodyContent}
+            {/* RN's <Modal> mounts into its OWN native root, so the app-root
+                react-native-keyboard-controller <KeyboardProvider> does not
+                reach this subtree. Re-establish a provider here so the sheet's
+                own keyboard tracker (<SheetKeyboardSync>) AND any TextInputs in
+                `children` find a real KeyboardContext + receive the Modal
+                window's keyboard insets. Resolves to a passthrough on web / when
+                the optional module isn't installed (see resolution above). */}
+            <KeyboardProvider>
+                <SheetKeyboardSync keyboardHeight={keyboardHeight} />
+                {/* RN's Modal renders into its own native window. The app-root
+                    GestureHandlerRootView does NOT extend into it, so pan
+                    gestures silently no-op without this wrapper. */}
+                <GestureHandlerRootView style={styles.rootView}>
+                    <View style={StyleSheet.absoluteFill}>
+                        <Animated.View style={[styles.backdrop, backdropStyle]}>
+                            {backdropComponent ? (
+                                backdropComponent({ onPress: handleBackdropPress })
+                            ) : (
+                                <Pressable style={styles.backdropTouchable} onPress={handleBackdropPress}>
+                                    <View style={StyleSheet.absoluteFill} />
+                                </Pressable>
+                            )}
                         </Animated.View>
-                    </GestureDetector>
-                </View>
-            </GestureHandlerRootView>
+
+                        <GestureDetector gesture={panGesture}>
+                            <Animated.View style={[dynamicStyles.sheet, sheetMarginStyle, sheetStyle, sheetHeightStyle, style]}>
+                                {backgroundComponent?.({ style: styles.background })}
+
+                                {handleSlot}
+
+                                {bodyContent}
+                            </Animated.View>
+                        </GestureDetector>
+                    </View>
+                </GestureHandlerRootView>
+            </KeyboardProvider>
         </Modal>
     );
 });
