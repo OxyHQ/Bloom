@@ -76,6 +76,72 @@ describe('BloomColorScope', () => {
     consoleError.mockRestore();
   });
 
+  // Regression: a Rules-of-Hooks violation (caught at runtime on a real Android
+  // device) where an early return between `useContext` and the `useMemo` calls
+  // changed the hook count/order when `colorPreset` toggled undefined <-> set:
+  //   "React has detected a change in the order of Hooks called by
+  //    BloomColorScope. Previous render: 1. useContext 2. undefined.
+  //    Next render: 1. useContext 2. useMemo".
+  // All hooks must now run unconditionally on every render, so toggling the
+  // preset must neither warn about hook order nor throw.
+  it.each([
+    ['native variant (index)', BloomColorScope] as const,
+    ['web variant (index.web)', BloomColorScopeWeb] as const,
+  ])(
+    'does not change hook order when colorPreset toggles undefined <-> set (%s)',
+    (_label, Scope) => {
+      const consoleError = jest.spyOn(console, 'error').mockImplementation(() => {});
+
+      // First render: no preset -> the bug ran only `useContext` (1 hook).
+      const { rerender, getByTestId } = render(
+        <BloomThemeProvider defaultColorPreset="blue" fonts={false}>
+          <Scope colorPreset={undefined}>
+            <CurrentPreset />
+          </Scope>
+        </BloomThemeProvider>,
+      );
+      expect(getByTestId('preset').props.children).toBe('blue');
+
+      // Re-render with a preset -> the bug now ran `useContext` + 2x `useMemo`,
+      // changing the hook order between renders. Must not throw or warn.
+      expect(() =>
+        rerender(
+          <BloomThemeProvider defaultColorPreset="blue" fonts={false}>
+            <Scope colorPreset="green">
+              <CurrentPreset />
+            </Scope>
+          </BloomThemeProvider>,
+        ),
+      ).not.toThrow();
+      expect(getByTestId('preset').props.children).toBe('green');
+
+      // Toggle back to undefined to exercise the reverse transition.
+      expect(() =>
+        rerender(
+          <BloomThemeProvider defaultColorPreset="blue" fonts={false}>
+            <Scope colorPreset={undefined}>
+              <CurrentPreset />
+            </Scope>
+          </BloomThemeProvider>,
+        ),
+      ).not.toThrow();
+      expect(getByTestId('preset').props.children).toBe('blue');
+
+      const hookOrderWarning = consoleError.mock.calls.some((args) =>
+        args.some(
+          (arg) =>
+            typeof arg === 'string' &&
+            (arg.includes('order of Hooks') ||
+              arg.includes('Rendered more hooks') ||
+              arg.includes('Rendered fewer hooks')),
+        ),
+      );
+      expect(hookOrderWarning).toBe(false);
+
+      consoleError.mockRestore();
+    },
+  );
+
   it('throws when used outside BloomThemeProvider', () => {
     const consoleError = jest.spyOn(console, 'error').mockImplementation(() => {});
     expect(() =>

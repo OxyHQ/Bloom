@@ -61,24 +61,32 @@ export function BloomColorScope({
   style,
   children,
 }: BloomColorScopeProps) {
+  // All hooks are called UNCONDITIONALLY, in the same order on every render —
+  // never gate a hook behind an early return (rules of hooks). The conditional
+  // no-op/throw behavior is applied AFTER every hook has run, using the values
+  // the hooks produced. `resolvedMode` falls back harmlessly when the provider
+  // is absent (that render path throws below anyway).
   const parent = useContext(BloomThemeContext);
-  if (!parent) {
-    throw new Error('BloomColorScope must be used within a <BloomThemeProvider>');
-  }
+  const resolvedMode = parent?.theme.mode ?? 'light';
 
-  if (!colorPreset) return <>{children}</>;
-
-  const resolvedMode = parent.theme.mode;
-
-  const contextValue = useMemo<BloomThemeContextValue>(() => {
+  const contextValue = useMemo<BloomThemeContextValue | null>(() => {
+    if (!parent || !colorPreset) return null;
     const theme = buildTheme(colorPreset, resolvedMode);
     return { ...parent, theme, colorPreset };
   }, [colorPreset, resolvedMode, parent]);
 
-  const varsStyle = useMemo(
-    () => buildWebScopeVars(colorPreset, resolvedMode),
+  const varsStyle = useMemo<React.CSSProperties | null>(
+    () => (colorPreset ? buildWebScopeVars(colorPreset, resolvedMode) : null),
     [colorPreset, resolvedMode],
   );
+
+  if (!parent) {
+    throw new Error('BloomColorScope must be used within a <BloomThemeProvider>');
+  }
+  // `colorPreset` undefined => the scope is a no-op; children inherit the
+  // parent scope. With `parent` present, `contextValue`/`varsStyle` are null
+  // iff `colorPreset` is absent, so this guard also narrows them to non-null.
+  if (!contextValue || !varsStyle) return <>{children}</>;
 
   let content: React.ReactNode;
   if (asChild) {
@@ -111,13 +119,15 @@ export function BloomColorScope({
  * caller. Returns a stable React style object carrying the preset's CSS vars.
  */
 export function useColorScopeStyle(colorPreset: AppColorName): React.CSSProperties {
+  // Hooks first, unconditionally; throw only after they have all run.
   const parent = useContext(BloomThemeContext);
-  if (!parent) {
-    throw new Error('useColorScopeStyle must be used within a <BloomThemeProvider>');
-  }
-  const resolvedMode = parent.theme.mode;
-  return useMemo(
+  const resolvedMode = parent?.theme.mode ?? 'light';
+  const scopeStyle = useMemo(
     () => buildWebScopeVars(colorPreset, resolvedMode),
     [colorPreset, resolvedMode],
   );
+  if (!parent) {
+    throw new Error('useColorScopeStyle must be used within a <BloomThemeProvider>');
+  }
+  return scopeStyle;
 }

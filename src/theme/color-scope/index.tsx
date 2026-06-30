@@ -32,16 +32,16 @@ export function BloomColorScope({
   style,
   children,
 }: BloomColorScopeProps) {
+  // All hooks are called UNCONDITIONALLY, in the same order on every render —
+  // never gate a hook behind an early return (rules of hooks). The conditional
+  // no-op/throw behavior is applied AFTER every hook has run, using the values
+  // the hooks produced. `resolvedMode` falls back harmlessly when the provider
+  // is absent (that render path throws below anyway).
   const parent = useContext(BloomThemeContext);
-  if (!parent) {
-    throw new Error('BloomColorScope must be used within a <BloomThemeProvider>');
-  }
+  const resolvedMode = parent?.theme.mode ?? 'light';
 
-  if (!colorPreset) return <>{children}</>;
-
-  const resolvedMode = parent.theme.mode;
-
-  const contextValue = useMemo<BloomThemeContextValue>(() => {
+  const contextValue = useMemo<BloomThemeContextValue | null>(() => {
+    if (!parent || !colorPreset) return null;
     const theme = buildTheme(colorPreset, resolvedMode);
     return { ...parent, theme, colorPreset };
   }, [colorPreset, resolvedMode, parent]);
@@ -50,10 +50,19 @@ export function BloomColorScope({
   // VariableContext (`VariableContextProvider`), NOT via an inline `vars()`
   // style — under react-native-css@3 inline vars applied to a plain `<View>`
   // (no matched className rules) are dropped silently. See `style-builder.ts`.
-  const nativeVars = useMemo(
-    () => buildScopeVars(colorPreset, resolvedMode),
+  const nativeVars = useMemo<Record<string, string> | null>(
+    () => (colorPreset ? buildScopeVars(colorPreset, resolvedMode) : null),
     [colorPreset, resolvedMode],
   );
+
+  if (!parent) {
+    throw new Error('BloomColorScope must be used within a <BloomThemeProvider>');
+  }
+  // `colorPreset` undefined => the scope is a no-op; children inherit the
+  // parent scope. With `parent` present, `contextValue`/`nativeVars` are null
+  // iff `colorPreset` is absent, so this guard also narrows them to non-null.
+  if (!contextValue || !nativeVars) return <>{children}</>;
+
   const VariableProvider = getVariableContextProvider();
 
   let content: React.ReactNode;
@@ -97,13 +106,15 @@ export function BloomColorScope({
  * `<BloomColorScope>`, which wraps children in `VariableContextProvider`.
  */
 export function useColorScopeStyle(colorPreset: AppColorName): StyleProp<ViewStyle> {
+  // Hooks first, unconditionally; throw only after they have all run.
   const parent = useContext(BloomThemeContext);
-  if (!parent) {
-    throw new Error('useColorScopeStyle must be used within a <BloomThemeProvider>');
-  }
-  const resolvedMode = parent.theme.mode;
-  return useMemo(
+  const resolvedMode = parent?.theme.mode ?? 'light';
+  const scopeStyle = useMemo(
     () => buildNativePresetStyle(colorPreset, resolvedMode),
     [colorPreset, resolvedMode],
   );
+  if (!parent) {
+    throw new Error('useColorScopeStyle must be used within a <BloomThemeProvider>');
+  }
+  return scopeStyle;
 }
