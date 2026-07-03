@@ -148,6 +148,13 @@ export const StyleSheet = {
   hairlineWidth: 1,
 };
 
+export const PixelRatio = {
+  get: () => 1,
+  getFontScale: () => 1,
+  getPixelSizeForLayoutSize: (size: number) => size,
+  roundToNearestPixel: (size: number) => size,
+};
+
 type PlatformOS = 'ios' | 'android' | 'web' | 'windows' | 'macos';
 
 export const Platform: {

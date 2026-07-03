@@ -44,9 +44,22 @@ export interface ThemeColors {
   overlay: string;
 }
 
+/**
+ * A single named gradient: an ordered list of `[offset, color]` stops where
+ * `offset` runs 0–1 along the gradient axis and `color` is any RN/CSS color.
+ */
+export interface ThemeGradient {
+  values: Array<[number, string]>;
+}
+
+/** Map of named gradients exposed on the theme (`theme.gradients`). */
+export type ThemeGradients = Record<string, ThemeGradient>;
+
 export interface Theme {
   mode: 'light' | 'dark';
   colors: ThemeColors;
+  /** Brand-neutral named linear-gradient palettes. Theme-agnostic (same in light/dark). */
+  gradients: ThemeGradients;
   isDark: boolean;
   isLight: boolean;
 }

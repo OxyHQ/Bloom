@@ -1,12 +1,12 @@
 import React, { memo } from 'react';
-import { StyleSheet, View, type ViewStyle } from 'react-native';
+import { StyleSheet, View, type StyleProp, type ViewStyle } from 'react-native';
 
 const FillComponent = function Fill({
   children,
   style,
 }: {
   children?: React.ReactNode;
-  style?: ViewStyle | ViewStyle[];
+  style?: StyleProp<ViewStyle>;
 }) {
   return (
     <View style={[fillStyles.base, style]}>

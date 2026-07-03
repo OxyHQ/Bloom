@@ -371,6 +371,39 @@
         "default": "./lib/commonjs/fill/index.js"
       }
     },
+    "./media-inset-border": {
+      "react-native": "./src/media-inset-border/index.ts",
+      "import": {
+        "types": "./lib/typescript/module/media-inset-border/index.d.ts",
+        "default": "./lib/module/media-inset-border/index.js"
+      },
+      "require": {
+        "types": "./lib/typescript/commonjs/media-inset-border/index.d.ts",
+        "default": "./lib/commonjs/media-inset-border/index.js"
+      }
+    },
+    "./pressable-scale": {
+      "react-native": "./src/pressable-scale/index.ts",
+      "import": {
+        "types": "./lib/typescript/module/pressable-scale/index.d.ts",
+        "default": "./lib/module/pressable-scale/index.js"
+      },
+      "require": {
+        "types": "./lib/typescript/commonjs/pressable-scale/index.d.ts",
+        "default": "./lib/commonjs/pressable-scale/index.js"
+      }
+    },
+    "./pressable-with-hover": {
+      "react-native": "./src/pressable-with-hover/index.ts",
+      "import": {
+        "types": "./lib/typescript/module/pressable-with-hover/index.d.ts",
+        "default": "./lib/module/pressable-with-hover/index.js"
+      },
+      "require": {
+        "types": "./lib/typescript/commonjs/pressable-with-hover/index.d.ts",
+        "default": "./lib/commonjs/pressable-with-hover/index.js"
+      }
+    },
     "./icon-circle": {
       "react-native": "./src/icon-circle/index.tsx",
       "import": {
@@ -927,6 +960,7 @@
     "@types/react-native": "*",
     "@vitejs/plugin-react": "^6.0.2",
     "expo-font": "^56.0.5",
+    "expo-haptics": "~56.0.3",
     "expo-router": "^56.0.0",
     "jest": "^30.3.0",
     "jest-environment-jsdom": "^30.4.1",
@@ -951,6 +985,7 @@
   "peerDependencies": {
     "expo": "*",
     "expo-font": "*",
+    "expo-haptics": "*",
     "expo-router": ">=3.0.0",
     "react": ">=18.0.0",
     "react-dom": ">=18.0.0",
@@ -967,6 +1002,9 @@
       "optional": true
     },
     "expo-font": {
+      "optional": true
+    },
+    "expo-haptics": {
       "optional": true
     },
     "expo-router": {

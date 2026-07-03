@@ -40,6 +40,8 @@ export type {
 export { useInteractionState } from './hooks/useInteractionState';
 export { useDelayedLoading } from './hooks/useDelayedLoading';
 export { useThrottledValue } from './hooks/useThrottledValue';
+export { useHaptics, BloomHapticsProvider } from './hooks/useHaptics';
+export type { HapticStrength, BloomHapticsProviderProps } from './hooks/useHaptics';
 
 // Icons
 export * as Icons from './icons';
@@ -97,11 +99,19 @@ export * as Typography from './typography';
 export * as Skeleton from './skeleton';
 export * as Grid from './grid';
 export { Fill } from './fill';
+export { MediaInsetBorder } from './media-inset-border';
+export type { MediaInsetBorderProps } from './media-inset-border';
 export { IconCircle } from './icon-circle';
 export { ConnectionDots } from './connection-dots';
 export type { ConnectionDotsProps } from './connection-dots';
 export { BenefitRow, BenefitList } from './benefit-list';
 export type { BenefitRowProps, BenefitListProps } from './benefit-list';
+
+// Interaction primitives
+export { PressableScale } from './pressable-scale';
+export type { PressableScaleProps } from './pressable-scale';
+export { PressableWithHover } from './pressable-with-hover';
+export type { PressableWithHoverProps } from './pressable-with-hover';
 
 // Form components
 export * from './text-field';

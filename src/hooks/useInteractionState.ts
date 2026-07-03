@@ -1,5 +1,11 @@
-import { useCallback, useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 
+/**
+ * Tracks a single boolean interaction flag (hovered / focused / pressed).
+ *
+ * Returns a memoized `{ state, onIn, onOut }` with stable handler identities,
+ * suitable for spreading onto Pressable-like components.
+ */
 export function useInteractionState() {
   const [state, setState] = useState(false);
 
@@ -10,7 +16,7 @@ export function useInteractionState() {
     setState(false);
   }, []);
 
-  return { state, onIn, onOut };
+  return useMemo(() => ({ state, onIn, onOut }), [state, onIn, onOut]);
 }
 
 /**

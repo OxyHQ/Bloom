@@ -2,6 +2,7 @@ import { Platform } from 'react-native';
 import { APP_COLOR_PRESETS, type AppColorName } from './color-presets';
 import { getAdaptiveColors } from './adaptive-colors';
 import { getResolvedTokens, hslToSrgb } from './token-registry';
+import { THEME_GRADIENTS } from './gradients';
 import type { Theme, ThemeColors } from './types';
 
 /**
@@ -119,6 +120,7 @@ export function buildTheme(
   return {
     mode: resolved,
     colors,
+    gradients: THEME_GRADIENTS,
     isDark: resolved === 'dark',
     isLight: resolved === 'light',
   };

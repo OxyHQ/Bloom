@@ -5,6 +5,7 @@ import {
   hexToAppColorName,
 } from '../theme/color-presets';
 import { buildTheme } from '../theme/build-theme';
+import { THEME_GRADIENTS } from '../theme/gradients';
 import type { Theme, ThemeColors, ThemeMode } from '../theme/types';
 
 describe('Theme system', () => {
@@ -111,6 +112,7 @@ describe('Theme system', () => {
         isDark: false,
         isLight: true,
         colors: createMockColors(),
+        gradients: THEME_GRADIENTS,
       };
       expect(lightTheme.isDark).toBe(false);
       expect(lightTheme.isLight).toBe(true);
@@ -120,6 +122,7 @@ describe('Theme system', () => {
         isDark: true,
         isLight: false,
         colors: createMockColors(),
+        gradients: THEME_GRADIENTS,
       };
       expect(darkTheme.isDark).toBe(true);
       expect(darkTheme.isLight).toBe(false);
