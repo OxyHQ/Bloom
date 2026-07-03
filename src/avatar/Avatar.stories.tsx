@@ -19,6 +19,7 @@ const meta: Meta<typeof Avatar> = {
     verified: { control: 'boolean' },
     live: { control: 'boolean' },
     hideLiveBadge: { control: 'boolean' },
+    ring: { control: 'object' },
   },
 };
 
@@ -28,6 +29,13 @@ type Story = StoryObj<typeof Avatar>;
 
 const SAMPLE_URI =
   'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=200&h=200&fit=crop';
+
+// Sample Instagram-stories-style gradient, defined locally in the story only —
+// Bloom ships no such palette (it stays brand-neutral). Consumers supply their
+// own ring colors via the `ring` prop.
+const STORY_GRADIENT = ['#F58529', '#DD2A7B', '#8134AF', '#515BD4'];
+// Muted gray used by IG for an already-seen story.
+const SEEN_GRAY = '#C7C7CC';
 
 export const Basic: Story = {
   args: { size: 64, name: 'Nate Isern' },
@@ -117,4 +125,91 @@ export const LiveGallery: Story = {
     </View>
   ),
   name: 'Live (gallery)',
+};
+
+export const GradientRing: Story = {
+  args: {
+    size: 72,
+    uri: SAMPLE_URI,
+    ring: { colors: STORY_GRADIENT, width: 3, gap: 3 },
+  },
+  name: 'Gradient ring (stories)',
+};
+
+export const SeenVsUnseen: Story = {
+  render: () => (
+    <View style={{ flexDirection: 'row', gap: 20, alignItems: 'center' }}>
+      {/* Unseen → gradient ring. */}
+      <Avatar
+        size={72}
+        uri={SAMPLE_URI}
+        ring={{ colors: STORY_GRADIENT, width: 3, gap: 3 }}
+      />
+      {/* Seen → muted solid gray ring. */}
+      <Avatar
+        size={72}
+        uri={SAMPLE_URI}
+        ring={{ colors: SEEN_GRAY, width: 3, gap: 3 }}
+      />
+    </View>
+  ),
+  name: 'Seen vs unseen',
+};
+
+export const RingWithGap: Story = {
+  render: () => (
+    <View style={{ flexDirection: 'row', gap: 24, alignItems: 'center' }}>
+      {/* gap 0 → overlays the edge, footprint unchanged. */}
+      <Avatar size={72} uri={SAMPLE_URI} ring={{ colors: STORY_GRADIENT, width: 3, gap: 0 }} />
+      {/* gap 4 → sits outside the avatar, footprint grows. */}
+      <Avatar size={72} uri={SAMPLE_URI} ring={{ colors: STORY_GRADIENT, width: 3, gap: 4 }} />
+      {/* gap 8 → wider clearance. */}
+      <Avatar size={72} uri={SAMPLE_URI} ring={{ colors: STORY_GRADIENT, width: 4, gap: 8 }} />
+    </View>
+  ),
+  name: 'Ring with gap',
+};
+
+export const RingSquircle: Story = {
+  args: {
+    size: 72,
+    uri: SAMPLE_URI,
+    shape: 'squircle',
+    ring: { colors: STORY_GRADIENT, width: 3, gap: 3 },
+  },
+  name: 'Gradient ring (squircle)',
+};
+
+export const SolidRing: Story = {
+  render: () => (
+    <View style={{ flexDirection: 'row', gap: 20, alignItems: 'center' }}>
+      <Avatar size={72} uri={SAMPLE_URI} ring={{ colors: '#1A73E8', width: 3 }} />
+      <Avatar size={72} uri={SAMPLE_URI} shape="squircle" ring={{ colors: '#1A73E8', width: 3 }} />
+      <Avatar size={72} uri={SAMPLE_URI} ring={{ colors: '#1A73E8', width: 3, gap: 4 }} />
+    </View>
+  ),
+  name: 'Solid ring',
+};
+
+export const GradientDirections: Story = {
+  render: () => (
+    <View style={{ flexDirection: 'row', gap: 20, alignItems: 'center' }}>
+      <Avatar
+        size={72}
+        uri={SAMPLE_URI}
+        ring={{ colors: STORY_GRADIENT, width: 3, gap: 3, gradientDirection: 'diagonal' }}
+      />
+      <Avatar
+        size={72}
+        uri={SAMPLE_URI}
+        ring={{ colors: STORY_GRADIENT, width: 3, gap: 3, gradientDirection: 'horizontal' }}
+      />
+      <Avatar
+        size={72}
+        uri={SAMPLE_URI}
+        ring={{ colors: STORY_GRADIENT, width: 3, gap: 3, gradientDirection: 'vertical' }}
+      />
+    </View>
+  ),
+  name: 'Gradient directions',
 };

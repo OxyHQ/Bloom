@@ -5,6 +5,20 @@ import type { ImageResolver } from '../image-resolver/context';
 
 export type AvatarShape = 'circle' | 'squircle';
 
+/** Gradient sweep direction for a multi-color {@link AvatarRingConfig}. */
+export type AvatarRingGradientDirection = 'diagonal' | 'horizontal' | 'vertical';
+
+export interface AvatarRingConfig {
+  /** Solid ring: one color. Gradient ring: 2+ colors. */
+  colors: string | string[];
+  /** Ring stroke width in px. Default: size > 16 ? 2 : 1. */
+  width?: number;
+  /** Gap between avatar edge and ring. Default 0 (ring overlays the edge). */
+  gap?: number;
+  /** Gradient sweep direction for multi-color rings. Default 'diagonal'. */
+  gradientDirection?: AvatarRingGradientDirection;
+}
+
 export interface AvatarProps {
   /**
    * Flexible image source — accepts a URL string, an ImageSourcePropType
@@ -70,5 +84,23 @@ export interface AvatarProps {
    * live treatments.
    */
   liveColor?: string;
+  /**
+   * Decorative ring drawn around the avatar. Pass a single color string for a
+   * solid ring, or an array of 2+ colors for a gradient ring (e.g. an
+   * Instagram-stories ring). The gradient form requires `react-native-svg`
+   * (falls back to a solid ring of the first color if it is not installed).
+   *
+   * When `gap` is 0 (default) the ring overlays the avatar edge and the
+   * component's footprint is unchanged. When `gap` > 0 the ring is drawn OUTSIDE
+   * the avatar and the rendered footprint grows to `size + 2*(width + gap)` with
+   * the avatar centered inside (matching how Instagram-stories rings sit outside
+   * the avatar).
+   *
+   * `live` is sugar over this same primitive: when set (and no explicit `ring`
+   * is passed) it renders a solid theme-`negative` ring plus the "LIVE" badge.
+   * An explicit `ring` always wins for geometry and colors; the badge stays
+   * controlled by `live`/`hideLiveBadge`.
+   */
+  ring?: AvatarRingConfig;
   testID?: string;
 }
