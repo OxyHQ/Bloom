@@ -14,15 +14,15 @@ export default meta;
 
 type Story = StoryObj<typeof SubtleHover>;
 
-/** A row that washes its background as the pointer enters (web). */
-function HoverRow({ label, native }: { label: string; native?: boolean }) {
-  const { state: hovered, onIn, onOut } = useInteractionState();
-
+/**
+ * Pure-CSS `group-hover`: the parent carries `className="group"` and the wash
+ * fades in on hover with ZERO React state (web only).
+ */
+function HoverRow({ label }: { label: string }) {
   return (
     <Pressable
+      {...({ className: 'group' } as Record<string, string>)}
       accessibilityLabel={label}
-      onHoverIn={onIn}
-      onHoverOut={onOut}
       style={{
         width: 280,
         paddingVertical: 14,
@@ -31,34 +31,14 @@ function HoverRow({ label, native }: { label: string; native?: boolean }) {
         overflow: 'hidden',
       }}
     >
-      <SubtleHover hover={hovered} native={native} style={{ borderRadius: 12 }} />
+      <SubtleHover style={{ borderRadius: 12 }} />
       <Text style={{ fontWeight: '600' }}>{label}</Text>
     </Pressable>
   );
 }
 
-export const ListRow: Story = {
-  render: () => <HoverRow label="Hover me (web)" />,
-};
-
-export const StrongerWash: Story = {
-  render: () => {
-    function Row() {
-      const { state: hovered, onIn, onOut } = useInteractionState();
-      return (
-        <Pressable
-          accessibilityLabel="Stronger wash"
-          onHoverIn={onIn}
-          onHoverOut={onOut}
-          style={{ width: 280, padding: 16, borderRadius: 12, overflow: 'hidden' }}
-        >
-          <SubtleHover hover={hovered} opacity={0.85} style={{ borderRadius: 12 }} />
-          <Text style={{ fontWeight: '600' }}>Higher opacity override</Text>
-        </Pressable>
-      );
-    }
-    return <Row />;
-  },
+export const GroupHover: Story = {
+  render: () => <HoverRow label="Hover me (web, group-hover)" />,
 };
 
 export const Stack: Story = {
@@ -69,4 +49,37 @@ export const Stack: Story = {
       <HoverRow label="Drafts" />
     </View>
   ),
+};
+
+/**
+ * JS `active` mode: hovering anywhere in the thread lights EVERY row together
+ * (a coordinated highlight a per-element `group-hover` can't express). `native`
+ * is opted in so the same wash shows on native surfaces too.
+ */
+export const CoordinatedThread: Story = {
+  render: () => {
+    function Thread() {
+      const { state: hovered, onIn, onOut } = useInteractionState();
+      return (
+        <Pressable onHoverIn={onIn} onHoverOut={onOut} style={{ gap: 4 }}>
+          {['First reply', 'Second reply', 'Third reply'].map((label) => (
+            <View
+              key={label}
+              style={{
+                width: 280,
+                paddingVertical: 14,
+                paddingHorizontal: 16,
+                borderRadius: 12,
+                overflow: 'hidden',
+              }}
+            >
+              <SubtleHover active={hovered} native style={{ borderRadius: 12 }} />
+              <Text style={{ fontWeight: '600' }}>{label}</Text>
+            </View>
+          ))}
+        </Pressable>
+      );
+    }
+    return <Thread />;
+  },
 };

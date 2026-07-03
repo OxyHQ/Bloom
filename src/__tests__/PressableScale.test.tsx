@@ -26,4 +26,13 @@ describe('PressableScale', () => {
     );
     expect(getByText('Scaled')).toBeTruthy();
   });
+
+  it('applies style to the pressable node that scales', () => {
+    const { getByText } = render(
+      <PressableScale style={{ flexDirection: 'row' }} accessibilityLabel="Row">
+        <Text>Row content</Text>
+      </PressableScale>,
+    );
+    expect(getByText('Row content')).toBeTruthy();
+  });
 });

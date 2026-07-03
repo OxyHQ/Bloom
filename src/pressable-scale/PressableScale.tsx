@@ -32,38 +32,32 @@ const IS_WEB_TOUCH_DEVICE =
 
 const SCALE_SUPPORTED = Platform.OS !== 'web' || IS_WEB_TOUCH_DEVICE;
 
-export interface PressableScaleProps
-  extends Omit<PressableProps, 'children' | 'style'> {
+/**
+ * A single animated `Pressable`, built once at module scope so the animated
+ * node identity is stable across renders.
+ */
+const AnimatedPressable = Animated.createAnimatedComponent(Pressable);
+
+export interface PressableScaleProps extends Omit<PressableProps, 'style'> {
   /** Scale applied while pressed. Defaults to `0.98`. */
   targetScale?: number;
-  /** Style for the outer, full-size touch target (stays put while pressing). */
+  /** Style applied to the pressable itself — the node that scales. */
   style?: StyleProp<ViewStyle>;
-  /** Style for the inner content wrapper that actually scales. */
-  contentContainerStyle?: StyleProp<ViewStyle>;
-  children?: React.ReactNode;
 }
 
 /**
- * A drop-in {@link Pressable} whose content springs to a smaller scale on
- * press-in and back on release. The outer pressable stays full size (so the
- * touch target never shrinks) while an inner wrapper scales.
+ * A drop-in {@link Pressable} that springs to a smaller scale on press-in and
+ * back on release. The scale is applied to the pressable node itself, so a
+ * consumer's `className` / layout styles (e.g. `flex-row items-center`) land on
+ * the same node that animates.
  *
+ * The touch target scales with the content — acceptable at the default ~0.98
+ * (the earlier two-node touch-target-preservation was dropped for simplicity).
  * Honours the OS "reduce motion" setting and disables the effect on non-touch
  * web pointers.
  */
 export const PressableScale = forwardRef<View, PressableScaleProps>(
-  function PressableScale(
-    {
-      targetScale = 0.98,
-      style,
-      contentContainerStyle,
-      children,
-      onPressIn,
-      onPressOut,
-      ...rest
-    },
-    ref,
-  ) {
+  function PressableScale({ targetScale = 0.98, style, onPressIn, onPressOut, ...rest }, ref) {
     const reducedMotion = useReducedMotion();
     const animate = SCALE_SUPPORTED && !reducedMotion;
 
@@ -74,7 +68,7 @@ export const PressableScale = forwardRef<View, PressableScaleProps>(
     }));
 
     return (
-      <Pressable
+      <AnimatedPressable
         ref={ref}
         accessibilityRole="button"
         onPressIn={(e) => {
@@ -89,13 +83,9 @@ export const PressableScale = forwardRef<View, PressableScaleProps>(
           cancelAnimation(scale);
           scale.value = withTiming(1, { duration: DURATION });
         }}
-        style={style}
+        style={[animate ? animatedStyle : null, style]}
         {...rest}
-      >
-        <Animated.View style={[animate ? animatedStyle : null, contentContainerStyle]}>
-          {children}
-        </Animated.View>
-      </Pressable>
+      />
     );
   },
 );
