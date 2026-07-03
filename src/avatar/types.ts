@@ -49,5 +49,26 @@ export interface AvatarProps {
   name?: string;
   /** Press handler — wraps avatar in TouchableOpacity when provided */
   onPress?: () => void;
+  /**
+   * When true, marks the user as live-streaming: draws a solid red ring that
+   * overlays the avatar edge and, unless `hideLiveBadge` is set, a small red
+   * "LIVE" pill hanging off the bottom-center. Static (no animation). The badge
+   * is only shown for `size > 16`.
+   */
+  live?: boolean;
+  /** Suppress the "LIVE" pill badge while keeping the live ring (ring only). */
+  hideLiveBadge?: boolean;
+  /**
+   * Text shown inside the live badge. Defaults to `'LIVE'`. Provide a localized
+   * string for i18n — keep it extremely short (≈4 characters) as there is very
+   * little room.
+   */
+  liveLabel?: string;
+  /**
+   * Override color for the live ring and badge background. Defaults to the theme
+   * `negative` token. Prefer the theme default; only override for brand-specific
+   * live treatments.
+   */
+  liveColor?: string;
   testID?: string;
 }

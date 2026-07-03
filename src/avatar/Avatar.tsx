@@ -7,6 +7,7 @@ import { useImageResolver } from '../image-resolver/context';
 import { Z_INDEX } from '../styles/z-index';
 import { lazyRequire } from '../utils/lazy-require';
 import { useAvatarPlaceholder } from './placeholder-context';
+import { LiveBadge } from './LiveBadge';
 import type { AvatarProps } from './types';
 
 // Google Contacts-inspired palette used to pick a deterministic background
@@ -53,6 +54,18 @@ let clipIdCounter = 0;
 type SvgModuleType = typeof import('react-native-svg');
 const getSvgModule = lazyRequire<SvgModuleType>('react-native-svg');
 
+/**
+ * Live-ring drawing config passed down to shape renderers.
+ * - `color`: resolved ring color (theme `negative` or `liveColor` override).
+ * - `strokeWidth`: stroke width in the squircle's 0–1 path coordinate space.
+ * - `borderWidth`: ring border width in pixels for the circle fallback.
+ */
+interface LiveRingConfig {
+  color: string;
+  strokeWidth: number;
+  borderWidth: number;
+}
+
 function SquircleImage({
   uri,
   fallbackSource,
@@ -61,6 +74,7 @@ function SquircleImage({
   placeholderIcon,
   name,
   onError,
+  liveRing,
 }: {
   uri?: string;
   fallbackSource?: AvatarProps['fallbackSource'];
@@ -69,11 +83,20 @@ function SquircleImage({
   placeholderIcon?: React.ReactNode;
   name?: string;
   onError: () => void;
+  liveRing?: LiveRingConfig;
 }) {
   const svg = getSvgModule();
   if (!svg) {
-    // Fallback to circle if react-native-svg is not installed
-    return <CircleFallback size={size} fallbackColor={fallbackColor} icon={placeholderIcon} name={name} />;
+    // Fallback to circle if react-native-svg is not installed. The circle
+    // fallback also gets a circle live ring (matching its rendered shape).
+    return (
+      <>
+        <CircleFallback size={size} fallbackColor={fallbackColor} icon={placeholderIcon} name={name} />
+        {liveRing && (
+          <CircleLiveRing radius={size / 2} color={liveRing.color} borderWidth={liveRing.borderWidth} />
+        )}
+      </>
+    );
   }
 
   const { default: Svg, Defs, ClipPath, Path, Image: SvgImage } = svg;
@@ -81,7 +104,14 @@ function SquircleImage({
 
   const href = uri ? { uri } : fallbackSource;
   if (!href) {
-    return <CircleFallback size={size} fallbackColor={fallbackColor} icon={placeholderIcon} name={name} />;
+    return (
+      <>
+        <CircleFallback size={size} fallbackColor={fallbackColor} icon={placeholderIcon} name={name} />
+        {liveRing && (
+          <CircleLiveRing radius={size / 2} color={liveRing.color} borderWidth={liveRing.borderWidth} />
+        )}
+      </>
+    );
   }
 
   return (
@@ -107,6 +137,18 @@ function SquircleImage({
           preserveAspectRatio="xMidYMid slice"
           clipPath={`url(#${clipId})`}
         />
+        {/* Live ring: the squircle outline stroked in the ring color. The
+            path lives in 0–1 space, so the stroke width is expressed in the
+            same units; the outer half is clipped by the SVG viewport, leaving
+            a ~borderWidth-px inset ring on the squircle edge. */}
+        {liveRing && (
+          <Path
+            d={SQUIRCLE_PATH}
+            fill="none"
+            stroke={liveRing.color}
+            strokeWidth={liveRing.strokeWidth}
+          />
+        )}
       </Svg>
     </>
   );
@@ -166,6 +208,37 @@ function CircleFallback({
   );
 }
 
+/**
+ * Solid live ring for circular avatars — an absolutely-positioned inset-0
+ * overlay whose border overlays the avatar edge (drawn on top of the image,
+ * never a border on the image itself). Also used as the fallback ring for a
+ * squircle avatar when react-native-svg is unavailable.
+ */
+function CircleLiveRing({
+  radius,
+  color,
+  borderWidth,
+}: {
+  radius: number;
+  color: string;
+  borderWidth: number;
+}) {
+  return (
+    <View
+      style={[
+        StyleSheet.absoluteFill,
+        {
+          borderRadius: radius,
+          borderColor: color,
+          borderWidth,
+          zIndex: Z_INDEX.raised,
+          pointerEvents: 'none',
+        },
+      ]}
+    />
+  );
+}
+
 const AvatarComponent: React.FC<AvatarProps> = ({
   source,
   uri,
@@ -181,6 +254,10 @@ const AvatarComponent: React.FC<AvatarProps> = ({
   placeholderIcon,
   name,
   onPress,
+  live = false,
+  hideLiveBadge = false,
+  liveLabel = 'LIVE',
+  liveColor,
   testID,
 }) => {
   const [errored, setErrored] = useState(false);
@@ -246,6 +323,23 @@ const AvatarComponent: React.FC<AvatarProps> = ({
     return fallbackSource;
   }, [effectiveUri, resolvedImageSource, fallbackSource]);
 
+  // Live indicator (modeled on Bluesky): a solid ring around the avatar plus,
+  // unless suppressed, a "LIVE" pill hanging off the bottom-center. Colors come
+  // from the theme (`negative` / `negativeForeground`) with an optional
+  // `liveColor` override. The badge is only shown for `size > 16`.
+  const liveRingColor = liveColor ?? theme.colors.negative;
+  const liveBorderWidth = size > 16 ? 2 : 1;
+  const liveRing: LiveRingConfig | undefined = live
+    ? {
+        color: liveRingColor,
+        // The squircle path is in 0–1 space; center-stroking it and letting the
+        // viewport clip the outer half yields a ~`liveBorderWidth`-px inset ring.
+        strokeWidth: (liveBorderWidth / size) * 2,
+        borderWidth: liveBorderWidth,
+      }
+    : undefined;
+  const showLiveBadge = live && size > 16 && !hideLiveBadge;
+
   const content = (
     <View style={[styles.container, { width: size, height: size }, style]} testID={testID}>
       {shape === 'squircle' ? (
@@ -257,6 +351,7 @@ const AvatarComponent: React.FC<AvatarProps> = ({
           placeholderIcon={resolvedPlaceholderIcon}
           name={name}
           onError={() => setErrored(true)}
+          liveRing={liveRing}
         />
       ) : (
         <View style={[styles.imageContainer, { width: size, height: size, borderRadius: radius }]}>
@@ -278,6 +373,12 @@ const AvatarComponent: React.FC<AvatarProps> = ({
         </View>
       )}
 
+      {/* Circle live ring — overlays the avatar edge. The squircle shape draws
+          its own ring inside SquircleImage (SVG path or circle fallback). */}
+      {live && shape !== 'squircle' && (
+        <CircleLiveRing radius={radius} color={liveRingColor} borderWidth={liveBorderWidth} />
+      )}
+
       {verified && verifiedIcon && (
         <View
           style={[
@@ -290,6 +391,15 @@ const AvatarComponent: React.FC<AvatarProps> = ({
         >
           {verifiedIcon}
         </View>
+      )}
+
+      {showLiveBadge && (
+        <LiveBadge
+          variant={size > 32 ? 'small' : 'tiny'}
+          label={liveLabel}
+          backgroundColor={liveRingColor}
+          textColor={theme.colors.negativeForeground}
+        />
       )}
     </View>
   );

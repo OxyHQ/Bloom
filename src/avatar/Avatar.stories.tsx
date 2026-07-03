@@ -3,6 +3,7 @@ import { View } from 'react-native';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
 import { Avatar } from './Avatar';
+import { Verified_Stroke2_Corner2_Rounded } from '../icons/Verified';
 
 const meta: Meta<typeof Avatar> = {
   title: 'Components/Avatar',
@@ -16,6 +17,8 @@ const meta: Meta<typeof Avatar> = {
       options: ['circle', 'squircle'],
     },
     verified: { control: 'boolean' },
+    live: { control: 'boolean' },
+    hideLiveBadge: { control: 'boolean' },
   },
 };
 
@@ -66,4 +69,52 @@ export const Composition: Story = {
       <Avatar size={48} name="Margaret Hamilton" />
     </View>
   ),
+};
+
+export const LiveCircle: Story = {
+  args: { size: 72, uri: SAMPLE_URI, live: true },
+  name: 'Live (circle)',
+};
+
+export const LiveSquircle: Story = {
+  args: { size: 72, uri: SAMPLE_URI, live: true, shape: 'squircle' },
+  name: 'Live (squircle)',
+};
+
+export const LiveSmall: Story = {
+  // size <= 32 → tiny badge variant
+  args: { size: 28, uri: SAMPLE_URI, live: true },
+  name: 'Live (small · tiny badge)',
+};
+
+export const LiveRingOnly: Story = {
+  args: { size: 72, uri: SAMPLE_URI, live: true, hideLiveBadge: true },
+  name: 'Live + hideLiveBadge (ring only)',
+};
+
+export const LiveVerified: Story = {
+  args: {
+    size: 72,
+    uri: SAMPLE_URI,
+    live: true,
+    verified: true,
+    verifiedIcon: (
+      <Verified_Stroke2_Corner2_Rounded size="lg" fill="#1D9BF0" />
+    ),
+  },
+  name: 'Live + verified',
+};
+
+export const LiveGallery: Story = {
+  render: () => (
+    <View style={{ flexDirection: 'row', gap: 20, alignItems: 'center' }}>
+      <Avatar size={24} uri={SAMPLE_URI} live />
+      <Avatar size={32} uri={SAMPLE_URI} live />
+      <Avatar size={48} uri={SAMPLE_URI} live />
+      <Avatar size={72} uri={SAMPLE_URI} live />
+      <Avatar size={72} uri={SAMPLE_URI} live shape="squircle" />
+      <Avatar size={72} uri={SAMPLE_URI} live liveLabel="EN VIVO" />
+    </View>
+  ),
+  name: 'Live (gallery)',
 };
