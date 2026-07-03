@@ -19,6 +19,7 @@ const Reanimated = {
     return ref.current;
   },
   useAnimatedStyle: (fn: () => Record<string, unknown>) => fn(),
+  useAnimatedProps: (fn: () => Record<string, unknown>) => fn(),
   useAnimatedScrollHandler: () => jest.fn(),
   // Reduced motion defaults to off in tests; suites that need it on can override.
   useReducedMotion: () => false,
@@ -28,6 +29,8 @@ const Reanimated = {
     return val;
   },
   withRepeat: (val: number, _count?: number, _reverse?: boolean) => val,
+  withDelay: (_delay: number, val: number) => val,
+  withSequence: (...vals: number[]) => (vals.length > 0 ? vals[vals.length - 1] : 0),
   interpolate: (value: number, inputRange: number[], outputRange: number[]) => {
     if (inputRange.length < 2 || outputRange.length < 2) return outputRange[0] ?? 0;
     const ratio = (value - inputRange[0]!) / (inputRange[1]! - inputRange[0]!);
@@ -37,25 +40,64 @@ const Reanimated = {
   cancelAnimation: (_sv: unknown) => {},
   Easing: {
     out: (fn: unknown) => fn,
+    in: (fn: unknown) => fn,
+    inOut: (fn: unknown) => fn,
     cubic: (t: number) => t * t * t,
     linear: (t: number) => t,
+    exp: (t: number) => t,
+    ease: (t: number) => t,
+    bezier: () => (t: number) => t,
   },
   default: {
     View: 'Animated.View',
     Text: 'Animated.Text',
     ScrollView: 'Animated.ScrollView',
+    createAnimatedComponent: (component: unknown) => component,
   },
   ScrollView: 'Animated.ScrollView',
 };
 
+// Layout-animation builders (`FadeIn`, `SlideInRight`, …). The real package
+// exposes chainable static configurators (`.duration()`, `.easing()`, …); the
+// mock returns a self-chaining stub so `entering=`/`exiting=` props resolve.
+// The string host used for `Animated.View` ignores the value at render time.
+type LayoutBuilder = {
+  duration: (ms: number) => LayoutBuilder;
+  delay: (ms: number) => LayoutBuilder;
+  easing: (fn: unknown) => LayoutBuilder;
+  springify: () => LayoutBuilder;
+  build: () => () => { initialValues: Record<string, unknown>; animations: Record<string, unknown> };
+};
+
+const makeLayoutBuilder = (): LayoutBuilder => {
+  const builder: LayoutBuilder = {
+    duration: () => builder,
+    delay: () => builder,
+    easing: () => builder,
+    springify: () => builder,
+    build: () => () => ({ initialValues: {}, animations: {} }),
+  };
+  return builder;
+};
+
+export const FadeIn = makeLayoutBuilder();
+export const FadeOut = makeLayoutBuilder();
+export const SlideInLeft = makeLayoutBuilder();
+export const SlideInRight = makeLayoutBuilder();
+export const SlideOutLeft = makeLayoutBuilder();
+export const SlideOutRight = makeLayoutBuilder();
+
 export const useSharedValue = Reanimated.useSharedValue;
 export const useDerivedValue = Reanimated.useDerivedValue;
 export const useAnimatedStyle = Reanimated.useAnimatedStyle;
+export const useAnimatedProps = Reanimated.useAnimatedProps;
 export const useAnimatedScrollHandler = Reanimated.useAnimatedScrollHandler;
 export const useReducedMotion = Reanimated.useReducedMotion;
 export const withSpring = Reanimated.withSpring;
 export const withTiming = Reanimated.withTiming;
 export const withRepeat = Reanimated.withRepeat;
+export const withDelay = Reanimated.withDelay;
+export const withSequence = Reanimated.withSequence;
 export const interpolate = Reanimated.interpolate;
 export const runOnJS = Reanimated.runOnJS;
 export const cancelAnimation = Reanimated.cancelAnimation;

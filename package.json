@@ -404,6 +404,39 @@
         "default": "./lib/commonjs/pressable-with-hover/index.js"
       }
     },
+    "./subtle-hover": {
+      "react-native": "./src/subtle-hover/index.ts",
+      "import": {
+        "types": "./lib/typescript/module/subtle-hover/index.d.ts",
+        "default": "./lib/module/subtle-hover/index.js"
+      },
+      "require": {
+        "types": "./lib/typescript/commonjs/subtle-hover/index.d.ts",
+        "default": "./lib/commonjs/subtle-hover/index.js"
+      }
+    },
+    "./motion": {
+      "react-native": "./src/motion/index.ts",
+      "import": {
+        "types": "./lib/typescript/module/motion/index.d.ts",
+        "default": "./lib/module/motion/index.js"
+      },
+      "require": {
+        "types": "./lib/typescript/commonjs/motion/index.d.ts",
+        "default": "./lib/commonjs/motion/index.js"
+      }
+    },
+    "./animated-check": {
+      "react-native": "./src/animated-check/index.ts",
+      "import": {
+        "types": "./lib/typescript/module/animated-check/index.d.ts",
+        "default": "./lib/module/animated-check/index.js"
+      },
+      "require": {
+        "types": "./lib/typescript/commonjs/animated-check/index.d.ts",
+        "default": "./lib/commonjs/animated-check/index.js"
+      }
+    },
     "./icon-circle": {
       "react-native": "./src/icon-circle/index.tsx",
       "import": {

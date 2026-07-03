@@ -47,6 +47,8 @@ export { useDelayedLoading } from './hooks/useDelayedLoading';
 export { useThrottledValue } from './hooks/useThrottledValue';
 export { useHaptics, BloomHapticsProvider } from './hooks/useHaptics';
 export type { HapticStrength, BloomHapticsProviderProps } from './hooks/useHaptics';
+export { useGutters } from './hooks/useGutters';
+export type { Gutter, Gutters } from './hooks/useGutters';
 
 // Icons
 export * as Icons from './icons';
@@ -117,6 +119,14 @@ export { PressableScale } from './pressable-scale';
 export type { PressableScaleProps } from './pressable-scale';
 export { PressableWithHover } from './pressable-with-hover';
 export type { PressableWithHoverProps } from './pressable-with-hover';
+export { SubtleHover } from './subtle-hover';
+export type { SubtleHoverProps } from './subtle-hover';
+
+// Motion presets (Reanimated enter/exit + directional screen transition)
+export { ScaleAndFadeIn, ScaleAndFadeOut, ShrinkAndPop, ScreenTransition } from './motion';
+export type { ScreenTransitionProps, ScreenTransitionDirection } from './motion';
+export { AnimatedCheck } from './animated-check';
+export type { AnimatedCheckProps, AnimatedCheckRef } from './animated-check';
 
 // Form components
 export * from './text-field';

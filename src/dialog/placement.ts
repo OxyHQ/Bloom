@@ -1,6 +1,8 @@
 import { useMemo } from 'react';
 import { useWindowDimensions } from 'react-native';
 
+import { BREAKPOINTS } from '../styles/breakpoints';
+
 /**
  * Anchor a `<Dialog>` can render against.
  *
@@ -31,14 +33,15 @@ export type ResponsiveDialogPlacement =
     };
 
 /**
- * Tailwind-default breakpoints (px). A responsive `placement` map resolves to
- * the value for the largest key whose min-width is `<=` the current viewport
- * width, falling back to `base`.
+ * Tailwind-default breakpoints (px), re-exported from the canonical
+ * {@link BREAKPOINTS} source. A responsive `placement` map resolves to the value
+ * for the largest key whose min-width is `<=` the current viewport width,
+ * falling back to `base`.
  */
-export const BREAKPOINT_SM = 640;
-export const BREAKPOINT_MD = 768;
-export const BREAKPOINT_LG = 1024;
-export const BREAKPOINT_XL = 1280;
+export const BREAKPOINT_SM = BREAKPOINTS.sm;
+export const BREAKPOINT_MD = BREAKPOINTS.md;
+export const BREAKPOINT_LG = BREAKPOINTS.lg;
+export const BREAKPOINT_XL = BREAKPOINTS.xl;
 
 /** Ordered breakpoint table, widest first, so the first match wins. */
 const RESPONSIVE_KEYS = [
