@@ -88,31 +88,12 @@ const ContentPanelComponent: React.FC<ContentPanelProps> = ({
   useContentPanelNestingGuard();
   const { colors } = useTheme();
 
-  if (!framed) {
-    // Full-bleed: a single flat surface. No rounding, no sticky overlays.
-    const fullBleedClass = [
-      'flex-1',
-      surfaceClassName ?? 'bg-card',
-      contentClassName,
-    ]
-      .filter(Boolean)
-      .join(' ');
-    return (
-      <ContentPanelNestingContext.Provider value={true}>
-        <View
-          {...({ className: fullBleedClass } as Record<string, string>)}
-          style={[surfaceStyle, contentStyle]}
-        >
-          {children}
-        </View>
-      </ContentPanelNestingContext.Provider>
-    );
-  }
-
-  const surfaceClass = ['flex-1', 'rounded-radius-28', surfaceClassName ?? 'bg-card'].join(' ');
-  const contentClass = ['flex-1', 'rounded-radius-28 web:overflow-x-clip', contentClassName]
-    .filter(Boolean)
-    .join(' ');
+  const surfaceClass = framed
+    ? ['flex-1 rounded-radius-28', surfaceClassName ?? 'bg-card'].join(' ')
+    : ['flex-1', surfaceClassName ?? 'bg-card'].join(' ');
+  const contentClass = framed
+    ? ['flex-1 rounded-radius-28 web:overflow-x-clip', contentClassName].filter(Boolean).join(' ')
+    : ['flex-1', contentClassName].filter(Boolean).join(' ');
 
   return (
     <ContentPanelNestingContext.Provider value={true}>
@@ -120,18 +101,22 @@ const ContentPanelComponent: React.FC<ContentPanelProps> = ({
         {...({ className: surfaceClass } as Record<string, string>)}
         style={surfaceStyle}
       >
-        {/* (1) Bleed-mask overlay — gutter box-shadow ring, below chrome. */}
-        <View
-          pointerEvents="none"
-          {...({
-            className:
-              'web:sticky web:top-2 z-30 h-[calc(100dvh-16px)] w-full rounded-radius-28 web:[margin-bottom:calc(-100dvh+16px)] web:[clip-path:inset(-12px)]',
-          } as Record<string, string>)}
-          style={{ boxShadow: `0 0 0 ${GUTTER_MASK_SPREAD}px ${maskColor ?? colors.background}` }}
-        />
-        {/* (2) Border-frame overlay — one continuous rounded border, above all. */}
-        {showStickyFrame !== false && (
+        {/* (1) Bleed-mask overlay — gutter box-shadow ring, below chrome. Framed only. */}
+        {framed && (
           <View
+            key="bleed-mask"
+            pointerEvents="none"
+            {...({
+              className:
+                'web:sticky web:top-2 z-30 h-[calc(100dvh-16px)] w-full rounded-radius-28 web:[margin-bottom:calc(-100dvh+16px)] web:[clip-path:inset(-12px)]',
+            } as Record<string, string>)}
+            style={{ boxShadow: `0 0 0 ${GUTTER_MASK_SPREAD}px ${maskColor ?? colors.background}` }}
+          />
+        )}
+        {/* (2) Border-frame overlay — one continuous rounded border, above all. Framed only. */}
+        {framed && showStickyFrame !== false && (
+          <View
+            key="border-frame"
             pointerEvents="none"
             {...({
               className:
@@ -139,8 +124,12 @@ const ContentPanelComponent: React.FC<ContentPanelProps> = ({
             } as Record<string, string>)}
           />
         )}
-        {/* Content wrapper — clipped to the rounded panel shape on web. */}
+        {/* Content wrapper — STABLE position + key so toggling `framed` reconciles
+            in place instead of remounting `{children}` (which would reset feed
+            scroll/virtualizer + refetch on a breakpoint cross). Clipped to the
+            rounded panel shape on web when framed. */}
         <View
+          key="content"
           {...({ className: contentClass } as Record<string, string>)}
           style={contentStyle}
         >
