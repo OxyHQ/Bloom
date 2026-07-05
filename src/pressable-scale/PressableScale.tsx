@@ -65,7 +65,7 @@ export const PressableScale = forwardRef<View, PressableScaleProps>(
 
     const animatedStyle = useAnimatedStyle(() => ({
       transform: [{ scale: scale.value }],
-    }));
+    }), []);
 
     return (
       <AnimatedPressable

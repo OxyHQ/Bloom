@@ -92,12 +92,12 @@ const TopLoading: React.FC<TopLoadingProps> = ({
 
   const containerAnimated = useAnimatedStyle(() => ({
     height: height.value,
-  }));
+  }), []);
 
   const innerAnimated = useAnimatedStyle(() => ({
     opacity: opacity.value,
     transform: [{ translateY: translateY.value }],
-  }));
+  }), []);
 
   return (
     <Animated.View style={[styles.topContainer, containerAnimated]} testID={testID}>

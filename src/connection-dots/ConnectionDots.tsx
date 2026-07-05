@@ -41,9 +41,9 @@ const ShimmerDot: React.FC<ShimmerDotProps> = ({ phase, color, size, driver }) =
     const t = (driver.value + phase) % 1;
     const wave = 1 - Math.abs(t * 2 - 1);
     return interpolate(wave, [0, 1], [DOT_DIM, 1]);
-  });
+  }, [phase]);
 
-  const animatedStyle = useAnimatedStyle(() => ({ opacity: opacity.value }));
+  const animatedStyle = useAnimatedStyle(() => ({ opacity: opacity.value }), []);
 
   return (
     <Animated.View

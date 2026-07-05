@@ -398,7 +398,7 @@ function SideSheet({
 
   const backdropAnimatedStyle = useAnimatedStyle(() => ({
     opacity: progress.value * SHEET_BACKDROP_OPACITY,
-  }));
+  }), []);
 
   const hiddenSign = side === 'left' ? -1 : 1;
   const panelAnimatedStyle = useAnimatedStyle(() => {

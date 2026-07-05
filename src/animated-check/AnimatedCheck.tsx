@@ -77,10 +77,10 @@ const AnimatedCheckSvg = forwardRef<AnimatedCheckRef, AnimatedCheckSvgProps>(
 
     const circleAnimatedProps = useAnimatedProps(() => ({
       strokeDashoffset: CIRCLE_LENGTH - circleProgress.value * CIRCLE_LENGTH,
-    }));
+    }), []);
     const checkAnimatedProps = useAnimatedProps(() => ({
       strokeDashoffset: CHECK_LENGTH - CHECK_LENGTH * checkProgress.value,
-    }));
+    }), []);
 
     const play = useCallback(() => {
       circleProgress.value = 0;

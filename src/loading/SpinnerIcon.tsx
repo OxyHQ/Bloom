@@ -60,7 +60,7 @@ const AnimatedSpinner: React.FC<AnimatedSpinnerProps> = ({
 
   const animatedStyle = useAnimatedStyle(() => ({
     transform: [{ rotate: `${rotation.value}deg` }],
-  }));
+  }), []);
 
   return (
     <Animated.View

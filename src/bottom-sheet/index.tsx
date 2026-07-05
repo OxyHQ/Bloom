@@ -623,7 +623,7 @@ const BottomSheet = forwardRef((props: BottomSheetProps, ref: React.ForwardedRef
                 { scale },
             ],
         };
-    });
+    }, []);
 
     const sheetHeightStyle = useAnimatedStyle(() => ({
         maxHeight: screenHeightSV.value - keyboardHeight.value - insets.top - (detached ? insets.bottom + 16 : 0),
@@ -654,7 +654,7 @@ const BottomSheet = forwardRef((props: BottomSheetProps, ref: React.ForwardedRef
             scrollOffsetY.value = event.contentOffset.y;
             isScrollAtTop.value = event.contentOffset.y <= 0;
         },
-    });
+    }, []);
 
     const dynamicStyles = useMemo(() => {
         return StyleSheet.create({
