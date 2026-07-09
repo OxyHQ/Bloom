@@ -99,3 +99,11 @@ setColorPreset("blue") // Updates context + CSS vars on web
 
 - Platform-agnostic code by default; platform-specific behavior goes in dedicated `.native.ts`/`.web.ts` files
 - `apply-dark-class.ts` handles dark mode class AND CSS var injection on web (no-op on native)
+
+## Cursor Cloud specific instructions
+
+- Package manager is **bun** (`bun.lock`). `bun` is preinstalled on `PATH` (`/usr/local/bin/bun`); the startup update script runs `bun install`, which also triggers the `prepare` → `bob build` step. Standard commands live in `README.md` and `package.json#scripts`.
+- **Runnable dev app: Storybook** — `bun run storybook` serves a web preview of the RN components at http://localhost:6006 (RN primitives render via `react-native-web`; `.storybook/main.ts` aliases native-only peers to stubs). This is the primary way to visually exercise components; there is no standalone example app.
+- On startup Storybook logs a non-fatal Vite warning: `react-native-css-interop ... could not be resolved` (imported by `src/theme/init-css-interop.ts`). It's an optional peer — Storybook still starts and renders fine; ignore it.
+- `bun run test` (jest) parses `jest.config.ts`, which requires **`ts-node`** (added as a devDependency). If tests error with "'ts-node' is required for the TypeScript configuration files", run `bun install`.
+- `bun run typescript`, `bun run test`, and `bun run build` each first run a `generate-font-data.mjs` (and, for build, `generate-platform-exports.mjs`) prestep that writes generated files (`src/fonts/font-data.web.ts` is gitignored; the exports regeneration is idempotent against the committed `package.json`).
