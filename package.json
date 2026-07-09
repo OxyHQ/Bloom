@@ -1012,6 +1012,7 @@
     "sonner-native": "^0.23.1",
     "storybook": "^10",
     "ts-jest": "^29.4.6",
+    "ts-node": "^10.9.2",
     "typescript": "~5.9.2",
     "vite": "^7"
   },
