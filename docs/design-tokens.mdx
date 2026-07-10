@@ -35,19 +35,38 @@ module.exports = {
 That single line adds every semantic utility. Your `BloomThemeProvider` already
 populates the underlying `--x` color tokens at runtime.
 
-### Tailwind v4 web (auth, console, website)
+### Tailwind v4 web (auth, console, website) and CSS-first NativeWind (Homiio)
 
-Tailwind v4 apps configure tokens in CSS. Add the Bloom `@theme` block to your
-global stylesheet. Either inject it at build time:
+Tailwind v4 apps configure tokens in CSS. **Import Bloom's shipped theme CSS —
+never paste the tokens into your own `global.css`.** Bloom ships a static
+`theme.css` (generated from the same source as `bloomThemeCss()`, so JS and CSS
+cannot drift) at a dedicated export:
+
+```css
+/* your global.css — after the Tailwind import */
+@import "tailwindcss";
+@import "@oxyhq/bloom/design-tokens/theme.css";
+```
+
+That single `@import` registers the full Bloom `@theme` vocabulary (color-role
+aliases, spacing, radius, border-width, typography, shadow), so utilities like
+`rounded-radius-28`, `p-space-8`, and `text-body` resolve without hand-copying
+any `--radius-radius-*` / `--spacing-*` block. The aliases are
+`--color-<role>: var(--canonical)` — direct `var(--x)` references (never
+`hsl(var(--x))`, per Bloom's web CSS-var contract).
+
+Keep only your **app-local** color seeds / `:root` overrides in `global.css`.
+Do NOT re-declare Bloom's radius or spacing scales locally — the imported CSS is
+the single authority.
+
+If you need the block inline (e.g. an app that assembles its stylesheet at build
+time) rather than via `@import`, `bloomThemeBlock()` / `bloomThemeCss()` return
+the exact same content programmatically:
 
 ```ts
 import { bloomThemeBlock } from '@oxyhq/bloom/design-tokens';
 // write `bloomThemeBlock()` into your generated global.css
 ```
-
-…or paste the output of `bloomThemeBlock()` once into your existing
-`@theme { … }`. The aliases are `--color-<role>: var(--canonical)` — direct
-`var(--x)` references (never `hsl(var(--x))`, per Bloom's web CSS-var contract).
 
 ## Color roles
 

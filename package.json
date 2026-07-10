@@ -1,6 +1,6 @@
 {
   "name": "@oxyhq/bloom",
-  "version": "0.29.2",
+  "version": "0.29.3",
   "description": "Bloom UI — Oxy ecosystem component library for React Native + Expo + Web",
   "main": "lib/commonjs/index.js",
   "module": "lib/module/index.js",
@@ -887,6 +887,7 @@
         "default": "./lib/commonjs/list/index.js"
       }
     },
+    "./design-tokens/theme.css": "./src/design-tokens/theme.css",
     "./package.json": "./package.json"
   },
   "files": [
@@ -954,7 +955,8 @@
   "scripts": {
     "generate:exports": "node scripts/generate-platform-exports.mjs",
     "generate:font-data": "node scripts/generate-font-data.mjs",
-    "prebuild": "node scripts/generate-platform-exports.mjs && node scripts/generate-font-data.mjs",
+    "generate:theme-css": "bun scripts/generate-theme-css.ts",
+    "prebuild": "node scripts/generate-platform-exports.mjs && node scripts/generate-font-data.mjs && bun scripts/generate-theme-css.ts",
     "build": "bob build",
     "test": "jest",
     "pretest": "node scripts/generate-font-data.mjs",
