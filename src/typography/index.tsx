@@ -1,16 +1,18 @@
 import React, { memo } from 'react';
 import {
-  Text as RNText,
   type TextProps as RNTextProps,
   Platform,
-  type StyleProp,
   type TextStyle,
 } from 'react-native';
 
 import { useTheme } from '../theme/use-theme';
 import { fontFamilies } from '../fonts/tokens';
+import { mergeTypographyStyle, typographyDefaultsWhenNoClassName } from './defaults';
+import { getInteropText, hasTypographyClassNameInterop } from './styled-text';
 
-export type TextProps = RNTextProps;
+export type TextProps = RNTextProps & {
+  className?: string;
+};
 
 /**
  * Platform-aware font-family value. On web we resolve to the CSS custom
@@ -36,19 +38,35 @@ function fontFamilyStyle(
 const SANS_FONT_FAMILY = fontFamilyStyle('sans');
 const DISPLAY_FONT_FAMILY = fontFamilyStyle('display');
 
+const DEFAULT_TEXT_TYPOGRAPHY: TextStyle = {
+  fontSize: 13,
+};
+
 /**
  * Base text component with theme-aware default color and the Bloom sans
- * font family applied.
+ * font family applied. NativeWind `className` utilities (text-*, font-*,
+ * leading-*, text-foreground, …) override defaults when provided.
  */
-const TextComponent = function Text({ children, style, ...rest }: TextProps) {
+const TextComponent = function Text({ children, style, className, ...rest }: TextProps) {
   const { colors } = useTheme();
+  const InteropText = getInteropText();
+  const interopActive = hasTypographyClassNameInterop();
+
+  const resolvedClassName = interopActive && className?.trim() ? className : undefined;
 
   return (
-    <RNText
+    <InteropText
       {...rest}
-      style={[{ fontSize: 13, color: colors.text, ...SANS_FONT_FAMILY }, style]}>
+      {...(resolvedClassName ? { className: resolvedClassName } : {})}
+      style={mergeTypographyStyle(
+        resolvedClassName,
+        { ...DEFAULT_TEXT_TYPOGRAPHY, color: colors.text },
+        SANS_FONT_FAMILY,
+        style,
+      )}
+    >
       {children}
-    </RNText>
+    </InteropText>
   );
 };
 
@@ -57,18 +75,30 @@ Text.displayName = 'Text';
 
 export { Text as Span };
 
-const HEADING_STYLE: StyleProp<TextStyle> = {
+const HEADING_TYPOGRAPHY: TextStyle = {
   ...DISPLAY_FONT_FAMILY,
   fontWeight: '700',
 };
 
 function createHeadingElement({ level }: { level: number }): React.FC<TextProps> {
-  return function HeadingElement({ style, ...rest }: TextProps) {
+  return function HeadingElement({ style, className, ...rest }: TextProps) {
     const extraProps: Record<string, unknown> =
       Platform.OS === 'web'
         ? { role: 'heading', 'aria-level': level }
         : {};
-    return <Text {...extraProps} {...rest} style={[HEADING_STYLE, style]} />;
+
+    const headingBase = className?.trim()
+      ? DISPLAY_FONT_FAMILY
+      : HEADING_TYPOGRAPHY;
+
+    return (
+      <Text
+        {...extraProps}
+        {...rest}
+        className={className}
+        style={[headingBase, style]}
+      />
+    );
   };
 }
 
@@ -85,14 +115,24 @@ H5.displayName = 'H5';
 export const H6 = createHeadingElement({ level: 6 });
 H6.displayName = 'H6';
 
-export function P({ style, ...rest }: TextProps) {
+const DEFAULT_PARAGRAPH_TYPOGRAPHY: TextStyle = {
+  fontSize: 15,
+  lineHeight: 15 * 1.625,
+};
+
+export function P({ style, className, ...rest }: TextProps) {
   const extraProps: Record<string, unknown> =
     Platform.OS === 'web' ? { role: 'paragraph' } : {};
+  const paragraphDefaults = typographyDefaultsWhenNoClassName(
+    className,
+    DEFAULT_PARAGRAPH_TYPOGRAPHY,
+  );
   return (
     <Text
       {...extraProps}
       {...rest}
-      style={[{ fontSize: 15, lineHeight: 15 * 1.625 }, style]}
+      className={className}
+      style={[paragraphDefaults, style]}
     />
   );
 }

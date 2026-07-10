@@ -111,6 +111,10 @@ setColorPreset("blue") // Updates context + CSS vars on web
 - **Required**: react >= 18, react-native >= 0.73, react-native-safe-area-context >= 5, react-native-reanimated, react-native-gesture-handler
 - **Optional**: @gorhom/bottom-sheet, SVG, sonner
 
+## Typography + NativeWind (CRITICAL)
+
+Bloom `Text` / `H1`–`H6` / `P` wire `className` → `style` via NativeWind's `styled(RNText)` when `nativewind` is installed (optional peer). **Never put font-size, line-height, font-weight, or color defaults in inline `style` when the caller passes `className`** — react-native-css merges `className` utilities first, then inline `style`; overlapping keys in inline `style` override the utilities and silently break `text-*` / `font-*` / `leading-*` / `text-foreground` on Bloom typography. Apply those defaults only when `className` is absent; non-overlapping base styles (`fontFamily`) may stay inline. Consumers should pass typography via `className` (e.g. `text-[56px] font-bold text-white`), layout via `className`, and reserve `style` for non-utility overrides (letterSpacing, opacity, textAlign).
+
 ## Coding Standards
 
 - Platform-agnostic code by default; platform-specific behavior goes in dedicated `.native.ts`/`.web.ts` files
