@@ -69,6 +69,22 @@ Only TWO overlay surfaces exist. `CenteredDialog` and `ResponsiveSheet` were REM
 
 Uses `react-native-builder-bob` → `lib/` (commonjs + module + typescript).
 
+## Design Token CSS (CSS-first consumers)
+
+`@oxyhq/bloom/design-tokens/theme.css` ships the full Bloom `@theme` block (color-role aliases, spacing, radius, border-width, typography, shadow), generated from the same source as `bloomThemeCss()` so JS and CSS cannot drift. Tailwind v4 / NativeWind CSS-first apps consume it with a single import — never by hand-copying tokens:
+
+```css
+/* global.css */
+@import "tailwindcss";
+@import "@oxyhq/bloom/design-tokens/theme.css";
+```
+
+Rules:
+- **Never paste `--radius-radius-*`, `--spacing-*`, or any other Bloom token into a consumer's `global.css`** — the imported CSS is the single authority.
+- Keep only app-local color seeds / `:root` overrides in the consumer's `global.css`.
+- If inline assembly is needed (e.g. build-time stylesheet gen), use `bloomThemeCss()` / `bloomThemeBlock()` from `@oxyhq/bloom/design-tokens` — not a manual copy.
+- Full docs at `docs/design-tokens.mdx`.
+
 ## Theme System
 
 `BloomThemeProvider` manages color presets and light/dark mode:
