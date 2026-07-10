@@ -8,7 +8,7 @@ import {
 import { useTheme } from '../theme/use-theme';
 import { fontFamilies } from '../fonts/tokens';
 import { mergeTypographyStyle, typographyDefaultsWhenNoClassName } from './defaults';
-import { getInteropText, hasTypographyClassNameInterop } from './styled-text';
+import { getInteropText } from './styled-text';
 
 export type TextProps = RNTextProps & {
   className?: string;
@@ -50,16 +50,14 @@ const DEFAULT_TEXT_TYPOGRAPHY: TextStyle = {
 const TextComponent = function Text({ children, style, className, ...rest }: TextProps) {
   const { colors } = useTheme();
   const InteropText = getInteropText();
-  const interopActive = hasTypographyClassNameInterop();
-
-  const resolvedClassName = interopActive && className?.trim() ? className : undefined;
+  const trimmedClassName = className?.trim() ? className : undefined;
 
   return (
     <InteropText
       {...rest}
-      {...(resolvedClassName ? { className: resolvedClassName } : {})}
+      {...(trimmedClassName ? { className: trimmedClassName } : {})}
       style={mergeTypographyStyle(
-        resolvedClassName,
+        trimmedClassName,
         { ...DEFAULT_TEXT_TYPOGRAPHY, color: colors.text },
         SANS_FONT_FAMILY,
         style,
