@@ -19,7 +19,10 @@ function clampPercent(value: number): number {
  *   track color), a bold percentage right of the label, and a two-sided footer
  *   of opposing values (inflow/outflow style).
  *
- * Pure `<View>` composition, so it renders identically on web and native.
+ * Colors come from the theme (the same NativeWind token pipeline that backs the
+ * `--*` vars) — text via `text`/`textSecondary`/`textTertiary`, the track from
+ * `backgroundSecondary` — with the fill overridable per-prop. Pure `<View>`
+ * composition, so it renders identically on web and native.
  */
 const StatBarComponent: React.FC<StatBarProps> = (props) => {
   const { colors } = useTheme();
@@ -47,12 +50,7 @@ const StatBarComponent: React.FC<StatBarProps> = (props) => {
 
         <View style={[styles.track, { height, borderRadius: radius, backgroundColor: remainder }]}>
           <View
-            style={{
-              width: `${leftPercent}%`,
-              height,
-              borderRadius: radius,
-              backgroundColor: activeLeft,
-            }}
+            style={{ width: `${leftPercent}%`, height, borderRadius: radius, backgroundColor: activeLeft }}
           />
         </View>
 
@@ -86,14 +84,7 @@ const StatBarComponent: React.FC<StatBarProps> = (props) => {
         accessibilityRole="progressbar"
         accessibilityValue={{ min: 0, max, now: value }}
       >
-        <View
-          style={{
-            width: `${ratio}%`,
-            height,
-            borderRadius: radius,
-            backgroundColor: fill,
-          }}
-        />
+        <View style={{ width: `${ratio}%`, height, borderRadius: radius, backgroundColor: fill }} />
       </View>
 
       {hasFooter && (
@@ -111,45 +102,24 @@ const StatBarComponent: React.FC<StatBarProps> = (props) => {
 };
 
 const styles = StyleSheet.create({
-  wrap: {
-    gap: 8,
-  },
+  wrap: { gap: 8 },
   labelRow: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
     gap: 8,
   },
-  label: {
-    flexShrink: 1,
-    fontSize: 13,
-    fontWeight: '500',
-  },
-  percent: {
-    fontSize: 14,
-    fontWeight: '700',
-    letterSpacing: -0.2,
-    fontVariant: ['tabular-nums'],
-  },
-  icon: {
-    marginLeft: 8,
-  },
-  track: {
-    width: '100%',
-    overflow: 'hidden',
-    flexDirection: 'row',
-    borderCurve: 'continuous',
-  },
+  label: { flexShrink: 1, fontSize: 13, fontWeight: '500' },
+  percent: { fontSize: 14, fontWeight: '700', letterSpacing: -0.2, fontVariant: ['tabular-nums'] },
+  icon: { marginLeft: 8 },
+  track: { width: '100%', overflow: 'hidden', flexDirection: 'row', borderCurve: 'continuous' },
   footerRow: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
     gap: 8,
   },
-  footerValue: {
-    fontSize: 12,
-    fontVariant: ['tabular-nums'],
-  },
+  footerValue: { fontSize: 12, fontVariant: ['tabular-nums'] },
 });
 
 export const StatBar = memo(StatBarComponent);

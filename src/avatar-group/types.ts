@@ -71,6 +71,14 @@ export interface AvatarGroupProps {
    */
   ringColor?: string;
   /**
+   * When true, an item with no `uri` renders {@link Avatar}'s colored
+   * deterministic initial (derived from its name) instead of the neutral
+   * default placeholder. Use for decorative/icon rows (e.g. a top-tokens strip)
+   * where distinct colors read better than identical grey circles. Defaults to
+   * `false` to preserve the neutral facepile placeholder for avatar-less people.
+   */
+  showInitials?: boolean;
+  /**
    * Per-avatar press handler. When provided, each avatar (and the overflow chip)
    * becomes pressable. When omitted, the group is purely presentational.
    */

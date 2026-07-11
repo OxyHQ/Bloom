@@ -49,6 +49,7 @@ const AvatarGroupBaseComponent: React.FC<AvatarGroupBaseProps> = ({
   overlap,
   spacing,
   ringColor,
+  showInitials = false,
   onPressItem,
   style,
   testID,
@@ -165,9 +166,15 @@ const AvatarGroupBaseComponent: React.FC<AvatarGroupBaseProps> = ({
               `'thumb'`) is forwarded so the resolver builds a small rendition
               for these stacked avatars. No `name` is passed, so a missing
               avatar shows Avatar's neutral default placeholder rather than a
-              colored deterministic initial.
+              colored deterministic initial. When `showInitials` is set the item's
+              name IS passed, so an avatar-less item renders a colored initial.
             */}
-            <Avatar source={item.uri ?? undefined} variant={variant} size={innerSize} />
+            <Avatar
+              source={item.uri ?? undefined}
+              name={showInitials ? name : undefined}
+              variant={variant}
+              size={innerSize}
+            />
           </View>
         );
 

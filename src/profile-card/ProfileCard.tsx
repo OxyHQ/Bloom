@@ -17,28 +17,26 @@ import type {
 } from './types';
 
 const WIDGET_WIDTH = 240;
-const CARD_PADDING = 16;
-const CARD_RADIUS = 24;
-const AVATAR_SIZE = 52;
-const FOOTER_AVATAR_SIZE = 28;
+const CARD_PADDING = 18;
+const CARD_RADIUS = 28;
+const AVATAR_SIZE = 54;
+const FOOTER_AVATAR_SIZE = 30;
 
-interface VariantAccents {
-  ring: string;
-  fill: string;
-  dots: string;
-}
-
-function variantAccents(variant: ProfileCardVariant, colors: ThemeColors): VariantAccents {
+/**
+ * Vivid per-variant accent, drawn from the theme's semantic tokens so it tracks
+ * the active Bloom preset. Every accent stays overridable per-prop.
+ */
+function variantAccent(variant: ProfileCardVariant, colors: ThemeColors): string {
   switch (variant) {
     case 'wallet':
-      return { ring: colors.success, fill: colors.primary, dots: colors.success };
+      return colors.success;
     case 'shopping':
-      return { ring: colors.info, fill: colors.info, dots: colors.info };
+      return colors.warning;
     case 'social':
-      return { ring: colors.primary, fill: colors.primary, dots: colors.primary };
+      return colors.primary;
     case 'stat':
     default:
-      return { ring: colors.primary, fill: colors.primary, dots: colors.primary };
+      return colors.info;
   }
 }
 
@@ -47,24 +45,19 @@ function AvatarWithBadge({
   name,
   ring,
   badge,
+  haloColor,
 }: {
   source?: string | null;
   name?: string;
   ring: AvatarRingConfig;
   badge?: React.ReactNode;
+  haloColor: string;
 }) {
   return (
     <View style={styles.avatarWrap}>
       <Avatar source={source ?? undefined} name={name} size={AVATAR_SIZE} ring={ring} />
       {badge != null && (
-        <View
-          style={[
-            styles.badge,
-            { width: Math.round(AVATAR_SIZE * 0.34), height: Math.round(AVATAR_SIZE * 0.34) },
-          ]}
-        >
-          {badge}
-        </View>
+        <View style={[styles.badgeHalo, { backgroundColor: haloColor }]}>{badge}</View>
       )}
     </View>
   );
@@ -72,11 +65,11 @@ function AvatarWithBadge({
 
 function MetricSection({
   metric,
-  accents,
+  accent,
   labelColor,
 }: {
   metric: ProfileCardMetric;
-  accents: VariantAccents;
+  accent: string;
   labelColor: string;
 }) {
   switch (metric.kind) {
@@ -91,7 +84,10 @@ function MetricSection({
           <DotGridMeter
             filled={metric.filled}
             total={metric.total}
-            filledColor={metric.filledColor ?? accents.dots}
+            columns={metric.total}
+            dotSize={9}
+            gap={6}
+            filledColor={metric.filledColor ?? accent}
           />
         </View>
       );
@@ -105,7 +101,7 @@ function MetricSection({
           minLabel={metric.minLabel}
           maxLabel={metric.maxLabel}
           icon={metric.icon}
-          fillColor={metric.fillColor ?? accents.fill}
+          fillColor={metric.fillColor ?? accent}
         />
       );
     case 'split':
@@ -116,7 +112,7 @@ function MetricSection({
           percent={metric.percent}
           leftValue={metric.leftValue}
           rightValue={metric.rightValue}
-          fillColor={metric.fillColor ?? accents.fill}
+          fillColor={metric.fillColor ?? accent}
         />
       );
     case 'custom':
@@ -129,10 +125,14 @@ function MetricSection({
  * A composed profile "widget" card — the Apple-Watch-style stat card. Fully
  * app-agnostic: it takes pre-formatted strings, colors, and `ReactNode` icons
  * (no domain/currency logic). Built on {@link Card}, {@link Avatar} (ring +
- * badge), {@link DotGridMeter}/{@link StatBar}, and a {@link AvatarGroup} row.
+ * badge), {@link DotGridMeter}/{@link StatBar}, and an {@link AvatarGroup} row.
  *
- * `variant` only picks sensible accent defaults (ring + metric fill); every
- * accent stays overridable via the individual props.
+ * Theme-driven (Bloom's `useTheme()` reads the same NativeWind token pipeline
+ * that backs the `--*` vars): the surface is the theme's `background` — the
+ * darkest token, a near-black in dark mode — with a hairline `border` so it
+ * separates on any page, and the metric tracks read from `backgroundSecondary`,
+ * a step lighter, so they always show. `variant` picks a vivid semantic accent
+ * (success/warning/info/primary), overridable per-prop.
  */
 const ProfileCardComponent: React.FC<ProfileCardProps> = ({
   layout = 'widget',
@@ -148,15 +148,20 @@ const ProfileCardComponent: React.FC<ProfileCardProps> = ({
   testID,
 }) => {
   const { colors } = useTheme();
-  const accents = variantAccents(variant, colors);
+  const accent = variantAccent(variant, colors);
   const isWide = layout === 'wide';
 
-  const ring: AvatarRingConfig = avatar.ring ?? { colors: accents.ring, width: 2, gap: 2 };
+  // Consumer ring wins for color; default to the accent, always with a small
+  // gap so the ring reads as a distinct halo (as in the reference).
+  const ring: AvatarRingConfig = { colors: accent, width: 2, gap: 2, ...avatar.ring };
 
   const surfaceStyle: ViewStyle = {
     width: isWide ? '100%' : WIDGET_WIDTH,
     padding: CARD_PADDING,
     borderRadius: CARD_RADIUS,
+    borderWidth: 1,
+    borderColor: colors.border,
+    backgroundColor: colors.background,
     borderCurve: 'continuous',
   };
 
@@ -166,7 +171,7 @@ const ProfileCardComponent: React.FC<ProfileCardProps> = ({
         {value}
       </Text>
       {subtitle != null && (
-        <Text style={[styles.subtitle, { color: colors.textTertiary }]} numberOfLines={1}>
+        <Text style={[styles.subtitle, { color: colors.textSecondary }]} numberOfLines={1}>
           {subtitle}
         </Text>
       )}
@@ -175,14 +180,14 @@ const ProfileCardComponent: React.FC<ProfileCardProps> = ({
 
   const metricNode =
     metric != null ? (
-      <MetricSection metric={metric} accents={accents} labelColor={colors.textTertiary} />
+      <MetricSection metric={metric} accent={accent} labelColor={colors.textSecondary} />
     ) : null;
 
   const footerNode =
     footer != null ? (
       <View style={styles.section}>
         {footer.label != null && (
-          <Text style={[styles.sectionLabel, { color: colors.textTertiary }]} numberOfLines={1}>
+          <Text style={[styles.sectionLabel, { color: colors.textSecondary }]} numberOfLines={1}>
             {footer.label}
           </Text>
         )}
@@ -190,18 +195,15 @@ const ProfileCardComponent: React.FC<ProfileCardProps> = ({
           layout="row"
           items={footer.items}
           size={FOOTER_AVATAR_SIZE}
+          spacing={7}
           max={footer.max ?? 4}
+          showInitials
         />
       </View>
     ) : null;
 
   return (
-    <Card
-      variant="filled"
-      onPress={onPress}
-      style={[surfaceStyle, style]}
-      testID={testID}
-    >
+    <Card variant="filled" onPress={onPress} style={[surfaceStyle, style]} testID={testID}>
       <View style={styles.body}>
         {isWide ? (
           <View style={styles.headerRowWide}>
@@ -210,6 +212,7 @@ const ProfileCardComponent: React.FC<ProfileCardProps> = ({
               name={avatar.name}
               ring={ring}
               badge={avatar.badge}
+              haloColor={colors.background}
             />
             <View style={styles.wideValueRow}>
               <View style={styles.headlineColumn}>{headline}</View>
@@ -223,6 +226,7 @@ const ProfileCardComponent: React.FC<ProfileCardProps> = ({
               name={avatar.name}
               ring={ring}
               badge={avatar.badge}
+              haloColor={colors.background}
             />
             <View style={styles.headlineColumn}>{headline}</View>
           </View>
@@ -238,65 +242,27 @@ const ProfileCardComponent: React.FC<ProfileCardProps> = ({
 };
 
 const styles = StyleSheet.create({
-  body: {
-    gap: 16,
-  },
-  headerRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 12,
-  },
-  headerRowWide: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 16,
-  },
-  headlineColumn: {
-    flex: 1,
-    minWidth: 0,
-  },
-  wideValueRow: {
-    flex: 1,
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-  },
-  wideIcon: {
-    marginLeft: 8,
-  },
-  value: {
-    fontSize: 26,
-    fontWeight: '800',
-    letterSpacing: -0.5,
-    fontVariant: ['tabular-nums'],
-  },
-  subtitle: {
-    marginTop: 2,
-    fontSize: 13,
-    fontVariant: ['tabular-nums'],
-  },
-  section: {
-    gap: 8,
-  },
-  sectionLabel: {
-    fontSize: 12,
-    fontWeight: '500',
-  },
-  avatarWrap: {
-    position: 'relative',
-  },
-  badge: {
+  body: { gap: 16 },
+  headerRow: { flexDirection: 'row', alignItems: 'center', gap: 12 },
+  headerRowWide: { flexDirection: 'row', alignItems: 'center', gap: 14 },
+  headlineColumn: { flex: 1, minWidth: 0 },
+  wideValueRow: { flex: 1, flexDirection: 'row', alignItems: 'center', gap: 8 },
+  wideIcon: { marginLeft: 8 },
+  value: { fontSize: 27, fontWeight: '800', letterSpacing: -0.6, fontVariant: ['tabular-nums'] },
+  subtitle: { marginTop: 2, fontSize: 13, fontWeight: '500', fontVariant: ['tabular-nums'] },
+  section: { gap: 10 },
+  sectionLabel: { fontSize: 13, fontWeight: '500' },
+  avatarWrap: { position: 'relative' },
+  badgeHalo: {
     position: 'absolute',
-    right: -2,
-    bottom: -2,
+    right: -3,
+    bottom: -3,
+    padding: 2,
+    borderRadius: 999,
     alignItems: 'center',
     justifyContent: 'center',
   },
-  floatingIcon: {
-    position: 'absolute',
-    top: CARD_PADDING,
-    right: CARD_PADDING,
-  },
+  floatingIcon: { position: 'absolute', top: CARD_PADDING, right: CARD_PADDING },
 });
 
 export const ProfileCard = memo(ProfileCardComponent);
