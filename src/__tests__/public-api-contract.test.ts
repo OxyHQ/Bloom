@@ -19,6 +19,11 @@ const REPRESENTATIVE_PARTS = [
   'AdmonitionIcon', 'PromptInputTextarea',
 ] as const;
 
+// Stat / profile widget components added to the public surface.
+const NEW_FLAT_COMPONENTS = [
+  'CompositionBar', 'DotGridMeter', 'StatBar', 'ActivityHeatmap', 'ProfileCard',
+] as const;
+
 /**
  * A flat React component export is either a plain function component or a wrapped
  * component object (React.memo / forwardRef), which carries a `$$typeof` symbol.
@@ -50,5 +55,15 @@ describe('public API contract', () => {
     for (const name of REPRESENTATIVE_PARTS) {
       expect(isReactComponent(api[name])).toBe(true);
     }
+  });
+
+  it('exposes the stat/profile widget components as flat components', () => {
+    for (const name of NEW_FLAT_COMPONENTS) {
+      expect(isReactComponent(api[name])).toBe(true);
+    }
+  });
+
+  it('exposes bucketByDay as a helper function', () => {
+    expect(typeof api.bucketByDay).toBe('function');
   });
 });

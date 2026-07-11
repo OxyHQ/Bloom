@@ -41,11 +41,13 @@ interface AvatarGroupBaseProps extends AvatarGroupProps {
 
 const AvatarGroupBaseComponent: React.FC<AvatarGroupBaseProps> = ({
   items,
+  layout = 'stack',
   size = 32,
   variant = 'thumb',
   max = 5,
   total,
   overlap,
+  spacing,
   ringColor,
   onPressItem,
   style,
@@ -53,6 +55,7 @@ const AvatarGroupBaseComponent: React.FC<AvatarGroupBaseProps> = ({
   hoverHandlers,
 }) => {
   const theme = useTheme();
+  const isRow = layout === 'row';
 
   // The ring is the thin separator drawn between overlapping avatars. It
   // defaults to the page background so avatars read as cleanly punched out of
@@ -65,6 +68,10 @@ const AvatarGroupBaseComponent: React.FC<AvatarGroupBaseProps> = ({
   // 1px border on each side, so the negative margin absorbs both borders to
   // keep the visual overlap equal to `effectiveOverlap`.
   const negativeMargin = -(effectiveOverlap + RING_WIDTH * 2);
+  // Row layout: a positive gap between adjacent avatars (no overlap, no ring).
+  const rowGap = spacing ?? Math.round(size * DEFAULT_OVERLAP_RATIO);
+  // Horizontal offset applied to every avatar after the first.
+  const itemMargin = isRow ? rowGap : negativeMargin;
 
   const shown = useMemo(
     () => items.slice(0, Math.max(0, max)),
@@ -74,11 +81,20 @@ const AvatarGroupBaseComponent: React.FC<AvatarGroupBaseProps> = ({
   const realTotal = total ?? items.length;
   const overflow = Math.max(0, realTotal - shown.length);
 
-  // Each cell is a circular, clipped container with a 1px ring border. The inner
-  // Avatar is inset by the border on both sides so the image fills the circle
-  // exactly inside the ring.
-  const innerSize = size - RING_WIDTH * 2;
+  // Stack: each cell is a circular, clipped container with a 1px ring border,
+  // and the inner Avatar is inset by the border on both sides. Row: no ring, so
+  // the Avatar fills the full cell.
+  const innerSize = isRow ? size : size - RING_WIDTH * 2;
   const cellStyle = useMemo((): ViewStyle => {
+    if (isRow) {
+      return {
+        width: size,
+        height: size,
+        borderRadius: size / 2,
+        alignItems: 'center',
+        justifyContent: 'center',
+      };
+    }
     return {
       width: size,
       height: size,
@@ -89,7 +105,7 @@ const AvatarGroupBaseComponent: React.FC<AvatarGroupBaseProps> = ({
       alignItems: 'center',
       justifyContent: 'center',
     };
-  }, [size, ring]);
+  }, [isRow, size, ring]);
 
   const overflowTextStyle = useMemo(
     () => ({
@@ -121,12 +137,14 @@ const AvatarGroupBaseComponent: React.FC<AvatarGroupBaseProps> = ({
           ? `${name ?? item.username} (@${item.username})`
           : name;
 
-        // The negative margin and stacking order live on the outermost
-        // row element so layout and hit-testing stay aligned with the visual
-        // overlap. Earlier siblings render on top of later ones.
+        // The horizontal margin and stacking order live on the outermost row
+        // element so layout and hit-testing stay aligned with the visual
+        // overlap. In stack mode earlier siblings render on top of later ones
+        // (descending zIndex); in row mode there is no overlap so stacking
+        // order is irrelevant.
         const wrapperStyle: ViewStyle = {
-          ...(index > 0 && { marginLeft: negativeMargin }),
-          zIndex: shown.length - index,
+          ...(index > 0 && { marginLeft: itemMargin }),
+          ...(isRow ? {} : { zIndex: shown.length - index }),
         };
 
         const cell = (
@@ -190,7 +208,8 @@ const AvatarGroupBaseComponent: React.FC<AvatarGroupBaseProps> = ({
         <OverflowCircle
           count={overflow}
           cellStyle={cellStyle}
-          negativeMargin={shown.length > 0 ? negativeMargin : 0}
+          marginLeft={shown.length > 0 ? itemMargin : 0}
+          isRow={isRow}
           textStyle={overflowTextStyle}
           onPress={overflowOnPress}
         />
@@ -202,23 +221,25 @@ const AvatarGroupBaseComponent: React.FC<AvatarGroupBaseProps> = ({
 function OverflowCircle({
   count,
   cellStyle,
-  negativeMargin,
+  marginLeft,
+  isRow,
   textStyle,
   onPress,
 }: {
   count: number;
   cellStyle: ViewStyle;
-  negativeMargin: number;
+  marginLeft: number;
+  isRow: boolean;
   textStyle: { color: string; fontSize: number; fontWeight: '600' };
   onPress?: () => void;
 }) {
   const theme = useTheme();
-  // The count circle is anchored at the lowest stacking order so it tucks behind
-  // the last avatar's ring. The margin lives on the outer element to keep layout
-  // aligned with the overlap.
+  // In stack mode the count circle is anchored at the lowest stacking order so
+  // it tucks behind the last avatar's ring; row mode has no overlap. The margin
+  // lives on the outer element to keep layout aligned with the spacing.
   const wrapperStyle: ViewStyle = {
-    ...(negativeMargin !== 0 && { marginLeft: negativeMargin }),
-    zIndex: 0,
+    ...(marginLeft !== 0 && { marginLeft }),
+    ...(isRow ? {} : { zIndex: 0 }),
   };
 
   // A solid "+N" count circle: secondary-text-colored fill with white text,

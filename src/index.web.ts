@@ -157,6 +157,30 @@ export * from './accordion';
 export { LinkPreviewCard } from './link-preview';
 export type { LinkPreviewCardProps } from './link-preview';
 
+// Stat / profile widgets
+export { CompositionBar } from './composition-bar';
+export type { CompositionBarProps, CompositionCategory } from './composition-bar';
+export { DotGridMeter } from './dot-grid-meter';
+export type { DotGridMeterProps } from './dot-grid-meter';
+export { StatBar } from './stat-bar';
+export type {
+  StatBarProps,
+  StatBarProgressProps,
+  StatBarSplitProps,
+  StatBarVariant,
+} from './stat-bar';
+export { ActivityHeatmap, bucketByDay } from './activity-heatmap';
+export type { ActivityHeatmapProps, ActivityHeatmapDay } from './activity-heatmap';
+export { ProfileCard } from './profile-card';
+export type {
+  ProfileCardProps,
+  ProfileCardLayout,
+  ProfileCardVariant,
+  ProfileCardAvatar,
+  ProfileCardMetric,
+  ProfileCardFooter,
+} from './profile-card';
+
 // Settings / Grouped list
 export * from './settings-list';
 export { Item } from './item';

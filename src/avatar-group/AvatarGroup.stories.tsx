@@ -133,3 +133,17 @@ export const Sizes: Story = {
     </View>
   ),
 };
+
+/**
+ * Row layout: avatars placed adjacent with a positive gap and no separator
+ * ring — the "top tokens" / adjacent-icons strip. Still collapses to `+N`.
+ */
+export const RowLayout: Story = {
+  render: () => (
+    <View style={{ gap: 16 }}>
+      <AvatarGroup layout="row" items={WITH_PHOTOS} size={28} max={4} />
+      <AvatarGroup layout="row" items={WITH_PHOTOS} size={36} max={5} spacing={10} />
+    </View>
+  ),
+  name: 'Row layout',
+};

@@ -28,6 +28,15 @@ export interface AvatarGroupItem {
 export interface AvatarGroupProps {
   /** Members to render, in stacking order (first item sits on top). */
   items: AvatarGroupItem[];
+  /**
+   * How the avatars are arranged.
+   * - `'stack'` (default): overlapping facepile with a thin separator ring, a
+   *   trailing `+N` overflow chip, and the first item on top.
+   * - `'row'`: avatars placed adjacent with a positive `spacing` gap and NO
+   *   separator ring — an "adjacent row" of icons (e.g. a top-tokens strip).
+   *   Still collapses into the `+N` overflow chip at `max`.
+   */
+  layout?: 'stack' | 'row';
   /** Diameter of each avatar in pixels. */
   size?: number;
   /**
@@ -47,9 +56,14 @@ export interface AvatarGroupProps {
   total?: number;
   /**
    * Horizontal overlap between adjacent avatars in pixels. Defaults to ~1/3 of
-   * `size`. Larger values pull avatars closer together.
+   * `size`. Larger values pull avatars closer together. `layout='stack'` only.
    */
   overlap?: number;
+  /**
+   * Horizontal gap between adjacent avatars in pixels when `layout='row'`.
+   * Defaults to ~1/3 of `size`. `layout='row'` only.
+   */
+  spacing?: number;
   /**
    * Color of the thin ring/border drawn around each avatar so overlapping
    * avatars separate cleanly. Defaults to the theme `background` color so the

@@ -1,6 +1,6 @@
 {
   "name": "@oxyhq/bloom",
-  "version": "0.29.6",
+  "version": "0.30.0",
   "description": "Bloom UI — Oxy ecosystem component library for React Native + Expo + Web",
   "main": "lib/commonjs/index.js",
   "module": "lib/module/index.js",
@@ -462,6 +462,61 @@
       "require": {
         "types": "./lib/typescript/commonjs/connection-dots/index.d.ts",
         "default": "./lib/commonjs/connection-dots/index.js"
+      }
+    },
+    "./composition-bar": {
+      "react-native": "./src/composition-bar/index.ts",
+      "import": {
+        "types": "./lib/typescript/module/composition-bar/index.d.ts",
+        "default": "./lib/module/composition-bar/index.js"
+      },
+      "require": {
+        "types": "./lib/typescript/commonjs/composition-bar/index.d.ts",
+        "default": "./lib/commonjs/composition-bar/index.js"
+      }
+    },
+    "./dot-grid-meter": {
+      "react-native": "./src/dot-grid-meter/index.ts",
+      "import": {
+        "types": "./lib/typescript/module/dot-grid-meter/index.d.ts",
+        "default": "./lib/module/dot-grid-meter/index.js"
+      },
+      "require": {
+        "types": "./lib/typescript/commonjs/dot-grid-meter/index.d.ts",
+        "default": "./lib/commonjs/dot-grid-meter/index.js"
+      }
+    },
+    "./stat-bar": {
+      "react-native": "./src/stat-bar/index.ts",
+      "import": {
+        "types": "./lib/typescript/module/stat-bar/index.d.ts",
+        "default": "./lib/module/stat-bar/index.js"
+      },
+      "require": {
+        "types": "./lib/typescript/commonjs/stat-bar/index.d.ts",
+        "default": "./lib/commonjs/stat-bar/index.js"
+      }
+    },
+    "./activity-heatmap": {
+      "react-native": "./src/activity-heatmap/index.ts",
+      "import": {
+        "types": "./lib/typescript/module/activity-heatmap/index.d.ts",
+        "default": "./lib/module/activity-heatmap/index.js"
+      },
+      "require": {
+        "types": "./lib/typescript/commonjs/activity-heatmap/index.d.ts",
+        "default": "./lib/commonjs/activity-heatmap/index.js"
+      }
+    },
+    "./profile-card": {
+      "react-native": "./src/profile-card/index.ts",
+      "import": {
+        "types": "./lib/typescript/module/profile-card/index.d.ts",
+        "default": "./lib/module/profile-card/index.js"
+      },
+      "require": {
+        "types": "./lib/typescript/commonjs/profile-card/index.d.ts",
+        "default": "./lib/commonjs/profile-card/index.js"
       }
     },
     "./benefit-list": {
