@@ -187,9 +187,17 @@ const ActivityHeatmapComponent: React.FC<ActivityHeatmapProps> = ({
   const monthRowMarginLeft = hasWeekdayCol ? weekdayColWidth + gap : 0;
   const cellRadius = Math.max(2, Math.round(cellSize * 0.25));
 
+  // The heatmap is a FIXED-width component: its footprint is exactly the grid's
+  // natural size, so it never stretches to fill a wide parent nor squishes in a
+  // narrow one (the cells keep `cellSize`). Overflow is the consumer's call —
+  // wrap it in a horizontal ScrollView when the viewport is narrower than this.
+  const columnCount = columns.length;
+  const gridWidth = columnCount * cellSize + Math.max(0, columnCount - 1) * gap;
+  const totalWidth = monthRowMarginLeft + gridWidth;
+
   return (
-    <View style={style} testID={testID}>
-      <View style={[styles.monthRow, { marginLeft: monthRowMarginLeft }]}>
+    <View style={[{ width: totalWidth, alignSelf: 'flex-start' }, style]} testID={testID}>
+      <View style={[styles.monthRow, { width: gridWidth, marginLeft: monthRowMarginLeft }]}>
         {monthMarks.map((mark, i) => (
           <Text
             key={`${mark.label}-${i}`}
