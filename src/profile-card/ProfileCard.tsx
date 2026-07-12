@@ -125,7 +125,8 @@ function MetricSection({
  * A composed profile "widget" card — the Apple-Watch-style stat card. Fully
  * app-agnostic: it takes pre-formatted strings, colors, and `ReactNode` icons
  * (no domain/currency logic). Built on {@link Card}, {@link Avatar} (ring +
- * badge), {@link DotGridMeter}/{@link StatBar}, and an {@link AvatarGroup} row.
+ * badge), {@link DotGridMeter}/{@link StatBar}, and an {@link AvatarGroup}
+ * facepile (overlapping stack).
  *
  * Theme-driven (Bloom's `useTheme()` reads the same NativeWind token pipeline
  * that backs the `--*` vars): the surface is the theme's `background` — the
@@ -192,10 +193,9 @@ const ProfileCardComponent: React.FC<ProfileCardProps> = ({
           </Text>
         )}
         <AvatarGroup
-          layout="row"
+          layout="stack"
           items={footer.items}
           size={FOOTER_AVATAR_SIZE}
-          spacing={7}
           max={footer.max ?? 4}
           showInitials
         />
