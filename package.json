@@ -624,6 +624,11 @@
     },
     "./bottom-sheet": {
       "react-native": "./src/bottom-sheet/index.tsx",
+      "browser": {
+        "types": "./lib/typescript/module/bottom-sheet/index.web.d.ts",
+        "import": "./lib/module/bottom-sheet/index.web.js",
+        "require": "./lib/commonjs/bottom-sheet/index.web.js"
+      },
       "import": {
         "types": "./lib/typescript/module/bottom-sheet/index.d.ts",
         "default": "./lib/module/bottom-sheet/index.js"

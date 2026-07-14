@@ -141,6 +141,7 @@ const WEB_FORKED_SUBPATHS = new Set([
   './menu',
   './tooltip',
   './select',
+  './bottom-sheet',
   './context-menu',
   './popover',
   './alert-dialog',
