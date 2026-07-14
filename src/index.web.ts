@@ -144,8 +144,8 @@ export { Combobox } from './combobox/index.web';
 export type { ComboboxProps, ComboboxOption } from './combobox/index.web';
 
 // Bottom sheet
-export { BottomSheet } from './bottom-sheet';
-export type { BottomSheetRef, BottomSheetProps } from './bottom-sheet';
+export { BottomSheet } from './bottom-sheet/index.web';
+export type { BottomSheetRef, BottomSheetProps } from './bottom-sheet/index.web';
 
 // Data display
 export * from './card';

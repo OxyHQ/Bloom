@@ -36,7 +36,7 @@ src/
 
 ## Platform Forks
 
-Components with `.web.tsx` variants: dialog, context-menu, menu, prompt-input/Textarea, select, toast, tooltip, theme/adaptive-colors.
+Components with `.web.tsx` variants: dialog, context-menu, menu, prompt-input/Textarea, select, bottom-sheet (`index.web.tsx` reuses the shared `#bloom-portal-root` — RN-Web's `<Modal>`/`ModalPortal` orphans its host node under React 19 StrictMode and never paints), toast, tooltip, theme/adaptive-colors.
 
 Platform-export generation script: `scripts/generate-platform-exports.mjs`. Every subpath with platform-specific behavior ships `.native.ts` + `.web.ts` + a clean default `.ts` with no Metro-only / NW5-only imports. Augmenting `ScrollView`/`FlatList` with `className` in this published RN package requires a heritage-free `declare module 'react-native'` block loaded via `/// <reference path>` — never `as any` / `@ts-ignore`. Consumer-facing rules are in parent `~/Oxy/AGENTS.md`.
 
