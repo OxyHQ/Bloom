@@ -19,6 +19,8 @@ export {
   HEX_TO_APP_COLOR,
   hexToAppColorName,
 } from './color-presets';
+export { parseRgb, withAlpha } from './color-utils';
+export type { RgbChannels } from './color-utils';
 export { getPresetVars, applyPresetVarsToDocument } from './preset-vars';
 export { applyDarkClass } from './apply-dark-class';
 export { setColorSchemeSafe } from './set-color-scheme-safe';
