@@ -97,10 +97,10 @@ export function createAlertDialog(Dialog: DialogComponent) {
             variant="primary"
             size="medium"
             onPress={handleConfirm}
-            style={[
+            style={StyleSheet.flatten([
               styles.action,
               destructive && { backgroundColor: theme.colors.negative },
-            ]}
+            ])}
             textStyle={destructive ? { color: theme.colors.negativeForeground } : undefined}
             accessibilityLabel={confirmLabel}
           >
