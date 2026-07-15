@@ -1,6 +1,6 @@
 {
   "name": "@oxyhq/bloom",
-  "version": "0.32.0",
+  "version": "0.33.0",
   "description": "Bloom UI — Oxy ecosystem component library for React Native + Expo + Web",
   "main": "lib/commonjs/index.js",
   "module": "lib/module/index.js",
@@ -37,6 +37,17 @@
       "require": {
         "types": "./lib/typescript/commonjs/image-resolver/index.d.ts",
         "default": "./lib/commonjs/image-resolver/index.js"
+      }
+    },
+    "./image-aspect-ratio-cache": {
+      "react-native": "./src/image-aspect-ratio-cache/index.ts",
+      "import": {
+        "types": "./lib/typescript/module/image-aspect-ratio-cache/index.d.ts",
+        "default": "./lib/module/image-aspect-ratio-cache/index.js"
+      },
+      "require": {
+        "types": "./lib/typescript/commonjs/image-aspect-ratio-cache/index.d.ts",
+        "default": "./lib/commonjs/image-aspect-ratio-cache/index.js"
       }
     },
     "./theme": {
@@ -380,6 +391,17 @@
       "require": {
         "types": "./lib/typescript/commonjs/media-inset-border/index.d.ts",
         "default": "./lib/commonjs/media-inset-border/index.js"
+      }
+    },
+    "./zoomable-image-gallery": {
+      "react-native": "./src/zoomable-image-gallery/index.ts",
+      "import": {
+        "types": "./lib/typescript/module/zoomable-image-gallery/index.d.ts",
+        "default": "./lib/module/zoomable-image-gallery/index.js"
+      },
+      "require": {
+        "types": "./lib/typescript/commonjs/zoomable-image-gallery/index.d.ts",
+        "default": "./lib/commonjs/zoomable-image-gallery/index.js"
       }
     },
     "./pressable-scale": {
@@ -1054,8 +1076,10 @@
     "@types/react-dom": "^19.2.3",
     "@types/react-native": "*",
     "@vitejs/plugin-react": "^6.0.2",
+    "expo-blur": "~56.0.3",
     "expo-font": "^56.0.5",
     "expo-haptics": "~56.0.3",
+    "expo-image": "~56.0.11",
     "expo-router": "^56.0.0",
     "jest": "^30.3.0",
     "jest-environment-jsdom": "^30.4.1",
@@ -1079,8 +1103,10 @@
   },
   "peerDependencies": {
     "expo": "*",
+    "expo-blur": "*",
     "expo-font": "*",
     "expo-haptics": "*",
+    "expo-image": "*",
     "expo-router": ">=3.0.0",
     "react": ">=18.0.0",
     "react-dom": ">=18.0.0",
