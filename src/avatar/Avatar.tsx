@@ -165,7 +165,7 @@ function CircleFallback({
 const AvatarComponent: React.FC<AvatarProps> = ({
   source,
   uri,
-  variant,
+  variant = 'thumb',
   fallbackSource,
   size = 40,
   verified = false,
@@ -223,7 +223,9 @@ const AvatarComponent: React.FC<AvatarProps> = ({
   // HTTP/data URLs pass through directly. Non-URL strings (e.g. Oxy file
   // IDs) are resolved via the app-provided ImageResolver if available, with the
   // requested `variant` forwarded so the resolver (the single URL chokepoint)
-  // can build the right rendition.
+  // can build the right rendition. `variant` defaults to `'thumb'` (see prop
+  // default) so a bare-id avatar never accidentally requests the full-size
+  // original; callers wanting the full image pass an explicit variant.
   const resolvedUri = useMemo(() => {
     if (typeof source === 'string') {
       if (source.startsWith('http://') || source.startsWith('https://') || source.startsWith('data:')) {

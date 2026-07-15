@@ -70,6 +70,7 @@ When no `source`, `uri`, or `name` resolves, you can fully control the placehold
 |------|------|---------|-------------|
 | `source?` | `string \| ImageSourcePropType \| null` | — | Flexible image source. Takes precedence over `uri`. |
 | `uri?` | `string` | — | Direct URI string. |
+| `variant?` | `string` | `'thumb'` | Rendition forwarded to the `ImageResolver` when `source` is a bare file ID. Defaults to `'thumb'` so avatars never request the full-size original; pass an explicit larger variant when you need a bigger image. Ignored for full URL / `{uri}` sources. |
 | `fallbackSource?` | `ImageSourcePropType` | — | Shown when `source`/`uri` errors. |
 | `size?` | `number` | `40` | Diameter in dp. |
 | `verified?` | `boolean` | `false` | Show a verified badge bottom-right. |

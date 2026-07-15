@@ -31,9 +31,10 @@ export interface AvatarProps {
   /**
    * Rendition variant forwarded to the {@link ImageResolver} when `source` is a
    * bare file ID (a non-URL string). Selects a server-side rendition such as
-   * `'thumb'`, `'small'`, or `'medium'`; omit it for the full-size image. Lists
-   * and grids should pass `variant="thumb"`. Ignored when `source` is already a
-   * full URL/`{uri}` or when no resolver is registered.
+   * `'thumb'`, `'small'`, or `'medium'`. Defaults to `'thumb'` so an avatar
+   * never accidentally requests the full-size original; pass an explicit
+   * variant (e.g. a larger rendition) when you need a bigger image. Ignored when
+   * `source` is already a full URL/`{uri}` or when no resolver is registered.
    */
   variant?: string;
   /** Fallback image source when source/uri is missing or errors (defaults to colored circle) */

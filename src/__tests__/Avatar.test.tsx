@@ -30,14 +30,29 @@ describe('Avatar variant resolution', () => {
     expect(resolver).toHaveBeenCalledWith('file_123', 'thumb');
   });
 
-  it('calls the resolver with undefined variant when none is supplied', () => {
+  it("defaults the variant to 'thumb' when none is supplied for a bare file ID", () => {
     const resolver = jest.fn<ReturnType<ImageResolver>, Parameters<ImageResolver>>(
       (id) => `https://cloud.oxy.so/${id}`,
     );
 
     renderWithProviders(<Avatar source="file_456" size={40} />, resolver);
 
-    expect(resolver).toHaveBeenCalledWith('file_456', undefined);
+    // No explicit variant → the safe default 'thumb', never the full-size
+    // original (undefined would request full size per the ImageResolver contract).
+    expect(resolver).toHaveBeenCalledWith('file_456', 'thumb');
+  });
+
+  it('forwards an explicit variant unchanged, overriding the default', () => {
+    const resolver = jest.fn<ReturnType<ImageResolver>, Parameters<ImageResolver>>(
+      (id, variant) => `https://cloud.oxy.so/${id}?variant=${variant ?? ''}`,
+    );
+
+    renderWithProviders(
+      <Avatar source="file_999" variant="w320" size={96} />,
+      resolver,
+    );
+
+    expect(resolver).toHaveBeenCalledWith('file_999', 'w320');
   });
 
   it('does NOT invoke the resolver when source is already a full URL', () => {
