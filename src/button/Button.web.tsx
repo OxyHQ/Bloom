@@ -9,11 +9,10 @@ import React, {
   type ReactElement,
 } from 'react';
 
-import type { ViewStyle } from 'react-native';
-
 import { useTheme } from '../theme/use-theme';
 import type { Theme } from '../theme/types';
 import { SpinnerIcon } from '../loading/SpinnerIcon.web';
+import { flattenWebStyle } from '../styles/flatten-web-style';
 import type { ButtonProps, ButtonSize, ButtonVariant } from './types';
 
 export type { ButtonProps, ButtonVariant, ButtonSize } from './types';
@@ -219,37 +218,6 @@ function resolveVariantStyle(
 }
 
 // ---------------------------------------------------------------------------
-//  Style normalization
-//
-//  Callers idiomatically pass `style` as a React-Native `StyleProp` — most
-//  often an ARRAY (`style={[base, cond && override]}`, possibly nested and
-//  containing falsy holes from `cond && {...}`). The DOM `<button>` below needs
-//  a SINGLE plain object: spreading a raw array into an object literal produces
-//  numeric keys (`"0"`, `"1"`, …), which React then assigns onto the real
-//  `CSSStyleDeclaration`, throwing
-//  `Failed to set an indexed property [0] on 'CSSStyleDeclaration'`. Flatten the
-//  StyleProp into one object here, once, before it reaches either merge site.
-//  Later entries win, mirroring React-Native array-style precedence.
-//
-//  `StyleNode` is a readonly-closed recursion type (RN's own `StyleProp` array
-//  member yields `readonly` sub-arrays that aren't assignable back to
-//  `StyleProp`, so it can't be recursed over directly). `ButtonProps['style']`
-//  is assignable to it, so call sites pass `style` with no cast.
-// ---------------------------------------------------------------------------
-
-type StyleNode = ViewStyle | false | null | undefined | '' | ReadonlyArray<StyleNode>;
-
-function flattenStyle(style: StyleNode): CSSProperties {
-  if (Array.isArray(style)) {
-    return style.reduce<CSSProperties>(
-      (merged, entry) => Object.assign(merged, flattenStyle(entry)),
-      {},
-    );
-  }
-  return style && typeof style === 'object' ? (style as CSSProperties) : {};
-}
-
-// ---------------------------------------------------------------------------
 //  Component
 // ---------------------------------------------------------------------------
 
@@ -350,9 +318,11 @@ const ButtonWebComponent: React.FC<ButtonProps> = ({
 
   const spinnerColor = loadingColor ?? variantStyle.textColor;
 
-  // Normalize the caller's `style` (single object, array, or falsy) into one
-  // flat plain object ONCE, so neither merge site below spreads a raw array.
-  const resolvedStyle = flattenStyle(style);
+  // Normalize the caller's `style` (single object, StyleProp array, or falsy)
+  // into ONE flat plain object here, once, so neither raw-DOM merge site below
+  // spreads a StyleProp array (which would leak numeric keys onto the button's
+  // CSSStyleDeclaration). See `flattenWebStyle` for the full rationale.
+  const resolvedStyle = flattenWebStyle(style);
 
   const content = (
     <>

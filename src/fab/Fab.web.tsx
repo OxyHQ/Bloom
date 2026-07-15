@@ -10,6 +10,7 @@ import React, {
 
 import { useTheme } from '../theme/use-theme';
 import type { Theme } from '../theme/types';
+import { flattenWebStyle } from '../styles/flatten-web-style';
 import type { FabPlacement, FabProps, FabSize, FabVariant } from './types';
 
 export type { FabProps, FabVariant, FabSize, FabPlacement } from './types';
@@ -261,12 +262,20 @@ const FabWebComponent: React.FC<FabProps> = ({
   const ariaLabel = ariaLabelProp ?? accessibilityLabel ?? label;
   const composedClassName = ['bloom-fab'].concat(className ? [className] : []).join(' ');
 
+  // Normalize `style`/`labelStyle` (single object, StyleProp array — the native
+  // fork passes `style={[placementStyle(...), {...}, style]}` — or falsy) into
+  // ONE flat plain object each, so neither raw-DOM merge site below spreads a
+  // StyleProp array (which would leak numeric keys onto the element's
+  // CSSStyleDeclaration). See `flattenWebStyle` for the full rationale.
+  const resolvedStyle = flattenWebStyle(style);
+  const resolvedLabelStyle = flattenWebStyle(labelStyle);
+
   return (
     <button
       id={resolvedId}
       type={type}
       className={composedClassName}
-      style={{ ...containerStyle, ...(style as CSSProperties) }}
+      style={{ ...containerStyle, ...resolvedStyle }}
       onClick={handleClick}
       disabled={disabled}
       aria-disabled={disabled || undefined}
@@ -288,7 +297,7 @@ const FabWebComponent: React.FC<FabProps> = ({
           {content}
         </span>
       )}
-      {isExtended && <span style={labelStyle as CSSProperties}>{label}</span>}
+      {isExtended && <span style={resolvedLabelStyle}>{label}</span>}
     </button>
   );
 };
