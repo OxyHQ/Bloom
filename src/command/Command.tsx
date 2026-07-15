@@ -1,4 +1,4 @@
-import React, { useCallback, useMemo, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
   Platform,
   ScrollView,
@@ -15,6 +15,7 @@ import { Kbd } from '../kbd';
 import { SearchInput } from '../search-input';
 import { fontSize, space } from '../styles/tokens';
 import type { DialogProps } from '../dialog';
+import { useDialogControl } from '../dialog/context';
 import type { CommandItem, CommandProps } from './types';
 
 type DialogComponent = React.ComponentType<DialogProps>;
@@ -48,6 +49,20 @@ interface FlatEntry {
  * `SearchInput`, an `Item` results list and `Kbd` shortcut hints. Items group
  * by their `group` field (ungrouped first). On web the list is
  * keyboard-navigable (Up/Down/Enter); on native, tap to select.
+ *
+ * Control mode — IMPERATIVE, not controlled. `Command` keeps its public
+ * *controlled* API (`visible` boolean + `onClose`) but internally bridges it
+ * onto the Dialog's imperative `useDialogControl()` handle, exactly like
+ * `AlertDialog`. This makes `Command` the LAST controlled-`open` `Dialog`
+ * consumer to move onto the imperative path every other surface uses
+ * (`alert()`, `confirm()`, native `Menu`/`Select`/`ContextMenu`, Mention's
+ * dialogs), so there is one code path across the ecosystem. It also guarantees
+ * the palette's exit animation on the dismiss path even for a consumer that
+ * unmounts the palette in response to `onClose` (`{open && <Command …/>}`): the
+ * imperative `close()` runs the exit animation FIRST and fires `onClose` only
+ * once it settles, whereas the controlled `open` path fires `onClose`
+ * synchronously — which, for an unmount-on-close consumer, would tear the
+ * surface down before it could animate out.
  */
 export function createCommand(Dialog: DialogComponent) {
   const Command = function Command({
@@ -64,6 +79,7 @@ export function createCommand(Dialog: DialogComponent) {
     testID,
   }: CommandProps) {
     const theme = useTheme();
+    const control = useDialogControl();
     const searchRef = useRef<TextInput>(null);
     const [activeIndex, setActiveIndex] = useState(0);
 
@@ -142,6 +158,37 @@ export function createCommand(Dialog: DialogComponent) {
     [setQuery, onClose],
   );
 
+  // Bridge the public *controlled* `visible` prop onto the Dialog's imperative
+  // open/close (mirrors `AlertDialog`). `control` is referentially stable
+  // (memoised on its id), so this effect only re-runs when `visible` actually
+  // flips. Opening straight from an effect on mount matches bloom's own
+  // `AutoMountedDialog`. When a consumer flips `visible` to `false` (their own
+  // close, or after a select), we imperatively `close()` so the exit animation
+  // still plays.
+  const closingFromPropRef = useRef(false);
+  useEffect(() => {
+    if (visible) {
+      control.open();
+      return;
+    }
+    closingFromPropRef.current = true;
+    control.close();
+  }, [visible, control]);
+
+  // The Dialog fires `onClose` after the exit animation settles (imperative
+  // mode). Forward ONLY user-initiated dismissals (backdrop / Escape) to the
+  // consumer — a consumer-initiated close (they flipped `visible` to `false`,
+  // e.g. `select` already called `onClose`) must not re-enter `onClose`,
+  // preserving the previous controlled semantics where a programmatic close
+  // does not fire `onClose` a second time.
+  const handleClose = useCallback(() => {
+    if (closingFromPropRef.current) {
+      closingFromPropRef.current = false;
+      return;
+    }
+    onClose();
+  }, [onClose]);
+
   // Web keyboard navigation on the search input.
   const webKeyHandler: Record<string, unknown> =
     Platform.OS === 'web'
@@ -172,8 +219,8 @@ export function createCommand(Dialog: DialogComponent) {
 
   return (
     <Dialog
-      open={visible}
-      onClose={onClose}
+      control={control}
+      onClose={handleClose}
       placement="center"
       dismissOnBackdrop
       maxWidth={COMMAND_MAX_WIDTH}
