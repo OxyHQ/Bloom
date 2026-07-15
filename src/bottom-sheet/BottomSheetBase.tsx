@@ -569,6 +569,19 @@ export const BottomSheetBase = forwardRef((props: BottomSheetBaseProps, ref: Rea
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [manualActivation, enablePanDownToClose, enableHandlePanningGesture, detached, finishClose]);
 
+    // CRITICAL — the shared values each `useAnimatedStyle` READS (translateY,
+    // opacity, screenHeightSV, keyboardHeight) MUST be listed in its dependency
+    // array. On web WITHOUT the react-native-worklets babel plugin (the
+    // production reality for the RN-Web apps: console, accounts, the SDK, etc.),
+    // reanimated cannot auto-detect which shared values a worklet reads (there
+    // is no injected `__closure`), so it drives the style mapper's re-runs off
+    // the dependency array instead. With an empty/incomplete deps array the
+    // mapper runs ONCE and freezes at the initial frame — the shared value keeps
+    // animating underneath but the DOM never updates, so the sheet stays one
+    // full viewport below the fold (translateY = screenHeight) and is invisible.
+    // Native (with the plugin) auto-tracks and ignores the extra deps, so this
+    // is safe on both platforms. Do NOT strip the shared values from these deps.
+    //
     // `opacity.value` drives the fade in/out (0 -> 1). `backdropOpacity` is the
     // final dim level once fully visible. We multiply so the consumer-provided
     // dim opacity applies smoothly across the animation. When
@@ -586,7 +599,7 @@ export const BottomSheetBase = forwardRef((props: BottomSheetBaseProps, ref: Rea
         return {
             opacity: opacity.value * backdropOpacity * dragFactor,
         };
-    }, [backdropOpacity, dynamicBackdrop]);
+    }, [backdropOpacity, dynamicBackdrop, opacity, translateY, screenHeightSV]);
 
     const sheetStyle = useAnimatedStyle(() => {
         const scale = interpolate(translateY.value, [0, screenHeightSV.value], [1, 0.95]);
@@ -596,11 +609,11 @@ export const BottomSheetBase = forwardRef((props: BottomSheetBaseProps, ref: Rea
                 { scale },
             ],
         };
-    }, []);
+    }, [translateY, screenHeightSV, keyboardHeight]);
 
     const sheetHeightStyle = useAnimatedStyle(() => ({
         maxHeight: screenHeightSV.value - keyboardHeight.value - insets.top - (detached ? insets.bottom + 16 : 0),
-    }), [insets.top, insets.bottom, detached]);
+    }), [insets.top, insets.bottom, detached, screenHeightSV, keyboardHeight]);
 
     const sheetMarginStyle = useAnimatedStyle(() => {
         // Only add margin when detached, otherwise extend behind safe area
@@ -612,7 +625,7 @@ export const BottomSheetBase = forwardRef((props: BottomSheetBaseProps, ref: Rea
         return {
             marginBottom: 0,
         };
-    }, [insets.bottom, detached]);
+    }, [insets.bottom, detached, keyboardHeight]);
 
     const handleBackdropPress = useCallback(() => {
         // Always animate close on backdrop press
