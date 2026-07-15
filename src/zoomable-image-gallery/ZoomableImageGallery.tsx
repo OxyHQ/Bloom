@@ -1,4 +1,4 @@
-import React, { useCallback, useMemo, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
   View,
   Text,
@@ -6,6 +6,7 @@ import {
   Pressable,
   Platform,
   ScrollView,
+  Share,
   useWindowDimensions,
   NativeSyntheticEvent,
   NativeScrollEvent,
@@ -28,6 +29,12 @@ import {
 } from 'react-native-gesture-handler';
 import { useTheme } from '../theme/use-theme';
 import { Portal } from '../portal';
+import { PressableWithHover } from '../pressable-with-hover';
+import {
+  ArrowLeft_Stroke2_Corner0_Rounded,
+  ArrowRight_Stroke2_Corner0_Rounded,
+  ArrowOutOfBox_Stroke2_Corner0_Rounded,
+} from '../icons';
 import { Z_INDEX } from '../styles/z-index';
 import {
   getAspectRatio,
@@ -48,6 +55,13 @@ import {
   CLOSE_SPRING,
   SNAP_BACK_SPRING,
   DEFAULT_CORNER_RADIUS,
+  MIN_ZOOM_SCALE,
+  MAX_ZOOM_SCALE,
+  ZOOM_SNAP_THRESHOLD,
+  DOUBLE_TAP_ZOOM_SCALE,
+  ZOOM_PAN_DAMPING,
+  ZOOM_PAN_MAX_BASE,
+  THUMBNAIL_STRIP_TILE_SIZE,
 } from './constants';
 import type {
   GalleryImage,
@@ -94,7 +108,7 @@ interface FittedSize {
  *   `Gesture.Pan` (`activeOffsetY` + `failOffsetX`) owns drag-to-dismiss, so the
  *   two never fight.
  */
-const ZoomableImageGalleryInner = React.forwardRef<ZoomableImageGalleryHandle, ZoomableImageGalleryProps>(({ measureThumb, cornerRadius = DEFAULT_CORNER_RADIUS }, ref) => {
+const ZoomableImageGalleryInner = React.forwardRef<ZoomableImageGalleryHandle, ZoomableImageGalleryProps>(({ measureThumb, cornerRadius = DEFAULT_CORNER_RADIUS, indicatorVariant = 'dots' }, ref) => {
   const theme = useTheme();
   const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = useWindowDimensions();
 
@@ -103,15 +117,37 @@ const ZoomableImageGalleryInner = React.forwardRef<ZoomableImageGalleryHandle, Z
   const [pagerReady, setPagerReady] = useState(false);
   const [images, setImages] = useState<GalleryImage[]>([]);
   const [activeIndex, setActiveIndex] = useState(0);
+  // Whether the active image is currently pinched/double-tapped past its base
+  // size. Drives the pan-while-zoomed gesture, disables the pager's horizontal
+  // paging + the dismiss drag so a pan moves the zoomed image instead.
+  const [isZoomed, setIsZoomed] = useState(false);
   // Aspect ratio of the OPENING image (drives the open-animation fit box).
   const [openRatio, setOpenRatio] = useState<number>(DEFAULT_ASPECT_RATIO);
   // Per-image aspect ratios for the pager pages (index-aligned with `images`).
   const [pageRatios, setPageRatios] = useState<Record<number, number>>({});
 
+  // Native `Share` is always available; web exposes a share button only when the
+  // browser implements `navigator.share`. Computed once (capability is static).
+  const [canShare] = useState(() => {
+    if (Platform.OS !== 'web') return true;
+    return typeof navigator !== 'undefined' && typeof navigator.share === 'function';
+  });
+
   const scale = useSharedValue(1);
   const translateX = useSharedValue(0);
   const translateY = useSharedValue(0);
   const opacity = useSharedValue(0);
+
+  // Zoom transform of the active image, kept SEPARATE from the open/close +
+  // dismiss-drag transform above (reusing those would collide two meanings).
+  // `zoom*` are the live/persisted values; `baseZoomScale` is captured at pinch
+  // start and `savedZoomTranslate*` at pan start for incremental bookkeeping.
+  const zoomScale = useSharedValue(1);
+  const zoomTranslateX = useSharedValue(0);
+  const zoomTranslateY = useSharedValue(0);
+  const baseZoomScale = useSharedValue(1);
+  const savedZoomTranslateX = useSharedValue(0);
+  const savedZoomTranslateY = useSharedValue(0);
 
   // Origin (offset from screen center) of the tapped image.
   const originX = useSharedValue(0);
@@ -140,6 +176,19 @@ const ZoomableImageGalleryInner = React.forwardRef<ZoomableImageGalleryHandle, Z
     activeIndexRef.current = next;
     setActiveIndex((prev) => (prev === next ? prev : next));
   }, []);
+
+  // Snap the active image back to its un-zoomed baseline (no animation) and clear
+  // all zoom bookkeeping. Called on every path that changes the active page so a
+  // freshly-viewed image always starts un-zoomed.
+  const resetZoom = useCallback(() => {
+    zoomScale.value = 1;
+    zoomTranslateX.value = 0;
+    zoomTranslateY.value = 0;
+    savedZoomTranslateX.value = 0;
+    savedZoomTranslateY.value = 0;
+    baseZoomScale.value = 1;
+    setIsZoomed(false);
+  }, [baseZoomScale, savedZoomTranslateX, savedZoomTranslateY, zoomScale, zoomTranslateX, zoomTranslateY]);
 
   // Box the fitted image must fit inside.
   const fitBox = useMemo<FittedSize>(
@@ -375,7 +424,9 @@ const ZoomableImageGalleryInner = React.forwardRef<ZoomableImageGalleryHandle, Z
   const panGesture = useMemo(
     () =>
       Gesture.Pan()
-        .enabled(isOpen)
+        // Disabled while zoomed so a drag pans the zoomed image (via the
+        // per-page pan gesture) instead of trying to dismiss the whole viewer.
+        .enabled(isOpen && !isZoomed)
         // Only claim drags that are decided to be vertical; horizontal drags
         // fall through to the pager's ScrollView so swiping changes pages.
         .activeOffsetY([-AXIS_DECISION_OFFSET, AXIS_DECISION_OFFSET])
@@ -408,7 +459,7 @@ const ZoomableImageGalleryInner = React.forwardRef<ZoomableImageGalleryHandle, Z
             opacity.value = withTiming(1, { duration: OPACITY_DURATION });
           }
         }),
-    [handleDismiss, isOpen, SCREEN_HEIGHT, opacity, scale, startScale, startX, startY, translateX, translateY]
+    [handleDismiss, isOpen, isZoomed, SCREEN_HEIGHT, opacity, scale, startScale, startX, startY, translateX, translateY]
   );
 
   const backdropStyle = useAnimatedStyle(() => ({ opacity: opacity.value }));
@@ -432,6 +483,16 @@ const ZoomableImageGalleryInner = React.forwardRef<ZoomableImageGalleryHandle, Z
     ],
   }));
 
+  // Pinch/double-tap zoom transform, layered on TOP of the active page image's
+  // `fit`-based sizing (composed, never replacing it).
+  const zoomImageStyle = useAnimatedStyle(() => ({
+    transform: [
+      { scale: zoomScale.value },
+      { translateX: zoomTranslateX.value },
+      { translateY: zoomTranslateY.value },
+    ],
+  }));
+
   // Derive the current page from the scroll offset, clamp into range, and update
   // `activeIndex` only when it actually changes (drives the live indicator + the
   // close fly-back target). Shared by `onMomentumScrollEnd` (native) and `onScroll`
@@ -442,11 +503,29 @@ const ZoomableImageGalleryInner = React.forwardRef<ZoomableImageGalleryHandle, Z
       if (lastIndex < 0) return;
       const next = Math.min(Math.max(Math.round(offsetX / SCREEN_WIDTH), 0), lastIndex);
       if (next === activeIndexRef.current) return;
+      // Swiping to a new page always starts it un-zoomed (and clears the zoom on
+      // the page scrolling away).
+      resetZoom();
       setActiveIndexBoth(next);
       const img = images[next];
       if (img) ensureRatio(next, img.uri);
     },
-    [ensureRatio, images, setActiveIndexBoth, SCREEN_WIDTH]
+    [ensureRatio, images, resetZoom, setActiveIndexBoth, SCREEN_WIDTH]
+  );
+
+  // Programmatically page to `index` (arrow buttons, keyboard, thumbnail taps).
+  // Clamps into range and lets the existing scroll handlers own the index/ratio
+  // state-sync — this only triggers the scroll. No-op until the pager is mounted.
+  const pageTo = useCallback(
+    (index: number) => {
+      if (!pagerReady) return;
+      const lastIndex = images.length - 1;
+      if (lastIndex < 0) return;
+      const clamped = Math.min(Math.max(index, 0), lastIndex);
+      resetZoom();
+      pagerRef.current?.scrollTo({ x: clamped * SCREEN_WIDTH, y: 0, animated: true });
+    },
+    [images.length, pagerReady, resetZoom, SCREEN_WIDTH]
   );
 
   const onPagerScroll = useCallback(
@@ -464,6 +543,166 @@ const ZoomableImageGalleryInner = React.forwardRef<ZoomableImageGalleryHandle, Z
       pagerRef.current?.scrollTo({ x: idx * SCREEN_WIDTH, animated: false });
     }
   }, [SCREEN_WIDTH]);
+
+  // Double-tap toggles zoom: reset when already zoomed, else zoom to the tapped
+  // point (biased toward it, clamped near the image center). `x`/`y` are local
+  // to the active image, so its own fitted box gives the center + clamp bounds.
+  const zoomToPoint = useCallback(
+    (x: number, y: number) => {
+      if (zoomScale.value > 1) {
+        resetZoom();
+        return;
+      }
+      const centerX = activeFit.width / 2;
+      const centerY = activeFit.height / 2;
+      const maxOffset = Math.max(activeFit.width, activeFit.height) * 0.2;
+      const offsetX = Math.max(-maxOffset, Math.min(maxOffset, (centerX - x) * 0.5));
+      const offsetY = Math.max(-maxOffset, Math.min(maxOffset, (centerY - y) * 0.5));
+      zoomScale.value = withSpring(DOUBLE_TAP_ZOOM_SCALE);
+      zoomTranslateX.value = withSpring(offsetX);
+      zoomTranslateY.value = withSpring(offsetY);
+      savedZoomTranslateX.value = offsetX;
+      savedZoomTranslateY.value = offsetY;
+      baseZoomScale.value = DOUBLE_TAP_ZOOM_SCALE;
+      setIsZoomed(true);
+    },
+    [activeFit, baseZoomScale, resetZoom, savedZoomTranslateX, savedZoomTranslateY, zoomScale, zoomTranslateX, zoomTranslateY]
+  );
+
+  const doubleTapGesture = useMemo(
+    () =>
+      Gesture.Tap()
+        .numberOfTaps(2)
+        .onEnd((event) => {
+          runOnJS(zoomToPoint)(event.x, event.y);
+        }),
+    [zoomToPoint]
+  );
+
+  // Single tap dismisses — but only when un-zoomed (a tap while zoomed is inert;
+  // double-tap/pinch own un-zooming). Made exclusive with the double-tap below so
+  // the first tap of a double-tap never dismisses.
+  const singleTapDismissGesture = useMemo(
+    () =>
+      Gesture.Tap()
+        .numberOfTaps(1)
+        .onEnd(() => {
+          if (zoomScale.value > 1) return;
+          runOnJS(handleDismiss)();
+        }),
+    [handleDismiss, zoomScale]
+  );
+
+  const pinchGesture = useMemo(
+    () =>
+      Gesture.Pinch()
+        .onStart(() => {
+          baseZoomScale.value = zoomScale.value;
+          runOnJS(setIsZoomed)(true);
+        })
+        .onUpdate((event) => {
+          zoomScale.value = Math.max(
+            MIN_ZOOM_SCALE,
+            Math.min(MAX_ZOOM_SCALE, baseZoomScale.value * (event.scale || 1))
+          );
+        })
+        .onEnd(() => {
+          if (zoomScale.value < ZOOM_SNAP_THRESHOLD) {
+            zoomScale.value = withSpring(1);
+            zoomTranslateX.value = withSpring(0);
+            zoomTranslateY.value = withSpring(0);
+            savedZoomTranslateX.value = 0;
+            savedZoomTranslateY.value = 0;
+            baseZoomScale.value = 1;
+            runOnJS(setIsZoomed)(false);
+          } else {
+            runOnJS(setIsZoomed)(true);
+          }
+        }),
+    [baseZoomScale, savedZoomTranslateX, savedZoomTranslateY, zoomScale, zoomTranslateX, zoomTranslateY]
+  );
+
+  const panWhileZoomedGesture = useMemo(
+    () =>
+      Gesture.Pan()
+        .enabled(isZoomed)
+        .minPointers(1)
+        .maxPointers(1)
+        .onStart(() => {
+          if (zoomScale.value <= 1) return;
+          savedZoomTranslateX.value = zoomTranslateX.value;
+          savedZoomTranslateY.value = zoomTranslateY.value;
+        })
+        .onUpdate((event) => {
+          if (zoomScale.value <= 1) return;
+          const nextX = savedZoomTranslateX.value + event.translationX * ZOOM_PAN_DAMPING;
+          const nextY = savedZoomTranslateY.value + event.translationY * ZOOM_PAN_DAMPING;
+          const maxTranslation = ZOOM_PAN_MAX_BASE * zoomScale.value;
+          zoomTranslateX.value = Math.max(-maxTranslation, Math.min(maxTranslation, nextX));
+          zoomTranslateY.value = Math.max(-maxTranslation, Math.min(maxTranslation, nextY));
+        })
+        .onEnd(() => {
+          if (zoomScale.value <= 1) return;
+          savedZoomTranslateX.value = zoomTranslateX.value;
+          savedZoomTranslateY.value = zoomTranslateY.value;
+        }),
+    [isZoomed, savedZoomTranslateX, savedZoomTranslateY, zoomScale, zoomTranslateX, zoomTranslateY]
+  );
+
+  // Active page gesture: double-tap zoom + single-tap dismiss are mutually
+  // exclusive (single waits for the double to fail); both run simultaneously
+  // with pinch + pan-while-zoomed.
+  const activePageGesture = useMemo(
+    () =>
+      Gesture.Simultaneous(
+        Gesture.Exclusive(doubleTapGesture, singleTapDismissGesture),
+        pinchGesture,
+        panWhileZoomedGesture
+      ),
+    [doubleTapGesture, singleTapDismissGesture, pinchGesture, panWhileZoomedGesture]
+  );
+
+  // Share the active image's URI: the OS share sheet on native; the Web Share API
+  // on supporting browsers (the button is only rendered where it exists).
+  const handleShare = useCallback(async () => {
+    const uri = images[activeIndexRef.current]?.uri;
+    if (!uri) return;
+    try {
+      if (Platform.OS === 'web') {
+        if (typeof navigator !== 'undefined' && typeof navigator.share === 'function') {
+          await navigator.share({ url: uri });
+        }
+        return;
+      }
+      await Share.share({ url: uri });
+    } catch (err) {
+      // A user-cancelled share sheet rejects (AbortError on web) — that's
+      // expected, not a failure. Anything else is a real error worth surfacing.
+      if (err instanceof Error && err.name === 'AbortError') return;
+      if (typeof console !== 'undefined' && console.error) console.error('Image share failed:', err);
+    }
+  }, [images]);
+
+  // Keyboard navigation (web only), scoped to the open lifetime like Dialog.web's
+  // Escape handler. Reads the live index from the ref so it need not re-subscribe
+  // on every page change. Escape flies back via `handleDismiss` (not a raw close).
+  useEffect(() => {
+    if (!isOpen || Platform.OS !== 'web' || typeof document === 'undefined') return;
+    const handler = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        e.stopPropagation();
+        handleDismiss();
+      } else if (e.key === 'ArrowLeft') {
+        e.stopPropagation();
+        pageTo(activeIndexRef.current - 1);
+      } else if (e.key === 'ArrowRight') {
+        e.stopPropagation();
+        pageTo(activeIndexRef.current + 1);
+      }
+    };
+    document.addEventListener('keydown', handler);
+    return () => document.removeEventListener('keydown', handler);
+  }, [handleDismiss, isOpen, pageTo]);
 
   const renderContent = () => (
     <GestureHandlerRootView style={styles.modalContainer}>
@@ -511,6 +750,9 @@ const ZoomableImageGalleryInner = React.forwardRef<ZoomableImageGalleryHandle, Z
                 ref={pagerRef}
                 horizontal
                 pagingEnabled
+                // Frozen while zoomed so a horizontal drag pans the zoomed image
+                // instead of paging away from it.
+                scrollEnabled={!isZoomed}
                 showsHorizontalScrollIndicator={false}
                 contentOffset={{ x: pendingIndexRef.current * SCREEN_WIDTH, y: 0 }}
                 onLayout={onPagerLayout}
@@ -522,11 +764,35 @@ const ZoomableImageGalleryInner = React.forwardRef<ZoomableImageGalleryHandle, Z
                 {images.map((img, idx) => {
                   const ratio = pageRatios[idx] ?? getAspectRatio(img.uri) ?? DEFAULT_ASPECT_RATIO;
                   const fit = fitForRatio(ratio);
+                  // Only the active page is zoomable + gesture-wrapped (double-tap
+                  // / single-tap dismiss / pinch / pan). Off-screen pages stay a
+                  // plain image; the active image handles its own tap-to-dismiss
+                  // through the gesture, so it isn't wrapped in a Pressable.
+                  if (idx === activeIndex) {
+                    return (
+                      <View
+                        key={`${img.uri}-${idx}`}
+                        style={[styles.page, { width: SCREEN_WIDTH, height: SCREEN_HEIGHT }, webPointerStyle]}
+                      >
+                        <GestureDetector gesture={activePageGesture}>
+                          <AnimatedImage
+                            source={{ uri: img.uri }}
+                            contentFit="contain"
+                            style={[
+                              { width: fit.width, height: fit.height, borderRadius: cornerRadius },
+                              zoomImageStyle,
+                            ]}
+                            transition={0}
+                            {...(Platform.OS === 'web' ? { draggable: false } : {})}
+                          />
+                        </GestureDetector>
+                      </View>
+                    );
+                  }
                   return (
-                    <Pressable
+                    <View
                       key={`${img.uri}-${idx}`}
-                      onPress={handleDismiss}
-                      style={[styles.page, { width: SCREEN_WIDTH, height: SCREEN_HEIGHT }, webPointerStyle]}
+                      style={[styles.page, { width: SCREEN_WIDTH, height: SCREEN_HEIGHT }]}
                     >
                       <Image
                         source={{ uri: img.uri }}
@@ -535,7 +801,7 @@ const ZoomableImageGalleryInner = React.forwardRef<ZoomableImageGalleryHandle, Z
                         transition={0}
                         {...(Platform.OS === 'web' ? { draggable: false } : {})}
                       />
-                    </Pressable>
+                    </View>
                   );
                 })}
               </ScrollView>
@@ -543,19 +809,88 @@ const ZoomableImageGalleryInner = React.forwardRef<ZoomableImageGalleryHandle, Z
           )}
 
           {pagerReady && images.length > 1 && (
-            <Animated.View style={[styles.indicatorWrap, backdropStyle]} pointerEvents="none">
-              <View style={styles.counterPill}>
+            <Animated.View style={[styles.indicatorWrap, backdropStyle]} pointerEvents="box-none">
+              <View style={styles.counterPill} pointerEvents="none">
                 <Text style={styles.counterText}>{`${activeIndex + 1} / ${images.length}`}</Text>
               </View>
-              <View style={styles.dotsRow}>
-                {images.map((img, idx) => (
-                  <View
-                    key={`dot-${img.uri}-${idx}`}
-                    style={[styles.dot, idx === activeIndex ? styles.dotActive : styles.dotInactive]}
-                  />
-                ))}
-              </View>
+              {indicatorVariant === 'thumbnails' ? (
+                <ScrollView
+                  horizontal
+                  showsHorizontalScrollIndicator={false}
+                  style={styles.thumbStripScroll}
+                  contentContainerStyle={styles.thumbStripContent}
+                >
+                  {images.map((img, idx) => (
+                    <Pressable
+                      key={`thumb-${img.uri}-${idx}`}
+                      onPress={() => pageTo(idx)}
+                      accessibilityRole="button"
+                      accessibilityLabel={`Go to image ${idx + 1} of ${images.length}`}
+                      style={[
+                        styles.thumbTile,
+                        idx === activeIndex ? styles.thumbTileActive : styles.thumbTileInactive,
+                        webPointerStyle,
+                      ]}
+                    >
+                      <Image
+                        source={{ uri: img.uri }}
+                        contentFit="cover"
+                        style={styles.thumbTileImage}
+                        transition={0}
+                        {...(Platform.OS === 'web' ? { draggable: false } : {})}
+                      />
+                    </Pressable>
+                  ))}
+                </ScrollView>
+              ) : (
+                <View style={styles.dotsRow} pointerEvents="none">
+                  {images.map((img, idx) => (
+                    <View
+                      key={`dot-${img.uri}-${idx}`}
+                      style={[styles.dot, idx === activeIndex ? styles.dotActive : styles.dotInactive]}
+                    />
+                  ))}
+                </View>
+              )}
             </Animated.View>
+          )}
+
+          {Platform.OS === 'web' && pagerReady && images.length > 1 && activeIndex > 0 && (
+            <PressableWithHover
+              onPress={() => pageTo(activeIndex - 1)}
+              accessibilityRole="button"
+              accessibilityLabel="Previous image"
+              hitSlop={8}
+              style={[styles.navArrow, styles.navArrowLeft, webPointerStyle]}
+              hoverStyle={styles.navArrowHoverLeft}
+            >
+              <ArrowLeft_Stroke2_Corner0_Rounded fill="#fff" size="lg" />
+            </PressableWithHover>
+          )}
+
+          {Platform.OS === 'web' && pagerReady && images.length > 1 && activeIndex < images.length - 1 && (
+            <PressableWithHover
+              onPress={() => pageTo(activeIndex + 1)}
+              accessibilityRole="button"
+              accessibilityLabel="Next image"
+              hitSlop={8}
+              style={[styles.navArrow, styles.navArrowRight, webPointerStyle]}
+              hoverStyle={styles.navArrowHoverRight}
+            >
+              <ArrowRight_Stroke2_Corner0_Rounded fill="#fff" size="lg" />
+            </PressableWithHover>
+          )}
+
+          {canShare && pagerReady && (
+            <Pressable
+              onPress={handleShare}
+              accessibilityRole="button"
+              accessibilityLabel="Share image"
+              hitSlop={8}
+              style={[styles.shareButton, webPointerStyle]}
+            >
+              <ArrowOutOfBox_Stroke2_Corner0_Rounded fill="#fff" size="md" />
+            </Pressable>
           )}
 
           {activeAlt ? (
@@ -665,6 +1000,72 @@ const styles = StyleSheet.create({
   },
   dotInactive: {
     backgroundColor: 'rgba(255,255,255,0.4)',
+  },
+  thumbStripScroll: {
+    maxWidth: '100%',
+    flexGrow: 0,
+  },
+  // Centers the tiles when they don't fill the width, scrolls when they overflow.
+  thumbStripContent: {
+    flexGrow: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    gap: 8,
+    paddingHorizontal: 16,
+  },
+  thumbTile: {
+    width: THUMBNAIL_STRIP_TILE_SIZE,
+    height: THUMBNAIL_STRIP_TILE_SIZE,
+    borderRadius: 8,
+    overflow: 'hidden',
+    borderWidth: 2,
+  },
+  thumbTileActive: {
+    borderColor: '#fff',
+  },
+  thumbTileInactive: {
+    borderColor: 'rgba(255,255,255,0.25)',
+  },
+  thumbTileImage: {
+    width: '100%',
+    height: '100%',
+  },
+  navArrow: {
+    position: 'absolute',
+    top: '50%',
+    width: 44,
+    height: 44,
+    borderRadius: 999,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: 'rgba(0,0,0,0.45)',
+    transform: [{ translateY: -22 }],
+  },
+  navArrowLeft: {
+    left: 16,
+  },
+  navArrowRight: {
+    right: 16,
+  },
+  // Hover styles fully replace the base `transform`, so they repeat `translateY`.
+  navArrowHoverLeft: {
+    backgroundColor: 'rgba(0,0,0,0.7)',
+    transform: [{ translateY: -22 }, { scale: 1.08 }],
+  },
+  navArrowHoverRight: {
+    backgroundColor: 'rgba(0,0,0,0.7)',
+    transform: [{ translateY: -22 }, { scale: 1.08 }],
+  },
+  shareButton: {
+    position: 'absolute',
+    top: 16,
+    right: 16,
+    width: 40,
+    height: 40,
+    borderRadius: 999,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: 'rgba(0,0,0,0.45)',
   },
   altCaptionWrap: {
     position: 'absolute',
