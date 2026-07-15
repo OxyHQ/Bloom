@@ -198,4 +198,55 @@ describe('Button.web', () => {
       expect(getByRole(c, 'button', { name: 'icon' }).tagName).toBe('BUTTON');
     });
   });
+
+  // Regression: passing `style` as a React-Native `StyleProp` ARRAY (the
+  // `style={[base, cond && override]}` idiom used across the ecosystem) used to
+  // spread the raw array into the DOM button's inline style, producing numeric
+  // keys and throwing at runtime:
+  //   "Failed to set an indexed property [0] on 'CSSStyleDeclaration'".
+  describe('style prop flattening', () => {
+    it('renders without crashing when style is an array with a falsy hole', () => {
+      const showBg = false;
+      const c = mount(
+        <Button style={[{ marginTop: 10 }, showBg && { backgroundColor: 'rgb(9, 9, 9)' }]}>
+          Styled
+        </Button>,
+      );
+      const btn = getByRole(c, 'button', { name: 'Styled' });
+      expect(btn.tagName).toBe('BUTTON');
+      // The array is flattened onto the button; falsy entries are skipped.
+      expect(btn.style.marginTop).toBe('10px');
+      expect(btn.style.backgroundColor).not.toBe('rgb(9, 9, 9)');
+      // The crash signature: a leaked numeric ("0") style key.
+      expect(btn.getAttribute('style') ?? '').not.toMatch(/(^|;)\s*0\s*:/);
+    });
+
+    it('later array entries win, mirroring RN precedence, and override base', () => {
+      const c = mount(
+        <Button style={[{ marginTop: 1 }, { marginTop: 9, backgroundColor: 'rgb(1, 2, 3)' }]}>
+          Override
+        </Button>,
+      );
+      const btn = getByRole(c, 'button', { name: 'Override' });
+      expect(btn.style.marginTop).toBe('9px');
+      // Caller style is spread after the variant container style, so it wins.
+      expect(btn.style.backgroundColor).toBe('rgb(1, 2, 3)');
+    });
+
+    it('accepts a single style object', () => {
+      const c = mount(<Button style={{ marginTop: 5 }}>Solo</Button>);
+      expect(getByRole(c, 'button', { name: 'Solo' }).style.marginTop).toBe('5px');
+    });
+
+    it('flattens an array style onto the asChild child element too', () => {
+      const c = mount(
+        <Button asChild style={[{ marginTop: 7 }, false]}>
+          <a href="/go">Go</a>
+        </Button>,
+      );
+      const link = getByRole(c, 'link', { name: 'Go' });
+      expect(link.tagName).toBe('A');
+      expect(link.style.marginTop).toBe('7px');
+    });
+  });
 });

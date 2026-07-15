@@ -9,6 +9,8 @@ import React, {
   type ReactElement,
 } from 'react';
 
+import type { ViewStyle } from 'react-native';
+
 import { useTheme } from '../theme/use-theme';
 import type { Theme } from '../theme/types';
 import { SpinnerIcon } from '../loading/SpinnerIcon.web';
@@ -217,6 +219,37 @@ function resolveVariantStyle(
 }
 
 // ---------------------------------------------------------------------------
+//  Style normalization
+//
+//  Callers idiomatically pass `style` as a React-Native `StyleProp` — most
+//  often an ARRAY (`style={[base, cond && override]}`, possibly nested and
+//  containing falsy holes from `cond && {...}`). The DOM `<button>` below needs
+//  a SINGLE plain object: spreading a raw array into an object literal produces
+//  numeric keys (`"0"`, `"1"`, …), which React then assigns onto the real
+//  `CSSStyleDeclaration`, throwing
+//  `Failed to set an indexed property [0] on 'CSSStyleDeclaration'`. Flatten the
+//  StyleProp into one object here, once, before it reaches either merge site.
+//  Later entries win, mirroring React-Native array-style precedence.
+//
+//  `StyleNode` is a readonly-closed recursion type (RN's own `StyleProp` array
+//  member yields `readonly` sub-arrays that aren't assignable back to
+//  `StyleProp`, so it can't be recursed over directly). `ButtonProps['style']`
+//  is assignable to it, so call sites pass `style` with no cast.
+// ---------------------------------------------------------------------------
+
+type StyleNode = ViewStyle | false | null | undefined | '' | ReadonlyArray<StyleNode>;
+
+function flattenStyle(style: StyleNode): CSSProperties {
+  if (Array.isArray(style)) {
+    return style.reduce<CSSProperties>(
+      (merged, entry) => Object.assign(merged, flattenStyle(entry)),
+      {},
+    );
+  }
+  return style && typeof style === 'object' ? (style as CSSProperties) : {};
+}
+
+// ---------------------------------------------------------------------------
 //  Component
 // ---------------------------------------------------------------------------
 
@@ -317,6 +350,10 @@ const ButtonWebComponent: React.FC<ButtonProps> = ({
 
   const spinnerColor = loadingColor ?? variantStyle.textColor;
 
+  // Normalize the caller's `style` (single object, array, or falsy) into one
+  // flat plain object ONCE, so neither merge site below spreads a raw array.
+  const resolvedStyle = flattenStyle(style);
+
   const content = (
     <>
       {iconPosition === 'left' && icon}
@@ -381,7 +418,7 @@ const ButtonWebComponent: React.FC<ButtonProps> = ({
     const childProps = child.props;
     return React.cloneElement(child, {
       className: [composedClassName, childProps.className].filter(Boolean).join(' '),
-      style: { ...containerStyle, ...(style as CSSProperties), ...childProps.style },
+      style: { ...containerStyle, ...resolvedStyle, ...childProps.style },
       onClick: (event: MouseEvent<HTMLElement>) => {
         if (isInteractionBlocked) {
           event.preventDefault();
@@ -407,7 +444,7 @@ const ButtonWebComponent: React.FC<ButtonProps> = ({
       name={name}
       value={value}
       className={composedClassName}
-      style={{ ...containerStyle, ...(style as CSSProperties) }}
+      style={{ ...containerStyle, ...resolvedStyle }}
       onClick={handleClick}
       disabled={disabled && !loading}
       aria-disabled={isInteractionBlocked || undefined}
