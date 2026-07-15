@@ -27,8 +27,10 @@ export interface AlertDialogProps {
   /** Render only the confirm button (no cancel). Defaults to `false`. */
   hideCancel?: boolean;
   /**
-   * Tap-outside / Escape dismisses. Defaults to `false` — alert dialogs are
-   * usually blocking until answered.
+   * Tap-outside / Escape dismisses. Defaults to `true` — matching the shared
+   * `Dialog` default and Mention's `ConfirmPrompt`. A backdrop / Escape
+   * dismissal always resolves the confirm as cancelled (`false`), so it is
+   * safe by default; pass `false` for a truly blocking confirm.
    */
   dismissible?: boolean;
   cardStyle?: StyleProp<ViewStyle>;
@@ -42,5 +44,9 @@ export interface ConfirmOptions {
   cancelLabel?: string;
   destructive?: boolean;
   hideCancel?: boolean;
+  /**
+   * Tap-outside / Escape dismisses (resolving `false`). Defaults to `true`;
+   * pass `false` for a blocking confirm that must be answered by a button.
+   */
   dismissible?: boolean;
 }

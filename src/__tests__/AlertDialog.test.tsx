@@ -2,7 +2,10 @@ import React, { useState } from 'react';
 import { act, fireEvent, render } from '@testing-library/react-native';
 
 import { AlertDialog, AlertDialogHost, confirm } from '../alert-dialog';
+import { createAlertDialog } from '../alert-dialog/AlertDialog';
+import { createAlertDialogHost } from '../alert-dialog/AlertDialogHost';
 import { getConfirmQueue, resolveConfirm } from '../alert-dialog/confirm-store';
+import type { DialogProps } from '../dialog';
 import { BloomThemeProvider } from '../theme/BloomThemeProvider';
 
 function renderWithTheme(ui: React.ReactElement) {
@@ -207,6 +210,75 @@ describe('AlertDialog (built on Dialog)', () => {
         fireEvent.press(getByText('Proceed'));
       });
       await expect(result).resolves.toBe(true);
+    });
+  });
+
+  // Finding 1 (control-mode) + Finding 2 (backdrop-dismiss default). These pin
+  // the two behavioural fixes at the prop boundary between `AlertDialog` and the
+  // underlying `Dialog`, using a prop-capturing mock `Dialog` so the assertions
+  // are deterministic and platform-agnostic.
+  describe('control-mode bridge + dismiss defaults', () => {
+    function captureDialogProps() {
+      const captured: { props?: DialogProps } = {};
+      const MockDialog = (props: DialogProps) => {
+        captured.props = props;
+        return null;
+      };
+      return { captured, MockDialog };
+    }
+
+    it('drives the underlying Dialog imperatively (control), never the controlled `open` prop', () => {
+      const { captured, MockDialog } = captureDialogProps();
+      const TestAlertDialog = createAlertDialog(MockDialog);
+      renderWithTheme(<TestAlertDialog visible onClose={() => {}} title="Delete?" />);
+      // The whole point of the fix: `confirm()` must take the Dialog's
+      // imperative/uncontrolled branch (the one that plays the exit animation),
+      // so an imperative `control` handle is passed and the controlled `open`
+      // boolean — which would take the other branch — is never set.
+      expect(captured.props?.control).toBeDefined();
+      expect(captured.props?.open).toBeUndefined();
+    });
+
+    it('defaults dismissOnBackdrop to true (backdrop / Escape dismiss by default)', () => {
+      const { captured, MockDialog } = captureDialogProps();
+      const TestAlertDialog = createAlertDialog(MockDialog);
+      renderWithTheme(<TestAlertDialog visible onClose={() => {}} title="Delete?" />);
+      // Matches the shared Dialog default + Mention's ConfirmPrompt.
+      expect(captured.props?.dismissOnBackdrop).toBe(true);
+    });
+
+    it('still supports an opt-in blocking confirm via dismissible={false}', () => {
+      const { captured, MockDialog } = captureDialogProps();
+      const TestAlertDialog = createAlertDialog(MockDialog);
+      renderWithTheme(
+        <TestAlertDialog visible onClose={() => {}} title="Delete?" dismissible={false} />,
+      );
+      expect(captured.props?.dismissOnBackdrop).toBe(false);
+    });
+
+    it('resolves false when dismissed via backdrop / Escape (Dialog onClose) with no button press', async () => {
+      // Backdrop tap and Escape both route through the Dialog's `onClose`. Now
+      // that dismissOnBackdrop defaults true, that path is reachable by default
+      // and must resolve the confirm as cancelled (false) and drain the queue —
+      // never trigger the (potentially destructive) confirm action.
+      const captured: { onClose?: () => void } = {};
+      const MockDialog = (props: DialogProps) => {
+        captured.onClose = props.onClose;
+        return null;
+      };
+      const Host = createAlertDialogHost(createAlertDialog(MockDialog));
+      renderWithTheme(<Host />);
+      let result!: Promise<boolean>;
+      act(() => {
+        result = confirm({ title: 'Discard unsaved changes?' });
+      });
+      act(() => {
+        // Simulate the backdrop / Escape dismissal the real Dialog fires after
+        // its exit animation settles.
+        captured.onClose?.();
+      });
+      await expect(result).resolves.toBe(false);
+      expect(getConfirmQueue()).toHaveLength(0);
     });
   });
 });

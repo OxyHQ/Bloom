@@ -1,6 +1,7 @@
-import React, { memo, useCallback } from 'react';
+import React, { memo, useCallback, useEffect, useRef } from 'react';
 
 import type { DialogAction, DialogProps } from '../dialog';
+import { useDialogControl } from '../dialog/context';
 import type { AlertDialogProps } from './types';
 
 type DialogComponent = React.ComponentType<DialogProps>;
@@ -22,6 +23,19 @@ type DialogComponent = React.ComponentType<DialogProps>;
  * imperative `confirm()` helper + `<AlertDialogHost />` to trigger a confirm
  * from an event handler without owning visible state.
  *
+ * Control mode — IMPERATIVE, not controlled. `AlertDialog` keeps its public
+ * *controlled* API (`visible` boolean + `onClose`) but internally bridges it
+ * onto the Dialog's imperative `useDialogControl()` handle, so `confirm()`
+ * drives `<Dialog>` through the EXACT uncontrolled/imperative internals
+ * Mention's `ConfirmPrompt` uses. That is the code path that actually plays the
+ * exit animation on dismiss: imperative `close()` sets `isClosing`, runs the
+ * exit animation, and fires `onClose` only once it settles. The controlled path
+ * instead fires `onClose` synchronously — and because `<AlertDialogHost />`
+ * resolves + drops the queue entry inside `onClose`, the surface would then
+ * unmount instantly, skipping the exit animation entirely. Bridging to
+ * imperative mode eliminates that fork so `confirm()` and Mention's
+ * `ConfirmPrompt` are pixel/timing identical.
+ *
  * The centered card uses the Dialog default `maxWidth` (480px) for full visual
  * parity with the shared confirm surface.
  */
@@ -37,34 +51,64 @@ export function createAlertDialog(Dialog: DialogComponent) {
     onCancel,
     destructive = false,
     hideCancel = false,
-    dismissible = false,
+    dismissible = true,
     cardStyle,
     testID,
   }: AlertDialogProps) {
-    // Confirm resolves + closes SYNCHRONOUSLY, in this order, and must NOT go
-    // through the Dialog's auto-close (`shouldCloseOnPress: false`). In
-    // controlled mode `close()` fires `onClose` FIRST, and the `confirm()` host
-    // wires `onClose` to resolve the promise as *cancelled* (`false`). Running
-    // `onConfirm` (resolve `true`, which removes the queue entry) before
-    // `onClose` (now a no-op for that entry) is what makes the confirm button
-    // resolve `true`.
-    const handleConfirm = useCallback(() => {
-      onConfirm?.();
-      onClose();
-    }, [onConfirm, onClose]);
+    const control = useDialogControl();
 
+    // Bridge the public *controlled* `visible` prop onto the Dialog's
+    // imperative open/close. Opening on mount straight from an effect (no
+    // `setTimeout`) mirrors bloom's own `AutoMountedDialog` (which backs
+    // `alert()`) — the canonical fresh-mount imperative-open pattern:
+    // `<AlertDialogHost />` mounts a FRESH `AlertDialog` per confirm
+    // (`key={id}`) with the final content already committed, so there is no
+    // stale-content window to defer past and the entry animation curve stays
+    // identical to Mention's. `control` is referentially stable (memoised on
+    // its id), so this effect only re-runs when `visible` actually flips. When
+    // a direct consumer flips `visible` to `false`, we imperatively `close()`
+    // so the exit animation still plays.
+    const closingFromPropRef = useRef(false);
+    useEffect(() => {
+      if (visible) {
+        control.open();
+        return;
+      }
+      closingFromPropRef.current = true;
+      control.close();
+    }, [visible, control]);
+
+    // The Dialog fires `onClose` after the exit animation settles (imperative
+    // mode). Forward ONLY user-initiated dismissals (backdrop / Escape / cancel)
+    // to the consumer — a consumer-initiated close (they flipped `visible` to
+    // `false`) must not re-enter `onClose`, preserving the previous controlled
+    // semantics where a programmatic close does not fire `onClose`.
+    const handleClose = useCallback(() => {
+      if (closingFromPropRef.current) {
+        closingFromPropRef.current = false;
+        return;
+      }
+      onClose();
+    }, [onClose]);
+
+    // Confirm/cancel map onto the Dialog's declarative action row. Both keep the
+    // default `shouldCloseOnPress` (true): the button runs the exit animation
+    // FIRST, then invokes `onPress` as a close-completion callback — so
+    // `onConfirm` resolves the `confirm()` promise as the surface animates out,
+    // exactly like Mention. `onConfirm` (resolve `true`, drains the entry) runs
+    // just BEFORE the Dialog's own post-close `onClose` (→ `handleClose` →
+    // resolve `false`, now a no-op for the drained entry), which is what makes
+    // the confirm button win the double-resolution guard.
     const actions: DialogAction[] = [
       {
         label: confirmLabel,
-        onPress: handleConfirm,
+        onPress: onConfirm,
         color: destructive ? 'destructive' : 'default',
-        shouldCloseOnPress: false,
       },
     ];
     if (!hideCancel) {
-      // The `cancel` color auto-dismisses via the Dialog's `close()`, which in
-      // controlled mode fires `onClose` (the host resolves `false`). `onCancel`
-      // runs after the surface finishes closing.
+      // The `cancel` color auto-dismisses via the Dialog's `close()` (exit
+      // animation), then runs `onCancel` as a close-completion callback.
       actions.push({
         label: cancelLabel,
         onPress: onCancel,
@@ -74,11 +118,14 @@ export function createAlertDialog(Dialog: DialogComponent) {
 
     return (
       <Dialog
-        open={visible}
-        onClose={onClose}
+        control={control}
+        onClose={handleClose}
         placement="center"
-        // Alert dialogs are blocking by default — the backdrop / Escape only
-        // dismiss when the caller opts in via `dismissible`.
+        // Alert dialogs dismiss on backdrop / Escape by default (matching the
+        // shared Dialog default and Mention's `ConfirmPrompt`). A backdrop /
+        // Escape dismissal can only ever resolve the confirm as cancelled
+        // (`false`), never the destructive action — callers that need a truly
+        // blocking confirm opt out with `dismissible={false}`.
         dismissOnBackdrop={dismissible}
         title={title}
         description={description}
