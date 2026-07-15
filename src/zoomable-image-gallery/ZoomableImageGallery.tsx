@@ -569,10 +569,14 @@ const ZoomableImageGalleryInner = React.forwardRef<ZoomableImageGalleryHandle, Z
     [activeFit, baseZoomScale, resetZoom, savedZoomTranslateX, savedZoomTranslateY, zoomScale, zoomTranslateX, zoomTranslateY]
   );
 
+  // Double-tap-to-zoom is a touch convention — disabled on web, where neither
+  // Twitter's nor Instagram's lightbox gates its dismiss click behind tap-count
+  // discrimination. Kept native-only.
   const doubleTapGesture = useMemo(
     () =>
       Gesture.Tap()
         .numberOfTaps(2)
+        .enabled(Platform.OS !== 'web')
         .onEnd((event) => {
           runOnJS(zoomToPoint)(event.x, event.y);
         }),
@@ -580,8 +584,10 @@ const ZoomableImageGalleryInner = React.forwardRef<ZoomableImageGalleryHandle, Z
   );
 
   // Single tap dismisses — but only when un-zoomed (a tap while zoomed is inert;
-  // double-tap/pinch own un-zooming). Made exclusive with the double-tap below so
-  // the first tap of a double-tap never dismisses.
+  // double-tap/pinch own un-zooming). On native this is made exclusive with the
+  // double-tap above so the first tap of a double-tap never dismisses; on web
+  // (see `tapGesture` below) it fires immediately, matching standard web
+  // lightbox click-to-close.
   const singleTapDismissGesture = useMemo(
     () =>
       Gesture.Tap()
@@ -591,6 +597,21 @@ const ZoomableImageGalleryInner = React.forwardRef<ZoomableImageGalleryHandle, Z
           runOnJS(handleDismiss)();
         }),
     [handleDismiss, zoomScale]
+  );
+
+  // On web, don't gate the dismiss tap behind double-tap-failure at all — that
+  // coupling requires react-native-gesture-handler's web tap-exclusivity timing
+  // (a ~500ms wait for the double-tap to time out) to resolve correctly for
+  // every single click, which is both slower than every standard web lightbox
+  // and the newest, least-exercised gesture code path here. Native keeps the
+  // Exclusive composition since double-tap-to-zoom is the expected touch
+  // convention there.
+  const tapGesture = useMemo(
+    () =>
+      Platform.OS === 'web'
+        ? singleTapDismissGesture
+        : Gesture.Exclusive(doubleTapGesture, singleTapDismissGesture),
+    [doubleTapGesture, singleTapDismissGesture]
   );
 
   const pinchGesture = useMemo(
@@ -649,17 +670,11 @@ const ZoomableImageGalleryInner = React.forwardRef<ZoomableImageGalleryHandle, Z
     [isZoomed, savedZoomTranslateX, savedZoomTranslateY, zoomScale, zoomTranslateX, zoomTranslateY]
   );
 
-  // Active page gesture: double-tap zoom + single-tap dismiss are mutually
-  // exclusive (single waits for the double to fail); both run simultaneously
-  // with pinch + pan-while-zoomed.
+  // Active page gesture: the tap gesture (see above) runs simultaneously with
+  // pinch + pan-while-zoomed.
   const activePageGesture = useMemo(
-    () =>
-      Gesture.Simultaneous(
-        Gesture.Exclusive(doubleTapGesture, singleTapDismissGesture),
-        pinchGesture,
-        panWhileZoomedGesture
-      ),
-    [doubleTapGesture, singleTapDismissGesture, pinchGesture, panWhileZoomedGesture]
+    () => Gesture.Simultaneous(tapGesture, pinchGesture, panWhileZoomedGesture),
+    [tapGesture, pinchGesture, panWhileZoomedGesture]
   );
 
   // Share the active image's URI: the OS share sheet on native; the Web Share API
