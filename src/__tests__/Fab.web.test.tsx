@@ -138,4 +138,66 @@ describe('Fab.web', () => {
     expect(fab.style.width).toBe('56px');
     expect(fab.style.height).toBe('56px');
   });
+
+  // Regression: `style` / `labelStyle` are React-Native `StyleProp`s (array-
+  // capable — the native fork passes `style={[placementStyle(...), {...}, style]}`).
+  // Spreading a raw array into the DOM element's inline style used to produce
+  // numeric keys and throw at runtime:
+  //   "Failed to set an indexed property [0] on 'CSSStyleDeclaration'".
+  describe('style prop flattening', () => {
+    it('renders without crashing when style is an array with a falsy hole', () => {
+      const showBorder = false;
+      const c = mount(
+        <Fab
+          accessibilityLabel="Add"
+          icon={<span>+</span>}
+          style={[{ marginBottom: 10 }, showBorder && { borderColor: 'rgb(9, 9, 9)' }]}
+        />,
+      );
+      const fab = getByRole(c, 'button');
+      expect(fab.tagName).toBe('BUTTON');
+      // The array is flattened onto the button; falsy entries are skipped.
+      expect(fab.style.marginBottom).toBe('10px');
+      // The crash signature: a leaked numeric ("0") style key.
+      expect(fab.getAttribute('style') ?? '').not.toMatch(/(^|;)\s*0\s*:/);
+    });
+
+    it('later array entries win, mirroring RN precedence, and override the base container style', () => {
+      const c = mount(
+        <Fab
+          accessibilityLabel="Add"
+          icon={<span>+</span>}
+          // `zIndex: 7` overrides the container's default zIndex (50).
+          style={[{ zIndex: 3 }, { zIndex: 7, backgroundColor: 'rgb(1, 2, 3)' }]}
+        />,
+      );
+      const fab = getByRole(c, 'button');
+      expect(fab.style.zIndex).toBe('7');
+      // Caller style is spread after the variant container style, so it wins.
+      expect(fab.style.backgroundColor).toBe('rgb(1, 2, 3)');
+    });
+
+    it('accepts a single style object', () => {
+      const c = mount(
+        <Fab accessibilityLabel="Add" icon={<span>+</span>} style={{ marginBottom: 5 }} />,
+      );
+      expect(getByRole(c, 'button').style.marginBottom).toBe('5px');
+    });
+
+    it('flattens an array labelStyle onto the extended-FAB label span', () => {
+      const c = mount(
+        <Fab
+          label="Compose"
+          icon={<span>+</span>}
+          labelStyle={[{ fontWeight: '700' }, false, { letterSpacing: 2 }]}
+        />,
+      );
+      const label = getByText(c, 'Compose');
+      expect(label.tagName).toBe('SPAN');
+      expect(label.style.fontWeight).toBe('700');
+      expect(label.style.letterSpacing).toBe('2px');
+      // No leaked numeric style key from the array spread.
+      expect(label.getAttribute('style') ?? '').not.toMatch(/(^|;)\s*0\s*:/);
+    });
+  });
 });
