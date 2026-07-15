@@ -42,6 +42,22 @@ describe('confirm-store', () => {
     await expect(promise).resolves.toBe(false);
   });
 
+  it('resolves once — a second resolve for the same id is a no-op', async () => {
+    // The AlertDialog confirm path calls onConfirm (resolve true) THEN onClose
+    // (resolve false) for the SAME entry. The first resolve drains the entry,
+    // so the second is ignored and the promise keeps its `true` value. This is
+    // the guard the whole confirm() button contract relies on.
+    const promise = confirm({ title: 'Proceed?' });
+    const id = getConfirmQueue()[0]?.id;
+    expect(id).toBeTruthy();
+    if (id) {
+      resolveConfirm(id, true);
+      resolveConfirm(id, false);
+    }
+    await expect(promise).resolves.toBe(true);
+    expect(getConfirmQueue()).toHaveLength(0);
+  });
+
   it('drains queued entries to a late subscriber', () => {
     void confirm({ title: 'Queued before subscribe' });
     let delivered: number | null = null;
