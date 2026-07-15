@@ -50,6 +50,35 @@ const stopPropagation = (e: { stopPropagation: () => void }) => e.stopPropagatio
 
 const ClosingContext = createContext(false);
 
+// ---------------------------------------------------------------------------
+//  Keyframe self-injection
+//
+//  The centered card + its backdrop animate via CSS `animation` shorthands that
+//  reference the `bloomDialog*` @keyframes. Those keyframes MUST exist in the
+//  document or the browser silently no-ops the animation (assigns an
+//  animation-name that resolves to nothing, then leaves the element at its
+//  static computed values — no error, no visible motion). We inject the
+//  required stylesheet once, keyed by id, exactly like `Button.web`'s
+//  `useButtonCss()`, so every consumer gets working dialog animations with zero
+//  app-side setup — no more "remember to paste BLOOM_DIALOG_CSS into your global
+//  stylesheet" footgun. The exported `BLOOM_DIALOG_CSS` string stays public for
+//  anyone already referencing it manually; a duplicate global copy is a harmless
+//  no-op because injection is guarded on the style id.
+// ---------------------------------------------------------------------------
+
+const DIALOG_STYLE_ID = 'bloom-dialog-web-css';
+
+function useDialogCss(): void {
+  useEffect(() => {
+    if (typeof document === 'undefined') return;
+    if (document.getElementById(DIALOG_STYLE_ID)) return;
+    const style = document.createElement('style');
+    style.id = DIALOG_STYLE_ID;
+    style.textContent = BLOOM_DIALOG_CSS;
+    document.head.appendChild(style);
+  }, []);
+}
+
 /**
  * Web variant of `<Dialog>`.
  *
@@ -116,6 +145,11 @@ function CenterOrSideDialog({
   label,
   children,
 }: Omit<DialogProps, 'placement'> & { placement: 'center' | 'left' | 'right' }) {
+  // Inject the required @keyframes on mount (before the panel ever appears —
+  // this component renders once with `isOpen=false` prior to opening, so the
+  // stylesheet is present by the time the animated surface mounts).
+  useDialogCss();
+
   // Controlled mode is opt-in: when `open` is a boolean the host owns the
   // visible state; otherwise the legacy imperative `control` path drives it.
   const isControlled = controlledOpen !== undefined;
@@ -652,8 +686,14 @@ const sheetStyles = {
 };
 
 /**
- * CSS keyframes required for web dialog animations.
- * Consumers should inject this string into a <style> tag or their global CSS:
+ * CSS keyframes required for the web dialog's centered-card open/close motion.
+ *
+ * `<Dialog>` self-injects these automatically on web (see `useDialogCss`), so
+ * consumers do NOT need to do anything — a working zoom/fade animation ships
+ * with zero app-side setup. This constant remains exported for anyone who
+ * already references it manually (e.g. a hand-copied block in a global
+ * stylesheet); such a copy is a harmless duplicate because the runtime
+ * injection is guarded by a unique style id.
  *
  * ```css
  * @keyframes bloomDialogFadeIn { from { opacity: 0; } to { opacity: 1; } }
