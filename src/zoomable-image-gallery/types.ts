@@ -46,4 +46,10 @@ export interface ZoomableImageGalleryProps {
   measureThumb?: MeasureThumb;
   /** Corner radius applied to the zoomed images. Defaults to `DEFAULT_CORNER_RADIUS`. */
   cornerRadius?: number;
+  /**
+   * Bottom page indicator for multi-image galleries. `'dots'` (default) renders the
+   * compact dot row; `'thumbnails'` renders a horizontal strip of tappable image
+   * tiles. The counter pill shows in both. Ignored for single-image galleries.
+   */
+  indicatorVariant?: 'dots' | 'thumbnails';
 }

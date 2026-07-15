@@ -6,3 +6,4 @@ export type {
   MeasureThumb,
   MeasuredRect,
 } from './types';
+export * from './constants';
