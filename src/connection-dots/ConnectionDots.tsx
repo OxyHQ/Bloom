@@ -36,14 +36,18 @@ interface ShimmerDotProps {
  * (the "ellipsis shimmer").
  */
 const ShimmerDot: React.FC<ShimmerDotProps> = ({ phase, color, size, driver }) => {
+  // `driver`/`opacity` MUST be in the deps arrays: on web without the worklets
+  // Babel plugin, useDerivedValue/useAnimatedStyle do not auto-track
+  // shared-value reads and would freeze at frame 1. Native (plugin present)
+  // auto-tracks and ignores the extra deps.
   const opacity = useDerivedValue(() => {
     // wrap into 0..1 then fold into a 0→1→0 triangle so the crest is a moving band
     const t = (driver.value + phase) % 1;
     const wave = 1 - Math.abs(t * 2 - 1);
     return interpolate(wave, [0, 1], [DOT_DIM, 1]);
-  }, [phase]);
+  }, [phase, driver]);
 
-  const animatedStyle = useAnimatedStyle(() => ({ opacity: opacity.value }), []);
+  const animatedStyle = useAnimatedStyle(() => ({ opacity: opacity.value }), [opacity]);
 
   return (
     <Animated.View

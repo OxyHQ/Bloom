@@ -75,12 +75,17 @@ const AnimatedCheckSvg = forwardRef<AnimatedCheckRef, AnimatedCheckSvgProps>(
     const circleProgress = useSharedValue(0);
     const checkProgress = useSharedValue(0);
 
+    // The progress shared values MUST be in the deps arrays: this component has
+    // no `.web` fork, so it runs on web (RN-Web) where the worklets Babel plugin
+    // is absent and useAnimatedProps does not auto-track shared-value reads —
+    // an empty deps array freezes the draw-on at frame 1. Native (plugin
+    // present) auto-tracks and ignores the extra deps.
     const circleAnimatedProps = useAnimatedProps(() => ({
       strokeDashoffset: CIRCLE_LENGTH - circleProgress.value * CIRCLE_LENGTH,
-    }), []);
+    }), [circleProgress]);
     const checkAnimatedProps = useAnimatedProps(() => ({
       strokeDashoffset: CHECK_LENGTH - CHECK_LENGTH * checkProgress.value,
-    }), []);
+    }), [checkProgress]);
 
     const play = useCallback(() => {
       circleProgress.value = 0;

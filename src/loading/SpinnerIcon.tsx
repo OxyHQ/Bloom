@@ -58,9 +58,12 @@ const AnimatedSpinner: React.FC<AnimatedSpinnerProps> = ({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  // `rotation` MUST be in the deps array: on web without the worklets Babel
+  // plugin, useAnimatedStyle does not auto-track shared-value reads and would
+  // freeze at frame 1. Native (plugin present) auto-tracks and ignores the dep.
   const animatedStyle = useAnimatedStyle(() => ({
     transform: [{ rotate: `${rotation.value}deg` }],
-  }), []);
+  }), [rotation]);
 
   return (
     <Animated.View

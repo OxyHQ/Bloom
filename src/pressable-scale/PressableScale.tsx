@@ -63,9 +63,12 @@ export const PressableScale = forwardRef<View, PressableScaleProps>(
 
     const scale = useSharedValue(1);
 
+    // `scale` MUST be in the deps array: on web without the worklets Babel
+    // plugin, useAnimatedStyle does not auto-track shared-value reads and would
+    // freeze at frame 1. Native (plugin present) auto-tracks and ignores the dep.
     const animatedStyle = useAnimatedStyle(() => ({
       transform: [{ scale: scale.value }],
-    }), []);
+    }), [scale]);
 
     return (
       <AnimatedPressable

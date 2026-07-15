@@ -90,14 +90,17 @@ const TopLoading: React.FC<TopLoadingProps> = ({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [showLoading, targetHeight]);
 
+  // Shared values MUST be in the deps arrays: on web without the worklets Babel
+  // plugin, useAnimatedStyle does not auto-track shared-value reads and would
+  // freeze at frame 1. Native (plugin present) auto-tracks and ignores the deps.
   const containerAnimated = useAnimatedStyle(() => ({
     height: height.value,
-  }), []);
+  }), [height]);
 
   const innerAnimated = useAnimatedStyle(() => ({
     opacity: opacity.value,
     transform: [{ translateY: translateY.value }],
-  }), []);
+  }), [opacity, translateY]);
 
   return (
     <Animated.View style={[styles.topContainer, containerAnimated]} testID={testID}>
