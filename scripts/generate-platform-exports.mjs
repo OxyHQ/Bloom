@@ -48,6 +48,7 @@ const ROOT_BARREL_WEB_PATH = join(SRC, 'index.web.ts');
 const SUBPATHS = /** @type {const} */ ([
   ['.', 'index.ts'],
   ['./image-resolver', 'image-resolver/index.ts'],
+  ['./image-aspect-ratio-cache', 'image-aspect-ratio-cache/index.ts'],
   ['./theme', 'theme/index.ts'],
   ['./color-presets', 'theme/color-presets.ts'],
   ['./design-tokens', 'design-tokens/index.ts'],
@@ -76,6 +77,7 @@ const SUBPATHS = /** @type {const} */ ([
   ['./grid', 'grid/index.tsx'],
   ['./fill', 'fill/index.tsx'],
   ['./media-inset-border', 'media-inset-border/index.ts'],
+  ['./zoomable-image-gallery', 'zoomable-image-gallery/index.ts'],
   ['./pressable-scale', 'pressable-scale/index.ts'],
   ['./pressable-with-hover', 'pressable-with-hover/index.ts'],
   ['./subtle-hover', 'subtle-hover/index.ts'],

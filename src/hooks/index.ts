@@ -7,3 +7,4 @@ export { useHaptics, BloomHapticsProvider } from './useHaptics';
 export type { HapticStrength, BloomHapticsProviderProps } from './useHaptics';
 export { useGutters } from './useGutters';
 export type { Gutter, Gutters } from './useGutters';
+export { useImagePreload, preloadImage } from './useImagePreload';

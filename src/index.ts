@@ -44,6 +44,7 @@ export { useHaptics, BloomHapticsProvider } from './hooks/useHaptics';
 export type { HapticStrength, BloomHapticsProviderProps } from './hooks/useHaptics';
 export { useGutters } from './hooks/useGutters';
 export type { Gutter, Gutters } from './hooks/useGutters';
+export { useImagePreload, preloadImage } from './hooks/useImagePreload';
 
 // Icons
 export * as Icons from './icons';
