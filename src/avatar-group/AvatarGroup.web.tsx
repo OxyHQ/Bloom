@@ -28,11 +28,11 @@ function getItemName(item: AvatarGroupItem): string {
 }
 
 /**
- * Web `AvatarGroup`. Identical stack rendering to native via
- * {@link AvatarGroupBase}, plus an optional hover card: when `hoverCard` is
- * enabled, hovering an avatar reveals a {@link UserHoverCard} positioned beneath
- * it. The card receives the per-item `renderItemAction` slot so the app can drop
- * its SDK FollowButton inside.
+ * Web `AvatarGroup`. Identical layout rendering to native (stack / row /
+ * cluster) via {@link AvatarGroupBase}, plus an optional hover card: when
+ * `hoverCard` is enabled, hovering an avatar reveals a {@link UserHoverCard}
+ * positioned beneath it. The card receives the per-item `renderItemAction` slot
+ * so the app can drop its SDK FollowButton inside.
  */
 const AvatarGroupWebComponent: React.FC<AvatarGroupProps> = (props) => {
   const { hoverCard, renderItemAction, onPressItem } = props;

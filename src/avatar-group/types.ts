@@ -30,14 +30,27 @@ export interface AvatarGroupProps {
   items: AvatarGroupItem[];
   /**
    * How the avatars are arranged.
-   * - `'stack'` (default): overlapping facepile with a thin separator ring, a
-   *   trailing `+N` overflow chip, and the first item on top.
+   * - `'stack'` (default): overlapping horizontal facepile with a thin separator
+   *   ring, a trailing `+N` overflow chip, and the first item on top.
    * - `'row'`: avatars placed adjacent with a positive `spacing` gap and NO
    *   separator ring — an "adjacent row" of icons (e.g. a top-tokens strip).
    *   Still collapses into the `+N` overflow chip at `max`.
+   * - `'cluster'`: a compact 2D "magnetic bubble cluster" (iMessage-style) —
+   *   avatars of VARYING sizes deterministically packed into a round bounding
+   *   box with a uniform gap: the first item (primary) is the largest and sits
+   *   centred/in front, the rest nestle around it. Scales from 2 (a "front +
+   *   behind" pair) up through a dense pack (~20), collapsing into a trailing
+   *   `+N` bubble past `max`. Unlike the horizontal layouts, `size` is the
+   *   overall box diameter (see `size`) and `max` defaults to 20 (see `max`), so
+   *   it drops in where a single round Avatar would.
    */
-  layout?: 'stack' | 'row';
-  /** Diameter of each avatar in pixels. */
+  layout?: 'stack' | 'row' | 'cluster';
+  /**
+   * Diameter in pixels. For `'stack'`/`'row'` this is the diameter of EACH
+   * avatar. For `'cluster'` this is the diameter of the whole bounding box (the
+   * packed bubbles are sized as fractions of it), so the cluster occupies the
+   * same footprint as a single `size`-px Avatar.
+   */
   size?: number;
   /**
    * Rendition variant forwarded to each {@link Avatar}'s `variant` prop, which
@@ -46,7 +59,12 @@ export interface AvatarGroupProps {
    * `'thumb'`; pass `undefined` to request full-size renditions.
    */
   variant?: string;
-  /** Maximum number of avatars to render before collapsing into the overflow chip. */
+  /**
+   * Maximum number of avatars to render before collapsing into the overflow
+   * chip. Defaults to 5 for `'stack'`/`'row'`, and to 20 for `'cluster'` (which
+   * packs densely). In `'cluster'` the cap is inclusive of the `+N` bubble: past
+   * the cap the last slot becomes the overflow bubble.
+   */
   max?: number;
   /**
    * Real total count of members. When provided and larger than the number of

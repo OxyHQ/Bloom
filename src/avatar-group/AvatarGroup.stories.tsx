@@ -147,3 +147,71 @@ export const RowLayout: Story = {
   ),
   name: 'Row layout',
 };
+
+// A larger pool of initials-only members to show the cluster densely packed.
+const MANY: AvatarGroupItem[] = Array.from({ length: 25 }, (_, i) => ({
+  id: `c${i}`,
+  displayName: String.fromCharCode(65 + (i % 26)),
+  username: `user${i}`,
+}));
+
+/**
+ * Cluster layout: a compact iMessage-style "magnetic bubble cluster" of
+ * varying-size avatars packed into a round box (`size` = box diameter). The
+ * primary is largest and centred/in front; the rest nestle around it with a
+ * uniform gap. `showInitials` renders a colored letter for avatar-less members
+ * so the packing reads clearly. Shown at counts 3, 5, 8, 12, and 20.
+ */
+export const ClusterLayout: Story = {
+  render: () => (
+    <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 24, alignItems: 'center' }}>
+      {[3, 5, 8, 12, 20].map((count) => (
+        <View key={count} style={{ alignItems: 'center', gap: 8 }}>
+          <AvatarGroup
+            layout="cluster"
+            items={MANY.slice(0, count)}
+            size={120}
+            showInitials
+          />
+          <Text>{count}</Text>
+        </View>
+      ))}
+    </View>
+  ),
+  name: 'Cluster layout',
+};
+
+/**
+ * Cluster with photos at the common collaborative-post sizes (2 = "front +
+ * behind", then 3 and 4).
+ */
+export const ClusterWithPhotos: Story = {
+  render: () => (
+    <View style={{ flexDirection: 'row', gap: 24, alignItems: 'center' }}>
+      {[2, 3, 4].map((count) => (
+        <AvatarGroup
+          key={count}
+          layout="cluster"
+          items={WITH_PHOTOS.slice(0, count)}
+          size={64}
+          showInitials
+        />
+      ))}
+    </View>
+  ),
+  name: 'Cluster with photos',
+};
+
+/**
+ * Cluster overflow: 25 members with `max={20}` shows 19 avatars + a trailing
+ * "+N" bubble as the last (smallest) cluster member.
+ */
+export const ClusterOverflow: Story = {
+  render: () => (
+    <View style={{ flexDirection: 'row', gap: 24, alignItems: 'center' }}>
+      <AvatarGroup layout="cluster" items={MANY} size={140} max={20} showInitials />
+      <Text>25 members, max 20 → cap + &quot;+N&quot;</Text>
+    </View>
+  ),
+  name: 'Cluster overflow',
+};
