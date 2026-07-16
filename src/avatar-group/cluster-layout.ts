@@ -1,8 +1,9 @@
 /**
  * Deterministic organic circle-packing for the {@link AvatarGroup} `cluster`
  * layout — the iMessage-style "magnetic bubble cluster" where several avatars of
- * varying sizes nestle together inside a round bounding box (a large primary in
- * the middle/front, smaller members packed around it with a uniform gap).
+ * NEAR-EQUAL size nestle tightly together and fill a round bounding box (a
+ * modestly larger primary with the rest only slightly smaller, packed against
+ * each other with a small uniform gap — not a big primary ringed by tiny dots).
  *
  * For 4+ members the layout is produced by a small, FULLY DETERMINISTIC
  * force-directed relaxation (no `Math.random`): the primary is pinned at the
@@ -17,9 +18,11 @@
  *
  * Output is resolution-independent: each bubble is expressed as a fraction of
  * the group's bounding box (`cx`/`cy` centre, `d` diameter, all 0..1), so the
- * consumer just multiplies by the pixel `size`. Every bubble is guaranteed to
- * sit fully inside the `[0, 1]` box (the packed result is scaled + translated to
- * fit), so the cluster drops in exactly where a single round Avatar would.
+ * consumer just multiplies by the pixel `size`. The relaxed blob is recentred on
+ * its own centre and scaled so the outermost bubble edge lands on the box edge,
+ * so it fills the round box densely with minimal empty margin while every bubble
+ * is guaranteed to sit fully inside the `[0, 1]` box — the cluster drops in
+ * exactly where a single round Avatar would.
  */
 
 /** A single packed bubble, expressed as fractions of the bounding box (0..1). */
@@ -47,17 +50,20 @@ const CENTERING = 0.05;
 // the pinned primary and many passes this stays stable and converges.
 const SEPARATION_STRENGTH = 1;
 // Uniform gap kept between every touching pair, in primary-radius units
-// (primary radius = 1). Reads as consistent spacing everywhere in the cluster.
-const LAYOUT_GAP = 0.16;
+// (primary radius = 1). Small, so near-equal bubbles nestle tightly like
+// magnets rather than floating apart with visible margins.
+const LAYOUT_GAP = 0.12;
 // Initial spiral spacing. Only affects convergence (the result is re-fitted to
 // the box afterwards), not the final scale.
 const SEED_SPACING = 1.7;
-// Relative radii: the primary is the largest; the remaining members taper from
-// SECONDARY_MAX (nearest the primary) down to SECONDARY_MIN (outermost) so size
-// decreases outward and later/overflow members are the smallest.
+// Relative radii: the primary is only MODESTLY the largest; every other member
+// tapers gently from SECONDARY_MAX (nearest the primary) down to SECONDARY_MIN
+// (outermost). The spread is deliberately narrow so the cluster reads as a pack
+// of near-equal magnetic bubbles — a slightly larger primary, not a big primary
+// ringed by tiny dots.
 const PRIMARY_RADIUS = 1;
-const SECONDARY_MAX = 0.72;
-const SECONDARY_MIN = 0.5;
+const SECONDARY_MAX = 0.9;
+const SECONDARY_MIN = 0.8;
 const EPSILON = 1e-6;
 
 /** Relative radius for member `index` of a `count`-member cluster. */
@@ -149,12 +155,34 @@ function packCluster(count: number): ClusterBubble[] {
     ys[0] = 0;
   }
 
-  // Fit to the unit box: the primary is at the origin, so scale so the
-  // outermost circle edge lands on the box radius (0.5) and place the primary at
-  // the box centre.
+  // Fit to the unit box so the pack FILLS the round box edge-to-edge with
+  // minimal empty margin. The primary was pinned at the origin during
+  // relaxation, but the relaxed blob is not centred on it, so we recentre on the
+  // cluster's OWN centre (its bounding-box midpoint) rather than the primary:
+  // enclose every bubble in a circle around that centre, then scale so the
+  // outermost bubble edge lands exactly on the box radius (0.5). Centring the
+  // enclosing circle at the box centre keeps every bubble inside the [0, 1] box
+  // (the enclosing circle is inscribed in the square) while packing the blob
+  // tightly against the edge instead of floating with a gap.
+  let minX = Infinity;
+  let maxX = -Infinity;
+  let minY = Infinity;
+  let maxY = -Infinity;
+  for (let i = 0; i < count; i++) {
+    const x = xs[i] ?? 0;
+    const y = ys[i] ?? 0;
+    const r = radii[i] ?? 0;
+    if (x - r < minX) minX = x - r;
+    if (x + r > maxX) maxX = x + r;
+    if (y - r < minY) minY = y - r;
+    if (y + r > maxY) maxY = y + r;
+  }
+  const centerX = (minX + maxX) / 2;
+  const centerY = (minY + maxY) / 2;
   let bound = 0;
   for (let i = 0; i < count; i++) {
-    const reach = Math.hypot(xs[i] ?? 0, ys[i] ?? 0) + (radii[i] ?? 0);
+    const reach =
+      Math.hypot((xs[i] ?? 0) - centerX, (ys[i] ?? 0) - centerY) + (radii[i] ?? 0);
     if (reach > bound) bound = reach;
   }
   const scale = bound > EPSILON ? 0.5 / bound : 0.5;
@@ -162,8 +190,8 @@ function packCluster(count: number): ClusterBubble[] {
   const bubbles = new Array<ClusterBubble>(count);
   for (let i = 0; i < count; i++) {
     bubbles[i] = {
-      cx: 0.5 + (xs[i] ?? 0) * scale,
-      cy: 0.5 + (ys[i] ?? 0) * scale,
+      cx: 0.5 + ((xs[i] ?? 0) - centerX) * scale,
+      cy: 0.5 + ((ys[i] ?? 0) - centerY) * scale,
       d: 2 * (radii[i] ?? 0) * scale,
     };
   }
@@ -177,20 +205,28 @@ function packCluster(count: number): ClusterBubble[] {
  *
  * - `<= 0` → empty.
  * - `1` → a single bubble filling the box.
- * - `2` → the iMessage "one in front, one behind" pair: a larger primary set
- *   low-left with a smaller member tucked behind it to the upper-right.
+ * - `2` → the iMessage "one in front, one behind" pair: two EQUAL-diameter
+ *   bubbles offset on a diagonal — the front set low-left, the other tucked
+ *   behind it to the upper-right. Same radius, so neither member reads as
+ *   secondary; the overlap + separator ring alone convey the stacking.
  * - `3` → an iMessage-style triangle: the larger primary along the bottom with
  *   two smaller members above it.
- * - `4+` → the deterministic force-directed pack (primary centred, the rest
- *   packed magnetically around it, denser as the count grows).
+ * - `4+` → the deterministic force-directed pack of near-equal bubbles, recentred
+ *   and scaled to fill the round box edge-to-edge (a modestly larger primary near
+ *   the centre, the rest packed magnetically around it, denser as the count
+ *   grows).
  */
 export function computeClusterLayout(count: number): ClusterBubble[] {
   if (count <= 0) return [];
   if (count === 1) return [{ cx: 0.5, cy: 0.5, d: 1 }];
   if (count === 2) {
+    // Two EQUAL-diameter bubbles, offset symmetrically on the diagonal: the
+    // front (index 0, highest zIndex) sits low-left, the other tucks behind it
+    // to the upper-right. They overlap (the intentional "front + behind" pair);
+    // the separator ring — not a size difference — reads the stacking.
     return [
-      { cx: 0.42, cy: 0.56, d: 0.66 },
-      { cx: 0.68, cy: 0.36, d: 0.5 },
+      { cx: 0.35, cy: 0.65, d: 0.64 },
+      { cx: 0.65, cy: 0.35, d: 0.64 },
     ];
   }
   if (count === 3) {

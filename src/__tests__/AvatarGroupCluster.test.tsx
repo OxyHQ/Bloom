@@ -74,11 +74,35 @@ describe('computeClusterLayout', () => {
     }
   });
 
-  it('centres the primary for the force-packed counts (4+)', () => {
+  it('fills the round box edge-to-edge for the force-packed counts (4+)', () => {
+    // After the recentre + scale, the outermost bubble edge lands on the box
+    // radius (0.5 from the box centre) — the blob fills the round box densely
+    // with no big empty margin — and the whole cluster stays roughly centred.
     for (const count of [4, 5, 8, 12, 20]) {
-      const primary = bubbleAt(computeClusterLayout(count), 0);
-      expect(primary.cx).toBeCloseTo(0.5, 5);
-      expect(primary.cy).toBeCloseTo(0.5, 5);
+      const bubbles = computeClusterLayout(count);
+      let reach = 0;
+      for (const bubble of bubbles) {
+        const r = Math.hypot(bubble.cx - 0.5, bubble.cy - 0.5) + bubble.d / 2;
+        if (r > reach) reach = r;
+      }
+      expect(reach).toBeCloseTo(0.5, 6);
+      const primary = bubbleAt(bubbles, 0);
+      expect(primary.cx).toBeGreaterThan(0.4);
+      expect(primary.cx).toBeLessThan(0.6);
+      expect(primary.cy).toBeGreaterThan(0.4);
+      expect(primary.cy).toBeLessThan(0.6);
+    }
+  });
+
+  it('keeps the force-packed bubbles near-equal in size (mild taper)', () => {
+    // The pack should read as near-equal magnetic bubbles: a modestly larger
+    // primary, everyone else only slightly smaller — not a big primary ringed by
+    // tiny dots. The smallest bubble stays at least ~75% of the largest.
+    for (const count of [4, 5, 6, 8, 12, 20]) {
+      const diameters = computeClusterLayout(count).map((bubble) => bubble.d);
+      const maxD = Math.max(...diameters);
+      const minD = Math.min(...diameters);
+      expect(minD / maxD).toBeGreaterThan(0.75);
     }
   });
 
@@ -86,6 +110,27 @@ describe('computeClusterLayout', () => {
     // n=2 is the intentional "front + behind" overlap; 3+ pack with a gap.
     for (let count = 3; count <= 20; count++) {
       expect(minEdgeGap(computeClusterLayout(count))).toBeGreaterThan(-1e-3);
+    }
+  });
+
+  it('gives the two-member cluster equal-diameter, overlapping bubbles', () => {
+    const bubbles = computeClusterLayout(2);
+    expect(bubbles).toHaveLength(2);
+    const front = bubbleAt(bubbles, 0);
+    const behind = bubbleAt(bubbles, 1);
+    // The fix: both bubbles share the SAME diameter — the one drawn behind is no
+    // longer rendered too small.
+    expect(front.d).toBeCloseTo(behind.d, 10);
+    // Still the intentional iMessage "front + behind" overlap (negative gap).
+    expect(minEdgeGap(bubbles)).toBeLessThan(0);
+    // Deterministic (no Math.random).
+    expect(computeClusterLayout(2)).toEqual(bubbles);
+    // Both bubbles sit fully inside the unit box.
+    for (const bubble of bubbles) {
+      expect(bubble.cx - bubble.d / 2).toBeGreaterThanOrEqual(-1e-6);
+      expect(bubble.cx + bubble.d / 2).toBeLessThanOrEqual(1 + 1e-6);
+      expect(bubble.cy - bubble.d / 2).toBeGreaterThanOrEqual(-1e-6);
+      expect(bubble.cy + bubble.d / 2).toBeLessThanOrEqual(1 + 1e-6);
     }
   });
 });

@@ -157,15 +157,16 @@ const MANY: AvatarGroupItem[] = Array.from({ length: 25 }, (_, i) => ({
 
 /**
  * Cluster layout: a compact iMessage-style "magnetic bubble cluster" of
- * varying-size avatars packed into a round box (`size` = box diameter). The
- * primary is largest and centred/in front; the rest nestle around it with a
- * uniform gap. `showInitials` renders a colored letter for avatar-less members
- * so the packing reads clearly. Shown at counts 3, 5, 8, 12, and 20.
+ * NEAR-EQUAL-size avatars packed densely into a round box (`size` = box
+ * diameter). A modestly larger primary sits in front; the rest are only slightly
+ * smaller and nestle against it with a small uniform gap, filling the round box
+ * edge-to-edge. `showInitials` renders a colored letter for avatar-less members
+ * so the packing reads clearly. Shown at counts 3, 4, 5, 6, 8, 12, and 20.
  */
 export const ClusterLayout: Story = {
   render: () => (
     <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 24, alignItems: 'center' }}>
-      {[3, 5, 8, 12, 20].map((count) => (
+      {[3, 4, 5, 6, 8, 12, 20].map((count) => (
         <View key={count} style={{ alignItems: 'center', gap: 8 }}>
           <AvatarGroup
             layout="cluster"
