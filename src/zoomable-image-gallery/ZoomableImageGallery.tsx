@@ -421,6 +421,19 @@ const ZoomableImageGalleryInner = React.forwardRef<ZoomableImageGalleryHandle, Z
 
   React.useImperativeHandle(ref, () => ({ open }), [open]);
 
+  // Tapping the backdrop dismisses. Uses the same Gesture system as every
+  // other interaction in this component (image tap, pinch, pan, double-tap)
+  // instead of a plain RN Pressable, so the backdrop isn't the one interaction
+  // mixing two different event-handling systems under the same
+  // GestureHandlerRootView.
+  const backdropTapGesture = useMemo(
+    () =>
+      Gesture.Tap().onEnd(() => {
+        runOnJS(handleDismiss)();
+      }),
+    [handleDismiss]
+  );
+
   const panGesture = useMemo(
     () =>
       Gesture.Pan()
@@ -721,18 +734,20 @@ const ZoomableImageGalleryInner = React.forwardRef<ZoomableImageGalleryHandle, Z
 
   const renderContent = () => (
     <GestureHandlerRootView style={styles.modalContainer}>
-      <Pressable style={StyleSheet.absoluteFill} onPress={handleDismiss} hitSlop={0}>
-        <AnimatedBlurView
-          intensity={80}
-          tint={theme.isDark ? 'dark' : 'light'}
-          experimentalBlurMethod="dimezisBlurView"
-          style={[StyleSheet.absoluteFill, backdropStyle]}
-        >
-          <Animated.View
-            style={[StyleSheet.absoluteFill, { backgroundColor: theme.colors.overlay }, backdropStyle]}
-          />
-        </AnimatedBlurView>
-      </Pressable>
+      <GestureDetector gesture={backdropTapGesture}>
+        <Animated.View style={StyleSheet.absoluteFill}>
+          <AnimatedBlurView
+            intensity={80}
+            tint={theme.isDark ? 'dark' : 'light'}
+            experimentalBlurMethod="dimezisBlurView"
+            style={[StyleSheet.absoluteFill, backdropStyle]}
+          >
+            <Animated.View
+              style={[StyleSheet.absoluteFill, { backgroundColor: theme.colors.overlay }, backdropStyle]}
+            />
+          </AnimatedBlurView>
+        </Animated.View>
+      </GestureDetector>
 
       <GestureDetector gesture={panGesture}>
         <Animated.View
