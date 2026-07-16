@@ -12,9 +12,10 @@
  * centre and (b) push any two circles apart until they clear a uniform gap. A
  * fixed iteration count + deterministic seed means the same `count` always
  * yields byte-identical positions, so native and web render the cluster
- * identically with no `onLayout`/DOM measurement. The very small counts (1, 2,
- * 3) — where a relaxation degenerates into a line or a lone pair — use explicit
- * iMessage-style arrangements instead.
+ * identically with no `onLayout`/DOM measurement. The small counts (1, 2, 3, 4)
+ * use explicit iMessage-style arrangements instead — 1–3 because a relaxation
+ * there degenerates into a line or a lone pair, and 4 because the iconic
+ * 4-person layout is a clean 2×2 grid of equal circles rather than a pack.
  *
  * Output is resolution-independent: each bubble is expressed as a fraction of
  * the group's bounding box (`cx`/`cy` centre, `d` diameter, all 0..1), so the
@@ -114,8 +115,8 @@ function separate(xs: number[], ys: number[], radii: number[], count: number): v
 
 /**
  * Deterministic force-directed pack of `count` circles (primary pinned at the
- * centre), returned as box-fraction bubbles. Used for every cluster with 4+
- * members; 1–3 are handled as explicit arrangements in
+ * centre), returned as box-fraction bubbles. Used for every cluster with 5+
+ * members; 1–4 are handled as explicit arrangements in
  * {@link computeClusterLayout}.
  */
 function packCluster(count: number): ClusterBubble[] {
@@ -211,7 +212,10 @@ function packCluster(count: number): ClusterBubble[] {
  *   secondary; the overlap + separator ring alone convey the stacking.
  * - `3` → an iMessage-style triangle: the larger primary along the bottom with
  *   two smaller members above it.
- * - `4+` → the deterministic force-directed pack of near-equal bubbles, recentred
+ * - `4` → the iMessage 4-person layout: a 2×2 grid of EQUAL-diameter bubbles,
+ *   centred in the box with a uniform gap, sized so the outermost edges reach the
+ *   box edge like the other counts.
+ * - `5+` → the deterministic force-directed pack of near-equal bubbles, recentred
  *   and scaled to fill the round box edge-to-edge (a modestly larger primary near
  *   the centre, the rest packed magnetically around it, denser as the count
  *   grows).
@@ -234,6 +238,28 @@ export function computeClusterLayout(count: number): ClusterBubble[] {
       { cx: 0.5, cy: 0.69, d: 0.54 },
       { cx: 0.285, cy: 0.24, d: 0.4 },
       { cx: 0.715, cy: 0.24, d: 0.4 },
+    ];
+  }
+  if (count === 4) {
+    // The iMessage 4-person layout: a 2×2 grid of EQUAL-diameter bubbles,
+    // centred in the box with the same uniform neighbour gap the rest of the
+    // cluster keeps (LAYOUT_GAP, in circle-radius units), sized so the outermost
+    // bubble edge reaches the box radius (0.5 from the centre) — exactly as the
+    // force-packed counts do — so the four circles fill the round box
+    // edge-to-edge with a clean uniform gap and no overlap.
+    //
+    // With diameter `d` and radius `r = d/2`, the neighbour gap `g = LAYOUT_GAP·r`,
+    // so the centre-to-centre spacing is `s = d + g = d·(1 + LAYOUT_GAP/2)`. Each
+    // centre sits `(s/2, s/2)` from the box centre, so its farthest point lies
+    // `(s/2)·√2 + r` away; setting that to `0.5` and solving for `d`:
+    const spacingFactor = 1 + LAYOUT_GAP / 2;
+    const d = 0.5 / ((spacingFactor * Math.SQRT2) / 2 + 0.5);
+    const half = (d * spacingFactor) / 2;
+    return [
+      { cx: 0.5 - half, cy: 0.5 - half, d },
+      { cx: 0.5 + half, cy: 0.5 - half, d },
+      { cx: 0.5 - half, cy: 0.5 + half, d },
+      { cx: 0.5 + half, cy: 0.5 + half, d },
     ];
   }
   return packCluster(count);

@@ -74,11 +74,12 @@ describe('computeClusterLayout', () => {
     }
   });
 
-  it('fills the round box edge-to-edge for the force-packed counts (4+)', () => {
+  it('fills the round box edge-to-edge for the force-packed counts (5+)', () => {
     // After the recentre + scale, the outermost bubble edge lands on the box
     // radius (0.5 from the box centre) — the blob fills the round box densely
     // with no big empty margin — and the whole cluster stays roughly centred.
-    for (const count of [4, 5, 8, 12, 20]) {
+    // (count=4 is the explicit 2×2 grid, covered separately below.)
+    for (const count of [5, 8, 12, 20]) {
       const bubbles = computeClusterLayout(count);
       let reach = 0;
       for (const bubble of bubbles) {
@@ -98,7 +99,8 @@ describe('computeClusterLayout', () => {
     // The pack should read as near-equal magnetic bubbles: a modestly larger
     // primary, everyone else only slightly smaller — not a big primary ringed by
     // tiny dots. The smallest bubble stays at least ~75% of the largest.
-    for (const count of [4, 5, 6, 8, 12, 20]) {
+    // (count=4 is the explicit 2×2 grid, covered separately below.)
+    for (const count of [5, 6, 8, 12, 20]) {
       const diameters = computeClusterLayout(count).map((bubble) => bubble.d);
       const maxD = Math.max(...diameters);
       const minD = Math.min(...diameters);
@@ -111,6 +113,60 @@ describe('computeClusterLayout', () => {
     for (let count = 3; count <= 20; count++) {
       expect(minEdgeGap(computeClusterLayout(count))).toBeGreaterThan(-1e-3);
     }
+  });
+
+  it('arranges the four-member cluster as an equal-size 2×2 grid', () => {
+    // The iMessage 4-person layout: four EQUAL-diameter bubbles at the corners of
+    // a 2×2 grid centred in the box, with a clean uniform gap (no overlap), sized
+    // so the outermost edges reach the box edge like the other counts.
+    const bubbles = computeClusterLayout(4);
+    expect(bubbles).toHaveLength(4);
+
+    // All four share one diameter.
+    const d = bubbleAt(bubbles, 0).d;
+    for (const bubble of bubbles) {
+      expect(bubble.d).toBeCloseTo(d, 10);
+    }
+
+    // Exactly two distinct rows (cy) and two distinct columns (cx), each shared by
+    // two bubbles — a true 2×2 grid, centred on the box (rows/cols symmetric
+    // about 0.5).
+    const round = (v: number) => Math.round(v * 1e6) / 1e6;
+    const cols = [...new Set(bubbles.map((b) => round(b.cx)))].sort((a, b) => a - b);
+    const rows = [...new Set(bubbles.map((b) => round(b.cy)))].sort((a, b) => a - b);
+    expect(cols).toHaveLength(2);
+    expect(rows).toHaveLength(2);
+    const col0 = cols[0];
+    const col1 = cols[1];
+    const row0 = rows[0];
+    const row1 = rows[1];
+    if (col0 === undefined || col1 === undefined || row0 === undefined || row1 === undefined) {
+      throw new Error('expected two distinct rows and columns');
+    }
+    expect((col0 + col1) / 2).toBeCloseTo(0.5, 9);
+    expect((row0 + row1) / 2).toBeCloseTo(0.5, 9);
+    // Square grid: the row and column spacings match.
+    expect(col1 - col0).toBeCloseTo(row1 - row0, 9);
+
+    // Clean uniform gap between neighbours — no overlap.
+    expect(minEdgeGap(bubbles)).toBeGreaterThan(0);
+
+    // Outermost edge reaches the box radius (fills the round box like the others).
+    let reach = 0;
+    for (const bubble of bubbles) {
+      const r = Math.hypot(bubble.cx - 0.5, bubble.cy - 0.5) + bubble.d / 2;
+      if (r > reach) reach = r;
+    }
+    expect(reach).toBeCloseTo(0.5, 6);
+
+    // Fully inside the unit box, and deterministic.
+    for (const bubble of bubbles) {
+      expect(bubble.cx - bubble.d / 2).toBeGreaterThanOrEqual(-1e-6);
+      expect(bubble.cx + bubble.d / 2).toBeLessThanOrEqual(1 + 1e-6);
+      expect(bubble.cy - bubble.d / 2).toBeGreaterThanOrEqual(-1e-6);
+      expect(bubble.cy + bubble.d / 2).toBeLessThanOrEqual(1 + 1e-6);
+    }
+    expect(computeClusterLayout(4)).toEqual(bubbles);
   });
 
   it('gives the two-member cluster equal-diameter, overlapping bubbles', () => {
