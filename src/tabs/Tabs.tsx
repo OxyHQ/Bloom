@@ -24,18 +24,21 @@ interface TabsContextValue {
   value: string;
   onValueChange: (value: string) => void;
   variant: TabsVariant;
+  fullWidth: boolean;
 }
 
 const TabsContext = createContext<TabsContextValue>({
   value: '',
   onValueChange: () => {},
   variant: 'underline',
+  fullWidth: false,
 });
 
 const TabsBarComponent: React.FC<TabsProps> = ({
   value,
   onValueChange,
   variant = 'underline',
+  fullWidth = false,
   children,
   style,
   testID,
@@ -43,8 +46,8 @@ const TabsBarComponent: React.FC<TabsProps> = ({
   const theme = useTheme();
 
   const contextValue = useMemo(
-    () => ({ value, onValueChange, variant }),
-    [value, onValueChange, variant],
+    () => ({ value, onValueChange, variant, fullWidth }),
+    [value, onValueChange, variant, fullWidth],
   );
 
   const containerStyle = useMemo((): ViewStyle => {
@@ -76,14 +79,20 @@ const TabsBarComponent: React.FC<TabsProps> = ({
 
   return (
     <TabsContext.Provider value={contextValue}>
-      <ScrollView
-        horizontal
-        showsHorizontalScrollIndicator={false}
-        contentContainerStyle={[containerStyle, style]}
-        testID={testID}
-      >
-        {children}
-      </ScrollView>
+      {fullWidth ? (
+        <View style={[containerStyle, style]} testID={testID}>
+          {children}
+        </View>
+      ) : (
+        <ScrollView
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          contentContainerStyle={[containerStyle, style]}
+          testID={testID}
+        >
+          {children}
+        </ScrollView>
+      )}
     </TabsContext.Provider>
   );
 };
@@ -97,7 +106,12 @@ const TabComponent: React.FC<TabsTriggerProps> = ({
   textStyle,
 }) => {
   const theme = useTheme();
-  const { value: selectedValue, onValueChange, variant } = useContext(TabsContext);
+  const {
+    value: selectedValue,
+    onValueChange,
+    variant,
+    fullWidth,
+  } = useContext(TabsContext);
   const isSelected = value === selectedValue;
   const { scaleAnim, onPressIn, onPressOut } = usePressAnimation(0.97);
 
@@ -165,9 +179,11 @@ const TabComponent: React.FC<TabsTriggerProps> = ({
   }, [variant, isSelected, theme]);
 
   return (
-    <Animated.View style={{ transform: [{ scale: scaleAnim }] }}>
+    <Animated.View
+      style={[{ transform: [{ scale: scaleAnim }] }, fullWidth && { flex: 1 }]}
+    >
       <Pressable
-        style={[tabStyle, disabled && { opacity: 0.4 }, style]}
+        style={[tabStyle, fullWidth && { flex: 1 }, disabled && { opacity: 0.4 }, style]}
         onPress={handlePress}
         onPressIn={onPressIn}
         onPressOut={onPressOut}

@@ -9,6 +9,13 @@ export interface TabsProps {
   onValueChange: (value: string) => void;
   /** Visual variant for the tab bar. */
   variant?: TabsVariant;
+  /**
+   * When true, the tab bar spans the full container width and each trigger
+   * takes an equal share of it (edge to edge), instead of the default
+   * content-sized, horizontally scrollable layout. Best for a small, fixed
+   * set of tabs (e.g. 2–3). Defaults to `false`.
+   */
+  fullWidth?: boolean;
   /** The tab items. Must be TabsTrigger components. */
   children: React.ReactNode;
   style?: StyleProp<ViewStyle>;
