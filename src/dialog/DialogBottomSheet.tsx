@@ -185,6 +185,17 @@ export function DialogBottomSheet({
       // Pure custom children own scrolling → opt OUT of BottomSheet's internal
       // ScrollView so there is exactly ONE scroll container (no scroll-in-scroll).
       scrollable={hasDeclarativeChrome}
+      // Declarative dialogs (title/description/actions) that overflow render a
+      // tall body inside BottomSheet's internal ScrollView. Opt those sheets into
+      // gorhom-style pan coordination: the drag-to-dismiss pan only activates
+      // when the ScrollView is at the top AND the finger moves down >8dp —
+      // otherwise the ScrollView owns the touch. Without this the always-active
+      // legacy body-pan steals vertical drags and a tall body cannot scroll
+      // (dragging up dismisses the sheet / bleeds into the parent instead). The
+      // standalone `BottomSheet` API keeps its legacy `manualActivation={false}`
+      // default, so direct consumers are unaffected. Gated on the same flag as
+      // `scrollable` because only the internal-ScrollView path needs it.
+      manualActivation={hasDeclarativeChrome}
       // Stronger dim than a lone sheet so an underlying sheet's handle/content
       // doesn't bleed through when a Dialog is stacked over one.
       backdropOpacity={SHEET_BACKDROP_OPACITY + 0.3}
