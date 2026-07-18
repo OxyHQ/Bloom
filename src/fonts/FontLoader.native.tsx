@@ -1,7 +1,7 @@
 import React, { useRef } from 'react';
 import { Text, type TextProps, type TextStyle, type StyleProp } from 'react-native';
 import { useFonts } from 'expo-font';
-import { FONT_ASSETS } from './font-assets';
+import { FONT_ASSETS } from './font-assets.native';
 
 export interface FontLoaderProps {
   /**
