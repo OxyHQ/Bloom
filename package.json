@@ -1033,7 +1033,7 @@
     "type": "git",
     "url": "https://github.com/OxyHQ/Bloom.git"
   },
-  "license": "MIT",
+  "license": "AGPL-3.0-only",
   "scripts": {
     "generate:exports": "node scripts/generate-platform-exports.mjs",
     "generate:font-data": "node scripts/generate-font-data.mjs",

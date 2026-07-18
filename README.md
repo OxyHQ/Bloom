@@ -476,4 +476,4 @@ bun run clean        # remove lib/
 
 ## License
 
-MIT
+AGPL-3.0-only -- The Oxy Foundation, Inc. See the [LICENSE](LICENSE) file for details.
