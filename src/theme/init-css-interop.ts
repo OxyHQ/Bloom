@@ -74,13 +74,25 @@ function setWebCssVariable(): void {
 
 function tryCallSetFlag(): void {
   let mod: CssInteropModule | undefined;
+  // `require` does not exist in an ES module, so guard before touching it —
+  // an unguarded reference is a ReferenceError, not a resolution failure.
+  // Matches the pattern used by every other optional-module load in Bloom
+  // (`utils/lazy-require.ts`, `theme/adaptive-colors.ts`,
+  // `bottom-sheet/index.tsx`).
+  if (typeof require === 'undefined') return;
   try {
     // Dynamic require: css-interop is not a Bloom dependency. If the host
     // app ships it (via NativeWind or directly), this resolves. Otherwise
     // the require throws and we silently move on — there is nothing to
     // initialize because css-interop is not in the bundle.
+    //
+    // The specifier goes through a variable on purpose: a literal
+    // `require('react-native-css-interop')` is statically analysable, so
+    // bundlers try to resolve (and warn about, or fail on) a module that is
+    // intentionally absent. The indirection keeps this a pure runtime lookup.
+    const moduleName = 'react-native-css-interop';
     // eslint-disable-next-line @typescript-eslint/no-require-imports
-    mod = require('react-native-css-interop') as CssInteropModule;
+    mod = require(moduleName) as CssInteropModule;
   } catch {
     return;
   }

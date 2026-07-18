@@ -1,16 +1,19 @@
-// Native font asset map for `useFonts(FONT_ASSETS)`.
+// Platform-neutral default font asset map — deliberately empty.
 //
-// We ship variable .ttf files for Inter and Geist Mono (extracted from the
-// official rsms/inter and vercel/geist-font releases) so the same family name
-// covers all weights at runtime. `@fontsource(-variable)?/*` packages only
-// publish .woff2 for their variable axes — modern react-native font loading
-// requires .ttf, so we use the upstream variable TTFs instead. On web,
-// `apply-font-faces.web.ts` inlines the .woff2 variants as base64 data URLs
-// (see `font-data.web.ts`) and this file is never imported.
+// The real map is Metro-only (`font-assets.native.ts`): it is built from
+// `require('./assets/*.ttf')` asset requires, which are meaningless outside
+// Metro and fatal inside an ES module, where `require` is not defined. This
+// default therefore carries no asset requires at all, per the platform-split
+// rule in AGENTS.md — anything with platform-specific behaviour ships
+// `.native.ts` + `.web.ts` + a clean default `.ts` that no bundler can choke
+// on.
+//
+// Who lands here: any consumer whose bundler does no platform-extension
+// resolution. In practice that is the `"import"` export condition — Node ESM,
+// SSR, and prerender passes. They get an empty map and load no fonts, which is
+// correct: there is no native font registry to load them into. Metro takes
+// `font-assets.native.ts`, and the web barrel names `./font-assets.web`
+// outright.
+import type { FontAssetMap } from './tokens';
 
-export const FONT_ASSETS = {
-  BlomusModernus: require('./assets/BlomusModernus-Regular.ttf'),
-  'BlomusModernus-Bold': require('./assets/BlomusModernus-Bold.ttf'),
-  Inter: require('./assets/InterVariable.ttf'),
-  'Geist Mono': require('./assets/GeistMono-Variable.ttf'),
-} as const;
+export const FONT_ASSETS: FontAssetMap = {};

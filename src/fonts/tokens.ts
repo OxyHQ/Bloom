@@ -21,3 +21,16 @@ export const fontCssVars = {
 } as const;
 
 export type FontFamilyName = keyof typeof fontFamilies;
+
+/**
+ * Shape of the font asset map handed to `expo-font`'s `useFonts()`.
+ *
+ * Values are Metro asset-registry ids produced by `require('./assets/*.ttf')`,
+ * so the map is only ever populated under Metro (`font-assets.native.ts`).
+ * Every other platform resolves an empty map — web installs the same families
+ * as `@font-face` rules instead (`apply-font-faces.web.ts`).
+ *
+ * Declared here, in the platform-neutral tokens module, so all three
+ * `font-assets` variants can share it without importing each other.
+ */
+export type FontAssetMap = Record<string, number>;
