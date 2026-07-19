@@ -72,6 +72,17 @@
         "default": "./lib/commonjs/theme/color-presets.js"
       }
     },
+    "./preset-vars": {
+      "react-native": "./src/theme/preset-vars.ts",
+      "import": {
+        "types": "./lib/typescript/module/theme/preset-vars.d.ts",
+        "default": "./lib/module/theme/preset-vars.js"
+      },
+      "require": {
+        "types": "./lib/typescript/commonjs/theme/preset-vars.d.ts",
+        "default": "./lib/commonjs/theme/preset-vars.js"
+      }
+    },
     "./design-tokens": {
       "react-native": "./src/design-tokens/index.ts",
       "import": {

@@ -1,4 +1,3 @@
-import { Platform } from 'react-native';
 import { APP_COLOR_PRESETS, type AppColorName, type PresetTokens } from './color-presets';
 import { generateRoleColors, type RoleColors } from './color-engine';
 // Circular at the module graph level (`token-registry` imports `getPresetVars`
@@ -96,7 +95,11 @@ export function applyPresetVarsToDocument(
   colorName: AppColorName,
   mode: 'light' | 'dark',
 ): void {
-  if (Platform.OS !== 'web' || typeof document === 'undefined') return;
+  // Web-only: on native `document` is undefined, so this is a no-op there
+  // without needing a `react-native` Platform import (keeping this module —
+  // and `getPresetVars` — free of any RN dependency so it is importable from
+  // pure/web/test environments).
+  if (typeof document === 'undefined') return;
 
   const vars = getResolvedTokens(colorName, mode);
   const root = document.documentElement.style;
