@@ -33,6 +33,7 @@ const config: Config = {
     'react-native-keyboard-controller': '<rootDir>/__mocks__/react-native-keyboard-controller.ts',
     '^react-native-svg$': '<rootDir>/__mocks__/react-native-svg.ts',
     '^expo-haptics$': '<rootDir>/__mocks__/expo-haptics.ts',
+    '^expo-blur$': '<rootDir>/__mocks__/expo-blur.ts',
     '^react-native$': '<rootDir>/__mocks__/react-native.ts',
     '\\.(woff2?|ttf|otf|eot)$': '<rootDir>/__mocks__/font-asset.ts',
     '^nanoid/non-secure$': '<rootDir>/__mocks__/nanoid.ts',

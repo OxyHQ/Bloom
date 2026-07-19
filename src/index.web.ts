@@ -80,6 +80,8 @@ export type {
 export * from './button/index.web';
 export { Fab } from './fab/index.web';
 export type { FabProps, FabVariant, FabSize, FabPlacement } from './fab/index.web';
+export { FrostedIconButton } from './frosted-icon-button/index.web';
+export type { FrostedIconButtonProps, FrostedIconButtonSize } from './frosted-icon-button/index.web';
 export * from './grouped-buttons';
 export * from './divider';
 export * from './radio-indicator';

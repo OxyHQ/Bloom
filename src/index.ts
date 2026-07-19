@@ -75,6 +75,8 @@ export type {
 export * from './button';
 export { Fab } from './fab';
 export type { FabProps, FabVariant, FabSize, FabPlacement } from './fab';
+export { FrostedIconButton } from './frosted-icon-button';
+export type { FrostedIconButtonProps, FrostedIconButtonSize } from './frosted-icon-button';
 export * from './grouped-buttons';
 export * from './divider';
 export * from './radio-indicator';

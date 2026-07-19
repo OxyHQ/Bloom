@@ -1,6 +1,6 @@
 {
   "name": "@oxyhq/bloom",
-  "version": "0.35.8",
+  "version": "0.36.0",
   "description": "Bloom UI — Oxy ecosystem component library for React Native + Expo + Web",
   "main": "lib/commonjs/index.js",
   "module": "lib/module/index.js",
@@ -156,6 +156,22 @@
       "require": {
         "types": "./lib/typescript/commonjs/fab/index.d.ts",
         "default": "./lib/commonjs/fab/index.js"
+      }
+    },
+    "./frosted-icon-button": {
+      "react-native": "./src/frosted-icon-button/index.ts",
+      "browser": {
+        "types": "./lib/typescript/module/frosted-icon-button/index.web.d.ts",
+        "import": "./lib/module/frosted-icon-button/index.web.js",
+        "require": "./lib/commonjs/frosted-icon-button/index.web.js"
+      },
+      "import": {
+        "types": "./lib/typescript/module/frosted-icon-button/index.d.ts",
+        "default": "./lib/module/frosted-icon-button/index.js"
+      },
+      "require": {
+        "types": "./lib/typescript/commonjs/frosted-icon-button/index.d.ts",
+        "default": "./lib/commonjs/frosted-icon-button/index.js"
       }
     },
     "./grouped-buttons": {
