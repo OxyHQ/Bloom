@@ -24,6 +24,7 @@
  */
 
 import { BORDER_ROLES, FILL_ROLES, TEXT_ROLES } from './color-roles';
+import { CANONICAL_TOKENS } from '../theme/token-registry';
 import {
   BORDER_WIDTH,
   FONT_FAMILY_VARS,
@@ -48,7 +49,7 @@ import { SHADOW_BOX } from './shadows';
 export function bloomThemeCss(): string {
   const lines: string[] = [];
 
-  // Color roles.
+  // Bloom's namespaced semantic color roles (bg-fill, text-text-*, border-*).
   for (const [role, value] of Object.entries({
     ...FILL_ROLES,
     ...TEXT_ROLES,
@@ -56,6 +57,22 @@ export function bloomThemeCss(): string {
   })) {
     lines.push(`  --color-${role}: ${value};`);
   }
+
+  // shadcn-canonical color utilities (bg-card, bg-primary, bg-background,
+  // text-muted-foreground, …). Emitted here — the SINGLE source of truth — for
+  // every runtime token, so consumer apps get these utilities by importing
+  // `@oxyhq/bloom/design-tokens/theme.css` and NEVER re-declare a per-app
+  // `@theme { --color-*: var(--*) }` block (that per-app duplication is what let
+  // `--color-card` drift to `var(--surface)`). Mirrors the `--color-<token>`
+  // aliases `buildScopeVars` emits at runtime, so the static and runtime maps
+  // agree. Each `--x` token already resolves to a full `rgb(...)` color, so the
+  // alias is a direct `var(--x)` — never `hsl(var(--x))`.
+  for (const token of CANONICAL_TOKENS) {
+    lines.push(`  --color-${token}: var(--${token});`);
+  }
+  // `destructive` carries no themed foreground token; its text is always the
+  // fixed light-on-error colour.
+  lines.push('  --color-destructive-foreground: #ffffff;');
 
   // Spacing.
   for (const [key, value] of Object.entries(SPACING)) {
