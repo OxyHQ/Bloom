@@ -1,7 +1,8 @@
 import { Platform } from 'react-native';
 import { APP_COLOR_PRESETS, type AppColorName } from './color-presets';
+import { generateRoleColors, type RoleColors } from './color-engine';
 import { getAdaptiveColors } from './adaptive-colors';
-import { getResolvedTokens, hslToSrgb } from './token-registry';
+import { getResolvedTokens } from './token-registry';
 import { THEME_GRADIENTS } from './gradients';
 import type { Theme, ThemeColors } from './types';
 
@@ -17,29 +18,16 @@ export const STATUS_COLORS = {
 } as const;
 
 /**
- * Extract the integer hue from a shadcn-style raw HSL triple (`'H S% L%'`,
- * optionally with an alpha tail). Used to seed the computed brand tints below
- * from the preset's primary/destructive hue, exactly as pre-0.8.0.
- */
-function extractHue(triple: string): number {
-  const first = (triple.split(/\s+/)[0] ?? '0').replace(/deg$/i, '');
-  const hue = parseInt(first, 10);
-  return Number.isFinite(hue) ? hue : 0;
-}
-
-/**
- * Build the JS `theme.colors` object from the SAME canonical rgb token source
- * the web/native CSS-var writes use (`getResolvedTokens`). JS styles and the
- * `var(--x)` document tokens therefore share one rgb pipeline — no second,
- * drift-prone HSL conversion lives here.
+ * Build the JS `theme.colors` object from the SAME engine-derived colours the
+ * web/native CSS-var writes use. Token-backed fields read from the resolved rgb
+ * token map (`getResolvedTokens`, which sources from the engine via
+ * `getPresetVars`); the brand-tint family (primarySubtle/negative/…) reads the
+ * engine's container/error roles directly. JS styles and the `var(--x)` document
+ * tokens therefore share one engine-backed pipeline — no second HSL conversion.
  *
- * Token-backed values read straight from the resolved rgb map via `g(...)`.
- * The brand tints (primarySubtle/negative/contrast50/...) reproduce the EXACT
- * pre-0.8.0 colors — computed from the preset's primary/destructive HUE with
- * the historical `hsl(h, s%, l%)` math — but are emitted as `rgb(...)` by
- * routing the triple through the registry's `hslToSrgb`, so the single-format
- * pipeline is preserved. (`hsl(h,s%,l%)` and the `rgb(...)` of the same color
- * are byte-identical under the RN/RNW/browser parser.)
+ * The two intentional fixes land here too: `card` is now the lightest surface
+ * (`--card` → engine `surfaceContainerLowest`) and `secondary` is a real
+ * contrast colour (engine `secondary` role), not a mirror of `primary`.
  */
 function buildColorsFromPreset(
   preset: AppColorName,
@@ -51,24 +39,23 @@ function buildColorsFromPreset(
   // Read a resolved `rgb(...)` token by its bare name (no leading `--`).
   const g = (k: string): string => t[`--${k}`] ?? 'rgb(0 0 0)';
 
-  // Convert a computed `H S% L%` triple to the canonical `rgb(...)` via the
-  // registry's single HSL→sRGB conversion (matches the old `hsl(h,s%,l%)`).
-  const hslRgb = (h: number, s: number, l: number): string => hslToSrgb(`${h} ${s}% ${l}%`);
-
-  // Brand hues seed the computed tints from the preset's raw HSL triples,
-  // exactly as the pre-0.8.0 logic did.
-  const presetTokens = isDark ? APP_COLOR_PRESETS[preset].dark : APP_COLOR_PRESETS[preset].light;
-  const pHue = extractHue(presetTokens['--primary'] ?? '0 0% 50%');
-  const dHue = extractHue(presetTokens['--destructive'] ?? '0 0% 0%');
+  // The full engine role set — for fields that map to roles Bloom's canonical
+  // token set does not surface (containers, error family).
+  const config = APP_COLOR_PRESETS[preset];
+  const r: RoleColors = generateRoleColors({
+    seed: config.hex,
+    variant: config.variant,
+    isDark,
+  });
 
   return {
     background: g('background'),
     backgroundSecondary: g('surface'),
-    backgroundTertiary: g('muted'),
+    backgroundTertiary: g('popover'),
 
     text: g('foreground'),
     textSecondary: g('muted-foreground'),
-    textTertiary: g('muted-foreground'),
+    textTertiary: r.outline,
 
     border: g('border'),
     borderLight: g('input'),
@@ -80,8 +67,8 @@ function buildColorsFromPreset(
     primaryLight: g('surface'),
     primaryDark: g('background'),
 
-    // `secondary` historically mirrors `primary`. Retained for compatibility.
-    secondary: g('primary'),
+    // The FIX: `secondary` is now a real contrast colour (engine `secondary`).
+    secondary: g('secondary'),
 
     tint: g('primary'),
     icon: g('muted-foreground'),
@@ -89,15 +76,16 @@ function buildColorsFromPreset(
 
     ...STATUS_COLORS,
 
-    primarySubtle: isDark ? hslRgb(pHue, 50, 10) : hslRgb(pHue, 70, 93),
-    primarySubtleForeground: isDark ? hslRgb(pHue, 70, 65) : hslRgb(pHue, 90, 25),
-    negative: hslRgb(dHue, 84, 45),
-    negativeForeground: '#FFFFFF',
-    negativeSubtle: isDark ? hslRgb(dHue, 50, 10) : hslRgb(dHue, 90, 95),
-    negativeSubtleForeground: isDark ? hslRgb(dHue, 70, 65) : hslRgb(dHue, 80, 40),
-    contrast50: isDark ? hslRgb(pHue, 15, 12) : hslRgb(pHue, 10, 93),
+    primarySubtle: r.primaryContainer,
+    primarySubtleForeground: r.onPrimaryContainer,
+    negative: r.error,
+    negativeForeground: r.onError,
+    negativeSubtle: r.errorContainer,
+    negativeSubtleForeground: r.onErrorContainer,
+    contrast50: g('muted'),
 
-    card: g('surface'),
+    // The FIX: `card` is the lightest surface (engine `surfaceContainerLowest`).
+    card: g('card'),
     shadow: isDark ? 'rgba(0, 0, 0, 0.3)' : 'rgba(0, 0, 0, 0.1)',
     overlay: 'rgba(0, 0, 0, 0.5)',
   };

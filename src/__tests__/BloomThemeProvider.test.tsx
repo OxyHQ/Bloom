@@ -4,6 +4,7 @@ import { render } from '@testing-library/react-native';
 
 import { BloomThemeProvider } from '../theme/BloomThemeProvider';
 import { useTheme, useThemeColor, useBloomTheme } from '../theme/use-theme';
+import { buildTheme } from '../theme/build-theme';
 import type { AppColorName } from '../theme/color-presets';
 
 function ThemeDisplay() {
@@ -72,8 +73,10 @@ describe('BloomThemeProvider', () => {
         <ThemeDisplay />
       </BloomThemeProvider>,
     );
-    // Blue preset primary is HSL(205, 87%, 53%) → canonical sRGB rgb(31 153 239)
-    expect(getByTestId('primary').props.children).toBe('rgb(31 153 239)');
+    // Blue preset primary is now engine-derived from the blue seed.
+    expect(getByTestId('primary').props.children).toBe(
+      buildTheme('blue', 'light').colors.primary,
+    );
   });
 
   it('generates different background colors for light and dark modes', () => {
@@ -135,8 +138,10 @@ describe('useThemeColor', () => {
         <ColorDisplay colorKey="primary" />
       </BloomThemeProvider>,
     );
-    // teal preset primary HSL(185, 100%, 20%) → canonical sRGB rgb(0 94 102)
-    expect(getByTestId('color').props.children).toBe('rgb(0 94 102)');
+    // teal preset primary is now engine-derived from the teal seed.
+    expect(getByTestId('color').props.children).toBe(
+      buildTheme('teal', 'light').colors.primary,
+    );
   });
 });
 

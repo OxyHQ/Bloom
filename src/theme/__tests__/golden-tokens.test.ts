@@ -2,13 +2,12 @@ import goldenResolvedTokens from './__fixtures__/golden-resolved-tokens.json';
 import { APP_COLOR_NAMES } from '../color-presets';
 import { getResolvedTokens } from '../token-registry';
 
-// `golden-resolved-tokens.json` is the FROZEN parity oracle: the exact resolved
-// rgb for every preset×mode×token that the legacy resolved-color pipeline
-// produced (captured once, each resolved-color key remapped to its base `--X`).
-// It is IMMUTABLE — never regenerate it to chase new output. These tests prove
-// the canonical `getResolvedTokens` pipeline reproduces that palette EXACTLY
-// (byte-for-byte rgb), so the refactor to a single rgb token pipeline does not
-// shift a single color.
+// `golden-resolved-tokens.json` is the frozen palette oracle: the exact resolved
+// rgb for every preset×mode×token. It was DELIBERATELY REBASED when the palette
+// moved from hand-authored HSL triples to the colour engine (Phase 5) — the
+// palette change is the deliverable. It is frozen going FORWARD: it now guards
+// against accidental drift of the engine-backed output, so these tests still
+// prove `getResolvedTokens` reproduces the committed palette byte-for-byte.
 const fixture = goldenResolvedTokens as Record<string, Record<string, string>>;
 
 describe('golden token parity (frozen oracle)', () => {

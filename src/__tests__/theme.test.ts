@@ -5,6 +5,7 @@ import {
   hexToAppColorName,
 } from '../theme/color-presets';
 import { buildTheme } from '../theme/build-theme';
+import { getPresetVars } from '../theme/preset-vars';
 import { THEME_GRADIENTS } from '../theme/gradients';
 import type { Theme, ThemeColors, ThemeMode } from '../theme/types';
 
@@ -18,7 +19,9 @@ describe('Theme system', () => {
       }
     });
 
-    it('each preset has both light and dark color variables', () => {
+    it('each preset generates both light and dark canonical tokens from its seed', () => {
+      // The palette is now engine-derived from the seed; every preset must
+      // produce a full canonical token set in both modes via `getPresetVars`.
       const requiredVars = [
         '--background',
         '--foreground',
@@ -32,31 +35,36 @@ describe('Theme system', () => {
       ];
 
       for (const name of APP_COLOR_NAMES) {
-        const preset = APP_COLOR_PRESETS[name]!;
+        const light = getPresetVars(name, 'light');
+        const dark = getPresetVars(name, 'dark');
         for (const v of requiredVars) {
-          expect(preset.light[v]).toBeDefined();
-          expect(preset.dark[v]).toBeDefined();
+          expect(light[v]).toBeDefined();
+          expect(dark[v]).toBeDefined();
         }
       }
     });
 
     it('light and dark variants have different values', () => {
       for (const name of APP_COLOR_NAMES) {
-        const preset = APP_COLOR_PRESETS[name]!;
         // Background should differ between light and dark
-        expect(preset.light['--background']).not.toBe(preset.dark['--background']);
+        expect(getPresetVars(name, 'light')['--background']).not.toBe(
+          getPresetVars(name, 'dark')['--background'],
+        );
       }
     });
   });
 
   describe('buildTheme primaryForeground', () => {
     it('resolves a readable foreground for the primary fill per preset', () => {
-      // blue's --primary-foreground is `0 0% 100%` → white (canonical sRGB rgb)
-      expect(buildTheme('blue', 'light').colors.primaryForeground).toBe('rgb(255 255 255)');
-      expect(buildTheme('blue', 'dark').colors.primaryForeground).toBe('rgb(255 255 255)');
-      // yellow's --primary-foreground is `0 0% 0%` → black (canonical sRGB rgb)
-      expect(buildTheme('yellow', 'light').colors.primaryForeground).toBe('rgb(0 0 0)');
-      expect(buildTheme('yellow', 'dark').colors.primaryForeground).toBe('rgb(0 0 0)');
+      // Every preset's primary foreground is the engine's `on-primary` role,
+      // surfaced as `--primary-foreground` — a legible on-primary contrast color.
+      for (const name of APP_COLOR_NAMES) {
+        for (const mode of ['light', 'dark'] as const) {
+          expect(buildTheme(name, mode).colors.primaryForeground).toBe(
+            getPresetVars(name, mode)['--primary-foreground'],
+          );
+        }
+      }
     });
 
     it('sets a primaryForeground for every preset in both modes', () => {

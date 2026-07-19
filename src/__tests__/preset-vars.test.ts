@@ -1,4 +1,4 @@
-import { APP_COLOR_NAMES, APP_COLOR_PRESETS } from '../theme/color-presets';
+import { APP_COLOR_NAMES } from '../theme/color-presets';
 import { getPresetVars } from '../theme/preset-vars';
 import { getResolvedTokens } from '../theme/token-registry';
 
@@ -20,70 +20,99 @@ const EXTENDED_KEYS = [
   '--sidebar-ring',
 ] as const;
 
-describe('getPresetVars', () => {
-  it('includes every base preset token plus extended tokens for all presets and modes', () => {
+const BASE_KEYS = [
+  '--background',
+  '--foreground',
+  '--surface',
+  '--surface-foreground',
+  '--popover',
+  '--popover-foreground',
+  '--primary',
+  '--primary-foreground',
+  '--secondary',
+  '--secondary-foreground',
+  '--muted',
+  '--muted-foreground',
+  '--accent',
+  '--accent-foreground',
+  '--destructive',
+  '--border',
+  '--input',
+  '--ring',
+  '--sidebar',
+] as const;
+
+describe('getPresetVars (engine-backed)', () => {
+  it('emits every base + extended token as a full rgb() color for all presets and modes', () => {
     for (const name of APP_COLOR_NAMES) {
       for (const mode of ['light', 'dark'] as const) {
         const vars = getPresetVars(name, mode);
-        const base = mode === 'light' ? APP_COLOR_PRESETS[name].light : APP_COLOR_PRESETS[name].dark;
-
-        for (const key of Object.keys(base)) {
-          expect(vars[key]).toBe(base[key]);
-        }
-        for (const key of EXTENDED_KEYS) {
+        for (const key of [...BASE_KEYS, ...EXTENDED_KEYS]) {
           expect(vars[key]).toBeDefined();
+          // The engine emits `rgb(r g b)` directly — never a bare HSL triple.
+          expect(vars[key]).toMatch(/^rgb\(\d+ \d+ \d+\)$/);
         }
       }
     }
   });
 
-  it('derives chart/sidebar hue from the preset primary', () => {
+  it('drives sidebar-primary / ring from the engine primary role', () => {
     const vars = getPresetVars('blue', 'light');
-    const primary = APP_COLOR_PRESETS.blue.light['--primary'] ?? '';
-    const primaryHue = primary.split(' ')[0] ?? '';
-    const chart1 = vars['--chart-1'] ?? '';
-    expect(chart1.startsWith(`${primaryHue} `)).toBe(true);
-    expect(vars['--sidebar-primary']).toBe(primary);
+    expect(vars['--sidebar-primary']).toBe(vars['--primary']);
+    expect(vars['--ring']).toBe(vars['--primary']);
+    expect(vars['--chart-1']).toBe(vars['--primary']);
   });
 
-  it('returns raw HSL triples (no resolved colors) — getResolvedTokens owns rgb', () => {
-    // `getPresetVars` is the raw triple source feeding the single canonical
-    // resolver. It must NOT pre-resolve to rgb/hsl, and the legacy resolved-color
-    // companion universe must be gone (no key carries the resolved-color prefix).
+  it('makes secondary a real contrast color, not a mirror of primary (the fix)', () => {
+    for (const name of APP_COLOR_NAMES) {
+      for (const mode of ['light', 'dark'] as const) {
+        const vars = getPresetVars(name, mode);
+        expect(vars['--secondary']).not.toBe(vars['--primary']);
+      }
+    }
+  });
+
+  it('makes card the lightest surface in light mode, darkest in dark (the fix)', () => {
+    const channels = (rgb: string): number[] =>
+      (rgb.match(/\d+/g) ?? []).map(Number);
+    const sum = (rgb: string): number => channels(rgb).reduce((a, b) => a + b, 0);
+
+    for (const name of APP_COLOR_NAMES) {
+      const light = getPresetVars(name, 'light');
+      // card (surfaceContainerLowest) must be lighter than background in light.
+      expect(sum(light['--card'] ?? '')).toBeGreaterThan(sum(light['--background'] ?? ''));
+
+      const dark = getPresetVars(name, 'dark');
+      // card must be darker than (or equal to) background in dark — correct inversion.
+      expect(sum(dark['--card'] ?? '')).toBeLessThanOrEqual(sum(dark['--background'] ?? ''));
+    }
+  });
+
+  it('carries no legacy resolved-color companion universe', () => {
     const vars = getPresetVars('green', 'dark');
-    expect(vars['--primary']).toBe(APP_COLOR_PRESETS.green.dark['--primary']);
-    expect(/^-?\d[\d.]*\s+[\d.]+%/.test(vars['--primary'] ?? '')).toBe(true);
     const legacyPrefix = `--${'color'}-`;
     expect(Object.keys(vars).some((k) => k.startsWith(legacyPrefix))).toBe(false);
   });
 });
 
 describe('getResolvedTokens (single canonical rgb pipeline)', () => {
-  it('resolves every base + extended token to a space-separated rgb() string', () => {
+  it('passes the engine rgb() values through unchanged', () => {
     const resolved = getResolvedTokens('green', 'dark');
-    const primaryTriple = APP_COLOR_PRESETS.green.dark['--primary'] ?? '';
-    // No resolved-color companion universe anymore — the base token is rgb.
-    const legacyPrefix = `--${'color'}-`;
-    expect(Object.keys(resolved).some((k) => k.startsWith(legacyPrefix))).toBe(false);
+    const raw = getPresetVars('green', 'dark');
+    // The engine already emits rgb(); getResolvedTokens must not re-touch it.
+    expect(resolved['--primary']).toBe(raw['--primary']);
+    expect(resolved['--card']).toBe(raw['--card']);
     expect(resolved['--primary']).toMatch(/^rgb\(\d+ \d+ \d+\)$/);
     expect(resolved['--card']).toMatch(/^rgb\(\d+ \d+ \d+\)$/);
-    // primary triple resolves to the same rgb the registry produces.
-    expect(resolved['--primary']).toBe(getResolvedTokens('green', 'dark')['--primary']);
-    expect(primaryTriple).toMatch(/%/);
-  });
-
-  it('resolves --primary to rgb for the blue preset (matches web reference)', () => {
-    // `blue` preset light `--primary` is `205 87% 53%` → rgb(31 153 239).
-    const resolved = getResolvedTokens('blue', 'light');
-    expect(resolved['--primary']).toBe('rgb(31 153 239)');
+    const legacyPrefix = `--${'color'}-`;
+    expect(Object.keys(resolved).some((k) => k.startsWith(legacyPrefix))).toBe(false);
   });
 
   it('produces a full CSS color for every base preset token of every preset/mode', () => {
     for (const name of APP_COLOR_NAMES) {
       for (const mode of ['light', 'dark'] as const) {
-        const base = mode === 'light' ? APP_COLOR_PRESETS[name].light : APP_COLOR_PRESETS[name].dark;
         const resolved = getResolvedTokens(name, mode);
-        for (const key of Object.keys(base)) {
+        for (const key of BASE_KEYS) {
           const value = resolved[key] ?? '';
           // A bare triple (`185 50% 5%`) is INVALID CSS — the incident. Every
           // base token must come out as a complete color the browser parses.

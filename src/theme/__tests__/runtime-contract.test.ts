@@ -44,18 +44,18 @@ describe('web var(--primary) resolves to a real color (not a bare triple)', () =
   });
 });
 
-it('restored legacy alias invariants hold', () => {
-  // Pre-0.8.0 semantics, restored in 0.8.1: `secondary` mirrors `primary`,
-  // `card` and `primaryLight` are the page surface, `primaryDark` is the page
-  // background. All read straight from the same resolved rgb token map, so the
-  // alias values are byte-identical to their source tokens.
+it('engine-backed alias invariants hold', () => {
+  // Phase 5 contract: `secondary` is a REAL contrast color (engine secondary
+  // role, no longer a mirror of primary), `card` is the lightest surface (engine
+  // `surfaceContainerLowest`, surfaced as `--card`). The legacy `primaryLight`
+  // (page surface tint) and `primaryDark` (page background) aliases are retained.
   for (const preset of ['oxy', 'blue'] as const) {
     for (const mode of ['light', 'dark'] as const) {
       const { colors } = buildTheme(preset, mode);
       const t = getResolvedTokens(preset, mode);
-      expect(colors.secondary).toBe(colors.primary);
-      expect(colors.secondary).toBe(t['--primary']);
-      expect(colors.card).toBe(t['--surface']);
+      expect(colors.secondary).not.toBe(colors.primary);
+      expect(colors.secondary).toBe(t['--secondary']);
+      expect(colors.card).toBe(t['--card']);
       expect(colors.primaryLight).toBe(t['--surface']);
       expect(colors.primaryDark).toBe(t['--background']);
     }

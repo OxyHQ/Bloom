@@ -53,12 +53,16 @@ describe('applyNativeRootVars (native variant)', () => {
     });
 
     // Keys are bare (no `--`), and the value is the single canonical sRGB
-    // `rgb(...)` color from `getResolvedTokens` (`205 87% 53%` → `rgb(31 153 239)`).
-    // sRGB is the space react-native-css's `color-mix` resolver registers, so
-    // alpha utilities (`bg-primary/10`) resolve on native.
+    // `rgb(...)` color from `getResolvedTokens` (now engine-derived from the blue
+    // seed). sRGB is the space react-native-css's `color-mix` resolver registers,
+    // so alpha utilities (`bg-primary/10`) resolve on native.
+    const { getResolvedTokens } = require('../theme/token-registry') as {
+      getResolvedTokens: (preset: string, mode: 'light' | 'dark') => Record<string, string>;
+    };
+    const expectedPrimary = getResolvedTokens('blue', 'light')['--primary'];
     expect(sets).toHaveProperty('primary');
     expect(sets).not.toHaveProperty('--primary');
-    expect(sets.primary).toEqual([['rgb(31 153 239)']]);
+    expect(sets.primary).toEqual([[expectedPrimary]]);
 
     // The legacy resolved-color companion universe is gone — the base token IS
     // rgb, so no `color-primary` companion is written.

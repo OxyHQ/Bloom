@@ -1,68 +1,84 @@
 import { Platform } from 'react-native';
 import { APP_COLOR_PRESETS, type AppColorName, type PresetTokens } from './color-presets';
+import { generateRoleColors, type RoleColors } from './color-engine';
 // Circular at the module graph level (`token-registry` imports `getPresetVars`
 // from here), but safe: `getResolvedTokens` is only referenced inside the
 // `applyPresetVarsToDocument` function body — i.e. at call time, after both
 // modules have finished evaluating — never during module initialization.
 import { getResolvedTokens } from './token-registry';
 
-function extractHue(hslVar: string): number {
-  return parseInt(hslVar.split(' ')[0] ?? '0', 10);
-}
-
-function extractSat(hslVar: string): number {
-  return parseInt(hslVar.split(' ')[1] ?? '0', 10);
-}
-
 /**
- * Bloom's base preset tokens extended with the surface/card/chart/sidebar
- * tokens that apps layer on top of the core shadcn palette. Synthesized from
- * the preset's primary hue so every preset stays in sync automatically.
+ * Map a preset (seed + variant) and mode onto Bloom's canonical CSS-var token
+ * set, sourcing EVERY colour from the colour engine's Material-3 role output.
+ *
+ * This replaces the old hand-authored HSL triples: the engine derives a full,
+ * self-consistent, WCAG-legible role set from the seed for light and dark, and
+ * this function assigns those roles to Bloom's token names. The token NAMES are
+ * unchanged (see `CANONICAL_TOKENS` in `token-registry.ts`) — only the SOURCE of
+ * each colour moved to the engine, so every downstream consumer keeps working.
+ *
+ * Values are full `rgb(r g b)` strings straight from the engine. `getResolvedTokens`
+ * passes non-HSL-triple values through untouched, so these flow through the whole
+ * pipeline (web document writes, native `rootVariables`, JS `ThemeColors`) unchanged.
  *
  * This is the single source of truth for extended theming vars — consumer apps
  * must not redefine these per-app.
- *
- * Values are platform-agnostic **raw HSL triples** (`'185 100% 20%'`, optionally
- * with a `/ A` alpha tail). The single canonical resolver `getResolvedTokens`
- * (in `token-registry.ts`) converts these to sRGB `rgb(...)` for BOTH web and
- * native runtime writes — this function only produces the raw triple map.
  */
 export function getPresetVars(
   colorName: AppColorName,
   mode: 'light' | 'dark',
 ): PresetTokens {
   const preset = APP_COLOR_PRESETS[colorName];
-  const base = mode === 'light' ? preset.light : preset.dark;
-  const get = (key: string): string => base[key] ?? '0 0% 0%';
-  const primary = get('--primary');
-  const foreground = get('--foreground');
-  const hue = extractHue(primary);
-  const sat = Math.min(extractSat(primary), 80);
-  const isDark = mode === 'dark';
+  const r: RoleColors = generateRoleColors({
+    seed: preset.hex,
+    variant: preset.variant,
+    isDark: mode === 'dark',
+  });
 
-  const extended: PresetTokens = {
-    ...base,
-    // Light cards carry the same bold preset tint as `--popover` (H 55% 97%)
-    // so they read as part of the preset family rather than a pure-white slab —
-    // mirroring how dark cards (H 30% 10%) carry the accent hue into near-black.
-    '--card': isDark ? `${hue} 30% 10%` : `${hue} 55% 97%`,
-    '--card-foreground': foreground,
-    '--chart-1': `${hue} ${sat}% 85%`,
-    '--chart-2': `${hue} ${sat}% 75%`,
-    '--chart-3': `${hue} ${sat}% 65%`,
-    '--chart-4': `${hue} ${sat}% ${isDark ? 55 : 75}%`,
-    '--chart-5': `${hue} ${sat}% ${isDark ? 45 : 65}%`,
-    '--content-area': isDark ? `${hue} 30% 8%` : get('--surface'),
-    '--sidebar-foreground': foreground,
-    '--sidebar-primary': primary,
-    '--sidebar-primary-foreground': get('--primary-foreground'),
-    '--sidebar-accent': isDark ? get('--sidebar') : get('--accent'),
-    '--sidebar-accent-foreground': isDark ? foreground : get('--accent-foreground'),
-    '--sidebar-border': get('--border'),
-    '--sidebar-ring': get('--ring'),
+  return {
+    // --- base shadcn palette ---
+    '--background': r.background,
+    '--foreground': r.onBackground,
+    '--surface': r.surfaceContainerLow,
+    '--surface-foreground': r.onSurface,
+    '--popover': r.surfaceContainer,
+    '--popover-foreground': r.onSurface,
+    '--primary': r.primary,
+    '--primary-foreground': r.onPrimary,
+    // The FIX: `secondary` is now a REAL contrast colour (the engine's secondary
+    // role), not a mirror of `primary`.
+    '--secondary': r.secondary,
+    '--secondary-foreground': r.onSecondary,
+    '--muted': r.surfaceContainerHigh,
+    '--muted-foreground': r.onSurfaceVariant,
+    '--accent': r.secondaryContainer,
+    '--accent-foreground': r.onSecondaryContainer,
+    '--destructive': r.error,
+    '--border': r.outlineVariant,
+    '--input': r.outlineVariant,
+    '--ring': r.primary,
+    '--sidebar': r.surfaceContainerLow,
+
+    // --- extended tokens ---
+    // The FIX: `card` is the LIGHTEST surface (lighter than `background` in
+    // light, correctly darker than `background` in dark) via `surfaceContainerLowest`.
+    '--card': r.surfaceContainerLowest,
+    '--card-foreground': r.onSurface,
+    // Chart series: a sensible 5-step ramp across the accent trio + containers.
+    '--chart-1': r.primary,
+    '--chart-2': r.secondary,
+    '--chart-3': r.tertiary,
+    '--chart-4': r.primaryContainer,
+    '--chart-5': r.tertiaryContainer,
+    '--content-area': r.background,
+    '--sidebar-foreground': r.onSurface,
+    '--sidebar-primary': r.primary,
+    '--sidebar-primary-foreground': r.onPrimary,
+    '--sidebar-accent': r.secondaryContainer,
+    '--sidebar-accent-foreground': r.onSecondaryContainer,
+    '--sidebar-border': r.outlineVariant,
+    '--sidebar-ring': r.primary,
   };
-
-  return extended;
 }
 
 /**
@@ -71,10 +87,10 @@ export function getPresetVars(
  * call this only when an app needs the extended (card/chart/sidebar) tokens on
  * the document root.
  *
- * Tokens are resolved to sRGB `rgb(...)` via the single canonical
- * `getResolvedTokens` pipeline, so `var(--x)` — the form Tailwind v4
- * `@theme inline` compiles its color utilities to — resolves directly to a
- * valid color on web.
+ * Tokens are resolved via the single canonical `getResolvedTokens` pipeline
+ * (already full `rgb(...)` colours from the engine), so `var(--x)` — the form
+ * Tailwind v4 `@theme inline` compiles its color utilities to — resolves
+ * directly to a valid color on web.
  */
 export function applyPresetVarsToDocument(
   colorName: AppColorName,
