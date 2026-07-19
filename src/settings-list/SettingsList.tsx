@@ -157,7 +157,7 @@ export const SettingsListGroup = memo<SettingsListGroupProps>(function SettingsL
       <View
         style={[
           styles.groupCard,
-          { backgroundColor: theme.colors.backgroundSecondary },
+          { backgroundColor: theme.colors.card },
         ]}
       >
         {filteredChildren.map((child, index) => (
