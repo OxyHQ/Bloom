@@ -25,6 +25,8 @@ export const CANONICAL_TOKENS = [
   'primary-foreground',
   'secondary',
   'secondary-foreground',
+  'tertiary',
+  'tertiary-foreground',
   'muted',
   'muted-foreground',
   'accent',

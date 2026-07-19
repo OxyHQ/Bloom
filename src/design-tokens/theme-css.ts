@@ -73,6 +73,9 @@ export function bloomThemeCss(): string {
   // `destructive` carries no themed foreground token; its text is always the
   // fixed light-on-error colour.
   lines.push('  --color-destructive-foreground: #ffffff;');
+  // `divider` is a semantic alias of the border token (M3 outlineVariant) so
+  // `bg-divider` / `border-divider` read intentionally in list/section UIs.
+  lines.push('  --color-divider: var(--border);');
 
   // Spacing.
   for (const [key, value] of Object.entries(SPACING)) {

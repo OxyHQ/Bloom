@@ -48,6 +48,10 @@ export function getPresetVars(
     // role), not a mirror of `primary`.
     '--secondary': r.secondary,
     '--secondary-foreground': r.onSecondary,
+    // The third accent of the M3 trio, exposed so `bg-tertiary` / `colors.tertiary`
+    // work alongside primary + secondary.
+    '--tertiary': r.tertiary,
+    '--tertiary-foreground': r.onTertiary,
     '--muted': r.surfaceContainerHigh,
     '--muted-foreground': r.onSurfaceVariant,
     '--accent': r.secondaryContainer,

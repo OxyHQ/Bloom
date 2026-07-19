@@ -19,8 +19,12 @@ export interface ThemeColors {
   /** Legacy alias: the page background (`--background`), NOT the focus ring. */
   primaryDark: string;
 
-  /** Legacy alias: mirrors `primary` (`--primary`) for backwards compatibility. */
+  /** The M3 secondary accent — a real contrast colour (no longer a mirror of primary). */
   secondary: string;
+  secondaryForeground: string;
+  /** The M3 tertiary accent, completing the primary/secondary/tertiary trio. */
+  tertiary: string;
+  tertiaryForeground: string;
 
   tint: string;
   icon: string;

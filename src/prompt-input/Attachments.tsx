@@ -101,7 +101,7 @@ function ImageAttachmentItem({
         height: 120,
         borderRadius: 16,
         overflow: 'hidden',
-        backgroundColor: theme.colors.backgroundSecondary,
+        backgroundColor: theme.colors.card,
         borderWidth: 1,
         borderColor: theme.colors.border,
       }}
@@ -168,7 +168,7 @@ function DocumentAttachmentItem({
         borderWidth: 1,
         borderColor: theme.colors.border,
         overflow: 'hidden',
-        backgroundColor: theme.colors.backgroundSecondary,
+        backgroundColor: theme.colors.card,
       }}
     >
       <View

@@ -67,8 +67,12 @@ function buildColorsFromPreset(
     primaryLight: g('surface'),
     primaryDark: g('background'),
 
-    // The FIX: `secondary` is now a real contrast colour (engine `secondary`).
+    // The M3 accent trio: secondary is a real contrast colour (engine `secondary`),
+    // and tertiary completes primary/secondary/tertiary.
     secondary: g('secondary'),
+    secondaryForeground: g('secondary-foreground'),
+    tertiary: g('tertiary'),
+    tertiaryForeground: g('tertiary-foreground'),
 
     tint: g('primary'),
     icon: g('muted-foreground'),
