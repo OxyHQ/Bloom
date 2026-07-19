@@ -7,11 +7,20 @@
  * the rounded corners / lateral gutters is masked while a single seamless border
  * is drawn around the panel — see `index.web.tsx`.
  *
- * On NATIVE none of that applies: there is no document scroll, no sticky
- * positioning, and no bleed to mask, so the panel is simply a rounded, bordered
- * surface wrapping its content. The `framed` and `showStickyFrame` props are
- * accepted for cross-platform API parity but are intentionally no-ops here
- * (mirroring the no-op native fork of `../scroll`).
+ * On NATIVE none of the WEB overlay machinery applies: there is no document
+ * scroll, no sticky positioning, and no bleed to mask, so the panel is simply a
+ * surface wrapping its content. The `framed` prop still drives whether that
+ * surface is rounded + bordered, tri-state and resolved with pure NativeWind
+ * (`md:` evaluates against the window width on native too — no JS breakpoint
+ * hook needed):
+ *
+ *  - `undefined` (DEFAULT) → responsive: full-bleed below `md`, rounded +
+ *    bordered at `md`+ (`md:rounded-radius-28 md:border md:border-border`).
+ *  - `false` → never framed (plain full-bleed at every size).
+ *  - `true` → always rounded + bordered.
+ *
+ * `showStickyFrame` and `maskColor` are accepted for cross-platform API parity
+ * but are no-ops here (there are no sticky overlays on native).
  *
  * Web bundlers select `./index.web` via the `"browser"` export condition in
  * `package.json`; native bundlers fall through to this file.
@@ -41,10 +50,14 @@ export const PANEL_BOTTOM_INSET = 8;
 export interface ContentPanelProps {
   children: React.ReactNode;
   /**
-   * Whether the panel is framed (wide screens) or full-bleed (narrow screens).
-   * No-op on native — the surface is always a rounded, bordered View.
+   * Framing mode. Tri-state, resolved purely with NativeWind — no consumer
+   * breakpoint hook needed:
+   * - `undefined` (DEFAULT) → responsive: full-bleed below `md`, rounded +
+   *   bordered at `md`+.
+   * - `false` → never framed (plain full-bleed at every size).
+   * - `true` → always rounded + bordered.
    */
-  framed: boolean;
+  framed?: boolean;
   /** Override the surface background utility (defaults to `bg-card`). */
   surfaceClassName?: string;
   surfaceStyle?: StyleProp<ViewStyle>;
@@ -65,6 +78,7 @@ export interface ContentPanelProps {
 
 const ContentPanelComponent: React.FC<ContentPanelProps> = ({
   children,
+  framed,
   surfaceClassName,
   surfaceStyle,
   contentClassName,
@@ -73,12 +87,17 @@ const ContentPanelComponent: React.FC<ContentPanelProps> = ({
   // Dev-only invariant — a ContentPanel must never be nested inside another.
   useContentPanelNestingGuard();
 
-  const surfaceClass = [
-    'flex-1',
-    'rounded-radius-28',
-    'overflow-hidden border border-border',
-    surfaceClassName ?? 'bg-card',
-  ].join(' ');
+  // Tri-state: `undefined` → responsive (md:-gated), `true` → always framed,
+  // `false` → never framed (plain full-bleed). Whole literal class strings are
+  // selected per mode so the Tailwind content-scan over `src/**` picks up every
+  // `md:` / `rounded-radius-28` token verbatim (no dynamic concatenation).
+  const surfaceBase =
+    framed === undefined
+      ? 'flex-1 md:overflow-hidden md:rounded-radius-28 md:border md:border-border'
+      : framed
+        ? 'flex-1 overflow-hidden rounded-radius-28 border border-border'
+        : 'flex-1';
+  const surfaceClass = [surfaceBase, surfaceClassName ?? 'bg-card'].join(' ');
   const contentClass = ['flex-1', contentClassName].filter(Boolean).join(' ');
 
   return (

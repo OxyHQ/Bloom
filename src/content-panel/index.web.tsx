@@ -23,16 +23,29 @@
  * content rather than displacing it). They render BEFORE the content wrapper so
  * z-index — not DOM order — decides layering.
  *
- * When `framed` is false (narrow screens) the panel is full-bleed: a single
- * flat surface, no rounding, no overlays.
+ * Framing is tri-state via the `framed` prop:
+ *
+ *  - `undefined` (DEFAULT) → RESPONSIVE, driven purely by NativeWind: full-bleed
+ *    below `md`, framed at `md`+. The rounding is `md:`-gated and both overlays
+ *    are always rendered but carry `max-md:hidden` (`display:none` below `md`),
+ *    so the breakpoint is decided in CSS — no consumer JS breakpoint hook.
+ *  - `false` → NEVER framed (full-bleed at every size): a single flat surface,
+ *    no rounding, no overlays.
+ *  - `true` → ALWAYS framed (rounded + overlays at every size).
+ *
+ * The overlays are gated by VISIBILITY (a `max-md:hidden` literal) rather than
+ * by conditional mounting for the responsive case, so crossing the breakpoint
+ * never remounts them. The content wrapper likewise keeps a stable `key` so
+ * `{children}` reconciles in place across the breakpoint instead of remounting
+ * (which would reset feed scroll / the virtualizer + refetch).
  *
  * Native bundlers use `./index.tsx` (a plain rounded surface); web bundlers
  * select this file via the `"browser"` export condition in `package.json`.
  *
  * Styling is NativeWind-className-first; the literal class strings below MUST
  * stay literal so a consumer's Tailwind content-scan over `lib/**` picks them up
- * (no dynamic concatenation of the arbitrary `web:[…]` / `rounded-radius-28`
- * parts).
+ * (no dynamic concatenation of the arbitrary `web:[…]` / `rounded-radius-28` /
+ * `md:` parts — whole class strings are selected per mode instead).
  */
 import React, { memo } from 'react';
 import { View, type StyleProp, type ViewStyle } from 'react-native';
@@ -52,8 +65,15 @@ export const PANEL_BOTTOM_INSET = 8;
 
 export interface ContentPanelProps {
   children: React.ReactNode;
-  /** Framed (wide screens) vs full-bleed (narrow screens). */
-  framed: boolean;
+  /**
+   * Framing mode. Tri-state, resolved purely with NativeWind — no consumer
+   * breakpoint hook needed:
+   * - `undefined` (DEFAULT) → responsive: full-bleed below `md`, framed at
+   *   `md`+ (rounded corners + sticky bleed-mask/border overlays).
+   * - `false` → never framed (full-bleed at every size).
+   * - `true` → always framed (rounded + overlays at every size).
+   */
+  framed?: boolean;
   /** Override the surface background utility (defaults to `bg-card`). */
   surfaceClassName?: string;
   surfaceStyle?: StyleProp<ViewStyle>;
@@ -83,17 +103,32 @@ const ContentPanelComponent: React.FC<ContentPanelProps> = ({
   showStickyFrame,
   maskColor,
 }) => {
-  // Dev-only invariant — must run unconditionally before the early `!framed`
-  // return so the hook order stays stable across renders (rules of hooks).
+  // Dev-only invariant — must run unconditionally (before deriving any
+  // mode-specific branch) so the hook order stays stable (rules of hooks).
   useContentPanelNestingGuard();
   const { colors } = useTheme();
 
-  const surfaceClass = framed
-    ? ['flex-1 rounded-radius-28', surfaceClassName ?? 'bg-card'].join(' ')
-    : ['flex-1', surfaceClassName ?? 'bg-card'].join(' ');
-  const contentClass = framed
-    ? ['flex-1 rounded-radius-28 web:overflow-x-clip', contentClassName].filter(Boolean).join(' ')
-    : ['flex-1', contentClassName].filter(Boolean).join(' ');
+  // Tri-state: `undefined` → responsive (md:-gated), `true` → always framed,
+  // `false` → never framed (full-bleed).
+  const responsive = framed === undefined;
+  const showOverlays = framed !== false;
+
+  // Whole literal class strings selected per mode (the Tailwind content-scan
+  // over `lib/**` requires each arbitrary/`md:`/`web:` token stay literal).
+  // `web:md:overflow-x-clip` is platform-first-then-breakpoint, matching the
+  // consumer convention (`web:sm:flex` in `@mercaria/ui`).
+  const surfaceBase = responsive
+    ? 'flex-1 md:rounded-radius-28'
+    : framed
+      ? 'flex-1 rounded-radius-28'
+      : 'flex-1';
+  const contentBase = responsive
+    ? 'flex-1 md:rounded-radius-28 web:md:overflow-x-clip'
+    : framed
+      ? 'flex-1 rounded-radius-28 web:overflow-x-clip'
+      : 'flex-1';
+  const surfaceClass = [surfaceBase, surfaceClassName ?? 'bg-card'].join(' ');
+  const contentClass = [contentBase, contentClassName].filter(Boolean).join(' ');
 
   return (
     <ContentPanelNestingContext.Provider value={true}>
@@ -101,26 +136,31 @@ const ContentPanelComponent: React.FC<ContentPanelProps> = ({
         {...({ className: surfaceClass } as Record<string, string>)}
         style={surfaceStyle}
       >
-        {/* (1) Bleed-mask overlay — gutter box-shadow ring, below chrome. Framed only. */}
-        {framed && (
+        {/* (1) Bleed-mask overlay — gutter box-shadow ring, below chrome. Not
+            rendered when never-framed; `max-md:hidden` (display:none <md) when
+            responsive, so the breakpoint is decided in CSS, not by remounting. */}
+        {showOverlays && (
           <View
             key="bleed-mask"
             pointerEvents="none"
             {...({
-              className:
-                'web:sticky web:top-2 z-30 h-[calc(100dvh-16px)] w-full rounded-radius-28 web:[margin-bottom:calc(-100dvh+16px)] web:[clip-path:inset(-12px)]',
+              className: responsive
+                ? 'web:sticky web:top-2 z-30 h-[calc(100dvh-16px)] w-full rounded-radius-28 max-md:hidden web:[margin-bottom:calc(-100dvh+16px)] web:[clip-path:inset(-12px)]'
+                : 'web:sticky web:top-2 z-30 h-[calc(100dvh-16px)] w-full rounded-radius-28 web:[margin-bottom:calc(-100dvh+16px)] web:[clip-path:inset(-12px)]',
             } as Record<string, string>)}
             style={{ boxShadow: `0 0 0 ${GUTTER_MASK_SPREAD}px ${maskColor ?? colors.background}` }}
           />
         )}
-        {/* (2) Border-frame overlay — one continuous rounded border, above all. Framed only. */}
-        {framed && showStickyFrame !== false && (
+        {/* (2) Border-frame overlay — one continuous rounded border, above all.
+            Same visibility gating as the bleed-mask. */}
+        {showOverlays && showStickyFrame !== false && (
           <View
             key="border-frame"
             pointerEvents="none"
             {...({
-              className:
-                'web:sticky web:top-2 z-[120] h-[calc(100dvh-16px)] w-full rounded-radius-28 border border-border web:[margin-bottom:calc(-100dvh+16px)]',
+              className: responsive
+                ? 'web:sticky web:top-2 z-[120] h-[calc(100dvh-16px)] w-full rounded-radius-28 border border-border max-md:hidden web:[margin-bottom:calc(-100dvh+16px)]'
+                : 'web:sticky web:top-2 z-[120] h-[calc(100dvh-16px)] w-full rounded-radius-28 border border-border web:[margin-bottom:calc(-100dvh+16px)]',
             } as Record<string, string>)}
           />
         )}
