@@ -51,7 +51,17 @@ export function quantizeImage(pixels: number[], maxColors = 128): Map<number, nu
   return result;
 }
 
-/** Ranked seed candidates (best first) extracted from an image's pixels (ARGB). */
+/**
+ * Ranked seed candidates (best first) extracted from an image's pixels (ARGB).
+ *
+ * The top result (`seeds[0]`) is the primary seed for `generateRoleColors({ seed })`.
+ * To derive a richer, brand-accurate theme from artwork, a caller can additionally
+ * pin distinct accents from the ranked list: pass `hexFromArgb(seeds[1])` as
+ * `secondarySeed` and `hexFromArgb(seeds[2])` as `tertiarySeed` to
+ * `generateRoleColors` / `buildSeedScopeVars` / `buildThemeFromSeed` so the
+ * secondary and tertiary families reflect the artwork's real supporting colours
+ * instead of hue-rotations of the primary.
+ */
 export function seedsFromImagePixels(pixels: number[], options?: ScoreOptions): number[] {
   return score(quantizeImage(pixels), options);
 }

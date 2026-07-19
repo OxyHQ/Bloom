@@ -1,5 +1,17 @@
 import { APP_COLOR_PRESETS, type AppColorName, type PresetTokens } from './color-presets';
 import { generateRoleColors, type RoleColors } from './color-engine';
+
+/**
+ * Optional explicit accent-colour overrides (`#rrggbb`) that PIN the secondary
+ * and/or tertiary palette app-wide, regardless of the active preset's own seed.
+ * Threaded from `BloomThemeProvider`'s `secondaryColor` / `tertiaryColor` props
+ * down through the whole token pipeline. When both are omitted, the preset's own
+ * (usually derived) accents are used — output is unchanged.
+ */
+export interface ExplicitAccents {
+  secondaryHex?: string;
+  tertiaryHex?: string;
+}
 // Circular at the module graph level (`token-registry` imports `getPresetVars`
 // from here), but safe: `getResolvedTokens` is only referenced inside the
 // `applyPresetVarsToDocument` function body — i.e. at call time, after both
@@ -26,12 +38,19 @@ import { getResolvedTokens } from './token-registry';
 export function getPresetVars(
   colorName: AppColorName,
   mode: 'light' | 'dark',
+  accents?: ExplicitAccents,
 ): PresetTokens {
   const preset = APP_COLOR_PRESETS[colorName];
   const r: RoleColors = generateRoleColors({
     seed: preset.hex,
     variant: preset.variant,
     isDark: mode === 'dark',
+    // Pinned accents: an explicit app-wide override (from the provider) wins,
+    // else the preset's own declared accent, else undefined → derived rotation.
+    // The built-in presets declare none, so with no override their generated
+    // tokens stay byte-identical.
+    secondarySeed: accents?.secondaryHex ?? preset.secondaryHex,
+    tertiarySeed: accents?.tertiaryHex ?? preset.tertiaryHex,
   });
 
   return {

@@ -17,6 +17,7 @@
 import { rootVariables } from 'react-native-css/native-internal';
 
 import { type AppColorName } from './color-presets';
+import type { ExplicitAccents } from './preset-vars';
 import { getResolvedTokens } from './token-registry';
 
 /**
@@ -121,10 +122,14 @@ import { getResolvedTokens } from './token-registry';
  * Defensive guard: if a host ships a react-native-css build that doesn't expose
  * `rootVariables` as a callable (it always does on @3), we bail rather than throw.
  */
-export function applyNativeRootVars(colorPreset: AppColorName, mode: 'light' | 'dark'): void {
+export function applyNativeRootVars(
+  colorPreset: AppColorName,
+  mode: 'light' | 'dark',
+  accents?: ExplicitAccents,
+): void {
   if (typeof rootVariables !== 'function') return;
 
-  const vars = getResolvedTokens(colorPreset, mode);
+  const vars = getResolvedTokens(colorPreset, mode, accents);
   for (const [key, value] of Object.entries(vars)) {
     // The family is keyed by the bare name; `getResolvedTokens` keys include `--`.
     const name = key.startsWith('--') ? key.slice(2) : key;

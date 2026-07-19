@@ -1,4 +1,5 @@
 import { type AppColorName } from './color-presets';
+import type { ExplicitAccents } from './preset-vars';
 
 /**
  * Platform-neutral DEFAULT variant of `applyNativeRootVars` — a no-op.
@@ -30,7 +31,11 @@ import { type AppColorName } from './color-presets';
  * The signature is intentionally identical to those variants so the import site in
  * `BloomThemeProvider` is platform-agnostic.
  */
-export function applyNativeRootVars(_colorPreset: AppColorName, _mode: 'light' | 'dark'): void {
+export function applyNativeRootVars(
+  _colorPreset: AppColorName,
+  _mode: 'light' | 'dark',
+  _accents?: ExplicitAccents,
+): void {
   // Intentionally empty — the native variant (`native-root-vars.native.ts`) does
   // the real work; this neutral default and the web fork are inert.
 }

@@ -37,6 +37,7 @@ import {
   type BloomThemeStorage,
   type SyncReadResult,
 } from './persistence';
+import type { ExplicitAccents } from './preset-vars';
 import { setColorSchemeSafe } from './set-color-scheme-safe';
 import { useIsomorphicLayoutEffect } from './use-isomorphic-layout-effect';
 import type { Theme, ThemeMode } from './types';
@@ -134,6 +135,21 @@ export interface BloomThemeProviderProps {
    * vars to `document.documentElement` instead of using a wrapper).
    */
   nativeWrapperStyle?: StyleProp<ViewStyle>;
+
+  /**
+   * Optional app-wide secondary-accent colour, `#rrggbb`. When set, the whole
+   * theme's secondary family (`--secondary`, `bg-secondary`, `colors.secondary`,
+   * plus the container / on-colour roles) is PINNED to this brand colour instead
+   * of the derived hue-rotation of the active preset's seed — for a brand with a
+   * distinct accent (e.g. blue primary + yellow secondary). M3 role tones still
+   * apply. Omit to keep the preset's derived accent.
+   */
+  secondaryColor?: string;
+  /**
+   * Optional app-wide tertiary-accent colour, `#rrggbb`. Same semantics as
+   * {@link BloomThemeProviderProps.secondaryColor} for the tertiary family.
+   */
+  tertiaryColor?: string;
 
   children: React.ReactNode;
 }
@@ -296,9 +312,23 @@ export function BloomThemeProvider({
   fonts = true,
   onFontsLoading,
   nativeWrapperStyle,
+  secondaryColor,
+  tertiaryColor,
   children,
 }: BloomThemeProviderProps) {
   const rnScheme = useRNColorScheme();
+
+  // The app-wide pinned accents, if any. Memoized so its identity only changes
+  // when a prop changes (keeps the effect/memo deps below stable). Left
+  // `undefined` when neither is set so every downstream call is byte-identical
+  // to the no-accent path.
+  const explicitAccents = useMemo<ExplicitAccents | undefined>(
+    () =>
+      secondaryColor === undefined && tertiaryColor === undefined
+        ? undefined
+        : { secondaryHex: secondaryColor, tertiaryHex: tertiaryColor },
+    [secondaryColor, tertiaryColor],
+  );
 
   const { mode, colorPreset, setMode, setColorPreset, resetTheme, hydrated } = useThemeState({
     controlledMode,
@@ -322,8 +352,8 @@ export function BloomThemeProvider({
   useIsomorphicLayoutEffect(() => {
     setColorSchemeSafe(effectiveMode);
     applyDarkClass(resolved);
-    applyColorPresetVars(colorPreset, resolved);
-  }, [effectiveMode, resolved, colorPreset]);
+    applyColorPresetVars(colorPreset, resolved, explicitAccents);
+  }, [effectiveMode, resolved, colorPreset, explicitAccents]);
 
   // Native only: publish the preset vars into react-native-css's GLOBAL root
   // variable family so they reach the ENTIRE app tree — navigator screens and
@@ -333,19 +363,19 @@ export function BloomThemeProvider({
   // there. Runs before paint via `useIsomorphicLayoutEffect`, matching the
   // sibling `applyColorPresetVars` side effect.
   useIsomorphicLayoutEffect(() => {
-    applyNativeRootVars(colorPreset, resolved);
-  }, [colorPreset, resolved]);
+    applyNativeRootVars(colorPreset, resolved, explicitAccents);
+  }, [colorPreset, resolved, explicitAccents]);
 
   const contextValue = useMemo<BloomThemeContextValue>(
     () => ({
-      theme: buildTheme(colorPreset, resolved, isAdaptive),
+      theme: buildTheme(colorPreset, resolved, isAdaptive, explicitAccents),
       mode,
       colorPreset,
       setMode,
       setColorPreset,
       resetTheme,
     }),
-    [colorPreset, resolved, isAdaptive, mode, setMode, setColorPreset, resetTheme],
+    [colorPreset, resolved, isAdaptive, explicitAccents, mode, setMode, setColorPreset, resetTheme],
   );
 
   const shouldAwait = awaitHydration ?? Boolean(persistKey && storage);
@@ -356,8 +386,8 @@ export function BloomThemeProvider({
   // etc. through react-native-css's real VariableContext. Web writes these to
   // `document.documentElement` via `applyColorPresetVars`, so it's unused there.
   const nativeVars = useMemo(
-    () => (Platform.OS === 'web' ? null : buildScopeVars(colorPreset, resolved)),
-    [colorPreset, resolved],
+    () => (Platform.OS === 'web' ? null : buildScopeVars(colorPreset, resolved, explicitAccents)),
+    [colorPreset, resolved, explicitAccents],
   );
   const VariableProvider = getVariableContextProvider();
 

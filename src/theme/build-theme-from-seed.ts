@@ -5,6 +5,18 @@ import { THEME_GRADIENTS } from './gradients';
 import type { Theme, ThemeColors } from './types';
 
 /**
+ * Optional explicit accent seeds for the arbitrary-seed theme path. Pinning a
+ * `secondarySeed` / `tertiarySeed` (`#rrggbb`) forces that accent family to the
+ * given brand colour instead of the derived hue-rotation — mirroring
+ * {@link GenerateOptions.secondarySeed}. For an artwork-derived theme, pass the
+ * ranked `seedsFromImagePixels` results (`seeds[1]` / `seeds[2]`).
+ */
+export interface SeedAccents {
+  secondarySeed?: string;
+  tertiarySeed?: string;
+}
+
+/**
  * Build the JS `theme.colors` object from an ARBITRARY seed colour — the dynamic
  * counterpart of `buildTheme(preset, …)`.
  *
@@ -22,8 +34,16 @@ export function buildColorsFromSeed(
   resolved: 'light' | 'dark',
   variant?: SchemeVariant,
   contrastLevel?: number,
+  accents?: SeedAccents,
 ): ThemeColors {
-  const t = buildSeedScopeVars({ seed, mode: resolved, variant, contrastLevel });
+  const t = buildSeedScopeVars({
+    seed,
+    mode: resolved,
+    variant,
+    contrastLevel,
+    secondarySeed: accents?.secondarySeed,
+    tertiarySeed: accents?.tertiarySeed,
+  });
   const isDark = resolved === 'dark';
 
   // Read a resolved `rgb(...)` token by its bare name (no leading `--`).
@@ -34,6 +54,8 @@ export function buildColorsFromSeed(
     variant,
     isDark,
     contrastLevel,
+    secondarySeed: accents?.secondarySeed,
+    tertiarySeed: accents?.tertiarySeed,
   });
 
   return {
@@ -88,10 +110,11 @@ export function buildThemeFromSeed(
   resolved: 'light' | 'dark',
   variant?: SchemeVariant,
   contrastLevel?: number,
+  accents?: SeedAccents,
 ): Theme {
   return {
     mode: resolved,
-    colors: buildColorsFromSeed(seed, resolved, variant, contrastLevel),
+    colors: buildColorsFromSeed(seed, resolved, variant, contrastLevel, accents),
     gradients: THEME_GRADIENTS,
     isDark: resolved === 'dark',
     isLight: resolved === 'light',

@@ -72,6 +72,18 @@ export interface SeedScopeOptions {
   variant?: SchemeVariant;
   /** −1 (low) … 0 (normal) … 1 (high). Defaults to 0. */
   contrastLevel?: number;
+  /**
+   * Optional explicit secondary-accent seed, `#rrggbb`. Pins the secondary palette
+   * to this brand colour instead of the derived rotation (M3 role tones still
+   * apply). Handy for an artwork-extracted theme: pass the second-ranked seed from
+   * `seedsFromImagePixels` (`seeds[1]`) as a distinct secondary accent.
+   */
+  secondarySeed?: string;
+  /**
+   * Optional explicit tertiary-accent seed, `#rrggbb`. Same semantics; pass
+   * `seedsFromImagePixels`' `seeds[2]` for a third artwork-derived accent.
+   */
+  tertiarySeed?: string;
 }
 
 /**
@@ -92,6 +104,8 @@ export function buildSeedScopeVars(options: SeedScopeOptions): Record<string, st
     variant: options.variant ?? 'vivid',
     isDark: options.mode === 'dark',
     contrastLevel: options.contrastLevel ?? 0,
+    secondarySeed: options.secondarySeed,
+    tertiarySeed: options.tertiarySeed,
   });
   const tokens = roleColorsToPresetTokens(roles);
   const vars: Record<string, string> = { ...tokens };

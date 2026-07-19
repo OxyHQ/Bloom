@@ -24,9 +24,10 @@ export {
   greenFromArgb,
   blueFromArgb,
 } from './color-engine';
-export type { RoleColors, GenerateOptions, RoleName, SchemeVariant } from './color-engine';
+export type { RoleColors, GenerateOptions, RoleName, SchemeVariant, AccentSources } from './color-engine';
 export { buildTheme, STATUS_COLORS } from './build-theme';
 export { buildThemeFromSeed, buildColorsFromSeed } from './build-theme-from-seed';
+export type { SeedAccents } from './build-theme-from-seed';
 export { THEME_GRADIENTS } from './gradients';
 export { useTheme, useThemeColor, useBloomTheme } from './use-theme';
 export { useNavigationTheme } from './use-navigation-theme';
@@ -43,6 +44,7 @@ export {
 export { parseRgb, withAlpha } from './color-utils';
 export type { RgbChannels } from './color-utils';
 export { getPresetVars, applyPresetVarsToDocument } from './preset-vars';
+export type { ExplicitAccents } from './preset-vars';
 export { applyDarkClass } from './apply-dark-class';
 export { setColorSchemeSafe } from './set-color-scheme-safe';
 export { initCssInteropDarkMode } from './init-css-interop';

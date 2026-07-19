@@ -32,6 +32,20 @@ export interface AppColorPreset {
   hex: string;
   /** The tonal scheme variant the engine derives roles with. */
   variant: SchemeVariant;
+  /**
+   * Optional explicit secondary-accent seed, `#rrggbb`. When set, the secondary
+   * palette is PINNED to this brand colour (hue + chroma preserved; M3 role tones
+   * still apply) instead of the derived hue-rotation of {@link AppColorPreset.hex}.
+   * Bloom's built-in presets do NOT set this, so their generated output is
+   * unchanged; a consumer brand with a distinct accent (blue primary + yellow
+   * secondary) sets it to pin its real accent family.
+   */
+  secondaryHex?: string;
+  /**
+   * Optional explicit tertiary-accent seed, `#rrggbb`. Same semantics as
+   * {@link AppColorPreset.secondaryHex} for the tertiary palette.
+   */
+  tertiaryHex?: string;
 }
 
 /**

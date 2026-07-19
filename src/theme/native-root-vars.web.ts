@@ -1,4 +1,5 @@
 import { type AppColorName } from './color-presets';
+import type { ExplicitAccents } from './preset-vars';
 
 /**
  * Web fork of `applyNativeRootVars` — a no-op.
@@ -17,6 +18,10 @@ import { type AppColorName } from './color-presets';
  * The signature is intentionally identical to the plain variant so the import
  * site in `BloomThemeProvider` is platform-agnostic.
  */
-export function applyNativeRootVars(_colorPreset: AppColorName, _mode: 'light' | 'dark'): void {
+export function applyNativeRootVars(
+  _colorPreset: AppColorName,
+  _mode: 'light' | 'dark',
+  _accents?: ExplicitAccents,
+): void {
   // Intentionally empty — web applies preset vars to `document.documentElement`.
 }

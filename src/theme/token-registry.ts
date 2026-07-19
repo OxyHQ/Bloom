@@ -1,5 +1,5 @@
 import { APP_COLOR_NAMES, type AppColorName } from './color-presets';
-import { getPresetVars } from './preset-vars';
+import { getPresetVars, type ExplicitAccents } from './preset-vars';
 
 /**
  * The canonical set of Bloom theme token names — WITHOUT the leading `--`.
@@ -149,8 +149,9 @@ export function hslToSrgb(triple: string): string {
 export function getResolvedTokens(
   preset: AppColorName,
   mode: 'light' | 'dark',
+  accents?: ExplicitAccents,
 ): Record<string, string> {
-  const raw = getPresetVars(preset, mode);
+  const raw = getPresetVars(preset, mode, accents);
   const resolved: Record<string, string> = {};
   for (const [key, value] of Object.entries(raw)) {
     resolved[key] = RAW_HSL_TRIPLE.test(value) ? hslToSrgb(value) : value;

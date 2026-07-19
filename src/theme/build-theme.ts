@@ -1,6 +1,7 @@
 import { Platform } from 'react-native';
 import { APP_COLOR_PRESETS, type AppColorName } from './color-presets';
 import { generateRoleColors, type RoleColors } from './color-engine';
+import type { ExplicitAccents } from './preset-vars';
 import { getAdaptiveColors } from './adaptive-colors';
 import { getResolvedTokens } from './token-registry';
 import { THEME_GRADIENTS } from './gradients';
@@ -32,20 +33,24 @@ export const STATUS_COLORS = {
 function buildColorsFromPreset(
   preset: AppColorName,
   resolved: 'light' | 'dark',
+  accents?: ExplicitAccents,
 ): ThemeColors {
-  const t = getResolvedTokens(preset, resolved);
+  const t = getResolvedTokens(preset, resolved, accents);
   const isDark = resolved === 'dark';
 
   // Read a resolved `rgb(...)` token by its bare name (no leading `--`).
   const g = (k: string): string => t[`--${k}`] ?? 'rgb(0 0 0)';
 
   // The full engine role set — for fields that map to roles Bloom's canonical
-  // token set does not surface (containers, error family).
+  // token set does not surface (containers, error family). An app-wide accent
+  // override wins over the preset's own declared accent (else derived).
   const config = APP_COLOR_PRESETS[preset];
   const r: RoleColors = generateRoleColors({
     seed: config.hex,
     variant: config.variant,
     isDark,
+    secondarySeed: accents?.secondaryHex ?? config.secondaryHex,
+    tertiarySeed: accents?.tertiaryHex ?? config.tertiaryHex,
   });
 
   return {
@@ -105,9 +110,10 @@ export function buildTheme(
   preset: AppColorName,
   resolved: 'light' | 'dark',
   isAdaptive: boolean = false,
+  accents?: ExplicitAccents,
 ): Theme {
   const adaptive = isAdaptive && Platform.OS !== 'web' ? getAdaptiveColors() : undefined;
-  const colors = adaptive ?? buildColorsFromPreset(preset, resolved);
+  const colors = adaptive ?? buildColorsFromPreset(preset, resolved, accents);
 
   return {
     mode: resolved,

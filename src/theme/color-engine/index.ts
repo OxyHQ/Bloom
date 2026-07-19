@@ -11,7 +11,7 @@ export { Hct } from './hct';
 export { TonalPalette } from './tonal-palette';
 export { DynamicScheme } from './dynamic-scheme';
 export { buildScheme, schemeVibrant, schemeExpressive, schemeTonalSpot, schemeNeutral } from './scheme-variants';
-export type { SchemeVariant } from './scheme-variants';
+export type { SchemeVariant, AccentSources } from './scheme-variants';
 export { Roles } from './color-roles';
 export type { RoleName } from './color-roles';
 export { ColorRole } from './color-role';
@@ -51,11 +51,27 @@ export interface GenerateOptions {
   isDark?: boolean;
   /** −1 (low) … 0 (normal) … 1 (high). */
   contrastLevel?: number;
+  /**
+   * Optional explicit secondary-accent seed, `#rrggbb`. When set, the secondary
+   * palette is pinned to THIS colour's hue + chroma (M3 role tones still apply)
+   * instead of the variant's derived hue-rotation of the primary seed. Omit for
+   * the current derived behaviour.
+   */
+  secondarySeed?: string;
+  /**
+   * Optional explicit tertiary-accent seed, `#rrggbb`. Same semantics as
+   * {@link GenerateOptions.secondarySeed} for the tertiary palette.
+   */
+  tertiarySeed?: string;
 }
 
 /**
  * Generate the full role set from ANY seed colour — the dynamic-theming entry
  * point. Presets are just fixed seeds; a user-picked colour works identically.
+ *
+ * `secondarySeed` / `tertiarySeed` optionally PIN those accent families to real
+ * brand colours (e.g. a blue-primary brand with a yellow secondary); omitted, the
+ * accents are derived as the variant's hue-rotations — byte-identical to before.
  */
 export function generateRoleColors(opts: GenerateOptions): RoleColors {
   const scheme = buildScheme(
@@ -63,6 +79,16 @@ export function generateRoleColors(opts: GenerateOptions): RoleColors {
     Hct.fromInt(argbFromHex(opts.seed)),
     opts.isDark ?? false,
     opts.contrastLevel ?? 0,
+    {
+      secondarySource:
+        opts.secondarySeed !== undefined
+          ? Hct.fromInt(argbFromHex(opts.secondarySeed))
+          : undefined,
+      tertiarySource:
+        opts.tertiarySeed !== undefined
+          ? Hct.fromInt(argbFromHex(opts.tertiarySeed))
+          : undefined,
+    },
   );
   const out = {} as RoleColors;
   for (const name of Object.keys(Roles) as RoleName[]) {

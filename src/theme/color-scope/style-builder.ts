@@ -3,6 +3,7 @@ import { Platform, type StyleProp, type ViewStyle } from 'react-native';
 
 import { CANONICAL_TOKENS, getResolvedTokens } from '../token-registry';
 import type { AppColorName } from '../color-presets';
+import type { ExplicitAccents } from '../preset-vars';
 import { lazyRequire } from '../../utils/lazy-require';
 
 /**
@@ -36,8 +37,9 @@ const getNativeWindVars = lazyRequire<NativeWindVarsModule>('nativewind');
 export function buildScopeVars(
   colorPreset: AppColorName,
   mode: 'light' | 'dark',
+  accents?: ExplicitAccents,
 ): Record<string, string> {
-  const tokens = getResolvedTokens(colorPreset, mode);
+  const tokens = getResolvedTokens(colorPreset, mode, accents);
   const vars: Record<string, string> = { ...tokens };
 
   for (const token of CANONICAL_TOKENS) {

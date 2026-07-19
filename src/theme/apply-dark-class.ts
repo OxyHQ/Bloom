@@ -1,5 +1,6 @@
 import { Platform } from 'react-native';
 import { APP_COLOR_PRESETS, type AppColorName } from './color-presets';
+import type { ExplicitAccents } from './preset-vars';
 import { getResolvedTokens } from './token-registry';
 
 export function applyDarkClass(resolved: 'light' | 'dark') {
@@ -25,11 +26,15 @@ export function applyDarkClass(resolved: 'light' | 'dark') {
  * Includes extended tokens (card, chart-*, content-area, sidebar-*) so consumer
  * apps don't need to synthesize them.
  */
-export function applyColorPresetVars(preset: AppColorName, resolved: 'light' | 'dark') {
+export function applyColorPresetVars(
+  preset: AppColorName,
+  resolved: 'light' | 'dark',
+  accents?: ExplicitAccents,
+) {
   if (Platform.OS !== 'web' || typeof document === 'undefined') return;
   if (!APP_COLOR_PRESETS[preset]) return;
 
-  const vars = getResolvedTokens(preset, resolved);
+  const vars = getResolvedTokens(preset, resolved, accents);
   const root = document.documentElement.style;
 
   for (const [key, value] of Object.entries(vars)) {
