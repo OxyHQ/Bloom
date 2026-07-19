@@ -65,8 +65,9 @@ export interface SeedScopeOptions {
   seed: string;
   mode: 'light' | 'dark';
   /**
-   * The tonal scheme variant. Defaults to `'vibrant'` — the same variant every
-   * named Bloom preset uses, so a preset's seed reproduces that preset exactly.
+   * The tonal scheme variant. Defaults to `'vivid'` — the same variant every
+   * named Bloom preset uses, so a preset's seed reproduces that preset exactly
+   * (and an artwork-extracted seed gets the same brand-vivid feel as the app).
    */
   variant?: SchemeVariant;
   /** −1 (low) … 0 (normal) … 1 (high). Defaults to 0. */
@@ -88,6 +89,7 @@ export interface SeedScopeOptions {
 export function buildSeedScopeVars(options: SeedScopeOptions): Record<string, string> {
   const roles = generateRoleColors({
     seed: options.seed,
+    variant: options.variant ?? 'vivid',
     isDark: options.mode === 'dark',
     contrastLevel: options.contrastLevel ?? 0,
   });

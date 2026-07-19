@@ -13,7 +13,7 @@ import { sanitizeDegreesDouble } from './math-utils';
 import { TonalPalette } from './tonal-palette';
 import { Variant } from './variant';
 
-export type SchemeVariant = 'vibrant' | 'expressive' | 'tonalSpot' | 'neutral';
+export type SchemeVariant = 'vivid' | 'vibrant' | 'expressive' | 'tonalSpot' | 'neutral';
 
 const VIBRANT_HUES = [0.0, 41.0, 61.0, 101.0, 131.0, 181.0, 251.0, 301.0, 360.0];
 const VIBRANT_SECONDARY_ROTATIONS = [18.0, 15.0, 10.0, 12.0, 15.0, 18.0, 15.0, 12.0, 12.0];
@@ -45,6 +45,34 @@ export function schemeVibrant(source: Hct, isDark: boolean, contrastLevel: numbe
 }
 
 /** Playful, intentionally detached from the seed hue (primary rotated 240°). */
+/**
+ * Bloom's own brand-vivid scheme. Same vibrant base (max-chroma primary) but the
+ * secondary and tertiary accents keep MUCH more chroma than canonical M3 (which
+ * intentionally desaturates supporting accents). Neutrals stay low-chroma so
+ * surfaces read as clean tinted light/dark. This is what the presets use — the
+ * old hand-authored palette felt more vivid than pure M3, and this restores that
+ * across the whole primary/secondary/tertiary trio.
+ */
+export function schemeVivid(source: Hct, isDark: boolean, contrastLevel: number): DynamicScheme {
+  return new DynamicScheme({
+    sourceColorArgb: source.toInt(),
+    variant: Variant.VIBRANT,
+    contrastLevel,
+    isDark,
+    primaryPalette: TonalPalette.fromHueAndChroma(source.hue, 200.0),
+    secondaryPalette: TonalPalette.fromHueAndChroma(
+      DynamicScheme.getRotatedHue(source, VIBRANT_HUES, VIBRANT_SECONDARY_ROTATIONS),
+      64.0,
+    ),
+    tertiaryPalette: TonalPalette.fromHueAndChroma(
+      DynamicScheme.getRotatedHue(source, VIBRANT_HUES, VIBRANT_TERTIARY_ROTATIONS),
+      72.0,
+    ),
+    neutralPalette: TonalPalette.fromHueAndChroma(source.hue, 10.0),
+    neutralVariantPalette: TonalPalette.fromHueAndChroma(source.hue, 12.0),
+  });
+}
+
 export function schemeExpressive(source: Hct, isDark: boolean, contrastLevel: number): DynamicScheme {
   return new DynamicScheme({
     sourceColorArgb: source.toInt(),
@@ -96,6 +124,7 @@ export function schemeNeutral(source: Hct, isDark: boolean, contrastLevel: numbe
 }
 
 const BUILDERS: Record<SchemeVariant, (s: Hct, d: boolean, c: number) => DynamicScheme> = {
+  vivid: schemeVivid,
   vibrant: schemeVibrant,
   expressive: schemeExpressive,
   tonalSpot: schemeTonalSpot,
