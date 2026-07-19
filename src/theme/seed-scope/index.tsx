@@ -15,6 +15,14 @@ export interface BloomSeedScopeProps {
    * mouse-leave/blur when restoring the default theme).
    */
   seed: string | undefined;
+  /**
+   * Optional explicit secondary-accent seed (`#rrggbb`). Pins the secondary
+   * palette to a distinct brand/artwork colour instead of the derived rotation —
+   * e.g. pass `seedsFromImagePixels(pixels)[1]` for a richer artwork theme.
+   */
+  secondarySeed?: string;
+  /** Optional explicit tertiary-accent seed (`#rrggbb`). Same semantics. */
+  tertiarySeed?: string;
   /** Tonal scheme variant. Defaults to `'vibrant'` (matches Bloom presets). */
   variant?: SchemeVariant;
   /** −1 (low) … 0 (normal) … 1 (high). Defaults to 0. */
@@ -46,6 +54,8 @@ interface StyleableProps {
  */
 export function BloomSeedScope({
   seed,
+  secondarySeed,
+  tertiarySeed,
   variant,
   contrastLevel,
   asChild = false,
@@ -57,15 +67,18 @@ export function BloomSeedScope({
   const resolvedMode = parent?.theme.mode ?? 'light';
 
   const nativeVars = useMemo<Record<string, string> | null>(
-    () => (seed ? buildSeedScopeVars({ seed, mode: resolvedMode, variant, contrastLevel }) : null),
-    [seed, resolvedMode, variant, contrastLevel],
+    () =>
+      seed
+        ? buildSeedScopeVars({ seed, mode: resolvedMode, variant, contrastLevel, secondarySeed, tertiarySeed })
+        : null,
+    [seed, resolvedMode, variant, contrastLevel, secondarySeed, tertiarySeed],
   );
 
   const contextValue = useMemo<BloomThemeContextValue | null>(() => {
     if (!parent || !seed) return null;
-    const theme = buildThemeFromSeed(seed, resolvedMode, variant, contrastLevel);
+    const theme = buildThemeFromSeed(seed, resolvedMode, variant, contrastLevel, { secondarySeed, tertiarySeed });
     return { ...parent, theme };
-  }, [parent, seed, resolvedMode, variant, contrastLevel]);
+  }, [parent, seed, resolvedMode, variant, contrastLevel, secondarySeed, tertiarySeed]);
 
   if (!parent) {
     throw new Error('BloomSeedScope must be used within a <BloomThemeProvider>');
