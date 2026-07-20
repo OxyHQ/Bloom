@@ -30,6 +30,13 @@ export { buildThemeFromSeed, buildColorsFromSeed } from './build-theme-from-seed
 export type { SeedAccents } from './build-theme-from-seed';
 export { THEME_GRADIENTS } from './gradients';
 export { useTheme, useThemeColor, useBloomTheme } from './use-theme';
+export { useAmbientTheme, ambientTheme } from './ambient-store';
+export type {
+  AmbientThemeState,
+  AmbientThemeApi,
+  AmbientAccents,
+  UseAmbientThemeOptions,
+} from './ambient-store';
 export { useNavigationTheme } from './use-navigation-theme';
 export type { NavigationTheme, NavigationThemeFont } from './use-navigation-theme';
 export type { Theme, ThemeColors, ThemeMode, ThemeGradient, ThemeGradients } from './types';

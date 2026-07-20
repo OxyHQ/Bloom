@@ -24,6 +24,8 @@ import {
 import { useControllableState } from '../hooks/useControllableState';
 import { FontLoader } from '../fonts/FontLoader';
 
+import { useAmbientThemeState } from './ambient-store';
+
 import { applyDarkClass, applyVarsToDocument } from './apply-dark-class';
 import { buildTheme } from './build-theme';
 import { buildThemeFromSeed } from './build-theme-from-seed';
@@ -332,16 +334,40 @@ export function BloomThemeProvider({
 }: BloomThemeProviderProps) {
   const rnScheme = useRNColorScheme();
 
+  // The app-wide ambient override, driven imperatively via `useAmbientTheme()`
+  // from anywhere in the app. Subscribed through the module-level store's
+  // `useSyncExternalStore` (stable snapshot ref while unchanged → React-Compiler
+  // safe). When an ambient seed is set it OVERRIDES the static `seed` prop and
+  // the active preset; clearing it restores them.
+  const ambient = useAmbientThemeState();
+
+  // The EFFECTIVE dynamic seed + accents for this render: ambient wins over the
+  // static props. `null` ambient seed means "no override" → fall back to the
+  // `seed` prop (which itself may be undefined → preset path). When ambient is
+  // active, ambient accents replace the static accent props entirely (a null
+  // ambient accent = "no pin for this artwork colour").
+  const ambientActive = ambient.seed !== null;
+  const effectiveSeed: string | undefined = ambientActive
+    ? ambient.seed ?? undefined
+    : seed;
+  const effectiveSecondary: string | undefined = ambientActive
+    ? ambient.secondary ?? undefined
+    : secondaryColor;
+  const effectiveTertiary: string | undefined = ambientActive
+    ? ambient.tertiary ?? undefined
+    : tertiaryColor;
+
   // The app-wide pinned accents, if any. Memoized so its identity only changes
-  // when a prop changes (keeps the effect/memo deps below stable). Left
+  // when an accent changes (keeps the effect/memo deps below stable). Left
   // `undefined` when neither is set so every downstream call is byte-identical
-  // to the no-accent path.
+  // to the no-accent path. Uses the EFFECTIVE accents so ambient accents apply
+  // to the preset path too when no ambient seed is present.
   const explicitAccents = useMemo<ExplicitAccents | undefined>(
     () =>
-      secondaryColor === undefined && tertiaryColor === undefined
+      effectiveSecondary === undefined && effectiveTertiary === undefined
         ? undefined
-        : { secondaryHex: secondaryColor, tertiaryHex: tertiaryColor },
-    [secondaryColor, tertiaryColor],
+        : { secondaryHex: effectiveSecondary, tertiaryHex: effectiveTertiary },
+    [effectiveSecondary, effectiveTertiary],
   );
 
   const { mode, colorPreset, setMode, setColorPreset, resetTheme, hydrated } = useThemeState({
@@ -371,20 +397,33 @@ export function BloomThemeProvider({
   // colour engine, so there is one code path — no seed/preset duplication.
   const themeVars = useMemo(
     () =>
-      seed
-        ? buildSeedScopeVars({ seed, mode: resolved, secondarySeed: secondaryColor, tertiarySeed: tertiaryColor })
+      effectiveSeed
+        ? buildSeedScopeVars({
+            seed: effectiveSeed,
+            mode: resolved,
+            secondarySeed: effectiveSecondary,
+            tertiarySeed: effectiveTertiary,
+          })
         : buildScopeVars(colorPreset, resolved, explicitAccents),
-    [seed, secondaryColor, tertiaryColor, colorPreset, resolved, explicitAccents],
+    [effectiveSeed, effectiveSecondary, effectiveTertiary, colorPreset, resolved, explicitAccents],
   );
   const themeColors = useMemo(
     () =>
-      seed
-        ? buildThemeFromSeed(seed, resolved, undefined, undefined, {
-            secondarySeed: secondaryColor,
-            tertiarySeed: tertiaryColor,
+      effectiveSeed
+        ? buildThemeFromSeed(effectiveSeed, resolved, undefined, undefined, {
+            secondarySeed: effectiveSecondary,
+            tertiarySeed: effectiveTertiary,
           })
         : buildTheme(colorPreset, resolved, isAdaptive, explicitAccents),
-    [seed, secondaryColor, tertiaryColor, colorPreset, resolved, isAdaptive, explicitAccents],
+    [
+      effectiveSeed,
+      effectiveSecondary,
+      effectiveTertiary,
+      colorPreset,
+      resolved,
+      isAdaptive,
+      explicitAccents,
+    ],
   );
 
   useIsomorphicLayoutEffect(() => {
