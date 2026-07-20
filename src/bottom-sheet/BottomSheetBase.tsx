@@ -818,6 +818,14 @@ const styles = StyleSheet.create({
     },
     nonScrollableContent: {
         flex: 1,
+        // A `scrollable={false}` sheet hands its own scrolling to a child
+        // VirtualizedList, which needs a BOUNDED height to scroll. The sheet is
+        // clamped by `maxHeight`, but on web a flex child defaults to
+        // `min-height: auto` and grows to its content instead of shrinking into
+        // that clamp — so the list overflows and is clipped (no scroll). Yoga
+        // already defaults min to 0 on native; making it explicit here fixes the
+        // web output so the bounded height propagates down to the list.
+        minHeight: 0,
     },
 });
 
