@@ -18,6 +18,11 @@ import type { ExplicitAccents } from './preset-vars';
  * The signature is intentionally identical to the plain variant so the import
  * site in `BloomThemeProvider` is platform-agnostic.
  */
+/** Web no-op of the native root-vars writer primitive (web writes to the document). */
+export function applyVarsToRootVariables(_vars: Record<string, string>): void {
+  // Intentionally empty — web applies vars to `document.documentElement`.
+}
+
 export function applyNativeRootVars(
   _colorPreset: AppColorName,
   _mode: 'light' | 'dark',

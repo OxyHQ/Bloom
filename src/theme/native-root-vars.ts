@@ -31,6 +31,11 @@ import type { ExplicitAccents } from './preset-vars';
  * The signature is intentionally identical to those variants so the import site in
  * `BloomThemeProvider` is platform-agnostic.
  */
+/** Neutral-default no-op of the native root-vars writer primitive. */
+export function applyVarsToRootVariables(_vars: Record<string, string>): void {
+  // Intentionally empty — the native variant does the real work.
+}
+
 export function applyNativeRootVars(
   _colorPreset: AppColorName,
   _mode: 'light' | 'dark',

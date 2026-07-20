@@ -26,18 +26,25 @@ export function applyDarkClass(resolved: 'light' | 'dark') {
  * Includes extended tokens (card, chart-*, content-area, sidebar-*) so consumer
  * apps don't need to synthesize them.
  */
+/**
+ * Write a pre-computed `--x -> value` record to the document root (web only).
+ * The single web writer primitive: both the preset path (`applyColorPresetVars`)
+ * and `BloomThemeProvider`'s dynamic-seed path feed their already-resolved vars
+ * through here, so the "write to document" logic lives in exactly one place.
+ */
+export function applyVarsToDocument(vars: Record<string, string>) {
+  if (Platform.OS !== 'web' || typeof document === 'undefined') return;
+  const root = document.documentElement.style;
+  for (const [key, value] of Object.entries(vars)) {
+    root.setProperty(key, value);
+  }
+}
+
 export function applyColorPresetVars(
   preset: AppColorName,
   resolved: 'light' | 'dark',
   accents?: ExplicitAccents,
 ) {
-  if (Platform.OS !== 'web' || typeof document === 'undefined') return;
   if (!APP_COLOR_PRESETS[preset]) return;
-
-  const vars = getResolvedTokens(preset, resolved, accents);
-  const root = document.documentElement.style;
-
-  for (const [key, value] of Object.entries(vars)) {
-    root.setProperty(key, value);
-  }
+  applyVarsToDocument(getResolvedTokens(preset, resolved, accents));
 }

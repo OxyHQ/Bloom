@@ -122,17 +122,26 @@ import { getResolvedTokens } from './token-registry';
  * Defensive guard: if a host ships a react-native-css build that doesn't expose
  * `rootVariables` as a callable (it always does on @3), we bail rather than throw.
  */
+/**
+ * Write a pre-computed `--x -> value` record into react-native-css's global
+ * `rootVariables` family. The single native writer primitive: both the preset
+ * path (`applyNativeRootVars`) and `BloomThemeProvider`'s dynamic-seed path feed
+ * their already-resolved vars through here, so the global-write logic lives in
+ * exactly one place.
+ */
+export function applyVarsToRootVariables(vars: Record<string, string>): void {
+  if (typeof rootVariables !== 'function') return;
+  for (const [key, value] of Object.entries(vars)) {
+    // The family is keyed by the bare name; the var keys include `--`.
+    const name = key.startsWith('--') ? key.slice(2) : key;
+    rootVariables(name).set([[value]]);
+  }
+}
+
 export function applyNativeRootVars(
   colorPreset: AppColorName,
   mode: 'light' | 'dark',
   accents?: ExplicitAccents,
 ): void {
-  if (typeof rootVariables !== 'function') return;
-
-  const vars = getResolvedTokens(colorPreset, mode, accents);
-  for (const [key, value] of Object.entries(vars)) {
-    // The family is keyed by the bare name; `getResolvedTokens` keys include `--`.
-    const name = key.startsWith('--') ? key.slice(2) : key;
-    rootVariables(name).set([[value]]);
-  }
+  applyVarsToRootVariables(getResolvedTokens(colorPreset, mode, accents));
 }

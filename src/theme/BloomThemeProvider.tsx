@@ -24,11 +24,13 @@ import {
 import { useControllableState } from '../hooks/useControllableState';
 import { FontLoader } from '../fonts/FontLoader';
 
-import { applyDarkClass, applyColorPresetVars } from './apply-dark-class';
+import { applyDarkClass, applyVarsToDocument } from './apply-dark-class';
 import { buildTheme } from './build-theme';
+import { buildThemeFromSeed } from './build-theme-from-seed';
+import { buildSeedScopeVars } from './color-scope/seed-scope';
 import { type AppColorName } from './color-presets';
 import { buildScopeVars, getVariableContextProvider } from './color-scope/style-builder';
-import { applyNativeRootVars } from './native-root-vars';
+import { applyVarsToRootVariables } from './native-root-vars';
 import {
   readPersistedTheme,
   readPersistedThemeSync,
@@ -150,6 +152,17 @@ export interface BloomThemeProviderProps {
    * {@link BloomThemeProviderProps.secondaryColor} for the tertiary family.
    */
   tertiaryColor?: string;
+
+  /**
+   * Optional DYNAMIC seed colour, `#rrggbb`. When set, the WHOLE app themes from
+   * this seed instead of the named `colorPreset` (via the same colour engine the
+   * preset path uses) — driving app-wide dynamic theming (e.g. tint everything to
+   * the artwork the user is viewing/hovering). `secondaryColor`/`tertiaryColor`
+   * act as this seed's pinned secondary/tertiary accents (e.g. the 2nd/3rd colours
+   * extracted from that artwork). Omit / pass `undefined` to fall back to the
+   * preset — so clearing it restores the app's default theme.
+   */
+  seed?: string;
 
   children: React.ReactNode;
 }
@@ -314,6 +327,7 @@ export function BloomThemeProvider({
   nativeWrapperStyle,
   secondaryColor,
   tertiaryColor,
+  seed,
   children,
 }: BloomThemeProviderProps) {
   const rnScheme = useRNColorScheme();
@@ -349,45 +363,67 @@ export function BloomThemeProvider({
   // Apply native color scheme, dark class, and CSS vars whenever the resolved
   // mode or preset changes. `useIsomorphicLayoutEffect` runs before paint on
   // both native and web, eliminating the previous render-time side effect.
+  // The single `--x -> value` record + JS theme for the ACTIVE source, computed
+  // ONCE and applied identically to web (document), native (rootVariables +
+  // VariableContext), and the JS `theme` context. The source is a DYNAMIC seed
+  // (whole-app dynamic theming — `secondaryColor`/`tertiaryColor` pin this seed's
+  // accents) when `seed` is set, else the named preset. Both go through the same
+  // colour engine, so there is one code path — no seed/preset duplication.
+  const themeVars = useMemo(
+    () =>
+      seed
+        ? buildSeedScopeVars({ seed, mode: resolved, secondarySeed: secondaryColor, tertiarySeed: tertiaryColor })
+        : buildScopeVars(colorPreset, resolved, explicitAccents),
+    [seed, secondaryColor, tertiaryColor, colorPreset, resolved, explicitAccents],
+  );
+  const themeColors = useMemo(
+    () =>
+      seed
+        ? buildThemeFromSeed(seed, resolved, undefined, undefined, {
+            secondarySeed: secondaryColor,
+            tertiarySeed: tertiaryColor,
+          })
+        : buildTheme(colorPreset, resolved, isAdaptive, explicitAccents),
+    [seed, secondaryColor, tertiaryColor, colorPreset, resolved, isAdaptive, explicitAccents],
+  );
+
   useIsomorphicLayoutEffect(() => {
     setColorSchemeSafe(effectiveMode);
     applyDarkClass(resolved);
-    applyColorPresetVars(colorPreset, resolved, explicitAccents);
-  }, [effectiveMode, resolved, colorPreset, explicitAccents]);
+    applyVarsToDocument(themeVars);
+  }, [effectiveMode, resolved, themeVars]);
 
-  // Native only: publish the preset vars into react-native-css's GLOBAL root
+  // Native only: publish the same vars into react-native-css's GLOBAL root
   // variable family so they reach the ENTIRE app tree — navigator screens and
   // every portal/modal/bottom-sheet that paints outside the provider's React
   // subtree (and therefore never sees the `VariableContextProvider` vars below).
   // Web writes the same vars to `document.documentElement` above, so this no-ops
-  // there. Runs before paint via `useIsomorphicLayoutEffect`, matching the
-  // sibling `applyColorPresetVars` side effect.
+  // there. Runs before paint via `useIsomorphicLayoutEffect`.
   useIsomorphicLayoutEffect(() => {
-    applyNativeRootVars(colorPreset, resolved, explicitAccents);
-  }, [colorPreset, resolved, explicitAccents]);
+    applyVarsToRootVariables(themeVars);
+  }, [themeVars]);
 
   const contextValue = useMemo<BloomThemeContextValue>(
     () => ({
-      theme: buildTheme(colorPreset, resolved, isAdaptive, explicitAccents),
+      theme: themeColors,
       mode,
       colorPreset,
       setMode,
       setColorPreset,
       resetTheme,
     }),
-    [colorPreset, resolved, isAdaptive, explicitAccents, mode, setMode, setColorPreset, resetTheme],
+    [themeColors, mode, colorPreset, setMode, setColorPreset, resetTheme],
   );
 
   const shouldAwait = awaitHydration ?? Boolean(persistKey && storage);
   const isGated = shouldAwait && !hydrated;
 
-  // The full `--name -> value` record for the active preset. On native this is
-  // handed to `VariableContextProvider` so descendants resolve `var(--primary)`
-  // etc. through react-native-css's real VariableContext. Web writes these to
-  // `document.documentElement` via `applyColorPresetVars`, so it's unused there.
+  // On native, the same record is handed to `VariableContextProvider` so
+  // descendants resolve `var(--primary)` etc. through react-native-css's real
+  // VariableContext. Web writes them to `document.documentElement` above.
   const nativeVars = useMemo(
-    () => (Platform.OS === 'web' ? null : buildScopeVars(colorPreset, resolved, explicitAccents)),
-    [colorPreset, resolved, explicitAccents],
+    () => (Platform.OS === 'web' ? null : themeVars),
+    [themeVars],
   );
   const VariableProvider = getVariableContextProvider();
 
