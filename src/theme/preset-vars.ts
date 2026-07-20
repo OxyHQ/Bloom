@@ -63,14 +63,17 @@ export function getPresetVars(
     '--popover-foreground': r.onSurface,
     '--primary': r.primary,
     '--primary-foreground': r.onPrimary,
-    // The FIX: `secondary` is now a REAL contrast colour (the engine's secondary
-    // role), not a mirror of `primary`.
-    '--secondary': r.secondary,
-    '--secondary-foreground': r.onSecondary,
-    // The third accent of the M3 trio, exposed so `bg-tertiary` / `colors.tertiary`
-    // work alongside primary + secondary.
-    '--tertiary': r.tertiary,
-    '--tertiary-foreground': r.onTertiary,
+    // shadcn `secondary`/`tertiary` are LOW-EMPHASIS TONAL SURFACES (the soft
+    // filled look of a shadcn secondary button — `bg-secondary` fills inputs,
+    // cards, chips, tabs), NOT the raw M3 accent. So they map to the M3 *container*
+    // roles (soft, brand-tinted, legible), with the on-container as the foreground.
+    // Mapping them to the raw accent (a dark tone-40 colour) turns every
+    // `bg-secondary` surface into a dark slab — the exact bug this fixes. The raw
+    // vivid accents remain available via the chart ramp (`--chart-2`/`--chart-3`).
+    '--secondary': r.secondaryContainer,
+    '--secondary-foreground': r.onSecondaryContainer,
+    '--tertiary': r.tertiaryContainer,
+    '--tertiary-foreground': r.onTertiaryContainer,
     '--muted': r.surfaceContainerHigh,
     '--muted-foreground': r.onSurfaceVariant,
     '--accent': r.secondaryContainer,

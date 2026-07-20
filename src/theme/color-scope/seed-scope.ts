@@ -26,10 +26,12 @@ export function roleColorsToPresetTokens(r: RoleColors): Record<string, string> 
     '--popover-foreground': r.onSurface,
     '--primary': r.primary,
     '--primary-foreground': r.onPrimary,
-    '--secondary': r.secondary,
-    '--secondary-foreground': r.onSecondary,
-    '--tertiary': r.tertiary,
-    '--tertiary-foreground': r.onTertiary,
+    // shadcn `secondary`/`tertiary` are low-emphasis TONAL SURFACES → M3 container
+    // roles (must stay identical to `getPresetVars`; the parity test enforces it).
+    '--secondary': r.secondaryContainer,
+    '--secondary-foreground': r.onSecondaryContainer,
+    '--tertiary': r.tertiaryContainer,
+    '--tertiary-foreground': r.onTertiaryContainer,
     '--muted': r.surfaceContainerHigh,
     '--muted-foreground': r.onSurfaceVariant,
     '--accent': r.secondaryContainer,
