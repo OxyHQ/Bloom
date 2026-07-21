@@ -1,6 +1,6 @@
 {
   "name": "@oxyhq/bloom",
-  "version": "0.46.0",
+  "version": "0.47.0",
   "description": "Bloom UI — Oxy ecosystem component library for React Native + Expo + Web",
   "main": "lib/commonjs/index.js",
   "module": "lib/module/index.js",
@@ -617,15 +617,15 @@
         "default": "./lib/commonjs/segmented-control/index.js"
       }
     },
-    "./search-input": {
-      "react-native": "./src/search-input/index.tsx",
+    "./search": {
+      "react-native": "./src/search/index.tsx",
       "import": {
-        "types": "./lib/typescript/module/search-input/index.d.ts",
-        "default": "./lib/module/search-input/index.js"
+        "types": "./lib/typescript/module/search/index.d.ts",
+        "default": "./lib/module/search/index.js"
       },
       "require": {
-        "types": "./lib/typescript/commonjs/search-input/index.d.ts",
-        "default": "./lib/commonjs/search-input/index.js"
+        "types": "./lib/typescript/commonjs/search/index.d.ts",
+        "default": "./lib/commonjs/search/index.js"
       }
     },
     "./admonition": {
@@ -1043,7 +1043,7 @@
     "grid",
     "text-field",
     "segmented-control",
-    "search-input",
+    "search",
     "admonition",
     "menu",
     "tooltip",

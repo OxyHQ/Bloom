@@ -144,7 +144,7 @@ export type { AnimatedCheckProps, AnimatedCheckRef } from './animated-check';
 // Form components
 export * from './text-field';
 export * from './segmented-control';
-export { SearchInput } from './search-input';
+export { Search } from './search';
 export { Label } from './label';
 export type { LabelProps } from './label';
 export { Field } from './field';

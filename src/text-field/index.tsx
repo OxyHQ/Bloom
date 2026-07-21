@@ -30,6 +30,8 @@ import { Text } from '../typography';
 const Context = createContext<{
   inputRef: React.RefObject<TextInput | null> | null;
   isInvalid: boolean;
+  /** Corner radius of the input chrome. A large value (e.g. 999) reads as a pill. */
+  radius: number;
   hovered: boolean;
   onHoverIn: () => void;
   onHoverOut: () => void;
@@ -39,6 +41,7 @@ const Context = createContext<{
 }>({
   inputRef: null,
   isInvalid: false,
+  radius: 10,
   hovered: false,
   onHoverIn: () => {},
   onHoverOut: () => {},
@@ -48,11 +51,24 @@ const Context = createContext<{
 });
 Context.displayName = 'TextFieldContext';
 
+/**
+ * RN Web paints the browser's default focus outline on the underlying `<input>`.
+ * That rectangle follows the input's own box — NOT the TextField chrome — so on a
+ * pill (large radius) it pokes out of the corners and reads as a stray border on
+ * focus. Strip it so ONLY the TextField's own focus chrome (the animated border)
+ * signals focus. `outlineStyle`/`outlineWidth` are RN-Web style properties absent
+ * from RN's core types; `web()` guarantees this object is never applied on native.
+ */
+const WEB_INPUT_OUTLINE_RESET: TextStyle | undefined =
+  Platform.OS === 'web'
+    ? ({ outlineWidth: 0, outlineStyle: 'none' } as unknown as TextStyle)
+    : undefined;
+
 export type TextFieldProps = React.PropsWithChildren<
-  { isInvalid?: boolean } & ViewStyleProp
+  { isInvalid?: boolean; radius?: number } & ViewStyleProp
 >;
 
-export function TextField({ children, isInvalid = false, style }: TextFieldProps) {
+export function TextField({ children, isInvalid = false, radius = 10, style }: TextFieldProps) {
   const inputRef = useRef<TextInput>(null);
   const {
     state: hovered,
@@ -75,8 +91,9 @@ export function TextField({ children, isInvalid = false, style }: TextFieldProps
       onFocus,
       onBlur,
       isInvalid,
+      radius,
     }),
-    [inputRef, hovered, onHoverIn, onHoverOut, focused, onFocus, onBlur, isInvalid],
+    [inputRef, hovered, onHoverIn, onHoverOut, focused, onFocus, onBlur, isInvalid, radius],
   );
 
   return (
@@ -240,6 +257,7 @@ export function TextFieldInput({
       marginTop: 2,
       marginBottom: 2,
     }),
+    WEB_INPUT_OUTLINE_RESET,
     style,
   ]) as TextStyle;
 
@@ -272,7 +290,7 @@ export function TextFieldInput({
           a.z_10,
           a.absolute,
           a.inset_0,
-          { borderRadius: 10 },
+          { borderRadius: ctx.radius },
           { backgroundColor: theme.colors.contrast50 },
           { borderColor: 'transparent', borderWidth: 2 },
           ctx.hovered ? chromeHover : {},
@@ -393,6 +411,7 @@ function FloatingLabelInput({
     },
     android({ paddingTop: 24, paddingBottom: 6 }),
     web({ paddingTop: 25, paddingBottom: 7 }),
+    WEB_INPUT_OUTLINE_RESET,
     style,
   ]) as TextStyle;
 
@@ -444,7 +463,7 @@ function FloatingLabelInput({
           a.z_10,
           a.absolute,
           a.inset_0,
-          { borderRadius: 10 },
+          { borderRadius: ctx.radius },
           { backgroundColor: theme.colors.contrast50 },
           { borderColor: 'transparent', borderWidth: 2 },
           ctx.hovered ? chromeHover : {},

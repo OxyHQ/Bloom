@@ -10,6 +10,7 @@ import React, {
 } from 'react';
 import {
   Pressable,
+  ScrollView,
   useWindowDimensions,
   View,
   type StyleProp,
@@ -137,6 +138,7 @@ function CenterOrSideDialog({
   inset,
   dismissOnBackdrop = true,
   contentPadding = DEFAULT_DIALOG_CONTENT_PADDING,
+  maxHeightRatio,
   style,
   panelStyle,
   panelClassName,
@@ -302,6 +304,7 @@ function CenterOrSideDialog({
                 style={style}
                 maxWidth={maxWidth}
                 contentPadding={contentPadding}
+                maxHeightRatio={maxHeightRatio}
                 surfaceZIndex={dialogZIndex.surface}
                 isClosing={isClosing}
               >
@@ -357,6 +360,7 @@ function DialogPanel({
   style,
   maxWidth,
   contentPadding,
+  maxHeightRatio,
   surfaceZIndex,
   isClosing,
   children,
@@ -369,6 +373,7 @@ function DialogPanel({
   style?: DialogProps['style'];
   maxWidth: number;
   contentPadding: number;
+  maxHeightRatio?: number;
   surfaceZIndex: number;
   isClosing: boolean;
   children?: React.ReactNode;
@@ -393,6 +398,13 @@ function DialogPanel({
           borderRadius: 20,
           width: '100%',
           maxWidth,
+          // The Dialog OWNS the size cap + scroll boundary (its content renders
+          // bare, edge-to-edge). Short content stays natural; tall content is
+          // capped at `maxHeightRatio` of the viewport and scrolls inside the
+          // rounded card (via the ScrollView below) — consumers never add their
+          // own height cap / ScrollView. `overflow: hidden` clips to the radius.
+          maxHeight: `${Math.round((maxHeightRatio ?? 0.9) * 100)}%`,
+          overflow: 'hidden',
           backgroundColor: theme.colors.background,
           borderWidth: 1,
           borderColor: theme.isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)',
@@ -400,7 +412,6 @@ function DialogPanel({
           shadowOpacity: theme.isDark ? 0.4 : 0.1,
           shadowRadius: 30,
           shadowOffset: { width: 0, height: 4 },
-          padding: contentPadding,
           zIndex: surfaceZIndex,
         },
         isClosing
@@ -409,15 +420,21 @@ function DialogPanel({
         style,
       ]}
     >
-      <DialogBody
-        titleId={titleId}
-        descriptionId={descriptionId}
-        title={title}
-        description={description}
-        actions={actions}
+      <ScrollView
+        style={{ flexShrink: 1 }}
+        contentContainerStyle={{ padding: contentPadding }}
+        showsVerticalScrollIndicator={false}
       >
-        {children}
-      </DialogBody>
+        <DialogBody
+          titleId={titleId}
+          descriptionId={descriptionId}
+          title={title}
+          description={description}
+          actions={actions}
+        >
+          {children}
+        </DialogBody>
+      </ScrollView>
     </View>
   );
 }

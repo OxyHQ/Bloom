@@ -96,7 +96,7 @@ const SUBPATHS = /** @type {const} */ ([
   ['./benefit-list', 'benefit-list/index.tsx'],
   ['./text-field', 'text-field/index.tsx'],
   ['./segmented-control', 'segmented-control/index.tsx'],
-  ['./search-input', 'search-input/index.tsx'],
+  ['./search', 'search/index.tsx'],
   ['./admonition', 'admonition/index.tsx'],
   ['./menu', 'menu/index.tsx'],
   ['./tooltip', 'tooltip/index.tsx'],

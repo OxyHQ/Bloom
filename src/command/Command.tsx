@@ -12,7 +12,7 @@ import { useControllableState } from '../hooks/useControllableState';
 import { Text } from '../typography';
 import { Item } from '../item';
 import { Kbd } from '../kbd';
-import { SearchInput } from '../search-input';
+import { Search } from '../search';
 import { fontSize, space } from '../styles/tokens';
 import type { DialogProps } from '../dialog';
 import { useDialogControl } from '../dialog/context';
@@ -46,7 +46,7 @@ interface FlatEntry {
  * relies on implicit `.web` resolution. The body is single-source.
  *
  * `Command` is a ⌘K command palette built on `<Dialog placement="center">`,
- * `SearchInput`, an `Item` results list and `Kbd` shortcut hints. Items group
+ * `Search`, an `Item` results list and `Kbd` shortcut hints. Items group
  * by their `group` field (ungrouped first). On web the list is
  * keyboard-navigable (Up/Down/Enter); on native, tap to select.
  *
@@ -231,7 +231,7 @@ export function createCommand(Dialog: DialogComponent) {
       testID={testID}>
       <View {...webKeyHandler}>
         <View style={[styles.searchWrap, { borderBottomColor: theme.colors.borderLight }]}>
-          <SearchInput
+          <Search
             ref={searchRef}
             label={placeholder}
             placeholder={placeholder}

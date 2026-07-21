@@ -21,7 +21,7 @@ export interface InputGroupAddonProps {
 export interface InputGroupProps {
   /**
    * Group children. Place `InputGroup.Addon` elements before/after the input
-   * (a Bloom `TextFieldInput`, a `SearchInput`, or any control). The middle
+   * (a Bloom `TextFieldInput`, a `Search`, or any control). The middle
    * child stretches to fill.
    */
   children: React.ReactNode;

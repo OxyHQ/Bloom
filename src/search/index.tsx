@@ -8,7 +8,10 @@ import { TextField, TextFieldIcon, TextFieldInput, type TextFieldInputProps } fr
 import { MagnifyingGlass_Stroke2_Corner0_Rounded as MagnifyingGlassIcon } from '../icons/MagnifyingGlass';
 import { TimesLarge_Stroke2_Corner0_Rounded as X } from '../icons/Times';
 
-type SearchInputProps = Omit<TextFieldInputProps, 'label'> & {
+/** Fully-rounded (pill) corner radius — clamps to half the field height. */
+const PILL_RADIUS = 999;
+
+type SearchProps = Omit<TextFieldInputProps, 'label'> & {
   label?: TextFieldInputProps['label'];
   /**
    * Called when the user presses the clear (X) button.
@@ -16,14 +19,14 @@ type SearchInputProps = Omit<TextFieldInputProps, 'label'> & {
   onClearText?: () => void;
 };
 
-export const SearchInput = forwardRef<TextInput, SearchInputProps>(
-  function SearchInput({ value, label = 'Search', onClearText, ...rest }, ref) {
+export const Search = forwardRef<TextInput, SearchProps>(
+  function Search({ value, label = 'Search', onClearText, ...rest }, ref) {
     const theme = useTheme();
     const showClear = value != null && value.length > 0;
 
     return (
       <View style={[a.w_full, a.relative]}>
-        <TextField>
+        <TextField radius={PILL_RADIUS}>
           <TextFieldIcon icon={MagnifyingGlassIcon} />
           <TextFieldInput
             inputRef={ref}
@@ -70,4 +73,4 @@ export const SearchInput = forwardRef<TextInput, SearchInputProps>(
     );
   },
 );
-SearchInput.displayName = 'SearchInput';
+Search.displayName = 'Search';

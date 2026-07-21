@@ -12,7 +12,7 @@ import { useTheme } from '../theme/use-theme';
 import { useControllableState } from '../hooks/useControllableState';
 import { Text } from '../typography';
 import { Item } from '../item';
-import { SearchInput } from '../search-input';
+import { Search } from '../search';
 import { borderRadius, fontSize, space } from '../styles/tokens';
 import {
   ChevronTopBottom_Stroke2_Corner0_Rounded as ChevronUpDownIcon,
@@ -55,7 +55,7 @@ function defaultFilter<T>(option: ComboboxOption<T>, query: string): boolean {
  * `.web` resolution. The combobox logic is single-source.
  *
  * `Combobox` is a filterable autocomplete select that delegates its overlay to
- * Bloom's `Popover` and composes `SearchInput` + `Item`. The trigger + panel
+ * Bloom's `Popover` and composes `Search` + `Item`. The trigger + panel
  * read the overlay control from `Popover` context (via an inner component) so
  * selecting an option reliably closes the overlay on every platform.
  */
@@ -153,7 +153,7 @@ export function createCombobox(PopoverImpl: PopoverModule) {
 
         <PopoverImpl.PopoverContent label={accessibleLabel} placement="bottom-start" minWidth={240}>
           <View style={styles.searchWrap}>
-            <SearchInput
+            <Search
               ref={searchRef}
               label={label ?? 'Search'}
               value={query}
