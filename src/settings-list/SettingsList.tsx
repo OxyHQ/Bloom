@@ -243,7 +243,11 @@ const styles = StyleSheet.create({
     marginBottom: 16,
   },
   groupCard: {
-    marginHorizontal: 16,
+    // No horizontal self-inset: a `SettingsListGroup` fills its parent's content
+    // width, so the single horizontal inset comes from the ONE content padding
+    // the screen/Dialog already applies (the same `px-screen-margin` that pads
+    // the title/search). Keeping a self-margin here double-inset grouped rows on
+    // every screen that also applies that padding.
     borderRadius: 16,
     overflow: 'hidden',
   },

@@ -13,6 +13,13 @@ import { useTheme } from '../theme/use-theme';
 import { Context } from './context';
 import { DialogBody } from './DialogContent';
 import {
+  DIALOG_NAV_BAR_HEIGHT,
+  DialogHeaderProvider,
+  DialogLargeTitle,
+  DialogNavHeader,
+  useDialogHeaderController,
+} from './DialogHeader';
+import {
   DEFAULT_DIALOG_CONTENT_PADDING,
   DEFAULT_MAX_HEIGHT_RATIO,
   PANEL_RADIUS,
@@ -43,15 +50,18 @@ import type { DialogControlProps, DialogProps } from './types';
 export function DialogBottomSheet({
   control,
   open: controlledOpen,
+  startOpen,
   onClose,
   testID,
   title,
   description,
   actions,
+  header,
   maxHeightRatio = DEFAULT_MAX_HEIGHT_RATIO,
   showHandle = true,
   dismissOnBackdrop = true,
   contentPadding = DEFAULT_DIALOG_CONTENT_PADDING,
+  scrollable,
   style,
   panelStyle,
   panelClassName,
@@ -66,6 +76,7 @@ export function DialogBottomSheet({
   const closeCallbacks = useRef<(() => void)[]>([]);
   const titleId = useId();
   const descriptionId = useId();
+  const headerController = useDialogHeaderController();
 
   // Read the latest controlled flag / `onClose` inside stable callbacks without
   // re-binding them (the context + imperative handle depend on `close` staying
@@ -161,41 +172,95 @@ export function DialogBottomSheet({
   }, [theme.colors.background, maxHeightRatio, panelStyle]);
 
   // Does this dialog render bloom's declarative chrome (title / description /
-  // actions), or is it pure custom `children`? Pure custom children own their
-  // own layout and scrolling, so we render them through a NON-scrollable
-  // BottomSheet body — otherwise the sheet's internal ScrollView would wrap a
-  // child that already contains its own scroller, producing a scroll-in-scroll
-  // (double scroll container). Declarative dialogs are short and keep the
-  // sheet's default scrollable body so they degrade gracefully on small
-  // viewports. This only changes what `DialogBottomSheet` passes to
-  // `BottomSheet`; the standalone `BottomSheet` API and its `scrollable` default
-  // are unchanged for direct consumers.
+  // actions)? This no longer gates the SCROLL decision (that is now the explicit
+  // `scrollable` prop below) — it only opts declarative dialogs into the
+  // gorhom-style pan coordination for their internal ScrollView. A declarative
+  // dialog overflowing on a small viewport needs the coordinated pan so the body
+  // scrolls instead of the drag stealing every vertical gesture; pure-custom
+  // children keep the legacy always-active pan.
   const hasDeclarativeChrome =
     title !== undefined ||
     description !== undefined ||
     (actions !== undefined && actions.length > 0);
 
+  const scrollableResolved = scrollable ?? true;
+
+  const dialogBody = (
+    <DialogBody
+      titleId={titleId}
+      descriptionId={descriptionId}
+      title={title}
+      description={description}
+      actions={actions}
+    >
+      {children}
+    </DialogBody>
+  );
+
+  // Nav-header mode: the Dialog OWNS a sticky gradient nav bar + a large
+  // collapsing title over the sheet's OWN scroll content. The bar floats via the
+  // BottomSheet `headerOverlay` slot; the sheet's scroll offset feeds the shared
+  // controller (`scrollY`) that drives the small-title cross-fade. `contentPadding`
+  // is dropped (the large title + screens own their padding).
+  const headerBody = header ? (
+    scrollableResolved ? (
+      <>
+        <DialogLargeTitle controller={headerController} header={header} />
+        <DialogHeaderProvider controller={headerController}>{dialogBody}</DialogHeaderProvider>
+      </>
+    ) : (
+      <>
+        <View style={{ height: DIALOG_NAV_BAR_HEIGHT }} />
+        <DialogHeaderProvider controller={headerController}>{dialogBody}</DialogHeaderProvider>
+      </>
+    )
+  ) : null;
+
   return (
     <BottomSheet
       ref={ref}
+      // Seed the sheet's open state so a fresh mount that should be open renders
+      // visible on its FIRST commit instead of relying on a present()-in-effect
+      // that races the mount and flashes blank. In controlled mode that seed is
+      // `controlledOpen`; in imperative mode it is the surface's `startOpen`
+      // intent — which is what lets a responsive Dialog survive a resize
+      // placement swap (centered card → bottom sheet) STILL OPEN.
+      open={isControlled ? controlledOpen : startOpen}
       onDismiss={handleDismiss}
       onDismissAttempt={onDismissAttempt}
       enablePanDownToClose
-      showHandle={showHandle}
-      // Pure custom children own scrolling → opt OUT of BottomSheet's internal
-      // ScrollView so there is exactly ONE scroll container (no scroll-in-scroll).
-      scrollable={hasDeclarativeChrome}
-      // Declarative dialogs (title/description/actions) that overflow render a
-      // tall body inside BottomSheet's internal ScrollView. Opt those sheets into
+      // Nav-header mode hides the drag handle (the nav bar sits at the very top);
+      // drag-to-dismiss still works via the coordinated body pan.
+      showHandle={header ? false : showHandle}
+      // Content scrolls inside the sheet's internal ScrollView by default; the
+      // Dialog owns the scroll boundary. A surface whose content owns its own
+      // scroller (a FlatList / VirtualizedList) passes `scrollable={false}` to
+      // opt OUT so there is exactly ONE scroll container (no scroll-in-scroll,
+      // no "VirtualizedList inside a plain ScrollView" warning).
+      scrollable={scrollableResolved}
+      // Declarative dialogs (title/description/actions) that overflow — AND every
+      // nav-header page (its scroll content overflows by design) — need
       // gorhom-style pan coordination: the drag-to-dismiss pan only activates
       // when the ScrollView is at the top AND the finger moves down >8dp —
       // otherwise the ScrollView owns the touch. Without this the always-active
       // legacy body-pan steals vertical drags and a tall body cannot scroll
       // (dragging up dismisses the sheet / bleeds into the parent instead). The
       // standalone `BottomSheet` API keeps its legacy `manualActivation={false}`
-      // default, so direct consumers are unaffected. Gated on the same flag as
-      // `scrollable` because only the internal-ScrollView path needs it.
-      manualActivation={hasDeclarativeChrome}
+      // default, so direct consumers are unaffected.
+      manualActivation={header ? scrollableResolved : hasDeclarativeChrome}
+      // Feed the sheet's scroll offset into the nav header's collapse controller.
+      scrollY={header ? headerController.scrollY : undefined}
+      // Float the sticky nav bar over the scroll body (clipped to the sheet top).
+      headerOverlay={
+        header ? (
+          <DialogNavHeader
+            controller={headerController}
+            header={header}
+            onDismiss={close}
+            collapse={scrollableResolved}
+          />
+        ) : undefined
+      }
       // Stronger dim than a lone sheet so an underlying sheet's handle/content
       // doesn't bleed through when a Dialog is stacked over one.
       backdropOpacity={SHEET_BACKDROP_OPACITY + 0.3}
@@ -210,7 +275,9 @@ export function DialogBottomSheet({
           {...(containerClassName ? ({ className: containerClassName } as Record<string, string>) : {})}
           {...(panelClassName ? ({ className: panelClassName } as Record<string, string>) : {})}
           style={[
-            { padding: contentPadding },
+            // Nav-header mode: the large title + screens own their padding, so the
+            // wrapper adds none. Otherwise the Dialog's uniform content padding.
+            header ? null : { padding: contentPadding },
             // `containerStyle` carries the host's CSS-var theme scope; it wraps
             // the content subtree so descendants read the scoped palette.
             containerStyle,
@@ -218,15 +285,7 @@ export function DialogBottomSheet({
             panelStyle,
           ]}
         >
-          <DialogBody
-            titleId={titleId}
-            descriptionId={descriptionId}
-            title={title}
-            description={description}
-            actions={actions}
-          >
-            {children}
-          </DialogBody>
+          {header ? headerBody : dialogBody}
         </View>
       </Context.Provider>
     </BottomSheet>
@@ -242,15 +301,18 @@ export type DialogBottomSheetProps = Pick<
   DialogProps,
   | 'control'
   | 'open'
+  | 'startOpen'
   | 'onClose'
   | 'testID'
   | 'title'
   | 'description'
   | 'actions'
+  | 'header'
   | 'maxHeightRatio'
   | 'showHandle'
   | 'dismissOnBackdrop'
   | 'contentPadding'
+  | 'scrollable'
   | 'style'
   | 'panelStyle'
   | 'panelClassName'

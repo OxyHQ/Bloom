@@ -1,8 +1,50 @@
+import type { ReactNode } from 'react';
 import type { GestureResponderEvent, StyleProp, ViewStyle } from 'react-native';
 
 import type { ResponsiveDialogPlacement } from './placement';
 
 export type { DialogPlacement, ResponsiveDialogPlacement } from './placement';
+
+/**
+ * Config for the Dialog's OWN navigation header — a DISTINCT surface mode from
+ * the declarative `title`/`description`/`actions` centered-heading path. When
+ * present it turns the Dialog into a scrolling page with a sticky, gradient top
+ * bar (left + right slots) and a large collapsing title that lives in the
+ * Dialog's own scroll content; as the large title scrolls under the bar a small
+ * title cross-fades into the bar center. Screens render NO header of their own.
+ *
+ * A surface seeds this from its registry config; a mounted screen may override
+ * or augment any field at runtime via `useDialogHeader` (a dynamic title, a Save
+ * action on the right, etc.).
+ */
+export interface DialogHeaderConfig {
+  /** Collapsing title — rendered large in-content and small in the nav bar. */
+  title?: string;
+  /** Supporting copy under the large title (and, optionally, in the bar). */
+  subtitle?: string;
+  /**
+   * Whether to render the large collapsing title in the scroll content.
+   * Defaults to `true`. When `false`, only the small nav-bar title shows (always
+   * visible, no collapse) and the content starts flush under the bar.
+   */
+  largeTitle?: boolean;
+  /** Custom left slot node. Overrides the default back button. */
+  left?: ReactNode;
+  /** Custom right slot node. Overrides the default close button. */
+  right?: ReactNode;
+  /**
+   * When set, the default left slot renders a back button that calls this. A
+   * custom `left` node still wins. Set by the surface host when the surface can
+   * navigate back.
+   */
+  onBack?: () => void;
+  /**
+   * Whether the default right slot renders a close button (dismiss). Defaults to
+   * `true`. A custom `right` node still wins. `false` suppresses the close
+   * affordance entirely (e.g. a blocking surface).
+   */
+  showClose?: boolean;
+}
 
 /**
  * Side-sheet inset (px) from the root overlay's edges. Lets a host place a
@@ -134,6 +176,40 @@ export type DialogProps = React.PropsWithChildren<{
   inset?: DialogInset;
   /** Whether to render the drag handle in bottom-sheet mode. Defaults to `true`. */
   showHandle?: boolean;
+  /**
+   * Turns on the Dialog's OWN navigation header (see {@link DialogHeaderConfig}).
+   * When present the Dialog renders a sticky gradient nav bar + a large
+   * collapsing title over its own scroll content, and its content is inset below
+   * the bar — a DISTINCT mode from the declarative
+   * `title`/`description`/`actions` centered heading (a confirm/alert dialog
+   * passes NO `header` and is unchanged). Screens render no header of their own;
+   * the title/slots come from this config, refined at runtime by a mounted
+   * screen's `useDialogHeader` contribution.
+   */
+  header?: DialogHeaderConfig;
+  /**
+   * Open-INTENT seed for a freshly-mounted placement branch, distinct from the
+   * controlled `open` prop. It ONLY seeds a branch's initial visible state on
+   * mount — it never switches the dialog into controlled close semantics, so
+   * the imperative `control.close()` still owns the exit animation and fires
+   * `onClose` post-exit (no synchronous-`onClose` entry leak). Set by the
+   * surface stack so a responsive `Dialog` that swaps its inner component across
+   * a breakpoint (centered card ↔ bottom sheet on resize) re-mounts the new
+   * branch ALREADY OPEN instead of blank. Ignored when the controlled `open`
+   * prop is provided (that path seeds itself).
+   */
+  startOpen?: boolean;
+  /**
+   * Whether the dialog wraps its content in an internal scroll container.
+   * Defaults to `true`. Set `false` when the content owns its own scrolling
+   * primitive (a `FlatList` / `SectionList` / any VirtualizedList, or its own
+   * `ScrollView`): the surface then renders children WITHOUT a ScrollView wrap —
+   * a bounded, overflow-clipped card on the centered/side placements and a
+   * non-scrollable `BottomSheet` body on the bottom placement — so the child
+   * gets a bounded height and owns its scroll, and no "VirtualizedList inside a
+   * plain ScrollView" warning is emitted.
+   */
+  scrollable?: boolean;
   /**
    * Inner padding (px) of the dialog content container, applied uniformly across
    * every placement (centered panel, side-sheet body, bottom-sheet body).

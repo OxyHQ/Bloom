@@ -31,6 +31,14 @@ import { Context, useDialogControl } from './context';
 import { DialogBody } from './DialogContent';
 import { DialogBottomSheet } from './DialogBottomSheet';
 import {
+  DIALOG_NAV_BAR_HEIGHT,
+  type DialogHeaderController,
+  DialogHeaderProvider,
+  DialogLargeTitle,
+  DialogNavHeader,
+  useDialogHeaderController,
+} from './DialogHeader';
+import {
   ANIMATION_DURATION,
   DEFAULT_DIALOG_CONTENT_PADDING,
   DEFAULT_SIDE_WIDTH,
@@ -103,6 +111,8 @@ function CenteredOrSideDialog({
   title,
   description,
   actions,
+  header,
+  scrollable,
   placement,
   layer,
   width = DEFAULT_SIDE_WIDTH,
@@ -119,6 +129,8 @@ function CenteredOrSideDialog({
 }: Omit<DialogProps, 'placement'> & { placement: 'center' | 'left' | 'right' }) {
   const isControlled = controlledOpen !== undefined;
   const isSide = placement === 'left' || placement === 'right';
+  const headerController = useDialogHeaderController();
+  const scrollableResolved = scrollable ?? true;
 
   // Imperative open state for the side placement (the BottomSheet path owns its
   // own visibility via its ref instead).
@@ -235,6 +247,24 @@ function CenteredOrSideDialog({
     </DialogBody>
   );
 
+  // Nav-header mode: the Dialog OWNS a sticky gradient nav bar + a large
+  // collapsing title over its own scroll content. The large title + screen body
+  // scroll under the bar, feeding the shared collapse controller. `contentPadding`
+  // is dropped (the large title + screens own their padding).
+  const headerBody = header ? (
+    scrollableResolved ? (
+      <>
+        <DialogLargeTitle controller={headerController} header={header} />
+        <DialogHeaderProvider controller={headerController}>{bodyNode}</DialogHeaderProvider>
+      </>
+    ) : (
+      <>
+        <View style={{ height: DIALOG_NAV_BAR_HEIGHT }} />
+        <DialogHeaderProvider controller={headerController}>{bodyNode}</DialogHeaderProvider>
+      </>
+    )
+  ) : null;
+
   if (isSide) {
     return (
       <Context.Provider value={context}>
@@ -253,6 +283,9 @@ function CenteredOrSideDialog({
           description={description}
           titleId={titleId}
           descriptionId={descriptionId}
+          header={header}
+          headerController={headerController}
+          onHeaderDismiss={close}
           panelStyle={panelStyle}
           panelClassName={panelClassName}
           containerStyle={containerStyle}
@@ -271,7 +304,21 @@ function CenteredOrSideDialog({
       onDismiss={handleDismiss}
       enablePanDownToClose
       detached
-      showHandle
+      // Nav-header mode hides the drag handle (the nav bar sits at the very top)
+      // and coordinates the body pan with the scroll so content scrolls.
+      showHandle={!header}
+      manualActivation={!!header}
+      scrollY={header ? headerController.scrollY : undefined}
+      headerOverlay={
+        header ? (
+          <DialogNavHeader
+            controller={headerController}
+            header={header}
+            onDismiss={close}
+            collapse={scrollableResolved}
+          />
+        ) : undefined
+      }
       // Stronger dim when a Dialog is stacked over another sheet so the
       // underlying sheet's handle/content doesn't bleed through.
       backdropOpacity={0.7}
@@ -288,13 +335,14 @@ function CenteredOrSideDialog({
             // Detached BottomSheet already adds `marginBottom: insets.bottom + 16`
             // to the sheet container — the floating card sits ABOVE the
             // system gesture bar, so we don't add `insets.bottom` here.
-            { padding: contentPadding },
+            // Nav-header mode: the large title + screens own their padding.
+            header ? null : { padding: contentPadding },
             { backgroundColor: theme.colors.background },
             style,
             panelStyle,
           ]}
         >
-          {bodyNode}
+          {header ? headerBody : bodyNode}
         </View>
       </Context.Provider>
     </BottomSheet>
@@ -324,6 +372,9 @@ function SideSheet({
   description,
   titleId,
   descriptionId,
+  header,
+  headerController,
+  onHeaderDismiss,
   panelStyle,
   panelClassName,
   containerStyle,
@@ -345,6 +396,9 @@ function SideSheet({
   description?: string;
   titleId: string;
   descriptionId: string;
+  header?: DialogProps['header'];
+  headerController: DialogHeaderController;
+  onHeaderDismiss: () => void;
   panelStyle?: StyleProp<ViewStyle>;
   panelClassName?: string;
   containerStyle?: StyleProp<ViewStyle>;
@@ -476,7 +530,23 @@ function SideSheet({
         ]}
         pointerEvents="auto"
       >
-        <View style={{ padding: contentPadding }}>{children}</View>
+        {header ? (
+          // Nav-header mode on a side drawer: a static titled bar (the drawer body
+          // has no Dialog scroll offset to drive a collapse) over content inset
+          // below the bar.
+          <View style={{ flex: 1, minHeight: 0 }}>
+            <DialogNavHeader
+              controller={headerController}
+              header={header}
+              onDismiss={onHeaderDismiss}
+              collapse={false}
+            />
+            <View style={{ height: DIALOG_NAV_BAR_HEIGHT }} />
+            <DialogHeaderProvider controller={headerController}>{children}</DialogHeaderProvider>
+          </View>
+        ) : (
+          <View style={{ padding: contentPadding }}>{children}</View>
+        )}
       </Animated.View>
     </View>
   );

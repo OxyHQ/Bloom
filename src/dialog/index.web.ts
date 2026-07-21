@@ -12,6 +12,7 @@ export { Dialog, BLOOM_DIALOG_CSS, DIALOG_SHEET_BACKDROP_TESTID } from './Dialog
 export { BloomDialogProvider } from './BloomDialogProvider.web';
 export { alert } from './alert';
 export { useDialogContext, useDialogControl } from './context';
+export { useDialogHeader } from './DialogHeader';
 export type {
   AlertButton,
   AlertButtonStyle,
@@ -21,6 +22,7 @@ export type {
   DialogActionColor,
   DialogContextProps,
   DialogControlProps,
+  DialogHeaderConfig,
   DialogInset,
   DialogPlacement,
   DialogProps,

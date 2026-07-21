@@ -21,9 +21,16 @@ import { RemoveScrollBar } from 'react-remove-scroll-bar';
 import { Portal } from '../portal/index.web';
 import { createOverlayZIndex } from '../styles/z-index';
 import { useTheme } from '../theme/use-theme';
-import { Context, useDialogControl } from './context';
+import { Context, useDialogContext, useDialogControl } from './context';
 import { DialogBody } from './DialogContent';
 import { DialogBottomSheet } from './DialogBottomSheet';
+import {
+  DIALOG_NAV_BAR_HEIGHT,
+  DialogHeaderProvider,
+  DialogLargeTitle,
+  DialogNavHeader,
+  useDialogHeaderController,
+} from './DialogHeader';
 import {
   ANIMATION_DURATION,
   CENTER_FADE_OUT_DURATION,
@@ -126,11 +133,13 @@ export function Dialog({ placement, ...rest }: DialogProps) {
 function CenterOrSideDialog({
   control,
   open: controlledOpen,
+  startOpen,
   onClose,
   testID,
   title,
   description,
   actions,
+  header,
   placement,
   layer,
   width = DEFAULT_SIDE_WIDTH,
@@ -139,6 +148,7 @@ function CenterOrSideDialog({
   dismissOnBackdrop = true,
   contentPadding = DEFAULT_DIALOG_CONTENT_PADDING,
   maxHeightRatio,
+  scrollable,
   style,
   panelStyle,
   panelClassName,
@@ -162,7 +172,13 @@ function CenterOrSideDialog({
   const isControlled = controlledOpen !== undefined;
   const resolvedPlacement = placement;
 
-  const [isOpen, setIsOpen] = useState(false);
+  // Seed the initial visible state so a branch that mounts while the surface is
+  // already open (the imperative `startOpen` intent) or under a truthy
+  // controlled `open` renders open on its FIRST commit — this is what lets a
+  // responsive Dialog survive a placement swap (centered card ↔ bottom sheet on
+  // resize) without going blank. `startOpen` never flips the close semantics;
+  // the imperative `control.close()` still drives the exit + post-exit onClose.
+  const [isOpen, setIsOpen] = useState(() => controlledOpen ?? startOpen ?? false);
   const [isClosing, setIsClosing] = useState(false);
   const closeCallbacksRef = useRef<(() => void)[]>([]);
   // Read the latest controlled flag inside stable callbacks without re-binding.
@@ -301,10 +317,12 @@ function CenterOrSideDialog({
                 title={title}
                 description={description}
                 actions={actions}
+                header={header}
                 style={style}
                 maxWidth={maxWidth}
                 contentPadding={contentPadding}
                 maxHeightRatio={maxHeightRatio}
+                scrollable={scrollable}
                 surfaceZIndex={dialogZIndex.surface}
                 isClosing={isClosing}
               >
@@ -328,6 +346,8 @@ function CenterOrSideDialog({
             title={title}
             description={description}
             actions={actions}
+            header={header}
+            scrollable={scrollable}
             placement={resolvedPlacement}
             shown={!isClosing}
             width={width}
@@ -357,10 +377,12 @@ function DialogPanel({
   title,
   description,
   actions,
+  header,
   style,
   maxWidth,
   contentPadding,
   maxHeightRatio,
+  scrollable,
   surfaceZIndex,
   isClosing,
   children,
@@ -370,17 +392,33 @@ function DialogPanel({
   title?: string;
   description?: string;
   actions?: DialogAction[];
+  header?: DialogProps['header'];
   style?: DialogProps['style'];
   maxWidth: number;
   contentPadding: number;
   maxHeightRatio?: number;
+  scrollable?: boolean;
   surfaceZIndex: number;
   isClosing: boolean;
   children?: React.ReactNode;
 }) {
   const theme = useTheme();
+  const { close } = useDialogContext();
   const titleId = useId();
   const descriptionId = useId();
+  const headerController = useDialogHeaderController();
+
+  const body = (
+    <DialogBody
+      titleId={titleId}
+      descriptionId={descriptionId}
+      title={title}
+      description={description}
+      actions={actions}
+    >
+      {children}
+    </DialogBody>
+  );
 
   return (
     <View
@@ -420,21 +458,56 @@ function DialogPanel({
         style,
       ]}
     >
-      <ScrollView
-        style={{ flexShrink: 1 }}
-        contentContainerStyle={{ padding: contentPadding }}
-        showsVerticalScrollIndicator={false}
-      >
-        <DialogBody
-          titleId={titleId}
-          descriptionId={descriptionId}
-          title={title}
-          description={description}
-          actions={actions}
+      {header ? (
+        // Nav-header mode: the Dialog OWNS a sticky gradient nav bar + a large
+        // collapsing title over its own scroll content (see `DialogHeader`). The
+        // bar overlays; the large title + screen body scroll under it, feeding
+        // the shared scroll offset that drives the small-title cross-fade.
+        <>
+          <DialogNavHeader
+            controller={headerController}
+            header={header}
+            onDismiss={close}
+            collapse={scrollable !== false}
+          />
+          {scrollable === false ? (
+            <View style={{ flex: 1, minHeight: 0 }}>
+              <View style={{ height: DIALOG_NAV_BAR_HEIGHT }} />
+              <DialogHeaderProvider controller={headerController}>{body}</DialogHeaderProvider>
+            </View>
+          ) : (
+            <ScrollView
+              style={{ flexShrink: 1 }}
+              contentContainerStyle={{ paddingBottom: contentPadding }}
+              showsVerticalScrollIndicator={false}
+              scrollEventThrottle={16}
+              onScroll={(e) => {
+                headerController.scrollY.value = e.nativeEvent.contentOffset.y;
+              }}
+            >
+              <DialogLargeTitle controller={headerController} header={header} />
+              <DialogHeaderProvider controller={headerController}>{body}</DialogHeaderProvider>
+            </ScrollView>
+          )}
+        </>
+      ) : scrollable === false ? (
+        // The content owns its own scrolling (a FlatList / VirtualizedList or a
+        // nested ScrollView). Render it bare in a bounded flex box — the card's
+        // `maxHeight` + `overflow: hidden` cap it and `flex: 1` + `minHeight: 0`
+        // hand the child a bounded height to scroll into — with NO wrapping
+        // ScrollView, so a VirtualizedList never nests inside one.
+        <View style={{ flex: 1, minHeight: 0, padding: contentPadding }}>
+          {body}
+        </View>
+      ) : (
+        <ScrollView
+          style={{ flexShrink: 1 }}
+          contentContainerStyle={{ padding: contentPadding }}
+          showsVerticalScrollIndicator={false}
         >
-          {children}
-        </DialogBody>
-      </ScrollView>
+          {body}
+        </ScrollView>
+      )}
     </View>
   );
 }
@@ -456,6 +529,8 @@ function SheetSurface({
   title,
   description,
   actions,
+  header,
+  scrollable,
   placement,
   shown,
   width,
@@ -477,6 +552,8 @@ function SheetSurface({
   title?: string;
   description?: string;
   actions?: DialogAction[];
+  header?: DialogProps['header'];
+  scrollable?: boolean;
   placement: 'left' | 'right';
   shown: boolean;
   width: number;
@@ -496,6 +573,7 @@ function SheetSurface({
   const theme = useTheme();
   const titleId = useId();
   const descriptionId = useId();
+  const headerController = useDialogHeaderController();
   const { width: viewportWidth } = useWindowDimensions();
 
   // Defer the entry transition by a frame so the start state paints before the
@@ -605,17 +683,53 @@ function SheetSurface({
         ]}
         pointerEvents="auto"
       >
-        <View style={{ padding: contentPadding }}>
-          <DialogBody
-            titleId={titleId}
-            descriptionId={descriptionId}
-            title={title}
-            description={description}
-            actions={actions}
-          >
-            {children}
-          </DialogBody>
-        </View>
+        {header ? (
+          // Nav-header mode on a side drawer: a static titled bar (the drawer
+          // body does not own a Dialog scroll offset to drive a collapse) over
+          // the content, which is inset below the bar.
+          <View style={{ flex: 1, minHeight: 0 }}>
+            <DialogNavHeader
+              controller={headerController}
+              header={header}
+              onDismiss={onDismiss}
+              collapse={false}
+            />
+            <ScrollView
+              style={{ flexShrink: 1 }}
+              contentContainerStyle={{ paddingTop: DIALOG_NAV_BAR_HEIGHT, paddingBottom: contentPadding }}
+              showsVerticalScrollIndicator={false}
+              scrollEventThrottle={16}
+              scrollEnabled={scrollable !== false}
+              onScroll={(e) => {
+                headerController.scrollY.value = e.nativeEvent.contentOffset.y;
+              }}
+            >
+              <DialogHeaderProvider controller={headerController}>
+                <DialogBody
+                  titleId={titleId}
+                  descriptionId={descriptionId}
+                  title={title}
+                  description={description}
+                  actions={actions}
+                >
+                  {children}
+                </DialogBody>
+              </DialogHeaderProvider>
+            </ScrollView>
+          </View>
+        ) : (
+          <View style={{ padding: contentPadding }}>
+            <DialogBody
+              titleId={titleId}
+              descriptionId={descriptionId}
+              title={title}
+              description={description}
+              actions={actions}
+            >
+              {children}
+            </DialogBody>
+          </View>
+        )}
       </View>
     </View>
   );

@@ -206,7 +206,7 @@ describe('Dialog bottom placement delegates to BottomSheet', () => {
     expect(flattened.padding).toBe(0);
   });
 
-  it('does NOT wrap pure custom children in a second scroll container (no scroll-in-scroll)', () => {
+  it('wraps pure custom children in the internal scroll container by default (Dialog owns scroll)', () => {
     let control: ReturnType<typeof useDialogControl> | undefined;
     const result = renderWithTheme(
       <Harness>
@@ -214,7 +214,7 @@ describe('Dialog bottom placement delegates to BottomSheet', () => {
           control = c;
           return (
             <Dialog control={c} placement="bottom">
-              <Text>Custom children own their own scrolling</Text>
+              <Text>Custom children scroll inside the sheet by default</Text>
             </Dialog>
           );
         }}
@@ -223,9 +223,34 @@ describe('Dialog bottom placement delegates to BottomSheet', () => {
     act(() => {
       control?.open();
     });
-    // Pure custom children → DialogBottomSheet passes `scrollable={false}` to
-    // BottomSheet, so the sheet does NOT add its internal ScrollView. A child
-    // that contains its own scroller is then the ONLY scroll container.
+    // Pure custom children default to `scrollable` (undefined → true), so the
+    // sheet DOES add its internal ScrollView and the screen — stripped of its
+    // own scroller — scrolls inside it. The Dialog owns the scroll boundary.
+    const tree: RenderedNode | RenderedNode[] | null = result.toJSON();
+    expect(countNodesByType(tree, 'Animated.ScrollView')).toBe(1);
+  });
+
+  it('opts custom children OUT of the internal scroll container when scrollable={false}', () => {
+    let control: ReturnType<typeof useDialogControl> | undefined;
+    const result = renderWithTheme(
+      <Harness>
+        {(c) => {
+          control = c;
+          return (
+            <Dialog control={c} placement="bottom" scrollable={false}>
+              <Text>Owns its own FlatList</Text>
+            </Dialog>
+          );
+        }}
+      </Harness>,
+    );
+    act(() => {
+      control?.open();
+    });
+    // A surface whose content owns its own scroller (a FlatList / VirtualizedList)
+    // passes `scrollable={false}`, so the sheet does NOT add its internal
+    // ScrollView — the child is then the ONLY scroll container (no scroll-in-
+    // scroll, no "VirtualizedList inside a plain ScrollView" warning).
     const tree: RenderedNode | RenderedNode[] | null = result.toJSON();
     expect(countNodesByType(tree, 'Animated.ScrollView')).toBe(0);
   });

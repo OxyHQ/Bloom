@@ -55,6 +55,16 @@ export interface BottomSheetRef {
 
 export interface BottomSheetProps {
     children: React.ReactNode;
+    /**
+     * Controlled open state. When provided, the sheet mounts already-open if
+     * `true` (seeding its internal visible/rendered state) instead of relying on
+     * an imperative `present()` after mount. This is what makes a responsive
+     * `Dialog` survive a placement swap (centered card ↔ bottom sheet on resize):
+     * the freshly-mounted sheet is visible on its first commit, with no
+     * present()-in-effect race that would otherwise leave it blank. Omit for the
+     * purely imperative `present()`/`dismiss()` API.
+     */
+    open?: boolean;
     onDismiss?: () => void;
     enablePanDownToClose?: boolean;
     backgroundComponent?: (props: { style?: StyleProp<ViewStyle> }) => React.ReactElement | null;
@@ -128,6 +138,19 @@ export interface BottomSheetProps {
      * `showHandle` is `true`.
      */
     handleComponent?: () => React.ReactNode;
+    /**
+     * External shared value the internal scroll handler mirrors the content
+     * offset into (in addition to its own gesture-gating offset). Lets a host —
+     * e.g. a Dialog nav-header — drive a collapse from the sheet's OWN scroller
+     * without owning the ScrollView. Optional; the standalone sheet ignores it.
+     */
+    scrollY?: SharedValue<number>;
+    /**
+     * Overlay slot rendered absolutely at the TOP of the sheet card, painted
+     * above the scrolling body (clipped to the sheet's rounded top). Used by the
+     * Dialog to float its sticky nav header over the sheet's scroll content.
+     */
+    headerOverlay?: React.ReactNode;
 }
 
 /**
@@ -169,6 +192,7 @@ export const BottomSheetBase = forwardRef((props: BottomSheetBaseProps, ref: Rea
     const {
         Shell,
         children,
+        open,
         onDismiss,
         enablePanDownToClose = true,
         backgroundComponent,
@@ -183,14 +207,19 @@ export const BottomSheetBase = forwardRef((props: BottomSheetBaseProps, ref: Rea
         manualActivation = false,
         dynamicBackdrop = false,
         handleComponent,
+        scrollY: externalScrollY,
+        headerOverlay,
     } = props;
 
     const insets = useSafeAreaInsets();
     const theme = useTheme();
     const { colors } = theme;
     const { height: screenHeight } = useScreenDimensions();
-    const [visible, setVisible] = useState(false);
-    const [rendered, setRendered] = useState(false); // keep mounted for exit animation
+    // Seed from the controlled `open` prop so a sheet that should be open is
+    // visible on its FIRST commit (no present()-in-effect race) — this is what
+    // lets a responsive Dialog survive a resize placement swap without going blank.
+    const [visible, setVisible] = useState(() => open ?? false);
+    const [rendered, setRendered] = useState(() => open ?? false); // keep mounted for exit animation
     const closeTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
     const hasClosedRef = useRef(false);
     const scrollViewRef = useRef<Animated.ScrollView>(null);
@@ -266,6 +295,12 @@ export const BottomSheetBase = forwardRef((props: BottomSheetBaseProps, ref: Rea
     useEffect(() => {
         renderedRef.current = rendered;
     }, [rendered]);
+    // Mirror `visible` so the unmount cleanup can tell "closing" (visible=false,
+    // animating out) from "fully open" (visible=true) at teardown time.
+    const visibleRef = useRef(visible);
+    useEffect(() => {
+        visibleRef.current = visible;
+    }, [visible]);
 
     /**
      * Commit a close. Two guards prevent stale callbacks from firing:
@@ -325,18 +360,24 @@ export const BottomSheetBase = forwardRef((props: BottomSheetBaseProps, ref: Rea
     }, [visible, rendered, finishClose, screenHeight, closeGeneration, opacity, translateY]);
 
     // On unmount: ensure pending close callbacks (e.g. consumer's `onDismiss`)
-    // still fire if the BS is yanked mid-animation by a parent re-render.
-    // Without this, `Dialog`'s `handleDismiss` never runs and queued
-    // callbacks (post-close handlers) are silently lost.
-    // Only fires when the sheet was actually rendered (open or closing) to
-    // avoid spuriously calling onDismiss on bare unmount of a never-opened
-    // sheet. Refs are read inside the cleanup, so latest values are captured.
+    // still fire if the BS is yanked mid-animation by a parent re-render while a
+    // close is IN PROGRESS. Without this, `Dialog`'s `handleDismiss` never runs
+    // and queued callbacks (post-close handlers) are silently lost.
+    //
+    // Guarded on `!visibleRef.current`: only flush when a close was already
+    // underway (visible=false → closing/animating out). A sheet yanked while
+    // still FULLY OPEN (visible=true) is not closing — it is being swapped out by
+    // a parent, e.g. a responsive `Dialog` crossing its breakpoint between the
+    // bottom-sheet and centered-card branches. Firing onDismiss there would
+    // wrongly dismiss the surface mid-swap (there are no pending close callbacks
+    // to flush anyway), so the new branch can take over still-open. Refs are read
+    // inside the cleanup, so the latest values are captured.
     useEffect(() => () => {
         if (closeTimeoutRef.current) {
             clearTimeout(closeTimeoutRef.current);
             closeTimeoutRef.current = null;
         }
-        if (renderedRef.current && !hasClosedRef.current) {
+        if (renderedRef.current && !hasClosedRef.current && !visibleRef.current) {
             hasClosedRef.current = true;
             safeCloseRef.current();
         }
@@ -639,8 +680,12 @@ export const BottomSheetBase = forwardRef((props: BottomSheetBaseProps, ref: Rea
         onScroll: (event) => {
             scrollOffsetY.value = event.contentOffset.y;
             isScrollAtTop.value = event.contentOffset.y <= 0;
+            // Mirror into the host's collapse offset (a Dialog nav header) when
+            // provided. Listed in deps so the RN-Web (no worklets plugin) handler
+            // re-binds if the shared value identity changes.
+            if (externalScrollY) externalScrollY.value = event.contentOffset.y;
         },
-    }, []);
+    }, [externalScrollY]);
 
     const dynamicStyles = useMemo(() => {
         return StyleSheet.create({
@@ -741,6 +786,10 @@ export const BottomSheetBase = forwardRef((props: BottomSheetBaseProps, ref: Rea
                         {handleSlot}
 
                         {bodyContent}
+
+                        {/* Sticky nav-header overlay (Dialog nav-header mode): floats
+                            above the scroll body, clipped to the sheet's rounded top. */}
+                        {headerOverlay}
                     </Animated.View>
                 </GestureDetector>
             </View>

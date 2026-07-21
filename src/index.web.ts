@@ -64,6 +64,7 @@ export {
   alert,
   useDialogContext,
   useDialogControl,
+  useDialogHeader,
 } from './dialog/index.web';
 export type {
   AlertButton,
@@ -72,6 +73,7 @@ export type {
   DialogActionColor,
   DialogContextProps,
   DialogControlProps,
+  DialogHeaderConfig,
   DialogInset,
   DialogPlacement,
   DialogProps,

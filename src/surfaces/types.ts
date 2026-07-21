@@ -1,7 +1,7 @@
 import type { ReactNode } from 'react';
 import type { StyleProp, ViewStyle } from 'react-native';
 
-import type { DialogInset, ResponsiveDialogPlacement } from '../dialog/types';
+import type { DialogHeaderConfig, DialogInset, ResponsiveDialogPlacement } from '../dialog/types';
 
 /**
  * How a surface renders — the placement + the `Dialog` sizing/chrome options a
@@ -39,6 +39,22 @@ export interface SurfacePresentation {
   dismissOnBackdrop?: boolean;
   /** Inner padding (px) of the surface content container. Forwarded to `Dialog`. */
   contentPadding?: number;
+  /**
+   * Turns on the Dialog's OWN navigation header for this surface (sticky gradient
+   * nav bar + large collapsing title over the surface's scroll content). Seeds
+   * the header content; a mounted screen refines it at runtime via
+   * `useDialogHeader`. Omit for a plain surface (a confirm/alert dialog). Forwarded
+   * to `Dialog`.
+   */
+  header?: DialogHeaderConfig;
+  /**
+   * Whether the surface wraps its content in an internal scroll container.
+   * Defaults to `true`. Set `false` when the surface's content owns its own
+   * scrolling primitive (a `FlatList` / `SectionList` / VirtualizedList, or its
+   * own `ScrollView`) so the host does not nest it in a ScrollView. Forwarded
+   * to `Dialog`.
+   */
+  scrollable?: boolean;
   /** Style overrides applied to the inner content container. */
   style?: StyleProp<ViewStyle>;
   /** Style overrides for the side/bottom placement panel surface. */

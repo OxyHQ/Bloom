@@ -38,6 +38,8 @@ function placementFor(p: SurfacePresentation): Partial<DialogProps> {
     showHandle: p.showHandle,
     dismissOnBackdrop: p.dismissOnBackdrop,
     contentPadding: p.contentPadding,
+    header: p.header,
+    scrollable: p.scrollable,
     style: p.style,
     panelStyle: p.panelStyle,
     panelClassName: p.panelClassName,
@@ -112,7 +114,20 @@ export function createSurfaceHost(Dialog: DialogComponent) {
     );
 
     return (
-      <Dialog control={control} onClose={handleClose} layer={index} {...placement}>
+      // `startOpen` is the surface's open-INTENT (true while not closing). It
+      // ONLY seeds a freshly-mounted Dialog branch's visible state — the
+      // imperative `control` still owns open/close — so when a responsive Dialog
+      // swaps its inner component on resize (centered card ↔ bottom sheet) the
+      // new branch mounts STILL OPEN instead of dismissing the surface. A real
+      // dismiss (backdrop/Escape/back/programmatic) still resolves + splices
+      // exactly once via `control.close()` → `handleClose`, post-exit.
+      <Dialog
+        control={control}
+        onClose={handleClose}
+        layer={index}
+        startOpen={status !== 'closing'}
+        {...placement}
+      >
         <SurfaceContext.Provider value={controls}>
           {entry.render(controls)}
         </SurfaceContext.Provider>

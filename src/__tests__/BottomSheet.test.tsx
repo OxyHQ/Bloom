@@ -248,6 +248,53 @@ describe('BottomSheet', () => {
     });
   });
 
+  describe('unmount-while-open does not fire onDismiss (responsive placement swap)', () => {
+    it('skips onDismiss when a fully-open sheet is unmounted (yanked, not closing)', () => {
+      // A responsive Dialog crossing its breakpoint swaps its bottom-sheet branch
+      // for the centered-card branch, unmounting this sheet while it is still
+      // fully OPEN. That is NOT a dismissal — firing onDismiss here would tear the
+      // surface down mid-swap. The unmount-safety only flushes when a close was
+      // already underway (visible=false).
+      const onDismiss = jest.fn();
+      const ref = createRef<BottomSheetRef>();
+      const { unmount } = renderWithTheme(
+        <BottomSheet ref={ref} onDismiss={onDismiss}>
+          <React.Fragment>Open content</React.Fragment>
+        </BottomSheet>,
+      );
+      act(() => {
+        ref.current?.present();
+      });
+      act(() => {
+        unmount();
+      });
+      expect(onDismiss).not.toHaveBeenCalled();
+    });
+
+    it('still flushes onDismiss when unmounted mid-close (visible already false)', () => {
+      // The original guard's purpose: a sheet yanked mid-close-animation must
+      // still flush its onDismiss so queued post-close callbacks are not lost.
+      const onDismiss = jest.fn();
+      const ref = createRef<BottomSheetRef>();
+      const { unmount } = renderWithTheme(
+        <BottomSheet ref={ref} onDismiss={onDismiss}>
+          <React.Fragment>Closing content</React.Fragment>
+        </BottomSheet>,
+      );
+      act(() => {
+        ref.current?.present();
+      });
+      // Start the close (visible → false), then yank before the exit settles.
+      act(() => {
+        ref.current?.dismiss();
+      });
+      act(() => {
+        unmount();
+      });
+      expect(onDismiss).toHaveBeenCalledTimes(1);
+    });
+  });
+
   describe('close generation tracking', () => {
     it('re-opening the sheet after dismiss does not throw or get stuck', () => {
       // Regression test for the "tap to open does nothing" bug: when the
