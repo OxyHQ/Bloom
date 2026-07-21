@@ -47,6 +47,17 @@ Platform-export generation script: `scripts/generate-platform-exports.mjs`. Ever
   - `src/styles/flatten-web-style.ts`'s `flattenWebStyle()` — dependency-free pure JS, for raw-DOM-only forks with no other RN runtime dependency (`Button.web.tsx`, `Fab.web.tsx`). Deliberately not `StyleSheet.flatten` — jest's `react-native` mock stubs `flatten` as an identity no-op, which would break these components under test.
   - `StyleSheet.flatten` (from `'react-native'`, via `styles/atoms.ts`'s `flatten()` wrapper) — for forks that already import RN/RNW components at runtime anyway (`list/index.web.tsx`, `tooltip/index.web.tsx`).
 
+## Consumer Web CSS Pipeline (CRITICAL — className layout is inert without it)
+
+Any WEB build of a consuming app that renders Bloom or `@oxyhq/services` className-based screens MUST (a) wire the Tailwind/NativeWind CSS pipeline AND (b) `@source`-scan both packages' built `lib/` output — otherwise every className LAYOUT utility (`flex-row`, `flex-1`, `gap-*`, `items-center`, arbitrary `[Npx]`) is silently INERT on web. On web, react-native-css (NativeWind) emits real CSS utility classes instead of injecting runtime styles the way it does on native; without a compiled Tailwind stylesheet that scans these packages, no CSS backs the emitted class tokens, so react-native-web's base `View` reset (`flex-direction: column`, `flex-shrink: 0`, no padding, `position: relative`) shows through and layout collapses. **Colors still appear to work** because Bloom applies those via inline style, which masks the gap — don't let working colors convince you the pipeline is wired. Native is unaffected (className compiles to runtime styles there).
+
+Reference wiring:
+- Expo/Metro apps: `@oxyhq/app-preset/css/base.css` — import it at the top of the app's `global.css`, which itself must be the first import in `app/_layout.tsx`, plus a `postcss.config.mjs` using `@tailwindcss/postcss`.
+- Vite apps: the `@tailwindcss/vite` plugin + a stylesheet that `@import`s Tailwind and `@source`-scans `node_modules/@oxyhq/services/lib/**/*.{js,jsx}` + `node_modules/@oxyhq/bloom/lib/**/*.{js,jsx}`.
+- Worked example: `Mention/packages/frontend/global.css`.
+
+This is consumer-side wiring — Bloom and `@oxyhq/services` cannot fix it internally. Every web-facing consumer owns it, and `create-oxy-app` scaffolds it by default so new apps aren't born broken.
+
 ## Component Families
 
 Compound components are flat-prefixed exports (e.g. `Tabs`, `TabsTrigger`, `TabsContent`; `Menu`, `MenuItem`, `MenuTrigger`). The collection families `Icons`, `Typography`, `Skeleton`, `Grid`, `Code`, `Fonts` stay namespaces. No deprecated/back-compat aliases — breaking renames are clean cuts.
