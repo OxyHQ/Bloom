@@ -44,7 +44,6 @@ import type {
 } from './types';
 
 const FADE_OUT_DURATION = CENTER_FADE_OUT_DURATION;
-const dialogZIndex = createOverlayZIndex();
 
 const stopPropagation = (e: { stopPropagation: () => void }) => e.stopPropagation();
 
@@ -132,6 +131,7 @@ function CenterOrSideDialog({
   description,
   actions,
   placement,
+  layer,
   width = DEFAULT_SIDE_WIDTH,
   maxWidth = DEFAULT_CENTER_MAX_WIDTH,
   inset,
@@ -149,6 +149,11 @@ function CenterOrSideDialog({
   // this component renders once with `isOpen=false` prior to opening, so the
   // stylesheet is present by the time the animated surface mounts).
   useDialogCss();
+
+  // Per-layer overlay z-indices, so a dialog presented on top of another (via
+  // the surface stack) paints above it. Defaults to layer 0 — the offset is 0,
+  // so a lone dialog's z is byte-for-byte unchanged.
+  const dialogZIndex = useMemo(() => createOverlayZIndex(layer ?? 0), [layer]);
 
   // Controlled mode is opt-in: when `open` is a boolean the host owns the
   // visible state; otherwise the legacy imperative `control` path drives it.
@@ -297,6 +302,7 @@ function CenterOrSideDialog({
                 style={style}
                 maxWidth={maxWidth}
                 contentPadding={contentPadding}
+                surfaceZIndex={dialogZIndex.surface}
                 isClosing={isClosing}
               >
                 {children}
@@ -325,6 +331,8 @@ function CenterOrSideDialog({
             inset={inset}
             dismissOnBackdrop={dismissOnBackdrop}
             contentPadding={contentPadding}
+            backdropZIndex={dialogZIndex.backdrop}
+            surfaceZIndex={dialogZIndex.surface}
             onDismiss={close}
             panelStyle={panelStyle}
             panelClassName={panelClassName}
@@ -349,6 +357,7 @@ function DialogPanel({
   style,
   maxWidth,
   contentPadding,
+  surfaceZIndex,
   isClosing,
   children,
 }: {
@@ -360,6 +369,7 @@ function DialogPanel({
   style?: DialogProps['style'];
   maxWidth: number;
   contentPadding: number;
+  surfaceZIndex: number;
   isClosing: boolean;
   children?: React.ReactNode;
 }) {
@@ -391,7 +401,7 @@ function DialogPanel({
           shadowRadius: 30,
           shadowOffset: { width: 0, height: 4 },
           padding: contentPadding,
-          zIndex: dialogZIndex.surface,
+          zIndex: surfaceZIndex,
         },
         isClosing
           ? ({ animation: `bloomDialogZoomFadeOut ease-in ${FADE_OUT_DURATION}ms forwards` } as ViewStyle)
@@ -435,6 +445,8 @@ function SheetSurface({
   inset,
   dismissOnBackdrop,
   contentPadding,
+  backdropZIndex,
+  surfaceZIndex,
   onDismiss,
   panelStyle,
   panelClassName,
@@ -454,6 +466,8 @@ function SheetSurface({
   inset?: DialogInset;
   dismissOnBackdrop: boolean;
   contentPadding: number;
+  backdropZIndex: number;
+  surfaceZIndex: number;
   onDismiss: () => void;
   panelStyle?: StyleProp<ViewStyle>;
   panelClassName?: string;
@@ -532,7 +546,7 @@ function SheetSurface({
 
   return (
     <View
-      style={[sheetStyles.root, containerStyle]}
+      style={[sheetStyles.root, { zIndex: backdropZIndex }, containerStyle]}
       {...(containerClassName ? ({ className: containerClassName } as Record<string, string>) : {})}
       pointerEvents="box-none"
     >
@@ -562,7 +576,11 @@ function SheetSurface({
         {...(panelClassName ? ({ className: panelClassName } as Record<string, string>) : {})}
         style={[
           sheetStyles.panel,
-          { backgroundColor: theme.colors.background, shadowColor: theme.colors.shadow },
+          {
+            backgroundColor: theme.colors.background,
+            shadowColor: theme.colors.shadow,
+            zIndex: surfaceZIndex,
+          },
           panelGeometry,
           panelTransition,
           panelStyle,
@@ -659,13 +677,15 @@ export function AutoMountedDialog({
 }
 
 const sheetStyles = {
+  // `zIndex` for the root (backdrop) and panel (surface) is applied inline from
+  // the per-layer `createOverlayZIndex(layer)` in `SheetSurface`, so a side
+  // dialog stacked on top of another (surface stack) paints above it.
   root: {
     position: 'fixed' as 'absolute',
     top: 0,
     left: 0,
     right: 0,
     bottom: 0,
-    zIndex: dialogZIndex.backdrop,
   } as ViewStyle,
   backdrop: {
     position: 'absolute',
@@ -681,7 +701,6 @@ const sheetStyles = {
     shadowOpacity: 0.18,
     shadowRadius: 24,
     shadowOffset: { width: 0, height: 8 },
-    zIndex: dialogZIndex.surface,
   } as ViewStyle,
 };
 

@@ -47,6 +47,7 @@ const ROOT_BARREL_WEB_PATH = join(SRC, 'index.web.ts');
  */
 const SUBPATHS = /** @type {const} */ ([
   ['.', 'index.ts'],
+  ['./surfaces', 'surfaces/index.ts'],
   ['./image-resolver', 'image-resolver/index.ts'],
   ['./image-aspect-ratio-cache', 'image-aspect-ratio-cache/index.ts'],
   ['./theme', 'theme/index.ts'],
@@ -135,6 +136,7 @@ const SUBPATHS = /** @type {const} */ ([
  */
 const WEB_FORKED_SUBPATHS = new Set([
   '.',
+  './surfaces',
   './portal',
   './dialog',
   './button',

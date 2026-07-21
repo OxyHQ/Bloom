@@ -77,6 +77,21 @@ export type {
   DialogProps,
   ResponsiveDialogPlacement,
 } from './dialog/index.web';
+// Surface stack — the shared, coordinated overlay system. The imperative API is
+// the `surfaces` object (its members would otherwise clash with alert-dialog's
+// `confirm`); the individual functions are also named exports of
+// `@oxyhq/bloom/surfaces`.
+export { surfaces, SurfaceProvider, SurfaceHost, useSurface } from './surfaces/index.web';
+export type {
+  SurfacePresentation,
+  PresentOptions,
+  SurfaceControls,
+  SurfaceRenderFn,
+  SurfaceStatus,
+  SurfaceEntry,
+  SurfaceConfirmOptions,
+  SurfacePromptOptions,
+} from './surfaces/index.web';
 export * from './button/index.web';
 export { Fab } from './fab/index.web';
 export type { FabProps, FabVariant, FabSize, FabPlacement } from './fab/index.web';

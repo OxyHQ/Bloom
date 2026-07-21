@@ -28,6 +28,22 @@
         "default": "./lib/commonjs/index.js"
       }
     },
+    "./surfaces": {
+      "react-native": "./src/surfaces/index.ts",
+      "browser": {
+        "types": "./lib/typescript/module/surfaces/index.web.d.ts",
+        "import": "./lib/module/surfaces/index.web.js",
+        "require": "./lib/commonjs/surfaces/index.web.js"
+      },
+      "import": {
+        "types": "./lib/typescript/module/surfaces/index.d.ts",
+        "default": "./lib/module/surfaces/index.js"
+      },
+      "require": {
+        "types": "./lib/typescript/commonjs/surfaces/index.d.ts",
+        "default": "./lib/commonjs/surfaces/index.js"
+      }
+    },
     "./image-resolver": {
       "react-native": "./src/image-resolver/index.ts",
       "import": {

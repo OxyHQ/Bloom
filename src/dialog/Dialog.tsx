@@ -25,7 +25,7 @@ import Animated, {
 } from 'react-native-reanimated';
 
 import { BottomSheet, type BottomSheetRef } from '../bottom-sheet';
-import { Z_INDEX } from '../styles/z-index';
+import { Z_INDEX, Z_INDEX_LAYER_STEP } from '../styles/z-index';
 import { useTheme } from '../theme/use-theme';
 import { Context, useDialogControl } from './context';
 import { DialogBody } from './DialogContent';
@@ -104,6 +104,7 @@ function CenteredOrSideDialog({
   description,
   actions,
   placement,
+  layer,
   width = DEFAULT_SIDE_WIDTH,
   inset,
   dismissOnBackdrop = true,
@@ -241,6 +242,7 @@ function CenteredOrSideDialog({
           open={sideOpen}
           onDismiss={handleDismiss}
           side={placement}
+          layer={layer}
           width={width}
           inset={inset}
           dismissOnBackdrop={dismissOnBackdrop}
@@ -311,6 +313,7 @@ function SideSheet({
   open,
   onDismiss,
   side,
+  layer,
   width,
   inset,
   dismissOnBackdrop,
@@ -331,6 +334,7 @@ function SideSheet({
   open: boolean;
   onDismiss: () => void;
   side: 'left' | 'right';
+  layer?: number;
   width: number;
   inset?: DialogInset;
   dismissOnBackdrop: boolean;
@@ -433,7 +437,13 @@ function SideSheet({
 
   return (
     <View
-      style={[sideStyles.root, containerStyle]}
+      style={[
+        sideStyles.root,
+        // Per-layer offset so a side dialog stacked on top of another (surface
+        // stack) paints above it. Layer 0 → offset 0 → unchanged.
+        { zIndex: Z_INDEX.fullscreen + Z_INDEX_LAYER_STEP * (layer ?? 0) },
+        containerStyle,
+      ]}
       {...(containerClassName ? ({ className: containerClassName } as Record<string, string>) : {})}
       pointerEvents="box-none"
     >
@@ -473,9 +483,10 @@ function SideSheet({
 }
 
 const sideStyles = StyleSheet.create({
+  // `zIndex` is applied inline (`Z_INDEX.fullscreen + layer offset`) so a side
+  // dialog stacked on top of another paints above it in the surface stack.
   root: {
     ...StyleSheet.absoluteFill,
-    zIndex: Z_INDEX.fullscreen,
   },
   backdrop: {
     ...StyleSheet.absoluteFill,
