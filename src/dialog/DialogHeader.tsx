@@ -7,7 +7,6 @@ import React, {
   useSyncExternalStore,
 } from 'react';
 import {
-  Pressable,
   StyleSheet,
   View,
   type LayoutChangeEvent,
@@ -22,11 +21,11 @@ import Animated, {
   type SharedValue,
 } from 'react-native-reanimated';
 
-import { getSvgModule } from '../avatar/svg-module';
 import {
   ChevronLeft_Stroke2_Corner0_Rounded,
   TimesLarge_Stroke2_Corner0_Rounded,
 } from '../icons';
+import { FrostedIconButton } from '../frosted-icon-button';
 import { useTheme } from '../theme/use-theme';
 import { H1, Text } from '../typography';
 import type { DialogHeaderConfig } from './types';
@@ -200,82 +199,6 @@ function useMergedHeaderConfig(
   return useMemo(() => (override ? { ...base, ...override } : base), [base, override]);
 }
 
-// --- Gradient ---------------------------------------------------------------
-
-/**
- * Vertical gradient behind the nav bar: opaque `color` at the top → transparent
- * at the bottom, so scrolled content fades out under the bar. Rendered with
- * `react-native-svg` (the same cross-platform gradient primitive the avatar ring
- * uses); when svg is unavailable it degrades to a solid opaque bar (no fade).
- */
-const HeaderGradient = memo(function HeaderGradient({
-  color,
-  height,
-}: {
-  color: string;
-  height: number;
-}) {
-  const id = useMemo(() => `bloom-dialog-header-grad-${headerGradientId++}`, []);
-  const svg = getSvgModule();
-
-  if (!svg) {
-    // No svg: cover only the interactive bar with a solid fill so content below
-    // still shows (a full-height opaque fallback would hide the fade region).
-    return (
-      <View
-        pointerEvents="none"
-        style={[StyleSheet.absoluteFill, { height: DIALOG_NAV_BAR_HEIGHT, backgroundColor: color }]}
-      />
-    );
-  }
-
-  const { default: Svg, Defs, LinearGradient, Stop, Rect } = svg;
-  return (
-    <View pointerEvents="none" style={StyleSheet.absoluteFill}>
-      <Svg width="100%" height={height}>
-        <Defs>
-          <LinearGradient id={id} x1="0" y1="0" x2="0" y2="1">
-            <Stop offset="0" stopColor={color} stopOpacity="1" />
-            <Stop offset={String(DIALOG_NAV_BAR_HEIGHT / height)} stopColor={color} stopOpacity="1" />
-            <Stop offset="1" stopColor={color} stopOpacity="0" />
-          </LinearGradient>
-        </Defs>
-        <Rect x="0" y="0" width="100%" height={height} fill={`url(#${id})`} />
-      </Svg>
-    </View>
-  );
-});
-
-let headerGradientId = 0;
-
-// --- Default affordances ----------------------------------------------------
-
-function NavIconButton({
-  onPress,
-  accessibilityLabel,
-  children,
-}: {
-  onPress: () => void;
-  accessibilityLabel: string;
-  children: React.ReactNode;
-}) {
-  const theme = useTheme();
-  return (
-    <Pressable
-      onPress={onPress}
-      accessibilityRole="button"
-      accessibilityLabel={accessibilityLabel}
-      hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
-      style={({ pressed }) => [
-        styles.navButton,
-        { backgroundColor: theme.colors.card, opacity: pressed ? 0.6 : 1 },
-      ]}
-    >
-      {children}
-    </Pressable>
-  );
-}
-
 // --- Nav bar overlay --------------------------------------------------------
 
 /**
@@ -335,17 +258,21 @@ export const DialogNavHeader = memo(function DialogNavHeader({
   const left =
     config.left ??
     (config.onBack ? (
-      <NavIconButton onPress={config.onBack} accessibilityLabel="Go back">
-        <ChevronLeft_Stroke2_Corner0_Rounded size="md" fill={theme.colors.text} />
-      </NavIconButton>
+      <FrostedIconButton
+        onPress={config.onBack}
+        accessibilityLabel="Go back"
+        icon={<ChevronLeft_Stroke2_Corner0_Rounded size="md" />}
+      />
     ) : null);
 
   const right =
     config.right ??
     (config.showClose !== false ? (
-      <NavIconButton onPress={onDismiss} accessibilityLabel="Close">
-        <TimesLarge_Stroke2_Corner0_Rounded size="md" fill={theme.colors.text} />
-      </NavIconButton>
+      <FrostedIconButton
+        onPress={onDismiss}
+        accessibilityLabel="Close"
+        icon={<TimesLarge_Stroke2_Corner0_Rounded size="md" />}
+      />
     ) : null);
 
   return (
@@ -353,7 +280,13 @@ export const DialogNavHeader = memo(function DialogNavHeader({
       pointerEvents="box-none"
       style={[styles.overlay, style]}
     >
-      <HeaderGradient color={theme.colors.background} height={DIALOG_HEADER_OVERLAY_HEIGHT} />
+      {/* Opaque (surface bg) at the top → transparent at the bottom, so scrolled
+          content fades out under the bar. Pure NativeWind — no SVG dependency. */}
+      <View
+        pointerEvents="none"
+        className="bg-gradient-to-b from-bg to-transparent"
+        style={[StyleSheet.absoluteFill, { height: DIALOG_HEADER_OVERLAY_HEIGHT }]}
+      />
       <View pointerEvents="box-none" style={styles.navRow}>
         <View style={styles.side}>{left}</View>
         <Animated.View
@@ -468,13 +401,6 @@ const styles = StyleSheet.create({
     fontSize: 12,
     fontWeight: '400',
     lineHeight: 14,
-  },
-  navButton: {
-    width: NAV_BUTTON_SIZE,
-    height: NAV_BUTTON_SIZE,
-    borderRadius: NAV_BUTTON_SIZE / 2,
-    alignItems: 'center',
-    justifyContent: 'center',
   },
   largeTitleBlock: {
     paddingHorizontal: HEADER_H_PADDING,
