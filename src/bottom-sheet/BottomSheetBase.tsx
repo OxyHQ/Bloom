@@ -6,6 +6,7 @@ import {
     Pressable,
     Dimensions,
     Platform,
+    type LayoutChangeEvent,
     type ViewStyle,
     type StyleProp,
 } from 'react-native';
@@ -151,6 +152,13 @@ export interface BottomSheetProps {
      * Dialog to float its sticky nav header over the sheet's scroll content.
      */
     headerOverlay?: React.ReactNode;
+    /**
+     * Layout callback for the SHEET CARD — the same box `style` targets. Lets a
+     * host observe the card's rendered size (the Dialog measures it to morph the
+     * sheet between two content frames). Fires on every size change, including
+     * while a host animates the card's height.
+     */
+    onLayout?: (event: LayoutChangeEvent) => void;
 }
 
 /**
@@ -209,6 +217,7 @@ export const BottomSheetBase = forwardRef((props: BottomSheetBaseProps, ref: Rea
         handleComponent,
         scrollY: externalScrollY,
         headerOverlay,
+        onLayout,
     } = props;
 
     const insets = useSafeAreaInsets();
@@ -780,7 +789,10 @@ export const BottomSheetBase = forwardRef((props: BottomSheetBaseProps, ref: Rea
                 </Animated.View>
 
                 <GestureDetector gesture={panGesture}>
-                    <Animated.View style={[dynamicStyles.sheet, sheetMarginStyle, sheetStyle, sheetHeightStyle, style]}>
+                    <Animated.View
+                        onLayout={onLayout}
+                        style={[dynamicStyles.sheet, sheetMarginStyle, sheetStyle, sheetHeightStyle, style]}
+                    >
                         {backgroundComponent?.({ style: styles.background })}
 
                         {handleSlot}

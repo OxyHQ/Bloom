@@ -89,6 +89,7 @@ function configsEqual(a: DialogHeaderConfig | null, b: DialogHeaderConfig | null
   if (!a || !b) return false;
   return (
     a.title === b.title &&
+    a.titleContent === b.titleContent &&
     a.subtitle === b.subtitle &&
     a.largeTitle === b.largeTitle &&
     a.left === b.left &&
@@ -181,6 +182,7 @@ export function useDialogHeader(config: DialogHeaderConfig | null | undefined): 
   }, [
     store,
     config?.title,
+    config?.titleContent,
     config?.subtitle,
     config?.largeTitle,
     config?.left,
@@ -235,7 +237,10 @@ export const DialogNavHeader = memo(function DialogNavHeader({
   const config = useMergedHeaderConfig(header, controller.store);
   const { scrollY, largeTitleHeight } = controller;
 
-  const hasLargeTitle = collapse && (config.largeTitle ?? true) && !!config.title;
+  // A branded `titleContent` owns the bar centre outright: it is always visible,
+  // so there is nothing to collapse and no large in-content title to collapse under.
+  const hasLargeTitle =
+    collapse && !config.titleContent && (config.largeTitle ?? true) && !!config.title;
 
   const titleStyle = useAnimatedStyle(() => {
     // When there is no large title to collapse under, the bar title is always
@@ -294,15 +299,17 @@ export const DialogNavHeader = memo(function DialogNavHeader({
           testID="dialog-nav-title"
           style={[styles.centerTitle, titleStyle]}
         >
-          {config.title ? (
+          {config.titleContent ?? null}
+          {!config.titleContent && config.title ? (
             <Text numberOfLines={1} style={[styles.smallTitle, { color: theme.colors.text }]}>
               {config.title}
             </Text>
           ) : null}
           {/* The subtitle rides along ONLY in the static (non-collapsing) bar —
               own-scroller screens whose subtitle is a short count. A large-title
-              screen keeps a clean single-line collapsed title. */}
-          {!hasLargeTitle && config.subtitle ? (
+              screen keeps a clean single-line collapsed title, and a branded
+              `titleContent` bar carries no supporting copy at all. */}
+          {!hasLargeTitle && !config.titleContent && config.subtitle ? (
             <Text
               numberOfLines={1}
               style={[styles.smallSubtitle, { color: theme.colors.textSecondary }]}
@@ -336,7 +343,9 @@ export const DialogLargeTitle = memo(function DialogLargeTitle({
   const config = useMergedHeaderConfig(header, controller.store);
   const { largeTitleHeight } = controller;
 
-  const hasLargeTitle = (config.largeTitle ?? true) && !!config.title;
+  // A branded `titleContent` lives in the bar and never collapses, so the
+  // surface starts flush under the bar with no large title above it.
+  const hasLargeTitle = !config.titleContent && (config.largeTitle ?? true) && !!config.title;
 
   const onLayout = (e: LayoutChangeEvent) => {
     largeTitleHeight.value = e.nativeEvent.layout.height;

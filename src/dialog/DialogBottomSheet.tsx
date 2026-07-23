@@ -6,7 +6,12 @@ import React, {
   useMemo,
   useRef,
 } from 'react';
-import { View, type StyleProp, type ViewStyle } from 'react-native';
+import {
+  useWindowDimensions,
+  View,
+  type StyleProp,
+  type ViewStyle,
+} from 'react-native';
 
 import { BottomSheet, type BottomSheetRef } from '../bottom-sheet';
 import { useTheme } from '../theme/use-theme';
@@ -19,6 +24,7 @@ import {
   DialogNavHeader,
   useDialogHeaderController,
 } from './DialogHeader';
+import { DialogMorphContent, useDialogMorph } from './DialogMorph';
 import {
   DEFAULT_DIALOG_CONTENT_PADDING,
   DEFAULT_MAX_HEIGHT_RATIO,
@@ -62,6 +68,7 @@ export function DialogBottomSheet({
   dismissOnBackdrop = true,
   contentPadding = DEFAULT_DIALOG_CONTENT_PADDING,
   scrollable,
+  morph,
   style,
   panelStyle,
   panelClassName,
@@ -72,6 +79,7 @@ export function DialogBottomSheet({
 }: DialogBottomSheetProps) {
   const isControlled = controlledOpen !== undefined;
   const theme = useTheme();
+  const { height: viewportHeight } = useWindowDimensions();
   const ref = useRef<BottomSheetRef>(null);
   const closeCallbacks = useRef<(() => void)[]>([]);
   const titleId = useId();
@@ -155,6 +163,19 @@ export function DialogBottomSheet({
     [dismissOnBackdrop],
   );
 
+  const scrollableResolved = scrollable ?? true;
+
+  // Size morphing across an in-place content swap. The sheet is anchored at the
+  // bottom, so animating its height makes it grow/shrink from that edge; its
+  // width is fixed by the placement. The sheet's own `maxHeight` (the ratio
+  // percentage + the safe-area clamp inside `BottomSheet`) does the exact
+  // capping — the viewport is just the bound the reshape may not exceed.
+  const morphState = useDialogMorph({
+    enabled: morph !== false,
+    measurable: scrollableResolved,
+    maxHeight: viewportHeight,
+  });
+
   // `panelStyle` paints the sheet surface (e.g. a brand background). It composes
   // AFTER the BottomSheet's internal background so a host palette wins; the
   // shape (radius, max height) is supplied here and remains overridable.
@@ -168,8 +189,11 @@ export function DialogBottomSheet({
         maxHeight: maxHeightPercent,
       },
       panelStyle,
+      // Drives the card's `height` only while a morph is in flight; at rest it
+      // resolves to `height: 'auto'` — the sheet's normal content sizing.
+      morphState.panelStyle,
     ];
-  }, [theme.colors.background, maxHeightRatio, panelStyle]);
+  }, [theme.colors.background, maxHeightRatio, panelStyle, morphState.panelStyle]);
 
   // Does this dialog render bloom's declarative chrome (title / description /
   // actions)? This no longer gates the SCROLL decision (that is now the explicit
@@ -182,8 +206,6 @@ export function DialogBottomSheet({
     title !== undefined ||
     description !== undefined ||
     (actions !== undefined && actions.length > 0);
-
-  const scrollableResolved = scrollable ?? true;
 
   const dialogBody = (
     <DialogBody
@@ -264,6 +286,8 @@ export function DialogBottomSheet({
       // Stronger dim than a lone sheet so an underlying sheet's handle/content
       // doesn't bleed through when a Dialog is stacked over one.
       backdropOpacity={SHEET_BACKDROP_OPACITY + 0.3}
+      // Measures the sheet card — the size a morph starts from.
+      onLayout={morphState.onPanelLayout}
       style={sheetStyle}
     >
       <Context.Provider value={context}>
@@ -285,7 +309,12 @@ export function DialogBottomSheet({
             panelStyle,
           ]}
         >
-          {header ? headerBody : dialogBody}
+          {/* The morph layer is its own node INSIDE the class-name'd container:
+              a className'd component's `onLayout` never fires on web, and this
+              one has to measure the incoming frame. */}
+          <DialogMorphContent morph={morphState}>
+            {header ? headerBody : dialogBody}
+          </DialogMorphContent>
         </View>
       </Context.Provider>
     </BottomSheet>
@@ -313,6 +342,7 @@ export type DialogBottomSheetProps = Pick<
   | 'dismissOnBackdrop'
   | 'contentPadding'
   | 'scrollable'
+  | 'morph'
   | 'style'
   | 'panelStyle'
   | 'panelClassName'

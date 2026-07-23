@@ -40,6 +40,7 @@ function placementFor(p: SurfacePresentation): Partial<DialogProps> {
     contentPadding: p.contentPadding,
     header: p.header,
     scrollable: p.scrollable,
+    morph: p.morph,
     style: p.style,
     panelStyle: p.panelStyle,
     panelClassName: p.panelClassName,

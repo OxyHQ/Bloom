@@ -3,10 +3,12 @@ export { BloomDialogProvider } from './BloomDialogProvider';
 export { alert } from './alert';
 export { useDialogContext, useDialogControl } from './context';
 export { useDialogHeader } from './DialogHeader';
+export { useDialogFrame } from './DialogMorph';
 export type {
   AlertButton,
   AlertButtonStyle,
 } from './alert-store';
+export type { DialogFrame } from './DialogMorph';
 export type {
   DialogAction,
   DialogActionColor,

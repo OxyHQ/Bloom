@@ -55,6 +55,15 @@ export interface SurfacePresentation {
    * to `Dialog`.
    */
   scrollable?: boolean;
+  /**
+   * Whether the surface MORPHS its panel when its content is swapped in place —
+   * navigation WITHIN this surface, as opposed to presenting a new surface on
+   * top. Defaults to `true`. The content signals the swap through
+   * `useDialogFrame`; a surface whose content never declares a frame is
+   * unaffected. Set `false` for content that must never be resized into (a
+   * full-bleed picker). Forwarded to `Dialog`.
+   */
+  morph?: boolean;
   /** Style overrides applied to the inner content container. */
   style?: StyleProp<ViewStyle>;
   /** Style overrides for the side/bottom placement panel surface. */

@@ -16,6 +16,7 @@ import {
   type StyleProp,
   type ViewStyle,
 } from 'react-native';
+import Animated from 'react-native-reanimated';
 import { RemoveScrollBar } from 'react-remove-scroll-bar';
 
 import { Portal } from '../portal/index.web';
@@ -31,11 +32,13 @@ import {
   DialogNavHeader,
   useDialogHeaderController,
 } from './DialogHeader';
+import { DialogMorphContent, useDialogMorph } from './DialogMorph';
 import {
   ANIMATION_DURATION,
   CENTER_FADE_OUT_DURATION,
   DEFAULT_CENTER_MAX_WIDTH,
   DEFAULT_DIALOG_CONTENT_PADDING,
+  DEFAULT_MAX_HEIGHT_RATIO,
   DEFAULT_SIDE_WIDTH,
   DIALOG_SHEET_BACKDROP_TESTID,
   EASE_OUT,
@@ -149,6 +152,7 @@ function CenterOrSideDialog({
   contentPadding = DEFAULT_DIALOG_CONTENT_PADDING,
   maxHeightRatio,
   scrollable,
+  morph,
   style,
   panelStyle,
   panelClassName,
@@ -323,6 +327,7 @@ function CenterOrSideDialog({
                 contentPadding={contentPadding}
                 maxHeightRatio={maxHeightRatio}
                 scrollable={scrollable}
+                morph={morph}
                 surfaceZIndex={dialogZIndex.surface}
                 isClosing={isClosing}
               >
@@ -383,6 +388,7 @@ function DialogPanel({
   contentPadding,
   maxHeightRatio,
   scrollable,
+  morph,
   surfaceZIndex,
   isClosing,
   children,
@@ -398,6 +404,7 @@ function DialogPanel({
   contentPadding: number;
   maxHeightRatio?: number;
   scrollable?: boolean;
+  morph?: boolean;
   surfaceZIndex: number;
   isClosing: boolean;
   children?: React.ReactNode;
@@ -407,6 +414,19 @@ function DialogPanel({
   const titleId = useId();
   const descriptionId = useId();
   const headerController = useDialogHeaderController();
+  const { height: viewportHeight } = useWindowDimensions();
+  const heightRatio = maxHeightRatio ?? DEFAULT_MAX_HEIGHT_RATIO;
+
+  // Size morphing across an in-place content swap. The centered card is the one
+  // placement whose width can vary too, so `maxWidth` is handed over as well.
+  // The card's own `maxHeight` (the ratio percentage below) does the exact
+  // capping — the viewport is just the bound the reshape may not exceed.
+  const morphState = useDialogMorph({
+    enabled: morph !== false,
+    measurable: scrollable !== false,
+    maxHeight: viewportHeight,
+    maxWidth,
+  });
 
   const body = (
     <DialogBody
@@ -421,12 +441,13 @@ function DialogPanel({
   );
 
   return (
-    <View
+    <Animated.View
       role="dialog"
       aria-label={label}
       aria-labelledby={title ? titleId : undefined}
       aria-describedby={description ? descriptionId : undefined}
       testID={testID}
+      onLayout={morphState.onPanelLayout}
       onStartShouldSetResponder={() => true}
       onResponderRelease={stopPropagation}
       {...({ onClick: stopPropagation } as Record<string, unknown>)}
@@ -441,7 +462,7 @@ function DialogPanel({
           // capped at `maxHeightRatio` of the viewport and scrolls inside the
           // rounded card (via the ScrollView below) — consumers never add their
           // own height cap / ScrollView. `overflow: hidden` clips to the radius.
-          maxHeight: `${Math.round((maxHeightRatio ?? 0.9) * 100)}%`,
+          maxHeight: `${Math.round(heightRatio * 100)}%`,
           overflow: 'hidden',
           backgroundColor: theme.colors.background,
           borderWidth: 1,
@@ -455,6 +476,10 @@ function DialogPanel({
         isClosing
           ? ({ animation: `bloomDialogZoomFadeOut ease-in ${FADE_OUT_DURATION}ms forwards` } as ViewStyle)
           : ({ animation: 'bloomDialogZoomFadeIn cubic-bezier(0.16, 1, 0.3, 1) 0.3s' } as ViewStyle),
+        // Drives `height` (and `maxWidth`) only while a morph is in flight; at
+        // rest it resolves to `height: 'auto'` — the natural sizing above. Placed
+        // before `style` so a consumer's explicit size still wins.
+        morphState.panelStyle,
         style,
       ]}
     >
@@ -471,10 +496,10 @@ function DialogPanel({
             collapse={scrollable !== false}
           />
           {scrollable === false ? (
-            <View style={{ flex: 1, minHeight: 0 }}>
+            <DialogMorphContent morph={morphState} style={{ flex: 1, minHeight: 0 }}>
               <View style={{ height: DIALOG_NAV_BAR_HEIGHT }} />
               <DialogHeaderProvider controller={headerController}>{body}</DialogHeaderProvider>
-            </View>
+            </DialogMorphContent>
           ) : (
             <ScrollView
               style={{ flexShrink: 1 }}
@@ -485,8 +510,10 @@ function DialogPanel({
                 headerController.scrollY.value = e.nativeEvent.contentOffset.y;
               }}
             >
-              <DialogLargeTitle controller={headerController} header={header} />
-              <DialogHeaderProvider controller={headerController}>{body}</DialogHeaderProvider>
+              <DialogMorphContent morph={morphState}>
+                <DialogLargeTitle controller={headerController} header={header} />
+                <DialogHeaderProvider controller={headerController}>{body}</DialogHeaderProvider>
+              </DialogMorphContent>
             </ScrollView>
           )}
         </>
@@ -496,19 +523,22 @@ function DialogPanel({
         // `maxHeight` + `overflow: hidden` cap it and `flex: 1` + `minHeight: 0`
         // hand the child a bounded height to scroll into — with NO wrapping
         // ScrollView, so a VirtualizedList never nests inside one.
-        <View style={{ flex: 1, minHeight: 0, padding: contentPadding }}>
+        <DialogMorphContent
+          morph={morphState}
+          style={{ flex: 1, minHeight: 0, padding: contentPadding }}
+        >
           {body}
-        </View>
+        </DialogMorphContent>
       ) : (
         <ScrollView
           style={{ flexShrink: 1 }}
           contentContainerStyle={{ padding: contentPadding }}
           showsVerticalScrollIndicator={false}
         >
-          {body}
+          <DialogMorphContent morph={morphState}>{body}</DialogMorphContent>
         </ScrollView>
       )}
-    </View>
+    </Animated.View>
   );
 }
 

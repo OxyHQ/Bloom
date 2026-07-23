@@ -20,6 +20,15 @@ export type { DialogPlacement, ResponsiveDialogPlacement } from './placement';
 export interface DialogHeaderConfig {
   /** Collapsing title — rendered large in-content and small in the nav bar. */
   title?: string;
+  /**
+   * A branded node rendered centered in the nav bar INSTEAD of the collapsing
+   * text title — e.g. a product wordmark. Always visible (it never collapses),
+   * and it suppresses the large in-content title/subtitle entirely, so the
+   * surface starts flush under the bar. `title`/`subtitle` are ignored while
+   * this is set. Must be referentially stable (memoize it) so the header does
+   * not thrash.
+   */
+  titleContent?: ReactNode;
   /** Supporting copy under the large title (and, optionally, in the bar). */
   subtitle?: string;
   /**
@@ -224,6 +233,27 @@ export type DialogProps = React.PropsWithChildren<{
   contentPadding?: number;
   /** Whether tapping the backdrop dismisses the dialog. Defaults to `true`. */
   dismissOnBackdrop?: boolean;
+  /**
+   * Whether the panel MORPHS across an in-place content swap. Defaults to
+   * `true`.
+   *
+   * When the content inside an OPEN dialog is replaced (a nav-within drill-in,
+   * as opposed to presenting a new surface on top), the panel animates from the
+   * outgoing content's size to the incoming one's while the incoming content
+   * fades in, instead of hard-cutting. The swap is signalled by the content
+   * itself through `useDialogFrame` — a dialog whose content never declares a
+   * frame is unaffected either way.
+   *
+   * The centered card morphs its height (about its centre) and its `maxWidth`;
+   * the bottom sheet morphs its height from its anchored edge; side sheets have
+   * fixed geometry and never morph. Morphing also requires the Dialog to own the
+   * scroll container: a `scrollable={false}` surface owns its own size, so its
+   * content only cross-fades.
+   *
+   * Set `false` for content that must never be resized into — e.g. a full-bleed
+   * picker that always fills the surface.
+   */
+  morph?: boolean;
   /**
    * Style overrides applied to the inner content container on native (the
    * floating bottom-sheet card) and to the modal panel on web.

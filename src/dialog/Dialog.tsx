@@ -38,6 +38,7 @@ import {
   DialogNavHeader,
   useDialogHeaderController,
 } from './DialogHeader';
+import { DialogMorphContent, useDialogMorph } from './DialogMorph';
 import {
   ANIMATION_DURATION,
   DEFAULT_DIALOG_CONTENT_PADDING,
@@ -113,6 +114,7 @@ function CenteredOrSideDialog({
   actions,
   header,
   scrollable,
+  morph,
   placement,
   layer,
   width = DEFAULT_SIDE_WIDTH,
@@ -131,6 +133,19 @@ function CenteredOrSideDialog({
   const isSide = placement === 'left' || placement === 'right';
   const headerController = useDialogHeaderController();
   const scrollableResolved = scrollable ?? true;
+  const { height: viewportHeight } = useWindowDimensions();
+
+  // Size morphing across an in-place content swap. The detached centered card
+  // is content-hugging, so animating its height reshapes it about its own
+  // centre; the side placements are anchored top-to-bottom at a fixed width and
+  // have no size to morph, so they never pin (`measurable: false`). The card's
+  // own `maxHeight` (inside `BottomSheet`) does the exact capping — the viewport
+  // is just the bound the reshape may not exceed.
+  const morphState = useDialogMorph({
+    enabled: morph !== false && !isSide,
+    measurable: scrollableResolved && !isSide,
+    maxHeight: viewportHeight,
+  });
 
   // Imperative open state for the side placement (the BottomSheet path owns its
   // own visibility via its ref instead).
@@ -223,16 +238,21 @@ function CenteredOrSideDialog({
     [close],
   );
 
-  const sheetStyle = useMemo(
-    () => ({
-      maxWidth: 500,
-      backgroundColor: theme.colors.background,
-      // All four corners rounded — bloom's BottomSheet defaults to top-only
-      // radius in flush mode, but we use `detached` so the whole card is
-      // floating and rounded uniformly.
-      borderRadius: 20,
-    }),
-    [theme.colors.background],
+  const sheetStyle = useMemo<StyleProp<ViewStyle>>(
+    () => [
+      {
+        maxWidth: 500,
+        backgroundColor: theme.colors.background,
+        // All four corners rounded — bloom's BottomSheet defaults to top-only
+        // radius in flush mode, but we use `detached` so the whole card is
+        // floating and rounded uniformly.
+        borderRadius: 20,
+      },
+      // Drives the card's `height` only while a morph is in flight; at rest it
+      // resolves to `height: 'auto'` — the card's normal content sizing.
+      morphState.panelStyle,
+    ],
+    [theme.colors.background, morphState.panelStyle],
   );
 
   const bodyNode = (
@@ -322,6 +342,8 @@ function CenteredOrSideDialog({
       // Stronger dim when a Dialog is stacked over another sheet so the
       // underlying sheet's handle/content doesn't bleed through.
       backdropOpacity={0.7}
+      // Measures the floating card — the size a morph starts from.
+      onLayout={morphState.onPanelLayout}
       style={sheetStyle}
     >
       <Context.Provider value={context}>
@@ -342,7 +364,12 @@ function CenteredOrSideDialog({
             panelStyle,
           ]}
         >
-          {header ? headerBody : bodyNode}
+          {/* The morph layer is its own node INSIDE the class-name'd container:
+              a className'd component's `onLayout` never fires on web, and this
+              one has to measure the incoming frame. */}
+          <DialogMorphContent morph={morphState}>
+            {header ? headerBody : bodyNode}
+          </DialogMorphContent>
         </View>
       </Context.Provider>
     </BottomSheet>
