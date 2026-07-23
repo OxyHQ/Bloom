@@ -13,6 +13,7 @@ import {
 import { Gesture, GestureDetector, type GestureType } from 'react-native-gesture-handler';
 import { Z_INDEX } from '../styles/z-index';
 import Animated, {
+    type AnimatedStyle,
     interpolate,
     runOnJS,
     type SharedValue,
@@ -76,7 +77,7 @@ export interface BottomSheetProps {
      * background color, border radius, etc. Composed AFTER the internal sheet
      * styles so it can override them.
      */
-    style?: StyleProp<ViewStyle>;
+    style?: StyleProp<AnimatedStyle<ViewStyle>>;
     enableHandlePanningGesture?: boolean;
     onDismissAttempt?: () => boolean;
     detached?: boolean; // If true, shows with margins and rounded corners. If false, full width with rounded top only.

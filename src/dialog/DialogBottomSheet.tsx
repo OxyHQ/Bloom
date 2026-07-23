@@ -12,6 +12,7 @@ import {
   type StyleProp,
   type ViewStyle,
 } from 'react-native';
+import { type AnimatedStyle } from 'react-native-reanimated';
 
 import { BottomSheet, type BottomSheetRef } from '../bottom-sheet';
 import { useTheme } from '../theme/use-theme';
@@ -179,7 +180,7 @@ export function DialogBottomSheet({
   // `panelStyle` paints the sheet surface (e.g. a brand background). It composes
   // AFTER the BottomSheet's internal background so a host palette wins; the
   // shape (radius, max height) is supplied here and remains overridable.
-  const sheetStyle = useMemo<StyleProp<ViewStyle>>(() => {
+  const sheetStyle = useMemo<StyleProp<AnimatedStyle<ViewStyle>>>(() => {
     const maxHeightPercent: `${number}%` = `${Math.round(maxHeightRatio * 100)}%`;
     return [
       {

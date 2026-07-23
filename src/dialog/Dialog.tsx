@@ -16,6 +16,7 @@ import {
   type ViewStyle,
 } from 'react-native';
 import Animated, {
+  type AnimatedStyle,
   cancelAnimation,
   Easing,
   runOnJS,
@@ -238,7 +239,11 @@ function CenteredOrSideDialog({
     [close],
   );
 
-  const sheetStyle = useMemo<StyleProp<ViewStyle>>(
+  // The array composes the plain surface styles with the morph's reanimated
+  // animated style (`morphState.panelStyle` from `useAnimatedStyle`), so the
+  // element type must admit an animated style, not just a plain `ViewStyle`.
+  // It flows to `<BottomSheet style>`, which applies it to its outer Animated.View.
+  const sheetStyle = useMemo<StyleProp<AnimatedStyle<ViewStyle>>>(
     () => [
       {
         maxWidth: 500,
