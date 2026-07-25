@@ -53,6 +53,87 @@ export interface DialogHeaderConfig {
    * affordance entirely (e.g. a blocking surface).
    */
   showClose?: boolean;
+
+  // -------------------------------------------------------------------------
+  //  Rich navigation-header fields (all OPTIONAL + backward-compatible).
+  //
+  //  Modeled on iOS `UINavigationBar` / SwiftUI `.toolbar` + Material 3
+  //  `TopAppBar`. Nav-row trailing = [actions…] + [primaryAction]; the
+  //  collapsing large-title zone stacks title → search → segments → progress.
+  //  A screen that sets none of these renders byte-for-byte as before. Object
+  //  fields are compared by identity — memoize them so the header does not
+  //  thrash (same contract as `left`/`right`).
+  // -------------------------------------------------------------------------
+
+  /**
+   * The ONE trailing call-to-action (Upload / Use photo / Save / Done) — a
+   * proper Bloom `Button` rendered at the trailing edge of the nav row, AFTER
+   * any `actions`. Standardizes what screens used to cram into `right`; supports
+   * `disabled` and a `loading` spinner (async submit). When set (and no explicit
+   * `right`), the default close affordance moves to the leading edge if the
+   * screen has no `onBack`, so there is always exactly one dismiss control.
+   */
+  primaryAction?: {
+    label: string;
+    onPress: () => void;
+    disabled?: boolean;
+    loading?: boolean;
+  };
+
+  /**
+   * Trailing icon buttons (share / more / sort), rendered as frosted circles
+   * BEFORE `primaryAction`. Past {@link DIALOG_HEADER_MAX_INLINE_ACTIONS} the
+   * surplus collapses into a "more" overflow menu (Material pattern) built on
+   * Bloom's `Menu` — never hand-rolled. Each item's `accessibilityLabel` is also
+   * its overflow-menu row text.
+   */
+  actions?: Array<{
+    icon: ReactNode;
+    accessibilityLabel: string;
+    onPress: () => void;
+    disabled?: boolean;
+  }>;
+
+  /**
+   * A search field in the collapsing large-title zone (iOS `.searchable` style:
+   * sits under the title and scrolls away with it). Requires a scrolling surface
+   * (`scrollable !== false`) — it lives in the same in-content block as the large
+   * title. Built on Bloom's `Search`.
+   */
+  search?: {
+    value: string;
+    onChangeText: (text: string) => void;
+    placeholder?: string;
+    onSubmit?: () => void;
+  };
+
+  /**
+   * A segmented control row UNDER the title (Material secondary row) for view
+   * switching. Requires a scrolling surface (lives in the large-title zone).
+   * Built on Bloom's `SegmentedControl` (`type="tabs"`).
+   */
+  segments?: {
+    items: Array<{ key: string; label: string }>;
+    value: string;
+    onChange: (key: string) => void;
+  };
+
+  /**
+   * Over a banner / dark media canvas, `'onImage'` strengthens the gradient
+   * scrim and forces light-content title + default icon buttons so the chrome
+   * stays legible over the media. `'default'` (the default) is unchanged.
+   */
+  tone?: 'default' | 'onImage';
+
+  /**
+   * A thin step/progress indicator for wizards, rendered in the large-title zone
+   * below any title/search/segments. `step` is 1-based; the bar fills
+   * `step / total`.
+   */
+  progress?: {
+    step: number;
+    total: number;
+  };
 }
 
 /**

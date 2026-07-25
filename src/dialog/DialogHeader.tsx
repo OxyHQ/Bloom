@@ -23,9 +23,18 @@ import Animated, {
 
 import {
   ChevronLeft_Stroke2_Corner0_Rounded,
+  DotGrid3x1_Stroke2_Corner0_Rounded,
   TimesLarge_Stroke2_Corner0_Rounded,
 } from '../icons';
 import { FrostedIconButton } from '../frosted-icon-button';
+import { Button } from '../button';
+import { Search } from '../search';
+import {
+  SegmentedControl,
+  SegmentedControlItem,
+  SegmentedControlItemText,
+} from '../segmented-control';
+import { Menu, MenuContent, MenuGroup, MenuItem, MenuItemText, MenuTrigger } from '../menu';
 import { useTheme } from '../theme/use-theme';
 import { H1, Text } from '../typography';
 import type { DialogHeaderConfig } from './types';
@@ -68,6 +77,17 @@ const HEADER_H_PADDING = 20;
 /** Circular icon-button diameter for the default back / close affordances. */
 const NAV_BUTTON_SIZE = 36;
 
+/**
+ * Trailing icon `actions` shown inline before they collapse into a "more"
+ * overflow menu (Material overflow pattern). Kept small so the nav row never
+ * crowds the title.
+ */
+export const DIALOG_HEADER_MAX_INLINE_ACTIONS = 3;
+
+/** Light content color for `tone: 'onImage'` (legible over any media). */
+const ON_IMAGE_TEXT = '#FFFFFF';
+const ON_IMAGE_SUBTEXT = 'rgba(255,255,255,0.82)';
+
 // --- Runtime override store (child screen → nav bar / large title) ----------
 //
 // The nav bar overlay and the in-content large title live in DIFFERENT subtrees
@@ -95,7 +115,15 @@ function configsEqual(a: DialogHeaderConfig | null, b: DialogHeaderConfig | null
     a.left === b.left &&
     a.right === b.right &&
     a.onBack === b.onBack &&
-    a.showClose === b.showClose
+    a.showClose === b.showClose &&
+    // Rich fields — object fields compared by identity (callers memoize them);
+    // `tone` is a plain value.
+    a.primaryAction === b.primaryAction &&
+    a.actions === b.actions &&
+    a.search === b.search &&
+    a.segments === b.segments &&
+    a.tone === b.tone &&
+    a.progress === b.progress
   );
 }
 
@@ -189,6 +217,12 @@ export function useDialogHeader(config: DialogHeaderConfig | null | undefined): 
     config?.right,
     config?.onBack,
     config?.showClose,
+    config?.primaryAction,
+    config?.actions,
+    config?.search,
+    config?.segments,
+    config?.tone,
+    config?.progress,
   ]);
 }
 
@@ -199,6 +233,108 @@ function useMergedHeaderConfig(
 ): DialogHeaderConfig {
   const override = useSyncExternalStore(store.subscribe, store.getSnapshot, store.getSnapshot);
   return useMemo(() => (override ? { ...base, ...override } : base), [base, override]);
+}
+
+// --- Rich header sub-parts --------------------------------------------------
+
+/**
+ * Trailing icon `actions`: the first {@link DIALOG_HEADER_MAX_INLINE_ACTIONS}
+ * render inline as frosted circles; any surplus collapses into a "more" overflow
+ * menu (Material pattern) built on Bloom's `Menu` — never a hand-rolled popover.
+ */
+function HeaderTrailingActions({
+  actions,
+  onImage,
+}: {
+  actions: NonNullable<DialogHeaderConfig['actions']>;
+  onImage: boolean;
+}): React.ReactElement | null {
+  if (actions.length === 0) return null;
+  const overflows = actions.length > DIALOG_HEADER_MAX_INLINE_ACTIONS;
+  // Keep room for the "more" trigger when collapsing.
+  const inline = overflows ? actions.slice(0, DIALOG_HEADER_MAX_INLINE_ACTIONS - 1) : actions;
+  const overflow = overflows ? actions.slice(DIALOG_HEADER_MAX_INLINE_ACTIONS - 1) : [];
+  return (
+    <>
+      {inline.map((action) => (
+        <FrostedIconButton
+          key={action.accessibilityLabel}
+          size="sm"
+          icon={action.icon}
+          onPress={action.onPress}
+          disabled={action.disabled}
+          accessibilityLabel={action.accessibilityLabel}
+        />
+      ))}
+      {overflow.length > 0 ? (
+        <Menu>
+          <MenuTrigger label="More">
+            {({ props }) => (
+              <FrostedIconButton
+                size="sm"
+                onPress={props.onPress}
+                accessibilityLabel={props.accessibilityLabel}
+                icon={
+                  <DotGrid3x1_Stroke2_Corner0_Rounded
+                    size="md"
+                    fill={onImage ? ON_IMAGE_TEXT : undefined}
+                  />
+                }
+              />
+            )}
+          </MenuTrigger>
+          <MenuContent>
+            <MenuGroup>
+              {overflow.map((action) => (
+                <MenuItem
+                  key={action.accessibilityLabel}
+                  label={action.accessibilityLabel}
+                  onPress={action.onPress}
+                  disabled={action.disabled}
+                >
+                  <MenuItemText>{action.accessibilityLabel}</MenuItemText>
+                </MenuItem>
+              ))}
+            </MenuGroup>
+          </MenuContent>
+        </Menu>
+      ) : null}
+    </>
+  );
+}
+
+/**
+ * A thin wizard step/progress indicator for the large-title zone. `step` is
+ * 1-based; the bar fills `step / total`, clamped to [0, 1].
+ */
+function HeaderProgressBar({
+  step,
+  total,
+  onImage,
+}: {
+  step: number;
+  total: number;
+  onImage: boolean;
+}): React.ReactElement {
+  const theme = useTheme();
+  const fraction = total > 0 ? Math.min(1, Math.max(0, step / total)) : 0;
+  return (
+    <View
+      accessibilityRole="progressbar"
+      accessibilityValue={{ min: 0, max: total, now: step }}
+      style={[
+        styles.progressTrack,
+        { backgroundColor: onImage ? 'rgba(255,255,255,0.25)' : theme.colors.border },
+      ]}
+    >
+      <View
+        style={[
+          styles.progressFill,
+          { width: `${Math.round(fraction * 100)}%`, backgroundColor: theme.colors.primary },
+        ]}
+      />
+    </View>
+  );
 }
 
 // --- Nav bar overlay --------------------------------------------------------
@@ -260,24 +396,62 @@ export const DialogNavHeader = memo(function DialogNavHeader({
     // reads MUST be in the deps array or it freezes on the first frame.
   }, [scrollY, largeTitleHeight, hasLargeTitle]);
 
+  // Over media (`tone: 'onImage'`) the scrim strengthens and the default title +
+  // icon buttons flip to light content so they stay legible.
+  const onImage = config.tone === 'onImage';
+  const iconFill = onImage ? ON_IMAGE_TEXT : undefined;
+  const titleColor = onImage ? ON_IMAGE_TEXT : theme.colors.text;
+  const subtitleColor = onImage ? ON_IMAGE_SUBTEXT : theme.colors.textSecondary;
+
+  const closeButton = (
+    <FrostedIconButton
+      onPress={onDismiss}
+      accessibilityLabel="Close"
+      icon={<TimesLarge_Stroke2_Corner0_Rounded size="md" fill={iconFill} />}
+    />
+  );
+
+  // Trailing edge: a custom `right` wins; else the rich trailing (icon actions +
+  // the single primary CTA); else the default close affordance.
+  const hasRichTrailing = !config.right && !!(config.actions?.length || config.primaryAction);
+
+  const right = config.right ?? (
+    hasRichTrailing ? (
+      <View style={styles.trailing}>
+        {config.actions?.length ? (
+          <HeaderTrailingActions actions={config.actions} onImage={onImage} />
+        ) : null}
+        {config.primaryAction ? (
+          <Button
+            variant="primary"
+            size="small"
+            onPress={config.primaryAction.onPress}
+            disabled={config.primaryAction.disabled || config.primaryAction.loading}
+            loading={config.primaryAction.loading}
+            accessibilityLabel={config.primaryAction.label}
+          >
+            {config.primaryAction.label}
+          </Button>
+        ) : null}
+      </View>
+    ) : config.showClose !== false ? (
+      closeButton
+    ) : null
+  );
+
+  // Leading edge: a custom `left` wins; else the back button; else — when the
+  // trailing edge is taken by the rich CTA and there is no back — the close
+  // affordance moves here so there is always exactly one dismiss control.
   const left =
     config.left ??
     (config.onBack ? (
       <FrostedIconButton
         onPress={config.onBack}
         accessibilityLabel="Go back"
-        icon={<ChevronLeft_Stroke2_Corner0_Rounded size="md" />}
+        icon={<ChevronLeft_Stroke2_Corner0_Rounded size="md" fill={iconFill} />}
       />
-    ) : null);
-
-  const right =
-    config.right ??
-    (config.showClose !== false ? (
-      <FrostedIconButton
-        onPress={onDismiss}
-        accessibilityLabel="Close"
-        icon={<TimesLarge_Stroke2_Corner0_Rounded size="md" />}
-      />
+    ) : hasRichTrailing && config.showClose !== false ? (
+      closeButton
     ) : null);
 
   return (
@@ -286,10 +460,15 @@ export const DialogNavHeader = memo(function DialogNavHeader({
       style={[styles.overlay, style]}
     >
       {/* Opaque (surface bg) at the top → transparent at the bottom, so scrolled
-          content fades out under the bar. Pure NativeWind — no SVG dependency. */}
+          content fades out under the bar. `onImage` swaps to a dark scrim so the
+          chrome reads over media. Pure NativeWind — no SVG dependency. */}
       <View
         pointerEvents="none"
-        className="bg-gradient-to-b from-bg to-transparent"
+        className={
+          onImage
+            ? 'bg-gradient-to-b from-black/60 to-transparent'
+            : 'bg-gradient-to-b from-bg to-transparent'
+        }
         style={[StyleSheet.absoluteFill, { height: DIALOG_HEADER_OVERLAY_HEIGHT }]}
       />
       <View pointerEvents="box-none" style={styles.navRow}>
@@ -301,7 +480,7 @@ export const DialogNavHeader = memo(function DialogNavHeader({
         >
           {config.titleContent ?? null}
           {!config.titleContent && config.title ? (
-            <Text numberOfLines={1} style={[styles.smallTitle, { color: theme.colors.text }]}>
+            <Text numberOfLines={1} style={[styles.smallTitle, { color: titleColor }]}>
               {config.title}
             </Text>
           ) : null}
@@ -310,10 +489,7 @@ export const DialogNavHeader = memo(function DialogNavHeader({
               screen keeps a clean single-line collapsed title, and a branded
               `titleContent` bar carries no supporting copy at all. */}
           {!hasLargeTitle && !config.titleContent && config.subtitle ? (
-            <Text
-              numberOfLines={1}
-              style={[styles.smallSubtitle, { color: theme.colors.textSecondary }]}
-            >
+            <Text numberOfLines={1} style={[styles.smallSubtitle, { color: subtitleColor }]}>
               {config.subtitle}
             </Text>
           ) : null}
@@ -346,25 +522,79 @@ export const DialogLargeTitle = memo(function DialogLargeTitle({
   // A branded `titleContent` lives in the bar and never collapses, so the
   // surface starts flush under the bar with no large title above it.
   const hasLargeTitle = !config.titleContent && (config.largeTitle ?? true) && !!config.title;
+  // The large-title zone also hosts search / segments / progress. These require a
+  // scrolling surface (they live here, not in the fixed bar) and collapse with the
+  // title on scroll (iOS `.searchable` style).
+  const hasExtras = !!(config.search || config.segments || config.progress);
+  const onImage = config.tone === 'onImage';
 
   const onLayout = (e: LayoutChangeEvent) => {
     largeTitleHeight.value = e.nativeEvent.layout.height;
   };
 
-  if (!hasLargeTitle) {
-    // No large title: just inset the content below the nav bar.
+  if (!hasLargeTitle && !hasExtras) {
+    // No large title and no extras: just inset the content below the nav bar.
     return <View style={{ height: DIALOG_NAV_BAR_HEIGHT }} />;
   }
 
   return (
     <>
+      {/* Clear the whole gradient overlay so the block starts below the bar. */}
       <View style={{ height: DIALOG_HEADER_CONTENT_TOP }} />
       <View onLayout={onLayout} testID="dialog-large-title" style={styles.largeTitleBlock}>
-        <H1 style={[styles.largeTitle, { color: theme.colors.text }]}>{config.title}</H1>
-        {config.subtitle ? (
-          <Text style={[styles.largeSubtitle, { color: theme.colors.textSecondary }]}>
-            {config.subtitle}
-          </Text>
+        {hasLargeTitle ? (
+          <>
+            <H1 style={[styles.largeTitle, { color: onImage ? ON_IMAGE_TEXT : theme.colors.text }]}>
+              {config.title}
+            </H1>
+            {config.subtitle ? (
+              <Text
+                style={[
+                  styles.largeSubtitle,
+                  { color: onImage ? ON_IMAGE_SUBTEXT : theme.colors.textSecondary },
+                ]}
+              >
+                {config.subtitle}
+              </Text>
+            ) : null}
+          </>
+        ) : null}
+        {config.search ? (
+          <View style={hasLargeTitle ? styles.extraRow : undefined}>
+            <Search
+              value={config.search.value}
+              onChangeText={config.search.onChangeText}
+              label={config.search.placeholder ?? 'Search'}
+              onSubmitEditing={config.search.onSubmit}
+              onClearText={() => config.search?.onChangeText('')}
+            />
+          </View>
+        ) : null}
+        {config.segments ? (
+          <View style={hasLargeTitle || config.search ? styles.extraRow : undefined}>
+            <SegmentedControl
+              label={config.title ?? 'View'}
+              type="tabs"
+              size="small"
+              value={config.segments.value}
+              onChange={config.segments.onChange}
+            >
+              {config.segments.items.map((item) => (
+                <SegmentedControlItem key={item.key} value={item.key}>
+                  <SegmentedControlItemText>{item.label}</SegmentedControlItemText>
+                </SegmentedControlItem>
+              ))}
+            </SegmentedControl>
+          </View>
+        ) : null}
+        {config.progress ? (
+          <View style={hasLargeTitle || config.search || config.segments ? styles.extraRow : undefined}>
+            <HeaderProgressBar
+              step={config.progress.step}
+              total={config.progress.total}
+              onImage={onImage}
+            />
+          </View>
         ) : null}
       </View>
     </>
@@ -393,6 +623,12 @@ const styles = StyleSheet.create({
   },
   sideRight: {
     justifyContent: 'flex-end',
+  },
+  /** Trailing row: icon actions + the primary CTA, right-aligned. */
+  trailing: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
   },
   centerTitle: {
     flex: 1,
@@ -425,5 +661,20 @@ const styles = StyleSheet.create({
     fontSize: 16,
     lineHeight: 22,
     marginTop: 4,
+  },
+  /** Spacing between the large title and each large-title-zone extra. */
+  extraRow: {
+    marginTop: 12,
+  },
+  /** Thin wizard progress bar in the large-title zone. */
+  progressTrack: {
+    height: 4,
+    width: '100%',
+    borderRadius: 2,
+    overflow: 'hidden',
+  },
+  progressFill: {
+    height: '100%',
+    borderRadius: 2,
   },
 });

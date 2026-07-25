@@ -36,6 +36,9 @@ const Reanimated = {
     const ratio = (value - inputRange[0]!) / (inputRange[1]! - inputRange[0]!);
     return outputRange[0]! + ratio * (outputRange[1]! - outputRange[0]!);
   },
+  // Extrapolation enum (the `interpolate` mock ignores the mode, but mappers read
+  // `Extrapolation.CLAMP` — it must be a real object, not undefined).
+  Extrapolation: { CLAMP: 'clamp', EXTEND: 'extend', IDENTITY: 'identity' },
   runOnJS: (fn: (...args: unknown[]) => void) => fn,
   cancelAnimation: (_sv: unknown) => {},
   Easing: {
@@ -99,6 +102,7 @@ export const withRepeat = Reanimated.withRepeat;
 export const withDelay = Reanimated.withDelay;
 export const withSequence = Reanimated.withSequence;
 export const interpolate = Reanimated.interpolate;
+export const Extrapolation = Reanimated.Extrapolation;
 export const runOnJS = Reanimated.runOnJS;
 export const cancelAnimation = Reanimated.cancelAnimation;
 export const Easing = Reanimated.Easing;
