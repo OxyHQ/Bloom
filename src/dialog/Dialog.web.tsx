@@ -29,6 +29,7 @@ import {
   DIALOG_NAV_BAR_HEIGHT,
   DialogHeaderProvider,
   DialogLargeTitle,
+  DialogNavBarSpacer,
   DialogNavHeader,
   useDialogHeaderController,
 } from './DialogHeader';
@@ -497,7 +498,7 @@ function DialogPanel({
           />
           {scrollable === false ? (
             <DialogMorphContent morph={morphState} style={{ flex: 1, minHeight: 0 }}>
-              <View style={{ height: DIALOG_NAV_BAR_HEIGHT }} />
+              <DialogNavBarSpacer controller={headerController} header={header} />
               <DialogHeaderProvider controller={headerController}>{body}</DialogHeaderProvider>
             </DialogMorphContent>
           ) : (

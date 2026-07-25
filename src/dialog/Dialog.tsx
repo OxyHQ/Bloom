@@ -32,10 +32,10 @@ import { Context, useDialogControl } from './context';
 import { DialogBody } from './DialogContent';
 import { DialogBottomSheet } from './DialogBottomSheet';
 import {
-  DIALOG_NAV_BAR_HEIGHT,
   type DialogHeaderController,
   DialogHeaderProvider,
   DialogLargeTitle,
+  DialogNavBarSpacer,
   DialogNavHeader,
   useDialogHeaderController,
 } from './DialogHeader';
@@ -284,7 +284,7 @@ function CenteredOrSideDialog({
       </>
     ) : (
       <>
-        <View style={{ height: DIALOG_NAV_BAR_HEIGHT }} />
+        <DialogNavBarSpacer controller={headerController} header={header} />
         <DialogHeaderProvider controller={headerController}>{bodyNode}</DialogHeaderProvider>
       </>
     )
@@ -573,7 +573,7 @@ function SideSheet({
               onDismiss={onHeaderDismiss}
               collapse={false}
             />
-            <View style={{ height: DIALOG_NAV_BAR_HEIGHT }} />
+            <DialogNavBarSpacer controller={headerController} header={header} />
             <DialogHeaderProvider controller={headerController}>{children}</DialogHeaderProvider>
           </View>
         ) : (

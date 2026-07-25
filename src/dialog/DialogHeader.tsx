@@ -624,6 +624,27 @@ export const DialogLargeTitle = memo(function DialogLargeTitle({
   );
 });
 
+/**
+ * The nav-bar-height content inset for a header-mode surface whose content owns
+ * its own scroll (`scrollable: false`) — the account dialog or an own-scroller
+ * like the media picker. Under `tone: 'onImage'` it COLLAPSES to nothing so the
+ * media (photo grid / banner) slides UP under the floating translucent nav bar,
+ * edge-to-edge (Apple/Material immersive photo grid); otherwise it insets the
+ * content below the bar. Reads the merged (base + runtime-override) tone, since
+ * `tone` is contributed by the mounted screen through the override store.
+ */
+export const DialogNavBarSpacer = memo(function DialogNavBarSpacer({
+  controller,
+  header,
+}: {
+  controller: DialogHeaderController;
+  header: DialogHeaderConfig;
+}) {
+  const config = useMergedHeaderConfig(header, controller.store);
+  if (config.tone === 'onImage') return null;
+  return <View style={{ height: DIALOG_NAV_BAR_HEIGHT }} />;
+});
+
 const styles = StyleSheet.create({
   overlay: {
     position: 'absolute',
