@@ -9,6 +9,7 @@ import {
 
 import { useTheme } from '../theme/use-theme';
 import { useInteractionState } from '../hooks/useInteractionState';
+import { bloomShadowStyle } from '../design-tokens/shadows';
 import type { ThemeColors } from '../theme/types';
 import { dismiss } from './sonner';
 import type { ToastType } from './types';
@@ -242,11 +243,8 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     gap: 8,
     paddingVertical: 14,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.05,
-    shadowRadius: 2,
-    elevation: 2,
+    // Subtle raise (`shadow-s`) — `boxShadow` on web, RN shadow/elevation on native.
+    ...bloomShadowStyle('s'),
   },
   textContainer: {
     flex: 1,

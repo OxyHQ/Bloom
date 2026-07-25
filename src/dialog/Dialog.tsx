@@ -529,11 +529,13 @@ function SideSheet({
         // stack) paints above it. Layer 0 → offset 0 → unchanged.
         { zIndex: Z_INDEX.fullscreen + Z_INDEX_LAYER_STEP * (layer ?? 0) },
         containerStyle,
+        { pointerEvents: 'box-none' },
       ]}
       {...(containerClassName ? ({ className: containerClassName } as Record<string, string>) : {})}
-      pointerEvents="box-none"
     >
-      <Animated.View style={[sideStyles.backdrop, backdropAnimatedStyle]} pointerEvents="auto">
+      <Animated.View
+        style={[sideStyles.backdrop, backdropAnimatedStyle, { pointerEvents: 'auto' }]}
+      >
         <Pressable
           testID={testID ? `${testID}-backdrop` : DIALOG_SHEET_BACKDROP_TESTID}
           accessibilityRole="button"
@@ -554,13 +556,14 @@ function SideSheet({
         {...(panelClassName ? ({ className: panelClassName } as Record<string, string>) : {})}
         style={[
           sideStyles.panel,
-          { backgroundColor: theme.colors.background, shadowColor: theme.colors.shadow },
+          // `shadowColor` is a valid RN style prop on native (Dialog.tsx is the
+          // native variant); the web `shadow*` deprecation is handled in Dialog.web.tsx.
+          { backgroundColor: theme.colors.background, shadowColor: theme.colors.shadow, pointerEvents: 'auto' },
           panelGeometry,
           panelAnimatedStyle,
           panelStyle,
           style,
         ]}
-        pointerEvents="auto"
       >
         {header ? (
           // Nav-header mode on a side drawer: a static titled bar (the drawer body

@@ -32,7 +32,7 @@ import {
 function WebShell({ children }: BottomSheetShellProps) {
     return (
         <Portal>
-            <GestureHandlerRootView style={webStyles.rootView} pointerEvents="box-none">
+            <GestureHandlerRootView style={[webStyles.rootView, { pointerEvents: 'box-none' }]}>
                 {children}
             </GestureHandlerRootView>
         </Portal>

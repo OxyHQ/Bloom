@@ -12,6 +12,7 @@ import {
 
 import { useTheme } from '../theme/use-theme';
 import { animation } from '../styles/tokens';
+import { bloomShadowStyle } from '../design-tokens/shadows';
 import type { SliderProps } from './types';
 
 function clamp(v: number, min: number, max: number): number {
@@ -236,7 +237,6 @@ const SliderComponent = function Slider({
             backgroundColor: thumbColor,
             left: thumbLeft,
             transform: [{ scale: thumbScale }],
-            shadowColor: theme.colors.shadow,
           },
         ]}
       />
@@ -261,10 +261,8 @@ const styles = StyleSheet.create({
   thumb: {
     position: 'absolute',
     top: '50%',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.2,
-    shadowRadius: 2,
-    elevation: 2,
+    // Subtle raise (`shadow-s`) — `boxShadow` on web, RN shadow/elevation on native.
+    ...bloomShadowStyle('s'),
   },
   disabled: {
     opacity: 0.5,

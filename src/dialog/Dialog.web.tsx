@@ -21,6 +21,7 @@ import { RemoveScrollBar } from 'react-remove-scroll-bar';
 
 import { Portal } from '../portal/index.web';
 import { createOverlayZIndex } from '../styles/z-index';
+import { bloomShadowStyle } from '../design-tokens/shadows';
 import { useTheme } from '../theme/use-theme';
 import { Context, useDialogContext, useDialogControl } from './context';
 import { DialogBody } from './DialogContent';
@@ -468,10 +469,9 @@ function DialogPanel({
           backgroundColor: theme.colors.background,
           borderWidth: 1,
           borderColor: theme.isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)',
-          shadowColor: '#000',
-          shadowOpacity: theme.isDark ? 0.4 : 0.1,
-          shadowRadius: 30,
-          shadowOffset: { width: 0, height: 4 },
+          // Design-system overlay elevation (`shadow-m`) as a `boxShadow` — RN-Web
+          // deprecated the `shadow*` style props.
+          ...bloomShadowStyle('m'),
           zIndex: surfaceZIndex,
         },
         isClosing
@@ -672,9 +672,8 @@ function SheetSurface({
 
   return (
     <View
-      style={[sheetStyles.root, { zIndex: backdropZIndex }, containerStyle]}
+      style={[sheetStyles.root, { zIndex: backdropZIndex }, containerStyle, { pointerEvents: 'box-none' }]}
       {...(containerClassName ? ({ className: containerClassName } as Record<string, string>) : {})}
-      pointerEvents="box-none"
     >
       <Pressable
         testID={testID ? `${testID}-backdrop` : DIALOG_SHEET_BACKDROP_TESTID}
@@ -704,15 +703,16 @@ function SheetSurface({
           sheetStyles.panel,
           {
             backgroundColor: theme.colors.background,
-            shadowColor: theme.colors.shadow,
             zIndex: surfaceZIndex,
+            pointerEvents: 'auto',
+            // Design-system overlay elevation (`shadow-m`) as a `boxShadow`.
+            ...bloomShadowStyle('m'),
           },
           panelGeometry,
           panelTransition,
           panelStyle,
           style,
         ]}
-        pointerEvents="auto"
       >
         {header ? (
           // Nav-header mode on a side drawer: a static titled bar (the drawer
@@ -860,9 +860,8 @@ const sheetStyles = {
   panel: {
     position: 'absolute',
     overflow: 'hidden',
-    shadowOpacity: 0.18,
-    shadowRadius: 24,
-    shadowOffset: { width: 0, height: 8 },
+    // Elevation is applied at the usage site via `bloomShadowStyle('m')`
+    // (`boxShadow` on web); the deprecated `shadow*` props were removed.
   } as ViewStyle,
 };
 

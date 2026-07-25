@@ -22,6 +22,7 @@ import {
 import { useTheme } from '../theme/use-theme';
 import { usePressAnimation } from '../hooks/usePressAnimation';
 import { borderRadius, space } from '../styles/tokens';
+import { bloomShadowStyle } from '../design-tokens/shadows';
 import type { TabsProps, TabsTriggerProps, TabsContentProps, TabsVariant } from './types';
 
 type TriggerLayout = Pick<LayoutRectangle, 'x' | 'width'>;
@@ -226,11 +227,8 @@ const TabComponent: React.FC<TabsTriggerProps> = ({
         if (isSelected) {
           base.backgroundColor = theme.colors.card;
           base.borderRadius = borderRadius.xs + 2;
-          base.shadowColor = theme.colors.shadow;
-          base.shadowOffset = { width: 0, height: 1 };
-          base.shadowOpacity = 0.1;
-          base.shadowRadius = 2;
-          base.elevation = 1;
+          // Subtle raise (`shadow-s`) — `boxShadow` on web, RN shadow/elevation on native.
+          Object.assign(base, bloomShadowStyle('s'));
         }
         break;
       case 'outlined':

@@ -20,6 +20,7 @@ import { Text } from '../typography';
 import { Portal } from '../portal/index.web';
 import { useInteractionState } from '../hooks/useInteractionState';
 import { createOverlayZIndex } from '../styles/z-index';
+import { bloomShadowStyle } from '../design-tokens/shadows';
 import { ItemCtx, useItemContext } from './context';
 import type {
   ContextMenuContextValue,
@@ -185,7 +186,7 @@ export function ContextMenuContent({ children, style }: ContextMenuContentProps)
               ? theme.colors.backgroundSecondary
               : theme.colors.background,
             borderColor: theme.colors.borderLight,
-            shadowColor: theme.colors.shadow,
+            ...bloomShadowStyle('m'),
           },
           style,
         ]}
@@ -341,9 +342,7 @@ const styles = StyleSheet.create({
     padding: 4,
     borderWidth: 1,
     overflow: 'hidden',
-    shadowOpacity: 0.15,
-    shadowRadius: 12,
-    shadowOffset: { width: 0, height: 4 },
+    // Overlay elevation applied at the usage site via `bloomShadowStyle('m')`.
     minWidth: 180,
     maxWidth: 280,
     // Opt back in from the Portal root's `pointer-events: none`.

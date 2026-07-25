@@ -3,6 +3,7 @@ import { Pressable, Animated, StyleSheet } from 'react-native';
 
 import { useTheme } from '../theme/use-theme';
 import { animation } from '../styles/tokens';
+import { bloomShadowStyle } from '../design-tokens/shadows';
 import type { SwitchProps } from './types';
 
 const TRACK = { default: { w: 44, h: 26 }, sm: { w: 36, h: 22 } } as const;
@@ -128,10 +129,8 @@ const styles = StyleSheet.create({
   },
   thumb: {
     backgroundColor: '#fff',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.15,
-    shadowRadius: 3,
-    elevation: 3,
+    // Subtle raise (`shadow-s`) — `boxShadow` on web (RN-Web deprecated `shadow*`),
+    // RN elevation/shadow on native.
+    ...bloomShadowStyle('s'),
   },
 });

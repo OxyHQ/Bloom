@@ -106,6 +106,62 @@ interface HeaderStore {
   subscribe: (listener: () => void) => () => void;
 }
 
+type PrimaryAction = NonNullable<DialogHeaderConfig['primaryAction']>;
+type HeaderAction = NonNullable<DialogHeaderConfig['actions']>[number];
+type HeaderSearch = NonNullable<DialogHeaderConfig['search']>;
+type HeaderSegments = NonNullable<DialogHeaderConfig['segments']>;
+type HeaderProgress = NonNullable<DialogHeaderConfig['progress']>;
+
+function primaryActionEqual(a: PrimaryAction | undefined, b: PrimaryAction | undefined): boolean {
+  if (a === b) return true;
+  if (!a || !b) return false;
+  // `onPress` is a fresh closure each render — its identity never changes what the
+  // button renders, so compare only the render-affecting scalars.
+  return a.label === b.label && !!a.disabled === !!b.disabled && !!a.loading === !!b.loading;
+}
+
+function actionsEqual(a: HeaderAction[] | undefined, b: HeaderAction[] | undefined): boolean {
+  if (a === b) return true;
+  if (!a || !b || a.length !== b.length) return false;
+  for (let i = 0; i < a.length; i += 1) {
+    const x = a[i];
+    const y = b[i];
+    if (!x || !y) return false;
+    // `icon` is a memoized node (compared by identity); `onPress` is ignored.
+    if (
+      x.accessibilityLabel !== y.accessibilityLabel ||
+      !!x.disabled !== !!y.disabled ||
+      x.icon !== y.icon
+    ) {
+      return false;
+    }
+  }
+  return true;
+}
+
+function searchEqual(a: HeaderSearch | undefined, b: HeaderSearch | undefined): boolean {
+  if (a === b) return true;
+  if (!a || !b) return false;
+  return a.value === b.value && a.placeholder === b.placeholder;
+}
+
+function segmentsEqual(a: HeaderSegments | undefined, b: HeaderSegments | undefined): boolean {
+  if (a === b) return true;
+  if (!a || !b || a.value !== b.value || a.items.length !== b.items.length) return false;
+  for (let i = 0; i < a.items.length; i += 1) {
+    const ai = a.items[i];
+    const bi = b.items[i];
+    if (!ai || !bi || ai.key !== bi.key || ai.label !== bi.label) return false;
+  }
+  return true;
+}
+
+function progressEqual(a: HeaderProgress | undefined, b: HeaderProgress | undefined): boolean {
+  if (a === b) return true;
+  if (!a || !b) return false;
+  return a.step === b.step && a.total === b.total;
+}
+
 function configsEqual(a: DialogHeaderConfig | null, b: DialogHeaderConfig | null): boolean {
   if (a === b) return true;
   if (!a || !b) return false;
@@ -116,16 +172,20 @@ function configsEqual(a: DialogHeaderConfig | null, b: DialogHeaderConfig | null
     a.largeTitle === b.largeTitle &&
     a.left === b.left &&
     a.right === b.right &&
-    a.onBack === b.onBack &&
+    // `onBack` legitimately gets a fresh closure each render; its identity never
+    // changes what the header renders, so compare by PRESENCE, never identity —
+    // treating a new ref as "changed" is exactly what drives the update loop.
+    !!a.onBack === !!b.onBack &&
     a.showClose === b.showClose &&
-    // Rich fields — object fields compared by identity (callers memoize them);
-    // `tone` is a plain value.
-    a.primaryAction === b.primaryAction &&
-    a.actions === b.actions &&
-    a.search === b.search &&
-    a.segments === b.segments &&
+    // Rich fields — compared by VALUE (render-affecting scalars only). A caller
+    // passing an inline `primaryAction`/`actions`/… object (a fresh reference
+    // every render) must NOT force a store update: that is React error #185.
     a.tone === b.tone &&
-    a.progress === b.progress
+    primaryActionEqual(a.primaryAction, b.primaryAction) &&
+    actionsEqual(a.actions, b.actions) &&
+    searchEqual(a.search, b.search) &&
+    segmentsEqual(a.segments, b.segments) &&
+    progressEqual(a.progress, b.progress)
   );
 }
 
@@ -474,28 +534,23 @@ export const DialogNavHeader = memo(function DialogNavHeader({
     ) : null);
 
   return (
-    <View
-      pointerEvents="box-none"
-      style={[styles.overlay, style]}
-    >
+    <View style={[styles.overlay, style, { pointerEvents: 'box-none' }]}>
       {/* Opaque (surface bg) at the top → transparent at the bottom, so scrolled
           content fades out under the bar. `onImage` swaps to a dark scrim so the
           chrome reads over media. Pure NativeWind — no SVG dependency. */}
       <View
-        pointerEvents="none"
         className={
           onImage
             ? 'bg-gradient-to-b from-black/60 to-transparent'
             : 'bg-gradient-to-b from-bg to-transparent'
         }
-        style={[StyleSheet.absoluteFill, { height: DIALOG_HEADER_OVERLAY_HEIGHT }]}
+        style={[StyleSheet.absoluteFill, { height: DIALOG_HEADER_OVERLAY_HEIGHT, pointerEvents: 'none' }]}
       />
-      <View pointerEvents="box-none" style={styles.navRow}>
+      <View style={[styles.navRow, { pointerEvents: 'box-none' }]}>
         <View style={styles.side}>{left}</View>
         <Animated.View
-          pointerEvents="none"
           testID="dialog-nav-title"
-          style={[styles.centerTitle, titleStyle]}
+          style={[styles.centerTitle, titleStyle, { pointerEvents: 'none' }]}
         >
           {config.titleContent ?? null}
           {!config.titleContent && config.title ? (

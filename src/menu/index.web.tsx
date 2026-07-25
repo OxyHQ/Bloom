@@ -17,6 +17,7 @@ import { Text } from '../typography';
 import type { DialogControlProps } from '../dialog/types';
 import { Portal } from '../portal/index.web';
 import { createDropdownZIndex } from '../styles/z-index';
+import { bloomShadowStyle } from '../design-tokens/shadows';
 import {
   MenuContext,
   ItemContext,
@@ -255,7 +256,7 @@ export function MenuContent({
               ? theme.colors.backgroundSecondary
               : theme.colors.background,
             borderColor: theme.colors.borderLight,
-            shadowColor: theme.colors.shadow,
+            ...bloomShadowStyle('m'),
           },
           style,
           styles.portaledDropdown,
@@ -393,9 +394,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     overflow: 'hidden',
     zIndex: menuZIndex.surface,
-    shadowOpacity: 0.15,
-    shadowRadius: 12,
-    shadowOffset: { width: 0, height: 4 },
+    // Overlay elevation applied at the usage site via `bloomShadowStyle('m')`.
     minWidth: 180,
   },
   portaledDropdown: {

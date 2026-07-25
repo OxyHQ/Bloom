@@ -5,6 +5,7 @@ import { useTheme } from '../theme/use-theme';
 import { Text } from '../typography';
 import { Portal } from '../portal/index.web';
 import { createOverlayZIndex } from '../styles/z-index';
+import { bloomShadowStyle } from '../design-tokens/shadows';
 import { RadioIndicator } from '../radio-indicator';
 import { useInteractionState } from '../hooks/useInteractionState';
 import {
@@ -201,7 +202,7 @@ export function SelectContent<T>({
               ? theme.colors.backgroundSecondary
               : theme.colors.background,
             borderColor: theme.colors.borderLight,
-            shadowColor: theme.colors.shadow,
+            ...bloomShadowStyle('m'),
           },
         ]}
       >
@@ -348,9 +349,7 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
     padding: 4,
     minWidth: 180,
-    shadowOpacity: 0.15,
-    shadowRadius: 12,
-    shadowOffset: { width: 0, height: 4 },
+    // Overlay elevation applied at the usage site via `bloomShadowStyle('m')`.
     // Opt back in from the Portal root's `pointer-events: none`.
     pointerEvents: 'auto',
   },

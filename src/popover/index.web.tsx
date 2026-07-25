@@ -12,6 +12,7 @@ import { Pressable, StyleSheet, View } from 'react-native';
 import { useTheme } from '../theme/use-theme';
 import { Portal } from '../portal/index.web';
 import { createOverlayZIndex } from '../styles/z-index';
+import { bloomShadowStyle } from '../design-tokens/shadows';
 import { PopoverContext, usePopoverContext } from './context';
 import type {
   PopoverContentProps,
@@ -288,7 +289,9 @@ export function PopoverContent({
               ? theme.colors.backgroundSecondary
               : theme.colors.background,
             borderColor: theme.colors.borderLight,
-            shadowColor: theme.colors.shadow,
+            // Design-system overlay elevation (`shadow-m`) as a `boxShadow` —
+            // RN-Web deprecated the `shadow*` style props.
+            ...bloomShadowStyle('m'),
             // Hide until measured to avoid a one-frame jump.
             opacity: panelSize ? 1 : 0,
           },
@@ -320,9 +323,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     paddingVertical: 4,
     overflow: 'hidden',
-    shadowOpacity: 0.15,
-    shadowRadius: 12,
-    shadowOffset: { width: 0, height: 4 },
+    // Elevation applied at the usage site via `bloomShadowStyle('m')` (boxShadow).
     pointerEvents: 'auto',
   },
 });
