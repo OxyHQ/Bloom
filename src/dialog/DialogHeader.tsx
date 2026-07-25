@@ -34,7 +34,9 @@ import {
   SegmentedControlItem,
   SegmentedControlItemText,
 } from '../segmented-control';
-import { Menu, MenuContent, MenuGroup, MenuItem, MenuItemText, MenuTrigger } from '../menu';
+import { Popover, PopoverContent, PopoverTrigger } from '../popover';
+import { Item } from '../item';
+import { useDialogControl } from './context';
 import { useTheme } from '../theme/use-theme';
 import { H1, Text } from '../typography';
 import type { DialogHeaderConfig } from './types';
@@ -238,9 +240,58 @@ function useMergedHeaderConfig(
 // --- Rich header sub-parts --------------------------------------------------
 
 /**
+ * The "more" overflow: a Bloom `Popover` that DROPS from the ⋯ trigger — anchored
+ * under the button on web (measured trigger + `bottom-end` placement) and a bottom
+ * sheet on native, matching how top libraries present a toolbar overflow (Radix
+ * DropdownMenu / Material Menu on desktop, an action sheet on mobile). Items are
+ * Bloom `Item` rows; pressing one closes the popover before firing.
+ */
+function HeaderOverflowMenu({
+  items,
+  onImage,
+}: {
+  items: NonNullable<DialogHeaderConfig['actions']>;
+  onImage: boolean;
+}): React.ReactElement {
+  // Own the control so an item press can close the popover before acting.
+  const control = useDialogControl();
+  return (
+    <Popover control={control}>
+      <PopoverTrigger label="More">
+        {({ props }) => (
+          <FrostedIconButton
+            size="sm"
+            onPress={props.onPress}
+            accessibilityLabel={props.accessibilityLabel}
+            icon={
+              <DotGrid3x1_Stroke2_Corner0_Rounded
+                size="md"
+                fill={onImage ? ON_IMAGE_TEXT : undefined}
+              />
+            }
+          />
+        )}
+      </PopoverTrigger>
+      <PopoverContent label="More actions" placement="bottom-end">
+        {items.map((action) => (
+          <Item
+            key={action.accessibilityLabel}
+            title={action.accessibilityLabel}
+            leading={action.icon}
+            density="compact"
+            disabled={action.disabled}
+            onPress={() => control.close(() => action.onPress())}
+          />
+        ))}
+      </PopoverContent>
+    </Popover>
+  );
+}
+
+/**
  * Trailing icon `actions`: the first {@link DIALOG_HEADER_MAX_INLINE_ACTIONS}
  * render inline as frosted circles; any surplus collapses into a "more" overflow
- * menu (Material pattern) built on Bloom's `Menu` — never a hand-rolled popover.
+ * that drops from the ⋯ ({@link HeaderOverflowMenu}) — never hand-rolled.
  */
 function HeaderTrailingActions({
   actions,
@@ -266,39 +317,7 @@ function HeaderTrailingActions({
           accessibilityLabel={action.accessibilityLabel}
         />
       ))}
-      {overflow.length > 0 ? (
-        <Menu>
-          <MenuTrigger label="More">
-            {({ props }) => (
-              <FrostedIconButton
-                size="sm"
-                onPress={props.onPress}
-                accessibilityLabel={props.accessibilityLabel}
-                icon={
-                  <DotGrid3x1_Stroke2_Corner0_Rounded
-                    size="md"
-                    fill={onImage ? ON_IMAGE_TEXT : undefined}
-                  />
-                }
-              />
-            )}
-          </MenuTrigger>
-          <MenuContent>
-            <MenuGroup>
-              {overflow.map((action) => (
-                <MenuItem
-                  key={action.accessibilityLabel}
-                  label={action.accessibilityLabel}
-                  onPress={action.onPress}
-                  disabled={action.disabled}
-                >
-                  <MenuItemText>{action.accessibilityLabel}</MenuItemText>
-                </MenuItem>
-              ))}
-            </MenuGroup>
-          </MenuContent>
-        </Menu>
-      ) : null}
+      {overflow.length > 0 ? <HeaderOverflowMenu items={overflow} onImage={onImage} /> : null}
     </>
   );
 }
@@ -533,8 +552,12 @@ export const DialogLargeTitle = memo(function DialogLargeTitle({
   };
 
   if (!hasLargeTitle && !hasExtras) {
-    // No large title and no extras: just inset the content below the nav bar.
-    return <View style={{ height: DIALOG_NAV_BAR_HEIGHT }} />;
+    // Pure content (no header chrome to render in-flow). Under `tone: 'onImage'`
+    // the content is media (a banner / photo canvas), so it slides UP under the
+    // translucent nav bar — the bar FLOATS over the media, immersive at rest (the
+    // standard iOS large-title-over-photo / Material collapsing-toolbar pattern).
+    // Default tone keeps the nav-bar-height inset so content clears the bar.
+    return onImage ? null : <View style={{ height: DIALOG_NAV_BAR_HEIGHT }} />;
   }
 
   return (
