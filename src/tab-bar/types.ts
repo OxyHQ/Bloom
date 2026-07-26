@@ -19,9 +19,12 @@ export type TabBarItem = {
   /** Text under the icon; fades out and is clipped when the bar minimizes. */
   label: string;
   /**
-   * The glyph, as a Bloom icon element (`<Icons.Home />`) or any node. This is
-   * the primary icon API — same convention as `Tabs`/`TabsTrigger` and
-   * `FrostedIconButton`. The bar renders it TWICE (an inactive layer with the
+   * The glyph, as a Bloom icon element (`<Icons.Home_Stroke2_Corner0_Rounded />`)
+   * or any node. Every `@oxyhq/bloom/icons` export carries its full style and
+   * corner suffix; a shortened `Home` is not an export, and a name that does not
+   * exist is simply `undefined`, which React then rejects as an invalid element
+   * type. This is the primary icon API — same convention as `Tabs`/`TabsTrigger`
+   * and `FrostedIconButton`. The bar renders it TWICE (an inactive layer with the
    * active layer crossfading on top), injecting the layer's tint as the icon's
    * `fill` unless the element already sets one.
    */

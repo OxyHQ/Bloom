@@ -36,7 +36,7 @@ Drive it like any controlled component: pass `activeIndex`, handle `onIndexChang
 
 ```tsx
 import { useState } from 'react';
-import { Icons } from '@oxyhq/bloom/icons';
+import * as Icons from '@oxyhq/bloom/icons';
 import { TabBar, TabBarButton, TabBarMinimizeProvider } from '@oxyhq/bloom/tab-bar';
 
 const TABS = [
@@ -66,7 +66,7 @@ export function Shell() {
 ## Usage with expo-router
 
 ```tsx
-import { Icons } from '@oxyhq/bloom/icons';
+import * as Icons from '@oxyhq/bloom/icons';
 import { TabBarMinimizeProvider } from '@oxyhq/bloom/tab-bar';
 import {
   RouterTabBar,
