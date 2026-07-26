@@ -1084,8 +1084,8 @@
     "typescript": "tsc --noEmit",
     "pretypescript": "node scripts/generate-font-data.mjs",
     "clean": "rm -rf lib",
-    "prepack": "bun run clean && bunx bob build",
-    "prepare": "bob build || true",
+    "prepack": "bun run clean && bun run build",
+    "prepare": "bun run build || true",
     "release": "rm -rf lib && bun run build && release-it",
     "storybook": "storybook dev -p 6006 --no-open",
     "storybook:build": "storybook build -o storybook-static"
