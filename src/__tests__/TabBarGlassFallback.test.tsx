@@ -192,9 +192,10 @@ describe('TabBarSurface (native) — degrading when glass is unusable', () => {
   });
 
   it('renders glass on a version that predates isGlassEffectAPIAvailable', () => {
-    // The peer floor is `>=0.1.5`, which exports no API probe at all. A missing
-    // probe means "not applicable", never "unavailable" — treating it as the
-    // latter would delete the glass look on every version below 56.
+    // The probe first shipped in 0.1.9, so the `>=0.1.9` peer floor guarantees it
+    // — but a peer range only WARNS, so a consumer can still resolve an older
+    // copy. A missing probe means "not applicable", never "unavailable"; treating
+    // it as the latter would delete the glass look on every working device.
     expect(
       hosts(
         renderNativeSurface({ GlassView: GLASS_HOST, isLiquidGlassAvailable: () => true }),

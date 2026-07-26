@@ -198,17 +198,23 @@ describe('tab-bar published surface', () => {
     expect(entry?.browser).toBeUndefined();
   });
 
-  it('declares the two Apple-only native peers OPTIONAL, keeping their ranges', () => {
-    // `expo-glass-effect` and `expo-symbols` both declare `"platforms": ["apple"]`
-    // — their native modules exist on Apple platforms only, and nothing outside
-    // `tab-bar/surface.native` / `tab-bar/glyph.native` reaches them. Required
-    // peers would oblige every consumer that never renders a tab bar (every web
-    // app included) to install two Apple-only packages. The RANGE still has to be
-    // declared: a native bundle imports both statically, so an installed version
-    // that predates those exports is a real incompatibility.
+  it('declares the two Apple-only native peers REQUIRED, keeping their ranges', () => {
+    // `expo-glass-effect` and `expo-symbols` are imported STATICALLY, by
+    // `tab-bar/surface.native` and `tab-bar/glyph.native`. That is what settles
+    // this: optional means "you may omit this", but omitting it does not degrade
+    // — the native bundle fails to RESOLVE the specifier and the build dies. An
+    // optional peer plus a static import is an incoherent pair, and the only
+    // thing marking them optional would achieve is silencing the one warning
+    // that tells a consumer their build is about to break. Declared the same way
+    // `expo-blur` already is, for the same reason.
+    //
+    // The RANGE carries the second half: both files import symbols that arrived
+    // after 1.0 — `isGlassEffectAPIAvailable` first shipped in
+    // expo-glass-effect 0.1.9 — so an older installed copy is a real
+    // incompatibility, not merely an absent one.
     for (const peer of ['expo-glass-effect', 'expo-symbols']) {
       expect(pkg.peerDependencies[peer]).toMatch(/^>=\d/);
-      expect(pkg.peerDependenciesMeta[peer]?.optional).toBe(true);
+      expect(pkg.peerDependenciesMeta[peer]).toBeUndefined();
     }
   });
 

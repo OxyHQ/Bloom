@@ -34,8 +34,13 @@
  *
  * `isGlassEffectAPIAvailable()` is upstream's own third condition: on some iOS 26
  * betas `UIGlassEffect` is missing and touching `GlassView` crashes NATIVELY,
- * below JS (expo/expo#40911). It postdates the `>=0.1.5` peer floor, so a missing
- * probe means "not applicable", never "unavailable".
+ * below JS (expo/expo#40911). It first shipped in expo-glass-effect 0.1.9, which is
+ * exactly why the peer floor is `>=0.1.9`: this file imports the symbol STATICALLY,
+ * and a floor predating it would be the same incoherence as declaring a
+ * statically-imported package optional. The `typeof` guard below is still not
+ * redundant — a peer range only WARNS, so a consumer can resolve an older copy
+ * anyway. A missing probe therefore means "not applicable", never "unavailable";
+ * reading it the other way would delete the glass look from every working device.
  *
  * Everything that fails routes to the SAME solid surface Android already paints —
  * the intended fallback path, not a new one.

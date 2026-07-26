@@ -1,6 +1,6 @@
 {
   "name": "@oxyhq/bloom",
-  "version": "0.51.0",
+  "version": "0.51.1",
   "description": "Bloom UI — Oxy ecosystem component library for React Native + Expo + Web",
   "main": "lib/commonjs/index.js",
   "module": "lib/module/index.js",
@@ -1189,7 +1189,7 @@
     "expo": "*",
     "expo-blur": "*",
     "expo-font": "*",
-    "expo-glass-effect": ">=0.1.5",
+    "expo-glass-effect": ">=0.1.9",
     "expo-haptics": "*",
     "expo-image": "*",
     "expo-router": ">=3.0.0",
@@ -1211,16 +1211,10 @@
     "expo-font": {
       "optional": true
     },
-    "expo-glass-effect": {
-      "optional": true
-    },
     "expo-haptics": {
       "optional": true
     },
     "expo-router": {
-      "optional": true
-    },
-    "expo-symbols": {
       "optional": true
     },
     "react-dom": {
