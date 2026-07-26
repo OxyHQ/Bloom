@@ -21,6 +21,7 @@ import { RemoveScrollBar } from 'react-remove-scroll-bar';
 
 import { Portal } from '../portal/index.web';
 import { createOverlayZIndex } from '../styles/z-index';
+import { WEB_POSITION_FIXED } from '../styles/web-view-style';
 import { bloomShadowStyle } from '../design-tokens/shadows';
 import { useTheme } from '../theme/use-theme';
 import { Context, useDialogContext, useDialogControl } from './context';
@@ -304,7 +305,7 @@ function CenterOrSideDialog({
               // `pointer-events: none`, which is set so the idle portal
               // doesn't intercept clicks on the underlying app.
               style={{
-                position: 'fixed' as 'absolute',
+                position: WEB_POSITION_FIXED,
                 top: 0,
                 left: 0,
                 right: 0,
@@ -790,7 +791,7 @@ function cancelFrame(token: FrameToken): void {
 function DialogBackdrop({ isClosing }: { isClosing: boolean }) {
   const style: ViewStyle[] = [
     {
-      position: 'fixed' as 'absolute',
+      position: WEB_POSITION_FIXED,
       top: 0,
       left: 0,
       right: 0,
@@ -843,7 +844,7 @@ const sheetStyles = {
   // the per-layer `createOverlayZIndex(layer)` in `SheetSurface`, so a side
   // dialog stacked on top of another (surface stack) paints above it.
   root: {
-    position: 'fixed' as 'absolute',
+    position: WEB_POSITION_FIXED,
     top: 0,
     left: 0,
     right: 0,

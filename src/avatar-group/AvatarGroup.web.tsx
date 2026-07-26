@@ -3,6 +3,7 @@ import { Pressable, StyleSheet, View } from 'react-native';
 
 import { Portal } from '../portal';
 import { Z_INDEX } from '../styles/z-index';
+import { WEB_POSITION_FIXED } from '../styles/web-view-style';
 import { UserHoverCard } from '../user-hover-card';
 import {
   AvatarGroupBase,
@@ -133,7 +134,7 @@ const AvatarGroupWebComponent: React.FC<AvatarGroupProps> = (props) => {
 
 const webStyles = StyleSheet.create({
   floating: {
-    position: 'fixed' as 'absolute',
+    position: WEB_POSITION_FIXED,
     zIndex: Z_INDEX.tooltip,
   },
   card: {

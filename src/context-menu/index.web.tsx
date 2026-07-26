@@ -20,6 +20,7 @@ import { Text } from '../typography';
 import { Portal } from '../portal/index.web';
 import { useInteractionState } from '../hooks/useInteractionState';
 import { createOverlayZIndex } from '../styles/z-index';
+import { WEB_POSITION_FIXED } from '../styles/web-view-style';
 import { bloomShadowStyle } from '../design-tokens/shadows';
 import { ItemCtx, useItemContext } from './context';
 import type {
@@ -326,7 +327,7 @@ export function ContextMenuDivider() {
 
 const styles = StyleSheet.create({
   backdrop: {
-    position: 'fixed' as 'absolute',
+    position: WEB_POSITION_FIXED,
     top: 0,
     left: 0,
     right: 0,
@@ -336,7 +337,7 @@ const styles = StyleSheet.create({
     pointerEvents: 'auto',
   },
   dropdown: {
-    position: 'fixed' as 'absolute',
+    position: WEB_POSITION_FIXED,
     zIndex: contextMenuZIndex.surface,
     borderRadius: 8,
     padding: 4,

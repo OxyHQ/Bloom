@@ -17,6 +17,7 @@ import { Text } from '../typography';
 import type { DialogControlProps } from '../dialog/types';
 import { Portal } from '../portal/index.web';
 import { createDropdownZIndex } from '../styles/z-index';
+import { WEB_POSITION_FIXED } from '../styles/web-view-style';
 import { bloomShadowStyle } from '../design-tokens/shadows';
 import {
   MenuContext,
@@ -222,7 +223,7 @@ export function MenuContent({
       );
 
       setPosition({
-        position: 'fixed' as 'absolute',
+        position: WEB_POSITION_FIXED,
         top,
         left,
         right: undefined,

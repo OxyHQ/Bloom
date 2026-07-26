@@ -1,9 +1,10 @@
 import type React from 'react';
 import { forwardRef } from 'react';
-import { StyleSheet, type ViewStyle } from 'react-native';
+import { StyleSheet } from 'react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { Portal } from '../portal/index.web';
 import { Z_INDEX } from '../styles/z-index';
+import { WEB_POSITION_FIXED } from '../styles/web-view-style';
 import {
     BottomSheetBase,
     type BottomSheetProps,
@@ -52,7 +53,7 @@ const webStyles = StyleSheet.create({
         // the sheet's own interactive descendants (backdrop, sheet) while empty
         // gaps stay click-through (`box-none`). `StyleSheet.absoluteFill` from
         // the sheet body then anchors to this box.
-        position: 'fixed' as ViewStyle['position'],
+        position: WEB_POSITION_FIXED,
         top: 0,
         left: 0,
         right: 0,

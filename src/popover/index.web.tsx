@@ -12,6 +12,7 @@ import { Pressable, StyleSheet, View } from 'react-native';
 import { useTheme } from '../theme/use-theme';
 import { Portal } from '../portal/index.web';
 import { createOverlayZIndex } from '../styles/z-index';
+import { WEB_POSITION_FIXED } from '../styles/web-view-style';
 import { bloomShadowStyle } from '../design-tokens/shadows';
 import { PopoverContext, usePopoverContext } from './context';
 import type {
@@ -308,7 +309,7 @@ const styles = StyleSheet.create({
     alignSelf: 'flex-start',
   },
   backdrop: {
-    position: 'fixed' as 'absolute',
+    position: WEB_POSITION_FIXED,
     top: 0,
     left: 0,
     right: 0,
@@ -317,7 +318,7 @@ const styles = StyleSheet.create({
     pointerEvents: 'auto',
   },
   panel: {
-    position: 'fixed' as 'absolute',
+    position: WEB_POSITION_FIXED,
     zIndex: popoverZIndex.surface,
     borderRadius: 12,
     borderWidth: 1,

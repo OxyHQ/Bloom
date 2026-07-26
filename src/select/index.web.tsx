@@ -5,6 +5,7 @@ import { useTheme } from '../theme/use-theme';
 import { Text } from '../typography';
 import { Portal } from '../portal/index.web';
 import { createOverlayZIndex } from '../styles/z-index';
+import { WEB_POSITION_FIXED } from '../styles/web-view-style';
 import { bloomShadowStyle } from '../design-tokens/shadows';
 import { RadioIndicator } from '../radio-indicator';
 import { useInteractionState } from '../hooks/useInteractionState';
@@ -332,7 +333,7 @@ const styles = StyleSheet.create({
     fontSize: 16,
   },
   backdrop: {
-    position: 'fixed' as 'absolute',
+    position: WEB_POSITION_FIXED,
     top: 0,
     left: 0,
     right: 0,

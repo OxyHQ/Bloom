@@ -12,6 +12,7 @@ import React, {
 } from 'react';
 import { View, StyleSheet, Platform } from 'react-native';
 import { Z_INDEX } from '../styles/z-index';
+import { WEB_POSITION_FIXED } from '../styles/web-view-style';
 
 type Component = React.ReactElement;
 
@@ -114,8 +115,10 @@ export const Outlet = memo(DefaultPortal.Outlet);
 export const Portal = DefaultPortal.Portal;
 
 const styles = StyleSheet.create({
+  // Applied only from the `Platform.OS === 'web'` branch of `Outlet`, which is
+  // why the web-only `position` value is honest in this universal file.
   portalOutlet: {
-    position: 'fixed' as 'absolute',
+    position: WEB_POSITION_FIXED,
     top: 0,
     left: 0,
     right: 0,
