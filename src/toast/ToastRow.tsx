@@ -26,12 +26,15 @@
  * subscription for the whole stack (upstream creates one per row, so N toasts
  * meant N `visibilitychange` listeners).
  *
- * THE ENTER ANIMATION IS IMPERATIVE, THE EXIT IS A LAYOUT ANIMATION. `rowStyle`
- * below fades and slides the row in from `enterTranslateY`; only `exiting` is
- * handed to reanimated. Moving the enter back onto `entering` reintroduces a
- * blocker where reanimated's web layout-animation cleanup freezes the row in
- * viewport coordinates and a later toast draws on top of it — the full mechanism
- * is documented in `animations.ts`.
+ * THE EXIT IS ALWAYS A LAYOUT ANIMATION; THE ENTER DEPENDS ON THE PLATFORM.
+ * `animations.ts` returns EITHER an `entering` builder (native, and any consumer
+ * override) OR an `enterTranslateY` for `rowStyle` below to fade and slide the row
+ * in imperatively (web default) — never both. When `enterTranslateY` is
+ * `undefined`, `enterProgress` is seeded at 1 and `rowStyle` collapses to the
+ * wiggle scale alone, so nothing here competes with `entering`. Both halves of
+ * that split are load-bearing and neither may be "simplified" into the other:
+ * `animations.ts` documents the web pin that forbids `entering` on web and the
+ * native regression that forbids the imperative driver on native.
  */
 import * as React from 'react';
 import {
@@ -239,9 +242,9 @@ export const ToastRow = React.forwardRef<ToastRef, ToastRowProps>(
       [yPosition, stackScaleX],
     );
 
-    // 0 -> 1 over the enter animation. Seeded at 1 (no animation) when a consumer
-    // supplied their own `entering` builder or reduced motion is on, in which case
-    // `enterTranslateY` is undefined and this style is the identity.
+    // 0 -> 1 over the enter animation. Seeded at 1 with NO mount-time `withTiming`
+    // whenever `enterTranslateY` is undefined — i.e. whenever `entering` is playing
+    // the enter instead, or reduced motion is on — leaving this style the identity.
     const enterProgress = useAnimatedTarget(1, {
       duration: ENTERING_ANIMATION_DURATION,
       easing: easeOutQuartFn,
