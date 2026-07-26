@@ -112,7 +112,10 @@ export type { UserHoverCardProps, UserHoverCardStat } from './user-hover-card';
 export * from './loading';
 export * from './prompt-input';
 export * from './switch';
-export { toast, type Toast } from './toast';
+// `ToastOutlet` is a required app-root mount, like `BloomDialogProvider` and
+// `SurfaceHost`. The full engine surface lives at `@oxyhq/bloom/toast`.
+export { toast, ToastOutlet } from './toast';
+export type { ToastFn, ToastOptions, ToastType } from './toast';
 
 // Typography
 export * as Typography from './typography';

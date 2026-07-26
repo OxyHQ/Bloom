@@ -50,6 +50,9 @@ const Reanimated = {
     exp: (t: number) => t,
     ease: (t: number) => t,
     bezier: () => (t: number) => t,
+    // `bezierFn` returns the easing function directly (no `.factory()` hop).
+    bezierFn: () => (t: number) => t,
+    elastic: () => (t: number) => t,
   },
   default: {
     View: 'Animated.View',
@@ -89,6 +92,32 @@ export const SlideInLeft = makeLayoutBuilder();
 export const SlideInRight = makeLayoutBuilder();
 export const SlideOutLeft = makeLayoutBuilder();
 export const SlideOutRight = makeLayoutBuilder();
+// Layout transitions share the builder shape (`.easing()`, `.duration()`, …).
+export const LinearTransition = makeLayoutBuilder();
+
+// `Keyframe` is a real class upstream (`ReanimatedKeyframe`) whose configurators
+// mutate and return the instance — which is why callers must cache one instance
+// per animation shape rather than reusing a shared definition object. The mock
+// keeps `definitions` readable so tests can assert what was built.
+export class Keyframe {
+  definitions: Record<string, Record<string, unknown>>;
+  durationMs: number | undefined;
+  delayMs: number | undefined;
+
+  constructor(definitions: Record<string, Record<string, unknown>>) {
+    this.definitions = definitions;
+  }
+
+  duration(ms: number): this {
+    this.durationMs = ms;
+    return this;
+  }
+
+  delay(ms: number): this {
+    this.delayMs = ms;
+    return this;
+  }
+}
 
 export const useSharedValue = Reanimated.useSharedValue;
 export const useDerivedValue = Reanimated.useDerivedValue;

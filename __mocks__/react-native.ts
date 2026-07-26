@@ -182,6 +182,28 @@ export const Appearance = {
   }),
 };
 
+// `AppState` is consulted by the toast engine to pause/resume auto-close timers
+// when the app (or browser tab) is backgrounded. `isAvailable` mirrors the real
+// module's flag — the engine guards on it because RN-Web reports it false during
+// prerender/SSR.
+export const AppState: {
+  currentState: 'active' | 'background' | 'inactive';
+  isAvailable: boolean;
+  addEventListener: (
+    event: string,
+    handler: (state: 'active' | 'background' | 'inactive') => void,
+  ) => { remove: () => void };
+} = {
+  currentState: 'active',
+  isAvailable: true,
+  addEventListener: (
+    _event: string,
+    _handler: (state: 'active' | 'background' | 'inactive') => void,
+  ) => ({
+    remove: jest.fn(),
+  }),
+};
+
 export const AccessibilityInfo = {
   isReduceMotionEnabled: () => Promise.resolve(false),
   addEventListener: (_event: string, _handler: (value: boolean) => void) => ({

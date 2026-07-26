@@ -11,9 +11,12 @@ const gestureBuilder = () => {
     manualActivation: () => builder,
     activeOffsetY: () => builder,
     activeOffsetX: () => builder,
+    onBegin: () => builder,
     onStart: () => builder,
     onUpdate: () => builder,
+    onChange: () => builder,
     onEnd: () => builder,
+    onFinalize: () => builder,
     onTouchesDown: () => builder,
     onTouchesMove: () => builder,
     onTouchesUp: () => builder,
@@ -24,7 +27,10 @@ const gestureBuilder = () => {
 
 export const Gesture = {
   Pan: gestureBuilder,
+  Tap: gestureBuilder,
   Native: gestureBuilder,
+  // A composed gesture is itself chainable, so return a builder too.
+  Race: (..._gestures: unknown[]) => gestureBuilder(),
 };
 
 export const GestureDetector = ({ children }: { children: React.ReactNode }) => children;

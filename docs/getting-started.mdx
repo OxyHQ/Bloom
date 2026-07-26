@@ -12,17 +12,11 @@ order: 1
 bun add @oxyhq/bloom
 ```
 
-Install the optional peer dependencies you'll use. For the full dialog/sheet
-experience on native:
+Install the peer dependencies. The same set covers native and web — Bloom's
+overlays and its toast engine run on react-native-web:
 
 ```sh
-bun add react-native-gesture-handler react-native-reanimated react-native-safe-area-context react-native-svg sonner-native
-```
-
-On web:
-
-```sh
-bun add sonner
+bun add react-native-gesture-handler react-native-reanimated react-native-safe-area-context react-native-svg
 ```
 
 ## 2. Wrap your app root

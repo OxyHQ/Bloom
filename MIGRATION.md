@@ -1,5 +1,67 @@
 # Migration Guide
 
+## 0.51.0 — Bloom owns its toast engine
+
+`sonner` and `sonner-native` are **no longer dependencies of Bloom** (nor is `nanoid`).
+The toast is now Bloom's own universal engine — one implementation on native and on
+web via react-native-web — derived from `sonner-native` v0.26.4 (MIT, see `NOTICE`).
+
+**Action for every consumer:** remove `sonner` and `sonner-native` from your
+`package.json`, delete any local `lib/sonner.ts` / `components/sonner` shim, and
+import from `@oxyhq/bloom/toast` (or `toast` from the root barrel). Apps that mount
+`OxyProvider` already get a `<ToastOutlet />` and must **not** mount a second one —
+two outlets render every toast twice, at two positions.
+
+### Removed exports
+
+| Removed | Replacement |
+|---------|-------------|
+| `show` | `toast` (same call signature) |
+| `api` | `toast` — the engine has no separate escape hatch |
+| `DURATION` | `toastDefaults.duration` |
+| `type Toast` | `type ToastFn` |
+| `type BaseToastOptions` | `type ToastOptions` |
+| `Outer`, `Icon`, `Text`, `Action`, `ToastConfigProvider` | `toast.custom(<YourRow />)` |
+
+### Behaviour changes
+
+- **`toast()` and every method now return the toast's id**, so the documented
+  `const id = toast(…); toast.dismiss(id)` finally works. They used to return `void`.
+- **The default position is now `bottom-center`** (it was `top-center` on native and
+  `bottom-left` on web). `mobileOffset` and `position="bottom-left"` no longer exist:
+  `ToastPosition` is `'top-center' | 'bottom-center' | 'center'`. Use `offset` or
+  `positionerStyle` to adjust geometry.
+- **`type: 'default'` renders a neutral toast** — no icon, no tint. Previously an
+  unqualified `toast('Saved')` picked up `info` styling.
+- **`ToastType` gained `'loading'`**, alongside a new `toast.loading()`.
+- **`onDismiss` / `onAutoClose` now receive the toast id** (`(id) => void`). Existing
+  zero-argument handlers keep working.
+- **`action`, `cancel`, `description` and `closeButton` now render on native.** Bloom
+  used to funnel every toast through `custom()`, which silently dropped them — an
+  "Undo" button worked on web and was dead on native.
+- `theme` and `invert` are accepted but documented no-ops; light/dark belongs to
+  `BloomThemeProvider`, per-subtree recolouring to `BloomColorScope`.
+
+### Peer dependency changes
+
+- **`react-native-svg` is now a required peer** (it was optional). Bloom's icons —
+  including the toast's variant icons — render through it.
+- `react-native-reanimated >= 3.13` — **derived**: 3.13.0 is where reanimated's web
+  `Keyframe` layout-animation support (`createCustomKeyFrameAnimation`) lands, which the
+  toast's enter/exit relies on. Every identifier the engine imports exists from 3.5.0,
+  so the keyframe machinery is the binding constraint. Verified by checking the
+  published tarballs of 3.0–3.19; Bloom itself is built and tested against 4.2.2.
+- `react-native-gesture-handler >= 2.16.1` — **inherited, not derived**: the API the
+  engine uses is available from 2.5.0 (`.onChange` on the Pan builder; `Gesture.Race`
+  from 2.0.0). 2.16.1 is the floor sonner-native's authors validated their gesture code
+  against, and gesture *behaviour* is the one part of this engine that cannot be
+  verified by checking whether an identifier exists. Lower it deliberately if you have
+  reason to; do not assume it was measured.
+- Reanimated and gesture-handler are now imported **on web too**, because the toast
+  engine runs on react-native-web. They have been required peers since 0.18.1; the
+  README's older "web never imports reanimated" note was already inaccurate and is
+  now removed.
+
 ## 0.18.1 — `react-native-reanimated` + `react-native-gesture-handler` are now required peers
 
 These two were previously declared as **optional** peer dependencies, but Bloom's core

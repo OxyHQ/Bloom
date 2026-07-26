@@ -1,0 +1,221 @@
+/**
+ * Derived from sonner-native v0.26.4 — src/animations.ts, src/animation-utils.ts
+ * and src/easings.ts (MIT © Gunnar Torfi Steinarsson). See the top-level NOTICE.
+ *
+ * W1 — THE DEFAULTS ARE `Keyframe` INSTANCES, NOT WORKLET BUILDERS.
+ *
+ * Upstream returns a custom `EntryExitAnimationFunction` from
+ * `useToastLayoutAnimations`. On web that produces NO animation at all:
+ * reanimated's web layout-animation manager looks the builder up by preset name,
+ * finds none, logs a warning per toast and falls through to `makeElementVisible`,
+ * so a toast simply appears and disappears. A `ReanimatedKeyframe` compiles to a
+ * real CSS `@keyframes` rule on web and to the same interpolation on native, so
+ * one definition covers both platforms.
+ *
+ * Consumer-supplied *predefined* builders (`FadeIn`, `SlideInUp`, a `Keyframe`)
+ * keep working on both platforms. A consumer's own custom worklet builder still
+ * animates on native and is silently ignored on web — that is a reanimated
+ * limitation, not something Bloom can bridge.
+ *
+ * Instances are cached per animation shape because building one is not free and,
+ * more importantly, because `Keyframe.parseDefinitions()` MUTATES the definition
+ * object it was constructed with (it rewrites `from`/`to` into `0`/`100` and
+ * deletes them). Each cached instance therefore owns its own definition object;
+ * sharing one definition across two instances would make the second throw
+ * "Please provide 0 or 'from' keyframe". Re-parsing a single instance is
+ * idempotent, so one instance is safely shared by every row of the same shape.
+ */
+import {
+  Easing,
+  Keyframe,
+  useReducedMotion,
+  type ReanimatedKeyframe,
+} from 'react-native-reanimated';
+
+import { ENTERING_ANIMATION_DURATION, toastDefaults } from './constants';
+import { useToastContext } from './context';
+import type {
+  ToastAnimation,
+  ToastEntryExitAnimation,
+  ToastPosition,
+} from './types';
+
+/**
+ * `Easing.bezier()` (not `bezierFn`) returns an easing *factory*, which is what
+ * `Keyframe` accepts on both platforms — reanimated's dev-only worklet assertion
+ * short-circuits on the `.factory` property, so these pass without the worklets
+ * babel plugin too.
+ */
+const EASE_OUT_QUART = Easing.bezier(0.165, 0.84, 0.44, 1);
+const EASE_IN_OUT_CUBIC = Easing.bezier(0.645, 0.045, 0.355, 1);
+
+/** Worklet-callable easing for `withTiming` inside mappers and layout transitions. */
+export const easeOutQuartFn = Easing.bezierFn(0.165, 0.84, 0.44, 1);
+export const easeInOutCircFn = Easing.bezierFn(0.785, 0.135, 0.15, 0.86);
+
+/** How far a row travels on the way in, per position. */
+const ENTER_TRANSLATE_Y: Record<ToastPosition, number> = {
+  'top-center': -20,
+  'bottom-center': 50,
+  center: 50,
+};
+
+/** A lone row leaves the screen entirely; a stacked one only slides by `stackGap`. */
+const EXIT_TRANSLATE_Y_SINGLE = 150;
+
+/**
+ * Bounded so an animated `gap` cannot grow the cache without limit. The natural
+ * key space is 3 enter shapes + 3 positions x hidden x single x one stackGap = 15
+ * entries, so this leaves room for a few gap values while staying O(1) memory.
+ */
+export const MAX_CACHED_ANIMATIONS = 32;
+
+const animationCache = new Map<string, ReanimatedKeyframe>();
+
+function cachedAnimation(
+  key: string,
+  build: () => ReanimatedKeyframe,
+): ReanimatedKeyframe {
+  const hit = animationCache.get(key);
+  if (hit) {
+    return hit;
+  }
+
+  if (animationCache.size >= MAX_CACHED_ANIMATIONS) {
+    // Map iterates in insertion order, so this evicts the least recently added.
+    const oldest = animationCache.keys().next();
+    if (!oldest.done) {
+      animationCache.delete(oldest.value);
+    }
+  }
+
+  const built = build();
+  animationCache.set(key, built);
+  return built;
+}
+
+/** Exported so the bounded-growth invariant above is testable. */
+export function toastAnimationCacheSize(): number {
+  return animationCache.size;
+}
+
+export function getToastEnterAnimation(
+  position: ToastPosition,
+): ReanimatedKeyframe {
+  return cachedAnimation(
+    `enter|${position}`,
+    () =>
+      new Keyframe({
+        from: {
+          opacity: 0,
+          transform: [{ translateY: ENTER_TRANSLATE_Y[position] }],
+        },
+        to: {
+          opacity: 1,
+          transform: [{ translateY: 0 }],
+          easing: EASE_OUT_QUART,
+        },
+      }).duration(ENTERING_ANIMATION_DURATION),
+  );
+}
+
+export function getToastExitAnimation({
+  position,
+  isHiddenByLimit,
+  isSingle,
+  stackGap,
+}: {
+  position: ToastPosition;
+  isHiddenByLimit: boolean;
+  isSingle: boolean;
+  stackGap: number;
+}): ReanimatedKeyframe {
+  return cachedAnimation(
+    `exit|${position}|${isHiddenByLimit}|${isSingle}|${stackGap}`,
+    () => {
+      // A row culled by `visibleToasts` is buried under the stack; sliding it
+      // would look wrong, so it only fades.
+      if (isHiddenByLimit) {
+        return new Keyframe({
+          from: { opacity: 1 },
+          to: { opacity: 0, easing: EASE_IN_OUT_CUBIC },
+        }).duration(ENTERING_ANIMATION_DURATION);
+      }
+
+      const distance = isSingle ? EXIT_TRANSLATE_Y_SINGLE : stackGap;
+      const translateY = position === 'top-center' ? -distance : distance;
+
+      return (
+        new Keyframe({
+          from: { opacity: 1, transform: [{ translateY: 0 }] },
+          to: { opacity: 0, transform: [{ translateY }], easing: EASE_IN_OUT_CUBIC },
+        })
+          // Matches the store's overlay teardown delay, which is also
+          // ENTERING_ANIMATION_DURATION — a longer exit would be cut off.
+          .duration(ENTERING_ANIMATION_DURATION)
+      );
+    },
+  );
+}
+
+type ResolvedAnimation = Exclude<ToastEntryExitAnimation, 'default'>;
+
+/** Per-toast animation wins over the outlet's; `'default'` opts back in to Bloom's. */
+export const resolveAnimationField = (
+  toastValue: ToastEntryExitAnimation | undefined,
+  toasterValue: ToastEntryExitAnimation | undefined,
+  defaultValue: ResolvedAnimation,
+): ResolvedAnimation => {
+  const resolved = toastValue !== undefined ? toastValue : toasterValue;
+  if (resolved === undefined || resolved === 'default') {
+    return defaultValue;
+  }
+  return resolved;
+};
+
+export const useToastLayoutAnimations = (
+  positionProp: ToastPosition | undefined,
+  animationProp: ToastAnimation | undefined,
+  isHiddenByLimit: boolean,
+  numberOfToasts: number,
+): {
+  entering: ResolvedAnimation | undefined;
+  exiting: ResolvedAnimation | undefined;
+} => {
+  const {
+    position: positionCtx,
+    gap,
+    animation: animationCtx,
+  } = useToastContext();
+  const position = positionProp ?? positionCtx;
+  const stackGap = gap ?? toastDefaults.stackGap;
+  const reducedMotion = useReducedMotion();
+
+  if (reducedMotion) {
+    return { entering: undefined, exiting: undefined };
+  }
+
+  const defaultExiting = getToastExitAnimation({
+    position,
+    isHiddenByLimit,
+    isSingle: numberOfToasts <= 1,
+    stackGap,
+  });
+
+  return {
+    entering: resolveAnimationField(
+      animationProp?.enter,
+      animationCtx?.enter,
+      getToastEnterAnimation(position),
+    ),
+    // An overflow-culled row always uses Bloom's fade: a consumer's custom exit
+    // would animate a row the user cannot even see.
+    exiting: isHiddenByLimit
+      ? defaultExiting
+      : resolveAnimationField(
+          animationProp?.exit,
+          animationCtx?.exit,
+          defaultExiting,
+        ),
+  };
+};

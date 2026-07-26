@@ -36,7 +36,7 @@ src/
 
 ## Platform Forks
 
-Components with `.web.tsx` variants: dialog, context-menu, menu, prompt-input/Textarea, select, bottom-sheet (`index.web.tsx` reuses the shared `#bloom-portal-root` — RN-Web's `<Modal>`/`ModalPortal` orphans its host node under React 19 StrictMode and never paints), toast, tooltip, theme/adaptive-colors.
+Components with `.web.tsx` variants: dialog, context-menu, menu, prompt-input/Textarea, select, bottom-sheet (`index.web.tsx` reuses the shared `#bloom-portal-root` — RN-Web's `<Modal>`/`ModalPortal` orphans its host node under React 19 StrictMode and never paints), tooltip, theme/adaptive-colors. `toast/` is NOT web-forked: it is one universal engine whose only platform split is `ToastHost.native.tsx` (filename-resolved by Metro), so `'./toast'` must stay out of `WEB_FORKED_SUBPATHS`.
 
 Platform-export generation script: `scripts/generate-platform-exports.mjs`. Every subpath with platform-specific behavior ships `.native.ts` + `.web.ts` + a clean default `.ts` with no Metro-only / NW5-only imports. Augmenting `ScrollView`/`FlatList` with `className` in this published RN package requires a heritage-free `declare module 'react-native'` block loaded via `/// <reference path>` — never `as any` / `@ts-ignore`. Consumer-facing rules are in parent `~/Oxy/AGENTS.md`.
 
@@ -126,8 +126,9 @@ setColorPreset("blue") // Updates context + CSS vars on web
 
 ## Peers
 
-- **Required**: react >= 18, react-native >= 0.73, react-native-safe-area-context >= 5, react-native-reanimated, react-native-gesture-handler
-- **Optional**: @gorhom/bottom-sheet, SVG, sonner
+- **Required**: react >= 18, react-native >= 0.73, react-native-safe-area-context >= 5, react-native-reanimated >= 3.13, react-native-gesture-handler >= 2.16.1, react-native-svg >= 13
+- **Optional**: @gorhom/bottom-sheet
+- Bloom owns its toast engine (vendored from sonner-native 0.26.4, see `NOTICE`); `sonner` / `sonner-native` / `nanoid` are NOT dependencies. The engine runs on react-native-web, so web bundles DO import reanimated + gesture-handler.
 
 ## Typography + NativeWind (CRITICAL)
 

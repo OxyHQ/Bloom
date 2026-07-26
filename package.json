@@ -1,6 +1,6 @@
 {
   "name": "@oxyhq/bloom",
-  "version": "0.50.2",
+  "version": "0.51.0",
   "description": "Bloom UI — Oxy ecosystem component library for React Native + Expo + Web",
   "main": "lib/commonjs/index.js",
   "module": "lib/module/index.js",
@@ -334,11 +334,6 @@
     },
     "./toast": {
       "react-native": "./src/toast/index.tsx",
-      "browser": {
-        "types": "./lib/typescript/module/toast/index.web.d.ts",
-        "import": "./lib/module/toast/index.web.js",
-        "require": "./lib/commonjs/toast/index.web.js"
-      },
       "import": {
         "types": "./lib/typescript/module/toast/index.d.ts",
         "default": "./lib/module/toast/index.js"
@@ -1017,7 +1012,8 @@
   },
   "files": [
     "src",
-    "lib"
+    "lib",
+    "NOTICE"
   ],
   "keywords": [
     "react-native",
@@ -1137,8 +1133,6 @@
     "react-native-web": "^0.21.2",
     "react-test-renderer": "^19.2.0",
     "release-it": "^19.0.6",
-    "sonner": "^2.0.3",
-    "sonner-native": "^0.23.1",
     "storybook": "^10",
     "ts-jest": "^29.4.6",
     "typescript": "~5.9.2",
@@ -1154,12 +1148,10 @@
     "react": ">=18.0.0",
     "react-dom": ">=18.0.0",
     "react-native": ">=0.73.0",
-    "react-native-gesture-handler": ">=2.0.0",
-    "react-native-reanimated": ">=3.0.0",
+    "react-native-gesture-handler": ">=2.16.1",
+    "react-native-reanimated": ">=3.13.0",
     "react-native-safe-area-context": ">=5.0.0",
     "react-native-svg": ">=13.0.0",
-    "sonner": ">=2.0.0",
-    "sonner-native": ">=0.17.0",
     "nativewind": ">=5.0.0"
   },
   "peerDependenciesMeta": {
@@ -1176,15 +1168,6 @@
       "optional": true
     },
     "react-dom": {
-      "optional": true
-    },
-    "react-native-svg": {
-      "optional": true
-    },
-    "sonner": {
-      "optional": true
-    },
-    "sonner-native": {
       "optional": true
     },
     "nativewind": {
@@ -1218,7 +1201,6 @@
   },
   "dependencies": {
     "@tanstack/react-virtual": "^3.14.3",
-    "nanoid": "^5.1.5",
     "react-native-css": "3.0.7",
     "react-remove-scroll-bar": "^2.3.8"
   },

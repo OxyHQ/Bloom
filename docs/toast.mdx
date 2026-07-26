@@ -1,12 +1,18 @@
 ---
 title: Toast
-description: Passive notifications, sonner under the hood, themed by Bloom.
+description: Passive notifications, powered by Bloom's own universal toast engine.
 order: 5
 ---
 
 # Toast
 
-Passive notifications. Sonner under the hood (`sonner-native` on native, `sonner` on web), themed and bridged by Bloom so the API is identical on every platform.
+Passive notifications. Bloom ships its own engine — **one** implementation that runs
+on native and on web (through react-native-web), so there is nothing extra to
+install and the API is identical everywhere.
+
+The engine is derived from [sonner-native](https://github.com/gunnartorfis/sonner-native)
+v0.26.4 (MIT), itself a React Native port of [sonner](https://github.com/emilkowalski/sonner).
+See `NOTICE` in the package for attribution.
 
 ## Setup
 
@@ -21,6 +27,13 @@ import { ToastOutlet } from '@oxyhq/bloom/toast';
 </BloomThemeProvider>
 ```
 
+Apps that mount `OxyProvider` from `@oxyhq/services` already get an outlet and
+should **not** mount a second one — two outlets render every toast twice.
+
+Native apps must wrap the root in `GestureHandlerRootView` (as they already do for
+`Dialog` / `BottomSheet`) for swipe-to-dismiss. On web the toast host provides its
+own, so no setup is needed.
+
 ## API
 
 ```tsx
@@ -31,33 +44,77 @@ toast.success('Profile updated');
 toast.error('Network error', { duration: 5000 });
 toast.warning('Please verify your email');
 toast.info('A new version is available');
+toast.loading('Uploading…');
 
 const id = toast('Uploading…');
-toast.dismiss(id);
+toast.dismiss(id);   // one toast
+toast.dismiss();     // all of them
 ```
 
-`toast(content, options?)` accepts strings or React elements. `options.type` (`'default' | 'success' | 'error' | 'warning' | 'info'`) is overridden by the typed helpers above.
+Every method returns the toast's id (`string | number`), so `const id = toast(…)`
+followed by `toast.dismiss(id)` works. Passing your own `id` updates that toast in
+place instead of adding another:
+
+```tsx
+toast.loading('Uploading…', { id: 'upload' });
+toast.success('Uploaded', { id: 'upload' }); // replaces the row, keeps its position
+```
+
+`toast(content, options?)` takes a string or a React element; anything else throws.
+`options.type` is the public variant knob and the typed helpers above are shorthands
+for it. `type: 'default'` (the default) renders a neutral toast — no icon, no tint.
 
 ## Options
 
+Per-toast options (`ToastOptions`):
+
 | Option | Type | Description |
 |--------|------|-------------|
-| `duration?` | `number` | Time in ms before auto-dismiss. Defaults to `4000`. |
-| `type?` | `'default' \| 'success' \| 'error' \| 'warning' \| 'info'` | Visual type. |
-| `id?` | `string` | Stable id (useful for updates). |
-| `description?` | `string` | Secondary text shown under the main label. |
+| `id?` | `string \| number` | Stable id. Reusing one updates that toast in place. |
+| `type?` | `'default' \| 'success' \| 'error' \| 'warning' \| 'info' \| 'loading'` | Visual variant. `'default'` is neutral. |
+| `duration?` | `number` | Milliseconds before auto-dismiss. Defaults to `3000`. `Infinity` never auto-closes. |
+| `description?` | `string` | Secondary text under the title. |
+| `action?` | `{ label, onClick }` \| `ReactNode` | Primary button, or your own node. |
+| `cancel?` | `{ label, onClick }` \| `ReactNode` | Secondary button; the object form also dismisses. |
+| `closeButton?` | `boolean` | Show the ✕ affordance. |
+| `dismissible?` | `boolean` | Allow swipe / close. Defaults to `true`. |
+| `position?` | `'top-center' \| 'bottom-center' \| 'center'` | Override the outlet's position for this toast. |
+| `icon?` | `ReactNode` | Replaces the variant icon. |
+| `richColors?` | `boolean` | Stronger variant tinting. |
+| `important?` | `boolean` | Announce assertively to screen readers. |
+| `onDismiss?` / `onAutoClose?` | `(id) => void` | Called when the toast goes away. |
+| `onPress?` | `() => void` | Press anywhere on the row. |
+| `style?` / `styles?` / `unstyled?` | — | Escape hatches for the row's own styling. |
+| `animation?` | `{ enter?, exit? }` | A predefined Reanimated builder, a `Keyframe`, or `'default'`. |
+
+Outlet options (`ToasterProps`) cover `position`, `offset`, `gap`, `visibleToasts`,
+`duration`, `swipeToDismissDirection`, `closeButton`, `richColors`,
+`enableStacking`, `autoWiggleOnUpdate`, `pauseWhenPageIsHidden`, `icons`,
+`toastOptions` and `positionerStyle`. Their defaults all come from the exported
+`toastDefaults`, so `<ToastOutlet position="top-center" />` changes only that one.
+
+<Callout variant="info" title="Documented no-ops">
+`theme` and `invert` are accepted but do nothing: light/dark and per-subtree
+recolouring belong to `BloomThemeProvider` / `BloomColorScope`.
+</Callout>
 
 ## Patterns
 
 ### Promise toast
 
+The pending row shows a spinner; the promise's result is formatted into the final
+title. `success` is a formatter, `error` is a formatter **or** a plain string:
+
 ```tsx
 toast.promise(saveProfile(), {
   loading: 'Saving…',
-  success: 'Saved',
-  error: (err) => `Failed: ${err.message}`,
+  success: (profile) => `Saved ${profile.name}`,
+  error: (err) => `Failed: ${err instanceof Error ? err.message : 'unknown'}`,
 });
 ```
+
+A promise toast cannot be swiped away while it is pending, and its auto-close timer
+only starts once it settles.
 
 ### Action toast
 
@@ -70,6 +127,30 @@ toast('Item moved to trash', {
 });
 ```
 
+### Fully custom row
+
+`toast.custom` hands the whole row to your element — Bloom renders no surface,
+icon or buttons around it, but still animates, stacks and swipes it:
+
+```tsx
+toast.custom(<MyRow />, { duration: 8000 });
+```
+
+### Above a native iOS modal
+
+Bloom does not depend on `react-native-screens`. Inject the overlay host yourself
+when a toast has to appear above a native modal:
+
+```tsx
+import { FullWindowOverlay } from 'react-native-screens';
+
+<ToastOutlet ToasterOverlayWrapper={FullWindowOverlay} />
+```
+
 <Callout variant="info" title="Toast vs alert()">
 Reach for `toast()` for passive feedback (the user doesn't have to react). Use [`alert()`](/docs/bloom/main/alert) when you need a one-shot confirmation that blocks the rest of the UI.
 </Callout>
+
+Upgrading from 0.50.x? See `MIGRATION.md` — `show`, `api`, `DURATION`, `type Toast`
+and the composition exports were removed, and the default position moved to
+`bottom-center`.

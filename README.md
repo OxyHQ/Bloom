@@ -16,12 +16,11 @@ Required:
 - `react-native >= 0.73`
 - `react-native-safe-area-context >= 5`
 
-Optional:
+Also required:
 
-- `react-native-reanimated >= 3` (native `Dialog`, `BottomSheet`, and the native `Loading` spinner / `top` variant). Web never imports reanimated — `Loading` ships a CSS-animated web fork, so a plain web bundle needs none of these native peers.
-- `react-native-gesture-handler >= 2` (native `Dialog`, `BottomSheet`) — also requires wrapping the app root with `GestureHandlerRootView`, see [Dialog](#dialog).
-- `react-native-svg >= 13` (Avatar `squircle` shape)
-- `sonner >= 2` / `sonner-native >= 0.17` (`toast`)
+- `react-native-reanimated >= 3.13` (`Dialog`, `BottomSheet`, `toast`, `Loading`) — on web too: the toast engine runs on react-native-web.
+- `react-native-gesture-handler >= 2.16.1` (`Dialog`, `BottomSheet`, toast swipe-to-dismiss) — **native** also needs the app root wrapped in `GestureHandlerRootView`, see [Dialog](#dialog); on web the toast host provides its own.
+- `react-native-svg >= 13` (Bloom icons, Avatar `squircle` shape)
 
 ## Usage
 
@@ -199,7 +198,7 @@ import { BLOOM_DIALOG_CSS } from '@oxyhq/bloom/dialog';
 
 ### toast
 
-Passive notifications, sonner under the hood, themed by bloom.
+Passive notifications. Bloom's own universal engine — one implementation on native and web, no `sonner` / `sonner-native` to install.
 
 ```tsx
 import { toast } from '@oxyhq/bloom';
@@ -214,10 +213,16 @@ toast.success('Profile updated');
 toast.error('Network error', { duration: 5000 });
 toast.warning('Please verify your email');
 toast.info('A new version is available');
+
+const id = toast.loading('Uploading…');
 toast.dismiss(id);
 ```
 
-`toast(content, options?)` accepts strings or React elements. `options.type` (`'default' | 'success' | 'error' | 'warning' | 'info'`) is overridden by the typed helpers above.
+`toast(content, options?)` accepts strings or React elements, and every method
+returns the toast's id. `options.type` (`'default' | 'success' | 'error' |
+'warning' | 'info' | 'loading'`) is overridden by the typed helpers above; the
+full surface (`promise`, `custom`, `wiggle`, `action`/`description`, stacking,
+positions) is documented in [docs/toast.mdx](docs/toast.mdx).
 
 ### alert()
 

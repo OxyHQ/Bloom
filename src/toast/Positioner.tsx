@@ -1,0 +1,114 @@
+/**
+ * Derived from sonner-native v0.26.4 — src/positioner.tsx
+ * (MIT © Gunnar Torfi Steinarsson). See the top-level NOTICE.
+ *
+ * One absolutely-positioned container per occupied position, plus the
+ * press-to-collapse area outside an expanded stack.
+ *
+ * `position: 'absolute'` is correct on BOTH platforms and this file stays fully
+ * universal: `ToastHost` supplies a viewport-sized containing block on web, so
+ * there is no `.web` fork and no `position: 'fixed'` here (W7).
+ *
+ * `pointerEvents` goes in `style`, never as a prop — the prop form is deprecated
+ * in react-native-web and logs on every render.
+ */
+import * as React from 'react';
+import { Platform, Pressable, View } from 'react-native';
+import {
+  SafeAreaInsetsContext,
+  initialWindowMetrics,
+} from 'react-native-safe-area-context';
+
+import { useDynamicToastContext, useToastContext } from './context';
+import {
+  calculateOutsidePressableArea,
+  getContainerStyle,
+  getInsetValues,
+} from './positioner-utils';
+import type { ToasterProps } from './types';
+
+/**
+ * Web `initialWindowMetrics` is `null`, and on native it is null until the
+ * provider measures — both fall back to zero insets, which `getInsetValues` then
+ * turns into its 16px default.
+ */
+const FALLBACK_INSETS = initialWindowMetrics?.insets ?? {
+  top: 0,
+  bottom: 0,
+  left: 0,
+  right: 0,
+};
+
+/**
+ * Without elevation the positioner can render behind sibling react-native-screens
+ * surfaces (native-stack, bottom-tabs) on Android, hiding toasts entirely. Kept
+ * alongside the `zIndex` the host applies, because Android orders those native
+ * siblings by elevation.
+ */
+const ANDROID_ELEVATION = 9999;
+const androidElevationStyle =
+  Platform.OS === 'android' ? { elevation: ANDROID_ELEVATION } : null;
+
+export const Positioner: React.FC<
+  React.PropsWithChildren<Pick<ToasterProps, 'position' | 'style'>>
+> = ({ children, position, style }) => {
+  const { offset, gap, visibleToasts } = useToastContext();
+  const { isExpanded, collapse, toastHeights } = useDynamicToastContext();
+  const insets = React.useContext(SafeAreaInsetsContext) ?? FALLBACK_INSETS;
+
+  const resolvedPosition = position ?? 'bottom-center';
+  const insetValues = getInsetValues({
+    position: resolvedPosition,
+    offset,
+    safeAreaInsets: { top: insets.top, bottom: insets.bottom },
+  });
+
+  const handleOutsidePress = React.useCallback(() => {
+    if (isExpanded) {
+      collapse();
+    }
+  }, [isExpanded, collapse]);
+
+  // Collapsing by pressing outside only makes sense for an anchored stack.
+  const shouldAllowCollapse = resolvedPosition !== 'center' && isExpanded;
+  const hasChildren = React.Children.count(children) > 0;
+
+  return (
+    <>
+      {shouldAllowCollapse ? (
+        <Pressable
+          style={[
+            calculateOutsidePressableArea({
+              position: resolvedPosition,
+              toastHeights,
+              gap,
+              visibleToasts,
+              insetValues,
+            }),
+            androidElevationStyle,
+          ]}
+          onPress={handleOutsidePress}
+        />
+      ) : null}
+      <View
+        style={[
+          getContainerStyle(resolvedPosition),
+          androidElevationStyle,
+          insetValues,
+          // An empty container on Android must not swallow touches at all;
+          // otherwise `box-none` lets presses through to the app but still
+          // reaches the rows.
+          {
+            pointerEvents:
+              Platform.OS === 'android' && !hasChildren ? 'none' : 'box-none',
+          },
+          style,
+        ]}
+      >
+        {children}
+      </View>
+    </>
+  );
+};
+
+Positioner.displayName = 'ToastPositioner';
