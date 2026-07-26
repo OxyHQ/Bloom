@@ -2,7 +2,8 @@
  * Ported from expo-glass-tabs v0.1.1 — src/glass-tab-bar.tsx
  * (MIT © 2026 David Mokos). See the top-level NOTICE.
  *
- * NATIVE variant of the tab bar's capsule surface — real liquid glass.
+ * NATIVE variant of the tab bar's capsule surface — real liquid glass, degrading
+ * to the solid surface whenever the glass is not actually usable.
  *
  * `expo-glass-effect` is imported STATICALLY and this file is the only place it
  * appears: Metro selects `.native` on iOS/Android, so the import never reaches
@@ -14,18 +15,83 @@
  *
  * `isLiquidGlassAvailable()` is false on Android and pre-iOS-26, where the
  * package's `GlassView` has no material to render; those platforms get the same
- * opaque fallback the neutral variant paints.
+ * opaque fallback the neutral variant paints. "Installed" is not "usable"
+ * though, and BOTH remaining hazards sit at MODULE scope, which is why neither
+ * can be handled by a branch inside the component:
+ *
+ *  1. THE NATIVE MODULE. On iOS `isLiquidGlassAvailable()` resolves
+ *     `ExpoGlassEffect` through `requireNativeModule`, which THROWS
+ *     `Cannot find native module …` by contract when that module is not in the
+ *     binary. For these apps it is a normal deploy state rather than a
+ *     misconfiguration: an OTA JS update can land on a binary built before the
+ *     package was linked, while the JS side always resolves because expo-router
+ *     depends on it. Unguarded, the throw escapes render and takes down the whole
+ *     screen the bar is on.
+ *  2. THE EXPORTS. `Animated.createAnimatedComponent(GlassView)` runs at IMPORT
+ *     time, so a tree that resolves the specifier to something without
+ *     `GlassView` hands React an `undefined` element type before any render
+ *     happens.
+ *
+ * `isGlassEffectAPIAvailable()` is upstream's own third condition: on some iOS 26
+ * betas `UIGlassEffect` is missing and touching `GlassView` crashes NATIVELY,
+ * below JS (expo/expo#40911). It postdates the `>=0.1.5` peer floor, so a missing
+ * probe means "not applicable", never "unavailable".
+ *
+ * Everything that fails routes to the SAME solid surface Android already paints —
+ * the intended fallback path, not a new one.
  */
-import { GlassView, isLiquidGlassAvailable } from 'expo-glass-effect';
+import { GlassView, isGlassEffectAPIAvailable, isLiquidGlassAvailable } from 'expo-glass-effect';
 import { StyleSheet } from 'react-native';
 import Animated from 'react-native-reanimated';
 
 import type { TabBarSurfaceProps } from './shared';
+import { SolidTabBarSurface } from './surface-solid';
 
-const AnimatedGlassView = Animated.createAnimatedComponent(GlassView);
+/**
+ * The animated glass view, or `null` when the package did not deliver the two
+ * exports this file needs. Built once, and guarded HERE rather than in the
+ * component because `createAnimatedComponent` runs on import (hazard 2 above).
+ */
+const AnimatedGlassView =
+  Boolean(GlassView) && typeof isLiquidGlassAvailable === 'function'
+    ? Animated.createAnimatedComponent(GlassView)
+    : null;
+
+/** Memo for {@link glassIsUsable} — the answer cannot change within a session. */
+let glassUsable: boolean | undefined;
+
+/**
+ * Whether this build can really render glass. Probed once: the native lookup
+ * behind it is not free, and on the failing path it throws.
+ *
+ * The `catch` reports rather than swallows. A bar that silently painted itself
+ * opaque on every iOS device would be far more expensive to find than one warning
+ * line, and reaching this branch always means a real, fixable packaging mistake.
+ * Warning exactly once falls out of the memo — the body runs at most one time.
+ */
+function glassIsUsable(): boolean {
+  if (glassUsable !== undefined) return glassUsable;
+
+  try {
+    glassUsable =
+      isLiquidGlassAvailable() &&
+      (typeof isGlassEffectAPIAvailable !== 'function' || isGlassEffectAPIAvailable());
+  } catch (error) {
+    glassUsable = false;
+    // eslint-disable-next-line no-console
+    console.warn(
+      '[Bloom] TabBar: expo-glass-effect could not report liquid-glass availability, ' +
+        'so the bar is painting its solid surface. Install expo-glass-effect and ' +
+        'rebuild the native app to get the glass capsule.',
+      error,
+    );
+  }
+
+  return glassUsable;
+}
 
 export function TabBarSurface({ theme, style }: TabBarSurfaceProps) {
-  if (isLiquidGlassAvailable()) {
+  if (AnimatedGlassView !== null && glassIsUsable()) {
     return (
       <AnimatedGlassView
         glassEffectStyle="regular"
@@ -39,16 +105,7 @@ export function TabBarSurface({ theme, style }: TabBarSurfaceProps) {
     );
   }
 
-  return (
-    <Animated.View
-      style={[
-        StyleSheet.absoluteFill,
-        styles.surface,
-        { backgroundColor: theme.solidFallback },
-        style,
-      ]}
-    />
-  );
+  return <SolidTabBarSurface theme={theme} style={style} />;
 }
 
 TabBarSurface.displayName = 'TabBarSurface';

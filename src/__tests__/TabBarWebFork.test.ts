@@ -50,6 +50,7 @@ const NEUTRAL_AND_WEB_FILES = [
   'tab-bar/TabBarBase.tsx',
   'tab-bar/minimize-context.tsx',
   'tab-bar/surface.tsx',
+  'tab-bar/surface-solid.tsx',
   'tab-bar/surface.web.tsx',
   'tab-bar/glyph.tsx',
   'progressive-blur/index.web.tsx',
@@ -126,6 +127,17 @@ describe('tab-bar platform split', () => {
     // than the feature having quietly lost its native path.
     expect(moduleSpecifiers(read('tab-bar/surface.native.tsx'))).toContain('expo-glass-effect');
     expect(moduleSpecifiers(read('tab-bar/glyph.native.tsx'))).toContain('expo-symbols');
+  });
+
+  it('the native surface takes its fallback from surface-solid, never ./surface', () => {
+    // Metro resolves a bare `./surface` to `surface.native.tsx` from ANY caller,
+    // so importing the neutral sibling by that name would be a self-import — which
+    // is the entire reason `surface-solid.tsx` exists as a separate name.
+    const specifiers = moduleSpecifiers(read('tab-bar/surface.native.tsx'));
+    expect(specifiers).toContain('./surface-solid');
+    expect(specifiers).not.toContain('./surface');
+    // And the neutral variant must be that same component, not a second copy.
+    expect(moduleSpecifiers(read('tab-bar/surface.tsx'))).toContain('./surface-solid');
   });
 
   it('the router packages live only under tab-bar/expo-router', () => {
