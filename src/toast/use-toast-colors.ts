@@ -9,8 +9,14 @@
  * `invert` are documented no-ops (light/dark and per-subtree recolouring are
  * `BloomThemeProvider` / `BloomColorScope` concerns).
  *
+ * SURFACES ARE NEUTRAL; ONLY THE ICON CARRIES THE VARIANT. Every variant renders
+ * the same `backgroundSecondary` surface with the same `border`, `text` and
+ * `textSecondary` roles — exactly like sonner. A tinted surface is what the
+ * opt-in `richColors` prop is for, and nothing else should reach for a `*Subtle`
+ * token.
+ *
  * An ABSENT variant is a first-class case: a plain `toast('Saved')` renders the
- * neutral surface. It must never fall back to `info`.
+ * neutral surface with no variant icon at all. It must never fall back to `info`.
  */
 import { useMemo } from 'react';
 
@@ -37,11 +43,41 @@ export type ToastColors = {
 };
 
 /**
- * Bloom's token set has `*Subtle` / `*SubtleForeground` pairs for the primary and
- * negative roles only, so `success` and `error` get a tinted surface while
- * `warning` / `info` / `loading` keep the neutral surface and tint only the icon.
- * `richColors` additionally lifts the border and title of those variants to the
- * variant colour — it never invents a surface token that does not exist.
+ * The variant NEVER tints the surface by default — only the leading icon. That is
+ * how sonner, sonner-native and every comparable library behave, and it is what
+ * `richColors` exists to opt out of: a plain `toast.success('Saved')` must read as
+ * a normal toast with a green check, not as a full brand-coloured card.
+ *
+ * `success` / `error` / `warning` / `info` are first-class theme tokens
+ * (`ThemeColors`), so the icon uses them directly. Reaching for
+ * `primarySubtle` / `negativeSubtle` here is what made success render brand
+ * purple instead of green.
+ */
+function variantIconColor(
+  variant: ToastVariant | undefined,
+  colors: ThemeColors,
+): string {
+  switch (variant) {
+    case 'success':
+      return colors.success;
+    case 'error':
+      return colors.error;
+    case 'warning':
+      return colors.warning;
+    case 'info':
+      return colors.info;
+    case 'loading':
+    case undefined:
+      return colors.textSecondary;
+  }
+}
+
+/**
+ * `richColors` is the opt-in tinted treatment. Bloom's token set has
+ * `*Subtle` / `*SubtleForeground` pairs for the primary and negative roles only,
+ * so `success` and `error` get a tinted surface while `warning` / `info` can only
+ * lift their border and title to the variant colour — this never invents a
+ * surface token that does not exist.
  */
 function resolveColors({
   variant,
@@ -59,16 +95,22 @@ function resolveColors({
     pressedText: colors.text,
   };
 
+  // The default for EVERY variant. Only `icon` differs, so the action button
+  // cannot pick up a brand-tinted pressed state on a neutral card either.
   const neutral: ToastColors = {
     surface: colors.backgroundSecondary,
     border: colors.border,
     title: colors.text,
     description: colors.textSecondary,
-    icon: colors.textSecondary,
+    icon: variantIconColor(variant, colors),
     closeButton: colors.textSecondary,
     action: neutralAction,
     cancelText: colors.textSecondary,
   };
+
+  if (!richColors) {
+    return neutral;
+  }
 
   switch (variant) {
     case 'success':
@@ -104,19 +146,9 @@ function resolveColors({
         cancelText: colors.negativeSubtleForeground,
       };
     case 'warning':
-      return {
-        ...neutral,
-        icon: colors.warning,
-        border: richColors ? colors.warning : neutral.border,
-        title: richColors ? colors.warning : neutral.title,
-      };
+      return { ...neutral, border: colors.warning, title: colors.warning };
     case 'info':
-      return {
-        ...neutral,
-        icon: colors.info,
-        border: richColors ? colors.info : neutral.border,
-        title: richColors ? colors.info : neutral.title,
-      };
+      return { ...neutral, border: colors.info, title: colors.info };
     case 'loading':
     case undefined:
       return neutral;

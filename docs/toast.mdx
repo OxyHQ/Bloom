@@ -64,6 +64,18 @@ toast.success('Uploaded', { id: 'upload' }); // replaces the row, keeps its posi
 `options.type` is the public variant knob and the typed helpers above are shorthands
 for it. `type: 'default'` (the default) renders a neutral toast — no icon, no tint.
 
+### The variant colours the icon, not the surface
+
+Every toast renders the SAME neutral surface — `backgroundSecondary` with the
+`border`, `text` and `textSecondary` roles — whatever its `type`. The variant
+shows up only in the leading icon, which uses the theme's first-class status
+tokens: `success`, `error`, `warning`, `info`. A `loading` or variant-less toast
+gets `textSecondary`.
+
+That is deliberate, and matches sonner. `toast.success('Saved')` should read as a
+normal toast with a green check, not as a full brand-coloured card. Opt into the
+tinted treatment with `richColors` (below) — never by styling per variant.
+
 ## Options
 
 Per-toast options (`ToastOptions`):
@@ -80,7 +92,7 @@ Per-toast options (`ToastOptions`):
 | `dismissible?` | `boolean` | Allow swipe / close. Defaults to `true`. |
 | `position?` | `'top-center' \| 'bottom-center' \| 'center'` | Override the outlet's position for this toast. |
 | `icon?` | `ReactNode` | Replaces the variant icon. |
-| `richColors?` | `boolean` | Stronger variant tinting. |
+| `richColors?` | `boolean` | Opt in to a tinted SURFACE. Off by default, where the variant only colours the icon. `success` / `error` get a tinted surface, border and text; `warning` / `info` lift their border and title only, because Bloom has no `warningSubtle` / `infoSubtle` pair. |
 | `important?` | `boolean` | Announce assertively to screen readers. |
 | `onDismiss?` / `onAutoClose?` | `(id) => void` | Called when the toast goes away. |
 | `onPress?` | `() => void` | Press anywhere on the row. |

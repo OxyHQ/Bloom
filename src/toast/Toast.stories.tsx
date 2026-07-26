@@ -50,6 +50,10 @@ function Demo({
   );
 }
 
+/**
+ * All six rows must share ONE neutral surface — only the leading icon changes
+ * colour. Compare against `RichColors`, which is the opt-in tinted treatment.
+ */
 export const Variants: Story = {
   render: () => (
     <Demo>
@@ -63,6 +67,14 @@ export const Variants: Story = {
   ),
 };
 
+/**
+ * The opt-in tinted treatment, and the direct comparison against `Variants`:
+ * there every row is the same neutral surface with only a coloured icon, here
+ * `success` / `error` tint the whole surface and `warning` / `info` lift their
+ * border and title (Bloom has no `warningSubtle` / `infoSubtle` pair). If this
+ * story ever looks the same as `Variants`, the default has regressed back to
+ * painting surfaces per variant.
+ */
 export const RichColors: Story = {
   render: () => (
     <Demo outlet={{ richColors: true }}>
