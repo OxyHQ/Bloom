@@ -63,13 +63,35 @@ describe('useToastColors', () => {
       }
     });
 
-    it('uses the theme surface roles, never a *Subtle tint', () => {
+    it('uses the theme surface roles, never a brand *Subtle tint', () => {
       const colors = colorsFor('success');
       expect(colors.surface).toBe(tokens.backgroundSecondary);
       expect(colors.border).toBe(tokens.border);
       expect(colors.title).toBe(tokens.text);
       expect(colors.description).toBe(tokens.textSecondary);
       expect(colors.surface).not.toBe(tokens.primarySubtle);
+    });
+
+    it('never emits a brand token anywhere, for any variant or prop value', () => {
+      const brand = [
+        tokens.primarySubtle,
+        tokens.primarySubtleForeground,
+        tokens.negativeSubtle,
+        tokens.negativeSubtleForeground,
+        tokens.negative,
+        tokens.primary,
+      ];
+      for (const variant of ALL) {
+        for (const rich of [false, true]) {
+          const { action, ...flat } = colorsFor(variant, rich);
+          const emitted = [...Object.values(flat), ...Object.values(action)];
+          expect({
+            variant,
+            rich,
+            brandLeaks: emitted.filter((value) => brand.includes(value)),
+          }).toEqual({ variant, rich, brandLeaks: [] });
+        }
+      }
     });
 
     it.each<[ToastVariant | undefined, keyof typeof tokens]>([
@@ -98,32 +120,70 @@ describe('useToastColors', () => {
   });
 
   describe('with richColors', () => {
-    it('tints the surface for success and error', () => {
-      expect(colorsFor('success', true).surface).toBe(tokens.primarySubtle);
-      expect(colorsFor('error', true).surface).toBe(tokens.negativeSubtle);
+    /** The four variants that carry a status colour. */
+    const STATUS: Array<[ToastVariant, keyof typeof tokens]> = [
+      ['success', 'success'],
+      ['error', 'error'],
+      ['warning', 'warning'],
+      ['info', 'info'],
+    ];
+
+    it('never tints the surface — that is the whole point of the prop', () => {
+      for (const variant of ALL) {
+        expect({ variant, surface: colorsFor(variant, true).surface }).toEqual({
+          variant,
+          surface: tokens.backgroundSecondary,
+        });
+      }
     });
 
-    it('lifts only border and title for warning and info, which have no subtle pair', () => {
-      const warning = colorsFor('warning', true);
-      expect(warning.surface).toBe(tokens.backgroundSecondary);
-      expect(warning.border).toBe(tokens.warning);
-      expect(warning.title).toBe(tokens.warning);
+    it.each(STATUS)(
+      'lifts border, title and icon to the status colour: %s',
+      (variant, token) => {
+        const colors = colorsFor(variant, true);
+        expect(colors.border).toBe(tokens[token]);
+        expect(colors.title).toBe(tokens[token]);
+        expect(colors.icon).toBe(tokens[token]);
+      },
+    );
 
-      const info = colorsFor('info', true);
-      expect(info.surface).toBe(tokens.backgroundSecondary);
-      expect(info.border).toBe(tokens.info);
-      expect(info.title).toBe(tokens.info);
-    });
+    it.each(STATUS)(
+      'never reaches for a brand token, so the %s icon keeps its hue with the prop on',
+      (variant) => {
+        expect(colorsFor(variant, true).icon).toBe(colorsFor(variant).icon);
+      },
+    );
 
-    it('leaves a variant-less and a loading toast untouched', () => {
+    it.each(STATUS)(
+      'leaves description, close button and actions neutral: %s',
+      (variant) => {
+        const rich = colorsFor(variant, true);
+        const plain = colorsFor(variant);
+        expect(rich.description).toBe(plain.description);
+        expect(rich.closeButton).toBe(plain.closeButton);
+        expect(rich.cancelText).toBe(plain.cancelText);
+        expect(rich.action).toEqual(plain.action);
+      },
+    );
+
+    it('leaves a variant-less and a loading toast completely untouched', () => {
       expect(colorsFor(undefined, true)).toEqual(colorsFor(undefined));
       expect(colorsFor('loading', true)).toEqual(colorsFor('loading'));
     });
 
-    it('visibly differs from the default for success', () => {
-      expect(colorsFor('success', true).surface).not.toBe(
-        colorsFor('success').surface,
-      );
+    it('is still visibly different from the default for every status variant', () => {
+      for (const [variant] of STATUS) {
+        const rich = colorsFor(variant, true);
+        const plain = colorsFor(variant);
+        expect({ variant, changed: rich.border !== plain.border }).toEqual({
+          variant,
+          changed: true,
+        });
+        expect({ variant, changed: rich.title !== plain.title }).toEqual({
+          variant,
+          changed: true,
+        });
+      }
     });
   });
 });

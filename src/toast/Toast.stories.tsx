@@ -52,7 +52,8 @@ function Demo({
 
 /**
  * All six rows must share ONE neutral surface — only the leading icon changes
- * colour. Compare against `RichColors`, which is the opt-in tinted treatment.
+ * colour. Compare against `RichColors`, which keeps that same surface and adds the
+ * status colour to the border and title.
  */
 export const Variants: Story = {
   render: () => (
@@ -68,12 +69,12 @@ export const Variants: Story = {
 };
 
 /**
- * The opt-in tinted treatment, and the direct comparison against `Variants`:
- * there every row is the same neutral surface with only a coloured icon, here
- * `success` / `error` tint the whole surface and `warning` / `info` lift their
- * border and title (Bloom has no `warningSubtle` / `infoSubtle` pair). If this
- * story ever looks the same as `Variants`, the default has regressed back to
- * painting surfaces per variant.
+ * The direct comparison against `Variants`. The SURFACE is identical in both
+ * stories — `richColors` only widens the status colour from the icon alone to the
+ * border and title as well, so a success row here is a neutral card with a green
+ * icon, green border and green title. Two failure modes to watch for: a tinted or
+ * brand-coloured surface (the status/brand token families got mixed again), or a
+ * row indistinguishable from `Variants` (the prop stopped doing anything).
  */
 export const RichColors: Story = {
   render: () => (
