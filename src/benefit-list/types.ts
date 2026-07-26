@@ -4,7 +4,8 @@ import type { StyleProp, TextStyle, ViewStyle } from 'react-native';
 export interface BenefitRowProps {
   /**
    * Leading icon — rendered inside a rounded `fill-secondary` square. Pass a
-   * Bloom icon element (e.g. `<Icons.Lock size="sm" />`) or any node.
+   * Bloom icon element (e.g. `<Icons.Lock_Stroke2_Corner0_Rounded size="sm" />`,
+   * suffix included — there is no shortened alias) or any node.
    */
   icon: ReactNode;
   /**

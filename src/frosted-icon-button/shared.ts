@@ -106,7 +106,7 @@ type FillableElement = ReactElement<{ fill?: unknown }>;
  * Inject `color` as the icon's `fill` — but only as a FALLBACK: if the caller
  * already set an explicit `fill` on the icon element, it wins and the node is
  * returned untouched. Bloom icons resolve their paint as `fill ?? style.color`,
- * so a bare `<Icons.X />` gets the theme-aware color for free while an
+ * so any bare Bloom icon element gets the theme-aware color for free while an
  * explicitly-colored icon is never overridden. Non-element children (plain
  * text/strings) pass through unchanged.
  */
