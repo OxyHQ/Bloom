@@ -27,7 +27,9 @@ bunx expo install expo-glass-effect expo-symbols react-native-screens
 The bar also uses Bloom's existing `expo-blur`, `react-native-reanimated`, `react-native-gesture-handler` and `react-native-safe-area-context` peers. Native apps must wrap their root in `GestureHandlerRootView` — the bar is scrubbable, so it needs gesture-handler mounted.
 
 <Callout variant="info" title="Web builds pull none of the native packages">
-`expo-glass-effect` and `expo-symbols` are imported only from `.native` files, and the router packages only from the `expo-router` subpath. A web bundle of `@oxyhq/bloom/tab-bar` reaches none of them, so a web-only app can skip installing them entirely — which is why Bloom marks both **optional** in `peerDependenciesMeta`. Optional means "no installer warning for the consumers that never reach them", not "omittable from a native bundle": both are static imports, so a **native** build that renders the bar needs the JS packages installed on Android exactly as much as on iOS, even though only iOS has native code to link.
+`expo-glass-effect` and `expo-symbols` are imported only from `.native` files, and the router packages only from the `expo-router` subpath. A web bundle of `@oxyhq/bloom/tab-bar` reaches none of them, so nothing about them ends up in a web app's output.
+
+Both are nonetheless declared as **required** peers, deliberately. They are static imports, so omitting them from a native build does not degrade to anything — Metro fails to resolve the specifier and the build dies. The only thing marking them optional would buy is silencing the one warning that says so in advance. That applies on Android too: the native module there is Apple-only (`"platforms": ["apple"]`), but the JS package still has to be installed for the bundle to resolve.
 </Callout>
 
 ## Usage without a router
