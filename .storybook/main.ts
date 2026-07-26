@@ -33,10 +33,19 @@ const config: StorybookConfig = {
    *     in the browser.
    *   - Add `.web.tsx` to the resolved extensions so Bloom's platform-
    *     specific files (e.g. `Dialog.web.tsx`) are picked up.
-   *   - Stub `react-native-reanimated`, `react-native-gesture-handler`, and
-   *     `react-native-safe-area-context` because their worklet/native code
-   *     can't run in a browser. The stubs preserve component identity so
-   *     trees render statically with no animation.
+   *
+   * `react-native-reanimated`, `react-native-gesture-handler` and
+   * `react-native-safe-area-context` are deliberately NOT stubbed. Storybook now
+   * bundles the REAL packages against react-native-web with no worklets babel
+   * plugin — precisely the configuration every Oxy consumer ships — so this is a
+   * genuine web gate. Stubbing them hid two whole classes of bug: an animation
+   * started from a Reanimated mapper never ticks on web, and a stubbed animation
+   * builder does nothing whether or not the real one works, so the stub reported
+   * success either way.
+   *
+   * `.storybook/mocks/*` is intentionally left in the tree, unreferenced, as the
+   * rollback. Do NOT re-point these aliases at it to make a story pass; fix the
+   * component or file the finding.
    */
   async viteFinal(viteConfig) {
     return mergeConfig(viteConfig, {
@@ -49,18 +58,6 @@ const config: StorybookConfig = {
           {
             find: 'react-native/Libraries/Image/AssetRegistry',
             replacement: 'react-native-web/dist/modules/AssetRegistry',
-          },
-          {
-            find: /^react-native-reanimated$/,
-            replacement: path.resolve(__dirname, 'mocks/reanimated.ts'),
-          },
-          {
-            find: /^react-native-gesture-handler$/,
-            replacement: path.resolve(__dirname, 'mocks/gesture-handler.tsx'),
-          },
-          {
-            find: /^react-native-safe-area-context$/,
-            replacement: path.resolve(__dirname, 'mocks/safe-area-context.tsx'),
           },
         ],
         extensions: [
@@ -81,12 +78,7 @@ const config: StorybookConfig = {
       },
       optimizeDeps: {
         include: ['react-native-web'],
-        exclude: [
-          'react-native',
-          'react-native-reanimated',
-          'react-native-gesture-handler',
-          'react-native-safe-area-context',
-        ],
+        exclude: ['react-native'],
         esbuildOptions: {
           loader: { '.js': 'jsx' },
           resolveExtensions: [
