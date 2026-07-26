@@ -126,6 +126,9 @@ const SUBPATHS = /** @type {const} */ ([
   ['./scroll', 'scroll/index.ts'],
   ['./content-panel', 'content-panel/index.tsx'],
   ['./list', 'list/index.tsx'],
+  ['./tab-bar', 'tab-bar/index.ts'],
+  ['./tab-bar/expo-router', 'tab-bar/expo-router/index.ts'],
+  ['./progressive-blur', 'progressive-blur/index.tsx'],
 ]);
 
 /**
@@ -163,6 +166,12 @@ const WEB_FORKED_SUBPATHS = new Set([
   './scroll',
   './content-panel',
   './list',
+  './tab-bar',
+  // NOT web-forked: `./tab-bar/expo-router` has no `.web` sibling — the router
+  // adapter is universal (it only re-binds `TabBar`/`TabBarButton`, whose own
+  // entry already resolves per platform). Listing it here would trip
+  // `assertWebSourceExists()`.
+  './progressive-blur',
 ]);
 
 // --------------------------------------------------------------------------

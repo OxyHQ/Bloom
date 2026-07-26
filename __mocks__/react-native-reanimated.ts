@@ -39,6 +39,16 @@ const Reanimated = {
   // Extrapolation enum (the `interpolate` mock ignores the mode, but mappers read
   // `Extrapolation.CLAMP` — it must be a real object, not undefined).
   Extrapolation: { CLAMP: 'clamp', EXTEND: 'extend', IDENTITY: 'identity' },
+  // No color-space blending: it returns the endpoint the value is closest to.
+  // Callers (the tab bar's label tint) only ever assert the ENDPOINTS — which
+  // color a fully-active or fully-inactive tab resolves to — and a real
+  // interpolation would produce a blended value that no test could name.
+  interpolateColor: (value: number, inputRange: number[], outputRange: string[]) => {
+    const from = inputRange[0] ?? 0;
+    const to = inputRange[1] ?? 1;
+    const ratio = to === from ? 0 : (value - from) / (to - from);
+    return (ratio < 0.5 ? outputRange[0] : outputRange[1]) ?? '';
+  },
   runOnJS: (fn: (...args: unknown[]) => void) => fn,
   cancelAnimation: (_sv: unknown) => {},
   Easing: {
@@ -131,6 +141,7 @@ export const withRepeat = Reanimated.withRepeat;
 export const withDelay = Reanimated.withDelay;
 export const withSequence = Reanimated.withSequence;
 export const interpolate = Reanimated.interpolate;
+export const interpolateColor = Reanimated.interpolateColor;
 export const Extrapolation = Reanimated.Extrapolation;
 export const runOnJS = Reanimated.runOnJS;
 export const cancelAnimation = Reanimated.cancelAnimation;

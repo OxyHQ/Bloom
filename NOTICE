@@ -21,7 +21,54 @@ design tokens. No code from sonner's DOM implementation is included; sonner is
 credited because sonner-native is a port of it. Each derived module carries a
 provenance header naming the upstream file and version it came from.
 
-Both upstream projects are distributed under the MIT License:
+--------------------------------------------------------------------------------
+Bloom's floating tab bar and progressive blur
+(src/tab-bar/, src/progressive-blur/)
+--------------------------------------------------------------------------------
+
+Derived from expo-glass-tabs v0.1.1
+  https://github.com/davidmokos/expo-glass-tabs
+  MIT License, Copyright (c) 2026 David Mokos
+
+Bloom derives the interaction and motion design from expo-glass-tabs v0.1.1: the
+minimize-on-scroll progress model, the sliding highlight with finger scrubbing,
+the constant-driven capsule geometry, the ten-layer progressive-blur falloff, and
+the fade-on-focus tab screen. Each derived module carries a provenance header
+naming the upstream file and version it came from.
+
+The following are re-implemented rather than ported:
+
+  - Theming. Upstream hardcodes a dark palette (#FFFFFF tints, an
+    rgba(10,10,12,0.55) surface, a black blur tail), which reads as a black bar
+    in a light theme. Every color role is instead resolved from Bloom's design
+    tokens through `resolveTabBarTheme`, so the bar follows the active
+    `BloomThemeProvider` preset and mode, with an optional partial override.
+
+  - Icons. Upstream's icon API is SF Symbols. Bloom's primary API is
+    `item.icon`, any node — the same convention as `Tabs`/`TabsTrigger` and
+    `FrostedIconButton` — so the bar renders identically on every platform.
+    `item.sfSymbol` remains available as an iOS-only enhancement.
+
+  - Platform forks. Upstream is one iOS-first module. Bloom splits the capsule
+    surface and the glyph into neutral / `.native` / `.web` variants, and forks
+    the progressive blur so the web build uses one masked `backdrop-filter`
+    instead of ten stacked `BlurView`s. The native-only packages therefore never
+    reach a web bundle or a consumer's type-check.
+
+  - Router coupling. Upstream binds directly to expo-router. Bloom's core
+    `@oxyhq/bloom/tab-bar` has no router dependency at all; the bindings live in
+    a separate `@oxyhq/bloom/tab-bar/expo-router` subpath, so the bar is usable
+    in an app with no router.
+
+  - Reanimated dependency arrays. Every mapper declares the shared values it
+    reads, which is what makes the animation run on web without the
+    react-native-worklets babel plugin.
+
+--------------------------------------------------------------------------------
+MIT License
+--------------------------------------------------------------------------------
+
+Every upstream project credited above is distributed under the MIT License:
 
   Permission is hereby granted, free of charge, to any person obtaining a copy
   of this software and associated documentation files (the "Software"), to deal

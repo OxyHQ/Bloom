@@ -1007,6 +1007,49 @@
         "default": "./lib/commonjs/list/index.js"
       }
     },
+    "./tab-bar": {
+      "react-native": "./src/tab-bar/index.ts",
+      "browser": {
+        "types": "./lib/typescript/module/tab-bar/index.web.d.ts",
+        "import": "./lib/module/tab-bar/index.web.js",
+        "require": "./lib/commonjs/tab-bar/index.web.js"
+      },
+      "import": {
+        "types": "./lib/typescript/module/tab-bar/index.d.ts",
+        "default": "./lib/module/tab-bar/index.js"
+      },
+      "require": {
+        "types": "./lib/typescript/commonjs/tab-bar/index.d.ts",
+        "default": "./lib/commonjs/tab-bar/index.js"
+      }
+    },
+    "./tab-bar/expo-router": {
+      "react-native": "./src/tab-bar/expo-router/index.ts",
+      "import": {
+        "types": "./lib/typescript/module/tab-bar/expo-router/index.d.ts",
+        "default": "./lib/module/tab-bar/expo-router/index.js"
+      },
+      "require": {
+        "types": "./lib/typescript/commonjs/tab-bar/expo-router/index.d.ts",
+        "default": "./lib/commonjs/tab-bar/expo-router/index.js"
+      }
+    },
+    "./progressive-blur": {
+      "react-native": "./src/progressive-blur/index.tsx",
+      "browser": {
+        "types": "./lib/typescript/module/progressive-blur/index.web.d.ts",
+        "import": "./lib/module/progressive-blur/index.web.js",
+        "require": "./lib/commonjs/progressive-blur/index.web.js"
+      },
+      "import": {
+        "types": "./lib/typescript/module/progressive-blur/index.d.ts",
+        "default": "./lib/module/progressive-blur/index.js"
+      },
+      "require": {
+        "types": "./lib/typescript/commonjs/progressive-blur/index.d.ts",
+        "default": "./lib/commonjs/progressive-blur/index.js"
+      }
+    },
     "./design-tokens/theme.css": "./src/design-tokens/theme.css",
     "./package.json": "./package.json"
   },
@@ -1117,9 +1160,11 @@
     "@vitejs/plugin-react": "^6.0.2",
     "expo-blur": "~56.0.3",
     "expo-font": "^56.0.5",
+    "expo-glass-effect": "~56.0.4",
     "expo-haptics": "~56.0.3",
     "expo-image": "~56.0.11",
     "expo-router": "^56.0.0",
+    "expo-symbols": "~56.0.6",
     "jest": "^30.3.0",
     "jest-environment-jsdom": "^30.4.1",
     "react": "19.2.0",
@@ -1129,6 +1174,7 @@
     "react-native-gesture-handler": "^2.30.0",
     "react-native-reanimated": "^4.2.2",
     "react-native-safe-area-context": "~5.6.0",
+    "react-native-screens": "^4.25.2",
     "react-native-svg": "^15.15.3",
     "react-native-web": "^0.21.2",
     "react-test-renderer": "^19.2.0",
@@ -1142,15 +1188,18 @@
     "expo": "*",
     "expo-blur": "*",
     "expo-font": "*",
+    "expo-glass-effect": ">=0.1.5",
     "expo-haptics": "*",
     "expo-image": "*",
     "expo-router": ">=3.0.0",
+    "expo-symbols": ">=0.4.5",
     "react": ">=18.0.0",
     "react-dom": ">=18.0.0",
     "react-native": ">=0.73.0",
     "react-native-gesture-handler": ">=2.16.1",
     "react-native-reanimated": ">=3.13.0",
     "react-native-safe-area-context": ">=5.0.0",
+    "react-native-screens": ">=3.16.0",
     "react-native-svg": ">=13.0.0",
     "nativewind": ">=5.0.0"
   },

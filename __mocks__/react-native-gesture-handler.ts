@@ -11,6 +11,11 @@ const gestureBuilder = () => {
     manualActivation: () => builder,
     activeOffsetY: () => builder,
     activeOffsetX: () => builder,
+    failOffsetY: () => builder,
+    failOffsetX: () => builder,
+    // Tap tolerances — the tab bar widens both so a drifting finger still taps.
+    maxDistance: () => builder,
+    maxDuration: () => builder,
     onBegin: () => builder,
     onStart: () => builder,
     onUpdate: () => builder,

@@ -1,0 +1,256 @@
+---
+title: TabBar
+description: A floating, minimize-on-scroll tab bar with a sliding highlight, liquid glass on iOS 26 and a backdrop-filter on web.
+order: 19
+---
+
+# TabBar
+
+A floating tab bar that sits over your content instead of boxing it in. It minimizes as you scroll down and re-expands as you scroll up, its highlight slides between tabs and can be scrubbed with a finger, and its capsule renders as real liquid glass on iOS 26, a CSS `backdrop-filter` on web, and a solid themed fill everywhere else.
+
+It works with or without a router. `@oxyhq/bloom/tab-bar` has no router dependency at all; the expo-router bindings live in a separate `@oxyhq/bloom/tab-bar/expo-router` subpath.
+
+## Install
+
+The tab bar adds three peers on top of Bloom's usual ones:
+
+```bash
+bunx expo install expo-glass-effect expo-symbols react-native-screens
+```
+
+| Peer | Used by | Needed when |
+|------|---------|-------------|
+| `expo-glass-effect` | `tab-bar/surface.native` | iOS/Android builds. Provides the iOS 26 liquid-glass capsule; the package's own `isLiquidGlassAvailable()` gate makes every other platform take the solid fallback. |
+| `expo-symbols` | `tab-bar/glyph.native` | iOS/Android builds, only if you set `item.sfSymbol`. |
+| `react-native-screens` | `tab-bar/expo-router` | Only if you use `renderFadingTabScreen`. |
+
+The bar also uses Bloom's existing `expo-blur`, `react-native-reanimated`, `react-native-gesture-handler` and `react-native-safe-area-context` peers. Native apps must wrap their root in `GestureHandlerRootView` — the bar is scrubbable, so it needs gesture-handler mounted.
+
+<Callout variant="info" title="Web builds pull none of the native packages">
+`expo-glass-effect` and `expo-symbols` are imported only from `.native` files, and the router packages only from the `expo-router` subpath. A web bundle of `@oxyhq/bloom/tab-bar` reaches none of them, so a web-only app can skip installing them entirely.
+</Callout>
+
+## Usage without a router
+
+Drive it like any controlled component: pass `activeIndex`, handle `onIndexChange`.
+
+```tsx
+import { useState } from 'react';
+import { Icons } from '@oxyhq/bloom/icons';
+import { TabBar, TabBarButton, TabBarMinimizeProvider } from '@oxyhq/bloom/tab-bar';
+
+const TABS = [
+  { name: 'home', label: 'Home', icon: <Icons.Home_Stroke2_Corner0_Rounded /> },
+  { name: 'search', label: 'Search', icon: <Icons.MagnifyingGlass_Stroke2_Corner0_Rounded /> },
+  { name: 'you', label: 'You', icon: <Icons.UserCircle_Stroke2_Corner0_Rounded /> },
+];
+
+export function Shell() {
+  const [index, setIndex] = useState(0);
+
+  return (
+    <TabBarMinimizeProvider>
+      <Screen index={index} />
+      <TabBar activeIndex={index} onIndexChange={setIndex}>
+        {TABS.map((item, i) => (
+          <TabBarButton key={item.name} item={item} index={i} />
+        ))}
+      </TabBar>
+    </TabBarMinimizeProvider>
+  );
+}
+```
+
+`TabBarMinimizeProvider` wraps the whole tab tree once, so any screen that calls `useMinimizeOnScroll()` drives the same bar. It is optional — without it each consumer falls back to its own local progress, which keeps a screen working when it is rendered outside a tab layout.
+
+## Usage with expo-router
+
+```tsx
+import { Icons } from '@oxyhq/bloom/icons';
+import { TabBarMinimizeProvider } from '@oxyhq/bloom/tab-bar';
+import {
+  RouterTabBar,
+  RouterTabBarButton,
+  renderFadingTabScreen,
+} from '@oxyhq/bloom/tab-bar/expo-router';
+import { Tabs, TabList, TabSlot, TabTrigger } from 'expo-router/ui';
+import { router } from 'expo-router';
+
+const TABS = [
+  { name: 'home', label: 'Home', href: '/', icon: <Icons.Home_Stroke2_Corner0_Rounded /> },
+  { name: 'search', label: 'Search', href: '/search', icon: <Icons.MagnifyingGlass_Stroke2_Corner0_Rounded /> },
+  { name: 'you', label: 'You', href: '/you', icon: <Icons.UserCircle_Stroke2_Corner0_Rounded /> },
+];
+
+export default function TabLayout() {
+  return (
+    <TabBarMinimizeProvider>
+      <Tabs>
+        <TabSlot style={{ height: '100%' }} renderFn={renderFadingTabScreen} />
+        <TabList asChild>
+          <RouterTabBar onIndexChange={(i) => router.navigate(TABS[i].href)}>
+            {TABS.map(({ href, ...item }, index) => (
+              <TabTrigger key={item.name} name={item.name} href={href} asChild>
+                <RouterTabBarButton item={item} index={index} />
+              </TabTrigger>
+            ))}
+          </RouterTabBar>
+        </TabList>
+      </Tabs>
+    </TabBarMinimizeProvider>
+  );
+}
+```
+
+Two things about this shape are load-bearing:
+
+- **Navigation runs through `onIndexChange`, not through the triggers.** The bar's gesture detector consumes the touches — that is what makes scrubbing possible — so a tap never reaches a trigger's own `Pressable`.
+- **`RouterTabBar` takes no `activeIndex`.** With a router the highlight is driven by each trigger's own focus, which is what keeps it correct through deep links, back gestures and any other programmatic navigation. Setting both would put two writers on one shared value.
+
+`renderFadingTabScreen` is a drop-in for `TabSlot`'s `renderFn`: identical to expo-router's default render, plus a fade and a micro-scale on the screen becoming focused. It is the only place `react-native-screens` is used.
+
+## Minimizing on scroll
+
+Screens opt in with `useMinimizeOnScroll()`, which returns a scroll handler for `Animated.ScrollView`. Scrolling down minimizes the bar to icons only; scrolling up, or being near the top, expands it.
+
+```tsx
+import Animated from 'react-native-reanimated';
+import { useMinimizeOnScroll } from '@oxyhq/bloom/tab-bar';
+
+export default function Feed() {
+  const onScroll = useMinimizeOnScroll();
+
+  return (
+    <Animated.ScrollView onScroll={onScroll} scrollEventThrottle={16}>
+      {/* … */}
+    </Animated.ScrollView>
+  );
+}
+```
+
+For anything else that should react to the same progress — a header that fades with the bar, say — read the raw shared value:
+
+```tsx
+import { useTabBarMinimized } from '@oxyhq/bloom/tab-bar';
+
+const minimized = useTabBarMinimized(); // SharedValue<number>, 0 = expanded, 1 = minimized
+```
+
+<Callout variant="warning" title="List every shared value in your mapper's deps array">
+On web without the react-native-worklets babel plugin — the production reality for every Oxy RN-Web app — reanimated drives a mapper off its dependency array, not off auto-tracked reads. `useAnimatedStyle(() => ({ opacity: minimized.value }), [minimized])` animates; the same mapper with `[]` runs once and freezes at the first frame, with no error anywhere. Native ignores the extra deps, so listing them is correct on both platforms.
+</Callout>
+
+## Icons
+
+`item.icon` is the primary API and takes any node — a Bloom icon, an SVG, your own component — exactly like `TabsTrigger` and `FrostedIconButton`. The bar renders it twice per tab (an inactive layer with the active layer crossfading on top) and injects the layer's tint as the icon's `fill`. An icon that sets its own `fill` (a brand mark, say) keeps it, so both layers render it identically and it never flickers.
+
+`item.sfSymbol` is an **iOS-only enhancement**: when present, iOS renders the real system glyph instead, weight-matched to the platform and tinted natively. Android, web and every non-Metro resolver ignore it and render `item.icon`, so every item still needs one.
+
+```tsx
+const TABS = [
+  {
+    name: 'home',
+    label: 'Home',
+    icon: <Icons.Home_Stroke2_Corner0_Rounded />,
+    sfSymbol: 'house.fill',
+  },
+  {
+    name: 'you',
+    label: 'You',
+    icon: <Icons.UserCircle_Stroke2_Corner0_Rounded />,
+    sfSymbol: 'person.crop.circle',
+  },
+];
+```
+
+## Theming
+
+Every color comes from the active `BloomThemeProvider` preset and mode — there is no hardcoded palette, so the bar follows a preset or a light/dark switch for free.
+
+| Role | Resolves from | Meaning |
+|------|---------------|---------|
+| `activeTint` | `colors.text` | Label and glyph of the tab the highlight is over. |
+| `inactiveTint` | `colors.textSecondary` | Label and glyph of every other tab. |
+| `highlight` | `colors.contrast50` | The sliding highlight pill. |
+| `glassTint` | `colors.background` at 55% | Tint layered over the liquid glass (iOS 26) or `backdrop-filter` (web) material. |
+| `solidFallback` | `colors.backgroundSecondary` at 94% | Near-opaque background used when there is no glass to lens. |
+
+Override any subset with the `theme` prop; the rest keep their token-derived values.
+
+```tsx
+<TabBar activeIndex={index} onIndexChange={setIndex} theme={{ highlight: 'rgb(255 0 128)' }}>
+```
+
+Overrides are coalesced key by key, so an explicit `undefined` in a partial can never punch a hole in the resolved theme.
+
+## Per-platform behaviour
+
+| Platform | Capsule surface | Blur behind the bar |
+|----------|-----------------|---------------------|
+| iOS 26 | Real `UIGlassEffect` liquid glass under `glassTint`, with the native corner configuration (true squircle + rim lighting) tracking the animated height. | Ten thin stacked `BlurView`s — iOS has no public variable-blur API, so the falloff is built from layer coverage. |
+| iOS &lt; 26, Android | Solid `solidFallback` fill. `isLiquidGlassAvailable()` reports `false`, so `GlassView` is never mounted. | Same ten-layer stack. |
+| Web | `backdrop-filter: blur(24px) saturate(180%)` under `glassTint`. Browsers without `backdrop-filter` simply skip it and keep the translucent tint. | One `backdrop-filter` faded with a `mask-image` — an order of magnitude cheaper than ten composited backdrop passes, and it traces the same curve as the native stack. |
+
+The capsule radius rides on the surface itself rather than on a clipping parent: iOS 26 glass renders its own native corner configuration, which an RN mask would flatten.
+
+## ProgressiveBlur
+
+The gradient blur behind the bar is also a standalone component. Use it behind any floating chrome — a transparent header, a docked composer — so content dissolves rather than meeting a hard blur line.
+
+```tsx
+import { ProgressiveBlur } from '@oxyhq/bloom/progressive-blur';
+
+<ProgressiveBlur
+  direction="top"
+  intensity={5}
+  style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 120 }}
+/>;
+```
+
+| Prop | Type | Default | Description |
+|------|------|---------|-------------|
+| `direction?` | `'top' \| 'bottom'` | `'top'` | Which edge the blur is anchored to — strongest there, fading away. |
+| `intensity?` | `number` | `5` | Blur strength at the anchored edge, on `expo-blur`'s 0–100 scale. Applied per layer on native; the web fork maps it onto the single CSS blur radius that approximates the same stack. |
+| `style?` | `StyleProp<ViewStyle>` | — | Position and size it yourself; it has no intrinsic layout. |
+
+The tail gradient is derived from the theme's page background, so it works on light and dark alike.
+
+## TabBar props
+
+| Prop | Type | Default | Description |
+|------|------|---------|-------------|
+| `children` | `ReactNode` | — | The `TabBarButton`s, in bar order. |
+| `activeIndex?` | `number` | — | **Controlled path.** The focused tab. Omit it with a router — use per-button `isFocused` instead. |
+| `onIndexChange?` | `(index: number) => void` | — | Called with the chosen index on tap, on scrub release, or on keyboard / assistive-technology activation. |
+| `theme?` | `Partial<TabBarTheme>` | — | Partial override of the token-resolved theme. |
+| `haptics?` | `boolean` | `true` | Picker-style tick as the scrub crosses tab boundaries. Already a no-op on web and when `expo-haptics` is absent. |
+
+Everything `View` accepts is forwarded.
+
+## TabBarButton props
+
+| Prop | Type | Default | Description |
+|------|------|---------|-------------|
+| `item` | `TabBarItem` | — | `{ name, label, icon, sfSymbol? }`. |
+| `index` | `number` | — | Position in the bar. Must match the child order. |
+| `isFocused?` | `boolean` | — | **Focus-driven path**, supplied by the router adapter. When present it wins over the bar's `activeIndex` and this button drives the highlight. |
+
+Everything `Pressable` accepts is forwarded, including the function form of `style`.
+
+## Exports
+
+| Export | From | Description |
+|--------|------|-------------|
+| `TabBar`, `TabBarButton` | `@oxyhq/bloom/tab-bar` | The bar and its trigger. |
+| `TabBarMinimizeProvider` | `@oxyhq/bloom/tab-bar` | Shares one minimize progress across the tab tree. |
+| `useMinimizeOnScroll` | `@oxyhq/bloom/tab-bar` | Scroll handler for `Animated.ScrollView`. |
+| `useTabBarMinimized` | `@oxyhq/bloom/tab-bar` | The raw `SharedValue<number>`, 0…1. |
+| `useMinimizeState`, `setMinimized`, `MINIMIZE_SPRING` | `@oxyhq/bloom/tab-bar` | Lower-level control of the same progress. |
+| `RouterTabBar`, `RouterTabBarButton`, `renderFadingTabScreen` | `@oxyhq/bloom/tab-bar/expo-router` | expo-router bindings. |
+| `ProgressiveBlur` | `@oxyhq/bloom/progressive-blur` | The gradient blur, standalone. |
+
+Types: `TabBarItem`, `TabBarProps`, `TabBarButtonProps`, `TabBarTheme`, `MinimizeState`, `ProgressiveBlurProps`.
+
+<Callout variant="info" title="TabBar vs Tabs">
+`TabBar` is app-level navigation chrome: floating, minimize-on-scroll, one per screen tree. For switching between panels *inside* a screen, reach for `Tabs` from `@oxyhq/bloom/tabs` instead — an inline, underlined control with no gestures and no surface of its own.
+</Callout>
