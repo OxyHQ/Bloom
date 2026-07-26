@@ -5,34 +5,55 @@
  * Pure geometry for the per-position container: `position: 'absolute'` is correct
  * here because the toast host provides a viewport-sized containing block (see
  * `ToastHost`), which is what keeps this module platform-agnostic.
+ *
+ * INVARIANT: a row must never be laid out outside its container's box. See
+ * `getContainerStyle`.
  */
 import type { ViewStyle } from 'react-native';
 import { ESTIMATED_TOAST_HEIGHT, OUTSIDE_PRESS_PADDING } from './constants';
 import type { ToastPosition } from './types';
 
-export const getContainerStyle = (position: ToastPosition): ViewStyle => {
-  if (position === 'center') {
-    return {
-      position: 'absolute',
-      top: '50%',
-      left: 0,
-      right: 0,
-      alignItems: 'center',
-      overflow: 'visible',
-    };
-  }
-
-  return {
-    position: 'absolute',
-    width: '100%',
-    alignItems: 'center',
-    overflow: 'visible',
-  };
-};
+/**
+ * ALL FOUR EDGES ARE PINNED, for every position. `Positioner` then overrides the
+ * one anchored edge with `getInsetValues`, so the container still spans the host in
+ * the other direction and always has a REAL HEIGHT.
+ *
+ * That is the whole point. This used to be `{position:'absolute', width:'100%'}`
+ * plus an inset of only `{bottom: N}` — and since every row inside is ITSELF
+ * `position:'absolute'`, the container had no in-flow content and measured ZERO
+ * HEIGHT, so every row was laid out entirely OUTSIDE its parent's box. Measured on
+ * web: a bottom-center container was a 0-height line at y=884 with its rows at
+ * y=784 and y=838, i.e. at NEGATIVE offsets (`top: -46px`) from a zero-height
+ * parent. The DOM does not clip, so web rendered it anyway; Android does not
+ * tolerate it, and `bottom-center` — the DEFAULT position — painted nothing at all.
+ *
+ * Two things that look like they would work here and do NOT:
+ *  - `justifyContent` cannot place the rows. They are absolutely positioned, so it
+ *    has no effect on them; the row's own anchor (`top: 0` / `bottom: 0` /
+ *    `top: '50%'`) does the placing.
+ *  - PADDING cannot supply the edge offset. In CSS an absolutely positioned child
+ *    resolves against its ancestor's PADDING BOX, so padding does not inset it —
+ *    while Yoga DOES inset it. Padding would have moved the rows on native and left
+ *    them at the screen edge on web. The offset therefore stays an inset on the
+ *    container itself, which behaves identically on both.
+ */
+export const getContainerStyle = (): ViewStyle => ({
+  position: 'absolute',
+  top: 0,
+  right: 0,
+  bottom: 0,
+  left: 0,
+  alignItems: 'center',
+  // Enter and exit animations translate a row past the container edge on purpose.
+  overflow: 'visible',
+});
 
 /**
- * A falsy `offset` means "derive from the safe area": the stack sits `inset + 8`
- * from the edge, or 16 when there is no inset.
+ * How far the stack sits from its screen edge. A falsy `offset` means "derive from
+ * the safe area": `inset + 8`, or 16 when there is no inset.
+ *
+ * `Positioner` applies this over ONE of `getContainerStyle`'s four pinned edges;
+ * `calculateOutsidePressableArea` reads the same numbers as a plain edge distance.
  */
 export const getInsetValues = ({
   position,

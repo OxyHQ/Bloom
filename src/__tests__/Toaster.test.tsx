@@ -76,14 +76,16 @@ const flattenStyle = (style: unknown): Record<string, unknown> => {
 
 /**
  * The positioner container for one edge. `getContainerStyle` is the only absolute
- * View that centres its children, and `getInsetValues` gives it a NUMERIC `top` or
- * `bottom` (the `center` position uses the string `'50%'`, so it never matches).
+ * View that centres its children, and it pins all four edges — so the ANCHORED edge
+ * is the one `getInsetValues` pushed off zero. `center` overrides neither, so it
+ * matches no edge.
  */
 const positionerFor = (
   { UNSAFE_root }: ReturnType<typeof renderOutlet>,
   edge: 'top' | 'bottom',
-): Instance | undefined =>
-  UNSAFE_root.findAll((node) => {
+): Instance | undefined => {
+  const other = edge === 'top' ? 'bottom' : 'top';
+  return UNSAFE_root.findAll((node) => {
     if (hostName(node) !== 'View') {
       return false;
     }
@@ -91,9 +93,12 @@ const positionerFor = (
     return (
       style.position === 'absolute' &&
       style.alignItems === 'center' &&
-      typeof style[edge] === 'number'
+      typeof style[edge] === 'number' &&
+      style[edge] !== 0 &&
+      style[other] === 0
     );
   })[0];
+};
 
 /** Every string rendered inside a subtree, in render order. */
 const textsIn = (node: Instance): string[] => {

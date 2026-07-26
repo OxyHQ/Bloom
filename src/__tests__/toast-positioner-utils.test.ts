@@ -10,28 +10,34 @@ import {
 import type { ToastPosition } from '../toast/types';
 
 describe('getContainerStyle', () => {
-  it('anchors the center position at the vertical midpoint', () => {
-    expect(getContainerStyle('center')).toEqual({
+  /**
+   * The container must be FULL-BLEED, with all four insets pinned to 0. Rows are
+   * themselves absolutely positioned, so a container that sizes itself to its
+   * content has ZERO HEIGHT and every row lands outside its parent's box — which
+   * Android refuses to paint at `bottom-center`. `getInsetValues` supplies the edge
+   * offset, which `Positioner` applies as PADDING so rows stay inside.
+   */
+  it('is full-bleed, so a row can never be laid out outside it', () => {
+    expect(getContainerStyle()).toEqual({
       position: 'absolute',
-      top: '50%',
-      left: 0,
+      top: 0,
       right: 0,
+      bottom: 0,
+      left: 0,
       alignItems: 'center',
       overflow: 'visible',
     });
   });
 
-  it.each<ToastPosition>(['top-center', 'bottom-center'])(
-    'spans the full width for %s, leaving the edge to getInsetValues',
-    (position) => {
-      expect(getContainerStyle(position)).toEqual({
-        position: 'absolute',
-        width: '100%',
-        alignItems: 'center',
-        overflow: 'visible',
-      });
-    },
-  );
+  it('never sizes itself to its content', () => {
+    const style = getContainerStyle();
+    expect(style.height).toBeUndefined();
+    expect(style.width).toBeUndefined();
+    // All four edges pinned is what gives it the host's size instead.
+    expect([style.top, style.right, style.bottom, style.left]).toEqual([
+      0, 0, 0, 0,
+    ]);
+  });
 });
 
 describe('getInsetValues', () => {

@@ -63,7 +63,13 @@ import { useAnimatedTarget } from './use-animated-target';
 import { ToastContent } from './ToastContent';
 import { ToastSwipeHandler } from './ToastSwipeHandler';
 import { toastStore } from './toast-store';
-import type { ToasterProps, ToastProps, ToastRef, ToastStyles } from './types';
+import type {
+  ToasterProps,
+  ToastPosition,
+  ToastProps,
+  ToastRef,
+  ToastStyles,
+} from './types';
 import { useToastPosition } from './use-toast-position';
 
 /** How much a wiggle grows the row, and for how long per half-cycle. */
@@ -383,7 +389,7 @@ export const ToastRow = React.forwardRef<ToastRef, ToastRowProps>(
       <Animated.View
         style={[
           styles.anchor,
-          position === 'bottom-center' ? styles.anchorBottom : styles.anchorTop,
+          anchorFor(position),
           { zIndex: stackZIndex },
           stackTransformStyle,
         ]}
@@ -458,4 +464,22 @@ const styles = StyleSheet.create({
   },
   anchorTop: { top: 0 },
   anchorBottom: { bottom: 0 },
+  /**
+   * The container is full-bleed for every position, so the vertical midpoint lives
+   * on the ROW rather than on the container. `calculateToastPosition` then shifts
+   * the front row up by half its height to sit ON the line rather than below it —
+   * see its `centerShift`.
+   */
+  anchorCenter: { top: '50%' },
 });
+
+/** Which edge of the (full-bleed, padded) container the row hangs from. */
+function anchorFor(position: ToastPosition) {
+  if (position === 'bottom-center') {
+    return styles.anchorBottom;
+  }
+  if (position === 'center') {
+    return styles.anchorCenter;
+  }
+  return styles.anchorTop;
+}
