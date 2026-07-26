@@ -18,8 +18,11 @@
  * It runs before paint, so a target change never shows a stale frame first.
  * Precedent for the imperative drive: `bottom-sheet/BottomSheetBase.tsx`.
  *
- * The first render is seeded rather than animated: a row must appear AT its
- * position, not fly in from zero on top of its own enter animation.
+ * By default the first render is seeded rather than animated: a row must appear
+ * AT its position, not fly in from zero. Pass `from` when the FIRST render is
+ * itself the animation — the value is then seeded at `from` and animated to
+ * `target` on mount. That is how the enter animation is driven; see the
+ * "Bloom owns the enter animation" note in `animations.ts`.
  */
 import { useLayoutEffect, useRef } from 'react';
 import {
@@ -34,21 +37,25 @@ export function useAnimatedTarget(
   {
     duration,
     easing,
+    from,
   }: {
     duration: number;
     easing: EasingFunctionFactory | ((value: number) => number);
+    from?: number;
   },
 ): SharedValue<number> {
-  const value = useSharedValue(target);
+  const value = useSharedValue(from ?? target);
   const isSeeded = useRef(false);
 
   useLayoutEffect(() => {
     if (!isSeeded.current) {
       isSeeded.current = true;
-      return;
+      if (from === undefined) {
+        return;
+      }
     }
     value.value = withTiming(target, { duration, easing });
-  }, [target, value, duration, easing]);
+  }, [target, value, duration, easing, from]);
 
   return value;
 }

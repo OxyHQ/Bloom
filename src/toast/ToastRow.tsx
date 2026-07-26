@@ -25,6 +25,13 @@
  * W5 — this row does NOT subscribe to `AppState`. `Toaster` holds one
  * subscription for the whole stack (upstream creates one per row, so N toasts
  * meant N `visibilitychange` listeners).
+ *
+ * THE ENTER ANIMATION IS IMPERATIVE, THE EXIT IS A LAYOUT ANIMATION. `rowStyle`
+ * below fades and slides the row in from `enterTranslateY`; only `exiting` is
+ * handed to reanimated. Moving the enter back onto `entering` reintroduces a
+ * blocker where reanimated's web layout-animation cleanup freezes the row in
+ * viewport coordinates and a later toast draws on top of it — the full mechanism
+ * is documented in `animations.ts`.
  */
 import * as React from 'react';
 import {
@@ -43,6 +50,7 @@ import Animated, {
 import { easeOutQuartFn, useToastLayoutAnimations } from './animations';
 import {
   CLOSE_BUTTON_HIT_AREA,
+  ENTERING_ANIMATION_DURATION,
   STACKING_ANIMATION_DURATION,
   toastDefaults,
 } from './constants';
@@ -187,7 +195,7 @@ export const ToastRow = React.forwardRef<ToastRef, ToastRowProps>(
       position === 'top-center' ? index : numberOfToasts - 1 - index;
     const isHiddenByLimit = enableStacking && distanceFromFront >= visibleToasts;
 
-    const { entering, exiting } = useToastLayoutAnimations(
+    const { entering, exiting, enterTranslateY } = useToastLayoutAnimations(
       positionProp,
       animation,
       isHiddenByLimit,
@@ -231,10 +239,28 @@ export const ToastRow = React.forwardRef<ToastRef, ToastRowProps>(
       [yPosition, stackScaleX],
     );
 
+    // 0 -> 1 over the enter animation. Seeded at 1 (no animation) when a consumer
+    // supplied their own `entering` builder or reduced motion is on, in which case
+    // `enterTranslateY` is undefined and this style is the identity.
+    const enterProgress = useAnimatedTarget(1, {
+      duration: ENTERING_ANIMATION_DURATION,
+      easing: easeOutQuartFn,
+      from: enterTranslateY === undefined ? undefined : 0,
+    });
+    const enterDistance = enterTranslateY ?? 0;
+
     const wiggleScale = useSharedValue(1);
-    const wiggleStyle = useAnimatedStyle(
-      () => ({ transform: [{ scale: wiggleScale.value }] }),
-      [wiggleScale],
+    // ONE mapper for both transforms: two animated styles on the same view would
+    // each return a `transform` array and the later one would win outright.
+    const rowStyle = useAnimatedStyle(
+      () => ({
+        opacity: enterProgress.value,
+        transform: [
+          { translateY: (1 - enterProgress.value) * enterDistance },
+          { scale: wiggleScale.value },
+        ],
+      }),
+      [enterProgress, enterDistance, wiggleScale],
     );
 
     const wiggle = React.useCallback(() => {
@@ -371,7 +397,7 @@ export const ToastRow = React.forwardRef<ToastRef, ToastRowProps>(
           important={important}
           position={positionProp}
         >
-          <Animated.View style={wiggleStyle}>
+          <Animated.View style={rowStyle}>
             <Animated.View
               ref={measuredRef}
               onLayout={handleLayout}

@@ -2,28 +2,57 @@
  * Derived from sonner-native v0.26.4 — src/animations.ts, src/animation-utils.ts
  * and src/easings.ts (MIT © Gunnar Torfi Steinarsson). See the top-level NOTICE.
  *
- * W1 — THE DEFAULTS ARE `Keyframe` INSTANCES, NOT WORKLET BUILDERS.
+ * W1 — THE EXIT DEFAULT IS A `Keyframe` INSTANCE, NOT A WORKLET BUILDER.
  *
- * Upstream returns a custom `EntryExitAnimationFunction` from
- * `useToastLayoutAnimations`. On web that produces NO animation at all:
- * reanimated's web layout-animation manager looks the builder up by preset name,
- * finds none, logs a warning per toast and falls through to `makeElementVisible`,
- * so a toast simply appears and disappears. A `ReanimatedKeyframe` compiles to a
- * real CSS `@keyframes` rule on web and to the same interpolation on native, so
- * one definition covers both platforms.
+ * Upstream returns a custom `EntryExitAnimationFunction` for both directions. On
+ * web that produces NO animation at all: reanimated's web layout-animation
+ * manager looks the builder up by preset name, finds none, logs a warning per
+ * toast and falls through to `makeElementVisible`, so a toast simply appears and
+ * disappears. A `ReanimatedKeyframe` compiles to a real CSS `@keyframes` rule on
+ * web and to the same interpolation on native, so one definition covers both
+ * platforms — which is what the exit default below is.
  *
- * Consumer-supplied *predefined* builders (`FadeIn`, `SlideInUp`, a `Keyframe`)
- * keep working on both platforms. A consumer's own custom worklet builder still
- * animates on native and is silently ignored on web — that is a reanimated
- * limitation, not something Bloom can bridge.
+ * BLOOM OWNS THE ENTER ANIMATION — NEVER HAND IT TO `entering`. This is the fix
+ * for a blocker where a second toast landed exactly on top of the first, and it
+ * MUST NOT be undone by "simplifying" the enter back into a `Keyframe`:
  *
- * Instances are cached per animation shape because building one is not free and,
- * more importantly, because `Keyframe.parseDefinitions()` MUTATES the definition
- * object it was constructed with (it rewrites `from`/`to` into `0`/`100` and
- * deletes them). Each cached instance therefore owns its own definition object;
- * sharing one definition across two instances would make the second throw
- * "Please provide 0 or 'from' keyframe". Re-parsing a single instance is
- * idempotent, so one instance is safely shared by every row of the same shape.
+ *   reanimated's web ENTERING path calls `setElementAnimation(element, config,
+ *   true)`, whose third argument is `shouldSavePosition`. For any animation name
+ *   that is not one of its own predefined presets — which is every `Keyframe`,
+ *   since those mint a fresh `REA-ENTERING-n` rule — it also schedules
+ *   `scheduleAnimationCleanup(name, duration, cb)`, and that callback runs
+ *   `setElementPosition(element, snapshot)`: `position: absolute`, an explicit
+ *   `top`/`left`/`width`/`height` and `transform: ''`, taken from a snapshot
+ *   captured when the enter animation ENDED. The timeout is `duration * 5`, so at
+ *   Bloom's 300ms enter the row is frozen in VIEWPORT coordinates 1500ms after it
+ *   appeared, and its parent collapses to `height: 0`. A row that moves inside
+ *   that window — i.e. any row that is still on screen when the next toast
+ *   arrives — has its stack translate exactly cancelled and redraws on top of the
+ *   newcomer. It is completely silent: no error, no warning.
+ *
+ * So Bloom's own enter is driven imperatively instead: `ToastRow` seeds a shared
+ * value at 0 and animates it to 1 (`useAnimatedTarget`'s `from`), interpolating
+ * opacity and `ENTER_TRANSLATE_Y`. That keeps the exact distances and easing on
+ * both platforms and never touches reanimated's web layout-animation machinery.
+ *
+ * The EXIT still goes through `exiting`, which is safe: reanimated pins the
+ * throwaway dummy clone it animates (`shouldSavePosition` is false for the real
+ * element), and it is what keeps a dismissed row mounted long enough to animate.
+ *
+ * Consumer-supplied *predefined* builders (`FadeIn`, `SlideInUp`) keep working on
+ * both platforms for both enter and exit. A consumer's own custom worklet builder
+ * still animates on native and is silently ignored on web, and a consumer's
+ * custom `Keyframe` passed as `animation.enter` will hit the pin described above
+ * on web — both are reanimated limitations Bloom cannot bridge.
+ *
+ * Exit instances are cached per animation shape because building one is not free
+ * and, more importantly, because `Keyframe.parseDefinitions()` MUTATES the
+ * definition object it was constructed with (it rewrites `from`/`to` into
+ * `0`/`100` and deletes them). Each cached instance therefore owns its own
+ * definition object; sharing one definition across two instances would make the
+ * second throw "Please provide 0 or 'from' keyframe". Re-parsing a single
+ * instance is idempotent, so one instance is safely shared by every row of the
+ * same shape.
  */
 import {
   Easing,
@@ -46,7 +75,6 @@ import type {
  * short-circuits on the `.factory` property, so these pass without the worklets
  * babel plugin too.
  */
-const EASE_OUT_QUART = Easing.bezier(0.165, 0.84, 0.44, 1);
 const EASE_IN_OUT_CUBIC = Easing.bezier(0.645, 0.045, 0.355, 1);
 
 /** Worklet-callable easing for `withTiming` inside mappers and layout transitions. */
@@ -65,8 +93,8 @@ const EXIT_TRANSLATE_Y_SINGLE = 150;
 
 /**
  * Bounded so an animated `gap` cannot grow the cache without limit. The natural
- * key space is 3 enter shapes + 3 positions x hidden x single x one stackGap = 15
- * entries, so this leaves room for a few gap values while staying O(1) memory.
+ * key space is 3 positions x hidden x single x one stackGap = 12 entries, so this
+ * leaves room for a few gap values while staying O(1) memory.
  */
 export const MAX_CACHED_ANIMATIONS = 32;
 
@@ -97,26 +125,6 @@ function cachedAnimation(
 /** Exported so the bounded-growth invariant above is testable. */
 export function toastAnimationCacheSize(): number {
   return animationCache.size;
-}
-
-export function getToastEnterAnimation(
-  position: ToastPosition,
-): ReanimatedKeyframe {
-  return cachedAnimation(
-    `enter|${position}`,
-    () =>
-      new Keyframe({
-        from: {
-          opacity: 0,
-          transform: [{ translateY: ENTER_TRANSLATE_Y[position] }],
-        },
-        to: {
-          opacity: 1,
-          transform: [{ translateY: 0 }],
-          easing: EASE_OUT_QUART,
-        },
-      }).duration(ENTERING_ANIMATION_DURATION),
-  );
 }
 
 export function getToastExitAnimation({
@@ -181,6 +189,12 @@ export const useToastLayoutAnimations = (
 ): {
   entering: ResolvedAnimation | undefined;
   exiting: ResolvedAnimation | undefined;
+  /**
+   * How far Bloom's own imperative enter animation travels, or `undefined` when
+   * Bloom does not own the enter at all — either the consumer supplied their own
+   * `entering` builder, or reduced motion is on and nothing should animate.
+   */
+  enterTranslateY: number | undefined;
 } => {
   const {
     position: positionCtx,
@@ -192,7 +206,7 @@ export const useToastLayoutAnimations = (
   const reducedMotion = useReducedMotion();
 
   if (reducedMotion) {
-    return { entering: undefined, exiting: undefined };
+    return { entering: undefined, exiting: undefined, enterTranslateY: undefined };
   }
 
   const defaultExiting = getToastExitAnimation({
@@ -202,12 +216,16 @@ export const useToastLayoutAnimations = (
     stackGap,
   });
 
+  const enterOverride =
+    animationProp?.enter !== undefined ? animationProp.enter : animationCtx?.enter;
+  const hasEnterOverride =
+    enterOverride !== undefined && enterOverride !== 'default';
+
   return {
-    entering: resolveAnimationField(
-      animationProp?.enter,
-      animationCtx?.enter,
-      getToastEnterAnimation(position),
-    ),
+    // Bloom's default enter is NOT a layout animation — see the header. Only a
+    // consumer override is handed to reanimated's `entering`.
+    entering: hasEnterOverride ? enterOverride : undefined,
+    enterTranslateY: hasEnterOverride ? undefined : ENTER_TRANSLATE_Y[position],
     // An overflow-culled row always uses Bloom's fade: a consumer's custom exit
     // would animate a row the user cannot even see.
     exiting: isHiddenByLimit

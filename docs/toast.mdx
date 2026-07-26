@@ -85,7 +85,7 @@ Per-toast options (`ToastOptions`):
 | `onDismiss?` / `onAutoClose?` | `(id) => void` | Called when the toast goes away. |
 | `onPress?` | `() => void` | Press anywhere on the row. |
 | `style?` / `styles?` / `unstyled?` | — | Escape hatches for the row's own styling. |
-| `animation?` | `{ enter?, exit? }` | A predefined Reanimated builder, a `Keyframe`, or `'default'`. |
+| `animation?` | `{ enter?, exit? }` | A predefined Reanimated builder, a `Keyframe`, or `'default'`. On web, prefer a **predefined** builder for `enter`: a custom `Keyframe` handed to Reanimated's `entering` gets frozen in place by its web layout-animation cleanup, which breaks the stack. Bloom's own default enter avoids that path entirely. |
 
 Outlet options (`ToasterProps`) cover `position`, `offset`, `gap`, `visibleToasts`,
 `duration`, `swipeToDismissDirection`, `closeButton`, `richColors`,

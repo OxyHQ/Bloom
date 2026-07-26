@@ -1,6 +1,5 @@
 import {
   MAX_CACHED_ANIMATIONS,
-  getToastEnterAnimation,
   getToastExitAnimation,
   toastAnimationCacheSize,
 } from '../toast/animations';
@@ -9,14 +8,14 @@ import type { ToastPosition } from '../toast/types';
 const POSITIONS: ToastPosition[] = ['top-center', 'bottom-center', 'center'];
 
 describe('toast layout animations', () => {
-  it('returns the same instance for the same enter shape', () => {
-    const first = getToastEnterAnimation('bottom-center');
-    expect(getToastEnterAnimation('bottom-center')).toBe(first);
-  });
-
-  it('returns a different instance per position', () => {
+  it('returns a different exit instance per position', () => {
     const instances = POSITIONS.map((position) =>
-      getToastEnterAnimation(position),
+      getToastExitAnimation({
+        position,
+        isHiddenByLimit: false,
+        isSingle: true,
+        stackGap: 8,
+      }),
     );
     expect(new Set(instances).size).toBe(POSITIONS.length);
   });
@@ -52,8 +51,13 @@ describe('toast layout animations', () => {
     // `Keyframe.parseDefinitions()` mutates the definitions it was built with
     // (rewriting `from`/`to` into `0`/`100`), so two instances sharing one object
     // would make the second throw. Distinct instances must not alias.
-    const first = getToastEnterAnimation('top-center');
-    const second = getToastEnterAnimation('bottom-center');
+    const base = {
+      isHiddenByLimit: false,
+      isSingle: true,
+      stackGap: 8,
+    };
+    const first = getToastExitAnimation({ ...base, position: 'top-center' });
+    const second = getToastExitAnimation({ ...base, position: 'bottom-center' });
     expect(first).not.toBe(second);
   });
 

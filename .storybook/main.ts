@@ -72,9 +72,24 @@ const config: StorybookConfig = {
           '.json',
         ],
       },
+      /**
+       * `react-native-worklets`'s `platformChecker.js` reads
+       * `process.env.JEST_WORKER_ID` at MODULE SCOPE, and reanimated reads
+       * `process.env.NODE_ENV` / `process.env.EXPO_OS` the same way. Without a
+       * `process.env` define the preview throws `ReferenceError: process is not
+       * defined` before any story renders — `#storybook-root` stays empty and
+       * Storybook only shows its generic "component failed to render" panel.
+       * The specific keys must be listed alongside the bare `process.env`
+       * object: Vite replaces the longest matching key first, so the specific
+       * entries win where they apply and the bare object catches the rest.
+       */
       define: {
         __DEV__: 'true',
         global: 'globalThis',
+        'process.env.NODE_ENV': '"development"',
+        'process.env.JEST_WORKER_ID': 'undefined',
+        'process.env.EXPO_OS': '"web"',
+        'process.env': '({})',
       },
       optimizeDeps: {
         include: ['react-native-web'],
