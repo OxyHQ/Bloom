@@ -38,6 +38,48 @@ describe('getContainerStyle', () => {
       0, 0, 0, 0,
     ]);
   });
+
+  /**
+   * Load-bearing for swipe-to-dismiss and for the exit animation: both translate a
+   * row deliberately PAST the container edge (a left swipe by up to a full screen
+   * width, an exit by up to 150px). Clipping the container would cut the row off
+   * mid-gesture.
+   */
+  it('does not clip, because swipe and exit translate rows past its edge', () => {
+    expect(getContainerStyle().overflow).toBe('visible');
+  });
+
+  /**
+   * THE #26 INVARIANT, on the composition rather than on either half. `Positioner`
+   * layers `getInsetValues` over `getContainerStyle` in a style array, so the inset
+   * overrides exactly ONE of the four pinned edges and the opposite edge stays 0 —
+   * which is what keeps the box spanning the host and gives it a real height. If a
+   * future edit made `getInsetValues` return both edges, or dropped the opposite
+   * pin, the container would collapse to zero height again and every row would be
+   * laid out out of bounds.
+   */
+  it.each<[ToastPosition, 'top' | 'bottom' | null]>([
+    ['top-center', 'top'],
+    ['bottom-center', 'bottom'],
+    ['center', null],
+  ])('keeps a real height for %s: only the anchored edge moves', (position, anchored) => {
+    const merged = { ...getContainerStyle(), ...getInsetValues({ position }) };
+    const edges = { top: merged.top, right: merged.right, bottom: merged.bottom, left: merged.left };
+
+    // Every edge is still pinned — none became undefined.
+    expect(Object.values(edges).every((value) => value !== undefined)).toBe(true);
+
+    const moved = Object.entries(edges)
+      .filter(([, value]) => value !== 0)
+      .map(([key]) => key);
+    expect(moved).toEqual(anchored ? [anchored] : []);
+
+    // The opposite vertical edge staying 0 is what gives the box its height.
+    if (anchored) {
+      const opposite = anchored === 'top' ? 'bottom' : 'top';
+      expect(edges[opposite]).toBe(0);
+    }
+  });
 });
 
 describe('getInsetValues', () => {

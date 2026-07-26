@@ -6,7 +6,7 @@ import { BloomThemeProvider } from '../theme/BloomThemeProvider';
 import { ENTERING_ANIMATION_DURATION } from '../toast/constants';
 import { toast, ToastOutlet } from '../toast';
 import { toastStore } from '../toast/toast-store';
-import type { ToasterProps } from '../toast/types';
+import type { ToasterProps, ToastPosition } from '../toast/types';
 
 /**
  * `ToastHost` (the web/default file jest resolves) portals through Bloom's DOM
@@ -123,6 +123,19 @@ const textsInPositioner = (
   const positioner = positionerFor(rendered, edge);
   return positioner ? textsIn(positioner) : [];
 };
+
+/**
+ * A row's outermost anchor: the absolute, full-width box that hangs off one edge of
+ * the container. Everything else in the row is relative or statically placed.
+ */
+const anchorOf = ({ UNSAFE_root }: ReturnType<typeof renderOutlet>) =>
+  UNSAFE_root.findAll((node) => {
+    if (hostName(node) !== 'Animated.View') {
+      return false;
+    }
+    const style = flattenStyle(node.props.style);
+    return style.position === 'absolute' && style.width === '100%';
+  })[0];
 
 describe('ToastOutlet', () => {
   beforeEach(() => {
@@ -292,6 +305,29 @@ describe('ToastOutlet', () => {
       expect(textsInPositioner(rendered, 'bottom')).toEqual([
         'explicitly at the bottom',
       ]);
+    });
+
+    /**
+     * The other half of the geometry contract (`toast-positioner-utils.test.ts`
+     * pins the container): the row hangs off exactly ONE edge, and which edge it is
+     * depends on the position. `center` anchors to the 50% LINE, which lives on the
+     * row because the container is no longer itself placed at 50% — dropping that
+     * would park every centred toast at the top of the screen.
+     */
+    it.each<[ToastPosition, 'top' | 'bottom', number | string]>([
+      ['bottom-center', 'bottom', 0],
+      ['top-center', 'top', 0],
+      ['center', 'top', '50%'],
+    ])('anchors a %s row to %s: %s', (position, edge, value) => {
+      const rendered = renderOutlet({ position });
+      show(() => toast('Anchor me'));
+
+      const anchor = anchorOf(rendered);
+      expect(anchor).toBeDefined();
+      const style = flattenStyle(anchor?.props.style);
+      expect(style[edge]).toBe(value);
+      // Anchoring to both edges would stretch the row instead of placing it.
+      expect(style[edge === 'top' ? 'bottom' : 'top']).toBeUndefined();
     });
 
     it('orders each group by its own position, not the outlet position', () => {
