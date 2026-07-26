@@ -476,36 +476,57 @@ const ZoomableImageGalleryInner = React.forwardRef<ZoomableImageGalleryHandle, Z
     [handleDismiss, isOpen, isZoomed, SCREEN_HEIGHT, opacity, scale, startScale, startX, startY, translateX, translateY]
   );
 
-  const backdropStyle = useAnimatedStyle(() => ({ opacity: opacity.value }));
+  // CRITICAL — every shared value a mapper READS must be listed in its dependency
+  // array. On web WITHOUT the react-native-worklets babel plugin (what every Oxy
+  // RN-Web app ships), reanimated cannot auto-detect the reads, so it drives the
+  // mapper off the deps array instead: with none, each mapper runs ONCE and
+  // freezes at the opening frame while the shared values animate underneath it.
+  // That froze the open animation, the drag-to-dismiss follow and the pinch/
+  // double-tap zoom on web. Native (plugin present) auto-tracks and ignores the
+  // extra deps, so listing them is correct on both platforms. Same rule as
+  // `bottom-sheet/BottomSheetBase.tsx`. Do NOT strip these.
+  const backdropStyle = useAnimatedStyle(
+    () => ({ opacity: opacity.value }),
+    [opacity],
+  );
 
   // The single open-image animates from origin → fitted center.
-  const openImageStyle = useAnimatedStyle(() => ({
-    transform: [
-      { translateX: translateX.value },
-      { translateY: translateY.value },
-      { scale: scale.value },
-    ],
-  }));
+  const openImageStyle = useAnimatedStyle(
+    () => ({
+      transform: [
+        { translateX: translateX.value },
+        { translateY: translateY.value },
+        { scale: scale.value },
+      ],
+    }),
+    [translateX, translateY, scale],
+  );
 
   // While dragging to dismiss, the whole pager follows the finger + fades.
-  const pagerContainerStyle = useAnimatedStyle(() => ({
-    opacity: opacity.value,
-    transform: [
-      { translateX: translateX.value },
-      { translateY: translateY.value },
-      { scale: scale.value },
-    ],
-  }));
+  const pagerContainerStyle = useAnimatedStyle(
+    () => ({
+      opacity: opacity.value,
+      transform: [
+        { translateX: translateX.value },
+        { translateY: translateY.value },
+        { scale: scale.value },
+      ],
+    }),
+    [opacity, translateX, translateY, scale],
+  );
 
   // Pinch/double-tap zoom transform, layered on TOP of the active page image's
   // `fit`-based sizing (composed, never replacing it).
-  const zoomImageStyle = useAnimatedStyle(() => ({
-    transform: [
-      { scale: zoomScale.value },
-      { translateX: zoomTranslateX.value },
-      { translateY: zoomTranslateY.value },
-    ],
-  }));
+  const zoomImageStyle = useAnimatedStyle(
+    () => ({
+      transform: [
+        { scale: zoomScale.value },
+        { translateX: zoomTranslateX.value },
+        { translateY: zoomTranslateY.value },
+      ],
+    }),
+    [zoomScale, zoomTranslateX, zoomTranslateY],
+  );
 
   // Derive the current page from the scroll offset, clamp into range, and update
   // `activeIndex` only when it actually changes (drives the live indicator + the
