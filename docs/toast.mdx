@@ -64,6 +64,28 @@ toast.success('Uploaded', { id: 'upload' }); // replaces the row, keeps its posi
 `options.type` is the public variant knob and the typed helpers above are shorthands
 for it. `type: 'default'` (the default) renders a neutral toast — no icon, no tint.
 
+### The variant colours the icon, not the surface
+
+Every toast renders the SAME neutral surface — `backgroundSecondary` with the
+`border`, `text` and `textSecondary` roles — whatever its `type`, and with
+`richColors` on or off. The variant shows up only in the leading icon, which uses
+the theme's first-class status tokens: `success`, `error`, `warning`, `info`. A
+`loading` or variant-less toast gets `textSecondary`.
+
+That is deliberate, and matches sonner. `toast.success('Saved')` should read as a
+normal toast with a green check, not as a full brand-coloured card. `richColors`
+widens the status colour to the border and title as well; it never tints the
+surface and never swaps in a brand colour.
+
+<Callout variant="info" title="Tinted status surfaces need new tokens">
+Bloom has `*Subtle` / `*SubtleForeground` pairs for the **brand** roles
+(`primarySubtle`, `negativeSubtle`) only — those are not status colours, and using
+them here is what once made a success toast render brand-purple. Genuinely tinted
+status surfaces would need a `successSubtle` / `errorSubtle` / `warningSubtle` /
+`infoSubtle` token family: a theme addition affecting every app, not something to
+fake from a brand pair or a derived alpha.
+</Callout>
+
 ## Options
 
 Per-toast options (`ToastOptions`):
@@ -80,12 +102,12 @@ Per-toast options (`ToastOptions`):
 | `dismissible?` | `boolean` | Allow swipe / close. Defaults to `true`. |
 | `position?` | `'top-center' \| 'bottom-center' \| 'center'` | Override the outlet's position for this toast. |
 | `icon?` | `ReactNode` | Replaces the variant icon. |
-| `richColors?` | `boolean` | Stronger variant tinting. |
+| `richColors?` | `boolean` | Show the status colour more prominently: it moves from the icon alone to the border and title as well. The surface stays neutral, as do the description, close button and action colours. No effect on `loading` or a variant-less toast, which have no status colour. |
 | `important?` | `boolean` | Announce assertively to screen readers. |
 | `onDismiss?` / `onAutoClose?` | `(id) => void` | Called when the toast goes away. |
 | `onPress?` | `() => void` | Press anywhere on the row. |
 | `style?` / `styles?` / `unstyled?` | — | Escape hatches for the row's own styling. |
-| `animation?` | `{ enter?, exit? }` | A predefined Reanimated builder, a `Keyframe`, or `'default'`. |
+| `animation?` | `{ enter?, exit? }` | A predefined Reanimated builder, a `Keyframe`, or `'default'`. On web, prefer a **predefined** builder for `enter`: a custom `Keyframe` handed to Reanimated's `entering` gets frozen in place by its web layout-animation cleanup, which breaks the stack. Bloom's own default enter avoids that path entirely. |
 
 Outlet options (`ToasterProps`) cover `position`, `offset`, `gap`, `visibleToasts`,
 `duration`, `swipeToDismissDirection`, `closeButton`, `richColors`,

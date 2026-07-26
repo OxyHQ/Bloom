@@ -10,28 +10,76 @@ import {
 import type { ToastPosition } from '../toast/types';
 
 describe('getContainerStyle', () => {
-  it('anchors the center position at the vertical midpoint', () => {
-    expect(getContainerStyle('center')).toEqual({
+  /**
+   * The container must be FULL-BLEED, with all four insets pinned to 0. Rows are
+   * themselves absolutely positioned, so a container that sizes itself to its
+   * content has ZERO HEIGHT and every row lands outside its parent's box — which
+   * Android refuses to paint at `bottom-center`. `getInsetValues` supplies the edge
+   * offset, which `Positioner` applies as PADDING so rows stay inside.
+   */
+  it('is full-bleed, so a row can never be laid out outside it', () => {
+    expect(getContainerStyle()).toEqual({
       position: 'absolute',
-      top: '50%',
-      left: 0,
+      top: 0,
       right: 0,
+      bottom: 0,
+      left: 0,
       alignItems: 'center',
       overflow: 'visible',
     });
   });
 
-  it.each<ToastPosition>(['top-center', 'bottom-center'])(
-    'spans the full width for %s, leaving the edge to getInsetValues',
-    (position) => {
-      expect(getContainerStyle(position)).toEqual({
-        position: 'absolute',
-        width: '100%',
-        alignItems: 'center',
-        overflow: 'visible',
-      });
-    },
-  );
+  it('never sizes itself to its content', () => {
+    const style = getContainerStyle();
+    expect(style.height).toBeUndefined();
+    expect(style.width).toBeUndefined();
+    // All four edges pinned is what gives it the host's size instead.
+    expect([style.top, style.right, style.bottom, style.left]).toEqual([
+      0, 0, 0, 0,
+    ]);
+  });
+
+  /**
+   * Load-bearing for swipe-to-dismiss and for the exit animation: both translate a
+   * row deliberately PAST the container edge (a left swipe by up to a full screen
+   * width, an exit by up to 150px). Clipping the container would cut the row off
+   * mid-gesture.
+   */
+  it('does not clip, because swipe and exit translate rows past its edge', () => {
+    expect(getContainerStyle().overflow).toBe('visible');
+  });
+
+  /**
+   * THE #26 INVARIANT, on the composition rather than on either half. `Positioner`
+   * layers `getInsetValues` over `getContainerStyle` in a style array, so the inset
+   * overrides exactly ONE of the four pinned edges and the opposite edge stays 0 —
+   * which is what keeps the box spanning the host and gives it a real height. If a
+   * future edit made `getInsetValues` return both edges, or dropped the opposite
+   * pin, the container would collapse to zero height again and every row would be
+   * laid out out of bounds.
+   */
+  it.each<[ToastPosition, 'top' | 'bottom' | null]>([
+    ['top-center', 'top'],
+    ['bottom-center', 'bottom'],
+    ['center', null],
+  ])('keeps a real height for %s: only the anchored edge moves', (position, anchored) => {
+    const merged = { ...getContainerStyle(), ...getInsetValues({ position }) };
+    const edges = { top: merged.top, right: merged.right, bottom: merged.bottom, left: merged.left };
+
+    // Every edge is still pinned — none became undefined.
+    expect(Object.values(edges).every((value) => value !== undefined)).toBe(true);
+
+    const moved = Object.entries(edges)
+      .filter(([, value]) => value !== 0)
+      .map(([key]) => key);
+    expect(moved).toEqual(anchored ? [anchored] : []);
+
+    // The opposite vertical edge staying 0 is what gives the box its height.
+    if (anchored) {
+      const opposite = anchored === 'top' ? 'bottom' : 'top';
+      expect(edges[opposite]).toBe(0);
+    }
+  });
 });
 
 describe('getInsetValues', () => {

@@ -10,6 +10,7 @@
  */
 import { useMemo } from 'react';
 import type { StyleProp, ViewStyle } from 'react-native';
+import type { AnimatedStyle } from 'react-native-reanimated';
 
 import { withAlpha } from '../theme/color-utils';
 import type { ThemeColors } from '../theme/types';
@@ -138,8 +139,15 @@ export interface TabBarSurfaceProps {
    * It rides on the surface itself rather than on a clipping parent: iOS 26
    * glass renders its own native corner configuration (true squircle + rim
    * lighting), which an RN mask would flatten.
+   *
+   * Typed through `AnimatedStyle` because this always receives a
+   * `useAnimatedStyle` result, which reanimated 4.5 returns as an opaque
+   * `AnimatedStyleHandle` rather than the plain style object 4.2 handed back.
+   * Same reason `BottomSheetProps.style` is typed this way. Every variant
+   * forwards it into an `Animated.View` (or an animated `GlassView`), so the
+   * wider type is what they genuinely accept.
    */
-  style: StyleProp<ViewStyle>;
+  style: StyleProp<AnimatedStyle<ViewStyle>>;
 }
 
 export interface TabBarGlyphProps {

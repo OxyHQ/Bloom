@@ -1,5 +1,6 @@
 import React from 'react';
 import { Text, View } from 'react-native';
+import { SlideInLeft } from 'react-native-reanimated';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
 import { Button } from '../button';
@@ -7,15 +8,24 @@ import { toast, ToastOutlet } from './index';
 import type { ToasterProps } from './types';
 
 /**
- * These stories exercise the real engine, so they need the REAL
- * `react-native-reanimated` / `react-native-gesture-handler` /
- * `react-native-safe-area-context`. Until `.storybook/main.ts` stops aliasing those
- * to `.storybook/mocks/*`, this page cannot load: the reanimated stub exports no
- * `Keyframe`, `LinearTransition`, `useReducedMotion`, `Easing.bezierFn` or
- * `Easing.elastic`, and the safe-area stub exports `SafeAreaInsetsContext` as a
- * function rather than a context. Removing those aliases is deliberately a separate
- * step — running against the real packages WITHOUT the worklets babel plugin is
- * exactly what consumers ship, which is the whole point of the web gate.
+ * These stories run against the REAL `react-native-reanimated` /
+ * `react-native-gesture-handler` / `react-native-safe-area-context` bundled
+ * against react-native-web WITHOUT the worklets babel plugin — exactly what
+ * every Oxy consumer ships, which is what makes this a genuine web gate.
+ *
+ * Two shapes of multi-toast story exist on purpose and BOTH must be kept:
+ *
+ *  - `Stacking` fires four toasts in ONE tick. Every row enters at its final
+ *    slot, so no row ever changes position after it has settled.
+ *  - `Sequential*` fires one toast, waits, then fires another while the first
+ *    is AT REST. Only this shape moves a settled row, and only this shape
+ *    catches the class of bug where something pins a row at a stale position.
+ *
+ * A one-tick story passing proves nothing about the sequential case. Verify a
+ * `Sequential*` story by comparing the two rows' `getBoundingClientRect().y`:
+ * unstacked they must be ~54px apart (46px measured row + 8px gap), collapsed-
+ * stack ~8px apart. Equal `y` values mean the rows are drawn on top of each
+ * other — the failure this shape exists to catch.
  */
 const meta: Meta = {
   title: 'Components/Toast',
@@ -40,6 +50,11 @@ function Demo({
   );
 }
 
+/**
+ * All six rows must share ONE neutral surface — only the leading icon changes
+ * colour. Compare against `RichColors`, which keeps that same surface and adds the
+ * status colour to the border and title.
+ */
 export const Variants: Story = {
   render: () => (
     <Demo>
@@ -53,6 +68,14 @@ export const Variants: Story = {
   ),
 };
 
+/**
+ * The direct comparison against `Variants`. The SURFACE is identical in both
+ * stories — `richColors` only widens the status colour from the icon alone to the
+ * border and title as well, so a success row here is a neutral card with a green
+ * icon, green border and green title. Two failure modes to watch for: a tinted or
+ * brand-coloured surface (the status/brand token families got mixed again), or a
+ * row indistinguishable from `Variants` (the prop stopped doing anything).
+ */
 export const RichColors: Story = {
   render: () => (
     <Demo outlet={{ richColors: true }}>
@@ -216,6 +239,61 @@ export const Stacking: Story = {
   ),
 };
 
+/**
+ * The three sequential regression stories. Fire `One`, let it settle, then fire
+ * `Two` — the second toast must land BESIDE the first, never on top of it. See
+ * the file header for the expected geometry.
+ */
+function SequentialDemo({ outlet }: { outlet?: ToasterProps }) {
+  return (
+    <Demo outlet={outlet}>
+      <Button onPress={() => toast('Row one', { duration: Infinity })}>One</Button>
+      <Button onPress={() => toast('Row two', { duration: Infinity })}>Two</Button>
+    </Demo>
+  );
+}
+
+export const SequentialStacked: Story = {
+  render: () => <SequentialDemo outlet={{ enableStacking: true, visibleToasts: 3 }} />,
+};
+
+export const SequentialUnstacked: Story = {
+  render: () => <SequentialDemo outlet={{ enableStacking: false, visibleToasts: 5 }} />,
+};
+
+export const SequentialTopCenter: Story = {
+  render: () => <SequentialDemo outlet={{ position: 'top-center', visibleToasts: 5 }} />,
+};
+
+/**
+ * Mixed positions on ONE outlet. The outlet is left at its default
+ * `bottom-center`, so:
+ *
+ *   "Top"   -> an explicit `position: 'top-center'` toast, near the top
+ *   "Plain" -> a POSITION-LESS toast, which must land at the outlet's configured
+ *              position (bottom-center) whether or not the top one is alive
+ *
+ * Fire Top first, then Plain. A position-less toast that relocates to the top
+ * means position grouping is keying off whichever position happens to be first in
+ * the occupied list rather than the outlet's own.
+ */
+export const MixedPositions: Story = {
+  render: () => (
+    <Demo outlet={{ visibleToasts: 5 }}>
+      <Button
+        onPress={() =>
+          toast('Top row', { position: 'top-center', duration: Infinity })
+        }
+      >
+        Top
+      </Button>
+      <Button onPress={() => toast('Plain row', { duration: Infinity })}>
+        Plain
+      </Button>
+    </Demo>
+  ),
+};
+
 export const TopCenter: Story = {
   render: () => (
     <Demo outlet={{ position: 'top-center' }}>
@@ -238,6 +316,21 @@ export const SwipeUp: Story = {
       <Button onPress={() => toast('Swipe me up', { duration: Infinity })}>
         Swipe up to dismiss
       </Button>
+    </Demo>
+  ),
+};
+
+/**
+ * The consumer-override branch: Bloom's own enter is imperative, so a supplied
+ * `animation.enter` is the ONLY thing ever handed to reanimated's `entering`.
+ * Sequential on purpose — an override must not reintroduce the stale-position
+ * pin the default enter was moved off `entering` to avoid.
+ */
+export const CustomEnterAnimation: Story = {
+  render: () => (
+    <Demo outlet={{ animation: { enter: SlideInLeft.duration(300) }, visibleToasts: 5 }}>
+      <Button onPress={() => toast('Row one', { duration: Infinity })}>One</Button>
+      <Button onPress={() => toast('Row two', { duration: Infinity })}>Two</Button>
     </Demo>
   ),
 };

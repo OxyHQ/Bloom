@@ -2,8 +2,11 @@
  * Derived from sonner-native v0.26.4 — src/positioner.tsx
  * (MIT © Gunnar Torfi Steinarsson). See the top-level NOTICE.
  *
- * One absolutely-positioned container per occupied position, plus the
- * press-to-collapse area outside an expanded stack.
+ * One container per occupied position, plus the press-to-collapse area outside an
+ * expanded stack. The container pins all four edges and `getInsetValues` overrides
+ * just the anchored one, so it always has a real height and the rows inside it —
+ * which are absolutely positioned — are never laid out out of bounds. See
+ * `getContainerStyle` for what a zero-height container did to Android.
  *
  * `position: 'absolute'` is correct on BOTH platforms and this file stays fully
  * universal: `ToastHost` supplies a viewport-sized containing block on web, so
@@ -92,12 +95,16 @@ export const Positioner: React.FC<
       ) : null}
       <View
         style={[
-          getContainerStyle(resolvedPosition),
+          getContainerStyle(),
           androidElevationStyle,
+          // Overrides ONE edge of the four `getContainerStyle` pins, so the box
+          // keeps a real height and the rows inside it stay in bounds.
           insetValues,
-          // An empty container on Android must not swallow touches at all;
-          // otherwise `box-none` lets presses through to the app but still
-          // reaches the rows.
+          // This container spans the whole host, so it must never swallow a touch.
+          // `box-none` passes presses through to the app while still reaching the
+          // rows; an EMPTY one on Android drops to `none` outright, because the
+          // outlet's configured position always renders a container even with no
+          // rows in it (see `Toaster`'s grouping).
           {
             pointerEvents:
               Platform.OS === 'android' && !hasChildren ? 'none' : 'box-none',

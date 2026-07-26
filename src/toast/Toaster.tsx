@@ -167,20 +167,35 @@ export const Toaster: React.FC<ToasterProps> = ({
     [toastHeights, isExpanded],
   );
 
-  const orderedToasts = React.useMemo(
-    () => orderToastsFromPosition(toasts, position),
-    [toasts, position],
-  );
-
-  const occupiedPositions = React.useMemo(
-    () =>
-      ALL_POSITIONS.filter(
-        (candidate) =>
-          candidate === position ||
-          toasts.some((toast) => toast.position === candidate),
-      ),
-    [toasts, position],
-  );
+  /**
+   * Rows grouped by their EFFECTIVE position, which for a toast with no explicit
+   * `position` is the outlet's configured one — the same resolution `ToastRow`
+   * itself does (`positionProp ?? positionCtx`).
+   *
+   * It must NOT be "whichever group happens to come first". Grouping a
+   * position-less row by index put it in the top-center group the moment any
+   * top-center toast existed, because `ALL_POSITIONS` starts with `top-center`:
+   * a plain `toast('Saved')` then rendered against the top inset (visible only as
+   * a sliver above the screen edge), and an already-placed one JUMPED there when a
+   * top-center toast arrived.
+   *
+   * The configured position is always kept, even with no rows in it, so
+   * position-less rows always have a home. Each group is ordered by its OWN
+   * position: a top-anchored stack renders in reverse, and applying the outlet's
+   * ordering to every group reversed the wrong ones.
+   */
+  const toastsByPosition = React.useMemo(() => {
+    const groups = new Map<ToastPosition, ToastProps[]>();
+    for (const candidate of ALL_POSITIONS) {
+      const group = toasts.filter(
+        (toast) => (toast.position ?? position) === candidate,
+      );
+      if (candidate === position || group.length > 0) {
+        groups.set(candidate, orderToastsFromPosition(group, candidate));
+      }
+    }
+    return groups;
+  }, [toasts, position]);
 
   const onDismiss = React.useCallback((id: string | number) => {
     toastStore.dismissToast(id, 'onDismiss');
@@ -196,12 +211,7 @@ export const Toaster: React.FC<ToasterProps> = ({
     <ToastHost ToasterOverlayWrapper={ToasterOverlayWrapper}>
       <ToastContext.Provider value={stableValue}>
         <DynamicToastContext.Provider value={dynamicValue}>
-          {occupiedPositions.map((currentPosition, positionIndex) => {
-            const toastsForPosition = orderedToasts.filter(
-              (toast) =>
-                toast.position === currentPosition ||
-                (!toast.position && positionIndex === 0),
-            );
+          {Array.from(toastsByPosition, ([currentPosition, toastsForPosition]) => {
             const orderedToastIds = getOrderedToastIds(
               toastsForPosition,
               currentPosition,

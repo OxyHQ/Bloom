@@ -25,6 +25,16 @@
  * W5 — this row does NOT subscribe to `AppState`. `Toaster` holds one
  * subscription for the whole stack (upstream creates one per row, so N toasts
  * meant N `visibilitychange` listeners).
+ *
+ * THE EXIT IS ALWAYS A LAYOUT ANIMATION; THE ENTER DEPENDS ON THE PLATFORM.
+ * `animations.ts` returns EITHER an `entering` builder (native, and any consumer
+ * override) OR an `enterTranslateY` for `rowStyle` below to fade and slide the row
+ * in imperatively (web default) — never both. When `enterTranslateY` is
+ * `undefined`, `enterProgress` is seeded at 1 and `rowStyle` collapses to the
+ * wiggle scale alone, so nothing here competes with `entering`. Both halves of
+ * that split are load-bearing and neither may be "simplified" into the other:
+ * `animations.ts` documents the web pin that forbids `entering` on web and the
+ * native regression that forbids the imperative driver on native.
  */
 import * as React from 'react';
 import {
@@ -43,6 +53,7 @@ import Animated, {
 import { easeOutQuartFn, useToastLayoutAnimations } from './animations';
 import {
   CLOSE_BUTTON_HIT_AREA,
+  ENTERING_ANIMATION_DURATION,
   STACKING_ANIMATION_DURATION,
   toastDefaults,
 } from './constants';
@@ -52,7 +63,13 @@ import { useAnimatedTarget } from './use-animated-target';
 import { ToastContent } from './ToastContent';
 import { ToastSwipeHandler } from './ToastSwipeHandler';
 import { toastStore } from './toast-store';
-import type { ToasterProps, ToastProps, ToastRef, ToastStyles } from './types';
+import type {
+  ToasterProps,
+  ToastPosition,
+  ToastProps,
+  ToastRef,
+  ToastStyles,
+} from './types';
 import { useToastPosition } from './use-toast-position';
 
 /** How much a wiggle grows the row, and for how long per half-cycle. */
@@ -187,7 +204,7 @@ export const ToastRow = React.forwardRef<ToastRef, ToastRowProps>(
       position === 'top-center' ? index : numberOfToasts - 1 - index;
     const isHiddenByLimit = enableStacking && distanceFromFront >= visibleToasts;
 
-    const { entering, exiting } = useToastLayoutAnimations(
+    const { entering, exiting, enterTranslateY } = useToastLayoutAnimations(
       positionProp,
       animation,
       isHiddenByLimit,
@@ -231,10 +248,28 @@ export const ToastRow = React.forwardRef<ToastRef, ToastRowProps>(
       [yPosition, stackScaleX],
     );
 
+    // 0 -> 1 over the enter animation. Seeded at 1 with NO mount-time `withTiming`
+    // whenever `enterTranslateY` is undefined — i.e. whenever `entering` is playing
+    // the enter instead, or reduced motion is on — leaving this style the identity.
+    const enterProgress = useAnimatedTarget(1, {
+      duration: ENTERING_ANIMATION_DURATION,
+      easing: easeOutQuartFn,
+      from: enterTranslateY === undefined ? undefined : 0,
+    });
+    const enterDistance = enterTranslateY ?? 0;
+
     const wiggleScale = useSharedValue(1);
-    const wiggleStyle = useAnimatedStyle(
-      () => ({ transform: [{ scale: wiggleScale.value }] }),
-      [wiggleScale],
+    // ONE mapper for both transforms: two animated styles on the same view would
+    // each return a `transform` array and the later one would win outright.
+    const rowStyle = useAnimatedStyle(
+      () => ({
+        opacity: enterProgress.value,
+        transform: [
+          { translateY: (1 - enterProgress.value) * enterDistance },
+          { scale: wiggleScale.value },
+        ],
+      }),
+      [enterProgress, enterDistance, wiggleScale],
     );
 
     const wiggle = React.useCallback(() => {
@@ -354,7 +389,7 @@ export const ToastRow = React.forwardRef<ToastRef, ToastRowProps>(
       <Animated.View
         style={[
           styles.anchor,
-          position === 'bottom-center' ? styles.anchorBottom : styles.anchorTop,
+          anchorFor(position),
           { zIndex: stackZIndex },
           stackTransformStyle,
         ]}
@@ -371,7 +406,7 @@ export const ToastRow = React.forwardRef<ToastRef, ToastRowProps>(
           important={important}
           position={positionProp}
         >
-          <Animated.View style={wiggleStyle}>
+          <Animated.View style={rowStyle}>
             <Animated.View
               ref={measuredRef}
               onLayout={handleLayout}
@@ -429,4 +464,22 @@ const styles = StyleSheet.create({
   },
   anchorTop: { top: 0 },
   anchorBottom: { bottom: 0 },
+  /**
+   * The container is full-bleed for every position, so the vertical midpoint lives
+   * on the ROW rather than on the container. `calculateToastPosition` then shifts
+   * the front row up by half its height to sit ON the line rather than below it —
+   * see its `centerShift`.
+   */
+  anchorCenter: { top: '50%' },
 });
+
+/** Which edge of the (full-bleed, padded) container the row hangs from. */
+function anchorFor(position: ToastPosition) {
+  if (position === 'bottom-center') {
+    return styles.anchorBottom;
+  }
+  if (position === 'center') {
+    return styles.anchorCenter;
+  }
+  return styles.anchorTop;
+}

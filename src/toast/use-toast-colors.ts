@@ -9,8 +9,24 @@
  * `invert` are documented no-ops (light/dark and per-subtree recolouring are
  * `BloomThemeProvider` / `BloomColorScope` concerns).
  *
+ * THE SURFACE IS ALWAYS NEUTRAL — `backgroundSecondary` with the `border`, `text`
+ * and `textSecondary` roles, for every variant, with `richColors` on or off. The
+ * variant only ever colours the leading ICON, and `richColors` only ever widens
+ * that to the border and title as well. Exactly like sonner.
+ *
+ * NOTHING HERE MAY REACH FOR A BRAND TOKEN. `success` / `error` / `warning` /
+ * `info` are STATUS colours; `primarySubtle` / `negativeSubtle` are BRAND pairs.
+ * Mixing the families is what made `toast.success('Saved')` render as a
+ * brand-purple card, and what made a success icon flip from green to purple when
+ * `richColors` was switched on. `richColors` means "show the status colour more
+ * prominently", never "switch to the brand palette".
+ *
+ * Genuinely tinted status SURFACES would need a `successSubtle` / `errorSubtle` /
+ * `warningSubtle` / `infoSubtle` token family — a theme addition, not something to
+ * fake here from a brand pair or a derived alpha.
+ *
  * An ABSENT variant is a first-class case: a plain `toast('Saved')` renders the
- * neutral surface. It must never fall back to `info`.
+ * neutral surface with no variant icon at all. It must never fall back to `info`.
  */
 import { useMemo } from 'react';
 
@@ -37,11 +53,35 @@ export type ToastColors = {
 };
 
 /**
- * Bloom's token set has `*Subtle` / `*SubtleForeground` pairs for the primary and
- * negative roles only, so `success` and `error` get a tinted surface while
- * `warning` / `info` / `loading` keep the neutral surface and tint only the icon.
- * `richColors` additionally lifts the border and title of those variants to the
- * variant colour — it never invents a surface token that does not exist.
+ * The variant's STATUS colour, or `undefined` for the variants that have none.
+ * `loading` and an absent variant are deliberately in the second group: they carry
+ * no status meaning, so `richColors` has nothing to make more prominent and both
+ * stay fully neutral.
+ */
+function statusColor(
+  variant: ToastVariant | undefined,
+  colors: ThemeColors,
+): string | undefined {
+  switch (variant) {
+    case 'success':
+      return colors.success;
+    case 'error':
+      return colors.error;
+    case 'warning':
+      return colors.warning;
+    case 'info':
+      return colors.info;
+    case 'loading':
+    case undefined:
+      return undefined;
+  }
+}
+
+/**
+ * `richColors` widens the status colour from the icon alone to the border and
+ * title as well. It does NOT tint the surface, and it does not touch the
+ * description, close button or action colours — those stay neutral so the row
+ * still reads as a toast rather than a status banner.
  */
 function resolveColors({
   variant,
@@ -52,75 +92,30 @@ function resolveColors({
   richColors: boolean;
   colors: ThemeColors;
 }): ToastColors {
-  const neutralAction: ToastActionColors = {
-    background: colors.backgroundTertiary,
-    text: colors.textSecondary,
-    pressedBackground: colors.contrast50,
-    pressedText: colors.text,
-  };
+  const status = statusColor(variant, colors);
 
+  // The whole surface, for EVERY variant and both values of `richColors`. Because
+  // the action colours live here, they can never pick up a variant tint either.
   const neutral: ToastColors = {
     surface: colors.backgroundSecondary,
     border: colors.border,
     title: colors.text,
     description: colors.textSecondary,
-    icon: colors.textSecondary,
+    icon: status ?? colors.textSecondary,
     closeButton: colors.textSecondary,
-    action: neutralAction,
+    action: {
+      background: colors.backgroundTertiary,
+      text: colors.textSecondary,
+      pressedBackground: colors.contrast50,
+      pressedText: colors.text,
+    },
     cancelText: colors.textSecondary,
   };
 
-  switch (variant) {
-    case 'success':
-      return {
-        surface: colors.primarySubtle,
-        border: colors.primary,
-        title: colors.primarySubtleForeground,
-        description: colors.primarySubtleForeground,
-        icon: colors.primarySubtleForeground,
-        closeButton: colors.primarySubtleForeground,
-        action: {
-          background: colors.primarySubtle,
-          text: colors.primarySubtleForeground,
-          pressedBackground: colors.primaryLight,
-          pressedText: colors.primaryDark,
-        },
-        cancelText: colors.primarySubtleForeground,
-      };
-    case 'error':
-      return {
-        surface: colors.negativeSubtle,
-        border: colors.negative,
-        title: colors.negativeSubtleForeground,
-        description: colors.negativeSubtleForeground,
-        icon: colors.negativeSubtleForeground,
-        closeButton: colors.negativeSubtleForeground,
-        action: {
-          background: colors.negativeSubtle,
-          text: colors.negativeSubtleForeground,
-          pressedBackground: colors.negative,
-          pressedText: colors.negativeForeground,
-        },
-        cancelText: colors.negativeSubtleForeground,
-      };
-    case 'warning':
-      return {
-        ...neutral,
-        icon: colors.warning,
-        border: richColors ? colors.warning : neutral.border,
-        title: richColors ? colors.warning : neutral.title,
-      };
-    case 'info':
-      return {
-        ...neutral,
-        icon: colors.info,
-        border: richColors ? colors.info : neutral.border,
-        title: richColors ? colors.info : neutral.title,
-      };
-    case 'loading':
-    case undefined:
-      return neutral;
+  if (!richColors || status === undefined) {
+    return neutral;
   }
+  return { ...neutral, border: status, title: status };
 }
 
 export function useToastColors({

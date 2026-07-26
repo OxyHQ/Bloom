@@ -14,9 +14,21 @@ describe('toast layout animations', () => {
     expect(getToastEnterAnimation('bottom-center')).toBe(first);
   });
 
-  it('returns a different instance per position', () => {
+  it('returns a different enter instance per position', () => {
     const instances = POSITIONS.map((position) =>
       getToastEnterAnimation(position),
+    );
+    expect(new Set(instances).size).toBe(POSITIONS.length);
+  });
+
+  it('returns a different exit instance per position', () => {
+    const instances = POSITIONS.map((position) =>
+      getToastExitAnimation({
+        position,
+        isHiddenByLimit: false,
+        isSingle: true,
+        stackGap: 8,
+      }),
     );
     expect(new Set(instances).size).toBe(POSITIONS.length);
   });
