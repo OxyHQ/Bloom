@@ -20,14 +20,14 @@ bunx expo install expo-glass-effect expo-symbols react-native-screens
 
 | Peer | Used by | Needed when |
 |------|---------|-------------|
-| `expo-glass-effect` | `tab-bar/surface.native` | iOS/Android builds. Provides the iOS 26 liquid-glass capsule; the package's own `isLiquidGlassAvailable()` gate makes every other platform take the solid fallback. |
-| `expo-symbols` | `tab-bar/glyph.native` | iOS/Android builds, only if you set `item.sfSymbol`. |
+| `expo-glass-effect` | `tab-bar/surface.native` | Any native build that renders the bar. Its NATIVE module is Apple-only (`"platforms": ["apple"]`) and provides the iOS 26 liquid-glass capsule; on Android the package is pure JS, its own `isLiquidGlassAvailable()` answers `false`, and the bar paints the solid themed fill instead. |
+| `expo-symbols` | `tab-bar/glyph.native` | Any native build that renders the bar. Apple-only as well: it draws `item.sfSymbol` as a real SF Symbol on iOS, and the bar falls back to `item.icon` everywhere else. |
 | `react-native-screens` | `tab-bar/expo-router` | Only if you use `renderFadingTabScreen`. |
 
 The bar also uses Bloom's existing `expo-blur`, `react-native-reanimated`, `react-native-gesture-handler` and `react-native-safe-area-context` peers. Native apps must wrap their root in `GestureHandlerRootView` — the bar is scrubbable, so it needs gesture-handler mounted.
 
 <Callout variant="info" title="Web builds pull none of the native packages">
-`expo-glass-effect` and `expo-symbols` are imported only from `.native` files, and the router packages only from the `expo-router` subpath. A web bundle of `@oxyhq/bloom/tab-bar` reaches none of them, so a web-only app can skip installing them entirely.
+`expo-glass-effect` and `expo-symbols` are imported only from `.native` files, and the router packages only from the `expo-router` subpath. A web bundle of `@oxyhq/bloom/tab-bar` reaches none of them, so a web-only app can skip installing them entirely — which is why Bloom marks both **optional** in `peerDependenciesMeta`. Optional means "no installer warning for the consumers that never reach them", not "omittable from a native bundle": both are static imports, so a **native** build that renders the bar needs the JS packages installed on Android exactly as much as on iOS, even though only iOS has native code to link.
 </Callout>
 
 ## Usage without a router

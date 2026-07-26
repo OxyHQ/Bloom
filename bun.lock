@@ -69,8 +69,10 @@
       "optionalPeers": [
         "expo",
         "expo-font",
+        "expo-glass-effect",
         "expo-haptics",
         "expo-router",
+        "expo-symbols",
         "nativewind",
         "react-dom",
       ],

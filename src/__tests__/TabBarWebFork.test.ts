@@ -160,6 +160,8 @@ describe('tab-bar platform split', () => {
 describe('tab-bar published surface', () => {
   const pkg = JSON.parse(readFileSync(join(REPO_ROOT, 'package.json'), 'utf8')) as {
     exports: Record<string, { browser?: { import?: string; require?: string } }>;
+    peerDependencies: Record<string, string>;
+    peerDependenciesMeta: Record<string, { optional?: boolean }>;
   };
 
   it('exports ./tab-bar with a browser condition → index.web.js', () => {
@@ -182,6 +184,32 @@ describe('tab-bar published surface', () => {
     const entry = pkg.exports['./tab-bar/expo-router'];
     expect(entry).toBeDefined();
     expect(entry?.browser).toBeUndefined();
+  });
+
+  it('declares the two Apple-only native peers OPTIONAL, keeping their ranges', () => {
+    // `expo-glass-effect` and `expo-symbols` both declare `"platforms": ["apple"]`
+    // — their native modules exist on Apple platforms only, and nothing outside
+    // `tab-bar/surface.native` / `tab-bar/glyph.native` reaches them. Required
+    // peers would oblige every consumer that never renders a tab bar (every web
+    // app included) to install two Apple-only packages. The RANGE still has to be
+    // declared: a native bundle imports both statically, so an installed version
+    // that predates those exports is a real incompatibility.
+    for (const peer of ['expo-glass-effect', 'expo-symbols']) {
+      expect(pkg.peerDependencies[peer]).toMatch(/^>=\d/);
+      expect(pkg.peerDependenciesMeta[peer]?.optional).toBe(true);
+    }
+  });
+
+  it('keeps the cross-platform native peers REQUIRED', () => {
+    // `expo-blur` and `expo-image` are apple+android native modules imported from
+    // platform-NEUTRAL files (`progressive-blur/index.tsx`,
+    // `frosted-icon-button/FrostedIconButton.tsx`, `zoomable-image-gallery/`), so
+    // every native platform genuinely needs them. Marking them optional would
+    // silence the one warning that tells a consumer their build is about to fail.
+    for (const peer of ['expo-blur', 'expo-image']) {
+      expect(pkg.peerDependencies[peer]).toBeDefined();
+      expect(pkg.peerDependenciesMeta[peer]).toBeUndefined();
+    }
   });
 
   it('the generator lists exactly the right subpaths as web-forked', () => {

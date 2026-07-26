@@ -1211,10 +1211,16 @@
     "expo-font": {
       "optional": true
     },
+    "expo-glass-effect": {
+      "optional": true
+    },
     "expo-haptics": {
       "optional": true
     },
     "expo-router": {
+      "optional": true
+    },
+    "expo-symbols": {
       "optional": true
     },
     "react-dom": {

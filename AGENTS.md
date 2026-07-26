@@ -127,7 +127,8 @@ setColorPreset("blue") // Updates context + CSS vars on web
 ## Peers
 
 - **Required**: react >= 18, react-native >= 0.73, react-native-safe-area-context >= 5, react-native-reanimated >= 3.13, react-native-gesture-handler >= 2.16.1, react-native-svg >= 13
-- **Optional**: @gorhom/bottom-sheet
+- **Optional**: @gorhom/bottom-sheet, expo-glass-effect, expo-symbols (both Apple-only native modules — `"platforms": ["apple"]` — reached ONLY from `tab-bar/surface.native` / `tab-bar/glyph.native`, where they add the iOS 26 glass capsule and real SF Symbols; Android gets each package's pure-JS fallback, web reaches neither). Optional means no installer warning for consumers that never reach them — it does NOT mean a native bundle can omit them: both are static imports, so any native build rendering the tab bar needs the JS packages on Android too.
+- `expo-blur` and `expo-image` stay REQUIRED on purpose: both are apple+android native modules and both are imported from platform-NEUTRAL files (`progressive-blur/index.tsx`, `frosted-icon-button/FrostedIconButton.tsx`, `zoomable-image-gallery/`), so every native platform genuinely needs them.
 - Bloom owns its toast engine (vendored from sonner-native 0.26.4, see `NOTICE`); `sonner` / `sonner-native` / `nanoid` are NOT dependencies. The engine runs on react-native-web, so web bundles DO import reanimated + gesture-handler.
 
 ## Typography + NativeWind (CRITICAL)
