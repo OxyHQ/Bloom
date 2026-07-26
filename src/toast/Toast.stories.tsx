@@ -265,6 +265,35 @@ export const SequentialTopCenter: Story = {
   render: () => <SequentialDemo outlet={{ position: 'top-center', visibleToasts: 5 }} />,
 };
 
+/**
+ * Mixed positions on ONE outlet. The outlet is left at its default
+ * `bottom-center`, so:
+ *
+ *   "Top"   -> an explicit `position: 'top-center'` toast, near the top
+ *   "Plain" -> a POSITION-LESS toast, which must land at the outlet's configured
+ *              position (bottom-center) whether or not the top one is alive
+ *
+ * Fire Top first, then Plain. A position-less toast that relocates to the top
+ * means position grouping is keying off whichever position happens to be first in
+ * the occupied list rather than the outlet's own.
+ */
+export const MixedPositions: Story = {
+  render: () => (
+    <Demo outlet={{ visibleToasts: 5 }}>
+      <Button
+        onPress={() =>
+          toast('Top row', { position: 'top-center', duration: Infinity })
+        }
+      >
+        Top
+      </Button>
+      <Button onPress={() => toast('Plain row', { duration: Infinity })}>
+        Plain
+      </Button>
+    </Demo>
+  ),
+};
+
 export const TopCenter: Story = {
   render: () => (
     <Demo outlet={{ position: 'top-center' }}>

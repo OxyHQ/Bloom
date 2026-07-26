@@ -59,6 +59,66 @@ const measuredRowOf = ({ UNSAFE_root }: ReturnType<typeof renderOutlet>) =>
       hostName(node) === 'Animated.View' && typeof node.props.onLayout === 'function',
   );
 
+type Instance = ReturnType<typeof rowsOf>[number];
+
+/**
+ * This repo's `react-native` mock stubs `StyleSheet.flatten` as an identity
+ * no-op, so style arrays have to be merged here rather than through RN.
+ */
+const flattenStyle = (style: unknown): Record<string, unknown> => {
+  if (Array.isArray(style)) {
+    return Object.assign({}, ...style.map(flattenStyle));
+  }
+  return typeof style === 'object' && style !== null
+    ? (style as Record<string, unknown>)
+    : {};
+};
+
+/**
+ * The positioner container for one edge. `getContainerStyle` is the only absolute
+ * View that centres its children, and `getInsetValues` gives it a NUMERIC `top` or
+ * `bottom` (the `center` position uses the string `'50%'`, so it never matches).
+ */
+const positionerFor = (
+  { UNSAFE_root }: ReturnType<typeof renderOutlet>,
+  edge: 'top' | 'bottom',
+): Instance | undefined =>
+  UNSAFE_root.findAll((node) => {
+    if (hostName(node) !== 'View') {
+      return false;
+    }
+    const style = flattenStyle(node.props.style);
+    return (
+      style.position === 'absolute' &&
+      style.alignItems === 'center' &&
+      typeof style[edge] === 'number'
+    );
+  })[0];
+
+/** Every string rendered inside a subtree, in render order. */
+const textsIn = (node: Instance): string[] => {
+  const strings: string[] = [];
+  const visit = (instance: Instance) => {
+    for (const child of instance.children) {
+      if (typeof child === 'string') {
+        strings.push(child);
+      } else {
+        visit(child);
+      }
+    }
+  };
+  visit(node);
+  return strings;
+};
+
+const textsInPositioner = (
+  rendered: ReturnType<typeof renderOutlet>,
+  edge: 'top' | 'bottom',
+): string[] => {
+  const positioner = positionerFor(rendered, edge);
+  return positioner ? textsIn(positioner) : [];
+};
+
 describe('ToastOutlet', () => {
   beforeEach(() => {
     jest.useFakeTimers();
@@ -175,6 +235,82 @@ describe('ToastOutlet', () => {
     // Both render, each inside its own positioner.
     expect(getByText('at the bottom')).toBeTruthy();
     expect(getByText('at the top')).toBeTruthy();
+  });
+
+  /**
+   * WHICH positioner a row lands in, not just that it renders. Grouping used to
+   * key a position-less row on `positionIndex === 0`, so the moment ANY
+   * top-center toast existed a plain `toast('Saved')` was assigned to the
+   * top-center container — visible only as a sliver above the screen edge — and an
+   * already-placed row jumped there when a top-center toast arrived.
+   */
+  describe('position assignment', () => {
+    it('keeps a position-less toast at the outlet position when a top-center one is alive', () => {
+      const rendered = renderOutlet();
+      show(() => {
+        toast('explicitly at the top', { position: 'top-center' });
+        toast('no position given');
+      });
+
+      expect(textsInPositioner(rendered, 'top')).toEqual([
+        'explicitly at the top',
+      ]);
+      expect(textsInPositioner(rendered, 'bottom')).toEqual([
+        'no position given',
+      ]);
+    });
+
+    it('does not move an already-placed position-less toast when a top-center one arrives', () => {
+      const rendered = renderOutlet();
+      show(() => toast('no position given'));
+      expect(textsInPositioner(rendered, 'bottom')).toEqual([
+        'no position given',
+      ]);
+
+      show(() => toast('explicitly at the top', { position: 'top-center' }));
+      expect(textsInPositioner(rendered, 'bottom')).toEqual([
+        'no position given',
+      ]);
+      expect(textsInPositioner(rendered, 'top')).toEqual([
+        'explicitly at the top',
+      ]);
+    });
+
+    it('follows the outlet position, not a hardcoded default', () => {
+      const rendered = renderOutlet({ position: 'top-center' });
+      show(() => {
+        toast('explicitly at the bottom', { position: 'bottom-center' });
+        toast('no position given');
+      });
+
+      expect(textsInPositioner(rendered, 'top')).toEqual(['no position given']);
+      expect(textsInPositioner(rendered, 'bottom')).toEqual([
+        'explicitly at the bottom',
+      ]);
+    });
+
+    it('orders each group by its own position, not the outlet position', () => {
+      // Outlet is bottom-center, so its own group renders oldest-first. The
+      // top-center group must still render newest-first — a top-anchored stack
+      // grows downward from the newest row. `visibleToasts` is raised so the
+      // store's cap does not cull the oldest of the four.
+      const rendered = renderOutlet({ visibleToasts: 5 });
+      show(() => {
+        toast('first at the top', { position: 'top-center' });
+        toast('second at the top', { position: 'top-center' });
+        toast('first at the bottom');
+        toast('second at the bottom');
+      });
+
+      expect(textsInPositioner(rendered, 'top')).toEqual([
+        'second at the top',
+        'first at the top',
+      ]);
+      expect(textsInPositioner(rendered, 'bottom')).toEqual([
+        'first at the bottom',
+        'second at the bottom',
+      ]);
+    });
   });
 
   it('records a measured row height from the onLayout tier', () => {
