@@ -189,6 +189,12 @@ with the default 3000ms duration survive 5s of hover, then resume when the point
 leaves. This holds with `enableStacking={false}` too — there the pointer pauses
 without expanding anything, since a flat column has nothing to open.
 
+Dismissing a row **out of** a hovered stack leaves the rest expanded and still
+paused, rather than collapsing under the cursor and resuming. Without a pointer
+holding it — on native, or once the mouse leaves — a stack still collapses itself
+once one row is left, which is invisible (a lone row sits at the same offset and
+scale either way) and is what stops that last toast's paused timer hanging forever.
+
 ## Options
 
 Per-toast options (`ToastOptions`):

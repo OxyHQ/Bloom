@@ -736,6 +736,46 @@ describe('ToastOutlet', () => {
       expect(rendered.queryByText('first')).toBeNull();
     });
 
+    it('keeps a hovered stack expanded when a row is dismissed out of it', () => {
+      // The store auto-collapses down to a single row so it cannot hang, but doing
+      // that under the cursor would resume the timers hover had just paused — the
+      // remaining toast would then expire while the user is reading it.
+      const rendered = renderOutlet({ enableStacking: true, closeButton: true });
+      show(() => {
+        toast('first');
+        toast('second');
+      });
+      act(() => {
+        fireEvent(hoverRow(rendered), 'pointerEnter', mouse);
+      });
+      expect(toastStore.getSnapshot().isExpanded).toBe(true);
+
+      // Dismiss the front row from the close strip: 2 rows -> 1.
+      tapRow(rendered, { x: STRIP_X });
+      expect(rendered.queryByText('second')).toBeNull();
+
+      expect(toastStore.getSnapshot().isExpanded).toBe(true);
+      act(() => {
+        jest.advanceTimersByTime(
+          (toastDefaults.duration + ENTERING_ANIMATION_DURATION) * 3,
+        );
+      });
+      expect(rendered.queryByText('first')).toBeTruthy();
+
+      // Leaving releases the hold: the survivor collapses and resumes.
+      act(() => {
+        fireEvent(hoverRow(rendered), 'pointerLeave', mouse);
+        jest.advanceTimersByTime(HOVER_LEAVE_GRACE);
+      });
+      expect(toastStore.getSnapshot().isExpanded).toBe(false);
+      act(() => {
+        jest.advanceTimersByTime(
+          toastDefaults.duration + ENTERING_ANIMATION_DURATION,
+        );
+      });
+      expect(rendered.queryByText('first')).toBeNull();
+    });
+
     it('leaves the expansion alone on a press while hovering, and still runs onPress', () => {
       const onPress = jest.fn();
       const rendered = renderOutlet({ enableStacking: true });

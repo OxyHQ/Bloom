@@ -42,6 +42,7 @@ class ToastStore {
   private pendingPromises = new Set<string | number>();
   private collapseCooldown = false;
   private collapseCooldownTimeout: ReturnType<typeof setTimeout> | null = null;
+  private expansionHold: (() => boolean) | null = null;
 
   subscribe = (callback: Subscriber) => {
     this.subscribers.add(callback);
@@ -58,6 +59,24 @@ class ToastStore {
   setConfig = (config: ToastStoreConfig) => {
     this.config = config;
   };
+
+  /**
+   * Something outside the store can HOLD an expanded stack open — on web, a pointer
+   * resting on it. Registered by the platform trigger (`use-stack-hover`) so this
+   * module stays pure JS with no DOM and no platform branch; native registers
+   * nothing and the predicate stays `null`.
+   *
+   * It is asked at DECISION time rather than tracked as state on purpose: a row can
+   * stop being under the pointer with no event at all — rows unmount under the
+   * cursor and move under a stationary one, and neither fires `pointerleave` —
+   * so any cached boolean goes stale. Nothing renders from this, so it is
+   * deliberately not part of the snapshot.
+   */
+  setExpansionHold = (hold: (() => boolean) | null) => {
+    this.expansionHold = hold;
+  };
+
+  private isHeldOpen = (): boolean => this.expansionHold?.() === true;
 
   private notify = () => {
     this.subscribers.forEach((callback) => callback());
@@ -305,8 +324,27 @@ class ToastStore {
     const updatedRefs = { ...this.state.toastRefs };
     delete updatedRefs[id];
 
+    /**
+     * An expanded stack collapses itself once a single row is left, because
+     * "expanded" then means nothing visually — a lone row resolves to the SAME
+     * offset and scale either way (`toast-position-utils.test.ts` pins that) — while
+     * `isExpanded` keeps every timer paused, so staying expanded would leave that
+     * last toast on screen forever with no visible reason. Inherited from
+     * sonner-native and kept deliberately: on native it is invisible and it is the
+     * only thing that stops the last row hanging.
+     *
+     * UNLESS something is holding the stack open. On web that is a pointer resting
+     * on it, and collapsing under the cursor would resume the timers hover had just
+     * paused — the toast would then expire while the user is reading it, which is
+     * exactly what hover exists to prevent.
+     *
+     * An EMPTY stack always resets, hold or no hold: it no longer exists to be held,
+     * and once the rows unmount no `pointerleave` will ever arrive to release it.
+     */
+    const isEmpty = filteredToasts.length === 0;
+    const heldOpen = !isEmpty && this.isHeldOpen();
     const shouldAutoCollapse =
-      filteredToasts.length <= 1 && this.state.isExpanded;
+      filteredToasts.length <= 1 && this.state.isExpanded && !heldOpen;
 
     const updatedIndex = this.cloneIndex();
     updatedIndex.delete(id);

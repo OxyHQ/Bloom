@@ -196,6 +196,34 @@ describe('calculateToastPosition', () => {
         }),
       ).toBe(54);
     });
+
+    /**
+     * WHY THE STORE MAY AUTO-COLLAPSE A STACK DOWN TO ITS LAST ROW.
+     *
+     * `ToastStore.dismissToast` collapses an expanded stack once one row is left, so
+     * that row's paused timer resumes and it cannot hang on screen forever. That is
+     * only acceptable because the collapse is INVISIBLE at one row: both branches of
+     * `calculateToastPosition` resolve to the same offset, and `calculateStackScaleX`
+     * returns 1 either way. If this ever stops holding, the store's rule needs a
+     * rethink rather than this test an update.
+     */
+    it.each<ToastPosition>(['bottom-center', 'top-center', 'center'])(
+      'a single row is unmoved by expansion (%s)',
+      (position) => {
+        const lone = {
+          index: 0,
+          position,
+          enableStacking: true,
+          numberOfToasts: 1,
+          orderedToastIds: ['a'],
+          allToastHeights: { a: 50 },
+        };
+
+        expect(positionAt({ ...lone, isExpanded: true })).toBe(
+          positionAt({ ...lone, isExpanded: false }),
+        );
+      },
+    );
   });
 });
 

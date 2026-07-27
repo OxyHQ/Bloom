@@ -17,6 +17,9 @@ describe('toastStore', () => {
   });
 
   afterEach(() => {
+    // The expansion hold is registered by whoever owns hovering, so a test that
+    // installs one must not leak it into the next.
+    toastStore.setExpansionHold(null);
     toastStore.dismissToast(undefined);
     // Drains the hide-overlay timeout so the next test starts from a clean state.
     jest.runOnlyPendingTimers();
@@ -573,7 +576,76 @@ describe('toastStore', () => {
       expect(toastStore.getSnapshot().isExpanded).toBe(true);
     });
 
+    /**
+     * The auto-collapse rule. A lone row renders identically expanded or collapsed
+     * (`toast-position-utils.test.ts`: "a single row is unmoved by expansion"), while
+     * `isExpanded` keeps every timer paused — so collapsing at one row is invisible
+     * and is the only thing that stops that last toast hanging on screen forever.
+     * The exception is a stack something is HOLDING open, which on web is a pointer
+     * resting on it.
+     */
     it('auto-collapses once only one toast is left', () => {
+      const first = toastStore.addToast({ title: 'a' });
+      toastStore.addToast({ title: 'b' });
+      toastStore.expand();
+
+      toastStore.dismissToast(first, 'onDismiss');
+      expect(toastStore.getSnapshot().isExpanded).toBe(false);
+    });
+
+    it('resumes the surviving toast on that auto-collapse, so it cannot hang', () => {
+      const first = toastStore.addToast({ title: 'a', duration: 1000 });
+      toastStore.addToast({ title: 'b', duration: 1000 });
+      toastStore.expand();
+
+      toastStore.dismissToast(first, 'onDismiss');
+      jest.advanceTimersByTime(ENTERING_ANIMATION_DURATION + 1000);
+
+      expect(toastStore.getSnapshot().toasts).toHaveLength(0);
+    });
+
+    it('stays expanded while more than one toast is left', () => {
+      const first = toastStore.addToast({ title: 'a' });
+      toastStore.addToast({ title: 'b' });
+      toastStore.addToast({ title: 'c' });
+      toastStore.expand();
+
+      toastStore.dismissToast(first, 'onDismiss');
+      expect(toastStore.getSnapshot().isExpanded).toBe(true);
+    });
+
+    it('does not auto-collapse a stack something is holding open', () => {
+      toastStore.setExpansionHold(() => true);
+      const first = toastStore.addToast({ title: 'a', duration: 1000 });
+      toastStore.addToast({ title: 'b', duration: 1000 });
+      toastStore.expand();
+
+      toastStore.dismissToast(first, 'onDismiss');
+
+      expect(toastStore.getSnapshot().isExpanded).toBe(true);
+      // Still paused: resuming here is what would let a hovered toast expire under
+      // the cursor.
+      jest.advanceTimersByTime(1_000_000);
+      expect(toastStore.getSnapshot().toasts).toHaveLength(1);
+    });
+
+    it('resets an EMPTY stack even while held', () => {
+      // Nothing can hold open a stack that no longer exists, and once the rows
+      // unmount no `pointerleave` ever arrives to release the hold — so this must
+      // not depend on it.
+      toastStore.setExpansionHold(() => true);
+      const only = toastStore.addToast({ title: 'a' });
+      toastStore.expand();
+
+      toastStore.dismissToast(only, 'onDismiss');
+
+      expect(toastStore.getSnapshot().toasts).toHaveLength(0);
+      expect(toastStore.getSnapshot().isExpanded).toBe(false);
+    });
+
+    it('stops consulting a hold once it is cleared', () => {
+      toastStore.setExpansionHold(() => true);
+      toastStore.setExpansionHold(null);
       const first = toastStore.addToast({ title: 'a' });
       toastStore.addToast({ title: 'b' });
       toastStore.expand();
