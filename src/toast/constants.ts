@@ -98,7 +98,24 @@ export const toastDefaults: {
   theme: 'system',
   autoWiggleOnUpdate: 'never',
   richColors: false,
-  enableStacking: false,
+  /**
+   * ON, unlike upstream — the same class of correction as `TOAST_MAX_ROW_WIDTH`.
+   *
+   * sonner-NATIVE defaults this off; sonner (web) has no switch at all, because a
+   * collapsed stack — front row full size, the ones behind scaled and offset,
+   * expanding on interaction — IS its default presentation. The port inherited the
+   * mobile default onto every desktop consumer, where an unstacked run of toasts
+   * is a column of full cards rather than a stack.
+   *
+   * Bloom already deviates deliberately elsewhere (`position: 'bottom-center'` vs
+   * upstream's `top-center`, `duration: 3000` vs 4000, `gap: 8` vs 14), so this is
+   * in keeping rather than a break with the port.
+   *
+   * Turning it OFF (`<ToastOutlet enableStacking={false} />`) restores the flat
+   * column, which is still the right choice for a surface that must show several
+   * toasts at once without an interaction.
+   */
+  enableStacking: true,
   stackGap: 8,
   allowFontScaling: true,
 };

@@ -145,6 +145,32 @@ That moves the card only. The swipe-to-dismiss threshold and the stacking depth
 cue are fractions of the **default** cap, so a widened card keeps the default
 gesture distances.
 
+### Stacking
+
+Toasts **stack** by default, the way sonner's do: the newest row sits in front at
+full size, older ones sit behind it scaled down and offset by `gap` (8px), and
+pressing the stack expands it into a readable column. Pressing outside collapses
+it again, and timers pause for as long as it is expanded.
+
+Measured on a 1280px viewport with three rows, front to back: `scaleX` 1 / 0.959 /
+0.918 at 0 / -8 / -16px, expanding to 1 / 1 / 1 at 0 / -54 / -108px.
+
+This is a deliberate deviation from sonner-**native**, which defaults it off —
+that default is right for a phone and wrong for the desktop consumers Bloom also
+serves. Two consequences to know about:
+
+- Only the front row's action button is reachable while the stack is collapsed.
+  Expand it (a press) to reach the others.
+- While more than one toast is live, a press on the row toggles the stack **and**
+  still calls the toast's own `onPress`.
+
+Opt out per outlet for a surface that must show several toasts at once with no
+interaction:
+
+```tsx
+<ToastOutlet enableStacking={false} />
+```
+
 ## Options
 
 Per-toast options (`ToastOptions`):

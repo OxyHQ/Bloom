@@ -26,6 +26,14 @@ import type { ToasterProps } from './types';
  * unstacked they must be ~54px apart (46px measured row + 8px gap), collapsed-
  * stack ~8px apart. Equal `y` values mean the rows are drawn on top of each
  * other — the failure this shape exists to catch.
+ *
+ * `Sequential*` gives you BOTH durations for a reason. The `One`/`Two` buttons use
+ * `duration: Infinity` so a row stays put while you inspect it — but that starts no
+ * auto-close timer at all, so nothing driven from those buttons can see the timer
+ * path. `One 3s`/`Two 3s` fire at the outlet's real duration; drive those when the
+ * question is a row's LIFETIME rather than its position. (`Toaster.test.tsx`'s
+ * "sequential toasts at the default duration" block covers the render set there;
+ * only a browser can judge the geometry.)
  */
 const meta: Meta = {
   title: 'Components/Toast',
@@ -249,6 +257,8 @@ function SequentialDemo({ outlet }: { outlet?: ToasterProps }) {
     <Demo outlet={outlet}>
       <Button onPress={() => toast('Row one', { duration: Infinity })}>One</Button>
       <Button onPress={() => toast('Row two', { duration: Infinity })}>Two</Button>
+      <Button onPress={() => toast('Row one')}>One 3s</Button>
+      <Button onPress={() => toast('Row two')}>Two 3s</Button>
     </Demo>
   );
 }

@@ -6,6 +6,7 @@ import { space } from '../styles/tokens';
 import { BloomThemeProvider } from '../theme/BloomThemeProvider';
 import {
   ENTERING_ANIMATION_DURATION,
+  toastDefaults,
   TOAST_MAX_ROW_WIDTH,
 } from '../toast/constants';
 import { toast, ToastOutlet } from '../toast';
@@ -147,6 +148,13 @@ const anchorOf = ({ UNSAFE_root }: ReturnType<typeof renderOutlet>) =>
  */
 const rowBoxOf = ({ UNSAFE_root }: ReturnType<typeof renderOutlet>) =>
   UNSAFE_root.find(
+    (node) =>
+      hostName(node) === 'Animated.View' && node.props['aria-live'] !== undefined,
+  );
+
+/** Every mounted row box — one per rendered toast, whatever its geometry. */
+const rowBoxesOf = ({ UNSAFE_root }: ReturnType<typeof renderOutlet>) =>
+  UNSAFE_root.findAll(
     (node) =>
       hostName(node) === 'Animated.View' && node.props['aria-live'] !== undefined,
   );
@@ -521,6 +529,138 @@ describe('ToastOutlet', () => {
       expect(surfaces.length).toBeGreaterThan(0);
     });
   });
+
+  /**
+   * The stacked presentation itself is geometry, so it is verified where geometry
+   * is verifiable: `toast-position-utils.test.ts` for the offsets and the `scaleX`
+   * depth cue, and the `Sequential*` / `Stacking` stories in a real browser for
+   * the composed result. What jest can pin — and what the two `describe.each`
+   * blocks below deliberately do NOT pin, since they run both values — is which
+   * one an outlet with no props gets.
+   *
+   * `useAnimatedTarget` drives the stack transform from a layout effect, so the
+   * rendered style still carries the previous frame's numbers; asserting them from
+   * the tree would read a stale value rather than the stack.
+   */
+  it('stacks by default — the deliberate deviation from sonner-native', () => {
+    expect(toastDefaults.enableStacking).toBe(true);
+  });
+
+  /**
+   * SEQUENTIAL MULTI-TOAST AT THE DEFAULT DURATION.
+   *
+   * Every earlier sequential check — the `Sequential*` stories and the browser
+   * probes driving them — fires with `duration: Infinity`, which starts no
+   * auto-close timer at all. That made the whole timer path invisible to them:
+   * a defect that cut a settled row's life short when the next toast arrived
+   * would have left every one of those results green. These tests therefore use
+   * the OUTLET DEFAULT duration and assert lifetimes, not just presence.
+   *
+   * Both `enableStacking` values run: the flat and collapsed-stack paths resolve
+   * row positions through different branches of `calculateToastPosition`, and a
+   * row dropped from the render set in one but not the other would otherwise be
+   * a coin flip on the default.
+   *
+   * These are RENDER-SET assertions. A row that is mounted but visually pinned or
+   * collapsed by reanimated's web layout-animation cleanup still passes here —
+   * that class of bug is only observable in a real browser, which is what the
+   * `Sequential*` stories and `animations.ts`'s `TOAST_ENTER_DRIVER` note cover.
+   */
+  describe.each([false, true])(
+    'sequential toasts at the default duration (enableStacking=%s)',
+    (enableStacking) => {
+      /** The window the consumer report measured the first row's disappearance in. */
+      const REPORT_WINDOW = 150;
+      const GAP = 1000;
+
+      it('keeps both rows mounted when the second arrives while the first is at rest', () => {
+        const rendered = renderOutlet({ enableStacking });
+        show(() => toast('first'));
+        act(() => {
+          jest.advanceTimersByTime(GAP);
+        });
+        show(() => toast('second'));
+        act(() => {
+          jest.advanceTimersByTime(REPORT_WINDOW);
+        });
+
+        expect(rendered.queryByText('first')).toBeTruthy();
+        expect(rendered.queryByText('second')).toBeTruthy();
+        expect(rowBoxesOf(rendered)).toHaveLength(2);
+      });
+
+      it('does not shorten the first row: it lives its own full duration, no less', () => {
+        const rendered = renderOutlet({ enableStacking });
+        show(() => toast('first'));
+        act(() => {
+          jest.advanceTimersByTime(GAP);
+        });
+        show(() => toast('second'));
+
+        // One tick short of the first row's own deadline (its duration plus the
+        // enter animation's head start), measured from ITS fire, not the second's.
+        act(() => {
+          jest.advanceTimersByTime(
+            toastDefaults.duration + ENTERING_ANIMATION_DURATION - GAP - 1,
+          );
+        });
+        expect(rendered.queryByText('first')).toBeTruthy();
+        expect(rowBoxesOf(rendered)).toHaveLength(2);
+
+        act(() => {
+          jest.advanceTimersByTime(1);
+        });
+        expect(rendered.queryByText('first')).toBeNull();
+        expect(rendered.queryByText('second')).toBeTruthy();
+        expect(rowBoxesOf(rendered)).toHaveLength(1);
+      });
+
+      it('does not extend the first row either, nor cut the second short', () => {
+        const rendered = renderOutlet({ enableStacking });
+        show(() => toast('first'));
+        act(() => {
+          jest.advanceTimersByTime(GAP);
+        });
+        show(() => toast('second'));
+
+        // The second row's own deadline is a full GAP later than the first's.
+        act(() => {
+          jest.advanceTimersByTime(
+            toastDefaults.duration + ENTERING_ANIMATION_DURATION - 1,
+          );
+        });
+        expect(rendered.queryByText('first')).toBeNull();
+        expect(rendered.queryByText('second')).toBeTruthy();
+
+        act(() => {
+          jest.advanceTimersByTime(1);
+        });
+        expect(rendered.queryByText('second')).toBeNull();
+        expect(rowBoxesOf(rendered)).toHaveLength(0);
+      });
+
+      it('holds every row of a three-toast run, one arriving each second', () => {
+        const rendered = renderOutlet({ enableStacking });
+        show(() => toast('first'));
+        act(() => {
+          jest.advanceTimersByTime(GAP);
+        });
+        show(() => toast('second'));
+        act(() => {
+          jest.advanceTimersByTime(GAP);
+        });
+        show(() => toast('third'));
+        act(() => {
+          jest.advanceTimersByTime(REPORT_WINDOW);
+        });
+
+        expect(rowBoxesOf(rendered)).toHaveLength(3);
+        expect(rendered.queryByText('first')).toBeTruthy();
+        expect(rendered.queryByText('second')).toBeTruthy();
+        expect(rendered.queryByText('third')).toBeTruthy();
+      });
+    },
+  );
 
   describe('app-state pausing', () => {
     it('subscribes exactly once for the whole stack, not once per row', () => {
