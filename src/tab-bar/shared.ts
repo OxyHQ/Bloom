@@ -63,9 +63,9 @@ const MIN_BOTTOM_GAP = 12;
 /**
  * Vertical gap between the bottom of the pill and the bottom of the window.
  *
- * The safe-area inset is folded in HERE, which is why anything reserving layout
- * space for the bar must go through `useTabBarReservedSpace` (which derives its
- * number from this same function) rather than adding `insets.bottom` to a
+ * The safe-area inset is folded in HERE, which is why anything accounting for
+ * the bar in its own layout must go through `useTabBarFootprint` (which derives
+ * its number from this same function) rather than adding `insets.bottom` to a
  * hardcoded height — that double-counts the inset.
  */
 export function tabBarBottomGap(bottomInset: number): number {

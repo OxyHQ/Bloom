@@ -317,8 +317,8 @@ function TabBarBody({
     };
   }, [progress, slideIndex, windowWidth, tabCount]);
 
-  // Shared with `useTabBarReservedSpace`, so a consumer reserving layout space
-  // for the bar can never drift from where the bar actually sits.
+  // Shared with `useTabBarFootprint`, so a consumer accounting for the bar in
+  // its own layout can never drift from where the bar actually sits.
   const bottomOffset = tabBarBottomGap(insets.bottom);
   const barContext = useMemo(
     () => ({ slideIndex, isDragging, theme, activeIndex, selectIndex }),

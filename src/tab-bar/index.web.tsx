@@ -31,5 +31,5 @@ export {
   useTabBarMinimized,
 } from './minimize-context';
 export type { MinimizeState } from './minimize-context';
-export { useTabBarReservedSpace } from './use-reserved-space';
+export { useTabBarFootprint } from './use-footprint';
 export type { TabBarButtonProps, TabBarItem, TabBarProps, TabBarTheme } from './types';

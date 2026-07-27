@@ -206,32 +206,40 @@ It reports the index under the finger after a 500ms hold, resolved through the s
 
 The gesture joins the bar's gesture race only when you pass the prop. Without it, nothing about a held finger changes: you can still rest a finger and then scrub. With it, a hold that reaches 500ms wins the race and cancels the scrub — the tap is unaffected either way, since it gives up at 400ms, before the long press can activate.
 
-## Reserving space for the bar
+## Laying out around the bar
 
-The bar floats over your content (`position: absolute`), so nothing reserves room for it. `useTabBarReservedSpace()` returns how much a screen must leave at the bottom:
+The bar floats over your content (`position: absolute`), so nothing accounts for it. `useTabBarFootprint()` returns the space it physically occupies above the bottom of the window — its own height plus its own bottom offset, and nothing else:
 
 ```tsx
-import { useMinimizeOnScroll, useTabBarReservedSpace } from '@oxyhq/bloom/tab-bar';
+import { useMinimizeOnScroll, useTabBarFootprint } from '@oxyhq/bloom/tab-bar';
 
 export default function Feed() {
   const onScroll = useMinimizeOnScroll();
-  const reserved = useTabBarReservedSpace();
+  const footprint = useTabBarFootprint();
 
   return (
-    <Animated.ScrollView
-      onScroll={onScroll}
-      scrollEventThrottle={16}
-      contentContainerStyle={{ paddingBottom: reserved }}
-    />
+    <>
+      <Animated.ScrollView
+        onScroll={onScroll}
+        scrollEventThrottle={16}
+        // The last row clears the pill by 12pt — that gap is yours, not Bloom's.
+        contentContainerStyle={{ paddingBottom: footprint + 12 }}
+      />
+      {/* A FAB anchored by `bottom` already carries its own gap: sit it right
+          on top of the footprint. */}
+      <Fab style={{ position: 'absolute', right: 16, bottom: footprint }} />
+    </>
   );
 }
 ```
 
+**No clearance is baked in.** Clearance is a per-call-site decision — a list wants breathing room above the pill, a FAB anchored by `bottom` supplies its own — and only you know which. Adding a margin inside the hook would place that FAB too high and make one word mean two things in a single file. Bloom returns the one number it actually knows.
+
 <Callout variant="warning" title="Never add `insets.bottom` to it">
-The returned number is measured from the true bottom of the window, because the bar folds the bottom safe-area inset into its own gap. `paddingBottom: reserved + insets.bottom` — the reflex for anything anchored to the bottom edge — counts the home indicator twice and reserves 110pt for a 76pt bar, leaving a visible band of dead space under every list. Use the value as-is; there is nothing to add to it.
+The value is measured from the true bottom of the window, because the bar folds the bottom safe-area inset into its own gap. `footprint + insets.bottom` — the reflex for anything anchored to the bottom edge — counts the home indicator twice and accounts 110pt for a 76pt bar, leaving a visible band of dead space under every list. Whatever you add on top is your own clearance, never the inset a second time.
 </Callout>
 
-It is the bar's **expanded** height, deliberately: the bar minimizes on the way down and re-expands on the way up, so reserving the minimized height would hide the end of a list the moment the user scrolled back to it. Anything else anchored above the bar — a FAB, a docked composer — offsets from the same number (`bottom: reserved + 12`).
+It is the bar's **expanded** height, deliberately: the bar minimizes on the way down and re-expands on the way up, so measuring the minimized height would hide the end of a list the moment the user scrolled back to it.
 
 ## Theming
 
@@ -316,7 +324,7 @@ Everything `Pressable` accepts is forwarded, including the function form of `sty
 | `TabBarMinimizeProvider` | `@oxyhq/bloom/tab-bar` | Shares one minimize progress across the tab tree. |
 | `useMinimizeOnScroll` | `@oxyhq/bloom/tab-bar` | Scroll handler for `Animated.ScrollView`. |
 | `useTabBarMinimized` | `@oxyhq/bloom/tab-bar` | The raw `SharedValue<number>`, 0…1. |
-| `useTabBarReservedSpace` | `@oxyhq/bloom/tab-bar` | Bottom space to leave for the bar, safe-area included. |
+| `useTabBarFootprint` | `@oxyhq/bloom/tab-bar` | Space the bar occupies at the bottom, safe-area included, no clearance added. |
 | `useMinimizeState`, `setMinimized`, `MINIMIZE_SPRING` | `@oxyhq/bloom/tab-bar` | Lower-level control of the same progress. |
 | `RouterTabBar`, `RouterTabBarButton`, `renderFadingTabScreen` | `@oxyhq/bloom/tab-bar/expo-router` | expo-router bindings. |
 | `ProgressiveBlur` | `@oxyhq/bloom/progressive-blur` | The gradient blur, standalone. |

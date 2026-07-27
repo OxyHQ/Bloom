@@ -49,7 +49,7 @@ const NEUTRAL_AND_WEB_FILES = [
   'tab-bar/shared.ts',
   'tab-bar/TabBarBase.tsx',
   'tab-bar/minimize-context.tsx',
-  'tab-bar/use-reserved-space.ts',
+  'tab-bar/use-footprint.ts',
   'tab-bar/surface.tsx',
   'tab-bar/surface-solid.tsx',
   'tab-bar/surface.web.tsx',
