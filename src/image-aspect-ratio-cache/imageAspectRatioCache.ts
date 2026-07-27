@@ -18,6 +18,23 @@ export const DEFAULT_ASPECT_RATIO = 4 / 3;
 
 const aspectRatioCache = new Map<string, number>();
 
+/**
+ * Intrinsic pixel size, recorded whenever we had to read it anyway (the
+ * `Image.getSize` behind `fetchAspectRatio`). A viewer needs it to avoid
+ * blowing a small image up past its own resolution — a ratio alone cannot say
+ * how big "big" is allowed to be.
+ */
+export interface IntrinsicSize {
+  width: number;
+  height: number;
+}
+
+const intrinsicSizeCache = new Map<string, IntrinsicSize>();
+
+/** Intrinsic size for `uri`, when it has already been measured. */
+export const getIntrinsicSize = (uri: string): IntrinsicSize | undefined =>
+  intrinsicSizeCache.get(uri);
+
 export const getAspectRatio = (uri: string): number | undefined => aspectRatioCache.get(uri);
 
 export const hasAspectRatio = (uri: string): boolean => aspectRatioCache.has(uri);
@@ -47,6 +64,7 @@ export const fetchAspectRatio = (uri: string): Promise<number> => {
         if (width > 0 && height > 0) {
           const ratio = width / height;
           aspectRatioCache.set(uri, ratio);
+          intrinsicSizeCache.set(uri, { width, height });
           resolve(ratio);
           return;
         }

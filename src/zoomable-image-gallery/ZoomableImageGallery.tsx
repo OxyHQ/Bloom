@@ -40,6 +40,7 @@ import { Z_INDEX } from '../styles/z-index';
 import { WEB_POSITION_FIXED, type WebCssStyle } from '../styles/web-view-style';
 import {
   getAspectRatio,
+  getIntrinsicSize,
   fetchAspectRatio,
   DEFAULT_ASPECT_RATIO,
 } from '../image-aspect-ratio-cache';
@@ -216,15 +217,23 @@ const ZoomableImageGalleryInner = React.forwardRef<ZoomableImageGalleryHandle, Z
     [SCREEN_WIDTH, SCREEN_HEIGHT]
   );
 
-  // Compute the largest width/height for `ratio` that fits inside `fitBox`
-  // without cropping (contain).
-  const fitForRatio = useCallback((ratio: number): FittedSize => {
+  // Largest width/height for `ratio` that fits inside `fitBox` without cropping
+  // (contain), never exceeding the image's own resolution: filling the viewport
+  // with a 512px avatar or a small thumbnail just renders it soft. `uri` is what
+  // lets us look the intrinsic size up; without it (not measured yet) the fit
+  // box wins and the clamp applies on the next frame.
+  const fitForRatio = useCallback((ratio: number, uri?: string): FittedSize => {
     const safeRatio = ratio > 0 && Number.isFinite(ratio) ? ratio : DEFAULT_ASPECT_RATIO;
     let width = fitBox.width;
     let height = width / safeRatio;
     if (height > fitBox.height) {
       height = fitBox.height;
       width = height * safeRatio;
+    }
+    const intrinsic = uri ? getIntrinsicSize(uri) : undefined;
+    if (intrinsic && intrinsic.width > 0 && width > intrinsic.width) {
+      width = intrinsic.width;
+      height = width / safeRatio;
     }
     return { width, height };
   }, [fitBox]);
@@ -234,7 +243,11 @@ const ZoomableImageGalleryInner = React.forwardRef<ZoomableImageGalleryHandle, Z
   // after swiping it tracks the viewed image so the collapse-on-dismiss renders
   // and flies back the image actually on screen.
   const activeRatio = pageRatios[activeIndex] ?? openRatio;
-  const activeFit = useMemo(() => fitForRatio(activeRatio), [fitForRatio, activeRatio]);
+  const activeUri = images[activeIndex]?.uri;
+  const activeFit = useMemo(
+    () => fitForRatio(activeRatio, activeUri),
+    [fitForRatio, activeRatio, activeUri],
+  );
 
   // Alt text (accessibility description) of the image currently on screen, shown
   // as a caption at the bottom of the viewer (Bluesky-style lightbox footer).
@@ -391,7 +404,7 @@ const ZoomableImageGalleryInner = React.forwardRef<ZoomableImageGalleryHandle, Z
       // animation grows it from the thumbnail's footprint (scale < 1) up to 1,
       // mirroring the avatar's small→big scale. The initial scale is the ratio
       // of the thumbnail width to the fitted width.
-      const fitted = fitForRatio(ratio);
+      const fitted = fitForRatio(ratio, target.uri);
       const centerX = SCREEN_WIDTH / 2;
       const centerY = SCREEN_HEIGHT / 2;
       if (rect && rect.width > 0) {
@@ -829,7 +842,7 @@ const ZoomableImageGalleryInner = React.forwardRef<ZoomableImageGalleryHandle, Z
               >
                 {images.map((img, idx) => {
                   const ratio = pageRatios[idx] ?? getAspectRatio(img.uri) ?? DEFAULT_ASPECT_RATIO;
-                  const fit = fitForRatio(ratio);
+                  const fit = fitForRatio(ratio, img.uri);
                   // Only the active page is zoomable + gesture-wrapped (double-tap
                   // / single-tap dismiss / pinch / pan). Off-screen pages stay a
                   // plain image; the active image handles its own tap-to-dismiss

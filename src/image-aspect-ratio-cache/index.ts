@@ -1,4 +1,6 @@
+export type { IntrinsicSize } from './imageAspectRatioCache';
 export {
+  getIntrinsicSize,
   getAspectRatio,
   hasAspectRatio,
   setAspectRatio,
