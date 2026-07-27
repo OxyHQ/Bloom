@@ -440,7 +440,7 @@ function TabBarBody({
   );
 
   return (
-    <View {...viewProps} style={[styles.root, style]}>
+    <View {...viewProps} pointerEvents="box-none" style={[styles.root, style]}>
       {/* Progressive blur rising from the screen's bottom edge behind the pill.
           Rendered CONDITIONALLY, and as nothing at all when off: the band is
           full-bleed and 114pt tall at a zero bottom inset, so it blurs whatever
@@ -462,7 +462,7 @@ function TabBarBody({
           }}
         />
       )}
-      <View style={[styles.barWrap, { marginBottom: bottomOffset }, constrainedWrapStyle]}>
+      <View pointerEvents="box-none" style={[styles.barWrap, { marginBottom: bottomOffset }, constrainedWrapStyle]}>
         <GestureDetector gesture={gesture}>
           <Animated.View style={barStyle}>
             <Surface theme={theme} style={shapeStyle} />
@@ -642,17 +642,19 @@ export function createTabBarButton(Glyph: ComponentType<TabBarGlyphProps>) {
 
 const styles = StyleSheet.create({
   root: {
+    // `pointerEvents="box-none"` is passed as a PROP on the views using these
+    // styles, NOT as a style entry: react-native-web resolves the RN-only
+    // `box-none` value only from the prop path, so as a style it silently does
+    // nothing and this full-width bottom band swallows every click in it. RNW
+    // logs a deprecation notice for the prop exactly once per session — the
+    // trade against a dead strip across the bottom of every page is not close.
     position: 'absolute',
     left: 0,
     right: 0,
     bottom: 0,
-    // In the style object, not as a prop: RN-Web deprecated the `pointerEvents`
-    // prop and warns on every render when it is used.
-    pointerEvents: 'box-none',
   },
   barWrap: {
     marginHorizontal: BAR_MARGIN,
-    pointerEvents: 'box-none',
   },
   highlight: {
     position: 'absolute',

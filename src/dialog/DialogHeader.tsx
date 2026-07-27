@@ -534,7 +534,7 @@ export const DialogNavHeader = memo(function DialogNavHeader({
     ) : null);
 
   return (
-    <View style={[styles.overlay, style, { pointerEvents: 'box-none' }]}>
+    <View pointerEvents="box-none" style={[styles.overlay, style]}>
       {/* Opaque (surface bg) at the top → transparent at the bottom, so scrolled
           content fades out under the bar. `onImage` swaps to a dark scrim so the
           chrome reads over media. Pure NativeWind — no SVG dependency. */}
@@ -546,7 +546,7 @@ export const DialogNavHeader = memo(function DialogNavHeader({
         }
         style={[StyleSheet.absoluteFill, { height: DIALOG_HEADER_OVERLAY_HEIGHT, pointerEvents: 'none' }]}
       />
-      <View style={[styles.navRow, { pointerEvents: 'box-none' }]}>
+      <View pointerEvents="box-none" style={styles.navRow}>
         <View style={styles.side}>{left}</View>
         <Animated.View
           testID="dialog-nav-title"

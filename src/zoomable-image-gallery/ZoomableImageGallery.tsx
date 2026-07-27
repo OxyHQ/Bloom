@@ -28,6 +28,7 @@ import {
   GestureDetector,
 } from 'react-native-gesture-handler';
 import { useTheme } from '../theme/use-theme';
+import { Backdrop, OverlayRoot } from '../overlay';
 import { Portal } from '../portal';
 import { PressableWithHover } from '../pressable-with-hover';
 import {
@@ -423,19 +424,6 @@ const ZoomableImageGalleryInner = React.forwardRef<ZoomableImageGalleryHandle, Z
 
   React.useImperativeHandle(ref, () => ({ open }), [open]);
 
-  // Tapping the backdrop dismisses. Uses the same Gesture system as every
-  // other interaction in this component (image tap, pinch, pan, double-tap)
-  // instead of a plain RN Pressable, so the backdrop isn't the one interaction
-  // mixing two different event-handling systems under the same
-  // GestureHandlerRootView.
-  const backdropTapGesture = useMemo(
-    () =>
-      Gesture.Tap().onEnd(() => {
-        runOnJS(handleDismiss)();
-      }),
-    [handleDismiss]
-  );
-
   const panGesture = useMemo(
     () =>
       Gesture.Pan()
@@ -756,9 +744,16 @@ const ZoomableImageGalleryInner = React.forwardRef<ZoomableImageGalleryHandle, Z
   }, [handleDismiss, isOpen, pageTo]);
 
   const renderContent = () => (
-    <GestureHandlerRootView style={styles.modalContainer}>
-      <GestureDetector gesture={backdropTapGesture}>
-        <Animated.View style={StyleSheet.absoluteFill}>
+    <OverlayRoot style={styles.modalContainer}>
+      <GestureHandlerRootView style={StyleSheet.absoluteFill}>
+        {/* Shared `Backdrop` (a Pressable) rather than a `Gesture.Tap()`: the
+            viewer renders through the web Portal, whose root is
+            `pointer-events: none`, and a gesture handler on a node that never
+            receives pointer events simply never fires — tapping the backdrop
+            did nothing on web while Escape still closed. `Backdrop` opts back
+            in via the `pointerEvents` PROP, the only form that reaches the DOM
+            (see `src/overlay`). */}
+        <Backdrop onPress={handleDismiss} accessibilityLabel="Close image viewer">
           <AnimatedBlurView
             intensity={80}
             tint={theme.isDark ? 'dark' : 'light'}
@@ -769,8 +764,7 @@ const ZoomableImageGalleryInner = React.forwardRef<ZoomableImageGalleryHandle, Z
               style={[StyleSheet.absoluteFill, { backgroundColor: theme.colors.overlay }, backdropStyle]}
             />
           </AnimatedBlurView>
-        </Animated.View>
-      </GestureDetector>
+        </Backdrop>
 
       <GestureDetector gesture={panGesture}>
         <Animated.View
@@ -961,8 +955,9 @@ const ZoomableImageGalleryInner = React.forwardRef<ZoomableImageGalleryHandle, Z
             </Animated.View>
           ) : null}
         </Animated.View>
-      </GestureDetector>
-    </GestureHandlerRootView>
+        </GestureDetector>
+      </GestureHandlerRootView>
+    </OverlayRoot>
   );
 
   if (!isOpen) return null;

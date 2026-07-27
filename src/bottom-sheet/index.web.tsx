@@ -2,6 +2,7 @@ import type React from 'react';
 import { forwardRef } from 'react';
 import { StyleSheet } from 'react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
+import { OverlayRoot } from '../overlay';
 import { Portal } from '../portal/index.web';
 import { Z_INDEX } from '../styles/z-index';
 import { WEB_POSITION_FIXED } from '../styles/web-view-style';
@@ -33,9 +34,15 @@ import {
 function WebShell({ children }: BottomSheetShellProps) {
     return (
         <Portal>
-            <GestureHandlerRootView style={[webStyles.rootView, { pointerEvents: 'box-none' }]}>
-                {children}
-            </GestureHandlerRootView>
+            {/* `OverlayRoot` owns the portal-root pointer-events opt-in (see
+                `src/overlay`). It used to ride in the style array below as an
+                RN-only box-none value, which never reached the DOM — the whole
+                sheet, backdrop included, was click-through on web. */}
+            <OverlayRoot style={webStyles.rootView}>
+                <GestureHandlerRootView style={StyleSheet.absoluteFill}>
+                    {children}
+                </GestureHandlerRootView>
+            </OverlayRoot>
         </Portal>
     );
 }
@@ -48,11 +55,9 @@ BottomSheet.displayName = 'BottomSheet';
 
 const webStyles = StyleSheet.create({
     rootView: {
-        // The bloom Portal root is `position: fixed; inset: 0; pointer-events:
-        // none`; this fixed, full-viewport root re-enables pointer events for
-        // the sheet's own interactive descendants (backdrop, sheet) while empty
-        // gaps stay click-through (`box-none`). `StyleSheet.absoluteFill` from
-        // the sheet body then anchors to this box.
+        // Fixed, full-viewport box the sheet's `StyleSheet.absoluteFill` body
+        // anchors to. The pointer-events opt-in lives in `OverlayRoot`; this
+        // only adds the stacking context.
         position: WEB_POSITION_FIXED,
         top: 0,
         left: 0,

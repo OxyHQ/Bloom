@@ -523,13 +523,13 @@ function SideSheet({
 
   return (
     <View
+      pointerEvents="box-none"
       style={[
         sideStyles.root,
         // Per-layer offset so a side dialog stacked on top of another (surface
         // stack) paints above it. Layer 0 → offset 0 → unchanged.
         { zIndex: Z_INDEX.fullscreen + Z_INDEX_LAYER_STEP * (layer ?? 0) },
         containerStyle,
-        { pointerEvents: 'box-none' },
       ]}
       {...(containerClassName ? ({ className: containerClassName } as Record<string, string>) : {})}
     >

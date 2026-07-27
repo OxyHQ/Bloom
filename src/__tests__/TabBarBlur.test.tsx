@@ -76,11 +76,16 @@ function flattenStyle(style: unknown): Record<string, unknown> {
 /**
  * The bar's outermost view — `styles.root`, the absolutely-positioned
  * `box-none` layer the blur and the pill wrap are the two children of.
+ *
+ * `box-none` is matched on the PROP, not on the flattened style: react-native-web
+ * only resolves that RN-only value from the prop path, so this bar (a full-width
+ * band pinned to the bottom of every page) would silently swallow clicks if it
+ * ever moved back into the style object. See `pointer-events-style-form.test.ts`.
  */
 function barRoot(tree: RenderedTree): ReactTestRendererJSON {
   const found = hostNodes(tree).find((node) => {
     const style = flattenStyle(node.props.style);
-    return style.position === 'absolute' && style.pointerEvents === 'box-none';
+    return style.position === 'absolute' && node.props.pointerEvents === 'box-none';
   });
   if (!found) throw new Error('The bar rendered no absolute box-none root');
   return found;

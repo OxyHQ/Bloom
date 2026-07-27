@@ -148,6 +148,17 @@
         "default": "./lib/commonjs/portal/index.js"
       }
     },
+    "./overlay": {
+      "react-native": "./src/overlay/index.tsx",
+      "import": {
+        "types": "./lib/typescript/module/overlay/index.d.ts",
+        "default": "./lib/module/overlay/index.js"
+      },
+      "require": {
+        "types": "./lib/typescript/commonjs/overlay/index.d.ts",
+        "default": "./lib/commonjs/overlay/index.js"
+      }
+    },
     "./dialog": {
       "react-native": "./src/dialog/index.ts",
       "browser": {

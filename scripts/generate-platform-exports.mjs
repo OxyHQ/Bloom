@@ -59,6 +59,8 @@ const SUBPATHS = /** @type {const} */ ([
   ['./design-tokens', 'design-tokens/index.ts'],
   ['./tailwind-preset', 'design-tokens/tailwind-preset.ts'],
   ['./portal', 'portal/index.tsx'],
+  // Shared overlay plumbing (OverlayRoot + Backdrop) for portaled surfaces.
+  ['./overlay', 'overlay/index.tsx'],
   ['./dialog', 'dialog/index.ts'],
   ['./button', 'button/index.ts'],
   ['./fab', 'fab/index.ts'],

@@ -63,7 +63,7 @@ function createPortalGroup() {
   function Outlet() {
     const ctx = useContext(Context);
     if (Platform.OS === 'web') {
-      return <View style={styles.portalOutlet}>{ctx.outlet}</View>;
+      return <View pointerEvents="box-none" style={styles.portalOutlet}>{ctx.outlet}</View>;
     }
     return ctx.outlet;
   }
@@ -123,7 +123,9 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
     bottom: 0,
-    pointerEvents: 'box-none',
+    // `box-none` rides on the PROP above — react-native-web only resolves that
+    // RN-only value from the prop path, so as a style entry it is silently
+    // inert and this full-viewport outlet swallows every click in the app.
     zIndex: Z_INDEX.portalRoot,
   },
 });

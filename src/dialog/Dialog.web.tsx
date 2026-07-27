@@ -19,6 +19,7 @@ import {
 import Animated from 'react-native-reanimated';
 import { RemoveScrollBar } from 'react-remove-scroll-bar';
 
+import { Backdrop, OverlayRoot } from '../overlay';
 import { Portal } from '../portal/index.web';
 import { createOverlayZIndex } from '../styles/z-index';
 import { WEB_POSITION_FIXED, type WebCssStyle } from '../styles/web-view-style';
@@ -315,23 +316,21 @@ function CenterOrSideDialog({
         <Context.Provider value={context}>
           <ClosingContext.Provider value={isClosing}>
             <RemoveScrollBar />
-            <Pressable
-              onPress={dismissOnBackdrop ? () => close() : undefined}
+            {/* The press target IS the full-viewport box, so it uses
+                `Backdrop` (which opts back in from the Portal root's
+                `pointer-events: none` via the `pointerEvents` PROP — the style
+                form is dropped before it reaches the DOM, see `src/overlay`)
+                and lays the panel out inside itself. */}
+            <Backdrop
+              onPress={() => close()}
               disabled={!dismissOnBackdrop}
-              // `pointerEvents: 'auto'` opts back in from the Portal root's
-              // `pointer-events: none`, which is set so the idle portal
-              // doesn't intercept clicks on the underlying app.
+              accessibilityLabel={label ? `Dismiss ${label}` : 'Dismiss dialog'}
               style={{
                 position: WEB_POSITION_FIXED,
-                top: 0,
-                left: 0,
-                right: 0,
-                bottom: 0,
                 zIndex: dialogZIndex.backdrop,
                 alignItems: 'center',
                 justifyContent: 'center',
                 paddingHorizontal: 20,
-                pointerEvents: 'auto',
               }}
             >
               <DialogBackdrop isClosing={isClosing} />
@@ -353,7 +352,7 @@ function CenterOrSideDialog({
               >
                 {children}
               </DialogPanel>
-            </Pressable>
+            </Backdrop>
           </ClosingContext.Provider>
         </Context.Provider>
       </Portal>
@@ -685,13 +684,12 @@ function SheetSurface({
   }, [dismissOnBackdrop, onDismiss]);
 
   return (
-    <View
-      style={[sheetStyles.root, { zIndex: backdropZIndex }, containerStyle, { pointerEvents: 'box-none' }]}
+    <OverlayRoot
+      style={[sheetStyles.root, { zIndex: backdropZIndex }, containerStyle]}
       {...(containerClassName ? ({ className: containerClassName } as Record<string, string>) : {})}
     >
-      <Pressable
+      <Backdrop
         testID={testID ? `${testID}-backdrop` : DIALOG_SHEET_BACKDROP_TESTID}
-        accessibilityRole="button"
         accessibilityLabel={label ? `Dismiss ${label}` : 'Dismiss dialog'}
         onPress={handleBackdropPress}
         disabled={!dismissOnBackdrop}
@@ -776,7 +774,7 @@ function SheetSurface({
           </View>
         )}
       </View>
-    </View>
+    </OverlayRoot>
   );
 }
 

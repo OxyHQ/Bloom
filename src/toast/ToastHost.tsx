@@ -19,13 +19,14 @@
  *    swipe-to-dismiss would never receive touches. This provides its own, exactly
  *    as `bottom-sheet/index.web.tsx` does. Web consumers need no setup.
  *
- * `pointerEvents: 'box-none'` keeps the empty area click-through while the rows
+ * `OverlayRoot`'s `box-none` keeps the empty area click-through while the rows
  * themselves stay interactive.
  */
 import * as React from 'react';
 import { StyleSheet } from 'react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 
+import { OverlayRoot } from '../overlay';
 import { Portal } from '../portal/index.web';
 import { WEB_POSITION_FIXED } from '../styles/web-view-style';
 import { Z_INDEX } from '../styles/z-index';
@@ -33,9 +34,14 @@ import type { ToastHostProps } from './types';
 
 export function ToastHost({ children, ToasterOverlayWrapper }: ToastHostProps) {
   const content = (
-    <GestureHandlerRootView style={styles.host}>
-      {children}
-    </GestureHandlerRootView>
+    // `OverlayRoot` carries the pointer-events opt-in as a PROP; as a style
+    // entry it never reached the DOM, so the rows inherited the portal root's
+    // `pointer-events: none` and no toast could be pressed or swiped away.
+    <OverlayRoot style={styles.host}>
+      <GestureHandlerRootView style={StyleSheet.absoluteFill}>
+        {children}
+      </GestureHandlerRootView>
+    </OverlayRoot>
   );
 
   return (
@@ -62,6 +68,5 @@ const styles = StyleSheet.create({
     // Inside `#bloom-portal-root` (which owns the document layer at 999999),
     // this keeps toasts above Dialog's surface (60) and tooltips (70).
     zIndex: Z_INDEX.toast,
-    pointerEvents: 'box-none',
   },
 });
