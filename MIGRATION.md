@@ -1,6 +1,58 @@
 # Migration Guide
 
-## Unreleased — motion presets animate on web; the toast row is capped
+## 0.55.0 — toasts stack and hover; motion presets animate on web
+
+### Toasts now STACK by default
+
+`enableStacking` defaults to **`true`**. A prop-less `<ToastOutlet />` renders a
+collapsed stack the way sonner (web) does — newest row in front at full size, older
+rows scaled and offset behind it by `gap` — instead of a flat column of full-size
+rows. Measured at 1280px, three rows front to back: `scaleX` 1 / 0.959 / 0.918 at
+0 / −8 / −16px, expanding to 1 / 1 / 1 at 0 / −54 / −108px. A single toast is
+unchanged.
+
+sonner-**native** defaults it off, which is right for a phone and wrong for the
+desktop consumers Bloom also serves. Two consequences worth knowing:
+
+- Only the front row's action button is reachable while collapsed. Expand to reach
+  the others (hover on web, press anywhere).
+- While more than one toast is live, a press on a row toggles the stack **and**
+  still calls the toast's own `onPress`.
+
+**Restore the flat column per outlet:**
+
+```tsx
+<ToastOutlet enableStacking={false} />
+```
+
+### Hover expands the stack on web, and the pointer pauses auto-close
+
+No prop and no setup: a **mouse** over the stack expands it, moving away collapses
+it. Press keeps working everywhere and is the only trigger on native and on touch —
+the handlers ignore any pointer that is not a mouse, so a tap cannot expand and then
+collapse the stack from its own `pointerenter`/`pointerleave` pair. While a mouse is
+over the stack a press does not toggle the expansion (hover owns it) but still runs
+`onPress`.
+
+**The pointer pauses the auto-close timers for as long as it rests on a toast**, so
+hovering to read one cannot let it expire under the cursor, and a row dismissed out
+of a hovered stack leaves the rest expanded and still paused. Applies with
+`enableStacking={false}` too: there the pointer pauses without expanding anything.
+
+If your app drove expansion itself by calling into the toast store, note that an
+expanded stack now stays expanded while a pointer holds it and collapses when the
+last row leaves it or the stack empties.
+
+### A press in a stacked row's close strip is no longer inert
+
+The last 60dp of a stacked row used to do **nothing** unless the stack was expanded
+AND `closeButton` was on — so at default config the whole strip was dead, and a
+visible ✕ on a collapsed stack's front row did nothing either (on Android the
+gesture beats that button's own press, so there was no fallback). Now every press
+resolves: it **dismisses** when a ✕ is actually rendered there (`closeButton` and
+`dismissible` both on), and otherwise expands or collapses like the rest of the row.
+
+Only affects you if you relied on that strip being inert.
 
 ### `ScaleAndFadeIn` / `ScaleAndFadeOut` / `ShrinkAndPop` now actually animate on web
 
