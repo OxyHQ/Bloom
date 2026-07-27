@@ -260,16 +260,21 @@ function TabBarBody({
       [EXPANDED_HEIGHT, MINIMIZED_HEIGHT],
       Extrapolation.CLAMP,
     );
-    return {
-      height,
-      // Revolut-style: the pill shrinks in both dimensions.
-      marginHorizontal: interpolate(
-        progress.value,
-        [0, 1],
-        [0, MINIMIZED_INSET],
-        Extrapolation.CLAMP,
-      ),
-    };
+    // Revolut-style: the pill shrinks in both dimensions.
+    //
+    // Written as the two long-form margins, NEVER as `marginHorizontal`.
+    // Reanimated's web path hands a mapper's result to react-native-web's
+    // `createReactDOMStyle`, whose `STYLE_SHORT_FORM_EXPANSIONS` map covers
+    // `marginInline` but NOT React Native's `marginHorizontal` (verified absent
+    // from the whole file in RNW 0.21.2). An unexpanded shorthand is written
+    // straight onto the DOM node as `style.marginHorizontal`, which is not a CSS
+    // property, so the browser drops it silently: the bar keeps its full width
+    // while `highlightStyle` still subtracts `MINIMIZED_INSET` from `barWidth`,
+    // leaving the highlight narrower than the tab it sits under. Static styles
+    // are unaffected — they take RNW's own StyleSheet path, which does handle
+    // the shorthand — so this only bites inside a mapper.
+    const inset = interpolate(progress.value, [0, 1], [0, MINIMIZED_INSET], Extrapolation.CLAMP);
+    return { height, marginLeft: inset, marginRight: inset };
   }, [progress]);
 
   // The capsule shape lives on the surface itself: iOS 26 glass renders its own

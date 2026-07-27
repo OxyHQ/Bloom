@@ -155,9 +155,15 @@ describe('useTabBarFootprint', () => {
     const gaps = styles.filter((style) => typeof style.marginBottom === 'number');
     expect(gaps).toHaveLength(1);
     // The pill itself: the animated capsule sizes BOTH its height and its
-    // horizontal inset, which nothing else in the bar does.
+    // horizontal inset, which nothing else in the bar does. The inset is written
+    // as the two long-form margins — `marginHorizontal` would be dropped
+    // silently on web, since RNW's `createReactDOMStyle` does not expand it (see
+    // `TabBarAnimatedShorthand.test.ts`).
     const pills = styles.filter(
-      (style) => typeof style.height === 'number' && typeof style.marginHorizontal === 'number',
+      (style) =>
+        typeof style.height === 'number' &&
+        typeof style.marginLeft === 'number' &&
+        typeof style.marginRight === 'number',
     );
     expect(pills).toHaveLength(1);
 
