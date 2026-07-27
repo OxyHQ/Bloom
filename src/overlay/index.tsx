@@ -2,7 +2,8 @@
  * The shared plumbing every portaled surface needs: an interactive ROOT and a
  * press-to-dismiss BACKDROP. Dialog, BottomSheet, the image gallery, menus and
  * toasts each used to hand-roll both, and each one got the web contract subtly
- * wrong in its own way.
+ * wrong in its own way — and looked different while doing it (the image viewer
+ * blurred, everything else only dimmed).
  *
  * ## The contract these two components encode
  *
@@ -26,13 +27,38 @@
  * which is what makes it look like a dismissal bug rather than a hit-testing
  * one.
  *
+ * A backdrop also only dismisses what is actually ON TOP of it: a full-screen
+ * layer rendered ABOVE the backdrop (a pager, a zoom container) receives the
+ * press first and swallows it. Either that layer opts out (`pointerEvents
+ *="box-none"`) or it owns the dismiss itself — the backdrop being present is
+ * not enough.
+ *
+ * EXPO/EXPO-ROUTER APPS ONLY for `BloomProvider` — see `src/provider`; these
+ * two components are universal.
+ *
  * Use `<OverlayRoot>` for the surface's outermost node and `<Backdrop>` for its
  * dimming layer; do not re-implement either with raw `View`s.
  */
 import { memo, type ReactNode } from 'react';
-import { Platform, Pressable, StyleSheet, View, type StyleProp, type ViewStyle } from 'react-native';
+import { BlurView } from 'expo-blur';
+import {
+  Platform,
+  Pressable,
+  StyleSheet,
+  View,
+  type StyleProp,
+  type ViewStyle,
+} from 'react-native';
 
 import { WEB_POSITION_FIXED } from '../styles/web-view-style';
+
+/**
+ * One blur radius for every Bloom overlay. Surfaces differ in what they show,
+ * not in how the app behind them recedes.
+ */
+export const BACKDROP_BLUR_INTENSITY = 40;
+/** Dim laid over the blur — the blur alone does not give enough contrast. */
+export const BACKDROP_DIM_OPACITY = 0.45;
 
 export interface OverlayRootProps {
   children?: ReactNode;
@@ -61,22 +87,34 @@ export interface BackdropProps {
   onPress?: () => void;
   /** `true` keeps the dim but makes it inert — a blocking dialog, a busy state. */
   disabled?: boolean;
-  /** Extra style (dim colour, animated opacity). Rendered over `absoluteFill`. */
+  /** Blur radius behind the dim. `0` renders the dim alone. */
+  blurIntensity?: number;
+  /** Blur tint. Backdrops dim the app, so `dark` is the default on every theme. */
+  blurTint?: 'light' | 'dark' | 'default';
+  /** Dim colour over the blur. */
+  dimColor?: string;
+  /** Dim opacity, 0–1. */
+  dimOpacity?: number;
+  /** Extra style on the press target — animated opacity, insets, z-index. */
   style?: StyleProp<ViewStyle>;
-  /** Rendered inside the backdrop — e.g. a blur layer that must dim with it. */
+  /** Rendered ON TOP of the dim, inside the press target (Dialog's panel does this). */
   children?: ReactNode;
   accessibilityLabel?: string;
   testID?: string;
 }
 
 /**
- * Full-bleed dimming layer that dismisses the surface when pressed. Always
- * takes pointer events (that is its whole job), so it must render UNDER the
- * surface's panel in the tree, never over it.
+ * Full-bleed blur + dim that dismisses the surface when pressed. Always takes
+ * pointer events (that is its whole job), so anything that must stay pressable
+ * goes INSIDE it as `children`, never as a sibling rendered over it.
  */
 export const Backdrop = memo(function Backdrop({
   onPress,
   disabled = false,
+  blurIntensity = BACKDROP_BLUR_INTENSITY,
+  blurTint = 'dark',
+  dimColor = '#000',
+  dimOpacity = BACKDROP_DIM_OPACITY,
   style,
   children,
   accessibilityLabel = 'Dismiss',
@@ -97,6 +135,21 @@ export const Backdrop = memo(function Backdrop({
       testID={testID}
       style={[StyleSheet.absoluteFill, style]}
     >
+      {blurIntensity > 0 ? (
+        <BlurView
+          intensity={blurIntensity}
+          tint={blurTint}
+          // Android's default blur is a no-op on many devices; this is the
+          // implementation that actually renders there.
+          experimentalBlurMethod="dimezisBlurView"
+          pointerEvents="none"
+          style={StyleSheet.absoluteFill}
+        />
+      ) : null}
+      <View
+        pointerEvents="none"
+        style={[StyleSheet.absoluteFill, { backgroundColor: dimColor, opacity: dimOpacity }]}
+      />
       {children}
     </Pressable>
   );

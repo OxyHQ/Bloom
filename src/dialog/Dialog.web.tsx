@@ -61,6 +61,12 @@ import type {
 const FADE_OUT_DURATION = CENTER_FADE_OUT_DURATION;
 
 /**
+ * The centered card's scrim reads darker than a sheet's because the card floats
+ * in the middle of it; the shared blur underneath is identical.
+ */
+const DIALOG_BACKDROP_DIM_OPACITY = 0.6;
+
+/**
  * The four CSS `animation` shorthands driving the centered card and its backdrop.
  * `animation` has no `ViewStyle` key at all — react-native-web forwards it to the
  * DOM node — so these are annotated `WebCssStyle` rather than cast. The
@@ -325,15 +331,18 @@ function CenterOrSideDialog({
               onPress={() => close()}
               disabled={!dismissOnBackdrop}
               accessibilityLabel={label ? `Dismiss ${label}` : 'Dismiss dialog'}
-              style={{
-                position: WEB_POSITION_FIXED,
-                zIndex: dialogZIndex.backdrop,
-                alignItems: 'center',
-                justifyContent: 'center',
-                paddingHorizontal: 20,
-              }}
+              dimOpacity={DIALOG_BACKDROP_DIM_OPACITY}
+              style={[
+                {
+                  position: WEB_POSITION_FIXED,
+                  zIndex: dialogZIndex.backdrop,
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  paddingHorizontal: 20,
+                },
+                isClosing ? BACKDROP_FADE_OUT : BACKDROP_FADE_IN,
+              ]}
             >
-              <DialogBackdrop isClosing={isClosing} />
               <DialogPanel
                 testID={testID}
                 label={label}
@@ -693,6 +702,9 @@ function SheetSurface({
         accessibilityLabel={label ? `Dismiss ${label}` : 'Dismiss dialog'}
         onPress={handleBackdropPress}
         disabled={!dismissOnBackdrop}
+        // The dim rides on the element's own animated opacity here, so the
+        // shared component's dim layer stays fully opaque under it.
+        dimOpacity={1}
         style={[
           sheetStyles.backdrop,
           backdropTransition,
@@ -797,22 +809,6 @@ function cancelFrame(token: FrameToken): void {
     return;
   }
   clearTimeout(token.timer);
-}
-
-function DialogBackdrop({ isClosing }: { isClosing: boolean }) {
-  const style: ViewStyle[] = [
-    {
-      position: WEB_POSITION_FIXED,
-      top: 0,
-      left: 0,
-      right: 0,
-      bottom: 0,
-      backgroundColor: 'rgba(0,0,0,0.8)',
-    },
-    isClosing ? BACKDROP_FADE_OUT : BACKDROP_FADE_IN,
-  ];
-
-  return <View style={style} />;
 }
 
 /**

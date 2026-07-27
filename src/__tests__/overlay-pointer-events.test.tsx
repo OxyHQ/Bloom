@@ -106,6 +106,23 @@ describe('overlay pointer-events contract (web)', () => {
     container.remove();
   });
 
+  // Every Bloom surface dims the app the same way: the blur is part of the
+  // shared backdrop, not something each surface opts into (it used to be — the
+  // image viewer blurred, dialogs and sheets only dimmed).
+  it('blurs by default and drops the blur layer only when asked', () => {
+    const withBlur = render(createElement(Backdrop, { onPress: () => {}, testID: 'a' }));
+    expect(withBlur.container.getElementsByTagName('blurview').length).toBe(1);
+    act(() => withBlur.root.unmount());
+    withBlur.container.remove();
+
+    const noBlur = render(
+      createElement(Backdrop, { onPress: () => {}, blurIntensity: 0, testID: 'b' }),
+    );
+    expect(noBlur.container.getElementsByTagName('blurview').length).toBe(0);
+    act(() => noBlur.root.unmount());
+    noBlur.container.remove();
+  });
+
   it('a disabled Backdrop dims without dismissing', () => {
     const onPress = jest.fn();
     const { root, container } = render(

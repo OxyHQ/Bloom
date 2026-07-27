@@ -25,6 +25,7 @@ import Animated, {
     withTiming,
 } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { Backdrop } from '../overlay';
 import { useTheme } from '../theme/use-theme';
 
 /** Hook that returns current screen dimensions and updates on rotation/resize. */
@@ -197,6 +198,8 @@ export interface BottomSheetShellProps {
 export interface BottomSheetBaseProps extends BottomSheetProps {
     Shell: React.ComponentType<BottomSheetShellProps>;
 }
+
+const AnimatedBackdrop = Animated.createAnimatedComponent(Backdrop);
 
 export const BottomSheetBase = forwardRef((props: BottomSheetBaseProps, ref: React.ForwardedRef<BottomSheetRef>) => {
     const {
@@ -783,15 +786,21 @@ export const BottomSheetBase = forwardRef((props: BottomSheetBaseProps, ref: Rea
     return (
         <Shell visible={rendered} onRequestClose={dismiss} keyboardHeight={keyboardHeight}>
             <View style={StyleSheet.absoluteFill}>
-                <Animated.View style={[styles.backdrop, backdropStyle]}>
-                    {backdropComponent ? (
-                        backdropComponent({ onPress: handleBackdropPress })
-                    ) : (
-                        <Pressable style={styles.backdropTouchable} onPress={handleBackdropPress}>
-                            <View style={StyleSheet.absoluteFill} />
-                        </Pressable>
-                    )}
-                </Animated.View>
+                {backdropComponent ? (
+                    <Animated.View style={[StyleSheet.absoluteFill, backdropStyle]}>
+                        {backdropComponent({ onPress: handleBackdropPress })}
+                    </Animated.View>
+                ) : (
+                    // The ONE Bloom backdrop (blur + dim + press-to-dismiss).
+                    // `backdropStyle` drives the fade; the dim level rides on
+                    // `backdropOpacity`, so the shared component's own dim is
+                    // switched off here to keep a single source of dimming.
+                    <AnimatedBackdrop
+                        onPress={handleBackdropPress}
+                        dimOpacity={1}
+                        style={[styles.backdrop, backdropStyle]}
+                    />
+                )}
 
                 <GestureDetector gesture={panGesture}>
                     <Animated.View

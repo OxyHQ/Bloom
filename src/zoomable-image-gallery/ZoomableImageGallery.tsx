@@ -72,8 +72,9 @@ import type {
   ZoomableImageGalleryProps,
 } from './types';
 
-const AnimatedBlurView = Animated.createAnimatedComponent(BlurView);
 const AnimatedImage = Animated.createAnimatedComponent(Image);
+// The shared overlay backdrop, driven by the viewer's open/drag progress.
+const AnimatedBackdrop = Animated.createAnimatedComponent(Backdrop);
 
 // Web-only interaction hints (no-ops on native): the zoom surfaces are
 // tap-to-dismiss (`cursor: pointer`) and must not select text or drag the
@@ -172,6 +173,8 @@ const ZoomableImageGalleryInner = React.forwardRef<ZoomableImageGalleryHandle, Z
   // (`handleDismiss` runs via `runOnJS` and from `Pressable.onPress`, where the
   // state closure can be stale). Kept in lockstep by `setActiveIndexBoth`.
   const activeIndexRef = useRef(0);
+  // True from the first dismiss request until the viewer is actually unmounted.
+  const dismissingRef = useRef(false);
 
   // Single writer for the current index: updates state (drives indicator + open
   // image) and the synchronous mirror together, and only when it changes.
@@ -238,6 +241,7 @@ const ZoomableImageGalleryInner = React.forwardRef<ZoomableImageGalleryHandle, Z
   // every dismiss path (fly-back and fade-out fallback).
   const finalizeDismiss = useCallback(() => {
     setIsOpen(false);
+    dismissingRef.current = false;
     scale.value = 1;
     translateX.value = 0;
     translateY.value = 0;
@@ -286,6 +290,12 @@ const ZoomableImageGalleryInner = React.forwardRef<ZoomableImageGalleryHandle, Z
   }, [finalizeDismiss, opacity, scale]);
 
   const handleDismiss = useCallback(() => {
+    // A press on the image reaches BOTH its tap gesture and the page beneath it
+    // (which owns the dismiss for the empty area around the image), so this can
+    // fire twice for one click. Latch it: a second call would start a second
+    // fly-back from an already-moving image.
+    if (dismissingRef.current) return;
+    dismissingRef.current = true;
     // Collapse the pager back to the single open-image so the fly-back animates
     // one image (the current one) rather than the whole scrolled strip.
     setPagerReady(false);
@@ -334,6 +344,7 @@ const ZoomableImageGalleryInner = React.forwardRef<ZoomableImageGalleryHandle, Z
   const open = useCallback(
     (nextImages: GalleryImage[], index: number, rect?: MeasuredRect) => {
       if (isOpen || nextImages.length === 0) return;
+      dismissingRef.current = false;
       const safeIndex = Math.min(Math.max(index, 0), nextImages.length - 1);
       const target = nextImages[safeIndex];
       if (!target) return;
@@ -753,18 +764,12 @@ const ZoomableImageGalleryInner = React.forwardRef<ZoomableImageGalleryHandle, Z
             did nothing on web while Escape still closed. `Backdrop` opts back
             in via the `pointerEvents` PROP, the only form that reaches the DOM
             (see `src/overlay`). */}
-        <Backdrop onPress={handleDismiss} accessibilityLabel="Close image viewer">
-          <AnimatedBlurView
-            intensity={80}
-            tint={theme.isDark ? 'dark' : 'light'}
-            experimentalBlurMethod="dimezisBlurView"
-            style={[StyleSheet.absoluteFill, backdropStyle]}
-          >
-            <Animated.View
-              style={[StyleSheet.absoluteFill, { backgroundColor: theme.colors.overlay }, backdropStyle]}
-            />
-          </AnimatedBlurView>
-        </Backdrop>
+        <AnimatedBackdrop
+          onPress={handleDismiss}
+          accessibilityLabel="Close image viewer"
+          dimColor={theme.colors.overlay}
+          style={backdropStyle}
+        />
 
       <GestureDetector gesture={panGesture}>
         <Animated.View
@@ -817,8 +822,16 @@ const ZoomableImageGalleryInner = React.forwardRef<ZoomableImageGalleryHandle, Z
                   // through the gesture, so it isn't wrapped in a Pressable.
                   if (idx === activeIndex) {
                     return (
-                      <View
+                      <Pressable
                         key={`${img.uri}-${idx}`}
+                        // The page fills the screen ON TOP of the backdrop (the
+                        // pager below it needs pointer events to swipe), so a
+                        // press on the empty area around the image can never
+                        // reach the backdrop — the page dismisses it itself.
+                        // Same outcome as tapping the image, which already
+                        // dismisses through `singleTapDismissGesture`.
+                        onPress={handleDismiss}
+                        accessibilityLabel="Close image viewer"
                         style={[styles.page, { width: SCREEN_WIDTH, height: SCREEN_HEIGHT }, webPointerStyle]}
                       >
                         <GestureDetector gesture={activePageGesture}>
@@ -833,12 +846,14 @@ const ZoomableImageGalleryInner = React.forwardRef<ZoomableImageGalleryHandle, Z
                             {...(Platform.OS === 'web' ? { draggable: false } : {})}
                           />
                         </GestureDetector>
-                      </View>
+                      </Pressable>
                     );
                   }
                   return (
-                    <View
+                    <Pressable
                       key={`${img.uri}-${idx}`}
+                      onPress={handleDismiss}
+                      accessibilityLabel="Close image viewer"
                       style={[styles.page, { width: SCREEN_WIDTH, height: SCREEN_HEIGHT }]}
                     >
                       <Image
@@ -848,7 +863,7 @@ const ZoomableImageGalleryInner = React.forwardRef<ZoomableImageGalleryHandle, Z
                         transition={0}
                         {...(Platform.OS === 'web' ? { draggable: false } : {})}
                       />
-                    </View>
+                    </Pressable>
                   );
                 })}
               </ScrollView>
