@@ -2,12 +2,18 @@
  * Derived from sonner-native v0.26.4 — src/gestures.tsx
  * (MIT © Gunnar Torfi Steinarsson). See the top-level NOTICE.
  *
- * W2 — the animated style reads `translate`, `direction`, `position`,
- * `windowWidth` and `isAndroid`; ALL of them are in the dependency array. On web
- * without the worklets babel plugin reanimated re-runs the mapper on its deps
- * rather than on auto-tracked reads, so a missing dep freezes the swipe transform
- * at its first frame (upstream omits `position` and `isAndroid`, so a toast that
- * changes position mid-life swipes the wrong way).
+ * W2 — the animated style reads `translate`, `direction`, `position`, `rowWidth`
+ * and `isAndroid`; ALL of them are in the dependency array. On web without the
+ * worklets babel plugin reanimated re-runs the mapper on its deps rather than on
+ * auto-tracked reads, so a missing dep freezes the swipe transform at its first
+ * frame (upstream omits `position` and `isAndroid`, so a toast that changes
+ * position mid-life swipes the wrong way).
+ *
+ * W12 — this wrapper is THE row box, so it is where `TOAST_MAX_ROW_WIDTH` caps
+ * and centres the toast. Capping here rather than on `ToastContent`'s card
+ * covers `toast.custom` JSX and `unstyled` rows too, which never reach that
+ * card. Every distance the gesture measures is a fraction of the capped
+ * `rowWidth`, not of the window — see the constant.
  */
 import * as React from 'react';
 import {
@@ -28,10 +34,11 @@ import Animated, {
 } from 'react-native-reanimated';
 
 import { easeInOutCircFn } from './animations';
+import { TOAST_MAX_ROW_WIDTH } from './constants';
 import { useToastContext } from './context';
 import type { ToastPosition, ToastProps } from './types';
 
-/** Fraction of the screen a horizontal swipe must cross to dismiss. */
+/** Fraction of the row a horizontal swipe must cross to dismiss. */
 const HORIZONTAL_DISMISS_FRACTION = 0.25;
 /** Below this the gesture reads as a tap, so the row springs back. */
 const TAP_SLOP = 16;
@@ -66,6 +73,8 @@ export const ToastSwipeHandler: React.FC<
   onPress,
 }) => {
   const { width: windowWidth } = useWindowDimensions();
+  // The row is `width: '100%'` up to the cap, so this is its real width.
+  const rowWidth = Math.min(windowWidth, TOAST_MAX_ROW_WIDTH);
   const translate = useSharedValue(0);
   const { swipeToDismissDirection: direction, position: positionCtx } =
     useToastContext();
@@ -137,7 +146,7 @@ export const ToastSwipeHandler: React.FC<
       if (direction === 'left') {
         if (Math.abs(translate.value) < TAP_SLOP) {
           springBack();
-        } else if (translate.value < -windowWidth * HORIZONTAL_DISMISS_FRACTION) {
+        } else if (translate.value < -rowWidth * HORIZONTAL_DISMISS_FRACTION) {
           dismiss();
         } else {
           springBack();
@@ -175,11 +184,11 @@ export const ToastSwipeHandler: React.FC<
         ? 1
         : interpolate(
             translate.value,
-            [0, direction === 'left' ? -windowWidth : -VERTICAL_FADE_DISTANCE],
+            [0, direction === 'left' ? -rowWidth : -VERTICAL_FADE_DISTANCE],
             [1, 0],
           ),
     };
-  }, [direction, translate, windowWidth, position, isAndroid]);
+  }, [direction, translate, rowWidth, position, isAndroid]);
 
   return (
     <GestureDetector gesture={Gesture.Race(tap, pan)}>
@@ -187,7 +196,7 @@ export const ToastSwipeHandler: React.FC<
         style={[
           animatedStyle,
           unstyled ? undefined : styles.centered,
-          styles.fullWidth,
+          styles.rowBox,
           style,
         ]}
         // W9 — on web `LinearTransition`'s easing degrades to CSS `ease` because
@@ -205,7 +214,16 @@ export const ToastSwipeHandler: React.FC<
 
 const styles = StyleSheet.create({
   centered: { justifyContent: 'center' },
-  fullWidth: { width: '100%' },
+  /**
+   * `alignSelf` is load-bearing: the parent anchor stretches its children, but a
+   * child with a definite cross size (`width: '100%'` capped by `maxWidth`) is
+   * not stretched — it would sit against the left edge without this.
+   */
+  rowBox: {
+    width: '100%',
+    maxWidth: TOAST_MAX_ROW_WIDTH,
+    alignSelf: 'center',
+  },
 });
 
 /**

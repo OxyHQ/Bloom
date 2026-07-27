@@ -515,7 +515,7 @@ function SideSheet({
         [side]: anchorInset,
         width: sideWidth,
         borderRadius: PANEL_RADIUS,
-      }) as ViewStyle,
+      }),
     [insetTop, insetBottom, side, anchorInset, sideWidth],
   );
 

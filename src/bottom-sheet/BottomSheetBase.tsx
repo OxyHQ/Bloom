@@ -11,6 +11,7 @@ import {
     type StyleProp,
 } from 'react-native';
 import { Gesture, GestureDetector, type GestureType } from 'react-native-gesture-handler';
+import type { WebCssStyle } from '../styles/web-view-style';
 import { Z_INDEX } from '../styles/z-index';
 import Animated, {
     type AnimatedStyle,
@@ -737,19 +738,22 @@ export const BottomSheetBase = forwardRef((props: BottomSheetBaseProps, ref: Rea
         </GestureDetector>
     ) : handleNode;
 
+    // `scrollbar-width` / `scrollbar-color` are web-only CSS RN does not model.
+    const webScrollbarStyle: WebCssStyle | undefined =
+        Platform.OS === 'web'
+            ? {
+                  scrollbarWidth: 'thin',
+                  scrollbarColor: `${colors.border} transparent`,
+              }
+            : undefined;
+
     // Inner content: scrollable wraps in Animated.ScrollView, non-scrollable
     // renders children directly. In legacy mode the scrollview is also
     // wrapped in the `nativeGesture` detector for scroll/pan coordination.
     const scrollViewNode = (
         <Animated.ScrollView
             ref={scrollViewRef}
-            style={[
-                styles.scrollView,
-                Platform.OS === 'web' && ({
-                    scrollbarWidth: 'thin',
-                    scrollbarColor: `${colors.border} transparent`,
-                } as ViewStyle),
-            ]}
+            style={[styles.scrollView, webScrollbarStyle]}
             contentContainerStyle={dynamicStyles.scrollContent}
             showsVerticalScrollIndicator={false}
             keyboardShouldPersistTaps="handled"

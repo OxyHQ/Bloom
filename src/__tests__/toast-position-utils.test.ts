@@ -1,6 +1,7 @@
 import {
   ESTIMATED_TOAST_HEIGHT,
   MIN_STACK_SCALE_X,
+  TOAST_MAX_ROW_WIDTH,
 } from '../toast/constants';
 import {
   calculateStackScaleX,
@@ -206,7 +207,7 @@ describe('calculateStackScaleX', () => {
     position = 'bottom-center' as ToastPosition,
     isExpanded = false,
     stackGap = 8,
-    screenWidth = 400,
+    rowWidth = 400,
   }: {
     index: number;
     numberOfToasts?: number;
@@ -214,7 +215,7 @@ describe('calculateStackScaleX', () => {
     position?: ToastPosition;
     isExpanded?: boolean;
     stackGap?: number;
-    screenWidth?: number;
+    rowWidth?: number;
   }) =>
     calculateStackScaleX({
       index,
@@ -223,14 +224,14 @@ describe('calculateStackScaleX', () => {
       position,
       isExpanded,
       stackGap,
-      screenWidth,
+      rowWidth,
     });
 
   it.each([
     ['stacking is off', { index: 0, enableStacking: false }],
     ['there is only one row', { index: 0, numberOfToasts: 1 }],
     ['the stack is expanded', { index: 0, isExpanded: true }],
-    ['the window has not been measured', { index: 0, screenWidth: 0 }],
+    ['the row has not been measured', { index: 0, rowWidth: 0 }],
   ])('does not squeeze when %s', (_label, params) => {
     expect(scaleAt(params)).toBe(1);
   });
@@ -249,11 +250,26 @@ describe('calculateStackScaleX', () => {
 
   it('never squeezes past MIN_STACK_SCALE_X', () => {
     expect(
-      scaleAt({ index: 0, numberOfToasts: 50, stackGap: 40, screenWidth: 200 }),
+      scaleAt({ index: 0, numberOfToasts: 50, stackGap: 40, rowWidth: 200 }),
     ).toBe(MIN_STACK_SCALE_X);
   });
 
-  it('scales the squeeze with the window width', () => {
-    expect(scaleAt({ index: 1, screenWidth: 800 })).toBe(1 - 16 / 800);
+  it('scales the squeeze with the row width', () => {
+    expect(scaleAt({ index: 1, rowWidth: 800 })).toBe(1 - 16 / 800);
+  });
+
+  /**
+   * The squeeze is measured against the ROW, which is capped, not the window.
+   * Feeding it a desktop window width instead is the bug this pins: the buried
+   * row would narrow by 4 visible pixels rather than the intended 16.
+   */
+  it('squeezes a capped row by the same visible amount on a desktop viewport', () => {
+    const desktopWindowWidth = 1280;
+    expect(scaleAt({ index: 1, rowWidth: TOAST_MAX_ROW_WIDTH })).toBe(
+      1 - 16 / TOAST_MAX_ROW_WIDTH,
+    );
+    expect(scaleAt({ index: 1, rowWidth: TOAST_MAX_ROW_WIDTH })).toBeLessThan(
+      scaleAt({ index: 1, rowWidth: desktopWindowWidth }),
+    );
   });
 });

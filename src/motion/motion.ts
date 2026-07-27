@@ -2,16 +2,24 @@ import {
   withDelay,
   withSequence,
   withTiming,
-  type LayoutAnimation,
+  type EntryOrExitLayoutType,
 } from 'react-native-reanimated';
 
 /**
- * Reanimated custom layout-animation presets. Each is a worklet builder
- * compatible with an `Animated.View`'s `entering` / `exiting` prop:
+ * Reanimated layout-animation presets. Each is a value you hand to an
+ * `Animated.View`'s `entering` / `exiting` prop:
  *
  * ```tsx
  * <Animated.View entering={ScaleAndFadeIn} exiting={ScaleAndFadeOut} />
  * ```
+ *
+ * THIS IS THE NATIVE FILE. Custom worklet builders animate correctly on native
+ * and do NOTHING on web, where reanimated resolves an animation by preset name —
+ * `motion.web.ts` reimplements all three against the mechanisms web actually
+ * supports and documents why the two platforms cannot share one. The exported
+ * TYPE is deliberately reanimated's own "thing you can pass to entering/exiting"
+ * union rather than the concrete builder shape, so the two files present one
+ * contract and no consumer can depend on the mechanism.
  *
  * Ported from Bluesky's custom-animation set. The `'worklet'` directive is
  * preserved through Bloom's build; the consuming app's Metro + reanimated Babel
@@ -20,7 +28,7 @@ import {
  */
 
 /** Entering: fade in while growing from 70% to full size. */
-export const ScaleAndFadeIn: () => LayoutAnimation = () => {
+export const ScaleAndFadeIn: EntryOrExitLayoutType = () => {
   'worklet';
   return {
     animations: {
@@ -35,7 +43,7 @@ export const ScaleAndFadeIn: () => LayoutAnimation = () => {
 };
 
 /** Exiting counterpart to {@link ScaleAndFadeIn}: fade out while shrinking to 70%. */
-export const ScaleAndFadeOut: () => LayoutAnimation = () => {
+export const ScaleAndFadeOut: EntryOrExitLayoutType = () => {
   'worklet';
   return {
     animations: {
@@ -53,7 +61,7 @@ export const ScaleAndFadeOut: () => LayoutAnimation = () => {
  * Exiting with a brief "pop": the scale dips to 70%, overshoots to 110%, and the
  * element fades out. Good for confirming a tapped or removed item.
  */
-export const ShrinkAndPop: () => LayoutAnimation = () => {
+export const ShrinkAndPop: EntryOrExitLayoutType = () => {
   'worklet';
   return {
     animations: {

@@ -36,9 +36,19 @@ src/
 
 ## Platform Forks
 
-Components with `.web.tsx` variants: dialog, context-menu, menu, prompt-input/Textarea, select, bottom-sheet (`index.web.tsx` reuses the shared `#bloom-portal-root` — RN-Web's `<Modal>`/`ModalPortal` orphans its host node under React 19 StrictMode and never paints), tooltip, theme/adaptive-colors. `toast/` is NOT web-forked: it is one universal engine whose only platform split is `ToastHost.native.tsx` (filename-resolved by Metro), so `'./toast'` must stay out of `WEB_FORKED_SUBPATHS`.
+Components with `.web.tsx` variants: dialog, context-menu, menu, prompt-input/Textarea, select, bottom-sheet (`index.web.tsx` reuses the shared `#bloom-portal-root` — RN-Web's `<Modal>`/`ModalPortal` orphans its host node under React 19 StrictMode and never paints), tooltip, theme/adaptive-colors, motion (`motion.web.ts` — reanimated resolves a layout animation by preset NAME on web, so the native custom worklet builders are inert there; see "Reanimated web layout animations" below). `toast/` is NOT web-forked: it is one universal engine whose only platform split is `ToastHost.native.tsx` (filename-resolved by Metro), so `'./toast'` must stay out of `WEB_FORKED_SUBPATHS`.
 
 Platform-export generation script: `scripts/generate-platform-exports.mjs`. Every subpath with platform-specific behavior ships `.native.ts` + `.web.ts` + a clean default `.ts` with no Metro-only / NW5-only imports. Augmenting `ScrollView`/`FlatList` with `className` in this published RN package requires a heritage-free `declare module 'react-native'` block loaded via `/// <reference path>` — never `as any` / `@ts-ignore`. Consumer-facing rules are in parent `~/Oxy/AGENTS.md`.
+
+## Reanimated Web Layout Animations
+
+The three web failure modes are in parent `~/Oxy/AGENTS.md`. Bloom's own rule, because it has now bitten twice (the toast enter, then `motion/`):
+
+**Pick the mechanism per DIRECTION, never per component.** Reanimated's web manager treats `entering` and `exiting` differently and the difference decides what is safe:
+- **`entering`** — `setElementAnimation(element, config, shouldSavePosition: TRUE)` on the real element. Any animation name absent from reanimated's built-in `Animations` map — every custom `Keyframe`, every custom worklet builder — also gets a `scheduleAnimationCleanup` that pins the element (`position: absolute` + a frozen box) at `duration × 5`. So an enter is EITHER a **predefined** builder (`FadeIn`, `SlideInUp` — its `presetName` is in the map, no cleanup is ever scheduled) OR driven **imperatively** from a shared value. Never a `Keyframe`, never a custom builder.
+- **`exiting`** — `setElementAnimation(dummy, config, shouldSavePosition: FALSE)` on a throwaway clone, so the same cleanup only reaps the clone. A custom `Keyframe` is safe here AND is the only mechanism that can express a multi-property, multi-stop shape.
+
+Consequences to accept rather than work around: predefined builders cannot combine a fade with a scale, so a web enter drops one of them (`motion.web.ts`, `ScreenTransition.tsx`); and `Keyframe` has no `.easing()`, while a per-stop easing only survives the CSS parser if it resolves to one of reanimated's seven `WebEasings` names, so web keyframes run linear — add intermediate stops if the curve matters. Reference implementations: `src/motion/motion.web.ts` (both directions, one file) and `src/toast/animations.ts` (`TOAST_ENTER_DRIVER`, the imperative variant).
 
 ## Web Fork CSS & Style Conventions
 

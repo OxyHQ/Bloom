@@ -36,7 +36,11 @@ export const SHADOW_BOX: Record<ShadowRole, string> = {
  * On WEB this returns a `{ boxShadow }` style object (so it can also be applied
  * inline without Tailwind). The `.native.ts` fork returns RN
  * `shadowColor/shadowOffset/shadowOpacity/shadowRadius/elevation`.
+ *
+ * No widening needed: `boxShadow` is a first-class `ViewStyle` key on RN >= 0.76
+ * and takes a CSS string, so this is not one of the web-only properties
+ * `styles/web-view-style.ts` exists for.
  */
 export function bloomShadowStyle(role: ShadowRole): ViewStyle {
-  return { boxShadow: SHADOW_BOX[role] } as ViewStyle;
+  return { boxShadow: SHADOW_BOX[role] };
 }

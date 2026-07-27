@@ -1,5 +1,7 @@
 import React, { memo, useMemo } from 'react';
-import { View, Text, StyleSheet, type DimensionValue, type ViewStyle } from 'react-native';
+import { View, Text, StyleSheet, type DimensionValue } from 'react-native';
+
+import type { WebCssStyle } from '../styles/web-view-style';
 
 import { useTheme } from '../theme/use-theme';
 import { animation } from '../styles/tokens';
@@ -87,17 +89,17 @@ const TopLoading: React.FC<TopLoadingProps> = ({
   // reanimated's `Easing.out(Easing.cubic)` used by the native variant.
   const easing = 'cubic-bezier(0.33, 1, 0.68, 1)';
 
-  const containerTransition = {
+  const containerTransition: WebCssStyle = {
     transitionProperty: 'height',
     transitionDuration: `${duration}ms`,
     transitionTimingFunction: easing,
-  } as ViewStyle;
+  };
 
-  const innerTransition = {
+  const innerTransition: WebCssStyle = {
     transitionProperty: 'opacity, transform',
     transitionDuration: `${duration}ms`,
     transitionTimingFunction: easing,
-  } as ViewStyle;
+  };
 
   return (
     <View

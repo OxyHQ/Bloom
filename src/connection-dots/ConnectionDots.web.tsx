@@ -1,6 +1,7 @@
 import React, { memo, useEffect, useState } from 'react';
 import { View, type ViewStyle } from 'react-native';
 
+import type { WebCssStyle } from '../styles/web-view-style';
 import { useTheme } from '../theme/use-theme';
 import { ConnectionDotsBase } from './ConnectionDotsBase';
 import type { ConnectionDotsProps } from './types';
@@ -88,14 +89,14 @@ const ConnectionDotsComponent: React.FC<ConnectionDotsProps> = ({
       borderRadius: dotSize / 2,
       backgroundColor: color,
     };
-    const animated: ViewStyle = reduce
+    const animated: WebCssStyle = reduce
       ? { opacity: 1 }
-      : ({
+      : {
           // `animation` / `animationDelay` are real CSS props on web;
           // react-native-web passes them through to the DOM node.
           animation: `${WAVE_ANIMATION_NAME} ${WAVE_DURATION_MS}ms linear infinite`,
           animationDelay: `${(i / count) * WAVE_DURATION_MS}ms`,
-        } as ViewStyle);
+        };
     return (
       <View
         key={i}

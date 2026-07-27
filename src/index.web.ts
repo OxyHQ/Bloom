@@ -146,8 +146,8 @@ export { SubtleHover } from './subtle-hover';
 export type { SubtleHoverProps } from './subtle-hover';
 
 // Motion presets (Reanimated enter/exit + directional screen transition)
-export { ScaleAndFadeIn, ScaleAndFadeOut, ShrinkAndPop, ScreenTransition } from './motion';
-export type { ScreenTransitionProps, ScreenTransitionDirection } from './motion';
+export { ScaleAndFadeIn, ScaleAndFadeOut, ShrinkAndPop, ScreenTransition } from './motion/index.web';
+export type { ScreenTransitionProps, ScreenTransitionDirection } from './motion/index.web';
 export { AnimatedCheck } from './animated-check';
 export type { AnimatedCheckProps, AnimatedCheckRef } from './animated-check';
 

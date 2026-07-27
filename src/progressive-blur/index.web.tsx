@@ -2,8 +2,9 @@
  * Ported from expo-glass-tabs v0.1.1 — src/progressive-blur.tsx
  * (MIT © 2026 David Mokos). See the top-level NOTICE.
  */
-import { View, type ViewStyle } from 'react-native';
+import { View } from 'react-native';
 
+import type { WebCssStyle } from '../styles/web-view-style';
 import { useTheme } from '../theme/use-theme';
 import {
   buildMaskGradient,
@@ -50,14 +51,14 @@ export function ProgressiveBlur({
   // Web-only CSS, unknown to React Native's `ViewStyle`. Both spellings are set
   // for `backdrop-filter` and `mask-image`: Safari still needs the prefixed
   // form of each.
-  const webStyle = {
+  const webStyle: WebCssStyle = {
     pointerEvents: 'none',
     backdropFilter: filter,
     WebkitBackdropFilter: filter,
     maskImage: mask,
     WebkitMaskImage: mask,
     backgroundImage: buildTailGradient(colors.background, direction),
-  } as ViewStyle;
+  };
 
   return <View {...rest} style={[webStyle, style]} />;
 }

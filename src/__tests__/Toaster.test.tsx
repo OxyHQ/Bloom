@@ -2,8 +2,12 @@ import React from 'react';
 import { AppState, Text } from 'react-native';
 import { act, fireEvent, render } from '@testing-library/react-native';
 
+import { space } from '../styles/tokens';
 import { BloomThemeProvider } from '../theme/BloomThemeProvider';
-import { ENTERING_ANIMATION_DURATION } from '../toast/constants';
+import {
+  ENTERING_ANIMATION_DURATION,
+  TOAST_MAX_ROW_WIDTH,
+} from '../toast/constants';
 import { toast, ToastOutlet } from '../toast';
 import { toastStore } from '../toast/toast-store';
 import type { ToasterProps, ToastPosition } from '../toast/types';
@@ -136,6 +140,16 @@ const anchorOf = ({ UNSAFE_root }: ReturnType<typeof renderOutlet>) =>
     const style = flattenStyle(node.props.style);
     return style.position === 'absolute' && style.width === '100%';
   })[0];
+
+/**
+ * The capped, centred row box — `ToastSwipeHandler`'s wrapper, the only row view
+ * carrying the `aria-live` announcement.
+ */
+const rowBoxOf = ({ UNSAFE_root }: ReturnType<typeof renderOutlet>) =>
+  UNSAFE_root.find(
+    (node) =>
+      hostName(node) === 'Animated.View' && node.props['aria-live'] !== undefined,
+  );
 
 describe('ToastOutlet', () => {
   beforeEach(() => {
@@ -380,6 +394,53 @@ describe('ToastOutlet', () => {
       measured.props.onLayout({ nativeEvent: { layout: { height: 0 } } });
     });
     expect(toastStore.getSnapshot().toastHeights[id]).toBeUndefined();
+  });
+
+  /**
+   * W12 — the row box is capped so a toast does not span a desktop viewport.
+   * The cap sits on the swipe wrapper rather than on `ToastContent`'s card so it
+   * also covers `toast.custom` JSX and `unstyled` rows, which never render that
+   * card.
+   */
+  describe('row width cap', () => {
+    it('caps and centres the row box', () => {
+      const rendered = renderOutlet();
+      show(() => toast('Not a banner'));
+
+      expect(flattenStyle(rowBoxOf(rendered).props.style)).toEqual(
+        expect.objectContaining({
+          width: '100%',
+          maxWidth: TOAST_MAX_ROW_WIDTH,
+          // Without this the capped row sits against the left edge: a child with
+          // a definite cross size is not stretched by the anchor.
+          alignSelf: 'center',
+        }),
+      );
+    });
+
+    it('caps a custom-jsx row too, not just the default card', () => {
+      const rendered = renderOutlet();
+      show(() => toast.custom(<Text>Fully custom</Text>));
+
+      expect(flattenStyle(rowBoxOf(rendered).props.style).maxWidth).toBe(
+        TOAST_MAX_ROW_WIDTH,
+      );
+    });
+
+    it('leaves the card its gutters inside the cap', () => {
+      // The cap sizes the ROW, which carries the card's two `space.lg` gutters,
+      // so the visible card lands on sonner's 356px reference width.
+      expect(TOAST_MAX_ROW_WIDTH - space.lg * 2).toBe(356);
+    });
+
+    it('lets a consumer widen the cap through toastContainerStyle', () => {
+      const rendered = renderOutlet({
+        toastOptions: { toastContainerStyle: { maxWidth: 600 } },
+      });
+      show(() => toast('Wider please'));
+
+      expect(flattenStyle(rowBoxOf(rendered).props.style).maxWidth).toBe(600);
+    });
   });
 
   /**
