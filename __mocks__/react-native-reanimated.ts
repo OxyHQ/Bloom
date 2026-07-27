@@ -111,20 +111,22 @@ export const LinearTransition = makeLayoutBuilder();
 // keeps `definitions` readable so tests can assert what was built.
 export class Keyframe {
   definitions: Record<string, Record<string, unknown>>;
-  durationMs: number | undefined;
-  delayMs: number | undefined;
+  // Field names mirror upstream's `InnerKeyframe` so an assertion written against
+  // the mock is an assertion about the real class's state, not about the mock.
+  durationV: number | undefined;
+  delayV: number | undefined;
 
   constructor(definitions: Record<string, Record<string, unknown>>) {
     this.definitions = definitions;
   }
 
   duration(ms: number): this {
-    this.durationMs = ms;
+    this.durationV = ms;
     return this;
   }
 
   delay(ms: number): this {
-    this.delayMs = ms;
+    this.delayV = ms;
     return this;
   }
 }

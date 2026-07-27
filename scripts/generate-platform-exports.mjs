@@ -157,6 +157,7 @@ const WEB_FORKED_SUBPATHS = new Set([
   './alert-dialog',
   './combobox',
   './command',
+  './motion',
   // NOT web-forked: the toast engine is ONE universal implementation that runs
   // on react-native-web. Its only platform split is the 40-line
   // `ToastHost.native.tsx`, which Metro picks up by filename. Listing it here

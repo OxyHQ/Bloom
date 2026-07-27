@@ -477,6 +477,11 @@
     },
     "./motion": {
       "react-native": "./src/motion/index.ts",
+      "browser": {
+        "types": "./lib/typescript/module/motion/index.web.d.ts",
+        "import": "./lib/module/motion/index.web.js",
+        "require": "./lib/commonjs/motion/index.web.js"
+      },
       "import": {
         "types": "./lib/typescript/module/motion/index.d.ts",
         "default": "./lib/module/motion/index.js"

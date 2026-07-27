@@ -1,5 +1,49 @@
 # Migration Guide
 
+## Unreleased — motion presets animate on web; the toast row is capped
+
+### `ScaleAndFadeIn` / `ScaleAndFadeOut` / `ShrinkAndPop` now actually animate on web
+
+**No code change is required, but the visual behaviour changes.** All three were
+custom Reanimated worklet builders, which are INERT on web: reanimated's web layout
+manager resolves an animation by preset name, a custom builder has none, so the
+element simply appeared at its final frame with a
+`[Reanimated] Couldn't load entering/exiting animation` warning apiece. Anywhere
+you already pass one to an `Animated.View`'s `entering` / `exiting`, an animation
+that silently did nothing on web starts playing.
+
+`@oxyhq/bloom/motion` is now a web-forked subpath. Native is unchanged — same
+worklet builders, byte-identical compiled output.
+
+| Preset | Web before | Web now |
+|--------|-----------|---------|
+| `ScaleAndFadeIn` (entering) | nothing | fades in over 300ms. **The 0.7 → 1 scale is dropped.** |
+| `ScaleAndFadeOut` (exiting) | nothing | fades out while shrinking to 70% over 300ms |
+| `ShrinkAndPop` (exiting) | nothing | full dip-to-70%-then-overshoot-to-110% pop over 250ms |
+
+The enter loses its scale because reanimated only runs a *predefined* builder
+safely on web's `entering` path: a custom `Keyframe` there gets pinned with
+`position: absolute` and a frozen box at `duration × 5`, which is a worse bug than
+no animation. Predefined builders cannot combine a fade with a scale.
+`ScreenTransition` in the same module already made the same trade. Exits are
+unaffected by the pin, so both keep their exact shape. If you need the scale on
+web, drive it yourself from a shared value (`sv.value = withTiming(…)` read by
+`useAnimatedStyle`) — see `toast/ToastRow.tsx`.
+
+The presets are now typed as reanimated's `EntryOrExitLayoutType` (its own
+"value you can pass to `entering`/`exiting`" union) instead of
+`() => LayoutAnimation`, so the two platform files present one contract. Passing
+them to an `Animated.View` is unaffected; annotating one as `() => LayoutAnimation`
+in your own code no longer compiles.
+
+### The toast row is capped at 388px
+
+A toast used to be `width: 100%`, which on a desktop viewport made a ~1248px page
+banner. The row now caps at 388px and centres, putting the visible card on 356px
+(sonner's reference width) plus its two 16px gutters. Below a 388px viewport
+nothing changes. Widen it per outlet with
+`toastOptions={{ toastContainerStyle: { maxWidth: 600 } }}`.
+
 ## 0.51.0 — Bloom owns its toast engine
 
 `sonner` and `sonner-native` are **no longer dependencies of Bloom** (nor is `nanoid`).
