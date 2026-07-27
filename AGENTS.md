@@ -139,3 +139,4 @@ Bloom `Text` / `H1`–`H6` / `P` wire `className` → `style` via `styled(RNText
 
 - Platform-agnostic code by default; platform-specific behavior goes in dedicated `.native.ts`/`.web.ts` files
 - `apply-dark-class.ts` handles dark mode class AND CSS var injection on web (no-op on native)
+- **A doc comment or `.mdx` example naming a shortened icon identifier (`Icons.Home`) is invisible to `tsc`.** `src/__tests__/icon-references.test.ts` scans `src/`, `docs/`, `README.md` and `AGENTS.md` for `Icons.*` references and named icon imports that don't resolve against the real export union — the only gate on this class of bug (general rule: `~/Oxy/AGENTS.md` §"Metro bundle freshness & native verification gates").
