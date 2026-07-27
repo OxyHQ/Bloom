@@ -63,6 +63,30 @@ function sourceFiles(dir: string): string[] {
   });
 }
 
+/**
+ * A mapper's deps array: the LAST bracket group in the call text, matched by
+ * depth from its closing `]`.
+ *
+ * Deliberately not a regex — see the same helper in `animated-style-deps.test.ts`.
+ * A lazy `/,\s*(\[[\s\S]*?\])\s*,?\s*$/` anchors on the first comma followed by a
+ * bracket, so in a mapper carrying an inline `interpolate(…, [0, 1], [a, b])`
+ * range it captures from THERE to the end — which is never `[]`, so a genuinely
+ * empty deps array on the busiest mappers in this file passed unnoticed.
+ */
+function trailingDeps(text: string): string | null {
+  const trimmed = text.replace(/[\s,]+$/, '');
+  if (!trimmed.endsWith(']')) return null;
+  let depth = 0;
+  for (let i = trimmed.length - 1; i >= 0; i -= 1) {
+    if (trimmed[i] === ']') depth += 1;
+    else if (trimmed[i] === '[') {
+      depth -= 1;
+      if (depth === 0) return trimmed.slice(i);
+    }
+  }
+  return null;
+}
+
 /** Text between the parens of the call starting at `start`, paren-balanced. */
 function callText(source: string, start: number): string {
   const open = source.indexOf('(', start);
@@ -95,13 +119,13 @@ function analyse(): { offenders: Offender[]; files: number; calls: number } {
         const line = source.slice(0, call.index).split('\n').length;
         const location = `${relative(SRC, file)}:${line}`;
 
-        // Trailing comma after the deps array is idiomatic and must parse.
-        const deps = [...text.matchAll(/,\s*(\[[\s\S]*?\])\s*,?\s*$/g)].pop();
-        if (!deps) {
+        // A trailing comma after the deps array is idiomatic and must parse.
+        const deps = trailingDeps(text);
+        if (deps === null) {
           offenders.push({ location, mapper, problem: 'no deps array' });
           continue;
         }
-        if ((deps[1] ?? '').replace(/\s/g, '') === '[]') {
+        if (deps.replace(/\s/g, '') === '[]') {
           offenders.push({ location, mapper, problem: 'empty deps array' });
         }
       }

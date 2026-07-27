@@ -65,6 +65,16 @@ export function Shell() {
 
 `TabBarMinimizeProvider` wraps the whole tab tree once, so any screen that calls `useMinimizeOnScroll()` drives the same bar. It is optional — without it each consumer falls back to its own local progress, which keeps a screen working when it is rendered outside a tab layout.
 
+### No selection
+
+An `activeIndex` that names no tab — negative, past the last tab, or fractional — means **no selection**: the highlight fades out where it stands and no tab is left tinted. Returning to a real index fades it back in at that tab rather than sliding to it, since there was no visible position to travel from. Scrubbing and tapping still work from there: the finger arms the highlight and a release selects, exactly as when a tab was already picked.
+
+This is the state to use whenever the current screen is not a tab. An index derived from the route — `TABS.findIndex((tab) => tab.href === pathname)` — is `-1` on every screen outside the tab set, and passing it straight through is correct; there is nothing to special-case.
+
+<Callout variant="warning" title="Omitting `activeIndex` is NOT the same as no selection">
+Leaving the prop off entirely selects the focus-driven path, where each `TabBarButton` supplies `isFocused` and drives the highlight itself (this is what `RouterTabBar` does). That path always shows the highlight. Only a NUMBER that names no tab hides it.
+</Callout>
+
 ## Usage with expo-router
 
 ```tsx
@@ -334,7 +344,7 @@ The tail gradient is derived from the theme's page background, so it works on li
 | Prop | Type | Default | Description |
 |------|------|---------|-------------|
 | `children` | `ReactNode` | — | The `TabBarButton`s, in bar order. |
-| `activeIndex?` | `number` | — | **Controlled path.** The focused tab. Omit it with a router — use per-button `isFocused` instead. |
+| `activeIndex?` | `number` | — | **Controlled path.** The focused tab; an index that names no tab (`-1`, past the last, fractional) hides the highlight — see [No selection](#no-selection). Omit it with a router — use per-button `isFocused` instead. |
 | `onIndexChange?` | `(index: number) => void` | — | Called with the chosen index on tap, on scrub release, or on keyboard / assistive-technology activation. |
 | `onIndexLongPress?` | `(index: number) => void` | — | Called with the index under the finger after a 500ms hold. Does not select. The gesture is armed only when this is supplied. |
 | `theme?` | `Partial<TabBarTheme>` | — | Partial override of the token-resolved theme. |

@@ -1,5 +1,5 @@
 import React, { useState, type PropsWithChildren } from 'react';
-import { ScrollView, Text, View } from 'react-native';
+import { Pressable, ScrollView, Text, View } from 'react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import Animated from 'react-native-reanimated';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
@@ -177,6 +177,52 @@ function MinimizeScreen() {
   );
 }
 
+/**
+ * Body of {@link NoSelection} — the consumer shape that exposed the bug.
+ *
+ * An index derived from the current route is `-1` on every screen outside the
+ * tab set, and the capsule used to slide one item-width to the LEFT of the first
+ * tab and poke out of the pill. What to watch for, none of which jest can see:
+ * it fades out WHERE IT STANDS rather than travelling off, no glyph or label
+ * stays lit while it is gone, and picking a tab again fades it back in AT that
+ * tab instead of sliding across the bar to reach it. Scrubbing from the
+ * off-tab state arms it under the finger.
+ */
+function NoSelectionScreen() {
+  const { colors } = useTheme();
+  const [activeIndex, setActiveIndex] = useState(0);
+  const offTab = activeIndex < 0;
+  return (
+    <Screen>
+      <ScrollView contentContainerStyle={CONTENT_STYLE}>
+        <Pressable
+          onPress={() => setActiveIndex(offTab ? 0 : -1)}
+          style={{
+            padding: 16,
+            borderRadius: 16,
+            borderWidth: 1,
+            borderColor: colors.border,
+            backgroundColor: colors.backgroundSecondary,
+          }}
+        >
+          <Text style={{ color: colors.text, fontSize: 15, fontWeight: '600' }}>
+            {offTab ? 'Back to the Home tab' : 'Open a screen that is not a tab (index -1)'}
+          </Text>
+        </Pressable>
+        <Feed
+          heading={offTab ? 'Not a tab' : (ITEMS[activeIndex]?.label ?? 'Feed')}
+          caption={
+            offTab
+              ? 'No tab is selected: the highlight has faded out where it stood and nothing is tinted. Tap a tab — it fades back in there rather than sliding across — or drag across the bar to arm it under the finger.'
+              : 'Open the screen above to leave the tab set, the way a post detail or a settings route does.'
+          }
+        />
+      </ScrollView>
+      <ControlledBar activeIndex={activeIndex} onIndexChange={setActiveIndex} />
+    </Screen>
+  );
+}
+
 function ThemeOverrideScreen() {
   const { colors } = useTheme();
   const [activeIndex, setActiveIndex] = useState(1);
@@ -209,6 +255,11 @@ export const MinimizeOnScroll: Story = {
       <MinimizeScreen />
     </TabBarMinimizeProvider>
   ),
+};
+
+/** No tab selected (`activeIndex` naming no tab): the highlight fades out in place. */
+export const NoSelection: Story = {
+  render: () => <NoSelectionScreen />,
 };
 
 /** A partial `theme` override on top of the token-derived defaults. */

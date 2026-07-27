@@ -80,6 +80,18 @@ export function tabBarBottomGap(bottomInset: number): number {
 export const SLIDE_SPRING = { duration: 420, dampingRatio: 0.82 };
 
 /**
+ * Fade for the highlight coming and going when the selection does — an
+ * `activeIndex` that names no tab (see `TabBarProps.activeIndex`).
+ *
+ * A timing, not a spring, and deliberately shorter than {@link SLIDE_SPRING}:
+ * appearing and disappearing is a change of STATE, not a movement, so it must
+ * not read as a second animation racing the slide. The capsule fades where it
+ * stands — moving it out of view instead would drag it the length of the bar on
+ * its way out and sweep the active tint across every tab it passed.
+ */
+export const HIGHLIGHT_FADE = { duration: 160 };
+
+/**
  * How long a press must be held before `onIndexLongPress` fires.
  *
  * Comfortably above the tap gesture's own 400ms ceiling: the two can never both

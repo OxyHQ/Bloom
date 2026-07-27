@@ -78,6 +78,18 @@ export type TabBarProps = ViewProps & {
    * highlight and springs it here whenever this changes. Use this when there is
    * no router in play; the router adapter uses the per-button `isFocused` path
    * instead (see {@link TabBarButtonProps.isFocused}) and must NOT pass this.
+   *
+   * An index that names NO tab — negative, past the last tab, or fractional —
+   * means no selection: the highlight fades out where it stands and no tab is
+   * left tinted. Pass one whenever the current screen is not a tab; an index
+   * derived from the route (`TABS.findIndex(…)`) is `-1` on every such screen
+   * and is correct as-is. Returning to a real index fades the highlight back in
+   * AT that tab rather than sliding to it — while it was invisible there was no
+   * position to travel from — and scrubbing still arms it under the finger.
+   *
+   * OMITTING this prop is a different thing entirely and does not hide
+   * anything: that is the focus-driven path, where each button drives the
+   * highlight from its own `isFocused`.
    */
   activeIndex?: number;
   /**

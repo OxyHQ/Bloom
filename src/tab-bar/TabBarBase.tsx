@@ -32,6 +32,7 @@ import Animated, {
   useAnimatedStyle,
   useSharedValue,
   withSpring,
+  withTiming,
   type SharedValue,
 } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -44,6 +45,7 @@ import {
   BLUR_BLEED,
   EXPANDED_HEIGHT,
   HIGHLIGHT_EXPANDED,
+  HIGHLIGHT_FADE,
   HIGHLIGHT_MINIMIZED,
   ICON_SIZE,
   ITEM_GAP,
@@ -69,6 +71,12 @@ import type { TabBarButtonProps, TabBarProps, TabBarTheme } from './types';
 type BarContextValue = {
   /** Live highlight position, in tab units. Fractional while scrubbing. */
   slideIndex: SharedValue<number>;
+  /**
+   * Highlight visibility, 0–1. Below 1 only when the bar has NO selection (an
+   * `activeIndex` that names no tab). Buttons fold it into their own active
+   * tint so a faded-out capsule leaves no glyph and no label lit.
+   */
+  highlightOpacity: SharedValue<number>;
   /** True while a scrub is in progress — the finger owns the highlight. */
   isDragging: SharedValue<boolean>;
   theme: TabBarTheme;
@@ -107,10 +115,34 @@ function TabBarBody({
   const { width: windowWidth } = useWindowDimensions();
   const minimized = useMinimizeState();
   const progress = minimized.progress;
+  const tabCount = Math.max(Children.count(children), 1);
+
+  // Is a tab selected at all?
+  //
+  // The two states this distinguishes are NOT the same thing, and collapsing
+  // them would silently kill the highlight for every router consumer:
+  //
+  //   - `activeIndex === undefined` is the FOCUS-DRIVEN path. The bar is not
+  //     the writer at all — each `TabBarButton` supplies `isFocused` and drives
+  //     the highlight itself (that is how the adapter keeps it correct through
+  //     deep links and back gestures), so from the bar's side there is always a
+  //     selection and the highlight is always visible.
+  //   - NO SELECTION is `activeIndex` being a number that names no tab:
+  //     negative, past the last tab, or fractional. Every consumer whose route
+  //     set is larger than its tab set produces one — a `usePathname()`-derived
+  //     index is -1 on every screen that is not a tab — and the highlight must
+  //     then be gone rather than parked outside the pill.
+  const hasSelection =
+    activeIndex === undefined ||
+    (Number.isInteger(activeIndex) && activeIndex >= 0 && activeIndex < tabCount);
+
   const slideIndex = useSharedValue(0);
+  // Seeded from the CURRENT state, not from 0: a bar that mounts with a
+  // selection must show its highlight on the first frame exactly as it always
+  // has, and one that mounts without a selection must never flash it.
+  const highlightOpacity = useSharedValue(hasSelection ? 1 : 0);
   const isDragging = useSharedValue(false);
   const lastTicked = useSharedValue(-1);
-  const tabCount = Math.max(Children.count(children), 1);
   const theme = useTabBarTheme(themeOverrides);
   const impact = useHaptics();
 
@@ -160,8 +192,26 @@ function TabBarBody({
     if (activeIndex === undefined) return;
     // While scrubbing the finger owns the highlight; never fight it.
     if (isDragging.value) return;
-    slideIndex.value = withSpring(activeIndex, SLIDE_SPRING);
-  }, [activeIndex, slideIndex, isDragging]);
+    if (!hasSelection) {
+      // Fade out where it stands. `slideIndex` is deliberately left alone: it
+      // is the highlight's POSITION, and there is no position that means
+      // "nowhere" — springing it to a sentinel would drag the capsule across
+      // the bar on its way out, dragging the active tint over every tab it
+      // passed. Visibility is the thing that changed, so visibility is the only
+      // thing that animates.
+      highlightOpacity.value = withTiming(0, HIGHLIGHT_FADE);
+      return;
+    }
+    // Coming back from fully hidden the capsule APPEARS at the new tab instead
+    // of travelling to it: a slide says "the selection moved from here to
+    // there", and while it was invisible there was no "here" — sliding from the
+    // stale index would animate out of a position the user never saw, and would
+    // light up every tab in between on the way. Interrupted mid-fade it is
+    // still on screen, so from there it slides as it always does.
+    slideIndex.value =
+      highlightOpacity.value === 0 ? activeIndex : withSpring(activeIndex, SLIDE_SPRING);
+    highlightOpacity.value = withTiming(1, HIGHLIGHT_FADE);
+  }, [activeIndex, hasSelection, slideIndex, highlightOpacity, isDragging]);
 
   // Scrubbing: the highlight tracks the finger 1:1 while dragging (no spring —
   // it must feel attached), haptic ticks fire on boundary crossings, and
@@ -192,8 +242,17 @@ function TabBarBody({
     const pan = Gesture.Pan()
       .activeOffsetX([-6, 6])
       .failOffsetY([-14, 14])
-      .onStart(() => {
+      .onStart((event) => {
         isDragging.value = true;
+        // Arming from the no-selection state: a hidden capsule has no position
+        // the finger can pick up, so it starts under the finger rather than at
+        // the index it faded out on — which would also make the first boundary
+        // tick fire against a phantom position. Mid-fade it is still visible,
+        // so it keeps the position it is at, exactly as it always has.
+        if (highlightOpacity.value === 0) {
+          slideIndex.value = indexAtX(event.x, progress.value);
+        }
+        highlightOpacity.value = withTiming(1, HIGHLIGHT_FADE);
         lastTicked.value = Math.round(slideIndex.value);
         // Scrubbing is a deliberate bar interaction — surface the labels.
         setMinimized(minimized, 0);
@@ -230,7 +289,11 @@ function TabBarBody({
           return;
         }
         const index = Math.round(indexAtX(event.x, progress.value));
-        slideIndex.value = withSpring(index, SLIDE_SPRING);
+        // Same rule as the controlled path above: appear at the tapped tab when
+        // hidden, slide to it when already on screen.
+        slideIndex.value =
+          highlightOpacity.value === 0 ? index : withSpring(index, SLIDE_SPRING);
+        highlightOpacity.value = withTiming(1, HIGHLIGHT_FADE);
         setMinimized(minimized, 0);
         runOnJS(selectIndex)(index);
       });
@@ -263,6 +326,7 @@ function TabBarBody({
     isDragging,
     lastTicked,
     slideIndex,
+    highlightOpacity,
     minimized,
     progress,
   ]);
@@ -344,9 +408,14 @@ function TabBarBody({
       width: itemWidth,
       borderRadius: height / 2,
       top: (barHeight - height) / 2,
+      // With no selection there is nothing to highlight, and the capsule has to
+      // stop being drawn: `slideIndex` is a position in tab units, so an
+      // out-of-range one is a real place — one item-width to the LEFT of the
+      // first tab, i.e. half outside the pill — not an absence.
+      opacity: highlightOpacity.value,
       transform: [{ translateX: ROW_PAD_H + itemWidth * slideIndex.value }],
     };
-  }, [progress, slideIndex, barOuterWidth, tabCount]);
+  }, [progress, slideIndex, highlightOpacity, barOuterWidth, tabCount]);
 
   // Shared with `useTabBarFootprint`, so a consumer accounting for the bar in
   // its own layout can never drift from where the bar actually sits.
@@ -366,8 +435,8 @@ function TabBarBody({
   const constrainedWrapStyle: ViewStyle | null =
     maxWidth === undefined ? null : { width: barOuterWidth, alignSelf: 'center' };
   const barContext = useMemo(
-    () => ({ slideIndex, isDragging, theme, activeIndex, selectIndex }),
-    [slideIndex, isDragging, theme, activeIndex, selectIndex],
+    () => ({ slideIndex, highlightOpacity, isDragging, theme, activeIndex, selectIndex }),
+    [slideIndex, highlightOpacity, isDragging, theme, activeIndex, selectIndex],
   );
 
   return (
@@ -431,6 +500,7 @@ function TabBarButtonBody({
   const standaloneTheme = useTabBarTheme();
   const theme = bar?.theme ?? standaloneTheme;
   const slideIndex = bar?.slideIndex;
+  const highlightOpacity = bar?.highlightOpacity;
   // The two paths meet here: an explicit `isFocused` (router adapter) wins;
   // otherwise focus comes from the bar's controlled `activeIndex`.
   const focused = isFocused ?? (bar?.activeIndex === index);
@@ -449,29 +519,35 @@ function TabBarButtonBody({
   // Tint follows the sliding highlight, not navigation focus: whatever the pill
   // is over lights up — live while scrubbing, traveling on taps. Without a bar
   // there is nothing to follow, so it falls back to plain focus.
+  //
+  // Scaled by the highlight's own visibility, so a bar with NO selection leaves
+  // nothing lit: distance alone would keep the tab the capsule faded out on
+  // fully tinted, which is the same bug as a stray capsule wearing a different
+  // hat — a tab that looks selected while nothing is.
   // (Deps: see the CRITICAL note in `TabBarBody`.)
-  const activeGlyphStyle = useAnimatedStyle(
-    () => ({
-      opacity: slideIndex ? 1 - Math.min(Math.abs(slideIndex.value - index), 1) : focused ? 1 : 0,
-    }),
-    [slideIndex, index, focused],
-  );
+  const activeGlyphStyle = useAnimatedStyle(() => {
+    if (!slideIndex || !highlightOpacity) return { opacity: focused ? 1 : 0 };
+    const proximity = 1 - Math.min(Math.abs(slideIndex.value - index), 1);
+    return { opacity: highlightOpacity.value * proximity };
+  }, [slideIndex, highlightOpacity, index, focused]);
 
-  const labelStyle = useAnimatedStyle(
-    () => ({
-      opacity: interpolate(progress.value, [0, 0.4], [1, 0], Extrapolation.CLAMP),
-      color: slideIndex
-        ? interpolateColor(
-            Math.min(Math.abs(slideIndex.value - index), 1),
-            [0, 1],
-            [theme.activeTint, theme.inactiveTint],
-          )
-        : focused
-          ? theme.activeTint
-          : theme.inactiveTint,
-    }),
-    [progress, slideIndex, index, focused, theme],
-  );
+  const labelStyle = useAnimatedStyle(() => {
+    const opacity = interpolate(progress.value, [0, 0.4], [1, 0], Extrapolation.CLAMP);
+    if (!slideIndex || !highlightOpacity) {
+      return { opacity, color: focused ? theme.activeTint : theme.inactiveTint };
+    }
+    // Same quantity as the glyph crossfade above, so a label can never disagree
+    // with the icon it sits under.
+    const proximity = 1 - Math.min(Math.abs(slideIndex.value - index), 1);
+    return {
+      opacity,
+      color: interpolateColor(
+        highlightOpacity.value * proximity,
+        [0, 1],
+        [theme.inactiveTint, theme.activeTint],
+      ),
+    };
+  }, [progress, slideIndex, highlightOpacity, index, focused, theme]);
 
   // Height is animated EXPLICITLY (not derived from children) so the icon stays
   // perfectly centered every frame — layout-driven sizing lags a frame behind
@@ -499,7 +575,13 @@ function TabBarButtonBody({
       onPress={(event) => {
         // The bar's GestureDetector normally consumes touches; this still fires
         // for assistive-technology activation (VoiceOver) and keyboard focus.
-        if (bar) bar.slideIndex.value = withSpring(index, SLIDE_SPRING);
+        if (bar) {
+          // Appear at the tab when hidden, slide to it when visible — the same
+          // rule the tap gesture and the controlled path follow.
+          bar.slideIndex.value =
+            bar.highlightOpacity.value === 0 ? index : withSpring(index, SLIDE_SPRING);
+          bar.highlightOpacity.value = withTiming(1, HIGHLIGHT_FADE);
+        }
         setMinimized(minimized, 0);
         // Controlled path only. On the focus-driven path the trigger's own
         // `onPress` below performs the navigation, so reporting the selection

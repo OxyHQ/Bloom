@@ -67,6 +67,33 @@ function sourceFiles(dir: string): string[] {
   });
 }
 
+/**
+ * A mapper's deps array: the LAST bracket group in the call text, matched by
+ * depth from its closing `]`.
+ *
+ * Deliberately not a regex. The obvious `/,\s*(\[[\s\S]*?\])\s*,?\s*$/` anchors
+ * on the FIRST comma followed by a bracket, which in any mapper carrying an
+ * inline range — `interpolate(progress.value, [0, 1], [a, b])`, i.e. most of
+ * them — is the range and not the deps. That swallows the rest of the call into
+ * the "declared" text (so every name in the body counts as declared) and cuts
+ * the reads after it out of the scanned body, leaving the check vacuous exactly
+ * where mappers are most complex. It matched `[]` in a mapper's own deps as
+ * `[0, 1], …, []` too, so even an empty array read as declared.
+ */
+function trailingDeps(text: string): { index: number; text: string } | null {
+  const trimmed = text.replace(/[\s,]+$/, '');
+  if (!trimmed.endsWith(']')) return null;
+  let depth = 0;
+  for (let i = trimmed.length - 1; i >= 0; i -= 1) {
+    if (trimmed[i] === ']') depth += 1;
+    else if (trimmed[i] === '[') {
+      depth -= 1;
+      if (depth === 0) return { index: i, text: trimmed.slice(i) };
+    }
+  }
+  return null;
+}
+
 /** Text between the parens of the call starting at `start`, paren-balanced. */
 function callText(source: string, start: number): string {
   const open = source.indexOf('(', start);
@@ -98,8 +125,8 @@ function analyse(): { offenders: Offender[]; scanned: number } {
         const line = source.slice(0, call.index).split('\n').length;
         const location = `${relative(SRC, file)}:${line}`;
 
-        // Trailing comma after the deps array is idiomatic and must parse.
-        const deps = [...text.matchAll(/,\s*(\[[\s\S]*?\])\s*,?\s*$/g)].pop();
+        // A trailing comma after the deps array is idiomatic and must parse.
+        const deps = trailingDeps(text);
         const body = deps ? text.slice(0, deps.index) : text;
         const reads = [
           ...new Set([...body.matchAll(/\b([A-Za-z_$][\w$]*)\.value\b/g)].map((m) => m[1] ?? '')),
@@ -111,10 +138,7 @@ function analyse(): { offenders: Offender[]; scanned: number } {
           offenders.push({ location, mapper, problem: 'no deps array', values: reads });
           continue;
         }
-        const declared = deps[1] ?? '';
-        const missing = reads.filter(
-          (read) => !new RegExp(`\\b${read}\\b`).test(declared),
-        );
+        const missing = reads.filter((read) => !new RegExp(`\\b${read}\\b`).test(deps.text));
         if (missing.length > 0) {
           offenders.push({ location, mapper, problem: 'incomplete deps', values: missing });
         }
