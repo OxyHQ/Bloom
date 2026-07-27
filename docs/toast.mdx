@@ -163,6 +163,9 @@ serves. Two consequences to know about:
   Expand it (a press) to reach the others.
 - While more than one toast is live, a press on the row toggles the stack **and**
   still calls the toast's own `onPress`.
+- No press on a stacked row is inert: it dismisses if it lands on a ✕ that is
+  actually rendered (`closeButton` and `dismissible` both on), and otherwise
+  expands or collapses like the rest of the row.
 
 Opt out per outlet for a surface that must show several toasts at once with no
 interaction:

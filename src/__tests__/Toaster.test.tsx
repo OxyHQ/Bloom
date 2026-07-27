@@ -1,10 +1,12 @@
 import React from 'react';
+import * as ReactNative from 'react-native';
 import { AppState, Text } from 'react-native';
 import { act, fireEvent, render } from '@testing-library/react-native';
 
 import { space } from '../styles/tokens';
 import { BloomThemeProvider } from '../theme/BloomThemeProvider';
 import {
+  CLOSE_BUTTON_HIT_AREA,
   ENTERING_ANIMATION_DURATION,
   toastDefaults,
   TOAST_MAX_ROW_WIDTH,
@@ -158,6 +160,54 @@ const rowBoxesOf = ({ UNSAFE_root }: ReturnType<typeof renderOutlet>) =>
     (node) =>
       hostName(node) === 'Animated.View' && node.props['aria-live'] !== undefined,
   );
+
+/**
+ * The shape `__mocks__/react-native-gesture-handler.ts` records its callbacks in,
+ * so a suite can fire the row's REAL tap with a real row-relative x rather than
+ * reaching inside the component for the policy.
+ */
+type MockGesture = {
+  __handlers: { onEnd?: (event: { x: number; y: number }) => void };
+  __members: MockGesture[];
+};
+
+const isMockGesture = (value: unknown): value is MockGesture =>
+  typeof value === 'object' &&
+  value !== null &&
+  '__handlers' in value &&
+  '__members' in value;
+
+/**
+ * Fires the tap gesture of one row at a ROW-RELATIVE x, in render order (so the
+ * last one is the front of a bottom-anchored stack — the row a real tap lands on).
+ * The pan gesture registers `onBegin`/`onChange`/`onFinalize` and no `onEnd`, so
+ * `onEnd` identifies the tap unambiguously.
+ */
+const tapRow = (
+  rendered: ReturnType<typeof renderOutlet>,
+  { x, row = 'front' }: { x: number; row?: 'front' | number },
+) => {
+  const gestures = rendered.UNSAFE_root
+    .findAll((node) => isMockGesture(node.props.gesture))
+    .flatMap((node) => {
+      const gesture: unknown = node.props.gesture;
+      return isMockGesture(gesture) ? [gesture] : [];
+    });
+  const gesture = row === 'front' ? gestures[gestures.length - 1] : gestures[row];
+  const onEnd = gesture?.__members.find(
+    (member) => typeof member.__handlers.onEnd === 'function',
+  )?.__handlers.onEnd;
+  if (!onEnd) {
+    throw new Error(`no tap gesture found for row ${String(row)}`);
+  }
+  act(() => {
+    onEnd({ x, y: 20 });
+  });
+};
+
+/** The mocked window is 375 wide, so the row is uncapped and the strip starts here. */
+const STRIP_X = 375 - CLOSE_BUTTON_HIT_AREA + 10;
+const ROW_CENTRE_X = 100;
 
 describe('ToastOutlet', () => {
   beforeEach(() => {
@@ -527,6 +577,153 @@ describe('ToastOutlet', () => {
           JSON.stringify(node.props.style).includes('"borderWidth":3'),
       );
       expect(surfaces.length).toBeGreaterThan(0);
+    });
+  });
+
+  /**
+   * TAPS ON A STACKED ROW — INVARIANT: NOT ONE OF THEM IS INERT.
+   *
+   * Every case here fires the row's real tap callback with a real row-relative x,
+   * because the defect this covers lived INSIDE that callback and a test that only
+   * taps row centres passes against it: the close-button strip used to require
+   * `isExpanded` to dismiss and did nothing whatsoever otherwise, so at default
+   * config (`closeButton: false`, dismiss branch unreachable) the rightmost 60dp of
+   * every stacked row was dead. Stacking is now the default, so that was the
+   * default too.
+   *
+   * The strip's x is measured from the ROW's capped width, never the window's —
+   * `measures the strip from the row, not the window` below is the guard on that.
+   */
+  describe('stacked row taps', () => {
+    it('expands a collapsed stack from the close strip instead of doing nothing', () => {
+      const rendered = renderOutlet({ enableStacking: true });
+      show(() => {
+        toast('first');
+        toast('second');
+      });
+      expect(toastStore.getSnapshot().isExpanded).toBe(false);
+
+      tapRow(rendered, { x: STRIP_X });
+
+      expect(toastStore.getSnapshot().isExpanded).toBe(true);
+      // Nothing was dismissed: there is no ✕ to aim at at default config.
+      expect(rendered.queryByText('first')).toBeTruthy();
+      expect(rendered.queryByText('second')).toBeTruthy();
+    });
+
+    it('collapses an expanded stack from the close strip when there is no close button', () => {
+      const rendered = renderOutlet({ enableStacking: true });
+      show(() => {
+        toast('first');
+        toast('second');
+      });
+      tapRow(rendered, { x: ROW_CENTRE_X });
+      expect(toastStore.getSnapshot().isExpanded).toBe(true);
+
+      tapRow(rendered, { x: STRIP_X });
+
+      expect(toastStore.getSnapshot().isExpanded).toBe(false);
+      expect(rendered.queryByText('second')).toBeTruthy();
+    });
+
+    it('dismisses from the close strip of a COLLAPSED stack — the ✕ is visible there', () => {
+      const rendered = renderOutlet({ enableStacking: true, closeButton: true });
+      show(() => {
+        toast('first');
+        toast('second');
+      });
+
+      tapRow(rendered, { x: STRIP_X });
+
+      // The front row goes; the stack does not expand instead.
+      expect(rendered.queryByText('second')).toBeNull();
+      expect(rendered.queryByText('first')).toBeTruthy();
+      expect(toastStore.getSnapshot().isExpanded).toBe(false);
+    });
+
+    it('dismisses from the close strip of an expanded stack', () => {
+      const rendered = renderOutlet({ enableStacking: true, closeButton: true });
+      show(() => {
+        toast('first');
+        toast('second');
+      });
+      tapRow(rendered, { x: ROW_CENTRE_X });
+      expect(toastStore.getSnapshot().isExpanded).toBe(true);
+
+      tapRow(rendered, { x: STRIP_X });
+
+      expect(rendered.queryByText('second')).toBeNull();
+      expect(rendered.queryByText('first')).toBeTruthy();
+    });
+
+    it('never dismisses from the strip when the toast is not dismissible', () => {
+      const rendered = renderOutlet({ enableStacking: true, closeButton: true });
+      show(() => {
+        toast('first');
+        toast('second', { dismissible: false });
+      });
+
+      tapRow(rendered, { x: STRIP_X });
+
+      // No ✕ renders on a non-dismissible row, so the strip expands instead.
+      expect(rendered.queryByText('second')).toBeTruthy();
+      expect(toastStore.getSnapshot().isExpanded).toBe(true);
+    });
+
+    it('treats the strip boundary itself as row, not strip', () => {
+      const rendered = renderOutlet({ enableStacking: true, closeButton: true });
+      show(() => {
+        toast('first');
+        toast('second');
+      });
+
+      // `x > rowWidth - CLOSE_BUTTON_HIT_AREA` — the boundary pixel is outside.
+      tapRow(rendered, { x: 375 - CLOSE_BUTTON_HIT_AREA });
+
+      expect(rendered.queryByText('second')).toBeTruthy();
+      expect(toastStore.getSnapshot().isExpanded).toBe(true);
+    });
+
+    it('measures the strip from the row, not the window', () => {
+      // A 1280px viewport caps the row at TOAST_MAX_ROW_WIDTH, so the strip starts
+      // at 328. Measured from the WINDOW it would start at 1220 and this tap would
+      // land in the row body — the failure mode the row-relative math exists for.
+      jest
+        .spyOn(ReactNative, 'useWindowDimensions')
+        .mockReturnValue({ width: 1280, height: 900, scale: 1, fontScale: 1 });
+
+      const rendered = renderOutlet({ enableStacking: true, closeButton: true });
+      show(() => {
+        toast('first');
+        toast('second');
+      });
+
+      tapRow(rendered, { x: TOAST_MAX_ROW_WIDTH - CLOSE_BUTTON_HIT_AREA + 10 });
+
+      expect(rendered.queryByText('second')).toBeNull();
+    });
+
+    it('still runs the toast onPress from inside the strip', () => {
+      const onPress = jest.fn();
+      const rendered = renderOutlet({ enableStacking: true });
+      show(() => {
+        toast('first');
+        toast('second', { onPress });
+      });
+
+      tapRow(rendered, { x: STRIP_X });
+
+      expect(onPress).toHaveBeenCalledTimes(1);
+    });
+
+    it('leaves a lone toast unexpanded — there is no stack to open', () => {
+      const rendered = renderOutlet({ enableStacking: true });
+      show(() => toast('only'));
+
+      tapRow(rendered, { x: ROW_CENTRE_X });
+
+      expect(toastStore.getSnapshot().isExpanded).toBe(false);
+      expect(rendered.queryByText('only')).toBeTruthy();
     });
   });
 

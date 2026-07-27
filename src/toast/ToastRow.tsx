@@ -354,17 +354,33 @@ export const ToastRow = React.forwardRef<ToastRef, ToastRowProps>(
       }
     }, [id, isExpanded]);
 
+    /**
+     * INVARIANT: NO TAP ON A STACKED ROW IS INERT. Every one of them dismisses,
+     * expands or collapses.
+     *
+     * The close-button strip dismisses only when a ✕ is actually THERE to aim at,
+     * which is exactly `closeButton && dismissible` — the same condition
+     * `ToastContent` renders it under, and nothing to do with expansion. Anything
+     * else in the strip falls through to the row's own behaviour rather than being
+     * swallowed: on a collapsed stack it expands, on an expanded one it collapses.
+     *
+     * Guarding the strip on `isExpanded` (as this did until now) made two taps do
+     * nothing at all — the whole strip at default config, where `closeButton` is
+     * `false` so the dismiss branch is unreachable, and the VISIBLE ✕ on a
+     * collapsed stack's front row. On Android that second one has no fallback:
+     * the RNGH tap wins the race against `ToastContent`'s nested close Pressable,
+     * so the ✕ never got its own press either.
+     *
+     * `x` is relative to the row, which is CAPPED at `TOAST_MAX_ROW_WIDTH`.
+     * Measuring the strip from the window edge would put it outside the row
+     * entirely on a wide viewport — do not "simplify" this back to `screenWidth`.
+     */
     const onSwipePress = React.useCallback(
       ({ x }: { x: number; y: number }) => {
         if (enableStacking && numberOfToasts > 1 && position !== 'center') {
-          // On Android the RNGH tap wins the race against the nested Pressable,
-          // so a press in the close-button strip has to dismiss explicitly.
-          // `x` is relative to the row, which is capped — measuring the strip
-          // from the window edge would put it outside the row on a wide viewport.
-          if (x > rowWidth - CLOSE_BUTTON_HIT_AREA) {
-            if (isExpanded && closeButton && dismissible) {
-              onDismiss(id);
-            }
+          const inCloseStrip = x > rowWidth - CLOSE_BUTTON_HIT_AREA;
+          if (inCloseStrip && closeButton && dismissible) {
+            onDismiss(id);
           } else {
             toggleExpand();
           }
@@ -376,7 +392,6 @@ export const ToastRow = React.forwardRef<ToastRef, ToastRowProps>(
         numberOfToasts,
         position,
         rowWidth,
-        isExpanded,
         closeButton,
         dismissible,
         onDismiss,
