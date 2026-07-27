@@ -56,9 +56,9 @@ import { WEB_POSITION_FIXED } from '../styles/web-view-style';
  * One blur radius for every Bloom overlay. Surfaces differ in what they show,
  * not in how the app behind them recedes.
  */
-export const BACKDROP_BLUR_INTENSITY = 40;
+export const BACKDROP_BLUR_INTENSITY = 80;
 /** Dim laid over the blur — the blur alone does not give enough contrast. */
-export const BACKDROP_DIM_OPACITY = 0.45;
+export const BACKDROP_DIM_OPACITY = 0.55;
 
 export interface OverlayRootProps {
   children?: ReactNode;

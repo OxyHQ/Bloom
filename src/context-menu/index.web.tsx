@@ -17,6 +17,7 @@ import { Pressable, StyleSheet, View } from 'react-native';
 
 import { useTheme } from '../theme/use-theme';
 import { Text } from '../typography';
+import { Backdrop } from '../overlay';
 import { Portal } from '../portal/index.web';
 import { useInteractionState } from '../hooks/useInteractionState';
 import { createOverlayZIndex } from '../styles/z-index';
@@ -172,7 +173,7 @@ export function ContextMenuContent({ children, style }: ContextMenuContentProps)
 
   return (
     <Portal>
-      <Pressable
+      <Backdrop
         style={styles.backdrop}
         onPress={close}
         accessibilityLabel="Close context menu"

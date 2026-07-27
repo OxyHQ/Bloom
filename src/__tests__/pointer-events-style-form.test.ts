@@ -43,6 +43,30 @@ describe('pointerEvents style-object form', () => {
     expect(files.some((f) => f.endsWith(join('overlay', 'index.tsx')))).toBe(true);
   });
 
+  // Every dismiss scrim is the shared `Backdrop`. The dropdown surfaces used to
+  // render a bare full-screen `Pressable` instead — a fourth copy of the idea,
+  // and a fully transparent one, so menus dismissed but never dimmed or blurred
+  // while dialogs and sheets did.
+  it('routes every backdrop-styled element through <Backdrop>', () => {
+    const offenders: string[] = [];
+
+    for (const file of files) {
+      const source = readFileSync(file, 'utf8');
+      // Every JSX element that takes the file's `styles.backdrop`, resolved back
+      // to the tag that opens it.
+      for (const match of source.matchAll(/style=\{(?:\[)?styles\.backdrop\b/g)) {
+        const opener = source.slice(0, match.index).lastIndexOf('<');
+        const tag = /^<([A-Za-z.]+)/.exec(source.slice(opener))?.[1] ?? '?';
+        if (tag !== 'Backdrop' && tag !== 'AnimatedBackdrop') {
+          const line = source.slice(0, match.index).split('\n').length;
+          offenders.push(`${file.slice(SRC.length + 1)}:${line}  <${tag}> uses styles.backdrop`);
+        }
+      }
+    }
+
+    expect(offenders).toEqual([]);
+  });
+
   it('never uses the RN-only values as styles — pass them as the prop', () => {
     const offenders = files
       .flatMap((file) =>

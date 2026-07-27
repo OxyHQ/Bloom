@@ -10,6 +10,7 @@ import React, {
 import { Pressable, StyleSheet, View } from 'react-native';
 
 import { useTheme } from '../theme/use-theme';
+import { Backdrop } from '../overlay';
 import { Portal } from '../portal/index.web';
 import { createOverlayZIndex } from '../styles/z-index';
 import { WEB_POSITION_FIXED } from '../styles/web-view-style';
@@ -262,7 +263,7 @@ export function PopoverContent({
   return (
     <Portal>
       {dismissible ? (
-        <Pressable
+        <Backdrop
           style={styles.backdrop}
           onPress={() => control.close()}
           accessibilityLabel="Dismiss popover"

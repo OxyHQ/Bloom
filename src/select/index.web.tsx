@@ -3,6 +3,7 @@ import { Pressable, StyleSheet, View } from 'react-native';
 
 import { useTheme } from '../theme/use-theme';
 import { Text } from '../typography';
+import { Backdrop } from '../overlay';
 import { Portal } from '../portal/index.web';
 import { createOverlayZIndex } from '../styles/z-index';
 import { WEB_POSITION_FIXED } from '../styles/web-view-style';
@@ -188,7 +189,7 @@ export function SelectContent<T>({
 
   return (
     <Portal>
-      <Pressable
+      <Backdrop
         style={styles.backdrop}
         onPress={ctx.close}
         accessibilityLabel="Close selection"
