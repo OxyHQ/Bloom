@@ -14,6 +14,10 @@
  * covers `toast.custom` JSX and `unstyled` rows too, which never reach that
  * card. Every distance the gesture measures is a fraction of the capped
  * `rowWidth`, not of the window — see the constant.
+ *
+ * W13 — being THE row box also makes it the hover target: `useStackHover`'s
+ * handlers go here so a pointer over ANY row counts as a pointer over the stack.
+ * The handlers are empty on native.
  */
 import * as React from 'react';
 import {
@@ -37,6 +41,7 @@ import { easeInOutCircFn } from './animations';
 import { TOAST_MAX_ROW_WIDTH } from './constants';
 import { useToastContext } from './context';
 import type { ToastPosition, ToastProps } from './types';
+import { useStackHover } from './use-stack-hover';
 
 /** Fraction of the row a horizontal swipe must cross to dismiss. */
 const HORIZONTAL_DISMISS_FRACTION = 0.25;
@@ -76,10 +81,16 @@ export const ToastSwipeHandler: React.FC<
   // The row is `width: '100%'` up to the cap, so this is its real width.
   const rowWidth = Math.min(windowWidth, TOAST_MAX_ROW_WIDTH);
   const translate = useSharedValue(0);
-  const { swipeToDismissDirection: direction, position: positionCtx } =
-    useToastContext();
+  const {
+    swipeToDismissDirection: direction,
+    position: positionCtx,
+    enableStacking,
+  } = useToastContext();
   const position = positionProps ?? positionCtx;
   const isAndroid = Platform.OS === 'android';
+  // W13 — hover lives on THE ROW BOX, so hovering any row counts as hovering the
+  // stack. Empty on native; see `use-stack-hover.native.ts`.
+  const hoverProps = useStackHover({ enableStacking });
 
   const pan = Gesture.Pan()
     .onBegin(() => {
@@ -199,6 +210,7 @@ export const ToastSwipeHandler: React.FC<
           styles.rowBox,
           style,
         ]}
+        {...hoverProps}
         // W9 — on web `LinearTransition`'s easing degrades to CSS `ease` because
         // a `bezierFn` result carries no easing-name symbol for the CSS mapper.
         // Accepted: the transition still runs, only its curve differs.

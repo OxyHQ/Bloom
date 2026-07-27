@@ -13,6 +13,10 @@ import {
 } from '../toast/constants';
 import { toast, ToastOutlet } from '../toast';
 import { toastStore } from '../toast/toast-store';
+import {
+  HOVER_LEAVE_GRACE,
+  resetStackHoverForTests,
+} from '../toast/use-stack-hover';
 import type { ToasterProps, ToastPosition } from '../toast/types';
 
 /**
@@ -216,6 +220,9 @@ describe('ToastOutlet', () => {
   });
 
   afterEach(() => {
+    // Hover state is module-level (one stack per document), so it outlives the
+    // render tree and has to be cleared between tests.
+    resetStackHoverForTests();
     act(() => {
       toastStore.dismissToast(undefined);
       jest.runOnlyPendingTimers();
@@ -577,6 +584,176 @@ describe('ToastOutlet', () => {
           JSON.stringify(node.props.style).includes('"borderWidth":3'),
       );
       expect(surfaces.length).toBeGreaterThan(0);
+    });
+  });
+
+  /**
+   * HOVER-TO-EXPAND (web). jest resolves `use-stack-hover.ts`, the web file, so
+   * these run the real trigger; `use-stack-hover.native.ts` returns no handlers at
+   * all and is covered by `toast-stack-hover.test.ts`.
+   *
+   * The pointer geometry itself — that hover reaches a row through the portal
+   * root's `pointer-events: none`, and the transforms on hover-in and hover-out —
+   * is only observable in a browser and is measured there.
+   */
+  describe('stack hover', () => {
+    const mouse = { nativeEvent: { pointerType: 'mouse' } };
+    const touch = { nativeEvent: { pointerType: 'touch' } };
+
+    const hoverRow = (rendered: ReturnType<typeof renderOutlet>, index = 0) => {
+      const row = rowBoxesOf(rendered)[index];
+      if (!row) {
+        throw new Error(`no row box at index ${index}`);
+      }
+      return row;
+    };
+
+    it('expands the stack when a mouse enters a row', () => {
+      const rendered = renderOutlet({ enableStacking: true });
+      show(() => {
+        toast('first');
+        toast('second');
+      });
+      expect(toastStore.getSnapshot().isExpanded).toBe(false);
+
+      act(() => {
+        fireEvent(hoverRow(rendered), 'pointerEnter', mouse);
+      });
+
+      expect(toastStore.getSnapshot().isExpanded).toBe(true);
+    });
+
+    it('ignores a touch pointer, so a tap does not expand-then-collapse', () => {
+      const rendered = renderOutlet({ enableStacking: true });
+      show(() => {
+        toast('first');
+        toast('second');
+      });
+
+      act(() => {
+        fireEvent(hoverRow(rendered), 'pointerEnter', touch);
+      });
+
+      expect(toastStore.getSnapshot().isExpanded).toBe(false);
+    });
+
+    it('collapses on leave, but only after the grace period', () => {
+      const rendered = renderOutlet({ enableStacking: true });
+      show(() => {
+        toast('first');
+        toast('second');
+      });
+      act(() => {
+        fireEvent(hoverRow(rendered), 'pointerEnter', mouse);
+      });
+
+      act(() => {
+        fireEvent(hoverRow(rendered), 'pointerLeave', mouse);
+        jest.advanceTimersByTime(HOVER_LEAVE_GRACE - 1);
+      });
+      expect(toastStore.getSnapshot().isExpanded).toBe(true);
+
+      act(() => {
+        jest.advanceTimersByTime(1);
+      });
+      expect(toastStore.getSnapshot().isExpanded).toBe(false);
+    });
+
+    it('does not collapse when the pointer crosses from one row to the next', () => {
+      const rendered = renderOutlet({ enableStacking: true });
+      show(() => {
+        toast('first');
+        toast('second');
+      });
+      act(() => {
+        fireEvent(hoverRow(rendered), 'pointerEnter', mouse);
+      });
+
+      // The gap between two expanded rows: leave one, enter the next a tick later.
+      act(() => {
+        fireEvent(hoverRow(rendered), 'pointerLeave', mouse);
+        jest.advanceTimersByTime(HOVER_LEAVE_GRACE - 20);
+        fireEvent(hoverRow(rendered, 1), 'pointerEnter', mouse);
+        jest.advanceTimersByTime(HOVER_LEAVE_GRACE * 3);
+      });
+
+      expect(toastStore.getSnapshot().isExpanded).toBe(true);
+    });
+
+    it('does not let a hovered toast auto-close under the cursor', () => {
+      const rendered = renderOutlet({ enableStacking: true });
+      show(() => {
+        toast('first');
+        toast('second');
+      });
+
+      act(() => {
+        fireEvent(hoverRow(rendered), 'pointerEnter', mouse);
+        // Well past both rows' deadlines.
+        jest.advanceTimersByTime(
+          (toastDefaults.duration + ENTERING_ANIMATION_DURATION) * 3,
+        );
+      });
+
+      expect(rendered.queryByText('first')).toBeTruthy();
+      expect(rendered.queryByText('second')).toBeTruthy();
+
+      // Leaving restarts the clock, so they still go on their own.
+      act(() => {
+        fireEvent(hoverRow(rendered), 'pointerLeave', mouse);
+        jest.advanceTimersByTime(
+          HOVER_LEAVE_GRACE + toastDefaults.duration + ENTERING_ANIMATION_DURATION,
+        );
+      });
+      expect(rendered.queryByText('first')).toBeNull();
+      expect(rendered.queryByText('second')).toBeNull();
+    });
+
+    it('pauses a hovered toast with stacking off too, without expanding anything', () => {
+      const rendered = renderOutlet({ enableStacking: false });
+      show(() => {
+        toast('first');
+        toast('second');
+      });
+
+      act(() => {
+        fireEvent(hoverRow(rendered), 'pointerEnter', mouse);
+        jest.advanceTimersByTime(
+          (toastDefaults.duration + ENTERING_ANIMATION_DURATION) * 3,
+        );
+      });
+
+      expect(rendered.queryByText('first')).toBeTruthy();
+      // Nothing to expand in a flat column — the pointer only pauses.
+      expect(toastStore.getSnapshot().isExpanded).toBe(false);
+
+      act(() => {
+        fireEvent(hoverRow(rendered), 'pointerLeave', mouse);
+        jest.advanceTimersByTime(
+          HOVER_LEAVE_GRACE + toastDefaults.duration + ENTERING_ANIMATION_DURATION,
+        );
+      });
+      expect(rendered.queryByText('first')).toBeNull();
+    });
+
+    it('leaves the expansion alone on a press while hovering, and still runs onPress', () => {
+      const onPress = jest.fn();
+      const rendered = renderOutlet({ enableStacking: true });
+      show(() => {
+        toast('first');
+        toast('second', { onPress });
+      });
+      act(() => {
+        fireEvent(hoverRow(rendered), 'pointerEnter', mouse);
+      });
+      expect(toastStore.getSnapshot().isExpanded).toBe(true);
+
+      // A desktop click on the row: hover owns expansion, so this must not toggle
+      // it shut (which would resume the timers hover just paused).
+      tapRow(rendered, { x: ROW_CENTRE_X });
+
+      expect(toastStore.getSnapshot().isExpanded).toBe(true);
+      expect(onPress).toHaveBeenCalledTimes(1);
     });
   });
 

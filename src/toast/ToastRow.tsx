@@ -60,6 +60,7 @@ import {
 } from './constants';
 import { useDynamicToastContext, useToastContext } from './context';
 import { calculateStackScaleX } from './position-utils';
+import { isStackHovered } from './use-stack-hover';
 import { useAnimatedTarget } from './use-animated-target';
 import { ToastContent } from './ToastContent';
 import { ToastSwipeHandler } from './ToastSwipeHandler';
@@ -374,6 +375,13 @@ export const ToastRow = React.forwardRef<ToastRef, ToastRowProps>(
      * `x` is relative to the row, which is CAPPED at `TOAST_MAX_ROW_WIDTH`.
      * Measuring the strip from the window edge would put it outside the row
      * entirely on a wide viewport — do not "simplify" this back to `screenWidth`.
+     *
+     * W13 — the expansion TOGGLE stands down while a mouse is hovering the stack,
+     * because hover already owns expansion there (`use-stack-hover`). Without this
+     * a desktop click would collapse the stack under the cursor and resume the
+     * timers hover had just paused. Dismissing is unaffected, `onPress` always
+     * runs, and `isStackHovered()` is always false on native and on any touch web
+     * device — so press remains the only trigger wherever there is no pointer.
      */
     const onSwipePress = React.useCallback(
       ({ x }: { x: number; y: number }) => {
@@ -381,7 +389,7 @@ export const ToastRow = React.forwardRef<ToastRef, ToastRowProps>(
           const inCloseStrip = x > rowWidth - CLOSE_BUTTON_HIT_AREA;
           if (inCloseStrip && closeButton && dismissible) {
             onDismiss(id);
-          } else {
+          } else if (!isStackHovered()) {
             toggleExpand();
           }
         }
