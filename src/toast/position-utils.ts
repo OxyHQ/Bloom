@@ -34,7 +34,12 @@ export const getOrderedToastIds = (
  *
  * Scale rather than width: changing the real width would rewrap the text. Returns
  * 1 (no squeeze) for a single row, an expanded stack, stacking turned off, or
- * before the window width is known.
+ * before the row width is known.
+ *
+ * `rowWidth` is the row's OWN width, not the window's. Upstream can use the
+ * screen width because its row is always full-bleed; Bloom's is capped at
+ * `TOAST_MAX_ROW_WIDTH`, and dividing a fixed `stackGap` inset by a 1280px window
+ * would shrink a buried row by 4 visible pixels instead of the intended 16.
  */
 export const calculateStackScaleX = ({
   index,
@@ -43,7 +48,7 @@ export const calculateStackScaleX = ({
   position,
   isExpanded,
   stackGap,
-  screenWidth,
+  rowWidth,
 }: {
   index: number;
   numberOfToasts: number;
@@ -51,16 +56,16 @@ export const calculateStackScaleX = ({
   position: ToastPosition;
   isExpanded: boolean;
   stackGap: number;
-  screenWidth: number;
+  rowWidth: number;
 }): number => {
-  if (!enableStacking || numberOfToasts <= 1 || isExpanded || screenWidth <= 0) {
+  if (!enableStacking || numberOfToasts <= 1 || isExpanded || rowWidth <= 0) {
     return 1;
   }
 
   const distanceFromFront =
     position === 'top-center' ? index : numberOfToasts - index - 1;
   const narrowAmount = stackGap * distanceFromFront * 2;
-  return Math.max(MIN_STACK_SCALE_X, 1 - narrowAmount / screenWidth);
+  return Math.max(MIN_STACK_SCALE_X, 1 - narrowAmount / rowWidth);
 };
 
 const heightOf = (

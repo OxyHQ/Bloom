@@ -55,6 +55,7 @@ import {
   CLOSE_BUTTON_HIT_AREA,
   ENTERING_ANIMATION_DURATION,
   STACKING_ANIMATION_DURATION,
+  TOAST_MAX_ROW_WIDTH,
   toastDefaults,
 } from './constants';
 import { useDynamicToastContext, useToastContext } from './context';
@@ -224,6 +225,8 @@ export const ToastRow = React.forwardRef<ToastRef, ToastRowProps>(
     });
 
     const { width: screenWidth } = useWindowDimensions();
+    // The row is `width: '100%'` up to the cap, so this is its real width.
+    const rowWidth = Math.min(screenWidth, TOAST_MAX_ROW_WIDTH);
 
     const stackScaleX = useAnimatedTarget(
       calculateStackScaleX({
@@ -233,7 +236,7 @@ export const ToastRow = React.forwardRef<ToastRef, ToastRowProps>(
         position,
         isExpanded,
         stackGap,
-        screenWidth,
+        rowWidth,
       }),
       { duration: STACKING_ANIMATION_DURATION, easing: easeOutQuartFn },
     );
@@ -356,7 +359,9 @@ export const ToastRow = React.forwardRef<ToastRef, ToastRowProps>(
         if (enableStacking && numberOfToasts > 1 && position !== 'center') {
           // On Android the RNGH tap wins the race against the nested Pressable,
           // so a press in the close-button strip has to dismiss explicitly.
-          if (x > screenWidth - CLOSE_BUTTON_HIT_AREA) {
+          // `x` is relative to the row, which is capped — measuring the strip
+          // from the window edge would put it outside the row on a wide viewport.
+          if (x > rowWidth - CLOSE_BUTTON_HIT_AREA) {
             if (isExpanded && closeButton && dismissible) {
               onDismiss(id);
             }
@@ -370,7 +375,7 @@ export const ToastRow = React.forwardRef<ToastRef, ToastRowProps>(
         enableStacking,
         numberOfToasts,
         position,
-        screenWidth,
+        rowWidth,
         isExpanded,
         closeButton,
         dismissible,
