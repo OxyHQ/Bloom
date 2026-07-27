@@ -39,7 +39,7 @@
  * Use `<OverlayRoot>` for the surface's outermost node and `<Backdrop>` for its
  * dimming layer; do not re-implement either with raw `View`s.
  */
-import { memo, type ReactNode } from 'react';
+import { forwardRef, memo, type ReactNode } from 'react';
 import { BlurView } from 'expo-blur';
 import {
   Platform,
@@ -108,21 +108,31 @@ export interface BackdropProps {
  * pointer events (that is its whole job), so anything that must stay pressable
  * goes INSIDE it as `children`, never as a sibling rendered over it.
  */
-export const Backdrop = memo(function Backdrop({
-  onPress,
-  disabled = false,
-  blurIntensity = BACKDROP_BLUR_INTENSITY,
-  blurTint = 'dark',
-  dimColor = '#000',
-  dimOpacity = BACKDROP_DIM_OPACITY,
-  style,
-  children,
-  accessibilityLabel = 'Dismiss',
-  testID,
-}: BackdropProps) {
+export const Backdrop = memo(forwardRef<View, BackdropProps>(function Backdrop(
+  {
+    onPress,
+    disabled = false,
+    blurIntensity = BACKDROP_BLUR_INTENSITY,
+    blurTint = 'dark',
+    dimColor = '#000',
+    dimOpacity = BACKDROP_DIM_OPACITY,
+    style,
+    children,
+    accessibilityLabel = 'Dismiss',
+    testID,
+  },
+  ref,
+) {
   const inert = disabled || !onPress;
   return (
     <Pressable
+      // MUST forward the ref: surfaces animate the backdrop through
+      // `Animated.createAnimatedComponent(Backdrop)`, and reanimated applies
+      // those updates by reaching the underlying host view. With the ref
+      // swallowed the animated style never lands, so a backdrop whose opacity
+      // is animated from 0 stays at 0 — fully transparent, with the surface
+      // floating over an undimmed app.
+      ref={ref}
       pointerEvents="auto"
       onPress={inert ? undefined : onPress}
       disabled={inert}
@@ -153,7 +163,9 @@ export const Backdrop = memo(function Backdrop({
       {children}
     </Pressable>
   );
-});
+}));
+
+Backdrop.displayName = 'Backdrop';
 
 const styles = StyleSheet.create({
   root: {

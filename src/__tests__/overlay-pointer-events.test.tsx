@@ -123,6 +123,30 @@ describe('overlay pointer-events contract (web)', () => {
     noBlur.container.remove();
   });
 
+  // Surfaces animate the backdrop via `Animated.createAnimatedComponent(Backdrop)`,
+  // and reanimated writes those updates through the ref. Swallow it and an
+  // opacity animated from 0 never moves: the backdrop stays fully transparent
+  // while the surface floats over an undimmed app (shipped exactly once).
+  it('forwards its ref to a host node so animated styles can land', () => {
+    let node: unknown = null;
+    const { root, container } = render(
+      createElement(Backdrop, {
+        onPress: () => {},
+        testID: 'backdrop',
+        ref: (el: unknown) => {
+          node = el;
+        },
+      } as never),
+    );
+
+    expect(node).not.toBeNull();
+    expect(node).toBeInstanceOf(HTMLElement);
+    expect((node as HTMLElement).getAttribute('data-testid')).toBe('backdrop');
+
+    act(() => root.unmount());
+    container.remove();
+  });
+
   it('a disabled Backdrop dims without dismissing', () => {
     const onPress = jest.fn();
     const { root, container } = render(
