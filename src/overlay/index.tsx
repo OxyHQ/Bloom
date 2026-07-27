@@ -108,8 +108,11 @@ const styles = StyleSheet.create({
     // it anchors to the document flow in some browsers once the page scrolls —
     // pin this box to the viewport itself. Native: absolute fill inside the
     // Outlet, which is already full-screen.
-    ...(Platform.OS === 'web'
-      ? { position: WEB_POSITION_FIXED, top: 0, left: 0, right: 0, bottom: 0 }
-      : StyleSheet.absoluteFillObject),
+    // `absoluteFillObject` was removed in RN 0.85 — the inset is written out.
+    position: Platform.OS === 'web' ? WEB_POSITION_FIXED : 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
   },
 });
