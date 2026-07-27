@@ -18,6 +18,12 @@
  * Nesting extra contexts costs nothing at runtime — the win is that scope is no
  * longer a per-app decision.
  *
+ * EXPO/EXPO-ROUTER APPS ONLY. The scroll-restoration provider it mounts imports
+ * `expo-router` (its web implementation keys offsets on the focused route), so
+ * a Vite/SPA consumer that has no expo-router cannot resolve this module. Those
+ * apps keep mounting `BloomThemeProvider` (and any other piece they need)
+ * directly — that is not a lesser path, just the one without a router.
+ *
  * NOT included, on purpose — these are OUTLETS, not state, and their placement
  * in the tree is a real app decision (z-order, safe areas, and mounting a
  * second one duplicates every surface it renders):
