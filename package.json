@@ -28,6 +28,17 @@
         "default": "./lib/commonjs/index.js"
       }
     },
+    "./provider": {
+      "react-native": "./src/provider/index.tsx",
+      "import": {
+        "types": "./lib/typescript/module/provider/index.d.ts",
+        "default": "./lib/module/provider/index.js"
+      },
+      "require": {
+        "types": "./lib/typescript/commonjs/provider/index.d.ts",
+        "default": "./lib/commonjs/provider/index.js"
+      }
+    },
     "./surfaces": {
       "react-native": "./src/surfaces/index.ts",
       "browser": {

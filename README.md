@@ -24,9 +24,40 @@ Also required:
 
 ## Usage
 
+### App root
+
+Mount `BloomProvider` once, at the very top of the app. It composes every piece of
+app-wide Bloom state — theme, haptics, image resolution, scroll restoration and the
+tab-bar minimize progress — so none of them can end up at the wrong depth. It takes
+all of `BloomThemeProvider`'s props plus `imageResolver` and `haptics`.
+
+```tsx
+import { BloomProvider } from '@oxyhq/bloom/provider';
+
+<BloomProvider
+  defaultMode="system"
+  defaultColorPreset="blue"
+  persistKey="app.theme"
+  storage={storage}
+  imageResolver={(id, variant) => oxyServices.getFileDownloadUrl(id, variant)}
+>
+  <App />
+</BloomProvider>
+```
+
+Everything scrollable must be **under** it: on web `useScrollRestoration()` throws
+outside its provider, so a list rendered beside the root (a right rail, an overlay)
+crashes the screen.
+
+Outlets are **not** included — their position in the tree is a real app decision, and
+a second mount duplicates every surface they render. Mount these yourself, under
+`BloomProvider`: `<ToastOutlet>`, `<Portal.Provider>`/`<Portal.Outlet>`,
+`<SurfaceHost>`, `<BloomDialogProvider>`, `<AlertDialogHost>`.
+
 ### Theme
 
-Wrap your app with `BloomThemeProvider`. It accepts controlled `mode` and `colorPreset` props — persist them however you like (AsyncStorage, Zustand, etc.).
+`BloomProvider` already mounts `BloomThemeProvider`; mount it directly only when you
+need a nested/scoped theme. It accepts controlled `mode` and `colorPreset` props — persist them however you like (AsyncStorage, Zustand, etc.).
 
 ```tsx
 import { BloomThemeProvider } from '@oxyhq/bloom/theme';

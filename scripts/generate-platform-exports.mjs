@@ -47,6 +47,9 @@ const ROOT_BARREL_WEB_PATH = join(SRC, 'index.web.ts');
  */
 const SUBPATHS = /** @type {const} */ ([
   ['.', 'index.ts'],
+  // The single app-root provider. Not web-forked: its one platform-varying
+  // import is bound by filename in `provider/scroll-provider{,.web}.ts`.
+  ['./provider', 'provider/index.tsx'],
   ['./surfaces', 'surfaces/index.ts'],
   ['./image-resolver', 'image-resolver/index.ts'],
   ['./image-aspect-ratio-cache', 'image-aspect-ratio-cache/index.ts'],
