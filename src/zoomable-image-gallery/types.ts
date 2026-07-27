@@ -44,8 +44,12 @@ export interface ZoomableImageGalleryHandle {
 export interface ZoomableImageGalleryProps {
   /** Measures any thumbnail by its images-only subset index, used on dismiss. */
   measureThumb?: MeasureThumb;
-  /** Corner radius applied to the zoomed images. Defaults to `DEFAULT_CORNER_RADIUS`. */
-  cornerRadius?: number;
+  /**
+   * Corner radius applied to the zoomed images. `'circle'` rounds each image to
+   * a full circle at whatever size it is fitted to — what an avatar needs, and
+   * the reason avatars don't need their own viewer.
+   */
+  cornerRadius?: number | 'circle';
   /**
    * Bottom page indicator for multi-image galleries. `'dots'` (default) renders the
    * compact dot row; `'thumbnails'` renders a horizontal strip of tappable image

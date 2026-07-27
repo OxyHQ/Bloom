@@ -96,6 +96,15 @@ interface FittedSize {
 }
 
 /**
+ * Resolve `cornerRadius` against the size an image is actually rendered at, so
+ * `'circle'` stays a circle at every fitted size (and through the open/close
+ * animation, which scales this same box).
+ */
+function resolveCornerRadius(cornerRadius: number | 'circle', fit: FittedSize): number {
+  return cornerRadius === 'circle' ? Math.min(fit.width, fit.height) / 2 : cornerRadius;
+}
+
+/**
  * Fullscreen, swipeable image viewer that replicates the profile avatar's
  * measured-origin zoom transition (`ZoomableAvatar`) for rectangular post media:
  *
@@ -115,6 +124,11 @@ interface FittedSize {
 const ZoomableImageGalleryInner = React.forwardRef<ZoomableImageGalleryHandle, ZoomableImageGalleryProps>(({ measureThumb, cornerRadius = DEFAULT_CORNER_RADIUS, indicatorVariant = 'dots' }, ref) => {
   const theme = useTheme();
   const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = useWindowDimensions();
+
+  const radiusFor = useCallback(
+    (fit: FittedSize) => resolveCornerRadius(cornerRadius, fit),
+    [cornerRadius],
+  );
 
   const [isOpen, setIsOpen] = useState(false);
   // Once true, the swipeable pager is mounted and the single open-image hidden.
@@ -787,7 +801,7 @@ const ZoomableImageGalleryInner = React.forwardRef<ZoomableImageGalleryHandle, Z
                 source={{ uri: images[activeIndex]?.uri }}
                 contentFit="contain"
                 style={[
-                  { width: activeFit.width, height: activeFit.height, borderRadius: cornerRadius },
+                  { width: activeFit.width, height: activeFit.height, borderRadius: radiusFor(activeFit) },
                   openImageStyle,
                 ]}
                 transition={0}
@@ -839,7 +853,7 @@ const ZoomableImageGalleryInner = React.forwardRef<ZoomableImageGalleryHandle, Z
                             source={{ uri: img.uri }}
                             contentFit="contain"
                             style={[
-                              { width: fit.width, height: fit.height, borderRadius: cornerRadius },
+                              { width: fit.width, height: fit.height, borderRadius: radiusFor(fit) },
                               zoomImageStyle,
                             ]}
                             transition={0}
@@ -859,7 +873,7 @@ const ZoomableImageGalleryInner = React.forwardRef<ZoomableImageGalleryHandle, Z
                       <Image
                         source={{ uri: img.uri }}
                         contentFit="contain"
-                        style={{ width: fit.width, height: fit.height, borderRadius: cornerRadius }}
+                        style={{ width: fit.width, height: fit.height, borderRadius: radiusFor(fit) }}
                         transition={0}
                         {...(Platform.OS === 'web' ? { draggable: false } : {})}
                       />
