@@ -73,18 +73,59 @@ the theme's first-class status tokens: `success`, `error`, `warning`, `info`. A
 `loading` or variant-less toast gets `textSecondary`.
 
 That is deliberate, and matches sonner. `toast.success('Saved')` should read as a
-normal toast with a green check, not as a full brand-coloured card. `richColors`
-widens the status colour to the border and title as well; it never tints the
-surface and never swaps in a brand colour.
+normal toast with a green check, not as a full brand-coloured card.
+
+`richColors` lifts the status colour from the icon alone to the **border and
+title** as well. That is all it does: the surface stays `backgroundSecondary`, and
+the description, close button and action colours stay neutral, so a rich-coloured
+row still reads as a toast rather than a status banner. All four status variants
+behave identically under it — `warning` and `info` are not special-cased and get
+exactly the same border+title treatment as `success` and `error`, because the
+lift is the only tinting mechanism there is. `loading` and a variant-less toast
+have no status colour, so `richColors` has nothing to make more prominent and
+they stay fully neutral either way.
 
 <Callout variant="info" title="Tinted status surfaces need new tokens">
-Bloom has `*Subtle` / `*SubtleForeground` pairs for the **brand** roles
-(`primarySubtle`, `negativeSubtle`) only — those are not status colours, and using
-them here is what once made a success toast render brand-purple. Genuinely tinted
-status surfaces would need a `successSubtle` / `errorSubtle` / `warningSubtle` /
-`infoSubtle` token family: a theme addition affecting every app, not something to
-fake from a brand pair or a derived alpha.
+There is no `warningSubtle` / `infoSubtle` (or `successSubtle` / `errorSubtle`)
+pair to tint a surface with, which is why every variant gets the same border+title
+lift instead. Bloom has `*Subtle` / `*SubtleForeground` pairs for the **brand**
+roles (`primarySubtle`, `negativeSubtle`) only — those are not status colours, and
+reaching for them here is what once made a success toast render brand-purple.
+Genuinely tinted status surfaces would need that missing status token family: a
+theme addition affecting every app, not something to fake from a brand pair or a
+derived alpha.
 </Callout>
+
+### Recolouring toasts with `BloomColorScope`
+
+`BloomColorScope` is a React context override, and React context flows through a
+portal — so a scope **does** reach the toast even though the row renders into
+`#bloom-portal-root` at the end of `<body>`. The catch is which side of the scope
+the OUTLET is on, not which side the `toast()` call is on:
+
+```tsx
+// ✅ tints toasts — the scope is an ancestor of the outlet
+<BloomColorScope colorPreset="green">
+  <App />
+  <ToastOutlet />
+</BloomColorScope>
+
+// ❌ does NOT tint toasts — the outlet is outside the scope
+<BloomColorScope colorPreset="green">
+  <SomeScreen />   {/* toast() called from in here */}
+</BloomColorScope>
+<ToastOutlet />
+```
+
+**Apps that mount `OxyProvider` are in the second shape.** It renders
+`<ToastOutlet />` at app root, so a `BloomColorScope` wrapped around a screen deep
+in the tree will not tint toasts fired from that screen — they follow the root
+preset. To recolour toasts, move the scope up so it wraps the provider.
+
+What a scope changes is the **preset-derived** roles: the surface, text and
+border. Status colours are fixed theme tokens, so a `success` icon (and, under
+`richColors`, the border and title) is the same green whichever preset is in
+scope — only the neutral card around it moves.
 
 ### Width
 
