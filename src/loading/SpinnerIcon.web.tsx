@@ -1,6 +1,8 @@
 import React, { useEffect } from 'react';
 import { StyleSheet, View, type ViewStyle } from 'react-native';
 
+import type { WebCssStyle } from '../styles/web-view-style';
+
 interface SpinnerIconProps {
   size?: number;
   color?: string;
@@ -59,6 +61,15 @@ export const BLOOM_SPINNER_CSS = `
 @keyframes ${SPIN_ANIMATION_NAME} { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
 `;
 
+/**
+ * `animation` is a real CSS prop on web; react-native-web passes it through to
+ * the DOM node. RN's `ViewStyle` has no `animation` key, which is what
+ * `WebCssStyle` covers.
+ */
+const SPIN_STYLE: WebCssStyle = {
+  animation: `${SPIN_ANIMATION_NAME} ${SPIN_DURATION_MS}ms linear infinite`,
+};
+
 function useKeyframes(): void {
   useEffect(() => {
     if (typeof document === 'undefined') return;
@@ -87,15 +98,7 @@ export const SpinnerIcon: React.FC<SpinnerIconProps> = ({
   return (
     <View
       {...(className ? ({ className } as Record<string, string>) : {})}
-      // `animation` is a real CSS prop on web; react-native-web passes it
-      // through to the DOM node. Typed as a cast because RN's ViewStyle has no
-      // `animation` key.
-      style={[
-        styles.container,
-        { width: size, height: size },
-        { animation: `${SPIN_ANIMATION_NAME} ${SPIN_DURATION_MS}ms linear infinite` } as ViewStyle,
-        style,
-      ]}
+      style={[styles.container, { width: size, height: size }, SPIN_STYLE, style]}
     >
       {BLADES.map(({ angle, opacity }) => (
         <View

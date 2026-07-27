@@ -21,7 +21,7 @@ import { RemoveScrollBar } from 'react-remove-scroll-bar';
 
 import { Portal } from '../portal/index.web';
 import { createOverlayZIndex } from '../styles/z-index';
-import { WEB_POSITION_FIXED } from '../styles/web-view-style';
+import { WEB_POSITION_FIXED, type WebCssStyle } from '../styles/web-view-style';
 import { bloomShadowStyle } from '../design-tokens/shadows';
 import { useTheme } from '../theme/use-theme';
 import { Context, useDialogContext, useDialogControl } from './context';
@@ -58,6 +58,23 @@ import type {
 } from './types';
 
 const FADE_OUT_DURATION = CENTER_FADE_OUT_DURATION;
+
+/**
+ * The four CSS `animation` shorthands driving the centered card and its backdrop.
+ * `animation` has no `ViewStyle` key at all — react-native-web forwards it to the
+ * DOM node — so these are annotated `WebCssStyle` rather than cast. The
+ * `@keyframes` they name are self-injected by `useDialogCss()`.
+ */
+const ZOOM_FADE_IN: WebCssStyle = {
+  animation: 'bloomDialogZoomFadeIn cubic-bezier(0.16, 1, 0.3, 1) 0.3s',
+};
+const ZOOM_FADE_OUT: WebCssStyle = {
+  animation: `bloomDialogZoomFadeOut ease-in ${FADE_OUT_DURATION}ms forwards`,
+};
+const BACKDROP_FADE_IN: WebCssStyle = { animation: 'bloomDialogFadeIn ease-out 0.15s' };
+const BACKDROP_FADE_OUT: WebCssStyle = {
+  animation: `bloomDialogFadeOut ease-in ${FADE_OUT_DURATION}ms forwards`,
+};
 
 const stopPropagation = (e: { stopPropagation: () => void }) => e.stopPropagation();
 
@@ -475,9 +492,7 @@ function DialogPanel({
           ...bloomShadowStyle('m'),
           zIndex: surfaceZIndex,
         },
-        isClosing
-          ? ({ animation: `bloomDialogZoomFadeOut ease-in ${FADE_OUT_DURATION}ms forwards` } as ViewStyle)
-          : ({ animation: 'bloomDialogZoomFadeIn cubic-bezier(0.16, 1, 0.3, 1) 0.3s' } as ViewStyle),
+        isClosing ? ZOOM_FADE_OUT : ZOOM_FADE_IN,
         // Drives `height` (and `maxWidth`) only while a morph is in flight; at
         // rest it resolves to `height: 'auto'` — the natural sizing above. Placed
         // before `style` so a consumer's explicit size still wins.
@@ -625,23 +640,21 @@ function SheetSurface({
 
   const visible = shown && entered;
 
-  const panelTransition = useMemo<ViewStyle>(
-    () =>
-      ({
-        transitionProperty: 'transform, opacity',
-        transitionDuration: `${ANIMATION_DURATION}ms`,
-        transitionTimingFunction: EASE_OUT,
-      }) as ViewStyle,
+  const panelTransition = useMemo<WebCssStyle>(
+    () => ({
+      transitionProperty: 'transform, opacity',
+      transitionDuration: `${ANIMATION_DURATION}ms`,
+      transitionTimingFunction: EASE_OUT,
+    }),
     [],
   );
 
-  const backdropTransition = useMemo<ViewStyle>(
-    () =>
-      ({
-        transitionProperty: 'opacity',
-        transitionDuration: `${ANIMATION_DURATION}ms`,
-        transitionTimingFunction: EASE_OUT,
-      }) as ViewStyle,
+  const backdropTransition = useMemo<WebCssStyle>(
+    () => ({
+      transitionProperty: 'opacity',
+      transitionDuration: `${ANIMATION_DURATION}ms`,
+      transitionTimingFunction: EASE_OUT,
+    }),
     [],
   );
 
@@ -664,7 +677,7 @@ function SheetSurface({
       borderRadius: PANEL_RADIUS,
       transform: [{ translateX: visible ? 0 : hiddenSign }],
       opacity: visible ? 1 : 0,
-    } as ViewStyle;
+    };
   }, [visible, placement, width, inset, viewportWidth]);
 
   const handleBackdropPress = useCallback(() => {
@@ -798,9 +811,7 @@ function DialogBackdrop({ isClosing }: { isClosing: boolean }) {
       bottom: 0,
       backgroundColor: 'rgba(0,0,0,0.8)',
     },
-    isClosing
-      ? ({ animation: `bloomDialogFadeOut ease-in ${FADE_OUT_DURATION}ms forwards` } as ViewStyle)
-      : ({ animation: 'bloomDialogFadeIn ease-out 0.15s' } as ViewStyle),
+    isClosing ? BACKDROP_FADE_OUT : BACKDROP_FADE_IN,
   ];
 
   return <View style={style} />;
@@ -839,7 +850,11 @@ export function AutoMountedDialog({
   );
 }
 
-const sheetStyles = {
+// Annotated rather than cast: a plain object literal widens `position: 'absolute'`
+// to `string`, which is what the three `as ViewStyle` casts here used to silence.
+// The annotation supplies the contextual type instead, so the literals narrow and
+// a genuine mistake still fails.
+const sheetStyles: Record<'root' | 'backdrop' | 'panel', ViewStyle> = {
   // `zIndex` for the root (backdrop) and panel (surface) is applied inline from
   // the per-layer `createOverlayZIndex(layer)` in `SheetSurface`, so a side
   // dialog stacked on top of another (surface stack) paints above it.
@@ -849,7 +864,7 @@ const sheetStyles = {
     left: 0,
     right: 0,
     bottom: 0,
-  } as ViewStyle,
+  },
   backdrop: {
     position: 'absolute',
     top: 0,
@@ -857,13 +872,13 @@ const sheetStyles = {
     right: 0,
     bottom: 0,
     backgroundColor: '#000',
-  } as ViewStyle,
+  },
   panel: {
     position: 'absolute',
     overflow: 'hidden',
     // Elevation is applied at the usage site via `bloomShadowStyle('m')`
     // (`boxShadow` on web); the deprecated `shadow*` props were removed.
-  } as ViewStyle,
+  },
 };
 
 /**

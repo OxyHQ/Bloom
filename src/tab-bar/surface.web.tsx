@@ -19,9 +19,10 @@
  * Browsers without `backdrop-filter` simply skip it and are left with the
  * translucent tint — a graceful degradation that needs no `@supports` rule.
  */
-import { StyleSheet, type ViewStyle } from 'react-native';
+import { StyleSheet } from 'react-native';
 import Animated from 'react-native-reanimated';
 
+import type { WebCssStyle } from '../styles/web-view-style';
 import type { TabBarSurfaceProps } from './shared';
 
 /**
@@ -35,10 +36,10 @@ const GLASS_FILTER = `blur(${GLASS_BLUR_PX}px) saturate(180%)`;
 
 // Web-only CSS, unknown to React Native's `ViewStyle`. Both spellings are set:
 // Safari still needs the prefixed property for `backdrop-filter`.
-const glassFilterStyle = {
+const glassFilterStyle: WebCssStyle = {
   backdropFilter: GLASS_FILTER,
   WebkitBackdropFilter: GLASS_FILTER,
-} as ViewStyle;
+};
 
 export function TabBarSurface({ theme, style }: TabBarSurfaceProps) {
   return (

@@ -36,7 +36,7 @@ import {
   ArrowOutOfBox_Stroke2_Corner0_Rounded,
 } from '../icons';
 import { Z_INDEX } from '../styles/z-index';
-import { WEB_POSITION_FIXED } from '../styles/web-view-style';
+import { WEB_POSITION_FIXED, type WebCssStyle } from '../styles/web-view-style';
 import {
   getAspectRatio,
   fetchAspectRatio,
@@ -76,14 +76,15 @@ const AnimatedImage = Animated.createAnimatedComponent(Image);
 
 // Web-only interaction hints (no-ops on native): the zoom surfaces are
 // tap-to-dismiss (`cursor: pointer`) and must not select text or drag the
-// image. `Platform.select` keeps them off native; the `as ViewStyle` cast
-// mirrors Bloom's other web-only style casts (e.g. Dialog.web's `animation`).
-const webPointerStyle = Platform.select({
-  web: { userSelect: 'none', cursor: 'pointer' } as ViewStyle,
-  default: undefined,
-});
+// image. `Platform.select` keeps them off native. `cursor` is a real
+// `ViewStyle` key on RN 0.83; `userSelect` is declared on `TextStyle` only,
+// which is what `WebCssStyle` covers.
+const WEB_POINTER: WebCssStyle = { userSelect: 'none', cursor: 'pointer' };
+const WEB_USER_SELECT_NONE: WebCssStyle = { userSelect: 'none' };
+
+const webPointerStyle = Platform.select({ web: WEB_POINTER, default: undefined });
 const webUserSelectNoneStyle = Platform.select({
-  web: { userSelect: 'none' } as ViewStyle,
+  web: WEB_USER_SELECT_NONE,
   default: undefined,
 });
 
