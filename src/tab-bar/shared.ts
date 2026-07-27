@@ -52,11 +52,41 @@ export const BLUR_BLEED = 44;
 export const LABEL_FONT_SIZE = 9.5;
 
 /**
+ * How much of the bottom safe-area inset the bar's own gap absorbs. The pill
+ * already floats clear of the content, so sitting the FULL inset below it
+ * strands it in the middle of the screen on a home-indicator device.
+ */
+const SAFE_AREA_ABSORBED = 16;
+/** Gap floor, for a device (or a browser) reporting no bottom inset at all. */
+const MIN_BOTTOM_GAP = 12;
+
+/**
+ * Vertical gap between the bottom of the pill and the bottom of the window.
+ *
+ * The safe-area inset is folded in HERE, which is why anything reserving layout
+ * space for the bar must go through `useTabBarReservedSpace` (which derives its
+ * number from this same function) rather than adding `insets.bottom` to a
+ * hardcoded height — that double-counts the inset.
+ */
+export function tabBarBottomGap(bottomInset: number): number {
+  return Math.max(bottomInset - SAFE_AREA_ABSORBED, MIN_BOTTOM_GAP);
+}
+
+/**
  * Slide spring: interruptible by design — rapid tab-hopping retargets with
  * preserved velocity. Slight under-damping gives the pill a tiny settle, safe
  * here because it's transform-only (no layout involved).
  */
 export const SLIDE_SPRING = { duration: 420, dampingRatio: 0.82 };
+
+/**
+ * How long a press must be held before `onIndexLongPress` fires.
+ *
+ * Comfortably above the tap gesture's own 400ms ceiling: the two can never both
+ * be candidates at the same instant, so arming the long press cannot cost the
+ * bar a tap. Matches the platform long-press feel (iOS ~0.5s).
+ */
+export const LONG_PRESS_MIN_DURATION = 500;
 
 // ---------------------------------------------------------------------------
 //  Theme
@@ -156,4 +186,12 @@ export interface TabBarGlyphProps {
   tint: string;
   /** Rendered icon size in px ({@link ICON_SIZE}). */
   size: number;
+  /**
+   * Which crossfade layer this is: `false` for the inactive one underneath,
+   * `true` for the one fading in on top. The active layer renders
+   * `item.activeIcon` when the item has one, so a set that expresses selection
+   * by shape (outline → filled) crossfades between two different nodes rather
+   * than between two tints of the same node.
+   */
+  active: boolean;
 }

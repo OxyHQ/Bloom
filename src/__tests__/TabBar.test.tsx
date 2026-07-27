@@ -46,6 +46,17 @@ const ITEMS: TabBarItem[] = [
   { name: 'you', label: 'You', icon: <BareIcon id="you-icon" /> },
 ];
 
+/**
+ * An item whose selected state is a different SHAPE, not a different tint —
+ * the icon-set convention (outline vs filled) that `activeIcon` exists for.
+ */
+const SHAPE_ITEM: TabBarItem = {
+  name: 'home',
+  label: 'Home',
+  icon: <BareIcon id="outline-icon" />,
+  activeIcon: <BareIcon id="filled-icon" />,
+};
+
 /** Captures the live `ThemeColors` so assertions compare against real tokens. */
 function ThemeProbe({ onColors }: { onColors: (colors: ThemeColors) => void }) {
   onColors(useTheme().colors);
@@ -259,6 +270,75 @@ describe('TabBar', () => {
     expect(flattenStyle(labelFor(UNSAFE_root, 'Home').props.style).color).toBe(theme.inactiveTint);
   });
 
+  describe('activeIcon', () => {
+    function ShapeBar() {
+      return (
+        <TabBar activeIndex={0}>
+          <TabBarButton item={SHAPE_ITEM} index={0} />
+        </TabBar>
+      );
+    }
+
+    it('renders the item icon underneath and activeIcon on the crossfade layer', () => {
+      // A tint crossfade cannot express an outline-to-filled swap: both layers
+      // would draw the same path in two colors. The layers must render two
+      // different NODES.
+      const { getAllByTestId } = renderWithTheme(<ShapeBar />);
+      expect(getAllByTestId('outline-icon')).toHaveLength(1);
+      expect(getAllByTestId('filled-icon')).toHaveLength(1);
+    });
+
+    it('puts activeIcon on the ACTIVE layer, not the inactive one', () => {
+      // The tint each node was cloned with is what identifies its layer — the
+      // crossfading layer is the one painted with `activeTint`.
+      const theme = readTheme();
+      const { getAllByTestId } = renderWithTheme(<ShapeBar />);
+      expect(getAllByTestId('filled-icon')[0]?.props.fill).toBe(theme.activeTint);
+      expect(getAllByTestId('outline-icon')[0]?.props.fill).toBe(theme.inactiveTint);
+    });
+
+    it('falls back to icon on both layers when the item has no activeIcon', () => {
+      // Full backward compatibility: an item that only carries `icon` behaves
+      // exactly as it did before `activeIcon` existed.
+      const theme = readTheme();
+      const { getAllByTestId } = renderWithTheme(<Bar activeIndex={0} />);
+      const fills = getAllByTestId('home-icon').map((node) => node.props.fill);
+      expect(fills).toHaveLength(2);
+      expect(fills).toEqual(expect.arrayContaining([theme.inactiveTint, theme.activeTint]));
+    });
+
+    it('is honoured by the native glyph too, per crossfade layer', () => {
+      const theme = readTheme();
+      const active = renderWithTheme(
+        <NativeTabBarGlyph item={SHAPE_ITEM} tint={theme.activeTint} size={21} active />,
+      );
+      expect(active.queryByTestId('filled-icon')).toBeTruthy();
+      expect(active.queryByTestId('outline-icon')).toBeNull();
+
+      const inactive = renderWithTheme(
+        <NativeTabBarGlyph item={SHAPE_ITEM} tint={theme.inactiveTint} size={21} active={false} />,
+      );
+      expect(inactive.queryByTestId('outline-icon')).toBeTruthy();
+      expect(inactive.queryByTestId('filled-icon')).toBeNull();
+    });
+
+    it('keeps the SF Symbol path on iOS, which is tinted natively', () => {
+      // A symbol IS tinted per layer by the system, so the tint crossfade is
+      // still the right expression there and `activeIcon` stays unused.
+      const theme = readTheme();
+      const { UNSAFE_root, queryByTestId } = renderWithTheme(
+        <NativeTabBarGlyph
+          item={{ ...SHAPE_ITEM, sfSymbol: 'house.fill' }}
+          tint={theme.activeTint}
+          size={21}
+          active
+        />,
+      );
+      expect(hosts(UNSAFE_root, 'SymbolView')).toHaveLength(1);
+      expect(queryByTestId('filled-icon')).toBeNull();
+    });
+  });
+
   describe('theming', () => {
     it('resolves its defaults from Bloom tokens, never a hardcoded palette', () => {
       const theme = readTheme();
@@ -322,7 +402,7 @@ describe('TabBar', () => {
       const theme = readTheme();
       const item: TabBarItem = { ...(ITEMS[0] as TabBarItem), sfSymbol: 'house.fill' };
       const { UNSAFE_root } = renderWithTheme(
-        <NativeTabBarGlyph item={item} tint={theme.activeTint} size={21} />,
+        <NativeTabBarGlyph item={item} tint={theme.activeTint} size={21} active />,
       );
       const symbol = hosts(UNSAFE_root, 'SymbolView')[0];
       expect(symbol?.props.name).toBe('house.fill');
@@ -333,7 +413,7 @@ describe('TabBar', () => {
     it('falls back to the item icon when no SF Symbol is given', () => {
       const theme = readTheme();
       const { queryByTestId, UNSAFE_root } = renderWithTheme(
-        <NativeTabBarGlyph item={ITEMS[0] as TabBarItem} tint={theme.activeTint} size={21} />,
+        <NativeTabBarGlyph item={ITEMS[0] as TabBarItem} tint={theme.activeTint} size={21} active />,
       );
       expect(hosts(UNSAFE_root, 'SymbolView')).toHaveLength(0);
       expect(queryByTestId('home-icon')).toBeTruthy();

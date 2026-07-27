@@ -17,7 +17,7 @@ import { Platform, View } from 'react-native';
 import { applyIconColor } from '../frosted-icon-button/shared';
 import type { TabBarGlyphProps } from './shared';
 
-export function TabBarGlyph({ item, tint, size }: TabBarGlyphProps) {
+export function TabBarGlyph({ item, tint, size, active }: TabBarGlyphProps) {
   if (item.sfSymbol && Platform.OS === 'ios') {
     // `TabBarItem.sfSymbol` is a plain `string` because `types.ts` may import
     // from react/react-native only — pulling `expo-symbols`' `SFSymbol` union
@@ -36,9 +36,12 @@ export function TabBarGlyph({ item, tint, size }: TabBarGlyphProps) {
     );
   }
 
+  // Same node-swapping crossfade as the neutral variant: the active layer takes
+  // `activeIcon` when the item has one. An SF Symbol never reaches here, and is
+  // tinted natively above, so the tint crossfade remains its correct expression.
   return (
     <View style={{ height: size, alignItems: 'center', justifyContent: 'center' }}>
-      {applyIconColor(item.icon, tint)}
+      {applyIconColor(active ? (item.activeIcon ?? item.icon) : item.icon, tint)}
     </View>
   );
 }

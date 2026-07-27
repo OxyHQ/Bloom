@@ -165,6 +165,74 @@ const TABS = [
 ];
 ```
 
+### Icon sets that change SHAPE when selected
+
+Tinting says everything an icon set needs to say only when its selected state *is* a different color. Plenty of sets — including Mention's — say it with a different **shape** instead: an outline glyph becomes a filled one, on a different path. A tint crossfade cannot express that, because both layers would draw the same path in two colors.
+
+`item.activeIcon` gives the crossfade a second node, so the outline dissolves into the fill:
+
+```tsx
+const TABS = [
+  {
+    name: 'home',
+    label: 'Home',
+    icon: <Home />,          // outline: fill="none" + stroke
+    activeIcon: <HomeActive />, // filled, different path
+  },
+];
+```
+
+It is optional and additive: an item with only `icon` renders it on both layers exactly as before. On iOS an item carrying `sfSymbol` renders the symbol on both layers and ignores `activeIcon` — a symbol is tinted natively, so the tint crossfade is still the right expression there.
+
+<Callout variant="warning" title="An icon that paints from a `color` prop never lights up">
+The bar tints a glyph by cloning the element with a `fill` prop. That is how Bloom's own icons (and raw SVG) take paint — they resolve `fill ?? style.color`. An icon set whose components read a **`color` prop** instead simply ignores the injected `fill`, and the result is a glyph that renders fine and never changes between the two layers. Nothing throws and nothing warns.
+
+Two ways out, both explicit: pass `activeIcon` so selection is carried by the shape rather than by the tint, or pre-color both nodes yourself (`icon={<Home color={inactive} />}`, `activeIcon={<HomeActive color={active} />}`) — an element that already has a `fill` is never overridden, and one that paints from `color` was never going to be.
+</Callout>
+
+## Long press
+
+The bar's gesture detector consumes its touches — that is what makes scrubbing possible — so a `TabBarButton`'s own `onLongPress` never fires for a real finger. `onIndexLongPress` on the **bar** is the way to get one:
+
+```tsx
+<TabBar
+  activeIndex={index}
+  onIndexChange={setIndex}
+  onIndexLongPress={(i) => TABS[i].name === 'you' && openAccountSheet()}
+>
+```
+
+It reports the index under the finger after a 500ms hold, resolved through the same geometry as a tap, and it does **not** select the tab — it is a secondary action (an account switcher on the profile tab, say), so the highlight stays where it was.
+
+The gesture joins the bar's gesture race only when you pass the prop. Without it, nothing about a held finger changes: you can still rest a finger and then scrub. With it, a hold that reaches 500ms wins the race and cancels the scrub — the tap is unaffected either way, since it gives up at 400ms, before the long press can activate.
+
+## Reserving space for the bar
+
+The bar floats over your content (`position: absolute`), so nothing reserves room for it. `useTabBarReservedSpace()` returns how much a screen must leave at the bottom:
+
+```tsx
+import { useMinimizeOnScroll, useTabBarReservedSpace } from '@oxyhq/bloom/tab-bar';
+
+export default function Feed() {
+  const onScroll = useMinimizeOnScroll();
+  const reserved = useTabBarReservedSpace();
+
+  return (
+    <Animated.ScrollView
+      onScroll={onScroll}
+      scrollEventThrottle={16}
+      contentContainerStyle={{ paddingBottom: reserved }}
+    />
+  );
+}
+```
+
+<Callout variant="warning" title="Never add `insets.bottom` to it">
+The returned number is measured from the true bottom of the window, because the bar folds the bottom safe-area inset into its own gap. `paddingBottom: reserved + insets.bottom` — the reflex for anything anchored to the bottom edge — counts the home indicator twice and reserves 110pt for a 76pt bar, leaving a visible band of dead space under every list. Use the value as-is; there is nothing to add to it.
+</Callout>
+
+It is the bar's **expanded** height, deliberately: the bar minimizes on the way down and re-expands on the way up, so reserving the minimized height would hide the end of a list the moment the user scrolled back to it. Anything else anchored above the bar — a FAB, a docked composer — offsets from the same number (`bottom: reserved + 12`).
+
 ## Theming
 
 Every color comes from the active `BloomThemeProvider` preset and mode — there is no hardcoded palette, so the bar follows a preset or a light/dark switch for free.
@@ -224,6 +292,7 @@ The tail gradient is derived from the theme's page background, so it works on li
 | `children` | `ReactNode` | — | The `TabBarButton`s, in bar order. |
 | `activeIndex?` | `number` | — | **Controlled path.** The focused tab. Omit it with a router — use per-button `isFocused` instead. |
 | `onIndexChange?` | `(index: number) => void` | — | Called with the chosen index on tap, on scrub release, or on keyboard / assistive-technology activation. |
+| `onIndexLongPress?` | `(index: number) => void` | — | Called with the index under the finger after a 500ms hold. Does not select. The gesture is armed only when this is supplied. |
 | `theme?` | `Partial<TabBarTheme>` | — | Partial override of the token-resolved theme. |
 | `haptics?` | `boolean` | `true` | Picker-style tick as the scrub crosses tab boundaries. Already a no-op on web and when `expo-haptics` is absent. |
 
@@ -233,7 +302,7 @@ Everything `View` accepts is forwarded.
 
 | Prop | Type | Default | Description |
 |------|------|---------|-------------|
-| `item` | `TabBarItem` | — | `{ name, label, icon, sfSymbol? }`. |
+| `item` | `TabBarItem` | — | `{ name, label, icon, activeIcon?, sfSymbol? }`. |
 | `index` | `number` | — | Position in the bar. Must match the child order. |
 | `isFocused?` | `boolean` | — | **Focus-driven path**, supplied by the router adapter. When present it wins over the bar's `activeIndex` and this button drives the highlight. |
 
@@ -247,6 +316,7 @@ Everything `Pressable` accepts is forwarded, including the function form of `sty
 | `TabBarMinimizeProvider` | `@oxyhq/bloom/tab-bar` | Shares one minimize progress across the tab tree. |
 | `useMinimizeOnScroll` | `@oxyhq/bloom/tab-bar` | Scroll handler for `Animated.ScrollView`. |
 | `useTabBarMinimized` | `@oxyhq/bloom/tab-bar` | The raw `SharedValue<number>`, 0…1. |
+| `useTabBarReservedSpace` | `@oxyhq/bloom/tab-bar` | Bottom space to leave for the bar, safe-area included. |
 | `useMinimizeState`, `setMinimized`, `MINIMIZE_SPRING` | `@oxyhq/bloom/tab-bar` | Lower-level control of the same progress. |
 | `RouterTabBar`, `RouterTabBarButton`, `renderFadingTabScreen` | `@oxyhq/bloom/tab-bar/expo-router` | expo-router bindings. |
 | `ProgressiveBlur` | `@oxyhq/bloom/progressive-blur` | The gradient blur, standalone. |

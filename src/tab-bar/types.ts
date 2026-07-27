@@ -26,9 +26,31 @@ export type TabBarItem = {
    * type. This is the primary icon API — same convention as `Tabs`/`TabsTrigger`
    * and `FrostedIconButton`. The bar renders it TWICE (an inactive layer with the
    * active layer crossfading on top), injecting the layer's tint as the icon's
-   * `fill` unless the element already sets one.
+   * `fill` unless the element already sets one. See {@link TabBarItem.activeIcon}
+   * for a set whose selected state is a different shape rather than a tint.
    */
   icon: ReactNode;
+  /**
+   * Optional second node rendered by the ACTIVE crossfade layer instead of
+   * `icon`; without it that layer renders `icon` again, which is the original
+   * behaviour.
+   *
+   * For icon sets that express selection by SHAPE rather than by tint — an
+   * outline glyph that becomes a filled one, with a different path — a tint
+   * crossfade cannot say what the set says, because both layers would draw the
+   * same shape in two colors. Supplying the filled variant here makes the
+   * existing crossfade swap NODES, so the outline dissolves into the fill.
+   *
+   * It is also the escape hatch for an icon that ignores the injected tint: the
+   * bar tints a glyph by cloning it with a `fill` prop (see `applyIconColor`),
+   * so an icon set that paints from a `color` prop instead never lights up, with
+   * no error. Pre-color both nodes yourself and the crossfade still works.
+   *
+   * On iOS an item carrying `sfSymbol` renders the symbol on both layers and
+   * ignores this — a symbol is tinted natively, so the tint crossfade is the
+   * right expression there.
+   */
+  activeIcon?: ReactNode;
   /**
    * Optional SF Symbol name, used INSTEAD of `icon` on iOS only. A pure
    * enhancement handled solely in `glyph.native.tsx`; the neutral and web
@@ -63,6 +85,20 @@ export type TabBarProps = ViewProps & {
    * or by keyboard/assistive-technology activation of a `TabBarButton`.
    */
   onIndexChange?: (index: number) => void;
+  /**
+   * Called with the index under the finger when a tab is pressed and HELD.
+   *
+   * This is the only way to reach a long press on the bar: its gesture detector
+   * consumes the touches (that is what makes scrubbing possible), so a button's
+   * own `onLongPress` never fires for a real finger. The gesture is added to the
+   * bar's gesture race only when this prop is supplied — holding still for half
+   * a second on a bar without it keeps behaving exactly as before, and can still
+   * start a scrub.
+   *
+   * Long-pressing does NOT move the highlight or select the tab; it is a
+   * secondary action (an account switcher on the profile tab, say).
+   */
+  onIndexLongPress?: (index: number) => void;
   /** Partial override of the theme resolved from Bloom's color tokens. */
   theme?: Partial<TabBarTheme>;
   /**

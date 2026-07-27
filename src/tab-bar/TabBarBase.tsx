@@ -49,10 +49,12 @@ import {
   ITEM_GAP,
   ITEM_PAD_V,
   LABEL_FONT_SIZE,
+  LONG_PRESS_MIN_DURATION,
   MINIMIZED_HEIGHT,
   MINIMIZED_INSET,
   ROW_PAD_H,
   SLIDE_SPRING,
+  tabBarBottomGap,
   useTabBarTheme,
   type TabBarGlyphProps,
   type TabBarSurfaceProps,
@@ -93,6 +95,7 @@ function TabBarBody({
   children,
   activeIndex,
   onIndexChange,
+  onIndexLongPress,
   theme: themeOverrides,
   haptics = true,
   style,
@@ -120,6 +123,14 @@ function TabBarBody({
   // Navigation happens only on release — switching screens live while
   // scrubbing makes the content jump under the finger.
   const selectIndex = useCallback((index: number) => onIndexChange?.(index), [onIndexChange]);
+
+  // Long press is reported through the same shape, and deliberately does NOT
+  // select: it is a secondary action on the tab under the finger.
+  const longPressIndex = useCallback(
+    (index: number) => onIndexLongPress?.(index),
+    [onIndexLongPress],
+  );
+  const hasLongPress = onIndexLongPress !== undefined;
 
   // CONTROLLED path: the bar owns the highlight when `activeIndex` is provided,
   // so it tracks the prop even when a consumer renders custom children instead
@@ -200,11 +211,30 @@ function TabBarBody({
         runOnJS(selectIndex)(index);
       });
 
-    return Gesture.Race(pan, tap);
+    if (!hasLongPress) return Gesture.Race(pan, tap);
+
+    // Long press: the ONLY path to one, because the detector consumes the
+    // bar's touches and a button's inner `Pressable` therefore never sees a
+    // real finger (see `TabBarButtonBody`). Added to the race only when a
+    // handler was supplied — an always-armed long press would cancel the pan
+    // for anyone who rests a finger before scrubbing, and no existing consumer
+    // asked for that. It cannot cost a tap either: the tap gesture gives up at
+    // 400ms, before this one can activate at 500ms, so the two are never
+    // candidates at the same instant. Resolves its index through the same
+    // `indexAtX` worklet as tap and pan, so all three agree on the geometry.
+    const longPress = Gesture.LongPress()
+      .minDuration(LONG_PRESS_MIN_DURATION)
+      .onStart((event) => {
+        runOnJS(longPressIndex)(Math.round(indexAtX(event.x, progress.value)));
+      });
+
+    return Gesture.Race(pan, tap, longPress);
   }, [
     windowWidth,
     tabCount,
     selectIndex,
+    hasLongPress,
+    longPressIndex,
     tick,
     isDragging,
     lastTicked,
@@ -287,7 +317,9 @@ function TabBarBody({
     };
   }, [progress, slideIndex, windowWidth, tabCount]);
 
-  const bottomOffset = Math.max(insets.bottom - 16, 12);
+  // Shared with `useTabBarReservedSpace`, so a consumer reserving layout space
+  // for the bar can never drift from where the bar actually sits.
+  const bottomOffset = tabBarBottomGap(insets.bottom);
   const barContext = useMemo(
     () => ({ slideIndex, isDragging, theme, activeIndex, selectIndex }),
     [slideIndex, isDragging, theme, activeIndex, selectIndex],
@@ -430,11 +462,13 @@ function TabBarButtonBody({
       }
     >
       <Animated.View style={[styles.itemBox, boxStyle]}>
-        {/* Inactive glyph underneath, active glyph crossfading on top. */}
+        {/* Inactive glyph underneath, active glyph crossfading on top. `active`
+            tells each layer which one it is, so an item with an `activeIcon`
+            crossfades between two different nodes and not just two tints. */}
         <View>
-          <Glyph item={item} tint={theme.inactiveTint} size={ICON_SIZE} />
+          <Glyph item={item} tint={theme.inactiveTint} size={ICON_SIZE} active={false} />
           <Animated.View style={[StyleSheet.absoluteFill, styles.glyphLayer, activeGlyphStyle]}>
-            <Glyph item={item} tint={theme.activeTint} size={ICON_SIZE} />
+            <Glyph item={item} tint={theme.activeTint} size={ICON_SIZE} active />
           </Animated.View>
         </View>
         {/* Fades out and is clipped by the shrinking box — no layout anim. */}
