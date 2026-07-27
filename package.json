@@ -1,7 +1,7 @@
 {
   "name": "@oxyhq/bloom",
-  "version": "0.53.0",
-  "description": "Bloom UI \u2014 Oxy ecosystem component library for React Native + Expo + Web",
+  "version": "0.54.0",
+  "description": "Bloom UI — Oxy ecosystem component library for React Native + Expo + Web",
   "main": "lib/commonjs/index.js",
   "module": "lib/module/index.js",
   "types": "lib/typescript/commonjs/index.d.ts",

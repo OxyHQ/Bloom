@@ -241,6 +241,42 @@ The value is measured from the true bottom of the window, because the bar folds 
 
 It is the bar's **expanded** height, deliberately: the bar minimizes on the way down and re-expands on the way up, so measuring the minimized height would hide the end of a list the moment the user scrolled back to it.
 
+## Constraining the width on a tablet
+
+By default the bar spans the window. That is right on a phone and wrong on a tablet: an iPad 11" gives you an 810pt pill in portrait and 1342pt in landscape, with 21pt glyphs adrift in cells hundreds of points wide. `maxWidth` caps it and centres it:
+
+```tsx
+<TabBar activeIndex={index} onIndexChange={setIndex} maxWidth={480}>
+```
+
+There is **no default** — omit the prop and the bar is exactly the bar it has always been. The value is a **ceiling, never a floor**: a window narrower than it keeps the full-bleed bar, so you can pass one number unconditionally from a shared tab layout and phones are untouched.
+
+The important part is what comes with it: the item width, the sliding highlight's position and the tap / scrub / long-press hit-testing all derive from the **same** constrained width, so a tap still lands on the tab it is visibly over.
+
+<Callout variant="warning" title="Do not narrow the bar with `style` instead">
+`style={{ maxWidth: 480, alignSelf: 'center' }}` on the bar moves the pixels and nothing else. The highlight and the gesture worklet keep dividing the **window** width by the tab count, so the pill is sized and positioned for a bar that is no longer there — and on a wide window a tap near the right edge selects a tab two places to the left. `maxWidth` is a prop rather than something you can express in a style precisely because the geometry has to follow it.
+</Callout>
+
+Centring and the minimize animation compose without either knowing about the other: the constrained wrap is centred once by layout, and the pill's minimized inset stays a pair of equal animated margins **inside** it, so the bar shrinks about its own centre on the way down.
+
+## The blur behind the bar
+
+The bar draws a progressive blur rising from the bottom edge of the screen — the band content dissolves into instead of meeting the pill at a hard line. It is full-bleed and 114pt tall at a zero bottom inset (the bar's bottom gap + its expanded height + 44pt of bleed above it), which is taller than the bar itself.
+
+That matters if your screen floats its own chrome down there. A video scrubber, a compose FAB, a QR-scan button — anything inside that band is blurred, and **no `zIndex` gets it out**: z-order only sorts siblings within one stacking context, and your FAB lives inside the screen, which is an earlier sibling of the bar's host. Turn the band off instead:
+
+```tsx
+<TabBar activeIndex={index} onIndexChange={setIndex} blur={false}>
+```
+
+`false` renders no blur at all — not an invisible one, and not an empty absolutely-positioned view left behind. `true` (or omitting it) is the default. The object form tunes the strength on the same 0–100 `expo-blur` scale the standalone [`ProgressiveBlur`](#progressiveblur) uses, defaulting to 5:
+
+```tsx
+<TabBar activeIndex={index} onIndexChange={setIndex} blur={{ intensity: 2 }}>
+```
+
+The band stays full-bleed under `maxWidth`: it is the screen-edge scrim, not part of the pill, and constraining it would leave a floating blurred rectangle.
+
 ## Theming
 
 Every color comes from the active `BloomThemeProvider` preset and mode — there is no hardcoded palette, so the bar follows a preset or a light/dark switch for free.
@@ -303,6 +339,8 @@ The tail gradient is derived from the theme's page background, so it works on li
 | `onIndexLongPress?` | `(index: number) => void` | — | Called with the index under the finger after a 500ms hold. Does not select. The gesture is armed only when this is supplied. |
 | `theme?` | `Partial<TabBarTheme>` | — | Partial override of the token-resolved theme. |
 | `haptics?` | `boolean` | `true` | Picker-style tick as the scrub crosses tab boundaries. Already a no-op on web and when `expo-haptics` is absent. |
+| `blur?` | `boolean \| { intensity?: number }` | `true` | The progressive blur band behind the bar. `false` removes it entirely — the escape hatch for a FAB or scrubber that sits inside its 114pt reach. |
+| `maxWidth?` | `number` | — | Caps the pill's width and centres it, with the item geometry and the hit-testing following. A ceiling, never a floor: narrower windows keep the full-bleed bar. |
 
 Everything `View` accepts is forwarded.
 

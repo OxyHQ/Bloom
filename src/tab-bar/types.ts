@@ -107,6 +107,44 @@ export type TabBarProps = ViewProps & {
    * optional `expo-haptics` peer is absent.
    */
   haptics?: boolean;
+  /**
+   * The progressive blur rising from the bottom edge of the screen behind the
+   * pill. Defaults to `true`; `{ intensity }` tunes its strength.
+   *
+   * Pass `false` to remove it entirely — no blur, and no node left behind. The
+   * band is tall (the bar's own bottom gap plus its expanded height plus the
+   * bleed above it, 114pt at a zero bottom inset) and full-bleed, so anything a
+   * screen floats near the bottom edge — a video scrubber, a FAB — sits INSIDE
+   * it and is blurred. That cannot be undone from the outside: `zIndex` only
+   * orders siblings within one stacking context, and a screen's FAB is inside
+   * an earlier sibling of the bar's host, so no z-order a consumer can write
+   * lifts it above this band. Turning the blur off is the only fix that does
+   * not also change where the FAB paints relative to everything else.
+   *
+   * On native the band is ten stacked `expo-blur` layers plus a tail gradient;
+   * on web it is one masked `backdrop-filter`. `false` skips both.
+   */
+  blur?: boolean | { intensity?: number };
+  /**
+   * Maximum width of the pill, in points. No default — omit it and the bar
+   * spans the window exactly as it always has.
+   *
+   * A CEILING, never a floor: on a window narrower than this the bar keeps its
+   * full-bleed width, so a phone layout is untouched by any value big enough to
+   * matter on a tablet. When it binds, the pill is constrained to this width and
+   * CENTRED, and the ITEM geometry follows it — the item width, the sliding
+   * highlight's position and the tap/scrub hit-testing all derive from the same
+   * constrained width, so a tap still lands on the tab it is visibly over.
+   *
+   * That last part is why this cannot be done from the outside. Narrowing the
+   * bar with a `style` override moves the pixels only: the highlight and the
+   * scrub worklet would still divide the WINDOW width by the tab count, leaving
+   * the highlight sized and positioned for a bar that is no longer there. On an
+   * iPad the unconstrained bar is the reason to reach for this at all — 810pt at
+   * 11" portrait, 1342pt in landscape, leaving 21pt glyphs adrift in cells
+   * hundreds of points wide.
+   */
+  maxWidth?: number;
 };
 
 export type TabBarButtonProps = PressableProps & {

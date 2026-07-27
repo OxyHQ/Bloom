@@ -22,7 +22,7 @@ import {
   useMemo,
   type ComponentType,
 } from 'react';
-import { Pressable, StyleSheet, useWindowDimensions, View } from 'react-native';
+import { Pressable, StyleSheet, useWindowDimensions, View, type ViewStyle } from 'react-native';
 import { Gesture, GestureDetector } from 'react-native-gesture-handler';
 import Animated, {
   Extrapolation,
@@ -98,6 +98,8 @@ function TabBarBody({
   onIndexLongPress,
   theme: themeOverrides,
   haptics = true,
+  blur = true,
+  maxWidth,
   style,
   ...viewProps
 }: TabBarBodyProps) {
@@ -111,6 +113,22 @@ function TabBarBody({
   const tabCount = Math.max(Children.count(children), 1);
   const theme = useTabBarTheme(themeOverrides);
   const impact = useHaptics();
+
+  // The pill's OUTER width (the box the animated minimize inset is applied
+  // inside), and the single source of truth for it: the wrap's own layout, the
+  // highlight geometry and the `indexAtX` scrub worklet all derive from this one
+  // number. They have to, or a tap lands on a tab the highlight is not under —
+  // the exact failure `maxWidth` exists to prevent, since narrowing the bar from
+  // the outside with a `style` override moves only the pixels.
+  //
+  // Unconstrained it is what the stretched wrap already measures
+  // (`windowWidth - BAR_MARGIN * 2`), so an existing consumer's geometry is
+  // unchanged to the pixel. `maxWidth` is a ceiling, never a floor: on a window
+  // narrower than it, the bar stays full-bleed.
+  const barOuterWidth =
+    maxWidth === undefined
+      ? windowWidth - BAR_MARGIN * 2
+      : Math.min(windowWidth - BAR_MARGIN * 2, maxWidth);
 
   // Picker-style tick while the highlight crosses tab boundaries mid-drag.
   // `useHaptics` already no-ops on web, when the optional `expo-haptics` peer
@@ -159,7 +177,13 @@ function TabBarBody({
         [0, MINIMIZED_INSET],
         Extrapolation.CLAMP,
       );
-      const barWidth = windowWidth - BAR_MARGIN * 2 - sideInset * 2;
+      // `event.x` is measured from the left edge of the view the detector is
+      // attached to — the animated pill itself, NOT the window and not the wrap
+      // around it. Its width is therefore the outer width minus the two
+      // animated margins, which is exactly what this computes, constrained or
+      // not. (Margins sit outside a view's own box, so x = 0 is the pill's left
+      // border edge either way.)
+      const barWidth = barOuterWidth - sideInset * 2;
       const itemWidth = (barWidth - ROW_PAD_H * 2) / tabCount;
       const raw = (x - ROW_PAD_H) / itemWidth - 0.5;
       return Math.min(Math.max(raw, 0), tabCount - 1);
@@ -230,7 +254,7 @@ function TabBarBody({
 
     return Gesture.Race(pan, tap, longPress);
   }, [
-    windowWidth,
+    barOuterWidth,
     tabCount,
     selectIndex,
     hasLongPress,
@@ -311,7 +335,9 @@ function TabBarBody({
       [0, MINIMIZED_INSET],
       Extrapolation.CLAMP,
     );
-    const barWidth = windowWidth - BAR_MARGIN * 2 - sideInset * 2;
+    // Same `barOuterWidth` the scrub worklet resolves an index from — see the
+    // note where it is computed.
+    const barWidth = barOuterWidth - sideInset * 2;
     const itemWidth = (barWidth - ROW_PAD_H * 2) / tabCount;
     return {
       height,
@@ -320,11 +346,25 @@ function TabBarBody({
       top: (barHeight - height) / 2,
       transform: [{ translateX: ROW_PAD_H + itemWidth * slideIndex.value }],
     };
-  }, [progress, slideIndex, windowWidth, tabCount]);
+  }, [progress, slideIndex, barOuterWidth, tabCount]);
 
   // Shared with `useTabBarFootprint`, so a consumer accounting for the bar in
   // its own layout can never drift from where the bar actually sits.
   const bottomOffset = tabBarBottomGap(insets.bottom);
+
+  // How centring and the animated inset compose: centring is STATIC and belongs
+  // to the wrap, the inset stays ANIMATED on the pill inside it. The wrap is
+  // centred once by layout at a definite width, and the pill's two equal
+  // margins keep it centred within that wrap at every point of the minimize
+  // animation — neither has to know about the other. Centring the animated view
+  // itself would instead mean `alignSelf: 'center'` on a node with no width of
+  // its own (its width comes from those margins), which Yoga then sizes from its
+  // CONTENT rather than from the constraint.
+  //
+  // Applied only when `maxWidth` is set: with no width and no `alignSelf` the
+  // wrap stretches, which is the original full-bleed behaviour.
+  const constrainedWrapStyle: ViewStyle | null =
+    maxWidth === undefined ? null : { width: barOuterWidth, alignSelf: 'center' };
   const barContext = useMemo(
     () => ({ slideIndex, isDragging, theme, activeIndex, selectIndex }),
     [slideIndex, isDragging, theme, activeIndex, selectIndex],
@@ -332,18 +372,28 @@ function TabBarBody({
 
   return (
     <View {...viewProps} style={[styles.root, style]}>
-      {/* Progressive blur rising from the screen's bottom edge behind the pill. */}
-      <Blur
-        direction="bottom"
-        style={{
-          position: 'absolute',
-          left: 0,
-          right: 0,
-          bottom: 0,
-          height: bottomOffset + EXPANDED_HEIGHT + BLUR_BLEED,
-        }}
-      />
-      <View style={[styles.barWrap, { marginBottom: bottomOffset }]}>
+      {/* Progressive blur rising from the screen's bottom edge behind the pill.
+          Rendered CONDITIONALLY, and as nothing at all when off: the band is
+          full-bleed and 114pt tall at a zero bottom inset, so it blurs whatever
+          a screen floats near the bottom edge (a scrubber, a FAB), and leaving
+          an empty absolutely-positioned view behind would keep a node — and a
+          rect — that exists to do nothing. Stays full-bleed under `maxWidth`:
+          it is the screen-edge scrim content dissolves into, not part of the
+          pill. */}
+      {blur !== false && (
+        <Blur
+          direction="bottom"
+          intensity={typeof blur === 'object' ? blur.intensity : undefined}
+          style={{
+            position: 'absolute',
+            left: 0,
+            right: 0,
+            bottom: 0,
+            height: bottomOffset + EXPANDED_HEIGHT + BLUR_BLEED,
+          }}
+        />
+      )}
+      <View style={[styles.barWrap, { marginBottom: bottomOffset }, constrainedWrapStyle]}>
         <GestureDetector gesture={gesture}>
           <Animated.View style={barStyle}>
             <Surface theme={theme} style={shapeStyle} />
