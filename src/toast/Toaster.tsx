@@ -30,6 +30,7 @@ import type {
   ToastProps,
 } from './types';
 import { useAppStateChange } from './use-app-state';
+import { useSingleOutletGuard } from './use-single-outlet-guard';
 
 const ALL_POSITIONS: ToastPosition[] = [
   'top-center',
@@ -79,6 +80,11 @@ export const Toaster: React.FC<ToasterProps> = ({
   style,
   styles: styleOverrides,
 }) => {
+  // Before any early return, and independent of whether a toast is up: a second
+  // outlet duplicates every row from the moment it mounts, not from the first
+  // toast, so the warning must not wait for one.
+  useSingleOutletGuard();
+
   const { toasts, shouldShowOverlay, toastHeights, isExpanded } =
     React.useSyncExternalStore(
       toastStore.subscribe,
