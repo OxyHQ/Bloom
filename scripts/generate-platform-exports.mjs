@@ -59,6 +59,8 @@ const SUBPATHS = /** @type {const} */ ([
   ['./design-tokens', 'design-tokens/index.ts'],
   ['./tailwind-preset', 'design-tokens/tailwind-preset.ts'],
   ['./portal', 'portal/index.tsx'],
+  // Connection loss as a toast; web-forked (navigator.onLine vs NetInfo).
+  ['./connection-status', 'connection-status/index.tsx'],
   // Shared overlay plumbing (OverlayRoot + Backdrop) for portaled surfaces.
   ['./overlay', 'overlay/index.tsx'],
   ['./dialog', 'dialog/index.ts'],
@@ -144,6 +146,7 @@ const SUBPATHS = /** @type {const} */ ([
  */
 const WEB_FORKED_SUBPATHS = new Set([
   '.',
+  './connection-status',
   './surfaces',
   './portal',
   './dialog',

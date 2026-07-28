@@ -148,6 +148,22 @@
         "default": "./lib/commonjs/portal/index.js"
       }
     },
+    "./connection-status": {
+      "react-native": "./src/connection-status/index.tsx",
+      "browser": {
+        "types": "./lib/typescript/module/connection-status/index.web.d.ts",
+        "import": "./lib/module/connection-status/index.web.js",
+        "require": "./lib/commonjs/connection-status/index.web.js"
+      },
+      "import": {
+        "types": "./lib/typescript/module/connection-status/index.d.ts",
+        "default": "./lib/module/connection-status/index.js"
+      },
+      "require": {
+        "types": "./lib/typescript/commonjs/connection-status/index.d.ts",
+        "default": "./lib/commonjs/connection-status/index.js"
+      }
+    },
     "./overlay": {
       "react-native": "./src/overlay/index.tsx",
       "import": {
@@ -1210,7 +1226,8 @@
     "storybook": "^10",
     "ts-jest": "^29.4.6",
     "typescript": "~5.9.2",
-    "vite": "^7"
+    "vite": "^7",
+    "@react-native-community/netinfo": "^12.0.1"
   },
   "peerDependencies": {
     "expo": "*",
@@ -1229,7 +1246,8 @@
     "react-native-safe-area-context": ">=5.0.0",
     "react-native-screens": ">=3.16.0",
     "react-native-svg": ">=13.0.0",
-    "nativewind": ">=5.0.0"
+    "nativewind": ">=5.0.0",
+    "@react-native-community/netinfo": ""
   },
   "peerDependenciesMeta": {
     "expo": {
@@ -1248,6 +1266,9 @@
       "optional": true
     },
     "nativewind": {
+      "optional": true
+    },
+    "@react-native-community/netinfo": {
       "optional": true
     }
   },
