@@ -332,16 +332,17 @@ function CenterOrSideDialog({
               disabled={!dismissOnBackdrop}
               accessibilityLabel={label ? `Dismiss ${label}` : 'Dismiss dialog'}
               dimOpacity={DIALOG_BACKDROP_DIM_OPACITY}
-              style={[
-                {
-                  position: WEB_POSITION_FIXED,
-                  zIndex: dialogZIndex.backdrop,
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  paddingHorizontal: 20,
-                },
-                isClosing ? BACKDROP_FADE_OUT : BACKDROP_FADE_IN,
-              ]}
+              // The fade rides on the LAYERS, never on the press target: an
+              // opacity animation on the blur's ancestor composites the group in
+              // isolation and leaves `backdrop-filter` nothing to sample.
+              layerStyle={isClosing ? BACKDROP_FADE_OUT : BACKDROP_FADE_IN}
+              style={{
+                position: WEB_POSITION_FIXED,
+                zIndex: dialogZIndex.backdrop,
+                alignItems: 'center',
+                justifyContent: 'center',
+                paddingHorizontal: 20,
+              }}
             >
               <DialogPanel
                 testID={testID}
@@ -702,14 +703,11 @@ function SheetSurface({
         accessibilityLabel={label ? `Dismiss ${label}` : 'Dismiss dialog'}
         onPress={handleBackdropPress}
         disabled={!dismissOnBackdrop}
-        // The dim rides on the element's own animated opacity here, so the
-        // shared component's dim layer stays fully opaque under it.
-        dimOpacity={1}
-        style={[
-          sheetStyles.backdrop,
-          backdropTransition,
-          { opacity: visible ? SHEET_BACKDROP_OPACITY : 0 },
-        ]}
+        // Same reason as the centred dialog: the transition and the opacity it
+        // animates belong to the layers, not to the press target above them.
+        dimOpacity={SHEET_BACKDROP_OPACITY}
+        layerStyle={backdropTransition}
+        style={[sheetStyles.backdrop, { opacity: visible ? 1 : 0 }]}
       />
 
       <View

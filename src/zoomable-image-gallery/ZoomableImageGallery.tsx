@@ -74,8 +74,6 @@ import type {
 } from './types';
 
 const AnimatedImage = Animated.createAnimatedComponent(Image);
-// The shared overlay backdrop, driven by the viewer's open/drag progress.
-const AnimatedBackdrop = Animated.createAnimatedComponent(Backdrop);
 
 // Web-only interaction hints (no-ops on native): the zoom surfaces are
 // tap-to-dismiss (`cursor: pointer`) and must not select text or drag the
@@ -791,11 +789,15 @@ const ZoomableImageGalleryInner = React.forwardRef<ZoomableImageGalleryHandle, Z
             did nothing on web while Escape still closed. `Backdrop` opts back
             in via the `pointerEvents` PROP, the only form that reaches the DOM
             (see `src/overlay`). */}
-        <AnimatedBackdrop
+        {/* `progress` rather than an animated style: an opacity on the
+            backdrop's root would sit ABOVE the blur layer and neutralise it —
+            `backdrop-filter` samples nothing under an ancestor that composites
+            in isolation. */}
+        <Backdrop
           onPress={handleDismiss}
           accessibilityLabel="Close image viewer"
           dimColor={theme.colors.overlay}
-          style={backdropStyle}
+          progress={opacity}
         />
 
       <GestureDetector gesture={panGesture}>

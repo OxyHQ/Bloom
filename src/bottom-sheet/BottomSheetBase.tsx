@@ -20,6 +20,7 @@ import Animated, {
     type SharedValue,
     useAnimatedScrollHandler,
     useAnimatedStyle,
+    useDerivedValue,
     useSharedValue,
     withSpring,
     withTiming,
@@ -198,8 +199,6 @@ export interface BottomSheetShellProps {
 export interface BottomSheetBaseProps extends BottomSheetProps {
     Shell: React.ComponentType<BottomSheetShellProps>;
 }
-
-const AnimatedBackdrop = Animated.createAnimatedComponent(Backdrop);
 
 export const BottomSheetBase = forwardRef((props: BottomSheetBaseProps, ref: React.ForwardedRef<BottomSheetRef>) => {
     const {
@@ -642,7 +641,11 @@ export const BottomSheetBase = forwardRef((props: BottomSheetBaseProps, ref: Rea
     // dim opacity applies smoothly across the animation. When
     // `dynamicBackdrop` is enabled, the dim also fades proportionally with
     // drag distance (iOS Photos style).
-    const backdropStyle = useAnimatedStyle(() => {
+    // A VALUE, not a style: `Backdrop` applies it to its blur and dim layers
+    // itself. Handing it over as an animated style would put the opacity on the
+    // layers' shared ancestor, which composites the group in isolation and
+    // leaves `backdrop-filter` with nothing behind it to blur.
+    const backdropProgress = useDerivedValue(() => {
         const dragFactor = dynamicBackdrop
             ? interpolate(
                 translateY.value,
@@ -651,10 +654,16 @@ export const BottomSheetBase = forwardRef((props: BottomSheetBaseProps, ref: Rea
                 'clamp',
             )
             : 1;
-        return {
-            opacity: opacity.value * backdropOpacity * dragFactor,
-        };
+        return opacity.value * backdropOpacity * dragFactor;
     }, [backdropOpacity, dynamicBackdrop, opacity, translateY, screenHeightSV]);
+
+    // Only the consumer-supplied `backdropComponent` needs the progress as a
+    // style — it owns its own visuals, blur included, so the ancestor-opacity
+    // hazard is its call to make.
+    const customBackdropStyle = useAnimatedStyle(
+        () => ({ opacity: backdropProgress.value }),
+        [backdropProgress],
+    );
 
     const sheetStyle = useAnimatedStyle(() => {
         const scale = interpolate(translateY.value, [0, screenHeightSV.value], [1, 0.95]);
@@ -787,7 +796,7 @@ export const BottomSheetBase = forwardRef((props: BottomSheetBaseProps, ref: Rea
         <Shell visible={rendered} onRequestClose={dismiss} keyboardHeight={keyboardHeight}>
             <View style={StyleSheet.absoluteFill}>
                 {backdropComponent ? (
-                    <Animated.View style={[StyleSheet.absoluteFill, backdropStyle]}>
+                    <Animated.View style={[StyleSheet.absoluteFill, customBackdropStyle]}>
                         {backdropComponent({ onPress: handleBackdropPress })}
                     </Animated.View>
                 ) : (
@@ -795,10 +804,16 @@ export const BottomSheetBase = forwardRef((props: BottomSheetBaseProps, ref: Rea
                     // `backdropStyle` drives the fade; the dim level rides on
                     // `backdropOpacity`, so the shared component's own dim is
                     // switched off here to keep a single source of dimming.
-                    <AnimatedBackdrop
+                    <Backdrop
                         onPress={handleBackdropPress}
+                        // `backdropProgress` already folds in `backdropOpacity`
+                        // and the drag factor, so the dim rides at full weight.
+                        // It goes through `progress` rather than an animated
+                        // style because an opacity on the root would sit above
+                        // the blur layer and neutralise it.
                         dimOpacity={1}
-                        style={[styles.backdrop, backdropStyle]}
+                        progress={backdropProgress}
+                        style={styles.backdrop}
                     />
                 )}
 

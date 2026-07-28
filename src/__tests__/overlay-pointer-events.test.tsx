@@ -123,25 +123,26 @@ describe('overlay pointer-events contract (web)', () => {
     noBlur.container.remove();
   });
 
-  // Surfaces animate the backdrop via `Animated.createAnimatedComponent(Backdrop)`,
-  // and reanimated writes those updates through the ref. Swallow it and an
-  // opacity animated from 0 never moves: the backdrop stays fully transparent
-  // while the surface floats over an undimmed app (shipped exactly once).
-  it('forwards its ref to a host node so animated styles can land', () => {
-    let node: unknown = null;
+  // THE fade invariant. `backdrop-filter` samples nothing under an ancestor
+  // that composites in isolation, so an opacity anywhere above the blur layer
+  // silently removes the blur — which is exactly what a surface fading the
+  // backdrop from the outside used to do. A caller's `opacity` is therefore
+  // redirected onto the layers and the press target stays fully opaque.
+  it('keeps the press target opaque and fades the layers instead', () => {
     const { root, container } = render(
-      createElement(Backdrop, {
-        onPress: () => {},
-        testID: 'backdrop',
-        ref: (el: unknown) => {
-          node = el;
-        },
-      } as never),
+      createElement(Backdrop, { onPress: () => {}, testID: 'backdrop', style: { opacity: 0.4 } }),
     );
 
-    expect(node).not.toBeNull();
-    expect(node).toBeInstanceOf(HTMLElement);
-    expect((node as HTMLElement).getAttribute('data-testid')).toBe('backdrop');
+    const el = container.querySelector('[data-testid="backdrop"]') as HTMLElement;
+    const inline = el.style.opacity;
+    const opacity = Number(inline === '' ? getComputedStyle(el).opacity || '1' : inline);
+
+    // The press target itself never fades — the blur under it would go with it.
+    expect(opacity).toBe(1);
+    // …and the layers it fades instead are there to receive it. (Their opacity
+    // is written by reanimated, which this suite mocks, so the value itself is
+    // asserted in the browser rather than here.)
+    expect(el.children.length).toBeGreaterThanOrEqual(2);
 
     act(() => root.unmount());
     container.remove();

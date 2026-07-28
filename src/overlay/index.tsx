@@ -39,7 +39,7 @@
  * Use `<OverlayRoot>` for the surface's outermost node and `<Backdrop>` for its
  * dimming layer; do not re-implement either with raw `View`s.
  */
-import { forwardRef, memo, type ReactNode } from 'react';
+import { memo, type ReactNode } from 'react';
 import { BlurView } from 'expo-blur';
 import {
   Platform,
@@ -49,8 +49,11 @@ import {
   type StyleProp,
   type ViewStyle,
 } from 'react-native';
+import Animated, { useAnimatedStyle, type SharedValue } from 'react-native-reanimated';
 
 import { WEB_POSITION_FIXED } from '../styles/web-view-style';
+
+const AnimatedBlurView = Animated.createAnimatedComponent(BlurView);
 
 /**
  * One blur radius for every Bloom overlay. Surfaces differ in what they show,
@@ -85,6 +88,12 @@ OverlayRoot.displayName = 'OverlayRoot';
 export interface BackdropProps {
   /** Dismiss handler. Omit (or pass `disabled`) for a backdrop that only dims. */
   onPress?: () => void;
+  /**
+   * Fade driver, 0 (hidden) → 1 (fully shown). The backdrop applies it to its
+   * OWN layers — see the note on `style` for why the caller must not animate
+   * opacity from the outside.
+   */
+  progress?: SharedValue<number>;
   /** `true` keeps the dim but makes it inert — a blocking dialog, a busy state. */
   disabled?: boolean;
   /** Blur radius behind the dim. `0` renders the dim alone. */
@@ -95,8 +104,19 @@ export interface BackdropProps {
   dimColor?: string;
   /** Dim opacity, 0–1. */
   dimOpacity?: number;
-  /** Extra style on the press target — animated opacity, insets, z-index. */
+  /**
+   * Geometry for the press target: insets, z-index, layout. NOT opacity —
+   * `backdrop-filter` samples nothing under an ancestor with `opacity < 1`
+   * (the group composites in isolation), so a fade applied here silently kills
+   * the blur. An `opacity` found in this style is redirected onto the layers;
+   * animate the fade through `progress` instead.
+   */
   style?: StyleProp<ViewStyle>;
+  /**
+   * Extra style for the blur + dim LAYERS, for fades a shared value can't
+   * express — the web dialog's CSS keyframes, for instance.
+   */
+  layerStyle?: StyleProp<ViewStyle>;
   /** Rendered ON TOP of the dim, inside the press target (Dialog's panel does this). */
   children?: ReactNode;
   accessibilityLabel?: string;
@@ -108,31 +128,40 @@ export interface BackdropProps {
  * pointer events (that is its whole job), so anything that must stay pressable
  * goes INSIDE it as `children`, never as a sibling rendered over it.
  */
-export const Backdrop = memo(forwardRef<View, BackdropProps>(function Backdrop(
-  {
-    onPress,
-    disabled = false,
-    blurIntensity = BACKDROP_BLUR_INTENSITY,
-    blurTint = 'dark',
-    dimColor = '#000',
-    dimOpacity = BACKDROP_DIM_OPACITY,
-    style,
-    children,
-    accessibilityLabel = 'Dismiss',
-    testID,
-  },
-  ref,
-) {
+export const Backdrop = memo(function Backdrop({
+  onPress,
+  progress,
+  disabled = false,
+  blurIntensity = BACKDROP_BLUR_INTENSITY,
+  blurTint = 'dark',
+  dimColor = '#000',
+  dimOpacity = BACKDROP_DIM_OPACITY,
+  style,
+  layerStyle,
+  children,
+  accessibilityLabel = 'Dismiss',
+  testID,
+}: BackdropProps) {
   const inert = disabled || !onPress;
+
+  // An `opacity` handed in through `style` would sit on the ancestor of the
+  // blur and kill it; hoist it onto the layers instead of honouring it there.
+  const flat: ViewStyle = StyleSheet.flatten(style) ?? {};
+  const { opacity: styleOpacity, ...rootStyle } = flat;
+  const staticOpacity = typeof styleOpacity === 'number' ? styleOpacity : 1;
+
+  // The fade lives on each LAYER, never on their shared ancestor.
+  const blurFade = useAnimatedStyle(
+    () => ({ opacity: (progress ? progress.value : 1) * staticOpacity }),
+    [progress, staticOpacity],
+  );
+  const dimFade = useAnimatedStyle(
+    () => ({ opacity: (progress ? progress.value : 1) * staticOpacity * dimOpacity }),
+    [progress, staticOpacity, dimOpacity],
+  );
+
   return (
     <Pressable
-      // MUST forward the ref: surfaces animate the backdrop through
-      // `Animated.createAnimatedComponent(Backdrop)`, and reanimated applies
-      // those updates by reaching the underlying host view. With the ref
-      // swallowed the animated style never lands, so a backdrop whose opacity
-      // is animated from 0 stays at 0 — fully transparent, with the surface
-      // floating over an undimmed app.
-      ref={ref}
       pointerEvents="auto"
       onPress={inert ? undefined : onPress}
       disabled={inert}
@@ -143,27 +172,27 @@ export const Backdrop = memo(forwardRef<View, BackdropProps>(function Backdrop(
       accessibilityRole={inert ? undefined : 'button'}
       accessibilityLabel={inert ? undefined : accessibilityLabel}
       testID={testID}
-      style={[StyleSheet.absoluteFill, style]}
+      style={[StyleSheet.absoluteFill, rootStyle]}
     >
       {blurIntensity > 0 ? (
-        <BlurView
+        <AnimatedBlurView
           intensity={blurIntensity}
           tint={blurTint}
           // Android's default blur is a no-op on many devices; this is the
           // implementation that actually renders there.
           experimentalBlurMethod="dimezisBlurView"
           pointerEvents="none"
-          style={StyleSheet.absoluteFill}
+          style={[StyleSheet.absoluteFill, layerStyle, blurFade]}
         />
       ) : null}
-      <View
+      <Animated.View
         pointerEvents="none"
-        style={[StyleSheet.absoluteFill, { backgroundColor: dimColor, opacity: dimOpacity }]}
+        style={[StyleSheet.absoluteFill, { backgroundColor: dimColor }, layerStyle, dimFade]}
       />
       {children}
     </Pressable>
   );
-}));
+});
 
 Backdrop.displayName = 'Backdrop';
 
