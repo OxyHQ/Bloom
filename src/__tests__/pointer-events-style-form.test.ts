@@ -68,14 +68,26 @@ describe('pointerEvents style-object form', () => {
   });
 
   it('never uses the RN-only values as styles — pass them as the prop', () => {
-    const offenders = files
-      .flatMap((file) =>
-        readFileSync(file, 'utf8')
-          .split('\n')
-          .map((line, i) => ({ file: file.slice(SRC.length + 1), line: i + 1, text: line.trim() }))
-          .filter(({ text }) => BANNED.test(text) && !text.startsWith('*') && !text.startsWith('//')),
-      )
-      .map(({ file, line, text }) => `${file}:${line}  ${text}`);
+    const offenders: string[] = [];
+
+    for (const file of files) {
+      const source = readFileSync(file, 'utf8');
+      // Scan the whole SOURCE, not line by line: the toast positioner hid one
+      // of these behind a multi-line ternary (`pointerEvents:\n  cond ? 'none'
+      // : 'box-none'`) and a per-line regex sailed straight past it, which is
+      // how a full-screen layer went on swallowing every tap under a toast.
+      // Comments first: this file and several components DESCRIBE the banned
+      // form in prose, and a scanner that flags its own documentation is a
+      // scanner nobody keeps.
+      const code = source.replace(/\/\*[\s\S]*?\*\//g, '').replace(/\/\/[^\n]*/g, '');
+      // The value may sit behind a ternary on the next line, so allow a bounded
+      // gap — but never one that crosses into a JSX prop (`pointerEvents=`) or
+      // the next element (`<`), which is what turns this into a false positive.
+      for (const match of code.matchAll(/pointerEvents:(?:(?!pointerEvents=|<)[\s\S]){0,160}?['"](box-none|box-only)['"]/g)) {
+        const line = code.slice(0, match.index).split('\n').length;
+        offenders.push(`${file.slice(SRC.length + 1)}:~${line}  ${match[0].replace(/\s+/g, ' ')}`);
+      }
+    }
 
     expect(offenders).toEqual([]);
   });

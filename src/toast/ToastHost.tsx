@@ -38,7 +38,10 @@ export function ToastHost({ children, ToasterOverlayWrapper }: ToastHostProps) {
     // entry it never reached the DOM, so the rows inherited the portal root's
     // `pointer-events: none` and no toast could be pressed or swiped away.
     <OverlayRoot style={styles.host}>
-      <GestureHandlerRootView style={StyleSheet.absoluteFill}>
+      {/* Also `box-none`: as the direct child of a box-none root it would
+          otherwise be handed `pointer-events: auto` and, spanning the whole
+          viewport, block the app underneath while a toast is up. */}
+      <GestureHandlerRootView pointerEvents="box-none" style={StyleSheet.absoluteFill}>
         {children}
       </GestureHandlerRootView>
     </OverlayRoot>

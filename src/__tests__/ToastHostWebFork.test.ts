@@ -116,10 +116,16 @@ describe('ToastHost platform split', () => {
     expect(driver).not.toMatch(/useDerivedValue/);
   });
 
-  it('Positioner passes pointerEvents through style, not as a prop', () => {
+  // This assertion used to demand the exact opposite, and it is what kept the
+  // bug alive: `box-none` is an RN-only value that react-native-web resolves
+  // ONLY from the prop (`createDOMProps` maps it to a class pair). As a style
+  // entry it is dropped, so this full-host container inherited `auto` and sat
+  // over the whole app as an invisible click-eater for as long as a toast was
+  // up. The prop form logs an RNW deprecation notice once; that is the price.
+  it('Positioner passes the RN-only pointerEvents value as a PROP, not a style', () => {
     const positioner = code('toast/Positioner.tsx');
-    expect(positioner).toMatch(/pointerEvents:/);
-    expect(positioner).not.toMatch(/pointerEvents=\{/);
+    expect(positioner).toMatch(/pointerEvents=\{/);
+    expect(positioner).not.toMatch(/pointerEvents:\s*(?:[^,;\n]*\n?){0,6}?['"]box-none['"]/);
   });
 
   it('package.json exports ./toast WITHOUT a browser condition', () => {

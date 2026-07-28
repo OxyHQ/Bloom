@@ -23,7 +23,10 @@ import { createRoot, type Root } from 'react-dom/client';
 // emits a class and would make every assertion below vacuous.
 jest.mock('react-native', () => jest.requireActual('react-native-web'));
 
+import { View } from 'react-native';
+
 import { Backdrop, OverlayRoot } from '../overlay';
+import { ToastHost } from '../toast/ToastHost';
 
 (globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT =
   true;
@@ -173,6 +176,48 @@ describe('overlay pointer-events contract (web)', () => {
 
     act(() => root.unmount());
     container.remove();
+  });
+
+  // The toast host is the widest surface Bloom mounts: a viewport-sized stack of
+  // containers that is present for as long as ANY toast is up. Every layer in it
+  // must be click-through, or a toast turns the whole app read-only — which is
+  // what shipped, because the positioner passed `box-none` as a style entry.
+  it('every layer of the toast host stays click-through', () => {
+    const { root } = render(
+      createElement(ToastHost, {
+        children: createElement(View, { testID: 'row' }),
+      }),
+    );
+
+    const row = document.querySelector('[data-testid="row"]') as HTMLElement | null;
+    expect(row).not.toBeNull();
+
+    const layers: HTMLElement[] = [];
+    for (let el = row?.parentElement; el && el !== document.body; el = el.parentElement) {
+      layers.push(el);
+    }
+    // Vacuity floor: the host view and the portal root. (The gesture root is
+    // the third layer in a browser; this suite's `react-native-gesture-handler`
+    // mock renders it away, so its own `box-none` is pinned by the source gate
+    // in `pointer-events-style-form.test.ts` instead.) A portal that failed to
+    // mount would leave an empty chain and pass silently.
+    expect(layers.length).toBeGreaterThanOrEqual(2);
+    expect(layers.some((el) => el.id === 'bloom-portal-root')).toBe(true);
+
+    for (const el of layers) {
+      const inline = el.style.pointerEvents;
+      const inert =
+        inline === 'none' ||
+        rulesFor(el.className).some(
+          (r) => /pointer-events:\s*none/.test(r) && !/>\s*\*/.test(r),
+        );
+      expect({ layer: el.className || el.id, inert }).toEqual({
+        layer: el.className || el.id,
+        inert: true,
+      });
+    }
+
+    act(() => root.unmount());
   });
 
   it('a disabled Backdrop dims without dismissing', () => {
