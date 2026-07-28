@@ -28,8 +28,8 @@ import { Backdrop, OverlayRoot } from '../overlay';
 (globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT =
   true;
 
-/** Every `pointer-events` declaration react-native-web injected for `className`. */
-function pointerEventsRulesFor(className: string): string[] {
+/** Every injected rule that targets one of `className`'s classes. */
+function rulesFor(className: string): string[] {
   const classes = className.split(/\s+/).filter(Boolean);
   const out: string[] = [];
   for (const sheet of Array.from(document.styleSheets)) {
@@ -41,7 +41,6 @@ function pointerEventsRulesFor(className: string): string[] {
     }
     for (const rule of Array.from(rules)) {
       const text = rule.cssText ?? '';
-      if (!text.includes('pointer-events')) continue;
       if (classes.some((c) => text.includes(`.${c}`))) out.push(text);
     }
   }
@@ -69,7 +68,7 @@ describe('overlay pointer-events contract (web)', () => {
 
     const el = container.querySelector('[data-testid="root"]');
     expect(el).not.toBeNull();
-    const rules = pointerEventsRulesFor(el?.className ?? '');
+    const rules = rulesFor(el?.className ?? '');
 
     // The two halves of react-native-web's `box-none`: the box itself does not
     // take events (empty gaps stay click-through), direct children do.
@@ -92,7 +91,7 @@ describe('overlay pointer-events contract (web)', () => {
     // Without this the element inherits the portal root's `none` and the press
     // below can never happen in a real browser.
     expect(
-      pointerEventsRulesFor(el?.className ?? '').some((r) =>
+      rulesFor(el?.className ?? '').some((r) =>
         /pointer-events:\s*auto/.test(r),
       ),
     ).toBe(true);
@@ -142,6 +141,34 @@ describe('overlay pointer-events contract (web)', () => {
     // …and the layers it fades instead are there to receive it. (Their opacity
     // is written by reanimated, which this suite mocks, so the value itself is
     // asserted in the browser rather than here.)
+    expect(el.children.length).toBeGreaterThanOrEqual(2);
+
+    act(() => root.unmount());
+    container.remove();
+  });
+
+  // The other half of the same rule: a background on the press target paints an
+  // opaque sheet UNDER the blur — a second backdrop. Menus and sheets shipped
+  // exactly that (their `styles.backdrop` still carried `#000`) and rendered
+  // solid black while the image viewer, which passed no background, looked
+  // right. A caller's colour is the DIM's colour, so it moves to the layer.
+  it('never paints the press target — a background becomes the dim colour', () => {
+    const { root, container } = render(
+      createElement(Backdrop, {
+        onPress: () => {},
+        testID: 'backdrop',
+        style: { backgroundColor: 'rgb(1, 2, 3)' },
+      }),
+    );
+
+    const el = container.querySelector('[data-testid="backdrop"]') as HTMLElement;
+    const rootBg = el.style.backgroundColor || getComputedStyle(el).backgroundColor;
+    expect(rootBg === '' || rootBg === 'rgba(0, 0, 0, 0)' || rootBg === 'transparent').toBe(true);
+
+    // Where the colour LANDS (the dim layer) is asserted in a browser: the dim
+    // is a reanimated `Animated.View`, which this suite mocks, so it never
+    // reaches the DOM here. What matters and is observable is that the press
+    // target above the blur stays transparent.
     expect(el.children.length).toBeGreaterThanOrEqual(2);
 
     act(() => root.unmount());

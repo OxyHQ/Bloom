@@ -587,7 +587,6 @@ const sideStyles = StyleSheet.create({
   },
   backdrop: {
     ...StyleSheet.absoluteFill,
-    backgroundColor: '#000',
   },
   panel: {
     position: 'absolute',

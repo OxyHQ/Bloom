@@ -844,10 +844,8 @@ BottomSheetBase.displayName = 'BottomSheetBase';
 
 const styles = StyleSheet.create({
     backdrop: {
-        // Color is solid black; the dim level is driven by `backdropOpacity` via
-        // the animated `opacity` style on the wrapping <Animated.View>.
+        // Geometry only: the colour and the dim level belong to `Backdrop`.
         flex: 1,
-        backgroundColor: '#000',
     },
     backdropTouchable: {
         flex: 1,

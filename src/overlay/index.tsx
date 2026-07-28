@@ -151,11 +151,18 @@ export const Backdrop = memo(function Backdrop({
 }: BackdropProps) {
   const inert = disabled || !onPress;
 
-  // An `opacity` handed in through `style` would sit on the ancestor of the
-  // blur and kill it; hoist it onto the layers instead of honouring it there.
+  // The press target must stay a pure hit box. Two things a caller's `style`
+  // can carry would break the visuals if honoured there:
+  //   - `opacity`, because `backdrop-filter` samples nothing under an ancestor
+  //     that composites in isolation, so the fade would erase the blur;
+  //   - `backgroundColor`, which would paint an opaque sheet UNDER the blur —
+  //     a second backdrop, and the reason menus and sheets rendered solid black
+  //     while the image viewer (which passed no background) looked right.
+  // Both are hoisted onto the layers, where they mean what the caller intended.
   const flat: ViewStyle = StyleSheet.flatten(style) ?? {};
-  const { opacity: styleOpacity, ...rootStyle } = flat;
+  const { opacity: styleOpacity, backgroundColor: styleBackground, ...rootStyle } = flat;
   const staticOpacity = typeof styleOpacity === 'number' ? styleOpacity : 1;
+  const resolvedDimColor = typeof styleBackground === 'string' ? styleBackground : dimColor;
 
   // The fade lives on each LAYER, never on their shared ancestor.
   const blurFade = useAnimatedStyle(
@@ -194,7 +201,7 @@ export const Backdrop = memo(function Backdrop({
       ) : null}
       <Animated.View
         pointerEvents="none"
-        style={[StyleSheet.absoluteFill, { backgroundColor: dimColor }, layerStyle, dimFade]}
+        style={[StyleSheet.absoluteFill, { backgroundColor: resolvedDimColor }, layerStyle, dimFade]}
       />
       {children}
     </Pressable>
