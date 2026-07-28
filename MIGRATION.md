@@ -96,6 +96,12 @@ banner. The row now caps at 388px and centres, putting the visible card on 356px
 nothing changes. Widen it per outlet with
 `toastOptions={{ toastContainerStyle: { maxWidth: 600 } }}`.
 
+## 0.53.0 — `useTabBarReservedSpace` renamed to `useTabBarFootprint`
+
+The rename itself first shipped in 0.52.1 — as a **patch**, which silently removed a public export ("reserved" oversold a value that reserves nothing beyond the bar's own footprint). Consumers upgrading 0.52.0 → 0.52.1 failed to type-check on a name that no longer existed. 0.52.1 is deprecated on npm; 0.53.0 is the same rename shipped as the breaking release it actually is.
+
+**Action:** `useTabBarReservedSpace()` → `useTabBarFootprint()`. No behavior change, name only. There is no compatibility alias.
+
 ## 0.51.0 — Bloom owns its toast engine
 
 `sonner` and `sonner-native` are **no longer dependencies of Bloom** (nor is `nanoid`).
@@ -157,6 +163,34 @@ two outlets render every toast twice, at two positions.
   engine runs on react-native-web. They have been required peers since 0.18.1; the
   README's older "web never imports reanimated" note was already inaccurate and is
   now removed.
+
+## 0.37.0 — `AppColorPreset` is now a seed + variant, not a light/dark token map
+
+`AppColorPreset` no longer carries a resolved palette. Each preset used to be a full `light`/`dark` map of raw HSL triples per token; it is now a brand seed plus a tonal-engine variant, and the full role set is generated on demand:
+
+```diff
+ interface AppColorPreset {
+   name: AppColorName;
+   hex: string;
+-  light: PresetTokens;
+-  dark: PresetTokens;
++  variant: SchemeVariant;
+ }
+```
+
+`PresetTokens` (`Record<string, string>`) is still exported, but it now describes the *resolved* `--token -> value` map `getPresetVars`/`getResolvedTokens` return — not a field of the preset itself.
+
+Any consumer that indexed a role straight off a preset object (`preset.dark['--primary']`) fails with `TS2339` — that shape is gone. Ask the engine for the role instead:
+
+```diff
+-const primary = APP_COLOR_PRESETS[name].dark['--primary'];
++import { getPresetVars } from '@oxyhq/bloom/theme';
++const primary = getPresetVars(name, 'dark')['--primary'];
+```
+
+`getPresetVars(colorName, mode, accents?)` takes the `AppColorName` and `'light' | 'dark'` mode — not the preset object — and returns the same token keys the old per-preset map used. It is exported from both `@oxyhq/bloom/theme` and `@oxyhq/bloom/preset-vars`.
+
+Bloom resolves these internally through `getResolvedTokens` (`token-registry.ts`), which is **not** part of the public API — do not reach for it. It only converts raw HSL triples to sRGB, and preset values already arrive from the engine as full `rgb(r g b)` strings, so for this lookup the two return identical values.
 
 ## 0.18.1 — `react-native-reanimated` + `react-native-gesture-handler` are now required peers
 

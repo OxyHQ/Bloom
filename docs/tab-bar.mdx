@@ -29,7 +29,9 @@ The bar also uses Bloom's existing `expo-blur`, `react-native-reanimated`, `reac
 <Callout variant="info" title="Web builds pull none of the native packages">
 `expo-glass-effect` and `expo-symbols` are imported only from `.native` files, and the router packages only from the `expo-router` subpath. A web bundle of `@oxyhq/bloom/tab-bar` reaches none of them, so nothing about them ends up in a web app's output.
 
-Both are nonetheless declared as **required** peers, deliberately. They are static imports, so omitting them from a native build does not degrade to anything — Metro fails to resolve the specifier and the build dies. The only thing marking them optional would buy is silencing the one warning that says so in advance. That applies on Android too: the native module there is Apple-only (`"platforms": ["apple"]`), but the JS package still has to be installed for the bundle to resolve.
+Both are nonetheless declared as **required** peers, deliberately. They are static imports, so omitting them from a native build that imports the tab bar does not degrade to anything — Metro fails to resolve the specifier and the build dies. The only thing marking them optional would buy is silencing the one warning that says so in advance. That applies on Android too: the native module there is Apple-only (`"platforms": ["apple"]`), but the JS package still has to be installed for the bundle to resolve.
+
+That degrade-to-nothing only follows once you import the tab bar. An app that never imports `@oxyhq/bloom/tab-bar` at all — on native or web — never reaches these files, so leaving the peer unmet costs nothing; don't install two Apple-only packages just to quiet a warning about a surface you don't use. In practice bun 1.3.14 doesn't even print that warning, so the gap is silent regardless of whether you use the tab bar.
 </Callout>
 
 ## Usage without a router
