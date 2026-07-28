@@ -16,7 +16,11 @@ import {
   type StyleProp,
   type ViewStyle,
 } from 'react-native';
-import Animated from 'react-native-reanimated';
+import Animated, {
+  Easing,
+  useSharedValue,
+  withTiming,
+} from 'react-native-reanimated';
 import { RemoveScrollBar } from 'react-remove-scroll-bar';
 
 import { Backdrop, OverlayRoot } from '../overlay';
@@ -72,10 +76,11 @@ const ZOOM_FADE_IN: WebCssStyle = {
 const ZOOM_FADE_OUT: WebCssStyle = {
   animation: `bloomDialogZoomFadeOut ease-in ${FADE_OUT_DURATION}ms forwards`,
 };
-const BACKDROP_FADE_IN: WebCssStyle = { animation: 'bloomDialogFadeIn ease-out 0.15s' };
-const BACKDROP_FADE_OUT: WebCssStyle = {
-  animation: `bloomDialogFadeOut ease-in ${FADE_OUT_DURATION}ms forwards`,
-};
+/**
+ * Backdrop fade-in duration (ms). The card's zoom-fade is longer; the dim
+ * arriving first is what makes the card read as landing ON something.
+ */
+const BACKDROP_FADE_IN_DURATION = 150;
 
 const stopPropagation = (e: { stopPropagation: () => void }) => e.stopPropagation();
 
@@ -279,6 +284,27 @@ function CenterOrSideDialog({
     return () => clearTimeout(timer);
   }, [isClosing, exitDuration]);
 
+  // The backdrop's fade rides a shared value, NOT a CSS `@keyframes opacity
+  // 0 → 1` handed to the layers. A running CSS animation outranks inline styles
+  // in the cascade, so those keyframes drove the DIM layer — whose inline
+  // opacity IS the dim (0.28) — all the way to 1, i.e. opaque black, and then
+  // dropped it back to 0.28 the instant the animation ended. That is the black
+  // flash every centered dialog opened with. `progress` is multiplied INTO each
+  // layer's own opacity by `Backdrop`, so the dim can only ever reach its own
+  // value. (The side-sheet path was never affected: it animates with a CSS
+  // *transition*, which interpolates the inline value instead of overriding it.)
+  const backdropFade = useSharedValue(0);
+
+  useEffect(() => {
+    if (!isOpen) {
+      backdropFade.value = 0;
+      return;
+    }
+    backdropFade.value = isClosing
+      ? withTiming(0, { duration: FADE_OUT_DURATION, easing: Easing.in(Easing.ease) })
+      : withTiming(1, { duration: BACKDROP_FADE_IN_DURATION, easing: Easing.out(Easing.ease) });
+  }, [backdropFade, isOpen, isClosing]);
+
   // Escape-to-close while open. The listener is intentionally scoped to the
   // open lifetime so stacked dialogs don't fight for the keydown — the
   // top-most one wins via document-level event order. Escape honors
@@ -328,7 +354,7 @@ function CenterOrSideDialog({
               // The fade rides on the LAYERS, never on the press target: an
               // opacity animation on the blur's ancestor composites the group in
               // isolation and leaves `backdrop-filter` nothing to sample.
-              layerStyle={isClosing ? BACKDROP_FADE_OUT : BACKDROP_FADE_IN}
+              progress={backdropFade}
               style={{
                 position: WEB_POSITION_FIXED,
                 zIndex: dialogZIndex.backdrop,
@@ -877,8 +903,6 @@ const sheetStyles: Record<'root' | 'backdrop' | 'panel', ViewStyle> = {
  * injection is guarded by a unique style id.
  *
  * ```css
- * @keyframes bloomDialogFadeIn { from { opacity: 0; } to { opacity: 1; } }
- * @keyframes bloomDialogFadeOut { from { opacity: 1; } to { opacity: 0; } }
  * @keyframes bloomDialogZoomFadeIn { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }
  * @keyframes bloomDialogZoomFadeOut { from { opacity: 1; transform: scale(1); } to { opacity: 0; transform: scale(0.95); } }
  * ```
@@ -888,8 +912,6 @@ const sheetStyles: Record<'root' | 'backdrop' | 'panel', ViewStyle> = {
  * `bottom` placement uses bloom's `BottomSheet` (reanimated) and needs none.
  */
 export const BLOOM_DIALOG_CSS = `
-@keyframes bloomDialogFadeIn { from { opacity: 0; } to { opacity: 1; } }
-@keyframes bloomDialogFadeOut { from { opacity: 1; } to { opacity: 0; } }
 @keyframes bloomDialogZoomFadeIn { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }
 @keyframes bloomDialogZoomFadeOut { from { opacity: 1; transform: scale(1); } to { opacity: 0; transform: scale(0.95); } }
 `;

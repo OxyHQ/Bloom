@@ -77,8 +77,11 @@ describe('Dialog.web keyframe self-injection', () => {
     const css = styleEl?.textContent ?? '';
     expect(css).toContain('@keyframes bloomDialogZoomFadeIn');
     expect(css).toContain('@keyframes bloomDialogZoomFadeOut');
-    expect(css).toContain('@keyframes bloomDialogFadeIn');
-    expect(css).toContain('@keyframes bloomDialogFadeOut');
+    // The backdrop's own fade is NOT a keyframe: it rides a shared value, so
+    // the dim can never be driven past its own opacity (see the black-flash
+    // regression below).
+    expect(css).not.toContain('@keyframes bloomDialogFadeIn');
+    expect(css).not.toContain('@keyframes bloomDialogFadeOut');
 
     // Opening the dialog (the path that actually plays the animation) must not
     // duplicate the stylesheet.
