@@ -26,7 +26,7 @@ import Animated, {
     withTiming,
 } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { Backdrop } from '../overlay';
+import { Backdrop, BACKDROP_DIM_OPACITY } from '../overlay';
 import { useTheme } from '../theme/use-theme';
 
 /** Hook that returns current screen dimensions and updates on rotation/resize. */
@@ -214,7 +214,7 @@ export const BottomSheetBase = forwardRef((props: BottomSheetBaseProps, ref: Rea
         onDismissAttempt,
         detached = false,
         showHandle = true,
-        backdropOpacity = 0.5,
+        backdropOpacity = BACKDROP_DIM_OPACITY,
         scrollable = true,
         manualActivation = false,
         dynamicBackdrop = false,
@@ -654,8 +654,8 @@ export const BottomSheetBase = forwardRef((props: BottomSheetBaseProps, ref: Rea
                 'clamp',
             )
             : 1;
-        return opacity.value * backdropOpacity * dragFactor;
-    }, [backdropOpacity, dynamicBackdrop, opacity, translateY, screenHeightSV]);
+        return opacity.value * dragFactor;
+    }, [dynamicBackdrop, opacity, translateY, screenHeightSV]);
 
     // Only the consumer-supplied `backdropComponent` needs the progress as a
     // style — it owns its own visuals, blur included, so the ancestor-opacity
@@ -806,12 +806,14 @@ export const BottomSheetBase = forwardRef((props: BottomSheetBaseProps, ref: Rea
                     // switched off here to keep a single source of dimming.
                     <Backdrop
                         onPress={handleBackdropPress}
-                        // `backdropProgress` already folds in `backdropOpacity`
-                        // and the drag factor, so the dim rides at full weight.
-                        // It goes through `progress` rather than an animated
-                        // style because an opacity on the root would sit above
-                        // the blur layer and neutralise it.
-                        dimOpacity={1}
+                        // `progress` is the FADE (0 → 1, folding the drag);
+                        // how dark the backdrop gets is `backdropOpacity`,
+                        // which defaults to the library-wide dim so a sheet
+                        // matches every other surface. It goes through
+                        // `progress` rather than an animated style because an
+                        // opacity on the root would sit above the blur layer
+                        // and neutralise it.
+                        dimOpacity={backdropOpacity}
                         progress={backdropProgress}
                         style={styles.backdrop}
                     />

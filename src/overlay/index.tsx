@@ -60,8 +60,15 @@ const AnimatedBlurView = Animated.createAnimatedComponent(BlurView);
  * not in how the app behind them recedes.
  */
 export const BACKDROP_BLUR_INTENSITY = 80;
-/** Dim laid over the blur — the blur alone does not give enough contrast. */
-export const BACKDROP_DIM_OPACITY = 0.55;
+/**
+ * Extra dim laid OVER the blur. The blur already paints its own tint wash
+ * (`rgba(25,25,25,~0.62)` at the intensity above), so this is what takes the
+ * total to roughly 0.72 — dark enough to read a panel against, still clearly
+ * see-through. Every surface uses this one value: with each of them picking its
+ * own, menus landed at ~0.83 and read as solid black next to the image viewer's
+ * ~0.72.
+ */
+export const BACKDROP_DIM_OPACITY = 0.28;
 
 export interface OverlayRootProps {
   children?: ReactNode;

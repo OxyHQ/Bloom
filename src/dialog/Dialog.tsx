@@ -26,6 +26,7 @@ import Animated, {
 } from 'react-native-reanimated';
 
 import { BottomSheet, type BottomSheetRef } from '../bottom-sheet';
+import { Backdrop } from '../overlay';
 import { Z_INDEX, Z_INDEX_LAYER_STEP } from '../styles/z-index';
 import { useTheme } from '../theme/use-theme';
 import { Context, useDialogControl } from './context';
@@ -46,7 +47,6 @@ import {
   DEFAULT_SIDE_WIDTH,
   DIALOG_SHEET_BACKDROP_TESTID,
   PANEL_RADIUS,
-  SHEET_BACKDROP_OPACITY,
   SIDE_SHEET_MIN_GUTTER,
   useResolvedPlacement,
 } from './placement';
@@ -486,10 +486,6 @@ function SideSheet({
     if (dismissOnBackdrop) onDismiss();
   }, [dismissOnBackdrop, onDismiss]);
 
-  const backdropAnimatedStyle = useAnimatedStyle(() => ({
-    opacity: progress.value * SHEET_BACKDROP_OPACITY,
-  }), []);
-
   const hiddenSign = side === 'left' ? -1 : 1;
   const panelAnimatedStyle = useAnimatedStyle(() => {
     const hidden = 1 - progress.value;
@@ -533,18 +529,14 @@ function SideSheet({
       ]}
       {...(containerClassName ? ({ className: containerClassName } as Record<string, string>) : {})}
     >
-      <Animated.View
-        style={[sideStyles.backdrop, backdropAnimatedStyle, { pointerEvents: 'auto' }]}
-      >
-        <Pressable
-          testID={testID ? `${testID}-backdrop` : DIALOG_SHEET_BACKDROP_TESTID}
-          accessibilityRole="button"
-          accessibilityLabel={label ? `Dismiss ${label}` : 'Dismiss dialog'}
-          onPress={handleBackdropPress}
-          disabled={!dismissOnBackdrop}
-          style={StyleSheet.absoluteFill}
-        />
-      </Animated.View>
+      <Backdrop
+        testID={testID ? `${testID}-backdrop` : DIALOG_SHEET_BACKDROP_TESTID}
+        accessibilityLabel={label ? `Dismiss ${label}` : 'Dismiss dialog'}
+        onPress={handleBackdropPress}
+        disabled={!dismissOnBackdrop}
+        progress={progress}
+        style={sideStyles.backdrop}
+      />
 
       <Animated.View
         accessibilityViewIsModal

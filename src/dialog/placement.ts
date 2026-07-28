@@ -83,8 +83,6 @@ export const CENTER_FADE_OUT_DURATION = 150;
 /** CSS approximation of reanimated's `Easing.out(Easing.cubic)`. */
 export const EASE_OUT = 'cubic-bezier(0.33, 1, 0.68, 1)';
 
-/** Backdrop dim opacity once fully shown (matches `bg-black/40`). */
-export const SHEET_BACKDROP_OPACITY = 0.4;
 
 /** Stable testID for the dimmed backdrop of a side/bottom placement dialog. */
 export const DIALOG_SHEET_BACKDROP_TESTID = 'bloom-dialog-sheet-backdrop';

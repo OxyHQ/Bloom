@@ -35,7 +35,7 @@ const MAPPERS = ['useAnimatedStyle', 'useDerivedValue', 'useAnimatedProps'] as c
 const ALLOWED: Array<{ file: string; count: number; reason: string }> = [
   {
     file: 'dialog/Dialog.tsx',
-    count: 2,
+    count: 1,
     reason:
       'Native-only fork: web resolves Dialog.web.tsx (see dialog/index.web.ts), ' +
       'and on native the worklets plugin auto-tracks reads, so the deps array is ' +

@@ -47,7 +47,6 @@ import {
   DIALOG_SHEET_BACKDROP_TESTID,
   EASE_OUT,
   PANEL_RADIUS,
-  SHEET_BACKDROP_OPACITY,
   SIDE_SHEET_MIN_GUTTER,
   useResolvedPlacement,
 } from './placement';
@@ -60,11 +59,6 @@ import type {
 
 const FADE_OUT_DURATION = CENTER_FADE_OUT_DURATION;
 
-/**
- * The centered card's scrim reads darker than a sheet's because the card floats
- * in the middle of it; the shared blur underneath is identical.
- */
-const DIALOG_BACKDROP_DIM_OPACITY = 0.6;
 
 /**
  * The four CSS `animation` shorthands driving the centered card and its backdrop.
@@ -331,7 +325,6 @@ function CenterOrSideDialog({
               onPress={() => close()}
               disabled={!dismissOnBackdrop}
               accessibilityLabel={label ? `Dismiss ${label}` : 'Dismiss dialog'}
-              dimOpacity={DIALOG_BACKDROP_DIM_OPACITY}
               // The fade rides on the LAYERS, never on the press target: an
               // opacity animation on the blur's ancestor composites the group in
               // isolation and leaves `backdrop-filter` nothing to sample.
@@ -705,7 +698,7 @@ function SheetSurface({
         disabled={!dismissOnBackdrop}
         // Same reason as the centred dialog: the transition and the opacity it
         // animates belong to the layers, not to the press target above them.
-        dimOpacity={SHEET_BACKDROP_OPACITY}
+        // No `dimOpacity` override — one darkness for every Bloom surface.
         layerStyle={backdropTransition}
         style={[sheetStyles.backdrop, { opacity: visible ? 1 : 0 }]}
       />

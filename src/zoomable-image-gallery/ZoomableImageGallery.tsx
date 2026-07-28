@@ -796,7 +796,6 @@ const ZoomableImageGalleryInner = React.forwardRef<ZoomableImageGalleryHandle, Z
         <Backdrop
           onPress={handleDismiss}
           accessibilityLabel="Close image viewer"
-          dimColor={theme.colors.overlay}
           progress={opacity}
         />
 
