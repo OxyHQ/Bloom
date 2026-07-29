@@ -1,13 +1,7 @@
 import React, { createContext, useCallback, useContext, useMemo } from 'react';
 import { Platform } from 'react-native';
 
-import { lazyRequire } from '../utils/lazy-require';
-
-/**
- * Lazily loads `expo-haptics`, returning `null` when it is not installed. The
- * dependency is an optional peer, so calls degrade to a no-op when absent.
- */
-const getHapticsModule = lazyRequire<typeof import('expo-haptics')>('expo-haptics');
+import { loadHaptics, warnHapticsUnavailable } from './haptics-module';
 
 /** Impact strength requested by a caller. */
 export type HapticStrength = 'light' | 'medium' | 'heavy';
@@ -52,8 +46,11 @@ export function useHaptics(): (strength?: HapticStrength) => void {
     (strength: HapticStrength = 'light') => {
       if (!enabled || Platform.OS === 'web') return;
 
-      const haptics = getHapticsModule();
-      if (!haptics) return;
+      const haptics = loadHaptics();
+      if (!haptics) {
+        warnHapticsUnavailable();
+        return;
+      }
 
       const { ImpactFeedbackStyle } = haptics;
       let style = ImpactFeedbackStyle.Light;

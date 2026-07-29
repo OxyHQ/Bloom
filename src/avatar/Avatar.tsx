@@ -1,6 +1,7 @@
 import React, { memo, useMemo, useRef, useState } from 'react';
 import { View, Image, StyleSheet, Text, TouchableOpacity } from 'react-native';
 import type { TextStyle } from 'react-native';
+import Svg, { ClipPath, Defs, Image as SvgImage, Path } from 'react-native-svg';
 
 import { useTheme } from '../theme/use-theme';
 import { useImageResolver } from '../image-resolver/context';
@@ -8,7 +9,6 @@ import { Z_INDEX } from '../styles/z-index';
 import { useAvatarPlaceholder } from './placeholder-context';
 import { LiveBadge } from './LiveBadge';
 import { AvatarRing, getRingOuterSize } from './AvatarRing';
-import { getSvgModule } from './svg-module';
 import { SQUIRCLE_PATH } from './squircle-path';
 import type { AvatarProps, AvatarRingConfig } from './types';
 
@@ -62,16 +62,6 @@ function SquircleImage({
   onError: () => void;
 }) {
   const clipId = useMemo(() => `bloom-sqc${clipIdCounter++}`, []);
-  const svg = getSvgModule();
-  if (!svg) {
-    // Fallback to a circle if react-native-svg is not installed. The ring (if
-    // any) is drawn separately by AvatarRing, which also degrades to a circle.
-    return (
-      <CircleFallback size={size} fallbackColor={fallbackColor} icon={placeholderIcon} name={name} />
-    );
-  }
-
-  const { default: Svg, Defs, ClipPath, Path, Image: SvgImage } = svg;
 
   const href = uri ? { uri } : fallbackSource;
   if (!href) {

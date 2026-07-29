@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react';
-import { ActivityIndicator, type ViewStyle } from 'react-native';
+import { type ViewStyle } from 'react-native';
 import Animated, {
   Easing,
   useAnimatedStyle,
@@ -7,18 +7,7 @@ import Animated, {
   withRepeat,
   withTiming,
 } from 'react-native-reanimated';
-
-import { lazyRequire } from '../utils/lazy-require';
-
-// react-native-svg is loaded lazily so the loading module can fall back to
-// ActivityIndicator when the host app doesn't ship SVG support. Reanimated,
-// by contrast, MUST be statically imported: the worklets Babel plugin
-// performs build-time closure analysis (`__closure` metadata) that fails on
-// runtime requires, which would crash the UI thread with
-// "Tried to synchronously call a non-worklet function `addListener`".
-type SvgModuleType = typeof import('react-native-svg');
-
-const getSvgModule = lazyRequire<SvgModuleType>('react-native-svg');
+import Svg, { Rect } from 'react-native-svg';
 
 interface SpinnerIconProps {
   size?: number;
@@ -27,24 +16,24 @@ interface SpinnerIconProps {
   style?: ViewStyle;
 }
 
-type AnimatedSpinnerProps = Omit<SpinnerIconProps, 'className'> & {
-  className?: string;
-  svg: NonNullable<SvgModuleType>;
-};
-
 /**
- * Inner component that unconditionally calls Reanimated hooks.
- * Only rendered when react-native-svg is available.
+ * iOS-style SVG spinner with 8 rotating rectangles and an opacity gradient trail.
+ *
+ * `react-native-svg` and `react-native-reanimated` are both REQUIRED peers and
+ * both are imported statically. Reanimated in particular must never be loaded at
+ * runtime: the worklets Babel plugin performs build-time closure analysis
+ * (`__closure` metadata) that fails on a runtime require, which crashes the UI
+ * thread with "Tried to synchronously call a non-worklet function `addListener`".
+ *
+ * Native only — `SpinnerIcon.web.tsx` draws the same shape with CSS, so this
+ * file is never reached by a web bundler.
  */
-const AnimatedSpinner: React.FC<AnimatedSpinnerProps> = ({
+export const SpinnerIcon: React.FC<SpinnerIconProps> = ({
   color = 'currentColor',
   size = 26,
   className,
   style,
-  svg,
 }) => {
-  const { default: Svg, Rect } = svg;
-
   const rotation = useSharedValue(0);
 
   useEffect(() => {
@@ -94,34 +83,6 @@ const AnimatedSpinner: React.FC<AnimatedSpinnerProps> = ({
         <Rect fill={color} height="10" opacity="0.875" rx="5" ry="5" transform="rotate(225 50 50)" width="28" x="67" y="45" />
       </Svg>
     </Animated.View>
-  );
-};
-
-/**
- * iOS-style SVG spinner with 8 rotating rectangles and an opacity gradient trail.
- * Requires react-native-svg (lazy) and react-native-reanimated (static).
- * Falls back to ActivityIndicator if react-native-svg is missing.
- */
-export const SpinnerIcon: React.FC<SpinnerIconProps> = ({
-  color = 'currentColor',
-  size = 26,
-  className,
-  style,
-}) => {
-  const svg = getSvgModule();
-
-  if (!svg) {
-    return <ActivityIndicator size={size > 30 ? 'large' : 'small'} color={color} />;
-  }
-
-  return (
-    <AnimatedSpinner
-      color={color}
-      size={size}
-      className={className}
-      style={style}
-      svg={svg}
-    />
   );
 };
 

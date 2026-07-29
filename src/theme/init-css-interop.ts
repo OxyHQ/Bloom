@@ -76,20 +76,22 @@ function tryCallSetFlag(): void {
   let mod: CssInteropModule | undefined;
   // `require` does not exist in an ES module, so guard before touching it —
   // an unguarded reference is a ReferenceError, not a resolution failure.
-  // Matches the pattern used by every other optional-module load in Bloom
-  // (`utils/lazy-require.ts`, `theme/adaptive-colors.ts`,
-  // `bottom-sheet/index.tsx`).
   if (typeof require === 'undefined') return;
   try {
-    // Dynamic require: css-interop is not a Bloom dependency. If the host
-    // app ships it (via NativeWind or directly), this resolves. Otherwise
-    // the require throws and we silently move on — there is nothing to
-    // initialize because css-interop is not in the bundle.
+    // Dynamic require: css-interop is neither a Bloom dependency nor a declared
+    // peer. The specifier goes through a variable to keep a plain-text
+    // `require('react-native-css-interop')` out of the file, so bundlers that
+    // scan for one do not try to resolve (and warn about, or fail on) a module
+    // Bloom never asked for.
     //
-    // The specifier goes through a variable on purpose: a literal
-    // `require('react-native-css-interop')` is statically analysable, so
-    // bundlers try to resolve (and warn about, or fail on) a module that is
-    // intentionally absent. The indirection keeps this a pure runtime lookup.
+    // Metro is not among them: its dependency collector EVALUATES the argument,
+    // folds this `const`, and treats the call exactly as it would a literal —
+    // optional, because it is a direct statement of a `try` block. So the
+    // indirection buys nothing under Metro and costs nothing either. It is not a
+    // pattern to copy: a specifier Metro cannot evaluate (a function parameter,
+    // a computed value) collects no dependency at all and is rewritten into a
+    // thrower, which is how `lazyRequire` silently killed four subsystems. See
+    // `connection-status/netinfo.ts` for the shape a real peer must use.
     const moduleName = 'react-native-css-interop';
     // eslint-disable-next-line @typescript-eslint/no-require-imports
     mod = require(moduleName) as CssInteropModule;

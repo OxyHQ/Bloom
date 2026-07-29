@@ -1,13 +1,30 @@
 import { Platform } from 'react-native';
 import type { ThemeColors } from './types';
 
+/**
+ * `expo-router`'s `Color` proxy is read through a `require()` of a STRING
+ * LITERAL as a direct statement of a `try` block — the shape Metro collects as
+ * an optional dependency, resolving the real module when installed and writing
+ * `null` into the dependency map when it is not, so an app without the optional
+ * `expo-router` peer loses the adaptive palette and nothing else.
+ *
+ * The specifier was previously bound to a local `const` first. That still
+ * worked — Metro evaluates the constant — but the literal is what the rule can
+ * be stated and checked as, and it does not rest on a constant-folding pass
+ * every bundler happens to share. What must never come back is a specifier
+ * Metro CANNOT evaluate (a function parameter, a computed value): it collects no
+ * dependency and rewrites the call into a thrower, so it resolves nothing on any
+ * device.
+ *
+ * @see connection-status/netinfo.ts — the same boundary, with the full rule.
+ */
+
 const c = (v: unknown): string => v as string;
 
 function getAndroidColors(): ThemeColors | null {
   try {
     if (typeof require === 'undefined') return null;
-    const moduleName = 'expo-router';
-    const { Color } = require(moduleName);
+    const { Color } = require('expo-router');
     const d = Color.android.dynamic;
     return {
       background: c(d.surface),
@@ -52,8 +69,7 @@ function getAndroidColors(): ThemeColors | null {
 function getIOSColors(): ThemeColors | null {
   try {
     if (typeof require === 'undefined') return null;
-    const moduleName = 'expo-router';
-    const { Color } = require(moduleName);
+    const { Color } = require('expo-router');
     const i = Color.ios;
     return {
       background: c(i.systemBackground),

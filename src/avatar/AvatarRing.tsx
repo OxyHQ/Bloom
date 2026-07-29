@@ -1,8 +1,8 @@
 import React, { memo, useMemo } from 'react';
 import { View, StyleSheet } from 'react-native';
+import Svg, { Circle, Defs, LinearGradient, Path, Stop } from 'react-native-svg';
 
 import { Z_INDEX } from '../styles/z-index';
-import { getSvgModule } from './svg-module';
 import { SQUIRCLE_PATH } from './squircle-path';
 import type { AvatarRingGradientDirection, AvatarShape } from './types';
 
@@ -56,10 +56,7 @@ function gradientCoords(direction: AvatarRingGradientDirection) {
  *
  * - Solid circle → a plain bordered `<View>` (no `react-native-svg` needed).
  * - Solid squircle → an SVG `<Path>` stroking the squircle outline.
- * - Gradient (either shape) → an SVG `<LinearGradient>` stroke; degrades to a
- *   solid ring of the first color when `react-native-svg` is unavailable (a
- *   squircle then degrades to a circle border, matching the avatar's own no-SVG
- *   circle fallback).
+ * - Gradient (either shape) → an SVG `<LinearGradient>` stroke.
  *
  * Internal to the avatar family — not exported from the package.
  */
@@ -79,19 +76,15 @@ const AvatarRingComponent: React.FC<AvatarRingProps> = ({
 
   const outer = getRingOuterSize(size, width, gap);
   // The ring's visible band is always the outermost `width` px inside the outer
-  // box; when it degrades to a circle border it is a full circle → radius
-  // `outer / 2`.
+  // box; drawn as a plain border it is a full circle → radius `outer / 2`.
   const ringRadius = outer / 2;
 
-  // `react-native-svg` is required for gradients (both shapes) and for the
-  // squircle outline. A solid circle ring is a plain border and never needs it.
+  // SVG is only needed for gradients (both shapes) and for the squircle
+  // outline. A solid circle ring is a plain bordered View — cheaper, and it
+  // keeps the common case off the SVG renderer entirely.
   const needsSvg = wantsGradient || shape === 'squircle';
-  const svg = needsSvg ? getSvgModule() : null;
 
-  // No SVG available (or a solid circle, which never needs SVG): draw a plain
-  // bordered View. A gradient degrades to its first color; a squircle degrades
-  // to a circle border.
-  if (!svg) {
+  if (!needsSvg) {
     return (
       <View
         pointerEvents="none"
@@ -110,7 +103,6 @@ const AvatarRingComponent: React.FC<AvatarRingProps> = ({
     );
   }
 
-  const { default: Svg, Defs, LinearGradient, Stop, Circle, Path } = svg;
   const stroke = wantsGradient ? `url(#${gradientId})` : solidColor;
   const coords = gradientCoords(gradientDirection);
   const gradientDefs = wantsGradient ? (

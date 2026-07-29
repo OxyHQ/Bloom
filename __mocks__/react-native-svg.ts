@@ -43,5 +43,7 @@ export const Polyline = createSvgComponent('Polyline');
 export const Ellipse = createSvgComponent('Ellipse');
 export const Text = createSvgComponent('SvgText');
 export const TSpan = createSvgComponent('TSpan');
+// `<Image href>` inside an `<Svg>` — the squircle avatar's clipped image.
+export const Image = createSvgComponent('SvgImage');
 
 export default Svg;

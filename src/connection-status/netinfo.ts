@@ -12,14 +12,25 @@
  * Metro treats a `require()` of a STRING LITERAL inside a `try` block as an
  * optional dependency: it resolves the real module when installed, and writes
  * `null` into the dependency map when it is not, so the failure moves from build
- * time to the `catch` below. Two constraints the shape has to respect:
+ * time to the `catch` below. Three constraints the shape has to respect, each
+ * checked against metro 0.83.5's own `collectDependencies`:
  *
- *   - The specifier MUST be a literal. Bloom's own `lazyRequire()` helper passes
- *     the name as a VARIABLE, which Metro rewrites into a thrower ("Dynamic
- *     require defined at line N; not supported by Metro") — under Metro it can
- *     never resolve anything, installed or not.
+ *   - The specifier must be STATICALLY EVALUABLE, and a literal is the only form
+ *     worth relying on. Metro rewrites a require it cannot evaluate — the
+ *     specifier arriving as a function parameter, say — into a thrower ("Dynamic
+ *     require defined at line N; not supported by Metro"), collecting no
+ *     dependency at all, so it resolves nothing whether or not the package is
+ *     installed. That is the defect that made Bloom's haptics, spinner and
+ *     native color scoping silently dead before it was swept out.
+ *   - The require must be a DIRECT statement of the try block.
+ *     `isOptionalDependency` walks up from the call and returns at the first
+ *     BlockStatement it meets, marking the dependency optional only if that
+ *     block belongs to a `try`. One `if`/`else` of nesting is enough to lose it,
+ *     and a non-optional dependency that cannot be resolved fails the BUILD —
+ *     precisely what this boundary exists to avoid. Hence the `typeof require`
+ *     guard below sits outside the try rather than inside it.
  *   - `require` may not exist at all (this file also backs the `import`
- *     condition, i.e. an ESM build under Node), hence the `typeof` guard.
+ *     condition, i.e. an ESM build under Node), hence that guard.
  *
  * The caller degrades to inert rather than throwing: an absent netinfo costs the
  * outage toast and nothing else, and crashing an app root over a missing
@@ -67,24 +78,29 @@ export function loadNetInfo(): NetInfoLike | null {
   if (netInfoModule !== undefined) return netInfoModule;
   netInfoModule = null;
 
-  try {
-    if (typeof require === 'undefined') {
-      unavailableReason = 'this bundle has no CommonJS `require`';
-    } else {
-      // netinfo exposes `addEventListener` both as a named export and on its
-      // default export; which one comes back depends on whether the bundler
-      // resolved the CommonJS build or the ESM/source entry.
-      const loaded = require('@react-native-community/netinfo') as
-        | (Partial<NetInfoLike> & { default?: Partial<NetInfoLike> })
-        | null
-        | undefined;
-      const resolved = typeof loaded?.addEventListener === 'function' ? loaded : loaded?.default;
+  // The `typeof require` guard sits OUTSIDE the try on purpose — see the second
+  // constraint above. Nested one `if`/`else` deeper, the require is no longer a
+  // direct statement of the try block, Metro stops marking it optional, and an
+  // app without netinfo fails to BUILD instead of losing the outage toast.
+  if (typeof require === 'undefined') {
+    unavailableReason = 'this bundle has no CommonJS `require`';
+    return netInfoModule;
+  }
 
-      if (typeof resolved?.addEventListener === 'function') {
-        netInfoModule = resolved as NetInfoLike;
-      } else {
-        unavailableReason = 'the module resolved without an `addEventListener` export';
-      }
+  try {
+    // netinfo exposes `addEventListener` both as a named export and on its
+    // default export; which one comes back depends on whether the bundler
+    // resolved the CommonJS build or the ESM/source entry.
+    const loaded = require('@react-native-community/netinfo') as
+      | (Partial<NetInfoLike> & { default?: Partial<NetInfoLike> })
+      | null
+      | undefined;
+    const resolved = typeof loaded?.addEventListener === 'function' ? loaded : loaded?.default;
+
+    if (typeof resolved?.addEventListener === 'function') {
+      netInfoModule = resolved as NetInfoLike;
+    } else {
+      unavailableReason = 'the module resolved without an `addEventListener` export';
     }
   } catch (error) {
     unavailableReason = error instanceof Error ? error.message : String(error);

@@ -13,8 +13,14 @@ import {
 // Keyboard handling — only on native platforms. On web, keyboard events are
 // handled by the browser (and the web build resolves to `index.web.tsx`, which
 // never imports this module). `react-native-keyboard-controller` is an OPTIONAL
-// dependency: it is lazily `require`d below and everything no-ops when it is
-// absent (or on web).
+// dependency, loaded below through the shape Metro collects as an optional
+// dependency: a `require()` of a STRING LITERAL as a direct statement of a `try`
+// block — the real module when it is installed, `null` in the dependency map
+// when it is not, so the failure lands in the `catch` and everything no-ops.
+// The specifier used to be bound to a local `const` first, which also worked
+// (Metro evaluates the constant); the literal is simply the form the rule can be
+// checked as. See `connection-status/netinfo.ts` for the full rule, including
+// the specifier shape that does NOT work.
 const noopKeyboardHandler = (_handlers: Record<string, (e: { height: number }) => void>, _deps: unknown[]) => {};
 let useKeyboardHandler: (handlers: Record<string, (e: { height: number }) => void>, deps: unknown[]) => void = noopKeyboardHandler;
 
@@ -34,8 +40,7 @@ let KeyboardProvider: React.ComponentType<{ children: React.ReactNode }> = Passt
 
 if (Platform.OS !== 'web' && typeof require !== 'undefined') {
     try {
-        const moduleName = 'react-native-keyboard-controller';
-        const keyboardController = require(moduleName);
+        const keyboardController = require('react-native-keyboard-controller');
         useKeyboardHandler = keyboardController.useKeyboardHandler ?? noopKeyboardHandler;
         KeyboardProvider = keyboardController.KeyboardProvider ?? PassthroughKeyboardProvider;
     } catch {
