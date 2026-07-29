@@ -1,5 +1,14 @@
-import React, { createContext, useContext, useId, useMemo, useState } from 'react';
-import { Pressable, StyleSheet, View } from 'react-native';
+import React, {
+  createContext,
+  useCallback,
+  useContext,
+  useId,
+  useLayoutEffect,
+  useMemo,
+  useRef,
+  useState,
+} from 'react';
+import { Pressable, StyleSheet, View, type ViewStyle } from 'react-native';
 
 import { useTheme } from '../theme/use-theme';
 import { Text } from '../typography';
@@ -7,6 +16,7 @@ import { Backdrop } from '../overlay';
 import { Portal } from '../portal/index.web';
 import { createOverlayZIndex } from '../styles/z-index';
 import { WEB_POSITION_FIXED } from '../styles/web-view-style';
+import { resolveDropdownPlacement } from '../overlay/dropdown-placement';
 import { bloomShadowStyle } from '../design-tokens/shadows';
 import { RadioIndicator } from '../radio-indicator';
 import { useInteractionState } from '../hooks/useInteractionState';
@@ -30,6 +40,8 @@ import type {
 export { useSelectItemContext };
 
 const selectZIndex = createOverlayZIndex();
+const VIEWPORT_GUTTER = 8;
+const SELECT_OFFSET = 6;
 
 // ---------------------------------------------------------------------------
 // Context
@@ -39,6 +51,8 @@ type SelectContextValue = Pick<SelectProps, 'value' | 'onValueChange' | 'disable
   isOpen: boolean;
   open: () => void;
   close: () => void;
+  /** The trigger element, so `SelectContent` can position itself against it. */
+  triggerRef: React.RefObject<unknown>;
 };
 
 const SelectContext = createContext<SelectContextValue | null>(null);
@@ -58,6 +72,7 @@ function useSelectContext(): SelectContextValue {
 
 export function Select({ children, value, onValueChange, disabled }: SelectProps) {
   const [isOpen, setIsOpen] = useState(false);
+  const triggerRef = useRef<unknown>(null);
 
   const ctx = useMemo<SelectContextValue>(
     () => ({
@@ -67,6 +82,7 @@ export function Select({ children, value, onValueChange, disabled }: SelectProps
       isOpen,
       open: () => setIsOpen(true),
       close: () => setIsOpen(false),
+      triggerRef,
     }),
     [value, onValueChange, disabled, isOpen],
   );
@@ -103,6 +119,7 @@ export function SelectTrigger({ children, label }: SelectTriggerProps) {
         pressed: false,
       },
       props: {
+        ref: ctx.triggerRef,
         onPress: ctx.open,
         onFocus,
         onBlur,
@@ -113,6 +130,7 @@ export function SelectTrigger({ children, label }: SelectTriggerProps) {
 
   return (
     <Pressable
+      ref={ctx.triggerRef as React.Ref<View>}
       onPress={ctx.open}
       onFocus={onFocus}
       onBlur={onBlur}
@@ -184,6 +202,58 @@ export function SelectContent<T>({
 }: SelectContentProps<T>) {
   const ctx = useSelectContext();
   const theme = useTheme();
+  const [position, setPosition] = useState<ViewStyle | null>(null);
+  // The mounted dropdown node, as STATE rather than a bare ref: positioning has
+  // to measure it, and `Portal` renders null on its first pass (it resolves its
+  // host in its own layout effect), so the node lands one render after `isOpen`
+  // flips. An effect keyed only on `isOpen` would measure nothing.
+  const [dropdownNode, setDropdownNode] = useState<HTMLElement | null>(null);
+
+  const attachDropdown = useCallback((node: View | null) => {
+    setDropdownNode(node as unknown as HTMLElement | null);
+  }, []);
+
+  // Anchored to the trigger, left edges aligned, and never off-screen: sit below
+  // when it fits, flip above when it doesn't, clamp when neither. Before this the
+  // dropdown had no `top`/`left` at all, so it rendered at the `Portal` root's
+  // origin — the viewport's top-left corner — however far from its trigger.
+  useLayoutEffect(() => {
+    if (!ctx.isOpen || typeof window === 'undefined') return;
+
+    const triggerNode = ctx.triggerRef.current as HTMLElement | null;
+    if (!triggerNode?.getBoundingClientRect || !dropdownNode) return;
+
+    const updatePosition = () => {
+      const rect = triggerNode.getBoundingClientRect();
+      // Measured BEFORE `minWidth` is applied, so the final surface can only be
+      // wider than this — and a wider surface wraps less, so the measured height
+      // is an upper bound. Erring that way flips early in a tie, never late.
+      const surface = dropdownNode.getBoundingClientRect();
+      const width = Math.max(surface.width, rect.width);
+
+      setPosition({
+        position: WEB_POSITION_FIXED,
+        ...resolveDropdownPlacement({
+          anchor: rect,
+          size: { width, height: surface.height },
+          viewport: { width: window.innerWidth, height: window.innerHeight },
+          offset: SELECT_OFFSET,
+          gutter: VIEWPORT_GUTTER,
+          align: 'start',
+        }),
+        minWidth: width,
+      });
+    };
+
+    updatePosition();
+    window.addEventListener('resize', updatePosition);
+    window.addEventListener('scroll', updatePosition, true);
+
+    return () => {
+      window.removeEventListener('resize', updatePosition);
+      window.removeEventListener('scroll', updatePosition, true);
+    };
+  }, [ctx.isOpen, ctx.triggerRef, dropdownNode]);
 
   if (!ctx.isOpen) return null;
 
@@ -195,6 +265,7 @@ export function SelectContent<T>({
         accessibilityLabel="Close selection"
       />
       <View
+        ref={attachDropdown}
         accessibilityRole="list"
         accessibilityLabel={label}
         style={[
@@ -206,6 +277,7 @@ export function SelectContent<T>({
             borderColor: theme.colors.borderLight,
             ...bloomShadowStyle('m'),
           },
+          position,
         ]}
       >
         {items.map((item, index) => (
@@ -222,7 +294,7 @@ export function SelectContent<T>({
 // SelectItem
 // ---------------------------------------------------------------------------
 
-export function SelectItem({ ref, value, children, style }: SelectItemProps) {
+export function SelectItem({ ref, value, label, children, style }: SelectItemProps) {
   const theme = useTheme();
   const ctx = useSelectContext();
   const {
@@ -243,6 +315,10 @@ export function SelectItem({ ref, value, children, style }: SelectItemProps) {
     <Pressable
       ref={ref}
       accessibilityRole="radio"
+      // The native fork has always applied this; web declared `label` and then
+      // dropped it, leaving every option a `role="radio"` with no accessible
+      // name for a screen reader to announce.
+      accessibilityLabel={label}
       accessibilityState={{ checked: isSelected }}
       onPress={() => {
         ctx.onValueChange?.(value);
@@ -344,7 +420,14 @@ const styles = StyleSheet.create({
     pointerEvents: 'auto',
   },
   dropdown: {
-    position: 'absolute',
+    // Fixed from the outset, not only once positioned: the `Portal` root is a
+    // block container, so a static child would stretch to the full viewport
+    // width and the pre-position measurement would under-read the height (less
+    // wrapping at a width the surface never actually has). A fixed box
+    // shrink-wraps to the same width it ends up with.
+    position: WEB_POSITION_FIXED,
+    top: 0,
+    left: 0,
     zIndex: selectZIndex.surface,
     borderRadius: 8,
     borderWidth: 1,

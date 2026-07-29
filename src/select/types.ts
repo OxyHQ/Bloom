@@ -23,6 +23,12 @@ export type TriggerChildProps = {
     pressed: boolean;
   };
   props: {
+    /**
+     * Attach this to the element the trigger actually renders. On web the
+     * dropdown is positioned against its measured rect; a trigger that drops
+     * it falls back to the viewport's top-left corner.
+     */
+    ref?: React.Ref<unknown>;
     onPress: () => void;
     onFocus: () => void;
     onBlur: () => void;
