@@ -9,6 +9,7 @@ import React, {
   useCallback,
   useContext,
   useEffect,
+  useLayoutEffect,
   useMemo,
   useRef,
   useState,
@@ -22,6 +23,10 @@ import { Portal } from '../portal/index.web';
 import { useInteractionState } from '../hooks/useInteractionState';
 import { createOverlayZIndex } from '../styles/z-index';
 import { WEB_POSITION_FIXED } from '../styles/web-view-style';
+import {
+  resolveDropdownPlacement,
+  type DropdownPlacement,
+} from '../overlay/dropdown-placement';
 import { bloomShadowStyle } from '../design-tokens/shadows';
 import { ItemCtx, useItemContext } from './context';
 import type {
@@ -36,6 +41,7 @@ import type {
 } from './types';
 
 const contextMenuZIndex = createOverlayZIndex();
+const VIEWPORT_GUTTER = 8;
 
 // ---------------------------------------------------------------------------
 // Web-specific context (extends base with position)
@@ -156,6 +162,38 @@ export function ContextMenuContent({ children, style }: ContextMenuContentProps)
   const ctx = useWebContextMenuContext();
   const theme = useTheme();
   const { isOpen, close, position } = ctx;
+  // The mounted menu node, as STATE rather than a bare ref: placement has to
+  // measure it, and `Portal` renders null on its first pass (it resolves its
+  // host in its own layout effect), so the node lands one render after the
+  // menu opens. An effect keyed only on `position` would measure nothing.
+  const [menuNode, setMenuNode] = useState<HTMLElement | null>(null);
+  const [placement, setPlacement] = useState<DropdownPlacement | null>(null);
+
+  const attachMenu = useCallback((node: View | null) => {
+    setMenuNode(node as unknown as HTMLElement | null);
+  }, []);
+
+  // The right-click point is a zero-area anchor, so the surface sits below-right
+  // of the cursor when it fits, flips above when it doesn't, and clamps into the
+  // viewport when neither fits. Without this a menu opened near an edge hung off
+  // the fold with its rows unreachable.
+  useLayoutEffect(() => {
+    if (!position || !menuNode || typeof window === 'undefined') {
+      setPlacement(null);
+      return;
+    }
+    const surface = menuNode.getBoundingClientRect();
+    setPlacement(
+      resolveDropdownPlacement({
+        anchor: { top: position.y, bottom: position.y, left: position.x, right: position.x },
+        size: { width: surface.width, height: surface.height },
+        viewport: { width: window.innerWidth, height: window.innerHeight },
+        offset: 0,
+        gutter: VIEWPORT_GUTTER,
+        align: 'start',
+      }),
+    );
+  }, [position, menuNode]);
 
   useEffect(() => {
     if (!isOpen || typeof document === 'undefined') return;
@@ -179,11 +217,14 @@ export function ContextMenuContent({ children, style }: ContextMenuContentProps)
         accessibilityLabel="Close context menu"
       />
       <View
+        ref={attachMenu}
         style={[
           styles.dropdown,
           {
-            top: position.y,
-            left: position.x,
+            // The raw click point is the pre-measurement anchor; the layout
+            // effect above replaces it before the browser paints.
+            top: placement?.top ?? position.y,
+            left: placement?.left ?? position.x,
             backgroundColor: theme.isDark
               ? theme.colors.backgroundSecondary
               : theme.colors.background,

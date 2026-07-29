@@ -18,6 +18,7 @@ import type { DialogControlProps } from '../dialog/types';
 import { Portal } from '../portal/index.web';
 import { createDropdownZIndex } from '../styles/z-index';
 import { WEB_POSITION_FIXED } from '../styles/web-view-style';
+import { resolveDropdownPlacement } from '../overlay/dropdown-placement';
 import { bloomShadowStyle } from '../design-tokens/shadows';
 import {
   MenuContext,
@@ -198,6 +199,22 @@ export function MenuContent({
   const theme = useTheme();
   const context = useMenuContext();
   const [position, setPosition] = useState<ViewStyle | null>(null);
+  // The mounted dropdown node, as STATE rather than a bare ref: positioning has
+  // to measure it, and `Portal` renders null on its first pass (it resolves its
+  // host in its own layout effect), so the node lands one render after
+  // `isOpen` flips. An effect keyed only on `isOpen` would measure nothing.
+  const [dropdownNode, setDropdownNode] = useState<HTMLElement | null>(null);
+
+  const attachDropdown = useCallback(
+    (node: View | null) => {
+      // The shared ref stays in sync — `Menu`'s outside-pointerdown check reads it.
+      if (context.dropdownRef) {
+        context.dropdownRef.current = node;
+      }
+      setDropdownNode(node as unknown as HTMLElement | null);
+    },
+    [context.dropdownRef],
+  );
 
   useLayoutEffect(() => {
     if (!context.isOpen || typeof window === 'undefined') {
@@ -205,27 +222,28 @@ export function MenuContent({
     }
 
     const triggerNode = context.triggerRef?.current as HTMLElement | null;
-    if (!triggerNode?.getBoundingClientRect) {
+    if (!triggerNode?.getBoundingClientRect || !dropdownNode) {
       return;
     }
 
     const updatePosition = () => {
       const rect = triggerNode.getBoundingClientRect();
-      const width = Math.max(180, rect.width);
-      const availableRight = window.innerWidth - VIEWPORT_GUTTER;
-      const left = Math.min(
-        Math.max(VIEWPORT_GUTTER, rect.right - width),
-        Math.max(VIEWPORT_GUTTER, availableRight - width),
-      );
-      const top = Math.min(
-        rect.bottom + MENU_OFFSET,
-        Math.max(VIEWPORT_GUTTER, window.innerHeight - VIEWPORT_GUTTER),
-      );
+      // Measured BEFORE `minWidth` is applied, so the final surface can only be
+      // wider than this — and a wider surface wraps less, so the measured height
+      // is an upper bound. Erring that way flips early in a tie, never late.
+      const surface = dropdownNode.getBoundingClientRect();
+      const width = Math.max(surface.width, rect.width);
 
       setPosition({
         position: WEB_POSITION_FIXED,
-        top,
-        left,
+        ...resolveDropdownPlacement({
+          anchor: rect,
+          size: { width, height: surface.height },
+          viewport: { width: window.innerWidth, height: window.innerHeight },
+          offset: MENU_OFFSET,
+          gutter: VIEWPORT_GUTTER,
+          align: 'end',
+        }),
         right: undefined,
         bottom: undefined,
         minWidth: width,
@@ -240,7 +258,7 @@ export function MenuContent({
       window.removeEventListener('resize', updatePosition);
       window.removeEventListener('scroll', updatePosition, true);
     };
-  }, [context.isOpen, context.triggerRef]);
+  }, [context.isOpen, context.triggerRef, dropdownNode]);
 
   if (!context.isOpen) {
     return null;
@@ -249,7 +267,7 @@ export function MenuContent({
   return (
     <Portal>
       <View
-        ref={context.dropdownRef as React.Ref<View>}
+        ref={attachDropdown}
         style={[
           styles.dropdown,
           {
@@ -390,6 +408,14 @@ const styles = StyleSheet.create({
     zIndex: menuZIndex.root,
   },
   dropdown: {
+    // Fixed from the outset, not only once positioned: the `Portal` root is a
+    // block container, so a static child would stretch to the full viewport
+    // width and the pre-position measurement would under-read the height (less
+    // wrapping at a width the surface never actually has). A fixed box
+    // shrink-wraps to the same width it ends up with.
+    position: WEB_POSITION_FIXED,
+    top: 0,
+    left: 0,
     borderRadius: 8,
     padding: 4,
     borderWidth: 1,
