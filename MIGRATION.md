@@ -1,5 +1,39 @@
 # Migration Guide
 
+## 0.69.0 — haptics, the spinner and native colour scoping were dead on device, and now work
+
+**No action required. These are fixes to Bloom internals, and things that silently
+did nothing on native start working.**
+
+`lazyRequire()` passed its module specifier as a **variable**. Metro cannot resolve
+that: it collects no dependency at all and rewrites the call into a thrower, which
+`lazyRequire`'s own `catch` then swallowed, returning `null` forever. Verified by
+running Metro 0.83.5's own `collectDependencies` on the real shape. It only ever
+worked under jest — CJS with a genuine dynamic `require` — which is exactly why the
+suites covering these paths were green while the shipped behaviour was dead.
+
+What was inert on native, and now is not:
+
+| Surface | Before | Now |
+|---|---|---|
+| `useHaptics` / every Bloom haptic | never fired | fires |
+| `Loading` spinner | always fell back to `ActivityIndicator` | renders the real spinner |
+| `Avatar` squircle clip, `AvatarRing` | fell back to a circle | render as designed |
+| `AnimatedCheck` | fell back to a Unicode `✓` | renders as designed |
+| `BloomColorScope` | could not scope NativeWind classes | scopes them |
+
+Because `react-native-svg` is a **required** peer, its three fallbacks were
+unreachable by design and have been removed rather than kept as dead branches.
+`src/utils/lazy-require.ts` is deleted, with no shim — if you imported it (it was
+never exported from any subpath), inline a `try { require('<string literal>') }
+catch` instead.
+
+**If you write this pattern yourself, note the shape Metro actually requires:** the
+`require()` must take a **string literal** AND be a **direct statement of the `try`
+block**. Nesting it one `if` deeper — a natural place to put a `typeof require`
+guard — makes Metro collect it as a HARD dependency, and an app without the optional
+peer fails to build. Hoist the guard outside the `try`.
+
 ## 0.68.0 — your `tsc` now reads Bloom's built declarations, not its source
 
 **No action required. This removes errors; it does not add any.**
