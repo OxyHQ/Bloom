@@ -343,7 +343,7 @@ describe('optional peers are loaded through Metro’s optional-dependency form',
     expect(notOptional).toEqual([]);
   });
 
-  it('declares every package it loads through a require boundary', () => {
+  it('declares every package it loads at runtime, by import OR require', () => {
     // The inverse direction, and the one that matters: every other assertion in
     // this file starts from `peerDependenciesMeta` and asks whether the code
     // matches it, so by construction none of them can see a package the manifest
@@ -351,26 +351,45 @@ describe('optional peers are loaded through Metro’s optional-dependency form',
     // for exactly that reason — loaded, degraded correctly, and invisible to a
     // consumer, who had no range to install against and no way to learn the
     // integration existed.
+    //
+    // BOTH vectors are scanned. Checking only `require` would leave the more
+    // common one open: a plain `import` of an undeclared package is the ordinary
+    // way one arrives, it resolves fine as long as some transitive dependency
+    // happens to hoist it into `node_modules`, and it disappears the moment that
+    // unrelated package drops it. Verified by mutation in both directions — a
+    // require-only scan passes an undeclared static import.
     const declared = new Set([
       ...Object.keys(PKG.peerDependencies),
       ...Object.keys(PKG.dependencies ?? {}),
     ]);
 
+    /** `react-dom/client` -> `react-dom`, `@scope/pkg/sub` -> `@scope/pkg`. */
+    function packageOf(specifier: string): string | null {
+      if (specifier.startsWith('.') || specifier.startsWith('/')) return null;
+      const parts = specifier.split('/');
+      return specifier.startsWith('@') ? parts.slice(0, 2).join('/') : (parts[0] as string);
+    }
+
     const undeclared = new Set<string>();
     for (const file of files) {
-      for (const { specifier, line } of requireCalls(parse(file))) {
-        if (specifier === null || specifier.startsWith('.')) continue;
-        const pkg = specifier.startsWith('@')
-          ? specifier.split('/').slice(0, 2).join('/')
-          : (specifier.split('/')[0] as string);
-        if (declared.has(pkg)) continue;
-        if (VARIABLE_REQUIRE_ALLOWED.some((entry) => file.endsWith(entry.file))) continue;
+      const source = parse(file);
+      const relative = file.slice(SRC.length + 1);
+
+      const check = (specifier: string | null, line: number, verb: string): void => {
+        // A non-literal specifier names no package to check; the shape rule for
+        // those is the separate `VARIABLE_REQUIRE_ALLOWED` scan below.
+        if (specifier === null) return;
+        const pkg = packageOf(specifier);
+        if (pkg === null || declared.has(pkg)) return;
         undeclared.add(
-          `${file.slice(SRC.length + 1)}:${line}  requires '${pkg}', which appears in neither ` +
-            'dependencies nor peerDependencies — a consumer cannot know the integration exists ' +
-            'or which versions satisfy it',
+          `${relative}:${line}  ${verb} '${pkg}', which appears in neither dependencies nor ` +
+            'peerDependencies — a consumer cannot know the integration exists or which ' +
+            'versions satisfy it',
         );
-      }
+      };
+
+      for (const { specifier, line } of requireCalls(source)) check(specifier, line, 'requires');
+      for (const { specifier, line } of valueImportSpecifiers(source)) check(specifier, line, 'imports');
     }
 
     expect([...undeclared].sort()).toEqual([]);
