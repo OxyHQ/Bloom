@@ -1,6 +1,6 @@
 {
   "name": "@oxyhq/bloom",
-  "version": "0.69.0",
+  "version": "0.69.1",
   "description": "Bloom UI — Oxy ecosystem component library for React Native + Expo + Web",
   "main": "lib/commonjs/index.js",
   "module": "lib/module/index.js",
@@ -1490,6 +1490,7 @@
     "@react-native-community/netinfo": "^12.0.1"
   },
   "peerDependencies": {
+    "@react-native-community/netinfo": ">=11.1.0",
     "expo": "*",
     "expo-blur": "*",
     "expo-font": "*",
@@ -1498,18 +1499,21 @@
     "expo-image": "*",
     "expo-router": ">=3.0.0",
     "expo-symbols": ">=0.4.5",
+    "nativewind": ">=5.0.0",
     "react": ">=18.0.0",
     "react-dom": ">=18.0.0",
     "react-native": ">=0.73.0",
     "react-native-gesture-handler": ">=2.16.1",
+    "react-native-keyboard-controller": ">=1.11.4",
     "react-native-reanimated": ">=3.13.0",
     "react-native-safe-area-context": ">=5.0.0",
     "react-native-screens": ">=3.16.0",
-    "react-native-svg": ">=13.0.0",
-    "nativewind": ">=5.0.0",
-    "@react-native-community/netinfo": ">=11.1.0"
+    "react-native-svg": ">=13.0.0"
   },
   "peerDependenciesMeta": {
+    "@react-native-community/netinfo": {
+      "optional": true
+    },
     "expo": {
       "optional": true
     },
@@ -1522,13 +1526,13 @@
     "expo-router": {
       "optional": true
     },
-    "react-dom": {
-      "optional": true
-    },
     "nativewind": {
       "optional": true
     },
-    "@react-native-community/netinfo": {
+    "react-dom": {
+      "optional": true
+    },
+    "react-native-keyboard-controller": {
       "optional": true
     }
   },

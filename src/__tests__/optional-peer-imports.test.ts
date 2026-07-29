@@ -50,6 +50,7 @@ import ts from 'typescript';
 
 const SRC = join(__dirname, '..');
 const PKG = JSON.parse(readFileSync(join(SRC, '..', 'package.json'), 'utf8')) as {
+  dependencies?: Record<string, string>;
   peerDependencies: Record<string, string>;
   peerDependenciesMeta: Record<string, { optional?: boolean }>;
 };
@@ -94,6 +95,7 @@ const DYNAMIC_BOUNDARIES: { peer: string; file: string }[] = [
   { peer: 'expo-haptics', file: 'hooks/haptics-module.ts' },
   { peer: 'nativewind', file: 'theme/color-scope/style-builder.ts' },
   { peer: 'expo-router', file: 'theme/adaptive-colors.ts' },
+  { peer: 'react-native-keyboard-controller', file: 'bottom-sheet/index.tsx' },
 ];
 
 /**
@@ -339,6 +341,39 @@ describe('optional peers are loaded through Metro’s optional-dependency form',
       );
 
     expect(notOptional).toEqual([]);
+  });
+
+  it('declares every package it loads through a require boundary', () => {
+    // The inverse direction, and the one that matters: every other assertion in
+    // this file starts from `peerDependenciesMeta` and asks whether the code
+    // matches it, so by construction none of them can see a package the manifest
+    // never mentions. `react-native-keyboard-controller` sat in `bottom-sheet`
+    // for exactly that reason — loaded, degraded correctly, and invisible to a
+    // consumer, who had no range to install against and no way to learn the
+    // integration existed.
+    const declared = new Set([
+      ...Object.keys(PKG.peerDependencies),
+      ...Object.keys(PKG.dependencies ?? {}),
+    ]);
+
+    const undeclared = new Set<string>();
+    for (const file of files) {
+      for (const { specifier, line } of requireCalls(parse(file))) {
+        if (specifier === null || specifier.startsWith('.')) continue;
+        const pkg = specifier.startsWith('@')
+          ? specifier.split('/').slice(0, 2).join('/')
+          : (specifier.split('/')[0] as string);
+        if (declared.has(pkg)) continue;
+        if (VARIABLE_REQUIRE_ALLOWED.some((entry) => file.endsWith(entry.file))) continue;
+        undeclared.add(
+          `${file.slice(SRC.length + 1)}:${line}  requires '${pkg}', which appears in neither ` +
+            'dependencies nor peerDependencies — a consumer cannot know the integration exists ' +
+            'or which versions satisfy it',
+        );
+      }
+    }
+
+    expect([...undeclared].sort()).toEqual([]);
   });
 
   it('loads each optional peer from exactly the documented boundary file', () => {
