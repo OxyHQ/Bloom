@@ -358,7 +358,10 @@ const styles = StyleSheet.create({
     borderRadius: 6,
     overflow: 'hidden',
     paddingHorizontal: 10,
-    minHeight: 32,
+    // Matches the native sheet row (`index.tsx`). Bloom's web build is what
+    // renders on touch tablets, where this dropdown — not the sheet — is the
+    // menu, so the row carries the same 44dp target on both platforms.
+    minHeight: 44,
   },
   itemText: {
     flex: 1,

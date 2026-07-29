@@ -100,6 +100,11 @@ export function SheetShell({
       detached
       backdropOpacity={0.7}
       style={sheetStyle}
+      // `SheetShell` draws its own PRESSABLE handle below (tap to dismiss);
+      // `BottomSheet`'s built-in one is decorative and defaults to on, so
+      // leaving it enabled painted two pills 2dp apart in every Bloom sheet
+      // menu, select, popover and context menu.
+      showHandle={false}
     >
       <Context.Provider value={context}>
         <SheetHandle onPress={() => close()} />

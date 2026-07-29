@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import {
   View,
   Text,
@@ -180,8 +180,6 @@ const ZoomableImageGalleryInner = React.forwardRef<ZoomableImageGalleryHandle, Z
   const originScale = useSharedValue(1);
 
   const pagerRef = useRef<ScrollView>(null);
-  // Latch the index the pager must land on once it has mounted + laid out.
-  const pendingIndexRef = useRef(0);
   // Mirror of `activeIndex` readable synchronously from callbacks/worklets
   // (`handleDismiss` runs via `runOnJS` and from `Pressable.onPress`, where the
   // state closure can be stale). Kept in lockstep by `setActiveIndexBoth`.
@@ -360,8 +358,8 @@ const ZoomableImageGalleryInner = React.forwardRef<ZoomableImageGalleryHandle, Z
   ]);
 
   // Reveal the swipeable pager once the open animation has settled. The index it
-  // lands on is held in `pendingIndexRef` (set synchronously in `open`) and
-  // applied in `onPagerLayout`.
+  // lands on is `activeIndexRef` (set synchronously in `open`), seated by the
+  // layout effect below.
   const revealPager = useCallback(() => {
     setPagerReady(true);
   }, []);
@@ -388,7 +386,6 @@ const ZoomableImageGalleryInner = React.forwardRef<ZoomableImageGalleryHandle, Z
         if (r !== undefined) initialRatios[i] = r;
       });
       setPageRatios(initialRatios);
-      pendingIndexRef.current = safeIndex;
 
       // Resolve the opening ratio if it was not yet known, then re-fit.
       if (knownRatio === undefined) {
@@ -595,14 +592,31 @@ const ZoomableImageGalleryInner = React.forwardRef<ZoomableImageGalleryHandle, Z
     [updateIndexFromOffset]
   );
 
-  // When the pager mounts, jump it to the open index without animation so the
-  // swap from the open-image to the pager is seamless.
-  const onPagerLayout = useCallback(() => {
-    const idx = pendingIndexRef.current;
-    if (idx > 0) {
-      pagerRef.current?.scrollTo({ x: idx * SCREEN_WIDTH, animated: false });
-    }
-  }, [SCREEN_WIDTH]);
+  // Re-seat the pager on the CURRENT page, without animation, whenever it mounts
+  // or the page width changes.
+  //
+  // Rotation is the case that needs this: the pager's retained scroll offset is
+  // in PIXELS, so when `SCREEN_WIDTH` changes the page widths change underneath
+  // a stale offset and the pager lands between two pages — showing the wrong
+  // image while the counter and dots still point at the right one. Nothing else
+  // corrects it: `contentOffset` below is only an initial value, and `pageTo`
+  // runs only on an explicit page change. Reading the index from
+  // `activeIndexRef` (rather than the index the viewer was opened at) is what
+  // makes it land on the page the user is actually looking at.
+  //
+  // This is a layout EFFECT rather than the pager's `onLayout` on purpose. The
+  // pages are sized from `SCREEN_WIDTH`, so the scroll offset is only meaningful
+  // once React has committed a render carrying the new width. `onLayout` fires
+  // from a different signal (the pager's own frame) than the one that resizes
+  // the pages (`useWindowDimensions`), and the two are not ordered against each
+  // other — so an `onLayout` handler can run holding the previous `SCREEN_WIDTH`
+  // and re-seat the pager to the offset it already had. Keying the effect on
+  // `SCREEN_WIDTH` makes the two agree by construction, and running it before
+  // paint keeps the corrected offset from being visible as a jump.
+  useLayoutEffect(() => {
+    if (!pagerReady) return;
+    pagerRef.current?.scrollTo({ x: activeIndexRef.current * SCREEN_WIDTH, y: 0, animated: false });
+  }, [pagerReady, SCREEN_WIDTH]);
 
   // Double-tap toggles zoom: reset when already zoomed, else zoom to the tapped
   // point (biased toward it, clamped near the image center). `x`/`y` are local
@@ -834,8 +848,7 @@ const ZoomableImageGalleryInner = React.forwardRef<ZoomableImageGalleryHandle, Z
                 // instead of paging away from it.
                 scrollEnabled={!isZoomed}
                 showsHorizontalScrollIndicator={false}
-                contentOffset={{ x: pendingIndexRef.current * SCREEN_WIDTH, y: 0 }}
-                onLayout={onPagerLayout}
+                contentOffset={{ x: activeIndexRef.current * SCREEN_WIDTH, y: 0 }}
                 onMomentumScrollEnd={onPagerScroll}
                 {...(Platform.OS === 'web' ? { onScroll: onPagerScroll } : {})}
                 scrollEventThrottle={16}
