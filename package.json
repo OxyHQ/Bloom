@@ -13,7 +13,10 @@
   },
   "exports": {
     ".": {
-      "react-native": "./src/index.ts",
+      "react-native": {
+        "types": "./lib/typescript/module/index.d.ts",
+        "default": "./src/index.ts"
+      },
       "browser": {
         "types": "./lib/typescript/module/index.web.d.ts",
         "import": "./lib/module/index.web.js",
@@ -29,7 +32,10 @@
       }
     },
     "./provider": {
-      "react-native": "./src/provider/index.tsx",
+      "react-native": {
+        "types": "./lib/typescript/module/provider/index.d.ts",
+        "default": "./src/provider/index.tsx"
+      },
       "import": {
         "types": "./lib/typescript/module/provider/index.d.ts",
         "default": "./lib/module/provider/index.js"
@@ -40,7 +46,10 @@
       }
     },
     "./surfaces": {
-      "react-native": "./src/surfaces/index.ts",
+      "react-native": {
+        "types": "./lib/typescript/module/surfaces/index.d.ts",
+        "default": "./src/surfaces/index.ts"
+      },
       "browser": {
         "types": "./lib/typescript/module/surfaces/index.web.d.ts",
         "import": "./lib/module/surfaces/index.web.js",
@@ -56,7 +65,10 @@
       }
     },
     "./image-resolver": {
-      "react-native": "./src/image-resolver/index.ts",
+      "react-native": {
+        "types": "./lib/typescript/module/image-resolver/index.d.ts",
+        "default": "./src/image-resolver/index.ts"
+      },
       "import": {
         "types": "./lib/typescript/module/image-resolver/index.d.ts",
         "default": "./lib/module/image-resolver/index.js"
@@ -67,7 +79,10 @@
       }
     },
     "./image-aspect-ratio-cache": {
-      "react-native": "./src/image-aspect-ratio-cache/index.ts",
+      "react-native": {
+        "types": "./lib/typescript/module/image-aspect-ratio-cache/index.d.ts",
+        "default": "./src/image-aspect-ratio-cache/index.ts"
+      },
       "import": {
         "types": "./lib/typescript/module/image-aspect-ratio-cache/index.d.ts",
         "default": "./lib/module/image-aspect-ratio-cache/index.js"
@@ -78,7 +93,10 @@
       }
     },
     "./theme": {
-      "react-native": "./src/theme/index.ts",
+      "react-native": {
+        "types": "./lib/typescript/module/theme/index.d.ts",
+        "default": "./src/theme/index.ts"
+      },
       "import": {
         "types": "./lib/typescript/module/theme/index.d.ts",
         "default": "./lib/module/theme/index.js"
@@ -89,7 +107,10 @@
       }
     },
     "./color-presets": {
-      "react-native": "./src/theme/color-presets.ts",
+      "react-native": {
+        "types": "./lib/typescript/module/theme/color-presets.d.ts",
+        "default": "./src/theme/color-presets.ts"
+      },
       "import": {
         "types": "./lib/typescript/module/theme/color-presets.d.ts",
         "default": "./lib/module/theme/color-presets.js"
@@ -100,7 +121,10 @@
       }
     },
     "./preset-vars": {
-      "react-native": "./src/theme/preset-vars.ts",
+      "react-native": {
+        "types": "./lib/typescript/module/theme/preset-vars.d.ts",
+        "default": "./src/theme/preset-vars.ts"
+      },
       "import": {
         "types": "./lib/typescript/module/theme/preset-vars.d.ts",
         "default": "./lib/module/theme/preset-vars.js"
@@ -111,7 +135,10 @@
       }
     },
     "./design-tokens": {
-      "react-native": "./src/design-tokens/index.ts",
+      "react-native": {
+        "types": "./lib/typescript/module/design-tokens/index.d.ts",
+        "default": "./src/design-tokens/index.ts"
+      },
       "import": {
         "types": "./lib/typescript/module/design-tokens/index.d.ts",
         "default": "./lib/module/design-tokens/index.js"
@@ -122,7 +149,10 @@
       }
     },
     "./tailwind-preset": {
-      "react-native": "./src/design-tokens/tailwind-preset.ts",
+      "react-native": {
+        "types": "./lib/typescript/module/design-tokens/tailwind-preset.d.ts",
+        "default": "./src/design-tokens/tailwind-preset.ts"
+      },
       "import": {
         "types": "./lib/typescript/module/design-tokens/tailwind-preset.d.ts",
         "default": "./lib/module/design-tokens/tailwind-preset.js"
@@ -133,7 +163,10 @@
       }
     },
     "./portal": {
-      "react-native": "./src/portal/index.tsx",
+      "react-native": {
+        "types": "./lib/typescript/module/portal/index.d.ts",
+        "default": "./src/portal/index.tsx"
+      },
       "browser": {
         "types": "./lib/typescript/module/portal/index.web.d.ts",
         "import": "./lib/module/portal/index.web.js",
@@ -149,7 +182,10 @@
       }
     },
     "./connection-status": {
-      "react-native": "./src/connection-status/index.tsx",
+      "react-native": {
+        "types": "./lib/typescript/module/connection-status/index.d.ts",
+        "default": "./src/connection-status/index.tsx"
+      },
       "browser": {
         "types": "./lib/typescript/module/connection-status/index.web.d.ts",
         "import": "./lib/module/connection-status/index.web.js",
@@ -165,7 +201,10 @@
       }
     },
     "./overlay": {
-      "react-native": "./src/overlay/index.tsx",
+      "react-native": {
+        "types": "./lib/typescript/module/overlay/index.d.ts",
+        "default": "./src/overlay/index.tsx"
+      },
       "import": {
         "types": "./lib/typescript/module/overlay/index.d.ts",
         "default": "./lib/module/overlay/index.js"
@@ -176,7 +215,10 @@
       }
     },
     "./dialog": {
-      "react-native": "./src/dialog/index.ts",
+      "react-native": {
+        "types": "./lib/typescript/module/dialog/index.d.ts",
+        "default": "./src/dialog/index.ts"
+      },
       "browser": {
         "types": "./lib/typescript/module/dialog/index.web.d.ts",
         "import": "./lib/module/dialog/index.web.js",
@@ -192,7 +234,10 @@
       }
     },
     "./button": {
-      "react-native": "./src/button/index.ts",
+      "react-native": {
+        "types": "./lib/typescript/module/button/index.d.ts",
+        "default": "./src/button/index.ts"
+      },
       "browser": {
         "types": "./lib/typescript/module/button/index.web.d.ts",
         "import": "./lib/module/button/index.web.js",
@@ -208,7 +253,10 @@
       }
     },
     "./fab": {
-      "react-native": "./src/fab/index.ts",
+      "react-native": {
+        "types": "./lib/typescript/module/fab/index.d.ts",
+        "default": "./src/fab/index.ts"
+      },
       "browser": {
         "types": "./lib/typescript/module/fab/index.web.d.ts",
         "import": "./lib/module/fab/index.web.js",
@@ -224,7 +272,10 @@
       }
     },
     "./frosted-icon-button": {
-      "react-native": "./src/frosted-icon-button/index.ts",
+      "react-native": {
+        "types": "./lib/typescript/module/frosted-icon-button/index.d.ts",
+        "default": "./src/frosted-icon-button/index.ts"
+      },
       "browser": {
         "types": "./lib/typescript/module/frosted-icon-button/index.web.d.ts",
         "import": "./lib/module/frosted-icon-button/index.web.js",
@@ -240,7 +291,10 @@
       }
     },
     "./grouped-buttons": {
-      "react-native": "./src/grouped-buttons/index.ts",
+      "react-native": {
+        "types": "./lib/typescript/module/grouped-buttons/index.d.ts",
+        "default": "./src/grouped-buttons/index.ts"
+      },
       "import": {
         "types": "./lib/typescript/module/grouped-buttons/index.d.ts",
         "default": "./lib/module/grouped-buttons/index.js"
@@ -251,7 +305,10 @@
       }
     },
     "./divider": {
-      "react-native": "./src/divider/index.ts",
+      "react-native": {
+        "types": "./lib/typescript/module/divider/index.d.ts",
+        "default": "./src/divider/index.ts"
+      },
       "import": {
         "types": "./lib/typescript/module/divider/index.d.ts",
         "default": "./lib/module/divider/index.js"
@@ -262,7 +319,10 @@
       }
     },
     "./radio-indicator": {
-      "react-native": "./src/radio-indicator/index.ts",
+      "react-native": {
+        "types": "./lib/typescript/module/radio-indicator/index.d.ts",
+        "default": "./src/radio-indicator/index.ts"
+      },
       "import": {
         "types": "./lib/typescript/module/radio-indicator/index.d.ts",
         "default": "./lib/module/radio-indicator/index.js"
@@ -273,7 +333,10 @@
       }
     },
     "./collapsible": {
-      "react-native": "./src/collapsible/index.ts",
+      "react-native": {
+        "types": "./lib/typescript/module/collapsible/index.d.ts",
+        "default": "./src/collapsible/index.ts"
+      },
       "import": {
         "types": "./lib/typescript/module/collapsible/index.d.ts",
         "default": "./lib/module/collapsible/index.js"
@@ -284,7 +347,10 @@
       }
     },
     "./error-boundary": {
-      "react-native": "./src/error-boundary/index.ts",
+      "react-native": {
+        "types": "./lib/typescript/module/error-boundary/index.d.ts",
+        "default": "./src/error-boundary/index.ts"
+      },
       "import": {
         "types": "./lib/typescript/module/error-boundary/index.d.ts",
         "default": "./lib/module/error-boundary/index.js"
@@ -295,7 +361,10 @@
       }
     },
     "./avatar": {
-      "react-native": "./src/avatar/index.ts",
+      "react-native": {
+        "types": "./lib/typescript/module/avatar/index.d.ts",
+        "default": "./src/avatar/index.ts"
+      },
       "import": {
         "types": "./lib/typescript/module/avatar/index.d.ts",
         "default": "./lib/module/avatar/index.js"
@@ -306,7 +375,10 @@
       }
     },
     "./avatar-group": {
-      "react-native": "./src/avatar-group/index.ts",
+      "react-native": {
+        "types": "./lib/typescript/module/avatar-group/index.d.ts",
+        "default": "./src/avatar-group/index.ts"
+      },
       "browser": {
         "types": "./lib/typescript/module/avatar-group/index.web.d.ts",
         "import": "./lib/module/avatar-group/index.web.js",
@@ -322,7 +394,10 @@
       }
     },
     "./user-hover-card": {
-      "react-native": "./src/user-hover-card/index.ts",
+      "react-native": {
+        "types": "./lib/typescript/module/user-hover-card/index.d.ts",
+        "default": "./src/user-hover-card/index.ts"
+      },
       "import": {
         "types": "./lib/typescript/module/user-hover-card/index.d.ts",
         "default": "./lib/module/user-hover-card/index.js"
@@ -333,7 +408,10 @@
       }
     },
     "./loading": {
-      "react-native": "./src/loading/index.ts",
+      "react-native": {
+        "types": "./lib/typescript/module/loading/index.d.ts",
+        "default": "./src/loading/index.ts"
+      },
       "browser": {
         "types": "./lib/typescript/module/loading/index.web.d.ts",
         "import": "./lib/module/loading/index.web.js",
@@ -349,7 +427,10 @@
       }
     },
     "./switch": {
-      "react-native": "./src/switch/index.ts",
+      "react-native": {
+        "types": "./lib/typescript/module/switch/index.d.ts",
+        "default": "./src/switch/index.ts"
+      },
       "import": {
         "types": "./lib/typescript/module/switch/index.d.ts",
         "default": "./lib/module/switch/index.js"
@@ -360,7 +441,10 @@
       }
     },
     "./prompt-input": {
-      "react-native": "./src/prompt-input/index.ts",
+      "react-native": {
+        "types": "./lib/typescript/module/prompt-input/index.d.ts",
+        "default": "./src/prompt-input/index.ts"
+      },
       "import": {
         "types": "./lib/typescript/module/prompt-input/index.d.ts",
         "default": "./lib/module/prompt-input/index.js"
@@ -371,7 +455,10 @@
       }
     },
     "./toast": {
-      "react-native": "./src/toast/index.tsx",
+      "react-native": {
+        "types": "./lib/typescript/module/toast/index.d.ts",
+        "default": "./src/toast/index.tsx"
+      },
       "import": {
         "types": "./lib/typescript/module/toast/index.d.ts",
         "default": "./lib/module/toast/index.js"
@@ -382,7 +469,10 @@
       }
     },
     "./styles": {
-      "react-native": "./src/styles/index.ts",
+      "react-native": {
+        "types": "./lib/typescript/module/styles/index.d.ts",
+        "default": "./src/styles/index.ts"
+      },
       "import": {
         "types": "./lib/typescript/module/styles/index.d.ts",
         "default": "./lib/module/styles/index.js"
@@ -393,7 +483,10 @@
       }
     },
     "./hooks": {
-      "react-native": "./src/hooks/index.ts",
+      "react-native": {
+        "types": "./lib/typescript/module/hooks/index.d.ts",
+        "default": "./src/hooks/index.ts"
+      },
       "import": {
         "types": "./lib/typescript/module/hooks/index.d.ts",
         "default": "./lib/module/hooks/index.js"
@@ -404,7 +497,10 @@
       }
     },
     "./icons": {
-      "react-native": "./src/icons/index.ts",
+      "react-native": {
+        "types": "./lib/typescript/module/icons/index.d.ts",
+        "default": "./src/icons/index.ts"
+      },
       "import": {
         "types": "./lib/typescript/module/icons/index.d.ts",
         "default": "./lib/module/icons/index.js"
@@ -415,7 +511,10 @@
       }
     },
     "./typography": {
-      "react-native": "./src/typography/index.tsx",
+      "react-native": {
+        "types": "./lib/typescript/module/typography/index.d.ts",
+        "default": "./src/typography/index.tsx"
+      },
       "import": {
         "types": "./lib/typescript/module/typography/index.d.ts",
         "default": "./lib/module/typography/index.js"
@@ -426,7 +525,10 @@
       }
     },
     "./skeleton": {
-      "react-native": "./src/skeleton/index.tsx",
+      "react-native": {
+        "types": "./lib/typescript/module/skeleton/index.d.ts",
+        "default": "./src/skeleton/index.tsx"
+      },
       "import": {
         "types": "./lib/typescript/module/skeleton/index.d.ts",
         "default": "./lib/module/skeleton/index.js"
@@ -437,7 +539,10 @@
       }
     },
     "./grid": {
-      "react-native": "./src/grid/index.tsx",
+      "react-native": {
+        "types": "./lib/typescript/module/grid/index.d.ts",
+        "default": "./src/grid/index.tsx"
+      },
       "import": {
         "types": "./lib/typescript/module/grid/index.d.ts",
         "default": "./lib/module/grid/index.js"
@@ -448,7 +553,10 @@
       }
     },
     "./fill": {
-      "react-native": "./src/fill/index.tsx",
+      "react-native": {
+        "types": "./lib/typescript/module/fill/index.d.ts",
+        "default": "./src/fill/index.tsx"
+      },
       "import": {
         "types": "./lib/typescript/module/fill/index.d.ts",
         "default": "./lib/module/fill/index.js"
@@ -459,7 +567,10 @@
       }
     },
     "./media-inset-border": {
-      "react-native": "./src/media-inset-border/index.ts",
+      "react-native": {
+        "types": "./lib/typescript/module/media-inset-border/index.d.ts",
+        "default": "./src/media-inset-border/index.ts"
+      },
       "import": {
         "types": "./lib/typescript/module/media-inset-border/index.d.ts",
         "default": "./lib/module/media-inset-border/index.js"
@@ -470,7 +581,10 @@
       }
     },
     "./zoomable-image-gallery": {
-      "react-native": "./src/zoomable-image-gallery/index.ts",
+      "react-native": {
+        "types": "./lib/typescript/module/zoomable-image-gallery/index.d.ts",
+        "default": "./src/zoomable-image-gallery/index.ts"
+      },
       "import": {
         "types": "./lib/typescript/module/zoomable-image-gallery/index.d.ts",
         "default": "./lib/module/zoomable-image-gallery/index.js"
@@ -481,7 +595,10 @@
       }
     },
     "./pressable-scale": {
-      "react-native": "./src/pressable-scale/index.ts",
+      "react-native": {
+        "types": "./lib/typescript/module/pressable-scale/index.d.ts",
+        "default": "./src/pressable-scale/index.ts"
+      },
       "import": {
         "types": "./lib/typescript/module/pressable-scale/index.d.ts",
         "default": "./lib/module/pressable-scale/index.js"
@@ -492,7 +609,10 @@
       }
     },
     "./pressable-with-hover": {
-      "react-native": "./src/pressable-with-hover/index.ts",
+      "react-native": {
+        "types": "./lib/typescript/module/pressable-with-hover/index.d.ts",
+        "default": "./src/pressable-with-hover/index.ts"
+      },
       "import": {
         "types": "./lib/typescript/module/pressable-with-hover/index.d.ts",
         "default": "./lib/module/pressable-with-hover/index.js"
@@ -503,7 +623,10 @@
       }
     },
     "./subtle-hover": {
-      "react-native": "./src/subtle-hover/index.ts",
+      "react-native": {
+        "types": "./lib/typescript/module/subtle-hover/index.d.ts",
+        "default": "./src/subtle-hover/index.ts"
+      },
       "import": {
         "types": "./lib/typescript/module/subtle-hover/index.d.ts",
         "default": "./lib/module/subtle-hover/index.js"
@@ -514,7 +637,10 @@
       }
     },
     "./motion": {
-      "react-native": "./src/motion/index.ts",
+      "react-native": {
+        "types": "./lib/typescript/module/motion/index.d.ts",
+        "default": "./src/motion/index.ts"
+      },
       "browser": {
         "types": "./lib/typescript/module/motion/index.web.d.ts",
         "import": "./lib/module/motion/index.web.js",
@@ -530,7 +656,10 @@
       }
     },
     "./animated-check": {
-      "react-native": "./src/animated-check/index.ts",
+      "react-native": {
+        "types": "./lib/typescript/module/animated-check/index.d.ts",
+        "default": "./src/animated-check/index.ts"
+      },
       "import": {
         "types": "./lib/typescript/module/animated-check/index.d.ts",
         "default": "./lib/module/animated-check/index.js"
@@ -541,7 +670,10 @@
       }
     },
     "./icon-circle": {
-      "react-native": "./src/icon-circle/index.tsx",
+      "react-native": {
+        "types": "./lib/typescript/module/icon-circle/index.d.ts",
+        "default": "./src/icon-circle/index.tsx"
+      },
       "import": {
         "types": "./lib/typescript/module/icon-circle/index.d.ts",
         "default": "./lib/module/icon-circle/index.js"
@@ -552,7 +684,10 @@
       }
     },
     "./connection-dots": {
-      "react-native": "./src/connection-dots/index.ts",
+      "react-native": {
+        "types": "./lib/typescript/module/connection-dots/index.d.ts",
+        "default": "./src/connection-dots/index.ts"
+      },
       "browser": {
         "types": "./lib/typescript/module/connection-dots/index.web.d.ts",
         "import": "./lib/module/connection-dots/index.web.js",
@@ -568,7 +703,10 @@
       }
     },
     "./composition-bar": {
-      "react-native": "./src/composition-bar/index.ts",
+      "react-native": {
+        "types": "./lib/typescript/module/composition-bar/index.d.ts",
+        "default": "./src/composition-bar/index.ts"
+      },
       "import": {
         "types": "./lib/typescript/module/composition-bar/index.d.ts",
         "default": "./lib/module/composition-bar/index.js"
@@ -579,7 +717,10 @@
       }
     },
     "./dot-grid-meter": {
-      "react-native": "./src/dot-grid-meter/index.ts",
+      "react-native": {
+        "types": "./lib/typescript/module/dot-grid-meter/index.d.ts",
+        "default": "./src/dot-grid-meter/index.ts"
+      },
       "import": {
         "types": "./lib/typescript/module/dot-grid-meter/index.d.ts",
         "default": "./lib/module/dot-grid-meter/index.js"
@@ -590,7 +731,10 @@
       }
     },
     "./stat-bar": {
-      "react-native": "./src/stat-bar/index.ts",
+      "react-native": {
+        "types": "./lib/typescript/module/stat-bar/index.d.ts",
+        "default": "./src/stat-bar/index.ts"
+      },
       "import": {
         "types": "./lib/typescript/module/stat-bar/index.d.ts",
         "default": "./lib/module/stat-bar/index.js"
@@ -601,7 +745,10 @@
       }
     },
     "./activity-heatmap": {
-      "react-native": "./src/activity-heatmap/index.ts",
+      "react-native": {
+        "types": "./lib/typescript/module/activity-heatmap/index.d.ts",
+        "default": "./src/activity-heatmap/index.ts"
+      },
       "import": {
         "types": "./lib/typescript/module/activity-heatmap/index.d.ts",
         "default": "./lib/module/activity-heatmap/index.js"
@@ -612,7 +759,10 @@
       }
     },
     "./profile-card": {
-      "react-native": "./src/profile-card/index.ts",
+      "react-native": {
+        "types": "./lib/typescript/module/profile-card/index.d.ts",
+        "default": "./src/profile-card/index.ts"
+      },
       "import": {
         "types": "./lib/typescript/module/profile-card/index.d.ts",
         "default": "./lib/module/profile-card/index.js"
@@ -623,7 +773,10 @@
       }
     },
     "./benefit-list": {
-      "react-native": "./src/benefit-list/index.tsx",
+      "react-native": {
+        "types": "./lib/typescript/module/benefit-list/index.d.ts",
+        "default": "./src/benefit-list/index.tsx"
+      },
       "import": {
         "types": "./lib/typescript/module/benefit-list/index.d.ts",
         "default": "./lib/module/benefit-list/index.js"
@@ -634,7 +787,10 @@
       }
     },
     "./text-field": {
-      "react-native": "./src/text-field/index.tsx",
+      "react-native": {
+        "types": "./lib/typescript/module/text-field/index.d.ts",
+        "default": "./src/text-field/index.tsx"
+      },
       "import": {
         "types": "./lib/typescript/module/text-field/index.d.ts",
         "default": "./lib/module/text-field/index.js"
@@ -645,7 +801,10 @@
       }
     },
     "./segmented-control": {
-      "react-native": "./src/segmented-control/index.tsx",
+      "react-native": {
+        "types": "./lib/typescript/module/segmented-control/index.d.ts",
+        "default": "./src/segmented-control/index.tsx"
+      },
       "import": {
         "types": "./lib/typescript/module/segmented-control/index.d.ts",
         "default": "./lib/module/segmented-control/index.js"
@@ -656,7 +815,10 @@
       }
     },
     "./search": {
-      "react-native": "./src/search/index.tsx",
+      "react-native": {
+        "types": "./lib/typescript/module/search/index.d.ts",
+        "default": "./src/search/index.tsx"
+      },
       "import": {
         "types": "./lib/typescript/module/search/index.d.ts",
         "default": "./lib/module/search/index.js"
@@ -667,7 +829,10 @@
       }
     },
     "./admonition": {
-      "react-native": "./src/admonition/index.tsx",
+      "react-native": {
+        "types": "./lib/typescript/module/admonition/index.d.ts",
+        "default": "./src/admonition/index.tsx"
+      },
       "import": {
         "types": "./lib/typescript/module/admonition/index.d.ts",
         "default": "./lib/module/admonition/index.js"
@@ -678,7 +843,10 @@
       }
     },
     "./menu": {
-      "react-native": "./src/menu/index.tsx",
+      "react-native": {
+        "types": "./lib/typescript/module/menu/index.d.ts",
+        "default": "./src/menu/index.tsx"
+      },
       "browser": {
         "types": "./lib/typescript/module/menu/index.web.d.ts",
         "import": "./lib/module/menu/index.web.js",
@@ -694,7 +862,10 @@
       }
     },
     "./tooltip": {
-      "react-native": "./src/tooltip/index.tsx",
+      "react-native": {
+        "types": "./lib/typescript/module/tooltip/index.d.ts",
+        "default": "./src/tooltip/index.tsx"
+      },
       "browser": {
         "types": "./lib/typescript/module/tooltip/index.web.d.ts",
         "import": "./lib/module/tooltip/index.web.js",
@@ -710,7 +881,10 @@
       }
     },
     "./select": {
-      "react-native": "./src/select/index.tsx",
+      "react-native": {
+        "types": "./lib/typescript/module/select/index.d.ts",
+        "default": "./src/select/index.tsx"
+      },
       "browser": {
         "types": "./lib/typescript/module/select/index.web.d.ts",
         "import": "./lib/module/select/index.web.js",
@@ -726,7 +900,10 @@
       }
     },
     "./bottom-sheet": {
-      "react-native": "./src/bottom-sheet/index.tsx",
+      "react-native": {
+        "types": "./lib/typescript/module/bottom-sheet/index.d.ts",
+        "default": "./src/bottom-sheet/index.tsx"
+      },
       "browser": {
         "types": "./lib/typescript/module/bottom-sheet/index.web.d.ts",
         "import": "./lib/module/bottom-sheet/index.web.js",
@@ -742,7 +919,10 @@
       }
     },
     "./context-menu": {
-      "react-native": "./src/context-menu/index.tsx",
+      "react-native": {
+        "types": "./lib/typescript/module/context-menu/index.d.ts",
+        "default": "./src/context-menu/index.tsx"
+      },
       "browser": {
         "types": "./lib/typescript/module/context-menu/index.web.d.ts",
         "import": "./lib/module/context-menu/index.web.js",
@@ -758,7 +938,10 @@
       }
     },
     "./popover": {
-      "react-native": "./src/popover/index.tsx",
+      "react-native": {
+        "types": "./lib/typescript/module/popover/index.d.ts",
+        "default": "./src/popover/index.tsx"
+      },
       "browser": {
         "types": "./lib/typescript/module/popover/index.web.d.ts",
         "import": "./lib/module/popover/index.web.js",
@@ -774,7 +957,10 @@
       }
     },
     "./alert-dialog": {
-      "react-native": "./src/alert-dialog/index.ts",
+      "react-native": {
+        "types": "./lib/typescript/module/alert-dialog/index.d.ts",
+        "default": "./src/alert-dialog/index.ts"
+      },
       "browser": {
         "types": "./lib/typescript/module/alert-dialog/index.web.d.ts",
         "import": "./lib/module/alert-dialog/index.web.js",
@@ -790,7 +976,10 @@
       }
     },
     "./combobox": {
-      "react-native": "./src/combobox/index.ts",
+      "react-native": {
+        "types": "./lib/typescript/module/combobox/index.d.ts",
+        "default": "./src/combobox/index.ts"
+      },
       "browser": {
         "types": "./lib/typescript/module/combobox/index.web.d.ts",
         "import": "./lib/module/combobox/index.web.js",
@@ -806,7 +995,10 @@
       }
     },
     "./command": {
-      "react-native": "./src/command/index.ts",
+      "react-native": {
+        "types": "./lib/typescript/module/command/index.d.ts",
+        "default": "./src/command/index.ts"
+      },
       "browser": {
         "types": "./lib/typescript/module/command/index.web.d.ts",
         "import": "./lib/module/command/index.web.js",
@@ -822,7 +1014,10 @@
       }
     },
     "./label": {
-      "react-native": "./src/label/index.ts",
+      "react-native": {
+        "types": "./lib/typescript/module/label/index.d.ts",
+        "default": "./src/label/index.ts"
+      },
       "import": {
         "types": "./lib/typescript/module/label/index.d.ts",
         "default": "./lib/module/label/index.js"
@@ -833,7 +1028,10 @@
       }
     },
     "./kbd": {
-      "react-native": "./src/kbd/index.ts",
+      "react-native": {
+        "types": "./lib/typescript/module/kbd/index.d.ts",
+        "default": "./src/kbd/index.ts"
+      },
       "import": {
         "types": "./lib/typescript/module/kbd/index.d.ts",
         "default": "./lib/module/kbd/index.js"
@@ -844,7 +1042,10 @@
       }
     },
     "./item": {
-      "react-native": "./src/item/index.ts",
+      "react-native": {
+        "types": "./lib/typescript/module/item/index.d.ts",
+        "default": "./src/item/index.ts"
+      },
       "import": {
         "types": "./lib/typescript/module/item/index.d.ts",
         "default": "./lib/module/item/index.js"
@@ -855,7 +1056,10 @@
       }
     },
     "./field": {
-      "react-native": "./src/field/index.ts",
+      "react-native": {
+        "types": "./lib/typescript/module/field/index.d.ts",
+        "default": "./src/field/index.ts"
+      },
       "import": {
         "types": "./lib/typescript/module/field/index.d.ts",
         "default": "./lib/module/field/index.js"
@@ -866,7 +1070,10 @@
       }
     },
     "./input-group": {
-      "react-native": "./src/input-group/index.ts",
+      "react-native": {
+        "types": "./lib/typescript/module/input-group/index.d.ts",
+        "default": "./src/input-group/index.ts"
+      },
       "import": {
         "types": "./lib/typescript/module/input-group/index.d.ts",
         "default": "./lib/module/input-group/index.js"
@@ -877,7 +1084,10 @@
       }
     },
     "./slider": {
-      "react-native": "./src/slider/index.ts",
+      "react-native": {
+        "types": "./lib/typescript/module/slider/index.d.ts",
+        "default": "./src/slider/index.ts"
+      },
       "import": {
         "types": "./lib/typescript/module/slider/index.d.ts",
         "default": "./lib/module/slider/index.js"
@@ -888,7 +1098,10 @@
       }
     },
     "./card": {
-      "react-native": "./src/card/index.ts",
+      "react-native": {
+        "types": "./lib/typescript/module/card/index.d.ts",
+        "default": "./src/card/index.ts"
+      },
       "import": {
         "types": "./lib/typescript/module/card/index.d.ts",
         "default": "./lib/module/card/index.js"
@@ -899,7 +1112,10 @@
       }
     },
     "./badge": {
-      "react-native": "./src/badge/index.ts",
+      "react-native": {
+        "types": "./lib/typescript/module/badge/index.d.ts",
+        "default": "./src/badge/index.ts"
+      },
       "import": {
         "types": "./lib/typescript/module/badge/index.d.ts",
         "default": "./lib/module/badge/index.js"
@@ -910,7 +1126,10 @@
       }
     },
     "./chip": {
-      "react-native": "./src/chip/index.ts",
+      "react-native": {
+        "types": "./lib/typescript/module/chip/index.d.ts",
+        "default": "./src/chip/index.ts"
+      },
       "import": {
         "types": "./lib/typescript/module/chip/index.d.ts",
         "default": "./lib/module/chip/index.js"
@@ -921,7 +1140,10 @@
       }
     },
     "./tabs": {
-      "react-native": "./src/tabs/index.ts",
+      "react-native": {
+        "types": "./lib/typescript/module/tabs/index.d.ts",
+        "default": "./src/tabs/index.ts"
+      },
       "import": {
         "types": "./lib/typescript/module/tabs/index.d.ts",
         "default": "./lib/module/tabs/index.js"
@@ -932,7 +1154,10 @@
       }
     },
     "./checkbox": {
-      "react-native": "./src/checkbox/index.ts",
+      "react-native": {
+        "types": "./lib/typescript/module/checkbox/index.d.ts",
+        "default": "./src/checkbox/index.ts"
+      },
       "import": {
         "types": "./lib/typescript/module/checkbox/index.d.ts",
         "default": "./lib/module/checkbox/index.js"
@@ -943,7 +1168,10 @@
       }
     },
     "./accordion": {
-      "react-native": "./src/accordion/index.ts",
+      "react-native": {
+        "types": "./lib/typescript/module/accordion/index.d.ts",
+        "default": "./src/accordion/index.ts"
+      },
       "import": {
         "types": "./lib/typescript/module/accordion/index.d.ts",
         "default": "./lib/module/accordion/index.js"
@@ -954,7 +1182,10 @@
       }
     },
     "./settings-list": {
-      "react-native": "./src/settings-list/index.ts",
+      "react-native": {
+        "types": "./lib/typescript/module/settings-list/index.d.ts",
+        "default": "./src/settings-list/index.ts"
+      },
       "import": {
         "types": "./lib/typescript/module/settings-list/index.d.ts",
         "default": "./lib/module/settings-list/index.js"
@@ -965,7 +1196,10 @@
       }
     },
     "./link-preview": {
-      "react-native": "./src/link-preview/index.ts",
+      "react-native": {
+        "types": "./lib/typescript/module/link-preview/index.d.ts",
+        "default": "./src/link-preview/index.ts"
+      },
       "import": {
         "types": "./lib/typescript/module/link-preview/index.d.ts",
         "default": "./lib/module/link-preview/index.js"
@@ -976,7 +1210,10 @@
       }
     },
     "./code": {
-      "react-native": "./src/code/index.ts",
+      "react-native": {
+        "types": "./lib/typescript/module/code/index.d.ts",
+        "default": "./src/code/index.ts"
+      },
       "import": {
         "types": "./lib/typescript/module/code/index.d.ts",
         "default": "./lib/module/code/index.js"
@@ -987,7 +1224,10 @@
       }
     },
     "./fonts": {
-      "react-native": "./src/fonts/index.ts",
+      "react-native": {
+        "types": "./lib/typescript/module/fonts/index.d.ts",
+        "default": "./src/fonts/index.ts"
+      },
       "browser": {
         "types": "./lib/typescript/module/fonts/index.web.d.ts",
         "import": "./lib/module/fonts/index.web.js",
@@ -1003,7 +1243,10 @@
       }
     },
     "./scroll": {
-      "react-native": "./src/scroll/index.ts",
+      "react-native": {
+        "types": "./lib/typescript/module/scroll/index.d.ts",
+        "default": "./src/scroll/index.ts"
+      },
       "browser": {
         "types": "./lib/typescript/module/scroll/index.web.d.ts",
         "import": "./lib/module/scroll/index.web.js",
@@ -1019,7 +1262,10 @@
       }
     },
     "./content-panel": {
-      "react-native": "./src/content-panel/index.tsx",
+      "react-native": {
+        "types": "./lib/typescript/module/content-panel/index.d.ts",
+        "default": "./src/content-panel/index.tsx"
+      },
       "browser": {
         "types": "./lib/typescript/module/content-panel/index.web.d.ts",
         "import": "./lib/module/content-panel/index.web.js",
@@ -1035,7 +1281,10 @@
       }
     },
     "./list": {
-      "react-native": "./src/list/index.tsx",
+      "react-native": {
+        "types": "./lib/typescript/module/list/index.d.ts",
+        "default": "./src/list/index.tsx"
+      },
       "browser": {
         "types": "./lib/typescript/module/list/index.web.d.ts",
         "import": "./lib/module/list/index.web.js",
@@ -1051,7 +1300,10 @@
       }
     },
     "./tab-bar": {
-      "react-native": "./src/tab-bar/index.ts",
+      "react-native": {
+        "types": "./lib/typescript/module/tab-bar/index.d.ts",
+        "default": "./src/tab-bar/index.ts"
+      },
       "browser": {
         "types": "./lib/typescript/module/tab-bar/index.web.d.ts",
         "import": "./lib/module/tab-bar/index.web.js",
@@ -1067,7 +1319,10 @@
       }
     },
     "./tab-bar/expo-router": {
-      "react-native": "./src/tab-bar/expo-router/index.ts",
+      "react-native": {
+        "types": "./lib/typescript/module/tab-bar/expo-router/index.d.ts",
+        "default": "./src/tab-bar/expo-router/index.ts"
+      },
       "import": {
         "types": "./lib/typescript/module/tab-bar/expo-router/index.d.ts",
         "default": "./lib/module/tab-bar/expo-router/index.js"
@@ -1078,7 +1333,10 @@
       }
     },
     "./progressive-blur": {
-      "react-native": "./src/progressive-blur/index.tsx",
+      "react-native": {
+        "types": "./lib/typescript/module/progressive-blur/index.d.ts",
+        "default": "./src/progressive-blur/index.tsx"
+      },
       "browser": {
         "types": "./lib/typescript/module/progressive-blur/index.web.d.ts",
         "import": "./lib/module/progressive-blur/index.web.js",
@@ -1165,6 +1423,8 @@
     "generate:theme-css": "bun scripts/generate-theme-css.ts",
     "prebuild": "node scripts/generate-platform-exports.mjs && node scripts/generate-font-data.mjs && bun scripts/generate-theme-css.ts",
     "build": "bob build",
+    "postbuild": "node scripts/verify-package.mjs",
+    "verify:package": "node scripts/verify-package.mjs",
     "test": "jest",
     "pretest": "node scripts/generate-font-data.mjs",
     "typescript": "tsc --noEmit",

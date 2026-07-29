@@ -235,7 +235,24 @@ function buildExportsField() {
 
     /** @type {Record<string, unknown>} */
     const entry = {
-      'react-native': `./src/${entrySrc}`,
+      // Metro compiles Bloom from SOURCE, so the `react-native` condition
+      // points at `src/`. It must NOT be a bare string: TypeScript honours
+      // `react-native` too (expo/tsconfig.base sets `customConditions:
+      // ["react-native"]`), and a string entry makes a consumer's tsc
+      // type-check Bloom's own `.tsx` files. That drags every module Bloom
+      // imports into the consumer's program — including web-fork imports like
+      // `react-dom` and optional peers like `expo-haptics` — and produces
+      // TS7016/TS2307 errors attributed to files inside `node_modules` that
+      // the consumer cannot edit. `skipLibCheck` cannot suppress them because
+      // a `.tsx` is not a declaration file.
+      //
+      // Splitting the condition fixes it at the root: tsc asks for `types` and
+      // gets the built declarations; Metro never requests `types`, so it falls
+      // through to `default` and still bundles source.
+      'react-native': {
+        types: paths.libTypesModule,
+        default: `./src/${entrySrc}`,
+      },
     };
 
     if (hasFork) {
