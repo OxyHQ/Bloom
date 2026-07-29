@@ -1,5 +1,36 @@
 # Migration Guide
 
+## 0.68.0 — your `tsc` now reads Bloom's built declarations, not its source
+
+**No action required. This removes errors; it does not add any.**
+
+Bloom's `react-native` export condition pointed straight at `src/`, and `tsc` has
+no platform-extension resolution — so a NATIVE typecheck walked Bloom's WEB forks
+and reported errors from inside `node_modules/@oxyhq/bloom`. Measured against a
+consumer with no `@types/react-dom`: five errors, none of them the consumer's fault
+— `TS7016` for `react-dom`, `TS2307` for `expo-haptics` and
+`@react-native-community/netinfo`, and a `TS2769` on a nativewind `className`.
+`skipLibCheck` could not help, because a `.tsx` file is not a declaration file.
+Whether you saw any of this came down to lockfile happenstance: two apps declaring
+the same Radix packages differed only in whether bun had materialised
+`@types/react-dom` as an optional peer.
+
+The condition now carries an explicit `types`:
+
+```diff
+ "react-native": {
++  "types": "./lib/typescript/module/toast/index.d.ts",
+   "default": "./src/toast/index.tsx"
+ }
+```
+
+Metro never requests the `types` condition, so it still compiles `src/` —
+verified with a real `expo export`, including a control run proving the check
+could tell the two apart. Your `tsc` reads the built `.d.ts` and stops walking
+Bloom's source at all.
+
+If you were carrying `@types/react-dom` purely to silence Bloom, you can drop it.
+
 ## 0.55.0 — toasts stack and hover; motion presets animate on web
 
 ### Toasts now STACK by default
