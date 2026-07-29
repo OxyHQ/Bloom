@@ -1507,7 +1507,7 @@
     "react-native-screens": ">=3.16.0",
     "react-native-svg": ">=13.0.0",
     "nativewind": ">=5.0.0",
-    "@react-native-community/netinfo": ""
+    "@react-native-community/netinfo": ">=11.1.0"
   },
   "peerDependenciesMeta": {
     "expo": {
