@@ -1419,19 +1419,16 @@
   "license": "AGPL-3.0-only",
   "scripts": {
     "generate:exports": "node scripts/generate-platform-exports.mjs",
-    "generate:font-data": "node scripts/generate-font-data.mjs",
     "generate:theme-css": "bun scripts/generate-theme-css.ts",
-    "prebuild": "node scripts/generate-platform-exports.mjs && node scripts/generate-font-data.mjs && bun scripts/generate-theme-css.ts",
+    "prebuild": "node scripts/generate-platform-exports.mjs && bun scripts/generate-theme-css.ts",
     "build": "bob build",
     "postbuild": "node scripts/verify-package.mjs",
     "verify:package": "node scripts/verify-package.mjs",
     "test": "jest",
-    "pretest": "node scripts/generate-font-data.mjs",
     "typescript": "tsc --noEmit",
-    "pretypescript": "node scripts/generate-font-data.mjs",
     "clean": "rm -rf lib",
     "prepack": "bun run clean && bun run build",
-    "prepare": "bun run build || true",
+    "prepare": "[ -n \"$BLOOM_VERIFY_PACKAGE_RUNNING\" ] || bun run build || true",
     "release": "rm -rf lib && bun run build && release-it",
     "storybook": "storybook dev -p 6006 --no-open",
     "storybook:build": "storybook build -o storybook-static"
@@ -1539,7 +1536,7 @@
   "react-native-builder-bob": {
     "source": "src",
     "output": "lib",
-    "exclude": "{**/{__tests__,__fixtures__,__mocks__}/**,**/*.stories.{ts,tsx},**/*.{test,spec}.{ts,tsx},**/*.woff2}",
+    "exclude": "{**/{__tests__,__fixtures__,__mocks__}/**,**/*.stories.{ts,tsx},**/*.{test,spec}.{ts,tsx}}",
     "targets": [
       [
         "commonjs",

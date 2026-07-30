@@ -6,9 +6,9 @@
 // of the box), so an extensionless specifier here would quietly fall through
 // to the default file.
 //
-// - `./apply-font-faces.web` performs the real `@font-face` injection using
-//   inlined base64 data URLs (see `font-data.web.ts`); the default
-//   `./apply-font-faces` is a no-op stub for native.
+// - `./apply-font-faces.web` performs the real `@font-face` injection against
+//   the `.woff2` URLs the consuming bundler emits (see `font-urls.web.ts`);
+//   the default `./apply-font-faces` is a no-op stub for native.
 // - `./font-assets.web` is an empty map. The native map is built from Metro
 //   asset `require()` calls, and importing it from an ES module throws
 //   `ReferenceError: require is not defined` during module evaluation — which

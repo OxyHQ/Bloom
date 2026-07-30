@@ -2,8 +2,9 @@
 //
 // `useFonts()` is native-only — the web `FontLoader` (`FontLoader.tsx`) calls
 // `applyFontFaces()` instead, which injects the same four families as
-// `@font-face` rules from base64 data URLs (`apply-font-faces.web.ts` /
-// `font-data.web.ts`). So the map is empty by design, not by omission.
+// `@font-face` rules pointing at bundler-emitted `.woff2` URLs
+// (`apply-font-faces.web.ts` / `font-urls.web.ts`). So the map is empty by
+// design, not by omission.
 //
 // This file exists so `index.web.ts` can name its font-asset source
 // explicitly, exactly as it already does for `./apply-font-faces.web`. The

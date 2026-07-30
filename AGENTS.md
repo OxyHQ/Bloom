@@ -121,6 +121,14 @@ Only TWO overlay surfaces exist. `CenteredDialog` and `ResponsiveSheet` were REM
 
 Uses `react-native-builder-bob` → `lib/` (commonjs + module + typescript).
 
+`postbuild` runs `scripts/verify-package.mjs`, which packs the tarball to check every `exports` target actually ships. Packing is re-entrant — `prepack` and `prepare` both build, and `build`'s `postbuild` is that script — so it is contained by `--ignore-scripts` (stops `prepack`) plus `BLOOM_VERIFY_PACKAGE_RUNNING`, which `prepare` reads and stands down on. `--ignore-scripts` alone does NOT work: npm runs `prepare` for a pack regardless. Remove either guard and the recursion comes back as bob dying on an `ENOENT` for a sourcemap, which looks like a bob bug and is not one.
+
+## Web Fonts
+
+`src/fonts/font-urls.web.ts` imports the four `.woff2` files so the consuming bundler emits them as separate, content-hashed assets — Metro's asset transformer returns a plain URL string when the platform is `web`; Vite/Rollup/webpack return their own. Never inline them as base64 again: it costs every web app ~219 KB gzip in the entry bundle (measured A/B against Mention), the browser cannot cache them as fonts, and it pushed at least one consumer into aliasing the module out with hand-copied content hashes.
+
+The one consumer requirement is `woff2` in Metro's `assetExts`; `@oxyhq/app-preset`'s Metro base already registers it fleet-wide. Native pays nothing, and the file split is what guarantees that: `apply-font-faces.ts` must stay an empty stub with no imports, because Metro resolves an asset import on native to a registry id and would bundle a second, unusable copy of all four fonts. `src/__tests__/apply-font-faces.test.ts` asserts both halves — that every `src` is a URL rather than a `data:` payload, and that the native stub injects nothing.
+
 ## Design Token CSS (CSS-first consumers)
 
 `@oxyhq/bloom/design-tokens/theme.css` ships the full Bloom `@theme` block (color-role aliases, spacing, radius, border-width, typography, shadow), generated from the same source as `bloomThemeCss()` so JS and CSS cannot drift. Tailwind v4 / NativeWind CSS-first apps consume it with a single import — never by hand-copying tokens:
