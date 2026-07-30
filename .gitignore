@@ -3,9 +3,3 @@ lib/
 .DS_Store
 *.tsbuildinfo
 storybook-static/
-
-# Generated at build time by scripts/generate-font-data.mjs — embeds the
-# bundled woff2 fonts as base64 data URLs so consumers do not need an
-# `.woff2` asset loader. Regenerated on every build; checked-in copy would
-# be ~310 KB of binary diff noise.
-src/fonts/font-data.web.ts

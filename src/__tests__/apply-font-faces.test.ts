@@ -54,4 +54,36 @@ describe('applyFontFaces (web)', () => {
     expect(cssText).toMatch(/font-family: 'Inter'/);
     expect(cssText).toMatch(/font-family: 'Geist Mono'/);
   });
+
+  // The whole point of `font-urls.web.ts` is that the browser fetches and
+  // caches the four families on their own. Re-inlining them as `data:` URLs
+  // would still render correctly in every test above, so this is the only
+  // assertion that would notice.
+  it('points every src at a bundler-emitted URL, never an inlined data: URL', () => {
+    applyFontFaces();
+    const cssText = document.getElementById('bloom-fonts')?.textContent ?? '';
+    const sources = [...cssText.matchAll(/src: url\("([^"]*)"\)/g)].map((m) => m[1]);
+    expect(sources).toHaveLength(4);
+    for (const source of sources) {
+      expect(source).not.toMatch(/^data:/);
+      expect(source).toBeTruthy();
+    }
+  });
+});
+
+describe('applyFontFaces (native stub)', () => {
+  beforeEach(() => {
+    document.head.innerHTML = '';
+  });
+
+  // Native loads `.ttf` through `useFonts`, so the default export must stay
+  // inert. If it ever forwarded to the web implementation, Metro would follow
+  // `font-urls.web.ts` and bundle a second, unusable copy of all four fonts
+  // into every iOS and Android build.
+  it('injects nothing', async () => {
+    const native = await import('../fonts/apply-font-faces');
+    native.applyFontFaces();
+    expect(document.getElementById('bloom-fonts')).toBeNull();
+    expect(document.head.innerHTML).toBe('');
+  });
 });
