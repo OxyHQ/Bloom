@@ -39,7 +39,8 @@
  */
 
 import { execFileSync } from 'node:child_process';
-import { readFileSync } from 'node:fs';
+import { mkdirSync, mkdtempSync, readFileSync, rmSync, symlinkSync, writeFileSync } from 'node:fs';
+import { tmpdir } from 'node:os';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -58,6 +59,56 @@ const REENTRY_ENV = 'BLOOM_VERIFY_PACKAGE_RUNNING';
  * not a pass.
  */
 const MIN_TYPESCRIPT_FILES = 500;
+
+/**
+ * Subpaths a plain Node process must be able to `require()`.
+ *
+ * Deliberately short. Most of Bloom pulls `react-native` and has never loaded
+ * under bare Node; `./fonts` is the exception, because its own header promises
+ * the SSR/prerender path, and it silently stopped working once the web font
+ * module changed from base64 string constants to `.woff2` asset imports —
+ * Node hands a `.woff2` to the JS parser and dies. Nothing else caught that:
+ * jest maps font binaries to a stub, tsc never executes, and every bundler
+ * handles assets by design. Running real `node` is the only thing that does.
+ */
+const NODE_REQUIRABLE_SUBPATHS = ['./fonts'];
+
+/**
+ * `require()` each entry from a throwaway package that resolves `@oxyhq/bloom`
+ * to this repo, so the real `exports` map — conditions and all — is what gets
+ * exercised. Requiring the built file directly would skip the `node` condition
+ * that makes these work, which is the part that broke.
+ */
+function assertNodeRequirable(subpaths) {
+  const scratch = mkdtempSync(join(tmpdir(), 'bloom-verify-'));
+  try {
+    mkdirSync(join(scratch, 'node_modules', '@oxyhq'), { recursive: true });
+    symlinkSync(REPO_ROOT, join(scratch, 'node_modules', '@oxyhq', 'bloom'), 'dir');
+    writeFileSync(
+      join(scratch, 'package.json'),
+      JSON.stringify({ name: 'bloom-node-require-probe', version: '0.0.0', private: true }),
+    );
+
+    return subpaths.flatMap((subpath) => {
+      const specifier = `@oxyhq/bloom${subpath.slice(1)}`;
+      try {
+        execFileSync(process.execPath, ['-e', `require(${JSON.stringify(specifier)})`], {
+          cwd: scratch,
+          encoding: 'utf8',
+          stdio: ['ignore', 'ignore', 'pipe'],
+        });
+        return [];
+      } catch (error) {
+        const detail = String(error.stderr ?? error.message)
+          .split('\n')
+          .find((line) => /Error|error/.test(line));
+        return [`require('${specifier}') fails under plain Node: ${detail ?? 'unknown'}`];
+      }
+    });
+  } finally {
+    rmSync(scratch, { recursive: true, force: true });
+  }
+}
 
 /** Collect every file path an `exports` entry references, at any nesting depth. */
 function collectTargets(node, out) {
@@ -104,6 +155,7 @@ function main() {
         'Every consumer resolves its types there — run `bun run build` and check the tsc step.',
     );
   }
+  problems.push(...assertNodeRequirable(NODE_REQUIRABLE_SUBPATHS));
 
   if (problems.length > 0) {
     console.error('[verify-package] FAILED\n  ' + problems.join('\n  '));
@@ -112,7 +164,8 @@ function main() {
 
   console.log(
     `[verify-package] ok — ${files.size} files packed, all ${targets.length} exports targets present ` +
-      `(${typescriptCount} in lib/typescript/)`,
+      `(${typescriptCount} in lib/typescript/), ` +
+      `${NODE_REQUIRABLE_SUBPATHS.length} subpath(s) require()-able under Node ${process.version}`,
   );
 }
 

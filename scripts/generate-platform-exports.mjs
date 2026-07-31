@@ -183,6 +183,28 @@ const WEB_FORKED_SUBPATHS = new Set([
   './progressive-blur',
 ]);
 
+/**
+ * Subpaths that additionally need an `index.node.ts` sibling, because plain
+ * Node would otherwise choke on something in the default graph.
+ *
+ * Only `./fonts` qualifies, and the reason is specific: its default files ARE
+ * the web implementation (`FontLoader.tsx` names `./apply-font-faces.web`
+ * outright), which transitively reaches `font-urls.web`'s `.woff2` imports.
+ * Node hands a `.woff2` to the JS parser and dies with a `SyntaxError`.
+ *
+ * The obvious alternative — fork `FontLoader` and leave a neutral default —
+ * does NOT work: `theme/BloomThemeProvider.tsx` imports `../fonts/FontLoader`
+ * by RELATIVE path, and export conditions do not apply to relative
+ * specifiers, so Vite would take the neutral default and silently stop
+ * injecting `@font-face` for every `@oxyhq/bloom/theme` consumer. Conditions
+ * are the only lever that separates Node from a browser bundler here.
+ *
+ * Ordering matters: `node` is emitted AFTER `browser`, so a browser-targeting
+ * bundler still gets the web build and only real Node (and SSR passes, which
+ * want the no-op anyway) lands on the safe barrel.
+ */
+const NODE_FORKED_SUBPATHS = new Set(['./fonts']);
+
 // --------------------------------------------------------------------------
 //  Path helpers
 // --------------------------------------------------------------------------
@@ -197,12 +219,17 @@ function computePaths(entrySrc) {
   return {
     webSource: `${stem}.web.ts`, // candidate web source file (we also accept .web.tsx)
     webSourceTsx: `${stem}.web.tsx`,
+    nodeSource: `${stem}.node.ts`, // candidate node source file (we also accept .node.tsx)
+    nodeSourceTsx: `${stem}.node.tsx`,
     libModule: `./lib/module/${stem}.js`,
     libModuleWeb: `./lib/module/${stem}.web.js`,
+    libModuleNode: `./lib/module/${stem}.node.js`,
     libCommonjs: `./lib/commonjs/${stem}.js`,
     libCommonjsWeb: `./lib/commonjs/${stem}.web.js`,
+    libCommonjsNode: `./lib/commonjs/${stem}.node.js`,
     libTypesModule: `./lib/typescript/module/${stem}.d.ts`,
     libTypesModuleWeb: `./lib/typescript/module/${stem}.web.d.ts`,
+    libTypesModuleNode: `./lib/typescript/module/${stem}.node.d.ts`,
     libTypesCjs: `./lib/typescript/commonjs/${stem}.d.ts`,
   };
 }
@@ -219,6 +246,18 @@ function assertWebSourceExists(name, paths) {
   }
 }
 
+/** Same assertion for `.node.{ts,tsx}`, so a stale set cannot emit a dead path. */
+function assertNodeSourceExists(name, paths) {
+  const tsCandidate = join(SRC, paths.nodeSource);
+  const tsxCandidate = join(SRC, paths.nodeSourceTsx);
+  if (!existsSync(tsCandidate) && !existsSync(tsxCandidate)) {
+    throw new Error(
+      `[generate-platform-exports] ${name} is listed as node-forked but ` +
+        `neither ${relative(REPO_ROOT, tsCandidate)} nor ${relative(REPO_ROOT, tsxCandidate)} exists.`,
+    );
+  }
+}
+
 // --------------------------------------------------------------------------
 //  exports map
 // --------------------------------------------------------------------------
@@ -230,8 +269,10 @@ function buildExportsField() {
   for (const [name, entrySrc] of SUBPATHS) {
     const paths = computePaths(entrySrc);
     const hasFork = WEB_FORKED_SUBPATHS.has(name);
+    const hasNodeFork = NODE_FORKED_SUBPATHS.has(name);
 
     if (hasFork) assertWebSourceExists(name, paths);
+    if (hasNodeFork) assertNodeSourceExists(name, paths);
 
     /** @type {Record<string, unknown>} */
     const entry = {
@@ -260,6 +301,14 @@ function buildExportsField() {
         types: paths.libTypesModuleWeb,
         import: paths.libModuleWeb,
         require: paths.libCommonjsWeb,
+      };
+    }
+
+    if (hasNodeFork) {
+      entry.node = {
+        types: paths.libTypesModuleNode,
+        import: paths.libModuleNode,
+        require: paths.libCommonjsNode,
       };
     }
 
