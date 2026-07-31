@@ -1,0 +1,19 @@
+[install]
+# Supply-chain quarantine. A compromised release is typically caught and
+# unpublished within hours to a couple of days, so refusing to RESOLVE anything
+# published in the last week removes most of that window. Bloom's tree is almost
+# entirely third-party (React Native, Expo, Storybook), which is exactly the
+# surface this protects.
+#
+# It applies to resolution only, never to a frozen install: `bun install
+# --frozen-lockfile` installs an already-locked fresh package with no complaint
+# even on a cold manifest cache. So it fires for whoever adds or bumps a
+# dependency here — the moment the decision is actually made — and not for
+# anyone reproducing bun.lock. Override deliberately, for a fix you have reason
+# to take immediately, with `bun install --minimum-release-age=0`.
+#
+# No excludes: nothing here comes from an Oxy scope. If a first-party dependency
+# is ever added, its first install fails naming the package, and that name goes
+# in a `minimumReleaseAgeExcludes` list — matched EXACTLY, since a scope glob
+# ("@oxyhq/*") is accepted by the parser and silently matches nothing.
+minimumReleaseAge = 604800
