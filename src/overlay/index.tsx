@@ -124,16 +124,28 @@ export interface BackdropProps {
    * express — the web dialog's CSS keyframes, for instance.
    */
   layerStyle?: StyleProp<ViewStyle>;
-  /** Rendered ON TOP of the dim, inside the press target (Dialog's panel does this). */
+  /** Rendered ON TOP of the dim, as a sibling of the press target (Dialog's panel does this). */
   children?: ReactNode;
   accessibilityLabel?: string;
   testID?: string;
 }
 
 /**
- * Full-bleed blur + dim that dismisses the surface when pressed. Always takes
- * pointer events (that is its whole job), so anything that must stay pressable
- * goes INSIDE it as `children`, never as a sibling rendered over it.
+ * Full-bleed blur + dim that dismisses the surface when pressed.
+ *
+ * The dismiss target is a hit box that fills this component and sits BEHIND
+ * `children`, never around them. It used to wrap them, which read fine on
+ * native but is invalid on web: the hit box carries `accessibilityRole="button"`,
+ * so react-native-web renders it as a real `<button>` — and every control inside
+ * any Bloom surface (a dialog's own buttons, a menu's rows) became a nested
+ * `<button>`. React reports that as a hydration error, and the nested control's
+ * activation behaviour is undefined per the HTML spec.
+ *
+ * Hit testing is unchanged: the hit box still covers the whole area, `children`
+ * render above it and take their own presses, and a press that lands on empty
+ * space falls through to the hit box. Layout styles passed via `style` stay on
+ * the outer box, so a caller that centres its panel with this component (the
+ * centred dialog) keeps doing so.
  */
 export const Backdrop = memo(function Backdrop({
   onPress,
@@ -175,36 +187,40 @@ export const Backdrop = memo(function Backdrop({
   );
 
   return (
-    <Pressable
-      pointerEvents="auto"
-      onPress={inert ? undefined : onPress}
-      disabled={inert}
-      // A dimming layer is not a focus stop on web: Escape and the panel's own
-      // controls are the keyboard paths out. It stays labelled for screen
-      // readers that surface it as the dismiss affordance.
-      focusable={false}
-      accessibilityRole={inert ? undefined : 'button'}
-      accessibilityLabel={inert ? undefined : accessibilityLabel}
-      testID={testID}
-      style={[StyleSheet.absoluteFill, rootStyle]}
-    >
-      {blurIntensity > 0 ? (
-        <AnimatedBlurView
-          intensity={blurIntensity}
-          tint={blurTint}
-          // Android's default blur is a no-op on many devices; this is the
-          // implementation that actually renders there.
-          experimentalBlurMethod="dimezisBlurView"
+    // `box-none` so this box never takes a press itself: the hit box below and
+    // `children` above are what receive them.
+    <View pointerEvents="box-none" style={[StyleSheet.absoluteFill, rootStyle]}>
+      <Pressable
+        pointerEvents="auto"
+        onPress={inert ? undefined : onPress}
+        disabled={inert}
+        // A dimming layer is not a focus stop on web: Escape and the panel's own
+        // controls are the keyboard paths out. It stays labelled for screen
+        // readers that surface it as the dismiss affordance.
+        focusable={false}
+        accessibilityRole={inert ? undefined : 'button'}
+        accessibilityLabel={inert ? undefined : accessibilityLabel}
+        testID={testID}
+        style={StyleSheet.absoluteFill}
+      >
+        {blurIntensity > 0 ? (
+          <AnimatedBlurView
+            intensity={blurIntensity}
+            tint={blurTint}
+            // Android's default blur is a no-op on many devices; this is the
+            // implementation that actually renders there.
+            experimentalBlurMethod="dimezisBlurView"
+            pointerEvents="none"
+            style={[StyleSheet.absoluteFill, layerStyle, blurFade]}
+          />
+        ) : null}
+        <Animated.View
           pointerEvents="none"
-          style={[StyleSheet.absoluteFill, layerStyle, blurFade]}
+          style={[StyleSheet.absoluteFill, { backgroundColor: resolvedDimColor }, layerStyle, dimFade]}
         />
-      ) : null}
-      <Animated.View
-        pointerEvents="none"
-        style={[StyleSheet.absoluteFill, { backgroundColor: resolvedDimColor }, layerStyle, dimFade]}
-      />
+      </Pressable>
       {children}
-    </Pressable>
+    </View>
   );
 });
 
