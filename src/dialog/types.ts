@@ -350,16 +350,6 @@ export type DialogProps = React.PropsWithChildren<{
   containerClassName?: string;
   /** Accessibility label, applied to the dialog role on web. */
   label?: string;
-  /**
-   * Stacking layer index within a coordinated surface stack. Multiplies
-   * `Z_INDEX_LAYER_STEP` onto this dialog's overlay z-indices (backdrop +
-   * panel) so a dialog presented on top of another paints above it. Defaults to
-   * `0` — the single-dialog case, byte-for-byte unchanged. Set by the shared
-   * surface stack (`src/surfaces`); direct consumers rarely need it. No-op for
-   * the `bottom` placement, which already stacks in mount order (native RN
-   * `<Modal>` / the web portal), so `layer` is harmless there.
-   */
-  layer?: number;
 }>;
 
 /**

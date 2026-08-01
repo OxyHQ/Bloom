@@ -18,10 +18,9 @@ import { Pressable, StyleSheet, View } from 'react-native';
 
 import { useTheme } from '../theme/use-theme';
 import { Text } from '../typography';
-import { Backdrop } from '../overlay';
+import { Backdrop, OverlayRoot } from '../overlay';
 import { Portal } from '../portal/index.web';
 import { useInteractionState } from '../hooks/useInteractionState';
-import { createOverlayZIndex } from '../styles/z-index';
 import { WEB_POSITION_FIXED } from '../styles/web-view-style';
 import {
   resolveDropdownPlacement,
@@ -40,7 +39,6 @@ import type {
   ItemContextValue,
 } from './types';
 
-const contextMenuZIndex = createOverlayZIndex();
 const VIEWPORT_GUTTER = 8;
 
 // ---------------------------------------------------------------------------
@@ -211,31 +209,38 @@ export function ContextMenuContent({ children, style }: ContextMenuContentProps)
 
   return (
     <Portal>
-      <Backdrop
-        style={styles.backdrop}
-        onPress={close}
-        accessibilityLabel="Close context menu"
-      />
-      <View
-        ref={attachMenu}
-        style={[
-          styles.dropdown,
-          {
-            // The raw click point is the pre-measurement anchor; the layout
-            // effect above replaces it before the browser paints.
-            top: placement?.top ?? position.y,
-            left: placement?.left ?? position.x,
-            backgroundColor: theme.isDark
-              ? theme.colors.backgroundSecondary
-              : theme.colors.background,
-            borderColor: theme.colors.borderLight,
-            ...bloomShadowStyle('m'),
-          },
-          style,
-        ]}
-      >
-        {children}
-      </View>
+      {/* `OverlayRoot` takes this surface's place in the open-order overlay
+          stack, so it paints above anything opened before it (see
+          `src/overlay/stack.ts`). It is `box-none`, so the area outside the
+          panel stays click-through and the backdrop below still takes its own
+          presses. */}
+      <OverlayRoot>
+        <Backdrop
+          style={styles.backdrop}
+          onPress={close}
+          accessibilityLabel="Close context menu"
+        />
+        <View
+          ref={attachMenu}
+          style={[
+            styles.dropdown,
+            {
+              // The raw click point is the pre-measurement anchor; the layout
+              // effect above replaces it before the browser paints.
+              top: placement?.top ?? position.y,
+              left: placement?.left ?? position.x,
+              backgroundColor: theme.isDark
+                ? theme.colors.backgroundSecondary
+                : theme.colors.background,
+              borderColor: theme.colors.borderLight,
+              ...bloomShadowStyle('m'),
+            },
+            style,
+          ]}
+        >
+          {children}
+        </View>
+      </OverlayRoot>
     </Portal>
   );
 }
@@ -374,13 +379,11 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
     bottom: 0,
-    zIndex: contextMenuZIndex.backdrop,
     // Opt back in from the Portal root's `pointer-events: none`.
     pointerEvents: 'auto',
   },
   dropdown: {
     position: WEB_POSITION_FIXED,
-    zIndex: contextMenuZIndex.surface,
     borderRadius: 8,
     padding: 4,
     borderWidth: 1,

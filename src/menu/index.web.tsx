@@ -15,8 +15,9 @@ import { Pressable, StyleSheet, View, type StyleProp, type ViewStyle } from 'rea
 import { useTheme } from '../theme/use-theme';
 import { Text } from '../typography';
 import type { DialogControlProps } from '../dialog/types';
+import { OverlayRoot } from '../overlay';
 import { Portal } from '../portal/index.web';
-import { createDropdownZIndex } from '../styles/z-index';
+import { Z_INDEX } from '../styles/z-index';
 import { WEB_POSITION_FIXED } from '../styles/web-view-style';
 import { resolveDropdownPlacement } from '../overlay/dropdown-placement';
 import { bloomShadowStyle } from '../design-tokens/shadows';
@@ -37,7 +38,6 @@ import type {
 
 export { useMenuContext };
 
-const menuZIndex = createDropdownZIndex();
 const VIEWPORT_GUTTER = 8;
 const MENU_OFFSET = 6;
 
@@ -266,24 +266,33 @@ export function MenuContent({
 
   return (
     <Portal>
-      <View
-        ref={attachDropdown}
-        style={[
-          styles.dropdown,
-          {
-            backgroundColor: theme.isDark
-              ? theme.colors.backgroundSecondary
-              : theme.colors.background,
-            borderColor: theme.colors.borderLight,
-            ...bloomShadowStyle('m'),
-          },
-          style,
-          styles.portaledDropdown,
-          position,
-        ]}
-      >
-        {children}
-      </View>
+      {/* `OverlayRoot` takes this menu's place in the open-order overlay stack.
+          The dropdown used to carry a fixed `zIndex` on the `dropdown` rung
+          (41), below the `overlay` rung a Dialog sits on (50/60) — so a menu
+          opened from inside a dialog rendered behind that dialog, whichever
+          opened last. It is `box-none`, so the area around the dropdown stays
+          click-through and the existing outside-press dismissal still sees the
+          press. */}
+      <OverlayRoot>
+        <View
+          ref={attachDropdown}
+          style={[
+            styles.dropdown,
+            {
+              backgroundColor: theme.isDark
+                ? theme.colors.backgroundSecondary
+                : theme.colors.background,
+              borderColor: theme.colors.borderLight,
+              ...bloomShadowStyle('m'),
+            },
+            style,
+            styles.portaledDropdown,
+            position,
+          ]}
+        >
+          {children}
+        </View>
+      </OverlayRoot>
     </Portal>
   );
 }
@@ -405,7 +414,10 @@ const styles = StyleSheet.create({
     position: 'relative',
   },
   openRoot: {
-    zIndex: menuZIndex.root,
+    // The INLINE trigger wrapper, still in the app's own document flow — this
+    // only lifts it over adjacent in-flow content while the menu is open. The
+    // portaled dropdown's depth is the overlay stack's business, not this.
+    zIndex: Z_INDEX.dropdown,
   },
   dropdown: {
     // Fixed from the outset, not only once positioned: the `Portal` root is a
@@ -420,7 +432,6 @@ const styles = StyleSheet.create({
     padding: 4,
     borderWidth: 1,
     overflow: 'hidden',
-    zIndex: menuZIndex.surface,
     // Overlay elevation applied at the usage site via `bloomShadowStyle('m')`.
     minWidth: 180,
   },

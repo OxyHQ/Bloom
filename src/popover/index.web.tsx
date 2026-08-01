@@ -10,9 +10,8 @@ import React, {
 import { Pressable, StyleSheet, View } from 'react-native';
 
 import { useTheme } from '../theme/use-theme';
-import { Backdrop } from '../overlay';
+import { Backdrop, OverlayRoot } from '../overlay';
 import { Portal } from '../portal/index.web';
-import { createOverlayZIndex } from '../styles/z-index';
 import { WEB_POSITION_FIXED } from '../styles/web-view-style';
 import { bloomShadowStyle } from '../design-tokens/shadows';
 import { PopoverContext, usePopoverContext } from './context';
@@ -36,7 +35,6 @@ export type {
 
 export { usePopoverContext };
 
-const popoverZIndex = createOverlayZIndex();
 
 /**
  * Web self-contained control. Unlike native (which proxies a `BottomSheet`
@@ -262,45 +260,52 @@ export function PopoverContent({
 
   return (
     <Portal>
-      {dismissible ? (
-        <Backdrop
-          style={styles.backdrop}
-          onPress={() => control.close()}
-          accessibilityLabel="Dismiss popover"
-        />
-      ) : null}
-      <View
-        ref={panelRef}
-        accessibilityRole="none"
-        aria-label={label}
-        testID={testID}
-        onLayout={(e) =>
-          setPanelSize({
-            width: e.nativeEvent.layout.width,
-            height: e.nativeEvent.layout.height,
-          })
-        }
-        style={[
-          styles.panel,
-          {
-            left: position.left,
-            top: position.top,
-            minWidth: resolvedMinWidth,
-            maxWidth,
-            backgroundColor: theme.isDark
-              ? theme.colors.backgroundSecondary
-              : theme.colors.background,
-            borderColor: theme.colors.borderLight,
-            // Design-system overlay elevation (`shadow-m`) as a `boxShadow` —
-            // RN-Web deprecated the `shadow*` style props.
-            ...bloomShadowStyle('m'),
-            // Hide until measured to avoid a one-frame jump.
-            opacity: panelSize ? 1 : 0,
-          },
-          style,
-        ]}>
-        {children}
-      </View>
+      {/* `OverlayRoot` takes this surface's place in the open-order overlay
+          stack, so it paints above anything opened before it (see
+          `src/overlay/stack.ts`). It is `box-none`, so the area outside the
+          panel stays click-through and the backdrop below still takes its own
+          presses. */}
+      <OverlayRoot>
+        {dismissible ? (
+          <Backdrop
+            style={styles.backdrop}
+            onPress={() => control.close()}
+            accessibilityLabel="Dismiss popover"
+          />
+        ) : null}
+        <View
+          ref={panelRef}
+          accessibilityRole="none"
+          aria-label={label}
+          testID={testID}
+          onLayout={(e) =>
+            setPanelSize({
+              width: e.nativeEvent.layout.width,
+              height: e.nativeEvent.layout.height,
+            })
+          }
+          style={[
+            styles.panel,
+            {
+              left: position.left,
+              top: position.top,
+              minWidth: resolvedMinWidth,
+              maxWidth,
+              backgroundColor: theme.isDark
+                ? theme.colors.backgroundSecondary
+                : theme.colors.background,
+              borderColor: theme.colors.borderLight,
+              // Design-system overlay elevation (`shadow-m`) as a `boxShadow` —
+              // RN-Web deprecated the `shadow*` style props.
+              ...bloomShadowStyle('m'),
+              // Hide until measured to avoid a one-frame jump.
+              opacity: panelSize ? 1 : 0,
+            },
+            style,
+          ]}>
+          {children}
+        </View>
+      </OverlayRoot>
     </Portal>
   );
 }
@@ -315,12 +320,10 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
     bottom: 0,
-    zIndex: popoverZIndex.backdrop,
     pointerEvents: 'auto',
   },
   panel: {
     position: WEB_POSITION_FIXED,
-    zIndex: popoverZIndex.surface,
     borderRadius: 12,
     borderWidth: 1,
     paddingVertical: 4,

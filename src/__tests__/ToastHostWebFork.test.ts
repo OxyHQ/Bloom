@@ -52,9 +52,17 @@ describe('ToastHost platform split', () => {
     expect(host).not.toMatch(/'fixed' as/);
   });
 
-  it('web/default host layers toasts at Z_INDEX.toast', () => {
-    const host = read('toast/ToastHost.tsx');
-    expect(host).toMatch(/zIndex: Z_INDEX\.toast/);
+  it('web/default host pins toasts above the whole overlay stack', () => {
+    const host = code('toast/ToastHost.tsx');
+    // A toast is a notification, not a modal surface: it must stay visible over
+    // whatever is open, including a surface opened AFTER it. So it opts out of
+    // the open-order stack via `OverlayRoot`'s `zIndex` prop rather than taking
+    // a rank (see `src/overlay/stack.ts`).
+    expect(host).toMatch(/<OverlayRoot zIndex=\{TOAST_LAYER_Z\}/);
+    // And it must not ALSO carry a hand-picked depth in its stylesheet: a fixed
+    // number there is exactly what left toasts stranded behind an open bottom
+    // sheet, and it would fight the prop above.
+    expect(host).not.toMatch(/zIndex: Z_INDEX\./);
   });
 
   it('native host imports neither react-native-screens nor the portal (D6)', () => {

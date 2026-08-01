@@ -10,6 +10,7 @@ import {
 } from 'react-native';
 
 import { useTheme } from '../theme/use-theme';
+import { OverlayRoot } from '../overlay';
 import { Portal } from '../portal';
 import { Z_INDEX } from '../styles/z-index';
 import { PromptInputContext, type Attachment } from './context';
@@ -230,36 +231,42 @@ export function PromptInput({
 
       {showFullscreen && (
         <Portal>
-          <View
-            style={[
-              StyleSheet.absoluteFill,
-              {
-                zIndex: Z_INDEX.fullscreen,
-                backgroundColor: theme.colors.background,
-                // Opt back in from the Portal root's `pointer-events: none`
-                // (web only — harmless on native).
-                pointerEvents: 'auto',
-              },
-            ]}
-          >
-            <Pressable
-              onPress={() => setShowFullscreen(false)}
-              style={{
-                position: 'absolute',
-                top: 16,
-                right: 16,
-                zIndex: Z_INDEX.fullscreenControl,
-                padding: 8,
-                backgroundColor: theme.colors.background,
-                borderRadius: 9999,
-              }}
+          {/* `OverlayRoot` takes the fullscreen editor's place in the
+              open-order overlay stack (`src/overlay/stack.ts`). It mounts with
+              `showFullscreen`, so the rank tracks opening. */}
+          <OverlayRoot>
+            <View
+              style={[
+                StyleSheet.absoluteFill,
+                {
+                  backgroundColor: theme.colors.background,
+                  // Opt back in from the Portal root's `pointer-events: none`
+                  // (web only — harmless on native).
+                  pointerEvents: 'auto',
+                },
+              ]}
             >
-              {collapseIcon ?? (
-                <Text style={{ fontSize: 18, color: theme.colors.text }}>⤡</Text>
-              )}
-            </Pressable>
-            <View style={{ flex: 1 }}>{content}</View>
-          </View>
+              <Pressable
+                onPress={() => setShowFullscreen(false)}
+                style={{
+                  position: 'absolute',
+                  top: 16,
+                  right: 16,
+                  // Above the editor's own body; where the editor sits relative
+                  // to OTHER surfaces is the overlay stack's call.
+                  zIndex: Z_INDEX.raised,
+                  padding: 8,
+                  backgroundColor: theme.colors.background,
+                  borderRadius: 9999,
+                }}
+              >
+                {collapseIcon ?? (
+                  <Text style={{ fontSize: 18, color: theme.colors.text }}>⤡</Text>
+                )}
+              </Pressable>
+              <View style={{ flex: 1 }}>{content}</View>
+            </View>
+          </OverlayRoot>
         </Portal>
       )}
     </PromptInputContext.Provider>

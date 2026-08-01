@@ -4,7 +4,6 @@ import { StyleSheet } from 'react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { OverlayRoot } from '../overlay';
 import { Portal } from '../portal/index.web';
-import { Z_INDEX } from '../styles/z-index';
 import { WEB_POSITION_FIXED } from '../styles/web-view-style';
 import {
     BottomSheetBase,
@@ -54,16 +53,22 @@ const BottomSheet = forwardRef((props: BottomSheetProps, ref: React.ForwardedRef
 BottomSheet.displayName = 'BottomSheet';
 
 const webStyles = StyleSheet.create({
+    // Fixed, full-viewport box the sheet's `StyleSheet.absoluteFill` body
+    // anchors to. The pointer-events opt-in and the STACKING both live in
+    // `OverlayRoot`.
+    //
+    // This used to also pin `zIndex: Z_INDEX.portalRoot` (999999) here. Inside
+    // the portal root that number does not mean "the portal layer" — it means
+    // "above every other portaled surface", which is how a confirm dialog
+    // opened from inside an open sheet ended up rendering underneath it,
+    // unreachable, no matter which one opened last. Stacking is the overlay
+    // stack's job now (`src/overlay/stack.ts`); do not reintroduce a constant.
     rootView: {
-        // Fixed, full-viewport box the sheet's `StyleSheet.absoluteFill` body
-        // anchors to. The pointer-events opt-in lives in `OverlayRoot`; this
-        // only adds the stacking context.
         position: WEB_POSITION_FIXED,
         top: 0,
         left: 0,
         right: 0,
         bottom: 0,
-        zIndex: Z_INDEX.portalRoot,
     },
 });
 

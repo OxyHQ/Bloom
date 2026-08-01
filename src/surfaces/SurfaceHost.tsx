@@ -67,13 +67,7 @@ export function createSurfaceHost(Dialog: DialogComponent) {
    * dismiss REQUEST and has no post-exit callback, so it could never tell the
    * store WHEN to splice the entry after the exit animation.
    */
-  function SurfaceLayer({
-    entry,
-    index,
-  }: {
-    entry: SurfaceEntry;
-    index: number;
-  }) {
+  function SurfaceLayer({ entry }: { entry: SurfaceEntry }) {
     const control = useDialogControl();
     const { id, status } = entry;
 
@@ -125,7 +119,6 @@ export function createSurfaceHost(Dialog: DialogComponent) {
       <Dialog
         control={control}
         onClose={handleClose}
-        layer={index}
         startOpen={status !== 'closing'}
         {...placement}
       >
@@ -144,8 +137,8 @@ export function createSurfaceHost(Dialog: DialogComponent) {
 
     return (
       <>
-        {stack.map((entry, index) => (
-          <SurfaceLayer key={entry.id} entry={entry} index={index} />
+        {stack.map((entry) => (
+          <SurfaceLayer key={entry.id} entry={entry} />
         ))}
       </>
     );
