@@ -190,6 +190,12 @@ const { setColorPreset } = useBloomTheme()
 setColorPreset("blue") // Updates context + CSS vars on web
 ```
 
+## Color Token Alpha Compositing (consumer gotcha)
+
+Accent role tokens (`primary` and the rest of the tonal-engine-derived roles) resolve to a CSS `rgb(...)` string; only `STATUS_COLORS` (`error`/`success`/`warning`/`info`) stay plain hex. Appending a hex alpha suffix to a token in inline style (`` `${theme.colors.primary}1A` ``) therefore behaves differently per family: on `STATUS_COLORS` it produces a valid 8-digit hex and the alpha applies; on an accent token it produces a malformed color string that react-native-web parses back as fully OPAQUE — a control tinted this way, whose label uses the same token, silently paints text on the identical color (contrast ratio 1.00). Never append hex alpha to a Bloom color token in inline style — use the NativeWind opacity class instead (`bg-primary/10` + `text-primary`; reference usages: Mention `SideBarItem`, `PollCard`, `StarterPackCard`).
+
+**Verification:** a check that only confirms a background style was applied cannot tell a correctly-tinted control from an invisible one. Composite the control's actual background over what's behind it, read the label color, and compute the WCAG contrast ratio — assert the property the user perceives (legibility), not the property you changed (that a style exists).
+
 ## Peers
 
 - **Required**: react >= 18, react-native >= 0.73, react-native-safe-area-context >= 5, react-native-reanimated >= 3.13, react-native-gesture-handler >= 2.16.1, react-native-svg >= 13
