@@ -39,7 +39,7 @@
  * Use `<OverlayRoot>` for the surface's outermost node and `<Backdrop>` for its
  * dimming layer; do not re-implement either with raw `View`s.
  */
-import { memo, type ReactNode } from 'react';
+import { createContext, memo, useContext, useMemo, type ReactNode } from 'react';
 import { BlurView } from 'expo-blur';
 import {
   Platform,
@@ -52,8 +52,27 @@ import {
 import Animated, { useAnimatedStyle, type SharedValue } from 'react-native-reanimated';
 
 import { WEB_POSITION_FIXED } from '../styles/web-view-style';
+import { layerForRank, type OverlayLayer } from './stack';
+import { useOverlayLayer } from './use-overlay-layer';
 
 const AnimatedBlurView = Animated.createAnimatedComponent(BlurView);
+
+/**
+ * The z-indices of the nearest enclosing `OverlayRoot`. Descendants that order
+ * themselves within a surface (a dialog's panel above its own backdrop) read
+ * this instead of picking their own numbers.
+ *
+ * The default is the first rank rather than 0, so a surface part rendered
+ * outside any `OverlayRoot` still lands in the overlay band instead of behind
+ * the app.
+ */
+const OverlayLayerContext = createContext<OverlayLayer>(layerForRank(1));
+OverlayLayerContext.displayName = 'BloomOverlayLayerContext';
+
+/** Z-indices of the enclosing overlay surface. See `OverlayRoot`. */
+export function useOverlayLayerContext(): OverlayLayer {
+  return useContext(OverlayLayerContext);
+}
 
 /**
  * One blur radius for every Bloom overlay. Surfaces differ in what they show,
@@ -74,19 +93,92 @@ export interface OverlayRootProps {
   children?: ReactNode;
   style?: StyleProp<ViewStyle>;
   testID?: string;
+  /**
+   * Opt OUT of the open-order stack and pin to a fixed depth. Only the toast
+   * layer does this — a notification has to stay visible over whatever is open,
+   * including a surface opened after it. Everything else must leave this unset
+   * so it stacks by open order; a hand-picked number here is precisely the bug
+   * `./stack.ts` exists to remove.
+   */
+  zIndex?: number;
 }
 
 /**
- * Outermost node of a portaled surface. Fills the viewport and re-enables
- * pointer events for its own children while empty gaps stay click-through
- * (`box-none`), so a surface that only covers part of the screen never steals
- * clicks from the app behind it.
+ * Outermost node of a portaled surface. Three jobs:
+ *
+ *  - Fills the viewport.
+ *  - Re-enables pointer events for its own children while empty gaps stay
+ *    click-through (`box-none`), so a surface that only covers part of the
+ *    screen never steals clicks from the app behind it.
+ *  - Takes this surface's place in the overlay stack, so a surface opened later
+ *    paints above one opened earlier (see `./stack.ts`).
+ *
+ * Because the rank is taken on MOUNT, this must be rendered inside whatever
+ * guard makes the surface appear (`if (!isOpen) return null`), which is where
+ * every Bloom surface already puts it. Descendants that need to order
+ * themselves within the surface read `useOverlayLayerContext()`.
  */
-export function OverlayRoot({ children, style, testID }: OverlayRootProps) {
-  return (
-    <View pointerEvents="box-none" style={[styles.root, style]} testID={testID}>
+export function OverlayRoot({ children, style, testID, zIndex }: OverlayRootProps) {
+  // Split into two components rather than branching on the hook: a pinned root
+  // must not CONSUME a rank either. The toast host is pinned and mounts for the
+  // whole life of the app, so holding a rank would keep the live set permanently
+  // non-empty — the counter would never reset and depths would climb for the
+  // rest of the session.
+  return zIndex === undefined ? (
+    <StackedOverlayRoot style={style} testID={testID}>
       {children}
-    </View>
+    </StackedOverlayRoot>
+  ) : (
+    <PinnedOverlayRoot zIndex={zIndex} style={style} testID={testID}>
+      {children}
+    </PinnedOverlayRoot>
+  );
+}
+
+function StackedOverlayRoot({ children, style, testID }: Omit<OverlayRootProps, 'zIndex'>) {
+  const layer = useOverlayLayer();
+  return (
+    <OverlayRootView layer={layer} style={style} testID={testID}>
+      {children}
+    </OverlayRootView>
+  );
+}
+
+function PinnedOverlayRoot({
+  children,
+  style,
+  testID,
+  zIndex,
+}: OverlayRootProps & { zIndex: number }) {
+  // Outside the stack, so descendants must not read stack depths from it
+  // either — every slot is the pinned depth.
+  const layer = useMemo(
+    () => ({ root: zIndex, backdrop: zIndex, surface: zIndex }),
+    [zIndex],
+  );
+  return (
+    <OverlayRootView layer={layer} style={style} testID={testID}>
+      {children}
+    </OverlayRootView>
+  );
+}
+
+function OverlayRootView({
+  children,
+  style,
+  testID,
+  layer,
+}: Omit<OverlayRootProps, 'zIndex'> & { layer: OverlayLayer }) {
+  return (
+    <OverlayLayerContext.Provider value={layer}>
+      <View
+        pointerEvents="box-none"
+        style={[styles.root, { zIndex: layer.root }, style]}
+        testID={testID}
+      >
+        {children}
+      </View>
+    </OverlayLayerContext.Provider>
   );
 }
 
@@ -112,7 +204,10 @@ export interface BackdropProps {
   /** Dim opacity, 0–1. */
   dimOpacity?: number;
   /**
-   * Geometry for the press target: insets, z-index, layout. NOT opacity —
+   * Geometry for the press target: insets, layout. NOT a z-index — where this
+   * surface sits relative to others is `OverlayRoot`'s call (see `./stack.ts`),
+   * and within the surface the panel is simply rendered after this. NOT opacity
+   * either —
    * `backdrop-filter` samples nothing under an ancestor with `opacity < 1`
    * (the group composites in isolation), so a fade applied here silently kills
    * the blur. An `opacity` found in this style is redirected onto the layers;
@@ -240,3 +335,13 @@ const styles = StyleSheet.create({
     bottom: 0,
   },
 });
+
+export {
+  layerForRank,
+  OVERLAY_STACK_BAND,
+  OVERLAY_STACK_BASE,
+  OVERLAY_STACK_MAX_RANK,
+  TOAST_LAYER_Z,
+  type OverlayLayer,
+} from './stack';
+export { useOverlayLayer } from './use-overlay-layer';

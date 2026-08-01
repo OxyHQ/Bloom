@@ -36,7 +36,6 @@ import {
   ArrowRight_Stroke2_Corner0_Rounded,
   ArrowOutOfBox_Stroke2_Corner0_Rounded,
 } from '../icons';
-import { Z_INDEX } from '../styles/z-index';
 import { WEB_POSITION_FIXED, type WebCssStyle } from '../styles/web-view-style';
 import {
   getAspectRatio,
@@ -1039,14 +1038,15 @@ const styles = StyleSheet.create({
       web: {
         // Full-screen fixed overlay (web), like Bloom's Portal and Dialog.web.
         // Only ever applied on web (this is the `web` arm of Platform.select),
-        // so `WEB_POSITION_FIXED` is honest here; the fullscreen z-index token
-        // keeps the viewer above the app chrome.
+        // so `WEB_POSITION_FIXED` is honest here. The depth is NOT set here:
+        // `OverlayRoot` above assigns it from the open-order overlay stack, so
+        // a viewer opened over another surface paints above it and one opened
+        // under a later surface goes behind (see `src/overlay/stack.ts`).
         position: WEB_POSITION_FIXED,
         top: 0,
         left: 0,
         right: 0,
         bottom: 0,
-        zIndex: Z_INDEX.fullscreen,
       },
       default: {
         // Mounted through the Bloom Portal `Outlet` (which renders its content

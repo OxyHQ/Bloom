@@ -3,8 +3,8 @@ import { Pressable, StyleSheet, View } from 'react-native';
 
 import { useTheme } from '../theme/use-theme';
 import { atoms as a, flatten } from '../styles';
-import { Z_INDEX } from '../styles/z-index';
 import { WEB_POSITION_FIXED } from '../styles/web-view-style';
+import { Z_INDEX } from '../styles/z-index';
 import {
   ARROW_SIZE,
   BUBBLE_MAX_WIDTH,
@@ -156,6 +156,12 @@ const webStyles = StyleSheet.create({
     left: 0,
     right: 0,
     bottom: 0,
-    zIndex: Z_INDEX.tooltip,
+    // In-flow depth, not an overlay-ordering one: the WEB tooltip is not
+    // portaled (unlike the native one) — the bubble is absolutely positioned
+    // against its trigger and renders inline. So this only lifts the
+    // outside-press catcher over adjacent content, and stays below the bubble's
+    // own `a.z_50`. Which SURFACE is on top is never decided here; see
+    // `src/overlay/stack.ts`.
+    zIndex: Z_INDEX.floating,
   },
 });

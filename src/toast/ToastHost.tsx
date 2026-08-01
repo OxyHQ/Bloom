@@ -26,10 +26,9 @@ import * as React from 'react';
 import { StyleSheet } from 'react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 
-import { OverlayRoot } from '../overlay';
+import { OverlayRoot, TOAST_LAYER_Z } from '../overlay';
 import { Portal } from '../portal/index.web';
 import { WEB_POSITION_FIXED } from '../styles/web-view-style';
-import { Z_INDEX } from '../styles/z-index';
 import type { ToastHostProps } from './types';
 
 export function ToastHost({ children, ToasterOverlayWrapper }: ToastHostProps) {
@@ -37,7 +36,7 @@ export function ToastHost({ children, ToasterOverlayWrapper }: ToastHostProps) {
     // `OverlayRoot` carries the pointer-events opt-in as a PROP; as a style
     // entry it never reached the DOM, so the rows inherited the portal root's
     // `pointer-events: none` and no toast could be pressed or swiped away.
-    <OverlayRoot style={styles.host}>
+    <OverlayRoot zIndex={TOAST_LAYER_Z} style={styles.host}>
       {/* Also `box-none`: as the direct child of a box-none root it would
           otherwise be handed `pointer-events: auto` and, spanning the whole
           viewport, block the app underneath while a toast is up. */}
@@ -68,8 +67,12 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
     bottom: 0,
-    // Inside `#bloom-portal-root` (which owns the document layer at 999999),
-    // this keeps toasts above Dialog's surface (60) and tooltips (70).
-    zIndex: Z_INDEX.toast,
+    // The depth is `TOAST_LAYER_Z`, applied by `OverlayRoot` via its `zIndex`
+    // prop — a toast is a notification, not a modal surface, so it is pinned
+    // above the whole open-order overlay stack rather than taking a rank in it
+    // (see `src/overlay/stack.ts`). It must not be set here as well: a style
+    // z-index would fight the prop and, being a fixed number again, would land
+    // back under any surface that outranked it — which is how toasts were
+    // already being lost behind an open bottom sheet.
   },
 });

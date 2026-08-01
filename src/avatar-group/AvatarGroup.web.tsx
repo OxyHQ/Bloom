@@ -1,8 +1,8 @@
 import React, { memo, useCallback, useMemo, useRef, useState } from 'react';
 import { Pressable, StyleSheet, View } from 'react-native';
 
+import { OverlayRoot } from '../overlay';
 import { Portal } from '../portal';
-import { Z_INDEX } from '../styles/z-index';
 import { WEB_POSITION_FIXED } from '../styles/web-view-style';
 import { UserHoverCard } from '../user-hover-card';
 import {
@@ -97,35 +97,40 @@ const AvatarGroupWebComponent: React.FC<AvatarGroupProps> = (props) => {
       <AvatarGroupBase {...props} hoverHandlers={hoverHandlers} />
       {hoverCard && hover && (
         <Portal>
-          {/*
-            A Pressable hosts the hover-bridge: `onHoverIn`/`onHoverOut` are
-            typed in React Native (and map to mouseenter/mouseleave on
-            react-native-web), so the card stays open while the cursor is over
-            it without any web-only DOM-prop type suppression.
-          */}
-          <Pressable
-            onHoverIn={cancelClose}
-            onHoverOut={scheduleClose}
-            accessibilityRole="none"
-            pointerEvents="auto"
-            style={[
-              webStyles.floating,
-              { top: hover.top, left: hover.left, width: CARD_WIDTH },
-            ]}
-          >
-            <UserHoverCard
-              avatar={hover.item.uri ?? undefined}
-              displayName={getItemName(hover.item)}
-              username={hover.item.username}
-              onPressProfile={
-                onPressItem
-                  ? () => onPressItem(hover.item, hover.index)
-                  : undefined
-              }
-              action={renderItemAction?.(hover.item, hover.index)}
-              style={webStyles.card}
-            />
-          </Pressable>
+          {/* The hover card stacks by when it opened, like every other Bloom
+              overlay (`src/overlay/stack.ts`). `box-none` keeps the area
+              around it click-through. */}
+          <OverlayRoot>
+            {/*
+              A Pressable hosts the hover-bridge: `onHoverIn`/`onHoverOut` are
+              typed in React Native (and map to mouseenter/mouseleave on
+              react-native-web), so the card stays open while the cursor is over
+              it without any web-only DOM-prop type suppression.
+            */}
+            <Pressable
+              onHoverIn={cancelClose}
+              onHoverOut={scheduleClose}
+              accessibilityRole="none"
+              pointerEvents="auto"
+              style={[
+                webStyles.floating,
+                { top: hover.top, left: hover.left, width: CARD_WIDTH },
+              ]}
+            >
+              <UserHoverCard
+                avatar={hover.item.uri ?? undefined}
+                displayName={getItemName(hover.item)}
+                username={hover.item.username}
+                onPressProfile={
+                  onPressItem
+                    ? () => onPressItem(hover.item, hover.index)
+                    : undefined
+                }
+                action={renderItemAction?.(hover.item, hover.index)}
+                style={webStyles.card}
+              />
+            </Pressable>
+          </OverlayRoot>
         </Portal>
       )}
     </>
@@ -135,7 +140,6 @@ const AvatarGroupWebComponent: React.FC<AvatarGroupProps> = (props) => {
 const webStyles = StyleSheet.create({
   floating: {
     position: WEB_POSITION_FIXED,
-    zIndex: Z_INDEX.tooltip,
   },
   card: {
     width: CARD_WIDTH,

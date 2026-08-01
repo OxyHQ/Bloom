@@ -12,9 +12,8 @@ import { Pressable, StyleSheet, View, type ViewStyle } from 'react-native';
 
 import { useTheme } from '../theme/use-theme';
 import { Text } from '../typography';
-import { Backdrop } from '../overlay';
+import { Backdrop, OverlayRoot } from '../overlay';
 import { Portal } from '../portal/index.web';
-import { createOverlayZIndex } from '../styles/z-index';
 import { WEB_POSITION_FIXED } from '../styles/web-view-style';
 import { resolveDropdownPlacement } from '../overlay/dropdown-placement';
 import { bloomShadowStyle } from '../design-tokens/shadows';
@@ -39,7 +38,6 @@ import type {
 
 export { useSelectItemContext };
 
-const selectZIndex = createOverlayZIndex();
 const VIEWPORT_GUTTER = 8;
 const SELECT_OFFSET = 6;
 
@@ -259,33 +257,40 @@ export function SelectContent<T>({
 
   return (
     <Portal>
-      <Backdrop
-        style={styles.backdrop}
-        onPress={ctx.close}
-        accessibilityLabel="Close selection"
-      />
-      <View
-        ref={attachDropdown}
-        accessibilityRole="list"
-        accessibilityLabel={label}
-        style={[
-          styles.dropdown,
-          {
-            backgroundColor: theme.isDark
-              ? theme.colors.backgroundSecondary
-              : theme.colors.background,
-            borderColor: theme.colors.borderLight,
-            ...bloomShadowStyle('m'),
-          },
-          position,
-        ]}
-      >
-        {items.map((item, index) => (
-          <React.Fragment key={valueExtractor(item)}>
-            {renderItem(item, index, ctx.value)}
-          </React.Fragment>
-        ))}
-      </View>
+      {/* `OverlayRoot` takes this surface's place in the open-order overlay
+          stack, so it paints above anything opened before it (see
+          `src/overlay/stack.ts`). It is `box-none`, so the area outside the
+          panel stays click-through and the backdrop below still takes its own
+          presses. */}
+      <OverlayRoot>
+        <Backdrop
+          style={styles.backdrop}
+          onPress={ctx.close}
+          accessibilityLabel="Close selection"
+        />
+        <View
+          ref={attachDropdown}
+          accessibilityRole="list"
+          accessibilityLabel={label}
+          style={[
+            styles.dropdown,
+            {
+              backgroundColor: theme.isDark
+                ? theme.colors.backgroundSecondary
+                : theme.colors.background,
+              borderColor: theme.colors.borderLight,
+              ...bloomShadowStyle('m'),
+            },
+            position,
+          ]}
+        >
+          {items.map((item, index) => (
+            <React.Fragment key={valueExtractor(item)}>
+              {renderItem(item, index, ctx.value)}
+            </React.Fragment>
+          ))}
+        </View>
+      </OverlayRoot>
     </Portal>
   );
 }
@@ -415,7 +420,6 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
     bottom: 0,
-    zIndex: selectZIndex.backdrop,
     // Opt back in from the Portal root's `pointer-events: none`.
     pointerEvents: 'auto',
   },
@@ -428,7 +432,6 @@ const styles = StyleSheet.create({
     position: WEB_POSITION_FIXED,
     top: 0,
     left: 0,
-    zIndex: selectZIndex.surface,
     borderRadius: 8,
     borderWidth: 1,
     overflow: 'hidden',

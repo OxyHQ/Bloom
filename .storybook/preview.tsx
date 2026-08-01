@@ -2,6 +2,8 @@ import React from 'react';
 import { View } from 'react-native';
 import type { Decorator, Preview } from '@storybook/react-vite';
 
+import { SafeAreaProvider } from 'react-native-safe-area-context';
+
 import { BloomThemeProvider } from '../src/theme';
 import { BloomDialogProvider } from '../src/dialog';
 import { Provider as PortalProvider, Outlet as PortalOutlet } from '../src/portal';
@@ -10,10 +12,19 @@ import { Provider as PortalProvider, Outlet as PortalOutlet } from '../src/porta
  * Global decorator. Every Bloom story renders inside the full provider
  * stack consuming apps use:
  *
- *   <BloomThemeProvider>   theme + fonts
- *     <PortalProvider>     portal host (menus, tooltips)
- *       <BloomDialogProvider>  imperative alert() host
- *         <story />
+ *   <SafeAreaProvider>     safe-area insets
+ *     <BloomThemeProvider>   theme + fonts
+ *       <PortalProvider>     portal host (menus, tooltips)
+ *         <BloomDialogProvider>  imperative alert() host
+ *           <story />
+ *
+ * `SafeAreaProvider` is not optional: `BottomSheet` reads insets through
+ * `useSafeAreaInsets`, which THROWS ("No safe area value available") outside a
+ * provider. Without it every sheet-backed story — the sheet itself, and the
+ * `Dialog`, `Menu`, `Select`, `ContextMenu` and `Popover` surfaces that render
+ * through one — hit the story error boundary instead of rendering, so the
+ * Storybook web gate silently covered none of them. Consuming apps mount this
+ * provider at their root; the decorator matches them.
  *
  * On web (where Storybook runs) BloomThemeProvider applies CSS variables and
  * the dark class, so stories pick up theme palette colors immediately.
@@ -33,24 +44,26 @@ const withProviders: Decorator = (Story, context) => {
       | undefined) ?? 'oxy';
 
   return (
-    <BloomThemeProvider mode={mode} colorPreset={colorPreset} fonts={false}>
-      <PortalProvider>
-        <BloomDialogProvider>
-          <View
-            style={{
-              padding: 24,
-              minHeight: '100%',
-              alignItems: 'flex-start',
-              justifyContent: 'flex-start',
-              gap: 16,
-            }}
-          >
-            <Story />
-          </View>
-          <PortalOutlet />
-        </BloomDialogProvider>
-      </PortalProvider>
-    </BloomThemeProvider>
+    <SafeAreaProvider>
+      <BloomThemeProvider mode={mode} colorPreset={colorPreset} fonts={false}>
+        <PortalProvider>
+          <BloomDialogProvider>
+            <View
+              style={{
+                padding: 24,
+                minHeight: '100%',
+                alignItems: 'flex-start',
+                justifyContent: 'flex-start',
+                gap: 16,
+              }}
+            >
+              <Story />
+            </View>
+            <PortalOutlet />
+          </BloomDialogProvider>
+        </PortalProvider>
+      </BloomThemeProvider>
+    </SafeAreaProvider>
   );
 };
 

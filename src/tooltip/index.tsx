@@ -18,6 +18,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { useTheme } from '../theme/use-theme';
 import { atoms as a } from '../styles';
+import { OverlayRoot } from '../overlay';
 import { Portal } from '../portal';
 import {
   ARROW_HALF_SIZE,
@@ -173,13 +174,19 @@ export function TooltipContent({
 
   return (
     <Portal>
-      <Bubble
-        label={label}
-        position={position}
-        targetMeasurements={targetMeasurements}
-        requestClose={requestClose}>
-        {children}
-      </Bubble>
+      {/* `OverlayRoot` takes the tooltip's place in the open-order overlay
+          stack, so a tooltip opened over another surface paints above it (see
+          `src/overlay/stack.ts`). It mounts past the `visible` guard, so the
+          rank tracks opening. */}
+      <OverlayRoot>
+        <Bubble
+          label={label}
+          position={position}
+          targetMeasurements={targetMeasurements}
+          requestClose={requestClose}>
+          {children}
+        </Bubble>
+      </OverlayRoot>
     </Portal>
   );
 }

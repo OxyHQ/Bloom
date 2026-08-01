@@ -25,7 +25,7 @@ import { RemoveScrollBar } from 'react-remove-scroll-bar';
 
 import { Backdrop, OverlayRoot } from '../overlay';
 import { Portal } from '../portal/index.web';
-import { createOverlayZIndex } from '../styles/z-index';
+import { Z_INDEX } from '../styles/z-index';
 import { WEB_POSITION_FIXED, type WebCssStyle } from '../styles/web-view-style';
 import { bloomShadowStyle } from '../design-tokens/shadows';
 import { useTheme } from '../theme/use-theme';
@@ -170,7 +170,6 @@ function CenterOrSideDialog({
   actions,
   header,
   placement,
-  layer,
   width = DEFAULT_SIDE_WIDTH,
   maxWidth = DEFAULT_CENTER_MAX_WIDTH,
   inset,
@@ -191,11 +190,6 @@ function CenterOrSideDialog({
   // this component renders once with `isOpen=false` prior to opening, so the
   // stylesheet is present by the time the animated surface mounts).
   useDialogCss();
-
-  // Per-layer overlay z-indices, so a dialog presented on top of another (via
-  // the surface stack) paints above it. Defaults to layer 0 — the offset is 0,
-  // so a lone dialog's z is byte-for-byte unchanged.
-  const dialogZIndex = useMemo(() => createOverlayZIndex(layer ?? 0), [layer]);
 
   // Controlled mode is opt-in: when `open` is a boolean the host owns the
   // visible state; otherwise the legacy imperative `control` path drives it.
@@ -342,46 +336,51 @@ function CenterOrSideDialog({
         <Context.Provider value={context}>
           <ClosingContext.Provider value={isClosing}>
             <RemoveScrollBar />
-            {/* The press target IS the full-viewport box, so it uses
-                `Backdrop` (which opts back in from the Portal root's
-                `pointer-events: none` via the `pointerEvents` PROP — the style
-                form is dropped before it reaches the DOM, see `src/overlay`)
-                and lays the panel out inside itself. */}
-            <Backdrop
-              onPress={() => close()}
-              disabled={!dismissOnBackdrop}
-              accessibilityLabel={label ? `Dismiss ${label}` : 'Dismiss dialog'}
-              // The fade rides on the LAYERS, never on the press target: an
-              // opacity animation on the blur's ancestor composites the group in
-              // isolation and leaves `backdrop-filter` nothing to sample.
-              progress={backdropFade}
-              style={{
-                position: WEB_POSITION_FIXED,
-                zIndex: dialogZIndex.backdrop,
-                alignItems: 'center',
-                justifyContent: 'center',
-                paddingHorizontal: 20,
-              }}
-            >
-              <DialogPanel
-                testID={testID}
-                label={label}
-                title={title}
-                description={description}
-                actions={actions}
-                header={header}
-                style={style}
-                maxWidth={maxWidth}
-                contentPadding={contentPadding}
-                maxHeightRatio={maxHeightRatio}
-                scrollable={scrollable}
-                morph={morph}
-                surfaceZIndex={dialogZIndex.surface}
-                isClosing={isClosing}
+            {/* `OverlayRoot` takes this dialog's place in the open-order
+                overlay stack. It mounts here, inside the `isOpen` guard, which
+                is what makes the rank track OPENING rather than mounting — the
+                dialog is declared once at the app root and stays mounted for
+                the app's lifetime. */}
+            <OverlayRoot>
+              {/* The press target IS the full-viewport box, so it uses
+                  `Backdrop` (which opts back in from the Portal root's
+                  `pointer-events: none` via the `pointerEvents` PROP — the style
+                  form is dropped before it reaches the DOM, see `src/overlay`)
+                  and lays the panel out inside itself. */}
+              <Backdrop
+                onPress={() => close()}
+                disabled={!dismissOnBackdrop}
+                accessibilityLabel={label ? `Dismiss ${label}` : 'Dismiss dialog'}
+                // The fade rides on the LAYERS, never on the press target: an
+                // opacity animation on the blur's ancestor composites the group in
+                // isolation and leaves `backdrop-filter` nothing to sample.
+                progress={backdropFade}
+                style={{
+                  position: WEB_POSITION_FIXED,
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  paddingHorizontal: 20,
+                }}
               >
-                {children}
-              </DialogPanel>
-            </Backdrop>
+                <DialogPanel
+                  testID={testID}
+                  label={label}
+                  title={title}
+                  description={description}
+                  actions={actions}
+                  header={header}
+                  style={style}
+                  maxWidth={maxWidth}
+                  contentPadding={contentPadding}
+                  maxHeightRatio={maxHeightRatio}
+                  scrollable={scrollable}
+                  morph={morph}
+                  isClosing={isClosing}
+                >
+                  {children}
+                </DialogPanel>
+              </Backdrop>
+            </OverlayRoot>
           </ClosingContext.Provider>
         </Context.Provider>
       </Portal>
@@ -407,8 +406,6 @@ function CenterOrSideDialog({
             inset={inset}
             dismissOnBackdrop={dismissOnBackdrop}
             contentPadding={contentPadding}
-            backdropZIndex={dialogZIndex.backdrop}
-            surfaceZIndex={dialogZIndex.surface}
             onDismiss={close}
             panelStyle={panelStyle}
             panelClassName={panelClassName}
@@ -437,7 +434,6 @@ function DialogPanel({
   maxHeightRatio,
   scrollable,
   morph,
-  surfaceZIndex,
   isClosing,
   children,
 }: {
@@ -453,7 +449,6 @@ function DialogPanel({
   maxHeightRatio?: number;
   scrollable?: boolean;
   morph?: boolean;
-  surfaceZIndex: number;
   isClosing: boolean;
   children?: React.ReactNode;
 }) {
@@ -518,7 +513,12 @@ function DialogPanel({
           // Design-system overlay elevation (`shadow-m`) as a `boxShadow` — RN-Web
           // deprecated the `shadow*` style props.
           ...bloomShadowStyle('m'),
-          zIndex: surfaceZIndex,
+          // Above this surface's OWN backdrop, and nothing more: `OverlayRoot`
+          // sets a z-index and a fixed position, so it is a stacking context and
+          // this value is scoped inside it. Where this dialog sits relative to
+          // OTHER surfaces is the overlay stack's decision, made once on
+          // `OverlayRoot` (see `src/overlay/stack.ts`) — never a number here.
+          zIndex: Z_INDEX.raised,
         },
         isClosing ? ZOOM_FADE_OUT : ZOOM_FADE_IN,
         // Drives `height` (and `maxWidth`) only while a morph is in flight; at
@@ -612,8 +612,6 @@ function SheetSurface({
   inset,
   dismissOnBackdrop,
   contentPadding,
-  backdropZIndex,
-  surfaceZIndex,
   onDismiss,
   panelStyle,
   panelClassName,
@@ -635,8 +633,6 @@ function SheetSurface({
   inset?: DialogInset;
   dismissOnBackdrop: boolean;
   contentPadding: number;
-  backdropZIndex: number;
-  surfaceZIndex: number;
   onDismiss: () => void;
   panelStyle?: StyleProp<ViewStyle>;
   panelClassName?: string;
@@ -714,7 +710,7 @@ function SheetSurface({
 
   return (
     <OverlayRoot
-      style={[sheetStyles.root, { zIndex: backdropZIndex }, containerStyle]}
+      style={[sheetStyles.root, containerStyle]}
       {...(containerClassName ? ({ className: containerClassName } as Record<string, string>) : {})}
     >
       <Backdrop
@@ -744,7 +740,12 @@ function SheetSurface({
           sheetStyles.panel,
           {
             backgroundColor: theme.colors.background,
-            zIndex: surfaceZIndex,
+            // Above this surface's OWN backdrop, and nothing more: `OverlayRoot`
+            // sets a z-index and a fixed position, so it is a stacking context and
+            // this value is scoped inside it. Where this dialog sits relative to
+            // OTHER surfaces is the overlay stack's decision, made once on
+            // `OverlayRoot` (see `src/overlay/stack.ts`) — never a number here.
+            zIndex: Z_INDEX.raised,
             pointerEvents: 'auto',
             // Design-system overlay elevation (`shadow-m`) as a `boxShadow`.
             ...bloomShadowStyle('m'),
@@ -866,9 +867,10 @@ export function AutoMountedDialog({
 // The annotation supplies the contextual type instead, so the literals narrow and
 // a genuine mistake still fails.
 const sheetStyles: Record<'root' | 'backdrop' | 'panel', ViewStyle> = {
-  // `zIndex` for the root (backdrop) and panel (surface) is applied inline from
-  // the per-layer `createOverlayZIndex(layer)` in `SheetSurface`, so a side
-  // dialog stacked on top of another (surface stack) paints above it.
+  // No overlay `zIndex` here: `SheetSurface` renders an `OverlayRoot`, which
+  // assigns this drawer's depth from the open-order overlay stack, so a drawer
+  // opened on top of another surface paints above it (see
+  // `src/overlay/stack.ts`).
   root: {
     position: WEB_POSITION_FIXED,
     top: 0,
