@@ -3,7 +3,30 @@ import type { ImageSourcePropType, StyleProp, ViewStyle, ImageStyle } from 'reac
 // Referenced by the `variant` prop docs below.
 import type { ImageResolver } from '../image-resolver/context';
 
-export type AvatarShape = 'circle' | 'squircle';
+import type { AvatarShapeName } from './shape-paths';
+
+/**
+ * Built-in avatar outlines: the two originals plus the named registry in
+ * `shape-paths.ts`. Any of these can be passed as a plain string.
+ */
+export type AvatarShape = 'circle' | 'squircle' | AvatarShapeName;
+
+/**
+ * A caller-supplied outline, for shapes that are not in the built-in registry.
+ *
+ * The path is clipped against the avatar box, so it should fill its coordinate
+ * space edge to edge; anything outside is cut off rather than scaled to fit.
+ */
+export interface AvatarShapePath {
+  /** SVG path data (the `d` attribute) describing a closed outline. */
+  d: string;
+  /**
+   * Side length of the square coordinate space `d` is drawn in — 100 for a
+   * path written over a 0–100 grid, 1 for one written over a 0–1 grid.
+   * Defaults to 1.
+   */
+  viewBox?: number;
+}
 
 /** Gradient sweep direction for a multi-color {@link AvatarRingConfig}. */
 export type AvatarRingGradientDirection = 'diagonal' | 'horizontal' | 'vertical';
@@ -45,8 +68,14 @@ export interface AvatarProps {
   verified?: boolean;
   /** Custom verified badge icon (rendered at bottom-right) */
   verifiedIcon?: ReactNode;
-  /** Shape of the avatar (defaults to 'circle'). 'squircle' requires react-native-svg. */
-  shape?: AvatarShape;
+  /**
+   * Shape of the avatar (defaults to `'circle'`). Accepts a built-in name —
+   * `'squircle'`, `'heart'`, `'pentagon'`, … see {@link AvatarShapeName} — or an
+   * {@link AvatarShapePath} with your own outline. Everything except `'circle'`
+   * clips through `react-native-svg`; a name that does not resolve falls back to
+   * a circle.
+   */
+  shape?: AvatarShape | AvatarShapePath;
   /** Container style */
   style?: StyleProp<ViewStyle>;
   /** Image style (circle shape only) */
