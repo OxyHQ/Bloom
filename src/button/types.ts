@@ -11,6 +11,14 @@ import type { StyleProp, ViewStyle, TextStyle } from 'react-native';
  *     the set. On native they fall back to a sensible equivalent
  *     (`outline → secondary`, `link → text`, `destructive → primary` tinted with
  *     the negative token) so passing them never crashes a native consumer.
+ *
+ * `text` (and its web alias `link`) is DELIBERATELY not a transparent `ghost`:
+ * it is the compact inline affordance, so it overrides the size config's padding
+ * down to 4/8 on BOTH platforms. `ghost` keeps the full padding — it is a
+ * regular button that happens to have no background. The one geometry that does
+ * differ by platform is `minHeight`: web clears it for `text`/`link` so the
+ * control hugs its label and sits inline, native keeps the size config's value
+ * because a finger needs the target and a cursor does not.
  */
 export type ButtonVariant =
   | 'primary'

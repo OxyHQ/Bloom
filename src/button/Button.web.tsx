@@ -18,9 +18,17 @@ import type { ButtonProps, ButtonSize, ButtonVariant } from './types';
 export type { ButtonProps, ButtonVariant, ButtonSize } from './types';
 
 // ---------------------------------------------------------------------------
-//  Geometry — mirrors the native (`Button.tsx`) impl exactly so the web button
-//  is pixel-consistent with native. Sizes below are the resolved primitives;
-//  the shadcn-style aliases (`sm | md | lg | icon`) are normalized first.
+//  Geometry — mirrors the native (`Button.tsx`) impl so the web button is
+//  pixel-consistent with native. Sizes below are the resolved primitives; the
+//  shadcn-style aliases (`sm | md | lg | icon`) are normalized first.
+//
+//  ONE deliberate exception, in `containerStyle`: `text`/`link` clear
+//  `minHeight` here so the control hugs its label and sits inline (which is what
+//  makes `asChild` anchors work), while native keeps the size config's value to
+//  preserve the touch target. The 4/8 padding override those variants get is NOT
+//  an exception — native applies exactly the same one, so `text` is a compact
+//  affordance and `ghost` a full-size button without a background on both
+//  platforms. Only the variant COLOR table below is shared between them.
 // ---------------------------------------------------------------------------
 
 type NativeSize = 'small' | 'medium' | 'large';

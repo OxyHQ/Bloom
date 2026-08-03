@@ -129,6 +129,22 @@ describe('Button.web', () => {
     expect(btn).toHaveClass('custom');
   });
 
+  // Parity with the native fork's "the button IS the node its parent lays out"
+  // suite in `Button.test.tsx`. Both platforms render ONE node, so a caller's
+  // layout class reaches the box the parent actually lays out; a wrapper element
+  // added here would scope it away exactly the way native's `Animated.View` did.
+  it('renders the classed button as the outermost node — no wrapper element', () => {
+    const c = mount(
+      <div data-testid="host">
+        <Button className="flex-1">Wide</Button>
+      </div>,
+    );
+    const host = c.querySelector('[data-testid="host"]');
+    expect(host?.children).toHaveLength(1);
+    expect(host?.firstElementChild?.tagName).toBe('BUTTON');
+    expect(host?.firstElementChild).toHaveClass('flex-1');
+  });
+
   it('applies aria-label from accessibilityLabel', () => {
     const c = mount(<Button accessibilityLabel="Save changes">Save</Button>);
     expect(getByLabelText(c, 'Save changes')).toBeTruthy();
