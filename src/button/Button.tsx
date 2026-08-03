@@ -1,4 +1,4 @@
-import React, { useMemo, memo } from 'react';
+import React, { useMemo, memo, type ComponentType } from 'react';
 import {
   ActivityIndicator,
   Animated,
@@ -7,9 +7,12 @@ import {
   StyleSheet,
   Text,
   View,
+  type PressableProps,
+  type StyleProp,
   type TextStyle,
   type ViewStyle,
 } from 'react-native';
+import { styled } from 'react-native-css';
 
 import { useTheme } from '../theme/use-theme';
 import { usePressAnimation } from '../hooks/usePressAnimation';
@@ -68,6 +71,73 @@ const PILL_RADIUS = 999;
 
 const PRESS_SCALE = 0.97;
 const SCALE_VARIANTS = new Set<string>(['primary', 'secondary', 'inverse']);
+
+// ---------------------------------------------------------------------------
+//  The button renders ONE node — the same shape the web fork renders (one
+//  `<button>`).
+//
+//  It used to be two: an unstyled `Animated.View` holding the press-scale
+//  transform, wrapping the `Pressable` that carried `className`, `style` and
+//  every visual. That wrapper — not the pressable — was the flex child of
+//  whatever laid the button out, and it hugged its content, so a caller's
+//  `className="flex-1"` (and `style={{ alignSelf }}`, and every other layout
+//  declaration) applied INSIDE a box that never grew. Nothing errored; the same
+//  call site behaved on web and did nothing on native, and consumers worked
+//  around it by wrapping every Bloom `Button` in their own `<View>`.
+//
+//  Collapsing the two nodes settles "which node does a class belong on?" by
+//  removing the choice: layout and visuals are one box here exactly as they are
+//  in the DOM, so a layout class and a visual class cannot land in different
+//  places. The touch target now scales with the press (0.97 — ~1px on a 40dp
+//  button, and the press is registered before it starts), the same trade
+//  `PressableScale` made when it dropped its own two-node structure.
+//
+//  `styled()` comes from Bloom's own `react-native-css` dependency rather than
+//  passing `className` as a bare prop and hoping the consumer's NativeWind
+//  interop recognises a component Bloom built at module scope. Same reasoning,
+//  and the same silent failure if skipped, as `typography/styled-text.ts`.
+//
+//  Both wrappers are built ONCE at module scope so the element type is stable
+//  across renders — one built during render remounts the subtree every time.
+// ---------------------------------------------------------------------------
+
+/**
+ * Exactly the prop surface `Button` hands to the pressable, and no wider.
+ * `Animated.createAnimatedComponent` maps `WithAnimatedValue` over every prop of
+ * the component it wraps, and doing that to the whole of `PressableProps`
+ * overflows the checker (`TS2590: union type that is too complex to represent`).
+ * Narrowing is also honest: the function form of `style` is deliberately
+ * excluded — see the `useInteractionState` comment in the component body for why
+ * Bloom never uses it.
+ */
+type ButtonPressableProps = Pick<
+  PressableProps,
+  | 'accessibilityHint'
+  | 'accessibilityLabel'
+  | 'accessibilityRole'
+  | 'accessibilityState'
+  | 'children'
+  | 'className'
+  | 'disabled'
+  | 'hitSlop'
+  | 'onPress'
+  | 'onPressIn'
+  | 'onPressOut'
+  | 'testID'
+> & { style?: StyleProp<ViewStyle> };
+
+/**
+ * The same `Pressable` object, typed down to {@link ButtonPressableProps}.
+ * `styled()` derives its mapping type from a dot-path union over the wrapped
+ * component's ENTIRE prop type, and the one over `PressableProps` also overflows
+ * the checker. Nothing changes at runtime — this is the identical component.
+ */
+const ButtonPressable: ComponentType<ButtonPressableProps> = Pressable;
+
+const StyledPressable: ComponentType<ButtonPressableProps> = styled(ButtonPressable, {
+  className: 'style',
+});
+const AnimatedPressable = Animated.createAnimatedComponent(StyledPressable);
 
 const ButtonComponent: React.FC<ButtonProps> = ({
   onPress,
@@ -170,6 +240,16 @@ const ButtonComponent: React.FC<ButtonProps> = ({
         styles.borderRadius = PILL_RADIUS;
         break;
       case 'icon':
+        // Resolved tokens, not `className="bg-background border border-border"`.
+        // The class form made the caller's `className` and the icon's own chrome
+        // compete for one slot — `<IconButton className="flex-1" />` replaced the
+        // default and shipped a transparent, borderless icon button — and it left
+        // the chrome dependent on the consumer's Tailwind pipeline resolving
+        // Bloom's color names. These are the SAME tokens `Button.web.tsx`'s
+        // `resolveVariantStyle('icon')` already writes inline.
+        styles.backgroundColor = theme.colors.background;
+        styles.borderWidth = 1;
+        styles.borderColor = theme.colors.border;
         styles.borderRadius = PILL_RADIUS;
         styles.padding = 8;
         styles.width = sizeConfig.minHeight;
@@ -220,7 +300,6 @@ const ButtonComponent: React.FC<ButtonProps> = ({
 
   const defaultHitSlop = variant === 'icon' ? ICON_HIT_SLOP : undefined;
   const resolvedActiveOpacity = activeOpacity ?? (variant === 'icon' ? 0.7 : 0.8);
-  const resolvedClassName = className ?? (variant === 'icon' ? 'bg-background border border-border' : undefined);
 
   const content = (
     <>
@@ -233,44 +312,48 @@ const ButtonComponent: React.FC<ButtonProps> = ({
   );
 
   return (
-    <Animated.View style={hasScaleFeedback ? { transform: [{ scale: scaleAnim }] } : undefined}>
-      <Pressable
-        {...(resolvedClassName ? { className: resolvedClassName } as Record<string, string> : {})}
-        style={[
-          baseStyles,
-          disabled && !loading && { opacity: 0.5 },
-          pressed && !hasScaleFeedback && !isInteractionBlocked && { opacity: resolvedActiveOpacity },
-          style,
-        ]}
-        onPress={isInteractionBlocked ? undefined : onPress}
-        onPressIn={handlePressIn}
-        onPressOut={handlePressOut}
-        disabled={isInteractionBlocked}
-        hitSlop={hitSlop ?? defaultHitSlop}
-        accessibilityLabel={accessibilityLabel}
-        accessibilityHint={accessibilityHint}
-        accessibilityRole="button"
-        accessibilityState={loading ? { disabled: isInteractionBlocked, busy: true } : { disabled: isInteractionBlocked }}
-        testID={testID}
-      >
-        {loading ? (
-          <>
-            <View
-              style={styles.loadingHiddenContent}
-              importantForAccessibility="no-hide-descendants"
-              accessibilityElementsHidden
-            >
-              {content}
-            </View>
-            <View style={styles.loadingOverlay}>
-              <ActivityIndicator size="small" color={loadingColor ?? resolvedTextColor} />
-            </View>
-          </>
-        ) : (
-          content
-        )}
-      </Pressable>
-    </Animated.View>
+    <AnimatedPressable
+      className={className}
+      style={[
+        baseStyles,
+        disabled && !loading && { opacity: 0.5 },
+        pressed && !hasScaleFeedback && !isInteractionBlocked && { opacity: resolvedActiveOpacity },
+        // Before the caller's `style`, so `style` keeps winning the whole array
+        // the way it always has (and the way the web fork spreads it last). The
+        // cost is that a caller who sets `transform` on a scale variant replaces
+        // the press scale instead of composing with it — when the transform sat
+        // on a separate wrapper node the two multiplied.
+        hasScaleFeedback ? { transform: [{ scale: scaleAnim }] } : null,
+        style,
+      ]}
+      onPress={isInteractionBlocked ? undefined : onPress}
+      onPressIn={handlePressIn}
+      onPressOut={handlePressOut}
+      disabled={isInteractionBlocked}
+      hitSlop={hitSlop ?? defaultHitSlop}
+      accessibilityLabel={accessibilityLabel}
+      accessibilityHint={accessibilityHint}
+      accessibilityRole="button"
+      accessibilityState={loading ? { disabled: isInteractionBlocked, busy: true } : { disabled: isInteractionBlocked }}
+      testID={testID}
+    >
+      {loading ? (
+        <>
+          <View
+            style={styles.loadingHiddenContent}
+            importantForAccessibility="no-hide-descendants"
+            accessibilityElementsHidden
+          >
+            {content}
+          </View>
+          <View style={styles.loadingOverlay}>
+            <ActivityIndicator size="small" color={loadingColor ?? resolvedTextColor} />
+          </View>
+        </>
+      ) : (
+        content
+      )}
+    </AnimatedPressable>
   );
 };
 
