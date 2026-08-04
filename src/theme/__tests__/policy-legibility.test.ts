@@ -117,11 +117,12 @@ describe('colour policy legibility', () => {
   });
 
 
-  // The budget must apply to BOTH modes. Exempting dark so the fill could stay on
-  // the brand hex left every Follow button, avatar and chat bubble with a black
-  // label there while light had eleven white ones — an asymmetry nobody chose,
-  // and invisible to the suite because each half was individually legible.
-  it('the brand fill carries the same label pattern in both modes', () => {
+  // The two modes want opposite things and the suite has to say which. Applying
+  // the budget in LIGHT let a light seed keep its own tone there, so faircoin
+  // rendered the same pale lime in both modes — no theme at all. Skipping it in
+  // DARK left every Follow button, avatar and chat bubble with a black label.
+  // Each half was individually legible, so nothing else could catch either.
+  it('the brand fill keeps light exemption-free and dark budgeted', () => {
     const white = { light: 0, dark: 0 };
     for (const preset of APP_COLOR_NAMES) {
       for (const mode of ['light', 'dark'] as const) {
@@ -130,7 +131,9 @@ describe('colour policy legibility', () => {
         }
       }
     }
-    expect(white.dark).toBe(white.light);
-    expect(white.light).toBeGreaterThan(0);
+    // Light admits no exemption, so every preset carries white there. Dark keeps
+    // the budget, so the seeds that are already light keep their colour instead.
+    expect(white.light).toBe(APP_COLOR_NAMES.length);
+    expect(white.dark).toBeGreaterThan(APP_COLOR_NAMES.length - 4);
   });
 });
