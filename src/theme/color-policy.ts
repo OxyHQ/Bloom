@@ -98,16 +98,15 @@ const LIGHT_FILL_TONE = 45;
 const DARK_FLOOR = 58;
 
 /**
- * Accent fills stop here in dark, and the ceiling is not aesthetic.
+ * Accent fills sit at their hue's PEAK tone in dark — where the hue is most
+ * itself, so a lime reads as lime rather than olive.
  *
- * White text needs a fill at or below tone 49, and an accent is a BUTTON — the
- * FAB, the compose action — where white on colour is the convention. Sitting the
- * accent at its hue's peak tone makes a lime look like lime, but peaks live at
- * tone 88 for that family, and no label survives up there except black. The hue
- * work still stands (a magenta seed's accent is the lime family, not the emerald
- * one it used to be); only its brightness is capped so the label can be white.
+ * The cost is fixed and cannot be engineered away: peaks for that family live
+ * around tone 88, and white text needs a fill at or below 49, so these buttons
+ * carry a BLACK label. Capping the tone to win the white label back turns the
+ * same accents dull — measured on blue, rgb(252 220 0) becomes rgb(134 116 0).
+ * The bright colour is the deliberate choice.
  */
-const DARK_ACCENT_TONE = 49;
 
 /** Chroma ceiling for an accent FILL — the brand palette's own maximum, not the gamut's. */
 const ACCENT_CHROMA = 80;
@@ -310,7 +309,7 @@ export function buildPolicyTokens(
     // black. The accent chroma cap already keeps these hues out of neon territory,
     // and the hue itself is the caller's brand rather than ours to move. The
     // analyzer still runs where it was designed to, inside `color-roles`.
-    const tone = isDark ? DARK_ACCENT_TONE : LIGHT_FILL_TONE;
+    const tone = isDark ? Math.max(peakTone(hue), DARK_FLOOR) : LIGHT_FILL_TONE;
     const pair = fillPair(fillPalette, tone);
     tokens[`--${role}`] = pair.fill;
     tokens[`--${role}-foreground`] = pair.foreground;
