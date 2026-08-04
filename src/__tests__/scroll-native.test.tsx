@@ -124,12 +124,13 @@ interface ShowOptions {
   subKey?: string;
   enabled?: boolean;
   focused?: boolean;
+  onBinding?: (binding: ScrollRestorationBinding) => void;
 }
 
 class Harness {
   readonly root: Root;
   private readonly container: HTMLElement;
-  private binding: ScrollRestorationBinding | null = null;
+  private bindingRef: ScrollRestorationBinding | null = null;
 
   constructor() {
     this.container = document.createElement('div');
@@ -145,7 +146,7 @@ class Harness {
     });
   }
 
-  show({ content, focused = true, ...screen }: ShowOptions): void {
+  show({ content, focused = true, onBinding, ...screen }: ShowOptions): void {
     this.render(
       createElement(
         FocusContext.Provider,
@@ -156,7 +157,8 @@ class Harness {
           createElement(Screen, {
             ...screen,
             onBinding: (binding) => {
-              this.binding = binding;
+              this.bindingRef = binding;
+              onBinding?.(binding);
             },
           }),
         ),
@@ -167,12 +169,18 @@ class Harness {
   /** Unmount the screen while keeping the provider (and its store) alive. */
   unmountScreen(): void {
     this.render(null);
-    this.binding = null;
+    this.bindingRef = null;
+  }
+
+  /** The binding from the most recent render. */
+  binding(): ScrollRestorationBinding {
+    if (this.bindingRef === null) throw new Error('no screen mounted');
+    return this.bindingRef;
   }
 
   /** Report a scroll the way a list wired to the binding would. */
   scroll(offset: number): void {
-    const binding = this.binding;
+    const binding = this.bindingRef;
     if (binding === null) throw new Error('no screen mounted');
     act(() => {
       binding.onScroll(scrollEvent(offset));
@@ -438,6 +446,64 @@ describe('native scroll-restoration hook', () => {
       frames.flushOneFrame();
     });
     expect(list.lastScroll).toBe(700);
+  });
+
+  describe('restorePending', () => {
+    it('is true from the FIRST render until the deferred write lands', () => {
+      // Native defers its write a frame so the incoming rows get their layout
+      // pass, so there IS something to wait for — unlike web, that covers a
+      // reset too, because that write is deferred as well.
+      //
+      // The first render is asserted specifically: the effect raises the flag
+      // anyway, so reading only the latest binding would pass whether or not
+      // the mount seed exists, and a caller hiding its list would still get one
+      // painted frame at the wrong offset.
+      const list = new FakeList();
+      const seen: ScrollRestorationBinding[] = [];
+      harness.show({
+        list,
+        content: unseenContent(),
+        onBinding: (b) => seen.push(b),
+      });
+      expect(seen[0]?.restorePending).toBe(true);
+      expect(harness.binding().restorePending).toBe(true);
+
+      act(() => {
+        frames.flushOneFrame();
+      });
+      expect(harness.binding().restorePending).toBe(false);
+    });
+
+    it('is true for a restore too, and false once the offset is applied', () => {
+      const list = new FakeList();
+      const content = unseenContent();
+      harness.show({ list, content });
+      act(() => {
+        frames.flushOneFrame();
+      });
+      harness.scroll(2400);
+      harness.unmountScreen();
+
+      harness.show({ list, content });
+      expect(harness.binding().restorePending).toBe(true);
+      act(() => {
+        frames.flushOneFrame();
+      });
+      expect(list.lastScroll).toBe(2400);
+      expect(harness.binding().restorePending).toBe(false);
+    });
+
+    it('is false while disabled — there is no write coming', () => {
+      const list = new FakeList();
+      harness.show({ list, content: unseenContent(), enabled: false });
+      expect(harness.binding().restorePending).toBe(false);
+    });
+
+    it('is false when the adapter cannot identify the screen', () => {
+      const list = new FakeList();
+      harness.show({ list, content: null });
+      expect(harness.binding().restorePending).toBe(false);
+    });
   });
 
   it('throws outside a provider, the same as on web', () => {
