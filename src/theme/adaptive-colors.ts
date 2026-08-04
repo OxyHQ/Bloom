@@ -43,12 +43,6 @@ function getAndroidColors(): ThemeColors | null {
       secondaryForeground: c(d.onSecondary),
       tertiary: c(d.tertiary),
       tertiaryForeground: c(d.onTertiary),
-      // Adaptive palettes come from the OS, which has no peak-tone accent to
-      // deepen, so the solid-button member is the accent itself.
-      secondaryStrong: c(d.secondary),
-      secondaryStrongForeground: c(d.onSecondary),
-      tertiaryStrong: c(d.tertiary),
-      tertiaryStrongForeground: c(d.onTertiary),
       tint: c(d.primary),
       icon: c(d.onSurfaceVariant),
       iconActive: c(d.primary),
@@ -94,10 +88,6 @@ function getIOSColors(): ThemeColors | null {
       secondaryForeground: '#FFFFFF',
       tertiary: c(i.systemTeal),
       tertiaryForeground: '#FFFFFF',
-      secondaryStrong: c(i.systemPurple),
-      secondaryStrongForeground: '#FFFFFF',
-      tertiaryStrong: c(i.systemTeal),
-      tertiaryStrongForeground: '#FFFFFF',
       tint: c(i.systemBlue),
       icon: c(i.secondaryLabel),
       iconActive: c(i.systemBlue),

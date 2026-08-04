@@ -79,10 +79,6 @@ export function buildColorsFromSeed(
     secondaryForeground: g('secondary-foreground'),
     tertiary: g('tertiary'),
     tertiaryForeground: g('tertiary-foreground'),
-    secondaryStrong: g('secondary-strong'),
-    secondaryStrongForeground: g('secondary-strong-foreground'),
-    tertiaryStrong: g('tertiary-strong'),
-    tertiaryStrongForeground: g('tertiary-strong-foreground'),
 
     tint: g('primary'),
     icon: g('muted-foreground'),

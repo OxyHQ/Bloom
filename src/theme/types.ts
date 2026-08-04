@@ -25,15 +25,6 @@ export interface ThemeColors {
   /** The M3 tertiary accent, completing the primary/secondary/tertiary trio. */
   tertiary: string;
   tertiaryForeground: string;
-  /**
-   * The solid-BUTTON member of each accent: the same hue, deep enough to carry a
-   * white label. The accent itself sits at its hue's peak tone, where nothing but
-   * black survives — fine for a tile or a chip, wrong for a FAB.
-   */
-  secondaryStrong: string;
-  secondaryStrongForeground: string;
-  tertiaryStrong: string;
-  tertiaryStrongForeground: string;
 
   tint: string;
   icon: string;
