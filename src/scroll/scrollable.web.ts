@@ -16,8 +16,19 @@ export interface ResolvedScroller {
    * content height drops to the viewport height; while collapsed the container
    * cannot be scrolled and its `scrollTop` is forced to 0. The hook uses this
    * to ignore a spurious 0 read coming from a collapsed container rather than
-   * persisting it over a previously-saved good offset. The `'window'` scroller
-   * is never collapsed by the navigator, so it always reports `true`.
+   * persisting it over a previously-saved good offset.
+   *
+   * The DOCUMENT collapses the same way, so the `'window'` sentinel answers the
+   * same question honestly rather than hardcoding `true`. It used to, on the
+   * premise that the navigator never collapses the document — false under a
+   * tabbed navigator, where every tab stays MOUNTED and non-focused ones are
+   * `display: none` (expo-router's `ui/TabSlot`, and react-native-screens' web
+   * `Screen` at `activityState === 0`). Measured in Chrome 150: switching from
+   * a tall tab to a short one drops `documentElement.scrollHeight` from 8040 to
+   * the 800px viewport, forces `scrollY` to 0 and dispatches two `scroll`
+   * events — which the outgoing tab's still-attached listener would otherwise
+   * persist as 0 over its real offset, because blur is emitted from an effect
+   * that has not run yet.
    */
   canScroll: () => boolean;
 }
@@ -71,7 +82,12 @@ export function createScroller(target: ScrollRestorationTarget): ResolvedScrolle
       setOffset: (offset) => {
         if (typeof window !== 'undefined') window.scrollTo(0, offset);
       },
-      canScroll: () => true,
+      canScroll: () => {
+        if (typeof window === 'undefined' || typeof document === 'undefined') {
+          return false;
+        }
+        return document.documentElement.scrollHeight > window.innerHeight;
+      },
     };
   }
 

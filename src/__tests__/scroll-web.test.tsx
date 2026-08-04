@@ -177,12 +177,23 @@ interface ScreenProps {
   node: FakeScrollNode;
   subKey?: string;
   enabled?: boolean;
+  /** Drive the `'window'` sentinel instead of the node ref. */
+  windowTarget?: boolean;
   onBinding?: (binding: ScrollRestorationBinding) => void;
 }
 
-function Screen({ node, subKey, enabled, onBinding }: ScreenProps): ReactNode {
+function Screen({
+  node,
+  subKey,
+  enabled,
+  windowTarget,
+  onBinding,
+}: ScreenProps): ReactNode {
   const ref = useRef(makeHandle(node));
-  const binding = useScrollRestoration(ref, { key: subKey, enabled });
+  const binding = useScrollRestoration(windowTarget ? 'window' : ref, {
+    key: subKey,
+    enabled,
+  });
   onBinding?.(binding);
   return null;
 }
@@ -749,6 +760,95 @@ describe('web scroll-restoration hook', () => {
       frames.flushOneFrame();
     });
     expect(node.scrollTop).toBe(3520);
+  });
+
+  describe('the window sentinel and a collapsing document', () => {
+    // Every Oxy web feed passes `'window'`. Under a TABBED navigator each tab
+    // stays MOUNTED and non-focused ones are `display: none`, which collapses
+    // the DOCUMENT — measured in Chrome 150: `documentElement.scrollHeight`
+    // 8040 -> 800, `scrollY` forced to 0, two `scroll` events dispatched. Blur
+    // is emitted from an effect that has not run yet, so the outgoing tab's
+    // listener is still attached when they arrive.
+    const DOC_VIEWPORT = 800;
+    let docHeight = 8040;
+    let scrollY = 0;
+
+    beforeEach(() => {
+      docHeight = 8040;
+      scrollY = 0;
+      Object.defineProperty(window, 'scrollY', {
+        configurable: true,
+        get: () => scrollY,
+      });
+      Object.defineProperty(window, 'innerHeight', {
+        configurable: true,
+        get: () => DOC_VIEWPORT,
+      });
+      Object.defineProperty(document.documentElement, 'scrollHeight', {
+        configurable: true,
+        get: () => docHeight,
+      });
+      window.scrollTo = ((_x: number, y: number) => {
+        scrollY = Math.min(Math.max(0, y), Math.max(0, docHeight - DOC_VIEWPORT));
+      }) as typeof window.scrollTo;
+    });
+
+    function emitWindowScroll(): void {
+      act(() => {
+        window.dispatchEvent(new Event('scroll'));
+      });
+    }
+
+    it('does not persist the 0 a collapsing document forces', () => {
+      const node = new FakeScrollNode();
+      const content = unseenContent();
+
+      harness.show({ node, content, windowTarget: true });
+      // Positive control: the document is genuinely scrollable, so a 0 read
+      // here would be a real user position rather than a collapse artefact.
+      expect(document.documentElement.scrollHeight).toBeGreaterThan(
+        window.innerHeight,
+      );
+      scrollY = 5000;
+      emitWindowScroll();
+
+      // The tab switch: this screen is hidden, the document collapses to the
+      // viewport and the browser forces the offset to 0, dispatching `scroll`
+      // while this screen's listener is still attached.
+      docHeight = DOC_VIEWPORT;
+      scrollY = 0;
+      emitWindowScroll();
+
+      // Leaving and returning must bring back 5000, not the forced 0.
+      harness.show({ node, content, windowTarget: true, focused: false });
+      docHeight = 8040;
+      harness.show({ node, content, windowTarget: true });
+      act(() => {
+        frames.flushOneFrame();
+      });
+      expect(window.scrollY).toBe(5000);
+    });
+
+    it('still persists a GENUINE scroll to the top of a scrollable document', () => {
+      // The other direction, and the reason `canScroll` cannot simply answer
+      // `false`: on a document that can scroll, 0 is where the user is.
+      const node = new FakeScrollNode();
+      const content = unseenContent();
+
+      harness.show({ node, content, windowTarget: true });
+      scrollY = 5000;
+      emitWindowScroll();
+      scrollY = 0; // the user scrolls back up; the document is still tall
+      emitWindowScroll();
+      expect(document.documentElement.scrollHeight).toBeGreaterThan(
+        window.innerHeight,
+      );
+
+      harness.show({ node, content, windowTarget: true, focused: false });
+      scrollY = 3000; // something nudges the shared scroller in between
+      harness.show({ node, content, windowTarget: true });
+      expect(window.scrollY).toBe(0);
+    });
   });
 
   it('returns a binding that is safe to wire onto a list on either platform', () => {
