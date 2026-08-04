@@ -10,7 +10,7 @@
 export { Hct } from './hct';
 export { TonalPalette } from './tonal-palette';
 export { DynamicScheme } from './dynamic-scheme';
-export { buildScheme, schemeVibrant, schemeExpressive, schemeTonalSpot, schemeNeutral } from './scheme-variants';
+export { buildScheme, schemeVibrant, schemeExpressive, schemeTonalSpot, schemeNeutral, schemeMonochrome } from './scheme-variants';
 export type { SchemeVariant, AccentSources } from './scheme-variants';
 export { Roles } from './color-roles';
 export type { RoleName } from './color-roles';

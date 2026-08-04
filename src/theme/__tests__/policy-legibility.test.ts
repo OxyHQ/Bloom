@@ -3,7 +3,7 @@
  *
  * Every accent and status family is generated, not authored, so nothing else in
  * the suite can notice when a tuning change makes a label unreadable. This walks
- * the full matrix — 13 presets x 2 modes x 7 families — and asserts the property
+ * the full matrix — every preset x 2 modes x 7 families — and asserts the property
  * a user actually perceives.
  *
  * Two failure shapes it exists to catch, both of which have already happened:
@@ -124,7 +124,11 @@ describe('colour policy legibility', () => {
   // Each half was individually legible, so nothing else could catch either.
   it('the brand fill keeps light exemption-free and dark budgeted', () => {
     const white = { light: 0, dark: 0 };
-    for (const preset of APP_COLOR_NAMES) {
+    // `mono` is not governed by the budget — it has no chroma to preserve, and its
+    // dark fill is near-WHITE by design, so it takes a black label on purpose.
+    // Counting it here would let a real regression hide inside its slack.
+    const chromatic = APP_COLOR_NAMES.filter((name) => name !== 'mono');
+    for (const preset of chromatic) {
       for (const mode of ['light', 'dark'] as const) {
         if (getResolvedTokens(preset, mode)['--primary-foreground'] === 'rgb(255 255 255)') {
           white[mode] += 1;
@@ -133,7 +137,11 @@ describe('colour policy legibility', () => {
     }
     // Light admits no exemption, so every preset carries white there. Dark keeps
     // the budget, so the seeds that are already light keep their colour instead.
-    expect(white.light).toBe(APP_COLOR_NAMES.length);
-    expect(white.dark).toBeGreaterThan(APP_COLOR_NAMES.length - 4);
+    expect(white.light).toBe(chromatic.length);
+    expect(white.dark).toBeGreaterThan(chromatic.length - 4);
+    // And the monochrome exception itself, stated rather than tolerated: a fill at
+    // each end of the scale, carrying the opposite label.
+    expect(getResolvedTokens('mono', 'light')['--primary-foreground']).toBe('rgb(255 255 255)');
+    expect(getResolvedTokens('mono', 'dark')['--primary-foreground']).toBe('rgb(0 0 0)');
   });
 });

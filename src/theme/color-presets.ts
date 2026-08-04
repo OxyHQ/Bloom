@@ -13,7 +13,8 @@ export type AppColorName =
   | 'orange'
   | 'mint'
   | 'oxy'
-  | 'faircoin';
+  | 'faircoin'
+  | 'mono';
 
 /**
  * A single colour preset: a brand SEED colour plus the tonal scheme variant to
@@ -56,7 +57,7 @@ export interface AppColorPreset {
  */
 export type PresetTokens = Record<string, string>;
 
-export const APP_COLOR_NAMES: readonly AppColorName[] = ['teal', 'blue', 'green', 'amber', 'yellow', 'red', 'purple', 'pink', 'sky', 'orange', 'mint', 'oxy', 'faircoin'];
+export const APP_COLOR_NAMES: readonly AppColorName[] = ['teal', 'blue', 'green', 'amber', 'yellow', 'red', 'purple', 'pink', 'sky', 'orange', 'mint', 'oxy', 'faircoin', 'mono'];
 
 /** Premium-exclusive presets, hidden from the standard color picker. */
 export const PREMIUM_COLOR_NAMES: readonly AppColorName[] = ['oxy', 'faircoin'];
@@ -75,6 +76,7 @@ export const HEX_TO_APP_COLOR: Record<string, AppColorName> = {
   '#14b8a6': 'mint',
   '#c46ede': 'oxy',
   '#9ffb50': 'faircoin',
+  '#000000': 'mono',
 };
 
 export function hexToAppColorName(hex: string): AppColorName {
@@ -101,4 +103,11 @@ export const APP_COLOR_PRESETS: Record<AppColorName, AppColorPreset> = {
   mint: { name: 'mint', hex: '#14b8a6', variant: 'vivid' },
   oxy: { name: 'oxy', hex: '#c46ede', variant: 'vivid' },
   faircoin: { name: 'faircoin', hex: '#9ffb50', variant: 'vivid' },
+  /**
+   * No colour at all — the black-and-white theme. Its seed carries zero chroma,
+   * which is the whole mechanism: the policy derives a greyscale palette from any
+   * seed with none, so a user who picks a grey in the colour wheel lands here too
+   * rather than on a nearly-grey approximation.
+   */
+  mono: { name: 'mono', hex: '#000000', variant: 'monochrome' },
 };

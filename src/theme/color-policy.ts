@@ -131,6 +131,29 @@ const TEXT_CHROMA = 60;
 const SUBTLE_SOURCE_TONE = 60;
 const SUBTLE_ALPHA = { light: 0.13, dark: 0.24 } as const;
 
+/**
+ * A seed at or below this chroma has no colour to derive from, so the whole
+ * palette goes greyscale — the black-and-white theme. Keyed on the seed rather
+ * than on a flag, so picking any grey in a colour wheel lands there too instead
+ * of on a nearly-grey approximation of it.
+ */
+const MONOCHROME_MAX_CHROMA = 6;
+
+/**
+ * Whether a seed carries no colour to derive a theme from — the one authority for
+ * that question, so the policy and the scheme choice can never disagree about a
+ * given seed and produce a grey palette wearing chromatic surfaces.
+ */
+export function isColourlessSeed(seedHex: string): boolean {
+  return Hct.fromInt(argbFromHex(seedHex)).chroma <= MONOCHROME_MAX_CHROMA;
+}
+
+/** Where a monochrome brand fill sits: near-black on a white page, near-white on a black one. */
+const MONOCHROME_FILL_TONE = { light: 12, dark: 94 } as const;
+
+/** The quiet member of a monochrome trio — the only one that is actually grey. */
+const MONOCHROME_SECONDARY_TONE = { light: 36, dark: 72 } as const;
+
 /** Split-complementary: the two accents sit either side of the seed's complement. */
 const SPLIT_ROTATIONS = [150, 210] as const;
 
@@ -211,7 +234,8 @@ function vividHueNear(hue: number): number {
  * ceasing to be itself: yellow turns to brown and lime to moss. Those keep their
  * own tone and take a black label instead, which is what a bright yellow button
  * wants anyway. The 25-tone budget is what separates the two cases, and it is
- * why 11 of the 13 presets carry white and exactly the two light ones do not.
+ * why 11 of the 13 chromatic presets carry white and exactly the two light ones
+ * do not. (`mono` sits outside this rule — see MONOCHROME_FILL_TONE.)
  */
 function whiteLabelTone(palette: TonalPalette, seedTone: number, isDark: boolean): number {
   // LIGHT: every fill comes down, no exemption. On a near-white page a bright
@@ -306,12 +330,24 @@ export function buildPolicyTokens(
   // tone <= 49, so that is the ceiling — in dark as much as in light. Letting the
   // dark fill sit at the seed's own tone instead makes it brighter, but every one
   // of those labels turns black, which costs more than the brightness buys.
+  const monochrome = seed.chroma <= MONOCHROME_MAX_CHROMA;
   // DARK keys off the seed itself so the fill IS the brand hex; LIGHT uses the
   // max-chroma palette, which is what stops a deepened fill from going pastel.
-  const brandPalette = isDark
-    ? TonalPalette.fromInt(argbFromHex(seedHex))
-    : TonalPalette.fromHueAndChroma(seed.hue, 200);
-  const primary = fillPair(brandPalette, whiteLabelTone(brandPalette, seed.tone, isDark));
+  // A monochrome seed has no chroma to preserve either way, and its fill goes to
+  // the far end of the scale rather than the white-label ceiling: a mid-grey
+  // button reads as disabled, where near-black on white reads as the primary
+  // action.
+  const brandPalette = monochrome
+    ? TonalPalette.fromHueAndChroma(0, 0)
+    : isDark
+      ? TonalPalette.fromInt(argbFromHex(seedHex))
+      : TonalPalette.fromHueAndChroma(seed.hue, 200);
+  const primary = fillPair(
+    brandPalette,
+    monochrome
+      ? (isDark ? MONOCHROME_FILL_TONE.dark : MONOCHROME_FILL_TONE.light)
+      : whiteLabelTone(brandPalette, seed.tone, isDark),
+  );
 
   const tokens: PolicyTokens = {
     '--primary': primary.fill,
@@ -320,7 +356,7 @@ export function buildPolicyTokens(
     // does correctly, and which the fill must stop trying to do at the same time.
     '--primary-text': roles.primary,
     '--primary-subtle': rgba(
-      TonalPalette.fromHueAndChroma(seed.hue, 200).tone(SUBTLE_SOURCE_TONE),
+      TonalPalette.fromHueAndChroma(seed.hue, monochrome ? 0 : 200).tone(SUBTLE_SOURCE_TONE),
       isDark ? SUBTLE_ALPHA.dark : SUBTLE_ALPHA.light,
     ),
     '--ring': roles.primary,
@@ -332,7 +368,9 @@ export function buildPolicyTokens(
     '--card': isDark ? roles.surfaceContainer : roles.surfaceContainerLowest,
     // A touch darker than M3's page background: near-white reads as unfinished
     // next to the card, and the extra step gives the surface ramp somewhere to sit.
-    '--background': rgb(TonalPalette.fromHueAndChroma(seed.hue, 10).tone(isDark ? 4 : 96)),
+    '--background': rgb(
+      TonalPalette.fromHueAndChroma(seed.hue, monochrome ? 0 : 10).tone(isDark ? 4 : 96),
+    ),
     // `--accent` stays what every consumer actually uses it for: a hover surface.
     '--accent': roles.surfaceContainerHigh,
     '--accent-foreground': roles.onSurfaceVariant,
@@ -344,9 +382,11 @@ export function buildPolicyTokens(
     const hue = pin !== undefined ? Hct.fromInt(argbFromHex(pin)).hue : hues[role];
     // One hue, three palettes. Every member shares it, so the family still reads
     // as one colour; only how loudly each speaks differs.
-    const fillPalette = TonalPalette.fromHueAndChroma(hue, ACCENT_CHROMA);
-    const textPalette = TonalPalette.fromHueAndChroma(hue, TEXT_CHROMA);
-    const vividPalette = TonalPalette.fromHueAndChroma(hue, 200);
+    // A monochrome theme has no accents to rotate to; the trio becomes a ladder
+    // of greys, which still separates a standout button from a quiet one.
+    const fillPalette = TonalPalette.fromHueAndChroma(hue, monochrome ? 0 : ACCENT_CHROMA);
+    const textPalette = TonalPalette.fromHueAndChroma(hue, monochrome ? 0 : TEXT_CHROMA);
+    const vividPalette = TonalPalette.fromHueAndChroma(hue, monochrome ? 0 : 200);
     // DARK sits at the hue's peak tone, floored by the same rule the brand fill
     // uses: some hues peak dark (violet at 35), and rendering them there gives a
     // slab rather than a highlight. LIGHT goes deep like every other fill, but
@@ -362,7 +402,20 @@ export function buildPolicyTokens(
     // black. The accent chroma cap already keeps these hues out of neon territory,
     // and the hue itself is the caller's brand rather than ours to move. The
     // analyzer still runs where it was designed to, inside `color-roles`.
-    const tone = accentTone(hue, isDark);
+    // Monochrome keeps `tertiary` AT the brand fill rather than a step off it:
+    // tertiary is what a compose button and a FAB paint with, and those are the
+    // primary action — a step of grey between them and `primary` reads as two
+    // buttons disagreeing, not as hierarchy. `secondary` carries the whole
+    // demotion instead.
+    const tone = monochrome
+      ? role === 'tertiary'
+        ? isDark
+          ? MONOCHROME_FILL_TONE.dark
+          : MONOCHROME_FILL_TONE.light
+        : isDark
+          ? MONOCHROME_SECONDARY_TONE.dark
+          : MONOCHROME_SECONDARY_TONE.light
+      : accentTone(hue, isDark);
     const pair = fillPair(fillPalette, tone);
     tokens[`--${role}`] = pair.fill;
     tokens[`--${role}-foreground`] = pair.foreground;
@@ -377,9 +430,10 @@ export function buildPolicyTokens(
   // The old ramp drew all five from the primary/secondary/tertiary trio, which
   // spans ~35 degrees, so adjacent series were indistinguishable.
   for (let i = 0; i < 5; i += 1) {
-    tokens[`--chart-${i + 1}`] = rgb(
-      TonalPalette.fromHueAndChroma((seed.hue + i * 72) % 360, 60).tone(isDark ? 72 : 48),
-    );
+    // Greyscale charts spread by TONE instead of hue — the only axis left.
+    tokens[`--chart-${i + 1}`] = monochrome
+      ? rgb(TonalPalette.fromHueAndChroma(0, 0).tone(isDark ? 40 + i * 13 : 78 - i * 13))
+      : rgb(TonalPalette.fromHueAndChroma((seed.hue + i * 72) % 360, 60).tone(isDark ? 72 : 48));
   }
 
   // The status family, themed per mode. The four frozen hexes it replaces all

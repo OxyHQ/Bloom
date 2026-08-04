@@ -90,9 +90,10 @@ describe('Theme system', () => {
     });
 
     it('defaults to teal for unknown hex values', () => {
-      expect(hexToAppColorName('#000000')).toBe('teal');
       expect(hexToAppColorName('#ffffff')).toBe('teal');
       expect(hexToAppColorName('#123456')).toBe('teal');
+      // '#000000' is no longer unknown — it is the `mono` preset's seed.
+      expect(hexToAppColorName('#000000')).toBe('mono');
     });
   });
 

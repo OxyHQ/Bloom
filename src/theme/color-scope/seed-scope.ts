@@ -1,5 +1,5 @@
 import { generateRoleColors, type RoleColors, type SchemeVariant } from '../color-engine';
-import { buildPolicyTokens } from '../color-policy';
+import { buildPolicyTokens, isColourlessSeed } from '../color-policy';
 import { CANONICAL_TOKENS } from '../token-registry';
 
 /**
@@ -104,7 +104,11 @@ export interface SeedScopeOptions {
 export function buildSeedScopeVars(options: SeedScopeOptions): Record<string, string> {
   const roles = generateRoleColors({
     seed: options.seed,
-    variant: options.variant ?? 'vivid',
+    // A seed with no chroma has no colour for a chromatic variant to work with,
+    // so it takes the greyscale scheme unless the caller asked for something else.
+    // This is what makes a grey picked in a colour wheel produce the SAME
+    // black-and-white theme as the `mono` preset instead of a tinted near-grey.
+    variant: options.variant ?? (isColourlessSeed(options.seed) ? 'monochrome' : 'vivid'),
     isDark: options.mode === 'dark',
     contrastLevel: options.contrastLevel ?? 0,
     secondarySeed: options.secondarySeed,

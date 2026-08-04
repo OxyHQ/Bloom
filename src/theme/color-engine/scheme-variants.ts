@@ -13,7 +13,13 @@ import { sanitizeDegreesDouble } from './math-utils';
 import { TonalPalette } from './tonal-palette';
 import { Variant } from './variant';
 
-export type SchemeVariant = 'vivid' | 'vibrant' | 'expressive' | 'tonalSpot' | 'neutral';
+export type SchemeVariant =
+  | 'vivid'
+  | 'vibrant'
+  | 'expressive'
+  | 'tonalSpot'
+  | 'neutral'
+  | 'monochrome';
 
 /**
  * Optional explicit accent seeds for a scheme. When a source HCT is supplied, its
@@ -191,6 +197,36 @@ export function schemeNeutral(
   });
 }
 
+/**
+ * No colour at all: every palette is greyscale, so the seed's hue is irrelevant
+ * and only its tone survives. This is the variant the `isMonochrome` role
+ * branches in `color-roles` were written for — they push `primary` to the far end
+ * of the scale (tone 0 on a light page, 100 on a dark one) rather than the
+ * mid-tone the chromatic curves would pick, which is what keeps a black-and-white
+ * theme from reading as a grey one.
+ *
+ * A pinned accent is ignored on purpose: honouring it would put one coloured
+ * family back into a scheme whose entire point is that nothing is coloured.
+ */
+export function schemeMonochrome(
+  source: Hct,
+  isDark: boolean,
+  contrastLevel: number,
+): DynamicScheme {
+  const grey = (): TonalPalette => TonalPalette.fromHueAndChroma(source.hue, 0);
+  return new DynamicScheme({
+    sourceColorArgb: source.toInt(),
+    variant: Variant.MONOCHROME,
+    contrastLevel,
+    isDark,
+    primaryPalette: grey(),
+    secondaryPalette: grey(),
+    tertiaryPalette: grey(),
+    neutralPalette: grey(),
+    neutralVariantPalette: grey(),
+  });
+}
+
 const BUILDERS: Record<
   SchemeVariant,
   (s: Hct, d: boolean, c: number, accents: AccentSources) => DynamicScheme
@@ -200,6 +236,7 @@ const BUILDERS: Record<
   expressive: schemeExpressive,
   tonalSpot: schemeTonalSpot,
   neutral: schemeNeutral,
+  monochrome: schemeMonochrome,
 };
 
 /**
