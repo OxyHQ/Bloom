@@ -94,8 +94,14 @@ const noLegibleForeground = (argb: number): boolean =>
 /** The tone a white-label fill sits at in LIGHT mode. */
 const LIGHT_FILL_TONE = 45;
 
-/** No dark-mode BRAND fill sits below this: under it a colour goes heavy on black. */
-const DARK_FLOOR = 58;
+/** The tone a white-label fill sits at in DARK: the ceiling white text allows. */
+const DARK_FILL_TONE = 49;
+
+/**
+ * No dark-mode ACCENT sits below this. Some hues peak dark — violet at tone 33 —
+ * and rendering one there gives a slab rather than a highlight.
+ */
+const DARK_ACCENT_FLOOR = 58;
 
 /**
  * Accent fills sit at their hue's PEAK tone in dark — where the hue is most
@@ -246,19 +252,15 @@ export function buildPolicyTokens(
 ): PolicyTokens {
   const seed = Hct.fromInt(argbFromHex(seedHex));
 
-  // LIGHT takes the max-chroma palette at a deep tone: on a near-white page the
-  // fill has to go deep to read calm, and max chroma is what keeps it from going
-  // pastel there. DARK takes the SEED'S OWN palette — its own chroma and its own
-  // tone, floored so a dark seed still lifts off the ground. At a fixed dark tone
-  // every mid-tone preset read dull on black, and the ones that looked right were
-  // exactly those whose seed tone escaped it.
-  const brandPalette = isDark
-    ? TonalPalette.fromInt(argbFromHex(seedHex))
-    : TonalPalette.fromHueAndChroma(seed.hue, 200);
-  const primary = fillPair(
-    brandPalette,
-    isDark ? Math.max(seed.tone, DARK_FLOOR) : LIGHT_FILL_TONE,
-  );
+  // Max chroma at a tone that carries a WHITE label, in both modes.
+  //
+  // The brand fill is what a compose button, a Follow button, an avatar and the
+  // user's own chat bubble paint with, and those carry white text. White needs
+  // tone <= 49, so that is the ceiling — in dark as much as in light. Letting the
+  // dark fill sit at the seed's own tone instead makes it brighter, but every one
+  // of those labels turns black, which costs more than the brightness buys.
+  const brandPalette = TonalPalette.fromHueAndChroma(seed.hue, 200);
+  const primary = fillPair(brandPalette, isDark ? DARK_FILL_TONE : LIGHT_FILL_TONE);
 
   const tokens: PolicyTokens = {
     '--primary': primary.fill,
@@ -309,7 +311,7 @@ export function buildPolicyTokens(
     // black. The accent chroma cap already keeps these hues out of neon territory,
     // and the hue itself is the caller's brand rather than ours to move. The
     // analyzer still runs where it was designed to, inside `color-roles`.
-    const tone = isDark ? Math.max(peakTone(hue), DARK_FLOOR) : LIGHT_FILL_TONE;
+    const tone = isDark ? Math.max(peakTone(hue), DARK_ACCENT_FLOOR) : LIGHT_FILL_TONE;
     const pair = fillPair(fillPalette, tone);
     tokens[`--${role}`] = pair.fill;
     tokens[`--${role}-foreground`] = pair.foreground;
@@ -336,7 +338,7 @@ export function buildPolicyTokens(
   for (const [role, hex] of Object.entries(STATUS_SEEDS)) {
     const status = Hct.fromInt(argbFromHex(hex));
     const palette = TonalPalette.fromHueAndChroma(status.hue, status.chroma);
-    const pair = fillPair(palette, isDark ? Math.max(status.tone, DARK_FLOOR) : LIGHT_FILL_TONE);
+    const pair = fillPair(palette, isDark ? DARK_FILL_TONE : LIGHT_FILL_TONE);
     tokens[`--${role}`] = pair.fill;
     tokens[`--${role}-foreground`] = pair.foreground;
     tokens[`--${role}-text`] = rgb(
