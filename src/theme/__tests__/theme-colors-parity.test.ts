@@ -44,12 +44,17 @@ describe.each(APP_COLOR_NAMES)('engine-backed theme.colors (%s)', (preset: AppCo
     }
   });
 
-  it('card is lighter than background in light, darker (or equal) in dark', () => {
-    const light = buildTheme(preset, 'light').colors;
-    expect(lightness(parse(light.card))).toBeGreaterThan(lightness(parse(light.background)));
-
-    const dark = buildTheme(preset, 'dark').colors;
-    expect(lightness(parse(dark.card))).toBeLessThanOrEqual(lightness(parse(dark.background)));
+  // Deliberately inverted from what this asserted before. M3's
+  // `surfaceContainerLowest` is the RECESSED step: in dark it sits at tone 4
+  // against a tone-6 background, so every card, sheet and chat bubble SANK into
+  // the page instead of lifting off it — measured identically on all thirteen
+  // presets, so it was the mapping and not any one seed. A card lifts in both
+  // modes now, and this is the assertion that would catch a silent revert.
+  it('card lifts off the background in BOTH modes', () => {
+    for (const mode of ['light', 'dark'] as const) {
+      const { colors } = buildTheme(preset, mode);
+      expect(lightness(parse(colors.card))).toBeGreaterThan(lightness(parse(colors.background)));
+    }
   });
 
   it('token-backed fields read straight from the resolved token map', () => {

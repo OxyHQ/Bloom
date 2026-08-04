@@ -1,5 +1,6 @@
 import { APP_COLOR_PRESETS, type AppColorName, type PresetTokens } from './color-presets';
 import { generateRoleColors, type RoleColors } from './color-engine';
+import { buildPolicyTokens } from './color-policy';
 
 /**
  * Optional explicit accent-colour overrides (`#rrggbb`) that PIN the secondary
@@ -53,7 +54,7 @@ export function getPresetVars(
     tertiarySeed: accents?.tertiaryHex ?? preset.tertiaryHex,
   });
 
-  return {
+  const base: PresetTokens = {
     // --- base shadcn palette ---
     '--background': r.background,
     '--foreground': r.onBackground,
@@ -103,6 +104,14 @@ export function getPresetVars(
     '--sidebar-accent-foreground': r.onSecondaryContainer,
     '--sidebar-border': r.outlineVariant,
     '--sidebar-ring': r.primary,
+  };
+
+  return {
+    ...base,
+    ...buildPolicyTokens(preset.hex, mode === 'dark', r, {
+      secondary: accents?.secondaryHex ?? preset.secondaryHex,
+      tertiary: accents?.tertiaryHex ?? preset.tertiaryHex,
+    }),
   };
 }
 

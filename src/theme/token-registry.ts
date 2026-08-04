@@ -51,6 +51,38 @@ export const CANONICAL_TOKENS = [
   'sidebar-accent-foreground',
   'sidebar-border',
   'sidebar-ring',
+
+  // --- the accent families ---
+  // Each accent is a FAMILY, not a colour: a fill, the label that is legible on
+  // it, a `-text` form for a mark on the page, and a `-subtle` translucent tint
+  // for the surface behind one. A single value can only ever be a fill, which is
+  // why consumers hand-rolled the rest with hex-alpha arithmetic.
+  'primary-text',
+  'primary-subtle',
+  'secondary-text',
+  'secondary-subtle',
+  'tertiary-text',
+  'tertiary-subtle',
+
+  // --- semantic status, themed per mode ---
+  // Replaces four frozen hexes that all FAILED AA under white text (warning at
+  // 2.15, success 2.54, info 3.68, error 3.76) and had no subtle or text member.
+  'success',
+  'success-foreground',
+  'success-text',
+  'success-subtle',
+  'error',
+  'error-foreground',
+  'error-text',
+  'error-subtle',
+  'warning',
+  'warning-foreground',
+  'warning-text',
+  'warning-subtle',
+  'info',
+  'info-foreground',
+  'info-text',
+  'info-subtle',
 ] as const;
 
 /** A canonical token name (no leading `--`). */

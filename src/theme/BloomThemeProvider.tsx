@@ -410,10 +410,13 @@ export function BloomThemeProvider({
   const themeColors = useMemo(
     () =>
       effectiveSeed
-        ? buildThemeFromSeed(effectiveSeed, resolved, undefined, undefined, {
-            secondarySeed: effectiveSecondary,
-            tertiarySeed: effectiveTertiary,
-          })
+        ? buildThemeFromSeed(
+            effectiveSeed,
+            resolved,
+            undefined,
+            undefined,
+            { secondarySeed: effectiveSecondary, tertiarySeed: effectiveTertiary }
+          )
         : buildTheme(colorPreset, resolved, isAdaptive, explicitAccents),
     [
       effectiveSeed,

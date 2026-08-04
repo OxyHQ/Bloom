@@ -56,11 +56,23 @@ describe('getPresetVars (engine-backed)', () => {
     }
   });
 
-  it('drives sidebar-primary / ring from the engine primary role', () => {
+  // `--ring` follows the TEXT accent, not the fill. A focus ring is drawn on the
+  // page next to a control, so it needs the tone that is legible there — which is
+  // the job `--primary-text` exists for. Equating it with `--primary` was the same
+  // conflation that made the fill go pastel to stay readable as text.
+  it('drives sidebar-primary / ring from the legible brand accent', () => {
     const vars = getPresetVars('blue', 'light');
-    expect(vars['--sidebar-primary']).toBe(vars['--primary']);
-    expect(vars['--ring']).toBe(vars['--primary']);
-    expect(vars['--chart-1']).toBe(vars['--primary']);
+    expect(vars['--ring']).toBe(vars['--primary-text']);
+    expect(vars['--sidebar-primary']).toBe(vars['--primary-text']);
+  });
+
+  // The chart ramp is no longer drawn from the primary/secondary/tertiary trio,
+  // which spans ~35 degrees of hue and left adjacent series indistinguishable
+  // (minimum ΔE 6.2 across the presets). Five hues, evenly spread, one tone.
+  it('spreads the chart ramp across distinct hues', () => {
+    const vars = getPresetVars('blue', 'light');
+    const series = [1, 2, 3, 4, 5].map((i) => vars[`--chart-${i}`]);
+    expect(new Set(series).size).toBe(series.length);
   });
 
   it('makes secondary a real contrast color, not a mirror of primary (the fix)', () => {
@@ -72,19 +84,19 @@ describe('getPresetVars (engine-backed)', () => {
     }
   });
 
-  it('makes card the lightest surface in light mode, darkest in dark (the fix)', () => {
-    const channels = (rgb: string): number[] =>
-      (rgb.match(/\d+/g) ?? []).map(Number);
-    const sum = (rgb: string): number => channels(rgb).reduce((a, b) => a + b, 0);
+  // Deliberately inverted from what this asserted before: M3's
+  // `surfaceContainerLowest` is the RECESSED step, so in dark a card SANK into
+  // the page rather than lifting off it — on all thirteen presets, which is what
+  // made it a mapping problem and not a seed one.
+  it('makes card lift off the background in BOTH modes', () => {
+    const sum = (rgb: string): number =>
+      (rgb.match(/\d+/g) ?? []).map(Number).reduce((a, b) => a + b, 0);
 
     for (const name of APP_COLOR_NAMES) {
-      const light = getPresetVars(name, 'light');
-      // card (surfaceContainerLowest) must be lighter than background in light.
-      expect(sum(light['--card'] ?? '')).toBeGreaterThan(sum(light['--background'] ?? ''));
-
-      const dark = getPresetVars(name, 'dark');
-      // card must be darker than (or equal to) background in dark — correct inversion.
-      expect(sum(dark['--card'] ?? '')).toBeLessThanOrEqual(sum(dark['--background'] ?? ''));
+      for (const mode of ['light', 'dark'] as const) {
+        const vars = getPresetVars(name, mode);
+        expect(sum(vars['--card'] ?? '')).toBeGreaterThan(sum(vars['--background'] ?? ''));
+      }
     }
   });
 

@@ -9,7 +9,12 @@ import type { StyleProp, ViewStyle, TextStyle } from 'react-native';
  *                  A lower-emphasis FAB that still reads as elevated.
  *   - `surface`  — alias of `secondary`, named for Material-style "surface" FABs.
  */
-export type FabVariant = 'primary' | 'secondary' | 'surface';
+/**
+ * M3 defines four FAB colour variants. Bloom previously mapped `secondary` onto
+ * the neutral card surface, so a "secondary FAB" was a grey circle and the
+ * accent trio had no home in the component that most wants one.
+ */
+export type FabVariant = 'primary' | 'secondary' | 'tertiary' | 'surface';
 
 /**
  * FAB size presets, matching Material-ish conventions but in Bloom's scale:

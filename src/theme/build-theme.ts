@@ -83,14 +83,19 @@ function buildColorsFromPreset(
     icon: g('muted-foreground'),
     iconActive: g('primary'),
 
-    ...STATUS_COLORS,
+    // The status family is themed per mode and legible, from the same pipeline
+    // as everything else — not four frozen hexes that fail AA under white text.
+    success: g('success'),
+    error: g('error'),
+    warning: g('warning'),
+    info: g('info'),
 
-    primarySubtle: r.primaryContainer,
+    primarySubtle: g('primary-subtle'),
     primarySubtleForeground: r.onPrimaryContainer,
     negative: r.error,
     negativeForeground: r.onError,
-    negativeSubtle: r.errorContainer,
-    negativeSubtleForeground: r.onErrorContainer,
+    negativeSubtle: g('error-subtle'),
+    negativeSubtleForeground: g('error-text'),
     contrast50: g('muted'),
 
     // The FIX: `card` is the lightest surface (engine `surfaceContainerLowest`).

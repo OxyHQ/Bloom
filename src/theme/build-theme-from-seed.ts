@@ -84,14 +84,17 @@ export function buildColorsFromSeed(
     icon: g('muted-foreground'),
     iconActive: g('primary'),
 
-    ...STATUS_COLORS,
+    success: g('success'),
+    error: g('error'),
+    warning: g('warning'),
+    info: g('info'),
 
-    primarySubtle: r.primaryContainer,
+    primarySubtle: g('primary-subtle'),
     primarySubtleForeground: r.onPrimaryContainer,
     negative: r.error,
     negativeForeground: r.onError,
-    negativeSubtle: r.errorContainer,
-    negativeSubtleForeground: r.onErrorContainer,
+    negativeSubtle: g('error-subtle'),
+    negativeSubtleForeground: g('error-text'),
     contrast50: g('muted'),
 
     card: g('card'),

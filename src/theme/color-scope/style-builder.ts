@@ -141,6 +141,12 @@ export function buildScopeVars(
   const tokens = getResolvedTokens(colorPreset, mode, accents);
   const vars: Record<string, string> = { ...tokens };
 
+  // Policy tokens live outside CANONICAL_TOKENS, so give every token present a
+  // `--color-*` alias; NativeWind resolves its utilities through those.
+  for (const [key, value] of Object.entries(tokens)) {
+    vars[`--color-${key.slice(2)}`] = value;
+  }
+
   for (const token of CANONICAL_TOKENS) {
     const value = tokens[`--${token}`];
     if (value !== undefined) {

@@ -1,4 +1,5 @@
 import { generateRoleColors, type RoleColors, type SchemeVariant } from '../color-engine';
+import { buildPolicyTokens } from '../color-policy';
 import { CANONICAL_TOKENS } from '../token-registry';
 
 /**
@@ -109,8 +110,19 @@ export function buildSeedScopeVars(options: SeedScopeOptions): Record<string, st
     secondarySeed: options.secondarySeed,
     tertiarySeed: options.tertiarySeed,
   });
-  const tokens = roleColorsToPresetTokens(roles);
+  const tokens: Record<string, string> = {
+    ...roleColorsToPresetTokens(roles),
+    ...buildPolicyTokens(options.seed, options.mode === 'dark', roles, {
+      secondary: options.secondarySeed,
+      tertiary: options.tertiarySeed,
+    }),
+  };
   const vars: Record<string, string> = { ...tokens };
+
+  // Policy tokens live outside CANONICAL_TOKENS, so alias every token present.
+  for (const [key, value] of Object.entries(tokens)) {
+    vars[`--color-${key.slice(2)}`] = value;
+  }
 
   for (const token of CANONICAL_TOKENS) {
     const value = tokens[`--${token}`];

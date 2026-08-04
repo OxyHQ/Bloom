@@ -206,6 +206,9 @@ function resolveVariant(
 ): { background: string; foreground: string } {
   switch (variant) {
     case 'secondary':
+      return { background: colors.secondary, foreground: colors.secondaryForeground };
+    case 'tertiary':
+      return { background: colors.tertiary, foreground: colors.tertiaryForeground };
     case 'surface':
       return { background: colors.card, foreground: colors.text };
     case 'primary':
