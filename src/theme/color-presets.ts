@@ -4,7 +4,6 @@ export type AppColorName =
   | 'teal'
   | 'blue'
   | 'green'
-  | 'amber'
   | 'yellow'
   | 'red'
   | 'purple'
@@ -62,7 +61,7 @@ export interface AppColorPreset {
  */
 export type PresetTokens = Record<string, string>;
 
-export const APP_COLOR_NAMES: readonly AppColorName[] = ['teal', 'blue', 'green', 'amber', 'yellow', 'red', 'purple', 'pink', 'sky', 'orange', 'mint', 'oxy', 'faircoin', 'pumpkin', 'gray', 'brown', 'peach', 'rose', 'mono'];
+export const APP_COLOR_NAMES: readonly AppColorName[] = ['teal', 'blue', 'green', 'yellow', 'red', 'purple', 'pink', 'sky', 'orange', 'mint', 'oxy', 'faircoin', 'pumpkin', 'gray', 'brown', 'peach', 'rose', 'mono'];
 
 /** Premium-exclusive presets, hidden from the standard color picker. */
 export const PREMIUM_COLOR_NAMES: readonly AppColorName[] = ['oxy', 'faircoin'];
@@ -71,7 +70,6 @@ export const HEX_TO_APP_COLOR: Record<string, AppColorName> = {
   '#005c67': 'teal',
   '#0085fe': 'blue',
   '#10b981': 'green',
-  '#f59e0b': 'amber',
   '#fcdc00': 'yellow',
   '#ef4444': 'red',
   '#b866ff': 'purple',
@@ -103,7 +101,6 @@ export const APP_COLOR_PRESETS: Record<AppColorName, AppColorPreset> = {
   teal: { name: 'teal', hex: '#005c67', variant: 'vivid' },
   blue: { name: 'blue', hex: '#0085fe', variant: 'vivid' },
   green: { name: 'green', hex: '#10b981', variant: 'vivid' },
-  amber: { name: 'amber', hex: '#f59e0b', variant: 'vivid' },
   yellow: { name: 'yellow', hex: '#fcdc00', variant: 'vivid' },
   red: { name: 'red', hex: '#ef4444', variant: 'vivid' },
   purple: { name: 'purple', hex: '#b866ff', variant: 'vivid' },

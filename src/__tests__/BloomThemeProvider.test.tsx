@@ -98,7 +98,7 @@ describe('BloomThemeProvider', () => {
 
   it('renders all color presets without crashing', () => {
     const presets: AppColorName[] = [
-      'teal', 'blue', 'green', 'amber', 'red',
+      'teal', 'blue', 'green', 'red',
       'purple', 'pink', 'sky', 'orange', 'mint',
     ];
 
