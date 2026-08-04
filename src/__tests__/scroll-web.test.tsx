@@ -829,6 +829,83 @@ describe('web scroll-restoration hook', () => {
       expect(window.scrollY).toBe(5000);
     });
 
+    it('does not persist a PARTIAL clamp when a shorter tab takes over the document', () => {
+      // The residual the collapse guard cannot see: the destination tab is
+      // still taller than the viewport, so `maxOffset > 0` and the offset is
+      // not 0 — it is the destination's MAXIMUM. Measured in Chrome 150:
+      // 5000 -> 2215 with `scrollHeight` 8040 -> 3015, dispatched as TWO
+      // identical scroll events.
+      const node = new FakeScrollNode();
+      const content = unseenContent();
+
+      harness.show({ node, content, windowTarget: true });
+      scrollY = 5000;
+      emitWindowScroll();
+
+      // The shorter tab takes over: the range shrinks and the browser parks the
+      // offset at the new bottom, twice.
+      docHeight = 3015;
+      scrollY = 3015 - DOC_VIEWPORT;
+      emitWindowScroll();
+      emitWindowScroll();
+
+      harness.show({ node, content, windowTarget: true, focused: false });
+      docHeight = 8040;
+      harness.show({ node, content, windowTarget: true });
+      act(() => {
+        frames.flushOneFrame();
+      });
+      expect(window.scrollY).toBe(5000);
+    });
+
+    it('persists a GENUINE scroll to the very bottom when nothing shrank', () => {
+      // The collision worth worrying about, and it does not fire: reaching the
+      // bottom under your own steam does not shrink the page in the same
+      // breath, so only one of the two conditions holds.
+      const node = new FakeScrollNode();
+      const content = unseenContent();
+
+      harness.show({ node, content, windowTarget: true });
+      scrollY = docHeight - DOC_VIEWPORT; // 7240, exactly at the maximum
+      emitWindowScroll();
+
+      harness.show({ node, content, windowTarget: true, focused: false });
+      scrollY = 0;
+      harness.show({ node, content, windowTarget: true });
+      act(() => {
+        frames.flushOneFrame();
+      });
+      expect(window.scrollY).toBe(7240);
+    });
+
+    it('recovers as soon as the user scrolls off the bottom after a shrink', () => {
+      // The suppression must not stick: while it holds, the reference range is
+      // not updated, so the only thing that clears it is an offset that is not
+      // at the maximum. Measured to recover on the first such scroll.
+      const node = new FakeScrollNode();
+      const content = unseenContent();
+
+      harness.show({ node, content, windowTarget: true });
+      scrollY = 7240;
+      emitWindowScroll();
+
+      docHeight = 4020; // something collapsed under them
+      scrollY = 4020 - DOC_VIEWPORT;
+      emitWindowScroll();
+
+      scrollY = 1000; // and now they scroll on their own
+      emitWindowScroll();
+
+      harness.show({ node, content, windowTarget: true, focused: false });
+      scrollY = 0;
+      docHeight = 4020;
+      harness.show({ node, content, windowTarget: true });
+      act(() => {
+        frames.flushOneFrame();
+      });
+      expect(window.scrollY).toBe(1000);
+    });
+
     it('still persists a GENUINE scroll to the top of a scrollable document', () => {
       // The other direction, and the reason `canScroll` cannot simply answer
       // `false`: on a document that can scroll, 0 is where the user is.

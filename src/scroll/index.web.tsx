@@ -195,14 +195,36 @@ export function useScrollRestoration(
       // end (stuck, capped, aborted), because each frame re-arms.
       let echoOffset: number | null = null;
 
+      // The largest offset reachable when we last PERSISTED one. A browser
+      // clamp is recognised against this rather than against the previous
+      // OBSERVATION, and that distinction is the whole mechanism: Chrome
+      // dispatches TWO `scroll` events for one clamp, so an
+      // observation-relative test sees the shrink on the first and nothing on
+      // the second, which then saves the clamped value anyway. Measured.
+      let maxOffsetAtLastSave = scroller.getMaxOffset();
+
       const save = () => {
         const offset = scroller.getOffset();
+        const maxOffset = scroller.getMaxOffset();
         // Ignore a spurious 0 produced by the navigator collapsing a hidden
         // background screen: while collapsed the container cannot scroll, so
         // its `scrollTop` is forced to 0. Persisting it would clobber the good
         // offset recorded by earlier live saves (problem A). A genuine
         // scroll-to-top keeps the container scrollable and is saved normally.
-        if (offset === 0 && !scroller.canScroll()) return;
+        if (offset === 0 && maxOffset <= 0) return;
+        // A partial clamp: the reachable range SHRANK and the offset is sitting
+        // exactly at the new bottom. That is what the browser does to a tab
+        // whose document has been taken over by a shorter sibling — the two
+        // together are a signature a genuine scroll does not have, because
+        // reaching the bottom on your own does not shrink the page in the same
+        // breath. Suppressing keeps the pre-clamp offset, which on return
+        // simply clamps to the same place if the content really did shrink.
+        if (
+          maxOffset < maxOffsetAtLastSave &&
+          Math.abs(offset - maxOffset) <= RESTORE_STICK_TOLERANCE_PX
+        ) {
+          return;
+        }
         if (offset === echoOffset) {
           // Our own write coming back. Consume the arming so a real scroll to
           // the same offset later is saved normally.
@@ -211,6 +233,7 @@ export function useScrollRestoration(
         }
         echoOffset = null;
         lastObservedOffset = offset;
+        maxOffsetAtLastSave = maxOffset;
         store.save(scrollKey, offset);
       };
 

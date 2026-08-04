@@ -9,8 +9,10 @@ export interface ResolvedScroller {
   getOffset: () => number;
   setOffset: (offset: number) => void;
   /**
-   * Whether the scroll container can currently hold a non-zero offset, i.e.
-   * its content is taller than its viewport (`scrollHeight > clientHeight`).
+   * The largest offset the container can currently hold — `scrollHeight -
+   * clientHeight`, clamped at 0. Answers two questions the save path needs:
+   * whether a 0 read is real (`maxOffset > 0`) and whether an offset is sitting
+   * exactly at the bottom, which is the signature of a browser clamp.
    *
    * React Navigation's web stack collapses a hidden background screen so its
    * content height drops to the viewport height; while collapsed the container
@@ -30,7 +32,7 @@ export interface ResolvedScroller {
    * persist as 0 over its real offset, because blur is emitted from an effect
    * that has not run yet.
    */
-  canScroll: () => boolean;
+  getMaxOffset: () => number;
 }
 
 function isElement(value: unknown): value is HTMLElement {
@@ -82,11 +84,14 @@ export function createScroller(target: ScrollRestorationTarget): ResolvedScrolle
       setOffset: (offset) => {
         if (typeof window !== 'undefined') window.scrollTo(0, offset);
       },
-      canScroll: () => {
+      getMaxOffset: () => {
         if (typeof window === 'undefined' || typeof document === 'undefined') {
-          return false;
+          return 0;
         }
-        return document.documentElement.scrollHeight > window.innerHeight;
+        return Math.max(
+          0,
+          document.documentElement.scrollHeight - window.innerHeight,
+        );
       },
     };
   }
@@ -100,9 +105,10 @@ export function createScroller(target: ScrollRestorationTarget): ResolvedScrolle
       const element = resolveElement(target);
       if (element) element.scrollTop = offset;
     },
-    canScroll: () => {
+    getMaxOffset: () => {
       const element = resolveElement(target);
-      return element ? element.scrollHeight > element.clientHeight : false;
+      if (!element) return 0;
+      return Math.max(0, element.scrollHeight - element.clientHeight);
     },
   };
 }
