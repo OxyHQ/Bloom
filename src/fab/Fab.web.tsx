@@ -183,7 +183,7 @@ const FabWebComponent: React.FC<FabProps> = ({
   icon,
   children,
   label,
-  variant = 'primary',
+  variant = 'tertiary',
   size = 'medium',
   placement = 'bottom-right',
   offset = DEFAULT_OFFSET,

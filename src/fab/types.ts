@@ -17,6 +17,12 @@ import type { StyleProp, ViewStyle, TextStyle } from 'react-native';
 export type FabVariant = 'primary' | 'secondary' | 'tertiary' | 'surface';
 
 /**
+ * A FAB is a screen's standout action, which is what the tertiary accent exists
+ * for — so that is the DEFAULT rather than something every call site repeats.
+ * `primary` remains available for a FAB that is the brand action itself.
+ */
+
+/**
  * FAB size presets, matching Material-ish conventions but in Bloom's scale:
  *   - `small`   — 40px (compact / dense layouts)
  *   - `medium`  — 56px (the canonical FAB; the default)
