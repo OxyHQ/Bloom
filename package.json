@@ -1267,6 +1267,20 @@
         "default": "./lib/commonjs/scroll/index.js"
       }
     },
+    "./scroll/expo-router": {
+      "react-native": {
+        "types": "./lib/typescript/module/scroll/expo-router/index.d.ts",
+        "default": "./src/scroll/expo-router/index.ts"
+      },
+      "import": {
+        "types": "./lib/typescript/module/scroll/expo-router/index.d.ts",
+        "default": "./lib/module/scroll/expo-router/index.js"
+      },
+      "require": {
+        "types": "./lib/typescript/commonjs/scroll/expo-router/index.d.ts",
+        "default": "./lib/commonjs/scroll/expo-router/index.js"
+      }
+    },
     "./content-panel": {
       "react-native": {
         "types": "./lib/typescript/module/content-panel/index.d.ts",

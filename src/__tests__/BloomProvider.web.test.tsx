@@ -7,11 +7,11 @@
 // THROWS outside `ScrollRestorationProvider`, so anything scrollable that an
 // app renders beside — rather than under — that provider crashes the screen.
 //
-// These tests therefore assert the WEB binding: `provider/scroll-provider` is
-// mapped to the web implementation the same way a web bundler resolves the
-// `.web` sibling (jest has no platform-extension resolution of its own, so
-// without this mapping the suite would silently exercise the native no-op and
-// pass no matter what).
+// The provider itself is platform-agnostic (it holds a store and a router
+// adapter), so no platform mapping is needed here: the hook under test is
+// imported from the web barrel, and it reads the very context the provider
+// mounts. What BloomProvider still supplies — and what these tests assert
+// reaches the subtree — is the expo-router ADAPTER.
 
 import { createElement, type ReactNode } from 'react';
 import { act } from 'react';
@@ -20,8 +20,8 @@ import { createRoot, type Root } from 'react-dom/client';
 (globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT =
   true;
 
-// Only the two navigation hooks `scroll/index.web` consumes; `virtual` keeps
-// the real (native-heavy) expo-router off the resolver.
+// Only the two navigation hooks `scroll/expo-router` consumes; `virtual` keeps the
+// real (native-heavy) expo-router off the resolver.
 jest.mock(
   'expo-router',
   () => {
@@ -36,14 +36,7 @@ jest.mock(
   { virtual: true },
 );
 
-// What a web bundler does with `provider/scroll-provider.web.ts`.
-jest.mock('../provider/scroll-provider', () => ({
-  ScrollRestorationProvider:
-    jest.requireActual<typeof import('../scroll/index.web')>('../scroll/index.web')
-      .ScrollRestorationProvider,
-}));
-
-// Imported AFTER the mocks are registered.
+// Imported AFTER the mock is registered.
 import { BloomProvider } from '../provider';
 import { useImageResolver } from '../image-resolver';
 import { useScrollRestoration } from '../scroll/index.web';

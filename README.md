@@ -45,9 +45,9 @@ import { BloomProvider } from '@oxyhq/bloom/provider';
 </BloomProvider>
 ```
 
-Everything scrollable must be **under** it: on web `useScrollRestoration()` throws
-outside its provider, so a list rendered beside the root (a right rail, an overlay)
-crashes the screen.
+Everything scrollable must be **under** it: `useScrollRestoration()` throws outside
+its provider, so a list rendered beside the root (a right rail, an overlay) crashes
+the screen.
 
 Outlets are **not** included — their position in the tree is a real app decision, and
 a second mount duplicates every surface they render. Mount these yourself, under
