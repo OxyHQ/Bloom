@@ -214,15 +214,18 @@ function vividHueNear(hue: number): number {
  * why 11 of the 13 presets carry white and exactly the two light ones do not.
  */
 function whiteLabelTone(palette: TonalPalette, seedTone: number, isDark: boolean): number {
-  // DARK keeps the brand's OWN tone, floored so a dark seed still lifts off the
-  // ground. On a near-black page the fill IS the brand — oxy at tone 49 is a
-  // different, electric purple, not #c46ede — so fidelity wins and the label
-  // follows. LIGHT is the opposite: a bright fill on a white page reads thin, so
-  // it comes down to the ceiling white allows unless that costs more than the
-  // budget, which is what keeps yellow yellow and faircoin lime.
-  if (isDark) return Math.max(seedTone, DARK_SEED_FLOOR);
-  const candidate = Math.max(LIGHT_FILL_TONE, seedTone - TONE_BUDGET);
-  return contrastOf(palette.tone(candidate), true) >= AA ? candidate : seedTone;
+  // ONE rule, both modes. The fill comes down to the tone a white label needs,
+  // unless the descent costs more than the budget and destroys the colour — then
+  // it keeps its own tone and takes a black label. Exempting dark, so the fill
+  // could stay on the brand hex, is what left every Follow button, avatar and
+  // chat bubble with a black label there while light had eleven white ones: an
+  // asymmetry nobody chose, visible in every component at once because they all
+  // read the same token.
+  const target = isDark ? DARK_FILL_TONE : LIGHT_FILL_TONE;
+  const candidate = Math.max(target, seedTone - TONE_BUDGET);
+  return contrastOf(palette.tone(candidate), true) >= AA
+    ? candidate
+    : Math.max(seedTone, isDark ? DARK_SEED_FLOOR : 0);
 }
 
 /**
