@@ -94,8 +94,20 @@ const noLegibleForeground = (argb: number): boolean =>
 /** The tone a white-label fill sits at in LIGHT mode. */
 const LIGHT_FILL_TONE = 45;
 
-/** No dark-mode fill sits below this: under it a colour goes heavy on black. */
+/** No dark-mode BRAND fill sits below this: under it a colour goes heavy on black. */
 const DARK_FLOOR = 58;
+
+/**
+ * Accent fills stop here in dark, and the ceiling is not aesthetic.
+ *
+ * White text needs a fill at or below tone 49, and an accent is a BUTTON — the
+ * FAB, the compose action — where white on colour is the convention. Sitting the
+ * accent at its hue's peak tone makes a lime look like lime, but peaks live at
+ * tone 88 for that family, and no label survives up there except black. The hue
+ * work still stands (a magenta seed's accent is the lime family, not the emerald
+ * one it used to be); only its brightness is capped so the label can be white.
+ */
+const DARK_ACCENT_TONE = 49;
 
 /** Chroma ceiling for an accent FILL — the brand palette's own maximum, not the gamut's. */
 const ACCENT_CHROMA = 80;
@@ -298,7 +310,7 @@ export function buildPolicyTokens(
     // black. The accent chroma cap already keeps these hues out of neon territory,
     // and the hue itself is the caller's brand rather than ours to move. The
     // analyzer still runs where it was designed to, inside `color-roles`.
-    const tone = isDark ? Math.max(peakTone(hue), DARK_FLOOR) : LIGHT_FILL_TONE;
+    const tone = isDark ? DARK_ACCENT_TONE : LIGHT_FILL_TONE;
     const pair = fillPair(fillPalette, tone);
     tokens[`--${role}`] = pair.fill;
     tokens[`--${role}-foreground`] = pair.foreground;

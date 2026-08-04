@@ -115,4 +115,24 @@ describe('colour policy legibility', () => {
   it('never picks black where white is legible', () => {
     expect(avoidableBlack).toEqual([]);
   });
+
+  // A PRODUCT decision, not a property of the colour maths, which is exactly why
+  // it needs an assertion: the accent fill is what a FAB and a compose button
+  // paint with, and those carry a white label. It has silently flipped to black
+  // twice — both times as a side effect of tuning the accent's TONE for hue
+  // fidelity, with nothing in the suite watching the label.
+  it('accent fills carry a WHITE label in both modes', () => {
+    const black: string[] = [];
+    for (const preset of APP_COLOR_NAMES) {
+      for (const mode of ['light', 'dark'] as const) {
+        const tokens = getResolvedTokens(preset, mode);
+        for (const family of ['secondary', 'tertiary'] as const) {
+          if (tokens[`--${family}-foreground`] !== 'rgb(255 255 255)') {
+            black.push(`${preset}/${mode} --${family}`);
+          }
+        }
+      }
+    }
+    expect(black).toEqual([]);
+  });
 });
