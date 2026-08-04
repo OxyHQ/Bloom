@@ -156,19 +156,32 @@ describe('colour policy legibility', () => {
       // to carry white, which is what makes faircoin a deep green there and a
       // bright lime in dark rather than the same pale smear twice.
       expect(getResolvedTokens(preset, 'light')['--primary-foreground']).toBe('rgb(255 255 255)');
-      const seedTone = Hct.fromInt(argbFromHex(APP_COLOR_PRESETS[preset].hex)).tone;
-      (getResolvedTokens(preset, 'dark')['--primary-foreground'] === 'rgb(255 255 255)'
-        ? white
-        : black
-      ).push(seedTone);
+      const config = APP_COLOR_PRESETS[preset];
+      const carriesWhite =
+        getResolvedTokens(preset, 'dark')['--primary-foreground'] === 'rgb(255 255 255)';
+
+      // A DECLARED white label is absolute — it is the brand overriding the
+      // budget, so no seed tone excuses a black one.
+      if (config.label === 'white') {
+        expect({ preset, carriesWhite }).toEqual({ preset, carriesWhite: true });
+        continue;
+      }
+      (carriesWhite ? white : black).push(Hct.fromInt(argbFromHex(config.hex)).tone);
     }
 
-    // Dark's split is decided by the SEED'S OWN LIGHTNESS and nothing else: a seed
-    // already too light to come down within the budget keeps its tone and takes a
-    // black label. So the partition must be ordered — every black-label seed
-    // lighter than every white-label one. Counting them instead (an "at most N
-    // take black" slack) says nothing about WHICH, passes while the rule inverts,
-    // and has to be re-tuned by hand every time a preset is added.
+    // For everything that does NOT declare a label, dark's split is decided by
+    // the seed's own lightness and nothing else: a seed already too light to come
+    // down within the budget keeps its tone and takes a black label. So that
+    // partition must be ORDERED — every black-label seed lighter than every
+    // white-label one. Counting them instead (an "at most N take black" slack)
+    // says nothing about WHICH, passes while the rule inverts, and needs
+    // re-tuning by hand every time a preset is added.
+    //
+    // The declared ones are excluded rather than folded in because they falsify
+    // the ordering ON PURPOSE: `yellow` (seed tone 86) comes down to a deep gold
+    // while `peach` (80) stays bright, so a single ordered partition over all of
+    // them cannot hold — and reading that failure as a policy bug is exactly the
+    // wrong conclusion.
     expect(black.length).toBeGreaterThan(0);
     expect(white.length).toBeGreaterThan(0);
     expect(Math.min(...black)).toBeGreaterThan(Math.max(...white));

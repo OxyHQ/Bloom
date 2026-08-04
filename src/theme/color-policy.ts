@@ -23,6 +23,7 @@
  * is that rule applied to one more role.
  */
 import { argbFromHex, type RoleColors } from './color-engine';
+import { APP_COLOR_PRESETS, HEX_TO_APP_COLOR } from './color-presets';
 import { Hct } from './color-engine/hct';
 import { TonalPalette } from './color-engine/tonal-palette';
 import { blueFromArgb, greenFromArgb, redFromArgb } from './color-engine/color-utils';
@@ -247,6 +248,22 @@ function vividHueNear(hue: number): number {
 }
 
 /**
+ * Whether the seed IS a built-in brand that declares a white label.
+ *
+ * Derived from the hex rather than passed in, and that is the point: a named
+ * preset is a fixed seed fed through this same policy, so
+ * `buildSeedScopeVars({ seed: preset.hex })` has to reproduce the preset exactly
+ * — a contract the seed-scope and build-theme-from-seed parity suites assert for
+ * every preset in both modes. Threading the declaration as a parameter satisfied
+ * only the caller that knew about it and silently gave every other path a
+ * different yellow.
+ */
+function declaresWhiteLabel(seedHex: string): boolean {
+  const name = HEX_TO_APP_COLOR[seedHex.toLowerCase()];
+  return name !== undefined && APP_COLOR_PRESETS[name].label === 'white';
+}
+
+/**
  * The most vivid tone a palette reaches while a WHITE label still clears AA on
  * it — searched per HUE instead of assumed.
  *
@@ -299,7 +316,12 @@ function vividLegibleTone(palette: TonalPalette): number {
  * why 11 of the 13 chromatic presets carry white and exactly the two light ones
  * do not. (`mono` sits outside this rule — see MONOCHROME_FILL_TONE.)
  */
-function whiteLabelTone(palette: TonalPalette, seedTone: number, isDark: boolean): number {
+function whiteLabelTone(
+  palette: TonalPalette,
+  seedTone: number,
+  isDark: boolean,
+  forceWhite: boolean,
+): number {
   // LIGHT: every fill comes down, no exemption. On a near-white page a bright
   // colour has nothing to read against — a lime at its own tone 90 is a pale
   // smear there, indistinguishable from the same colour in dark, which is not a
@@ -309,7 +331,14 @@ function whiteLabelTone(palette: TonalPalette, seedTone: number, isDark: boolean
   // DARK: the budget applies. Most brands come down to where white fits, but a
   // seed that is already light cannot without ceasing to be itself, so it keeps
   // its own tone and takes a black label. That is the eleven-and-two pattern.
-  const candidate = Math.max(vividLegibleTone(palette), seedTone - TONE_BUDGET);
+  // A brand that DECLARES a white label forgoes the exemption outright: it comes
+  // down to where white fits, exactly as it does in light. Without this the
+  // budget is the only voice, and it answers by seed lightness alone — which
+  // cannot separate a yellow that wants to be a deep gold from a lime that wants
+  // to stay bright.
+  const candidate = forceWhite
+    ? vividLegibleTone(palette)
+    : Math.max(vividLegibleTone(palette), seedTone - TONE_BUDGET);
   return contrastOf(palette.tone(candidate), true) >= AA
     ? candidate
     : Math.max(seedTone, DARK_SEED_FLOOR);
@@ -410,7 +439,7 @@ export function buildPolicyTokens(
     brandPalette,
     monochrome
       ? (isDark ? MONOCHROME_FILL_TONE.dark : MONOCHROME_FILL_TONE.light)
-      : whiteLabelTone(brandPalette, seed.tone, isDark),
+      : whiteLabelTone(brandPalette, seed.tone, isDark, declaresWhiteLabel(seedHex)),
   );
 
   const tokens: PolicyTokens = {

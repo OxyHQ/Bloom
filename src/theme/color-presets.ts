@@ -66,6 +66,18 @@ export interface AppColorPreset {
    */
   tertiaryHex?: string;
   /**
+   * Force the fill to a tone a WHITE label fits, in BOTH modes — overriding the
+   * budget that otherwise lets an already-light seed keep its own tone in dark
+   * and take a black label.
+   *
+   * It has to be declared, because it cannot be derived: `yellow` (seed tone 86)
+   * wants to come down to a deep gold with white on it, and `faircoin` (tone 90)
+   * wants to stay a bright lime with black on it. Two seeds four tones apart,
+   * opposite answers — nothing in the hex distinguishes them, only what the brand
+   * is for.
+   */
+  label?: 'white';
+  /**
    * Who may pick this preset. Absent = everyone. Bloom only DECLARES the gate;
    * whether a given viewer satisfies it is the consuming app's question, since
    * only the app knows who is signed in and what they pay for.
@@ -85,14 +97,14 @@ export const APP_COLOR_NAMES: readonly AppColorName[] = ['teal', 'blue', 'green'
 
 export const HEX_TO_APP_COLOR: Record<string, AppColorName> = {
   '#005c67': 'teal',
-  '#0085fe': 'blue',
+  '#1d9bf0': 'blue',
   '#10b981': 'green',
-  '#fcdc00': 'yellow',
+  '#ffd400': 'yellow',
   '#ef4444': 'red',
   '#b866ff': 'purple',
-  '#ff3c7f': 'pink',
+  '#f91880': 'pink',
   '#03a9f4': 'sky',
-  '#ff5722': 'orange',
+  '#ff7a00': 'orange',
   '#14b8a6': 'mint',
   '#c46ede': 'oxy',
   '#9ffb50': 'faircoin',
@@ -116,12 +128,12 @@ export function hexToAppColorName(hex: string): AppColorName {
  */
 export const APP_COLOR_PRESETS: Record<AppColorName, AppColorPreset> = {
   teal: { name: 'teal', hex: '#005c67', variant: 'vivid' },
-  blue: { name: 'blue', hex: '#0085fe', variant: 'vivid' },
+  blue: { name: 'blue', hex: '#1d9bf0', variant: 'vivid' },
   green: { name: 'green', hex: '#10b981', variant: 'vivid' },
-  yellow: { name: 'yellow', hex: '#fcdc00', variant: 'vivid' },
+  yellow: { name: 'yellow', hex: '#ffd400', variant: 'vivid', label: 'white' },
   red: { name: 'red', hex: '#ef4444', variant: 'vivid' },
   purple: { name: 'purple', hex: '#b866ff', variant: 'vivid' },
-  pink: { name: 'pink', hex: '#ff3c7f', variant: 'vivid' },
+  pink: { name: 'pink', hex: '#f91880', variant: 'vivid' },
   sky: { name: 'sky', hex: '#03a9f4', variant: 'vivid' },
   // Deliberately NOT Tailwind's orange-500 (`#f97316`). That seed sits at HCT hue
   // 46, which reads as orange only because it is also light: at hue 46 the sRGB
@@ -129,7 +141,7 @@ export const APP_COLOR_PRESETS: Record<AppColorName, AppColorPreset> = {
   // the brand fill resolved to `rgb(177 76 0)` — a brown. Hue 34 carries a chroma
   // of 84 at that same tone, with the same white label and the same contrast
   // headroom, so the fill reads as orange instead of paying for the hue twice.
-  orange: { name: 'orange', hex: '#ff5722', variant: 'vivid' },
+  orange: { name: 'orange', hex: '#ff7a00', variant: 'vivid' },
   mint: { name: 'mint', hex: '#14b8a6', variant: 'vivid' },
   oxy: { name: 'oxy', hex: '#c46ede', variant: 'vivid', gate: 'handle' },
   faircoin: { name: 'faircoin', hex: '#9ffb50', variant: 'vivid', gate: 'handle' },
