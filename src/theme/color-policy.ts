@@ -196,6 +196,23 @@ function vividHueNear(hue: number): number {
   return bestChroma - baseChroma >= VIVID_SNAP_MIN_GAIN ? bestHue : hue;
 }
 
+/**
+ * The tone a BRAND fill sits at.
+ *
+ * Normally the ceiling white text allows, so a Follow button, an avatar and the
+ * compose button all carry a white label. But a seed that is ALREADY light —
+ * yellow at tone 82, faircoin at 90 — cannot be dragged down there without
+ * ceasing to be itself: yellow turns to brown and lime to moss. Those keep their
+ * own tone and take a black label instead, which is what a bright yellow button
+ * wants anyway. The 25-tone budget is what separates the two cases, and it is
+ * why 11 of the 13 presets carry white and exactly the two light ones do not.
+ */
+function whiteLabelTone(palette: TonalPalette, seedTone: number, isDark: boolean): number {
+  const target = isDark ? DARK_FILL_TONE : LIGHT_FILL_TONE;
+  const candidate = Math.max(target, seedTone - 25);
+  return contrastOf(palette.tone(candidate), true) >= AA ? candidate : seedTone;
+}
+
 /** Settle a fill tone so some foreground is legible, then pair it with that foreground. */
 function fillPair(palette: TonalPalette, startTone: number): { fill: string; foreground: string } {
   let tone = startTone;
@@ -260,7 +277,7 @@ export function buildPolicyTokens(
   // dark fill sit at the seed's own tone instead makes it brighter, but every one
   // of those labels turns black, which costs more than the brightness buys.
   const brandPalette = TonalPalette.fromHueAndChroma(seed.hue, 200);
-  const primary = fillPair(brandPalette, isDark ? DARK_FILL_TONE : LIGHT_FILL_TONE);
+  const primary = fillPair(brandPalette, whiteLabelTone(brandPalette, seed.tone, isDark));
 
   const tokens: PolicyTokens = {
     '--primary': primary.fill,
