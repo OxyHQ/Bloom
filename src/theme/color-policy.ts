@@ -291,9 +291,13 @@ export function buildPolicyTokens(
     // analyzer runs there — Bloom ships it yet only reaches it on the fidelity
     // path, which no Bloom variant uses, so a rotated accent could land in the
     // band with nothing to lift it out.
-    const tone = isDark
-      ? Math.max(peakTone(hue), DARK_FLOOR)
-      : fixIfDisliked(Hct.fromInt(fillPalette.tone(LIGHT_FILL_TONE))).tone;
+    // LIGHT sits at the fill tone, and deliberately does NOT run the bile
+    // analyzer over it. Lifting a yellow-green out of that band costs 25 tones,
+    // which puts the fill above the white-label ceiling and flips a button's
+    // label to black — on the compose button, whose whole point is white on
+    // colour. The accent chroma cap already keeps this out of neon territory,
+    // and the hue is the caller's brand, not ours to move.
+    const tone = isDark ? Math.max(peakTone(hue), DARK_FLOOR) : LIGHT_FILL_TONE;
     const pair = fillPair(fillPalette, tone);
     tokens[`--${role}`] = pair.fill;
     tokens[`--${role}-foreground`] = pair.foreground;
