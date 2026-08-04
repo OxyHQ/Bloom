@@ -78,7 +78,7 @@ describe('Theme system', () => {
   describe('hexToAppColorName', () => {
     it('maps known hex values to correct color names', () => {
       expect(hexToAppColorName('#005c67')).toBe('teal');
-      expect(hexToAppColorName('#1d9bf0')).toBe('blue');
+      expect(hexToAppColorName('#0085fe')).toBe('blue');
       expect(hexToAppColorName('#10b981')).toBe('green');
       expect(hexToAppColorName('#ef4444')).toBe('red');
       expect(hexToAppColorName('#c46ede')).toBe('oxy');
@@ -86,7 +86,7 @@ describe('Theme system', () => {
 
     it('is case-insensitive', () => {
       expect(hexToAppColorName('#005C67')).toBe('teal');
-      expect(hexToAppColorName('#1D9BF0')).toBe('blue');
+      expect(hexToAppColorName('#0085FE')).toBe('blue');
     });
 
     it('defaults to teal for unknown hex values', () => {

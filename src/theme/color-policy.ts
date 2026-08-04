@@ -92,10 +92,31 @@ const noLegibleForeground = (argb: number): boolean =>
   contrastOf(argb, true) < AA && contrastOf(argb, false) < AA;
 
 /** The tone a white-label fill sits at in LIGHT mode. */
-const LIGHT_FILL_TONE = 45;
+const FILL_TONE_FLOOR = 45;
 
 /** The tone a white-label fill sits at in DARK: the ceiling white text allows. */
-const DARK_FILL_TONE = 49;
+const FILL_TONE_SEARCH_CEILING = 56;
+
+/**
+ * How much DEEPER the same brand sits on a light page than on a dark one.
+ *
+ * Not decoration: a colour on a near-white page has nothing to read against, so
+ * the mode difference is what makes a theme a theme rather than one palette shown
+ * twice. Dropping it is a regression that looks like a simplification — light and
+ * dark collapse onto the same fill for every seed that is not already bright, and
+ * the two modes stop being distinguishable at all.
+ */
+const LIGHT_DEPTH_STEP = 5;
+
+/**
+ * How deep a light-mode fill may go. Deliberately BELOW the search's lower bound,
+ * which those two used to share — and sharing them silently voided the depth step
+ * for any seed whose dark fill already sits at that bound. A high-chroma seed is
+ * exactly that case: pink loses its white label above tone 45, so dark cannot rise
+ * to make room and light must descend instead, or the two modes render the
+ * identical fill.
+ */
+const LIGHT_FILL_FLOOR = 40;
 
 /** How far a fill may be dragged from its natural tone before the colour is lost. */
 const TONE_BUDGET = 25;
@@ -226,6 +247,47 @@ function vividHueNear(hue: number): number {
 }
 
 /**
+ * The most vivid tone a palette reaches while a WHITE label still clears AA on
+ * it — searched per HUE instead of assumed.
+ *
+ * A single tone for every hue leaves chroma on the table for some and takes it
+ * from others, because the sRGB gamut is not a cylinder: from tone 45 upward an
+ * orange keeps gaining chroma until white runs out at ~49.5 (59 -> 84), while a
+ * violet has already passed its peak and LOSES chroma over the same interval
+ * (91 -> 86). The old flat 45 spent none of the contrast headroom it had — every
+ * preset sat at 5.38 when 4.5 was the requirement — and orange paid for that
+ * twice, since its hue is also one of the gamut's narrow ones.
+ *
+ * The floor is what keeps this from trading lightness for chroma: a hue that
+ * peaks far below 45 stays at 45 rather than descending into a near-black slab
+ * that happens to be saturated. So the search can only ever improve a fill or
+ * leave it exactly where it was.
+ *
+ * Contrast is measured on the QUANTIZED colour, not the engine's continuous
+ * tone-ratio: an earlier iteration chose tones by the latter and shipped 135
+ * pairs at a measured 4.49.
+ */
+function vividLegibleTone(palette: TonalPalette): number {
+  let bestTone = FILL_TONE_FLOOR;
+  let bestChroma = -1;
+  for (let tone = FILL_TONE_FLOOR; tone <= FILL_TONE_SEARCH_CEILING; tone += 0.5) {
+    const argb = palette.tone(tone);
+    if (contrastOf(argb, true) < AA) continue;
+    const chroma = Hct.fromInt(argb).chroma;
+    // A tie keeps the DEEPEST tone. Ties are common rather than exotic — any seed
+    // whose chroma sits below the gamut ceiling across this whole range has a flat
+    // curve here — and breaking them toward the lightest end instead changes no
+    // preset's output, because the light-mode floor below already supplies the
+    // separation that would have bought. Mutation-checked, not assumed.
+    if (chroma > bestChroma) {
+      bestChroma = chroma;
+      bestTone = tone;
+    }
+  }
+  return bestTone;
+}
+
+/**
  * The tone a BRAND fill sits at.
  *
  * Normally the ceiling white text allows, so a Follow button, an avatar and the
@@ -243,11 +305,11 @@ function whiteLabelTone(palette: TonalPalette, seedTone: number, isDark: boolean
   // smear there, indistinguishable from the same colour in dark, which is not a
   // theme at all. Coming down is what makes faircoin a deep green in light and a
   // bright lime in dark.
-  if (!isDark) return LIGHT_FILL_TONE;
+  if (!isDark) return Math.max(LIGHT_FILL_FLOOR, vividLegibleTone(palette) - LIGHT_DEPTH_STEP);
   // DARK: the budget applies. Most brands come down to where white fits, but a
   // seed that is already light cannot without ceasing to be itself, so it keeps
   // its own tone and takes a black label. That is the eleven-and-two pattern.
-  const candidate = Math.max(DARK_FILL_TONE, seedTone - TONE_BUDGET);
+  const candidate = Math.max(vividLegibleTone(palette), seedTone - TONE_BUDGET);
   return contrastOf(palette.tone(candidate), true) >= AA
     ? candidate
     : Math.max(seedTone, DARK_SEED_FLOOR);
@@ -260,10 +322,10 @@ function whiteLabelTone(palette: TonalPalette, seedTone: number, isDark: boolean
  * peaks dark comes down and carries white.
  */
 function accentTone(hue: number, isDark: boolean): number {
-  if (!isDark) return LIGHT_FILL_TONE;
-  const peak = Math.max(peakTone(hue), DARK_ACCENT_FLOOR);
   const palette = TonalPalette.fromHueAndChroma(hue, ACCENT_CHROMA);
-  const candidate = Math.max(DARK_FILL_TONE, peak - TONE_BUDGET);
+  if (!isDark) return Math.max(LIGHT_FILL_FLOOR, vividLegibleTone(palette) - LIGHT_DEPTH_STEP);
+  const peak = Math.max(peakTone(hue), DARK_ACCENT_FLOOR);
+  const candidate = Math.max(vividLegibleTone(palette), peak - TONE_BUDGET);
   return contrastOf(palette.tone(candidate), true) >= AA ? candidate : peak;
 }
 
@@ -331,17 +393,19 @@ export function buildPolicyTokens(
   // dark fill sit at the seed's own tone instead makes it brighter, but every one
   // of those labels turns black, which costs more than the brightness buys.
   const monochrome = seed.chroma <= MONOCHROME_MAX_CHROMA;
-  // DARK keys off the seed itself so the fill IS the brand hex; LIGHT uses the
-  // max-chroma palette, which is what stops a deepened fill from going pastel.
+  // BOTH modes key off the seed itself, so the fill carries the brand's SATURATION
+  // as well as its hue. Light used to force the hue to maximum chroma, which reads
+  // as "the seed only chose a hue" — and that silently renames a colour: a muted
+  // blue-grey seed resolved to a vivid cyan, and a brown seed to an orange, since
+  // both differ from a saturated neighbour by chroma alone. A deliberately soft
+  // brand now stays soft instead of being argued with.
   // A monochrome seed has no chroma to preserve either way, and its fill goes to
   // the far end of the scale rather than the white-label ceiling: a mid-grey
   // button reads as disabled, where near-black on white reads as the primary
   // action.
   const brandPalette = monochrome
     ? TonalPalette.fromHueAndChroma(0, 0)
-    : isDark
-      ? TonalPalette.fromInt(argbFromHex(seedHex))
-      : TonalPalette.fromHueAndChroma(seed.hue, 200);
+    : TonalPalette.fromInt(argbFromHex(seedHex));
   const primary = fillPair(
     brandPalette,
     monochrome
@@ -443,7 +507,12 @@ export function buildPolicyTokens(
   for (const [role, hex] of Object.entries(STATUS_SEEDS)) {
     const status = Hct.fromInt(argbFromHex(hex));
     const palette = TonalPalette.fromHueAndChroma(status.hue, status.chroma);
-    const pair = fillPair(palette, isDark ? DARK_FILL_TONE : LIGHT_FILL_TONE);
+    const pair = fillPair(
+      palette,
+      isDark
+        ? vividLegibleTone(palette)
+        : Math.max(LIGHT_FILL_FLOOR, vividLegibleTone(palette) - LIGHT_DEPTH_STEP),
+    );
     tokens[`--${role}`] = pair.fill;
     tokens[`--${role}-foreground`] = pair.foreground;
     tokens[`--${role}-text`] = rgb(

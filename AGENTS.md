@@ -194,7 +194,7 @@ Rules:
 - Applies dark class on web via `applyDarkClass()`
 - Applies CSS custom properties on web via `applyColorPresetVars()` on preset/mode change — writes full-color values via `toWebColorValue()` in `src/theme/apply-dark-class.ts` (never raw HSL triples)
 - `getResolvedTokens()` produces the resolved color map consumed by both web (`applyColorPresetVars`) and native (`BloomThemeProvider` context)
-- 14 built-in color presets: teal, blue, green, amber, yellow, red, purple, pink, sky, orange, mint, oxy, faircoin, mono (`mono` is the colourless one — a seed at or below chroma 6 takes the greyscale scheme, so a hand-picked grey lands there too; only the status family stays semantic)
+- 19 built-in color presets: teal, blue, green, amber, yellow, red, purple, pink, sky, orange, mint, oxy, faircoin, pumpkin, gray, brown, peach, rose, mono (`mono` is the colourless one — a seed at or below chroma 6 takes the greyscale scheme, so a hand-picked grey lands there too; only the status family stays semantic)
 - `useBloomTheme()` returns `{ theme, mode, colorPreset, setMode, setColorPreset }`
 - `BloomColorScope` overrides color for a subtree; emits both canonical `--x` tokens AND Tailwind v4 `--color-x` aliases from the same resolver so NW classes inside scoped subtrees pick up the scoped preset
 

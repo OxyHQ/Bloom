@@ -14,6 +14,11 @@ export type AppColorName =
   | 'mint'
   | 'oxy'
   | 'faircoin'
+  | 'pumpkin'
+  | 'gray'
+  | 'brown'
+  | 'peach'
+  | 'rose'
   | 'mono';
 
 /**
@@ -57,25 +62,30 @@ export interface AppColorPreset {
  */
 export type PresetTokens = Record<string, string>;
 
-export const APP_COLOR_NAMES: readonly AppColorName[] = ['teal', 'blue', 'green', 'amber', 'yellow', 'red', 'purple', 'pink', 'sky', 'orange', 'mint', 'oxy', 'faircoin', 'mono'];
+export const APP_COLOR_NAMES: readonly AppColorName[] = ['teal', 'blue', 'green', 'amber', 'yellow', 'red', 'purple', 'pink', 'sky', 'orange', 'mint', 'oxy', 'faircoin', 'pumpkin', 'gray', 'brown', 'peach', 'rose', 'mono'];
 
 /** Premium-exclusive presets, hidden from the standard color picker. */
 export const PREMIUM_COLOR_NAMES: readonly AppColorName[] = ['oxy', 'faircoin'];
 
 export const HEX_TO_APP_COLOR: Record<string, AppColorName> = {
   '#005c67': 'teal',
-  '#1d9bf0': 'blue',
+  '#0085fe': 'blue',
   '#10b981': 'green',
   '#f59e0b': 'amber',
-  '#ffc300': 'yellow',
+  '#fcdc00': 'yellow',
   '#ef4444': 'red',
-  '#8b5cf6': 'purple',
-  '#ec4899': 'pink',
-  '#0ea5e9': 'sky',
-  '#f97316': 'orange',
+  '#b866ff': 'purple',
+  '#ff3c7f': 'pink',
+  '#03a9f4': 'sky',
+  '#ff5722': 'orange',
   '#14b8a6': 'mint',
   '#c46ede': 'oxy',
   '#9ffb50': 'faircoin',
+  '#ff9800': 'pumpkin',
+  '#607d8b': 'gray',
+  '#813519': 'brown',
+  '#ffb28d': 'peach',
+  '#fcaffe': 'rose',
   '#000000': 'mono',
 };
 
@@ -91,18 +101,29 @@ export function hexToAppColorName(hex: string): AppColorName {
  */
 export const APP_COLOR_PRESETS: Record<AppColorName, AppColorPreset> = {
   teal: { name: 'teal', hex: '#005c67', variant: 'vivid' },
-  blue: { name: 'blue', hex: '#1d9bf0', variant: 'vivid' },
+  blue: { name: 'blue', hex: '#0085fe', variant: 'vivid' },
   green: { name: 'green', hex: '#10b981', variant: 'vivid' },
   amber: { name: 'amber', hex: '#f59e0b', variant: 'vivid' },
-  yellow: { name: 'yellow', hex: '#ffc300', variant: 'vivid' },
+  yellow: { name: 'yellow', hex: '#fcdc00', variant: 'vivid' },
   red: { name: 'red', hex: '#ef4444', variant: 'vivid' },
-  purple: { name: 'purple', hex: '#8b5cf6', variant: 'vivid' },
-  pink: { name: 'pink', hex: '#ec4899', variant: 'vivid' },
-  sky: { name: 'sky', hex: '#0ea5e9', variant: 'vivid' },
-  orange: { name: 'orange', hex: '#f97316', variant: 'vivid' },
+  purple: { name: 'purple', hex: '#b866ff', variant: 'vivid' },
+  pink: { name: 'pink', hex: '#ff3c7f', variant: 'vivid' },
+  sky: { name: 'sky', hex: '#03a9f4', variant: 'vivid' },
+  // Deliberately NOT Tailwind's orange-500 (`#f97316`). That seed sits at HCT hue
+  // 46, which reads as orange only because it is also light: at hue 46 the sRGB
+  // gamut allows a chroma of just 62 at the tones a white label needs (<= 49), so
+  // the brand fill resolved to `rgb(177 76 0)` — a brown. Hue 34 carries a chroma
+  // of 84 at that same tone, with the same white label and the same contrast
+  // headroom, so the fill reads as orange instead of paying for the hue twice.
+  orange: { name: 'orange', hex: '#ff5722', variant: 'vivid' },
   mint: { name: 'mint', hex: '#14b8a6', variant: 'vivid' },
   oxy: { name: 'oxy', hex: '#c46ede', variant: 'vivid' },
   faircoin: { name: 'faircoin', hex: '#9ffb50', variant: 'vivid' },
+  pumpkin: { name: 'pumpkin', hex: '#ff9800', variant: 'vivid' },
+  gray: { name: 'gray', hex: '#607d8b', variant: 'vivid' },
+  brown: { name: 'brown', hex: '#813519', variant: 'vivid' },
+  peach: { name: 'peach', hex: '#ffb28d', variant: 'vivid' },
+  rose: { name: 'rose', hex: '#fcaffe', variant: 'vivid' },
   /**
    * No colour at all — the black-and-white theme. Its seed carries zero chroma,
    * which is the whole mechanism: the policy derives a greyscale palette from any

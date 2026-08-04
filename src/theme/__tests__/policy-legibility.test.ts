@@ -20,7 +20,9 @@
  * it against the raw rgba would compare against a colour nobody ever sees.
  */
 import { getResolvedTokens } from '../token-registry';
-import { APP_COLOR_NAMES } from '../color-presets';
+import { APP_COLOR_NAMES, APP_COLOR_PRESETS } from '../color-presets';
+import { Hct } from '../color-engine/hct';
+import { argbFromHex } from '../color-engine';
 
 const AA = 4.5;
 
@@ -117,28 +119,60 @@ describe('colour policy legibility', () => {
   });
 
 
+  // The regression this exists for has landed twice, both times reported by the
+  // user rather than by the suite: a preset rendering the IDENTICAL brand fill in
+  // both modes, which is not a theme, just one palette shown twice. It is easy to
+  // reintroduce because every individual token stays legible and every other
+  // assertion here keeps passing — nothing in a per-mode check can see that the
+  // two modes agree.
+  //
+  // Two distinct mechanisms produced it, which is why the gate is on the OUTPUT
+  // rather than on either cause: a tone search that degenerated to its own floor
+  // for any seed whose chroma is flat across the search range (pink, purple), and
+  // a light floor sharing that same bound, which voided the depth step for a seed
+  // whose dark fill already sat on it (pink again, for the opposite reason).
+  it('every preset renders a different brand fill in each mode', () => {
+    const identical = APP_COLOR_NAMES.filter(
+      (preset) =>
+        getResolvedTokens(preset, 'light')['--primary'] ===
+        getResolvedTokens(preset, 'dark')['--primary'],
+    );
+    expect(identical).toEqual([]);
+  });
+
   // The two modes want opposite things and the suite has to say which. Applying
   // the budget in LIGHT let a light seed keep its own tone there, so faircoin
   // rendered the same pale lime in both modes — no theme at all. Skipping it in
   // DARK left every Follow button, avatar and chat bubble with a black label.
   // Each half was individually legible, so nothing else could catch either.
   it('the brand fill keeps light exemption-free and dark budgeted', () => {
-    const white = { light: 0, dark: 0 };
     // `mono` is not governed by the budget — it has no chroma to preserve, and its
     // dark fill is near-WHITE by design, so it takes a black label on purpose.
-    // Counting it here would let a real regression hide inside its slack.
     const chromatic = APP_COLOR_NAMES.filter((name) => name !== 'mono');
+    const black: number[] = [];
+    const white: number[] = [];
     for (const preset of chromatic) {
-      for (const mode of ['light', 'dark'] as const) {
-        if (getResolvedTokens(preset, mode)['--primary-foreground'] === 'rgb(255 255 255)') {
-          white[mode] += 1;
-        }
-      }
+      // Light admits no exemption: every chromatic preset comes down far enough
+      // to carry white, which is what makes faircoin a deep green there and a
+      // bright lime in dark rather than the same pale smear twice.
+      expect(getResolvedTokens(preset, 'light')['--primary-foreground']).toBe('rgb(255 255 255)');
+      const seedTone = Hct.fromInt(argbFromHex(APP_COLOR_PRESETS[preset].hex)).tone;
+      (getResolvedTokens(preset, 'dark')['--primary-foreground'] === 'rgb(255 255 255)'
+        ? white
+        : black
+      ).push(seedTone);
     }
-    // Light admits no exemption, so every preset carries white there. Dark keeps
-    // the budget, so the seeds that are already light keep their colour instead.
-    expect(white.light).toBe(chromatic.length);
-    expect(white.dark).toBeGreaterThan(chromatic.length - 4);
+
+    // Dark's split is decided by the SEED'S OWN LIGHTNESS and nothing else: a seed
+    // already too light to come down within the budget keeps its tone and takes a
+    // black label. So the partition must be ordered — every black-label seed
+    // lighter than every white-label one. Counting them instead (an "at most N
+    // take black" slack) says nothing about WHICH, passes while the rule inverts,
+    // and has to be re-tuned by hand every time a preset is added.
+    expect(black.length).toBeGreaterThan(0);
+    expect(white.length).toBeGreaterThan(0);
+    expect(Math.min(...black)).toBeGreaterThan(Math.max(...white));
+
     // And the monochrome exception itself, stated rather than tolerated: a fill at
     // each end of the scale, carrying the opposite label.
     expect(getResolvedTokens('mono', 'light')['--primary-foreground']).toBe('rgb(255 255 255)');
