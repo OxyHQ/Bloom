@@ -61,8 +61,12 @@ export const CANONICAL_TOKENS = [
   'primary-subtle',
   'secondary-text',
   'secondary-subtle',
+  'secondary-strong',
+  'secondary-strong-foreground',
   'tertiary-text',
   'tertiary-subtle',
+  'tertiary-strong',
+  'tertiary-strong-foreground',
 
   // --- semantic status, themed per mode ---
   // Replaces four frozen hexes that all FAILED AA under white text (warning at

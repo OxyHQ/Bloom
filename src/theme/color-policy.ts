@@ -115,6 +115,18 @@ const ACCENT_CHROMA = 80;
 const TEXT_TONE = { light: 40, dark: 80 } as const;
 const TEXT_CHROMA = 60;
 
+/**
+ * The tone a `-strong` accent sits at: deep enough to carry a WHITE label.
+ *
+ * `--tertiary` is the vivid accent — a tile, a chip, a block of colour — and it
+ * sits at its hue's peak tone so a lime reads as lime. A solid BUTTON is a
+ * different job: it wants the same hue with white on it, which needs tone <= 49.
+ * One token cannot do both, exactly as `--primary` could not be both the fill
+ * and the legible text accent. Capping `--tertiary` itself to win the label back
+ * dulls every other use of it, so the button gets its own member instead.
+ */
+const STRONG_TONE = 49;
+
 /** The `-subtle` tint is mixed from a BRIGHT tone at low alpha, never a dark one at high alpha. */
 const SUBTLE_SOURCE_TONE = 60;
 const SUBTLE_ALPHA = { light: 0.13, dark: 0.24 } as const;
@@ -318,6 +330,12 @@ export function buildPolicyTokens(
       vividPalette.tone(SUBTLE_SOURCE_TONE),
       isDark ? SUBTLE_ALPHA.dark : SUBTLE_ALPHA.light,
     );
+    // The solid-button member: same hue, deep enough for a white label in both
+    // modes. In light it lands on the ordinary fill tone, so a button that uses
+    // it there is identical to one that used the accent.
+    const strong = fillPair(fillPalette, isDark ? STRONG_TONE : LIGHT_FILL_TONE);
+    tokens[`--${role}-strong`] = strong.fill;
+    tokens[`--${role}-strong-foreground`] = strong.foreground;
   }
 
   // Categorical chart ramp: five hues spread evenly from the seed at one tone.

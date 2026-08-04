@@ -66,8 +66,12 @@
   --color-primary-subtle: var(--primary-subtle);
   --color-secondary-text: var(--secondary-text);
   --color-secondary-subtle: var(--secondary-subtle);
+  --color-secondary-strong: var(--secondary-strong);
+  --color-secondary-strong-foreground: var(--secondary-strong-foreground);
   --color-tertiary-text: var(--tertiary-text);
   --color-tertiary-subtle: var(--tertiary-subtle);
+  --color-tertiary-strong: var(--tertiary-strong);
+  --color-tertiary-strong-foreground: var(--tertiary-strong-foreground);
   --color-success: var(--success);
   --color-success-foreground: var(--success-foreground);
   --color-success-text: var(--success-text);
