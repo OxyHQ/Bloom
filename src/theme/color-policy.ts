@@ -25,7 +25,6 @@
 import { argbFromHex, type RoleColors } from './color-engine';
 import { Hct } from './color-engine/hct';
 import { TonalPalette } from './color-engine/tonal-palette';
-import { fixIfDisliked } from './color-engine/dislike-analyzer';
 import { blueFromArgb, greenFromArgb, redFromArgb } from './color-engine/color-utils';
 
 /** Semantic status seeds. Only hue and chroma survive; tones come from the policy. */
@@ -291,12 +290,14 @@ export function buildPolicyTokens(
     // analyzer runs there — Bloom ships it yet only reaches it on the fidelity
     // path, which no Bloom variant uses, so a rotated accent could land in the
     // band with nothing to lift it out.
-    // LIGHT sits at the fill tone, and deliberately does NOT run the bile
-    // analyzer over it. Lifting a yellow-green out of that band costs 25 tones,
-    // which puts the fill above the white-label ceiling and flips a button's
-    // label to black — on the compose button, whose whole point is white on
-    // colour. The accent chroma cap already keeps this out of neon territory,
-    // and the hue is the caller's brand, not ours to move.
+    // Bloom's own tone policy governs this, and M3's `fixIfDisliked` deliberately
+    // does not get a say. That heuristic flags dark yellow-greens and lifts them
+    // to tone 70 — a remedy calibrated for M3's tone assignments, where nothing
+    // depends on staying under the ceiling white text needs. Here everything does:
+    // a 25-tone lift puts the fill above it and flips a compose button's label to
+    // black. The accent chroma cap already keeps these hues out of neon territory,
+    // and the hue itself is the caller's brand rather than ours to move. The
+    // analyzer still runs where it was designed to, inside `color-roles`.
     const tone = isDark ? Math.max(peakTone(hue), DARK_FLOOR) : LIGHT_FILL_TONE;
     const pair = fillPair(fillPalette, tone);
     tokens[`--${role}`] = pair.fill;
