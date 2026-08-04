@@ -1154,6 +1154,20 @@
         "default": "./lib/commonjs/tabs/index.js"
       }
     },
+    "./tabs/expo-router": {
+      "react-native": {
+        "types": "./lib/typescript/module/tabs/expo-router/index.d.ts",
+        "default": "./src/tabs/expo-router/index.ts"
+      },
+      "import": {
+        "types": "./lib/typescript/module/tabs/expo-router/index.d.ts",
+        "default": "./lib/module/tabs/expo-router/index.js"
+      },
+      "require": {
+        "types": "./lib/typescript/commonjs/tabs/expo-router/index.d.ts",
+        "default": "./lib/commonjs/tabs/expo-router/index.js"
+      }
+    },
     "./checkbox": {
       "react-native": {
         "types": "./lib/typescript/module/checkbox/index.d.ts",

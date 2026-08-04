@@ -82,6 +82,11 @@ const ALLOWED: { peer: string; file: string; why: string }[] = [
     file: 'scroll/expo-router/index.ts',
     why: 'the whole point of this file is to BE the expo-router binding — it is reachable only from `@oxyhq/bloom/scroll/expo-router` and from BloomProvider, both of which are expo-router-only by construction; the scroll core itself no longer imports a router (see AGENTS.md "App Root Provider")',
   },
+  {
+    peer: 'expo-router',
+    file: 'tabs/expo-router/RouterTabs.tsx',
+    why: 'same shape as the scroll binding above — this file exists to BE the expo-router binding for the tab strip and is reachable only from `@oxyhq/bloom/tabs/expo-router`; the tabs core imports no router, so a consumer on a different router (or none) still gets `@oxyhq/bloom/tabs`',
+  },
 ];
 
 /**
