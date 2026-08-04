@@ -97,6 +97,12 @@ const LIGHT_FILL_TONE = 45;
 /** The tone a white-label fill sits at in DARK: the ceiling white text allows. */
 const DARK_FILL_TONE = 49;
 
+/** How far a fill may be dragged from its natural tone before the colour is lost. */
+const TONE_BUDGET = 25;
+
+/** No dark-mode BRAND fill sits below this: under it a colour goes heavy on black. */
+const DARK_SEED_FLOOR = 58;
+
 /**
  * No dark-mode ACCENT sits below this. Some hues peak dark — violet at tone 33 —
  * and rendering one there gives a slab rather than a highlight.
@@ -208,9 +214,29 @@ function vividHueNear(hue: number): number {
  * why 11 of the 13 presets carry white and exactly the two light ones do not.
  */
 function whiteLabelTone(palette: TonalPalette, seedTone: number, isDark: boolean): number {
-  const target = isDark ? DARK_FILL_TONE : LIGHT_FILL_TONE;
-  const candidate = Math.max(target, seedTone - 25);
+  // DARK keeps the brand's OWN tone, floored so a dark seed still lifts off the
+  // ground. On a near-black page the fill IS the brand — oxy at tone 49 is a
+  // different, electric purple, not #c46ede — so fidelity wins and the label
+  // follows. LIGHT is the opposite: a bright fill on a white page reads thin, so
+  // it comes down to the ceiling white allows unless that costs more than the
+  // budget, which is what keeps yellow yellow and faircoin lime.
+  if (isDark) return Math.max(seedTone, DARK_SEED_FLOOR);
+  const candidate = Math.max(LIGHT_FILL_TONE, seedTone - TONE_BUDGET);
   return contrastOf(palette.tone(candidate), true) >= AA ? candidate : seedTone;
+}
+
+/**
+ * The same budget governs the ACCENT: come down to where white fits, unless the
+ * descent would cost more than this and destroy the hue. An accent that peaks
+ * bright — a lime at tone 88 — keeps its peak and takes a black label; one that
+ * peaks dark comes down and carries white.
+ */
+function accentTone(hue: number, isDark: boolean): number {
+  if (!isDark) return LIGHT_FILL_TONE;
+  const peak = Math.max(peakTone(hue), DARK_ACCENT_FLOOR);
+  const palette = TonalPalette.fromHueAndChroma(hue, ACCENT_CHROMA);
+  const candidate = Math.max(DARK_FILL_TONE, peak - TONE_BUDGET);
+  return contrastOf(palette.tone(candidate), true) >= AA ? candidate : peak;
 }
 
 /** Settle a fill tone so some foreground is legible, then pair it with that foreground. */
@@ -276,7 +302,11 @@ export function buildPolicyTokens(
   // tone <= 49, so that is the ceiling — in dark as much as in light. Letting the
   // dark fill sit at the seed's own tone instead makes it brighter, but every one
   // of those labels turns black, which costs more than the brightness buys.
-  const brandPalette = TonalPalette.fromHueAndChroma(seed.hue, 200);
+  // DARK keys off the seed itself so the fill IS the brand hex; LIGHT uses the
+  // max-chroma palette, which is what stops a deepened fill from going pastel.
+  const brandPalette = isDark
+    ? TonalPalette.fromInt(argbFromHex(seedHex))
+    : TonalPalette.fromHueAndChroma(seed.hue, 200);
   const primary = fillPair(brandPalette, whiteLabelTone(brandPalette, seed.tone, isDark));
 
   const tokens: PolicyTokens = {
@@ -328,7 +358,7 @@ export function buildPolicyTokens(
     // black. The accent chroma cap already keeps these hues out of neon territory,
     // and the hue itself is the caller's brand rather than ours to move. The
     // analyzer still runs where it was designed to, inside `color-roles`.
-    const tone = isDark ? Math.max(peakTone(hue), DARK_ACCENT_FLOOR) : LIGHT_FILL_TONE;
+    const tone = accentTone(hue, isDark);
     const pair = fillPair(fillPalette, tone);
     tokens[`--${role}`] = pair.fill;
     tokens[`--${role}-foreground`] = pair.foreground;
