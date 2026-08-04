@@ -1,9 +1,10 @@
 import React from 'react';
 import type { ReactTestInstance } from 'react-test-renderer';
-import { fireEvent, render } from '@testing-library/react-native';
+import { act, fireEvent, render } from '@testing-library/react-native';
 
 import { BloomThemeProvider } from '../theme/BloomThemeProvider';
 import { Tabs, TabsTrigger } from '../tabs';
+import type { TabsDragController } from '../tabs/Tabs';
 
 function renderWithTheme(ui: React.ReactElement) {
   return render(
@@ -32,6 +33,18 @@ function triggerFor(node: ReactTestInstance): ReactTestInstance {
   }
   if (!current) throw new Error('No trigger ancestor with role "tab" found');
   return current;
+}
+
+/**
+ * The selected state as it actually reaches a platform.
+ *
+ * `aria-selected` rather than `accessibilityState.selected` because
+ * react-native-web's `createDOMProps` reads only the former (the latter appears
+ * nowhere in it), while React Native's `Pressable` folds `aria-selected` back
+ * into `accessibilityState` — so this is the ONE spelling both platforms honour.
+ */
+function selectedState(node: ReactTestInstance): unknown {
+  return node.props['aria-selected'];
 }
 
 function Bar({
@@ -98,14 +111,36 @@ describe('Tabs', () => {
     }
   });
 
+  /**
+   * A tab strip that does not say WHICH tab is current is unusable with a
+   * screen reader, and the failure is invisible to everyone else: the underline
+   * is drawn, so the strip looks correct while announcing nothing.
+   *
+   * The assertion is on `aria-selected` specifically. Setting only
+   * `accessibilityState={{selected}}` — which reads like the React Native
+   * answer and is what this component shipped — produces no `aria-selected` on
+   * web at all, because react-native-web stopped consulting
+   * `accessibilityState` and now maps `aria-*` props directly.
+   */
   it('marks the active trigger as selected for accessibility', () => {
     const { getByText } = renderWithTheme(<Bar value="b" />);
-    expect(
-      triggerFor(getByText('First')).props.accessibilityState.selected,
-    ).toBe(false);
-    expect(
-      triggerFor(getByText('Second')).props.accessibilityState.selected,
-    ).toBe(true);
+    expect(selectedState(triggerFor(getByText('First')))).toBe(false);
+    expect(selectedState(triggerFor(getByText('Second')))).toBe(true);
+  });
+
+  it('leaves the disabled state to the disabled prop, which both platforms map', () => {
+    // Neither Pressable needs telling twice: React Native's folds a non-null
+    // `disabled` into `accessibilityState`, react-native-web's emits
+    // `aria-disabled` from it. A second copy on the trigger could only ever
+    // disagree with this one.
+    const { getByText } = renderWithTheme(
+      <Tabs value="a" onValueChange={() => {}} testID="tabs">
+        <TabsTrigger value="a" label="First" />
+        <TabsTrigger value="b" label="Second" disabled />
+      </Tabs>,
+    );
+    expect(triggerFor(getByText('Second')).props.disabled).toBe(true);
+    expect(triggerFor(getByText('First')).props.disabled).toBe(false);
   });
 
   /**
@@ -134,7 +169,7 @@ describe('Tabs', () => {
     );
 
     expect(getByTestId('tabs-indicator')).toBeTruthy();
-    expect(triggerFor(getByText('Overview')).props.accessibilityState.selected).toBe(true);
+    expect(selectedState(triggerFor(getByText('Overview')))).toBe(true);
     fireEvent.press(getByText('Activity'));
     expect(onValueChange).toHaveBeenCalledWith('activity');
   });
@@ -148,8 +183,8 @@ describe('Tabs', () => {
           <TabsTrigger value="b" label="Second" isFocused />
         </Tabs>,
       );
-      expect(triggerFor(getByText('First')).props.accessibilityState.selected).toBe(false);
-      expect(triggerFor(getByText('Second')).props.accessibilityState.selected).toBe(true);
+      expect(selectedState(triggerFor(getByText('First')))).toBe(false);
+      expect(selectedState(triggerFor(getByText('Second')))).toBe(true);
     });
 
     it('does NOT report a selection on press, because the caller navigates', () => {
@@ -293,5 +328,246 @@ describe('Tabs', () => {
       renderWithTheme(<TabsTrigger value="a" label="First" />),
     ).toThrow(/TabsTrigger must be used within a Tabs/);
     spy.mockRestore();
+  });
+
+  /**
+   * A trigger set that CHANGES after the strip has already been laid out.
+   *
+   * This is the case `onLayout` alone cannot serve, and it is worth being
+   * precise about why, because the component looks correct without it. On
+   * react-native-web `onLayout` is one shared `ResizeObserver`
+   * (`react-native-web/dist/modules/useElementLayout`), so it fires for a SIZE
+   * change and never for a position-only move. Insert a tab and every trigger
+   * after it slides right without one of them re-reporting; the underline stays
+   * on the stale numbers, one tab to the left of the tab that is actually
+   * showing. Measured on production `mention.earth`, where a profile's lane tab
+   * arrives from a separate query after first paint: `/@nate/boosts` underlined
+   * "Likes".
+   *
+   * Every test below therefore reports layout for the changed triggers ONLY —
+   * modelling exactly what the platform does — and asserts the underline anyway.
+   * Reporting layout for all of them would hide the bug completely.
+   */
+  describe('a trigger set that changes after first layout', () => {
+    interface Box {
+      x: number;
+      width: number;
+    }
+
+    /**
+     * Which tab an element belongs to, or `undefined` if it is not a trigger.
+     *
+     * The element the strip measures is a trigger's animated wrapper, which is
+     * anonymous; the tab it stands for is named by the Pressable inside it.
+     */
+    function tabLabelOf(element: unknown): string | undefined {
+      // `createNodeMock` is handed a plain `{type, props}` pair rather than a
+      // real element — `React.isValidElement` is false for it — so the outer
+      // hop is narrowed by hand. The CHILD is a genuine element.
+      if (typeof element !== 'object' || element === null || !('props' in element)) {
+        return undefined;
+      }
+      const props = element.props;
+      if (typeof props !== 'object' || props === null || !('children' in props)) {
+        return undefined;
+      }
+      const child = props.children;
+      if (
+        !React.isValidElement<{ accessibilityRole?: string; accessibilityLabel?: string }>(
+          child,
+        )
+      ) {
+        return undefined;
+      }
+      if (child.props.accessibilityRole !== 'tab') return undefined;
+      return child.props.accessibilityLabel;
+    }
+
+    /**
+     * Stand in for a host view.
+     *
+     * react-test-renderer hands `null` to every host ref unless a
+     * `createNodeMock` is supplied, so without this a trigger has no node to
+     * measure and the strip is back to trusting `onLayout` — which is the
+     * behaviour under test, not a background detail. Geometry is read from a
+     * live table so the test can move the tabs between renders, exactly as a
+     * reflow would.
+     */
+    function nodeMockFor(geometry: Map<string, Box>) {
+      return (element: React.ReactElement): unknown => {
+        const label = tabLabelOf(element);
+        if (label === undefined) return {};
+        return {
+          measure: (
+            report: (x: number, y: number, width: number, height: number) => void,
+          ) => {
+            const box = geometry.get(label);
+            if (box) report(box.x, 0, box.width, 40);
+          },
+        };
+      };
+    }
+
+    function mountStrip(tabs: string[], focused: string, geometry: Map<string, Box>) {
+      const dragRef = React.createRef<TabsDragController>();
+      const tree = (next: { tabs: string[]; focused: string }) => (
+        <BloomThemeProvider mode="light" colorPreset="teal">
+          <Tabs testID="tabs" ref={dragRef} hasSelection>
+            {next.tabs.map((tab) => (
+              <TabsTrigger
+                key={tab}
+                value={tab}
+                label={tab}
+                isFocused={tab === next.focused}
+              />
+            ))}
+          </Tabs>
+        </BloomThemeProvider>
+      );
+      const utils = render(tree({ tabs, focused }), {
+        createNodeMock: nodeMockFor(geometry),
+      });
+
+      /** Fire the `onLayout` a trigger's own node would fire. */
+      const reportLayout = (label: string) => {
+        const box = geometry.get(label);
+        if (!box) throw new Error(`no geometry for "${label}"`);
+        let node: ReactTestInstance | null = triggerFor(utils.getByText(label));
+        while (node && node.props?.onLayout === undefined) node = node.parent;
+        if (!node) throw new Error(`no onLayout ancestor for "${label}"`);
+        fireEvent(node, 'layout', { nativeEvent: { layout: box } });
+      };
+
+      /**
+       * Let the measurement pass run and re-render so the mapper is evaluated
+       * against the shared values it wrote — the reanimated mock computes
+       * `useAnimatedStyle` at render time, so nothing written from a callback is
+       * visible in the rendered style until something renders again.
+       */
+      const settle = async (next?: { tabs: string[]; focused: string }) => {
+        await act(async () => {
+          utils.rerender(tree(next ?? { tabs, focused }));
+        });
+        await act(async () => {
+          utils.rerender(tree(next ?? { tabs, focused }));
+        });
+      };
+
+      const indicator = () => {
+        const style = flattenStyle(utils.getByTestId('tabs-indicator').props.style);
+        const transform = style.transform as { translateX?: number }[] | undefined;
+        return {
+          x: transform?.[0]?.translateX,
+          width: style.width,
+        };
+      };
+
+      return { ...utils, dragRef, reportLayout, settle, indicator };
+    }
+
+    it('follows the active tab when one is INSERTED before it', async () => {
+      const geometry = new Map<string, Box>([
+        ['posts', { x: 0, width: 80 }],
+        ['likes', { x: 80, width: 80 }],
+        ['boosts', { x: 160, width: 80 }],
+      ]);
+      const bar = mountStrip(['posts', 'likes', 'boosts'], 'boosts', geometry);
+      for (const tab of ['posts', 'likes', 'boosts']) bar.reportLayout(tab);
+      await bar.settle();
+      expect(bar.indicator()).toEqual({ x: 160, width: 80 });
+
+      // The lane tab lands, and everything after it slides right by its width.
+      geometry.set('lane', { x: 0, width: 100 });
+      geometry.set('posts', { x: 100, width: 80 });
+      geometry.set('likes', { x: 180, width: 80 });
+      geometry.set('boosts', { x: 260, width: 80 });
+      await bar.settle({ tabs: ['lane', 'posts', 'likes', 'boosts'], focused: 'boosts' });
+      // Only the NEW node is newly observed, so only it reports.
+      bar.reportLayout('lane');
+      await bar.settle({ tabs: ['lane', 'posts', 'likes', 'boosts'], focused: 'boosts' });
+
+      expect(bar.indicator()).toEqual({ x: 260, width: 80 });
+    });
+
+    it('follows the active tab when one is REMOVED before it', async () => {
+      const geometry = new Map<string, Box>([
+        ['lane', { x: 0, width: 100 }],
+        ['posts', { x: 100, width: 80 }],
+        ['boosts', { x: 180, width: 80 }],
+      ]);
+      const bar = mountStrip(['lane', 'posts', 'boosts'], 'boosts', geometry);
+      for (const tab of ['lane', 'posts', 'boosts']) bar.reportLayout(tab);
+      await bar.settle();
+      expect(bar.indicator()).toEqual({ x: 180, width: 80 });
+
+      geometry.set('posts', { x: 0, width: 80 });
+      geometry.set('boosts', { x: 80, width: 80 });
+      // Nothing resized and the removed node is gone, so NOTHING reports here.
+      await bar.settle({ tabs: ['posts', 'boosts'], focused: 'boosts' });
+
+      expect(bar.indicator()).toEqual({ x: 80, width: 80 });
+    });
+
+    it('follows the active tab when the set is REORDERED', async () => {
+      const geometry = new Map<string, Box>([
+        ['posts', { x: 0, width: 80 }],
+        ['likes', { x: 80, width: 80 }],
+        ['lane', { x: 160, width: 100 }],
+      ]);
+      const bar = mountStrip(['posts', 'likes', 'lane'], 'lane', geometry);
+      for (const tab of ['posts', 'likes', 'lane']) bar.reportLayout(tab);
+      await bar.settle();
+      expect(bar.indicator()).toEqual({ x: 160, width: 100 });
+
+      // Same tabs, same sizes, new order — the case no size-change notification
+      // can ever report, on either platform.
+      geometry.set('lane', { x: 0, width: 100 });
+      geometry.set('posts', { x: 100, width: 80 });
+      geometry.set('likes', { x: 180, width: 80 });
+      await bar.settle({ tabs: ['lane', 'posts', 'likes'], focused: 'lane' });
+
+      expect(bar.indicator()).toEqual({ x: 0, width: 100 });
+    });
+
+    it('forgets a removed tab, so a swipe cannot commit to one that is gone', async () => {
+      const geometry = new Map<string, Box>([
+        ['posts', { x: 0, width: 80 }],
+        ['likes', { x: 80, width: 80 }],
+        ['lane', { x: 160, width: 100 }],
+      ]);
+      const bar = mountStrip(['posts', 'likes', 'lane'], 'likes', geometry);
+      for (const tab of ['posts', 'likes', 'lane']) bar.reportLayout(tab);
+      await bar.settle();
+      // Dragging left reveals the tab to the RIGHT, so this commits `lane`.
+      expect(bar.dragRef.current?.drag(-1000)).toBe('lane');
+
+      await bar.settle({ tabs: ['posts', 'likes'], focused: 'likes' });
+
+      // `likes` is now last. A phantom `lane` left behind in the geometry would
+      // still be found here, and releasing would navigate to a tab that is not
+      // on screen.
+      expect(bar.dragRef.current?.drag(-1000)).toBeNull();
+    });
+
+    it('ignores a zero measurement, which means "not laid out" and not "empty"', async () => {
+      const geometry = new Map<string, Box>([
+        ['posts', { x: 0, width: 80 }],
+        ['likes', { x: 80, width: 80 }],
+      ]);
+      const bar = mountStrip(['posts', 'likes'], 'likes', geometry);
+      for (const tab of ['posts', 'likes']) bar.reportLayout(tab);
+      await bar.settle();
+      expect(bar.indicator()).toEqual({ x: 80, width: 80 });
+
+      // What a `display: none` ancestor reports on web. A trigger always
+      // carries horizontal padding, so it can never genuinely be zero-wide —
+      // taking this at face value would collapse the underline and lose the
+      // real geometry it has to come back to.
+      geometry.set('posts', { x: 0, width: 0 });
+      geometry.set('likes', { x: 0, width: 0 });
+      await bar.settle();
+
+      expect(bar.indicator()).toEqual({ x: 80, width: 80 });
+    });
   });
 });

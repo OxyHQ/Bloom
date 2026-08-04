@@ -41,6 +41,18 @@ import type { TabsProps, TabsTriggerProps, TabsContentProps, TabsVariant } from 
 type TriggerLayout = Pick<LayoutRectangle, 'x' | 'width'>;
 
 /**
+ * Re-read ONE trigger's geometry from the platform and report it back.
+ *
+ * A callback rather than a return value because measuring is asynchronous on
+ * both platforms: react-native-web defers to a `setTimeout(0)` inside
+ * `UIManager.measure`, and native hops to the UI thread. Each trigger keeps its
+ * own host ref and hands the strip this instead, so the registry says exactly
+ * what it needs — a position on demand — and nothing about what a trigger
+ * renders.
+ */
+type TriggerMeasure = (report: (layout: TriggerLayout) => void) => void;
+
+/**
  * Underline travel. The same spring the floating `TabBar` highlight uses, so the
  * two strips read as one motion language; stated here rather than imported
  * because they are separate component families and a shared constant would tie
@@ -48,7 +60,7 @@ type TriggerLayout = Pick<LayoutRectangle, 'x' | 'width'>;
  */
 const SLIDE_SPRING = { duration: 420, dampingRatio: 0.82 };
 
-/** Visibility, not travel — see {@link TabsContextValue.indicatorOpacity}. */
+/** Visibility, not travel — the underline fades, it does not slide, in and out. */
 const HIGHLIGHT_FADE = { duration: 160 };
 
 /**
@@ -84,7 +96,13 @@ interface TabsContextValue {
   onValueChange: ((value: string) => void) | undefined;
   variant: TabsVariant;
   fullWidth: boolean;
-  /** A trigger reports its measured position so the shared underline can track it. */
+  /**
+   * A trigger hands the strip a way to RE-READ its own geometry, and takes it
+   * back on unmount. See `remeasureTriggers` for why the strip cannot simply
+   * keep whatever `onLayout` last reported.
+   */
+  registerTrigger: (value: string, measure: TriggerMeasure) => () => void;
+  /** A trigger reports the geometry its own `onLayout` just handed it. */
   reportTriggerLayout: (value: string, layout: TriggerLayout) => void;
   /** A trigger reports that the ROUTER considers it focused. */
   reportFocused: (value: string) => void;
@@ -173,6 +191,11 @@ const TabsBarComponent = forwardRef<TabsDragController, TabsProps>(function Tabs
   const dragWidthDelta = useSharedValue(0);
 
   const triggerLayoutsRef = useRef<Record<string, TriggerLayout>>({});
+  // How to ask each trigger where it is NOW, keyed by value. Registration order
+  // carries no meaning — everything that consumes the geometry orders itself by
+  // measured `x`, which is the only ordering that survives a reorder.
+  const triggerMeasuresRef = useRef(new Map<string, TriggerMeasure>());
+  const remeasureScheduledRef = useRef(false);
   const indicatorPlacedRef = useRef(false);
   const scrollRef = useRef<ScrollView>(null);
   const viewportWidthRef = useRef(0);
@@ -190,9 +213,16 @@ const TabsBarComponent = forwardRef<TabsDragController, TabsProps>(function Tabs
         indicatorX.value = target.x;
         indicatorWidth.value = target.width;
       }
+      // Reveal only while something IS selected. Geometry keeps arriving while
+      // a non-tab sibling route is showing — the measurement pass below is
+      // precisely what makes it arrive — and fading the underline back in there
+      // would re-assert a tab the reader has left. Read from the closure rather
+      // than a ref: a ref written in an effect is still stale at this point,
+      // because a child's effect runs before its parent's.
+      if (!hasSelection) return;
       indicatorOpacity.value = withTiming(1, HIGHLIGHT_FADE);
     },
-    [indicatorX, indicatorWidth, indicatorOpacity],
+    [indicatorX, indicatorWidth, indicatorOpacity, hasSelection],
   );
 
   // Keep the active tab in view when the strip overflows its viewport. Centring
@@ -222,18 +252,99 @@ const TabsBarComponent = forwardRef<TabsDragController, TabsProps>(function Tabs
     [moveIndicator, revealTrigger],
   );
 
-  const reportTriggerLayout = useCallback(
+  /**
+   * Record where a trigger is, from whichever source measured it, and keep the
+   * underline glued to it.
+   *
+   * Placement here never animates: the tab did not become SELECTED, it MOVED,
+   * and it moved instantly because nothing animates a strip's reflow. Sliding
+   * the underline across would read as a selection change that never happened.
+   */
+  const applyTriggerLayout = useCallback(
     (tabValue: string, layout: TriggerLayout) => {
-      triggerLayoutsRef.current[tabValue] = layout;
-      // Snap onto the active trigger the moment it is first measured (mount), or
-      // when its size changes — never slide in from the origin.
-      if (tabValue === selectedValueRef.current) {
-        moveIndicator(layout, false);
-        revealTrigger(layout, false);
-        indicatorPlacedRef.current = true;
+      const previous = triggerLayoutsRef.current[tabValue];
+      // Unchanged geometry must be a no-op, not a re-place: a measurement pass
+      // runs after every render, and re-placing would cancel a selection slide
+      // mid-flight for no reason.
+      if (previous !== undefined && previous.x === layout.x && previous.width === layout.width) {
+        return;
       }
+      triggerLayoutsRef.current[tabValue] = layout;
+      if (tabValue !== selectedValueRef.current) return;
+      moveIndicator(layout, false);
+      revealTrigger(layout, false);
+      indicatorPlacedRef.current = true;
     },
     [moveIndicator, revealTrigger],
+  );
+
+  /**
+   * Re-read EVERY trigger's position from the platform.
+   *
+   * This exists because `onLayout` cannot be trusted to report a MOVE. On
+   * react-native-web it is backed by a single `ResizeObserver`
+   * (`modules/useElementLayout`), which fires for a SIZE change and never for a
+   * position-only one — so a trigger inserted, removed or reordered after first
+   * layout shifts every trigger after it while not one of them re-reports, and
+   * the underline stays where the stale numbers put it: silently, one tab off,
+   * only on the first paint after an async tab list lands. A tab whose own
+   * width changes has the same effect on its neighbours.
+   *
+   * So `onLayout` is demoted to a change SIGNAL and the geometry is read back
+   * explicitly, through the `measure` both platforms put on a host view ref. It
+   * answers in the view's PARENT coordinate space, which is the space the
+   * underline is positioned in and the same one `onLayout` reports — the two
+   * sources cannot disagree about what they mean.
+   */
+  const remeasureTriggers = useCallback(() => {
+    for (const [tabValue, measure] of triggerMeasuresRef.current) {
+      measure((layout) => {
+        // A strip that is mounted but not laid out — a `display: none` ancestor
+        // on web, an unmeasured subtree on native — measures as zero, and a
+        // trigger cannot genuinely be zero-wide (it always carries horizontal
+        // padding). Recording that would collapse the underline and throw away
+        // the real geometry, so the last known position stands until it is on
+        // screen again.
+        if (layout.width <= 0) return;
+        applyTriggerLayout(tabValue, layout);
+      });
+    }
+  }, [applyTriggerLayout]);
+
+  const scheduleRemeasure = useCallback(() => {
+    // One pass per turn, however many signals arrive: a mount registers N
+    // triggers and reports N layouts, which is N+1 reasons to measure the same
+    // frame. A microtask, so the pass is queued before the browser paints the
+    // frame the change landed in.
+    if (remeasureScheduledRef.current) return;
+    remeasureScheduledRef.current = true;
+    queueMicrotask(() => {
+      remeasureScheduledRef.current = false;
+      remeasureTriggers();
+    });
+  }, [remeasureTriggers]);
+
+  const registerTrigger = useCallback((tabValue: string, measure: TriggerMeasure) => {
+    triggerMeasuresRef.current.set(tabValue, measure);
+    return () => {
+      triggerMeasuresRef.current.delete(tabValue);
+      // A tab that is gone must not keep a position in the geometry the drag
+      // controller orders itself by, or a swipe can commit to a trigger that is
+      // no longer on screen.
+      delete triggerLayoutsRef.current[tabValue];
+    };
+  }, []);
+
+  const reportTriggerLayout = useCallback(
+    (tabValue: string, layout: TriggerLayout) => {
+      // Snap onto the active trigger the moment it is first measured (mount), or
+      // when its size changes — never slide in from the origin.
+      applyTriggerLayout(tabValue, layout);
+      // One trigger changing size moves every trigger after it, and not one of
+      // them will say so.
+      scheduleRemeasure();
+    },
+    [applyTriggerLayout, scheduleRemeasure],
   );
 
   const reportFocused = useCallback(
@@ -262,6 +373,16 @@ const TabsBarComponent = forwardRef<TabsDragController, TabsProps>(function Tabs
     if (hasSelection) return;
     indicatorOpacity.value = withTiming(0, HIGHLIGHT_FADE);
   }, [hasSelection, indicatorOpacity]);
+
+  // Every render of the strip is a render in which its contents may have MOVED:
+  // a trigger inserted, removed or reordered, or one re-rendered at a new size.
+  // Unconditional on purpose, rather than keyed on a signature of `children` —
+  // any such signature has to be built from React keys or child props, both of
+  // which the caller controls and neither of which is obliged to change on a
+  // reorder. A pass writes nothing when nothing moved, so being wrong in this
+  // direction costs a handful of reads and being wrong in the other direction
+  // is the bug.
+  useEffect(scheduleRemeasure);
 
   useImperativeHandle(
     dragRef,
@@ -327,10 +448,19 @@ const TabsBarComponent = forwardRef<TabsDragController, TabsProps>(function Tabs
       onValueChange,
       variant,
       fullWidth,
+      registerTrigger,
       reportTriggerLayout,
       reportFocused,
     }),
-    [value, onValueChange, variant, fullWidth, reportTriggerLayout, reportFocused],
+    [
+      value,
+      onValueChange,
+      variant,
+      fullWidth,
+      registerTrigger,
+      reportTriggerLayout,
+      reportFocused,
+    ],
   );
 
   const containerStyle = useMemo((): ViewStyle => {
@@ -446,6 +576,7 @@ const TabComponent: React.FC<TabsTriggerProps> = ({
     onValueChange,
     variant,
     fullWidth,
+    registerTrigger,
     reportTriggerLayout,
     reportFocused,
   } = useTabsContext('TabsTrigger');
@@ -455,6 +586,24 @@ const TabComponent: React.FC<TabsTriggerProps> = ({
   const { scaleAnim, onPressIn, onPressOut } = usePressAnimation(0.97);
   const resolvedCount = count ?? 0;
   const showCount = resolvedCount > 0;
+
+  // The trigger's own host view. It stays here rather than in the strip because
+  // the strip has no way to reach a child it did not create — it receives them
+  // as `children` — and because a trigger is the only thing that knows its own
+  // value, which is what the geometry has to be keyed by.
+  const nodeRef = useRef<View | null>(null);
+  const measureSelf = useCallback<TriggerMeasure>((report) => {
+    nodeRef.current?.measure((x, _y, width) => {
+      report({ x, width });
+    });
+  }, []);
+
+  // Registration IS the insertion/removal signal the strip acts on, so it must
+  // outlive nothing: the cleanup drops both the measure hook and the geometry.
+  useEffect(
+    () => registerTrigger(value, measureSelf),
+    [registerTrigger, value, measureSelf],
+  );
 
   // FOCUS-DRIVEN path only. This covers programmatic navigation too — a deep
   // link, a browser Back, a back gesture — because nothing here asks HOW the
@@ -528,6 +677,7 @@ const TabComponent: React.FC<TabsTriggerProps> = ({
 
   return (
     <RNAnimated.View
+      ref={nodeRef}
       onLayout={(e) => {
         const { x, width } = e.nativeEvent.layout;
         reportTriggerLayout(value, { x, width });
@@ -542,7 +692,17 @@ const TabComponent: React.FC<TabsTriggerProps> = ({
         disabled={disabled}
         accessibilityRole="tab"
         accessibilityLabel={showCount ? `${label}, ${resolvedCount}` : label}
-        accessibilityState={{ selected: isSelected, disabled }}
+        // `aria-selected`, and NOT a web-only spelling of `accessibilityState`.
+        // react-native-web's `createDOMProps` reads `aria-selected` (or the
+        // deprecated `accessibilitySelected`) and does not look at
+        // `accessibilityState` at all, so a strip that set only the latter
+        // announced no selection on web at all — every tab equally current.
+        // React Native's own `Pressable` folds `aria-selected` back into
+        // `accessibilityState.selected`, so this one prop serves both platforms
+        // and there is no second place for the answer to disagree. `disabled`
+        // needs no counterpart: both Pressables already derive that state from
+        // the `disabled` prop above.
+        aria-selected={isSelected}
       >
         {icon}
         <Text style={[labelStyle, textStyle]}>{label}</Text>
