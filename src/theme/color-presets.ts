@@ -31,6 +31,20 @@ export type AppColorName =
  * maps those roles onto Bloom's canonical token names. A user-picked colour
  * flows through the identical path — a preset is just a fixed seed.
  */
+/**
+ * Why a preset is not offered to every user. Absent means it is.
+ *
+ * The two are NOT interchangeable and must not collapse back into one list: a
+ * `handle` preset belongs to a specific account and cannot be bought, while a
+ * `premium` one is exactly what is bought. Conflating them is how the picker
+ * came to offer both of Oxy's reserved brand colours to everybody.
+ */
+export type ColorPresetGate =
+  /** Reserved for the account whose brand it is — not purchasable. */
+  | 'handle'
+  /** Sold with a subscription. */
+  | 'premium';
+
 export interface AppColorPreset {
   name: AppColorName;
   /** The brand seed colour, `#rrggbb`. Also the value the colour picker matches. */
@@ -51,6 +65,12 @@ export interface AppColorPreset {
    * {@link AppColorPreset.secondaryHex} for the tertiary palette.
    */
   tertiaryHex?: string;
+  /**
+   * Who may pick this preset. Absent = everyone. Bloom only DECLARES the gate;
+   * whether a given viewer satisfies it is the consuming app's question, since
+   * only the app knows who is signed in and what they pay for.
+   */
+  gate?: ColorPresetGate;
 }
 
 /**
@@ -62,9 +82,6 @@ export interface AppColorPreset {
 export type PresetTokens = Record<string, string>;
 
 export const APP_COLOR_NAMES: readonly AppColorName[] = ['teal', 'blue', 'green', 'yellow', 'red', 'purple', 'pink', 'sky', 'orange', 'mint', 'oxy', 'faircoin', 'pumpkin', 'gray', 'brown', 'peach', 'rose', 'mono'];
-
-/** Premium-exclusive presets, hidden from the standard color picker. */
-export const PREMIUM_COLOR_NAMES: readonly AppColorName[] = ['oxy', 'faircoin'];
 
 export const HEX_TO_APP_COLOR: Record<string, AppColorName> = {
   '#005c67': 'teal',
@@ -114,8 +131,8 @@ export const APP_COLOR_PRESETS: Record<AppColorName, AppColorPreset> = {
   // headroom, so the fill reads as orange instead of paying for the hue twice.
   orange: { name: 'orange', hex: '#ff5722', variant: 'vivid' },
   mint: { name: 'mint', hex: '#14b8a6', variant: 'vivid' },
-  oxy: { name: 'oxy', hex: '#c46ede', variant: 'vivid' },
-  faircoin: { name: 'faircoin', hex: '#9ffb50', variant: 'vivid' },
+  oxy: { name: 'oxy', hex: '#c46ede', variant: 'vivid', gate: 'handle' },
+  faircoin: { name: 'faircoin', hex: '#9ffb50', variant: 'vivid', gate: 'handle' },
   pumpkin: { name: 'pumpkin', hex: '#ff9800', variant: 'vivid' },
   gray: { name: 'gray', hex: '#607d8b', variant: 'vivid' },
   brown: { name: 'brown', hex: '#813519', variant: 'vivid' },
@@ -127,5 +144,28 @@ export const APP_COLOR_PRESETS: Record<AppColorName, AppColorPreset> = {
    * seed with none, so a user who picks a grey in the colour wheel lands here too
    * rather than on a nearly-grey approximation.
    */
-  mono: { name: 'mono', hex: '#000000', variant: 'monochrome' },
+  mono: { name: 'mono', hex: '#000000', variant: 'monochrome', gate: 'premium' },
 };
+
+/**
+ * The three gate groups, DERIVED from the presets rather than listed again, so a
+ * preset cannot be gated in one place and offered in another. Together they
+ * partition {@link APP_COLOR_NAMES} exactly — asserted in
+ * `__tests__/color-preset-gates.test.ts`, since a preset silently missing from
+ * every group would simply vanish from a picker with no error anywhere.
+ *
+ * A consumer builds its visible list from these; it must NOT start from
+ * `APP_COLOR_NAMES` and add the unlocked ones, which yields the gated presets to
+ * everybody and duplicates whatever the viewer did unlock.
+ */
+const namesGatedBy = (gate: ColorPresetGate | undefined): readonly AppColorName[] =>
+  APP_COLOR_NAMES.filter((name) => APP_COLOR_PRESETS[name].gate === gate);
+
+/** Available to every user, signed in or not. */
+export const FREE_COLOR_NAMES: readonly AppColorName[] = namesGatedBy(undefined);
+
+/** Reserved for the account whose brand it is (`oxy`, `faircoin`) — not for sale. */
+export const HANDLE_COLOR_NAMES: readonly AppColorName[] = namesGatedBy('handle');
+
+/** Sold with a subscription. */
+export const PREMIUM_COLOR_NAMES: readonly AppColorName[] = namesGatedBy('premium');

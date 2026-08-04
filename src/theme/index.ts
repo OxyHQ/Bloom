@@ -40,9 +40,11 @@ export type {
 export { useNavigationTheme } from './use-navigation-theme';
 export type { NavigationTheme, NavigationThemeFont } from './use-navigation-theme';
 export type { Theme, ThemeColors, ThemeMode, ThemeGradient, ThemeGradients } from './types';
-export type { AppColorName, AppColorPreset, PresetTokens } from './color-presets';
+export type { AppColorName, AppColorPreset, ColorPresetGate, PresetTokens } from './color-presets';
 export {
   APP_COLOR_NAMES,
+  FREE_COLOR_NAMES,
+  HANDLE_COLOR_NAMES,
   PREMIUM_COLOR_NAMES,
   APP_COLOR_PRESETS,
   HEX_TO_APP_COLOR,
