@@ -18,11 +18,13 @@
  * Nesting extra contexts costs nothing at runtime — the win is that scope is no
  * longer a per-app decision.
  *
- * EXPO/EXPO-ROUTER APPS ONLY. The scroll-restoration provider it mounts imports
- * `expo-router` (its web implementation keys offsets on the focused route), so
- * a Vite/SPA consumer that has no expo-router cannot resolve this module. Those
- * apps keep mounting `BloomThemeProvider` (and any other piece they need)
- * directly — that is not a lesser path, just the one without a router.
+ * EXPO/EXPO-ROUTER APPS ONLY, and now for one narrow reason: it binds the
+ * scroll store to the expo-router ADAPTER, which is the only module in the
+ * scroll primitive that imports `expo-router`. The scroll core itself is
+ * router-agnostic, so a Vite/SPA consumer can mount
+ * `<ScrollRestorationProvider adapter={...}>` from `@oxyhq/bloom/scroll` with
+ * an adapter for its own router — alongside `BloomThemeProvider` and whatever
+ * else it needs — rather than going without.
  *
  * NOT included, on purpose — these are OUTLETS, not state, and their placement
  * in the tree is a real app decision (z-order, safe areas, and mounting a
@@ -36,7 +38,8 @@ import { ImageResolverProvider, type ImageResolver } from '../image-resolver';
 import { BloomHapticsProvider } from '../hooks/useHaptics';
 import { TabBarMinimizeProvider } from '../tab-bar/minimize-context';
 import { BloomThemeProvider, type BloomThemeProviderProps } from '../theme';
-import { ScrollRestorationProvider } from './scroll-provider';
+import { ScrollRestorationProvider } from '../scroll/context';
+import { expoRouterScrollAdapter } from '../scroll/expo-router';
 
 export interface BloomProviderProps extends Omit<BloomThemeProviderProps, 'children'> {
   children: ReactNode;
@@ -61,7 +64,7 @@ export function BloomProvider({
     // never changes the tree shape and remounts everything below it.
     <ImageResolverProvider value={imageResolver ?? null}>
       <BloomThemeProvider {...themeProps}>
-        <ScrollRestorationProvider>
+        <ScrollRestorationProvider adapter={expoRouterScrollAdapter}>
           <BloomHapticsProvider enabled={haptics}>
             <TabBarMinimizeProvider>{children}</TabBarMinimizeProvider>
           </BloomHapticsProvider>

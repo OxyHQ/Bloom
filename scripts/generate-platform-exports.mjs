@@ -131,6 +131,7 @@ const SUBPATHS = /** @type {const} */ ([
   ['./code', 'code/index.ts'],
   ['./fonts', 'fonts/index.ts'],
   ['./scroll', 'scroll/index.ts'],
+  ['./scroll/expo-router', 'scroll/expo-router/index.ts'],
   ['./content-panel', 'content-panel/index.tsx'],
   ['./list', 'list/index.tsx'],
   ['./tab-bar', 'tab-bar/index.ts'],
@@ -173,6 +174,10 @@ const WEB_FORKED_SUBPATHS = new Set([
   // in `resolve.extensions` would resolve a bare `./toast` import to it.
   './fonts',
   './scroll',
+  // NOT web-forked: `./scroll/expo-router` has no `.web` sibling — the router
+  // adapter is universal (its two hooks behave the same on both platforms; the
+  // platform split lives in `./scroll` itself). Listing it here would trip
+  // `assertWebSourceExists()`.
   './content-panel',
   './list',
   './tab-bar',

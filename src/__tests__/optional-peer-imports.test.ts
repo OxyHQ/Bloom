@@ -79,8 +79,8 @@ const ALLOWED: { peer: string; file: string; why: string }[] = [
   },
   {
     peer: 'expo-router',
-    file: 'scroll/index.web.tsx',
-    why: 'scroll restoration is expo-router-only by design — this is the import that keeps BloomProvider out of Vite/SPA consumers (see AGENTS.md "App Root Provider")',
+    file: 'scroll/expo-router/index.ts',
+    why: 'the whole point of this file is to BE the expo-router binding — it is reachable only from `@oxyhq/bloom/scroll/expo-router` and from BloomProvider, both of which are expo-router-only by construction; the scroll core itself no longer imports a router (see AGENTS.md "App Root Provider")',
   },
 ];
 

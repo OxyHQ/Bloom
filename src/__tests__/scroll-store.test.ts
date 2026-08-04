@@ -1,36 +1,60 @@
 import { ScrollOffsetStore, deriveScrollKey } from '../scroll/store';
 
 describe('deriveScrollKey', () => {
-  it('returns null when there is no route key', () => {
-    expect(deriveScrollKey(undefined)).toBeNull();
-    expect(deriveScrollKey(undefined, 'feed')).toBeNull();
+  it('returns null when there is no content to anchor against', () => {
+    expect(deriveScrollKey(null)).toBeNull();
+    expect(deriveScrollKey(null, 'feed')).toBeNull();
+    expect(deriveScrollKey('', 'feed')).toBeNull();
   });
 
-  it('returns the route key verbatim when no sub-key is given', () => {
-    expect(deriveScrollKey('Home-abc')).toBe('Home-abc');
+  it('keys on the content alone when there is no sub-key', () => {
+    expect(deriveScrollKey('/@alice')).toBe('/@alice\0');
+  });
+
+  it('separates two different contents', () => {
+    // The sharpest case is a query-only change, because that is where
+    // expo-router RECYCLES one route object: `search?q=cats` -> `search?q=dogs`
+    // keeps a single route key and swaps only params, so without the content id
+    // the two searches would share an offset.
+    expect(deriveScrollKey('search?"q":"cats"')).not.toBe(
+      deriveScrollKey('search?"q":"dogs"'),
+    );
+  });
+
+  it('separates scrollables that share one content', () => {
+    const posts = deriveScrollKey('/@alice', 'posts');
+    const media = deriveScrollKey('/@alice', 'media');
+    expect(posts).not.toBe(media);
+  });
+
+  it('gives ONE key to one content, whatever entry it was reached through', () => {
+    // The deliberate trade: an offset belongs to what the user was looking at,
+    // not to the history slot. That is what makes a tab press restore, and it
+    // is also why the same content in two live entries shares an offset.
+    expect(deriveScrollKey('index?')).toBe(deriveScrollKey('index?'));
+  });
+
+  it('composes a fixed two-field key so no two identities collapse', () => {
+    expect(deriveScrollKey('a')).toBe('a\0');
+    expect(deriveScrollKey('a', 'b')).toBe('a\0b');
+    expect(deriveScrollKey('a', 'b')).not.toBe(deriveScrollKey('a\0b'));
   });
 
   it('treats an empty sub-key the same as no sub-key', () => {
-    expect(deriveScrollKey('Home-abc', '')).toBe('Home-abc');
-  });
-
-  it('composes route key and sub-key for multiple lists on one route', () => {
-    const a = deriveScrollKey('Profile-xyz', 'posts');
-    const b = deriveScrollKey('Profile-xyz', 'media');
-    expect(a).not.toBe(b);
-    expect(a).toBe('Profile-xyz\0posts');
-  });
-
-  it('does not collide across routes that share a sub-key', () => {
-    expect(deriveScrollKey('A', 'feed')).not.toBe(deriveScrollKey('B', 'feed'));
+    expect(deriveScrollKey('a', '')).toBe(deriveScrollKey('a'));
   });
 });
 
 describe('ScrollOffsetStore', () => {
-  it('reads 0 for an unseen key so callers can restore unconditionally', () => {
+  it('distinguishes an unseen key from one deliberately saved at the top', () => {
+    // This is the whole reason callers ask `has` rather than `read() > 0`: both
+    // read 0, and only one of them must be reset to the top.
     const store = new ScrollOffsetStore();
-    expect(store.read('missing')).toBe(0);
-    expect(store.has('missing')).toBe(false);
+    store.save('seen', 0);
+    expect(store.read('seen')).toBe(0);
+    expect(store.has('seen')).toBe(true);
+    expect(store.read('unseen')).toBe(0);
+    expect(store.has('unseen')).toBe(false);
   });
 
   it('saves and reads an offset back', () => {
