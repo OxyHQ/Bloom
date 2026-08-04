@@ -675,6 +675,82 @@ describe('web scroll-restoration hook', () => {
     expect(later.scrollTop).toBe(2400);
   });
 
+  it('does not persist a PARTIAL offset when the restore is aborted mid-loop', () => {
+    // The corruption this closes: every loop write echoes back as a `scroll`
+    // event, so before suppression an interrupted restore left whatever the
+    // browser had clamped to in the store, and that content's remembered
+    // position stayed wrong for the rest of the session. A swipe that commits
+    // a route change mid-restore hits this every time.
+    const node = new FakeScrollNode();
+    node.growTo(FULL_CONTENT_HEIGHT);
+    const content = unseenContent();
+
+    harness.show({ node, content });
+    scrollTo(node, 3520);
+    harness.show({ node, content, focused: false });
+
+    // Re-show with the content still short, so the write clamps to a partial.
+    node.collapseLikeNavigator();
+    node.growTo(1500); // 621px of scroll range against a 3520 target
+    harness.show({ node, content });
+    act(() => {
+      frames.flushOneFrame();
+      node.emitScroll(); // the browser echoing our own clamped write
+    });
+    expect(node.scrollTop).toBe(1500 - 879);
+
+    // The user grabs it, which aborts the loop, and then navigates away.
+    act(() => {
+      node.emitUserTakeover('touchstart');
+    });
+    harness.show({ node, content, focused: false });
+
+    // The original offset must have survived, not the partial.
+    node.growTo(FULL_CONTENT_HEIGHT);
+    node.scrollTop = 0;
+    harness.show({ node, content });
+    act(() => {
+      frames.flushOneFrame();
+    });
+    expect(node.scrollTop).toBe(3520);
+  });
+
+  it('keeps the original target when the loop exhausts its frame budget', () => {
+    // Same mechanism, the other end state. Content that is short right now is
+    // usually a list still loading, not a permanent shrink — remembering the
+    // target means the position is right once the rows arrive.
+    const node = new FakeScrollNode();
+    node.growTo(FULL_CONTENT_HEIGHT);
+    const content = unseenContent();
+
+    harness.show({ node, content });
+    scrollTo(node, 3520);
+    harness.show({ node, content, focused: false });
+
+    node.collapseLikeNavigator();
+    node.growTo(1500);
+    harness.show({ node, content });
+    for (let i = 0; i < 40; i++) {
+      const wrote = frames.pending > 0;
+      act(() => {
+        frames.flushOneFrame();
+        // Only a frame that actually wrote produces an echo; a real browser
+        // dispatches `scroll` when something moves, not on a timer.
+        if (wrote) node.emitScroll();
+      });
+    }
+    expect(frames.pending).toBe(0);
+    harness.show({ node, content, focused: false });
+
+    node.growTo(FULL_CONTENT_HEIGHT);
+    node.scrollTop = 0;
+    harness.show({ node, content });
+    act(() => {
+      frames.flushOneFrame();
+    });
+    expect(node.scrollTop).toBe(3520);
+  });
+
   it('returns a binding that is safe to wire onto a list on either platform', () => {
     const node = new FakeScrollNode();
     const seen: ScrollRestorationBinding[] = [];

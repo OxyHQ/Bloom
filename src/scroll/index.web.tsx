@@ -176,13 +176,23 @@ export function useScrollRestoration(
       // than what the scroll listener already saved live.
       let lastObservedOffset: number | null = null;
 
-      // The 0 WE wrote, which a real browser dispatches back as a `scroll`
-      // event (jsdom does not, so the test for this emits it explicitly).
-      // Persisting it would record an offset the user never chose, under a key
-      // another LIVE screen may share — the two-live-entries trade content
-      // keying makes (see `deriveScrollKey`) means a sibling showing the same
-      // content can save a real offset between our write and its echo, and the
-      // echo would clobber it.
+      // The offset WE last wrote, which a real browser dispatches back as a
+      // `scroll` event (jsdom does not, so the tests for this emit it
+      // explicitly). Both writers arm it: the reset, and every frame of the
+      // restore loop. Persisting either records an offset the user never
+      // chose — the reset's 0 under a key another LIVE screen may share (the
+      // two-live-entries trade content keying makes, see `deriveScrollKey`),
+      // and the loop's intermediate value as a PARTIAL that outlives an
+      // interrupted restore.
+      //
+      // A `restoring` FLAG covering the loop's duration is the obvious
+      // alternative and is wrong. It could only be cleared by a takeover
+      // event, so a session whose scroll came from a source that fires none —
+      // `scrollIntoView` from another component, a focus-driven scroll — would
+      // suppress saves indefinitely and never record the user's position at
+      // all: an unbounded corruption traded for a bounded one. Arming a VALUE
+      // is bounded to one event per write and covers every way the loop can
+      // end (stuck, capped, aborted), because each frame re-arms.
       let echoOffset: number | null = null;
 
       const save = () => {
@@ -243,24 +253,27 @@ export function useScrollRestoration(
         // single write while it is still collapsed would be clamped to 0 and
         // never re-applied (problem B).
         //
-        // KNOWN PROPERTY, not a bug: each of these writes echoes back as a
-        // `scroll` event and IS persisted (only the reset arms `echoOffset`,
-        // and `canScroll()` is always true for the `'window'` sentinel so the
-        // collapsed-container guard never fires there). A loop that reaches
-        // the target self-heals on its last echo. A loop that exhausts the cap
-        // leaves the CLAMPED offset stored — which is the right thing to
-        // remember when the content genuinely shrank, since that is as far as
-        // the user can now scroll.
+        // Every write the loop makes is suppressed from the save path (see
+        // `echoOffset` below), so an interrupted restore leaves the ORIGINAL
+        // target stored rather than a partial. Nothing is lost on the success
+        // path: `targetOffset` came out of the store, so persisting it again
+        // would write back the same number.
         let framesLeft = RESTORE_FRAME_CAP;
         const applyOffset = () => {
           rafId = null;
           scroller.setOffset(targetOffset);
           framesLeft -= 1;
+          // `getOffset` re-reads the value the browser actually took, which is
+          // clamped to the content height it has reached so far. Arm it as the
+          // echo to swallow: this write is about to come back as a `scroll`
+          // event, and persisting a PARTIAL offset we wrote ourselves is how a
+          // restore that is aborted or capped corrupts the stored position.
+          const landed = scroller.getOffset();
+          echoOffset = landed;
           // Stop once the write took effect (content grew tall enough) or we
-          // exhaust the frame budget. `getOffset` re-reads the clamped value.
+          // exhaust the frame budget.
           const reached =
-            Math.abs(scroller.getOffset() - targetOffset) <=
-            RESTORE_STICK_TOLERANCE_PX;
+            Math.abs(landed - targetOffset) <= RESTORE_STICK_TOLERANCE_PX;
           if (!reached && framesLeft > 0) {
             rafId = requestAnimationFrame(applyOffset);
           }
