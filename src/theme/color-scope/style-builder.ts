@@ -1,9 +1,10 @@
 import type React from 'react';
 import { Platform, type StyleProp, type ViewStyle } from 'react-native';
 
-import { CANONICAL_TOKENS, getResolvedTokens } from '../token-registry';
+import { getResolvedTokens } from '../token-registry';
 import type { AppColorName } from '../color-presets';
 import type { ExplicitAccents } from '../preset-vars';
+import { withScopeAliases } from './seed-scope';
 
 /**
  * The optional-peer boundary for `nativewind`.
@@ -138,23 +139,7 @@ export function buildScopeVars(
   mode: 'light' | 'dark',
   accents?: ExplicitAccents,
 ): Record<string, string> {
-  const tokens = getResolvedTokens(colorPreset, mode, accents);
-  const vars: Record<string, string> = { ...tokens };
-
-  // Policy tokens live outside CANONICAL_TOKENS, so give every token present a
-  // `--color-*` alias; NativeWind resolves its utilities through those.
-  for (const [key, value] of Object.entries(tokens)) {
-    vars[`--color-${key.slice(2)}`] = value;
-  }
-
-  for (const token of CANONICAL_TOKENS) {
-    const value = tokens[`--${token}`];
-    if (value !== undefined) {
-      vars[`--color-${token}`] = value;
-    }
-  }
-
-  return vars;
+  return withScopeAliases(getResolvedTokens(colorPreset, mode, accents));
 }
 
 /**

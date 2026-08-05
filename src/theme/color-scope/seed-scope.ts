@@ -1,6 +1,52 @@
 import { generateRoleColors, type RoleColors, type SchemeVariant } from '../color-engine';
 import { buildPolicyTokens, isColourlessSeed } from '../color-policy';
-import { CANONICAL_TOKENS } from '../token-registry';
+import { BORDER_ROLES, FILL_ROLES, TEXT_ROLES } from '../../design-tokens/color-roles';
+
+/**
+ * Every alias `theme.css` declares at `:root` as a reference to a canonical
+ * token, keyed by the alias name. `--color-divider` is one of these and does not
+ * come from the role maps, so it is named here.
+ *
+ * An alias declared at the document root substitutes THERE, so a subtree that
+ * overrides `--foreground` cannot move a `--color-text: var(--foreground)` the
+ * root already computed — the subtree keeps painting the app-wide palette while
+ * every canonical token around it says otherwise. Re-declaring each alias inside
+ * the scope, against the scope's own values, is what closes that.
+ *
+ * An alias whose value is a literal (`--color-destructive-foreground: #ffffff`)
+ * is unaffected and deliberately absent.
+ */
+const SCOPED_ALIASES: Readonly<Record<string, string>> = {
+  ...FILL_ROLES,
+  ...TEXT_ROLES,
+  ...BORDER_ROLES,
+  divider: 'var(--border)',
+};
+
+/**
+ * Give a resolved token map the `--color-x` alias layer, so utilities resolve
+ * against the scope instead of the document root.
+ *
+ * Shared by both scope builders — the preset path (`buildScopeVars`) and the
+ * seed path (`buildSeedScopeVars`) — because a gap here is invisible until a
+ * scoped page paints the wrong colour in one mode only.
+ */
+export function withScopeAliases(tokens: Record<string, string>): Record<string, string> {
+  const vars: Record<string, string> = { ...tokens };
+
+  // Policy tokens live outside the canonical set, so alias every token present.
+  for (const [key, value] of Object.entries(tokens)) {
+    vars[`--color-${key.slice(2)}`] = value;
+  }
+
+  for (const [alias, reference] of Object.entries(SCOPED_ALIASES)) {
+    const canonical = /^var\(--(.+)\)$/.exec(reference)?.[1];
+    const resolved = canonical === undefined ? undefined : tokens[`--${canonical}`];
+    if (resolved !== undefined) vars[`--color-${alias}`] = resolved;
+  }
+
+  return vars;
+}
 
 /**
  * The canonical role → token assignment, sourced from an arbitrary seed's role
@@ -121,19 +167,5 @@ export function buildSeedScopeVars(options: SeedScopeOptions): Record<string, st
       tertiary: options.tertiarySeed,
     }),
   };
-  const vars: Record<string, string> = { ...tokens };
-
-  // Policy tokens live outside CANONICAL_TOKENS, so alias every token present.
-  for (const [key, value] of Object.entries(tokens)) {
-    vars[`--color-${key.slice(2)}`] = value;
-  }
-
-  for (const token of CANONICAL_TOKENS) {
-    const value = tokens[`--${token}`];
-    if (value !== undefined) {
-      vars[`--color-${token}`] = value;
-    }
-  }
-
-  return vars;
+  return withScopeAliases(tokens);
 }

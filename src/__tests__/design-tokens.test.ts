@@ -19,6 +19,7 @@ import {
   bloomShadowStyle,
 } from '../design-tokens';
 import { APP_COLOR_PRESETS } from '../theme/color-presets';
+import { buildScopeVars } from '../theme/color-scope/style-builder';
 import { CANONICAL_TOKENS } from '../theme/token-registry';
 
 describe('design-tokens color roles', () => {
@@ -205,10 +206,13 @@ describe('design-tokens resolved token values', () => {
 
   it('buildSeedScopeVars also emits the --color-x aliases a scope needs', () => {
     const vars = buildSeedScopeVars({ seed: '#7c5aed', mode: 'dark' });
-    const aliases = Object.keys(vars).filter((k) => k.startsWith('--color-'));
-    expect(aliases.length).toBeGreaterThan(0);
-    for (const alias of aliases) {
-      expect(vars[alias]).toBe(vars[alias.replace('--color-', '--')]);
+    // Every canonical token gets a same-named alias. The role vocabulary
+    // (`--color-fill` → `--card`) is checked against theme.css further down,
+    // where the mapping comes from rather than being restated here.
+    const canonical = Object.keys(vars).filter((k) => !k.startsWith('--color-'));
+    expect(canonical.length).toBeGreaterThan(0);
+    for (const token of canonical) {
+      expect(vars[`--color-${token.slice(2)}`]).toBe(vars[token]);
     }
   });
 
@@ -229,6 +233,40 @@ describe('design-tokens resolved token values', () => {
     }
   });
 });
+
+describe('a scope re-declares every alias theme.css points at a token', () => {
+  /* The failure this guards is silent and mode-dependent: a scope overrides
+   * `--foreground`, but `--color-text: var(--foreground)` was computed at the
+   * document root, so `text-text` inside the scope keeps painting the app-wide
+   * colour. It looks correct in whichever mode the root happens to match.
+   *
+   * The list is read out of `bloomThemeCss()` rather than written here, so an
+   * alias added there is covered the day it lands. */
+  const rootAliases = bloomThemeCss()
+    .split('\n')
+    .map((line) => /^\s*--color-([a-z0-9-]+):\s*var\(--([a-z0-9-]+)\);\s*$/.exec(line))
+    .filter((match): match is RegExpExecArray => match !== null)
+    .map((match) => ({ alias: match[1] as string, canonical: match[2] as string }))
+
+  it('covers a meaningful number of aliases', () => {
+    // A regex that stopped matching would otherwise leave every case below
+    // passing over an empty list.
+    expect(rootAliases.length).toBeGreaterThan(20)
+  })
+
+  for (const [label, scope] of [
+    ['seed', buildSeedScopeVars({ seed: '#7c5aed', mode: 'dark' })],
+    ['preset', buildScopeVars('faircoin', 'dark')],
+  ] as const) {
+    it(`resolves them against the scope's own tokens (${label})`, () => {
+      const wrong = rootAliases
+        .filter(({ canonical }) => scope[`--${canonical}`] !== undefined)
+        .filter(({ alias, canonical }) => scope[`--color-${alias}`] !== scope[`--${canonical}`])
+        .map(({ alias, canonical }) => `--color-${alias} != --${canonical}`)
+      expect(wrong).toEqual([])
+    })
+  }
+})
 
 describe('design-tokens entry stays free of react / react-native', () => {
   /* Build scripts import this entry from plain node/bun to emit a static theme
