@@ -1,10 +1,12 @@
-import { readFileSync } from 'node:fs';
-import { join } from 'node:path';
+import { existsSync, readFileSync, statSync } from 'node:fs';
+import { dirname, join, relative } from 'node:path';
 
 import {
   bloomTailwindPreset,
   bloomThemeCss,
   bloomThemeBlock,
+  getPresetVars,
+  buildSeedScopeVars,
   FILL_ROLES,
   TEXT_ROLES,
   BORDER_ROLES,
@@ -16,6 +18,7 @@ import {
   SHADOW_BOX,
   bloomShadowStyle,
 } from '../design-tokens';
+import { APP_COLOR_PRESETS } from '../theme/color-presets';
 import { CANONICAL_TOKENS } from '../theme/token-registry';
 
 describe('design-tokens color roles', () => {
@@ -188,5 +191,115 @@ describe('design-tokens shadow style (web default)', () => {
   it('returns a boxShadow style on the web/default fork', () => {
     const style = bloomShadowStyle('m');
     expect(style).toHaveProperty('boxShadow', SHADOW_BOX.m);
+  });
+});
+
+describe('design-tokens resolved token values', () => {
+  it('getPresetVars resolves a preset to canonical tokens only', () => {
+    const vars = getPresetVars('oxy', 'dark');
+    expect(vars['--background']).toMatch(/^rgb/);
+    // A document root needs the canonical tokens alone — the `--color-x` alias
+    // layer comes from theme.css / bloomThemeCss().
+    expect(Object.keys(vars).some((k) => k.startsWith('--color-'))).toBe(false);
+  });
+
+  it('buildSeedScopeVars also emits the --color-x aliases a scope needs', () => {
+    const vars = buildSeedScopeVars({ seed: '#7c5aed', mode: 'dark' });
+    const aliases = Object.keys(vars).filter((k) => k.startsWith('--color-'));
+    expect(aliases.length).toBeGreaterThan(0);
+    for (const alias of aliases) {
+      expect(vars[alias]).toBe(vars[alias.replace('--color-', '--')]);
+    }
+  });
+
+  it("a preset's own seed reproduces that preset exactly", () => {
+    // What lets a consumer theme a brand scope and the document root through one
+    // code path: the seed form is not an approximation of the preset form.
+    const preset = APP_COLOR_PRESETS.oxy;
+    for (const mode of ['light', 'dark'] as const) {
+      const fromPreset = getPresetVars('oxy', mode);
+      const fromSeed = buildSeedScopeVars({
+        seed: preset.hex,
+        mode,
+        variant: preset.variant,
+      });
+      for (const [token, value] of Object.entries(fromPreset)) {
+        expect(fromSeed[token]).toBe(value);
+      }
+    }
+  });
+});
+
+describe('design-tokens entry stays free of react / react-native', () => {
+  /* Build scripts import this entry from plain node/bun to emit a static theme
+   * stylesheet (see the export's doc comment). A `react-native` import anywhere
+   * in its transitive graph makes that throw at import time — in the CONSUMER's
+   * build, with a parse error inside node_modules and nothing pointing back
+   * here. Jest cannot catch it by importing the module: this suite runs in the
+   * RN preset, where both packages resolve. So walk the graph statically. */
+  const SOURCE_ROOT = join(__dirname, '..');
+  /* Captures the clause of every `import`/`export … from '…'`, so a type-only
+   * one can be told apart from a value one. `import { type ViewStyle } from
+   * 'react-native'` is erased by the compiler and is FINE here; a value import
+   * of the same module is not. A scanner blind to the difference reports the
+   * shipped `shadows.ts` as a violation. */
+  const IMPORT_RE = /(?:import|export)\s+([\s\S]*?)\s*from\s*['"]([^'"]+)['"]/g;
+
+  function isValueImport(clause: string): boolean {
+    const trimmed = clause.trim();
+    if (trimmed.startsWith('type ') || trimmed === 'type') return false;
+    const named = /^\{([\s\S]*)\}$/.exec(trimmed)?.[1];
+    if (named === undefined) return true; // default or namespace import — always a value
+    return named
+      .split(',')
+      .map((specifier) => specifier.trim())
+      .filter(Boolean)
+      .some((specifier) => !specifier.startsWith('type '));
+  }
+
+  function resolve(specifier: string, fromFile: string): string | null {
+    const base = join(dirname(fromFile), specifier);
+    for (const candidate of [
+      base,
+      `${base}.ts`,
+      `${base}.tsx`,
+      join(base, 'index.ts'),
+      join(base, 'index.tsx'),
+    ]) {
+      if (existsSync(candidate) && statSync(candidate).isFile()) return candidate;
+    }
+    return null;
+  }
+
+  const entry = join(SOURCE_ROOT, 'design-tokens', 'index.ts');
+  const visited = new Set<string>();
+  const offenders: string[] = [];
+  const queue = [entry];
+
+  for (let file = queue.pop(); file !== undefined; file = queue.pop()) {
+    if (visited.has(file)) continue;
+    visited.add(file);
+    const source = readFileSync(file, 'utf8');
+    for (const match of source.matchAll(IMPORT_RE)) {
+      const [, clause = '', specifier = ''] = match;
+      if (!isValueImport(clause)) continue;
+      if (specifier === 'react' || specifier === 'react-native' || specifier.startsWith('react-native/')) {
+        offenders.push(`${relative(SOURCE_ROOT, file)} imports ${specifier}`);
+        continue;
+      }
+      if (!specifier.startsWith('.')) continue;
+      const resolved = resolve(specifier, file);
+      if (resolved) queue.push(resolved);
+    }
+  }
+
+  it('imports neither react nor react-native anywhere in its graph', () => {
+    expect(offenders).toEqual([]);
+  });
+
+  it('actually walked the graph', () => {
+    // Without a floor, a resolver that silently returns null for everything
+    // would report a clean graph of one file.
+    expect(visited.size).toBeGreaterThan(8);
   });
 });

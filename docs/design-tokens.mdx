@@ -68,6 +68,35 @@ import { bloomThemeBlock } from '@oxyhq/bloom/design-tokens';
 // write `bloomThemeBlock()` into your generated global.css
 ```
 
+### The pre-JS palette (prerendered apps)
+
+`theme.css` is the **alias** layer: `--color-background: var(--background)`. It
+says nothing about what `--background` *is* — `BloomThemeProvider` writes that at
+startup. So between first paint and hydration, a prerendered page shows whatever
+palette its own stylesheet declares, and a hand-written one is a second source of
+truth that drifts from the preset it claims to mirror.
+
+Generate it instead, at build time:
+
+```ts
+import { getPresetVars, buildSeedScopeVars } from '@oxyhq/bloom/design-tokens';
+
+// Document root: canonical tokens are all it needs.
+getPresetVars('oxy', 'dark'); // { '--background': 'rgb(19 12 20)', … }
+
+// A scoped block — a brand section, a forced-dark region — needs the
+// `--color-x` aliases too, because an alias substitutes where it is DECLARED:
+// overriding `--background` on a subtree does not move a `--color-background`
+// declared at `:root`. That is why hand-written brand themes write every colour
+// twice. `buildSeedScopeVars` returns both namespaces from one seed.
+buildSeedScopeVars({ seed: '#7c5aed', mode: 'dark' });
+```
+
+A preset's own `hex` + `variant` reproduces `getPresetVars` token-for-token, so
+the document root and a brand scope go through the same code path. Both
+functions are pure — no react, no react-native — so a plain node/bun script can
+import them.
+
 ## Color roles
 
 | Utility | Role | Canonical token |

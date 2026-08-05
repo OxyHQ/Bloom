@@ -184,6 +184,9 @@ Rules:
 - **Never paste `--radius-radius-*`, `--spacing-*`, or any other Bloom token into a consumer's `global.css`** — the imported CSS is the single authority.
 - Keep only app-local color seeds / `:root` overrides in the consumer's `global.css`.
 - If inline assembly is needed (e.g. build-time stylesheet gen), use `bloomThemeCss()` / `bloomThemeBlock()` from `@oxyhq/bloom/design-tokens` — not a manual copy.
+- **A consumer's pre-JS `:root` palette is GENERATED, never hand-written.** `theme.css` is only the alias layer (`--color-x: var(--x)`); until `BloomThemeProvider` runs, `--x` itself is whatever the app's stylesheet says, so a hand-written fallback silently becomes a second palette that drifts from the preset it claims to mirror (measured in the website: `--secondary` was a light grey there and a teal here). Emit it at build time from `getPresetVars(preset, mode)` (`@oxyhq/bloom/design-tokens`) instead.
+- **A SCOPED block needs `buildSeedScopeVars`, not `getPresetVars`.** A `--color-x` alias substitutes where it is DECLARED, so a `.brand-theme { --background: … }` does not move a `--color-background` declared at `:root` — which is why hand-written brand themes end up writing every colour twice. `buildSeedScopeVars({ seed, mode })` returns both namespaces for exactly this; a preset's own `hex` + `variant` reproduces `getPresetVars` token-for-token (gated in `src/__tests__/design-tokens.test.ts`), so root and brand scopes share one code path.
+- Both resolvers are pure (no react / react-native) so build scripts can import them from plain node/bun — gated by a static import-graph scan in the same test file. Adding a value import of either package to that graph breaks every consumer's theme generation.
 - Full docs at `docs/design-tokens.mdx`.
 
 ## Theme System
