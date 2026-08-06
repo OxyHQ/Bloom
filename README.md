@@ -5,7 +5,7 @@
 
 <p align="center">
   <a href="https://www.npmjs.com/package/@oxyhq/bloom"><img alt="npm" src="https://img.shields.io/npm/v/@oxyhq/bloom?style=flat-square&color=440151&label=%40oxyhq%2Fbloom"></a>
-  <a href="./LICENSE"><img alt="License AGPL-3.0-only" src="https://img.shields.io/badge/license-AGPL--3.0--only-informational?style=flat-square"></a>
+  <a href="./LICENSE"><img alt="License Apache-2.0" src="https://img.shields.io/badge/license-Apache--2.0-informational?style=flat-square"></a>
   <img alt="React Native" src="https://img.shields.io/badge/React%20Native-0.73%2B-61DAFB?style=flat-square&logo=react&logoColor=black">
   <img alt="Expo" src="https://img.shields.io/badge/Expo-supported-000020?style=flat-square&logo=expo&logoColor=white">
   <img alt="TypeScript" src="https://img.shields.io/badge/TypeScript-3178C6?style=flat-square&logo=typescript&logoColor=white">
@@ -180,6 +180,8 @@ Issues and pull requests are welcome. Please run `bun run typescript` and `bun r
 
 ## License
 
-AGPL-3.0-only, The Oxy Foundation, Inc. See [LICENSE](./LICENSE).
+Apache-2.0, The Oxy Collective Inc. See [LICENSE](./LICENSE).
+
+Bloom moved from AGPL-3.0-only to Apache-2.0 at `0.87.0`. Versions published before that keep AGPL-3.0-only permanently; a licence change binds future versions only.
 
 Third party code Bloom derives from, principally the universal toast engine, is credited in [NOTICE](./NOTICE).
