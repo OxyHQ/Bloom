@@ -180,7 +180,7 @@ Issues and pull requests are welcome. Please run `bun run typescript` and `bun r
 
 ## License
 
-Apache-2.0, The Oxy Collective Inc. See [LICENSE](./LICENSE).
+Apache-2.0, The Oxy Collective, Inc. See [LICENSE](./LICENSE).
 
 Bloom moved from AGPL-3.0-only to Apache-2.0 at `0.87.0`. Versions published before that keep AGPL-3.0-only permanently; a licence change binds future versions only.
 
