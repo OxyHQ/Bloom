@@ -1,5 +1,35 @@
 # Migration Guide
 
+## 0.87.0: Bloom is Apache-2.0, no longer AGPL-3.0-only
+
+**No action required, and no code changed.** This release exists to carry the
+licence change and nothing else. The component API, the theme tokens and the
+build output are identical to `0.86.0`.
+
+Bloom is part of the SDK and client layer, which is licensed permissively on
+purpose: it is a dependency you either can or cannot add, and AGPL on a
+component library that gets bundled into a consumer's app is the licence a
+legal team refuses. Apache-2.0 is what a component library should have been
+carrying all along.
+
+This is a widening. Every right the AGPL granted you, Apache-2.0 grants too, and
+Apache-2.0 additionally drops the network copyleft and adds an express patent
+grant. Nothing you are doing today becomes non-compliant.
+
+Versions published before `0.87.0` keep AGPL-3.0-only permanently. `0.86.0`
+stays AGPL for anyone who already has it; a licence change binds future versions
+only.
+
+Bloom is below 1.0.0, where semver puts the breaking position in the minor and
+`^0.86.0` does not accept `0.87.0`. Bumping the minor is therefore the same
+signal a major bump gives a 1.x package: nobody picks this up without editing
+their manifest.
+
+`NOTICE` still carries the third party attributions for the vendored toast
+engine and the tab bar, and Apache-2.0 section 4(d) now requires downstream
+redistributors to reproduce it. It is already in `files`, so it ships in the
+published tarball.
+
 ## 0.69.0 — haptics, the spinner and native colour scoping were dead on device, and now work
 
 **No action required. These are fixes to Bloom internals, and things that silently
