@@ -82,7 +82,13 @@ const SwitchComponent = React.forwardRef<React.ElementRef<typeof Pressable>, Swi
         ref={ref}
         role="switch"
         aria-checked={value}
-        accessibilityState={{ checked: value, disabled }}
+        // The disabled state has to travel on this prop, not on `aria-disabled`:
+        // react-native-web's `Pressable` appends its own `aria-disabled` from
+        // `disabled` AFTER spreading the caller's props, so a caller-supplied
+        // one is overwritten. `handlePress` already no-ops when disabled, so
+        // this only adds what was missing — the announced state, and skipping
+        // the control in the tab order.
+        disabled={disabled}
         onPress={handlePress}
         onPressIn={onPressIn}
         onPressOut={onPressOut}

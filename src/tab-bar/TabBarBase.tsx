@@ -569,7 +569,10 @@ function TabBarButtonBody({
       // Accessibility defaults come BEFORE the spread so an explicit prop — or
       // one injected by a router trigger — still wins.
       accessibilityRole="tab"
-      accessibilityState={{ selected: focused }}
+      // `aria-selected` is the state ARIA defines for `role="tab"`, and the one
+      // spelling both platforms read: react-native-web ignores
+      // `accessibilityState`, React Native folds `aria-selected` into it.
+      aria-selected={focused}
       accessibilityLabel={item.label}
       {...pressableProps}
       onPress={(event) => {

@@ -106,7 +106,14 @@ const CheckboxComponent: React.FC<CheckboxProps> = ({
       onPressOut={onPressOut}
       disabled={disabled}
       accessibilityRole="checkbox"
-      accessibilityState={{ checked: indeterminate ? 'mixed' : checked, disabled }}
+      // `aria-checked`, not `accessibilityState`: react-native-web's
+      // `createDOMProps` never reads `accessibilityState`, so a checkbox that
+      // set only that announced no state at all on web — the box was drawn
+      // checked while assistive tech saw an unchecked control. React Native's
+      // `Pressable` folds `aria-checked` back into `accessibilityState`, so
+      // this one prop is the spelling both platforms honour. `disabled`
+      // travels on the `disabled` prop above, which both platforms map.
+      aria-checked={indeterminate ? 'mixed' : checked}
       accessibilityLabel={accessibilityLabel ?? label}
       hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
       testID={testID}

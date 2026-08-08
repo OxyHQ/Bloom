@@ -121,7 +121,15 @@ const ChipComponent: React.FC<ChipProps> = ({
           disabled={disabled}
           accessibilityLabel={accessibilityLabel}
           accessibilityRole="button"
+          // Both spellings, because neither platform reads the other's and
+          // there is no single prop that serves both here: react-native-web
+          // ignores `accessibilityState`, while React Native has no
+          // `aria-pressed` at all (its `AccessibilityState` is
+          // disabled/selected/checked/busy/expanded). `aria-pressed` is also
+          // the state ARIA defines for a toggle with `role="button"` —
+          // `aria-selected` would be invalid on that role.
           accessibilityState={{ disabled, selected }}
+          aria-pressed={selected}
           testID={testID}
         >
           {content}

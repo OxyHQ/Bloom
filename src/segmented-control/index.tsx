@@ -240,7 +240,14 @@ export function SegmentedControlItem({
         onPressOut={disabled ? undefined : onPressOut}
         accessibilityLabel={accessibilityLabel}
         accessibilityHint={accessibilityHint}
-        accessibilityState={{ selected: active, disabled: !!disabled }}
+        // The active state has to be spelled as an `aria-*` prop, because
+        // react-native-web never reads `accessibilityState` (React Native folds
+        // these back into it, so native is unaffected) — and WHICH prop depends
+        // on the role: ARIA gives `tab` a selected state and `radio` a checked
+        // one, so a single spelling would be invalid for one of the two modes.
+        {...(itemRole === 'tab'
+          ? { 'aria-selected': active }
+          : { 'aria-checked': active })}
         role={itemRole}
         disabled={disabled}
         testID={testID}

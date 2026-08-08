@@ -128,7 +128,10 @@ export const SettingsListItem = memo<SettingsListItemProps>(function SettingsLis
       accessibilityRole={role}
       accessibilityLabel={label}
       accessibilityHint={accessibilityHint}
-      accessibilityState={disabled ? { disabled: true } : undefined}
+      // See the pressable branch above, which gets `aria-disabled` for free
+      // from its `disabled` prop. A `View` has no such prop, and
+      // react-native-web never reads `accessibilityState`.
+      aria-disabled={disabled || undefined}
     >
       {content}
     </View>

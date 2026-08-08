@@ -198,8 +198,16 @@ const SliderComponent = function Slider({
       testID={testID}
       accessibilityRole="adjustable"
       accessibilityLabel={accessibilityLabel}
-      accessibilityValue={{ min, max, now: value }}
-      accessibilityState={{ disabled }}
+      // react-native-web reads the FLAT `aria-value*` props; it has no handling
+      // for the `accessibilityValue` object at all, so this rendered a
+      // `role="slider"` carrying no value whatsoever — a screen reader could
+      // say the control existed but never what it was set to. React Native
+      // folds these three back into `accessibilityValue`, and `aria-disabled`
+      // into `accessibilityState`, so native keeps what it had.
+      aria-valuemin={min}
+      aria-valuemax={max}
+      aria-valuenow={value}
+      aria-disabled={disabled || undefined}
       style={[
         styles.root,
         { height: Math.max(thumbSize, trackHeight) + 8 },

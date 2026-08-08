@@ -124,7 +124,11 @@ describe('Button', () => {
       </Button>,
     );
     const btn = getByTestId('dis-btn');
-    expect(btn.props.accessibilityState).toEqual({ disabled: true });
+    // The `disabled` PROP is what carries this to both platforms: React Native
+    // folds it into `accessibilityState`, and react-native-web's `Pressable`
+    // derives `aria-disabled` from it (overwriting any the caller passes, so
+    // the prop is the only spelling that works there).
+    expect(btn.props.disabled).toBe(true);
   });
 
   it('keeps children mounted when loading so width is preserved', () => {
@@ -151,14 +155,18 @@ describe('Button', () => {
     expect(btn.props.disabled).toBe(true);
   });
 
-  it('marks loading state via accessibilityState busy + disabled', () => {
+  it('marks loading state as busy + disabled', () => {
     const { getByTestId } = renderWithTheme(
       <Button testID="busy-btn" loading>
         Submit
       </Button>,
     );
     const btn = getByTestId('busy-btn');
-    expect(btn.props.accessibilityState).toEqual({ disabled: true, busy: true });
+    // `aria-busy` rather than `accessibilityState.busy`, which react-native-web
+    // drops — this is also what `Button.web.tsx` emits, so both forks announce
+    // the same thing. React Native folds it back into `accessibilityState`.
+    expect(btn.props['aria-busy']).toBe(true);
+    expect(btn.props.disabled).toBe(true);
   });
 });
 

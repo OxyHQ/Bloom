@@ -156,8 +156,16 @@ function hosts(root: ReactTestInstance, tag: string): ReactTestInstance[] {
   return root.findAll((node) => hostName(node) === tag);
 }
 
+/**
+ * Read `aria-selected`, not `accessibilityState.selected`. The latter reaches
+ * native only: react-native-web's `createDOMProps` never consults
+ * `accessibilityState`, so a bar that set only that rendered tabs announcing no
+ * selection at all on web. React Native folds `aria-selected` back into
+ * `accessibilityState`, making this the one spelling both platforms honour —
+ * the same contract `Tabs.test.tsx` pins for the tab strip.
+ */
 function selectedFlags(root: ReactTestInstance): boolean[] {
-  return triggers(root).map((node) => node.props.accessibilityState.selected);
+  return triggers(root).map((node) => node.props['aria-selected']);
 }
 
 function Bar({

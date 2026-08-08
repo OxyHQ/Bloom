@@ -221,7 +221,9 @@ function labelColors(root: ReactTestInstance): unknown[] {
 function selectedFlags(root: ReactTestInstance): boolean[] {
   return root
     .findAll((node) => hostName(node) !== null && node.props?.accessibilityRole === 'tab')
-    .map((node) => node.props.accessibilityState.selected);
+    // `aria-selected` is the spelling both platforms read — see the same
+    // helper in `TabBar.test.tsx`.
+    .map((node) => node.props['aria-selected']);
 }
 
 /** The gesture the detector was actually given — the last race constructed. */

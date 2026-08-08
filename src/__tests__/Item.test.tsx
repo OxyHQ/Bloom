@@ -47,7 +47,11 @@ describe('Item', () => {
       <Item title="Disabled" onPress={onPress} disabled accessibilityLabel="Disabled" />,
     );
     const node = getByLabelText('Disabled');
-    expect(node.props.accessibilityState).toEqual({ disabled: true, selected: false });
+    // `selected` is absent, not `false`: a row that never mentions selection is
+    // not a toggle. Defaulting it made every plain navigation row announce
+    // itself as an unpressed toggle button once the state reached web as
+    // `aria-pressed`. A caller passing `selected={false}` still gets `false`.
+    expect(node.props.accessibilityState).toEqual({ disabled: true, selected: undefined });
     // The Pressable receives no press handler while disabled.
     expect(node.props.onPress).toBeUndefined();
   });

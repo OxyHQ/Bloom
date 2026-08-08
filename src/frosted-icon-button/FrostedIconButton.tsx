@@ -110,7 +110,12 @@ const FrostedIconButtonComponent: React.FC<FrostedIconButtonProps> = ({
         accessibilityRole="button"
         accessibilityLabel={accessibilityLabel}
         accessibilityHint={accessibilityHint}
+        // `aria-pressed` matches what the `.web.tsx` fork emits, so the same
+        // button announces the same state whichever fork a bundler picks.
+        // Both spellings are needed: react-native-web ignores
+        // `accessibilityState`, React Native has no `aria-pressed`.
         accessibilityState={{ disabled, selected: active }}
+        aria-pressed={active}
         testID={testID}
       >
         {/* Clip layer: blur (frosted only) + translucent/solid tint, rounded. */}

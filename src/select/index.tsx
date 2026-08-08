@@ -289,7 +289,10 @@ export function SelectItem({ children, value, label, style }: SelectItemProps) {
     <Pressable
       accessibilityRole="radio"
       accessibilityLabel={label}
-      accessibilityState={{ checked: isSelected }}
+      // ARIA gives `role="radio"` a checked state, not a selected one. Spelled
+      // as `aria-checked` because react-native-web never reads
+      // `accessibilityState`; React Native folds this back into it.
+      aria-checked={isSelected}
       onPress={handlePress}
       onFocus={onFocus}
       onBlur={onBlur}

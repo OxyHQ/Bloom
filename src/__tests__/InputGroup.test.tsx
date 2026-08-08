@@ -39,6 +39,9 @@ describe('InputGroup', () => {
         <Text>field</Text>
       </InputGroup>,
     );
-    expect(getByTestId('group').props.accessibilityState).toEqual({ disabled: true });
+    // `aria-disabled`, not `accessibilityState`: the group is a `View`, so
+    // react-native-web has no `disabled` prop to derive the attribute from and
+    // never reads `accessibilityState`. React Native folds this back into it.
+    expect(getByTestId('group').props['aria-disabled']).toBe(true);
   });
 });

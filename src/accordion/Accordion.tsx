@@ -176,7 +176,11 @@ const AccordionTriggerComponent: React.FC<AccordionTriggerProps> = ({
       onPressOut={disabled ? undefined : onPressOut}
       disabled={disabled}
       accessibilityRole="button"
-      accessibilityState={{ expanded: isExpanded, disabled }}
+      // `aria-expanded` rather than `accessibilityState`, which react-native-web
+      // drops entirely. React Native folds this back into `accessibilityState`,
+      // so it is the one spelling both platforms read. `disabled` travels on the
+      // `disabled` prop above.
+      aria-expanded={isExpanded}
     >
       {icon}
       <View style={{ flex: 1 }}>

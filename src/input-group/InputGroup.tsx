@@ -126,7 +126,10 @@ const InputGroupComponent = function InputGroup({
     <InputGroupContext.Provider value={ctx}>
       <View
         testID={testID}
-        accessibilityState={disabled ? { disabled: true } : undefined}
+        // `aria-disabled`, not `accessibilityState`: this is a `View`, so
+        // react-native-web has no `disabled` prop to derive the attribute from
+        // and never reads `accessibilityState`. React Native folds it back.
+        aria-disabled={disabled || undefined}
         // Capture focus bubbling from a nested input so the whole chrome
         // reflects focus — RN-web bubbles focus/blur, native does not but a
         // nested TextInput's own focus ring is sufficient there.

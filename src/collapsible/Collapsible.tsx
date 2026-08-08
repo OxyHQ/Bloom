@@ -58,7 +58,9 @@ const CollapsibleComponent: React.FC<CollapsibleProps> = ({
         onPress={handleToggle}
         activeOpacity={0.7}
         accessibilityRole="button"
-        accessibilityState={{ expanded: isOpen }}
+        // See `Accordion`: react-native-web reads `aria-expanded`, never
+        // `accessibilityState`; React Native folds it back into that state.
+        aria-expanded={isOpen}
         style={styles.trigger}
       >
         {chevronIcon ?? (

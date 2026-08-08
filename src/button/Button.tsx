@@ -334,7 +334,12 @@ const ButtonComponent: React.FC<ButtonProps> = ({
       accessibilityLabel={accessibilityLabel}
       accessibilityHint={accessibilityHint}
       accessibilityRole="button"
-      accessibilityState={loading ? { disabled: isInteractionBlocked, busy: true } : { disabled: isInteractionBlocked }}
+      // `aria-busy` matches what `Button.web.tsx` emits, so a loading button
+      // announces the same thing whichever fork a bundler resolves.
+      // react-native-web never reads `accessibilityState`; React Native folds
+      // `aria-busy` back into it. The disabled half travels on the `disabled`
+      // prop above, which both platforms map.
+      aria-busy={loading || undefined}
       testID={testID}
     >
       {loading ? (

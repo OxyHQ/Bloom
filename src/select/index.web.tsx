@@ -324,7 +324,10 @@ export function SelectItem({ ref, value, label, children, style }: SelectItemPro
       // dropped it, leaving every option a `role="radio"` with no accessible
       // name for a screen reader to announce.
       accessibilityLabel={label}
-      accessibilityState={{ checked: isSelected }}
+      // `aria-checked` is the state ARIA defines for `role="radio"`, and the
+      // only one react-native-web emits — it never reads `accessibilityState`,
+      // so this fork's options announced no selection at all.
+      aria-checked={isSelected}
       onPress={() => {
         ctx.onValueChange?.(value);
         ctx.close();

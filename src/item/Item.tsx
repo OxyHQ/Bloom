@@ -28,7 +28,11 @@ const ItemComponent = function Item({
   onLongPress,
   disabled = false,
   destructive = false,
-  selected = false,
+  // Deliberately NOT defaulted: a row that never mentions selection is not a
+  // toggle, and defaulting to `false` made every plain navigation row announce
+  // itself as an unpressed toggle button on web. Absence and "off" are
+  // different statements to assistive tech; both remain falsy for styling.
+  selected,
   active = false,
   density = 'comfortable',
   style,
@@ -109,6 +113,19 @@ const ItemComponent = function Item({
 
   if (onPress || onLongPress) {
     const resolvedRole = accessibilityRole ?? 'button';
+    // Web reads only `aria-*` — react-native-web never consults
+    // `accessibilityState` — and ARIA scopes these states by role: `option`
+    // carries a selected state, a `button` toggle carries a pressed one, and
+    // `menuitem`/`listitem` carry neither, so those emit nothing. React Native
+    // keeps reading `accessibilityState` below, which is why both are set.
+    const selectedAria =
+      selected == null
+        ? null
+        : role === 'option'
+          ? { 'aria-selected': selected }
+          : role == null
+            ? { 'aria-pressed': selected }
+            : null;
     const handlePress = disabled || !onPress ? undefined : onPress;
     const handleLongPress = disabled || !onLongPress ? undefined : onLongPress;
     return (
@@ -126,6 +143,7 @@ const ItemComponent = function Item({
         }
         accessibilityHint={accessibilityHint}
         accessibilityState={{ disabled, selected }}
+        {...selectedAria}
         style={[
           disabled && styles.disabled,
           pressed && !disabled && styles.pressed,
@@ -143,7 +161,11 @@ const ItemComponent = function Item({
         accessibilityLabel ?? (typeof title === 'string' ? title : undefined)
       }
       accessibilityHint={accessibilityHint}
-      accessibilityState={disabled ? { disabled: true } : undefined}
+      // A `View` has no `disabled` prop for react-native-web to derive
+      // `aria-disabled` from, and it ignores `accessibilityState`, so without
+      // this the non-pressable row announced nothing. React Native folds
+      // `aria-disabled` back into `accessibilityState`.
+      aria-disabled={disabled || undefined}
       style={disabled ? styles.disabled : undefined}>
       {content}
     </View>

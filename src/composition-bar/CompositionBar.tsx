@@ -75,7 +75,11 @@ const CompositionBarComponent: React.FC<CompositionBarProps> = ({
               onPress={() => onSelect(category.key)}
               accessibilityRole="button"
               accessibilityLabel={category.name}
+              // See `Chip`: `accessibilityState` carries this on native (which
+              // has no `aria-pressed`), `aria-pressed` on web (where
+              // react-native-web never reads `accessibilityState`).
               accessibilityState={{ selected: category.key === selectedKey }}
+              aria-pressed={category.key === selectedKey}
               style={[
                 styles.segment,
                 {
