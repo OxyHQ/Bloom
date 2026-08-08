@@ -12,6 +12,7 @@ import React, {
 import { useTheme } from '../theme/use-theme';
 import type { Theme } from '../theme/types';
 import { SpinnerIcon } from '../loading/SpinnerIcon.web';
+import { adoptStyleSheet } from '../styles/adopt-style-sheet';
 import { flattenWebStyle } from '../styles/flatten-web-style';
 import type { ButtonProps, ButtonSize, ButtonVariant } from './types';
 
@@ -128,12 +129,7 @@ const BLOOM_BUTTON_CSS = `
 
 function useButtonCss(): void {
   useEffect(() => {
-    if (typeof document === 'undefined') return;
-    if (document.getElementById(STYLE_ID)) return;
-    const style = document.createElement('style');
-    style.id = STYLE_ID;
-    style.textContent = BLOOM_BUTTON_CSS;
-    document.head.appendChild(style);
+    adoptStyleSheet(STYLE_ID, BLOOM_BUTTON_CSS);
   }, []);
 }
 

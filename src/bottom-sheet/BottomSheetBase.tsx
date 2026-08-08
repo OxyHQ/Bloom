@@ -11,6 +11,7 @@ import {
     type StyleProp,
 } from 'react-native';
 import { Gesture, GestureDetector, type GestureType } from 'react-native-gesture-handler';
+import { adoptStyleSheet, dropStyleSheet } from '../styles/adopt-style-sheet';
 import type { WebCssStyle } from '../styles/web-view-style';
 import { Z_INDEX } from '../styles/z-index';
 import Animated, {
@@ -921,15 +922,7 @@ const styles = StyleSheet.create({
 
 // Create web scrollbar styles dynamically based on theme
 const createWebScrollbarStyle = (borderColor: string) => {
-    if (Platform.OS !== 'web' || typeof document === 'undefined') return;
-
-    let styleElement = document.getElementById(SCROLLBAR_STYLE_ID) as HTMLStyleElement | null;
-
-    if (!styleElement) {
-        styleElement = document.createElement('style');
-        styleElement.id = SCROLLBAR_STYLE_ID;
-        document.head.appendChild(styleElement);
-    }
+    if (Platform.OS !== 'web') return;
 
     // Derive a slightly darker scrollbar hover color from the border color
     const scrollbarColor = borderColor;
@@ -937,7 +930,9 @@ const createWebScrollbarStyle = (borderColor: string) => {
         ? borderColor.replace(/\)$/, ' / 0.7)')  // add alpha for hover
         : '#888';
 
-    styleElement.textContent = `
+    adoptStyleSheet(
+        SCROLLBAR_STYLE_ID,
+        `
         .bottom-sheet-scrollview::-webkit-scrollbar {
             width: 6px;
         }
@@ -952,13 +947,14 @@ const createWebScrollbarStyle = (borderColor: string) => {
         .bottom-sheet-scrollview::-webkit-scrollbar-thumb:hover {
             background: ${scrollbarHoverColor};
         }
-    `;
+    `,
+    );
 };
 
 const SCROLLBAR_STYLE_ID = 'bottom-sheet-scrollbar-style';
 
-/** Remove the injected scrollbar <style> tag on unmount. */
+/** Detach the scrollbar rules on unmount. */
 const removeWebScrollbarStyle = () => {
-    if (Platform.OS !== 'web' || typeof document === 'undefined') return;
-    document.getElementById(SCROLLBAR_STYLE_ID)?.remove();
+    if (Platform.OS !== 'web') return;
+    dropStyleSheet(SCROLLBAR_STYLE_ID);
 };

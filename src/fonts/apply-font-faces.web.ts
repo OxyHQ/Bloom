@@ -1,3 +1,4 @@
+import { adoptStyleSheet } from '../styles/adopt-style-sheet';
 import {
   blomusModernusRegular,
   blomusModernusBold,
@@ -14,9 +15,11 @@ const STYLE_ID = 'bloom-fonts';
  * Web-only. The native counterpart in `apply-font-faces.ts` is a no-op
  * stub — native loads its fonts through `useFonts(FONT_ASSETS)`, so the file
  * split keeps the web font payload out of the native bundle entirely.
- * Idempotent: safe to call multiple times; subsequent calls early-return
- * after the `<style id="bloom-fonts">` tag has been mounted. SSR-safe via
- * the `typeof document === 'undefined'` guard.
+ * Idempotent: safe to call multiple times; `adoptStyleSheet` keys the sheet by
+ * id, so repeat calls re-parse nothing. SSR-safe via its `typeof document`
+ * guard. `BloomThemeProvider` calls this on every mount by default, which is
+ * why it also has to survive a page whose CSP forbids inline styles — see
+ * `styles/adopt-style-sheet.ts`.
  *
  * The URLs come from `./font-urls.web`, which imports the `.woff2` files so
  * the consuming bundler emits them as separate, cacheable assets. See that
@@ -24,12 +27,9 @@ const STYLE_ID = 'bloom-fonts';
  * provide (Metro needs `woff2` in `assetExts`).
  */
 export function applyFontFaces(): void {
-  if (typeof document === 'undefined') return;
-  if (document.getElementById(STYLE_ID)) return;
-
-  const style = document.createElement('style');
-  style.id = STYLE_ID;
-  style.textContent = `
+  adoptStyleSheet(
+    STYLE_ID,
+    `
     @font-face { font-family: 'BlomusModernus'; src: url("${blomusModernusRegular}") format('woff2'); font-weight: 400; font-style: normal; font-display: swap; }
     @font-face { font-family: 'BlomusModernus'; src: url("${blomusModernusBold}") format('woff2'); font-weight: 700; font-style: normal; font-display: swap; }
     @font-face { font-family: 'Inter'; src: url("${interVariable}") format('woff2-variations'); font-weight: 100 900; font-style: normal; font-display: swap; }
@@ -39,6 +39,6 @@ export function applyFontFaces(): void {
       --bloom-font-sans: ${fontFamilies.sans};
       --bloom-font-mono: ${fontFamilies.mono};
     }
-  `;
-  document.head.appendChild(style);
+  `,
+  );
 }

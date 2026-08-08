@@ -9,7 +9,12 @@
 // resolution; here we reach for it explicitly so the test exercises the
 // actual implementation under jsdom.
 import { applyFontFaces } from '../fonts/apply-font-faces.web';
+import { installConstructedStyleSheets } from './support/constructed-style-sheets';
 
+/* jsdom has no constructed-stylesheet API, so everything in this block
+ * exercises `adoptStyleSheet`'s `<style>` fallback. The CSP-safe path a real
+ * browser takes is asserted in the last block, and in
+ * `adopt-style-sheet.test.ts`. */
 describe('applyFontFaces (web)', () => {
   beforeEach(() => {
     document.head.innerHTML = '';
@@ -67,6 +72,33 @@ describe('applyFontFaces (web)', () => {
     for (const source of sources) {
       expect(source).not.toMatch(/^data:/);
       expect(source).toBeTruthy();
+    }
+  });
+});
+
+/* The font faces are the one injection `BloomThemeProvider` performs by
+ * default, so they are the first thing a page under `style-src 'self'` loses —
+ * and it loses them silently, as text rendered in the fallback family with no
+ * console output. Everything else Bloom injects is per-component; this is
+ * every consumer, every page. */
+describe('applyFontFaces under a page that forbids inline styles', () => {
+  it('adopts a constructed sheet and creates no <style> element', () => {
+    document.head.innerHTML = '';
+    const harness = installConstructedStyleSheets();
+    try {
+      let fonts: typeof import('../fonts/apply-font-faces.web') | undefined;
+      jest.isolateModules(() => {
+        fonts = require('../fonts/apply-font-faces.web') as typeof fonts;
+      });
+      fonts?.applyFontFaces();
+
+      expect(document.querySelectorAll('style')).toHaveLength(0);
+      expect(harness.adopted()).toHaveLength(1);
+      const css = harness.adopted()[0]?.cssText ?? '';
+      expect(css.match(/@font-face\s*{/g) ?? []).toHaveLength(4);
+      expect(css).toMatch(/--bloom-font-sans:/);
+    } finally {
+      harness.uninstall();
     }
   });
 });

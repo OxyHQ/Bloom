@@ -9,6 +9,7 @@ import React, {
 } from 'react';
 
 import { useTheme } from '../theme/use-theme';
+import { adoptStyleSheet } from '../styles/adopt-style-sheet';
 import { flattenWebStyle } from '../styles/flatten-web-style';
 import {
   applyIconColor,
@@ -74,12 +75,7 @@ const BLOOM_FROSTED_ICON_BUTTON_CSS = `
 
 function useFrostedIconButtonCss(): void {
   useEffect(() => {
-    if (typeof document === 'undefined') return;
-    if (document.getElementById(STYLE_ID)) return;
-    const style = document.createElement('style');
-    style.id = STYLE_ID;
-    style.textContent = BLOOM_FROSTED_ICON_BUTTON_CSS;
-    document.head.appendChild(style);
+    adoptStyleSheet(STYLE_ID, BLOOM_FROSTED_ICON_BUTTON_CSS);
   }, []);
 }
 

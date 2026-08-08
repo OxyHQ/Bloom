@@ -25,6 +25,7 @@ import { RemoveScrollBar } from 'react-remove-scroll-bar';
 
 import { Backdrop, OverlayRoot } from '../overlay';
 import { Portal } from '../portal/index.web';
+import { adoptStyleSheet } from '../styles/adopt-style-sheet';
 import { Z_INDEX } from '../styles/z-index';
 import { WEB_POSITION_FIXED, type WebCssStyle } from '../styles/web-view-style';
 import { bloomShadowStyle } from '../design-tokens/shadows';
@@ -106,12 +107,7 @@ const DIALOG_STYLE_ID = 'bloom-dialog-web-css';
 
 function useDialogCss(): void {
   useEffect(() => {
-    if (typeof document === 'undefined') return;
-    if (document.getElementById(DIALOG_STYLE_ID)) return;
-    const style = document.createElement('style');
-    style.id = DIALOG_STYLE_ID;
-    style.textContent = BLOOM_DIALOG_CSS;
-    document.head.appendChild(style);
+    adoptStyleSheet(DIALOG_STYLE_ID, BLOOM_DIALOG_CSS);
   }, []);
 }
 

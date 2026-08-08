@@ -1,6 +1,7 @@
 import React, { memo, useEffect, useState } from 'react';
 import { View, type ViewStyle } from 'react-native';
 
+import { adoptStyleSheet } from '../styles/adopt-style-sheet';
 import type { WebCssStyle } from '../styles/web-view-style';
 import { useTheme } from '../theme/use-theme';
 import { ConnectionDotsBase } from './ConnectionDotsBase';
@@ -31,12 +32,7 @@ export const BLOOM_CONNECTION_DOTS_CSS = `
 
 function useKeyframes(): void {
   useEffect(() => {
-    if (typeof document === 'undefined') return;
-    if (document.getElementById(KEYFRAMES_ID)) return;
-    const style = document.createElement('style');
-    style.id = KEYFRAMES_ID;
-    style.textContent = BLOOM_CONNECTION_DOTS_CSS;
-    document.head.appendChild(style);
+    adoptStyleSheet(KEYFRAMES_ID, BLOOM_CONNECTION_DOTS_CSS);
   }, []);
 }
 

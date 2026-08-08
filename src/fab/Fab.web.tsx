@@ -10,6 +10,7 @@ import React, {
 
 import { useTheme } from '../theme/use-theme';
 import type { Theme } from '../theme/types';
+import { adoptStyleSheet } from '../styles/adopt-style-sheet';
 import { flattenWebStyle } from '../styles/flatten-web-style';
 import type { FabPlacement, FabProps, FabSize, FabVariant } from './types';
 
@@ -103,12 +104,7 @@ const BLOOM_FAB_CSS = `
 
 function useFabCss(): void {
   useEffect(() => {
-    if (typeof document === 'undefined') return;
-    if (document.getElementById(STYLE_ID)) return;
-    const style = document.createElement('style');
-    style.id = STYLE_ID;
-    style.textContent = BLOOM_FAB_CSS;
-    document.head.appendChild(style);
+    adoptStyleSheet(STYLE_ID, BLOOM_FAB_CSS);
   }, []);
 }
 
