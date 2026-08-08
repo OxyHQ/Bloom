@@ -225,6 +225,111 @@ export interface BackdropProps {
   testID?: string;
 }
 
+interface BackdropLayerProps {
+  blurIntensity: number;
+  blurTint: 'light' | 'dark' | 'default';
+  dimColor: string;
+  dimOpacity: number;
+  /** Opacity the caller asked for, already lifted off the press target. */
+  staticOpacity: number;
+  layerStyle?: StyleProp<ViewStyle>;
+}
+
+/**
+ * Layers fading under a shared value. Reanimated owns the opacity on both, so
+ * the fade runs off the JS thread and the caller never has to animate an
+ * ancestor (which would erase the blur — see `BackdropProps['style']`).
+ */
+function AnimatedBackdropLayers({
+  progress,
+  blurIntensity,
+  blurTint,
+  dimColor,
+  dimOpacity,
+  staticOpacity,
+  layerStyle,
+}: BackdropLayerProps & { progress: SharedValue<number> }) {
+  // The fade lives on each LAYER, never on their shared ancestor.
+  const blurFade = useAnimatedStyle(
+    () => ({ opacity: progress.value * staticOpacity }),
+    [progress, staticOpacity],
+  );
+  const dimFade = useAnimatedStyle(
+    () => ({ opacity: progress.value * staticOpacity * dimOpacity }),
+    [progress, staticOpacity, dimOpacity],
+  );
+
+  return (
+    <>
+      {blurIntensity > 0 ? (
+        <AnimatedBlurView
+          intensity={blurIntensity}
+          tint={blurTint}
+          // Android's default blur is a no-op on many devices; this is the
+          // implementation that actually renders there.
+          experimentalBlurMethod="dimezisBlurView"
+          pointerEvents="none"
+          style={[StyleSheet.absoluteFill, layerStyle, blurFade]}
+        />
+      ) : null}
+      <Animated.View
+        pointerEvents="none"
+        style={[StyleSheet.absoluteFill, { backgroundColor: dimColor }, layerStyle, dimFade]}
+      />
+    </>
+  );
+}
+
+/**
+ * Layers with no shared value driving them: the opacity is whatever the caller
+ * asked for, and a caller that still wants movement hands a CSS transition down
+ * through `layerStyle` — which is exactly what the web side sheet does, flipping
+ * its own `opacity` between 0 and 1 and letting the browser interpolate.
+ *
+ * These MUST stay plain, non-reanimated components. On web, an animated
+ * component whose style carries `transitionProperty` is routed through
+ * reanimated's CSS transitions manager, which assigns straight into
+ * `element.style` — where `element` is whatever ref the wrapped component
+ * exposes. expo-blur's web `BlurView` exposes a `useImperativeHandle` object
+ * carrying only `setNativeProps`, so there is no `.style` on it and opening the
+ * surface throws `Cannot set properties of undefined (setting
+ * 'transitionProperty')`. A plain layer puts the transition on the DOM node
+ * itself, which is both where it belongs and the only place it works.
+ */
+function StaticBackdropLayers({
+  blurIntensity,
+  blurTint,
+  dimColor,
+  dimOpacity,
+  staticOpacity,
+  layerStyle,
+}: BackdropLayerProps) {
+  return (
+    <>
+      {blurIntensity > 0 ? (
+        <BlurView
+          intensity={blurIntensity}
+          tint={blurTint}
+          experimentalBlurMethod="dimezisBlurView"
+          pointerEvents="none"
+          // Opacity last, as in the animated pair: the level this component
+          // resolved wins over anything `layerStyle` happens to carry.
+          style={[StyleSheet.absoluteFill, layerStyle, { opacity: staticOpacity }]}
+        />
+      ) : null}
+      <View
+        pointerEvents="none"
+        style={[
+          StyleSheet.absoluteFill,
+          { backgroundColor: dimColor },
+          layerStyle,
+          { opacity: staticOpacity * dimOpacity },
+        ]}
+      />
+    </>
+  );
+}
+
 /**
  * Full-bleed blur + dim that dismisses the surface when pressed.
  *
@@ -271,15 +376,14 @@ export const Backdrop = memo(function Backdrop({
   const staticOpacity = typeof styleOpacity === 'number' ? styleOpacity : 1;
   const resolvedDimColor = typeof styleBackground === 'string' ? styleBackground : dimColor;
 
-  // The fade lives on each LAYER, never on their shared ancestor.
-  const blurFade = useAnimatedStyle(
-    () => ({ opacity: (progress ? progress.value : 1) * staticOpacity }),
-    [progress, staticOpacity],
-  );
-  const dimFade = useAnimatedStyle(
-    () => ({ opacity: (progress ? progress.value : 1) * staticOpacity * dimOpacity }),
-    [progress, staticOpacity, dimOpacity],
-  );
+  const layerProps: BackdropLayerProps = {
+    blurIntensity,
+    blurTint,
+    dimColor: resolvedDimColor,
+    dimOpacity,
+    staticOpacity,
+    layerStyle,
+  };
 
   return (
     // `box-none` so this box never takes a press itself: the hit box below and
@@ -298,21 +402,16 @@ export const Backdrop = memo(function Backdrop({
         testID={testID}
         style={StyleSheet.absoluteFill}
       >
-        {blurIntensity > 0 ? (
-          <AnimatedBlurView
-            intensity={blurIntensity}
-            tint={blurTint}
-            // Android's default blur is a no-op on many devices; this is the
-            // implementation that actually renders there.
-            experimentalBlurMethod="dimezisBlurView"
-            pointerEvents="none"
-            style={[StyleSheet.absoluteFill, layerStyle, blurFade]}
-          />
-        ) : null}
-        <Animated.View
-          pointerEvents="none"
-          style={[StyleSheet.absoluteFill, { backgroundColor: resolvedDimColor }, layerStyle, dimFade]}
-        />
+        {/* Split into two components rather than branching inside one, so the
+            reanimated hooks stay unconditional AND a caller without a shared
+            value gets layers reanimated never touches. Which branch a call site
+            takes is fixed by whether it passes `progress` at all, so this never
+            swaps mid-life. */}
+        {progress ? (
+          <AnimatedBackdropLayers progress={progress} {...layerProps} />
+        ) : (
+          <StaticBackdropLayers {...layerProps} />
+        )}
       </Pressable>
       {children}
     </View>

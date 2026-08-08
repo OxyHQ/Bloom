@@ -85,8 +85,45 @@ function ThreeActionDemo() {
   );
 }
 
+/**
+ * The side-sheet placement, which is a DIFFERENT web surface from the centered
+ * card: it resolves `SheetSurface` in `Dialog.web.tsx`, whose entry animation is
+ * a CSS transition handed to the backdrop layers rather than a shared value.
+ *
+ * It needs its own story because that difference is exactly what broke. The
+ * layers used to be reanimated components, and on web reanimated routes a style
+ * carrying `transitionProperty` into its CSS transitions manager, which writes
+ * to `ref.style` — undefined on expo-blur's web `BlurView`, whose ref is a
+ * `setNativeProps`-only handle. Opening the sheet threw before it painted. Only
+ * a real browser sees it: jest mocks both packages, so the whole suite passed.
+ */
+function SideSheetDemo({ placement }: { placement: 'left' | 'right' }) {
+  const control = useDialogControl();
+  return (
+    <>
+      <Button onPress={() => control.open()}>Open {placement} sheet</Button>
+      <Dialog control={control} placement={placement} title="Store menu">
+        <View style={{ gap: 12 }}>
+          <Text>An anchored drawer, blurred and dimmed behind.</Text>
+          <Button variant="secondary" onPress={() => control.close()}>
+            Done
+          </Button>
+        </View>
+      </Dialog>
+    </>
+  );
+}
+
 export const Basic: Story = {
   render: () => <DeclarativeDemo />,
+};
+
+export const SideSheetLeft: Story = {
+  render: () => <SideSheetDemo placement="left" />,
+};
+
+export const SideSheetRight: Story = {
+  render: () => <SideSheetDemo placement="right" />,
 };
 
 export const CustomChildren: Story = {
