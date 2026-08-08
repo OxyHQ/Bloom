@@ -27,6 +27,22 @@ export type {
 
 export { bloomThemeCss, bloomThemeBlock } from './theme-css';
 
+/* The same tokens as a data structure rather than a stylesheet, for a consumer
+ * that is not a browser (`@oxyhq/bloom/design-tokens/tokens.json` is the
+ * generated artifact; these rebuild it in memory). Both come from the colour
+ * engine, so the JSON and the CSS cannot disagree. */
+export {
+  bloomDesignTokens,
+  renderBloomTokensJson,
+  resolvedColorToHex,
+} from './tokens-json';
+export type {
+  BloomDesignTokens,
+  DesignToken,
+  PresetExtensions,
+  PresetGroup,
+} from './tokens-json';
+
 /* The resolved counterpart of `bloomThemeCss()`. That emits the alias layer
  * (`--color-x: var(--x)`); these resolve `--x` itself, so a build script can
  * write a static `:root` / `.dark` block and a prerendered page paints the real

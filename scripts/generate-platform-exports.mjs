@@ -336,6 +336,12 @@ function buildExportsField() {
   // (included in the package `files` list) so no build copy is needed.
   out['./design-tokens/theme.css'] = './src/design-tokens/theme.css';
 
+  // The same tokens resolved, for a consumer that is not a browser (Astro
+  // codegens C++ SkColor tables from it). Generated from the colour engine by
+  // scripts/generate-design-tokens-json.ts and verified in
+  // src/__tests__/design-tokens-json.test.ts.
+  out['./design-tokens/tokens.json'] = './src/design-tokens/tokens.json';
+
   // Allow consumers / tooling to resolve the package.json itself.
   out['./package.json'] = './package.json';
 

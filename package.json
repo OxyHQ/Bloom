@@ -1,6 +1,6 @@
 {
   "name": "@oxyhq/bloom",
-  "version": "0.87.1",
+  "version": "0.88.0",
   "packageManager": "bun@1.3.14",
   "description": "Bloom UI — Oxy ecosystem component library for React Native + Expo + Web",
   "main": "lib/commonjs/index.js",
@@ -1386,6 +1386,7 @@
       }
     },
     "./design-tokens/theme.css": "./src/design-tokens/theme.css",
+    "./design-tokens/tokens.json": "./src/design-tokens/tokens.json",
     "./package.json": "./package.json"
   },
   "files": [
@@ -1454,7 +1455,8 @@
   "scripts": {
     "generate:exports": "node scripts/generate-platform-exports.mjs",
     "generate:theme-css": "bun scripts/generate-theme-css.ts",
-    "prebuild": "node scripts/generate-platform-exports.mjs && bun scripts/generate-theme-css.ts",
+    "generate:tokens-json": "bun scripts/generate-design-tokens-json.ts",
+    "prebuild": "node scripts/generate-platform-exports.mjs && bun scripts/generate-theme-css.ts && bun scripts/generate-design-tokens-json.ts",
     "build": "bob build",
     "postbuild": "node scripts/verify-package.mjs",
     "verify:package": "node scripts/verify-package.mjs",

@@ -97,6 +97,32 @@ the document root and a brand scope go through the same code path. Both
 functions are pure — no react, no react-native — so a plain node/bun script can
 import them.
 
+### Consumers that are not browsers
+
+A consumer that cannot run a stylesheet — native UI code, a design tool, a
+codegen step — reads the resolved tokens as data instead. Bloom ships them in
+W3C Design Tokens (DTCG) format, generated from the same colour engine, so the
+JSON and the CSS cannot disagree:
+
+```ts
+import tokens from '@oxyhq/bloom/design-tokens/tokens.json';
+
+tokens.color.oxy.dark.card.$value;    // '#251d26' — the value of --card
+tokens.color.teal.light.primary.$value; // '#1d6a75'
+tokens.spacing['space-8'].$value;     // '8px'
+tokens.typography.body.fontWeight.$value; // 400
+```
+
+`color.<preset>.<scheme>.<token>` covers every preset Bloom ships and both
+schemes. Token names are the CSS custom properties with the leading `--`
+removed, so the mapping to `getPresetVars` output is mechanical. Values are
+sRGB hex — `#rrggbb`, or `#rrggbbaa` for the translucent `-subtle` family.
+Font families and shadows are deliberately absent: families resolve to
+`var(--bloom-font-*)`, which is meaningless off the web, and shadows ship as a
+platform-forked style object (`bloomShadowStyle`). If you need the same data in
+memory rather than from the file, `bloomDesignTokens()` from
+`@oxyhq/bloom/design-tokens` returns it.
+
 ## Color roles
 
 | Utility | Role | Canonical token |

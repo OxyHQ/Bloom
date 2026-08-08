@@ -37,7 +37,11 @@ const pkg = JSON.parse(readFileSync(PKG_PATH, 'utf8')) as {
 const exportsMap = pkg.exports;
 
 /** Non-subpath entries that are legitimately plain strings (static assets). */
-const STRING_ENTRIES = ['./design-tokens/theme.css', './package.json'];
+const STRING_ENTRIES = [
+  './design-tokens/theme.css',
+  './design-tokens/tokens.json',
+  './package.json',
+];
 
 /**
  * Vacuity floor. `SUBPATHS` in the generator is 86 entries today; a traversal

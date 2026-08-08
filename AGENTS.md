@@ -194,6 +194,41 @@ Rules:
 - Both resolvers are pure (no react / react-native) so build scripts can import them from plain node/bun — gated by a static import-graph scan in the same test file. Adding a value import of either package to that graph breaks every consumer's theme generation.
 - Full docs at `docs/design-tokens.mdx`.
 
+## Design Token JSON (consumers that are not browsers)
+
+`@oxyhq/bloom/design-tokens/tokens.json` is every token RESOLVED, in W3C DTCG
+format, for a consumer that cannot run a stylesheet — Astro codegens Chromium
+`SkColor` tables from it so the browser's native toolbar and its WebUI pages
+cannot disagree about what "primary" is. Same single source as `theme.css` and
+the runtime palette: Bloom's colour engine, via `getResolvedTokens`.
+
+- **Shape contract** (consumers codegen against these paths, so additions are
+  additive and existing paths do not move):
+  `color.<preset>.<scheme>.<token>.$value`, where `<preset>` is an
+  `AppColorName`, `<scheme>` is `light` or `dark`, and `<token>` is the CSS
+  custom property with its leading `--` removed — `color.oxy.dark.card` is
+  `--card` under `oxy` in dark. Values are sRGB hex: `#rrggbb`, or `#rrggbbaa`
+  when the token carries alpha (only the `-subtle` family does). Alongside it,
+  `spacing` / `radius` / `borderWidth` are DTCG dimensions (`"8px"`), and
+  `typography.<role>` carries `fontSize`, `lineHeight` and a numeric
+  `fontWeight`. Each preset group's `$extensions["so.oxy.bloom"]` records the
+  `seed`, the `variant`, and `gate`/`label` when set.
+- **Font families and shadows are deliberately absent.** Families resolve to
+  `var(--bloom-font-*)`, which a non-browser consumer cannot use; shadows ship
+  as a platform-forked style object (`bloomShadowStyle`), not as a value.
+- **Generated, never hand-edited.** `scripts/generate-design-tokens-json.ts`
+  writes it from `renderBloomTokensJson()` (`design-tokens/tokens-json.ts`),
+  wired into `prebuild` next to the theme.css generator;
+  `src/__tests__/design-tokens-json.test.ts` fails unless the checked-in file is
+  byte-identical to a fresh render. `resolvedColorToHex` THROWS on any value the
+  engine emits that is not `rgb()`/`rgba()` — a third form would otherwise reach
+  a C++ colour table as an unparseable string, and generation time is the only
+  place anyone would notice.
+- Both string exports (`./design-tokens/theme.css`, `./design-tokens/tokens.json`)
+  are declared in `scripts/generate-platform-exports.mjs`, which OWNS
+  `package.json#exports` — adding one to `package.json` by hand is silently
+  reverted by the next `prebuild`.
+
 ## Theme System
 
 `BloomThemeProvider` manages color presets and light/dark mode:
