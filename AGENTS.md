@@ -44,7 +44,7 @@ Wiring: Expo/Metro apps import `@oxyhq/app-preset/css/base.css` at the top of `g
 
 **`index.ts` is a PURE BARREL. `<Pascal>.tsx` holds the implementation, `types.ts` the props.** An index that is both barrel and implementation makes a family's public surface invisible — anything it exports becomes API by being written rather than decided. Gate: `family-layout.test.ts`.
 
-- **The FACTORY layout is the one exception.** A web-forked family whose fork differs only in which component it is BUILT FROM can't express that as a re-export: `alert-dialog`, `combobox`, `command`, `surfaces`, `tab-bar` call `createAlertDialog(Dialog)` etc. in their barrels, each binding the platform's own. The gate's exemption list for these is an EQUALITY, not a floor.
+- **The FACTORY layout is the one exception.** A web-forked family whose fork differs only in which component it is BUILT FROM can't express that as a re-export — as a normal import, the shared implementation would have to import the surface that imports it. `alert-dialog`, `combobox`, `command`, `surfaces`, `tab-bar` call `createAlertDialog(Dialog)` etc. in their barrels, each binding the platform's own. The gate's exemption list for these is an EQUALITY, not a floor.
 - **A barrel is `.ts`** — no JSX to justify `.tsx`.
 - **File names:** hooks `use-kebab-case.ts`, context module `context.ts`, constants `constants.ts` (never `const.ts`), cross-fork module `shared.ts`.
 
@@ -55,7 +55,7 @@ Wiring: Expo/Metro apps import `@oxyhq/app-preset/css/base.css` at the top of `g
 
 ## What the root barrel carries
 
-**A family is on `src/index.ts` unless importing it would add a PACKAGE to the barrel's graph** — Metro doesn't tree-shake, so an unmet REQUIRED peer is a build failure, not a degradation. Three families fail that: `tab-bar` (`expo-glass-effect`+`expo-symbols`), `provider` (`expo-router`, via `scroll/expo-router` — making `BloomProvider` expo-router-only BY CONSTRUCTION) and `zoomable-image-gallery` (`expo-image`). Gate: `root-barrel-graph.test.ts`, counting STATIC imports only. A family with generic collision-prone exports comes in as a namespace, not loose top-level verbs.
+**A family is on `src/index.ts` unless importing it would add a PACKAGE to the barrel's graph** — Metro doesn't tree-shake, so an unmet REQUIRED peer is a build failure, not a degradation. Three families fail that: `tab-bar` (`expo-glass-effect`+`expo-symbols`), `provider` (`expo-router`, via `scroll/expo-router` — making `BloomProvider` expo-router-only BY CONSTRUCTION) and `zoomable-image-gallery` (`expo-image`). Gate: `root-barrel-graph.test.ts`, counting STATIC imports only — `theme/adaptive-colors.ts` names `expo-router` through the optional-`require` boundary and links nothing, which is the only reason the gate is falsifiable. A family with generic collision-prone exports comes in as a namespace, not loose top-level verbs.
 
 ## App root provider
 
