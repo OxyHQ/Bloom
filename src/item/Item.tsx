@@ -42,6 +42,7 @@ const ItemComponent = function Item({
   accessibilityHint,
   accessibilityRole,
   role,
+  expanded,
   testID,
 }: ItemProps) {
   const theme = useTheme();
@@ -112,21 +113,22 @@ const ItemComponent = function Item({
   );
 
   if (onPress || onLongPress) {
-    // `radio` is a role BOTH platforms have, so it travels on
+    // `radio` and `checkbox` are roles BOTH platforms have, so they travel on
     // `accessibilityRole` as well rather than being web-only like `option`.
-    const resolvedRole = accessibilityRole ?? (role === 'radio' ? 'radio' : 'button');
+    const resolvedRole =
+      accessibilityRole ?? (role === 'radio' || role === 'checkbox' ? role : 'button');
     // Web reads only `aria-*` — react-native-web never consults
     // `accessibilityState` — and ARIA scopes these states by role: `option`
-    // carries a SELECTED state, `radio` a CHECKED one, a `button` toggle a
-    // PRESSED one, and `menuitem`/`listitem` carry neither, so those emit
-    // nothing. React Native keeps reading `accessibilityState` below, which is
-    // why both are set.
+    // carries a SELECTED state, `radio`/`checkbox` a CHECKED one, a `button`
+    // toggle a PRESSED one, and `menuitem`/`listitem` carry neither, so those
+    // emit nothing. React Native keeps reading `accessibilityState` below,
+    // which is why both are set.
     const selectedAria =
       selected == null
         ? null
         : role === 'option'
           ? { 'aria-selected': selected }
-          : role === 'radio'
+          : role === 'radio' || role === 'checkbox'
             ? { 'aria-checked': selected }
             : role == null
               ? { 'aria-pressed': selected }
@@ -147,7 +149,11 @@ const ItemComponent = function Item({
           accessibilityLabel ?? (typeof title === 'string' ? title : undefined)
         }
         accessibilityHint={accessibilityHint}
-        accessibilityState={{ disabled, selected }}
+        accessibilityState={{ disabled, selected, expanded }}
+        // React Native folds `aria-expanded` back into `accessibilityState`,
+        // and react-native-web reads ONLY the flat prop — a disclosure row
+        // setting `accessibilityState.expanded` alone announces nothing on web.
+        aria-expanded={expanded}
         {...selectedAria}
         style={[
           disabled && styles.disabled,
