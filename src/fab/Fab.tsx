@@ -1,12 +1,15 @@
-import React, { memo, useMemo } from 'react';
+import React, { memo, useMemo, type ComponentType } from 'react';
 import {
   Animated,
   Pressable,
   Text,
   View,
+  type PressableProps,
+  type StyleProp,
   type TextStyle,
   type ViewStyle,
 } from 'react-native';
+import { styled } from 'react-native-css';
 
 import { useTheme } from '../theme/use-theme';
 import { borderRadius } from '../styles/tokens';
@@ -77,6 +80,51 @@ function placementStyle(placement: FabPlacement, offset: number): ViewStyle {
   }
   return style;
 }
+
+// ---------------------------------------------------------------------------
+//  The FAB renders ONE node — the same shape `Fab.web.tsx` renders (one
+//  `<button>` carrying `className`, `style` and every visual).
+//
+//  It used to be two, and the split was worse than the one `Button` had: the
+//  outer `Animated.View` held the placement, the `zIndex`, the press transform
+//  AND the caller's `style`, while the inner `Pressable` held `className` and
+//  the FAB's own chrome. So a caller's `style` and their `className` landed on
+//  DIFFERENT nodes, and every layout class applied inside a box that had already
+//  been positioned and sized by the wrapper. Nothing errored; the same call site
+//  behaved on web and did nothing on native.
+//
+//  See `button/Button.tsx` for the full reasoning, including why splitting
+//  classes by kind is not implementable and why both wrappers are built once at
+//  module scope.
+// ---------------------------------------------------------------------------
+
+/**
+ * Exactly the prop surface `Fab` hands to the pressable, and no wider — mapping
+ * `WithAnimatedValue` (or `styled()`'s dot-path union) over the whole of
+ * `PressableProps` overflows the checker with `TS2590`.
+ */
+type FabPressableProps = Pick<
+  PressableProps,
+  | 'accessibilityHint'
+  | 'accessibilityLabel'
+  | 'accessibilityRole'
+  | 'accessibilityState'
+  | 'children'
+  | 'className'
+  | 'disabled'
+  | 'hitSlop'
+  | 'onPress'
+  | 'onPressIn'
+  | 'onPressOut'
+  | 'testID'
+> & { style?: StyleProp<ViewStyle> };
+
+const FabPressable: ComponentType<FabPressableProps> = Pressable;
+
+const StyledPressable: ComponentType<FabPressableProps> = styled(FabPressable, {
+  className: 'style',
+});
+const AnimatedPressable = Animated.createAnimatedComponent(StyledPressable);
 
 const FabComponent: React.FC<FabProps> = ({
   onPress,
@@ -153,50 +201,51 @@ const FabComponent: React.FC<FabProps> = ({
       };
 
   return (
-    <Animated.View
+    <AnimatedPressable
+      className={className}
       style={[
         placementStyle(placement, offset),
-        { zIndex, transform: [{ scale: scaleAnim }] },
+        { zIndex },
+        containerStyle,
+        disabled && { opacity: 0.5 },
+        pressed && !disabled && { opacity: 0.9 },
+        // Before the caller's `style`, so `style` keeps winning the whole array
+        // the way it always has (and the way the web fork spreads it last). The
+        // cost is that a caller who sets `transform` replaces the press scale
+        // instead of composing with it — when the transform sat on a separate
+        // wrapper node the two multiplied.
+        { transform: [{ scale: scaleAnim }] },
         style,
       ]}
+      onPress={disabled ? undefined : onPress}
+      onPressIn={handlePressIn}
+      onPressOut={handlePressOut}
+      disabled={disabled}
+      hitSlop={HIT_SLOP}
+      accessibilityRole="button"
+      accessibilityLabel={accessibilityLabel ?? label}
+      accessibilityHint={accessibilityHint}
+      accessibilityState={{ disabled }}
+      testID={testID}
     >
-      <Pressable
-        {...(className ? ({ className } as Record<string, string>) : {})}
-        style={[
-          containerStyle,
-          disabled && { opacity: 0.5 },
-          pressed && !disabled && { opacity: 0.9 },
-        ]}
-        onPress={disabled ? undefined : onPress}
-        onPressIn={handlePressIn}
-        onPressOut={handlePressOut}
-        disabled={disabled}
-        hitSlop={HIT_SLOP}
-        accessibilityRole="button"
-        accessibilityLabel={accessibilityLabel ?? label}
-        accessibilityHint={accessibilityHint}
-        accessibilityState={{ disabled }}
-        testID={testID}
-      >
-        {content != null && (
-          <View
-            style={{
-              width: sizeConfig.iconBox,
-              height: sizeConfig.iconBox,
-              alignItems: 'center',
-              justifyContent: 'center',
-            }}
-          >
-            {content}
-          </View>
-        )}
-        {isExtended && (
-          <Text style={[labelTextStyle, labelStyle]} numberOfLines={1}>
-            {label}
-          </Text>
-        )}
-      </Pressable>
-    </Animated.View>
+      {content != null && (
+        <View
+          style={{
+            width: sizeConfig.iconBox,
+            height: sizeConfig.iconBox,
+            alignItems: 'center',
+            justifyContent: 'center',
+          }}
+        >
+          {content}
+        </View>
+      )}
+      {isExtended && (
+        <Text style={[labelTextStyle, labelStyle]} numberOfLines={1}>
+          {label}
+        </Text>
+      )}
+    </AnimatedPressable>
   );
 };
 

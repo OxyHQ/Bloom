@@ -1,11 +1,14 @@
-import React, { memo, useMemo } from 'react';
+import React, { memo, useMemo, type ComponentType } from 'react';
 import {
   Animated,
   Pressable,
   StyleSheet,
   View,
+  type PressableProps,
+  type StyleProp,
   type ViewStyle,
 } from 'react-native';
+import { styled } from 'react-native-css';
 import { BlurView } from 'expo-blur';
 
 import { useTheme } from '../theme/use-theme';
@@ -27,6 +30,40 @@ const DEFAULT_HIT_SLOP = { top: 8, bottom: 8, left: 8, right: 8 } as const;
 // BlurView intensity (0–100). A gentle frost so the chip reads over an image
 // without smearing the content behind it. The `active` (solid) state has none.
 const BLUR_INTENSITY = 24;
+
+// ---------------------------------------------------------------------------
+//  ONE node, like `Fab` and `Button` and like this component's own `.web.tsx`
+//  fork (a single `<button>`). It used to be an unstyled `Animated.View` holding
+//  the press transform and the caller's `style`, wrapping the `Pressable` that
+//  carried `className` and the chrome — so `style` and `className` landed on
+//  DIFFERENT nodes and every layout class applied inside a box the parent had
+//  already laid out. Silent on native, correct on web. Full reasoning in
+//  `button/Button.tsx`.
+// ---------------------------------------------------------------------------
+
+/** The prop surface handed to the pressable, narrowed to avoid `TS2590`. */
+type FrostedPressableProps = Pick<
+  PressableProps,
+  | 'accessibilityHint'
+  | 'accessibilityLabel'
+  | 'accessibilityRole'
+  | 'accessibilityState'
+  | 'children'
+  | 'className'
+  | 'disabled'
+  | 'hitSlop'
+  | 'onPress'
+  | 'onPressIn'
+  | 'onPressOut'
+  | 'testID'
+> & { style?: StyleProp<ViewStyle>; 'aria-pressed'?: boolean };
+
+const FrostedPressable: ComponentType<FrostedPressableProps> = Pressable;
+
+const StyledPressable: ComponentType<FrostedPressableProps> = styled(FrostedPressable, {
+  className: 'style',
+});
+const AnimatedPressable = Animated.createAnimatedComponent(StyledPressable);
 
 const FrostedIconButtonComponent: React.FC<FrostedIconButtonProps> = ({
   onPress,
@@ -98,52 +135,58 @@ const FrostedIconButtonComponent: React.FC<FrostedIconButtonProps> = ({
   const content = icon ?? children;
 
   return (
-    <Animated.View style={[{ transform: [{ scale: scaleAnim }] }, style]}>
-      <Pressable
-        {...(className ? ({ className } as Record<string, string>) : {})}
-        style={[containerStyle, disabled && styles.disabled]}
-        onPress={disabled ? undefined : onPress}
-        onPressIn={handlePressIn}
-        onPressOut={handlePressOut}
-        disabled={disabled}
-        hitSlop={hitSlop ?? DEFAULT_HIT_SLOP}
-        accessibilityRole="button"
-        accessibilityLabel={accessibilityLabel}
-        accessibilityHint={accessibilityHint}
-        // `aria-pressed` matches what the `.web.tsx` fork emits, so the same
-        // button announces the same state whichever fork a bundler picks.
-        // Both spellings are needed: react-native-web ignores
-        // `accessibilityState`, React Native has no `aria-pressed`.
-        accessibilityState={{ disabled, selected: active }}
-        aria-pressed={active}
-        testID={testID}
-      >
-        {/* Clip layer: blur (frosted only) + translucent/solid tint, rounded. */}
-        <View style={[StyleSheet.absoluteFill, styles.clip]}>
-          {!active && (
-            <BlurView
-              intensity={BLUR_INTENSITY}
-              tint={theme.isDark ? 'dark' : 'light'}
-              experimentalBlurMethod="dimezisBlurView"
-              style={StyleSheet.absoluteFill}
-            />
-          )}
-          <View style={[StyleSheet.absoluteFill, { backgroundColor: surface }]} />
-        </View>
-        {content != null && (
-          <View
-            style={{
-              width: geo.iconBox,
-              height: geo.iconBox,
-              alignItems: 'center',
-              justifyContent: 'center',
-            }}
-          >
-            {applyIconColor(content, iconColor)}
-          </View>
+    <AnimatedPressable
+      className={className}
+      style={[
+        containerStyle,
+        disabled && styles.disabled,
+        // Before the caller's `style`, so `style` still wins the array. A caller
+        // who sets `transform` now replaces the press scale instead of
+        // composing with it — the trade `Button` made for the same reason.
+        { transform: [{ scale: scaleAnim }] },
+        style,
+      ]}
+      onPress={disabled ? undefined : onPress}
+      onPressIn={handlePressIn}
+      onPressOut={handlePressOut}
+      disabled={disabled}
+      hitSlop={hitSlop ?? DEFAULT_HIT_SLOP}
+      accessibilityRole="button"
+      accessibilityLabel={accessibilityLabel}
+      accessibilityHint={accessibilityHint}
+      // `aria-pressed` matches what the `.web.tsx` fork emits, so the same
+      // button announces the same state whichever fork a bundler picks.
+      // Both spellings are needed: react-native-web ignores
+      // `accessibilityState`, React Native has no `aria-pressed`.
+      accessibilityState={{ disabled, selected: active }}
+      aria-pressed={active}
+      testID={testID}
+    >
+      {/* Clip layer: blur (frosted only) + translucent/solid tint, rounded. */}
+      <View style={[StyleSheet.absoluteFill, styles.clip]}>
+        {!active && (
+          <BlurView
+            intensity={BLUR_INTENSITY}
+            tint={theme.isDark ? 'dark' : 'light'}
+            experimentalBlurMethod="dimezisBlurView"
+            style={StyleSheet.absoluteFill}
+          />
         )}
-      </Pressable>
-    </Animated.View>
+        <View style={[StyleSheet.absoluteFill, { backgroundColor: surface }]} />
+      </View>
+      {content != null && (
+        <View
+          style={{
+            width: geo.iconBox,
+            height: geo.iconBox,
+            alignItems: 'center',
+            justifyContent: 'center',
+          }}
+        >
+          {applyIconColor(content, iconColor)}
+        </View>
+      )}
+    </AnimatedPressable>
   );
 };
 

@@ -28,6 +28,7 @@ import Animated, {
 import { BottomSheet, type BottomSheetRef } from '../bottom-sheet';
 import { Backdrop, OverlayRoot } from '../overlay';
 import { useTheme } from '../theme/use-theme';
+import { StyledView } from '../styles/styled-primitives';
 import { Context, useDialogControl } from './context';
 import { DialogBody } from './DialogContent';
 import { DialogBottomSheet } from './DialogBottomSheet';
@@ -56,6 +57,14 @@ import type {
   DialogProps,
 } from './types';
 
+
+/**
+ * The panel node carries `className`, the caller's `style`, the surface chrome
+ * AND the enter/exit transform, so all four are ONE element type — built once at
+ * module scope, because a type constructed during render remounts the subtree on
+ * every render. See `button/Button.tsx` for the full rule.
+ */
+const AnimatedStyledView = Animated.createAnimatedComponent(StyledView);
 
 /**
  * Native variant of `<Dialog>`.
@@ -348,12 +357,12 @@ function CenteredOrSideDialog({
       style={sheetStyle}
     >
       <Context.Provider value={context}>
-        <View
+        <StyledView
           testID={testID}
           accessibilityLabel={label}
           aria-labelledby={title ? titleId : undefined}
           aria-describedby={description ? descriptionId : undefined}
-          {...(panelClassName ? ({ className: panelClassName } as Record<string, string>) : {})}
+          className={panelClassName}
           style={[
             // Detached BottomSheet already adds `marginBottom: insets.bottom + 16`
             // to the sheet container — the floating card sits ABOVE the
@@ -371,7 +380,7 @@ function CenteredOrSideDialog({
           <DialogMorphContent morph={morphState}>
             {header ? headerBody : bodyNode}
           </DialogMorphContent>
-        </View>
+        </StyledView>
       </Context.Provider>
     </BottomSheet>
   );
@@ -514,10 +523,7 @@ function SideSheet({
   return (
     // `OverlayRoot` takes this drawer's place in the open-order overlay stack.
     // It mounts here, past the `mounted` guard, so the rank tracks OPENING.
-    <OverlayRoot
-      style={[sideStyles.root, containerStyle]}
-      {...(containerClassName ? ({ className: containerClassName } as Record<string, string>) : {})}
-    >
+    <OverlayRoot style={[sideStyles.root, containerStyle]} className={containerClassName}>
       <Backdrop
         testID={testID ? `${testID}-backdrop` : DIALOG_SHEET_BACKDROP_TESTID}
         accessibilityLabel={label ? `Dismiss ${label}` : 'Dismiss dialog'}
@@ -527,14 +533,14 @@ function SideSheet({
         style={sideStyles.backdrop}
       />
 
-      <Animated.View
+      <AnimatedStyledView
         accessibilityViewIsModal
         accessibilityLabel={label}
         aria-labelledby={title ? titleId : undefined}
         aria-describedby={description ? descriptionId : undefined}
         testID={testID}
         onLayout={measurePanel}
-        {...(panelClassName ? ({ className: panelClassName } as Record<string, string>) : {})}
+        className={panelClassName}
         style={[
           sideStyles.panel,
           // `shadowColor` is a valid RN style prop on native (Dialog.tsx is the
@@ -563,7 +569,7 @@ function SideSheet({
         ) : (
           <View style={{ padding: contentPadding }}>{children}</View>
         )}
-      </Animated.View>
+      </AnimatedStyledView>
     </OverlayRoot>
   );
 }

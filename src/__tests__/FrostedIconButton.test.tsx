@@ -1,5 +1,5 @@
 import React from 'react';
-import { Text, type ViewStyle } from 'react-native';
+import { Text, View, type ViewStyle } from 'react-native';
 import { render, fireEvent } from '@testing-library/react-native';
 
 import { BloomThemeProvider } from '../theme/BloomThemeProvider';
@@ -7,6 +7,12 @@ import { FrostedIconButton } from '../frosted-icon-button';
 import { buildTheme } from '../theme/build-theme';
 import { parseRgb } from '../theme/color-utils';
 import { resolveFrostedPalette, resolveFrostedSize } from '../frosted-icon-button/shared';
+import { borderRadius } from '../styles/tokens';
+import {
+  classNamesOn,
+  renderedChildren,
+  resolvedStyle,
+} from './support/rendered-style';
 
 function renderWithTheme(ui: React.ReactElement) {
   return render(
@@ -133,5 +139,42 @@ describe('FrostedIconButton palette math', () => {
     const geo = resolveFrostedSize(44);
     expect(geo.diameter).toBe(44);
     expect(geo.iconBox).toBe(Math.round(44 * 0.56));
+  });
+});
+
+// Regression: the same two-node shape `Button` and `Fab` carried — an unstyled
+// `Animated.View` holding the press transform and the caller's `style`, wrapping
+// the `Pressable` that held `className` and the chrome. `style` and `className`
+// therefore landed on different nodes and layout classes applied inside a box
+// the parent had already laid out. The `.web.tsx` fork renders one `<button>`.
+describe('layout: the button IS the node its parent lays out', () => {
+  it('renders the pressable as its outermost node — no wrapper in between', () => {
+    const { toJSON } = renderWithTheme(
+      <View testID="host">
+        <FrostedIconButton testID="fib" accessibilityLabel="Back" icon={<Text>x</Text>} />
+      </View>,
+    );
+    const rendered = renderedChildren(toJSON(), 'host');
+    expect(rendered).toHaveLength(1);
+    expect(rendered[0]?.props.testID).toBe('fib');
+    expect(rendered[0]?.props.accessibilityRole).toBe('button');
+  });
+
+  it('lands className, the caller style and the chrome on that one node', () => {
+    const { getByTestId } = renderWithTheme(
+      <FrostedIconButton
+        testID="fib"
+        className="flex-1"
+        style={{ marginTop: 7 }}
+        accessibilityLabel="Back"
+        icon={<Text>x</Text>}
+      />,
+    );
+    const style = getByTestId('fib').props.style;
+    expect(classNamesOn(style)).toContain('flex-1');
+    const resolved = resolvedStyle(style);
+    expect(resolved.borderRadius).toBe(borderRadius.full);
+    expect(resolved.marginTop).toBe(7);
+    expect(resolved.transform).toBeDefined();
   });
 });

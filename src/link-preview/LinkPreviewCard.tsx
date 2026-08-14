@@ -19,16 +19,16 @@
  * `ImageResolver` / `Avatar`, which resolve bare Oxy file IDs.
  */
 import React, { memo, useCallback, useMemo } from 'react';
-import {
-  View,
-  Text,
-  Image,
-  Pressable,
-  Linking,
-} from 'react-native';
+import { Linking } from 'react-native';
 
 import { useTheme } from '../theme/use-theme';
 import { useInteractionState } from '../hooks/use-interaction-state';
+import {
+  StyledImage,
+  StyledPressable,
+  StyledText,
+  StyledView,
+} from '../styles/styled-primitives';
 import { RADIUS } from '../design-tokens/scales';
 import type { LinkPreviewCardProps } from './types';
 
@@ -89,8 +89,8 @@ const LinkPreviewCardComponent: React.FC<LinkPreviewCardProps> = ({
     .join(' ');
 
   return (
-    <Pressable
-      {...({ className: surfaceClass } as Record<string, string>)}
+    <StyledPressable
+      className={surfaceClass}
       style={[
         { borderRadius: RADIUS['radius-20'] },
         pressed && { opacity: PRESSED_OPACITY },
@@ -103,10 +103,10 @@ const LinkPreviewCardComponent: React.FC<LinkPreviewCardProps> = ({
       accessibilityLabel={displayTitle}
     >
       {image ? (
-        <Image
+        <StyledImage
           source={{ uri: image }}
           resizeMode="cover"
-          {...({ className: 'w-full' } as Record<string, string>)}
+          className="w-full"
           style={{
             // Fill-height mode: flex into the card's bounding height (supplied
             // by the consumer via `style`), letting the text block stay a
@@ -117,42 +117,35 @@ const LinkPreviewCardComponent: React.FC<LinkPreviewCardProps> = ({
         />
       ) : null}
 
-      <View {...({ className: 'p-3' } as Record<string, string>)}>
+      <StyledView className="p-3">
         {displaySiteName ? (
-          <Text
+          <StyledText
             numberOfLines={1}
-            {...({
-              className:
-                'text-xs font-medium uppercase tracking-wide text-muted-foreground',
-            } as Record<string, string>)}
+            className="text-xs font-medium uppercase tracking-wide text-muted-foreground"
           >
             {displaySiteName}
-          </Text>
+          </StyledText>
         ) : null}
 
         {displayTitle ? (
-          <Text
+          <StyledText
             numberOfLines={2}
-            {...({
-              className: 'text-[15px] font-semibold text-foreground mt-1',
-            } as Record<string, string>)}
+            className="text-[15px] font-semibold text-foreground mt-1"
           >
             {displayTitle}
-          </Text>
+          </StyledText>
         ) : null}
 
         {description ? (
-          <Text
+          <StyledText
             numberOfLines={2}
-            {...({
-              className: 'text-[13px] leading-[18px] text-muted-foreground mt-1',
-            } as Record<string, string>)}
+            className="text-[13px] leading-[18px] text-muted-foreground mt-1"
           >
             {description}
-          </Text>
+          </StyledText>
         ) : null}
-      </View>
-    </Pressable>
+      </StyledView>
+    </StyledPressable>
   );
 };
 

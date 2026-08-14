@@ -1,8 +1,9 @@
 import React from 'react';
-import { Platform, StyleSheet, View, type StyleProp, type ViewStyle } from 'react-native';
+import { Platform, StyleSheet } from 'react-native';
 
 import { useTheme } from '../theme';
 import { IS_WEB_TOUCH_DEVICE } from '../styles/pointer';
+import { StyledView } from '../styles/styled-primitives';
 import type { SubtleHoverProps } from './types';
 
 /**
@@ -30,11 +31,8 @@ export function SubtleHover({ active, style, native = false }: SubtleHoverProps)
     // neither does touch web — render nothing there.
     if (!isWeb || IS_WEB_TOUCH_DEVICE) return null;
     return (
-      <View
-        {...({
-          className:
-            'opacity-0 group-hover:opacity-50 dark:group-hover:opacity-40 transition-opacity duration-150',
-        } as Record<string, string>)}
+      <StyledView
+        className="opacity-0 group-hover:opacity-50 dark:group-hover:opacity-40 transition-opacity duration-150"
         style={[styles.overlay, { backgroundColor: theme.colors.contrast50 }, style]}
       />
     );
@@ -43,8 +41,8 @@ export function SubtleHover({ active, style, native = false }: SubtleHoverProps)
   // JS-driven coordinated mode: web always; native only when opted in.
   if (!isWeb && !native) return null;
   return (
-    <View
-      {...({ className: 'transition-opacity duration-150' } as Record<string, string>)}
+    <StyledView
+      className="transition-opacity duration-150"
       style={[
         styles.overlay,
         {

@@ -31,8 +31,9 @@
  * native `src/**`) picks them up.
  */
 import React, { memo } from 'react';
-import { View, type StyleProp, type ViewStyle } from 'react-native';
+import { type StyleProp, type ViewStyle } from 'react-native';
 
+import { StyledView } from '../styles/styled-primitives';
 import {
   ContentPanelNestingContext,
   useContentPanelNestingGuard,
@@ -92,17 +93,11 @@ const ContentPanelComponent: React.FC<ContentPanelProps> = ({
 
   return (
     <ContentPanelNestingContext.Provider value={true}>
-      <View
-        {...({ className: surfaceClass } as Record<string, string>)}
-        style={surfaceStyle}
-      >
-        <View
-          {...({ className: contentClass } as Record<string, string>)}
-          style={contentStyle}
-        >
+      <StyledView className={surfaceClass} style={surfaceStyle}>
+        <StyledView className={contentClass} style={contentStyle}>
           {children}
-        </View>
-      </View>
+        </StyledView>
+      </StyledView>
     </ContentPanelNestingContext.Provider>
   );
 };

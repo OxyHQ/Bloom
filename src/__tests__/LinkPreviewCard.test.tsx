@@ -4,6 +4,7 @@ import { render, fireEvent } from '@testing-library/react-native';
 
 import { BloomThemeProvider } from '../theme/BloomThemeProvider';
 import { LinkPreviewCard } from '../link-preview';
+import { resolvedStyle } from './support/rendered-style';
 
 function renderWithTheme(ui: React.ReactElement) {
   return render(
@@ -66,7 +67,9 @@ describe('LinkPreviewCard', () => {
         image="https://cdn.example.com/og.png"
       />,
     );
-    const imageStyle = UNSAFE_getByType(Image).props.style as Record<string, unknown>;
+    // Flattened: the cover goes through `styled()`, so its `style` arrives as
+    // an array with the class descriptor merged in rather than one object.
+    const imageStyle = resolvedStyle(UNSAFE_getByType(Image).props.style);
     expect(imageStyle.height).toBe(160);
     expect(imageStyle.flex).toBeUndefined();
   });
@@ -81,7 +84,9 @@ describe('LinkPreviewCard', () => {
         style={{ height: 180 }}
       />,
     );
-    const imageStyle = UNSAFE_getByType(Image).props.style as Record<string, unknown>;
+    // Flattened: the cover goes through `styled()`, so its `style` arrives as
+    // an array with the class descriptor merged in rather than one object.
+    const imageStyle = resolvedStyle(UNSAFE_getByType(Image).props.style);
     expect(imageStyle.flex).toBe(1);
     expect(imageStyle.height).toBeUndefined();
   });

@@ -24,6 +24,7 @@ import Animated, {
 import { RemoveScrollBar } from 'react-remove-scroll-bar';
 
 import { Backdrop, OverlayRoot } from '../overlay';
+import { StyledView } from '../styles/styled-primitives';
 import { Portal } from '../portal/index.web';
 import { adoptStyleSheet } from '../styles/adopt-style-sheet';
 import { Z_INDEX } from '../styles/z-index';
@@ -704,10 +705,7 @@ function SheetSurface({
   }, [dismissOnBackdrop, onDismiss]);
 
   return (
-    <OverlayRoot
-      style={[sheetStyles.root, containerStyle]}
-      {...(containerClassName ? ({ className: containerClassName } as Record<string, string>) : {})}
-    >
+    <OverlayRoot style={[sheetStyles.root, containerStyle]} className={containerClassName}>
       <Backdrop
         testID={testID ? `${testID}-backdrop` : DIALOG_SHEET_BACKDROP_TESTID}
         accessibilityLabel={label ? `Dismiss ${label}` : 'Dismiss dialog'}
@@ -720,7 +718,7 @@ function SheetSurface({
         style={[sheetStyles.backdrop, { opacity: visible ? 1 : 0 }]}
       />
 
-      <View
+      <StyledView
         role="dialog"
         aria-label={label}
         aria-labelledby={title ? titleId : undefined}
@@ -730,7 +728,7 @@ function SheetSurface({
         onStartShouldSetResponder={() => true}
         onResponderRelease={stopPropagation}
         {...({ onClick: stopPropagation } as Record<string, unknown>)}
-        {...(panelClassName ? ({ className: panelClassName } as Record<string, string>) : {})}
+        className={panelClassName}
         style={[
           sheetStyles.panel,
           {
@@ -798,7 +796,7 @@ function SheetSurface({
             </DialogBody>
           </View>
         )}
-      </View>
+      </StyledView>
     </OverlayRoot>
   );
 }

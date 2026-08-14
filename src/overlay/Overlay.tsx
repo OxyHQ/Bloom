@@ -52,6 +52,7 @@ import {
 import Animated, { useAnimatedStyle, type SharedValue } from 'react-native-reanimated';
 
 import { WEB_POSITION_FIXED } from '../styles/web-view-style';
+import { StyledView } from '../styles/styled-primitives';
 import { layerForRank, type OverlayLayer } from './stack';
 import { useOverlayLayer } from './use-overlay-layer';
 import type { OverlayRootProps, BackdropProps } from './types';
@@ -105,27 +106,32 @@ export const BACKDROP_DIM_OPACITY = 0.28;
  * every Bloom surface already puts it. Descendants that need to order
  * themselves within the surface read `useOverlayLayerContext()`.
  */
-export function OverlayRoot({ children, style, testID, zIndex }: OverlayRootProps) {
+export function OverlayRoot({ children, className, style, testID, zIndex }: OverlayRootProps) {
   // Split into two components rather than branching on the hook: a pinned root
   // must not CONSUME a rank either. The toast host is pinned and mounts for the
   // whole life of the app, so holding a rank would keep the live set permanently
   // non-empty — the counter would never reset and depths would climb for the
   // rest of the session.
   return zIndex === undefined ? (
-    <StackedOverlayRoot style={style} testID={testID}>
+    <StackedOverlayRoot className={className} style={style} testID={testID}>
       {children}
     </StackedOverlayRoot>
   ) : (
-    <PinnedOverlayRoot zIndex={zIndex} style={style} testID={testID}>
+    <PinnedOverlayRoot zIndex={zIndex} className={className} style={style} testID={testID}>
       {children}
     </PinnedOverlayRoot>
   );
 }
 
-function StackedOverlayRoot({ children, style, testID }: Omit<OverlayRootProps, 'zIndex'>) {
+function StackedOverlayRoot({
+  children,
+  className,
+  style,
+  testID,
+}: Omit<OverlayRootProps, 'zIndex'>) {
   const layer = useOverlayLayer();
   return (
-    <OverlayRootView layer={layer} style={style} testID={testID}>
+    <OverlayRootView layer={layer} className={className} style={style} testID={testID}>
       {children}
     </OverlayRootView>
   );
@@ -133,6 +139,7 @@ function StackedOverlayRoot({ children, style, testID }: Omit<OverlayRootProps, 
 
 function PinnedOverlayRoot({
   children,
+  className,
   style,
   testID,
   zIndex,
@@ -144,7 +151,7 @@ function PinnedOverlayRoot({
     [zIndex],
   );
   return (
-    <OverlayRootView layer={layer} style={style} testID={testID}>
+    <OverlayRootView layer={layer} className={className} style={style} testID={testID}>
       {children}
     </OverlayRootView>
   );
@@ -152,19 +159,24 @@ function PinnedOverlayRoot({
 
 function OverlayRootView({
   children,
+  className,
   style,
   testID,
   layer,
 }: Omit<OverlayRootProps, 'zIndex'> & { layer: OverlayLayer }) {
   return (
     <OverlayLayerContext.Provider value={layer}>
-      <View
+      {/* `pointerEvents` stays a PROP: react-native-web resolves the RN-only
+          `box-none` from the prop path only, and as a style entry it is silently
+          dropped — which makes the whole portaled surface click-through. */}
+      <StyledView
         pointerEvents="box-none"
+        className={className}
         style={[styles.root, { zIndex: layer.root }, style]}
         testID={testID}
       >
         {children}
-      </View>
+      </StyledView>
     </OverlayLayerContext.Provider>
   );
 }

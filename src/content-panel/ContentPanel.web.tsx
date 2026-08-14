@@ -52,7 +52,9 @@
  * `md:` parts — whole class strings are selected per mode instead).
  */
 import React, { memo } from 'react';
-import { View, type StyleProp, type ViewStyle } from 'react-native';
+import { type StyleProp, type ViewStyle } from 'react-native';
+
+import { StyledView } from '../styles/styled-primitives';
 
 import { useTheme } from '../theme/use-theme';
 import {
@@ -151,50 +153,43 @@ const ContentPanelComponent: React.FC<ContentPanelProps> = ({
 
   return (
     <ContentPanelNestingContext.Provider value={true}>
-      <View
-        {...({ className: surfaceClass } as Record<string, string>)}
-        style={surfaceStyle}
-      >
+      <StyledView className={surfaceClass} style={surfaceStyle}>
         {/* (1) Bleed-mask overlay — gutter box-shadow ring, below chrome. Not
             rendered when never-framed; `max-md:hidden` (display:none <md) when
             responsive, so the breakpoint is decided in CSS, not by remounting. */}
         {showOverlays && (
-          <View
+          <StyledView
             key="bleed-mask"
             pointerEvents="none"
-            {...({
-              className: responsive
+            className={
+              responsive
                 ? `web:sticky web:top-2 z-30 h-[calc(100dvh-16px)] w-full rounded-radius-28 ${bp.overlayHidden} web:[margin-bottom:calc(-100dvh+16px)] web:[clip-path:inset(-12px)]`
-                : 'web:sticky web:top-2 z-30 h-[calc(100dvh-16px)] w-full rounded-radius-28 web:[margin-bottom:calc(-100dvh+16px)] web:[clip-path:inset(-12px)]',
-            } as Record<string, string>)}
+                : 'web:sticky web:top-2 z-30 h-[calc(100dvh-16px)] w-full rounded-radius-28 web:[margin-bottom:calc(-100dvh+16px)] web:[clip-path:inset(-12px)]'
+            }
             style={{ boxShadow: `0 0 0 ${GUTTER_MASK_SPREAD}px ${maskColor ?? colors.background}` }}
           />
         )}
         {/* (2) Border-frame overlay — one continuous rounded border, above all.
             Same visibility gating as the bleed-mask. */}
         {showOverlays && showStickyFrame !== false && (
-          <View
+          <StyledView
             key="border-frame"
             pointerEvents="none"
-            {...({
-              className: responsive
+            className={
+              responsive
                 ? `web:sticky web:top-2 z-[120] h-[calc(100dvh-16px)] w-full rounded-radius-28 border border-border ${bp.overlayHidden} web:[margin-bottom:calc(-100dvh+16px)]`
-                : 'web:sticky web:top-2 z-[120] h-[calc(100dvh-16px)] w-full rounded-radius-28 border border-border web:[margin-bottom:calc(-100dvh+16px)]',
-            } as Record<string, string>)}
+                : 'web:sticky web:top-2 z-[120] h-[calc(100dvh-16px)] w-full rounded-radius-28 border border-border web:[margin-bottom:calc(-100dvh+16px)]'
+            }
           />
         )}
         {/* Content wrapper — STABLE position + key so toggling `framed` reconciles
             in place instead of remounting `{children}` (which would reset feed
             scroll/virtualizer + refetch on a breakpoint cross). Clipped to the
             rounded panel shape on web when framed. */}
-        <View
-          key="content"
-          {...({ className: contentClass } as Record<string, string>)}
-          style={contentStyle}
-        >
+        <StyledView key="content" className={contentClass} style={contentStyle}>
           {children}
-        </View>
-      </View>
+        </StyledView>
+      </StyledView>
     </ContentPanelNestingContext.Provider>
   );
 };

@@ -16,6 +16,7 @@ import { type AnimatedStyle } from 'react-native-reanimated';
 
 import { BottomSheet, type BottomSheetRef } from '../bottom-sheet';
 import { useTheme } from '../theme/use-theme';
+import { StyledView } from '../styles/styled-primitives';
 import { Context } from './context';
 import { DialogBody } from './DialogContent';
 import {
@@ -290,13 +291,16 @@ export function DialogBottomSheet({
       style={sheetStyle}
     >
       <Context.Provider value={context}>
-        <View
+        <StyledView
           testID={testID}
           accessibilityLabel={label}
           aria-labelledby={title ? titleId : undefined}
           aria-describedby={description ? descriptionId : undefined}
-          {...(containerClassName ? ({ className: containerClassName } as Record<string, string>) : {})}
-          {...(panelClassName ? ({ className: panelClassName } as Record<string, string>) : {})}
+          // Bottom placement renders ONE node for both, so the two classes are
+          // joined rather than spread twice — the second spread used to
+          // overwrite the first, so `containerClassName` was silently dropped on
+          // this branch and the cast type-checked it anyway.
+          className={[containerClassName, panelClassName].filter(Boolean).join(' ') || undefined}
           style={[
             // Nav-header mode: the large title + screens own their padding, so the
             // wrapper adds none. Otherwise the Dialog's uniform content padding.
@@ -314,7 +318,7 @@ export function DialogBottomSheet({
           <DialogMorphContent morph={morphState}>
             {header ? headerBody : dialogBody}
           </DialogMorphContent>
-        </View>
+        </StyledView>
       </Context.Provider>
     </BottomSheet>
   );

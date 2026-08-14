@@ -1,13 +1,9 @@
 import React, { memo } from 'react';
-import {
-  View,
-  type StyleProp,
-  type TextStyle,
-  type ViewStyle,
-} from 'react-native';
+import { View, type StyleProp, type TextStyle, type ViewStyle } from 'react-native';
 
 import { useTheme } from '../theme/use-theme';
 import { atoms as a } from '../styles';
+import { StyledView } from '../styles/styled-primitives';
 import { bloomShadowStyle } from '../design-tokens/shadows';
 import { TYPOGRAPHY, RADIUS, SPACING, BORDER_WIDTH } from '../design-tokens/scales';
 import { Text } from '../typography';
@@ -69,8 +65,8 @@ const BenefitRowComponent: React.FC<BenefitRowProps> = ({
   ];
 
   return (
-    <View
-      {...(className ? ({ className } as Record<string, string>) : {})}
+    <StyledView
+      className={className}
       style={rowStyle}
       accessibilityLabel={a11y}
       {...(a11y ? { accessibilityRole: 'text' as const } : {})}>
@@ -78,7 +74,7 @@ const BenefitRowComponent: React.FC<BenefitRowProps> = ({
         {icon}
       </View>
       <Text style={captionStyle}>{content}</Text>
-    </View>
+    </StyledView>
   );
 };
 
@@ -118,12 +114,12 @@ const BenefitListComponent: React.FC<BenefitListProps> = ({
   ];
 
   return (
-    <View
-      {...(className ? ({ className } as Record<string, string>) : {})}
+    <StyledView
+      className={className}
       style={cardStyle}
       accessibilityLabel={accessibilityLabel}>
       {children}
-    </View>
+    </StyledView>
   );
 };
 

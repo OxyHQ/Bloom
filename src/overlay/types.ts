@@ -7,6 +7,15 @@ export interface OverlayRootProps {
   style?: StyleProp<ViewStyle>;
   testID?: string;
   /**
+   * NativeWind / DOM class for the surface's outermost node.
+   *
+   * A real prop, forwarded to a `styled()` view. Callers used to smuggle it in
+   * as `{...({ className } as Record<string, string>)}`, which type-checks
+   * against nothing — `OverlayRoot` never destructured it, so `Dialog`'s
+   * `containerClassName` reached this component and was dropped on the floor.
+   */
+  className?: string;
+  /**
    * Opt OUT of the open-order stack and pin to a fixed depth. Only the toast
    * layer does this — a notification has to stay visible over whatever is open,
    * including a surface opened after it. Everything else must leave this unset

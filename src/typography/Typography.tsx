@@ -8,7 +8,7 @@ import {
 import { useTheme } from '../theme/use-theme';
 import { fontFamilies } from '../fonts/tokens';
 import { mergeTypographyStyle, typographyDefaultsWhenNoClassName } from './defaults';
-import { getInteropText } from './styled-text';
+import { StyledText } from '../styles/styled-primitives';
 import type { TextProps } from './types';
 
 /**
@@ -46,11 +46,10 @@ const DEFAULT_TEXT_TYPOGRAPHY: TextStyle = {
  */
 const TextComponent = function Text({ children, style, className, ...rest }: TextProps) {
   const { colors } = useTheme();
-  const InteropText = getInteropText();
   const trimmedClassName = className?.trim() ? className : undefined;
 
   return (
-    <InteropText
+    <StyledText
       {...rest}
       {...(trimmedClassName ? { className: trimmedClassName } : {})}
       style={mergeTypographyStyle(
@@ -61,7 +60,7 @@ const TextComponent = function Text({ children, style, className, ...rest }: Tex
       )}
     >
       {children}
-    </InteropText>
+    </StyledText>
   );
 };
 

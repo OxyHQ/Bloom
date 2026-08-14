@@ -91,7 +91,7 @@ const SCALE_VARIANTS = new Set<string>(['primary', 'secondary', 'inverse']);
 //  `styled()` comes from Bloom's own `react-native-css` dependency rather than
 //  passing `className` as a bare prop and hoping the consumer's NativeWind
 //  interop recognises a component Bloom built at module scope. Same reasoning,
-//  and the same silent failure if skipped, as `typography/styled-text.ts`.
+//  and the same silent failure if skipped, as `styles/styled-primitives.ts`.
 //
 //  Both wrappers are built ONCE at module scope so the element type is stable
 //  across renders — one built during render remounts the subtree every time.
