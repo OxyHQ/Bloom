@@ -6,7 +6,7 @@ import { Slider } from './Slider';
 import { Text } from '../typography';
 
 const meta: Meta = {
-  title: 'Components/Slider',
+  title: 'Forms/Slider',
 };
 
 export default meta;

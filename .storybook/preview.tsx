@@ -77,26 +77,32 @@ const preview: Preview = {
       },
     },
     options: {
+      /**
+       * ONE taxonomy, so a reader can predict where a family lives before
+       * looking. The rule per group, in the order they appear:
+       *
+       *   Foundations   not a component you place — theme, tokens, type, icons,
+       *                 motion, fonts, resolvers, the app root provider, hooks
+       *   Layout        structure and space
+       *   Actions       things you press
+       *   Forms         things you fill in or choose with
+       *   Navigation    moving between places or sections
+       *   Overlays      surfaces YOU open, on top of the page
+       *   Feedback      surfaces the SYSTEM shows you, and state indicators
+       *   Data Display  things that show you something
+       */
       storySort: {
         order: [
           'Introduction',
           'Foundations',
-          ['Theme', 'Typography', 'Icons'],
-          'Components',
-          [
-            'Button',
-            'Dialog',
-            'BottomSheet',
-            'Toast',
-            'Avatar',
-            'TextField',
-            'Loading',
-            'Menu',
-            'Select',
-            'ContextMenu',
-            'PromptInput',
-            'SettingsList',
-          ],
+          ['Theme', 'Design Tokens', 'Typography', 'Icons', 'Motion'],
+          'Layout',
+          'Actions',
+          'Forms',
+          'Navigation',
+          'Overlays',
+          'Feedback',
+          'Data Display',
         ],
       },
     },

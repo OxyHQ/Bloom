@@ -1,4 +1,4 @@
-import React, { memo, useMemo } from 'react';
+import React, { memo } from 'react';
 import {
   Pressable,
   StyleSheet,
@@ -8,10 +8,10 @@ import {
 } from 'react-native';
 
 import { Avatar } from '../avatar';
+import { Card } from '../card';
 import { VerifiedCheck } from '../icons/VerifiedCheck';
 import { useTheme } from '../theme/use-theme';
-import { borderRadius, fontSize, space } from '../styles/tokens';
-import { bloomShadowStyle } from '../design-tokens/shadows';
+import { fontSize, space } from '../styles/tokens';
 import type { UserHoverCardProps } from './types';
 
 const AVATAR_SIZE = 48;
@@ -32,23 +32,15 @@ const UserHoverCardComponent: React.FC<UserHoverCardProps> = ({
 }) => {
   const theme = useTheme();
 
-  const cardStyle = useMemo((): ViewStyle => {
-    const base: ViewStyle = {
-      backgroundColor: theme.colors.card,
-      borderRadius: borderRadius.lg,
-      borderWidth: StyleSheet.hairlineWidth,
-      borderColor: theme.colors.border,
-      padding: space.lg,
-      width: 280,
-    };
-
-    // `shadow-m` is the overlay role — menus, popovers, dialogs, and this card,
-    // which is one. The token owns the platform split, so the hand-rolled
-    // `Platform.OS` branch goes with it.
-    Object.assign(base, bloomShadowStyle('m'));
-
-    return base;
-  }, [theme]);
+  // Layout only — the chrome (card background, hairline border, `shadow-m`, the
+  // `radius-16` rung) is `Card`'s. `overflow: 'visible'` restores the RN default
+  // that `Card` overrides: this card clips nothing, and leaving it hidden would
+  // change what an Android elevation draws under a rounded, clipped view.
+  const layoutStyle: ViewStyle = {
+    padding: space.lg,
+    width: 280,
+    overflow: 'visible',
+  };
 
   const identity = (
     <View style={styles.identityRow}>
@@ -84,7 +76,16 @@ const UserHoverCardComponent: React.FC<UserHoverCardProps> = ({
   );
 
   return (
-    <View style={[cardStyle, style]} testID={testID}>
+    <Card
+      variant="outlined"
+      radius="radius-16"
+      border="hairline"
+      // `shadow-m` is the overlay role — menus, popovers, dialogs, and this card,
+      // which is one.
+      elevation="m"
+      style={[layoutStyle, style]}
+      testID={testID}
+    >
       <View style={styles.header}>
         {onPressProfile ? (
           <Pressable
@@ -128,7 +129,7 @@ const UserHoverCardComponent: React.FC<UserHoverCardProps> = ({
           ))}
         </View>
       ) : null}
-    </View>
+    </Card>
   );
 };
 

@@ -5,7 +5,7 @@ import type { Meta, StoryObj } from '@storybook/react-vite';
 import { MediaInsetBorder } from './index';
 
 const meta: Meta<typeof MediaInsetBorder> = {
-  title: 'Components/MediaInsetBorder',
+  title: 'Layout/MediaInsetBorder',
   component: MediaInsetBorder,
   argTypes: {
     opaque: { control: 'boolean' },

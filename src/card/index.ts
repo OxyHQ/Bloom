@@ -2,6 +2,9 @@ export { Card, CardHeader, CardBody, CardFooter, CardTitle, CardDescription } fr
 export type {
   CardProps,
   CardVariant,
+  CardRadius,
+  CardElevation,
+  CardBorder,
   CardHeaderProps,
   CardBodyProps,
   CardFooterProps,

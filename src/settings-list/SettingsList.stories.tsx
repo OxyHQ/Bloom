@@ -10,7 +10,7 @@ import {
 } from './SettingsList';
 
 const meta: Meta = {
-  title: 'Components/SettingsList',
+  title: 'Navigation/SettingsList',
 };
 
 export default meta;

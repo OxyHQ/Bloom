@@ -14,7 +14,7 @@ import {
 } from './index';
 
 const meta: Meta = {
-  title: 'Components/Select',
+  title: 'Forms/Select',
 };
 
 export default meta;

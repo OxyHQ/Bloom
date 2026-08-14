@@ -6,7 +6,7 @@ import { Fab } from './Fab';
 import * as Icons from '../icons';
 
 const meta: Meta<typeof Fab> = {
-  title: 'Components/Fab',
+  title: 'Actions/Fab',
   component: Fab,
   args: {
     accessibilityLabel: 'Compose',

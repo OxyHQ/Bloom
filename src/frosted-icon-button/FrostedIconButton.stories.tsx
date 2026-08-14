@@ -6,7 +6,7 @@ import { FrostedIconButton } from './FrostedIconButton';
 import * as Icons from '../icons';
 
 const meta: Meta<typeof FrostedIconButton> = {
-  title: 'Components/FrostedIconButton',
+  title: 'Actions/FrostedIconButton',
   component: FrostedIconButton,
   args: {
     accessibilityLabel: 'Back',

@@ -1,12 +1,36 @@
+/**
+ * `Card` — THE card-shaped surface. One place decides what "a card" is made of:
+ * the `card` background role, a border colour and width, an elevation, a corner
+ * rung, and the clip that keeps content inside those corners.
+ *
+ * Five families used to draw that chrome by hand (`settings-list`'s group,
+ * `user-hover-card`, `benefit-list`, `link-preview` and `profile-card`), which
+ * is the duplication this component exists to remove. They differ in the RUNG
+ * and the border/elevation, not in what a card IS — so the axes are props drawn
+ * from the token scales rather than five more variants:
+ *
+ *   variant   the preset (`plain` is the bare surface; the other three add one axis)
+ *   radius    a rung of `RADIUS` — never a free number
+ *   border    `none` | `hairline` (0.5px) | `thin` (1px)
+ *   elevation `none` | `s` | `m`, resolved through the platform-forked `bloomShadowStyle`
+ *
+ * An explicit axis prop wins over the variant's default, so no combination
+ * requires a new variant name.
+ */
 import React, { memo, useMemo } from 'react';
-import { View, Text, Pressable, type ViewStyle } from 'react-native';
+import { Text, View, type ViewStyle } from 'react-native';
 
 import { useTheme } from '../theme/use-theme';
+import { RADIUS, BORDER_WIDTH } from '../design-tokens/scales';
 import { bloomShadowStyle } from '../design-tokens/shadows';
 import { useInteractionState } from '../hooks/use-interaction-state';
-import { borderRadius, space } from '../styles/tokens';
+import { StyledPressable, StyledView } from '../styles/styled-primitives';
+import { space } from '../styles/tokens';
 import type {
   CardProps,
+  CardVariant,
+  CardBorder,
+  CardElevation,
   CardHeaderProps,
   CardBodyProps,
   CardFooterProps,
@@ -14,11 +38,33 @@ import type {
   CardDescriptionProps,
 } from './types';
 
+/** The width each border role resolves to. `none` is expressed by omitting the border. */
+const BORDER_PX: Record<Exclude<CardBorder, 'none'>, number> = {
+  hairline: BORDER_WIDTH.hairline,
+  thin: 1,
+};
+
+/** What each preset means on the two axes an explicit prop can override. */
+const VARIANT_DEFAULTS: Record<CardVariant, { border: CardBorder; elevation: CardElevation }> = {
+  plain: { border: 'none', elevation: 'none' },
+  // `shadow-s` IS the "subtle raise — cards, chips" role, and the token is
+  // already platform-forked, so a hand-rolled `Platform.OS` branch would be one
+  // more copy of the split with slightly different numbers.
+  elevated: { border: 'none', elevation: 's' },
+  outlined: { border: 'thin', elevation: 'none' },
+  filled: { border: 'none', elevation: 'none' },
+};
+
 const CardRootComponent: React.FC<CardProps> = ({
   children,
   variant = 'elevated',
+  radius = 'radius-12',
+  elevation,
+  border,
   style,
+  className,
   onPress,
+  accessibilityRole = 'button',
   disabled = false,
   accessibilityLabel,
   testID,
@@ -31,35 +77,33 @@ const CardRootComponent: React.FC<CardProps> = ({
     useInteractionState();
 
   const containerStyle = useMemo((): ViewStyle => {
+    const defaults = VARIANT_DEFAULTS[variant];
+    const resolvedBorder = border ?? defaults.border;
+    const resolvedElevation = elevation ?? defaults.elevation;
+
     const base: ViewStyle = {
-      borderRadius: borderRadius.md,
+      backgroundColor:
+        variant === 'filled' ? theme.colors.backgroundSecondary : theme.colors.card,
+      borderRadius: RADIUS[radius],
       overflow: 'hidden',
     };
 
-    switch (variant) {
-      case 'elevated':
-        base.backgroundColor = theme.colors.card;
-        // `shadow-s` IS the "subtle raise — cards, chips" role, and the token is
-        // already platform-forked, so the hand-rolled `Platform.OS` branch was
-        // one more copy of the split with slightly different numbers.
-        Object.assign(base, bloomShadowStyle('s'));
-        break;
-      case 'outlined':
-        base.backgroundColor = theme.colors.card;
-        base.borderWidth = 1;
-        base.borderColor = theme.colors.border;
-        break;
-      case 'filled':
-        base.backgroundColor = theme.colors.backgroundSecondary;
-        break;
+    if (resolvedBorder !== 'none') {
+      base.borderWidth = BORDER_PX[resolvedBorder];
+      base.borderColor = theme.colors.border;
+    }
+
+    if (resolvedElevation !== 'none') {
+      Object.assign(base, bloomShadowStyle(resolvedElevation));
     }
 
     return base;
-  }, [variant, theme]);
+  }, [variant, radius, border, elevation, theme]);
 
   if (onPress) {
     return (
-      <Pressable
+      <StyledPressable
+        className={className}
         style={[
           containerStyle,
           pressed && !disabled && { opacity: 0.85 },
@@ -71,23 +115,24 @@ const CardRootComponent: React.FC<CardProps> = ({
         onPressOut={disabled ? undefined : onPressOut}
         disabled={disabled}
         accessibilityLabel={accessibilityLabel}
-        accessibilityRole="button"
+        accessibilityRole={accessibilityRole}
         accessibilityState={{ disabled }}
         testID={testID}
       >
         {children}
-      </Pressable>
+      </StyledPressable>
     );
   }
 
   return (
-    <View
+    <StyledView
+      className={className}
       style={[containerStyle, disabled && { opacity: 0.5 }, style]}
       accessibilityLabel={accessibilityLabel}
       testID={testID}
     >
       {children}
-    </View>
+    </StyledView>
   );
 };
 

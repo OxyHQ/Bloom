@@ -5,7 +5,7 @@ import type { Meta, StoryObj } from '@storybook/react-vite';
 import { PromptInput } from './PromptInput';
 
 const meta: Meta<typeof PromptInput> = {
-  title: 'Components/PromptInput',
+  title: 'Forms/PromptInput',
   component: PromptInput,
 };
 

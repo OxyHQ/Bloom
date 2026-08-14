@@ -8,7 +8,7 @@ import { Person_Stroke2_Corner0_Rounded as PersonIcon } from '../icons/Person';
 import { Lock_Stroke2_Corner0_Rounded as LockIcon } from '../icons/Lock';
 
 const meta: Meta<typeof ConnectionDots> = {
-  title: 'Components/ConnectionDots',
+  title: 'Data Display/ConnectionDots',
   component: ConnectionDots,
 };
 

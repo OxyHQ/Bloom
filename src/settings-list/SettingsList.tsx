@@ -3,7 +3,7 @@ import { View, Text, Pressable, StyleSheet } from 'react-native';
 
 import { useTheme } from '../theme/use-theme';
 import { useInteractionState } from '../hooks/use-interaction-state';
-import { borderRadius } from '../styles/tokens';
+import { Card } from '../card';
 import { Divider } from '../divider';
 import { ChevronRight_Stroke2_Corner0_Rounded as ChevronRightIcon } from '../icons/Chevron';
 import type {
@@ -144,12 +144,14 @@ export const SettingsListGroup = memo<SettingsListGroupProps>(function SettingsL
         </Text>
       ) : null}
 
-      <View
-        style={[
-          styles.groupCard,
-          { backgroundColor: theme.colors.card },
-        ]}
-      >
+      {/*
+        No horizontal self-inset: a `SettingsListGroup` fills its parent's content
+        width, so the single horizontal inset comes from the ONE content padding
+        the screen/Dialog already applies (the same `px-screen-margin` that pads
+        the title/search). A self-margin here double-inset grouped rows on every
+        screen that also applies that padding.
+      */}
+      <Card variant="plain" radius="radius-16">
         {filteredChildren.map((child, index) => (
           <React.Fragment key={index}>
             {child}
@@ -158,7 +160,7 @@ export const SettingsListGroup = memo<SettingsListGroupProps>(function SettingsL
             ) : null}
           </React.Fragment>
         ))}
-      </View>
+      </Card>
 
       {footer ? (
         <Text style={[styles.groupFooter, { color: theme.colors.textTertiary }]}>
@@ -218,15 +220,6 @@ const styles = StyleSheet.create({
   // Group
   groupContainer: {
     marginBottom: 16,
-  },
-  groupCard: {
-    // No horizontal self-inset: a `SettingsListGroup` fills its parent's content
-    // width, so the single horizontal inset comes from the ONE content padding
-    // the screen/Dialog already applies (the same `px-screen-margin` that pads
-    // the title/search). Keeping a self-margin here double-inset grouped rows on
-    // every screen that also applies that padding.
-    borderRadius: borderRadius.lg,
-    overflow: 'hidden',
   },
   groupTitle: {
     fontSize: 11,
