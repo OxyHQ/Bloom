@@ -47,6 +47,19 @@ const [country, setCountry] = useState('us');
 
 `SelectContent` takes the whole `items` array rather than children, so the native fork can hand it to a `FlatList` and the web fork can measure and scroll it. `renderItem` receives `(item, index, selectedValue)`.
 
+`SelectTrigger` renders a pressable around its children, or hands the open handler to your own control with `asChild` — the same escape hatch every anchored Bloom family offers:
+
+```tsx
+<SelectTrigger asChild label="Country">
+  <MyField>
+    <SelectValue placeholder="Pick a country" />
+    <SelectIcon />
+  </MyField>
+</SelectTrigger>
+```
+
+It used to take a render prop instead, which handed its child a `state` object whose `pressed` was a hardcoded `false` and whose `hovered` the native fork never computed. Press and hover styling on a select trigger was therefore dead while the API read as though it worked. Bring your own control through `asChild` and its own states are real.
+
 ## Groups and labels
 
 ```tsx

@@ -207,6 +207,20 @@ export interface MenuRowProps {
    * dismisses, which is what both shadcn and Bloom's previous menus did.
    */
   keepOpen?: boolean;
+  /**
+   * The row's accessible name.
+   *
+   * Only needed when `children` is not a plain string: a row composed as
+   * `<Icon /><Text>Profile</Text>` has no name a screen reader can announce,
+   * because the name is derived from a string child and there isn't one. A
+   * string child names itself and needs nothing here.
+   *
+   * This is where the upstream primitive's `textValue` lands. It is spelled
+   * `accessibilityLabel` because in Bloom that is all it does — `textValue`'s
+   * other job upstream is matching keystrokes for type-ahead, and Bloom has no
+   * type-ahead for it to feed.
+   */
+  accessibilityLabel?: string;
   style?: StyleProp<ViewStyle>;
   testID?: string;
 }
@@ -251,6 +265,8 @@ export interface MenuSubTriggerProps {
   disabled?: boolean;
   inset?: boolean;
   leading?: React.ReactNode;
+  /** The row's accessible name, when `children` is not a plain string. */
+  accessibilityLabel?: string;
   style?: StyleProp<ViewStyle>;
   testID?: string;
 }

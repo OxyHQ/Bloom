@@ -210,7 +210,18 @@ export const AccessibilityInfo = {
     remove: jest.fn(),
   }),
   announceForAccessibility: (_message: string) => {},
+  setAccessibilityFocus: jest.fn((_reactTag: number) => {}),
 };
+
+/**
+ * Enough of `findNodeHandle` for the screen-reader focus hooks to run.
+ *
+ * Without it they threw the moment a timer advanced with a surface open — which
+ * no suite did, so the whole path was unreachable and green.
+ */
+export const findNodeHandle = jest.fn((instance: unknown): number | null =>
+  instance == null ? null : 1,
+);
 
 export const Linking = {
   openURL: jest.fn((_url: string) => Promise.resolve()),

@@ -119,6 +119,29 @@ Until all four exist, an inline disclosure is the honest behaviour: it works wit
 
 On native these are ignored. The menu is a bottom sheet, which is anchored to the screen rather than to the trigger.
 
+## Naming a row that is not a plain string
+
+A row whose child is a string names itself. A row composed of elements does not:
+
+```tsx
+<DropdownMenuItem accessibilityLabel="Profile">
+  <UserIcon />
+  <Text>Profile</Text>
+</DropdownMenuItem>
+```
+
+Without it a screen reader announces the row as nothing. This is where the upstream primitive's `textValue` lands — spelled `accessibilityLabel` because in Bloom that is all it does.
+
+## Screen-reader focus
+
+On NATIVE, opening a menu moves the VoiceOver/TalkBack cursor into the sheet, and closing it returns the cursor to the trigger. Both are automatic for every Bloom surface that presents through a sheet — menus, context menus, the menubar, popovers and select — and neither needs any wiring at the call site.
+
+They are a pair on purpose. Moving the cursor in without giving it back strands it on the root view after the surface unmounts, which is worse than never moving it.
+
+The platform's own dismiss gesture works too: a two-finger Z scrub under VoiceOver, a back gesture under TalkBack. Android's hardware back already closed these, since every Bloom sheet is an RN `<Modal>`.
+
+On WEB none of this applies — the browser owns focus and the hooks return early rather than calling an API that is a no-op there.
+
 ## Rows are `Item`
 
 Every row is Bloom's `Item`, the same primitive settings lists and the command palette use. That is what keeps the touch target, the disabled treatment, the destructive colour, the pointer highlight and the ARIA state in one place — a fix to any of them lands in every menu at once.

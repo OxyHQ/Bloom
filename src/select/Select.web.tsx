@@ -2,22 +2,17 @@ import React, {
   createContext,
   useCallback,
   useContext,
-  useId,
-  useLayoutEffect,
   useMemo,
   useRef,
   useState,
 } from 'react';
-import { Pressable, ScrollView, StyleSheet, View, type ViewStyle } from 'react-native';
+import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
 
 import { useTheme } from '../theme/use-theme';
 import { Text } from '../typography';
-import { Backdrop, OverlayRoot } from '../overlay';
-import { Portal } from '../portal/index.web';
-import { WEB_POSITION_FIXED } from '../styles/web-view-style';
-import { resolveDropdownPlacement } from '../overlay/dropdown-placement';
-import { bloomShadowStyle } from '../design-tokens/shadows';
-import { RadioIndicator } from '../radio-indicator';
+import { FloatingPanel } from '../floating/FloatingPanel';
+import { TriggerSlot } from '../floating/TriggerSlot';
+import { useAnchorRect } from '../floating/use-anchor-rect';
 import { useInteractionState } from '../hooks/use-interaction-state';
 import {
   ChevronBottom_Stroke2_Corner0_Rounded as ChevronDownIcon,
@@ -64,8 +59,8 @@ type SelectContextValue = Pick<SelectProps, 'value' | 'onValueChange' | 'disable
   isOpen: boolean;
   open: () => void;
   close: () => void;
-  /** The trigger element, so `SelectContent` can position itself against it. */
-  triggerRef: React.RefObject<unknown>;
+  /** The trigger box, so `SelectContent` can anchor itself against it. */
+  triggerRef: React.RefObject<View | null>;
 };
 
 const SelectContext = createContext<SelectContextValue | null>(null);
@@ -85,7 +80,7 @@ function useSelectContext(): SelectContextValue {
 
 export function Select({ children, value, onValueChange, disabled }: SelectProps) {
   const [isOpen, setIsOpen] = useState(false);
-  const triggerRef = useRef<unknown>(null);
+  const triggerRef = useRef<View | null>(null);
 
   const ctx = useMemo<SelectContextValue>(
     () => ({
@@ -107,62 +102,43 @@ export function Select({ children, value, onValueChange, disabled }: SelectProps
 // SelectTrigger
 // ---------------------------------------------------------------------------
 
-export function SelectTrigger({ children, label }: SelectTriggerProps) {
+/**
+ * Opens the dropdown, and is the box it anchors to.
+ *
+ * See the native fork for why the render-prop form is gone: it published a
+ * `state` object whose `pressed` was a hardcoded `false` and whose `hovered`
+ * the native fork never computed at all, so trigger press and hover styling was
+ * dead on one platform and half-dead on the other while the API read as though
+ * the feature existed.
+ */
+export function SelectTrigger({
+  children,
+  asChild,
+  disabled,
+  label,
+  style,
+  testID,
+}: SelectTriggerProps) {
   const ctx = useSelectContext();
-  const theme = useTheme();
-  const triggerId = useId();
-  const {
-    state: hovered,
-    onIn: onMouseEnter,
-    onOut: onMouseLeave,
-  } = useInteractionState();
-  const { state: focused, onIn: onFocus, onOut: onBlur } = useInteractionState();
-
-  if (typeof children === 'function') {
-    return children({
-      control: {
-        id: triggerId,
-        ref: { current: null },
-        open: ctx.open,
-        close: ctx.close,
-      },
-      state: {
-        hovered,
-        focused,
-        pressed: false,
-      },
-      props: {
-        ref: ctx.triggerRef,
-        onPress: ctx.open,
-        onFocus,
-        onBlur,
-        accessibilityLabel: label,
-      },
-    });
-  }
 
   return (
-    <Pressable
-      ref={ctx.triggerRef as React.Ref<View>}
-      onPress={ctx.open}
-      onFocus={onFocus}
-      onBlur={onBlur}
-      accessibilityLabel={label}
-      accessibilityRole="button"
-      {...({
-        onMouseEnter,
-        onMouseLeave,
-      } as Record<string, () => void>)}
-      style={[
-        styles.trigger,
-        {
-          backgroundColor: theme.colors.contrast50,
-          borderColor: focused ? theme.colors.primary : theme.colors.contrast50,
-        },
-      ]}
+    <TriggerSlot
+      asChild={asChild}
+      anchorRef={ctx.triggerRef}
+      style={[styles.triggerSlot, style]}
+      testID={testID}
+      handle={{
+        // A dropdown trigger TOGGLES — pressing an open select's trigger closes
+        // it rather than reopening it.
+        onPress: () => (ctx.isOpen ? ctx.close() : ctx.open()),
+        disabled,
+        accessibilityLabel: label,
+        accessibilityRole: 'button',
+        'aria-expanded': ctx.isOpen,
+      }}
     >
       {children}
-    </Pressable>
+    </TriggerSlot>
   );
 }
 
@@ -215,8 +191,7 @@ export function SelectContent<T>({
   maxHeight = DEFAULT_MAX_HEIGHT,
 }: SelectContentProps<T>) {
   const ctx = useSelectContext();
-  const theme = useTheme();
-  const [position, setPosition] = useState<ViewStyle | null>(null);
+  const anchor = useAnchorRect(ctx.triggerRef, ctx.isOpen);
   const listRef = useRef<ScrollView | null>(null);
   // Where the option list is scrolled to, tracked so the two scroll buttons can
   // hide when there is nothing left in their direction. A button that is always
@@ -244,123 +219,56 @@ export function SelectContent<T>({
     }),
     [scrollState, scrollBy],
   );
-  // The mounted dropdown node, as STATE rather than a bare ref: positioning has
-  // to measure it, and `Portal` renders null on its first pass (it resolves its
-  // host in its own layout effect), so the node lands one render after `isOpen`
-  // flips. An effect keyed only on `isOpen` would measure nothing.
-  const [dropdownNode, setDropdownNode] = useState<HTMLElement | null>(null);
-
-  const attachDropdown = useCallback((node: View | null) => {
-    setDropdownNode(node as unknown as HTMLElement | null);
-  }, []);
-
-  // Anchored to the trigger, left edges aligned, and never off-screen: sit below
-  // when it fits, flip above when it doesn't, clamp when neither. Before this the
-  // dropdown had no `top`/`left` at all, so it rendered at the `Portal` root's
-  // origin — the viewport's top-left corner — however far from its trigger.
-  useLayoutEffect(() => {
-    if (!ctx.isOpen || typeof window === 'undefined') return;
-
-    const triggerNode = ctx.triggerRef.current as HTMLElement | null;
-    if (!triggerNode?.getBoundingClientRect || !dropdownNode) return;
-
-    const updatePosition = () => {
-      const rect = triggerNode.getBoundingClientRect();
-      // Measured BEFORE `minWidth` is applied, so the final surface can only be
-      // wider than this — and a wider surface wraps less, so the measured height
-      // is an upper bound. Erring that way flips early in a tie, never late.
-      const surface = dropdownNode.getBoundingClientRect();
-      const width = Math.max(surface.width, rect.width);
-
-      setPosition({
-        position: WEB_POSITION_FIXED,
-        ...resolveDropdownPlacement({
-          anchor: rect,
-          size: { width, height: surface.height },
-          viewport: { width: window.innerWidth, height: window.innerHeight },
-          offset: SELECT_OFFSET,
-          gutter: VIEWPORT_GUTTER,
-          align: 'start',
-          side: 'bottom',
-        }),
-        minWidth: width,
-      });
-    };
-
-    updatePosition();
-    window.addEventListener('resize', updatePosition);
-    window.addEventListener('scroll', updatePosition, true);
-
-    return () => {
-      window.removeEventListener('resize', updatePosition);
-      window.removeEventListener('scroll', updatePosition, true);
-    };
-  }, [ctx.isOpen, ctx.triggerRef, dropdownNode]);
-
-  if (!ctx.isOpen) return null;
-
+  // The dropdown is the same anchored surface the four menu families render, so
+  // it goes through the same `FloatingPanel`. That deletes this fork's own
+  // portal, its own backdrop and its own copy of the measure/flip/clamp effect,
+  // and gains the one thing it never had: Escape to dismiss.
+  //
+  // `minWidth` is the TRIGGER's width, which is what makes a select dropdown
+  // line up under its field rather than shrink-wrap its longest option.
   return (
-    <Portal>
-      {/* `OverlayRoot` takes this surface's place in the open-order overlay
-          stack, so it paints above anything opened before it (see
-          `src/overlay/stack.ts`). It is `box-none`, so the area outside the
-          panel stays click-through and the backdrop below still takes its own
-          presses. */}
-      <OverlayRoot>
-        <Backdrop
-          style={styles.backdrop}
-          onPress={ctx.close}
-          accessibilityLabel="Close selection"
-        />
-        <View
-          ref={attachDropdown}
-          accessibilityRole="list"
-          accessibilityLabel={label}
-          style={[
-            styles.dropdown,
-            {
-              backgroundColor: theme.isDark
-                ? theme.colors.backgroundSecondary
-                : theme.colors.background,
-              borderColor: theme.colors.borderLight,
-              ...bloomShadowStyle('m'),
-            },
-            position,
-          ]}
-        >
-          <SelectScrollProvider value={scroll}>
-            <SelectScrollUpButton />
-            <ScrollView
-              ref={listRef}
-              style={{ maxHeight }}
-              scrollEventThrottle={16}
-              onScroll={(event) =>
-                setScrollState({
-                  offset: event.nativeEvent.contentOffset.y,
-                  content: event.nativeEvent.contentSize.height,
-                  viewport: event.nativeEvent.layoutMeasurement.height,
-                })
-              }
-              onContentSizeChange={(_width, height) =>
-                setScrollState((current) => ({ ...current, content: height }))
-              }
-              onLayout={(event) =>
-                setScrollState((current) => ({
-                  ...current,
-                  viewport: event.nativeEvent.layout.height,
-                }))
-              }>
-              {items.map((item, index) => (
-                <React.Fragment key={valueExtractor(item)}>
-                  {renderItem(item, index, ctx.value)}
-                </React.Fragment>
-              ))}
-            </ScrollView>
-            <SelectScrollDownButton />
-          </SelectScrollProvider>
-        </View>
-      </OverlayRoot>
-    </Portal>
+    <FloatingPanel
+      open={ctx.isOpen}
+      anchor={anchor}
+      role="menu"
+      label={label}
+      align="start"
+      sideOffset={SELECT_OFFSET}
+      minWidth={anchor ? anchor.right - anchor.left : undefined}
+      onDismiss={ctx.close}
+      style={styles.dropdown}
+    >
+      <SelectScrollProvider value={scroll}>
+        <SelectScrollUpButton />
+        <ScrollView
+          ref={listRef}
+          style={{ maxHeight }}
+          scrollEventThrottle={16}
+          onScroll={(event) =>
+            setScrollState({
+              offset: event.nativeEvent.contentOffset.y,
+              content: event.nativeEvent.contentSize.height,
+              viewport: event.nativeEvent.layoutMeasurement.height,
+            })
+          }
+          onContentSizeChange={(_width, height) =>
+            setScrollState((current) => ({ ...current, content: height }))
+          }
+          onLayout={(event) =>
+            setScrollState((current) => ({
+              ...current,
+              viewport: event.nativeEvent.layout.height,
+            }))
+          }>
+          {items.map((item, index) => (
+            <React.Fragment key={valueExtractor(item)}>
+              {renderItem(item, index, ctx.value)}
+            </React.Fragment>
+          ))}
+        </ScrollView>
+        <SelectScrollDownButton />
+      </SelectScrollProvider>
+    </FloatingPanel>
   );
 }
 
@@ -380,9 +288,12 @@ export function SelectItem({ ref, value, label, children, style }: SelectItemPro
 
   const isSelected = ctx.value === value;
 
+  // `selected` only. `hovered` and `focused` still drive this row's own
+  // background below, but they are no longer PUBLISHED — nothing ever read
+  // them, and `pressed` was published as a literal `false`.
   const itemCtx = useMemo<SelectItemContextValue>(
-    () => ({ selected: isSelected, hovered, focused, pressed: false }),
-    [isSelected, hovered, focused],
+    () => ({ selected: isSelected }),
+    [isSelected],
   );
 
   return (
@@ -470,48 +381,21 @@ export function SelectSeparator() {
 // ---------------------------------------------------------------------------
 
 const styles = StyleSheet.create({
-  trigger: {
-    flexDirection: 'row',
-    position: 'relative',
-    alignItems: 'center',
-    gap: 8,
-    justifyContent: 'space-between',
-    paddingVertical: 8,
-    paddingHorizontal: 12,
-    borderRadius: 10,
-    maxWidth: 400,
-    borderWidth: 2,
-    borderStyle: 'solid',
+  // `TriggerSlot`'s wrapper is `alignSelf: 'flex-start'` so an anchored surface
+  // lines up with the CONTROL. A select trigger is a full-width field, so it
+  // stretches instead — the same exception the combobox makes.
+  triggerSlot: {
+    alignSelf: 'stretch',
   },
   valueText: {
     fontSize: 16,
   },
-  backdrop: {
-    position: WEB_POSITION_FIXED,
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-    // Opt back in from the Portal root's `pointer-events: none`.
-    pointerEvents: 'auto',
-  },
+  // Only the INSET is the select's own now. `FloatingPanel` owns the surface's
+  // position, background, border, radius, elevation and pointer-events, which
+  // is why the fixed-position and backdrop entries that used to live here are
+  // gone rather than merely unused.
   dropdown: {
-    // Fixed from the outset, not only once positioned: the `Portal` root is a
-    // block container, so a static child would stretch to the full viewport
-    // width and the pre-position measurement would under-read the height (less
-    // wrapping at a width the surface never actually has). A fixed box
-    // shrink-wraps to the same width it ends up with.
-    position: WEB_POSITION_FIXED,
-    top: 0,
-    left: 0,
-    borderRadius: 8,
-    borderWidth: 1,
-    overflow: 'hidden',
     padding: 4,
-    minWidth: 180,
-    // Overlay elevation applied at the usage site via `bloomShadowStyle('m')`.
-    // Opt back in from the Portal root's `pointer-events: none`.
-    pointerEvents: 'auto',
   },
   item: {
     position: 'relative',

@@ -101,6 +101,7 @@ export function createMenuRows(prefix: string): MenuRowParts {
     inset = false,
     variant = 'default',
     keepOpen = false,
+    accessibilityLabel,
     style,
     testID,
   }: MenuRowProps) {
@@ -122,6 +123,7 @@ export function createMenuRows(prefix: string): MenuRowParts {
         leading={leading}
         trailing={trailing}
         onPress={handlePress}
+        accessibilityLabel={accessibilityLabel}
         style={[inset ? styles.inset : null, style]}
         testID={testID}>
         {body}
@@ -137,6 +139,7 @@ export function createMenuRows(prefix: string): MenuRowParts {
     disabled = false,
     trailing,
     keepOpen = false,
+    accessibilityLabel,
     style,
     testID,
   }: MenuCheckboxRowProps) {
@@ -163,6 +166,7 @@ export function createMenuRows(prefix: string): MenuRowParts {
           onCheckedChange(!checked);
           if (!keepOpen) surface.close();
         }}
+        accessibilityLabel={accessibilityLabel}
         style={style}
         testID={testID}>
         {body}
@@ -187,6 +191,7 @@ export function createMenuRows(prefix: string): MenuRowParts {
     disabled = false,
     trailing,
     keepOpen = false,
+    accessibilityLabel,
     style,
     testID,
   }: MenuRadioRowProps) {
@@ -210,6 +215,7 @@ export function createMenuRows(prefix: string): MenuRowParts {
           group.onValueChange(value);
           if (!keepOpen) surface.close();
         }}
+        accessibilityLabel={accessibilityLabel}
         style={style}
         testID={testID}>
         {body}
@@ -287,6 +293,7 @@ export function createMenuRows(prefix: string): MenuRowParts {
     disabled = false,
     inset = false,
     leading,
+    accessibilityLabel,
     style,
     testID,
   }: MenuSubTriggerProps) {
@@ -306,6 +313,7 @@ export function createMenuRows(prefix: string): MenuRowParts {
         leading={leading}
         trailing={<Chevron size="xs" fill={theme.colors.textSecondary} />}
         onPress={() => sub.setOpen(!sub.open)}
+        accessibilityLabel={accessibilityLabel}
         style={[inset ? styles.inset : null, style]}
         testID={testID}>
         {body}

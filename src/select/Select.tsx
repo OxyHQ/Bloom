@@ -13,6 +13,7 @@ import { Text } from '../typography';
 import { Button } from '../button';
 import { useDialogContext, useDialogControl } from '../dialog/context';
 import { SheetShell } from '../dialog/SheetShell';
+import { TriggerSlot } from '../floating/TriggerSlot';
 import type { DialogControlProps } from '../dialog/types';
 import { RadioIndicator } from '../radio-indicator';
 import { useInteractionState } from '../hooks/use-interaction-state';
@@ -82,42 +83,41 @@ export function Select({ children, value, onValueChange, disabled }: SelectProps
 // SelectTrigger
 // ---------------------------------------------------------------------------
 
-export function SelectTrigger({ children, label }: SelectTriggerProps) {
+/**
+ * Opens the sheet. `asChild` hands the caller's own control the open handler,
+ * the same escape hatch the other four anchored families offer.
+ *
+ * This replaced a render-prop trigger that handed its child a
+ * `state: { hovered, focused, pressed }` object in which `hovered` was the
+ * literal `false` and `pressed` was fed by a `useInteractionState` pair wired to
+ * nothing. Every consumer's hover and press styling on a select trigger was
+ * therefore dead while the API read as though the feature existed. There is no
+ * literal to be wrong now: the trigger renders a real pressable, and a caller
+ * who wants its own press states brings its own control through `asChild`.
+ */
+export function SelectTrigger({
+  children,
+  asChild,
+  disabled,
+  label,
+  style,
+  testID,
+}: SelectTriggerProps) {
   const { control } = useSelectContext();
-  const { state: focused, onIn: onFocus, onOut: onBlur } = useInteractionState();
-  const {
-    state: pressed,
-    onIn: onPressIn,
-    onOut: onPressOut,
-  } = useInteractionState();
-
-  if (typeof children === 'function') {
-    return children({
-      control,
-      state: {
-        hovered: false,
-        focused,
-        pressed,
-      },
-      props: {
-        onPress: () => control.open(),
-        onFocus,
-        onBlur,
-        accessibilityLabel: label,
-      },
-    });
-  }
 
   return (
-    <Button
-      accessibilityLabel={label}
-      onPress={() => control.open()}
-      variant="secondary"
-      size="large"
-      style={styles.triggerButton}
-    >
+    <TriggerSlot
+      asChild={asChild}
+      style={[styles.triggerSlot, style]}
+      testID={testID}
+      handle={{
+        onPress: () => control.open(),
+        disabled,
+        accessibilityLabel: label,
+        accessibilityRole: 'button',
+      }}>
       {children}
-    </Button>
+    </TriggerSlot>
   );
 }
 
@@ -279,8 +279,8 @@ export function SelectItem({ children, value, label, style }: SelectItemProps) {
   }, [close, onValueChange, value]);
 
   const itemCtx = useMemo<SelectItemContextValue>(
-    () => ({ selected: isSelected, hovered: false, focused, pressed }),
-    [isSelected, focused, pressed],
+    () => ({ selected: isSelected }),
+    [isSelected],
   );
 
   return (
@@ -367,11 +367,11 @@ export function SelectSeparator() {
 // ---------------------------------------------------------------------------
 
 const styles = StyleSheet.create({
-  triggerButton: {
-    flex: 1,
-    justifyContent: 'space-between',
-    paddingLeft: 16,
-    paddingRight: 12,
+  // `TriggerSlot`'s wrapper is `alignSelf: 'flex-start'` so an anchored surface
+  // lines up with the CONTROL. A select trigger is a full-width field, so it
+  // stretches instead — the same exception the combobox makes.
+  triggerSlot: {
+    alignSelf: 'stretch',
   },
   valueText: {
     fontSize: 16,

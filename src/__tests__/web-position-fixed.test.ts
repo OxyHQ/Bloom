@@ -64,7 +64,17 @@ describe('web position: fixed', () => {
     const importers = files.filter((file) =>
       readFileSync(file, 'utf8').includes('WEB_POSITION_FIXED'),
     );
-    // The 10 consumers plus the module that defines it.
-    expect(importers.length).toBeGreaterThanOrEqual(11);
+    // The 9 consumers plus the module that defines it.
+    //
+    // This floor went from 11 to 10 when the four anchored families and the
+    // select dropdown stopped positioning themselves and started rendering
+    // `floating/FloatingPanel`. That is a CONSOLIDATION, not an erosion — one
+    // importer now does the positioning that four used to — which is why the
+    // decrement comes with the assertion below rather than on its own. A floor
+    // that only ever ratchets down is a gate switching itself off.
+    expect(importers.length).toBeGreaterThanOrEqual(10);
+    expect(importers.map((f) => f.replace(`${SRC}/`, ''))).toContain(
+      'floating/FloatingPanel.tsx',
+    );
   });
 });

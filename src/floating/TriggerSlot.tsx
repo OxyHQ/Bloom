@@ -21,9 +21,11 @@
  * `alignSelf: 'flex-start'` keeps that wrapper from stretching across its
  * parent, which would anchor the surface to the row rather than to the control.
  */
-import React, { Children, cloneElement, isValidElement } from 'react';
+import React, { Children, cloneElement, isValidElement, useRef } from 'react';
 import { StyleSheet, View, type StyleProp, type ViewStyle } from 'react-native';
 
+import { useRestoreAccessibilityFocus } from '../hooks/use-accessibility-focus';
+import { mergeRefs } from '../hooks/merge-refs';
 import { StyledPressable } from '../styles/styled-primitives';
 import type { TriggerHandleProps } from './types';
 
@@ -86,8 +88,20 @@ export function TriggerSlot({
   style,
   testID,
 }: TriggerSlotProps) {
+  // Every family already tells the trigger whether its surface is open, through
+  // `aria-expanded` — so the screen-reader focus restore is wired ONCE here
+  // rather than in each of the four native forks, and any family added later
+  // gets it by construction. Native-only inside the hook; on web the browser
+  // owns focus.
+  const ownRef = useRef<View | null>(null);
+  useRestoreAccessibilityFocus(handle['aria-expanded'] === true, ownRef);
+
   return (
-    <View ref={anchorRef} collapsable={false} style={[styles.wrap, style]} testID={testID}>
+    <View
+      ref={mergeRefs([ownRef, anchorRef])}
+      collapsable={false}
+      style={[styles.wrap, style]}
+      testID={testID}>
       {asChild ? (
         cloneTrigger(children, handle)
       ) : (

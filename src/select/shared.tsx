@@ -43,12 +43,7 @@ export function defaultItemValueExtractor(item: unknown): string {
 // Item context
 // ---------------------------------------------------------------------------
 
-export const ItemContext = createContext<SelectItemContextValue>({
-  selected: false,
-  hovered: false,
-  focused: false,
-  pressed: false,
-});
+export const ItemContext = createContext<SelectItemContextValue>({ selected: false });
 ItemContext.displayName = 'SelectItemContext';
 
 export function useSelectItemContext(): SelectItemContextValue {
