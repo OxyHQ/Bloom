@@ -63,6 +63,7 @@ import { InputGroup } from '../input-group';
 import { SettingsListItem } from '../settings-list/SettingsList';
 import { FrostedIconButton } from '../frosted-icon-button';
 import { CompositionBar } from '../composition-bar';
+import { Radio, RadioGroup } from '../radio';
 import { StatBar } from '../stat-bar';
 import { DotGridMeter } from '../dot-grid-meter';
 import { DialogLargeTitle, useDialogHeaderController } from '../dialog/DialogHeader';
@@ -439,6 +440,54 @@ describe('TabBar', () => {
     expect(tabs).toHaveLength(2);
     expect(tabs[0]?.getAttribute('aria-selected')).toBe('false');
     expect(tabs[1]?.getAttribute('aria-selected')).toBe('true');
+  });
+});
+
+describe('Radio', () => {
+  it('emits role="radio" with aria-checked', () => {
+    const c = mount(
+      <Radio value="daily" selected onSelect={() => {}} label="Daily" testID="r" />,
+    );
+    const el = byTestId(c, 'r');
+    expect(el.getAttribute('role')).toBe('radio');
+    expect(el.getAttribute('aria-checked')).toBe('true');
+  });
+
+  it('emits aria-checked="false" when not chosen — absent is not the same as false', () => {
+    const c = mount(
+      <Radio value="daily" selected={false} onSelect={() => {}} label="Daily" testID="r" />,
+    );
+    expect(byTestId(c, 'r').getAttribute('aria-checked')).toBe('false');
+  });
+
+  it('emits aria-disabled when disabled', () => {
+    const c = mount(
+      <Radio value="daily" selected onSelect={() => {}} label="Daily" disabled testID="r" />,
+    );
+    expect(byTestId(c, 'r').getAttribute('aria-disabled')).toBe('true');
+  });
+
+  it('RadioGroup names itself and marks exactly one option', () => {
+    // A `radiogroup` with no accessible name announces a list of options and
+    // nothing about what is being chosen, and "2 of 4" is only announced when
+    // the options sit inside one.
+    const c = mount(
+      <RadioGroup
+        label="Digest frequency"
+        value="weekly"
+        onValueChange={() => {}}
+        options={[
+          { value: 'daily', label: 'Daily' },
+          { value: 'weekly', label: 'Weekly' },
+        ]}
+      />,
+    );
+    const group = byRole(c, 'radiogroup');
+    expect(group.getAttribute('aria-label')).toBe('Digest frequency');
+    const options = allByRole(c, 'radio');
+    expect(options).toHaveLength(2);
+    expect(options[0]?.getAttribute('aria-checked')).toBe('false');
+    expect(options[1]?.getAttribute('aria-checked')).toBe('true');
   });
 });
 

@@ -324,6 +324,20 @@
         "default": "./lib/commonjs/radio-indicator/index.js"
       }
     },
+    "./radio": {
+      "react-native": {
+        "types": "./lib/typescript/module/radio/index.d.ts",
+        "default": "./src/radio/index.ts"
+      },
+      "import": {
+        "types": "./lib/typescript/module/radio/index.d.ts",
+        "default": "./lib/module/radio/index.js"
+      },
+      "require": {
+        "types": "./lib/typescript/commonjs/radio/index.d.ts",
+        "default": "./lib/commonjs/radio/index.js"
+      }
+    },
     "./error-boundary": {
       "react-native": {
         "types": "./lib/typescript/module/error-boundary/index.d.ts",

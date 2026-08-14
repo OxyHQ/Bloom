@@ -70,6 +70,7 @@ const SUBPATHS = /** @type {const} */ ([
   ['./frosted-icon-button', 'frosted-icon-button/index.ts'],
   ['./divider', 'divider/index.ts'],
   ['./radio-indicator', 'radio-indicator/index.ts'],
+  ['./radio', 'radio/index.ts'],
   ['./error-boundary', 'error-boundary/index.ts'],
   ['./avatar', 'avatar/index.ts'],
   ['./avatar-group', 'avatar-group/index.ts'],
