@@ -63,6 +63,7 @@ Wiring: Expo/Metro apps import `@oxyhq/app-preset/css/base.css` at the top of `g
 
 - **Expo/expo-router apps only** — it binds the scroll store to `expoRouterScrollAdapter`. A Vite/SPA consumer mounts `BloomThemeProvider` plus `<ScrollRestorationProvider adapter={…}>` with its own router adapter.
 - **OUTLETS stay out of it** (`ToastOutlet`, `PortalProvider`/`PortalOutlet`, `SurfaceHost`) — a second mount duplicates every surface.
+- **`PortalProvider`/`PortalOutlet` are NATIVE-ONLY** — the web fork ports directly to `document.body`, and both are explicit no-op exports there. "This app doesn't mount a Portal Outlet" is never a valid reason to fork a web-facing component (it already produced a 742-line fork that diverged for two months and shipped strictly worse).
 
 ## Scroll restoration
 
