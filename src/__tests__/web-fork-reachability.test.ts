@@ -185,4 +185,33 @@ describe('web forks are reachable off Metro', () => {
     expect(offenders).toEqual([]);
     expect(checked).toBeGreaterThanOrEqual(30);
   });
+
+  it('gives every subpath whose OWN entry file is forked a browser condition', () => {
+    // The rule above maps a fork to its FAMILY, which is the right grain for
+    // `prompt-input/Textarea.web.tsx`. It is the wrong grain for a subpath that
+    // publishes a file from inside a family: `./preset-vars` resolves
+    // `src/theme/preset-vars.ts`, so forking that file would be answered by
+    // `./theme`'s browser condition while `./preset-vars` — the specifier a
+    // consumer writes — kept serving the native default. Same property, stated
+    // where the resolution actually happens.
+    const offenders: string[] = [];
+    let forked = 0;
+    for (const [subpath, entry] of Object.entries(exportsMap)) {
+      if (typeof entry !== 'object' || entry === null) continue;
+      const rn = (entry as Record<string, unknown>)['react-native'];
+      const source =
+        typeof rn === 'object' && rn !== null ? (rn as { default?: unknown }).default : rn;
+      if (typeof source !== 'string' || !source.startsWith('./src/')) continue;
+      const base = join(SRC, source.replace('./src/', '').replace(/\.tsx?$/, ''));
+      if (!existsSync(`${base}.web.ts`) && !existsSync(`${base}.web.tsx`)) continue;
+      forked += 1;
+      if ((entry as Record<string, unknown>).browser === undefined) {
+        offenders.push(`${subpath}: entry ${source} has a .web fork but no browser condition`);
+      }
+    }
+    expect(offenders).toEqual([]);
+    // Vacuity floor: "no subpath is missing a browser condition" is also what a
+    // loop that matched no forked entry file reports.
+    expect(forked).toBeGreaterThanOrEqual(20);
+  });
 });

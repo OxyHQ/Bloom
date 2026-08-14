@@ -1,4 +1,4 @@
-import { readdirSync, readFileSync, statSync } from 'node:fs';
+import { existsSync, readdirSync, readFileSync, statSync } from 'node:fs';
 import { join } from 'node:path';
 import ts from 'typescript';
 
@@ -129,6 +129,59 @@ describe('one family layout', () => {
 
   it('writes every barrel as .ts — a barrel has no JSX to justify .tsx', () => {
     expect(allIndexes.filter((rel) => rel.endsWith('.tsx'))).toEqual([]);
+  });
+
+  it('gives every family a barrel to be imported through', () => {
+    // The rule above governs what a barrel may CONTAIN. This one is that there
+    // is one: a family directory with no `index.ts` has no surface of its own,
+    // so a consumer reaches its components by deep-importing implementation
+    // files, and every one of those paths becomes API by accident.
+    const missing = families().filter((name) => !existsSync(join(SRC, name, 'index.ts')));
+    expect(missing).toEqual([]);
+  });
+
+  it('publishes every family, or records it as internal on purpose', () => {
+    // A directory under `src/` that no subpath and no barrel names is either a
+    // half-finished addition or the remains of a half-finished deletion — it
+    // still compiles, still ships in the tarball and is still scanned by every
+    // gate here, so nothing else notices it.
+    //
+    // INTERNAL_DIRECTORIES is deliberately empty and deliberately NOT a floor.
+    // A genuinely private shared directory is a legitimate thing to want, and
+    // this is where it gets written down; without the list the cheapest way to
+    // green a private directory would be PUBLISHING it, which is the opposite
+    // of what its author wanted and enlarges the public API by accident.
+    const INTERNAL_DIRECTORIES: readonly string[] = [];
+
+    const pkg = JSON.parse(readFileSync(join(SRC, '..', 'package.json'), 'utf8')) as {
+      exports: Record<string, Record<string, unknown> | string>;
+    };
+    const published = new Set<string>();
+    for (const entry of Object.values(pkg.exports)) {
+      if (typeof entry === 'string') continue;
+      const rn = entry['react-native'];
+      const source =
+        typeof rn === 'object' && rn !== null ? (rn as { default?: unknown }).default : rn;
+      if (typeof source !== 'string') continue;
+      const rel = source.replace(/^\.\/src\//, '');
+      if (rel.includes('/')) published.add(rel.slice(0, rel.indexOf('/')));
+    }
+    const barrel = readFileSync(join(SRC, 'index.ts'), 'utf8')
+      .replace(/\/\*[\s\S]*?\*\//g, '')
+      .replace(/^\s*\/\/.*$/gm, '');
+    for (const match of barrel.matchAll(/from\s+['"]\.\/([^'"]+)['"]/g)) {
+      const first = match[1]?.split('/')[0];
+      if (first !== undefined) published.add(first);
+    }
+
+    // Positive control: the set was built from a real manifest and a real
+    // barrel, not from an empty parse. Without it, "no unpublished family" is
+    // also what a `published` set of size zero would report — inverted.
+    expect(published.size).toBeGreaterThanOrEqual(60);
+    expect(published.has('button')).toBe(true);
+
+    const unpublished = families().filter((name) => !published.has(name));
+    expect(unpublished).toEqual([...INTERNAL_DIRECTORIES]);
   });
 });
 
