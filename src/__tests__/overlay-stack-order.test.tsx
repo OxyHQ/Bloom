@@ -203,7 +203,7 @@ describe('no surface picks its own depth', () => {
     'popover/index.web.tsx',
     'tooltip/index.tsx',
     'zoomable-image-gallery/ZoomableImageGallery.tsx',
-    'prompt-input/PromptInput.tsx',
+    'prompt-input/PromptInputBase.tsx',
     'avatar-group/AvatarGroup.web.tsx',
     'toast/ToastHost.tsx',
   ];

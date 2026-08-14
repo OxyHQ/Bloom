@@ -7,17 +7,16 @@
  * full, self-consistent, WCAG-legible set of roles for light and dark at any
  * contrast level — the same dynamic theming MaterialKolor does, but ours.
  */
-export { Hct } from './hct';
-export { TonalPalette } from './tonal-palette';
-export { DynamicScheme } from './dynamic-scheme';
-export { buildScheme, schemeVibrant, schemeExpressive, schemeTonalSpot, schemeNeutral, schemeMonochrome } from './scheme-variants';
+/**
+ * This barrel is the engine's PUBLIC surface — `@oxyhq/bloom/theme` publishes it
+ * whole, as the `ColorEngine` namespace. Keep it to what a consumer deriving a
+ * theme actually calls; the ports underneath (`Hct`, `TonalPalette`,
+ * `DynamicScheme`, `ColorRole`, `Roles`, `buildScheme`, `quantizeWu`, `score`)
+ * are implementation and are imported from their own modules by the handful of
+ * files inside Bloom that need them — adding one back here publishes it.
+ */
 export type { SchemeVariant, AccentSources } from './scheme-variants';
-export { Roles } from './color-roles';
 export type { RoleName } from './color-roles';
-export { ColorRole } from './color-role';
-export { quantizeWu } from './quantizer-wu';
-export { score } from './score';
-export type { ScoreOptions } from './score';
 export { quantizeImage, seedsFromImagePixels, seedHexFromImagePixels } from './seed-from-image';
 export { argbFromRgb, redFromArgb, greenFromArgb, blueFromArgb } from './color-utils';
 

@@ -1,3 +1,33 @@
+// WHAT BELONGS ON THIS BARREL — the rule, so the gaps stop being folklore.
+//
+// A family is HERE unless one of two things is true:
+//
+//  1. Importing it would add a package to this barrel's module graph. Metro
+//     does not tree-shake, so `import { Button } from '@oxyhq/bloom'` links
+//     everything this file can reach — and an unmet REQUIRED peer is a build
+//     failure, not a degradation. Measured today exactly three families fail
+//     this, and each is reachable only through its own subpath:
+//       · `./tab-bar` — statically imports `expo-glass-effect` + `expo-symbols`
+//         from its `.native` files. Both ship Apple-only native modules, and the
+//         "a consumer that never imports @oxyhq/bloom/tab-bar never reaches
+//         them" rule in AGENTS.md is true only while this stays off the barrel.
+//       · `./provider` — statically imports `expo-router` (via
+//         `scroll/expo-router`). `BloomProvider` is expo-router-only BY
+//         CONSTRUCTION; a Vite/SPA consumer composes `BloomThemeProvider` +
+//         `ScrollRestorationProvider` itself. `theme/adaptive-colors.ts` also
+//         names expo-router, but through the optional-`require` boundary, which
+//         links nothing.
+//       · `./zoomable-image-gallery` — statically imports `expo-image`.
+//     Gate: `src/__tests__/root-barrel-graph.test.ts`.
+//
+//  2. Its exports are generic, collision-prone names. Those come in as a
+//     NAMESPACE (the same rule that makes `Icons`/`Skeleton`/`Grid` namespaces),
+//     never as loose top-level verbs.
+//
+// Everything else is here, including the pure-JS families that were absent for
+// no recorded reason (`image-resolver`, `image-aspect-ratio-cache`, `scroll`,
+// `overlay`, `content-panel`, `list`, `progressive-blur`, `connection-status`).
+
 // Theme
 export * from './theme';
 
@@ -50,8 +80,44 @@ export { useImagePreload, preloadImage } from './hooks/useImagePreload';
 export * as Icons from './icons';
 export { type Props as IconProps, sizes as iconSizes, useCommonSVGProps } from './icons/common';
 
+// App-wide plumbing (pure JS — no peer beyond what this barrel already links)
+export { ImageResolverProvider, useImageResolver } from './image-resolver';
+export type { ImageResolver } from './image-resolver';
+// A namespace, not seven loose verbs: `getAspectRatio`/`setAspectRatio`/
+// `hasAspectRatio` are exactly the collision-prone shape the namespace rule
+// covers.
+export * as ImageAspectRatio from './image-aspect-ratio-cache';
+export { ScrollRestorationProvider, useScrollRestoration } from './scroll';
+export type {
+  ScreenFocusEffect,
+  ScrollableHandle,
+  ScrollRestorationBinding,
+  ScrollRestorationProviderProps,
+  ScrollRestorationTarget,
+  ScrollRouterAdapter,
+  UseScrollRestorationOptions,
+} from './scroll';
+export { ConnectionStatusToasts } from './connection-status';
+export type { ConnectionStatusToastsProps } from './connection-status';
+
 // Core components
 export * from './portal';
+// Overlay plumbing — the ONE way a portaled surface takes its place in the
+// stack (`src/overlay/stack.ts`) and draws its press-to-dismiss dim.
+export {
+  OverlayRoot,
+  Backdrop,
+  useOverlayLayer,
+  useOverlayLayerContext,
+  layerForRank,
+  BACKDROP_BLUR_INTENSITY,
+  BACKDROP_DIM_OPACITY,
+  OVERLAY_STACK_BAND,
+  OVERLAY_STACK_BASE,
+  OVERLAY_STACK_MAX_RANK,
+  TOAST_LAYER_Z,
+} from './overlay';
+export type { OverlayRootProps, BackdropProps, OverlayLayer } from './overlay';
 export {
   Dialog,
   useDialogContext,
@@ -126,6 +192,23 @@ export { ConnectionDots } from './connection-dots';
 export type { ConnectionDotsProps } from './connection-dots';
 export { BenefitRow, BenefitList } from './benefit-list';
 export type { BenefitRowProps, BenefitListProps } from './benefit-list';
+export {
+  ContentPanel,
+  GUTTER_MASK_SPREAD,
+  PANEL_TOP_INSET,
+  PANEL_BOTTOM_INSET,
+} from './content-panel';
+export type { ContentPanelProps, ContentPanelFramedBreakpoint } from './content-panel';
+export { ProgressiveBlur } from './progressive-blur';
+export type { ProgressiveBlurProps } from './progressive-blur';
+export { VirtualList } from './list';
+export type {
+  VirtualListHandle,
+  VirtualListProps,
+  VirtualListRenderItem,
+  VirtualListRenderItemInfo,
+  VirtualListSlot,
+} from './list';
 
 // Interaction primitives
 export { PressableScale } from './pressable-scale';

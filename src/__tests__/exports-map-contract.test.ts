@@ -44,8 +44,11 @@ const STRING_ENTRIES = [
 ];
 
 /**
- * Vacuity floor. `SUBPATHS` in the generator is 86 entries today; a traversal
- * bug that silently found none must not read as a pass.
+ * Vacuity floor, deliberately NOT the current count: a number written here goes
+ * stale on the next family added or deleted, and a stale one reads as a
+ * measurement. It exists only so a traversal bug that silently finds no
+ * subpaths cannot pass. `SUBPATHS` in `scripts/generate-platform-exports.mjs`
+ * is the actual list.
  */
 const MIN_SUBPATHS = 80;
 

@@ -98,6 +98,11 @@
         "types": "./lib/typescript/module/theme/index.d.ts",
         "default": "./src/theme/index.ts"
       },
+      "browser": {
+        "types": "./lib/typescript/module/theme/index.web.d.ts",
+        "import": "./lib/module/theme/index.web.js",
+        "require": "./lib/commonjs/theme/index.web.js"
+      },
       "import": {
         "types": "./lib/typescript/module/theme/index.d.ts",
         "default": "./lib/module/theme/index.js"
@@ -417,6 +422,11 @@
       "react-native": {
         "types": "./lib/typescript/module/prompt-input/index.d.ts",
         "default": "./src/prompt-input/index.ts"
+      },
+      "browser": {
+        "types": "./lib/typescript/module/prompt-input/index.web.d.ts",
+        "import": "./lib/module/prompt-input/index.web.js",
+        "require": "./lib/commonjs/prompt-input/index.web.js"
       },
       "import": {
         "types": "./lib/typescript/module/prompt-input/index.d.ts",
