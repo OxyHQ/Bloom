@@ -1,0 +1,63 @@
+---
+title: Image aspect-ratio cache
+description: Remembering an image's shape so a list stops jumping when it loads.
+order: 67
+---
+
+# Image aspect-ratio cache
+
+A process-wide cache of image intrinsic sizes, keyed by URL.
+
+```tsx
+import {
+  getAspectRatio,
+  hasAspectRatio,
+  fetchAspectRatio,
+  setAspectRatio,
+  DEFAULT_ASPECT_RATIO,
+} from '@oxyhq/bloom/image-aspect-ratio-cache';
+
+const ratio = hasAspectRatio(url) ? getAspectRatio(url) : DEFAULT_ASPECT_RATIO;
+```
+
+## The problem it solves
+
+An image's shape is not known until it loads. A list that reserves no space
+reflows every time one arrives, which throws the reading position down the page
+— the classic feed that jumps while you are reading it.
+
+Reserving a *fixed* box instead is not a fix: it letterboxes portrait images and
+crops landscape ones. What you want is the real ratio, remembered, so the second
+time the same image appears there is no jump at all.
+
+## The functions
+
+| function                | for                                                  |
+| ----------------------- | ----------------------------------------------------- |
+| `hasAspectRatio(url)`   | whether the shape is known **without** guessing        |
+| `getAspectRatio(url)`   | the ratio, if known                                    |
+| `getIntrinsicSize(url)` | the width and height, if known                         |
+| `fetchAspectRatio(url)` | measure it and cache the result                        |
+| `setAspectRatio(url, …)`| record one you already know — from a DTO, say          |
+| `DEFAULT_ASPECT_RATIO`  | what to reserve while it is unknown                    |
+
+## `hasAspectRatio` is not the same as `getAspectRatio() !== undefined`
+
+Keep the distinction. "Not measured yet" and "measured, and it happens to be
+the default" want different behaviour: the first should reserve the default and
+then settle, the second is already correct and must not animate.
+
+## Prefer `setAspectRatio` over measuring
+
+If the API already returns the dimensions — most media DTOs do — record them
+and skip the measurement entirely. A ratio known before first paint means the
+layout is right on frame one, which no amount of caching after the fact
+achieves.
+
+## It is a cache, not state
+
+Module-level and process-wide, so it survives navigation and re-renders. Do not
+read it in a memoized position: it is external mutable state, and under the
+React Compiler that is exactly the shape that produces a stale read. Read it
+during render for the initial reservation, and drive updates from the load
+event.

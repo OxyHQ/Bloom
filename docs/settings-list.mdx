@@ -11,23 +11,27 @@ iOS-style grouped settings list. Items, groups (with optional headers and footer
 ## Basic
 
 ```tsx
-import * as SettingsList from '@oxyhq/bloom/settings-list';
+import {
+  SettingsListGroup,
+  SettingsListItem,
+  SettingsListDivider,
+} from '@oxyhq/bloom/settings-list';
 
-<SettingsList.Group title="General">
-  <SettingsList.Item
+<SettingsListGroup title="General">
+  <SettingsListItem
     icon={<PersonIcon />}
     title="Account"
     value="ada@oxy.so"
     onPress={() => navigate('Account')}
   />
-  <SettingsList.Divider />
-  <SettingsList.Item
+  <SettingsListDivider />
+  <SettingsListItem
     icon={<GlobeIcon />}
     title="Language"
     value="English"
     onPress={() => navigate('Language')}
   />
-</SettingsList.Group>
+</SettingsListGroup>
 ```
 
 The group renders a rounded card on iOS-style platforms and on web. The first item rounds top corners, the last item rounds bottom corners.
@@ -35,7 +39,7 @@ The group renders a rounded card on iOS-style platforms and on web. The first it
 ## With description
 
 ```tsx
-<SettingsList.Item
+<SettingsListItem
   icon={<ShieldIcon />}
   title="Two-factor authentication"
   description="Add a second sign-in step with an authenticator app."
@@ -49,7 +53,7 @@ The group renders a rounded card on iOS-style platforms and on web. The first it
 ## Toggle row
 
 ```tsx
-<SettingsList.Item
+<SettingsListItem
   icon={<MoonIcon />}
   title="Dark mode"
   rightElement={<Switch value={darkMode} onValueChange={setDarkMode} />}
@@ -61,14 +65,14 @@ When `rightElement` is set, the chevron is hidden automatically (you can overrid
 ## Destructive
 
 ```tsx
-<SettingsList.Group title="Danger zone">
-  <SettingsList.Item
+<SettingsListGroup title="Danger zone">
+  <SettingsListItem
     icon={<TrashIcon />}
     title="Delete account"
     destructive
     onPress={confirmDelete}
   />
-</SettingsList.Group>
+</SettingsListGroup>
 ```
 
 `destructive` switches the title to the negative color and uses the destructive icon tint.
@@ -76,7 +80,7 @@ When `rightElement` is set, the chevron is hidden automatically (you can overrid
 ## Disabled
 
 ```tsx
-<SettingsList.Item
+<SettingsListItem
   icon={<KeyIcon />}
   title="Reset password"
   description="Coming soon"
@@ -87,21 +91,21 @@ When `rightElement` is set, the chevron is hidden automatically (you can overrid
 ## Footer / header text
 
 ```tsx
-<SettingsList.Group
+<SettingsListGroup
   title="Notifications"
   footer="Push notifications require an enabled device permission."
 >
-  <SettingsList.Item title="Marketing emails" rightElement={<Switch value={mktg} onValueChange={setMktg} />} />
-  <SettingsList.Divider />
-  <SettingsList.Item title="Product updates" rightElement={<Switch value={prod} onValueChange={setProd} />} />
-</SettingsList.Group>
+  <SettingsListItem title="Marketing emails" rightElement={<Switch value={mktg} onValueChange={setMktg} />} />
+  <SettingsListDivider />
+  <SettingsListItem title="Product updates" rightElement={<Switch value={prod} onValueChange={setProd} />} />
+</SettingsListGroup>
 ```
 
 `title` is the group header (uppercase muted label on iOS-style platforms); `footer` is a soft explanatory line under the card.
 
 ## Components
 
-### `SettingsList.Group`
+### `SettingsListGroup`
 
 | Prop | Type | Description |
 |------|------|-------------|
@@ -110,7 +114,7 @@ When `rightElement` is set, the chevron is hidden automatically (you can overrid
 | `children` | `React.ReactNode` | `Item`, `Divider`. |
 | `style?` | `StyleProp<ViewStyle>` | Override group container style. |
 
-### `SettingsList.Item`
+### `SettingsListItem`
 
 | Prop | Type | Description |
 |------|------|-------------|
@@ -128,7 +132,7 @@ When `rightElement` is set, the chevron is hidden automatically (you can overrid
 | `accessibilityRole?` | `'button' \| 'link' \| 'none'` | Defaults to `'button'` when pressable. |
 | `leftInset?` | `number` | Left inset to align text when no icon is set. |
 
-### `SettingsList.Divider`
+### `SettingsListDivider`
 
 | Prop | Type | Description |
 |------|------|-------------|
@@ -139,37 +143,37 @@ When `rightElement` is set, the chevron is hidden automatically (you can overrid
 ### Mixed read / link rows
 
 ```tsx
-<SettingsList.Group title="About">
-  <SettingsList.Item title="Version" value="1.4.2" />
-  <SettingsList.Divider />
-  <SettingsList.Item title="Build" value="231" />
-  <SettingsList.Divider />
-  <SettingsList.Item title="Terms" onPress={() => navigate('Terms')} />
-  <SettingsList.Divider />
-  <SettingsList.Item title="Privacy" onPress={() => navigate('Privacy')} />
-</SettingsList.Group>
+<SettingsListGroup title="About">
+  <SettingsListItem title="Version" value="1.4.2" />
+  <SettingsListDivider />
+  <SettingsListItem title="Build" value="231" />
+  <SettingsListDivider />
+  <SettingsListItem title="Terms" onPress={() => navigate('Terms')} />
+  <SettingsListDivider />
+  <SettingsListItem title="Privacy" onPress={() => navigate('Privacy')} />
+</SettingsListGroup>
 ```
 
 ### Sign-out section
 
 ```tsx
-<SettingsList.Group>
-  <SettingsList.Item
+<SettingsListGroup>
+  <SettingsListItem
     title="Sign out"
     onPress={signOut}
     accessibilityRole="button"
   />
-</SettingsList.Group>
+</SettingsListGroup>
 ```
 
 ### Account switcher
 
 ```tsx
-<SettingsList.Group title="Accounts">
+<SettingsListGroup title="Accounts">
   {accounts.map((a, i) => (
     <Fragment key={a.id}>
-      {i > 0 ? <SettingsList.Divider /> : null}
-      <SettingsList.Item
+      {i > 0 ? <SettingsListDivider /> : null}
+      <SettingsListItem
         icon={<Avatar uri={a.avatarUrl} size={28} />}
         title={a.name}
         description={a.handle}
@@ -178,5 +182,5 @@ When `rightElement` is set, the chevron is hidden automatically (you can overrid
       />
     </Fragment>
   ))}
-</SettingsList.Group>
+</SettingsListGroup>
 ```

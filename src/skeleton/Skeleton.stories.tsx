@@ -5,7 +5,7 @@ import type { Meta, StoryObj } from '@storybook/react-vite';
 import * as Skeleton from './index';
 
 const meta: Meta = {
-  title: 'Feedback/Skeleton',
+  title: 'Components/Skeleton',
 };
 
 export default meta;

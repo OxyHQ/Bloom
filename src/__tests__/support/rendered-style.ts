@@ -69,6 +69,25 @@ export function findHost(
 }
 
 /**
+ * Every host node in a rendered tree, in document order.
+ *
+ * The reason to walk `toJSON()` rather than `UNSAFE_root.findAll` is that the
+ * latter yields COMPOSITE instances too, so a `memo(fn)` component contributes
+ * two matches for one rendered element and every count is silently doubled —
+ * which reads as "the component rendered the thing twice", not as an artefact
+ * of the query.
+ */
+export function hostNodes(tree: unknown, out: HostNode[] = []): HostNode[] {
+  if (Array.isArray(tree)) {
+    for (const child of tree) hostNodes(child, out);
+    return out;
+  }
+  if (!isHostNode(tree)) return out;
+  out.push(tree);
+  return hostNodes(tree.children, out);
+}
+
+/**
  * The host nodes a parent laid out. Callers assert the LENGTH themselves —
  * "exactly one" is the property, and a helper that returned only the first would
  * hide the second.

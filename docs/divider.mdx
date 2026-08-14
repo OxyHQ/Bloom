@@ -1,0 +1,56 @@
+---
+title: Divider
+description: The one separator. Nothing else in the library draws a rule by hand.
+order: 27
+---
+
+# Divider
+
+A hairline in the `border` role. Three families used to draw their own 1px
+separator and each had a slightly different colour — that is the whole reason
+this component exists.
+
+```tsx
+import { Divider } from '@oxyhq/bloom/divider';
+
+<Divider />
+<Divider spacing={12} />
+<Divider vertical spacing={12} />
+```
+
+## Which prop decides what
+
+| prop        | decides                                                     |
+| ----------- | ------------------------------------------------------------ |
+| `vertical`  | the axis                                                     |
+| `spacing`   | margin on the axis it separates — the prop you usually want   |
+| `thickness` | the weight; defaults to the platform hairline                 |
+| `color`     | an override; defaults to the `border` role                    |
+
+Reach for `spacing` first. Most "the divider looks wrong" cases are margin, not
+weight — a rule pressed against the text above it reads as heavier than it is.
+
+## A vertical divider needs a parent with a height
+
+It fills the cross axis (`alignSelf: 'stretch'`); it does not invent a height.
+In a row with no height it is invisible rather than broken — which is the usual
+reason a toolbar rule "doesn't render".
+
+```tsx
+<View style={{ flexDirection: 'row', alignItems: 'center', height: 40 }}>
+  <Text>Drafts</Text>
+  <Divider vertical spacing={12} />
+  <Text>Sent</Text>
+</View>
+```
+
+## When not to use one
+
+A divider between every row of a list is usually noise: a settings group already
+separates itself with its card, and rows separated by space read as a group
+without a rule. Use one where a boundary is *meaningful* — between sections,
+not between items.
+
+`SettingsListDivider` is the inset variant for grouped rows; prefer it inside a
+settings group so the rule starts after the icon column instead of cutting the
+card in half.

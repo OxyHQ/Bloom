@@ -1,0 +1,63 @@
+---
+title: CompositionBar
+description: What a total is made of — a segmented bar with a readout you can interrogate.
+order: 62
+---
+
+# CompositionBar
+
+A single bar split into coloured segments, with a readout for the selected one.
+Use it when the question is *what is this total made of* — a portfolio by
+asset, spending by category, storage by file type.
+
+```tsx
+import { CompositionBar } from '@oxyhq/bloom/composition-bar';
+
+<CompositionBar
+  categories={[
+    { key: 'eth', name: 'Ethereum', amount: 4200, color: '#627EEA' },
+    { key: 'btc', name: 'Bitcoin', amount: 3100, color: '#F7931A' },
+    { key: 'other', name: 'Other', amount: 900, color: '#9CA3AF' },
+  ]}
+  selectedKey={selected}
+  onSelect={setSelected}
+  hintLabel="Tap a segment"
+/>
+```
+
+## Which prop decides what
+
+| prop             | decides                                                  |
+| ---------------- | --------------------------------------------------------- |
+| `categories`     | the segments — `key`, `name`, `amount`, `color`            |
+| `selectedKey`    | which segment's readout is shown; `null` for none          |
+| `onSelect`       | the press                                                  |
+| `hintLabel`      | the prompt shown while nothing is selected                 |
+| `formatReadout`  | how the selected amount and percentage are worded          |
+
+## The readout is the point
+
+`selectedKey` and `onSelect` are required. A segmented bar with no way to ask
+"which slice is that?" is decoration: the colours are unlabelled and the widths
+are unreadable below about 5%.
+
+`null` is a real state — nothing selected — and not the same as selecting the
+first category on the user's behalf. `hintLabel` is what fills that space.
+
+## Amounts, not percentages
+
+Pass raw `amount`s and let the component compute the shares. Pre-computing
+percentages is how the segments stop summing to 100 after rounding, which shows
+up as a sliver of background at the end of the bar.
+
+## Keep the category count low
+
+Five or six. Beyond that the small segments are too thin to press and the
+colours stop being distinguishable — group the tail into an "Other" category
+with its own neutral colour, as above.
+
+## `formatReadout`
+
+The default states the amount and its share. Override it when the unit needs
+saying (`$4,200`, `4.2 GB`) — a bare number in a readout is the same problem as
+a bare number anywhere else.

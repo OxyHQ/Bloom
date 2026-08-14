@@ -1,0 +1,57 @@
+---
+title: Kbd
+description: A keyboard key rendered as a key — in menus, palettes and help text.
+order: 44
+---
+
+# Kbd
+
+Renders a keyboard key with the raised-cap look, so a shortcut in running text
+reads as a key rather than as a stray capital letter.
+
+```tsx
+import { Kbd } from '@oxyhq/bloom/kbd';
+
+<Text>
+  Press <Kbd>⌘</Kbd> <Kbd>K</Kbd> to open the command palette.
+</Text>
+
+<Kbd size="sm">Esc</Kbd>
+```
+
+## Which prop decides what
+
+| prop   | decides                                          |
+| ------ | ------------------------------------------------- |
+| `size` | `sm` for inside a row or a menu, `md` for prose   |
+
+## One key per `Kbd`
+
+`⌘K` as a single child renders one wide cap, which is not what a keyboard looks
+like and not what the user has to press. Two keys, two `Kbd`s.
+
+## Use the platform's own symbols
+
+`⌘` on Apple platforms, `Ctrl` elsewhere; `⌥` versus `Alt`; `⇧` versus `Shift`.
+A shortcut written for the wrong platform is worse than none — the user presses
+a key that does nothing and concludes the feature is broken.
+
+`Kbd` renders what you give it; deciding which spelling to give it belongs to
+the app, which knows the platform.
+
+## It is decoration, not a control
+
+`Kbd` draws a key. It does not register a shortcut, and pressing it does
+nothing. Binding keys belongs to the app or the surface that owns the key
+handling — the same reason [`Command`](/docs/bloom/main/command)'s `shortcut`
+field is a hint rather than a binding.
+
+## Where it earns its place
+
+- A [`Command`](/docs/bloom/main/command) row, showing the shortcut for the
+  action.
+- A menu item, for the same reason.
+- Help and onboarding text, where the key is the instruction.
+
+Not in a tooltip on a touch device: a user with no keyboard reading about `⌘K`
+is being told about a feature they cannot reach.

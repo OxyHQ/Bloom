@@ -33,7 +33,7 @@ import type { TabBarItem, TabBarProps } from './types';
  * moving while nothing errors.
  */
 const meta: Meta<typeof TabBar> = {
-  title: 'Navigation/TabBar',
+  title: 'Components/TabBar',
   component: TabBar,
   // The bar is a screen-level element: its highlight geometry comes from
   // `useWindowDimensions()`, so the demo has to be exactly window-wide or the

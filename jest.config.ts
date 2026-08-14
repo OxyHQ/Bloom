@@ -41,6 +41,7 @@ const config: Config = {
     'react-native-screens': '<rootDir>/__mocks__/react-native-screens.ts',
     '^expo-haptics$': '<rootDir>/__mocks__/expo-haptics.ts',
     '^expo-blur$': '<rootDir>/__mocks__/expo-blur.ts',
+    '^expo-image$': '<rootDir>/__mocks__/expo-image.ts',
     '^expo-glass-effect$': '<rootDir>/__mocks__/expo-glass-effect.ts',
     '^expo-symbols$': '<rootDir>/__mocks__/expo-symbols.ts',
     '^react-native$': '<rootDir>/__mocks__/react-native.ts',

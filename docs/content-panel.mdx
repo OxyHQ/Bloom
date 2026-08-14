@@ -1,0 +1,62 @@
+---
+title: ContentPanel
+description: The reading column — a width constraint that optionally becomes a framed surface.
+order: 50
+---
+
+# ContentPanel
+
+The column a screen's content lives in. It caps the reading width and, above a
+breakpoint, decides whether that column reads as a framed surface or as the
+page itself.
+
+```tsx
+import { ContentPanel } from '@oxyhq/bloom/content-panel';
+
+<ContentPanel framed framedFrom={640}>
+  <SettingsScreen />
+</ContentPanel>
+```
+
+## Which prop decides what
+
+| prop               | decides                                                  |
+| ------------------ | --------------------------------------------------------- |
+| `framed`           | whether the panel draws a surface at all                   |
+| `framedFrom`       | the breakpoint it starts framing at — `500` `640` `768` `1024` |
+| `showStickyFrame`  | whether the frame persists behind sticky content           |
+| `surfaceStyle` / `surfaceClassName` | the surface itself                        |
+| `contentStyle` / `contentClassName` | the column inside it                      |
+| `maskColor`        | the colour the gutter mask fades to                        |
+
+## `framedFrom` is why the branch is not in your screen
+
+A phone wants a plain column: a frame a few pixels from the screen edge reads
+as a rendering bug, not as a card. A desktop wants the framed surface. Handling
+that in the screen means every screen re-derives the same breakpoint, and they
+drift.
+
+## Panels are siblings, never nested
+
+`ContentPanel` **throws** if you nest one inside another. That is deliberate: a
+panel in a panel would frame inside a frame and inset the reading column twice,
+which looks merely "a bit padded" and would survive review indefinitely. A loud
+failure in development is the cheaper outcome.
+
+Two columns side by side are two panels as **siblings**:
+
+```tsx
+<View style={{ flexDirection: 'row', gap: 16 }}>
+  <View style={{ flex: 2 }}><ContentPanel framed>…</ContentPanel></View>
+  <View style={{ flex: 1 }}><ContentPanel framed>…</ContentPanel></View>
+</View>
+```
+
+A screen picks one panel per column; the sections inside it are plain views.
+
+## Do not put a Card immediately inside a framed panel
+
+They are both surfaces. A card filling a framed panel is two borders with a few
+pixels between them. Use the panel's frame, and reach for
+[`Card`](/docs/bloom/main/card) for things *within* the column that are
+genuinely separate objects.

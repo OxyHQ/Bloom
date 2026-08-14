@@ -1,0 +1,66 @@
+---
+title: LinkPreviewCard
+description: An unfurled link — structural props, so Bloom never depends on the contracts package.
+order: 59
+---
+
+# LinkPreviewCard
+
+The card that renders an unfurled link: cover image, site name, title,
+description.
+
+```tsx
+import { LinkPreviewCard } from '@oxyhq/bloom/link-preview';
+
+<LinkPreviewCard
+  url={preview.url}
+  siteName={preview.siteName}
+  title={preview.title}
+  description={preview.description}
+  image={preview.image}
+/>
+```
+
+## Which prop decides what
+
+| prop          | decides                                                    |
+| ------------- | ----------------------------------------------------------- |
+| `url`         | where it goes, and the fallback for everything else          |
+| `title` / `description` / `siteName` / `image` | the unfurled metadata     |
+| `coverFill`   | whether the cover crops to fill or fits                      |
+| `onPress`     | overrides the default "open the URL"                         |
+
+## Only `url` is required
+
+Everything else is optional because unfurling fails all the time — a site with
+no Open Graph tags, a link behind auth, a timeout. The hostname is the fallback
+for both the site name and the title, so a bare URL still renders a usable card
+rather than an empty box with a shadow.
+
+Design the calling code for that: pass whatever the unfurler returned, without
+deciding not to render when the metadata is thin.
+
+## The shape is structural, not a contracts type
+
+The props mirror the platform's `LinkPreview` DTO but are declared
+independently, so Bloom does not depend on `@oxyhq/contracts`. If the DTO gains
+a field, map it at the call site.
+
+## `image` is a plain URL, not a file id
+
+It is rendered directly with the RN `Image` primitive, **not** through
+[`ImageResolver`](/docs/bloom/main/image-resolver) — an OG image comes from
+whatever host the linked page uses, so there is no Oxy file id to resolve.
+
+That is the opposite of the avatar rule, and the reason both are worth stating:
+an avatar goes through the resolver, an OG image does not.
+
+## The chrome is `Card`'s
+
+`outlined` at the `radius-20` rung. It used to be `bg-card` / `border-border`
+classes, which are **inert on web until the consumer wires the Tailwind
+pipeline** — the card then drew as an unbordered transparent block with no
+error anywhere. As resolved inline tokens it paints either way.
+
+The text inside is still className-first, and those class strings must stay
+literal so a consumer's Tailwind content scan over `lib/` can see them.

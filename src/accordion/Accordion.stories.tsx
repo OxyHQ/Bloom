@@ -6,7 +6,7 @@ import { Accordion, AccordionItem, AccordionTrigger, AccordionContent } from './
 import { Text } from '../typography';
 
 const meta: Meta<typeof Accordion> = {
-  title: 'Navigation/Accordion',
+  title: 'Components/Accordion',
   component: Accordion,
 };
 

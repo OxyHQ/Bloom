@@ -1,0 +1,66 @@
+---
+title: ZoomableImageGallery
+description: The full-screen image viewer — mounted once, opened imperatively.
+order: 71
+---
+
+# ZoomableImageGallery
+
+Full-screen images with pinch-zoom, swipe between, and drag-to-dismiss. Mount
+it once near the app root and open it from anywhere.
+
+```tsx
+import { ZoomableImageGallery, type ZoomableImageGalleryHandle } from '@oxyhq/bloom/zoomable-image-gallery';
+
+const gallery = useRef<ZoomableImageGalleryHandle>(null);
+
+<ZoomableImageGallery ref={gallery} measureThumb={measureThumb} />
+
+// from a thumbnail
+gallery.current?.open(images, index);
+```
+
+## Which prop decides what
+
+| prop               | decides                                                  |
+| ------------------ | --------------------------------------------------------- |
+| `measureThumb`     | the rect the opening animation grows FROM                 |
+| `cornerRadius`     | the thumbnail's corner, so the transition matches it       |
+| `indicatorVariant` | `dots` or `thumbnails` for the page indicator              |
+
+`open(images, index, rect?)` takes the whole set and which one to show.
+
+## Why it is imperative
+
+One gallery serves every thumbnail on a screen. Making it declarative would
+mean a piece of state per grid, or one shared "which image is open" flag
+threaded through everything that can show an image. The ref is what lets a
+thumbnail deep in a list open it without the list knowing the gallery exists.
+
+## `measureThumb` is what makes the transition read
+
+Without it the gallery fades in from nowhere. With it, the image grows out of
+the thumbnail the user pressed, which tells them *which* image they opened —
+useful precisely in the case where a grid has several similar photos.
+
+It returns a promise because measuring is asynchronous on native. Returning
+`null` is fine and degrades to the fade.
+
+## `alt` is the caption and the accessible text
+
+Set `alt` on each `GalleryImage`. It is shown as the caption for the active
+image, and it is the only description a screen reader has — an image viewer
+with no alt text is a screen with nothing on it.
+
+## Peers
+
+It requires `expo-image`, which is why the family is **not** on the root
+barrel: Metro does not tree-shake, so importing the barrel would drag that peer
+into every consumer's build whether or not they use a gallery. Import it from
+its subpath.
+
+## What a jest run can and cannot see
+
+That it renders nothing until `open()` is called, and that it opens at the
+index it was given. The gestures — pinch, pan-to-dismiss, the shared-element
+transition — belong to a device build.

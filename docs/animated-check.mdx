@@ -1,0 +1,53 @@
+---
+title: AnimatedCheck
+description: A checkmark that draws itself — confirmation for something that just finished.
+order: 67
+---
+
+# AnimatedCheck
+
+A checkmark that strokes itself in when told to.
+
+```tsx
+import { AnimatedCheck, type AnimatedCheckRef } from '@oxyhq/bloom/animated-check';
+
+const check = useRef<AnimatedCheckRef>(null);
+
+<AnimatedCheck ref={check} size={48} />
+
+// when the thing succeeds
+check.current?.play();
+```
+
+## Which prop decides what
+
+| prop    | decides                     |
+| ------- | ---------------------------- |
+| `size`  | the glyph size               |
+| `color` | the stroke colour            |
+
+The animation itself is imperative: `ref.play()`. There is no `visible` or
+`animate` prop, because the interesting moment is a **transition** — the check
+should draw when the operation finishes, not whenever the component happens to
+mount or a prop happens to flip.
+
+## Where it belongs
+
+The end of something the user waited for: a payment confirmed, a file uploaded,
+a form submitted. It replaces the spinner that was there.
+
+Not as a static tick in a list — that is an icon
+(`Check_Stroke2_Corner0_Rounded`) and drawing it with an animation component
+costs an animation and a ref for a glyph. And not for every save: a check
+animation on an autosave is motion for something the user did not ask about.
+
+## Say it in words too
+
+An animation is not announced. Whatever the check confirms should also be
+readable — a line of text beside it, or a [toast](/docs/bloom/main/toast) — or a
+screen reader user gets no confirmation at all.
+
+## Reduced motion
+
+If the user has asked for reduced motion, show the check rather than drawing
+it. The information is the checkmark; the stroke is decoration.

@@ -1,0 +1,53 @@
+---
+title: SubtleHover
+description: The hover wash behind a row — one tint, so every hoverable row matches.
+order: 64
+---
+
+# SubtleHover
+
+A faint fill that appears behind its parent's content on hover. It is what
+makes a list row feel hoverable without a border or a shadow.
+
+```tsx
+import { SubtleHover } from '@oxyhq/bloom/subtle-hover';
+
+<Pressable onPress={open} onHoverIn={…} onHoverOut={…}>
+  <SubtleHover active={hovered} />
+  <Row />
+</Pressable>
+```
+
+## Which prop decides what
+
+| prop     | decides                                                     |
+| -------- | ------------------------------------------------------------ |
+| `active` | whether the wash is shown — the caller owns the hover state   |
+| `native` | whether it also renders on native, where there is no hover    |
+
+## It does not detect hover
+
+The caller does. That is deliberate: what counts as "hovered" depends on the
+row — sometimes it is the row itself, often it is a larger container, and
+occasionally it should stay lit while a menu opened from the row is up. A
+component that owned the detection could not express the third case at all.
+
+## `native` defaults off, because hover does not exist there
+
+On touch there is no hover state to reflect, and a wash that appears on press
+duplicates the press feedback the row already has. Turn it on only for a native
+surface that genuinely has a pointer — an iPad with a trackpad, a keyboard
+focus ring you are mirroring.
+
+## One tint, everywhere
+
+The value of this component is not the effect, which is three lines of style —
+it is that every hoverable row in the ecosystem uses the *same* wash. Rolling
+your own is how a menu and a list on the same screen end up hovering in
+different greys.
+
+## Not a substitute for focus
+
+Hover is for pointers. A keyboard user needs a visible focus state, which is a
+separate thing and must not be styled away — a row that only responds to hover
+is invisible to anyone navigating with a keyboard.

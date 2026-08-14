@@ -1,0 +1,51 @@
+---
+title: PressableScale
+description: A press that shrinks slightly — the feedback for something that is not already a button.
+order: 63
+---
+
+# PressableScale
+
+A `Pressable` that scales down while held.
+
+```tsx
+import { PressableScale } from '@oxyhq/bloom/pressable-scale';
+
+<PressableScale onPress={open} targetScale={0.97} accessibilityLabel="Open photo">
+  <Image source={photo} style={{ width: 120, height: 120, borderRadius: 12 }} />
+</PressableScale>
+```
+
+## Which prop decides what
+
+| prop          | decides                                                     |
+| ------------- | ------------------------------------------------------------ |
+| `targetScale` | how far it shrinks while held — smaller is more emphatic      |
+
+Everything else is `Pressable`'s.
+
+## What it is for
+
+Feedback on things that are not shaped like buttons: a photo, a card, a tile, a
+row that opens something. Those have no border or fill to darken, so without
+motion a press produces no acknowledgement at all and the user presses again.
+
+`Button`, `Fab` and `FrostedIconButton` already have their own press feedback —
+wrapping one adds a second animation on top of the first.
+
+## Keep the scale small
+
+Around 0.96–0.98 for anything sizeable. A large element shrinking to 0.9 moves
+its edges a long way, which reads as the layout jumping rather than as a press.
+Small targets can take more, because the absolute movement is smaller.
+
+## It is a Pressable, so it still needs a name
+
+An image inside a `PressableScale` announces as a button with no label.
+`accessibilityLabel` is not optional here.
+
+## Native vs web
+
+The press animation runs on the native driver, and jest can see the structure
+but never whether the animation ran. A device build is the only place it is
+actually verified.

@@ -33,13 +33,13 @@ export const Radio: Story = {
       <View style={{ width: 380 }}>
         <SegmentedControl label="Appearance" type="radio" value={value} onChange={setValue}>
           <SegmentedControlItem value="light">
-            <SegmentedControlItemText value="light">Light</SegmentedControlItemText>
+            <SegmentedControlItemText>Light</SegmentedControlItemText>
           </SegmentedControlItem>
           <SegmentedControlItem value="dark">
-            <SegmentedControlItemText value="dark">Dark</SegmentedControlItemText>
+            <SegmentedControlItemText>Dark</SegmentedControlItemText>
           </SegmentedControlItem>
           <SegmentedControlItem value="system">
-            <SegmentedControlItemText value="system">System</SegmentedControlItemText>
+            <SegmentedControlItemText>System</SegmentedControlItemText>
           </SegmentedControlItem>
         </SegmentedControl>
       </View>
@@ -55,10 +55,10 @@ export const Tabs: Story = {
       <View style={{ width: 380, gap: 16 }}>
         <SegmentedControl label="Profile section" type="tabs" value={value} onChange={setValue}>
           <SegmentedControlItem value="posts">
-            <SegmentedControlItemText value="posts">Posts</SegmentedControlItemText>
+            <SegmentedControlItemText>Posts</SegmentedControlItemText>
           </SegmentedControlItem>
           <SegmentedControlItem value="replies">
-            <SegmentedControlItemText value="replies">Replies</SegmentedControlItemText>
+            <SegmentedControlItemText>Replies</SegmentedControlItemText>
           </SegmentedControlItem>
         </SegmentedControl>
         <Text>{value === 'posts' ? 'Everything you posted.' : 'Everything you replied to.'}</Text>
@@ -76,18 +76,18 @@ export const Sizes: Story = {
       <View style={{ width: 380, gap: 16 }}>
         <SegmentedControl label="Small" type="radio" size="small" value={a} onChange={setA}>
           <SegmentedControlItem value="one">
-            <SegmentedControlItemText value="one">One</SegmentedControlItemText>
+            <SegmentedControlItemText>One</SegmentedControlItemText>
           </SegmentedControlItem>
           <SegmentedControlItem value="two">
-            <SegmentedControlItemText value="two">Two</SegmentedControlItemText>
+            <SegmentedControlItemText>Two</SegmentedControlItemText>
           </SegmentedControlItem>
         </SegmentedControl>
         <SegmentedControl label="Large" type="radio" size="large" value={b} onChange={setB}>
           <SegmentedControlItem value="one">
-            <SegmentedControlItemText value="one">One</SegmentedControlItemText>
+            <SegmentedControlItemText>One</SegmentedControlItemText>
           </SegmentedControlItem>
           <SegmentedControlItem value="two">
-            <SegmentedControlItemText value="two">Two</SegmentedControlItemText>
+            <SegmentedControlItemText>Two</SegmentedControlItemText>
           </SegmentedControlItem>
         </SegmentedControl>
       </View>

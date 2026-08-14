@@ -7,7 +7,7 @@ import { Badge } from '../badge';
 import { Person_Stroke2_Corner0_Rounded as PersonIcon } from '../icons/Person';
 
 const meta: Meta<typeof Item> = {
-  title: 'Navigation/Item',
+  title: 'Components/Item',
   component: Item,
 };
 

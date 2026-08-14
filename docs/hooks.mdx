@@ -1,0 +1,79 @@
+---
+title: Hooks
+description: The shared behaviours Bloom's own components are built on.
+order: 73
+---
+
+# Hooks
+
+`@oxyhq/bloom/hooks` is the set of behaviours Bloom's components share. They
+are exported because apps hit the same problems, and because a second copy of
+any of them drifts.
+
+```tsx
+import { useInteractionState, useDelayedLoading, useGutters } from '@oxyhq/bloom/hooks';
+```
+
+## `useInteractionState`
+
+Press and hover state as plain booleans, with the handlers to wire up.
+
+```tsx
+const { state: pressed, onIn, onOut } = useInteractionState();
+
+<Pressable onPressIn={onIn} onPressOut={onOut} style={[base, pressed && dim]}>
+```
+
+Bloom uses this rather than `Pressable`'s function-form `style`, which
+NativeWind's css-interop swallows — taking the base container style (background,
+radius, border, shadow) with it. That failure is silent and total: the component
+renders unstyled and nothing errors.
+
+## `useDelayedLoading`
+
+True only after a request has been slow for a moment.
+
+```tsx
+const showSpinner = useDelayedLoading(isFetching);
+```
+
+A spinner that appears for 80ms and vanishes is worse than no spinner — the
+flash reads as a glitch, and the user cannot tell what happened. Delaying means
+fast responses look instant and only genuinely slow ones get an indicator.
+
+## `useThrottledValue`
+
+A value that updates at most every N ms. For anything that re-renders a
+expensive tree on a continuous input — a drag, a scroll position, a typed
+query.
+
+## `usePressAnimation`
+
+The shared press transform, so a press dip is the same everywhere.
+
+## `useGutters`
+
+The screen's horizontal insets, from one place, so a header and the content
+below it agree about where the margin is.
+
+## `useHaptics`
+
+Haptic feedback through Bloom's optional-peer boundary — a no-op when
+`expo-haptics` is not installed, rather than a build failure.
+
+Mount `BloomHapticsProvider` if the app needs to turn haptics off globally
+(a user setting, or a platform where they are inappropriate).
+
+## `useImagePreload` / `preloadImage`
+
+Fetch an image before it is rendered — the transition into a full-screen viewer,
+the next page of a carousel.
+
+## `mergeRefs`
+
+Combines several refs into one callback.
+
+Note the return type: `(instance: T | null) => void`, **not**
+`React.RefCallback<T>`. That is deliberate — the plain function type stays
+assignable across duplicate copies of `@types/react` in a consumer's tree,
+which the branded type does not.

@@ -1,0 +1,76 @@
+---
+title: SegmentedControl
+description: Two controls that look identical and announce differently — `type` is the decision.
+order: 25
+---
+
+# SegmentedControl
+
+A row of segments with a sliding indicator. Two to four options, all visible at
+once, one selected.
+
+```tsx
+import {
+  SegmentedControl,
+  SegmentedControlItem,
+  SegmentedControlItemText,
+} from '@oxyhq/bloom/segmented-control';
+
+<SegmentedControl label="Appearance" type="radio" value={mode} onChange={setMode}>
+  <SegmentedControlItem value="light">
+    <SegmentedControlItemText>Light</SegmentedControlItemText>
+  </SegmentedControlItem>
+  <SegmentedControlItem value="dark">
+    <SegmentedControlItemText>Dark</SegmentedControlItemText>
+  </SegmentedControlItem>
+  <SegmentedControlItem value="system">
+    <SegmentedControlItemText>System</SegmentedControlItemText>
+  </SegmentedControlItem>
+</SegmentedControl>
+```
+
+## `type` is an accessibility decision wearing visual clothes
+
+| `type`  | means                                          | announces as              |
+| ------- | ---------------------------------------------- | ------------------------- |
+| `radio` | the segments **pick a value** — a setting       | radio group / radio       |
+| `tabs`  | the segments **switch the panel below**         | tab list / tab            |
+
+The two render identically. That is exactly why the wrong one is dangerous:
+there is nothing on screen to notice, and it is wrong in every screen reader.
+
+Ask what happens when the user picks: if something is now *set*, it is `radio`;
+if the same subject is now shown a different way, it is `tabs`.
+
+## The state spelling follows the role
+
+ARIA gives a `tab` a **selected** state and a `radio` a **checked** one, so a
+single spelling would be invalid in one of the two modes. `SegmentedControl`
+emits `aria-selected` for tabs and `aria-checked` for radios, and neither uses
+`accessibilityState` — react-native-web drops that entirely, so a control
+relying on it would announce no state at all on web.
+
+## `label` is required
+
+It names the group. "Light / Dark / System" without a group name announces as
+three unrelated radios; with `label="Appearance"` it announces as a choice
+about appearance.
+
+## Which prop decides what
+
+| prop       | decides                                        |
+| ---------- | ---------------------------------------------- |
+| `label`    | the accessible name of the whole group          |
+| `type`     | radio group vs tab list (see above)             |
+| `value`    | the selected segment — fully controlled         |
+| `onChange` | receives the pressed segment's `value`          |
+| `size`     | `small` (32px) for a toolbar, `large` (40px)    |
+
+`SegmentedControlItemText` takes no `value` — it reads whether its segment is
+active from context. Passing one is a type error.
+
+## When to reach for something else
+
+- More than about four options, or long labels: a [`Select`](/docs/bloom/main/select).
+- A view of the same subject with real panels underneath: [`Tabs`](/docs/bloom/main/tabs).
+- A single on/off: [`Switch`](/docs/bloom/main/switch).

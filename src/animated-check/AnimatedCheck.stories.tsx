@@ -6,7 +6,7 @@ import { AnimatedCheck } from './index';
 import type { AnimatedCheckRef } from './types';
 
 const meta: Meta<typeof AnimatedCheck> = {
-  title: 'Feedback/AnimatedCheck',
+  title: 'Components/AnimatedCheck',
   component: AnimatedCheck,
   argTypes: {
     size: { control: { type: 'range', min: 16, max: 128, step: 4 } },

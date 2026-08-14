@@ -1,0 +1,50 @@
+---
+title: ConnectionDots
+description: An animated link between two things — an OAuth consent shape, not a loading state.
+order: 68
+---
+
+# ConnectionDots
+
+Two elements with a run of animated dots travelling between them. It is the
+"this app is connecting to your account" illustration on a consent screen.
+
+```tsx
+import { ConnectionDots } from '@oxyhq/bloom/connection-dots';
+
+<ConnectionDots
+  left={<AppLogo />}
+  right={<Avatar source={user.avatar} size={48} />}
+  accessibilityLabel="Notion is connecting to your Oxy account"
+/>
+```
+
+## Which prop decides what
+
+| prop                 | decides                                            |
+| -------------------- | --------------------------------------------------- |
+| `left` / `right`     | the two endpoints — required                        |
+| `dotCount` / `dotSize` | the run between them                              |
+| `accessibilityLabel` | what the whole illustration means                   |
+| `reducedMotion`      | render the dots static instead of animating         |
+
+## It illustrates a relationship, not progress
+
+The dots move continuously; they do not fill up. Nothing here says how far
+along anything is, and using it while an operation runs implies a progress bar
+that never advances. For work in flight use [`Loading`](/docs/bloom/main/loading).
+
+## Give it a label
+
+The whole point is carried by the picture: two parties and a link between them.
+Without `accessibilityLabel` a screen reader gets an app logo, an avatar, and
+nothing about the relationship — which is exactly the thing the user is being
+asked to consent to.
+
+Name both sides in the label, in the direction the consent runs.
+
+## `reducedMotion`
+
+Honour the OS setting. Perpetual motion is one of the more uncomfortable
+patterns for motion-sensitive users, and this one runs for as long as the
+screen is open. The static form still communicates the link.

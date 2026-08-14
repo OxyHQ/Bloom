@@ -1,0 +1,66 @@
+---
+title: ProfileCard
+description: A profile widget with one headline number and one metric — four flavours, one shape.
+order: 62
+---
+
+# ProfileCard
+
+A compact profile widget: an avatar with an optional ring and badge, a headline
+value, and one metric underneath.
+
+```tsx
+import { ProfileCard } from '@oxyhq/bloom/profile-card';
+
+<ProfileCard
+  variant="wallet"
+  avatar={{ source: user.avatar, name: user.displayName }}
+  value="$167,395"
+  subtitle="*5bF5"
+  metric={{ kind: 'dots', label: 'Token diversity', filled: 34, total: 50 }}
+  footer={{ label: 'Top tokens', items: topTokens }}
+/>
+```
+
+## Which prop decides what
+
+| prop       | decides                                                        |
+| ---------- | --------------------------------------------------------------- |
+| `variant`  | `wallet` · `social` · `shopping` · `stat` — the flavour           |
+| `layout`   | `widget` (a fixed-width card) or `wide` (fills its container)     |
+| `avatar`   | the image, its ring, a badge, and the fallback name               |
+| `value`    | the headline number                                              |
+| `metric`   | the thing underneath — a discriminated union, see below           |
+| `footer`   | a labelled row of avatars                                        |
+
+## `metric` is a discriminated union
+
+`kind` picks both the widget and the fields it needs, so a `dots` metric cannot
+be given a `max` and a `progress` metric cannot be given a `total`:
+
+```tsx
+metric={{ kind: 'dots', filled: 34, total: 50 }}
+metric={{ kind: 'progress', label: 'Level 4', value: 620, max: 1000 }}
+```
+
+That is deliberate: the alternative — a flat prop bag with everything optional
+— makes an incomplete metric a runtime surprise rather than a type error.
+
+## `avatar.source`, not a URL
+
+The avatar goes through [`ImageResolver`](/docs/bloom/main/image-resolver), so
+pass the bare Oxy file id. `name` is the fallback used to draw an initial when
+there is no image — give it even when you have one, since that is exactly the
+state you get when the image fails.
+
+## One headline number
+
+`value` is the number the card exists to show. If a card needs two, it is two
+cards — a widget with competing headlines has no headline, and the eye has
+nowhere to land.
+
+## The background is deliberately not the `card` role
+
+This widget sits **on** a card surface in its reference design, so it takes the
+page background and reads as a cut-out rather than as a stacked card. If you
+place it on the page background instead, give it a surface of its own.

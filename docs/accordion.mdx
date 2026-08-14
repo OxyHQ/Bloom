@@ -1,0 +1,69 @@
+---
+title: Accordion
+description: Collapsible sections — fully controlled, and when a disclosure is the wrong shape.
+order: 28
+---
+
+# Accordion
+
+Sections that expand and collapse. Use it when a page holds more than a reader
+needs at once and the sections are *independent* — an FAQ, a set of advanced
+options, a long form split into stages.
+
+```tsx
+import { Accordion, AccordionItem, AccordionTrigger, AccordionContent } from '@oxyhq/bloom/accordion';
+
+const [open, setOpen] = useState<string | string[] | undefined>('shipping');
+
+<Accordion type="single" value={open} onValueChange={setOpen}>
+  <AccordionItem value="shipping">
+    <AccordionTrigger>When will it arrive?</AccordionTrigger>
+    <AccordionContent>Two to four working days.</AccordionContent>
+  </AccordionItem>
+  <AccordionItem value="returns">
+    <AccordionTrigger>Can I return it?</AccordionTrigger>
+    <AccordionContent>Within 30 days, unopened.</AccordionContent>
+  </AccordionItem>
+</Accordion>
+```
+
+## Which prop decides what
+
+| prop            | decides                                                              |
+| --------------- | -------------------------------------------------------------------- |
+| `type`          | `single` — one open section — or `multiple`                           |
+| `value`         | which section(s) are open: a string for `single`, an array for `multiple` |
+| `onValueChange` | receives the next value, or `undefined` when everything closes         |
+| `disabled`      | per `AccordionItem`, a section that cannot be opened                   |
+| `icon`          | per `AccordionTrigger`, replaces the default chevron                   |
+
+**It is fully controlled — `value` and `onValueChange` are required.** There is
+no uncontrolled mode and no `collapsible` flag: closing the last open section
+means `onValueChange` hands you `undefined`, and whether you accept that or
+re-open something is your decision, not the component's. That is what a wizard
+(always something open) and an FAQ (nothing open is fine) actually differ by.
+
+```tsx
+// FAQ: allow everything closed.
+onValueChange={setOpen}
+
+// Wizard: never let the current step close.
+onValueChange={(next) => setOpen(next ?? open)}
+```
+
+## When an accordion is the wrong shape
+
+- **The user needs to compare sections.** Collapsing hides exactly what they are
+  comparing.
+- **The content is two lines.** More interaction than reading it would have been.
+- **Something inside must be findable.** Browser find-in-page and screen-reader
+  search do not see collapsed content, so an accordion is a bad home for
+  anything a user might arrive looking for.
+
+## Animation
+
+The height transition is driven imperatively from a measured content height
+rather than by a layout animation. On web that distinction is load-bearing:
+an animation started from a Reanimated mapper never ticks, so the obvious
+"animate the content in" silently does nothing. If you nest something that
+animates its own height, let one of the two own the measurement.

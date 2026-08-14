@@ -1,0 +1,66 @@
+---
+title: ImageResolver
+description: The one chokepoint that turns an Oxy file id into a URL.
+order: 54
+---
+
+# ImageResolver
+
+Bloom components take a **file id** and ask the app how to turn it into a URL.
+The app registers that function once, at the root.
+
+```tsx
+import { ImageResolverProvider } from '@oxyhq/bloom/image-resolver';
+import { oxyServices } from '@oxyhq/services';
+
+<ImageResolverProvider value={(id, variant) => oxyServices.getFileDownloadUrl(id, variant)}>
+  <App />
+</ImageResolverProvider>
+```
+
+```ts
+type ImageResolver = (id: string, variant?: string) => string | undefined;
+```
+
+## Why Bloom does not build the URL itself
+
+A URL builder in Bloom would hardcode a host, a path shape and a variant
+vocabulary that belong to the platform, not to a component library — and every
+consumer would then need Bloom released to change any of them. One function,
+registered by the app, keeps the media contract in `@oxyhq/services` where it
+already lives.
+
+That is also why there is no `avatarUrl` field on any DTO and no per-app URL
+helper: **one chokepoint**, `getFileDownloadUrl(id, variant)`, plus this
+resolver.
+
+## `source` versus `uri` — the failure that is total and silent
+
+`Avatar` invokes the resolver only for a **non-URL string** passed as `source`.
+
+```tsx
+<Avatar source={user.avatar} />        // ✅ file id → resolver → URL
+<Avatar uri={user.avatar} />           // ✗ file id used as a raw URL → 404
+```
+
+A full URL or an `{ uri }` object passes through untouched, so both props
+"work" in a test with a real URL and only one of them works with a file id.
+Nothing throws — the image 404s and the avatar falls back to its initial. The
+symptom is *every avatar shows a placeholder character*, which reads as missing
+data rather than as a wiring mistake.
+
+The same applies to every Bloom component that wraps `Avatar`:
+[`AvatarGroup`](/docs/bloom/main/avatar-group) items and
+[`UserHoverCard`](/docs/bloom/main/user-hover-card).
+
+## `variant`
+
+The second argument asks for a size. `Avatar` defaults it to `thumb` rather
+than requesting the full-size original for a 32px circle — a detail worth
+keeping if you write a resolver that ignores the argument.
+
+## Register it once
+
+One provider at the app root. A second one deeper in the tree silently shadows
+the first for that subtree, which produces images that work on some screens and
+not others.

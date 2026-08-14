@@ -6,7 +6,7 @@ import { useInteractionState } from '../hooks/use-interaction-state';
 import { SubtleHover } from './index';
 
 const meta: Meta<typeof SubtleHover> = {
-  title: 'Actions/SubtleHover',
+  title: 'Components/SubtleHover',
   component: SubtleHover,
 };
 

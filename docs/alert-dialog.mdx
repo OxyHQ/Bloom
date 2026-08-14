@@ -1,0 +1,75 @@
+---
+title: AlertDialog
+description: The declarative confirm dialog — and when to use `confirm()` instead.
+order: 40
+---
+
+# AlertDialog
+
+A confirm dialog you render: a title, a description, and a confirm/cancel pair.
+
+```tsx
+import { AlertDialog } from '@oxyhq/bloom/alert-dialog';
+
+<AlertDialog
+  visible={confirmingDelete}
+  onClose={() => setConfirmingDelete(false)}
+  title="Delete this draft?"
+  description="This cannot be undone."
+  confirmLabel="Delete"
+  destructive
+  onConfirm={remove}
+/>
+```
+
+## Which prop decides what
+
+| prop            | decides                                                     |
+| --------------- | ------------------------------------------------------------ |
+| `visible`       | whether it is open — the dialog is controlled                 |
+| `onClose`       | called whenever it closes, however it closed                  |
+| `title`         | the question                                                  |
+| `description`   | the consequence                                               |
+| `confirmLabel` / `cancelLabel` | the button text                                |
+| `onConfirm` / `onCancel` | what each button does                                |
+| `destructive`   | paints the confirm button in the error role                   |
+| `hideCancel`    | one button only — an acknowledgement, not a choice            |
+| `dismissible`   | whether a backdrop press or Escape closes it                  |
+
+There is no free-form action array: the shape is confirm-and-cancel, and that
+constraint is the point. A dialog with three or four actions is a menu wearing
+a dialog's clothes, and the user has to read all of them before deciding.
+
+## AlertDialog or `confirm()`
+
+Both ask the same question; they differ in where the answer goes.
+
+- **`AlertDialog`** — declarative and controlled. Right when the open state is
+  already part of the screen's state.
+- **[`confirm()`](/docs/bloom/main/surfaces)** — imperative, returns a promise.
+  Right inside an event handler or a mutation callback, where you want to
+  `await` the answer and there is no natural place to hang a `visible` flag.
+
+The family owns no queue and no host: it bridges onto `Dialog`'s imperative
+control internally, so it stacks with every other overlay and its exit
+animation is not raced by a consumer unmounting in `onClose`.
+
+## `destructive` is a colour
+
+It does not add a second confirmation and it does not make the action
+reversible. If the action destroys something the user cannot get back, the
+recovery path — an undo, a trash — is the real safeguard; the red button is
+only a signal.
+
+## Write the question, not "Are you sure?"
+
+The title says what will happen, and `confirmLabel` says what the button does —
+"Delete" rather than "OK". Anyone dismissing dialogs quickly reads only the
+button, and should still know what they agreed to.
+
+## `hideCancel` is for an acknowledgement
+
+One button means there is no choice to make — something already happened and
+the user is being told. Consider whether that needs a dialog at all: if nothing
+is required of the reader, a [`toast`](/docs/bloom/main/toast) says it without
+interrupting.

@@ -1,0 +1,65 @@
+---
+title: Scroll restoration
+description: Returning to content where the user left it — and the decisions that make it feel right.
+order: 55
+---
+
+# Scroll restoration
+
+`@oxyhq/bloom/scroll` remembers where the user was and puts them back. The core
+is router-agnostic; one adapter binds it to a router.
+
+```tsx
+import { ScrollRestorationProvider } from '@oxyhq/bloom/scroll';
+import { expoRouterScrollAdapter } from '@oxyhq/bloom/scroll/expo-router';
+
+<ScrollRestorationProvider adapter={expoRouterScrollAdapter}>
+  <App />
+</ScrollRestorationProvider>
+```
+
+An expo-router app gets this from [`BloomProvider`](/docs/bloom/main/provider)
+already. A Vite/SPA consumer mounts it directly with its own adapter.
+
+**The adapter must be a module-level constant** — the core calls its members as
+hooks, so a value built inside a component changes the hook identity every
+render.
+
+## The key is CONTENT, not the navigation entry
+
+An offset is stored against the content's identity (route name plus sorted
+params) and the caller's optional `key` — deliberately **not** against the
+history entry.
+
+So content the user has already seen restores however they arrived at it, and
+only unseen content opens at the top. The accepted trade-off: the same content
+open in two live entries shares one offset.
+
+`contentId` comes from the adapter via `useRoute()`, never `usePathname()` —
+`usePathname` reads the globally focused route, so a background screen would
+adopt the foreground one's path and restore to a stranger's offset.
+
+## A miss RESETS to 0; it is not a no-op
+
+On a document-scrolled web app, one window scroller serves every route. If
+arriving at unseen content did nothing, it would inherit the previous screen's
+offset — you would open a new page halfway down.
+
+## Native is deliberately narrower
+
+The native hook is keyed on the storage key, never on focus, and it **returns**
+`{ onScroll }` for the caller to wire up rather than attaching itself.
+
+`enabled` is how the caller says *its rows exist yet* — restoring to an offset a
+list cannot reach yet lands at the bottom of a short list. It is not a feature
+flag.
+
+## What to expect on web
+
+- The restore re-applies across a bounded run of frames, because a re-shown
+  virtualized list reaches full height over several.
+- It **aborts on user input** (`wheel`, `touchstart`, `pointerdown`, `keydown`).
+  If the user starts scrolling, they have taken over.
+- `history.scrollRestoration` is set to `'manual'` only while the provider is
+  mounted, and handed back on `pagehide` — so an app that unmounts it does not
+  leave the browser's own restoration disabled.

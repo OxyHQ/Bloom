@@ -1,0 +1,60 @@
+---
+title: RadioIndicator
+description: The radio dot on its own — presentational, for rows that are already controls.
+order: 69
+---
+
+# RadioIndicator
+
+The ring-and-dot glyph, with no label, no press target and no group.
+
+```tsx
+import { RadioIndicator } from '@oxyhq/bloom/radio-indicator';
+
+<Item
+  title={plan.name}
+  subtitle={plan.price}
+  leading={<RadioIndicator selected={plan.id === chosen} />}
+  role="radio"
+  onPress={() => setChosen(plan.id)}
+/>
+```
+
+## Which prop decides what
+
+| prop            | decides                                        |
+| --------------- | ----------------------------------------------- |
+| `selected`      | filled or hollow                                |
+| `size`          | the diameter; the dot scales with it            |
+| `selectedColor` | the fill when selected                          |
+| `borderColor`   | the ring when not                               |
+
+## Use it only where the row is already the control
+
+`RadioIndicator` is **presentational**. It has no press handler and contributes
+no role or state, so a group built out of these announces as decoration unless
+the surrounding row supplies both — `role="radio"` and the selected state.
+
+If you are building a plain list of options, use
+[`Radio` / `RadioGroup`](/docs/bloom/main/radio) instead: they render the label,
+make the whole row the target, and name the group. Reaching for the indicator
+where you meant the control is the usual way a "radio group" ends up
+unreachable by keyboard and silent to a screen reader.
+
+The legitimate cases are rows that are already something else: a card selector,
+a table row, a settings row with its own affordances.
+
+## The dot colour is derived, not white
+
+When `selectedColor` is the theme primary, the dot uses the preset's readable
+foreground — dark on a yellow primary, light on a blue one. A hardcoded white
+dot disappears on a light accent, which is the same class of failure as
+appending alpha to a token: correct markup, invisible control.
+
+A caller-supplied `selectedColor` falls back to white, because Bloom cannot
+know the right contrast for an arbitrary colour. If you pass one, check it.
+
+## Selected drops the border
+
+A filled circle with a ring around it reads as two states at once. When
+`selected` is true the border goes to zero and the fill carries the state.

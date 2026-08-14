@@ -1,0 +1,58 @@
+---
+title: Fonts
+description: How Bloom's typefaces reach a web bundle and a native build — and what a consumer must not do.
+order: 58
+---
+
+# Fonts
+
+Bloom ships its own typefaces and loads them for you. `BloomThemeProvider`
+mounts `FontLoader`, which injects `@font-face` rules on web and loads the
+assets on native.
+
+```tsx
+// Nothing to do: BloomThemeProvider already does this.
+<BloomThemeProvider>…</BloomThemeProvider>
+```
+
+## Consuming apps must not set `fontFamily` by hand
+
+`BloomThemeProvider` sets Inter as `Text.defaultProps` globally. An app that
+also sets `fontFamily: 'Inter-Regular'` on its own text is overriding the
+family with a name that may not match the loaded asset, and the failure is a
+silent fallback to the system face — text that looks *almost* right.
+
+Use the typography roles instead, which carry family and weight together.
+
+## The `.woff2` files are assets, not base64
+
+`font-urls.web.ts` imports the four files so the consuming bundler emits them
+as content-hashed assets. **Never inline them as base64 again** — that put
+~219 KB gzip into every web entry bundle and made the fonts uncacheable, since
+a font embedded in JS cannot be cached as a font.
+
+The one consumer requirement is `woff2` in Metro's `assetExts`, which
+`@oxyhq/app-preset` registers fleet-wide.
+
+## Two things that look like cleanups and are not
+
+**`apply-font-faces.ts` must stay an empty stub with no imports.** It is the
+neutral default; the web variant is `apply-font-faces.web.ts`. Give the default
+real imports and Metro bundles a second, unusable copy of the font machinery
+into every native app.
+
+**Do not fork `FontLoader` into a `.web` plus a neutral default.**
+`BloomThemeProvider` imports it by *relative* path, and export conditions do
+not apply to relative specifiers — so Vite would silently take the neutral
+default and stop injecting `@font-face` for every web consumer. The `./fonts`
+subpath's `node` export condition exists for the same reason and is
+load-bearing.
+
+## Verifying that fonts are actually on
+
+This is a system that fails by looking fine: a missing `@font-face` falls back
+to a system face rather than erroring. Bloom's own Storybook ran with
+`fonts={false}` for months and every story looked plausible.
+
+Check the computed `font-family` on real text, not that the provider is
+mounted.

@@ -13,7 +13,7 @@ import {
 } from './index';
 
 const meta: Meta<typeof Admonition> = {
-  title: 'Feedback/Admonition',
+  title: 'Components/Admonition',
   component: Admonition,
 };
 

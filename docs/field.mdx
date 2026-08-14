@@ -1,0 +1,70 @@
+---
+title: Field
+description: Label, description, error and the wiring that makes them announce as one control.
+order: 29
+---
+
+# Field
+
+`Field` wraps a control with the things around it — a label, a hint, an error —
+and, more importantly, the associations that make a screen reader read them as
+belonging to that control rather than as loose text near it.
+
+```tsx
+import { Field } from '@oxyhq/bloom/field';
+import { TextField, TextFieldInput } from '@oxyhq/bloom/text-field';
+
+<Field
+  label="Email address"
+  description="We only use this for sign-in."
+  error={errors.email}
+  required
+>
+  <TextField>
+    <TextFieldInput value={email} onChangeText={setEmail} />
+  </TextField>
+</Field>
+```
+
+## Which prop decides what
+
+| prop          | decides                                                     |
+| ------------- | ------------------------------------------------------------ |
+| `label`       | the control's name                                           |
+| `description` | a persistent hint, shown whether or not there is an error     |
+| `error`       | the message; `null` or omitted means valid                    |
+| `required`    | the required marker and the announced requirement             |
+| `disabled`    | dims the whole group                                         |
+| `nativeID`    | the id the label and control are wired through                |
+
+## `error` is a string, not a boolean
+
+Because the message *is* the value. A boolean `hasError` forces the message to
+live somewhere else, and the two then disagree — a red border with no
+explanation, or an explanation after the user already fixed it.
+
+```tsx
+<Field error={touched ? validate(value) : null}>
+```
+
+## A description is not an error, and an error is not a description
+
+Keep both. The description says what the field is for and stays put; the error
+says what went wrong with what was typed. Replacing the description with the
+error means the user loses the instructions at the exact moment they need them.
+
+## Placeholder is not a label
+
+A placeholder disappears as soon as there is text, so a form filled in from
+autofill or a paste has no visible labels at all. `Field`'s `label` is the
+label; a placeholder is at most an example of the format.
+
+## Composition
+
+`Field` does not care what it wraps — a `TextField`, a `Switch`, a
+`SegmentedControl`, a custom control. It supplies the label/description/error
+and the id wiring; the control supplies its own role and state.
+
+For the label alone, without the surrounding structure, use
+[`Label`](/docs/bloom/main/label). For a control with attached buttons or
+prefixes, use [`InputGroup`](/docs/bloom/main/input-group) *inside* a `Field`.

@@ -1,0 +1,54 @@
+---
+title: ProgressiveBlur
+description: A blur that fades out, so content dissolves into the chrome instead of meeting a line.
+order: 72
+---
+
+# ProgressiveBlur
+
+A blur that is strongest at one edge and fades to nothing. Put it behind a
+floating tab bar or a transparent header so scrolling content dissolves rather
+than hitting a hard blur boundary halfway up a word.
+
+```tsx
+import { ProgressiveBlur } from '@oxyhq/bloom/progressive-blur';
+
+<ProgressiveBlur
+  direction="bottom"
+  intensity={5}
+  style={{ position: 'absolute', left: 0, right: 0, bottom: 0, height: 96 }}
+/>
+```
+
+## Which prop decides what
+
+| prop        | decides                                              |
+| ----------- | ----------------------------------------------------- |
+| `direction` | which edge the blur is anchored to — `top` or `bottom` |
+| `intensity` | the strength at that edge, on `expo-blur`'s 0–100 scale |
+
+It takes no size of its own: position and size it with `style`.
+
+## Two implementations, one call site
+
+iOS has no public variable-blur API, so the **native** fork stacks ten thin
+blur layers with a small per-layer intensity — each layer's edge adds an
+imperceptible step, so the falloff reads as continuous. The **web** fork
+replaces the whole stack with one masked `backdrop-filter`, because ten stacked
+backdrop passes would cost far more than the single pass a browser can do
+natively.
+
+Nothing at the call site changes, and `intensity` means the same thing in both
+— per layer on native, mapped onto the equivalent CSS radius on web.
+
+## Be conservative with `intensity`
+
+The blur exists so text stays legible while passing under the chrome. A high
+value turns the strip into an opaque band, which reads as a rendering bug
+rather than as a design.
+
+## It needs something behind it
+
+A backdrop blur with nothing scrolling under it is a slightly grey rectangle
+that costs a compositing pass. If the area behind is a flat background, use a
+gradient — or nothing.
