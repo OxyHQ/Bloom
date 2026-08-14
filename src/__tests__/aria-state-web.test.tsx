@@ -63,6 +63,9 @@ import { InputGroup } from '../input-group';
 import { SettingsListItem } from '../settings-list/SettingsList';
 import { FrostedIconButton } from '../frosted-icon-button';
 import { CompositionBar } from '../composition-bar';
+import { StatBar } from '../stat-bar';
+import { DotGridMeter } from '../dot-grid-meter';
+import { DialogLargeTitle, useDialogHeaderController } from '../dialog/DialogHeader';
 // Both Select forks by explicit filename: jest has no platform-extension
 // resolution, so a bare `'../select'` would only ever exercise the native one
 // and the web fork could drift back unnoticed.
@@ -425,6 +428,56 @@ describe('TabBar', () => {
     expect(tabs).toHaveLength(2);
     expect(tabs[0]?.getAttribute('aria-selected')).toBe('false');
     expect(tabs[1]?.getAttribute('aria-selected')).toBe('true');
+  });
+});
+
+// `Slider` above was fixed on its own and its three siblings were not, because
+// joining this suite is a step somebody has to remember. `aria-state-source-
+// census.test.ts` is the half that fails by default; these are the three it
+// found, asserted against the DOM react-native-web actually emits.
+describe('progressbars announce their value', () => {
+  it('StatBar', () => {
+    const c = mount(<StatBar label="Storage" value={30} max={120} testID="sb" />);
+    const el = byRole(c, 'progressbar');
+    expect(el.getAttribute('aria-valuenow')).toBe('30');
+    expect(el.getAttribute('aria-valuemin')).toBe('0');
+    expect(el.getAttribute('aria-valuemax')).toBe('120');
+    // A progressbar with no label announces a number and nothing about what it
+    // measures, so the bar's own label travels with it.
+    expect(el.getAttribute('aria-label')).toBe('Storage');
+  });
+
+  it('DotGridMeter', () => {
+    const c = mount(<DotGridMeter filled={3} total={10} testID="dg" />);
+    const el = byTestId(c, 'dg');
+    expect(el.getAttribute('role')).toBe('progressbar');
+    expect(el.getAttribute('aria-valuenow')).toBe('3');
+    expect(el.getAttribute('aria-valuemin')).toBe('0');
+    expect(el.getAttribute('aria-valuemax')).toBe('10');
+  });
+
+  it('DotGridMeter clamps the announced value to the total', () => {
+    const c = mount(<DotGridMeter filled={99} total={10} testID="dg" />);
+    expect(byTestId(c, 'dg').getAttribute('aria-valuenow')).toBe('10');
+  });
+
+  it('the dialog header wizard step', () => {
+    // The controller holds shared values, so it has to be created inside a
+    // component rather than beside the assertion.
+    function WizardHeader(): React.ReactElement {
+      const controller = useDialogHeaderController();
+      return (
+        <DialogLargeTitle
+          controller={controller}
+          header={{ title: 'Set up', progress: { step: 2, total: 4 } }}
+        />
+      );
+    }
+    const c = mount(<WizardHeader />);
+    const el = byRole(c, 'progressbar');
+    expect(el.getAttribute('aria-valuenow')).toBe('2');
+    expect(el.getAttribute('aria-valuemin')).toBe('0');
+    expect(el.getAttribute('aria-valuemax')).toBe('4');
   });
 });
 

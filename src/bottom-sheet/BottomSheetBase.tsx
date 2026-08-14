@@ -595,7 +595,18 @@ export const BottomSheetBase = forwardRef((props: BottomSheetBaseProps, ref: Rea
     // overlay (the body pan covers the entire sheet, handle included).
     const handleSlot = handleNode && manualActivation && handlePanGesture ? (
         <GestureDetector gesture={handlePanGesture}>
-            <View style={styles.handleHitArea} accessible accessibilityRole="adjustable">
+            {/*
+              The hit area is a POINTER affordance and is deliberately not an
+              accessibility element. It used to carry `accessible
+              accessibilityRole="adjustable"`, which react-native-web maps to
+              `role="slider"` — an unlabelled, valueless slider in the a11y tree,
+              and a promise the component cannot keep on either platform: the
+              sheet has no snap points to step between and the handle declares no
+              `accessibilityActions`, so the increment/decrement gestures the role
+              advertises do nothing. Screen-reader users dismiss the sheet through
+              the backdrop, the close control or Escape.
+            */}
+            <View style={styles.handleHitArea}>
                 {handleNode}
             </View>
         </GestureDetector>

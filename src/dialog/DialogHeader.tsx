@@ -400,7 +400,13 @@ function HeaderProgressBar({
   return (
     <View
       accessibilityRole="progressbar"
-      accessibilityValue={{ min: 0, max: total, now: step }}
+      // The FLAT `aria-value*` props: react-native-web drops the
+      // `accessibilityValue` object entirely, so the wizard step announced a
+      // progressbar with no step count. React Native folds these back into
+      // `accessibilityValue`, so native is unchanged.
+      aria-valuemin={0}
+      aria-valuemax={total}
+      aria-valuenow={step}
       style={[
         styles.progressTrack,
         { backgroundColor: onImage ? 'rgba(255,255,255,0.25)' : theme.colors.border },

@@ -82,7 +82,14 @@ const StatBarComponent: React.FC<StatBarProps> = (props) => {
       <View
         style={[styles.track, { height, borderRadius: radius, backgroundColor: track }]}
         accessibilityRole="progressbar"
-        accessibilityValue={{ min: 0, max, now: value }}
+        // The FLAT `aria-value*` props, not the `accessibilityValue` object:
+        // react-native-web has no handling for the latter at all, so the bar
+        // announced its role and no value whatsoever. React Native folds these
+        // three back into `accessibilityValue`, so native keeps what it had.
+        aria-valuemin={0}
+        aria-valuemax={max}
+        aria-valuenow={value}
+        accessibilityLabel={label}
       >
         <View style={{ width: `${ratio}%`, height, borderRadius: radius, backgroundColor: fill }} />
       </View>
