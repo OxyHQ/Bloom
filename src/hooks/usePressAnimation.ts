@@ -29,16 +29,19 @@ import { SUPPORTS_PRESS_SCALE } from '../styles/pointer';
  * — `scaleAnim` stays parked at 1, so a caller can keep passing it into a
  * transform unconditionally and simply gets no movement.
  *
- * KNOWN DEFECT, pinned by `__tests__/usePressAnimation.test.tsx`: `pressScale`
- * carries a default, and a JS default parameter fires on an explicit `undefined`
- * — so the `undefined`-disables path four call sites pass for their disabled
- * state resolves to 0.97 and never disables anything. It is unreachable today
- * (each of those call sites also withholds its press handlers when disabled) and
- * closing it moves the exported signature, so it belongs to a breaking batch.
+ * `pressScale` is REQUIRED and takes `undefined` to mean "no press animation" —
+ * which is how `Button`, `Fab`, `FrostedIconButton` and `Checkbox` express their
+ * disabled state. It used to carry a `= 0.97` default, and a JS default
+ * parameter fires on an EXPLICIT `undefined`, so that documented escape hatch
+ * resolved to 0.97 and disabled nothing. Latent rather than live — each of those
+ * call sites also withholds its press handlers when disabled, so the hook was
+ * never driven — but the default is gone rather than papered over, and every
+ * caller already passes an argument. Do not reintroduce it: a default and an
+ * `undefined`-means-off parameter cannot coexist.
  *
- * @param pressScale - Scale value when pressed (e.g. 0.97).
+ * @param pressScale - Scale value when pressed (e.g. 0.97), or `undefined` for none.
  */
-export function usePressAnimation(pressScale: number | undefined = 0.97) {
+export function usePressAnimation(pressScale: number | undefined) {
   const scaleAnim = useRef(new Animated.Value(1)).current;
   const reducedMotion = useReducedMotion();
   const enabled = pressScale !== undefined && SUPPORTS_PRESS_SCALE && !reducedMotion;

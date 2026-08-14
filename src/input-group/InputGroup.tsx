@@ -25,7 +25,7 @@ interface InputGroupContextValue {
 const InputGroupContext = createContext<InputGroupContextValue>({ size: 'md' });
 InputGroupContext.displayName = 'InputGroupContext';
 
-const AddonComponent = function InputGroupAddon({
+const InputGroupAddonComponent = function InputGroupAddon({
   children,
   divider = false,
   noPadding = false,
@@ -67,8 +67,8 @@ const AddonComponent = function InputGroupAddon({
   );
 };
 
-export const Addon = memo(AddonComponent);
-Addon.displayName = 'InputGroup.Addon';
+export const InputGroupAddon = memo(InputGroupAddonComponent);
+InputGroupAddon.displayName = 'InputGroupAddon';
 
 /**
  * Horizontal group that wraps an input with leading/trailing addons (icons,
@@ -184,4 +184,7 @@ const styles = StyleSheet.create({
 const InputGroupBase = memo(InputGroupComponent);
 InputGroupBase.displayName = 'InputGroup';
 
-export const InputGroup = Object.assign(InputGroupBase, { Addon });
+// The flat-prefixed `InputGroupAddon` is the export; `InputGroup.Addon` is the
+// same component reachable through the parent, which is how every call site
+// reads (`<InputGroup.Addon>` inside an `<InputGroup>`).
+export const InputGroup = Object.assign(InputGroupBase, { Addon: InputGroupAddon });

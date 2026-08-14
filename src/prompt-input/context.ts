@@ -1,7 +1,7 @@
 import React, { createContext, useContext } from 'react';
 import type { TextInput as RNTextInput } from 'react-native';
 
-export interface Attachment {
+export interface PromptInputAttachment {
   id: string;
   uri: string;
   type: 'image' | 'document';
@@ -23,10 +23,10 @@ export type PromptInputContextType = {
   setCurrentHeight: (height: number) => void;
   isFullscreen: boolean;
   onImagePaste?: (files: File[]) => void;
-  attachments: Attachment[];
-  addAttachment: (attachment: Attachment) => void;
+  attachments: PromptInputAttachment[];
+  addAttachment: (attachment: PromptInputAttachment) => void;
   removeAttachment: (id: string) => void;
-  updateAttachment: (id: string, updates: Partial<Attachment>) => void;
+  updateAttachment: (id: string, updates: Partial<PromptInputAttachment>) => void;
   handleCompletionKey: ((key: string) => boolean) | null;
   setHandleCompletionKey: (fn: ((key: string) => boolean) | null) => void;
 };
@@ -54,6 +54,3 @@ export function usePromptInput(): PromptInputContextType {
   return useContext(PromptInputContext);
 }
 
-export function useIsFullscreen(): boolean {
-  return useContext(PromptInputContext).isFullscreen;
-}

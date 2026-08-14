@@ -7,8 +7,10 @@ export { BloomColorScope, useColorScopeStyle } from './color-scope';
 export type { BloomColorScopeProps } from './color-scope';
 export { BloomSeedScope } from './seed-scope';
 export type { BloomSeedScopeProps } from './seed-scope';
-export { buildSeedScopeVars, roleColorsToPresetTokens } from './color-scope/seed-scope';
-export type { SeedScopeOptions } from './color-scope/seed-scope';
+export { roleColorsToPresetTokens } from './color-scope/seed-scope';
+// `buildSeedScopeVars` + `SeedScopeOptions` are exported by
+// `@oxyhq/bloom/design-tokens` — the react-free barrel a build script can
+// import — and are deliberately NOT duplicated here.
 // Colour engine — the dependency-free tonal system that turns ANY seed colour
 // into a full role set. Surfaced here so consumers can derive dynamic themes
 // (e.g. from artwork) without reaching into the internal color-engine path.
@@ -52,8 +54,9 @@ export {
 } from './color-presets';
 export { parseRgb, withAlpha } from './color-utils';
 export type { RgbChannels } from './color-utils';
-export { getPresetVars, applyPresetVarsToDocument } from './preset-vars';
-export type { ExplicitAccents } from './preset-vars';
+export { applyPresetVarsToDocument } from './preset-vars';
+// `getPresetVars` + `ExplicitAccents`: see the note above — `design-tokens`
+// owns them.
 export { applyDarkClass } from './apply-dark-class';
 export { setColorSchemeSafe } from './set-color-scheme-safe';
 export { initCssInteropDarkMode } from './init-css-interop';

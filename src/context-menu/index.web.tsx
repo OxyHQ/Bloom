@@ -189,6 +189,7 @@ export function ContextMenuContent({ children, style }: ContextMenuContentProps)
         offset: 0,
         gutter: VIEWPORT_GUTTER,
         align: 'start',
+        side: 'bottom',
       }),
     );
   }, [position, menuNode]);

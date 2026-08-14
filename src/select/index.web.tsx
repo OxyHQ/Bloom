@@ -238,6 +238,7 @@ export function SelectContent<T>({
           offset: SELECT_OFFSET,
           gutter: VIEWPORT_GUTTER,
           align: 'start',
+          side: 'bottom',
         }),
         minWidth: width,
       });

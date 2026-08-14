@@ -107,20 +107,23 @@ describe('usePressAnimation suppressions', () => {
     expect(spring).toHaveBeenCalledTimes(2);
   });
 
-  // PINS A KNOWN DEFECT, deliberately. The hook's own doc says "pass `undefined`
-  // to disable" and four call sites (`Button`, `Fab`, `FrostedIconButton`, and
-  // `Checkbox` as of this batch) pass exactly that for their disabled state — but
-  // `pressScale` carries a DEFAULT, and a JS default parameter fires on an
-  // explicit `undefined`, so the argument becomes 0.97 and `enabled` stays true.
-  //
-  // It is latent, not live: every one of those call sites also withholds the
-  // press handlers when disabled, so the hook is never driven. Closing it means
-  // either dropping the default (a signature tightening on an exported hook) or
-  // rewriting what those call sites pass — a breaking-batch change, not an
-  // internal one. This assertion states today's behaviour so that fix cannot
-  // land silently.
-  it('an explicit undefined scale does NOT disable it — the default fires', () => {
-    expect(press(usePressAnimation, undefined)).toBe(true);
+  // The third suppression, and the one that used to be a defect. `Button`,
+  // `Fab`, `FrostedIconButton` and `Checkbox` all express their disabled state
+  // as `usePressAnimation(disabled ? undefined : PRESS_SCALE)`. While
+  // `pressScale` carried a `= 0.97` default that did nothing — a JS default
+  // parameter fires on an EXPLICIT `undefined` — so the argument became 0.97 and
+  // `enabled` stayed true. The parameter is required now; reintroducing a
+  // default makes this red.
+  it('an explicit undefined scale disables it', () => {
+    expect(press(usePressAnimation, undefined)).toBe(false);
+    expect(spring).not.toHaveBeenCalled();
+  });
+
+  // The control for the case above: one argument apart, same everything else.
+  // Without it, "undefined disables" would pass against a hook that never
+  // animates at all.
+  it('…while a number on the same path animates', () => {
+    expect(press(usePressAnimation, 0.9)).toBe(true);
     expect(spring).toHaveBeenCalledTimes(2);
   });
 });

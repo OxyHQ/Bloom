@@ -113,7 +113,7 @@ export function TextField({ children, isInvalid = false, radius = 10, style }: T
   );
 }
 
-export function useSharedInputStyles() {
+function useSharedInputStyles() {
   const theme = useTheme();
   return useMemo(() => {
     const hover: ViewStyle = {

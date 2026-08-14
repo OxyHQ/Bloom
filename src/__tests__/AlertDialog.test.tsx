@@ -1,10 +1,8 @@
 import React, { useState } from 'react';
 import { act, fireEvent, render } from '@testing-library/react-native';
 
-import { AlertDialog, AlertDialogHost, confirm } from '../alert-dialog';
+import { AlertDialog } from '../alert-dialog';
 import { createAlertDialog } from '../alert-dialog/AlertDialog';
-import { createAlertDialogHost } from '../alert-dialog/AlertDialogHost';
-import { getConfirmQueue, resolveConfirm } from '../alert-dialog/confirm-store';
 import type { DialogProps } from '../dialog';
 import { BloomThemeProvider } from '../theme/BloomThemeProvider';
 
@@ -19,20 +17,13 @@ function renderWithTheme(ui: React.ReactElement) {
 // `AlertDialog` is a thin wrapper over `<Dialog placement="center">` that maps
 // its confirm/cancel props onto the Dialog's declarative `actions` row (the
 // shared `ActionRow`/`ActionButton` primitive). These tests assert the
-// public-API contract it owns — controlled visibility, the title/description
-// copy, the confirm/cancel actions, and — most importantly — the exact
-// `confirm()` promise-resolution contract every ecosystem call site relies on:
-// the confirm button resolves `true`; the cancel button (or Escape / backdrop,
-// which route through the Dialog's `onClose`) resolves `false`.
+// public-API contract it owns: CONTROLLED visibility, the title/description
+// copy, and the confirm/cancel actions.
+//
+// The imperative counterpart — `confirm()` — is no longer this family's: it
+// presents onto the shared surface stack, and its promise contract is asserted
+// in `surface-prompts.test.tsx` against the real rendered chrome.
 describe('AlertDialog (built on Dialog)', () => {
-  afterEach(() => {
-    // Drain any confirm() entries a test left pending so the module-scoped
-    // queue never bleeds across tests.
-    for (const entry of [...getConfirmQueue()]) {
-      resolveConfirm(entry.id, false);
-    }
-  });
-
   it('renders nothing when not visible', () => {
     const { queryByText } = renderWithTheme(
       <AlertDialog
@@ -159,60 +150,6 @@ describe('AlertDialog (built on Dialog)', () => {
     expect(onConfirm).toHaveBeenCalledTimes(1);
   });
 
-  // The authoritative ecosystem contract: `confirm()` + `<AlertDialogHost />`.
-  // Every consuming call site does `const ok = await confirm({...})`, so these
-  // assert the exact promise resolution against the REAL rendered action row.
-  describe('confirm() + AlertDialogHost promise contract', () => {
-    it('resolves true when the confirm button is pressed', async () => {
-      const { getByText } = renderWithTheme(<AlertDialogHost />);
-      let result!: Promise<boolean>;
-      act(() => {
-        result = confirm({
-          title: 'Delete app?',
-          confirmLabel: 'Delete',
-          cancelLabel: 'Keep',
-        });
-      });
-      act(() => {
-        fireEvent.press(getByText('Delete'));
-      });
-      await expect(result).resolves.toBe(true);
-      expect(getConfirmQueue()).toHaveLength(0);
-    });
-
-    it('resolves false when the cancel button is pressed', async () => {
-      const { getByText } = renderWithTheme(<AlertDialogHost />);
-      let result!: Promise<boolean>;
-      act(() => {
-        result = confirm({
-          title: 'Discard changes?',
-          confirmLabel: 'Discard',
-          cancelLabel: 'Keep editing',
-        });
-      });
-      act(() => {
-        fireEvent.press(getByText('Keep editing'));
-      });
-      await expect(result).resolves.toBe(false);
-      expect(getConfirmQueue()).toHaveLength(0);
-    });
-
-    it('resolves true even though confirm fires both onConfirm and onClose', async () => {
-      // The confirm button runs onConfirm (resolve true, drains the entry) then
-      // onClose (resolve false — a no-op once the entry is gone). The net must
-      // be `true`; this guards the double-resolution path explicitly.
-      const { getByText } = renderWithTheme(<AlertDialogHost />);
-      let result!: Promise<boolean>;
-      act(() => {
-        result = confirm({ title: 'Proceed?', confirmLabel: 'Proceed' });
-      });
-      act(() => {
-        fireEvent.press(getByText('Proceed'));
-      });
-      await expect(result).resolves.toBe(true);
-    });
-  });
-
   // Finding 1 (control-mode) + Finding 2 (backdrop-dismiss default). These pin
   // the two behavioural fixes at the prop boundary between `AlertDialog` and the
   // underlying `Dialog`, using a prop-capturing mock `Dialog` so the assertions
@@ -256,29 +193,5 @@ describe('AlertDialog (built on Dialog)', () => {
       expect(captured.props?.dismissOnBackdrop).toBe(false);
     });
 
-    it('resolves false when dismissed via backdrop / Escape (Dialog onClose) with no button press', async () => {
-      // Backdrop tap and Escape both route through the Dialog's `onClose`. Now
-      // that dismissOnBackdrop defaults true, that path is reachable by default
-      // and must resolve the confirm as cancelled (false) and drain the queue —
-      // never trigger the (potentially destructive) confirm action.
-      const captured: { onClose?: () => void } = {};
-      const MockDialog = (props: DialogProps) => {
-        captured.onClose = props.onClose;
-        return null;
-      };
-      const Host = createAlertDialogHost(createAlertDialog(MockDialog));
-      renderWithTheme(<Host />);
-      let result!: Promise<boolean>;
-      act(() => {
-        result = confirm({ title: 'Discard unsaved changes?' });
-      });
-      act(() => {
-        // Simulate the backdrop / Escape dismissal the real Dialog fires after
-        // its exit animation settles.
-        captured.onClose?.();
-      });
-      await expect(result).resolves.toBe(false);
-      expect(getConfirmQueue()).toHaveLength(0);
-    });
   });
 });

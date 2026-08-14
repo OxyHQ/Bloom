@@ -99,7 +99,8 @@ declare global {
  * `react-native` → `./src/...` condition alongside the `lib/module` / `lib/commonjs`
  * forks, and the `Portal` component is consumed cross-subpath from `./tooltip`,
  * `./prompt-input`, `./dialog`, `./select`, `./menu`, `./context-menu`, and `./popover`
- * while the `Provider`/`Outlet` are mounted once at the app root via `@oxyhq/bloom/portal`.
+ * while `PortalProvider`/`PortalOutlet` are mounted once at the app root via
+ * `@oxyhq/bloom/portal`.
  * A bundler can resolve those subpaths through different export conditions, so without a
  * guard each physical copy runs its own `createPortalGroup()` and a `<Portal>` from copy
  * A would register against the `Provider`'s map in copy B — its content would never reach
@@ -110,8 +111,8 @@ declare global {
 const DefaultPortal: PortalGroup = (globalThis.__oxyhq_bloom_portal_group__ ??=
   createPortalGroup());
 
-export const Provider = DefaultPortal.Provider;
-export const Outlet = memo(DefaultPortal.Outlet);
+export const PortalProvider = DefaultPortal.Provider;
+export const PortalOutlet = memo(DefaultPortal.Outlet);
 export const Portal = DefaultPortal.Portal;
 
 const styles = StyleSheet.create({

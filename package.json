@@ -291,20 +291,6 @@
         "default": "./lib/commonjs/frosted-icon-button/index.js"
       }
     },
-    "./grouped-buttons": {
-      "react-native": {
-        "types": "./lib/typescript/module/grouped-buttons/index.d.ts",
-        "default": "./src/grouped-buttons/index.ts"
-      },
-      "import": {
-        "types": "./lib/typescript/module/grouped-buttons/index.d.ts",
-        "default": "./lib/module/grouped-buttons/index.js"
-      },
-      "require": {
-        "types": "./lib/typescript/commonjs/grouped-buttons/index.d.ts",
-        "default": "./lib/commonjs/grouped-buttons/index.js"
-      }
-    },
     "./divider": {
       "react-native": {
         "types": "./lib/typescript/module/divider/index.d.ts",
@@ -331,20 +317,6 @@
       "require": {
         "types": "./lib/typescript/commonjs/radio-indicator/index.d.ts",
         "default": "./lib/commonjs/radio-indicator/index.js"
-      }
-    },
-    "./collapsible": {
-      "react-native": {
-        "types": "./lib/typescript/module/collapsible/index.d.ts",
-        "default": "./src/collapsible/index.ts"
-      },
-      "import": {
-        "types": "./lib/typescript/module/collapsible/index.d.ts",
-        "default": "./lib/module/collapsible/index.js"
-      },
-      "require": {
-        "types": "./lib/typescript/commonjs/collapsible/index.d.ts",
-        "default": "./lib/commonjs/collapsible/index.js"
       }
     },
     "./error-boundary": {
@@ -607,20 +579,6 @@
       "require": {
         "types": "./lib/typescript/commonjs/pressable-scale/index.d.ts",
         "default": "./lib/commonjs/pressable-scale/index.js"
-      }
-    },
-    "./pressable-with-hover": {
-      "react-native": {
-        "types": "./lib/typescript/module/pressable-with-hover/index.d.ts",
-        "default": "./src/pressable-with-hover/index.ts"
-      },
-      "import": {
-        "types": "./lib/typescript/module/pressable-with-hover/index.d.ts",
-        "default": "./lib/module/pressable-with-hover/index.js"
-      },
-      "require": {
-        "types": "./lib/typescript/commonjs/pressable-with-hover/index.d.ts",
-        "default": "./lib/commonjs/pressable-with-hover/index.js"
       }
     },
     "./subtle-hover": {
@@ -1409,7 +1367,6 @@
     "user-hover-card",
     "loading",
     "divider",
-    "collapsible",
     "error-boundary",
     "prompt-input",
     "icons",

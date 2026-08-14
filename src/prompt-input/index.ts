@@ -5,8 +5,7 @@ export { PromptInputAttachments } from './Attachments';
 export { PromptInputSubmitButton } from './SubmitButton';
 export {
   usePromptInput,
-  useIsFullscreen,
-  type Attachment,
+  type PromptInputAttachment,
   type PromptInputContextType,
 } from './context';
 export type {

@@ -25,18 +25,6 @@ const TooltipContext = createContext<TooltipContextType>({
 });
 TooltipContext.displayName = 'TooltipContext';
 
-/**
- * No-op on web. Portal Provider is only needed on native.
- */
-export function TooltipSheetCompatProvider({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
-  return <>{children}</>;
-}
-TooltipSheetCompatProvider.displayName = 'TooltipSheetCompatProvider';
-
 export function Tooltip({
   children,
   position = 'bottom',

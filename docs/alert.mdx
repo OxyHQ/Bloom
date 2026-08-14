@@ -6,19 +6,23 @@ order: 6
 
 # alert()
 
-Imperative one-shot confirmation dialogs, matching React Native's `Alert.alert(title, message?, buttons?)` signature. Calls are queued and rendered through `BloomDialogProvider` — you can call `alert()` from anywhere, including before the provider mounts (alerts queue and drain on subscribe).
+Imperative one-shot confirmation dialogs, matching React Native's `Alert.alert(title, message?, buttons?)` signature. You can call `alert()` from anywhere — an event handler, an async callback, a top-level helper — without threading a provider through the call site.
+
+It presents onto Bloom's shared **surface stack**, the same one `confirm()`, `prompt()` and `surfaces.present()` use, so an alert layers correctly above whatever is already open. Two `alert()` calls in a row STACK; they do not queue.
 
 ## Setup
 
-Mount `BloomDialogProvider` once near your app root:
+Mount the surface host once near your app root:
 
 ```tsx
-import { BloomDialogProvider } from '@oxyhq/bloom';
+import { SurfaceProvider } from '@oxyhq/bloom';
 
-<BloomDialogProvider>
+<SurfaceProvider>
   <App />
-</BloomDialogProvider>
+</SurfaceProvider>
 ```
+
+`<SurfaceHost />` on its own does the same job without wrapping `children`, if you'd rather place it yourself.
 
 See [Getting started](/docs/bloom/main/getting-started) for the full provider stack.
 
@@ -43,7 +47,6 @@ function alert(
   title: string,
   message?: string,
   buttons?: AlertButton[],
-  options?: { cancelable?: boolean }
 ): void
 ```
 
@@ -53,7 +56,7 @@ function alert(
 |------|------|-------------|
 | `text` | `string` | Required label. |
 | `style?` | `'default' \| 'cancel' \| 'destructive'` | Defaults to `'default'`. |
-| `onPress?` | `() => void` | Fires after the dialog finishes closing. |
+| `onPress?` | `() => void` | Fires on the press, as the surface animates out. |
 
 ## Patterns
 
@@ -74,3 +77,17 @@ If you're migrating from React Native's built-in `Alert`, you can swap the impor
 <Callout variant="warning" title="alert vs Dialog">
 `alert()` is for **imperative one-shot prompts** (e.g. confirming destructive actions from a deeply nested callback). When you need state-driven control over a dialog (open/close timing, busy states), use the declarative [`<Dialog>`](/docs/bloom/main/dialog) component instead.
 </Callout>
+
+## Related
+
+`alert()` answers nothing. Its two siblings on the same stack do:
+
+```tsx
+import { confirm, prompt } from '@oxyhq/bloom/surfaces';
+
+const ok = await confirm({ title: 'Delete app?', destructive: true });
+const name = await prompt({ title: 'Name this list' }); // string | null
+```
+
+`confirm` resolves `false` and `prompt` resolves `null` on a backdrop / Escape /
+Android-back dismissal, so neither can hang.

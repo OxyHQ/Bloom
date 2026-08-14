@@ -11,6 +11,7 @@ import { Pressable, StyleSheet, View } from 'react-native';
 
 import { useTheme } from '../theme/use-theme';
 import { Backdrop, OverlayRoot } from '../overlay';
+import { resolveDropdownPlacement } from '../overlay/dropdown-placement';
 import { Portal } from '../portal/index.web';
 import { WEB_POSITION_FIXED } from '../styles/web-view-style';
 import { bloomShadowStyle } from '../design-tokens/shadows';
@@ -155,41 +156,26 @@ export function PopoverTrigger({ children, label }: PopoverTriggerProps) {
   );
 }
 
-function resolvePosition(
-  rect: Rect,
-  panel: { width: number; height: number },
-  placement: PopoverPlacement,
-  offset: number,
-): { left: number; top: number } {
-  const viewportW = typeof window !== 'undefined' ? window.innerWidth : 0;
-  const viewportH = typeof window !== 'undefined' ? window.innerHeight : 0;
-  const isTop = placement.startsWith('top');
+/** Minimum distance kept from every viewport edge. */
+const VIEWPORT_GUTTER = 8;
 
-  let top = isTop ? rect.y - panel.height - offset : rect.y + rect.height + offset;
-
-  // Flip if it would overflow the chosen edge.
-  if (!isTop && top + panel.height > viewportH && rect.y - panel.height - offset > 0) {
-    top = rect.y - panel.height - offset;
-  } else if (isTop && top < 0 && rect.y + rect.height + offset + panel.height <= viewportH) {
-    top = rect.y + rect.height + offset;
-  }
-
-  let left: number;
-  if (placement.endsWith('end')) {
-    left = rect.x + rect.width - panel.width;
-  } else if (placement.endsWith('start')) {
-    left = rect.x;
-  } else {
-    // bare 'bottom' / 'top' → center-align under the trigger.
-    left = rect.x + rect.width / 2 - panel.width / 2;
-  }
-
-  // Clamp horizontally into the viewport with an 8px gutter.
-  const gutter = 8;
-  left = Math.max(gutter, Math.min(left, viewportW - panel.width - gutter));
-  top = Math.max(gutter, top);
-
-  return { left, top };
+/**
+ * Split a `PopoverPlacement` into the two axes `resolveDropdownPlacement`
+ * takes. A bare `'bottom'`/`'top'` centres on the trigger, which is why the
+ * shared resolver grew `align: 'center'`.
+ */
+function axesFor(placement: PopoverPlacement): {
+  side: 'bottom' | 'top';
+  align: 'start' | 'end' | 'center';
+} {
+  return {
+    side: placement.startsWith('top') ? 'top' : 'bottom',
+    align: placement.endsWith('end')
+      ? 'end'
+      : placement.endsWith('start')
+        ? 'start'
+        : 'center',
+  };
 }
 
 export function PopoverContent({
@@ -254,9 +240,22 @@ export function PopoverContent({
   if (!isOpen || !rect) return null;
 
   const resolvedMinWidth = minWidth ?? rect.width;
-  const position = panelSize
-    ? resolvePosition(rect, panelSize, placement, offset)
-    : { left: rect.x, top: rect.y + rect.height + offset };
+  const position =
+    panelSize && typeof window !== 'undefined'
+      ? resolveDropdownPlacement({
+          anchor: {
+            top: rect.y,
+            bottom: rect.y + rect.height,
+            left: rect.x,
+            right: rect.x + rect.width,
+          },
+          size: panelSize,
+          viewport: { width: window.innerWidth, height: window.innerHeight },
+          offset,
+          gutter: VIEWPORT_GUTTER,
+          ...axesFor(placement),
+        })
+      : { left: rect.x, top: rect.y + rect.height + offset };
 
   return (
     <Portal>

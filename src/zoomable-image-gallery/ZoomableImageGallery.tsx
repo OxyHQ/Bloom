@@ -30,7 +30,7 @@ import {
 import { useTheme } from '../theme/use-theme';
 import { Backdrop, OverlayRoot } from '../overlay';
 import { Portal } from '../portal';
-import { PressableWithHover } from '../pressable-with-hover';
+import { useInteractionState } from '../hooks/useInteractionState';
 import {
   ArrowLeft_Stroke2_Corner0_Rounded,
   ArrowRight_Stroke2_Corner0_Rounded,
@@ -87,6 +87,47 @@ const webUserSelectNoneStyle = Platform.select({
   web: WEB_USER_SELECT_NONE,
   default: undefined,
 });
+
+/**
+ * The gallery's web-only paging arrows — the ONLY hover-styled control in the
+ * package, which is why the hover merge lives here rather than in a shared
+ * component. Hover is a web affordance (react-native-web synthesises
+ * `onHoverIn`/`onHoverOut`; native pointers have none), and these arrows are
+ * already rendered behind a `Platform.OS === 'web'` guard.
+ */
+function NavArrow({
+  direction,
+  onPress,
+}: {
+  direction: 'left' | 'right';
+  onPress: () => void;
+}) {
+  const { state: hovered, onIn: onHoverIn, onOut: onHoverOut } = useInteractionState();
+  const isLeft = direction === 'left';
+
+  return (
+    <Pressable
+      onPress={onPress}
+      accessibilityRole="button"
+      accessibilityLabel={isLeft ? 'Previous image' : 'Next image'}
+      hitSlop={8}
+      onHoverIn={onHoverIn}
+      onHoverOut={onHoverOut}
+      style={[
+        styles.navArrow,
+        isLeft ? styles.navArrowLeft : styles.navArrowRight,
+        webPointerStyle,
+        hovered ? (isLeft ? styles.navArrowHoverLeft : styles.navArrowHoverRight) : null,
+      ]}
+    >
+      {isLeft ? (
+        <ArrowLeft_Stroke2_Corner0_Rounded fill="#fff" size="lg" />
+      ) : (
+        <ArrowRight_Stroke2_Corner0_Rounded fill="#fff" size="lg" />
+      )}
+    </Pressable>
+  );
+}
 
 interface FittedSize {
   width: number;
@@ -958,29 +999,11 @@ const ZoomableImageGalleryInner = React.forwardRef<ZoomableImageGalleryHandle, Z
           )}
 
           {Platform.OS === 'web' && pagerReady && images.length > 1 && activeIndex > 0 && (
-            <PressableWithHover
-              onPress={() => pageTo(activeIndex - 1)}
-              accessibilityRole="button"
-              accessibilityLabel="Previous image"
-              hitSlop={8}
-              style={[styles.navArrow, styles.navArrowLeft, webPointerStyle]}
-              hoverStyle={styles.navArrowHoverLeft}
-            >
-              <ArrowLeft_Stroke2_Corner0_Rounded fill="#fff" size="lg" />
-            </PressableWithHover>
+            <NavArrow direction="left" onPress={() => pageTo(activeIndex - 1)} />
           )}
 
           {Platform.OS === 'web' && pagerReady && images.length > 1 && activeIndex < images.length - 1 && (
-            <PressableWithHover
-              onPress={() => pageTo(activeIndex + 1)}
-              accessibilityRole="button"
-              accessibilityLabel="Next image"
-              hitSlop={8}
-              style={[styles.navArrow, styles.navArrowRight, webPointerStyle]}
-              hoverStyle={styles.navArrowHoverRight}
-            >
-              <ArrowRight_Stroke2_Corner0_Rounded fill="#fff" size="lg" />
-            </PressableWithHover>
+            <NavArrow direction="right" onPress={() => pageTo(activeIndex + 1)} />
           )}
 
           {canShare && pagerReady && (

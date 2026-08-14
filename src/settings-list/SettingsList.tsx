@@ -3,6 +3,7 @@ import { View, Text, Pressable, StyleSheet } from 'react-native';
 
 import { useTheme } from '../theme/use-theme';
 import { useInteractionState } from '../hooks/useInteractionState';
+import { Divider } from '../divider';
 import type {
   SettingsListItemProps,
   SettingsListGroupProps,
@@ -167,12 +168,7 @@ export const SettingsListGroup = memo<SettingsListGroupProps>(function SettingsL
           <React.Fragment key={index}>
             {child}
             {index < filteredChildren.length - 1 ? (
-              <View
-                style={[
-                  styles.divider,
-                  { backgroundColor: theme.colors.border, opacity: 0.3 },
-                ]}
-              />
+              <Divider style={styles.divider} />
             ) : null}
           </React.Fragment>
         ))}
@@ -191,15 +187,7 @@ export const SettingsListGroup = memo<SettingsListGroupProps>(function SettingsL
 
 export const SettingsListDivider = memo<SettingsListDividerProps>(
   function SettingsListDivider({ inset = 52 }) {
-    const theme = useTheme();
-    return (
-      <View
-        style={[
-          styles.divider,
-          { marginLeft: inset, backgroundColor: theme.colors.border, opacity: 0.3 },
-        ]}
-      />
-    );
+    return <Divider style={[styles.divider, { marginLeft: inset }]} />;
   }
 );
 
@@ -270,9 +258,13 @@ const styles = StyleSheet.create({
     paddingTop: 6,
   },
 
-  // Divider
+  // Divider. `Divider` supplies the hairline height and `theme.colors.border`;
+  // these are the settings-list specifics on top of it. `width: 'auto'` is
+  // load-bearing next to the inset: `Divider`'s own `width: '100%'` would make
+  // an inset rule overhang its container by exactly the inset.
   divider: {
-    height: StyleSheet.hairlineWidth,
     marginLeft: 16,
+    width: 'auto',
+    opacity: 0.3,
   },
 });

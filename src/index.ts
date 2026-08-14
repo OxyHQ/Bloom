@@ -2,7 +2,7 @@
 export * from './theme';
 
 // Styles & Utilities
-export { atoms, flatten, Z_INDEX, zIndex } from './styles';
+export { atoms, flatten, Z_INDEX } from './styles';
 export type { ViewStyleProp, TextStyleProp } from './styles';
 export * as tokens from './styles/tokens';
 export { web, native, ios, android, platform, select } from './styles/platform';
@@ -54,16 +54,11 @@ export { type Props as IconProps, sizes as iconSizes, useCommonSVGProps } from '
 export * from './portal';
 export {
   Dialog,
-  DIALOG_SHEET_BACKDROP_TESTID,
-  BloomDialogProvider,
-  alert,
   useDialogContext,
   useDialogControl,
   useDialogHeader,
 } from './dialog';
 export type {
-  AlertButton,
-  AlertButtonStyle,
   DialogAction,
   DialogActionColor,
   DialogContextProps,
@@ -74,11 +69,11 @@ export type {
   DialogProps,
   ResponsiveDialogPlacement,
 } from './dialog';
-// Surface stack — the shared, coordinated overlay system. The imperative API is
-// the `surfaces` object (its members would otherwise clash with alert-dialog's
-// `confirm`); the individual functions are also named exports of
-// `@oxyhq/bloom/surfaces`.
-export { surfaces, SurfaceProvider, SurfaceHost, useSurface } from './surfaces';
+// Surface stack — the ONE coordinated overlay system, and the ONE imperative
+// overlay API. `alert()` and `confirm()` present into it (they used to be two
+// separate FIFO queues with hosts of their own); `prompt` and the rest of the
+// stack controls are named exports of `@oxyhq/bloom/surfaces`.
+export { surfaces, alert, confirm, SurfaceProvider, SurfaceHost, useSurface } from './surfaces';
 export type {
   SurfacePresentation,
   PresentOptions,
@@ -86,6 +81,8 @@ export type {
   SurfaceRenderFn,
   SurfaceStatus,
   SurfaceEntry,
+  AlertButton,
+  AlertButtonStyle,
   SurfaceConfirmOptions,
   SurfacePromptOptions,
 } from './surfaces';
@@ -94,10 +91,8 @@ export { Fab } from './fab';
 export type { FabProps, FabVariant, FabSize, FabPlacement } from './fab';
 export { FrostedIconButton } from './frosted-icon-button';
 export type { FrostedIconButtonProps, FrostedIconButtonSize } from './frosted-icon-button';
-export * from './grouped-buttons';
 export * from './divider';
 export * from './radio-indicator';
-export * from './collapsible';
 export { ErrorBoundary } from './error-boundary';
 export type {
   ErrorBoundaryProps,
@@ -112,8 +107,8 @@ export type { UserHoverCardProps, UserHoverCardStat } from './user-hover-card';
 export * from './loading';
 export * from './prompt-input';
 export * from './switch';
-// `ToastOutlet` is a required app-root mount, like `BloomDialogProvider` and
-// `SurfaceHost`. The full engine surface lives at `@oxyhq/bloom/toast`.
+// `ToastOutlet` is a required app-root mount, like `SurfaceHost`. The full
+// engine surface lives at `@oxyhq/bloom/toast`.
 export { toast, ToastOutlet } from './toast';
 export type { ToastFn, ToastOptions, ToastType } from './toast';
 
@@ -135,8 +130,6 @@ export type { BenefitRowProps, BenefitListProps } from './benefit-list';
 // Interaction primitives
 export { PressableScale } from './pressable-scale';
 export type { PressableScaleProps } from './pressable-scale';
-export { PressableWithHover } from './pressable-with-hover';
-export type { PressableWithHoverProps } from './pressable-with-hover';
 export { SubtleHover } from './subtle-hover';
 export type { SubtleHoverProps } from './subtle-hover';
 
@@ -154,7 +147,7 @@ export { Label } from './label';
 export type { LabelProps } from './label';
 export { Field } from './field';
 export type { FieldProps } from './field';
-export { InputGroup } from './input-group';
+export { InputGroup, InputGroupAddon } from './input-group';
 export type { InputGroupProps, InputGroupAddonProps } from './input-group';
 export { Slider } from './slider';
 export type { SliderProps } from './slider';
@@ -213,12 +206,8 @@ export * from './tooltip';
 export * from './select';
 export * from './context-menu';
 export * from './popover';
-export { AlertDialog, AlertDialogHost, confirm } from './alert-dialog';
-export type {
-  AlertDialogProps,
-  AlertDialogActionStyle,
-  ConfirmOptions,
-} from './alert-dialog';
+export { AlertDialog } from './alert-dialog';
+export type { AlertDialogProps, AlertDialogActionStyle } from './alert-dialog';
 export { Command } from './command';
 export type { CommandProps, CommandItem } from './command';
 

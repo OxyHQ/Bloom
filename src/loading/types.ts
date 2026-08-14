@@ -1,7 +1,7 @@
 import type { ReactNode } from 'react';
 import type { ViewStyle, TextStyle } from 'react-native';
 
-export type LoadingVariant = 'spinner' | 'top' | 'skeleton' | 'inline';
+export type LoadingVariant = 'spinner' | 'top' | 'inline';
 export type LoadingSize = 'small' | 'medium' | 'large';
 
 interface BaseLoadingProps {
@@ -44,16 +44,6 @@ export interface TopLoadingProps extends BaseLoadingProps {
   spinnerIcon?: ReactNode;
 }
 
-export interface SkeletonLoadingProps extends BaseLoadingProps {
-  variant: 'skeleton';
-  /** Number of skeleton lines */
-  lines?: number;
-  /** Width of skeleton (percentage or pixels) */
-  width?: number | string;
-  /** Height of skeleton lines */
-  lineHeight?: number;
-}
-
 export interface InlineLoadingProps extends BaseLoadingProps {
   variant: 'inline';
   /** Text to show next to spinner */
@@ -67,5 +57,4 @@ export interface InlineLoadingProps extends BaseLoadingProps {
 export type LoadingProps =
   | SpinnerLoadingProps
   | TopLoadingProps
-  | SkeletonLoadingProps
   | InlineLoadingProps;

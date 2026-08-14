@@ -13,7 +13,7 @@ import { useTheme } from '../theme/use-theme';
 import { OverlayRoot } from '../overlay';
 import { Portal } from '../portal';
 import { Z_INDEX } from '../styles/z-index';
-import { PromptInputContext, type Attachment } from './context';
+import { PromptInputContext, type PromptInputAttachment } from './context';
 import { PromptInputTextarea } from './Textarea';
 import { PromptInputActions } from './Actions';
 import { PromptInputAttachments } from './Attachments';
@@ -51,11 +51,11 @@ export function PromptInput({
   const theme = useTheme();
 
   // Internal attachment state (used when no controlled props)
-  const [internalAttachments, setInternalAttachments] = useState<Attachment[]>([]);
+  const [internalAttachments, setInternalAttachments] = useState<PromptInputAttachment[]>([]);
   const attachments = controlledAttachments ?? internalAttachments;
 
   const addAttachment = useCallback(
-    (a: Attachment) => {
+    (a: PromptInputAttachment) => {
       if (onAddAttachment) {
         onAddAttachment(a);
       } else {
@@ -77,7 +77,7 @@ export function PromptInput({
   );
 
   const updateAttachment = useCallback(
-    (id: string, updates: Partial<Attachment>) => {
+    (id: string, updates: Partial<PromptInputAttachment>) => {
       if (onUpdateAttachment) {
         onUpdateAttachment(id, updates);
       } else {

@@ -22,6 +22,7 @@ export {
   dismissById,
   dismissToRoot,
   dismissAll,
+  alert,
   confirm,
   prompt,
 } from './api';
@@ -33,6 +34,8 @@ export type {
   SurfaceRenderFn,
   SurfaceStatus,
   SurfaceEntry,
+  AlertButton,
+  AlertButtonStyle,
   SurfaceConfirmOptions,
   SurfacePromptOptions,
 } from './types';

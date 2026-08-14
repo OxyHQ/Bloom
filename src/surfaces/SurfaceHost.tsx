@@ -27,8 +27,12 @@ const DEFAULT_PLACEMENT: SurfacePresentation['placement'] = {
   md: 'center',
 };
 
-/** Map a surface's presentation config onto the shared `Dialog` props. */
-function placementFor(p: SurfacePresentation): Partial<DialogProps> {
+/**
+ * Map a surface's presentation config onto the shared `Dialog` props. Every
+ * field is a 1:1 forward except `actions`, which the caller resolves against the
+ * surface's own controls (see {@link SurfacePresentation.actions}).
+ */
+function dialogPropsFor(p: SurfacePresentation): Partial<DialogProps> {
   return {
     placement: p.placement ?? DEFAULT_PLACEMENT,
     width: p.width,
@@ -48,6 +52,8 @@ function placementFor(p: SurfacePresentation): Partial<DialogProps> {
     containerClassName: p.containerClassName,
     label: p.label,
     testID: p.testID,
+    title: p.title,
+    description: p.description,
   };
 }
 
@@ -103,9 +109,12 @@ export function createSurfaceHost(Dialog: DialogComponent) {
       finalizeClose(id);
     }, [id]);
 
-    const placement = useMemo(
-      () => placementFor(entry.presentation),
-      [entry.presentation],
+    const dialogProps = useMemo(
+      () => ({
+        ...dialogPropsFor(entry.presentation),
+        actions: entry.presentation.actions?.(controls),
+      }),
+      [entry.presentation, controls],
     );
 
     return (
@@ -120,7 +129,7 @@ export function createSurfaceHost(Dialog: DialogComponent) {
         control={control}
         onClose={handleClose}
         startOpen={status !== 'closing'}
-        {...placement}
+        {...dialogProps}
       >
         <SurfaceContext.Provider value={controls}>
           {entry.render(controls)}
@@ -149,7 +158,7 @@ export function createSurfaceHost(Dialog: DialogComponent) {
    * Mount ONCE near your app root — renders `children` plus the stack host.
    * Requires the Bloom Portal provider to be mounted too (same as any `<Dialog>`
    * usage): on web the Portal auto-creates `#bloom-portal-root`; on native mount
-   * `<Provider>`/`<Outlet>` from `@oxyhq/bloom/portal`. Can equally be folded
+   * `<PortalProvider>`/`<PortalOutlet>` from `@oxyhq/bloom/portal`. Can equally be folded
    * next to that Portal provider — `<SurfaceHost>` used directly does the same
    * job without wrapping `children`.
    */

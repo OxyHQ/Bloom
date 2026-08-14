@@ -2,16 +2,16 @@
  * Web variant of the Portal API.
  *
  * On native we keep the context-based portal group (the consumer mounts a
- * `<Provider />` near the root and an `<Outlet />` to render portaled
+ * `<PortalProvider />` near the root and a `<PortalOutlet />` to render portaled
  * components inside the native view hierarchy). On web there's a stable
  * `document.body`, so we portal directly there via `react-dom`'s native
  * `createPortal` — no provider, no outlet, no setup. This matches how
  * mature web component libraries (Radix, Mantine, Tamagui) ship their
  * portals.
  *
- * The native and web APIs are kept identical: `Provider` and `Outlet` are
- * still exported on web — they just become harmless no-op fragments so
- * consumers that *do* mount them keep compiling.
+ * The native and web APIs are kept identical: `PortalProvider` and
+ * `PortalOutlet` are still exported on web — they just become harmless no-op
+ * fragments so consumers that *do* mount them keep compiling.
  */
 import React, { Fragment, memo, useLayoutEffect, useState } from 'react';
 import { createPortal } from 'react-dom';
@@ -68,13 +68,13 @@ export function Portal({ children }: React.PropsWithChildren<object>) {
   return createPortal(children, root);
 }
 
-// Native API parity — on web these are inert. Provider mounts its children
-// inline; Outlet renders nothing. Consumers that mount them on web keep
-// compiling without behaviour change.
-export function Provider(props: React.PropsWithChildren<object>) {
+// Native API parity — on web these are inert. `PortalProvider` mounts its
+// children inline; `PortalOutlet` renders nothing. Consumers that mount them on
+// web keep compiling without behaviour change.
+export function PortalProvider(props: React.PropsWithChildren<object>) {
   return <Fragment>{props.children}</Fragment>;
 }
 
-export const Outlet = memo(function Outlet() {
+export const PortalOutlet = memo(function PortalOutlet() {
   return null;
 });

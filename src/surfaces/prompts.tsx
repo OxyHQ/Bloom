@@ -1,86 +1,135 @@
 import React, { useCallback, useState } from 'react';
-import { Text, View } from 'react-native';
+import { View } from 'react-native';
 
-import { Button } from '../button';
+import { ActionRow } from '../dialog/DialogContent';
+import type { DialogAction } from '../dialog/types';
 import { TextFieldInput } from '../text-field';
-import { useTheme } from '../theme/use-theme';
 import { present } from './surfaceStore';
 import type {
+  AlertButton,
   SurfaceConfirmOptions,
   SurfaceControls,
   SurfacePromptOptions,
 } from './types';
 
 /**
- * Built-in `confirm` / `prompt` surfaces.
+ * The three built-in surfaces: `alert`, `confirm`, `prompt`.
  *
- * They are implemented AS surfaces — each calls `present(...)` so it STACKS
- * correctly above any open surface with the right layer/z (unlike Bloom's
- * one-at-a-time `alert()` FIFO queue, which cannot layer over another surface).
- * Their buttons resolve through the surface's own `dismiss(result)` (NOT the
- * underlying `Dialog`'s close), so the value flows back through the `present()`
- * promise.
+ * They are implemented AS surfaces — each calls `present(...)`, so each STACKS
+ * on top of whatever is already open. That is the whole reason they live here
+ * instead of behind module-scope FIFO queues of their own (`dialog/alert-store`
+ * and `alert-dialog/confirm-store`, both removed): a one-at-a-time queue
+ * answers "which surface is on top" by arrival order into its OWN queue, which
+ * cannot layer over a surface it does not know about — the same reason a
+ * per-component `zIndex` constant cannot order overlays (`src/overlay/stack.ts`).
+ * The visible consequence of the change: two `alert()` calls in a row now stack
+ * rather than queue.
+ *
+ * Chrome — headline, supporting copy and the button row — is the shared
+ * `Dialog`'s own declarative `title` / `description` / `actions`, so these can
+ * never drift from a hand-mounted `<Dialog>` in spacing, typography or button
+ * palette, and the title/description carry the `aria-labelledby` /
+ * `aria-describedby` ids the Dialog wires up.
+ *
+ * Buttons carry `shouldCloseOnPress: false` and dismiss through the SURFACE's
+ * own `dismiss(result)` rather than the underlying `Dialog`'s `close()`. Both
+ * halves matter: the value flows back through the `present()` promise, and the
+ * store resolves IMMEDIATELY on the press (the exit animation that follows is
+ * cosmetic), so an `await confirm(...)` is not held up by an animation.
  */
 
-const TITLE_STYLE = { fontSize: 22, fontWeight: '600' as const, lineHeight: 30 };
-const MESSAGE_STYLE = { fontSize: 16, lineHeight: 22 };
-
-function ConfirmSurface({
-  options,
-  surface,
-}: {
-  options: SurfaceConfirmOptions;
-  surface: SurfaceControls;
-}) {
-  const theme = useTheme();
-  const onConfirm = useCallback(() => surface.dismiss(true), [surface]);
-  const onCancel = useCallback(() => surface.dismiss(false), [surface]);
-
-  return (
-    <View>
-      <Text
-        style={[
-          TITLE_STYLE,
-          {
-            color: theme.colors.text,
-            paddingBottom: options.message ? 4 : 16,
-          },
-        ]}
-      >
-        {options.title}
-      </Text>
-      {options.message ? (
-        <Text
-          style={[
-            MESSAGE_STYLE,
-            { color: theme.colors.textSecondary, paddingBottom: 16 },
-          ]}
-        >
-          {options.message}
-        </Text>
-      ) : null}
-      <View style={{ gap: 8 }}>
-        <Button
-          variant={options.destructive ? 'destructive' : 'primary'}
-          onPress={onConfirm}
-          testID="bloom-surface-confirm-confirm"
-        >
-          {options.confirmLabel ?? 'Confirm'}
-        </Button>
-        {options.hideCancel ? null : (
-          <Button
-            variant="secondary"
-            onPress={onCancel}
-            testID="bloom-surface-confirm-cancel"
-          >
-            {options.cancelLabel ?? 'Cancel'}
-          </Button>
-        )}
-      </View>
-    </View>
-  );
+/** Map an alert button's style onto the shared action row's colour vocabulary. */
+function actionColor(style: AlertButton['style']): DialogAction['color'] {
+  if (style === 'destructive') return 'destructive';
+  if (style === 'cancel') return 'cancel';
+  return 'default';
 }
 
+/**
+ * Show a Bloom-styled alert. Mirrors React Native's
+ * `Alert.alert(title, message?, buttons?)` signature, so existing call sites
+ * migrate by changing the import only. With no buttons, a single `OK` is
+ * rendered.
+ *
+ * ```tsx
+ * import { alert } from '@oxyhq/bloom';
+ *
+ * alert('Sign out?', 'You will need to enter your password to sign in again.', [
+ *   { text: 'Cancel', style: 'cancel' },
+ *   { text: 'Sign out', style: 'destructive', onPress: doSignOut },
+ * ]);
+ * ```
+ */
+export function alert(
+  title: string,
+  message?: string,
+  buttons?: AlertButton[],
+): void {
+  const resolved: AlertButton[] =
+    buttons && buttons.length > 0 ? buttons : [{ text: 'OK', style: 'default' }];
+
+  // The surface is pure chrome — no children at all.
+  void present(() => null, {
+    placement: 'center',
+    title,
+    description: message,
+    label: title,
+    actions: (surface) =>
+      resolved.map((button) => ({
+        label: button.text,
+        color: actionColor(button.style),
+        shouldCloseOnPress: false,
+        onPress: () => {
+          surface.dismiss();
+          button.onPress?.();
+        },
+      })),
+  });
+}
+
+/**
+ * Present a confirm surface stacked on top of anything currently open. Resolves
+ * `true` on confirm, `false` on cancel OR on backdrop/Escape/back dismissal.
+ */
+export function confirm(options: SurfaceConfirmOptions): Promise<boolean> {
+  return present<unknown>(() => null, {
+    placement: options.placement ?? 'center',
+    dismissOnBackdrop: options.dismissible ?? true,
+    title: options.title,
+    description: options.description,
+    label: options.title,
+    actions: (surface) => {
+      const actions: DialogAction[] = [
+        {
+          label: options.confirmLabel ?? 'Confirm',
+          color: options.destructive ? 'destructive' : 'default',
+          shouldCloseOnPress: false,
+          onPress: () => surface.dismiss(true),
+          testID: 'bloom-surface-confirm-confirm',
+        },
+      ];
+      if (!options.hideCancel) {
+        actions.push({
+          label: options.cancelLabel ?? 'Cancel',
+          color: 'cancel',
+          shouldCloseOnPress: false,
+          onPress: () => surface.dismiss(false),
+          testID: 'bloom-surface-confirm-cancel',
+        });
+      }
+      return actions;
+    },
+    // A backdrop / Escape / back dismissal resolves `undefined`, which the
+    // mapping below reads as "not confirmed".
+  }).then((result) => result === true);
+}
+
+/**
+ * The prompt's body. Unlike `alert`/`confirm` this cannot be pure presentation
+ * config: its buttons read the live input value, which is component state, so
+ * the row is rendered here — through the SAME `ActionRow` the Dialog's own
+ * `actions` prop renders, at the same position (last child).
+ */
 function PromptSurface({
   options,
   surface,
@@ -88,34 +137,28 @@ function PromptSurface({
   options: SurfacePromptOptions;
   surface: SurfaceControls;
 }) {
-  const theme = useTheme();
   const [value, setValue] = useState(options.defaultValue ?? '');
   const onSubmit = useCallback(() => surface.dismiss(value), [surface, value]);
-  const onCancel = useCallback(() => surface.dismiss(null), [surface]);
+
+  const actions: DialogAction[] = [
+    {
+      label: options.confirmLabel ?? 'OK',
+      color: 'default',
+      shouldCloseOnPress: false,
+      onPress: onSubmit,
+      testID: 'bloom-surface-prompt-confirm',
+    },
+    {
+      label: options.cancelLabel ?? 'Cancel',
+      color: 'cancel',
+      shouldCloseOnPress: false,
+      onPress: () => surface.dismiss(null),
+      testID: 'bloom-surface-prompt-cancel',
+    },
+  ];
 
   return (
-    <View>
-      <Text
-        style={[
-          TITLE_STYLE,
-          {
-            color: theme.colors.text,
-            paddingBottom: options.message ? 4 : 16,
-          },
-        ]}
-      >
-        {options.title}
-      </Text>
-      {options.message ? (
-        <Text
-          style={[
-            MESSAGE_STYLE,
-            { color: theme.colors.textSecondary, paddingBottom: 16 },
-          ]}
-        >
-          {options.message}
-        </Text>
-      ) : null}
+    <>
       <TextFieldInput
         label={options.inputLabel ?? options.title}
         placeholder={options.placeholder}
@@ -126,39 +169,11 @@ function PromptSurface({
         onSubmitEditing={onSubmit}
         testID="bloom-surface-prompt-input"
       />
-      <View style={{ gap: 8, paddingTop: 16 }}>
-        <Button
-          variant="primary"
-          onPress={onSubmit}
-          testID="bloom-surface-prompt-confirm"
-        >
-          {options.confirmLabel ?? 'OK'}
-        </Button>
-        <Button
-          variant="secondary"
-          onPress={onCancel}
-          testID="bloom-surface-prompt-cancel"
-        >
-          {options.cancelLabel ?? 'Cancel'}
-        </Button>
+      <View style={{ paddingTop: 16 }}>
+        <ActionRow actions={actions} />
       </View>
-    </View>
+    </>
   );
-}
-
-/**
- * Present a confirm surface stacked on top of anything currently open. Resolves
- * `true` on confirm, `false` on cancel OR on backdrop/Escape/back dismissal.
- */
-export function confirm(options: SurfaceConfirmOptions): Promise<boolean> {
-  return present<unknown>(
-    (surface) => <ConfirmSurface options={options} surface={surface} />,
-    {
-      placement: options.placement ?? 'center',
-      dismissOnBackdrop: options.dismissible ?? true,
-      label: options.title,
-    },
-  ).then((result) => result === true);
 }
 
 /**
@@ -172,6 +187,8 @@ export function prompt(options: SurfacePromptOptions): Promise<string | null> {
     {
       placement: options.placement ?? 'center',
       dismissOnBackdrop: options.dismissible ?? true,
+      title: options.title,
+      description: options.description,
       label: options.title,
     },
   ).then((result) => (typeof result === 'string' ? result : null));

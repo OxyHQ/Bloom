@@ -2,13 +2,7 @@ import React from 'react';
 import { Text } from 'react-native';
 import { act, fireEvent, render } from '@testing-library/react-native';
 
-import {
-  alert,
-  BloomDialogProvider,
-  Dialog,
-  useDialogControl,
-} from '../dialog';
-import { dismissAlert, getAlertQueue } from '../dialog/alert-store';
+import { Dialog, useDialogControl } from '../dialog';
 import { BloomThemeProvider } from '../theme/BloomThemeProvider';
 
 function renderWithTheme(ui: React.ReactElement) {
@@ -110,69 +104,6 @@ describe('Dialog (unified API)', () => {
       fireEvent.press(getByText('Confirm'));
     });
     expect(onConfirm).toHaveBeenCalledTimes(1);
-  });
-});
-
-describe('alert() helper', () => {
-  // The alert store is module-scope; ensure no cross-test contamination by
-  // draining anything left over from prior tests before each new run.
-  beforeEach(() => {
-    while (getAlertQueue().length > 0) {
-      const head = getAlertQueue()[0];
-      if (head) dismissAlert(head.id);
-    }
-  });
-
-  it('queues alerts before any provider mounts and drains them on subscribe', () => {
-    // Call alert() *before* the provider mounts — entry should sit in the
-    // queue until a subscriber attaches, at which point the head is
-    // rendered.
-    alert('Pending', 'Was queued before provider', [
-      { text: 'OK' },
-    ]);
-    expect(getAlertQueue().length).toBe(1);
-
-    const { getByText } = renderWithTheme(
-      <BloomDialogProvider>
-        <Text>app body</Text>
-      </BloomDialogProvider>,
-    );
-    // The queued entry now renders inside the provider.
-    expect(getByText('Pending')).toBeTruthy();
-    expect(getByText('Was queued before provider')).toBeTruthy();
-    expect(getByText('OK')).toBeTruthy();
-  });
-
-  it('defaults to a single OK button when no buttons are passed', () => {
-    const { getByText } = renderWithTheme(
-      <BloomDialogProvider>
-        <Text>app</Text>
-      </BloomDialogProvider>,
-    );
-    act(() => {
-      alert('Hello');
-    });
-    expect(getByText('Hello')).toBeTruthy();
-    expect(getByText('OK')).toBeTruthy();
-  });
-
-  it('invokes the button onPress when tapped', () => {
-    const onPress = jest.fn();
-    const { getByText } = renderWithTheme(
-      <BloomDialogProvider>
-        <Text>app</Text>
-      </BloomDialogProvider>,
-    );
-    act(() => {
-      alert('Sign out?', undefined, [
-        { text: 'Cancel', style: 'cancel' },
-        { text: 'Sign out', style: 'destructive', onPress },
-      ]);
-    });
-    act(() => {
-      fireEvent.press(getByText('Sign out'));
-    });
-    expect(onPress).toHaveBeenCalledTimes(1);
   });
 });
 

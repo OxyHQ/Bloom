@@ -56,7 +56,6 @@ import type {
   DialogProps,
 } from './types';
 
-export { DIALOG_SHEET_BACKDROP_TESTID };
 
 /**
  * Native variant of `<Dialog>`.
@@ -589,42 +588,3 @@ const sideStyles = StyleSheet.create({
   },
 });
 
-/**
- * Helper used by the imperative `alert()` API. Mounts a `<Dialog>` against
- * a fresh control and presents it immediately. `onResolve` is invoked
- * exactly once when the dialog finishes closing (regardless of how the
- * dismissal happened).
- *
- * Kept private to the dialog module — `alert()` is the public surface.
- */
-export function AutoMountedDialog({
-  title,
-  description,
-  actions,
-  onResolve,
-}: {
-  title?: string;
-  description?: string;
-  actions: DialogAction[];
-  onResolve: () => void;
-}) {
-  const control = useDialogControl();
-
-  // `control` is referentially stable for the lifetime of the component
-  // (memoised by `useDialogControl` on `[id]`), so this effect runs exactly
-  // once per mount — present-on-mount semantics for an `alert()` call
-  // without re-presenting on subsequent renders.
-  useEffect(() => {
-    control.open();
-  }, [control]);
-
-  return (
-    <Dialog
-      control={control}
-      title={title}
-      description={description}
-      actions={actions}
-      onClose={onResolve}
-    />
-  );
-}

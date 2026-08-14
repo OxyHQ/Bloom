@@ -67,21 +67,6 @@ const TargetContext = createContext<TargetContextType>({
 });
 TargetContext.displayName = 'TargetContext';
 
-/**
- * Provider for Tooltip component. Only needed when you need to position the
- * tooltip relative to a container, such as in a sheet.
- *
- * Only really necessary on iOS but can work on Android.
- */
-export function TooltipSheetCompatProvider({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
-  return <>{children}</>;
-}
-TooltipSheetCompatProvider.displayName = 'TooltipSheetCompatProvider';
-
 export function Tooltip({
   children,
   position = 'bottom',

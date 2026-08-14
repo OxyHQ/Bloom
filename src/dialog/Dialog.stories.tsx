@@ -5,7 +5,7 @@ import type { Meta, StoryObj } from '@storybook/react-vite';
 import { Button } from '../button';
 import { Dialog } from './Dialog';
 import { useDialogControl } from './context';
-import { alert } from './alert';
+import { alert } from '../surfaces';
 
 const meta: Meta<typeof Dialog> = {
   title: 'Components/Dialog',

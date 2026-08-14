@@ -19,9 +19,10 @@ type DialogComponent = React.ComponentType<DialogProps>;
  * the confirm/cancel props onto the Dialog's declarative `actions` row — the
  * SAME battle-tested `ActionRow`/`ActionButton` primitive every other bloom
  * confirm surface uses (e.g. Mention's `ConfirmPrompt`), so the button
- * component, layout, and palette stay identical across apps. Reach for the
- * imperative `confirm()` helper + `<AlertDialogHost />` to trigger a confirm
- * from an event handler without owning visible state.
+ * component, layout, and palette stay identical across apps. To trigger a
+ * confirm from an event handler without owning visible state, reach for the
+ * imperative `confirm()` in `@oxyhq/bloom/surfaces` — it presents onto the
+ * shared surface stack, so it layers over whatever is already open.
  *
  * Control mode — IMPERATIVE, not controlled. `AlertDialog` keeps its public
  * *controlled* API (`visible` boolean + `onClose`) but internally bridges it
@@ -30,11 +31,9 @@ type DialogComponent = React.ComponentType<DialogProps>;
  * Mention's `ConfirmPrompt` uses. That is the code path that actually plays the
  * exit animation on dismiss: imperative `close()` sets `isClosing`, runs the
  * exit animation, and fires `onClose` only once it settles. The controlled path
- * instead fires `onClose` synchronously — and because `<AlertDialogHost />`
- * resolves + drops the queue entry inside `onClose`, the surface would then
- * unmount instantly, skipping the exit animation entirely. Bridging to
- * imperative mode eliminates that fork so `confirm()` and Mention's
- * `ConfirmPrompt` are pixel/timing identical.
+ * instead fires `onClose` synchronously — so a host that unmounts the surface
+ * inside its own `onClose` handler races ahead of the exit animation and it
+ * never plays. Bridging to imperative mode eliminates that fork.
  *
  * The centered card uses the Dialog default `maxWidth` (480px) for full visual
  * parity with the shared confirm surface.
@@ -59,15 +58,13 @@ export function createAlertDialog(Dialog: DialogComponent) {
 
     // Bridge the public *controlled* `visible` prop onto the Dialog's
     // imperative open/close. Opening on mount straight from an effect (no
-    // `setTimeout`) mirrors bloom's own `AutoMountedDialog` (which backs
-    // `alert()`) — the canonical fresh-mount imperative-open pattern:
-    // `<AlertDialogHost />` mounts a FRESH `AlertDialog` per confirm
-    // (`key={id}`) with the final content already committed, so there is no
-    // stale-content window to defer past and the entry animation curve stays
-    // identical to Mention's. `control` is referentially stable (memoised on
-    // its id), so this effect only re-runs when `visible` actually flips. When
-    // a direct consumer flips `visible` to `false`, we imperatively `close()`
-    // so the exit animation still plays.
+    // `setTimeout`) is the canonical fresh-mount imperative-open pattern —
+    // `SurfaceHost`'s `SurfaceLayer` does the same — and it works because the
+    // component mounts with its final content already committed, so there is no
+    // stale-content window to defer past. `control` is referentially stable
+    // (memoised on its id), so this effect only re-runs when `visible` actually
+    // flips. When a consumer flips `visible` to `false`, we imperatively
+    // `close()` so the exit animation still plays.
     const closingFromPropRef = useRef(false);
     useEffect(() => {
       if (visible) {

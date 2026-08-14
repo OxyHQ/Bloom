@@ -243,6 +243,7 @@ export function MenuContent({
           offset: MENU_OFFSET,
           gutter: VIEWPORT_GUTTER,
           align: 'end',
+          side: 'bottom',
         }),
         right: undefined,
         bottom: undefined,

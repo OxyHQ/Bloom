@@ -94,21 +94,24 @@ function ActionButton({ action }: { action: DialogAction }) {
 
   const { background, foreground } = getActionPalette(color, theme.colors);
 
+  // `shouldCloseOnPress` (default true) is the ONLY switch, for every colour.
+  // `cancel` used to bypass it — on the premise that a cancel button must always
+  // dismiss — which made it the one action a caller could not own the dismissal
+  // of. That is exactly what a surface needs: the surface stack dismisses
+  // through its OWN `dismiss(result)` so the value reaches the `present()`
+  // promise, and the entry's `'closing'` status is what runs the exit animation.
+  // The default is unchanged, so a caller that says nothing still gets
+  // dismiss-on-press.
   const handlePress = useCallback(
     (e: GestureResponderEvent) => {
       const onPress = action.onPress;
-      if (color === 'cancel') {
-        // Cancel always dismisses; consumer's onPress (rare) runs after.
-        close(onPress ? () => onPress(e) : undefined);
-        return;
-      }
       if (shouldCloseOnPress) {
         close(onPress ? () => onPress(e) : undefined);
       } else {
         onPress?.(e);
       }
     },
-    [action.onPress, close, color, shouldCloseOnPress],
+    [action.onPress, close, shouldCloseOnPress],
   );
 
   return (

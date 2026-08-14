@@ -1,7 +1,12 @@
 import type { ReactNode } from 'react';
 import type { StyleProp, ViewStyle } from 'react-native';
 
-import type { DialogHeaderConfig, DialogInset, ResponsiveDialogPlacement } from '../dialog/types';
+import type {
+  DialogAction,
+  DialogHeaderConfig,
+  DialogInset,
+  ResponsiveDialogPlacement,
+} from '../dialog/types';
 
 /**
  * How a surface renders — the placement + the `Dialog` sizing/chrome options a
@@ -78,6 +83,28 @@ export interface SurfacePresentation {
   label?: string;
   /** Stable testID forwarded to the underlying `Dialog`. */
   testID?: string;
+  /** Declarative headline, rendered by the shared `Dialog` chrome. */
+  title?: string;
+  /** Declarative supporting copy, rendered under the title. */
+  description?: string;
+  /**
+   * Declarative action row, rendered through the shared `Dialog`'s own
+   * `actions` prop — the same `ActionRow`/`ActionButton` primitive every other
+   * Bloom confirm surface uses.
+   *
+   * It is a FUNCTION of the surface's controls, which is the one place this
+   * diverges from {@link ../dialog/types#DialogProps}: a plain `DialogAction[]`
+   * can only ask the underlying `Dialog` to close, and a close resolves the
+   * `present()` promise with `undefined`. Taking the controls lets a button
+   * resolve it with a VALUE (`surface.dismiss(true)`), which is what `confirm`
+   * needs and what a static array cannot express.
+   *
+   * Such a button should carry `shouldCloseOnPress: false` and dismiss through
+   * the surface: the store then resolves IMMEDIATELY on the press and flips the
+   * entry to `'closing'`, so the exit animation plays without the caller
+   * waiting on it.
+   */
+  actions?: (surface: SurfaceControls) => DialogAction[];
 }
 
 /** Options accepted by `present` / `SurfaceControls.present`. */
@@ -132,12 +159,29 @@ export interface SurfaceEntry {
   generation: number;
 }
 
+/** Visual treatment of an {@link AlertButton}. */
+export type AlertButtonStyle = 'default' | 'cancel' | 'destructive';
+
+/** One button of the built-in {@link ../surfaces/prompts#alert} surface. */
+export interface AlertButton {
+  /** Button label. Required. */
+  text: string;
+  /**
+   * Tap handler. Runs on the press, as the surface animates out — not after the
+   * animation settles. Every built-in surface resolves on the press; waiting on
+   * a cosmetic animation would only delay the caller.
+   */
+  onPress?: () => void;
+  /** Visual treatment. Defaults to `'default'`. */
+  style?: AlertButtonStyle;
+}
+
 /** Options for the built-in {@link ../surfaces/prompts#confirm} surface. */
 export interface SurfaceConfirmOptions {
   /** Headline. */
   title: string;
   /** Supporting copy. */
-  message?: string;
+  description?: string;
   /** Confirm button label. Defaults to `'Confirm'`. */
   confirmLabel?: string;
   /** Cancel button label. Defaults to `'Cancel'`. */
@@ -160,7 +204,7 @@ export interface SurfacePromptOptions {
   /** Headline. */
   title: string;
   /** Supporting copy. */
-  message?: string;
+  description?: string;
   /** Input placeholder. */
   placeholder?: string;
   /** Initial input value. */

@@ -1,8 +1,8 @@
 /**
  * Placement arithmetic for a portaled dropdown surface — shared by the web
- * `Menu`, `ContextMenu` and `Select` forks, which anchor differently (a
- * trigger's rect vs. a right-click point) but need the same fit / flip / clamp
- * decision.
+ * `Menu`, `ContextMenu`, `Select` and `Popover` forks, which anchor differently
+ * (a trigger's rect vs. a right-click point) but need the same fit / flip /
+ * clamp decision.
  *
  * Internal: deliberately NOT re-exported from `overlay/index.ts`. The web forks
  * import it directly, the same way `dialog/SheetShell` is shared without
@@ -41,6 +41,17 @@ export interface DropdownPlacementInput {
    * reason a popover can stop carrying its own positioner.
    */
   align: 'start' | 'end' | 'center';
+  /**
+   * Which side of the anchor the surface PREFERS. A dropdown always wants
+   * `'bottom'`; `Popover` lets its caller ask for `'top'` explicitly.
+   *
+   * It is a preference, not a demand: whichever side is named, the surface
+   * flips to the other one when the named side does not fit, and clamps when
+   * neither does. So the two values are symmetric, not two different code
+   * paths — which is what let `Popover` stop carrying its own positioner along
+   * with its own (one-sided) clamp.
+   */
+  side: 'bottom' | 'top';
 }
 
 export interface DropdownPlacement {
@@ -63,9 +74,9 @@ function clamp(value: number, min: number, max: number): number {
 /**
  * Resolve the viewport-relative `top`/`left` for a dropdown surface.
  *
- * Vertical: sit below the anchor when it fits, else flip above it, else clamp
- * into the viewport. Horizontal: align per `align`, then clamp into the
- * viewport.
+ * Vertical: sit on the `side` the caller prefers when it fits, else flip to the
+ * other side, else clamp into the viewport. Horizontal: align per `align`, then
+ * clamp into the viewport.
  */
 export function resolveDropdownPlacement({
   anchor,
@@ -74,6 +85,7 @@ export function resolveDropdownPlacement({
   offset,
   gutter,
   align,
+  side,
 }: DropdownPlacementInput): DropdownPlacement {
   const below = anchor.bottom + offset;
   const above = anchor.top - offset - size.height;
@@ -81,11 +93,16 @@ export function resolveDropdownPlacement({
   const fitsBelow = below + size.height <= viewport.height - gutter;
   const fitsAbove = above >= gutter;
 
-  const top = fitsBelow
-    ? below
-    : fitsAbove
-      ? above
-      : clamp(below, gutter, viewport.height - gutter - size.height);
+  const preferred = side === 'top' ? above : below;
+  const fitsPreferred = side === 'top' ? fitsAbove : fitsBelow;
+  const alternative = side === 'top' ? below : above;
+  const fitsAlternative = side === 'top' ? fitsBelow : fitsAbove;
+
+  const top = fitsPreferred
+    ? preferred
+    : fitsAlternative
+      ? alternative
+      : clamp(preferred, gutter, viewport.height - gutter - size.height);
 
   const preferredLeft =
     align === 'end'

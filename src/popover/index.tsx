@@ -21,7 +21,15 @@ export type {
   PopoverTriggerState,
 } from './types';
 
-export { useDialogControl as usePopoverControl } from '../dialog/context';
+/**
+ * A `Popover`'s imperative handle. Declared here rather than re-exported from
+ * `dialog` under an alias, for the same reason as `useMenuControl`: the web fork
+ * implements its own (it anchors a floating panel, not a sheet), so both
+ * platforms must publish this name from THIS family.
+ */
+export function usePopoverControl(): PopoverControlProps {
+  return useDialogControl();
+}
 export { usePopoverContext };
 
 /**

@@ -54,7 +54,6 @@ import { BloomThemeProvider } from '../theme/BloomThemeProvider';
 import { Checkbox } from '../checkbox/Checkbox';
 import { Switch } from '../switch/Switch';
 import { Accordion, AccordionItem, AccordionTrigger, AccordionContent } from '../accordion';
-import { Collapsible } from '../collapsible';
 import { Chip } from '../chip';
 import { Item } from '../item';
 import { SegmentedControl, SegmentedControlItem } from '../segmented-control';
@@ -196,7 +195,7 @@ describe('Switch', () => {
   });
 });
 
-describe('Accordion / Collapsible', () => {
+describe('Accordion', () => {
   it('Accordion trigger emits aria-expanded reflecting the open item', () => {
     const c = mount(
       <Accordion type="single" value="a" onValueChange={() => {}}>
@@ -218,24 +217,6 @@ describe('Accordion / Collapsible', () => {
     expect(triggers).toHaveLength(2);
     expect(triggers[0]?.getAttribute('aria-expanded')).toBe('true');
     expect(triggers[1]?.getAttribute('aria-expanded')).toBe('false');
-  });
-
-  it('Collapsible header emits aria-expanded', () => {
-    const c = mount(
-      <Collapsible title="Details" defaultOpen>
-        <Text>body</Text>
-      </Collapsible>,
-    );
-    expect(byRole(c, 'button').getAttribute('aria-expanded')).toBe('true');
-  });
-
-  it('Collapsible header emits aria-expanded="false" when closed', () => {
-    const c = mount(
-      <Collapsible title="Details">
-        <Text>body</Text>
-      </Collapsible>,
-    );
-    expect(byRole(c, 'button').getAttribute('aria-expanded')).toBe('false');
   });
 });
 

@@ -1,17 +1,21 @@
 ---
 title: Loading
-description: Spinner, top bar, skeleton, and inline loading indicators with one consistent API.
+description: Spinner, top bar, and inline loading indicators with one consistent API.
 order: 13
 ---
 
 # Loading
 
-One component, four variants. Pick the right one for the affordance:
+One component, three variants. Pick the right one for the affordance:
 
 - `spinner` — centered, optional text, the default
 - `top` — sliding bar at the top of the screen for global progress
-- `skeleton` — pulsing line placeholders for content that's about to appear
 - `inline` — small spinner with a text label, for inline buttons or rows
+
+For content placeholders reach for the `Skeleton` family
+(`@oxyhq/bloom/skeleton`), which actually shimmers. `Loading` never had a real
+skeleton — its `skeleton` variant drew static rectangles under the same name —
+so the variant is gone.
 
 ## Spinner (default)
 
@@ -31,15 +35,6 @@ import { Loading } from '@oxyhq/bloom';
 ```
 
 Renders a fixed-height bar at the top of the parent. Use it as a global progress indicator (route transitions, background sync). Requires `react-native-reanimated`.
-
-## Skeleton
-
-```tsx
-<Loading variant="skeleton" lines={3} width="100%" />
-<Loading variant="skeleton" lines={1} width={120} lineHeight={20} />
-```
-
-Pulsing rectangles, sized like the content they're standing in for. Use it instead of a spinner when the layout would otherwise jump on first paint.
 
 ## Inline
 
@@ -63,7 +58,7 @@ For native-tailwind users, `className` overrides `color`:
 
 | Prop | Type | Description |
 |------|------|-------------|
-| `variant?` | `'spinner' \| 'top' \| 'skeleton' \| 'inline'` | Default: `'spinner'`. |
+| `variant?` | `'spinner' \| 'top' \| 'inline'` | Default: `'spinner'`. |
 | `size?` | `'small' \| 'medium' \| 'large'` | Default: `'medium'`. |
 | `color?` | `string` | Spinner color. Defaults to theme primary. |
 | `className?` | `string` | NativeWind class. Overrides `color`. |
@@ -89,14 +84,6 @@ For native-tailwind users, `className` overrides `color`:
 | `heightOffset?` | `number` | Offset from the top edge. |
 | `spinnerIcon?` | `React.ReactNode` | |
 
-### `skeleton`
-
-| Prop | Type | Description |
-|------|------|-------------|
-| `lines?` | `number` | Number of stacked rectangles. |
-| `width?` | `number \| string` | Width of each rectangle. |
-| `lineHeight?` | `number` | Height per rectangle. |
-
 ### `inline`
 
 | Prop | Type | Description |
@@ -107,13 +94,19 @@ For native-tailwind users, `className` overrides `color`:
 
 ## Recipes
 
-### Lazy content with skeleton
+### Lazy content placeholders
 
 ```tsx
+import * as Skeleton from '@oxyhq/bloom/skeleton';
+
 const { data, isPending } = useQuery({ queryKey: ['articles'], queryFn });
 
 if (isPending) {
-  return <Loading variant="skeleton" lines={5} width="100%" />;
+  return (
+    <Skeleton.Col style={{ gap: 8 }}>
+      {Array.from({ length: 5 }, (_, i) => <Skeleton.Text key={i} />)}
+    </Skeleton.Col>
+  );
 }
 return <ArticleList articles={data} />;
 ```

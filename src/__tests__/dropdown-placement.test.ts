@@ -19,6 +19,7 @@ function place(overrides: Partial<DropdownPlacementInput>): { top: number; left:
     offset: 6,
     gutter: GUTTER,
     align: 'end',
+    side: 'bottom',
     ...overrides,
   });
 }
@@ -50,6 +51,41 @@ describe('resolveDropdownPlacement', () => {
       // Overflowing the BOTTOM keeps the first rows reachable; the opposite
       // choice would push the surface's start off-screen and strand every row.
       expect(place({ anchor: trigger(200), size: { width: 180, height: 900 } }).top).toBe(GUTTER);
+    });
+
+    // `side` is what let `Popover` (batch 2) drop its own positioner: its
+    // `placement` prop names the preferred side outright, which a
+    // below-only resolver could not express.
+    it("side 'top' sits ABOVE the anchor when it fits", () => {
+      // Trigger 100..140, surface 100 tall, offset 6 → 100 - 6 - 100 = -6…
+      // which does NOT clear the gutter, so use a lower trigger.
+      expect(place({ anchor: trigger(200), side: 'top' }).top).toBe(94);
+    });
+
+    it("side 'top' is a PREFERENCE — it flips below when there is no room above", () => {
+      // Trigger 20..60: above would start at 20 - 6 - 100 = -86, past the top
+      // gutter. Below starts at 60 + 6 = 66 and fits.
+      expect(place({ anchor: trigger(20), side: 'top' }).top).toBe(66);
+    });
+
+    it("side 'top' and side 'bottom' disagree when BOTH sides fit", () => {
+      const anchor = trigger(200);
+      expect(place({ anchor, side: 'bottom' }).top).toBe(246);
+      expect(place({ anchor, side: 'top' }).top).toBe(94);
+    });
+
+    it("side 'top' pins to the top gutter when neither side fits", () => {
+      // 460 tall against a 500 viewport, so neither side fits and the PREFERRED
+      // position is clamped: above = 200 - 6 - 460 = -266 → the gutter.
+      //
+      // The max end of the clamp is unreachable for `'top'` by construction:
+      // `above` is only clamped when it is BELOW the gutter, and the gutter is
+      // below the max. That is why the two-sided clamp — the thing popover's own
+      // positioner lacked — is asserted on the `'bottom'` side (see the
+      // `align 'center'` case), which is where it actually bites.
+      expect(
+        place({ anchor: trigger(200), side: 'top', size: { width: 180, height: 460 } }).top,
+      ).toBe(GUTTER);
     });
 
     it('treats a zero-area anchor (a right-click point) as its own edge', () => {

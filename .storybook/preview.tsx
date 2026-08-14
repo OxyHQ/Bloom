@@ -5,8 +5,8 @@ import type { Decorator, Preview } from '@storybook/react-vite';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 
 import { BloomThemeProvider } from '../src/theme';
-import { BloomDialogProvider } from '../src/dialog';
-import { Provider as PortalProvider, Outlet as PortalOutlet } from '../src/portal';
+import { SurfaceProvider } from '../src/surfaces';
+import { PortalProvider, PortalOutlet } from '../src/portal';
 
 /**
  * Global decorator. Every Bloom story renders inside the full provider
@@ -15,7 +15,7 @@ import { Provider as PortalProvider, Outlet as PortalOutlet } from '../src/porta
  *   <SafeAreaProvider>     safe-area insets
  *     <BloomThemeProvider>   theme + fonts
  *       <PortalProvider>     portal host (menus, tooltips)
- *         <BloomDialogProvider>  imperative alert() host
+ *         <SurfaceProvider>  the surface stack — alert()/confirm()/prompt()
  *           <story />
  *
  * `SafeAreaProvider` is not optional: `BottomSheet` reads insets through
@@ -47,7 +47,7 @@ const withProviders: Decorator = (Story, context) => {
     <SafeAreaProvider>
       <BloomThemeProvider mode={mode} colorPreset={colorPreset} fonts={false}>
         <PortalProvider>
-          <BloomDialogProvider>
+          <SurfaceProvider>
             <View
               style={{
                 padding: 24,
@@ -60,7 +60,7 @@ const withProviders: Decorator = (Story, context) => {
               <Story />
             </View>
             <PortalOutlet />
-          </BloomDialogProvider>
+          </SurfaceProvider>
         </PortalProvider>
       </BloomThemeProvider>
     </SafeAreaProvider>

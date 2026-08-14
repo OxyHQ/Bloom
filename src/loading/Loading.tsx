@@ -14,7 +14,6 @@ import type {
   LoadingProps,
   SpinnerLoadingProps,
   TopLoadingProps,
-  SkeletonLoadingProps,
   InlineLoadingProps,
 } from './types';
 
@@ -111,42 +110,6 @@ const TopLoading: React.FC<TopLoadingProps> = ({
   );
 };
 
-const SkeletonLoading: React.FC<SkeletonLoadingProps> = ({
-  lines = 3,
-  width = '100%',
-  lineHeight = 16,
-  style,
-  testID,
-}) => {
-  const theme = useTheme();
-  const skeletonColor = theme.colors.backgroundSecondary;
-
-  const skeletonLines = useMemo(
-    () =>
-      Array.from({ length: lines }, (_, index) => (
-        <View
-          key={index}
-          style={[
-            styles.skeletonLine,
-            {
-              width: (typeof width === 'string' ? width : `${width}%`) as DimensionValue,
-              height: lineHeight,
-              backgroundColor: skeletonColor,
-              marginBottom: index < lines - 1 ? 8 : 0,
-            },
-          ]}
-        />
-      )),
-    [lines, width, lineHeight, skeletonColor],
-  );
-
-  return (
-    <View style={[styles.skeletonContainer, style]} testID={testID}>
-      {skeletonLines}
-    </View>
-  );
-};
-
 const InlineLoading: React.FC<InlineLoadingProps> = ({
   size = 'small',
   color,
@@ -184,8 +147,6 @@ const LoadingComponent: React.FC<LoadingProps> = (props) => {
   switch (variant) {
     case 'top':
       return <TopLoading {...(props as TopLoadingProps)} />;
-    case 'skeleton':
-      return <SkeletonLoading {...(props as SkeletonLoadingProps)} />;
     case 'inline':
       return <InlineLoading {...(props as InlineLoadingProps)} />;
     case 'spinner':
@@ -218,12 +179,6 @@ const styles = StyleSheet.create({
     position: 'absolute',
     top: 0,
     left: 0,
-  },
-  skeletonContainer: {
-    width: '100%',
-  },
-  skeletonLine: {
-    borderRadius: 4,
   },
   inlineContainer: {
     flexDirection: 'row',

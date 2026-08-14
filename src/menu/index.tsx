@@ -22,8 +22,17 @@ import type {
   MenuTriggerProps,
 } from './types';
 
-export type { DialogControlProps as MenuControlProps } from '../dialog/types';
-export { useDialogControl as useMenuControl } from '../dialog/context';
+/**
+ * A `Menu`'s imperative handle. Declared here, not re-exported from `dialog`
+ * under an alias: the WEB fork implements its own `useMenuControl` (a dropdown
+ * has no sheet to drive), so this is menu's own API on both platforms — it just
+ * happens to be the dialog's handle on native, where the menu presents through
+ * the shared `SheetShell`.
+ */
+export type MenuControlProps = DialogControlProps;
+export function useMenuControl(): MenuControlProps {
+  return useDialogControl();
+}
 export { useMenuContext };
 
 export function Menu({

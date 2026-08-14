@@ -29,8 +29,7 @@
  * NOT included, on purpose — these are OUTLETS, not state, and their placement
  * in the tree is a real app decision (z-order, safe areas, and mounting a
  * second one duplicates every surface it renders):
- * `<ToastOutlet>`, `<Portal.Provider>`/`<Portal.Outlet>`, `<SurfaceHost>`,
- * `<BloomDialogProvider>`, `<AlertDialogHost>`.
+ * `<ToastOutlet>`, `<PortalProvider>`/`<PortalOutlet>`, `<SurfaceHost>`.
  */
 import type { ReactNode } from 'react';
 

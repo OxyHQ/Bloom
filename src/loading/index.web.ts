@@ -19,6 +19,5 @@ export type {
   LoadingSize,
   SpinnerLoadingProps,
   TopLoadingProps,
-  SkeletonLoadingProps,
   InlineLoadingProps,
 } from './types';
