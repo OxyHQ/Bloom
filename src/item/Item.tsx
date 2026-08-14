@@ -112,20 +112,25 @@ const ItemComponent = function Item({
   );
 
   if (onPress || onLongPress) {
-    const resolvedRole = accessibilityRole ?? 'button';
+    // `radio` is a role BOTH platforms have, so it travels on
+    // `accessibilityRole` as well rather than being web-only like `option`.
+    const resolvedRole = accessibilityRole ?? (role === 'radio' ? 'radio' : 'button');
     // Web reads only `aria-*` — react-native-web never consults
     // `accessibilityState` — and ARIA scopes these states by role: `option`
-    // carries a selected state, a `button` toggle carries a pressed one, and
-    // `menuitem`/`listitem` carry neither, so those emit nothing. React Native
-    // keeps reading `accessibilityState` below, which is why both are set.
+    // carries a SELECTED state, `radio` a CHECKED one, a `button` toggle a
+    // PRESSED one, and `menuitem`/`listitem` carry neither, so those emit
+    // nothing. React Native keeps reading `accessibilityState` below, which is
+    // why both are set.
     const selectedAria =
       selected == null
         ? null
         : role === 'option'
           ? { 'aria-selected': selected }
-          : role == null
-            ? { 'aria-pressed': selected }
-            : null;
+          : role === 'radio'
+            ? { 'aria-checked': selected }
+            : role == null
+              ? { 'aria-pressed': selected }
+              : null;
     const handlePress = disabled || !onPress ? undefined : onPress;
     const handleLongPress = disabled || !onLongPress ? undefined : onLongPress;
     return (

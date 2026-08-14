@@ -3,6 +3,7 @@ import { View, Text, Pressable, StyleSheet } from 'react-native';
 
 import { useTheme } from '../theme/use-theme';
 import { useInteractionState } from '../hooks/use-interaction-state';
+import { borderRadius } from '../styles/tokens';
 import { Divider } from '../divider';
 import { ChevronRight_Stroke2_Corner0_Rounded as ChevronRightIcon } from '../icons/Chevron';
 import type {
@@ -224,7 +225,7 @@ const styles = StyleSheet.create({
     // the screen/Dialog already applies (the same `px-screen-margin` that pads
     // the title/search). Keeping a self-margin here double-inset grouped rows on
     // every screen that also applies that padding.
-    borderRadius: 16,
+    borderRadius: borderRadius.lg,
     overflow: 'hidden',
   },
   groupTitle: {

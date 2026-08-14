@@ -38,8 +38,10 @@ export interface ItemProps {
   accessibilityRole?: AccessibilityRole;
   /**
    * Web ARIA role override. Use `'option'` for combobox/listbox items (RN's
-   * `accessibilityRole` has no `'option'`); ignored on native.
+   * `accessibilityRole` has no `'option'`) and `'radio'` for a single-choice
+   * list. Each role scopes which state ARIA allows, and `Item` spells the
+   * matching one — see the `selectedAria` branch in `Item.tsx`.
    */
-  role?: 'option' | 'menuitem' | 'listitem';
+  role?: 'option' | 'radio' | 'menuitem' | 'listitem';
   testID?: string;
 }

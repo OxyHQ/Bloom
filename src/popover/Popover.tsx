@@ -1,6 +1,7 @@
 import React, { useMemo, useRef, useState } from 'react';
 import { View } from 'react-native';
 
+import { useInteractionState } from '../hooks/use-interaction-state';
 import { useDialogControl } from '../dialog/context';
 import { SheetShell } from '../dialog/SheetShell';
 import { PopoverContext, usePopoverContext } from './context';
@@ -63,16 +64,16 @@ export function Popover({ children, control }: PopoverProps) {
 
 export function PopoverTrigger({ children, label }: PopoverTriggerProps) {
   const { control, triggerRef } = usePopoverContext();
-  const [focused, setFocused] = useState(false);
-  const [pressed, setPressed] = useState(false);
+  const { state: focused, onIn: onFocus, onOut: onBlur } = useInteractionState();
+  const { state: pressed, onIn: onPressIn, onOut: onPressOut } = useInteractionState();
 
   const rendered = children({
     control,
     state: { hovered: false, focused, pressed },
     props: {
       onPress: () => control.open(),
-      onFocus: () => setFocused(true),
-      onBlur: () => setFocused(false),
+      onFocus,
+      onBlur,
       accessibilityLabel: label,
       accessibilityRole: 'button',
       'aria-haspopup': 'dialog',

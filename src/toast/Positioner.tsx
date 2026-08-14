@@ -31,7 +31,7 @@ import {
   calculateOutsidePressableArea,
   getContainerStyle,
   getInsetValues,
-} from './positioner-utils';
+} from './container-geometry';
 import type { ToasterProps } from './types';
 
 /**

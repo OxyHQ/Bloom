@@ -578,7 +578,7 @@ describe('toastStore', () => {
 
     /**
      * The auto-collapse rule. A lone row renders identically expanded or collapsed
-     * (`toast-position-utils.test.ts`: "a single row is unmoved by expansion"), while
+     * (`toast-row-geometry.test.ts`: "a single row is unmoved by expansion"), while
      * `isExpanded` keeps every timer paused — so collapsing at one row is invisible
      * and is the only thing that stops that last toast hanging on screen forever.
      * The exception is a stack something is HOLDING open, which on web is a pointer

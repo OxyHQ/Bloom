@@ -387,7 +387,7 @@ describe('ToastOutlet', () => {
     });
 
     /**
-     * The other half of the geometry contract (`toast-positioner-utils.test.ts`
+     * The other half of the geometry contract (`toast-container-geometry.test.ts`
      * pins the container): the row hangs off exactly ONE edge, and which edge it is
      * depends on the position. `center` anchors to the 50% LINE, which lives on the
      * row because the container is no longer itself placed at 50% — dropping that
@@ -946,7 +946,7 @@ describe('ToastOutlet', () => {
 
   /**
    * The stacked presentation itself is geometry, so it is verified where geometry
-   * is verifiable: `toast-position-utils.test.ts` for the offsets and the `scaleX`
+   * is verifiable: `toast-row-geometry.test.ts` for the offsets and the `scaleX`
    * depth cue, and the `Sequential*` / `Stacking` stories in a real browser for
    * the composed result. What jest can pin — and what the two `describe.each`
    * blocks below deliberately do NOT pin, since they run both values — is which

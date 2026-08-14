@@ -2,6 +2,7 @@ import React, { cloneElement, Fragment, isValidElement, useCallback, useMemo, us
 import { Pressable, StyleSheet, View, type StyleProp, type ViewStyle } from 'react-native';
 
 import { useTheme } from '../theme/use-theme';
+import { useInteractionState } from '../hooks/use-interaction-state';
 import { Text } from '../typography';
 import { Button } from '../button';
 import { useDialogControl } from '../dialog/context';
@@ -62,8 +63,8 @@ export function MenuTrigger({
   hint,
 }: MenuTriggerProps) {
   const context = useMenuContext();
-  const [focused, setFocused] = useState(false);
-  const [pressed, setPressed] = useState(false);
+  const { state: focused, onIn: onFocus, onOut: onBlur } = useInteractionState();
+  const { state: pressed, onIn: onPressIn, onOut: onPressOut } = useInteractionState();
 
   return children({
     control: context.control,
@@ -74,8 +75,8 @@ export function MenuTrigger({
     },
     props: {
       onPress: () => context.control.open(),
-      onFocus: () => setFocused(true),
-      onBlur: () => setFocused(false),
+      onFocus,
+      onBlur,
       accessibilityHint: hint,
       accessibilityLabel: label,
       accessibilityRole: role,
@@ -107,8 +108,8 @@ export function MenuContent({
 export function MenuItem({ children, label, style, onPress, ...rest }: MenuItemProps) {
   const theme = useTheme();
   const context = useMenuContext();
-  const [focused, setFocused] = useState(false);
-  const [pressed, setPressed] = useState(false);
+  const { state: focused, onIn: onFocus, onOut: onBlur } = useInteractionState();
+  const { state: pressed, onIn: onPressIn, onOut: onPressOut } = useInteractionState();
 
   const handlePress = useCallback(
     (e: import('react-native').GestureResponderEvent) => {
@@ -132,11 +133,11 @@ export function MenuItem({ children, label, style, onPress, ...rest }: MenuItemP
       {...rest}
       accessibilityHint=""
       accessibilityLabel={label}
-      onFocus={() => setFocused(true)}
-      onBlur={() => setFocused(false)}
+      onFocus={onFocus}
+      onBlur={onBlur}
       onPress={handlePress}
-      onPressIn={() => setPressed(true)}
-      onPressOut={() => setPressed(false)}
+      onPressIn={onPressIn}
+      onPressOut={onPressOut}
       style={[
         styles.item,
         {

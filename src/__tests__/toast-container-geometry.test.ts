@@ -6,7 +6,7 @@ import {
   calculateOutsidePressableArea,
   getContainerStyle,
   getInsetValues,
-} from '../toast/positioner-utils';
+} from '../toast/container-geometry';
 import type { ToastPosition } from '../toast/types';
 
 describe('getContainerStyle', () => {

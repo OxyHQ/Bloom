@@ -287,6 +287,17 @@ describe('Item selection is spelled per its role', () => {
     expect(el.hasAttribute('aria-pressed')).toBe(false);
   });
 
+  it('role="radio" gets aria-checked, which is what ARIA allows there', () => {
+    // The role a single-choice list needs, and the one `Select`'s two forks
+    // spell by hand. Both platforms have it, so it also travels on
+    // `accessibilityRole` rather than being web-only like `option`.
+    const c = mount(<Item title="Row" role="radio" onPress={() => {}} selected />);
+    const el = byRole(c, 'radio');
+    expect(el.getAttribute('aria-checked')).toBe('true');
+    expect(el.hasAttribute('aria-selected')).toBe(false);
+    expect(el.hasAttribute('aria-pressed')).toBe(false);
+  });
+
   it('a row with no selection state emits neither attribute', () => {
     const c = mount(<Item title="Row" onPress={() => {}} />);
     const el = byRole(c, 'button');

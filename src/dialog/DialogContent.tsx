@@ -1,10 +1,7 @@
 import React, { useCallback } from 'react';
-import {
-  Text,
-  Pressable,
-  View,
-  type GestureResponderEvent,
-} from 'react-native';
+import { Pressable, View, type GestureResponderEvent } from 'react-native';
+
+import { Text } from '../typography';
 
 import type { ThemeColors } from '../theme/types';
 import { useTheme } from '../theme/use-theme';
@@ -46,12 +43,16 @@ export function DialogBody({
   return (
     <>
       {title ? (
+        // Bloom's `Text`, not react-native's: the raw one renders in whatever
+        // font the platform picks and takes no theme colour, so every dialog
+        // title in the library was the system face while the rest of the surface
+        // was Bloom's. The sizes stay explicit — the typography ROLES
+        // (`H1`…`H6`, `P`) carry family and weight, not a size ramp.
         <Text
           nativeID={titleId}
           style={{
             fontSize: 22,
             fontWeight: '600',
-            color: theme.colors.text,
             paddingBottom: description ? 4 : 16,
             lineHeight: 30,
           }}

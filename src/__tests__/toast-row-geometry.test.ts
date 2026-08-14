@@ -7,7 +7,7 @@ import {
   calculateStackScaleX,
   calculateToastPosition,
   getOrderedToastIds,
-} from '../toast/position-utils';
+} from '../toast/row-geometry';
 import type { ToastPosition, ToastProps } from '../toast/types';
 
 const toastWithId = (id: string | number): ToastProps => ({

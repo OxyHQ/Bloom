@@ -2,6 +2,10 @@
  * Derived from sonner-native v0.26.4 — src/position-utils.ts
  * (MIT © Gunnar Torfi Steinarsson). See the top-level NOTICE.
  *
+ * Named for what it computes — the per-ROW offset, ordering and stack scale —
+ * rather than carried over as `position-utils.ts`, one letter from its sibling
+ * `positioner-utils.ts` (now `container-geometry.ts`).
+ *
  * PURE geometry, called from plain JS. Upstream runs `calculateToastPosition`
  * inside a Reanimated mapper (hence its `'worklet'` directive); Bloom computes the
  * target in React and drives the shared value imperatively instead, because an

@@ -10,6 +10,7 @@ import React, {
 import { Pressable, StyleSheet, View } from 'react-native';
 
 import { useTheme } from '../theme/use-theme';
+import { useInteractionState } from '../hooks/use-interaction-state';
 import { Backdrop, OverlayRoot } from '../overlay';
 import { resolveDropdownPlacement } from '../overlay/dropdown-placement';
 import { Portal } from '../portal/index.web';
@@ -112,16 +113,16 @@ export function Popover({ children, control }: PopoverProps) {
 
 export function PopoverTrigger({ children, label }: PopoverTriggerProps) {
   const { control, triggerRef, isOpen } = usePopoverContext();
-  const [hovered, setHovered] = useState(false);
-  const [focused, setFocused] = useState(false);
+  const { state: hovered, onIn: onHoverIn, onOut: onHoverOut } = useInteractionState();
+  const { state: focused, onIn: onFocus, onOut: onBlur } = useInteractionState();
 
   const rendered = children({
     control,
     state: { hovered, focused, pressed: false },
     props: {
       onPress: () => control.open(),
-      onFocus: () => setFocused(true),
-      onBlur: () => setFocused(false),
+      onFocus,
+      onBlur,
       accessibilityLabel: label,
       accessibilityRole: 'button',
       'aria-expanded': isOpen,
@@ -135,8 +136,8 @@ export function PopoverTrigger({ children, label }: PopoverTriggerProps) {
       collapsable={false}
       style={styles.triggerWrap}
       {...({
-        onMouseEnter: () => setHovered(true),
-        onMouseLeave: () => setHovered(false),
+        onMouseEnter: onHoverIn,
+        onMouseLeave: onHoverOut,
       } as Record<string, () => void>)}>
       {rendered}
     </View>
