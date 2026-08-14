@@ -78,11 +78,11 @@ InputGroupAddon.displayName = 'InputGroupAddon';
  *
  * ```tsx
  * <InputGroup>
- *   <InputGroup.Addon>https://</InputGroup.Addon>
+ *   <InputGroupAddon>https://</InputGroupAddon>
  *   <TextFieldInput label="Domain" value={v} onChangeText={setV} />
- *   <InputGroup.Addon divider>
+ *   <InputGroupAddon divider>
  *     <Button size="small" variant="ghost" onPress={go}>Go</Button>
- *   </InputGroup.Addon>
+ *   </InputGroupAddon>
  * </InputGroup>
  * ```
  */
@@ -181,10 +181,10 @@ const styles = StyleSheet.create({
   },
 });
 
-const InputGroupBase = memo(InputGroupComponent);
-InputGroupBase.displayName = 'InputGroup';
-
-// The flat-prefixed `InputGroupAddon` is the export; `InputGroup.Addon` is the
-// same component reachable through the parent, which is how every call site
-// reads (`<InputGroup.Addon>` inside an `<InputGroup>`).
-export const InputGroup = Object.assign(InputGroupBase, { Addon: InputGroupAddon });
+// Flat-prefixed, with no `InputGroup.Addon` static beside it. Two spellings of
+// one part is the ambiguity the flat-prefix rule exists to remove, and no other
+// Bloom compound carries one — there is no `Tabs.Trigger`, `Menu.Item` or
+// `Select.Trigger`. The static was the last place a reader could learn a second
+// name for a part that already has one.
+export const InputGroup = memo(InputGroupComponent);
+InputGroup.displayName = 'InputGroup';

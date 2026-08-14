@@ -20,7 +20,7 @@ export interface InputGroupAddonProps {
 
 export interface InputGroupProps {
   /**
-   * Group children. Place `InputGroup.Addon` elements before/after the input
+   * Group children. Place `InputGroupAddon` elements before/after the input
    * (a Bloom `TextFieldInput`, a `Search`, or any control). The middle
    * child stretches to fill.
    */

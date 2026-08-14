@@ -53,6 +53,21 @@ export function isOpaque(argb: number): boolean {
   return alphaFromArgb(argb) >= 255;
 }
 
+/** Parse a `#rrggbb` (or `#aarrggbb`) hex string into an ARGB int. */
+export function argbFromHex(hex: string): number {
+  const h = hex.replace('#', '');
+  const v = h.length === 6 ? `ff${h}` : h;
+  return parseInt(v, 16) >>> 0;
+}
+
+/** Format an ARGB int as `#rrggbb`. */
+export function hexFromArgb(argb: number): string {
+  const r = redFromArgb(argb).toString(16).padStart(2, '0');
+  const g = greenFromArgb(argb).toString(16).padStart(2, '0');
+  const b = blueFromArgb(argb).toString(16).padStart(2, '0');
+  return `#${r}${g}${b}`;
+}
+
 /** XYZ → ARGB. */
 export function argbFromXyz(x: number, y: number, z: number): number {
   const m = XYZ_TO_SRGB;
