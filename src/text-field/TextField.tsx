@@ -14,7 +14,7 @@ import { useReducedMotion } from 'react-native-reanimated';
 
 import { useTheme } from '../theme/use-theme';
 import { useInteractionState } from '../hooks/use-interaction-state';
-import { mergeRefs } from '../hooks/mergeRefs';
+import { mergeRefs } from '../hooks/merge-refs';
 import {
   atoms as a,
   web,

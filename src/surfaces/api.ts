@@ -4,7 +4,7 @@ import {
   dismissTop,
   present,
   requestDismiss,
-} from './surfaceStore';
+} from './surface-store';
 import { alert, confirm, prompt } from './prompts';
 import type { PresentOptions, SurfaceRenderFn } from './types';
 

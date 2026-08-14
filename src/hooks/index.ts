@@ -2,7 +2,7 @@ export { useInteractionState, useInteractionStates } from './use-interaction-sta
 export { useDelayedLoading } from './use-delayed-loading';
 export { useThrottledValue } from './use-throttled-value';
 export { usePressAnimation } from './use-press-animation';
-export { mergeRefs } from './mergeRefs';
+export { mergeRefs } from './merge-refs';
 export { useHaptics, BloomHapticsProvider } from './use-haptics';
 export type { HapticStrength, BloomHapticsProviderProps } from './use-haptics';
 export { useGutters } from './use-gutters';

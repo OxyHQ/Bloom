@@ -4,7 +4,7 @@ import { View } from 'react-native';
 import { ActionRow } from '../dialog/DialogContent';
 import type { DialogAction } from '../dialog/types';
 import { TextFieldInput } from '../text-field';
-import { present } from './surfaceStore';
+import { present } from './surface-store';
 import type {
   AlertButton,
   SurfaceConfirmOptions,

@@ -9,7 +9,7 @@ import {
   requestDismiss,
   resetSurfaces,
   subscribe,
-} from '../surfaces/surfaceStore';
+} from '../surfaces/surface-store';
 import { confirm, prompt, surfaces } from '../surfaces/api';
 
 const noop = () => null;

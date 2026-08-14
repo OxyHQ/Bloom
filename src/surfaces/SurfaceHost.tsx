@@ -15,7 +15,7 @@ import {
   requestDismiss,
   resetSurfaces,
   subscribe,
-} from './surfaceStore';
+} from './surface-store';
 import { SurfaceContext } from './use-surface';
 import type { SurfaceControls, SurfaceEntry, SurfacePresentation } from './types';
 

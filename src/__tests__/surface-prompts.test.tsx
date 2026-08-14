@@ -8,7 +8,7 @@ import { createSurfaceHost } from '../surfaces/SurfaceHost';
 import {
   __resetSurfacesForTests,
   getSnapshot,
-} from '../surfaces/surfaceStore';
+} from '../surfaces/surface-store';
 import { BloomThemeProvider } from '../theme/BloomThemeProvider';
 
 /**

@@ -1,4 +1,4 @@
-export type { IntrinsicSize } from './imageAspectRatioCache';
+export type { IntrinsicSize } from './aspect-ratio-cache';
 export {
   getIntrinsicSize,
   getAspectRatio,
@@ -6,4 +6,4 @@ export {
   setAspectRatio,
   fetchAspectRatio,
   DEFAULT_ASPECT_RATIO,
-} from './imageAspectRatioCache';
+} from './aspect-ratio-cache';
