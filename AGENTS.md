@@ -97,6 +97,7 @@ Wiring: Expo/Metro apps import `@oxyhq/app-preset/css/base.css` at the top of `g
 - **`aria-disabled` inverts between `Pressable` and `View`** — `Pressable` overwrites a caller-supplied one from its `disabled` prop; a plain `View` has no `disabled` prop.
 - **`accessibilityValue={{min,max,now}}` is dropped too** — only the flat `aria-value*` props work.
 - **A prop-level test cannot catch any of this** — assert the rendered ATTRIBUTE. Gate: `aria-state-web.test.tsx`, mutation-verified per component.
+- **TWO gates; the runtime one does not fail by default.** `aria-state-web.test.tsx` imports subjects BY NAME, so a new component never joins it — how `Slider` got fixed and its three `progressbar` siblings did not. `aria-state-source-census.test.ts` fails any element with a stateful role and no matching `aria-*`. Add to both.
 
 ## Overlay stacking (one authority, never a constant)
 
@@ -132,7 +133,7 @@ Only TWO exist: `CenteredDialog` and `ResponsiveSheet` were removed with no shim
 - Both resolvers are pure so build scripts can import them — gated by a static import-graph scan.
 - **The colour engine is the `ColorEngine` NAMESPACE, not flat exports** — `useTheme`/`BloomThemeProvider`/tokens stay flat (used fleet-wide); raw colour maths (`argbFromHex`, `quantizeImage`, …) has no consumers outside Bloom. `theme/color-engine/index.ts` is that namespace's published surface; the ports underneath are implementation.
 - **`design-tokens/tokens.json`** is every token RESOLVED in W3C DTCG format for consumers that can't run a stylesheet — sRGB hex, additions must be additive, fonts/shadows absent. **Generated, never hand-edited.**
-- **Never append hex alpha to a Bloom color token in inline style** — accent tokens resolve to `rgb(...)`, so appended hex alpha parses back OPAQUE (contrast 1.00). Use the NativeWind opacity class (`bg-primary/10`); verify by compositing the actual background and computing the WCAG ratio.
+- **Never derive a colour from a token — read the pair.** Accent tokens resolve to `rgb(...)`, so appended hex alpha parses back OPAQUE (contrast 1.00), and a fill is sized to CARRY text, not to BE it, so using one as a label fails AA. A tinted/filled/outlined control calls `resolveAccentColors(colors, tone, fill)` (`theme/accent-colors.ts`), which reads the `*Subtle`/`*SubtleForeground` pairs the policy gates together; a className context uses the opacity utility (`bg-primary/10`). Verify by compositing the actual background and computing the WCAG ratio — gate: `theme/__tests__/accent-colors.test.ts`.
 
 ## Web fonts
 
@@ -153,7 +154,7 @@ Only TWO exist: `CenteredDialog` and `ResponsiveSheet` were removed with no shim
 
 - **Bloom typography wires `className` → `style` via `styled(RNText)` from `react-native-css`.** **Never put font-size, line-height, font-weight or color defaults in inline `style` when the caller passes `className`** — react-native-css merges utilities first, so overlapping inline keys silently break `text-*`/`font-*`/`leading-*`. Apply defaults only when `className` is absent; `fontFamily` may stay inline.
 - **`className` must land on the node the PARENT lays out.** An extra layout wrapper (an `Animated.View` holding a press transform) makes LAYOUT classes silently inert on native while VISUAL ones keep working — same call site works on web, does nothing on native, no error. **Fix: one node** — build `Animated.createAnimatedComponent(...)` at module scope so transform, visuals, `style` and `className` share it. Reference: `button/Button.tsx`.
-- **Wire `className` through Bloom's own `styled()`, never as a bare prop** — a bare one only works under NW5 and drops the moment the primitive is wrapped.
+- **Wire `className` through Bloom's own `styled()`, never as a bare prop** — a bare one only works under NW5 and drops the moment the primitive is wrapped. Use the module-scope wrappers in `styles/styled-primitives.ts`; a `Record<string, string>` cast type-checks against nothing and hid two dropped props. Gate: `classname-interop.test.ts`.
 - **Never let a component's own default `className` compete with the caller's** — the caller's replaces it, stripping the chrome. Defaults belong in resolved-token inline style.
 - Jest sees the structure but never whether a class resolves to CSS, or the native driver — a device build is the only place the press animation is verified.
 
