@@ -27,7 +27,6 @@ import {
   Gesture,
   GestureDetector,
 } from 'react-native-gesture-handler';
-import { useTheme } from '../theme/use-theme';
 import { borderRadius } from '../styles/tokens';
 import { Backdrop, OverlayRoot } from '../overlay';
 import { Portal } from '../portal';
@@ -162,7 +161,6 @@ function resolveCornerRadius(cornerRadius: number | 'circle', fit: FittedSize): 
  *   two never fight.
  */
 const ZoomableImageGalleryInner = React.forwardRef<ZoomableImageGalleryHandle, ZoomableImageGalleryProps>(({ measureThumb, cornerRadius = DEFAULT_CORNER_RADIUS, indicatorVariant = 'dots' }, ref) => {
-  const theme = useTheme();
   const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = useWindowDimensions();
 
   const radiusFor = useCallback(

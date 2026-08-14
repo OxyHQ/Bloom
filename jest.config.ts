@@ -20,12 +20,18 @@ const config: Config = {
     ],
   },
   testMatch: ['**/__tests__/**/*.(test|spec).(ts|tsx)'],
-  // Agent git worktrees live under `.claude/worktrees/`. Each is a full checkout
-  // of this repo, so jest-haste-map finds a SECOND copy of every file in
-  // `__mocks__/` ("duplicate manual mock found") and may resolve the stale one —
-  // which fails the suite, or worse passes it against mocks that no longer match
-  // the source. Nothing under `.claude/` is ever part of a test run.
-  modulePathIgnorePatterns: ['<rootDir>/.claude/'],
+  // Agent git worktrees. Each is a full checkout of this repo, so jest-haste-map
+  // finds a SECOND copy of every file in `__mocks__/` ("duplicate manual mock
+  // found") and may resolve the stale one — which fails the suite, or worse
+  // passes it against mocks that no longer match the source.
+  //
+  // BOTH locations are listed. Worktrees moved from `.claude/worktrees/` to
+  // `.worktrees/` and the pattern did not follow, so a run in the shared
+  // checkout collected 1197 test files out of other agents' branches — every
+  // sibling's work-in-progress, reported as this checkout's result. It fails in
+  // the permissive direction: the run is greener and far larger than the tree
+  // under test, and nothing about the output says so.
+  modulePathIgnorePatterns: ['<rootDir>/.claude/', '<rootDir>/.worktrees/'],
   moduleNameMapper: {
     // react-native-css is a transitive (host-only) dep; `theme/native-root-vars.ts`
     // statically imports its `native-internal` subpath. Map it so suites that pull

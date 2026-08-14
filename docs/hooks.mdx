@@ -31,15 +31,17 @@ renders unstyled and nothing errors.
 
 ## `useDelayedLoading`
 
-True only after a request has been slow for a moment.
+Holds a flag true for a fixed delay, then flips it false.
 
 ```tsx
-const showSpinner = useDelayedLoading(isFetching);
+const settling = useDelayedLoading(300);        // true for 300ms, then false
+const showContent = !settling && !isFetching;
 ```
 
-A spinner that appears for 80ms and vanishes is worse than no spinner — the
-flash reads as a glitch, and the user cannot tell what happened. Delaying means
-fast responses look instant and only genuinely slow ones get an indicator.
+It takes the DELAY, not the loading flag: `useDelayedLoading(delay, initialState?)`.
+Use it to guarantee a minimum on-screen time. A spinner that appears for 80ms
+and vanishes is worse than no spinner — the flash reads as a glitch, and the
+user cannot tell what happened.
 
 ## `useThrottledValue`
 
