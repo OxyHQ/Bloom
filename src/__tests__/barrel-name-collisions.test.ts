@@ -301,9 +301,22 @@ describe('the resolver reads a real surface', () => {
     // a star export and by an explicit re-export, from two different files.
     const fixture = join(SRC, '__tests__', 'support', 'collision-fixture-barrel.ts');
     const reported = collisions(fixture, 'native');
+    const star = "export * from '../../item'";
+    const explicit = "export { Card as Item } from '../../card'";
+    // The line numbers are DERIVED from the fixture, not typed in. Hardcoding
+    // them makes an edit to the fixture's own comment fail the control — which
+    // is not the property under test, and is how a control ends up loosened
+    // rather than fixed. Locating each statement instead still proves the
+    // reported line points at the right statement, which is what a failure
+    // message has to get right.
+    const lines = readFileSync(fixture, 'utf8').split('\n');
+    const lineOf = (statement: string): number =>
+      lines.findIndex((text) => text.startsWith(statement)) + 1;
+    expect(lineOf(star)).toBeGreaterThan(0);
+    expect(lineOf(explicit)).toBeGreaterThan(lineOf(star));
     expect(reported).toEqual([
-      "Item: line 13 export * from '../../item' -> item/Item.tsx#Item  |  " +
-        "line 14 export { Card as Item } from '../../card' -> card/Card.tsx#Card",
+      `Item: line ${lineOf(star)} ${star} -> item/Item.tsx#Item  |  ` +
+        `line ${lineOf(explicit)} ${explicit} -> card/Card.tsx#Card`,
     ]);
     // …and stays quiet about the name the fixture offers TWICE from one
     // declaration, which is redundant and not ambiguous.

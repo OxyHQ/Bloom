@@ -6,8 +6,10 @@
  * quiet about — otherwise the cheapest way to green the gate would be deleting a
  * binding that is doing its job.
  *
- * Nothing imports this at runtime, and bob's `__tests__` exclusion keeps it out
- * of the published package. It is a plain `.ts` with no React import because the
+ * Nothing imports this at runtime. bob's `exclude` keeps it out of `lib/`, and
+ * `files: ["src", …]` does ship it inside the tarball's `src/` like the other
+ * 137 test files there — but no entry point reaches it, so no bundler links it.
+ * It is a plain `.ts` with no React import because the
  * detector reads source, never types: a call named `use…` bound to a name is all
  * the shape there is.
  *
