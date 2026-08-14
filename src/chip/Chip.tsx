@@ -2,47 +2,23 @@ import React, { memo, useMemo } from 'react';
 import { View, Text, Pressable, Animated, type ViewStyle, type TextStyle } from 'react-native';
 
 import { useTheme } from '../theme/use-theme';
+import { resolveAccentColors } from '../theme/accent-colors';
 import { usePressAnimation } from '../hooks/use-press-animation';
-import type { ChipProps, ChipColor, ChipVariant } from './types';
+import { TimesLarge_Stroke2_Corner0_Rounded as TimesIcon } from '../icons/Times';
+import type { ChipProps } from './types';
 
+/**
+ * `closeIcon` is a rung of the icon scale rather than a pixel height: the close
+ * affordance is an `Icons` glyph, and those take `size` from the shared scale
+ * (`sm` = 16, `md` = 20).
+ */
 const SIZE_CONFIG = {
-  small: { height: 24, fontSize: 12, paddingHorizontal: 8, iconGap: 4, iconSize: 14 },
-  medium: { height: 32, fontSize: 14, paddingHorizontal: 12, iconGap: 6, iconSize: 16 },
-  large: { height: 40, fontSize: 16, paddingHorizontal: 16, iconGap: 8, iconSize: 18 },
+  small: { height: 24, fontSize: 12, paddingHorizontal: 8, iconGap: 4, closeIcon: 'sm' },
+  medium: { height: 32, fontSize: 14, paddingHorizontal: 12, iconGap: 6, closeIcon: 'sm' },
+  large: { height: 40, fontSize: 16, paddingHorizontal: 16, iconGap: 8, closeIcon: 'md' },
 } as const;
 
 const PRESS_SCALE = 0.95;
-
-function useChipColors(
-  color: ChipColor,
-  variant: ChipVariant,
-  selected: boolean,
-  theme: ReturnType<typeof useTheme>,
-): { bg: string; fg: string; border: string } {
-  const colorMap: Record<ChipColor, string> = {
-    default: theme.colors.textSecondary,
-    primary: theme.colors.primary,
-    success: theme.colors.success,
-    warning: theme.colors.warning,
-    error: theme.colors.error,
-  };
-
-  const base = selected ? theme.colors.primary : colorMap[color];
-  // When the background is the theme primary, the readable text/icon color is
-  // preset-specific (white for blue, black for yellow). Semantic colors
-  // (success/warning/error) are fixed bright fills that always pair with white.
-  const isPrimaryBg = base === theme.colors.primary;
-  const solidForeground = isPrimaryBg ? theme.colors.primaryForeground : '#fff';
-
-  switch (variant) {
-    case 'solid':
-      return { bg: base, fg: solidForeground, border: base };
-    case 'outlined':
-      return { bg: 'transparent', fg: base, border: base };
-    case 'soft':
-      return { bg: base + '18', fg: base, border: 'transparent' };
-  }
-}
 
 const ChipComponent: React.FC<ChipProps> = ({
   children,
@@ -62,14 +38,16 @@ const ChipComponent: React.FC<ChipProps> = ({
 }) => {
   const theme = useTheme();
   const { scaleAnim, onPressIn, onPressOut } = usePressAnimation(PRESS_SCALE);
-  const colors = useChipColors(color, variant, selected, theme);
+  // Selection promotes the chip to the brand tone \u2014 the filter-pill behaviour \u2014
+  // rather than to a second colour system of its own.
+  const colors = resolveAccentColors(theme.colors, selected ? 'primary' : color, variant);
   const sizeConfig = SIZE_CONFIG[size];
 
   const containerStyle = useMemo((): ViewStyle => ({
     height: sizeConfig.height,
     borderRadius: sizeConfig.height / 2,
     paddingHorizontal: sizeConfig.paddingHorizontal,
-    backgroundColor: colors.bg,
+    backgroundColor: colors.background,
     borderWidth: variant === 'outlined' ? 1 : 0,
     borderColor: colors.border,
     flexDirection: 'row',
@@ -81,7 +59,7 @@ const ChipComponent: React.FC<ChipProps> = ({
   const labelStyle = useMemo((): TextStyle => ({
     fontSize: sizeConfig.fontSize,
     fontWeight: '500',
-    color: colors.fg,
+    color: colors.foreground,
   }), [sizeConfig, colors]);
 
   const closeButton = onClose ? (
@@ -91,9 +69,7 @@ const ChipComponent: React.FC<ChipProps> = ({
       accessibilityLabel="Remove"
       accessibilityRole="button"
     >
-      <Text style={{ fontSize: sizeConfig.iconSize, color: colors.fg, lineHeight: sizeConfig.iconSize }}>
-        {'\u00D7'}
-      </Text>
+      <TimesIcon size={sizeConfig.closeIcon} fill={colors.foreground} />
     </Pressable>
   ) : null;
 

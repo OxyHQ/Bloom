@@ -1,16 +1,20 @@
 import type { StyleProp, ViewStyle, TextStyle } from 'react-native';
 
-export type ChipVariant = 'solid' | 'outlined' | 'soft';
-export type ChipColor = 'default' | 'primary' | 'success' | 'warning' | 'error';
+import type { AccentFill, AccentTone } from '../theme/accent-colors';
+
 export type ChipSize = 'small' | 'medium' | 'large';
 
 export interface ChipProps {
   /** Text content of the chip. */
   children?: React.ReactNode;
-  /** Visual variant. */
-  variant?: ChipVariant;
+  /**
+   * How loudly the chip is painted. `subtle` used to be spelled `soft` here and
+   * `subtle` on `Badge` — one concept, two names, resolved by the shared
+   * {@link AccentFill}.
+   */
+  variant?: AccentFill;
   /** Semantic color. */
-  color?: ChipColor;
+  color?: AccentTone;
   /** Size preset. */
   size?: ChipSize;
   /** Icon rendered before the label. */

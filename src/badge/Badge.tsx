@@ -2,8 +2,9 @@ import React, { memo, useMemo } from 'react';
 import { View, Text, type ViewStyle, type TextStyle } from 'react-native';
 
 import { useTheme } from '../theme/use-theme';
+import { resolveAccentColors } from '../theme/accent-colors';
 import { Z_INDEX } from '../styles/z-index';
-import type { BadgeProps, BadgeColor, BadgeVariant } from './types';
+import type { BadgeProps } from './types';
 
 const SIZE_CONFIG = {
   small: { minWidth: 16, height: 16, fontSize: 10, paddingHorizontal: 4, dotSize: 6 },
@@ -17,36 +18,6 @@ const PLACEMENT_CONFIG = {
   'bottom-right': { bottom: -4, right: -4 },
   'bottom-left': { bottom: -4, left: -4 },
 } as const;
-
-function useColorPair(
-  color: BadgeColor,
-  variant: BadgeVariant,
-  theme: ReturnType<typeof useTheme>,
-): { bg: string; fg: string } {
-  const colorMap: Record<BadgeColor, string> = {
-    default: theme.colors.textSecondary,
-    primary: theme.colors.primary,
-    success: theme.colors.success,
-    warning: theme.colors.warning,
-    error: theme.colors.error,
-    info: theme.colors.info,
-  };
-
-  const base = colorMap[color];
-  // A primary-colored solid badge needs the preset's readable foreground
-  // (white for blue, black for yellow). Semantic colors are fixed bright
-  // fills that always pair with white.
-  const solidForeground = base === theme.colors.primary ? theme.colors.primaryForeground : '#fff';
-
-  switch (variant) {
-    case 'solid':
-      return { bg: base, fg: solidForeground };
-    case 'subtle':
-      return { bg: base + '20', fg: base };
-    case 'outlined':
-      return { bg: 'transparent', fg: base };
-  }
-}
 
 const BadgeComponent: React.FC<BadgeProps> = ({
   content,
@@ -63,7 +34,10 @@ const BadgeComponent: React.FC<BadgeProps> = ({
   testID,
 }) => {
   const theme = useTheme();
-  const colors = useColorPair(color, variant, theme);
+  // A dot has no label to make legible, so it always paints the tone's FILL. It
+  // used to follow the variant, which made `dot variant="outlined"` a fully
+  // transparent circle — visually absent, with markup that looks correct.
+  const colors = resolveAccentColors(theme.colors, color, dot ? 'solid' : variant);
   const sizeConfig = SIZE_CONFIG[size];
 
   const displayContent = useMemo(() => {
@@ -81,7 +55,7 @@ const BadgeComponent: React.FC<BadgeProps> = ({
         width: sizeConfig.dotSize,
         height: sizeConfig.dotSize,
         borderRadius: sizeConfig.dotSize / 2,
-        backgroundColor: colors.bg,
+        backgroundColor: colors.background,
       };
     }
 
@@ -90,14 +64,14 @@ const BadgeComponent: React.FC<BadgeProps> = ({
       height: sizeConfig.height,
       borderRadius: sizeConfig.height / 2,
       paddingHorizontal: sizeConfig.paddingHorizontal,
-      backgroundColor: colors.bg,
+      backgroundColor: colors.background,
       alignItems: 'center',
       justifyContent: 'center',
     };
 
     if (variant === 'outlined') {
       base.borderWidth = 1;
-      base.borderColor = colors.fg;
+      base.borderColor = colors.border;
     }
 
     return base;
@@ -107,7 +81,7 @@ const BadgeComponent: React.FC<BadgeProps> = ({
     (): TextStyle => ({
       fontSize: sizeConfig.fontSize,
       fontWeight: '600',
-      color: colors.fg,
+      color: colors.foreground,
       textAlign: 'center',
       lineHeight: sizeConfig.height,
     }),

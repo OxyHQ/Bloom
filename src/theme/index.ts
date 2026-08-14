@@ -50,6 +50,13 @@ export {
 } from './color-presets';
 export { parseRgb, withAlpha } from './color-utils';
 export type { RgbChannels } from './color-utils';
+// The one way to paint something in a semantic colour at a chosen loudness.
+// Public because the alternative is what consumers were already doing —
+// appending hex alpha to a fill token, which produces a malformed string
+// react-native-web reads back as fully opaque. `Chip` and `Badge` are its first
+// two callers; anything building a status pill wants the same three values.
+export { resolveAccentColors } from './accent-colors';
+export type { AccentColors, AccentFill, AccentTone } from './accent-colors';
 export { applyPresetVarsToDocument } from './preset-vars';
 // `getPresetVars` + `ExplicitAccents`: see the note above — `design-tokens`
 // owns them.

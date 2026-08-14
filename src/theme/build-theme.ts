@@ -104,7 +104,16 @@ function buildColorsFromPreset(
     infoSubtleForeground: g('info-text'),
 
     primarySubtle: g('primary-subtle'),
-    primarySubtleForeground: r.onPrimaryContainer,
+    // The `-text` member, like every other `*SubtleForeground` above — NOT the
+    // engine's `onPrimaryContainer`. `--primary-subtle` is the policy's
+    // TRANSLUCENT tint and `onPrimaryContainer` is the on-colour of M3's OPAQUE
+    // container, so the two were never a pair: measured over the tint composited
+    // on `--background`, `mono` came out at 1.25 in light and 1.53 in dark (white
+    // text on a near-white pill). The pairs the policy generates together are the
+    // `-subtle`/`-text` ones, and those are what `policy-legibility.test.ts`
+    // gates. The platform palettes in `adaptive-colors.ts` keep
+    // `primaryContainer`/`onPrimaryContainer`, which IS a matched pair.
+    primarySubtleForeground: g('primary-text'),
     negative: r.error,
     negativeForeground: r.onError,
     negativeSubtle: g('error-subtle'),
