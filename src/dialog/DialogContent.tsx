@@ -1,13 +1,15 @@
 import React, { useCallback } from 'react';
 import {
   Text,
-  TouchableOpacity,
+  Pressable,
   View,
   type GestureResponderEvent,
 } from 'react-native';
 
 import type { ThemeColors } from '../theme/types';
 import { useTheme } from '../theme/use-theme';
+import { useInteractionState } from '../hooks/use-interaction-state';
+import { borderRadius } from '../styles/tokens';
 import { useDialogContext } from './context';
 import type { DialogAction, DialogActionColor } from './types';
 
@@ -93,6 +95,9 @@ function ActionButton({ action }: { action: DialogAction }) {
   const shouldCloseOnPress = action.shouldCloseOnPress ?? true;
 
   const { background, foreground } = getActionPalette(color, theme.colors);
+  // Component state, not `Pressable`'s function-form `style`: css-interop
+  // swallows the function form and every base style with it.
+  const { state: pressed, onIn: onPressIn, onOut: onPressOut } = useInteractionState();
 
   // `shouldCloseOnPress` (default true) is the ONLY switch, for every colour.
   // `cancel` used to bypass it — on the premise that a cancel button must always
@@ -115,25 +120,31 @@ function ActionButton({ action }: { action: DialogAction }) {
   );
 
   return (
-    <TouchableOpacity
-      style={{
-        borderRadius: 9999,
-        alignItems: 'center',
-        justifyContent: 'center',
-        backgroundColor: background,
-        opacity: action.disabled ? 0.5 : 1,
-        paddingVertical: 12,
-        paddingHorizontal: 24,
-      }}
+    <Pressable
+      style={[
+        {
+          borderRadius: borderRadius.full,
+          alignItems: 'center',
+          justifyContent: 'center',
+          backgroundColor: background,
+          opacity: action.disabled ? 0.5 : 1,
+          paddingVertical: 12,
+          paddingHorizontal: 24,
+        },
+        !action.disabled && pressed && { opacity: 0.7 },
+      ]}
       onPress={handlePress}
+      onPressIn={onPressIn}
+      onPressOut={onPressOut}
       disabled={action.disabled}
-      activeOpacity={0.7}
+      accessibilityRole="button"
+      accessibilityLabel={action.label}
       testID={action.testID}
     >
       <Text style={{ fontSize: 16, fontWeight: '500', color: foreground }}>
         {action.label}
       </Text>
-    </TouchableOpacity>
+    </Pressable>
   );
 }
 

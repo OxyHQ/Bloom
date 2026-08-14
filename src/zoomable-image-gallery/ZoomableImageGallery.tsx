@@ -28,6 +28,7 @@ import {
   GestureDetector,
 } from 'react-native-gesture-handler';
 import { useTheme } from '../theme/use-theme';
+import { borderRadius } from '../styles/tokens';
 import { Backdrop, OverlayRoot } from '../overlay';
 import { Portal } from '../portal';
 import { useInteractionState } from '../hooks/use-interaction-state';
@@ -1106,7 +1107,7 @@ const styles = StyleSheet.create({
   counterPill: {
     paddingHorizontal: 12,
     paddingVertical: 4,
-    borderRadius: 999,
+    borderRadius: borderRadius.full,
     backgroundColor: 'rgba(0,0,0,0.55)',
   },
   counterText: {
@@ -1121,7 +1122,7 @@ const styles = StyleSheet.create({
   dot: {
     width: 7,
     height: 7,
-    borderRadius: 999,
+    borderRadius: borderRadius.full,
   },
   dotActive: {
     backgroundColor: '#fff',
@@ -1163,7 +1164,7 @@ const styles = StyleSheet.create({
     top: '50%',
     width: 44,
     height: 44,
-    borderRadius: 999,
+    borderRadius: borderRadius.full,
     alignItems: 'center',
     justifyContent: 'center',
     backgroundColor: 'rgba(0,0,0,0.45)',
@@ -1190,7 +1191,7 @@ const styles = StyleSheet.create({
     right: 16,
     width: 40,
     height: 40,
-    borderRadius: 999,
+    borderRadius: borderRadius.full,
     alignItems: 'center',
     justifyContent: 'center',
     backgroundColor: 'rgba(0,0,0,0.45)',

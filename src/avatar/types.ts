@@ -62,7 +62,7 @@ export interface AvatarProps {
    * Consumers can still override via `placeholderColor` / `placeholderIcon`.
    */
   name?: string;
-  /** Press handler — wraps avatar in TouchableOpacity when provided */
+  /** Press handler — wraps the avatar in a `Pressable` when provided. */
   onPress?: () => void;
   /**
    * When true, marks the user as live-streaming: draws a solid red ring that

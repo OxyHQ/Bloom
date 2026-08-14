@@ -10,6 +10,7 @@ import {
 } from 'react-native';
 
 import { useTheme } from '../theme/use-theme';
+import { borderRadius } from '../styles/tokens';
 import { OverlayRoot } from '../overlay';
 import { Portal } from '../portal';
 import { Z_INDEX } from '../styles/z-index';
@@ -214,7 +215,7 @@ export function PromptInputBase({
               right: 8,
               zIndex: Z_INDEX.floating,
               backgroundColor: theme.colors.background,
-              borderRadius: 9999,
+              borderRadius: borderRadius.full,
               padding: 6,
               borderWidth: 1,
               borderColor: theme.colors.border,
@@ -269,7 +270,7 @@ export function PromptInputBase({
                   zIndex: Z_INDEX.raised,
                   padding: 8,
                   backgroundColor: theme.colors.background,
-                  borderRadius: 9999,
+                  borderRadius: borderRadius.full,
                 }}
               >
                 {collapseIcon ?? (

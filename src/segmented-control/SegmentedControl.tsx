@@ -20,6 +20,7 @@ import {
 import Animated, { Easing, LinearTransition } from 'react-native-reanimated';
 
 import { useTheme } from '../theme/use-theme';
+import { bloomShadowStyle } from '../design-tokens/shadows';
 import { useInteractionState } from '../hooks/use-interaction-state';
 import { atoms as a, platform } from '../styles';
 
@@ -326,18 +327,10 @@ function Slider({ x, width }: { x: number; width: number }) {
           width,
           borderRadius: 10,
         },
-        platform({
-          web: {
-            boxShadow: '0px 2px 4px 0px #0000000D',
-          },
-          ios: {
-            shadowColor: '#000',
-            shadowOffset: { width: 0, height: 2 },
-            shadowOpacity: 0x0d / 0xff,
-            shadowRadius: 4,
-          },
-          android: { elevation: 0.25 },
-        }),
+        // `shadow-s` — the subtle-raise role, already platform-forked. This was
+        // the package's ONLY hardcoded shadow colour ('#000') and its own
+        // three-way platform split.
+        bloomShadowStyle('s'),
         platform({
           native: { left: x },
           web: { transform: [{ translateX: x }] },

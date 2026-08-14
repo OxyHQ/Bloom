@@ -13,6 +13,7 @@ import { styled } from 'react-native-css';
 
 import { useTheme } from '../theme/use-theme';
 import { borderRadius } from '../styles/tokens';
+import { bloomShadowStyle } from '../design-tokens/shadows';
 import { usePressAnimation } from '../hooks/use-press-animation';
 import { useInteractionState } from '../hooks/use-interaction-state';
 import type { FabPlacement, FabProps, FabSize, FabVariant } from './types';
@@ -165,12 +166,10 @@ const FabComponent: React.FC<FabProps> = ({
       backgroundColor: resolvedColors.background,
       borderRadius: borderRadius.full,
       height: sizeConfig.diameter,
-      // Elevation / shadow (native).
-      shadowColor: theme.colors.shadow,
-      shadowOffset: { width: 0, height: 4 },
-      shadowOpacity: 0.3,
-      shadowRadius: 8,
-      elevation: 6,
+      // `shadow-m` — the elevated/overlay role. Hand-rolling it here meant one
+      // more set of numbers to keep in step, and only the native half of the
+      // split: on web these props are the deprecated path.
+      ...bloomShadowStyle('m'),
     };
     if (isExtended) {
       base.paddingHorizontal = sizeConfig.diameter <= 44 ? 14 : 20;

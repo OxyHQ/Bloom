@@ -1,7 +1,8 @@
 import React, { memo, useMemo } from 'react';
-import { View, Text, Pressable, Platform, type ViewStyle } from 'react-native';
+import { View, Text, Pressable, type ViewStyle } from 'react-native';
 
 import { useTheme } from '../theme/use-theme';
+import { bloomShadowStyle } from '../design-tokens/shadows';
 import { useInteractionState } from '../hooks/use-interaction-state';
 import { borderRadius, space } from '../styles/tokens';
 import type {
@@ -38,15 +39,10 @@ const CardRootComponent: React.FC<CardProps> = ({
     switch (variant) {
       case 'elevated':
         base.backgroundColor = theme.colors.card;
-        if (Platform.OS === 'web') {
-          base.boxShadow = `0px 1px 3px ${theme.colors.shadow}`;
-        } else {
-          base.shadowColor = theme.colors.shadow;
-          base.shadowOffset = { width: 0, height: 1 };
-          base.shadowOpacity = 0.2;
-          base.shadowRadius = 3;
-          base.elevation = 2;
-        }
+        // `shadow-s` IS the "subtle raise — cards, chips" role, and the token is
+        // already platform-forked, so the hand-rolled `Platform.OS` branch was
+        // one more copy of the split with slightly different numbers.
+        Object.assign(base, bloomShadowStyle('s'));
         break;
       case 'outlined':
         base.backgroundColor = theme.colors.card;

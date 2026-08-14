@@ -9,6 +9,7 @@ import {
 } from 'react-native';
 
 import { useTheme } from '../theme/use-theme';
+import { borderRadius } from '../styles/tokens';
 import { SUPPORTS_NATIVE_DRIVER } from '../styles/native-driver';
 
 const SHIMMER_DURATION = 1500;
@@ -138,7 +139,7 @@ Pill.displayName = 'Skeleton.Pill';
 
 /**
  * Generic rectangular shimmering placeholder. Use for image/card/banner
- * placeholders where neither {@link Pill} (forced borderRadius: 999) nor
+ * placeholders where neither {@link Pill} (forced `borderRadius.full`) nor
  * {@link Circle} fit. Defaults to a small borderRadius (8). Pass `0` for
  * sharp corners or any larger number / percentage string for custom shapes.
  */
@@ -214,10 +215,10 @@ const styles = StyleSheet.create({
   circle: {
     justifyContent: 'center',
     alignItems: 'center',
-    borderRadius: 999,
+    borderRadius: borderRadius.full,
   },
   pill: {
-    borderRadius: 999,
+    borderRadius: borderRadius.full,
   },
   col: {
     flex: 1,

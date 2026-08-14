@@ -1,6 +1,5 @@
 import React, { memo, useMemo } from 'react';
 import {
-  Platform,
   Pressable,
   StyleSheet,
   Text,
@@ -12,6 +11,7 @@ import { Avatar } from '../avatar';
 import { VerifiedCheck } from '../icons/VerifiedCheck';
 import { useTheme } from '../theme/use-theme';
 import { borderRadius, fontSize, space } from '../styles/tokens';
+import { bloomShadowStyle } from '../design-tokens/shadows';
 import type { UserHoverCardProps } from './types';
 
 const AVATAR_SIZE = 48;
@@ -42,15 +42,10 @@ const UserHoverCardComponent: React.FC<UserHoverCardProps> = ({
       width: 280,
     };
 
-    if (Platform.OS === 'web') {
-      base.boxShadow = `0px 8px 24px ${theme.colors.shadow}`;
-    } else {
-      base.shadowColor = theme.colors.shadow;
-      base.shadowOffset = { width: 0, height: 8 };
-      base.shadowOpacity = 0.18;
-      base.shadowRadius = 16;
-      base.elevation = 8;
-    }
+    // `shadow-m` is the overlay role — menus, popovers, dialogs, and this card,
+    // which is one. The token owns the platform split, so the hand-rolled
+    // `Platform.OS` branch goes with it.
+    Object.assign(base, bloomShadowStyle('m'));
 
     return base;
   }, [theme]);

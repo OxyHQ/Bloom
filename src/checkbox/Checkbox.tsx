@@ -1,6 +1,8 @@
 import React, { memo, useCallback, useEffect, useMemo, useRef } from 'react';
 import { View, Text, Pressable, Animated, type ViewStyle } from 'react-native';
 
+import { Check_Stroke2_Corner0_Rounded as CheckIcon } from '../icons/Check';
+
 import { useTheme } from '../theme/use-theme';
 import { animation, borderRadius, space } from '../styles/tokens';
 import { SUPPORTS_NATIVE_DRIVER } from '../styles/native-driver';
@@ -12,6 +14,12 @@ const SIZE_CONFIG = {
   medium: { box: 22, checkmark: 12, fontSize: 15, lineHeight: 22, descFontSize: 13 },
   large: { box: 26, checkmark: 14, fontSize: 16, lineHeight: 24, descFontSize: 14 },
 } as const;
+
+/**
+ * How thick the indeterminate bar is, as a fraction of the checkmark box. Its
+ * proportion, not a fixed pixel value, so it tracks the three sizes.
+ */
+const INDETERMINATE_BAR_THICKNESS = 0.18;
 
 /** Deeper than the 0.97 of a text button: the box is small, so the dip has to be. */
 const PRESS_SCALE = 0.9;
@@ -82,8 +90,24 @@ const CheckboxComponent: React.FC<CheckboxProps> = ({
     return base;
   }, [sizeConfig, checked, indeterminate, checkColor, theme]);
 
-  // Checkmark using unicode characters for zero-dependency rendering
-  const checkmarkContent = indeterminate ? '\u2014' : '\u2713';
+  // The mark is drawn, not typed. It used to be the glyphs `\u2713` and `\u2014`
+  // in a `<Text>`, so its shape, weight and vertical centring came from whatever
+  // font the platform resolved — and `Check_Stroke2_Corner0_Rounded` was already
+  // the answer everywhere else in the library. The indeterminate state is a BAR
+  // rather than a second icon: there is no minus in the set, and a rounded rule
+  // is what the state means.
+  const mark = indeterminate ? (
+    <View
+      style={{
+        width: sizeConfig.checkmark,
+        height: Math.max(2, Math.round(sizeConfig.checkmark * INDETERMINATE_BAR_THICKNESS)),
+        borderRadius: borderRadius.full,
+        backgroundColor: checkmarkColor,
+      }}
+    />
+  ) : (
+    <CheckIcon width={sizeConfig.checkmark} height={sizeConfig.checkmark} fill={checkmarkColor} />
+  );
 
   return (
     <Pressable
@@ -120,17 +144,7 @@ const CheckboxComponent: React.FC<CheckboxProps> = ({
             transform: [{ scale: scaleAnim }],
           }}
         >
-          <Text
-            style={{
-              fontSize: sizeConfig.checkmark,
-              color: checkmarkColor,
-              fontWeight: '700',
-              lineHeight: sizeConfig.checkmark + 2,
-              textAlign: 'center',
-            }}
-          >
-            {checkmarkContent}
-          </Text>
+          {mark}
         </Animated.View>
       </Animated.View>
 

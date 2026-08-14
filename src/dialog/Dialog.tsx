@@ -28,6 +28,7 @@ import Animated, {
 import { BottomSheet, type BottomSheetRef } from '../bottom-sheet';
 import { Backdrop, OverlayRoot } from '../overlay';
 import { useTheme } from '../theme/use-theme';
+import { bloomShadowStyle } from '../design-tokens/shadows';
 import { StyledView } from '../styles/styled-primitives';
 import { Context, useDialogControl } from './context';
 import { DialogBody } from './DialogContent';
@@ -545,7 +546,7 @@ function SideSheet({
           sideStyles.panel,
           // `shadowColor` is a valid RN style prop on native (Dialog.tsx is the
           // native variant); the web `shadow*` deprecation is handled in Dialog.web.tsx.
-          { backgroundColor: theme.colors.background, shadowColor: theme.colors.shadow, pointerEvents: 'auto' },
+          { backgroundColor: theme.colors.background, pointerEvents: 'auto' },
           panelGeometry,
           panelAnimatedStyle,
           panelStyle,
@@ -587,10 +588,10 @@ const sideStyles = StyleSheet.create({
   panel: {
     position: 'absolute',
     overflow: 'hidden',
-    shadowOpacity: 0.18,
-    shadowRadius: 24,
-    shadowOffset: { width: 0, height: 8 },
-    elevation: 12,
+    // `shadow-m` — the overlay role this drawer is one of. Hand-rolled here it
+    // was only the NATIVE half of the split, so the web fork's drawer got none
+    // of it, and its numbers drifted from every other Bloom overlay.
+    ...bloomShadowStyle('m'),
   },
 });
 

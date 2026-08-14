@@ -17,6 +17,7 @@ import Animated, { Easing, ZoomIn } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { useTheme } from '../theme/use-theme';
+import { bloomShadowStyle } from '../design-tokens/shadows';
 import { atoms as a } from '../styles';
 import { OverlayRoot } from '../overlay';
 import { Portal } from '../portal';
@@ -32,7 +33,6 @@ import { createTextBubble } from './TextBubble';
  * These are native specific values, not shared with web
  */
 const ARROW_VISUAL_OFFSET = ARROW_SIZE / 1.25;
-const BUBBLE_SHADOW_OFFSET = ARROW_SIZE / 3;
 
 type TooltipContextType = {
   position: 'top' | 'bottom';
@@ -344,18 +344,12 @@ function Bubble({
               a.py_sm,
               a.rounded_sm,
               bubbleBg,
-              {
-                shadowColor: theme.colors.shadow,
-                shadowOpacity: 0.2,
-                shadowRadius: 12,
-                shadowOffset: {
-                  width: 0,
-                  height:
-                    BUBBLE_SHADOW_OFFSET *
-                    (coords.computedPosition === 'bottom' ? -1 : 1),
-                },
-                elevation: 8,
-              },
+              // `shadow-m` — the overlay role, and the token owns the platform
+              // split, which the hand-rolled version only had the native half
+              // of. The offset no longer flips with the bubble's side: one
+              // shadow vocabulary is the point, and at a 12px blur the
+              // direction was not readable anyway.
+              bloomShadowStyle('m'),
             ]}
             onLayout={(e) => {
               setBubbleMeasurements({

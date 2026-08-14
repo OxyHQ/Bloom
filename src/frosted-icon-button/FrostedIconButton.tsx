@@ -124,6 +124,14 @@ const FrostedIconButtonComponent: React.FC<FrostedIconButtonProps> = ({
       borderColor: ring,
       // Soft shadow lives on the (non-clipping) Pressable so it renders on iOS —
       // the blur/tint are clipped by an inner overflow:hidden layer instead.
+      //
+      // Deliberately NOT `bloomShadowStyle`: the role tokens fix the colour at
+      // black, and this chip's whole job is to read over ARBITRARY media, so its
+      // shadow colour is theme-derived (`palette.shadow`, alpha included, hence
+      // `shadowOpacity: 1`) and must survive in dark mode where a black shadow
+      // over dark artwork gives no edge at all. Every other hand-rolled shadow in
+      // the package was folded into the tokens; this one is the exception, on
+      // purpose.
       shadowColor: palette.shadow,
       shadowOffset: { width: 0, height: 2 },
       shadowOpacity: 1,

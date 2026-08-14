@@ -2,6 +2,7 @@ import React, { memo } from 'react';
 import { View, StyleSheet, type ViewStyle } from 'react-native';
 
 import { Card } from '../card';
+import { borderRadius } from '../styles/tokens';
 import { Avatar } from '../avatar';
 import { AvatarGroup } from '../avatar-group';
 import { DotGridMeter } from '../dot-grid-meter';
@@ -258,7 +259,7 @@ const styles = StyleSheet.create({
     right: -3,
     bottom: -3,
     padding: 2,
-    borderRadius: 999,
+    borderRadius: borderRadius.full,
     alignItems: 'center',
     justifyContent: 'center',
   },

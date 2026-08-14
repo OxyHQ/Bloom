@@ -4,27 +4,12 @@ import { View, Text, Pressable, StyleSheet } from 'react-native';
 import { useTheme } from '../theme/use-theme';
 import { useInteractionState } from '../hooks/use-interaction-state';
 import { Divider } from '../divider';
+import { ChevronRight_Stroke2_Corner0_Rounded as ChevronRightIcon } from '../icons/Chevron';
 import type {
   SettingsListItemProps,
   SettingsListGroupProps,
   SettingsListDividerProps,
 } from './types';
-
-// ── Chevron icon (unicode-based, no SVG dependency) ─────────────
-const Chevron = memo(({ size = 16, color }: { size?: number; color: string }) => (
-  <Text
-    style={{
-      fontSize: size,
-      color,
-      lineHeight: size,
-      textAlign: 'center',
-      width: size,
-    }}
-  >
-    {'\u203A'}
-  </Text>
-));
-Chevron.displayName = 'Chevron';
 
 // ── SettingsListItem ────────────────────────────────────────────
 
@@ -97,7 +82,7 @@ export const SettingsListItem = memo<SettingsListItemProps>(function SettingsLis
       {rightElement}
 
       {hasChevron ? (
-        <Chevron size={16} color={theme.colors.textTertiary} />
+        <ChevronRightIcon size="sm" fill={theme.colors.textTertiary} />
       ) : null}
     </View>
   );
