@@ -1,6 +1,6 @@
 # Bloom (`@oxyhq/bloom`)
 
-> Org-wide standards live in `~/AGENTS.md` and `~/Oxy/AGENTS.md`. **Component documentation lives in `docs/*.mdx`; history lives in git.** This file holds only RULES. **Budget: under 18 KB.** Changes here affect EVERY app in the ecosystem — use the `bloom` agent.
+> Org-wide standards live in `~/AGENTS.md` and `~/Oxy/AGENTS.md`. **Component documentation lives in `docs/*.mdx`; history lives in git.** This file holds only RULES. **Budget: under 24 KB — bounds narrative and history, not how many distinct silent-failure hazards Bloom has. Compress prose before deleting a hazard; a budget whose cheapest fix is deleting a measured hazard is itself the bug.** Changes here affect EVERY app in the ecosystem — use the `bloom` agent.
 
 ```bash
 bun run build       # bob build → lib/ (commonjs + module + typescript)
