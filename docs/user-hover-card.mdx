@@ -61,6 +61,13 @@ wrong in one app or the other.
 ## Chrome
 
 The card composes [`Card`](/docs/bloom/main/card) at the `radius-16` rung with a
-hairline border and `shadow-m` — the overlay elevation role it shares with
+`hairline` border and `shadow-m` — the overlay elevation role it shares with
 menus, popovers and dialogs. It does not clip, so nothing inside it needs to
 know it is in a card.
+
+The border is **0.5px**, `BORDER_WIDTH.hairline`, the same width
+[`BenefitList`](/docs/bloom/main/benefit-list) draws. That is worth stating
+because it renders 0.5px on web, where `StyleSheet.hairlineWidth` — the older
+spelling — is hardcoded to 1: the two surfaces both called themselves hairline
+and did not match. Bloom's scale defines the hairline as 0.5, and this card
+follows the scale.
