@@ -46,8 +46,10 @@ const PKG_PATH = join(REPO_ROOT, 'package.json');
  */
 const SUBPATHS = /** @type {const} */ ([
   ['.', 'index.ts'],
-  // The single app-root provider. Not web-forked: its one platform-varying
-  // import is bound by filename in `provider/scroll-provider{,.web}.ts`.
+  // The single app-root provider. Not web-forked: it holds a store and an
+  // adapter, composed identically on both platforms. (The
+  // `provider/scroll-provider{,.web}.ts` filename fork this comment used to
+  // name is gone — two identical files were dead weight.)
   ['./provider', 'provider/index.ts'],
   ['./surfaces', 'surfaces/index.ts'],
   ['./image-resolver', 'image-resolver/index.ts'],
