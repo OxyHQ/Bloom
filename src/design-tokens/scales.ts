@@ -23,7 +23,12 @@
  * `p-space-8`, `px-space-16`, `gap-space-20`, `m-space-24`, `py-space-12`, …
  *
  * `screen-margin` is the standard page gutter (left/right inset). Default 20px —
- * matches Bloom's existing `space.xl` and the `Dialog` default `contentPadding`.
+ * the same rung as `space-20`, which is also the `Dialog` default `contentPadding`.
+ *
+ * THIS IS THE ONE PLACE A SPACING NUMBER IS WRITTEN DOWN. `styles/tokens.ts`'s
+ * t-shirt-keyed `space` is a VIEW of this object, not a second copy: the class
+ * vocabulary (`p-space-12`) and the inline-style vocabulary (`space.md`) name the
+ * same rung in two spellings, and neither can drift from the other.
  */
 export const SPACING = {
   'space-2': 2,
@@ -34,6 +39,8 @@ export const SPACING = {
   'space-20': 20,
   'space-24': 24,
   'space-32': 32,
+  'space-40': 40,
+  'space-60': 60,
   'screen-margin': 20,
 } as const;
 
@@ -43,13 +50,26 @@ export const SPACING = {
 
 /**
  * Corner-radius scale (px). Consumed via `rounded-radius-*`:
- * `rounded-radius-8`, `rounded-radius-12`, `rounded-radius-20`,
- * `rounded-radius-28`, `rounded-radius-max` (pill / circle).
+ * `rounded-radius-2` … `rounded-radius-28`, `rounded-radius-max` (pill / circle).
+ *
+ * Same rule as `SPACING`: the one place a radius number is written down, viewed
+ * under t-shirt keys by `styles/tokens.ts`'s `borderRadius`.
+ *
+ * `radius-max` is 9999 and not 999. Both render identically everywhere Bloom can
+ * reach — a corner radius is clamped to half the element's SMALLER dimension, so
+ * the two only diverge on a control at least 1998px tall AND wide — but one
+ * number had to win, this file is the authority the Tailwind preset and the CSS
+ * layer are already built from, and 9999 is the idiom the `rounded-radius-max`
+ * utility has been publishing all along.
  */
 export const RADIUS = {
+  'radius-2': 2,
+  'radius-4': 4,
   'radius-8': 8,
   'radius-12': 12,
+  'radius-16': 16,
   'radius-20': 20,
+  'radius-24': 24,
   'radius-28': 28,
   'radius-max': 9999,
 } as const;

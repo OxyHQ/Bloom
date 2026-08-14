@@ -2,17 +2,7 @@ import React from 'react';
 import { Platform, StyleSheet, View, type StyleProp, type ViewStyle } from 'react-native';
 
 import { useTheme } from '../theme';
-
-/**
- * True on touch-capable web browsers (coarse pointer). The CSS `group-hover`
- * wash only makes sense with a hovering pointer, so it is suppressed on touch
- * web to match native (which has no hover at all).
- */
-const IS_WEB_TOUCH_DEVICE =
-  Platform.OS === 'web' &&
-  typeof window !== 'undefined' &&
-  typeof window.matchMedia === 'function' &&
-  window.matchMedia('(pointer: coarse)').matches;
+import { IS_WEB_TOUCH_DEVICE } from '../styles/pointer';
 
 export interface SubtleHoverProps {
   /**

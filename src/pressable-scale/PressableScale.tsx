@@ -1,6 +1,5 @@
 import React, { forwardRef } from 'react';
 import {
-  Platform,
   Pressable,
   type PressableProps,
   type StyleProp,
@@ -15,22 +14,10 @@ import Animated, {
   withTiming,
 } from 'react-native-reanimated';
 
+import { SUPPORTS_PRESS_SCALE } from '../styles/pointer';
+
 /** Press-in / press-out timing, in ms. */
 const DURATION = 100;
-
-/**
- * True on touch-capable web browsers (coarse pointer). The press-scale
- * affordance only makes sense where a finger obscures the element — with a
- * mouse it reads as jitter — so it is disabled on non-touch web, matching the
- * native / web-touch behaviour.
- */
-const IS_WEB_TOUCH_DEVICE =
-  Platform.OS === 'web' &&
-  typeof window !== 'undefined' &&
-  typeof window.matchMedia === 'function' &&
-  window.matchMedia('(pointer: coarse)').matches;
-
-const SCALE_SUPPORTED = Platform.OS !== 'web' || IS_WEB_TOUCH_DEVICE;
 
 /**
  * A single animated `Pressable`, built once at module scope so the animated
@@ -59,7 +46,7 @@ export interface PressableScaleProps extends Omit<PressableProps, 'style'> {
 export const PressableScale = forwardRef<View, PressableScaleProps>(
   function PressableScale({ targetScale = 0.98, style, onPressIn, onPressOut, ...rest }, ref) {
     const reducedMotion = useReducedMotion();
-    const animate = SCALE_SUPPORTED && !reducedMotion;
+    const animate = SUPPORTS_PRESS_SCALE && !reducedMotion;
 
     const scale = useSharedValue(1);
 

@@ -9,6 +9,7 @@ import {
 import { BlurView } from 'expo-blur';
 
 import { useTheme } from '../theme/use-theme';
+import { borderRadius } from '../styles/tokens';
 import { usePressAnimation } from '../hooks/usePressAnimation';
 import { useInteractionState } from '../hooks/useInteractionState';
 import {
@@ -20,7 +21,6 @@ import type { FrostedIconButtonProps } from './types';
 
 export type { FrostedIconButtonProps, FrostedIconButtonSize } from './types';
 
-const RADIUS = 999;
 const PRESS_SCALE = 0.94;
 const DEFAULT_HIT_SLOP = { top: 8, bottom: 8, left: 8, right: 8 } as const;
 
@@ -80,7 +80,7 @@ const FrostedIconButtonComponent: React.FC<FrostedIconButtonProps> = ({
     return {
       width: geo.diameter,
       height: geo.diameter,
-      borderRadius: RADIUS,
+      borderRadius: borderRadius.full,
       alignItems: 'center',
       justifyContent: 'center',
       borderWidth: StyleSheet.hairlineWidth * 2,
@@ -149,7 +149,7 @@ const FrostedIconButtonComponent: React.FC<FrostedIconButtonProps> = ({
 
 const styles = StyleSheet.create({
   clip: {
-    borderRadius: RADIUS,
+    borderRadius: borderRadius.full,
     overflow: 'hidden',
   },
   disabled: {

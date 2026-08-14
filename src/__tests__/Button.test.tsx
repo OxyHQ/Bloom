@@ -6,6 +6,7 @@ import { BloomThemeProvider } from '../theme/BloomThemeProvider';
 import { useTheme } from '../theme/use-theme';
 import type { ThemeColors } from '../theme/types';
 import { Button, PrimaryButton, SecondaryButton, IconButton, GhostButton, TextButton } from '../button';
+import { borderRadius } from '../styles/tokens';
 
 function renderWithTheme(ui: React.ReactElement) {
   return render(
@@ -204,8 +205,10 @@ describe('layout: the button IS the node its parent lays out', () => {
     );
     const style = getByTestId('btn').props.style;
     expect(classNamesOn(style)).toContain('flex-1');
-    // Same node, so a layout class and the button's visuals cannot diverge.
-    expect(resolvedStyle(style).borderRadius).toBe(999);
+    // Same node, so a layout class and the button's visuals cannot diverge. The
+    // radius is read from the token rather than restated: what this asserts is
+    // that the button's BOX is on the classed node, not what the pill rung is.
+    expect(resolvedStyle(style).borderRadius).toBe(borderRadius.full);
   });
 
   it('applies the press-scale transform to that node too, not to a wrapper', () => {

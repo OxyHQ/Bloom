@@ -1,7 +1,6 @@
 import React, {
   memo,
   useCallback,
-  useEffect,
   useId,
   useMemo,
   type CSSProperties,
@@ -9,7 +8,8 @@ import React, {
 } from 'react';
 
 import { useTheme } from '../theme/use-theme';
-import { adoptStyleSheet } from '../styles/adopt-style-sheet';
+import { borderRadius } from '../styles/tokens';
+import { interactiveWebCss, useInteractiveWebCss } from '../styles/interactive-web-css';
 import { flattenWebStyle } from '../styles/flatten-web-style';
 import {
   applyIconColor,
@@ -20,64 +20,41 @@ import type { FrostedIconButtonProps } from './types';
 
 export type { FrostedIconButtonProps, FrostedIconButtonSize } from './types';
 
-const RADIUS = 999;
 const PRESS_SCALE = 0.94;
 
 // ---------------------------------------------------------------------------
 //  Per-state CSS injection
 //
-//  Inline styles cannot express `:hover` / `:focus-visible` / `:active`. We
-//  inject one static stylesheet (keyed by id, once) defining the interaction
-//  behavior for the base `bloom-frosted-icon-btn` class; per-instance resolved
-//  colors are passed in as inline CSS custom properties. Self-injecting the CSS
-//  (rather than exporting a string for consumers to paste) is the Bloom web-fork
-//  convention — an unresolvable rule would fail silently otherwise.
+//  Shared recipe — see `styles/interactive-web-css.ts`. Per-instance resolved
+//  colours stay inline and reach the static rules as custom properties
+//  (`--bloom-frosted-ring`, `--bloom-frosted-hover-bg`,
+//  `--bloom-frosted-hover-ring`, `--bloom-frosted-press-scale`).
 // ---------------------------------------------------------------------------
 
 const STYLE_ID = 'bloom-frosted-icon-button-web-css';
 
-const BLOOM_FROSTED_ICON_BUTTON_CSS = `
-.bloom-frosted-icon-btn {
-  appearance: none;
-  -webkit-appearance: none;
-  box-sizing: border-box;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  padding: 0;
-  margin: 0;
-  border-style: solid;
-  border-width: 1px;
-  font-family: inherit;
-  cursor: pointer;
-  user-select: none;
-  outline: none;
-  transition: background-color 140ms ease, border-color 140ms ease,
-    box-shadow 160ms ease, transform 120ms ease;
-}
-.bloom-frosted-icon-btn:disabled,
-.bloom-frosted-icon-btn[aria-disabled="true"] {
-  cursor: default;
-  opacity: 0.5;
-}
-.bloom-frosted-icon-btn:not(:disabled):not([aria-disabled="true"]):not([data-active="true"]):hover {
-  background-color: var(--bloom-frosted-hover-bg);
-  border-color: var(--bloom-frosted-hover-ring);
-}
-.bloom-frosted-icon-btn:not(:disabled):not([aria-disabled="true"]):active {
-  transform: scale(var(--bloom-frosted-press-scale, 1));
-}
-.bloom-frosted-icon-btn:focus-visible {
-  outline: 2px solid var(--bloom-frosted-ring-focus, currentColor);
-  outline-offset: 2px;
-}
-`;
-
-function useFrostedIconButtonCss(): void {
-  useEffect(() => {
-    adoptStyleSheet(STYLE_ID, BLOOM_FROSTED_ICON_BUTTON_CSS);
-  }, []);
-}
+const BLOOM_FROSTED_ICON_BUTTON_CSS = interactiveWebCss({
+  className: 'bloom-frosted-icon-btn',
+  varPrefix: 'bloom-frosted',
+  base: `
+    padding: 0;
+    border-style: solid;
+    border-width: 1px;
+    font-family: inherit;
+  `,
+  transition:
+    'background-color 140ms ease, border-color 140ms ease, box-shadow 160ms ease, transform 120ms ease',
+  hover: {
+    // The ACTIVE (solid) state is its own colour and already at full strength —
+    // letting hover repaint it would make a selected control look unselected.
+    filter: ':not([data-active="true"])',
+    declarations: `
+      background-color: var(--bloom-frosted-hover-bg);
+      border-color: var(--bloom-frosted-hover-ring);
+    `,
+  },
+  outlineOffset: 2,
+});
 
 const FrostedIconButtonWebComponent: React.FC<FrostedIconButtonProps> = ({
   onPress,
@@ -97,7 +74,7 @@ const FrostedIconButtonWebComponent: React.FC<FrostedIconButtonProps> = ({
   title,
   type = 'button',
 }) => {
-  useFrostedIconButtonCss();
+  useInteractiveWebCss(STYLE_ID, BLOOM_FROSTED_ICON_BUTTON_CSS);
   const theme = useTheme();
   const reactId = useId();
   const resolvedId = id ?? `bloom-frosted-icon-btn-${reactId}`;
@@ -115,7 +92,7 @@ const FrostedIconButtonWebComponent: React.FC<FrostedIconButtonProps> = ({
     return {
       width: geo.diameter,
       height: geo.diameter,
-      borderRadius: RADIUS,
+      borderRadius: borderRadius.full,
       backgroundColor: active ? palette.activeSurface : palette.surface,
       borderColor: palette.ring,
       color: iconColor,
@@ -127,7 +104,7 @@ const FrostedIconButtonWebComponent: React.FC<FrostedIconButtonProps> = ({
       boxShadow: `0 2px 8px ${palette.shadow}`,
       ['--bloom-frosted-hover-bg' as string]: palette.surfaceHover,
       ['--bloom-frosted-hover-ring' as string]: palette.ringHover,
-      ['--bloom-frosted-ring-focus' as string]: palette.focusRing,
+      ['--bloom-frosted-ring' as string]: palette.focusRing,
       ['--bloom-frosted-press-scale' as string]: PRESS_SCALE,
     };
   }, [

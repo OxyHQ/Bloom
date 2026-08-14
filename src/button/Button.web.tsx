@@ -1,7 +1,6 @@
 import React, {
   memo,
   useCallback,
-  useEffect,
   useId,
   useMemo,
   type CSSProperties,
@@ -10,10 +9,15 @@ import React, {
 } from 'react';
 
 import { useTheme } from '../theme/use-theme';
+import { borderRadius } from '../styles/tokens';
 import type { Theme } from '../theme/types';
 import { SpinnerIcon } from '../loading/SpinnerIcon.web';
-import { adoptStyleSheet } from '../styles/adopt-style-sheet';
 import { flattenWebStyle } from '../styles/flatten-web-style';
+import {
+  NOT_DISABLED,
+  interactiveWebCss,
+  useInteractiveWebCss,
+} from '../styles/interactive-web-css';
 import type { ButtonProps, ButtonSize, ButtonVariant } from './types';
 
 export type { ButtonProps, ButtonVariant, ButtonSize } from './types';
@@ -57,12 +61,6 @@ const SIZE_ALIAS: Record<ButtonSize, NativeSize> = {
   icon: 'medium',
 };
 
-// Fully-rounded (pill/capsule) corner radius — large enough to stay a perfect
-// capsule at any button height. Mirrors native `PILL_RADIUS` so web and native
-// produce the SAME fully-rounded shape. The icon variant reuses it too: a square
-// button with this radius renders as a perfect circle.
-const PILL_RADIUS = 999;
-const ICON_RADIUS = PILL_RADIUS;
 const PRESS_SCALE = 0.97;
 
 /** Variants that get a tactile press-scale (matches native `SCALE_VARIANTS`). */
@@ -71,73 +69,47 @@ const SCALE_VARIANTS = new Set<ButtonVariant>(['primary', 'secondary', 'inverse'
 // ---------------------------------------------------------------------------
 //  Per-state CSS injection
 //
-//  Inline styles cannot express `:hover` / `:focus-visible` / `:active` /
-//  `:disabled`, and the keyboard-focus ring MUST be a `:focus-visible` rule
-//  (not always-on) for correct mouse-vs-keyboard behavior. We inject one static
-//  stylesheet (keyed by id, once) that defines the interaction behavior for the
-//  base `bloom-btn` class; per-instance resolved colors stay inline.
+//  Shared recipe — see `styles/interactive-web-css.ts` for why the focus ring is
+//  `:focus-visible` and why injection goes through `adoptStyleSheet`. Per-instance
+//  resolved colours stay inline, reaching the static rules as custom properties
+//  (`--bloom-btn-ring`, `--bloom-btn-press-scale`).
 // ---------------------------------------------------------------------------
 
 const STYLE_ID = 'bloom-button-web-css';
 
-/**
- * The focus ring color is read from a CSS custom property the component sets
- * inline per-instance (`--bloom-btn-ring`), so the static rule can theme itself
- * from the resolved token without a per-instance stylesheet.
- */
-const BLOOM_BUTTON_CSS = `
-.bloom-btn {
-  appearance: none;
-  -webkit-appearance: none;
-  box-sizing: border-box;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  flex-direction: row;
-  gap: 8px;
-  position: relative;
-  margin: 0;
-  border: none;
-  background: transparent;
-  font-family: var(--bloom-font-sans, inherit);
-  text-decoration: none;
-  cursor: pointer;
-  user-select: none;
-  outline: none;
-  transition: opacity 120ms ease, transform 120ms ease, background-color 120ms ease, border-color 120ms ease;
-}
-.bloom-btn:disabled,
-.bloom-btn[aria-disabled="true"] {
-  cursor: default;
-  opacity: 0.5;
-}
-.bloom-btn:not(:disabled):not([aria-disabled="true"]):hover {
-  opacity: 0.9;
-}
-.bloom-btn:not(:disabled):not([aria-disabled="true"]):active {
-  transform: scale(var(--bloom-btn-press-scale, 1));
-}
-.bloom-btn:focus-visible {
-  outline: 2px solid var(--bloom-btn-ring, currentColor);
-  outline-offset: 2px;
-}
-.bloom-btn--link:not(:disabled):not([aria-disabled="true"]):hover {
+const BLOOM_BUTTON_CSS = interactiveWebCss({
+  className: 'bloom-btn',
+  varPrefix: 'bloom-btn',
+  base: `
+    flex-direction: row;
+    gap: 8px;
+    position: relative;
+    border: none;
+    background: transparent;
+    font-family: var(--bloom-font-sans, inherit);
+    text-decoration: none;
+  `,
+  transition:
+    'opacity 120ms ease, transform 120ms ease, background-color 120ms ease, border-color 120ms ease',
+  hover: { declarations: 'opacity: 0.9;' },
+  outlineOffset: 2,
+  // The `link` variant is the one button that is text: it underlines on hover
+  // instead of dimming, so it has to undo the shared opacity dip.
+  extraRules: `.bloom-btn--link${NOT_DISABLED}:hover {
   opacity: 1;
   text-decoration: underline;
-}
-`;
-
-function useButtonCss(): void {
-  useEffect(() => {
-    adoptStyleSheet(STYLE_ID, BLOOM_BUTTON_CSS);
-  }, []);
-}
+}`,
+});
 
 // ---------------------------------------------------------------------------
 //  Variant styling — all colors come from the SAME Bloom theme tokens native
 //  uses, so primary/secondary/etc. look identical across platforms. The added
 //  web variants (`outline | link | destructive`) are styled from those tokens
 //  too (no new palette).
+//
+//  Every variant, text and icon alike, takes `borderRadius.full` — the same
+//  token native reads, so the fully-rounded shape cannot drift between the two
+//  forks, and a square icon button at that radius renders as a perfect circle.
 // ---------------------------------------------------------------------------
 
 interface VariantStyle {
@@ -160,19 +132,19 @@ function resolveVariantStyle(
   switch (variant) {
     case 'primary':
       return {
-        container: { backgroundColor: c.primary, borderRadius: PILL_RADIUS },
+        container: { backgroundColor: c.primary, borderRadius: borderRadius.full },
         textColor: c.primaryForeground,
         ringColor: c.primary,
       };
     case 'destructive':
       return {
-        container: { backgroundColor: c.negative, borderRadius: PILL_RADIUS },
+        container: { backgroundColor: c.negative, borderRadius: borderRadius.full },
         textColor: c.negativeForeground,
         ringColor: c.negative,
       };
     case 'inverse':
       return {
-        container: { backgroundColor: '#FFFFFF', borderRadius: PILL_RADIUS },
+        container: { backgroundColor: '#FFFFFF', borderRadius: borderRadius.full },
         textColor: '#000000',
         ringColor: c.primary,
       };
@@ -184,14 +156,14 @@ function resolveVariantStyle(
           borderWidth: 1,
           borderStyle: 'solid',
           borderColor: c.border,
-          borderRadius: PILL_RADIUS,
+          borderRadius: borderRadius.full,
         },
         textColor: c.text,
         ringColor: c.primary,
       };
     case 'ghost':
       return {
-        container: { backgroundColor: 'transparent', borderRadius: PILL_RADIUS },
+        container: { backgroundColor: 'transparent', borderRadius: borderRadius.full },
         textColor: c.primary,
         ringColor: c.primary,
       };
@@ -202,7 +174,7 @@ function resolveVariantStyle(
           borderWidth: 1,
           borderStyle: 'solid',
           borderColor: c.border,
-          borderRadius: ICON_RADIUS,
+          borderRadius: borderRadius.full,
           padding: 8,
           width: sizeConfig.minHeight,
           height: sizeConfig.minHeight,
@@ -214,7 +186,7 @@ function resolveVariantStyle(
     case 'link':
     default:
       return {
-        container: { backgroundColor: 'transparent', borderRadius: PILL_RADIUS },
+        container: { backgroundColor: 'transparent', borderRadius: borderRadius.full },
         textColor: c.primary,
         ringColor: c.primary,
       };
@@ -252,7 +224,7 @@ const ButtonWebComponent: React.FC<ButtonProps> = ({
   tabIndex,
   fullWidth = false,
 }) => {
-  useButtonCss();
+  useInteractiveWebCss(STYLE_ID, BLOOM_BUTTON_CSS);
   const theme = useTheme();
   const reactId = useId();
   const resolvedId = id ?? `bloom-btn-${reactId}`;

@@ -9,6 +9,7 @@ import {
 } from 'react-native';
 
 import { useTheme } from '../theme/use-theme';
+import { borderRadius } from '../styles/tokens';
 import { usePressAnimation } from '../hooks/usePressAnimation';
 import { useInteractionState } from '../hooks/useInteractionState';
 import type { FabPlacement, FabProps, FabSize, FabVariant } from './types';
@@ -50,7 +51,6 @@ function resolveSize(size: FabSize | number): ResolvedSize {
   return SIZE_CONFIG[size];
 }
 
-const PILL_RADIUS = 999;
 const PRESS_SCALE = 0.94;
 const DEFAULT_OFFSET = 16;
 const DEFAULT_Z_INDEX = 50;
@@ -115,7 +115,7 @@ const FabComponent: React.FC<FabProps> = ({
       justifyContent: 'center',
       flexDirection: 'row',
       backgroundColor: resolvedColors.background,
-      borderRadius: PILL_RADIUS,
+      borderRadius: borderRadius.full,
       height: sizeConfig.diameter,
       // Elevation / shadow (native).
       shadowColor: theme.colors.shadow,

@@ -2,6 +2,7 @@ import React, { memo } from 'react';
 import { View, type ViewStyle } from 'react-native';
 
 import { useTheme } from '../theme/use-theme';
+import { borderRadius } from '../styles/tokens';
 import { type Props as IconProps } from '../icons/common';
 
 const IconCircleComponent = function IconCircle({
@@ -23,7 +24,7 @@ const IconCircleComponent = function IconCircle({
         {
           justifyContent: 'center',
           alignItems: 'center',
-          borderRadius: 999,
+          borderRadius: borderRadius.full,
           width: size === 'lg' ? 52 : 64,
           height: size === 'lg' ? 52 : 64,
           backgroundColor: colors.primarySubtle,

@@ -86,5 +86,47 @@ describe('resolveDropdownPlacement', () => {
     it('pins to the left gutter when the surface is wider than the viewport', () => {
       expect(place({ size: { width: 1200, height: 100 } }).left).toBe(GUTTER);
     });
+
+    it("align 'center' lines the two midpoints up", () => {
+      // Trigger 400..600 → midpoint 500; a 180-wide surface starts at 410.
+      expect(place({ align: 'center' }).left).toBe(410);
+    });
+
+    it("align 'center' is genuinely a third answer, not an alias of either edge", () => {
+      const start = place({ align: 'start' }).left;
+      const end = place({ align: 'end' }).left;
+      const center = place({ align: 'center' }).left;
+      // Which of `start`/`end` is the larger number depends on whether the
+      // surface is narrower than the anchor (here it is: 180 against 200), so the
+      // property is that `center` sits strictly BETWEEN them, not which side.
+      expect(center).not.toBe(start);
+      expect(center).not.toBe(end);
+      expect(center).toBeGreaterThan(Math.min(start, end));
+      expect(center).toBeLessThan(Math.max(start, end));
+    });
+
+    it("align 'center' centres on a zero-area anchor (a point)", () => {
+      const point = { top: 100, bottom: 100, left: 500, right: 500 };
+      expect(place({ anchor: point, align: 'center' }).left).toBe(410);
+    });
+
+    it("align 'center' takes the same clamp as the other two", () => {
+      // Centring on a trigger hard against the left edge would start at -80.
+      const edge = { top: 100, bottom: 140, left: 0, right: 40 };
+      expect(place({ anchor: edge, align: 'center' }).left).toBe(GUTTER);
+      // …and against the right edge it would run past 1000.
+      const far = { top: 100, bottom: 140, left: 960, right: 1000 };
+      expect(place({ anchor: far, align: 'center' }).left).toBe(812);
+    });
+
+    // The reason to migrate popover onto this function at all (batch 2): its own
+    // positioner clamps only the TOP, so an oversized panel runs off the bottom
+    // of the viewport. This one clamps both ends of the vertical axis for every
+    // alignment, `'center'` included.
+    it("align 'center' still gets the vertical clamp popover's own positioner lacks", () => {
+      expect(
+        place({ anchor: trigger(200), align: 'center', size: { width: 180, height: 460 } }).top,
+      ).toBe(32);
+    });
   });
 });

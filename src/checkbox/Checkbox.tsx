@@ -4,6 +4,7 @@ import { View, Text, Pressable, Animated, type ViewStyle } from 'react-native';
 import { useTheme } from '../theme/use-theme';
 import { animation, borderRadius, space } from '../styles/tokens';
 import { SUPPORTS_NATIVE_DRIVER } from '../styles/native-driver';
+import { usePressAnimation } from '../hooks/usePressAnimation';
 import type { CheckboxProps } from './types';
 
 const SIZE_CONFIG = {
@@ -11,6 +12,9 @@ const SIZE_CONFIG = {
   medium: { box: 22, checkmark: 12, fontSize: 15, lineHeight: 22, descFontSize: 13 },
   large: { box: 26, checkmark: 14, fontSize: 16, lineHeight: 24, descFontSize: 14 },
 } as const;
+
+/** Deeper than the 0.97 of a text button: the box is small, so the dip has to be. */
+const PRESS_SCALE = 0.9;
 
 const CheckboxComponent: React.FC<CheckboxProps> = ({
   checked,
@@ -28,7 +32,14 @@ const CheckboxComponent: React.FC<CheckboxProps> = ({
 }) => {
   const theme = useTheme();
   const scaleAnim = useRef(new Animated.Value(checked ? 1 : 0)).current;
-  const pressAnim = useRef(new Animated.Value(1)).current;
+  // The press dip goes through the shared hook rather than a fourth copy of the
+  // same two springs: it is the one place the "reduce motion" and pointer-type
+  // suppressions are applied, and an inlined copy honoured neither.
+  const {
+    scaleAnim: pressAnim,
+    onPressIn,
+    onPressOut,
+  } = usePressAnimation(disabled ? undefined : PRESS_SCALE);
   const sizeConfig = SIZE_CONFIG[size];
   const checkColor = color ?? theme.colors.primary;
   // The checkmark sits on top of `checkColor`. When the box uses the theme
@@ -49,22 +60,6 @@ const CheckboxComponent: React.FC<CheckboxProps> = ({
       onCheckedChange(!checked);
     }
   }, [checked, disabled, onCheckedChange]);
-
-  const onPressIn = useCallback(() => {
-    Animated.spring(pressAnim, {
-      toValue: 0.9,
-      useNativeDriver: SUPPORTS_NATIVE_DRIVER,
-      ...animation.spring.snappy,
-    }).start();
-  }, [pressAnim]);
-
-  const onPressOut = useCallback(() => {
-    Animated.spring(pressAnim, {
-      toValue: 1,
-      useNativeDriver: SUPPORTS_NATIVE_DRIVER,
-      ...animation.spring.gentle,
-    }).start();
-  }, [pressAnim]);
 
   const boxStyle = useMemo((): ViewStyle => {
     const base: ViewStyle = {

@@ -90,6 +90,19 @@ function buildColorsFromPreset(
     warning: g('warning'),
     info: g('info'),
 
+    // The tinted half of the same four families. `-subtle` is the translucent
+    // surface, `-text` the member legible on it — the pair the policy generates
+    // together, so JS consumers get the gated combination instead of hand-tinting
+    // a fill with hex alpha.
+    successSubtle: g('success-subtle'),
+    successSubtleForeground: g('success-text'),
+    errorSubtle: g('error-subtle'),
+    errorSubtleForeground: g('error-text'),
+    warningSubtle: g('warning-subtle'),
+    warningSubtleForeground: g('warning-text'),
+    infoSubtle: g('info-subtle'),
+    infoSubtleForeground: g('info-text'),
+
     primarySubtle: g('primary-subtle'),
     primarySubtleForeground: r.onPrimaryContainer,
     negative: r.error,
@@ -117,8 +130,13 @@ export function buildTheme(
   isAdaptive: boolean = false,
   accents?: ExplicitAccents,
 ): Theme {
+  const base = buildColorsFromPreset(preset, resolved, accents);
   const adaptive = isAdaptive && Platform.OS !== 'web' ? getAdaptiveColors() : undefined;
-  const colors = adaptive ?? buildColorsFromPreset(preset, resolved, accents);
+  // The platform palette OVERLAYS the preset one rather than replacing it. Every
+  // field the platform answers still wins, byte for byte; the tinted status
+  // members — which Material You and iOS dynamic have no role for at all — fall
+  // through to the engine, whose `-subtle`/`-text` pairs are legibility-gated.
+  const colors = adaptive ? { ...base, ...adaptive } : base;
 
   return {
     mode: resolved,

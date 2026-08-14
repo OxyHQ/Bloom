@@ -89,6 +89,15 @@ export function buildColorsFromSeed(
     warning: g('warning'),
     info: g('info'),
 
+    successSubtle: g('success-subtle'),
+    successSubtleForeground: g('success-text'),
+    errorSubtle: g('error-subtle'),
+    errorSubtleForeground: g('error-text'),
+    warningSubtle: g('warning-subtle'),
+    warningSubtleForeground: g('warning-text'),
+    infoSubtle: g('info-subtle'),
+    infoSubtleForeground: g('info-text'),
+
     primarySubtle: g('primary-subtle'),
     primarySubtleForeground: r.onPrimaryContainer,
     negative: r.error,

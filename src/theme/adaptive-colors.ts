@@ -19,9 +19,37 @@ import type { ThemeColors } from './types';
  * @see connection-status/netinfo.ts — the same boundary, with the full rule.
  */
 
+/**
+ * The subset of `ThemeColors` a platform's adaptive palette can actually answer.
+ *
+ * Material You and iOS dynamic ship a brand family and an error family and
+ * NOTHING for success/warning/info — which is why the four status fills below
+ * are frozen hexes rather than platform reads. The tinted status members have no
+ * platform counterpart at all, so they are deliberately absent here and come
+ * from the preset-derived palette underneath (`buildTheme` overlays this on it).
+ * That keeps the four `*Subtle`/`*SubtleForeground` pairs coming from ONE source
+ * — the colour policy, whose pairs are gated at AA — instead of four hand-picked
+ * tints that would only be legible by luck.
+ *
+ * Consequence for anyone extending this file: adding one of those keys to a
+ * branch below is a type error, on purpose. Answering it needs a real platform
+ * role, not a neutral grey.
+ */
+export type AdaptiveColors = Omit<
+  ThemeColors,
+  | 'successSubtle'
+  | 'successSubtleForeground'
+  | 'errorSubtle'
+  | 'errorSubtleForeground'
+  | 'warningSubtle'
+  | 'warningSubtleForeground'
+  | 'infoSubtle'
+  | 'infoSubtleForeground'
+>;
+
 const c = (v: unknown): string => v as string;
 
-function getAndroidColors(): ThemeColors | null {
+function getAndroidColors(): AdaptiveColors | null {
   try {
     if (typeof require === 'undefined') return null;
     const { Color } = require('expo-router');
@@ -66,7 +94,7 @@ function getAndroidColors(): ThemeColors | null {
   }
 }
 
-function getIOSColors(): ThemeColors | null {
+function getIOSColors(): AdaptiveColors | null {
   try {
     if (typeof require === 'undefined') return null;
     const { Color } = require('expo-router');
@@ -111,7 +139,7 @@ function getIOSColors(): ThemeColors | null {
   }
 }
 
-export function getAdaptiveColors(): ThemeColors | null {
+export function getAdaptiveColors(): AdaptiveColors | null {
   if (Platform.OS === 'android') return getAndroidColors();
   if (Platform.OS === 'ios') return getIOSColors();
   return null;

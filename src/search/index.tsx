@@ -3,13 +3,11 @@ import { Platform, type TextInput, View } from 'react-native';
 
 import { useTheme } from '../theme/use-theme';
 import { atoms as a } from '../styles';
+import { borderRadius } from '../styles/tokens';
 import { Button } from '../button';
 import { TextField, TextFieldIcon, TextFieldInput, type TextFieldInputProps } from '../text-field';
 import { MagnifyingGlass_Stroke2_Corner0_Rounded as MagnifyingGlassIcon } from '../icons/MagnifyingGlass';
 import { TimesLarge_Stroke2_Corner0_Rounded as X } from '../icons/Times';
-
-/** Fully-rounded (pill) corner radius — clamps to half the field height. */
-const PILL_RADIUS = 999;
 
 type SearchProps = Omit<TextFieldInputProps, 'label'> & {
   label?: TextFieldInputProps['label'];
@@ -26,7 +24,7 @@ export const Search = forwardRef<TextInput, SearchProps>(
 
     return (
       <View style={[a.w_full, a.relative]}>
-        <TextField radius={PILL_RADIUS}>
+        <TextField radius={borderRadius.full}>
           <TextFieldIcon icon={MagnifyingGlassIcon} />
           <TextFieldInput
             inputRef={ref}
