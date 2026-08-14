@@ -77,6 +77,26 @@ export type SelectContentProps<T> = {
    * Defaults to `item => item.value`.
    */
   valueExtractor?: (item: T) => string;
+  /**
+   * Tallest the anchored dropdown grows before its options scroll (web only —
+   * the native sheet sizes itself). Defaults to 320.
+   */
+  maxHeight?: number;
+};
+
+export type SelectGroupProps = {
+  children?: React.ReactNode;
+  style?: StyleProp<ViewStyle>;
+};
+
+export type SelectLabelProps = {
+  children?: React.ReactNode;
+  style?: StyleProp<TextStyle>;
+};
+
+export type SelectScrollButtonProps = {
+  direction: 'up' | 'down';
+  style?: StyleProp<ViewStyle>;
 };
 
 export type SelectItemProps = {

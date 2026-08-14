@@ -65,7 +65,7 @@ const DEFAULT_Z_INDEX = 50;
 const STYLE_ID = 'bloom-fab-web-css';
 
 const BLOOM_FAB_CSS = interactiveWebCss({
-  className: 'bloom-fab',
+  selector: '.bloom-fab',
   varPrefix: 'bloom-fab',
   base: `
     flex-direction: row;

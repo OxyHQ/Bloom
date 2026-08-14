@@ -48,6 +48,8 @@ const ItemComponent = function Item({
   const theme = useTheme();
   const { state: pressed, onIn: onPressIn, onOut: onPressOut } =
     useInteractionState();
+  const { state: hovered, onIn: onHoverIn, onOut: onHoverOut } =
+    useInteractionState();
 
   const titleColor = destructive ? theme.colors.error : theme.colors.text;
   const cfg = DENSITY[density];
@@ -62,13 +64,20 @@ const ItemComponent = function Item({
       minHeight: cfg.minHeight,
       borderRadius: borderRadius.sm,
     };
-    if (selected || active) {
-      base.backgroundColor = active
-        ? theme.colors.primaryLight
-        : theme.colors.backgroundSecondary;
+    // Precedence, loudest first. Hover paints ONLY a row that had no background
+    // of its own: washing over `active` or `selected` would read as the row
+    // losing the state it is announcing, which is worse than no hover at all.
+    // `contrast50` is the same wash `SubtleHover` uses, so a hovered row and a
+    // hovered card agree.
+    if (active) {
+      base.backgroundColor = theme.colors.primaryLight;
+    } else if (selected) {
+      base.backgroundColor = theme.colors.backgroundSecondary;
+    } else if (hovered) {
+      base.backgroundColor = theme.colors.contrast50;
     }
     return base;
-  }, [cfg, selected, active, theme]);
+  }, [cfg, selected, active, hovered, theme]);
 
   const body =
     children != null ? (
@@ -141,6 +150,12 @@ const ItemComponent = function Item({
         onLongPress={handleLongPress}
         onPressIn={disabled ? undefined : onPressIn}
         onPressOut={disabled ? undefined : onPressOut}
+        // Pointer feedback for the library's most-composed row. React Native
+        // types these on `Pressable` and only a platform with a real pointer
+        // ever calls them, so there is no `Platform.OS` branch to write and a
+        // touch never flashes a hover state on its way to a press.
+        onHoverIn={disabled ? undefined : onHoverIn}
+        onHoverOut={disabled ? undefined : onHoverOut}
         disabled={disabled}
         android_ripple={{ color: theme.colors.border }}
         accessibilityRole={resolvedRole}

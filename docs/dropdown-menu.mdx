@@ -1,0 +1,124 @@
+---
+title: DropdownMenu
+description: An action menu anchored to a trigger — a bottom sheet on native, a dropdown on web.
+order: 14
+---
+
+# DropdownMenu
+
+The menu that drops from a button. A bottom sheet on native, an anchored panel on web, one API on both.
+
+The parts are shadcn's, so a `@shadcn/ui` or `react-native-reusables` call site ports across unchanged: `DropdownMenu` owns the open state, `DropdownMenuTrigger` opens it, `DropdownMenuContent` is the surface, and the rows are `DropdownMenuItem`, `DropdownMenuCheckboxItem`, `DropdownMenuRadioGroup` / `DropdownMenuRadioItem`, `DropdownMenuLabel`, `DropdownMenuSeparator`, `DropdownMenuShortcut`, `DropdownMenuGroup` and the `DropdownMenuSub` trio.
+
+`ContextMenu` and `Menubar` publish the same row vocabulary under their own prefixes. They are one implementation, so a row behaves identically in all three.
+
+## Basic
+
+```tsx
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuShortcut,
+  DropdownMenuTrigger,
+} from '@oxyhq/bloom/dropdown-menu';
+import { Button } from '@oxyhq/bloom/button';
+
+<DropdownMenu>
+  <DropdownMenuTrigger asChild label="Open menu">
+    <Button variant="secondary">Open menu</Button>
+  </DropdownMenuTrigger>
+
+  <DropdownMenuContent>
+    <DropdownMenuLabel>My account</DropdownMenuLabel>
+    <DropdownMenuSeparator />
+    <DropdownMenuItem onPress={openProfile}>Profile</DropdownMenuItem>
+    <DropdownMenuItem trailing={<DropdownMenuShortcut>⌘,</DropdownMenuShortcut>}>
+      Settings
+    </DropdownMenuItem>
+    <DropdownMenuItem disabled>Billing</DropdownMenuItem>
+    <DropdownMenuSeparator />
+    <DropdownMenuItem variant="destructive" onPress={signOut}>
+      Sign out
+    </DropdownMenuItem>
+  </DropdownMenuContent>
+</DropdownMenu>
+```
+
+A row dismisses the menu after it fires. Pass `keepOpen` to a row that should not — a checkbox row you expect the user to toggle twice, say.
+
+## `asChild`
+
+`asChild` is Radix's composition escape hatch and it works the same way here: the trigger's single element child *becomes* the trigger and receives the open handler plus the accessibility props. Without it, the children render inside Bloom's own pressable.
+
+```tsx
+<DropdownMenuTrigger asChild label="Actions">
+  <Button variant="icon" onPress={track}>…</Button>
+</DropdownMenuTrigger>
+```
+
+Handlers the child already carries are composed, not replaced — `track()` runs first, then the menu opens.
+
+## Controlled
+
+```tsx
+const [open, setOpen] = useState(false);
+
+<DropdownMenu open={open} onOpenChange={setOpen}>
+  …
+</DropdownMenu>
+```
+
+Uncontrolled by default; pass `open` to take over. `onOpenChange` fires either way. There is no imperative control to reach for and no `close()` to call: the menu's state is one boolean, and a row closes it by returning.
+
+## Checkbox and radio rows
+
+```tsx
+<DropdownMenuCheckboxItem checked={dense} onCheckedChange={setDense} keepOpen>
+  Dense rows
+</DropdownMenuCheckboxItem>
+
+<DropdownMenuRadioGroup value={sort} onValueChange={setSort}>
+  <DropdownMenuRadioItem value="newest">Newest</DropdownMenuRadioItem>
+  <DropdownMenuRadioItem value="oldest">Oldest</DropdownMenuRadioItem>
+</DropdownMenuRadioGroup>
+```
+
+Both announce their state as `aria-checked`, which is the spelling react-native-web reads and React Native folds back into `accessibilityState` — so it reaches assistive tech on both platforms.
+
+## Sub-menus render inline, on both platforms
+
+This is the one place Bloom's port diverges from shadcn on purpose, so it is worth stating plainly: `DropdownMenuSub` is an **inline disclosure**, not a flyout. Pressing `DropdownMenuSubTrigger` expands its `DropdownMenuSubContent` in place, under the trigger row, and the chevron flips.
+
+```tsx
+<DropdownMenuSub>
+  <DropdownMenuSubTrigger>Send to…</DropdownMenuSubTrigger>
+  <DropdownMenuSubContent>
+    <DropdownMenuItem inset>Email</DropdownMenuItem>
+    <DropdownMenuItem inset>Messages</DropdownMenuItem>
+  </DropdownMenuSubContent>
+</DropdownMenuSub>
+```
+
+The API is unchanged — a ported call site does not move — only the presentation is. react-native-reusables reaches the same conclusion on native (its own sub-trigger swaps the chevron between up and down to say so); Bloom takes it to web as well rather than shipping two different interaction models for one component.
+
+What a real web flyout would take, if it is ever worth it:
+
+- `overlay/dropdown-placement` grows a HORIZONTAL axis — today it fits, flips and clamps vertically and only clamps horizontally, because every surface using it opens above or below its anchor.
+- Hover intent: a delay and a movement-direction test, so travelling diagonally toward the sub-panel does not close it by crossing a sibling row.
+- Roving keyboard focus across two surfaces, with Arrow Right / Arrow Left entering and leaving the sub-menu.
+- A second `OverlayRoot` rank per open sub-menu, and a decision about what dismissing the parent does to it.
+
+Until all four exist, an inline disclosure is the honest behaviour: it works with a finger, a pointer and a keyboard on both platforms, with nothing half-implemented.
+
+## Placement (web)
+
+`DropdownMenuContent` takes `side` (`'top' | 'bottom'`, default `'bottom'`), `align` (`'start' | 'center' | 'end'`, default `'start'`), `sideOffset` and `alignOffset` — the same four Radix takes. They are preferences: the surface flips to the other side when the named one does not fit and clamps into the viewport when neither does.
+
+On native these are ignored. The menu is a bottom sheet, which is anchored to the screen rather than to the trigger.
+
+## Rows are `Item`
+
+Every row is Bloom's `Item`, the same primitive settings lists and the command palette use. That is what keeps the touch target, the disabled treatment, the destructive colour, the pointer highlight and the ARIA state in one place — a fix to any of them lands in every menu at once.

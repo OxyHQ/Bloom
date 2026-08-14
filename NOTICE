@@ -68,6 +68,59 @@ The following are re-implemented rather than ported:
     react-native-worklets babel plugin.
 
 --------------------------------------------------------------------------------
+Bloom's menu, popover, select, typography, chip, aspect-ratio and checkbox APIs
+(src/dropdown-menu/, src/context-menu/, src/menubar/, src/popover/,
+src/floating/, src/select/, src/typography/, src/chip/, src/aspect-ratio/,
+src/checkbox/)
+--------------------------------------------------------------------------------
+
+API derived from react-native-reusables, revision 119d0b10 (2026-07-02)
+  https://github.com/founded-labs/react-native-reusables
+  MIT License, Copyright (c) 2025 Founded Labs
+
+  Sources read: packages/registry/src/nativewind/components/ui/{dropdown-menu,
+  context-menu,menubar,popover,select,text,badge,aspect-ratio,checkbox}.tsx.
+  The registry package carries no version, so the git revision is cited instead.
+
+What Bloom takes is the PUBLIC API and nothing under it: the component names,
+the composition structure and the prop shapes, so a shadcn/react-native-
+reusables call site ports across without being rewritten. No upstream code is
+included, and every implementation below the API is Bloom's own — which is why
+these modules carry no per-file provenance headers, unlike the two entries
+above.
+
+Deliberately NOT taken, each replaced by an existing Bloom system:
+
+  - `@rn-primitives/*`. Every upstream family is a thin wrapper over one of
+    these, and each brings its own portal, overlay and slot machinery. Bloom
+    already has `portal/`, `overlay/OverlayRoot`, `overlay/stack.ts` and
+    `overlay/dropdown-placement`; a second overlay system beside them is what
+    decides which surface paints on top by accident.
+
+  - `lucide-react-native`. Bloom ships `icons/`.
+
+  - `TextClassContext` and upstream's `text.tsx`. Bloom's typography is
+    `styled(RNText)` through react-native-css, and its `H1`-`H6` already carry
+    `role="heading"` plus `aria-level`, which upstream's `h1`-`h4` variants do
+    only on web.
+
+  - `cn` and `class-variance-authority`. Bloom is not a Tailwind-first library;
+    its variants resolve through `theme/accent-colors.ts`.
+
+  - Hardcoded colours and hardcoded `z-*` classes. Every colour is a resolved
+    Bloom token, and depth is decided once by open ORDER in `overlay/stack.ts`
+    rather than by what a surface IS.
+
+  - `react-native-screens`' `FullWindowOverlay`. Bloom's native surfaces present
+    through `dialog/SheetShell`, which is already a React Native `<Modal>`
+    window.
+
+One deliberate behavioural divergence, documented at the component and in
+`docs/dropdown-menu.mdx`: a sub-menu (`*MenuSub` / `*MenuSubTrigger` /
+`*MenuSubContent`) renders as an INLINE DISCLOSURE on both platforms rather than
+as a web flyout. The API is unchanged.
+
+--------------------------------------------------------------------------------
 MIT License
 --------------------------------------------------------------------------------
 

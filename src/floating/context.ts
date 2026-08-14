@@ -1,31 +1,17 @@
 /**
- * The contexts the menu ROW vocabulary reads.
+ * The contexts the shared menu ROW vocabulary reads.
  *
- * `menu/` owns the rows — `MenuItem`, `MenuCheckboxItem`, `MenuRadioItem`,
- * `MenuLabel`, `MenuSeparator`, `MenuShortcut`, `MenuGroup` and the `MenuSub`
- * trio — and `context-menu/` and `menubar/` render the SAME components inside
- * their own shells. That is the one place Bloom's port diverges from
- * react-native-reusables, where each of the three menus ships its own
- * copy-pasted `…Item`/`…Label`/`…Separator` set: three names for one component
- * is exactly the aliasing Bloom does not do. What every shell must provide is
- * this context.
+ * `dropdown-menu`, `context-menu` and `menubar` render the SAME rows, and the
+ * rows have to know two things a row cannot ask the platform for: how to
+ * dismiss the surface they sit in, and whether that surface is a native sheet
+ * or a pointer dropdown. Each shell states both here, so a row never branches on
+ * `Platform.OS` and never learns which family it belongs to.
+ *
+ * The per-family OPEN state is deliberately NOT here — each family owns its own
+ * `context.ts` with its own React context, because one shared open-state context
+ * would make a dropdown menu nested inside a popover drive the popover.
  */
 import { createContext, useContext } from 'react';
-
-import type { OverlayShellContextValue } from '../floating/types';
-
-const DropdownMenuContext = createContext<OverlayShellContextValue | null>(null);
-DropdownMenuContext.displayName = 'BloomDropdownMenuContext';
-
-export const DropdownMenuProvider = DropdownMenuContext.Provider;
-
-export function useDropdownMenu(): OverlayShellContextValue {
-  const value = useContext(DropdownMenuContext);
-  if (!value) {
-    throw new Error('DropdownMenu parts must be rendered inside a <DropdownMenu>.');
-  }
-  return value;
-}
 
 export interface MenuSurfaceContextValue {
   /** Dismiss the whole menu. Rows call it after activation. */
@@ -67,7 +53,7 @@ export const MenuRadioGroupProvider = MenuRadioGroupContext.Provider;
 export function useMenuRadioGroup(): MenuRadioGroupContextValue {
   const value = useContext(MenuRadioGroupContext);
   if (!value) {
-    throw new Error('MenuRadioItem must be rendered inside a MenuRadioGroup.');
+    throw new Error('A menu radio item must be rendered inside a menu radio group.');
   }
   return value;
 }
@@ -85,7 +71,7 @@ export const MenuSubProvider = MenuSubContext.Provider;
 export function useMenuSub(): MenuSubContextValue {
   const value = useContext(MenuSubContext);
   if (!value) {
-    throw new Error('MenuSubTrigger and MenuSubContent must be rendered inside a MenuSub.');
+    throw new Error('A menu sub trigger and sub content must be rendered inside a menu sub.');
   }
   return value;
 }

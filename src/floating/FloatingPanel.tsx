@@ -47,6 +47,7 @@ export function FloatingPanel({
   sideOffset = DEFAULT_SIDE_OFFSET,
   alignOffset = DEFAULT_ALIGN_OFFSET,
   dismissible = true,
+  modal = true,
   onDismiss,
   label,
   role,
@@ -69,19 +70,19 @@ export function FloatingPanel({
   }, []);
 
   useLayoutEffect(() => {
+    // react-native-web resolves a `View` ref to the DOM element itself. Read
+    // through the one method needed rather than asserting the whole
+    // `HTMLElement` interface, and capture it as a local so the narrowing holds
+    // inside `update` — a property check does not survive into a closure.
     const element = panelNode as unknown as { getBoundingClientRect?: () => DOMRect } | null;
-    if (
-      !open ||
-      !anchor ||
-      typeof window === 'undefined' ||
-      typeof element?.getBoundingClientRect !== 'function'
-    ) {
+    const measure = element?.getBoundingClientRect;
+    if (!open || !anchor || typeof window === 'undefined' || typeof measure !== 'function') {
       setPlacement(null);
       return;
     }
 
     const update = () => {
-      const box = element.getBoundingClientRect();
+      const box = measure.call(element);
       // Measured BEFORE `minWidth` is applied, so the laid-out surface can only
       // be wider than the box read here — and a wider surface wraps less, so the
       // measured height is an upper bound. Erring that way flips early in a tie,
@@ -127,12 +128,40 @@ export function FloatingPanel({
     return () => document.removeEventListener('keydown', onKeyDown);
   }, [open, dismissible, onDismiss]);
 
+  // The NON-modal outside press. Deliberately `pointerdown` in the CAPTURE
+  // phase and never `preventDefault`: the surface has to be gone before the
+  // click resolves, and the click itself has to carry on to whatever is under
+  // it. The anchor is excluded by GEOMETRY rather than by node, because a
+  // context menu's anchor is a bare point with no element behind it — and
+  // excluding it is what lets a trigger keep toggling its own surface closed
+  // instead of reopening it after this handler shut it.
+  useEffect(() => {
+    if (!open || !dismissible || modal || typeof document === 'undefined') return;
+    const onPointerDown = (event: PointerEvent) => {
+      const node = panelNode as unknown as Node | null;
+      const target = event.target as Node | null;
+      if (node && target && node.contains(target)) return;
+      if (
+        anchor &&
+        event.clientX >= anchor.left &&
+        event.clientX <= anchor.right &&
+        event.clientY >= anchor.top &&
+        event.clientY <= anchor.bottom
+      ) {
+        return;
+      }
+      onDismiss();
+    };
+    document.addEventListener('pointerdown', onPointerDown, true);
+    return () => document.removeEventListener('pointerdown', onPointerDown, true);
+  }, [open, dismissible, modal, onDismiss, panelNode, anchor]);
+
   if (!open || !anchor) return null;
 
   return (
     <Portal>
       <OverlayRoot>
-        {dismissible ? (
+        {dismissible && modal ? (
           <Backdrop
             style={styles.backdrop}
             onPress={onDismiss}

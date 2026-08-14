@@ -1,158 +1,80 @@
 ---
 title: Select
-description: Single-choice picker — Trigger, Content, Item.
+description: A single-choice picker — trigger, value, grouped options.
 order: 15
 ---
 
 # Select
 
-A single-choice picker. Sheet on native, native `<select>` styling on web. Controlled or uncontrolled.
+A single-choice picker. A bottom sheet on native, an anchored dropdown on web. Controlled or uncontrolled.
 
-`Select.Root` owns the value. `Select.Trigger` opens it. `Select.Content` renders the choices via a `FlatList`-style API. `Select.Item` is one row.
+`Select` owns the value, `SelectTrigger` opens it, `SelectContent` renders the choices from an `items` array, and `SelectItem` is one row.
 
 ## Basic
 
 ```tsx
-import * as Select from '@oxyhq/bloom/select';
+import {
+  Select,
+  SelectContent,
+  SelectIcon,
+  SelectItem,
+  SelectItemIndicator,
+  SelectItemText,
+  SelectTrigger,
+  SelectValue,
+} from '@oxyhq/bloom/select';
 
 const [country, setCountry] = useState('us');
 
-<Select.Root value={country} onValueChange={setCountry}>
-  <Select.Trigger label="Country">
-    {({ props }) => (
-      <Pressable {...props} style={styles.field}>
-        <Select.ValueText placeholder="Pick a country" />
-        <Select.Icon />
-      </Pressable>
-    )}
-  </Select.Trigger>
+<Select value={country} onValueChange={setCountry}>
+  <SelectTrigger label="Country">
+    <SelectValue placeholder="Pick a country" />
+    <SelectIcon />
+  </SelectTrigger>
 
-  <Select.Content
+  <SelectContent
     label="Country"
     items={countries}
-    renderItem={(item, _i, selected) => (
-      <Select.Item value={item.code} label={item.name}>
-        <Select.ItemText>{item.name}</Select.ItemText>
-        {selected === item.code ? <Select.ItemIndicator /> : null}
-      </Select.Item>
+    renderItem={(item) => (
+      <SelectItem value={item.code} label={item.name}>
+        <SelectItemIndicator />
+        <SelectItemText>{item.name}</SelectItemText>
+      </SelectItem>
     )}
   />
-</Select.Root>
+</Select>
 ```
 
-`Select.Trigger` accepts a render prop — wire `props` onto your pressable element. `Select.ValueText` reads from the root's value.
+`SelectContent` takes the whole `items` array rather than children, so the native fork can hand it to a `FlatList` and the web fork can measure and scroll it. `renderItem` receives `(item, index, selectedValue)`.
 
-## Disabled
+## Groups and labels
 
 ```tsx
-<Select.Root value={value} onValueChange={setValue} disabled>
-  …
-</Select.Root>
+<SelectGroup>
+  <SelectLabel>Europe</SelectLabel>
+  <SelectItem value="es" label="Spain">…</SelectItem>
+  <SelectItem value="fr" label="France">…</SelectItem>
+</SelectGroup>
 ```
 
-## Custom value rendering
+`SelectGroup` renders `role="group"` so a screen reader announces the run as one; `SelectLabel` is its heading. Return them from `renderItem` on the first row of each run — `SelectContent`'s list stays flat.
 
-When items aren't plain `{ value, label }`, give `Select.ValueText` a child function:
+## Long lists
 
-```tsx
-<Select.ValueText placeholder="Pick a user">
-  {(item) => item ? `${(item as User).name} (${(item as User).handle})` : ''}
-</Select.ValueText>
-```
+The web dropdown grows to `maxHeight` (default 320) and then scrolls. When it does, `SelectScrollUpButton` and `SelectScrollDownButton` appear at whichever end still has something to show, and disappear at the ends — a scroll affordance that is always visible tells the user a list scrolls when it does not.
 
-Same idea for items:
+`SelectContent` renders both, so you get them by default. They are exported for a caller composing their own content, and on NATIVE they render nothing at all: the sheet's list already scrolls under the finger, and a chevron there is a target with no pointer to hit it.
 
-```tsx
-<Select.Content
-  items={users}
-  valueExtractor={(u) => u.id}
-  renderItem={(u, _i, selected) => (
-    <Select.Item value={u.id} label={u.name}>
-      <Avatar uri={u.avatarUrl} size={24} />
-      <Select.ItemText>{u.name}</Select.ItemText>
-      {selected === u.id ? <Select.ItemIndicator /> : null}
-    </Select.Item>
-  )}
-/>
-```
+## Selection state
 
-## Components
+Both forks render each option as `role="radio"` with `aria-checked` — the only spelling react-native-web reads, and one React Native folds back into `accessibilityState`. `SelectItemIndicator` draws the mark: the shared `RadioIndicator` on native, a check on web.
 
-### `Select.Root`
+`SelectSeparator` draws a rule between runs.
 
-| Prop | Type | Description |
-|------|------|-------------|
-| `value?` | `string` | Selected key (controlled). |
-| `onValueChange?` | `(value: string) => void` | |
-| `disabled?` | `boolean` | |
-| `children?` | `React.ReactNode` | |
+## Why a row is not `Item`
 
-### `Select.Trigger`
+Every menu row in Bloom is an `Item`. A select row is not, and the reason is its layout.
 
-| Prop | Type | Description |
-|------|------|-------------|
-| `children` | `(p: TriggerChildProps) => ReactNode` | Render prop. |
-| `label` | `string` | Required accessibility label. |
+The web option reserves a 30px indicator gutter and paints the indicator into it ABSOLUTELY, so the label's left edge does not move between a selected row and an unselected one; `Item` has an in-flow leading slot and no absolute one. On top of that, `Item` couples `selected` — which select needs purely to emit `aria-checked` — to a selected BACKGROUND, and the web select deliberately paints none, because the check mark is its selection signal.
 
-### `Select.ValueText`
-
-| Prop | Type | Description |
-|------|------|-------------|
-| `children?` | `(item) => ReactNode` | Custom display for the selected item. Defaults to `item => item.label`. |
-| `placeholder?` | `string` | Shown when nothing is selected. |
-| `style?` | `TextStyle` | |
-
-### `Select.Content`
-
-| Prop | Type | Description |
-|------|------|-------------|
-| `label?` | `string` | Sheet title (native) / aria-label (web). |
-| `items` | `T[]` | The choices. |
-| `renderItem` | `(item, i, selectedValue?) => ReactElement` | Use `Select.Item` inside. |
-| `valueExtractor?` | `(item: T) => string` | Defaults to `item => item.value`. |
-
-### `Select.Item`
-
-| Prop | Type | Description |
-|------|------|-------------|
-| `value` | `string` | Key. |
-| `label` | `string` | Required for accessibility. |
-| `children` | `React.ReactNode` | What's rendered inside the row. |
-| `style?` | `StyleProp<ViewStyle>` | |
-
-### `Select.ItemIndicator`
-
-Renders the checkmark (or custom icon) next to the selected item. Pass `icon` to override.
-
-## Recipes
-
-### With initial loading state
-
-```tsx
-<Select.Root value={value ?? ''} onValueChange={setValue} disabled={isPending}>
-  <Select.Trigger label="Project">
-    {({ props }) => (
-      <Pressable {...props} style={styles.field}>
-        {isPending ? (
-          <Loading variant="inline" text="Loading…" />
-        ) : (
-          <Select.ValueText placeholder="Pick a project" />
-        )}
-      </Pressable>
-    )}
-  </Select.Trigger>
-  …
-</Select.Root>
-```
-
-### Validation
-
-Pair `Select.Root` with `TextField.Root` outer chrome:
-
-```tsx
-<TextField.Root isInvalid={touched && !value}>
-  <Select.Root value={value} onValueChange={setValue}>
-    {/* trigger + content as usual */}
-  </Select.Root>
-</TextField.Root>
-```
+Composing would mean flattening one of those two, and both are visible: the first as a label that jumps sideways on selection, the second as a highlighted row where there was none. So select keeps its own row, and `radio-indicator` stays the one indicator both it and `Radio` draw.

@@ -23,7 +23,7 @@ import type {
   PopoverProps,
   PopoverTriggerProps,
 } from '../popover/types';
-import type { usePopoverContext as usePopoverContextType } from '../popover/context';
+import type { usePopover as usePopoverType } from '../popover/context';
 import type { ComboboxOption, ComboboxProps } from './types';
 
 /**
@@ -36,7 +36,7 @@ interface PopoverModule {
   Popover: (props: PopoverProps) => React.ReactElement;
   PopoverTrigger: (props: PopoverTriggerProps) => React.ReactElement;
   PopoverContent: (props: PopoverContentProps) => React.ReactElement | null;
-  usePopoverContext: typeof usePopoverContextType;
+  usePopover: typeof usePopoverType;
 }
 
 function defaultFilter<T>(option: ComboboxOption<T>, query: string): boolean {
@@ -80,7 +80,7 @@ export function createCombobox(PopoverImpl: PopoverModule) {
   > &
     Pick<ComboboxProps<T>, 'label' | 'query' | 'onQueryChange' | 'disabled'>) {
     const theme = useTheme();
-    const { control } = PopoverImpl.usePopoverContext();
+    const popover = PopoverImpl.usePopover();
     const searchRef = useRef<TextInput>(null);
 
     const [query, setQuery] = useControllableState<string>({
@@ -104,54 +104,53 @@ export function createCombobox(PopoverImpl: PopoverModule) {
         if (option.disabled) return;
         onValueChange(option.value);
         setQuery('');
-        control.close();
+        popover.setOpen(false);
       },
-      [onValueChange, setQuery, control],
+      [onValueChange, setQuery, popover],
     );
 
     const accessibleLabel = label ?? placeholder;
 
     return (
       <>
-        <PopoverImpl.PopoverTrigger label={accessibleLabel}>
-          {({ props }) => (
-            <Pressable
-              {...props}
-              disabled={disabled}
-              onPress={() => {
-                if (disabled) return;
-                props.onPress();
-                if (Platform.OS === 'web') {
-                  requestAnimationFrame(() => searchRef.current?.focus());
-                }
-              }}
-              accessibilityState={{ disabled: disabled ?? false }}
+        {/* `asChild` composes rather than replaces: the trigger's own
+            `onPress` runs first and `TriggerSlot` opens the popover after it,
+            which is how the web focus hop below still happens on open. */}
+        <PopoverImpl.PopoverTrigger asChild label={accessibleLabel} style={styles.triggerSlot}>
+          <Pressable
+            disabled={disabled}
+            onPress={() => {
+              if (disabled) return;
+              if (Platform.OS === 'web') {
+                requestAnimationFrame(() => searchRef.current?.focus());
+              }
+            }}
+            accessibilityState={{ disabled: disabled ?? false }}
+            style={[
+              styles.trigger,
+              {
+                backgroundColor: theme.colors.contrast50,
+                borderColor: theme.colors.borderLight,
+              },
+              disabled && styles.disabled,
+            ]}>
+            <Text
+              numberOfLines={1}
               style={[
-                styles.trigger,
+                styles.triggerText,
                 {
-                  backgroundColor: theme.colors.contrast50,
-                  borderColor: theme.colors.borderLight,
+                  color: selectedOption
+                    ? theme.colors.text
+                    : theme.colors.textSecondary,
                 },
-                disabled && styles.disabled,
               ]}>
-              <Text
-                numberOfLines={1}
-                style={[
-                  styles.triggerText,
-                  {
-                    color: selectedOption
-                      ? theme.colors.text
-                      : theme.colors.textSecondary,
-                  },
-                ]}>
-                {selectedOption ? selectedOption.label : placeholder}
-              </Text>
-              <ChevronUpDownIcon size="xs" fill={theme.colors.textSecondary} />
-            </Pressable>
-          )}
+              {selectedOption ? selectedOption.label : placeholder}
+            </Text>
+            <ChevronUpDownIcon size="xs" fill={theme.colors.textSecondary} />
+          </Pressable>
         </PopoverImpl.PopoverTrigger>
 
-        <PopoverImpl.PopoverContent label={accessibleLabel} placement="bottom-start" minWidth={240}>
+        <PopoverImpl.PopoverContent label={accessibleLabel} align="start" minWidth={240}>
           <View style={styles.searchWrap}>
             <Search
               ref={searchRef}
@@ -242,6 +241,12 @@ export function createCombobox(PopoverImpl: PopoverModule) {
 }
 
 const styles = StyleSheet.create({
+  // `TriggerSlot`'s wrapper is `alignSelf: 'flex-start'` so an anchored surface
+  // lines up with the CONTROL rather than the row it sits in. A combobox is the
+  // exception: its trigger is a full-width field, so the wrapper stretches.
+  triggerSlot: {
+    alignSelf: 'stretch',
+  },
   trigger: {
     flexDirection: 'row',
     alignItems: 'center',

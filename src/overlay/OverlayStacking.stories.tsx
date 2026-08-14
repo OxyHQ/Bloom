@@ -25,7 +25,12 @@ import { BottomSheet, type BottomSheetRef } from '../bottom-sheet';
 import { Button } from '../button';
 import { Dialog } from '../dialog/Dialog';
 import { useDialogControl } from '../dialog/context';
-import { Menu, MenuContent, MenuItem, MenuTrigger } from '../menu';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '../dropdown-menu';
 
 const meta: Meta = {
   title: 'Components/Overlay stacking',
@@ -168,19 +173,21 @@ function MenuOverDialog() {
       <Result value={result} />
 
       <Dialog control={control} testID="menu-host-dialog" title="Filters">
-        <Menu>
-          <MenuTrigger label="Sort by">
-            {({ props }) => (
-              <Button {...props} testID="open-second" variant="secondary">
-                Sort by
-              </Button>
-            )}
-          </MenuTrigger>
-          <MenuContent>
-            <MenuItem testID="top-action" label="Newest" onPress={() => setResult('menu')} />
-            <MenuItem label="Oldest" onPress={() => setResult('menu-oldest')} />
-          </MenuContent>
-        </Menu>
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild label="Sort by">
+            <Button testID="open-second" variant="secondary">
+              Sort by
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent>
+            <DropdownMenuItem testID="top-action" onPress={() => setResult('menu')}>
+              Newest
+            </DropdownMenuItem>
+            <DropdownMenuItem onPress={() => setResult('menu-oldest')}>
+              Oldest
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
       </Dialog>
     </>
   );

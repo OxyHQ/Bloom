@@ -197,7 +197,9 @@ describe('no surface picks its own depth', () => {
     'dialog/Dialog.tsx',
     'dialog/Dialog.web.tsx',
     'bottom-sheet/BottomSheet.web.tsx',
-    'menu/Menu.web.tsx',
+    'floating/FloatingPanel.tsx',
+    'dropdown-menu/DropdownMenu.web.tsx',
+    'menubar/Menubar.web.tsx',
     'select/Select.web.tsx',
     'context-menu/ContextMenu.web.tsx',
     'popover/Popover.web.tsx',
@@ -262,9 +264,19 @@ describe('no surface picks its own depth', () => {
     // `Dialog.web`'s side placement renders `SheetSurface`, which mounts its
     // own `OverlayRoot`; the centred branch mounts one directly. Both files are
     // covered by the membership check below.
-    const missing = SURFACES.filter((rel) => !code(rel).includes('OverlayRoot'));
+    //
+    // The four ANCHORED families (`dropdown-menu`, `context-menu`, `menubar`,
+    // `popover`) do not mount one each: their web forks render
+    // `floating/FloatingPanel`, which mounts the single `OverlayRoot` they
+    // share. Delegating counts, and the assertion below is what stops that from
+    // being a hole — if `FloatingPanel` ever stopped mounting one, every
+    // delegating surface would lose its rank at once and this would fail.
+    const missing = SURFACES.filter(
+      (rel) => !code(rel).includes('OverlayRoot') && !code(rel).includes('FloatingPanel'),
+    );
     expect(missing).toEqual([]);
+    expect(code('floating/FloatingPanel.tsx')).toMatch(/<OverlayRoot>/);
     // Vacuity floor on the list itself.
-    expect(SURFACES.length).toBeGreaterThanOrEqual(12);
+    expect(SURFACES.length).toBeGreaterThanOrEqual(14);
   });
 });

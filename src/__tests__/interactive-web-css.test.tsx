@@ -22,36 +22,65 @@ import { createRoot, type Root } from 'react-dom/client';
 
 import { BloomThemeProvider } from '../theme/BloomThemeProvider';
 import { Button } from '../button/Button.web';
+import { Checkbox } from '../checkbox';
+import { Chip } from '../chip';
 import { Fab } from '../fab/Fab.web';
 import { FrostedIconButton } from '../frosted-icon-button/FrostedIconButton.web';
 import { NOT_DISABLED, interactiveWebCss } from '../styles/interactive-web-css';
 
 (globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
 
-/** The three families, with the style id each adopts and the class it renders. */
+/**
+ * Every family built from the shared recipe, with the style id each adopts and
+ * the CSS selector its rules hang off.
+ *
+ * Three render a raw DOM `<button>` and hang off a class; `Chip` is a
+ * react-native-web control, whose `className` is consumed by react-native-css
+ * before any DOM class exists, so it hangs off a `data-*` attribute instead. The
+ * assertions below are selector-agnostic on purpose — that difference is the
+ * only one, and it must not become a second recipe.
+ */
 const FAMILIES = [
   {
     name: 'Button',
     styleId: 'bloom-button-web-css',
-    className: 'bloom-btn',
+    selector: '.bloom-btn',
     varPrefix: 'bloom-btn',
     element: <Button>Go</Button>,
   },
   {
     name: 'Fab',
     styleId: 'bloom-fab-web-css',
-    className: 'bloom-fab',
+    selector: '.bloom-fab',
     varPrefix: 'bloom-fab',
     element: <Fab accessibilityLabel="Compose" icon={<span />} />,
   },
   {
     name: 'FrostedIconButton',
     styleId: 'bloom-frosted-icon-button-web-css',
-    className: 'bloom-frosted-icon-btn',
+    selector: '.bloom-frosted-icon-btn',
     varPrefix: 'bloom-frosted',
     element: <FrostedIconButton accessibilityLabel="Back" icon={<span />} />,
   },
+  {
+    name: 'Chip',
+    styleId: 'bloom-chip-web-css',
+    selector: '[data-bloom-chip]',
+    varPrefix: 'bloom-chip',
+    element: <Chip onPress={() => {}}>Filter</Chip>,
+  },
+  {
+    name: 'Checkbox',
+    styleId: 'bloom-checkbox-web-css',
+    selector: '[data-bloom-checkbox]',
+    varPrefix: 'bloom-checkbox',
+    element: <Checkbox checked={false} onCheckedChange={() => {}} label="Remember me" />,
+  },
 ] as const;
+
+/** Escape a selector for use inside a `RegExp`. */
+const escapeSelector = (selector: string): string =>
+  selector.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 
 function mountAndReadCss(element: React.ReactElement, styleId: string): string {
   const container = document.createElement('div');
@@ -76,15 +105,15 @@ describe('interactiveWebCss', () => {
     it('adopts a non-empty sheet under its own id', () => {
       const sheet = css();
       expect(sheet.length).toBeGreaterThan(200);
-      expect(sheet).toContain(`.${family.className} {`);
+      expect(sheet).toContain(`${family.selector} {`);
     });
 
     it('rings the keyboard focus with :focus-visible, never a bare :focus', () => {
       const sheet = css();
-      expect(sheet).toContain(`.${family.className}:focus-visible`);
+      expect(sheet).toContain(`${family.selector}:focus-visible`);
       // A bare `:focus` rule fires on mouse press too, stranding a ring on every
       // clicked control — the reason this selector is not a free choice.
-      expect(sheet).not.toMatch(new RegExp(`\\.${family.className}:focus[^-]`));
+      expect(sheet).not.toMatch(new RegExp(`${escapeSelector(family.selector)}:focus[^-]`));
       expect(sheet).toContain(`var(--${family.varPrefix}-ring`);
     });
 
@@ -100,7 +129,7 @@ describe('interactiveWebCss', () => {
         .split('\n')
         .filter(
           (line) =>
-            line.startsWith(`.${family.className}`) &&
+            line.startsWith(family.selector) &&
             (line.includes(':hover') || line.includes(':active')),
         );
       expect(interactiveRules.length).toBeGreaterThanOrEqual(2);
@@ -112,14 +141,14 @@ describe('interactiveWebCss', () => {
 
     it('dims and un-points a disabled control', () => {
       const sheet = css();
-      expect(sheet).toContain(`.${family.className}[aria-disabled="true"]`);
+      expect(sheet).toContain(`${family.selector}[aria-disabled="true"]`);
       expect(sheet).toMatch(/opacity:\s*0\.5/);
     });
   });
 
   it("appends a family's own rules verbatim, composing the shared filter", () => {
     const sheet = interactiveWebCss({
-      className: 'x',
+      selector: '.x',
       varPrefix: 'x',
       base: 'color: red;',
       transition: 'none',
@@ -132,7 +161,7 @@ describe('interactiveWebCss', () => {
 
   it('an extra hover filter narrows only the hover rule', () => {
     const sheet = interactiveWebCss({
-      className: 'x',
+      selector: '.x',
       varPrefix: 'x',
       base: 'color: red;',
       transition: 'none',

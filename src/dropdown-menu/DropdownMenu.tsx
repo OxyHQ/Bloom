@@ -8,20 +8,20 @@
  * the root, `asChild` on the trigger — bridged onto `Dialog`'s IMPERATIVE
  * control by `floating/use-sheet-open-bridge`, never onto its controlled
  * boolean path.
+ *
+ * The rows come from `floating/menu-rows`, the same set `ContextMenu` and
+ * `Menubar` publish under their own prefixes.
  */
 import React, { useMemo, useRef } from 'react';
 import type { View } from 'react-native';
 
 import { SheetShell } from '../dialog/SheetShell';
+import { MenuSurfaceProvider, type MenuSurfaceContextValue } from '../floating/context';
+import { createMenuRows } from '../floating/menu-rows';
 import { TriggerSlot } from '../floating/TriggerSlot';
 import { useSheetOpenBridge } from '../floating/use-sheet-open-bridge';
 import { useControllableState } from '../hooks/use-controllable-state';
-import {
-  DropdownMenuProvider,
-  MenuSurfaceProvider,
-  useDropdownMenu,
-  type MenuSurfaceContextValue,
-} from './context';
+import { DropdownMenuProvider, useDropdownMenu } from './context';
 import type {
   DropdownMenuContentProps,
   DropdownMenuProps,
@@ -40,10 +40,7 @@ export function DropdownMenu({
     onChange: onOpenChange,
   });
   const anchorRef = useRef<View | null>(null);
-  const value = useMemo(
-    () => ({ open: isOpen, setOpen, anchorRef }),
-    [isOpen, setOpen],
-  );
+  const value = useMemo(() => ({ open: isOpen, setOpen, anchorRef }), [isOpen, setOpen]);
 
   return <DropdownMenuProvider value={value}>{children}</DropdownMenuProvider>;
 }
@@ -94,3 +91,17 @@ export function DropdownMenuContent({
     </SheetShell>
   );
 }
+
+const rows = createMenuRows('DropdownMenu');
+
+export const DropdownMenuItem = rows.Item;
+export const DropdownMenuCheckboxItem = rows.CheckboxItem;
+export const DropdownMenuRadioGroup = rows.RadioGroup;
+export const DropdownMenuRadioItem = rows.RadioItem;
+export const DropdownMenuLabel = rows.Label;
+export const DropdownMenuSeparator = rows.Separator;
+export const DropdownMenuShortcut = rows.Shortcut;
+export const DropdownMenuGroup = rows.Group;
+export const DropdownMenuSub = rows.Sub;
+export const DropdownMenuSubTrigger = rows.SubTrigger;
+export const DropdownMenuSubContent = rows.SubContent;

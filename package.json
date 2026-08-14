@@ -825,23 +825,23 @@
         "default": "./lib/commonjs/admonition/index.js"
       }
     },
-    "./menu": {
+    "./dropdown-menu": {
       "react-native": {
-        "types": "./lib/typescript/module/menu/index.d.ts",
-        "default": "./src/menu/index.ts"
+        "types": "./lib/typescript/module/dropdown-menu/index.d.ts",
+        "default": "./src/dropdown-menu/index.ts"
       },
       "browser": {
-        "types": "./lib/typescript/module/menu/index.web.d.ts",
-        "import": "./lib/module/menu/index.web.js",
-        "require": "./lib/commonjs/menu/index.web.js"
+        "types": "./lib/typescript/module/dropdown-menu/index.web.d.ts",
+        "import": "./lib/module/dropdown-menu/index.web.js",
+        "require": "./lib/commonjs/dropdown-menu/index.web.js"
       },
       "import": {
-        "types": "./lib/typescript/module/menu/index.d.ts",
-        "default": "./lib/module/menu/index.js"
+        "types": "./lib/typescript/module/dropdown-menu/index.d.ts",
+        "default": "./lib/module/dropdown-menu/index.js"
       },
       "require": {
-        "types": "./lib/typescript/commonjs/menu/index.d.ts",
-        "default": "./lib/commonjs/menu/index.js"
+        "types": "./lib/typescript/commonjs/dropdown-menu/index.d.ts",
+        "default": "./lib/commonjs/dropdown-menu/index.js"
       }
     },
     "./tooltip": {
@@ -920,6 +920,25 @@
         "default": "./lib/commonjs/context-menu/index.js"
       }
     },
+    "./menubar": {
+      "react-native": {
+        "types": "./lib/typescript/module/menubar/index.d.ts",
+        "default": "./src/menubar/index.ts"
+      },
+      "browser": {
+        "types": "./lib/typescript/module/menubar/index.web.d.ts",
+        "import": "./lib/module/menubar/index.web.js",
+        "require": "./lib/commonjs/menubar/index.web.js"
+      },
+      "import": {
+        "types": "./lib/typescript/module/menubar/index.d.ts",
+        "default": "./lib/module/menubar/index.js"
+      },
+      "require": {
+        "types": "./lib/typescript/commonjs/menubar/index.d.ts",
+        "default": "./lib/commonjs/menubar/index.js"
+      }
+    },
     "./popover": {
       "react-native": {
         "types": "./lib/typescript/module/popover/index.d.ts",
@@ -937,6 +956,20 @@
       "require": {
         "types": "./lib/typescript/commonjs/popover/index.d.ts",
         "default": "./lib/commonjs/popover/index.js"
+      }
+    },
+    "./aspect-ratio": {
+      "react-native": {
+        "types": "./lib/typescript/module/aspect-ratio/index.d.ts",
+        "default": "./src/aspect-ratio/index.ts"
+      },
+      "import": {
+        "types": "./lib/typescript/module/aspect-ratio/index.d.ts",
+        "default": "./lib/module/aspect-ratio/index.js"
+      },
+      "require": {
+        "types": "./lib/typescript/commonjs/aspect-ratio/index.d.ts",
+        "default": "./lib/commonjs/aspect-ratio/index.js"
       }
     },
     "./alert-dialog": {

@@ -8,14 +8,14 @@ const ALLOWED_NAMESPACES = ['Icons', 'Typography', 'Skeleton', 'Grid', 'Code', '
 
 // Compound families converted to flat: the top-level name is the root component.
 const FLATTENED_ROOTS = [
-  'Tabs', 'Accordion', 'Select', 'Menu', 'ContextMenu', 'Popover',
+  'Tabs', 'Accordion', 'Select', 'DropdownMenu', 'ContextMenu', 'Menubar', 'Popover',
   'Tooltip', 'SegmentedControl', 'TextField', 'Admonition', 'PromptInput',
 ] as const;
 
 // One renamed part per converted family — proves the flat rename landed.
 const REPRESENTATIVE_PARTS = [
-  'TabsTrigger', 'AccordionItem', 'SelectItem', 'MenuItem', 'ContextMenuItem',
-  'PopoverTrigger', 'TooltipTrigger', 'SegmentedControlItem', 'TextFieldInput',
+  'TabsTrigger', 'AccordionItem', 'SelectItem', 'DropdownMenuItem', 'ContextMenuItem',
+  'MenubarItem', 'PopoverTrigger', 'TooltipTrigger', 'SegmentedControlItem', 'TextFieldInput',
   'AdmonitionIcon', 'PromptInputTextarea',
 ] as const;
 

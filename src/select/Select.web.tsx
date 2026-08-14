@@ -8,7 +8,7 @@ import React, {
   useRef,
   useState,
 } from 'react';
-import { Pressable, StyleSheet, View, type ViewStyle } from 'react-native';
+import { Pressable, ScrollView, StyleSheet, View, type ViewStyle } from 'react-native';
 
 import { useTheme } from '../theme/use-theme';
 import { Text } from '../typography';
@@ -23,7 +23,14 @@ import {
   ChevronBottom_Stroke2_Corner0_Rounded as ChevronDownIcon,
 } from '../icons/Chevron';
 import { Check_Stroke2_Corner0_Rounded as CheckIcon } from '../icons/Check';
-import { defaultItemValueExtractor, ItemContext, useSelectItemContext } from './shared';
+import {
+  defaultItemValueExtractor,
+  ItemContext,
+  SelectScrollDownButton,
+  SelectScrollProvider,
+  SelectScrollUpButton,
+  useSelectItemContext,
+} from './shared';
 import type {
   SelectContentProps,
   SelectIconProps,
@@ -38,6 +45,16 @@ import type {
 
 const VIEWPORT_GUTTER = 8;
 const SELECT_OFFSET = 6;
+/** Tallest an anchored option list grows before it scrolls. */
+const DEFAULT_MAX_HEIGHT = 320;
+/** How far one press of a scroll button moves the list. */
+const SCROLL_STEP = 96;
+/**
+ * Sub-pixel slack. A scroll container's content height and its viewport height
+ * are fractional, so an exact comparison leaves a scroll button visible on a
+ * list that is already at its end and cannot move.
+ */
+const SCROLL_EPSILON = 1;
 
 // ---------------------------------------------------------------------------
 // Context
@@ -195,10 +212,38 @@ export function SelectContent<T>({
   renderItem,
   label = 'Select an option',
   valueExtractor = defaultItemValueExtractor,
+  maxHeight = DEFAULT_MAX_HEIGHT,
 }: SelectContentProps<T>) {
   const ctx = useSelectContext();
   const theme = useTheme();
   const [position, setPosition] = useState<ViewStyle | null>(null);
+  const listRef = useRef<ScrollView | null>(null);
+  // Where the option list is scrolled to, tracked so the two scroll buttons can
+  // hide when there is nothing left in their direction. A button that is always
+  // there says the list scrolls when it does not.
+  const [scrollState, setScrollState] = useState({ offset: 0, content: 0, viewport: 0 });
+
+  const scrollBy = useCallback(
+    (direction: 'up' | 'down') => {
+      const step = direction === 'down' ? SCROLL_STEP : -SCROLL_STEP;
+      const next = Math.max(
+        0,
+        Math.min(scrollState.offset + step, scrollState.content - scrollState.viewport),
+      );
+      listRef.current?.scrollTo({ y: next, animated: true });
+    },
+    [scrollState],
+  );
+
+  const scroll = useMemo(
+    () => ({
+      canScrollUp: scrollState.offset > SCROLL_EPSILON,
+      canScrollDown:
+        scrollState.content - scrollState.viewport - scrollState.offset > SCROLL_EPSILON,
+      scrollBy,
+    }),
+    [scrollState, scrollBy],
+  );
   // The mounted dropdown node, as STATE rather than a bare ref: positioning has
   // to measure it, and `Portal` renders null on its first pass (it resolves its
   // host in its own layout effect), so the node lands one render after `isOpen`
@@ -283,11 +328,36 @@ export function SelectContent<T>({
             position,
           ]}
         >
-          {items.map((item, index) => (
-            <React.Fragment key={valueExtractor(item)}>
-              {renderItem(item, index, ctx.value)}
-            </React.Fragment>
-          ))}
+          <SelectScrollProvider value={scroll}>
+            <SelectScrollUpButton />
+            <ScrollView
+              ref={listRef}
+              style={{ maxHeight }}
+              scrollEventThrottle={16}
+              onScroll={(event) =>
+                setScrollState({
+                  offset: event.nativeEvent.contentOffset.y,
+                  content: event.nativeEvent.contentSize.height,
+                  viewport: event.nativeEvent.layoutMeasurement.height,
+                })
+              }
+              onContentSizeChange={(_width, height) =>
+                setScrollState((current) => ({ ...current, content: height }))
+              }
+              onLayout={(event) =>
+                setScrollState((current) => ({
+                  ...current,
+                  viewport: event.nativeEvent.layout.height,
+                }))
+              }>
+              {items.map((item, index) => (
+                <React.Fragment key={valueExtractor(item)}>
+                  {renderItem(item, index, ctx.value)}
+                </React.Fragment>
+              ))}
+            </ScrollView>
+            <SelectScrollDownButton />
+          </SelectScrollProvider>
         </View>
       </OverlayRoot>
     </Portal>

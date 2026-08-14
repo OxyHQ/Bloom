@@ -242,6 +242,7 @@ export type { BottomSheetRef, BottomSheetProps } from './bottom-sheet';
 export * from './card';
 export * from './badge';
 export * from './chip';
+export * from './aspect-ratio';
 export * from './tabs';
 export * from './checkbox';
 export * from './radio';
@@ -282,10 +283,11 @@ export type { KbdProps } from './kbd';
 
 // Overlay components
 export * from './admonition';
-export * from './menu';
+export * from './dropdown-menu';
 export * from './tooltip';
 export * from './select';
 export * from './context-menu';
+export * from './menubar';
 export * from './popover';
 export { AlertDialog } from './alert-dialog';
 export type { AlertDialogProps, AlertDialogActionStyle } from './alert-dialog';
