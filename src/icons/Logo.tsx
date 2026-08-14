@@ -1,6 +1,6 @@
 import Svg, {Path} from 'react-native-svg'
 
-import {type Props, useCommonSVGProps} from './common'
+import {type Props, useCommonSVGProps} from './shared'
 import {createSinglePathSVG} from './TEMPLATE'
 
 export const Mark = createSinglePathSVG({

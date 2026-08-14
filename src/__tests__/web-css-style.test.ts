@@ -53,7 +53,7 @@ const ALLOWED: Record<string, { count: number; reason: string }> = {
     reason:
       "`WEB_POSITION_FIXED` — a VALUE-level cast on a key RN does model, just with a narrower union. It is the one documented crossing point and cannot be an annotation, because `position: 'fixed'` has to be writable inside an ordinary style object.",
   },
-  'skeleton/index.tsx': {
+  'skeleton/Skeleton.tsx': {
     count: 1,
     reason:
       '`(flattened as ViewStyle)?.width` narrows a `StyleSheet.flatten` result, which is legitimately `ViewStyle | TextStyle | ImageStyle`. Not a web-CSS cast.',

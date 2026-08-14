@@ -4,7 +4,7 @@ import { View, Text, Pressable, Animated, type ViewStyle } from 'react-native';
 import { useTheme } from '../theme/use-theme';
 import { animation, borderRadius, space } from '../styles/tokens';
 import { SUPPORTS_NATIVE_DRIVER } from '../styles/native-driver';
-import { usePressAnimation } from '../hooks/usePressAnimation';
+import { usePressAnimation } from '../hooks/use-press-animation';
 import type { CheckboxProps } from './types';
 
 const SIZE_CONFIG = {

@@ -162,7 +162,7 @@ describe('ToastHost platform split', () => {
 
   it('no sonner import survives in the toast surface or the root barrel', () => {
     for (const file of [
-      'toast/index.tsx',
+      'toast/ToastOutlet.tsx',
       'toast/Toaster.tsx',
       'toast/toast-fns.ts',
       'index.ts',

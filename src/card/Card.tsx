@@ -2,7 +2,7 @@ import React, { memo, useMemo } from 'react';
 import { View, Text, Pressable, Platform, type ViewStyle } from 'react-native';
 
 import { useTheme } from '../theme/use-theme';
-import { useInteractionState } from '../hooks/useInteractionState';
+import { useInteractionState } from '../hooks/use-interaction-state';
 import { borderRadius, space } from '../styles/tokens';
 import type {
   CardProps,

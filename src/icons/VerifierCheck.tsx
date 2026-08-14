@@ -1,7 +1,7 @@
 import {forwardRef} from 'react'
 import Svg, {Path} from 'react-native-svg'
 
-import {type Props, useCommonSVGProps} from './common'
+import {type Props, useCommonSVGProps} from './shared'
 
 export const VerifierCheck = forwardRef<Svg, Props>(
   function VerifierCheckImpl(props, ref) {

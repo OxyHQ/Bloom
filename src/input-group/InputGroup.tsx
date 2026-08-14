@@ -7,7 +7,7 @@ import React, {
 import { Platform, StyleSheet, View } from 'react-native';
 
 import { useTheme } from '../theme/use-theme';
-import { useInteractionState } from '../hooks/useInteractionState';
+import { useInteractionState } from '../hooks/use-interaction-state';
 import { Text } from '../typography';
 import { borderRadius, fontSize, space } from '../styles/tokens';
 import type { InputGroupAddonProps, InputGroupProps } from './types';

@@ -21,7 +21,7 @@ import {
   type ViewStyle,
 } from 'react-native';
 
-import { useControllableState } from '../hooks/useControllableState';
+import { useControllableState } from '../hooks/use-controllable-state';
 import { FontLoader } from '../fonts/FontLoader';
 
 import { useAmbientThemeState } from './ambient-store';

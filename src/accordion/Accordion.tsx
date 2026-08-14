@@ -2,7 +2,7 @@ import React, { createContext, memo, useCallback, useContext, useEffect, useMemo
 import { View, Text, Pressable, Animated, type ViewStyle } from 'react-native';
 
 import { useTheme } from '../theme/use-theme';
-import { useInteractionState } from '../hooks/useInteractionState';
+import { useInteractionState } from '../hooks/use-interaction-state';
 import { animation, borderRadius, space } from '../styles/tokens';
 import { SUPPORTS_NATIVE_DRIVER } from '../styles/native-driver';
 import type {

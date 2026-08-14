@@ -3,7 +3,8 @@ import { Text, View } from 'react-native';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
 import { Button } from '../button';
-import { BottomSheet, type BottomSheetRef } from './index';
+import { BottomSheet } from './index';
+import type { BottomSheetRef } from './types';
 
 const meta: Meta<typeof BottomSheet> = {
   title: 'Components/BottomSheet',

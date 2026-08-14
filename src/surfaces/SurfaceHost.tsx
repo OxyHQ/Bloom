@@ -16,7 +16,7 @@ import {
   resetSurfaces,
   subscribe,
 } from './surfaceStore';
-import { SurfaceContext } from './useSurface';
+import { SurfaceContext } from './use-surface';
 import type { SurfaceControls, SurfaceEntry, SurfacePresentation } from './types';
 
 type DialogComponent = React.ComponentType<DialogProps>;

@@ -2,7 +2,7 @@ import React from 'react';
 import { Pressable, Text, View } from 'react-native';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
-import { useInteractionState } from '../hooks/useInteractionState';
+import { useInteractionState } from '../hooks/use-interaction-state';
 import { SubtleHover } from './index';
 
 const meta: Meta<typeof SubtleHover> = {

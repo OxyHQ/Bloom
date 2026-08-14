@@ -16,8 +16,8 @@ import { styled } from 'react-native-css';
 
 import { useTheme } from '../theme/use-theme';
 import { borderRadius } from '../styles/tokens';
-import { usePressAnimation } from '../hooks/usePressAnimation';
-import { useInteractionState } from '../hooks/useInteractionState';
+import { usePressAnimation } from '../hooks/use-press-animation';
+import { useInteractionState } from '../hooks/use-interaction-state';
 import type { ButtonProps, ButtonSize, ButtonVariant } from './types';
 
 export type { ButtonProps, ButtonVariant, ButtonSize } from './types';

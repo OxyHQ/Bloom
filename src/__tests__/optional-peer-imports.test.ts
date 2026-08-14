@@ -74,7 +74,7 @@ const ALLOWED: { peer: string; file: string; why: string }[] = [
   },
   {
     peer: 'react-dom',
-    file: 'portal/index.web.tsx',
+    file: 'portal/Portal.web.tsx',
     why: 'react-native-web depends on react-dom, so a web bundle rendering Bloom always has it',
   },
   {
@@ -100,7 +100,7 @@ const DYNAMIC_BOUNDARIES: { peer: string; file: string }[] = [
   { peer: 'expo-haptics', file: 'hooks/haptics-module.ts' },
   { peer: 'nativewind', file: 'theme/color-scope/style-builder.ts' },
   { peer: 'expo-router', file: 'theme/adaptive-colors.ts' },
-  { peer: 'react-native-keyboard-controller', file: 'bottom-sheet/index.tsx' },
+  { peer: 'react-native-keyboard-controller', file: 'bottom-sheet/BottomSheet.tsx' },
 ];
 
 /**

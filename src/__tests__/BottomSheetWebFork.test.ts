@@ -25,7 +25,7 @@ const read = (rel: string) => readFileSync(join(SRC, rel), 'utf8');
 
 describe('BottomSheet web fork (RN-Web Modal-orphan fix)', () => {
   it('web shell renders through bloom DOM Portal, never RN <Modal>/keyboard-controller', () => {
-    const web = read('bottom-sheet/index.web.tsx');
+    const web = read('bottom-sheet/BottomSheet.web.tsx');
     expect(web).toMatch(/from '\.\.\/portal\/index\.web'/);
     expect(web).toMatch(/BottomSheetBase/);
     // The whole point: no RN Modal *import* (orphaned ModalPortal) on web.
@@ -35,7 +35,7 @@ describe('BottomSheet web fork (RN-Web Modal-orphan fix)', () => {
   });
 
   it('native shell keeps RN <Modal> + keyboard-controller', () => {
-    const native = read('bottom-sheet/index.tsx');
+    const native = read('bottom-sheet/BottomSheet.tsx');
     expect(native).toMatch(/import \{ Modal[^}]*\} from 'react-native'/);
     expect(native).toContain('react-native-keyboard-controller');
     expect(native).toMatch(/BottomSheetBase/);

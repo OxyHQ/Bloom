@@ -28,7 +28,7 @@ import {
 } from 'react-native';
 
 import { useTheme } from '../theme/use-theme';
-import { useInteractionState } from '../hooks/useInteractionState';
+import { useInteractionState } from '../hooks/use-interaction-state';
 import { RADIUS } from '../design-tokens/scales';
 import type { LinkPreviewCardProps } from './types';
 

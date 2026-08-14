@@ -1,5 +1,5 @@
 import type { StyleProp, ViewStyle } from 'react-native';
-import type { Props as IconProps } from '../icons/common';
+import type { Props as IconProps } from '../icons/shared';
 
 export interface CommandItem {
   /** Stable id. */

@@ -2,7 +2,7 @@ import React, { memo, useMemo } from 'react';
 import { Pressable, StyleSheet, View, type ViewStyle } from 'react-native';
 
 import { useTheme } from '../theme/use-theme';
-import { useInteractionState } from '../hooks/useInteractionState';
+import { useInteractionState } from '../hooks/use-interaction-state';
 import { Text } from '../typography';
 import { borderRadius, fontSize, space } from '../styles/tokens';
 import type { ItemProps } from './types';

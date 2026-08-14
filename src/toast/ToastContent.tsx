@@ -23,7 +23,7 @@ import {
 } from 'react-native';
 
 import { bloomShadowStyle } from '../design-tokens/shadows';
-import { useInteractionState } from '../hooks/useInteractionState';
+import { useInteractionState } from '../hooks/use-interaction-state';
 import { TimesLarge_Stroke2_Corner0_Rounded as TimesIcon } from '../icons/Times';
 import { borderRadius, fontSize, space } from '../styles/tokens';
 import { ToastIcon } from './ToastIcon';

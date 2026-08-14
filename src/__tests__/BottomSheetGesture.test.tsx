@@ -16,7 +16,7 @@ import BottomSheet, { type BottomSheetRef } from '../bottom-sheet';
  * This file overrides the default gesture-handler mock (which discards the
  * registered callbacks) with a RECORDING mock that captures the pan gesture's
  * handlers. Invoking the captured `onEnd` exercises the real threshold math
- * from `bottom-sheet/index.tsx` — there is no `Platform.OS` gating around the
+ * from `bottom-sheet/BottomSheet.tsx` — there is no `Platform.OS` gating around the
  * `<GestureDetector>` or the pan builder, so this is the SAME code path web
  * runs (drag-to-dismiss is active on web).
  */

@@ -1,6 +1,6 @@
 import type { StyleProp, TextStyle, View, ViewStyle } from 'react-native';
 
-import type { Props as SVGIconProps } from '../icons/common';
+import type { Props as SVGIconProps } from '../icons/shared';
 import type { DialogControlProps } from '../dialog/types';
 
 export type SelectProps = {

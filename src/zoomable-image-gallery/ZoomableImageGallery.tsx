@@ -30,7 +30,7 @@ import {
 import { useTheme } from '../theme/use-theme';
 import { Backdrop, OverlayRoot } from '../overlay';
 import { Portal } from '../portal';
-import { useInteractionState } from '../hooks/useInteractionState';
+import { useInteractionState } from '../hooks/use-interaction-state';
 import {
   ArrowLeft_Stroke2_Corner0_Rounded,
   ArrowRight_Stroke2_Corner0_Rounded,

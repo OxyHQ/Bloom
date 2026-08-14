@@ -71,9 +71,13 @@ function staticSpecifiers(text: string): string[] {
   const stripped = text.replace(/\/\*[\s\S]*?\*\//g, '').replace(/^\s*\/\/.*$/gm, '');
   const out: string[] = [];
   const re = /^\s*(?:import|export)\b[\s\S]*?from\s+['"]([^'"]+)['"]/gm;
-  for (const match of stripped.matchAll(re)) out.push(match[1]);
+  for (const match of stripped.matchAll(re)) {
+    if (match[1] !== undefined) out.push(match[1]);
+  }
   // Bare side-effect imports (`import 'x';`) link too.
-  for (const match of stripped.matchAll(/^\s*import\s+['"]([^'"]+)['"]/gm)) out.push(match[1]);
+  for (const match of stripped.matchAll(/^\s*import\s+['"]([^'"]+)['"]/gm)) {
+    if (match[1] !== undefined) out.push(match[1]);
+  }
   return out;
 }
 
@@ -97,7 +101,8 @@ function walkFrom(entry: string): { files: Set<string>; packages: Map<string, st
         if (resolved) queue.push(...platformSiblings(resolved));
         continue;
       }
-      const name = spec.startsWith('@') ? spec.split('/').slice(0, 2).join('/') : spec.split('/')[0];
+      const segments = spec.split('/');
+      const name = spec.startsWith('@') ? segments.slice(0, 2).join('/') : (segments[0] ?? spec);
       const via = packages.get(name) ?? [];
       via.push(relative(SRC, file));
       packages.set(name, via);

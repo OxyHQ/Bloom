@@ -196,12 +196,12 @@ describe('no surface picks its own depth', () => {
   const SURFACES = [
     'dialog/Dialog.tsx',
     'dialog/Dialog.web.tsx',
-    'bottom-sheet/index.web.tsx',
-    'menu/index.web.tsx',
-    'select/index.web.tsx',
-    'context-menu/index.web.tsx',
-    'popover/index.web.tsx',
-    'tooltip/index.tsx',
+    'bottom-sheet/BottomSheet.web.tsx',
+    'menu/Menu.web.tsx',
+    'select/Select.web.tsx',
+    'context-menu/ContextMenu.web.tsx',
+    'popover/Popover.web.tsx',
+    'tooltip/Tooltip.tsx',
     'zoomable-image-gallery/ZoomableImageGallery.tsx',
     'prompt-input/PromptInputBase.tsx',
     'avatar-group/AvatarGroup.web.tsx',
@@ -254,8 +254,8 @@ describe('no surface picks its own depth', () => {
     // lifted over another surface and has no rank to take. The NATIVE tooltip
     // does portal, and IS in the list above. If this ever starts portaling,
     // move it into `SURFACES`.
-    expect(code('tooltip/index.web.tsx')).not.toMatch(/from '\.\.\/portal/);
-    expect(code('tooltip/index.tsx')).toMatch(/from '\.\.\/portal/);
+    expect(code('tooltip/Tooltip.web.tsx')).not.toMatch(/from '\.\.\/portal/);
+    expect(code('tooltip/Tooltip.tsx')).toMatch(/from '\.\.\/portal/);
   });
 
   it('every surface routes its depth through OverlayRoot', () => {

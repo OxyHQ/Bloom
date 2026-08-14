@@ -2,7 +2,7 @@ import React, { memo, useMemo } from 'react';
 import { View, Text, Pressable, Animated, type ViewStyle, type TextStyle } from 'react-native';
 
 import { useTheme } from '../theme/use-theme';
-import { usePressAnimation } from '../hooks/usePressAnimation';
+import { usePressAnimation } from '../hooks/use-press-animation';
 import type { ChipProps, ChipColor, ChipVariant } from './types';
 
 const SIZE_CONFIG = {

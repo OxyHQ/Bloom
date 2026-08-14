@@ -33,7 +33,7 @@ import Animated, {
 } from 'react-native-reanimated';
 
 import { useTheme } from '../theme/use-theme';
-import { usePressAnimation } from '../hooks/usePressAnimation';
+import { usePressAnimation } from '../hooks/use-press-animation';
 import { borderRadius, space } from '../styles/tokens';
 import { bloomShadowStyle } from '../design-tokens/shadows';
 import type { TabsProps, TabsTriggerProps, TabsContentProps, TabsVariant } from './types';

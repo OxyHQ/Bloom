@@ -9,6 +9,7 @@ import Animated, {
 import Svg, { Circle, Path } from 'react-native-svg';
 
 import { useTheme } from '../theme';
+import type { AnimatedCheckRef, AnimatedCheckProps } from './types';
 
 /** Square viewBox the ring + check are drawn on. */
 const VIEW_BOX = 52;
@@ -25,18 +26,6 @@ const STROKE_WIDTH = 4;
 const CIRCLE_DURATION = 500;
 /** Check draw-on duration (ms), started once the ring completes. */
 const CHECK_DURATION = 300;
-
-export interface AnimatedCheckRef {
-  /** Replays the draw-on animation from the start. */
-  play: () => void;
-}
-
-export interface AnimatedCheckProps {
-  /** Width and height in px. Defaults to `24`. */
-  size?: number;
-  /** Stroke color of the ring and check. Defaults to the theme success color. */
-  color?: string;
-}
 
 // `Animated.createAnimatedComponent` must be called once per underlying
 // component — calling it per render would remount the element and break the

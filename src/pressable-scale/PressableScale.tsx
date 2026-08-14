@@ -15,6 +15,7 @@ import Animated, {
 } from 'react-native-reanimated';
 
 import { SUPPORTS_PRESS_SCALE } from '../styles/pointer';
+import type { PressableScaleProps } from './types';
 
 /** Press-in / press-out timing, in ms. */
 const DURATION = 100;
@@ -24,13 +25,6 @@ const DURATION = 100;
  * node identity is stable across renders.
  */
 const AnimatedPressable = Animated.createAnimatedComponent(Pressable);
-
-export interface PressableScaleProps extends Omit<PressableProps, 'style'> {
-  /** Scale applied while pressed. Defaults to `0.98`. */
-  targetScale?: number;
-  /** Style applied to the pressable itself — the node that scales. */
-  style?: StyleProp<ViewStyle>;
-}
 
 /**
  * A drop-in {@link Pressable} that springs to a smaller scale on press-in and

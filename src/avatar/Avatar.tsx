@@ -6,7 +6,7 @@ import Svg, { ClipPath, Defs, Image as SvgImage, Path } from 'react-native-svg';
 import { useTheme } from '../theme/use-theme';
 import { useImageResolver } from '../image-resolver/context';
 import { Z_INDEX } from '../styles/z-index';
-import { useAvatarPlaceholder } from './placeholder-context';
+import { useAvatarPlaceholder } from './context';
 import { LiveBadge } from './LiveBadge';
 import { AvatarRing, getRingOuterSize } from './AvatarRing';
 import { SQUIRCLE_PATH } from './squircle-path';

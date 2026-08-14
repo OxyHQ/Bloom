@@ -5,4 +5,4 @@
  */
 export { ScaleAndFadeIn, ScaleAndFadeOut, ShrinkAndPop } from './motion.web';
 export { ScreenTransition } from './ScreenTransition';
-export type { ScreenTransitionProps, ScreenTransitionDirection } from './ScreenTransition';
+export type { ScreenTransitionProps, ScreenTransitionDirection } from './types';

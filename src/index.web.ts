@@ -72,18 +72,18 @@ export type {
 } from './design-tokens';
 
 // Hooks
-export { useInteractionState } from './hooks/useInteractionState';
-export { useDelayedLoading } from './hooks/useDelayedLoading';
-export { useThrottledValue } from './hooks/useThrottledValue';
-export { useHaptics, BloomHapticsProvider } from './hooks/useHaptics';
-export type { HapticStrength, BloomHapticsProviderProps } from './hooks/useHaptics';
-export { useGutters } from './hooks/useGutters';
-export type { Gutter, Gutters } from './hooks/useGutters';
-export { useImagePreload, preloadImage } from './hooks/useImagePreload';
+export { useInteractionState } from './hooks/use-interaction-state';
+export { useDelayedLoading } from './hooks/use-delayed-loading';
+export { useThrottledValue } from './hooks/use-throttled-value';
+export { useHaptics, BloomHapticsProvider } from './hooks/use-haptics';
+export type { HapticStrength, BloomHapticsProviderProps } from './hooks/use-haptics';
+export { useGutters } from './hooks/use-gutters';
+export type { Gutter, Gutters } from './hooks/use-gutters';
+export { useImagePreload, preloadImage } from './hooks/use-image-preload';
 
 // Icons
 export * as Icons from './icons';
-export { type Props as IconProps, sizes as iconSizes, useCommonSVGProps } from './icons/common';
+export { type Props as IconProps, sizes as iconSizes, useCommonSVGProps } from './icons/shared';
 
 // App-wide plumbing (pure JS — no peer beyond what this barrel already links)
 export { ImageResolverProvider, useImageResolver } from './image-resolver';

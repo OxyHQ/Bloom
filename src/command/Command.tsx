@@ -8,7 +8,7 @@ import {
 } from 'react-native';
 
 import { useTheme } from '../theme/use-theme';
-import { useControllableState } from '../hooks/useControllableState';
+import { useControllableState } from '../hooks/use-controllable-state';
 import { Text } from '../typography';
 import { Item } from '../item';
 import { Kbd } from '../kbd';

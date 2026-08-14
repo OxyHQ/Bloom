@@ -21,7 +21,7 @@ export {
   confirm,
   prompt,
 } from './api';
-export { useSurface } from './useSurface';
+export { useSurface } from './use-surface';
 export type {
   SurfacePresentation,
   PresentOptions,

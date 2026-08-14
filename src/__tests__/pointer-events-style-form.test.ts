@@ -40,7 +40,7 @@ describe('pointerEvents style-object form', () => {
   // Vacuity floor: a broken traversal would otherwise report a clean sweep.
   it('scans the whole source tree', () => {
     expect(files.length).toBeGreaterThan(200);
-    expect(files.some((f) => f.endsWith(join('overlay', 'index.tsx')))).toBe(true);
+    expect(files.some((f) => f.endsWith(join('overlay', 'Overlay.tsx')))).toBe(true);
   });
 
   // Every dismiss scrim is the shared `Backdrop`. The dropdown surfaces used to

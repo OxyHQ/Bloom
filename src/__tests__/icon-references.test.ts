@@ -223,7 +223,7 @@ describe('icon reference integrity', () => {
       "import { Icons } from '@oxyhq/bloom';",
       'const a = <Icons.Home_Stroke2_Corner0_Rounded />;',
       "import { Check_Stroke2_Corner0_Rounded as CheckIcon } from '../icons/Check';",
-      "import { type IconStyle, type Props as SVGIconProps } from '../icons/common';",
+      "import { type IconStyle, type Props as SVGIconProps } from '../icons/shared';",
       '| `Icons` | `export * as Icons` | keep namespace | `Icons.*` |',
       "import { useState } from 'react';",
     ].join('\n');
