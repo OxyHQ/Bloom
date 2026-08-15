@@ -20,11 +20,20 @@ type Story = StoryObj;
  * A stand-in for `oxyServices.getFileDownloadUrl`. A real resolver builds a
  * `cloud.oxy.so` URL; this one returns a coloured square so the story is
  * self-contained and works offline.
+ *
+ * NOT `data:image/svg+xml;utf8,` — react-native-web matches that exact prefix
+ * and runs `encodeURIComponent` over the remainder itself
+ * (`exports/Image/index.js`), so a pre-encoded payload arrives DOUBLE-encoded,
+ * fails to decode, and `Avatar` falls back to its initial. This story rendered
+ * the same letter for both cases for exactly that reason — the resolved half
+ * looked like the broken half, which is the opposite of what it is here to
+ * show, and nothing errored. The plain `data:image/svg+xml,` form is left alone
+ * by that rewrite and is valid on both platforms.
  */
 const resolver: ImageResolver = (id, variant) => {
   const hue = [...id].reduce((sum, ch) => sum + ch.charCodeAt(0), 0) % 360;
   const label = variant ?? '—';
-  return `data:image/svg+xml;utf8,${encodeURIComponent(
+  return `data:image/svg+xml,${encodeURIComponent(
     `<svg xmlns='http://www.w3.org/2000/svg' width='96' height='96'>` +
       `<rect width='96' height='96' fill='hsl(${hue} 70% 55%)'/>` +
       `<text x='48' y='54' font-size='13' fill='white' text-anchor='middle'>${label}</text>` +

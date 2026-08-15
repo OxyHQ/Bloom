@@ -15,14 +15,61 @@ assets on native.
 <BloomThemeProvider>…</BloomThemeProvider>
 ```
 
+## What the subpath exports
+
+Almost no app imports `@oxyhq/bloom/fonts` — the provider does. Reach for it
+when you need the family stacks in a style of your own, or when you are loading
+fonts yourself (a bare React Native app with no `BloomThemeProvider`):
+
+```tsx
+import { fontFamilies, fontCssVars, FONT_ASSETS, applyFontFaces, FontLoader } from '@oxyhq/bloom/fonts';
+```
+
+| Export | What it is |
+| --- | --- |
+| `fontFamilies` | The three family STACKS (`display`, `sans`, `mono`), each with system fallbacks. The literal `fontFamily` string source on native, and the value of the CSS variables on web. |
+| `fontCssVars` | The inverse map: family name → `--bloom-font-*` custom property name. |
+| `FONT_ASSETS` | The `expo-font` map for `useFonts()`. Populated under Metro only — see below. |
+| `applyFontFaces()` | Injects the `@font-face` rules and the `:root` variables. Web only, idempotent, SSR-safe. |
+| `FontLoader` | The component `BloomThemeProvider` mounts. `enabled`, `fallback`, `children`. |
+
+`fontFamilies.display` and `.sans` both lead with **BlomusModernus**;
+`.mono` leads with **Geist Mono**. On native, `FontLoader` prepends
+`{ fontFamily: 'BlomusModernus' }` to `Text.defaultProps.style` once the assets
+report loaded, so every `<Text>` in the app inherits it — which is why an app
+setting its own `fontFamily` is overriding Bloom rather than complementing it.
+
 ## Consuming apps must not set `fontFamily` by hand
 
-`BloomThemeProvider` sets Inter as `Text.defaultProps` globally. An app that
-also sets `fontFamily: 'Inter-Regular'` on its own text is overriding the
-family with a name that may not match the loaded asset, and the failure is a
-silent fallback to the system face — text that looks *almost* right.
+An app that sets `fontFamily: 'Inter-Regular'` (or any other literal) on its own
+text is overriding the family with a name that may not match a loaded asset, and
+the failure is a silent fallback to the system face — text that looks *almost*
+right.
 
 Use the typography roles instead, which carry family and weight together.
+
+## Four ways in, one surface
+
+`./fonts` is resolved by export condition, and each condition lands on a barrel
+whose members are already the right implementation for that platform. This is
+the whole mechanism — there is no runtime platform check anywhere in the family:
+
+| Condition | Barrel | `applyFontFaces` | `FONT_ASSETS` | `FontLoader` |
+| --- | --- | --- | --- | --- |
+| `react-native` (Metro) | `index.ts` | no-op stub | the Metro asset map | loads `.ttf` via `useFonts` |
+| `browser` (Vite, webpack, Metro-web) | `index.web.ts` | injects `@font-face` | empty | injects on first render |
+| `node` (SSR, prerender, tooling) | `index.node.ts` | no-op stub | empty | renders children |
+| `import` / `require` | `index.ts` | no-op stub | empty | — |
+
+The `node` condition is load-bearing, not tidiness: the web `FontLoader` imports
+`apply-font-faces.web`, which reaches `font-urls.web`'s `.woff2` imports. Node
+hands a `.woff2` to the JS parser, so merely LOADING that module throws a
+`SyntaxError` — before any `typeof document` guard inside the function can run.
+
+Every barrel names its platform-forked siblings OUTRIGHT (`./apply-font-faces.web`,
+`./font-assets.web`) rather than leaving the extension to the bundler. Vite does
+no platform-extension resolution, so an extensionless specifier there falls
+through to the default file and the fonts silently stop being injected.
 
 ## The `.woff2` files are assets, not base64
 
@@ -32,7 +79,8 @@ as content-hashed assets. **Never inline them as base64 again** — that put
 a font embedded in JS cannot be cached as a font.
 
 The one consumer requirement is `woff2` in Metro's `assetExts`, which
-`@oxyhq/app-preset` registers fleet-wide.
+`@oxyhq/app-preset` registers fleet-wide. Bundlers that already treat an asset
+import as a URL (Vite, Rollup, webpack 5) need nothing.
 
 ## Two things that look like cleanups and are not
 
@@ -44,9 +92,9 @@ into every native app.
 **Do not fork `FontLoader` into a `.web` plus a neutral default.**
 `BloomThemeProvider` imports it by *relative* path, and export conditions do
 not apply to relative specifiers — so Vite would silently take the neutral
-default and stop injecting `@font-face` for every web consumer. The `./fonts`
-subpath's `node` export condition exists for the same reason and is
-load-bearing.
+default and stop injecting `@font-face` for every web consumer. `FontLoader.tsx`
+IS the web implementation; `FontLoader.native.tsx` and `FontLoader.node.tsx` are
+selected by Metro's platform extensions and by the `node` condition respectively.
 
 ## Verifying that fonts are actually on
 
@@ -55,4 +103,6 @@ to a system face rather than erroring. Bloom's own Storybook ran with
 `fonts={false}` for months and every story looked plausible.
 
 Check the computed `font-family` on real text, not that the provider is
-mounted.
+mounted. On web, `applyFontFaces()` goes through a CONSTRUCTED stylesheet
+(`adoptedStyleSheets`), so there is no `<style id="bloom-fonts">` element to
+look for — read the document's adopted sheets, or just measure the text.
