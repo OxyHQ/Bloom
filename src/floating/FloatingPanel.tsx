@@ -17,11 +17,14 @@
  *    `pointer-events` opt-in correct — the web `Portal` root is
  *    `pointer-events: none` and the property inherits.
  *  - Placement goes through `overlay/dropdown-placement`, which fits, flips and
- *    clamps on the vertical axis and clamps on the horizontal one.
+ *    clamps on the axis `side` names and aligns-then-clamps on the other one.
  *
  * `alignOffset` is applied by SHIFTING THE ANCHOR before resolving, not by
- * nudging the result: the resolver's own clamp then still owns the horizontal
- * axis, so an offset can never push the surface off the viewport edge.
+ * nudging the result: the resolver's own clamp then still owns the align axis,
+ * so an offset can never push the surface off the viewport edge. It shifts the
+ * anchor on whichever axis `align` acts on — horizontal under a vertical `side`,
+ * VERTICAL under `'left'`/`'right'`. Nudging the result, or hardcoding the
+ * horizontal pair here, would silently move a submenu along the wrong axis.
  */
 import React, { useCallback, useEffect, useLayoutEffect, useState } from 'react';
 import { StyleSheet, View } from 'react-native';
@@ -94,13 +97,17 @@ export function FloatingPanel({
       // measured height is an upper bound. Erring that way flips early in a tie,
       // never late.
       const width = Math.max(box.width, minWidth ?? 0);
+      // The align axis is the one `side` does not name.
+      const alignsVertically = side === 'left' || side === 'right';
+      const shiftY = alignsVertically ? alignOffset : 0;
+      const shiftX = alignsVertically ? 0 : alignOffset;
       setPlacement(
         resolveDropdownPlacement({
           anchor: {
-            top: anchor.top,
-            bottom: anchor.bottom,
-            left: anchor.left + alignOffset,
-            right: anchor.right + alignOffset,
+            top: anchor.top + shiftY,
+            bottom: anchor.bottom + shiftY,
+            left: anchor.left + shiftX,
+            right: anchor.right + shiftX,
           },
           size: { width, height: box.height },
           viewport: { width: window.innerWidth, height: window.innerHeight },
@@ -187,10 +194,22 @@ export function FloatingPanel({
           style={[
             styles.panel,
             {
-              // Before the first measurement the panel sits at the anchor and is
-              // invisible, so it never paints a frame in the wrong place.
-              left: placement?.left ?? anchor.left,
-              top: placement?.top ?? anchor.bottom + sideOffset,
+              // Before the first measurement the panel sits at the anchor, on
+              // the side it will end up on, and is invisible — so it never
+              // paints a frame in the wrong place, and the box it is measured in
+              // is already the shape it will be laid out at.
+              left:
+                placement?.left ??
+                (side === 'right'
+                  ? anchor.right + sideOffset
+                  : side === 'left'
+                    ? anchor.left - sideOffset
+                    : anchor.left),
+              top:
+                placement?.top ??
+                (side === 'left' || side === 'right'
+                  ? anchor.top
+                  : anchor.bottom + sideOffset),
               opacity: placement ? 1 : 0,
               minWidth,
               maxWidth,

@@ -165,11 +165,13 @@ WHAT IS RE-IMPLEMENTED RATHER THAN PORTED
     `theme/accent-colors.ts` and design tokens, ships `icons/`, and wires
     `className` through `styled()` from react-native-css.
 
-ONE DELIBERATE BEHAVIOURAL DIVERGENCE, documented at the component and in
-`docs/dropdown-menu.mdx`: a sub-menu (`*MenuSub` / `*MenuSubTrigger` /
-`*MenuSubContent`) renders as an INLINE DISCLOSURE on both platforms rather than
-as a web flyout. The API is unchanged. Upstream renders it inline on native too;
-its web flyout is Radix's, so there was no implementation to take.
+The sub-menu (`*MenuSub` / `*MenuSubTrigger` / `*MenuSubContent`) is Bloom's own
+implementation on both platforms, and matches what upstream presents on each: a
+FLYOUT panel beside the trigger row on web, an INLINE DISCLOSURE on native.
+Upstream's web flyout is `@radix-ui/react-dropdown-menu`'s, so no code was taken
+— the hover intent, the keyboard handling and the horizontal placement axis in
+`floating/menu-sub-flyout.tsx` and `overlay/dropdown-placement.ts` are written
+here against the same behaviour. Documented in `docs/dropdown-menu.mdx`.
 
 Every module named above carries Bloom's own file header and no per-file
 provenance comment, because none of them contains upstream code.

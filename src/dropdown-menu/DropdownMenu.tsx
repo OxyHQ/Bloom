@@ -18,6 +18,7 @@ import type { View } from 'react-native';
 import { SheetShell } from '../dialog/SheetShell';
 import { MenuSurfaceProvider, type MenuSurfaceContextValue } from '../floating/context';
 import { createMenuRows } from '../floating/menu-rows';
+import { createInlineMenuSub } from '../floating/menu-sub-inline';
 import { TriggerSlot } from '../floating/TriggerSlot';
 import { useSheetOpenBridge } from '../floating/use-sheet-open-bridge';
 import { useControllableState } from '../hooks/use-controllable-state';
@@ -92,7 +93,7 @@ export function DropdownMenuContent({
   );
 }
 
-const rows = createMenuRows('DropdownMenu');
+const rows = createMenuRows('DropdownMenu', createInlineMenuSub);
 
 export const DropdownMenuItem = rows.Item;
 export const DropdownMenuCheckboxItem = rows.CheckboxItem;

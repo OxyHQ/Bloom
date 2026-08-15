@@ -88,34 +88,40 @@ Uncontrolled by default; pass `open` to take over. `onOpenChange` fires either w
 
 Both announce their state as `aria-checked`, which is the spelling react-native-web reads and React Native folds back into `accessibilityState` — so it reaches assistive tech on both platforms.
 
-## Sub-menus render inline, on both platforms
+## Sub-menus: a flyout on web, an inline disclosure on native
 
-This is the one place Bloom's port diverges from shadcn on purpose, so it is worth stating plainly: `DropdownMenuSub` is an **inline disclosure**, not a flyout. Pressing `DropdownMenuSubTrigger` expands its `DropdownMenuSubContent` in place, under the trigger row, and the chevron flips.
+The API is one thing on both platforms — a shadcn call site ports across unchanged — and the presentation is the platform's own, matching what each platform's upstream does.
 
 ```tsx
 <DropdownMenuSub>
   <DropdownMenuSubTrigger>Send to…</DropdownMenuSubTrigger>
   <DropdownMenuSubContent>
-    <DropdownMenuItem inset>Email</DropdownMenuItem>
-    <DropdownMenuItem inset>Messages</DropdownMenuItem>
+    <DropdownMenuItem>Email</DropdownMenuItem>
+    <DropdownMenuItem>Messages</DropdownMenuItem>
   </DropdownMenuSubContent>
 </DropdownMenuSub>
 ```
 
-The API is unchanged — a ported call site does not move — only the presentation is. react-native-reusables reaches the same conclusion on native (its own sub-trigger swaps the chevron between up and down to say so); Bloom takes it to web as well rather than shipping two different interaction models for one component.
+**On web** the sub-panel flies out beside its trigger row, the way shadcn's does, and its chevron points right:
 
-What a real web flyout would take, if it is ever worth it:
+- Hovering the row opens it; leaving either surface schedules a close 300 ms later, and entering either one cancels that — which is what keeps it open while the pointer travels diagonally across the gap between them.
+- Pressing the row toggles it, so a click and a touch-web tap both work.
+- <kbd>→</kbd> opens it and moves focus onto its first row; <kbd>←</kbd> closes it and returns focus to the trigger.
+- <kbd>Esc</kbd> closes the **innermost** surface first: one press shuts the sub-panel and leaves the menu open, a second shuts the menu.
+- It takes its own rank from `overlay/stack.ts` on mount, like every other surface, so it paints above the menu it opened from and carries no `zIndex` of its own.
+- It positions itself through the same `overlay/dropdown-placement` every other anchored surface uses, with `side="right"`. With no room to the right it flips to the left of the row on its own — there is no second positioner.
 
-- `overlay/dropdown-placement` grows a HORIZONTAL axis — today it fits, flips and clamps vertically and only clamps horizontally, because every surface using it opens above or below its anchor.
-- Hover intent: a delay and a movement-direction test, so travelling diagonally toward the sub-panel does not close it by crossing a sibling row.
-- Roving keyboard focus across two surfaces, with Arrow Right / Arrow Left entering and leaving the sub-menu.
-- A second `OverlayRoot` rank per open sub-menu, and a decision about what dismissing the parent does to it.
+**On native** it is an inline disclosure: the trigger expands its content in place, under the row, and the chevron swaps between down and up. react-native-reusables renders it the same way there, and a menu on native is a bottom sheet — there is nowhere for a flyout to fly to.
 
-Until all four exist, an inline disclosure is the honest behaviour: it works with a finger, a pointer and a keyboard on both platforms, with nothing half-implemented.
+The split is a build-time one, not a `Platform.OS` branch: `floating/menu-sub-flyout.tsx` and `floating/menu-sub-inline.tsx` are passed to `createMenuRows` by each family's own platform fork, so the web-only `FloatingPanel` never reaches a native bundle.
+
+Verified in a real browser by `scripts/verify-submenu-flyout.mjs` — jest can see none of it.
 
 ## Placement (web)
 
 `DropdownMenuContent` takes `side` (`'top' | 'bottom'`, default `'bottom'`), `align` (`'start' | 'center' | 'end'`, default `'start'`), `sideOffset` and `alignOffset` — the same four Radix takes. They are preferences: the surface flips to the other side when the named one does not fit and clamps into the viewport when neither does.
+
+`side` also accepts `'left'` and `'right'`, which make the horizontal axis the one that fits, flips and clamps, and `align` the vertical one. That is how the sub-panel positions itself; a root dropdown has no use for it.
 
 On native these are ignored. The menu is a bottom sheet, which is anchored to the screen rather than to the trigger.
 

@@ -12,6 +12,7 @@ import React, { useCallback, useMemo, useState } from 'react';
 import { SheetShell } from '../dialog/SheetShell';
 import { MenuSurfaceProvider, type MenuSurfaceContextValue } from '../floating/context';
 import { createMenuRows } from '../floating/menu-rows';
+import { createInlineMenuSub } from '../floating/menu-sub-inline';
 import { TriggerSlot } from '../floating/TriggerSlot';
 import { useSheetOpenBridge } from '../floating/use-sheet-open-bridge';
 import { ContextMenuProvider, useContextMenu } from './context';
@@ -101,7 +102,7 @@ export function ContextMenuContent({
   );
 }
 
-const rows = createMenuRows('ContextMenu');
+const rows = createMenuRows('ContextMenu', createInlineMenuSub);
 
 export const ContextMenuItem = rows.Item;
 export const ContextMenuCheckboxItem = rows.CheckboxItem;
