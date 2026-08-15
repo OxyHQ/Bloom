@@ -53,8 +53,8 @@ export {
   HEX_TO_APP_COLOR,
   hexToAppColorName,
 } from './color-presets';
-export { parseRgb, withAlpha } from './color-utils';
-export type { RgbChannels } from './color-utils';
+export { parseRgb, parseRgba, withAlpha } from './color-utils';
+export type { RgbChannels, RgbaChannels } from './color-utils';
 // The one way to paint something in a semantic colour at a chosen loudness.
 // Public because the alternative is what consumers were already doing —
 // appending hex alpha to a fill token, which produces a malformed string

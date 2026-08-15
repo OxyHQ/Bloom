@@ -34,10 +34,19 @@ const STYLE_ID = 'bloom-frosted-icon-button-web-css';
 const BLOOM_FROSTED_ICON_BUTTON_CSS = interactiveWebCss({
   selector: '.bloom-frosted-icon-btn',
   varPrefix: 'bloom-frosted',
+  // `background-color` and `border-color` arrive as custom properties rather than
+  // in the inline style, and that is NOT a stylistic choice. An inline
+  // declaration outranks EVERY rule in an adopted stylesheet, so a fork that
+  // writes either one inline makes its own `:hover` rules for that property
+  // unreachable. Measured in a real browser: the hover pair below had never once
+  // fired, with the rules present and the variables resolving correctly.
+  // Gate: `interactive-web-css.test.tsx`.
   base: `
     padding: 0;
     border-style: solid;
     border-width: 1px;
+    background-color: var(--bloom-frosted-bg);
+    border-color: var(--bloom-frosted-border);
     font-family: inherit;
   `,
   transition:
@@ -91,8 +100,8 @@ const FrostedIconButtonWebComponent: React.FC<FrostedIconButtonProps> = ({
       width: geo.diameter,
       height: geo.diameter,
       borderRadius: borderRadius.full,
-      backgroundColor: active ? palette.activeSurface : palette.surface,
-      borderColor: palette.ring,
+      ['--bloom-frosted-bg' as string]: active ? palette.activeSurface : palette.surface,
+      ['--bloom-frosted-border' as string]: palette.ring,
       color: iconColor,
       // Real CSS backdrop blur so the chip frosts over content behind it. The
       // solid `active` state drops the blur. Both prefixed forms for Safari.

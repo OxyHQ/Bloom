@@ -96,6 +96,45 @@ function mountAndReadCss(element: React.ReactElement, styleId: string): string {
   return css;
 }
 
+/** The `style` attribute a family writes onto its own root element. */
+function mountAndReadInlineStyle(element: React.ReactElement, selector: string): string {
+  const container = document.createElement('div');
+  document.body.appendChild(container);
+  let root: Root | undefined;
+  act(() => {
+    root = createRoot(container);
+    root.render(<BloomThemeProvider mode="light">{element}</BloomThemeProvider>);
+  });
+  const attribute = container.querySelector(selector)?.getAttribute('style') ?? '';
+  act(() => root?.unmount());
+  container.remove();
+  return attribute;
+}
+
+/** Every CSS property name a `:hover` or `:active` rule in `css` declares. */
+function propertiesTouchedByInteractiveRules(css: string): string[] {
+  const found = new Set<string>();
+  // The builder emits `selector {\n  decl;\n  decl;\n}` — one per line.
+  for (const rule of css.split('}')) {
+    const [selector, body] = rule.split('{');
+    if (!selector || !body) continue;
+    if (!selector.includes(':hover') && !selector.includes(':active')) continue;
+    for (const line of body.split('\n')) {
+      const name = line.split(':')[0]?.trim();
+      if (name) found.add(name);
+    }
+  }
+  return [...found];
+}
+
+/**
+ * The families that render a RAW DOM element and therefore own their `style`
+ * attribute outright. `Chip` and `Checkbox` are react-native-web controls with
+ * RNW in between, so the same assertion there would be about RNW's choices
+ * rather than Bloom's.
+ */
+const RAW_DOM_FAMILIES = ['Button', 'Fab', 'FrostedIconButton'];
+
 describe('interactiveWebCss', () => {
   describe.each(FAMILIES)('$name', (family) => {
     const css = (): string => mountAndReadCss(family.element, family.styleId);
@@ -144,6 +183,31 @@ describe('interactiveWebCss', () => {
       expect(sheet).toContain(`${family.selector}[aria-disabled="true"]`);
       expect(sheet).toMatch(/opacity:\s*0\.5/);
     });
+
+    if (RAW_DOM_FAMILIES.includes(family.name)) {
+      it('never writes inline a property its own hover/active rules change', () => {
+        // An inline declaration outranks EVERY rule in an adopted stylesheet, so
+        // a fork that writes its rest value inline silences its own `:hover` and
+        // `:active` rules for that property. It fails in the worst way: the CSS
+        // is present and correct, the custom property resolves, jest sees a
+        // perfectly good stylesheet, and the state simply never paints.
+        //
+        // Measured before this gate existed: `Fab`'s hover shadow lift and
+        // `FrostedIconButton`'s hover background+border pair had never once
+        // fired, on any build, since they shipped.
+        const inline = mountAndReadInlineStyle(family.element, family.selector);
+        const touched = propertiesTouchedByInteractiveRules(css());
+        expect(touched.length).toBeGreaterThan(0);
+        for (const property of touched) {
+          // A CUSTOM property of the same name is how the value is MEANT to
+          // arrive, so match only the bare declaration.
+          expect(inline).not.toMatch(new RegExp(`(^|;)\\s*${property}\\s*:`));
+        }
+        // Vacuity floor: the element IS styled inline, so the misses above are
+        // about these properties and not about an element that never mounted.
+        expect(inline.length).toBeGreaterThan(20);
+      });
+    }
   });
 
   it("appends a family's own rules verbatim, composing the shared filter", () => {

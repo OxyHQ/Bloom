@@ -66,10 +66,19 @@ const STYLE_ID = 'bloom-fab-web-css';
 const BLOOM_FAB_CSS = interactiveWebCss({
   selector: '.bloom-fab',
   varPrefix: 'bloom-fab',
+  // `background-color` and `box-shadow` arrive as custom properties rather than
+  // in the inline style, and that is NOT a stylistic choice. An inline
+  // declaration outranks EVERY rule in an adopted stylesheet, so a fork that
+  // writes either one inline makes its own `:hover` rule for that property
+  // unreachable. Measured in a real browser: the hover lift below had never once
+  // fired, with the rule present and the variable resolving correctly.
+  // Gate: `interactive-web-css.test.tsx`.
   base: `
     flex-direction: row;
     gap: 8px;
     border: none;
+    background-color: var(--bloom-fab-bg);
+    box-shadow: var(--bloom-fab-shadow);
     font-family: inherit;
   `,
   transition:
@@ -187,15 +196,15 @@ const FabWebComponent: React.FC<FabProps> = ({
 
   const containerStyle = useMemo((): CSSProperties => {
     const base: CSSProperties = {
-      backgroundColor: variantColors.background,
       color: variantColors.foreground,
       borderRadius: borderRadius.full,
       height: sizeConfig.diameter,
       zIndex,
-      boxShadow: restShadow,
       fontSize: sizeConfig.fontSize,
       fontWeight: 600,
       ['--bloom-fab-ring' as string]: variantColors.ring,
+      ['--bloom-fab-bg' as string]: variantColors.background,
+      ['--bloom-fab-shadow' as string]: restShadow,
       ['--bloom-fab-shadow-hover' as string]: hoverShadow,
       ['--bloom-fab-press-scale' as string]: animation.pressScale,
       ...placementStyle(placement, offset),
