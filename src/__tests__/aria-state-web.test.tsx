@@ -589,6 +589,14 @@ describe('menu rows spell their state per role', () => {
     expect(el.getAttribute('aria-selected')).toBeNull();
   });
 
+  it('a plain row announces NO popup — the negative half of the sub-trigger case', () => {
+    // Without this, "the sub-trigger has aria-haspopup" is satisfied just as
+    // well by putting it on every row, which would tell a screen reader that
+    // three ordinary actions open submenus.
+    const c = mount(inMenu(<DropdownMenuItem testID="row">Profile</DropdownMenuItem>));
+    expect(byTestId(c, 'row').getAttribute('aria-haspopup')).toBeNull();
+  });
+
   it('a disabled row emits aria-disabled, from the disabled PROP', () => {
     const c = mount(
       inMenu(
@@ -650,5 +658,22 @@ describe('menu rows spell their state per role', () => {
     const el = byTestId(c, 'sub');
     expect(el.getAttribute('role')).toBe('menuitem');
     expect(el.getAttribute('aria-expanded')).toBe('true');
+  });
+
+  it('a sub-trigger announces WHAT it opens, not only that it is open', () => {
+    // `aria-expanded` alone says "collapsed" without ever saying "submenu", so a
+    // sub-trigger reads as an ordinary row that toggles something. React Native
+    // types no `aria-haspopup` (it is a PROPERTY, with no state to fold into
+    // `accessibilityState`), which is why it travels on the widened
+    // `StyledPressableProps` rather than an RN prop — and why the source census
+    // cannot see it: that gate is per-role STATE.
+    const c = mount(
+      inMenu(
+        <DropdownMenuSub>
+          <DropdownMenuSubTrigger testID="sub">Send to…</DropdownMenuSubTrigger>
+        </DropdownMenuSub>,
+      ),
+    );
+    expect(byTestId(c, 'sub').getAttribute('aria-haspopup')).toBe('menu');
   });
 });

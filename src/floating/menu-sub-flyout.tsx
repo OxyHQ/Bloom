@@ -355,6 +355,7 @@ export function createFlyoutMenuSub(prefix: string): MenuSubParts {
         <MenuRowShell
           role="menuitem"
           expanded={sub.open}
+          hasPopup="menu"
           disabled={disabled}
           inset={inset}
           leading={leading}
