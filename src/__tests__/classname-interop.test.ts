@@ -24,6 +24,18 @@
  * This scans the source rather than rendering: no runtime suite can see the
  * difference, because under the repo-wide react-native mock a bare `className`
  * prop reads straight back off the stub.
+ *
+ * STORIES ARE STILL SKIPPED, and that is now a known gap rather than a
+ * deliberate exclusion. It was harmless while Storybook had no Tailwind
+ * pipeline — no class resolved there either way — but the harness now compiles
+ * the same stylesheet a consumer compiles, so a cast in a story renders a
+ * working component as a broken one. Two casts survived there:
+ * `SubtleHover.stories.tsx` (fixed: it uses `StyledPressable`) and
+ * `PressableScale.stories.tsx`, which cannot be fixed in the story because
+ * `PressableScale` wires no `className` at all — it wraps a bare
+ * `Animated.createAnimatedComponent(Pressable)`, so the class has no `styled()`
+ * to reach. Drop the skip below once that component follows `button/Button.tsx`
+ * and builds its animated component from a styled primitive.
  */
 
 import { readdirSync, readFileSync, statSync } from 'node:fs';
