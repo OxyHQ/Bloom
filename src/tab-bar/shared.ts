@@ -1,6 +1,6 @@
 /**
  * Ported from expo-glass-tabs v0.1.1 — src/glass-tab-bar.tsx
- * (MIT © 2026 David Mokos). See the top-level NOTICE.
+ * (MIT © 2026 David Mokos).
  *
  * Geometry, motion constants, theme resolution and the contracts for the two
  * injected platform components. Everything here is platform-neutral — no

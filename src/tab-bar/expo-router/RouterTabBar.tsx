@@ -1,6 +1,6 @@
 /**
  * Ported from expo-glass-tabs v0.1.1 — src/glass-tab-bar.tsx
- * (MIT © 2026 David Mokos). See the top-level NOTICE.
+ * (MIT © 2026 David Mokos).
  *
  * expo-router bindings for the tab bar. This subpath
  * (`@oxyhq/bloom/tab-bar/expo-router`) is the ONLY place in Bloom that may

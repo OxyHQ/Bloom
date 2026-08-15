@@ -1,7 +1,6 @@
 /**
  * Derived from sonner-native v0.26.4 — src/types.ts
  * (MIT © Gunnar Torfi Steinarsson), absorbed into Bloom's own toast API.
- * See the top-level NOTICE for full attribution.
  */
 import type React from 'react';
 import type { TextStyle, ViewProps, ViewStyle } from 'react-native';

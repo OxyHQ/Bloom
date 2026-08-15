@@ -1,6 +1,6 @@
 /**
  * Derived from sonner-native v0.26.4 — src/gestures.tsx
- * (MIT © Gunnar Torfi Steinarsson). See the top-level NOTICE.
+ * (MIT © Gunnar Torfi Steinarsson).
  *
  * W2 — the animated style reads `translate`, `direction`, `position`, `rowWidth`
  * and `isAndroid`; ALL of them are in the dependency array. On web without the

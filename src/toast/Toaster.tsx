@@ -1,6 +1,6 @@
 /**
  * Derived from sonner-native v0.26.4 — src/toaster.tsx
- * (MIT © Gunnar Torfi Steinarsson). See the top-level NOTICE.
+ * (MIT © Gunnar Torfi Steinarsson).
  *
  * Subscribes to the store, resolves the outlet configuration once, groups rows by
  * position and renders each group through `Positioner` inside the platform

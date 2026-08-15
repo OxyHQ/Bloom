@@ -1,6 +1,6 @@
 /**
  * Replaces sonner-native v0.26.4's `src/icons.tsx` (MIT © Gunnar Torfi
- * Steinarsson — see the top-level NOTICE), which ships its own inline SVG paths
+ * Steinarsson), which ships its own inline SVG paths
  * and imports `react-native-svg` directly. Bloom maps variants onto its own icon
  * set instead, so the toast picks up icon changes with the rest of the library.
  *

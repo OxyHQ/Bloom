@@ -1,6 +1,6 @@
 /**
  * Ported from expo-glass-tabs v0.1.1 — src/glass-tab-bar.tsx
- * (MIT © 2026 David Mokos). See the top-level NOTICE.
+ * (MIT © 2026 David Mokos).
  *
  * NATIVE variant of the tab bar's capsule surface — real liquid glass, degrading
  * to the solid surface whenever the glass is not actually usable.

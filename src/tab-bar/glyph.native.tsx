@@ -1,6 +1,6 @@
 /**
  * Ported from expo-glass-tabs v0.1.1 — src/glass-tab-bar.tsx
- * (MIT © 2026 David Mokos). See the top-level NOTICE.
+ * (MIT © 2026 David Mokos).
  *
  * NATIVE variant of a tab glyph. Identical to the neutral variant except that
  * an item carrying an `sfSymbol` renders as a real SF Symbol on iOS: the system

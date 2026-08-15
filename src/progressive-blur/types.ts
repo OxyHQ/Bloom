@@ -1,6 +1,6 @@
 /**
  * Ported from expo-glass-tabs v0.1.1 — src/progressive-blur.tsx
- * (MIT © 2026 David Mokos). See the top-level NOTICE.
+ * (MIT © 2026 David Mokos).
  *
  * Shared prop contract for both forks. It lives in its own module so the web
  * fork can declare it without importing the native entry (`./index` resolves to

@@ -1,6 +1,6 @@
 /**
  * Derived from sonner-native v0.26.4 — src/use-toast-position.ts
- * (MIT © Gunnar Torfi Steinarsson). See the top-level NOTICE.
+ * (MIT © Gunnar Torfi Steinarsson).
  *
  * Upstream computes the row's offset inside a `useDerivedValue` worklet and
  * returns `withTiming(...)` from it, which does not animate on web. Bloom computes

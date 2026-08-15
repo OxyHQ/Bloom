@@ -1,6 +1,6 @@
 /**
  * Derived from sonner-native v0.26.4 — src/position-utils.ts
- * (MIT © Gunnar Torfi Steinarsson). See the top-level NOTICE.
+ * (MIT © Gunnar Torfi Steinarsson).
  *
  * Named for what it computes — the per-ROW offset, ordering and stack scale —
  * rather than carried over as `position-utils.ts`, one letter from its sibling

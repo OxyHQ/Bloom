@@ -1,6 +1,6 @@
 /**
  * Ported from expo-glass-tabs v0.1.1 — src/index.ts
- * (MIT © 2026 David Mokos). See the top-level NOTICE.
+ * (MIT © 2026 David Mokos).
  *
  * Entry for `@oxyhq/bloom/tab-bar/expo-router`. The components live in sibling
  * modules because this file is the published entry path and must stay stable;

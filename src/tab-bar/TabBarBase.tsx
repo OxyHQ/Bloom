@@ -1,6 +1,6 @@
 /**
  * Ported from expo-glass-tabs v0.1.1 — src/glass-tab-bar.tsx
- * (MIT © 2026 David Mokos). See the top-level NOTICE.
+ * (MIT © 2026 David Mokos).
  *
  * The platform-agnostic body of the floating tab bar: gestures, springs, every
  * animated style, the highlight geometry and the button. The only pieces that

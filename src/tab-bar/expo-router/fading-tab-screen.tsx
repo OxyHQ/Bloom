@@ -1,6 +1,6 @@
 /**
  * Ported from expo-glass-tabs v0.1.1 — src/fading-tab-slot.tsx
- * (MIT © 2026 David Mokos). See the top-level NOTICE.
+ * (MIT © 2026 David Mokos).
  */
 import { useEffect, useRef, type PropsWithChildren } from 'react';
 import { StyleSheet } from 'react-native';

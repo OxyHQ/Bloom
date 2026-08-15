@@ -1,6 +1,6 @@
 /**
  * Derived from sonner-native v0.26.4 — src/toast-fns.ts
- * (MIT © Gunnar Torfi Steinarsson). See the top-level NOTICE.
+ * (MIT © Gunnar Torfi Steinarsson).
  *
  * This module is the ONLY translation layer between the public API and the
  * engine:

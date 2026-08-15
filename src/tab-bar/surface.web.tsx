@@ -1,6 +1,6 @@
 /**
  * Ported from expo-glass-tabs v0.1.1 — src/glass-tab-bar.tsx
- * (MIT © 2026 David Mokos). See the top-level NOTICE.
+ * (MIT © 2026 David Mokos).
  *
  * WEB variant of the tab bar's capsule surface: the browser's own frosted
  * material, `backdrop-filter`, under the theme's translucent glass tint.

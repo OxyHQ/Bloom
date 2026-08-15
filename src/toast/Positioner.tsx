@@ -1,6 +1,6 @@
 /**
  * Derived from sonner-native v0.26.4 — src/positioner.tsx
- * (MIT © Gunnar Torfi Steinarsson). See the top-level NOTICE.
+ * (MIT © Gunnar Torfi Steinarsson).
  *
  * One container per occupied position, plus the press-to-collapse area outside an
  * expanded stack. The container pins all four edges and `getInsetValues` overrides

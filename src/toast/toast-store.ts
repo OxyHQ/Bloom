@@ -1,6 +1,6 @@
 /**
  * Derived from sonner-native v0.26.4 — src/toast-store.ts
- * (MIT © Gunnar Torfi Steinarsson). See the top-level NOTICE.
+ * (MIT © Gunnar Torfi Steinarsson).
  *
  * The auto-close timers were lifted out into `toast-timers.ts`. Everything this
  * module touches is pure JavaScript — `react` (for `createRef`), `./constants`,

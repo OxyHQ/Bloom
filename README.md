@@ -159,7 +159,7 @@ Bloom publishes 88 subpath exports. Importing from the subpath rather than the r
 
 Component guides live in [`docs/`](./docs): [getting started](./docs/getting-started.mdx), [theme](./docs/theme.mdx), [design tokens](./docs/design-tokens.mdx), [dialog](./docs/dialog.mdx), [bottom sheet](./docs/bottom-sheet.mdx), [toast](./docs/toast.mdx), [alert](./docs/alert.mdx), [menu](./docs/menu.mdx), [select](./docs/select.mdx), [context menu](./docs/context-menu.mdx), [button](./docs/button.mdx), [avatar](./docs/avatar.mdx), [text field](./docs/text-field.mdx), [settings list](./docs/settings-list.mdx), [tab bar](./docs/tab-bar.mdx), [prompt input](./docs/prompt-input.mdx) and [loading](./docs/loading.mdx).
 
-Upgrade notes are in [MIGRATION.md](./MIGRATION.md), and the theme reference is in [README.theme.md](./README.theme.md).
+The theme reference is in [README.theme.md](./README.theme.md).
 
 ## Development
 
@@ -183,5 +183,3 @@ Issues and pull requests are welcome. Please run `bun run typescript` and `bun r
 Apache-2.0, The Oxy Collective, Inc. See [LICENSE](./LICENSE).
 
 Bloom moved from AGPL-3.0-only to Apache-2.0 at `0.87.0`. Versions published before that keep AGPL-3.0-only permanently; a licence change binds future versions only.
-
-Third party code Bloom derives from, principally the universal toast engine, is credited in [NOTICE](./NOTICE).

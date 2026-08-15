@@ -148,7 +148,7 @@ Only TWO exist: `CenteredDialog` and `ResponsiveSheet` were removed with no shim
 - **A statically-imported peer is never `optional`** — optionality is about what RESOLVES, so omitting one makes Metro fail the build rather than degrade.
 - **To keep a peer genuinely optional, load it with a `require('<string literal>')` that is a DIRECT STATEMENT of a `try` block.** Metro rewrites an unevaluable require into an inlined thrower and collects no dependency (a parameter-passed specifier once killed haptics, squircle clip, spinner and native color scoping); its optionality walk returns at the FIRST enclosing block, so nesting an `if` inside the try loses optionality. Hoist any `typeof require` guard OUT of the try. Reference `src/connection-status/netinfo.ts`; gate `optional-peer-imports.test.ts`.
 - **The Apple-only peers are reachable ONLY through `@oxyhq/bloom/tab-bar`** — a consumer that never imports it shouldn't install them to silence a warning. Bun prints no mismatch warning for these at all.
-- Bloom owns its toast engine (vendored, see `NOTICE`); `sonner`/`sonner-native`/`nanoid` are not dependencies. Web bundles DO import reanimated + gesture-handler.
+- Bloom owns its toast engine (vendored); `sonner`/`sonner-native`/`nanoid` are not dependencies. Web bundles DO import reanimated + gesture-handler.
 
 ## Style and `className`
 

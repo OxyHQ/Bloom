@@ -1,6 +1,6 @@
 /**
  * Ported from expo-glass-tabs v0.1.1 — src/glass-tab-bar.tsx
- * (MIT © 2026 David Mokos). See the top-level NOTICE.
+ * (MIT © 2026 David Mokos).
  *
  * The tab bar's NON-GLASS capsule surface: a plain animated view filled with the
  * theme's near-opaque fallback. Android, pre-iOS-26 devices and any build without

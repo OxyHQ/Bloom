@@ -1,6 +1,6 @@
 /**
  * Derived from sonner-native v0.26.4 — src/use-app-state.ts
- * (MIT © Gunnar Torfi Steinarsson). See the top-level NOTICE.
+ * (MIT © Gunnar Torfi Steinarsson).
  *
  * Owns the whole "did the app go away" concern in one place so callers never
  * have to guard the platform themselves (W4). Two upstream problems are fixed

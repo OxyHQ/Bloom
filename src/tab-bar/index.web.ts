@@ -1,6 +1,6 @@
 /**
  * Ported from expo-glass-tabs v0.1.1 — src/index.ts
- * (MIT © 2026 David Mokos). See the top-level NOTICE.
+ * (MIT © 2026 David Mokos).
  *
  * WEB entry for `@oxyhq/bloom/tab-bar`, selected through the package's
  * `browser` export condition.

@@ -1,6 +1,6 @@
 /**
  * Derived from sonner-native v0.26.4 — src/toast.tsx:39-437
- * (MIT © Gunnar Torfi Steinarsson). See the top-level NOTICE.
+ * (MIT © Gunnar Torfi Steinarsson).
  *
  * The animated shell around a row: stack offset + scale, enter/exit animation,
  * height measurement, swipe wrapper and the imperative wiggle handle. The visual

@@ -1,6 +1,6 @@
 /**
  * Derived from sonner-native v0.26.4 — src/toast-store.ts:78-154
- * (MIT © Gunnar Torfi Steinarsson). See the top-level NOTICE.
+ * (MIT © Gunnar Torfi Steinarsson).
  *
  * Upstream keeps auto-close timers inside the store's React state even though no
  * renderer ever reads them. Extracting them keeps the store's snapshot free of

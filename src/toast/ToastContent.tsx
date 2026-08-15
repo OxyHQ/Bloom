@@ -1,6 +1,6 @@
 /**
  * Derived from sonner-native v0.26.4 — src/toast.tsx:440-689
- * (MIT © Gunnar Torfi Steinarsson — see the top-level NOTICE), restyled with
+ * (MIT © Gunnar Torfi Steinarsson), restyled with
  * Bloom's design tokens and absorbing the surface/text/action styling from
  * Bloom's previous `Toast.tsx`.
  *

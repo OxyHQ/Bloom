@@ -1,6 +1,6 @@
 /**
  * Derived from sonner-native v0.26.4 — src/animations.ts, src/animation-utils.ts
- * and src/easings.ts (MIT © Gunnar Torfi Steinarsson). See the top-level NOTICE.
+ * and src/easings.ts (MIT © Gunnar Torfi Steinarsson).
  *
  * W1 — THE EXIT DEFAULT IS A `Keyframe` INSTANCE, NOT A WORKLET BUILDER.
  *

@@ -1,6 +1,6 @@
 /**
  * Ported from expo-glass-tabs v0.1.1 — src/progressive-blur.tsx
- * (MIT © 2026 David Mokos). See the top-level NOTICE.
+ * (MIT © 2026 David Mokos).
  *
  * The falloff math both forks share, so the native stack and the web mask
  * describe the SAME curve and a bar looks the same on a phone and in a browser.

@@ -1,6 +1,6 @@
 /**
  * Derived from sonner-native v0.26.4 — src/positioner-utils.ts
- * (MIT © Gunnar Torfi Steinarsson). See the top-level NOTICE.
+ * (MIT © Gunnar Torfi Steinarsson).
  *
  * Named for what it computes — the per-position CONTAINER's box — rather than
  * carried over as `positioner-utils.ts`, which sat one letter from its sibling

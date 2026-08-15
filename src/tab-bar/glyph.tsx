@@ -1,6 +1,6 @@
 /**
  * Ported from expo-glass-tabs v0.1.1 — src/glass-tab-bar.tsx
- * (MIT © 2026 David Mokos). See the top-level NOTICE.
+ * (MIT © 2026 David Mokos).
  *
  * NEUTRAL default variant of a tab glyph: renders the item's own `icon` node —
  * or its `activeIcon` on the active layer — tinted for this crossfade layer.

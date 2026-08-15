@@ -1,6 +1,6 @@
 /**
  * Derived from sonner-native v0.26.4 — src/toast-comparator.ts
- * (MIT © Gunnar Torfi Steinarsson). See the top-level NOTICE.
+ * (MIT © Gunnar Torfi Steinarsson).
  *
  * Drives `autoWiggleOnUpdate: 'toast-change'`: an update-by-id only wiggles the
  * row when something a user can actually see changed. `description` is

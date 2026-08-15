@@ -1,6 +1,6 @@
 /**
  * Derived from sonner-native v0.26.4 — src/constants.ts and src/animations.ts
- * (MIT © Gunnar Torfi Steinarsson). See the top-level NOTICE.
+ * (MIT © Gunnar Torfi Steinarsson).
  *
  * The two animation durations live HERE rather than in `animations.ts` so
  * `toast-store.ts` never has to import a Reanimated-dependent module: the store

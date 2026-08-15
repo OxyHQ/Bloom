@@ -1,6 +1,6 @@
 /**
  * Ported from expo-glass-tabs v0.1.1 — src/minimize-context.tsx
- * (MIT © 2026 David Mokos). See the top-level NOTICE.
+ * (MIT © 2026 David Mokos).
  *
  * The shared 0..1 "minimize" progress the tab bar interpolates on, plus the
  * scroll handler that drives it. Reanimated only — no platform imports.

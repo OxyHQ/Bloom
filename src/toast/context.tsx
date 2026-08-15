@@ -1,6 +1,6 @@
 /**
  * Derived from sonner-native v0.26.4 — src/context.tsx
- * (MIT © Gunnar Torfi Steinarsson). See the top-level NOTICE.
+ * (MIT © Gunnar Torfi Steinarsson).
  *
  * Two contexts, split by change frequency: the resolved `Toaster` configuration
  * (stable for the lifetime of the outlet) and the live stack state (changes on

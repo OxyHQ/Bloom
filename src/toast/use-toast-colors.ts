@@ -1,6 +1,6 @@
 /**
  * Replaces sonner-native v0.26.4's `src/use-colors.ts` + `src/use-default-styles.ts`
- * (MIT © Gunnar Torfi Steinarsson — see the top-level NOTICE) and absorbs the
+ * (MIT © Gunnar Torfi Steinarsson) and absorbs the
  * colour logic from Bloom's previous `Toast.tsx`.
  *
  * Upstream ships two hardcoded light/dark palettes and picks between them from
