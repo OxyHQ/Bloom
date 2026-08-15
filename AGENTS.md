@@ -121,6 +121,7 @@ Only TWO exist: `CenteredDialog` and `ResponsiveSheet` were removed with no shim
 - **ONE imperative overlay API: the surface stack** — `alert()`, `confirm()`, `prompt()` all `present()` onto `surfaces/surfaceStore`, rendered by the single `<SurfaceHost>`. Two `alert()` calls in a row STACK rather than queue.
 - **A built-in surface's buttons carry `shouldCloseOnPress: false` and dismiss via `surface.dismiss(result)`, never `Dialog`'s `close()`** — the value must reach the `present()` promise, which resolves on the PRESS. Pinned at the prop boundary with a mock Dialog (`surface-prompts.test.tsx`).
 - **`DialogAction`'s `'cancel'` colour is purely visual** — it does not affect dismissal.
+- **`disabled` on an `asChild` trigger is guarded in `cloneTrigger`, not in the child alone** — `TriggerSlot` COMPOSES the child's `onPress` with the open handler, so a guard only in the child leaves the open to the caller's element. **The browser is the WEAKER instrument:** unguarded, a `Pressable` child stays closed in Chrome (RNW masks it) while jest goes red (its mock ignores `disabled`). Gates: `Combobox.test.tsx` + `scripts/verify-trigger-disabled.mjs`.
 - **KNOWN GAP — the native tooltip cannot position itself inside a sheet.** `TooltipTrigger` measures in PAGE coordinates, `TooltipContent` renders into the ROOT portal group, so a tooltip inside a `BottomSheet` portals outside that window. Needs a real device to fix — jest cannot see a native window boundary.
 
 ## Theme and design tokens
