@@ -204,7 +204,11 @@ export function FloatingPanel({
     // through the one method needed rather than asserting the whole
     // `HTMLElement` interface, and capture it as a local so the narrowing holds
     // inside `update` — a property check does not survive into a closure.
-    const element = panelNode as unknown as { getBoundingClientRect?: () => DOMRect } | null;
+    const element = panelNode as unknown as {
+      getBoundingClientRect?: () => DOMRect;
+      offsetWidth?: number;
+      offsetHeight?: number;
+    } | null;
     const measure = element?.getBoundingClientRect;
     if (
       phase !== 'open' ||
@@ -218,12 +222,23 @@ export function FloatingPanel({
 
     const update = () => {
       const box = measure.call(element);
+      // The LAYOUT box, not the visual one. `getBoundingClientRect` reports the
+      // TRANSFORMED rectangle, and this panel is measured while its own enter is
+      // still at `scale(0.95)` — so the rect is 5% small. `far` placements never
+      // read the extent and looked perfect; the FLIPPED and `align="end"` ones
+      // do, and were out by 5% of the surface. Measured: a 256px sub-panel read
+      // as 243.2 and flipped 12.8px over its parent. `offsetWidth`/`offsetHeight`
+      // are the untransformed border box, integer-rounded, which is the right
+      // precision for a fit/flip decision. The rect is still the fallback for a
+      // non-DOM node (a jsdom stub has neither).
+      const layoutWidth = element?.offsetWidth ?? box.width;
+      const layoutHeight = element?.offsetHeight ?? box.height;
       // Measured BEFORE `minWidth` is applied, so the laid-out surface can only
       // be wider than the box read here — and a wider surface wraps less, so the
       // measured height is an upper bound. Erring that way flips early in a tie,
       // never late. The panel's own `min-w-*` CLASS is already in the box, since
       // a stylesheet rule applies before a layout effect can read the node.
-      const width = Math.max(box.width, minWidth ?? 0);
+      const width = Math.max(layoutWidth, minWidth ?? 0);
       // The align axis is the one `side` does not name.
       const alignsVertically = side === 'left' || side === 'right';
       const shiftY = alignsVertically ? alignOffset : 0;
@@ -236,7 +251,7 @@ export function FloatingPanel({
             left: anchor.left + shiftX,
             right: anchor.right + shiftX,
           },
-          size: { width, height: box.height },
+          size: { width, height: layoutHeight },
           viewport: { width: window.innerWidth, height: window.innerHeight },
           offset: sideOffset,
           gutter: VIEWPORT_GUTTER,

@@ -70,6 +70,21 @@ export const DEFAULT_SIDE_OFFSET = 4;
 /** Default shift along the alignment axis. Radix's default is 0. */
 export const DEFAULT_ALIGN_OFFSET = 0;
 
+/**
+ * The visible gap between a parent panel's EDGE and the sub-panel flying out of
+ * it.
+ *
+ * Deliberately small: the two surfaces should read as one menu with a seam
+ * between its columns, not as two detached cards. It is a separate constant from
+ * {@link DEFAULT_SIDE_OFFSET} because it measures a different thing — that one
+ * is the gap from a TRIGGER, this one the gap from a SURFACE, and
+ * `menu-sub-flyout`'s `useFlyoutAnchor` is what makes the horizontal axis
+ * measure the surface. Before it did, a 4px offset from the trigger ROW put the
+ * sub-panel 1px INSIDE the parent's border, because the row sits inside the
+ * panel's own padding and border.
+ */
+export const MENU_SUB_SIDE_OFFSET = 2;
+
 /** `alignOffset={-4} sideOffset={8}` — a menubar menu's own defaults. */
 export const MENUBAR_ALIGN_OFFSET = -4;
 export const MENUBAR_SIDE_OFFSET = 8;
