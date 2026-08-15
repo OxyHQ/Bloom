@@ -14,6 +14,7 @@ import { styled } from 'react-native-css';
 import { useTheme } from '../theme/use-theme';
 import { animation, borderRadius } from '../styles/tokens';
 import { bloomShadowStyle } from '../design-tokens/shadows';
+import { pressedSurface } from '../theme/press-colors';
 import { usePressAnimation } from '../hooks/use-press-animation';
 import { useInteractionState } from '../hooks/use-interaction-state';
 import type { FabPlacement, FabProps, FabSize, FabVariant } from './types';
@@ -157,6 +158,16 @@ const FabComponent: React.FC<FabProps> = ({
 
   const resolvedColors = useMemo(() => resolveVariant(variant, theme.colors), [variant, theme.colors]);
 
+  // A FAB is always filled, so the held state is a state layer of its own label
+  // colour over its own fill — never a wash, and never an alpha'd fill: it
+  // floats over arbitrary content, so "let the page show through" would change
+  // meaning with whatever it happens to be sitting on. It REPLACES the opacity
+  // dip this used to carry, which was a second press vocabulary for one family.
+  const pressedBackground = useMemo(
+    () => pressedSurface(theme.colors, resolvedColors.background, resolvedColors.foreground),
+    [theme.colors, resolvedColors.background, resolvedColors.foreground],
+  );
+
   const containerStyle = useMemo((): ViewStyle => {
     const base: ViewStyle = {
       alignItems: 'center',
@@ -206,7 +217,7 @@ const FabComponent: React.FC<FabProps> = ({
         { zIndex },
         containerStyle,
         disabled && { opacity: 0.5 },
-        pressed && !disabled && { opacity: 0.9 },
+        pressed && !disabled && { backgroundColor: pressedBackground },
         // Before the caller's `style`, so `style` keeps winning the whole array
         // the way it always has (and the way the web fork spreads it last). The
         // cost is that a caller who sets `transform` replaces the press scale

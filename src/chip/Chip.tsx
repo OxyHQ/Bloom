@@ -12,6 +12,8 @@ import {
 import { useTheme } from '../theme/use-theme';
 import { animation } from '../styles/tokens';
 import { resolveAccentColors } from '../theme/accent-colors';
+import { pressedSurface } from '../theme/press-colors';
+import { useInteractionState } from '../hooks/use-interaction-state';
 import { usePressAnimation } from '../hooks/use-press-animation';
 import { TimesLarge_Stroke2_Corner0_Rounded as TimesIcon } from '../icons/Times';
 import { interactiveWebCss, useInteractiveWebCss } from '../styles/interactive-web-css';
@@ -93,11 +95,27 @@ const ChipComponent: React.FC<ChipProps> = ({
 }) => {
   const theme = useTheme();
   useInteractiveWebCss(STYLE_ID, BLOOM_CHIP_CSS);
-  const { scaleAnim, onPressIn, onPressOut } = usePressAnimation(animation.pressScale);
+  const { scaleAnim, onPressIn: onScaleIn, onPressOut: onScaleOut } =
+    usePressAnimation(animation.pressScale);
+  // The scale and the background are DRIVEN SEPARATELY on purpose. The scale is
+  // motion and is suppressed under "reduce motion" and under a mouse; a colour
+  // swap is neither, and suppressing it there is what left this control with no
+  // desktop press feedback at all.
+  const { state: pressed, onIn: onPressedIn, onOut: onPressedOut } = useInteractionState();
+  const onPressIn = () => { onScaleIn(); onPressedIn(); };
+  const onPressOut = () => { onScaleOut(); onPressedOut(); };
   // Selection promotes the chip to the brand tone \u2014 the filter-pill behaviour \u2014
   // rather than to a second colour system of its own.
   const colors = resolveAccentColors(theme.colors, selected ? 'primary' : color, variant);
   const sizeConfig = SIZE_CONFIG[size];
+  // All three fills go through the one resolver and land somewhere different
+  // because their REST surfaces do: `solid` keeps its tone and gains a state
+  // layer of its own label colour, `subtle` deepens the tint AND its alpha
+  // rather than flattening it, `outlined` has no fill so the press IS the fill.
+  const pressedBackground = useMemo(
+    () => pressedSurface(theme.colors, colors.background, colors.foreground),
+    [theme.colors, colors.background, colors.foreground],
+  );
 
   const containerStyle = useMemo((): WebCssStyle => ({
     height: sizeConfig.height,
@@ -186,7 +204,13 @@ const ChipComponent: React.FC<ChipProps> = ({
           // `classname-interop.test.ts`'s exemption list. It is NOT a `className`
           // smuggled past `styled()`, which is what that gate forbids.
           {...(IS_WEB ? ({ dataSet: { bloomChip: '' } } as Record<string, unknown>) : {})}
-          style={[containerStyle, disabled && { opacity: 0.5 }, style]}
+          style={[
+            containerStyle,
+            disabled && { opacity: 0.5 },
+            // Before the caller's `style`, so `style` still wins the array.
+            pressed && !disabled && { backgroundColor: pressedBackground },
+            style,
+          ]}
           onPress={onPress}
           onPressIn={onPressIn}
           onPressOut={onPressOut}
