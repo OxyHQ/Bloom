@@ -25,6 +25,11 @@ export type {
 } from './context';
 export { FloatingPanel } from './FloatingPanel';
 export { createMenuRows } from './menu-rows';
+// The two sub-menu presentations. NOT re-exported together on purpose: a family
+// imports the ONE its platform fork is, by path, so the web-only flyout (and the
+// `FloatingPanel`/portal graph behind it) never reaches a native bundle through
+// this barrel.
+export { createInlineMenuSub } from './menu-sub-inline';
 export { TriggerSlot } from './TriggerSlot';
 export type { TriggerSlotProps } from './TriggerSlot';
 export { useAnchorRect } from './use-anchor-rect';

@@ -17,8 +17,15 @@
  * per file, never per render), because an element type constructed during render
  * remounts its whole subtree every time.
  *
- * Universal, not forked. Pointer highlight is `Item`'s own, which is why no row
- * here tracks hover.
+ * Universal, not forked — with ONE exception, the sub-menu trio, which is a
+ * flyout on web and an inline disclosure on native. That difference cannot be a
+ * branch inside this file: the flyout imports the web-only `FloatingPanel`, so a
+ * `Platform.OS` check would link `react-dom` and the web portal into every
+ * native bundle. It arrives as a FACTORY instead — each family's own platform
+ * fork passes `createFlyoutMenuSub` or `createInlineMenuSub`, and this file
+ * never learns which platform it is on.
+ *
+ * Pointer highlight is `Item`'s own, which is why no row here tracks hover.
  *
  * Every row IS an `item/Item`, Bloom's one row primitive. That is what keeps the
  * disabled treatment, the destructive colour and the ARIA state in one place
@@ -36,22 +43,15 @@
  * exactly as upstream.
  */
 import React, { useCallback, useMemo } from 'react';
-import { StyleSheet, useWindowDimensions, View, type ViewStyle } from 'react-native';
+import { StyleSheet, useWindowDimensions, View } from 'react-native';
 
-import { useControllableState } from '../hooks/use-controllable-state';
 import { Check_Stroke2_Corner0_Rounded as CheckIcon } from '../icons/Check';
-import {
-  ChevronBottom_Stroke2_Corner0_Rounded as ChevronBottomIcon,
-  ChevronTop_Stroke2_Corner0_Rounded as ChevronTopIcon,
-} from '../icons/Chevron';
 import { Item } from '../item';
 import { BREAKPOINTS } from '../styles/breakpoints';
-import { space } from '../styles/tokens';
 import { useTheme } from '../theme/use-theme';
 import { Text } from '../typography';
 import {
   FONT_MEDIUM,
-  ROW_GAP,
   ROW_ICON_SIZE,
   ROW_INDICATOR_BOX,
   ROW_INDICATOR_INSET,
@@ -60,7 +60,6 @@ import {
   ROW_PADDING_Y,
   ROW_PADDING_Y_SM,
   ROW_RADIO_DOT,
-  ROW_RADIUS,
   ROW_SEPARATOR_INSET_X,
   ROW_SEPARATOR_MARGIN_Y,
   ROW_SEPARATOR_THICKNESS,
@@ -70,13 +69,8 @@ import {
   TEXT_XS,
   TEXT_XS_LINE_HEIGHT,
 } from './constants';
-import {
-  MenuRadioGroupProvider,
-  MenuSubProvider,
-  useMenuRadioGroup,
-  useMenuSub,
-  useMenuSurface,
-} from './context';
+import { MenuRadioGroupProvider, useMenuRadioGroup, useMenuSurface } from './context';
+import { rowShapeStyles, splitChildren, useRowStyle } from './shared';
 import type {
   MenuCheckboxRowProps,
   MenuGroupProps,
@@ -86,54 +80,8 @@ import type {
   MenuRowParts,
   MenuRowProps,
   MenuShortcutProps,
-  MenuSubContentProps,
-  MenuSubProps,
-  MenuSubTriggerProps,
+  MenuSubFactory,
 } from './types';
-
-/**
- * `py-2 sm:py-1.5` — 8px of row inset below 640px, 6px from there up, and the
- * `text-sm` type the row is set in.
- *
- * Returned as a whole style object rather than a number so the four row kinds
- * that share it cannot each re-derive it, and so the LIST of properties that
- * override `Item`'s defaults is written once: horizontal inset, gap, radius and
- * the removal of `Item`'s minimum height, which upstream does not have.
- */
-function useRowStyle(): ViewStyle {
-  const { width } = useWindowDimensions();
-  const paddingVertical = width >= BREAKPOINTS.sm ? ROW_PADDING_Y_SM : ROW_PADDING_Y;
-  return useMemo(
-    () => ({
-      // Longhands, for the reason spelled out in `item/Item.tsx`: on web a
-      // `paddingHorizontal` here would outrank the `paddingLeft` a gutter or
-      // `inset` row sets after it, whatever the array order.
-      paddingLeft: ROW_PADDING_X,
-      paddingRight: ROW_PADDING_X,
-      paddingVertical,
-      gap: ROW_GAP,
-      borderRadius: ROW_RADIUS,
-      // Explicitly 0, not `undefined`: a later `undefined` in an RN style array
-      // is merged as a key that exists, so whether it CLEARS `Item`'s 36/44 or
-      // is skipped depends on the flattener. Upstream sets no minimum at all, so
-      // say that in a value both platforms read the same way.
-      minHeight: 0,
-    }),
-    [paddingVertical],
-  );
-}
-
-/**
- * A string child becomes the row's TITLE so `Item` colours it (destructive,
- * disabled); anything else is rendered verbatim, which is shadcn's own
- * `<Icon /><Text>…</Text>` composition.
- */
-function splitChildren(children: React.ReactNode): {
-  title?: string;
-  body?: React.ReactNode;
-} {
-  return typeof children === 'string' ? { title: children } : { body: children };
-}
 
 /**
  * Upstream's `pl-8` gutter with its `absolute left-2 h-3.5 w-3.5` indicator.
@@ -172,8 +120,13 @@ function IndicatorGutter({
  *
  * `prefix` is the family's own name (`'DropdownMenu'`, `'ContextMenu'`,
  * `'Menubar'`) and is used for nothing but `displayName`.
+ *
+ * `createSub` is the platform's sub-menu trio — `createFlyoutMenuSub` from a
+ * `.web.tsx` fork, `createInlineMenuSub` from the native one. It is a required
+ * argument rather than a default, so a new family cannot silently ship the
+ * wrong presentation by omitting it.
  */
-export function createMenuRows(prefix: string): MenuRowParts {
+export function createMenuRows(prefix: string, createSub: MenuSubFactory): MenuRowParts {
   function MenuItem({
     children,
     onPress,
@@ -206,8 +159,8 @@ export function createMenuRows(prefix: string): MenuRowParts {
         trailing={trailing}
         onPress={handlePress}
         accessibilityLabel={accessibilityLabel}
-        titleStyle={styles.rowText}
-        style={[rowStyle, inset ? styles.inset : null, style]}
+        titleStyle={rowShapeStyles.rowText}
+        style={[rowStyle, inset ? rowShapeStyles.inset : null, style]}
         testID={testID}>
         {body}
       </Item>
@@ -255,7 +208,7 @@ export function createMenuRows(prefix: string): MenuRowParts {
             if (!keepOpen) surface.close();
           }}
           accessibilityLabel={accessibilityLabel}
-          titleStyle={styles.rowText}
+          titleStyle={rowShapeStyles.rowText}
           style={[rowStyle, styles.gutterRow, style]}
           testID={testID}>
           {body}
@@ -315,7 +268,7 @@ export function createMenuRows(prefix: string): MenuRowParts {
             if (!keepOpen) surface.close();
           }}
           accessibilityLabel={accessibilityLabel}
-          titleStyle={styles.rowText}
+          titleStyle={rowShapeStyles.rowText}
           style={[rowStyle, styles.gutterRow, style]}
           testID={testID}>
           {body}
@@ -378,80 +331,6 @@ export function createMenuRows(prefix: string): MenuRowParts {
   }
   MenuGroup.displayName = `${prefix}Group`;
 
-  function MenuSub({ children, open, defaultOpen = false, onOpenChange }: MenuSubProps) {
-    const [isOpen, setOpen] = useControllableState<boolean>({
-      value: open,
-      defaultValue: defaultOpen,
-      onChange: onOpenChange,
-    });
-    const context = useMemo(() => ({ open: isOpen, setOpen }), [isOpen, setOpen]);
-    return <MenuSubProvider value={context}>{children}</MenuSubProvider>;
-  }
-  MenuSub.displayName = `${prefix}Sub`;
-
-  /**
-   * A sub-menu is an INLINE DISCLOSURE on both platforms, not a web-only flyout.
-   *
-   * That is the one presentational departure from shadcn, and it is deliberate:
-   * react-native-reusables already renders sub-menus inline on native (its own
-   * trigger swaps the chevron between up and down to say so), while a web flyout
-   * would need `overlay/dropdown-placement` to grow a horizontal axis, plus
-   * hover-intent and roving keyboard focus across two surfaces. The API — `Sub`
-   * / `SubTrigger` / `SubContent` — is unchanged, so a shadcn call site ports
-   * verbatim and only the presentation differs.
-   */
-  function MenuSubTrigger({
-    children,
-    disabled = false,
-    inset = false,
-    leading,
-    accessibilityLabel,
-    style,
-    testID,
-  }: MenuSubTriggerProps) {
-    const theme = useTheme();
-    const sub = useMenuSub();
-    const rowStyle = useRowStyle();
-    const { title, body } = splitChildren(children);
-    const Chevron = sub.open ? ChevronTopIcon : ChevronBottomIcon;
-
-    return (
-      <Item
-        title={title}
-        disabled={disabled}
-        role="menuitem"
-        expanded={sub.open}
-        leading={leading}
-        // `text-foreground ml-auto size-4 shrink-0` — the chevron is full
-        // foreground and the same 16px as a row's check, not a small muted
-        // glyph. `Item`'s body already carries `flex: 1`, which is what pushes
-        // it right; `ml-auto` needs no counterpart.
-        trailing={
-          <Chevron
-            width={ROW_ICON_SIZE}
-            height={ROW_ICON_SIZE}
-            fill={theme.colors.text}
-          />
-        }
-        onPress={() => sub.setOpen(!sub.open)}
-        accessibilityLabel={accessibilityLabel}
-        titleStyle={styles.rowText}
-        // Upstream's sub-trigger is the one row with NO `gap-2`.
-        style={[rowStyle, styles.subTrigger, inset ? styles.inset : null, style]}
-        testID={testID}>
-        {body}
-      </Item>
-    );
-  }
-  MenuSubTrigger.displayName = `${prefix}SubTrigger`;
-
-  function MenuSubContent({ children, style }: MenuSubContentProps) {
-    const sub = useMenuSub();
-    if (!sub.open) return null;
-    return <View style={[styles.subContent, style]}>{children}</View>;
-  }
-  MenuSubContent.displayName = `${prefix}SubContent`;
-
   return {
     Item: MenuItem,
     CheckboxItem: MenuCheckboxItem,
@@ -461,9 +340,7 @@ export function createMenuRows(prefix: string): MenuRowParts {
     Separator: MenuSeparator,
     Shortcut: MenuShortcut,
     Group: MenuGroup,
-    Sub: MenuSub,
-    SubTrigger: MenuSubTrigger,
-    SubContent: MenuSubContent,
+    ...createSub(prefix),
   };
 }
 
@@ -491,21 +368,6 @@ const styles = StyleSheet.create({
     paddingLeft: ROW_INSET_PADDING_X,
     paddingRight: ROW_PADDING_X,
   },
-  // `pl-8` — a plain row asking to line up with those.
-  inset: {
-    paddingLeft: ROW_INSET_PADDING_X,
-  },
-  // The one row upstream gives no `gap-2`.
-  subTrigger: {
-    gap: 0,
-  },
-  // `text-sm` with no weight of its own: a menu row's label is body text, where
-  // `Item`'s is a 15px medium settings-row title.
-  rowText: {
-    fontSize: TEXT_SM,
-    lineHeight: TEXT_SM_LINE_HEIGHT,
-    fontWeight: '400',
-  },
   // `text-foreground px-2 py-2 text-sm font-medium sm:py-1.5` (the vertical
   // inset is applied at the call site, where the breakpoint is read).
   label: {
@@ -531,8 +393,5 @@ const styles = StyleSheet.create({
     height: ROW_SEPARATOR_THICKNESS,
     marginVertical: ROW_SEPARATOR_MARGIN_Y,
     marginHorizontal: ROW_SEPARATOR_INSET_X,
-  },
-  subContent: {
-    paddingLeft: space.md,
   },
 });

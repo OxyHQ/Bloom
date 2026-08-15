@@ -13,6 +13,7 @@ import { MENU_MIN_WIDTH } from '../floating/constants';
 import { MenuSurfaceProvider, type MenuSurfaceContextValue } from '../floating/context';
 import { FloatingPanel } from '../floating/FloatingPanel';
 import { createMenuRows } from '../floating/menu-rows';
+import { createFlyoutMenuSub } from '../floating/menu-sub-flyout';
 import { TriggerSlot } from '../floating/TriggerSlot';
 import type { FloatingAnchor } from '../floating/types';
 import { ContextMenuProvider, useContextMenu } from './context';
@@ -145,7 +146,7 @@ export function ContextMenuContent({
   );
 }
 
-const rows = createMenuRows('ContextMenu');
+const rows = createMenuRows('ContextMenu', createFlyoutMenuSub);
 
 export const ContextMenuItem = rows.Item;
 export const ContextMenuCheckboxItem = rows.CheckboxItem;

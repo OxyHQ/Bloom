@@ -33,15 +33,20 @@ export interface OverlayShellContextValue {
 }
 
 /**
- * Which side of its anchor a floating surface PREFERS. It is a preference:
- * `overlay/dropdown-placement` flips to the other side when the named one does
- * not fit and clamps when neither does.
+ * Which side of its anchor a floating surface PREFERS, and therefore which axis
+ * it fits-flips-clamps on. It is a preference:
+ * `overlay/dropdown-placement` flips to the OPPOSITE side when the named one
+ * does not fit and clamps when neither does.
+ *
+ * `'left'`/`'right'` are the submenu axis: a sub-panel flies out beside its
+ * trigger row rather than under it.
  */
-export type FloatingSide = 'top' | 'bottom';
+export type FloatingSide = 'top' | 'bottom' | 'left' | 'right';
 
 /**
- * How the surface lines up with its anchor horizontally — Radix/shadcn's
- * `align`, mapped straight onto `resolveDropdownPlacement`'s own axis.
+ * How the surface lines up with its anchor on the CROSS axis — Radix/shadcn's
+ * `align`, mapped straight onto `resolveDropdownPlacement`'s own. Horizontal
+ * under a vertical `side`, vertical under a horizontal one.
  */
 export type FloatingAlign = 'start' | 'center' | 'end';
 
@@ -277,10 +282,29 @@ export interface MenuSubContentProps {
 }
 
 /**
+ * The sub-menu trio, the ONE part of the row vocabulary that presents
+ * differently per platform: an inline disclosure inside a native sheet
+ * (`menu-sub-inline`), a flyout panel beside the row on web
+ * (`menu-sub-flyout`).
+ *
+ * `createMenuRows` takes a factory of this shape rather than branching on
+ * `Platform.OS`, because the flyout imports the web-only `FloatingPanel` — a
+ * runtime branch would link `react-dom` into every native bundle.
+ */
+export interface MenuSubParts {
+  Sub: React.ComponentType<MenuSubProps>;
+  SubTrigger: React.ComponentType<MenuSubTriggerProps>;
+  SubContent: React.ComponentType<MenuSubContentProps>;
+}
+
+/** Builds one family's sub trio. The argument is the family prefix, for `displayName`. */
+export type MenuSubFactory = (prefix: string) => MenuSubParts;
+
+/**
  * The row parts one call of `createMenuRows` produces. Each menu family binds
  * one set and publishes it under its own prefix.
  */
-export interface MenuRowParts {
+export interface MenuRowParts extends MenuSubParts {
   Item: React.ComponentType<MenuRowProps>;
   CheckboxItem: React.ComponentType<MenuCheckboxRowProps>;
   RadioGroup: React.ComponentType<MenuRadioGroupProps>;
@@ -289,7 +313,4 @@ export interface MenuRowParts {
   Separator: React.ComponentType<Record<string, never>>;
   Shortcut: React.ComponentType<MenuShortcutProps>;
   Group: React.ComponentType<MenuGroupProps>;
-  Sub: React.ComponentType<MenuSubProps>;
-  SubTrigger: React.ComponentType<MenuSubTriggerProps>;
-  SubContent: React.ComponentType<MenuSubContentProps>;
 }

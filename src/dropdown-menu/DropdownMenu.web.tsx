@@ -13,6 +13,7 @@ import { MENU_MIN_WIDTH } from '../floating/constants';
 import { MenuSurfaceProvider, type MenuSurfaceContextValue } from '../floating/context';
 import { FloatingPanel } from '../floating/FloatingPanel';
 import { createMenuRows } from '../floating/menu-rows';
+import { createFlyoutMenuSub } from '../floating/menu-sub-flyout';
 import { TriggerSlot } from '../floating/TriggerSlot';
 import { useAnchorRect } from '../floating/use-anchor-rect';
 import { useControllableState } from '../hooks/use-controllable-state';
@@ -113,7 +114,7 @@ export function DropdownMenuContent({
   );
 }
 
-const rows = createMenuRows('DropdownMenu');
+const rows = createMenuRows('DropdownMenu', createFlyoutMenuSub);
 
 export const DropdownMenuItem = rows.Item;
 export const DropdownMenuCheckboxItem = rows.CheckboxItem;

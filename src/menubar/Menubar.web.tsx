@@ -31,6 +31,7 @@ import {
 import { MenuSurfaceProvider, type MenuSurfaceContextValue } from '../floating/context';
 import { FloatingPanel } from '../floating/FloatingPanel';
 import { createMenuRows } from '../floating/menu-rows';
+import { createFlyoutMenuSub } from '../floating/menu-sub-flyout';
 import { TriggerSlot } from '../floating/TriggerSlot';
 import { useAnchorRect } from '../floating/use-anchor-rect';
 import { useControllableState } from '../hooks/use-controllable-state';
@@ -238,7 +239,7 @@ const styles = StyleSheet.create({
   },
 });
 
-const rows = createMenuRows('Menubar');
+const rows = createMenuRows('Menubar', createFlyoutMenuSub);
 
 export const MenubarItem = rows.Item;
 export const MenubarCheckboxItem = rows.CheckboxItem;

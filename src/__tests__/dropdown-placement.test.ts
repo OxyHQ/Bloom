@@ -165,4 +165,89 @@ describe('resolveDropdownPlacement', () => {
       ).toBe(32);
     });
   });
+
+  /**
+   * The submenu axis. A sub-panel flies out BESIDE its trigger row, so `side`
+   * names the horizontal axis and `align` moves the surface vertically — the
+   * same two helpers with the anchor's edges swapped, not a second positioner.
+   */
+  describe("side 'right' / 'left' — the submenu axis", () => {
+    it("side 'right' sits to the RIGHT of the anchor when it fits", () => {
+      // Trigger 400..600, surface 180 wide, offset 6 → 606..786, inside 1000 - 8.
+      expect(place({ side: 'right' }).left).toBe(606);
+    });
+
+    it("side 'right' flips LEFT when there is no room on the right", () => {
+      // Trigger 850..980: right would end at 1166, past 1000 - 8. Left starts at
+      // 850 - 6 - 180 = 664 and clears the gutter.
+      const near = { top: 100, bottom: 140, left: 850, right: 980 };
+      expect(place({ anchor: near, side: 'right' }).left).toBe(664);
+    });
+
+    it("side 'left' sits to the LEFT when it fits, and flips right when it does not", () => {
+      expect(place({ side: 'left' }).left).toBe(214);
+      const edge = { top: 100, bottom: 140, left: 20, right: 60 };
+      expect(place({ anchor: edge, side: 'left' }).left).toBe(66);
+    });
+
+    it("side 'right' and side 'left' disagree when BOTH sides fit", () => {
+      expect(place({ side: 'right' }).left).toBe(606);
+      expect(place({ side: 'left' }).left).toBe(214);
+    });
+
+    it('clamps into the viewport when neither side fits', () => {
+      // 900 wide against a 1000 viewport: right ends at 1506, left starts at
+      // -506, so the PREFERRED position is clamped to 1000 - 8 - 900.
+      expect(place({ side: 'right', size: { width: 900, height: 100 } }).left).toBe(92);
+    });
+
+    it('pins to the left gutter when the surface is wider than the viewport', () => {
+      // Same choice the vertical axis makes: overflow the FAR edge so the
+      // surface's start stays reachable.
+      expect(place({ side: 'right', size: { width: 1200, height: 100 } }).left).toBe(GUTTER);
+    });
+
+    /**
+     * The property that makes this ONE resolver rather than two: `align` acts on
+     * whichever axis `side` did not name. A resolver that kept `align` on the
+     * horizontal axis for every side would pass every test above and place every
+     * submenu at its trigger's `left`.
+     */
+    it("align acts on the VERTICAL axis when the side is horizontal", () => {
+      const anchor = trigger(100); // 100..140
+      expect(place({ anchor, side: 'right', align: 'start' }).top).toBe(100);
+      expect(place({ anchor, side: 'right', align: 'end' }).top).toBe(40);
+      expect(place({ anchor, side: 'right', align: 'center' }).top).toBe(70);
+    });
+
+    it('leaves `left` untouched by `align` when the side is horizontal', () => {
+      const anchor = trigger(100);
+      const start = place({ anchor, side: 'right', align: 'start' }).left;
+      const end = place({ anchor, side: 'right', align: 'end' }).left;
+      const center = place({ anchor, side: 'right', align: 'center' }).left;
+      expect(start).toBe(606);
+      expect(end).toBe(606);
+      expect(center).toBe(606);
+    });
+
+    it('clamps the cross axis into the viewport', () => {
+      // Trigger 460..500 against a 500-tall viewport: aligning the panel's top
+      // to 460 would run it to 560, so it pins to 500 - 8 - 100.
+      const low = { top: 460, bottom: 500, left: 400, right: 600 };
+      expect(place({ anchor: low, side: 'right', align: 'start' }).top).toBe(392);
+      const high = { top: 0, bottom: 40, left: 400, right: 600 };
+      expect(place({ anchor: high, side: 'right', align: 'end' }).top).toBe(GUTTER);
+    });
+
+    it('a horizontal side and a vertical side are genuinely different answers', () => {
+      // Vacuity floor: if `side` were ignored for the two new values, `'right'`
+      // would silently behave as `'bottom'` and every case above would still
+      // pass on `left` alone.
+      const anchor = trigger(100);
+      const bottom = place({ anchor, side: 'bottom', align: 'start' });
+      const right = place({ anchor, side: 'right', align: 'start' });
+      expect(right.left).not.toBe(bottom.left);
+      expect(right.top).not.toBe(bottom.top);
+    });
+  });
 });

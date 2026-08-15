@@ -28,6 +28,7 @@ import {
 } from '../floating/constants';
 import { MenuSurfaceProvider, type MenuSurfaceContextValue } from '../floating/context';
 import { createMenuRows } from '../floating/menu-rows';
+import { createInlineMenuSub } from '../floating/menu-sub-inline';
 import { TriggerSlot } from '../floating/TriggerSlot';
 import { useSheetOpenBridge } from '../floating/use-sheet-open-bridge';
 import { useControllableState } from '../hooks/use-controllable-state';
@@ -197,7 +198,7 @@ const styles = StyleSheet.create({
   },
 });
 
-const rows = createMenuRows('Menubar');
+const rows = createMenuRows('Menubar', createInlineMenuSub);
 
 export const MenubarItem = rows.Item;
 export const MenubarCheckboxItem = rows.CheckboxItem;
