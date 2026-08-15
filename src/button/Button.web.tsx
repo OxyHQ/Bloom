@@ -89,9 +89,9 @@ const SCALE_VARIANTS = new Set<ButtonVariant>(['primary', 'secondary', 'inverse'
  *    that case, not an oversight.
  *  - `icon` keeps the neutral chrome that distinguishes it from a bare glyph.
  */
-const GLASS_FILLS: Record<string, (theme: Theme) => string> = {
-  primary: (theme) => theme.colors.primary,
-  destructive: (theme) => theme.colors.negative,
+const GLASS_FILLS: Record<string, (theme: Theme) => { fill: string; onFill: string }> = {
+  primary: (theme) => ({ fill: theme.colors.primary, onFill: theme.colors.primaryForeground }),
+  destructive: (theme) => ({ fill: theme.colors.negative, onFill: theme.colors.negativeForeground }),
 };
 
 // ---------------------------------------------------------------------------
@@ -180,8 +180,8 @@ interface VariantStyle {
  * `.glassy-effect` carries the blur and the gradient, the element's `style`
  * attribute carries the per-instance fill, border and shadow.
  */
-function glassContainer(fill: string, theme: Theme): VariantStyle {
-  const glass = resolveGlassColors(theme.colors, fill);
+function glassContainer(fill: string, onFill: string, theme: Theme): VariantStyle {
+  const glass = resolveGlassColors(fill);
   return {
     container: {
       backgroundColor: glass.fill,
@@ -201,7 +201,10 @@ function glassContainer(fill: string, theme: Theme): VariantStyle {
         ? 'rgba(255, 255, 255, 0.10)'
         : 'rgba(0, 0, 0, 0.10)',
     },
-    textColor: glass.foreground,
+    // The fill's OWN on-colour. At 0.85 the pane is the fill, so it carries the
+    // label the fill was calibrated for — not the page's reading colour, which
+    // is what a 0.25 wash needed and what fails 1015 of 1260 rows here.
+    textColor: onFill,
     ringColor: fill,
   };
 }
@@ -214,8 +217,11 @@ function resolveVariantStyle(
   const c = theme.colors;
   const sizeConfig = SIZE_CONFIG[size];
 
-  const glassFill = GLASS_FILLS[variant];
-  if (glassFill) return glassContainer(glassFill(theme), theme);
+  const glass = GLASS_FILLS[variant];
+  if (glass) {
+    const { fill, onFill } = glass(theme);
+    return glassContainer(fill, onFill, theme);
+  }
 
   switch (variant) {
     case 'inverse':

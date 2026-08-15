@@ -76,9 +76,11 @@ export const Variants: Story = {
  * averaging unmistakable. It is built from real `View`s rather than a CSS
  * gradient so the story shows the same thing on a device.
  *
- * The bottom band is the case the material does NOT support — see the backdrop
- * range in `theme/glass-colors.ts` — and is here so the limit is visible rather
- * than merely described.
+ * The bottom band is over media. At 0.85 that is no longer the failure case it
+ * was at 0.25 — measured, the label clears AA on 85 of 108 preset x mode x
+ * backdrop rows, worst 3.61, against 50% failing at worst 1.02 before. It stays
+ * in the story because it is where the residual risk lives, not because it is
+ * unsupported.
  */
 const STRIPES = Array.from({ length: 40 }, (_, i) => i);
 
@@ -122,7 +124,7 @@ export const Glass: Story = {
           {buttons}
         </GlassBand>
         <GlassBand
-          label='over media — NOT supported, use variant="inverse"'
+          label='over media — the pane is 85%, so it behaves nearly like the solid fill'
           backdrop={
             <View
               style={[StyleSheet.absoluteFill, { backgroundColor: '#7b3f7a', opacity: 0.9 }]}

@@ -249,7 +249,7 @@ const ButtonComponent: React.FC<ButtonProps> = ({
         // both have to sit on the node that owns the shape — a border traces the
         // real edge only from here, and a shadow drawn on the clipping child is
         // clipped away.
-        const glass = resolveGlassColors(theme.colors, glassFill ?? theme.colors.primary);
+        const glass = resolveGlassColors(glassFill ?? theme.colors.primary);
         styles.backgroundColor = 'transparent';
         styles.borderWidth = glass.hairlineWidth;
         styles.borderColor = glass.hairline;
@@ -301,11 +301,12 @@ const ButtonComponent: React.FC<ButtonProps> = ({
   const resolvedTextColor = useMemo((): string => {
     switch (variant) {
       case 'primary':
-        // The page's own reading colour, not `primaryForeground`. A translucent
-        // pane's luminance follows the surface behind it, so the label has to be
-        // the token that is already legible on that surface — see
-        // `GlassColors.foreground`.
-        return resolveGlassColors(theme.colors, glassFill ?? theme.colors.primary).foreground;
+        // The fill's OWN on-colour, unchanged from the solid button. At 0.85 the
+        // pane IS the fill, so it carries the label the fill was calibrated for
+        // — see `resolveGlassColors` for why this flipped when the alpha did.
+        return isDestructive
+          ? theme.colors.negativeForeground
+          : theme.colors.primaryForeground;
       case 'secondary':
         return theme.colors.text;
       case 'inverse':
@@ -317,7 +318,7 @@ const ButtonComponent: React.FC<ButtonProps> = ({
       default:
         return theme.colors.text;
     }
-  }, [variant, theme, glassFill]);
+  }, [variant, theme, isDestructive]);
 
   const computedTextStyle = useMemo((): TextStyle => {
     const sizeConfig = SIZE_CONFIG[size];
