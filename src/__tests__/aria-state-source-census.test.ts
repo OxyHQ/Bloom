@@ -84,6 +84,16 @@ const RN_HOSTS = new Set([
   'ImageBackground',
   'Modal',
   'ActivityIndicator',
+  // `styles/styled-primitives.ts`'s four wrappers. They are the SAME primitives
+  // with `className` mapped onto `style` — every other prop is spread straight
+  // through to the host element — so the rules below apply to them exactly as
+  // they apply to the bare names above. Listing them here rather than in
+  // `DELEGATING_TAGS` is the honest classification: a delegating tag answers a
+  // role in its own file, and these answer nothing, they forward.
+  'StyledView',
+  'StyledText',
+  'StyledPressable',
+  'StyledImage',
 ]);
 
 /**
@@ -94,9 +104,12 @@ const RN_HOSTS = new Set([
  * stateful role has to be added here deliberately, and adding it is a claim that
  * its own file translates the role. `item/Item.tsx` does (`role === 'option'` →
  * `aria-selected`, a `button` toggle → `aria-pressed`, `menuitem`/`listitem` →
- * neither), and the runtime suite pins all four cases against the real DOM.
+ * neither) and `floating/shared.tsx`'s `MenuRowShell` does (`checkbox`/`radio` →
+ * `aria-checked`, `menuitem` → no checked state and `accessibilityRole="button"`,
+ * plus `aria-expanded` for a sub-trigger). The runtime suite pins every one of
+ * those cases against the real DOM.
  */
-const DELEGATING_TAGS = ['Item'];
+const DELEGATING_TAGS = ['Item', 'MenuRowShell'];
 
 const isDom = (tag: string): boolean => /^[a-z]/.test(tag);
 const isHost = (tag: string): boolean =>

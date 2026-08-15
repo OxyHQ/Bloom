@@ -9,7 +9,12 @@
  * `INTERNAL_DIRECTORIES`. Nothing here is public API, and a consumer reaching
  * `@oxyhq/bloom/floating` is a bug in the export map, not a supported import.
  */
-export { VIEWPORT_GUTTER, DEFAULT_SIDE_OFFSET, DEFAULT_ALIGN_OFFSET, MENU_MIN_WIDTH } from './constants';
+export {
+  VIEWPORT_GUTTER,
+  DEFAULT_SIDE_OFFSET,
+  DEFAULT_ALIGN_OFFSET,
+  MENU_MIN_WIDTH_CLASS,
+} from './constants';
 export {
   MenuSurfaceProvider,
   useMenuSurface,

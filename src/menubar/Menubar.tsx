@@ -7,34 +7,24 @@
  * ported call site keeps every part it wrote.
  */
 import React, { useMemo, useRef } from 'react';
-import { StyleSheet, useWindowDimensions, View, type View as RNView } from 'react-native';
+import type { View as RNView } from 'react-native';
 
 import { bloomShadowStyle } from '../design-tokens/shadows';
 import { SheetShell } from '../dialog/SheetShell';
 import {
-  FONT_MEDIUM,
-  MENUBAR_GAP,
-  MENUBAR_HEIGHT,
-  MENUBAR_HEIGHT_SM,
-  MENUBAR_PADDING,
-  MENUBAR_RADIUS,
-  MENUBAR_TRIGGER_PADDING_X,
-  MENUBAR_TRIGGER_PADDING_Y,
-  MENUBAR_TRIGGER_PADDING_Y_SM,
-  MENUBAR_TRIGGER_RADIUS,
-  PANEL_BORDER_WIDTH,
-  TEXT_SM,
-  TEXT_SM_LINE_HEIGHT,
+  MENUBAR_CLASS,
+  MENUBAR_TRIGGER_CLASS,
+  MENUBAR_TRIGGER_OPEN_CLASS,
+  MENUBAR_TRIGGER_TEXT_CLASS,
 } from '../floating/constants';
 import { MenuSurfaceProvider, type MenuSurfaceContextValue } from '../floating/context';
 import { createMenuRows } from '../floating/menu-rows';
 import { createInlineMenuSub } from '../floating/menu-sub-inline';
+import { cx } from '../floating/shared';
 import { TriggerSlot } from '../floating/TriggerSlot';
 import { useSheetOpenBridge } from '../floating/use-sheet-open-bridge';
 import { useControllableState } from '../hooks/use-controllable-state';
-import { BREAKPOINTS } from '../styles/breakpoints';
-import { useTheme } from '../theme/use-theme';
-import { Text } from '../typography';
+import { StyledText, StyledView } from '../styles/styled-primitives';
 import {
   MenubarMenuProvider,
   MenubarProvider,
@@ -54,11 +44,10 @@ export function Menubar({
   defaultValue,
   onValueChange,
   label = 'Menu bar',
+  className,
   style,
   testID,
 }: MenubarProps) {
-  const theme = useTheme();
-  const { width } = useWindowDimensions();
   const [openValue, setValue] = useControllableState<string | undefined>({
     value,
     defaultValue,
@@ -68,22 +57,21 @@ export function Menubar({
 
   return (
     <MenubarProvider value={context}>
-      <View
+      {/* `shadow-s` — the bar is a raised control, not an overlay, so it takes
+          the lighter of Bloom's two elevation roles. */}
+      <StyledView
         role="menubar"
         aria-label={label}
         testID={testID}
-        style={[
-          styles.bar,
-          // `h-10 sm:h-9`.
-          { height: width >= BREAKPOINTS.sm ? MENUBAR_HEIGHT_SM : MENUBAR_HEIGHT },
-          { backgroundColor: theme.colors.background, borderColor: theme.colors.borderLight },
-          // `shadow-sm shadow-black/5` — the bar is a raised control, not an
-          // overlay, so it takes the lighter of Bloom's two elevation roles.
-          bloomShadowStyle('s'),
-          style,
-        ]}>
+        className={cx(MENUBAR_CLASS, className)}
+      // `shadow-s` reaches WEB through the class; NATIVE takes the same role as
+      // an inline style, because `design-tokens/shadows` is platform-forked and
+      // its own contract is that a multi-layer `box-shadow` is not something to
+      // rely on NativeWind translating to RN elevation. On web the two agree, so
+      // whichever wins paints the same thing.
+        style={[bloomShadowStyle('s'), style]}>
         {children}
-      </View>
+      </StyledView>
     </MenubarProvider>
   );
 }
@@ -110,34 +98,28 @@ export function MenubarTrigger({
   asChild,
   disabled,
   label,
+  className,
   style,
   testID,
 }: MenubarTriggerProps) {
-  const theme = useTheme();
   const menu = useMenubarMenu();
-  const { width } = useWindowDimensions();
 
-  // `group flex items-center rounded-md px-2 py-1.5 sm:py-1`, plus `bg-accent`
-  // while its menu is open and `text-sm font-medium` for the label — the same
-  // chrome the web fork draws, so the bar reads identically on both platforms.
+  // `flex items-center rounded-md px-2 py-1.5`, plus `bg-accent` while its menu
+  // is open and `text-sm font-medium` for the label — the same chrome the web
+  // fork draws, so the bar reads identically on both platforms.
   const trigger = (
-    <View
-      style={[
-        styles.trigger,
-        {
-          paddingVertical:
-            width >= BREAKPOINTS.sm
-              ? MENUBAR_TRIGGER_PADDING_Y_SM
-              : MENUBAR_TRIGGER_PADDING_Y,
-        },
-        menu.open ? { backgroundColor: theme.colors.contrast50 } : null,
-      ]}>
+    <StyledView
+      className={cx(
+        MENUBAR_TRIGGER_CLASS,
+        menu.open && MENUBAR_TRIGGER_OPEN_CLASS,
+        className,
+      )}>
       {typeof children === 'string' ? (
-        <Text style={[styles.triggerText, { color: theme.colors.text }]}>{children}</Text>
+        <StyledText className={MENUBAR_TRIGGER_TEXT_CLASS}>{children}</StyledText>
       ) : (
         children
       )}
-    </View>
+    </StyledView>
   );
 
   return (
@@ -172,31 +154,6 @@ export function MenubarContent({ children, label = 'Menu', style }: MenubarConte
     </SheetShell>
   );
 }
-
-const styles = StyleSheet.create({
-  // `bg-background border-border flex h-10 flex-row items-center gap-1
-  //  rounded-md border p-1 shadow-sm shadow-black/5 sm:h-9`.
-  bar: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    alignSelf: 'flex-start',
-    gap: MENUBAR_GAP,
-    padding: MENUBAR_PADDING,
-    borderWidth: PANEL_BORDER_WIDTH,
-    borderRadius: MENUBAR_RADIUS,
-  },
-  trigger: {
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingHorizontal: MENUBAR_TRIGGER_PADDING_X,
-    borderRadius: MENUBAR_TRIGGER_RADIUS,
-  },
-  triggerText: {
-    fontSize: TEXT_SM,
-    lineHeight: TEXT_SM_LINE_HEIGHT,
-    fontWeight: FONT_MEDIUM,
-  },
-});
 
 const rows = createMenuRows('Menubar', createInlineMenuSub);
 

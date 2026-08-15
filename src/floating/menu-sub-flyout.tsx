@@ -32,20 +32,20 @@
  * one would install the competing Escape handler this file exists to order.
  */
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { StyleSheet, View } from 'react-native';
+import { View } from 'react-native';
 
 import { useControllableState } from '../hooks/use-controllable-state';
 import { ChevronRight_Stroke2_Corner0_Rounded as ChevronRightIcon } from '../icons/Chevron';
-import { Item } from '../item';
+import { StyledView } from '../styles/styled-primitives';
 import { useTheme } from '../theme/use-theme';
 import {
   DEFAULT_SIDE_OFFSET,
-  MENU_MIN_WIDTH,
-  PANEL_PADDING,
+  MENU_SUB_PANEL_CLASS,
+  MENU_SUB_SCROLL_CLASS,
   ROW_ICON_SIZE,
 } from './constants';
 import { FloatingPanel } from './FloatingPanel';
-import { rowShapeStyles, splitChildren, useRowStyle } from './shared';
+import { cx, MenuRowChevron, MenuRowShell, splitChildren, SUB_TRIGGER_CLASS } from './shared';
 import { useAnchorRect } from './use-anchor-rect';
 import type {
   MenuSubContentProps,
@@ -181,12 +181,12 @@ export function createFlyoutMenuSub(prefix: string): MenuSubParts {
     inset = false,
     leading,
     accessibilityLabel,
+    className,
     style,
     testID,
   }: MenuSubTriggerProps) {
     const theme = useTheme();
     const sub = useSubFlyout();
-    const rowStyle = useRowStyle();
     const { title, body } = splitChildren(children);
     const [node, setNode] = useState<View | null>(null);
 
@@ -228,43 +228,42 @@ export function createFlyoutMenuSub(prefix: string): MenuSubParts {
 
     return (
       <View ref={attach}>
-        <Item
-          title={title}
-          disabled={disabled}
+        <MenuRowShell
           role="menuitem"
           expanded={sub.open}
+          disabled={disabled}
+          inset={inset}
           leading={leading}
-          // `text-foreground ml-auto size-4 shrink-0`, pointing RIGHT: on web the
-          // sub-menu is beside the row, not under it, so an up/down disclosure
-          // chevron would describe a relationship the panel does not have.
+          // `size-4 shrink-0 ms-auto text-fg-secondary`, pointing RIGHT: on web
+          // the sub-menu is beside the row, not under it, so an up/down
+          // disclosure chevron would describe a relationship the panel does not
+          // have. The target paints it in the SECONDARY colour, one step back
+          // from the label it sits beside.
           trailing={
-            <ChevronRightIcon
-              width={ROW_ICON_SIZE}
-              height={ROW_ICON_SIZE}
-              fill={theme.colors.text}
-            />
+            <MenuRowChevron>
+              <ChevronRightIcon
+                width={ROW_ICON_SIZE}
+                height={ROW_ICON_SIZE}
+                fill={theme.colors.textSecondary}
+              />
+            </MenuRowChevron>
           }
+          title={title}
           // A press toggles, so a pointer user who clicked rather than hovered
           // can shut it again, and a touch-web user can reach it at all.
           onPress={() => (sub.open ? sub.closeAndRefocus() : sub.keepOpen())}
           accessibilityLabel={accessibilityLabel}
-          titleStyle={rowShapeStyles.rowText}
-          // Upstream's sub-trigger is the one row with NO `gap-2`.
-          style={[
-            rowStyle,
-            rowShapeStyles.subTrigger,
-            inset ? rowShapeStyles.inset : null,
-            style,
-          ]}
+          className={cx(SUB_TRIGGER_CLASS, className)}
+          style={style}
           testID={testID}>
           {body}
-        </Item>
+        </MenuRowShell>
       </View>
     );
   }
   MenuSubTrigger.displayName = `${prefix}SubTrigger`;
 
-  function MenuSubContent({ children, style }: MenuSubContentProps) {
+  function MenuSubContent({ children, className, style }: MenuSubContentProps) {
     const sub = useSubFlyout();
     const anchor = useAnchorRect(sub.triggerRef, sub.open);
     const [node, setNode] = useState<View | null>(null);
@@ -321,9 +320,6 @@ export function createFlyoutMenuSub(prefix: string): MenuSubParts {
         open={sub.open}
         anchor={anchor}
         role="menu"
-        // `min-w-[8rem]`, the same floor as a root panel: upstream's SubContent
-        // takes the root panel's treatment verbatim.
-        minWidth={MENU_MIN_WIDTH}
         side="right"
         // The panel's first row lines up with the trigger row it flew out of.
         align="start"
@@ -331,14 +327,19 @@ export function createFlyoutMenuSub(prefix: string): MenuSubParts {
         dismissible={false}
         modal={false}
         onDismiss={sub.closeAndRefocus}
+        // `w-64` — a sub panel is a FIXED 256px, so a column of flyouts does not
+        // step in and out as their labels change length.
+        className={cx(MENU_SUB_PANEL_CLASS, className)}
         style={style}>
-        {/* Negative margin + matching padding so this listener box covers the
-            panel's own `p-1` too. Without it the 4px inset is a ring where the
-            pointer is over the panel but not over anything listening, and a
+        {/* `-mx-1 px-1 max-h-96 overflow-y-auto`: the negative inset bleeds the
+            scroller to the panel edge and pads the content back, so the
+            scrollbar is not inset by the panel's own `p-1`. It doubles as the
+            flyout's pointer hit box — without it that 4px ring is a place where
+            the pointer is over the panel but over nothing listening, and a
             pointer resting there would schedule a close. */}
-        <View ref={setNode} style={styles.hitBox}>
+        <StyledView ref={setNode} className={MENU_SUB_SCROLL_CLASS}>
           {children}
-        </View>
+        </StyledView>
       </FloatingPanel>
     );
   }
@@ -346,10 +347,3 @@ export function createFlyoutMenuSub(prefix: string): MenuSubParts {
 
   return { Sub: MenuSub, SubTrigger: MenuSubTrigger, SubContent: MenuSubContent };
 }
-
-const styles = StyleSheet.create({
-  hitBox: {
-    margin: -PANEL_PADDING,
-    padding: PANEL_PADDING,
-  },
-});

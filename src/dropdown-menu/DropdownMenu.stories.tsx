@@ -3,6 +3,7 @@ import { View } from 'react-native';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
 import { Button } from '../button';
+import { Person_Stroke2_Corner0_Rounded as PersonIcon } from '../icons/Person';
 import { Text } from '../typography';
 import {
   DropdownMenu,
@@ -40,8 +41,11 @@ export const Basic: Story = {
           <DropdownMenuLabel>My account</DropdownMenuLabel>
           <DropdownMenuSeparator />
           <DropdownMenuGroup>
+            {/* A leading glyph takes the target's base treatment: full colour
+                at 70%, not a secondary-coloured icon. */}
             <DropdownMenuItem
               testID="menu-profile"
+              leading={<PersonIcon size="sm" />}
               trailing={<DropdownMenuShortcut>⇧⌘P</DropdownMenuShortcut>}>
               Profile
             </DropdownMenuItem>

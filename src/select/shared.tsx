@@ -12,24 +12,19 @@
  * owner and neither fork re-exports the other's work.
  */
 import React, { createContext, useContext } from 'react';
-import { Pressable, StyleSheet, useWindowDimensions, View } from 'react-native';
 
-import {
-  ROW_ICON_SIZE,
-  ROW_PADDING_X,
-  ROW_PADDING_Y,
-  ROW_PADDING_Y_SM,
-  SELECT_SCROLL_BUTTON_PADDING_Y,
-  TEXT_XS,
-  TEXT_XS_LINE_HEIGHT,
-} from '../floating/constants';
+import { ROW_ICON_SIZE } from '../floating/constants';
+import { cx } from '../floating/shared';
 import {
   ChevronBottom_Stroke2_Corner0_Rounded as ChevronDownIcon,
   ChevronTop_Stroke2_Corner0_Rounded as ChevronUpIcon,
 } from '../icons/Chevron';
-import { BREAKPOINTS } from '../styles/breakpoints';
+import {
+  StyledPressable,
+  StyledText,
+  StyledView,
+} from '../styles/styled-primitives';
 import { useTheme } from '../theme/use-theme';
-import { Text } from '../typography';
 import type {
   SelectGroupProps,
   SelectItemContextValue,
@@ -80,33 +75,27 @@ export const SelectScrollProvider = SelectScrollContext.Provider;
 // ---------------------------------------------------------------------------
 
 /** A set of related options, so a screen reader announces them as one. */
-export function SelectGroup({ children, style }: SelectGroupProps) {
+export function SelectGroup({ children, className, style }: SelectGroupProps) {
   // `group` carries no ARIA state, so there is no `aria-*` counterpart here.
   return (
-    <View role="group" style={style}>
+    <StyledView role="group" className={className} style={style}>
       {children}
-    </View>
+    </StyledView>
   );
 }
 SelectGroup.displayName = 'SelectGroup';
 
 /** The heading of a `SelectGroup`. */
-export function SelectLabel({ children, style }: SelectLabelProps) {
-  const theme = useTheme();
-  const { width } = useWindowDimensions();
-  // `text-muted-foreground px-2 py-2 text-xs sm:py-1.5` — a select's group
-  // heading is the one label in this vocabulary that IS muted and IS `text-xs`,
-  // unlike a menu's (`text-foreground text-sm font-medium`).
+export function SelectLabel({ children, className, style }: SelectLabelProps) {
+  // `text-muted-foreground px-2 py-1.5 text-xs` — a select's group heading is
+  // the one label in this vocabulary that IS muted and IS `text-xs`, unlike a
+  // menu's (`text-foreground text-sm font-medium`).
   return (
-    <Text
-      style={[
-        styles.label,
-        { paddingVertical: width >= BREAKPOINTS.sm ? ROW_PADDING_Y_SM : ROW_PADDING_Y },
-        { color: theme.colors.textSecondary },
-        style,
-      ]}>
+    <StyledText
+      className={cx('px-space-8 py-1.5 text-xs text-muted-foreground', className)}
+      style={style}>
       {children}
-    </Text>
+    </StyledText>
   );
 }
 SelectLabel.displayName = 'SelectLabel';
@@ -124,7 +113,7 @@ SelectLabel.displayName = 'SelectLabel';
  * `SelectContent` renders both, so a caller gets them by default. They are
  * exported as well, for a caller composing their own content.
  */
-function SelectScrollButton({ direction, style }: SelectScrollButtonProps) {
+function SelectScrollButton({ direction, className, style }: SelectScrollButtonProps) {
   const theme = useTheme();
   const scroll = useContext(SelectScrollContext);
   const isUp = direction === 'up';
@@ -133,41 +122,36 @@ function SelectScrollButton({ direction, style }: SelectScrollButtonProps) {
 
   const Chevron = isUp ? ChevronUpIcon : ChevronDownIcon;
   return (
-    <Pressable
+    <StyledPressable
       accessibilityRole="button"
       accessibilityLabel={isUp ? 'Scroll up' : 'Scroll down'}
       onPress={() => scroll.scrollBy(direction)}
-      style={[styles.scrollButton, { backgroundColor: theme.colors.background }, style]}>
+      // `flex cursor-default items-center justify-center py-1`, opaque so the
+      // rows scrolling under it do not show through.
+      className={cx('items-center justify-center py-space-4 bg-popover', className)}
+      style={style}>
       {/* `size-4` — the same 16px glyph the rows use. */}
       <Chevron
         width={ROW_ICON_SIZE}
         height={ROW_ICON_SIZE}
         fill={theme.colors.textSecondary}
       />
-    </Pressable>
+    </StyledPressable>
   );
 }
 
-export function SelectScrollUpButton({ style }: Omit<SelectScrollButtonProps, 'direction'>) {
-  return <SelectScrollButton direction="up" style={style} />;
+export function SelectScrollUpButton({
+  className,
+  style,
+}: Omit<SelectScrollButtonProps, 'direction'>) {
+  return <SelectScrollButton direction="up" className={className} style={style} />;
 }
 SelectScrollUpButton.displayName = 'SelectScrollUpButton';
 
-export function SelectScrollDownButton({ style }: Omit<SelectScrollButtonProps, 'direction'>) {
-  return <SelectScrollButton direction="down" style={style} />;
+export function SelectScrollDownButton({
+  className,
+  style,
+}: Omit<SelectScrollButtonProps, 'direction'>) {
+  return <SelectScrollButton direction="down" className={className} style={style} />;
 }
 SelectScrollDownButton.displayName = 'SelectScrollDownButton';
-
-const styles = StyleSheet.create({
-  label: {
-    paddingHorizontal: ROW_PADDING_X,
-    fontSize: TEXT_XS,
-    lineHeight: TEXT_XS_LINE_HEIGHT,
-  },
-  // `flex cursor-default items-center justify-center py-1`.
-  scrollButton: {
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingVertical: SELECT_SCROLL_BUTTON_PADDING_Y,
-  },
-});

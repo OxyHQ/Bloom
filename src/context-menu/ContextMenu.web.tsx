@@ -9,11 +9,12 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type { View } from 'react-native';
 
-import { MENU_MIN_WIDTH } from '../floating/constants';
+import { MENU_MIN_WIDTH_CLASS } from '../floating/constants';
 import { MenuSurfaceProvider, type MenuSurfaceContextValue } from '../floating/context';
 import { FloatingPanel } from '../floating/FloatingPanel';
 import { createMenuRows } from '../floating/menu-rows';
 import { createFlyoutMenuSub } from '../floating/menu-sub-flyout';
+import { cx } from '../floating/shared';
 import { TriggerSlot } from '../floating/TriggerSlot';
 import type { FloatingAnchor } from '../floating/types';
 import { ContextMenuProvider, useContextMenu } from './context';
@@ -113,8 +114,9 @@ export function ContextMenuContent({
   sideOffset = 0,
   alignOffset,
   dismissible,
-  minWidth = MENU_MIN_WIDTH,
+  minWidth,
   maxWidth,
+  className,
   style,
   testID,
 }: ContextMenuContentProps) {
@@ -139,6 +141,7 @@ export function ContextMenuContent({
       minWidth={minWidth}
       maxWidth={maxWidth}
       onDismiss={onDismiss}
+      className={cx(MENU_MIN_WIDTH_CLASS, className)}
       style={style}
       testID={testID}>
       <MenuSurfaceProvider value={surface}>{children}</MenuSurfaceProvider>

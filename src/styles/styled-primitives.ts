@@ -22,7 +22,7 @@
  * versions stay unanimated so an element type is not created twice for the same
  * primitive. `button/Button.tsx` is the reference.
  */
-import type { ComponentType } from 'react';
+import type { ComponentType, Ref } from 'react';
 import {
   Image,
   Pressable,
@@ -44,17 +44,39 @@ import { styled } from 'react-native-css';
  * also honest: the function form of `style` is deliberately excluded, since
  * NativeWind's css-interop swallows it and Bloom never uses it.
  */
-export type StyledPressableProps = Omit<PressableProps, 'style'> & {
+type StyledPressableBase = Omit<PressableProps, 'style'> & {
   style?: StyleProp<ViewStyle>;
 };
 
-export const StyledView: ComponentType<ViewProps> = styled(View, { className: 'style' });
+/**
+ * `ref` is on the PUBLISHED type and deliberately not on the one handed to
+ * `styled()`: adding it to the argument widens that dot-path union past the
+ * checker's limit again, and the mapping only ever names `className`.
+ */
+export type StyledPressableProps = StyledPressableBase & {
+  ref?: Ref<View>;
+};
 
-export const StyledText: ComponentType<TextProps> = styled(Text, { className: 'style' });
+/**
+ * `styled()` is declared as returning `any`, so these annotations are the whole
+ * type contract — including `ref`, which under React 19 is an ordinary prop that
+ * `useCssElement` spreads onto the wrapped primitive. Leaving it out made a
+ * measured node (a flyout's scroll box, a select option) a compile error while
+ * the runtime forwarded it fine.
+ */
+export const StyledView: ComponentType<ViewProps & { ref?: Ref<View> }> = styled(View, {
+  className: 'style',
+});
 
-export const StyledImage: ComponentType<ImageProps> = styled(Image, { className: 'style' });
+export const StyledText: ComponentType<TextProps & { ref?: Ref<Text> }> = styled(Text, {
+  className: 'style',
+});
+
+export const StyledImage: ComponentType<ImageProps & { ref?: Ref<Image> }> = styled(Image, {
+  className: 'style',
+});
 
 export const StyledPressable: ComponentType<StyledPressableProps> = styled(
-  Pressable as ComponentType<StyledPressableProps>,
+  Pressable as ComponentType<StyledPressableBase>,
   { className: 'style' },
 );

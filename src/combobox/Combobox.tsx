@@ -13,7 +13,6 @@ import { useControllableState } from '../hooks/use-controllable-state';
 import { Text } from '../typography';
 import { Item } from '../item';
 import { Search } from '../search';
-import { PANEL_PADDING } from '../floating/constants';
 import { borderRadius, fontSize, space } from '../styles/tokens';
 import {
   ChevronTopBottom_Stroke2_Corner0_Rounded as ChevronUpDownIcon,
@@ -165,8 +164,10 @@ export function createCombobox(PopoverImpl: PopoverModule) {
           // with `className="w-[200px] p-0"`: this panel holds a search field
           // and `Item` rows, which have to reach its edge to draw a full-width
           // highlight, and it sizes to the field it drops from rather than to a
-          // fixed `w-72`.
-          style={styles.panel}>
+          // fixed `w-72`. A CLASS, because that is what `PopoverContent`'s own
+          // chrome is now — an inline style would outrank it silently instead of
+          // replacing the two utilities it means to.
+          className="w-auto p-space-4">
           <View style={styles.searchWrap}>
             <Search
               ref={searchRef}
@@ -262,10 +263,6 @@ const styles = StyleSheet.create({
   // exception: its trigger is a full-width field, so the wrapper stretches.
   triggerSlot: {
     alignSelf: 'stretch',
-  },
-  panel: {
-    width: 'auto',
-    padding: PANEL_PADDING,
   },
   trigger: {
     flexDirection: 'row',
