@@ -1,9 +1,9 @@
 import React, { memo, useCallback } from 'react';
-import { View, Text, Pressable, Animated } from 'react-native';
+import { View, Text, Pressable } from 'react-native';
 
 import { useTheme } from '../theme/use-theme';
 import { space } from '../styles/tokens';
-import { usePressAnimation } from '../hooks/use-press-animation';
+import { useInteractionState } from '../hooks/use-interaction-state';
 import { RadioIndicator } from '../radio-indicator';
 import type { RadioGroupProps, RadioProps } from './types';
 
@@ -17,9 +17,6 @@ const SIZE_CONFIG = {
   medium: { indicator: 22, fontSize: 15, lineHeight: 22, descFontSize: 13 },
   large: { indicator: 26, fontSize: 16, lineHeight: 24, descFontSize: 14 },
 } as const;
-
-/** The same dip as `Checkbox`: the target is small, so the scale has to be. */
-const PRESS_SCALE = 0.9;
 
 const HIT_SLOP = { top: 8, bottom: 8, left: 8, right: 8 } as const;
 
@@ -39,11 +36,12 @@ const RadioComponent = function Radio<Value extends string = string>({
 }: RadioProps<Value>) {
   const theme = useTheme();
   const sizeConfig = SIZE_CONFIG[size];
-  // The shared press hook, which is where the reduced-motion and pointer-type
-  // suppressions live — the same dip `Checkbox` applies to its box.
-  const { scaleAnim, onPressIn, onPressOut } = usePressAnimation(
-    disabled ? undefined : PRESS_SCALE,
-  );
+  // The INDICATOR answers the press, not the row — the same choice `Checkbox`
+  // makes about its box, and for the same reason: a wash across the option and
+  // its description would read as a list row rather than as one of N. The flag
+  // travels rather than a colour, because the indicator is the node that holds
+  // both colours the state layer is built from.
+  const { state: pressed, onIn: onPressIn, onOut: onPressOut } = useInteractionState();
 
   const handlePress = useCallback(() => {
     // Re-choosing the chosen option is a no-op. A radio, unlike a checkbox, has
@@ -79,13 +77,12 @@ const RadioComponent = function Radio<Value extends string = string>({
       hitSlop={HIT_SLOP}
       testID={testID}
     >
-      <Animated.View style={{ transform: [{ scale: scaleAnim }] }}>
-        <RadioIndicator
-          selected={selected}
-          size={sizeConfig.indicator}
-          selectedColor={color}
-        />
-      </Animated.View>
+      <RadioIndicator
+        selected={selected}
+        pressed={pressed && !disabled}
+        size={sizeConfig.indicator}
+        selectedColor={color}
+      />
 
       {(label || description) && (
         <View style={{ flex: 1, paddingTop: 1 }}>

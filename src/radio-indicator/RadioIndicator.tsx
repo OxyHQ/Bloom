@@ -2,10 +2,12 @@ import React, { memo } from 'react';
 import { View } from 'react-native';
 
 import { useTheme } from '../theme/use-theme';
+import { pressedSurface } from '../theme/press-colors';
 import type { RadioIndicatorProps } from './types';
 
 const RadioIndicatorComponent: React.FC<RadioIndicatorProps> = ({
   selected,
+  pressed = false,
   size = 20,
   selectedColor,
   borderColor,
@@ -20,6 +22,14 @@ const RadioIndicatorComponent: React.FC<RadioIndicatorProps> = ({
   // yellow). A caller-supplied custom color falls back to white.
   const dotColor = selectedColor == null ? theme.colors.primaryForeground : '#FFFFFF';
   const dotSize = size * 0.5;
+  const restBackground = selected ? resolvedSelectedColor : 'transparent';
+  // Unselected there is no fill, so the press IS the fill and it takes the
+  // neutral wash inside the ring — with no dot, so it still cannot be read as
+  // chosen. Selected the circle keeps its colour and gains a state layer of the
+  // dot's own. See `theme/press-colors.ts`.
+  const background = pressed
+    ? pressedSurface(theme.colors, restBackground, dotColor)
+    : restBackground;
 
   return (
     <View
@@ -31,7 +41,7 @@ const RadioIndicatorComponent: React.FC<RadioIndicatorProps> = ({
           borderRadius: size / 2,
           borderWidth: selected ? 0 : 2,
           borderColor: selected ? undefined : resolvedBorderColor,
-          backgroundColor: selected ? resolvedSelectedColor : 'transparent',
+          backgroundColor: background,
           alignItems: 'center',
           justifyContent: 'center',
         },

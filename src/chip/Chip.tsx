@@ -4,14 +4,14 @@ import {
   Text,
   Platform,
   Pressable,
-  Animated,
   type ViewStyle,
   type TextStyle,
 } from 'react-native';
 
 import { useTheme } from '../theme/use-theme';
 import { resolveAccentColors } from '../theme/accent-colors';
-import { usePressAnimation } from '../hooks/use-press-animation';
+import { pressedSurface } from '../theme/press-colors';
+import { useInteractionState } from '../hooks/use-interaction-state';
 import { TimesLarge_Stroke2_Corner0_Rounded as TimesIcon } from '../icons/Times';
 import { interactiveWebCss, useInteractiveWebCss } from '../styles/interactive-web-css';
 import type { WebCssStyle } from '../styles/web-view-style';
@@ -27,8 +27,6 @@ const SIZE_CONFIG = {
   medium: { height: 32, fontSize: 14, paddingHorizontal: 12, iconGap: 6, closeIcon: 'sm' },
   large: { height: 40, fontSize: 16, paddingHorizontal: 16, iconGap: 8, closeIcon: 'md' },
 } as const;
-
-const PRESS_SCALE = 0.95;
 
 // ---------------------------------------------------------------------------
 //  Keyboard focus on web
@@ -71,6 +69,11 @@ const BLOOM_CHIP_CSS = interactiveWebCss({
   `,
   transition: 'background-color 120ms ease, border-color 120ms ease, opacity 120ms ease',
   hover: { declarations: 'opacity: 0.9;' },
+  // No `press` rule, deliberately: `Chip` is a react-native-web control, so its
+  // held state is JS (`useInteractionState` below) and reaches the DOM as an
+  // inline style, which outranks this sheet in BOTH directions. A `:active` rule
+  // here would be dead while the two agree and wrong in the one frame they do
+  // not. See the note at the top of `styles/interactive-web-css.ts`.
   outlineOffset: 2,
 });
 
@@ -94,11 +97,21 @@ const ChipComponent: React.FC<ChipProps> = ({
 }) => {
   const theme = useTheme();
   useInteractiveWebCss(STYLE_ID, BLOOM_CHIP_CSS);
-  const { scaleAnim, onPressIn, onPressOut } = usePressAnimation(PRESS_SCALE);
+  const { state: pressed, onIn: onPressIn, onOut: onPressOut } = useInteractionState();
   // Selection promotes the chip to the brand tone \u2014 the filter-pill behaviour \u2014
   // rather than to a second colour system of its own.
   const colors = resolveAccentColors(theme.colors, selected ? 'primary' : color, variant);
   const sizeConfig = SIZE_CONFIG[size];
+  // All three fills go through the one resolver, and each lands somewhere
+  // different because their REST surfaces do: `solid` keeps its tone and gains a
+  // state layer of its own label colour; `subtle` is a translucent tint, so the
+  // layer deepens the tint AND its alpha rather than flattening it to an opaque
+  // fill; `outlined` has no fill at all, so the press IS the fill and it takes
+  // the neutral wash. See `theme/press-colors.ts`.
+  const pressedBackground = useMemo(
+    () => pressedSurface(theme.colors, colors.background, colors.foreground),
+    [theme.colors, colors.background, colors.foreground],
+  );
 
   const containerStyle = useMemo((): WebCssStyle => ({
     height: sizeConfig.height,
@@ -169,45 +182,55 @@ const ChipComponent: React.FC<ChipProps> = ({
 
   if (onPress) {
     return (
-      <Animated.View style={{ transform: [{ scale: scaleAnim }] }}>
-        <Pressable
-          // The DOM hook the adopted sheet above hangs off.
-          //
-          // It MUST go through `dataSet`. react-native-web filters props against
-          // a fixed list and drops anything it does not know, so a literal
-          // `'data-bloom-chip'` prop never reaches the DOM — measured in a real
-          // browser: the attribute was absent, the sheet matched nothing, and
-          // the ring that appeared under keyboard focus was Chrome's own default,
-          // which is exactly what a working ring looks like from a distance.
-          // `dataSet` is the one channel react-native-web turns into `data-*`.
-          //
-          // A cast because react-native has no type for it (it is a
-          // react-native-web prop, inert on native). Same web-only-attribute case
-          // as `TextField`'s DOM mouse handlers, registered in
-          // `classname-interop.test.ts`'s exemption list. It is NOT a `className`
-          // smuggled past `styled()`, which is what that gate forbids.
-          {...(IS_WEB ? ({ dataSet: { bloomChip: '' } } as Record<string, unknown>) : {})}
-          style={[containerStyle, disabled && { opacity: 0.5 }, style]}
-          onPress={onPress}
-          onPressIn={onPressIn}
-          onPressOut={onPressOut}
-          disabled={disabled}
-          accessibilityLabel={accessibilityLabel}
-          accessibilityRole="button"
-          // Both spellings, because neither platform reads the other's and
-          // there is no single prop that serves both here: react-native-web
-          // ignores `accessibilityState`, while React Native has no
-          // `aria-pressed` at all (its `AccessibilityState` is
-          // disabled/selected/checked/busy/expanded). `aria-pressed` is also
-          // the state ARIA defines for a toggle with `role="button"` —
-          // `aria-selected` would be invalid on that role.
-          accessibilityState={{ disabled, selected }}
-          aria-pressed={selected}
-          testID={testID}
-        >
-          {content}
-        </Pressable>
-      </Animated.View>
+      // ONE node. The pressable used to sit inside an `Animated.View` that
+      // existed only to hold a press-scale transform, and that wrapper — not the
+      // pill — was the flex child of whatever laid the chip out, so the pill's
+      // own `alignSelf: 'flex-start'` and `flexShrink: 0` applied inside a box
+      // that had already been sized. Same defect `Button` and `Fab` shed; with
+      // the press expressed as a background there is nothing left to wrap.
+      <Pressable
+        // The DOM hook the adopted sheet above hangs off.
+        //
+        // It MUST go through `dataSet`. react-native-web filters props against
+        // a fixed list and drops anything it does not know, so a literal
+        // `'data-bloom-chip'` prop never reaches the DOM — measured in a real
+        // browser: the attribute was absent, the sheet matched nothing, and
+        // the ring that appeared under keyboard focus was Chrome's own default,
+        // which is exactly what a working ring looks like from a distance.
+        // `dataSet` is the one channel react-native-web turns into `data-*`.
+        //
+        // A cast because react-native has no type for it (it is a
+        // react-native-web prop, inert on native). Same web-only-attribute case
+        // as `TextField`'s DOM mouse handlers, registered in
+        // `classname-interop.test.ts`'s exemption list. It is NOT a `className`
+        // smuggled past `styled()`, which is what that gate forbids.
+        {...(IS_WEB ? ({ dataSet: { bloomChip: '' } } as Record<string, unknown>) : {})}
+        style={[
+          containerStyle,
+          disabled && { opacity: 0.5 },
+          // Before the caller's `style`, so `style` still wins the array.
+          pressed && !disabled && { backgroundColor: pressedBackground },
+          style,
+        ]}
+        onPress={onPress}
+        onPressIn={onPressIn}
+        onPressOut={onPressOut}
+        disabled={disabled}
+        accessibilityLabel={accessibilityLabel}
+        accessibilityRole="button"
+        // Both spellings, because neither platform reads the other's and
+        // there is no single prop that serves both here: react-native-web
+        // ignores `accessibilityState`, while React Native has no
+        // `aria-pressed` at all (its `AccessibilityState` is
+        // disabled/selected/checked/busy/expanded). `aria-pressed` is also
+        // the state ARIA defines for a toggle with `role="button"` —
+        // `aria-selected` would be invalid on that role.
+        accessibilityState={{ disabled, selected }}
+        aria-pressed={selected}
+        testID={testID}
+      >
+        {content}
+      </Pressable>
     );
   }
 

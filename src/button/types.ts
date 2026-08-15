@@ -75,7 +75,6 @@ export interface ButtonProps {
   accessibilityLabel?: string;
   accessibilityHint?: string;
   hitSlop?: { top: number; bottom: number; left: number; right: number };
-  activeOpacity?: number;
   testID?: string;
   className?: string;
 

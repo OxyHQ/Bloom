@@ -1,6 +1,5 @@
 import React, { memo, useMemo, type ComponentType } from 'react';
 import {
-  Animated,
   Pressable,
   StyleSheet,
   View,
@@ -13,7 +12,7 @@ import { BlurView } from 'expo-blur';
 
 import { useTheme } from '../theme/use-theme';
 import { borderRadius } from '../styles/tokens';
-import { usePressAnimation } from '../hooks/use-press-animation';
+import { pressedSurface } from '../theme/press-colors';
 import { useInteractionState } from '../hooks/use-interaction-state';
 import {
   applyIconColor,
@@ -24,7 +23,6 @@ import type { FrostedIconButtonProps } from './types';
 
 export type { FrostedIconButtonProps, FrostedIconButtonSize } from './types';
 
-const PRESS_SCALE = 0.94;
 const DEFAULT_HIT_SLOP = { top: 8, bottom: 8, left: 8, right: 8 } as const;
 
 // BlurView intensity (0–100). A gentle frost so the chip reads over an image
@@ -34,11 +32,12 @@ const BLUR_INTENSITY = 24;
 // ---------------------------------------------------------------------------
 //  ONE node, like `Fab` and `Button` and like this component's own `.web.tsx`
 //  fork (a single `<button>`). It used to be an unstyled `Animated.View` holding
-//  the press transform and the caller's `style`, wrapping the `Pressable` that
+//  a press transform and the caller's `style`, wrapping the `Pressable` that
 //  carried `className` and the chrome — so `style` and `className` landed on
 //  DIFFERENT nodes and every layout class applied inside a box the parent had
 //  already laid out. Silent on native, correct on web. Full reasoning in
-//  `button/Button.tsx`.
+//  `button/Button.tsx`, including why no animated component is involved now that
+//  the press is a background rather than a transform.
 // ---------------------------------------------------------------------------
 
 /** The prop surface handed to the pressable, narrowed to avoid `TS2590`. */
@@ -63,7 +62,6 @@ const FrostedPressable: ComponentType<FrostedPressableProps> = Pressable;
 const StyledPressable: ComponentType<FrostedPressableProps> = styled(FrostedPressable, {
   className: 'style',
 });
-const AnimatedPressable = Animated.createAnimatedComponent(StyledPressable);
 
 const FrostedIconButtonComponent: React.FC<FrostedIconButtonProps> = ({
   onPress,
@@ -86,32 +84,27 @@ const FrostedIconButtonComponent: React.FC<FrostedIconButtonProps> = ({
     [theme.colors, theme.isDark],
   );
 
-  const { scaleAnim, onPressIn: onScalePressIn, onPressOut: onScalePressOut } =
-    usePressAnimation(disabled ? undefined : PRESS_SCALE);
   const { state: pressed, onIn: onPressedIn, onOut: onPressedOut } =
     useInteractionState();
 
-  const handlePressIn = disabled
-    ? undefined
-    : () => {
-        onScalePressIn();
-        onPressedIn();
-      };
-  const handlePressOut = disabled
-    ? undefined
-    : () => {
-        onScalePressOut();
-        onPressedOut();
-      };
-
-  const highlighted = pressed && !disabled;
-  const surface = active
-    ? palette.activeSurface
-    : highlighted
-      ? palette.surfaceHover
-      : palette.surface;
-  const ring = highlighted ? palette.ringHover : palette.ring;
+  const held = pressed && !disabled;
   const iconColor = active ? palette.activeIcon : palette.icon;
+  // The frosted chip already had a background press state; what it did NOT have
+  // was one distinct from hover, and the scale was carrying that distinction on
+  // its own. It steps from `surfaceHover` rather than from `surface` because on
+  // web a press is always also a hover, so stepping from rest would land a
+  // pressed chip barely past a hovered one (measured: 0.243 against 0.22 alpha
+  // in dark mode). Off the ACTIVE state the layer is `colors.text`, which is the
+  // same hue the frosted surface is a tint of — so the composite is that tint at
+  // a higher alpha, which is exactly the right answer over arbitrary media, and
+  // one this component does not need a fourth palette member to state.
+  const restSurface = active ? palette.activeSurface : palette.surface;
+  const surface = held
+    ? active
+      ? pressedSurface(theme.colors, palette.activeSurface, palette.activeIcon)
+      : pressedSurface(theme.colors, palette.surfaceHover, theme.colors.text)
+    : restSurface;
+  const ring = held ? palette.ringHover : palette.ring;
 
   const containerStyle = useMemo((): ViewStyle => {
     return {
@@ -143,20 +136,12 @@ const FrostedIconButtonComponent: React.FC<FrostedIconButtonProps> = ({
   const content = icon ?? children;
 
   return (
-    <AnimatedPressable
+    <StyledPressable
       className={className}
-      style={[
-        containerStyle,
-        disabled && styles.disabled,
-        // Before the caller's `style`, so `style` still wins the array. A caller
-        // who sets `transform` now replaces the press scale instead of
-        // composing with it — the trade `Button` made for the same reason.
-        { transform: [{ scale: scaleAnim }] },
-        style,
-      ]}
+      style={[containerStyle, disabled && styles.disabled, style]}
       onPress={disabled ? undefined : onPress}
-      onPressIn={handlePressIn}
-      onPressOut={handlePressOut}
+      onPressIn={disabled ? undefined : onPressedIn}
+      onPressOut={disabled ? undefined : onPressedOut}
       disabled={disabled}
       hitSlop={hitSlop ?? DEFAULT_HIT_SLOP}
       accessibilityRole="button"
@@ -194,7 +179,7 @@ const FrostedIconButtonComponent: React.FC<FrostedIconButtonProps> = ({
           {applyIconColor(content, iconColor)}
         </View>
       )}
-    </AnimatedPressable>
+    </StyledPressable>
   );
 };
 

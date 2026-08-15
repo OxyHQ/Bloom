@@ -27,7 +27,7 @@ import { Button } from '@oxyhq/bloom';
 <Button variant="icon" icon={<XIcon />} accessibilityLabel="Close" />
 ```
 
-`primary`, `secondary`, and `inverse` get a press-scale animation; the rest don't. `icon` renders as a square hit target — pair it with `accessibilityLabel`.
+Every variant answers a press with a BACKGROUND shift, resolved by `pressedSurface`: a filled one (`primary`, `destructive`, `inverse`, `icon`) keeps its hue and gains a state layer of its own label colour, an unfilled one (`secondary`/`outline`, `ghost`, `text`/`link`) takes the neutral wash — the same colour a menu row highlights with. `icon` renders as a square hit target — pair it with `accessibilityLabel`.
 
 ## Sizes
 
@@ -90,7 +90,6 @@ When `loading` is true, a centered spinner appears, children stay in the layout 
 | `accessibilityLabel?` | `string` | — | Required for icon-only buttons. |
 | `accessibilityHint?` | `string` | — | |
 | `hitSlop?` | `{ top, bottom, left, right }` | — | Expand the touch target. |
-| `activeOpacity?` | `number` | `0.7` | Opacity while pressed (non-scale variants). |
 | `testID?` | `string` | — | RN testing id. |
 | `className?` | `string` | — | NativeWind class (web). |
 

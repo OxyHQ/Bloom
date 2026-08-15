@@ -58,7 +58,34 @@ function compositeOver(surface: string, bg: { r: number; g: number; b: number })
   };
 }
 
+/**
+ * The rest surface, read from the custom property that carries it.
+ *
+ * It is NOT `style.backgroundColor`, and that is the point: an inline
+ * declaration outranks every rule in an adopted sheet, so while this fork wrote
+ * its fill inline its own `:hover` and `:active` rules for `background-color`
+ * were unreachable and did nothing — measured in a real browser. The value now
+ * arrives as `--bloom-frosted-bg` and the sheet paints it.
+ */
+function restSurface(btn: HTMLElement): string {
+  return btn.style.getPropertyValue('--bloom-frosted-bg');
+}
+
 describe('FrostedIconButton.web', () => {
+  // The invariant behind `restSurface`, asserted once and directly: nothing a
+  // pseudo-class rule in this fork's sheet touches may be written inline.
+  it.each(['background-color', 'border-color'])(
+    'never writes %s inline, which would outrank its own hover and press rules',
+    (property) => {
+      const c = mount(<FrostedIconButton accessibilityLabel="Back" icon={<span>x</span>} />);
+      const btn = getByRole(c, 'button');
+      expect(btn.style.getPropertyValue(property)).toBe('');
+      // Vacuity floor: the element IS styled inline, so an empty read above is
+      // about this property and not about a button that never got a style.
+      expect(btn.getAttribute('style')).toContain('--bloom-frosted-bg');
+    },
+  );
+
   it('renders a real <button> with the accessible label', () => {
     const c = mount(<FrostedIconButton accessibilityLabel="Back" icon={<span>x</span>} />);
     const btn = getByRole(c, 'button', { name: 'Back' });
@@ -79,7 +106,7 @@ describe('FrostedIconButton.web', () => {
     it('uses a low-opacity LIGHT tint distinguishable from the page', () => {
       const c = mount(<FrostedIconButton accessibilityLabel="Back" icon={<span>x</span>} />);
       const btn = getByRole(c, 'button');
-      const surface = btn.style.backgroundColor;
+      const surface = restSurface(btn);
 
       // Not the page color, and a genuine translucent (rgba) surface.
       expect(surface).not.toBe('rgb(11, 11, 15)');
@@ -103,8 +130,8 @@ describe('FrostedIconButton.web', () => {
     it('renders a hairline ring and a shadow that survive dark mode', () => {
       const c = mount(<FrostedIconButton accessibilityLabel="Back" icon={<span>x</span>} />);
       const btn = getByRole(c, 'button');
-      // Ring: a translucent border COLOR is present inline (per-instance token).
-      expect(btn.style.borderColor).toMatch(/^rgba\(/);
+      // Ring: a translucent border COLOR is present as a per-instance token.
+      expect(btn.style.getPropertyValue('--bloom-frosted-border')).toMatch(/^rgba\(/);
       // The hairline border-style/width live in the self-injected stylesheet.
       const css = document.getElementById('bloom-frosted-icon-button-web-css')?.textContent ?? '';
       expect(css).toMatch(/border-style:\s*solid/);
@@ -140,8 +167,8 @@ describe('FrostedIconButton.web', () => {
       const c = mount(<FrostedIconButton accessibilityLabel="Mute" active icon={<span>x</span>} />);
       const btn = getByRole(c, 'button');
       // Opaque solid fill — an `rgb(...)` (not translucent `rgba`).
-      expect(btn.style.backgroundColor).toMatch(/^rgb\(/);
-      expect(btn.style.backgroundColor).not.toMatch(/^rgba\(/);
+      expect(restSurface(btn)).toMatch(/^rgb\(/);
+      expect(restSurface(btn)).not.toMatch(/^rgba\(/);
       expect(btn).toHaveAttribute('aria-pressed', 'true');
       expect(btn).toHaveAttribute('data-active', 'true');
       const bf = btn.style.getPropertyValue('backdrop-filter');
@@ -180,7 +207,7 @@ describe('FrostedIconButton.web', () => {
         <FrostedIconButton accessibilityLabel="Back" icon={<span>x</span>} />,
         'light',
       );
-      const surface = getByRole(c, 'button').style.backgroundColor;
+      const surface = restSurface(getByRole(c, 'button'));
       expect(surface).toMatch(/^rgba\(/);
       const base = parseRgb(surface);
       if (!base) throw new Error('unreachable');

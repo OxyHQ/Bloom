@@ -1,7 +1,6 @@
 import React, { useMemo, memo, type ComponentType } from 'react';
 import {
   ActivityIndicator,
-  Animated,
   Platform,
   Pressable,
   StyleSheet,
@@ -16,7 +15,7 @@ import { styled } from 'react-native-css';
 
 import { useTheme } from '../theme/use-theme';
 import { borderRadius } from '../styles/tokens';
-import { usePressAnimation } from '../hooks/use-press-animation';
+import { pressedSurface } from '../theme/press-colors';
 import { useInteractionState } from '../hooks/use-interaction-state';
 import type { ButtonProps, ButtonSize, ButtonVariant } from './types';
 
@@ -65,14 +64,11 @@ const SIZE_CONFIG = {
 
 const ICON_HIT_SLOP = { top: 10, bottom: 10, left: 10, right: 10 } as const;
 
-const PRESS_SCALE = 0.97;
-const SCALE_VARIANTS = new Set<string>(['primary', 'secondary', 'inverse']);
-
 // ---------------------------------------------------------------------------
 //  The button renders ONE node — the same shape the web fork renders (one
 //  `<button>`).
 //
-//  It used to be two: an unstyled `Animated.View` holding the press-scale
+//  It used to be two: an unstyled `Animated.View` holding a press-scale
 //  transform, wrapping the `Pressable` that carried `className`, `style` and
 //  every visual. That wrapper — not the pressable — was the flex child of
 //  whatever laid the button out, and it hugged its content, so a caller's
@@ -84,27 +80,31 @@ const SCALE_VARIANTS = new Set<string>(['primary', 'secondary', 'inverse']);
 //  Collapsing the two nodes settles "which node does a class belong on?" by
 //  removing the choice: layout and visuals are one box here exactly as they are
 //  in the DOM, so a layout class and a visual class cannot land in different
-//  places. The touch target now scales with the press (0.97 — ~1px on a 40dp
-//  button, and the press is registered before it starts), the same trade
-//  `PressableScale` made when it dropped its own two-node structure.
+//  places.
+//
+//  There is no `Animated.createAnimatedComponent` here any more, because there
+//  is no animated value left to drive: the press is a BACKGROUND now
+//  (`theme/press-colors.ts`), not a transform, and a background is plain state.
+//  The one-node rule is unchanged and is what the tests still pin — it was never
+//  about the transform.
 //
 //  `styled()` comes from Bloom's own `react-native-css` dependency rather than
 //  passing `className` as a bare prop and hoping the consumer's NativeWind
 //  interop recognises a component Bloom built at module scope. Same reasoning,
 //  and the same silent failure if skipped, as `styles/styled-primitives.ts`.
 //
-//  Both wrappers are built ONCE at module scope so the element type is stable
-//  across renders — one built during render remounts the subtree every time.
+//  It is built ONCE at module scope so the element type is stable across
+//  renders — one built during render remounts the subtree every time.
 // ---------------------------------------------------------------------------
 
 /**
  * Exactly the prop surface `Button` hands to the pressable, and no wider.
- * `Animated.createAnimatedComponent` maps `WithAnimatedValue` over every prop of
- * the component it wraps, and doing that to the whole of `PressableProps`
- * overflows the checker (`TS2590: union type that is too complex to represent`).
- * Narrowing is also honest: the function form of `style` is deliberately
- * excluded — see the `useInteractionState` comment in the component body for why
- * Bloom never uses it.
+ * `styled()` derives its mapping type from a dot-path union over the wrapped
+ * component's ENTIRE prop type, and the one over `PressableProps` overflows the
+ * checker (`TS2590: union type that is too complex to represent`). Narrowing is
+ * also honest: the function form of `style` is deliberately excluded — see the
+ * `useInteractionState` comment in the component body for why Bloom never uses
+ * it.
  */
 type ButtonPressableProps = Pick<
   PressableProps,
@@ -124,16 +124,13 @@ type ButtonPressableProps = Pick<
 
 /**
  * The same `Pressable` object, typed down to {@link ButtonPressableProps}.
- * `styled()` derives its mapping type from a dot-path union over the wrapped
- * component's ENTIRE prop type, and the one over `PressableProps` also overflows
- * the checker. Nothing changes at runtime — this is the identical component.
+ * Nothing changes at runtime — this is the identical component.
  */
 const ButtonPressable: ComponentType<ButtonPressableProps> = Pressable;
 
 const StyledPressable: ComponentType<ButtonPressableProps> = styled(ButtonPressable, {
   className: 'style',
 });
-const AnimatedPressable = Animated.createAnimatedComponent(StyledPressable);
 
 const ButtonComponent: React.FC<ButtonProps> = ({
   onPress,
@@ -150,7 +147,6 @@ const ButtonComponent: React.FC<ButtonProps> = ({
   accessibilityLabel,
   accessibilityHint,
   hitSlop,
-  activeOpacity,
   testID,
   className,
   'aria-expanded': ariaExpanded,
@@ -174,44 +170,31 @@ const ButtonComponent: React.FC<ButtonProps> = ({
   }, [variantProp, sizeProp]);
   const isDestructive = variantProp === 'destructive';
   const size: NativeSize = SIZE_ALIAS[sizeProp];
-  const hasScaleFeedback = SCALE_VARIANTS.has(variant);
   const isInteractionBlocked = disabled || loading;
-  const { scaleAnim, onPressIn: onScalePressIn, onPressOut: onScalePressOut } =
-    usePressAnimation(
-      hasScaleFeedback && !isInteractionBlocked ? PRESS_SCALE : undefined,
-    );
-  // Non-scale variants (icon/ghost/text) convey press feedback via an opacity
-  // dip. We drive it through component state + onPressIn/onPressOut rather than
-  // Pressable's function-form `style` because NativeWind v4's css-interop
-  // rewrites the `style` prop of every JSX element and swallows the function
-  // form, which would drop ALL base styles (background, radius, padding,
-  // minHeight). A static style array is merged correctly by css-interop.
+  // Every variant conveys the press the same way — a background shift. We drive
+  // it through component state + onPressIn/onPressOut rather than Pressable's
+  // function-form `style` because NativeWind v4's css-interop rewrites the
+  // `style` prop of every JSX element and swallows the function form, which
+  // would drop ALL base styles (background, radius, padding, minHeight). A
+  // static style array is merged correctly by css-interop.
   const { state: pressed, onIn: onPressedIn, onOut: onPressedOut } =
     useInteractionState();
 
-  const handlePressIn = useMemo(() => {
-    if (isInteractionBlocked) return undefined;
-    return () => {
-      onScalePressIn();
-      onPressedIn();
-    };
-  }, [isInteractionBlocked, onScalePressIn, onPressedIn]);
+  const handlePressIn = isInteractionBlocked ? undefined : onPressedIn;
+  const handlePressOut = isInteractionBlocked ? undefined : onPressedOut;
 
-  const handlePressOut = useMemo(() => {
-    if (isInteractionBlocked) return undefined;
-    return () => {
-      onScalePressOut();
-      onPressedOut();
-    };
-  }, [isInteractionBlocked, onScalePressOut, onPressedOut]);
-
-  const baseStyles = useMemo((): ViewStyle => {
+  const baseStyles = useMemo((): ViewStyle & { backgroundColor: string } => {
     const sizeConfig = SIZE_CONFIG[size];
-    const styles: ViewStyle = {
+    const styles: ViewStyle & { backgroundColor: string } = {
       alignItems: 'center',
       justifyContent: 'center',
       flexDirection: 'row',
       overflow: 'hidden',
+      // Narrowed to a required `string` so the press resolver can read the
+      // variant's REST fill straight off it. `ViewStyle['backgroundColor']` is
+      // `ColorValue`, which admits an opaque platform handle the resolver could
+      // not parse — every branch below writes a real colour string.
+      backgroundColor: 'transparent',
     };
 
     if (variant !== 'icon') {
@@ -296,8 +279,17 @@ const ButtonComponent: React.FC<ButtonProps> = ({
     };
   }, [size, resolvedTextColor]);
 
+  // What the button paints while held. One rule for all seven variants: a
+  // filled one (primary, destructive, inverse, icon) keeps its hue and gains a
+  // state layer of its own label colour; an unfilled one (secondary/outline,
+  // ghost, text/link) takes the neutral wash — `active:bg-accent`, the same
+  // colour a menu row highlights with. See `theme/press-colors.ts`.
+  const pressedBackground = useMemo(
+    () => pressedSurface(theme.colors, baseStyles.backgroundColor, resolvedTextColor),
+    [theme.colors, baseStyles.backgroundColor, resolvedTextColor],
+  );
+
   const defaultHitSlop = variant === 'icon' ? ICON_HIT_SLOP : undefined;
-  const resolvedActiveOpacity = activeOpacity ?? (variant === 'icon' ? 0.7 : 0.8);
 
   const content = (
     <>
@@ -310,18 +302,17 @@ const ButtonComponent: React.FC<ButtonProps> = ({
   );
 
   return (
-    <AnimatedPressable
+    <StyledPressable
       className={className}
       style={[
         baseStyles,
         disabled && !loading && { opacity: 0.5 },
-        pressed && !hasScaleFeedback && !isInteractionBlocked && { opacity: resolvedActiveOpacity },
         // Before the caller's `style`, so `style` keeps winning the whole array
-        // the way it always has (and the way the web fork spreads it last). The
-        // cost is that a caller who sets `transform` on a scale variant replaces
-        // the press scale instead of composing with it — when the transform sat
-        // on a separate wrapper node the two multiplied.
-        hasScaleFeedback ? { transform: [{ scale: scaleAnim }] } : null,
+        // the way it always has (and the way the web fork spreads it last) — a
+        // caller who sets their own `backgroundColor` opts out of the press
+        // wash along with the rest state, which is the same trade every other
+        // declaration here makes.
+        pressed && !isInteractionBlocked && { backgroundColor: pressedBackground },
         style,
       ]}
       onPress={isInteractionBlocked ? undefined : onPress}
@@ -362,7 +353,7 @@ const ButtonComponent: React.FC<ButtonProps> = ({
       ) : (
         content
       )}
-    </AnimatedPressable>
+    </StyledPressable>
   );
 };
 

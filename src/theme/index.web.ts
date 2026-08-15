@@ -53,8 +53,13 @@ export {
   HEX_TO_APP_COLOR,
   hexToAppColorName,
 } from './color-presets';
-export { parseRgb, withAlpha } from './color-utils';
-export type { RgbChannels } from './color-utils';
+export { parseRgb, parseRgba, withAlpha } from './color-utils';
+export type { RgbChannels, RgbaChannels } from './color-utils';
+// The one way to paint a control's HELD state, so a consumer's own pressable
+// presses like a Bloom one. Public for the same reason `resolveAccentColors` is:
+// the alternative is deriving it, and every derivation anyone reaches for first
+// (appending hex alpha, dropping a tint's own alpha) fails silently.
+export { pressedSurface, PRESS_LAYER_ALPHA } from './press-colors';
 // The one way to paint something in a semantic colour at a chosen loudness.
 // Public because the alternative is what consumers were already doing —
 // appending hex alpha to a fill token, which produces a malformed string

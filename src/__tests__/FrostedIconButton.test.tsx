@@ -6,6 +6,7 @@ import { BloomThemeProvider } from '../theme/BloomThemeProvider';
 import { FrostedIconButton } from '../frosted-icon-button';
 import { buildTheme } from '../theme/build-theme';
 import { parseRgb } from '../theme/color-utils';
+import { pressedSurface } from '../theme/press-colors';
 import { resolveFrostedPalette, resolveFrostedSize } from '../frosted-icon-button/shared';
 import { borderRadius } from '../styles/tokens';
 import {
@@ -175,6 +176,48 @@ describe('layout: the button IS the node its parent lays out', () => {
     const resolved = resolvedStyle(style);
     expect(resolved.borderRadius).toBe(borderRadius.full);
     expect(resolved.marginTop).toBe(7);
-    expect(resolved.transform).toBeDefined();
+  });
+
+  // The wrapper this block forbids existed to hold a press-scale transform. The
+  // press is a colour now, and this component is the one of the seven whose
+  // held state was already a background — what it lacked was a step BEYOND
+  // hover, which the scale had been carrying on its own.
+  //
+  // The chip's face is an inner absolute-fill layer (the blur has to be clipped
+  // and the shadow must not be), so the surface half is asserted on that layer
+  // and the ring half on the pressable itself. Both move, and neither is a
+  // transform.
+  it('answers a press with a colour on both layers, and with no transform anywhere', () => {
+    const theme = buildTheme('blue', 'dark');
+    const palette = resolveFrostedPalette(theme.colors, true);
+    const { getByTestId, UNSAFE_root } = renderWithTheme(
+      <FrostedIconButton testID="fib" accessibilityLabel="Back" icon={<Text>x</Text>} />,
+    );
+
+    /** Every `backgroundColor` currently painted anywhere in the tree. */
+    const faces = (): string[] =>
+      UNSAFE_root
+        .findAll((node) => typeof node.type === 'string')
+        .map((node) => resolvedStyle(node.props.style as ViewStyle).backgroundColor)
+        .filter((color): color is string => typeof color === 'string');
+
+    expect(faces()).toContain(palette.surface);
+    expect(resolvedStyle(getByTestId('fib').props.style).borderColor).toBe(palette.ring);
+    expect(resolvedStyle(getByTestId('fib').props.style).transform).toBeUndefined();
+
+    fireEvent(getByTestId('fib'), 'pressIn');
+    // The held face is a STEP BEYOND the hover tint, not the hover tint itself —
+    // the distinction the scale used to carry. Stated as the exact resolver
+    // output so "some colour changed" cannot pass for it.
+    const heldFace = pressedSurface(theme.colors, palette.surfaceHover, theme.colors.text);
+    expect(heldFace).not.toBe(palette.surfaceHover);
+    expect(faces()).toContain(heldFace);
+    expect(faces()).not.toContain(palette.surface);
+    expect(resolvedStyle(getByTestId('fib').props.style).borderColor).toBe(palette.ringHover);
+    expect(resolvedStyle(getByTestId('fib').props.style).transform).toBeUndefined();
+
+    fireEvent(getByTestId('fib'), 'pressOut');
+    expect(faces()).toContain(palette.surface);
+    expect(resolvedStyle(getByTestId('fib').props.style).borderColor).toBe(palette.ring);
   });
 });

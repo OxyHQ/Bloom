@@ -9,6 +9,7 @@ import React, {
 
 import { useTheme } from '../theme/use-theme';
 import { borderRadius } from '../styles/tokens';
+import { pressedSurface } from '../theme/press-colors';
 import type { Theme } from '../theme/types';
 import { interactiveWebCss, useInteractiveWebCss } from '../styles/interactive-web-css';
 import { flattenWebStyle } from '../styles/flatten-web-style';
@@ -50,7 +51,6 @@ function resolveSize(size: FabSize | number): ResolvedSize {
   return SIZE_CONFIG[size];
 }
 
-const PRESS_SCALE = 0.94;
 const DEFAULT_OFFSET = 16;
 const DEFAULT_Z_INDEX = 50;
 
@@ -59,7 +59,7 @@ const DEFAULT_Z_INDEX = 50;
 //
 //  Shared recipe — see `styles/interactive-web-css.ts`. Per-instance resolved
 //  colours stay inline and reach the static rules as custom properties
-//  (`--bloom-fab-ring`, `--bloom-fab-shadow-hover`, `--bloom-fab-press-scale`).
+//  (`--bloom-fab-ring`, `--bloom-fab-shadow-hover`, `--bloom-fab-press-bg`).
 // ---------------------------------------------------------------------------
 
 const STYLE_ID = 'bloom-fab-web-css';
@@ -67,17 +67,30 @@ const STYLE_ID = 'bloom-fab-web-css';
 const BLOOM_FAB_CSS = interactiveWebCss({
   selector: '.bloom-fab',
   varPrefix: 'bloom-fab',
+  // `background-color` and `box-shadow` come from custom properties rather than
+  // from the inline style, and that is NOT a stylistic choice. An inline
+  // declaration outranks every rule in an adopted sheet, so a fork that writes
+  // either one inline makes its own `:hover` / `:active` rule for that property
+  // UNREACHABLE — measured in a real browser: the hover lift below had never
+  // once fired, with the rule present and the variable resolving correctly.
+  // Gate: `interactive-web-css.test.tsx`.
   base: `
     flex-direction: row;
     gap: 8px;
     border: none;
+    background-color: var(--bloom-fab-bg);
+    box-shadow: var(--bloom-fab-shadow);
     font-family: inherit;
   `,
-  transition:
-    'opacity 120ms ease, transform 120ms ease, box-shadow 160ms ease, background-color 120ms ease',
+  transition: 'opacity 120ms ease, box-shadow 160ms ease, background-color 120ms ease',
   // A FAB lifts on hover rather than dimming: it floats over the content, so a
   // deeper shadow is the affordance an opacity dip cannot express.
   hover: { declarations: 'box-shadow: var(--bloom-fab-shadow-hover);' },
+  // The held state is the same state layer the native fork paints, resolved from
+  // the same function. It reads THROUGH the hover lift rather than replacing it
+  // (a pressed FAB is always also hovered), so hover and press stay two distinct
+  // states: deeper shadow, then a darker face.
+  press: { declarations: 'background-color: var(--bloom-fab-press-bg);' },
   // One px more than a button's: the FAB is a circle on a page it floats above,
   // so a ring at 2 reads as touching the edge.
   outlineOffset: 3,
@@ -188,17 +201,21 @@ const FabWebComponent: React.FC<FabProps> = ({
 
   const containerStyle = useMemo((): CSSProperties => {
     const base: CSSProperties = {
-      backgroundColor: variantColors.background,
       color: variantColors.foreground,
       borderRadius: borderRadius.full,
       height: sizeConfig.diameter,
       zIndex,
-      boxShadow: restShadow,
       fontSize: sizeConfig.fontSize,
       fontWeight: 600,
       ['--bloom-fab-ring' as string]: variantColors.ring,
+      ['--bloom-fab-bg' as string]: variantColors.background,
+      ['--bloom-fab-shadow' as string]: restShadow,
       ['--bloom-fab-shadow-hover' as string]: hoverShadow,
-      ['--bloom-fab-press-scale' as string]: PRESS_SCALE,
+      ['--bloom-fab-press-bg' as string]: pressedSurface(
+        theme.colors,
+        variantColors.background,
+        variantColors.foreground,
+      ),
       ...placementStyle(placement, offset),
     };
     if (isExtended) {
@@ -211,6 +228,7 @@ const FabWebComponent: React.FC<FabProps> = ({
     return base;
   }, [
     variantColors,
+    theme.colors,
     sizeConfig.diameter,
     sizeConfig.fontSize,
     zIndex,

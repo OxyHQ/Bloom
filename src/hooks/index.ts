@@ -5,7 +5,6 @@ export {
 } from './use-accessibility-focus';
 export { useDelayedLoading } from './use-delayed-loading';
 export { useThrottledValue } from './use-throttled-value';
-export { usePressAnimation } from './use-press-animation';
 export { mergeRefs } from './merge-refs';
 export { useHaptics, BloomHapticsProvider } from './use-haptics';
 export type { HapticStrength, BloomHapticsProviderProps } from './use-haptics';

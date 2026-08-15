@@ -8,14 +8,15 @@
  * blob and its own `use*Css()` hook for what is, rule for rule, the same
  * stylesheet: the same reset, the same disabled block, the same
  * `:not(:disabled):not([aria-disabled="true"])` interactive filter, the same
- * press-scale `:active` transform and the same focus ring.
+ * `:active` rule and the same focus ring.
  *
  * What genuinely differs between them is small and is what this takes as
  * arguments: the class name, the custom-property namespace, the family's own
  * base declarations (layout, border, font), the transition list, WHICH property
- * hover changes, and the focus ring's offset.
+ * hover changes, whether the family has a CSS press rule at all, and the focus
+ * ring's offset.
  *
- * TWO RULES THAT MUST SURVIVE ANY EDIT HERE:
+ * THREE RULES THAT MUST SURVIVE ANY EDIT HERE:
  *
  * - **The keyboard focus ring is `:focus-visible`, never `:focus`.** An
  *   always-on ring fires on mouse press as well, so every click leaves a ring
@@ -27,6 +28,13 @@
  *   `style-src 'self'` blocks, and it fails silently: the rules are dropped, the
  *   control renders with none of its CSS, nothing throws, and an id-based guard
  *   still finds the element and reports success.
+ * - **`press` is emitted ONLY for a family that renders a raw DOM element.** The
+ *   two react-native-web callers (`Chip`, `Checkbox`) drive their held state from
+ *   `useInteractionState`, on both platforms, from one code path — so a CSS
+ *   `:active` rule there is dead at best: react-native-web writes the JS-driven
+ *   colour as an inline style, which outranks an adopted sheet in both
+ *   directions. It would only ever be reachable in the window where the two
+ *   disagree, which is the one place it must not be.
  *
  * No react-native import — these forks render DOM and must not pull the RN
  * runtime in behind a stylesheet.
@@ -58,7 +66,7 @@ export interface InteractiveWebCssOptions {
   selector: string;
   /**
    * Namespace for the per-instance custom properties the component sets inline.
-   * `bloom-btn` yields `--bloom-btn-ring` and `--bloom-btn-press-scale`.
+   * `bloom-btn` yields `--bloom-btn-ring` and `--bloom-btn-press-bg`.
    */
   varPrefix: string;
   /**
@@ -74,6 +82,20 @@ export interface InteractiveWebCssOptions {
     /** Extra selector filter appended after {@link NOT_DISABLED}, e.g. `:not([data-active="true"])`. */
     filter?: string;
     /** Declarations the hover state sets. */
+    declarations: string;
+  };
+  /**
+   * The `:active` rule — what the control paints while it is HELD.
+   *
+   * Optional, and its absence is a statement: this family drives its held state
+   * from JS instead (see the note at the top of the file). A family that renders
+   * a raw DOM element has no JS press state at all, so omitting it there is how
+   * a control silently stops answering a press.
+   */
+  press?: {
+    /** Extra selector filter appended after {@link NOT_DISABLED}. */
+    filter?: string;
+    /** Declarations the pressed state sets. */
     declarations: string;
   };
   /** `outline-offset` for the focus ring, in px. */
@@ -104,11 +126,18 @@ export function interactiveWebCss({
   base,
   transition,
   hover,
+  press,
   outlineOffset,
   extraRules,
 }: InteractiveWebCssOptions): string {
   const c = selector;
   const interactive = `${c}${NOT_DISABLED}`;
+  const pressRule = press
+    ? `${interactive}${press.filter ?? ''}:active {
+${block(press.declarations)}
+}
+`
+    : '';
 
   return `
 ${c} {
@@ -133,10 +162,7 @@ ${c}[aria-disabled="true"] {
 ${interactive}${hover.filter ?? ''}:hover {
 ${block(hover.declarations)}
 }
-${interactive}:active {
-  transform: scale(var(--${varPrefix}-press-scale, 1));
-}
-${c}:focus-visible {
+${pressRule}${c}:focus-visible {
   outline: 2px solid var(--${varPrefix}-ring, currentColor);
   outline-offset: ${outlineOffset}px;
 }

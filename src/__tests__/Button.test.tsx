@@ -6,6 +6,7 @@ import { BloomThemeProvider } from '../theme/BloomThemeProvider';
 import { useTheme } from '../theme/use-theme';
 import type { ThemeColors } from '../theme/types';
 import { Button, PrimaryButton, SecondaryButton, IconButton, GhostButton, TextButton } from '../button';
+import { pressedSurface } from '../theme/press-colors';
 import { borderRadius } from '../styles/tokens';
 import {
   classNamesOn,
@@ -161,9 +162,57 @@ describe('layout: the button IS the node its parent lays out', () => {
     expect(resolvedStyle(style).borderRadius).toBe(borderRadius.full);
   });
 
-  it('applies the press-scale transform to that node too, not to a wrapper', () => {
+  // The press used to be a SCALE, and the wrapper this describe block exists to
+  // forbid was there to hold its transform. Both are gone: a held button shifts
+  // its BACKGROUND, and this asserts the shift lands on the same single node —
+  // which is the invariant, not the mechanism. Both halves are load-bearing:
+  // without the `transform` check "no scale" would be satisfiable by a neutral
+  // `scale(1)`, and without the background check it would be satisfiable by
+  // removing the feedback entirely.
+  it('applies the press BACKGROUND to that node too, not to a wrapper', () => {
+    const colors = captureThemeColors();
     const { getByTestId } = renderWithTheme(<Button testID="btn">Press</Button>);
-    expect(resolvedStyle(getByTestId('btn').props.style).transform).toBeDefined();
+    const btn = getByTestId('btn');
+
+    expect(resolvedStyle(btn.props.style).backgroundColor).toBe(colors.primary);
+    expect(resolvedStyle(btn.props.style).transform).toBeUndefined();
+
+    fireEvent(btn, 'pressIn');
+    const held = resolvedStyle(getByTestId('btn').props.style);
+    expect(held.backgroundColor).not.toBe(colors.primary);
+    expect(held.backgroundColor).toBe(
+      pressedSurface(colors, colors.primary, colors.primaryForeground),
+    );
+    // Still no transform while held — the mechanism is gone, not neutralised.
+    expect(held.transform).toBeUndefined();
+
+    fireEvent(btn, 'pressOut');
+    expect(resolvedStyle(getByTestId('btn').props.style).backgroundColor).toBe(colors.primary);
+  });
+
+  // The variant that carried NO press feedback of any kind on desktop web and
+  // an opacity dip on native. It answers a press the same way every other
+  // variant does now, and with the token the rest of the library highlights a
+  // row with — so `contrast50` here is the claim, not just "something changed".
+  it('gives an unfilled variant the same neutral wash a menu row uses', () => {
+    const colors = captureThemeColors();
+    const { getByTestId } = renderWithTheme(<GhostButton testID="ghost">Ghost</GhostButton>);
+    expect(resolvedStyle(getByTestId('ghost').props.style).backgroundColor).toBe('transparent');
+    fireEvent(getByTestId('ghost'), 'pressIn');
+    expect(resolvedStyle(getByTestId('ghost').props.style).backgroundColor).toBe(
+      colors.contrast50,
+    );
+  });
+
+  it('leaves a disabled button inert under a press', () => {
+    const colors = captureThemeColors();
+    const { getByTestId } = renderWithTheme(
+      <Button testID="off" disabled>
+        Off
+      </Button>,
+    );
+    fireEvent(getByTestId('off'), 'pressIn');
+    expect(resolvedStyle(getByTestId('off').props.style).backgroundColor).toBe(colors.primary);
   });
 
   it('keeps the caller style winning over the button box', () => {

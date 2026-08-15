@@ -10,6 +10,7 @@ import React, {
 
 import { useTheme } from '../theme/use-theme';
 import { borderRadius } from '../styles/tokens';
+import { pressedSurface } from '../theme/press-colors';
 import type { Theme } from '../theme/types';
 import { SpinnerIcon } from '../loading/SpinnerIcon.web';
 import { flattenWebStyle } from '../styles/flatten-web-style';
@@ -61,18 +62,13 @@ const SIZE_ALIAS: Record<ButtonSize, NativeSize> = {
   icon: 'medium',
 };
 
-const PRESS_SCALE = 0.97;
-
-/** Variants that get a tactile press-scale (matches native `SCALE_VARIANTS`). */
-const SCALE_VARIANTS = new Set<ButtonVariant>(['primary', 'secondary', 'inverse', 'destructive']);
-
 // ---------------------------------------------------------------------------
 //  Per-state CSS injection
 //
 //  Shared recipe — see `styles/interactive-web-css.ts` for why the focus ring is
 //  `:focus-visible` and why injection goes through `adoptStyleSheet`. Per-instance
 //  resolved colours stay inline, reaching the static rules as custom properties
-//  (`--bloom-btn-ring`, `--bloom-btn-press-scale`).
+//  (`--bloom-btn-ring`, `--bloom-btn-press-bg`).
 // ---------------------------------------------------------------------------
 
 const STYLE_ID = 'bloom-button-web-css';
@@ -80,18 +76,31 @@ const STYLE_ID = 'bloom-button-web-css';
 const BLOOM_BUTTON_CSS = interactiveWebCss({
   selector: '.bloom-btn',
   varPrefix: 'bloom-btn',
+  // `background-color` comes from a custom property rather than from the inline
+  // style, and that is NOT a stylistic choice. An inline declaration outranks
+  // every rule in an adopted sheet, so a fork that writes its rest fill inline
+  // makes its own `:hover` / `:active` rules for that property UNREACHABLE —
+  // measured in a real browser: the rule was present, the variable resolved, and
+  // the button did not move under the finger. Anything a pseudo-class rule below
+  // touches has to arrive this way. Gate: `interactive-web-css.test.tsx`.
   base: `
     flex-direction: row;
     gap: 8px;
     position: relative;
     border: none;
-    background: transparent;
+    background-color: var(--bloom-btn-bg, transparent);
     font-family: var(--bloom-font-sans, inherit);
     text-decoration: none;
   `,
-  transition:
-    'opacity 120ms ease, transform 120ms ease, background-color 120ms ease, border-color 120ms ease',
+  transition: 'opacity 120ms ease, background-color 120ms ease, border-color 120ms ease',
   hover: { declarations: 'opacity: 0.9;' },
+  // The held state is a BACKGROUND, resolved per instance from the variant's own
+  // fill and label colour — never a transform. The variable is always written
+  // inline below, so the declaration has no fallback to be wrong about: an
+  // undefined custom property would make `background-color` invalid at
+  // computed-value time and paint the button TRANSPARENT, which is the loudest
+  // possible way for a missing value to fail and therefore the safe one.
+  press: { declarations: 'background-color: var(--bloom-btn-press-bg);' },
   outlineOffset: 2,
   // The `link` variant is the one button that is text: it underlines on hover
   // instead of dimming, so it has to undo the shared opacity dip.
@@ -113,8 +122,14 @@ const BLOOM_BUTTON_CSS = interactiveWebCss({
 // ---------------------------------------------------------------------------
 
 interface VariantStyle {
-  /** Container CSS (background, border, radius). */
+  /**
+   * Container CSS — border, radius, box geometry. Deliberately NOT the
+   * background: that reaches the element as `--bloom-btn-bg` so the sheet's
+   * `:active` rule can outrank it. See the note on `base` above.
+   */
   container: CSSProperties;
+  /** The REST fill, always a real colour string so the press resolver can read it. */
+  background: string;
   /** Resolved text/icon color. */
   textColor: string;
   /** The `:focus-visible` ring color. */
@@ -132,19 +147,22 @@ function resolveVariantStyle(
   switch (variant) {
     case 'primary':
       return {
-        container: { backgroundColor: c.primary, borderRadius: borderRadius.full },
+        container: { borderRadius: borderRadius.full },
+        background: c.primary,
         textColor: c.primaryForeground,
         ringColor: c.primary,
       };
     case 'destructive':
       return {
-        container: { backgroundColor: c.negative, borderRadius: borderRadius.full },
+        container: { borderRadius: borderRadius.full },
+        background: c.negative,
         textColor: c.negativeForeground,
         ringColor: c.negative,
       };
     case 'inverse':
       return {
-        container: { backgroundColor: '#FFFFFF', borderRadius: borderRadius.full },
+        container: { borderRadius: borderRadius.full },
+        background: '#FFFFFF',
         textColor: '#000000',
         ringColor: c.primary,
       };
@@ -152,25 +170,25 @@ function resolveVariantStyle(
     case 'outline':
       return {
         container: {
-          backgroundColor: 'transparent',
           borderWidth: 1,
           borderStyle: 'solid',
           borderColor: c.border,
           borderRadius: borderRadius.full,
         },
+        background: 'transparent',
         textColor: c.text,
         ringColor: c.primary,
       };
     case 'ghost':
       return {
-        container: { backgroundColor: 'transparent', borderRadius: borderRadius.full },
+        container: { borderRadius: borderRadius.full },
+        background: 'transparent',
         textColor: c.primary,
         ringColor: c.primary,
       };
     case 'icon':
       return {
         container: {
-          backgroundColor: c.background,
           borderWidth: 1,
           borderStyle: 'solid',
           borderColor: c.border,
@@ -179,6 +197,7 @@ function resolveVariantStyle(
           width: sizeConfig.minHeight,
           height: sizeConfig.minHeight,
         },
+        background: c.background,
         textColor: c.text,
         ringColor: c.primary,
       };
@@ -186,7 +205,8 @@ function resolveVariantStyle(
     case 'link':
     default:
       return {
-        container: { backgroundColor: 'transparent', borderRadius: borderRadius.full },
+        container: { borderRadius: borderRadius.full },
+        background: 'transparent',
         textColor: c.primary,
         ringColor: c.primary,
       };
@@ -254,9 +274,12 @@ const ButtonWebComponent: React.FC<ButtonProps> = ({
       width: fullWidth ? '100%' : undefined,
       // CSS custom props consumed by the static stylesheet.
       ['--bloom-btn-ring' as string]: variantStyle.ringColor,
-      ['--bloom-btn-press-scale' as string]: SCALE_VARIANTS.has(resolvedVariant)
-        ? PRESS_SCALE
-        : 1,
+      ['--bloom-btn-bg' as string]: variantStyle.background,
+      ['--bloom-btn-press-bg' as string]: pressedSurface(
+        theme.colors,
+        variantStyle.background,
+        variantStyle.textColor,
+      ),
       ...variantStyle.container,
     };
     if (!isIcon) {
@@ -274,7 +297,7 @@ const ButtonWebComponent: React.FC<ButtonProps> = ({
       base.minHeight = undefined;
     }
     return base;
-  }, [sizeConfig, variantStyle, fullWidth, isIcon, resolvedVariant]);
+  }, [sizeConfig, variantStyle, fullWidth, isIcon, resolvedVariant, theme.colors]);
 
   const handleClick = useCallback(
     (event: MouseEvent<HTMLButtonElement>) => {

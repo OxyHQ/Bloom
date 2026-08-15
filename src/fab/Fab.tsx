@@ -1,6 +1,5 @@
 import React, { memo, useMemo, type ComponentType } from 'react';
 import {
-  Animated,
   Pressable,
   Text,
   View,
@@ -14,7 +13,7 @@ import { styled } from 'react-native-css';
 import { useTheme } from '../theme/use-theme';
 import { borderRadius } from '../styles/tokens';
 import { bloomShadowStyle } from '../design-tokens/shadows';
-import { usePressAnimation } from '../hooks/use-press-animation';
+import { pressedSurface } from '../theme/press-colors';
 import { useInteractionState } from '../hooks/use-interaction-state';
 import type { FabPlacement, FabProps, FabSize, FabVariant } from './types';
 
@@ -55,7 +54,6 @@ function resolveSize(size: FabSize | number): ResolvedSize {
   return SIZE_CONFIG[size];
 }
 
-const PRESS_SCALE = 0.94;
 const DEFAULT_OFFSET = 16;
 const DEFAULT_Z_INDEX = 50;
 const HIT_SLOP = { top: 8, bottom: 8, left: 8, right: 8 } as const;
@@ -87,7 +85,7 @@ function placementStyle(placement: FabPlacement, offset: number): ViewStyle {
 //  `<button>` carrying `className`, `style` and every visual).
 //
 //  It used to be two, and the split was worse than the one `Button` had: the
-//  outer `Animated.View` held the placement, the `zIndex`, the press transform
+//  outer `Animated.View` held the placement, the `zIndex`, a press transform
 //  AND the caller's `style`, while the inner `Pressable` held `className` and
 //  the FAB's own chrome. So a caller's `style` and their `className` landed on
 //  DIFFERENT nodes, and every layout class applied inside a box that had already
@@ -95,14 +93,14 @@ function placementStyle(placement: FabPlacement, offset: number): ViewStyle {
 //  behaved on web and did nothing on native.
 //
 //  See `button/Button.tsx` for the full reasoning, including why splitting
-//  classes by kind is not implementable and why both wrappers are built once at
-//  module scope.
+//  classes by kind is not implementable, why the wrapper is built once at module
+//  scope, and why there is no longer an animated component involved.
 // ---------------------------------------------------------------------------
 
 /**
  * Exactly the prop surface `Fab` hands to the pressable, and no wider — mapping
- * `WithAnimatedValue` (or `styled()`'s dot-path union) over the whole of
- * `PressableProps` overflows the checker with `TS2590`.
+ * `styled()`'s dot-path union over the whole of `PressableProps` overflows the
+ * checker with `TS2590`.
  */
 type FabPressableProps = Pick<
   PressableProps,
@@ -125,7 +123,6 @@ const FabPressable: ComponentType<FabPressableProps> = Pressable;
 const StyledPressable: ComponentType<FabPressableProps> = styled(FabPressable, {
   className: 'style',
 });
-const AnimatedPressable = Animated.createAnimatedComponent(StyledPressable);
 
 const FabComponent: React.FC<FabProps> = ({
   onPress,
@@ -150,13 +147,20 @@ const FabComponent: React.FC<FabProps> = ({
   const isExtended = label != null && label.length > 0;
   const content = icon ?? children;
 
-  const { scaleAnim, onPressIn, onPressOut } = usePressAnimation(
-    disabled ? undefined : PRESS_SCALE,
-  );
   const { state: pressed, onIn: onPressedIn, onOut: onPressedOut } =
     useInteractionState();
 
   const resolvedColors = useMemo(() => resolveVariant(variant, theme.colors), [variant, theme.colors]);
+
+  // A FAB is always filled, so the held state is always a state layer of its own
+  // label colour over its own fill — never a wash, and never an alpha'd fill: it
+  // floats over arbitrary content, so "let the page show through" would change
+  // meaning with whatever it happens to be sitting on. See
+  // `theme/press-colors.ts`.
+  const pressedBackground = useMemo(
+    () => pressedSurface(theme.colors, resolvedColors.background, resolvedColors.foreground),
+    [theme.colors, resolvedColors.background, resolvedColors.foreground],
+  );
 
   const containerStyle = useMemo((): ViewStyle => {
     const base: ViewStyle = {
@@ -186,39 +190,22 @@ const FabComponent: React.FC<FabProps> = ({
     color: resolvedColors.foreground,
   }), [sizeConfig.fontSize, resolvedColors.foreground]);
 
-  const handlePressIn = disabled
-    ? undefined
-    : () => {
-        onPressIn();
-        onPressedIn();
-      };
-  const handlePressOut = disabled
-    ? undefined
-    : () => {
-        onPressOut();
-        onPressedOut();
-      };
-
   return (
-    <AnimatedPressable
+    <StyledPressable
       className={className}
       style={[
         placementStyle(placement, offset),
         { zIndex },
         containerStyle,
         disabled && { opacity: 0.5 },
-        pressed && !disabled && { opacity: 0.9 },
         // Before the caller's `style`, so `style` keeps winning the whole array
-        // the way it always has (and the way the web fork spreads it last). The
-        // cost is that a caller who sets `transform` replaces the press scale
-        // instead of composing with it — when the transform sat on a separate
-        // wrapper node the two multiplied.
-        { transform: [{ scale: scaleAnim }] },
+        // the way it always has (and the way the web fork spreads it last).
+        pressed && !disabled && { backgroundColor: pressedBackground },
         style,
       ]}
       onPress={disabled ? undefined : onPress}
-      onPressIn={handlePressIn}
-      onPressOut={handlePressOut}
+      onPressIn={disabled ? undefined : onPressedIn}
+      onPressOut={disabled ? undefined : onPressedOut}
       disabled={disabled}
       hitSlop={HIT_SLOP}
       accessibilityRole="button"
@@ -244,7 +231,7 @@ const FabComponent: React.FC<FabProps> = ({
           {label}
         </Text>
       )}
-    </AnimatedPressable>
+    </StyledPressable>
   );
 };
 

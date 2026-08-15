@@ -137,10 +137,29 @@ describe('layout: the FAB IS the node its parent lays out', () => {
     expect(resolved.marginTop).toBe(7);
   });
 
-  it('applies the press-scale transform to that node too, not to a wrapper', () => {
+  // The press used to be a SCALE, and the wrapper this describe block forbids
+  // was there to hold its transform. Both are gone: a held FAB shifts its
+  // BACKGROUND, and this asserts the shift lands on the same single node.
+  // Asserting the absent transform as well matters — "no scale" is otherwise
+  // satisfiable by a neutral `scale(1)`, which would mean the mechanism is still
+  // there — and so does asserting the colour actually moves, since it is
+  // otherwise satisfiable by removing the feedback altogether.
+  it('applies the press BACKGROUND to that node too, not to a wrapper', () => {
     const { getByTestId } = renderWithTheme(
       <Fab testID="fab" accessibilityLabel="Add" icon={<Text>+</Text>} />,
     );
-    expect(resolvedStyle(getByTestId('fab').props.style).transform).toBeDefined();
+    const rest = resolvedStyle(getByTestId('fab').props.style);
+    expect(rest.transform).toBeUndefined();
+    expect(rest.backgroundColor).toBeDefined();
+
+    fireEvent(getByTestId('fab'), 'pressIn');
+    const held = resolvedStyle(getByTestId('fab').props.style);
+    expect(held.backgroundColor).not.toBe(rest.backgroundColor);
+    expect(held.transform).toBeUndefined();
+
+    fireEvent(getByTestId('fab'), 'pressOut');
+    expect(resolvedStyle(getByTestId('fab').props.style).backgroundColor).toBe(
+      rest.backgroundColor,
+    );
   });
 });

@@ -68,9 +68,9 @@ export type {
 
 // Hooks — through the family's own barrel, not eight deep paths into it.
 // Reaching THROUGH a family is how `@oxyhq/bloom` and `@oxyhq/bloom/hooks`
-// came to disagree about what the hooks family is: `useInteractionStates`,
-// `usePressAnimation` and `mergeRefs` were on the subpath and not here, for no
-// reason anyone had decided.
+// came to disagree about what the hooks family is: `useInteractionStates` and
+// `mergeRefs` were on the subpath and not here, for no reason anyone had
+// decided.
 export * from './hooks';
 
 // Icons
