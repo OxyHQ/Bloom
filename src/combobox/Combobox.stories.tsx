@@ -41,19 +41,25 @@ export const Basic: Story = {
 };
 
 /**
- * A disabled combobox must not OPEN, and that is worth a story because the way
- * it fails is invisible from the markup: the panel lives behind the trigger, so
- * a broken `disabled` looks identical at rest and only diverges once something
- * presses it.
+ * A disabled combobox must not OPEN. The trigger is an `asChild` slot, and
+ * `TriggerSlot` composes the child's `onPress` with its own open handler — so a
+ * guard living only in the child's callback does not stop the open. What stops
+ * it then is the TYPE of element the caller passed, which is not a guard at
+ * all: a real `Pressable` swallows the press, a plain `View` or a custom control
+ * that forwards `onPress` does not. `cloneTrigger` therefore reads both the
+ * family's `disabled` and the child's.
  *
- * The trigger is an `asChild` slot, which is what makes this delicate. Bloom's
- * `TriggerSlot` composes the child's `onPress` with its own open handler, so if
- * the guard lived only in the child's callback the open would still happen —
- * and whether anything stopped it would depend on the TYPE of element passed
- * in: a real `Pressable` swallows the press, a plain `View` does not. The guard
- * therefore reads both the family's `disabled` and the child's.
+ * THIS STORY DOES NOT GATE THAT, and the reason is worth knowing before
+ * trusting it. Measured in real Chrome with trusted input: with the guard
+ * removed, these two still stay closed, because react-native-web's own
+ * `Pressable` swallows the press first. The instrument that CAN see the
+ * regression is jest — its `Pressable` mock ignores `disabled`, so the composed
+ * handler runs and `Combobox.test.tsx` goes red. The usual asymmetry is
+ * inverted here: the mock is the sharper tool, and the browser agrees with a
+ * broken build. Reachable in production only through a non-`Pressable` child.
  *
- * Press both of these in a browser. Neither may open a panel.
+ * So what these two are for is the visual state — a disabled control still has
+ * to read as disabled, with and without a selected value.
  */
 export const Disabled: Story = {
   render: () => (
