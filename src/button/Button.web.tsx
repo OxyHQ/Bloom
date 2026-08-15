@@ -10,7 +10,14 @@ import React, {
 
 import { useTheme } from '../theme/use-theme';
 import { animation, borderRadius } from '../styles/tokens';
+import { SHADOW_BOX } from '../design-tokens/shadows';
 import type { Theme } from '../theme/types';
+import {
+  GLASS_BLUR_FILTER,
+  GLASS_RIM_HIGHLIGHT,
+  GLASS_SHEEN_GRADIENT,
+  resolveGlassColors,
+} from '../theme/glass-colors';
 import { SpinnerIcon } from '../loading/SpinnerIcon.web';
 import { flattenWebStyle } from '../styles/flatten-web-style';
 import {
@@ -64,6 +71,29 @@ const SIZE_ALIAS: Record<ButtonSize, NativeSize> = {
 /** Variants that get a tactile press-scale (matches native `SCALE_VARIANTS`). */
 const SCALE_VARIANTS = new Set<ButtonVariant>(['primary', 'secondary', 'inverse', 'destructive']);
 
+/**
+ * The two variants painted as GLASS, and which theme fill each is tinted with.
+ *
+ * They are exactly the variants that carry a brand FILL today, which is what
+ * makes the treatment coherent: glass REPLACES a fill, it does not add one, so
+ * the button's colour does not move — only its opacity, and the chrome around
+ * it. The other seven are excluded for reasons that are not aesthetic:
+ *
+ *  - `secondary`/`outline`/`ghost`/`text`/`link` have no fill to replace. A blur
+ *    behind a transparent control shows nothing, and the hairline is only "the
+ *    edge of the tinted pane" where there IS a tint for it to be the edge of.
+ *  - `inverse` is the on-image CTA, and it is precisely the surface this material
+ *    cannot be. Over content Bloom does not own, half the preset matrix falls
+ *    below AA (worst 1.02) — and so does the reference itself, whose own label
+ *    measures 4.05 over a mid-tone photo. `inverse` being opaque is the answer to
+ *    that case, not an oversight.
+ *  - `icon` keeps the neutral chrome that distinguishes it from a bare glyph.
+ */
+const GLASS_FILLS: Record<string, (theme: Theme) => string> = {
+  primary: (theme) => theme.colors.primary,
+  destructive: (theme) => theme.colors.negative,
+};
+
 // ---------------------------------------------------------------------------
 //  Per-state CSS injection
 //
@@ -91,11 +121,33 @@ const BLOOM_BUTTON_CSS = interactiveWebCss({
     'opacity 120ms ease, transform 120ms ease, background-color 120ms ease, border-color 120ms ease',
   hover: { declarations: 'opacity: 0.9;' },
   outlineOffset: 2,
-  // The `link` variant is the one button that is text: it underlines on hover
-  // instead of dimming, so it has to undo the shared opacity dip.
+  // Two variants undo the shared opacity dip, each for its own reason.
+  //
+  // `link` is the one button that IS text: it underlines instead of dimming.
+  //
+  // `glass` is translucent, so dimming it is the wrong axis twice over — it
+  // fades the LABEL along with the surface, and it makes a pane that is already
+  // showing the page through it show more of it, which reads as the button
+  // retreating rather than responding. The reference darkens its background
+  // instead (`hover:bg-[rgba(0,0,0,.1)]`), and that is what this does: one more
+  // flat layer on top of the sheen, in a direction the instance chooses, since
+  // black-over-dark-mode would be invisible. The whole `background-image` list
+  // is restated because CSS has no way to prepend to one, and the sheen has to
+  // stay under the new layer.
   extraRules: `.bloom-btn--link${NOT_DISABLED}:hover {
   opacity: 1;
   text-decoration: underline;
+}
+.bloom-btn--glass {
+  backdrop-filter: ${GLASS_BLUR_FILTER};
+  -webkit-backdrop-filter: ${GLASS_BLUR_FILTER};
+  background-image: ${GLASS_SHEEN_GRADIENT};
+}
+.bloom-btn--glass${NOT_DISABLED}:hover {
+  opacity: 1;
+  background-image:
+    linear-gradient(var(--bloom-btn-glass-hover), var(--bloom-btn-glass-hover)),
+    ${GLASS_SHEEN_GRADIENT};
 }`,
 });
 
@@ -119,6 +171,41 @@ interface VariantStyle {
   ringColor: string;
 }
 
+/**
+ * The glass container, from the reference's five declarations.
+ *
+ * The blur and the sheen are NOT here — they are constant, so they live in the
+ * `.bloom-btn--glass` rule where `:hover` can restate the `background-image`
+ * without an inline style outranking it. That split is the reference's own:
+ * `.glassy-effect` carries the blur and the gradient, the element's `style`
+ * attribute carries the per-instance fill, border and shadow.
+ */
+function glassContainer(fill: string, theme: Theme): VariantStyle {
+  const glass = resolveGlassColors(theme.colors, fill);
+  return {
+    container: {
+      backgroundColor: glass.fill,
+      borderWidth: glass.hairlineWidth,
+      borderStyle: 'solid',
+      borderColor: glass.hairline,
+      borderRadius: borderRadius.full,
+      // The lit rim first, then the drop — the reference's own order, and the
+      // only order that works: an inset painted after a drop is still an inset,
+      // but reading it in the same sequence the reference wrote it is what makes
+      // the two diffable.
+      boxShadow: `${GLASS_RIM_HIGHLIGHT}, ${SHADOW_BOX.glass}`,
+      // Consumed by `.bloom-btn--glass:hover`. Black over a light pane, white
+      // over a dark one — the reference only ever needed the first, being a
+      // light-page component.
+      ['--bloom-btn-glass-hover' as string]: theme.isDark
+        ? 'rgba(255, 255, 255, 0.10)'
+        : 'rgba(0, 0, 0, 0.10)',
+    },
+    textColor: glass.foreground,
+    ringColor: fill,
+  };
+}
+
 function resolveVariantStyle(
   variant: ButtonVariant,
   size: NativeSize,
@@ -127,19 +214,10 @@ function resolveVariantStyle(
   const c = theme.colors;
   const sizeConfig = SIZE_CONFIG[size];
 
+  const glassFill = GLASS_FILLS[variant];
+  if (glassFill) return glassContainer(glassFill(theme), theme);
+
   switch (variant) {
-    case 'primary':
-      return {
-        container: { backgroundColor: c.primary, borderRadius: borderRadius.full },
-        textColor: c.primaryForeground,
-        ringColor: c.primary,
-      };
-    case 'destructive':
-      return {
-        container: { backgroundColor: c.negative, borderRadius: borderRadius.full },
-        textColor: c.negativeForeground,
-        ringColor: c.negative,
-      };
     case 'inverse':
       return {
         container: { backgroundColor: '#FFFFFF', borderRadius: borderRadius.full },
@@ -289,6 +367,7 @@ const ButtonWebComponent: React.FC<ButtonProps> = ({
   const ariaLabel = ariaLabelProp ?? accessibilityLabel;
   const composedClassName = ['bloom-btn']
     .concat(resolvedVariant === 'link' ? ['bloom-btn--link'] : [])
+    .concat(GLASS_FILLS[resolvedVariant] ? ['bloom-btn--glass'] : [])
     .concat(className ? [className] : [])
     .join(' ');
 

@@ -29,6 +29,19 @@ import { Button } from '@oxyhq/bloom';
 
 `primary`, `secondary`, and `inverse` get a press-scale animation; the rest don't. `icon` renders as a square hit target — pair it with `accessibilityLabel`.
 
+## The filled variants are glass
+
+`primary` and `destructive` are **tinted glass**: the brand colour at 25% over a `blur(10px)` of whatever is behind them, a hairline of the same colour at full strength, a lit top rim and a soft drop shadow. Their label is `colors.text` — the page's own reading colour — not a white-on-brand foreground, because a translucent surface's luminance follows the surface behind it.
+
+This is a **page** material, not an over-media one. It is measured to clear WCAG AA on every neutral Bloom surface a control can sit on (`background`, `backgroundSecondary`, `backgroundTertiary`, `card`, `contrast50`) across every preset, mode and tone — worst 5.39. Over content Bloom does not own, it does not, and neither does any 25% material:
+
+```tsx
+// A CTA over a photo or a video still — use the opaque variant.
+<Button variant="inverse">Comprar</Button>
+```
+
+`secondary`, `outline`, `ghost`, `text`, `link` and `icon` are unchanged: they have no fill for the tint to replace.
+
 ## Sizes
 
 ```tsx

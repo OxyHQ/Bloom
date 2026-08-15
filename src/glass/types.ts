@@ -1,17 +1,17 @@
 import type { StyleProp, ViewStyle } from 'react-native';
 
-import type { GlassTone } from '../theme/glass-colors';
-
-export type { GlassTone };
-
 export interface GlassSurfaceProps {
   /**
-   * Which hue the pane is tinted with. Defaults to `primary`.
+   * The OPAQUE brand fill the pane is tinted with — `theme.colors.primary`,
+   * `theme.colors.negative`, and so on. The material composes the translucent
+   * tint and the full-strength hairline from it.
    *
-   * The same vocabulary `Chip` and `Badge` speak, so a glass dialog and a status
-   * chip cannot disagree about what "warning" looks like.
+   * A resolved token rather than a tone NAME because the caller is the only one
+   * who knows which token its surface means: `Button`'s `destructive` is
+   * `colors.negative`, which is a different colour from `colors.error` in all 36
+   * preset x mode combinations.
    */
-  tone?: GlassTone;
+  fill: string;
   /**
    * Corner radius, matching the radius of the box this fills.
    *

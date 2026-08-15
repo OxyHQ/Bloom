@@ -1,5 +1,5 @@
 import React from 'react';
-import { View } from 'react-native';
+import { StyleSheet, Text, View } from 'react-native';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
 import { Button } from './Button';
@@ -64,6 +64,76 @@ export const Variants: Story = {
       <Button variant="text">Text</Button>
     </View>
   ),
+};
+
+/**
+ * The two GLASS variants over three backdrops, because a translucent surface
+ * cannot be judged against one.
+ *
+ * The middle band is a hard STRIPE pattern on purpose: a blur that silently
+ * stopped applying looks identical to a working one over a flat fill, and the
+ * only cheap way to see the difference is a backdrop whose frequency makes
+ * averaging unmistakable. It is built from real `View`s rather than a CSS
+ * gradient so the story shows the same thing on a device.
+ *
+ * The bottom band is the case the material does NOT support — see the backdrop
+ * range in `theme/glass-colors.ts` — and is here so the limit is visible rather
+ * than merely described.
+ */
+const STRIPES = Array.from({ length: 40 }, (_, i) => i);
+
+function Stripes() {
+  return (
+    <View style={[StyleSheet.absoluteFill, { flexDirection: 'row', overflow: 'hidden' }]}>
+      {STRIPES.map((i) => (
+        <View key={i} style={{ flex: 1, backgroundColor: i % 2 ? '#e2dcee' : '#5d5270' }} />
+      ))}
+    </View>
+  );
+}
+
+function GlassBand({ label, children, backdrop }: {
+  label: string;
+  children: React.ReactNode;
+  backdrop?: React.ReactNode;
+}) {
+  return (
+    <View style={{ padding: 16, borderRadius: 16, gap: 10, overflow: 'hidden' }}>
+      {backdrop}
+      <Text style={{ fontSize: 11, fontWeight: '600' }}>{label}</Text>
+      <View style={{ flexDirection: 'row', gap: 12, flexWrap: 'wrap' }}>{children}</View>
+    </View>
+  );
+}
+
+export const Glass: Story = {
+  render: () => {
+    const buttons = (
+      <>
+        <Button variant="primary">Comprar</Button>
+        <Button variant="destructive">Eliminar</Button>
+        <Button variant="inverse">Inverse</Button>
+      </>
+    );
+    return (
+      <View style={{ gap: 16 }}>
+        <GlassBand label="on the page">{buttons}</GlassBand>
+        <GlassBand label="on a texture — the blur is only visible here" backdrop={<Stripes />}>
+          {buttons}
+        </GlassBand>
+        <GlassBand
+          label='over media — NOT supported, use variant="inverse"'
+          backdrop={
+            <View
+              style={[StyleSheet.absoluteFill, { backgroundColor: '#7b3f7a', opacity: 0.9 }]}
+            />
+          }
+        >
+          {buttons}
+        </GlassBand>
+      </View>
+    );
+  },
 };
 
 export const Sizes: Story = {

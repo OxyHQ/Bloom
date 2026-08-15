@@ -16,6 +16,9 @@ import { styled } from 'react-native-css';
 
 import { useTheme } from '../theme/use-theme';
 import { animation, borderRadius } from '../styles/tokens';
+import { bloomShadowStyle } from '../design-tokens/shadows';
+import { resolveGlassColors } from '../theme/glass-colors';
+import { GlassSurface } from '../glass/GlassSurface';
 import { usePressAnimation } from '../hooks/use-press-animation';
 import { useInteractionState } from '../hooks/use-interaction-state';
 import type { ButtonProps, ButtonSize, ButtonVariant } from './types';
@@ -171,6 +174,22 @@ const ButtonComponent: React.FC<ButtonProps> = ({
     }
   }, [variantProp, sizeProp]);
   const isDestructive = variantProp === 'destructive';
+  /**
+   * The opaque brand fill this button is made of GLASS in, or `null` for the
+   * variants that are not.
+   *
+   * `primary` is the only native variant with a brand fill to replace —
+   * `destructive` normalises onto it above and is distinguished only by which
+   * token it reads, which is exactly the shape the glass material wants. The
+   * exclusions and the measurement behind them are in `Button.web.tsx`'s
+   * `GLASS_FILLS` and in `theme/glass-colors.ts`.
+   */
+  const glassFill: string | null =
+    variant === 'primary'
+      ? isDestructive
+        ? theme.colors.negative
+        : theme.colors.primary
+      : null;
   const size: NativeSize = SIZE_ALIAS[sizeProp];
   const hasScaleFeedback = SCALE_VARIANTS.has(variant);
   const isInteractionBlocked = disabled || loading;
@@ -209,7 +228,12 @@ const ButtonComponent: React.FC<ButtonProps> = ({
       alignItems: 'center',
       justifyContent: 'center',
       flexDirection: 'row',
-      overflow: 'hidden',
+      // A glass button does NOT clip. `GlassSurface` clips its own layer stack
+      // to the same radius, so nothing needs clipping here — and `overflow:
+      // 'hidden'` sets `clipsToBounds` on the iOS layer, which would clip away
+      // the drop shadow that lifts the pane off the page. The other variants
+      // keep it; they have no shadow to lose.
+      overflow: glassFill === null ? 'hidden' : 'visible',
     };
 
     if (variant !== 'icon') {
@@ -219,12 +243,20 @@ const ButtonComponent: React.FC<ButtonProps> = ({
     }
 
     switch (variant) {
-      case 'primary':
-        styles.backgroundColor = isDestructive
-          ? theme.colors.negative
-          : theme.colors.primary;
+      case 'primary': {
+        // The pane's own geometry: transparent, because the fill is a LAYER
+        // inside `GlassSurface`, plus the hairline and the drop shadow, which
+        // both have to sit on the node that owns the shape — a border traces the
+        // real edge only from here, and a shadow drawn on the clipping child is
+        // clipped away.
+        const glass = resolveGlassColors(theme.colors, glassFill ?? theme.colors.primary);
+        styles.backgroundColor = 'transparent';
+        styles.borderWidth = glass.hairlineWidth;
+        styles.borderColor = glass.hairline;
         styles.borderRadius = borderRadius.full;
+        Object.assign(styles, bloomShadowStyle('glass'));
         break;
+      }
       case 'secondary':
         styles.backgroundColor = 'transparent';
         styles.borderWidth = 1;
@@ -264,14 +296,16 @@ const ButtonComponent: React.FC<ButtonProps> = ({
     }
 
     return styles;
-  }, [variant, size, theme, isDestructive]);
+  }, [variant, size, theme, glassFill]);
 
   const resolvedTextColor = useMemo((): string => {
     switch (variant) {
       case 'primary':
-        return isDestructive
-          ? theme.colors.negativeForeground
-          : theme.colors.primaryForeground;
+        // The page's own reading colour, not `primaryForeground`. A translucent
+        // pane's luminance follows the surface behind it, so the label has to be
+        // the token that is already legible on that surface — see
+        // `GlassColors.foreground`.
+        return resolveGlassColors(theme.colors, glassFill ?? theme.colors.primary).foreground;
       case 'secondary':
         return theme.colors.text;
       case 'inverse':
@@ -283,7 +317,7 @@ const ButtonComponent: React.FC<ButtonProps> = ({
       default:
         return theme.colors.text;
     }
-  }, [variant, theme, isDestructive]);
+  }, [variant, theme, glassFill]);
 
   const computedTextStyle = useMemo((): TextStyle => {
     const sizeConfig = SIZE_CONFIG[size];
@@ -348,6 +382,18 @@ const ButtonComponent: React.FC<ButtonProps> = ({
       {...(ariaHasPopup == null ? {} : { 'aria-haspopup': ariaHasPopup })}
       testID={testID}
     >
+      {/*
+        The pane, FIRST so every layer of it paints under the label. It fills
+        this node absolutely and clips itself to the same radius, so it takes no
+        part in the row layout above and needs no wrapper.
+      */}
+      {glassFill === null ? null : (
+        <GlassSurface
+          fill={glassFill}
+          radius={borderRadius.full}
+          testID={testID ? `${testID}-glass` : undefined}
+        />
+      )}
       {loading ? (
         <>
           <View
