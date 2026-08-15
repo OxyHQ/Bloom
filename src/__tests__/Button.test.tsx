@@ -7,6 +7,8 @@ import { useTheme } from '../theme/use-theme';
 import type { ThemeColors } from '../theme/types';
 import { Button, PrimaryButton, SecondaryButton, IconButton, GhostButton, TextButton } from '../button';
 import { borderRadius } from '../styles/tokens';
+import { SHADOW_BOX } from '../design-tokens/shadows';
+import { resolveGlassColors } from '../theme/glass-colors';
 import {
   classNamesOn,
   renderedChildren,
@@ -255,5 +257,65 @@ describe('Button variants', () => {
       <TextButton>Text</TextButton>,
     );
     expect(getByText('Text')).toBeTruthy();
+  });
+});
+
+/**
+ * The FILLED variant is GLASS on native too, and it is the SAME tokens the web
+ * fork reads — the whole point of `theme/glass-colors.ts` being one module.
+ *
+ * The native half cannot assert the blur or the sheen from their values (they
+ * are an `expo-blur` component and an SVG, not style keys), so it asserts the
+ * layer is MOUNTED and that the box carries the two things that must not be on
+ * it: the hairline, which has to trace the real edge, and the drop shadow, which
+ * a clipping node would swallow on iOS.
+ */
+describe('the filled variant is glass', () => {
+  it('paints the box from the glass tokens and mounts the surface under the label', () => {
+    const colors = captureThemeColors();
+    const glass = resolveGlassColors(colors, 'primary');
+    const { getByTestId, queryByTestId } = renderWithTheme(<Button testID="b">Go</Button>);
+    const style = resolvedStyle(getByTestId('b').props.style);
+
+    // The fill is the SURFACE's job; the box must stay clear or the blur has
+    // nothing to show through.
+    expect(style.backgroundColor).toBe('transparent');
+    expect(style.borderColor).toBe(glass.hairline);
+    expect(style.borderWidth).toBe(glass.hairlineWidth);
+    expect(style.boxShadow).toBe(SHADOW_BOX.glass);
+    // …and the drop shadow only. The rim is an INSET, and an inset on this node
+    // would be painted over by the very layer it is meant to sit on top of.
+    expect(style.boxShadow).not.toContain('inset');
+
+    expect(queryByTestId('b-glass')).not.toBeNull();
+  });
+
+  it('labels it with the pair member legible on the tint, not the opaque fill', () => {
+    const colors = captureThemeColors();
+    const glass = resolveGlassColors(colors, 'primary');
+    const { getByText } = renderWithTheme(<Button>Go</Button>);
+    expect(resolvedStyle(getByText('Go').props.style).color).toBe(glass.fillForeground);
+    // The one it must NOT be: `primaryForeground` is white here, sized for the
+    // opaque fill this replaced.
+    expect(glass.fillForeground).not.toBe(colors.primaryForeground);
+  });
+
+  it('speaks the error tone for destructive, the same tone a destructive Chip uses', () => {
+    const colors = captureThemeColors();
+    const { getByTestId } = renderWithTheme(
+      <Button testID="d" variant="destructive">
+        Delete
+      </Button>,
+    );
+    expect(resolvedStyle(getByTestId('d').props.style).borderColor).toBe(
+      resolveGlassColors(colors, 'error').hairline,
+    );
+  });
+
+  it('leaves the unfilled variants without a surface at all', () => {
+    const { queryByTestId } = renderWithTheme(
+      <GhostButton testID="g">Ghost</GhostButton>,
+    );
+    expect(queryByTestId('g-glass')).toBeNull();
   });
 });
