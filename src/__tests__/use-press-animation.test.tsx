@@ -21,7 +21,11 @@ import { act, renderHook } from '@testing-library/react-native';
 import * as ReactNative from 'react-native';
 import * as Reanimated from 'react-native-reanimated';
 
+import { readFileSync, readdirSync } from 'node:fs';
+import path from 'node:path';
+
 import { usePressAnimation } from '../hooks/use-press-animation';
+import { animation } from '../styles/tokens';
 
 type Hook = typeof import('../hooks/use-press-animation');
 
@@ -109,7 +113,7 @@ describe('usePressAnimation suppressions', () => {
 
   // The third suppression, and the one that used to be a defect. `Button`,
   // `Fab`, `FrostedIconButton` and `Checkbox` all express their disabled state
-  // as `usePressAnimation(disabled ? undefined : PRESS_SCALE)`. While
+  // as `usePressAnimation(disabled ? undefined : animation.pressScale)`. While
   // `pressScale` carried a `= 0.97` default that did nothing — a JS default
   // parameter fires on an EXPLICIT `undefined` — so the argument became 0.97 and
   // `enabled` stayed true. The parameter is required now; reintroducing a
@@ -125,5 +129,66 @@ describe('usePressAnimation suppressions', () => {
   it('…while a number on the same path animates', () => {
     expect(press(usePressAnimation, 0.9)).toBe(true);
     expect(spring).toHaveBeenCalledTimes(2);
+  });
+});
+
+/**
+ * ONE value, and a census that says so.
+ *
+ * The five per-family constants this replaced (0.97, 0.95, 0.94, 0.90) were each
+ * defensible where they were written and together made the same gesture read as
+ * four different amounts of feedback — and the deepest of them, on the smallest
+ * control, was the visible squash the value moved away from. Nothing about a
+ * call site announces that it has drifted; a local `const PRESS_SCALE = 0.94`
+ * reads as deliberate, because it was.
+ *
+ * So this reads the SOURCE, not the render: a numeric literal reaching the hook,
+ * or any local constant named for it, fails here.
+ */
+describe('one press-scale value across the library', () => {
+  const SOURCE_ROOT = path.resolve(__dirname, '..');
+
+  /** Every `.ts`/`.tsx` under `src/`, tests and stories included. */
+  function sourceFiles(dir: string): string[] {
+    return readdirSync(dir, { withFileTypes: true }).flatMap((entry) => {
+      const full = path.join(dir, entry.name);
+      if (entry.isDirectory()) return sourceFiles(full);
+      return /\.tsx?$/.test(entry.name) ? [full] : [];
+    });
+  }
+
+  const files = sourceFiles(SOURCE_ROOT);
+
+  // Vacuity floor. A census that walked nothing reports the same clean zero.
+  it('walks the whole source tree', () => {
+    expect(files.length).toBeGreaterThan(300);
+  });
+
+  it('passes the token to every call, never a literal', () => {
+    const offenders: string[] = [];
+    for (const file of files) {
+      if (file === __filename) continue;
+      const source = readFileSync(file, 'utf8');
+      for (const match of source.matchAll(/usePressAnimation\(([^)]*)\)/g)) {
+        const argument = match[1] ?? '';
+        // A bare number, or a number on either side of a ternary.
+        if (/(^|[?:\s])0?\.\d+/.test(argument)) {
+          offenders.push(`${path.relative(SOURCE_ROOT, file)}: ${match[0]}`);
+        }
+      }
+    }
+    expect(offenders).toEqual([]);
+  });
+
+  it('leaves no per-family constant named for the scale', () => {
+    const offenders = files
+      .filter((file) => file !== __filename)
+      .filter((file) => /const\s+PRESS_SCALE\s*=/.test(readFileSync(file, 'utf8')))
+      .map((file) => path.relative(SOURCE_ROOT, file));
+    expect(offenders).toEqual([]);
+  });
+
+  it('and the token is the value the reference asked for', () => {
+    expect(animation.pressScale).toBe(0.99);
   });
 });

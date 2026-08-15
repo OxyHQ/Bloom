@@ -93,6 +93,26 @@ export const animation = {
     gentle: { friction: 8, tension: 60 },
     bouncy: { friction: 6, tension: 120 },
   },
+  /**
+   * How far a HELD control shrinks. One number for the whole library.
+   *
+   * It used to be five, chosen per family — 0.97 on `Button` and `Tabs`, 0.95 on
+   * `Chip`, 0.94 on `Fab` and `FrostedIconButton`, 0.90 on `Checkbox` and
+   * `Radio` — each justified locally by the size of the target, which is a real
+   * argument and still produced a library where the same gesture reads as five
+   * different amounts of feedback. At 0.90 a checkbox visibly SQUASHES; that is
+   * the effect the value moved away from, and it was ten times deeper than the
+   * one that prompted the change.
+   *
+   * 0.99 is a tactile hint you feel rather than watch — roughly 0.4px on a 40dp
+   * button and 0.16px on a 16px checkbox. The suppression rules that decide
+   * whether it runs at all live in `hooks/use-press-animation.ts`.
+   *
+   * Declared here rather than beside the hook because the raw-DOM web forks need
+   * it too, and this module imports no react-native — a fork that renders through
+   * react-dom must not pull the RN runtime in behind a constant.
+   */
+  pressScale: 0.99,
 } as const;
 
 /**

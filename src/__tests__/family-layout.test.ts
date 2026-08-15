@@ -157,7 +157,19 @@ describe('one family layout', () => {
     // so those five have one surface to import through, and it stays out of
     // `exports` and the root barrel because none of it is API a consumer should
     // reach for.
-    const INTERNAL_DIRECTORIES: readonly string[] = ['floating'];
+    //
+    // `glass/` is the same shape: ONE authority for the translucent material —
+    // blur, accent tint, sheen and lit rim — that the surfaces which float over
+    // content compose instead of each inventing it. Bloom already solved glass
+    // three times independently (`frosted-icon-button`, `tab-bar`,
+    // `progressive-blur`) and this exists so there is not a fourth.
+    //
+    // Internal DELIBERATELY, and the direction matters: publishing it later is
+    // additive, unpublishing it would be a breaking change, and only one
+    // consumer (`Button`) has landed on it so far. Whether apps should be able
+    // to build their own glass surfaces is a real question and not one this gate
+    // should answer by default.
+    const INTERNAL_DIRECTORIES: readonly string[] = ['floating', 'glass'];
 
     const pkg = JSON.parse(readFileSync(join(SRC, '..', 'package.json'), 'utf8')) as {
       exports: Record<string, Record<string, unknown> | string>;

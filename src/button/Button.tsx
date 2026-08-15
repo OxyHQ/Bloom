@@ -15,7 +15,10 @@ import {
 import { styled } from 'react-native-css';
 
 import { useTheme } from '../theme/use-theme';
-import { borderRadius } from '../styles/tokens';
+import { animation, borderRadius } from '../styles/tokens';
+import { bloomShadowStyle } from '../design-tokens/shadows';
+import { resolveGlassColors } from '../theme/glass-colors';
+import { GlassSurface } from '../glass';
 import { usePressAnimation } from '../hooks/use-press-animation';
 import { useInteractionState } from '../hooks/use-interaction-state';
 import type { ButtonProps, ButtonSize, ButtonVariant } from './types';
@@ -65,7 +68,6 @@ const SIZE_CONFIG = {
 
 const ICON_HIT_SLOP = { top: 10, bottom: 10, left: 10, right: 10 } as const;
 
-const PRESS_SCALE = 0.97;
 const SCALE_VARIANTS = new Set<string>(['primary', 'secondary', 'inverse']);
 
 // ---------------------------------------------------------------------------
@@ -173,12 +175,21 @@ const ButtonComponent: React.FC<ButtonProps> = ({
     }
   }, [variantProp, sizeProp]);
   const isDestructive = variantProp === 'destructive';
+  // The FILLED variant is GLASS now — a translucent pane in the tone the variant
+  // names, rather than an opaque brand fill. `error` is the tone `Chip` and
+  // `Badge` already use for a destructive action, so a destructive button and a
+  // destructive chip cannot disagree about the hue.
+  const isGlass = variant === 'primary';
+  const glass = useMemo(
+    () => resolveGlassColors(theme.colors, isDestructive ? 'error' : 'primary'),
+    [theme.colors, isDestructive],
+  );
   const size: NativeSize = SIZE_ALIAS[sizeProp];
   const hasScaleFeedback = SCALE_VARIANTS.has(variant);
   const isInteractionBlocked = disabled || loading;
   const { scaleAnim, onPressIn: onScalePressIn, onPressOut: onScalePressOut } =
     usePressAnimation(
-      hasScaleFeedback && !isInteractionBlocked ? PRESS_SCALE : undefined,
+      hasScaleFeedback && !isInteractionBlocked ? animation.pressScale : undefined,
     );
   // Non-scale variants (icon/ghost/text) convey press feedback via an opacity
   // dip. We drive it through component state + onPressIn/onPressOut rather than
@@ -222,10 +233,16 @@ const ButtonComponent: React.FC<ButtonProps> = ({
 
     switch (variant) {
       case 'primary':
-        styles.backgroundColor = isDestructive
-          ? theme.colors.negative
-          : theme.colors.primary;
+        // The fill, the sheen and the blur are painted by `GlassSurface` as a
+        // clipped layer below the content, so the box itself carries only what
+        // has to be on the node that owns the geometry: the hairline, which
+        // traces the real edge, and the drop shadow, which a clipping node would
+        // swallow on iOS.
+        styles.backgroundColor = 'transparent';
+        styles.borderWidth = glass.hairlineWidth;
+        styles.borderColor = glass.hairline;
         styles.borderRadius = borderRadius.full;
+        Object.assign(styles, bloomShadowStyle('glass'));
         break;
       case 'secondary':
         styles.backgroundColor = 'transparent';
@@ -266,14 +283,16 @@ const ButtonComponent: React.FC<ButtonProps> = ({
     }
 
     return styles;
-  }, [variant, size, theme, isDestructive]);
+  }, [variant, size, theme, isDestructive, glass]);
 
   const resolvedTextColor = useMemo((): string => {
     switch (variant) {
       case 'primary':
-        return isDestructive
-          ? theme.colors.negativeForeground
-          : theme.colors.primaryForeground;
+        // The `*SubtleForeground` half of the pair the fill came from — the one
+        // colour the palette guarantees is legible ON that tint. NOT
+        // `primaryForeground`, which is sized for the OPAQUE fill this variant
+        // used to have and would be white on a pale wash.
+        return glass.fillForeground;
       case 'secondary':
         return theme.colors.text;
       case 'inverse':
@@ -285,7 +304,7 @@ const ButtonComponent: React.FC<ButtonProps> = ({
       default:
         return theme.colors.text;
     }
-  }, [variant, theme, isDestructive]);
+  }, [variant, theme, glass.fillForeground]);
 
   const computedTextStyle = useMemo((): TextStyle => {
     const sizeConfig = SIZE_CONFIG[size];
@@ -301,6 +320,20 @@ const ButtonComponent: React.FC<ButtonProps> = ({
 
   const content = (
     <>
+      {/*
+        FIRST, so it paints under the label — and inside the pressable rather
+        than around it, so the button stays ONE node and a caller's layout class
+        still lands on the box the parent lays out. `GlassSurface` is absolutely
+        positioned and `pointerEvents="none"`, so it changes neither the layout
+        nor the hit target.
+      */}
+      {isGlass ? (
+        <GlassSurface
+          tone={isDestructive ? 'error' : 'primary'}
+          radius={borderRadius.full}
+          testID={testID ? `${testID}-glass` : undefined}
+        />
+      ) : null}
       {iconPosition === 'left' && icon}
       {children != null && (
         <Text style={[computedTextStyle, textStyle]}>{children}</Text>

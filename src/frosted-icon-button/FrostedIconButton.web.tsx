@@ -8,7 +8,7 @@ import React, {
 } from 'react';
 
 import { useTheme } from '../theme/use-theme';
-import { borderRadius } from '../styles/tokens';
+import { animation, borderRadius } from '../styles/tokens';
 import { interactiveWebCss, useInteractiveWebCss } from '../styles/interactive-web-css';
 import { flattenWebStyle } from '../styles/flatten-web-style';
 import {
@@ -19,8 +19,6 @@ import {
 import type { FrostedIconButtonProps } from './types';
 
 export type { FrostedIconButtonProps, FrostedIconButtonSize } from './types';
-
-const PRESS_SCALE = 0.94;
 
 // ---------------------------------------------------------------------------
 //  Per-state CSS injection
@@ -105,7 +103,7 @@ const FrostedIconButtonWebComponent: React.FC<FrostedIconButtonProps> = ({
       ['--bloom-frosted-hover-bg' as string]: palette.surfaceHover,
       ['--bloom-frosted-hover-ring' as string]: palette.ringHover,
       ['--bloom-frosted-ring' as string]: palette.focusRing,
-      ['--bloom-frosted-press-scale' as string]: PRESS_SCALE,
+      ['--bloom-frosted-press-scale' as string]: animation.pressScale,
     };
   }, [
     geo.diameter,

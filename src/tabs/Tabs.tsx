@@ -34,7 +34,7 @@ import Animated, {
 
 import { useTheme } from '../theme/use-theme';
 import { usePressAnimation } from '../hooks/use-press-animation';
-import { borderRadius, space } from '../styles/tokens';
+import { animation, borderRadius, space } from '../styles/tokens';
 import { bloomShadowStyle } from '../design-tokens/shadows';
 import type { TabsProps, TabsTriggerProps, TabsContentProps, TabsVariant } from './types';
 
@@ -583,7 +583,7 @@ const TabComponent: React.FC<TabsTriggerProps> = ({
   // The two paths meet here: an explicit `isFocused` (router adapter) wins;
   // otherwise selection comes from the bar's controlled `value`.
   const isSelected = isFocused ?? value === selectedValue;
-  const { scaleAnim, onPressIn, onPressOut } = usePressAnimation(0.97);
+  const { scaleAnim, onPressIn, onPressOut } = usePressAnimation(animation.pressScale);
   const resolvedCount = count ?? 0;
   const showCount = resolvedCount > 0;
 

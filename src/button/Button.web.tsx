@@ -9,7 +9,14 @@ import React, {
 } from 'react';
 
 import { useTheme } from '../theme/use-theme';
-import { borderRadius } from '../styles/tokens';
+import { animation, borderRadius } from '../styles/tokens';
+import { SHADOW_BOX } from '../design-tokens/shadows';
+import {
+  GLASS_BLUR_FILTER,
+  GLASS_RIM_HIGHLIGHT,
+  glassBackgroundImage,
+  resolveGlassColors,
+} from '../theme/glass-colors';
 import type { Theme } from '../theme/types';
 import { SpinnerIcon } from '../loading/SpinnerIcon.web';
 import { flattenWebStyle } from '../styles/flatten-web-style';
@@ -60,8 +67,6 @@ const SIZE_ALIAS: Record<ButtonSize, NativeSize> = {
   lg: 'large',
   icon: 'medium',
 };
-
-const PRESS_SCALE = 0.97;
 
 /** Variants that get a tactile press-scale (matches native `SCALE_VARIANTS`). */
 const SCALE_VARIANTS = new Set<ButtonVariant>(['primary', 'secondary', 'inverse', 'destructive']);
@@ -121,6 +126,29 @@ interface VariantStyle {
   ringColor: string;
 }
 
+/**
+ * The glass material as raw-DOM CSS.
+ *
+ * `backdrop-filter` needs both spellings for Safari, and it needs the element to
+ * have a translucent background for anything to show through — which the
+ * `background-image` stack provides rather than `background-color`, leaving that
+ * slot free.
+ */
+function glassContainer(theme: Theme, isDestructive: boolean): CSSProperties {
+  const glass = resolveGlassColors(theme.colors, isDestructive ? 'error' : 'primary');
+  return {
+    backgroundColor: 'transparent',
+    backgroundImage: glassBackgroundImage(glass.fill, theme.isDark),
+    borderWidth: glass.hairlineWidth,
+    borderStyle: 'solid',
+    borderColor: glass.hairline,
+    borderRadius: borderRadius.full,
+    backdropFilter: GLASS_BLUR_FILTER,
+    WebkitBackdropFilter: GLASS_BLUR_FILTER,
+    boxShadow: `${GLASS_RIM_HIGHLIGHT}, ${SHADOW_BOX.glass}`,
+  };
+}
+
 function resolveVariantStyle(
   variant: ButtonVariant,
   size: NativeSize,
@@ -130,17 +158,19 @@ function resolveVariantStyle(
   const sizeConfig = SIZE_CONFIG[size];
 
   switch (variant) {
+    // The two FILLED variants are GLASS. Every layer comes from
+    // `theme/glass-colors.ts`, the same module the native fork's `GlassSurface`
+    // reads, so the two cannot drift: the accent tint and its guaranteed-legible
+    // label from the `*Subtle` pair, the hairline at the tone's full strength,
+    // the sheen and the material as a `background-image` stack, the lit rim and
+    // the drop shadow as one `box-shadow`.
     case 'primary':
-      return {
-        container: { backgroundColor: c.primary, borderRadius: borderRadius.full },
-        textColor: c.primaryForeground,
-        ringColor: c.primary,
-      };
     case 'destructive':
       return {
-        container: { backgroundColor: c.negative, borderRadius: borderRadius.full },
-        textColor: c.negativeForeground,
-        ringColor: c.negative,
+        container: glassContainer(theme, variant === 'destructive'),
+        textColor: resolveGlassColors(c, variant === 'destructive' ? 'error' : 'primary')
+          .fillForeground,
+        ringColor: variant === 'destructive' ? c.negative : c.primary,
       };
     case 'inverse':
       return {
@@ -255,7 +285,7 @@ const ButtonWebComponent: React.FC<ButtonProps> = ({
       // CSS custom props consumed by the static stylesheet.
       ['--bloom-btn-ring' as string]: variantStyle.ringColor,
       ['--bloom-btn-press-scale' as string]: SCALE_VARIANTS.has(resolvedVariant)
-        ? PRESS_SCALE
+        ? animation.pressScale
         : 1,
       ...variantStyle.container,
     };
