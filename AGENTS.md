@@ -17,20 +17,19 @@ Shared RN + Web component library. One family per `src/<name>/`, each shipped as
 - **The `react-native` condition MUST stay split into `types` + `default`, never a bare string** — a string entry makes native consumers typecheck Bloom's own `.tsx`, dragging `react-dom` and undeclared optional peers into their program.
 - **`verify:package` (the `postbuild`) is not optional** — it packs the tarball and asserts every `exports` path actually ships; RN consumers have no `src/` fallback. Both re-entrancy guards (`--ignore-scripts` + `BLOOM_VERIFY_PACKAGE_RUNNING`) are required.
 - **`toast/` is NOT web-forked** — its only split is `ToastHost.native.tsx`, so `'./toast'` stays out of `WEB_FORKED_SUBPATHS`.
-- `className` on `ScrollView`/`FlatList` needs a heritage-free `declare module 'react-native'` block via `/// <reference path>`.
 
 ## Reanimated web layout animations
 
 The three general web failure modes are in `~/Oxy/AGENTS.md`. Bloom's own rule, because it has bitten twice: **pick the mechanism per DIRECTION, never per component.**
 
-- **`entering` runs on the REAL element with `shouldSavePosition: true`.** Any animation name absent from reanimated's built-in map — every custom `Keyframe`, every custom builder — also schedules a cleanup that PINS the element (`position: absolute` + a frozen box) at `duration × 5`. An enter is EITHER a predefined builder (`FadeIn`, `SlideInUp`) OR driven imperatively — never a `Keyframe` or custom builder.
+- **`entering` runs on the REAL element with `shouldSavePosition: true`.** Any animation name absent from reanimated's built-in map — every custom `Keyframe`, every custom builder — also schedules a cleanup that PINS the element (`position: absolute` + a frozen box) at `duration × 5`. An enter is EITHER a predefined builder (`FadeIn`, `SlideInUp`) OR driven imperatively.
 - **`exiting` runs on a throwaway clone**, so a custom `Keyframe` is safe there — the only way to express a multi-property, multi-stop shape.
 - Trade-offs: a predefined builder can't combine fade with scale; `Keyframe` has no `.easing()` (survives only via one of reanimated's seven `WebEasings` names), so web keyframes run linear. Reference: `src/motion/motion.web.ts`, `src/toast/animations.ts`.
 
 ## Web fork CSS
 
 - **A `.web.tsx` fork self-injects any CSS it needs — never make consumers copy it into a global stylesheet.** An unresolvable `animation-name` fails silently, so a consumer can ship dead animations indefinitely.
-- **Injection goes through `styles/adopt-style-sheet.ts`, never `document.createElement('style')` with text content.** A `<style>` element's contents are what `style-src 'self'` blocks — rules dropped, nothing thrown, the fork's own `getElementById` guard reports success. A CONSTRUCTED sheet (`new CSSStyleSheet()` + `replaceSync()` + `adoptedStyleSheets`) is outside CSP's inline hooks. `adoptStyleSheet(id, css)` replaces in place; there is no `<style id="bloom-*">` element to look for — check the adopted sheets.
+- **Injection goes through `styles/adopt-style-sheet.ts`, never `document.createElement('style')`.** A `<style>` element's contents are what `style-src 'self'` blocks — rules dropped, nothing thrown, the fork's own `getElementById` guard reports success. A CONSTRUCTED sheet (`new CSSStyleSheet()` + `replaceSync()` + `adoptedStyleSheets`) is outside CSP's inline hooks. `adoptStyleSheet(id, css)` replaces in place; there's no `<style id="bloom-*">` to find — check the adopted sheets.
 - **Jest cannot see this** — jsdom lacks `replaceSync`/`adoptedStyleSheets`, so every suite takes the fallback (`src/__tests__/support/constructed-style-sheets.ts`).
 - **Flatten a `StyleProp` before spreading it into a raw DOM element's `style`** — the RN array idiom produces numeric keys and crashes with `Failed to set an indexed property [0]`. Use `flattenWebStyle()` or `StyleSheet.flatten` via `styles/atoms.ts` — not the latter for a dependency-free fork, since jest's RN mock stubs it as identity.
 
@@ -44,7 +43,7 @@ Wiring: Expo/Metro apps import `@oxyhq/app-preset/css/base.css` at the top of `g
 
 **`index.ts` is a PURE BARREL. `<Pascal>.tsx` holds the implementation, `types.ts` the props.** An index that is both barrel and implementation makes a family's public surface invisible — anything it exports becomes API by being written rather than decided. Gate: `family-layout.test.ts`.
 
-- **The FACTORY layout is the one exception.** A web-forked family whose fork differs only in which component it is BUILT FROM can't express that as a re-export — as a normal import, the shared implementation would have to import the surface that imports it. `alert-dialog`, `combobox`, `command`, `surfaces`, `tab-bar` call `createAlertDialog(Dialog)` etc. in their barrels, each binding the platform's own. The gate's exemption list for these is an EQUALITY, not a floor.
+- **The FACTORY layout is the one exception.** A web-forked family whose fork differs only in which component it's BUILT FROM can't express that as a re-export — the shared implementation would have to import the surface that imports it. `alert-dialog`, `combobox`, `command`, `surfaces`, `tab-bar` call `createAlertDialog(Dialog)` etc. The gate's exemption list here is an EQUALITY, not a floor.
 - **A barrel is `.ts`** — no JSX to justify `.tsx`.
 - **File names:** hooks `use-kebab-case.ts`, context module `context.ts`, constants `constants.ts` (never `const.ts`), cross-fork module `shared.ts`.
 
@@ -55,7 +54,7 @@ Wiring: Expo/Metro apps import `@oxyhq/app-preset/css/base.css` at the top of `g
 
 ## What the root barrel carries
 
-**A family is on `src/index.ts` unless importing it would add a PACKAGE to the barrel's graph** — Metro doesn't tree-shake, so an unmet REQUIRED peer is a build failure, not a degradation. Three families fail that: `tab-bar` (`expo-glass-effect`+`expo-symbols`), `provider` (`expo-router`, via `scroll/expo-router` — making `BloomProvider` expo-router-only BY CONSTRUCTION) and `zoomable-image-gallery` (`expo-image`). Gate: `root-barrel-graph.test.ts`, counting STATIC imports only — `theme/adaptive-colors.ts` names `expo-router` through the optional-`require` boundary and links nothing, which is the only reason the gate is falsifiable. A family with generic collision-prone exports comes in as a namespace, not loose top-level verbs.
+**A family is on `src/index.ts` unless importing it would add a PACKAGE to the barrel's graph** — Metro doesn't tree-shake, so an unmet peer is a build failure, not a degradation. Three families fail that: `tab-bar` (`expo-glass-effect`+`expo-symbols`), `provider` (`expo-router`, via `scroll/expo-router` — making `BloomProvider` expo-router-only BY CONSTRUCTION) and `zoomable-image-gallery` (`expo-image`). Gate: `root-barrel-graph.test.ts`, counting STATIC imports only — `theme/adaptive-colors.ts` names `expo-router` via the optional-`require` boundary and links nothing, the only reason the gate is falsifiable.
 
 ## App root provider
 
@@ -63,7 +62,7 @@ Wiring: Expo/Metro apps import `@oxyhq/app-preset/css/base.css` at the top of `g
 
 - **Expo/expo-router apps only** — it binds the scroll store to `expoRouterScrollAdapter`. A Vite/SPA consumer mounts `BloomThemeProvider` plus `<ScrollRestorationProvider adapter={…}>` with its own router adapter.
 - **OUTLETS stay out of it** (`ToastOutlet`, `PortalProvider`/`PortalOutlet`, `SurfaceHost`) — a second mount duplicates every surface.
-- **`PortalProvider`/`PortalOutlet` are NATIVE-ONLY** — the web fork ports directly to `document.body`, and both are explicit no-op exports there. "This app doesn't mount a Portal Outlet" is never a valid reason to fork a web-facing component (it already produced a 742-line fork that diverged for two months and shipped strictly worse).
+- **`PortalProvider`/`PortalOutlet` are NATIVE-ONLY** — the web fork ports directly to `document.body`, and both are explicit no-op exports there. "This app doesn't mount a Portal Outlet" is never a valid reason to fork a web-facing component — a past attempt diverged for months and shipped strictly worse.
 
 ## Scroll restoration
 
@@ -74,7 +73,7 @@ Wiring: Expo/Metro apps import `@oxyhq/app-preset/css/base.css` at the top of `g
 - **A miss RESETS to 0, not a no-op** — one window scroller serves every route. `store.has()` is needed for the decision (`read()` can't tell "never seen" from "saved at top").
 - **Reset is arrival-scoped; restore is not** — resetting twice is data loss, restoring twice is harmless.
 - **The reset's own scroll echo isn't persisted**, and restore writes are swallowed via `echoOffset` — else an interrupted restore stores a partial offset.
-- **`canScroll()` must stay honest for the `'window'` sentinel** — a tabbed navigator collapses the document (`display: none`), forcing `scrollY` to 0 before blur, so a hardcoded `true` persists 0 over a real offset. A partial clamp needs BOTH the range shrinking and the offset sitting at the new max, with the reference range from the last SAVE, not the last observation (Chrome dispatches two scroll events per clamp).
+- **`canScroll()` must stay honest for the `'window'` sentinel** — a tabbed navigator collapses the document (`display: none`), forcing `scrollY` to 0 before blur, so a hardcoded `true` persists 0 over a real offset. A partial clamp needs BOTH the range shrinking and the offset at the new max, with the reference range from the last SAVE, not the last observation (Chrome dispatches two scroll events per clamp).
 - **The web restore re-applies across a bounded run of frames** and **ABORTS on user input** (`wheel`/`touchstart`/`pointerdown`/`keydown`).
 - **`history.scrollRestoration` is `'manual'` only while mounted**, handed back on `pagehide` — must not be a module-scope side effect.
 - **Native is narrow** — keyed on storage key, never focus; the hook returns `{ onScroll }`. `enabled` means "rows exist", not a feature flag.
@@ -97,7 +96,7 @@ Wiring: Expo/Metro apps import `@oxyhq/app-preset/css/base.css` at the top of `g
 - **`aria-disabled` inverts between `Pressable` and `View`** — `Pressable` overwrites a caller-supplied one from its `disabled` prop; a plain `View` has no `disabled` prop.
 - **`accessibilityValue={{min,max,now}}` is dropped too** — only the flat `aria-value*` props work.
 - **A prop-level test cannot catch any of this** — assert the rendered ATTRIBUTE. Gate: `aria-state-web.test.tsx`, mutation-verified per component.
-- **TWO gates; the runtime one does not fail by default.** `aria-state-web.test.tsx` imports subjects BY NAME, so a new component never joins it — how `Slider` got fixed and its three `progressbar` siblings did not. `aria-state-source-census.test.ts` fails any element with a stateful role and no matching `aria-*`. Add to both.
+- **TWO gates; the runtime one does not fail by default.** `aria-state-web.test.tsx` imports subjects BY NAME, so a new component never joins it automatically — `Slider` was fixed, its three `progressbar` siblings were not. `aria-state-source-census.test.ts` fails any element with a stateful role and no matching `aria-*`. Add to both.
 
 ## Overlay stacking (one authority, never a constant)
 
@@ -121,7 +120,7 @@ Only TWO exist: `CenteredDialog` and `ResponsiveSheet` were removed with no shim
 - **ONE imperative overlay API: the surface stack** — `alert()`, `confirm()`, `prompt()` all `present()` onto `surfaces/surfaceStore`, rendered by the single `<SurfaceHost>`. Two `alert()` calls in a row STACK rather than queue.
 - **A built-in surface's buttons carry `shouldCloseOnPress: false` and dismiss via `surface.dismiss(result)`, never `Dialog`'s `close()`** — the value must reach the `present()` promise, which resolves on the PRESS. Pinned at the prop boundary with a mock Dialog (`surface-prompts.test.tsx`).
 - **`DialogAction`'s `'cancel'` colour is purely visual** — it does not affect dismissal.
-- **`disabled` on an `asChild` trigger is guarded in `cloneTrigger`, not in the child alone** — `TriggerSlot` COMPOSES the child's `onPress` with the open handler, so a guard only in the child leaves the open to the caller's element. **The browser is the WEAKER instrument:** unguarded, a `Pressable` child stays closed in Chrome (RNW masks it) while jest goes red (its mock ignores `disabled`). Gates: `Combobox.test.tsx` + `scripts/verify-trigger-disabled.mjs`.
+- **`disabled` on an `asChild` trigger is guarded in `cloneTrigger`, not the child alone** — `TriggerSlot` COMPOSES the child's `onPress` with the open handler, so a child-only guard leaves the open to the caller's element. **The browser is the WEAKER instrument:** unguarded, a `Pressable` child stays closed in Chrome (RNW masks it) while jest goes red (its mock ignores `disabled`). Gates: `Combobox.test.tsx` + `scripts/verify-trigger-disabled.mjs`.
 - **KNOWN GAP — the native tooltip cannot position itself inside a sheet.** `TooltipTrigger` measures in PAGE coordinates, `TooltipContent` renders into the ROOT portal group, so a tooltip inside a `BottomSheet` portals outside that window. Needs a real device to fix — jest cannot see a native window boundary.
 
 ## Theme and design tokens
@@ -130,11 +129,11 @@ Only TWO exist: `CenteredDialog` and `ResponsiveSheet` were removed with no shim
 
 - **Never paste a Bloom token into a consumer's `global.css`** — `theme.css` is the single authority; keep only app-local seeds there. Build-time assembly: `bloomThemeCss()`/`bloomThemeBlock()`.
 - **A consumer's pre-JS `:root` palette is GENERATED, never hand-written** (`getPresetVars(preset, mode)`) — `theme.css` is only the alias layer; a hand-written fallback becomes a second palette that drifts.
-- **A SCOPED block needs `buildSeedScopeVars`, not `getPresetVars`** — an alias substitutes where it's DECLARED, so a scoped `--background` doesn't move `--color-background` at `:root`. Go through `withScopeAliases` (covers the ROLE vocabulary too — missing it silently paints near-black text on a dark photo under forced-dark mode).
+- **A SCOPED block needs `buildSeedScopeVars`, not `getPresetVars`** — an alias substitutes where it's DECLARED, so a scoped `--background` doesn't move `--color-background` at `:root`. Go through `withScopeAliases` (covers the ROLE vocabulary too — omitting it silently paints near-black text on a dark photo in forced-dark mode).
 - Both resolvers are pure so build scripts can import them — gated by a static import-graph scan.
 - **The colour engine is the `ColorEngine` NAMESPACE, not flat exports** — `useTheme`/`BloomThemeProvider`/tokens stay flat (used fleet-wide); raw colour maths (`argbFromHex`, `quantizeImage`, …) has no consumers outside Bloom. `theme/color-engine/index.ts` is that namespace's published surface; the ports underneath are implementation.
 - **`design-tokens/tokens.json`** is every token RESOLVED in W3C DTCG format for consumers that can't run a stylesheet — sRGB hex, additions must be additive, fonts/shadows absent. **Generated, never hand-edited.**
-- **Never derive a colour from a token — read the pair.** Accent tokens resolve to `rgb(...)`, so appended hex alpha parses back OPAQUE (contrast 1.00), and a fill is sized to CARRY text, not to BE it, so using one as a label fails AA. A tinted/filled/outlined control calls `resolveAccentColors(colors, tone, fill)` (`theme/accent-colors.ts`), which reads the `*Subtle`/`*SubtleForeground` pairs the policy gates together; a className context uses the opacity utility (`bg-primary/10`). Verify by compositing the actual background and computing the WCAG ratio — gate: `theme/__tests__/accent-colors.test.ts`.
+- **Never derive a colour from a token — read the pair.** Accent tokens resolve to `rgb(...)`, so appended hex alpha parses back OPAQUE (contrast 1.00); a fill is sized to CARRY text, not BE it, so using one as a label fails AA. A tinted/filled/outlined control calls `resolveAccentColors(colors, tone, fill)` (`theme/accent-colors.ts`), reading the `*Subtle`/`*SubtleForeground` pairs the policy gates together; className contexts use the opacity utility (`bg-primary/10`). Verify by compositing the background and computing the WCAG ratio — gate: `theme/__tests__/accent-colors.test.ts`.
 
 ## Web fonts
 
@@ -147,13 +146,13 @@ Only TWO exist: `CenteredDialog` and `ResponsiveSheet` were removed with no shim
 - **`peerDependencies` + `peerDependenciesMeta` ARE the list.** Never restate ranges here — a stale prose copy reads as permission to drop a peer the package needs.
 - **`@gorhom/bottom-sheet` is not a peer or dependency of any kind** — the bottom sheet is Bloom's own; the name survives only in comments.
 - **A statically-imported peer is never `optional`** — optionality is about what RESOLVES, so omitting one makes Metro fail the build rather than degrade.
-- **To keep a peer genuinely optional, load it with a `require('<string literal>')` that is a DIRECT STATEMENT of a `try` block.** Metro rewrites an unevaluable require into an inlined thrower and collects no dependency (a specifier arriving as a function parameter silently killed haptics, the squircle clip, the spinner and native color scoping); its optionality walk returns at the FIRST enclosing block, so one `if` of nesting inside the try loses optionality. Hoist any `typeof require` guard OUT of the try. Reference `src/connection-status/netinfo.ts`; gate `optional-peer-imports.test.ts`.
+- **To keep a peer genuinely optional, load it with a `require('<string literal>')` that is a DIRECT STATEMENT of a `try` block.** Metro rewrites an unevaluable require into an inlined thrower and collects no dependency (a parameter-passed specifier once killed haptics, squircle clip, spinner and native color scoping); its optionality walk returns at the FIRST enclosing block, so nesting an `if` inside the try loses optionality. Hoist any `typeof require` guard OUT of the try. Reference `src/connection-status/netinfo.ts`; gate `optional-peer-imports.test.ts`.
 - **The Apple-only peers are reachable ONLY through `@oxyhq/bloom/tab-bar`** — a consumer that never imports it shouldn't install them to silence a warning. Bun prints no mismatch warning for these at all.
 - Bloom owns its toast engine (vendored, see `NOTICE`); `sonner`/`sonner-native`/`nanoid` are not dependencies. Web bundles DO import reanimated + gesture-handler.
 
 ## Style and `className`
 
-- **A `style` override of padding/margin must use the LONGHAND the base uses** — react-native-web maps `paddingHorizontal`/`marginHorizontal` to CSS shorthands (`padding-inline`) its atomic sheet ranks ABOVE `padding-left` whatever the array order, so a later longhand is dropped on WEB and honoured on native. Measured: a menu row's 32px indicator gutter drew 8px; `SettingsListItem`'s `leftInset` had been inert on web since it shipped. A prop-level test sees the array, not the cascade.
+- **A `style` override of padding/margin must use the LONGHAND the base uses** — react-native-web maps `paddingHorizontal`/`marginHorizontal` to CSS shorthands (`padding-inline`) its atomic sheet ranks ABOVE `padding-left` whatever the array order, so a later longhand is dropped on WEB and honoured on native. Measured: a 32px indicator gutter drew 8px; `SettingsListItem`'s `leftInset` had been inert on web since it shipped. A prop-level test sees the array, not the cascade.
 - **Bloom typography wires `className` → `style` via `styled(RNText)` from `react-native-css`.** **Never put font-size, line-height, font-weight or color defaults in inline `style` when the caller passes `className`** — react-native-css merges utilities first, so overlapping inline keys silently break `text-*`/`font-*`/`leading-*`. Apply defaults only when `className` is absent; `fontFamily` may stay inline.
 - **`className` must land on the node the PARENT lays out.** An extra layout wrapper (an `Animated.View` holding a press transform) makes LAYOUT classes silently inert on native while VISUAL ones keep working — same call site works on web, does nothing on native, no error. **Fix: one node** — build `Animated.createAnimatedComponent(...)` at module scope so transform, visuals, `style` and `className` share it. Reference: `button/Button.tsx`.
 - **Wire `className` through Bloom's own `styled()`, never as a bare prop** — a bare one only works under NW5 and drops the moment the primitive is wrapped. Use the module-scope wrappers in `styles/styled-primitives.ts`; a `Record<string, string>` cast type-checks against nothing and hid two dropped props. Gate: `classname-interop.test.ts`.
