@@ -8,7 +8,7 @@ import React, {
 } from 'react';
 
 import { useTheme } from '../theme/use-theme';
-import { borderRadius } from '../styles/tokens';
+import { animation, borderRadius } from '../styles/tokens';
 import type { Theme } from '../theme/types';
 import { interactiveWebCss, useInteractiveWebCss } from '../styles/interactive-web-css';
 import { flattenWebStyle } from '../styles/flatten-web-style';
@@ -50,7 +50,6 @@ function resolveSize(size: FabSize | number): ResolvedSize {
   return SIZE_CONFIG[size];
 }
 
-const PRESS_SCALE = 0.94;
 const DEFAULT_OFFSET = 16;
 const DEFAULT_Z_INDEX = 50;
 
@@ -198,7 +197,7 @@ const FabWebComponent: React.FC<FabProps> = ({
       fontWeight: 600,
       ['--bloom-fab-ring' as string]: variantColors.ring,
       ['--bloom-fab-shadow-hover' as string]: hoverShadow,
-      ['--bloom-fab-press-scale' as string]: PRESS_SCALE,
+      ['--bloom-fab-press-scale' as string]: animation.pressScale,
       ...placementStyle(placement, offset),
     };
     if (isExtended) {

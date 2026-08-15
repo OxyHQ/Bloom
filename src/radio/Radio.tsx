@@ -2,7 +2,7 @@ import React, { memo, useCallback } from 'react';
 import { View, Text, Pressable, Animated } from 'react-native';
 
 import { useTheme } from '../theme/use-theme';
-import { space } from '../styles/tokens';
+import { animation, space } from '../styles/tokens';
 import { usePressAnimation } from '../hooks/use-press-animation';
 import { RadioIndicator } from '../radio-indicator';
 import type { RadioGroupProps, RadioProps } from './types';
@@ -17,9 +17,6 @@ const SIZE_CONFIG = {
   medium: { indicator: 22, fontSize: 15, lineHeight: 22, descFontSize: 13 },
   large: { indicator: 26, fontSize: 16, lineHeight: 24, descFontSize: 14 },
 } as const;
-
-/** The same dip as `Checkbox`: the target is small, so the scale has to be. */
-const PRESS_SCALE = 0.9;
 
 const HIT_SLOP = { top: 8, bottom: 8, left: 8, right: 8 } as const;
 
@@ -42,7 +39,7 @@ const RadioComponent = function Radio<Value extends string = string>({
   // The shared press hook, which is where the reduced-motion and pointer-type
   // suppressions live — the same dip `Checkbox` applies to its box.
   const { scaleAnim, onPressIn, onPressOut } = usePressAnimation(
-    disabled ? undefined : PRESS_SCALE,
+    disabled ? undefined : animation.pressScale,
   );
 
   const handlePress = useCallback(() => {

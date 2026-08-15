@@ -13,9 +13,9 @@ import { SUPPORTS_PRESS_SCALE } from '../styles/pointer';
  * handlers that spring the value between 1 and the target scale.
  *
  * THE TWO SUPPRESSION RULES LIVE HERE, not at the call sites, because this is
- * the mechanism every press-scaling family shares (`Button`, `Fab`, `Chip`,
- * `Tabs`, `Checkbox`, `FrostedIconButton`). They used to live only in
- * `PressableScale`, the mechanism with a dozen consumers rather than five — so
+ * the mechanism all SEVEN press-scaling families share (`Button`, `Fab`, `Chip`,
+ * `Tabs`, `Checkbox`, `Radio`, `FrostedIconButton`). They used to live only in
+ * `PressableScale`, the mechanism with a dozen consumers rather than seven — so
  * every button in the ecosystem animated straight through a user's "reduce
  * motion" setting while `PressableScale` honoured it:
  *
@@ -39,7 +39,13 @@ import { SUPPORTS_PRESS_SCALE } from '../styles/pointer';
  * caller already passes an argument. Do not reintroduce it: a default and an
  * `undefined`-means-off parameter cannot coexist.
  *
- * @param pressScale - Scale value when pressed (e.g. 0.97), or `undefined` for none.
+ * HOW FAR it shrinks is not this module's decision and is not a per-caller one
+ * either: every family passes `animation.pressScale`, the single token in
+ * `styles/tokens.ts`. It lives there rather than here because the raw-DOM web
+ * forks read the same number and must not import react-native to get it.
+ *
+ * @param pressScale - Scale value when pressed (`animation.pressScale`), or
+ *   `undefined` for none.
  */
 export function usePressAnimation(pressScale: number | undefined) {
   const scaleAnim = useRef(new Animated.Value(1)).current;

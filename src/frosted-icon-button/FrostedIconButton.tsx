@@ -12,7 +12,7 @@ import { styled } from 'react-native-css';
 import { BlurView } from 'expo-blur';
 
 import { useTheme } from '../theme/use-theme';
-import { borderRadius } from '../styles/tokens';
+import { animation, borderRadius } from '../styles/tokens';
 import { usePressAnimation } from '../hooks/use-press-animation';
 import { useInteractionState } from '../hooks/use-interaction-state';
 import {
@@ -24,7 +24,6 @@ import type { FrostedIconButtonProps } from './types';
 
 export type { FrostedIconButtonProps, FrostedIconButtonSize } from './types';
 
-const PRESS_SCALE = 0.94;
 const DEFAULT_HIT_SLOP = { top: 8, bottom: 8, left: 8, right: 8 } as const;
 
 // BlurView intensity (0–100). A gentle frost so the chip reads over an image
@@ -87,7 +86,7 @@ const FrostedIconButtonComponent: React.FC<FrostedIconButtonProps> = ({
   );
 
   const { scaleAnim, onPressIn: onScalePressIn, onPressOut: onScalePressOut } =
-    usePressAnimation(disabled ? undefined : PRESS_SCALE);
+    usePressAnimation(disabled ? undefined : animation.pressScale);
   const { state: pressed, onIn: onPressedIn, onOut: onPressedOut } =
     useInteractionState();
 

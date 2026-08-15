@@ -10,6 +10,7 @@ import {
 } from 'react-native';
 
 import { useTheme } from '../theme/use-theme';
+import { animation } from '../styles/tokens';
 import { resolveAccentColors } from '../theme/accent-colors';
 import { usePressAnimation } from '../hooks/use-press-animation';
 import { TimesLarge_Stroke2_Corner0_Rounded as TimesIcon } from '../icons/Times';
@@ -27,8 +28,6 @@ const SIZE_CONFIG = {
   medium: { height: 32, fontSize: 14, paddingHorizontal: 12, iconGap: 6, closeIcon: 'sm' },
   large: { height: 40, fontSize: 16, paddingHorizontal: 16, iconGap: 8, closeIcon: 'md' },
 } as const;
-
-const PRESS_SCALE = 0.95;
 
 // ---------------------------------------------------------------------------
 //  Keyboard focus on web
@@ -94,7 +93,7 @@ const ChipComponent: React.FC<ChipProps> = ({
 }) => {
   const theme = useTheme();
   useInteractiveWebCss(STYLE_ID, BLOOM_CHIP_CSS);
-  const { scaleAnim, onPressIn, onPressOut } = usePressAnimation(PRESS_SCALE);
+  const { scaleAnim, onPressIn, onPressOut } = usePressAnimation(animation.pressScale);
   // Selection promotes the chip to the brand tone \u2014 the filter-pill behaviour \u2014
   // rather than to a second colour system of its own.
   const colors = resolveAccentColors(theme.colors, selected ? 'primary' : color, variant);

@@ -9,7 +9,7 @@ import React, {
 } from 'react';
 
 import { useTheme } from '../theme/use-theme';
-import { borderRadius } from '../styles/tokens';
+import { animation, borderRadius } from '../styles/tokens';
 import type { Theme } from '../theme/types';
 import { SpinnerIcon } from '../loading/SpinnerIcon.web';
 import { flattenWebStyle } from '../styles/flatten-web-style';
@@ -60,8 +60,6 @@ const SIZE_ALIAS: Record<ButtonSize, NativeSize> = {
   lg: 'large',
   icon: 'medium',
 };
-
-const PRESS_SCALE = 0.97;
 
 /** Variants that get a tactile press-scale (matches native `SCALE_VARIANTS`). */
 const SCALE_VARIANTS = new Set<ButtonVariant>(['primary', 'secondary', 'inverse', 'destructive']);
@@ -255,7 +253,7 @@ const ButtonWebComponent: React.FC<ButtonProps> = ({
       // CSS custom props consumed by the static stylesheet.
       ['--bloom-btn-ring' as string]: variantStyle.ringColor,
       ['--bloom-btn-press-scale' as string]: SCALE_VARIANTS.has(resolvedVariant)
-        ? PRESS_SCALE
+        ? animation.pressScale
         : 1,
       ...variantStyle.container,
     };

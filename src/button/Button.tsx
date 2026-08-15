@@ -15,7 +15,7 @@ import {
 import { styled } from 'react-native-css';
 
 import { useTheme } from '../theme/use-theme';
-import { borderRadius } from '../styles/tokens';
+import { animation, borderRadius } from '../styles/tokens';
 import { usePressAnimation } from '../hooks/use-press-animation';
 import { useInteractionState } from '../hooks/use-interaction-state';
 import type { ButtonProps, ButtonSize, ButtonVariant } from './types';
@@ -65,7 +65,6 @@ const SIZE_CONFIG = {
 
 const ICON_HIT_SLOP = { top: 10, bottom: 10, left: 10, right: 10 } as const;
 
-const PRESS_SCALE = 0.97;
 const SCALE_VARIANTS = new Set<string>(['primary', 'secondary', 'inverse']);
 
 // ---------------------------------------------------------------------------
@@ -178,7 +177,7 @@ const ButtonComponent: React.FC<ButtonProps> = ({
   const isInteractionBlocked = disabled || loading;
   const { scaleAnim, onPressIn: onScalePressIn, onPressOut: onScalePressOut } =
     usePressAnimation(
-      hasScaleFeedback && !isInteractionBlocked ? PRESS_SCALE : undefined,
+      hasScaleFeedback && !isInteractionBlocked ? animation.pressScale : undefined,
     );
   // Non-scale variants (icon/ghost/text) convey press feedback via an opacity
   // dip. We drive it through component state + onPressIn/onPressOut rather than

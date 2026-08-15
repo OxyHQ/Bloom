@@ -12,7 +12,7 @@ import {
 import { styled } from 'react-native-css';
 
 import { useTheme } from '../theme/use-theme';
-import { borderRadius } from '../styles/tokens';
+import { animation, borderRadius } from '../styles/tokens';
 import { bloomShadowStyle } from '../design-tokens/shadows';
 import { usePressAnimation } from '../hooks/use-press-animation';
 import { useInteractionState } from '../hooks/use-interaction-state';
@@ -55,7 +55,6 @@ function resolveSize(size: FabSize | number): ResolvedSize {
   return SIZE_CONFIG[size];
 }
 
-const PRESS_SCALE = 0.94;
 const DEFAULT_OFFSET = 16;
 const DEFAULT_Z_INDEX = 50;
 const HIT_SLOP = { top: 8, bottom: 8, left: 8, right: 8 } as const;
@@ -151,7 +150,7 @@ const FabComponent: React.FC<FabProps> = ({
   const content = icon ?? children;
 
   const { scaleAnim, onPressIn, onPressOut } = usePressAnimation(
-    disabled ? undefined : PRESS_SCALE,
+    disabled ? undefined : animation.pressScale,
   );
   const { state: pressed, onIn: onPressedIn, onOut: onPressedOut } =
     useInteractionState();

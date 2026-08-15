@@ -52,9 +52,6 @@ const MIN_TOUCH_TARGET = 44;
  */
 const INDETERMINATE_BAR_THICKNESS = 0.18;
 
-/** Deeper than the 0.97 of a text button: the box is small, so the dip has to be. */
-const PRESS_SCALE = 0.9;
-
 // ---------------------------------------------------------------------------
 //  Keyboard focus on web
 //
@@ -120,7 +117,7 @@ const CheckboxComponent: React.FC<CheckboxProps> = ({
     scaleAnim: pressAnim,
     onPressIn,
     onPressOut,
-  } = usePressAnimation(disabled ? undefined : PRESS_SCALE);
+  } = usePressAnimation(disabled ? undefined : animation.pressScale);
   const sizeConfig = SIZE_CONFIG[size];
   const checkColor = color ?? theme.colors.primary;
   // The checkmark sits on top of `checkColor`. When the box uses the theme
