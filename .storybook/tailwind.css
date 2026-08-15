@@ -51,7 +51,7 @@
 
 @import "tailwindcss/theme.css" layer(theme);
 @import "tailwindcss/preflight.css" layer(base);
-@import "tailwindcss/utilities.css";
+@import "tailwindcss/utilities.css" source(none);
 @import "nativewind/theme";
 @import "../src/design-tokens/theme.css";
 
@@ -67,18 +67,25 @@
 @custom-variant dark (&:where(.dark, .dark *));
 
 /*
+ * THE SCAN SCOPE, which is the half of fidelity the imports above do not cover.
+ *
  * Consumers `@source`-scan Bloom's published `lib/**` (`.js`/`.jsx`). Bloom is
  * the library, so the harness scans the source those files are compiled from —
  * same literal class strings, no build step between an edit and the browser.
- * Stories are under `src/` too, so one glob covers both.
+ * Stories live under `src/` too, so one glob covers both, and they are what
+ * this harness actually renders even though bob keeps them out of `lib/`.
  *
- * SUITES ARE EXCLUDED, and the exclusion is load-bearing rather than tidy. bob
- * keeps `__tests__/` out of `lib/`, so a class named only inside a test is
- * scanned by nothing a consumer ships. Left in, the harness would resolve it,
- * and a component later given that class would look correct here and be inert
- * in production — the harness generating MORE than production is the one
- * direction in which it lies. Stories are excluded from `lib/` too, but they
- * stay: they are what this harness actually renders.
+ * `source(none)` above turns OFF Tailwind's automatic detection, and it is
+ * load-bearing. Left on, the scan walks the whole repository: measured, a
+ * throwaway class written into `docs/accordion.mdx` alone resolved in the
+ * browser. Nothing a consumer runs scans Bloom's docs, README or scripts, so
+ * those classes exist here and nowhere else — and the harness generating MORE
+ * than production is the one direction in which it can lie, because a class
+ * that "works" in Storybook and is inert in an app is exactly the defect this
+ * pipeline was wired to expose.
+ *
+ * Suites are excluded for the same reason: bob keeps `__tests__/` out of
+ * `lib/`. Measured as four utilities generated only from assertions' prose.
  */
 @source "../src/**/*.{ts,tsx}";
 @source not "../src/**/__tests__/**/*";

@@ -47,7 +47,7 @@ describe('the Storybook Tailwind pipeline is wired', () => {
     // UNLAYERED — layered, it loses to react-native-web's unlayered reset.
     expect(css).toContain('@import "tailwindcss/theme.css" layer(theme);');
     expect(css).toContain('@import "tailwindcss/preflight.css" layer(base);');
-    expect(css).toContain('@import "tailwindcss/utilities.css";');
+    expect(css).toContain('@import "tailwindcss/utilities.css" source(none);');
     expect(css).toContain('@import "nativewind/theme";');
     // Bloom's own token vocabulary: `rounded-radius-28`, `p-space-8`,
     // `text-body`, `bg-fill`, `shadow-s` and the colour roles all come from it.
@@ -55,11 +55,13 @@ describe('the Storybook Tailwind pipeline is wired', () => {
     // Bloom drives dark mode with a class, so the stock media-query variant
     // would ignore both `BloomThemeProvider`'s mode and Storybook's toolbar.
     expect(css).toContain('@custom-variant dark (&:where(.dark, .dark *));');
-    // Without a source glob Tailwind generates nothing Bloom uses. Suites are
-    // excluded because bob keeps them out of `lib/`: a class named only in a
-    // test would resolve in the harness and in no consumer, which is the one
-    // direction in which the harness can lie. Removing the exclusion measured
-    // as four extra utilities generated from this file's own assertions.
+    // Scope. `source(none)` above turns off automatic detection, which
+    // otherwise walks the whole repository — measured, a class written into
+    // `docs/accordion.mdx` alone resolved in the browser, and nothing a
+    // consumer runs scans Bloom's docs. Suites are excluded for the same
+    // reason: bob keeps `__tests__/` out of `lib/`. Together the two measured
+    // as nine utilities that existed only in prose. Without the positive glob,
+    // Tailwind then generates nothing at all.
     expect(css).toContain('@source "../src/**/*.{ts,tsx}";');
     expect(css).toContain('@source not "../src/**/__tests__/**/*";');
   });
