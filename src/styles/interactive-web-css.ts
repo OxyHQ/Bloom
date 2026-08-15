@@ -76,6 +76,15 @@ export interface InteractiveWebCssOptions {
     /** Declarations the hover state sets. */
     declarations: string;
   };
+  /**
+   * Extra declarations for the `:active` rule, ALONGSIDE the press scale.
+   *
+   * Appended to the one existing `:active` rule rather than emitted as a second
+   * one, so the held state stays a single declaration block with a single
+   * specificity — two rules for one state is how a press ends up half-applied
+   * depending on which selector happens to win.
+   */
+  pressDeclarations?: string;
   /** `outline-offset` for the focus ring, in px. */
   outlineOffset: number;
   /** Rules appended verbatim, for a family-specific modifier class. */
@@ -104,6 +113,7 @@ export function interactiveWebCss({
   base,
   transition,
   hover,
+  pressDeclarations,
   outlineOffset,
   extraRules,
 }: InteractiveWebCssOptions): string {
@@ -135,7 +145,7 @@ ${block(hover.declarations)}
 }
 ${interactive}:active {
   transform: scale(var(--${varPrefix}-press-scale, 1));
-}
+${pressDeclarations ? `${block(pressDeclarations)}\n` : ''}}
 ${c}:focus-visible {
   outline: 2px solid var(--${varPrefix}-ring, currentColor);
   outline-offset: ${outlineOffset}px;

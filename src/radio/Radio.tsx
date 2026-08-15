@@ -4,6 +4,7 @@ import { View, Text, Pressable, Animated } from 'react-native';
 import { useTheme } from '../theme/use-theme';
 import { animation, space } from '../styles/tokens';
 import { usePressAnimation } from '../hooks/use-press-animation';
+import { useInteractionState } from '../hooks/use-interaction-state';
 import { RadioIndicator } from '../radio-indicator';
 import type { RadioGroupProps, RadioProps } from './types';
 
@@ -38,9 +39,16 @@ const RadioComponent = function Radio<Value extends string = string>({
   const sizeConfig = SIZE_CONFIG[size];
   // The shared press hook, which is where the reduced-motion and pointer-type
   // suppressions live — the same dip `Checkbox` applies to its box.
-  const { scaleAnim, onPressIn, onPressOut } = usePressAnimation(
+  const { scaleAnim, onPressIn: onScaleIn, onPressOut: onScaleOut } = usePressAnimation(
     disabled ? undefined : animation.pressScale,
   );
+  // Driven separately from the scale — see `Chip` for why. The INDICATOR answers
+  // the press, not the row: a wash across the option and its description would
+  // read as a list row rather than as one of N. The flag travels rather than a
+  // colour, because the indicator holds both colours the state layer needs.
+  const { state: pressed, onIn: onPressedIn, onOut: onPressedOut } = useInteractionState();
+  const onPressIn = () => { onScaleIn(); onPressedIn(); };
+  const onPressOut = () => { onScaleOut(); onPressedOut(); };
 
   const handlePress = useCallback(() => {
     // Re-choosing the chosen option is a no-op. A radio, unlike a checkbox, has
@@ -79,6 +87,7 @@ const RadioComponent = function Radio<Value extends string = string>({
       <Animated.View style={{ transform: [{ scale: scaleAnim }] }}>
         <RadioIndicator
           selected={selected}
+          pressed={pressed && !disabled}
           size={sizeConfig.indicator}
           selectedColor={color}
         />

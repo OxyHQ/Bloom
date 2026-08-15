@@ -13,6 +13,7 @@ import { BlurView } from 'expo-blur';
 
 import { useTheme } from '../theme/use-theme';
 import { animation, borderRadius } from '../styles/tokens';
+import { pressedSurface } from '../theme/press-colors';
 import { usePressAnimation } from '../hooks/use-press-animation';
 import { useInteractionState } from '../hooks/use-interaction-state';
 import {
@@ -103,13 +104,22 @@ const FrostedIconButtonComponent: React.FC<FrostedIconButtonProps> = ({
         onPressedOut();
       };
 
-  const highlighted = pressed && !disabled;
-  const surface = active
-    ? palette.activeSurface
-    : highlighted
-      ? palette.surfaceHover
-      : palette.surface;
-  const ring = highlighted ? palette.ringHover : palette.ring;
+  const held = pressed && !disabled;
+  // This is the one family that already HAD a background press. What it did not
+  // have was one distinct from hover — both landed on `surfaceHover`, and the
+  // scale was carrying the whole difference. The held state now steps beyond it,
+  // from `surfaceHover` rather than from rest, because on web a press is always
+  // also a hover. Off the ACTIVE state the layer is `colors.text`, the same hue
+  // the frosted surface is a tint of — so the composite is that tint at a higher
+  // alpha, which is the right answer over arbitrary media and needs no fourth
+  // palette member.
+  const restSurface = active ? palette.activeSurface : palette.surface;
+  const surface = held
+    ? active
+      ? pressedSurface(theme.colors, palette.activeSurface, palette.activeIcon)
+      : pressedSurface(theme.colors, palette.surfaceHover, theme.colors.text)
+    : restSurface;
+  const ring = held ? palette.ringHover : palette.ring;
   const iconColor = active ? palette.activeIcon : palette.icon;
 
   const containerStyle = useMemo((): ViewStyle => {

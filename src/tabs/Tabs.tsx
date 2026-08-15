@@ -34,6 +34,8 @@ import Animated, {
 
 import { useTheme } from '../theme/use-theme';
 import { usePressAnimation } from '../hooks/use-press-animation';
+import { useInteractionState } from '../hooks/use-interaction-state';
+import { pressedSurface } from '../theme/press-colors';
 import { animation, borderRadius, space } from '../styles/tokens';
 import { bloomShadowStyle } from '../design-tokens/shadows';
 import type { TabsProps, TabsTriggerProps, TabsContentProps, TabsVariant } from './types';
@@ -583,7 +585,12 @@ const TabComponent: React.FC<TabsTriggerProps> = ({
   // The two paths meet here: an explicit `isFocused` (router adapter) wins;
   // otherwise selection comes from the bar's controlled `value`.
   const isSelected = isFocused ?? value === selectedValue;
-  const { scaleAnim, onPressIn, onPressOut } = usePressAnimation(animation.pressScale);
+  const { scaleAnim, onPressIn: onScaleIn, onPressOut: onScaleOut } =
+    usePressAnimation(animation.pressScale);
+  // Driven separately from the scale — see `Chip` for why.
+  const { state: pressed, onIn: onPressedIn, onOut: onPressedOut } = useInteractionState();
+  const onPressIn = () => { onScaleIn(); onPressedIn(); };
+  const onPressOut = () => { onScaleOut(); onPressedOut(); };
   const resolvedCount = count ?? 0;
   const showCount = resolvedCount > 0;
 
@@ -624,14 +631,23 @@ const TabComponent: React.FC<TabsTriggerProps> = ({
     if (isFocused === undefined) onValueChange?.(value);
   }, [value, disabled, onValueChange, onPressProp, isFocused]);
 
-  const tabStyle = useMemo((): ViewStyle => {
-    const base: ViewStyle = {
+  const tabStyle = useMemo((): ViewStyle & { backgroundColor: string } => {
+    const base: ViewStyle & { backgroundColor: string } = {
       flexDirection: 'row',
       alignItems: 'center',
       justifyContent: 'center',
       paddingHorizontal: space.lg,
       paddingVertical: space.sm,
       gap: space.xs,
+      // The rest fill, narrowed to a required `string` so the press resolver can
+      // read it straight off. Only the two SELECTED states below overwrite it.
+      backgroundColor: 'transparent',
+      // Every trigger, selected or not, in every variant — not just the two that
+      // paint a fill. Invisible on a transparent background, and it is what gives
+      // the press wash a shape: without it an `underline` tab answers a press
+      // with a hard-edged rectangle while its `filled` sibling answers with a
+      // rounded one. Same rung the two filled states already use.
+      borderRadius: borderRadius.xs + 2,
     };
 
     switch (variant) {
@@ -642,7 +658,6 @@ const TabComponent: React.FC<TabsTriggerProps> = ({
       case 'filled':
         if (isSelected) {
           base.backgroundColor = theme.colors.card;
-          base.borderRadius = borderRadius.xs + 2;
           // Subtle raise (`shadow-s`) — `boxShadow` on web, RN shadow/elevation on native.
           Object.assign(base, bloomShadowStyle('s'));
         }
@@ -650,7 +665,6 @@ const TabComponent: React.FC<TabsTriggerProps> = ({
       case 'outlined':
         if (isSelected) {
           base.backgroundColor = theme.colors.primary;
-          base.borderRadius = borderRadius.xs + 2;
         }
         break;
     }
@@ -658,22 +672,29 @@ const TabComponent: React.FC<TabsTriggerProps> = ({
     return base;
   }, [variant, isSelected, theme]);
 
-  const labelStyle = useMemo((): TextStyle => {
-    const base: TextStyle = {
+  const labelColor = useMemo((): string => {
+    if (variant === 'outlined' && isSelected) return theme.colors.primaryForeground;
+    if (isSelected) return theme.colors.primary;
+    return theme.colors.textSecondary;
+  }, [variant, isSelected, theme]);
+
+  const labelStyle = useMemo(
+    (): TextStyle => ({
       fontSize: 14,
       fontWeight: isSelected ? '600' : '500',
-    };
+      color: labelColor,
+    }),
+    [isSelected, labelColor],
+  );
 
-    if (variant === 'outlined' && isSelected) {
-      base.color = theme.colors.primaryForeground;
-    } else if (isSelected) {
-      base.color = theme.colors.primary;
-    } else {
-      base.color = theme.colors.textSecondary;
-    }
-
-    return base;
-  }, [variant, isSelected, theme]);
+  // An unselected trigger has no fill, so its press IS the fill and it takes the
+  // neutral wash. A SELECTED one keeps its fill and gains a state layer of its
+  // own label colour, so pressing the current tab still says something instead
+  // of repainting it as one of its neighbours.
+  const pressedBackground = useMemo(
+    () => pressedSurface(theme.colors, tabStyle.backgroundColor, labelColor),
+    [theme.colors, tabStyle.backgroundColor, labelColor],
+  );
 
   return (
     <RNAnimated.View
@@ -685,7 +706,14 @@ const TabComponent: React.FC<TabsTriggerProps> = ({
       style={[{ transform: [{ scale: scaleAnim }] }, fullWidth && { flex: 1 }]}
     >
       <Pressable
-        style={[tabStyle, fullWidth && { flex: 1 }, disabled && { opacity: 0.4 }, style]}
+        style={[
+          tabStyle,
+          fullWidth && { flex: 1 },
+          disabled && { opacity: 0.4 },
+          // Before the caller's `style`, so `style` still wins the array.
+          pressed && !disabled && { backgroundColor: pressedBackground },
+          style,
+        ]}
         onPress={handlePress}
         onPressIn={onPressIn}
         onPressOut={onPressOut}

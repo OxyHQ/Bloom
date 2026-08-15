@@ -16,9 +16,6 @@ import { styled } from 'react-native-css';
 
 import { useTheme } from '../theme/use-theme';
 import { animation, borderRadius } from '../styles/tokens';
-import { bloomShadowStyle } from '../design-tokens/shadows';
-import { resolveGlassColors } from '../theme/glass-colors';
-import { GlassSurface } from '../glass';
 import { usePressAnimation } from '../hooks/use-press-animation';
 import { useInteractionState } from '../hooks/use-interaction-state';
 import type { ButtonProps, ButtonSize, ButtonVariant } from './types';
@@ -174,15 +171,6 @@ const ButtonComponent: React.FC<ButtonProps> = ({
     }
   }, [variantProp, sizeProp]);
   const isDestructive = variantProp === 'destructive';
-  // The FILLED variant is GLASS now — a translucent pane in the tone the variant
-  // names, rather than an opaque brand fill. `error` is the tone `Chip` and
-  // `Badge` already use for a destructive action, so a destructive button and a
-  // destructive chip cannot disagree about the hue.
-  const isGlass = variant === 'primary';
-  const glass = useMemo(
-    () => resolveGlassColors(theme.colors, isDestructive ? 'error' : 'primary'),
-    [theme.colors, isDestructive],
-  );
   const size: NativeSize = SIZE_ALIAS[sizeProp];
   const hasScaleFeedback = SCALE_VARIANTS.has(variant);
   const isInteractionBlocked = disabled || loading;
@@ -232,16 +220,10 @@ const ButtonComponent: React.FC<ButtonProps> = ({
 
     switch (variant) {
       case 'primary':
-        // The fill, the sheen and the blur are painted by `GlassSurface` as a
-        // clipped layer below the content, so the box itself carries only what
-        // has to be on the node that owns the geometry: the hairline, which
-        // traces the real edge, and the drop shadow, which a clipping node would
-        // swallow on iOS.
-        styles.backgroundColor = 'transparent';
-        styles.borderWidth = glass.hairlineWidth;
-        styles.borderColor = glass.hairline;
+        styles.backgroundColor = isDestructive
+          ? theme.colors.negative
+          : theme.colors.primary;
         styles.borderRadius = borderRadius.full;
-        Object.assign(styles, bloomShadowStyle('glass'));
         break;
       case 'secondary':
         styles.backgroundColor = 'transparent';
@@ -282,16 +264,14 @@ const ButtonComponent: React.FC<ButtonProps> = ({
     }
 
     return styles;
-  }, [variant, size, theme, isDestructive, glass]);
+  }, [variant, size, theme, isDestructive]);
 
   const resolvedTextColor = useMemo((): string => {
     switch (variant) {
       case 'primary':
-        // The SCHEME's reading colour, not the tone's. A glass surface's
-        // luminance moves with whatever is behind it, and only one side of that
-        // swing has room for a label — see `GlassColors.foreground`. The brand
-        // hue is in the fill and the hairline.
-        return glass.foreground;
+        return isDestructive
+          ? theme.colors.negativeForeground
+          : theme.colors.primaryForeground;
       case 'secondary':
         return theme.colors.text;
       case 'inverse':
@@ -303,7 +283,7 @@ const ButtonComponent: React.FC<ButtonProps> = ({
       default:
         return theme.colors.text;
     }
-  }, [variant, theme, glass.foreground]);
+  }, [variant, theme, isDestructive]);
 
   const computedTextStyle = useMemo((): TextStyle => {
     const sizeConfig = SIZE_CONFIG[size];
@@ -318,26 +298,11 @@ const ButtonComponent: React.FC<ButtonProps> = ({
   // How far a NON-scaling variant dips under the finger. Not a prop: how a
   // control answers a press is the library's decision, not a per-call-site one,
   // and a knob for it is how one button in one app ends up feeling different
-  // from every other. Every scaling variant uses `animation.pressScale` instead;
-  // these are the ones with no fill to scale convincingly.
+  // from every other. The scaling variants use `animation.pressScale`.
   const resolvedActiveOpacity = variant === 'icon' ? 0.7 : 0.8;
 
   const content = (
     <>
-      {/*
-        FIRST, so it paints under the label — and inside the pressable rather
-        than around it, so the button stays ONE node and a caller's layout class
-        still lands on the box the parent lays out. `GlassSurface` is absolutely
-        positioned and `pointerEvents="none"`, so it changes neither the layout
-        nor the hit target.
-      */}
-      {isGlass ? (
-        <GlassSurface
-          tone={isDestructive ? 'error' : 'primary'}
-          radius={borderRadius.full}
-          testID={testID ? `${testID}-glass` : undefined}
-        />
-      ) : null}
       {iconPosition === 'left' && icon}
       {children != null && (
         <Text style={[computedTextStyle, textStyle]}>{children}</Text>

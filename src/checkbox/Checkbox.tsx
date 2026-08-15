@@ -10,6 +10,8 @@ import { SUPPORTS_NATIVE_DRIVER } from '../styles/native-driver';
 import { interactiveWebCss, useInteractiveWebCss } from '../styles/interactive-web-css';
 import type { WebCssStyle } from '../styles/web-view-style';
 import { usePressAnimation } from '../hooks/use-press-animation';
+import { useInteractionState } from '../hooks/use-interaction-state';
+import { pressedSurface } from '../theme/press-colors';
 import type { CheckboxProps } from './types';
 
 /**
@@ -115,9 +117,15 @@ const CheckboxComponent: React.FC<CheckboxProps> = ({
   // suppressions are applied, and an inlined copy honoured neither.
   const {
     scaleAnim: pressAnim,
-    onPressIn,
-    onPressOut,
+    onPressIn: onScaleIn,
+    onPressOut: onScaleOut,
   } = usePressAnimation(disabled ? undefined : animation.pressScale);
+  // Driven separately from the scale — see `Chip` for why. The BOX answers the
+  // press, not the row: a wash across a checkbox and its label would read as a
+  // list-row press rather than as a control.
+  const { state: pressed, onIn: onPressedIn, onOut: onPressedOut } = useInteractionState();
+  const onPressIn = () => { onScaleIn(); onPressedIn(); };
+  const onPressOut = () => { onScaleOut(); onPressedOut(); };
   const sizeConfig = SIZE_CONFIG[size];
   const checkColor = color ?? theme.colors.primary;
   // The checkmark sits on top of `checkColor`. When the box uses the theme
@@ -155,11 +163,11 @@ const CheckboxComponent: React.FC<CheckboxProps> = ({
     [disabled, color, theme],
   );
 
-  const boxStyle = useMemo((): ViewStyle => {
+  const boxStyle = useMemo((): ViewStyle & { backgroundColor: string } => {
     // `border-input size-4 shrink-0 rounded-[4px] border shadow-sm
     //  shadow-black/5`, plus `border-primary` and the `bg-primary` indicator
     //  once checked.
-    const base: ViewStyle = {
+    const base: ViewStyle & { backgroundColor: string } = {
       width: sizeConfig.box,
       height: sizeConfig.box,
       borderRadius: BOX_RADIUS,
@@ -167,18 +175,29 @@ const CheckboxComponent: React.FC<CheckboxProps> = ({
       alignItems: 'center',
       justifyContent: 'center',
       ...bloomShadowStyle('s'),
+      // Narrowed to a required `string` so the press resolver can read the REST
+      // fill straight off it. It sits AFTER the shadow spread, whose `ViewStyle`
+      // would otherwise widen it back to `ColorValue`.
+      backgroundColor: 'transparent',
     };
 
     if (checked || indeterminate) {
       base.backgroundColor = checkColor;
       base.borderColor = checkColor;
     } else {
-      base.backgroundColor = 'transparent';
       base.borderColor = theme.colors.border;
     }
 
     return base;
   }, [sizeConfig, checked, indeterminate, checkColor, theme]);
+
+  // Unchecked the box has no fill, so the press IS the fill and it takes the
+  // neutral wash; checked it keeps `checkColor` and gains a state layer of the
+  // checkmark's own colour, so the held state cannot be read as unchecked.
+  const pressedBackground = useMemo(
+    () => pressedSurface(theme.colors, boxStyle.backgroundColor, checkmarkColor),
+    [theme.colors, boxStyle.backgroundColor, checkmarkColor],
+  );
 
   // The mark is drawn, not typed. It used to be the glyphs `\u2713` and `\u2014`
   // in a `<Text>`, so its shape, weight and vertical centring came from whatever
@@ -229,7 +248,13 @@ const CheckboxComponent: React.FC<CheckboxProps> = ({
       hitSlop={{ top: slop, bottom: slop, left: slop, right: slop }}
       testID={testID}
     >
-      <Animated.View style={[boxStyle, { transform: [{ scale: pressAnim }] }]}>
+      <Animated.View
+        style={[
+          boxStyle,
+          pressed && !disabled && { backgroundColor: pressedBackground },
+          { transform: [{ scale: pressAnim }] },
+        ]}
+      >
         <Animated.View
           style={{
             opacity: scaleAnim,
