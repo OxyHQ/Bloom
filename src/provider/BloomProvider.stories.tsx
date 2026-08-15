@@ -40,9 +40,13 @@ export default meta;
 
 type Story = StoryObj;
 
-/** Stands in for `oxyServices.getFileDownloadUrl` — see the ImageResolver story. */
+/**
+ * Stands in for `oxyServices.getFileDownloadUrl` — see the ImageResolver story,
+ * including why this is NOT the `;utf8,` form (react-native-web re-encodes that
+ * one, and the avatar then silently shows an initial instead).
+ */
 const resolver: ImageResolver = (id, variant) =>
-  `data:image/svg+xml;utf8,${encodeURIComponent(
+  `data:image/svg+xml,${encodeURIComponent(
     `<svg xmlns='http://www.w3.org/2000/svg' width='96' height='96'>` +
       `<rect width='96' height='96' fill='hsl(210 70% 55%)'/>` +
       `<text x='48' y='54' font-size='12' fill='white' text-anchor='middle'>${variant ?? '—'}</text>` +
