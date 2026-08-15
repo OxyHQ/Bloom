@@ -17,19 +17,27 @@
  * per file, never per render), because an element type constructed during render
  * remounts its whole subtree every time.
  *
- * Universal, not forked. What differs between a native bottom sheet and a web
- * dropdown is density, and it is read from `useMenuSurface().presentation` — the
- * shell states which surface it is, so a row never asks the platform. Pointer
- * highlight is `Item`'s own, which is why no row here tracks hover.
+ * Universal, not forked. Pointer highlight is `Item`'s own, which is why no row
+ * here tracks hover.
  *
  * Every row IS an `item/Item`, Bloom's one row primitive. That is what keeps the
- * touch target, the disabled treatment, the destructive colour and the ARIA
- * state in one place instead of a fourth copy living here.
+ * disabled treatment, the destructive colour and the ARIA state in one place
+ * instead of a fourth copy living here. Its GEOMETRY is not `Item`'s, though:
+ * every number below comes from react-native-reusables' own class strings,
+ * resolved in `floating/constants.ts`, because a shadcn menu row is a denser
+ * thing than a Bloom settings row (8px of horizontal inset against 16, a 14px
+ * label against 15, no minimum height at all) and `Item`'s defaults still belong
+ * to every other caller.
+ *
+ * The `sm:` half of `py-2 sm:py-1.5` is a real breakpoint, not a platform split:
+ * NativeWind resolves it against the WINDOW WIDTH on both platforms, so the row
+ * reads it the same way, from `BREAKPOINTS.sm`. `useMenuSurface().presentation`
+ * is no longer consulted for density — a web dropdown on a 400px window is 8px,
+ * exactly as upstream.
  */
 import React, { useCallback, useMemo } from 'react';
-import { StyleSheet, View } from 'react-native';
+import { StyleSheet, useWindowDimensions, View, type ViewStyle } from 'react-native';
 
-import { Divider } from '../divider';
 import { useControllableState } from '../hooks/use-controllable-state';
 import { Check_Stroke2_Corner0_Rounded as CheckIcon } from '../icons/Check';
 import {
@@ -37,17 +45,37 @@ import {
   ChevronTop_Stroke2_Corner0_Rounded as ChevronTopIcon,
 } from '../icons/Chevron';
 import { Item } from '../item';
-import { RadioIndicator } from '../radio-indicator';
-import { fontSize, space } from '../styles/tokens';
+import { BREAKPOINTS } from '../styles/breakpoints';
+import { space } from '../styles/tokens';
 import { useTheme } from '../theme/use-theme';
 import { Text } from '../typography';
+import {
+  FONT_MEDIUM,
+  ROW_GAP,
+  ROW_ICON_SIZE,
+  ROW_INDICATOR_BOX,
+  ROW_INDICATOR_INSET,
+  ROW_INSET_PADDING_X,
+  ROW_PADDING_X,
+  ROW_PADDING_Y,
+  ROW_PADDING_Y_SM,
+  ROW_RADIO_DOT,
+  ROW_RADIUS,
+  ROW_SEPARATOR_INSET_X,
+  ROW_SEPARATOR_MARGIN_Y,
+  ROW_SEPARATOR_THICKNESS,
+  SHORTCUT_LETTER_SPACING,
+  TEXT_SM,
+  TEXT_SM_LINE_HEIGHT,
+  TEXT_XS,
+  TEXT_XS_LINE_HEIGHT,
+} from './constants';
 import {
   MenuRadioGroupProvider,
   MenuSubProvider,
   useMenuRadioGroup,
   useMenuSub,
   useMenuSurface,
-  type MenuSurfaceContextValue,
 } from './context';
 import type {
   MenuCheckboxRowProps,
@@ -63,14 +91,36 @@ import type {
   MenuSubTriggerProps,
 } from './types';
 
-/** Width of the checkbox/radio indicator column, so rows line up under `inset`. */
-const INDICATOR_SIZE = 20;
-
-/** A sheet row is a touch target; a dropdown row is a pointer target. */
-function densityFor(
-  presentation: MenuSurfaceContextValue['presentation'],
-): 'comfortable' | 'compact' {
-  return presentation === 'sheet' ? 'comfortable' : 'compact';
+/**
+ * `py-2 sm:py-1.5` — 8px of row inset below 640px, 6px from there up, and the
+ * `text-sm` type the row is set in.
+ *
+ * Returned as a whole style object rather than a number so the four row kinds
+ * that share it cannot each re-derive it, and so the LIST of properties that
+ * override `Item`'s defaults is written once: horizontal inset, gap, radius and
+ * the removal of `Item`'s minimum height, which upstream does not have.
+ */
+function useRowStyle(): ViewStyle {
+  const { width } = useWindowDimensions();
+  const paddingVertical = width >= BREAKPOINTS.sm ? ROW_PADDING_Y_SM : ROW_PADDING_Y;
+  return useMemo(
+    () => ({
+      // Longhands, for the reason spelled out in `item/Item.tsx`: on web a
+      // `paddingHorizontal` here would outrank the `paddingLeft` a gutter or
+      // `inset` row sets after it, whatever the array order.
+      paddingLeft: ROW_PADDING_X,
+      paddingRight: ROW_PADDING_X,
+      paddingVertical,
+      gap: ROW_GAP,
+      borderRadius: ROW_RADIUS,
+      // Explicitly 0, not `undefined`: a later `undefined` in an RN style array
+      // is merged as a key that exists, so whether it CLEARS `Item`'s 36/44 or
+      // is skipped depends on the flattener. Upstream sets no minimum at all, so
+      // say that in a value both platforms read the same way.
+      minHeight: 0,
+    }),
+    [paddingVertical],
+  );
 }
 
 /**
@@ -83,6 +133,38 @@ function splitChildren(children: React.ReactNode): {
   body?: React.ReactNode;
 } {
   return typeof children === 'string' ? { title: children } : { body: children };
+}
+
+/**
+ * Upstream's `pl-8` gutter with its `absolute left-2 h-3.5 w-3.5` indicator.
+ *
+ * The indicator is OUT OF FLOW, which is the whole point: a checkbox row's text
+ * starts at a fixed 32px whether or not a check is drawn, so a menu's rows line
+ * up with each other and with an `inset` plain row. Passing it as `Item`'s
+ * `leading` instead would put it back in flow and add the row's `gap-2` on top,
+ * which is how the text ended up 8px further right than upstream's — and it
+ * would also make the column collapse to nothing on an unchecked row.
+ *
+ * `pointerEvents="none"` as a PROP, not a style entry: the box sits ON TOP of
+ * `Item`'s own `Pressable`, so without it the indicator swallows the press that
+ * toggles the row. (`'none'` does survive as a style on react-native-web, but
+ * the prop path is the one both platforms resolve.)
+ */
+function IndicatorGutter({
+  indicator,
+  children,
+}: {
+  indicator: React.ReactNode;
+  children: React.ReactNode;
+}) {
+  return (
+    <View>
+      {children}
+      <View style={styles.indicator} pointerEvents="none">
+        {indicator}
+      </View>
+    </View>
+  );
 }
 
 /**
@@ -106,6 +188,7 @@ export function createMenuRows(prefix: string): MenuRowParts {
     testID,
   }: MenuRowProps) {
     const surface = useMenuSurface();
+    const rowStyle = useRowStyle();
     const { title, body } = splitChildren(children);
 
     const handlePress = useCallback(() => {
@@ -116,7 +199,6 @@ export function createMenuRows(prefix: string): MenuRowParts {
     return (
       <Item
         title={title}
-        density={densityFor(surface.presentation)}
         disabled={disabled}
         destructive={variant === 'destructive'}
         role="menuitem"
@@ -124,7 +206,8 @@ export function createMenuRows(prefix: string): MenuRowParts {
         trailing={trailing}
         onPress={handlePress}
         accessibilityLabel={accessibilityLabel}
-        style={[inset ? styles.inset : null, style]}
+        titleStyle={styles.rowText}
+        style={[rowStyle, inset ? styles.inset : null, style]}
         testID={testID}>
         {body}
       </Item>
@@ -145,32 +228,39 @@ export function createMenuRows(prefix: string): MenuRowParts {
   }: MenuCheckboxRowProps) {
     const theme = useTheme();
     const surface = useMenuSurface();
+    const rowStyle = useRowStyle();
     const { title, body } = splitChildren(children);
 
     return (
-      <Item
-        title={title}
-        density={densityFor(surface.presentation)}
-        disabled={disabled}
-        // `checkbox` + `selected` is what makes `Item` emit `aria-checked`,
-        // which is the only spelling react-native-web reads.
-        role="checkbox"
-        selected={checked}
-        leading={
-          <View style={styles.indicator}>
-            {checked ? <CheckIcon size="sm" fill={theme.colors.text} /> : null}
-          </View>
-        }
-        trailing={trailing}
-        onPress={() => {
-          onCheckedChange(!checked);
-          if (!keepOpen) surface.close();
-        }}
-        accessibilityLabel={accessibilityLabel}
-        style={style}
-        testID={testID}>
-        {body}
-      </Item>
+      <IndicatorGutter
+        indicator={
+          checked ? (
+            <CheckIcon
+              width={ROW_ICON_SIZE}
+              height={ROW_ICON_SIZE}
+              fill={theme.colors.text}
+            />
+          ) : null
+        }>
+        <Item
+          title={title}
+          disabled={disabled}
+          // `checkbox` + `selected` is what makes `Item` emit `aria-checked`,
+          // which is the only spelling react-native-web reads.
+          role="checkbox"
+          selected={checked}
+          trailing={trailing}
+          onPress={() => {
+            onCheckedChange(!checked);
+            if (!keepOpen) surface.close();
+          }}
+          accessibilityLabel={accessibilityLabel}
+          titleStyle={styles.rowText}
+          style={[rowStyle, styles.gutterRow, style]}
+          testID={testID}>
+          {body}
+        </Item>
+      </IndicatorGutter>
     );
   }
   MenuCheckboxItem.displayName = `${prefix}CheckboxItem`;
@@ -195,42 +285,58 @@ export function createMenuRows(prefix: string): MenuRowParts {
     style,
     testID,
   }: MenuRadioRowProps) {
+    const theme = useTheme();
     const surface = useMenuSurface();
     const group = useMenuRadioGroup();
+    const rowStyle = useRowStyle();
     const { title, body } = splitChildren(children);
     const checked = group.value === value;
 
     return (
-      <Item
-        title={title}
-        density={densityFor(surface.presentation)}
-        disabled={disabled}
-        role="radio"
-        selected={checked}
-        // The same indicator `Select` and `Radio` draw. A menu radio row that
-        // hand-rolled its own dot would be the second one in the library.
-        leading={<RadioIndicator selected={checked} size={INDICATOR_SIZE} />}
-        trailing={trailing}
-        onPress={() => {
-          group.onValueChange(value);
-          if (!keepOpen) surface.close();
-        }}
-        accessibilityLabel={accessibilityLabel}
-        style={style}
-        testID={testID}>
-        {body}
-      </Item>
+      <IndicatorGutter
+        indicator={
+          // `bg-foreground h-2 w-2 rounded-full` — upstream's selected radio row
+          // is a FILLED DOT with no ring, which is what fits an 8px mark inside a
+          // 14px indicator box. `radio-indicator/` draws Bloom's ringed control,
+          // a different thing at a different size, and using it here is what made
+          // a menu radio row twice the width of its checkbox sibling.
+          checked ? (
+            <View style={[styles.radioDot, { backgroundColor: theme.colors.text }]} />
+          ) : null
+        }>
+        <Item
+          title={title}
+          disabled={disabled}
+          role="radio"
+          selected={checked}
+          trailing={trailing}
+          onPress={() => {
+            group.onValueChange(value);
+            if (!keepOpen) surface.close();
+          }}
+          accessibilityLabel={accessibilityLabel}
+          titleStyle={styles.rowText}
+          style={[rowStyle, styles.gutterRow, style]}
+          testID={testID}>
+          {body}
+        </Item>
+      </IndicatorGutter>
     );
   }
   MenuRadioItem.displayName = `${prefix}RadioItem`;
 
   function MenuLabel({ children, inset = false, style }: MenuLabelProps) {
     const theme = useTheme();
+    const { width } = useWindowDimensions();
     return (
       <Text
         style={[
           styles.label,
-          { color: theme.colors.textSecondary },
+          // `px-2 py-2 sm:py-1.5`, and `text-foreground` — NOT muted. A shadcn
+          // menu label is a heading over its group, set in the same colour and
+          // size as the rows under it and separated only by its weight.
+          { paddingVertical: width >= BREAKPOINTS.sm ? ROW_PADDING_Y_SM : ROW_PADDING_Y },
+          { color: theme.colors.text },
           inset ? styles.labelInset : null,
           style,
         ]}>
@@ -241,14 +347,20 @@ export function createMenuRows(prefix: string): MenuRowParts {
   MenuLabel.displayName = `${prefix}Label`;
 
   function MenuSeparator() {
-    return <Divider spacing={space.xs} />;
+    const theme = useTheme();
+    // `bg-border -mx-1 my-1 h-px`. Not `Divider`: the negative inset is what
+    // makes the rule reach the panel's edge through its own `p-1`, and a
+    // hairline is not what upstream draws — `h-px` is one whole pixel.
+    return (
+      <View style={[styles.separator, { backgroundColor: theme.colors.borderLight }]} />
+    );
   }
   MenuSeparator.displayName = `${prefix}Separator`;
 
   function MenuShortcut({ children, style }: MenuShortcutProps) {
     const theme = useTheme();
     return (
-      <Text style={[styles.shortcut, { color: theme.colors.textTertiary }, style]}>
+      <Text style={[styles.shortcut, { color: theme.colors.textSecondary }, style]}>
         {children}
       </Text>
     );
@@ -298,23 +410,34 @@ export function createMenuRows(prefix: string): MenuRowParts {
     testID,
   }: MenuSubTriggerProps) {
     const theme = useTheme();
-    const surface = useMenuSurface();
     const sub = useMenuSub();
+    const rowStyle = useRowStyle();
     const { title, body } = splitChildren(children);
     const Chevron = sub.open ? ChevronTopIcon : ChevronBottomIcon;
 
     return (
       <Item
         title={title}
-        density={densityFor(surface.presentation)}
         disabled={disabled}
         role="menuitem"
         expanded={sub.open}
         leading={leading}
-        trailing={<Chevron size="xs" fill={theme.colors.textSecondary} />}
+        // `text-foreground ml-auto size-4 shrink-0` — the chevron is full
+        // foreground and the same 16px as a row's check, not a small muted
+        // glyph. `Item`'s body already carries `flex: 1`, which is what pushes
+        // it right; `ml-auto` needs no counterpart.
+        trailing={
+          <Chevron
+            width={ROW_ICON_SIZE}
+            height={ROW_ICON_SIZE}
+            fill={theme.colors.text}
+          />
+        }
         onPress={() => sub.setOpen(!sub.open)}
         accessibilityLabel={accessibilityLabel}
-        style={[inset ? styles.inset : null, style]}
+        titleStyle={styles.rowText}
+        // Upstream's sub-trigger is the one row with NO `gap-2`.
+        style={[rowStyle, styles.subTrigger, inset ? styles.inset : null, style]}
         testID={testID}>
         {body}
       </Item>
@@ -345,30 +468,69 @@ export function createMenuRows(prefix: string): MenuRowParts {
 }
 
 const styles = StyleSheet.create({
+  // `absolute left-2 flex h-3.5 w-3.5 items-center justify-center`, stretched
+  // top-to-bottom so it centres against whatever the row's height turns out to
+  // be rather than guessing one.
   indicator: {
-    width: INDICATOR_SIZE,
-    height: INDICATOR_SIZE,
+    position: 'absolute',
+    left: ROW_INDICATOR_INSET,
+    top: 0,
+    bottom: 0,
+    width: ROW_INDICATOR_BOX,
     alignItems: 'center',
     justifyContent: 'center',
   },
-  // Lines a plain row up with the rows that carry an indicator: the indicator
-  // column plus `Item`'s own leading-slot gap.
-  inset: {
-    paddingLeft: space.lg + INDICATOR_SIZE + space.md,
+  // `h-2 w-2 rounded-full`.
+  radioDot: {
+    width: ROW_RADIO_DOT,
+    height: ROW_RADIO_DOT,
+    borderRadius: ROW_RADIO_DOT / 2,
   },
+  // `pl-8 pr-2` on the two rows that carry an indicator.
+  gutterRow: {
+    paddingLeft: ROW_INSET_PADDING_X,
+    paddingRight: ROW_PADDING_X,
+  },
+  // `pl-8` — a plain row asking to line up with those.
+  inset: {
+    paddingLeft: ROW_INSET_PADDING_X,
+  },
+  // The one row upstream gives no `gap-2`.
+  subTrigger: {
+    gap: 0,
+  },
+  // `text-sm` with no weight of its own: a menu row's label is body text, where
+  // `Item`'s is a 15px medium settings-row title.
+  rowText: {
+    fontSize: TEXT_SM,
+    lineHeight: TEXT_SM_LINE_HEIGHT,
+    fontWeight: '400',
+  },
+  // `text-foreground px-2 py-2 text-sm font-medium sm:py-1.5` (the vertical
+  // inset is applied at the call site, where the breakpoint is read).
   label: {
-    paddingHorizontal: space.lg,
-    paddingVertical: space.sm,
-    fontSize: fontSize.sm,
-    fontWeight: '600',
+    // Longhands, so `labelInset`'s `paddingLeft` is not outranked on web.
+    paddingLeft: ROW_PADDING_X,
+    paddingRight: ROW_PADDING_X,
+    fontSize: TEXT_SM,
+    lineHeight: TEXT_SM_LINE_HEIGHT,
+    fontWeight: FONT_MEDIUM,
   },
   labelInset: {
-    paddingLeft: space.lg + INDICATOR_SIZE + space.md,
+    paddingLeft: ROW_INSET_PADDING_X,
   },
+  // `text-muted-foreground ml-auto text-xs tracking-widest`.
   shortcut: {
     marginLeft: 'auto',
-    fontSize: fontSize.xs,
-    letterSpacing: 1,
+    fontSize: TEXT_XS,
+    lineHeight: TEXT_XS_LINE_HEIGHT,
+    letterSpacing: SHORTCUT_LETTER_SPACING,
+  },
+  // `bg-border -mx-1 my-1 h-px`.
+  separator: {
+    height: ROW_SEPARATOR_THICKNESS,
+    marginVertical: ROW_SEPARATOR_MARGIN_Y,
+    marginHorizontal: ROW_SEPARATOR_INSET_X,
   },
   subContent: {
     paddingLeft: space.md,

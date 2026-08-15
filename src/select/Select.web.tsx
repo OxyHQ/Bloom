@@ -6,14 +6,41 @@ import React, {
   useRef,
   useState,
 } from 'react';
-import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
+import { Pressable, ScrollView, StyleSheet, useWindowDimensions, View } from 'react-native';
 
+import { bloomShadowStyle } from '../design-tokens/shadows';
 import { useTheme } from '../theme/use-theme';
 import { Text } from '../typography';
+import {
+  PANEL_BORDER_WIDTH,
+  PANEL_PADDING,
+  ROW_GAP,
+  ROW_ICON_SIZE,
+  ROW_INDICATOR_BOX,
+  ROW_INDICATOR_INSET,
+  ROW_INSET_PADDING_X,
+  ROW_PADDING_X,
+  ROW_PADDING_Y,
+  ROW_PADDING_Y_SM,
+  ROW_RADIUS,
+  ROW_SEPARATOR_INSET_X,
+  ROW_SEPARATOR_MARGIN_Y,
+  ROW_SEPARATOR_THICKNESS,
+  SELECT_MAX_HEIGHT,
+  SELECT_TRIGGER_GAP,
+  SELECT_TRIGGER_HEIGHT,
+  SELECT_TRIGGER_HEIGHT_SM,
+  SELECT_TRIGGER_PADDING_X,
+  SELECT_TRIGGER_PADDING_Y,
+  SELECT_TRIGGER_RADIUS,
+  TEXT_SM,
+  TEXT_SM_LINE_HEIGHT,
+} from '../floating/constants';
 import { FloatingPanel } from '../floating/FloatingPanel';
 import { TriggerSlot } from '../floating/TriggerSlot';
 import { useAnchorRect } from '../floating/use-anchor-rect';
 import { useInteractionState } from '../hooks/use-interaction-state';
+import { BREAKPOINTS } from '../styles/breakpoints';
 import {
   ChevronBottom_Stroke2_Corner0_Rounded as ChevronDownIcon,
 } from '../icons/Chevron';
@@ -38,10 +65,7 @@ import type {
   SelectValueProps,
 } from './types';
 
-const VIEWPORT_GUTTER = 8;
 const SELECT_OFFSET = 6;
-/** Tallest an anchored option list grows before it scrolls. */
-const DEFAULT_MAX_HEIGHT = 320;
 /** How far one press of a scroll button moves the list. */
 const SCROLL_STEP = 96;
 /**
@@ -119,7 +143,32 @@ export function SelectTrigger({
   style,
   testID,
 }: SelectTriggerProps) {
+  const theme = useTheme();
   const ctx = useSelectContext();
+  const { width } = useWindowDimensions();
+
+  // `border-input bg-background flex h-10 flex-row items-center justify-between
+  //  gap-2 rounded-md border px-3 py-2 shadow-sm shadow-black/5 sm:h-9`.
+  //
+  // The trigger IS the field. It used to render its children into a bare
+  // pressable with no border, height or background at all, so a ported shadcn
+  // select was a line of text and a chevron floating on the page — the single
+  // largest visual gap in this family.
+  const field = (
+    <View
+      style={[
+        styles.trigger,
+        {
+          height: width >= BREAKPOINTS.sm ? SELECT_TRIGGER_HEIGHT_SM : SELECT_TRIGGER_HEIGHT,
+          backgroundColor: theme.colors.background,
+          borderColor: theme.colors.border,
+        },
+        bloomShadowStyle('s'),
+        disabled ? styles.triggerDisabled : null,
+      ]}>
+      {children}
+    </View>
+  );
 
   return (
     <TriggerSlot
@@ -137,7 +186,7 @@ export function SelectTrigger({
         'aria-expanded': ctx.isOpen,
       }}
     >
-      {children}
+      {asChild ? children : field}
     </TriggerSlot>
   );
 }
@@ -176,7 +225,15 @@ export function SelectValue({
 
 export function SelectIcon({ style }: SelectIconProps) {
   const theme = useTheme();
-  return <ChevronDownIcon style={style} size="xs" fill={theme.colors.textSecondary} />;
+  // `text-muted-foreground size-4`.
+  return (
+    <ChevronDownIcon
+      style={style}
+      width={ROW_ICON_SIZE}
+      height={ROW_ICON_SIZE}
+      fill={theme.colors.textSecondary}
+    />
+  );
 }
 
 // ---------------------------------------------------------------------------
@@ -188,7 +245,7 @@ export function SelectContent<T>({
   renderItem,
   label = 'Select an option',
   valueExtractor = defaultItemValueExtractor,
-  maxHeight = DEFAULT_MAX_HEIGHT,
+  maxHeight = SELECT_MAX_HEIGHT,
 }: SelectContentProps<T>) {
   const ctx = useSelectContext();
   const anchor = useAnchorRect(ctx.triggerRef, ctx.isOpen);
@@ -279,6 +336,7 @@ export function SelectContent<T>({
 export function SelectItem({ ref, value, label, children, style }: SelectItemProps) {
   const theme = useTheme();
   const ctx = useSelectContext();
+  const { width } = useWindowDimensions();
   const {
     state: hovered,
     onIn: onMouseEnter,
@@ -320,7 +378,10 @@ export function SelectItem({ ref, value, label, children, style }: SelectItemPro
       } as Record<string, () => void>)}
       style={[
         styles.item,
-        (hovered || focused) && { backgroundColor: theme.colors.primaryLight },
+        { paddingVertical: width >= BREAKPOINTS.sm ? ROW_PADDING_Y_SM : ROW_PADDING_Y },
+        // `focus:bg-accent` — the same wash a menu row takes, which is what
+        // `Item` and `SubtleHover` paint everywhere else in the library.
+        (hovered || focused) && { backgroundColor: theme.colors.contrast50 },
         style,
       ]}
     >
@@ -346,15 +407,24 @@ export function SelectItemText({ children, style }: SelectItemTextProps) {
 // ---------------------------------------------------------------------------
 
 export function SelectItemIndicator({ icon: IconComponent = CheckIcon }: SelectItemIndicatorProps) {
+  const theme = useTheme();
   const { selected } = useSelectItemContext();
 
-  if (!selected) {
-    return <View style={styles.itemIndicatorPlaceholder} />;
-  }
+  // `absolute right-2 flex size-3.5 items-center justify-center` holding a
+  // `text-muted-foreground size-4` check. A select's tick sits on the RIGHT — the
+  // opposite side from a menu's — which is what leaves the option's own text
+  // starting flush at `pl-2` like every other line in the panel. Bloom drew it in
+  // a 30px LEFT gutter, so a select and a dropdown menu disagreed about which
+  // edge a selection mark belongs on.
+  if (!selected) return null;
 
   return (
-    <View style={styles.itemIndicatorContainer}>
-      <IconComponent size="sm" />
+    <View style={styles.itemIndicatorContainer} pointerEvents="none">
+      <IconComponent
+        width={ROW_ICON_SIZE}
+        height={ROW_ICON_SIZE}
+        fill={theme.colors.textSecondary}
+      />
     </View>
   );
 }
@@ -387,49 +457,63 @@ const styles = StyleSheet.create({
   triggerSlot: {
     alignSelf: 'stretch',
   },
+  // `flex flex-row items-center justify-between gap-2 rounded-md border px-3 py-2`.
+  trigger: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    gap: SELECT_TRIGGER_GAP,
+    paddingHorizontal: SELECT_TRIGGER_PADDING_X,
+    paddingVertical: SELECT_TRIGGER_PADDING_Y,
+    borderWidth: PANEL_BORDER_WIDTH,
+    borderRadius: SELECT_TRIGGER_RADIUS,
+  },
+  triggerDisabled: {
+    opacity: 0.5,
+  },
+  // `text-foreground line-clamp-1 flex flex-row items-center gap-2 text-sm`.
   valueText: {
-    fontSize: 16,
+    fontSize: TEXT_SM,
+    lineHeight: TEXT_SM_LINE_HEIGHT,
   },
   // Only the INSET is the select's own now. `FloatingPanel` owns the surface's
   // position, background, border, radius, elevation and pointer-events, which
   // is why the fixed-position and backdrop entries that used to live here are
-  // gone rather than merely unused.
+  // gone rather than merely unused. `p-1` on the viewport, matching the panel's.
   dropdown: {
-    padding: 4,
+    padding: PANEL_PADDING,
   },
+  // `relative flex w-full flex-row items-center gap-2 rounded-sm py-2 pl-2 pr-8
+  //  sm:py-1.5` — no minimum height, and the 32px gutter is on the RIGHT.
   item: {
     position: 'relative',
     flexDirection: 'row',
-    // Matches the native sheet row (`index.tsx`) and the web `Menu` row. Bloom's
-    // web build is what renders on touch tablets, where this dropdown — not the
-    // sheet — is the select, so the row carries the same 44dp target on both
-    // platforms.
-    minHeight: 44,
-    paddingLeft: 30,
-    paddingRight: 8,
+    width: '100%',
+    gap: ROW_GAP,
+    paddingLeft: ROW_PADDING_X,
+    paddingRight: ROW_INSET_PADDING_X,
     alignItems: 'center',
-    borderRadius: 4,
-    paddingVertical: 4,
+    borderRadius: ROW_RADIUS,
   },
+  // `text-foreground select-none text-sm`.
   itemText: {
-    fontSize: 14,
-  },
-  itemIndicatorPlaceholder: {
-    position: 'absolute',
-    left: 0,
-    width: 30,
+    fontSize: TEXT_SM,
+    lineHeight: TEXT_SM_LINE_HEIGHT,
   },
   itemIndicatorContainer: {
     position: 'absolute',
-    left: 0,
-    width: 30,
+    right: ROW_INDICATOR_INSET,
+    top: 0,
+    bottom: 0,
+    width: ROW_INDICATOR_BOX,
     alignItems: 'center',
     justifyContent: 'center',
   },
+  // `bg-border -mx-1 my-1 h-px`.
   separator: {
-    height: 1,
-    marginVertical: 4,
-    width: '100%',
+    height: ROW_SEPARATOR_THICKNESS,
+    marginVertical: ROW_SEPARATOR_MARGIN_Y,
+    marginHorizontal: ROW_SEPARATOR_INSET_X,
   },
 });
 

@@ -144,4 +144,6 @@ On WEB none of this applies — the browser owns focus and the hooks return earl
 
 ## Rows are `Item`
 
-Every row is Bloom's `Item`, the same primitive settings lists and the command palette use. That is what keeps the touch target, the disabled treatment, the destructive colour, the pointer highlight and the ARIA state in one place — a fix to any of them lands in every menu at once.
+Every row is Bloom's `Item`, the same primitive settings lists and the command palette use. That is what keeps the disabled treatment, the destructive colour, the pointer highlight and the ARIA state in one place — a fix to any of them lands in every menu at once.
+
+Its GEOMETRY is not `Item`'s. A shadcn menu row is a denser thing than a Bloom settings row, and `floating/constants.ts` resolves upstream's class strings once for all three menu families: `rounded-sm px-2 py-2 sm:py-1.5 gap-2` on a row, `pl-8 pr-2` on the two that carry an indicator, `text-sm` throughout, and no minimum height at all. The `sm:` half is a real breakpoint read from the window width on BOTH platforms, not a platform split — a web dropdown on a 400px window is as roomy as a native sheet.

@@ -24,7 +24,24 @@ import * as Typography from '@oxyhq/bloom/typography';
 
 `H1` through `H6` are headings, and on web they carry `role="heading"` with the matching `aria-level` — which is what makes a screen reader's heading navigation work.
 
-`P` is body copy at 15px with relaxed leading, and `role="paragraph"` on web.
+`P` is body copy at 16px over a 28px line, with a leading margin (`mt-3`, 24px from the `sm` breakpoint up) and `role="paragraph"` on web.
+
+## The heading ramp
+
+react-native-reusables' own numbers, resolved from its `text-4xl font-extrabold tracking-tight` and the three `font-semibold` levels under it. `tracking-tight` is −0.025em, so the letter-spacing is computed against each level's own size. `H5`/`H6` have no upstream counterpart and continue the ramp.
+
+| | size / line | weight | also |
+| --- | --- | --- | --- |
+| `H1` | 36 / 40 | 800 | centred, like shadcn's `h1` |
+| `H2` | 30 / 36 | 600 | a 1px rule underneath, 8px clear of the text |
+| `H3` | 24 / 32 | 600 | |
+| `H4` | 20 / 28 | 600 | |
+| `H5` | 18 / 28 | 600 | |
+| `H6` | 16 / 24 | 600 | |
+
+The FAMILY is not upstream's. shadcn sets everything in one sans face; a Bloom heading is set in the display family, which is the same layer as the colour roles and is Bloom's own.
+
+A caller's `className` replaces the size, weight and tracking (react-native-css merges utilities into `style` first, so an inline default repeating those keys would silently beat `text-2xl`). Only the family survives it.
 
 ## Prose variants
 

@@ -7,17 +7,36 @@
  * than centring like a popover.
  */
 import React, { useCallback, useMemo, useRef } from 'react';
-import { StyleSheet, View, type View as RNView } from 'react-native';
+import { StyleSheet, useWindowDimensions, View, type View as RNView } from 'react-native';
 
-import { MENU_MIN_WIDTH } from '../floating/constants';
+import { bloomShadowStyle } from '../design-tokens/shadows';
+import {
+  FONT_MEDIUM,
+  MENUBAR_ALIGN_OFFSET,
+  MENUBAR_GAP,
+  MENUBAR_HEIGHT,
+  MENUBAR_HEIGHT_SM,
+  MENUBAR_MENU_MIN_WIDTH,
+  MENUBAR_PADDING,
+  MENUBAR_RADIUS,
+  MENUBAR_SIDE_OFFSET,
+  MENUBAR_TRIGGER_PADDING_X,
+  MENUBAR_TRIGGER_PADDING_Y,
+  MENUBAR_TRIGGER_PADDING_Y_SM,
+  MENUBAR_TRIGGER_RADIUS,
+  PANEL_BORDER_WIDTH,
+  TEXT_SM,
+  TEXT_SM_LINE_HEIGHT,
+} from '../floating/constants';
 import { MenuSurfaceProvider, type MenuSurfaceContextValue } from '../floating/context';
 import { FloatingPanel } from '../floating/FloatingPanel';
 import { createMenuRows } from '../floating/menu-rows';
 import { TriggerSlot } from '../floating/TriggerSlot';
 import { useAnchorRect } from '../floating/use-anchor-rect';
 import { useControllableState } from '../hooks/use-controllable-state';
-import { borderRadius, space } from '../styles/tokens';
+import { BREAKPOINTS } from '../styles/breakpoints';
 import { useTheme } from '../theme/use-theme';
+import { Text } from '../typography';
 import {
   MenubarMenuProvider,
   MenubarProvider,
@@ -41,6 +60,7 @@ export function Menubar({
   testID,
 }: MenubarProps) {
   const theme = useTheme();
+  const { width } = useWindowDimensions();
   const [openValue, setValue] = useControllableState<string | undefined>({
     value,
     defaultValue,
@@ -56,7 +76,12 @@ export function Menubar({
         testID={testID}
         style={[
           styles.bar,
+          // `h-10 sm:h-9`.
+          { height: width >= BREAKPOINTS.sm ? MENUBAR_HEIGHT_SM : MENUBAR_HEIGHT },
           { backgroundColor: theme.colors.background, borderColor: theme.colors.borderLight },
+          // `shadow-sm shadow-black/5` — the bar is a raised control, not an
+          // overlay, so it takes the lighter of Bloom's two elevation roles.
+          bloomShadowStyle('s'),
           style,
         ]}>
         {children}
@@ -90,7 +115,34 @@ export function MenubarTrigger({
   style,
   testID,
 }: MenubarTriggerProps) {
+  const theme = useTheme();
   const menu = useMenubarMenu();
+  const { width } = useWindowDimensions();
+
+  // `group flex items-center rounded-md px-2 py-1.5 sm:py-1`, plus `bg-accent`
+  // while its menu is open, and `text-sm font-medium` for the label. A menubar
+  // trigger is a BUTTON with chrome of its own, not a bare hit box — leaving it
+  // unstyled is why a Bloom menubar read as loose text against upstream's
+  // pill-per-menu bar. `asChild` still hands the whole thing to the caller.
+  const trigger = (
+    <View
+      style={[
+        styles.trigger,
+        {
+          paddingVertical:
+            width >= BREAKPOINTS.sm
+              ? MENUBAR_TRIGGER_PADDING_Y_SM
+              : MENUBAR_TRIGGER_PADDING_Y,
+        },
+        menu.open ? { backgroundColor: theme.colors.contrast50 } : null,
+      ]}>
+      {typeof children === 'string' ? (
+        <Text style={[styles.triggerText, { color: theme.colors.text }]}>{children}</Text>
+      ) : (
+        children
+      )}
+    </View>
+  );
 
   return (
     <TriggerSlot
@@ -105,7 +157,7 @@ export function MenubarTrigger({
         accessibilityRole: 'button',
         'aria-expanded': menu.open,
       }}>
-      {children}
+      {asChild ? children : trigger}
     </TriggerSlot>
   );
 }
@@ -115,10 +167,13 @@ export function MenubarContent({
   label = 'Menu',
   side,
   align = 'start',
-  sideOffset,
-  alignOffset,
+  // `alignOffset={-4} sideOffset={8}` — upstream's own defaults, which pull the
+  // menu back over its trigger's `p-1` so its left edge lines up with the
+  // trigger's label rather than with the bar's border.
+  sideOffset = MENUBAR_SIDE_OFFSET,
+  alignOffset = MENUBAR_ALIGN_OFFSET,
   dismissible,
-  minWidth = MENU_MIN_WIDTH,
+  minWidth = MENUBAR_MENU_MIN_WIDTH,
   maxWidth,
   style,
   testID,
@@ -159,14 +214,27 @@ export function MenubarContent({
 }
 
 const styles = StyleSheet.create({
+  // `bg-background border-border flex h-10 flex-row items-center gap-1
+  //  rounded-md border p-1 shadow-sm shadow-black/5 sm:h-9`.
   bar: {
     flexDirection: 'row',
     alignItems: 'center',
     alignSelf: 'flex-start',
-    gap: space.xs,
-    padding: space.xs,
-    borderWidth: 1,
-    borderRadius: borderRadius.md,
+    gap: MENUBAR_GAP,
+    padding: MENUBAR_PADDING,
+    borderWidth: PANEL_BORDER_WIDTH,
+    borderRadius: MENUBAR_RADIUS,
+  },
+  trigger: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingHorizontal: MENUBAR_TRIGGER_PADDING_X,
+    borderRadius: MENUBAR_TRIGGER_RADIUS,
+  },
+  triggerText: {
+    fontSize: TEXT_SM,
+    lineHeight: TEXT_SM_LINE_HEIGHT,
+    fontWeight: FONT_MEDIUM,
   },
 });
 

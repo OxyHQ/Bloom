@@ -151,13 +151,14 @@ Only TWO exist: `CenteredDialog` and `ResponsiveSheet` were removed with no shim
 - **The Apple-only peers are reachable ONLY through `@oxyhq/bloom/tab-bar`** — a consumer that never imports it shouldn't install them to silence a warning. Bun prints no mismatch warning for these at all.
 - Bloom owns its toast engine (vendored, see `NOTICE`); `sonner`/`sonner-native`/`nanoid` are not dependencies. Web bundles DO import reanimated + gesture-handler.
 
-## Typography and `className`
+## Style and `className`
 
+- **A `style` override of padding/margin must use the LONGHAND the base uses** — react-native-web maps `paddingHorizontal`/`marginHorizontal` to CSS shorthands (`padding-inline`) its atomic sheet ranks ABOVE `padding-left` whatever the array order, so a later longhand is dropped on WEB and honoured on native. Measured: a menu row's 32px indicator gutter drew 8px; `SettingsListItem`'s `leftInset` had been inert on web since it shipped. A prop-level test sees the array, not the cascade.
 - **Bloom typography wires `className` → `style` via `styled(RNText)` from `react-native-css`.** **Never put font-size, line-height, font-weight or color defaults in inline `style` when the caller passes `className`** — react-native-css merges utilities first, so overlapping inline keys silently break `text-*`/`font-*`/`leading-*`. Apply defaults only when `className` is absent; `fontFamily` may stay inline.
 - **`className` must land on the node the PARENT lays out.** An extra layout wrapper (an `Animated.View` holding a press transform) makes LAYOUT classes silently inert on native while VISUAL ones keep working — same call site works on web, does nothing on native, no error. **Fix: one node** — build `Animated.createAnimatedComponent(...)` at module scope so transform, visuals, `style` and `className` share it. Reference: `button/Button.tsx`.
 - **Wire `className` through Bloom's own `styled()`, never as a bare prop** — a bare one only works under NW5 and drops the moment the primitive is wrapped. Use the module-scope wrappers in `styles/styled-primitives.ts`; a `Record<string, string>` cast type-checks against nothing and hid two dropped props. Gate: `classname-interop.test.ts`.
 - **Never let a component's own default `className` compete with the caller's** — the caller's replaces it, stripping the chrome. Defaults belong in resolved-token inline style.
-- Jest sees the structure but never whether a class resolves to CSS, or the native driver — a device build is the only place the press animation is verified.
+- Jest sees structure, never whether a class resolves to CSS nor the native driver — only a device build verifies the press animation.
 
 ## ImageResolver
 
@@ -170,7 +171,7 @@ Each of these runs your "verification" against the PUBLISHED package while looki
 - **`bun add file:<tgz|dir>` reports success and does nothing** when the version matches what's installed. Bump the local version, or swap by symlink.
 - **Metro's `resolver.extraNodeModules` is a FALLBACK, not an override** — with a real `node_modules/@oxyhq/bloom` present it's never consulted.
 - **`expo export` and `expo start` disagree** — the dev server's file map only indexes `projectRoot` + `watchFolders`. Put the local copy inside the consumer repo, gitignored.
-- **The Metro port is baked in at BUILD time** via the Gradle property `-PreactNativeDevServerPort`, not `RCT_METRO_PORT` — an emulator resolves the dev server through host loopback, which `adb reverse` doesn't intercept. Confirm the value flipped in the generated `gradleResValues.xml`.
+- **The Metro port is baked in at BUILD time** via `-PreactNativeDevServerPort`, not `RCT_METRO_PORT` — an emulator resolves the dev server through host loopback, which `adb reverse` doesn't intercept. Confirm the value flipped in `gradleResValues.xml`.
 
 **Assert what you are testing before you test it** — resolved version plus a marker only the local build can produce. **Never extract or write over `node_modules/<pkg>`**: bun hardlinks from its global cache, mutating the package for every worktree and session.
 

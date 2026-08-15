@@ -6,20 +6,46 @@ import React, {
   useMemo,
   useState,
 } from 'react';
-import { FlatList, Pressable, StyleSheet, View } from 'react-native';
+import { FlatList, Pressable, StyleSheet, useWindowDimensions, View } from 'react-native';
 
+import { bloomShadowStyle } from '../design-tokens/shadows';
 import { useTheme } from '../theme/use-theme';
 import { Text } from '../typography';
-import { Button } from '../button';
 import { useDialogContext, useDialogControl } from '../dialog/context';
 import { SheetShell } from '../dialog/SheetShell';
+import {
+  PANEL_BORDER_WIDTH,
+  ROW_GAP,
+  ROW_ICON_SIZE,
+  ROW_INDICATOR_BOX,
+  ROW_INDICATOR_INSET,
+  ROW_INSET_PADDING_X,
+  ROW_PADDING_X,
+  ROW_PADDING_Y,
+  ROW_PADDING_Y_SM,
+  ROW_RADIUS,
+  ROW_SEPARATOR_INSET_X,
+  ROW_SEPARATOR_MARGIN_Y,
+  ROW_SEPARATOR_THICKNESS,
+  SELECT_TRIGGER_GAP,
+  SELECT_TRIGGER_HEIGHT,
+  SELECT_TRIGGER_HEIGHT_SM,
+  SELECT_TRIGGER_PADDING_X,
+  SELECT_TRIGGER_PADDING_Y,
+  SELECT_TRIGGER_RADIUS,
+  TEXT_SM,
+  TEXT_SM_LINE_HEIGHT,
+} from '../floating/constants';
 import { TriggerSlot } from '../floating/TriggerSlot';
 import type { DialogControlProps } from '../dialog/types';
-import { RadioIndicator } from '../radio-indicator';
 import { useInteractionState } from '../hooks/use-interaction-state';
+import {
+  Check_Stroke2_Corner0_Rounded as CheckIcon,
+} from '../icons/Check';
 import {
   ChevronTopBottom_Stroke2_Corner0_Rounded as ChevronUpDownIcon,
 } from '../icons/Chevron';
+import { BREAKPOINTS } from '../styles/breakpoints';
 import { defaultItemValueExtractor, ItemContext, useSelectItemContext } from './shared';
 import type {
   SelectContentProps,
@@ -103,7 +129,29 @@ export function SelectTrigger({
   style,
   testID,
 }: SelectTriggerProps) {
+  const theme = useTheme();
   const { control } = useSelectContext();
+  const { width } = useWindowDimensions();
+
+  // The same field chrome the web fork draws — `border-input bg-background
+  // h-10 flex-row items-center justify-between gap-2 rounded-md border px-3
+  // py-2 shadow-sm sm:h-9` — so the two platforms agree about what a select
+  // trigger looks like even though only one of them opens an anchored list.
+  const field = (
+    <View
+      style={[
+        styles.trigger,
+        {
+          height: width >= BREAKPOINTS.sm ? SELECT_TRIGGER_HEIGHT_SM : SELECT_TRIGGER_HEIGHT,
+          backgroundColor: theme.colors.background,
+          borderColor: theme.colors.border,
+        },
+        bloomShadowStyle('s'),
+        disabled ? styles.triggerDisabled : null,
+      ]}>
+      {children}
+    </View>
+  );
 
   return (
     <TriggerSlot
@@ -116,7 +164,7 @@ export function SelectTrigger({
         accessibilityLabel: label,
         accessibilityRole: 'button',
       }}>
-      {children}
+      {asChild ? children : field}
     </TriggerSlot>
   );
 }
@@ -162,7 +210,14 @@ function defaultExtractLabel(item: unknown): React.ReactNode {
 
 export function SelectIcon(_props: SelectIconProps) {
   const theme = useTheme();
-  return <ChevronUpDownIcon size="sm" fill={theme.colors.textSecondary} />;
+  // `text-muted-foreground size-4`.
+  return (
+    <ChevronUpDownIcon
+      width={ROW_ICON_SIZE}
+      height={ROW_ICON_SIZE}
+      fill={theme.colors.textSecondary}
+    />
+  );
 }
 
 // ---------------------------------------------------------------------------
@@ -261,6 +316,7 @@ function SelectContentInner<T>({
 
 export function SelectItem({ children, value, label, style }: SelectItemProps) {
   const theme = useTheme();
+  const { width } = useWindowDimensions();
   const { close } = useDialogContext();
   const { value: selectedValue, onValueChange } = useSelectContext();
   const { state: focused, onIn: onFocus, onOut: onBlur } = useInteractionState();
@@ -298,6 +354,7 @@ export function SelectItem({ children, value, label, style }: SelectItemProps) {
       onPressOut={onPressOut}
       style={[
         styles.item,
+        { paddingVertical: width >= BREAKPOINTS.sm ? ROW_PADDING_Y_SM : ROW_PADDING_Y },
         (focused || pressed) && { backgroundColor: theme.colors.contrast50 },
         style,
       ]}
@@ -331,18 +388,25 @@ export function SelectItemText({ children, style }: SelectItemTextProps) {
 // SelectItemIndicator
 // ---------------------------------------------------------------------------
 
-export function SelectItemIndicator({ icon: IconComponent }: SelectItemIndicatorProps) {
+export function SelectItemIndicator({ icon: IconComponent = CheckIcon }: SelectItemIndicatorProps) {
+  const theme = useTheme();
   const { selected } = useSelectItemContext();
 
-  if (IconComponent) {
-    return (
-      <View style={styles.itemIndicatorIcon}>
-        {selected && <IconComponent size="md" />}
-      </View>
-    );
-  }
+  // The same right-hand gutter the web fork draws: `absolute right-2 size-3.5`
+  // holding a `text-muted-foreground size-4` check. It used to default to
+  // `RadioIndicator` in the row's FLOW on the left, so a select on native and
+  // the same select on web disagreed about both the mark and the side it is on.
+  if (!selected) return null;
 
-  return <RadioIndicator selected={selected} />;
+  return (
+    <View style={styles.itemIndicatorContainer} pointerEvents="none">
+      <IconComponent
+        width={ROW_ICON_SIZE}
+        height={ROW_ICON_SIZE}
+        fill={theme.colors.textSecondary}
+      />
+    </View>
+  );
 }
 
 // ---------------------------------------------------------------------------
@@ -352,13 +416,10 @@ export function SelectItemIndicator({ icon: IconComponent }: SelectItemIndicator
 export function SelectSeparator() {
   const theme = useTheme();
 
+  // `bg-border -mx-1 my-1 h-px` — a filled 1px rule, not a bottom border on a
+  // stretched box.
   return (
-    <View
-      style={[
-        styles.separator,
-        { borderBottomColor: theme.colors.borderLight },
-      ]}
-    />
+    <View style={[styles.separator, { backgroundColor: theme.colors.borderLight }]} />
   );
 }
 
@@ -373,8 +434,24 @@ const styles = StyleSheet.create({
   triggerSlot: {
     alignSelf: 'stretch',
   },
+  // `flex flex-row items-center justify-between gap-2 rounded-md border px-3 py-2`.
+  trigger: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    gap: SELECT_TRIGGER_GAP,
+    paddingHorizontal: SELECT_TRIGGER_PADDING_X,
+    paddingVertical: SELECT_TRIGGER_PADDING_Y,
+    borderWidth: PANEL_BORDER_WIDTH,
+    borderRadius: SELECT_TRIGGER_RADIUS,
+  },
+  triggerDisabled: {
+    opacity: 0.5,
+  },
+  // `text-foreground line-clamp-1 text-sm`.
   valueText: {
-    fontSize: 16,
+    fontSize: TEXT_SM,
+    lineHeight: TEXT_SM_LINE_HEIGHT,
     fontWeight: '400',
   },
   contentHeader: {
@@ -390,28 +467,41 @@ const styles = StyleSheet.create({
   flatList: {
     flexGrow: 0,
   },
+  // `relative flex w-full flex-row items-center gap-2 rounded-sm py-2 pl-2 pr-8
+  //  sm:py-1.5`, the same row the web fork draws.
   item: {
-    flex: 1,
-    paddingHorizontal: 16,
+    position: 'relative',
+    width: '100%',
+    paddingLeft: ROW_PADDING_X,
+    paddingRight: ROW_INSET_PADDING_X,
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 8,
-    paddingVertical: 12,
+    gap: ROW_GAP,
+    borderRadius: ROW_RADIUS,
   },
   itemText: {
-    fontSize: 16,
+    fontSize: TEXT_SM,
+    lineHeight: TEXT_SM_LINE_HEIGHT,
   },
+  // Upstream marks the selected option with the check alone and leaves its label
+  // at the same weight as every other row.
   itemTextSelected: {
-    fontWeight: '600',
+    fontWeight: '400',
   },
-  itemIndicatorIcon: {
-    width: 24,
+  itemIndicatorContainer: {
+    position: 'absolute',
+    right: ROW_INDICATOR_INSET,
+    top: 0,
+    bottom: 0,
+    width: ROW_INDICATOR_BOX,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
+  // `bg-border -mx-1 my-1 h-px`.
   separator: {
-    flex: 1,
-    borderBottomWidth: 1,
-    marginHorizontal: 16,
-    marginVertical: 4,
+    height: ROW_SEPARATOR_THICKNESS,
+    marginVertical: ROW_SEPARATOR_MARGIN_Y,
+    marginHorizontal: ROW_SEPARATOR_INSET_X,
   },
 });
 

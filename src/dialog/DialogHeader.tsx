@@ -36,6 +36,7 @@ import {
   SegmentedControlItemText,
 } from '../segmented-control';
 import { Popover, PopoverContent, PopoverTrigger } from '../popover';
+import { PANEL_PADDING } from '../floating/constants';
 import { Item } from '../item';
 import { useDialogControl } from './context';
 import { useTheme } from '../theme/use-theme';
@@ -329,7 +330,13 @@ function HeaderOverflowMenu({
           }
         />
       </PopoverTrigger>
-      <PopoverContent label="More actions" align="end">
+      <PopoverContent
+        label="More actions"
+        align="end"
+        // A row list, not a prose card: it opts out of the popover's `w-72 p-4`
+        // for the same reason `Combobox` does, and shadcn would build this
+        // surface out of a `DropdownMenu` rather than a `Popover` at all.
+        style={styles.overflowPanel}>
         {items.map((action) => (
           <Item
             key={action.accessibilityLabel}
@@ -707,6 +714,10 @@ export const DialogNavBarSpacer = memo(function DialogNavBarSpacer({
 });
 
 const styles = StyleSheet.create({
+  overflowPanel: {
+    width: 'auto',
+    padding: PANEL_PADDING,
+  },
   overlay: {
     position: 'absolute',
     top: 0,
@@ -761,6 +772,10 @@ const styles = StyleSheet.create({
     lineHeight: 38,
     letterSpacing: -0.5,
     fontWeight: '700',
+    // `H1` now carries shadcn's `text-center`. A dialog's large title is a
+    // leading-aligned page heading, so it states its own alignment rather than
+    // inheriting the variant's.
+    textAlign: 'left',
   },
   largeSubtitle: {
     fontSize: 16,

@@ -74,7 +74,7 @@ It used to take a render prop instead, which handed its child a `state` object w
 
 ## Long lists
 
-The web dropdown grows to `maxHeight` (default 320) and then scrolls. When it does, `SelectScrollUpButton` and `SelectScrollDownButton` appear at whichever end still has something to show, and disappear at the ends — a scroll affordance that is always visible tells the user a list scrolls when it does not.
+The web dropdown grows to `maxHeight` (default 208, shadcn's `max-h-52`) and then scrolls. When it does, `SelectScrollUpButton` and `SelectScrollDownButton` appear at whichever end still has something to show, and disappear at the ends — a scroll affordance that is always visible tells the user a list scrolls when it does not.
 
 `SelectContent` renders both, so you get them by default. They are exported for a caller composing their own content, and on NATIVE they render nothing at all: the sheet's list already scrolls under the finger, and a chevron there is a target with no pointer to hit it.
 

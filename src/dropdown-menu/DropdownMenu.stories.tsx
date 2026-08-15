@@ -118,7 +118,7 @@ export const Submenu: Story = {
           <Button variant="secondary">Share</Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent>
-          <DropdownMenuItem>Copy link</DropdownMenuItem>
+          <DropdownMenuItem testID="plain-item">Copy link</DropdownMenuItem>
           <DropdownMenuSub>
             <DropdownMenuSubTrigger testID="submenu-trigger">Send to…</DropdownMenuSubTrigger>
             <DropdownMenuSubContent>
@@ -127,7 +127,9 @@ export const Submenu: Story = {
             </DropdownMenuSubContent>
           </DropdownMenuSub>
           <DropdownMenuSeparator />
-          <DropdownMenuItem inset>Embed</DropdownMenuItem>
+          <DropdownMenuItem inset testID="inset-item">
+            Embed
+          </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>
     </View>
