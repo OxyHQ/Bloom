@@ -1,0 +1,77 @@
+---
+title: Admonition
+description: A bordered callout inside the content — for information the reader must not scroll past.
+order: 49
+---
+
+# Admonition
+
+A bordered block that interrupts the reading flow: a warning about a setting, a
+note about a limitation, an apology for something that went wrong.
+
+```tsx
+import { Admonition } from '@oxyhq/bloom/admonition';
+
+<Admonition type="warning">
+  Turning this off signs you out of every other device.
+</Admonition>
+```
+
+For a callout with an action, compose the parts:
+
+```tsx
+import {
+  AdmonitionRoot,
+  AdmonitionRow,
+  AdmonitionIcon,
+  AdmonitionContent,
+  AdmonitionText,
+  AdmonitionButton,
+} from '@oxyhq/bloom/admonition';
+
+<AdmonitionRoot type="error">
+  <AdmonitionRow>
+    <AdmonitionIcon />
+    <AdmonitionContent>
+      <AdmonitionText>We couldn't reach the server.</AdmonitionText>
+      <AdmonitionButton onPress={retry}>Try again</AdmonitionButton>
+    </AdmonitionContent>
+  </AdmonitionRow>
+</AdmonitionRoot>
+```
+
+## `type` picks the icon and the border together
+
+| `type`    | for                                                    |
+| --------- | ------------------------------------------------------- |
+| `info`    | a neutral note                                          |
+| `tip`     | a suggestion — painted in the brand colour               |
+| `warning` | something that could go wrong if they continue          |
+| `error`   | something that has gone wrong                           |
+| `apology` | a limitation on our side, not the reader's mistake      |
+
+`AdmonitionIcon` reads the type from context, so the icon and the border cannot
+disagree — which is how an `error` callout ends up with a warning icon when the
+two are set by hand.
+
+## Admonition or toast
+
+- **Admonition** — stays. It is *about* the content it sits next to, and the
+  reader can return to it.
+- **[Toast](/docs/bloom/main/toast)** — passes. It is about something that just
+  happened.
+
+Anything the user might need to read twice belongs in an admonition. A toast is
+gone in four seconds and cannot be recovered.
+
+## `apology` exists because the wording differs
+
+"Something went wrong" and "we couldn't do this, and it is our fault" are
+different messages, and the second reads badly in an `error` box that looks
+like the user broke something. Use it where the limitation is ours.
+
+## Do not stack them
+
+Three callouts in a row is a page that has given up prioritising. If everything
+is important, nothing reads as important — and a reader who learns to scroll
+past one will scroll past the one that mattered.

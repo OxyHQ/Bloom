@@ -2,7 +2,8 @@ import React, { useRef } from 'react';
 import { Pressable, Text, View } from 'react-native';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
-import { AnimatedCheck, type AnimatedCheckRef } from './index';
+import { AnimatedCheck } from './index';
+import type { AnimatedCheckRef } from './types';
 
 const meta: Meta<typeof AnimatedCheck> = {
   title: 'Components/AnimatedCheck',

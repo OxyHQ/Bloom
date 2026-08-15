@@ -68,4 +68,15 @@ export interface WebCssStyle extends ViewStyle {
   scrollbarColor?: string;
   /** RN declares this on `TextStyle`, not `ViewStyle`. */
   userSelect?: 'auto' | 'none' | 'text' | 'contain' | 'all';
+  /**
+   * CSS custom properties, for a component whose self-injected sheet reads a
+   * per-instance value it cannot know statically — a resolved theme colour in a
+   * `:focus-visible` ring, say. `Chip` is the reference.
+   *
+   * A PATTERN index signature, not an open one: it admits `--bloom-chip-ring`
+   * and nothing else, so this stays an escape hatch for custom properties rather
+   * than a hole that would let any misspelled style key through and undo the
+   * excess-property checking this interface exists for.
+   */
+  [customProperty: `--${string}`]: string | undefined;
 }

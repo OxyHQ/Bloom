@@ -1,0 +1,91 @@
+/*
+ * The Storybook harness's Tailwind entry — a deliberate copy of the stylesheet
+ * every Oxy consumer's WEB build compiles, so a class resolves here to the same
+ * value it resolves to in production.
+ *
+ * WHY THIS FILE HAS TO EXIST AT ALL
+ *
+ * On web, `react-native-css`'s `styled()` does not turn a `className` into a
+ * style object. `useCssElement` rewrites it into `style={{ $$css: true,
+ * className: '<the literal string>' }}`, and react-native-web copies those
+ * tokens verbatim onto the DOM element's `class` attribute. So every Bloom
+ * class name reaches the browser whether or not any rule backs it. Without a
+ * compiled stylesheet the tokens sit there inert: `p-3` draws no padding,
+ * `flex-1` no growth, `opacity-0` no fade, and react-native-web's base `View`
+ * reset shows through with nothing thrown and nothing logged. Bloom's colours
+ * keep working because those come from resolved-token inline style, which is
+ * precisely what makes the gap invisible by eye.
+ *
+ * WHY IT IS SHAPED LIKE THIS AND NOT LIKE ANYTHING ELSE
+ *
+ * The five imports below are, line for line, `@oxyhq/app-preset/css/base.css`
+ * (what every Expo consumer imports at the top of its `global.css`) and the
+ * head of the website's `src/index.css` (the reference Vite consumer). A
+ * harness that resolved stock Tailwind while consumers resolve something else
+ * would be worse than no harness: it would disagree with production
+ * confidently, and be believed.
+ *
+ *   - `tailwindcss/theme.css` in `layer(theme)`, `preflight.css` in
+ *     `layer(base)`, `utilities.css` UNLAYERED. The split matters: unlayered
+ *     rules beat every layered one, and react-native-web inserts its atomic
+ *     sheet at `head.firstChild`, so utilities land after it and win the
+ *     cascade at equal specificity. Importing plain `tailwindcss` instead would
+ *     put utilities in a layer and hand every conflict back to the RNW reset.
+ *   - `nativewind/theme` is NOT decoration. It is where `web:`, `native:`,
+ *     `ios:` and `android:` come from (`@custom-variant web (@supports
+ *     selector(div > div))` and friends), plus the `leading-*` override that
+ *     makes line heights unitless. Bloom's `content-panel` is built out of
+ *     `web:sticky` / `web:[clip-path:…]`; drop this import and those tokens
+ *     compile to nothing while everything else still works.
+ *   - `../src/design-tokens/theme.css` is Bloom's own generated `@theme` block
+ *     — the single authority for `rounded-radius-28`, `p-space-8`, `text-body`,
+ *     `bg-fill`, `shadow-s` and the colour roles. Consumers import the
+ *     published `@oxyhq/bloom/design-tokens/theme.css`; the relative path here
+ *     is the same file before packing.
+ *
+ * `bloomTailwindPreset` (`src/design-tokens/tailwind-preset.ts`) is
+ * deliberately NOT wired in. It is the Tailwind-v3-shaped JS config for
+ * NativeWind v4 consumers; the v4 fleet gets the identical vocabulary from
+ * `theme.css`, and loading both would be two sources for one set of tokens.
+ */
+
+@import "tailwindcss/theme.css" layer(theme);
+@import "tailwindcss/preflight.css" layer(base);
+@import "tailwindcss/utilities.css" source(none);
+@import "nativewind/theme";
+@import "../src/design-tokens/theme.css";
+
+/*
+ * Bloom drives dark mode with a `.dark` CLASS on `<html>`
+ * (`theme/apply-dark-class.ts`), not with the OS preference — that is the whole
+ * point of `BloomThemeProvider`'s `mode` prop, and of Storybook's theme
+ * toolbar. Tailwind v4's stock `dark` variant is
+ * `@media (prefers-color-scheme: dark)`, which would ignore both. Redefining it
+ * against the class is what the website already does (`src/index.css`), so this
+ * matches a real consumer rather than inventing a third behaviour.
+ */
+@custom-variant dark (&:where(.dark, .dark *));
+
+/*
+ * THE SCAN SCOPE, which is the half of fidelity the imports above do not cover.
+ *
+ * Consumers `@source`-scan Bloom's published `lib/**` (`.js`/`.jsx`). Bloom is
+ * the library, so the harness scans the source those files are compiled from —
+ * same literal class strings, no build step between an edit and the browser.
+ * Stories live under `src/` too, so one glob covers both, and they are what
+ * this harness actually renders even though bob keeps them out of `lib/`.
+ *
+ * `source(none)` above turns OFF Tailwind's automatic detection, and it is
+ * load-bearing. Left on, the scan walks the whole repository: measured, a
+ * throwaway class written into `docs/accordion.mdx` alone resolved in the
+ * browser. Nothing a consumer runs scans Bloom's docs, README or scripts, so
+ * those classes exist here and nowhere else — and the harness generating MORE
+ * than production is the one direction in which it can lie, because a class
+ * that "works" in Storybook and is inert in an app is exactly the defect this
+ * pipeline was wired to expose.
+ *
+ * Suites are excluded for the same reason: bob keeps `__tests__/` out of
+ * `lib/`. Measured as four utilities generated only from assertions' prose.
+ */
+@source "../src/**/*.{ts,tsx}";
+@source not "../src/**/__tests__/**/*";

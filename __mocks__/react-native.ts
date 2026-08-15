@@ -38,12 +38,23 @@ const createComponent = (name: string) => {
 
 export const View = createComponent('View');
 export const Text = createComponent('Text');
-export const Image = createComponent('Image');
+export const Image = createComponent('Image') as ReturnType<typeof createComponent> & {
+  getSize: (uri: string, success?: (width: number, height: number) => void) => void;
+};
+// Deliberately never calls back: nothing in this environment can know an
+// image's intrinsic size, and inventing one would make a suite assert a layout
+// that only the mock produces. Callers must stay correct while the size is
+// still unknown, which is the state this models.
+Image.getSize = () => {};
 export const Pressable = createComponent('Pressable');
 export const TouchableOpacity = createComponent('TouchableOpacity');
 export const TextInput = createComponent('TextInput');
 export const Modal = createComponent('Modal');
 export const ActivityIndicator = createComponent('ActivityIndicator');
+// Its absence is not a missing convenience — an undefined element type makes
+// the WHOLE subtree fail to render ("Element type is invalid"), so every family
+// composing one (`PromptInput`) was untestable rather than partly tested.
+export const KeyboardAvoidingView = createComponent('KeyboardAvoidingView');
 
 export const PanResponder = {
   create: (config: Record<string, unknown>) => ({
@@ -210,7 +221,18 @@ export const AccessibilityInfo = {
     remove: jest.fn(),
   }),
   announceForAccessibility: (_message: string) => {},
+  setAccessibilityFocus: jest.fn((_reactTag: number) => {}),
 };
+
+/**
+ * Enough of `findNodeHandle` for the screen-reader focus hooks to run.
+ *
+ * Without it they threw the moment a timer advanced with a surface open — which
+ * no suite did, so the whole path was unreachable and green.
+ */
+export const findNodeHandle = jest.fn((instance: unknown): number | null =>
+  instance == null ? null : 1,
+);
 
 export const Linking = {
   openURL: jest.fn((_url: string) => Promise.resolve()),

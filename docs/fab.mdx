@@ -1,0 +1,67 @@
+---
+title: Fab
+description: The floating action button — one per screen, for the screen's primary action.
+order: 43
+---
+
+# Fab
+
+A floating button for the **one** thing a screen is mostly for: compose on a
+feed, add on a list, new message in an inbox.
+
+```tsx
+import { Fab } from '@oxyhq/bloom/fab';
+
+<Fab
+  icon={<PencilIcon />}
+  accessibilityLabel="New post"
+  onPress={compose}
+/>
+
+<Fab
+  icon={<PencilIcon />}
+  label="New post"
+  placement="bottom-right"
+  onPress={compose}
+/>
+```
+
+## Which prop decides what
+
+| prop        | decides                                                        |
+| ----------- | --------------------------------------------------------------- |
+| `icon`      | the glyph                                                       |
+| `label`     | makes it an extended FAB with visible text                      |
+| `variant`   | `primary` · `secondary` · `tertiary` · `surface`                |
+| `size`      | `small` · `medium` · `large`, or a number                       |
+| `placement` | which corner it floats in, or `static` to place it yourself     |
+| `offset`    | distance from the edges                                         |
+
+## An icon-only FAB needs `accessibilityLabel`
+
+Without it the button announces as "button" and nothing else. A pencil is not
+self-describing to a screen reader, and it is not always self-describing on
+screen either — which is what `label` is for.
+
+## One per screen
+
+A FAB claims the corner and floats above the content. Two of them are two
+primary actions, which means neither is primary, and they compete for the same
+thumb position. If a screen has several important actions, the FAB takes the
+most common one and the rest go in the content or a menu.
+
+## `placement="static"` when something else owns the position
+
+A FAB inside a scroll container, or one that has to sit above a tab bar, is
+easier to place with layout than to nudge with `offset`. `static` turns off the
+absolute positioning and leaves it to you.
+
+Remember the safe area and any bottom chrome: a FAB pinned to `bottom-right`
+with no offset lands under a tab bar on most phones, where it is unreachable
+rather than merely ugly.
+
+## Do not hide it behind scroll
+
+Hiding the FAB while scrolling down is a common pattern and a bad default: the
+action becomes unavailable exactly while the user is looking for it, and the
+reappear animation reads as a glitch. Prefer letting it stay.

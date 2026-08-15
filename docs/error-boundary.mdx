@@ -1,0 +1,72 @@
+---
+title: ErrorBoundary
+description: Containing a failure to a section instead of losing the screen.
+order: 51
+---
+
+# ErrorBoundary
+
+Catches a render error below it and shows a fallback instead of unmounting the
+tree above.
+
+```tsx
+import { ErrorBoundary } from '@oxyhq/bloom/error-boundary';
+
+<ErrorBoundary
+  title="This feed didn't load"
+  message="Your other tabs are unaffected."
+  retryLabel="Try again"
+  onError={report}
+>
+  <Feed />
+</ErrorBoundary>
+```
+
+## Which prop decides what
+
+| prop         | decides                                                     |
+| ------------ | ------------------------------------------------------------ |
+| `title` / `message` / `retryLabel` | the wording of the default fallback    |
+| `fallback`   | replaces it entirely — a node, or a function                 |
+| `onError`    | reporting; called with the error and the React error info    |
+
+## Place it where a failure should cost a section, not the screen
+
+Around a feed, a widget, a tab's content, a third-party embed. One boundary at
+the app root turns every error into a blank page, which is the outcome a
+boundary exists to prevent.
+
+The useful question is: *if this subtree fails, what should the user still be
+able to do?* Whatever the answer is, the boundary goes below it.
+
+## The function `fallback` gives you `retryCount`
+
+That is the reason to reach for it. After two or three failed retries, offering
+the button again is dishonest — the same thing will fail the same way.
+
+```tsx
+fallback={({ error, retry, retryCount }) =>
+  retryCount < 2 ? <Retry onPress={retry} /> : <Offline error={error} />
+}
+```
+
+## Write the fallback for someone who does not know what a boundary is
+
+Say what they lost and what the button will do. "This feed didn't load" is
+useful; "Something went wrong" tells them only that we noticed.
+
+Never show the error message itself in production UI. It is written for us, it
+often contains internals, and it cannot be acted on.
+
+## What it does not catch
+
+React error boundaries catch errors thrown **during render**. They do not catch:
+
+- errors in event handlers — those are just exceptions; catch them where they
+  happen and surface them with a [toast](/docs/bloom/main/toast) or an
+  [admonition](/docs/bloom/main/admonition);
+- rejected promises and async failures — the same;
+- errors in code above the boundary itself.
+
+So a boundary is a safety net for the unexpected, not the way you handle a
+failed request. A request that can fail has a designed failure state.

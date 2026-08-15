@@ -96,7 +96,7 @@ import { BloomProvider } from '@oxyhq/bloom/provider';
 
 Everything scrollable must sit under it. `useScrollRestoration()` throws outside its provider, so a list rendered beside the root, a right rail or an overlay, crashes that screen.
 
-Outlets are deliberately not included, because where they sit in the tree is a real application decision and a second mount duplicates every surface they render. Mount these yourself, under `BloomProvider`: `ToastOutlet`, the `Provider` and `Outlet` pair from `@oxyhq/bloom/portal`, `SurfaceHost`, `BloomDialogProvider` and `AlertDialogHost`.
+Outlets are deliberately not included, because where they sit in the tree is a real application decision and a second mount duplicates every surface they render. Mount these yourself, under `BloomProvider`: `ToastOutlet`, the `PortalProvider` and `PortalOutlet` pair from `@oxyhq/bloom/portal`, and `SurfaceHost` (which renders `alert()`, `confirm()`, `prompt()` and everything else on the surface stack).
 
 ```tsx
 import { Button } from '@oxyhq/bloom/button';
@@ -145,9 +145,9 @@ Bloom publishes 88 subpath exports. Importing from the subpath rather than the r
 |---|---|
 | Providers and theme | `provider`, `theme`, `color-presets`, `preset-vars`, `design-tokens`, `tailwind-preset`, `styles`, `hooks` |
 | Overlays | `dialog`, `alert-dialog`, `bottom-sheet`, `popover`, `context-menu`, `menu`, `tooltip`, `overlay`, `portal`, `surfaces` |
-| Actions | `button`, `fab`, `frosted-icon-button`, `grouped-buttons`, `pressable-scale`, `pressable-with-hover`, `subtle-hover` |
+| Actions | `button`, `fab`, `frosted-icon-button`, `pressable-scale`, `subtle-hover` |
 | Forms | `text-field`, `field`, `input-group`, `label`, `select`, `combobox`, `command`, `checkbox`, `switch`, `slider`, `segmented-control`, `search`, `prompt-input` |
-| Layout and lists | `grid`, `list`, `scroll`, `tabs`, `tab-bar`, `settings-list`, `content-panel`, `card`, `accordion`, `collapsible`, `divider`, `item` |
+| Layout and lists | `grid`, `list`, `scroll`, `tabs`, `tab-bar`, `settings-list`, `content-panel`, `card`, `accordion`, `divider`, `item` |
 | Identity and media | `avatar`, `avatar-group`, `user-hover-card`, `profile-card`, `image-resolver`, `image-aspect-ratio-cache`, `zoomable-image-gallery`, `media-inset-border`, `progressive-blur`, `fill` |
 | Feedback and data | `toast`, `admonition`, `loading`, `skeleton`, `error-boundary`, `badge`, `chip`, `kbd`, `code`, `link-preview`, `connection-status`, `connection-dots` |
 | Charts and motion | `composition-bar`, `dot-grid-meter`, `stat-bar`, `activity-heatmap`, `motion`, `animated-check`, `icon-circle`, `radio-indicator` |

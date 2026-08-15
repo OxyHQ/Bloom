@@ -1,0 +1,71 @@
+---
+title: Badge
+description: Counts, dots and status pills — inline, or attached to the thing they are about.
+order: 21
+---
+
+# Badge
+
+`Badge` is a small piece of state about something else: how many unread, which
+status, whether there is anything new. It has two shapes behind one component —
+an inline pill when it has no children, and an overlay pinned to a corner when
+it wraps one.
+
+```tsx
+import { Badge } from '@oxyhq/bloom/badge';
+
+<Badge content="Beta" color="info" variant="subtle" />
+
+<Badge content={5} color="error">
+  <IconCircle icon={BellIcon} />
+</Badge>
+```
+
+## Which prop decides what
+
+| prop        | decides                                                     |
+| ----------- | ----------------------------------------------------------- |
+| `content`   | the label; absent, the badge draws nothing                   |
+| `color`     | the semantic tone                                            |
+| `variant`   | how loudly it is painted — `solid` · `subtle` · `outlined`   |
+| `dot`       | drops the label entirely for a presence marker               |
+| `max`       | caps a number and appends a plus                             |
+| `invisible` | hides the badge **without unmounting the child**             |
+| `placement` | which corner, when it wraps a child                          |
+
+`color` and `variant` are resolved together through `resolveAccentColors`,
+which reads the `*Subtle` / `*SubtleForeground` pairs. That is why a subtle
+badge is legible rather than one colour on the same colour — a tone lightened
+by appending alpha to a token would not be.
+
+## Three props that each prevent a specific bug
+
+**`max`** — an unread count is unbounded, and `1204` inside a 20px pill either
+stretches the nav icon off screen or clips. `max={99}` renders `99+`.
+
+**`invisible`** — the reason to prefer this over rendering the badge
+conditionally: when a count reaches zero the child must stay exactly where it
+is. Unmounting the badge is fine; unmounting the wrapper reflows the row.
+
+```tsx
+<Badge content={unread} invisible={unread === 0}>
+  <InboxIcon />
+</Badge>
+```
+
+**`dot`** — a dot has no label to make legible, so it always paints the tone's
+**fill**, whatever the `variant`. Following the variant made
+`dot variant="outlined"` a fully transparent circle: visually absent, with
+markup that reads as correct.
+
+## Accessibility
+
+A badge is decoration for the control it sits on. The count must also be in
+that control's accessible name — a screen reader user should hear
+"Inbox, 5 unread", not "Inbox" and then a stray "5".
+
+```tsx
+<Badge content={5}>
+  <Pressable accessibilityLabel={`Inbox, ${unread} unread`}>…</Pressable>
+</Badge>
+```

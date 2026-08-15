@@ -7,24 +7,22 @@ export { BloomColorScope, useColorScopeStyle } from './color-scope';
 export type { BloomColorScopeProps } from './color-scope';
 export { BloomSeedScope } from './seed-scope';
 export type { BloomSeedScopeProps } from './seed-scope';
-export { buildSeedScopeVars, roleColorsToPresetTokens } from './color-scope/seed-scope';
-export type { SeedScopeOptions } from './color-scope/seed-scope';
+export { roleColorsToPresetTokens } from './color-scope/seed-scope';
+// `buildSeedScopeVars` + `SeedScopeOptions` are exported by
+// `@oxyhq/bloom/design-tokens` — the react-free barrel a build script can
+// import — and are deliberately NOT duplicated here.
 // Colour engine — the dependency-free tonal system that turns ANY seed colour
-// into a full role set. Surfaced here so consumers can derive dynamic themes
-// (e.g. from artwork) without reaching into the internal color-engine path.
-export {
-  generateRoleColors,
-  seedHexFromImagePixels,
-  seedsFromImagePixels,
-  quantizeImage,
-  argbFromHex,
-  hexFromArgb,
-  argbFromRgb,
-  redFromArgb,
-  greenFromArgb,
-  blueFromArgb,
-} from './color-engine';
-export type { RoleColors, GenerateOptions, RoleName, SchemeVariant, AccentSources } from './color-engine';
+// into a full role set, surfaced so consumers can derive dynamic themes (e.g.
+// from artwork) without reaching into the internal color-engine path.
+//
+// A NAMESPACE, not ten flat exports, and the split is deliberate: `useTheme`,
+// `BloomThemeProvider` and the tokens stay flat because they are what the whole
+// fleet imports, while the raw colour maths (`argbFromHex`, `redFromArgb`,
+// `quantizeImage`, …) had ZERO consumers outside Bloom when this was measured —
+// nine generically-named helpers on the root barrel, paying for nothing. That
+// is exactly the "open set of collision-prone primitives" case the namespace
+// rule exists for.
+export * as ColorEngine from './color-engine';
 export { buildTheme, STATUS_COLORS } from './build-theme';
 export { buildThemeFromSeed, buildColorsFromSeed } from './build-theme-from-seed';
 export type { SeedAccents } from './build-theme-from-seed';
@@ -50,10 +48,23 @@ export {
   HEX_TO_APP_COLOR,
   hexToAppColorName,
 } from './color-presets';
-export { parseRgb, withAlpha } from './color-utils';
-export type { RgbChannels } from './color-utils';
-export { getPresetVars, applyPresetVarsToDocument } from './preset-vars';
-export type { ExplicitAccents } from './preset-vars';
+export { parseRgb, parseRgba, withAlpha } from './color-utils';
+export type { RgbChannels, RgbaChannels } from './color-utils';
+// The one way to paint a control's HELD state, so a consumer's own pressable
+// presses like a Bloom one. Public for the same reason `resolveAccentColors` is:
+// the alternative is deriving it, and every derivation anyone reaches for first
+// (appending hex alpha, dropping a tint's own alpha) fails silently.
+export { pressedSurface, PRESS_LAYER_ALPHA } from './press-colors';
+// The one way to paint something in a semantic colour at a chosen loudness.
+// Public because the alternative is what consumers were already doing —
+// appending hex alpha to a fill token, which produces a malformed string
+// react-native-web reads back as fully opaque. `Chip` and `Badge` are its first
+// two callers; anything building a status pill wants the same three values.
+export { resolveAccentColors } from './accent-colors';
+export type { AccentColors, AccentFill, AccentTone } from './accent-colors';
+export { applyPresetVarsToDocument } from './preset-vars';
+// `getPresetVars` + `ExplicitAccents`: see the note above — `design-tokens`
+// owns them.
 export { applyDarkClass } from './apply-dark-class';
 export { setColorSchemeSafe } from './set-color-scheme-safe';
 export { initCssInteropDarkMode } from './init-css-interop';

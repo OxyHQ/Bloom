@@ -1,0 +1,39 @@
+---
+title: AspectRatio
+description: A box that keeps a fixed width-to-height ratio.
+order: 25
+---
+
+# AspectRatio
+
+A box that keeps a fixed width-to-height ratio while the layout around it decides its width. The usual job: a media well that must not jump as an image loads, because its height was known before the image was.
+
+```tsx
+import { AspectRatio } from '@oxyhq/bloom/aspect-ratio';
+
+<AspectRatio ratio={16 / 9}>
+  <Image source={{ uri: cover }} style={{ width: '100%', height: '100%' }} />
+</AspectRatio>
+```
+
+`ratio` is width divided by height and defaults to `1`. A number rather than a preset name, for the same reason shadcn's web `AspectRatio` takes one: a ratio is arithmetic the call site already has, and naming presets needs a new name for every ratio anyone wants.
+
+## It fills its parent's width
+
+An aspect box with no width is zero-sized, and "fill the parent, derive the height" is what every call site wants. So the width is `100%` and the height follows from `ratio`. A caller who needs a fixed width passes one through `style`, which lands last:
+
+```tsx
+<AspectRatio ratio={1} style={{ width: 96, borderRadius: 12, overflow: 'hidden' }}>
+  <Avatar source={user.avatar} />
+</AspectRatio>
+```
+
+## It takes no `className`
+
+`aspectRatio` is the ONE property this component exists to set, and react-native-css merges utilities into `style` before inline style — so a caller writing `className="aspect-video"` would have it silently overwritten by the `ratio` prop, with no error anywhere.
+
+One owner per property: use this component with `ratio`, or a plain `View` with the class, never both. Wrap it for the surrounding layout classes.
+
+## Not a port
+
+react-native-reusables' `aspect-ratio.tsx` is four lines re-exporting `@rn-primitives/aspect-ratio`'s Root — a primitive that exists on the web because CSS needed `padding-bottom` tricks before `aspect-ratio` landed. React Native has had `aspectRatio` as an ordinary style property the whole time, so there was nothing to copy. What earns the name here is the shadcn spelling and the two decisions above.

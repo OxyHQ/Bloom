@@ -3,13 +3,22 @@ import { Text } from 'react-native';
 import { render } from '@testing-library/react-native';
 
 import { ContentPanel } from '../content-panel';
+import { classNamesOn } from './support/rendered-style';
 
-/** Read the outer surface View's `className` from the rendered native tree. */
+/**
+ * The classes the outer surface node received.
+ *
+ * They arrive INSIDE `style`, not as a `className` prop: the panel wires them
+ * through Bloom's own `styled()`, and react-native-css merges each class in as a
+ * `{ $$css: true, className }` descriptor. Reading `props.className` — what this
+ * used to do — reads the prop as WRITTEN rather than as interpreted, which is
+ * exactly the difference between a class that resolves to a style and one that
+ * sits inert on an element react-native never looks at.
+ */
 function surfaceClassName(node: ReturnType<typeof render>): string {
   const json = node.toJSON();
   const el = Array.isArray(json) ? json[0] : json;
-  const className = el?.props?.className;
-  return typeof className === 'string' ? className : '';
+  return classNamesOn(el?.props?.style).join(' ');
 }
 
 // Jest resolves `../content-panel` to the native variant (`index.tsx`), which

@@ -1,6 +1,6 @@
 import type { ReactNode } from 'react';
 import type { StyleProp, ViewStyle, TextStyle, TextInputProps } from 'react-native';
-import type { Attachment } from './context';
+import type { PromptInputAttachment } from './context';
 
 export interface PromptInputProps {
   /** Whether the AI is currently generating a response */
@@ -30,13 +30,13 @@ export interface PromptInputProps {
   /** Rendered when input is empty and not loading (e.g., mic button) */
   emptyAction?: ReactNode;
   /** Controlled attachments */
-  attachments?: Attachment[];
+  attachments?: PromptInputAttachment[];
   /** Callback to add an attachment */
-  onAddAttachment?: (attachment: Attachment) => void;
+  onAddAttachment?: (attachment: PromptInputAttachment) => void;
   /** Callback to remove an attachment */
   onRemoveAttachment?: (id: string) => void;
   /** Callback to update an attachment */
-  onUpdateAttachment?: (id: string, updates: Partial<Attachment>) => void;
+  onUpdateAttachment?: (id: string, updates: Partial<PromptInputAttachment>) => void;
   /** Skip the inner KeyboardAvoidingView (use when outer keyboard handling exists) */
   disableKeyboardAvoidance?: boolean;
   /** Icon shown on the expand button (defaults to text "⤢") */

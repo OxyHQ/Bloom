@@ -1,0 +1,159 @@
+---
+title: DropdownMenu
+description: An action menu anchored to a trigger — a bottom sheet on native, a dropdown on web.
+order: 14
+---
+
+# DropdownMenu
+
+The menu that drops from a button. A bottom sheet on native, an anchored panel on web, one API on both.
+
+The parts are shadcn's, so a `@shadcn/ui` or `react-native-reusables` call site ports across unchanged: `DropdownMenu` owns the open state, `DropdownMenuTrigger` opens it, `DropdownMenuContent` is the surface, and the rows are `DropdownMenuItem`, `DropdownMenuCheckboxItem`, `DropdownMenuRadioGroup` / `DropdownMenuRadioItem`, `DropdownMenuLabel`, `DropdownMenuSeparator`, `DropdownMenuShortcut`, `DropdownMenuGroup` and the `DropdownMenuSub` trio.
+
+`ContextMenu` and `Menubar` publish the same row vocabulary under their own prefixes. They are one implementation, so a row behaves identically in all three.
+
+## Basic
+
+```tsx
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuShortcut,
+  DropdownMenuTrigger,
+} from '@oxyhq/bloom/dropdown-menu';
+import { Button } from '@oxyhq/bloom/button';
+
+<DropdownMenu>
+  <DropdownMenuTrigger asChild label="Open menu">
+    <Button variant="secondary">Open menu</Button>
+  </DropdownMenuTrigger>
+
+  <DropdownMenuContent>
+    <DropdownMenuLabel>My account</DropdownMenuLabel>
+    <DropdownMenuSeparator />
+    <DropdownMenuItem onPress={openProfile}>Profile</DropdownMenuItem>
+    <DropdownMenuItem trailing={<DropdownMenuShortcut>⌘,</DropdownMenuShortcut>}>
+      Settings
+    </DropdownMenuItem>
+    <DropdownMenuItem disabled>Billing</DropdownMenuItem>
+    <DropdownMenuSeparator />
+    <DropdownMenuItem variant="destructive" onPress={signOut}>
+      Sign out
+    </DropdownMenuItem>
+  </DropdownMenuContent>
+</DropdownMenu>
+```
+
+A row dismisses the menu after it fires. Pass `keepOpen` to a row that should not — a checkbox row you expect the user to toggle twice, say.
+
+## `asChild`
+
+`asChild` is Radix's composition escape hatch and it works the same way here: the trigger's single element child *becomes* the trigger and receives the open handler plus the accessibility props. Without it, the children render inside Bloom's own pressable.
+
+```tsx
+<DropdownMenuTrigger asChild label="Actions">
+  <Button variant="icon" onPress={track}>…</Button>
+</DropdownMenuTrigger>
+```
+
+Handlers the child already carries are composed, not replaced — `track()` runs first, then the menu opens.
+
+## Controlled
+
+```tsx
+const [open, setOpen] = useState(false);
+
+<DropdownMenu open={open} onOpenChange={setOpen}>
+  …
+</DropdownMenu>
+```
+
+Uncontrolled by default; pass `open` to take over. `onOpenChange` fires either way. There is no imperative control to reach for and no `close()` to call: the menu's state is one boolean, and a row closes it by returning.
+
+## Checkbox and radio rows
+
+```tsx
+<DropdownMenuCheckboxItem checked={dense} onCheckedChange={setDense} keepOpen>
+  Dense rows
+</DropdownMenuCheckboxItem>
+
+<DropdownMenuRadioGroup value={sort} onValueChange={setSort}>
+  <DropdownMenuRadioItem value="newest">Newest</DropdownMenuRadioItem>
+  <DropdownMenuRadioItem value="oldest">Oldest</DropdownMenuRadioItem>
+</DropdownMenuRadioGroup>
+```
+
+Both announce their state as `aria-checked`, which is the spelling react-native-web reads and React Native folds back into `accessibilityState` — so it reaches assistive tech on both platforms.
+
+## Sub-menus: a flyout on web, an inline disclosure on native
+
+The API is one thing on both platforms — a shadcn call site ports across unchanged — and the presentation is the platform's own, matching what each platform's upstream does.
+
+```tsx
+<DropdownMenuSub>
+  <DropdownMenuSubTrigger>Send to…</DropdownMenuSubTrigger>
+  <DropdownMenuSubContent>
+    <DropdownMenuItem>Email</DropdownMenuItem>
+    <DropdownMenuItem>Messages</DropdownMenuItem>
+  </DropdownMenuSubContent>
+</DropdownMenuSub>
+```
+
+**On web** the sub-panel flies out beside its trigger row, the way shadcn's does, and its chevron points right:
+
+- Hovering the row opens it; leaving either surface schedules a close 300 ms later, and entering either one cancels that — which is what keeps it open while the pointer travels diagonally across the gap between them.
+- Pressing the row toggles it, so a click and a touch-web tap both work.
+- <kbd>→</kbd> opens it and moves focus onto its first row; <kbd>←</kbd> closes it and returns focus to the trigger.
+- <kbd>Esc</kbd> closes the **innermost** surface first: one press shuts the sub-panel and leaves the menu open, a second shuts the menu.
+- It takes its own rank from `overlay/stack.ts` on mount, like every other surface, so it paints above the menu it opened from and carries no `zIndex` of its own.
+- It positions itself through the same `overlay/dropdown-placement` every other anchored surface uses, with `side="right"`. With no room to the right it flips to the left of the row on its own — there is no second positioner.
+
+**On native** it is an inline disclosure: the trigger expands its content in place, under the row, and the chevron swaps between down and up. react-native-reusables renders it the same way there, and a menu on native is a bottom sheet — there is nowhere for a flyout to fly to.
+
+The split is a build-time one, not a `Platform.OS` branch: `floating/menu-sub-flyout.tsx` and `floating/menu-sub-inline.tsx` are passed to `createMenuRows` by each family's own platform fork, so the web-only `FloatingPanel` never reaches a native bundle.
+
+Verified in a real browser by `scripts/verify-submenu-flyout.mjs` — jest can see none of it.
+
+## Placement (web)
+
+`DropdownMenuContent` takes `side` (`'top' | 'bottom'`, default `'bottom'`), `align` (`'start' | 'center' | 'end'`, default `'start'`), `sideOffset` and `alignOffset` — the same four Radix takes. They are preferences: the surface flips to the other side when the named one does not fit and clamps into the viewport when neither does.
+
+`side` also accepts `'left'` and `'right'`, which make the horizontal axis the one that fits, flips and clamps, and `align` the vertical one. That is how the sub-panel positions itself; a root dropdown has no use for it.
+
+On native these are ignored. The menu is a bottom sheet, which is anchored to the screen rather than to the trigger.
+
+## Naming a row that is not a plain string
+
+A row whose child is a string names itself. A row composed of elements does not:
+
+```tsx
+<DropdownMenuItem accessibilityLabel="Profile">
+  <UserIcon />
+  <Text>Profile</Text>
+</DropdownMenuItem>
+```
+
+Without it a screen reader announces the row as nothing. This is where the upstream primitive's `textValue` lands — spelled `accessibilityLabel` because in Bloom that is all it does.
+
+## Screen-reader focus
+
+On NATIVE, opening a menu moves the VoiceOver/TalkBack cursor into the sheet, and closing it returns the cursor to the trigger. Both are automatic for every Bloom surface that presents through a sheet — menus, context menus, the menubar, popovers and select — and neither needs any wiring at the call site.
+
+They are a pair on purpose. Moving the cursor in without giving it back strands it on the root view after the surface unmounts, which is worse than never moving it.
+
+The platform's own dismiss gesture works too: a two-finger Z scrub under VoiceOver, a back gesture under TalkBack. Android's hardware back already closed these, since every Bloom sheet is an RN `<Modal>`.
+
+On WEB none of this applies — the browser owns focus and the hooks return early rather than calling an API that is a no-op there.
+
+## Rows are className-first
+
+Every row is one pressable node built from Bloom's `styled()` primitives, shared by all three menu families through `floating/shared.tsx` — so the disabled treatment, the destructive colour, the pointer highlight and the ARIA state stay in one place and a fix lands in every menu at once.
+
+Its shape is a class string, not resolved numbers, because that is how the originals are built and it is the only form a consumer can override with a utility (an inline `style` outranks a class on web whatever the array order). `floating/constants.ts` holds the vocabulary: `relative flex-row items-center px-2 py-1.5 gap-2 min-h-8 rounded-xl` on a row, `pl-8 pr-2` on the two that carry an indicator, `text-sm` throughout, and a 32px minimum height. There is no `sm:` breakpoint any more — the row is the same density at every window width.
+
+Every part takes a `className` and APPENDS it to its own, so a layout class cannot strip the chrome. Two utilities for one property are then resolved by Tailwind's own emission order, exactly as in any shadcn consumer; `style` remains the unambiguous override.
+
+**A web consumer must have the Tailwind/NativeWind pipeline wired and `@source`-scanning `@oxyhq/bloom/lib`.** That was always required; it is now visible rather than subtle, because the colours moved out of inline style too.

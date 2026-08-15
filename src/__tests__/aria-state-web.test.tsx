@@ -54,7 +54,6 @@ import { BloomThemeProvider } from '../theme/BloomThemeProvider';
 import { Checkbox } from '../checkbox/Checkbox';
 import { Switch } from '../switch/Switch';
 import { Accordion, AccordionItem, AccordionTrigger, AccordionContent } from '../accordion';
-import { Collapsible } from '../collapsible';
 import { Chip } from '../chip';
 import { Item } from '../item';
 import { SegmentedControl, SegmentedControlItem } from '../segmented-control';
@@ -64,6 +63,19 @@ import { InputGroup } from '../input-group';
 import { SettingsListItem } from '../settings-list/SettingsList';
 import { FrostedIconButton } from '../frosted-icon-button';
 import { CompositionBar } from '../composition-bar';
+import { Radio, RadioGroup } from '../radio';
+import { StatBar } from '../stat-bar';
+import {
+  DropdownMenuCheckboxItem,
+  DropdownMenuItem,
+  DropdownMenuRadioGroup,
+  DropdownMenuRadioItem,
+  DropdownMenuSub,
+  DropdownMenuSubTrigger,
+} from '../dropdown-menu';
+import { MenuSurfaceProvider } from '../floating/context';
+import { DotGridMeter } from '../dot-grid-meter';
+import { DialogLargeTitle, useDialogHeaderController } from '../dialog/DialogHeader';
 // Both Select forks by explicit filename: jest has no platform-extension
 // resolution, so a bare `'../select'` would only ever exercise the native one
 // and the web fork could drift back unnoticed.
@@ -76,7 +88,13 @@ import {
   Select as NativeSelect,
   SelectItem as NativeSelectItem,
   SelectItemText as NativeSelectItemText,
+  SelectTrigger,
+  SelectValue,
 } from '../select/index';
+import { DropdownMenu, DropdownMenuTrigger } from '../dropdown-menu';
+import { ContextMenu, ContextMenuTrigger } from '../context-menu';
+import { Menubar, MenubarMenu, MenubarTrigger } from '../menubar';
+import { Popover, PopoverTrigger } from '../popover';
 import { TabBar, TabBarButton } from '../tab-bar';
 
 (globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
@@ -196,7 +214,7 @@ describe('Switch', () => {
   });
 });
 
-describe('Accordion / Collapsible', () => {
+describe('Accordion', () => {
   it('Accordion trigger emits aria-expanded reflecting the open item', () => {
     const c = mount(
       <Accordion type="single" value="a" onValueChange={() => {}}>
@@ -218,24 +236,6 @@ describe('Accordion / Collapsible', () => {
     expect(triggers).toHaveLength(2);
     expect(triggers[0]?.getAttribute('aria-expanded')).toBe('true');
     expect(triggers[1]?.getAttribute('aria-expanded')).toBe('false');
-  });
-
-  it('Collapsible header emits aria-expanded', () => {
-    const c = mount(
-      <Collapsible title="Details" defaultOpen>
-        <Text>body</Text>
-      </Collapsible>,
-    );
-    expect(byRole(c, 'button').getAttribute('aria-expanded')).toBe('true');
-  });
-
-  it('Collapsible header emits aria-expanded="false" when closed', () => {
-    const c = mount(
-      <Collapsible title="Details">
-        <Text>body</Text>
-      </Collapsible>,
-    );
-    expect(byRole(c, 'button').getAttribute('aria-expanded')).toBe('false');
   });
 });
 
@@ -300,6 +300,17 @@ describe('Item selection is spelled per its role', () => {
     const el = byRole(c, 'option');
     expect(el.getAttribute('aria-selected')).toBe('true');
     // `aria-pressed` is not valid on `option` and must not be emitted too.
+    expect(el.hasAttribute('aria-pressed')).toBe(false);
+  });
+
+  it('role="radio" gets aria-checked, which is what ARIA allows there', () => {
+    // The role a single-choice list needs, and the one `Select`'s two forks
+    // spell by hand. Both platforms have it, so it also travels on
+    // `accessibilityRole` rather than being web-only like `option`.
+    const c = mount(<Item title="Row" role="radio" onPress={() => {}} selected />);
+    const el = byRole(c, 'radio');
+    expect(el.getAttribute('aria-checked')).toBe('true');
+    expect(el.hasAttribute('aria-selected')).toBe(false);
     expect(el.hasAttribute('aria-pressed')).toBe(false);
   });
 
@@ -447,6 +458,104 @@ describe('TabBar', () => {
   });
 });
 
+describe('Radio', () => {
+  it('emits role="radio" with aria-checked', () => {
+    const c = mount(
+      <Radio value="daily" selected onSelect={() => {}} label="Daily" testID="r" />,
+    );
+    const el = byTestId(c, 'r');
+    expect(el.getAttribute('role')).toBe('radio');
+    expect(el.getAttribute('aria-checked')).toBe('true');
+  });
+
+  it('emits aria-checked="false" when not chosen — absent is not the same as false', () => {
+    const c = mount(
+      <Radio value="daily" selected={false} onSelect={() => {}} label="Daily" testID="r" />,
+    );
+    expect(byTestId(c, 'r').getAttribute('aria-checked')).toBe('false');
+  });
+
+  it('emits aria-disabled when disabled', () => {
+    const c = mount(
+      <Radio value="daily" selected onSelect={() => {}} label="Daily" disabled testID="r" />,
+    );
+    expect(byTestId(c, 'r').getAttribute('aria-disabled')).toBe('true');
+  });
+
+  it('RadioGroup names itself and marks exactly one option', () => {
+    // A `radiogroup` with no accessible name announces a list of options and
+    // nothing about what is being chosen, and "2 of 4" is only announced when
+    // the options sit inside one.
+    const c = mount(
+      <RadioGroup
+        label="Digest frequency"
+        value="weekly"
+        onValueChange={() => {}}
+        options={[
+          { value: 'daily', label: 'Daily' },
+          { value: 'weekly', label: 'Weekly' },
+        ]}
+      />,
+    );
+    const group = byRole(c, 'radiogroup');
+    expect(group.getAttribute('aria-label')).toBe('Digest frequency');
+    const options = allByRole(c, 'radio');
+    expect(options).toHaveLength(2);
+    expect(options[0]?.getAttribute('aria-checked')).toBe('false');
+    expect(options[1]?.getAttribute('aria-checked')).toBe('true');
+  });
+});
+
+// `Slider` above was fixed on its own and its three siblings were not, because
+// joining this suite is a step somebody has to remember. `aria-state-source-
+// census.test.ts` is the half that fails by default; these are the three it
+// found, asserted against the DOM react-native-web actually emits.
+describe('progressbars announce their value', () => {
+  it('StatBar', () => {
+    const c = mount(<StatBar label="Storage" value={30} max={120} testID="sb" />);
+    const el = byRole(c, 'progressbar');
+    expect(el.getAttribute('aria-valuenow')).toBe('30');
+    expect(el.getAttribute('aria-valuemin')).toBe('0');
+    expect(el.getAttribute('aria-valuemax')).toBe('120');
+    // A progressbar with no label announces a number and nothing about what it
+    // measures, so the bar's own label travels with it.
+    expect(el.getAttribute('aria-label')).toBe('Storage');
+  });
+
+  it('DotGridMeter', () => {
+    const c = mount(<DotGridMeter filled={3} total={10} testID="dg" />);
+    const el = byTestId(c, 'dg');
+    expect(el.getAttribute('role')).toBe('progressbar');
+    expect(el.getAttribute('aria-valuenow')).toBe('3');
+    expect(el.getAttribute('aria-valuemin')).toBe('0');
+    expect(el.getAttribute('aria-valuemax')).toBe('10');
+  });
+
+  it('DotGridMeter clamps the announced value to the total', () => {
+    const c = mount(<DotGridMeter filled={99} total={10} testID="dg" />);
+    expect(byTestId(c, 'dg').getAttribute('aria-valuenow')).toBe('10');
+  });
+
+  it('the dialog header wizard step', () => {
+    // The controller holds shared values, so it has to be created inside a
+    // component rather than beside the assertion.
+    function WizardHeader(): React.ReactElement {
+      const controller = useDialogHeaderController();
+      return (
+        <DialogLargeTitle
+          controller={controller}
+          header={{ title: 'Set up', progress: { step: 2, total: 4 } }}
+        />
+      );
+    }
+    const c = mount(<WizardHeader />);
+    const el = byRole(c, 'progressbar');
+    expect(el.getAttribute('aria-valuenow')).toBe('2');
+    expect(el.getAttribute('aria-valuemin')).toBe('0');
+    expect(el.getAttribute('aria-valuemax')).toBe('4');
+  });
+});
+
 describe('View-based containers emit aria-disabled', () => {
   it('InputGroup', () => {
     const c = mount(
@@ -462,5 +571,212 @@ describe('View-based containers emit aria-disabled', () => {
     // The row renders a View wrapping the content; the disabled state belongs
     // on whichever node carries the a11y role.
     expect(c.querySelector('[aria-disabled="true"]')).not.toBeNull();
+  });
+});
+
+
+// The menu ROW, which is the second entry in `aria-state-source-census.test.ts`'s
+// `DELEGATING_TAGS` — `floating/shared.tsx`'s `MenuRowShell` takes a `role` and
+// answers it itself, so the census cannot read the role off the element and
+// these are what stand in for it. All three menu families render this one row,
+// so covering `DropdownMenu`'s covers `ContextMenu`'s and `Menubar`'s too.
+describe('menu rows spell their state per role', () => {
+  const inMenu = (ui: React.ReactElement) => (
+    <MenuSurfaceProvider value={{ close: () => {}, presentation: 'sheet' }}>
+      {ui}
+    </MenuSurfaceProvider>
+  );
+
+  it('a plain row is a menuitem with no checked state — absent, not false', () => {
+    const c = mount(inMenu(<DropdownMenuItem testID="row">Profile</DropdownMenuItem>));
+    const el = byTestId(c, 'row');
+    expect(el.getAttribute('role')).toBe('menuitem');
+    expect(el.getAttribute('aria-checked')).toBeNull();
+    expect(el.getAttribute('aria-selected')).toBeNull();
+  });
+
+  it('a plain row announces NO popup — the negative half of the sub-trigger case', () => {
+    // Without this, "the sub-trigger has aria-haspopup" is satisfied just as
+    // well by putting it on every row, which would tell a screen reader that
+    // three ordinary actions open submenus.
+    const c = mount(inMenu(<DropdownMenuItem testID="row">Profile</DropdownMenuItem>));
+    expect(byTestId(c, 'row').getAttribute('aria-haspopup')).toBeNull();
+  });
+
+  it('a disabled row emits aria-disabled, from the disabled PROP', () => {
+    const c = mount(
+      inMenu(
+        <DropdownMenuItem disabled testID="row">
+          Billing
+        </DropdownMenuItem>,
+      ),
+    );
+    expect(byTestId(c, 'row').getAttribute('aria-disabled')).toBe('true');
+  });
+
+  it('a checkbox row emits aria-checked, which is what ARIA allows there', () => {
+    const c = mount(
+      inMenu(
+        <DropdownMenuCheckboxItem checked onCheckedChange={() => {}} testID="row">
+          Grid
+        </DropdownMenuCheckboxItem>,
+      ),
+    );
+    const el = byTestId(c, 'row');
+    expect(el.getAttribute('role')).toBe('checkbox');
+    expect(el.getAttribute('aria-checked')).toBe('true');
+  });
+
+  it('an unchecked checkbox row says so rather than saying nothing', () => {
+    const c = mount(
+      inMenu(
+        <DropdownMenuCheckboxItem checked={false} onCheckedChange={() => {}} testID="row">
+          Ruler
+        </DropdownMenuCheckboxItem>,
+      ),
+    );
+    expect(byTestId(c, 'row').getAttribute('aria-checked')).toBe('false');
+  });
+
+  it('a radio group marks exactly one option with aria-checked', () => {
+    const c = mount(
+      inMenu(
+        <DropdownMenuRadioGroup value="oldest" onValueChange={() => {}}>
+          <DropdownMenuRadioItem value="newest">Newest</DropdownMenuRadioItem>
+          <DropdownMenuRadioItem value="oldest">Oldest</DropdownMenuRadioItem>
+        </DropdownMenuRadioGroup>,
+      ),
+    );
+    const options = allByRole(c, 'radio');
+    expect(options).toHaveLength(2);
+    expect(options[0]?.getAttribute('aria-checked')).toBe('false');
+    expect(options[1]?.getAttribute('aria-checked')).toBe('true');
+  });
+
+  it('a sub-trigger announces whether its sub-menu is open', () => {
+    const c = mount(
+      inMenu(
+        <DropdownMenuSub defaultOpen>
+          <DropdownMenuSubTrigger testID="sub">Send to…</DropdownMenuSubTrigger>
+        </DropdownMenuSub>,
+      ),
+    );
+    const el = byTestId(c, 'sub');
+    expect(el.getAttribute('role')).toBe('menuitem');
+    expect(el.getAttribute('aria-expanded')).toBe('true');
+  });
+
+  it('a sub-trigger announces WHAT it opens, not only that it is open', () => {
+    // `aria-expanded` alone says "collapsed" without ever saying "submenu", so a
+    // sub-trigger reads as an ordinary row that toggles something. React Native
+    // types no `aria-haspopup` (it is a PROPERTY, with no state to fold into
+    // `accessibilityState`), which is why it travels on the widened
+    // `StyledPressableProps` rather than an RN prop — and why the source census
+    // cannot see it: that gate is per-role STATE.
+    const c = mount(
+      inMenu(
+        <DropdownMenuSub>
+          <DropdownMenuSubTrigger testID="sub">Send to…</DropdownMenuSubTrigger>
+        </DropdownMenuSub>,
+      ),
+    );
+    expect(byTestId(c, 'sub').getAttribute('aria-haspopup')).toBe('menu');
+  });
+});
+
+
+// Every ROOT trigger says WHAT it opens. Five families, three kinds of surface —
+// so a single shared value would be right for three of them and a lie for the
+// other two, which is why `aria-haspopup` is set per family from
+// `floating/constants.ts` rather than defaulted on `TriggerHandleProps`.
+//
+// The negative half is the LAST case: a Button is not a trigger and must carry
+// nothing. Without it, "every trigger has aria-haspopup" is satisfied by putting
+// the attribute on every pressable in the library.
+describe('a trigger announces what it opens', () => {
+  /** The pressable a trigger renders — `testID` lands on the anchor wrapper. */
+  const trigger = (c: HTMLElement) => byRole(c, 'button');
+
+  it('DropdownMenu opens a menu', () => {
+    const c = mount(
+      <DropdownMenu>
+        <DropdownMenuTrigger label="Open">
+          <Text>Open</Text>
+        </DropdownMenuTrigger>
+      </DropdownMenu>,
+    );
+    expect(trigger(c).getAttribute('aria-haspopup')).toBe('menu');
+  });
+
+  it('ContextMenu opens a menu', () => {
+    const c = mount(
+      <ContextMenu>
+        <ContextMenuTrigger label="Actions">
+          <Text>Right-click me</Text>
+        </ContextMenuTrigger>
+      </ContextMenu>,
+    );
+    expect(trigger(c).getAttribute('aria-haspopup')).toBe('menu');
+  });
+
+  it('Menubar opens a menu', () => {
+    const c = mount(
+      <Menubar>
+        <MenubarMenu value="file">
+          <MenubarTrigger label="File">File</MenubarTrigger>
+        </MenubarMenu>
+      </Menubar>,
+    );
+    expect(trigger(c).getAttribute('aria-haspopup')).toBe('menu');
+  });
+
+  it('Popover opens a dialog, NOT a menu', () => {
+    const c = mount(
+      <Popover>
+        <PopoverTrigger label="Explain">
+          <Text>What is this?</Text>
+        </PopoverTrigger>
+      </Popover>,
+    );
+    expect(trigger(c).getAttribute('aria-haspopup')).toBe('dialog');
+  });
+
+  it('Select opens a listbox, NOT a menu', () => {
+    const c = mount(
+      <NativeSelect value="a" onValueChange={() => {}}>
+        <SelectTrigger label="Choose">
+          <SelectValue placeholder="Choose" />
+        </SelectTrigger>
+      </NativeSelect>,
+    );
+    expect(trigger(c).getAttribute('aria-haspopup')).toBe('listbox');
+  });
+
+  it('survives the asChild path, which is a different code path', () => {
+    // Without `asChild` the attribute rides a JSX spread onto Bloom's own
+    // pressable; with it, `cloneTrigger` builds an explicit prop object and
+    // merges it into the caller's element. Most real call sites — and every
+    // story — take the second one, so a fix that only covered the first would
+    // be invisible where it matters.
+    const c = mount(
+      <DropdownMenu>
+        <DropdownMenuTrigger asChild label="Open">
+          <Button onPress={() => {}} testID="own">
+            Open
+          </Button>
+        </DropdownMenuTrigger>
+      </DropdownMenu>,
+    );
+    const el = byTestId(c, 'own');
+    expect(el.getAttribute('aria-haspopup')).toBe('menu');
+    // `aria-expanded` rides the same path and had been dropped there since
+    // `TriggerSlot` shipped — measured: an asChild Button emitted `aria-label`
+    // (which `Button` named) and neither of these two (which it did not).
+    expect(el.getAttribute('aria-expanded')).toBe('false');
+  });
+
+  it('an ordinary Button opens nothing and says so by omission', () => {
+    const c = mount(<Button onPress={() => {}} testID="btn">Save</Button>);
+    expect(byTestId(c, 'btn').getAttribute('aria-haspopup')).toBeNull();
   });
 });

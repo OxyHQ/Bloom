@@ -1,13 +1,7 @@
 import { Dialog } from '../dialog/index.web';
 import { createAlertDialog } from './AlertDialog';
-import { createAlertDialogHost } from './AlertDialogHost';
 
+/** Web variant of the `./alert-dialog` barrel — see `./index.ts`. */
 export const AlertDialog = createAlertDialog(Dialog);
-export const AlertDialogHost = createAlertDialogHost(AlertDialog);
 
-export { confirm } from './confirm-store';
-export type {
-  AlertDialogProps,
-  AlertDialogActionStyle,
-  ConfirmOptions,
-} from './types';
+export type { AlertDialogProps, AlertDialogActionStyle } from './types';

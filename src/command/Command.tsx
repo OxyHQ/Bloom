@@ -8,7 +8,7 @@ import {
 } from 'react-native';
 
 import { useTheme } from '../theme/use-theme';
-import { useControllableState } from '../hooks/useControllableState';
+import { useControllableState } from '../hooks/use-controllable-state';
 import { Text } from '../typography';
 import { Item } from '../item';
 import { Kbd } from '../kbd';
@@ -161,8 +161,8 @@ export function createCommand(Dialog: DialogComponent) {
   // Bridge the public *controlled* `visible` prop onto the Dialog's imperative
   // open/close (mirrors `AlertDialog`). `control` is referentially stable
   // (memoised on its id), so this effect only re-runs when `visible` actually
-  // flips. Opening straight from an effect on mount matches bloom's own
-  // `AutoMountedDialog`. When a consumer flips `visible` to `false` (their own
+  // flips. Opening straight from an effect on mount is Bloom's fresh-mount
+  // imperative-open pattern. When a consumer flips `visible` to `false` (their own
   // close, or after a select), we imperatively `close()` so the exit animation
   // still plays.
   const closingFromPropRef = useRef(false);

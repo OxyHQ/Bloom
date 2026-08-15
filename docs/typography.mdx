@@ -1,0 +1,88 @@
+---
+title: Typography
+description: Text, headings and the semantic prose variants.
+order: 22
+---
+
+# Typography
+
+Bloom's text primitives. Every one is a flat component, and every one accepts `className` so a NativeWind consumer can override it — except `Blockquote`, for the reason below.
+
+```tsx
+import { H1, Lead, Muted, P, Small, Text } from '@oxyhq/bloom/typography';
+```
+
+Or as a namespace, which costs no tree-shaking because the family ships as its own subpath:
+
+```tsx
+import * as Typography from '@oxyhq/bloom/typography';
+```
+
+## Base
+
+`Text` is the base: theme-aware colour, Bloom's sans family, 13px. `Span` is the same component under the name you reach for inline.
+
+`H1` through `H6` are headings, and on web they carry `role="heading"` with the matching `aria-level` — which is what makes a screen reader's heading navigation work.
+
+`P` is body copy at 16px over a 28px line, with a leading margin (`mt-3`, 24px from the `sm` breakpoint up) and `role="paragraph"` on web.
+
+## The heading ramp
+
+react-native-reusables' own numbers, resolved from its `text-4xl font-extrabold tracking-tight` and the three `font-semibold` levels under it. `tracking-tight` is −0.025em, so the letter-spacing is computed against each level's own size. `H5`/`H6` have no upstream counterpart and continue the ramp.
+
+| | size / line | weight | also |
+| --- | --- | --- | --- |
+| `H1` | 36 / 40 | 800 | centred, like shadcn's `h1` |
+| `H2` | 30 / 36 | 600 | a 1px rule underneath, 8px clear of the text |
+| `H3` | 24 / 32 | 600 | |
+| `H4` | 20 / 28 | 600 | |
+| `H5` | 18 / 28 | 600 | |
+| `H6` | 16 / 24 | 600 | |
+
+The FAMILY is not upstream's. shadcn sets everything in one sans face; a Bloom heading is set in the display family, which is the same layer as the colour roles and is Bloom's own.
+
+A caller's `className` replaces the size, weight and tracking (react-native-css merges utilities into `style` first, so an inline default repeating those keys would silently beat `text-2xl`). Only the family survives it.
+
+## Prose variants
+
+Ported from react-native-reusables, which spells them as a `variant` prop on one `Text`. Bloom keeps them flat, because `H1`–`H6` already are and a second way to ask for a heading is an ambiguity, not a feature.
+
+```tsx
+<H2>Device sessions</H2>
+<Lead>Every device you sign in from gets its own session.</Lead>
+<P>A session is minted per origin and refreshed in the background.</P>
+<Blockquote>A session you cannot end from elsewhere is a key you cannot take back.</Blockquote>
+<Large>Ending a session</Large>
+<Small>Last active 4 minutes ago</Small>
+<Muted>Sessions older than 90 days end on their own.</Muted>
+```
+
+| Component | What it is |
+| --- | --- |
+| `Lead` | An intro paragraph. Larger than body, in the secondary colour. |
+| `Large` | Emphasised body text — a section's opening line. |
+| `Small` | A dense label, set on its own baseline with no extra leading. |
+| `Muted` | De-emphasised supporting text. |
+| `Blockquote` | A quotation, with the rule down its left edge. |
+
+react-native-reusables' `code` variant is deliberately absent: Bloom's [`code`](/docs/bloom/main/design-tokens) family already owns monospace text, and a second spelling of one thing is what this library removes rather than adds.
+
+## `Blockquote` takes no `className`
+
+The one exception, and it is a platform limit rather than a preference. React Native draws no border on a text node — Android renders a `TextView`, iOS an attributed string, and neither paints a left rule — so the rule has to be a `View` wrapping a `Text`.
+
+That splits the component in two: the node the parent lays out is the `View`, while the utilities anybody would write (`text-lg`, `text-primary`) belong on the `Text` inside it. A `className` would land on one of them and silently do nothing for the other, which is exactly the failure Bloom's className rules exist to prevent. So it is not offered:
+
+```tsx
+<Blockquote style={{ borderLeftWidth: 4 }} textStyle={{ fontStyle: 'normal' }}>
+  Styled container and text, separately.
+</Blockquote>
+```
+
+A caller who wants utility classes composes a `View` and a `Text` directly.
+
+## `className` and inline defaults
+
+Every other variant applies its size, weight and colour ONLY when no `className` is passed. react-native-css merges utilities into `style` first, so an inline default repeating `fontSize` or `color` would win the merge and silently break the caller's `text-lg` or `text-primary`. `fontFamily` is the exception and stays inline either way.
+
+Layout classes on web need the consumer's Tailwind pipeline to be scanning Bloom's `lib/`. Colours work regardless, because Bloom applies those inline — which is what makes a missing pipeline look like a layout bug rather than a missing stylesheet.

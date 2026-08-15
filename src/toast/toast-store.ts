@@ -327,7 +327,7 @@ class ToastStore {
     /**
      * An expanded stack collapses itself once a single row is left, because
      * "expanded" then means nothing visually — a lone row resolves to the SAME
-     * offset and scale either way (`toast-position-utils.test.ts` pins that) — while
+     * offset and scale either way (`toast-row-geometry.test.ts` pins that) — while
      * `isExpanded` keeps every timer paused, so staying expanded would leave that
      * last toast on screen forever with no visible reason. Inherited from
      * sonner-native and kept deliberately: on native it is invisible and it is the

@@ -1,0 +1,50 @@
+---
+title: Label
+description: A control's name, wired to the control rather than merely sitting above it.
+order: 33
+---
+
+# Label
+
+The text that names a control. Use it when you are laying a form out yourself;
+[`Field`](/docs/bloom/main/field) renders one for you and handles the wiring.
+
+```tsx
+import { Label } from '@oxyhq/bloom/label';
+
+<Label nativeID="workspace-name" required>Workspace name</Label>
+<TextField>
+  <TextFieldInput nativeID="workspace-name" value={name} onChangeText={setName} />
+</TextField>
+```
+
+## Which prop decides what
+
+| prop       | decides                                                      |
+| ---------- | ------------------------------------------------------------- |
+| `nativeID` | the id the control points at — this is what makes it a label   |
+| `htmlFor`  | the reverse association on web                                |
+| `required` | the required marker, and that it is announced as required      |
+| `disabled` | dims it in step with the control                              |
+| `size`     | `xs` · `sm` · `md`                                            |
+
+## Without the wiring it is just text above a box
+
+A `<Text>` above an input is not a label: a screen reader reaches the input and
+announces "edit text, blank". The association is the whole feature — either
+through `nativeID`/`htmlFor` here, or by letting `Field` do it.
+
+On web it also buys a click target: clicking the label focuses the control.
+
+## `required` is a claim, not a decoration
+
+The marker and the announced requirement come from the same prop, so they
+cannot disagree. Do not draw your own asterisk beside the text — it is
+invisible to a screen reader and produces a field that looks required and
+announces as optional.
+
+## Do not use a label as a heading
+
+A label names a control. A section title above a group of fields is a heading;
+using `Label` for it makes a screen reader look for a control that is not
+there.

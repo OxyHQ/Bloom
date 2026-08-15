@@ -1,0 +1,66 @@
+---
+title: IconCircle
+description: An icon on a tinted disc — the reference for how Bloom tints anything.
+order: 47
+---
+
+# IconCircle
+
+An icon centred on a coloured disc. Empty states, consent steps, the header of
+a settings section — anywhere an icon needs presence rather than sitting beside
+text.
+
+```tsx
+import { IconCircle } from '@oxyhq/bloom/icon-circle';
+import { Shield_Stroke2_Corner0_Rounded as ShieldIcon } from '@oxyhq/bloom/icons';
+
+<IconCircle icon={ShieldIcon} />
+<IconCircle icon={ShieldIcon} size="lg" />
+```
+
+## Which prop decides what
+
+| prop        | decides                                       |
+| ----------- | ---------------------------------------------- |
+| `icon`      | the glyph component — passed, not rendered      |
+| `size`      | `lg` (52px) or `xl` (64px, the default)         |
+| `style`     | the disc                                       |
+| `iconStyle` | the glyph                                      |
+
+`icon` takes the component itself (`icon={ShieldIcon}`), not an element
+(`icon={<ShieldIcon />}`), so the circle can size and colour it.
+
+## The tinting rule this component is the reference for
+
+The disc is `primarySubtle` and the glyph is `primary` — a **pair** of resolved
+tokens, not one token with alpha appended.
+
+That distinction is the whole point. A Bloom accent token resolves to a full
+`rgb(...)`, so `` `${colors.primary}1A` `` is a malformed string that
+react-native-web parses back as fully **opaque**. A disc tinted that way ends
+up the same colour as the glyph on it — contrast 1.00, an invisible icon, and
+markup that reads as correct.
+
+## Override both or neither
+
+`style` moves the disc, `iconStyle` moves the glyph. Changing one is exactly
+how a tinted disc ends up with an invisible icon:
+
+```tsx
+<IconCircle
+  icon={BellIcon}
+  style={{ backgroundColor: 'rgb(255 237 213)' }}
+  iconStyle={{ color: 'rgb(154 52 18)' }}
+/>
+```
+
+If you find yourself doing this often for the same tone, that is a signal the
+tone belongs in the theme — `resolveAccentColors(colors, tone, fill)` reads the
+`*Subtle` / `*SubtleForeground` pairs the design tokens already gate together.
+
+## Not a button
+
+`IconCircle` draws; it does not press. Wrap it in a `Pressable` with an
+`accessibilityLabel` if it should do something — and consider
+[`FrostedIconButton`](/docs/bloom/main/frosted-icon-button) or `Button`'s icon
+form first, which are already controls.

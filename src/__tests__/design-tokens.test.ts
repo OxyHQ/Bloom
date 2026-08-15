@@ -18,6 +18,7 @@ import {
   SHADOW_BOX,
   bloomShadowStyle,
 } from '../design-tokens';
+import { borderRadius, space } from '../styles/tokens';
 import { APP_COLOR_PRESETS } from '../theme/color-presets';
 import { buildScopeVars } from '../theme/color-scope/style-builder';
 import { CANONICAL_TOKENS } from '../theme/token-registry';
@@ -68,6 +69,31 @@ describe('design-tokens numeric scales', () => {
 
   it('exposes the 0.5px hairline border width', () => {
     expect(BORDER_WIDTH.hairline).toBe(0.5);
+  });
+
+  // The two vocabularies USED to be two declarations of the same physical scale,
+  // and they disagreed: `borderRadius.full` was 999 against `radius-max` 9999,
+  // `borderRadius` carried a 16 rung `RADIUS` did not and `RADIUS` a 28 rung
+  // `borderRadius` did not. Nothing could see it — each rung is individually
+  // valid, and a component reading the wrong spelling just draws a slightly
+  // different corner. `styles/tokens.ts` now reads these by reference, so this
+  // fails the moment somebody writes a number down a second time or adds a rung
+  // in one spelling only.
+  //
+  // Compared as VALUE SETS rather than key-by-key on purpose: the two key
+  // vocabularies are deliberately different (`space-12` vs `md`), and `SPACING`
+  // carries `screen-margin` as a second name for the 20 rung, so a key-wise
+  // comparison would have to encode the mapping it is trying to check.
+  it('the t-shirt view covers exactly the authority scale, with no second copy of a number', () => {
+    const values = (o: Record<string, number>): number[] =>
+      [...new Set(Object.values(o))].sort((a, b) => a - b);
+
+    expect(values(space)).toEqual(values(SPACING));
+    expect(values(borderRadius)).toEqual(values(RADIUS));
+
+    // Vacuity floor: two empty scales also compare equal.
+    expect(values(SPACING).length).toBeGreaterThanOrEqual(10);
+    expect(values(RADIUS).length).toBeGreaterThanOrEqual(9);
   });
 });
 

@@ -1,7 +1,6 @@
 import React, {
   memo,
   useCallback,
-  useEffect,
   useId,
   useMemo,
   type CSSProperties,
@@ -9,8 +8,10 @@ import React, {
 } from 'react';
 
 import { useTheme } from '../theme/use-theme';
+import { animation, borderRadius } from '../styles/tokens';
+import { pressedSurface } from '../theme/press-colors';
 import type { Theme } from '../theme/types';
-import { adoptStyleSheet } from '../styles/adopt-style-sheet';
+import { interactiveWebCss, useInteractiveWebCss } from '../styles/interactive-web-css';
 import { flattenWebStyle } from '../styles/flatten-web-style';
 import type { FabPlacement, FabProps, FabSize, FabVariant } from './types';
 
@@ -50,63 +51,51 @@ function resolveSize(size: FabSize | number): ResolvedSize {
   return SIZE_CONFIG[size];
 }
 
-const PILL_RADIUS = 999;
-const PRESS_SCALE = 0.94;
 const DEFAULT_OFFSET = 16;
 const DEFAULT_Z_INDEX = 50;
 
 // ---------------------------------------------------------------------------
 //  Per-state CSS injection
 //
-//  Inline styles cannot express `:hover` / `:focus-visible` / `:active`. We
-//  inject one static stylesheet (keyed by id, once) defining the interaction
-//  behavior for the base `bloom-fab` class; per-instance resolved colors stay
-//  inline. The focus-ring color is read from a CSS custom property the
-//  component sets inline (`--bloom-fab-ring`).
+//  Shared recipe — see `styles/interactive-web-css.ts`. Per-instance resolved
+//  colours stay inline and reach the static rules as custom properties
+//  (`--bloom-fab-ring`, `--bloom-fab-shadow-hover`, `--bloom-fab-press-scale`).
 // ---------------------------------------------------------------------------
 
 const STYLE_ID = 'bloom-fab-web-css';
 
-const BLOOM_FAB_CSS = `
-.bloom-fab {
-  appearance: none;
-  -webkit-appearance: none;
-  box-sizing: border-box;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  flex-direction: row;
-  gap: 8px;
-  margin: 0;
-  border: none;
-  font-family: inherit;
-  cursor: pointer;
-  user-select: none;
-  outline: none;
-  transition: opacity 120ms ease, transform 120ms ease, box-shadow 160ms ease, background-color 120ms ease;
-}
-.bloom-fab:disabled,
-.bloom-fab[aria-disabled="true"] {
-  cursor: default;
-  opacity: 0.5;
-}
-.bloom-fab:not(:disabled):not([aria-disabled="true"]):hover {
-  box-shadow: var(--bloom-fab-shadow-hover);
-}
-.bloom-fab:not(:disabled):not([aria-disabled="true"]):active {
-  transform: scale(var(--bloom-fab-press-scale, 1));
-}
-.bloom-fab:focus-visible {
-  outline: 2px solid var(--bloom-fab-ring, currentColor);
-  outline-offset: 3px;
-}
-`;
-
-function useFabCss(): void {
-  useEffect(() => {
-    adoptStyleSheet(STYLE_ID, BLOOM_FAB_CSS);
-  }, []);
-}
+const BLOOM_FAB_CSS = interactiveWebCss({
+  selector: '.bloom-fab',
+  varPrefix: 'bloom-fab',
+  // `background-color` and `box-shadow` arrive as custom properties rather than
+  // in the inline style, and that is NOT a stylistic choice. An inline
+  // declaration outranks EVERY rule in an adopted stylesheet, so a fork that
+  // writes either one inline makes its own `:hover` rule for that property
+  // unreachable. Measured in a real browser: the hover lift below had never once
+  // fired, with the rule present and the variable resolving correctly.
+  // Gate: `interactive-web-css.test.tsx`.
+  base: `
+    flex-direction: row;
+    gap: 8px;
+    border: none;
+    background-color: var(--bloom-fab-bg);
+    box-shadow: var(--bloom-fab-shadow);
+    font-family: inherit;
+  `,
+  transition:
+    'opacity 120ms ease, transform 120ms ease, box-shadow 160ms ease, background-color 120ms ease',
+  // A FAB lifts on hover rather than dimming: it floats over the content, so a
+  // deeper shadow is the affordance an opacity dip cannot express.
+  hover: { declarations: 'box-shadow: var(--bloom-fab-shadow-hover);' },
+  // The held state is the same state layer the native fork paints, from the same
+  // resolver. It reads THROUGH the hover lift rather than replacing it (a
+  // pressed FAB is always also hovered), so hover and press stay two distinct
+  // states: deeper shadow, then a darker face.
+  pressDeclarations: 'background-color: var(--bloom-fab-press-bg);',
+  // One px more than a button's: the FAB is a circle on a page it floats above,
+  // so a ring at 2 reads as touching the edge.
+  outlineOffset: 3,
+});
 
 /**
  * Positioning for a placement on web.
@@ -196,7 +185,7 @@ const FabWebComponent: React.FC<FabProps> = ({
   title,
   type = 'button',
 }) => {
-  useFabCss();
+  useInteractiveWebCss(STYLE_ID, BLOOM_FAB_CSS);
   const theme = useTheme();
   const reactId = useId();
   const resolvedId = id ?? `bloom-fab-${reactId}`;
@@ -213,17 +202,24 @@ const FabWebComponent: React.FC<FabProps> = ({
 
   const containerStyle = useMemo((): CSSProperties => {
     const base: CSSProperties = {
-      backgroundColor: variantColors.background,
       color: variantColors.foreground,
-      borderRadius: PILL_RADIUS,
+      borderRadius: borderRadius.full,
       height: sizeConfig.diameter,
       zIndex,
-      boxShadow: restShadow,
       fontSize: sizeConfig.fontSize,
       fontWeight: 600,
       ['--bloom-fab-ring' as string]: variantColors.ring,
+      ['--bloom-fab-bg' as string]: variantColors.background,
+      ['--bloom-fab-shadow' as string]: restShadow,
       ['--bloom-fab-shadow-hover' as string]: hoverShadow,
-      ['--bloom-fab-press-scale' as string]: PRESS_SCALE,
+      // Resolved by the same function the native fork calls, off the same rest
+      // fill, so the two forks land on the identical colour.
+      ['--bloom-fab-press-bg' as string]: pressedSurface(
+        theme.colors,
+        variantColors.background,
+        variantColors.foreground,
+      ),
+      ['--bloom-fab-press-scale' as string]: animation.pressScale,
       ...placementStyle(placement, offset),
     };
     if (isExtended) {
@@ -236,6 +232,7 @@ const FabWebComponent: React.FC<FabProps> = ({
     return base;
   }, [
     variantColors,
+    theme.colors,
     sizeConfig.diameter,
     sizeConfig.fontSize,
     zIndex,

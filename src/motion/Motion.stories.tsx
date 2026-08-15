@@ -6,7 +6,7 @@ import type { Meta, StoryObj } from '@storybook/react-vite';
 import { ScaleAndFadeIn, ScaleAndFadeOut, ScreenTransition, ShrinkAndPop } from './index';
 
 const meta: Meta = {
-  title: 'Motion/Presets',
+  title: 'Foundations/Motion',
 };
 
 export default meta;

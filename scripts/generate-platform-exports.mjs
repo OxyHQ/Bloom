@@ -3,7 +3,8 @@
  * Generate the platform-aware bits of @oxyhq/bloom's published surface:
  *
  *   1. The `exports` field of `package.json`.
- *   2. `src/index.web.ts` — the web variant of the root barrel.
+ *   2. Every WEB BARREL (`src/index.web.ts`, `src/theme/index.web.ts`) — each
+ *      one derived from its native sibling.
  *
  * The single source of truth is the layout under `src/`. A subpath gets a
  * `"browser"` export condition iff it appears in `WEB_FORKED_SUBPATHS`
@@ -30,8 +31,6 @@ const HERE = dirname(fileURLToPath(import.meta.url));
 const REPO_ROOT = join(HERE, '..');
 const SRC = join(REPO_ROOT, 'src');
 const PKG_PATH = join(REPO_ROOT, 'package.json');
-const ROOT_BARREL_PATH = join(SRC, 'index.ts');
-const ROOT_BARREL_WEB_PATH = join(SRC, 'index.web.ts');
 
 // --------------------------------------------------------------------------
 //  Public-API map
@@ -47,9 +46,11 @@ const ROOT_BARREL_WEB_PATH = join(SRC, 'index.web.ts');
  */
 const SUBPATHS = /** @type {const} */ ([
   ['.', 'index.ts'],
-  // The single app-root provider. Not web-forked: its one platform-varying
-  // import is bound by filename in `provider/scroll-provider{,.web}.ts`.
-  ['./provider', 'provider/index.tsx'],
+  // The single app-root provider. Not web-forked: it holds a store and an
+  // adapter, composed identically on both platforms. (The
+  // `provider/scroll-provider{,.web}.ts` filename fork this comment used to
+  // name is gone — two identical files were dead weight.)
+  ['./provider', 'provider/index.ts'],
   ['./surfaces', 'surfaces/index.ts'],
   ['./image-resolver', 'image-resolver/index.ts'],
   ['./image-aspect-ratio-cache', 'image-aspect-ratio-cache/index.ts'],
@@ -58,19 +59,18 @@ const SUBPATHS = /** @type {const} */ ([
   ['./preset-vars', 'theme/preset-vars.ts'],
   ['./design-tokens', 'design-tokens/index.ts'],
   ['./tailwind-preset', 'design-tokens/tailwind-preset.ts'],
-  ['./portal', 'portal/index.tsx'],
+  ['./portal', 'portal/index.ts'],
   // Connection loss as a toast; web-forked (navigator.onLine vs NetInfo).
-  ['./connection-status', 'connection-status/index.tsx'],
+  ['./connection-status', 'connection-status/index.ts'],
   // Shared overlay plumbing (OverlayRoot + Backdrop) for portaled surfaces.
-  ['./overlay', 'overlay/index.tsx'],
+  ['./overlay', 'overlay/index.ts'],
   ['./dialog', 'dialog/index.ts'],
   ['./button', 'button/index.ts'],
   ['./fab', 'fab/index.ts'],
   ['./frosted-icon-button', 'frosted-icon-button/index.ts'],
-  ['./grouped-buttons', 'grouped-buttons/index.ts'],
   ['./divider', 'divider/index.ts'],
   ['./radio-indicator', 'radio-indicator/index.ts'],
-  ['./collapsible', 'collapsible/index.ts'],
+  ['./radio', 'radio/index.ts'],
   ['./error-boundary', 'error-boundary/index.ts'],
   ['./avatar', 'avatar/index.ts'],
   ['./avatar-group', 'avatar-group/index.ts'],
@@ -78,39 +78,40 @@ const SUBPATHS = /** @type {const} */ ([
   ['./loading', 'loading/index.ts'],
   ['./switch', 'switch/index.ts'],
   ['./prompt-input', 'prompt-input/index.ts'],
-  ['./toast', 'toast/index.tsx'],
+  ['./toast', 'toast/index.ts'],
   ['./styles', 'styles/index.ts'],
   ['./hooks', 'hooks/index.ts'],
   ['./icons', 'icons/index.ts'],
-  ['./typography', 'typography/index.tsx'],
-  ['./skeleton', 'skeleton/index.tsx'],
-  ['./grid', 'grid/index.tsx'],
-  ['./fill', 'fill/index.tsx'],
+  ['./typography', 'typography/index.ts'],
+  ['./skeleton', 'skeleton/index.ts'],
+  ['./grid', 'grid/index.ts'],
+  ['./fill', 'fill/index.ts'],
   ['./media-inset-border', 'media-inset-border/index.ts'],
   ['./zoomable-image-gallery', 'zoomable-image-gallery/index.ts'],
   ['./pressable-scale', 'pressable-scale/index.ts'],
-  ['./pressable-with-hover', 'pressable-with-hover/index.ts'],
   ['./subtle-hover', 'subtle-hover/index.ts'],
   ['./motion', 'motion/index.ts'],
   ['./animated-check', 'animated-check/index.ts'],
-  ['./icon-circle', 'icon-circle/index.tsx'],
+  ['./icon-circle', 'icon-circle/index.ts'],
   ['./connection-dots', 'connection-dots/index.ts'],
   ['./composition-bar', 'composition-bar/index.ts'],
   ['./dot-grid-meter', 'dot-grid-meter/index.ts'],
   ['./stat-bar', 'stat-bar/index.ts'],
   ['./activity-heatmap', 'activity-heatmap/index.ts'],
   ['./profile-card', 'profile-card/index.ts'],
-  ['./benefit-list', 'benefit-list/index.tsx'],
-  ['./text-field', 'text-field/index.tsx'],
-  ['./segmented-control', 'segmented-control/index.tsx'],
-  ['./search', 'search/index.tsx'],
-  ['./admonition', 'admonition/index.tsx'],
-  ['./menu', 'menu/index.tsx'],
-  ['./tooltip', 'tooltip/index.tsx'],
-  ['./select', 'select/index.tsx'],
-  ['./bottom-sheet', 'bottom-sheet/index.tsx'],
-  ['./context-menu', 'context-menu/index.tsx'],
-  ['./popover', 'popover/index.tsx'],
+  ['./benefit-list', 'benefit-list/index.ts'],
+  ['./text-field', 'text-field/index.ts'],
+  ['./segmented-control', 'segmented-control/index.ts'],
+  ['./search', 'search/index.ts'],
+  ['./admonition', 'admonition/index.ts'],
+  ['./dropdown-menu', 'dropdown-menu/index.ts'],
+  ['./tooltip', 'tooltip/index.ts'],
+  ['./select', 'select/index.ts'],
+  ['./bottom-sheet', 'bottom-sheet/index.ts'],
+  ['./context-menu', 'context-menu/index.ts'],
+  ['./menubar', 'menubar/index.ts'],
+  ['./popover', 'popover/index.ts'],
+  ['./aspect-ratio', 'aspect-ratio/index.ts'],
   ['./alert-dialog', 'alert-dialog/index.ts'],
   ['./combobox', 'combobox/index.ts'],
   ['./command', 'command/index.ts'],
@@ -133,11 +134,11 @@ const SUBPATHS = /** @type {const} */ ([
   ['./fonts', 'fonts/index.ts'],
   ['./scroll', 'scroll/index.ts'],
   ['./scroll/expo-router', 'scroll/expo-router/index.ts'],
-  ['./content-panel', 'content-panel/index.tsx'],
-  ['./list', 'list/index.tsx'],
+  ['./content-panel', 'content-panel/index.ts'],
+  ['./list', 'list/index.ts'],
   ['./tab-bar', 'tab-bar/index.ts'],
   ['./tab-bar/expo-router', 'tab-bar/expo-router/index.ts'],
-  ['./progressive-blur', 'progressive-blur/index.tsx'],
+  ['./progressive-blur', 'progressive-blur/index.ts'],
 ]);
 
 /**
@@ -158,11 +159,14 @@ const WEB_FORKED_SUBPATHS = new Set([
   './avatar-group',
   './connection-dots',
   './loading',
-  './menu',
+  './dropdown-menu',
   './tooltip',
   './select',
+  './theme',
+  './prompt-input',
   './bottom-sheet',
   './context-menu',
+  './menubar',
   './popover',
   './alert-dialog',
   './combobox',
@@ -349,26 +353,57 @@ function buildExportsField() {
 }
 
 // --------------------------------------------------------------------------
-//  Root barrel (web variant)
+//  Web barrels
 // --------------------------------------------------------------------------
 
 /**
- * Rewrite `src/index.ts` into `src/index.web.ts` by retargeting every line
- * that re-exports a web-forked subpath to its `.web` entry.
+ * Barrels that exist in a native and a web variant, where the web variant is
+ * DERIVED from the native one rather than maintained by hand.
+ *
+ * `children` names the sibling FOLDERS whose `index.web` the web barrel must
+ * point at. This has to be spelled out because **export conditions do not
+ * apply to relative specifiers** — `theme/index.ts` naming `./color-scope`
+ * resolves to the native `index.tsx` in every bundler that is not Metro, no
+ * matter what `package.json#exports` says about `./theme`. Metro alone picks
+ * the `.web` sibling up by platform extension, which is exactly why the gap
+ * was invisible: Metro-web was right and Vite/webpack/SSR silently got native.
+ *
+ * Generated rather than hand-written for the same reason the root barrel is:
+ * two barrels that must agree on every line drift the moment one is edited.
+ */
+const WEB_BARRELS = /** @type {const} */ ([
+  {
+    source: 'index.ts',
+    // Every web-forked subpath except the root itself.
+    children: [...WEB_FORKED_SUBPATHS].filter((s) => s !== '.').map((s) => s.replace(/^\.\//, '')),
+  },
+  {
+    // `BloomColorScope` / `BloomSeedScope` fork because the web variants write
+    // the resolved tokens as real CSS custom properties on an inline `style`,
+    // while native publishes them through react-native-css's `VariableContext`.
+    // Resolved to the native file, a web consumer's scope emits NO vars at all
+    // (the provider is absent off-Metro), which is the silent
+    // "scoped subtree renders with the root palette" failure.
+    source: 'theme/index.ts',
+    children: ['color-scope', 'seed-scope'],
+  },
+]);
+
+/**
+ * Rewrite a native barrel into its web variant by retargeting every line that
+ * re-exports a forked child folder to that folder's `index.web` entry.
  *
  * The transform is purely textual and only touches lines of the form
- * `from './<folder>'`. Lines that don't match are passed through verbatim.
+ * `from './<folder>'`. Lines that don't match — including deeper paths like
+ * `from './color-scope/seed-scope'`, which is not forked — pass through
+ * verbatim.
  */
-function buildRootWebBarrel(originalSource) {
-  const forkedFolderNames = [...WEB_FORKED_SUBPATHS]
-    .filter((s) => s !== '.')
-    .map((s) => s.replace(/^\.\//, ''));
-
+function buildWebBarrel(originalSource, sourceRelPath, children) {
   const header = [
     '// AUTO-GENERATED by scripts/generate-platform-exports.mjs — DO NOT EDIT.',
-    '// Source of truth: src/index.ts.',
+    `// Source of truth: src/${sourceRelPath}.`,
     '// Re-run `bun run generate:exports` (or any `bun run build`) after',
-    '// changing the root barrel or the set of web-forked subpaths.',
+    '// changing that barrel or the set of web-forked subpaths.',
     '',
     '',
   ].join('\n');
@@ -379,7 +414,7 @@ function buildRootWebBarrel(originalSource) {
       const match = line.match(/from '\.\/([a-z-]+)'(\s*;?\s*)$/);
       if (!match) return line;
       const folder = match[1];
-      if (!forkedFolderNames.includes(folder)) return line;
+      if (!children.includes(folder)) return line;
       return line.replace(`from './${folder}'`, `from './${folder}/index.web'`);
     })
     .join('\n');
@@ -392,13 +427,16 @@ function buildRootWebBarrel(originalSource) {
 // --------------------------------------------------------------------------
 
 function main() {
-  // 1. Regenerate src/index.web.ts FIRST so the exports-field assertion
-  //    that the file exists will pass.
-  const rootBarrel = readFileSync(ROOT_BARREL_PATH, 'utf8');
-  writeFileSync(ROOT_BARREL_WEB_PATH, buildRootWebBarrel(rootBarrel));
-  console.log(
-    `[generate-platform-exports] wrote ${relative(REPO_ROOT, ROOT_BARREL_WEB_PATH)} from ${relative(REPO_ROOT, ROOT_BARREL_PATH)}`,
-  );
+  // 1. Regenerate the web barrels FIRST so the exports-field assertion that
+  //    each `.web` source exists will pass.
+  for (const { source, children } of WEB_BARRELS) {
+    const nativePath = join(SRC, source);
+    const webPath = join(SRC, source.replace(/\.ts$/, '.web.ts'));
+    writeFileSync(webPath, buildWebBarrel(readFileSync(nativePath, 'utf8'), source, children));
+    console.log(
+      `[generate-platform-exports] wrote ${relative(REPO_ROOT, webPath)} from ${relative(REPO_ROOT, nativePath)}`,
+    );
+  }
 
   // 2. Update `exports` in package.json.
   const pkg = JSON.parse(readFileSync(PKG_PATH, 'utf8'));

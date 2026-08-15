@@ -35,6 +35,27 @@ export interface ThemeColors {
   warning: string;
   info: string;
 
+  /**
+   * The tinted status SURFACES and the text that is legible on them.
+   *
+   * Each `*Subtle` is a translucent tint of its status hue and each
+   * `*SubtleForeground` is that family's `-text` member — the pair the colour
+   * policy generates together and `policy-legibility.test.ts` checks at AA with
+   * the tint composited over the page background. They exist so a status pill,
+   * chip or badge never has to derive a tint by appending hex alpha to a fill:
+   * the fills resolve to `rgb(...)`, so `` `${colors.error}18` `` is a malformed
+   * string that react-native-web reads back as fully OPAQUE, painting the label
+   * on its own colour at contrast 1.00.
+   */
+  successSubtle: string;
+  successSubtleForeground: string;
+  errorSubtle: string;
+  errorSubtleForeground: string;
+  warningSubtle: string;
+  warningSubtleForeground: string;
+  infoSubtle: string;
+  infoSubtleForeground: string;
+
   primarySubtle: string;
   primarySubtleForeground: string;
   negative: string;

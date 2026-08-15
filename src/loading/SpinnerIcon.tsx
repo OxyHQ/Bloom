@@ -9,6 +9,8 @@ import Animated, {
 } from 'react-native-reanimated';
 import Svg, { Rect } from 'react-native-svg';
 
+import { StyledView } from '../styles/styled-primitives';
+
 interface SpinnerIconProps {
   size?: number;
   color?: string;
@@ -28,6 +30,13 @@ interface SpinnerIconProps {
  * Native only — `SpinnerIcon.web.tsx` draws the same shape with CSS, so this
  * file is never reached by a web bundler.
  */
+// The class lands on the node the PARENT lays out — the rotating box, which
+// carries the size and the caller's `style` — not on the inner `<Svg>`, which is
+// sized from `size` and cannot grow. That inner placement is the same two-node
+// mistake `Button`, `Fab` and `FrostedIconButton` had, and the web fork already
+// puts the class on the outer node.
+const AnimatedStyledView = Animated.createAnimatedComponent(StyledView);
+
 export const SpinnerIcon: React.FC<SpinnerIconProps> = ({
   color = 'currentColor',
   size = 26,
@@ -55,7 +64,8 @@ export const SpinnerIcon: React.FC<SpinnerIconProps> = ({
   }), [rotation]);
 
   return (
-    <Animated.View
+    <AnimatedStyledView
+      className={className}
       style={[
         {
           width: size,
@@ -67,12 +77,7 @@ export const SpinnerIcon: React.FC<SpinnerIconProps> = ({
         style,
       ]}
     >
-      <Svg
-        viewBox="0 0 100 100"
-        width={size}
-        height={size}
-        {...(className ? ({ className } as Record<string, string>) : {})}
-      >
+      <Svg viewBox="0 0 100 100" width={size} height={size}>
         <Rect fill={color} height="10" opacity="0" rx="5" ry="5" transform="rotate(-90 50 50)" width="28" x="67" y="45" />
         <Rect fill={color} height="10" opacity="0.125" rx="5" ry="5" transform="rotate(-45 50 50)" width="28" x="67" y="45" />
         <Rect fill={color} height="10" opacity="0.25" rx="5" ry="5" transform="rotate(0 50 50)" width="28" x="67" y="45" />
@@ -82,7 +87,7 @@ export const SpinnerIcon: React.FC<SpinnerIconProps> = ({
         <Rect fill={color} height="10" opacity="0.75" rx="5" ry="5" transform="rotate(180 50 50)" width="28" x="67" y="45" />
         <Rect fill={color} height="10" opacity="0.875" rx="5" ry="5" transform="rotate(225 50 50)" width="28" x="67" y="45" />
       </Svg>
-    </Animated.View>
+    </AnimatedStyledView>
   );
 };
 

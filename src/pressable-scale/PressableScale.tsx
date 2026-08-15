@@ -1,12 +1,5 @@
 import React, { forwardRef } from 'react';
-import {
-  Platform,
-  Pressable,
-  type PressableProps,
-  type StyleProp,
-  type View,
-  type ViewStyle,
-} from 'react-native';
+import { type View } from 'react-native';
 import Animated, {
   cancelAnimation,
   useAnimatedStyle,
@@ -15,41 +8,32 @@ import Animated, {
   withTiming,
 } from 'react-native-reanimated';
 
+import { SUPPORTS_PRESS_SCALE } from '../styles/pointer';
+import { StyledPressable } from '../styles/styled-primitives';
+import type { PressableScaleProps } from './types';
+
 /** Press-in / press-out timing, in ms. */
 const DURATION = 100;
 
 /**
- * True on touch-capable web browsers (coarse pointer). The press-scale
- * affordance only makes sense where a finger obscures the element — with a
- * mouse it reads as jitter — so it is disabled on non-touch web, matching the
- * native / web-touch behaviour.
+ * A single animated pressable, built once at module scope so the animated node
+ * identity is stable across renders.
+ *
+ * Built from `StyledPressable`, not a bare `Pressable`: `className` is not a
+ * prop react-native understands, so wrapping the raw primitive left the class
+ * with no `styled()` to reach and it resolved to nothing at all — while this
+ * component's own doc comment claimed a consumer's class landed on the
+ * animating node. `button/Button.tsx` is the reference for the shape: ONE node,
+ * so transform, visuals, `style` and `className` cannot land in different
+ * places.
  */
-const IS_WEB_TOUCH_DEVICE =
-  Platform.OS === 'web' &&
-  typeof window !== 'undefined' &&
-  typeof window.matchMedia === 'function' &&
-  window.matchMedia('(pointer: coarse)').matches;
-
-const SCALE_SUPPORTED = Platform.OS !== 'web' || IS_WEB_TOUCH_DEVICE;
+const AnimatedPressable = Animated.createAnimatedComponent(StyledPressable);
 
 /**
- * A single animated `Pressable`, built once at module scope so the animated
- * node identity is stable across renders.
- */
-const AnimatedPressable = Animated.createAnimatedComponent(Pressable);
-
-export interface PressableScaleProps extends Omit<PressableProps, 'style'> {
-  /** Scale applied while pressed. Defaults to `0.98`. */
-  targetScale?: number;
-  /** Style applied to the pressable itself — the node that scales. */
-  style?: StyleProp<ViewStyle>;
-}
-
-/**
- * A drop-in {@link Pressable} that springs to a smaller scale on press-in and
- * back on release. The scale is applied to the pressable node itself, so a
- * consumer's `className` / layout styles (e.g. `flex-row items-center`) land on
- * the same node that animates.
+ * A drop-in `Pressable` that springs to a smaller scale on press-in and back on
+ * release. The scale is applied to the pressable node itself, so a consumer's
+ * `className` / layout styles (e.g. `flex-row items-center`) land on the same
+ * node that animates.
  *
  * The touch target scales with the content — acceptable at the default ~0.98
  * (the earlier two-node touch-target-preservation was dropped for simplicity).
@@ -57,9 +41,12 @@ export interface PressableScaleProps extends Omit<PressableProps, 'style'> {
  * web pointers.
  */
 export const PressableScale = forwardRef<View, PressableScaleProps>(
-  function PressableScale({ targetScale = 0.98, style, onPressIn, onPressOut, ...rest }, ref) {
+  function PressableScale(
+    { targetScale = 0.98, className, style, onPressIn, onPressOut, ...rest },
+    ref,
+  ) {
     const reducedMotion = useReducedMotion();
-    const animate = SCALE_SUPPORTED && !reducedMotion;
+    const animate = SUPPORTS_PRESS_SCALE && !reducedMotion;
 
     const scale = useSharedValue(1);
 
@@ -86,6 +73,7 @@ export const PressableScale = forwardRef<View, PressableScaleProps>(
           cancelAnimation(scale);
           scale.value = withTiming(1, { duration: DURATION });
         }}
+        className={className}
         style={[animate ? animatedStyle : null, style]}
         {...rest}
       />

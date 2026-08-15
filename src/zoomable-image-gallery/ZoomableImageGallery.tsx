@@ -27,10 +27,10 @@ import {
   Gesture,
   GestureDetector,
 } from 'react-native-gesture-handler';
-import { useTheme } from '../theme/use-theme';
+import { borderRadius } from '../styles/tokens';
 import { Backdrop, OverlayRoot } from '../overlay';
 import { Portal } from '../portal';
-import { PressableWithHover } from '../pressable-with-hover';
+import { useInteractionState } from '../hooks/use-interaction-state';
 import {
   ArrowLeft_Stroke2_Corner0_Rounded,
   ArrowRight_Stroke2_Corner0_Rounded,
@@ -88,6 +88,47 @@ const webUserSelectNoneStyle = Platform.select({
   default: undefined,
 });
 
+/**
+ * The gallery's web-only paging arrows — the ONLY hover-styled control in the
+ * package, which is why the hover merge lives here rather than in a shared
+ * component. Hover is a web affordance (react-native-web synthesises
+ * `onHoverIn`/`onHoverOut`; native pointers have none), and these arrows are
+ * already rendered behind a `Platform.OS === 'web'` guard.
+ */
+function NavArrow({
+  direction,
+  onPress,
+}: {
+  direction: 'left' | 'right';
+  onPress: () => void;
+}) {
+  const { state: hovered, onIn: onHoverIn, onOut: onHoverOut } = useInteractionState();
+  const isLeft = direction === 'left';
+
+  return (
+    <Pressable
+      onPress={onPress}
+      accessibilityRole="button"
+      accessibilityLabel={isLeft ? 'Previous image' : 'Next image'}
+      hitSlop={8}
+      onHoverIn={onHoverIn}
+      onHoverOut={onHoverOut}
+      style={[
+        styles.navArrow,
+        isLeft ? styles.navArrowLeft : styles.navArrowRight,
+        webPointerStyle,
+        hovered ? (isLeft ? styles.navArrowHoverLeft : styles.navArrowHoverRight) : null,
+      ]}
+    >
+      {isLeft ? (
+        <ArrowLeft_Stroke2_Corner0_Rounded fill="#fff" size="lg" />
+      ) : (
+        <ArrowRight_Stroke2_Corner0_Rounded fill="#fff" size="lg" />
+      )}
+    </Pressable>
+  );
+}
+
 interface FittedSize {
   width: number;
   height: number;
@@ -120,7 +161,6 @@ function resolveCornerRadius(cornerRadius: number | 'circle', fit: FittedSize): 
  *   two never fight.
  */
 const ZoomableImageGalleryInner = React.forwardRef<ZoomableImageGalleryHandle, ZoomableImageGalleryProps>(({ measureThumb, cornerRadius = DEFAULT_CORNER_RADIUS, indicatorVariant = 'dots' }, ref) => {
-  const theme = useTheme();
   const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = useWindowDimensions();
 
   const radiusFor = useCallback(
@@ -958,29 +998,11 @@ const ZoomableImageGalleryInner = React.forwardRef<ZoomableImageGalleryHandle, Z
           )}
 
           {Platform.OS === 'web' && pagerReady && images.length > 1 && activeIndex > 0 && (
-            <PressableWithHover
-              onPress={() => pageTo(activeIndex - 1)}
-              accessibilityRole="button"
-              accessibilityLabel="Previous image"
-              hitSlop={8}
-              style={[styles.navArrow, styles.navArrowLeft, webPointerStyle]}
-              hoverStyle={styles.navArrowHoverLeft}
-            >
-              <ArrowLeft_Stroke2_Corner0_Rounded fill="#fff" size="lg" />
-            </PressableWithHover>
+            <NavArrow direction="left" onPress={() => pageTo(activeIndex - 1)} />
           )}
 
           {Platform.OS === 'web' && pagerReady && images.length > 1 && activeIndex < images.length - 1 && (
-            <PressableWithHover
-              onPress={() => pageTo(activeIndex + 1)}
-              accessibilityRole="button"
-              accessibilityLabel="Next image"
-              hitSlop={8}
-              style={[styles.navArrow, styles.navArrowRight, webPointerStyle]}
-              hoverStyle={styles.navArrowHoverRight}
-            >
-              <ArrowRight_Stroke2_Corner0_Rounded fill="#fff" size="lg" />
-            </PressableWithHover>
+            <NavArrow direction="right" onPress={() => pageTo(activeIndex + 1)} />
           )}
 
           {canShare && pagerReady && (
@@ -1083,7 +1105,7 @@ const styles = StyleSheet.create({
   counterPill: {
     paddingHorizontal: 12,
     paddingVertical: 4,
-    borderRadius: 999,
+    borderRadius: borderRadius.full,
     backgroundColor: 'rgba(0,0,0,0.55)',
   },
   counterText: {
@@ -1098,7 +1120,7 @@ const styles = StyleSheet.create({
   dot: {
     width: 7,
     height: 7,
-    borderRadius: 999,
+    borderRadius: borderRadius.full,
   },
   dotActive: {
     backgroundColor: '#fff',
@@ -1140,7 +1162,7 @@ const styles = StyleSheet.create({
     top: '50%',
     width: 44,
     height: 44,
-    borderRadius: 999,
+    borderRadius: borderRadius.full,
     alignItems: 'center',
     justifyContent: 'center',
     backgroundColor: 'rgba(0,0,0,0.45)',
@@ -1167,7 +1189,7 @@ const styles = StyleSheet.create({
     right: 16,
     width: 40,
     height: 40,
-    borderRadius: 999,
+    borderRadius: borderRadius.full,
     alignItems: 'center',
     justifyContent: 'center',
     backgroundColor: 'rgba(0,0,0,0.45)',

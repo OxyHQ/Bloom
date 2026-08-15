@@ -39,7 +39,7 @@ const WITH_PHOTOS: AvatarGroupItem[] = [
 ];
 
 const meta: Meta<typeof AvatarGroup> = {
-  title: 'Components/AvatarGroup',
+  title: 'Data Display/AvatarGroup',
   component: AvatarGroup,
   argTypes: {
     size: { control: { type: 'number', min: 16, max: 96, step: 4 } },

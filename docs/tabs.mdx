@@ -1,0 +1,75 @@
+---
+title: Tabs
+description: Switching which panel is shown, controlled from the outside.
+order: 26
+---
+
+# Tabs
+
+`Tabs` is the **strip**, and only the strip: the triggers, the sliding
+indicator and the horizontal scroll. It is controlled — `value` is the open tab
+and `onValueChange` reports a press — and the caller renders the panel for
+whatever `value` currently is.
+
+```tsx
+import { Tabs, TabsTrigger } from '@oxyhq/bloom/tabs';
+
+<Tabs value={tab} onValueChange={setTab}>
+  <TabsTrigger value="posts" label="Posts" />
+  <TabsTrigger value="replies" label="Replies" />
+  <TabsTrigger value="media" label="Media" count={12} />
+</Tabs>
+
+{tab === 'posts' ? <Posts /> : null}
+{tab === 'replies' ? <Replies /> : null}
+{tab === 'media' ? <Media /> : null}
+```
+
+Keeping the panels outside is what lets a screen put the strip in a sticky
+header, in a navigator, or beside the content — the strip does not have to be
+an ancestor of what it switches.
+
+## Which prop decides what
+
+| prop            | decides                                                       |
+| --------------- | ------------------------------------------------------------- |
+| `value`         | the open tab                                                   |
+| `onValueChange` | receives the pressed trigger's `value`                         |
+| `hasSelection`  | whether **any** tab is selected — see below                    |
+| `variant`       | `underline` · `filled` · `outlined`                            |
+| `fullWidth`     | spread the triggers across the container instead of hugging    |
+| `count`         | a number beside a trigger's label                              |
+
+## `hasSelection` exists for a state a tab strip usually cannot express
+
+A filter row where nothing is chosen yet. Without it, the first tab looks
+selected before the user has selected anything, and "All" and "no filter" are
+indistinguishable.
+
+```tsx
+<Tabs value={filter} hasSelection={filter != null} onValueChange={setFilter}>
+```
+
+## `count` is a quantity you are choosing between
+
+3 drafts versus 41 sent — a number that helps you decide which tab to open. It
+is not an unread badge; unread belongs on the thing that is unread, through
+[`Badge`](/docs/bloom/main/badge), where `invisible` keeps the layout still as
+the count reaches zero.
+
+## Tabs, SegmentedControl or a Select
+
+- **Tabs** — several views of one subject, with real content underneath.
+- **[SegmentedControl](/docs/bloom/main/segmented-control)** — the choice *is*
+  the value (a setting). Announces as a radio group.
+- **[Select](/docs/bloom/main/select)** — too many options to show at once, or
+  the options are data rather than fixed sections.
+
+The first two look similar enough that the decision is worth making explicitly:
+after the user picks, has something been *set*, or is the same thing now shown
+differently?
+
+## expo-router
+
+`@oxyhq/bloom/tabs/expo-router` binds the strip to the router so `value` comes
+from the current route and a press navigates, instead of a local `useState`.

@@ -1,6 +1,7 @@
 import React, { Component, type ErrorInfo, type ReactNode } from 'react';
-import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
+import { View, Text, Pressable, StyleSheet } from 'react-native';
 
+import { useInteractionState } from '../hooks/use-interaction-state';
 import type { ErrorBoundaryProps } from './types';
 
 interface ErrorBoundaryState {
@@ -33,17 +34,24 @@ function DefaultFallback({
   retryLabel: string;
   onRetry: () => void;
 }) {
+  // Component state rather than `Pressable`'s function-form `style`: css-interop
+  // rewrites the `style` prop of every JSX element and swallows the function
+  // form, which would drop every base style with it.
+  const { state: pressed, onIn: onPressIn, onOut: onPressOut } = useInteractionState();
   return (
     <View style={styles.container}>
       <Text style={styles.title}>{title}</Text>
       <Text style={styles.message}>{message}</Text>
-      <TouchableOpacity
-        style={styles.retryButton}
+      <Pressable
+        style={[styles.retryButton, pressed && styles.retryButtonPressed]}
         onPress={onRetry}
-        activeOpacity={0.7}
+        onPressIn={onPressIn}
+        onPressOut={onPressOut}
+        accessibilityRole="button"
+        accessibilityLabel={retryLabel}
       >
         <Text style={styles.retryText}>{retryLabel}</Text>
-      </TouchableOpacity>
+      </Pressable>
     </View>
   );
 }
@@ -133,6 +141,9 @@ const styles = StyleSheet.create({
     lineHeight: 22,
     paddingHorizontal: 16,
     color: '#555555',
+  },
+  retryButtonPressed: {
+    opacity: 0.7,
   },
   retryButton: {
     paddingHorizontal: 24,

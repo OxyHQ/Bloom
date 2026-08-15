@@ -17,7 +17,7 @@ import * as React from 'react';
 
 import { toastDefaults } from './constants';
 import { DynamicToastContext, ToastContext } from './context';
-import { getOrderedToastIds } from './position-utils';
+import { getOrderedToastIds } from './row-geometry';
 import { Positioner } from './Positioner';
 import { ToastHost } from './ToastHost';
 import { ToastRow } from './ToastRow';

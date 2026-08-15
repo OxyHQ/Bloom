@@ -1,0 +1,59 @@
+---
+title: Checkbox
+description: A tri-state checkbox with an optional label and description.
+order: 24
+---
+
+# Checkbox
+
+A checkbox. Controlled, with an optional label and description, three sizes and a mixed state.
+
+## Basic
+
+```tsx
+import { Checkbox } from '@oxyhq/bloom/checkbox';
+
+const [checked, setChecked] = useState(false);
+
+<Checkbox checked={checked} onCheckedChange={setChecked} label="Remember me" />
+```
+
+`label` also becomes the accessible name, so a labelled checkbox needs nothing else. A checkbox with no label needs `accessibilityLabel`.
+
+```tsx
+<Checkbox
+  checked={notify}
+  onCheckedChange={setNotify}
+  label="Email notifications"
+  description="Get a message when someone replies to you."
+/>
+```
+
+## The mixed state
+
+```tsx
+<Checkbox
+  checked={allChecked}
+  indeterminate={!allChecked && someChecked}
+  onCheckedChange={(next) => setAll(next)}
+  label="Select all"
+/>
+```
+
+`indeterminate` announces as `aria-checked="mixed"` and draws a rounded bar rather than a second glyph — the icon set has no minus, and a rule is what the state means.
+
+## Sizes and colour
+
+`size` is `small`, `medium` (default) or `large`. `color` overrides the checked fill; it defaults to the theme primary, and the mark on top of it resolves to that preset's readable foreground rather than a hardcoded white.
+
+## Touch target
+
+The box is 22dp at the default size, which is half of what a finger needs. The pressable is grown to 44dp with `hitSlop` — the target grows, the drawing does not — and the slack is derived per size, so `large` does not overshoot into a neighbouring row.
+
+For a labelled checkbox the pressable already spans the label, so the whole row is the target.
+
+## Keyboard focus on web
+
+The pressable takes a `:focus-visible` ring, drawn from the same shared recipe every Bloom control's web CSS is built from. It rings the element the browser actually focuses — the box AND its label — because ringing anything else would point at something that does not have focus.
+
+`:focus-visible`, not `:focus`: a mouse click never leaves a ring behind.

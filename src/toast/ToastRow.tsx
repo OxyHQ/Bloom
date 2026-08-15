@@ -59,7 +59,7 @@ import {
   toastDefaults,
 } from './constants';
 import { useDynamicToastContext, useToastContext } from './context';
-import { calculateStackScaleX } from './position-utils';
+import { calculateStackScaleX } from './row-geometry';
 import { isStackHovered } from './use-stack-hover';
 import { useAnimatedTarget } from './use-animated-target';
 import { ToastContent } from './ToastContent';

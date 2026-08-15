@@ -1,13 +1,12 @@
 import React, { useCallback } from 'react';
-import {
-  Text,
-  TouchableOpacity,
-  View,
-  type GestureResponderEvent,
-} from 'react-native';
+import { Pressable, View, type GestureResponderEvent } from 'react-native';
+
+import { Text } from '../typography';
 
 import type { ThemeColors } from '../theme/types';
 import { useTheme } from '../theme/use-theme';
+import { useInteractionState } from '../hooks/use-interaction-state';
+import { borderRadius } from '../styles/tokens';
 import { useDialogContext } from './context';
 import type { DialogAction, DialogActionColor } from './types';
 
@@ -44,12 +43,16 @@ export function DialogBody({
   return (
     <>
       {title ? (
+        // Bloom's `Text`, not react-native's: the raw one renders in whatever
+        // font the platform picks and takes no theme colour, so every dialog
+        // title in the library was the system face while the rest of the surface
+        // was Bloom's. The sizes stay explicit — the typography ROLES
+        // (`H1`…`H6`, `P`) carry family and weight, not a size ramp.
         <Text
           nativeID={titleId}
           style={{
             fontSize: 22,
             fontWeight: '600',
-            color: theme.colors.text,
             paddingBottom: description ? 4 : 16,
             lineHeight: 30,
           }}
@@ -93,44 +96,56 @@ function ActionButton({ action }: { action: DialogAction }) {
   const shouldCloseOnPress = action.shouldCloseOnPress ?? true;
 
   const { background, foreground } = getActionPalette(color, theme.colors);
+  // Component state, not `Pressable`'s function-form `style`: css-interop
+  // swallows the function form and every base style with it.
+  const { state: pressed, onIn: onPressIn, onOut: onPressOut } = useInteractionState();
 
+  // `shouldCloseOnPress` (default true) is the ONLY switch, for every colour.
+  // `cancel` used to bypass it — on the premise that a cancel button must always
+  // dismiss — which made it the one action a caller could not own the dismissal
+  // of. That is exactly what a surface needs: the surface stack dismisses
+  // through its OWN `dismiss(result)` so the value reaches the `present()`
+  // promise, and the entry's `'closing'` status is what runs the exit animation.
+  // The default is unchanged, so a caller that says nothing still gets
+  // dismiss-on-press.
   const handlePress = useCallback(
     (e: GestureResponderEvent) => {
       const onPress = action.onPress;
-      if (color === 'cancel') {
-        // Cancel always dismisses; consumer's onPress (rare) runs after.
-        close(onPress ? () => onPress(e) : undefined);
-        return;
-      }
       if (shouldCloseOnPress) {
         close(onPress ? () => onPress(e) : undefined);
       } else {
         onPress?.(e);
       }
     },
-    [action.onPress, close, color, shouldCloseOnPress],
+    [action.onPress, close, shouldCloseOnPress],
   );
 
   return (
-    <TouchableOpacity
-      style={{
-        borderRadius: 9999,
-        alignItems: 'center',
-        justifyContent: 'center',
-        backgroundColor: background,
-        opacity: action.disabled ? 0.5 : 1,
-        paddingVertical: 12,
-        paddingHorizontal: 24,
-      }}
+    <Pressable
+      style={[
+        {
+          borderRadius: borderRadius.full,
+          alignItems: 'center',
+          justifyContent: 'center',
+          backgroundColor: background,
+          opacity: action.disabled ? 0.5 : 1,
+          paddingVertical: 12,
+          paddingHorizontal: 24,
+        },
+        !action.disabled && pressed && { opacity: 0.7 },
+      ]}
       onPress={handlePress}
+      onPressIn={onPressIn}
+      onPressOut={onPressOut}
       disabled={action.disabled}
-      activeOpacity={0.7}
+      accessibilityRole="button"
+      accessibilityLabel={action.label}
       testID={action.testID}
     >
       <Text style={{ fontSize: 16, fontWeight: '500', color: foreground }}>
         {action.label}
       </Text>
-    </TouchableOpacity>
+    </Pressable>
   );
 }
 

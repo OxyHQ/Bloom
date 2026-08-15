@@ -1,9 +1,15 @@
 import React from 'react';
-import { Text } from 'react-native';
+import { Text, View } from 'react-native';
 import { render, fireEvent } from '@testing-library/react-native';
 
 import { BloomThemeProvider } from '../theme/BloomThemeProvider';
 import { Fab } from '../fab';
+import { borderRadius } from '../styles/tokens';
+import {
+  classNamesOn,
+  renderedChildren,
+  resolvedStyle,
+} from './support/rendered-style';
 
 function renderWithTheme(ui: React.ReactElement) {
   return render(
@@ -89,5 +95,52 @@ describe('Fab (native)', () => {
     );
     expect(container?.width).toBe(48);
     expect(container?.height).toBe(48);
+  });
+});
+
+// Regression: the FAB used to render its `Pressable` inside an `Animated.View`
+// that held the placement, the `zIndex`, the press transform AND the caller's
+// `style`, while the pressable held `className` and the FAB's own chrome. So a
+// caller's `style` and their `className` landed on DIFFERENT nodes, and every
+// layout class applied inside a box the wrapper had already positioned and
+// sized. `Fab.web.tsx` renders one real `<button>` and has always behaved.
+describe('layout: the FAB IS the node its parent lays out', () => {
+  it('renders the pressable as its outermost node — no wrapper in between', () => {
+    const { toJSON } = renderWithTheme(
+      <View testID="host">
+        <Fab testID="fab" placement="static" accessibilityLabel="Add" icon={<Text>+</Text>} />
+      </View>,
+    );
+    const rendered = renderedChildren(toJSON(), 'host');
+    expect(rendered).toHaveLength(1);
+    expect(rendered[0]?.props.testID).toBe('fab');
+    expect(rendered[0]?.props.accessibilityRole).toBe('button');
+  });
+
+  it('lands className, the caller style, the placement and the chrome on that one node', () => {
+    const { getByTestId } = renderWithTheme(
+      <Fab
+        testID="fab"
+        className="flex-1"
+        style={{ marginTop: 7 }}
+        accessibilityLabel="Add"
+        icon={<Text>+</Text>}
+      />,
+    );
+    const style = getByTestId('fab').props.style;
+    expect(classNamesOn(style)).toContain('flex-1');
+    const resolved = resolvedStyle(style);
+    // All four used to be split across two nodes: chrome and class here,
+    // placement and the caller's style on the wrapper.
+    expect(resolved.borderRadius).toBe(borderRadius.full);
+    expect(resolved.position).toBe('absolute');
+    expect(resolved.marginTop).toBe(7);
+  });
+
+  it('applies the press-scale transform to that node too, not to a wrapper', () => {
+    const { getByTestId } = renderWithTheme(
+      <Fab testID="fab" accessibilityLabel="Add" icon={<Text>+</Text>} />,
+    );
+    expect(resolvedStyle(getByTestId('fab').props.style).transform).toBeDefined();
   });
 });

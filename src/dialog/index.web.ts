@@ -8,16 +8,10 @@
 // Web bundlers select this file via the `"browser"` export condition in
 // `package.json`'s `exports['./dialog']`; native bundlers fall through to
 // the React Native build above.
-export { Dialog, BLOOM_DIALOG_CSS, DIALOG_SHEET_BACKDROP_TESTID } from './Dialog.web';
-export { BloomDialogProvider } from './BloomDialogProvider.web';
-export { alert } from './alert';
+export { Dialog, BLOOM_DIALOG_CSS } from './Dialog.web';
 export { useDialogContext, useDialogControl } from './context';
 export { useDialogHeader } from './DialogHeader';
 export { useDialogFrame } from './DialogMorph';
-export type {
-  AlertButton,
-  AlertButtonStyle,
-} from './alert-store';
 export type { DialogFrame } from './DialogMorph';
 export type {
   DialogAction,

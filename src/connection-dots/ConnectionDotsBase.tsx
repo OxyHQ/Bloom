@@ -2,6 +2,7 @@ import React from 'react';
 import { View, type StyleProp, type ViewStyle } from 'react-native';
 
 import { atoms as a, tokens } from '../styles';
+import { StyledView } from '../styles/styled-primitives';
 import type { ConnectionDotsProps } from './types';
 
 export interface ConnectionDotsBaseProps
@@ -40,8 +41,8 @@ export function ConnectionDotsBase({
   ];
 
   return (
-    <View
-      {...(className ? ({ className } as Record<string, string>) : {})}
+    <StyledView
+      className={className}
       style={rowStyle}>
       <View style={[a.align_center, a.justify_center]}>{left}</View>
 
@@ -57,6 +58,6 @@ export function ConnectionDotsBase({
       </View>
 
       <View style={[a.align_center, a.justify_center]}>{right}</View>
-    </View>
+    </StyledView>
   );
 }

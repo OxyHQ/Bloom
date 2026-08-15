@@ -1,0 +1,86 @@
+---
+title: Menubar
+description: A horizontal bar of menus, at most one open at a time.
+order: 20
+---
+
+# Menubar
+
+A desktop-style menu bar: a row of triggers, each opening a menu, with at most one open at a time.
+
+New to Bloom in this release. Its parts are shadcn's, and its rows are the same rows `DropdownMenu` and `ContextMenu` publish.
+
+## Basic
+
+```tsx
+import {
+  Menubar,
+  MenubarContent,
+  MenubarItem,
+  MenubarMenu,
+  MenubarSeparator,
+  MenubarShortcut,
+  MenubarTrigger,
+} from '@oxyhq/bloom/menubar';
+
+<Menubar>
+  <MenubarMenu value="file">
+    <MenubarTrigger>File</MenubarTrigger>
+    <MenubarContent>
+      <MenubarItem trailing={<MenubarShortcut>⌘N</MenubarShortcut>} onPress={newTab}>
+        New tab
+      </MenubarItem>
+      <MenubarItem onPress={open}>Open…</MenubarItem>
+      <MenubarSeparator />
+      <MenubarItem variant="destructive" onPress={closeWindow}>
+        Close window
+      </MenubarItem>
+    </MenubarContent>
+  </MenubarMenu>
+
+  <MenubarMenu value="edit">
+    <MenubarTrigger>Edit</MenubarTrigger>
+    <MenubarContent>
+      <MenubarItem onPress={undo}>Undo</MenubarItem>
+      <MenubarItem onPress={redo}>Redo</MenubarItem>
+    </MenubarContent>
+  </MenubarMenu>
+</Menubar>
+```
+
+Each `MenubarMenu` needs a `value`. That value IS the open state.
+
+## One open menu, one state
+
+`Menubar` owns which menu is open, and each `MenubarMenu` derives its own boolean from it:
+
+```tsx
+const [open, setOpen] = useState<string | undefined>(undefined);
+
+<Menubar value={open} onValueChange={setOpen}>
+```
+
+Uncontrolled by default (`defaultValue` sets the initially-open menu; omit it for none). Switching menus is a single state write, so there is never a frame with both open or neither.
+
+## Presentation
+
+`MenubarTrigger` draws its own chrome — `rounded-md px-2 py-1.5` with a `text-sm font-medium` label, washed with the accent colour while its menu is open. Pass a string and it is set for you; pass nodes and they go inside that button; pass `asChild` and your own element replaces the whole thing.
+
+On web each menu is an anchored panel under its own trigger, aligned to the trigger's left edge. On native each is the bottom sheet the other menu families use — a phone has no room for a hanging panel, and every Bloom overlay resolving to the same sheet is what makes the native surfaces feel like one system.
+
+Pressing an open menu's trigger closes it.
+
+## Rows
+
+`MenubarItem`, `MenubarCheckboxItem`, `MenubarRadioGroup` / `MenubarRadioItem`, `MenubarLabel`, `MenubarSeparator`, `MenubarShortcut`, `MenubarGroup`, and `MenubarSub` / `MenubarSubTrigger` / `MenubarSubContent`.
+
+Sub-menus fly out beside their trigger row on web and render as an inline disclosure on native — see [DropdownMenu](/docs/bloom/main/dropdown-menu).
+
+## What is not here yet
+
+Two things a desktop menu bar has that this one does not, both deliberate rather than forgotten:
+
+- **Hover to switch.** On a real desktop bar, once one menu is open, moving the pointer across a sibling trigger switches to it without a click. That needs hover intent, which is the same machinery a sub-menu flyout needs.
+- **Arrow-key navigation between menus.** Roving focus across the bar and into the open panel.
+
+A press opens, a press closes, and every row is reachable by tab. Nothing is half-wired.

@@ -1,26 +1,23 @@
+/**
+ * `Popover`'s own open state.
+ *
+ * Its own context, not a shared one, for the reason the other three families
+ * have theirs: a dropdown menu opened from inside a popover must drive the MENU,
+ * and one shared open-state context would hand it the popover instead.
+ */
 import { createContext, useContext } from 'react';
-import type { View } from 'react-native';
 
-import type { PopoverControlProps } from './types';
+import type { OverlayShellContextValue } from '../floating/types';
 
-export interface PopoverContextValue {
-  control: PopoverControlProps;
-  /** Whether the popover is currently open. Drives web rendering. */
-  isOpen: boolean;
-  /**
-   * Ref to the trigger wrapper. Web uses it to anchor the floating panel.
-   * Native ignores it (it presents a bottom sheet).
-   */
-  triggerRef: React.RefObject<View | null>;
-}
+const PopoverContext = createContext<OverlayShellContextValue | null>(null);
+PopoverContext.displayName = 'BloomPopoverContext';
 
-export const PopoverContext = createContext<PopoverContextValue | null>(null);
-PopoverContext.displayName = 'PopoverContext';
+export const PopoverProvider = PopoverContext.Provider;
 
-export function usePopoverContext(): PopoverContextValue {
-  const ctx = useContext(PopoverContext);
-  if (!ctx) {
-    throw new Error('Popover components must be used within a <Popover>');
+export function usePopover(): OverlayShellContextValue {
+  const value = useContext(PopoverContext);
+  if (!value) {
+    throw new Error('Popover parts must be rendered inside a <Popover>.');
   }
-  return ctx;
+  return value;
 }

@@ -2,7 +2,7 @@ import React from 'react';
 import { View, Text, Image, Pressable, ScrollView, ActivityIndicator } from 'react-native';
 
 import { useTheme } from '../theme/use-theme';
-import { usePromptInput, type Attachment } from './context';
+import { usePromptInput, type PromptInputAttachment } from './context';
 import type { PromptInputAttachmentsProps } from './types';
 
 function formatFileSize(bytes: number): string {
@@ -88,7 +88,7 @@ function ImageAttachmentItem({
   onRemove,
   removeIcon,
 }: {
-  attachment: Attachment;
+  attachment: PromptInputAttachment;
   onRemove: () => void;
   removeIcon?: React.ReactNode;
 }) {
@@ -151,7 +151,7 @@ function DocumentAttachmentItem({
   removeIcon,
   renderDocumentIcon,
 }: {
-  attachment: Attachment;
+  attachment: PromptInputAttachment;
   onRemove: () => void;
   removeIcon?: React.ReactNode;
   renderDocumentIcon?: (mimeType: string, name: string) => React.ReactNode;

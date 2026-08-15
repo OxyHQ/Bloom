@@ -1,0 +1,67 @@
+---
+title: Tooltip
+description: A hint about an already-labelled control — controlled, because what opens it differs by platform.
+order: 39
+---
+
+# Tooltip
+
+A short hint attached to a control.
+
+```tsx
+import { Tooltip, TooltipTrigger, TooltipTextBubble } from '@oxyhq/bloom/tooltip';
+
+const [visible, setVisible] = useState(false);
+
+<Tooltip visible={visible} onVisibleChange={setVisible} position="top">
+  <TooltipTrigger>
+    <Pressable
+      onHoverIn={() => setVisible(true)}
+      onHoverOut={() => setVisible(false)}
+      onPress={copy}
+      accessibilityLabel="Copy link"
+    >
+      <LinkIcon />
+    </Pressable>
+  </TooltipTrigger>
+  <TooltipTextBubble>Copies the link to your clipboard</TooltipTextBubble>
+</Tooltip>
+```
+
+## Why it is controlled
+
+What should open a tooltip differs by platform and by trigger — hover for a
+desktop pointer, long-press on touch, focus for a keyboard — and the right
+answer depends on what the trigger already does with a press. `Tooltip` takes
+`visible` and leaves that decision at the call site rather than guessing.
+
+`TooltipTextBubble` renders its own content surface, so it is a **sibling** of
+the trigger inside `Tooltip`, not something you wrap in a `TooltipContent`.
+
+## A tooltip is never the only place the information appears
+
+It cannot be reached by touch without an interaction that also does something
+else, and it dismisses on the next tap. So:
+
+- The control still needs its own `accessibilityLabel`. A tooltip is a hint
+  about a labelled control, not a substitute for the label.
+- Nothing required to complete a task goes in one. If the user must know it,
+  put it on the page.
+
+## `position` is a preference
+
+A bubble near a screen edge is nudged back into view, so `position="top"` on an
+element at the top of the viewport still renders somewhere readable rather than
+off screen.
+
+## Two platform notes
+
+The **web** tooltip is not portaled and takes no rank in the overlay stack; the
+**native** one is portaled and does. So on native it participates in overlay
+ordering and on web it does not — check for a `Portal` before reasoning about
+what paints above what.
+
+**Known gap on native:** `TooltipTrigger` measures in page coordinates while
+the content renders into the root portal group, so a tooltip inside a
+`BottomSheet` portals *outside* that window and lands in the wrong place.
+Fixing it needs a real device — jest cannot see a native window boundary.

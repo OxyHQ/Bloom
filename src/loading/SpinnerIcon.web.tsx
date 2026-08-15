@@ -1,6 +1,8 @@
 import React, { useEffect } from 'react';
 import { StyleSheet, View, type ViewStyle } from 'react-native';
 
+import { StyledView } from '../styles/styled-primitives';
+
 import { adoptStyleSheet } from '../styles/adopt-style-sheet';
 import type { WebCssStyle } from '../styles/web-view-style';
 
@@ -92,8 +94,8 @@ export const SpinnerIcon: React.FC<SpinnerIconProps> = ({
   const bladeCorner = BLADE_RADIUS_CORNER * scale;
 
   return (
-    <View
-      {...(className ? ({ className } as Record<string, string>) : {})}
+    <StyledView
+      className={className}
       style={[styles.container, { width: size, height: size }, SPIN_STYLE, style]}
     >
       {BLADES.map(({ angle, opacity }) => (
@@ -114,7 +116,7 @@ export const SpinnerIcon: React.FC<SpinnerIconProps> = ({
           ]}
         />
       ))}
-    </View>
+    </StyledView>
   );
 };
 

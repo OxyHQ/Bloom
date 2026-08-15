@@ -1,0 +1,72 @@
+---
+title: Surfaces
+description: The one imperative overlay API — alert, confirm, prompt, and the stack they present onto.
+order: 36
+---
+
+# Surfaces
+
+The surface stack is Bloom's **one** imperative overlay API. `alert()`,
+`confirm()` and `prompt()` present from anywhere — no ref, no local `open`
+state, no second provider — and a single `<SurfaceHost>` renders whatever is on
+the stack.
+
+```tsx
+import { alert, confirm, prompt } from '@oxyhq/bloom/surfaces';
+
+alert('Saved', 'Your changes are live.');
+
+if (await confirm({ title: 'Leave this page?', confirmLabel: 'Leave' })) {
+  router.back();
+}
+
+const name = await prompt({ title: 'Name this list', placeholder: 'Reading list' });
+```
+
+## Why these are not components
+
+They are answers to a **question**, so the call site wants a value back, and a
+component you have to mount cannot be awaited. `confirm()` resolves to a
+boolean and `prompt()` to a string or `null`. That difference is the whole
+reason this API exists beside [`Dialog`](/docs/bloom/main/dialog):
+
+- **Surfaces** — a one-shot question from inside an event handler, in code
+  that has no render tree of its own (a mutation callback, a service).
+- **Dialog** — a surface with real content that belongs to a screen.
+
+## Mounting
+
+`<SurfaceProvider>` wraps the app; `<SurfaceHost>` renders the stack. **Both
+stay out of `BloomProvider`** — where an outlet sits is an app decision, and a
+second mount would duplicate every surface.
+
+## Two calls in a row STACK, they do not queue
+
+```tsx
+alert('First');
+alert('Second');   // paints over the first; dismissing reveals it
+```
+
+If you want them one after the other, `await` the first. This is deliberate: a
+queue would delay an urgent surface behind a trivial one, and there is no
+general rule for which of two surfaces matters more.
+
+## `present()` is the general form
+
+```tsx
+const size = await present<string>(
+  (surface) => <SizeList onPick={(s) => surface.dismiss(s)} />,
+  { placement: 'bottom', title: 'Pick a size', label: 'Pick a size' },
+);
+```
+
+The content resolves the promise by calling `surface.dismiss(value)`. Note what
+it does **not** call: `Dialog`'s own `close()`. The value has to reach the
+`present()` promise, and it resolves on the press — a surface closed any other
+way resolves with nothing, which reads as the user having cancelled.
+
+## Buttons
+
+A built-in surface's buttons carry `shouldCloseOnPress: false` and dismiss
+through `surface.dismiss(result)` for that reason. A `'cancel'` colour on a
+`DialogAction` is purely visual; it does not make the button dismiss.

@@ -1,4 +1,5 @@
 import type { StyleProp, ViewStyle, TextStyle } from 'react-native';
+import type { WebAriaProps } from '../styles/styled-primitives';
 
 /**
  * Bloom's canonical button variants (shared across native + web) plus the
@@ -74,7 +75,6 @@ export interface ButtonProps {
   accessibilityLabel?: string;
   accessibilityHint?: string;
   hitSlop?: { top: number; bottom: number; left: number; right: number };
-  activeOpacity?: number;
   testID?: string;
   className?: string;
 
@@ -122,6 +122,22 @@ export interface ButtonProps {
    * `aria-label` (web only). Falls back to `accessibilityLabel`.
    */
   'aria-label'?: string;
+  /**
+   * Whether the surface this button controls is open.
+   *
+   * Forwarded, not invented: a `Button` used as an anchored family's `asChild`
+   * trigger is handed this by `floating/TriggerSlot`, and a component that
+   * destructures a known prop list DROPS what it does not name. Measured before
+   * these two existed: an `asChild` trigger emitted `aria-label` (which `Button`
+   * did name) and neither `aria-expanded` nor `aria-haspopup`, so every story
+   * and most real call sites announced a plain button.
+   */
+  'aria-expanded'?: boolean;
+  /**
+   * What the surface this button opens IS. Forwarded for the same reason as
+   * {@link ButtonProps['aria-expanded']}; the value comes from the family.
+   */
+  'aria-haspopup'?: WebAriaProps['aria-haspopup'];
   /**
    * `title` tooltip attribute (web only).
    */

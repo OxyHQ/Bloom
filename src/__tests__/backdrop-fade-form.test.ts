@@ -82,7 +82,7 @@ describe('backdrop fade form', () => {
   // The other half of the contract: the fade is multiplied INTO each layer's own
   // opacity, so a fully-arrived backdrop is still only `dimOpacity` dark.
   it('multiplies the fade into the dim opacity', () => {
-    const overlay = readFileSync(join(SRC, 'overlay', 'index.tsx'), 'utf8');
+    const overlay = readFileSync(join(SRC, 'overlay', 'Overlay.tsx'), 'utf8');
 
     expect(overlay).toMatch(
       /const dimFade[\s\S]{0,200}?progress\.value[\s\S]{0,80}?\* dimOpacity/,

@@ -67,6 +67,20 @@ describe.each(APP_COLOR_NAMES)('engine-backed theme.colors (%s)', (preset: AppCo
         ['card', '--card'],
         ['background', '--background'],
         ['border', '--border'],
+        // The tinted status family. Every one of these was declared as a CSS var
+        // and unreachable from JS, which is what pushed consumers into deriving a
+        // tint by appending hex alpha to a fill. Pairing each `*Subtle` with the
+        // `-text` member is the point: the legibility gate checks exactly that
+        // combination, so reading a `*SubtleForeground` from anywhere else would
+        // be ungated.
+        ['successSubtle', '--success-subtle'],
+        ['successSubtleForeground', '--success-text'],
+        ['errorSubtle', '--error-subtle'],
+        ['errorSubtleForeground', '--error-text'],
+        ['warningSubtle', '--warning-subtle'],
+        ['warningSubtleForeground', '--warning-text'],
+        ['infoSubtle', '--info-subtle'],
+        ['infoSubtleForeground', '--info-text'],
       ];
       for (const [colorKey, tokenKey] of field) {
         expect(colors[colorKey]).toBe(t[tokenKey]);

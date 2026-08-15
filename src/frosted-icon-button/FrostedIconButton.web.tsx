@@ -1,7 +1,6 @@
 import React, {
   memo,
   useCallback,
-  useEffect,
   useId,
   useMemo,
   type CSSProperties,
@@ -9,7 +8,9 @@ import React, {
 } from 'react';
 
 import { useTheme } from '../theme/use-theme';
-import { adoptStyleSheet } from '../styles/adopt-style-sheet';
+import { animation, borderRadius } from '../styles/tokens';
+import { pressedSurface } from '../theme/press-colors';
+import { interactiveWebCss, useInteractiveWebCss } from '../styles/interactive-web-css';
 import { flattenWebStyle } from '../styles/flatten-web-style';
 import {
   applyIconColor,
@@ -20,64 +21,61 @@ import type { FrostedIconButtonProps } from './types';
 
 export type { FrostedIconButtonProps, FrostedIconButtonSize } from './types';
 
-const RADIUS = 999;
-const PRESS_SCALE = 0.94;
-
 // ---------------------------------------------------------------------------
 //  Per-state CSS injection
 //
-//  Inline styles cannot express `:hover` / `:focus-visible` / `:active`. We
-//  inject one static stylesheet (keyed by id, once) defining the interaction
-//  behavior for the base `bloom-frosted-icon-btn` class; per-instance resolved
-//  colors are passed in as inline CSS custom properties. Self-injecting the CSS
-//  (rather than exporting a string for consumers to paste) is the Bloom web-fork
-//  convention — an unresolvable rule would fail silently otherwise.
+//  Shared recipe — see `styles/interactive-web-css.ts`. Per-instance resolved
+//  colours stay inline and reach the static rules as custom properties
+//  (`--bloom-frosted-ring`, `--bloom-frosted-hover-bg`,
+//  `--bloom-frosted-hover-ring`, `--bloom-frosted-press-scale`).
 // ---------------------------------------------------------------------------
 
 const STYLE_ID = 'bloom-frosted-icon-button-web-css';
 
-const BLOOM_FROSTED_ICON_BUTTON_CSS = `
-.bloom-frosted-icon-btn {
-  appearance: none;
-  -webkit-appearance: none;
-  box-sizing: border-box;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  padding: 0;
-  margin: 0;
-  border-style: solid;
-  border-width: 1px;
-  font-family: inherit;
-  cursor: pointer;
-  user-select: none;
-  outline: none;
-  transition: background-color 140ms ease, border-color 140ms ease,
-    box-shadow 160ms ease, transform 120ms ease;
-}
-.bloom-frosted-icon-btn:disabled,
-.bloom-frosted-icon-btn[aria-disabled="true"] {
-  cursor: default;
-  opacity: 0.5;
-}
-.bloom-frosted-icon-btn:not(:disabled):not([aria-disabled="true"]):not([data-active="true"]):hover {
-  background-color: var(--bloom-frosted-hover-bg);
-  border-color: var(--bloom-frosted-hover-ring);
-}
-.bloom-frosted-icon-btn:not(:disabled):not([aria-disabled="true"]):active {
-  transform: scale(var(--bloom-frosted-press-scale, 1));
-}
-.bloom-frosted-icon-btn:focus-visible {
-  outline: 2px solid var(--bloom-frosted-ring-focus, currentColor);
-  outline-offset: 2px;
-}
-`;
-
-function useFrostedIconButtonCss(): void {
-  useEffect(() => {
-    adoptStyleSheet(STYLE_ID, BLOOM_FROSTED_ICON_BUTTON_CSS);
-  }, []);
-}
+const BLOOM_FROSTED_ICON_BUTTON_CSS = interactiveWebCss({
+  selector: '.bloom-frosted-icon-btn',
+  varPrefix: 'bloom-frosted',
+  // `background-color` and `border-color` arrive as custom properties rather than
+  // in the inline style, and that is NOT a stylistic choice. An inline
+  // declaration outranks EVERY rule in an adopted stylesheet, so a fork that
+  // writes either one inline makes its own `:hover` rules for that property
+  // unreachable. Measured in a real browser: the hover pair below had never once
+  // fired, with the rules present and the variables resolving correctly.
+  // Gate: `interactive-web-css.test.tsx`.
+  base: `
+    padding: 0;
+    border-style: solid;
+    border-width: 1px;
+    background-color: var(--bloom-frosted-bg);
+    border-color: var(--bloom-frosted-border);
+    font-family: inherit;
+  `,
+  transition:
+    'background-color 140ms ease, border-color 140ms ease, box-shadow 160ms ease, transform 120ms ease',
+  hover: {
+    // The ACTIVE (solid) state is its own colour and already at full strength,
+    // so hover must not repaint it or a selected control looks unselected. That
+    // is expressed in the VALUE — `--bloom-frosted-hover-*` resolve to the rest
+    // pair when `active` — and NOT as a `:not([data-active="true"])` filter,
+    // which is how it used to be written.
+    //
+    // The filter was not a neutral spelling of the same thing, and moving it
+    // became REQUIRED the moment the press below gained a background. `:not()`
+    // carries its argument's specificity, so the filter made this selector
+    // (0,5,0) against the `:active` rule's (0,4,0) — and a HELD control is
+    // always also a HOVERED one, so hover would have outranked press and the
+    // press would have done nothing at all. Equal specificity plus source order
+    // is what puts press on top.
+    declarations: `
+      background-color: var(--bloom-frosted-hover-bg);
+      border-color: var(--bloom-frosted-hover-ring);
+    `,
+  },
+  // Resolved per state — an active chip steps its solid fill, a frosted one
+  // steps its tint — so this needs no filter to avoid unselecting anything.
+  pressDeclarations: 'background-color: var(--bloom-frosted-press-bg);',
+  outlineOffset: 2,
+});
 
 const FrostedIconButtonWebComponent: React.FC<FrostedIconButtonProps> = ({
   onPress,
@@ -97,7 +95,7 @@ const FrostedIconButtonWebComponent: React.FC<FrostedIconButtonProps> = ({
   title,
   type = 'button',
 }) => {
-  useFrostedIconButtonCss();
+  useInteractiveWebCss(STYLE_ID, BLOOM_FROSTED_ICON_BUTTON_CSS);
   const theme = useTheme();
   const reactId = useId();
   const resolvedId = id ?? `bloom-frosted-icon-btn-${reactId}`;
@@ -115,9 +113,9 @@ const FrostedIconButtonWebComponent: React.FC<FrostedIconButtonProps> = ({
     return {
       width: geo.diameter,
       height: geo.diameter,
-      borderRadius: RADIUS,
-      backgroundColor: active ? palette.activeSurface : palette.surface,
-      borderColor: palette.ring,
+      borderRadius: borderRadius.full,
+      ['--bloom-frosted-bg' as string]: active ? palette.activeSurface : palette.surface,
+      ['--bloom-frosted-border' as string]: palette.ring,
       color: iconColor,
       // Real CSS backdrop blur so the chip frosts over content behind it. The
       // solid `active` state drops the blur. Both prefixed forms for Safari.
@@ -125,14 +123,23 @@ const FrostedIconButtonWebComponent: React.FC<FrostedIconButtonProps> = ({
       WebkitBackdropFilter: active ? 'none' : blur,
       // Soft shadow kept in BOTH modes so the chip has an edge on a solid bg.
       boxShadow: `0 2px 8px ${palette.shadow}`,
-      ['--bloom-frosted-hover-bg' as string]: palette.surfaceHover,
-      ['--bloom-frosted-hover-ring' as string]: palette.ringHover,
-      ['--bloom-frosted-ring-focus' as string]: palette.focusRing,
-      ['--bloom-frosted-press-scale' as string]: PRESS_SCALE,
+      // An ACTIVE chip's hover pair IS its rest pair — the "hover does not repaint
+      // the solid on-state" rule, moved from the selector into the value.
+      ['--bloom-frosted-hover-bg' as string]: active ? palette.activeSurface : palette.surfaceHover,
+      ['--bloom-frosted-hover-ring' as string]: active ? palette.ring : palette.ringHover,
+      // Stepped from `surfaceHover`, because a press on web is always also a
+      // hover — see the note in `FrostedIconButton.tsx`.
+      ['--bloom-frosted-press-bg' as string]: active
+        ? pressedSurface(theme.colors, palette.activeSurface, palette.activeIcon)
+        : pressedSurface(theme.colors, palette.surfaceHover, theme.colors.text),
+      ['--bloom-frosted-ring' as string]: palette.focusRing,
+      ['--bloom-frosted-press-scale' as string]: animation.pressScale,
     };
   }, [
     geo.diameter,
     active,
+    theme.colors,
+    palette.activeIcon,
     palette.activeSurface,
     palette.surface,
     palette.ring,

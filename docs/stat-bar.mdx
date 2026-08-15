@@ -1,0 +1,59 @@
+---
+title: StatBar
+description: A labelled bar in two shapes — progress toward a maximum, or a split between two sides.
+order: 63
+---
+
+# StatBar
+
+One bar, two meanings.
+
+```tsx
+import { StatBar } from '@oxyhq/bloom/stat-bar';
+
+<StatBar label="Storage" value={62} max={100} minLabel="0 GB" maxLabel="100 GB" />
+
+<StatBar variant="split" label="Votes" percent={64} leftValue="Yes" rightValue="No" />
+```
+
+## Which prop decides what
+
+| prop                      | decides                                            |
+| ------------------------- | --------------------------------------------------- |
+| `variant`                 | `progress` (default) or `split`                     |
+| `value` / `max`           | progress: how far along                             |
+| `percent`                 | split: where the divide sits                        |
+| `leftValue` / `rightValue`| split: what each side is                            |
+| `minLabel` / `maxLabel`   | progress: the ends of the range                     |
+| `label`                   | what the bar is about — required                    |
+| `icon`                    | a glyph beside the label                            |
+| `fillColor` / `trackColor`| the colours                                         |
+
+The two variants are one component because they are the same object visually,
+and one prop rather than two components because a row often switches between
+them for the same subject.
+
+## `progress` and `split` are different claims
+
+`progress` says *how much of a maximum has been used* — there is a ceiling, and
+approaching it means something. `split` says *how a whole divides between two
+named sides* — there is no ceiling and neither side is "full".
+
+Using `progress` for a split reads as the left side filling up toward a limit,
+which is a claim you did not intend to make.
+
+## `minLabel` / `maxLabel` on a progress bar
+
+A bar with no scale is a proportion with no units. "62 of 100" is a different
+statement from "62%", and only one of them tells the user whether to act.
+
+## `percent` is a number, the values are strings
+
+`leftValue` and `rightValue` are strings because they are labels, not the
+maths: "Yes" / "No", "1,204" / "677", "You" / "Everyone else". The bar's
+geometry comes from `percent` alone.
+
+## `label` is required
+
+A bar in a stack of stats with no label is a colour. It is also the only thing
+a screen reader gets, since the bar itself conveys nothing.

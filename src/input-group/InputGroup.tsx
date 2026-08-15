@@ -7,7 +7,7 @@ import React, {
 import { Platform, StyleSheet, View } from 'react-native';
 
 import { useTheme } from '../theme/use-theme';
-import { useInteractionState } from '../hooks/useInteractionState';
+import { useInteractionState } from '../hooks/use-interaction-state';
 import { Text } from '../typography';
 import { borderRadius, fontSize, space } from '../styles/tokens';
 import type { InputGroupAddonProps, InputGroupProps } from './types';
@@ -25,7 +25,7 @@ interface InputGroupContextValue {
 const InputGroupContext = createContext<InputGroupContextValue>({ size: 'md' });
 InputGroupContext.displayName = 'InputGroupContext';
 
-const AddonComponent = function InputGroupAddon({
+const InputGroupAddonComponent = function InputGroupAddon({
   children,
   divider = false,
   noPadding = false,
@@ -67,8 +67,8 @@ const AddonComponent = function InputGroupAddon({
   );
 };
 
-export const Addon = memo(AddonComponent);
-Addon.displayName = 'InputGroup.Addon';
+export const InputGroupAddon = memo(InputGroupAddonComponent);
+InputGroupAddon.displayName = 'InputGroupAddon';
 
 /**
  * Horizontal group that wraps an input with leading/trailing addons (icons,
@@ -78,11 +78,11 @@ Addon.displayName = 'InputGroup.Addon';
  *
  * ```tsx
  * <InputGroup>
- *   <InputGroup.Addon>https://</InputGroup.Addon>
+ *   <InputGroupAddon>https://</InputGroupAddon>
  *   <TextFieldInput label="Domain" value={v} onChangeText={setV} />
- *   <InputGroup.Addon divider>
+ *   <InputGroupAddon divider>
  *     <Button size="small" variant="ghost" onPress={go}>Go</Button>
- *   </InputGroup.Addon>
+ *   </InputGroupAddon>
  * </InputGroup>
  * ```
  */
@@ -181,7 +181,10 @@ const styles = StyleSheet.create({
   },
 });
 
-const InputGroupBase = memo(InputGroupComponent);
-InputGroupBase.displayName = 'InputGroup';
-
-export const InputGroup = Object.assign(InputGroupBase, { Addon });
+// Flat-prefixed, with no `InputGroup.Addon` static beside it. Two spellings of
+// one part is the ambiguity the flat-prefix rule exists to remove, and no other
+// Bloom compound carries one — there is no `Tabs.Trigger`, `Menu.Item` or
+// `Select.Trigger`. The static was the last place a reader could learn a second
+// name for a part that already has one.
+export const InputGroup = memo(InputGroupComponent);
+InputGroup.displayName = 'InputGroup';

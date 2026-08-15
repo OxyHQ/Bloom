@@ -24,6 +24,7 @@ import Animated, {
 import { RemoveScrollBar } from 'react-remove-scroll-bar';
 
 import { Backdrop, OverlayRoot } from '../overlay';
+import { StyledView } from '../styles/styled-primitives';
 import { Portal } from '../portal/index.web';
 import { adoptStyleSheet } from '../styles/adopt-style-sheet';
 import { Z_INDEX } from '../styles/z-index';
@@ -583,7 +584,6 @@ function DialogPanel({
   );
 }
 
-export { DIALOG_SHEET_BACKDROP_TESTID };
 
 /**
  * Side-sheet surface for the `left`/`right` placements. Pure CSS transitions:
@@ -705,10 +705,7 @@ function SheetSurface({
   }, [dismissOnBackdrop, onDismiss]);
 
   return (
-    <OverlayRoot
-      style={[sheetStyles.root, containerStyle]}
-      {...(containerClassName ? ({ className: containerClassName } as Record<string, string>) : {})}
-    >
+    <OverlayRoot style={[sheetStyles.root, containerStyle]} className={containerClassName}>
       <Backdrop
         testID={testID ? `${testID}-backdrop` : DIALOG_SHEET_BACKDROP_TESTID}
         accessibilityLabel={label ? `Dismiss ${label}` : 'Dismiss dialog'}
@@ -721,7 +718,7 @@ function SheetSurface({
         style={[sheetStyles.backdrop, { opacity: visible ? 1 : 0 }]}
       />
 
-      <View
+      <StyledView
         role="dialog"
         aria-label={label}
         aria-labelledby={title ? titleId : undefined}
@@ -731,7 +728,7 @@ function SheetSurface({
         onStartShouldSetResponder={() => true}
         onResponderRelease={stopPropagation}
         {...({ onClick: stopPropagation } as Record<string, unknown>)}
-        {...(panelClassName ? ({ className: panelClassName } as Record<string, string>) : {})}
+        className={panelClassName}
         style={[
           sheetStyles.panel,
           {
@@ -799,7 +796,7 @@ function SheetSurface({
             </DialogBody>
           </View>
         )}
-      </View>
+      </StyledView>
     </OverlayRoot>
   );
 }
@@ -825,38 +822,6 @@ function cancelFrame(token: FrameToken): void {
   clearTimeout(token.timer);
 }
 
-/**
- * Inline imperative dialog used by `alert()`. Mounts and immediately
- * presents; resolves the host's `onResolve` once the dialog has finished
- * its exit animation.
- */
-export function AutoMountedDialog({
-  title,
-  description,
-  actions,
-  onResolve,
-}: {
-  title?: string;
-  description?: string;
-  actions: DialogAction[];
-  onResolve: () => void;
-}) {
-  const control = useDialogControl();
-
-  useEffect(() => {
-    control.open();
-  }, [control]);
-
-  return (
-    <Dialog
-      control={control}
-      title={title}
-      description={description}
-      actions={actions}
-      onClose={onResolve}
-    />
-  );
-}
 
 // Annotated rather than cast: a plain object literal widens `position: 'absolute'`
 // to `string`, which is what the three `as ViewStyle` casts here used to silence.

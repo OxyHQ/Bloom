@@ -1,0 +1,64 @@
+---
+title: Switch
+description: An immediate on/off toggle — and why it must carry `aria-checked`, not `accessibilityState`.
+order: 24
+---
+
+# Switch
+
+A binary control whose change takes effect **immediately**. That is the whole
+distinction from a checkbox: a switch turns something on, a checkbox records an
+intent you confirm later with a Save button.
+
+```tsx
+import { Switch } from '@oxyhq/bloom/switch';
+
+<Switch value={pushEnabled} onValueChange={setPushEnabled} />
+```
+
+## Which prop decides what
+
+| prop            | decides                                          |
+| --------------- | ------------------------------------------------ |
+| `value`         | on or off — the component is fully controlled     |
+| `onValueChange` | receives the **opposite** of the current value    |
+| `disabled`      | dims it and takes it out of the tab order         |
+| `size`          | `default` (44×26) or `sm` (36×22)                 |
+
+There is no uncontrolled mode. A switch whose state the caller does not own is a
+switch that can disagree with the thing it is supposed to be controlling — the
+classic version being an optimistic toggle that stays on after the request
+failed.
+
+## A switch needs a label it does not draw
+
+`Switch` renders a track and a thumb and nothing else. Whatever it turns on has
+to be named by something — a `SettingsListItem` title, a `Label`, or an
+`accessibilityLabel` — or it announces as "switch, on" with no subject.
+
+```tsx
+<SettingsListItem
+  title="Push notifications"
+  rightElement={<Switch value={push} onValueChange={setPush} />}
+  showChevron={false}
+/>
+```
+
+## The accessibility rule this component is the reference for
+
+`Switch` sets `role="switch"` and **`aria-checked`**, not
+`accessibilityState={{ checked }}`.
+
+react-native-web drops `accessibilityState` entirely and reads only `aria-*`,
+while React Native folds `aria-checked` back into `accessibilityState`. So
+`aria-checked` is the one spelling that works on both platforms, and a control
+that set only `accessibilityState` would render a switch role carrying no
+state — drawn correctly, announced as nothing.
+
+The disabled state is the mirror image and goes the other way: it travels on
+the `disabled` **prop**, because react-native-web's `Pressable` appends its own
+`aria-disabled` *after* spreading the caller's props, so a hand-written one is
+silently overwritten.
+
+Neither of these is visible to a prop-level test. Assert the rendered
+attribute.

@@ -1,0 +1,33 @@
+---
+title: Choosing a stat widget
+description: Four families, four different questions about a number.
+order: 61
+---
+
+# Choosing a stat widget
+
+Bloom has four small data-display families. They are separate because each
+answers a different question, and picking the wrong one makes a number harder
+to read rather than easier.
+
+| family                                                | answers                                  |
+| ----------------------------------------------------- | ---------------------------------------- |
+| [`CompositionBar`](/docs/bloom/main/composition-bar)  | what is this total **made of**?           |
+| [`StatBar`](/docs/bloom/main/stat-bar)                | how far along, or how is it split in two? |
+| [`DotGridMeter`](/docs/bloom/main/dot-grid-meter)     | how many out of a countable total?        |
+| [`ActivityHeatmap`](/docs/bloom/main/activity-heatmap) | when did this happen, over time?          |
+
+Two rules apply to all four.
+
+## Colours are the app's, not the theme's
+
+Each takes explicit colours, because the categories belong to the product — a
+token's brand colour is not a Bloom role. Whatever you pass, check it against
+the surface it sits on and in both modes: a colour chosen on a light card is
+routinely invisible in dark mode.
+
+## A chart still needs the number in text
+
+None of these announces anything useful on its own. Whatever the widget shows,
+the value should also be readable as text nearby — otherwise the information is
+available only to people who can see and interpret the shape.

@@ -6,6 +6,12 @@ import { BloomThemeProvider } from '../theme/BloomThemeProvider';
 import { useTheme } from '../theme/use-theme';
 import type { ThemeColors } from '../theme/types';
 import { Button, PrimaryButton, SecondaryButton, IconButton, GhostButton, TextButton } from '../button';
+import { borderRadius } from '../styles/tokens';
+import {
+  classNamesOn,
+  renderedChildren,
+  resolvedStyle,
+} from './support/rendered-style';
 
 function renderWithTheme(ui: React.ReactElement) {
   return render(
@@ -13,59 +19,6 @@ function renderWithTheme(ui: React.ReactElement) {
       {ui}
     </BloomThemeProvider>,
   );
-}
-
-type StyleEntry = Record<string, unknown>;
-
-/**
- * Deep-flatten an RN `style` prop (nested arrays, `false`/`null` holes) into the
- * list of style objects that actually reached the node — including the
- * `{ $$css: true, className }` descriptor react-native-css merges in.
- */
-function styleEntries(style: unknown, out: StyleEntry[] = []): StyleEntry[] {
-  if (!style || typeof style !== 'object') return out;
-  if (Array.isArray(style)) {
-    for (const entry of style) styleEntries(entry, out);
-    return out;
-  }
-  out.push(style as StyleEntry);
-  return out;
-}
-
-/** Every style key/value that landed on a node, later entries winning. */
-function resolvedStyle(style: unknown): StyleEntry {
-  return Object.assign({}, ...styleEntries(style)) as StyleEntry;
-}
-
-/** The class tokens react-native-css accepted for a node, in arrival order. */
-function classNamesOn(style: unknown): string[] {
-  return styleEntries(style)
-    .filter((entry) => entry.$$css === true && typeof entry.className === 'string')
-    .map((entry) => String(entry.className));
-}
-
-interface HostNode {
-  type: string;
-  props: Record<string, unknown>;
-  children: Array<HostNode | string> | null;
-}
-
-function isHostNode(value: unknown): value is HostNode {
-  return typeof value === 'object' && value !== null && typeof (value as HostNode).type === 'string';
-}
-
-/** Walk the HOST tree (composites are absent from `toJSON()`) for a testID. */
-function findHost(node: unknown, testID: string): HostNode | null {
-  if (Array.isArray(node)) {
-    for (const child of node) {
-      const hit = findHost(child, testID);
-      if (hit) return hit;
-    }
-    return null;
-  }
-  if (!isHostNode(node)) return null;
-  if (node.props.testID === testID) return node;
-  return findHost(node.children, testID);
 }
 
 /** Read the live resolved theme colors the same way `Button` does. */
@@ -186,9 +139,7 @@ describe('layout: the button IS the node its parent lays out', () => {
         </Button>
       </View>,
     );
-    const host = findHost(toJSON(), 'host');
-    expect(host).not.toBeNull();
-    const rendered = (host?.children ?? []).filter(isHostNode);
+    const rendered = renderedChildren(toJSON(), 'host');
     expect(rendered).toHaveLength(1);
     // The single node the parent lays out is the pressable itself — the one
     // carrying the a11y role, the handlers and the button's own box.
@@ -204,8 +155,10 @@ describe('layout: the button IS the node its parent lays out', () => {
     );
     const style = getByTestId('btn').props.style;
     expect(classNamesOn(style)).toContain('flex-1');
-    // Same node, so a layout class and the button's visuals cannot diverge.
-    expect(resolvedStyle(style).borderRadius).toBe(999);
+    // Same node, so a layout class and the button's visuals cannot diverge. The
+    // radius is read from the token rather than restated: what this asserts is
+    // that the button's BOX is on the classed node, not what the pill rung is.
+    expect(resolvedStyle(style).borderRadius).toBe(borderRadius.full);
   });
 
   it('applies the press-scale transform to that node too, not to a wrapper', () => {

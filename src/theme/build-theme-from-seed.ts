@@ -89,8 +89,20 @@ export function buildColorsFromSeed(
     warning: g('warning'),
     info: g('info'),
 
+    successSubtle: g('success-subtle'),
+    successSubtleForeground: g('success-text'),
+    errorSubtle: g('error-subtle'),
+    errorSubtleForeground: g('error-text'),
+    warningSubtle: g('warning-subtle'),
+    warningSubtleForeground: g('warning-text'),
+    infoSubtle: g('info-subtle'),
+    infoSubtleForeground: g('info-text'),
+
     primarySubtle: g('primary-subtle'),
-    primarySubtleForeground: r.onPrimaryContainer,
+    // The `-text` member, for the reason spelled out in `build-theme.ts`: the
+    // policy's translucent `--primary-subtle` and M3's `onPrimaryContainer` are
+    // not a pair, and pairing them made `mono` illegible.
+    primarySubtleForeground: g('primary-text'),
     negative: r.error,
     negativeForeground: r.onError,
     negativeSubtle: g('error-subtle'),

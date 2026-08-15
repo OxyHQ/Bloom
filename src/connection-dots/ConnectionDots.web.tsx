@@ -96,8 +96,16 @@ const ConnectionDotsComponent: React.FC<ConnectionDotsProps> = ({
     return (
       <View
         key={i}
-        // marker attribute lets the reduced-motion media query target dots
-        {...({ 'data-bloom-connection-dot': '' } as Record<string, string>)}
+        // Marker attribute, so the reduced-motion media query above can target
+        // the dots. It MUST go through `dataSet`: react-native-web filters props
+        // against a fixed list and silently drops anything outside it, so the
+        // literal `'data-bloom-connection-dot'` prop this used to spread never
+        // reached the DOM and the media query matched nothing — measured in a
+        // real browser, where the attribute was simply absent. The JS
+        // `matchMedia` gate below is what kept the behaviour correct, so the
+        // dead half was invisible: it is defence-in-depth for the case where the
+        // preference changes with no re-render.
+        {...({ dataSet: { bloomConnectionDot: '' } } as Record<string, unknown>)}
         style={[base, animated]}
       />
     );

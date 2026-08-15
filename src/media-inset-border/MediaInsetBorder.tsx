@@ -10,6 +10,7 @@ import {
 import { Fill } from '../fill';
 import { borderRadius } from '../styles/tokens';
 import { useTheme } from '../theme';
+import type { MediaInsetBorderProps } from './types';
 
 /**
  * A 1px (hairline) inset border reads too heavy on high-DPI web displays, so we
@@ -18,21 +19,6 @@ import { useTheme } from '../theme';
  */
 const HAIRLINE_WIDTH =
   Platform.OS === 'web' && PixelRatio.get() > 1 ? 0.5 : StyleSheet.hairlineWidth;
-
-export interface MediaInsetBorderProps {
-  /**
-   * Render a solid, full-contrast border instead of the default softened one.
-   * Use where the inset border must line up with adjacent opaque borders, such
-   * as external link-preview cards.
-   */
-  opaque?: boolean;
-  /**
-   * Extra style merged last. Override `borderRadius` here to match the corner
-   * radius of the surrounding media box.
-   */
-  style?: StyleProp<ViewStyle>;
-  children?: React.ReactNode;
-}
 
 /**
  * A theme-aware hairline border painted just inside a media box (image, avatar,

@@ -2,7 +2,8 @@ import React from 'react';
 import { Pressable, Text, View } from 'react-native';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
-import { useInteractionState } from '../hooks/useInteractionState';
+import { useInteractionState } from '../hooks/use-interaction-state';
+import { StyledPressable } from '../styles/styled-primitives';
 import { SubtleHover } from './index';
 
 const meta: Meta<typeof SubtleHover> = {
@@ -17,11 +18,19 @@ type Story = StoryObj<typeof SubtleHover>;
 /**
  * Pure-CSS `group-hover`: the parent carries `className="group"` and the wash
  * fades in on hover with ZERO React state (web only).
+ *
+ * The parent is `StyledPressable`, not a bare `Pressable` with a
+ * `Record<string, string>` cast. The cast type-checks against nothing and the
+ * class never reaches the DOM here — a consumer's NativeWind babel interop
+ * rewrites `className` in the CONSUMER's own source, and this file is Bloom's.
+ * With the class missing, `group-hover:opacity-50` has no group to hover and
+ * the wash stays at 0 forever, which reads as "SubtleHover is broken" while the
+ * component is fine.
  */
 function HoverRow({ label }: { label: string }) {
   return (
-    <Pressable
-      {...({ className: 'group' } as Record<string, string>)}
+    <StyledPressable
+      className="group"
       accessibilityLabel={label}
       style={{
         width: 280,
@@ -33,7 +42,7 @@ function HoverRow({ label }: { label: string }) {
     >
       <SubtleHover style={{ borderRadius: 12 }} />
       <Text style={{ fontWeight: '600' }}>{label}</Text>
-    </Pressable>
+    </StyledPressable>
   );
 }
 

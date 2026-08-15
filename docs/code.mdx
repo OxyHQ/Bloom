@@ -1,0 +1,50 @@
+---
+title: Code
+description: Inline monospace and code blocks, as real elements rather than styled text.
+order: 53
+---
+
+# Code
+
+`Code` is **inline** — an identifier, a flag, a token inside a sentence.
+`Pre` is a **block** — a command, a snippet, a config file.
+
+```tsx
+import { Code, Pre } from '@oxyhq/bloom/code';
+
+<Text>
+  Pass <Code>variant="outlined"</Code> to draw the border.
+</Text>
+
+<Pre>{`bun add @oxyhq/bloom
+bun run build`}</Pre>
+```
+
+## They are elements, not fonts
+
+On web `Code` renders a real `<code>`. That matters for more than styling:
+find-in-page, copy behaviour, and assistive technology all treat it as code
+rather than as decoration. On native it is a `Text` in the monospace family.
+
+## `Pre` keeps its whitespace and scrolls
+
+A block preserves line breaks and indentation and scrolls horizontally rather
+than wrapping. Wrapping is the wrong default for a command: a wrapped command
+is a command someone will copy wrong, and the break is invisible once pasted.
+
+Write the content as a template literal so the source's own indentation does
+not leak into the block.
+
+## Use `Code` for things that are typed, not for emphasis
+
+`Code` means *this is a literal you would type or paste*: a prop name, a flag,
+a file path, an env var. It is not a way to make a word stand out — monospace
+in the middle of a sentence tells the reader "this is exact", and using it for
+emphasis makes the real literals unfindable.
+
+## No syntax highlighting
+
+`Pre` renders text. Highlighting means shipping a grammar for every language a
+consumer might use, and getting it wrong is worse than not having it —
+mis-tokenised code reads as broken code. If a surface genuinely needs
+highlighting, it belongs to that surface.

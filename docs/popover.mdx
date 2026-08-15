@@ -1,0 +1,73 @@
+---
+title: Popover
+description: Arbitrary content anchored to a trigger — a sheet on native, a panel on web.
+order: 21
+---
+
+# Popover
+
+A small surface of arbitrary content, anchored to what opened it. An anchored panel on web, a bottom sheet on native.
+
+Three parts, shadcn's own: `Popover`, `PopoverTrigger`, `PopoverContent`.
+
+Reach for it when the content is not a list of actions. When it IS a list of actions, reach for [DropdownMenu](/docs/bloom/main/dropdown-menu) — it gives you the rows, the keyboard state and the ARIA roles for free.
+
+## Basic
+
+```tsx
+import { Popover, PopoverContent, PopoverTrigger } from '@oxyhq/bloom/popover';
+import { Button } from '@oxyhq/bloom/button';
+import { P } from '@oxyhq/bloom/typography';
+
+<Popover>
+  <PopoverTrigger asChild label="What is this?">
+    <Button variant="secondary">What is this?</Button>
+  </PopoverTrigger>
+
+  <PopoverContent label="Two-factor authentication">
+    <View style={{ padding: 16, gap: 8 }}>
+      <P>A second step when you sign in, so a leaked password is not enough on its own.</P>
+    </View>
+  </PopoverContent>
+</Popover>
+```
+
+## The panel has no padding of its own
+
+Deliberate, and worth knowing before you wonder where the inset went. A popover's body is as often a list of `Item` rows (the combobox, the dialog header's overflow) as it is prose, and rows have to reach the panel edge to show their full-width highlight. So the panel keeps only the 4px vertical rhythm every anchored Bloom surface has, and a prose popover pads its own body — as the example above does.
+
+## Controlled
+
+```tsx
+const [open, setOpen] = useState(false);
+
+<Popover open={open} onOpenChange={setOpen}>
+```
+
+Uncontrolled by default. `onOpenChange` fires either way. Closing it from inside its own content is a `setOpen(false)`.
+
+## Placement (web)
+
+`PopoverContent` takes `side` (`'top' | 'bottom'`, default `'bottom'`), `align` (`'start' | 'center' | 'end'`, default `'center'`), `sideOffset`, `alignOffset`, `minWidth` and `maxWidth`. The surface flips to the other side when the named one does not fit and clamps into the viewport when neither does.
+
+A popover centres on its trigger by default, where a menu starts at its left edge — that is the one placement default the two families disagree on, and it matches shadcn.
+
+## Shape
+
+shadcn's popover is `w-72 p-4`: a fixed 288px card with a 16px inset, not a shrink-wrap around its content. Bloom applies both, first in the style array, so a body that is a list of rows rather than prose overrides them from `style` — the same thing a shadcn call site says with `className="w-auto p-0"`:
+
+```tsx
+<PopoverContent label="Actions" style={{ width: 'auto', padding: 4 }}>
+  <Item title="Profile" onPress={openProfile} />
+</PopoverContent>
+```
+
+Rows have to reach the panel's edge to draw a full-width highlight, which is why `Combobox` and the dialog header's overflow menu both do this.
+
+On native these are ignored; the sheet is anchored to the screen.
+
+## Dismissal
+
+Press outside or hit Escape. `dismissible={false}` turns both off, for a popover the user has to answer.
+
+Escape stops at the innermost open surface, so a popover opened from inside a dialog closes the popover and leaves the dialog up.

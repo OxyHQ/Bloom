@@ -1,0 +1,69 @@
+---
+title: Icons
+description: 250-odd glyphs with full names — and why a shortened one is invisible to the compiler.
+order: 66
+---
+
+# Icons
+
+Bloom's icon set. Every glyph is a named export carrying its style and corner
+suffix.
+
+```tsx
+import { Bell_Stroke2_Corner0_Rounded as BellIcon } from '@oxyhq/bloom/icons';
+
+<BellIcon size="lg" fill={colors.text} />
+```
+
+## The naming is `<Subject>_<Style>_Corner0_Rounded`
+
+The suffix is not decoration — it is *which drawing you get*. `Stroke2` and
+`Filled` are separate exports rather than a prop on one component, because they
+are different artwork: filled reads as "on"/selected, stroke as the resting
+state. A tab bar uses both for the same subject.
+
+Import the exact identifier and alias it locally, as above.
+
+## `fill` and `size`, not inheritance
+
+Colour travels on `fill` and size on `size`. Neither is inherited from a
+surrounding `Text`, so an icon beside a label has to be told both — an icon
+that "looks black in dark mode" is almost always one that was never given a
+`fill`.
+
+## A shortened name is invisible to `tsc`
+
+Dropping the suffix — writing the bare subject where the full identifier
+belongs — is not a compile error anywhere such a reference usually appears: in
+a **doc comment** or an `.mdx` example, TypeScript never sees it. A reader
+copies it, gets `undefined`, and React reports "Element type is invalid … but
+got: undefined" against *their* file — which is how a phantom release blocker
+once got filed against the tab bar.
+
+`src/__tests__/icon-references.test.ts` scans `src/`, `docs/`, `README.md` and
+`AGENTS.md` for references that do not resolve against the real export union.
+It is the only gate on this class of bug, and it deliberately does **not** strip
+comments, because the comments are the surface under test.
+
+## Two import shapes are correct, one is not
+
+```tsx
+import * as Icons from '@oxyhq/bloom/icons';   // ✅ the subpath, as a namespace
+import { Icons } from '@oxyhq/bloom';          // ✅ the root barrel's namespace
+```
+
+The third shape — importing `Icons` as a *named* export from the **subpath** —
+is `undefined` at runtime. The subpath exports the components flat; the `Icons`
+name is assembled by the root barrel (`export * as Icons from './icons'`), so
+there is no such named export to destructure.
+
+The gate below flags that shape too, which is why this page describes it rather
+than showing it: a counter-example spelled as a literal is indistinguishable
+from the mistake it warns about, and the scan is right to flag both.
+
+## Adding an icon
+
+One file per subject under `src/icons/`, exporting the full identifiers, and
+re-exported from the barrel. Keep the stroke and filled variants together in
+the same file — they are the same subject, and separating them is how one gets
+updated without the other.

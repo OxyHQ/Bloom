@@ -1,0 +1,64 @@
+---
+title: Combobox
+description: A select you can type into — for when the option list is too long to scan.
+order: 42
+---
+
+# Combobox
+
+A picker with a search field. Reach for it when there are more options than a
+user can scan — a country, a repository, a person.
+
+```tsx
+import { Combobox } from '@oxyhq/bloom/combobox';
+
+<Combobox
+  options={apps.map((a) => ({ value: a.id, label: a.name, description: a.tagline }))}
+  value={appId}
+  onValueChange={setAppId}
+  placeholder="Pick an app"
+  emptyText="No apps match that"
+/>
+```
+
+## Which prop decides what
+
+| prop                      | decides                                             |
+| ------------------------- | ---------------------------------------------------- |
+| `options`                 | the choices — `value`, `label`, optional `description` |
+| `value` / `onValueChange` | the selection; `null` means nothing chosen            |
+| `placeholder`             | the trigger text while nothing is selected            |
+| `emptyText`               | what an empty result says                             |
+| `filter`                  | replaces the default match                            |
+| `query` / `onQueryChange` | the search text, if you want to control it            |
+| `maxListHeight`           | how tall the list may grow                            |
+
+## The trigger shows the LABEL
+
+`value` is an opaque id to the user. A combobox that renders the value into the
+field shows `usr_8f21c` where the user chose "Ada Lovelace" — which reads as a
+bug rather than as a raw id.
+
+## Controlled `query` is for search that leaves the component
+
+By default the combobox owns the query. Take control of it when the *filtering*
+happens elsewhere — a debounced server search, a query mirrored into the URL:
+
+```tsx
+<Combobox query={q} onQueryChange={setQ} options={serverResults} filter={() => true} />
+```
+
+Note the `filter={() => true}`: if the server already filtered, filtering again
+locally throws away results that matched for reasons the client cannot see.
+
+## `emptyText` earns its place
+
+An empty popover reads as broken. Saying "No apps match that" tells the user
+the search worked and there is nothing — a different message from silence.
+
+## Combobox, Select or Command
+
+- **Combobox** — many values, typing needed to find one, selection persists.
+- **[Select](/docs/bloom/main/select)** — few enough values to scan.
+- **[Command](/docs/bloom/main/command)** — **actions**, not values; runs one
+  and closes.

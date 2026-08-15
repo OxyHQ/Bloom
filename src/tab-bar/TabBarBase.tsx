@@ -37,9 +37,9 @@ import Animated, {
 } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-import { useHaptics } from '../hooks/useHaptics';
+import { useHaptics } from '../hooks/use-haptics';
 import type { ProgressiveBlurProps } from '../progressive-blur/types';
-import { setMinimized, useMinimizeState } from './minimize-context';
+import { setMinimized, useMinimizeState } from './context';
 import {
   BAR_MARGIN,
   BLUR_BLEED,

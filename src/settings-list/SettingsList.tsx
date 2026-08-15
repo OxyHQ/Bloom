@@ -2,28 +2,15 @@ import React, { memo } from 'react';
 import { View, Text, Pressable, StyleSheet } from 'react-native';
 
 import { useTheme } from '../theme/use-theme';
-import { useInteractionState } from '../hooks/useInteractionState';
+import { useInteractionState } from '../hooks/use-interaction-state';
+import { Card } from '../card';
+import { Divider } from '../divider';
+import { ChevronRight_Stroke2_Corner0_Rounded as ChevronRightIcon } from '../icons/Chevron';
 import type {
   SettingsListItemProps,
   SettingsListGroupProps,
   SettingsListDividerProps,
 } from './types';
-
-// ── Chevron icon (unicode-based, no SVG dependency) ─────────────
-const Chevron = memo(({ size = 16, color }: { size?: number; color: string }) => (
-  <Text
-    style={{
-      fontSize: size,
-      color,
-      lineHeight: size,
-      textAlign: 'center',
-      width: size,
-    }}
-  >
-    {'\u203A'}
-  </Text>
-));
-Chevron.displayName = 'Chevron';
 
 // ── SettingsListItem ────────────────────────────────────────────
 
@@ -96,7 +83,7 @@ export const SettingsListItem = memo<SettingsListItemProps>(function SettingsLis
       {rightElement}
 
       {hasChevron ? (
-        <Chevron size={16} color={theme.colors.textTertiary} />
+        <ChevronRightIcon size="sm" fill={theme.colors.textTertiary} />
       ) : null}
     </View>
   );
@@ -157,26 +144,23 @@ export const SettingsListGroup = memo<SettingsListGroupProps>(function SettingsL
         </Text>
       ) : null}
 
-      <View
-        style={[
-          styles.groupCard,
-          { backgroundColor: theme.colors.card },
-        ]}
-      >
+      {/*
+        No horizontal self-inset: a `SettingsListGroup` fills its parent's content
+        width, so the single horizontal inset comes from the ONE content padding
+        the screen/Dialog already applies (the same `px-screen-margin` that pads
+        the title/search). A self-margin here double-inset grouped rows on every
+        screen that also applies that padding.
+      */}
+      <Card variant="plain" radius="radius-16">
         {filteredChildren.map((child, index) => (
           <React.Fragment key={index}>
             {child}
             {index < filteredChildren.length - 1 ? (
-              <View
-                style={[
-                  styles.divider,
-                  { backgroundColor: theme.colors.border, opacity: 0.3 },
-                ]}
-              />
+              <Divider style={styles.divider} />
             ) : null}
           </React.Fragment>
         ))}
-      </View>
+      </Card>
 
       {footer ? (
         <Text style={[styles.groupFooter, { color: theme.colors.textTertiary }]}>
@@ -191,15 +175,7 @@ export const SettingsListGroup = memo<SettingsListGroupProps>(function SettingsL
 
 export const SettingsListDivider = memo<SettingsListDividerProps>(
   function SettingsListDivider({ inset = 52 }) {
-    const theme = useTheme();
-    return (
-      <View
-        style={[
-          styles.divider,
-          { marginLeft: inset, backgroundColor: theme.colors.border, opacity: 0.3 },
-        ]}
-      />
-    );
+    return <Divider style={[styles.divider, { marginLeft: inset }]} />;
   }
 );
 
@@ -210,7 +186,14 @@ const styles = StyleSheet.create({
   itemContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: 12,
+    // Longhands, because `leftInset` overrides the left edge with a later
+    // `paddingLeft` — and on web react-native-web maps `paddingHorizontal` to
+    // the CSS shorthand `padding-inline`, which its atomic sheet ranks above
+    // the longhands whatever the style array's order. So `leftInset` was inert
+    // on web and correct on native, silently. See the longer note in
+    // `item/Item.tsx`, where the mechanism was measured.
+    paddingLeft: 12,
+    paddingRight: 12,
     paddingVertical: 10,
     minHeight: 44,
     gap: 12,
@@ -245,15 +228,6 @@ const styles = StyleSheet.create({
   groupContainer: {
     marginBottom: 16,
   },
-  groupCard: {
-    // No horizontal self-inset: a `SettingsListGroup` fills its parent's content
-    // width, so the single horizontal inset comes from the ONE content padding
-    // the screen/Dialog already applies (the same `px-screen-margin` that pads
-    // the title/search). Keeping a self-margin here double-inset grouped rows on
-    // every screen that also applies that padding.
-    borderRadius: 16,
-    overflow: 'hidden',
-  },
   groupTitle: {
     fontSize: 11,
     fontWeight: '600',
@@ -270,9 +244,13 @@ const styles = StyleSheet.create({
     paddingTop: 6,
   },
 
-  // Divider
+  // Divider. `Divider` supplies the hairline height and `theme.colors.border`;
+  // these are the settings-list specifics on top of it. `width: 'auto'` is
+  // load-bearing next to the inset: `Divider`'s own `width: '100%'` would make
+  // an inset rule overhang its container by exactly the inset.
   divider: {
-    height: StyleSheet.hairlineWidth,
     marginLeft: 16,
+    width: 'auto',
+    opacity: 0.3,
   },
 });

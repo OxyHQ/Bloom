@@ -3,7 +3,7 @@ import { Text } from 'react-native';
 import { render } from '@testing-library/react-native';
 
 import { BloomThemeProvider } from '../theme/BloomThemeProvider';
-import { InputGroup } from '../input-group';
+import { InputGroup, InputGroupAddon } from '../input-group';
 
 function renderWithTheme(ui: React.ReactElement) {
   return render(
@@ -17,11 +17,11 @@ describe('InputGroup', () => {
   it('renders addons and the input', () => {
     const { getByText } = renderWithTheme(
       <InputGroup>
-        <InputGroup.Addon>https://</InputGroup.Addon>
+        <InputGroupAddon>https://</InputGroupAddon>
         <Text>field</Text>
-        <InputGroup.Addon divider>
+        <InputGroupAddon divider>
           <Text>Go</Text>
-        </InputGroup.Addon>
+        </InputGroupAddon>
       </InputGroup>,
     );
     expect(getByText('https://')).toBeTruthy();
@@ -30,7 +30,7 @@ describe('InputGroup', () => {
   });
 
   it('exposes Addon as a static member', () => {
-    expect(InputGroup.Addon).toBeTruthy();
+    expect(InputGroupAddon).toBeTruthy();
   });
 
   it('marks disabled state for accessibility', () => {

@@ -21,9 +21,13 @@
  * `richColors` was switched on. `richColors` means "show the status colour more
  * prominently", never "switch to the brand palette".
  *
- * Genuinely tinted status SURFACES would need a `successSubtle` / `errorSubtle` /
- * `warningSubtle` / `infoSubtle` token family — a theme addition, not something to
- * fake here from a brand pair or a derived alpha.
+ * That family now EXISTS — `successSubtle` / `errorSubtle` / `warningSubtle` /
+ * `infoSubtle`, each with its legible `*SubtleForeground` — so a tinted status
+ * surface is finally expressible without faking one from a brand pair or a
+ * derived alpha. The toast still does not take it: the neutral surface is the
+ * sonner behaviour Bloom deliberately matches, and `richColors` means "show the
+ * status colour more prominently", never "tint the card". Anything that DOES want
+ * a tinted status surface (a status pill, chip or badge) reads the pair.
  *
  * An ABSENT variant is a first-class case: a plain `toast('Saved')` renders the
  * neutral surface with no variant icon at all. It must never fall back to `info`.

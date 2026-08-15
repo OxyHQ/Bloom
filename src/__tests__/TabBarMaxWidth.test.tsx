@@ -4,7 +4,7 @@ import type { ReactTestInstance } from 'react-test-renderer';
 
 import { BloomThemeProvider } from '../theme/BloomThemeProvider';
 import { TabBar, TabBarButton, TabBarMinimizeProvider, useMinimizeState } from '../tab-bar';
-import type { MinimizeState } from '../tab-bar/minimize-context';
+import type { MinimizeState } from '../tab-bar/context';
 import { BAR_MARGIN, MINIMIZED_INSET, ROW_PAD_H } from '../tab-bar/shared';
 import type { TabBarItem } from '../tab-bar/types';
 

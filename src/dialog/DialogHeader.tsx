@@ -4,6 +4,7 @@ import React, {
   useContext,
   useLayoutEffect,
   useMemo,
+  useState,
   useSyncExternalStore,
 } from 'react';
 import {
@@ -313,26 +314,29 @@ function HeaderOverflowMenu({
   items: NonNullable<DialogHeaderConfig['actions']>;
   onImage: boolean;
 }): React.ReactElement {
-  // Own the control so an item press can close the popover before acting.
-  const control = useDialogControl();
+  // Own the open state so an item press can close the popover before acting.
+  const [open, setOpen] = useState(false);
   return (
-    <Popover control={control}>
-      <PopoverTrigger label="More">
-        {({ props }) => (
-          <FrostedIconButton
-            size="sm"
-            onPress={props.onPress}
-            accessibilityLabel={props.accessibilityLabel}
-            icon={
-              <DotGrid3x1_Stroke2_Corner0_Rounded
-                size="md"
-                fill={onImage ? ON_IMAGE_TEXT : undefined}
-              />
-            }
-          />
-        )}
+    <Popover open={open} onOpenChange={setOpen}>
+      <PopoverTrigger asChild label="More">
+        <FrostedIconButton
+          size="sm"
+          icon={
+            <DotGrid3x1_Stroke2_Corner0_Rounded
+              size="md"
+              fill={onImage ? ON_IMAGE_TEXT : undefined}
+            />
+          }
+        />
       </PopoverTrigger>
-      <PopoverContent label="More actions" placement="bottom-end">
+      <PopoverContent
+        label="More actions"
+        align="end"
+        // A row list, not a prose card: it opts out of the popover's `w-72 p-4`
+        // for the same reason `Combobox` does, and shadcn would build this
+        // surface out of a `DropdownMenu` rather than a `Popover` at all. A
+        // CLASS, because that is what the popover's own chrome is now.
+        className="w-auto p-space-4">
         {items.map((action) => (
           <Item
             key={action.accessibilityLabel}
@@ -340,7 +344,10 @@ function HeaderOverflowMenu({
             leading={action.icon}
             density="compact"
             disabled={action.disabled}
-            onPress={() => control.close(() => action.onPress())}
+            onPress={() => {
+              setOpen(false);
+              action.onPress();
+            }}
           />
         ))}
       </PopoverContent>
@@ -400,7 +407,13 @@ function HeaderProgressBar({
   return (
     <View
       accessibilityRole="progressbar"
-      accessibilityValue={{ min: 0, max: total, now: step }}
+      // The FLAT `aria-value*` props: react-native-web drops the
+      // `accessibilityValue` object entirely, so the wizard step announced a
+      // progressbar with no step count. React Native folds these back into
+      // `accessibilityValue`, so native is unchanged.
+      aria-valuemin={0}
+      aria-valuemax={total}
+      aria-valuenow={step}
       style={[
         styles.progressTrack,
         { backgroundColor: onImage ? 'rgba(255,255,255,0.25)' : theme.colors.border },
@@ -755,6 +768,10 @@ const styles = StyleSheet.create({
     lineHeight: 38,
     letterSpacing: -0.5,
     fontWeight: '700',
+    // `H1` now carries shadcn's `text-center`. A dialog's large title is a
+    // leading-aligned page heading, so it states its own alignment rather than
+    // inheriting the variant's.
+    textAlign: 'left',
   },
   largeSubtitle: {
     fontSize: 16,

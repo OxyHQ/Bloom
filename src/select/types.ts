@@ -1,7 +1,6 @@
 import type { StyleProp, TextStyle, View, ViewStyle } from 'react-native';
 
-import type { Props as SVGIconProps } from '../icons/common';
-import type { DialogControlProps } from '../dialog/types';
+import type { Props as SVGIconProps } from '../icons/shared';
 
 export type SelectProps = {
   children?: React.ReactNode;
@@ -11,29 +10,22 @@ export type SelectProps = {
 };
 
 export type SelectTriggerProps = {
-  children: React.ReactNode | ((props: TriggerChildProps) => React.ReactNode);
+  children?: React.ReactNode;
+  /**
+   * Render the single element child AS the trigger, merging the open handler
+   * and a11y props into it. Without it the children render inside Bloom's own
+   * pressable. The same escape hatch every anchored Bloom family offers.
+   */
+  asChild?: boolean;
+  disabled?: boolean;
   label: string;
-};
-
-export type TriggerChildProps = {
-  control: DialogControlProps;
-  state: {
-    hovered: boolean;
-    focused: boolean;
-    pressed: boolean;
-  };
-  props: {
-    /**
-     * Attach this to the element the trigger actually renders. On web the
-     * dropdown is positioned against its measured rect; a trigger that drops
-     * it falls back to the viewport's top-left corner.
-     */
-    ref?: React.Ref<unknown>;
-    onPress: () => void;
-    onFocus: () => void;
-    onBlur: () => void;
-    accessibilityLabel: string;
-  };
+  /**
+   * Utility classes APPENDED to the part's own — never substituted for them, so
+   * a single layout class cannot strip the chrome.
+   */
+  className?: string;
+  style?: StyleProp<ViewStyle>;
+  testID?: string;
 };
 
 /**
@@ -49,6 +41,7 @@ export type SelectValueProps = {
    */
   children?: (value: unknown) => React.ReactNode;
   placeholder?: string;
+  className?: string;
   style?: TextStyle;
 };
 
@@ -77,6 +70,31 @@ export type SelectContentProps<T> = {
    * Defaults to `item => item.value`.
    */
   valueExtractor?: (item: T) => string;
+  /**
+   * Tallest the anchored dropdown grows before its options scroll (web only —
+   * the native sheet sizes itself). Defaults to 320.
+   */
+  maxHeight?: number;
+  /** Appended to the dropdown panel's own chrome. */
+  className?: string;
+};
+
+export type SelectGroupProps = {
+  children?: React.ReactNode;
+  className?: string;
+  style?: StyleProp<ViewStyle>;
+};
+
+export type SelectLabelProps = {
+  children?: React.ReactNode;
+  className?: string;
+  style?: StyleProp<TextStyle>;
+};
+
+export type SelectScrollButtonProps = {
+  direction: 'up' | 'down';
+  className?: string;
+  style?: StyleProp<ViewStyle>;
 };
 
 export type SelectItemProps = {
@@ -84,11 +102,13 @@ export type SelectItemProps = {
   value: string;
   label: string;
   children: React.ReactNode;
+  className?: string;
   style?: StyleProp<ViewStyle>;
 };
 
 export type SelectItemTextProps = {
   children: React.ReactNode;
+  className?: string;
   style?: TextStyle;
 };
 
@@ -96,9 +116,15 @@ export type SelectItemIndicatorProps = {
   icon?: React.ComponentType<SVGIconProps>;
 };
 
+/**
+ * What a row publishes to `SelectItemText` and `SelectItemIndicator`.
+ *
+ * `selected` and nothing else. It used to carry `hovered`, `focused` and
+ * `pressed` as well — three members no part in the library ever read, two of
+ * which were hardcoded literals (`hovered: false` on native, `pressed: false` on
+ * web) rather than computed at all. A context member that is a literal is worse
+ * than an absent one: it answers the question wrongly instead of not answering.
+ */
 export type SelectItemContextValue = {
   selected: boolean;
-  hovered: boolean;
-  focused: boolean;
-  pressed: boolean;
 };

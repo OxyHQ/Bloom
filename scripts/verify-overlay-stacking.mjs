@@ -67,22 +67,22 @@ const OUT = process.env.OVERLAY_SHOT_DIR ?? '/tmp/bloom-overlay-shots';
  */
 const CASES = [
   {
-    id: 'components-overlay-stacking--dialog-over-sheet-story',
+    id: 'overlays-overlay-stacking--dialog-over-sheet-story',
     name: 'dialog over sheet',
     expect: 'dialog',
   },
   {
-    id: 'components-overlay-stacking--sheet-over-dialog-story',
+    id: 'overlays-overlay-stacking--sheet-over-dialog-story',
     name: 'sheet over dialog',
     expect: 'sheet',
   },
   {
-    id: 'components-overlay-stacking--dialog-over-dialog-story',
+    id: 'overlays-overlay-stacking--dialog-over-dialog-story',
     name: 'dialog over dialog',
     expect: 'second',
   },
   {
-    id: 'components-overlay-stacking--menu-over-dialog-story',
+    id: 'overlays-overlay-stacking--menu-over-dialog-story',
     name: 'menu over dialog',
     expect: 'menu',
   },

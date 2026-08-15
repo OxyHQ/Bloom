@@ -27,7 +27,7 @@ export {
   useMinimizeOnScroll,
   useMinimizeState,
   useTabBarMinimized,
-} from './minimize-context';
-export type { MinimizeState } from './minimize-context';
+} from './context';
+export type { MinimizeState } from './context';
 export { useTabBarFootprint } from './use-footprint';
 export type { TabBarButtonProps, TabBarItem, TabBarProps, TabBarTheme } from './types';

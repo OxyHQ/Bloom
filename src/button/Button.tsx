@@ -15,8 +15,9 @@ import {
 import { styled } from 'react-native-css';
 
 import { useTheme } from '../theme/use-theme';
-import { usePressAnimation } from '../hooks/usePressAnimation';
-import { useInteractionState } from '../hooks/useInteractionState';
+import { animation, borderRadius } from '../styles/tokens';
+import { usePressAnimation } from '../hooks/use-press-animation';
+import { useInteractionState } from '../hooks/use-interaction-state';
 import type { ButtonProps, ButtonSize, ButtonVariant } from './types';
 
 export type { ButtonProps, ButtonVariant, ButtonSize } from './types';
@@ -64,12 +65,6 @@ const SIZE_CONFIG = {
 
 const ICON_HIT_SLOP = { top: 10, bottom: 10, left: 10, right: 10 } as const;
 
-// Fully-rounded (pill/capsule) corner radius. Large enough to stay a perfect
-// capsule at any button height. Shared by every text button variant so they all
-// read as pills; the icon variant keeps its own large radius to stay a circle.
-const PILL_RADIUS = 999;
-
-const PRESS_SCALE = 0.97;
 const SCALE_VARIANTS = new Set<string>(['primary', 'secondary', 'inverse']);
 
 // ---------------------------------------------------------------------------
@@ -95,7 +90,7 @@ const SCALE_VARIANTS = new Set<string>(['primary', 'secondary', 'inverse']);
 //  `styled()` comes from Bloom's own `react-native-css` dependency rather than
 //  passing `className` as a bare prop and hoping the consumer's NativeWind
 //  interop recognises a component Bloom built at module scope. Same reasoning,
-//  and the same silent failure if skipped, as `typography/styled-text.ts`.
+//  and the same silent failure if skipped, as `styles/styled-primitives.ts`.
 //
 //  Both wrappers are built ONCE at module scope so the element type is stable
 //  across renders — one built during render remounts the subtree every time.
@@ -124,7 +119,7 @@ type ButtonPressableProps = Pick<
   | 'onPressIn'
   | 'onPressOut'
   | 'testID'
-> & { style?: StyleProp<ViewStyle> };
+> & { style?: StyleProp<ViewStyle>; 'aria-expanded'?: boolean };
 
 /**
  * The same `Pressable` object, typed down to {@link ButtonPressableProps}.
@@ -154,9 +149,10 @@ const ButtonComponent: React.FC<ButtonProps> = ({
   accessibilityLabel,
   accessibilityHint,
   hitSlop,
-  activeOpacity,
   testID,
   className,
+  'aria-expanded': ariaExpanded,
+  'aria-haspopup': ariaHasPopup,
 }) => {
   const theme = useTheme();
   // The shadcn `size="icon"` shorthand also selects the icon variant unless an
@@ -180,7 +176,7 @@ const ButtonComponent: React.FC<ButtonProps> = ({
   const isInteractionBlocked = disabled || loading;
   const { scaleAnim, onPressIn: onScalePressIn, onPressOut: onScalePressOut } =
     usePressAnimation(
-      hasScaleFeedback && !isInteractionBlocked ? PRESS_SCALE : undefined,
+      hasScaleFeedback && !isInteractionBlocked ? animation.pressScale : undefined,
     );
   // Non-scale variants (icon/ghost/text) convey press feedback via an opacity
   // dip. We drive it through component state + onPressIn/onPressOut rather than
@@ -227,17 +223,17 @@ const ButtonComponent: React.FC<ButtonProps> = ({
         styles.backgroundColor = isDestructive
           ? theme.colors.negative
           : theme.colors.primary;
-        styles.borderRadius = PILL_RADIUS;
+        styles.borderRadius = borderRadius.full;
         break;
       case 'secondary':
         styles.backgroundColor = 'transparent';
         styles.borderWidth = 1;
         styles.borderColor = theme.colors.border;
-        styles.borderRadius = PILL_RADIUS;
+        styles.borderRadius = borderRadius.full;
         break;
       case 'inverse':
         styles.backgroundColor = '#FFFFFF';
-        styles.borderRadius = PILL_RADIUS;
+        styles.borderRadius = borderRadius.full;
         break;
       case 'icon':
         // Resolved tokens, not `className="bg-background border border-border"`.
@@ -250,18 +246,18 @@ const ButtonComponent: React.FC<ButtonProps> = ({
         styles.backgroundColor = theme.colors.background;
         styles.borderWidth = 1;
         styles.borderColor = theme.colors.border;
-        styles.borderRadius = PILL_RADIUS;
+        styles.borderRadius = borderRadius.full;
         styles.padding = 8;
         styles.width = sizeConfig.minHeight;
         styles.height = sizeConfig.minHeight;
         break;
       case 'ghost':
         styles.backgroundColor = 'transparent';
-        styles.borderRadius = PILL_RADIUS;
+        styles.borderRadius = borderRadius.full;
         break;
       case 'text':
         styles.backgroundColor = 'transparent';
-        styles.borderRadius = PILL_RADIUS;
+        styles.borderRadius = borderRadius.full;
         styles.paddingVertical = 4;
         styles.paddingHorizontal = 8;
         break;
@@ -299,7 +295,11 @@ const ButtonComponent: React.FC<ButtonProps> = ({
   }, [size, resolvedTextColor]);
 
   const defaultHitSlop = variant === 'icon' ? ICON_HIT_SLOP : undefined;
-  const resolvedActiveOpacity = activeOpacity ?? (variant === 'icon' ? 0.7 : 0.8);
+  // How far a NON-scaling variant dips under the finger. Not a prop: how a
+  // control answers a press is the library's decision, not a per-call-site one,
+  // and a knob for it is how one button in one app ends up feeling different
+  // from every other. The scaling variants use `animation.pressScale`.
+  const resolvedActiveOpacity = variant === 'icon' ? 0.7 : 0.8;
 
   const content = (
     <>
@@ -340,6 +340,12 @@ const ButtonComponent: React.FC<ButtonProps> = ({
       // `aria-busy` back into it. The disabled half travels on the `disabled`
       // prop above, which both platforms map.
       aria-busy={loading || undefined}
+      // Forwarded from an anchored family's `asChild` trigger, never invented
+      // here — see `ButtonProps['aria-expanded']`. A component that destructures
+      // a known prop list drops what it does not name, and these two are how a
+      // trigger says that it opens something and what.
+      aria-expanded={ariaExpanded}
+      {...(ariaHasPopup == null ? {} : { 'aria-haspopup': ariaHasPopup })}
       testID={testID}
     >
       {loading ? (

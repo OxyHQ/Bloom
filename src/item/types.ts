@@ -38,8 +38,18 @@ export interface ItemProps {
   accessibilityRole?: AccessibilityRole;
   /**
    * Web ARIA role override. Use `'option'` for combobox/listbox items (RN's
-   * `accessibilityRole` has no `'option'`); ignored on native.
+   * `accessibilityRole` has no `'option'`), and `'radio'` / `'checkbox'` for a
+   * single- or multi-choice list. Each role scopes which state ARIA allows, and
+   * `Item` spells the matching one — see the `selectedAria` branch in
+   * `Item.tsx`.
    */
-  role?: 'option' | 'menuitem' | 'listitem';
+  role?: 'option' | 'radio' | 'checkbox' | 'menuitem' | 'listitem';
+  /**
+   * Whether the row DISCLOSES something (a sub-menu, an accordion section).
+   * Emitted as `aria-expanded`, which React Native folds back into
+   * `accessibilityState` — so, unlike `accessibilityState.expanded` alone, it
+   * reaches web as well.
+   */
+  expanded?: boolean;
   testID?: string;
 }

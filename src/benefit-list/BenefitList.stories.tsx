@@ -8,7 +8,7 @@ import { Lock_Stroke2_Corner0_Rounded as LockIcon } from '../icons/Lock';
 import { Shield_Stroke2_Corner0_Rounded as ShieldIcon } from '../icons/Shield';
 
 const meta: Meta<typeof BenefitList> = {
-  title: 'Components/BenefitList',
+  title: 'Data Display/BenefitList',
   component: BenefitList,
 };
 

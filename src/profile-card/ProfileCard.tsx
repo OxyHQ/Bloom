@@ -2,6 +2,7 @@ import React, { memo } from 'react';
 import { View, StyleSheet, type ViewStyle } from 'react-native';
 
 import { Card } from '../card';
+import { borderRadius } from '../styles/tokens';
 import { Avatar } from '../avatar';
 import { AvatarGroup } from '../avatar-group';
 import { DotGridMeter } from '../dot-grid-meter';
@@ -18,7 +19,6 @@ import type {
 
 const WIDGET_WIDTH = 240;
 const CARD_PADDING = 18;
-const CARD_RADIUS = 28;
 const AVATAR_SIZE = 54;
 const FOOTER_AVATAR_SIZE = 30;
 
@@ -156,12 +156,12 @@ const ProfileCardComponent: React.FC<ProfileCardProps> = ({
   // gap so the ring reads as a distinct halo (as in the reference).
   const ring: AvatarRingConfig = { colors: accent, width: 2, gap: 2, ...avatar.ring };
 
+  // Chrome (border, rung) is `Card`'s. The background is deliberately NOT the
+  // `card` role: this widget sits ON a card surface in the reference, so it
+  // takes the page background to read as a cut-out rather than a stacked card.
   const surfaceStyle: ViewStyle = {
     width: isWide ? '100%' : WIDGET_WIDTH,
     padding: CARD_PADDING,
-    borderRadius: CARD_RADIUS,
-    borderWidth: 1,
-    borderColor: colors.border,
     backgroundColor: colors.background,
     borderCurve: 'continuous',
   };
@@ -203,7 +203,13 @@ const ProfileCardComponent: React.FC<ProfileCardProps> = ({
     ) : null;
 
   return (
-    <Card variant="filled" onPress={onPress} style={[surfaceStyle, style]} testID={testID}>
+    <Card
+      variant="outlined"
+      radius="radius-28"
+      onPress={onPress}
+      style={[surfaceStyle, style]}
+      testID={testID}
+    >
       <View style={styles.body}>
         {isWide ? (
           <View style={styles.headerRowWide}>
@@ -258,7 +264,7 @@ const styles = StyleSheet.create({
     right: -3,
     bottom: -3,
     padding: 2,
-    borderRadius: 999,
+    borderRadius: borderRadius.full,
     alignItems: 'center',
     justifyContent: 'center',
   },

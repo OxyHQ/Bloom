@@ -1,2 +1,2 @@
-export { InputGroup, Addon } from './InputGroup';
+export { InputGroup, InputGroupAddon } from './InputGroup';
 export type { InputGroupProps, InputGroupAddonProps } from './types';

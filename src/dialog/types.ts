@@ -175,8 +175,12 @@ export type DialogContextProps = {
  * Color of a declarative `DialogAction`. Maps to bloom's theme palette:
  *
  * - `'default'`  -> theme primary (filled CTA)
- * - `'cancel'`   -> theme secondary (auto-dismiss, no `onPress` required)
+ * - `'cancel'`   -> theme secondary
  * - `'destructive'` -> theme negative
+ *
+ * Colour is purely visual. Whether a press dismisses is `shouldCloseOnPress`
+ * for EVERY colour, `'cancel'` included — it used to bypass that switch, which
+ * made it the one action a caller could not own the dismissal of.
  */
 export type DialogActionColor = 'default' | 'cancel' | 'destructive';
 

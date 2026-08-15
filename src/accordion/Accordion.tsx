@@ -1,8 +1,25 @@
-import React, { createContext, memo, useCallback, useContext, useEffect, useMemo, useRef } from 'react';
-import { View, Text, Pressable, Animated, type ViewStyle } from 'react-native';
+import React, {
+  createContext,
+  memo,
+  useCallback,
+  useContext,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from 'react';
+import {
+  View,
+  Text,
+  Pressable,
+  Animated,
+  type LayoutChangeEvent,
+  type ViewStyle,
+} from 'react-native';
 
+import { ChevronBottom_Stroke2_Corner0_Rounded as ChevronBottomIcon } from '../icons/Chevron';
 import { useTheme } from '../theme/use-theme';
-import { useInteractionState } from '../hooks/useInteractionState';
+import { useInteractionState } from '../hooks/use-interaction-state';
 import { animation, borderRadius, space } from '../styles/tokens';
 import { SUPPORTS_NATIVE_DRIVER } from '../styles/native-driver';
 import type {
@@ -202,15 +219,7 @@ const AccordionTriggerComponent: React.FC<AccordionTriggerProps> = ({
         )}
       </View>
       <Animated.View style={{ transform: [{ rotate: rotation }] }}>
-        <Text
-          style={{
-            fontSize: 16,
-            color: theme.colors.textSecondary,
-            lineHeight: 18,
-          }}
-        >
-          {'\u25BE'}
-        </Text>
+        <ChevronBottomIcon size="sm" fill={theme.colors.textSecondary} />
       </Animated.View>
     </Pressable>
   );
@@ -224,6 +233,18 @@ const AccordionContentComponent: React.FC<AccordionContentProps> = ({
 }) => {
   const { isExpanded } = useContext(AccordionItemContext);
   const heightAnim = useRef(new Animated.Value(isExpanded ? 1 : 0)).current;
+  // The content's own height, measured. The reveal used to interpolate to a
+  // hardcoded 500 ("reasonable max"), which is not a max at all: `overflow:
+  // hidden` above it meant anything taller was CLIPPED, silently, with no error
+  // and no scrollbar — an accordion holding a form or a paragraph of prose just
+  // lost its bottom. The content still lays out at its natural height inside the
+  // clip, so `onLayout` reports the real one whether the item is open or shut.
+  const [contentHeight, setContentHeight] = useState(0);
+  const handleContentLayout = useCallback((event: LayoutChangeEvent) => {
+    const next = event.nativeEvent.layout.height;
+    // Sub-pixel churn would re-render on every frame of the spring.
+    setContentHeight((prev) => (Math.abs(prev - next) > 0.5 ? next : prev));
+  }, []);
 
   useEffect(() => {
     Animated.spring(heightAnim, {
@@ -240,7 +261,7 @@ const AccordionContentComponent: React.FC<AccordionContentProps> = ({
 
   const maxHeight = heightAnim.interpolate({
     inputRange: [0, 1],
-    outputRange: [0, 500], // reasonable max; content will use its natural height
+    outputRange: [0, contentHeight],
   });
 
   return (
@@ -249,12 +270,19 @@ const AccordionContentComponent: React.FC<AccordionContentProps> = ({
         {
           overflow: 'hidden',
           opacity,
-          maxHeight,
+          // Before the first measurement an OPEN item must not be clipped to
+          // zero, and a SHUT one must not flash open — so the unmeasured frame
+          // takes the answer its state already implies, and every frame after
+          // that is driven by the real height.
+          maxHeight: contentHeight === 0 && isExpanded ? undefined : maxHeight,
         },
         style,
       ]}
     >
-      <View style={{ paddingBottom: space.md, paddingHorizontal: space.xs }}>
+      <View
+        onLayout={handleContentLayout}
+        style={{ paddingBottom: space.md, paddingHorizontal: space.xs }}
+      >
         {children}
       </View>
     </Animated.View>

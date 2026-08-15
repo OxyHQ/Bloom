@@ -25,7 +25,7 @@ import type { SharedValue } from 'react-native-reanimated';
 
 import { easeOutQuartFn } from './animations';
 import { STACKING_ANIMATION_DURATION } from './constants';
-import { calculateToastPosition } from './position-utils';
+import { calculateToastPosition } from './row-geometry';
 import type { ToastPosition } from './types';
 import { useAnimatedTarget } from './use-animated-target';
 

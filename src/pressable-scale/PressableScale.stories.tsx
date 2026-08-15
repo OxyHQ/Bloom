@@ -52,19 +52,15 @@ export const StrongScale: Story = {
 };
 
 /**
- * NativeWind layout classes apply to the SAME node that scales — the whole row
- * (avatar + label) springs as one. In a NativeWind consumer you pass `className`
- * directly; the spread-cast here just satisfies Bloom's own typecheck (which has
- * no NativeWind ambient types).
+ * Layout classes apply to the SAME node that scales — the whole row (avatar +
+ * label) springs as one.
  */
 export const InlineRow: Story = {
   render: (args) => (
     <PressableScale
       {...args}
       accessibilityLabel="Open profile"
-      {...({
-        className: 'flex-row items-center gap-3 px-4 py-3 rounded-xl bg-muted',
-      } as Record<string, string>)}
+      className="flex-row items-center gap-space-12 px-space-16 py-space-12 rounded-radius-12 bg-muted"
     >
       <View style={{ width: 32, height: 32, borderRadius: 16, backgroundColor: '#4f46e5' }} />
       <Text style={{ fontWeight: '600' }}>Row that scales as one node</Text>

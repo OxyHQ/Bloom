@@ -1,0 +1,52 @@
+---
+title: MediaInsetBorder
+description: A hairline drawn INSIDE a media edge, so a white photo still has a boundary.
+order: 66
+---
+
+# MediaInsetBorder
+
+Draws a hairline just inside its own bounds, over whatever it wraps.
+
+```tsx
+import { MediaInsetBorder } from '@oxyhq/bloom/media-inset-border';
+
+<MediaInsetBorder style={{ borderRadius: 12 }}>
+  <Image source={photo} style={{ width: 320, height: 200 }} />
+</MediaInsetBorder>
+```
+
+## Which prop decides what
+
+| prop     | decides                                                       |
+| -------- | -------------------------------------------------------------- |
+| `opaque` | whether the hairline is solid rather than a translucent overlay |
+
+## The problem it solves
+
+A photo whose edges are white — a screenshot, a product shot on a light
+background, a diagram — has no visible boundary on a light page. It bleeds into
+the surface and the layout looks broken rather than seamless.
+
+A border on the container does not fix it, because the image paints *over* the
+container's inner edge at the corners. This draws the line on top, inside the
+media's own bounds, so it survives the image's own corners and any clipping.
+
+## It goes around media, not around content
+
+For a boundary around a text block or a group of controls, use
+[`Card`](/docs/bloom/main/card)'s `outlined` variant or
+[`Divider`](/docs/bloom/main/divider). This component exists specifically for
+the case where the *content itself* can be the same colour as the page.
+
+## Match the radius
+
+The inset border takes its shape from the style you give it, so a rounded photo
+needs the same `borderRadius` here as on the image. A mismatch shows as a
+hairline that clips the corners — subtle, and worse than no border.
+
+## `opaque`
+
+Use the translucent default over photos, where a solid line reads as a frame.
+Reach for `opaque` where the media is flat colour and the translucent line
+disappears into it.

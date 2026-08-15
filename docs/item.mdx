@@ -1,0 +1,69 @@
+---
+title: Item
+description: The one row primitive — and the `role` prop that decides how it is announced.
+order: 31
+---
+
+# Item
+
+A row: optional leading element, a title, an optional subtitle, an optional
+trailing element. It is what menus, option lists, comboboxes and settings rows
+are built from, so a row anywhere in the ecosystem has the same height, the same
+press feedback and the same disabled treatment.
+
+```tsx
+import { Item } from '@oxyhq/bloom/item';
+
+<Item
+  leading={<Avatar source={user.avatar} size={32} />}
+  title={user.displayName}
+  subtitle={`@${user.username}`}
+  trailing={selected ? <CheckIcon /> : null}
+  onPress={() => choose(user)}
+  role="option"
+/>
+```
+
+## Which prop decides what
+
+| prop          | decides                                                        |
+| ------------- | --------------------------------------------------------------- |
+| `title` / `subtitle` | the two text lines                                       |
+| `leading` / `trailing` | the slots on either side                               |
+| `children`    | replaces the title/subtitle block entirely                       |
+| `onPress`     | makes the row pressable                                          |
+| `role`        | **how it is announced** — see below                              |
+| `selected`    | the selected state, for `option` / `radio` rows                  |
+| `active`      | the "you are here" state, for navigation rows                    |
+| `density`     | `comfortable` (default) or `compact` for a dense list            |
+| `destructive` | paints the title in the error role                               |
+
+## `role` is the prop that matters
+
+A row looks the same in every context and means something different in each.
+`role` is how you say which:
+
+| `role`     | for                                            |
+| ---------- | ----------------------------------------------- |
+| `option`   | a choice in a listbox — a combobox, a picker     |
+| `radio`    | a mutually exclusive choice                     |
+| `menuitem` | an action in a menu                             |
+| `listitem` | a row in a plain list                           |
+
+Getting this wrong is invisible on screen and wrong in every screen reader: a
+combobox whose rows are `listitem` announces as a list, and the user is never
+told they are choosing.
+
+## `selected` and `active` are different states
+
+`selected` means *this is the chosen one* — a checkmark in a picker. `active`
+means *this is where you are* — the current route in a sidebar. They look
+similar and they are not the same claim: a sidebar row is active without the
+user having selected anything, and a picker row is selected whether or not it
+is focused.
+
+## `destructive` colours, it does not confirm
+
+It paints the title in the error role. It does not add a confirmation step —
+if the action is irreversible, `confirm()` from
+[`surfaces`](/docs/bloom/main/surfaces) is what asks.

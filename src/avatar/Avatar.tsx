@@ -1,12 +1,13 @@
 import React, { memo, useMemo, useRef, useState } from 'react';
-import { View, Image, StyleSheet, Text, TouchableOpacity } from 'react-native';
+import { View, Image, StyleSheet, Text, Pressable } from 'react-native';
 import type { TextStyle } from 'react-native';
 import Svg, { ClipPath, Defs, Image as SvgImage, Path } from 'react-native-svg';
 
 import { useTheme } from '../theme/use-theme';
+import { useInteractionState } from '../hooks/use-interaction-state';
 import { useImageResolver } from '../image-resolver/context';
 import { Z_INDEX } from '../styles/z-index';
-import { useAvatarPlaceholder } from './placeholder-context';
+import { useAvatarPlaceholder } from './context';
 import { LiveBadge } from './LiveBadge';
 import { AvatarRing, getRingOuterSize } from './AvatarRing';
 import { SQUIRCLE_PATH } from './squircle-path';
@@ -175,6 +176,10 @@ const AvatarComponent: React.FC<AvatarProps> = ({
   testID,
 }) => {
   const [errored, setErrored] = useState(false);
+  // The press dip goes through the shared interaction hook rather than
+  // `TouchableOpacity`'s `activeOpacity` — one mechanism across the library, and
+  // the one the reduced-motion / pointer-type guards live behind.
+  const { state: pressed, onIn: onPressIn, onOut: onPressOut } = useInteractionState();
   const theme = useTheme();
   const placeholderConfig = useAvatarPlaceholder();
   const radius = size / 2;
@@ -342,13 +347,27 @@ const AvatarComponent: React.FC<AvatarProps> = ({
   );
 
   if (onPress) {
-    return <TouchableOpacity onPress={onPress}>{content}</TouchableOpacity>;
+    return (
+      <Pressable
+        onPress={onPress}
+        onPressIn={onPressIn}
+        onPressOut={onPressOut}
+        accessibilityRole="button"
+        accessibilityLabel={hasName ? name : undefined}
+        style={pressed ? styles.pressed : undefined}
+      >
+        {content}
+      </Pressable>
+    );
   }
 
   return content;
 };
 
 const styles = StyleSheet.create({
+  pressed: {
+    opacity: 0.7,
+  },
   container: {
     position: 'relative',
     overflow: 'visible',

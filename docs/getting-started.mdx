@@ -23,15 +23,15 @@ bun add react-native-gesture-handler react-native-reanimated react-native-safe-a
 
 ```tsx
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
-import { BloomThemeProvider, BloomDialogProvider } from '@oxyhq/bloom';
+import { BloomThemeProvider, SurfaceProvider } from '@oxyhq/bloom';
 
 export default function Root() {
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
       <BloomThemeProvider mode="system" colorPreset="teal">
-        <BloomDialogProvider>
+        <SurfaceProvider>
           <App />
-        </BloomDialogProvider>
+        </SurfaceProvider>
       </BloomThemeProvider>
     </GestureHandlerRootView>
   );
@@ -39,7 +39,7 @@ export default function Root() {
 ```
 
 - `BloomThemeProvider` is required — every Bloom component reads from it.
-- `BloomDialogProvider` is required only if you use `alert()`. Without it, `<Dialog>` still works on its own.
+- `SurfaceProvider` (or a bare `<SurfaceHost />`) is required only if you use the imperative surfaces — `alert()`, `confirm()`, `prompt()`, `surfaces.present()`. Without it, `<Dialog>` still works on its own.
 - `GestureHandlerRootView` is required on native for any sheet-based component.
 
 <Callout variant="warning" title="Web setup">

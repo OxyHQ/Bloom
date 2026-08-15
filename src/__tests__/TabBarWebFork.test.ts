@@ -44,17 +44,17 @@ const PLATFORM_ONLY = [
  */
 const NEUTRAL_AND_WEB_FILES = [
   'tab-bar/index.ts',
-  'tab-bar/index.web.tsx',
+  'tab-bar/index.web.ts',
   'tab-bar/types.ts',
   'tab-bar/shared.ts',
   'tab-bar/TabBarBase.tsx',
-  'tab-bar/minimize-context.tsx',
+  'tab-bar/context.tsx',
   'tab-bar/use-footprint.ts',
   'tab-bar/surface.tsx',
   'tab-bar/surface-solid.tsx',
   'tab-bar/surface.web.tsx',
   'tab-bar/glyph.tsx',
-  'progressive-blur/index.web.tsx',
+  'progressive-blur/ProgressiveBlur.web.tsx',
   'progressive-blur/shared.ts',
   'progressive-blur/types.ts',
 ] as const;
@@ -119,8 +119,8 @@ describe('tab-bar platform split', () => {
 
   it('the web progressive blur drops expo-blur for one masked backdrop-filter', () => {
     // Ten stacked BlurViews would be ten composited backdrop passes per frame.
-    expect(moduleSpecifiers(read('progressive-blur/index.web.tsx'))).not.toContain('expo-blur');
-    expect(moduleSpecifiers(read('progressive-blur/index.tsx'))).toContain('expo-blur');
+    expect(moduleSpecifiers(read('progressive-blur/ProgressiveBlur.web.tsx'))).not.toContain('expo-blur');
+    expect(moduleSpecifiers(read('progressive-blur/ProgressiveBlur.tsx'))).toContain('expo-blur');
   });
 
   it('the native surface and glyph are the ONLY holders of the native packages', () => {
@@ -160,7 +160,7 @@ describe('tab-bar platform split', () => {
   it('the web entry imports the web pieces by their FULL .web name', () => {
     // Inside the published `lib/` every file is plain `.js`, and no web bundler
     // resolves a bare `./surface` to the `.web` sibling — only Metro does.
-    const specifiers = moduleSpecifiers(read('tab-bar/index.web.tsx'));
+    const specifiers = moduleSpecifiers(read('tab-bar/index.web.ts'));
     expect(specifiers).toContain('./surface.web');
     expect(specifiers).toContain('../progressive-blur/index.web');
     expect(specifiers).not.toContain('./surface');
@@ -221,7 +221,7 @@ describe('tab-bar published surface', () => {
 
   it('keeps the cross-platform native peers REQUIRED', () => {
     // `expo-blur` and `expo-image` are apple+android native modules imported from
-    // platform-NEUTRAL files (`progressive-blur/index.tsx`,
+    // platform-NEUTRAL files (`progressive-blur/ProgressiveBlur.tsx`,
     // `frosted-icon-button/FrostedIconButton.tsx`, `zoomable-image-gallery/`), so
     // every native platform genuinely needs them. Marking them optional would
     // silence the one warning that tells a consumer their build is about to fail.

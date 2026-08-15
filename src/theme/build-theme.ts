@@ -90,8 +90,30 @@ function buildColorsFromPreset(
     warning: g('warning'),
     info: g('info'),
 
+    // The tinted half of the same four families. `-subtle` is the translucent
+    // surface, `-text` the member legible on it — the pair the policy generates
+    // together, so JS consumers get the gated combination instead of hand-tinting
+    // a fill with hex alpha.
+    successSubtle: g('success-subtle'),
+    successSubtleForeground: g('success-text'),
+    errorSubtle: g('error-subtle'),
+    errorSubtleForeground: g('error-text'),
+    warningSubtle: g('warning-subtle'),
+    warningSubtleForeground: g('warning-text'),
+    infoSubtle: g('info-subtle'),
+    infoSubtleForeground: g('info-text'),
+
     primarySubtle: g('primary-subtle'),
-    primarySubtleForeground: r.onPrimaryContainer,
+    // The `-text` member, like every other `*SubtleForeground` above — NOT the
+    // engine's `onPrimaryContainer`. `--primary-subtle` is the policy's
+    // TRANSLUCENT tint and `onPrimaryContainer` is the on-colour of M3's OPAQUE
+    // container, so the two were never a pair: measured over the tint composited
+    // on `--background`, `mono` came out at 1.25 in light and 1.53 in dark (white
+    // text on a near-white pill). The pairs the policy generates together are the
+    // `-subtle`/`-text` ones, and those are what `policy-legibility.test.ts`
+    // gates. The platform palettes in `adaptive-colors.ts` keep
+    // `primaryContainer`/`onPrimaryContainer`, which IS a matched pair.
+    primarySubtleForeground: g('primary-text'),
     negative: r.error,
     negativeForeground: r.onError,
     negativeSubtle: g('error-subtle'),
@@ -117,8 +139,13 @@ export function buildTheme(
   isAdaptive: boolean = false,
   accents?: ExplicitAccents,
 ): Theme {
+  const base = buildColorsFromPreset(preset, resolved, accents);
   const adaptive = isAdaptive && Platform.OS !== 'web' ? getAdaptiveColors() : undefined;
-  const colors = adaptive ?? buildColorsFromPreset(preset, resolved, accents);
+  // The platform palette OVERLAYS the preset one rather than replacing it. Every
+  // field the platform answers still wins, byte for byte; the tinted status
+  // members — which Material You and iOS dynamic have no role for at all — fall
+  // through to the engine, whose `-subtle`/`-text` pairs are legibility-gated.
+  const colors = adaptive ? { ...base, ...adaptive } : base;
 
   return {
     mode: resolved,

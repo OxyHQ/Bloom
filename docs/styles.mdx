@@ -1,0 +1,61 @@
+---
+title: Styles
+description: Atoms, tokens, breakpoints and the platform helpers — for styles a className cannot express.
+order: 74
+---
+
+# Styles
+
+`@oxyhq/bloom/styles` holds the style primitives Bloom itself uses.
+
+```tsx
+import { atoms as a, tokens, BREAKPOINTS, web, native, select } from '@oxyhq/bloom/styles';
+```
+
+## `atoms`
+
+Utility style objects — `a.flex_1`, `a.flex_row`, `a.align_center`, `a.px_sm`.
+They are the inline equivalent of the Tailwind utilities, and they exist
+because **a className is inert on web without the consumer's Tailwind
+pipeline**. Anything Bloom must draw correctly with or without that pipeline
+uses atoms; layout that only apps compose can use classes.
+
+## `tokens`
+
+The t-shirt view of the scales — `tokens.space.lg`, `tokens.borderRadius.xl`.
+
+The numbers themselves live in `design-tokens/scales.ts` and are read from
+there by reference, so a rung cannot exist in one spelling and not the other.
+They did once diverge: `borderRadius.full` was 999 against `radius-max` 9999,
+and each file's comments claimed to match the other.
+
+Prefer the numeric names (`radius-20`) when you are naming a rung in an API —
+[`Card`](/docs/bloom/main/card)'s `radius` prop takes those — and the t-shirt
+names in ad-hoc inline style.
+
+## `BREAKPOINTS`
+
+The shared widths, so a component and the screen around it agree about when the
+layout changes.
+
+## `web` / `native` / `ios` / `android` / `platform` / `select`
+
+Platform-conditional style helpers. Use them for a genuine platform difference
+— a shadow, a font smoothing, a scrollbar — and not to work around something
+that should be the same on both.
+
+## `Z_INDEX`
+
+**Within-context values only.** Which overlay paints on top is decided by the
+overlay stack, not by a constant: `overlay/stack.ts` ranks surfaces by when
+they OPENED, and a per-component z-index answers that question by what a
+surface *is*, which leaves some pairings permanently inverted.
+
+Never give an overlay surface a `zIndex` of its own.
+
+## `flatten`
+
+`StyleSheet.flatten` re-exported for code that already depends on the RN
+runtime. A raw-DOM web fork should use `flattenWebStyle()` instead — jest's RN
+mock stubs `StyleSheet.flatten` as identity, so the array form would survive
+and crash the DOM with `Failed to set an indexed property [0]`.

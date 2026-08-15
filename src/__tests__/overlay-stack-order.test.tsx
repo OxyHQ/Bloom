@@ -196,14 +196,16 @@ describe('no surface picks its own depth', () => {
   const SURFACES = [
     'dialog/Dialog.tsx',
     'dialog/Dialog.web.tsx',
-    'bottom-sheet/index.web.tsx',
-    'menu/index.web.tsx',
-    'select/index.web.tsx',
-    'context-menu/index.web.tsx',
-    'popover/index.web.tsx',
-    'tooltip/index.tsx',
+    'bottom-sheet/BottomSheet.web.tsx',
+    'floating/FloatingPanel.tsx',
+    'dropdown-menu/DropdownMenu.web.tsx',
+    'menubar/Menubar.web.tsx',
+    'select/Select.web.tsx',
+    'context-menu/ContextMenu.web.tsx',
+    'popover/Popover.web.tsx',
+    'tooltip/Tooltip.tsx',
     'zoomable-image-gallery/ZoomableImageGallery.tsx',
-    'prompt-input/PromptInput.tsx',
+    'prompt-input/PromptInputBase.tsx',
     'avatar-group/AvatarGroup.web.tsx',
     'toast/ToastHost.tsx',
   ];
@@ -254,17 +256,27 @@ describe('no surface picks its own depth', () => {
     // lifted over another surface and has no rank to take. The NATIVE tooltip
     // does portal, and IS in the list above. If this ever starts portaling,
     // move it into `SURFACES`.
-    expect(code('tooltip/index.web.tsx')).not.toMatch(/from '\.\.\/portal/);
-    expect(code('tooltip/index.tsx')).toMatch(/from '\.\.\/portal/);
+    expect(code('tooltip/Tooltip.web.tsx')).not.toMatch(/from '\.\.\/portal/);
+    expect(code('tooltip/Tooltip.tsx')).toMatch(/from '\.\.\/portal/);
   });
 
   it('every surface routes its depth through OverlayRoot', () => {
     // `Dialog.web`'s side placement renders `SheetSurface`, which mounts its
     // own `OverlayRoot`; the centred branch mounts one directly. Both files are
     // covered by the membership check below.
-    const missing = SURFACES.filter((rel) => !code(rel).includes('OverlayRoot'));
+    //
+    // The four ANCHORED families (`dropdown-menu`, `context-menu`, `menubar`,
+    // `popover`) do not mount one each: their web forks render
+    // `floating/FloatingPanel`, which mounts the single `OverlayRoot` they
+    // share. Delegating counts, and the assertion below is what stops that from
+    // being a hole — if `FloatingPanel` ever stopped mounting one, every
+    // delegating surface would lose its rank at once and this would fail.
+    const missing = SURFACES.filter(
+      (rel) => !code(rel).includes('OverlayRoot') && !code(rel).includes('FloatingPanel'),
+    );
     expect(missing).toEqual([]);
+    expect(code('floating/FloatingPanel.tsx')).toMatch(/<OverlayRoot>/);
     // Vacuity floor on the list itself.
-    expect(SURFACES.length).toBeGreaterThanOrEqual(12);
+    expect(SURFACES.length).toBeGreaterThanOrEqual(14);
   });
 });

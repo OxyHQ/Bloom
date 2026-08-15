@@ -17,10 +17,11 @@ export {
   dismissById,
   dismissToRoot,
   dismissAll,
+  alert,
   confirm,
   prompt,
 } from './api';
-export { useSurface } from './useSurface';
+export { useSurface } from './use-surface';
 export type {
   SurfacePresentation,
   PresentOptions,
@@ -28,6 +29,8 @@ export type {
   SurfaceRenderFn,
   SurfaceStatus,
   SurfaceEntry,
+  AlertButton,
+  AlertButtonStyle,
   SurfaceConfirmOptions,
   SurfacePromptOptions,
 } from './types';

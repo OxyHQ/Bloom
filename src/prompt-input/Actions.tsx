@@ -2,6 +2,7 @@ import React from 'react';
 import { View } from 'react-native';
 
 import { useTheme } from '../theme/use-theme';
+import { borderRadius } from '../styles/tokens';
 import { usePromptInput } from './context';
 import type { PromptInputActionsProps } from './types';
 
@@ -28,7 +29,7 @@ export function PromptInputActions({
           right: 16,
           maxWidth: 672,
           alignSelf: 'center',
-          borderRadius: 9999,
+          borderRadius: borderRadius.full,
           borderWidth: 1,
           borderColor: theme.colors.border,
           backgroundColor: theme.colors.background,

@@ -49,7 +49,13 @@ const DotGridMeterComponent: React.FC<DotGridMeterProps> = ({
         style,
       ]}
       accessibilityRole="progressbar"
-      accessibilityValue={{ min: 0, max: safeTotal, now: safeFilled }}
+      // The FLAT `aria-value*` props: react-native-web drops the
+      // `accessibilityValue` object entirely, so the meter announced a
+      // progressbar carrying no value. React Native folds these back into
+      // `accessibilityValue`, so native is unchanged.
+      aria-valuemin={0}
+      aria-valuemax={safeTotal}
+      aria-valuenow={safeFilled}
       testID={testID}
     >
       {dots.map((isFilled, index) => (

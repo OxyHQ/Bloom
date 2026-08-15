@@ -10,7 +10,7 @@ const meta: Meta<typeof Loading> = {
   argTypes: {
     variant: {
       control: 'select',
-      options: ['spinner', 'top', 'skeleton', 'inline'],
+      options: ['spinner', 'top', 'inline'],
     },
     size: {
       control: 'select',
@@ -35,10 +35,6 @@ export const Inline: Story = {
   args: { variant: 'inline', text: 'Saving' },
 };
 
-export const Skeleton: Story = {
-  args: { variant: 'skeleton', lines: 4 },
-};
-
 export const Sizes: Story = {
   render: () => (
     <View style={{ flexDirection: 'row', gap: 24, alignItems: 'center' }}>
@@ -54,7 +50,6 @@ export const Composition: Story = {
     <View style={{ gap: 24, alignItems: 'flex-start' }}>
       <Loading variant="spinner" size="small" text="Small" />
       <Loading variant="inline" text="Saving changes" />
-      <Loading variant="skeleton" lines={3} />
     </View>
   ),
 };

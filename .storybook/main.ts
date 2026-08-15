@@ -1,6 +1,7 @@
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import type { StorybookConfig } from '@storybook/react-vite';
+import tailwindcss from '@tailwindcss/vite';
 import { mergeConfig } from 'vite';
 
 const __filename = fileURLToPath(import.meta.url);
@@ -46,9 +47,18 @@ const config: StorybookConfig = {
    * `.storybook/mocks/*` is intentionally left in the tree, unreferenced, as the
    * rollback. Do NOT re-point these aliases at it to make a story pass; fix the
    * component or file the finding.
+   *
+   * `@tailwindcss/vite` compiles `.storybook/tailwind.css` (imported by
+   * `preview.tsx`). Without it every Bloom `className` still reaches the DOM —
+   * react-native-css stamps the literal tokens onto the `class` attribute via
+   * react-native-web's `$$css` escape hatch — but no rule backs any of them, so
+   * layout utilities are inert and the harness reports success on components
+   * whose layout never applied. That is the exact shape of the `fonts={false}`
+   * gap above: nothing errors, and the story still looks plausible.
    */
   async viteFinal(viteConfig) {
     return mergeConfig(viteConfig, {
+      plugins: [tailwindcss()],
       resolve: {
         alias: [
           {

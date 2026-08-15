@@ -1,6 +1,26 @@
-import { parseRgb, withAlpha } from '../color-utils';
+import { parseRgb, parseRgba, withAlpha } from '../color-utils';
 
 describe('color-utils', () => {
+  describe('parseRgba', () => {
+    // The alpha is what half the palette carries: the `*Subtle` tints resolve to
+    // `rgba(r, g, b, 0.13)` and every frosted surface is a low-alpha tint, so a
+    // resolver compositing onto one has to know it is compositing onto something
+    // translucent. Dropping it turns a tint into an opaque fill — a change that
+    // renders perfectly and is wrong.
+    it('reads the alpha a colour was written with', () => {
+      expect(parseRgba('rgba(213, 86, 255, 0.13)')).toEqual({ r: 213, g: 86, b: 255, a: 0.13 });
+      expect(parseRgba('rgb(31 153 239 / 0.5)')).toEqual({ r: 31, g: 153, b: 239, a: 0.5 });
+      expect(parseRgba('rgb(31 153 239 / 50%)')).toEqual({ r: 31, g: 153, b: 239, a: 0.5 });
+    });
+    it('reads a colour with no alpha component as fully opaque', () => {
+      expect(parseRgba('rgb(31 153 239)')).toEqual({ r: 31, g: 153, b: 239, a: 1 });
+      expect(parseRgba('#1f99ef')).toEqual({ r: 31, g: 153, b: 239, a: 1 });
+    });
+    it('refuses a colour whose alpha it cannot read, rather than guessing 1', () => {
+      // Guessing would silently flatten whatever it was actually asked about.
+      expect(parseRgba('rgb(31 153 239 / var(--a))')).toBeNull();
+    });
+  });
   describe('parseRgb', () => {
     it('parses canonical space-separated rgb', () => {
       expect(parseRgb('rgb(31 153 239)')).toEqual({ r: 31, g: 153, b: 239 });
@@ -18,6 +38,11 @@ describe('color-utils', () => {
       expect(parseRgb('transparent')).toBeNull();
       expect(parseRgb('#12')).toBeNull();
       expect(parseRgb('')).toBeNull();
+    });
+    it('discards the alpha rather than reporting it', () => {
+      // The distinction from `parseRgba`, stated: a caller reaching for this one
+      // is asking about the channels only.
+      expect(parseRgb('rgba(31, 153, 239, 0.5)')).toEqual({ r: 31, g: 153, b: 239 });
     });
   });
 

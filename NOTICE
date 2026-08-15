@@ -68,6 +68,115 @@ The following are re-implemented rather than ported:
     react-native-worklets babel plugin.
 
 --------------------------------------------------------------------------------
+Bloom's anchored overlay, select, typography, chip, aspect-ratio and checkbox
+families (src/dropdown-menu/, src/context-menu/, src/menubar/, src/popover/,
+src/floating/, src/select/, src/typography/, src/chip/, src/aspect-ratio/,
+src/checkbox/, plus hooks/use-accessibility-focus.ts)
+--------------------------------------------------------------------------------
+
+Behaviour derived from rn-primitives
+  https://github.com/roninoss/rn-primitives
+  MIT License, Copyright (c) 2024 roninoss
+
+Public API derived from react-native-reusables, revision 119d0b10 (2026-07-02)
+  https://github.com/founded-labs/react-native-reusables
+  MIT License, Copyright (c) 2025 Founded Labs
+
+The two are one layer each of the same stack, which is why they share an entry:
+react-native-reusables is the STYLING layer — component names, composition and
+prop shapes — and each of its families is a thin wrapper over the rn-primitives
+package of the same name, which holds the BEHAVIOUR.
+
+Bloom reads both as reference and ships neither as a dependency. What was
+studied and re-expressed here is the native interaction model: open/close
+semantics, the trigger/content/overlay split, per-row dismissal, the sub-menu
+disclosure, the screen-reader focus handling, and the accessibility roles and
+states each part carries.
+
+WHAT IS RE-IMPLEMENTED RATHER THAN PORTED
+
+  - The entire WEB half. Every `*.web.tsx` upstream is an adapter over Radix UI
+    (`@radix-ui/react-dropdown-menu`, `-context-menu`, `-menubar`, `-select`,
+    `-popover`, `-checkbox`); the behaviour on web is Radix's, not
+    rn-primitives'. Bloom's web surfaces are its own — `floating/FloatingPanel`
+    over `portal/`, `overlay/OverlayRoot` and `overlay/dropdown-placement`. No
+    Radix code is included and Radix is not a dependency.
+
+    The honest consequence: Bloom has no web arrow-key navigation, roving focus
+    or type-ahead. Neither does rn-primitives — measured across its whole tree,
+    type-ahead appears zero times and arrow keys four times, all in a package
+    Bloom did not port and all either forwarded to Radix or discarded on native.
+    Its only `onKeyDown` maps Enter and Space onto a press.
+
+  - Portal and overlay host. Bloom uses `portal/` plus `overlay/OverlayRoot`,
+    whose stack rank is taken on MOUNT by `overlay/stack.ts` so a surface opened
+    later paints above one opened earlier. Upstream's portal host names and
+    per-surface z-indices are not used; no Bloom overlay carries a `zIndex` of
+    its own.
+
+  - Positioning. `overlay/dropdown-placement.ts` (fit, flip, clamp, with
+    `align` of start/center/end) rather than upstream's `useRelativePosition`.
+    Its native anchored positioning has no caller here at all: a Bloom menu
+    presents as a bottom sheet on native through `dialog/SheetShell`, so there
+    is nothing to anchor.
+
+  - `Slot` / `asChild`. Taken for TRIGGERS only, as `floating/TriggerSlot`, and
+    deliberately declined for rows. A Bloom row IS `item/Item`, so `asChild`
+    there would replace the component that guarantees the touch target, the
+    disabled treatment, the destructive colour and the ARIA state — it would
+    hand back exactly what the row exists to provide. Upstream can offer it
+    because its rows are unstyled `Pressable`s that guarantee none of those.
+
+  - The row vocabulary. Upstream ships three copy-pasted row sets, one per menu
+    family, differing only in prefix. Bloom has ONE implementation, bound per
+    family by `floating/menu-rows.tsx`'s `createMenuRows`, so the three families'
+    rows cannot drift apart.
+
+  - The hooks. Bloom already had equivalents of `useControllableState`,
+    `useComposedRefs` (`mergeRefs`) and the interaction-state pairs, so only the
+    two screen-reader focus hooks were genuinely absent, and those are rewritten
+    rather than copied: the platform guard is read at the call site so the web
+    branch is reachable by a test, the settle delay is a named constant with its
+    reason, a pending focus move is cancelled if the surface closes inside the
+    window, the restore fires on the open-to-closed EDGE only, and the
+    `findNodeHandle` narrowing lives in one place instead of at each call.
+
+  - `BackHandler`. Not taken. Upstream needs it because it portals into the app
+    tree; every Bloom native surface is an RN `<Modal>`, which already fires
+    `onRequestClose` on Android's back gesture. A second handler would race the
+    first.
+
+  - `textValue`. Re-expressed as `accessibilityLabel`, because in Bloom that is
+    the whole of what it does — upstream's other use for it, matching keystrokes
+    for type-ahead, has nothing to feed here.
+
+  - `aspect-ratio`. Not ported in any sense. Upstream's is 22 lines whose body
+    is one style property React Native has always had; Bloom's is its own, and
+    differs deliberately by filling its parent's width and by refusing
+    `className`.
+
+  - `checkbox`. Bloom's predates this work. Only the web focus ring and a 44dp
+    touch target were taken.
+
+  - From react-native-reusables specifically: `cn`,
+    `class-variance-authority`, `TextClassContext`, its `text.tsx`,
+    `lucide-react-native`, `react-native-screens`' `FullWindowOverlay`, every
+    hardcoded colour and every hardcoded `z-*`. Bloom resolves colour through
+    `theme/accent-colors.ts` and design tokens, ships `icons/`, and wires
+    `className` through `styled()` from react-native-css.
+
+The sub-menu (`*MenuSub` / `*MenuSubTrigger` / `*MenuSubContent`) is Bloom's own
+implementation on both platforms, and matches what upstream presents on each: a
+FLYOUT panel beside the trigger row on web, an INLINE DISCLOSURE on native.
+Upstream's web flyout is `@radix-ui/react-dropdown-menu`'s, so no code was taken
+— the hover intent, the keyboard handling and the horizontal placement axis in
+`floating/menu-sub-flyout.tsx` and `overlay/dropdown-placement.ts` are written
+here against the same behaviour. Documented in `docs/dropdown-menu.mdx`.
+
+Every module named above carries Bloom's own file header and no per-file
+provenance comment, because none of them contains upstream code.
+
+--------------------------------------------------------------------------------
 MIT License
 --------------------------------------------------------------------------------
 

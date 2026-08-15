@@ -2,11 +2,16 @@ import React from 'react';
 import { View } from 'react-native';
 import type { Decorator, Preview } from '@storybook/react-vite';
 
+// The compiled Tailwind/NativeWind stylesheet. This import is what makes every
+// `className` in the library resolve to a rule — see `.storybook/tailwind.css`
+// for why the harness is useless, not merely incomplete, without it.
+import './tailwind.css';
+
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 
 import { BloomThemeProvider } from '../src/theme';
-import { BloomDialogProvider } from '../src/dialog';
-import { Provider as PortalProvider, Outlet as PortalOutlet } from '../src/portal';
+import { SurfaceProvider } from '../src/surfaces';
+import { PortalProvider, PortalOutlet } from '../src/portal';
 
 /**
  * Global decorator. Every Bloom story renders inside the full provider
@@ -15,7 +20,7 @@ import { Provider as PortalProvider, Outlet as PortalOutlet } from '../src/porta
  *   <SafeAreaProvider>     safe-area insets
  *     <BloomThemeProvider>   theme + fonts
  *       <PortalProvider>     portal host (menus, tooltips)
- *         <BloomDialogProvider>  imperative alert() host
+ *         <SurfaceProvider>  the surface stack — alert()/confirm()/prompt()
  *           <story />
  *
  * `SafeAreaProvider` is not optional: `BottomSheet` reads insets through
@@ -28,6 +33,14 @@ import { Provider as PortalProvider, Outlet as PortalOutlet } from '../src/porta
  *
  * On web (where Storybook runs) BloomThemeProvider applies CSS variables and
  * the dark class, so stories pick up theme palette colors immediately.
+ *
+ * `fonts` is left at its default (`true`) DELIBERATELY. This harness passed
+ * `fonts={false}` for months: every story still looked fine, because a missing
+ * `@font-face` falls back to a system face rather than failing, so the harness
+ * covered the whole font system with nothing while reporting green. A gate that
+ * opts out of the default every consumer ships is not a gate. On web the loader
+ * is synchronous (`applyFontFaces()` during render, `font-display: swap`), so
+ * there is no render cost to pay for the coverage.
  *
  * The padded container gives stories breathing room and a consistent
  * background that respects the active theme.
@@ -45,9 +58,9 @@ const withProviders: Decorator = (Story, context) => {
 
   return (
     <SafeAreaProvider>
-      <BloomThemeProvider mode={mode} colorPreset={colorPreset} fonts={false}>
+      <BloomThemeProvider mode={mode} colorPreset={colorPreset}>
         <PortalProvider>
-          <BloomDialogProvider>
+          <SurfaceProvider>
             <View
               style={{
                 padding: 24,
@@ -60,7 +73,7 @@ const withProviders: Decorator = (Story, context) => {
               <Story />
             </View>
             <PortalOutlet />
-          </BloomDialogProvider>
+          </SurfaceProvider>
         </PortalProvider>
       </BloomThemeProvider>
     </SafeAreaProvider>
@@ -77,26 +90,30 @@ const preview: Preview = {
       },
     },
     options: {
+      /**
+       * ONE taxonomy, so a reader can predict where a family lives before
+       * looking. Five groups, and the boundaries are behavioural rather than
+       * visual — a finer split (Actions / Layout / Navigation / Feedback) reads
+       * well in a sidebar and then puts `Toast` and `Dialog` in different
+       * places, which is the question a reader is actually asking.
+       *
+       *   Foundations   not a component you place — theme, tokens, type, icons,
+       *                 motion
+       *   Forms         inputs and controls: things you fill in or choose with
+       *   Overlays      anything that opens over the page and dismisses,
+       *                 whoever opened it (Dialog, BottomSheet, Toast, Command)
+       *   Data Display  things whose job is to show you a value or a person
+       *   Components    everything else
+       */
       storySort: {
         order: [
           'Introduction',
           'Foundations',
-          ['Theme', 'Typography', 'Icons'],
+          ['Theme', 'Design Tokens', 'Typography', 'Icons', 'Motion'],
           'Components',
-          [
-            'Button',
-            'Dialog',
-            'BottomSheet',
-            'Toast',
-            'Avatar',
-            'TextField',
-            'Loading',
-            'Menu',
-            'Select',
-            'ContextMenu',
-            'PromptInput',
-            'SettingsList',
-          ],
+          'Forms',
+          'Overlays',
+          'Data Display',
         ],
       },
     },

@@ -12,8 +12,8 @@ import { join } from 'node:path';
  * `expo-haptics` / `@react-native-community/netinfo` into a program that never
  * declared them. Measured against a consumer fixture with no
  * `@types/react-dom`, the string form produces TS7016 on
- * `src/portal/index.web.tsx`, TS2307 on `src/hooks/useHaptics.tsx` and
- * `src/connection-status/index.tsx`, plus a nativewind TS2769 on
+ * `src/portal/Portal.web.tsx`, TS2307 on `src/hooks/use-haptics.tsx` and
+ * `src/connection-status/ConnectionStatusToasts.tsx`, plus a nativewind TS2769 on
  * `src/dialog/DialogHeader.tsx`. `skipLibCheck` cannot suppress any of them —
  * a `.tsx` is not a declaration file.
  *
@@ -44,8 +44,11 @@ const STRING_ENTRIES = [
 ];
 
 /**
- * Vacuity floor. `SUBPATHS` in the generator is 86 entries today; a traversal
- * bug that silently found none must not read as a pass.
+ * Vacuity floor, deliberately NOT the current count: a number written here goes
+ * stale on the next family added or deleted, and a stale one reads as a
+ * measurement. It exists only so a traversal bug that silently finds no
+ * subpaths cannot pass. `SUBPATHS` in `scripts/generate-platform-exports.mjs`
+ * is the actual list.
  */
 const MIN_SUBPATHS = 80;
 
