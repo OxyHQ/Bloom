@@ -78,7 +78,7 @@ const SCALE_VARIANTS = new Set<ButtonVariant>(['primary', 'secondary', 'inverse'
 const STYLE_ID = 'bloom-button-web-css';
 
 const BLOOM_BUTTON_CSS = interactiveWebCss({
-  className: 'bloom-btn',
+  selector: '.bloom-btn',
   varPrefix: 'bloom-btn',
   base: `
     flex-direction: row;

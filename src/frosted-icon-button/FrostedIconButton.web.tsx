@@ -34,7 +34,7 @@ const PRESS_SCALE = 0.94;
 const STYLE_ID = 'bloom-frosted-icon-button-web-css';
 
 const BLOOM_FROSTED_ICON_BUTTON_CSS = interactiveWebCss({
-  className: 'bloom-frosted-icon-btn',
+  selector: '.bloom-frosted-icon-btn',
   varPrefix: 'bloom-frosted',
   base: `
     padding: 0;

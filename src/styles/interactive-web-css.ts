@@ -43,8 +43,19 @@ import { adoptStyleSheet } from './adopt-style-sheet';
 export const NOT_DISABLED = ':not(:disabled):not([aria-disabled="true"])';
 
 export interface InteractiveWebCssOptions {
-  /** Base class every rule is scoped to, e.g. `bloom-btn`. */
-  className: string;
+  /**
+   * The CSS selector every rule is scoped to, written in full: `.bloom-btn` for
+   * a raw-DOM fork that renders its own class, `[data-bloom-chip]` for a
+   * react-native-web control that cannot.
+   *
+   * A full selector rather than a bare class name because the two kinds of
+   * caller cannot both use a class. A raw-DOM fork sets `className` on a real
+   * element and gets one; a react-native-web component's `className` is consumed
+   * by react-native-css and mapped into `style`, so no class ever reaches the
+   * DOM. An attribute is the hook that IS available to it, and the interactive
+   * rules are identical either way — only the thing they hang off differs.
+   */
+  selector: string;
   /**
    * Namespace for the per-instance custom properties the component sets inline.
    * `bloom-btn` yields `--bloom-btn-ring` and `--bloom-btn-press-scale`.
@@ -88,7 +99,7 @@ function block(declarations: string): string {
  * a DOM.
  */
 export function interactiveWebCss({
-  className,
+  selector,
   varPrefix,
   base,
   transition,
@@ -96,7 +107,7 @@ export function interactiveWebCss({
   outlineOffset,
   extraRules,
 }: InteractiveWebCssOptions): string {
-  const c = `.${className}`;
+  const c = selector;
   const interactive = `${c}${NOT_DISABLED}`;
 
   return `

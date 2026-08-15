@@ -1,0 +1,53 @@
+---
+title: Chip
+description: A labelled pill — a filter, a tag, a removable token.
+order: 23
+---
+
+# Chip
+
+A labelled pill. A filter you can toggle, a tag you can remove, or a static token.
+
+`Chip` is what shadcn calls `Badge`. Bloom's own [`Badge`](/docs/bloom/main/design-tokens) is a different component — a counter or a dot that rides on another control — so if you are porting a `<Badge>Draft</Badge>` from shadcn, this is the one you want.
+
+## Basic
+
+```tsx
+import { Chip } from '@oxyhq/bloom/chip';
+
+<Chip>Draft</Chip>
+<Chip variant="solid" color="success">Published</Chip>
+<Chip variant="subtle" color="warning">Needs review</Chip>
+```
+
+## Tone and fill
+
+`color` picks the tone (`default`, `primary`, `success`, `warning`, `error`, `info`) and `variant` picks how loudly it is painted (`solid`, `subtle`, `outlined` — default `outlined`). shadcn's four badge variants map onto that pair: `default` is `solid` + `primary`, `secondary` is `subtle` + `default`, `destructive` is `solid` + `error`, and `outline` is `outlined` + `default`.
+
+Both come from `theme/accent-colors.ts`, the one resolver `Chip` and `Badge` share. Never derive a tint yourself by appending alpha to a token — an accent resolves to `rgb(...)`, so the appended-hex form parses back fully opaque and paints the label on its own colour at contrast 1.00.
+
+## Filter pills
+
+```tsx
+<Chip variant="subtle" selected={active} onPress={toggle}>
+  Music
+</Chip>
+```
+
+`selected` promotes the chip to the brand tone rather than to a colour system of its own, and announces as `aria-pressed`. On web a keyboard user gets a `:focus-visible` ring — keyboard-only, so a mouse click does not leave one behind.
+
+## Removable
+
+```tsx
+<Chip onClose={() => removeTag(tag)}>{tag}</Chip>
+```
+
+The close affordance is its own control inside the pill, with its own label and its own hit slop.
+
+## Sizes and icons
+
+`size` is `small`, `medium` (default) or `large`. `startIcon` and `endIcon` take any node, and both are sized to the pill rather than to whatever was passed — an icon in a `small` chip and the same icon in a `large` one come out proportional.
+
+## A pill does not shrink
+
+In a flex row of chips — a filter bar, a tag list — each pill keeps its size and the row overflows, rather than every label squeezing into an ellipsis to make room. Inside one pill, the label yields first: a chip narrower than its own text ellipsises rather than spilling past its radius.

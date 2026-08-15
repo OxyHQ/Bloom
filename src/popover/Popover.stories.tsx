@@ -15,20 +15,20 @@ export default meta;
 
 type Story = StoryObj;
 
+/**
+ * The shadcn shape: `asChild` hands the caller's own control to the trigger, so
+ * the `Button` below IS the trigger rather than something wrapped in one.
+ */
 export const Basic: Story = {
   render: () => (
     <View style={{ padding: 80 }}>
       <Popover>
-        <PopoverTrigger label="Open popover">
-          {({ props }) => (
-            <Button {...props} onPress={props.onPress}>
-              Open popover
-            </Button>
-          )}
+        <PopoverTrigger asChild label="Open popover">
+          <Button testID="popover-trigger">Open popover</Button>
         </PopoverTrigger>
-        <PopoverContent label="Account actions" placement="bottom-start">
-          <View style={{ minWidth: 200 }}>
-            <Item title="Edit profile" density="compact" onPress={() => {}} />
+        <PopoverContent label="Account actions" align="start">
+          <View style={{ minWidth: 200 }} testID="popover-panel">
+            <Item title="Profile" density="compact" onPress={() => {}} />
             <Item title="Settings" density="compact" onPress={() => {}} />
             <Item title="Sign out" density="compact" destructive onPress={() => {}} />
           </View>
@@ -38,24 +38,48 @@ export const Basic: Story = {
   ),
 };
 
-export const RichContent: Story = {
+/** Prose rather than rows: the body pads itself, since the panel does not. */
+export const Prose: Story = {
   render: () => (
-    <View style={{ padding: 80 }}>
+    <View style={{ padding: 80, alignItems: 'flex-end' }}>
       <Popover>
-        <PopoverTrigger label="Details">
-          {({ props }) => (
-            <Button {...props} variant="secondary" onPress={props.onPress}>
-              Details
-            </Button>
-          )}
+        <PopoverTrigger asChild label="What is this?">
+          <Button variant="secondary">What is this?</Button>
         </PopoverTrigger>
-        <PopoverContent label="Details" placement="bottom" maxWidth={280}>
-          <View style={{ padding: 12, gap: 6 }}>
-            <Text style={{ fontWeight: '600' }}>Storage</Text>
-            <Text>4.2 GB of 10 GB used.</Text>
+        <PopoverContent label="Explanation" align="end" maxWidth={280}>
+          <View style={{ padding: 16, gap: 8 }}>
+            <Text style={{ fontWeight: '600' }}>Two-factor authentication</Text>
+            <Text>
+              A second step when you sign in, so a leaked password is not enough on its own.
+            </Text>
           </View>
         </PopoverContent>
       </Popover>
     </View>
   ),
+};
+
+/**
+ * Controlled: the caller owns `open`. Both stories above are uncontrolled, which
+ * is the same pair of modes every anchored Bloom family offers.
+ */
+export const Controlled: Story = {
+  render: function ControlledPopover() {
+    const [open, setOpen] = React.useState(false);
+    return (
+      <View style={{ padding: 80, gap: 12 }}>
+        <Text>open: {String(open)}</Text>
+        <Popover open={open} onOpenChange={setOpen}>
+          <PopoverTrigger asChild label="Toggle">
+            <Button variant="secondary">Toggle</Button>
+          </PopoverTrigger>
+          <PopoverContent label="Controlled panel">
+            <View style={{ padding: 16 }}>
+              <Text>Driven by the story's own state.</Text>
+            </View>
+          </PopoverContent>
+        </Popover>
+      </View>
+    );
+  },
 };

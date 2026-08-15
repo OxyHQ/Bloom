@@ -1,285 +1,116 @@
 /**
- * ContextMenu — Native implementation
+ * `ContextMenu` — NATIVE. A LONG PRESS opens the same bottom sheet
+ * `DropdownMenu` presents, because a phone has no right-click and no cursor to
+ * anchor to. The web fork (`ContextMenu.web.tsx`) is the second half and anchors
+ * at the click point instead.
  *
- * Opens a bottom-sheet menu when the user long-presses the trigger. The
- * menu body uses bloom's internal `SheetShell` (a `BottomSheet`
- * presentation primitive with the same drag-handle + close-on-tap
- * semantics shared by `Menu` and `Select`).
+ * The rows are `floating/menu-rows`, published here under shadcn's
+ * `ContextMenu*` names — one implementation, three families.
  */
-import React, {
-  createContext,
-  useCallback,
-  useContext,
-  useMemo,
-} from 'react';
-import { Pressable, StyleSheet, View } from 'react-native';
+import React, { useCallback, useMemo, useState } from 'react';
 
-import { useTheme } from '../theme/use-theme';
-import { Text } from '../typography';
-import { useDialogControl } from '../dialog/context';
 import { SheetShell } from '../dialog/SheetShell';
-import type { DialogControlProps } from '../dialog/types';
-import { useInteractionState } from '../hooks/use-interaction-state';
-import { ItemCtx, useItemContext } from './context';
+import { MenuSurfaceProvider, type MenuSurfaceContextValue } from '../floating/context';
+import { createMenuRows } from '../floating/menu-rows';
+import { TriggerSlot } from '../floating/TriggerSlot';
+import { useSheetOpenBridge } from '../floating/use-sheet-open-bridge';
+import { ContextMenuProvider, useContextMenu } from './context';
 import type {
-  ContextMenuContextValue,
   ContextMenuContentProps,
-  ContextMenuGroupProps,
-  ContextMenuItemIconProps,
-  ContextMenuItemProps,
-  ContextMenuItemTextProps,
+  ContextMenuProps,
   ContextMenuTriggerProps,
-  ItemContextValue,
 } from './types';
 
-// ---------------------------------------------------------------------------
-// Native-specific context (extends base with Dialog control)
-// ---------------------------------------------------------------------------
+export function ContextMenu({ children, onOpenChange }: ContextMenuProps) {
+  const [open, setOpen] = useState(false);
 
-type NativeContextMenuContextValue = ContextMenuContextValue & {
-  control: DialogControlProps;
-};
-
-const NativeContextMenuContext = createContext<NativeContextMenuContextValue | null>(null);
-NativeContextMenuContext.displayName = 'NativeContextMenuContext';
-
-function useNativeContextMenuContext(): NativeContextMenuContextValue {
-  const ctx = useContext(NativeContextMenuContext);
-  if (!ctx) {
-    throw new Error(
-      'ContextMenu components must be used within a <ContextMenu>',
-    );
-  }
-  return ctx;
-}
-
-// ---------------------------------------------------------------------------
-// ContextMenu (Root)
-// ---------------------------------------------------------------------------
-
-export function ContextMenu({ children }: { children: React.ReactNode }) {
-  const control = useDialogControl();
-
-  const ctx = useMemo(
+  const value = useMemo(
     () => ({
-      isOpen: false,
-      open: () => control.open(),
-      close: () => control.close(),
-      control,
+      open,
+      // Native ignores the anchor: a sheet is not anchored to the press.
+      openAt: () => {
+        setOpen(true);
+        onOpenChange?.(true);
+      },
+      close: () => {
+        setOpen(false);
+        onOpenChange?.(false);
+      },
+      anchor: null,
     }),
-    [control],
+    [open, onOpenChange],
   );
 
+  return <ContextMenuProvider value={value}>{children}</ContextMenuProvider>;
+}
+
+export function ContextMenuTrigger({
+  children,
+  asChild,
+  disabled,
+  label,
+  style,
+  testID,
+}: ContextMenuTriggerProps) {
+  const menu = useContextMenu();
+
   return (
-    <NativeContextMenuContext.Provider value={ctx}>
+    <TriggerSlot
+      asChild={asChild}
+      style={style}
+      testID={testID}
+      handle={{
+        // A press does nothing — a context menu opens on a LONG press, and the
+        // trigger's own content keeps whatever tap behaviour it had. `onPress`
+        // is required by the handle shape, so it is explicitly a no-op rather
+        // than absent.
+        onPress: () => {},
+        onLongPress: () => menu.openAt(null),
+        disabled,
+        accessibilityLabel: label,
+        accessibilityRole: 'button',
+        'aria-expanded': menu.open,
+      }}>
       {children}
-    </NativeContextMenuContext.Provider>
+    </TriggerSlot>
   );
 }
 
-// ---------------------------------------------------------------------------
-// ContextMenuTrigger
-// ---------------------------------------------------------------------------
-
-export function ContextMenuTrigger({ children, label, hint, style }: ContextMenuTriggerProps) {
-  const { open } = useNativeContextMenuContext();
-  const { state: focused, onIn: onFocus, onOut: onBlur } = useInteractionState();
-
-  return (
-    <View style={style}>
-      {children({
-        isOpen: false,
-        state: {
-          hovered: false,
-          focused,
-          pressed: false,
-        },
-        props: {
-          onPress: null,
-          onLongPress: open,
-          onFocus,
-          onBlur,
-          accessibilityLabel: label,
-          accessibilityHint: hint ?? 'Long press to open context menu',
-        },
-      })}
-    </View>
+export function ContextMenuContent({
+  children,
+  label = 'Context menu',
+  style,
+}: ContextMenuContentProps) {
+  const menu = useContextMenu();
+  const setOpen = useCallback(
+    (next: boolean) => {
+      if (!next) menu.close();
+    },
+    [menu],
   );
-}
-
-// ---------------------------------------------------------------------------
-// ContextMenuContent  (the menu container — uses Bloom Dialog as a bottom sheet)
-// ---------------------------------------------------------------------------
-
-export function ContextMenuContent({ children, style }: ContextMenuContentProps) {
-  const { control } = useNativeContextMenuContext();
+  const { control, onSheetClose } = useSheetOpenBridge(menu.open, setOpen);
+  const surface = useMemo<MenuSurfaceContextValue>(
+    () => ({ close: menu.close, presentation: 'sheet' }),
+    [menu.close],
+  );
 
   return (
-    <SheetShell control={control} label="Context menu">
-      <NativeContextMenuContext.Provider
-        value={{
-          isOpen: true,
-          open: () => control.open(),
-          close: () => control.close(),
-          control,
-        }}
-      >
-        <View style={[styles.outerContent, style]}>{children}</View>
-      </NativeContextMenuContext.Provider>
+    <SheetShell control={control} label={label} onClose={onSheetClose} contentStyle={style}>
+      <MenuSurfaceProvider value={surface}>{children}</MenuSurfaceProvider>
     </SheetShell>
   );
 }
 
-// ---------------------------------------------------------------------------
-// ContextMenuItem
-// ---------------------------------------------------------------------------
+const rows = createMenuRows('ContextMenu');
 
-export function ContextMenuItem({
-  children,
-  label,
-  onPress,
-  disabled = false,
-  style,
-}: ContextMenuItemProps) {
-  const theme = useTheme();
-  const { close } = useNativeContextMenuContext();
-  const { state: focused, onIn: onFocus, onOut: onBlur } = useInteractionState();
-  const {
-    state: pressed,
-    onIn: onPressIn,
-    onOut: onPressOut,
-  } = useInteractionState();
-
-  const isHighlighted = (focused || pressed) && !disabled;
-
-  const handlePress = useCallback(() => {
-    close();
-    onPress();
-  }, [close, onPress]);
-
-  const itemCtx = useMemo<ItemContextValue>(
-    () => ({ disabled }),
-    [disabled],
-  );
-
-  return (
-    <Pressable
-      accessibilityHint=""
-      accessibilityLabel={label}
-      accessibilityState={{ disabled }}
-      disabled={disabled}
-      onFocus={onFocus}
-      onBlur={onBlur}
-      onPress={handlePress}
-      onPressIn={onPressIn}
-      onPressOut={onPressOut}
-      style={[
-        styles.item,
-        {
-          backgroundColor: theme.colors.contrast50,
-          borderColor: theme.colors.borderLight,
-        },
-        isHighlighted && {
-          backgroundColor: theme.colors.backgroundSecondary,
-        },
-        style,
-      ]}
-    >
-      <ItemCtx.Provider value={itemCtx}>{children}</ItemCtx.Provider>
-    </Pressable>
-  );
-}
-
-// ---------------------------------------------------------------------------
-// ContextMenuItemText
-// ---------------------------------------------------------------------------
-
-export function ContextMenuItemText({ children, style }: ContextMenuItemTextProps) {
-  const theme = useTheme();
-  const { disabled } = useItemContext();
-
-  return (
-    <Text
-      numberOfLines={2}
-      ellipsizeMode="middle"
-      style={[
-        styles.itemText,
-        { color: disabled ? theme.colors.textTertiary : theme.colors.text },
-        ...(style ? [style] : []),
-      ]}
-    >
-      {children}
-    </Text>
-  );
-}
-
-// ---------------------------------------------------------------------------
-// ContextMenuItemIcon
-// ---------------------------------------------------------------------------
-
-export function ContextMenuItemIcon({ icon: Comp }: ContextMenuItemIconProps) {
-  const theme = useTheme();
-  const { disabled } = useItemContext();
-
-  return (
-    <Comp
-      size="lg"
-      fill={disabled ? theme.colors.textTertiary : theme.colors.textSecondary}
-    />
-  );
-}
-
-// ---------------------------------------------------------------------------
-// ContextMenuGroup
-// ---------------------------------------------------------------------------
-
-export function ContextMenuGroup({ children, style }: ContextMenuGroupProps) {
-  return <View style={style}>{children}</View>;
-}
-
-// ---------------------------------------------------------------------------
-// ContextMenuDivider
-// ---------------------------------------------------------------------------
-
-export function ContextMenuDivider() {
-  const theme = useTheme();
-
-  return (
-    <View
-      style={[
-        styles.divider,
-        { borderTopColor: theme.colors.borderLight },
-      ]}
-    />
-  );
-}
-
-// ---------------------------------------------------------------------------
-// Styles
-// ---------------------------------------------------------------------------
-
-const styles = StyleSheet.create({
-  outerContent: {
-    gap: 4,
-  },
-  item: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-    paddingHorizontal: 12,
-    borderRadius: 8,
-    overflow: 'hidden',
-    borderWidth: 1,
-    minHeight: 44,
-    paddingVertical: 10,
-  },
-  itemText: {
-    flex: 1,
-    fontSize: 16,
-    fontWeight: '600',
-  },
-  divider: {
-    borderTopWidth: StyleSheet.hairlineWidth,
-    marginVertical: 4,
-  },
-});
+export const ContextMenuItem = rows.Item;
+export const ContextMenuCheckboxItem = rows.CheckboxItem;
+export const ContextMenuRadioGroup = rows.RadioGroup;
+export const ContextMenuRadioItem = rows.RadioItem;
+export const ContextMenuLabel = rows.Label;
+export const ContextMenuSeparator = rows.Separator;
+export const ContextMenuShortcut = rows.Shortcut;
+export const ContextMenuGroup = rows.Group;
+export const ContextMenuSub = rows.Sub;
+export const ContextMenuSubTrigger = rows.SubTrigger;
+export const ContextMenuSubContent = rows.SubContent;

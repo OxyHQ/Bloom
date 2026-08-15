@@ -39,7 +39,16 @@ const SRC = join(__dirname, '..');
  * node only web renders — not a `className`, which is what `styled()` answers.
  */
 const CAST_EXEMPTIONS = [
-  // A `data-*` attribute used as a CSS selector hook by the same fork's sheet.
+  // `dataSet`, react-native-web's channel for a `data-*` attribute, used as the
+  // CSS selector hook by the chip's own adopted sheet and applied only under
+  // `Platform.OS === 'web'`. A class would be the obvious hook and is the one
+  // thing that cannot work: `className` on a react-native primitive is consumed
+  // by react-native-css into `style`, so no class ever reaches the DOM for a
+  // `:focus-visible` rule to match.
+  'chip/Chip.tsx',
+  // The same, for the checkbox's focus ring.
+  'checkbox/Checkbox.tsx',
+  // The same, for the dots' reduced-motion media query.
   'connection-dots/ConnectionDots.web.tsx',
   // `onClick`, to stop a press inside the panel dismissing the dialog.
   'dialog/Dialog.web.tsx',

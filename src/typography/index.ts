@@ -8,6 +8,11 @@ export {
   H5,
   H6,
   P,
+  Lead,
+  Large,
+  Small,
+  Muted,
+  Blockquote,
   fontFamilies,
 } from './Typography';
-export type { TextProps } from './types';
+export type { TextProps, BlockquoteProps } from './types';

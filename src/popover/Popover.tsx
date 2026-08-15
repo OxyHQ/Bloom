@@ -1,104 +1,70 @@
-import React, { useMemo, useRef, useState } from 'react';
-import { View } from 'react-native';
+/**
+ * `Popover` — NATIVE. Presents as a bottom sheet, the same shell
+ * `DropdownMenu`, `ContextMenu` and `Select` use: a phone has no room to float a
+ * panel beside a control, and every Bloom overlay resolving to the same sheet is
+ * what makes the native surfaces feel like one system.
+ *
+ * The public API is Radix/shadcn's — `open` / `defaultOpen` / `onOpenChange` on
+ * the root, `asChild` on the trigger. Unlike the menus, a popover's body is
+ * arbitrary content, so this family publishes no rows.
+ */
+import React, { useMemo, useRef } from 'react';
+import type { View } from 'react-native';
 
-import { useInteractionState } from '../hooks/use-interaction-state';
-import { useDialogControl } from '../dialog/context';
 import { SheetShell } from '../dialog/SheetShell';
-import { PopoverContext, usePopoverContext } from './context';
-import type {
-  PopoverContentProps,
-  PopoverControlProps,
-  PopoverProps,
-  PopoverTriggerProps,
-} from './types';
+import { TriggerSlot } from '../floating/TriggerSlot';
+import { useSheetOpenBridge } from '../floating/use-sheet-open-bridge';
+import { useControllableState } from '../hooks/use-controllable-state';
+import { PopoverProvider, usePopover } from './context';
+import type { PopoverContentProps, PopoverProps, PopoverTriggerProps } from './types';
 
-/**
- * A `Popover`'s imperative handle. Declared here rather than re-exported from
- * `dialog` under an alias, for the same reason as `useMenuControl`: the web fork
- * implements its own (it anchors a floating panel, not a sheet), so both
- * platforms must publish this name from THIS family.
- */
-export function usePopoverControl(): PopoverControlProps {
-  return useDialogControl();
-}
-
-/**
- * Native `Popover` — presents its content in a bottom sheet (Bloom's
- * established native-overlay convention, shared with `Menu`/`Select`). The
- * web fork (`index.web.tsx`) anchors a floating panel to the trigger.
- */
-export function Popover({ children, control }: PopoverProps) {
-  const defaultControl = useDialogControl();
-  const triggerRef = useRef<View | null>(null);
-  const [isOpen, setIsOpen] = useState(false);
-
-  const activeControl = control ?? defaultControl;
-
-  // Wrap the control so `isOpen` reflects open/close on native too.
-  const wrappedControl = useMemo<PopoverControlProps>(
-    () => ({
-      ...activeControl,
-      open: () => {
-        setIsOpen(true);
-        activeControl.open();
-      },
-      close: (cb) => {
-        setIsOpen(false);
-        activeControl.close(cb);
-      },
-    }),
-    [activeControl],
-  );
-
-  const context = useMemo(
-    () => ({ control: wrappedControl, isOpen, triggerRef }),
-    [wrappedControl, isOpen],
-  );
-
-  return (
-    <PopoverContext.Provider value={context}>
-      {children}
-    </PopoverContext.Provider>
-  );
-}
-
-export function PopoverTrigger({ children, label }: PopoverTriggerProps) {
-  const { control, triggerRef } = usePopoverContext();
-  const { state: focused, onIn: onFocus, onOut: onBlur } = useInteractionState();
-  const { state: pressed, onIn: onPressIn, onOut: onPressOut } = useInteractionState();
-
-  const rendered = children({
-    control,
-    state: { hovered: false, focused, pressed },
-    props: {
-      onPress: () => control.open(),
-      onFocus,
-      onBlur,
-      accessibilityLabel: label,
-      accessibilityRole: 'button',
-      'aria-haspopup': 'dialog',
-    },
+export function Popover({ children, open, defaultOpen = false, onOpenChange }: PopoverProps) {
+  const [isOpen, setOpen] = useControllableState<boolean>({
+    value: open,
+    defaultValue: defaultOpen,
+    onChange: onOpenChange,
   });
+  const anchorRef = useRef<View | null>(null);
+  const value = useMemo(() => ({ open: isOpen, setOpen, anchorRef }), [isOpen, setOpen]);
+
+  return <PopoverProvider value={value}>{children}</PopoverProvider>;
+}
+
+export function PopoverTrigger({
+  children,
+  asChild,
+  disabled,
+  label,
+  style,
+  testID,
+}: PopoverTriggerProps) {
+  const popover = usePopover();
 
   return (
-    <View ref={triggerRef} collapsable={false}>
-      {rendered}
-    </View>
+    <TriggerSlot
+      asChild={asChild}
+      anchorRef={popover.anchorRef}
+      style={style}
+      testID={testID}
+      handle={{
+        onPress: () => popover.setOpen(true),
+        disabled,
+        accessibilityLabel: label,
+        accessibilityRole: 'button',
+        'aria-expanded': popover.open,
+      }}>
+      {children}
+    </TriggerSlot>
   );
 }
 
-export function PopoverContent({
-  children,
-  label = 'Popover',
-  style,
-}: PopoverContentProps) {
-  const { control } = usePopoverContext();
+export function PopoverContent({ children, label = 'Popover', style }: PopoverContentProps) {
+  const popover = usePopover();
+  const { control, onSheetClose } = useSheetOpenBridge(popover.open, popover.setOpen);
 
   return (
-    <SheetShell control={control} label={label} contentStyle={style}>
+    <SheetShell control={control} label={label} onClose={onSheetClose} contentStyle={style}>
       {children}
     </SheetShell>
   );
 }
-
-export { usePopoverContext };

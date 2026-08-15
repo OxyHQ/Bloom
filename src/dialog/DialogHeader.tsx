@@ -4,6 +4,7 @@ import React, {
   useContext,
   useLayoutEffect,
   useMemo,
+  useState,
   useSyncExternalStore,
 } from 'react';
 import {
@@ -313,26 +314,22 @@ function HeaderOverflowMenu({
   items: NonNullable<DialogHeaderConfig['actions']>;
   onImage: boolean;
 }): React.ReactElement {
-  // Own the control so an item press can close the popover before acting.
-  const control = useDialogControl();
+  // Own the open state so an item press can close the popover before acting.
+  const [open, setOpen] = useState(false);
   return (
-    <Popover control={control}>
-      <PopoverTrigger label="More">
-        {({ props }) => (
-          <FrostedIconButton
-            size="sm"
-            onPress={props.onPress}
-            accessibilityLabel={props.accessibilityLabel}
-            icon={
-              <DotGrid3x1_Stroke2_Corner0_Rounded
-                size="md"
-                fill={onImage ? ON_IMAGE_TEXT : undefined}
-              />
-            }
-          />
-        )}
+    <Popover open={open} onOpenChange={setOpen}>
+      <PopoverTrigger asChild label="More">
+        <FrostedIconButton
+          size="sm"
+          icon={
+            <DotGrid3x1_Stroke2_Corner0_Rounded
+              size="md"
+              fill={onImage ? ON_IMAGE_TEXT : undefined}
+            />
+          }
+        />
       </PopoverTrigger>
-      <PopoverContent label="More actions" placement="bottom-end">
+      <PopoverContent label="More actions" align="end">
         {items.map((action) => (
           <Item
             key={action.accessibilityLabel}
@@ -340,7 +337,10 @@ function HeaderOverflowMenu({
             leading={action.icon}
             density="compact"
             disabled={action.disabled}
-            onPress={() => control.close(() => action.onPress())}
+            onPress={() => {
+              setOpen(false);
+              action.onPress();
+            }}
           />
         ))}
       </PopoverContent>

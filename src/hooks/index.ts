@@ -1,4 +1,8 @@
 export { useInteractionState, useInteractionStates } from './use-interaction-state';
+export {
+  useAccessibilityFocus,
+  useRestoreAccessibilityFocus,
+} from './use-accessibility-focus';
 export { useDelayedLoading } from './use-delayed-loading';
 export { useThrottledValue } from './use-throttled-value';
 export { usePressAnimation } from './use-press-animation';
