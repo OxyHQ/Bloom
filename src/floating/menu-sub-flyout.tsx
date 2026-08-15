@@ -31,7 +31,14 @@
  * clicking a row of the PARENT menu would only dismiss the sub; and a dismissible
  * one would install the competing Escape handler this file exists to order.
  */
-import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import React, {
+  useCallback,
+  useEffect,
+  useLayoutEffect,
+  useMemo,
+  useRef,
+  useState,
+} from 'react';
 import { View } from 'react-native';
 
 import { useControllableState } from '../hooks/use-controllable-state';
@@ -39,15 +46,15 @@ import { ChevronRight_Stroke2_Corner0_Rounded as ChevronRightIcon } from '../ico
 import { StyledView } from '../styles/styled-primitives';
 import { useTheme } from '../theme/use-theme';
 import {
-  DEFAULT_SIDE_OFFSET,
   MENU_SUB_PANEL_CLASS,
   MENU_SUB_SCROLL_CLASS,
+  MENU_SUB_SIDE_OFFSET,
   ROW_ICON_SIZE,
 } from './constants';
 import { FloatingPanel } from './FloatingPanel';
 import { cx, MenuRowChevron, MenuRowShell, splitChildren, SUB_TRIGGER_CLASS } from './shared';
-import { useAnchorRect } from './use-anchor-rect';
 import type {
+  FloatingAnchor,
   MenuSubContentProps,
   MenuSubParts,
   MenuSubProps,
@@ -65,6 +72,16 @@ import type {
  * immediate when the user genuinely moves away.
  */
 const CLOSE_DELAY_MS = 300;
+
+/**
+ * How many animation frames `useFlyoutAnchor` keeps re-measuring after a flyout
+ * opens.
+ *
+ * Long enough to outlast the parent panel's own enter (`PANEL_MOTION_DURATION`,
+ * ~12 frames at 60Hz) with room for a slower machine, and cheap because a
+ * settled box re-measures to the identical value and sets no state.
+ */
+const SETTLE_FRAMES = 20;
 
 /**
  * The one node a DOM listener can be attached to per surface.
@@ -98,6 +115,113 @@ function domNode(node: View | null): DomNode | null {
 function focusFirstItem(node: DomNode | null): void {
   const first = node?.querySelector<HTMLElement>('[role="menuitem"], [role="menuitemcheckbox"], [role="checkbox"], [role="radio"]');
   first?.focus?.();
+}
+
+/**
+ * The box a flyout anchors to: the trigger ROW vertically, the parent PANEL
+ * horizontally.
+ *
+ * Two boxes rather than one, because the two axes are answering different
+ * questions. Vertically the panel's first row lines up with the row it flew out
+ * of, so that axis is the row's. Horizontally the panel flies out from the
+ * PARENT SURFACE's edge — and the row is not on that edge: it sits inside the
+ * panel's own `p-1` and its 1px border, so an offset measured from the row lands
+ * 5px further in. Measured before this existed: a 4px offset put the sub-panel's
+ * left edge at 279 against a parent whose right edge is 280 — a ONE PIXEL
+ * OVERLAP, which is the "flush against the parent" the flyout shipped with.
+ *
+ * Taking the horizontal axis off the panel also makes {@link MENU_SUB_SIDE_OFFSET}
+ * mean the gap you actually see, with no dependence on the panel's inset: change
+ * `PANEL_CLASS`'s padding and the gap does not move.
+ *
+ * The panel is found with `closest`, so a sub-menu nested inside a sub-menu
+ * anchors to ITS parent rather than to the root. If there is no panel ancestor
+ * (a row rendered outside a surface, a non-DOM ref), the row's own box is the
+ * fallback and behaviour is what it was.
+ */
+function useFlyoutAnchor(
+  ref: React.RefObject<View | null>,
+  open: boolean,
+): FloatingAnchor | null {
+  const [anchor, setAnchor] = useState<FloatingAnchor | null>(null);
+
+  const measure = useCallback(() => {
+    // react-native-web resolves a `View` ref to the DOM element itself; the RN
+    // types do not say so, so read through the two methods actually needed and a
+    // non-DOM ref answers `null` instead of throwing.
+    const row = ref.current as unknown as {
+      getBoundingClientRect?: () => DOMRect;
+      closest?: (selector: string) => Element | null;
+    } | null;
+    if (typeof row?.getBoundingClientRect !== 'function') {
+      setAnchor(null);
+      return;
+    }
+    const rowBox = row.getBoundingClientRect();
+    const panel =
+      typeof row.closest === 'function' ? row.closest('[role="menu"]') : null;
+    const sideBox = panel ? panel.getBoundingClientRect() : rowBox;
+    const next = {
+      top: rowBox.top,
+      bottom: rowBox.bottom,
+      left: sideBox.left,
+      right: sideBox.right,
+    };
+    // Only on a real change: this runs on every scroll event and, below, on a
+    // run of animation frames, and a fresh object each time would re-render the
+    // panel and re-resolve its placement for a box that did not move.
+    setAnchor((current) =>
+      current &&
+      current.top === next.top &&
+      current.bottom === next.bottom &&
+      current.left === next.left &&
+      current.right === next.right
+        ? current
+        : next,
+    );
+  }, [ref]);
+
+  useLayoutEffect(() => {
+    if (!open) {
+      setAnchor(null);
+      return;
+    }
+    measure();
+    if (typeof requestAnimationFrame !== 'function') return;
+    // Re-measured across a BOUNDED RUN OF FRAMES, because the parent panel may
+    // still be running its own enter when the flyout opens — and
+    // `getBoundingClientRect` reports the TRANSFORMED box, so its right edge is
+    // up to `width × (1 − scale)` short of where it will settle. A pointer
+    // already resting where the trigger row appears opens the flyout on the
+    // panel's first frame, which is exactly that case. Measured before this
+    // existed: the gap settled at 1.84px instead of 2px, and the error scales
+    // with the parent's width.
+    //
+    // A run of frames rather than a timeout keyed to the enter's duration: this
+    // hook has no business knowing how long a panel animates, and re-measuring
+    // an already-settled box is free once the equality check above holds.
+    let frame = 0;
+    let handle = requestAnimationFrame(function again() {
+      measure();
+      frame += 1;
+      if (frame < SETTLE_FRAMES) handle = requestAnimationFrame(again);
+    });
+    return () => cancelAnimationFrame(handle);
+  }, [open, measure]);
+
+  useEffect(() => {
+    if (!open || typeof window === 'undefined') return;
+    // Capture phase: a scroll inside any ancestor moves both boxes, and a
+    // bubbling listener never sees a scroll on an inner container.
+    window.addEventListener('resize', measure);
+    window.addEventListener('scroll', measure, true);
+    return () => {
+      window.removeEventListener('resize', measure);
+      window.removeEventListener('scroll', measure, true);
+    };
+  }, [open, measure]);
+
+  return anchor;
 }
 
 interface SubFlyoutContextValue {
@@ -265,7 +389,7 @@ export function createFlyoutMenuSub(prefix: string): MenuSubParts {
 
   function MenuSubContent({ children, className, style }: MenuSubContentProps) {
     const sub = useSubFlyout();
-    const anchor = useAnchorRect(sub.triggerRef, sub.open);
+    const anchor = useFlyoutAnchor(sub.triggerRef, sub.open);
     const [node, setNode] = useState<View | null>(null);
 
     useEffect(() => {
@@ -323,7 +447,9 @@ export function createFlyoutMenuSub(prefix: string): MenuSubParts {
         side="right"
         // The panel's first row lines up with the trigger row it flew out of.
         align="start"
-        sideOffset={DEFAULT_SIDE_OFFSET}
+        // Measured from the PARENT PANEL's edge, not the trigger row's — see
+        // `useFlyoutAnchor`.
+        sideOffset={MENU_SUB_SIDE_OFFSET}
         dismissible={false}
         modal={false}
         onDismiss={sub.closeAndRefocus}
