@@ -1,35 +1,49 @@
 /**
- * What a label on a GLASS surface is actually legible against.
+ * What a label on a GLASS surface is actually legible against — and, just as
+ * load-bearing, what it is NOT.
  *
  * `accent-colors.test.ts` already walks every tone x fill x preset x mode and
- * composites the `*Subtle` tint over the PAGE. That is the right measurement for
- * a chip sitting on the page, and it is the wrong one here, for two reasons that
- * only apply to glass:
+ * composites the `*Subtle` tint over the PAGE. That is the right measurement
+ * for a chip sitting on the page and the wrong one here, because a glass pane
+ * has an extra layer on native (`expo-blur` cannot be asked for a blur radius
+ * without also painting a tint of its own — one `intensity` drives both) and
+ * because its fill is the brand token at {@link GLASS_FILL_ALPHA}, not the
+ * `*Subtle` pair.
  *
- *  1. **There is an extra layer.** `expo-blur` cannot be asked for a blur radius
- *     without also painting a tint of its own — the same `intensity` drives
- *     both — so a glass surface is `label / sheen / accent tint / expo-blur
- *     material / whatever is behind`, five layers rather than two.
- *  2. **"Whatever is behind" is not the page.** A glass surface floats OVER
- *     content by definition. So the page background is the optimistic case, and
- *     the honest measurement is the worst of the three backdrops a real surface
- *     meets: the page, pure white, and pure black.
+ * ── THE BACKDROP RANGE IS THE WHOLE ARGUMENT ────────────────────────────────
  *
- * A ratio that only holds over the page would read as a comfortable pass here
- * and fail on the first photograph.
+ * An earlier version of this gate asserted AA over pure white AND pure black,
+ * on the reasoning that "a glass surface floats OVER content by definition".
+ * The arithmetic was right and the premise was wrong: satisfying it forces the
+ * material to 0.76 opacity, which is a near-opaque card with a blur behind it
+ * rather than glass, and it is what shipped the washed-out button this replaces.
+ *
+ * The surfaces a `Button` sits on are Bloom's own and are enumerable, so that
+ * is what {@link SURFACE_KEYS} lists. The two halves below are therefore both
+ * assertions, and the second is what stops the first from being satisfiable by
+ * simply making the pane opaque again:
+ *
+ *   1. over Bloom's neutral surfaces, EVERY combination clears AA;
+ *   2. over pure white / pure black, a LARGE SHARE still does not — because a
+ *      material that survived arbitrary content would no longer be translucent.
+ *
+ * The reference this is ported from fails (2) as well: its own near-black label
+ * measures 4.05 over a mid-tone photo and 1.20 over black. The variant for that
+ * case is `inverse`, which is opaque.
  */
 import { readFileSync } from 'node:fs';
 
 import { APP_COLOR_PRESETS, type AppColorName } from '../color-presets';
 import { buildTheme } from '../build-theme';
-import { resolveAccentColors } from '../accent-colors';
+import { resolveAccentColors, type AccentTone } from '../accent-colors';
 import {
+  GLASS_BLUR_FILTER,
   GLASS_BLUR_INTENSITY,
-  GLASS_SCRIM_ALPHA,
+  GLASS_BLUR_RADIUS_PX,
+  GLASS_FILL_ALPHA,
   GLASS_SHEEN,
-  glassScrim,
+  GLASS_SHEEN_GRADIENT,
   resolveGlassColors,
-  type GlassTone,
 } from '../glass-colors';
 import type { ThemeColors } from '../types';
 
@@ -85,15 +99,14 @@ function contrast(a: Rgba, b: Rgba): number {
 
 /**
  * `expo-blur`'s OWN tint, reproduced from its `getBackgroundColor` — the layer a
- * caller cannot decline because `intensity` drives the blur radius and this
- * together.
+ * NATIVE caller cannot decline because `intensity` drives the blur radius and
+ * this together. The web fork has no counterpart: CSS `backdrop-filter` is a
+ * pure blur, which is why both platforms are measured below.
  *
  * Copied deliberately rather than imported: importing it would make this gate
  * agree with expo-blur by construction, so a version bump that changed the
  * material would move the measurement and the expectation together and the suite
- * would stay green through a real regression. The version it was read from is
- * pinned in `package.json`; `blurTintMatchesInstalledExpoBlur` below is the
- * control that says so.
+ * would stay green through a real regression.
  */
 function blurTint(isDark: boolean): Rgba {
   const opacity = GLASS_BLUR_INTENSITY / 100;
@@ -105,13 +118,34 @@ function blurTint(isDark: boolean): Rgba {
 const WHITE: Rgba = { r: 255, g: 255, b: 255, a: 1 };
 const BLACK: Rgba = { r: 0, g: 0, b: 0, a: 1 };
 
-/** The three backdrops a floating surface actually meets. */
-function backdrops(colors: ThemeColors): Array<[string, Rgba]> {
-  return [
-    ['page', parse(colors.background)],
-    ['white', WHITE],
-    ['black', BLACK],
-  ];
+/**
+ * Every neutral surface in `ThemeColors` a control can be laid on — the honest
+ * backdrop range, and the reason the material can stay at the reference's 25%.
+ *
+ * Enumerated from the type rather than sampled: `background` is the page,
+ * `backgroundSecondary`/`backgroundTertiary` are `--surface`/`--popover`,
+ * `card` is the lightest surface and `contrast50` is `--muted`. Anything a
+ * future palette adds has to join this list or the range claim above stops
+ * being true.
+ */
+const SURFACE_KEYS = [
+  'background',
+  'backgroundSecondary',
+  'backgroundTertiary',
+  'card',
+  'contrast50',
+] as const satisfies ReadonlyArray<keyof ThemeColors>;
+
+/**
+ * The brand fills a glass surface is painted in — the resolved tokens, since
+ * that is what `resolveGlassColors` now takes. `Button` uses the first two;
+ * the rest are here so the material is measured across the whole palette's
+ * range of lightness and chroma rather than on one hue.
+ */
+const TONES: AccentTone[] = ['default', 'primary', 'success', 'warning', 'error', 'info'];
+
+function fillsOf(colors: ThemeColors): string[] {
+  return TONES.map((tone) => resolveAccentColors(colors, tone, 'solid').background);
 }
 
 /**
@@ -121,42 +155,94 @@ function backdrops(colors: ThemeColors): Array<[string, Rgba]> {
  * because that is where a light label has the least to work with, and a
  * measurement taken at the surface's midpoint would miss it.
  */
-function surfaceOver(colors: ThemeColors, tone: GlassTone, isDark: boolean, backdrop: Rgba): Rgba {
-  const glass = resolveGlassColors(colors, tone);
-  const material = over(blurTint(isDark), backdrop);
-  const scrimmed = over(parse(glassScrim(isDark)), material);
-  const tinted = over(parse(glass.fill), scrimmed);
+function surfaceOver(
+  colors: ThemeColors,
+  fill: string,
+  isDark: boolean,
+  backdrop: Rgba,
+  platform: 'web' | 'native',
+): Rgba {
+  const glass = resolveGlassColors(colors, fill);
+  const material = platform === 'native' ? over(blurTint(isDark), backdrop) : backdrop;
+  const tinted = over(parse(glass.fill), material);
   return over(parse(GLASS_SHEEN.bottom), tinted);
 }
 
-function measure(colors: ThemeColors, tone: GlassTone, isDark: boolean, backdrop: Rgba): number {
-  const surface = surfaceOver(colors, tone, isDark, backdrop);
-  return contrast(surface, over(parse(resolveGlassColors(colors, tone).foreground), surface));
+function measure(
+  colors: ThemeColors,
+  fill: string,
+  isDark: boolean,
+  backdrop: Rgba,
+  platform: 'web' | 'native',
+): number {
+  const surface = surfaceOver(colors, fill, isDark, backdrop, platform);
+  return contrast(surface, over(parse(resolveGlassColors(colors, fill).foreground), surface));
 }
 
 const PRESETS = Object.keys(APP_COLOR_PRESETS) as AppColorName[];
 const MODES = ['light', 'dark'] as const;
-const TONES: GlassTone[] = ['default', 'primary', 'success', 'warning', 'error', 'info'];
+const PLATFORMS = ['web', 'native'] as const;
 
 /** WCAG AA for normal-size text. A button label is not large text. */
 const AA = 4.5;
 
+interface Row {
+  name: string;
+  ratio: number;
+}
+
+function walk(backdropsOf: (colors: ThemeColors) => Array<[string, Rgba]>): Record<string, Row[]> {
+  const out: Record<string, Row[]> = { web: [], native: [] };
+  for (const preset of PRESETS) {
+    for (const mode of MODES) {
+      const colors = buildTheme(preset, mode).colors;
+      for (const fill of fillsOf(colors)) {
+        for (const [backdropName, backdrop] of backdropsOf(colors)) {
+          for (const platform of PLATFORMS) {
+            out[platform]?.push({
+              name: `${preset}/${mode}/${fill} over ${backdropName}`,
+              ratio: measure(colors, fill, mode === 'dark', backdrop, platform),
+            });
+          }
+        }
+      }
+    }
+  }
+  return out;
+}
+
+const onBloomSurfaces = walk((colors) =>
+  SURFACE_KEYS.map((key) => [key, parse(colors[key])] as [string, Rgba]),
+);
+const onArbitraryContent = walk(() => [
+  ['white', WHITE],
+  ['black', BLACK],
+]);
+
 describe('glass surface legibility', () => {
   it('reads a real matrix', () => {
-    // Vacuity floor: an empty walk reports no failures either.
+    // Vacuity floors: an empty walk reports no failures either.
     expect(PRESETS.length).toBeGreaterThanOrEqual(15);
     expect(TONES).toHaveLength(6);
+    expect(SURFACE_KEYS).toHaveLength(5);
+    for (const platform of PLATFORMS) {
+      expect(onBloomSurfaces[platform]).toHaveLength(
+        PRESETS.length * MODES.length * TONES.length * SURFACE_KEYS.length,
+      );
+      expect(onArbitraryContent[platform]).toHaveLength(
+        PRESETS.length * MODES.length * TONES.length * 2,
+      );
+    }
   });
 
-  it('reproduces the installed expo-blur material, so the numbers mean something', () => {
+  it('reproduces the installed expo-blur material, so the native numbers mean something', () => {
     // Positive control on the COPIED constant. If expo-blur changes its tint
-    // maths, this fails and the ratios below are known to be stale — rather than
-    // both moving together and reporting a comfortable pass.
+    // maths, this fails and the native ratios are known to be stale — rather
+    // than both moving together and reporting a comfortable pass.
     //
     // Read as SOURCE rather than imported: expo-blur ships ESM and is not in
     // this project's jest transform whitelist, and adding it there to run one
-    // assertion would change what every other suite loads. The shipped artefact
-    // is the thing being checked either way.
+    // assertion would change what every other suite loads.
     const shipped = readFileSync(
       require.resolve('expo-blur/build/getBackgroundColor.js'),
       'utf8',
@@ -174,117 +260,69 @@ describe('glass surface legibility', () => {
     });
   });
 
-  /**
-   * Every combination, with its worst backdrop, reported as a numbered list so a
-   * failure names the tone rather than just the count.
-   */
-  const rows = PRESETS.flatMap((preset) =>
-    MODES.flatMap((mode) => {
-      const colors = buildTheme(preset, mode).colors;
-      return TONES.flatMap((tone) =>
-        backdrops(colors).map(([backdropName, backdrop]) => ({
-          name: `${preset}/${mode}/${tone} over ${backdropName}`,
-          ratio: measure(colors, tone, mode === 'dark', backdrop),
-        })),
-      );
-    }),
-  );
-
-  it('walked every preset x mode x tone x backdrop', () => {
-    expect(rows).toHaveLength(PRESETS.length * 2 * 6 * 3);
-  });
-
-  it('clears AA on EVERY backdrop a floating surface meets, not just the page', () => {
-    // The whole point of the calibration. The page used to be the only backdrop
-    // this held for; a surface that floats over content meets the extremes.
-    const failures = rows
-      .filter((row) => row.ratio < AA)
-      .map((row) => `${row.name}: ${row.ratio.toFixed(2)}`)
-      .sort();
-    expect(failures).toEqual([]);
-  });
-
-  /**
-   * The POSITIVE CONTROL for the calibration above, and it used to be the
-   * recorded limit.
-   *
-   * Before the foreground moved to `colors.text`, the label was the tone's
-   * `*SubtleForeground` and this pairing measured 1.04 (light over black) and
-   * 1.49 (dark over white). Keeping it as a control is what makes the pass above
-   * mean something: it exercises the identical five-layer composite and the
-   * identical helpers, so if `over`, `contrast` or the stack ever degraded to
-   * something that returns comfortable numbers, this would go green and say so.
-   *
-   * It also pins WHY the old pairing could not be rescued by opacity. The
-   * `*Subtle`/`*SubtleForeground` pair is calibrated for a tint composited over
-   * THE PAGE; it is not self-contained, and over arbitrary content it needs the
-   * material at 0.98 (light) / 0.90 (dark) — a surface that is no longer glass.
-   */
-  it('beats the OLD tone-derived foreground on the identical stack', () => {
-    // The POSITIVE CONTROL for the pass above, stated as the before/after it
-    // actually is rather than as a claim needing an exclusion list. Both
-    // foregrounds are measured through the SAME five-layer composite and the
-    // same helpers, so if `over`, `contrast` or the stack ever degraded to
-    // something that returns comfortable numbers, the old column would go green
-    // and say so.
-    //
-    // No filtering: some pairings are legitimately fine under the old
-    // foreground — the `default` tone's is `textSecondary`, a neutral already
-    // sitting where `colors.text` sits, and a monochrome preset has no hue to
-    // begin with. Excluding those by name would be a list that stops being true;
-    // counting them is the measurement.
-    let oldFailures = 0;
-    let newFailures = 0;
-    let total = 0;
-    let worstNew = Infinity;
-    for (const preset of PRESETS) {
-      for (const mode of MODES) {
-        const colors = buildTheme(preset, mode).colors;
-        for (const tone of TONES) {
-          const opposite = mode === 'light' ? BLACK : WHITE;
-          const surface = surfaceOver(colors, tone, mode === 'dark', opposite);
-          const oldRatio = contrast(
-            surface,
-            over(parse(resolveAccentColors(colors, tone, 'subtle').foreground), surface),
-          );
-          const newRatio = contrast(
-            surface,
-            over(parse(resolveGlassColors(colors, tone).foreground), surface),
-          );
-          total++;
-          if (oldRatio < AA) oldFailures++;
-          if (newRatio < AA) newFailures++;
-          worstNew = Math.min(worstNew, newRatio);
-        }
-      }
+  it('clears AA on every Bloom surface a control can sit on, on BOTH platform stacks', () => {
+    for (const platform of PLATFORMS) {
+      const failures = (onBloomSurfaces[platform] ?? [])
+        .filter((row) => row.ratio < AA)
+        .map((row) => `${platform}: ${row.name}: ${row.ratio.toFixed(2)}`)
+        .sort();
+      expect(failures).toEqual([]);
     }
-
-    // Vacuity floor first: a loop that walked nothing reports zero of everything.
-    expect(total).toBe(PRESETS.length * 2 * 6);
-    // The old foreground fails on the majority of the matrix…
-    expect(oldFailures).toBeGreaterThan(total / 2);
-    // …and the new one on none of it.
-    expect(newFailures).toBe(0);
-
-    // The new foreground is not uniformly higher, and pretending otherwise
-    // would be a false claim: on `mono`, whose `primary` is achromatic, the old
-    // `*SubtleForeground` was MORE extreme than `colors.text` and scored better
-    // (10.11 → 8.29 light, 6.50 → 5.02 dark). Both still clear AA with room, so
-    // what matters is the floor, not the direction — pinned here so the margin
-    // cannot erode quietly.
-    expect(worstNew).toBeGreaterThan(AA);
-    expect(worstNew).toBeLessThan(6);
   });
 
-  it('composes the blur and the scrim to the opacity the calibration needs', () => {
-    // The scrim is DERIVED from the target, so this is the arithmetic that keeps
-    // the two in step: whatever expo-blur's own tint contributes, the scrim
-    // closes the rest of the gap to 0.76 — the alpha at which `colors.text`
-    // clears AA in DARK mode, which is the binding side.
-    const blur = (GLASS_BLUR_INTENSITY / 100) * 0.78;
-    expect(1 - (1 - blur) * (1 - GLASS_SCRIM_ALPHA)).toBeCloseTo(0.76, 6);
-    // …and the scrim is a real layer, not a rounding artefact.
-    expect(GLASS_SCRIM_ALPHA).toBeGreaterThan(0.5);
+  it('is STILL TRANSLUCENT — over arbitrary content most of the matrix fails', () => {
+    // The half that keeps the pass above honest. "Clears AA everywhere Bloom
+    // paints it" is trivially satisfiable by making the pane opaque, which is
+    // exactly the regression that shipped once: a neutral scrim taking the
+    // stack to 0.76 opacity, at which point the brand contributed 3% of the
+    // pixel and the button read as near-white with a coloured rim.
+    //
+    // Stated as a floor rather than an exact count so a palette change cannot
+    // fail it spuriously, and as a MAJORITY so it cannot be satisfied by one
+    // stubborn combination.
+    for (const platform of PLATFORMS) {
+      const rows = onArbitraryContent[platform] ?? [];
+      const failures = rows.filter((row) => row.ratio < AA).length;
+      expect(failures).toBeGreaterThan(rows.length / 3);
+    }
+  });
+
+  it('carries the reference fill alpha, and no scrim beside it', () => {
+    // The material is ONE translucent layer over the backdrop. If a second
+    // opaque-ish layer were reintroduced the composite would stop matching this
+    // arithmetic, which is the same composite the rows above are built from.
+    const colors = buildTheme('oxy', 'light').colors;
+    const glass = resolveGlassColors(colors, colors.primary);
+    expect(parse(glass.fill).a).toBe(GLASS_FILL_ALPHA);
+    expect(GLASS_FILL_ALPHA).toBe(0.25);
+    // …and the hairline is the SAME hue at full strength — the edge of the pane,
+    // not a decorative outline in some other colour.
+    expect(glass.hairline).toBe(colors.primary);
+    expect(parse(glass.fill)).toMatchObject(
+      (({ r, g, b }) => ({ r, g, b }))(parse(colors.primary)),
+    );
+  });
+
+  it('states the blur radius once, and both platforms read it from there', () => {
+    // The web filter is the reference's verbatim — a blur and NOTHING else. An
+    // added `saturate()` (which is expo-blur's, not the reference's) is visibly
+    // different over a colourful backdrop, so it is asserted absent rather than
+    // left to a reviewer's eye.
+    expect(GLASS_BLUR_FILTER).toBe(`blur(${GLASS_BLUR_RADIUS_PX}px)`);
+    expect(GLASS_BLUR_FILTER).not.toContain('saturate');
+    expect(GLASS_BLUR_RADIUS_PX).toBe(10);
+    // The native intensity is DERIVED from that radius through expo-blur's web
+    // formula, so the two cannot drift apart by editing one.
+    expect(GLASS_BLUR_INTENSITY * 0.2).toBe(GLASS_BLUR_RADIUS_PX);
+  });
+
+  it('builds the web sheen gradient from the same stops the native Svg uses', () => {
+    // The web fork sets `background-image` and the native one draws an `Svg`
+    // `LinearGradient`; both read `GLASS_SHEEN`. Deriving the CSS string is what
+    // stops a stop from being edited on one platform only.
+    expect(GLASS_SHEEN_GRADIENT).toContain(GLASS_SHEEN.top);
+    expect(GLASS_SHEEN_GRADIENT).toContain(GLASS_SHEEN.bottom);
+    expect(GLASS_SHEEN_GRADIENT).toContain(`${GLASS_SHEEN.middleStop * 100}%`);
   });
 
   it('and a known-bad pairing still fails, so the threshold is doing work', () => {
@@ -293,8 +331,7 @@ describe('glass surface legibility', () => {
     // the same `parse` → `over` → `contrast` path as every row above, so a
     // broken helper cannot leave the assertions green.
     const colors = buildTheme('oxy', 'light').colors;
-    const glass = resolveGlassColors(colors, 'primary');
-    const surface = surfaceOver(colors, 'primary', false, parse(colors.background));
+    const surface = surfaceOver(colors, colors.primary, false, parse(colors.background), 'web');
     expect(contrast(surface, WHITE)).toBeLessThan(AA);
   });
 });

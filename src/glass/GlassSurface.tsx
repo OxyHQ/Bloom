@@ -8,7 +8,6 @@ import {
   GLASS_BLUR_INTENSITY,
   GLASS_RIM_HIGHLIGHT,
   GLASS_SHEEN,
-  glassScrim,
   resolveGlassColors,
 } from '../theme/glass-colors';
 import type { GlassSurfaceProps } from './types';
@@ -53,14 +52,14 @@ import type { GlassSurfaceProps } from './types';
 let glassSheenIdCounter = 0;
 
 const GlassSurfaceComponent: React.FC<GlassSurfaceProps> = ({
-  tone = 'primary',
+  fill,
   radius,
   sheen = true,
   style,
   testID,
 }) => {
   const theme = useTheme();
-  const glass = useMemo(() => resolveGlassColors(theme.colors, tone), [theme.colors, tone]);
+  const glass = useMemo(() => resolveGlassColors(theme.colors, fill), [theme.colors, fill]);
   // Per instance, because two panes in one document would otherwise share an id
   // and the survivor of an unmount would reference a gradient that is gone. Same
   // counter shape as `AvatarRing`.
@@ -89,12 +88,13 @@ const GlassSurfaceComponent: React.FC<GlassSurfaceProps> = ({
         style={StyleSheet.absoluteFill}
       />
       {/*
-        The scrim, between the blur and the accent fill. It carries the opacity
-        the blur cannot: `expo-blur` derives its tint's alpha from the SAME
-        `intensity` that sets the blur radius, so asking it for a material opaque
-        enough to carry text would also triple the blur. See `GLASS_SCRIM_ALPHA`.
+        The accent fill, straight onto the blur. There is no neutral scrim
+        between them: the pane's transparency IS the material, and the surfaces
+        this sits on are Bloom's own — see the backdrop-range note in
+        `theme/glass-colors.ts` for the 1080-combination measurement that says
+        the reference's 25% needs no help there, and for what it costs over
+        content Bloom does not own.
       */}
-      <View style={[StyleSheet.absoluteFill, { backgroundColor: glassScrim(theme.isDark) }]} />
       <View style={[StyleSheet.absoluteFill, { backgroundColor: glass.fill }]} />
       {sheen ? (
         <Svg style={StyleSheet.absoluteFill} testID={testID ? `${testID}-sheen` : undefined}>
