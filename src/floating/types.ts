@@ -125,14 +125,24 @@ export interface FloatingPanelProps extends FloatingPositionProps {
  * The props a trigger hands to whatever it renders — either Bloom's own
  * `Pressable`, or the caller's single child under `asChild`.
  *
- * `aria-expanded` is the one state prop here, and it is deliberately the only
- * one: React Native types exactly four boolean `aria-*` props (`busy`,
- * `checked`, `disabled`, `expanded`, `selected`) and folds them back into
- * `accessibilityState`, so it is the spelling that reaches BOTH platforms.
- * `aria-haspopup` is read by react-native-web but has no React Native type at
- * all, so setting it would need a cast on a prop native never sees — the
- * trigger states that it is expanded and leaves the popup kind to the surface's
- * own `role`.
+ * `aria-expanded` is the one state prop here: React Native types exactly five
+ * boolean `aria-*` props (`busy`, `checked`, `disabled`, `expanded`,
+ * `selected`) and folds them back into `accessibilityState`, so it is the
+ * spelling that reaches BOTH platforms.
+ *
+ * `aria-haspopup` is NOT here, and that is now a scope decision rather than a
+ * typing one. React Native still types no such prop — it is a PROPERTY, with no
+ * state to fold into `accessibilityState` — but react-native-web forwards it,
+ * and `styles/styled-primitives.ts`'s `WebAriaProps` declares it so it can be
+ * set without a cast. The MENU ROW that opens a submenu uses that
+ * (`MenuRowShell`'s `hasPopup`), because a row announcing only `aria-expanded`
+ * reads as an ordinary action that toggles something.
+ *
+ * A ROOT trigger is a different case and is deliberately still without it: this
+ * one type is shared by all five families, whose popups are a `menu`, a
+ * `dialog` and a `listbox`, so a single value here would be wrong for two of
+ * them. Giving each family its own would be worth doing and is not what the
+ * submenu fix needed.
  */
 export interface TriggerHandleProps {
   onPress: (event: GestureResponderEvent) => void;

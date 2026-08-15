@@ -49,13 +49,42 @@ type StyledPressableBase = Omit<PressableProps, 'style'> & {
 };
 
 /**
+ * The ARIA PROPERTIES react-native-web forwards to the DOM and React Native does
+ * not type at all.
+ *
+ * React Native types exactly five boolean `aria-*` STATES plus the four
+ * `aria-value*`, and folds them back into `accessibilityState`
+ * (`ViewAccessibility.d.ts` calls them "alias for accessibilityState"). A
+ * PROPERTY like `aria-haspopup` has no state to fold into and no native
+ * counterpart, so it is absent from RN's types — while react-native-web lists it
+ * in `forwardedProps` and `createDOMProps` writes it straight onto the element.
+ *
+ * Declared here rather than cast at the call site for the reason
+ * `styles/web-view-style.ts` spells out for its own RN/RNW gap: `as` only
+ * requires the two types to be COMPARABLE, so a cast accepts a typo'd attribute
+ * name and ships it as a prop nothing reads. An annotation keeps the key checked.
+ *
+ * Native ignores it — an unrecognised prop never reaches a native view config —
+ * so this needs no `Platform.OS` branch.
+ */
+export interface WebAriaProps {
+  /**
+   * What kind of surface this control opens. `menu` is the only value Bloom
+   * currently needs; the union is the ARIA one, narrowed to what is spellable.
+   */
+  'aria-haspopup'?: 'menu' | 'listbox' | 'tree' | 'grid' | 'dialog';
+}
+
+/**
  * `ref` is on the PUBLISHED type and deliberately not on the one handed to
  * `styled()`: adding it to the argument widens that dot-path union past the
- * checker's limit again, and the mapping only ever names `className`.
+ * checker's limit again, and the mapping only ever names `className`. The same
+ * goes for {@link WebAriaProps}.
  */
-export type StyledPressableProps = StyledPressableBase & {
-  ref?: Ref<View>;
-};
+export type StyledPressableProps = StyledPressableBase &
+  WebAriaProps & {
+    ref?: Ref<View>;
+  };
 
 /**
  * `styled()` is declared as returning `any`, so these annotations are the whole

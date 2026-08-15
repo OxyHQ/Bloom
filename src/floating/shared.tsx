@@ -34,7 +34,12 @@
 import React from 'react';
 import { type StyleProp, type ViewStyle } from 'react-native';
 
-import { StyledPressable, StyledText, StyledView } from '../styles/styled-primitives';
+import {
+  StyledPressable,
+  StyledText,
+  StyledView,
+  type WebAriaProps,
+} from '../styles/styled-primitives';
 import { useInteractionState } from '../hooks/use-interaction-state';
 import {
   ROW_CHEVRON_CLASS,
@@ -94,6 +99,19 @@ export interface MenuRowShellProps {
   checked?: boolean;
   /** `aria-expanded`, for a sub-trigger. */
   expanded?: boolean;
+  /**
+   * `aria-haspopup` — what this row OPENS, for the rows that open something.
+   *
+   * The companion to `expanded` and not a duplicate of it: `aria-expanded`
+   * announces that the thing is open or shut, `aria-haspopup` announces that
+   * there is a thing at all and what kind. A sub-trigger with only the first
+   * says "collapsed" without ever saying "submenu", so a screen-reader user
+   * cannot tell it from an ordinary row that happens to toggle something.
+   *
+   * Deliberately NOT derived from `expanded`: an ordinary row must not carry it,
+   * and the two are separate claims.
+   */
+  hasPopup?: WebAriaProps['aria-haspopup'];
   disabled: boolean;
   destructive?: boolean;
   /** Indent to line up with the rows that carry an indicator. */
@@ -124,6 +142,7 @@ export function MenuRowShell({
   role,
   checked,
   expanded,
+  hasPopup,
   disabled,
   destructive = false,
   inset = false,
@@ -163,6 +182,7 @@ export function MenuRowShell({
       // half travels on the `disabled` prop, which both platforms map.
       {...(checked == null ? {} : { 'aria-checked': checked })}
       {...(expanded == null ? {} : { 'aria-expanded': expanded })}
+      {...(hasPopup == null ? {} : { 'aria-haspopup': hasPopup })}
       disabled={disabled}
       onPress={disabled ? undefined : onPress}
       onPressIn={disabled ? undefined : onPressIn}
