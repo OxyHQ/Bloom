@@ -31,12 +31,17 @@ import { Button } from '@oxyhq/bloom';
 
 ## The filled variants are glass
 
-`primary` and `destructive` are **tinted glass**: the brand colour at 25% over a `blur(10px)` of whatever is behind them, a hairline of the same colour at full strength, a lit top rim and a soft drop shadow. Their label is `colors.text` — the page's own reading colour — not a white-on-brand foreground, because a translucent surface's luminance follows the surface behind it.
+`primary` and `destructive` are **tinted glass**: the brand colour at 85% over a `blur(10px)` of whatever is behind them, a hairline of the same colour at full strength, a lit white top rim and a soft drop shadow. The label is the fill's own on-colour, exactly as on the solid button — the pane IS the fill, so it carries the same label.
 
-This is a **page** material, not an over-media one. It is measured to clear WCAG AA on every neutral Bloom surface a control can sit on (`background`, `backgroundSecondary`, `backgroundTertiary`, `card`, `contrast50`) across every preset, mode and tone — worst 5.39. Over content Bloom does not own, it does not, and neither does any 25% material:
+The glass is the sheen, not the wash. What reads as glass is the rim, the vertical gradient and the hairline; the 15% of the backdrop that shows through is a hint of depth, not the effect itself.
+
+**One measured cost, stated because it is real.** The 15% bleed moves the pane toward the surface under it, which in light mode means lighter — the one direction a white label cannot afford. Of `primary`'s 180 preset × mode × surface combinations, **45 fall below WCAG AA**, in the band 4.17–4.45, all in light mode, on `blue`, `faircoin`, `green`, `mint`, `orange`, `pumpkin`, `rose`, `sky` and `yellow`. As a solid fill all 180 pass. `destructive` is unaffected (worst 5.32). The alpha at which the failures reach zero is 0.89.
+
+If your app runs one of those nine presets in light mode and needs AA on its primary button, use `variant="inverse"` for that call site, or raise `GLASS_FILL_ALPHA`.
+
+Over content Bloom does not own — a photograph, a video still — the pane is still 85% fill, so it behaves close to the solid button: **23 of 108** preset × mode × backdrop rows fall below AA, worst 3.61 (`destructive`: 0). If a CTA must be legible over an arbitrary image, `variant="inverse"` is opaque and backdrop-independent:
 
 ```tsx
-// A CTA over a photo or a video still — use the opaque variant.
 <Button variant="inverse">Comprar</Button>
 ```
 

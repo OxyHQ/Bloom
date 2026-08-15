@@ -59,7 +59,7 @@ const GlassSurfaceComponent: React.FC<GlassSurfaceProps> = ({
   testID,
 }) => {
   const theme = useTheme();
-  const glass = useMemo(() => resolveGlassColors(theme.colors, fill), [theme.colors, fill]);
+  const glass = useMemo(() => resolveGlassColors(fill), [fill]);
   // Per instance, because two panes in one document would otherwise share an id
   // and the survivor of an unmount would reference a gradient that is gone. Same
   // counter shape as `AvatarRing`.
