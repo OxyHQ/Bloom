@@ -1,0 +1,52 @@
+---
+title: DotGridMeter
+description: How many out of a total, when the total is small enough to count.
+order: 64
+---
+
+# DotGridMeter
+
+A grid of dots, some filled. It answers *how many out of how many* for a total
+the eye can actually count.
+
+```tsx
+import { DotGridMeter } from '@oxyhq/bloom/dot-grid-meter';
+
+<DotGridMeter filled={34} total={50} columns={10} />
+```
+
+## Which prop decides what
+
+| prop                       | decides                                       |
+| -------------------------- | ---------------------------------------------- |
+| `filled` / `total`          | the count and the ceiling                      |
+| `columns`                   | the grid width, which sets the row count        |
+| `dotSize` / `gap`           | the geometry                                   |
+| `filledColor` / `emptyColor`| the two states                                 |
+
+## Use it when the total is countable
+
+Thirty-four of fifty tokens, seven of ten onboarding steps, twelve of twenty
+invites. The point is that a reader can verify the number by looking — that is
+what a dot grid gives you over a bar.
+
+Over a few hundred it stops being countable and becomes a texture. Past that a
+[`StatBar`](/docs/bloom/main/stat-bar) is the honest widget: it does not
+pretend the reader can count.
+
+## `columns` decides the shape
+
+Pick a value that makes the rows read as groups — 10 across for a total of 50
+gives five clean rows of ten, which is countable at a glance. An awkward number
+leaves a ragged last row and makes the total harder to read, not easier.
+
+## Both colours matter
+
+The empty dots carry the *total*, so they must be visible. An `emptyColor` too
+close to the background turns the widget into "34 dots" with no denominator,
+which is the one thing it exists to show.
+
+## State the numbers as well
+
+`34 / 50` in text beside the grid. The dots are the shape of the answer; the
+text is the answer — and it is the only version available to a screen reader.

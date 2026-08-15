@@ -1,0 +1,67 @@
+---
+title: Search
+description: A pill-shaped search field whose clear button appears only when there is something to clear.
+order: 48
+---
+
+# Search
+
+A search input: magnifier, rounded field, and a clear button that appears once
+there is a query.
+
+```tsx
+import { Search } from '@oxyhq/bloom/search';
+
+<Search
+  value={query}
+  onChangeText={setQuery}
+  onClearText={() => setQuery('')}
+  label="Search people"
+/>
+```
+
+## Which prop decides what
+
+| prop           | decides                                                    |
+| -------------- | ----------------------------------------------------------- |
+| `value`        | the query — the field is controlled                          |
+| `onChangeText` | typing                                                       |
+| `onClearText`  | the clear button's press                                     |
+| `label`        | the accessible name **and** the placeholder; defaults to `Search` |
+
+Everything else passes through to the underlying text input.
+
+## `onClearText` reports; it does not clear
+
+The field is controlled, so clearing itself would fight the caller's state and
+leave the list filtered by a query the field no longer shows. Handle it:
+
+```tsx
+onClearText={() => { setQuery(''); refetch(); }}
+```
+
+## The clear button is conditional on purpose
+
+It appears only when `value` is non-empty. A clear button on an empty field is
+a dead target that looks live, and a missing one on a full field strands the
+user with no way back to the unfiltered list except selecting and deleting.
+
+## Searching as you type, or on submit
+
+`Search` sets `returnKeyType="search"` but does not decide when the search
+runs. Both are legitimate:
+
+- **As you type** — cheap, local filtering. Debounce anything that leaves the
+  device.
+- **On submit** — expensive or paginated search. Say so, by leaving the results
+  alone until the key is pressed rather than showing stale ones.
+
+What is not legitimate is issuing a request per keystroke to a server. That is
+the same failure as a [`Slider`](/docs/bloom/main/slider) that saves in
+`onValueChange`.
+
+## Search or Combobox
+
+- **Search** — filters something already on the page.
+- **[Combobox](/docs/bloom/main/combobox)** — picks a value into a form, and
+  the picked value stays.

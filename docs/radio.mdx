@@ -1,0 +1,65 @@
+---
+title: Radio
+description: One choice from a small set — the control, not just the dot.
+order: 30
+---
+
+# Radio
+
+A radio is a **control**: the label is part of the target, the group announces
+itself as a group, and exactly one option is selected. `RadioGroup` is the form
+you almost always want; `Radio` is the single row, for when the options are not
+a flat list.
+
+```tsx
+import { RadioGroup } from '@oxyhq/bloom/radio';
+
+<RadioGroup
+  label="Delivery speed"
+  value={speed}
+  onValueChange={setSpeed}
+  options={[
+    { value: 'standard', label: 'Standard', description: 'Two to four days' },
+    { value: 'express', label: 'Express', description: 'Next working day' },
+    { value: 'pickup', label: 'Collect in store', disabled: !storeNearby },
+  ]}
+/>
+```
+
+## Which prop decides what
+
+| prop                      | decides                                            |
+| ------------------------- | --------------------------------------------------- |
+| `label` (group)           | the accessible name of the whole group — required    |
+| `value` / `onValueChange` | the selection; the group is fully controlled         |
+| `options`                 | the choices, each with its own `label`/`description` |
+| `size`                    | `small` · `medium` · `large`                         |
+| `disabled`                | the whole group, or one option via its `disabled`    |
+
+## The label belongs to the radio, not next to it
+
+`Radio` renders its own `label` and `description` and makes the whole row the
+press target. A dot with a separate `<Text>` beside it is a smaller target, and
+tapping the words does nothing — which reads as an unresponsive control.
+
+If you need the dot alone — inside a custom row, a card selector, a table cell —
+that is [`RadioIndicator`](/docs/bloom/main/radio-indicator), which is
+presentational and takes `selected`. Using the indicator where you meant the
+control is how a "radio group" ends up announcing as decoration.
+
+## Radio, Switch or Checkbox
+
+- **Radio** — one of several named options, all visible, mutually exclusive.
+- **[Switch](/docs/bloom/main/switch)** — a single thing that is on or off,
+  taking effect immediately.
+- **Checkbox** — several independent options, or an intent confirmed later.
+
+Two radios is usually a sign the choice is really a switch — unless both
+options need naming ("Metric" / "Imperial"), which is exactly when radios are
+right.
+
+## A group with nothing selected
+
+`value` may be `undefined`. Prefer that over pre-selecting an option the user
+did not choose: a default that happens to be first is indistinguishable from an
+answer, and it silently becomes the submitted value.

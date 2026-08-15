@@ -29,6 +29,14 @@ import { PortalProvider, PortalOutlet } from '../src/portal';
  * On web (where Storybook runs) BloomThemeProvider applies CSS variables and
  * the dark class, so stories pick up theme palette colors immediately.
  *
+ * `fonts` is left at its default (`true`) DELIBERATELY. This harness passed
+ * `fonts={false}` for months: every story still looked fine, because a missing
+ * `@font-face` falls back to a system face rather than failing, so the harness
+ * covered the whole font system with nothing while reporting green. A gate that
+ * opts out of the default every consumer ships is not a gate. On web the loader
+ * is synchronous (`applyFontFaces()` during render, `font-display: swap`), so
+ * there is no render cost to pay for the coverage.
+ *
  * The padded container gives stories breathing room and a consistent
  * background that respects the active theme.
  */
@@ -45,7 +53,7 @@ const withProviders: Decorator = (Story, context) => {
 
   return (
     <SafeAreaProvider>
-      <BloomThemeProvider mode={mode} colorPreset={colorPreset} fonts={false}>
+      <BloomThemeProvider mode={mode} colorPreset={colorPreset}>
         <PortalProvider>
           <SurfaceProvider>
             <View
@@ -77,26 +85,30 @@ const preview: Preview = {
       },
     },
     options: {
+      /**
+       * ONE taxonomy, so a reader can predict where a family lives before
+       * looking. Four groups, and the boundaries are behavioural rather than
+       * visual — a finer split (Actions / Layout / Navigation / Feedback) reads
+       * well in a sidebar and then puts `Toast` and `Dialog` in different
+       * places, which is the question a reader is actually asking.
+       *
+       *   Foundations   not a component you place — theme, tokens, type, icons,
+       *                 motion
+       *   Forms         inputs and controls: things you fill in or choose with
+       *   Overlays      anything that opens over the page and dismisses,
+       *                 whoever opened it (Dialog, BottomSheet, Toast, Command)
+       *   Data Display  things whose job is to show you a value or a person
+       *   Components    everything else
+       */
       storySort: {
         order: [
           'Introduction',
           'Foundations',
-          ['Theme', 'Typography', 'Icons'],
+          ['Theme', 'Design Tokens', 'Typography', 'Icons', 'Motion'],
           'Components',
-          [
-            'Button',
-            'Dialog',
-            'BottomSheet',
-            'Toast',
-            'Avatar',
-            'TextField',
-            'Loading',
-            'Menu',
-            'Select',
-            'ContextMenu',
-            'PromptInput',
-            'SettingsList',
-          ],
+          'Forms',
+          'Overlays',
+          'Data Display',
         ],
       },
     },

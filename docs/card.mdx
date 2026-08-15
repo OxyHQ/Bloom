@@ -1,0 +1,106 @@
+---
+title: Card
+description: The one card-shaped surface — background, border, elevation and corner decided in a single place.
+order: 20
+---
+
+# Card
+
+`Card` is the answer to "what is a card made of". One component owns the `card`
+background role, the border colour and width, the elevation and the corner
+rung — and the platform split those imply, since a shadow is a `box-shadow` on
+web and `elevation` on Android.
+
+Five families used to draw that chrome by hand, with five different radii and
+three different elevations. That is what `Card` removes. It does **not** remove
+the variety: a settings group, a hover card and a link preview are legitimately
+different surfaces, and the radius scale has rungs precisely so they can differ.
+
+```tsx
+import { Card, CardHeader, CardBody, CardFooter, CardTitle, CardDescription } from '@oxyhq/bloom/card';
+
+<Card variant="outlined" radius="radius-16">
+  <CardHeader>
+    <CardTitle>Weekly digest</CardTitle>
+    <CardDescription>Sent every Monday at 09:00.</CardDescription>
+  </CardHeader>
+  <CardBody>…</CardBody>
+</Card>
+```
+
+## Which prop decides what
+
+| prop        | decides                                                          |
+| ----------- | ---------------------------------------------------------------- |
+| `variant`   | the preset combination of background, border and elevation        |
+| `radius`    | the corner, as a **rung of the `RADIUS` scale** — never a number  |
+| `border`    | `none` · `hairline` (0.5px) · `thin` (1px)                        |
+| `elevation` | `none` · `s` (a subtle raise) · `m` (the overlay role)            |
+
+`variant` is only a named default for the other three. An explicit `border` or
+`elevation` wins, in both directions — you can add a shadow to `plain` and take
+one away from `elevated`. That is deliberate: a surface that is "an outlined
+card but flatter" should refine the axes rather than earn a fifth variant name.
+
+```tsx
+<Card variant="plain" border="hairline" elevation="m" radius="radius-20" />
+```
+
+## Variants
+
+- `plain` — the bare `card` surface: no border, no shadow.
+- `elevated` — `shadow-s`. The default.
+- `outlined` — a 1px border in the `border` role.
+- `filled` — paints from `backgroundSecondary` instead of `card`, for a surface
+  that sits **on** a card rather than being one.
+
+## `radius` is a rung, not a number
+
+```tsx
+<Card radius="radius-20" />   // ✅
+<Card radius={20} />          // ✗ does not type-check
+```
+
+The scale has 2 / 4 / 12 / 16 / 20 / 24 / 28 / max. Taking a rung rather than a
+number is what keeps "this surface is a bit rounder" to eight values instead of
+eight hundred, and it is why a design change to a rung moves every surface that
+uses it.
+
+## The mistake it prevents
+
+Hand-rolling the chrome means hand-rolling the platform split too, and the
+usual result is a `Platform.OS` branch with slightly different numbers from the
+one next to it. Worse, on web it is tempting to reach for classes —
+`border border-border bg-card` — which are **inert until the consumer wires the
+Tailwind pipeline**. That failure is silent: the card renders as an unbordered
+transparent block, nothing throws, and it looks like a spacing bug.
+
+`Card` applies background, border, radius and shadow as resolved inline tokens,
+so the surface paints with or without a consumer's CSS pipeline.
+
+## Pressable cards
+
+Passing `onPress` makes the card a `Pressable` with a press dip. Say what it
+is: a card that opens a URL is a `link`, a card that performs an in-app action
+is a `button` (the default).
+
+```tsx
+<Card onPress={open} accessibilityRole="link" accessibilityLabel="Read the post" />
+```
+
+## Clipping
+
+`Card` sets `overflow: 'hidden'` so a cover image cannot paint over the corner.
+A surface that must *not* clip — because it has an Android elevation, or
+because a child deliberately overflows — opts out through `style`:
+
+```tsx
+<Card style={{ overflow: 'visible' }} />
+```
+
+## Parts
+
+`CardHeader`, `CardBody`, `CardFooter`, `CardTitle` and `CardDescription` are
+spacing and type conventions, not requirements. A card with entirely custom
+content is a normal thing; use the parts when you want the same rhythm as every
+other card.

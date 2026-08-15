@@ -34,6 +34,13 @@ const gestureBuilder = (): MockGesture => {
     // Tap tolerances — the tab bar widens both so a drifting finger still taps.
     maxDistance: () => builder,
     maxDuration: () => builder,
+    // Tap count and pointer bounds — the image gallery distinguishes a
+    // double-tap zoom from a two-finger pinch with these. A missing chain link
+    // is not a degraded mock: the chain returns `undefined` and the suite dies
+    // at import time, so the family reads as untestable rather than untested.
+    numberOfTaps: () => builder,
+    minPointers: () => builder,
+    maxPointers: () => builder,
     onBegin: record('onBegin'),
     onStart: record('onStart'),
     onUpdate: record('onUpdate'),
@@ -50,17 +57,27 @@ const gestureBuilder = (): MockGesture => {
   return builder;
 };
 
-export const Gesture = {
-  Pan: gestureBuilder,
-  Tap: gestureBuilder,
-  Native: gestureBuilder,
-  // A composed gesture is itself chainable, so return a builder too — one that
-  // keeps its members reachable.
-  Race: (...gestures: unknown[]): MockGesture => {
+// A composed gesture is itself chainable, so return a builder too — one that
+// keeps its members reachable.
+const compose =
+  () =>
+  (...gestures: unknown[]): MockGesture => {
     const composed = gestureBuilder();
     composed.__members = gestures as MockGesture[];
     return composed;
-  },
+  };
+
+export const Gesture = {
+  Pan: gestureBuilder,
+  Tap: gestureBuilder,
+  Pinch: gestureBuilder,
+  Native: gestureBuilder,
+  Race: compose(),
+  // The three composers differ only in ARBITRATION, which this mock does not
+  // model — it records membership so a suite can assert what was composed, and
+  // leaves which one wins to a device build.
+  Exclusive: compose(),
+  Simultaneous: compose(),
 };
 
 export const GestureDetector = ({ children }: { children: React.ReactNode }) => children;

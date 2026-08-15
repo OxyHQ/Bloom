@@ -1,0 +1,64 @@
+---
+title: BloomProvider
+description: The one root a consuming app mounts — and why the outlets are deliberately not in it.
+order: 56
+---
+
+# BloomProvider
+
+The single root that composes Bloom's app-wide **state** providers, so none of
+them lands at the wrong depth.
+
+```tsx
+import { BloomProvider } from '@oxyhq/bloom/provider';
+
+export default function RootLayout() {
+  return (
+    <BloomProvider>
+      <Stack />
+    </BloomProvider>
+  );
+}
+```
+
+## Why one root rather than several
+
+Depth is not a detail for these. Mounted too low:
+
+- `useScrollRestoration()` **throws** for anything rendered beside it;
+- `useMinimizeState()` silently hands out a private fallback, so two parts of
+  the app disagree about the same state and neither errors.
+
+One root removes the chance to get that wrong.
+
+## Expo/expo-router apps only
+
+`BloomProvider` binds the scroll store to `expoRouterScrollAdapter`, so it is
+expo-router-only **by construction** — which is also why the family is not on
+the root barrel: importing it would drag `expo-router` into every consumer's
+graph, and Metro does not tree-shake, so an unmet peer is a build failure
+rather than a degradation.
+
+A Vite/SPA consumer mounts the pieces instead: `BloomThemeProvider` plus
+`<ScrollRestorationProvider adapter={…}>` with its own router adapter.
+
+## The OUTLETS are deliberately not in it
+
+`ToastOutlet`, `PortalProvider`/`PortalOutlet`, `SurfaceHost` and the dialog
+hosts stay out. Where an outlet sits in the tree is an app decision — it has to
+paint over the app's own chrome — and **a second mount duplicates every
+surface**. Adding one here would silently double the toasts of any app that
+already mounts its own.
+
+That failure is quiet: two identical toasts read as a double-fire in your own
+code, not as two outlets.
+
+## Where the theme provider goes
+
+Above **every** render branch, including the splash/loading one.
+
+`useTheme()` throws outside `BloomThemeProvider`, and the classic way to hit
+that is an `appIsReady` early-return in `app/_layout.tsx` that renders a splash
+screen *before* the providers mount. It fails at runtime only — `tsc` and the
+build stay green — and only on a cold start. Verify in a real browser after any
+theming migration.

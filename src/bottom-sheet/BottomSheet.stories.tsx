@@ -7,7 +7,7 @@ import { BottomSheet } from './index';
 import type { BottomSheetRef } from './types';
 
 const meta: Meta<typeof BottomSheet> = {
-  title: 'Components/BottomSheet',
+  title: 'Overlays/BottomSheet',
   component: BottomSheet,
 };
 

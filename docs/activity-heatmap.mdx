@@ -1,0 +1,65 @@
+---
+title: ActivityHeatmap
+description: A calendar grid coloured by count — when something happened, over months.
+order: 65
+---
+
+# ActivityHeatmap
+
+Days as cells, coloured by how much happened. Contributions, posts, sessions,
+streaks.
+
+```tsx
+import { ActivityHeatmap } from '@oxyhq/bloom/activity-heatmap';
+
+<ActivityHeatmap
+  data={days}
+  numDays={182}
+  weekStartsOn={1}
+  onPressDay={(day) => showDay(day.date)}
+/>
+```
+
+`data` is `{ date, count }[]`; `date` is an ISO day string.
+
+## Which prop decides what
+
+| prop                       | decides                                            |
+| -------------------------- | --------------------------------------------------- |
+| `data`                     | the counts                                          |
+| `numDays` / `endDate`      | the window shown                                    |
+| `levels`                   | the count thresholds between colour steps           |
+| `colorScale` / `emptyColor`| the colours per level, and for zero                 |
+| `weekStartsOn`             | `0` Sunday or `1` Monday                            |
+| `cellSize` / `gap`         | the geometry                                        |
+| `monthLabels` / `weekdayLabels` | the axis text, for localisation                |
+| `onPressDay`               | makes a cell pressable                              |
+
+## `levels` is the prop to think about
+
+The default buckets suit a roughly uniform distribution. Real activity data is
+usually skewed — a handful of enormous days and a long tail of ones — and with
+default thresholds almost everything paints at the lowest level, so the chart
+says "nothing much happened" about a year of work.
+
+Set thresholds that match your distribution. Quantiles of the non-zero counts
+are a better starting point than evenly spaced values.
+
+## Zero is not the lowest level
+
+`emptyColor` is separate from the scale on purpose. "Nothing happened" and "the
+least that ever happens" are different facts, and collapsing them hides exactly
+the streaks the chart is usually read for.
+
+## `weekStartsOn` is a locale decision
+
+Not a style one. Getting it wrong shifts every column by a day, so the chart
+disagrees with the user's calendar — which reads as bad data rather than as a
+wrong setting. `monthLabels` and `weekdayLabels` exist for the same reason:
+they must come from the app's locale, not from English defaults.
+
+## Give the window a reason
+
+`numDays` should match a period the user thinks in — a year, six months, a
+quarter. An arbitrary window invites the reader to work out what they are
+looking at, and the label above the chart should say it outright.

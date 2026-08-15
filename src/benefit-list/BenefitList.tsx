@@ -2,10 +2,10 @@ import React, { memo } from 'react';
 import { View, type StyleProp, type TextStyle, type ViewStyle } from 'react-native';
 
 import { useTheme } from '../theme/use-theme';
+import { Card } from '../card';
 import { atoms as a } from '../styles';
 import { StyledView } from '../styles/styled-primitives';
-import { bloomShadowStyle } from '../design-tokens/shadows';
-import { TYPOGRAPHY, RADIUS, SPACING, BORDER_WIDTH } from '../design-tokens/scales';
+import { TYPOGRAPHY, RADIUS, SPACING } from '../design-tokens/scales';
 import { Text } from '../typography';
 import type { BenefitRowProps, BenefitListProps } from './types';
 
@@ -85,12 +85,9 @@ BenefitRow.displayName = 'BenefitRow';
  * `BenefitList` — a bordered card that stacks {@link BenefitRow}s with consistent
  * spacing. The "3 icon + caption rows in a card" from the consent reference.
  *
- * Token roles → runtime values:
- *   - card bg     → `fill` role (`--card`) → `theme.colors.card`
- *   - hairline    → `border-image` role (`--border`) → `theme.colors.border` at
- *                   the `border-hairline` (0.5px) width
- *   - radius      → `radius-20`
- *   - elevation   → `shadow-s` (platform-correct via `bloomShadowStyle`)
+ * The chrome is `Card`'s — the `fill` background, the `border-image` hairline
+ * and `shadow-s` are one platform branch shared by every Bloom card surface.
+ * This family only chooses the rung (`radius-20`) and the interior spacing.
  */
 const BenefitListComponent: React.FC<BenefitListProps> = ({
   children,
@@ -98,28 +95,29 @@ const BenefitListComponent: React.FC<BenefitListProps> = ({
   className,
   style,
 }) => {
-  const theme = useTheme();
-
-  const cardStyle: StyleProp<ViewStyle> = [
+  // `overflow: 'visible'` restores the RN default that `Card` overrides: a
+  // benefit list clips nothing, and leaving it hidden would change what an
+  // Android elevation draws under a rounded, clipped view.
+  const layoutStyle: StyleProp<ViewStyle> = [
     {
-      backgroundColor: theme.colors.card,
-      borderRadius: RADIUS['radius-20'],
-      borderWidth: BORDER_WIDTH.hairline,
-      borderColor: theme.colors.border,
       padding: SPACING['space-16'],
       gap: SPACING['space-16'],
+      overflow: 'visible',
     },
-    bloomShadowStyle('s'),
     style,
   ];
 
   return (
-    <StyledView
+    <Card
+      variant="outlined"
+      radius="radius-20"
+      border="hairline"
+      elevation="s"
       className={className}
-      style={cardStyle}
+      style={layoutStyle}
       accessibilityLabel={accessibilityLabel}>
       {children}
-    </StyledView>
+    </Card>
   );
 };
 

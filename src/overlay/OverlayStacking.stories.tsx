@@ -28,7 +28,7 @@ import { useDialogControl } from '../dialog/context';
 import { Menu, MenuContent, MenuItem, MenuTrigger } from '../menu';
 
 const meta: Meta = {
-  title: 'Components/Overlay stacking',
+  title: 'Overlays/Overlay stacking',
 };
 
 export default meta;

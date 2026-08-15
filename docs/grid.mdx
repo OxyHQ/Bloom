@@ -1,0 +1,64 @@
+---
+title: Grid
+description: Row and Col — a gutter that keeps the grid's outer edges flush with everything else.
+order: 45
+---
+
+# Grid
+
+`Row` and `Col` are a twelfth-free fractional grid. A row holds columns; each
+column takes a fraction of the width.
+
+```tsx
+import { Row, Col } from '@oxyhq/bloom/grid';
+
+<Row gap={16}>
+  <Col width={2 / 3}>
+    <Article />
+  </Col>
+  <Col width={1 / 3}>
+    <Sidebar />
+  </Col>
+</Row>
+```
+
+## Which prop decides what
+
+| prop    | decides                                                    |
+| ------- | ----------------------------------------------------------- |
+| `gap`   | on `Row`, the space between columns                          |
+| `width` | on `Col`, its fraction of the row — `0.5`, `1 / 3`, `0.25`   |
+
+## How the gutter works, and why it matters
+
+The row pulls itself out by **half** the gap on each side, and each column pads
+in by half. The result is that the outer edges of the grid line up with the
+content above and below it, while the columns are still separated.
+
+A grid that only padded its columns would be inset by half a gutter on both
+sides — a few pixels of misalignment against every other block on the page,
+which is the kind of thing that looks like nothing and reads as sloppy.
+
+That is also why a `Col` outside any `Row` gets no gutter at all rather than a
+default one: without a row there is no negative margin to compensate for it.
+
+## `width` is a fraction, not a column count
+
+`width={1 / 3}` rather than `width={4}` out of twelve. Fractions compose with
+any number of columns and do not require the reader to remember the divisor.
+`1 / 3` is exactly what it says; `4` is only meaningful once you know the grid
+is twelve wide.
+
+## Grid or flexbox
+
+`Row`/`Col` is for a **proportional split** — two thirds and one third,
+regardless of content. Ordinary flexbox is better when the split follows the
+content (a label that hugs its text beside a field that takes the rest), and a
+`gap` on a plain `View` is better when everything is the same size.
+
+## Wrapping
+
+`Row` does not wrap. A responsive layout switches between one column and two by
+rendering different structures at the breakpoint, rather than by letting a row
+reflow — a wrapped grid loses the alignment the gutter maths exists to
+preserve.

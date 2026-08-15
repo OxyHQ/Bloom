@@ -1,0 +1,58 @@
+---
+title: InputGroup
+description: A control with things attached to it — one bordered box, not several.
+order: 34
+---
+
+# InputGroup
+
+An input with prefixes, suffixes or buttons attached, drawn as **one** bordered
+box so the whole thing reads as a single control.
+
+```tsx
+import { InputGroup, InputGroupAddon } from '@oxyhq/bloom/input-group';
+
+<InputGroup>
+  <InputGroupAddon>oxy.so/</InputGroupAddon>
+  <TextFieldInput value={handle} onChangeText={setHandle} />
+</InputGroup>
+
+<InputGroup>
+  <TextFieldInput value={query} onChangeText={setQuery} />
+  <InputGroupAddon divider>
+    <Button size="small" onPress={run}>Search</Button>
+  </InputGroupAddon>
+</InputGroup>
+```
+
+## Which prop decides what
+
+| prop        | decides                                                       |
+| ----------- | -------------------------------------------------------------- |
+| `size`      | `sm` · `md` · `lg` — applied to the group, so parts agree       |
+| `isInvalid` | the error border on the whole box                              |
+| `disabled`  | dims and disables the group                                    |
+| `divider`   | per addon, a rule between it and the input                     |
+| `noPadding` | per addon, for an addon that supplies its own (a button)        |
+
+## Why the state lives on the group
+
+`isInvalid` and `disabled` are properties of the **control**, not of the input
+element inside it. Setting them per part is how a box ends up with a red border
+and a normal-coloured button, or an enabled button beside a disabled input.
+
+## A prefix is not a placeholder and not a label
+
+`oxy.so/` as an addon is part of the value's shape: it is always visible, it
+does not disappear on typing, and it is not editable. That is different from a
+placeholder (an example, which vanishes) and from a label (the name of the
+field, which belongs to [`Field`](/docs/bloom/main/field) or
+[`Label`](/docs/bloom/main/label)).
+
+`InputGroup` goes *inside* a `Field` — the group is the control, the field is
+its label, hint and error.
+
+## `divider`
+
+Use it when the addon is a distinct target — a button, a dropdown. Skip it for
+a static prefix or an icon, where a rule makes one control look like two.

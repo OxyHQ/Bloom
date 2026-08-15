@@ -1,0 +1,73 @@
+---
+title: UserHoverCard
+description: A presentational profile card. Bloom holds no follow logic — the consumer passes the button in.
+order: 23
+---
+
+# UserHoverCard
+
+The card that appears when you hover a name or an avatar: photo, display name,
+handle, bio, a couple of stats, and one action.
+
+```tsx
+import { UserHoverCard } from '@oxyhq/bloom/user-hover-card';
+import { FollowButton } from '@oxyhq/services';
+
+<UserHoverCard
+  avatar={user.avatar}
+  displayName={user.name.displayName ?? user.username}
+  username={user.username}
+  bio={user.bio}
+  stats={[
+    { label: 'Following', value: formatCount(user.following) },
+    { label: 'Followers', value: formatCount(user.followers) },
+  ]}
+  verified={user.verified}
+  action={<FollowButton userId={user.id} />}
+  onPressProfile={() => router.push(`/@${user.username}`)}
+/>
+```
+
+## Bloom holds no follow state
+
+`action` is a slot, and that is the whole design. Following is session-aware,
+optimistic, and shared across every Oxy app — it belongs to `@oxyhq/services`,
+which owns the mutation and the cache. A follow button living in Bloom would
+either duplicate that or force Bloom to depend on the SDK.
+
+The same reasoning applies to `onPressProfile`: Bloom does not know your router.
+
+## `avatar` goes to `source`, and this fails silently
+
+Internally the value is handed to `Avatar`'s **`source`** prop, so a bare Oxy
+file id resolves through the app's `ImageResolver`. If you build a card by hand
+somewhere and pass a file id as `uri` instead, the image 404s and you get a
+placeholder letter with no error anywhere. That is the single most common way
+avatars break across the ecosystem.
+
+## Display name fallback
+
+`displayName` is optional upstream. Fall back to the normalized handle —
+`displayName?.trim() || handle` — and never recompose a name from
+`name.first` / `name.last`. A wrong display name is fixed in the serializer or
+the SDK type, not in a frontend helper.
+
+## Stats are strings
+
+`value` is a string, not a number: formatting a count (`4.8K`, `1,204`) is
+locale- and product-specific, and a component that formatted it for you would be
+wrong in one app or the other.
+
+## Chrome
+
+The card composes [`Card`](/docs/bloom/main/card) at the `radius-16` rung with a
+`hairline` border and `shadow-m` — the overlay elevation role it shares with
+menus, popovers and dialogs. It does not clip, so nothing inside it needs to
+know it is in a card.
+
+The border is **0.5px**, `BORDER_WIDTH.hairline`, the same width
+[`BenefitList`](/docs/bloom/main/benefit-list) draws. That is worth stating
+because it renders 0.5px on web, where `StyleSheet.hairlineWidth` — the older
+spelling — is hardcoded to 1: the two surfaces both called themselves hairline
+and did not match. Bloom's scale defines the hairline as 0.5, and this card
+follows the scale.

@@ -14,7 +14,7 @@ import {
 } from './index';
 
 const meta: Meta = {
-  title: 'Components/ContextMenu',
+  title: 'Overlays/ContextMenu',
 };
 
 export default meta;

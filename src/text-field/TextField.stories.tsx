@@ -5,7 +5,7 @@ import type { Meta, StoryObj } from '@storybook/react-vite';
 import { TextField, TextFieldInput, TextFieldLabel } from './index';
 
 const meta: Meta = {
-  title: 'Components/TextField',
+  title: 'Forms/TextField',
 };
 
 export default meta;

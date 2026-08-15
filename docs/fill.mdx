@@ -1,0 +1,58 @@
+---
+title: Fill
+description: The four-line absolute-inset block, as one word.
+order: 46
+---
+
+# Fill
+
+A view pinned to all four edges of its parent. It replaces the style object
+that used to be written inline wherever a scrim, a gradient or a press layer
+had to cover its parent exactly.
+
+```tsx
+import { Fill } from '@oxyhq/bloom/fill';
+
+<View style={{ height: 180, borderRadius: 12, overflow: 'hidden' }}>
+  <Image source={cover} style={{ flex: 1 }} />
+  <Fill style={{ backgroundColor: 'rgba(0,0,0,0.45)' }} />
+  <Fill style={{ alignItems: 'center', justifyContent: 'center' }}>
+    <Text>Over the top</Text>
+  </Fill>
+</View>
+```
+
+## What it is for
+
+Writing `position: 'absolute', top: 0, right: 0, bottom: 0, left: 0` by hand
+four times in a file is how three of the four edges end up right. `Fill` is the
+same object, named.
+
+Overriding one edge still works, and the others survive:
+
+```tsx
+<Fill style={{ left: '50%' }} />   // right half only
+```
+
+## It takes its size from the parent
+
+`Fill` has no size of its own — it fills the nearest positioned ancestor. In a
+parent with no height it is invisible, not broken, which is the usual reason a
+scrim "doesn't show up".
+
+## Stacking
+
+Two fills stack in source order: the later one paints above. There is no
+`zIndex` involved, and there should not be — a scrim over a photo under a label
+is three siblings in the order you want them.
+
+## What it is not for
+
+- **An overlay surface.** A dialog, a sheet or a menu goes through
+  [`Portal`](/docs/bloom/main/portal) plus
+  [`OverlayRoot`](/docs/bloom/main/overlay), which give it a stack position and
+  an interactive root. A `Fill` at the root of a screen is a full-bleed band
+  that silently eats presses.
+- **A press layer that must not block touches.** If content underneath has to
+  stay pressable, the fill needs `pointerEvents="none"` — as a **prop**, since
+  the RN-only values are dropped when written as a style.

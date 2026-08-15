@@ -1,0 +1,83 @@
+---
+title: Motion
+description: Shared durations and easings — and the three web failure modes that make animation code lie.
+order: 57
+---
+
+# Motion
+
+Shared enter/exit presets and a screen transition, so a sheet and a menu on the
+same screen do not open at subtly different speeds.
+
+```tsx
+import {
+  ScaleAndFadeIn,
+  ScaleAndFadeOut,
+  ShrinkAndPop,
+  ScreenTransition,
+} from '@oxyhq/bloom/motion';
+
+<Animated.View entering={ScaleAndFadeIn} exiting={ScaleAndFadeOut}>
+  <Panel />
+</Animated.View>
+```
+
+The value of shared presets is not the numbers — it is that a change to "how
+fast things feel" happens in one place rather than being renegotiated per
+component. It is also where the web rules below are already applied, which is
+the stronger reason to use them rather than hand-writing an enter.
+
+## Three ways animation silently does nothing on web
+
+These are not Bloom quirks; they are how Reanimated behaves in the
+configuration every Oxy web app ships. Each fails with **no console output**.
+
+### An animation started from a mapper never ticks
+
+Returning `withTiming` / `withRepeat` from `useDerivedValue` or
+`useAnimatedStyle` does nothing on web. Drive a shared value **imperatively**;
+`useAnimatedStyle` only ever READS.
+
+```tsx
+// ✅ someone calls this
+progress.value = withTiming(1, { duration: 200 });
+
+const style = useAnimatedStyle(() => ({ opacity: progress.value }), [progress]);
+```
+
+### Without the worklets Babel plugin, mappers re-run on their DEPS ARRAY
+
+Not on auto-tracked reads. Omit an animating shared value from the deps and the
+mapper runs once and freezes at frame 1. **List every shared value the mapper
+reads** — note the `[progress]` above, which is doing real work.
+
+`useAnimatedReaction` does not fix this: key it on a changing prop, not on a
+shared value.
+
+### A custom `Keyframe` as `entering` freezes the element
+
+An animation name absent from Reanimated's built-in map also schedules a
+cleanup that pins the element — `position: absolute` plus a frozen box — at
+`duration × 5`. It is a layout bug with no error, and `exiting` is unaffected,
+so it looks intermittent.
+
+## Bloom's rule: pick the mechanism per DIRECTION
+
+- **`entering`** runs on the real element. It is EITHER a predefined builder
+  (`FadeIn`, `SlideInUp`) OR driven imperatively from a shared value. Never a
+  `Keyframe`, never a custom builder.
+- **`exiting`** runs on a throwaway clone, so a custom `Keyframe` is safe there —
+  and is the only way to express a multi-property, multi-stop shape.
+
+Consequences to accept rather than work around: a predefined builder cannot
+combine fade with scale, so a web enter drops one; and `Keyframe` has no
+`.easing()`, so web keyframes run linear unless a per-stop easing happens to
+resolve to one of Reanimated's built-in names. Add intermediate stops if the
+curve matters.
+
+## Verifying
+
+Jest and `tsc` catch none of these. Verify in a real **foregrounded** tab — a
+hidden tab freezes plain CSS transitions too, which mimics "the class didn't
+apply". Read the class attribute, or set `transitionProperty: 'none'` before
+reading computed styles.

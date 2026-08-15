@@ -1,0 +1,66 @@
+---
+title: Slider
+description: A value on a continuum — and the difference between `onValueChange` and `onSlidingComplete`.
+order: 35
+---
+
+# Slider
+
+For a value where the *approximate* position matters more than the exact number:
+volume, brightness, a zoom level, a price ceiling.
+
+```tsx
+import { Slider } from '@oxyhq/bloom/slider';
+
+<Slider
+  value={volume}
+  onValueChange={setVolume}
+  onSlidingComplete={persistVolume}
+  min={0}
+  max={100}
+  step={1}
+  accessibilityLabel="Volume"
+/>
+```
+
+## Which prop decides what
+
+| prop                | decides                                                  |
+| ------------------- | --------------------------------------------------------- |
+| `value`             | the position — the slider is fully controlled              |
+| `onValueChange`     | fires **continuously** while dragging                      |
+| `onSlidingComplete` | fires **once**, when the finger lifts                      |
+| `min` / `max`       | the range                                                  |
+| `step`              | the granularity; omit for continuous                       |
+| `disabled`          | dims and ignores gestures                                  |
+
+## The two callbacks are the whole API
+
+`onValueChange` fires on every frame of a drag. Put the *preview* there — the
+number under the thumb, the live volume — and nothing else.
+
+`onSlidingComplete` fires once. Put anything expensive or persistent there: a
+network request, a write to storage, a re-render of a large list. A `PATCH` in
+`onValueChange` sends one request per frame, which is the classic way a slider
+takes a settings screen offline.
+
+```tsx
+onValueChange={setLocalValue}          // cheap, immediate
+onSlidingComplete={(v) => save(v)}     // once, at the end
+```
+
+## Give it a label and a unit
+
+A slider announces a number with no meaning attached. `accessibilityLabel`
+names it; if the number is not self-evident (a price, a duration), show the
+formatted value beside the track so it is readable without dragging.
+
+## When a slider is the wrong control
+
+- **The exact value matters.** Use a number input; a slider cannot be typed
+  into and is hard to land on a specific value.
+- **There are fewer than about five positions.** Use a
+  [`SegmentedControl`](/docs/bloom/main/segmented-control) or a
+  [`Radio`](/docs/bloom/main/radio) group — they name the options.
+- **The range is huge and non-linear.** A slider over 1–1,000,000 gives most of
+  its travel to values nobody wants.

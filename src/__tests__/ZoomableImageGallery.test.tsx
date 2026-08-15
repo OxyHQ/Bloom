@@ -1,0 +1,78 @@
+/**
+ * `ZoomableImageGallery` is mounted ONCE near the app root and driven through
+ * an imperative handle, which is the part a jest run can hold: it must render
+ * nothing at all until `open()` is called, and `open()` must place its content
+ * in the portal rather than in the tree position where the gallery was written.
+ *
+ * A gallery that rendered even an empty overlay while closed would sit over the
+ * whole app collecting presses — invisible, and total.
+ *
+ * The gestures (pinch, pan-to-dismiss, the shared-element transition from the
+ * measured thumb rect) are not testable here and belong to a device build.
+ */
+import React, { createRef } from 'react';
+import { act, render } from '@testing-library/react-native';
+
+import { BloomThemeProvider } from '../theme/BloomThemeProvider';
+import { PortalProvider, PortalOutlet } from '../portal';
+import { ZoomableImageGallery } from '../zoomable-image-gallery';
+import type { ZoomableImageGalleryHandle, GalleryImage } from '../zoomable-image-gallery';
+import { hostNodes } from './support/rendered-style';
+
+const IMAGES: GalleryImage[] = [
+  { uri: 'https://cloud.oxy.so/a.jpg', alt: 'First' },
+  { uri: 'https://cloud.oxy.so/b.jpg', alt: 'Second' },
+];
+
+function renderGallery() {
+  const ref = createRef<ZoomableImageGalleryHandle>();
+  const utils = render(
+    <BloomThemeProvider mode="light" colorPreset="oxy">
+      <PortalProvider>
+        <ZoomableImageGallery ref={ref} />
+        <PortalOutlet />
+      </PortalProvider>
+    </BloomThemeProvider>,
+  );
+  return { ...utils, ref };
+}
+
+describe('ZoomableImageGallery', () => {
+  it('renders nothing while closed', () => {
+    const { toJSON } = renderGallery();
+    const images = hostNodes(toJSON()).filter((node) => node.type === 'ExpoImage');
+    expect(images).toHaveLength(0);
+  });
+
+  it('exposes an imperative open() rather than an open prop', () => {
+    const { ref } = renderGallery();
+    expect(typeof ref.current?.open).toBe('function');
+  });
+
+  it('renders the images once opened', () => {
+    const { ref, toJSON } = renderGallery();
+    act(() => {
+      ref.current?.open(IMAGES, 0);
+    });
+    const images = hostNodes(toJSON()).filter((node) => node.type === 'ExpoImage');
+    expect(images.length).toBeGreaterThan(0);
+  });
+
+  it('opens at the index it was given, not always the first image', () => {
+    // The ACTIVE image's alt is shown as the caption, so the caption is the
+    // observable "which page is open" — and opening at 0 whatever the caller
+    // asked for is the classic version of this bug.
+    const second = renderGallery();
+    act(() => {
+      second.ref.current?.open(IMAGES, 1);
+    });
+    expect(second.getByText('Second')).toBeTruthy();
+    expect(second.queryByText('First')).toBeNull();
+
+    const first = renderGallery();
+    act(() => {
+      first.ref.current?.open(IMAGES, 0);
+    });
+    expect(first.getByText('First')).toBeTruthy();
+  });
+});

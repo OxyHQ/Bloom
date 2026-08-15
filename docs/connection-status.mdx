@@ -1,0 +1,56 @@
+---
+title: ConnectionStatusToasts
+description: Offline and reconnected, announced once — with a delay that hides the flap.
+order: 70
+---
+
+# ConnectionStatusToasts
+
+Mount it once and the app announces losing and regaining its connection.
+
+```tsx
+import { ConnectionStatusToasts } from '@oxyhq/bloom/connection-status';
+
+<ConnectionStatusToasts />
+```
+
+## Which prop decides what
+
+| prop                   | decides                                              |
+| ---------------------- | ----------------------------------------------------- |
+| `offlineMessage`       | shown while there is no connection                    |
+| `reconnectingMessage`  | shown after `reconnectingDelayMs` offline             |
+| `restoredMessage`      | shown when the connection comes back                  |
+| `reconnectingDelayMs`  | how long to wait before escalating                    |
+| `restoredDurationMs`   | how long the restored toast stays                     |
+
+## "Back online" is only shown to someone who saw the outage
+
+The restored toast is suppressed unless an outage toast was actually up. A
+"Back online" that appears on its own is confusing — the user never knew
+anything was wrong, and the message implies they missed something.
+
+## The delay is the point
+
+Connectivity flaps. Announcing every dropped packet produces a toast that
+appears and disappears while the user is reading, which is worse than silence.
+The offline toast is shown immediately because the user is about to hit a
+failure; the *reconnecting* escalation waits, so a two-second blip never
+escalates at all.
+
+## Optional peer
+
+Connectivity comes from `@react-native-community/netinfo`, loaded through
+Bloom's optional-require boundary. Without the package installed the component
+mounts and does nothing rather than failing the build.
+
+That is why the require is written the way it is — a literal specifier, as a
+direct statement of a `try` block. Metro's optionality walk returns at the
+first enclosing block, so one `if` of nesting inside the `try` would lose
+optionality and turn a missing optional peer into a build failure.
+
+## Mount it once
+
+It presents through the shared [toast](/docs/bloom/main/toast) engine with a
+fixed id, so a second mount does not duplicate the toast — but it does double
+the listeners and the timers. One per app.

@@ -1,0 +1,63 @@
+---
+title: Portal
+description: Rendering somewhere else in the tree — and why the provider and outlet are native-only.
+order: 38
+---
+
+# Portal
+
+`Portal` renders its children at an outlet instead of where they were written.
+It is what lets a menu escape a parent's `overflow: hidden`, a clipping
+scroll view, or a stacking context that would otherwise trap it.
+
+```tsx
+import { Portal } from '@oxyhq/bloom/portal';
+
+<View style={{ overflow: 'hidden' }}>
+  <Trigger />
+  {open ? (
+    <Portal>
+      <OverlayRoot>
+        <Panel />
+      </OverlayRoot>
+    </Portal>
+  ) : null}
+</View>
+```
+
+## `PortalProvider` and `PortalOutlet` are NATIVE-ONLY
+
+On web the fork portals directly to `document.body`, so both are explicit no-op
+exports there. You still render them — the API is the same on both platforms —
+they simply do nothing in a browser.
+
+This matters because "this app doesn't mount a Portal Outlet" is **never** a
+valid reason to fork a web-facing component. That reasoning once produced a
+742-line fork that diverged for two months and shipped strictly worse than the
+thing it replaced.
+
+## Where the outlet goes
+
+Near the app root, after the content it must paint over. Mounting it too early
+puts every portaled surface behind the app; mounting two duplicates every
+surface.
+
+Outlets deliberately stay **out** of `BloomProvider`: their tree position is an
+app decision, and a second mount is silent — you get two of everything, which
+reads as a render loop rather than as a duplicated outlet.
+
+## Portal is not enough on its own
+
+A portaled surface still needs:
+
+- an [`OverlayRoot`](/docs/bloom/main/overlay) for its stack position and its
+  interactive root — the web portal root is `pointer-events: none` and that
+  **inherits**, so a surface without one is entirely click-through;
+- a `Backdrop` if it should dismiss on an outside press.
+
+## Several portals coexist
+
+Each portal is tracked by its own id, so opening a second does not replace the
+first, and unmounting one removes only that one. Order at the outlet follows
+mount order — which is also why the overlay stack, not the outlet, decides what
+paints on top.

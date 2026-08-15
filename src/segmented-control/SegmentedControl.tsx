@@ -41,16 +41,12 @@ const InternalContext = createContext<{
  *
  * @example
  * ```tsx
- * <SegmentedControl value={value} onChange={setValue}>
+ * <SegmentedControl label="Example" type="radio" value={value} onChange={setValue}>
  *   <SegmentedControlItem value="one">
- *     <SegmentedControlItemText value="one">
- *       One
- *     </SegmentedControlItemText>
+ *     <SegmentedControlItemText>One</SegmentedControlItemText>
  *   </SegmentedControlItem>
  *   <SegmentedControlItem value="two">
- *     <SegmentedControlItemText value="two">
- *       Two
- *     </SegmentedControlItemText>
+ *     <SegmentedControlItemText>Two</SegmentedControlItemText>
  *   </SegmentedControlItem>
  * </SegmentedControl>
  * ```

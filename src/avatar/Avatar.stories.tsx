@@ -6,7 +6,7 @@ import { Avatar } from './Avatar';
 import { Verified_Stroke2_Corner2_Rounded } from '../icons/Verified';
 
 const meta: Meta<typeof Avatar> = {
-  title: 'Components/Avatar',
+  title: 'Data Display/Avatar',
   component: Avatar,
   argTypes: {
     size: {

@@ -7,12 +7,16 @@
  * DTO `LinkPreview`) but takes a structural prop shape so Bloom never depends on
  * `@oxyhq/contracts`.
  *
- * Styling is NativeWind-className-first (semantic Bloom utilities like
- * `bg-card`, `border-border`, `text-foreground`, `text-muted-foreground`) with
- * `useTheme()` Bloom tokens for the runtime-color and numeric-geometry values
- * that have no clean utility — mirroring the `ContentPanel` idiom. The literal
- * class strings must stay literal so a consumer's Tailwind content-scan over
- * `lib/**` (and the native `src/**`) picks them up.
+ * The surface chrome is `Card`'s (`outlined` at the `radius-20` rung): one
+ * platform branch for background, border and elevation, shared with every other
+ * Bloom card. The card's own background and border used to be `bg-card` /
+ * `border-border` classes, which are inert on web until the consumer wires the
+ * Tailwind pipeline — as inline resolved tokens they now paint either way.
+ *
+ * The CONTENT is still NativeWind-className-first (`text-foreground`,
+ * `text-muted-foreground`, spacing). Those class strings must stay literal so a
+ * consumer's Tailwind content-scan over `lib/**` (and the native `src/**`)
+ * picks them up.
  *
  * The `image` prop is a plain absolute URL (e.g. a `cloud.oxy.so` OG image) and
  * is rendered directly with the RN `Image` primitive — NOT through
@@ -21,22 +25,17 @@
 import React, { memo, useCallback, useMemo } from 'react';
 import { Linking } from 'react-native';
 
+import { Card } from '../card';
 import { useTheme } from '../theme/use-theme';
-import { useInteractionState } from '../hooks/use-interaction-state';
 import {
   StyledImage,
-  StyledPressable,
   StyledText,
   StyledView,
 } from '../styles/styled-primitives';
-import { RADIUS } from '../design-tokens/scales';
 import type { LinkPreviewCardProps } from './types';
 
 /** Height (px) of the optional cover image at the top of the card. */
 const COVER_IMAGE_HEIGHT = 160;
-
-/** Opacity applied to the whole card while it is pressed. */
-const PRESSED_OPACITY = 0.85;
 
 /**
  * Best-effort hostname for the siteName / title fallbacks. Returns `undefined`
@@ -62,8 +61,6 @@ const LinkPreviewCardComponent: React.FC<LinkPreviewCardProps> = ({
   style,
 }) => {
   const { colors } = useTheme();
-  const { state: pressed, onIn: onPressIn, onOut: onPressOut } =
-    useInteractionState();
 
   const { displaySiteName, displayTitle } = useMemo(() => {
     const host = hostnameOf(url);
@@ -84,21 +81,13 @@ const LinkPreviewCardComponent: React.FC<LinkPreviewCardProps> = ({
     void Linking.openURL(url).catch(() => undefined);
   }, [onPress, url]);
 
-  const surfaceClass = ['overflow-hidden border border-border bg-card', className]
-    .filter(Boolean)
-    .join(' ');
-
   return (
-    <StyledPressable
-      className={surfaceClass}
-      style={[
-        { borderRadius: RADIUS['radius-20'] },
-        pressed && { opacity: PRESSED_OPACITY },
-        style,
-      ]}
+    <Card
+      variant="outlined"
+      radius="radius-20"
+      className={className}
+      style={style}
       onPress={handlePress}
-      onPressIn={onPressIn}
-      onPressOut={onPressOut}
       accessibilityRole="link"
       accessibilityLabel={displayTitle}
     >
@@ -145,7 +134,7 @@ const LinkPreviewCardComponent: React.FC<LinkPreviewCardProps> = ({
           </StyledText>
         ) : null}
       </StyledView>
-    </StyledPressable>
+    </Card>
   );
 };
 

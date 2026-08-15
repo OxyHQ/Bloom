@@ -6,7 +6,7 @@ import { Button } from '../button';
 import { Menu, MenuContent, MenuGroup, MenuItem, MenuItemText, MenuTrigger } from './index';
 
 const meta: Meta = {
-  title: 'Components/Menu',
+  title: 'Overlays/Menu',
 };
 
 export default meta;

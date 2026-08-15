@@ -25,7 +25,7 @@ function DemoFollowButton() {
 }
 
 const meta: Meta<typeof UserHoverCard> = {
-  title: 'Components/UserHoverCard',
+  title: 'Data Display/UserHoverCard',
   component: UserHoverCard,
   argTypes: {
     verified: { control: 'boolean' },

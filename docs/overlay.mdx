@@ -1,0 +1,75 @@
+---
+title: Overlay
+description: How a portaled surface takes its place in the stack — and the pointer-events rule that fails totally and silently.
+order: 37
+---
+
+# Overlay
+
+`overlay/` exports `OverlayRoot` and `Backdrop`: the one way a portaled surface
+establishes its interactive root, its position in the stack, and its
+press-to-dismiss dim. Do not hand-roll either.
+
+```tsx
+import { OverlayRoot, Backdrop } from '@oxyhq/bloom/overlay';
+
+{open ? (
+  <Portal>
+    <OverlayRoot>
+      <Backdrop onPress={close} progress={progress} />
+      <Panel />
+    </OverlayRoot>
+  </Portal>
+) : null}
+```
+
+## A surface opened LATER paints above one opened earlier
+
+That is decided once, in `overlay/stack.ts`, and applied by `OverlayRoot`.
+**Never give an overlay surface a `zIndex` of its own.**
+
+A per-component constant answers "which is on top" by what a surface *is*
+rather than by when it was opened, so some pairings end up permanently
+inverted — a menu that can never appear above a dialog, whatever order the user
+opened them in.
+
+To add a surface: render its portal body inside `<OverlayRoot>`, and put that
+`OverlayRoot` **inside the guard that makes the surface appear**. The rank is
+taken on mount, so the depth is right on the first paint. Order the parts
+*within* one surface using `useOverlayLayerContext()`.
+
+Toasts are the one deliberate exception: `ToastHost` mounts for the app's whole
+life, so taking a rank would wedge the counter, and it passes an explicit
+`zIndex` instead.
+
+## The `pointerEvents` rule
+
+`box-none` and `box-only` are React Native-only values and **must be passed as
+a prop, never inside a `style` object**.
+
+```tsx
+<View pointerEvents="box-none" style={styles.root} />          // ✅
+<View style={[styles.root, { pointerEvents: 'box-none' }]} />  // ✗ silently dropped
+```
+
+react-native-web resolves those two values from the prop path only; as a style
+entry they are dropped with no warning. `'auto'` and `'none'` *do* survive as
+styles, which is exactly what makes the mistake easy to make and hard to see.
+
+Why it is catastrophic: the web `Portal` root is `pointer-events: none`, and the
+property **inherits**. A dropped opt-in makes the entire surface click-through —
+backdrops do not dismiss, buttons do not press, clicks land on the app behind.
+Escape still works, so it presents as a dismissal bug rather than as a
+pointer-events bug. Outside a portal the same mistake inverts, and a full-bleed
+band silently eats presses.
+
+Verify dismissal in a real browser. Jest cannot see inheritance through a
+portal, and the markup is valid either way.
+
+## Not everything overlay-shaped is in the stack
+
+The **web** tooltip is not portaled and has no rank; the native one is and does.
+Check for a `Portal` before assuming a surface participates.
+
+On native there is a second mechanism z-index cannot reach: each of these
+surfaces is its own RN `<Modal>` window.

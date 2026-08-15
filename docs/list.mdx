@@ -1,0 +1,72 @@
+---
+title: VirtualList
+description: The one list primitive — windowed on web, virtualized on native, one prop shape.
+order: 52
+---
+
+# VirtualList
+
+Bloom's list. On web it windows against the scroller; on native it is a
+virtualized list. Same props either way.
+
+```tsx
+import { VirtualList } from '@oxyhq/bloom/list';
+
+<VirtualList
+  data={posts}
+  keyExtractor={(post) => post.id}
+  estimatedItemSize={96}
+  renderItem={({ item }) => <PostRow post={item} />}
+  ListEmptyComponent={<Empty query={query} />}
+  onEndReached={loadMore}
+  onEndReachedThreshold={0.5}
+/>
+```
+
+## Which prop decides what
+
+| prop                    | decides                                              |
+| ----------------------- | ----------------------------------------------------- |
+| `data` / `renderItem`   | what is drawn                                         |
+| `keyExtractor`          | identity across updates                               |
+| `estimatedItemSize`     | how the scrollbar behaves before rows are measured    |
+| `ListHeaderComponent` / `ListFooterComponent` / `ListEmptyComponent` | the slots |
+| `onEndReached` / `onEndReachedThreshold` | pagination                           |
+| `refreshing` / `onRefresh` | pull to refresh                                    |
+
+## `estimatedItemSize` is why scrolling feels right or wrong
+
+It is a hint, but a badly wrong one makes the scrollbar jump as real heights
+replace the estimate. Estimate the **common** row, not the average of a bimodal
+set: for a list that is mostly one-line rows with occasional images, the
+one-line height is the better answer even though it is nowhere near the mean.
+
+## `ListEmptyComponent` is the one to wire first
+
+An unstyled empty list is indistinguishable from a list that failed to load.
+The empty state should say which — "No results for *bloom*" is a different
+message from "Couldn't load your feed".
+
+## `onEndReached` can fire while a page is in flight
+
+It fires once per approach to the end, not once per scroll event — but a second
+approach can happen before the first request resolves. Guard on your own
+loading flag; the list does not know what your fetch is doing.
+
+```tsx
+onEndReached={() => { if (!isFetching && hasMore) fetchNext(); }}
+```
+
+## `keyExtractor` is not optional in practice
+
+Without stable keys, rows recycle onto the wrong data: a list that reorders
+shows the previous row's content for a frame, and inputs inside rows keep the
+wrong value. Use the entity's id, never the index.
+
+## Native tuning props
+
+`removeClippedSubviews`, `maxToRenderPerBatch`, `windowSize`,
+`initialNumToRender`, `recycleItems` and `maintainVisibleContentPosition` are
+honoured on native where applicable and accepted-but-ignored on web, where the
+window virtualizer manages its own mounted-row budget. They are on the type so
+one call site type-checks on both platforms.

@@ -1,0 +1,56 @@
+---
+title: BenefitList
+description: The "icon plus caption" card — what an app is asking for, in a consent step.
+order: 60
+---
+
+# BenefitList
+
+A bordered card of icon-and-caption rows. It is the consent-screen shape: what
+an app is about to get, one line each.
+
+```tsx
+import { BenefitList, BenefitRow } from '@oxyhq/bloom/benefit-list';
+
+<BenefitList accessibilityLabel="What you're sharing">
+  <BenefitRow icon={<PersonIcon size="sm" />} label="Your name and profile photo" />
+  <BenefitRow icon={<LockIcon size="sm" />} label="Your password is never shared" />
+  <BenefitRow icon={<ShieldIcon size="sm" />} label="You can revoke access at any time" />
+</BenefitList>
+```
+
+## Which prop decides what
+
+| prop                 | decides                                            |
+| -------------------- | --------------------------------------------------- |
+| `icon` (row)         | the glyph — required                                |
+| `label` (row)        | the caption, for the common one-line case            |
+| `children` (row)     | rich content instead of a plain label                |
+| `accessibilityLabel` | names the card as a group                            |
+
+## Write what the user gets, not what the API grants
+
+"Your name and profile photo" rather than "profile:read". A consent list is
+read by someone deciding, and a scope name is not a decision they can make.
+
+Say the limits too. "Your password is never shared" is a benefit row precisely
+because it answers the question the user actually has.
+
+## `icon` is required for a reason
+
+A row without a glyph collapses to a bullet list, and the icons are what make
+the list scannable — someone skimming reads the shapes, not the sentences. If a
+row has no natural icon, that is a sign it is prose rather than a benefit.
+
+## Keep the list short
+
+Three to five rows. A consent screen with twelve is not more transparent — it
+is a screen nobody reads, and the important row is buried among the routine
+ones.
+
+## Chrome
+
+The card is [`Card`](/docs/bloom/main/card)'s: the `card` background, a hairline
+border, `shadow-s`, at the `radius-20` rung. It deliberately does **not** clip
+its content, so an Android elevation draws the way it should under a rounded
+view.

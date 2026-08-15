@@ -1,0 +1,71 @@
+---
+title: AvatarGroup
+description: The one stacked-avatar component. Apps must not keep a local avatar stack.
+order: 22
+---
+
+# AvatarGroup
+
+Overlapping avatars with an overflow count — "3 people are typing", "12 members",
+a facepile on a post. **Every grouped or stacked avatar UI in the ecosystem uses
+this.** App-local avatar-stack components are not a variation to be tolerated;
+they drift on overlap, ring colour and overflow rules, and they miss the avatar
+resolution rules below.
+
+```tsx
+import { AvatarGroup } from '@oxyhq/bloom/avatar-group';
+
+<AvatarGroup
+  items={members}
+  max={5}
+  total={members.length}
+  size={32}
+  onPressItem={(item) => router.push(`/@${item.username}`)}
+/>
+```
+
+## Which prop decides what
+
+| prop               | decides                                                       |
+| ------------------ | -------------------------------------------------------------- |
+| `items`            | who is shown, in order                                          |
+| `max`              | how many faces before the overflow chip                         |
+| `total`            | the number the overflow chip counts to                          |
+| `size` / `overlap` | the geometry                                                    |
+| `ringColor`        | the colour of the gap between overlapping faces                 |
+| `onPressItem`      | makes each face a link to that profile                          |
+| `hoverCard`        | a hover card on web; a no-op on native, where there is no hover |
+| `renderItemAction` | a slot on each face                                             |
+
+`total` is separate from `items.length` on purpose: a list endpoint usually
+returns a page of members plus a full count, and the overflow chip should say
+`+248` rather than `+3`.
+
+## The avatar prop that goes wrong silently
+
+Pass an Oxy avatar to `source`, **not** `uri`.
+
+```tsx
+items={users.map((u) => ({ id: u.id, source: u.avatar, name: u.displayName }))}  // ✅
+items={users.map((u) => ({ id: u.id, uri: u.avatar }))}                          // ✗
+```
+
+`source` sends a non-URL string — an Oxy file id — through the consumer's
+registered `ImageResolver`. `uri` is taken as a raw URL, so a file id resolves
+to nothing, the image 404s, and every face falls back to its initial. Nothing
+throws. The symptom is "all avatars show a placeholder character", which reads
+as missing data rather than as a wiring mistake.
+
+## `ringColor` is the surface behind, not a decoration
+
+The gap between overlapping faces is drawn in `ringColor`, so it must match
+whatever the group sits **on** — the page background on a screen, the `card`
+role inside a card. A ring left at the default over a coloured surface is the
+usual reason a facepile looks like it has white halos.
+
+## `hoverCard`
+
+Web-only by construction: hover does not exist on touch, so the prop is a no-op
+on native rather than a different interaction. The card itself is
+[`UserHoverCard`](/docs/bloom/main/user-hover-card), which holds no follow
+state — the consumer passes the SDK's `FollowButton` into its `action` slot.

@@ -1,0 +1,60 @@
+---
+title: FrostedIconButton
+description: A translucent icon button for use over media, where a normal button has nothing to sit on.
+order: 65
+---
+
+# FrostedIconButton
+
+A circular icon button with a blurred, translucent background. It is for
+controls that float **over content** — a close button on a photo viewer, a
+mute toggle on a video, a back button over a hero image.
+
+```tsx
+import { FrostedIconButton } from '@oxyhq/bloom/frosted-icon-button';
+
+<FrostedIconButton
+  icon={<CloseIcon />}
+  accessibilityLabel="Close"
+  onPress={close}
+/>
+```
+
+## Which prop decides what
+
+| prop       | decides                                             |
+| ---------- | ---------------------------------------------------- |
+| `icon`     | the glyph                                            |
+| `size`     | `sm` · `md`, or a number                             |
+| `active`   | a persistent on state, for a toggle                  |
+| `disabled` | dims and disables                                    |
+| `hitSlop`  | the touch target beyond the drawn circle             |
+
+## Why it exists rather than a `Button` variant
+
+Over arbitrary media there is no background to be legible against: a photo can
+be white here and black there. The frosted fill blurs whatever is behind it so
+the glyph keeps its contrast wherever the button lands, which is not something
+a solid or ghost button can do.
+
+That also means it is the wrong choice **on** a surface. Over a card or a page
+background, frosting blurs a flat colour — it costs a blur pass to look like a
+slightly muddy circle. Use `Button`'s icon form there.
+
+## Always give it a label
+
+An icon-only button announces as "button" and nothing else. `accessibilityLabel`
+is not decoration here; it is the entire accessible name.
+
+## `hitSlop` for small buttons
+
+A 32px circle over media is usually near a screen edge and pressed with a
+thumb. `hitSlop` grows the target without growing the drawn button, which is
+preferable to drawing something bigger than the design calls for.
+
+## Web-only props
+
+`onClick`, `title`, `id`, `type` and `aria-label` are on the shared type so one
+call site type-checks on both platforms. They are consumed by the web fork,
+which renders a real DOM `<button>`, and are no-ops on native. Prefer
+`onPress` and `accessibilityLabel`, which work on both.

@@ -1,0 +1,85 @@
+---
+title: Command
+description: A command palette — search across everything the user could do from here.
+order: 41
+---
+
+# Command
+
+A searchable list of actions, opened over the page. Type to filter, press to run.
+
+```tsx
+import { Command } from '@oxyhq/bloom/command';
+
+<Command
+  visible={paletteOpen}
+  onClose={() => setPaletteOpen(false)}
+  placeholder="Type a command…"
+  items={[
+    {
+      id: 'new-post',
+      label: 'New post',
+      group: 'Create',
+      shortcut: '⌘N',
+      icon: PencilIcon,
+      onSelect: newPost,
+    },
+    {
+      id: 'settings',
+      label: 'Open settings',
+      description: 'Account, appearance, notifications',
+      keywords: ['preferences', 'account'],
+      group: 'Navigate',
+      onSelect: () => router.push('/settings'),
+    },
+  ]}
+/>
+```
+
+## Which prop decides what
+
+| prop            | decides                                                    |
+| --------------- | ----------------------------------------------------------- |
+| `visible` / `onClose` | whether it is open — controlled                        |
+| `items`         | everything that can be run                                   |
+| `query` / `onQueryChange` | the search text, if you want to control it         |
+| `filter`        | replaces the default match                                   |
+| `emptyText`     | what an empty result says                                    |
+| `maxListHeight` | how tall the list may grow                                   |
+
+## `keywords` is what makes a palette usable
+
+A palette is only as good as its synonyms. A user looking for "preferences"
+will not type "settings", and a user looking for "dark mode" will not type
+"appearance". `keywords` are matched alongside the label and description and
+are never shown, so they cost nothing on screen.
+
+```tsx
+{ id: 'theme', label: 'Appearance', keywords: ['dark mode', 'light', 'theme'] }
+```
+
+## `group` is a heading, not a filter
+
+Items are grouped under their `group` label in the order the groups first
+appear. Grouping helps a user *scan* a list they did not search; once they type,
+what matters is the match, not the category.
+
+## `shortcut` is a reminder, not a binding
+
+Setting it draws the key hint on the row. It does **not** register a keyboard
+shortcut — the app owns its key handling, and a palette that silently bound
+keys would collide with the page underneath.
+
+## An item that cannot run should not be listed
+
+Prefer omitting an inapplicable action to showing it `disabled`. A palette is
+searched, not browsed: a disabled row is a match that answers the query and
+then refuses, which is worse than no match at all. Keep `disabled` for the case
+where the user needs to know the action *exists* here but is unavailable right
+now.
+
+## Command or Combobox
+
+- **Command** — a list of **actions**, opened over the page, closed after one.
+- **[Combobox](/docs/bloom/main/combobox)** — a list of **values**, inside a
+  form, producing a selection that stays.
