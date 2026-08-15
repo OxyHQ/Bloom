@@ -25,17 +25,17 @@
  * difference, because under the repo-wide react-native mock a bare `className`
  * prop reads straight back off the stub.
  *
- * STORIES ARE STILL SKIPPED, and that is now a known gap rather than a
- * deliberate exclusion. It was harmless while Storybook had no Tailwind
+ * STORIES ARE SCANNED TOO. They were skipped while Storybook had no Tailwind
  * pipeline — no class resolved there either way — but the harness now compiles
  * the same stylesheet a consumer compiles, so a cast in a story renders a
- * working component as a broken one. Two casts survived there:
- * `SubtleHover.stories.tsx` (fixed: it uses `StyledPressable`) and
- * `PressableScale.stories.tsx`, which cannot be fixed in the story because
- * `PressableScale` wires no `className` at all — it wraps a bare
- * `Animated.createAnimatedComponent(Pressable)`, so the class has no `styled()`
- * to reach. Drop the skip below once that component follows `button/Button.tsx`
- * and builds its animated component from a styled primitive.
+ * working component as a broken one. The two that survived the skip were
+ * `SubtleHover.stories.tsx` (it uses `StyledPressable`) and
+ * `PressableScale.stories.tsx`, which could not be fixed in the story at all:
+ * `PressableScale` wired no `className`, wrapping a bare
+ * `Animated.createAnimatedComponent(Pressable)`, so the class had no `styled()`
+ * to reach and the component's own doc comment claimed the opposite. It now
+ * builds its animated component from `StyledPressable`, following
+ * `button/Button.tsx`, and the skip is gone with it.
  */
 
 import { readdirSync, readFileSync, statSync } from 'node:fs';
@@ -84,7 +84,6 @@ function sourceFiles(dir: string): string[] {
       continue;
     }
     if (!/\.tsx?$/.test(entry)) continue;
-    if (entry.endsWith('.stories.tsx')) continue;
     out.push(full);
   }
   return out;

@@ -27,6 +27,8 @@ export interface MenubarProps {
   onValueChange?: (value: string | undefined) => void;
   /** Accessible name for the bar. */
   label?: string;
+  /** Appended to the bar's own classes — never substituted for them. */
+  className?: string;
   style?: StyleProp<ViewStyle>;
   testID?: string;
 }

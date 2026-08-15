@@ -14,19 +14,17 @@
  * into every native bundle.
  */
 import React, { useMemo } from 'react';
-import { StyleSheet, View } from 'react-native';
 
 import { useControllableState } from '../hooks/use-controllable-state';
 import {
   ChevronBottom_Stroke2_Corner0_Rounded as ChevronBottomIcon,
   ChevronTop_Stroke2_Corner0_Rounded as ChevronTopIcon,
 } from '../icons/Chevron';
-import { Item } from '../item';
-import { space } from '../styles/tokens';
+import { StyledView } from '../styles/styled-primitives';
 import { useTheme } from '../theme/use-theme';
 import { ROW_ICON_SIZE } from './constants';
 import { MenuSubProvider, useMenuSub } from './context';
-import { rowShapeStyles, splitChildren, useRowStyle } from './shared';
+import { cx, MenuRowChevron, MenuRowShell, splitChildren, SUB_TRIGGER_CLASS } from './shared';
 import type {
   MenuSubContentProps,
   MenuSubParts,
@@ -53,59 +51,59 @@ export function createInlineMenuSub(prefix: string): MenuSubParts {
     inset = false,
     leading,
     accessibilityLabel,
+    className,
     style,
     testID,
   }: MenuSubTriggerProps) {
     const theme = useTheme();
     const sub = useMenuSub();
-    const rowStyle = useRowStyle();
     const { title, body } = splitChildren(children);
     // Down when closed, up when open: the disclosure states an INLINE
     // relationship, which is what the native presentation is.
     const Chevron = sub.open ? ChevronTopIcon : ChevronBottomIcon;
 
     return (
-      <Item
-        title={title}
-        disabled={disabled}
+      <MenuRowShell
         role="menuitem"
         expanded={sub.open}
+        disabled={disabled}
+        inset={inset}
         leading={leading}
-        // `text-foreground ml-auto size-4 shrink-0` — the chevron is full
-        // foreground and the same 16px as a row's check, not a small muted
-        // glyph. `Item`'s body already carries `flex: 1`, which is what pushes
-        // it right; `ml-auto` needs no counterpart.
+        // `size-4 shrink-0 ms-auto text-fg-secondary` — the same 16px glyph as a
+        // row's check, one step back in colour, exactly as the flyout's.
         trailing={
-          <Chevron width={ROW_ICON_SIZE} height={ROW_ICON_SIZE} fill={theme.colors.text} />
+          <MenuRowChevron>
+            <Chevron
+              width={ROW_ICON_SIZE}
+              height={ROW_ICON_SIZE}
+              fill={theme.colors.textSecondary}
+            />
+          </MenuRowChevron>
         }
+        title={title}
         onPress={() => sub.setOpen(!sub.open)}
         accessibilityLabel={accessibilityLabel}
-        titleStyle={rowShapeStyles.rowText}
-        style={[
-          rowStyle,
-          rowShapeStyles.subTrigger,
-          inset ? rowShapeStyles.inset : null,
-          style,
-        ]}
+        className={cx(SUB_TRIGGER_CLASS, className)}
+        style={style}
         testID={testID}>
         {body}
-      </Item>
+      </MenuRowShell>
     );
   }
   MenuSubTrigger.displayName = `${prefix}SubTrigger`;
 
-  function MenuSubContent({ children, style }: MenuSubContentProps) {
+  function MenuSubContent({ children, className, style }: MenuSubContentProps) {
     const sub = useMenuSub();
     if (!sub.open) return null;
-    return <View style={[styles.subContent, style]}>{children}</View>;
+    // Indented under its trigger, which is the whole visual statement an inline
+    // disclosure makes.
+    return (
+      <StyledView className={cx('pl-space-16', className)} style={style}>
+        {children}
+      </StyledView>
+    );
   }
   MenuSubContent.displayName = `${prefix}SubContent`;
 
   return { Sub: MenuSub, SubTrigger: MenuSubTrigger, SubContent: MenuSubContent };
 }
-
-const styles = StyleSheet.create({
-  subContent: {
-    paddingLeft: space.md,
-  },
-});

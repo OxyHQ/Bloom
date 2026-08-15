@@ -6,41 +6,31 @@ import React, {
   useRef,
   useState,
 } from 'react';
-import { Pressable, ScrollView, StyleSheet, useWindowDimensions, View } from 'react-native';
+import { ScrollView, StyleSheet, View } from 'react-native';
 
-import { bloomShadowStyle } from '../design-tokens/shadows';
 import { useTheme } from '../theme/use-theme';
-import { Text } from '../typography';
 import {
-  PANEL_BORDER_WIDTH,
-  PANEL_PADDING,
-  ROW_GAP,
   ROW_ICON_SIZE,
-  ROW_INDICATOR_BOX,
-  ROW_INDICATOR_INSET,
-  ROW_INSET_PADDING_X,
-  ROW_PADDING_X,
-  ROW_PADDING_Y,
-  ROW_PADDING_Y_SM,
-  ROW_RADIUS,
-  ROW_SEPARATOR_INSET_X,
-  ROW_SEPARATOR_MARGIN_Y,
-  ROW_SEPARATOR_THICKNESS,
+  ROW_INDICATOR_END_CLASS,
+  ROW_SEPARATOR_CLASS,
+  SELECT_ITEM_CLASS,
+  SELECT_ITEM_TEXT_CLASS,
   SELECT_MAX_HEIGHT,
-  SELECT_TRIGGER_GAP,
-  SELECT_TRIGGER_HEIGHT,
-  SELECT_TRIGGER_HEIGHT_SM,
-  SELECT_TRIGGER_PADDING_X,
-  SELECT_TRIGGER_PADDING_Y,
-  SELECT_TRIGGER_RADIUS,
-  TEXT_SM,
-  TEXT_SM_LINE_HEIGHT,
+  SELECT_PLACEHOLDER_CLASS,
+  SELECT_TRIGGER_CLASS,
+  SELECT_VALUE_CLASS,
+  ROW_HIGHLIGHT_CLASS,
 } from '../floating/constants';
 import { FloatingPanel } from '../floating/FloatingPanel';
+import { cx } from '../floating/shared';
 import { TriggerSlot } from '../floating/TriggerSlot';
 import { useAnchorRect } from '../floating/use-anchor-rect';
 import { useInteractionState } from '../hooks/use-interaction-state';
-import { BREAKPOINTS } from '../styles/breakpoints';
+import {
+  StyledPressable,
+  StyledText,
+  StyledView,
+} from '../styles/styled-primitives';
 import {
   ChevronBottom_Stroke2_Corner0_Rounded as ChevronDownIcon,
 } from '../icons/Chevron';
@@ -140,34 +130,23 @@ export function SelectTrigger({
   asChild,
   disabled,
   label,
+  className,
   style,
   testID,
 }: SelectTriggerProps) {
-  const theme = useTheme();
   const ctx = useSelectContext();
-  const { width } = useWindowDimensions();
 
   // `border-input bg-background flex h-10 flex-row items-center justify-between
-  //  gap-2 rounded-md border px-3 py-2 shadow-sm shadow-black/5 sm:h-9`.
+  //  gap-2 rounded-md border px-3 py-2 shadow-sm`.
   //
   // The trigger IS the field. It used to render its children into a bare
   // pressable with no border, height or background at all, so a ported shadcn
   // select was a line of text and a chevron floating on the page — the single
   // largest visual gap in this family.
   const field = (
-    <View
-      style={[
-        styles.trigger,
-        {
-          height: width >= BREAKPOINTS.sm ? SELECT_TRIGGER_HEIGHT_SM : SELECT_TRIGGER_HEIGHT,
-          backgroundColor: theme.colors.background,
-          borderColor: theme.colors.border,
-        },
-        bloomShadowStyle('s'),
-        disabled ? styles.triggerDisabled : null,
-      ]}>
+    <StyledView className={cx(SELECT_TRIGGER_CLASS, disabled && 'opacity-50', className)}>
       {children}
-    </View>
+    </StyledView>
   );
 
   return (
@@ -198,24 +177,21 @@ export function SelectTrigger({
 export function SelectValue({
   children: extractLabel,
   placeholder,
+  className,
   style,
 }: SelectValueProps) {
   const { value } = useSelectContext();
-  const theme = useTheme();
 
   const display = value ?? placeholder ?? '';
 
   return (
-    <Text
+    <StyledText
       numberOfLines={1}
-      style={[
-        styles.valueText,
-        { color: value ? theme.colors.text : theme.colors.textSecondary },
-        ...(style ? [style] : []),
-      ]}
+      className={cx(value ? SELECT_VALUE_CLASS : SELECT_PLACEHOLDER_CLASS, className)}
+      style={style}
     >
       {extractLabel && value ? extractLabel(value) : display}
-    </Text>
+    </StyledText>
   );
 }
 
@@ -246,6 +222,7 @@ export function SelectContent<T>({
   label = 'Select an option',
   valueExtractor = defaultItemValueExtractor,
   maxHeight = SELECT_MAX_HEIGHT,
+  className,
 }: SelectContentProps<T>) {
   const ctx = useSelectContext();
   const anchor = useAnchorRect(ctx.triggerRef, ctx.isOpen);
@@ -293,7 +270,7 @@ export function SelectContent<T>({
       sideOffset={SELECT_OFFSET}
       minWidth={anchor ? anchor.right - anchor.left : undefined}
       onDismiss={ctx.close}
-      style={styles.dropdown}
+      className={className}
     >
       <SelectScrollProvider value={scroll}>
         <SelectScrollUpButton />
@@ -333,10 +310,8 @@ export function SelectContent<T>({
 // SelectItem
 // ---------------------------------------------------------------------------
 
-export function SelectItem({ ref, value, label, children, style }: SelectItemProps) {
-  const theme = useTheme();
+export function SelectItem({ ref, value, label, children, className, style }: SelectItemProps) {
   const ctx = useSelectContext();
-  const { width } = useWindowDimensions();
   const {
     state: hovered,
     onIn: onMouseEnter,
@@ -355,7 +330,7 @@ export function SelectItem({ ref, value, label, children, style }: SelectItemPro
   );
 
   return (
-    <Pressable
+    <StyledPressable
       ref={ref}
       accessibilityRole="radio"
       // The native fork has always applied this; web declared `label` and then
@@ -376,17 +351,13 @@ export function SelectItem({ ref, value, label, children, style }: SelectItemPro
         onMouseEnter,
         onMouseLeave,
       } as Record<string, () => void>)}
-      style={[
-        styles.item,
-        { paddingVertical: width >= BREAKPOINTS.sm ? ROW_PADDING_Y_SM : ROW_PADDING_Y },
-        // `focus:bg-accent` — the same wash a menu row takes, which is what
-        // `Item` and `SubtleHover` paint everywhere else in the library.
-        (hovered || focused) && { backgroundColor: theme.colors.contrast50 },
-        style,
-      ]}
+      // `focus:bg-accent` — the same wash a menu row takes, which is what every
+      // other highlighted row in the library paints.
+      className={cx(SELECT_ITEM_CLASS, (hovered || focused) && ROW_HIGHLIGHT_CLASS, className)}
+      style={style}
     >
       <ItemContext.Provider value={itemCtx}>{children}</ItemContext.Provider>
-    </Pressable>
+    </StyledPressable>
   );
 }
 
@@ -394,11 +365,11 @@ export function SelectItem({ ref, value, label, children, style }: SelectItemPro
 // SelectItemText
 // ---------------------------------------------------------------------------
 
-export function SelectItemText({ children, style }: SelectItemTextProps) {
+export function SelectItemText({ children, className, style }: SelectItemTextProps) {
   return (
-    <Text style={[styles.itemText, ...(style ? [style] : [])]}>
+    <StyledText numberOfLines={1} className={cx(SELECT_ITEM_TEXT_CLASS, className)} style={style}>
       {children}
-    </Text>
+    </StyledText>
   );
 }
 
@@ -419,13 +390,13 @@ export function SelectItemIndicator({ icon: IconComponent = CheckIcon }: SelectI
   if (!selected) return null;
 
   return (
-    <View style={styles.itemIndicatorContainer} pointerEvents="none">
+    <StyledView className={ROW_INDICATOR_END_CLASS} pointerEvents="none">
       <IconComponent
         width={ROW_ICON_SIZE}
         height={ROW_ICON_SIZE}
         fill={theme.colors.textSecondary}
       />
-    </View>
+    </StyledView>
   );
 }
 
@@ -434,86 +405,17 @@ export function SelectItemIndicator({ icon: IconComponent = CheckIcon }: SelectI
 // ---------------------------------------------------------------------------
 
 export function SelectSeparator() {
-  const theme = useTheme();
-
-  return (
-    <View
-      style={[
-        styles.separator,
-        { backgroundColor: theme.colors.borderLight },
-      ]}
-    />
-  );
+  return <StyledView className={ROW_SEPARATOR_CLASS} />;
 }
-
-// ---------------------------------------------------------------------------
-// Styles
-// ---------------------------------------------------------------------------
 
 const styles = StyleSheet.create({
   // `TriggerSlot`'s wrapper is `alignSelf: 'flex-start'` so an anchored surface
   // lines up with the CONTROL. A select trigger is a full-width field, so it
-  // stretches instead — the same exception the combobox makes.
+  // stretches instead — the same exception the combobox makes. Inline rather
+  // than a class because it overrides `TriggerSlot`'s own inline default, and a
+  // class cannot outrank one.
   triggerSlot: {
     alignSelf: 'stretch',
-  },
-  // `flex flex-row items-center justify-between gap-2 rounded-md border px-3 py-2`.
-  trigger: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    gap: SELECT_TRIGGER_GAP,
-    paddingHorizontal: SELECT_TRIGGER_PADDING_X,
-    paddingVertical: SELECT_TRIGGER_PADDING_Y,
-    borderWidth: PANEL_BORDER_WIDTH,
-    borderRadius: SELECT_TRIGGER_RADIUS,
-  },
-  triggerDisabled: {
-    opacity: 0.5,
-  },
-  // `text-foreground line-clamp-1 flex flex-row items-center gap-2 text-sm`.
-  valueText: {
-    fontSize: TEXT_SM,
-    lineHeight: TEXT_SM_LINE_HEIGHT,
-  },
-  // Only the INSET is the select's own now. `FloatingPanel` owns the surface's
-  // position, background, border, radius, elevation and pointer-events, which
-  // is why the fixed-position and backdrop entries that used to live here are
-  // gone rather than merely unused. `p-1` on the viewport, matching the panel's.
-  dropdown: {
-    padding: PANEL_PADDING,
-  },
-  // `relative flex w-full flex-row items-center gap-2 rounded-sm py-2 pl-2 pr-8
-  //  sm:py-1.5` — no minimum height, and the 32px gutter is on the RIGHT.
-  item: {
-    position: 'relative',
-    flexDirection: 'row',
-    width: '100%',
-    gap: ROW_GAP,
-    paddingLeft: ROW_PADDING_X,
-    paddingRight: ROW_INSET_PADDING_X,
-    alignItems: 'center',
-    borderRadius: ROW_RADIUS,
-  },
-  // `text-foreground select-none text-sm`.
-  itemText: {
-    fontSize: TEXT_SM,
-    lineHeight: TEXT_SM_LINE_HEIGHT,
-  },
-  itemIndicatorContainer: {
-    position: 'absolute',
-    right: ROW_INDICATOR_INSET,
-    top: 0,
-    bottom: 0,
-    width: ROW_INDICATOR_BOX,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  // `bg-border -mx-1 my-1 h-px`.
-  separator: {
-    height: ROW_SEPARATOR_THICKNESS,
-    marginVertical: ROW_SEPARATOR_MARGIN_Y,
-    marginHorizontal: ROW_SEPARATOR_INSET_X,
   },
 });
 

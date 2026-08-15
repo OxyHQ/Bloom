@@ -65,6 +65,15 @@ import { FrostedIconButton } from '../frosted-icon-button';
 import { CompositionBar } from '../composition-bar';
 import { Radio, RadioGroup } from '../radio';
 import { StatBar } from '../stat-bar';
+import {
+  DropdownMenuCheckboxItem,
+  DropdownMenuItem,
+  DropdownMenuRadioGroup,
+  DropdownMenuRadioItem,
+  DropdownMenuSub,
+  DropdownMenuSubTrigger,
+} from '../dropdown-menu';
+import { MenuSurfaceProvider } from '../floating/context';
 import { DotGridMeter } from '../dot-grid-meter';
 import { DialogLargeTitle, useDialogHeaderController } from '../dialog/DialogHeader';
 // Both Select forks by explicit filename: jest has no platform-extension
@@ -556,5 +565,90 @@ describe('View-based containers emit aria-disabled', () => {
     // The row renders a View wrapping the content; the disabled state belongs
     // on whichever node carries the a11y role.
     expect(c.querySelector('[aria-disabled="true"]')).not.toBeNull();
+  });
+});
+
+
+// The menu ROW, which is the second entry in `aria-state-source-census.test.ts`'s
+// `DELEGATING_TAGS` — `floating/shared.tsx`'s `MenuRowShell` takes a `role` and
+// answers it itself, so the census cannot read the role off the element and
+// these are what stand in for it. All three menu families render this one row,
+// so covering `DropdownMenu`'s covers `ContextMenu`'s and `Menubar`'s too.
+describe('menu rows spell their state per role', () => {
+  const inMenu = (ui: React.ReactElement) => (
+    <MenuSurfaceProvider value={{ close: () => {}, presentation: 'sheet' }}>
+      {ui}
+    </MenuSurfaceProvider>
+  );
+
+  it('a plain row is a menuitem with no checked state — absent, not false', () => {
+    const c = mount(inMenu(<DropdownMenuItem testID="row">Profile</DropdownMenuItem>));
+    const el = byTestId(c, 'row');
+    expect(el.getAttribute('role')).toBe('menuitem');
+    expect(el.getAttribute('aria-checked')).toBeNull();
+    expect(el.getAttribute('aria-selected')).toBeNull();
+  });
+
+  it('a disabled row emits aria-disabled, from the disabled PROP', () => {
+    const c = mount(
+      inMenu(
+        <DropdownMenuItem disabled testID="row">
+          Billing
+        </DropdownMenuItem>,
+      ),
+    );
+    expect(byTestId(c, 'row').getAttribute('aria-disabled')).toBe('true');
+  });
+
+  it('a checkbox row emits aria-checked, which is what ARIA allows there', () => {
+    const c = mount(
+      inMenu(
+        <DropdownMenuCheckboxItem checked onCheckedChange={() => {}} testID="row">
+          Grid
+        </DropdownMenuCheckboxItem>,
+      ),
+    );
+    const el = byTestId(c, 'row');
+    expect(el.getAttribute('role')).toBe('checkbox');
+    expect(el.getAttribute('aria-checked')).toBe('true');
+  });
+
+  it('an unchecked checkbox row says so rather than saying nothing', () => {
+    const c = mount(
+      inMenu(
+        <DropdownMenuCheckboxItem checked={false} onCheckedChange={() => {}} testID="row">
+          Ruler
+        </DropdownMenuCheckboxItem>,
+      ),
+    );
+    expect(byTestId(c, 'row').getAttribute('aria-checked')).toBe('false');
+  });
+
+  it('a radio group marks exactly one option with aria-checked', () => {
+    const c = mount(
+      inMenu(
+        <DropdownMenuRadioGroup value="oldest" onValueChange={() => {}}>
+          <DropdownMenuRadioItem value="newest">Newest</DropdownMenuRadioItem>
+          <DropdownMenuRadioItem value="oldest">Oldest</DropdownMenuRadioItem>
+        </DropdownMenuRadioGroup>,
+      ),
+    );
+    const options = allByRole(c, 'radio');
+    expect(options).toHaveLength(2);
+    expect(options[0]?.getAttribute('aria-checked')).toBe('false');
+    expect(options[1]?.getAttribute('aria-checked')).toBe('true');
+  });
+
+  it('a sub-trigger announces whether its sub-menu is open', () => {
+    const c = mount(
+      inMenu(
+        <DropdownMenuSub defaultOpen>
+          <DropdownMenuSubTrigger testID="sub">Send to…</DropdownMenuSubTrigger>
+        </DropdownMenuSub>,
+      ),
+    );
+    const el = byTestId(c, 'sub');
+    expect(el.getAttribute('role')).toBe('menuitem');
+    expect(el.getAttribute('aria-expanded')).toBe('true');
   });
 });

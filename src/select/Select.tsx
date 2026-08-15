@@ -6,7 +6,7 @@ import React, {
   useMemo,
   useState,
 } from 'react';
-import { FlatList, Pressable, StyleSheet, useWindowDimensions, View } from 'react-native';
+import { FlatList, StyleSheet } from 'react-native';
 
 import { bloomShadowStyle } from '../design-tokens/shadows';
 import { useTheme } from '../theme/use-theme';
@@ -14,28 +14,17 @@ import { Text } from '../typography';
 import { useDialogContext, useDialogControl } from '../dialog/context';
 import { SheetShell } from '../dialog/SheetShell';
 import {
-  PANEL_BORDER_WIDTH,
-  ROW_GAP,
+  ROW_HIGHLIGHT_CLASS,
   ROW_ICON_SIZE,
-  ROW_INDICATOR_BOX,
-  ROW_INDICATOR_INSET,
-  ROW_INSET_PADDING_X,
-  ROW_PADDING_X,
-  ROW_PADDING_Y,
-  ROW_PADDING_Y_SM,
-  ROW_RADIUS,
-  ROW_SEPARATOR_INSET_X,
-  ROW_SEPARATOR_MARGIN_Y,
-  ROW_SEPARATOR_THICKNESS,
-  SELECT_TRIGGER_GAP,
-  SELECT_TRIGGER_HEIGHT,
-  SELECT_TRIGGER_HEIGHT_SM,
-  SELECT_TRIGGER_PADDING_X,
-  SELECT_TRIGGER_PADDING_Y,
-  SELECT_TRIGGER_RADIUS,
-  TEXT_SM,
-  TEXT_SM_LINE_HEIGHT,
+  ROW_INDICATOR_END_CLASS,
+  ROW_SEPARATOR_CLASS,
+  SELECT_ITEM_CLASS,
+  SELECT_ITEM_TEXT_CLASS,
+  SELECT_PLACEHOLDER_CLASS,
+  SELECT_TRIGGER_CLASS,
+  SELECT_VALUE_CLASS,
 } from '../floating/constants';
+import { cx } from '../floating/shared';
 import { TriggerSlot } from '../floating/TriggerSlot';
 import type { DialogControlProps } from '../dialog/types';
 import { useInteractionState } from '../hooks/use-interaction-state';
@@ -45,7 +34,11 @@ import {
 import {
   ChevronTopBottom_Stroke2_Corner0_Rounded as ChevronUpDownIcon,
 } from '../icons/Chevron';
-import { BREAKPOINTS } from '../styles/breakpoints';
+import {
+  StyledPressable,
+  StyledText,
+  StyledView,
+} from '../styles/styled-primitives';
 import { defaultItemValueExtractor, ItemContext, useSelectItemContext } from './shared';
 import type {
   SelectContentProps,
@@ -126,31 +119,27 @@ export function SelectTrigger({
   asChild,
   disabled,
   label,
+  className,
   style,
   testID,
 }: SelectTriggerProps) {
-  const theme = useTheme();
   const { control } = useSelectContext();
-  const { width } = useWindowDimensions();
 
   // The same field chrome the web fork draws — `border-input bg-background
   // h-10 flex-row items-center justify-between gap-2 rounded-md border px-3
-  // py-2 shadow-sm sm:h-9` — so the two platforms agree about what a select
-  // trigger looks like even though only one of them opens an anchored list.
+  // py-2 shadow-sm` — so the two platforms agree about what a select trigger
+  // looks like even though only one of them opens an anchored list.
   const field = (
-    <View
-      style={[
-        styles.trigger,
-        {
-          height: width >= BREAKPOINTS.sm ? SELECT_TRIGGER_HEIGHT_SM : SELECT_TRIGGER_HEIGHT,
-          backgroundColor: theme.colors.background,
-          borderColor: theme.colors.border,
-        },
-        bloomShadowStyle('s'),
-        disabled ? styles.triggerDisabled : null,
-      ]}>
+    <StyledView
+      className={cx(SELECT_TRIGGER_CLASS, disabled && 'opacity-50', className)}
+      // `shadow-s` reaches WEB through the class; NATIVE takes the same role as
+      // an inline style, because `design-tokens/shadows` is platform-forked and
+      // its own contract is that a multi-layer `box-shadow` is not something to
+      // rely on NativeWind translating to RN elevation. On web the two agree, so
+      // whichever wins paints the same thing.
+      style={bloomShadowStyle('s')}>
       {children}
-    </View>
+    </StyledView>
   );
 
   return (
@@ -176,24 +165,24 @@ export function SelectTrigger({
 export function SelectValue({
   placeholder,
   children: extractLabel = defaultExtractLabel,
+  className,
   style,
 }: SelectValueProps) {
   const [storedValue] = useContext(ValueStoreContext);
-  const theme = useTheme();
 
   const display = storedValue != null ? extractLabel(storedValue) : placeholder;
 
   return (
-    <Text
+    <StyledText
       numberOfLines={1}
-      style={[
-        styles.valueText,
-        { color: storedValue != null ? theme.colors.text : theme.colors.textSecondary },
-        ...(style ? [style] : []),
-      ]}
+      className={cx(
+        storedValue != null ? SELECT_VALUE_CLASS : SELECT_PLACEHOLDER_CLASS,
+        className,
+      )}
+      style={style}
     >
       {display}
-    </Text>
+    </StyledText>
   );
 }
 
@@ -291,11 +280,11 @@ function SelectContentInner<T>({
       control={control}
       label={label}
       header={
-        <View style={styles.contentHeader}>
+        <StyledView className="pt-space-24 pb-space-8 px-space-16">
           <Text style={[styles.contentHeaderText, { color: theme.colors.text }]}>
             {label}
           </Text>
-        </View>
+        </StyledView>
       }
     >
       <SelectContext.Provider value={ctx}>
@@ -314,9 +303,7 @@ function SelectContentInner<T>({
 // SelectItem
 // ---------------------------------------------------------------------------
 
-export function SelectItem({ children, value, label, style }: SelectItemProps) {
-  const theme = useTheme();
-  const { width } = useWindowDimensions();
+export function SelectItem({ children, value, label, className, style }: SelectItemProps) {
   const { close } = useDialogContext();
   const { value: selectedValue, onValueChange } = useSelectContext();
   const { state: focused, onIn: onFocus, onOut: onBlur } = useInteractionState();
@@ -340,7 +327,7 @@ export function SelectItem({ children, value, label, style }: SelectItemProps) {
   );
 
   return (
-    <Pressable
+    <StyledPressable
       accessibilityRole="radio"
       accessibilityLabel={label}
       // ARIA gives `role="radio"` a checked state, not a selected one. Spelled
@@ -352,15 +339,11 @@ export function SelectItem({ children, value, label, style }: SelectItemProps) {
       onBlur={onBlur}
       onPressIn={onPressIn}
       onPressOut={onPressOut}
-      style={[
-        styles.item,
-        { paddingVertical: width >= BREAKPOINTS.sm ? ROW_PADDING_Y_SM : ROW_PADDING_Y },
-        (focused || pressed) && { backgroundColor: theme.colors.contrast50 },
-        style,
-      ]}
+      className={cx(SELECT_ITEM_CLASS, (focused || pressed) && ROW_HIGHLIGHT_CLASS, className)}
+      style={style}
     >
       <ItemContext.Provider value={itemCtx}>{children}</ItemContext.Provider>
-    </Pressable>
+    </StyledPressable>
   );
 }
 
@@ -368,19 +351,13 @@ export function SelectItem({ children, value, label, style }: SelectItemProps) {
 // SelectItemText
 // ---------------------------------------------------------------------------
 
-export function SelectItemText({ children, style }: SelectItemTextProps) {
-  const { selected } = useSelectItemContext();
-
+export function SelectItemText({ children, className, style }: SelectItemTextProps) {
+  // The selected option is marked with the check ALONE: its label stays at the
+  // same weight as every other row's, which is what the target does.
   return (
-    <Text
-      style={[
-        styles.itemText,
-        selected && styles.itemTextSelected,
-        ...(style ? [style] : []),
-      ]}
-    >
+    <StyledText numberOfLines={1} className={cx(SELECT_ITEM_TEXT_CLASS, className)} style={style}>
       {children}
-    </Text>
+    </StyledText>
   );
 }
 
@@ -399,13 +376,13 @@ export function SelectItemIndicator({ icon: IconComponent = CheckIcon }: SelectI
   if (!selected) return null;
 
   return (
-    <View style={styles.itemIndicatorContainer} pointerEvents="none">
+    <StyledView className={ROW_INDICATOR_END_CLASS} pointerEvents="none">
       <IconComponent
         width={ROW_ICON_SIZE}
         height={ROW_ICON_SIZE}
         fill={theme.colors.textSecondary}
       />
-    </View>
+    </StyledView>
   );
 }
 
@@ -414,13 +391,9 @@ export function SelectItemIndicator({ icon: IconComponent = CheckIcon }: SelectI
 // ---------------------------------------------------------------------------
 
 export function SelectSeparator() {
-  const theme = useTheme();
-
   // `bg-border -mx-1 my-1 h-px` — a filled 1px rule, not a bottom border on a
   // stretched box.
-  return (
-    <View style={[styles.separator, { backgroundColor: theme.colors.borderLight }]} />
-  );
+  return <StyledView className={ROW_SEPARATOR_CLASS} />;
 }
 
 // ---------------------------------------------------------------------------
@@ -430,34 +403,11 @@ export function SelectSeparator() {
 const styles = StyleSheet.create({
   // `TriggerSlot`'s wrapper is `alignSelf: 'flex-start'` so an anchored surface
   // lines up with the CONTROL. A select trigger is a full-width field, so it
-  // stretches instead — the same exception the combobox makes.
+  // stretches instead — the same exception the combobox makes. Inline rather
+  // than a class because it overrides `TriggerSlot`'s own inline default, and a
+  // class cannot outrank one.
   triggerSlot: {
     alignSelf: 'stretch',
-  },
-  // `flex flex-row items-center justify-between gap-2 rounded-md border px-3 py-2`.
-  trigger: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    gap: SELECT_TRIGGER_GAP,
-    paddingHorizontal: SELECT_TRIGGER_PADDING_X,
-    paddingVertical: SELECT_TRIGGER_PADDING_Y,
-    borderWidth: PANEL_BORDER_WIDTH,
-    borderRadius: SELECT_TRIGGER_RADIUS,
-  },
-  triggerDisabled: {
-    opacity: 0.5,
-  },
-  // `text-foreground line-clamp-1 text-sm`.
-  valueText: {
-    fontSize: TEXT_SM,
-    lineHeight: TEXT_SM_LINE_HEIGHT,
-    fontWeight: '400',
-  },
-  contentHeader: {
-    paddingTop: 24,
-    paddingBottom: 8,
-    paddingHorizontal: 16,
   },
   contentHeaderText: {
     fontSize: 20,
@@ -466,42 +416,6 @@ const styles = StyleSheet.create({
   },
   flatList: {
     flexGrow: 0,
-  },
-  // `relative flex w-full flex-row items-center gap-2 rounded-sm py-2 pl-2 pr-8
-  //  sm:py-1.5`, the same row the web fork draws.
-  item: {
-    position: 'relative',
-    width: '100%',
-    paddingLeft: ROW_PADDING_X,
-    paddingRight: ROW_INSET_PADDING_X,
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: ROW_GAP,
-    borderRadius: ROW_RADIUS,
-  },
-  itemText: {
-    fontSize: TEXT_SM,
-    lineHeight: TEXT_SM_LINE_HEIGHT,
-  },
-  // Upstream marks the selected option with the check alone and leaves its label
-  // at the same weight as every other row.
-  itemTextSelected: {
-    fontWeight: '400',
-  },
-  itemIndicatorContainer: {
-    position: 'absolute',
-    right: ROW_INDICATOR_INSET,
-    top: 0,
-    bottom: 0,
-    width: ROW_INDICATOR_BOX,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  // `bg-border -mx-1 my-1 h-px`.
-  separator: {
-    height: ROW_SEPARATOR_THICKNESS,
-    marginVertical: ROW_SEPARATOR_MARGIN_Y,
-    marginHorizontal: ROW_SEPARATOR_INSET_X,
   },
 });
 

@@ -9,11 +9,12 @@
 import React, { useCallback, useMemo, useRef } from 'react';
 import type { View } from 'react-native';
 
-import { MENU_MIN_WIDTH } from '../floating/constants';
+import { MENU_MIN_WIDTH_CLASS } from '../floating/constants';
 import { MenuSurfaceProvider, type MenuSurfaceContextValue } from '../floating/context';
 import { FloatingPanel } from '../floating/FloatingPanel';
 import { createMenuRows } from '../floating/menu-rows';
 import { createFlyoutMenuSub } from '../floating/menu-sub-flyout';
+import { cx } from '../floating/shared';
 import { TriggerSlot } from '../floating/TriggerSlot';
 import { useAnchorRect } from '../floating/use-anchor-rect';
 import { useControllableState } from '../hooks/use-controllable-state';
@@ -80,8 +81,9 @@ export function DropdownMenuContent({
   sideOffset,
   alignOffset,
   dismissible,
-  minWidth = MENU_MIN_WIDTH,
+  minWidth,
   maxWidth,
+  className,
   style,
   testID,
 }: DropdownMenuContentProps) {
@@ -107,6 +109,10 @@ export function DropdownMenuContent({
       minWidth={minWidth}
       maxWidth={maxWidth}
       onDismiss={close}
+      // `min-w-40` — 160px, as a CLASS rather than an inline `minWidth`, so a
+      // caller's own `min-w-*` can reach it. The placement resolver reads the
+      // laid-out box, which the class is already part of.
+      className={cx(MENU_MIN_WIDTH_CLASS, className)}
       style={style}
       testID={testID}>
       <MenuSurfaceProvider value={surface}>{children}</MenuSurfaceProvider>

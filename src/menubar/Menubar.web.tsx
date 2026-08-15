@@ -7,37 +7,26 @@
  * than centring like a popover.
  */
 import React, { useCallback, useMemo, useRef } from 'react';
-import { StyleSheet, useWindowDimensions, View, type View as RNView } from 'react-native';
+import type { View as RNView } from 'react-native';
 
-import { bloomShadowStyle } from '../design-tokens/shadows';
 import {
-  FONT_MEDIUM,
   MENUBAR_ALIGN_OFFSET,
-  MENUBAR_GAP,
-  MENUBAR_HEIGHT,
-  MENUBAR_HEIGHT_SM,
-  MENUBAR_MENU_MIN_WIDTH,
-  MENUBAR_PADDING,
-  MENUBAR_RADIUS,
+  MENUBAR_CLASS,
+  MENUBAR_MENU_MIN_WIDTH_CLASS,
   MENUBAR_SIDE_OFFSET,
-  MENUBAR_TRIGGER_PADDING_X,
-  MENUBAR_TRIGGER_PADDING_Y,
-  MENUBAR_TRIGGER_PADDING_Y_SM,
-  MENUBAR_TRIGGER_RADIUS,
-  PANEL_BORDER_WIDTH,
-  TEXT_SM,
-  TEXT_SM_LINE_HEIGHT,
+  MENUBAR_TRIGGER_CLASS,
+  MENUBAR_TRIGGER_OPEN_CLASS,
+  MENUBAR_TRIGGER_TEXT_CLASS,
 } from '../floating/constants';
 import { MenuSurfaceProvider, type MenuSurfaceContextValue } from '../floating/context';
 import { FloatingPanel } from '../floating/FloatingPanel';
 import { createMenuRows } from '../floating/menu-rows';
 import { createFlyoutMenuSub } from '../floating/menu-sub-flyout';
+import { cx } from '../floating/shared';
 import { TriggerSlot } from '../floating/TriggerSlot';
 import { useAnchorRect } from '../floating/use-anchor-rect';
 import { useControllableState } from '../hooks/use-controllable-state';
-import { BREAKPOINTS } from '../styles/breakpoints';
-import { useTheme } from '../theme/use-theme';
-import { Text } from '../typography';
+import { StyledText, StyledView } from '../styles/styled-primitives';
 import {
   MenubarMenuProvider,
   MenubarProvider,
@@ -57,11 +46,10 @@ export function Menubar({
   defaultValue,
   onValueChange,
   label = 'Menu bar',
+  className,
   style,
   testID,
 }: MenubarProps) {
-  const theme = useTheme();
-  const { width } = useWindowDimensions();
   const [openValue, setValue] = useControllableState<string | undefined>({
     value,
     defaultValue,
@@ -71,22 +59,16 @@ export function Menubar({
 
   return (
     <MenubarProvider value={context}>
-      <View
+      {/* `shadow-s` — the bar is a raised control, not an overlay, so it takes
+          the lighter of Bloom's two elevation roles. */}
+      <StyledView
         role="menubar"
         aria-label={label}
         testID={testID}
-        style={[
-          styles.bar,
-          // `h-10 sm:h-9`.
-          { height: width >= BREAKPOINTS.sm ? MENUBAR_HEIGHT_SM : MENUBAR_HEIGHT },
-          { backgroundColor: theme.colors.background, borderColor: theme.colors.borderLight },
-          // `shadow-sm shadow-black/5` — the bar is a raised control, not an
-          // overlay, so it takes the lighter of Bloom's two elevation roles.
-          bloomShadowStyle('s'),
-          style,
-        ]}>
+        className={cx(MENUBAR_CLASS, className)}
+        style={style}>
         {children}
-      </View>
+      </StyledView>
     </MenubarProvider>
   );
 }
@@ -113,36 +95,30 @@ export function MenubarTrigger({
   asChild,
   disabled,
   label,
+  className,
   style,
   testID,
 }: MenubarTriggerProps) {
-  const theme = useTheme();
   const menu = useMenubarMenu();
-  const { width } = useWindowDimensions();
 
-  // `group flex items-center rounded-md px-2 py-1.5 sm:py-1`, plus `bg-accent`
-  // while its menu is open, and `text-sm font-medium` for the label. A menubar
-  // trigger is a BUTTON with chrome of its own, not a bare hit box — leaving it
-  // unstyled is why a Bloom menubar read as loose text against upstream's
-  // pill-per-menu bar. `asChild` still hands the whole thing to the caller.
+  // `flex items-center rounded-md px-2 py-1.5`, plus `bg-accent` while its menu
+  // is open, and `text-sm font-medium` for the label. A menubar trigger is a
+  // BUTTON with chrome of its own, not a bare hit box — leaving it unstyled is
+  // why a Bloom menubar read as loose text against a pill-per-menu bar.
+  // `asChild` still hands the whole thing to the caller.
   const trigger = (
-    <View
-      style={[
-        styles.trigger,
-        {
-          paddingVertical:
-            width >= BREAKPOINTS.sm
-              ? MENUBAR_TRIGGER_PADDING_Y_SM
-              : MENUBAR_TRIGGER_PADDING_Y,
-        },
-        menu.open ? { backgroundColor: theme.colors.contrast50 } : null,
-      ]}>
+    <StyledView
+      className={cx(
+        MENUBAR_TRIGGER_CLASS,
+        menu.open && MENUBAR_TRIGGER_OPEN_CLASS,
+        className,
+      )}>
       {typeof children === 'string' ? (
-        <Text style={[styles.triggerText, { color: theme.colors.text }]}>{children}</Text>
+        <StyledText className={MENUBAR_TRIGGER_TEXT_CLASS}>{children}</StyledText>
       ) : (
         children
       )}
-    </View>
+    </StyledView>
   );
 
   return (
@@ -174,8 +150,9 @@ export function MenubarContent({
   sideOffset = MENUBAR_SIDE_OFFSET,
   alignOffset = MENUBAR_ALIGN_OFFSET,
   dismissible,
-  minWidth = MENUBAR_MENU_MIN_WIDTH,
+  minWidth,
   maxWidth,
+  className,
   style,
   testID,
 }: MenubarContentProps) {
@@ -207,37 +184,14 @@ export function MenubarContent({
       minWidth={minWidth}
       maxWidth={maxWidth}
       onDismiss={close}
+      // `min-w-[12rem]` — a menubar menu is wider than a dropdown.
+      className={cx(MENUBAR_MENU_MIN_WIDTH_CLASS, className)}
       style={style}
       testID={testID}>
       <MenuSurfaceProvider value={surface}>{children}</MenuSurfaceProvider>
     </FloatingPanel>
   );
 }
-
-const styles = StyleSheet.create({
-  // `bg-background border-border flex h-10 flex-row items-center gap-1
-  //  rounded-md border p-1 shadow-sm shadow-black/5 sm:h-9`.
-  bar: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    alignSelf: 'flex-start',
-    gap: MENUBAR_GAP,
-    padding: MENUBAR_PADDING,
-    borderWidth: PANEL_BORDER_WIDTH,
-    borderRadius: MENUBAR_RADIUS,
-  },
-  trigger: {
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingHorizontal: MENUBAR_TRIGGER_PADDING_X,
-    borderRadius: MENUBAR_TRIGGER_RADIUS,
-  },
-  triggerText: {
-    fontSize: TEXT_SM,
-    lineHeight: TEXT_SM_LINE_HEIGHT,
-    fontWeight: FONT_MEDIUM,
-  },
-});
 
 const rows = createMenuRows('Menubar', createFlyoutMenuSub);
 

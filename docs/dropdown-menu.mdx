@@ -148,8 +148,12 @@ The platform's own dismiss gesture works too: a two-finger Z scrub under VoiceOv
 
 On WEB none of this applies — the browser owns focus and the hooks return early rather than calling an API that is a no-op there.
 
-## Rows are `Item`
+## Rows are className-first
 
-Every row is Bloom's `Item`, the same primitive settings lists and the command palette use. That is what keeps the disabled treatment, the destructive colour, the pointer highlight and the ARIA state in one place — a fix to any of them lands in every menu at once.
+Every row is one pressable node built from Bloom's `styled()` primitives, shared by all three menu families through `floating/shared.tsx` — so the disabled treatment, the destructive colour, the pointer highlight and the ARIA state stay in one place and a fix lands in every menu at once.
 
-Its GEOMETRY is not `Item`'s. A shadcn menu row is a denser thing than a Bloom settings row, and `floating/constants.ts` resolves upstream's class strings once for all three menu families: `rounded-sm px-2 py-2 sm:py-1.5 gap-2` on a row, `pl-8 pr-2` on the two that carry an indicator, `text-sm` throughout, and no minimum height at all. The `sm:` half is a real breakpoint read from the window width on BOTH platforms, not a platform split — a web dropdown on a 400px window is as roomy as a native sheet.
+Its shape is a class string, not resolved numbers, because that is how the originals are built and it is the only form a consumer can override with a utility (an inline `style` outranks a class on web whatever the array order). `floating/constants.ts` holds the vocabulary: `relative flex-row items-center px-2 py-1.5 gap-2 min-h-8 rounded-xl` on a row, `pl-8 pr-2` on the two that carry an indicator, `text-sm` throughout, and a 32px minimum height. There is no `sm:` breakpoint any more — the row is the same density at every window width.
+
+Every part takes a `className` and APPENDS it to its own, so a layout class cannot strip the chrome. Two utilities for one property are then resolved by Tailwind's own emission order, exactly as in any shadcn consumer; `style` remains the unambiguous override.
+
+**A web consumer must have the Tailwind/NativeWind pipeline wired and `@source`-scanning `@oxyhq/bloom/lib`.** That was always required; it is now visible rather than subtle, because the colours moved out of inline style too.

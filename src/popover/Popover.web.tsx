@@ -8,10 +8,11 @@
  * wants to be as wide as its content.
  */
 import React, { useCallback, useMemo, useRef } from 'react';
-import { StyleSheet, type View } from 'react-native';
+import type { View } from 'react-native';
 
-import { POPOVER_PADDING, POPOVER_WIDTH } from '../floating/constants';
+import { POPOVER_CLASS } from '../floating/constants';
 import { FloatingPanel } from '../floating/FloatingPanel';
+import { cx } from '../floating/shared';
 import { TriggerSlot } from '../floating/TriggerSlot';
 import { useAnchorRect } from '../floating/use-anchor-rect';
 import { useControllableState } from '../hooks/use-controllable-state';
@@ -68,6 +69,7 @@ export function PopoverContent({
   dismissible,
   minWidth,
   maxWidth,
+  className,
   style,
   testID,
 }: PopoverContentProps) {
@@ -90,22 +92,15 @@ export function PopoverContent({
       maxWidth={maxWidth}
       onDismiss={close}
       // `w-72 p-4` — shadcn's popover is a FIXED 288px card with a 16px inset,
-      // not a shrink-wrap around its content. Both come FIRST in the array, so a
-      // caller whose body is a row list rather than prose overrides them from
-      // `style` — which is exactly what a shadcn call site does with
-      // `className="w-[200px] p-0"`, and what `Combobox` and `DialogHeader` do
-      // here. Their rows have to reach the panel edge to show a full-width
-      // highlight.
-      style={[styles.card, style]}
+      // not a shrink-wrap around its content. A caller whose body is a row list
+      // rather than prose overrides them, which is exactly what a shadcn call
+      // site does with `className="w-[200px] p-0"` and what `Combobox` and
+      // `DialogHeader` do here — their rows have to reach the panel edge to show
+      // a full-width highlight.
+      className={cx(POPOVER_CLASS, className)}
+      style={style}
       testID={testID}>
       {children}
     </FloatingPanel>
   );
 }
-
-const styles = StyleSheet.create({
-  card: {
-    width: POPOVER_WIDTH,
-    padding: POPOVER_PADDING,
-  },
-});

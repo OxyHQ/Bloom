@@ -19,6 +19,11 @@ export type SelectTriggerProps = {
   asChild?: boolean;
   disabled?: boolean;
   label: string;
+  /**
+   * Utility classes APPENDED to the part's own — never substituted for them, so
+   * a single layout class cannot strip the chrome.
+   */
+  className?: string;
   style?: StyleProp<ViewStyle>;
   testID?: string;
 };
@@ -36,6 +41,7 @@ export type SelectValueProps = {
    */
   children?: (value: unknown) => React.ReactNode;
   placeholder?: string;
+  className?: string;
   style?: TextStyle;
 };
 
@@ -69,20 +75,25 @@ export type SelectContentProps<T> = {
    * the native sheet sizes itself). Defaults to 320.
    */
   maxHeight?: number;
+  /** Appended to the dropdown panel's own chrome. */
+  className?: string;
 };
 
 export type SelectGroupProps = {
   children?: React.ReactNode;
+  className?: string;
   style?: StyleProp<ViewStyle>;
 };
 
 export type SelectLabelProps = {
   children?: React.ReactNode;
+  className?: string;
   style?: StyleProp<TextStyle>;
 };
 
 export type SelectScrollButtonProps = {
   direction: 'up' | 'down';
+  className?: string;
   style?: StyleProp<ViewStyle>;
 };
 
@@ -91,11 +102,13 @@ export type SelectItemProps = {
   value: string;
   label: string;
   children: React.ReactNode;
+  className?: string;
   style?: StyleProp<ViewStyle>;
 };
 
 export type SelectItemTextProps = {
   children: React.ReactNode;
+  className?: string;
   style?: TextStyle;
 };
 

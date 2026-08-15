@@ -25,52 +25,37 @@
  * fork passes `createFlyoutMenuSub` or `createInlineMenuSub`, and this file
  * never learns which platform it is on.
  *
- * Pointer highlight is `Item`'s own, which is why no row here tracks hover.
+ * ── STYLING ──────────────────────────────────────────────────────────────────
  *
- * Every row IS an `item/Item`, Bloom's one row primitive. That is what keeps the
- * disabled treatment, the destructive colour and the ARIA state in one place
- * instead of a fourth copy living here. Its GEOMETRY is not `Item`'s, though:
- * every number below comes from react-native-reusables' own class strings,
- * resolved in `floating/constants.ts`, because a shadcn menu row is a denser
- * thing than a Bloom settings row (8px of horizontal inset against 16, a 14px
- * label against 15, no minimum height at all) and `Item`'s defaults still belong
- * to every other caller.
+ * Every shape below is a Tailwind class from `floating/constants.ts`, applied
+ * through Bloom's own `styled()` primitives, because that is how the originals
+ * are built and it is the only form a consumer can override with a utility. The
+ * row shell itself is `shared.tsx`'s `MenuRowShell` — see its header for why
+ * these rows are no longer `item/Item`.
  *
- * The `sm:` half of `py-2 sm:py-1.5` is a real breakpoint, not a platform split:
- * NativeWind resolves it against the WINDOW WIDTH on both platforms, so the row
- * reads it the same way, from `BREAKPOINTS.sm`. `useMenuSurface().presentation`
- * is no longer consulted for density — a web dropdown on a 400px window is 8px,
- * exactly as upstream.
+ * Every part takes a `className` and APPENDS it to its own, so a caller can
+ * restyle a row without stripping its chrome.
+ *
+ * The `sm:` breakpoint the previous pass carried (`py-2 sm:py-1.5`) is gone:
+ * the target has one row inset (6px) plus a 32px minimum height, so a row is
+ * the same density at every window width.
  */
 import React, { useCallback, useMemo } from 'react';
-import { StyleSheet, useWindowDimensions, View } from 'react-native';
 
 import { Check_Stroke2_Corner0_Rounded as CheckIcon } from '../icons/Check';
-import { Item } from '../item';
-import { BREAKPOINTS } from '../styles/breakpoints';
+import { StyledText, StyledView } from '../styles/styled-primitives';
 import { useTheme } from '../theme/use-theme';
-import { Text } from '../typography';
 import {
-  FONT_MEDIUM,
   ROW_ICON_SIZE,
-  ROW_INDICATOR_BOX,
-  ROW_INDICATOR_INSET,
-  ROW_INSET_PADDING_X,
-  ROW_PADDING_X,
-  ROW_PADDING_Y,
-  ROW_PADDING_Y_SM,
-  ROW_RADIO_DOT,
-  ROW_SEPARATOR_INSET_X,
-  ROW_SEPARATOR_MARGIN_Y,
-  ROW_SEPARATOR_THICKNESS,
-  SHORTCUT_LETTER_SPACING,
-  TEXT_SM,
-  TEXT_SM_LINE_HEIGHT,
-  TEXT_XS,
-  TEXT_XS_LINE_HEIGHT,
+  ROW_INDICATOR_CLASS,
+  ROW_LABEL_CLASS,
+  ROW_LABEL_INSET_CLASS,
+  ROW_RADIO_DOT_CLASS,
+  ROW_SEPARATOR_CLASS,
+  ROW_SHORTCUT_CLASS,
 } from './constants';
 import { MenuRadioGroupProvider, useMenuRadioGroup, useMenuSurface } from './context';
-import { rowShapeStyles, splitChildren, useRowStyle } from './shared';
+import { cx, MenuRowShell, splitChildren } from './shared';
 import type {
   MenuCheckboxRowProps,
   MenuGroupProps,
@@ -84,17 +69,16 @@ import type {
 } from './types';
 
 /**
- * Upstream's `pl-8` gutter with its `absolute left-2 h-3.5 w-3.5` indicator.
+ * The target's `pl-8` gutter with its `absolute left-2 size-3.5` indicator.
  *
  * The indicator is OUT OF FLOW, which is the whole point: a checkbox row's text
  * starts at a fixed 32px whether or not a check is drawn, so a menu's rows line
- * up with each other and with an `inset` plain row. Passing it as `Item`'s
- * `leading` instead would put it back in flow and add the row's `gap-2` on top,
- * which is how the text ended up 8px further right than upstream's — and it
+ * up with each other and with an `inset` plain row. Passing it as a leading slot
+ * instead would put it back in flow and add the row's `gap-2` on top, and it
  * would also make the column collapse to nothing on an unchecked row.
  *
  * `pointerEvents="none"` as a PROP, not a style entry: the box sits ON TOP of
- * `Item`'s own `Pressable`, so without it the indicator swallows the press that
+ * the row's own pressable, so without it the indicator swallows the press that
  * toggles the row. (`'none'` does survive as a style on react-native-web, but
  * the prop path is the one both platforms resolve.)
  */
@@ -106,12 +90,12 @@ function IndicatorGutter({
   children: React.ReactNode;
 }) {
   return (
-    <View>
+    <StyledView className="relative">
       {children}
-      <View style={styles.indicator} pointerEvents="none">
+      <StyledView className={ROW_INDICATOR_CLASS} pointerEvents="none">
         {indicator}
-      </View>
-    </View>
+      </StyledView>
+    </StyledView>
   );
 }
 
@@ -137,11 +121,11 @@ export function createMenuRows(prefix: string, createSub: MenuSubFactory): MenuR
     variant = 'default',
     keepOpen = false,
     accessibilityLabel,
+    className,
     style,
     testID,
   }: MenuRowProps) {
     const surface = useMenuSurface();
-    const rowStyle = useRowStyle();
     const { title, body } = splitChildren(children);
 
     const handlePress = useCallback(() => {
@@ -150,20 +134,21 @@ export function createMenuRows(prefix: string, createSub: MenuSubFactory): MenuR
     }, [onPress, keepOpen, surface]);
 
     return (
-      <Item
-        title={title}
+      <MenuRowShell
+        role="menuitem"
         disabled={disabled}
         destructive={variant === 'destructive'}
-        role="menuitem"
+        inset={inset}
         leading={leading}
         trailing={trailing}
+        title={title}
         onPress={handlePress}
         accessibilityLabel={accessibilityLabel}
-        titleStyle={rowShapeStyles.rowText}
-        style={[rowStyle, inset ? rowShapeStyles.inset : null, style]}
+        className={className}
+        style={style}
         testID={testID}>
         {body}
-      </Item>
+      </MenuRowShell>
     );
   }
   MenuItem.displayName = `${prefix}Item`;
@@ -176,12 +161,12 @@ export function createMenuRows(prefix: string, createSub: MenuSubFactory): MenuR
     trailing,
     keepOpen = false,
     accessibilityLabel,
+    className,
     style,
     testID,
   }: MenuCheckboxRowProps) {
     const theme = useTheme();
     const surface = useMenuSurface();
-    const rowStyle = useRowStyle();
     const { title, body } = splitChildren(children);
 
     return (
@@ -195,24 +180,23 @@ export function createMenuRows(prefix: string, createSub: MenuSubFactory): MenuR
             />
           ) : null
         }>
-        <Item
-          title={title}
-          disabled={disabled}
-          // `checkbox` + `selected` is what makes `Item` emit `aria-checked`,
-          // which is the only spelling react-native-web reads.
+        <MenuRowShell
           role="checkbox"
-          selected={checked}
+          checked={checked}
+          disabled={disabled}
+          gutter
           trailing={trailing}
+          title={title}
           onPress={() => {
             onCheckedChange(!checked);
             if (!keepOpen) surface.close();
           }}
           accessibilityLabel={accessibilityLabel}
-          titleStyle={rowShapeStyles.rowText}
-          style={[rowStyle, styles.gutterRow, style]}
+          className={className}
+          style={style}
           testID={testID}>
           {body}
-        </Item>
+        </MenuRowShell>
       </IndicatorGutter>
     );
   }
@@ -222,7 +206,7 @@ export function createMenuRows(prefix: string, createSub: MenuSubFactory): MenuR
     const context = useMemo(() => ({ value, onValueChange }), [value, onValueChange]);
     return (
       <MenuRadioGroupProvider value={context}>
-        <View role="radiogroup">{children}</View>
+        <StyledView role="radiogroup">{children}</StyledView>
       </MenuRadioGroupProvider>
     );
   }
@@ -235,98 +219,85 @@ export function createMenuRows(prefix: string, createSub: MenuSubFactory): MenuR
     trailing,
     keepOpen = false,
     accessibilityLabel,
+    className,
     style,
     testID,
   }: MenuRadioRowProps) {
-    const theme = useTheme();
     const surface = useMenuSurface();
     const group = useMenuRadioGroup();
-    const rowStyle = useRowStyle();
     const { title, body } = splitChildren(children);
     const checked = group.value === value;
 
     return (
       <IndicatorGutter
         indicator={
-          // `bg-foreground h-2 w-2 rounded-full` — upstream's selected radio row
-          // is a FILLED DOT with no ring, which is what fits an 8px mark inside a
+          // `bg-foreground h-2 w-2 rounded-full` — a selected radio row is a
+          // FILLED DOT with no ring, which is what fits an 8px mark inside a
           // 14px indicator box. `radio-indicator/` draws Bloom's ringed control,
           // a different thing at a different size, and using it here is what made
           // a menu radio row twice the width of its checkbox sibling.
-          checked ? (
-            <View style={[styles.radioDot, { backgroundColor: theme.colors.text }]} />
-          ) : null
+          checked ? <StyledView className={ROW_RADIO_DOT_CLASS} /> : null
         }>
-        <Item
-          title={title}
-          disabled={disabled}
+        <MenuRowShell
           role="radio"
-          selected={checked}
+          checked={checked}
+          disabled={disabled}
+          gutter
           trailing={trailing}
+          title={title}
           onPress={() => {
             group.onValueChange(value);
             if (!keepOpen) surface.close();
           }}
           accessibilityLabel={accessibilityLabel}
-          titleStyle={rowShapeStyles.rowText}
-          style={[rowStyle, styles.gutterRow, style]}
+          className={className}
+          style={style}
           testID={testID}>
           {body}
-        </Item>
+        </MenuRowShell>
       </IndicatorGutter>
     );
   }
   MenuRadioItem.displayName = `${prefix}RadioItem`;
 
-  function MenuLabel({ children, inset = false, style }: MenuLabelProps) {
-    const theme = useTheme();
-    const { width } = useWindowDimensions();
+  function MenuLabel({ children, inset = false, className, style }: MenuLabelProps) {
+    // `text-foreground px-2 py-1.5 text-sm font-medium` — NOT muted. A menu label
+    // is a heading over its group, set in the same colour and size as the rows
+    // under it and separated only by its weight.
     return (
-      <Text
-        style={[
-          styles.label,
-          // `px-2 py-2 sm:py-1.5`, and `text-foreground` — NOT muted. A shadcn
-          // menu label is a heading over its group, set in the same colour and
-          // size as the rows under it and separated only by its weight.
-          { paddingVertical: width >= BREAKPOINTS.sm ? ROW_PADDING_Y_SM : ROW_PADDING_Y },
-          { color: theme.colors.text },
-          inset ? styles.labelInset : null,
-          style,
-        ]}>
+      <StyledText
+        className={cx(ROW_LABEL_CLASS, inset && ROW_LABEL_INSET_CLASS, className)}
+        style={style}>
         {children}
-      </Text>
+      </StyledText>
     );
   }
   MenuLabel.displayName = `${prefix}Label`;
 
   function MenuSeparator() {
-    const theme = useTheme();
     // `bg-border -mx-1 my-1 h-px`. Not `Divider`: the negative inset is what
     // makes the rule reach the panel's edge through its own `p-1`, and a
-    // hairline is not what upstream draws — `h-px` is one whole pixel.
-    return (
-      <View style={[styles.separator, { backgroundColor: theme.colors.borderLight }]} />
-    );
+    // hairline is not what the target draws — `h-px` is one whole pixel.
+    return <StyledView className={ROW_SEPARATOR_CLASS} />;
   }
   MenuSeparator.displayName = `${prefix}Separator`;
 
-  function MenuShortcut({ children, style }: MenuShortcutProps) {
-    const theme = useTheme();
+  function MenuShortcut({ children, className, style }: MenuShortcutProps) {
     return (
-      <Text style={[styles.shortcut, { color: theme.colors.textSecondary }, style]}>
+      <StyledText className={cx(ROW_SHORTCUT_CLASS, className)} style={style}>
         {children}
-      </Text>
+      </StyledText>
     );
   }
   MenuShortcut.displayName = `${prefix}Shortcut`;
 
-  function MenuGroup({ children, style }: MenuGroupProps) {
+  function MenuGroup({ children, className, style }: MenuGroupProps) {
     // `group` is the ARIA role for a set of related menu rows; it carries no
     // state, so there is no `aria-*` counterpart to spell.
     return (
-      <View role="group" style={style}>
+      <StyledView role="group" className={className} style={style}>
         {children}
-      </View>
+      </StyledView>
     );
   }
   MenuGroup.displayName = `${prefix}Group`;
@@ -343,55 +314,3 @@ export function createMenuRows(prefix: string, createSub: MenuSubFactory): MenuR
     ...createSub(prefix),
   };
 }
-
-const styles = StyleSheet.create({
-  // `absolute left-2 flex h-3.5 w-3.5 items-center justify-center`, stretched
-  // top-to-bottom so it centres against whatever the row's height turns out to
-  // be rather than guessing one.
-  indicator: {
-    position: 'absolute',
-    left: ROW_INDICATOR_INSET,
-    top: 0,
-    bottom: 0,
-    width: ROW_INDICATOR_BOX,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  // `h-2 w-2 rounded-full`.
-  radioDot: {
-    width: ROW_RADIO_DOT,
-    height: ROW_RADIO_DOT,
-    borderRadius: ROW_RADIO_DOT / 2,
-  },
-  // `pl-8 pr-2` on the two rows that carry an indicator.
-  gutterRow: {
-    paddingLeft: ROW_INSET_PADDING_X,
-    paddingRight: ROW_PADDING_X,
-  },
-  // `text-foreground px-2 py-2 text-sm font-medium sm:py-1.5` (the vertical
-  // inset is applied at the call site, where the breakpoint is read).
-  label: {
-    // Longhands, so `labelInset`'s `paddingLeft` is not outranked on web.
-    paddingLeft: ROW_PADDING_X,
-    paddingRight: ROW_PADDING_X,
-    fontSize: TEXT_SM,
-    lineHeight: TEXT_SM_LINE_HEIGHT,
-    fontWeight: FONT_MEDIUM,
-  },
-  labelInset: {
-    paddingLeft: ROW_INSET_PADDING_X,
-  },
-  // `text-muted-foreground ml-auto text-xs tracking-widest`.
-  shortcut: {
-    marginLeft: 'auto',
-    fontSize: TEXT_XS,
-    lineHeight: TEXT_XS_LINE_HEIGHT,
-    letterSpacing: SHORTCUT_LETTER_SPACING,
-  },
-  // `bg-border -mx-1 my-1 h-px`.
-  separator: {
-    height: ROW_SEPARATOR_THICKNESS,
-    marginVertical: ROW_SEPARATOR_MARGIN_Y,
-    marginHorizontal: ROW_SEPARATOR_INSET_X,
-  },
-});
