@@ -23,17 +23,21 @@ type StyleBuilder = typeof import('../theme/color-scope/style-builder');
 /**
  * Load `style-builder` against a given nativewind factory.
  *
- * `{ virtual: true }` IS correct here, unlike in the netinfo suite: nativewind
- * is not installed in this repo at all, so without it `doMock` throws while
- * resolving the name it is being asked to stand in for. The trade is that a
- * virtual mock is keyed by the bare specifier — which is exactly what the
- * loader requires, so the two agree.
+ * A PLAIN `doMock`, exactly as in the netinfo suite: nativewind is installed
+ * here (the Storybook harness compiles `nativewind/theme` for the `web:` /
+ * `native:` variants), so the specifier resolves and jest keys the mock by the
+ * resolved path. `{ virtual: true }` was correct only while the package was
+ * absent, and it fails in a way worth remembering — the virtual registration is
+ * keyed by the bare specifier, so once the real module exists the require can
+ * resolve past it and load the REAL nativewind. That reads as a passing
+ * "consumer's `vars()` was used" while the consumer's mock was never consulted,
+ * and it only shows up in a full run, never in isolation.
  */
 function loadStyleBuilder(factory?: () => unknown): StyleBuilder {
   let mod: StyleBuilder | undefined;
 
   jest.isolateModules(() => {
-    if (factory) jest.doMock(NATIVEWIND, factory, { virtual: true });
+    if (factory) jest.doMock(NATIVEWIND, factory);
     // A second copy of react-native carries a second `Platform`, so the OS each
     // case sets would land on an object the module under test never reads.
     jest.doMock('react-native', () => ReactNative);

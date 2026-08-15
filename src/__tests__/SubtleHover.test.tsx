@@ -1,5 +1,6 @@
 import React from 'react';
 import { render } from '@testing-library/react-native';
+import type { ReactTestRendererJSON, ReactTestRendererNode } from 'react-test-renderer';
 
 import { BloomThemeProvider } from '../theme/BloomThemeProvider';
 import { SubtleHover } from '../subtle-hover';
@@ -15,14 +16,50 @@ function renderWithTheme(ui: React.ReactElement) {
   );
 }
 
-// The provider wraps the subject in ONE flex View, so `toJSON` is a single node;
-// narrowing away the array/null branches lets `children` read the wash cleanly.
-function renderWrapper(ui: React.ReactElement) {
+/**
+ * The provider's own layout wrapper — the `<View style={[{ flex: 1 }, …]}>` in
+ * `BloomThemeProvider`, whose children are the subject.
+ *
+ * It is FOUND rather than assumed to be the root. How many nodes sit above it
+ * depends on whether `nativewind` resolves: when it does, the provider wraps
+ * the tree in the consumer's `VariableContextProvider` as well, and every Oxy
+ * app installs that peer. Reading `toJSON().children` directly measured the
+ * depth of the provider stack, not what `SubtleHover` rendered, so it flipped
+ * the moment the optional peer appeared in the tree.
+ *
+ * Throwing when no wrapper matches is the vacuity floor: without it, a helper
+ * that found nothing would report the same `null` children as a subject that
+ * correctly rendered nothing.
+ */
+function renderWrapper(ui: React.ReactElement): ReactTestRendererJSON {
   const tree = renderWithTheme(ui).toJSON();
-  if (tree === null || Array.isArray(tree)) {
-    throw new Error('expected a single wrapper node');
-  }
-  return tree;
+  const roots: ReactTestRendererNode[] =
+    tree === null ? [] : Array.isArray(tree) ? tree : [tree];
+
+  const isFlexWrapper = (node: ReactTestRendererJSON) => {
+    const style: unknown = node.props.style;
+    return (
+      node.type === 'View' &&
+      Array.isArray(style) &&
+      typeof style[0] === 'object' &&
+      style[0] !== null &&
+      (style[0] as { flex?: number }).flex === 1
+    );
+  };
+
+  const search = (nodes: ReactTestRendererNode[]): ReactTestRendererJSON | null => {
+    for (const node of nodes) {
+      if (typeof node === 'string') continue;
+      if (isFlexWrapper(node)) return node;
+      const found = search(node.children ?? []);
+      if (found) return found;
+    }
+    return null;
+  };
+
+  const wrapper = search(roots);
+  if (!wrapper) throw new Error("BloomThemeProvider's flex wrapper was not found");
+  return wrapper;
 }
 
 describe('SubtleHover', () => {
