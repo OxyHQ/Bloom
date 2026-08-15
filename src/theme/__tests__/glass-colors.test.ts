@@ -22,9 +22,12 @@ import { readFileSync } from 'node:fs';
 
 import { APP_COLOR_PRESETS, type AppColorName } from '../color-presets';
 import { buildTheme } from '../build-theme';
+import { resolveAccentColors } from '../accent-colors';
 import {
   GLASS_BLUR_INTENSITY,
+  GLASS_SCRIM_ALPHA,
   GLASS_SHEEN,
+  glassScrim,
   resolveGlassColors,
   type GlassTone,
 } from '../glass-colors';
@@ -99,12 +102,15 @@ function blurTint(isDark: boolean): Rgba {
     : { r: 249, g: 249, b: 249, a: opacity * 0.78 };
 }
 
+const WHITE: Rgba = { r: 255, g: 255, b: 255, a: 1 };
+const BLACK: Rgba = { r: 0, g: 0, b: 0, a: 1 };
+
 /** The three backdrops a floating surface actually meets. */
 function backdrops(colors: ThemeColors): Array<[string, Rgba]> {
   return [
     ['page', parse(colors.background)],
-    ['white', { r: 255, g: 255, b: 255, a: 1 }],
-    ['black', { r: 0, g: 0, b: 0, a: 1 }],
+    ['white', WHITE],
+    ['black', BLACK],
   ];
 }
 
@@ -115,12 +121,17 @@ function backdrops(colors: ThemeColors): Array<[string, Rgba]> {
  * because that is where a light label has the least to work with, and a
  * measurement taken at the surface's midpoint would miss it.
  */
-function measure(colors: ThemeColors, tone: GlassTone, isDark: boolean, backdrop: Rgba): number {
+function surfaceOver(colors: ThemeColors, tone: GlassTone, isDark: boolean, backdrop: Rgba): Rgba {
   const glass = resolveGlassColors(colors, tone);
   const material = over(blurTint(isDark), backdrop);
-  const tinted = over(parse(glass.fill), material);
-  const surface = over(parse(GLASS_SHEEN.bottom), tinted);
-  return contrast(surface, over(parse(glass.fillForeground), surface));
+  const scrimmed = over(parse(glassScrim(isDark)), material);
+  const tinted = over(parse(glass.fill), scrimmed);
+  return over(parse(GLASS_SHEEN.bottom), tinted);
+}
+
+function measure(colors: ThemeColors, tone: GlassTone, isDark: boolean, backdrop: Rgba): number {
+  const surface = surfaceOver(colors, tone, isDark, backdrop);
+  return contrast(surface, over(parse(resolveGlassColors(colors, tone).foreground), surface));
 }
 
 const PRESETS = Object.keys(APP_COLOR_PRESETS) as AppColorName[];
@@ -183,47 +194,97 @@ describe('glass surface legibility', () => {
     expect(rows).toHaveLength(PRESETS.length * 2 * 6 * 3);
   });
 
-  it('clears AA for a label on glass over THE PAGE, every tone and mode', () => {
-    // The context a glass BUTTON is actually in — an inline control on the app's
-    // own background, or on a card. Measured worst: 4.85 (light) / 7.03 (dark).
+  it('clears AA on EVERY backdrop a floating surface meets, not just the page', () => {
+    // The whole point of the calibration. The page used to be the only backdrop
+    // this held for; a surface that floats over content meets the extremes.
     const failures = rows
-      .filter((row) => row.name.endsWith('over page') && row.ratio < AA)
+      .filter((row) => row.ratio < AA)
       .map((row) => `${row.name}: ${row.ratio.toFixed(2)}`)
       .sort();
     expect(failures).toEqual([]);
   });
 
   /**
-   * KNOWN LIMIT, recorded as a measurement rather than left as a silent pass.
+   * The POSITIVE CONTROL for the calibration above, and it used to be the
+   * recorded limit.
    *
-   * Over the backdrop OPPOSITE to the scheme — a light-mode surface on black
-   * content, a dark-mode surface on white — the label does not clear AA, and it
-   * is nowhere close: 1.04 and 1.49 at worst.
+   * Before the foreground moved to `colors.text`, the label was the tone's
+   * `*SubtleForeground` and this pairing measured 1.04 (light over black) and
+   * 1.49 (dark over white). Keeping it as a control is what makes the pass above
+   * mean something: it exercises the identical five-layer composite and the
+   * identical helpers, so if `over`, `contrast` or the stack ever degraded to
+   * something that returns comfortable numbers, this would go green and say so.
    *
-   * The important part is WHY, because the obvious fix does not work. It is not
-   * that the fill is too transparent: at alpha 1.0, light-mode `primary` over
-   * black still measures 1.96, because `*SubtleForeground` is a mid-tone brand
-   * colour calibrated to be legible on the tint AS COMPOSITED OVER THE PAGE. The
-   * `*Subtle`/`*SubtleForeground` pair is not self-contained — it assumes the
-   * page is behind it, which is exactly the assumption a floating surface breaks.
-   *
-   * So this asserts the limitation EXISTS. If someone changes the material or
-   * the pair and glass becomes safe over arbitrary content, this test fails and
-   * forces the claim to be re-measured and the docs updated, instead of a
-   * limitation quietly outliving the thing that caused it.
+   * It also pins WHY the old pairing could not be rescued by opacity. The
+   * `*Subtle`/`*SubtleForeground` pair is calibrated for a tint composited over
+   * THE PAGE; it is not self-contained, and over arbitrary content it needs the
+   * material at 0.98 (light) / 0.90 (dark) — a surface that is no longer glass.
    */
-  it('does NOT clear AA over the opposite-scheme backdrop — a recorded limit', () => {
-    const opposite = rows.filter(
-      (row) =>
-        (row.name.includes('/light/') && row.name.endsWith('over black')) ||
-        (row.name.includes('/dark/') && row.name.endsWith('over white')),
-    );
-    expect(opposite.length).toBeGreaterThan(0);
-    const worst = Math.min(...opposite.map((row) => row.ratio));
-    expect(worst).toBeLessThan(AA);
-    // Pinned, so an improvement cannot pass unnoticed as "still broken".
-    expect(worst).toBeGreaterThan(1);
-    expect(worst).toBeLessThan(2);
+  it('beats the OLD tone-derived foreground on the identical stack', () => {
+    // The POSITIVE CONTROL for the pass above, stated as the before/after it
+    // actually is rather than as a claim needing an exclusion list. Both
+    // foregrounds are measured through the SAME five-layer composite and the
+    // same helpers, so if `over`, `contrast` or the stack ever degraded to
+    // something that returns comfortable numbers, the old column would go green
+    // and say so.
+    //
+    // No filtering: some pairings are legitimately fine under the old
+    // foreground — the `default` tone's is `textSecondary`, a neutral already
+    // sitting where `colors.text` sits, and a monochrome preset has no hue to
+    // begin with. Excluding those by name would be a list that stops being true;
+    // counting them is the measurement.
+    let oldFailures = 0;
+    let newFailures = 0;
+    let total = 0;
+    let worstNew = Infinity;
+    for (const preset of PRESETS) {
+      for (const mode of MODES) {
+        const colors = buildTheme(preset, mode).colors;
+        for (const tone of TONES) {
+          const opposite = mode === 'light' ? BLACK : WHITE;
+          const surface = surfaceOver(colors, tone, mode === 'dark', opposite);
+          const oldRatio = contrast(
+            surface,
+            over(parse(resolveAccentColors(colors, tone, 'subtle').foreground), surface),
+          );
+          const newRatio = contrast(
+            surface,
+            over(parse(resolveGlassColors(colors, tone).foreground), surface),
+          );
+          total++;
+          if (oldRatio < AA) oldFailures++;
+          if (newRatio < AA) newFailures++;
+          worstNew = Math.min(worstNew, newRatio);
+        }
+      }
+    }
+
+    // Vacuity floor first: a loop that walked nothing reports zero of everything.
+    expect(total).toBe(PRESETS.length * 2 * 6);
+    // The old foreground fails on the majority of the matrix…
+    expect(oldFailures).toBeGreaterThan(total / 2);
+    // …and the new one on none of it.
+    expect(newFailures).toBe(0);
+
+    // The new foreground is not uniformly higher, and pretending otherwise
+    // would be a false claim: on `mono`, whose `primary` is achromatic, the old
+    // `*SubtleForeground` was MORE extreme than `colors.text` and scored better
+    // (10.11 → 8.29 light, 6.50 → 5.02 dark). Both still clear AA with room, so
+    // what matters is the floor, not the direction — pinned here so the margin
+    // cannot erode quietly.
+    expect(worstNew).toBeGreaterThan(AA);
+    expect(worstNew).toBeLessThan(6);
+  });
+
+  it('composes the blur and the scrim to the opacity the calibration needs', () => {
+    // The scrim is DERIVED from the target, so this is the arithmetic that keeps
+    // the two in step: whatever expo-blur's own tint contributes, the scrim
+    // closes the rest of the gap to 0.76 — the alpha at which `colors.text`
+    // clears AA in DARK mode, which is the binding side.
+    const blur = (GLASS_BLUR_INTENSITY / 100) * 0.78;
+    expect(1 - (1 - blur) * (1 - GLASS_SCRIM_ALPHA)).toBeCloseTo(0.76, 6);
+    // …and the scrim is a real layer, not a rounding artefact.
+    expect(GLASS_SCRIM_ALPHA).toBeGreaterThan(0.5);
   });
 
   it('and a known-bad pairing still fails, so the threshold is doing work', () => {
@@ -233,7 +294,7 @@ describe('glass surface legibility', () => {
     // broken helper cannot leave the assertions green.
     const colors = buildTheme('oxy', 'light').colors;
     const glass = resolveGlassColors(colors, 'primary');
-    const surface = over(parse(glass.fill), over(blurTint(false), parse(colors.background)));
-    expect(contrast(surface, { r: 255, g: 255, b: 255, a: 1 })).toBeLessThan(AA);
+    const surface = surfaceOver(colors, 'primary', false, parse(colors.background));
+    expect(contrast(surface, WHITE)).toBeLessThan(AA);
   });
 });

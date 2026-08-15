@@ -152,7 +152,6 @@ const ButtonComponent: React.FC<ButtonProps> = ({
   accessibilityLabel,
   accessibilityHint,
   hitSlop,
-  activeOpacity,
   testID,
   className,
   'aria-expanded': ariaExpanded,
@@ -288,11 +287,11 @@ const ButtonComponent: React.FC<ButtonProps> = ({
   const resolvedTextColor = useMemo((): string => {
     switch (variant) {
       case 'primary':
-        // The `*SubtleForeground` half of the pair the fill came from — the one
-        // colour the palette guarantees is legible ON that tint. NOT
-        // `primaryForeground`, which is sized for the OPAQUE fill this variant
-        // used to have and would be white on a pale wash.
-        return glass.fillForeground;
+        // The SCHEME's reading colour, not the tone's. A glass surface's
+        // luminance moves with whatever is behind it, and only one side of that
+        // swing has room for a label — see `GlassColors.foreground`. The brand
+        // hue is in the fill and the hairline.
+        return glass.foreground;
       case 'secondary':
         return theme.colors.text;
       case 'inverse':
@@ -304,7 +303,7 @@ const ButtonComponent: React.FC<ButtonProps> = ({
       default:
         return theme.colors.text;
     }
-  }, [variant, theme, glass.fillForeground]);
+  }, [variant, theme, glass.foreground]);
 
   const computedTextStyle = useMemo((): TextStyle => {
     const sizeConfig = SIZE_CONFIG[size];
@@ -316,7 +315,12 @@ const ButtonComponent: React.FC<ButtonProps> = ({
   }, [size, resolvedTextColor]);
 
   const defaultHitSlop = variant === 'icon' ? ICON_HIT_SLOP : undefined;
-  const resolvedActiveOpacity = activeOpacity ?? (variant === 'icon' ? 0.7 : 0.8);
+  // How far a NON-scaling variant dips under the finger. Not a prop: how a
+  // control answers a press is the library's decision, not a per-call-site one,
+  // and a knob for it is how one button in one app ends up feeling different
+  // from every other. Every scaling variant uses `animation.pressScale` instead;
+  // these are the ones with no fill to scale convincingly.
+  const resolvedActiveOpacity = variant === 'icon' ? 0.7 : 0.8;
 
   const content = (
     <>

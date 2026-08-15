@@ -335,7 +335,7 @@ describe('the filled variants are glass', () => {
     // The label is the half of the pair that is legible on that tint — NOT
     // `primaryForeground`, which is sized for the opaque fill this replaced and
     // would be white on a pale wash.
-    sameColour(btn.style.color, glass.fillForeground);
+    sameColour(btn.style.color, glass.foreground);
 
     // Rim first, drop after: the inset has to be listed before the outer layers
     // or it paints under them.
