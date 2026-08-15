@@ -26,7 +26,7 @@
  * | reference                    | here                                    |
  * | ---------------------------- | --------------------------------------- |
  * | the 25% accent fill          | `resolveAccentColors(colors, tone, 'subtle').background` — the `*Subtle` tint, which the colour policy generates TOGETHER with the text that is legible on it |
- * | the label on that fill       | the same call's `.foreground` — the `*SubtleForeground` half of that pair |
+ * | the label on that fill       | `colors.text` — see {@link GlassColors.foreground}, which is the one thing here the reference gets wrong for a surface that floats |
  * | the full-strength hairline   | the same call at `'solid'` — `.background`, the tone's own fill |
  * | `0.5px`                      | `BORDER_WIDTH.hairline` |
  * | the box-shadow               | `bloomShadowStyle('glass')` |
@@ -98,6 +98,58 @@ export const GLASS_RIM_HIGHLIGHT = 'inset 0 1px 0 0 rgba(255, 255, 255, 0.2)';
 export const GLASS_BLUR_INTENSITY = 50;
 
 /**
+ * The SCRIM: a second, neutral layer of the material's own colour, sitting
+ * between the blur and the accent fill.
+ *
+ * It exists because `expo-blur` couples two things a legible material needs to
+ * set independently — one `intensity` drives BOTH the blur radius
+ * (`intensity * 0.2` px) and the tint's opacity (`intensity/100 * 0.78`). The
+ * reference's `blur(10px)` fixes the intensity at 50, which fixes the tint at
+ * 0.39, and 0.39 is not nearly enough opacity to carry text (see below). Asking
+ * expo-blur for more opacity would mean `blur(19.5px)`, a visibly different
+ * material. So the blur stays at the reference's radius and the opacity is
+ * closed here.
+ *
+ * ── WHY 0.76 TOTAL, AND WHY IT IS NOT NEGOTIABLE ────────────────────────────
+ *
+ * Measured across 18 presets x 2 modes x 6 tones, compositing the whole stack
+ * over the two backdrop extremes a floating surface actually meets:
+ *
+ *   At the material's own 0.39, the BEST ratio ANY foreground can achieve over
+ *   both black and white is 3.37 (light) and 2.53 (dark). Not "the token we
+ *   chose is wrong" — no colour exists that clears AA, because the surface swings
+ *   from rgb(110,94,115) over black to rgb(243,226,248) over white and nothing
+ *   is far from both.
+ *
+ * Raising the total opacity narrows that swing. `colors.text` — the page's own
+ * reading colour, already near-black in light and near-white in dark — clears AA
+ * over both extremes from 0.56 in light mode and 0.76 in DARK, which is the
+ * binding constraint and therefore the number.
+ *
+ * ONE value rather than per-mode (0.56 / 0.76): a material whose transparency
+ * depended on the scheme would read as two different materials, which is the
+ * thing an authority exists to prevent. The cost is stated rather than hidden —
+ * light mode gives up transparency it could have afforded, and at 0.76 roughly
+ * 20% of the backdrop still shows through against 52% before.
+ */
+const GLASS_TOTAL_OPACITY = 0.76;
+
+/**
+ * What the scrim itself has to be, so blur and opacity compose to
+ * {@link GLASS_TOTAL_OPACITY}: `1 - (1 - blurTint) * (1 - scrim) = total`.
+ * Derived rather than typed in, so the two cannot drift apart.
+ */
+export const GLASS_SCRIM_ALPHA =
+  1 - (1 - GLASS_TOTAL_OPACITY) / (1 - (GLASS_BLUR_INTENSITY / 100) * 0.78);
+
+/** The scrim, in the material's own scheme colour. */
+export function glassScrim(isDark: boolean): string {
+  return isDark
+    ? `rgba(25, 25, 25, ${GLASS_SCRIM_ALPHA})`
+    : `rgba(249, 249, 249, ${GLASS_SCRIM_ALPHA})`;
+}
+
+/**
  * The same material, for a fork that renders a raw DOM element and therefore
  * cannot mount `GlassSurface`.
  *
@@ -124,7 +176,7 @@ export function glassMaterialTint(isDark: boolean): string {
 
 /**
  * The whole stack as a CSS `background-image` list — topmost layer first, which
- * is CSS's own order: sheen, then the accent tint, then the material.
+ * is CSS's own order: sheen, accent tint, scrim, then the blur's own material.
  *
  * Two flat colours are spelled as one-stop gradients because `background-image`
  * takes images, not colours, and `background-color` is a single slot the caller
@@ -132,18 +184,38 @@ export function glassMaterialTint(isDark: boolean): string {
  */
 export function glassBackgroundImage(fill: string, isDark: boolean): string {
   const { top, middle, middleStop, bottom } = GLASS_SHEEN;
+  const scrim = glassScrim(isDark);
+  const tint = glassMaterialTint(isDark);
   return [
     `linear-gradient(180deg, ${top}, ${middle} ${middleStop * 100}%, ${bottom})`,
     `linear-gradient(${fill}, ${fill})`,
-    `linear-gradient(${glassMaterialTint(isDark)}, ${glassMaterialTint(isDark)})`,
+    `linear-gradient(${scrim}, ${scrim})`,
+    `linear-gradient(${tint}, ${tint})`,
   ].join(', ');
 }
 
 export interface GlassColors {
   /** The translucent accent fill, from the `*Subtle` pair. */
   fill: string;
-  /** The label/icon colour that pair guarantees is legible on `fill`. */
-  fillForeground: string;
+  /**
+   * The label/icon colour — `colors.text`, the page's own reading colour, and
+   * deliberately NOT the tone's `*SubtleForeground`.
+   *
+   * The direction is forced by arithmetic, not chosen. A glass surface's
+   * luminance swings with whatever is behind it, so the label has to sit clear
+   * of BOTH ends of that swing. At the calibrated opacity the light-mode surface
+   * spans 0.362..0.832: a dark label needs luminance <= 0.0416 (achievable —
+   * `colors.text` measures 0.011), and a light one would need 3.92, which does
+   * not exist. Dark mode is the mirror image. So there is exactly one workable
+   * side per scheme, and `colors.text` is already the token that sits there.
+   *
+   * The tone's own `*SubtleForeground` cannot be used at all: it is a mid-tone
+   * brand colour calibrated for the tint AS COMPOSITED OVER THE PAGE, and over
+   * arbitrary content it needs the material at 0.98 opacity (light) or 0.90
+   * (dark) to clear AA — i.e. a surface that is no longer glass. The brand hue
+   * lives in the FILL and the HAIRLINE; the label is neutral.
+   */
+  foreground: string;
   /** The hairline, at the tone's FULL strength — the reference's `border` hue. */
   hairline: string;
   /** Width of that hairline. `0.5` on web; see `GlassSurface` for the native note. */
@@ -163,7 +235,7 @@ export function resolveGlassColors(colors: ThemeColors, tone: GlassTone): GlassC
   const solid = resolveAccentColors(colors, tone, 'solid');
   return {
     fill: tint.background,
-    fillForeground: tint.foreground,
+    foreground: colors.text,
     hairline: solid.background,
     hairlineWidth: BORDER_WIDTH.hairline,
   };

@@ -8,6 +8,7 @@ import {
   GLASS_BLUR_INTENSITY,
   GLASS_RIM_HIGHLIGHT,
   GLASS_SHEEN,
+  glassScrim,
   resolveGlassColors,
 } from '../theme/glass-colors';
 import type { GlassSurfaceProps } from './types';
@@ -87,6 +88,13 @@ const GlassSurfaceComponent: React.FC<GlassSurfaceProps> = ({
         experimentalBlurMethod="dimezisBlurView"
         style={StyleSheet.absoluteFill}
       />
+      {/*
+        The scrim, between the blur and the accent fill. It carries the opacity
+        the blur cannot: `expo-blur` derives its tint's alpha from the SAME
+        `intensity` that sets the blur radius, so asking it for a material opaque
+        enough to carry text would also triple the blur. See `GLASS_SCRIM_ALPHA`.
+      */}
+      <View style={[StyleSheet.absoluteFill, { backgroundColor: glassScrim(theme.isDark) }]} />
       <View style={[StyleSheet.absoluteFill, { backgroundColor: glass.fill }]} />
       {sheen ? (
         <Svg style={StyleSheet.absoluteFill} testID={testID ? `${testID}-sheen` : undefined}>

@@ -290,14 +290,19 @@ describe('the filled variant is glass', () => {
     expect(queryByTestId('b-glass')).not.toBeNull();
   });
 
-  it('labels it with the pair member legible on the tint, not the opaque fill', () => {
+  it('labels it with the SCHEME reading colour, not the tone or the old fill pair', () => {
     const colors = captureThemeColors();
     const glass = resolveGlassColors(colors, 'primary');
     const { getByText } = renderWithTheme(<Button>Go</Button>);
-    expect(resolvedStyle(getByText('Go').props.style).color).toBe(glass.fillForeground);
-    // The one it must NOT be: `primaryForeground` is white here, sized for the
-    // opaque fill this replaced.
-    expect(glass.fillForeground).not.toBe(colors.primaryForeground);
+    expect(resolvedStyle(getByText('Go').props.style).color).toBe(glass.foreground);
+    expect(glass.foreground).toBe(colors.text);
+
+    // The two it must NOT be, each for its own reason. `primaryForeground` is
+    // white, sized for the opaque fill this replaced. `primarySubtleForeground`
+    // is the pair member for a tint over the PAGE — over arbitrary content it
+    // needs the material at 0.98 opacity to clear AA, i.e. no longer glass.
+    expect(glass.foreground).not.toBe(colors.primaryForeground);
+    expect(glass.foreground).not.toBe(colors.primarySubtleForeground);
   });
 
   it('speaks the error tone for destructive, the same tone a destructive Chip uses', () => {

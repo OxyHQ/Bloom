@@ -169,7 +169,7 @@ function resolveVariantStyle(
       return {
         container: glassContainer(theme, variant === 'destructive'),
         textColor: resolveGlassColors(c, variant === 'destructive' ? 'error' : 'primary')
-          .fillForeground,
+          .foreground,
         ringColor: variant === 'destructive' ? c.negative : c.primary,
       };
     case 'inverse':

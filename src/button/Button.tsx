@@ -287,11 +287,11 @@ const ButtonComponent: React.FC<ButtonProps> = ({
   const resolvedTextColor = useMemo((): string => {
     switch (variant) {
       case 'primary':
-        // The `*SubtleForeground` half of the pair the fill came from — the one
-        // colour the palette guarantees is legible ON that tint. NOT
-        // `primaryForeground`, which is sized for the OPAQUE fill this variant
-        // used to have and would be white on a pale wash.
-        return glass.fillForeground;
+        // The SCHEME's reading colour, not the tone's. A glass surface's
+        // luminance moves with whatever is behind it, and only one side of that
+        // swing has room for a label — see `GlassColors.foreground`. The brand
+        // hue is in the fill and the hairline.
+        return glass.foreground;
       case 'secondary':
         return theme.colors.text;
       case 'inverse':
@@ -303,7 +303,7 @@ const ButtonComponent: React.FC<ButtonProps> = ({
       default:
         return theme.colors.text;
     }
-  }, [variant, theme, glass.fillForeground]);
+  }, [variant, theme, glass.foreground]);
 
   const computedTextStyle = useMemo((): TextStyle => {
     const sizeConfig = SIZE_CONFIG[size];
