@@ -2,6 +2,11 @@ import React from 'react';
 import { View } from 'react-native';
 import type { Decorator, Preview } from '@storybook/react-vite';
 
+// The compiled Tailwind/NativeWind stylesheet. This import is what makes every
+// `className` in the library resolve to a rule — see `.storybook/tailwind.css`
+// for why the harness is useless, not merely incomplete, without it.
+import './tailwind.css';
+
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 
 import { BloomThemeProvider } from '../src/theme';

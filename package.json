@@ -1498,8 +1498,10 @@
     }
   },
   "devDependencies": {
+    "@react-native-community/netinfo": "^12.0.1",
     "@storybook/addon-docs": "^10",
     "@storybook/react-vite": "^10",
+    "@tailwindcss/vite": "4.3.2",
     "@testing-library/dom": "^10.4.1",
     "@testing-library/jest-dom": "^6.9.1",
     "@testing-library/react-native": "^13.3.3",
@@ -1530,11 +1532,12 @@
     "react-native-worklets": "0.10.0",
     "react-test-renderer": "^19.2.0",
     "release-it": "^19.0.6",
+    "nativewind": "5.0.0-preview.3",
     "storybook": "^10",
+    "tailwindcss": "4.3.2",
     "ts-jest": "^29.4.6",
     "typescript": "~5.9.2",
-    "vite": "^7",
-    "@react-native-community/netinfo": "^12.0.1"
+    "vite": "^7"
   },
   "peerDependencies": {
     "@react-native-community/netinfo": ">=11.1.0",
