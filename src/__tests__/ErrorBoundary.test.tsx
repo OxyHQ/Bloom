@@ -1,12 +1,13 @@
 import React, { type ErrorInfo, type ReactNode } from 'react';
 import { Text } from 'react-native';
-import { act, render, fireEvent } from '@testing-library/react-native';
+import { act, render } from '@testing-library/react-native';
 
 import { ErrorBoundary } from '../error-boundary';
 import type {
   ErrorBoundaryFallback,
   ErrorBoundaryFallbackContext,
 } from '../error-boundary';
+import { pressHost } from './support/press-host';
 
 /**
  * Renders normally on the first mount, then throws once we flip the
@@ -202,16 +203,30 @@ describe('ErrorBoundary', () => {
     expect(getByText('Retry!')).toBeTruthy();
   });
 
-  it('fires the default-fallback retry button without crashing', () => {
-    const { getByText } = render(
+  it('resets the boundary when the default-fallback retry button is pressed', () => {
+    // A transient failure, the way a consumer meets one: the child throws, the
+    // user retries, and by then the condition is gone.
+    let failing = true;
+    function TransientlyThrows() {
+      if (failing) throw new Error('boom');
+      return <Text>recovered</Text>;
+    }
+
+    const { getByText, getByLabelText, queryByText } = render(
       <ErrorBoundary>
-        <MaybeThrow shouldThrow />
+        <TransientlyThrows />
       </ErrorBoundary>,
     );
-    // The button is rendered inside a TouchableOpacity; pressing fires the
-    // internal handleRetry which resets state. The child will throw again on
-    // the next render, but the test only asserts the press itself does not
-    // throw synchronously.
-    expect(() => fireEvent.press(getByText('Try Again'))).not.toThrow();
+    expect(getByText('Try Again')).toBeTruthy();
+
+    failing = false;
+    // `expect(() => fireEvent.press(…)).not.toThrow()` was the whole assertion
+    // here, and it cannot fail: `fireEvent` returns silently when it finds no
+    // handler, so nothing throws either way. Measured — deleting the retry
+    // button's `onPress` left it green. What the press actually owes the
+    // consumer is that it RESETS the boundary and re-renders the children.
+    pressHost(getByLabelText('Try Again'));
+    expect(queryByText('Try Again')).toBeNull();
+    expect(getByText('recovered')).toBeTruthy();
   });
 });

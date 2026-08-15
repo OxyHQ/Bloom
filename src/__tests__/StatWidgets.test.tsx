@@ -12,6 +12,7 @@ import {
   bucketByDay,
 } from '../index';
 import type { CompositionCategory, AvatarGroupItem } from '../index';
+import { pressHost } from './support/press-host';
 
 function renderWithTheme(ui: React.ReactElement) {
   return render(
@@ -173,7 +174,10 @@ describe('ProfileCard', () => {
     expect(getByText('*5bF5')).toBeTruthy();
     expect(getByText('Token diversity')).toBeTruthy();
     expect(getByText('Top tokens')).toBeTruthy();
-    fireEvent.press(getByTestId('card'));
+    // Through `pressHost`: a bare `fireEvent.press` walks up past the card to
+    // `<ProfileCard onPress={…}>` in this file's own JSX, so the call it
+    // reports says nothing about what the component wired.
+    pressHost(getByTestId('card'));
     expect(onPress).toHaveBeenCalledTimes(1);
   });
 

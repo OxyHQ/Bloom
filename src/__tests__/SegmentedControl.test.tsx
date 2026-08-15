@@ -19,6 +19,7 @@ import {
   SegmentedControlItem,
   SegmentedControlItemText,
 } from '../segmented-control';
+import { pressHost } from './support/press-host';
 
 function renderControl(
   type: 'radio' | 'tabs',
@@ -65,8 +66,14 @@ describe('SegmentedControl', () => {
   });
 
   it('is controlled — pressing does not move the state by itself', () => {
-    const { getByTestId } = renderControl('radio', 'a');
-    fireEvent.press(getByTestId('b'));
+    const onChange = jest.fn();
+    const { getByTestId } = renderControl('radio', 'a', onChange);
+    pressHost(getByTestId('b'));
+    // The floor this negative assertion needs: the press LANDED. "The state did
+    // not move" is also exactly what a press reaching nothing reports —
+    // measured, deleting the segment's `onPress` left the two checks below
+    // green on their own.
+    expect(onChange).toHaveBeenCalledWith('b');
     expect(getByTestId('a').props['aria-checked']).toBe(true);
     expect(getByTestId('b').props['aria-checked']).toBe(false);
   });

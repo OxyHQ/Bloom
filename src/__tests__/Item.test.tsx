@@ -1,9 +1,10 @@
 import React from 'react';
 import { Text } from 'react-native';
-import { fireEvent, render } from '@testing-library/react-native';
+import { render } from '@testing-library/react-native';
 
 import { BloomThemeProvider } from '../theme/BloomThemeProvider';
 import { Item } from '../item';
+import { pressHost } from './support/press-host';
 
 function renderWithTheme(ui: React.ReactElement) {
   return render(
@@ -34,10 +35,14 @@ describe('Item', () => {
 
   it('is pressable when onPress is provided and fires the handler', () => {
     const onPress = jest.fn();
-    const { getByText } = renderWithTheme(
+    const { getByLabelText } = renderWithTheme(
       <Item title="Tap me" onPress={onPress} />,
     );
-    fireEvent.press(getByText('Tap me'));
+    // The row's own host node, found by the label `Item` derives from `title`.
+    // Pressing the title `Text` instead would walk up past the row to
+    // `<Item onPress={…}>` in this file's own JSX and report a call the
+    // component had no part in.
+    pressHost(getByLabelText('Tap me'));
     expect(onPress).toHaveBeenCalledTimes(1);
   });
 

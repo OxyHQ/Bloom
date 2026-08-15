@@ -4,6 +4,7 @@ import { render, fireEvent } from '@testing-library/react-native';
 
 import { BloomThemeProvider } from '../theme/BloomThemeProvider';
 import { LinkPreviewCard } from '../link-preview';
+import { pressHost } from './support/press-host';
 import { classNamesOn, resolvedStyle } from './support/rendered-style';
 
 function renderWithTheme(ui: React.ReactElement) {
@@ -43,7 +44,10 @@ describe('LinkPreviewCard', () => {
     const { getByLabelText } = renderWithTheme(
       <LinkPreviewCard url="https://example.com" title="Pressable" onPress={onPress} />,
     );
-    fireEvent.press(getByLabelText('Pressable'));
+    // Through `pressHost`: a bare `fireEvent.press` walks up past the card to
+    // `<LinkPreviewCard onPress={…}>` in this file's own JSX, so the call it
+    // reports says nothing about what the component wired.
+    pressHost(getByLabelText('Pressable'));
     expect(onPress).toHaveBeenCalledTimes(1);
   });
 

@@ -17,7 +17,7 @@
  * items to. See the last test for where it diverges from the org rule.
  */
 import React from 'react';
-import { render, fireEvent } from '@testing-library/react-native';
+import { render } from '@testing-library/react-native';
 import { Text as RNText } from 'react-native';
 
 import { ProfileCard } from '../profile-card';
@@ -26,6 +26,7 @@ import { BloomThemeProvider } from '../theme/BloomThemeProvider';
 import { useTheme } from '../theme/use-theme';
 import type { ThemeColors } from '../theme/types';
 import type { ProfileCardProps, ProfileCardVariant } from '../profile-card/types';
+import { pressHost } from './support/press-host';
 import { findHost, hostNodes, resolvedStyle, type HostNode } from './support/rendered-style';
 
 type Rendered = ReturnType<typeof render>;
@@ -230,13 +231,11 @@ describe('ProfileCard', () => {
     const onPress = jest.fn();
     const rendered = renderCard({ avatar: AVATAR, value: '1', onPress });
 
-    // The handler has to land on the CARD's own host node. `fireEvent.press`
-    // alone cannot see that: it walks up to the nearest ancestor carrying an
-    // `onPress` prop, and `<ProfileCard onPress={…}>` is itself one — measured,
-    // it still reported one call with the handler deleted from `Card` and the
-    // card rendered as an inert `View`.
-    expect(typeof findHost(rendered.toJSON(), 'card')?.props.onPress).toBe('function');
-    fireEvent.press(rendered.getByTestId('card'));
+    // The handler has to land on the CARD's own host node — see `pressHost`,
+    // which asserts that and presses THAT node. Splitting the two (assert on
+    // the node `findHost` returns, press the one `getByTestId` returns) would
+    // pass a component that made a different node the pressable one.
+    pressHost(rendered.getByTestId('card'));
     expect(onPress).toHaveBeenCalledTimes(1);
 
     // And a card nobody asked to be pressable stays a plain surface, rather than

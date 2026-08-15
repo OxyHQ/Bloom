@@ -1,10 +1,11 @@
 import React from 'react';
 import { Text, View } from 'react-native';
-import { render, fireEvent } from '@testing-library/react-native';
+import { render } from '@testing-library/react-native';
 
 import { BloomThemeProvider } from '../theme/BloomThemeProvider';
 import { Fab } from '../fab';
 import { borderRadius } from '../styles/tokens';
+import { pressHost } from './support/press-host';
 import {
   classNamesOn,
   renderedChildren,
@@ -32,7 +33,10 @@ describe('Fab (native)', () => {
     const { getByTestId } = renderWithTheme(
       <Fab testID="fab" accessibilityLabel="Add" onPress={onPress} icon={<Text>+</Text>} />,
     );
-    fireEvent.press(getByTestId('fab'));
+    // Through `pressHost`: a bare `fireEvent.press` walks up past the FAB to
+    // `<Fab onPress={…}>` in this file's own JSX, so the call it reports says
+    // nothing about what the component wired.
+    pressHost(getByTestId('fab'));
     expect(onPress).toHaveBeenCalledTimes(1);
   });
 
