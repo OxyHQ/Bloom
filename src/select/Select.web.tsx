@@ -20,6 +20,7 @@ import {
   SELECT_TRIGGER_CLASS,
   SELECT_VALUE_CLASS,
   ROW_HIGHLIGHT_CLASS,
+  SELECT_TRIGGER_POPUP,
 } from '../floating/constants';
 import { FloatingPanel } from '../floating/FloatingPanel';
 import { cx } from '../floating/shared';
@@ -162,6 +163,7 @@ export function SelectTrigger({
         disabled,
         accessibilityLabel: label,
         accessibilityRole: 'button',
+        'aria-haspopup': SELECT_TRIGGER_POPUP,
         'aria-expanded': ctx.isOpen,
       }}
     >

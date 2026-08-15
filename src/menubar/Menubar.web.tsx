@@ -17,6 +17,7 @@ import {
   MENUBAR_TRIGGER_CLASS,
   MENUBAR_TRIGGER_OPEN_CLASS,
   MENUBAR_TRIGGER_TEXT_CLASS,
+  MENU_TRIGGER_POPUP,
 } from '../floating/constants';
 import { MenuSurfaceProvider, type MenuSurfaceContextValue } from '../floating/context';
 import { FloatingPanel } from '../floating/FloatingPanel';
@@ -132,6 +133,7 @@ export function MenubarTrigger({
         disabled,
         accessibilityLabel: label,
         accessibilityRole: 'button',
+        'aria-haspopup': MENU_TRIGGER_POPUP,
         'aria-expanded': menu.open,
       }}>
       {asChild ? children : trigger}

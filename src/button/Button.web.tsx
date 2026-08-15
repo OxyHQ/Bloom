@@ -211,6 +211,8 @@ const ButtonWebComponent: React.FC<ButtonProps> = ({
   loadingColor,
   accessibilityLabel,
   'aria-label': ariaLabelProp,
+  'aria-expanded': ariaExpanded,
+  'aria-haspopup': ariaHasPopup,
   accessibilityHint,
   testID,
   className,
@@ -396,6 +398,10 @@ const ButtonWebComponent: React.FC<ButtonProps> = ({
       aria-disabled={isInteractionBlocked || undefined}
       aria-busy={loading || undefined}
       aria-label={ariaLabel}
+      // Forwarded from an anchored family's `asChild` trigger — see
+      // `ButtonProps['aria-expanded']`.
+      aria-expanded={ariaExpanded}
+      aria-haspopup={ariaHasPopup}
       title={title ?? accessibilityHint}
       autoFocus={autoFocus}
       tabIndex={tabIndex}

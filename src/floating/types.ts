@@ -19,6 +19,8 @@
  */
 import type { GestureResponderEvent, StyleProp, TextStyle, View, ViewStyle } from 'react-native';
 
+import type { WebAriaProps } from '../styles/styled-primitives';
+
 /**
  * What a family's ROOT publishes to its own trigger and surface: the open
  * state, and the box the surface anchors to. Each of the four families owns its
@@ -130,19 +132,20 @@ export interface FloatingPanelProps extends FloatingPositionProps {
  * `selected`) and folds them back into `accessibilityState`, so it is the
  * spelling that reaches BOTH platforms.
  *
- * `aria-haspopup` is NOT here, and that is now a scope decision rather than a
- * typing one. React Native still types no such prop — it is a PROPERTY, with no
- * state to fold into `accessibilityState` — but react-native-web forwards it,
- * and `styles/styled-primitives.ts`'s `WebAriaProps` declares it so it can be
- * set without a cast. The MENU ROW that opens a submenu uses that
- * (`MenuRowShell`'s `hasPopup`), because a row announcing only `aria-expanded`
- * reads as an ordinary action that toggles something.
+ * `aria-haspopup` is here too, and it is a PROPERTY rather than a state: React
+ * Native types no such prop — there is no state for it to fold into
+ * `accessibilityState` — while react-native-web forwards it.
+ * `styles/styled-primitives.ts`'s `WebAriaProps` is what makes it spellable
+ * without a cast, and each family passes its OWN value from
+ * `floating/constants.ts`, because the five families open three different kinds
+ * of surface and one shared default would be a lie for two of them.
  *
- * A ROOT trigger is a different case and is deliberately still without it: this
- * one type is shared by all five families, whose popups are a `menu`, a
- * `dialog` and a `listbox`, so a single value here would be wrong for two of
- * them. Giving each family its own would be worth doing and is not what the
- * submenu fix needed.
+ * BOTH of these reach an `asChild` child only if that child FORWARDS them.
+ * `cloneTrigger` sets them, and a component that destructures a known prop list
+ * drops what it does not name — measured, an `asChild` `<Button>` emitted
+ * `aria-label` (which `Button` named) and neither of these. Bloom's own `Button`
+ * now forwards both; an arbitrary caller element is the caller's to wire, which
+ * is inherent to `asChild` rather than something this type can fix.
  */
 export interface TriggerHandleProps {
   onPress: (event: GestureResponderEvent) => void;
@@ -151,6 +154,12 @@ export interface TriggerHandleProps {
   accessibilityLabel?: string;
   accessibilityRole?: 'button';
   'aria-expanded'?: boolean;
+  /**
+   * What this trigger OPENS. Set by each family from its own constant in
+   * `floating/constants.ts`, never defaulted here — the five families open three
+   * different kinds of surface.
+   */
+  'aria-haspopup'?: WebAriaProps['aria-haspopup'];
 }
 
 /**

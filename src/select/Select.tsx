@@ -23,6 +23,7 @@ import {
   SELECT_PLACEHOLDER_CLASS,
   SELECT_TRIGGER_CLASS,
   SELECT_VALUE_CLASS,
+  SELECT_TRIGGER_POPUP,
 } from '../floating/constants';
 import { cx } from '../floating/shared';
 import { TriggerSlot } from '../floating/TriggerSlot';
@@ -152,6 +153,7 @@ export function SelectTrigger({
         disabled,
         accessibilityLabel: label,
         accessibilityRole: 'button',
+        'aria-haspopup': SELECT_TRIGGER_POPUP,
       }}>
       {asChild ? children : field}
     </TriggerSlot>

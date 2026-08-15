@@ -12,6 +12,7 @@ import React, { useMemo, useRef } from 'react';
 import type { View } from 'react-native';
 
 import { SheetShell } from '../dialog/SheetShell';
+import { POPOVER_TRIGGER_POPUP } from '../floating/constants';
 import { TriggerSlot } from '../floating/TriggerSlot';
 import { useSheetOpenBridge } from '../floating/use-sheet-open-bridge';
 import { useControllableState } from '../hooks/use-controllable-state';
@@ -51,6 +52,7 @@ export function PopoverTrigger({
         disabled,
         accessibilityLabel: label,
         accessibilityRole: 'button',
+        'aria-haspopup': POPOVER_TRIGGER_POPUP,
         'aria-expanded': popover.open,
       }}>
       {children}

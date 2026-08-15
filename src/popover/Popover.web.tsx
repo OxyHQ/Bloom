@@ -10,7 +10,7 @@
 import React, { useCallback, useMemo, useRef } from 'react';
 import type { View } from 'react-native';
 
-import { POPOVER_CLASS } from '../floating/constants';
+import { POPOVER_CLASS, POPOVER_TRIGGER_POPUP } from '../floating/constants';
 import { FloatingPanel } from '../floating/FloatingPanel';
 import { cx } from '../floating/shared';
 import { TriggerSlot } from '../floating/TriggerSlot';
@@ -52,6 +52,7 @@ export function PopoverTrigger({
         disabled,
         accessibilityLabel: label,
         accessibilityRole: 'button',
+        'aria-haspopup': POPOVER_TRIGGER_POPUP,
         'aria-expanded': popover.open,
       }}>
       {children}

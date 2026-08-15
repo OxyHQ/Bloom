@@ -71,6 +71,28 @@ export const DEFAULT_SIDE_OFFSET = 4;
 export const DEFAULT_ALIGN_OFFSET = 0;
 
 /**
+ * What each family's ROOT trigger opens, as `aria-haspopup`.
+ *
+ * Per family and not one shared value, because the five families open three
+ * different kinds of surface — a single constant on `TriggerHandleProps` would
+ * be right for three of them and a lie for the other two. A screen reader with
+ * no `aria-haspopup` gets no warning that the control opens anything at all;
+ * with the wrong one it is told to expect the wrong thing.
+ *
+ * Each pair is imported by BOTH of a family's platform forks, so the two cannot
+ * drift apart — the failure that would otherwise be invisible, since only one
+ * fork is ever rendered at a time.
+ *
+ * React Native types no `aria-haspopup` (it is a PROPERTY, with no state to fold
+ * into `accessibilityState`) and ignores it; react-native-web forwards it.
+ * `styles/styled-primitives.ts`'s `WebAriaProps` is what makes it spellable
+ * without a cast.
+ */
+export const MENU_TRIGGER_POPUP = 'menu';
+export const POPOVER_TRIGGER_POPUP = 'dialog';
+export const SELECT_TRIGGER_POPUP = 'listbox';
+
+/**
  * The visible gap between a parent panel's EDGE and the sub-panel flying out of
  * it.
  *

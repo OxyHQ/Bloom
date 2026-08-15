@@ -120,7 +120,7 @@ type ButtonPressableProps = Pick<
   | 'onPressIn'
   | 'onPressOut'
   | 'testID'
-> & { style?: StyleProp<ViewStyle> };
+> & { style?: StyleProp<ViewStyle>; 'aria-expanded'?: boolean };
 
 /**
  * The same `Pressable` object, typed down to {@link ButtonPressableProps}.
@@ -153,6 +153,8 @@ const ButtonComponent: React.FC<ButtonProps> = ({
   activeOpacity,
   testID,
   className,
+  'aria-expanded': ariaExpanded,
+  'aria-haspopup': ariaHasPopup,
 }) => {
   const theme = useTheme();
   // The shadcn `size="icon"` shorthand also selects the icon variant unless an
@@ -336,6 +338,12 @@ const ButtonComponent: React.FC<ButtonProps> = ({
       // `aria-busy` back into it. The disabled half travels on the `disabled`
       // prop above, which both platforms map.
       aria-busy={loading || undefined}
+      // Forwarded from an anchored family's `asChild` trigger, never invented
+      // here — see `ButtonProps['aria-expanded']`. A component that destructures
+      // a known prop list drops what it does not name, and these two are how a
+      // trigger says that it opens something and what.
+      aria-expanded={ariaExpanded}
+      {...(ariaHasPopup == null ? {} : { 'aria-haspopup': ariaHasPopup })}
       testID={testID}
     >
       {loading ? (

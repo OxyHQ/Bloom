@@ -88,7 +88,13 @@ import {
   Select as NativeSelect,
   SelectItem as NativeSelectItem,
   SelectItemText as NativeSelectItemText,
+  SelectTrigger,
+  SelectValue,
 } from '../select/index';
+import { DropdownMenu, DropdownMenuTrigger } from '../dropdown-menu';
+import { ContextMenu, ContextMenuTrigger } from '../context-menu';
+import { Menubar, MenubarMenu, MenubarTrigger } from '../menubar';
+import { Popover, PopoverTrigger } from '../popover';
 import { TabBar, TabBarButton } from '../tab-bar';
 
 (globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
@@ -675,5 +681,102 @@ describe('menu rows spell their state per role', () => {
       ),
     );
     expect(byTestId(c, 'sub').getAttribute('aria-haspopup')).toBe('menu');
+  });
+});
+
+
+// Every ROOT trigger says WHAT it opens. Five families, three kinds of surface —
+// so a single shared value would be right for three of them and a lie for the
+// other two, which is why `aria-haspopup` is set per family from
+// `floating/constants.ts` rather than defaulted on `TriggerHandleProps`.
+//
+// The negative half is the LAST case: a Button is not a trigger and must carry
+// nothing. Without it, "every trigger has aria-haspopup" is satisfied by putting
+// the attribute on every pressable in the library.
+describe('a trigger announces what it opens', () => {
+  /** The pressable a trigger renders — `testID` lands on the anchor wrapper. */
+  const trigger = (c: HTMLElement) => byRole(c, 'button');
+
+  it('DropdownMenu opens a menu', () => {
+    const c = mount(
+      <DropdownMenu>
+        <DropdownMenuTrigger label="Open">
+          <Text>Open</Text>
+        </DropdownMenuTrigger>
+      </DropdownMenu>,
+    );
+    expect(trigger(c).getAttribute('aria-haspopup')).toBe('menu');
+  });
+
+  it('ContextMenu opens a menu', () => {
+    const c = mount(
+      <ContextMenu>
+        <ContextMenuTrigger label="Actions">
+          <Text>Right-click me</Text>
+        </ContextMenuTrigger>
+      </ContextMenu>,
+    );
+    expect(trigger(c).getAttribute('aria-haspopup')).toBe('menu');
+  });
+
+  it('Menubar opens a menu', () => {
+    const c = mount(
+      <Menubar>
+        <MenubarMenu value="file">
+          <MenubarTrigger label="File">File</MenubarTrigger>
+        </MenubarMenu>
+      </Menubar>,
+    );
+    expect(trigger(c).getAttribute('aria-haspopup')).toBe('menu');
+  });
+
+  it('Popover opens a dialog, NOT a menu', () => {
+    const c = mount(
+      <Popover>
+        <PopoverTrigger label="Explain">
+          <Text>What is this?</Text>
+        </PopoverTrigger>
+      </Popover>,
+    );
+    expect(trigger(c).getAttribute('aria-haspopup')).toBe('dialog');
+  });
+
+  it('Select opens a listbox, NOT a menu', () => {
+    const c = mount(
+      <NativeSelect value="a" onValueChange={() => {}}>
+        <SelectTrigger label="Choose">
+          <SelectValue placeholder="Choose" />
+        </SelectTrigger>
+      </NativeSelect>,
+    );
+    expect(trigger(c).getAttribute('aria-haspopup')).toBe('listbox');
+  });
+
+  it('survives the asChild path, which is a different code path', () => {
+    // Without `asChild` the attribute rides a JSX spread onto Bloom's own
+    // pressable; with it, `cloneTrigger` builds an explicit prop object and
+    // merges it into the caller's element. Most real call sites — and every
+    // story — take the second one, so a fix that only covered the first would
+    // be invisible where it matters.
+    const c = mount(
+      <DropdownMenu>
+        <DropdownMenuTrigger asChild label="Open">
+          <Button onPress={() => {}} testID="own">
+            Open
+          </Button>
+        </DropdownMenuTrigger>
+      </DropdownMenu>,
+    );
+    const el = byTestId(c, 'own');
+    expect(el.getAttribute('aria-haspopup')).toBe('menu');
+    // `aria-expanded` rides the same path and had been dropped there since
+    // `TriggerSlot` shipped — measured: an asChild Button emitted `aria-label`
+    // (which `Button` named) and neither of these two (which it did not).
+    expect(el.getAttribute('aria-expanded')).toBe('false');
+  });
+
+  it('an ordinary Button opens nothing and says so by omission', () => {
+    const c = mount(<Button onPress={() => {}} testID="btn">Save</Button>);
+    expect(byTestId(c, 'btn').getAttribute('aria-haspopup')).toBeNull();
   });
 });
