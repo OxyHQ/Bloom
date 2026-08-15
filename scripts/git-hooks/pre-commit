@@ -1,0 +1,88 @@
+#!/usr/bin/env bash
+#
+# Refuses a commit made by an AI agent in the SHARED checkout.
+#
+# The failure this closes happened here, for real: an agent working on Bloom ran
+# `git add -A` and committed from `/home/nate/Oxy/Bloom` instead of its own
+# worktree. That swept the user's uncommitted work into the agent's commit — an
+# untracked test file that existed in no branch, and two file deletions the user
+# had staged themselves. Restoring it undid the user's own deletions, so the
+# repair caused a second regression on top of the first. Nothing errored at any
+# point; the commit looked ordinary.
+#
+# The house rule is one worktree per agent under `.worktrees/<name>`. This hook
+# is what makes the rule fail loudly instead of quietly.
+#
+# THE DISCRIMINATOR, and why it costs the operator nothing:
+#
+#   * `CLAUDECODE` is set in the environment of every Claude Code process and of
+#     nothing else. A human typing `git commit` in their own terminal does not
+#     have it, so their commits pass through untouched. This hook is invisible to
+#     them.
+#   * `--git-dir` and `--git-common-dir` resolve to the SAME absolute path in the
+#     main checkout and to DIFFERENT paths inside a linked worktree. Resolving to
+#     absolute matters: from a subdirectory git prints `/abs/.git` for one and
+#     `../.git` for the other, so a literal string comparison reports every
+#     subdirectory of the shared checkout as a worktree — the permissive
+#     direction, which is the one that fails silently.
+#
+# The opt-in exists because the lead legitimately commits here when integrating
+# branches, which is a real operational state, and a guard that can only be
+# satisfied by deleting it protects nothing:
+#
+#   BLOOM_SHARED_COMMIT=1 git commit ...
+#
+set -euo pipefail
+
+# Not an agent — a human at a terminal. Nothing to check.
+if [ -z "${CLAUDECODE:-}" ]; then
+  exit 0
+fi
+
+if [ -n "${BLOOM_SHARED_COMMIT:-}" ]; then
+  exit 0
+fi
+
+# `--path-format=absolute` needs git >= 2.31. Fall back rather than exit 0 on an
+# older git: a guard that silently disables itself on an unexpected environment
+# is the vacuity this repo's rules exist to prevent.
+if git rev-parse --path-format=absolute --git-dir >/dev/null 2>&1; then
+  git_dir=$(git rev-parse --path-format=absolute --git-dir)
+  git_common_dir=$(git rev-parse --path-format=absolute --git-common-dir)
+else
+  git_dir=$(cd "$(git rev-parse --git-dir)" && pwd -P)
+  git_common_dir=$(cd "$(git rev-parse --git-common-dir)" && pwd -P)
+fi
+
+if [ -z "$git_dir" ] || [ -z "$git_common_dir" ]; then
+  echo "pre-commit: could not resolve the git directory, so this hook cannot tell" >&2
+  echo "a worktree from the shared checkout. Refusing rather than guessing." >&2
+  exit 1
+fi
+
+# Different paths => a linked worktree => this is where agents belong.
+if [ "$git_dir" != "$git_common_dir" ]; then
+  exit 0
+fi
+
+cat >&2 <<'MESSAGE'
+
+  REFUSED: an agent is committing in the SHARED checkout.
+
+  This is the human's working tree. It routinely holds uncommitted and untracked
+  work that exists in no branch, and a commit made here can sweep it up — that
+  has already happened once, and undoing it destroyed a second piece of the
+  user's work.
+
+  Work in your own worktree instead:
+
+      git worktree add .worktrees/<your-name> -b <your-branch> main
+      cd .worktrees/<your-name> && bun install
+
+  If you are the lead and this commit is a deliberate integration in the shared
+  checkout, say so explicitly:
+
+      BLOOM_SHARED_COMMIT=1 git commit ...
+
+MESSAGE
+exit 1
