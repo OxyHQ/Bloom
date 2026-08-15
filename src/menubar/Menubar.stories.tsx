@@ -37,7 +37,7 @@ export const Basic: Story = {
         <Menubar>
           <MenubarMenu value="file">
             <MenubarTrigger testID="menubar-file">
-              <Text style={{ paddingHorizontal: 8, paddingVertical: 4 }}>File</Text>
+              File
             </MenubarTrigger>
             <MenubarContent testID="menubar-file-panel">
               <MenubarItem
@@ -68,7 +68,7 @@ export const Basic: Story = {
 
           <MenubarMenu value="edit">
             <MenubarTrigger testID="menubar-edit">
-              <Text style={{ paddingHorizontal: 8, paddingVertical: 4 }}>Edit</Text>
+              Edit
             </MenubarTrigger>
             <MenubarContent>
               <MenubarItem onPress={() => setLast('undo')}>Undo</MenubarItem>
@@ -78,7 +78,7 @@ export const Basic: Story = {
 
           <MenubarMenu value="view">
             <MenubarTrigger testID="menubar-view">
-              <Text style={{ paddingHorizontal: 8, paddingVertical: 4 }}>View</Text>
+              View
             </MenubarTrigger>
             <MenubarContent>
               <MenubarLabel>Layout</MenubarLabel>
@@ -108,7 +108,7 @@ export const Controlled: Story = {
         <Menubar value={open} onValueChange={setOpen}>
           <MenubarMenu value="view">
             <MenubarTrigger>
-              <Text style={{ paddingHorizontal: 8, paddingVertical: 4 }}>View</Text>
+              View
             </MenubarTrigger>
             <MenubarContent>
               <MenubarCheckboxItem checked={dense} onCheckedChange={setDense} keepOpen>
@@ -118,7 +118,7 @@ export const Controlled: Story = {
           </MenubarMenu>
           <MenubarMenu value="help">
             <MenubarTrigger>
-              <Text style={{ paddingHorizontal: 8, paddingVertical: 4 }}>Help</Text>
+              Help
             </MenubarTrigger>
             <MenubarContent>
               <MenubarItem>Documentation</MenubarItem>

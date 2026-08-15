@@ -33,10 +33,16 @@ import {
   type DropdownPlacement,
 } from '../overlay/dropdown-placement';
 import { Portal } from '../portal/index.web';
-import { borderRadius } from '../styles/tokens';
 import { WEB_POSITION_FIXED } from '../styles/web-view-style';
 import { useTheme } from '../theme/use-theme';
-import { DEFAULT_ALIGN_OFFSET, DEFAULT_SIDE_OFFSET, VIEWPORT_GUTTER } from './constants';
+import {
+  DEFAULT_ALIGN_OFFSET,
+  DEFAULT_SIDE_OFFSET,
+  PANEL_BORDER_WIDTH,
+  PANEL_PADDING,
+  PANEL_RADIUS,
+  VIEWPORT_GUTTER,
+} from './constants';
 import type { FloatingPanelProps } from './types';
 
 export function FloatingPanel({
@@ -215,11 +221,16 @@ const styles = StyleSheet.create({
     // Opt back in from the Portal root's `pointer-events: none`.
     pointerEvents: 'auto',
   },
+  // `bg-popover border-border overflow-hidden rounded-md border p-1 shadow-lg`.
+  // `p-1` is FOUR-sided: upstream's rows sit 4px in from the panel's border on
+  // every edge, which is also what gives the separator's `-mx-1` something to
+  // bleed back through. A vertical-only inset let every row's rounded highlight
+  // run flush into the panel's own corner.
   panel: {
     position: WEB_POSITION_FIXED,
-    borderRadius: borderRadius.md,
-    borderWidth: 1,
-    paddingVertical: 4,
+    borderRadius: PANEL_RADIUS,
+    borderWidth: PANEL_BORDER_WIDTH,
+    padding: PANEL_PADDING,
     overflow: 'hidden',
     // Opt back in from the Portal root's `pointer-events: none`.
     pointerEvents: 'auto',

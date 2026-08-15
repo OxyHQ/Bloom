@@ -26,7 +26,13 @@ export const Basic: Story = {
         <PopoverTrigger asChild label="Open popover">
           <Button testID="popover-trigger">Open popover</Button>
         </PopoverTrigger>
-        <PopoverContent label="Account actions" align="start">
+        {/* A row list rather than prose, so it opts out of the panel's own
+            `w-72 p-4` — the same thing a shadcn call site says with
+            `className="w-auto p-0"`. */}
+        <PopoverContent
+          label="Account actions"
+          align="start"
+          style={{ width: 'auto', padding: 4 }}>
           <View style={{ minWidth: 200 }} testID="popover-panel">
             <Item title="Profile" density="compact" onPress={() => {}} />
             <Item title="Settings" density="compact" onPress={() => {}} />
@@ -38,7 +44,7 @@ export const Basic: Story = {
   ),
 };
 
-/** Prose rather than rows: the body pads itself, since the panel does not. */
+/** Prose rather than rows — the panel's own `w-72 p-4` is the shape for it. */
 export const Prose: Story = {
   render: () => (
     <View style={{ padding: 80, alignItems: 'flex-end' }}>
@@ -46,8 +52,8 @@ export const Prose: Story = {
         <PopoverTrigger asChild label="What is this?">
           <Button variant="secondary">What is this?</Button>
         </PopoverTrigger>
-        <PopoverContent label="Explanation" align="end" maxWidth={280}>
-          <View style={{ padding: 16, gap: 8 }}>
+        <PopoverContent label="Explanation" align="end">
+          <View style={{ gap: 8 }}>
             <Text style={{ fontWeight: '600' }}>Two-factor authentication</Text>
             <Text>
               A second step when you sign in, so a leaked password is not enough on its own.
@@ -74,9 +80,7 @@ export const Controlled: Story = {
             <Button variant="secondary">Toggle</Button>
           </PopoverTrigger>
           <PopoverContent label="Controlled panel">
-            <View style={{ padding: 16 }}>
-              <Text>Driven by the story's own state.</Text>
-            </View>
+            <Text>Driven by the story's own state.</Text>
           </PopoverContent>
         </Popover>
       </View>

@@ -7,16 +7,33 @@
  * ported call site keeps every part it wrote.
  */
 import React, { useMemo, useRef } from 'react';
-import { StyleSheet, View, type View as RNView } from 'react-native';
+import { StyleSheet, useWindowDimensions, View, type View as RNView } from 'react-native';
 
+import { bloomShadowStyle } from '../design-tokens/shadows';
 import { SheetShell } from '../dialog/SheetShell';
+import {
+  FONT_MEDIUM,
+  MENUBAR_GAP,
+  MENUBAR_HEIGHT,
+  MENUBAR_HEIGHT_SM,
+  MENUBAR_PADDING,
+  MENUBAR_RADIUS,
+  MENUBAR_TRIGGER_PADDING_X,
+  MENUBAR_TRIGGER_PADDING_Y,
+  MENUBAR_TRIGGER_PADDING_Y_SM,
+  MENUBAR_TRIGGER_RADIUS,
+  PANEL_BORDER_WIDTH,
+  TEXT_SM,
+  TEXT_SM_LINE_HEIGHT,
+} from '../floating/constants';
 import { MenuSurfaceProvider, type MenuSurfaceContextValue } from '../floating/context';
 import { createMenuRows } from '../floating/menu-rows';
 import { TriggerSlot } from '../floating/TriggerSlot';
 import { useSheetOpenBridge } from '../floating/use-sheet-open-bridge';
 import { useControllableState } from '../hooks/use-controllable-state';
-import { borderRadius, space } from '../styles/tokens';
+import { BREAKPOINTS } from '../styles/breakpoints';
 import { useTheme } from '../theme/use-theme';
+import { Text } from '../typography';
 import {
   MenubarMenuProvider,
   MenubarProvider,
@@ -40,6 +57,7 @@ export function Menubar({
   testID,
 }: MenubarProps) {
   const theme = useTheme();
+  const { width } = useWindowDimensions();
   const [openValue, setValue] = useControllableState<string | undefined>({
     value,
     defaultValue,
@@ -55,7 +73,12 @@ export function Menubar({
         testID={testID}
         style={[
           styles.bar,
+          // `h-10 sm:h-9`.
+          { height: width >= BREAKPOINTS.sm ? MENUBAR_HEIGHT_SM : MENUBAR_HEIGHT },
           { backgroundColor: theme.colors.background, borderColor: theme.colors.borderLight },
+          // `shadow-sm shadow-black/5` — the bar is a raised control, not an
+          // overlay, so it takes the lighter of Bloom's two elevation roles.
+          bloomShadowStyle('s'),
           style,
         ]}>
         {children}
@@ -89,7 +112,32 @@ export function MenubarTrigger({
   style,
   testID,
 }: MenubarTriggerProps) {
+  const theme = useTheme();
   const menu = useMenubarMenu();
+  const { width } = useWindowDimensions();
+
+  // `group flex items-center rounded-md px-2 py-1.5 sm:py-1`, plus `bg-accent`
+  // while its menu is open and `text-sm font-medium` for the label — the same
+  // chrome the web fork draws, so the bar reads identically on both platforms.
+  const trigger = (
+    <View
+      style={[
+        styles.trigger,
+        {
+          paddingVertical:
+            width >= BREAKPOINTS.sm
+              ? MENUBAR_TRIGGER_PADDING_Y_SM
+              : MENUBAR_TRIGGER_PADDING_Y,
+        },
+        menu.open ? { backgroundColor: theme.colors.contrast50 } : null,
+      ]}>
+      {typeof children === 'string' ? (
+        <Text style={[styles.triggerText, { color: theme.colors.text }]}>{children}</Text>
+      ) : (
+        children
+      )}
+    </View>
+  );
 
   return (
     <TriggerSlot
@@ -104,7 +152,7 @@ export function MenubarTrigger({
         accessibilityRole: 'button',
         'aria-expanded': menu.open,
       }}>
-      {children}
+      {asChild ? children : trigger}
     </TriggerSlot>
   );
 }
@@ -125,14 +173,27 @@ export function MenubarContent({ children, label = 'Menu', style }: MenubarConte
 }
 
 const styles = StyleSheet.create({
+  // `bg-background border-border flex h-10 flex-row items-center gap-1
+  //  rounded-md border p-1 shadow-sm shadow-black/5 sm:h-9`.
   bar: {
     flexDirection: 'row',
     alignItems: 'center',
     alignSelf: 'flex-start',
-    gap: space.xs,
-    padding: space.xs,
-    borderWidth: 1,
-    borderRadius: borderRadius.md,
+    gap: MENUBAR_GAP,
+    padding: MENUBAR_PADDING,
+    borderWidth: PANEL_BORDER_WIDTH,
+    borderRadius: MENUBAR_RADIUS,
+  },
+  trigger: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingHorizontal: MENUBAR_TRIGGER_PADDING_X,
+    borderRadius: MENUBAR_TRIGGER_RADIUS,
+  },
+  triggerText: {
+    fontSize: TEXT_SM,
+    lineHeight: TEXT_SM_LINE_HEIGHT,
+    fontWeight: FONT_MEDIUM,
   },
 });
 

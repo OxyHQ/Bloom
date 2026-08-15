@@ -3,6 +3,7 @@ import { View, Text, Platform, Pressable, Animated, type ViewStyle } from 'react
 
 import { Check_Stroke2_Corner0_Rounded as CheckIcon } from '../icons/Check';
 
+import { bloomShadowStyle } from '../design-tokens/shadows';
 import { useTheme } from '../theme/use-theme';
 import { animation, borderRadius, space } from '../styles/tokens';
 import { SUPPORTS_NATIVE_DRIVER } from '../styles/native-driver';
@@ -11,11 +12,29 @@ import type { WebCssStyle } from '../styles/web-view-style';
 import { usePressAnimation } from '../hooks/use-press-animation';
 import type { CheckboxProps } from './types';
 
+/**
+ * `medium` IS react-native-reusables' checkbox: `size-4` (16px) holding a 12px
+ * check, beside a `text-sm font-medium` label and a `text-muted-foreground
+ * text-sm` description. It used to be a 22px box with a 15px label — half again
+ * as large as shadcn's in a vocabulary where the control is deliberately small
+ * next to its text. `small` and `large` step around it; upstream has only the
+ * one size.
+ */
 const SIZE_CONFIG = {
-  small: { box: 18, checkmark: 10, fontSize: 14, lineHeight: 20, descFontSize: 12 },
-  medium: { box: 22, checkmark: 12, fontSize: 15, lineHeight: 22, descFontSize: 13 },
-  large: { box: 26, checkmark: 14, fontSize: 16, lineHeight: 24, descFontSize: 14 },
+  small: { box: 14, checkmark: 10, fontSize: 12, lineHeight: 16, descFontSize: 12 },
+  medium: { box: 16, checkmark: 12, fontSize: 14, lineHeight: 20, descFontSize: 14 },
+  large: { box: 20, checkmark: 14, fontSize: 16, lineHeight: 24, descFontSize: 14 },
 } as const;
+
+/** `rounded-[4px]` — an explicit pixel radius, not a rung of shadcn's ramp. */
+const BOX_RADIUS = 4;
+
+/** `border` — one pixel, where Bloom's box drew two. */
+const BOX_BORDER_WIDTH = 1;
+
+/** `gap-3` between the box and its label, and `gap-2` under the label. */
+const LABEL_GAP = space.md;
+const DESCRIPTION_GAP = space.sm;
 
 /**
  * The smallest comfortable touch target, in dp. A bare checkbox — no label, no
@@ -127,8 +146,10 @@ const CheckboxComponent: React.FC<CheckboxProps> = ({
     (): WebCssStyle => ({
       flexDirection: 'row',
       alignItems: 'flex-start',
-      gap: space.sm,
-      opacity: disabled ? 0.4 : 1,
+      gap: LABEL_GAP,
+      // `opacity-50` — upstream's disabled treatment, and the same number
+      // `Item` and every menu row already use.
+      opacity: disabled ? 0.5 : 1,
       // The `:focus-visible` ring colour, read by the adopted sheet. A custom
       // property because the value is a resolved theme token the static sheet
       // cannot know; native has no such style key and ignores it.
@@ -138,13 +159,17 @@ const CheckboxComponent: React.FC<CheckboxProps> = ({
   );
 
   const boxStyle = useMemo((): ViewStyle => {
+    // `border-input size-4 shrink-0 rounded-[4px] border shadow-sm
+    //  shadow-black/5`, plus `border-primary` and the `bg-primary` indicator
+    //  once checked.
     const base: ViewStyle = {
       width: sizeConfig.box,
       height: sizeConfig.box,
-      borderRadius: borderRadius._2xs + 2,
-      borderWidth: 2,
+      borderRadius: BOX_RADIUS,
+      borderWidth: BOX_BORDER_WIDTH,
       alignItems: 'center',
       justifyContent: 'center',
+      ...bloomShadowStyle('s'),
     };
 
     if (checked || indeterminate) {
@@ -241,7 +266,8 @@ const CheckboxComponent: React.FC<CheckboxProps> = ({
                 fontSize: sizeConfig.descFontSize,
                 color: theme.colors.textSecondary,
                 lineHeight: sizeConfig.descFontSize + 6,
-                marginTop: 2,
+                // `gap-2` in upstream's label column, not a 2px hairline.
+                marginTop: DESCRIPTION_GAP,
               }}
             >
               {description}

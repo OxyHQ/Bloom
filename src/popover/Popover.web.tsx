@@ -8,17 +8,15 @@
  * wants to be as wide as its content.
  */
 import React, { useCallback, useMemo, useRef } from 'react';
-import type { View } from 'react-native';
+import { StyleSheet, type View } from 'react-native';
 
+import { POPOVER_PADDING, POPOVER_WIDTH } from '../floating/constants';
 import { FloatingPanel } from '../floating/FloatingPanel';
 import { TriggerSlot } from '../floating/TriggerSlot';
 import { useAnchorRect } from '../floating/use-anchor-rect';
 import { useControllableState } from '../hooks/use-controllable-state';
 import { PopoverProvider, usePopover } from './context';
 import type { PopoverContentProps, PopoverProps, PopoverTriggerProps } from './types';
-
-/** Widest a popover grows before its content wraps. */
-const DEFAULT_MAX_WIDTH = 360;
 
 export function Popover({ children, open, defaultOpen = false, onOpenChange }: PopoverProps) {
   const [isOpen, setOpen] = useControllableState<boolean>({
@@ -69,7 +67,7 @@ export function PopoverContent({
   alignOffset,
   dismissible,
   minWidth,
-  maxWidth = DEFAULT_MAX_WIDTH,
+  maxWidth,
   style,
   testID,
 }: PopoverContentProps) {
@@ -91,14 +89,23 @@ export function PopoverContent({
       minWidth={minWidth}
       maxWidth={maxWidth}
       onDismiss={close}
-      // No inset of its own. shadcn's web popover is `p-4`, but a Bloom popover
-      // is as often a list of `Item` rows (combobox, the dialog header's
-      // overflow) as it is prose, and rows must reach the panel edge to show
-      // their full-width highlight. `FloatingPanel`'s 4px vertical rhythm is
-      // the shared default; a prose popover pads its own body.
-      style={style}
+      // `w-72 p-4` — shadcn's popover is a FIXED 288px card with a 16px inset,
+      // not a shrink-wrap around its content. Both come FIRST in the array, so a
+      // caller whose body is a row list rather than prose overrides them from
+      // `style` — which is exactly what a shadcn call site does with
+      // `className="w-[200px] p-0"`, and what `Combobox` and `DialogHeader` do
+      // here. Their rows have to reach the panel edge to show a full-width
+      // highlight.
+      style={[styles.card, style]}
       testID={testID}>
       {children}
     </FloatingPanel>
   );
 }
+
+const styles = StyleSheet.create({
+  card: {
+    width: POPOVER_WIDTH,
+    padding: POPOVER_PADDING,
+  },
+});

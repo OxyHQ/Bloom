@@ -59,7 +59,16 @@ const ItemComponent = function Item({
       flexDirection: 'row',
       alignItems: 'center',
       gap: space.md,
-      paddingHorizontal: space.lg,
+      // `paddingLeft`/`paddingRight`, never `paddingHorizontal`. On web
+      // react-native-web maps `paddingHorizontal` to the CSS SHORTHAND
+      // `padding-inline`, and its atomic sheet ranks a shorthand ABOVE the
+      // longhands whatever the style array's order — so a caller's later
+      // `paddingLeft` was silently discarded while native, where Yoga gives the
+      // longhand precedence, honoured it. Measured: a menu checkbox row asked
+      // for a 32px indicator gutter and got 8px on web and 32px on native.
+      // Longhands on both sides make the last entry win on both platforms.
+      paddingLeft: space.lg,
+      paddingRight: space.lg,
       paddingVertical: cfg.paddingVertical,
       minHeight: cfg.minHeight,
       borderRadius: borderRadius.sm,

@@ -12,13 +12,22 @@
  * owner and neither fork re-exports the other's work.
  */
 import React, { createContext, useContext } from 'react';
-import { Pressable, StyleSheet, View } from 'react-native';
+import { Pressable, StyleSheet, useWindowDimensions, View } from 'react-native';
 
+import {
+  ROW_ICON_SIZE,
+  ROW_PADDING_X,
+  ROW_PADDING_Y,
+  ROW_PADDING_Y_SM,
+  SELECT_SCROLL_BUTTON_PADDING_Y,
+  TEXT_XS,
+  TEXT_XS_LINE_HEIGHT,
+} from '../floating/constants';
 import {
   ChevronBottom_Stroke2_Corner0_Rounded as ChevronDownIcon,
   ChevronTop_Stroke2_Corner0_Rounded as ChevronUpIcon,
 } from '../icons/Chevron';
-import { fontSize, space } from '../styles/tokens';
+import { BREAKPOINTS } from '../styles/breakpoints';
 import { useTheme } from '../theme/use-theme';
 import { Text } from '../typography';
 import type {
@@ -84,8 +93,18 @@ SelectGroup.displayName = 'SelectGroup';
 /** The heading of a `SelectGroup`. */
 export function SelectLabel({ children, style }: SelectLabelProps) {
   const theme = useTheme();
+  const { width } = useWindowDimensions();
+  // `text-muted-foreground px-2 py-2 text-xs sm:py-1.5` — a select's group
+  // heading is the one label in this vocabulary that IS muted and IS `text-xs`,
+  // unlike a menu's (`text-foreground text-sm font-medium`).
   return (
-    <Text style={[styles.label, { color: theme.colors.textSecondary }, style]}>
+    <Text
+      style={[
+        styles.label,
+        { paddingVertical: width >= BREAKPOINTS.sm ? ROW_PADDING_Y_SM : ROW_PADDING_Y },
+        { color: theme.colors.textSecondary },
+        style,
+      ]}>
       {children}
     </Text>
   );
@@ -119,7 +138,12 @@ function SelectScrollButton({ direction, style }: SelectScrollButtonProps) {
       accessibilityLabel={isUp ? 'Scroll up' : 'Scroll down'}
       onPress={() => scroll.scrollBy(direction)}
       style={[styles.scrollButton, { backgroundColor: theme.colors.background }, style]}>
-      <Chevron size="xs" fill={theme.colors.textSecondary} />
+      {/* `size-4` — the same 16px glyph the rows use. */}
+      <Chevron
+        width={ROW_ICON_SIZE}
+        height={ROW_ICON_SIZE}
+        fill={theme.colors.textSecondary}
+      />
     </Pressable>
   );
 }
@@ -136,14 +160,14 @@ SelectScrollDownButton.displayName = 'SelectScrollDownButton';
 
 const styles = StyleSheet.create({
   label: {
-    paddingHorizontal: space.md,
-    paddingVertical: space.sm,
-    fontSize: fontSize.xs,
-    fontWeight: '600',
+    paddingHorizontal: ROW_PADDING_X,
+    fontSize: TEXT_XS,
+    lineHeight: TEXT_XS_LINE_HEIGHT,
   },
+  // `flex cursor-default items-center justify-center py-1`.
   scrollButton: {
     alignItems: 'center',
     justifyContent: 'center',
-    paddingVertical: space.xs,
+    paddingVertical: SELECT_SCROLL_BUTTON_PADDING_Y,
   },
 });

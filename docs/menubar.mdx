@@ -22,11 +22,10 @@ import {
   MenubarShortcut,
   MenubarTrigger,
 } from '@oxyhq/bloom/menubar';
-import { Text } from '@oxyhq/bloom/typography';
 
 <Menubar>
   <MenubarMenu value="file">
-    <MenubarTrigger><Text>File</Text></MenubarTrigger>
+    <MenubarTrigger>File</MenubarTrigger>
     <MenubarContent>
       <MenubarItem trailing={<MenubarShortcut>⌘N</MenubarShortcut>} onPress={newTab}>
         New tab
@@ -40,7 +39,7 @@ import { Text } from '@oxyhq/bloom/typography';
   </MenubarMenu>
 
   <MenubarMenu value="edit">
-    <MenubarTrigger><Text>Edit</Text></MenubarTrigger>
+    <MenubarTrigger>Edit</MenubarTrigger>
     <MenubarContent>
       <MenubarItem onPress={undo}>Undo</MenubarItem>
       <MenubarItem onPress={redo}>Redo</MenubarItem>
@@ -64,6 +63,8 @@ const [open, setOpen] = useState<string | undefined>(undefined);
 Uncontrolled by default (`defaultValue` sets the initially-open menu; omit it for none). Switching menus is a single state write, so there is never a frame with both open or neither.
 
 ## Presentation
+
+`MenubarTrigger` draws its own chrome — shadcn's `rounded-md px-2 py-1.5 sm:py-1` with a `text-sm font-medium` label, washed with the accent colour while its menu is open. Pass a string and it is set for you; pass nodes and they go inside that button; pass `asChild` and your own element replaces the whole thing.
 
 On web each menu is an anchored panel under its own trigger, aligned to the trigger's left edge. On native each is the bottom sheet the other menu families use — a phone has no room for a hanging panel, and every Bloom overlay resolving to the same sheet is what makes the native surfaces feel like one system.
 

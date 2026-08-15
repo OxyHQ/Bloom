@@ -48,9 +48,21 @@ Uncontrolled by default. `onOpenChange` fires either way. Closing it from inside
 
 ## Placement (web)
 
-`PopoverContent` takes `side` (`'top' | 'bottom'`, default `'bottom'`), `align` (`'start' | 'center' | 'end'`, default `'center'`), `sideOffset`, `alignOffset`, `minWidth` and `maxWidth` (default 360). The surface flips to the other side when the named one does not fit and clamps into the viewport when neither does.
+`PopoverContent` takes `side` (`'top' | 'bottom'`, default `'bottom'`), `align` (`'start' | 'center' | 'end'`, default `'center'`), `sideOffset`, `alignOffset`, `minWidth` and `maxWidth`. The surface flips to the other side when the named one does not fit and clamps into the viewport when neither does.
 
 A popover centres on its trigger by default, where a menu starts at its left edge — that is the one placement default the two families disagree on, and it matches shadcn.
+
+## Shape
+
+shadcn's popover is `w-72 p-4`: a fixed 288px card with a 16px inset, not a shrink-wrap around its content. Bloom applies both, first in the style array, so a body that is a list of rows rather than prose overrides them from `style` — the same thing a shadcn call site says with `className="w-auto p-0"`:
+
+```tsx
+<PopoverContent label="Actions" style={{ width: 'auto', padding: 4 }}>
+  <Item title="Profile" onPress={openProfile} />
+</PopoverContent>
+```
+
+Rows have to reach the panel's edge to draw a full-width highlight, which is why `Combobox` and the dialog header's overflow menu both do this.
 
 On native these are ignored; the sheet is anchored to the screen.
 

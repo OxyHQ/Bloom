@@ -186,7 +186,14 @@ const styles = StyleSheet.create({
   itemContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: 12,
+    // Longhands, because `leftInset` overrides the left edge with a later
+    // `paddingLeft` — and on web react-native-web maps `paddingHorizontal` to
+    // the CSS shorthand `padding-inline`, which its atomic sheet ranks above
+    // the longhands whatever the style array's order. So `leftInset` was inert
+    // on web and correct on native, silently. See the longer note in
+    // `item/Item.tsx`, where the mechanism was measured.
+    paddingLeft: 12,
+    paddingRight: 12,
     paddingVertical: 10,
     minHeight: 44,
     gap: 12,
