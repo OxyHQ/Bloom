@@ -10,6 +10,7 @@
 import React, { useCallback, useMemo, useState } from 'react';
 
 import { SheetShell } from '../dialog/SheetShell';
+import { MENU_TRIGGER_POPUP } from '../floating/constants';
 import { MenuSurfaceProvider, type MenuSurfaceContextValue } from '../floating/context';
 import { createMenuRows } from '../floating/menu-rows';
 import { createInlineMenuSub } from '../floating/menu-sub-inline';
@@ -70,6 +71,7 @@ export function ContextMenuTrigger({
         disabled,
         accessibilityLabel: label,
         accessibilityRole: 'button',
+        'aria-haspopup': MENU_TRIGGER_POPUP,
         'aria-expanded': menu.open,
       }}>
       {children}
