@@ -87,7 +87,7 @@ const preview: Preview = {
     options: {
       /**
        * ONE taxonomy, so a reader can predict where a family lives before
-       * looking. Four groups, and the boundaries are behavioural rather than
+       * looking. Five groups, and the boundaries are behavioural rather than
        * visual — a finer split (Actions / Layout / Navigation / Feedback) reads
        * well in a sidebar and then puts `Toast` and `Dialog` in different
        * places, which is the question a reader is actually asking.

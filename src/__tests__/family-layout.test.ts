@@ -151,7 +151,13 @@ describe('one family layout', () => {
     // this is where it gets written down; without the list the cheapest way to
     // green a private directory would be PUBLISHING it, which is the opposite
     // of what its author wanted and enlarges the public API by accident.
-    const INTERNAL_DIRECTORIES: readonly string[] = [];
+    // `floating/` is the shared layer `dropdown-menu`, `context-menu`,
+    // `menubar`, `popover` and `select` build on — a trigger slot, a panel, a
+    // row vocabulary and an anchor measurement, written once. It has a barrel
+    // so those five have one surface to import through, and it stays out of
+    // `exports` and the root barrel because none of it is API a consumer should
+    // reach for.
+    const INTERNAL_DIRECTORIES: readonly string[] = ['floating'];
 
     const pkg = JSON.parse(readFileSync(join(SRC, '..', 'package.json'), 'utf8')) as {
       exports: Record<string, Record<string, unknown> | string>;

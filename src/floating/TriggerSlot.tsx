@@ -11,9 +11,10 @@
  * carries are COMPOSED, not replaced — `<Trigger asChild><Button onPress={log}
  * /></Trigger>` still logs, then opens.
  *
- * Internal: deliberately NOT re-exported from any barrel, for the same reason
- * as `overlay/dropdown-placement` — the four families import it directly and it
- * is not public API.
+ * Internal: reachable only through `floating/index.ts`, which is itself absent
+ * from `package.json#exports` and from the root barrel, for the same reason as
+ * `overlay/dropdown-placement` — the families build on it and it is not public
+ * API.
  *
  * The anchor ref goes on a WRAPPER `View`, never on the child. Merging a ref
  * into a cloned element means owning ref composition for an element type we
@@ -59,16 +60,25 @@ function cloneTrigger(
     );
   }
   const childProps = child.props;
+  // A disabled trigger must not OPEN, and the child's own `disabled` is where a
+  // caller most naturally writes that — `Combobox` disables its `Pressable`, not
+  // the family's trigger. Composing unconditionally left the guard to whatever
+  // element the caller passed: a real `Pressable` swallows the press, a plain
+  // `View` or a custom control that forwards `onPress` does not, so `disabled`
+  // held or leaked depending on the child's type. Read both sides here instead.
+  const isDisabled = handle.disabled === true || childProps.disabled === true;
   return cloneElement(child, {
     ...handle,
     // Compose rather than overwrite: the child's own handler runs first, then
     // ours opens the surface.
-    onPress: (event) => {
-      childProps.onPress?.(event);
-      handle.onPress(event);
-    },
+    onPress: isDisabled
+      ? childProps.onPress
+      : (event) => {
+          childProps.onPress?.(event);
+          handle.onPress(event);
+        },
     onLongPress:
-      handle.onLongPress === undefined
+      handle.onLongPress === undefined || isDisabled
         ? childProps.onLongPress
         : (event) => {
             childProps.onLongPress?.(event);
@@ -76,7 +86,7 @@ function cloneTrigger(
           },
     // A label the caller already wrote is more specific than the family's.
     accessibilityLabel: childProps.accessibilityLabel ?? handle.accessibilityLabel,
-    disabled: handle.disabled === true ? true : childProps.disabled,
+    disabled: isDisabled ? true : childProps.disabled,
   });
 }
 

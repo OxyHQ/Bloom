@@ -115,8 +115,14 @@ export function createCombobox(PopoverImpl: PopoverModule) {
       <>
         {/* `asChild` composes rather than replaces: the trigger's own
             `onPress` runs first and `TriggerSlot` opens the popover after it,
-            which is how the web focus hop below still happens on open. */}
-        <PopoverImpl.PopoverTrigger asChild label={accessibleLabel} style={styles.triggerSlot}>
+            which is how the web focus hop below still happens on open.
+            `disabled` goes to BOTH — the popover must know not to open, and the
+            `Pressable` must draw and announce itself as disabled. */}
+        <PopoverImpl.PopoverTrigger
+          asChild
+          disabled={disabled}
+          label={accessibleLabel}
+          style={styles.triggerSlot}>
           <Pressable
             disabled={disabled}
             onPress={() => {

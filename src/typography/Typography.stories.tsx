@@ -20,7 +20,7 @@ import {
 } from './index';
 
 const meta: Meta = {
-  title: 'Components/Typography',
+  title: 'Foundations/Typography',
 };
 
 export default meta;
