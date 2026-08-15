@@ -5,6 +5,7 @@ import { act, fireEvent, render } from '@testing-library/react-native';
 import { BloomThemeProvider } from '../theme/BloomThemeProvider';
 import { Tabs, TabsTrigger } from '../tabs';
 import type { TabsDragController } from '../tabs/Tabs';
+import { pressHost } from './support/press-host';
 
 function renderWithTheme(ui: React.ReactElement) {
   return render(
@@ -198,7 +199,13 @@ describe('Tabs', () => {
           <TabsTrigger value="b" label="Second" isFocused={false} onPress={onPress} />
         </Tabs>,
       );
-      fireEvent.press(getByText('Second'));
+      // The trigger's OWN host node, via `pressHost`. Pressing the label `Text`
+      // would walk up past the trigger to `<TabsTrigger onPress={…}>` in this
+      // file's own JSX: `onPress` would report a call the component had no part
+      // in, and `onValueChange` would be un-called for the trivial reason that
+      // the press never reached the component — which is what this test's whole
+      // point rests on NOT being the explanation.
+      pressHost(triggerFor(getByText('Second')));
       expect(onPress).toHaveBeenCalled();
       expect(onValueChange).not.toHaveBeenCalled();
     });

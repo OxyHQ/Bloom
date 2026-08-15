@@ -1,12 +1,13 @@
 import React from 'react';
 import { Text, View } from 'react-native';
-import { render, fireEvent } from '@testing-library/react-native';
+import { render } from '@testing-library/react-native';
 
 import { BloomThemeProvider } from '../theme/BloomThemeProvider';
 import { useTheme } from '../theme/use-theme';
 import type { ThemeColors } from '../theme/types';
 import { Button, PrimaryButton, SecondaryButton, IconButton, GhostButton, TextButton } from '../button';
 import { borderRadius } from '../styles/tokens';
+import { pressHost } from './support/press-host';
 import {
   classNamesOn,
   renderedChildren,
@@ -41,10 +42,13 @@ describe('Button', () => {
 
   it('calls onPress when pressed', () => {
     const onPress = jest.fn();
-    const { getByText } = renderWithTheme(
-      <Button onPress={onPress}>Press</Button>,
+    const { getByTestId } = renderWithTheme(
+      <Button testID="btn" onPress={onPress}>Press</Button>,
     );
-    fireEvent.press(getByText('Press'));
+    // Through `pressHost`, not a bare `fireEvent.press(getByText('Press'))`:
+    // that walks up past the button to `<Button onPress={…}>` in this file's own
+    // JSX and reports a call the component had no part in.
+    pressHost(getByTestId('btn'));
     expect(onPress).toHaveBeenCalledTimes(1);
   });
 

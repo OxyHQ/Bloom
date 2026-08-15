@@ -5,11 +5,12 @@ jest.mock('react-native-svg', () => ({
 }));
 
 import React from 'react';
-import { fireEvent, render } from '@testing-library/react-native';
+import { render } from '@testing-library/react-native';
 import { StyleSheet } from 'react-native';
 
 import { BloomThemeProvider } from '../theme/BloomThemeProvider';
 import { SettingsListItem } from '../settings-list/SettingsList';
+import { pressHost } from './support/press-host';
 
 let consoleErrorSpy: jest.SpyInstance;
 
@@ -41,11 +42,15 @@ describe('SettingsListItem', () => {
 
   it('calls onPress when pressed', () => {
     const onPress = jest.fn();
-    const { getByText } = renderWithTheme(
+    const { getByLabelText } = renderWithTheme(
       <SettingsListItem title="Press me" onPress={onPress} />,
     );
 
-    fireEvent.press(getByText('Press me'));
+    // The row's own host node, found by the label the item derives from
+    // `title`. Pressing the title `Text` instead would walk up past the row to
+    // `<SettingsListItem onPress={…}>` in this file's own JSX and report a call
+    // the component had no part in.
+    pressHost(getByLabelText('Press me'));
     expect(onPress).toHaveBeenCalledTimes(1);
   });
 

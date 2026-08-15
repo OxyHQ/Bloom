@@ -1,6 +1,6 @@
 import React from 'react';
 import { Text, View, type ViewStyle } from 'react-native';
-import { render, fireEvent } from '@testing-library/react-native';
+import { render } from '@testing-library/react-native';
 
 import { BloomThemeProvider } from '../theme/BloomThemeProvider';
 import { FrostedIconButton } from '../frosted-icon-button';
@@ -8,6 +8,7 @@ import { buildTheme } from '../theme/build-theme';
 import { parseRgb } from '../theme/color-utils';
 import { resolveFrostedPalette, resolveFrostedSize } from '../frosted-icon-button/shared';
 import { borderRadius } from '../styles/tokens';
+import { pressHost } from './support/press-host';
 import {
   classNamesOn,
   renderedChildren,
@@ -47,7 +48,10 @@ describe('FrostedIconButton (native)', () => {
     const { getByTestId } = renderWithTheme(
       <FrostedIconButton testID="btn" accessibilityLabel="Back" onPress={onPress} icon={<Text>x</Text>} />,
     );
-    fireEvent.press(getByTestId('btn'));
+    // Through `pressHost`: a bare `fireEvent.press` walks up past the button to
+    // `<FrostedIconButton onPress={…}>` in this file's own JSX, so the call it
+    // reports says nothing about what the component wired.
+    pressHost(getByTestId('btn'));
     expect(onPress).toHaveBeenCalledTimes(1);
   });
 
