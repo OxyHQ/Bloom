@@ -152,7 +152,6 @@ const ButtonComponent: React.FC<ButtonProps> = ({
   accessibilityLabel,
   accessibilityHint,
   hitSlop,
-  activeOpacity,
   testID,
   className,
   'aria-expanded': ariaExpanded,
@@ -316,7 +315,12 @@ const ButtonComponent: React.FC<ButtonProps> = ({
   }, [size, resolvedTextColor]);
 
   const defaultHitSlop = variant === 'icon' ? ICON_HIT_SLOP : undefined;
-  const resolvedActiveOpacity = activeOpacity ?? (variant === 'icon' ? 0.7 : 0.8);
+  // How far a NON-scaling variant dips under the finger. Not a prop: how a
+  // control answers a press is the library's decision, not a per-call-site one,
+  // and a knob for it is how one button in one app ends up feeling different
+  // from every other. Every scaling variant uses `animation.pressScale` instead;
+  // these are the ones with no fill to scale convincingly.
+  const resolvedActiveOpacity = variant === 'icon' ? 0.7 : 0.8;
 
   const content = (
     <>

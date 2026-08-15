@@ -12,7 +12,7 @@ const BUTTON_SIZE = 32;
 const ICON_SIZE = 18;
 /** The stop square, as a fraction of the button. Drawn, not typed. */
 const STOP_SQUARE = 0.34;
-/** Press feedback, matching the `activeOpacity` this button used to pass. */
+/** Press feedback, matching the `TouchableOpacity` dip this button used to pass. */
 const PRESSED_OPACITY = 0.7;
 
 export function PromptInputSubmitButton({
