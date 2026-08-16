@@ -76,6 +76,16 @@ On native, wrap the app root in `GestureHandlerRootView` from `react-native-gest
 
 </details>
 
+## Upgrading from 0.x
+
+Bloom follows the clean cut rule, so there are no `@deprecated` aliases and no old name shims anywhere in 1.0.0. If a symbol you import was renamed, nothing re-exports it under the old spelling and the build fails. **[`docs/migrating-to-1.0.mdx`](./docs/migrating-to-1.0.mdx) is the only bridge** — every removed subpath, every rename, every prop change, derived from the published 0.89.0 and 1.0.0 tarballs rather than from commit messages.
+
+That file ships inside the package, so the copy you read is the one that describes the version you installed:
+
+```bash
+$EDITOR node_modules/@oxyhq/bloom/docs/migrating-to-1.0.mdx
+```
+
 ## Getting started
 
 Mount `BloomProvider` once, at the very top of the app. It composes every piece of app wide Bloom state, theme, haptics, image resolution, scroll restoration and tab bar minimise progress, so none of them can end up at the wrong depth.
@@ -144,10 +154,10 @@ Bloom publishes 88 subpath exports. Importing from the subpath rather than the r
 | Group | Exports |
 |---|---|
 | Providers and theme | `provider`, `theme`, `color-presets`, `preset-vars`, `design-tokens`, `tailwind-preset`, `styles`, `hooks` |
-| Overlays | `dialog`, `alert-dialog`, `bottom-sheet`, `popover`, `context-menu`, `menu`, `tooltip`, `overlay`, `portal`, `surfaces` |
+| Overlays | `dialog`, `alert-dialog`, `bottom-sheet`, `popover`, `context-menu`, `dropdown-menu`, `menubar`, `tooltip`, `overlay`, `portal`, `surfaces` |
 | Actions | `button`, `fab`, `frosted-icon-button`, `pressable-scale`, `subtle-hover` |
-| Forms | `text-field`, `field`, `input-group`, `label`, `select`, `combobox`, `command`, `checkbox`, `switch`, `slider`, `segmented-control`, `search`, `prompt-input` |
-| Layout and lists | `grid`, `list`, `scroll`, `tabs`, `tab-bar`, `settings-list`, `content-panel`, `card`, `accordion`, `divider`, `item` |
+| Forms | `text-field`, `field`, `input-group`, `label`, `select`, `combobox`, `command`, `checkbox`, `radio`, `switch`, `slider`, `segmented-control`, `search`, `prompt-input` |
+| Layout and lists | `grid`, `list`, `scroll`, `tabs`, `tab-bar`, `settings-list`, `content-panel`, `card`, `accordion`, `aspect-ratio`, `divider`, `item` |
 | Identity and media | `avatar`, `avatar-group`, `user-hover-card`, `profile-card`, `image-resolver`, `image-aspect-ratio-cache`, `zoomable-image-gallery`, `media-inset-border`, `progressive-blur`, `fill` |
 | Feedback and data | `toast`, `admonition`, `loading`, `skeleton`, `error-boundary`, `badge`, `chip`, `kbd`, `code`, `link-preview`, `connection-status`, `connection-dots` |
 | Charts and motion | `composition-bar`, `dot-grid-meter`, `stat-bar`, `activity-heatmap`, `motion`, `animated-check`, `icon-circle`, `radio-indicator` |
@@ -157,7 +167,9 @@ Bloom publishes 88 subpath exports. Importing from the subpath rather than the r
 
 ## Documentation
 
-Component guides live in [`docs/`](./docs): [getting started](./docs/getting-started.mdx), [theme](./docs/theme.mdx), [design tokens](./docs/design-tokens.mdx), [dialog](./docs/dialog.mdx), [bottom sheet](./docs/bottom-sheet.mdx), [toast](./docs/toast.mdx), [alert](./docs/alert.mdx), [menu](./docs/menu.mdx), [select](./docs/select.mdx), [context menu](./docs/context-menu.mdx), [button](./docs/button.mdx), [avatar](./docs/avatar.mdx), [text field](./docs/text-field.mdx), [settings list](./docs/settings-list.mdx), [tab bar](./docs/tab-bar.mdx), [prompt input](./docs/prompt-input.mdx) and [loading](./docs/loading.mdx).
+Component guides live in [`docs/`](./docs), one `.mdx` per family, and **they ship inside the package** at `node_modules/@oxyhq/bloom/docs/`. The copy you read there always describes the version you installed, which matters most for [migrating to 1.0](./docs/migrating-to-1.0.mdx).
+
+Start with [getting started](./docs/getting-started.mdx), [theme](./docs/theme.mdx) and [design tokens](./docs/design-tokens.mdx). Then per surface: [dialog](./docs/dialog.mdx), [bottom sheet](./docs/bottom-sheet.mdx), [toast](./docs/toast.mdx), [alert](./docs/alert.mdx), [dropdown menu](./docs/dropdown-menu.mdx), [select](./docs/select.mdx), [context menu](./docs/context-menu.mdx), [button](./docs/button.mdx), [avatar](./docs/avatar.mdx), [text field](./docs/text-field.mdx), [settings list](./docs/settings-list.mdx), [tab bar](./docs/tab-bar.mdx), [prompt input](./docs/prompt-input.mdx) and [loading](./docs/loading.mdx).
 
 The theme reference is in [README.theme.md](./README.theme.md).
 
