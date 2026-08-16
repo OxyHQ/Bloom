@@ -1,0 +1,53 @@
+{
+  // Typechecks src/ the way a CONSUMER's program sees it, not the way Bloom's
+  // own program does. Bloom's `react-native` export condition points at `src/`,
+  // so every RN consumer compiles these files inside their own tsconfig — one
+  // that has no `@types/node`. A Node-only global reached from src/ is green
+  // under tsconfig.json (which does pull @types/node in) and red in every
+  // consuming app. Driven by scripts/verify-consumer-typecheck.mjs, which
+  // supplies the positive control and the vacuity floor.
+  //
+  // The compilerOptions below that are not Bloom's own are copied from
+  // `expo/tsconfig.base.json`, which every Oxy RN app extends — read them off
+  // that file rather than from here if the two ever disagree. Bloom's `strict`,
+  // `noUncheckedIndexedAccess` and `isolatedModules` are inherited and kept:
+  // running stricter than a consumer can over-report, never under-report, and
+  // src/ is already clean under them.
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "noEmit": true,
+    // Inert under `noEmit`, but it has to be the package root so the
+    // control-bearing variant of this config can include a file outside `src/`
+    // without the two runs differing in any compiler option.
+    "rootDir": ".",
+    "declaration": false,
+    "declarationMap": false,
+    "sourceMap": false,
+    // THE POINT: no ambient @types packages, so `setTimeout` resolves to the
+    // DOM lib's `number` exactly as it does in an Expo/RN app. This does not
+    // affect `react`/`react-native` types, which arrive through import
+    // resolution and are unaffected by `types`.
+    "types": [],
+    // The rest mirror expo/tsconfig.base.json.
+    "lib": ["DOM", "ESNext"],
+    "jsx": "react-native",
+    "module": "preserve",
+    "moduleDetection": "force",
+    "moduleResolution": "bundler",
+    "customConditions": ["react-native"],
+    "target": "ESNext",
+    "allowJs": true
+  },
+  // Tests, stories and their support harness are never part of a consumer's
+  // program — nothing published reaches them, and they may legitimately use
+  // Node APIs (jest runs on Node).
+  "exclude": [
+    "lib",
+    "node_modules",
+    "example",
+    "src/**/__tests__/**",
+    "src/**/*.test.ts",
+    "src/**/*.test.tsx",
+    "src/**/*.stories.tsx"
+  ]
+}

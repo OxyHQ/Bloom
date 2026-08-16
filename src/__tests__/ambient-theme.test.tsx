@@ -134,3 +134,60 @@ describe('BloomThemeProvider ambient override / restore', () => {
     expect(getByTestId('primary').props.children).toBe(staticPrimary);
   });
 });
+
+// The debounce releases its timer handle so a pending commit can't hold a jest
+// worker open — but ONLY Node hands back a handle that can be released. React
+// Native and the browser return an opaque number. Both shapes are exercised
+// here because jest only ever supplies the first one, which is exactly why the
+// second went unnoticed.
+describe('ambient debounce timer handle', () => {
+  const realSetTimeout = globalThis.setTimeout;
+
+  beforeEach(() => {
+    __resetAmbientForTests();
+  });
+  afterEach(() => {
+    Object.defineProperty(globalThis, 'setTimeout', {
+      value: realSetTimeout,
+      configurable: true,
+      writable: true,
+    });
+    jest.restoreAllMocks();
+    __resetAmbientForTests();
+  });
+
+  it('unrefs a Node timer handle so a pending debounce holds nothing open', () => {
+    const handles: ReturnType<typeof setTimeout>[] = [];
+    jest.spyOn(globalThis, 'setTimeout').mockImplementation((...args: Parameters<typeof setTimeout>) => {
+      const handle = realSetTimeout(...args);
+      handles.push(handle);
+      return handle;
+    });
+
+    ambientTheme.setAmbient(RED_SEED);
+
+    expect(handles).toHaveLength(1);
+    const handle = handles[0];
+    // Positive control on the fixture itself: a handle that never had `hasRef`
+    // would make the assertion below vacuous.
+    expect(typeof handle?.hasRef).toBe('function');
+    expect(handle?.hasRef()).toBe(false);
+  });
+
+  it('does not touch unref on a host whose setTimeout returns a number', () => {
+    // React Native and the browser. `'unref' in 42` THROWS, so dropping any
+    // clause of the guard fails here rather than in a consumer's app.
+    Object.defineProperty(globalThis, 'setTimeout', {
+      value: () => 42,
+      configurable: true,
+      writable: true,
+    });
+
+    expect(() => ambientTheme.setAmbient(RED_SEED)).not.toThrow();
+    // The commit is still pending behind the (never-firing) fake timer, so the
+    // schedule really did run rather than bailing out early.
+    expect(ambientTheme.getState().seed).toBeNull();
+    __flushAmbientForTests();
+    expect(ambientTheme.getState().seed).toBe(RED_SEED);
+  });
+});
