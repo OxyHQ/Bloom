@@ -1406,7 +1406,13 @@
   },
   "files": [
     "src",
-    "lib"
+    "lib",
+    "!**/__tests__/**",
+    "!**/__fixtures__/**",
+    "!**/__mocks__/**",
+    "!**/*.stories.*",
+    "!**/*.test.*",
+    "!**/*.spec.*"
   ],
   "keywords": [
     "react-native",
