@@ -189,6 +189,21 @@ These break nothing at compile time and change what you see.
 - **Popover positions through the shared placement engine.** Its own resolver
   clamped only the top, so a panel that fit neither above nor below its trigger
   ran off the bottom of the viewport.
+- **`Switch`, `Slider` and `DotGridMeter` warn once, in dev only, when they
+  mount with no accessible name.** All three draw no text, so nothing in the
+  component can supply one. `Switch` and `DotGridMeter` gained an optional
+  `accessibilityLabel` prop for it; the warning never fires in production, and
+  an empty or whitespace-only name counts as missing, because `aria-label=""`
+  names nothing.
+- **The neutral surface ramp was respaced** so adjacent surfaces are actually
+  distinguishable in every preset — M3's 2-tone step measured below the
+  just-noticeable difference here. If you pinned Bloom token values in your own
+  fixtures or screenshots, expect them to move.
+- **`AvatarGroup`'s hover card renders off Metro.** Its web fork named
+  `'../portal'` rather than `'../portal/index.web'`, and export conditions do
+  not apply to relative specifiers, so Vite/webpack/SSR got the native `Portal`
+  — which needs a `PortalOutlet` a web app never mounts — and the card drew
+  nothing.
 - **`PromptInput` and `BloomColorScope`/`BloomSeedScope` now work off Metro.**
   Both shipped `.web` forks with no `browser` condition, so Vite/webpack/SSR
   resolved the native build: `onImagePaste` was missing entirely and the colour
