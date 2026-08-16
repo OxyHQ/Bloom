@@ -197,9 +197,16 @@ describe('glass surface legibility', () => {
   // These four assertions replace "everything clears AA", which was true at
   // 0.25 and is not true at 0.85. They are an EQUALITY on the failure set, so
   // the alpha cannot move by a hundredth without one of them going red:
-  // measured, 0.86 -> 39 rows, 0.87 -> 22, 0.88 -> 5, 0.89 -> 0.
+  // measured, 0.86 -> 21 rows, 0.87 -> 14, 0.88 -> 5, 0.89 -> 0.
+  //
+  // The count came DOWN from 45 when the surface ramp opened up
+  // (`color-policy.ts`'s `SURFACE_RAMP`): the pane bleeds toward the surface
+  // under it, and three of the five surfaces are now darker, so a white label
+  // on them has further to fall before it fails. That is a palette improvement
+  // showing up here, not a softened bar — the numbers below were re-measured,
+  // not relaxed.
 
-  it('costs EXACTLY 45 of Button primary\'s 180 rows, in a bounded band', () => {
+  it('costs EXACTLY 30 of Button primary\'s 180 rows, in a bounded band', () => {
     const failures: Array<{ where: string; ratio: number }> = [];
     let rows = 0;
     for (const preset of PRESETS) {
@@ -216,9 +223,9 @@ describe('glass surface legibility', () => {
     expect(rows).toBe(PRESETS.length * MODES.length * SURFACE_KEYS.length);
     // The count is exact, not a ceiling. A palette change that fixes some of
     // these fails here too, which is the point: somebody has to look.
-    expect(failures).toHaveLength(45);
+    expect(failures).toHaveLength(30);
     // …and the shortfall is BOUNDED. Every failure is a near miss, not a
-    // control nobody can read. Without this the count alone would tolerate 45
+    // control nobody can read. Without this the count alone would tolerate 30
     // rows at 1.05.
     const worst = Math.min(...failures.map((f) => f.ratio));
     expect(worst).toBeCloseTo(4.17, 1);

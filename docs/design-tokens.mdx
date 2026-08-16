@@ -148,6 +148,32 @@ memory rather than from the file, `bloomDesignTokens()` from
 | `border-border-input` | input border | `--input` |
 | `border-border-input-active` | focused input | `--ring` |
 
+## The neutral surface ramp
+
+`--background`, `--surface`, `--popover`, `--muted`/`--accent` and `--card` are a
+stack: several components carry meaning **only** in the step between two of them —
+an `ActivityHeatmap` empty cell, `Card variant="filled"`, a `Code` block, the
+`StatBar` and `CompositionBar` tracks, `DotGridMeter`'s off dots, a filled `Tabs`
+track, a selected `Item`, the solid `TabBar`, a plain `Card` on a panel, the
+`Toast` action, and the `Avatar`/`BenefitList`/`LinkPreviewCard` placeholders.
+
+Those tones are owned by `SURFACE_RAMP` in `theme/color-policy.ts` rather than
+taken from Material 3's container roles. M3's ramp steps by 2 tones, which at
+these lightnesses is about **1.2 ΔE00** — below the just-noticeable difference for
+two large flat patches. Measured across all 18 presets, **4 tones (~2.4 ΔE00)** is
+the first spacing at which every pair separates.
+
+`--background` is deliberately not part of the ramp: the page tone is every
+consuming app's page colour, so the rungs below it carry the spacing instead.
+`--card` is not either — it sits on the far side of the page in light (tone 100,
+white) and at the top of the ramp in dark, so it is expressed as the engine role
+that means exactly that in each mode.
+
+If you move any of these, measure **every** pair rather than the one you are
+fixing: the light tones 92/94/96/98/100 are exactly `--muted`, `--popover`,
+`--surface`, `--content-area` and `--card`, so any new value for one lands on
+another unless you check.
+
 ## Scales
 
 - **Spacing** (px): `space-2/4/8/12/16/20/24/32` + `screen-margin` (20).

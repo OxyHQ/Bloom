@@ -35,7 +35,9 @@ import { Button } from '@oxyhq/bloom';
 
 The glass is the sheen, not the wash. What reads as glass is the rim, the vertical gradient and the hairline; the 15% of the backdrop that shows through is a hint of depth, not the effect itself.
 
-**One measured cost, stated because it is real.** The 15% bleed moves the pane toward the surface under it, which in light mode means lighter — the one direction a white label cannot afford. Of `primary`'s 180 preset × mode × surface combinations, **45 fall below WCAG AA**, in the band 4.17–4.45, all in light mode, on `blue`, `faircoin`, `green`, `mint`, `orange`, `pumpkin`, `rose`, `sky` and `yellow`. As a solid fill all 180 pass. `destructive` is unaffected (worst 5.32). The alpha at which the failures reach zero is 0.89.
+**One measured cost, stated because it is real.** The 15% bleed moves the pane toward the surface under it, which in light mode means lighter — the one direction a white label cannot afford. Of `primary`'s 180 preset × mode × surface combinations, **30 fall below WCAG AA**, in the band 4.17–4.49, all in light mode, on `blue`, `faircoin`, `green`, `mint`, `orange`, `pumpkin`, `rose`, `sky` and `yellow`. As a solid fill all 180 pass. `destructive` is unaffected (worst 5.32). The alpha at which the failures reach zero is 0.89.
+
+That count was 45 until the surface ramp opened up (`SURFACE_RAMP` in `theme/color-policy.ts`): three of the five surfaces a button sits on are now darker, so a white label on the pane has further to fall before it fails. The nine presets and the 4.17 floor did not move — the worst row sits on `--card`, the one light surface the ramp left alone.
 
 If your app runs one of those nine presets in light mode and needs AA on its primary button, use `variant="inverse"` for that call site, or raise `GLASS_FILL_ALPHA`.
 
