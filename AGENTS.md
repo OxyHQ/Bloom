@@ -12,165 +12,125 @@ Shared RN + Web component library. One family per `src/<name>/`, each shipped as
 ## Package exports and packaging
 
 - **`scripts/generate-platform-exports.mjs` OWNS `package.json#exports` AND every web barrel** — hand-editing either is silently reverted by the next `prebuild`.
-- **A platform fork is TWO files** — `index.ts` is the native implementation, `index.web.ts` the web one, selected by the `browser` condition. No web-forked family ships `index.native.*`. The one three-file exception, `theme/native-root-vars.*`, exists because its native variant imports `react-native-css/native-internal`, unresolvable to a web bundler or `tsc`.
+- **A platform fork is TWO files** — `index.ts` native, `index.web.ts` web, selected by the `browser` condition; no web-forked family ships `index.native.*`. The one three-file exception, `theme/native-root-vars.*`, exists because its native variant imports `react-native-css/native-internal`, unresolvable to a web bundler or `tsc`.
 - **Export conditions do NOT apply to relative specifiers** — a web barrel must NAME its `.web` siblings, or Metro-web is right while Vite/webpack/SSR silently get native. Gate: `web-fork-reachability.test.ts`.
-- **The `react-native` condition MUST stay split into `types` + `default`, never a bare string** — a string entry makes native consumers typecheck Bloom's own `.tsx`, dragging `react-dom` and undeclared optional peers into their program.
-- **`verify:package` (the `postbuild`) is not optional** — it packs the tarball and asserts every `exports` path actually ships; RN consumers have no `src/` fallback. Both re-entrancy guards (`--ignore-scripts` + `BLOOM_VERIFY_PACKAGE_RUNNING`) are required.
+- **The `react-native` condition MUST stay split into `types` + `default`, never a bare string** — a string entry makes native consumers typecheck Bloom's own `.tsx`, dragging in `react-dom` and undeclared optional peers.
+- **`verify:package` (the `postbuild`) is not optional** — it packs the tarball and asserts every `exports` path ships; RN consumers have no `src/` fallback. Both re-entrancy guards (`--ignore-scripts` + `BLOOM_VERIFY_PACKAGE_RUNNING`) are required.
 - **`toast/` is NOT web-forked** — its only split is `ToastHost.native.tsx`, so `'./toast'` stays out of `WEB_FORKED_SUBPATHS`.
 
 ## Reanimated web layout animations
 
-The three general web failure modes are in `~/Oxy/AGENTS.md`. Bloom's own rule, because it has bitten twice: **pick the mechanism per DIRECTION, never per component.**
-
-- **`entering` runs on the REAL element with `shouldSavePosition: true`.** Any animation name absent from reanimated's built-in map — every custom `Keyframe`, every custom builder — also schedules a cleanup that PINS the element (`position: absolute` + a frozen box) at `duration × 5`. An enter is EITHER a predefined builder (`FadeIn`, `SlideInUp`) OR driven imperatively.
-- **`exiting` runs on a throwaway clone**, so a custom `Keyframe` is safe there — the only way to express a multi-property, multi-stop shape.
-- Trade-offs: a predefined builder can't combine fade with scale; `Keyframe` has no `.easing()` (survives only via one of reanimated's seven `WebEasings` names), so web keyframes run linear. Reference: `src/motion/motion.web.ts`, `src/toast/animations.ts`.
+The three general web failure modes are in `~/Oxy/AGENTS.md`; Bloom's per-direction rule and trade-offs are in `docs/motion.mdx`, because it has bitten twice. The one thing neither says: **`entering` runs on the REAL element with `shouldSavePosition: true`**, so an unrecognized animation name used as `entering` — any custom `Keyframe` or builder — schedules a cleanup that pins the element (`position: absolute` + a frozen box) at `duration × 5`. Reference: `src/motion/motion.web.ts`, `src/toast/animations.ts`.
 
 ## Web fork CSS
 
 - **A `.web.tsx` fork self-injects any CSS it needs — never make consumers copy it into a global stylesheet.** An unresolvable `animation-name` fails silently, so a consumer can ship dead animations indefinitely.
-- **Injection goes through `styles/adopt-style-sheet.ts`, never `document.createElement('style')`.** A `<style>` element's contents are what `style-src 'self'` blocks — rules dropped, nothing thrown, the fork's own `getElementById` guard reports success. A CONSTRUCTED sheet (`new CSSStyleSheet()` + `replaceSync()` + `adoptedStyleSheets`) is outside CSP's inline hooks. `adoptStyleSheet(id, css)` replaces in place; there's no `<style id="bloom-*">` to find — check the adopted sheets.
-- **Jest cannot see this** — jsdom lacks `replaceSync`/`adoptedStyleSheets`, so every suite takes the fallback (`src/__tests__/support/constructed-style-sheets.ts`).
-- **Flatten a `StyleProp` before spreading it into a raw DOM element's `style`** — the RN array idiom produces numeric keys and crashes with `Failed to set an indexed property [0]`. Use `flattenWebStyle()` or `StyleSheet.flatten` via `styles/atoms.ts` — not the latter for a dependency-free fork, since jest's RN mock stubs it as identity.
+- **Injection goes through `styles/adopt-style-sheet.ts`, never `document.createElement('style')`.** A `<style>` element's contents are what `style-src 'self'` blocks — rules dropped, nothing thrown, the fork's own `getElementById` guard still reports success. A CONSTRUCTED sheet (`new CSSStyleSheet()` + `replaceSync()` + `adoptedStyleSheets`) sits outside CSP's inline hooks; `adoptStyleSheet(id, css)` replaces in place, so there's no `<style id="bloom-*">` to find — check the adopted sheets. Jest can't see any of this: jsdom lacks `replaceSync`/`adoptedStyleSheets`, so every suite takes the fallback (`src/__tests__/support/constructed-style-sheets.ts`).
+- **Flatten a `StyleProp` before spreading it into a raw DOM element's `style`** (`docs/styles.mdx` `flatten`) — the RN array idiom produces numeric keys and crashes with `Failed to set an indexed property [0]`. Use `flattenWebStyle()`, not `StyleSheet.flatten`, in a dependency-free fork — jest's RN mock stubs the latter as identity.
 
 ## Consumer web CSS pipeline (className layout is inert without it)
 
-Any WEB build rendering Bloom or `@oxyhq/services` className screens MUST wire the Tailwind/NativeWind pipeline AND `@source`-scan both packages' built `lib/`, or every LAYOUT utility (`flex-row`, `gap-*`, arbitrary `[Npx]`) is silently inert — react-native-web's base `View` reset shows through. **Colors still work** (Bloom applies those inline), masking the gap. Native is unaffected.
+Any WEB build rendering Bloom or `@oxyhq/services` className screens MUST wire the Tailwind/NativeWind pipeline AND `@source`-scan both packages' built `lib/`, or every LAYOUT utility (`flex-row`, `gap-*`, arbitrary `[Npx]`) is silently inert — react-native-web's base `View` reset shows through. **Colors still work** (applied inline), masking the gap; native is unaffected.
 
-Wiring: Expo/Metro apps import `@oxyhq/app-preset/css/base.css` at the top of `global.css` (the first import in `app/_layout.tsx`) plus `@tailwindcss/postcss`; Vite apps use `@tailwindcss/vite` plus a stylesheet that `@source`-scans both `lib/`s. Consumer-side only — `create-oxy-app` scaffolds it.
+Wiring: Expo/Metro apps import `@oxyhq/app-preset/css/base.css` at the top of `global.css` (first import in `app/_layout.tsx`) plus `@tailwindcss/postcss`; Vite apps use `@tailwindcss/vite` plus a stylesheet `@source`-scanning both `lib/`s. Consumer-side only — `create-oxy-app` scaffolds it.
 
-## Family layout and file names
+## Family layout, files and the root barrel
 
 **`index.ts` is a PURE BARREL. `<Pascal>.tsx` holds the implementation, `types.ts` the props.** An index that is both barrel and implementation makes a family's public surface invisible — anything it exports becomes API by being written rather than decided. Gate: `family-layout.test.ts`.
 
-- **The FACTORY layout is the one exception.** A web-forked family whose fork differs only in which component it's BUILT FROM can't express that as a re-export — the shared implementation would have to import the surface that imports it. `alert-dialog`, `combobox`, `command`, `surfaces`, `tab-bar` call `createAlertDialog(Dialog)` etc. The gate's exemption list here is an EQUALITY, not a floor.
-- **A barrel is `.ts`** — no JSX to justify `.tsx`.
-- **File names:** hooks `use-kebab-case.ts`, context module `context.ts`, constants `constants.ts` (never `const.ts`), cross-fork module `shared.ts`.
+- **The FACTORY layout is the one exception** — a web-forked family whose fork differs only in which component it's BUILT FROM can't express that as a re-export (the shared implementation would have to import the surface that imports it). `alert-dialog`, `combobox`, `command`, `surfaces`, `tab-bar` call `createAlertDialog(Dialog)` etc. The gate's exemption list is an EQUALITY, not a floor.
+- **A barrel is `.ts`** — no JSX to justify `.tsx`. **File names:** hooks `use-kebab-case.ts`, context module `context.ts`, constants `constants.ts` (never `const.ts`), cross-fork module `shared.ts`.
 
 **Compound components are flat-prefixed** (`Tabs`/`TabsTrigger`); collection families stay namespaces (`Icons`, `Typography`, `Skeleton`, `Grid`, `Code`, `Fonts`, `ColorEngine`, `ImageAspectRatio`).
 
-- **Flat-prefix** for the fixed-arity pieces of ONE component, **with no static alias beside it** — no `Tabs.Trigger`, `Menu.Item`, `Select.Trigger` or `InputGroup.Addon`. Two spellings of one part is the ambiguity this removes.
-- **Namespace** for an open/large set of sibling primitives with generic, collision-prone names (`Text`, `Box`, `Row`) — each ships as a subpath so `import * as` costs no tree-shaking.
-
-## What the root barrel carries
+- **Flat-prefix** for the fixed-arity pieces of ONE component, **with no static alias beside it** — no `Tabs.Trigger`, `Menu.Item`, `Select.Trigger` or `InputGroup.Addon`; two spellings of one part is the ambiguity this removes. **Namespace** for an open/large set of sibling primitives with generic, collision-prone names (`Text`, `Box`, `Row`) — each ships as a subpath so `import * as` costs no tree-shaking.
 
 **A family is on `src/index.ts` unless importing it would add a PACKAGE to the barrel's graph** — Metro doesn't tree-shake, so an unmet peer is a build failure, not a degradation. Three families fail that: `tab-bar` (`expo-glass-effect`+`expo-symbols`), `provider` (`expo-router`, via `scroll/expo-router` — making `BloomProvider` expo-router-only BY CONSTRUCTION) and `zoomable-image-gallery` (`expo-image`). Gate: `root-barrel-graph.test.ts`, counting STATIC imports only — `theme/adaptive-colors.ts` names `expo-router` via the optional-`require` boundary and links nothing, the only reason the gate is falsifiable.
 
 ## App root provider
 
-`BloomProvider` is the ONE root a consumer mounts, composing app-wide STATE providers so none lands at the wrong depth (too low, `useScrollRestoration()` THROWS beside it and `useMinimizeState()` silently hands out a private fallback).
-
-- **Expo/expo-router apps only** — it binds the scroll store to `expoRouterScrollAdapter`. A Vite/SPA consumer mounts `BloomThemeProvider` plus `<ScrollRestorationProvider adapter={…}>` with its own router adapter.
-- **OUTLETS stay out of it** (`ToastOutlet`, `PortalProvider`/`PortalOutlet`, `SurfaceHost`) — a second mount duplicates every surface.
-- **`PortalProvider`/`PortalOutlet` are NATIVE-ONLY** — the web fork ports directly to `document.body`, and both are explicit no-op exports there. "This app doesn't mount a Portal Outlet" is never a valid reason to fork a web-facing component — a past attempt diverged for months and shipped strictly worse.
+`BloomProvider` is the ONE root a consumer mounts. Depth hazards (`useScrollRestoration()` THROWS too low; `useMinimizeState()` hands out a silent private fallback), the expo-router-only scroll binding, why outlets stay OUT of it, and `PortalProvider`/`PortalOutlet`'s native-only status are in `docs/provider.mdx` and `docs/portal.mdx` — no duplicate copy here.
 
 ## Scroll restoration
 
-`scroll/` is a router-AGNOSTIC core plus one adapter; imports no router. An adapter value must be a module-level CONSTANT.
+`scroll/` is a router-AGNOSTIC core plus one adapter; imports no router. `docs/scroll.mdx` covers the general model — content-keyed offsets, `contentId` via the adapter, miss-resets-to-0, native's `{ onScroll, restorePending }` hook, the web frame-bounded restore. This section holds only what that doc doesn't.
 
-- **Key = CONTENT identity + `options.key`; the navigation entry is deliberately NOT part of it**, so content seen this session restores regardless of arrival path, and only unseen content opens at top. Trade-off: identical content in two live entries shares one offset.
-- **`contentId` comes from the ADAPTER via `useRoute()`** (name + sorted params), never `usePathname()` (reads the globally focused route — a background screen would adopt the foreground pathname).
-- **A miss RESETS to 0, not a no-op** — one window scroller serves every route. `store.has()` is needed for the decision (`read()` can't tell "never seen" from "saved at top").
+- An adapter value must be a module-level CONSTANT — the core calls its members as hooks, so a value built inside a component changes hook identity every render.
 - **Reset is arrival-scoped; restore is not** — resetting twice is data loss, restoring twice is harmless.
 - **The reset's own scroll echo isn't persisted**, and restore writes are swallowed via `echoOffset` — else an interrupted restore stores a partial offset.
-- **`canScroll()` must stay honest for the `'window'` sentinel** — a tabbed navigator collapses the document (`display: none`), forcing `scrollY` to 0 before blur, so a hardcoded `true` persists 0 over a real offset. A partial clamp needs BOTH the range shrinking and the offset at the new max, with the reference range from the last SAVE, not the last observation (Chrome dispatches two scroll events per clamp).
-- **The web restore re-applies across a bounded run of frames** and **ABORTS on user input** (`wheel`/`touchstart`/`pointerdown`/`keydown`).
-- **`history.scrollRestoration` is `'manual'` only while mounted**, handed back on `pagehide` — must not be a module-scope side effect.
-- **`restorePending` is SEEDED from the store on the first render, never defaulted to `false`** — the focus effect is passive and runs after a paint, so a `false` start gives exactly the one wrong-position frame it exists to prevent. It falls on whichever comes first: stuck, frame budget exhausted, user takeover. A caller hiding content until the offset lands must keep it LAID OUT (`opacity: 0`) — `display: none` collapses the document and every write clamps to 0. Web reports it only for the multi-frame loop (a reset writes synchronously); native reports it for any deferred write, reset included.
-- **Native is narrow** — keyed on storage key, never focus; the hook returns `{ onScroll, restorePending }`. `enabled` means "rows exist", not a feature flag.
+- **`canScroll()` must stay honest for the `'window'` sentinel** — a tabbed navigator collapses the document (`display: none`), forcing `scrollY` to 0 before blur, so a hardcoded `true` persists 0 over a real offset. A partial clamp needs BOTH the range shrinking and the offset at the new max, referenced against the last SAVE (not the last observation — Chrome dispatches two scroll events per clamp).
+- **`restorePending` is SEEDED from the store on first render, never defaulted to `false`** — the focus effect runs after paint, so a `false` start gives exactly the wrong-position frame it exists to prevent. Clears on whichever comes first: stuck, frame budget exhausted, user takeover. Hide content until the offset lands with `opacity: 0`, not `display: none` — that collapses the document and clamps every write to 0. Web reports it only for the multi-frame loop (a reset writes synchronously); native reports it for any deferred write, reset included.
 
-## Overlay pointer events (silent and total)
+## Overlay (`overlay/`)
 
-`overlay/` exports `OverlayRoot` + `Backdrop` — the ONE way a portaled surface establishes its interactive root, stack position and press-to-dismiss dim. Do not hand-roll either.
+`docs/overlay.mdx` and `docs/styles.mdx` (`Z_INDEX`) cover the general model — `OverlayRoot`/`Backdrop`, the one stacking authority (never a per-component `zIndex`), how to add a surface, the toast exception, the web-tooltip gap, and the `pointerEvents` `box-none`/`box-only`-must-be-a-PROP rule (silently dropped as a style entry; catastrophic since the web `Portal` root is `pointer-events: none` and INHERITS). This section holds only what those docs don't:
 
-- **`pointerEvents` with the RN-only values `box-none`/`box-only` MUST be a PROP, never inside `style`** — react-native-web resolves them from the prop path only; as a style entry they're silently dropped. `'auto'`/`'none'` DO survive as styles, which makes the mistake easy.
-- Catastrophic because the web `Portal` root is `pointer-events: none` and INHERITS — a dropped opt-in makes the ENTIRE surface click-through. Escape still works, so it reads as a dismissal bug. Outside a portal the mistake inverts and a full-bleed band eats presses.
-- Gates: `pointer-events-style-form.test.ts` (source scan) and `overlay-pointer-events.test.tsx` (runtime against REAL react-native-web). Verify dismissal in a real browser.
+- The stacking rank is taken on MOUNT from a `useState` initializer specifically so it can't be memoized into a stale read.
+- **Native has a second mechanism z-index can't reach:** each surface is its own RN `<Modal>` window. Android is fine by construction; **iOS may not be** — unconfirmed, verify on a real device before shipping a fix.
+- **Jest cannot see either bug** — a losing surface's markup is valid, merely painted under something, and a dropped `pointerEvents` prop is valid markup too. Stacking gates: `overlay-stack-order.test.tsx` + `scripts/verify-overlay-stacking.mjs` (real Chrome, `page.mouse.click()` — a synthetic `element.click()` bypasses hit testing). Pointer-events gates: `pointer-events-style-form.test.ts` (source scan) + `overlay-pointer-events.test.tsx` (real react-native-web). Verify dismissal in a real browser either way.
 
 ## Accessibility state on web (silent)
 
 **`accessibilityState` reaches NATIVE ONLY — react-native-web drops it entirely** and reads only `aria-*`. A control setting just `accessibilityState={{checked}}` renders a role carrying no state.
 
 - **`aria-*` works on BOTH platforms** — RN folds `aria-busy|checked|disabled|expanded|selected` back into `accessibilityState`.
-- **`aria-pressed` is the exception** — RN has no such concept, so a toggle with `role="button"` must set BOTH.
-- **Which aria state is correct depends on the ROLE** — a component rendering two roles needs both branches.
-- **`aria-disabled` inverts between `Pressable` and `View`** — `Pressable` overwrites a caller-supplied one from its `disabled` prop; a plain `View` has no `disabled` prop.
-- **`accessibilityValue={{min,max,now}}` is dropped too** — only the flat `aria-value*` props work.
+- **`aria-pressed` is the exception** — RN has no such concept, so a toggle with `role="button"` must set BOTH. **Which aria state is correct depends on the ROLE** — a component rendering two roles needs both branches.
+- **`aria-disabled` inverts between `Pressable` and `View`** — `Pressable` overwrites a caller-supplied one from its `disabled` prop; a plain `View` has no `disabled` prop. **`accessibilityValue={{min,max,now}}` is dropped too** — only the flat `aria-value*` props work.
 - **A prop-level test cannot catch any of this** — assert the rendered ATTRIBUTE. Gate: `aria-state-web.test.tsx`, mutation-verified per component.
 - **TWO gates; the runtime one does not fail by default.** `aria-state-web.test.tsx` imports subjects BY NAME, so a new component never joins it automatically — `Slider` was fixed, its three `progressbar` siblings were not. `aria-state-source-census.test.ts` fails any element with a stateful role and no matching `aria-*`. Add to both.
 
-## Overlay stacking (one authority, never a constant)
-
-**A surface opened LATER paints above one opened earlier.** Decided ONCE in `src/overlay/stack.ts`, applied by `OverlayRoot`. **Never give an overlay surface a `zIndex` of its own.**
-
-- A per-component constant answers "which is on top" by what a surface IS, not when it opened, so some pairings are permanently inverted. `Z_INDEX` now carries only WITHIN-context values.
-- **To add a surface:** render its portal body inside `<OverlayRoot>`, itself INSIDE the guard that makes the surface appear. The rank is taken on MOUNT from a `useState` initializer, so depth is right on the FIRST paint and can't be memoized into a stale read.
-- **Toasts are the one deliberate exception** — `ToastHost` passes an explicit `zIndex` and takes no rank (mounts for the app's whole life; a rank would wedge the counter).
-- **Not every overlay-looking thing is in the stack** — the WEB tooltip isn't portaled and has no rank; the native one does.
-- **Native has a second mechanism z-index can't reach:** each surface is its own RN `<Modal>` window. Android is fine by construction; **iOS may not be** — unconfirmed, verify on a real device before shipping a fix.
-- **Jest cannot see this bug** — the losing surface's markup is valid, merely painted under something. Gates: `overlay-stack-order.test.tsx` plus `scripts/verify-overlay-stacking.mjs`, driving real Chrome with `page.mouse.click()` (a synthetic `element.click()` bypasses hit testing).
-
 ## Overlay surfaces
 
-Only TWO exist: `CenteredDialog` and `ResponsiveSheet` were removed with no shims.
+Only TWO exist: `CenteredDialog` and `ResponsiveSheet` were removed with no shims (migration in `docs/dialog.mdx`). Props and day-to-day API — `GestureHandlerRootView`, the surface stack, `DialogAction`'s purely-visual `'cancel'` colour — are in `docs/dialog.mdx` and `docs/surfaces.mdx`; this holds only the remaining hazards.
 
-- **`dialog/`** is THE unified overlay (`placement` center/left/right/bottom or a responsive map). **Always drive it imperatively via `useDialogControl()`, never the controlled `open`/`onClose` boolean** — the controlled path fires `onClose` synchronously, racing ahead of the exit animation if the consumer unmounts in its handler.
-- **`bottom-sheet/`** is standalone and cross-platform; `Dialog`'s bottom placement composes it. Custom children on bottom placement are non-scrollable.
+- **Always drive `dialog/` imperatively via `useDialogControl()`, never the controlled `open`/`onClose` boolean** — the controlled path fires `onClose` synchronously, racing ahead of the exit animation if the consumer unmounts in its handler. `docs/dialog.mdx` documents controlled mode as a plain alternative; it is one, with this footgun.
+- **`bottom-sheet/`** is standalone and cross-platform; `Dialog`'s bottom placement composes it.
 - `AlertDialog` and `Command` bridge onto `Dialog`'s imperative control; reuse its `actions` prop rather than hand-rolling a confirm row.
-- Native consumers must wrap the app root with `GestureHandlerRootView`.
-- **ONE imperative overlay API: the surface stack** — `alert()`, `confirm()`, `prompt()` all `present()` onto `surfaces/surfaceStore`, rendered by the single `<SurfaceHost>`. Two `alert()` calls in a row STACK rather than queue.
-- **A built-in surface's buttons carry `shouldCloseOnPress: false` and dismiss via `surface.dismiss(result)`, never `Dialog`'s `close()`** — the value must reach the `present()` promise, which resolves on the PRESS. Pinned at the prop boundary with a mock Dialog (`surface-prompts.test.tsx`).
-- **`DialogAction`'s `'cancel'` colour is purely visual** — it does not affect dismissal.
-- **`disabled` on an `asChild` trigger is guarded in `cloneTrigger`, not the child alone** — `TriggerSlot` COMPOSES the child's `onPress` with the open handler, so a child-only guard leaves the open to the caller's element. **The browser is the WEAKER instrument:** unguarded, a `Pressable` child stays closed in Chrome (RNW masks it) while jest goes red (its mock ignores `disabled`). Gates: `Combobox.test.tsx` + `scripts/verify-trigger-disabled.mjs`.
+- **A built-in surface's buttons dismiss via `surface.dismiss(result)`, never `Dialog`'s `close()`** — pinned at the prop boundary with a mock Dialog (`surface-prompts.test.tsx`).
+- **`disabled` on an `asChild` trigger is guarded in `cloneTrigger`, not the child alone** — `TriggerSlot` COMPOSES the child's `onPress` with the open handler, so a child-only guard leaves the open to the caller's element. **The browser is the WEAKER instrument:** an unguarded `Pressable` child stays closed in Chrome (RNW masks it) while jest goes red (mock ignores `disabled`). Gates: `Combobox.test.tsx` + `scripts/verify-trigger-disabled.mjs`.
 - **KNOWN GAP — the native tooltip cannot position itself inside a sheet.** `TooltipTrigger` measures in PAGE coordinates, `TooltipContent` renders into the ROOT portal group, so a tooltip inside a `BottomSheet` portals outside that window. Needs a real device to fix — jest cannot see a native window boundary.
 
 ## Theme and design tokens
 
 `BloomThemeProvider` manages presets and mode, applies the dark class and CSS custom properties on web via `applyColorPresetVars()` (full-color values, never raw HSL triples). `getResolvedTokens()` feeds both platforms. Built-in presets are the keys of `APP_COLOR_PRESETS`. `BloomColorScope` emits both canonical `--x` tokens and Tailwind `--color-x` aliases.
 
-- **Never paste a Bloom token into a consumer's `global.css`** — `theme.css` is the single authority; keep only app-local seeds there. Build-time assembly: `bloomThemeCss()`/`bloomThemeBlock()`.
-- **A consumer's pre-JS `:root` palette is GENERATED, never hand-written** (`getPresetVars(preset, mode)`) — `theme.css` is only the alias layer; a hand-written fallback becomes a second palette that drifts.
-- **A SCOPED block needs `buildSeedScopeVars`, not `getPresetVars`** — an alias substitutes where it's DECLARED, so a scoped `--background` doesn't move `--color-background` at `:root`. Go through `withScopeAliases` (covers the ROLE vocabulary too — omitting it silently paints near-black text on a dark photo in forced-dark mode).
-- Both resolvers are pure so build scripts can import them — gated by a static import-graph scan.
-- **The colour engine is the `ColorEngine` NAMESPACE, not flat exports** — `useTheme`/`BloomThemeProvider`/tokens stay flat (used fleet-wide); raw colour maths (`argbFromHex`, `quantizeImage`, …) has no consumers outside Bloom. `theme/color-engine/index.ts` is that namespace's published surface; the ports underneath are implementation.
-- **`design-tokens/tokens.json`** is every token RESOLVED in W3C DTCG format for consumers that can't run a stylesheet — sRGB hex, additions must be additive, fonts/shadows absent. **Generated, never hand-edited.**
-- **Never derive a colour from a token — read the pair.** Accent tokens resolve to `rgb(...)`, so appended hex alpha parses back OPAQUE (contrast 1.00); a fill is sized to CARRY text, not BE it, so using one as a label fails AA. A tinted/filled/outlined control calls `resolveAccentColors(colors, tone, fill)` (`theme/accent-colors.ts`), reading the `*Subtle`/`*SubtleForeground` pairs the policy gates together; className contexts use the opacity utility (`bg-primary/10`). Verify by compositing the background and computing the WCAG ratio — gate: `theme/__tests__/accent-colors.test.ts`. **`theme/glass-colors.ts` is the ONE exception**, and it goes through `withAlpha` (a parse and re-emit, not a concatenation), because a glass material IS an alpha of a fill; the ratio is gated the same way.
+`docs/design-tokens.mdx` covers the consumer-facing contract: never paste a token into `global.css` (`theme.css` is the single authority), the pre-JS `:root` palette is GENERATED via `getPresetVars`, and a SCOPED block needs `buildSeedScopeVars` because an alias substitutes where it's DECLARED. What that doc doesn't cover:
+
+- `buildSeedScopeVars` goes through `withScopeAliases`, which also covers the ROLE vocabulary — omitting it silently paints near-black text on a dark photo in forced-dark mode. Gated by a static import-graph scan.
+- **The colour engine is the `ColorEngine` NAMESPACE, not flat exports** — `useTheme`/`BloomThemeProvider`/tokens stay flat (fleet-wide use); raw colour maths (`argbFromHex`, `quantizeImage`, …) has no consumers outside Bloom. `theme/color-engine/index.ts` is the namespace's published surface; the ports under it are implementation.
+- **`design-tokens/tokens.json`** (also documented there) is **generated, never hand-edited.**
+- **Never derive a colour from a token — read the pair.** Accent tokens resolve to `rgb(...)`, so appended hex alpha parses back OPAQUE (contrast 1.00); a fill is sized to CARRY text, not BE it, so using one as a label fails AA. A tinted/filled/outlined control calls `resolveAccentColors(colors, tone, fill)` (`theme/accent-colors.ts`), reading the gated `*Subtle`/`*SubtleForeground` pairs; className contexts use the opacity utility (`bg-primary/10`), verified by compositing and computing the WCAG ratio (gate: `theme/__tests__/accent-colors.test.ts`). **`theme/glass-colors.ts` is the ONE exception** — `withAlpha` (parse-and-re-emit, not concatenation), since a glass material IS an alpha of a fill; same gate.
 
 ## Glass (`theme/glass-colors.ts` + `glass/GlassSurface.tsx`; `Button`'s `primary`/`destructive` are the only consumers)
 
-- **THE GLASS IS THE SHEEN, NOT THE WASH.** What reads as glass is the lit top rim, the vertical gradient, the hairline in the fill's own hue and the blur behind the little that gets through — not how much you can see through it. This shipped once at fill alpha 0.25 and read as a pale stain with no body; the reference is **0.85**. Transparency is the least of the five things that make the material.
-- **The LABEL follows the alpha, and flips with it** — at 0.25 the pane takes its luminance from the page, so the page's `colors.text` was right (on-fill failed 263/1260); at 0.85 the pane IS the fill, so the fill's own on-colour is right (`colors.text` fails 1015/1260). Neither is a permanent answer. Re-measure both whenever the alpha moves; the gate walks them side by side for this reason.
-- **0.85 costs 45 of `Button` primary's 180 rows their AA pass** (band 4.17–4.45, all LIGHT mode, nine named presets), where a solid fill passes all 180. Failures reach zero at **0.89**. The cost is deliberate — matching the reference is the requirement — and is pinned as an EXACT count plus an exact preset/mode set, so a one-hundredth alpha change goes red in both directions. `destructive` is unaffected.
-- **A THRESHOLD erodes; an EQUALITY has to be looked at.** When a material genuinely cannot clear a bar, do not lower the bar — account for the shortfall exactly (count, band, named set) so improving it fails the gate as loudly as regressing it.
-- **Prove translucency DIRECTLY, not by proxy.** The 0.25 gate proved it via "a large share still fails AA over black/white", which stops discriminating as the fill approaches opaque. Measure whether the PAINTED pane moves when the backdrop moves: 0 at opacity, monotonic in the alpha (0.85 → 37.5, 0.90 → 25.0, 0.95 → 12.5, 1.00 → 0.0 on web). Floors must be LITERALS — deriving them from the alpha constant moves both sides together and measures nothing.
-- **Glass replaces a FILL, never adds one** — a blur behind a transparent control shows nothing, and the hairline is "the edge of the pane" only where there is a tint. **`inverse` stays opaque** as the backdrop-independent CTA; at 0.85 it is no longer load-bearing the way it was at 0.25 (over white/black/mid, primary fails 23/108 worst 3.61, against half the matrix at worst 1.02 before) — re-measure rather than repeating either number.
-- **`expo-blur` cannot give a radius without a tint** (one `intensity` drives both); `backdrop-filter` is a pure blur. That gap SHRINKS as the fill gets more opaque — 2.35/255 at 0.85, because the tint can only reach the 15% that gets through. Assert it is small AND non-zero, or a native stack that silently dropped the blur passes.
+- **THE GLASS IS THE SHEEN, NOT THE WASH** (full description + AA cost table: `docs/button.mdx`) — transparency is the least of five things that make the material. Reference is **0.85**; 0.25 read as a pale stain with no body.
+- **The LABEL follows the alpha, and flips with it** — at 0.25 the pane takes its luminance from the page (page `colors.text` right, on-fill failed 263/1260); at 0.85 the pane IS the fill (fill's on-colour right, `colors.text` fails 1015/1260, per `docs/button.mdx`). Neither is permanent — re-measure both on every alpha change; the gate walks them side by side.
+- **0.85's AA cost is measured in full in `docs/button.mdx`, and the gate pins it as an EXACT count plus preset/mode set** — deliberate, since matching the reference is the requirement, so a one-hundredth alpha change goes red either direction.
+- **A THRESHOLD erodes; an EQUALITY has to be looked at.** When a material can't clear a bar, don't lower the bar — account for the shortfall exactly (count, band, named set) so improving it fails the gate as loudly as regressing it.
+- **Prove translucency DIRECTLY, not by proxy.** The 0.25 gate proved it via "still fails AA over black/white", which stops discriminating near opaque. Measure whether the PAINTED pane moves with the backdrop: 0 at opacity, monotonic in alpha (0.85→37.5, 0.90→25.0, 0.95→12.5, 1.00→0.0 on web). Floors must be LITERALS, not derived from the alpha constant, or both sides move together and it measures nothing.
+- **Glass replaces a FILL, never adds one** — a blur behind a transparent control shows nothing, and the hairline reads as "the pane's edge" only where there's a tint. **`inverse` stays opaque** as the backdrop-independent CTA (over-photo AA numbers: `docs/button.mdx`); at 0.85 it's less load-bearing than at 0.25, when half the matrix failed — re-measure rather than repeat either number.
+- **`expo-blur` cannot give a radius without a tint** (one `intensity` drives both); `backdrop-filter` is a pure blur. The gap SHRINKS as the fill opacifies — 2.35/255 at 0.85, since the tint reaches only the 15% that gets through. Assert small AND non-zero, or a native stack that silently dropped the blur passes.
 - **A glass variant must not set `overflow: 'hidden'`** — `GlassSurface` self-clips, and `clipsToBounds` on iOS clips the drop shadow away.
-- **Read the PAINTED PIXEL** — a translucent surface reports a plausible `background-color` for a slot it is not using, so a computed-style diff cannot tell a pane from a wash. Screenshot, reload the capture into the page, sample on a canvas.
+- **Read the PAINTED PIXEL** — a translucent surface reports a plausible `background-color` for a slot it isn't using, so a computed-style diff can't tell a pane from a wash. Screenshot, reload the capture into the page, sample on a canvas.
 
 ## Web fonts
 
-`src/fonts/font-urls.web.ts` imports the four `.woff2` files so the bundler emits content-hashed assets. **Never inline them as base64** — ~219 KB gzip per bundle, uncacheable. `apply-font-faces.ts` must stay an empty stub with no imports, or Metro bundles a second unusable copy on native.
-
-`./fonts` also carries a `node` export condition, load-bearing. **Do not fork `FontLoader` into `.web` plus a neutral default** — `BloomThemeProvider` imports it by RELATIVE path, and export conditions don't apply to relative specifiers, so Vite would silently take the neutral default and stop injecting `@font-face` for every consumer.
+Font-loading hazards (base64-inlining the `.woff2`s, the empty-stub requirement on `apply-font-faces.ts`, `FontLoader` forking, the `node` export condition, the Inter/`fontFamilies` gap) are in `docs/fonts.mdx` — no duplicate copy here.
 
 ## Peers
 
 - **`peerDependencies` + `peerDependenciesMeta` ARE the list.** Never restate ranges here — a stale prose copy reads as permission to drop a peer the package needs.
-- **`@gorhom/bottom-sheet` is not a peer or dependency of any kind** — the bottom sheet is Bloom's own; the name survives only in comments.
-- **A statically-imported peer is never `optional`** — optionality is about what RESOLVES, so omitting one makes Metro fail the build rather than degrade.
-- **To keep a peer genuinely optional, load it with a `require('<string literal>')` that is a DIRECT STATEMENT of a `try` block.** Metro rewrites an unevaluable require into an inlined thrower and collects no dependency (a parameter-passed specifier once killed haptics, squircle clip, spinner and native color scoping); its optionality walk returns at the FIRST enclosing block, so nesting an `if` inside the try loses optionality. Hoist any `typeof require` guard OUT of the try. Reference `src/connection-status/netinfo.ts`; gate `optional-peer-imports.test.ts`.
-- **The Apple-only peers are reachable ONLY through `@oxyhq/bloom/tab-bar`** — a consumer that never imports it shouldn't install them to silence a warning. Bun prints no mismatch warning for these at all.
-- Bloom owns its toast engine (vendored); `sonner`/`sonner-native`/`nanoid` are not dependencies. Web bundles DO import reanimated + gesture-handler.
+- **`@gorhom/bottom-sheet` is not a peer or dependency of any kind** — the bottom sheet is Bloom's own; the name survives only in comments. **A statically-imported peer is never `optional`** — optionality is about what RESOLVES, so omitting one makes Metro fail the build rather than degrade.
+- **To keep a peer genuinely optional, load it with a `require('<string literal>')` that is a DIRECT STATEMENT of a `try` block.** A parameter-passed specifier once killed haptics, squircle clip, spinner and native color scoping — Metro's optionality walk returns at the FIRST enclosing block, so nesting an `if` inside the try loses it. Hoist any `typeof require` guard OUT of the try. Reference `src/connection-status/netinfo.ts`; gate `optional-peer-imports.test.ts`.
+- **The Apple-only peers are reachable ONLY through `@oxyhq/bloom/tab-bar`** — a consumer that never imports it shouldn't install them to silence a warning (bun prints no mismatch warning for these at all). Bloom owns its toast engine (vendored); `sonner`/`sonner-native`/`nanoid` are not dependencies. Web bundles DO import reanimated + gesture-handler.
 
 ## Style and `className`
 
-- **A `style` override of padding/margin must use the LONGHAND the base uses** — react-native-web maps `paddingHorizontal`/`marginHorizontal` to CSS shorthands (`padding-inline`) its atomic sheet ranks ABOVE `padding-left` whatever the array order, so a later longhand is dropped on WEB and honoured on native. Measured: a 32px indicator gutter drew 8px; `SettingsListItem`'s `leftInset` had been inert on web since it shipped. A prop-level test sees the array, not the cascade.
-- **Bloom typography wires `className` → `style` via `styled(RNText)` from `react-native-css`.** **Never put font-size, line-height, font-weight or color defaults in inline `style` when the caller passes `className`** — react-native-css merges utilities first, so overlapping inline keys silently break `text-*`/`font-*`/`leading-*`. Apply defaults only when `className` is absent; `fontFamily` may stay inline.
-- **`className` must land on the node the PARENT lays out.** An extra layout wrapper (an `Animated.View` holding a press transform) makes LAYOUT classes silently inert on native while VISUAL ones keep working — same call site works on web, does nothing on native, no error. **Fix: one node** — build `Animated.createAnimatedComponent(...)` at module scope so transform, visuals, `style` and `className` share it. Reference: `button/Button.tsx`.
-- **Wire `className` through Bloom's own `styled()`, never as a bare prop** — a bare one only works under NW5 and drops the moment the primitive is wrapped. Use the module-scope wrappers in `styles/styled-primitives.ts`; a `Record<string, string>` cast type-checks against nothing and hid two dropped props. Gate: `classname-interop.test.ts`.
-- **Never let a component's own default `className` compete with the caller's** — the caller's replaces it, stripping the chrome. Defaults belong in resolved-token inline style.
-- Jest sees structure, never whether a class resolves to CSS nor the native driver — only a device build verifies the press animation.
+- **A `style` override of padding/margin must use the LONGHAND the base uses** — react-native-web maps `paddingHorizontal`/`marginHorizontal` to CSS shorthands (`padding-inline`) its atomic sheet ranks ABOVE `padding-left` regardless of array order, so a later longhand drops on WEB, honoured on native. Measured: `SettingsListItem`'s 32px `leftInset` drew 8px, inert on web since it shipped — a prop-level test sees the array, not the cascade.
+- **Bloom typography wires `className` → `style` via `styled(RNText)`.** **Never put font-size, line-height, font-weight or color defaults in inline `style` when the caller passes `className`** — react-native-css merges utilities first, so overlapping inline keys silently break `text-*`/`font-*`/`leading-*`. Apply defaults only when `className` is absent; `fontFamily` may stay inline.
+- **`className` must land on the node the PARENT lays out.** An extra layout wrapper (e.g. an `Animated.View` holding a press transform) makes LAYOUT classes inert on native while VISUAL ones keep working — works on web, does nothing on native, no error. **Fix: one node** — build `Animated.createAnimatedComponent(...)` at module scope so transform, visuals, `style` and `className` share it (`button/Button.tsx`).
+- **Wire `className` through Bloom's own `styled()`, never as a bare prop** — a bare prop only works under NW5 and drops once the primitive is wrapped. Use the module-scope wrappers in `styles/styled-primitives.ts`; a `Record<string, string>` cast type-checks against nothing and hid two dropped props. Gate: `classname-interop.test.ts`.
+- **Never let a component's own default `className` compete with the caller's** — the caller's replaces it, stripping the chrome; defaults belong in resolved-token inline style. Jest sees structure, never whether a class resolves to CSS or the native driver — only a device build verifies the press animation.
 
 ## ImageResolver
 
@@ -181,15 +141,14 @@ Pure JS, one universal file. `ImageResolver = (id, variant?) => string | undefin
 Each of these runs your "verification" against the PUBLISHED package while looking correct. None errors.
 
 - **`bun add file:<tgz|dir>` reports success and does nothing** when the version matches what's installed. Bump the local version, or swap by symlink.
-- **Metro's `resolver.extraNodeModules` is a FALLBACK, not an override** — with a real `node_modules/@oxyhq/bloom` present it's never consulted.
-- **`expo export` and `expo start` disagree** — the dev server's file map only indexes `projectRoot` + `watchFolders`. Put the local copy inside the consumer repo, gitignored.
-- **The Metro port is baked in at BUILD time** via `-PreactNativeDevServerPort`, not `RCT_METRO_PORT` — an emulator resolves the dev server through host loopback, which `adb reverse` doesn't intercept. Confirm the value flipped in `gradleResValues.xml`.
+- **Metro's `resolver.extraNodeModules` is a FALLBACK, not an override** — with a real `node_modules/@oxyhq/bloom` present it's never consulted. **`expo export`/`expo start` disagree, too** — the dev server's file map only indexes `projectRoot` + `watchFolders`; put the local copy inside the consumer repo, gitignored.
+- **The Metro port is baked in at BUILD time** via `-PreactNativeDevServerPort`, not `RCT_METRO_PORT` — an emulator resolves it through host loopback, which `adb reverse` doesn't intercept. Confirm the value flipped in `gradleResValues.xml`.
 
-**Assert what you are testing before you test it** — resolved version plus a marker only the local build can produce. **Never extract or write over `node_modules/<pkg>`**: bun hardlinks from its global cache, mutating the package for every worktree and session.
+**Assert what you're testing before you test it** — resolved version plus a marker only the local build can produce. **Never extract or write over `node_modules/<pkg>`** — bun hardlinks from its global cache, mutating the package for every worktree and session.
 
 ## Local conventions
 
 - `apply-dark-class.ts` handles the dark class AND CSS var injection on web (no-op on native).
-- **A `pre-commit` hook refuses an AGENT commit in the SHARED checkout** (`scripts/git-hooks/pre-commit`, wired by `core.hooksPath`; install with `git config core.hooksPath "$PWD/scripts/git-hooks"`). Measured cause: an agent ran `git add -A` there and swept the user's untracked and staged work into its commit, and undoing that destroyed a second piece of it. Work in `.worktrees/<name>`; the lead's deliberate integration passes `BLOOM_SHARED_COMMIT=1`. Discriminator is `CLAUDECODE` plus `--git-dir` vs `--git-common-dir` **resolved to absolute** — from a subdirectory git prints one relative and one absolute, so a string compare calls every subdirectory a worktree.
-- **Per-worktree `node_modules` here is NOT shared** (unlike the bun-hardlink case the parent file warns about) — the shared checkout's tree silently lagged a devDependency added in a worktree, and the only symptom was one suite reporting `Cannot find module`. Run `bun install` in each worktree.
+- **A `pre-commit` hook refuses an AGENT commit in the SHARED checkout** (`scripts/git-hooks/pre-commit`, wired via `core.hooksPath`; install with `git config core.hooksPath "$PWD/scripts/git-hooks"`) — guards against an agent's `git add -A` sweeping the user's untracked and staged work into its own commit. Work in `.worktrees/<name>`; the lead's integration passes `BLOOM_SHARED_COMMIT=1`. Discriminator is `CLAUDECODE` plus `--git-dir` vs `--git-common-dir` **resolved to absolute** — from a subdirectory git prints one relative, one absolute, so a naive string compare calls every subdirectory a worktree.
+- **Per-worktree `node_modules` here is NOT shared** (unlike the bun-hardlink case the parent file warns about) — a devDependency added in one worktree silently lagged in the shared checkout's tree, surfacing only as `Cannot find module` in one suite. Run `bun install` in each worktree.
 - **A doc comment or `.mdx` example naming a shortened icon identifier is invisible to `tsc`** — `src/__tests__/icon-references.test.ts` scans `src/`, `docs/`, `README.md` and `AGENTS.md` for unresolved references, and is the only gate on this class of bug.
