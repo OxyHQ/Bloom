@@ -2,7 +2,13 @@ import React, { memo, useCallback, useMemo, useRef, useState } from 'react';
 import { StyleSheet, View } from 'react-native';
 
 import { OverlayRoot } from '../overlay';
-import { Portal } from '../portal';
+// `../portal/index.web`, not `../portal`: export conditions do not apply to
+// relative specifiers, so the bare name resolves to the NATIVE barrel in any
+// bundler that does not add web extensions to its resolution order. The native
+// Portal renders into a `PortalOutlet`, which a web app never mounts — both are
+// no-ops in the web fork — so the hover card would render nothing at all.
+// `Dialog.web.tsx` and `BottomSheet.web.tsx` already name it this way.
+import { Portal } from '../portal/index.web';
 import { WEB_POSITION_FIXED } from '../styles/web-view-style';
 import { UserHoverCard } from '../user-hover-card';
 import {
