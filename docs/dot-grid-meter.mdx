@@ -12,7 +12,7 @@ the eye can actually count.
 ```tsx
 import { DotGridMeter } from '@oxyhq/bloom/dot-grid-meter';
 
-<DotGridMeter filled={34} total={50} columns={10} />
+<DotGridMeter filled={34} total={50} columns={10} accessibilityLabel="Tokens used" />
 ```
 
 ## Which prop decides what
@@ -23,6 +23,7 @@ import { DotGridMeter } from '@oxyhq/bloom/dot-grid-meter';
 | `columns`                   | the grid width, which sets the row count        |
 | `dotSize` / `gap`           | the geometry                                   |
 | `filledColor` / `emptyColor`| the two states                                 |
+| `accessibilityLabel`        | what is being counted — see below              |
 
 ## Use it when the total is countable
 
@@ -49,4 +50,17 @@ which is the one thing it exists to show.
 ## State the numbers as well
 
 `34 / 50` in text beside the grid. The dots are the shape of the answer; the
-text is the answer — and it is the only version available to a screen reader.
+text is the answer.
+
+## Name what is being counted
+
+The grid announces itself as a `progressbar` carrying `aria-valuenow` /
+`aria-valuemin` / `aria-valuemax`, so a screen reader reads the numbers — but
+`progressbar` takes its name from the author alone. ARIA never computes one
+from an element's contents for this role, and the contents are dots in any
+case, so without `accessibilityLabel` the meter announces "34 of 50" against
+nothing. `StatBar` gets this for free from its required `label`; a bare grid has
+no such text.
+
+Omitting it warns once in development, dev-only and never throwing. An empty or
+whitespace-only string counts as missing.

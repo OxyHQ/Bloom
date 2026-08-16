@@ -55,6 +55,13 @@ A slider announces a number with no meaning attached. `accessibilityLabel`
 names it; if the number is not self-evident (a price, a duration), show the
 formatted value beside the track so it is readable without dragging.
 
+The label is not optional in practice, only in the type. ARIA computes no name
+from a `slider`'s contents — a track and a knob render no text — so a caption
+beside it names nothing, and the `aria-value*` props say how far along it is
+and never what it is. Omitting it warns once in development, dev-only and never
+throwing; an empty or whitespace-only string counts as missing, because
+`aria-label=""` is not a name.
+
 ## When a slider is the wrong control
 
 - **The exact value matters.** Use a number input; a slider cannot be typed

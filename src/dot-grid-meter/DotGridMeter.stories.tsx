@@ -10,9 +10,17 @@ function Demo() {
   return (
     <View style={{ gap: 16 }}>
       <Text style={{ fontSize: 12, opacity: 0.6 }}>Token diversity</Text>
-      <DotGridMeter filled={34} total={50} columns={10} />
+      <DotGridMeter filled={34} total={50} columns={10} accessibilityLabel="Invites used" />
       <Text style={{ fontSize: 12, opacity: 0.6 }}>Compact (accent)</Text>
-      <DotGridMeter filled={7} total={12} columns={6} dotSize={12} gap={8} filledColor="#8B5CF6" />
+      <DotGridMeter
+        filled={7}
+        total={12}
+        columns={6}
+        dotSize={12}
+        gap={8}
+        filledColor="#8B5CF6"
+        accessibilityLabel="Onboarding steps"
+      />
     </View>
   );
 }

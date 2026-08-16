@@ -25,6 +25,16 @@ export interface SliderProps {
   /** Override the thumb color. Defaults to the theme primary. */
   thumbTintColor?: string;
   style?: StyleProp<ViewStyle>;
+  /**
+   * The slider's accessible NAME — what the value applies to.
+   *
+   * `slider` takes its name from the author only, and a track with a thumb
+   * renders no text, so this is the only route to one: without it the control
+   * announces a number and no subject. The `aria-value*` props say how far
+   * along it is, never what it is.
+   *
+   * Omitting it warns once in development; see `use-accessible-name-warning`.
+   */
   accessibilityLabel?: string;
   testID?: string;
 }

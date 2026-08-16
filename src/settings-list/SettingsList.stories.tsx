@@ -50,13 +50,17 @@ function WithToggles() {
         <SettingsListItem
           title="Push notifications"
           rightElement={
-            <Switch value={notifs} onValueChange={setNotifs} />
+            <Switch
+              value={notifs}
+              onValueChange={setNotifs}
+              accessibilityLabel="Push notifications"
+            />
           }
           showChevron={false}
         />
         <SettingsListItem
           title="Dark mode"
-          rightElement={<Switch value={dark} onValueChange={setDark} />}
+          rightElement={<Switch value={dark} onValueChange={setDark} accessibilityLabel="Dark mode" />}
           showChevron={false}
         />
       </SettingsListGroup>

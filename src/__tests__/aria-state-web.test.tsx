@@ -76,6 +76,7 @@ import {
 import { MenuSurfaceProvider } from '../floating/context';
 import { DotGridMeter } from '../dot-grid-meter';
 import { DialogLargeTitle, useDialogHeaderController } from '../dialog/DialogHeader';
+import { ToastContent } from '../toast/ToastContent';
 // Both Select forks by explicit filename: jest has no platform-extension
 // resolution, so a bare `'../select'` would only ever exercise the native one
 // and the web fork could drift back unnoticed.
@@ -211,6 +212,22 @@ describe('Switch', () => {
     // Pressable, so the prop is the only route.
     const c = mount(<Switch value onValueChange={() => {}} disabled testID="sw" />);
     expect(byTestId(c, 'sw').getAttribute('aria-disabled')).toBe('true');
+  });
+
+  it('emits the accessible NAME as aria-label', () => {
+    // The state above says whether it is on; this says what it is. A switch
+    // draws a track and a thumb and no text, so nothing else on the element can
+    // supply a name — before this prop existed, `SwitchProps` was
+    // `value`/`onValueChange`/`disabled`/`style`/`size`/`testID` and every
+    // toggle in every app announced "switch, off" and nothing more.
+    //
+    // `accessibilityLabel` is deliberately NOT the `accessibilityState` case:
+    // react-native-web's `createDOMProps` falls back to it when `aria-label` is
+    // absent, so the one React Native spelling reaches both platforms.
+    const c = mount(
+      <Switch value onValueChange={() => {}} accessibilityLabel="Notifications" testID="sw" />,
+    );
+    expect(byTestId(c, 'sw').getAttribute('aria-label')).toBe('Notifications');
   });
 });
 
@@ -412,6 +429,23 @@ describe('Slider', () => {
     );
     expect(byTestId(c, 'sl').getAttribute('aria-disabled')).toBe('true');
   });
+
+  it('emits the accessible NAME as aria-label', () => {
+    // `slider` takes its name from the author only — no contents ever name it —
+    // so the value props above announce a number against no subject without
+    // this one.
+    const c = mount(
+      <Slider
+        value={40}
+        min={0}
+        max={100}
+        onValueChange={() => {}}
+        accessibilityLabel="Volume"
+        testID="sl"
+      />,
+    );
+    expect(byTestId(c, 'sl').getAttribute('aria-label')).toBe('Volume');
+  });
 });
 
 // ARIA gives `role="radio"` a checked state, not a selected one. Both forks are
@@ -536,6 +570,16 @@ describe('progressbars announce their value', () => {
     expect(byTestId(c, 'dg').getAttribute('aria-valuenow')).toBe('10');
   });
 
+  it('DotGridMeter emits the accessible NAME as aria-label', () => {
+    // `StatBar` above always had one, from its required `label`. This one had
+    // no label prop at all, so it announced "3 of 10" with no subject —
+    // the same gap one component over.
+    const c = mount(
+      <DotGridMeter filled={3} total={10} accessibilityLabel="Diversity" testID="dg" />,
+    );
+    expect(byTestId(c, 'dg').getAttribute('aria-label')).toBe('Diversity');
+  });
+
   it('the dialog header wizard step', () => {
     // The controller holds shared values, so it has to be created inside a
     // component rather than beside the assertion.
@@ -553,6 +597,54 @@ describe('progressbars announce their value', () => {
     expect(el.getAttribute('aria-valuenow')).toBe('2');
     expect(el.getAttribute('aria-valuemin')).toBe('0');
     expect(el.getAttribute('aria-valuemax')).toBe('4');
+    // The name and the reading. Unlike `Slider` and `DotGridMeter`, this bar
+    // always means the same thing, so Bloom supplies both itself rather than
+    // taking a prop for them.
+    expect(el.getAttribute('aria-label')).toBe('Progress');
+    expect(el.getAttribute('aria-valuetext')).toBe('Step 2 of 4');
+  });
+});
+
+// An icon-only control is the other half of the missing-name class: not a
+// component with no label PROP, but one whose only child is a glyph, so ARIA
+// computes nothing from its contents. The toast renders two buttons side by
+// side — an action named by the text it draws, and a close button that drew a
+// cross and announced "button".
+describe('an icon-only button carries its own name', () => {
+  it('the toast close button', () => {
+    const c = mount(
+      <ToastContent
+        id={1}
+        title="Saved"
+        unstyled={false}
+        icons={{}}
+        onDismiss={() => {}}
+        dismissible
+        closeButton
+      />,
+    );
+    const named = [...c.querySelectorAll('[aria-label]')].map((el) =>
+      el.getAttribute('aria-label'),
+    );
+    expect(named).toContain('Close');
+  });
+
+  it('the toast action button is named by its label instead, not by a prop', () => {
+    // The control on the other branch of the same rule: the source census
+    // excuses this one because it renders text, and this is what that means at
+    // runtime. If the action ever stops rendering its label, the census's
+    // `NAMED_BY_CONTENTS` equality drops it and says so.
+    const c = mount(
+      <ToastContent
+        id={2}
+        title="Saved"
+        unstyled={false}
+        icons={{}}
+        onDismiss={() => {}}
+        action={{ label: 'Undo', onClick: () => {} }}
+      />,
+    );
+    expect(c.textContent).toContain('Undo');
   });
 });
 
