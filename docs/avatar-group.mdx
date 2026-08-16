@@ -75,6 +75,13 @@ state — the consumer passes the SDK's `FollowButton` into its `action` slot.
 who these people are, and an app that wants a fuller preview renders
 `UserHoverCard` behind its own trigger.
 
+The card floats via `Portal`, imported from `'../portal/index.web'` rather than
+the bare `'../portal'` — export conditions don't apply to relative specifiers,
+so a bare import here resolves to the NATIVE barrel off Metro (Vite, webpack,
+SSR), and the card renders nothing, silently, because the native `Portal`
+needs a `PortalOutlet` no web app mounts. If you touch this import, verify
+against the BUILT artefact, not just the source.
+
 The card floats under a `View` with `onPointerEnter`/`onPointerLeave`, and that
 must not become a `Pressable`. react-native-web's `Pressable` dispatches a
 bubbling `react-gui:hover:lock` event on hover, and an ancestor `Pressable` that
