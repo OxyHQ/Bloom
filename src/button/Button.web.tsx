@@ -50,12 +50,20 @@ interface SizeConfig {
   paddingHorizontal: number;
   fontSize: number;
   minHeight: number;
+  /** The square `icon` variant's own padding — see `Button.tsx`'s SIZE_CONFIG. */
+  iconPadding: number;
 }
 
+/**
+ * Mirrors `Button.tsx`'s table exactly, including why the padding is what it is:
+ * `minHeight` is the single authority on the height, and these values keep the
+ * content box (padding + a `1.5 × fontSize` line box + a 1px border on each
+ * side) underneath it. Heights are 32 / 36 / 44 on both platforms.
+ */
 const SIZE_CONFIG: Record<NativeSize, SizeConfig> = {
-  small: { paddingVertical: 6, paddingHorizontal: 12, fontSize: 14, minHeight: 32 },
-  medium: { paddingVertical: 8, paddingHorizontal: 16, fontSize: 15, minHeight: 40 },
-  large: { paddingVertical: 12, paddingHorizontal: 20, fontSize: 16, minHeight: 48 },
+  small: { paddingVertical: 4, paddingHorizontal: 12, fontSize: 14, minHeight: 32, iconPadding: 8 },
+  medium: { paddingVertical: 5, paddingHorizontal: 16, fontSize: 15, minHeight: 36, iconPadding: 6 },
+  large: { paddingVertical: 8, paddingHorizontal: 20, fontSize: 16, minHeight: 44, iconPadding: 6 },
 };
 
 const SIZE_ALIAS: Record<ButtonSize, NativeSize> = {
@@ -257,7 +265,7 @@ function resolveVariantStyle(
           borderStyle: 'solid',
           borderColor: c.border,
           borderRadius: borderRadius.full,
-          padding: 8,
+          padding: sizeConfig.iconPadding,
           width: sizeConfig.minHeight,
           height: sizeConfig.minHeight,
         },

@@ -45,26 +45,87 @@ const SIZE_ALIAS: Record<ButtonSize, NativeSize> = {
   icon: 'medium',
 };
 
+// ---------------------------------------------------------------------------
+//  Geometry
+//
+//  `minHeight` is the SINGLE authority on the rendered height, on both
+//  platforms, and `paddingVertical` is chosen to keep it that way.
+//
+//  It was not. Measured in Chrome before this: the content box (padding + the
+//  label's line box + the border) OUTGREW `minHeight` on web at every size, so
+//  the height came from the padding there and from `minHeight` on native, and
+//  the two forks disagreed — a `medium` button measured 40.5px with a border and
+//  40px without, against a `minHeight` of 40 that never applied. Tailwind
+//  preflight sets `line-height: 1.5` on `html` and the web fork inherits it (the
+//  consumer CSS pipeline Bloom already requires), so a size's line box is
+//  `1.5 × fontSize`; the padding below leaves that plus a 1px border on each
+//  side inside `minHeight`:
+//
+//    small   2×4 + 21   + 2 = 31   ≤ 32
+//    medium  2×5 + 22.5 + 2 = 34.5 ≤ 36
+//    large   2×8 + 24   + 2 = 42   ≤ 44
+//
+//  Native's line box is the FONT's own (~1.2em), which is smaller still, so
+//  `minHeight` governs there with more room to spare.
+//
+//  Heights are therefore exactly 32 / 36 / 44 on both platforms and in every
+//  variant — 44 being the touch-target floor `SIZE_HIT_SLOP` below brings the
+//  other two up to.
+// ---------------------------------------------------------------------------
+
 const SIZE_CONFIG = {
   small: {
-    paddingVertical: 6,
+    paddingVertical: 4,
     paddingHorizontal: 12,
     fontSize: 14,
     minHeight: 32,
+    /**
+     * The `icon` variant's own padding — smaller than the text variants' as the
+     * circle tightens, so the glyph box (`minHeight − 2×iconPadding − 2` for the
+     * border: 14 / 22 / 30) is unchanged by the compaction. A fixed 8 would have
+     * squeezed `medium`'s box to 18px and clipped the 20px default icon against
+     * `overflow: 'hidden'`, with no error.
+     */
+    iconPadding: 8,
   },
   medium: {
-    paddingVertical: 8,
+    paddingVertical: 5,
     paddingHorizontal: 16,
     fontSize: 15,
-    minHeight: 40,
+    minHeight: 36,
+    iconPadding: 6,
   },
   large: {
-    paddingVertical: 12,
+    paddingVertical: 8,
     paddingHorizontal: 20,
     fontSize: 16,
-    minHeight: 48,
+    minHeight: 44,
+    iconPadding: 6,
   },
 } as const;
+
+/**
+ * Vertical slack that brings each size's native touch target up to 44dp — the
+ * floor `Checkbox` derives its own slack from, and the one Apple's HIG asks for
+ * — so a compact button is never both visually small and unreachable. Pinned as
+ * literals rather than derived from `minHeight`, because a value computed from
+ * the thing it is checked against is checked by nothing: `Button.test.tsx`
+ * asserts `minHeight + 2 × top >= 44` for every size, which only means something
+ * while the two are written independently.
+ *
+ * Horizontal slack is deliberately ZERO. A labelled button is already wider than
+ * the floor, and side slack is what makes two buttons in a row overlap and steal
+ * each other's presses. The square `icon` variant is the exception and keeps its
+ * own all-round slop.
+ *
+ * Native only: react-native-web drops `hitSlop`, and the web fork is a raw
+ * `<button>` that never sees it. On web the target IS the box — 32 / 36 / 44.
+ */
+const SIZE_HIT_SLOP = {
+  small: { top: 6, bottom: 6, left: 0, right: 0 },
+  medium: { top: 4, bottom: 4, left: 0, right: 0 },
+  large: { top: 0, bottom: 0, left: 0, right: 0 },
+} as const satisfies Record<NativeSize, NonNullable<ButtonProps['hitSlop']>>;
 
 const ICON_HIT_SLOP = { top: 10, bottom: 10, left: 10, right: 10 } as const;
 
@@ -279,7 +340,7 @@ const ButtonComponent: React.FC<ButtonProps> = ({
         styles.borderWidth = 1;
         styles.borderColor = theme.colors.border;
         styles.borderRadius = borderRadius.full;
-        styles.padding = 8;
+        styles.padding = sizeConfig.iconPadding;
         styles.width = sizeConfig.minHeight;
         styles.height = sizeConfig.minHeight;
         break;
@@ -329,7 +390,7 @@ const ButtonComponent: React.FC<ButtonProps> = ({
     };
   }, [size, resolvedTextColor]);
 
-  const defaultHitSlop = variant === 'icon' ? ICON_HIT_SLOP : undefined;
+  const defaultHitSlop = variant === 'icon' ? ICON_HIT_SLOP : SIZE_HIT_SLOP[size];
   // How far a NON-scaling variant dips under the finger. Not a prop: how a
   // control answers a press is the library's decision, not a per-call-site one,
   // and a knob for it is how one button in one app ends up feeling different
