@@ -27,6 +27,7 @@ const UserHoverCardComponent: React.FC<UserHoverCardProps> = ({
   verified = false,
   onPressProfile,
   action,
+  footer,
   style,
   testID,
 }) => {
@@ -129,6 +130,12 @@ const UserHoverCardComponent: React.FC<UserHoverCardProps> = ({
           ))}
         </View>
       ) : null}
+
+      {/* The consumer's own content. It is a SIBLING of the identity
+          `Pressable`, not a child, so a button inside it keeps its own press
+          instead of firing `onPressProfile`, and assistive technology reads it
+          as content rather than folding it into the identity button's name. */}
+      {footer != null ? <View style={styles.footer}>{footer}</View> : null}
     </Card>
   );
 };
@@ -194,6 +201,9 @@ const styles = StyleSheet.create({
   },
   statLabel: {
     fontSize: fontSize.sm,
+  },
+  footer: {
+    marginTop: space.md,
   },
 });
 

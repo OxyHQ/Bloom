@@ -1,5 +1,5 @@
 import React, { memo, useCallback, useMemo, useRef, useState } from 'react';
-import { Pressable, StyleSheet, View } from 'react-native';
+import { StyleSheet, View } from 'react-native';
 
 import { OverlayRoot } from '../overlay';
 import { Portal } from '../portal';
@@ -99,15 +99,29 @@ const AvatarGroupWebComponent: React.FC<AvatarGroupProps> = (props) => {
               around it click-through. */}
           <OverlayRoot>
             {/*
-              A Pressable hosts the hover-bridge: `onHoverIn`/`onHoverOut` are
-              typed in React Native (and map to mouseenter/mouseleave on
-              react-native-web), so the card stays open while the cursor is over
-              it without any web-only DOM-prop type suppression.
+              The hover-bridge keeps the card open while the cursor is over it.
+              It is a `View` with the W3C pointer events (in React Native's own
+              `ViewProps`, forwarded to the DOM by react-native-web — so no
+              web-only type suppression) and NOT a `Pressable`, which is what it
+              used to be.
+
+              A `Pressable` bridge closes the card the moment the cursor reaches
+              anything pressable INSIDE it — the identity area, or a FollowButton
+              in the `action` slot. react-native-web's `Pressable` calls
+              `useHover` with `contain: true`, which dispatches a BUBBLING
+              `react-gui:hover:lock` event on itself; an ancestor `Pressable`
+              that is currently hovered ends its own hover for any lock whose
+              target is not itself. So a descendant `Pressable` fired this
+              bridge's `onHoverOut` and the card dismissed ~120ms later, with
+              nothing in the console. Measured in Chrome; jest cannot see it.
+
+              `pointerenter`/`pointerleave` do not bubble and do not fire when
+              the cursor moves between descendants, which is exactly the
+              containment the bridge needs.
             */}
-            <Pressable
-              onHoverIn={cancelClose}
-              onHoverOut={scheduleClose}
-              accessibilityRole="none"
+            <View
+              onPointerEnter={cancelClose}
+              onPointerLeave={scheduleClose}
               pointerEvents="auto"
               style={[
                 webStyles.floating,
@@ -130,7 +144,7 @@ const AvatarGroupWebComponent: React.FC<AvatarGroupProps> = (props) => {
                 action={renderItemAction?.(hover.item, hover.index)}
                 style={webStyles.card}
               />
-            </Pressable>
+            </View>
           </OverlayRoot>
         </Portal>
       )}

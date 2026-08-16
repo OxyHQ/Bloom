@@ -11,8 +11,8 @@
  * throws; the card just shows a letter.
  */
 import React from 'react';
-import { Text } from 'react-native';
-import { render, fireEvent } from '@testing-library/react-native';
+import { Pressable, Text } from 'react-native';
+import { render, fireEvent, within } from '@testing-library/react-native';
 
 import { BloomThemeProvider } from '../theme/BloomThemeProvider';
 import { ImageResolverProvider, type ImageResolver } from '../image-resolver';
@@ -63,6 +63,52 @@ describe('UserHoverCard', () => {
       <UserHoverCard displayName="Nate" action={<Text>Follow</Text>} />,
     );
     expect(getByText('Follow')).toBeTruthy();
+  });
+
+  it('renders the footer slot, so a consumer can add what Bloom does not know', () => {
+    const { getByText } = renderWithTheme(
+      <UserHoverCard displayName="Nate" footer={<Text>Contribution graph</Text>} />,
+    );
+    expect(getByText('Contribution graph')).toBeTruthy();
+  });
+
+  it('renders the footer OUTSIDE the identity button, not within it', () => {
+    // The slot is a SIBLING of the identity area on purpose. Nested, a press
+    // anywhere on the consumer's content (a chart, a line of text — anything
+    // that is not itself pressable) would open the profile, and a screen reader
+    // would fold the whole block into the identity button's accessible name.
+    // Both failures are silent.
+    //
+    // The first assertion is this test's positive control: without it, deleting
+    // the slot entirely would satisfy "not inside the button".
+    const { getByText, getByLabelText } = renderWithTheme(
+      <UserHoverCard
+        displayName="Nate"
+        username="nate"
+        onPressProfile={() => {}}
+        footer={<Text>Contribution graph</Text>}
+      />,
+    );
+    expect(getByText('Contribution graph')).toBeTruthy();
+    expect(within(getByLabelText('Nate (@nate)')).queryByText('Contribution graph')).toBeNull();
+  });
+
+  it('leaves a pressable inside the footer working on its own', () => {
+    const onPressFooter = jest.fn();
+    const { getByText } = renderWithTheme(
+      <UserHoverCard
+        displayName="Nate"
+        username="nate"
+        onPressProfile={() => {}}
+        footer={
+          <Pressable onPress={onPressFooter}>
+            <Text>See all activity</Text>
+          </Pressable>
+        }
+      />,
+    );
+    fireEvent.press(getByText('See all activity'));
+    expect(onPressFooter).toHaveBeenCalledTimes(1);
   });
 
   it('makes the identity pressable only when given a handler', () => {

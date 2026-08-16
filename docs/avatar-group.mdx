@@ -69,3 +69,16 @@ Web-only by construction: hover does not exist on touch, so the prop is a no-op
 on native rather than a different interaction. The card itself is
 [`UserHoverCard`](/docs/bloom/main/user-hover-card), which holds no follow
 state — the consumer passes the SDK's `FollowButton` into its `action` slot.
+
+`renderItemAction` is the only slot the hover card exposes per item.
+`UserHoverCard`'s `footer` is not forwarded: a facepile hover card is a glance at
+who these people are, and an app that wants a fuller preview renders
+`UserHoverCard` behind its own trigger.
+
+The card floats under a `View` with `onPointerEnter`/`onPointerLeave`, and that
+must not become a `Pressable`. react-native-web's `Pressable` dispatches a
+bubbling `react-gui:hover:lock` event on hover, and an ancestor `Pressable` that
+is currently hovered ends its own hover for any lock it did not send — so a
+`Pressable` bridge dismissed the card the moment the cursor reached the injected
+FollowButton or the identity area. Nothing was logged; the card just went away
+about 120ms later.

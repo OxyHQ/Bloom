@@ -1,5 +1,6 @@
 import React from 'react';
-import { Text, View } from 'react-native';
+// Aliased: this file already exports a story named `Pressable`.
+import { Pressable as RNPressable, Text, View } from 'react-native';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
 import { AvatarGroup } from './AvatarGroup';
@@ -88,22 +89,30 @@ export const Pressable: Story = {
   ),
 };
 
-/** Web-only: hovering an avatar reveals the UserHoverCard. */
-export const HoverCard: Story = {
-  render: (args) => (
+/**
+ * Web-only: hovering an avatar reveals the UserHoverCard.
+ *
+ * The injected action is a real `Pressable`, because the real one is — the SDK's
+ * FollowButton. That matters: a `Pressable` inside the hover card used to
+ * DISMISS the card the moment the cursor reached it (react-native-web's
+ * `Pressable` dispatches a bubbling hover-lock event that ended the bridge's own
+ * hover), so a `View` here would have shown a card that worked while the shipped
+ * usage did not.
+ */
+function HoverCardStory() {
+  const [pressed, setPressed] = React.useState('nothing pressed yet');
+  return (
     <View style={{ gap: 12, minHeight: 240 }}>
       <AvatarGroup
-        {...args}
         items={WITH_PHOTOS}
         size={44}
         max={5}
         hoverCard
-        onPressItem={(item) => {
-          // eslint-disable-next-line no-alert
-          if (typeof window !== 'undefined') window.alert(`@${item.username}`);
-        }}
+        onPressItem={(item) => setPressed(`profile @${item.username}`)}
         renderItemAction={(item) => (
-          <View
+          <RNPressable
+            onPress={() => setPressed(`follow @${item.username}`)}
+            testID="hovercard-action"
             style={{
               paddingHorizontal: 12,
               paddingVertical: 6,
@@ -114,12 +123,17 @@ export const HoverCard: Story = {
             <Text style={{ color: '#fff', fontWeight: '600', fontSize: 13 }}>
               Follow
             </Text>
-          </View>
+          </RNPressable>
         )}
       />
+      <Text testID="press-result">{pressed}</Text>
       <Text>Hover an avatar (web) to see the card with an injected action.</Text>
     </View>
-  ),
+  );
+}
+
+export const HoverCard: Story = {
+  render: () => <HoverCardStory />,
   name: 'Hover card (web)',
 };
 

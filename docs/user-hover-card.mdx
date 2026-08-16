@@ -7,7 +7,8 @@ order: 23
 # UserHoverCard
 
 The card that appears when you hover a name or an avatar: photo, display name,
-handle, bio, a couple of stats, and one action.
+handle, bio, a couple of stats, one action — and a `footer` slot for whatever
+your app knows about a person that Bloom does not.
 
 ```tsx
 import { UserHoverCard } from '@oxyhq/bloom/user-hover-card';
@@ -27,6 +28,59 @@ import { FollowButton } from '@oxyhq/services';
   onPressProfile={() => router.push(`/@${user.username}`)}
 />
 ```
+
+## `footer` is where your own content goes
+
+The card renders what every Oxy app agrees a person is — photo, name, handle,
+bio, a couple of counts — and nothing else. Anything past that is yours:
+
+```tsx
+<UserHoverCard
+  displayName={user.name.displayName ?? user.username}
+  username={user.username}
+  bio={user.bio}
+  stats={stats}
+  action={<FollowButton userId={user.id} />}
+  footer={
+    <View style={{ gap: 4 }}>
+      <Text>Activity</Text>
+      <ActivityHeatmap data={activity} endDate={today} numDays={112} cellSize={11} gap={3} />
+    </View>
+  }
+/>
+```
+
+It renders **after** the stats, spanning the full inner width, with the same
+vertical rhythm the bio and stats use. Bloom adds no label, no divider and no
+clip — the block is yours to shape.
+
+It is a **sibling** of the identity area, never a child, and that is the part
+worth knowing. Nested, every press on your content would also fire
+`onPressProfile`, and on web a screen reader would fold the whole block into the
+identity button's accessible name — the identity area is a real `role="button"`,
+and text inside a button becomes part of its name.
+
+The card is 280px wide with 16px padding, so content has **248px** of inner
+width, and the card does not clip: anything wider paints outside it. A
+contribution graph of 17 columns at `cellSize={11} gap={3}` is 235px and fits;
+119 days spans eighteen columns once the leading partial week is counted, which
+is 249px and does not.
+
+There is one named slot, not three. The positions a second consumer might want —
+above the bio, beside the action — are still free to be added as their own named
+slots; a `children` prop would have claimed the generic name for one arbitrary
+position.
+
+### Inside a hover card, everything you put here stays pressable
+
+`AvatarGroup`'s `hoverCard` floats this card under a bridge that keeps it open
+while the cursor is over it. That bridge is a `View` with
+`onPointerEnter`/`onPointerLeave`, **not** a `Pressable`, and it has to be: a
+`Pressable` bridge dismisses the card the moment the cursor reaches anything
+pressable inside it. react-native-web's `Pressable` dispatches a bubbling
+`react-gui:hover:lock` event, and an ancestor `Pressable` that is currently
+hovered ends its own hover for any lock it did not send. If you build your own
+hover trigger around this card, do the same.
 
 ## Bloom holds no follow state
 
@@ -65,9 +119,20 @@ The card composes [`Card`](/docs/bloom/main/card) at the `radius-16` rung with a
 menus, popovers and dialogs. It does not clip, so nothing inside it needs to
 know it is in a card.
 
-The border is **0.5px**, `BORDER_WIDTH.hairline`, the same width
-[`BenefitList`](/docs/bloom/main/benefit-list) draws. That is worth stating
-because it renders 0.5px on web, where `StyleSheet.hairlineWidth` — the older
-spelling — is hardcoded to 1: the two surfaces both called themselves hairline
-and did not match. Bloom's scale defines the hairline as 0.5, and this card
-follows the scale.
+The border asks for **0.5px**, `BORDER_WIDTH.hairline`, the same width
+[`BenefitList`](/docs/bloom/main/benefit-list) asks for — verified in Chrome,
+both surfaces, both densities. That is worth stating because
+`StyleSheet.hairlineWidth`, the older spelling, is hardcoded to **1** on web:
+the two surfaces both called themselves hairline and did not match. Bloom's
+scale defines the hairline as 0.5, and this card follows the scale.
+
+**What the browser actually paints depends on pixel density**, and the 0.5 is
+only visible on half of it. Measured in Chrome: at `devicePixelRatio` 1 the used
+border width is **1px** — a sub-pixel border is snapped up to one device pixel,
+never down to zero — so on an ordinary 1× monitor `hairline` and the 1px `thin`
+are indistinguishable. At `devicePixelRatio` 2 it is 0.5px, one device pixel, and
+visibly finer. Native is unaffected. So the distinction the scale draws is real
+on HiDPI and inert elsewhere; that is the trade for one number that holds on both
+platforms. The alternative, a density branch, is what
+`MediaInsetBorder` does (`PixelRatio.get() > 1 ? 0.5 : StyleSheet.hairlineWidth`)
+where the line sits on top of an image and 1px would read as a frame.
