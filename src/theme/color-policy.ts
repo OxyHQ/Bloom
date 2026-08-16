@@ -154,6 +154,39 @@ const SUBTLE_SOURCE_TONE = 60;
 const SUBTLE_ALPHA = { light: 0.13, dark: 0.24 } as const;
 
 /**
+ * The neutral surface ramp, owned here as TONES rather than taken from M3's
+ * container roles.
+ *
+ * M3's container ramp steps by 2 tones, which at these lightnesses is ~1.2
+ * ΔE00 — below the just-noticeable difference for two large flat patches. So
+ * every rung of Bloom's surface stack was invisible against its neighbour, and
+ * the thirteen components that carry meaning ONLY in the step between two
+ * surfaces (a heatmap's empty cell, a filled card, a progress track, a hover
+ * row, a skeleton) read as nothing at all. Measured across all 18 presets, 4
+ * tones is ~2.4 ΔE00 and is the first spacing where every pair separates.
+ *
+ * `--background` is deliberately NOT in here: the page keeps the tone it
+ * already had, so no consuming app inherits a new page colour. The rungs below
+ * it move instead. `--card` is not here either — it sits on the far side of the
+ * page in light (tone 100, white) and at the top of the ramp in dark, so it is
+ * expressed as the engine role that means exactly that in each mode.
+ *
+ * Both members of each declared alias share a rung on purpose: `--sidebar` IS
+ * `--surface` and `--accent` IS `--muted`, and splitting them here would invent
+ * a distinction no component asks for.
+ */
+const SURFACE_RAMP = {
+  light: { surface: 92, popover: 88, muted: 84 },
+  dark: { surface: 10, popover: 14, muted: 18 },
+} as const;
+
+/** Where the page itself sits. A touch off M3's own page background in both modes. */
+const BACKGROUND_TONE = { light: 96, dark: 4 } as const;
+
+/** The chroma every neutral surface carries — the same value the `vivid` scheme's neutral palette uses. */
+const NEUTRAL_CHROMA = 10;
+
+/**
  * A seed at or below this chroma has no colour to derive from, so the whole
  * palette goes greyscale — the black-and-white theme. Keyed on the seed rather
  * than on a flag, so picking any grey in a colour wheel lands there too instead
@@ -442,6 +475,12 @@ export function buildPolicyTokens(
       : whiteLabelTone(brandPalette, seed.tone, isDark, declaresWhiteLabel(seedHex)),
   );
 
+  // The palette every neutral surface is cut from — the same one the `vivid`
+  // scheme builds its neutrals from, so a policy-owned tone and an engine role
+  // at that tone are the same colour rather than two near-misses.
+  const neutral = TonalPalette.fromHueAndChroma(seed.hue, monochrome ? 0 : NEUTRAL_CHROMA);
+  const rampTones = isDark ? SURFACE_RAMP.dark : SURFACE_RAMP.light;
+
   const tokens: PolicyTokens = {
     '--primary': primary.fill,
     '--primary-foreground': primary.foreground,
@@ -453,19 +492,32 @@ export function buildPolicyTokens(
       isDark ? SUBTLE_ALPHA.dark : SUBTLE_ALPHA.light,
     ),
     '--ring': roles.primary,
-    // `--card` is the one surface MAPPING the policy changes.
-    // `surfaceContainerLowest` is M3's RECESSED step: in dark it sits at tone 4
-    // against a tone-6 background, so every card, sheet and chat bubble sinks
-    // into the page instead of lifting off it. Light is unaffected — lowest IS
-    // the lightest there — so only dark moves.
-    '--card': isDark ? roles.surfaceContainer : roles.surfaceContainerLowest,
-    // A touch darker than M3's page background: near-white reads as unfinished
-    // next to the card, and the extra step gives the surface ramp somewhere to sit.
-    '--background': rgb(
-      TonalPalette.fromHueAndChroma(seed.hue, monochrome ? 0 : 10).tone(isDark ? 4 : 96),
-    ),
+    // `--card` lifts OFF the page, and which direction that is flips with the
+    // mode: in light it is white, brighter than everything; in dark it is the
+    // top of the container ramp, M3's own filled-card role.
+    //
+    // Neither end is free. `surfaceContainerLowest` in dark is tone 4, which is
+    // exactly where `--background` sits below, so a card would be byte-identical
+    // to the page — and `surfaceContainer` in dark is `--popover`'s role
+    // (`preset-vars.ts`), which is what it WAS: every card, sheet and chat
+    // bubble rendering the same colour as every menu, in all 18 presets.
+    '--card': isDark ? roles.surfaceContainerHighest : roles.surfaceContainerLowest,
+    // The page. A touch darker than M3's page background, which stays
+    // `--content-area`: near-white reads as unfinished next to the card.
+    //
+    // This tone is the one thing the ramp holds still — it is every consuming
+    // app's page colour. It sits ON `surfaceContainerLow`'s tone, which is why
+    // `--surface` no longer comes from that role.
+    '--background': rgb(neutral.tone(isDark ? BACKGROUND_TONE.dark : BACKGROUND_TONE.light)),
+    // The rungs below the page, spaced far enough apart to be seen. These
+    // override the M3 container roles `preset-vars.ts` maps them to; see
+    // `SURFACE_RAMP` for why the roles themselves cannot be used.
+    '--surface': rgb(neutral.tone(rampTones.surface)),
+    '--sidebar': rgb(neutral.tone(rampTones.surface)),
+    '--popover': rgb(neutral.tone(rampTones.popover)),
+    '--muted': rgb(neutral.tone(rampTones.muted)),
     // `--accent` stays what every consumer actually uses it for: a hover surface.
-    '--accent': roles.surfaceContainerHigh,
+    '--accent': rgb(neutral.tone(rampTones.muted)),
     '--accent-foreground': roles.onSurfaceVariant,
   };
 
