@@ -24,6 +24,30 @@ import { dirname, join, relative, resolve } from 'node:path';
  * a no-op precisely because a web bundler must not reach the native-only
  * import. That shape needs no namer, and the presence of the `.native` sibling
  * is what distinguishes it from an orphan.
+ *
+ * THE SECOND PROPERTY IS THE MIRROR OF THE FIRST, AND THE FIRST CANNOT SEE IT.
+ * Reachability asks whether anybody NAMES a fork. It is satisfied the moment
+ * one file does — so a fork can be perfectly reachable while a DIFFERENT web
+ * file reaches the same family through its neutral barrel and gets native.
+ * Measured: `avatar-group/AvatarGroup.web.tsx` imported `'../portal'` while
+ * `Dialog.web.tsx` and `BottomSheet.web.tsx` beside it wrote
+ * `'../portal/index.web'`. `portal/index.web.ts` was reachable the whole time,
+ * so this gate was green, and the hover card still rendered into nothing off
+ * Metro: the native `Portal` needs a `PortalOutlet`, and a web app never mounts
+ * one because both are no-ops in the web fork.
+ *
+ * It survived because Storybook's Vite config adds `.web.tsx` to
+ * `resolve.extensions` (`.storybook/main.ts`), so the browser — the instrument
+ * this package trusts most — resolved it correctly and showed a working card.
+ *
+ * WHY THE RULE IS SCOPED TO `.web` FILES. A NEUTRAL module has no choice:
+ * `admonition/Admonition.tsx` must write `'../button'`, because naming
+ * `'../button/index.web'` would break native. bob preserves that — measured
+ * across 1471 built specifiers, it leaves a specifier BARE exactly when the
+ * target has platform variants (115 of them) and appends `.js` when it does not
+ * (1273), with zero counterexamples in either direction — so the platform
+ * choice reaches the consumer's bundler intact. A WEB-ONLY file has the choice,
+ * and taking it removes one bundler-config dependency from the package.
  */
 
 const SRC = join(__dirname, '..');
@@ -132,6 +156,37 @@ function hasNativeSibling(webFile: string): boolean {
   return existsSync(`${stem}.native.ts`) || existsSync(`${stem}.native.tsx`);
 }
 
+/**
+ * Resolve a relative specifier to the NEUTRAL stem it names (no extension), so
+ * `'../portal'` and `'../portal/index'` both land on `…/portal/index`.
+ */
+function resolveStem(fromFile: string, spec: string): string | null {
+  const base = resolve(dirname(fromFile), spec);
+  for (const ext of ['.ts', '.tsx']) if (existsSync(`${base}${ext}`)) return base;
+  for (const ext of ['.ts', '.tsx']) {
+    if (existsSync(join(base, `index${ext}`))) return join(base, 'index');
+  }
+  return null;
+}
+
+const hasWebVariant = (stem: string): boolean =>
+  existsSync(`${stem}.web.ts`) || existsSync(`${stem}.web.tsx`);
+
+/** A specifier that names a `.web` file itself has already made the choice. */
+const namesWebFile = (spec: string): boolean => /(^|\/)[^/]*\.web$/.test(spec);
+
+/**
+ * The rule, as a function of (file, specifier) alone, so it can be pointed at a
+ * synthetic pair as a positive control. Returns the offending target's stem, or
+ * null when the specifier is fine.
+ */
+function reachesNativeFromWeb(fromFile: string, spec: string): string | null {
+  if (namesWebFile(spec)) return null;
+  const stem = resolveStem(fromFile, spec);
+  if (stem === null) return null; // asset imports (`.woff2`) and the like
+  return hasWebVariant(stem) ? stem : null;
+}
+
 const allWebForks = listWebForks(SRC);
 const entries = browserEntrySources();
 const reachable = reachableWebForks(entries);
@@ -213,5 +268,57 @@ describe('web forks are reachable off Metro', () => {
     // Vacuity floor: "no subpath is missing a browser condition" is also what a
     // loop that matched no forked entry file reports.
     expect(forked).toBeGreaterThanOrEqual(20);
+  });
+});
+
+describe('web-only files name the .web sibling, never the neutral barrel', () => {
+  /** Every (web file, relative specifier) pair in the package. */
+  const pairs = allWebForks.flatMap((file) =>
+    localSpecifiers(readFileSync(file, 'utf8')).map((spec) => ({ file, spec })),
+  );
+
+  const offenders = pairs
+    .map(({ file, spec }) => ({ file, spec, target: reachesNativeFromWeb(file, spec) }))
+    .filter((hit) => hit.target !== null)
+    .map((hit) => `${relative(SRC, hit.file)}: '${hit.spec}' -> ${relative(SRC, hit.target as string)}`)
+    .sort();
+
+  it('reads web files, their imports, and the forked targets they could hit', () => {
+    // Three floors, because "no offender" is also what an empty walk, an
+    // import regex that matched nothing, and a `hasWebVariant` that never
+    // returns true all report.
+    expect(allWebForks.length).toBeGreaterThanOrEqual(30);
+    expect(pairs.length).toBeGreaterThanOrEqual(100);
+    const forkedStems = new Set(
+      allWebForks.map((file) => file.replace(/\.web\.tsx?$/, '')),
+    );
+    expect([...forkedStems].filter(hasWebVariant).length).toBeGreaterThanOrEqual(30);
+  });
+
+  it('sees the COMPLIANT shape, so an empty offender list means compliance', () => {
+    // The positive control in the same currency as the measurement: files that
+    // already name a `.web` sibling. If this reached zero, every specifier
+    // would be taking the `namesWebFile` early return for the wrong reason and
+    // the gate would pass on a tree where nothing was named at all.
+    const compliant = pairs.filter(({ spec }) => namesWebFile(spec));
+    expect(compliant.length).toBeGreaterThanOrEqual(15);
+  });
+
+  it('flags a specifier that reaches a forked family by its neutral name', () => {
+    // The detector, pointed at a synthetic pair. `avatar-group/AvatarGroup.web.tsx`
+    // importing `'../portal'` is the real case this gate was written for, and it
+    // is spelled out here so the rule keeps being checked after that file is
+    // fixed — a gate whose only evidence is the absence of its own subject
+    // cannot be told from one that stopped working.
+    const subject = join(SRC, 'avatar-group', 'AvatarGroup.web.tsx');
+    expect(reachesNativeFromWeb(subject, '../portal')).toBe(join(SRC, 'portal', 'index'));
+    // And the negative control: the same file, the same shape, a family that is
+    // NOT forked. `overlay/` has no `.web` file, so `'../overlay'` is correct.
+    expect(reachesNativeFromWeb(subject, '../overlay')).toBeNull();
+    expect(reachesNativeFromWeb(subject, '../portal/index.web')).toBeNull();
+  });
+
+  it('has no web file reaching a forked family through its neutral name', () => {
+    expect(offenders).toEqual([]);
   });
 });
