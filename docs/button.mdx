@@ -68,7 +68,9 @@ So Bloom asks for no blur method on Android at all. What that costs:
 - Over Bloom's own flat surfaces — the documented backdrop range — nothing visible changes. A blur over a uniform colour is a no-op, so the painted pane matched the web composite to **0.75/255**, and every AA number above still holds.
 - Over **textured** content (a photograph, a busy list) the Android pane transmits that texture at 15% instead of smoothing it. The pill clip, the hairline, the rim, the sheen and the drop shadow are all unaffected.
 
-The third row is the interesting one: a backdrop rendered inside a `Modal` — which is what every portaled Bloom overlay is — **can** blur the app root across the window boundary. That is the one place an Android blur is available, and it waits on a decision about who mounts the target.
+The third row is where an Android blur is still available, and Bloom now takes it — but only for surfaces inside a real RN `<Modal>`, which is the bottom-sheet path and not a `Button`. See `docs/dialog.mdx` for how to switch it on.
+
+**So on Android, "glass" means tint, top sheen, hairline and drop shadow — plus a blur only where a target exists.** A glass `Button` has the first four and never the fifth.
 
 iOS uses `UIVisualEffectView` and needs none of this, but it has not been verified on hardware.
 

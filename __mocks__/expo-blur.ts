@@ -8,3 +8,14 @@ export const BlurView = React.forwardRef<unknown, Record<string, unknown>>(
     return React.createElement('BlurView', props, props.children as React.ReactNode);
   },
 );
+
+/**
+ * The Android-only container a `BlurView` points at through `blurTarget`. Real
+ * on Android, a plain `View` everywhere else; here it is a host element so a
+ * test can assert what the glass layer wraps and what it hands downwards.
+ */
+export const BlurTargetView = React.forwardRef<unknown, Record<string, unknown>>(
+  function BlurTargetView(props, _ref) {
+    return React.createElement('BlurTargetView', props, props.children as React.ReactNode);
+  },
+);

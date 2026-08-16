@@ -33,6 +33,7 @@
  */
 import type { ReactNode } from 'react';
 
+import { GlassBlurTargetProvider } from '../glass/blur-target';
 import { ImageResolverProvider, type ImageResolver } from '../image-resolver';
 import { BloomHapticsProvider } from '../hooks/use-haptics';
 import { TabBarMinimizeProvider } from '../tab-bar/context';
@@ -54,7 +55,20 @@ export function BloomProvider({
       <BloomThemeProvider {...themeProps}>
         <ScrollRestorationProvider adapter={expoRouterScrollAdapter}>
           <BloomHapticsProvider enabled={haptics}>
-            <TabBarMinimizeProvider>{children}</TabBarMinimizeProvider>
+            {/*
+              A PROVIDER, not an outlet, and the distinction is the one this
+              component's exclusion list encodes. Outlets stay out because a
+              second mount duplicates every surface they render; this renders NO
+              surface — a transparent container on Android and nothing at all
+              elsewhere — so a second mount duplicates nothing, and the nearest
+              one simply becomes the target for its subtree. Nor is its position
+              an app decision the way an outlet's is: it has no z-order and no
+              insets, and it must WRAP the content, which is exactly what this
+              provider already does with `children`.
+            */}
+            <GlassBlurTargetProvider>
+              <TabBarMinimizeProvider>{children}</TabBarMinimizeProvider>
+            </GlassBlurTargetProvider>
           </BloomHapticsProvider>
         </ScrollRestorationProvider>
       </BloomThemeProvider>
