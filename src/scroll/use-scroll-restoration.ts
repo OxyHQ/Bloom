@@ -15,7 +15,7 @@
  * Web bundlers select `./index.web` via the `"browser"` export condition in
  * `package.json`; native bundlers fall through to this file.
  */
-import { useCallback, useEffect, useMemo, useRef } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 import { useScrollRestorationContext } from './context';
 import { createScroller } from './scrollable.native';
@@ -54,8 +54,20 @@ export function useScrollRestoration(
   // while a new key is already rendered is never attributed to the new key.
   const recordingKeyRef = useRef<string | null>(null);
 
+  // Native's write is ALWAYS deferred a frame (see below), restore and reset
+  // alike, so this is pending whenever the effect below has work to do. Seeded
+  // on the first render rather than defaulting to false, because the effect is
+  // a passive one: a caller hiding its list until the offset lands would
+  // otherwise get one painted frame at the wrong position.
+  const [restorePending, setRestorePending] = useState(
+    () => enabled && scrollKey !== null,
+  );
+
   useEffect(() => {
-    if (!enabled || scrollKey === null) return undefined;
+    if (!enabled || scrollKey === null) {
+      setRestorePending(false);
+      return undefined;
+    }
 
     const scroller = createScroller(target);
     let frame: number | null = null;
@@ -63,10 +75,12 @@ export function useScrollRestoration(
     // Restore and reset are ONE write: a miss reads 0, and 0 is exactly what a
     // list showing content never seen this session must be sent to rather than
     // left at the offset its predecessor had.
+    setRestorePending(true);
     const apply = (): void => {
       frame = null;
       scroller.setOffset(store.read(scrollKey));
       recordingKeyRef.current = scrollKey;
+      setRestorePending(false);
     };
 
     // Defer one frame. This effect fires in the same commit that rendered the
@@ -86,6 +100,7 @@ export function useScrollRestoration(
     return () => {
       if (frame !== null) cancelAnimationFrame(frame);
       recordingKeyRef.current = null;
+      setRestorePending(false);
     };
   }, [store, scrollKey, enabled, target]);
 
@@ -98,5 +113,8 @@ export function useScrollRestoration(
     [store],
   );
 
-  return useMemo(() => ({ onScroll }), [onScroll]);
+  return useMemo(
+    () => ({ onScroll, restorePending }),
+    [onScroll, restorePending],
+  );
 }
