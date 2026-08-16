@@ -1,0 +1,9 @@
+{
+  // The consumer-shaped program PLUS the positive control. Used only by
+  // scripts/verify-consumer-typecheck.mjs, which asserts this run reports the
+  // control's error — proving the clean run next to it measured something.
+  // Same compilerOptions as tsconfig.consumer.json by extension, so the two
+  // runs cannot drift apart.
+  "extends": "./tsconfig.consumer.json",
+  "include": ["src", "scripts/typecheck-control"]
+}

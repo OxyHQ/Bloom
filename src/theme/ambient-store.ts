@@ -89,7 +89,27 @@ function schedule(next: AmbientThemeState, debounceMs: number): void {
   }
   pendingCommit = run;
   pendingTimer = setTimeout(run, debounceMs);
-  pendingTimer.unref?.();
+  // Release the handle where the host has one to release, so a pending debounce
+  // never holds a jest worker or an SSR process open. Only Node's timer handle
+  // is an object with `unref`; React Native and the browser return an opaque
+  // `number`, which has no such property AT ALL.
+  //
+  // This has to test the PROPERTY, not optional-call it: `pendingTimer.unref?.()`
+  // guards the CALL and still requires `unref` to exist on the declared type, so
+  // it is a hard TS2339 in every consumer's program, where `setTimeout` returns
+  // `number`. It compiled inside Bloom only because Bloom's own tsconfig pulls
+  // in @types/node. Widening through `unknown` is what makes the narrowing
+  // structural, and therefore valid under both programs.
+  // Gate: scripts/verify-consumer-typecheck.mjs.
+  const handle: unknown = pendingTimer;
+  if (
+    typeof handle === 'object' &&
+    handle !== null &&
+    'unref' in handle &&
+    typeof handle.unref === 'function'
+  ) {
+    handle.unref();
+  }
 }
 
 function subscribe(listener: () => void): () => void {
