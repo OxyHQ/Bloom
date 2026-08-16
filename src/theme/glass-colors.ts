@@ -91,18 +91,21 @@ import { withAlpha } from './color-utils';
  * in light mode that means lighter — which is the direction a white label can
  * least afford. Measured over 18 presets x 2 modes x 5 Bloom surfaces:
  *
- *   `Button` primary     45 of 180 rows fall below WCAG AA, in the band
- *                        4.17..4.45, ALL of them in LIGHT mode, across nine
+ *   `Button` primary     30 of 180 rows fall below WCAG AA, in the band
+ *                        4.17..4.49, ALL of them in LIGHT mode, across nine
  *                        presets (blue, faircoin, green, mint, orange, pumpkin,
  *                        rose, sky, yellow).
  *   `Button` destructive 0 of 180. Worst 5.32.
  *
  * As a SOLID fill all 360 rows pass, so this is a real regression and not an
- * inherited one — 263 rows across the whole fill vocabulary cross the AA line
- * that did not before, none of which failed both ways.
+ * inherited one — 173 rows across the whole fill vocabulary cross the AA line
+ * that did not before, none of which failed both ways. That count was 45 (and
+ * 263) until `SURFACE_RAMP` opened up three of the five Bloom surfaces the
+ * button can sit on — a palette improvement showing up here, not a relaxed
+ * bar; re-measure both numbers on every alpha or surface change.
  *
  * The alpha at which the failures reach zero is **0.89** (worst 4.52), and the
- * curve between is steep: 0.86 -> 39 rows, 0.87 -> 22, 0.88 -> 5, 0.89 -> 0.
+ * curve between is steep: 0.86 -> 21 rows, 0.87 -> 14, 0.88 -> 5, 0.89 -> 0.
  * So AA compliance costs four hundredths of alpha. 0.85 is kept because it is
  * the reference's own value and matching the reference is the requirement;
  * `glass-colors.test.ts` pins the compromise as an EXACT failure count and an
@@ -253,11 +256,13 @@ export interface GlassColors {
  * It is worth writing down WHY it is that token, because at 0.25 it was
  * `colors.text` and that was correct THEN: a pane that is three-quarters
  * backdrop takes its luminance from the page, so it needed the page's reading
- * colour. At 0.85 the pane is the fill, so it takes the fill's own label.
- * Measured on the same 1260-row matrix, `colors.text` fails AA on 1015 rows
- * (worst 1.23) against the on-fill token's 263 (worst 4.17) — a four-fold
- * difference, and the reason this flipped when the alpha did. The gate walks
- * both and reports them side by side, so the choice stays measured.
+ * colour — at that alpha `colors.text` passed everywhere and the on-fill
+ * token failed 650 of 1080 rows. At 0.85 the pane is the fill, so it takes
+ * the fill's own label: on the SAME 1080-row matrix (presets x modes x tones
+ * x surfaces), `colors.text` now fails AA on 864 rows (worst 1.21) against
+ * the on-fill token's 173 (worst 4.17) — the reason this flipped when the
+ * alpha did. Neither count is permanent; the gate re-measures both on every
+ * alpha or surface change and reports them side by side.
  */
 export function resolveGlassColors(fill: string): GlassColors {
   return {
