@@ -336,6 +336,12 @@ function ToastCloseButton({
       onPress={handlePress}
       hitSlop={CLOSE_BUTTON_HIT_SLOP}
       accessibilityRole="button"
+      // The NAME. Every other button in a toast is named by the text it
+      // renders; this one renders a glyph, so it announced itself as an
+      // unlabelled button beside the message it dismisses. The string is fixed
+      // rather than a prop because the control means one thing — the same call
+      // `DialogHeader` and `SheetShell` make for their own close affordances.
+      accessibilityLabel="Close"
       style={buttonStyle}
     >
       <TimesIcon size="md" fill={color} style={iconStyle} />

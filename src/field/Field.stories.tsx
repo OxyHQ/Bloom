@@ -46,7 +46,7 @@ export const WrappingAControl: Story = {
     return (
       <View style={{ width: 360 }}>
         <Field label="Notifications" description="Email me about account activity.">
-          <Switch value={on} onValueChange={setOn} />
+          <Switch value={on} onValueChange={setOn} accessibilityLabel="Notifications" />
         </Field>
       </View>
     );

@@ -30,6 +30,18 @@ export interface DotGridMeterProps {
    * @default theme.colors.backgroundSecondary
    */
   emptyColor?: string;
+  /**
+   * The meter's accessible NAME — what is being measured.
+   *
+   * `progressbar` takes its name from the author only: ARIA never computes one
+   * from an element's contents for this role, and the contents here are dots
+   * anyway. Without it the meter announces "13 of 30" against nothing.
+   * `StatBar` gets this from its required `label`; a bare grid of dots has no
+   * such text, so it has to be stated.
+   *
+   * Omitting it warns once in development; see `use-accessible-name-warning`.
+   */
+  accessibilityLabel?: string;
   /** Container style override. */
   style?: StyleProp<ViewStyle>;
   testID?: string;

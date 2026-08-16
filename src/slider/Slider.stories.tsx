@@ -19,7 +19,13 @@ export const Basic: Story = {
     return (
       <View style={{ width: 320, gap: 8 }}>
         <Text>{`Value: ${value}`}</Text>
-        <Slider value={value} onValueChange={setValue} min={0} max={100} />
+        <Slider
+          value={value}
+          onValueChange={setValue}
+          min={0}
+          max={100}
+          accessibilityLabel="Volume"
+        />
       </View>
     );
   },
@@ -31,7 +37,14 @@ export const Stepped: Story = {
     return (
       <View style={{ width: 320, gap: 8 }}>
         <Text>{`Step 0–5: ${value}`}</Text>
-        <Slider value={value} onValueChange={setValue} min={0} max={5} step={1} />
+        <Slider
+          value={value}
+          onValueChange={setValue}
+          min={0}
+          max={5}
+          step={1}
+          accessibilityLabel="Rating"
+        />
       </View>
     );
   },
@@ -40,7 +53,7 @@ export const Stepped: Story = {
 export const Disabled: Story = {
   render: () => (
     <View style={{ width: 320 }}>
-      <Slider value={60} onValueChange={() => {}} disabled />
+      <Slider value={60} onValueChange={() => {}} disabled accessibilityLabel="Volume, unavailable" />
     </View>
   ),
 };

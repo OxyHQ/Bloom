@@ -13,6 +13,7 @@ import {
 import { useTheme } from '../theme/use-theme';
 import { animation } from '../styles/tokens';
 import { bloomShadowStyle } from '../design-tokens/shadows';
+import { useAccessibleNameWarning } from '../hooks/use-accessible-name-warning';
 import type { SliderProps } from './types';
 
 function clamp(v: number, min: number, max: number): number {
@@ -55,6 +56,7 @@ const SliderComponent = function Slider({
   testID,
 }: SliderProps) {
   const theme = useTheme();
+  useAccessibleNameWarning('Slider', accessibilityLabel);
   const [trackWidth, setTrackWidth] = useState(0);
   const pressScale = useRef(new Animated.Value(0)).current;
 

@@ -1,6 +1,6 @@
 ---
 title: Switch
-description: An immediate on/off toggle — and why it must carry `aria-checked`, not `accessibilityState`.
+description: An immediate on/off toggle — why it must carry `aria-checked` rather than `accessibilityState`, and why it cannot name itself.
 order: 24
 ---
 
@@ -13,17 +13,22 @@ intent you confirm later with a Save button.
 ```tsx
 import { Switch } from '@oxyhq/bloom/switch';
 
-<Switch value={pushEnabled} onValueChange={setPushEnabled} />
+<Switch
+  value={pushEnabled}
+  onValueChange={setPushEnabled}
+  accessibilityLabel="Push notifications"
+/>
 ```
 
 ## Which prop decides what
 
-| prop            | decides                                          |
-| --------------- | ------------------------------------------------ |
-| `value`         | on or off — the component is fully controlled     |
-| `onValueChange` | receives the **opposite** of the current value    |
-| `disabled`      | dims it and takes it out of the tab order         |
-| `size`          | `default` (44×26) or `sm` (36×22)                 |
+| prop                 | decides                                       |
+| -------------------- | --------------------------------------------- |
+| `value`              | on or off — the component is fully controlled  |
+| `onValueChange`      | receives the **opposite** of the current value |
+| `disabled`           | dims it and takes it out of the tab order      |
+| `size`               | `default` (44×26) or `sm` (36×22)              |
+| `accessibilityLabel` | what it announces as — see below               |
 
 There is no uncontrolled mode. A switch whose state the caller does not own is a
 switch that can disagree with the thing it is supposed to be controlling — the
@@ -32,17 +37,38 @@ failed.
 
 ## A switch needs a label it does not draw
 
-`Switch` renders a track and a thumb and nothing else. Whatever it turns on has
-to be named by something — a `SettingsListItem` title, a `Label`, or an
-`accessibilityLabel` — or it announces as "switch, on" with no subject.
+`Switch` renders a track and a thumb and nothing else, so there is no text for
+either platform to compute a name from. **`accessibilityLabel` is the only
+route to one.** Without it the control announces "switch, on" and never says
+which of the settings on the page it belongs to.
+
+The caption next to it does not do this job. A `SettingsListItem` title, a
+`Label`, a `Text` in the same row — all of them are SIBLING elements, and
+neither React Native nor react-native-web associates a sibling with a control.
+So the row below needs the label even though the words are already on screen:
 
 ```tsx
 <SettingsListItem
   title="Push notifications"
-  rightElement={<Switch value={push} onValueChange={setPush} />}
+  rightElement={
+    <Switch
+      value={push}
+      onValueChange={setPush}
+      accessibilityLabel="Push notifications"
+    />
+  }
   showChevron={false}
 />
 ```
+
+One spelling covers both platforms, and it is not the same rule as the state
+below: react-native-web emits `aria-label` from `accessibilityLabel` when no
+`aria-label` is given, and React Native reads it directly.
+
+Omitting it warns once per component in development. The warning is dev-only
+(`process.env.NODE_ENV`, folded out of production bundles) and never throws — an
+unnamed switch still renders and still toggles. An empty or whitespace-only
+label counts as missing, because `aria-label=""` names nothing.
 
 ## The accessibility rule this component is the reference for
 

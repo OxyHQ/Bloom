@@ -2,6 +2,7 @@ import React, { memo, useMemo } from 'react';
 import { View } from 'react-native';
 
 import { useTheme } from '../theme/use-theme';
+import { useAccessibleNameWarning } from '../hooks/use-accessible-name-warning';
 import type { DotGridMeterProps } from './types';
 
 /**
@@ -18,10 +19,12 @@ const DotGridMeterComponent: React.FC<DotGridMeterProps> = ({
   gap = 6,
   filledColor,
   emptyColor,
+  accessibilityLabel,
   style,
   testID,
 }) => {
   const { colors } = useTheme();
+  useAccessibleNameWarning('DotGridMeter', accessibilityLabel);
   const onColor = filledColor ?? colors.success;
   const offColor = emptyColor ?? colors.backgroundSecondary;
 
@@ -56,6 +59,10 @@ const DotGridMeterComponent: React.FC<DotGridMeterProps> = ({
       aria-valuemin={0}
       aria-valuemax={safeTotal}
       aria-valuenow={safeFilled}
+      // The NAME, which the value props above do not supply: `progressbar`
+      // takes its name from the author alone, so an unnamed one announces a
+      // number against nothing.
+      accessibilityLabel={accessibilityLabel}
       testID={testID}
     >
       {dots.map((isFilled, index) => (

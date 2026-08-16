@@ -4,6 +4,7 @@ import { Pressable, Animated, StyleSheet } from 'react-native';
 import { useTheme } from '../theme/use-theme';
 import { animation } from '../styles/tokens';
 import { bloomShadowStyle } from '../design-tokens/shadows';
+import { useAccessibleNameWarning } from '../hooks/use-accessible-name-warning';
 import type { SwitchProps } from './types';
 
 const TRACK = { default: { w: 44, h: 26 }, sm: { w: 36, h: 22 } } as const;
@@ -12,8 +13,9 @@ const PADDING = 2;
 const SQUEEZE_RATIO = 0.75; // thumb height shrinks to 75% when pressed
 
 const SwitchComponent = React.forwardRef<React.ElementRef<typeof Pressable>, SwitchProps>(
-  ({ value, onValueChange, disabled, style, size = 'default', testID }, ref) => {
+  ({ value, onValueChange, disabled, style, size = 'default', accessibilityLabel, testID }, ref) => {
     const theme = useTheme();
+    useAccessibleNameWarning('Switch', accessibilityLabel);
     const anim = useRef(new Animated.Value(value ? 1 : 0)).current;
     const pressAnim = useRef(new Animated.Value(0)).current;
 
@@ -82,6 +84,14 @@ const SwitchComponent = React.forwardRef<React.ElementRef<typeof Pressable>, Swi
         ref={ref}
         role="switch"
         aria-checked={value}
+        // The NAME. A switch renders a track and a thumb, so there is no text
+        // for the name to be computed from and no sibling caption either
+        // platform will adopt — without this the control announces "switch, on"
+        // and nothing more. One spelling covers both: react-native-web's
+        // `createDOMProps` emits `aria-label` from it, React Native reads it
+        // directly. That is NOT the rule for `accessibilityState` two lines up,
+        // which reaches native alone; the state and the name differ here.
+        accessibilityLabel={accessibilityLabel}
         // The disabled state has to travel on this prop, not on `aria-disabled`:
         // react-native-web's `Pressable` appends its own `aria-disabled` from
         // `disabled` AFTER spreading the caller's props, so a caller-supplied

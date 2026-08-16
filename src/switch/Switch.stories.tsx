@@ -22,7 +22,12 @@ type Story = StoryObj<typeof Switch>;
 export const Basic: Story = {
   render: function BasicStory() {
     const [on, setOn] = useState(false);
-    return <Switch value={on} onValueChange={setOn} testID="switch-basic" />;
+    return <Switch
+        value={on}
+        onValueChange={setOn}
+        accessibilityLabel="Airplane mode"
+        testID="switch-basic"
+      />;
   },
 };
 
@@ -33,8 +38,8 @@ export const Sizes: Story = {
     const [b, setB] = useState(true);
     return (
       <View style={{ gap: 16, alignItems: 'flex-start' }}>
-        <Switch value={a} onValueChange={setA} />
-        <Switch value={b} onValueChange={setB} size="sm" />
+        <Switch value={a} onValueChange={setA} accessibilityLabel="Default size" />
+        <Switch value={b} onValueChange={setB} size="sm" accessibilityLabel="Small size" />
       </View>
     );
   },
@@ -44,8 +49,8 @@ export const Sizes: Story = {
 export const Disabled: Story = {
   render: () => (
     <View style={{ gap: 16, alignItems: 'flex-start' }}>
-      <Switch value onValueChange={() => {}} disabled />
-      <Switch value={false} onValueChange={() => {}} disabled />
+      <Switch value onValueChange={() => {}} disabled accessibilityLabel="On, unavailable" />
+      <Switch value={false} onValueChange={() => {}} disabled accessibilityLabel="Off, unavailable" />
     </View>
   ),
 };
@@ -67,7 +72,11 @@ export const InARow: Story = {
         }}
       >
         <Text>Sync over cellular</Text>
-        <Switch value={on} onValueChange={setOn} />
+        <Switch
+          value={on}
+          onValueChange={setOn}
+          accessibilityLabel="Sync over cellular"
+        />
       </View>
     );
   },

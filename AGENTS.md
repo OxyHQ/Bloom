@@ -69,15 +69,17 @@ Wiring: Expo/Metro apps import `@oxyhq/app-preset/css/base.css` at the top of `g
 - **Native has a second mechanism z-index can't reach:** each surface is its own RN `<Modal>` window. Android is fine by construction; **iOS may not be** — unconfirmed, verify on a real device before shipping a fix.
 - **Jest cannot see either bug** — a losing surface's markup is valid, merely painted under something, and a dropped `pointerEvents` prop is valid markup too. Stacking gates: `overlay-stack-order.test.tsx` + `scripts/verify-overlay-stacking.mjs` (real Chrome, `page.mouse.click()` — a synthetic `element.click()` bypasses hit testing). Pointer-events gates: `pointer-events-style-form.test.ts` (source scan) + `overlay-pointer-events.test.tsx` (real react-native-web). Verify dismissal in a real browser either way.
 
-## Accessibility state on web (silent)
+## Accessibility state and NAME on web (both silent)
 
 **`accessibilityState` reaches NATIVE ONLY — react-native-web drops it entirely** and reads only `aria-*`. A control setting just `accessibilityState={{checked}}` renders a role carrying no state.
 
 - **`aria-*` works on BOTH platforms** — RN folds `aria-busy|checked|disabled|expanded|selected` back into `accessibilityState`.
 - **`aria-pressed` is the exception** — RN has no such concept, so a toggle with `role="button"` must set BOTH. **Which aria state is correct depends on the ROLE** — a component rendering two roles needs both branches.
 - **`aria-disabled` inverts between `Pressable` and `View`** — `Pressable` overwrites a caller-supplied one from its `disabled` prop; a plain `View` has no `disabled` prop. **`accessibilityValue={{min,max,now}}` is dropped too** — only the flat `aria-value*` props work.
+- **The NAME is NOT that rule** — `accessibilityLabel` reaches both, so ONE spelling, the one 43 elements already use. Don't "fix" it to `aria-label` by analogy with the state.
+- **A control rendering no text can be named by nothing but a prop** — a caption beside it is a SIBLING, and `progressbar`/`slider` take no name from contents at all. `Switch` shipped `role="switch"` + `aria-checked` and NO label prop, so the whole fleet announced "switch, off" and a consumer forked it rather than report it. `switch`/`slider`/`dot-grid-meter` warn once per component in dev (`hooks/use-accessible-name-warning.ts`); an EMPTY string counts as missing, which is why a required prop would not have sufficed.
 - **A prop-level test cannot catch any of this** — assert the rendered ATTRIBUTE. Gate: `aria-state-web.test.tsx`, mutation-verified per component.
-- **TWO gates; the runtime one does not fail by default.** `aria-state-web.test.tsx` imports subjects BY NAME, so a new component never joins it automatically — `Slider` was fixed, its three `progressbar` siblings were not. `aria-state-source-census.test.ts` fails any element with a stateful role and no matching `aria-*`. Add to both.
+- **TWO gates; the runtime one does not fail by default.** `aria-state-web.test.tsx` imports subjects BY NAME, so a new component never joins it automatically — `Slider` was fixed, its three `progressbar` siblings were not. `aria-state-source-census.test.ts` fails any stateful role with no matching `aria-*` and any interactive role with no NAME. Add to both. In it a `{...spread}` is NOT evidence a caller can name an element (`Slider` spreads `panResponder.panHandlers`): spread exemptions are a written list, contents-derived ones an equality.
 
 ## Overlay surfaces
 

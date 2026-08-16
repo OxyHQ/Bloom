@@ -414,6 +414,14 @@ function HeaderProgressBar({
       aria-valuemin={0}
       aria-valuemax={total}
       aria-valuenow={step}
+      // The NAME, which the value props do not supply and which `progressbar`
+      // never computes from contents: unnamed, the bar announced a bare "2 of
+      // 5" with no subject. This one Bloom can answer itself — the bar always
+      // means the same thing — so unlike `Slider` and `DotGridMeter` it takes
+      // no prop. `aria-valuetext` carries the reading, since the raw number is
+      // announced as a percentage otherwise.
+      accessibilityLabel="Progress"
+      aria-valuetext={`Step ${step} of ${total}`}
       style={[
         styles.progressTrack,
         { backgroundColor: onImage ? 'rgba(255,255,255,0.25)' : theme.colors.border },
