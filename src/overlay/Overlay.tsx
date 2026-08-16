@@ -223,9 +223,13 @@ function AnimatedBackdropLayers({
         <AnimatedBlurView
           intensity={blurIntensity}
           tint={blurTint}
-          // Android's default blur is a no-op on many devices; this is the
-          // implementation that actually renders there.
-          experimentalBlurMethod="dimezisBlurView"
+          // No Android blur method is requested — see `glass/GlassSurface.tsx`.
+          // Unlike a glass Button, THIS surface could actually have one: a
+          // backdrop renders inside a `Modal`, so it is not a descendant of the
+          // content it blurs, and a `blurTarget` pointing at the app root is
+          // reachable across that window boundary (measured on API 37: the pane
+          // matched the blurred composite to 0.36/255). It needs a target the
+          // consumer mounts, which is public API Bloom has not decided on yet.
           pointerEvents="none"
           style={[StyleSheet.absoluteFill, layerStyle, blurFade]}
         />
@@ -268,7 +272,7 @@ function StaticBackdropLayers({
         <BlurView
           intensity={blurIntensity}
           tint={blurTint}
-          experimentalBlurMethod="dimezisBlurView"
+          // No Android blur method — see the animated pair above.
           pointerEvents="none"
           // Opacity last, as in the animated pair: the level this component
           // resolved wins over anything `layerStyle` happens to carry.

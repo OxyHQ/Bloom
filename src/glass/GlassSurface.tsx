@@ -82,9 +82,17 @@ const GlassSurfaceComponent: React.FC<GlassSurfaceProps> = ({
         // mode would be a bright card, which is the failure `frosted-icon-button`
         // documents at length.
         tint={theme.isDark ? 'dark' : 'light'}
-        // Android's default blur is a no-op without this — the same value
-        // `frosted-icon-button` passes, for the same reason.
-        experimentalBlurMethod="dimezisBlurView"
+        // No blur METHOD is requested on Android, and that is the honest state
+        // rather than an oversight — see the `dimezisBlurView` note in
+        // `docs/button.mdx`. `expo-blur` needs a `blurTarget` ref to a
+        // `BlurTargetView` wrapping the content to blur, and a `BlurView` that
+        // is a DESCENDANT of the view it points at takes the process down with
+        // SIGSEGV (unbounded `RenderNode::prepareTreeImpl` recursion, measured
+        // on API 37). A glass surface fills its caller, which sits inside the
+        // content it would need to blur, so the only topology available here is
+        // the one that crashes. Asking for the method anyway bought nothing: the
+        // native side falls back to "none" and every instance logged TWO
+        // warnings per mount.
         style={StyleSheet.absoluteFill}
       />
       {/*
