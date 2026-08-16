@@ -37,6 +37,7 @@ import {
   GLASS_FILL_ALPHA,
   GLASS_SHEEN,
   GLASS_SHEEN_GRADIENT,
+  glassSheenCss,
   resolveGlassColors,
 } from '../glass-colors';
 import type { ThemeColors } from '../types';
@@ -138,7 +139,7 @@ const PRESETS = Object.keys(APP_COLOR_PRESETS) as AppColorName[];
 const MODES = ['light', 'dark'] as const;
 
 /** The sheen at its darkest point — the bottom stop, black at 2%. */
-const SHEEN_BOTTOM = GLASS_SHEEN.bottom;
+const SHEEN_BOTTOM = glassSheenCss(GLASS_SHEEN.bottom);
 
 /** The painted pane: fill at its alpha over the backdrop, then the sheen. */
 function pane(fill: string, backdrop: Rgba, platform: Platform, isDark: boolean): Rgba {
@@ -410,9 +411,39 @@ describe('glass surface legibility', () => {
   });
 
   it('builds the web sheen gradient from the same stops the native Svg uses', () => {
-    expect(GLASS_SHEEN_GRADIENT).toContain(GLASS_SHEEN.top);
-    expect(GLASS_SHEEN_GRADIENT).toContain(GLASS_SHEEN.bottom);
+    expect(GLASS_SHEEN_GRADIENT).toContain(glassSheenCss(GLASS_SHEEN.top));
+    expect(GLASS_SHEEN_GRADIENT).toContain(glassSheenCss(GLASS_SHEEN.bottom));
     expect(GLASS_SHEEN_GRADIENT).toContain(`${GLASS_SHEEN.middleStop * 100}%`);
+  });
+
+  /**
+   * The assertion above pins the two forks to the same VALUES, and that is all
+   * it ever pinned — which is exactly why an Android emulator found the pane
+   * painting a solid white-to-black wipe over an invisible brand fill while
+   * every suite was green. `react-native-svg` takes RGB from `stopColor` and
+   * DISCARDS an alpha channel found there, so the one representation that must
+   * never reach an SVG stop is a colour with its alpha inside it.
+   *
+   * This is the shape of the defect rather than its pixels: jest cannot
+   * rasterise an SVG gradient, so a pixel assertion here would be theatre. What
+   * it can do is refuse the ambiguous representation at the token.
+   */
+  it('keeps every sheen stop alpha OUT of its colour, where an SVG stop would drop it', () => {
+    const stops = [GLASS_SHEEN.top, GLASS_SHEEN.middle, GLASS_SHEEN.bottom];
+    expect(stops).toHaveLength(3);
+    for (const stop of stops) {
+      expect(stop.color).toMatch(/^rgb\(\s*\d+\s*,\s*\d+\s*,\s*\d+\s*\)$/);
+      expect(stop.color).not.toContain('rgba');
+      expect(typeof stop.opacity).toBe('number');
+      expect(stop.opacity).toBeGreaterThanOrEqual(0);
+      expect(stop.opacity).toBeLessThanOrEqual(1);
+    }
+    // A positive control on the check itself: the pre-fix spelling must FAIL the
+    // same predicate, or this only asserts that strings are strings.
+    expect('rgba(255, 255, 255, 0.02)').not.toMatch(/^rgb\(\s*\d+\s*,\s*\d+\s*,\s*\d+\s*\)$/);
+    // And the sheen must still be a sheen — an all-zero opacity set would pass
+    // every line above while painting nothing.
+    expect(stops.some((s) => s.opacity > 0)).toBe(true);
   });
 
   it('and a known-bad pairing still fails, so the threshold is doing work', () => {

@@ -116,19 +116,47 @@ export const GLASS_FILL_ALPHA = 0.85;
  * The sheen: simulated light from above, white at the top edge fading to nothing
  * by 40% and a trace of black at the bottom.
  *
- * These are the reference's `#ffffff05` and `#00000005` — 5/255 ≈ 2% — as real
- * `rgba()` strings, because an 8-digit hex is not a colour every RN surface
- * parses. White and black at 2% are light, not palette: there is no themed
- * "colour of a highlight", and tinting the sheen with the accent would make it
- * a second fill rather than a specular.
+ * These are the reference's `#ffffff05` and `#00000005` — 5/255 ≈ 2%. White and
+ * black at 2% are light, not palette: there is no themed "colour of a
+ * highlight", and tinting the sheen with the accent would make it a second fill
+ * rather than a specular.
+ *
+ * ── WHY THE OPACITY IS A SEPARATE FIELD, NOT AN `rgba()` STRING ──────────────
+ *
+ * These stops feed TWO renderers with different models of where alpha lives. A
+ * CSS `linear-gradient` takes it inside the colour; SVG has separate
+ * `stop-color` and `stop-opacity` properties and `react-native-svg` follows SVG
+ * — it parses `stopColor` for its RGB and DISCARDS the alpha channel.
+ *
+ * So an `rgba(255, 255, 255, 0.02)` stop is correct on web and renders OPAQUE
+ * WHITE on native. Measured on an Android emulator (API 37) before this shape
+ * existed: the pane ran a solid white-to-black wipe from 255 at the top to 12 at
+ * the bottom, with the break at exactly 40% — {@link GLASS_SHEEN.middleStop} —
+ * and the brand fill under it was not visible at ANY pixel, R=G=B throughout.
+ * The glass button was achromatic on Android and correct on web.
+ *
+ * Nothing threw, and no gate saw it: the token was shared, the gradient was
+ * built from it, and both forks agreed about every VALUE. Only the SVG
+ * renderer's reading of that value differed. Holding the opacity in its own
+ * field removes the representation that can be silently half-read — the web
+ * string is derived below, and native passes the two fields to the two props
+ * SVG actually defines.
  */
 export const GLASS_SHEEN = {
-  top: 'rgba(255, 255, 255, 0.02)',
-  middle: 'rgba(255, 255, 255, 0)',
-  bottom: 'rgba(0, 0, 0, 0.02)',
+  top: { color: 'rgb(255, 255, 255)', opacity: 0.02 },
+  middle: { color: 'rgb(255, 255, 255)', opacity: 0 },
+  bottom: { color: 'rgb(0, 0, 0)', opacity: 0.02 },
   /** Where the top stop has faded out completely, 0..1 down the surface. */
   middleStop: 0.4,
 } as const;
+
+/** One sheen stop as a CSS colour, for the fork whose gradient carries alpha inline. */
+export type GlassSheenStop = { readonly color: string; readonly opacity: number };
+
+/** A stop as a single CSS `rgba()` — the web gradient's form. */
+export function glassSheenCss(stop: GlassSheenStop): string {
+  return withAlpha(stop.color, stop.opacity);
+}
 
 /**
  * The lit rim: a 1px hairline of white along the top edge.
@@ -163,9 +191,12 @@ export const GLASS_BLUR_FILTER = `blur(${GLASS_BLUR_RADIUS_PX}px)`;
  * element and sets `background-image` directly.
  *
  * Derived from {@link GLASS_SHEEN} rather than written out, so the web fork and
- * the native `Svg` gradient cannot drift to different stops.
+ * the native `Svg` gradient cannot drift to different stops. Note what that
+ * guarantee does and does not cover: it pins the two to the same VALUES, which
+ * is why it stayed green while native rendered them opaque — see the alpha note
+ * on {@link GLASS_SHEEN}. Sharing a token is not the same as agreeing about it.
  */
-export const GLASS_SHEEN_GRADIENT = `linear-gradient(180deg, ${GLASS_SHEEN.top}, ${GLASS_SHEEN.middle} ${GLASS_SHEEN.middleStop * 100}%, ${GLASS_SHEEN.bottom})`;
+export const GLASS_SHEEN_GRADIENT = `linear-gradient(180deg, ${glassSheenCss(GLASS_SHEEN.top)}, ${glassSheenCss(GLASS_SHEEN.middle)} ${GLASS_SHEEN.middleStop * 100}%, ${glassSheenCss(GLASS_SHEEN.bottom)})`;
 
 /**
  * Intensity handed to `expo-blur`'s `BlurView` on NATIVE, derived from
