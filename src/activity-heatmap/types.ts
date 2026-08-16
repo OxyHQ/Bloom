@@ -26,12 +26,23 @@ export interface ActivityHeatmapProps {
    * Ascending count thresholds partitioning positive counts into color levels.
    * With N thresholds a positive count maps to `colorScale[number of thresholds
    * met]` (clamped to the scale). Count 0 always uses `emptyColor`.
-   * @default [1, 3, 6, 10]
+   *
+   * N thresholds therefore address indices `0..N`, so the scale wants `N + 1`
+   * colors — and index 0 means "positive, but below the first threshold", which
+   * only exists while the first threshold is 2 or more. A first threshold of 1
+   * makes the faintest color unreachable: every positive count meets it.
+   *
+   * The defaults bucket 1–2 / 3–5 / 6–9 / 10+.
+   * @default [3, 6, 10]
    */
   levels?: number[];
   /**
    * Colors low→high. Index 0 is the faintest activity shade, the last index the
-   * strongest. Defaults to five opacity steps of `theme.colors.primary`.
+   * strongest. Defaults to four opacity steps of `theme.colors.primary`.
+   *
+   * Pass `levels.length + 1` of them — see `levels`. A shorter scale clamps the
+   * busiest days into its last color; a longer one leaves its darkest colors
+   * unused.
    */
   colorScale?: string[];
   /**

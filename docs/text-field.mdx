@@ -1,38 +1,58 @@
 ---
 title: TextField
-description: Composable text input — Root, Input, Label, Icon, Suffix.
+description: Composable text input — the field, its input, label, icon, suffix and ghost.
 order: 11
 ---
 
 # TextField
 
-A composable text input. Wrap a `TextField.Root` around `TextField.Input` and optional `TextField.Label`, `TextField.Icon`, and `TextField.Suffix` to build the exact field your form needs. Tracks focus, hover, and invalid state for you so children can react via context.
+A composable text input. `TextField` is the field itself; put a `TextFieldInput` inside it, plus any of `TextFieldIcon`, `TextFieldSuffix` and `TextFieldGhost`. The field tracks focus, hover and invalid state and hands it to those parts, so the whole chrome reacts as one.
 
 ## Basic
 
 ```tsx
-import * as TextField from '@oxyhq/bloom/text-field';
+import { TextField, TextFieldInput } from '@oxyhq/bloom/text-field';
 
-<TextField.Root>
-  <TextField.Input
+<TextField>
+  <TextFieldInput
+    label="Email"
     value={value}
     onChangeText={setValue}
-    placeholder="Email"
     keyboardType="email-address"
   />
-</TextField.Root>
+</TextField>
 ```
 
-## With label and icon
+`label` is required and is the input's accessible name. Without an explicit `placeholder` it doubles as the placeholder; pass `placeholder={null}` for none.
+
+## One input needs no wrapper
 
 ```tsx
-<TextField.Root>
-  <TextField.Icon icon={MailIcon} />
-  <TextField.Input value={email} onChangeText={setEmail} placeholder="Email" />
-</TextField.Root>
+<TextFieldInput label="Email" value={value} onChangeText={setValue} />
 ```
 
-The `Root` lays children out in a row and auto-focuses the input on click (web).
+`TextFieldInput` on its own wraps itself in a `TextField`, so the common case is one element. Reach for the explicit `TextField` when you have more than one part to put in it, or when you need `isInvalid` or `radius` on the field.
+
+## With an icon
+
+```tsx
+<TextField>
+  <TextFieldIcon icon={Envelope_Stroke2_Corner0_Rounded} />
+  <TextFieldInput label="Email" value={email} onChangeText={setEmail} />
+</TextField>
+```
+
+The field lays its children out in a row and focuses the input when you click anywhere in it (web).
+
+## Which parts need the field
+
+`TextFieldIcon` and `TextFieldSuffix` read the field's focus, hover and invalid state, and **throw** when rendered outside a `TextField` — they have nothing to colour themselves against, and a part that renders anyway would look finished while never reacting to anything. The message names what is missing:
+
+```
+TextField parts must be rendered inside a <TextField>.
+```
+
+`TextFieldInput` does not throw: a missing field is how it knows to wrap itself. `TextFieldLabel` sits above the field by design, and `TextFieldGhost` reads no state — both render anywhere.
 
 ## Validation
 
@@ -41,76 +61,103 @@ const [value, setValue] = useState('');
 const [touched, setTouched] = useState(false);
 const isInvalid = touched && !value.includes('@');
 
-<TextField.Root isInvalid={isInvalid}>
-  <TextField.Input
+<TextField isInvalid={isInvalid}>
+  <TextFieldInput
+    label="Email"
     value={value}
     onChangeText={setValue}
     onBlur={() => setTouched(true)}
-    placeholder="Email"
   />
-</TextField.Root>
+</TextField>
 {isInvalid ? <Text style={{ color: theme.colors.negative }}>Enter a valid email</Text> : null}
 ```
 
-`isInvalid` paints the root in the negative palette and is also exposed via context for custom children.
+`isInvalid` paints the field in the negative palette and reaches every part through context. `TextFieldInput` takes its own `isInvalid` too, for the wrapper-less spelling.
+
+## Floating label
+
+```tsx
+<TextField>
+  <TextFieldInput floatingLabel label="Email" value={email} onChangeText={setEmail} />
+</TextField>
+```
+
+The label starts inside the field and animates to a caption at the top on focus or once there is a value. State drives it, not CSS, so web and native behave identically; reduced motion snaps instead of animating.
 
 ## Multiline
 
 ```tsx
-<TextField.Root style={{ minHeight: 96, alignItems: 'flex-start' }}>
-  <TextField.Input value={bio} onChangeText={setBio} multiline />
-</TextField.Root>
+<TextField style={{ minHeight: 96, alignItems: 'flex-start' }}>
+  <TextFieldInput label="Bio" value={bio} onChangeText={setBio} multiline />
+</TextField>
 ```
 
 ## Suffix
 
 ```tsx
-<TextField.Root>
-  <TextField.Input value={url} onChangeText={setUrl} placeholder="example" />
-  <TextField.Suffix>.oxy.so</TextField.Suffix>
-</TextField.Root>
+<TextField>
+  <TextFieldInput label="Workspace" value={url} onChangeText={setUrl} />
+  <TextFieldSuffix label="domain">.oxy.so</TextFieldSuffix>
+</TextField>
 ```
 
 ## Components
 
-### `TextField.Root`
+### `TextField`
 
 | Prop | Type | Description |
 |------|------|-------------|
-| `isInvalid?` | `boolean` | Paints the root in the negative palette and exposes via context. |
+| `isInvalid?` | `boolean` | Paints the field in the negative palette and exposes it via context. |
+| `radius?` | `number` | Corner radius of the chrome, default `10`. A large value (999) reads as a pill. |
 | `style?` | `StyleProp<ViewStyle>` | Override the container style. |
-| `children?` | `React.ReactNode` | `Input`, `Label`, `Icon`, `Suffix`, custom. |
+| `children?` | `React.ReactNode` | The input, plus any icon / suffix / ghost. |
 
-### `TextField.Input`
+### `TextFieldInput`
 
-Accepts all of React Native's `TextInputProps`. Auto-styles to match the Bloom theme; hooks into the `Root`'s focus/hover state.
-
-### `TextField.Icon`
+Accepts React Native's `TextInputProps`, plus:
 
 | Prop | Type | Description |
 |------|------|-------------|
-| `icon` | `React.ComponentType<SVGIconProps>` | Bloom icon component. |
-| `position?` | `'left' \| 'right'` | Defaults to `'left'`. |
+| `label` | `string` | Required. The accessible name, and the default placeholder. |
+| `value?` / `onChangeText?` | `string` / `(v: string) => void` | The controlled value. |
+| `placeholder?` | `string \| null` | Overrides the label as placeholder; `null` for none. |
+| `isInvalid?` | `boolean` | For the wrapper-less spelling. |
+| `floatingLabel?` | `boolean` | Material-style animated label. Default `false`. |
+| `inputRef?` | `RefObject<TextInput \| null>` | Merged with the field's own ref. |
 
-### `TextField.Label`
+### `TextFieldIcon`
 
-Accessibility label rendered visually hidden by default on native, styled inline on web.
+| Prop | Type | Description |
+|------|------|-------------|
+| `icon` | `React.ComponentType<SVGIconProps>` | A Bloom icon component. Takes the field's hover / focus / error colour. |
 
-### `TextField.Suffix`
+Renders before the input, so put it first.
 
-Inline trailing text or node — domain suffixes, units, badges.
+### `TextFieldLabel`
 
-## Hooks
+A visible label rendered ABOVE the field, outside it:
 
-### `useSharedInputStyles()`
+```tsx
+<TextFieldLabel>Workspace</TextFieldLabel>
+<TextField>
+  <TextFieldInput label="Workspace" value={name} onChangeText={setName} />
+</TextField>
+```
 
-Returns the style snippets the chrome uses for hover/focus/error so you can keep visual parity in custom inputs.
+### `TextFieldSuffix`
+
+Inline trailing text — domain suffixes, units. `label` is its accessible name; `accessibilityHint` and `style` are optional.
+
+### `TextFieldGhost`
+
+Greyed completion text drawn behind the input, for "type `acme`, see `acme.oxy.so`". Takes the typed prefix as `children` and the suggested remainder as `value`; it is `aria-hidden`.
 
 ## Accessibility
 
-- The whole `Root` is clickable on web — clicking anywhere focuses the input.
-- Labels participate in `accessibilityLabel` automatically.
-- Invalid state is announced via `aria-invalid` on web; on native, surface a separate error message under the field.
+- Clicking anywhere in the field focuses the input (web).
+- `label` is the input's `accessibilityLabel`; the floating label itself is hidden from assistive tech so it is not announced twice.
+- On web the browser's own focus ring is stripped, because it follows the input's box rather than the field's and pokes out of a pill's corners. The animated border IS the focus signal.
+- Invalid state paints the chrome. Surface the reason as text under the field — colour alone is not an announcement.
 
 ## Recipes
 
@@ -119,25 +166,22 @@ Returns the style snippets the chrome uses for hover/focus/error so you can keep
 ```tsx
 const [show, setShow] = useState(false);
 
-<TextField.Root>
-  <TextField.Input
+<TextField>
+  <TextFieldInput
+    label="Password"
     value={password}
     onChangeText={setPassword}
     secureTextEntry={!show}
-    placeholder="Password"
   />
-  <Button variant="icon" icon={show ? <EyeOffIcon /> : <EyeIcon />} onPress={() => setShow(!show)} />
-</TextField.Root>
+  <Button
+    variant="icon"
+    icon={show ? <EyeSlash_Stroke2_Corner0_Rounded /> : <Eye_Stroke2_Corner0_Rounded />}
+    accessibilityLabel={show ? 'Hide password' : 'Show password'}
+    onPress={() => setShow(!show)}
+  />
+</TextField>
 ```
 
-### Search field with clear
+### Search
 
-```tsx
-<TextField.Root>
-  <TextField.Icon icon={SearchIcon} />
-  <TextField.Input value={query} onChangeText={setQuery} placeholder="Search" />
-  {query.length > 0 ? (
-    <Button variant="icon" icon={<XIcon />} accessibilityLabel="Clear" onPress={() => setQuery('')} />
-  ) : null}
-</TextField.Root>
-```
+Reach for `Search` rather than rebuilding it: it is a `TextField` at the pill radius with the magnifier, the clear button and the keyboard settings a query field wants.

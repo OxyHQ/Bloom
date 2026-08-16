@@ -18,6 +18,12 @@ import { AspectRatio } from '@oxyhq/bloom/aspect-ratio';
 
 `ratio` is width divided by height and defaults to `1`. A number rather than a preset name, for the same reason shadcn's web `AspectRatio` takes one: a ratio is arithmetic the call site already has, and naming presets needs a new name for every ratio anyone wants.
 
+## A ratio it cannot use takes the default
+
+`0`, `NaN`, `Infinity` and negatives are not ratios — a box has positive finite lengths on both axes — and every one of them comes out of the arithmetic above when the image has not loaded yet: `0 / 0` is `NaN`, `w / 0` is `Infinity`, `0 / h` is `0`. Passed through, they leave the well with no usable height, which is the layout jump this component exists to prevent. So they fall back to `1` rather than reaching the style.
+
+You still want a real number here. The fallback keeps the well a well; it does not know your media's shape, so a component that can be told the ratio ahead of the load should be told it.
+
 ## It fills its parent's width
 
 An aspect box with no width is zero-sized, and "fill the parent, derive the height" is what every call site wants. So the width is `100%` and the height follows from `ratio`. A caller who needs a fixed width passes one through `style`, which lands last:
