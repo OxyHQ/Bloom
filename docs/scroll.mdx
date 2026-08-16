@@ -48,7 +48,8 @@ offset — you would open a new page halfway down.
 ## Native is deliberately narrower
 
 The native hook is keyed on the storage key, never on focus, and it **returns**
-`{ onScroll }` for the caller to wire up rather than attaching itself.
+`{ onScroll, restorePending }` for the caller to wire up rather than attaching
+itself.
 
 `enabled` is how the caller says *its rows exist yet* — restoring to an offset a
 list cannot reach yet lands at the bottom of a short list. It is not a feature
