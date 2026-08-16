@@ -40,6 +40,22 @@ export interface UserHoverCardProps {
    * Bloom does NOT implement follow logic; it only renders the card.
    */
   action?: ReactNode;
+  /**
+   * Trailing content region, rendered after the stats row and spanning the full
+   * inner width — the slot for whatever this app knows about a person that Bloom
+   * does not (a contribution graph, a shared-followers strip, a mutual-friends
+   * line). Bloom adds the vertical rhythm and nothing else: no label, no divider,
+   * no clip.
+   *
+   * It is a SIBLING of the identity area, never a child, so its own pressables
+   * keep their presses instead of feeding {@link UserHoverCardProps.onPressProfile}
+   * — and a screen reader reads it as content, not as part of the identity
+   * button's name.
+   *
+   * The card is 280px wide with `space.lg` padding, so content has ~248px of
+   * inner width; the card does not clip, so anything wider paints outside it.
+   */
+  footer?: ReactNode;
   /** Container style override. */
   style?: StyleProp<ViewStyle>;
   testID?: string;
