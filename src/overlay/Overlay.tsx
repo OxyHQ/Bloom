@@ -41,6 +41,8 @@
  */
 import { createContext, memo, useContext, useMemo, type ReactNode } from 'react';
 import { BlurView } from 'expo-blur';
+
+import { useWindowedBlurTarget } from '../glass/blur-target';
 import {
   Platform,
   Pressable,
@@ -184,6 +186,13 @@ function OverlayRootView({
 OverlayRoot.displayName = 'OverlayRoot';
 
 interface BackdropLayerProps {
+  /**
+   * The Android blur target, or `undefined` when this surface may not use one.
+   * Resolved ONCE in `Backdrop` and passed down, so both layer variants make
+   * the identical decision — see `glass/blur-target.tsx` for why a surface in
+   * the app's own window must not receive it.
+   */
+  blurTarget?: ReturnType<typeof useWindowedBlurTarget>;
   blurIntensity: number;
   blurTint: 'light' | 'dark' | 'default';
   dimColor: string;
@@ -199,6 +208,7 @@ interface BackdropLayerProps {
  * ancestor (which would erase the blur — see `BackdropProps['style']`).
  */
 function AnimatedBackdropLayers({
+  blurTarget,
   progress,
   blurIntensity,
   blurTint,
@@ -223,9 +233,14 @@ function AnimatedBackdropLayers({
         <AnimatedBlurView
           intensity={blurIntensity}
           tint={blurTint}
-          // Android's default blur is a no-op on many devices; this is the
-          // implementation that actually renders there.
-          experimentalBlurMethod="dimezisBlurView"
+          // A blur method ONLY alongside a target. Without one expo-blur
+          // falls back to "none" and warns twice per mount, and WITH one in the
+          // wrong window it segfaults — so the two props travel together or not
+          // at all. `glass/blur-target.tsx` is what guarantees this is
+          // `undefined` anywhere it would be unsafe.
+          {...(blurTarget
+            ? { blurMethod: 'dimezisBlurView' as const, blurTarget }
+            : null)}
           pointerEvents="none"
           style={[StyleSheet.absoluteFill, layerStyle, blurFade]}
         />
@@ -255,6 +270,7 @@ function AnimatedBackdropLayers({
  * itself, which is both where it belongs and the only place it works.
  */
 function StaticBackdropLayers({
+  blurTarget,
   blurIntensity,
   blurTint,
   dimColor,
@@ -268,7 +284,10 @@ function StaticBackdropLayers({
         <BlurView
           intensity={blurIntensity}
           tint={blurTint}
-          experimentalBlurMethod="dimezisBlurView"
+          // Blur method and target travel together — see the animated pair.
+          {...(blurTarget
+            ? { blurMethod: 'dimezisBlurView' as const, blurTarget }
+            : null)}
           pointerEvents="none"
           // Opacity last, as in the animated pair: the level this component
           // resolved wins over anything `layerStyle` happens to carry.
@@ -320,6 +339,9 @@ export const Backdrop = memo(function Backdrop({
   testID,
 }: BackdropProps) {
   const inert = disabled || !onPress;
+  // `undefined` unless this backdrop is inside a declared separate native
+  // window. On Android that is the difference between a real blur and a crash.
+  const blurTarget = useWindowedBlurTarget();
 
   // The press target must stay a pure hit box. Two things a caller's `style`
   // can carry would break the visuals if honoured there:
@@ -335,6 +357,7 @@ export const Backdrop = memo(function Backdrop({
   const resolvedDimColor = typeof styleBackground === 'string' ? styleBackground : dimColor;
 
   const layerProps: BackdropLayerProps = {
+    blurTarget,
     blurIntensity,
     blurTint,
     dimColor: resolvedDimColor,

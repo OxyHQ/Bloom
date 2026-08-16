@@ -1,2 +1,11 @@
 export { GlassSurface } from './GlassSurface';
-export type { GlassSurfaceProps } from './types';
+export {
+  GlassBlurTargetProvider,
+  GlassBlurWindow,
+  useWindowedBlurTarget,
+} from './blur-target';
+export type {
+  GlassSurfaceProps,
+  GlassBlurTargetProviderProps,
+  GlassBlurWindowProps,
+} from './types';

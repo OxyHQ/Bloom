@@ -148,6 +148,36 @@ Per-placement behavior:
 | `shouldCloseOnPress?` | `boolean` | Defaults to `true`. Set `false` while an async action is in flight. |
 | `testID?` | `string` | |
 
+## Blurring the backdrop on Android
+
+A backdrop blurs its content on iOS and web with no setup. **On Android it needs
+the app content wrapped in a blur target**, which `BloomProvider` composes — so
+if you mount it, there is nothing to do:
+
+```tsx
+import { BloomProvider } from '@oxyhq/bloom/provider';
+
+<BloomProvider>{children}</BloomProvider>
+```
+
+An app that does not mount `BloomProvider` keeps the tint-only backdrop. That is
+a supported state, not a missing step — see below.
+
+Two things are worth knowing rather than discovering:
+
+- **It applies to the bottom-sheet path only.** `expo-blur` on Android blurs a
+  target view, and a blur view that is a DESCENDANT of its own target crashes
+  the app — `SIGSEGV`, an unbounded render-tree recursion. Only a surface in a
+  separate native window is safe, which means a real RN `<Modal>`: that is
+  `BottomSheet`, and `Dialog`'s bottom placement through it. `Dialog`'s centre
+  and side placements portal into the same window and keep the tint-only
+  backdrop. Bloom enforces this structurally — the target is simply not
+  reachable from a surface that has not crossed a window boundary — so there is
+  no wiring you can get wrong.
+- **Not mounting it is a supported state**, not a broken one. The backdrop still
+  paints its tint at full intensity; you lose the blur and nothing else, with no
+  warning and no crash.
+
 ## Web setup
 
 Inject the CSS animations into your global styles once:

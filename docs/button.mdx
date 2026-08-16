@@ -49,14 +49,28 @@ Over content Bloom does not own — a photograph, a video still — the pane is 
 
 `secondary`, `outline`, `ghost`, `text`, `link` and `icon` are unchanged: they have no fill for the tint to replace.
 
-### On Android the blur is not applied today
+### On Android the blur is not applied, and it cannot be
 
-Measured on an Android emulator (API 37): the pane paints its tint and the backdrop behind it is **not blurred**. `expo-blur`'s `blurMethod` defaults to `'none'` on Android, and its `dimezisBlurView` method additionally needs a `blurTarget` ref pointing at the view to blur — something a surface that simply fills its caller cannot supply on its own. Without it `expo-blur` logs one warning and falls back to no blur.
+Measured on an Android emulator (API 37): the pane paints its tint and the backdrop behind it is **not blurred**. `expo-blur`'s `blurMethod` defaults to `'none'` on Android, and `dimezisBlurView` additionally needs a `blurTarget` ref pointing at a `BlurTargetView` that wraps the content to blur.
 
-What this changes in practice is small but worth knowing:
+The obvious fix — wrap the app in a `BlurTargetView` and hand the ref down — **crashes the app**. A `BlurView` that is a DESCENDANT of the view it points at makes the Android render tree recurse into itself: `SIGSEGV` in `RenderThread`, `RenderNode::prepareTreeImpl` repeating past 500 frames. Reproduced twice, isolated to one target and one pane. A glass `Button` fills its caller and therefore sits inside the content it would need to blur, so the only topology available to it is the one that crashes.
+
+Three topologies, all measured on device (over 10dp stripes, where `std` is the discriminator — the MEAN is nearly identical in every case, so a mean-only comparison reports "no difference"):
+
+| `BlurView` position | result |
+| --- | --- |
+| descendant of its own `blurTarget` | **native crash** |
+| sibling of the target | blurs; std 0.70 vs 11.95 unblurred |
+| inside a `Modal`, target in the root window | blurs; std 0.68, matches the blurred composite to 0.36/255 |
+
+So Bloom asks for no blur method on Android at all. What that costs:
 
 - Over Bloom's own flat surfaces — the documented backdrop range — nothing visible changes. A blur over a uniform colour is a no-op, so the painted pane matched the web composite to **0.75/255**, and every AA number above still holds.
 - Over **textured** content (a photograph, a busy list) the Android pane transmits that texture at 15% instead of smoothing it. The pill clip, the hairline, the rim, the sheen and the drop shadow are all unaffected.
+
+The third row is where an Android blur is still available, and Bloom now takes it — but only for surfaces inside a real RN `<Modal>`, which is the bottom-sheet path and not a `Button`. See `docs/dialog.mdx` for how to switch it on.
+
+**So on Android, "glass" means tint, top sheen, hairline and drop shadow — plus a blur only where a target exists.** A glass `Button` has the first four and never the fifth.
 
 iOS uses `UIVisualEffectView` and needs none of this, but it has not been verified on hardware.
 
