@@ -75,4 +75,43 @@ describe('ZoomableImageGallery', () => {
     });
     expect(first.getByText('First')).toBeTruthy();
   });
+
+  /**
+   * The open transition is a two-step timer chain (`0 ms` to start the springs,
+   * then ~300 ms to reveal the pager), and both steps end in a `setState`. A
+   * gallery unmounted mid-transition — a screen left, a route popped — must take
+   * its pending steps with it.
+   *
+   * React makes the write itself a silent no-op, so the only observable is the
+   * timer. That is also how this escaped: measured before the fix, the reveal
+   * timer OUTLIVED the jest file that mounted it and fired inside the next test
+   * file running in the same worker process, where it re-scheduled itself once
+   * more. Nothing failed, because the callback happens not to throw — but a
+   * stray timer that ever does takes the whole run down as an uncaught
+   * exception, attributed to whichever file was unlucky enough to be running.
+   *
+   * The pre-unmount assertion is the control: without it the test would pass
+   * against a gallery that scheduled nothing at all.
+   */
+  it('cancels its pending transition timers on unmount', () => {
+    jest.useFakeTimers();
+    try {
+      const { ref, unmount } = renderGallery();
+      const baseline = jest.getTimerCount();
+
+      act(() => {
+        ref.current?.open(IMAGES, 0);
+      });
+      // Run the first step, which is what schedules the reveal.
+      act(() => {
+        jest.advanceTimersByTime(1);
+      });
+      expect(jest.getTimerCount()).toBeGreaterThan(baseline);
+
+      unmount();
+      expect(jest.getTimerCount()).toBeLessThanOrEqual(baseline);
+    } finally {
+      jest.useRealTimers();
+    }
+  });
 });
