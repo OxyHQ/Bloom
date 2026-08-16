@@ -131,8 +131,16 @@ only visible on half of it. Measured in Chrome: at `devicePixelRatio` 1 the used
 border width is **1px** — a sub-pixel border is snapped up to one device pixel,
 never down to zero — so on an ordinary 1× monitor `hairline` and the 1px `thin`
 are indistinguishable. At `devicePixelRatio` 2 it is 0.5px, one device pixel, and
+<<<<<<< HEAD
 visibly finer. Native is unaffected. So the distinction the scale draws is real
 on HiDPI and inert elsewhere; that is the trade for one number that holds on both
 platforms. The alternative, a density branch, is what
+=======
+visibly finer. Native does no such snapping — but it is not untouched either:
+`StyleSheet.hairlineWidth` is 0.5 at @2x and ~0.333 at @3x, so the scale's flat
+0.5 is identical at @2x and 0.167px thicker at @3x. So the distinction the scale
+draws is real on HiDPI and inert on a 1× browser; that is the trade for one
+number that holds on both platforms. The alternative, a density branch, is what
+>>>>>>> 78d88cf (feat(user-hover-card): a footer slot, and a hover bridge that survives what goes in it)
 `MediaInsetBorder` does (`PixelRatio.get() > 1 ? 0.5 : StyleSheet.hairlineWidth`)
 where the line sits on top of an image and 1px would read as a frame.
