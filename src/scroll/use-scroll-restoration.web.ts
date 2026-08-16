@@ -38,7 +38,7 @@
  * Native bundlers use `./index.ts`; web bundlers select this file via the
  * `"browser"` export condition in `package.json`.
  */
-import { useCallback, useRef } from 'react';
+import { useCallback, useMemo, useRef, useState } from 'react';
 
 import { useScrollRestorationContext } from './context';
 import { createScroller } from './scrollable.web';
@@ -69,12 +69,12 @@ const RESTORE_FRAME_CAP = 30;
 const RESTORE_STICK_TOLERANCE_PX = 2;
 
 /**
- * The web binding is a constant: this platform observes offsets by subscribing
- * to the resolved DOM node's own `scroll` event, so it needs nothing from the
- * caller. It is still returned — and still safe to spread onto a list — so a
- * call site is written once and runs on both platforms.
+ * This platform observes offsets by subscribing to the resolved DOM node's own
+ * `scroll` event, so it needs nothing from the caller. The handler is still
+ * returned — and still safe to spread onto a list — so a call site is written
+ * once and runs on both platforms.
  */
-const WEB_BINDING: ScrollRestorationBinding = { onScroll: () => undefined };
+const WEB_ON_SCROLL: ScrollRestorationBinding['onScroll'] = () => undefined;
 
 /**
  * Events that mean the USER has taken over the scroller, and the restore must
@@ -140,13 +140,25 @@ export function useScrollRestoration(
   // record. Restoring twice is harmless; resetting twice is data loss.
   const resetKeyRef = useRef<string | null>(null);
 
+  // Seeded from the store on the FIRST render rather than defaulting to false,
+  // because a caller hiding content until the offset lands would otherwise get
+  // one painted frame at the wrong position: the focus effect below is a
+  // passive effect and runs after that paint. A `useState` initializer runs
+  // exactly once, so this is a one-shot read and not a memoized one.
+  const [restorePending, setRestorePending] = useState(
+    () => enabled && scrollKey !== null && store.read(scrollKey) > 0,
+  );
+
   adapter.useScreenFocusEffect(
     // Every varying input is a dependency rather than a ref read, so the
     // session below CLOSES OVER the key it belongs to. That is what makes a
     // key change mid-focus correct in both directions: the outgoing session's
     // cleanup persists to the old key, and the incoming one restores the new.
     useCallback(() => {
-      if (!enabled || scrollKey === null) return undefined;
+      if (!enabled || scrollKey === null) {
+        setRestorePending(false);
+        return undefined;
+      }
 
       const scroller = createScroller(target);
       const element =
@@ -246,9 +258,11 @@ export function useScrollRestoration(
       let rafId: number | null = null;
 
       const stopRestore = () => {
-        if (rafId === null) return;
-        cancelAnimationFrame(rafId);
-        rafId = null;
+        if (rafId !== null) {
+          cancelAnimationFrame(rafId);
+          rafId = null;
+        }
+        setRestorePending(false);
       };
 
       if (alreadyReset) {
@@ -269,6 +283,7 @@ export function useScrollRestoration(
         // target stored rather than a partial. Nothing is lost on the success
         // path: `targetOffset` came out of the store, so persisting it again
         // would write back the same number.
+        setRestorePending(true);
         let framesLeft = RESTORE_FRAME_CAP;
         const applyOffset = () => {
           rafId = null;
@@ -287,6 +302,8 @@ export function useScrollRestoration(
             Math.abs(landed - targetOffset) <= RESTORE_STICK_TOLERANCE_PX;
           if (!reached && framesLeft > 0) {
             rafId = requestAnimationFrame(applyOffset);
+          } else {
+            setRestorePending(false);
           }
         };
         rafId = requestAnimationFrame(applyOffset);
@@ -318,7 +335,10 @@ export function useScrollRestoration(
     }, [store, scrollKey, enabled, target]),
   );
 
-  return WEB_BINDING;
+  return useMemo(
+    () => ({ onScroll: WEB_ON_SCROLL, restorePending }),
+    [restorePending],
+  );
 }
 
 /**

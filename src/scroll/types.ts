@@ -106,6 +106,24 @@ export interface ScrollRestorationBinding {
    * nothing from the caller — and passing it costs nothing.
    */
   onScroll: (event: NativeSyntheticEvent<NativeScrollEvent>) => void;
+  /**
+   * Whether a write to the scroller is still coming. Lets a caller hold the
+   * content invisible until the offset has landed, so the settle is never seen
+   * — keep it LAID OUT (`opacity: 0`), never `display: none`, which collapses
+   * the document and makes every write clamp to 0.
+   *
+   * It falls to `false` on whichever comes first: the restore sticks, it
+   * exhausts the frame budget, or the user takes over. Waiting past any of
+   * those is waiting for something that has already stopped trying.
+   *
+   * The two platforms answer it honestly rather than identically, because the
+   * thing being waited for differs. WEB: `true` only while the multi-frame
+   * restore loop is in flight — a reset writes 0 synchronously inside the
+   * effect, so there is nothing left to wait for and it stays `false`. NATIVE:
+   * `true` from the effect until the deferred write lands one frame later,
+   * which covers a reset too, since that write is deferred as well.
+   */
+  restorePending: boolean;
 }
 
 export interface ScrollRestorationProviderProps {

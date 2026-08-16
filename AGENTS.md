@@ -76,7 +76,8 @@ Wiring: Expo/Metro apps import `@oxyhq/app-preset/css/base.css` at the top of `g
 - **`canScroll()` must stay honest for the `'window'` sentinel** — a tabbed navigator collapses the document (`display: none`), forcing `scrollY` to 0 before blur, so a hardcoded `true` persists 0 over a real offset. A partial clamp needs BOTH the range shrinking and the offset at the new max, with the reference range from the last SAVE, not the last observation (Chrome dispatches two scroll events per clamp).
 - **The web restore re-applies across a bounded run of frames** and **ABORTS on user input** (`wheel`/`touchstart`/`pointerdown`/`keydown`).
 - **`history.scrollRestoration` is `'manual'` only while mounted**, handed back on `pagehide` — must not be a module-scope side effect.
-- **Native is narrow** — keyed on storage key, never focus; the hook returns `{ onScroll }`. `enabled` means "rows exist", not a feature flag.
+- **`restorePending` is SEEDED from the store on the first render, never defaulted to `false`** — the focus effect is passive and runs after a paint, so a `false` start gives exactly the one wrong-position frame it exists to prevent. It falls on whichever comes first: stuck, frame budget exhausted, user takeover. A caller hiding content until the offset lands must keep it LAID OUT (`opacity: 0`) — `display: none` collapses the document and every write clamps to 0. Web reports it only for the multi-frame loop (a reset writes synchronously); native reports it for any deferred write, reset included.
+- **Native is narrow** — keyed on storage key, never focus; the hook returns `{ onScroll, restorePending }`. `enabled` means "rows exist", not a feature flag.
 
 ## Overlay pointer events (silent and total)
 

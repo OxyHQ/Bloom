@@ -213,6 +213,18 @@ class Harness {
     this.root = createRoot(this.container);
   }
 
+  /** Unmount the screen while keeping the provider — and its store — alive. */
+  hideScreen(): void {
+    act(() => {
+      this.root.render(
+        createElement(ScrollRestorationProvider, {
+          adapter: testAdapter,
+          children: null,
+        }),
+      );
+    });
+  }
+
   /** Render the screen showing `content`, with a focus state and options. */
   show({ content, focused = true, ...screen }: ShowOptions): void {
     act(() => {
@@ -925,6 +937,129 @@ describe('web scroll-restoration hook', () => {
       scrollY = 3000; // something nudges the shared scroller in between
       harness.show({ node, content, windowTarget: true });
       expect(window.scrollY).toBe(0);
+    });
+  });
+
+  describe('restorePending', () => {
+    function latest(seen: ScrollRestorationBinding[]): boolean {
+      const last = seen[seen.length - 1];
+      if (!last) throw new Error('no binding captured');
+      return last.restorePending;
+    }
+
+    it('is true on the FIRST render when a restore is coming', () => {
+      // The focus effect is a passive effect, so it runs after a paint. If this
+      // started false the caller would show one frame at the wrong offset —
+      // exactly the flash it exists to prevent.
+      const node = new FakeScrollNode();
+      node.growTo(FULL_CONTENT_HEIGHT);
+      const content = unseenContent();
+      harness.show({ node, content });
+      scrollTo(node, 3520);
+      harness.show({ node, content, focused: false });
+
+      const seen: ScrollRestorationBinding[] = [];
+      node.collapseLikeNavigator();
+      harness.hideScreen(); // the destination screen mounts fresh, as under <Slot/>
+      harness.show({ node, content, onBinding: (b) => seen.push(b) });
+      expect(seen[0]?.restorePending).toBe(true);
+    });
+
+    it('falls to false when the restore sticks', () => {
+      const node = new FakeScrollNode();
+      node.growTo(FULL_CONTENT_HEIGHT);
+      const content = unseenContent();
+      harness.show({ node, content });
+      scrollTo(node, 3520);
+      harness.show({ node, content, focused: false });
+
+      const seen: ScrollRestorationBinding[] = [];
+      node.collapseLikeNavigator();
+      harness.show({ node, content, onBinding: (b) => seen.push(b) });
+      expect(latest(seen)).toBe(true);
+
+      act(() => {
+        frames.flushOneFrame();
+      });
+      expect(latest(seen)).toBe(true); // still short, still trying
+
+      node.growTo(FULL_CONTENT_HEIGHT);
+      act(() => {
+        frames.flushOneFrame();
+      });
+      expect(node.scrollTop).toBe(3520);
+      expect(latest(seen)).toBe(false);
+    });
+
+    it('falls to false when the frame budget runs out, not later', () => {
+      // A caller that waits past the cap is waiting for something that has
+      // already stopped trying.
+      const node = new FakeScrollNode();
+      node.growTo(FULL_CONTENT_HEIGHT);
+      const content = unseenContent();
+      harness.show({ node, content });
+      scrollTo(node, 3520);
+      harness.show({ node, content, focused: false });
+
+      const seen: ScrollRestorationBinding[] = [];
+      node.collapseLikeNavigator();
+      harness.show({ node, content, onBinding: (b) => seen.push(b) });
+
+      for (let i = 0; i < 40; i++) {
+        act(() => {
+          frames.flushOneFrame();
+        });
+      }
+      expect(frames.pending).toBe(0);
+      expect(latest(seen)).toBe(false);
+    });
+
+    it('falls to false when the user takes over', () => {
+      const node = new FakeScrollNode();
+      node.growTo(FULL_CONTENT_HEIGHT);
+      const content = unseenContent();
+      harness.show({ node, content });
+      scrollTo(node, 3520);
+      harness.show({ node, content, focused: false });
+
+      const seen: ScrollRestorationBinding[] = [];
+      node.collapseLikeNavigator();
+      harness.show({ node, content, onBinding: (b) => seen.push(b) });
+      act(() => {
+        frames.flushOneFrame();
+      });
+      expect(latest(seen)).toBe(true);
+
+      act(() => {
+        node.emitUserTakeover('wheel');
+      });
+      expect(latest(seen)).toBe(false);
+    });
+
+    it('is false for a reset — the write already happened synchronously', () => {
+      const node = new FakeScrollNode();
+      node.growTo(FULL_CONTENT_HEIGHT);
+      const seen: ScrollRestorationBinding[] = [];
+      harness.show({
+        node,
+        content: unseenContent(),
+        onBinding: (b) => seen.push(b),
+      });
+      expect(seen[0]?.restorePending).toBe(false);
+      expect(latest(seen)).toBe(false);
+    });
+
+    it('is false while disabled', () => {
+      const node = new FakeScrollNode();
+      node.growTo(FULL_CONTENT_HEIGHT);
+      const seen: ScrollRestorationBinding[] = [];
+      harness.show({
+        node,
+        content: unseenContent(),
+        enabled: false,
+        onBinding: (b) => seen.push(b),
+      });
+      expect(latest(seen)).toBe(false);
     });
   });
 
