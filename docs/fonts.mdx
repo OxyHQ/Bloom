@@ -1,6 +1,6 @@
 ---
 title: Fonts
-description: How Bloom's typefaces reach a web bundle and a native build — and what a consumer must not do.
+description: How Bloom's typefaces reach a web bundle and a native build — and where the documented stacks and current fleet practice diverge.
 order: 58
 ---
 
@@ -39,14 +39,50 @@ import { fontFamilies, fontCssVars, FONT_ASSETS, applyFontFaces, FontLoader } fr
 report loaded, so every `<Text>` in the app inherits it — which is why an app
 setting its own `fontFamily` is overriding Bloom rather than complementing it.
 
-## Consuming apps must not set `fontFamily` by hand
+## A fourth family ships and registers unconditionally: Inter
 
-An app that sets `fontFamily: 'Inter-Regular'` (or any other literal) on its own
-text is overriding the family with a name that may not match a loaded asset, and
-the failure is a silent fallback to the system face — text that looks *almost*
-right.
+Bloom bundles Inter alongside BlomusModernus and Geist Mono, on both platforms,
+and loading it is not gated the way you'd expect:
 
-Use the typography roles instead, which carry family and weight together.
+- `FONT_ASSETS` (native) requires `InterVariable.ttf` (879,708 bytes) under the
+  key `Inter`. `FontLoader.native.tsx` calls `useFonts(FONT_ASSETS)`
+  unconditionally — per the Rules of Hooks the hook has to fire whether or not
+  `<BloomThemeProvider fonts={false}>` is set — so Inter is bundled into the
+  native binary and loaded into the platform font registry for every consumer
+  that mounts `BloomThemeProvider`, regardless of that prop.
+- `apply-font-faces.web.ts` injects an `@font-face` rule for `'Inter'` from
+  `InterVariable.woff2` (48,256 bytes) alongside the other two families. This
+  half *is* gated on the `fonts` prop (default `true`).
+
+**But `Inter` is not a member of `fontFamilies.display`, `.sans` or `.mono`** —
+those three stacks lead with BlomusModernus and Geist Mono only, as shown
+above. There is no exported constant that names Inter; a consumer reaches it
+only by writing the literal string `'Inter'` itself.
+
+In practice, several apps in the fleet do exactly that. Mention's
+`packages/frontend/global.css` and `tailwind.config.js`, and CrowdSource's
+`console` and `reviewer` apps, set `--font-sans: Inter` / `sans: ['Inter', …]`
+directly. Alia's `packages/app/tailwind.config.js` does the same — and ships
+no font file of its own for it: the built `InterVariable-*.woff2` in
+`alia-canvas`, `alia-console` and `alia-gateway-admin` is byte-identical
+(md5 `260c81a4759baf163c025001c4f27872`, 48,256 bytes) to Bloom's own
+`src/fonts/assets/InterVariable.woff2`. This resolves today only because
+Bloom happens to register the family, unconditionally, on both platforms.
+
+`'Inter-Regular'`, which appears as a fallback in Mention's and CrowdSource's
+`font-family` declarations (`font-family: 'Inter', 'Inter-Regular', sans-serif`),
+names nothing Bloom — or anything else in this repo — ever registers. Only the
+bare family `Inter` is registered, as a single variable face. That fallback
+entry has been dead since it was written; on a machine without a
+system-installed `Inter-Regular` it just falls through to the next name in the
+stack.
+
+Whether selecting `'Inter'` by hand is a supported way to reach it, or several
+apps happening to line up with a family Bloom bundles for its own reasons, is
+not settled anywhere in this repo. Treat it as an open question, not a green
+light or a ban — and treat any *other* hand-set literal the same way `'Inter-Regular'`
+turned out: it either matches a family one of the four platform conditions
+above actually registers, or it silently falls back to the system face.
 
 ## Four ways in, one surface
 
