@@ -7,9 +7,10 @@
  * is what actually landed on the node — which is the whole contract for a
  * component whose entire body is one `View` and two style keys.
  *
- * The degenerate case is deliberately included and deliberately NOT rescued: see
- * the last test, which records what the component does today with a ratio the
- * caller could not compute (`w / h` before an image has loaded).
+ * The degenerate case is included too — the last test — because the ratio a
+ * caller could not compute (`w / h` before an image has loaded) is the one that
+ * reaches this component in production, and rescuing it is a decision that has
+ * to stay pinned rather than be re-derived by the next reader.
  */
 import React from 'react';
 import { render } from '@testing-library/react-native';
@@ -77,17 +78,24 @@ describe('AspectRatio', () => {
     expect(children[0]?.props.testID).toBe('child');
   });
 
-  it('passes a degenerate ratio straight through — only `undefined` takes the default', () => {
-    // FINDING, pinned rather than fixed: `ratio` is a plain default parameter,
-    // so it rescues `undefined` and nothing else. A caller computing
-    // `image.width / image.height` before the image has loaded hands over `0 / 0`
-    // (NaN) or `w / 0` (Infinity), and the box then has no usable aspect ratio at
-    // all — it collapses to zero height, which is the exact jump this component
-    // exists to prevent, with no error on either platform.
-    //
-    // Asserted as-is because a `|| 1` "fix" would also rewrite a deliberate `0`,
-    // and because the value is what a future guard has to change on purpose.
-    expect(boxStyle(<AspectRatio testID="box" ratio={0} />).aspectRatio).toBe(0);
-    expect(boxStyle(<AspectRatio testID="box" ratio={Number.NaN} />).aspectRatio).toBeNaN();
+  it('takes the default for a ratio that is not a ratio, rather than collapsing', () => {
+    // `image.width / image.height` before the image has loaded is the one live
+    // source of all four of these: `0 / 0` is NaN, `w / 0` is Infinity, `0 / h`
+    // is 0, and a sign slip gives a negative. None of them describes a box, and
+    // each one passed through leaves the well with no usable height — the exact
+    // jump this component exists to prevent, silently and on both platforms.
+    expect(boxStyle(<AspectRatio testID="box" ratio={Number.NaN} />).aspectRatio).toBe(1);
+    expect(
+      boxStyle(<AspectRatio testID="box" ratio={Number.POSITIVE_INFINITY} />).aspectRatio,
+    ).toBe(1);
+    expect(boxStyle(<AspectRatio testID="box" ratio={0} />).aspectRatio).toBe(1);
+    expect(boxStyle(<AspectRatio testID="box" ratio={-16 / 9} />).aspectRatio).toBe(1);
+
+    // …and the guard is a RANGE test, not a falsy one, which is the half that
+    // decides whether the four above mean anything: a component hardcoding `1`
+    // would satisfy every line so far. Extreme but coherent ratios still land
+    // untouched.
+    expect(boxStyle(<AspectRatio testID="box" ratio={0.01} />).aspectRatio).toBe(0.01);
+    expect(boxStyle(<AspectRatio testID="box" ratio={1000} />).aspectRatio).toBe(1000);
   });
 });
