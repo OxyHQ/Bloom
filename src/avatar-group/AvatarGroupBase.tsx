@@ -31,12 +31,50 @@ const CLUSTER_RING_RATIO = 0.02;
  * matching the original Mention count circle (shared by every layout). */
 const OVERFLOW_TEXT_COLOR = '#FFFFFF';
 
-function getItemName(item: AvatarGroupItem): string | undefined {
-  return item.displayName ?? item.name ?? item.username;
+/**
+ * The first non-blank of the fields a caller can name a person with, trimmed.
+ *
+ * `??` is the wrong operator for every one of these and the reason is the same
+ * each time: it falls through on `null`/`undefined` ONLY, so an empty or
+ * whitespace-only string wins over the field behind it. That is not a
+ * hypothetical shape — `displayName` is optional ecosystem-wide and the API
+ * sends `''` for it, at which point `displayName ?? username` hands `Avatar` a
+ * blank name, `Avatar` correctly reads that as "no name" (it trims), and the
+ * cell renders the DEFAULT AVATAR IMAGE: the one placeholder that says nothing
+ * about who the person is, where the handle's initial was available all along.
+ *
+ * The org rule is `displayName?.trim() || handle`, and `.trim()` plus `||` is
+ * exactly what it prescribes for this case. This is a FALLBACK, not a repair:
+ * an absent display name is a normal, expected state that a UI has to render
+ * something for, so the choice belongs here. Bloom never rewrites the value it
+ * was handed — a genuinely WRONG `displayName` is still fixed in the serializer
+ * or the SDK type, never in a component.
+ */
+function firstNonBlank(...values: Array<string | null | undefined>): string | undefined {
+  for (const value of values) {
+    const trimmed = value?.trim();
+    if (trimmed) return trimmed;
+  }
+  return undefined;
 }
 
+/**
+ * What to call this person. Exported because the web fork's hover card needs the
+ * SAME answer — it used to carry its own copy of this function, and the copy had
+ * the same defect, so fixing one would have left half the family wrong.
+ */
+export function getItemName(item: AvatarGroupItem): string | undefined {
+  return firstNonBlank(item.displayName, item.name, item.username);
+}
+
+/**
+ * The React key. Same operator hazard, different blast radius: a blank `id`
+ * under `??` yields the key `''`, and two such items in one group collide into
+ * a duplicate key — a reconciliation bug rather than a wrong pixel, which is
+ * why it is worth fixing but was not what anybody noticed.
+ */
 function getItemKey(item: AvatarGroupItem, index: number): string {
-  return item.id ?? item.username ?? item.uri ?? `avatar-${index}`;
+  return firstNonBlank(item.id, item.username, item.uri) ?? `avatar-${index}`;
 }
 
 /** Hover callbacks injected by the web fork; undefined (no-op) on native. */
@@ -80,9 +118,10 @@ function AvatarGroupCell({
   hoverHandlers?: AvatarGroupCellHoverHandlers;
 }) {
   const name = getItemName(item);
-  const accessibilityLabel = item.username
-    ? `${name ?? item.username} (@${item.username})`
-    : name;
+  // The handle is trimmed for the same reason the name is: `item.username` of
+  // `'  '` is TRUTHY, so the untrimmed form announced "Ada (@  )".
+  const handle = firstNonBlank(item.username);
+  const accessibilityLabel = handle ? `${name ?? handle} (@${handle})` : name;
   const interactive = typeof onPressItem === 'function';
   const hoverable =
     typeof hoverHandlers?.onHoverIn === 'function' ||

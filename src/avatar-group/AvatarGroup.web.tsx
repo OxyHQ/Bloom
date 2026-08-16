@@ -7,6 +7,7 @@ import { WEB_POSITION_FIXED } from '../styles/web-view-style';
 import { UserHoverCard } from '../user-hover-card';
 import {
   AvatarGroupBase,
+  getItemName,
   type AvatarGroupCellHoverHandlers,
 } from './AvatarGroupBase';
 import type { AvatarGroupItem, AvatarGroupProps } from './types';
@@ -22,10 +23,6 @@ interface HoverState {
   index: number;
   top: number;
   left: number;
-}
-
-function getItemName(item: AvatarGroupItem): string {
-  return item.displayName ?? item.name ?? item.username ?? '';
 }
 
 /**
@@ -119,7 +116,11 @@ const AvatarGroupWebComponent: React.FC<AvatarGroupProps> = (props) => {
             >
               <UserHoverCard
                 avatar={hover.item.uri ?? undefined}
-                displayName={getItemName(hover.item)}
+                // `UserHoverCardProps.displayName` is contractually an
+                // already-resolved string, and resolving it is precisely this
+                // component's job. `''` is the honest terminal case: no field on
+                // the item named the person at all, so there is nothing to show.
+                displayName={getItemName(hover.item) ?? ''}
                 username={hover.item.username}
                 onPressProfile={
                   onPressItem
