@@ -252,18 +252,36 @@ describe('ActivityHeatmap bucketing', () => {
     expect(dates[dates.length - 1]).toBe(END);
   });
 
-  it('FINDING: the faintest default colour step is unreachable', () => {
-    // `DEFAULT_ALPHAS` has five steps and `DEFAULT_LEVELS` four thresholds
-    // starting at 1, so every positive count meets at least one threshold and
-    // lands on index 1 or above — index 0 (alpha 0.16) can only be reached by a
-    // caller whose own first threshold is 2 or more. Pinned rather than changed:
-    // the fix is a palette decision (drop the step, or start the thresholds at
-    // 2), and either way this is the assertion that has to move with it.
+  it('paints every step of its default palette, and no step it cannot reach', () => {
+    // The palette and the thresholds are ONE decision in two lists: a level is
+    // the number of thresholds a count meets, so N thresholds address indices
+    // `0..N` and the scale needs `N + 1` colours. The faintest colour is the one
+    // that goes dead when they drift apart — it means "positive, but below the
+    // first threshold", so a first threshold of 1 makes it unreachable, which is
+    // what the defaults did while `DEFAULT_ALPHAS` had a fifth step at 0.16.
+    //
+    // Asserted as an EQUALITY of the whole set rather than a floor, because both
+    // failure directions are silent: a colour nothing can reach and a threshold
+    // whose bucket has been merged into its neighbour both render a heatmap that
+    // looks perfectly fine.
     const colors = captureThemeColors();
     const rendered = cells({ data: DATA, endDate: END, numDays: 7 });
     const used = new Set(rendered.filter((entry) => entry.count > 0).map((entry) => entry.color));
-    expect(used).toContain(withAlpha(colors.primary, 0.32));
-    expect(used).not.toContain(withAlpha(colors.primary, 0.16));
+    expect(used).toEqual(
+      new Set([0.32, 0.52, 0.75, 1].map((alpha) => withAlpha(colors.primary, alpha))),
+    );
+
+    // …and the counts land in the buckets those four colours are FOR, which is
+    // the half the set alone cannot see: four colours all still appear if two
+    // thresholds swap. `DATA` carries one day per boundary (1, 2, 3, 6, 10, 99).
+    expect(colorOf(rendered, '2026-03-08')).toBe(withAlpha(colors.primary, 0.32)); // 1
+    expect(colorOf(rendered, '2026-03-09')).toBe(withAlpha(colors.primary, 0.32)); // 2
+    expect(colorOf(rendered, '2026-03-10')).toBe(withAlpha(colors.primary, 0.52)); // 3
+    expect(colorOf(rendered, '2026-03-11')).toBe(withAlpha(colors.primary, 0.75)); // 6
+    expect(colorOf(rendered, '2026-03-12')).toBe(withAlpha(colors.primary, 1)); // 10
+    expect(colorOf(rendered, '2026-03-13')).toBe(withAlpha(colors.primary, 1)); // 99
+    // Zero is still the empty colour, not the faintest step.
+    expect(colorOf(rendered, '2026-03-14')).toBe(colors.backgroundSecondary);
   });
 });
 

@@ -82,7 +82,10 @@ export const CustomScale: Story = {
             numDays={140}
             cellSize={14}
             gap={4}
-            colorScale={['#0E3B2E', '#146B4C', '#1FA971', '#38D896', '#7DF3BD']}
+            // One colour per threshold, PLUS one for "positive but below the
+            // first" — pass five here and `#7DF3BD` would never paint, which is
+            // the bug the defaults used to have.
+            colorScale={['#0E3B2E', '#146B4C', '#1FA971', '#38D896']}
           />
         </ScrollView>
       </View>

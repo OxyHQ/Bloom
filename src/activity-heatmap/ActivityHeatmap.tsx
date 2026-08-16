@@ -8,13 +8,29 @@ import type { ActivityHeatmapDay, ActivityHeatmapProps } from './types';
 
 const DAY_MS = 86_400_000;
 const DEFAULT_NUM_DAYS = 364;
-const DEFAULT_LEVELS = [1, 3, 6, 10];
+/**
+ * Ascending thresholds, one per colour step ABOVE the first — see
+ * `DEFAULT_ALPHAS`. A positive count below `3` is the lightest tint; `10` and up
+ * is the strongest. The buckets are 1–2 / 3–5 / 6–9 / 10+.
+ */
+const DEFAULT_LEVELS = [3, 6, 10];
 const DEFAULT_MONTHS = [
   'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
   'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec',
 ];
-/** Opacity steps (low→high) used to derive the default color scale from primary. */
-const DEFAULT_ALPHAS = [0.16, 0.32, 0.52, 0.75, 1];
+/**
+ * Opacity steps (low→high) used to derive the default color scale from primary.
+ *
+ * FOUR steps for THREE thresholds, and the pairing is the whole point: a level
+ * is the number of thresholds a count meets, so N thresholds address indices
+ * `0..N` and a scale needs `N + 1` entries. Index 0 is "positive, but below the
+ * first threshold" — reachable only while `DEFAULT_LEVELS[0] >= 2`. This list
+ * used to carry a fifth step at 0.16 against thresholds starting at 1, where
+ * every positive count meets the first one, so the faintest tint could never
+ * paint. Keep the two lists in step: add a threshold and a colour together, and
+ * never let the first threshold fall to 1.
+ */
+const DEFAULT_ALPHAS = [0.32, 0.52, 0.75, 1];
 const LABEL_FONT_SIZE = 10;
 const MONTH_ROW_HEIGHT = 16;
 const WEEKDAY_COL_WIDTH = 26;

@@ -45,6 +45,12 @@ says "nothing much happened" about a year of work.
 Set thresholds that match your distribution. Quantiles of the non-zero counts
 are a better starting point than evenly spaced values.
 
+Pass one more colour than you pass thresholds. A level is the number of
+thresholds a count meets, so N thresholds address `colorScale[0..N]`; index 0 is
+"positive, but below the first threshold". That index only exists while the
+first threshold is 2 or more — start it at 1 and every positive count meets it,
+so the faintest colour in your scale can never paint.
+
 ## Zero is not the lowest level
 
 `emptyColor` is separate from the scale on purpose. "Nothing happened" and "the
