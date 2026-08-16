@@ -197,14 +197,11 @@ describe('ProfileCard', () => {
   it('falls back to the handle for a facepile item with no display name', () => {
     // What a consumer hands over is a raw profile: `displayName` is optional
     // ecosystem-wide, so the initial has to come from the handle when it is
-    // absent. FINDING: `AvatarGroup` resolves this with `??`, so an EMPTY or
-    // whitespace-only `displayName` — which the API can send — wins over the
-    // handle and renders a blank circle, where the org rule
-    // (`displayName?.trim() || handle`) would fall through to `@zoe`. Asserted
-    // as it behaves today, with the divergence named.
+    // absent — INCLUDING when "absent" arrives as `''` or `'   '`, which is
+    // what the API sends and what `??` does not catch. Each letter below has
+    // exactly one possible source, so a fall-through cannot be confused with a
+    // collision.
     const rendered = renderCard({
-      // A name whose initial collides with none of the facepile's, so each
-      // letter below has exactly one source.
       avatar: { source: 'file-abc', name: 'Nova' },
       value: '1',
       footer: {
@@ -213,18 +210,25 @@ describe('ProfileCard', () => {
           { id: '1', displayName: 'Ada Lovelace', username: 'ada' },
           { id: '2', username: 'grace' },
           { id: '3', displayName: '   ', username: 'zoe' },
+          { id: '4', displayName: '', username: 'hopper' },
         ],
       },
     });
 
     expect(rendered.getByText('A')).toBeTruthy();
-    // No `displayName` at all: the handle carries the initial.
+    // No `displayName` at all.
     expect(rendered.getByText('G')).toBeTruthy();
-    // A blank `displayName` does NOT fall through — and the cell is not empty
-    // for a harmless reason either: it renders the default avatar IMAGE, which
-    // is the one placeholder that says nothing about who the person is.
-    expect(rendered.queryByText('Z')).toBeNull();
-    expect(hostsOfType(rendered.toJSON(), 'Image')).toHaveLength(1);
+    // Whitespace-only, and empty-string: both fall through to the handle.
+    expect(rendered.getByText('Z')).toBeTruthy();
+    expect(rendered.getByText('H')).toBeTruthy();
+    // The card's own avatar carries a name too, so it renders an initial rather
+    // than an image — which makes the image count a clean zero and turns it into
+    // a real discriminator: before the fix the two blank names each rendered a
+    // default-avatar IMAGE, the one placeholder that says nothing about who the
+    // person is. Counting images is what separates "the initial rendered" from
+    // "something else did".
+    expect(rendered.getByText('N')).toBeTruthy();
+    expect(hostsOfType(rendered.toJSON(), 'Image')).toHaveLength(0);
   });
 
   it('is pressable as a whole only when the caller asks for it', () => {
