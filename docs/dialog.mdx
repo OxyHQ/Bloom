@@ -204,7 +204,7 @@ const [busy, setBusy] = useState(false);
 
 ```tsx
 <Dialog control={control} title="Add tag">
-  <TextField placeholder="Tag name" value={name} onChangeText={setName} />
+  <TextFieldInput label="Tag name" value={name} onChangeText={setName} />
   <Button onPress={() => { save(name); control.close(); }}>Save</Button>
 </Dialog>
 ```

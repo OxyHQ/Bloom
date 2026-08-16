@@ -28,8 +28,8 @@ import { type IconStyle, type Props as SVGIconProps } from '../icons/shared';
 import { Text } from '../typography';
 import type { TextFieldProps, TextFieldInputProps } from './types';
 
-const Context = createContext<{
-  inputRef: React.RefObject<TextInput | null> | null;
+interface TextFieldContextValue {
+  inputRef: React.RefObject<TextInput | null>;
   isInvalid: boolean;
   /** Corner radius of the input chrome. A large value (e.g. 999) reads as a pill. */
   radius: number;
@@ -39,18 +39,36 @@ const Context = createContext<{
   focused: boolean;
   onFocus: () => void;
   onBlur: () => void;
-}>({
-  inputRef: null,
-  isInvalid: false,
-  radius: 10,
-  hovered: false,
-  onHoverIn: () => {},
-  onHoverOut: () => {},
-  focused: false,
-  onFocus: () => {},
-  onBlur: () => {},
-});
-Context.displayName = 'TextFieldContext';
+}
+
+/**
+ * The default is `null`, not an inert value object — see `useTextFieldContext`.
+ */
+const Context = createContext<TextFieldContextValue | null>(null);
+Context.displayName = 'BloomTextFieldContext';
+
+/**
+ * The context, or an error naming what is missing.
+ *
+ * A filled-in default would let a part render OUTSIDE a `<TextField>` and look
+ * finished: an icon that never takes the focus colour, a suffix stuck on the
+ * resting tint, a corner radius that ignores the field it is not inside. Nothing
+ * errors, nothing logs, and the field is simply wrong forever — the failure this
+ * whole library answers with a throw everywhere else (`useDropdownMenu`,
+ * `usePopover`, `useMenubar`, `useTheme`).
+ *
+ * `TextFieldInput` deliberately does NOT use this: it reads the context directly
+ * so that a `null` means "no root above me", which is the signal it uses to wrap
+ * itself in one. Standalone `<TextFieldInput>` is a supported spelling and by far
+ * the most common one in the fleet.
+ */
+function useTextFieldContext(): TextFieldContextValue {
+  const value = useContext(Context);
+  if (!value) {
+    throw new Error('TextField parts must be rendered inside a <TextField>.');
+  }
+  return value;
+}
 
 /**
  * RN Web paints the browser's default focus outline on the underlying `<input>`.
@@ -152,13 +170,14 @@ export function TextFieldInput({
   ...rest
 }: TextFieldInputProps) {
   const theme = useTheme();
+  // Read directly rather than through `useTextFieldContext`: a missing root is
+  // not an error here, it is the branch below.
   const ctx = useContext(Context);
-  const withinRoot = Boolean(ctx.inputRef);
 
   const { chromeHover, chromeFocus, chromeError, chromeErrorHover } =
     useSharedInputStyles();
 
-  if (!withinRoot) {
+  if (ctx === null) {
     return (
       <TextField isInvalid={isInvalid}>
         <TextFieldInput
@@ -328,7 +347,7 @@ function FloatingLabelInput({
   ...rest
 }: FloatingLabelInputProps) {
   const theme = useTheme();
-  const ctx = useContext(Context);
+  const ctx = useTextFieldContext();
   const reduceMotion = useReducedMotion();
 
   const hasValue = (value?.length ?? 0) > 0;
@@ -469,7 +488,7 @@ export function TextFieldLabel({
 
 export function TextFieldIcon({ icon: Comp }: { icon: React.ComponentType<SVGIconProps> }) {
   const theme = useTheme();
-  const ctx = useContext(Context);
+  const ctx = useTextFieldContext();
 
   const { hover, focus, errorHover, errorFocus } = useMemo(() => {
     const hover: IconStyle = { color: theme.colors.text };
@@ -511,7 +530,7 @@ export function TextFieldSuffix({
   }
 >) {
   const theme = useTheme();
-  const ctx = useContext(Context);
+  const ctx = useTextFieldContext();
   return (
     <Text
       accessibilityLabel={label}

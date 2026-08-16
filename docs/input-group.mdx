@@ -14,11 +14,11 @@ import { InputGroup, InputGroupAddon } from '@oxyhq/bloom/input-group';
 
 <InputGroup>
   <InputGroupAddon>oxy.so/</InputGroupAddon>
-  <TextFieldInput value={handle} onChangeText={setHandle} />
+  <TextFieldInput label="Handle" value={handle} onChangeText={setHandle} />
 </InputGroup>
 
 <InputGroup>
-  <TextFieldInput value={query} onChangeText={setQuery} />
+  <TextFieldInput label="Search" value={query} onChangeText={setQuery} />
   <InputGroupAddon divider>
     <Button size="small" onPress={run}>Search</Button>
   </InputGroupAddon>
