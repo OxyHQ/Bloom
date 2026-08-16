@@ -226,6 +226,45 @@ const ZoomableImageGalleryInner = React.forwardRef<ZoomableImageGalleryHandle, Z
   // True from the first dismiss request until the viewer is actually unmounted.
   const dismissingRef = useRef(false);
 
+  // Every deferred step of the open / dismiss choreography, so unmount can cancel
+  // the ones still owing.
+  //
+  // Each one ends in a `setState` on THIS instance, and each is scheduled from a
+  // gesture or an imperative `open()` — never from an effect — so React's own
+  // teardown reaches none of them. A screen left within the ~300 ms of the open
+  // transition therefore leaves a live timer holding the whole subtree, and the
+  // state it eventually writes lands on a tree nobody is rendering. React makes
+  // that a silent no-op rather than an error, which is exactly why it survived:
+  // measured under jest, the gallery's `revealPager` timer outlives the file
+  // that mounted it and fires inside the NEXT test file in the same worker
+  // process, sometimes re-scheduling itself two files further on.
+  const pendingRef = useRef<Set<ReturnType<typeof setTimeout>>>(new Set());
+  const frameRef = useRef<number | null>(null);
+  const unmountedRef = useRef(false);
+  const schedule = useCallback((step: () => void, delay: number) => {
+    // The open transition's own frame callback schedules the step after it, so
+    // this can be reached once the component is already gone — starting a timer
+    // there would put one back after the cleanup has run.
+    if (unmountedRef.current) return;
+    const handle = setTimeout(() => {
+      pendingRef.current.delete(handle);
+      step();
+    }, delay);
+    pendingRef.current.add(handle);
+  }, []);
+  useEffect(
+    () => () => {
+      unmountedRef.current = true;
+      for (const handle of pendingRef.current) clearTimeout(handle);
+      pendingRef.current.clear();
+      if (frameRef.current !== null) {
+        cancelAnimationFrame(frameRef.current);
+        frameRef.current = null;
+      }
+    },
+    [],
+  );
+
   // Single writer for the current index: updates state (drives indicator + open
   // image) and the synchronous mirror together, and only when it changes.
   const setActiveIndexBoth = useCallback((next: number) => {
@@ -322,16 +361,16 @@ const ZoomableImageGalleryInner = React.forwardRef<ZoomableImageGalleryHandle, Z
         translateX.value = withTiming(target.x, { duration, easing });
         translateY.value = withTiming(target.y, { duration, easing });
         opacity.value = withTiming(0, { duration, easing });
-        setTimeout(finalizeDismiss, duration + 20);
+        schedule(finalizeDismiss, duration + 20);
       } else {
         scale.value = withSpring(target.scale, CLOSE_SPRING);
         translateX.value = withSpring(target.x, CLOSE_SPRING);
         translateY.value = withSpring(target.y, CLOSE_SPRING);
         opacity.value = withTiming(0, { duration: OPACITY_DURATION });
-        setTimeout(finalizeDismiss, CLOSE_DURATION_WEB);
+        schedule(finalizeDismiss, CLOSE_DURATION_WEB);
       }
     },
-    [finalizeDismiss, opacity, scale, translateX, translateY]
+    [finalizeDismiss, opacity, scale, schedule, translateX, translateY]
   );
 
   // Fallback when the current thumbnail cannot be measured (ref missing /
@@ -343,13 +382,13 @@ const ZoomableImageGalleryInner = React.forwardRef<ZoomableImageGalleryHandle, Z
       const easing = Easing.in(Easing.cubic);
       scale.value = withTiming(MIN_DRAG_SCALE, { duration, easing });
       opacity.value = withTiming(0, { duration, easing });
-      setTimeout(finalizeDismiss, duration + 20);
+      schedule(finalizeDismiss, duration + 20);
     } else {
       scale.value = withSpring(MIN_DRAG_SCALE, CLOSE_SPRING);
       opacity.value = withTiming(0, { duration: OPACITY_DURATION });
-      setTimeout(finalizeDismiss, CLOSE_DURATION_WEB);
+      schedule(finalizeDismiss, CLOSE_DURATION_WEB);
     }
-  }, [finalizeDismiss, opacity, scale]);
+  }, [finalizeDismiss, opacity, scale, schedule]);
 
   const handleDismiss = useCallback(() => {
     // A press on the image reaches BOTH its tap gesture and the page beneath it
@@ -458,22 +497,23 @@ const ZoomableImageGalleryInner = React.forwardRef<ZoomableImageGalleryHandle, Z
       opacity.value = 0;
 
       if (Platform.OS === 'web') {
-        requestAnimationFrame(() => {
+        frameRef.current = requestAnimationFrame(() => {
+          frameRef.current = null;
           const duration = OPEN_DURATION_WEB;
           const easing = Easing.out(Easing.cubic);
           scale.value = withTiming(1, { duration, easing });
           translateX.value = withTiming(0, { duration, easing });
           translateY.value = withTiming(0, { duration, easing });
           opacity.value = withTiming(1, { duration, easing });
-          setTimeout(revealPager, duration);
+          schedule(revealPager, duration);
         });
       } else {
-        setTimeout(() => {
+        schedule(() => {
           scale.value = withSpring(1, OPEN_SPRING);
           translateX.value = withSpring(0, OPEN_SPRING);
           translateY.value = withSpring(0, OPEN_SPRING);
           opacity.value = withTiming(1, { duration: OPACITY_DURATION });
-          setTimeout(revealPager, OPEN_DURATION_WEB);
+          schedule(revealPager, OPEN_DURATION_WEB);
         }, 0);
       }
     },
@@ -488,6 +528,7 @@ const ZoomableImageGalleryInner = React.forwardRef<ZoomableImageGalleryHandle, Z
       originY,
       revealPager,
       scale,
+      schedule,
       setActiveIndexBoth,
       translateX,
       translateY,
