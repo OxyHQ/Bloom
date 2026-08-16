@@ -47,6 +47,39 @@ Over content Bloom does not own — a photograph, a video still — the pane is 
 
 `secondary`, `outline`, `ghost`, `text`, `link` and `icon` are unchanged: they have no fill for the tint to replace.
 
+### What a lower alpha would buy, and what it would cost
+
+The recurring question about this material is whether it is transparent enough to be glass at all. `backdrop-filter` only acts on the fraction of the backdrop that gets **through** the pane, so at 0.85 the blur is running at full radius on 15% of the picture. Reproduce the whole trade with:
+
+```bash
+bun run storybook          # the DEV server; the script reads the theme through Vite
+node scripts/measure-glass-alpha.mjs --url http://localhost:6006 --image docs/glass-alpha-sweep.png
+```
+
+![The same button at seven fill alphas, over a flat page, a photograph and a hard stripe pattern](./glass-alpha-sweep.png)
+
+Measured in Chrome off painted pixels, with the label removed from the measurement clones so a white glyph cannot be mistaken for backdrop:
+
+| alpha | backdrop response | blur delta over a photo (max/mean) | blur delta on a flat page | `primary` rows < AA | `destructive` rows < AA |
+| --- | --- | --- | --- | --- | --- |
+| **0.85** (shipped) | 38.0 | 18 / 4.7 | 1 | 45 / 180 | 0 / 180 |
+| 0.75 | 63.7 | 31 / 7.8 | 1 | 85 / 180 | 36 / 180 |
+| 0.65 | 88.7 | 43 / 10.9 | 1 | 85 / 180 | 180 / 180 |
+| 0.55 | 114.7 | 55 / 14.2 | 1 | 92 / 180 | 180 / 180 |
+| 0.45 | 139.3 | 67 / 17.4 | 0 | 103 / 180 | 180 / 180 |
+| 0.35 | 165.3 | 79 / 20.6 | 1 | 110 / 180 | 180 / 180 |
+| 0.25 | 190.3 | 91 / 23.8 | 1 | 110 / 180 | 180 / 180 |
+
+Everything is out of 255. Backdrop response is how far the painted pane moves between a white and a black backdrop — linear in `1 - alpha`, at 25.4 ± 0.7 per 0.10 of alpha. Blur delta is how much the picture changes when the blur is switched off, which is the honest form of "can you see the blur".
+
+Three things the table settles:
+
+- **On a flat page the blur is worth ~1/255 at every alpha, including 0.25.** There is nothing behind the pane to blur, so lowering the alpha does not make a flat page glassy — it only makes the button paler. That is the whole of the "it doesn't look glassy" complaint, and no alpha fixes it.
+- **Over a photograph the blur is already visible at 0.85** (18/255 peak). Where there is something to see, the shipped material is doing the thing.
+- **Legibility falls off a cliff immediately below 0.85.** One step down doubles `primary`'s AA failures and takes `destructive` from 0 to 36; two steps down puts every one of `destructive`'s 180 rows under AA.
+
+So there is no single alpha that both matches the reference and reads as glass on a flat surface. That is a property of the material — a blur needs a backdrop — not a constant nobody has tuned yet. To make a specific surface read as glass, put something behind it.
+
 ## Sizes
 
 ```tsx
