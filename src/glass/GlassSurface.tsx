@@ -100,10 +100,28 @@ const GlassSurfaceComponent: React.FC<GlassSurfaceProps> = ({
         <Svg style={StyleSheet.absoluteFill} testID={testID ? `${testID}-sheen` : undefined}>
           <Defs>
             {/* Top to bottom: simulated light from above. */}
+            {/*
+              `stopOpacity` is a SEPARATE prop and not an optional nicety:
+              react-native-svg reads `stopColor` for RGB only and drops any alpha
+              channel in it, so an `rgba(…, 0.02)` stop paints at FULL strength.
+              See the alpha note on `GLASS_SHEEN`.
+            */}
             <LinearGradient id={sheenId} x1="0" y1="0" x2="0" y2="1">
-              <Stop offset="0" stopColor={GLASS_SHEEN.top} />
-              <Stop offset={String(GLASS_SHEEN.middleStop)} stopColor={GLASS_SHEEN.middle} />
-              <Stop offset="1" stopColor={GLASS_SHEEN.bottom} />
+              <Stop
+                offset="0"
+                stopColor={GLASS_SHEEN.top.color}
+                stopOpacity={GLASS_SHEEN.top.opacity}
+              />
+              <Stop
+                offset={String(GLASS_SHEEN.middleStop)}
+                stopColor={GLASS_SHEEN.middle.color}
+                stopOpacity={GLASS_SHEEN.middle.opacity}
+              />
+              <Stop
+                offset="1"
+                stopColor={GLASS_SHEEN.bottom.color}
+                stopOpacity={GLASS_SHEEN.bottom.opacity}
+              />
             </LinearGradient>
           </Defs>
           <Rect x="0" y="0" width="100%" height="100%" fill={`url(#${sheenId})`} />

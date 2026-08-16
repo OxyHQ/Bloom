@@ -47,6 +47,17 @@ Over content Bloom does not own — a photograph, a video still — the pane is 
 
 `secondary`, `outline`, `ghost`, `text`, `link` and `icon` are unchanged: they have no fill for the tint to replace.
 
+### On Android the blur is not applied today
+
+Measured on an Android emulator (API 37): the pane paints its tint and the backdrop behind it is **not blurred**. `expo-blur`'s `blurMethod` defaults to `'none'` on Android, and its `dimezisBlurView` method additionally needs a `blurTarget` ref pointing at the view to blur — something a surface that simply fills its caller cannot supply on its own. Without it `expo-blur` logs one warning and falls back to no blur.
+
+What this changes in practice is small but worth knowing:
+
+- Over Bloom's own flat surfaces — the documented backdrop range — nothing visible changes. A blur over a uniform colour is a no-op, so the painted pane matched the web composite to **0.75/255**, and every AA number above still holds.
+- Over **textured** content (a photograph, a busy list) the Android pane transmits that texture at 15% instead of smoothing it. The pill clip, the hairline, the rim, the sheen and the drop shadow are all unaffected.
+
+iOS uses `UIVisualEffectView` and needs none of this, but it has not been verified on hardware.
+
 ### What a lower alpha would buy, and what it would cost
 
 The recurring question about this material is whether it is transparent enough to be glass at all. `backdrop-filter` only acts on the fraction of the backdrop that gets **through** the pane, so at 0.85 the blur is running at full radius on 15% of the picture. Reproduce the whole trade with:
