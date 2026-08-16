@@ -1,5 +1,5 @@
 import React from 'react';
-import { Text, View } from 'react-native';
+import { Pressable, Text, View } from 'react-native';
 import { render } from '@testing-library/react-native';
 
 import { BloomThemeProvider } from '../theme/BloomThemeProvider';
@@ -215,13 +215,110 @@ describe('variant="text" geometry', () => {
   it('ghost keeps the full size-config padding', () => {
     const { getByTestId } = renderWithTheme(<GhostButton testID="ghost">Ghost</GhostButton>);
     const style = resolvedStyle(getByTestId('ghost').props.style);
-    expect(style.paddingVertical).toBe(8);
+    expect(style.paddingVertical).toBe(5);
     expect(style.paddingHorizontal).toBe(16);
   });
 
   it('keeps the size-config minHeight so the touch target survives', () => {
     const { getByTestId } = renderWithTheme(<TextButton testID="txt">Text</TextButton>);
-    expect(resolvedStyle(getByTestId('txt').props.style).minHeight).toBe(40);
+    expect(resolvedStyle(getByTestId('txt').props.style).minHeight).toBe(36);
+  });
+});
+
+// ---------------------------------------------------------------------------
+//  Geometry table
+//
+//  `minHeight` is the only thing that decides how tall a button is, on BOTH
+//  platforms — which is a property of the PADDING as much as of `minHeight`
+//  itself, since a content box that outgrows the floor takes the height back.
+//  Measured in Chrome (Tailwind preflight's `line-height: 1.5`, which every
+//  consumer inherits): a `medium` button was 40.5px tall with a border and 40px
+//  without, against a `minHeight` of 40 that never applied.
+//
+//  These assertions therefore pin BOTH numbers per size, and the arithmetic
+//  between them, so shrinking one without the other goes red here rather than
+//  silently on a consumer's page.
+// ---------------------------------------------------------------------------
+
+/** The floor `SIZE_HIT_SLOP` exists to reach — Apple's HIG, and `Checkbox`'s. */
+const MIN_TOUCH_TARGET = 44;
+
+/** Web's line box: Tailwind preflight sets `line-height: 1.5` on `html`. */
+const WEB_LINE_HEIGHT_RATIO = 1.5;
+
+/** The widest border any variant draws, on each of the two vertical edges. */
+const MAX_VERTICAL_BORDER = 2;
+
+const GEOMETRY = [
+  { size: 'small', height: 32, paddingVertical: 4, fontSize: 14, verticalSlop: 6 },
+  { size: 'medium', height: 36, paddingVertical: 5, fontSize: 15, verticalSlop: 4 },
+  { size: 'large', height: 44, paddingVertical: 8, fontSize: 16, verticalSlop: 0 },
+] as const;
+
+describe('Button geometry', () => {
+  it.each(GEOMETRY)(
+    '$size is $height tall, from minHeight and not from padding',
+    ({ size, height, paddingVertical, fontSize }) => {
+      const { getByTestId } = renderWithTheme(
+        <Button testID="btn" size={size}>
+          Save changes
+        </Button>,
+      );
+      const style = resolvedStyle(getByTestId('btn').props.style);
+      expect(style.minHeight).toBe(height);
+      expect(style.paddingVertical).toBe(paddingVertical);
+
+      // The content box has to FIT inside `minHeight`, or the height comes from
+      // the padding instead and the two forks drift apart again.
+      const contentBox =
+        2 * paddingVertical + WEB_LINE_HEIGHT_RATIO * fontSize + MAX_VERTICAL_BORDER;
+      expect(contentBox).toBeLessThanOrEqual(height);
+    },
+  );
+
+  // `hitSlop` is read against the `Pressable` element, not the host view:
+  // Pressable feeds it to Pressability and never forwards it, so the resolved
+  // value is invisible from `getByTestId`.
+  it.each(GEOMETRY)(
+    '$size reaches the touch-target floor on native, with slop where it must',
+    ({ size, height, verticalSlop }) => {
+      const { UNSAFE_getByType } = renderWithTheme(
+        <Button testID="btn" size={size}>
+          Save changes
+        </Button>,
+      );
+      expect(UNSAFE_getByType(Pressable).props.hitSlop).toEqual({
+        top: verticalSlop,
+        bottom: verticalSlop,
+        left: 0,
+        right: 0,
+      });
+      expect(height + 2 * verticalSlop).toBeGreaterThanOrEqual(MIN_TOUCH_TARGET);
+    },
+  );
+
+  it.each(GEOMETRY)('$size icon variant is a square that clears its glyph', ({ size, height }) => {
+    const { getByTestId } = renderWithTheme(
+      <IconButton testID="btn" size={size} icon={<View testID="glyph" />} />,
+    );
+    const style = resolvedStyle(getByTestId('btn').props.style);
+    expect(style.width).toBe(height);
+    expect(style.height).toBe(height);
+    // Not a fixed 8: at `medium` that would leave an 18px box, and the 20px
+    // default icon would be clipped by the variant's own `overflow: 'hidden'`
+    // with nothing thrown. The glyph box stays 14 / 22 / 30.
+    const glyphBox = height - 2 * Number(style.padding) - MAX_VERTICAL_BORDER;
+    expect(glyphBox).toBe({ small: 14, medium: 22, large: 30 }[size]);
+  });
+
+  it('a caller hitSlop still replaces the default', () => {
+    const slop = { top: 1, bottom: 2, left: 3, right: 4 };
+    const { UNSAFE_getByType } = renderWithTheme(
+      <Button testID="btn" hitSlop={slop}>
+        Save
+      </Button>,
+    );
+    expect(UNSAFE_getByType(Pressable).props.hitSlop).toEqual(slop);
   });
 });
 

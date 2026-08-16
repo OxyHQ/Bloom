@@ -265,4 +265,44 @@ describe('Button.web', () => {
       expect(link.style.marginTop).toBe('7px');
     });
   });
+
+  // -------------------------------------------------------------------------
+  //  Geometry parity with the native fork
+  //
+  //  The two forks hold two INDEPENDENT `SIZE_CONFIG` literals — nothing in the
+  //  type system makes them agree, and a compaction applied to one of them is a
+  //  fleet-wide platform split that renders correctly on the platform you are
+  //  looking at. `Button.test.tsx` pins the same three rows against the native
+  //  fork; both must move together.
+  // -------------------------------------------------------------------------
+  describe('geometry', () => {
+    const GEOMETRY = [
+      { size: 'small', height: '32px', paddingVertical: '4px', iconPadding: '8px' },
+      { size: 'medium', height: '36px', paddingVertical: '5px', iconPadding: '6px' },
+      { size: 'large', height: '44px', paddingVertical: '8px', iconPadding: '6px' },
+    ] as const;
+
+    it.each(GEOMETRY)('$size matches the native table', ({ size, height, paddingVertical }) => {
+      const c = mount(
+        <Button size={size} variant="secondary">
+          Save changes
+        </Button>,
+      );
+      const btn = getByRole(c, 'button', { name: 'Save changes' });
+      expect(btn.style.minHeight).toBe(height);
+      expect(btn.style.paddingTop).toBe(paddingVertical);
+      expect(btn.style.paddingBottom).toBe(paddingVertical);
+    });
+
+    it.each(GEOMETRY)(
+      '$size icon variant is a square whose glyph box the compaction did not shrink',
+      ({ size, height, iconPadding }) => {
+        const c = mount(<Button size={size} variant="icon" aria-label="Act" />);
+        const btn = getByRole(c, 'button', { name: 'Act' });
+        expect(btn.style.width).toBe(height);
+        expect(btn.style.height).toBe(height);
+        expect(btn.style.padding).toBe(iconPadding);
+      },
+    );
+  });
 });

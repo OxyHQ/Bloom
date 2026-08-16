@@ -55,7 +55,9 @@ Over content Bloom does not own — a photograph, a video still — the pane is 
 <Button size="large">Large</Button>
 ```
 
-Heights are 32 / 40 / 48 dp; font sizes 14 / 15 / 16.
+Heights are 32 / 36 / 44 dp; font sizes 14 / 15 / 16. The height comes from `minHeight` alone — the vertical padding is sized to keep the label's line box underneath it — so a button measures the same on native and on web, and in every variant. The one exception is `text` / `link`, which clears `minHeight` on web so the control hugs its label and sits inline.
+
+Native adds vertical `hitSlop` to bring `small` and `medium` up to a 44 dp touch target; `large` is already there. Horizontal slop is zero, so two buttons in a row cannot steal each other's presses. On web `hitSlop` does not exist and the target is the box: 32 / 36 / 44 px.
 
 ## Loading
 
