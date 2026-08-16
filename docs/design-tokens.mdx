@@ -92,6 +92,11 @@ getPresetVars('oxy', 'dark'); // { '--background': 'rgb(19 12 20)', … }
 buildSeedScopeVars({ seed: '#7c5aed', mode: 'dark' });
 ```
 
+`buildSeedScopeVars` also writes the ROLE vocabulary (`withScopeAliases`)
+alongside the colour aliases — omitting it is what makes a scoped block paint
+near-black text over a dark photo in forced-dark mode, since the role that
+resolves foreground-over-fill never got scoped with everything else.
+
 A preset's own `hex` + `variant` reproduces `getPresetVars` token-for-token, so
 the document root and a brand scope go through the same code path. Both
 functions are pure — no react, no react-native — so a plain node/bun script can

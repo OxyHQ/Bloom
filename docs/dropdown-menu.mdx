@@ -61,6 +61,8 @@ A row dismisses the menu after it fires. Pass `keepOpen` to a row that should no
 
 Handlers the child already carries are composed, not replaced — `track()` runs first, then the menu opens.
 
+`disabled` on the trigger is guarded the same way, at the composition layer rather than on the child alone — pass `disabled` to `DropdownMenuTrigger`, not to your own child element, or the open handler still fires.
+
 ## Controlled
 
 ```tsx

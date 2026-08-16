@@ -36,7 +36,10 @@ import { Badge } from '@oxyhq/bloom/badge';
 `color` and `variant` are resolved together through `resolveAccentColors`,
 which reads the `*Subtle` / `*SubtleForeground` pairs. That is why a subtle
 badge is legible rather than one colour on the same colour — a tone lightened
-by appending alpha to a token would not be.
+by appending alpha to a token would not be. Concretely: an accent token
+resolves to `rgb(...)`, so hand-appending a hex alpha suffix parses back
+OPAQUE (contrast 1.00, a label on its own colour) rather than translucent —
+`resolveAccentColors` is what makes the pairing legible instead of that.
 
 ## Three props that each prevent a specific bug
 

@@ -39,6 +39,10 @@ function SignOutButton() {
 
 ## Controlled open state
 
+<Callout variant="warning" title="Prefer useDialogControl">
+The controlled path fires `onClose` synchronously on `open` flipping to `false` — ahead of the exit animation. If your `onClose` handler unmounts the consumer (navigates away, removes the dialog from the tree), it races the animation still in flight. `useDialogControl()` doesn't have this footgun: it closes imperatively and only resolves once the exit finishes.
+</Callout>
+
 Pass `open` + `onClose` to drive the dialog from external state instead of `useDialogControl`:
 
 ```tsx
