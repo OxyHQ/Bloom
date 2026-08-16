@@ -1,0 +1,259 @@
+---
+title: Migrating to 1.0
+description: Every breaking change between @oxyhq/bloom 0.89.0 and 1.0.0, derived from the published tarball rather than from commit messages.
+order: 2
+---
+
+# Migrating to 1.0
+
+Bloom follows the clean-cut rule: there are no `@deprecated` aliases and no
+old-name shims anywhere in this release. **This page is the only bridge.** If a
+name below is gone, it is gone in the build you install — nothing re-exports it
+under the old spelling.
+
+<Callout variant="info" title="Which version are you on?">
+`0.87.1 → 0.88.0 → 0.89.0` was **purely additive**: seven new symbols on
+`@oxyhq/bloom/design-tokens` plus the `./design-tokens/tokens.json` subpath, and
+nothing removed or renamed. So every change on this page applies in full whether
+you are coming from 0.87.1, 0.88.0 or 0.89.0.
+</Callout>
+
+<Callout variant="warning" title="`^` means something different now">
+Under a `0.x` version, `^0.89.0` resolves to `>=0.89.0 <0.90.0` — a caret pinned
+you to one minor. From 1.0.0, `^1.0.0` resolves to `>=1.0.0 <2.0.0`, so a caret
+now accepts every future minor. That is the intended semantics, but it is a
+change in what your existing range does.
+</Callout>
+
+## How this list was derived
+
+Not from commit subjects. The published `@oxyhq/bloom@0.87.1` and `0.89.0`
+tarballs were unpacked and their `package.json#exports` compared against this
+build's, and the exported symbol set of each of the 88 typed subpaths was read
+out of `lib/typescript/` on both sides through the TypeScript checker, so a
+re-export barrel is followed rather than guessed. Prop shapes were diffed the
+same way, because a removed prop leaves `ButtonProps` present and its shape
+changed.
+
+One correction that matters if you re-run such a census yourself: a symbol moved
+**into a namespace** looks exactly like a deleted symbol when you only read
+top-level module exports. The fifteen colour-engine names below are in that
+class — they are renamed, not removed.
+
+## Subpaths removed
+
+Four subpaths no longer exist. An import of any of them is a hard resolution
+failure, not a type error.
+
+| Removed | Replacement | Why |
+| --- | --- | --- |
+| `@oxyhq/bloom/menu` | `@oxyhq/bloom/dropdown-menu` | The family was ported to shadcn/react-native-reusables' public API. Every `Menu*` export is `DropdownMenu*`. |
+| `@oxyhq/bloom/collapsible` | `@oxyhq/bloom/accordion` | `Collapsible` called `UIManager.setLayoutAnimationEnabledExperimental(true)` at module scope and reached the root barrel through `export *`, so that side effect ran for every barrel consumer on Android old-arch whether or not the component was used. |
+| `@oxyhq/bloom/grouped-buttons` | `@oxyhq/bloom/settings-list` + `@oxyhq/bloom/item` | The only one of the three row renderers with no `accessibilityRole`, no `accessibilityLabel` and no `aria-disabled`, built on `TouchableOpacity`/`activeOpacity` instead of `useInteractionState`. |
+| `@oxyhq/bloom/pressable-with-hover` | none — inline it | One internal user. It now lives inside `zoomable-image-gallery` as `NavArrow`, the package's only hover-styled control. |
+
+### Subpaths added
+
+`@oxyhq/bloom/dropdown-menu`, `@oxyhq/bloom/menubar`, `@oxyhq/bloom/radio`,
+`@oxyhq/bloom/aspect-ratio`, and the `@oxyhq/bloom/design-tokens/tokens.json`
+asset (the last already shipped in 0.89.0).
+
+## Renamed symbols
+
+Mechanical renames — same component, new name.
+
+| Old | New | Subpath |
+| --- | --- | --- |
+| `Menu`, `MenuTrigger`, `MenuContent`, `MenuItem`, `MenuGroup` | `DropdownMenu`, `DropdownMenuTrigger`, `DropdownMenuContent`, `DropdownMenuItem`, `DropdownMenuGroup` | `./dropdown-menu` |
+| `MenuDivider`, `ContextMenuDivider` | `DropdownMenuSeparator`, `ContextMenuSeparator` | `./dropdown-menu`, `./context-menu` |
+| `useMenuControl`, `useMenuContext`, `MenuControlProps` | declared by `dropdown-menu` itself, no longer re-exported from `dialog` under an alias | `./dropdown-menu` |
+| `Addon` | `InputGroupAddon` | `./input-group` |
+| `Provider`, `Outlet` | `PortalProvider`, `PortalOutlet` | `./portal` |
+| `Attachment` | `PromptInputAttachment` | `./prompt-input` |
+| `zIndex` | `Z_INDEX` | `./styles` |
+| `ChipVariant`, `BadgeVariant` | `AccentFill` | `./theme` |
+| `ChipColor`, `BadgeColor` | `AccentTone` | `./theme` |
+
+`InputGroup.Addon`, the static alias, is gone too — `InputGroupAddon` is the one
+spelling. No Bloom compound carries a static alias.
+
+For `Chip` and `Badge` the accepted **values** are almost unchanged; only the
+type names moved. `BadgeVariant` was already `'solid' | 'subtle' | 'outlined'`,
+which is exactly `AccentFill`, and `BadgeColor` is exactly `AccentTone`. The one
+value that changed is Chip's `'soft'`, which is now `'subtle'`; `AccentTone` also
+adds `'info'` for Chip, which previously had it on `Badge` only.
+
+### The colour engine is one namespace
+
+Fifteen flat exports of `@oxyhq/bloom/theme` are now members of the `ColorEngine`
+namespace, still published from the same subpath:
+
+```ts
+// before
+import { argbFromHex, generateRoleColors, quantizeImage } from '@oxyhq/bloom/theme';
+
+// after
+import { ColorEngine } from '@oxyhq/bloom/theme';
+ColorEngine.argbFromHex(...);
+```
+
+Affected: `argbFromHex`, `hexFromArgb`, `argbFromRgb`, `redFromArgb`,
+`greenFromArgb`, `blueFromArgb`, `quantizeImage`, `seedsFromImagePixels`,
+`seedHexFromImagePixels`, `generateRoleColors`, and the types `RoleName`,
+`RoleColors`, `GenerateOptions`, `SchemeVariant`, `AccentSources`.
+
+`useTheme`, `BloomThemeProvider` and the tokens stay flat — those are used
+fleet-wide and did not move.
+
+### Theme symbols that moved subpath
+
+`getPresetVars`, `buildSeedScopeVars`, `SeedScopeOptions` and `ExplicitAccents`
+were reachable from two subpaths. They now live only in the react-free barrel a
+build script can import:
+
+```ts
+-import { getPresetVars } from '@oxyhq/bloom/theme';
++import { getPresetVars } from '@oxyhq/bloom/design-tokens';
+```
+
+`getPresetVars` and `ExplicitAccents` are also on `@oxyhq/bloom/preset-vars`.
+
+### `alert()` and `confirm()` moved to the surface stack
+
+`alert()` lived on `./dialog`, `confirm()` on `./alert-dialog`. Both are now on
+`@oxyhq/bloom/surfaces`, along with `AlertButton` and `AlertButtonStyle`.
+
+```ts
+-import { alert } from '@oxyhq/bloom/dialog';
+-import { confirm } from '@oxyhq/bloom/alert-dialog';
++import { alert, confirm } from '@oxyhq/bloom/surfaces';
+```
+
+Their hosts — `BloomDialogProvider` and `AlertDialogHost` — are **deleted**, not
+renamed. Both were module-scope FIFO queues with a host component each; remove
+them from your provider tree and mount the single `<SurfaceHost>` instead. A
+one-at-a-time queue orders by arrival into its own queue, so it could not layer
+over a surface it did not know about. Consequence: **two `alert()` calls in a row
+now stack rather than queue.**
+
+`SurfaceConfirmOptions.message` and `SurfacePromptOptions.message` are now
+`description`, matching `DialogProps`.
+
+## Deleted with no replacement
+
+| Symbol | Was on | Note |
+| --- | --- | --- |
+| `BloomDialogProvider` | `./dialog` | see above |
+| `AlertDialogHost`, `ConfirmOptions` | `./alert-dialog` | see above |
+| `TooltipSheetCompatProvider` | `./tooltip` | `return <>{children}</>` on both platforms, zero importers — an unfinished port, not a redundant shim |
+| `SkeletonLoadingProps` | `./loading` | `Loading variant="skeleton"` drew static Views under the same name as the `skeleton` family, which has a real shimmer loop |
+| `useSharedInputStyles` | `./text-field` | module-private; was never usable |
+| `useIsFullscreen` | `./prompt-input` | zero callers |
+| `DIALOG_SHEET_BACKDROP_TESTID` | `./dialog` | off the public surface |
+| `usePopoverControl`, `usePopoverContext`, `PopoverControlProps`, `PopoverPlacement`, `PopoverTriggerRenderProps`, `PopoverTriggerState` | `./popover` | Popover took the Radix shape (`open`/`defaultOpen`/`onOpenChange`, `asChild`, `side`/`align`/`sideOffset`); the render-prop trigger is gone |
+| `MenuItemText`, `MenuItemIcon`, `ContextMenuItemText`, `ContextMenuItemIcon` | `./menu`, `./context-menu` | The four menu families share one row vocabulary now. A row is `DropdownMenuItem` / `ContextMenuItem` with its label as children; use `DropdownMenuShortcut` for trailing text and `DropdownMenuLabel` for a group heading. There is no `*ItemText` or `*ItemIcon` in 1.0.0. |
+
+## Prop changes
+
+| Component | Change |
+| --- | --- |
+| `Button` | `activeOpacity` removed. Press feedback is the library's decision, not a per-call knob. |
+| `Loading` | `variant` no longer accepts `"skeleton"`. Use the `skeleton` family. |
+| `Chip` | `variant="soft"` → `variant="subtle"`, one spelling matching the token family. `color="info"` now exists (it was on `Badge` only). The `onClose` affordance draws `TimesLarge_Stroke2_Corner0_Rounded`, not the `×` glyph. |
+| `Badge` | A `dot` Badge paints the tone's fill whatever the variant — `dot variant="outlined"` used to be a fully transparent circle. |
+| `Popover` | `PopoverContentProps.offset` and `.placement` removed (use `sideOffset` and `side`/`align`); `PopoverProps.control` removed. |
+| `TextField` | `TextFieldIcon` and `TextFieldSuffix` now **throw** outside a `<TextField>`. `TextFieldInput` and `TextFieldLabel` deliberately still work standalone. |
+
+## Behavioural changes with no API change
+
+These break nothing at compile time and change what you see.
+
+- **`Button` heights are now exactly 32 / 36 / 44** (small / medium / large) on
+  both platforms and in every variant. Hit slop brings the two smaller sizes up
+  to the 44dp touch-target floor.
+- **`Button`'s `primary` and `destructive` fills are a glass material** at fill
+  alpha 0.85. `inverse` stays opaque. Full AA cost table in
+  [Button](/docs/bloom/main/button).
+- **`AspectRatio` rejects a degenerate ratio** — a `ratio` that is zero,
+  negative or non-finite falls back to the default instead of collapsing the
+  box.
+- **`ActivityHeatmap`'s default palette declares only the steps it can paint.**
+  `DEFAULT_ALPHAS` carried five steps but the first could never be reached.
+  Rendered with the default props this is byte-identical to what shipped; if you
+  passed your own `levels` **and** relied on the default alphas, re-check the
+  pairing.
+- **`AvatarGroup` resolves identity as `displayName?.trim() || handle`.** It used
+  `??`, which falls through on null/undefined only, so a whitespace-only
+  `displayName` — which the API does send — beat the handle behind it and showed
+  the default avatar image.
+- **Popover positions through the shared placement engine.** Its own resolver
+  clamped only the top, so a panel that fit neither above nor below its trigger
+  ran off the bottom of the viewport.
+- **`PromptInput` and `BloomColorScope`/`BloomSeedScope` now work off Metro.**
+  Both shipped `.web` forks with no `browser` condition, so Vite/webpack/SSR
+  resolved the native build: `onImagePaste` was missing entirely and the colour
+  scopes emitted no CSS custom properties at all.
+
+## Structural changes that are not API changes
+
+Every family is now `index.ts` (a pure barrel) + `<Pascal>.tsx` + `types.ts`,
+hooks are `use-kebab-case.ts`, and prop types live in `types.ts`. **The export
+surface is unchanged by that refactor** — measured symbol-for-symbol across all
+barrels, lost=0 gained=0. You only notice if you deep-import a file path inside
+the package, which is not a supported entry point.
+
+## `jest.mock` call sites
+
+A renamed subpath breaks `jest.mock('@oxyhq/bloom/<sub>')` silently — the string
+is not an import, so no type checker and no import census sees it.
+
+Measured across the Oxy fleet: **131 `jest.mock('@oxyhq/bloom/…')` call sites in
+48 files, referencing 20 distinct subpaths — all 20 still exist in 1.0.0.** No
+mock needs to change. The subpaths mocked are `.`, `./avatar`, `./avatar-group`,
+`./bottom-sheet`, `./button`, `./dialog`, `./hooks`, `./icons`, `./item`,
+`./loading`, `./pressable-scale`, `./search`, `./settings-list`, `./skeleton`,
+`./subtle-hover`, `./switch`, `./tab-bar`, `./text-field`, `./theme`, `./toast`.
+
+If you add a mock for `./menu`, `./collapsible`, `./grouped-buttons` or
+`./pressable-with-hover`, it will now silently mock a module that does not exist.
+
+## Measured impact across the Oxy fleet
+
+15,544 tracked source files across every repo under `~/Oxy` were scanned for
+`@oxyhq/bloom` import specifiers and named bindings, and each binding checked
+against 1.0.0's real export set. Excluding Bloom's own tree: **68 call sites in
+51 files across 15 repos need an edit** — Alia, Astro, CRM, Clarity,
+CrowdSource, Homiio, Inbox, Mention, Mercaria, Moovo, Noted, OxyHQServices,
+Station, Syra and website. Four of the 68 are imports of a deleted subpath; the
+other 64 are named bindings.
+
+Imports of a removed subpath — these fail to resolve:
+
+| File | Subpath |
+| --- | --- |
+| `OxyHQServices/packages/services/src/ui/components/authChooser/TroubleDisclosure.tsx` | `./collapsible` |
+| `Inbox/packages/frontend/components/settings/sections/AccountSection.tsx` | `./grouped-buttons` |
+| `OxyHQServices/packages/inbox/components/settings/sections/AccountSection.tsx` | `./grouped-buttons` |
+| `Homiio/packages/frontend/app/host/calendar.tsx` | `./menu` |
+
+Named bindings that no longer exist, by symbol:
+
+| Symbol | Sites | Fix |
+| --- | --- | --- |
+| `getPresetVars` | 10 | import from `@oxyhq/bloom/design-tokens` |
+| `confirm` (from `./alert-dialog`) | 12 | import from `@oxyhq/bloom/surfaces` |
+| `Provider` / `Outlet` (from `./portal`) | 6 + 6 | `PortalProvider` / `PortalOutlet` |
+| `generateRoleColors` | 6 | `ColorEngine.generateRoleColors` |
+| `BadgeColor` | 5 | `AccentTone` |
+| `alert` (from `./dialog`) | 3 | import from `@oxyhq/bloom/surfaces` |
+| `ChipColor`, `ChipVariant` | 2 + 2 | `AccentTone`, `AccentFill` |
+| `BadgeVariant` | 1 | `AccentFill` |
+| `BloomDialogProvider` | 2 | delete; mount `<SurfaceHost>` |
+| `AlertDialogHost` | 1 | delete; mount `<SurfaceHost>` |
+| `Menu*` + `useMenuControl` (one file, `Syra/packages/frontend/components/MediaCard.tsx`) | 7 | `DropdownMenu*` |
+| `Collapsible` (`Astro/webui/.../collapsible-group.tsx`) | 1 | `Accordion` |
+
+`@oxyhq/bloom/icons` is byte-identical between 0.87.1 and 1.0.0 — a census will
+appear to flag three icon names in Bloom's own
+`src/__tests__/icon-references.test.ts`, but those are that suite's own fixture
+strings, not call sites.
