@@ -1,6 +1,6 @@
 ---
 title: Migrating to 1.0
-description: Every breaking change between @oxyhq/bloom 0.89.0 and 1.0.0, derived from the published tarball rather than from commit messages.
+description: Bloom 1.0.0 moves with @oxyhq/services 30.0.1 and @oxyhq/core 21.0.0 as one upgrade, plus every breaking change between 0.89.0 and 1.0.0, derived from the published tarballs rather than from commit messages.
 order: 2
 ---
 
@@ -23,6 +23,141 @@ Under a `0.x` version, `^0.89.0` resolves to `>=0.89.0 <0.90.0` — a caret pinn
 you to one minor. From 1.0.0, `^1.0.0` resolves to `>=1.0.0 <2.0.0`, so a caret
 now accepts every future minor. That is the intended semantics, but it is a
 change in what your existing range does.
+</Callout>
+
+## Before anything else: this is a three-package upgrade
+
+Bloom 1.0.0 is not a package you can bump on its own. If your app also uses
+`@oxyhq/services`, the move is **three packages in one commit**:
+
+```json
+"@oxyhq/bloom": "^1.0.0",
+"@oxyhq/services": "^30.0.1",
+"@oxyhq/core": "^21.0.0"
+```
+
+Not three steps. Both intermediate states are broken, and neither announces
+itself: one cannot produce a warning at all, and the other produces exactly one
+line, on one run.
+
+### Bloom alone breaks `@oxyhq/services`, silently
+
+Every published `@oxyhq/services` below `30.0.0` imports two subpaths that 1.0.0
+deleted, from its own source:
+
+| File in `@oxyhq/services` | Imports |
+| --- | --- |
+| `src/ui/components/FollowTargetButton.tsx` | `@oxyhq/bloom/menu` |
+| `src/ui/components/authChooser/TroubleDisclosure.tsx` | `@oxyhq/bloom/collapsible` |
+
+Both are present in the published `29.0.0` tarball in `src/` **and** in both
+compiled `lib/` trees, so it does not matter whether your bundler reads Bloom's
+source or its build. Neither is in `30.0.1`. `FollowTargetButton` is the one that
+usually surfaces first, because it is on the follow button most apps render.
+
+Nothing warns you, and it is not that the warning is easy to miss — **no warning
+is possible.** Every `@oxyhq/services` below 30 declares its Bloom peer as
+`">=0.59.0"` (or looser), an unbounded range that `1.0.0` satisfies. There is no
+mismatch for a package manager to report. `@oxyhq/bloom` declares no `@oxyhq/*`
+peer of its own, so it cannot report one either. The failure appears at bundle
+time as an unresolved module — on web, typically a white screen.
+
+### `@oxyhq/services` alone breaks against an old `@oxyhq/core`
+
+`@oxyhq/services@30.0.1` names **12 `@oxyhq/core` symbols across 10 of its own
+source files that do not exist in `@oxyhq/core@20.1.0`**: `DeviceContext`,
+`SharedDeviceCredential`, `SharedDeviceCredentialRead`,
+`SharedDeviceCredentialStore`, `SwitcherContextRow`, `SwitcherPrincipalRow`,
+`buildSwitcherRows`, `createSharedMirroringAuthStateStore`,
+`normalizeSharedDeviceSessionRead`, `projectDevicePrincipals`,
+`resolveActiveContext` and `showsPrincipalHeaders`. All 144 core bindings
+services imports exist in `21.0.0`.
+
+This is not new in 30 — `@oxyhq/services@29.0.0` names the same 12. The core
+floor moved to `^21.0.0` in services 29, so if you are skipping several majors
+you are crossing it whichever version you land on.
+
+Here the package manager does speak, but only just:
+
+```
+warn: incorrect peer dependency "@oxyhq/core@20.1.0"
+```
+
+One line, naming the version but not which package wanted what, on the run that
+actually resolves. Re-run `bun install` against a lockfile that already
+satisfies the tree and you get `Checked N installs ... (no changes)` and no
+warning at all — which is the state most people are in by the time they look.
+
+<Callout variant="warning" title="Do not install `@oxyhq/services@30.0.0`">
+It is deprecated on npm: it published without `lib/`, so 26 of its 33 exports
+targets are missing. `30.0.1` is the version.
+</Callout>
+
+### Whether your typecheck can see any of this
+
+`@oxyhq/services` publishes its main entry with a `react-native` condition that
+is a **bare string** pointing at TypeScript source:
+
+```json
+"exports": { ".": { "react-native": "./src/index.ts", "import": { … }, … } }
+```
+
+So a project whose `customConditions` include `react-native` resolves
+`@oxyhq/services` to `node_modules/@oxyhq/services/src/index.ts` and typechecks
+the package's own source — the core mismatch lands as errors under
+`node_modules/`, all naming `"@oxyhq/core"` (19 of them for `30.0.1` against
+core `20.1.0`). A project without that condition resolves to
+`lib/typescript/module/index.d.ts` instead, and with `skipLibCheck: true` — the
+default in the Expo and Vite templates — **sees nothing at all: zero errors.**
+Its build is green and its web bundle white-screens.
+
+Which side you are on:
+
+```bash
+# from the package directory, not the monorepo root, and name the tsconfig your
+# typecheck script names — a references-only root tsconfig resolves nothing
+bunx tsc -p tsconfig.json --showConfig | grep customConditions
+```
+
+`["react-native"]` means your typecheck is a real check. No output means it is
+not, and a green typecheck is not evidence about this upgrade. Expo apps get the
+condition from `expo/tsconfig.base`; DOM/Vite packages generally do not.
+
+If you are on the blind side and want one run that can see it, typecheck once
+with `--skipLibCheck false`: services' shipped declarations reference the same
+core symbols, so a stale core produces errors there too (fewer of them — 4 in
+the case measured — but enough to fail the run).
+
+### Assert the version that resolved, not the one you declared
+
+Two ways a "done" upgrade is not done:
+
+- **A `packages/*` workspace glob does not match the repo root manifest.** A
+  version pinned in five places, four of them under `packages/`, edits cleanly,
+  and `bun install` answers `Checked 1539 installs (no changes)` — the root
+  manifest still pins the old major and `node_modules` never moved.
+- **A caret range that a lockfile already satisfies does not re-resolve.**
+
+Both are invisible if you read `package.json`. Read what resolved instead, from
+each workspace package:
+
+```bash
+bun pm ls | grep -E '@oxyhq/(bloom|services|core)@'
+# or, from the package directory:
+node -e 'for (const p of ["@oxyhq/bloom","@oxyhq/services","@oxyhq/core"]) console.log(p, require(p + "/package.json").version)'
+```
+
+Expect `1.0.0`, `30.0.1` and `21.0.0`. Anything else means the edit did not land.
+
+<Callout variant="info" title="How the numbers on this page were measured">
+Everything above was read out of the published npm tarballs and registry
+metadata for `@oxyhq/bloom@1.0.0`, `@oxyhq/services@29.0.0` and `30.0.1`, and
+`@oxyhq/core@20.1.0` and `21.0.0`, on 2026-08-17. The symbol counts come from
+an AST walk of services' `src/` cross-checked against each core version's
+exported symbol set through the TypeScript checker; the error counts and the
+warning text come from installing that pair into a scratch project and running
+`tsc` and `bun install` against it. Version numbers move — re-read yours with
+the commands above rather than trusting these.
 </Callout>
 
 ## How this list was derived
@@ -234,21 +369,46 @@ If you add a mock for `./menu`, `./collapsible`, `./grouped-buttons` or
 
 ## Measured impact across the Oxy fleet
 
-15,544 tracked source files across every repo under `~/Oxy` were scanned for
-`@oxyhq/bloom` import specifiers and named bindings, and each binding checked
-against 1.0.0's real export set. Excluding Bloom's own tree: **68 call sites in
-51 files across 15 repos need an edit** — Alia, Astro, CRM, Clarity,
-CrowdSource, Homiio, Inbox, Mention, Mercaria, Moovo, Noted, OxyHQServices,
-Station, Syra and website. Four of the 68 are imports of a deleted subpath; the
-other 64 are named bindings.
+<Callout variant="warning" title="This section is a scan of local checkouts, not of what you have installed">
+The counts below come from scanning 15,544 tracked source files in the working
+copies of every repo under `~/Oxy` on one machine. A working copy is whatever
+branch someone left it on, which is not the same as any published version — the
+`OxyHQServices` checkout scanned here sat on a topic branch pinned to
+`@oxyhq/services@26.0.1`, four majors behind the published `30.0.1`, and that
+one stale tree is why an earlier revision of this page named only one of the two
+files services imports from a removed subpath. Treat this as a worked example of
+what an upgrade turns up, not as an inventory of your repo. Scan your own:
 
-Imports of a removed subpath — these fail to resolve:
+```bash
+git grep -nE "@oxyhq/bloom/(menu|collapsible|grouped-buttons|pressable-with-hover)['\"]"
+```
+</Callout>
+
+As scanned, excluding Bloom's own tree: **68 call sites in 51 files across 15
+repos need an edit** — Alia, Astro, CRM, Clarity, CrowdSource, Homiio, Inbox,
+Mention, Mercaria, Moovo, Noted, OxyHQServices, Station, Syra and website. Four
+of the 68 were imports of a deleted subpath and the other 64 were named
+bindings, so 68 is a floor: the scan missed `FollowTargetButton.tsx` below,
+which does not exist on the branch the `OxyHQServices` checkout was parked on.
+
+Imports of a removed subpath fail to resolve. They fall into two groups, and the
+fix is different for each.
+
+**In `@oxyhq/services`' own code — fixed by upgrading, not by editing.** Read
+out of the published `29.0.0` tarball rather than from a checkout, so it holds
+for anyone below 30 regardless of what any working copy says:
+
+| File in `@oxyhq/services` (any version below 30) | Subpath |
+| --- | --- |
+| `src/ui/components/FollowTargetButton.tsx` | `./menu` |
+| `src/ui/components/authChooser/TroubleDisclosure.tsx` | `./collapsible` |
+
+**In app code — you edit these.** Present on `origin/main` of each repo as of
+2026-08-17:
 
 | File | Subpath |
 | --- | --- |
-| `OxyHQServices/packages/services/src/ui/components/authChooser/TroubleDisclosure.tsx` | `./collapsible` |
 | `Inbox/packages/frontend/components/settings/sections/AccountSection.tsx` | `./grouped-buttons` |
-| `OxyHQServices/packages/inbox/components/settings/sections/AccountSection.tsx` | `./grouped-buttons` |
 | `Homiio/packages/frontend/app/host/calendar.tsx` | `./menu` |
 
 Named bindings that no longer exist, by symbol:
