@@ -1475,6 +1475,7 @@
   "scripts": {
     "generate:exports": "node scripts/generate-platform-exports.mjs",
     "generate:theme-css": "bun scripts/generate-theme-css.ts",
+    "generate:theme-golden": "bun scripts/generate-theme-golden.ts",
     "generate:tokens-json": "bun scripts/generate-design-tokens-json.ts",
     "prebuild": "node scripts/generate-platform-exports.mjs && bun scripts/generate-theme-css.ts && bun scripts/generate-design-tokens-json.ts",
     "build": "bob build",

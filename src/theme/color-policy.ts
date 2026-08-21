@@ -162,7 +162,7 @@ const SUBTLE_ALPHA = { light: 0.13, dark: 0.24 } as const;
  * every rung of Bloom's surface stack was invisible against its neighbour, and
  * the thirteen components that carry meaning ONLY in the step between two
  * surfaces (a heatmap's empty cell, a filled card, a progress track, a hover
- * row, a skeleton) read as nothing at all. Measured across all 18 presets, 4
+ * row, a skeleton) read as nothing at all. Measured across all 34 presets, 4
  * tones is ~2.4 ΔE00 and is the first spacing where every pair separates.
  *
  * `--background` is deliberately NOT in here: the page keeps the tone it
@@ -183,8 +183,13 @@ const SURFACE_RAMP = {
 /** Where the page itself sits. A touch off M3's own page background in both modes. */
 const BACKGROUND_TONE = { light: 96, dark: 4 } as const;
 
-/** The chroma every neutral surface carries — the same value the `vivid` scheme's neutral palette uses. */
-const NEUTRAL_CHROMA = 10;
+/**
+ * Large surfaces keep only a trace of the identity hue. At the old chroma 10 a
+ * green or yellow seed washed the whole shell in a pastel cast; chroma 4 keeps
+ * the family relationship visible without making neutral layout layers compete
+ * with identity and action fills.
+ */
+const NEUTRAL_CHROMA = 4;
 
 /**
  * A seed at or below this chroma has no colour to derive from, so the whole
@@ -340,41 +345,20 @@ function vividLegibleTone(palette: TonalPalette): number {
 /**
  * The tone a BRAND fill sits at.
  *
- * Normally the ceiling white text allows, so a Follow button, an avatar and the
- * compose button all carry a white label. But a seed that is ALREADY light —
- * yellow at tone 82, faircoin at 90 — cannot be dragged down there without
- * ceasing to be itself: yellow turns to brown and lime to moss. Those keep their
- * own tone and take a black label instead, which is what a bright yellow button
- * wants anyway. The 25-tone budget is what separates the two cases, and it is
- * why 11 of the 13 chromatic presets carry white and exactly the two light ones
- * do not. (`mono` sits outside this rule — see MONOCHROME_FILL_TONE.)
+ * Light goes deep enough to read as structure on a near-white page. Dark moves
+ * to the hue's vivid peak so it does not become the same heavy slab on black;
+ * the foreground follows whichever tone that produces. A preset declaring a
+ * white label deliberately stays at the deepest vivid white-label tone in dark.
  */
-function whiteLabelTone(
+function brandTone(
   palette: TonalPalette,
-  seedTone: number,
   isDark: boolean,
   forceWhite: boolean,
 ): number {
-  // LIGHT: every fill comes down, no exemption. On a near-white page a bright
-  // colour has nothing to read against — a lime at its own tone 90 is a pale
-  // smear there, indistinguishable from the same colour in dark, which is not a
-  // theme at all. Coming down is what makes faircoin a deep green in light and a
-  // bright lime in dark.
   if (!isDark) return Math.max(LIGHT_FILL_FLOOR, vividLegibleTone(palette) - LIGHT_DEPTH_STEP);
-  // DARK: the budget applies. Most brands come down to where white fits, but a
-  // seed that is already light cannot without ceasing to be itself, so it keeps
-  // its own tone and takes a black label. That is the eleven-and-two pattern.
-  // A brand that DECLARES a white label forgoes the exemption outright: it comes
-  // down to where white fits, exactly as it does in light. Without this the
-  // budget is the only voice, and it answers by seed lightness alone — which
-  // cannot separate a yellow that wants to be a deep gold from a lime that wants
-  // to stay bright.
-  const candidate = forceWhite
+  return forceWhite
     ? vividLegibleTone(palette)
-    : Math.max(vividLegibleTone(palette), seedTone - TONE_BUDGET);
-  return contrastOf(palette.tone(candidate), true) >= AA
-    ? candidate
-    : Math.max(seedTone, DARK_SEED_FLOOR);
+    : Math.max(peakTone(palette.hue), DARK_SEED_FLOOR);
 }
 
 /**
@@ -472,7 +456,7 @@ export function buildPolicyTokens(
     brandPalette,
     monochrome
       ? (isDark ? MONOCHROME_FILL_TONE.dark : MONOCHROME_FILL_TONE.light)
-      : whiteLabelTone(brandPalette, seed.tone, isDark, declaresWhiteLabel(seedHex)),
+      : brandTone(brandPalette, isDark, declaresWhiteLabel(seedHex)),
   );
 
   // The palette every neutral surface is cut from — the same one the `vivid`
@@ -500,7 +484,7 @@ export function buildPolicyTokens(
     // exactly where `--background` sits below, so a card would be byte-identical
     // to the page — and `surfaceContainer` in dark is `--popover`'s role
     // (`preset-vars.ts`), which is what it WAS: every card, sheet and chat
-    // bubble rendering the same colour as every menu, in all 18 presets.
+    // bubble rendering the same colour as every menu, in every preset.
     '--card': isDark ? roles.surfaceContainerHighest : roles.surfaceContainerLowest,
     // The page. A touch darker than M3's page background, which stays
     // `--content-area`: near-white reads as unfinished next to the card.
@@ -529,9 +513,13 @@ export function buildPolicyTokens(
     // as one colour; only how loudly each speaks differs.
     // A monochrome theme has no accents to rotate to; the trio becomes a ladder
     // of greys, which still separates a standout button from a quiet one.
-    const fillPalette = TonalPalette.fromHueAndChroma(hue, monochrome ? 0 : ACCENT_CHROMA);
-    const textPalette = TonalPalette.fromHueAndChroma(hue, monochrome ? 0 : TEXT_CHROMA);
-    const vividPalette = TonalPalette.fromHueAndChroma(hue, monochrome ? 0 : 200);
+    // A colourless identity can still declare a real action seed (Graphite +
+    // Acid). Only an UNPINNED accent inherits monochrome; otherwise the supplied
+    // hue remains chromatic.
+    const accentMonochrome = monochrome && pin === undefined;
+    const fillPalette = TonalPalette.fromHueAndChroma(hue, accentMonochrome ? 0 : ACCENT_CHROMA);
+    const textPalette = TonalPalette.fromHueAndChroma(hue, accentMonochrome ? 0 : TEXT_CHROMA);
+    const vividPalette = TonalPalette.fromHueAndChroma(hue, accentMonochrome ? 0 : 200);
     // DARK sits at the hue's peak tone, floored by the same rule the brand fill
     // uses: some hues peak dark (violet at 35), and rendering them there gives a
     // slab rather than a highlight. LIGHT goes deep like every other fill, but
@@ -552,7 +540,8 @@ export function buildPolicyTokens(
     // primary action — a step of grey between them and `primary` reads as two
     // buttons disagreeing, not as hierarchy. `secondary` carries the whole
     // demotion instead.
-    const tone = monochrome
+    const pinnedAction = role === 'tertiary' && pin !== undefined;
+    const tone = accentMonochrome
       ? role === 'tertiary'
         ? isDark
           ? MONOCHROME_FILL_TONE.dark
@@ -560,7 +549,13 @@ export function buildPolicyTokens(
         : isDark
           ? MONOCHROME_SECONDARY_TONE.dark
           : MONOCHROME_SECONDARY_TONE.light
-      : accentTone(hue, isDark);
+      : pinnedAction
+        // A deliberately paired action stays at the hue's vivid peak instead of
+        // turning signal yellow into ochre or lime into olive on a light page.
+        // The matched foreground may be black; legibility is decided by the pair,
+        // not by a blanket white-label preference.
+        ? Math.max(peakTone(hue), isDark ? DARK_ACCENT_FLOOR : LIGHT_FILL_FLOOR)
+        : accentTone(hue, isDark);
     const pair = fillPair(fillPalette, tone);
     tokens[`--${role}`] = pair.fill;
     tokens[`--${role}-foreground`] = pair.foreground;

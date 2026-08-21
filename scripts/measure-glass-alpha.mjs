@@ -14,7 +14,7 @@
  *
  * ── HOW THE ALPHA IS VARIED ─────────────────────────────────────────────────
  *
- * `GLASS_FILL_ALPHA` is a module constant, so seven alphas cannot be seven
+ * `GLASS_FILL_ALPHA` is a module constant, so several alphas cannot be separate
  * renders of the component. Instead this CLONES the real
  * `button.bloom-btn--glass` node Storybook rendered and overrides exactly one
  * thing on the clone: `background-color`, to the same rgb at a different alpha.
@@ -58,7 +58,7 @@ const require = createRequire(import.meta.url);
 const puppeteer = require('/home/nate/Oxy/Homiio/node_modules/puppeteer-core');
 
 /** The sweep. Measured high-to-low; 0.85 doubles as the control row. */
-const ALPHAS = [0.85, 0.75, 0.65, 0.55, 0.45, 0.35, 0.25];
+const ALPHAS = [0.89, 0.88, 0.87, 0.86, 0.85, 0.75, 0.65, 0.55, 0.45, 0.35, 0.25];
 
 /**
  * Stripe period in CSS px, deliberately far below the material's 10px blur
@@ -76,7 +76,7 @@ const PHOTO_URL = 'https://picsum.photos/seed/bloom-glass/1200/400';
  * alpha. If this sweep's own 0.85 row does not reproduce it, the composition
  * here has drifted from the library's and every other row is unverified.
  */
-const SHIPPED_PRIMARY_AA_FAILURES = 45;
+const SHIPPED_PRIMARY_AA_FAILURES = 38;
 
 /**
  * How large a per-pixel change counts as "you can see the blur", out of 255.
@@ -238,11 +238,18 @@ const shot = await page.screenshot({ encoding: 'base64' });
 
 const results = await page.evaluate(
   async ({ data, rects, alphas, shippedAlpha }) => {
-    const [{ buildTheme }, { APP_COLOR_PRESETS }, { withAlpha }, { GLASS_SHEEN }] =
+    const [
+      { buildTheme },
+      { APP_COLOR_PRESETS },
+      { withAlpha },
+      { resolveAccentColors },
+      { GLASS_SHEEN, glassSheenCss },
+    ] =
       await Promise.all([
         import('/src/theme/build-theme.ts'),
         import('/src/theme/color-presets.ts'),
         import('/src/theme/color-utils.ts'),
+        import('/src/theme/accent-colors.ts'),
         import('/src/theme/glass-colors.ts'),
       ]);
 
@@ -378,12 +385,15 @@ const results = await page.evaluate(
     const MODES = ['light', 'dark'];
     const AA = 4.5;
     const pane = (fill, alpha, backdrop) =>
-      over(parse(GLASS_SHEEN.bottom), over(parse(withAlpha(fill, alpha)), backdrop));
+      over(
+        parse(glassSheenCss(GLASS_SHEEN.bottom)),
+        over(parse(withAlpha(fill, alpha)), backdrop),
+      );
 
     const contrastRows = alphas.map((alpha) => {
       const tally = {
-        primary: { fail: 0, worst: Infinity, failing: new Set() },
-        destructive: { fail: 0, worst: Infinity, failing: new Set() },
+        primary: { fail: 0, worst: Infinity, failing: new Set(), rows: [] },
+        destructive: { fail: 0, worst: Infinity, failing: new Set(), rows: [] },
       };
       let rows = 0;
       for (const preset of PRESETS) {
@@ -402,6 +412,7 @@ const results = await page.evaluate(
               if (ratio < AA) {
                 tally[name].fail++;
                 tally[name].failing.add(`${preset}/${mode}`);
+                tally[name].rows.push(`${preset}/${mode}/${key}/${ratio.toFixed(3)}`);
               }
               tally[name].worst = Math.min(tally[name].worst, ratio);
             }
@@ -414,12 +425,113 @@ const results = await page.evaluate(
         primaryFailures: tally.primary.fail,
         primaryWorst: tally.primary.worst,
         primaryFailingCombos: [...tally.primary.failing].sort(),
+        primaryFailingRows: tally.primary.rows.sort(),
         destructiveFailures: tally.destructive.fail,
         destructiveWorst: tally.destructive.worst,
       };
     });
 
-    return { painted, contrastRows, shippedAlpha };
+    // The full accent vocabulary is wider than Button's two reachable fills.
+    // This is the matrix documented beside resolveGlassColors: every preset,
+    // mode, accent tone and Bloom-owned neutral surface at the shipped alpha.
+    const TONES = ['default', 'primary', 'success', 'warning', 'error', 'info'];
+    const vocabulary = {
+      rows: 0,
+      onFillFailures: 0,
+      onFillWorst: Infinity,
+      textFailures: 0,
+      textWorst: Infinity,
+    };
+    for (const preset of PRESETS) {
+      for (const mode of MODES) {
+        const c = buildTheme(preset, mode).colors;
+        for (const tone of TONES) {
+          const accent = resolveAccentColors(c, tone, 'solid');
+          for (const key of SURFACE_KEYS) {
+            const surface = pane(accent.background, shippedAlpha, parse(c[key]));
+            const onFillRatio = contrast(surface, over(parse(accent.foreground), surface));
+            const textRatio = contrast(surface, over(parse(c.text), surface));
+            vocabulary.rows++;
+            vocabulary.onFillWorst = Math.min(vocabulary.onFillWorst, onFillRatio);
+            vocabulary.textWorst = Math.min(vocabulary.textWorst, textRatio);
+            if (onFillRatio < AA) vocabulary.onFillFailures++;
+            if (textRatio < AA) vocabulary.textFailures++;
+          }
+        }
+      }
+    }
+
+    // A deliberately small arbitrary-media sample retained from the original
+    // audit: black, mid-grey and white. Unlike Bloom surfaces these are not a
+    // promise, but they quantify why inverse remains the image-safe CTA.
+    const mediaBackdrops = [
+      { r: 0, g: 0, b: 0, a: 1 },
+      { r: 127.5, g: 127.5, b: 127.5, a: 1 },
+      { r: 255, g: 255, b: 255, a: 1 },
+    ];
+    const arbitraryMedia = {
+      rowsPerFill: 0,
+      primaryFailures: 0,
+      primaryWorst: Infinity,
+      destructiveFailures: 0,
+      destructiveWorst: Infinity,
+    };
+    for (const preset of PRESETS) {
+      for (const mode of MODES) {
+        const c = buildTheme(preset, mode).colors;
+        for (const backdrop of mediaBackdrops) {
+          arbitraryMedia.rowsPerFill++;
+          for (const [name, fill, onFill] of [
+            ['primary', c.primary, c.primaryForeground],
+            ['destructive', c.negative, c.negativeForeground],
+          ]) {
+            const surface = pane(fill, shippedAlpha, backdrop);
+            const ratio = contrast(surface, over(parse(onFill), surface));
+            const failureKey = `${name}Failures`;
+            const worstKey = `${name}Worst`;
+            if (ratio < AA) arbitraryMedia[failureKey]++;
+            arbitraryMedia[worstKey] = Math.min(arbitraryMedia[worstKey], ratio);
+          }
+        }
+      }
+    }
+
+    const solidButton = {
+      rowsPerFill: 0,
+      primaryFailures: 0,
+      primaryWorst: Infinity,
+      destructiveFailures: 0,
+      destructiveWorst: Infinity,
+    };
+    for (const preset of PRESETS) {
+      for (const mode of MODES) {
+        const c = buildTheme(preset, mode).colors;
+        for (const key of SURFACE_KEYS) {
+          solidButton.rowsPerFill++;
+          for (const [name, fill, onFill] of [
+            ['primary', c.primary, c.primaryForeground],
+            ['destructive', c.negative, c.negativeForeground],
+          ]) {
+            const surface = parse(fill);
+            const ratio = contrast(surface, over(parse(onFill), surface));
+            const failureKey = `${name}Failures`;
+            const worstKey = `${name}Worst`;
+            if (ratio < AA) solidButton[failureKey]++;
+            solidButton[worstKey] = Math.min(solidButton[worstKey], ratio);
+          }
+        }
+      }
+    }
+
+    return {
+      painted,
+      contrastRows,
+      vocabulary,
+      arbitraryMedia,
+      solidButton,
+      shippedAlpha,
+      presetCount: PRESETS.length,
+    };
   },
   { data: shot, rects: built.rects, alphas: ALPHAS, shippedAlpha: built.alpha },
 );
@@ -446,7 +558,7 @@ console.log(
 );
 
 console.log('1. TRANSLUCENCY — how much backdrop the pane lets through\n');
-console.log(pad('alpha', 8) + pad('backdrop response', 20) + pad('step', 9) + 'linear in (1 - alpha)?');
+console.log(pad('alpha', 8) + pad('backdrop response', 20) + pad('step', 9) + 'monotonic?');
 
 /**
  * Linearity is checked on the STEPS, not against the composition model. The
@@ -455,21 +567,30 @@ console.log(pad('alpha', 8) + pad('backdrop response', 20) + pad('step', 9) + 'l
  * above the model at every row — a constant offset, which is exactly what a
  * linearity check must not mistake for a bend.
  */
-const steps = results.painted.slice(1).map((r, i) => results.painted[i].response - r.response);
-const meanStep = steps.reduce((a, b) => a + b, 0) / steps.length;
+const coarsePainted = results.painted.filter((r) => r.alpha <= 0.85);
+const coarseSteps = coarsePainted.slice(1).map((r, i) => r.response - coarsePainted[i].response);
+const meanStep = coarseSteps.reduce((a, b) => a + b, 0) / coarseSteps.length;
 let bend = 0;
 results.painted.forEach((r, i) => {
-  const step = i === 0 ? null : results.painted[i - 1].response - r.response;
-  if (step !== null) bend = Math.max(bend, Math.abs(step - meanStep));
+  const previous = i === 0 ? null : results.painted[i - 1];
+  const step = previous === null ? null : r.response - previous.response;
+  if (step !== null && step <= 0) {
+    throw new Error(`painted backdrop response stopped increasing at alpha ${r.alpha}`);
+  }
+  const coarseStep =
+    i > 0 && previous.alpha <= 0.85 && Math.abs(previous.alpha - r.alpha - 0.1) < 0.001
+      ? step
+      : null;
+  if (coarseStep !== null) bend = Math.max(bend, Math.abs(coarseStep - meanStep));
   console.log(
     pad(r.alpha.toFixed(2), 8) +
       pad(r.response.toFixed(1), 20) +
       pad(step === null ? '—' : step.toFixed(1), 9) +
-      (step === null ? '' : Math.abs(step - meanStep) <= 1.5 ? 'yes' : 'NO — bends here'),
+      (step === null ? '' : 'yes'),
   );
 });
 console.log(
-  `\n  Every step is ${meanStep.toFixed(1)} +/- ${bend.toFixed(1)} out of 255 for each 0.10 of alpha, so the response is linear in (1 - alpha).`,
+  `\n  Every sampled response increases as alpha falls. Across the 0.10 steps it moves ${meanStep.toFixed(1)} +/- ${bend.toFixed(1)} out of 255, linear in (1 - alpha).`,
 );
 console.log(
   '  backdrop response = how far the painted pane moves between a white and a black backdrop, 0..255.',
@@ -506,7 +627,9 @@ console.log(
 
 const first = results.contrastRows[0];
 console.log('\n\n3. LABEL CONTRAST vs the COMPOSITED pane');
-console.log(`${first.rowsPerFill} rows per fill (18 presets x 2 modes x 5 Bloom surfaces)\n`);
+console.log(
+  `${first.rowsPerFill} rows per fill (${results.presetCount} presets x 2 modes x 5 Bloom surfaces)\n`,
+);
 console.log(
   pad('alpha', 8) +
     pad('primary rows < AA', 19) +
@@ -537,6 +660,16 @@ if (!shippedRow || shippedRow.primaryFailures !== SHIPPED_PRIMARY_AA_FAILURES) {
 }
 console.log(
   `\ncontrol: the ${built.alpha} row reproduces the ${SHIPPED_PRIMARY_AA_FAILURES} failures glass-colors.test.ts pins, so the rest of the column measures the shipped material.`,
+);
+console.log(`failing rows at ${built.alpha}:\n  ${shippedRow.primaryFailingRows.join('\n  ')}`);
+console.log(
+  `\nfull accent vocabulary: ${results.vocabulary.onFillFailures} / ${results.vocabulary.rows} on-fill failures (worst ${results.vocabulary.onFillWorst.toFixed(2)}); ${results.vocabulary.textFailures} / ${results.vocabulary.rows} text-token failures (worst ${results.vocabulary.textWorst.toFixed(2)}).`,
+);
+console.log(
+  `solid Button fills: primary ${results.solidButton.primaryFailures} / ${results.solidButton.rowsPerFill} (worst ${results.solidButton.primaryWorst.toFixed(2)}); destructive ${results.solidButton.destructiveFailures} / ${results.solidButton.rowsPerFill} (worst ${results.solidButton.destructiveWorst.toFixed(2)}).`,
+);
+console.log(
+  `arbitrary black/mid/white backdrops: primary ${results.arbitraryMedia.primaryFailures} / ${results.arbitraryMedia.rowsPerFill} (worst ${results.arbitraryMedia.primaryWorst.toFixed(2)}); destructive ${results.arbitraryMedia.destructiveFailures} / ${results.arbitraryMedia.rowsPerFill} (worst ${results.arbitraryMedia.destructiveWorst.toFixed(2)}).`,
 );
 
 // ── The strip: the artefact a person actually judges ─────────────────────────

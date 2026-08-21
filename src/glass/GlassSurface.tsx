@@ -99,8 +99,8 @@ const GlassSurfaceComponent: React.FC<GlassSurfaceProps> = ({
         The accent fill, straight onto the blur. There is no neutral scrim
         between them: the pane's transparency IS the material, and the surfaces
         this sits on are Bloom's own — see the backdrop-range note in
-        `theme/glass-colors.ts` for the 1080-combination measurement that says
-        the reference's 25% needs no help there, and for what it costs over
+        `theme/glass-colors.ts` for the 2040-combination measurement that pins
+        the 85% material's on-fill label choice, and for what it costs over
         content Bloom does not own.
       */}
       <View style={[StyleSheet.absoluteFill, { backgroundColor: glass.fill }]} />

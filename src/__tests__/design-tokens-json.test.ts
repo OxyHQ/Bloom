@@ -7,7 +7,11 @@ import {
   resolvedColorToHex,
   type PresetGroup,
 } from '../design-tokens/tokens-json';
-import { APP_COLOR_NAMES, APP_COLOR_PRESETS } from '../theme/color-presets';
+import {
+  APP_COLOR_NAMES,
+  APP_COLOR_PRESETS,
+  COLOR_PRESET_REGISTRY,
+} from '../theme/color-presets';
 import { CANONICAL_TOKENS, getResolvedTokens } from '../theme/token-registry';
 
 const TOKENS_PATH = join(__dirname, '..', 'design-tokens', 'tokens.json');
@@ -73,6 +77,26 @@ describe('tokens.json shape contract', () => {
       expect(preset.$extensions['so.oxy.bloom']).toMatchObject({
         seed: APP_COLOR_PRESETS[name].hex,
         variant: APP_COLOR_PRESETS[name].variant,
+      });
+    }
+  });
+
+  it('derives picker metadata and optional accent seeds from the same registry', () => {
+    for (const recipe of COLOR_PRESET_REGISTRY) {
+      const preset = tokens.color[recipe.name] as PresetGroup;
+      expect(preset.$description).toBe(recipe.description);
+      expect(preset.$extensions['so.oxy.bloom']).toEqual({
+        seed: recipe.hex,
+        variant: recipe.variant,
+        displayName: recipe.displayName,
+        family: recipe.family,
+        description: recipe.description,
+        pairing: recipe.pairing,
+        featured: recipe.featured,
+        ...(recipe.secondaryHex ? { secondarySeed: recipe.secondaryHex } : {}),
+        ...(recipe.tertiaryHex ? { tertiarySeed: recipe.tertiaryHex } : {}),
+        ...(recipe.gate ? { gate: recipe.gate } : {}),
+        ...(recipe.label ? { label: recipe.label } : {}),
       });
     }
   });

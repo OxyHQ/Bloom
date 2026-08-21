@@ -23,6 +23,7 @@ import { getResolvedTokens } from '../token-registry';
 import { APP_COLOR_NAMES, APP_COLOR_PRESETS } from '../color-presets';
 import { Hct } from '../color-engine/hct';
 import { argbFromHex } from '../color-engine';
+import { isColourlessSeed } from '../color-policy';
 
 const AA = 4.5;
 
@@ -140,55 +141,43 @@ describe('colour policy legibility', () => {
     expect(identical).toEqual([]);
   });
 
-  // The two modes want opposite things and the suite has to say which. Applying
-  // the budget in LIGHT let a light seed keep its own tone there, so faircoin
-  // rendered the same pale lime in both modes — no theme at all. Skipping it in
-  // DARK left every Follow button, avatar and chat bubble with a black label.
-  // Each half was individually legible, so nothing else could catch either.
-  it('the brand fill keeps light exemption-free and dark budgeted', () => {
-    // `mono` is not governed by the budget — it has no chroma to preserve, and its
-    // dark fill is near-WHITE by design, so it takes a black label on purpose.
-    const chromatic = APP_COLOR_NAMES.filter((name) => name !== 'mono');
-    const black: number[] = [];
-    const white: number[] = [];
+  // The two modes want opposite things and the suite has to state the direction:
+  // structural/deep on white, vivid/bright on black. Every pair can remain AA
+  // while accidentally collapsing to the same heavy fill, so contrast alone is
+  // not an instrument for this rule.
+  it('keeps identity deep in light and moves it toward its vivid peak in dark', () => {
+    const chromatic = APP_COLOR_NAMES.filter(
+      (name) => !isColourlessSeed(APP_COLOR_PRESETS[name].hex),
+    );
+    const darkForegrounds = new Set<string>();
     for (const preset of chromatic) {
-      // Light admits no exemption: every chromatic preset comes down far enough
-      // to carry white, which is what makes faircoin a deep green there and a
-      // bright lime in dark rather than the same pale smear twice.
-      expect(getResolvedTokens(preset, 'light')['--primary-foreground']).toBe('rgb(255 255 255)');
       const config = APP_COLOR_PRESETS[preset];
-      const carriesWhite =
-        getResolvedTokens(preset, 'dark')['--primary-foreground'] === 'rgb(255 255 255)';
+      const light = getResolvedTokens(preset, 'light');
+      const dark = getResolvedTokens(preset, 'dark');
+      expect(light['--primary-foreground']).toBe('rgb(255 255 255)');
+      expect(Hct.fromInt(argbFromHex(rgbToHex(dark['--primary'] ?? ''))).tone).toBeGreaterThan(
+        Hct.fromInt(argbFromHex(rgbToHex(light['--primary'] ?? ''))).tone,
+      );
+      darkForegrounds.add(dark['--primary-foreground'] ?? '');
 
-      // A DECLARED white label is absolute — it is the brand overriding the
-      // budget, so no seed tone excuses a black one.
       if (config.label === 'white') {
-        expect({ preset, carriesWhite }).toEqual({ preset, carriesWhite: true });
-        continue;
+        expect(dark['--primary-foreground']).toBe('rgb(255 255 255)');
       }
-      (carriesWhite ? white : black).push(Hct.fromInt(argbFromHex(config.hex)).tone);
     }
 
-    // For everything that does NOT declare a label, dark's split is decided by
-    // the seed's own lightness and nothing else: a seed already too light to come
-    // down within the budget keeps its tone and takes a black label. So that
-    // partition must be ORDERED — every black-label seed lighter than every
-    // white-label one. Counting them instead (an "at most N take black" slack)
-    // says nothing about WHICH, passes while the rule inverts, and needs
-    // re-tuning by hand every time a preset is added.
-    //
-    // The declared ones are excluded rather than folded in because they falsify
-    // the ordering ON PURPOSE: `yellow` (seed tone 86) comes down to a deep gold
-    // while `peach` (80) stays bright, so a single ordered partition over all of
-    // them cannot hold — and reading that failure as a policy bug is exactly the
-    // wrong conclusion.
-    expect(black.length).toBeGreaterThan(0);
-    expect(white.length).toBeGreaterThan(0);
-    expect(Math.min(...black)).toBeGreaterThan(Math.max(...white));
+    // Positive controls: vivid peaks genuinely exercise both matched label
+    // colours; a blanket foreground would leave the loop above deceptively green.
+    expect([...darkForegrounds].sort()).toEqual(['rgb(0 0 0)', 'rgb(255 255 255)']);
 
-    // And the monochrome exception itself, stated rather than tolerated: a fill at
-    // each end of the scale, carrying the opposite label.
-    expect(getResolvedTokens('mono', 'light')['--primary-foreground']).toBe('rgb(255 255 255)');
-    expect(getResolvedTokens('mono', 'dark')['--primary-foreground']).toBe('rgb(0 0 0)');
+    for (const preset of APP_COLOR_NAMES.filter((name) => isColourlessSeed(APP_COLOR_PRESETS[name].hex))) {
+      expect(getResolvedTokens(preset, 'light')['--primary-foreground']).toBe('rgb(255 255 255)');
+      expect(getResolvedTokens(preset, 'dark')['--primary-foreground']).toBe('rgb(0 0 0)');
+    }
   });
 });
+
+function rgbToHex(value: string): string {
+  const channels = (value.match(/\d+/g) ?? []).map(Number);
+  if (channels.length !== 3) throw new Error(`expected rgb colour, received ${value}`);
+  return `#${channels.map((channel) => channel.toString(16).padStart(2, '0')).join('')}`;
+}

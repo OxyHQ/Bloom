@@ -18,10 +18,13 @@
  */
 
 import {
-  APP_COLOR_NAMES,
-  APP_COLOR_PRESETS,
+  COLOR_PRESET_REGISTRY,
   type AppColorName,
+  type ColorPresetFamily,
+  type ColorPresetGate,
+  type ColorPresetPairing,
 } from '../theme/color-presets';
+import type { SchemeVariant } from '../theme/color-engine';
 import { getResolvedTokens } from '../theme/token-registry';
 import {
   BORDER_WIDTH,
@@ -44,11 +47,18 @@ export interface PresetExtensions {
     /** The brand seed the engine derived the whole palette from. */
     seed: string;
     /** The tonal scheme variant used with that seed. */
-    variant: string;
+    variant: SchemeVariant;
+    displayName: string;
+    family: ColorPresetFamily;
+    description: string;
+    pairing: ColorPresetPairing;
+    featured: boolean;
+    secondarySeed?: string;
+    tertiarySeed?: string;
     /** Who may pick the preset; absent means everyone. */
-    gate?: string;
+    gate?: ColorPresetGate;
     /** Present when the preset forces a white label in both schemes. */
-    label?: string;
+    label?: 'white';
   };
 }
 
@@ -133,16 +143,26 @@ function colorGroup(): BloomDesignTokens['color'] {
       'One group per Bloom colour preset, each with a light and a dark scheme. Token names match the CSS custom properties without the leading "--".',
   };
 
-  for (const name of APP_COLOR_NAMES) {
-    const preset = APP_COLOR_PRESETS[name];
+  for (const preset of COLOR_PRESET_REGISTRY) {
+    const { name } = preset;
     const extensions: PresetExtensions = {
-      'so.oxy.bloom': { seed: preset.hex, variant: preset.variant },
+      'so.oxy.bloom': {
+        seed: preset.hex,
+        variant: preset.variant,
+        displayName: preset.displayName,
+        family: preset.family,
+        description: preset.description,
+        pairing: preset.pairing,
+        featured: preset.featured,
+      },
     };
+    if (preset.secondaryHex) extensions['so.oxy.bloom'].secondarySeed = preset.secondaryHex;
+    if (preset.tertiaryHex) extensions['so.oxy.bloom'].tertiarySeed = preset.tertiaryHex;
     if (preset.gate) extensions['so.oxy.bloom'].gate = preset.gate;
     if (preset.label) extensions['so.oxy.bloom'].label = preset.label;
 
     group[name] = {
-      $description: `Derived by Bloom’s colour engine from seed ${preset.hex} (${preset.variant}).`,
+      $description: preset.description,
       $extensions: extensions,
       light: schemeTokens(name, 'light'),
       dark: schemeTokens(name, 'dark'),

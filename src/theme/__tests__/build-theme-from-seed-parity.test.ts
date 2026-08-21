@@ -1,7 +1,8 @@
 /**
  * Parity guard for the dynamic JS-theme seed path.
  *
- * A named preset is just a fixed seed, so `buildThemeFromSeed(preset.hex, mode)`
+ * A named preset is a fixed seed recipe, so the arbitrary-seed path receives
+ * its optional paired accent seeds too and
  * MUST produce the identical `theme.colors` as the preset path
  * `buildTheme(name, mode)`. If `buildColorsFromSeed` ever drifts from
  * `buildColorsFromPreset`, this fails.
@@ -23,7 +24,10 @@ describe('buildThemeFromSeed parity with buildTheme (preset)', () => {
       it(`matches preset "${name}" colours in ${mode} mode`, () => {
         const preset = APP_COLOR_PRESETS[name];
         const fromPreset = buildTheme(name, mode);
-        const fromSeed = buildThemeFromSeed(preset.hex, mode, preset.variant);
+        const fromSeed = buildThemeFromSeed(preset.hex, mode, preset.variant, undefined, {
+          secondarySeed: preset.secondaryHex,
+          tertiarySeed: preset.tertiaryHex,
+        });
         expect(fromSeed.colors).toEqual(fromPreset.colors);
         expect(fromSeed.mode).toBe(fromPreset.mode);
         expect(fromSeed.isDark).toBe(fromPreset.isDark);

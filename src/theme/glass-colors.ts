@@ -89,23 +89,22 @@ import { withAlpha } from './color-utils';
  *
  * The 15% that bleeds through moves the pane TOWARD the surface under it, and
  * in light mode that means lighter — which is the direction a white label can
- * least afford. Measured over 18 presets x 2 modes x 5 Bloom surfaces:
+ * least afford. Measured over 34 presets x 2 modes x 5 Bloom surfaces:
  *
- *   `Button` primary     30 of 180 rows fall below WCAG AA, in the band
- *                        4.17..4.49, ALL of them in LIGHT mode, across nine
- *                        presets (blue, faircoin, green, mint, orange, pumpkin,
- *                        rose, sky, yellow).
- *   `Button` destructive 0 of 180. Worst 5.32.
+ *   `Button` primary     38 of 340 rows fall below WCAG AA, in the band
+ *                        4.17..4.49, ALL of them in LIGHT mode, across fourteen
+ *                        presets (blue, faircoin, green, lagoon, lavender, mint,
+ *                        olive, orange, pine, plum, pumpkin, rose, sky, yellow).
+ *   `Button` destructive 0 of 340. Worst 5.32.
  *
- * As a SOLID fill all 360 rows pass, so this is a real regression and not an
- * inherited one — 173 rows across the whole fill vocabulary cross the AA line
- * that did not before, none of which failed both ways. That count was 45 (and
- * 263) until `SURFACE_RAMP` opened up three of the five Bloom surfaces the
- * button can sit on — a palette improvement showing up here, not a relaxed
- * bar; re-measure both numbers on every alpha or surface change.
+ * As a SOLID fill all 680 Button rows pass. The original 18 presets retain
+ * their exact 30/180 shipped failure set; all eight added failures belong to
+ * the new recipes. A browser helper briefly reported 45 only because it parsed
+ * the structured `GLASS_SHEEN.bottom` stop as CSS; that was measurement drift,
+ * never the shipped oracle and never a threshold being relaxed.
  *
  * The alpha at which the failures reach zero is **0.89** (worst 4.52), and the
- * curve between is steep: 0.86 -> 21 rows, 0.87 -> 14, 0.88 -> 5, 0.89 -> 0.
+ * curve between is steep: 0.86 -> 25 rows, 0.87 -> 14, 0.88 -> 5, 0.89 -> 0.
  * So AA compliance costs four hundredths of alpha. 0.85 is kept because it is
  * the reference's own value and matching the reference is the requirement;
  * `glass-colors.test.ts` pins the compromise as an EXACT failure count and an
@@ -241,7 +240,7 @@ export interface GlassColors {
  * `colors.negative`, `colors.success` — rather than a tone name, because the
  * caller is the only one who knows which token its variant means. `Button`'s
  * `destructive` is `colors.negative` (the engine's error ROLE) and not
- * `colors.error` (the fixed status seed): measured, those two differ in all 36
+ * `colors.error` (the fixed status seed): measured, those two differ in all 68
  * preset x mode combinations and by as much as `rgb(255 180 171)` against
  * `rgb(209 45 50)` on `teal`/dark, so a tone vocabulary here would have
  * silently repainted every destructive button on the way past.
@@ -256,13 +255,11 @@ export interface GlassColors {
  * It is worth writing down WHY it is that token, because at 0.25 it was
  * `colors.text` and that was correct THEN: a pane that is three-quarters
  * backdrop takes its luminance from the page, so it needed the page's reading
- * colour — at that alpha `colors.text` passed everywhere and the on-fill
- * token failed 650 of 1080 rows. At 0.85 the pane is the fill, so it takes
- * the fill's own label: on the SAME 1080-row matrix (presets x modes x tones
- * x surfaces), `colors.text` now fails AA on 864 rows (worst 1.21) against
- * the on-fill token's 173 (worst 4.17) — the reason this flipped when the
- * alpha did. Neither count is permanent; the gate re-measures both on every
- * alpha or surface change and reports them side by side.
+ * colour. At 0.85 the pane is the fill, so it takes the fill's own label: on
+ * the complete 2040-row matrix (34 presets x 2 modes x 6 tones x 5 surfaces),
+ * `colors.text` fails AA on 1714 rows (worst 1.21) against the on-fill token's
+ * 305 (worst 4.17). Neither count is permanent; the gate re-measures and pins
+ * both on every alpha or surface change.
  */
 export function resolveGlassColors(fill: string): GlassColors {
   return {

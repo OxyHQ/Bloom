@@ -112,6 +112,7 @@ function blurTint(isDark: boolean): Rgba {
 
 const WHITE: Rgba = { r: 255, g: 255, b: 255, a: 1 };
 const BLACK: Rgba = { r: 0, g: 0, b: 0, a: 1 };
+const MID: Rgba = { r: 127.5, g: 127.5, b: 127.5, a: 1 };
 
 /**
  * Every neutral surface in `ThemeColors` a control can be laid on — the backdrop
@@ -137,6 +138,10 @@ const AA = 4.5;
 
 const PRESETS = Object.keys(APP_COLOR_PRESETS) as AppColorName[];
 const MODES = ['light', 'dark'] as const;
+const LEGACY_PRESETS = new Set<AppColorName>([
+  'teal', 'blue', 'green', 'yellow', 'red', 'purple', 'pink', 'sky', 'orange',
+  'mint', 'oxy', 'faircoin', 'pumpkin', 'gray', 'brown', 'peach', 'rose', 'mono',
+]);
 
 /** The sheen at its darkest point — the bottom stop, black at 2%. */
 const SHEEN_BOTTOM = glassSheenCss(GLASS_SHEEN.bottom);
@@ -198,16 +203,15 @@ describe('glass surface legibility', () => {
   // These four assertions replace "everything clears AA", which was true at
   // 0.25 and is not true at 0.85. They are an EQUALITY on the failure set, so
   // the alpha cannot move by a hundredth without one of them going red:
-  // measured, 0.86 -> 21 rows, 0.87 -> 14, 0.88 -> 5, 0.89 -> 0.
+  // measured, 0.86 -> 25 rows, 0.87 -> 14, 0.88 -> 5, 0.89 -> 0.
   //
-  // The count came DOWN from 45 when the surface ramp opened up
-  // (`color-policy.ts`'s `SURFACE_RAMP`): the pane bleeds toward the surface
-  // under it, and three of the five surfaces are now darker, so a white label
-  // on them has further to fall before it fails. That is a palette improvement
-  // showing up here, not a softened bar — the numbers below were re-measured,
-  // not relaxed.
+  // The old 18-preset oracle was exactly 30/180. A browser helper briefly
+  // printed 45 because it parsed the structured `GLASS_SHEEN.bottom` stop as a
+  // CSS string; that was measurement drift, never the shipped baseline. With
+  // 16 new recipes the oracle is 38/340: the original 30 rows are unchanged
+  // and all eight additions belong to new recipe IDs.
 
-  it('costs EXACTLY 30 of Button primary\'s 180 rows, in a bounded band', () => {
+  it('costs EXACTLY 38 of Button primary\'s 340 rows, in a bounded band', () => {
     const failures: Array<{ where: string; ratio: number }> = [];
     let rows = 0;
     for (const preset of PRESETS) {
@@ -224,9 +228,14 @@ describe('glass surface legibility', () => {
     expect(rows).toBe(PRESETS.length * MODES.length * SURFACE_KEYS.length);
     // The count is exact, not a ceiling. A palette change that fixes some of
     // these fails here too, which is the point: somebody has to look.
-    expect(failures).toHaveLength(30);
+    expect(failures).toHaveLength(38);
+    // The eight added rows all belong to new recipes: the original 18-preset
+    // matrix remains byte-for-byte at its previous exact count.
+    expect(
+      failures.filter(({ where }) => LEGACY_PRESETS.has(where.split('/')[0] as AppColorName)),
+    ).toHaveLength(30);
     // …and the shortfall is BOUNDED. Every failure is a near miss, not a
-    // control nobody can read. Without this the count alone would tolerate 30
+    // control nobody can read. Without this the count alone would tolerate 38
     // rows at 1.05.
     const worst = Math.min(...failures.map((f) => f.ratio));
     expect(worst).toBeCloseTo(4.17, 1);
@@ -234,7 +243,7 @@ describe('glass surface legibility', () => {
     expect(Math.max(...failures.map((f) => f.ratio))).toBeLessThan(AA);
   });
 
-  it('confines that cost to LIGHT mode and to nine named presets', () => {
+  it('confines that cost to LIGHT mode and to fourteen named presets', () => {
     // The SHAPE of the compromise, not just its size. The bleed moves the pane
     // toward the surface under it, so in light mode it lightens — which is the
     // one direction a white label cannot afford. A failure appearing in dark
@@ -256,8 +265,13 @@ describe('glass surface legibility', () => {
       'blue/light',
       'faircoin/light',
       'green/light',
+      'lagoon/light',
+      'lavender/light',
       'mint/light',
+      'olive/light',
       'orange/light',
+      'pine/light',
+      'plum/light',
       'pumpkin/light',
       'rose/light',
       'sky/light',
@@ -286,7 +300,58 @@ describe('glass surface legibility', () => {
     expect(worst).toBeCloseTo(5.32, 1);
   });
 
-  it('beats the alternative label by four-fold, which is why it is the on-fill token', () => {
+  it('keeps every solid Button fill row above AA', () => {
+    const failures: string[] = [];
+    let rows = 0;
+    for (const preset of PRESETS) {
+      for (const mode of MODES) {
+        const c = buildTheme(preset, mode).colors;
+        for (const { name, fill, onFill } of buttonFills(c)) {
+          for (const key of SURFACE_KEYS) {
+            rows++;
+            if (contrast(parse(fill), parse(onFill)) < AA) {
+              failures.push(`${preset}/${mode}/${name}/${key}`);
+            }
+          }
+        }
+      }
+    }
+    expect(rows).toBe(PRESETS.length * MODES.length * SURFACE_KEYS.length * 2);
+    expect(failures).toEqual([]);
+  });
+
+  it('pins the arbitrary-media sample instead of implying backdrop independence', () => {
+    let primaryFailures = 0;
+    let destructiveFailures = 0;
+    let primaryWorst = Infinity;
+    let destructiveWorst = Infinity;
+    let rowsPerFill = 0;
+    for (const preset of PRESETS) {
+      for (const mode of MODES) {
+        const c = buildTheme(preset, mode).colors;
+        for (const backdrop of [BLACK, MID, WHITE]) {
+          rowsPerFill++;
+          for (const { name, fill, onFill } of buttonFills(c)) {
+            const ratio = labelRatio(fill, onFill, backdrop, 'web', mode === 'dark');
+            if (name === 'primary') {
+              primaryWorst = Math.min(primaryWorst, ratio);
+              if (ratio < AA) primaryFailures++;
+            } else {
+              destructiveWorst = Math.min(destructiveWorst, ratio);
+              if (ratio < AA) destructiveFailures++;
+            }
+          }
+        }
+      }
+    }
+    expect(rowsPerFill).toBe(PRESETS.length * MODES.length * 3);
+    expect(primaryFailures).toBe(25);
+    expect(primaryWorst).toBeCloseTo(3.61, 1);
+    expect(destructiveFailures).toBe(0);
+    expect(destructiveWorst).toBeCloseTo(5.32, 1);
+  });
+
+  it('pins both label vocabularies across every preset, mode, tone and surface', () => {
     // The choice of foreground, kept as a MEASUREMENT rather than a comment.
     // At 0.25 `colors.text` was correct and the on-fill token was not; at 0.85
     // it is the other way round, and this is the number that flipped. If the
@@ -314,7 +379,8 @@ describe('glass surface legibility', () => {
       }
     }
     expect(rows).toBe(PRESETS.length * MODES.length * TONES.length * SURFACE_KEYS.length);
-    expect(textFailures).toBeGreaterThan(onFillFailures * 3);
+    expect(onFillFailures).toBe(305);
+    expect(textFailures).toBe(1714);
   });
 
   // ── STILL GLASS, MEASURED DIRECTLY ───────────────────────────────────────

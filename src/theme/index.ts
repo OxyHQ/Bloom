@@ -38,9 +38,24 @@ export type {
 export { useNavigationTheme } from './use-navigation-theme';
 export type { NavigationTheme, NavigationThemeFont } from './use-navigation-theme';
 export type { Theme, ThemeColors, ThemeMode, ThemeGradient, ThemeGradients } from './types';
-export type { AppColorName, AppColorPreset, ColorPresetGate, PresetTokens } from './color-presets';
+export type {
+  AppColorName,
+  AppColorPreset,
+  ColorPresetFamily,
+  ColorPresetFamilyDefinition,
+  ColorPresetGate,
+  ColorPresetGroup,
+  ColorPresetPairing,
+  ColorPresetRecipe,
+  PresetTokens,
+} from './color-presets';
 export {
   APP_COLOR_NAMES,
+  COLOR_PLAYGROUND_NAMES,
+  COLOR_PRESET_FAMILIES,
+  COLOR_PRESET_FAMILY_REGISTRY,
+  COLOR_PRESET_GROUPS,
+  COLOR_PRESET_REGISTRY,
   FREE_COLOR_NAMES,
   HANDLE_COLOR_NAMES,
   PREMIUM_COLOR_NAMES,
