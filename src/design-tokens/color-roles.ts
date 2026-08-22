@@ -82,6 +82,26 @@ export const TEXT_ROLES = {
 } as const;
 
 /**
+ * Decorative brand-accent text roles → text-color utilities.
+ *
+ * These are deliberately separate from the semantic status roles
+ * (`success-text`, `warning-text`, `info-text`, and `error-text`). Product
+ * copy, labels, and artwork captions can use the active palette's accent
+ * families without pretending that the text communicates a system state.
+ *
+ * | utility               | canonical token    |
+ * | --------------------- | ------------------ |
+ * | text-accent-primary   | --primary-text     |
+ * | text-accent-secondary | --secondary-text   |
+ * | text-accent-tertiary  | --tertiary-text    |
+ */
+export const ACCENT_TEXT_ROLES = {
+  'accent-primary': ref('primary-text'),
+  'accent-secondary': ref('secondary-text'),
+  'accent-tertiary': ref('tertiary-text'),
+} as const;
+
+/**
  * Border roles → border-color utilities (`border-<role>`).
  *
  * | role               | utility                 | canonical token | rationale                                  |
@@ -107,4 +127,5 @@ export const BORDER_ROLES = {
 
 export type FillRole = keyof typeof FILL_ROLES;
 export type TextRole = keyof typeof TEXT_ROLES;
+export type AccentTextRole = keyof typeof ACCENT_TEXT_ROLES;
 export type BorderRole = keyof typeof BORDER_ROLES;

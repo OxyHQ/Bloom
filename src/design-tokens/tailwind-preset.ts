@@ -26,7 +26,7 @@
  * `Config`) so Bloom does not need to depend on `tailwindcss` types.
  */
 
-import { BORDER_ROLES, FILL_ROLES, TEXT_ROLES } from './color-roles';
+import { ACCENT_TEXT_ROLES, BORDER_ROLES, FILL_ROLES, TEXT_ROLES } from './color-roles';
 import {
   BORDER_WIDTH,
   FONT_FAMILY_VARS,
@@ -109,6 +109,7 @@ const BORDER_WIDTH_PX = toPxMap(BORDER_WIDTH);
 const COLOR_ROLES: Record<string, string> = {
   ...FILL_ROLES,
   ...TEXT_ROLES,
+  ...ACCENT_TEXT_ROLES,
   ...BORDER_ROLES,
 };
 
@@ -123,7 +124,7 @@ export const bloomTailwindPreset: TailwindPreset = Object.freeze({
       colors: { ...COLOR_ROLES },
       // Targeted buckets so the namespaced roles resolve on the right utility.
       backgroundColor: { ...FILL_ROLES },
-      textColor: { ...TEXT_ROLES },
+      textColor: { ...TEXT_ROLES, ...ACCENT_TEXT_ROLES },
       borderColor: { ...BORDER_ROLES },
 
       spacing: SPACING_PX,

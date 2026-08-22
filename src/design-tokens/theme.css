@@ -21,6 +21,9 @@
   --color-text-inverse: var(--primary-foreground);
   --color-text-fixed-light: var(--primary-foreground);
   --color-text-placeholder: var(--muted-foreground);
+  --color-accent-primary: var(--primary-text);
+  --color-accent-secondary: var(--secondary-text);
+  --color-accent-tertiary: var(--tertiary-text);
   --color-border: var(--border);
   --color-border-image: var(--border);
   --color-border-secondary: var(--input);

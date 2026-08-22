@@ -10,7 +10,7 @@
  *     for CSS-configured web apps.
  *   - `getPresetVars` / `buildSeedScopeVars` — the resolved token VALUES behind
  *     that alias layer, for a named preset or an arbitrary brand seed.
- *   - The raw token maps (`FILL_ROLES`, `TEXT_ROLES`, `BORDER_ROLES`, `SPACING`,
+ *   - The raw token maps (`FILL_ROLES`, `TEXT_ROLES`, `ACCENT_TEXT_ROLES`, `BORDER_ROLES`, `SPACING`,
  *     `RADIUS`, `TYPOGRAPHY`, `SHADOW_BOX`) for direct programmatic use.
  *   - `bloomShadowStyle` — platform-correct shadow style object (web box-shadow /
  *     native elevation) so a consumer writes one call for both platforms.
@@ -65,9 +65,10 @@ export type { SeedScopeOptions } from '../theme/color-scope/seed-scope';
 export {
   FILL_ROLES,
   TEXT_ROLES,
+  ACCENT_TEXT_ROLES,
   BORDER_ROLES,
 } from './color-roles';
-export type { FillRole, TextRole, BorderRole } from './color-roles';
+export type { FillRole, TextRole, AccentTextRole, BorderRole } from './color-roles';
 
 export {
   SPACING,

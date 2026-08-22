@@ -9,6 +9,7 @@ import {
   buildSeedScopeVars,
   FILL_ROLES,
   TEXT_ROLES,
+  ACCENT_TEXT_ROLES,
   BORDER_ROLES,
   SPACING,
   RADIUS,
@@ -24,7 +25,7 @@ import { buildScopeVars } from '../theme/color-scope/style-builder';
 import { CANONICAL_TOKENS } from '../theme/token-registry';
 
 describe('design-tokens color roles', () => {
-  const allRoles = { ...FILL_ROLES, ...TEXT_ROLES, ...BORDER_ROLES };
+  const allRoles = { ...FILL_ROLES, ...TEXT_ROLES, ...ACCENT_TEXT_ROLES, ...BORDER_ROLES };
 
   it('every color role is a var(--canonical) reference (no hardcoded color)', () => {
     for (const [role, value] of Object.entries(allRoles)) {
@@ -39,6 +40,16 @@ describe('design-tokens color roles', () => {
       const token = value.replace(/^var\(--/, '').replace(/\)$/, '');
       expect(CANONICAL_TOKENS).toContain(token as never);
     }
+  });
+
+  it('keeps decorative accent text separate from semantic status text', () => {
+    expect(ACCENT_TEXT_ROLES).toEqual({
+      'accent-primary': 'var(--primary-text)',
+      'accent-secondary': 'var(--secondary-text)',
+      'accent-tertiary': 'var(--tertiary-text)',
+    });
+    expect(Object.keys(ACCENT_TEXT_ROLES)).not.toContain('success-text');
+    expect(Object.keys(ACCENT_TEXT_ROLES)).not.toContain('warning-text');
   });
 });
 

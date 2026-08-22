@@ -23,7 +23,7 @@
  * `bloomThemeCss()` directly into their `@theme { … }` — the values are stable.
  */
 
-import { BORDER_ROLES, FILL_ROLES, TEXT_ROLES } from './color-roles';
+import { ACCENT_TEXT_ROLES, BORDER_ROLES, FILL_ROLES, TEXT_ROLES } from './color-roles';
 import { CANONICAL_TOKENS } from '../theme/token-registry';
 import {
   BORDER_WIDTH,
@@ -53,6 +53,7 @@ export function bloomThemeCss(): string {
   for (const [role, value] of Object.entries({
     ...FILL_ROLES,
     ...TEXT_ROLES,
+    ...ACCENT_TEXT_ROLES,
     ...BORDER_ROLES,
   })) {
     lines.push(`  --color-${role}: ${value};`);
