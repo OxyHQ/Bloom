@@ -142,6 +142,7 @@ const LEGACY_PRESETS = new Set<AppColorName>([
   'teal', 'blue', 'green', 'yellow', 'red', 'purple', 'pink', 'sky', 'orange',
   'mint', 'oxy', 'faircoin', 'pumpkin', 'gray', 'brown', 'peach', 'rose', 'mono',
 ]);
+const SHIPPED_1_0_1_PRESETS = new Set<AppColorName>(PRESETS.slice(0, 34));
 
 /** The sheen at its darkest point — the bottom stop, black at 2%. */
 const SHEEN_BOTTOM = glassSheenCss(GLASS_SHEEN.bottom);
@@ -203,15 +204,16 @@ describe('glass surface legibility', () => {
   // These four assertions replace "everything clears AA", which was true at
   // 0.25 and is not true at 0.85. They are an EQUALITY on the failure set, so
   // the alpha cannot move by a hundredth without one of them going red:
-  // measured, 0.86 -> 25 rows, 0.87 -> 14, 0.88 -> 5, 0.89 -> 0.
+  // measured, 0.86 -> 49 rows, 0.87 -> 26, 0.88 -> 8, 0.89 -> 0.
   //
   // The old 18-preset oracle was exactly 30/180. A browser helper briefly
   // printed 45 because it parsed the structured `GLASS_SHEEN.bottom` stop as a
   // CSS string; that was measurement drift, never the shipped baseline. With
-  // 16 new recipes the oracle is 38/340: the original 30 rows are unchanged
-  // and all eight additions belong to new recipe IDs.
+  // 16 curated recipes moved the oracle to 38/340: the original 30 rows stayed
+  // unchanged and all eight additions belonged to those recipe IDs. The next
+  // 30 three-seed combinations add 35/300 without changing either baseline.
 
-  it('costs EXACTLY 38 of Button primary\'s 340 rows, in a bounded band', () => {
+  it('costs EXACTLY 73 of Button primary\'s 640 rows, split from the shipped baseline', () => {
     const failures: Array<{ where: string; ratio: number }> = [];
     let rows = 0;
     for (const preset of PRESETS) {
@@ -228,22 +230,27 @@ describe('glass surface legibility', () => {
     expect(rows).toBe(PRESETS.length * MODES.length * SURFACE_KEYS.length);
     // The count is exact, not a ceiling. A palette change that fixes some of
     // these fails here too, which is the point: somebody has to look.
-    expect(failures).toHaveLength(38);
-    // The eight added rows all belong to new recipes: the original 18-preset
-    // matrix remains byte-for-byte at its previous exact count.
+    expect(failures).toHaveLength(73);
+    // Both earlier matrices stay pinned independently of the 30 additions.
     expect(
       failures.filter(({ where }) => LEGACY_PRESETS.has(where.split('/')[0] as AppColorName)),
     ).toHaveLength(30);
+    expect(
+      failures.filter(({ where }) => SHIPPED_1_0_1_PRESETS.has(where.split('/')[0] as AppColorName)),
+    ).toHaveLength(38);
+    expect(
+      failures.filter(({ where }) => !SHIPPED_1_0_1_PRESETS.has(where.split('/')[0] as AppColorName)),
+    ).toHaveLength(35);
     // …and the shortfall is BOUNDED. Every failure is a near miss, not a
     // control nobody can read. Without this the count alone would tolerate 38
     // rows at 1.05.
     const worst = Math.min(...failures.map((f) => f.ratio));
-    expect(worst).toBeCloseTo(4.17, 1);
+    expect(worst).toBeCloseTo(4.17, 2);
     expect(worst).toBeGreaterThan(4.0);
     expect(Math.max(...failures.map((f) => f.ratio))).toBeLessThan(AA);
   });
 
-  it('confines that cost to LIGHT mode and to fourteen named presets', () => {
+  it('confines that cost to LIGHT mode and to 27 named presets', () => {
     // The SHAPE of the compromise, not just its size. The bleed moves the pane
     // toward the surface under it, so in light mode it lightens — which is the
     // one direction a white label cannot afford. A failure appearing in dark
@@ -262,19 +269,32 @@ describe('glass surface legibility', () => {
       }
     }
     expect([...involved].sort()).toEqual([
+      'acid-canopy/light',
+      'arctic-signal/light',
       'blue/light',
+      'bronze-neon/light',
+      'clay-current/light',
+      'copper-field/light',
+      'electric-tide/light',
       'faircoin/light',
       'green/light',
       'lagoon/light',
       'lavender/light',
+      'malachite-rush/light',
+      'midnight-citrus/light',
       'mint/light',
       'olive/light',
       'orange/light',
+      'pacific-flare/light',
       'pine/light',
       'plum/light',
       'pumpkin/light',
+      'reef-pulse/light',
       'rose/light',
+      'saffron-depth/light',
       'sky/light',
+      'solar-flux/light',
+      'viridian-orbit/light',
       'yellow/light',
     ]);
   });
@@ -322,8 +342,11 @@ describe('glass surface legibility', () => {
 
   it('pins the arbitrary-media sample instead of implying backdrop independence', () => {
     let primaryFailures = 0;
+    let shippedPrimaryFailures = 0;
+    let newPrimaryFailures = 0;
     let destructiveFailures = 0;
     let primaryWorst = Infinity;
+    let newPrimaryWorst = Infinity;
     let destructiveWorst = Infinity;
     let rowsPerFill = 0;
     for (const preset of PRESETS) {
@@ -335,7 +358,14 @@ describe('glass surface legibility', () => {
             const ratio = labelRatio(fill, onFill, backdrop, 'web', mode === 'dark');
             if (name === 'primary') {
               primaryWorst = Math.min(primaryWorst, ratio);
-              if (ratio < AA) primaryFailures++;
+              if (!SHIPPED_1_0_1_PRESETS.has(preset)) {
+                newPrimaryWorst = Math.min(newPrimaryWorst, ratio);
+              }
+              if (ratio < AA) {
+                primaryFailures++;
+                if (SHIPPED_1_0_1_PRESETS.has(preset)) shippedPrimaryFailures++;
+                else newPrimaryFailures++;
+              }
             } else {
               destructiveWorst = Math.min(destructiveWorst, ratio);
               if (ratio < AA) destructiveFailures++;
@@ -345,8 +375,11 @@ describe('glass surface legibility', () => {
       }
     }
     expect(rowsPerFill).toBe(PRESETS.length * MODES.length * 3);
-    expect(primaryFailures).toBe(25);
+    expect(primaryFailures).toBe(50);
+    expect(shippedPrimaryFailures).toBe(25);
+    expect(newPrimaryFailures).toBe(25);
     expect(primaryWorst).toBeCloseTo(3.61, 1);
+    expect(newPrimaryWorst).toBeCloseTo(4.17, 2);
     expect(destructiveFailures).toBe(0);
     expect(destructiveWorst).toBeCloseTo(5.32, 1);
   });
@@ -359,6 +392,10 @@ describe('glass surface legibility', () => {
     // with it.
     let onFillFailures = 0;
     let textFailures = 0;
+    let shippedOnFillFailures = 0;
+    let shippedTextFailures = 0;
+    let newOnFillFailures = 0;
+    let newTextFailures = 0;
     let rows = 0;
     for (const preset of PRESETS) {
       for (const mode of MODES) {
@@ -370,17 +407,25 @@ describe('glass surface legibility', () => {
             rows++;
             if (labelRatio(accent.background, accent.foreground, backdrop, 'web', mode === 'dark') < AA) {
               onFillFailures++;
+              if (SHIPPED_1_0_1_PRESETS.has(preset)) shippedOnFillFailures++;
+              else newOnFillFailures++;
             }
             if (labelRatio(accent.background, c.text, backdrop, 'web', mode === 'dark') < AA) {
               textFailures++;
+              if (SHIPPED_1_0_1_PRESETS.has(preset)) shippedTextFailures++;
+              else newTextFailures++;
             }
           }
         }
       }
     }
     expect(rows).toBe(PRESETS.length * MODES.length * TONES.length * SURFACE_KEYS.length);
-    expect(onFillFailures).toBe(305);
-    expect(textFailures).toBe(1714);
+    expect(onFillFailures).toBe(577);
+    expect(textFailures).toBe(3232);
+    expect(shippedOnFillFailures).toBe(305);
+    expect(shippedTextFailures).toBe(1714);
+    expect(newOnFillFailures).toBe(272);
+    expect(newTextFailures).toBe(1518);
   });
 
   // ── STILL GLASS, MEASURED DIRECTLY ───────────────────────────────────────

@@ -18,7 +18,7 @@ working.
 
 ## Preset recipes and runtime colour
 
-Bloom ships **34 named recipes**, authored once in the type-checked
+Bloom ships **64 named recipes**, authored once in the type-checked
 `COLOR_PRESET_REGISTRY`. A recipe is not a frozen light/dark token table: it is
 an identity seed, a scheme variant and optionally explicit secondary/tertiary
 seeds. `BloomThemeProvider`, `getResolvedTokens()` and `BloomColorScope` run
@@ -43,14 +43,16 @@ COLOR_PRESET_FAMILY_REGISTRY[0].displayName; // stable family copy and order
 COLOR_PRESET_GROUPS.ocean.presets;            // ordered recipes for a picker
 ```
 
-The 16 `pairing: 'curated'` recipes pin a complementary `tertiaryHex`. The
-identity remains `--primary`; the standout action is `--tertiary`, which is the
-role used by FABs and compose actions. The other 18 recipes derive their accent
-families dynamically. Every recipe exposes `displayName`, `description`,
-`family`, `pairing` and `featured` metadata, so consumer pickers do not need a
-second name/category map. Historical `APP_COLOR_PRESETS`, name arrays, hex
-lookup and access-gate arrays are derived from this registry and retain their
-existing public shapes.
+The 46 `pairing: 'curated'` recipes pin an intentional action seed. The first 16
+pin `tertiaryHex`; the newest 30 are complete three-seed combinations and pin
+both `secondaryHex` support and `tertiaryHex` action. Identity remains
+`--primary`, support resolves through `--secondary`, and the standout action is
+`--tertiary`, which is the role used by FABs and compose actions. The other 18
+recipes derive both accent families dynamically. Every recipe exposes
+`displayName`, `description`, `family`, `pairing` and `featured` metadata, so
+consumer pickers do not need a second name/category map. Historical
+`APP_COLOR_PRESETS`, name arrays, hex lookup and access-gate arrays are derived
+from this registry and retain their existing public shapes.
 
 For visual review, run Storybook and open **Theme / Color System Playground**
 (`src/theme/ColorSystemLab.stories.tsx`). It keeps signed-in and public Mention
@@ -214,7 +216,7 @@ track, a selected `Item`, the solid `TabBar`, a plain `Card` on a panel, the
 Those tones are owned by `SURFACE_RAMP` in `theme/color-policy.ts` rather than
 taken from Material 3's container roles. M3's ramp steps by 2 tones, which at
 these lightnesses is about **1.2 ΔE00** — below the just-noticeable difference for
-two large flat patches. Measured across all 34 presets, **4 tones (~2.4 ΔE00)** is
+two large flat patches. Measured across all 64 presets, **4 tones (~2.4 ΔE00)** is
 the first spacing at which every pair separates.
 
 `--background` is deliberately not part of the ramp: the page tone is every

@@ -89,22 +89,24 @@ import { withAlpha } from './color-utils';
  *
  * The 15% that bleeds through moves the pane TOWARD the surface under it, and
  * in light mode that means lighter — which is the direction a white label can
- * least afford. Measured over 34 presets x 2 modes x 5 Bloom surfaces:
+ * least afford. Measured over 64 presets x 2 modes x 5 Bloom surfaces:
  *
- *   `Button` primary     38 of 340 rows fall below WCAG AA, in the band
- *                        4.17..4.49, ALL of them in LIGHT mode, across fourteen
- *                        presets (blue, faircoin, green, lagoon, lavender, mint,
- *                        olive, orange, pine, plum, pumpkin, rose, sky, yellow).
- *   `Button` destructive 0 of 340. Worst 5.32.
+ *   `Button` primary     73 of 640 rows fall below WCAG AA, in the band
+ *                        4.17..4.50, ALL of them in LIGHT mode, across 27
+ *                        presets (acid-canopy, arctic-signal, blue, bronze-neon,
+ *                        clay-current, copper-field, electric-tide, faircoin,
+ *                        green, lagoon, lavender, malachite-rush,
+ *                        midnight-citrus, mint, olive, orange, pacific-flare,
+ *                        pine, plum, pumpkin, reef-pulse, rose, saffron-depth,
+ *                        sky, solar-flux, viridian-orbit, yellow).
+ *   `Button` destructive 0 of 640. Worst 5.32.
  *
- * As a SOLID fill all 680 Button rows pass. The original 18 presets retain
- * their exact 30/180 shipped failure set; all eight added failures belong to
- * the new recipes. A browser helper briefly reported 45 only because it parsed
- * the structured `GLASS_SHEEN.bottom` stop as CSS; that was measurement drift,
- * never the shipped oracle and never a threshold being relaxed.
+ * As a SOLID fill all 1280 Button rows pass. The 1.0.1 catalog retains its exact
+ * 38/340 failure set (including the original 18 presets' 30/180); the 30 new
+ * three-seed combinations add 35/300 and do not worsen the 4.17 floor.
  *
  * The alpha at which the failures reach zero is **0.89** (worst 4.52), and the
- * curve between is steep: 0.86 -> 25 rows, 0.87 -> 14, 0.88 -> 5, 0.89 -> 0.
+ * curve between is steep: 0.86 -> 49 rows, 0.87 -> 26, 0.88 -> 8, 0.89 -> 0.
  * So AA compliance costs four hundredths of alpha. 0.85 is kept because it is
  * the reference's own value and matching the reference is the requirement;
  * `glass-colors.test.ts` pins the compromise as an EXACT failure count and an
@@ -240,7 +242,7 @@ export interface GlassColors {
  * `colors.negative`, `colors.success` — rather than a tone name, because the
  * caller is the only one who knows which token its variant means. `Button`'s
  * `destructive` is `colors.negative` (the engine's error ROLE) and not
- * `colors.error` (the fixed status seed): measured, those two differ in all 68
+ * `colors.error` (the fixed status seed): measured, those two differ in all 128
  * preset x mode combinations and by as much as `rgb(255 180 171)` against
  * `rgb(209 45 50)` on `teal`/dark, so a tone vocabulary here would have
  * silently repainted every destructive button on the way past.
@@ -256,10 +258,11 @@ export interface GlassColors {
  * `colors.text` and that was correct THEN: a pane that is three-quarters
  * backdrop takes its luminance from the page, so it needed the page's reading
  * colour. At 0.85 the pane is the fill, so it takes the fill's own label: on
- * the complete 2040-row matrix (34 presets x 2 modes x 6 tones x 5 surfaces),
- * `colors.text` fails AA on 1714 rows (worst 1.21) against the on-fill token's
- * 305 (worst 4.17). Neither count is permanent; the gate re-measures and pins
- * both on every alpha or surface change.
+ * the complete 3840-row matrix (64 presets x 2 modes x 6 tones x 5 surfaces),
+ * `colors.text` fails AA on 3232 rows (worst 1.21) against the on-fill token's
+ * 577 (worst 4.17). The 1.0.1 baseline remains 1714/2040 versus 305/2040;
+ * the 30 additions contribute 1518/1800 versus 272/1800. The gate re-measures
+ * and pins both on every alpha or surface change.
  */
 export function resolveGlassColors(fill: string): GlassColors {
   return {

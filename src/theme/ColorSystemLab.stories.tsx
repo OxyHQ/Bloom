@@ -422,7 +422,7 @@ function ThemePreview({
     <View style={styles.previewBlock}>
       <View style={styles.previewLabelRow}>
         <Text style={styles.previewModeTitle}>{mode === 'light' ? 'Light mode' : 'Dark mode'}</Text>
-        <Text style={styles.previewModeNote}>Mention desktop · 1500 px · shell expandido</Text>
+        <Text style={styles.previewModeNote}>Mention desktop · 1500 px · expanded shell</Text>
       </View>
       <View testID={`mention-preview-${mode}`} style={[styles.preview, { backgroundColor: palette.canvas }]}>
         <View style={styles.appFrame}>
@@ -583,41 +583,41 @@ function ColorSystemLab() {
     <View style={styles.page}>
       <View style={styles.labHeader}>
         <View style={styles.labHeading}>
-          <Text style={styles.labEyebrow}>BLOOM COLOR LAB · INTERFAZ MENTION</Text>
-          <Text style={styles.labTitle}>Más pulso, menos pastel</Text>
+          <Text style={styles.labEyebrow}>BLOOM COLOR LAB · MENTION INTERFACE</Text>
+          <Text style={styles.labTitle}>More energy, less pastel</Text>
           <Text style={styles.labDescription}>
-            La misma estructura de Mention aplicada a {COLOR_RECIPES.length} recetas dinámicas. Las
-            superficies grandes se mantienen neutras; identidad y acción concentran el color saturado.
+            The same Mention structure applied to {COLOR_RECIPES.length} dynamic recipes. Large
+            surfaces stay neutral while identity and action carry the saturated colour.
           </Text>
         </View>
         <View style={styles.legend}>
           <View style={styles.legendItem}>
             <View style={[styles.legendDot, { backgroundColor: '#75805D' }]} />
-            <Text style={styles.legendText}>Identidad: selección, navegación y marca</Text>
+            <Text style={styles.legendText}>Identity: selection, navigation and brand</Text>
           </View>
           <View style={styles.legendItem}>
             <View style={[styles.legendDot, { backgroundColor: '#E9B522' }]} />
-            <Text style={styles.legendText}>Acción: un CTA dominante por contexto</Text>
+            <Text style={styles.legendText}>Action: one dominant CTA in each context</Text>
           </View>
           <View style={styles.legendItem}>
             <View style={[styles.legendDot, { backgroundColor: '#BDB6AC' }]} />
-            <Text style={styles.legendText}>Jerarquía: flujo, espacio y radio; sin cajas decorativas</Text>
+            <Text style={styles.legendText}>Hierarchy: flow, spacing and radius without decorative boxes</Text>
           </View>
         </View>
       </View>
 
       <View style={styles.paletteMapHeader}>
-        <Text style={styles.paletteMapTitle}>{COLOR_RECIPES.length} direcciones para comparar</Text>
+        <Text style={styles.paletteMapTitle}>{COLOR_RECIPES.length} directions to compare</Text>
         <Text style={styles.paletteMapDescription}>
-          Filtra por familia o por pareja curada/generada. Cada tarjeta enseña light y dark.
+          Filter by family or curated/derived pairing. Every card shows light and dark.
         </Text>
       </View>
 
       <View style={styles.filterStack}>
         <View style={styles.filterRow}>
-          <Text style={styles.filterLabel}>Familia</Text>
+          <Text style={styles.filterLabel}>Family</Text>
           <FilterButton
-            label="Todas"
+            label="All"
             selected={familyFilter === 'all'}
             onPress={() => {
               setFamilyFilter('all');
@@ -637,9 +637,9 @@ function ColorSystemLab() {
           ))}
         </View>
         <View style={styles.filterRow}>
-          <Text style={styles.filterLabel}>Variedad</Text>
+          <Text style={styles.filterLabel}>Pairing</Text>
           <FilterButton
-            label="Todas"
+            label="All"
             selected={pairingFilter === 'all'}
             onPress={() => {
               setPairingFilter('all');
@@ -647,7 +647,7 @@ function ColorSystemLab() {
             }}
           />
           <FilterButton
-            label="Parejas curadas"
+            label="Curated combinations"
             selected={pairingFilter === 'curated'}
             onPress={() => {
               setPairingFilter('curated');
@@ -655,14 +655,14 @@ function ColorSystemLab() {
             }}
           />
           <FilterButton
-            label="Derivadas"
+            label="Derived"
             selected={pairingFilter === 'derived'}
             onPress={() => {
               setPairingFilter('derived');
               setActiveRecipeIndex(0);
             }}
           />
-          <Text style={styles.filterCount}>{visibleRecipes.length} visibles</Text>
+          <Text style={styles.filterCount}>{visibleRecipes.length} visible</Text>
         </View>
       </View>
 
@@ -708,12 +708,12 @@ function ColorSystemLab() {
           <Text style={styles.recipeIdea}>{activeRecipe.description}</Text>
         </View>
         <View style={styles.rulePill}>
-          <Text style={styles.rulePillText}>La paleta cambia por modo; la relación se conserva</Text>
+          <Text style={styles.rulePillText}>The palette changes by mode; the relationship stays intact</Text>
         </View>
       </View>
 
       <View style={styles.viewerModeRow}>
-        <Text style={styles.viewerModeLabel}>Estado de Mention</Text>
+        <Text style={styles.viewerModeLabel}>Mention state</Text>
         <View style={styles.viewerModeControl}>
           <Pressable
             accessibilityRole="button"
@@ -723,7 +723,7 @@ function ColorSystemLab() {
             style={[styles.viewerModeButton, authenticated && styles.viewerModeButtonSelected]}
           >
             <Text style={[styles.viewerModeButtonText, authenticated && styles.viewerModeButtonTextSelected]}>
-              Sesión iniciada
+              Signed in
             </Text>
           </Pressable>
           <Pressable
@@ -734,7 +734,7 @@ function ColorSystemLab() {
             style={[styles.viewerModeButton, !authenticated && styles.viewerModeButtonSelected]}
           >
             <Text style={[styles.viewerModeButtonText, !authenticated && styles.viewerModeButtonTextSelected]}>
-              Vista pública
+              Public view
             </Text>
           </Pressable>
         </View>
@@ -747,7 +747,7 @@ function ColorSystemLab() {
 
       <View style={styles.swatchSection}>
         <View style={styles.swatchMode}>
-          <Text style={styles.swatchModeTitle}>Light · capas neutras, color concentrado</Text>
+          <Text style={styles.swatchModeTitle}>Light · neutral layers, concentrated colour</Text>
           <View style={styles.swatchRow}>
             <Swatch label="Canvas" color={activeLight.canvas} text="#18202A" />
             <Swatch label="Shell" color={activeLight.shell} text="#18202A" />
@@ -758,7 +758,7 @@ function ColorSystemLab() {
           </View>
         </View>
         <View style={styles.swatchMode}>
-          <Text style={styles.swatchModeTitle}>Dark · capas profundas, no invertidas</Text>
+          <Text style={styles.swatchModeTitle}>Dark · deep layers, not inverted</Text>
           <View style={styles.swatchRow}>
             <Swatch label="Canvas" color={activeDark.canvas} text="#18202A" />
             <Swatch label="Shell" color={activeDark.shell} text="#18202A" />
