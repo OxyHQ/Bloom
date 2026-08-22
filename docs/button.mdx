@@ -35,13 +35,13 @@ import { Button } from '@oxyhq/bloom';
 
 The glass is the sheen, not the wash. What reads as glass is the rim, the vertical gradient and the hairline; the 15% of the backdrop that shows through is a hint of depth, not the effect itself.
 
-**One measured cost, stated because it is real.** The 15% bleed moves the pane toward the surface under it, which in light mode means lighter — the one direction a white label cannot afford. Of `primary`'s 340 preset × mode × surface combinations, **38 fall below WCAG AA**, in the band 4.17–4.49, all in light mode, on `blue`, `faircoin`, `green`, `lagoon`, `lavender`, `mint`, `olive`, `orange`, `pine`, `plum`, `pumpkin`, `rose`, `sky` and `yellow`. Both solid Button fills pass all 680 rows; glass `destructive` is also unaffected (0/340, worst 5.32). The alpha at which the failures reach zero is 0.89.
+**One measured cost, stated because it is real.** The 15% bleed moves the pane toward the surface under it, which in light mode means lighter — the one direction a white label cannot afford. Of `primary`'s 640 preset × mode × surface combinations, **73 fall below WCAG AA**, in the band 4.17–4.50, all in light mode, on `acid-canopy`, `arctic-signal`, `blue`, `bronze-neon`, `clay-current`, `copper-field`, `electric-tide`, `faircoin`, `green`, `lagoon`, `lavender`, `malachite-rush`, `midnight-citrus`, `mint`, `olive`, `orange`, `pacific-flare`, `pine`, `plum`, `pumpkin`, `reef-pulse`, `rose`, `saffron-depth`, `sky`, `solar-flux`, `viridian-orbit` and `yellow`. Both solid Button fills pass all 1,280 rows; glass `destructive` is also unaffected (0/640, worst 5.32). The alpha at which the failures reach zero remains 0.89.
 
-The previous 18-preset oracle was exactly 30/180. Those same rows and nine IDs remain unchanged; all eight added failures come from the new recipes. A browser helper briefly printed 45 because it parsed the structured `GLASS_SHEEN.bottom` channel object as CSS. That was drift in the measurement script, not Bloom's shipped baseline and not a threshold relaxed from 45 to 38.
+The 1.0.1 catalog remains exactly 38/340, including the original 18-preset oracle at 30/180. The 30 new three-seed combinations contribute 35/300 and do not lower the existing 4.17 floor. These cohorts are asserted independently, so an unchanged total cannot hide a regression moving from one into the other.
 
-If your app runs one of those fourteen presets in light mode and needs AA on its primary button, use `variant="inverse"` for that call site, or raise `GLASS_FILL_ALPHA`.
+If your app runs one of those 27 presets in light mode and needs AA on its primary button, use `variant="inverse"` for that call site, or raise `GLASS_FILL_ALPHA`.
 
-Over a retained black/mid-grey/white media sample, **25 of 204** preset × mode × backdrop rows fall below AA, worst 3.61 (`destructive`: 0). That is a sample rather than a promise about arbitrary pixels. If a CTA must be legible over an image, `variant="inverse"` is opaque and backdrop-independent:
+Over a retained black/mid-grey/white media sample, **50 of 384** preset × mode × backdrop rows fall below AA, worst 3.61 (`destructive`: 0). The 1.0.1 catalog remains 25/204; the additions contribute 25/180, worst 4.17. That is a sample rather than a promise about arbitrary pixels. If a CTA must be legible over an image, `variant="inverse"` is opaque and backdrop-independent:
 
 ```tsx
 <Button variant="inverse">Comprar</Button>
@@ -83,23 +83,25 @@ bun run storybook          # the DEV server; the script reads the theme through 
 node scripts/measure-glass-alpha.mjs --url http://localhost:6006 --image docs/glass-alpha-sweep.png
 ```
 
-![The same button at eleven fill alphas, over a flat page, a photograph and a hard stripe pattern](./glass-alpha-sweep.png)
+![The same button at thirteen fill alphas, over a flat page, a photograph and a hard stripe pattern](./glass-alpha-sweep.png)
 
 Measured in Chrome off painted pixels, with the label removed from the measurement clones so a white glyph cannot be mistaken for backdrop:
 
 | alpha | backdrop response | blur delta over a photo (max/mean) | blur delta on a flat page | `primary` rows < AA | `destructive` rows < AA |
 | --- | --- | --- | --- | --- | --- |
-| 0.89 | 28.0 | 13 / 3.5 | 1 | 0 / 340 | 0 / 340 |
-| 0.88 | 31.0 | 15 / 3.8 | 1 | 5 / 340 | 0 / 340 |
-| 0.87 | 33.0 | 16 / 4.0 | 1 | 14 / 340 | 0 / 340 |
-| 0.86 | 36.0 | 17 / 4.4 | 1 | 25 / 340 | 0 / 340 |
-| **0.85** (shipped) | 38.0 | 18 / 4.7 | 1 | 38 / 340 | 0 / 340 |
-| 0.75 | 63.7 | 31 / 7.8 | 1 | 216 / 340 | 68 / 340 |
-| 0.65 | 88.7 | 43 / 10.9 | 1 | 252 / 340 | 340 / 340 |
-| 0.55 | 114.7 | 55 / 14.2 | 1 | 272 / 340 | 340 / 340 |
-| 0.45 | 139.3 | 67 / 17.4 | 0 | 301 / 340 | 340 / 340 |
-| 0.35 | 165.3 | 79 / 20.6 | 1 | 335 / 340 | 340 / 340 |
-| 0.25 | 190.3 | 91 / 23.8 | 1 | 335 / 340 | 340 / 340 |
+| 0.91 | 23.0 | 11 / 2.9 | 1 | 0 / 640 | 0 / 640 |
+| 0.90 | 25.0 | 12 / 3.1 | 1 | 0 / 640 | 0 / 640 |
+| 0.89 | 28.0 | 13 / 3.5 | 1 | 0 / 640 | 0 / 640 |
+| 0.88 | 31.0 | 15 / 3.8 | 1 | 8 / 640 | 0 / 640 |
+| 0.87 | 33.0 | 16 / 4.0 | 1 | 26 / 640 | 0 / 640 |
+| 0.86 | 36.0 | 17 / 4.4 | 1 | 49 / 640 | 0 / 640 |
+| **0.85** (shipped) | 38.0 | 18 / 4.7 | 1 | 73 / 640 | 0 / 640 |
+| 0.75 | 63.7 | 31 / 7.8 | 1 | 431 / 640 | 128 / 640 |
+| 0.65 | 88.7 | 43 / 10.9 | 1 | 492 / 640 | 640 / 640 |
+| 0.55 | 114.7 | 55 / 14.2 | 1 | 531 / 640 | 640 / 640 |
+| 0.45 | 139.3 | 67 / 17.4 | 0 | 580 / 640 | 640 / 640 |
+| 0.35 | 165.3 | 79 / 20.6 | 1 | 635 / 640 | 640 / 640 |
+| 0.25 | 190.3 | 91 / 23.8 | 1 | 635 / 640 | 640 / 640 |
 
 Everything is out of 255. Backdrop response is how far the painted pane moves between a white and a black backdrop — linear in `1 - alpha`, at 25.4 ± 0.7 per 0.10 of alpha. Blur delta is how much the picture changes when the blur is switched off, which is the honest form of "can you see the blur".
 
@@ -107,7 +109,7 @@ Three things the table settles:
 
 - **On a flat page the blur is worth ~1/255 at every alpha, including 0.25.** There is nothing behind the pane to blur, so lowering the alpha does not make a flat page glassy — it only makes the button paler. That is the whole of the "it doesn't look glassy" complaint, and no alpha fixes it.
 - **Over a photograph the blur is already visible at 0.85** (18/255 peak). Where there is something to see, the shipped material is doing the thing.
-- **Legibility falls off a cliff immediately below 0.85.** One step down takes `primary` from 38 to 216 failures and `destructive` from 0 to 68; two steps down puts every one of `destructive`'s 340 rows under AA.
+- **Legibility falls off a cliff immediately below 0.85.** One step down takes `primary` from 73 to 431 failures and `destructive` from 0 to 128; two steps down puts every one of `destructive`'s 640 rows under AA.
 
 So there is no single alpha that both matches the reference and reads as glass on a flat surface. That is a property of the material — a blur needs a backdrop — not a constant nobody has tuned yet. To make a specific surface read as glass, put something behind it.
 

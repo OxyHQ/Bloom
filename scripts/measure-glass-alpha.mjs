@@ -58,7 +58,7 @@ const require = createRequire(import.meta.url);
 const puppeteer = require('/home/nate/Oxy/Homiio/node_modules/puppeteer-core');
 
 /** The sweep. Measured high-to-low; 0.85 doubles as the control row. */
-const ALPHAS = [0.89, 0.88, 0.87, 0.86, 0.85, 0.75, 0.65, 0.55, 0.45, 0.35, 0.25];
+const ALPHAS = [0.91, 0.90, 0.89, 0.88, 0.87, 0.86, 0.85, 0.75, 0.65, 0.55, 0.45, 0.35, 0.25];
 
 /**
  * Stripe period in CSS px, deliberately far below the material's 10px blur
@@ -76,7 +76,7 @@ const PHOTO_URL = 'https://picsum.photos/seed/bloom-glass/1200/400';
  * alpha. If this sweep's own 0.85 row does not reproduce it, the composition
  * here has drifted from the library's and every other row is unverified.
  */
-const SHIPPED_PRIMARY_AA_FAILURES = 38;
+const SHIPPED_PRIMARY_AA_FAILURES = 73;
 
 /**
  * How large a per-pixel change counts as "you can see the blur", out of 255.

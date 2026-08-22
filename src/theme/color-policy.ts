@@ -162,7 +162,7 @@ const SUBTLE_ALPHA = { light: 0.13, dark: 0.24 } as const;
  * every rung of Bloom's surface stack was invisible against its neighbour, and
  * the thirteen components that carry meaning ONLY in the step between two
  * surfaces (a heatmap's empty cell, a filled card, a progress track, a hover
- * row, a skeleton) read as nothing at all. Measured across all 34 presets, 4
+ * row, a skeleton) read as nothing at all. Measured across all 64 presets, 4
  * tones is ~2.4 ΔE00 and is the first spacing where every pair separates.
  *
  * `--background` is deliberately NOT in here: the page keeps the tone it
