@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Image, Pressable, StyleSheet, Text, View } from 'react-native';
 import Svg, { Circle, Line, Path } from 'react-native-svg';
 import type { Meta, StoryObj } from '@storybook/react-vite';
+import { defaultAvatarSource } from '../avatar/default-avatar';
 import {
   COLOR_PRESET_FAMILY_REGISTRY,
   COLOR_PRESET_REGISTRY,
@@ -264,6 +265,63 @@ function PostAction({ name, palette }: { name: MentionIconName; palette: LabPale
   );
 }
 
+type PostIllustrationVariant = 'books' | 'dictionary-primary' | 'dictionary-secondary';
+
+function PostIllustration({
+  palette,
+  variant,
+}: {
+  palette: LabPalette;
+  variant: PostIllustrationVariant;
+}) {
+  const books = variant === 'books';
+  const accent = variant === 'dictionary-secondary' ? palette.action : palette.identity;
+  const onAccent = variant === 'dictionary-secondary' ? palette.onAction : palette.onIdentity;
+  const label = books
+    ? 'Abstract rare-books illustration'
+    : 'Abstract dictionary-card illustration';
+
+  return (
+    <View
+      accessible
+      accessibilityLabel={label}
+      accessibilityRole="image"
+      style={[
+        books ? styles.linkPreviewImage : styles.galleryImage,
+        styles.postIllustration,
+        { backgroundColor: palette.shell },
+      ]}
+    >
+      {books ? (
+        <>
+          <View
+            style={[
+              styles.bookHalo,
+              { backgroundColor: palette.actionSoft },
+            ]}
+          />
+          <View style={styles.bookStack}>
+            <View style={[styles.bookVolumeWide, { backgroundColor: palette.identity }]} />
+            <View style={[styles.bookVolumeNarrow, { backgroundColor: palette.action }]} />
+            <View style={[styles.bookVolumeWide, { backgroundColor: palette.raised }]} />
+          </View>
+        </>
+      ) : (
+        <View style={[styles.dictionaryCard, { backgroundColor: palette.raised }]}>
+          <View style={[styles.dictionaryMonogram, { backgroundColor: accent }]}>
+            <Text style={[styles.dictionaryMonogramText, { color: onAccent }]}>W</Text>
+          </View>
+          <View style={styles.dictionaryCopy}>
+            <View style={[styles.dictionaryLineLong, { backgroundColor: palette.text }]} />
+            <View style={[styles.dictionaryLineMedium, { backgroundColor: accent }]} />
+            <View style={[styles.dictionaryLineShort, { backgroundColor: palette.textMuted }]} />
+          </View>
+        </View>
+      )}
+    </View>
+  );
+}
+
 function MentionPost({
   palette,
   second = false,
@@ -271,12 +329,9 @@ function MentionPost({
   palette: LabPalette;
   second?: boolean;
 }) {
-  const avatar = second
-    ? 'https://cloud.oxy.so/6a53ee4be552947c9e8e19d0?variant=w96'
-    : 'https://cloud.oxy.so/6a36834ed82c97aa6765548f?variant=w96';
   return (
     <View style={[styles.post, { backgroundColor: palette.canvas, borderBottomColor: palette.shell }]}>
-      <Image accessibilityLabel="" source={{ uri: avatar }} style={styles.postAvatarImage} />
+      <Image accessibilityLabel="" source={defaultAvatarSource} style={styles.postAvatarImage} />
       <View style={styles.postBody}>
         <View style={styles.postIdentityRow}>
           <Text numberOfLines={1} style={[styles.postName, { color: palette.text }]}>
@@ -296,24 +351,17 @@ function MentionPost({
 
         {second ? (
           <View style={styles.galleryRow}>
-            <Image
-              accessibilityLabel="Wiktionary definition"
-              source={{ uri: 'https://cloud.oxy.so/01a00861-0e9b-787f-a9b0-652540b248df?variant=w320' }}
-              style={[styles.galleryImage, { backgroundColor: palette.shell }]}
-            />
-            <Image
-              accessibilityLabel="Wiktionary definition"
-              source={{ uri: 'https://cloud.oxy.so/01a00861-0f84-7484-808d-a22b198f38d7?variant=w320' }}
-              style={[styles.galleryImage, { backgroundColor: palette.shell }]}
-            />
+            <PostIllustration palette={palette} variant="dictionary-primary" />
+            <PostIllustration palette={palette} variant="dictionary-secondary" />
           </View>
         ) : (
-          <View style={[styles.linkPreview, { borderColor: palette.shell, backgroundColor: palette.raised }]}>
-            <Image
-              accessibilityLabel="404 Media article cover"
-              source={{ uri: 'https://cloud.oxy.so/01a01022-43e5-7772-be0a-33818fa99454?variant=w320' }}
-              style={[styles.linkPreviewImage, { backgroundColor: palette.shell }]}
-            />
+          <View
+            style={[
+              styles.linkPreview,
+              { borderColor: palette.shell, backgroundColor: palette.raised },
+            ]}
+          >
+            <PostIllustration palette={palette} variant="books" />
             <View style={styles.linkPreviewCopy}>
               <Text style={[styles.linkDomain, { color: palette.textMuted }]}>404 MEDIA</Text>
               <Text numberOfLines={2} style={[styles.linkTitle, { color: palette.text }]}>
@@ -368,10 +416,10 @@ function TrendRow({
 }
 
 const FOLLOW_ITEMS = [
-  ['Depths of Wiktionary', '@depthsofwiktionary@wikis.world', 'https://cloud.oxy.so/6a53ee4be552947c9e8e19d0?variant=w96'],
-  ['David Revoy', '@davidrevoy@framapiaf.org', 'https://cloud.oxy.so/6a36868cd82c97aa67655583?variant=w96'],
-  ['Ritalin Invitees', '@intransitivelie@beige.party', 'https://cloud.oxy.so/6a36931388abe386bd22b74c?variant=w96'],
-  ['J L Westover', '@mrlovenstein@mastodon.social', 'https://cloud.oxy.so/6a300ab5fce513fdf070b8cf?variant=w96'],
+  ['Depths of Wiktionary', '@depthsofwiktionary@wikis.world'],
+  ['David Revoy', '@davidrevoy@framapiaf.org'],
+  ['Ritalin Invitees', '@intransitivelie@beige.party'],
+  ['J L Westover', '@mrlovenstein@mastodon.social'],
 ] as const;
 
 function RightRail({ palette }: { palette: LabPalette }) {
@@ -392,9 +440,9 @@ function RightRail({ palette }: { palette: LabPalette }) {
 
       <View style={[styles.widgetDivider, { backgroundColor: palette.shell }]} />
       <Text style={[styles.widgetTitle, { color: palette.text }]}>Who to follow</Text>
-      {FOLLOW_ITEMS.map(([name, handle, avatar]) => (
+      {FOLLOW_ITEMS.map(([name, handle]) => (
         <View key={name} style={[styles.followRow, { borderBottomColor: palette.shell }]}>
-          <Image accessibilityLabel="" source={{ uri: avatar }} style={styles.followAvatar} />
+          <Image accessibilityLabel="" source={defaultAvatarSource} style={styles.followAvatar} />
           <View style={styles.followCopy}>
             <Text numberOfLines={1} style={[styles.followName, { color: palette.text }]}>{name}</Text>
             <Text numberOfLines={1} style={[styles.followHandle, { color: palette.textMuted }]}>{handle}</Text>
@@ -433,7 +481,7 @@ function ThemePreview({
                 <View style={styles.sidebarItem}>
                   <Image
                     accessibilityLabel=""
-                    source={{ uri: 'https://cloud.oxy.so/6a6479fa39ba140e8a59566c?variant=w96' }}
+                    source={defaultAvatarSource}
                     style={styles.sidebarProfileAvatar}
                   />
                   <Text style={[styles.sidebarLabel, { color: palette.text }]}>Profile</Text>
@@ -456,7 +504,7 @@ function ThemePreview({
                 <>
                   <Image
                     accessibilityLabel="Nate"
-                    source={{ uri: 'https://cloud.oxy.so/6a6479fa39ba140e8a59566c?variant=w96' }}
+                    source={defaultAvatarSource}
                     style={styles.profileAvatar}
                   />
                   <View style={styles.profileCopy}>
@@ -509,7 +557,7 @@ function ThemePreview({
                   >
                     <Image
                       accessibilityLabel="Nate"
-                      source={{ uri: 'https://cloud.oxy.so/6a6479fa39ba140e8a59566c?variant=w96' }}
+                      source={defaultAvatarSource}
                       style={styles.composerAvatar}
                     />
                     <Text style={[styles.composerPlaceholder, { color: palette.textMuted }]}>What&apos;s up?</Text>
@@ -1280,6 +1328,35 @@ const styles = StyleSheet.create({
     width: '100%',
     height: 160,
   },
+  postIllustration: {
+    overflow: 'hidden',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  bookHalo: {
+    position: 'absolute',
+    width: 190,
+    height: 190,
+    borderRadius: 95,
+    top: -54,
+    right: -38,
+  },
+  bookStack: {
+    width: 150,
+    gap: 8,
+    transform: [{ rotate: '-7deg' }],
+  },
+  bookVolumeWide: {
+    width: 150,
+    height: 28,
+    borderRadius: 7,
+  },
+  bookVolumeNarrow: {
+    width: 124,
+    height: 24,
+    borderRadius: 7,
+    alignSelf: 'flex-end',
+  },
   linkPreviewCopy: {
     padding: 12,
     gap: 3,
@@ -1306,6 +1383,46 @@ const styles = StyleSheet.create({
     width: 462,
     height: 180,
     borderRadius: 16,
+  },
+  dictionaryCard: {
+    width: '78%',
+    height: '74%',
+    borderRadius: 14,
+    padding: 18,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 16,
+  },
+  dictionaryMonogram: {
+    width: 54,
+    height: 54,
+    borderRadius: 14,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  dictionaryMonogramText: {
+    fontSize: 28,
+    lineHeight: 32,
+    fontWeight: '800',
+  },
+  dictionaryCopy: {
+    flex: 1,
+    gap: 9,
+  },
+  dictionaryLineLong: {
+    width: '88%',
+    height: 8,
+    borderRadius: 4,
+  },
+  dictionaryLineMedium: {
+    width: '68%',
+    height: 7,
+    borderRadius: 4,
+  },
+  dictionaryLineShort: {
+    width: '48%',
+    height: 6,
+    borderRadius: 3,
   },
   postActions: {
     minHeight: 24,
