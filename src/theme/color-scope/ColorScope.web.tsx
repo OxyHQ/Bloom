@@ -35,13 +35,21 @@ export interface BloomColorScopeProps {
 }
 
 /**
- * On web, the single `asChild` child is frequently a react-native-web
- * component (e.g. RN `<View>`) whose `style` prop is a *style array* (or a
- * numeric registered-style id), not a plain `React.CSSProperties` object.
- * react-native-web flattens nested style arrays, so the cloned child must
- * receive an array — spreading an array into an object literal would copy its
- * numeric indices as keys and crash RNW when it commits them to the DOM
- * (`Failed to set an indexed property [0] on 'CSSStyleDeclaration'`).
+ * On web, the single `asChild` child can be either kind of element, and the two
+ * kinds want different `style` shapes:
+ *
+ *  - A react-native-web component (RN `<View>`, `<Pressable>`) may already
+ *    carry a style ARRAY or a numeric registered-style id. Spreading that into
+ *    an object literal copies its numeric indices as keys, and RNW then commits
+ *    `0`, `1`, … to the DOM. RNW flattens arrays, so it gets an array.
+ *  - Anything that ends on a DOM element — an `<a>`, a router `<Link>`, any
+ *    component that forwards `style` to its host node — hands the prop straight
+ *    to React DOM, which walks the own keys of whatever it is given. An array
+ *    there throws `Failed to set an indexed property [0] on
+ *    'CSSStyleDeclaration'` during commit, blanking the tree.
+ *
+ * So the array form is used only when the child's own style is already
+ * RN-shaped; every other child gets a plain object, which both runtimes accept.
  */
 type WebStyle =
   | React.CSSProperties
@@ -96,13 +104,15 @@ export function BloomColorScope({
         'BloomColorScope with `asChild` requires a single React element child that accepts a `style` prop.',
       );
     }
-    // Merge as a style ARRAY (the RNW-safe form): scope vars first, then the
-    // caller's `style`, then the child's own `style` last so its explicit
-    // styles win. react-native-web flattens nested arrays correctly; spreading
-    // the child's style (which is often an RN style array or numeric id) into an
-    // object literal would copy numeric indices as keys and crash RNW.
+    // Scope vars first, then the caller's `style`, then the child's own so its
+    // explicit styles win. The shape follows the child: an array only when the
+    // child's style is already RN-shaped (see the note above), an object
+    // otherwise — an array reaching a DOM node throws on commit.
     const childStyle = child.props.style;
-    const mergedStyle: WebStyle = [varsStyle, style, childStyle];
+    const childIsRnStyled = Array.isArray(childStyle) || typeof childStyle === 'number';
+    const mergedStyle: WebStyle = childIsRnStyled
+      ? [varsStyle, style, childStyle]
+      : { ...varsStyle, ...style, ...(childStyle || undefined) };
     content = cloneElement(child, { style: mergedStyle });
   } else {
     // A plain DOM `<div>` does NOT accept style arrays — only the cloned child
