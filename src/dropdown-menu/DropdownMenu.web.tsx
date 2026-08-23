@@ -47,6 +47,7 @@ export function DropdownMenuTrigger({
   asChild,
   disabled,
   label,
+  className,
   style,
   testID,
 }: DropdownMenuTriggerProps) {
@@ -56,6 +57,7 @@ export function DropdownMenuTrigger({
     <TriggerSlot
       asChild={asChild}
       anchorRef={menu.anchorRef}
+      className={className}
       style={style}
       testID={testID}
       handle={{

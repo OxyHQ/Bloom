@@ -1,6 +1,6 @@
 # Bloom (`@oxyhq/bloom`)
 
-> Org-wide standards live in `~/AGENTS.md` and `~/Oxy/AGENTS.md`. **Component documentation lives in `docs/*.mdx`; history lives in git.** This file holds only RULES. **Budget: under 24 KB — bounds narrative and history, not how many distinct silent-failure hazards Bloom has. Compress prose before deleting a hazard; a budget whose cheapest fix is deleting a measured hazard is itself the bug.** Changes here affect EVERY app in the ecosystem — use the `bloom` agent.
+> Org-wide standards: `~/AGENTS.md` and `~/Oxy/AGENTS.md`. Component docs: `docs/*.mdx`; history: git. **Rules only, under 24 KB. Compress prose; never delete a measured hazard to meet the budget.** Affects EVERY app — use the `bloom` agent.
 
 ```bash
 bun run build       # bob build → lib/ (commonjs + module + typescript)
@@ -82,6 +82,7 @@ Only TWO exist: `CenteredDialog` and `ResponsiveSheet` were removed with no shim
 
 - **Always drive `dialog/` imperatively via `useDialogControl()`, never the controlled `open`/`onClose` boolean** — the race this avoids is documented on the controlled path itself, in `docs/dialog.mdx`.
 - `AlertDialog` and `Command` bridge onto `Dialog`'s imperative control; reuse its `actions` prop rather than hand-rolling a confirm row.
+- **Menu behavior belongs in `floating/menu-*`, never a consumer or one family fork.** DropdownMenu, ContextMenu and Menubar share rows, radio and submenus; extend and gate the factory once.
 - The `surface.dismiss(result)` mechanism (`docs/surfaces.mdx`) is pinned at the prop boundary with a mock Dialog: `surface-prompts.test.tsx`.
 - **`disabled` on an `asChild` trigger is guarded in `cloneTrigger`, not the child alone** (composition mechanism: `docs/dropdown-menu.mdx` `asChild`). **The browser is the WEAKER instrument:** an unguarded `Pressable` child stays closed in Chrome (RNW masks it) while jest goes red (mock ignores `disabled`). Gates: `Combobox.test.tsx` + `scripts/verify-trigger-disabled.mjs`.
 - **KNOWN GAP — the native tooltip cannot position itself inside a sheet** (mechanism: `docs/tooltip.mdx`).

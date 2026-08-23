@@ -27,7 +27,7 @@ import { StyleSheet, View, type StyleProp, type ViewStyle } from 'react-native';
 
 import { useRestoreAccessibilityFocus } from '../hooks/use-accessibility-focus';
 import { mergeRefs } from '../hooks/merge-refs';
-import { StyledPressable } from '../styles/styled-primitives';
+import { StyledPressable, StyledView } from '../styles/styled-primitives';
 import type { TriggerHandleProps } from './types';
 
 export interface TriggerSlotProps {
@@ -38,6 +38,8 @@ export interface TriggerSlotProps {
   handle: TriggerHandleProps;
   /** Measured by the web forks to position the surface. Unused on native. */
   anchorRef?: React.RefObject<View | null>;
+  /** Classes for the wrapper box — the node the parent lays out. */
+  className?: string;
   /** Style for the wrapper box. The child styles itself. */
   style?: StyleProp<ViewStyle>;
   testID?: string;
@@ -95,6 +97,7 @@ export function TriggerSlot({
   children,
   handle,
   anchorRef,
+  className,
   style,
   testID,
 }: TriggerSlotProps) {
@@ -107,9 +110,10 @@ export function TriggerSlot({
   useRestoreAccessibilityFocus(handle['aria-expanded'] === true, ownRef);
 
   return (
-    <View
+    <StyledView
       ref={mergeRefs([ownRef, anchorRef])}
       collapsable={false}
+      className={className}
       style={[styles.wrap, style]}
       testID={testID}>
       {asChild ? (
@@ -117,7 +121,7 @@ export function TriggerSlot({
       ) : (
         <StyledPressable {...handle}>{children}</StyledPressable>
       )}
-    </View>
+    </StyledView>
   );
 }
 

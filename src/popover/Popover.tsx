@@ -36,6 +36,7 @@ export function PopoverTrigger({
   asChild,
   disabled,
   label,
+  className,
   style,
   testID,
 }: PopoverTriggerProps) {
@@ -45,6 +46,7 @@ export function PopoverTrigger({
     <TriggerSlot
       asChild={asChild}
       anchorRef={popover.anchorRef}
+      className={className}
       style={style}
       testID={testID}
       handle={{

@@ -8,6 +8,7 @@ import { useDialogControl } from '../dialog/context';
 import { SheetShell } from '../dialog/SheetShell';
 import { Z_INDEX } from '../styles/z-index';
 import { BloomThemeProvider } from '../theme/BloomThemeProvider';
+import { classNamesOn } from './support/rendered-style';
 
 /**
  * `BottomSheet` draws a decorative drag handle by default; `SheetShell` draws
@@ -39,13 +40,23 @@ function renderWithTheme(ui: React.ReactElement) {
   );
 }
 
-function OpenSheetShell() {
+function OpenSheetShell({
+  contentClassName,
+  contentTestID,
+}: {
+  contentClassName?: string;
+  contentTestID?: string;
+} = {}) {
   const control = useDialogControl();
   React.useEffect(() => {
     control.open();
   }, [control]);
   return (
-    <SheetShell control={control} label="Menu">
+    <SheetShell
+      control={control}
+      label="Menu"
+      contentClassName={contentClassName}
+      contentTestID={contentTestID}>
       <Text>Row</Text>
     </SheetShell>
   );
@@ -62,6 +73,16 @@ describe('SheetShell drag handle', () => {
     expect(getByHintText('Tap to close')).toBeTruthy();
     // BottomSheet's built-in decorative handle must be suppressed.
     expect(sheetHandles(UNSAFE_root)).toHaveLength(0);
+  });
+
+  it('forwards content classes and testID to the sheet body', () => {
+    const { getByTestId } = renderWithTheme(
+      <OpenSheetShell contentClassName="min-w-[224px]" contentTestID="menu-content" />,
+    );
+    act(() => {});
+
+    const body = getByTestId('menu-content');
+    expect(classNamesOn(body.props.style)).toContain('min-w-[224px]');
   });
 
   describe('control case', () => {

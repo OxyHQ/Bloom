@@ -52,6 +52,7 @@ export function DropdownMenuTrigger({
   asChild,
   disabled,
   label,
+  className,
   style,
   testID,
 }: DropdownMenuTriggerProps) {
@@ -61,6 +62,7 @@ export function DropdownMenuTrigger({
     <TriggerSlot
       asChild={asChild}
       anchorRef={menu.anchorRef}
+      className={className}
       style={style}
       testID={testID}
       handle={{
@@ -79,7 +81,9 @@ export function DropdownMenuTrigger({
 export function DropdownMenuContent({
   children,
   label = 'Menu',
+  className,
   style,
+  testID,
 }: DropdownMenuContentProps) {
   const menu = useDropdownMenu();
   const { control, onSheetClose } = useSheetOpenBridge(menu.open, menu.setOpen);
@@ -89,7 +93,13 @@ export function DropdownMenuContent({
   );
 
   return (
-    <SheetShell control={control} label={label} onClose={onSheetClose} contentStyle={style}>
+    <SheetShell
+      control={control}
+      label={label}
+      onClose={onSheetClose}
+      contentClassName={className}
+      contentStyle={style}
+      contentTestID={testID}>
       <MenuSurfaceProvider value={surface}>{children}</MenuSurfaceProvider>
     </SheetShell>
   );

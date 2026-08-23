@@ -225,6 +225,9 @@ export const ROW_INSET_CLASS = 'pl-space-32';
 /** `pl-8 pr-2` on the two rows that carry an out-of-flow indicator. */
 export const ROW_GUTTER_CLASS = 'pl-space-32 pr-space-8';
 
+/** `pl-2 pr-8` when that out-of-flow indicator sits on the trailing edge. */
+export const ROW_GUTTER_END_CLASS = 'pl-space-8 pr-space-32';
+
 /**
  * The row's own label: `text-sm`, no weight of its own.
  *
@@ -340,4 +343,3 @@ export const SELECT_ITEM_CLASS =
 
 /** `text-foreground select-none text-sm`. */
 export const SELECT_ITEM_TEXT_CLASS = 'flex-1 min-w-0 text-sm text-foreground';
-

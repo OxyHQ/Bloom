@@ -37,6 +37,8 @@ export interface ContextMenuTriggerProps {
   disabled?: boolean;
   /** Accessible name. Ignored when the `asChild` child carries its own. */
   label?: string;
+  /** Applied to the measured anchor wrapper; the context trigger draws no chrome. */
+  className?: string;
   style?: StyleProp<ViewStyle>;
   testID?: string;
 }

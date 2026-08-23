@@ -32,6 +32,7 @@ import {
 } from '../dropdown-menu';
 import { MenuSurfaceProvider } from '../floating/context';
 import { BloomThemeProvider } from '../theme/BloomThemeProvider';
+import { classNamesOn } from './support/rendered-style';
 
 const SRC = path.resolve(__dirname, '..');
 
@@ -94,6 +95,27 @@ describe('the native sub-menu is an inline disclosure', () => {
     );
     expect(queryByText('Email')).toBeTruthy();
   });
+
+  it('forwards className and testID while native coherently ignores flyout placement', () => {
+    const { getByTestId } = renderSub(
+      <DropdownMenuSub defaultOpen>
+        <DropdownMenuSubTrigger>Send to…</DropdownMenuSubTrigger>
+        <DropdownMenuSubContent
+          side="left"
+          align="end"
+          sideOffset={12}
+          alignOffset={4}
+          className="min-w-[150px]"
+          testID="submenu-content">
+          <DropdownMenuItem>Email</DropdownMenuItem>
+        </DropdownMenuSubContent>
+      </DropdownMenuSub>,
+    );
+
+    expect(classNamesOn(getByTestId('submenu-content').props.style)).toContain(
+      'pl-space-16 min-w-[150px]',
+    );
+  });
 });
 
 describe('every menu family wires the presentation its platform ships', () => {
@@ -148,5 +170,22 @@ describe('every menu family wires the presentation its platform ships', () => {
       const wrong = /\.web\.tsx$/.test(file) ? 'createInlineMenuSub' : 'createFlyoutMenuSub';
       expect(source).not.toContain(wrong);
     }
+  });
+
+  it('the shared web flyout forwards its public placement and identity props', () => {
+    const source = readFileSync(path.join(SRC, 'floating/menu-sub-flyout.tsx'), 'utf8');
+    const forwarded = [
+      'label={label}',
+      'side={side}',
+      'align={align}',
+      'sideOffset={sideOffset}',
+      'alignOffset={alignOffset}',
+      'minWidth={minWidth}',
+      'maxWidth={maxWidth}',
+      'testID={testID}',
+    ];
+
+    expect(forwarded).toHaveLength(8);
+    for (const prop of forwarded) expect(source).toContain(prop);
   });
 });

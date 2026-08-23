@@ -53,6 +53,7 @@ export function ContextMenuTrigger({
   asChild,
   disabled,
   label,
+  className,
   style,
   testID,
 }: ContextMenuTriggerProps) {
@@ -87,6 +88,7 @@ export function ContextMenuTrigger({
     <TriggerSlot
       asChild={asChild}
       anchorRef={wrapperRef}
+      className={className}
       style={style}
       testID={testID}
       handle={{

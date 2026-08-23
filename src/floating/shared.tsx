@@ -47,6 +47,7 @@ import {
   ROW_DISABLED_CLASS,
   ROW_ENABLED_CLASS,
   ROW_GUTTER_CLASS,
+  ROW_GUTTER_END_CLASS,
   ROW_HIGHLIGHT_CLASS,
   ROW_INSET_CLASS,
   ROW_LEADING_CLASS,
@@ -116,8 +117,8 @@ export interface MenuRowShellProps {
   destructive?: boolean;
   /** Indent to line up with the rows that carry an indicator. */
   inset?: boolean;
-  /** This row carries an out-of-flow indicator, so it takes the full gutter. */
-  gutter?: boolean;
+  /** This row carries an out-of-flow indicator at the named edge. */
+  gutter?: 'leading' | 'trailing';
   leading?: React.ReactNode;
   trailing?: React.ReactNode;
   /** A plain-string child, rendered as the row's own label. */
@@ -146,7 +147,7 @@ export function MenuRowShell({
   disabled,
   destructive = false,
   inset = false,
-  gutter = false,
+  gutter,
   leading,
   trailing,
   title,
@@ -164,7 +165,13 @@ export function MenuRowShell({
   const rowClass = cx(
     ROW_CLASS,
     disabled ? ROW_DISABLED_CLASS : ROW_ENABLED_CLASS,
-    gutter ? ROW_GUTTER_CLASS : inset ? ROW_INSET_CLASS : false,
+    gutter === 'leading'
+      ? ROW_GUTTER_CLASS
+      : gutter === 'trailing'
+        ? ROW_GUTTER_END_CLASS
+        : inset
+          ? ROW_INSET_CLASS
+          : false,
     highlighted && ROW_HIGHLIGHT_CLASS,
     className,
   );

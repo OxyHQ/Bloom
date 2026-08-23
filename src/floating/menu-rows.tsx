@@ -48,6 +48,7 @@ import { useTheme } from '../theme/use-theme';
 import {
   ROW_ICON_SIZE,
   ROW_INDICATOR_CLASS,
+  ROW_INDICATOR_END_CLASS,
   ROW_LABEL_CLASS,
   ROW_LABEL_INSET_CLASS,
   ROW_RADIO_DOT_CLASS,
@@ -69,13 +70,13 @@ import type {
 } from './types';
 
 /**
- * The target's `pl-8` gutter with its `absolute left-2 size-3.5` indicator.
+ * The target's 32px selection gutter with its out-of-flow 14px indicator.
  *
  * The indicator is OUT OF FLOW, which is the whole point: a checkbox row's text
- * starts at a fixed 32px whether or not a check is drawn, so a menu's rows line
- * up with each other and with an `inset` plain row. Passing it as a leading slot
- * instead would put it back in flow and add the row's `gap-2` on top, and it
- * would also make the column collapse to nothing on an unchecked row.
+ * starts at a fixed inset whether or not a check is drawn, so a menu's rows line
+ * up. `indicatorPosition="trailing"` mirrors that geometry for products whose
+ * menu vocabulary puts the check at the far edge. Passing the mark as a normal
+ * slot would put it back in flow and collapse the column on an unchecked row.
  *
  * `pointerEvents="none"` as a PROP, not a style entry: the box sits ON TOP of
  * the row's own pressable, so without it the indicator swallows the press that
@@ -84,15 +85,19 @@ import type {
  */
 function IndicatorGutter({
   indicator,
+  position,
   children,
 }: {
   indicator: React.ReactNode;
+  position: 'leading' | 'trailing';
   children: React.ReactNode;
 }) {
   return (
     <StyledView className="relative">
       {children}
-      <StyledView className={ROW_INDICATOR_CLASS} pointerEvents="none">
+      <StyledView
+        className={position === 'leading' ? ROW_INDICATOR_CLASS : ROW_INDICATOR_END_CLASS}
+        pointerEvents="none">
         {indicator}
       </StyledView>
     </StyledView>
@@ -157,6 +162,8 @@ export function createMenuRows(prefix: string, createSub: MenuSubFactory): MenuR
     children,
     checked,
     onCheckedChange,
+    indicator,
+    indicatorPosition = 'leading',
     disabled = false,
     trailing,
     keepOpen = false,
@@ -168,23 +175,26 @@ export function createMenuRows(prefix: string, createSub: MenuSubFactory): MenuR
     const theme = useTheme();
     const surface = useMenuSurface();
     const { title, body } = splitChildren(children);
+    const selectedIndicator =
+      indicator === undefined ? (
+        <CheckIcon
+          width={ROW_ICON_SIZE}
+          height={ROW_ICON_SIZE}
+          fill={theme.colors.text}
+        />
+      ) : (
+        indicator
+      );
 
     return (
       <IndicatorGutter
-        indicator={
-          checked ? (
-            <CheckIcon
-              width={ROW_ICON_SIZE}
-              height={ROW_ICON_SIZE}
-              fill={theme.colors.text}
-            />
-          ) : null
-        }>
+        position={indicatorPosition}
+        indicator={checked ? selectedIndicator : null}>
         <MenuRowShell
           role="checkbox"
           checked={checked}
           disabled={disabled}
-          gutter
+          gutter={indicatorPosition}
           trailing={trailing}
           title={title}
           onPress={() => {
@@ -215,6 +225,8 @@ export function createMenuRows(prefix: string, createSub: MenuSubFactory): MenuR
   function MenuRadioItem({
     children,
     value,
+    indicator,
+    indicatorPosition = 'leading',
     disabled = false,
     trailing,
     keepOpen = false,
@@ -227,22 +239,21 @@ export function createMenuRows(prefix: string, createSub: MenuSubFactory): MenuR
     const group = useMenuRadioGroup();
     const { title, body } = splitChildren(children);
     const checked = group.value === value;
+    // `bg-foreground h-2 w-2 rounded-full`: the established default remains a
+    // filled dot. A caller-supplied node replaces only this selected mark; the
+    // shared gutter and ARIA state remain owned here.
+    const selectedIndicator =
+      indicator === undefined ? <StyledView className={ROW_RADIO_DOT_CLASS} /> : indicator;
 
     return (
       <IndicatorGutter
-        indicator={
-          // `bg-foreground h-2 w-2 rounded-full` — a selected radio row is a
-          // FILLED DOT with no ring, which is what fits an 8px mark inside a
-          // 14px indicator box. `radio-indicator/` draws Bloom's ringed control,
-          // a different thing at a different size, and using it here is what made
-          // a menu radio row twice the width of its checkbox sibling.
-          checked ? <StyledView className={ROW_RADIO_DOT_CLASS} /> : null
-        }>
+        position={indicatorPosition}
+        indicator={checked ? selectedIndicator : null}>
         <MenuRowShell
           role="radio"
           checked={checked}
           disabled={disabled}
-          gutter
+          gutter={indicatorPosition}
           trailing={trailing}
           title={title}
           onPress={() => {

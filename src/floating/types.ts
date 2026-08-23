@@ -189,9 +189,8 @@ export interface OverlayTriggerProps {
   /** Accessible name. Ignored when the `asChild` child carries its own. */
   label?: string;
   /**
-   * Appended to whatever chrome the trigger draws of its own. A trigger that
-   * draws none (a dropdown's, a popover's) simply has nothing to append to, so
-   * the class lands alone.
+   * Bare triggers apply this to the measured anchor wrapper; families whose
+   * trigger owns chrome append it to that chrome instead.
    */
   className?: string;
   style?: StyleProp<ViewStyle>;
@@ -274,6 +273,13 @@ export interface MenuCheckboxRowProps
   extends Omit<MenuRowProps, 'onPress' | 'variant' | 'leading' | 'inset'> {
   checked: boolean;
   onCheckedChange: (checked: boolean) => void;
+  /**
+   * Mark rendered while checked. Omit for Bloom's default check; pass `null`
+   * to suppress it or a glyph to match a product-specific menu.
+   */
+  indicator?: React.ReactNode;
+  /** Where the mark sits. Defaults to the established leading gutter. */
+  indicatorPosition?: 'leading' | 'trailing';
 }
 
 export interface MenuRadioGroupProps {
@@ -285,6 +291,13 @@ export interface MenuRadioGroupProps {
 export interface MenuRadioRowProps
   extends Omit<MenuRowProps, 'onPress' | 'variant' | 'leading' | 'inset'> {
   value: string;
+  /**
+   * Mark rendered while this value is selected. Omit for Bloom's default dot;
+   * pass `null` to suppress it or a glyph to match a product-specific menu.
+   */
+  indicator?: React.ReactNode;
+  /** Where the mark sits. Defaults to the established leading gutter. */
+  indicatorPosition?: 'leading' | 'trailing';
 }
 
 export interface MenuLabelProps {
@@ -325,9 +338,22 @@ export interface MenuSubTriggerProps {
 
 export interface MenuSubContentProps {
   children?: React.ReactNode;
+  /** Accessible name of the flyout panel on web. */
+  label?: string;
+  /** Preferred lateral side on web. Defaults to `'right'` and may flip to fit. */
+  side?: Extract<FloatingSide, 'left' | 'right'>;
+  /** Vertical alignment against the sub trigger on web. Defaults to `'start'`. */
+  align?: FloatingAlign;
+  /** Gap from the parent panel edge on web. Defaults to Bloom's submenu seam. */
+  sideOffset?: number;
+  /** Vertical shift applied before viewport clamping on web. */
+  alignOffset?: number;
+  minWidth?: number;
+  maxWidth?: number;
   /** Appended to the sub panel's own classes — see {@link MenuRowProps.className}. */
   className?: string;
   style?: StyleProp<ViewStyle>;
+  testID?: string;
 }
 
 /**
