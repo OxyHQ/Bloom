@@ -16,10 +16,10 @@
  *  - **Stack rank.** Taken by the `OverlayRoot` inside `FloatingPanel`, on
  *    mount, like every other surface. The sub-panel mounts AFTER the root panel,
  *    so it paints above it by construction and carries no `zIndex`.
- *  - **Hover intent.** Opening on hover is easy; staying open while the pointer
- *    travels diagonally from the row to the panel is the part that needs a
- *    delay. Leaving either surface SCHEDULES a close, entering either CANCELS
- *    it, and the delay is long enough (`CLOSE_DELAY_MS`) to cross the gap.
+ *  - **Hover intent.** A real mouse/pen move over the row opens it; a layout
+ *    transition placing the row under a parked pointer does not. Leaving either
+ *    surface SCHEDULES a close, moving over either CANCELS it, and the delay is
+ *    long enough (`CLOSE_DELAY_MS`) to cross the gap.
  *  - **Keyboard.** Right opens and moves into the panel, Left and Escape leave
  *    it. Escape is handled here in the CAPTURE phase with
  *    `stopImmediatePropagation`, which is the only way the INNERMOST surface
@@ -109,6 +109,12 @@ function domNode(node: View | null): DomNode | null {
     return null;
   }
   return element as DomNode;
+}
+
+/** Touch movement is scrolling/dragging, not hover intent. */
+function isHoverPointer(event: Event): boolean {
+  const pointerType = (event as PointerEvent).pointerType;
+  return pointerType === 'mouse' || pointerType === 'pen';
 }
 
 /** The first focusable descendant, so Right lands ON the panel's first row. */
@@ -272,8 +278,10 @@ export function createFlyoutMenuSub(prefix: string): MenuSubParts {
 
     const keepOpen = useCallback(() => {
       cancelTimer();
-      setOpen(true);
-    }, [cancelTimer, setOpen]);
+      // `pointermove` is intentionally continuous. Once open, cancel the close
+      // timer without re-notifying a controlled consumer on every coordinate.
+      if (!isOpen) setOpen(true);
+    }, [cancelTimer, isOpen, setOpen]);
 
     const closeSoon = useCallback(() => {
       cancelTimer();
@@ -322,17 +330,22 @@ export function createFlyoutMenuSub(prefix: string): MenuSubParts {
       [sub.triggerRef],
     );
 
-    // Hover and keyboard through DOM listeners on the wrapper rather than RN
-    // props: `Item` renders its own `Pressable` and publishes neither
-    // `onHoverIn` nor `onKeyDown`, and widening its prop surface for one
-    // web-only caller is the wrong trade. `mouseenter`/`mouseleave` do not
-    // bubble, so they describe THIS row and not the rows under the panel.
+    // Pointer intent and keyboard through DOM listeners on the wrapper rather
+    // than RN props: `Item` renders its own `Pressable` and publishes neither
+    // pointer movement nor `onKeyDown`, and widening its prop surface for one
+    // web-only caller is the wrong trade. Crucially, `pointermove` needs actual
+    // coordinates to change: unlike enter, layout motion cannot synthesize it
+    // when a transition puts this row under a parked pointer.
     useEffect(() => {
       const element = domNode(node);
       if (!element || disabled) return;
 
-      const onEnter = () => sub.keepOpen();
-      const onLeave = () => sub.closeSoon();
+      const onMove = (event: Event) => {
+        if (isHoverPointer(event)) sub.keepOpen();
+      };
+      const onLeave = (event: Event) => {
+        if (isHoverPointer(event)) sub.closeSoon();
+      };
       const onKeyDown = (event: Event) => {
         const key = (event as KeyboardEvent).key;
         if (key !== 'ArrowRight' && key !== 'Enter' && key !== ' ') return;
@@ -340,12 +353,12 @@ export function createFlyoutMenuSub(prefix: string): MenuSubParts {
         sub.keepOpen();
       };
 
-      element.addEventListener('mouseenter', onEnter);
-      element.addEventListener('mouseleave', onLeave);
+      element.addEventListener('pointermove', onMove);
+      element.addEventListener('pointerleave', onLeave);
       element.addEventListener('keydown', onKeyDown);
       return () => {
-        element.removeEventListener('mouseenter', onEnter);
-        element.removeEventListener('mouseleave', onLeave);
+        element.removeEventListener('pointermove', onMove);
+        element.removeEventListener('pointerleave', onLeave);
         element.removeEventListener('keydown', onKeyDown);
       };
     }, [node, disabled, sub]);
@@ -409,8 +422,12 @@ export function createFlyoutMenuSub(prefix: string): MenuSubParts {
       const element = domNode(node);
       if (!element || !sub.open) return;
 
-      const onEnter = () => sub.keepOpen();
-      const onLeave = () => sub.closeSoon();
+      const onMove = (event: Event) => {
+        if (isHoverPointer(event)) sub.keepOpen();
+      };
+      const onLeave = (event: Event) => {
+        if (isHoverPointer(event)) sub.closeSoon();
+      };
       const onKeyDown = (event: Event) => {
         const key = (event as KeyboardEvent).key;
         if (key !== 'ArrowLeft') return;
@@ -418,12 +435,12 @@ export function createFlyoutMenuSub(prefix: string): MenuSubParts {
         sub.closeAndRefocus();
       };
 
-      element.addEventListener('mouseenter', onEnter);
-      element.addEventListener('mouseleave', onLeave);
+      element.addEventListener('pointermove', onMove);
+      element.addEventListener('pointerleave', onLeave);
       element.addEventListener('keydown', onKeyDown);
       return () => {
-        element.removeEventListener('mouseenter', onEnter);
-        element.removeEventListener('mouseleave', onLeave);
+        element.removeEventListener('pointermove', onMove);
+        element.removeEventListener('pointerleave', onLeave);
         element.removeEventListener('keydown', onKeyDown);
       };
     }, [node, sub]);
