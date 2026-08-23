@@ -119,9 +119,9 @@ export const Selection: Story = {
 /**
  * A sub-menu FLIES OUT beside its trigger row on web, as shadcn's does, and
  * stays an inline disclosure on native, as react-native-reusables' own does.
- * Hovering the row opens it; the close is delayed so a diagonal pointer path
- * across the gap does not dismiss it; Right and Left enter and leave it; Escape
- * closes the sub before the menu.
+ * Real mouse or pen movement over the row opens it; the close is delayed so a
+ * diagonal pointer path across the gap does not dismiss it; Right and Left
+ * enter and leave it; Escape closes the sub before the menu.
  */
 export const Submenu: Story = {
   render: () => (
@@ -147,6 +147,51 @@ export const Submenu: Story = {
       </DropdownMenu>
     </View>
   ),
+};
+
+const SUBMENU_LAYOUT_SHIFT_PX = 120;
+
+/**
+ * Regression fixture for hover intent: expanding layout moves the trigger
+ * under a parked pointer without opening it. One real pointer move on the row
+ * then opens the flyout. The browser gate drives both halves.
+ */
+export const SubmenuLayoutShiftDoesNotOpen: Story = {
+  render: function SubmenuLayoutShiftFixture() {
+    const [shifted, setShifted] = useState(false);
+    const [submenuOpen, setSubmenuOpen] = useState(false);
+
+    return (
+      <View style={{ minHeight: 420, padding: 80 }}>
+        <DropdownMenu defaultOpen>
+          <DropdownMenuTrigger asChild label="Layout intent fixture">
+            <Button variant="secondary">Layout intent fixture</Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent>
+            <DropdownMenuItem
+              keepOpen
+              onPress={() => setShifted(true)}
+              testID="layout-shift-control">
+              Move submenu row
+            </DropdownMenuItem>
+            <div
+              aria-hidden="true"
+              className="transition-[height] duration-700 ease-linear"
+              style={{ height: shifted ? SUBMENU_LAYOUT_SHIFT_PX : 0 }}
+            />
+            <DropdownMenuSub open={submenuOpen} onOpenChange={setSubmenuOpen}>
+              <DropdownMenuSubTrigger testID="layout-submenu-trigger">
+                Layout-sensitive submenu
+              </DropdownMenuSubTrigger>
+              <DropdownMenuSubContent>
+                <DropdownMenuItem testID="layout-submenu-item">Moved item</DropdownMenuItem>
+              </DropdownMenuSubContent>
+            </DropdownMenuSub>
+          </DropdownMenuContent>
+        </DropdownMenu>
+      </View>
+    );
+  },
 };
 
 /**

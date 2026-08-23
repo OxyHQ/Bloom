@@ -127,7 +127,7 @@ The API is one thing on both platforms — a shadcn call site ports across uncha
 
 **On web** the sub-panel flies out beside its trigger row, the way shadcn's does, and its chevron points right:
 
-- Hovering the row opens it; leaving either surface schedules a close 300 ms later, and entering either one cancels that — which is what keeps it open while the pointer travels diagonally across the gap between them.
+- Real mouse or pen movement over the row opens it; a reflow or transition that moves the row under a parked pointer does not count as hover intent. Leaving either surface schedules a close 300 ms later, and real pointer movement over either one cancels that — which keeps it open while the pointer travels diagonally across the gap between them.
 - Pressing the row toggles it, so a click and a touch-web tap both work.
 - <kbd>→</kbd> opens it and moves focus onto its first row; <kbd>←</kbd> closes it and returns focus to the trigger.
 - <kbd>Esc</kbd> closes the **innermost** surface first: one press shuts the sub-panel and leaves the menu open, a second shuts the menu.

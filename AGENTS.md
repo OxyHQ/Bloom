@@ -82,7 +82,7 @@ Only TWO exist: `CenteredDialog` and `ResponsiveSheet` were removed with no shim
 
 - **Always drive `dialog/` imperatively via `useDialogControl()`, never the controlled `open`/`onClose` boolean** — the race this avoids is documented on the controlled path itself, in `docs/dialog.mdx`.
 - `AlertDialog` and `Command` bridge onto `Dialog`'s imperative control; reuse its `actions` prop rather than hand-rolling a confirm row.
-- **Menu behavior belongs in `floating/menu-*`, never a consumer or one family fork.** DropdownMenu, ContextMenu and Menubar share rows, radio and submenus; extend and gate the factory once.
+- **Menu behavior belongs in `floating/menu-*`, never consumers.** Gate it once. Flyouts require pointer movement, keyboard or press; layout motion under a parked pointer is not hover intent.
 - The `surface.dismiss(result)` mechanism (`docs/surfaces.mdx`) is pinned at the prop boundary with a mock Dialog: `surface-prompts.test.tsx`.
 - **`disabled` on an `asChild` trigger is guarded in `cloneTrigger`, not the child alone** (composition mechanism: `docs/dropdown-menu.mdx` `asChild`). **The browser is the WEAKER instrument:** an unguarded `Pressable` child stays closed in Chrome (RNW masks it) while jest goes red (mock ignores `disabled`). Gates: `Combobox.test.tsx` + `scripts/verify-trigger-disabled.mjs`.
 - **KNOWN GAP — the native tooltip cannot position itself inside a sheet** (mechanism: `docs/tooltip.mdx`).

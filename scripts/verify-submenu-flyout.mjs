@@ -10,9 +10,10 @@
  * `element.dispatchEvent` would pass against a panel nothing can reach.
  *
  * Mutation-verified: `side="right"` → `"bottom"` fails the two geometry cases,
- * `CLOSE_DELAY_MS` → 0 fails the diagonal case, and dropping
- * `stopImmediatePropagation` fails the innermost-Escape case. Each mutation is
- * caught by exactly the case that measures it, and by no other.
+ * `CLOSE_DELAY_MS` → 0 fails the diagonal case, `pointermove` → `mouseenter`
+ * fails the layout-intent case, removing pointer movement fails its positive
+ * control, and dropping `stopImmediatePropagation` fails the innermost-Escape
+ * case. Each mutation is caught by exactly the case that measures it.
  *
  * Usage: start Storybook, then
  *   node scripts/verify-submenu-flyout.mjs [--url http://localhost:6006]
@@ -44,7 +45,7 @@ const OUT = '/tmp/bloom-submenu-shots';
 
 const STORY = 'overlays-dropdownmenu--submenu';
 const EDGE_STORY = 'overlays-dropdownmenu--submenu-with-no-room-to-the-right';
-
+const LAYOUT_STORY = 'overlays-dropdownmenu--submenu-layout-shift-does-not-open';
 
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
@@ -79,7 +80,7 @@ async function openMenu(page, storyId) {
 }
 
 /** Every check below runs unconditionally, so a short run means something threw. */
-const EXPECTED_CASES = 17;
+const EXPECTED_CASES = 20;
 
 const results = [];
 function record(name, pass, detail) {
@@ -197,12 +198,12 @@ async function main() {
     await openMenu(page, STORY);
     const trig2 = await boxOf(page, 'submenu-trigger');
     const t2 = centre(trig2);
-    // Focus the row without opening on hover: click it, which toggles it open,
-    // then close with Left so focus is on the row and the panel is shut.
+    // Moving onto the row opens it; the following click toggles it closed and
+    // leaves focus on the row. That freezes press behavior alongside keyboard.
     await page.mouse.click(t2.x, t2.y);
     await sleep(300);
-    await page.keyboard.press('ArrowLeft');
-    await sleep(300);
+    const afterClick = await boxOf(page, 'submenu-item-email');
+    record('pressing the hovered submenu row toggles the sub-panel closed', afterClick === null);
     // Park the pointer away so hover plays no part in what follows.
     await page.mouse.move(20, 860);
     await sleep(500);
@@ -255,6 +256,47 @@ async function main() {
     } else {
       record('the panel opens near the window edge', false, 'no trigger');
     }
+
+    // ---------------------------------------------------------------- case 7
+    // A layout transition moves the trigger under a STATIONARY pointer. The
+    // browser fires enter for that geometry change, but no pointer coordinates
+    // changed, so it is not hover intent. Moving one pixel afterwards is.
+    await page.goto(`${BASE}/iframe.html?id=${LAYOUT_STORY}&viewMode=story`, {
+      waitUntil: 'networkidle2',
+    });
+    await sleep(900);
+    const layoutTriggerBefore = await boxOf(page, 'layout-submenu-trigger');
+    const shiftControl = await boxOf(page, 'layout-shift-control');
+    if (!layoutTriggerBefore || !shiftControl) {
+      throw new Error('layout intent fixture did not render');
+    }
+    const beforeCentre = centre(layoutTriggerBefore);
+    const parked = { x: beforeCentre.x, y: beforeCentre.y + 120 };
+    const controlCentre = centre(shiftControl);
+    await page.mouse.click(controlCentre.x, controlCentre.y);
+    await page.mouse.move(parked.x, parked.y);
+    await sleep(900);
+
+    const layoutTriggerAfter = await boxOf(page, 'layout-submenu-trigger');
+    const layoutItemAfterShift = await boxOf(page, 'layout-submenu-item');
+    const landedUnderPointer =
+      layoutTriggerAfter !== null &&
+      Math.abs(centre(layoutTriggerAfter).x - parked.x) < 2 &&
+      Math.abs(centre(layoutTriggerAfter).y - parked.y) < 2 &&
+      layoutTriggerAfter.top - layoutTriggerBefore.top > 100;
+    record(
+      'layout motion under a parked pointer does not open the sub-panel',
+      landedUnderPointer && layoutItemAfterShift === null,
+      `landed=${landedUnderPointer} open=${layoutItemAfterShift !== null}`,
+    );
+
+    await page.mouse.move(parked.x + 1, parked.y);
+    await sleep(400);
+    const layoutItemAfterMove = await boxOf(page, 'layout-submenu-item');
+    record(
+      'one real pointer move over the shifted row opens the sub-panel',
+      layoutItemAfterMove !== null,
+    );
 
     let failed = results.filter((r) => !r.pass).length;
     // Vacuity floor: a run that bailed early must not read as success.
