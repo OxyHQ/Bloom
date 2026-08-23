@@ -93,13 +93,23 @@ export function createInlineMenuSub(prefix: string): MenuSubParts {
   }
   MenuSubTrigger.displayName = `${prefix}SubTrigger`;
 
-  function MenuSubContent({ children, className, style }: MenuSubContentProps) {
+  function MenuSubContent({
+    children,
+    label,
+    className,
+    style,
+    testID,
+  }: MenuSubContentProps) {
     const sub = useMenuSub();
     if (!sub.open) return null;
     // Indented under its trigger, which is the whole visual statement an inline
     // disclosure makes.
     return (
-      <StyledView className={cx('pl-space-16', className)} style={style}>
+      <StyledView
+        accessibilityLabel={label}
+        className={cx('pl-space-16', className)}
+        style={style}
+        testID={testID}>
         {children}
       </StyledView>
     );

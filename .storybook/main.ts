@@ -99,7 +99,7 @@ const config: StorybookConfig = {
         'process.env.NODE_ENV': '"development"',
         'process.env.JEST_WORKER_ID': 'undefined',
         'process.env.EXPO_OS': '"web"',
-        'process.env': '({})',
+        'process.env': '{}',
       },
       optimizeDeps: {
         include: ['react-native-web'],

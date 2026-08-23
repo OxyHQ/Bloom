@@ -63,6 +63,8 @@ Handlers the child already carries are composed, not replaced — `track()` runs
 
 `disabled` on the trigger is guarded the same way, at the composition layer rather than on the child alone — pass `disabled` to `DropdownMenuTrigger`, not to your own child element, or the open handler still fires.
 
+`className` and `style` land on the trigger's anchor wrapper, the node the parent lays out and the web surface measures. With `asChild`, keep the button's visual chrome on the child and use the trigger props for anchor geometry.
+
 ## Controlled
 
 ```tsx
@@ -78,17 +80,31 @@ Uncontrolled by default; pass `open` to take over. `onOpenChange` fires either w
 ## Checkbox and radio rows
 
 ```tsx
+import { Check_Stroke2_Corner0_Rounded as CheckIcon } from '@oxyhq/bloom/icons';
+
 <DropdownMenuCheckboxItem checked={dense} onCheckedChange={setDense} keepOpen>
   Dense rows
 </DropdownMenuCheckboxItem>
 
 <DropdownMenuRadioGroup value={sort} onValueChange={setSort}>
-  <DropdownMenuRadioItem value="newest">Newest</DropdownMenuRadioItem>
-  <DropdownMenuRadioItem value="oldest">Oldest</DropdownMenuRadioItem>
+  <DropdownMenuRadioItem
+    value="newest"
+    indicator={<CheckIcon size="sm" />}
+    indicatorPosition="trailing">
+    Newest
+  </DropdownMenuRadioItem>
+  <DropdownMenuRadioItem
+    value="oldest"
+    indicator={<CheckIcon size="sm" />}
+    indicatorPosition="trailing">
+    Oldest
+  </DropdownMenuRadioItem>
 </DropdownMenuRadioGroup>
 ```
 
 Both announce their state as `aria-checked`, which is the spelling react-native-web reads and React Native folds back into `accessibilityState` — so it reaches assistive tech on both platforms.
+
+The established defaults stay unchanged: checkbox rows use a check and radio rows use a dot, both in the leading gutter. `indicator` replaces that selected mark, `indicatorPosition="trailing"` moves its reserved gutter to the opposite edge, and `indicator={null}` suppresses the visual mark without removing `aria-checked`. These props are implemented once by the shared row factory, so `ContextMenu` and `Menubar` receive the identical contract.
 
 ## Sub-menus: a flyout on web, an inline disclosure on native
 
@@ -97,7 +113,12 @@ The API is one thing on both platforms — a shadcn call site ports across uncha
 ```tsx
 <DropdownMenuSub>
   <DropdownMenuSubTrigger>Send to…</DropdownMenuSubTrigger>
-  <DropdownMenuSubContent>
+  <DropdownMenuSubContent
+    side="right"
+    align="start"
+    sideOffset={2}
+    className="w-[150px]"
+    testID="effort-menu">
     <DropdownMenuItem>Email</DropdownMenuItem>
     <DropdownMenuItem>Messages</DropdownMenuItem>
   </DropdownMenuSubContent>
@@ -114,6 +135,8 @@ The API is one thing on both platforms — a shadcn call site ports across uncha
 - It positions itself through the same `overlay/dropdown-placement` every other anchored surface uses, with `side="right"`. With no room to the right it flips to the left of the row on its own — there is no second positioner.
 
 **On native** it is an inline disclosure: the trigger expands its content in place, under the row, and the chevron swaps between down and up. react-native-reusables renders it the same way there, and a menu on native is a bottom sheet — there is nowhere for a flyout to fly to.
+
+`DropdownMenuSubContent` accepts `side="left" | "right"`, `align`, `sideOffset`, `alignOffset`, `minWidth`, `maxWidth`, `className`, `style`, `label` and `testID`. Web applies the geometry to the flyout and still fit-flip-clamps it; native keeps the same API, forwards identity and styling to the inline disclosure, and ignores flyout-only placement.
 
 The split is a build-time one, not a `Platform.OS` branch: `floating/menu-sub-flyout.tsx` and `floating/menu-sub-inline.tsx` are passed to `createMenuRows` by each family's own platform fork, so the web-only `FloatingPanel` never reaches a native bundle.
 

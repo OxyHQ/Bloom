@@ -388,7 +388,19 @@ export function createFlyoutMenuSub(prefix: string): MenuSubParts {
   }
   MenuSubTrigger.displayName = `${prefix}SubTrigger`;
 
-  function MenuSubContent({ children, className, style }: MenuSubContentProps) {
+  function MenuSubContent({
+    children,
+    label = 'Submenu',
+    side = 'right',
+    align = 'start',
+    sideOffset = MENU_SUB_SIDE_OFFSET,
+    alignOffset,
+    minWidth,
+    maxWidth,
+    className,
+    style,
+    testID,
+  }: MenuSubContentProps) {
     const sub = useSubFlyout();
     const anchor = useFlyoutAnchor(sub.triggerRef, sub.open);
     const [node, setNode] = useState<View | null>(null);
@@ -445,19 +457,24 @@ export function createFlyoutMenuSub(prefix: string): MenuSubParts {
         open={sub.open}
         anchor={anchor}
         role="menu"
-        side="right"
+        label={label}
+        side={side}
         // The panel's first row lines up with the trigger row it flew out of.
-        align="start"
+        align={align}
         // Measured from the PARENT PANEL's edge, not the trigger row's — see
         // `useFlyoutAnchor`.
-        sideOffset={MENU_SUB_SIDE_OFFSET}
+        sideOffset={sideOffset}
+        alignOffset={alignOffset}
         dismissible={false}
         modal={false}
         onDismiss={sub.closeAndRefocus}
+        minWidth={minWidth}
+        maxWidth={maxWidth}
         // `w-64` — a sub panel is a FIXED 256px, so a column of flyouts does not
         // step in and out as their labels change length.
         className={cx(MENU_SUB_PANEL_CLASS, className)}
-        style={style}>
+        style={style}
+        testID={testID}>
         {/* `-mx-1 px-1 max-h-96 overflow-y-auto`: the negative inset bleeds the
             scroller to the panel edge and pads the content back, so the
             scrollbar is not inset by the panel's own `p-1`. It doubles as the
