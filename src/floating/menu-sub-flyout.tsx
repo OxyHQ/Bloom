@@ -117,9 +117,55 @@ function isHoverPointer(event: Event): boolean {
   return pointerType === 'mouse' || pointerType === 'pen';
 }
 
+/** Every role a menu ROW can carry — the rows a pointer can actually land on. */
+const MENU_ITEM_SELECTOR =
+  '[role="menuitem"], [role="menuitemcheckbox"], [role="menuitemradio"], [role="checkbox"], [role="radio"]';
+
+/**
+ * Did the pointer leave for another ROW, rather than for the gap this sub's
+ * grace delay exists to cover?
+ *
+ * {@link CLOSE_DELAY_MS} buys time for ONE journey: the diagonal from a trigger
+ * row to its own flyout, across a strip where neither surface is hovered. Every
+ * other departure is unambiguous the moment it happens, and the most visible one
+ * is a SIBLING sub-trigger: two subs in a panel each own their state and their
+ * own timer, so the one being left served out its full delay while the one being
+ * entered had already opened — 300ms of two overlapping flyouts, which is not a
+ * grace period but a bug.
+ *
+ * "Another row" means the pointer landed on an actual menu ITEM that belongs to
+ * neither this sub's trigger nor its flyout. Testing for an ITEM rather than for
+ * a `[role="menu"]` ancestor is the whole subtlety: the diagonal to the flyout
+ * crosses the parent panel's own padding, which IS inside a `[role="menu"]` but
+ * is not a row — measured, a panel-ancestor test dismissed the flyout mid-journey
+ * and broke the very case the delay exists for.
+ *
+ * Both exclusions are load-bearing. Without the flyout check, arriving at the
+ * panel's first row would close the panel the move was aimed at. Without the
+ * trigger check, moving from the panel back onto its own trigger would close and
+ * immediately re-open, which flickers.
+ *
+ * A departure with no `relatedTarget` — off the window, or the node under the
+ * pointer being torn down — is NOT another row, so it keeps the delay and
+ * behaviour there is what it was.
+ */
+function leavesForAnotherRow(
+  event: Event,
+  ownFlyout: DomNode | null,
+  ownTrigger: DomNode | null,
+): boolean {
+  const next = (event as PointerEvent).relatedTarget;
+  if (!(next instanceof Element)) return false;
+  const row = next.closest(MENU_ITEM_SELECTOR);
+  if (!row) return false;
+  if (ownFlyout?.contains(row as HTMLElement)) return false;
+  if (ownTrigger?.contains(row as HTMLElement)) return false;
+  return true;
+}
+
 /** The first focusable descendant, so Right lands ON the panel's first row. */
 function focusFirstItem(node: DomNode | null): void {
-  const first = node?.querySelector<HTMLElement>('[role="menuitem"], [role="menuitemcheckbox"], [role="checkbox"], [role="radio"]');
+  const first = node?.querySelector<HTMLElement>(MENU_ITEM_SELECTOR);
   first?.focus?.();
 }
 
@@ -235,10 +281,22 @@ interface SubFlyoutContextValue {
   setOpen: (next: boolean) => void;
   /** The trigger row's wrapper, measured to anchor the panel. */
   triggerRef: React.RefObject<View | null>;
+  /**
+   * The flyout's scroller, so the TRIGGER can tell a pointer heading for its own
+   * panel from one heading for a sibling row. Written by `MenuSubContent`; null
+   * whenever the panel is closed, which is exactly when there is nothing to
+   * cross to.
+   */
+  contentRef: React.RefObject<View | null>;
   /** Cancel a scheduled close — the pointer arrived on one of the two surfaces. */
   keepOpen: () => void;
   /** Schedule a close — the pointer left one of them, and may be crossing to the other. */
   closeSoon: () => void;
+  /**
+   * Close immediately, WITHOUT moving focus — the pointer has already landed on
+   * another row, and refocusing this trigger would take focus off it.
+   */
+  closeNow: () => void;
   /** Close now and put focus back on the trigger row (Left, Escape). */
   closeAndRefocus: () => void;
 }
@@ -263,6 +321,7 @@ export function createFlyoutMenuSub(prefix: string): MenuSubParts {
       onChange: onOpenChange,
     });
     const triggerRef = useRef<View | null>(null);
+    const contentRef = useRef<View | null>(null);
     const closeTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
     const cancelTimer = useCallback(() => {
@@ -291,6 +350,11 @@ export function createFlyoutMenuSub(prefix: string): MenuSubParts {
       }, CLOSE_DELAY_MS);
     }, [cancelTimer, setOpen]);
 
+    const closeNow = useCallback(() => {
+      cancelTimer();
+      setOpen(false);
+    }, [cancelTimer, setOpen]);
+
     const closeAndRefocus = useCallback(() => {
       cancelTimer();
       setOpen(false);
@@ -299,8 +363,8 @@ export function createFlyoutMenuSub(prefix: string): MenuSubParts {
     }, [cancelTimer, setOpen]);
 
     const context = useMemo<SubFlyoutContextValue>(
-      () => ({ open: isOpen, setOpen, triggerRef, keepOpen, closeSoon, closeAndRefocus }),
-      [isOpen, setOpen, keepOpen, closeSoon, closeAndRefocus],
+      () => ({ open: isOpen, setOpen, triggerRef, contentRef, keepOpen, closeSoon, closeNow, closeAndRefocus }),
+      [isOpen, setOpen, keepOpen, closeSoon, closeNow, closeAndRefocus],
     );
 
     return <SubFlyoutContext.Provider value={context}>{children}</SubFlyoutContext.Provider>;
@@ -344,7 +408,14 @@ export function createFlyoutMenuSub(prefix: string): MenuSubParts {
         if (isHoverPointer(event)) sub.keepOpen();
       };
       const onLeave = (event: Event) => {
-        if (isHoverPointer(event)) sub.closeSoon();
+        if (!isHoverPointer(event)) return;
+        // Straight onto another row of the parent panel — a sibling trigger, or
+        // any plain item — is not the diagonal the delay exists for.
+        if (leavesForAnotherRow(event, domNode(sub.contentRef.current), element)) {
+          sub.closeNow();
+          return;
+        }
+        sub.closeSoon();
       };
       const onKeyDown = (event: Event) => {
         const key = (event as KeyboardEvent).key;
@@ -418,6 +489,18 @@ export function createFlyoutMenuSub(prefix: string): MenuSubParts {
     const anchor = useFlyoutAnchor(sub.triggerRef, sub.open);
     const [node, setNode] = useState<View | null>(null);
 
+    // State for this component's own effects, a ref for the TRIGGER's leave
+    // handler: that handler runs from a DOM listener, outside React's render,
+    // so it needs a value it can read at event time rather than one captured
+    // when the listener was attached.
+    const attachContent = useCallback(
+      (value: View | null) => {
+        setNode(value);
+        sub.contentRef.current = value;
+      },
+      [sub.contentRef],
+    );
+
     useEffect(() => {
       const element = domNode(node);
       if (!element || !sub.open) return;
@@ -426,7 +509,15 @@ export function createFlyoutMenuSub(prefix: string): MenuSubParts {
         if (isHoverPointer(event)) sub.keepOpen();
       };
       const onLeave = (event: Event) => {
-        if (isHoverPointer(event)) sub.closeSoon();
+        if (!isHoverPointer(event)) return;
+        // Leaving the flyout for a row of the parent panel is just as
+        // unambiguous as leaving the trigger for one: the pointer has arrived
+        // somewhere, and it is not this sub.
+        if (leavesForAnotherRow(event, element, domNode(sub.triggerRef.current))) {
+          sub.closeNow();
+          return;
+        }
+        sub.closeSoon();
       };
       const onKeyDown = (event: Event) => {
         const key = (event as KeyboardEvent).key;
@@ -498,7 +589,7 @@ export function createFlyoutMenuSub(prefix: string): MenuSubParts {
             flyout's pointer hit box — without it that 4px ring is a place where
             the pointer is over the panel but over nothing listening, and a
             pointer resting there would schedule a close. */}
-        <StyledView ref={setNode} className={MENU_SUB_SCROLL_CLASS}>
+        <StyledView ref={attachContent} className={MENU_SUB_SCROLL_CLASS}>
           {children}
         </StyledView>
       </FloatingPanel>

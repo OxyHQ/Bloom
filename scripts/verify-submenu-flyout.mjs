@@ -10,7 +10,9 @@
  * `element.dispatchEvent` would pass against a panel nothing can reach.
  *
  * Mutation-verified: `side="right"` → `"bottom"` fails the two geometry cases,
- * `CLOSE_DELAY_MS` → 0 fails the diagonal case, `pointermove` → `mouseenter`
+ * `CLOSE_DELAY_MS` → 0 fails the diagonal case, `leavesForAnotherRow` → `false`
+ * fails the sibling case (and testing it for a `[role="menu"]` ancestor instead
+ * of a ROW fails the diagonal one), `pointermove` → `mouseenter`
  * fails the layout-intent case, removing pointer movement fails its positive
  * control, and dropping `stopImmediatePropagation` fails the innermost-Escape
  * case. Each mutation is caught by exactly the case that measures it.
@@ -46,6 +48,7 @@ const OUT = '/tmp/bloom-submenu-shots';
 const STORY = 'overlays-dropdownmenu--submenu';
 const EDGE_STORY = 'overlays-dropdownmenu--submenu-with-no-room-to-the-right';
 const LAYOUT_STORY = 'overlays-dropdownmenu--submenu-layout-shift-does-not-open';
+const SIBLING_STORY = 'overlays-dropdownmenu--sibling-submenus';
 
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
@@ -60,6 +63,32 @@ async function boxOf(page, testId) {
 }
 
 const centre = (b) => ({ x: b.left + b.width / 2, y: b.top + b.height / 2 });
+
+/**
+ * Is the panel holding `testId` still ON SCREEN — not merely still in the DOM?
+ *
+ * A closed `FloatingPanel` stays mounted through its exit animation, so a
+ * presence check calls a panel that is already at opacity 0.09 and
+ * `pointer-events: none` "still open". Measured: it reports open for ~250ms
+ * after the close, which is longer than the window the sibling case has to
+ * measure in — a presence assertion there fails a CORRECT implementation.
+ */
+async function visible(page, testId) {
+  return page.evaluate((id) => {
+    const el = document.querySelector(`[data-testid="${id}"]`);
+    if (!el) return { present: false, shown: false, opacity: 0 };
+    const panel = el.closest('[role="menu"]') ?? el;
+    const cs = getComputedStyle(panel);
+    const opacity = Number(cs.opacity);
+    return {
+      present: true,
+      // Leaving, not left: an exit that has begun is already invisible to the
+      // pointer, which is the property the user reads as "it disappeared".
+      shown: opacity > 0.5 && cs.pointerEvents !== 'none',
+      opacity,
+    };
+  }, testId);
+}
 
 async function openMenu(page, storyId) {
   await page.goto(`${BASE}/iframe.html?id=${storyId}&viewMode=story`, {
@@ -80,7 +109,7 @@ async function openMenu(page, storyId) {
 }
 
 /** Every check below runs unconditionally, so a short run means something threw. */
-const EXPECTED_CASES = 20;
+const EXPECTED_CASES = 23;
 
 const results = [];
 function record(name, pass, detail) {
@@ -297,6 +326,57 @@ async function main() {
       'one real pointer move over the shifted row opens the sub-panel',
       layoutItemAfterMove !== null,
     );
+
+    // ---------------------------------------------------------------- case 8
+    // SIBLING sub-menus. Moving the pointer from one trigger to the next must
+    // leave exactly ONE panel on screen. Each `Sub` owns its own close timer,
+    // so the first used to serve out `CLOSE_DELAY_MS` while the second was
+    // already open — 300ms of two overlapping flyouts.
+    //
+    // The wait below is deliberately SHORTER than CLOSE_DELAY_MS: waiting it
+    // out would let the timer close the first panel on its own and the case
+    // would pass against the bug it exists to catch.
+    await openMenu(page, SIBLING_STORY);
+    const firstTrigger = await boxOf(page, 'sibling-first-trigger');
+    const secondTrigger = await boxOf(page, 'sibling-second-trigger');
+    if (!firstTrigger || !secondTrigger) throw new Error('sibling fixture did not render');
+
+    const firstCentre = centre(firstTrigger);
+    await page.mouse.move(firstCentre.x, firstCentre.y);
+    await sleep(400);
+    const firstOpen = await visible(page, 'sibling-first-item');
+    // Positive control: without this, "no panels at all" would satisfy the
+    // one-panel assertion below.
+    record('hovering the first sibling trigger opens its panel', firstOpen.shown);
+
+    // Straight down the column of rows, entirely inside the parent panel —
+    // never across the gap the grace delay exists for.
+    const secondCentre = centre(secondTrigger);
+    const steps = 6;
+    for (let i = 1; i <= steps; i += 1) {
+      // eslint-disable-next-line no-await-in-loop
+      await page.mouse.move(
+        firstCentre.x + ((secondCentre.x - firstCentre.x) * i) / steps,
+        firstCentre.y + ((secondCentre.y - firstCentre.y) * i) / steps,
+      );
+      // eslint-disable-next-line no-await-in-loop
+      await sleep(12);
+    }
+    await sleep(120);
+
+    const firstAfter = await visible(page, 'sibling-first-item');
+    const secondAfter = await visible(page, 'sibling-second-item');
+    record(
+      'moving to the next sibling trigger closes the previous panel',
+      !firstAfter.shown,
+      `first opacity=${firstAfter.opacity.toFixed(2)} shown=${firstAfter.shown}`,
+    );
+    record(
+      'the sibling moved to is the one left open',
+      secondAfter.shown,
+      `second opacity=${secondAfter.opacity.toFixed(2)}`,
+    );
+    await page.screenshot({ path: `${OUT}/flyout-siblings.png` });
 
     let failed = results.filter((r) => !r.pass).length;
     // Vacuity floor: a run that bailed early must not read as success.
