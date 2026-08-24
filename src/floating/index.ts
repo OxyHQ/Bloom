@@ -3,6 +3,11 @@
  * `select` sit on: one trigger slot, one panel, one row vocabulary, one anchor
  * measurement, instead of five copies.
  *
+ * `level-picker` is the sixth, and it takes only the ROW half — `MenuRowShell`
+ * and the chevron slot for its disclosure row, plus the motion constants — so
+ * the row that reveals a menu's details region cannot disagree with the rows it
+ * reveals about an inset, a highlight or a height.
+ *
  * INTERNAL. This barrel is the family's surface to the five families INSIDE
  * Bloom that build on it — it is deliberately absent from `package.json#exports`
  * and from `src/index.ts`, and `family-layout.test.ts` records that in

@@ -390,10 +390,15 @@ describe('the census can see', () => {
   it('finds at least one element for every role it has a rule for', () => {
     const seen = new Set(ALL.map((e) => e.role).filter((r): r is string => r !== undefined));
     const missing = Object.keys(REQUIRED_BY_ROLE).filter((role) => !seen.has(role));
-    // `slider` is the web spelling react-native-web PRODUCES rather than one
-    // Bloom writes, so it is legitimately absent from the source; every other
-    // rule must have a live subject or the rule is guarding nothing.
-    expect(missing).toEqual(['slider']);
+    // Every rule must have a live subject or it is guarding nothing.
+    //
+    // `slider` was the one exception for as long as it was purely the web
+    // spelling react-native-web PRODUCES from `adjustable`. It is not any more:
+    // `level-picker/LevelPicker.web.tsx` renders a RAW `<div role="slider">`,
+    // because a DOM element gets no `accessibilityRole` translation — and that
+    // is exactly the element these rules have to reach, since nothing else
+    // gives it a value or a name.
+    expect(missing).toEqual([]);
   });
 
   it('resolves the animated host aliases it treats as primitives', () => {
@@ -430,12 +435,12 @@ describe('the census can see', () => {
   it('finds at least one element for every role the name rule covers', () => {
     const seen = new Set(ALL.map((e) => e.role).filter((r): r is string => r !== undefined));
     const missing = Object.keys(NAME_REQUIRED_ROLES).filter((role) => !seen.has(role));
-    // `slider` again: react-native-web PRODUCES it from `adjustable`, Bloom
-    // never writes it. The two menu-item checkbox/radio spellings are ARIA's
-    // and Bloom uses the plain `checkbox`/`radio` roles inside its menus, so
-    // they are covered but unused — kept because a role list derived from what
-    // happens to be present today is a rule that cannot fail tomorrow.
-    expect(missing).toEqual(['menuitemcheckbox', 'menuitemradio', 'slider']);
+    // `slider` is present now that a raw-DOM fork writes it (see above). The two
+    // menu-item checkbox/radio spellings are ARIA's and Bloom uses the plain
+    // `checkbox`/`radio` roles inside its menus, so they are covered but unused
+    // — kept because a role list derived from what happens to be present today
+    // is a rule that cannot fail tomorrow.
+    expect(missing).toEqual(['menuitemcheckbox', 'menuitemradio']);
   });
 });
 

@@ -59,6 +59,13 @@ import { Item } from '../item';
 import { SegmentedControl, SegmentedControlItem } from '../segmented-control';
 import { Button } from '../button/Button';
 import { Slider } from '../slider';
+// The NATIVE fork, by explicit filename. Its rail is the case this suite is
+// for: `accessibilityRole="adjustable"` only becomes a `role="slider"` once
+// react-native-web has translated it, and the web fork writes that role on a
+// raw `<div>` where no translation happens at all. Importing `'../level-picker'`
+// would exercise the same native file, but by accident — jest has no
+// platform-extension resolution — so the filename says which half is meant.
+import { LevelPicker } from '../level-picker/LevelPicker';
 import { InputGroup } from '../input-group';
 import { SettingsListItem } from '../settings-list/SettingsList';
 import { FrostedIconButton } from '../frosted-icon-button';
@@ -445,6 +452,62 @@ describe('Slider', () => {
       />,
     );
     expect(byTestId(c, 'sl').getAttribute('aria-label')).toBe('Volume');
+  });
+});
+
+describe('LevelPicker', () => {
+  const LEVELS = ['Draft', 'Standard', 'Fine'];
+
+  it('emits the rail as a named role="slider" with its value', () => {
+    const c = mount(
+      <LevelPicker
+        levels={LEVELS}
+        value={1}
+        onValueChange={() => {}}
+        accessibilityLabel="Quality"
+        testID="lp"
+      />,
+    );
+    const el = byTestId(c, 'lp-track');
+    // `adjustable` is RN's spelling; this is what a browser is handed.
+    expect(el.getAttribute('role')).toBe('slider');
+    expect(el.getAttribute('aria-label')).toBe('Quality');
+    expect(el.getAttribute('aria-valuenow')).toBe('1');
+    expect(el.getAttribute('aria-valuemin')).toBe('0');
+    expect(el.getAttribute('aria-valuemax')).toBe('2');
+  });
+
+  it('announces the level by name, which is the whole point of `levels`', () => {
+    // `aria-valuetext` is the fourth flat value prop and the one that carries a
+    // WORD. Without it the rail says "2" and the user has to know what 2 means.
+    const c = mount(
+      <LevelPicker
+        levels={LEVELS}
+        value={2}
+        onValueChange={() => {}}
+        accessibilityLabel="Quality"
+        testID="lp"
+      />,
+    );
+    expect(byTestId(c, 'lp-track').getAttribute('aria-valuetext')).toBe('Fine');
+  });
+
+  it('emits the summary row as a menuitem that states whether it is open', () => {
+    const c = mount(
+      <LevelPicker
+        levels={LEVELS}
+        value={0}
+        onValueChange={() => {}}
+        accessibilityLabel="Quality"
+        detailsLabel="Advanced"
+        expanded
+        testID="lp"
+      />,
+    );
+    const row = byTestId(c, 'lp-summary');
+    expect(row.getAttribute('role')).toBe('menuitem');
+    expect(row.getAttribute('aria-expanded')).toBe('true');
+    expect(row.getAttribute('aria-label')).toBe('Advanced');
   });
 });
 
