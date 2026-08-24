@@ -149,6 +149,46 @@ export const Submenu: Story = {
   ),
 };
 
+/**
+ * Regression fixture for SIBLING sub-menus: two flyouts anchored off the same
+ * panel, one directly under the other.
+ *
+ * Each `Sub` owns its own open state and its own close timer, so moving the
+ * pointer from one trigger to the next used to leave BOTH panels on screen for
+ * `CLOSE_DELAY_MS` — the first was still serving out its grace delay while the
+ * second had already opened. The delay exists to cover the diagonal gap between
+ * a row and its OWN panel; a pointer that landed on another row of the parent
+ * panel is not crossing that gap, and the browser gate measures exactly that.
+ *
+ * Two rows and nothing else: a slider or a controlled `open` would put a second
+ * mechanism between the pointer and the assertion.
+ */
+export const SiblingSubmenus: Story = {
+  render: () => (
+    <View style={{ padding: 80 }}>
+      <DropdownMenu>
+        <DropdownMenuTrigger asChild label="Share">
+          <Button variant="secondary">Share</Button>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent>
+          <DropdownMenuSub>
+            <DropdownMenuSubTrigger testID="sibling-first-trigger">Model</DropdownMenuSubTrigger>
+            <DropdownMenuSubContent>
+              <DropdownMenuItem testID="sibling-first-item">Automatic</DropdownMenuItem>
+            </DropdownMenuSubContent>
+          </DropdownMenuSub>
+          <DropdownMenuSub>
+            <DropdownMenuSubTrigger testID="sibling-second-trigger">Effort</DropdownMenuSubTrigger>
+            <DropdownMenuSubContent>
+              <DropdownMenuItem testID="sibling-second-item">Medium</DropdownMenuItem>
+            </DropdownMenuSubContent>
+          </DropdownMenuSub>
+        </DropdownMenuContent>
+      </DropdownMenu>
+    </View>
+  ),
+};
+
 const SUBMENU_LAYOUT_SHIFT_PX = 120;
 
 /**
