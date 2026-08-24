@@ -1,0 +1,105 @@
+---
+title: LevelPicker
+description: A stepped level over a disclosure — the surface, not what the levels mean.
+order: 35
+---
+
+# LevelPicker
+
+A short, ordered scale picked on a rail, with a disclosure underneath that
+reveals the detail rows for whatever the scale is a summary of. It is the body
+of a menu panel: put it inside a `DropdownMenuContent` and give it rows.
+
+```tsx
+import { LevelPicker } from '@oxyhq/bloom/level-picker';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuSub,
+  DropdownMenuSubContent,
+  DropdownMenuSubTrigger,
+  DropdownMenuTrigger,
+} from '@oxyhq/bloom/dropdown-menu';
+
+<DropdownMenu>
+  <DropdownMenuTrigger asChild label="Quality">
+    <Button variant="ghost">{QUALITY[level]}</Button>
+  </DropdownMenuTrigger>
+  <DropdownMenuContent align="end" className="w-[224px]">
+    <LevelPicker
+      accessibilityLabel="Quality"
+      levels={QUALITY}
+      value={level}
+      onValueChange={setLevel}
+      minLabel="Faster"
+      maxLabel="Sharper"
+      detailsLabel="Advanced">
+      <DropdownMenuSub>
+        <DropdownMenuSubTrigger>Format</DropdownMenuSubTrigger>
+        <DropdownMenuSubContent side="right" align="start">
+          …
+        </DropdownMenuSubContent>
+      </DropdownMenuSub>
+    </LevelPicker>
+  </DropdownMenuContent>
+</DropdownMenu>
+```
+
+## Which prop decides what
+
+| prop                                             | decides                                                        |
+| ------------------------------------------------ | -------------------------------------------------------------- |
+| `levels`                                         | how many stops there are, and what each is called               |
+| `value` / `onValueChange`                        | the selected stop, as an index — fully controlled               |
+| `accessibilityLabel`                             | what the level applies to. **Required**                         |
+| `minLabel` / `maxLabel`                          | the ends of the scale, shown while the rail is being worked     |
+| `detailsLabel`                                   | the disclosure row's text. Defaults to `Details`                |
+| `expanded` / `defaultExpanded` / `onExpandedChange` | whether the details are showing                              |
+| `children`                                       | the rows the disclosure reveals                                 |
+
+## `levels` is the whole scale
+
+The array's LENGTH is the number of stops — two, five, nine — and each entry is
+that stop's own name, announced as the slider's value. So a level is never a
+bare number to a screen reader:
+
+```tsx
+levels={['Draft', 'Standard', 'Fine', 'Very fine', 'Maximum']}
+value={1}   // "Standard"
+```
+
+There is no `min`, `max` or `step`: a level picker is for a scale short enough
+to name every position on. If yours is not, you want a
+[`Slider`](/docs/bloom/main/slider).
+
+## It owns the surface, not the meaning
+
+The picker knows the number of stops, their names, and that a disclosure reveals
+some rows. It knows nothing about what a stop selects or what the rows do —
+those are `children`, and they are ordinary menu rows. Keeping that line is what
+lets one component serve a quality scale, a privacy scale and a compression
+scale without learning about any of them.
+
+## Label it, and do not rely on the captions
+
+`minLabel` and `maxLabel` are captions on the SCALE ("Faster" → "Sharper"), and
+they are visible only while the rail is hovered, focused or being dragged.
+Neither is a name for the control: ARIA computes no name from a `slider`'s
+contents, and a caption beside one is a sibling. `accessibilityLabel` is
+required in the type for that reason.
+
+## Keyboard and pointer
+
+On web the rail is a focusable `role="slider"`: <kbd>←</kbd>/<kbd>→</kbd> (and
+<kbd>↑</kbd>/<kbd>↓</kbd>) step one level, <kbd>Home</kbd> and <kbd>End</kbd> go
+to the ends, and a drag holds pointer capture so it keeps steering past the end
+of the track. On native the same control is an `adjustable` with `increment` and
+`decrement` actions, driven by a `PanResponder`.
+
+## Both platforms, two layouts
+
+The picker is web-forked, and the reason is the details region: a sub-menu is a
+flyout on web and an INLINE disclosure on native, so the native fork measures
+the region on every layout instead of animating to a height it computed. Both
+forks read one set of stops, insets and colour roles, so the control is the same
+control — see `src/level-picker/constants.ts`.

@@ -238,6 +238,8 @@ export { InputGroup, InputGroupAddon } from './input-group';
 export type { InputGroupProps, InputGroupAddonProps } from './input-group';
 export { Slider } from './slider';
 export type { SliderProps } from './slider';
+export { LevelPicker } from './level-picker/index.web';
+export type { LevelPickerProps } from './level-picker/index.web';
 export { Combobox } from './combobox/index.web';
 export type { ComboboxProps, ComboboxOption } from './combobox/index.web';
 

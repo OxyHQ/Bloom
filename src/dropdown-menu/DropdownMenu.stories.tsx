@@ -4,11 +4,9 @@ import type { Meta, StoryObj } from '@storybook/react-vite';
 
 import { Button } from '../button';
 import { Check_Stroke2_Corner0_Rounded as CheckIcon } from '../icons/Check';
-import {
-  ChevronBottom_Stroke2_Corner0_Rounded as ChevronBottomIcon,
-  ChevronRight_Stroke2_Corner0_Rounded as ChevronRightIcon,
-} from '../icons/Chevron';
+import { ChevronBottom_Stroke2_Corner0_Rounded as ChevronBottomIcon } from '../icons/Chevron';
 import { Person_Stroke2_Corner0_Rounded as PersonIcon } from '../icons/Person';
+import { LevelPicker } from '../level-picker';
 import { StyledView } from '../styles/styled-primitives';
 import { useTheme } from '../theme/use-theme';
 import { Text } from '../typography';
@@ -296,44 +294,29 @@ export const AlignEnd: Story = {
 
 const POWER_LABELS = ['Instant', 'Medium', 'High', 'Extra High', 'Pro'] as const;
 
-/** The reference insets five ticks by 13px from the ends of its 196px rail. */
-function powerSliderPosition(index: number): string {
-  return `calc(${index * 25}% + ${13 - index * 6.5}px)`;
-}
-
 /**
- * The complete menu shape needed by Alia's composer: a measured trigger, the
- * compact power slider, the advanced rows, a lateral sub-menu and radio checks
- * on the trailing edge. It stays on the public `DropdownMenu*` vocabulary — no
- * product imports Radix or forks these behaviours locally.
+ * The complete menu shape a product composer needs — a measured trigger, a
+ * stepped power slider, an advanced region, lateral sub-menus and radio checks
+ * on the trailing edge — with every part of the SURFACE now coming from
+ * `LevelPicker` rather than from ~200 lines of absolute positioning written
+ * here.
+ *
+ * The story is still in this file because the menu is what the picker is a body
+ * FOR: it is the case that proves a `DropdownMenuContent` can hold one, that
+ * the sub-menus inside its details region still fly out, and that the panel
+ * resizes around the reveal. What it demonstrates now is composition — the
+ * picker knows the number of stops and their names, and nothing about what a
+ * stop means.
  */
 export const IntelligencePicker: Story = {
   render: function IntelligencePickerMenu() {
     const theme = useTheme();
     const [power, setPower] = useState(1);
     const [advanced, setAdvanced] = useState(true);
-    const [sliderActive, setSliderActive] = useState(false);
-    const [dragging, setDragging] = useState(false);
     const [effortSubmenuOpen, setEffortSubmenuOpen] = useState(true);
     const [model, setModel] = useState('automatic');
     const [effort, setEffort] = useState('medium');
-    const sliderRef = React.useRef<HTMLDivElement>(null);
-    const powerLabel = POWER_LABELS[power] ?? 'Medium';
-
-    const setPowerFromPointer = (event: React.PointerEvent<HTMLDivElement>) => {
-      const rect = sliderRef.current?.getBoundingClientRect();
-      if (!rect) return;
-      const index = Math.round(((event.clientX - rect.left) / rect.width) * 4);
-      setPower(Math.max(0, Math.min(POWER_LABELS.length - 1, index)));
-    };
-
-    const movePower = (direction: -1 | 1) => {
-      setPower((value) => Math.max(0, Math.min(POWER_LABELS.length - 1, value + direction)));
-    };
-
-    const selectedMark = (
-      <CheckIcon size="sm" fill={theme.colors.text} />
-    );
+    const selectedMark = <CheckIcon size="sm" fill={theme.colors.text} />;
 
     return (
       <StyledView className="min-h-[420px] w-[680px] items-end px-space-80 py-space-40">
@@ -346,226 +329,107 @@ export const IntelligencePicker: Story = {
             <Button
               variant="ghost"
               size="small"
-              className="h-9 w-full rounded-full justify-center"
+              className="h-9 w-full justify-center rounded-full"
               icon={<ChevronBottomIcon size="sm" />}
               iconPosition="right">
-              {powerLabel}
+              {POWER_LABELS[power]}
             </Button>
           </DropdownMenuTrigger>
 
           <DropdownMenuContent
             align="end"
             sideOffset={4}
-            className="w-[224px] min-w-[224px] rounded-[20px] py-2.5"
+            className="w-[224px] min-w-[224px] rounded-[20px] py-space-8"
             testID="intelligence-menu">
-            <div
-              role="group"
-              data-testid="composer-intelligence-picker-content"
-              data-view={advanced ? 'advanced' : 'simple'}
-              className="relative flex w-[224px] flex-col overflow-hidden transition-[height] duration-200 ease-out"
-              style={{ height: advanced ? 112 : 76 }}>
-              <div
-                inert={advanced}
-                aria-hidden={advanced}
-                className={`absolute inset-x-0 top-0 flex h-10 items-center justify-center transition-all duration-200 ${
-                  advanced
-                    ? 'pointer-events-none -translate-y-2 opacity-0'
-                    : 'translate-y-0 opacity-100'
-                }`}>
-                <div
-                  ref={sliderRef}
-                  role="slider"
-                  tabIndex={advanced ? -1 : 0}
-                  aria-label="Power"
-                  aria-valuemin={0}
-                  aria-valuemax={4}
-                  aria-valuenow={power}
-                  aria-valuetext={powerLabel}
-                  onPointerEnter={() => setSliderActive(true)}
-                  onPointerLeave={() => {
-                    if (!dragging) setSliderActive(false);
-                  }}
-                  onPointerDown={(event) => {
-                    event.currentTarget.setPointerCapture(event.pointerId);
-                    setDragging(true);
-                    setSliderActive(true);
-                    setPowerFromPointer(event);
-                  }}
-                  onPointerMove={(event) => {
-                    if (dragging) setPowerFromPointer(event);
-                  }}
-                  onPointerUp={(event) => {
-                    if (event.currentTarget.hasPointerCapture(event.pointerId)) {
-                      event.currentTarget.releasePointerCapture(event.pointerId);
-                    }
-                    setDragging(false);
-                  }}
-                  onPointerCancel={() => setDragging(false)}
-                  onFocus={() => setSliderActive(true)}
-                  onBlur={() => setSliderActive(false)}
-                  onKeyDown={(event) => {
-                    if (event.key === 'ArrowLeft') {
-                      event.preventDefault();
-                      movePower(-1);
-                    }
-                    if (event.key === 'ArrowRight') {
-                      event.preventDefault();
-                      movePower(1);
-                    }
-                  }}
-                  className="relative h-6 w-[196px] touch-none cursor-pointer rounded-full bg-muted-foreground/25 outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-popover">
-                  <span
-                    aria-hidden="true"
-                    className="absolute inset-y-0 left-0 rounded-full bg-primary"
-                    style={{ width: powerSliderPosition(power) }}
-                  />
-                  {POWER_LABELS.map((label, index) => (
-                    <span
-                      key={label}
-                      aria-hidden="true"
-                      className={`absolute top-1/2 h-1 w-1 -translate-x-1/2 -translate-y-1/2 rounded-full ${
-                        power >= index
-                          ? 'bg-primary-foreground/35'
-                          : 'bg-muted-foreground/65'
-                      }`}
-                      style={{ left: powerSliderPosition(index) }}
-                    />
-                  ))}
-                  <span
-                    aria-hidden="true"
-                    className="absolute top-1/2 h-[30px] w-[30px] -translate-x-1/2 -translate-y-1/2 rounded-full bg-background shadow-sm"
-                    style={{ left: powerSliderPosition(power) }}
-                  />
-                </div>
-              </div>
+            <LevelPicker
+              testID="intelligence-picker"
+              accessibilityLabel="Power"
+              levels={[...POWER_LABELS]}
+              value={power}
+              onValueChange={setPower}
+              minLabel="Faster"
+              maxLabel="Smarter"
+              detailsLabel="Advanced"
+              expanded={advanced}
+              onExpandedChange={setAdvanced}>
+              <DropdownMenuSub>
+                <DropdownMenuSubTrigger accessibilityLabel="Model, Automatic">
+                  <StyledView className="min-w-0 flex-1 flex-row items-center">
+                    <Text className="text-sm text-foreground">Model</Text>
+                    <Text
+                      className="ms-auto max-w-24 text-sm text-muted-foreground"
+                      numberOfLines={1}>
+                      Automatic
+                    </Text>
+                  </StyledView>
+                </DropdownMenuSubTrigger>
+                <DropdownMenuSubContent
+                  label="Model"
+                  side="right"
+                  align="start"
+                  sideOffset={2}
+                  className="w-[202px]"
+                  testID="model-submenu">
+                  <DropdownMenuRadioGroup value={model} onValueChange={setModel}>
+                    <DropdownMenuRadioItem
+                      value="automatic"
+                      indicator={selectedMark}
+                      indicatorPosition="trailing">
+                      Automatic
+                    </DropdownMenuRadioItem>
+                    <DropdownMenuRadioItem
+                      value="balanced"
+                      indicator={selectedMark}
+                      indicatorPosition="trailing">
+                      Balanced
+                    </DropdownMenuRadioItem>
+                  </DropdownMenuRadioGroup>
+                </DropdownMenuSubContent>
+              </DropdownMenuSub>
 
-              <button
-                type="button"
-                role="menuitem"
-                aria-expanded={advanced}
-                aria-label={advanced ? 'Show compact options' : 'Show advanced options'}
-                onPointerDown={(event) => {
-                  event.preventDefault();
-                  event.stopPropagation();
-                }}
-                onClick={(event) => {
-                  event.preventDefault();
-                  event.stopPropagation();
-                  setAdvanced((value) => !value);
-                }}
-                className={`absolute inset-x-0 flex h-9 w-full cursor-default items-center border-0 bg-transparent px-4 text-left text-sm text-foreground outline-none transition-[top,opacity] duration-200 hover:bg-accent focus:bg-accent ${
-                  advanced ? 'top-0' : 'top-10'
-                } ${!advanced && sliderActive ? 'pointer-events-none opacity-0' : 'opacity-100'}`}>
-                <span className="flex items-center gap-1">
-                  <span>Advanced</span>
-                  <span
-                    className={`flex h-4 w-4 items-center justify-center transition-transform duration-200 ${
-                      advanced ? 'rotate-90' : ''
-                    }`}>
-                    <ChevronRightIcon size="sm" fill={theme.colors.textSecondary} />
-                  </span>
-                </span>
-              </button>
-
-              <span
-                aria-hidden="true"
-                className={`pointer-events-none absolute inset-x-0 top-10 flex h-9 items-center justify-between px-4 text-xs text-muted-foreground transition-opacity duration-150 ${
-                  !advanced && sliderActive ? 'opacity-100' : 'opacity-0'
-                }`}>
-                <span>Faster</span>
-                <span>Smarter</span>
-              </span>
-
-              <span
-                aria-hidden="true"
-                className={`absolute left-4 right-4 top-9 h-px bg-border transition-opacity duration-200 ${
-                  advanced ? 'opacity-100' : 'opacity-0'
-                }`}
-              />
-
-              <div
-                inert={!advanced}
-                aria-hidden={!advanced}
-                className={`absolute inset-x-0 top-9 h-[76px] pt-1 transition-all duration-200 ${
-                  advanced
-                    ? 'translate-y-0 opacity-100'
-                    : 'pointer-events-none translate-y-2 opacity-0'
-                }`}>
-                <DropdownMenuSub>
-                  <DropdownMenuSubTrigger accessibilityLabel="Model, Automatic">
-                    <StyledView className="min-w-0 flex-1 flex-row items-center">
-                      <Text className="text-sm text-foreground">Model</Text>
-                      <Text className="ms-auto max-w-24 text-sm text-muted-foreground" numberOfLines={1}>
-                        Automatic
-                      </Text>
-                    </StyledView>
-                  </DropdownMenuSubTrigger>
-                  <DropdownMenuSubContent
-                    label="Model"
-                    side="right"
-                    align="start"
-                    sideOffset={2}
-                    className="w-[202px]"
-                    testID="model-submenu">
-                    <DropdownMenuRadioGroup value={model} onValueChange={setModel}>
+              <DropdownMenuSub
+                open={advanced && effortSubmenuOpen}
+                onOpenChange={setEffortSubmenuOpen}>
+                <DropdownMenuSubTrigger
+                  accessibilityLabel="Effort, Medium"
+                  testID="effort-submenu-trigger">
+                  <StyledView className="min-w-0 flex-1 flex-row items-center">
+                    <Text className="text-sm text-foreground">Effort</Text>
+                    <Text
+                      className="ms-auto max-w-24 text-sm text-muted-foreground"
+                      numberOfLines={1}>
+                      Medium
+                    </Text>
+                  </StyledView>
+                </DropdownMenuSubTrigger>
+                <DropdownMenuSubContent
+                  label="Effort"
+                  side="right"
+                  align="start"
+                  sideOffset={2}
+                  className="w-[150px]"
+                  testID="effort-submenu">
+                  <DropdownMenuRadioGroup value={effort} onValueChange={setEffort}>
+                    {([
+                      ['instant', 'Instant'],
+                      ['medium', 'Medium'],
+                      ['high', 'High'],
+                      ['extra-high', 'Extra High'],
+                      ['pro', 'Pro'],
+                    ] as const).map(([value, label]) => (
                       <DropdownMenuRadioItem
-                        value="automatic"
+                        key={value}
+                        value={value}
+                        disabled={value === 'pro'}
                         indicator={selectedMark}
                         indicatorPosition="trailing">
-                        Automatic
+                        {label}
                       </DropdownMenuRadioItem>
-                      <DropdownMenuRadioItem
-                        value="balanced"
-                        indicator={selectedMark}
-                        indicatorPosition="trailing">
-                        Balanced
-                      </DropdownMenuRadioItem>
-                    </DropdownMenuRadioGroup>
-                  </DropdownMenuSubContent>
-                </DropdownMenuSub>
-
-                <DropdownMenuSub
-                  open={advanced && effortSubmenuOpen}
-                  onOpenChange={setEffortSubmenuOpen}>
-                  <DropdownMenuSubTrigger
-                    accessibilityLabel="Effort, Medium"
-                    testID="effort-submenu-trigger">
-                    <StyledView className="min-w-0 flex-1 flex-row items-center">
-                      <Text className="text-sm text-foreground">Effort</Text>
-                      <Text className="ms-auto max-w-24 text-sm text-muted-foreground" numberOfLines={1}>
-                        Medium
-                      </Text>
-                    </StyledView>
-                  </DropdownMenuSubTrigger>
-                  <DropdownMenuSubContent
-                    label="Effort"
-                    side="right"
-                    align="start"
-                    sideOffset={2}
-                    className="w-[150px]"
-                    testID="effort-submenu">
-                    <DropdownMenuRadioGroup value={effort} onValueChange={setEffort}>
-                      {([
-                        ['instant', 'Instant'],
-                        ['medium', 'Medium'],
-                        ['high', 'High'],
-                        ['extra-high', 'Extra High'],
-                        ['pro', 'Pro'],
-                      ] as const).map(([value, label]) => (
-                        <DropdownMenuRadioItem
-                          key={value}
-                          value={value}
-                          disabled={value === 'pro'}
-                          indicator={selectedMark}
-                          indicatorPosition="trailing">
-                          {label}
-                        </DropdownMenuRadioItem>
-                      ))}
-                    </DropdownMenuRadioGroup>
-                  </DropdownMenuSubContent>
-                </DropdownMenuSub>
-              </div>
-            </div>
+                    ))}
+                  </DropdownMenuRadioGroup>
+                </DropdownMenuSubContent>
+              </DropdownMenuSub>
+            </LevelPicker>
           </DropdownMenuContent>
         </DropdownMenu>
       </StyledView>

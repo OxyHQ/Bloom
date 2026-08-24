@@ -152,11 +152,11 @@ describe('one family layout', () => {
     // green a private directory would be PUBLISHING it, which is the opposite
     // of what its author wanted and enlarges the public API by accident.
     // `floating/` is the shared layer `dropdown-menu`, `context-menu`,
-    // `menubar`, `popover` and `select` build on — a trigger slot, a panel, a
-    // row vocabulary and an anchor measurement, written once. It has a barrel
-    // so those five have one surface to import through, and it stays out of
-    // `exports` and the root barrel because none of it is API a consumer should
-    // reach for.
+    // `menubar`, `popover`, `select` and `level-picker` build on — a trigger
+    // slot, a panel, a row vocabulary and an anchor measurement, written once.
+    // It has a barrel so those six have one surface to import through, and it
+    // stays out of `exports` and the root barrel because none of it is API a
+    // consumer should reach for.
     //
     // `glass/` is the same shape: ONE authority for the translucent material —
     // blur, accent tint, sheen and lit rim — that the surfaces which float over

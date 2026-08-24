@@ -233,6 +233,8 @@ export { InputGroup, InputGroupAddon } from './input-group';
 export type { InputGroupProps, InputGroupAddonProps } from './input-group';
 export { Slider } from './slider';
 export type { SliderProps } from './slider';
+export { LevelPicker } from './level-picker';
+export type { LevelPickerProps } from './level-picker';
 export { Combobox } from './combobox';
 export type { ComboboxProps, ComboboxOption } from './combobox';
 
