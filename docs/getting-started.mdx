@@ -64,6 +64,35 @@ export function Hello() {
 }
 ```
 
+## If you build with Vite (or any ESM web bundler)
+
+Bloom reaches its **optional** peers through a `require()` that Metro marks
+optional. An ESM web bundle has no `require` at all — measured: `typeof require`
+is `undefined` in a Vite bundle — so those loads cannot run and every optional
+peer degrades **even when the package is installed**. Metro is unaffected, which
+is why this only appears off Metro.
+
+**Check in one line**, in your app's console:
+
+```js
+typeof require   // "undefined" -> the optional peers below are inert for you
+```
+
+Today one of them can be handed over explicitly:
+
+```ts
+import * as ExpoVideo from 'expo-video';
+import { provideExpoVideo } from '@oxyhq/bloom/media-flight';
+
+provideExpoVideo(ExpoVideo);   // otherwise video silently shows only its poster
+```
+
+The others have no equivalent yet, so on an ESM bundle you currently lose
+scoped NativeWind presets (`BloomColorScope`), adaptive colours, haptics and the
+connection toasts. Most of them say so in the dev console — the warning ends
+`Reason: this bundle has no CommonJS require` — with the exception noted in
+`theme/adaptive-colors.ts`, which degrades silently.
+
 ## Recommended layout
 
 If your app supports both light and dark themes:

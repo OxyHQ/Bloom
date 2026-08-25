@@ -260,6 +260,27 @@ the root barrel, because Metro does not tree-shake). `expo-video` is
 flies video without it gets the poster plus a single dev warning naming the
 package.
 
+<Callout variant="warning" title="On Vite (or any ESM web bundler) you must hand expo-video over">
+Bloom loads optional peers through a `require()` that Metro marks optional.
+**An ESM web bundle has no `require` at all** — measured: `typeof require` is
+`undefined` in a Vite bundle — so the load cannot run and video degrades to its
+poster **even when `expo-video` is installed**. Metro has a real `require` and
+is unaffected, which is why this only shows up off Metro.
+
+One line at startup fixes it:
+
+```ts
+import * as ExpoVideo from 'expo-video';
+import { provideExpoVideo } from '@oxyhq/bloom/media-flight';
+
+provideExpoVideo(ExpoVideo);
+```
+
+How to tell whether it applies to you: run `typeof require` in your app's
+console. If it answers `"undefined"`, you need this. The dev console also says
+so directly — the warning ends `Reason: this bundle has no CommonJS require`.
+</Callout>
+
 ## What a jest run can and cannot see
 
 The registry: that a flight is created, that a second `flyTo` retargets rather
