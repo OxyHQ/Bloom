@@ -443,18 +443,39 @@ cold, no flight   x2             0 / 3                0 / 0
 with a flight     x2             4 / 4                2 / 2
 ```
 
-**The third view is real and its mount already fails at something.** With no
+**The third view is real: one per flight, and it is not remounted.** With no
 flight there is no `TextureVideoView` and no error; with one, the layer mounts
 its own `MediaSurface` (no `renderVideo`, so `surfaceType` defaults to
-`'textureView'`) and expo-video raises `PropSetException: Cannot set prop
-'player' on view 'TextureVideoView'`, twice per flight. That name is the
-RUNTIME class of the instance — `ConcreteViewProp.kt` throws
-`PropSetException(name, onView::class, …)` — so it is not a mislabelling: a
-`TextureVideoView` is genuinely there.
+`'textureView'`). The name in the error is the RUNTIME class of the instance —
+`ConcreteViewProp.kt` throws `PropSetException(name, onView::class, …)` — so it
+is not a mislabelling.
+
+Traced on device, one flight:
+
+```
+01:09:41.923  MOUNT      <id> ak19
+01:09:42.846  PropSetException: Cannot set prop 'player' on view 'TextureVideoView'
+01:09:42.868  UNMOUNT    <id> ak19        same instance
+```
+
+**The exception fires at the UNBIND, not at the mount** — ~920 ms after mounting
+and 22 ms before the surface is destroyed. That is the `player={null}` commit
+`releaseFlight` renders on the way out: the same instruction the web path
+depends on (it makes an element go quiet without an event) is rejected by the
+Kotlin view, which reports being "notified of disconnection from the player
+view, even though it's still connected". Nothing is wrong with the mount, and
+anyone reading this looking to fix mounting would be looking in the wrong place.
+
+One mount, one unmount, one exception, 2 flights of 2. Matching a bench
+measurement of the same path: the layer mounts its arm ONCE per flight, and the
+`detached` commit is a re-render rather than a remount.
 
 **No observed consequence.** Playback continues, and picture-in-picture opens
-with the video playing rather than black or frozen, so the view and the player
-do end up correctly married; the assignment that fails is not the one PiP needs.
+with the video playing rather than black or frozen. A failed assignment onto a
+view that is destroyed 22 ms later has nobody left to affect. Note the limit of
+that claim: it rules out the mechanism we suspected — a remount restarting the
+decoder, hidden by an emulator that has no real ones — rather than proving no
+consequence exists at all.
 
 **What is NOT measured: whether any of this costs anything on real hardware.**
 An emulator has no real hardware decoders, so the decoder-count question — the
