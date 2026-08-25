@@ -32,6 +32,7 @@ import {
 } from '../overlay/stack';
 import { MediaFlightLayer } from '../media-flight/MediaFlightLayer';
 import { MediaPoster, MediaSurface } from '../media-flight/MediaSurface';
+import { provideExpoVideo } from '../media-flight/expo-video-module';
 import { useMediaFlight } from '../media-flight/use-media-flight';
 import {
   flyBack,
@@ -727,6 +728,112 @@ describe('a video surface unbinds before it leaves the DOM', () => {
     } finally {
       jest.useRealTimers();
     }
+  });
+});
+
+/**
+ * UNBINDING MUST NOT COST THE DESTINATION ITS POSITION.
+ *
+ * expo-video's web player seeds a newly mounted element from the FIRST element
+ * already in `_mountedVideos` (`mountVideoView` adds, then
+ * `_synchronizeWithFirstVideo` copies `currentTime` from `[...set][0]`). So the
+ * flying surface is not only the pause victim — it is what SEEDS the
+ * destination. Unbind it before the destination mounts and the destination
+ * starts at ZERO: measured in a consuming app at `ct=0` with the unbind, and
+ * `ct=1.07` without it.
+ *
+ * Bloom's window is safe by construction — release is driven by `handOff`,
+ * which the destination raises from its own first frame, so it has mounted and
+ * synchronised by then. This asserts that with the destination's `currentTime`
+ * rather than by reasoning about effect order, against a double that reproduces
+ * expo-video's documented semantics exactly.
+ */
+describe('unbinding happens after the destination has taken the position', () => {
+  /** The slice of `VideoPlayer.web.js` that decides seeding and mirroring. */
+  function fakePlayer() {
+    const mounted = new Set<{ currentTime: number; paused: boolean }>();
+    return {
+      mounted,
+      playing: true,
+      play: () => {},
+      pause: () => {},
+      mountVideoView(el: { currentTime: number; paused: boolean }) {
+        mounted.add(el);
+        const first = [...mounted][0];
+        if (first) el.currentTime = first.currentTime;
+      },
+      unmountVideoView(el: { currentTime: number; paused: boolean }) {
+        mounted.delete(el);
+      },
+      /** What the browser does to a detached element, then expo-video's mirror. */
+      detach(el: { currentTime: number; paused: boolean }) {
+        el.paused = true;
+        if (mounted.has(el)) for (const other of mounted) if (other !== el) other.paused = true;
+      },
+    };
+  }
+
+  it('leaves the destination seeded, not at zero', () => {
+    const player = fakePlayer();
+    // The feed element, already playing.
+    const feed = { currentTime: 4.28, paused: false };
+    player.mountVideoView(feed);
+
+    // Bloom's flying surface mounts through the real MediaSurface, using a view
+    // that binds/unbinds exactly as expo-video's does.
+    const elements: Array<{ currentTime: number; paused: boolean }> = [];
+    provideExpoVideo({
+      VideoView: function FakeVideoView(props: { player?: unknown }) {
+        const [el] = React.useState(() => ({ currentTime: 0, paused: false }));
+        React.useEffect(() => {
+          const p = props.player as ReturnType<typeof fakePlayer> | null | undefined;
+          if (!p) return undefined;
+          elements.push(el);
+          p.mountVideoView(el);
+          return () => p.unmountVideoView(el);
+        }, [props.player, el]);
+        return null;
+      },
+    });
+
+    try {
+      const content = { kind: 'video' as const, player: player as unknown as VideoPlayerLike };
+      const flight = render(<MediaSurface content={content} />);
+      const flying = elements[0];
+      expect(flying?.currentTime).toBeCloseTo(4.28); // seeded from the feed
+
+      // The feed's route goes away.
+      player.unmountVideoView(feed);
+      player.detach(feed);
+
+      // The destination mounts while the flying surface is STILL bound.
+      const destination = { currentTime: 0, paused: false };
+      player.mountVideoView(destination);
+      expect(destination.currentTime).toBeCloseTo(4.28);
+
+      // Only now does Bloom unbind and drop the flying element.
+      flight.rerender(<MediaSurface content={content} detached />);
+      flight.unmount();
+      player.detach(flying as { currentTime: number; paused: boolean });
+
+      expect(destination.currentTime).toBeCloseTo(4.28);
+      expect(destination.paused).toBe(false);
+    } finally {
+      provideExpoVideo(null);
+    }
+  });
+
+  it('would have cost the position if it unbound first (control)', () => {
+    // The failure the ordering avoids, produced deliberately so "seeded" above
+    // is known to be a property of the ORDER and not of the double.
+    const player = fakePlayer();
+    const feed = { currentTime: 4.28, paused: false };
+    player.mountVideoView(feed);
+    player.unmountVideoView(feed);
+
+    const destination = { currentTime: 0, paused: false };
+    player.mountVideoView(destination);
+    expect(destination.currentTime).toBe(0);
   });
 });
 
