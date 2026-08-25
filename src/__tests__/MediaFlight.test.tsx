@@ -24,6 +24,7 @@ import { StyleSheet, View } from 'react-native';
 // `store.ts` calls through, so a spy written here is a spy the store sees.
 import * as Reanimated from 'react-native-reanimated';
 import type { VideoPlayer } from 'expo-video';
+import type { MediaFlightHostProps } from '../media-flight/types';
 
 import { PortalOutlet, PortalProvider } from '../portal';
 import {
@@ -31,6 +32,7 @@ import {
   OVERLAY_STACK_BASE,
   resetOverlayStack,
 } from '../overlay/stack';
+import { MediaFlightHost } from '../media-flight/MediaFlightHost';
 import { MediaFlightLayer } from '../media-flight/MediaFlightLayer';
 import { MediaPoster, MediaSurface } from '../media-flight/MediaSurface';
 import * as expoVideoModule from '../media-flight/expo-video-module';
@@ -1143,6 +1145,46 @@ describe('releasing a flying video leaves the destination playing, and where it 
 });
 
 describe('the hand-written expo-video types', () => {
+  it('lets a slot hand a REAL player straight to expo-video, with no cast', () => {
+    // The defect this pins: `VideoPlayerLike` is a hand-written subset, and
+    // `VideoView.player` wants the real class — about forty properties more. A
+    // slot whose player was narrowed to `VideoPlayerLike` on the way through
+    // forces every consumer to cast it back, and a contract that pushes people
+    // towards `as` ends up as an `as any` in someone's repo.
+    //
+    // A COMPILE-TIME assertion: `player` flows from `content` into the slot, so
+    // this line stops compiling the moment the type stops being carried
+    // through. It cannot fail at runtime, which is the point — the failure it
+    // guards against is a type error in a consumer's file, not in this one.
+    const player = {} as VideoPlayer;
+    const props: MediaFlightHostProps<VideoPlayer> = {
+      id: 'v',
+      content: { kind: 'video', player },
+      renderVideo: ({ player: given }) => {
+        const real: VideoPlayer | null = given;
+        return real === null ? null : null;
+      },
+    };
+    expect(props.id).toBe('v');
+
+    // …and through INFERENCE, which is how a consumer actually writes it: no
+    // type argument anywhere, the player's type reaching the slot from
+    // `content`. The annotated form above would still compile if the generic
+    // stopped being inferred and every consumer had to spell it out.
+    const inferred = (
+      <MediaFlightHost
+        id="v"
+        content={{ kind: 'video', player }}
+        renderVideo={({ player: given }) => {
+          const real: VideoPlayer | null = given;
+          return real === null ? null : null;
+        }}
+      />
+    );
+    expect(inferred.props.id).toBe('v');
+  });
+
+
   it('accepts a real VideoPlayer', () => {
     // `VideoPlayerLike` is hand-written so no expo-video type reaches Bloom's
     // emitted declarations (a consumer that skips the optional peer must not

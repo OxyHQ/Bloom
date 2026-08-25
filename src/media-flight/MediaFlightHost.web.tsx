@@ -22,10 +22,18 @@ import {
   releaseMediaNode,
   type MediaNodeRender,
 } from './media-node.web';
+import type { VideoPlayerLike } from './expo-video-module';
 import { handOffFlight, hasFlight, registerAnchor } from './store';
-import type { MediaFlightHostProps } from './types';
+import type { MediaFlightHostProps, MediaVideoSlot } from './types';
 
-export function MediaFlightHost({
+/**
+ * The web host publishes its slot to the layer, which paints every shared node
+ * through one non-generic `MediaSurface`. Widening is sound for the same reason
+ * as the native host's `widenSlot`: the only player Bloom ever hands a slot is
+ * the one it took out of that slot's own `content`. Bloom transports the
+ * object; it never substitutes one.
+ */
+export function MediaFlightHost<P extends VideoPlayerLike = VideoPlayerLike>({
   id,
   content,
   style,
@@ -35,7 +43,7 @@ export function MediaFlightHost({
   accessibilityLabel,
   pointerEvents,
   flightId,
-}: MediaFlightHostProps) {
+}: MediaFlightHostProps<P>) {
   // State rather than a ref, because the claim runs in a layout effect and an
   // effect cannot depend on a ref's mutation. One extra render at mount.
   const [node, setNode] = useState<View | null>(null);
@@ -49,7 +57,15 @@ export function MediaFlightHost({
   );
 
   const render = useMemo<MediaNodeRender>(
-    () => ({ content, contentFit, renderVideo, nativeControls, accessibilityLabel, flightId }),
+    () => ({
+      content,
+      contentFit,
+      // See `widenSlot`: the player a slot gets back is the one it put in.
+      renderVideo: renderVideo as MediaVideoSlot | undefined,
+      nativeControls,
+      accessibilityLabel,
+      flightId,
+    }),
     [content, contentFit, renderVideo, nativeControls, accessibilityLabel, flightId],
   );
   const renderRef = useRef(render);

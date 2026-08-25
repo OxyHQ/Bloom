@@ -323,6 +323,17 @@ and a media element that does not fill its wrapper warns once with both
 rectangles. Neither is a gate — they are the three trap-doors of this contract
 turned into three messages.
 
+**The invariant that keeps this a primitive and not a coupling:** Bloom decides
+`player`, `style` and `contentFit`, and those three are exactly the three that
+depend on WHERE THE NODE IS. Nothing else about the media is Bloom's business.
+If a fourth prop ever has to be added beside them, that is the signal that
+coupling is leaking in — not a reason to add a fifth.
+
+The player's own type flows from `content` into the slot, so a slot hands it
+straight to `VideoView` with no cast. Bloom transports that object; it never
+reads it, and narrowing what you only transport is what pushes a consumer
+towards `as`.
+
 The flight itself never brings an element. Its claim on a shared node says only
 WHERE the node lives — a flight that published its own render would swap a
 consumer's element out for Bloom's and back again, which is two remounts in the

@@ -15,10 +15,27 @@ import { useCallback } from 'react';
 import { StyleSheet, View } from 'react-native';
 
 import { MediaSurface } from './MediaSurface';
+import type { VideoPlayerLike } from './expo-video-module';
 import { registerAnchor } from './store';
-import type { MediaFlightHostProps } from './types';
+import type { MediaFlightHostProps, MediaVideoSlot } from './types';
 
-export function MediaFlightHost({
+/**
+ * Hand a consumer's slot to `MediaSurface`, which is not generic.
+ *
+ * SOUND, and the reason is the invariant this whole family is built on: the
+ * only player Bloom ever passes to a slot is the one it took out of that
+ * slot's own `content`. Bloom transports the object and never substitutes one,
+ * so the value really is a `P` at runtime — the assertion says what the types
+ * cannot follow through a `memo`'d component, and it lives HERE, once, rather
+ * than in every consumer's `renderVideo`.
+ */
+function widenSlot<P extends VideoPlayerLike>(
+  slot: MediaVideoSlot<P> | undefined,
+): MediaVideoSlot | undefined {
+  return slot as MediaVideoSlot | undefined;
+}
+
+export function MediaFlightHost<P extends VideoPlayerLike = VideoPlayerLike>({
   id,
   content,
   style,
@@ -29,7 +46,7 @@ export function MediaFlightHost({
   surfaceType,
   pointerEvents,
   flightId,
-}: MediaFlightHostProps) {
+}: MediaFlightHostProps<P>) {
   // A callback ref rather than an effect: the anchor must be measurable the
   // moment the box is on screen, and a tap can come one frame later.
   const setNode = useCallback(
@@ -42,7 +59,7 @@ export function MediaFlightHost({
       <MediaSurface
         content={content}
         contentFit={contentFit}
-        renderVideo={renderVideo}
+        renderVideo={widenSlot(renderVideo)}
         nativeControls={nativeControls}
         accessibilityLabel={accessibilityLabel}
         surfaceType={surfaceType}

@@ -67,6 +67,19 @@ export interface MediaSurfaceVideo {
 export type MediaSurfaceContent = MediaSurfaceImage | MediaSurfaceVideo;
 
 /**
+ * `MediaSurfaceVideo` carrying the consumer's OWN player type.
+ *
+ * Bloom transports that object; it never reads it. Narrowing it to
+ * `VideoPlayerLike` on the way through would be Bloom asserting something about
+ * cargo — and it would land on the consumer, who then has to cast the player
+ * back before handing it to expo-video's `VideoView`. A contract that pushes a
+ * consumer towards `as` ends up as an `as any` in someone's repo.
+ */
+export interface MediaSurfaceVideoOf<P extends VideoPlayerLike> extends MediaSurfaceVideo {
+  player: P;
+}
+
+/**
  * A media surface currently owned by the flight layer.
  *
  * One per id, ever — that is the contract. `flyTo` on an id that is already in
@@ -233,7 +246,7 @@ export interface MediaFlightController {
  * INTRINSIC size (300x150) instead of stretching — so a slot that drops this
  * style paints a 300x150 video inside whatever box it was given. Spread it.
  */
-export interface MediaVideoSlotProps {
+export interface MediaVideoSlotProps<P extends VideoPlayerLike = VideoPlayerLike> {
   /**
    * The player Bloom was given — never one Bloom created.
    *
@@ -244,7 +257,7 @@ export interface MediaVideoSlotProps {
    * anything else here — keeping the old player, unmounting instead — brings
    * that defect back. See `releaseFlight`.
    */
-  player: VideoPlayerLike | null;
+  player: P | null;
   /** Fills the box. Spread it — see above. */
   style: StyleProp<ViewStyle>;
   contentFit: 'contain' | 'cover';
@@ -267,7 +280,9 @@ export interface MediaVideoSlotProps {
  * layer, compared by identity — a new function every render republishes every
  * render. Correct either way, wasteful if you skip it.
  */
-export type MediaVideoSlot = (props: MediaVideoSlotProps) => ReactNode;
+export type MediaVideoSlot<P extends VideoPlayerLike = VideoPlayerLike> = (
+  props: MediaVideoSlotProps<P>,
+) => ReactNode;
 
 /**
  * A place a media surface may live: the feed row it starts in, the fullscreen
@@ -279,11 +294,16 @@ export type MediaVideoSlot = (props: MediaVideoSlotProps) => ReactNode;
  * ever leaving the document. On native a host renders its media inline, which
  * is what it has always done and what the platform makes correct there.
  */
-export interface MediaFlightHostProps {
+export interface MediaFlightHostProps<P extends VideoPlayerLike = VideoPlayerLike> {
   /** The id this host shares with the flight and with the other end. */
   id: string;
-  /** What to paint: a still image, or a consumer-owned expo-video player. */
-  content: MediaSurfaceContent;
+  /**
+   * What to paint: a still image, or a consumer-owned expo-video player.
+   *
+   * The player's own type flows from here into {@link renderVideo}, so a slot
+   * gets back exactly what it put in and hands it to `VideoView` with no cast.
+   */
+  content: MediaSurfaceImage | MediaSurfaceVideoOf<P>;
   /** Style of the host BOX. Give it the radius and `overflow: 'hidden'` you want. */
   style?: StyleProp<ViewStyle>;
   /** How the media fills the box. Defaults to `'cover'`. */
@@ -292,7 +312,7 @@ export interface MediaFlightHostProps {
    * Paint the video yourself, keeping your own `ref` and expo-video props. See
    * {@link MediaVideoSlot}; memoise it.
    */
-  renderVideo?: MediaVideoSlot;
+  renderVideo?: MediaVideoSlot<P>;
   /** Whether the video arm shows expo-video's own controls. Defaults to `false`. */
   nativeControls?: boolean;
   accessibilityLabel?: string;

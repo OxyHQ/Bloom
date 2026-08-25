@@ -399,6 +399,13 @@ async function traceVideoFlight(page, testId) {
 
 async function checkVideoGeometry(page, failures) {
   const good = await traceVideoFlight(page, 'flight-video');
+  // A FLOOR, not a niceity: this samples with `requestAnimationFrame`, and a
+  // throttled tab returns a handful of samples that all look fine. "It tracked
+  // its box on every frame" over 20 frames of a 60-frame flight is a pass for
+  // want of anything to look at. See `page.bringToFront()` in `main`.
+  report(failures, !Array.isArray(good) || good.length >= 30,
+    `video: only ${good?.length ?? 0} samples across the flight — too few to have watched it. ` +
+    'A throttled tab (rAF at ~3 Hz) produces exactly this, and every assertion below would pass on it');
   report(failures, Array.isArray(good) && good.length > 5,
     `video: no <video> was observed at all (${good === null ? 'trigger not clickable' : `${good?.length ?? 0} samples`}) — ` +
     'provideExpoVideo did not install a view, so this phase measures nothing');
@@ -626,6 +633,17 @@ async function main() {
 
   try {
     const page = await browser.newPage();
+    // FOREGROUND THE TAB BEFORE MEASURING ANYTHING.
+    //
+    // Two phases here sample with `requestAnimationFrame`, and Chrome throttles
+    // rAF in a tab the compositor is not drawing — to roughly 3 Hz. A sampler
+    // running at 3 Hz instead of 60 does not fail: it returns a handful of
+    // samples that all look fine, and every assertion over them passes for
+    // want of anything to see. Measured elsewhere on this fleet: three runs of
+    // six "passed" on ~20 samples where a foregrounded tab produces ~358, and
+    // the median gap fell from a 20x spread to a steady 17 ms once the tab was
+    // brought to the front. It was the instrument, not the build.
+    await page.bringToFront();
     await page.emulateMediaFeatures([
       { name: 'prefers-reduced-motion', value: 'no-preference' },
     ]);
