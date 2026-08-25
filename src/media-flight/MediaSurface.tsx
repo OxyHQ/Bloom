@@ -98,12 +98,16 @@ export interface MediaSurfaceProps {
    * the element is still in the DOM.
    *
    * expo-video's web player mirrors pause across every element bound to it, and
-   * a `<video>` removed from the DOM is auto-paused by the browser — but
-   * `unmountVideoView` only runs in a PASSIVE effect cleanup, so it happens
-   * after removal and after that auto-pause. A dying element therefore pauses
-   * the one the viewer is watching. Setting this for one commit before unmount
-   * runs expo-video's own `[props.player]` effect early, whose cleanup unbinds,
-   * so the later pause reaches nobody.
+   * a `<video>` removed from the DOM is auto-paused by the browser, so a dying
+   * element pauses the one the viewer is watching.
+   *
+   * Setting this for one commit runs expo-video's own `[props.player]` effect
+   * early — and the half that matters is `removeAttribute('src'); load()`
+   * (`VideoView.web.js:206`), not the unbind beside it. The media element load
+   * algorithm pauses WITHOUT firing `pause` (measured in real Chrome, with
+   * controls), so the element goes quiet and its later removal fires nothing.
+   * Unbinding alone does not help: `unmountVideoView` never clears the handler
+   * it installed. See `releaseFlight`.
    */
   detached?: boolean;
 }

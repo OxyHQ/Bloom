@@ -414,10 +414,25 @@ export function flyBack(id: string): void {
  * nobody having called `pause()`.
  *
  * Rendering `player={null}` for one commit runs expo-video's own `[props.player]`
- * effect while the node is STILL in the DOM: its cleanup calls
- * `unmountVideoView`, the element leaves `_mountedVideos`, and its later pause
- * reaches nobody. That is the documented mount/unmount pair, not a patch of
- * somebody else's module.
+ * effect while the node is STILL in the DOM, and the operative part of that is
+ * NOT the unbind. `unmountVideoView` takes the element out of `_mountedVideos`
+ * and leaves the `onpause` handler `_addListeners` installed, so unbinding
+ * alone would still mirror. What saves it is the other half of the same
+ * branch: `removeAttribute('src'); load()` (`VideoView.web.js:206`). The media
+ * element load algorithm sets `paused` to true WITHOUT firing `pause`, so the
+ * element goes quiet, and its later removal fires nothing either because it is
+ * already paused.
+ *
+ * Measured in real Chrome, with controls: a playing element put through
+ * `removeAttribute('src') + load()` reports events `["play"]` and nothing more,
+ * while the same element paused by hand, or removed from the DOM while
+ * playing, reports `["play","pause"]`. Against real builds: without this commit
+ * the destination ends STOPPED (5/5), with it PLAYING (6/6) and the position
+ * carried.
+ *
+ * DO NOT replace this with a direct `unmountVideoView` call. It looks
+ * equivalent, it is the half that does not matter, and the fix would disappear
+ * silently. `MediaFlight.test.tsx` makes that substitution its control.
  *
  * The cost is one frame in which the outgoing surface shows its poster instead
  * of video. It is already on its way out and the destination is live by then —

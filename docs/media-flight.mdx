@@ -130,6 +130,15 @@ reports that itself (expo-video's `onFirstFrameRender`, expo-image's `onLoad`).
 Called mid-flight, a hand-off is remembered rather than obeyed — the surface
 finishes travelling first, or it would vanish between the two rects.
 
+On web the release then renders one commit with `player={null}` before the node
+leaves the DOM. What that buys is **not** the unbind beside it: expo-video
+answers a null player with `removeAttribute('src'); load()`, and the media
+element load algorithm pauses WITHOUT firing `pause`, so the outgoing element
+goes quiet and its removal mirrors nothing. Unbinding alone would not help —
+`unmountVideoView` never clears the `onpause` it installed. Measured in real
+Chrome with controls, and against real builds: without that commit the
+destination ends stopped, with it playing and in position.
+
 **The success criterion is continuity, not speed.** With a shared player the
 frame is already on screen before the tap; the flight does not make the video
 appear sooner, it makes it never disappear. Measure "was there ever no frame?"

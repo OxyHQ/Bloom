@@ -129,8 +129,10 @@ function MediaFlightSurface({ flight }: { flight: MediaFlight }) {
       contentFit={contentFit}
       surfaceType={surfaceType}
       // One commit with no player before this node leaves the DOM — see
-      // `releaseFlight`. Without it the dying element's auto-pause mirrors
-      // through expo-video and stops the video the viewer just landed on.
+      // `releaseFlight`, and note there that what it buys is expo-video
+      // emptying the source, not the unbind. Without it the dying element's
+      // auto-pause mirrors through expo-video and stops the video the viewer
+      // just landed on.
       detached={unbinding}
       // A flying surface is a picture, never a control: it must not intercept
       // the press that is already travelling to whatever is underneath it.
