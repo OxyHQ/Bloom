@@ -93,6 +93,19 @@ export interface MediaSurfaceProps {
    * surface that handed off to itself would release on its own first frame.
    */
   flightId?: string;
+  /**
+   * Render the video arm with NO player, unbinding this element from it while
+   * the element is still in the DOM.
+   *
+   * expo-video's web player mirrors pause across every element bound to it, and
+   * a `<video>` removed from the DOM is auto-paused by the browser — but
+   * `unmountVideoView` only runs in a PASSIVE effect cleanup, so it happens
+   * after removal and after that auto-pause. A dying element therefore pauses
+   * the one the viewer is watching. Setting this for one commit before unmount
+   * runs expo-video's own `[props.player]` effect early, whose cleanup unbinds,
+   * so the later pause reaches nobody.
+   */
+  detached?: boolean;
 }
 
 /**
@@ -112,6 +125,7 @@ export const MediaSurface = memo(function MediaSurface({
   accessibilityLabel,
   pointerEvents,
   flightId,
+  detached = false,
 }: MediaSurfaceProps) {
   // Captured once — see `surfaceType` above. A consumer changing it later gets
   // the value the view was mounted with, which is the only value expo-video
@@ -162,7 +176,7 @@ export const MediaSurface = memo(function MediaSurface({
       )}
       {content.kind === 'video' && expoVideo !== null ? (
         <expoVideo.VideoView
-          player={content.player}
+          player={detached ? null : content.player}
           contentFit={contentFit}
           surfaceType={mountedSurfaceType}
           nativeControls={nativeControls}

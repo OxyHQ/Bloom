@@ -77,6 +77,8 @@ interface FlightStatus {
   /** Waiters on `flyTo`'s promise, resolved once `mounted` turns true. */
   mountWaiters: Array<() => void>;
   mountTimer: ReturnType<typeof setTimeout> | null;
+  /** Pending final removal while the surface unbinds from its player. */
+  unbindTimer: ReturnType<typeof setTimeout> | null;
 }
 
 interface Registry {
@@ -119,6 +121,7 @@ function statusFor(id: string): FlightStatus {
       handedOff: false,
       mountWaiters: [],
       mountTimer: null,
+      unbindTimer: null,
     };
     reg.status.set(id, status);
   }
@@ -127,7 +130,9 @@ function statusFor(id: string): FlightStatus {
 
 function clearTimers(status: FlightStatus): void {
   if (status.mountTimer !== null) clearTimeout(status.mountTimer);
+  if (status.unbindTimer !== null) clearTimeout(status.unbindTimer);
   status.mountTimer = null;
+  status.unbindTimer = null;
 }
 
 function resolveMountWaiters(status: FlightStatus): void {
@@ -263,6 +268,7 @@ export function flyTo(
       // silently ignored by the view it is meant to configure.
       surfaceType: existing.surfaceType,
       landing: false,
+      unbinding: false,
       generation: existing.generation + 1,
     };
     reg.flights.set(id, next);
@@ -285,6 +291,7 @@ export function flyTo(
     surfaceType: options?.surfaceType ?? 'textureView',
     progress: makeMutable(0),
     landing: false,
+    unbinding: false,
     generation: 0,
   };
   reg.flights.set(id, flight);
@@ -394,9 +401,47 @@ export function flyBack(id: string): void {
   });
 }
 
-/** Drop the surface for `id`. Called when a landing leg settles, and on teardown. */
+/**
+ * Drop the surface for `id`. Called when a landing leg settles, and on teardown.
+ *
+ * A VIDEO surface does not go straight out. It renders for one more commit with
+ * NO player first, because expo-video's web player mirrors pause across every
+ * element bound to it and a `<video>` removed from the DOM is auto-paused by the
+ * browser — while `unmountVideoView` only runs in a PASSIVE effect cleanup,
+ * i.e. after removal and after that auto-pause. So the dying element pauses the
+ * one the viewer is now watching. Measured: the reel's video paused 1 ms after
+ * the flying surface left the DOM, with `currentTime` still advancing and
+ * nobody having called `pause()`.
+ *
+ * Rendering `player={null}` for one commit runs expo-video's own `[props.player]`
+ * effect while the node is STILL in the DOM: its cleanup calls
+ * `unmountVideoView`, the element leaves `_mountedVideos`, and its later pause
+ * reaches nobody. That is the documented mount/unmount pair, not a patch of
+ * somebody else's module.
+ *
+ * The cost is one frame in which the outgoing surface shows its poster instead
+ * of video. It is already on its way out and the destination is live by then —
+ * `handOff` is what got us here — so that frame is covered.
+ */
 export function releaseFlight(id: string): void {
   const reg = registry();
+  const flight = reg.flights.get(id);
+
+  if (flight !== undefined && flight.content.kind === 'video' && !flight.unbinding) {
+    reg.flights.set(id, { ...flight, unbinding: true });
+    const unbinding = statusFor(id);
+    if (unbinding.unbindTimer === null) {
+      // After the commit AND expo-video's passive effect, which is the whole
+      // point — a microtask would run before either.
+      unbinding.unbindTimer = setTimeout(() => {
+        unbinding.unbindTimer = null;
+        releaseFlight(id);
+      }, 0);
+    }
+    publish(reg);
+    return;
+  }
+
   const status = reg.status.get(id);
   if (status) {
     // A waiter still parked on `flyTo`'s promise would otherwise hang until its

@@ -102,6 +102,19 @@ function anchorAt(rect: typeof RECT): MediaFlightAnchorNode {
   };
 }
 
+/**
+ * Let a VIDEO surface finish going away.
+ *
+ * Releasing one is deliberately not synchronous: it renders one commit with no
+ * player first so its element unbinds while still in the DOM (see
+ * `releaseFlight`). Image surfaces release immediately and need none of this.
+ */
+async function flushRelease(): Promise<void> {
+  await act(async () => {
+    await new Promise((resolve) => setTimeout(resolve, 0));
+  });
+}
+
 beforeEach(() => {
   resetMediaFlight();
   resetOverlayStack();
@@ -539,13 +552,13 @@ describe('flyTo waits for the layer to commit a surface', () => {
       resolved = true;
     });
     releaseFlight('a');
-    await act(async () => {});
+    await flushRelease();
     expect(resolved).toBe(true);
   });
 });
 
 describe('hand-off: the layer leaves when the DESTINATION is live', () => {
-  it('holds the surface until a destination reports itself live', () => {
+  it('holds the surface until a destination reports itself live', async () => {
     // Releasing on the animation's own clock is the thing this replaces:
     // measured against production, a fullscreen video route needs ~1 s from tap
     // to first presented frame, and a ~300 ms animation would uncover a ~700 ms
@@ -556,10 +569,11 @@ describe('hand-off: the layer leaves when the DESTINATION is live', () => {
     expect(hasFlight('a')).toBe(true);
 
     handOffFlight('a');
+    await flushRelease();
     expect(hasFlight('a')).toBe(false);
   });
 
-  it('does not release MID-FLIGHT when the destination reports early', () => {
+  it('does not release MID-FLIGHT when the destination reports early', async () => {
     // A destination that is live before the surface has finished travelling
     // would otherwise make it vanish somewhere between the two rects.
     const suspended = suspendAnimations();
@@ -574,6 +588,7 @@ describe('hand-off: the layer leaves when the DESTINATION is live', () => {
       expect(hasFlight('a')).toBe(true);
 
       notifySurfaceSettled('a');
+      await flushRelease();
       expect(hasFlight('a')).toBe(false);
     } finally {
       suspended.restore();
@@ -596,7 +611,7 @@ describe('hand-off: the layer leaves when the DESTINATION is live', () => {
     expect(hasFlight('a')).toBe(true);
   });
 
-  it('a destination MediaSurface hands off on its first video frame', () => {
+  it('a destination MediaSurface hands off on its first video frame', async () => {
     // The entrypoint. Every assertion above drives the store directly and would
     // pass against a `flightId` prop that was declared and never wired.
     flyTo('a', TARGET, VIDEO, { from: RECT });
@@ -611,6 +626,7 @@ describe('hand-off: the layer leaves when the DESTINATION is live', () => {
     act(() => {
       (onFirstFrameRender as () => void)();
     });
+    await flushRelease();
     expect(hasFlight('a')).toBe(false);
   });
 
@@ -637,6 +653,80 @@ describe('hand-off: the layer leaves when the DESTINATION is live', () => {
     const [poster] = hostNodes(video.toJSON()).filter((n) => n.type === 'ExpoImage');
     expect(poster?.props?.onLoad).toBeUndefined();
     expect(hasFlight('b')).toBe(true);
+  });
+});
+
+/**
+ * A DYING ELEMENT MUST NOT PAUSE A LIVE ONE.
+ *
+ * expo-video's web player mirrors pause across every element bound to it
+ * (`VideoPlayer.web.js`: `video.onpause` pauses all the others), and the browser
+ * auto-pauses a `<video>` removed from the DOM. `unmountVideoView` runs in a
+ * PASSIVE effect cleanup — after removal, after the auto-pause — so the element
+ * on its way out pauses the one the viewer is watching. Measured in a real app:
+ * the reel's video paused 1 ms after the flying surface left the DOM, with
+ * nobody having called `pause()`.
+ *
+ * So a video surface unbinds BEFORE it goes: one commit rendering `player={null}`
+ * runs expo-video's own `[props.player]` effect while the node is still in the
+ * DOM, and its cleanup takes the element out of `_mountedVideos`.
+ */
+describe('a video surface unbinds before it leaves the DOM', () => {
+  it('renders one commit with NO player before releasing', () => {
+    jest.useFakeTimers();
+    try {
+      flyTo('a', TARGET, VIDEO, { from: RECT });
+      notifySurfaceMounted('a');
+      notifySurfaceSettled('a');
+      handOffFlight('a');
+
+      // Still live, and now marked unbinding — this is the commit that unbinds.
+      expect(hasFlight('a')).toBe(true);
+      expect(getFlights()[0]?.unbinding).toBe(true);
+
+      jest.advanceTimersByTime(1);
+      expect(hasFlight('a')).toBe(false);
+    } finally {
+      jest.useRealTimers();
+    }
+  });
+
+  it('passes player={null} to the view during that commit, and the real player before', () => {
+    // The entrypoint. The store flag above is inert unless the surface acts on
+    // it, and "it unbound" is exactly what a `detached` prop that nothing reads
+    // would also report.
+    const bound = render(<MediaSurface content={VIDEO} />);
+    const [live] = hostNodes(bound.toJSON()).filter((n) => n.type === 'ExpoVideoView');
+    expect(live?.props?.player).toBe(PLAYER);
+
+    const unbound = render(<MediaSurface content={VIDEO} detached />);
+    const [dying] = hostNodes(unbound.toJSON()).filter((n) => n.type === 'ExpoVideoView');
+    expect(dying?.props?.player).toBeNull();
+  });
+
+  it('does NOT delay an image surface, which has no player to unbind', () => {
+    // The cost is only paid where the hazard exists. An image release staying
+    // synchronous is also what keeps every other assertion in this file honest.
+    flyTo('b', TARGET, IMAGE, { from: RECT });
+    releaseFlight('b');
+    expect(hasFlight('b')).toBe(false);
+  });
+
+  it('clears the pending release when the registry is reset', () => {
+    // A timer that outlives its registry fires into the next suite — the exact
+    // shape that made the gallery's reveal timer land in another test file.
+    jest.useFakeTimers();
+    try {
+      flyTo('a', TARGET, VIDEO, { from: RECT });
+      notifySurfaceMounted('a');
+      notifySurfaceSettled('a');
+      handOffFlight('a');
+      expect(jest.getTimerCount()).toBeGreaterThan(0);
+      resetMediaFlight();
+      expect(jest.getTimerCount()).toBe(0);
+    } finally {
+      jest.useRealTimers();
+    }
   });
 });
 

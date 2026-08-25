@@ -94,6 +94,19 @@ export interface MediaFlight {
    * settles, the surface is released instead of parked.
    */
   landing: boolean;
+  /**
+   * True for the ONE commit between "release requested" and the surface
+   * actually going away, during which a video surface renders with no player.
+   *
+   * expo-video's web player MIRRORS pause across every element bound to it
+   * (`VideoPlayer.web.js`: `video.onpause` pauses all the others), and a
+   * `<video>` removed from the DOM is auto-paused by the browser. Its
+   * `unmountVideoView` runs in a PASSIVE effect cleanup — after removal, after
+   * the auto-pause — so a dying element pauses the one the viewer is watching.
+   * Unbinding first takes this element out of `_mountedVideos` while it is
+   * still in the DOM, so its later pause reaches nobody.
+   */
+  unbinding: boolean;
   /** Bumped on every retarget, so React remounts nothing but the layer re-reads. */
   generation: number;
 }

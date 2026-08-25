@@ -423,6 +423,64 @@ async function checkVideoGeometry(page, failures) {
     'measured as tracking its box, so the assertion above proves nothing');
 }
 
+/**
+ * IT IS STILL PLAYING — the property every other phase here is blind to.
+ *
+ * Geometry and first-frame gates pass a video that is frozen in exactly the
+ * right place. And frozen is what happened: expo-video's web player mirrors
+ * pause across every element bound to it, the browser auto-pauses a `<video>`
+ * removed from the DOM, and `unmountVideoView` runs only in a PASSIVE effect
+ * cleanup — so the element on its way out paused the one the viewer had just
+ * landed on, 1 ms after it left the DOM.
+ *
+ * So this asserts playback, and the CONTROL is the whole point: a landing in
+ * the correct position with the video PAUSED must be rejected, or the assertion
+ * is just the geometry phase again wearing a different name.
+ */
+async function checkStillPlaying(page, failures) {
+  await page.goto(`${BASE}/iframe.html?id=${STORY}&viewMode=story`, { waitUntil: 'networkidle0' });
+  await page.waitForSelector('[data-testid="flight-video"]', { timeout: 20000 });
+  if (!(await clickTestId(page, 'flight-video'))) {
+    failures.push('playing: the video trigger was not clickable');
+    return;
+  }
+
+  const read = () => page.evaluate(() => {
+    const v = document.querySelector('#bloom-portal-root video');
+    if (!v) return null;
+    return { paused: v.paused, t: v.currentTime, ready: v.readyState };
+  });
+
+  await sleep(120);
+  const during = await read();
+  await sleep(600);
+  const after = await read();
+
+  report(failures, during !== null, 'playing: no <video> was on screen mid-flight');
+  report(failures, after !== null, 'playing: no <video> was on screen after landing');
+  if (!during || !after) return;
+
+  report(failures, during.ready > 0, `playing: the clip never loaded (readyState ${during.ready})`);
+  report(failures, !during.paused, 'playing: the video was PAUSED mid-flight');
+  report(failures, !after.paused, 'playing: the video was PAUSED after landing');
+  // …and it actually advanced, or "not paused" is satisfied by a stalled element.
+  report(failures, after.t > during.t,
+    `playing: currentTime did not advance (${during.t} -> ${after.t}) — not paused, but not moving either`);
+
+  // CONTROL: pause it by hand and confirm this phase would say so. Without it,
+  // "still playing" is also what a probe that reads the wrong element reports.
+  const caught = await page.evaluate(() => {
+    const v = document.querySelector('#bloom-portal-root video');
+    if (!v) return null;
+    v.pause();
+    return v.paused;
+  });
+  report(failures, caught === true,
+    'playing: the control did not discriminate — pausing the element by hand did not register, ' +
+    'so this phase cannot tell a playing video from a frozen one');
+  console.log(`      playback: mid-flight t=${during.t.toFixed(2)} paused=${during.paused}; after t=${after.t.toFixed(2)} paused=${after.paused}`);
+}
+
 async function main() {
   const puppeteer = loadPuppeteer();
   const browser = await puppeteer.launch({
@@ -446,6 +504,7 @@ async function main() {
     await checkPaintLatency(page, failures);
     await checkNoOriginJumps(page, failures);
     await checkVideoGeometry(page, failures);
+    await checkStillPlaying(page, failures);
 
     await page.goto(`${BASE}/iframe.html?id=${STORY}&viewMode=story`, {
       waitUntil: 'networkidle0',
@@ -538,6 +597,7 @@ async function main() {
     console.log('PASS  a warm flight presents pixels within a frame or two of flyTo resolving');
     console.log('PASS  a flight with NO origin rect jumps to the destination (documented degradation)');
     console.log('PASS  a flying VIDEO element tracks its box on every frame, height included');
+    console.log('PASS  the video is still PLAYING mid-flight and after landing');
     console.log('PASS  media flight animates from the origin to the destination and releases');
   }
   process.exitCode = failures.length === 0 ? 0 : 1;
