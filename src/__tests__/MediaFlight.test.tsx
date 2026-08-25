@@ -411,6 +411,30 @@ describe('MediaSurface', () => {
     expect(getFlights()[0]?.surfaceType).toBe('surfaceView');
   });
 
+  it('gives the video EXPLICIT width and height, which absoluteFill does not', () => {
+    // A DOM `<video>` is a REPLACED element: `position:absolute; inset:0` with
+    // `width/height:auto` resolves it to its INTRINSIC size (300x150 before
+    // metadata) and the over-constrained right/bottom are discarded rather than
+    // stretching it. Measured in a real browser inside a 320x200 box, the
+    // element computed `inset: 0px` and `300x150` — it sat at the default while
+    // the box animated around it, then jumped the frame `videoWidth/Height`
+    // stopped being 0x0.
+    //
+    // The poster does not suffer it because expo-image sizes its own element,
+    // which is exactly why every image flight looked correct and hid this.
+    //
+    // The browser phase in `verify-media-flight.mjs` is the real gate; this is
+    // the fast one, so a regression is caught in a second rather than a minute.
+    const { toJSON } = render(<MediaSurface content={VIDEO} />);
+    const [view] = hostNodes(toJSON()).filter((node) => node.type === 'ExpoVideoView');
+    const style = resolvedStyle(view?.props?.style);
+    expect(style.width).toBe('100%');
+    expect(style.height).toBe('100%');
+    // …and still positioned, or it would fill its own line box instead of the
+    // flying one.
+    expect(style.position).toBe('absolute');
+  });
+
   it('asks for a textureView, which is what makes the box clip a video', () => {
     // A `surfaceView` composites outside the view hierarchy: it ignores the
     // parent's clip, radius and transform, i.e. every property a flying box
