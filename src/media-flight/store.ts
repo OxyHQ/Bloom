@@ -35,6 +35,7 @@ import {
 } from 'react-native-reanimated';
 
 import { RADIUS } from '../design-tokens';
+import { SURFACE_MOUNT_TIMEOUT_MS } from './constants';
 import {
   CLOSE_DURATION_WEB,
   CLOSE_SPRING,
@@ -56,9 +57,32 @@ import type {
  */
 export const DEFAULT_FLIGHT_CORNER_RADIUS = RADIUS['radius-12'];
 
+/**
+ * Bookkeeping the layer does not RENDER, kept out of the `MediaFlight` record
+ * on purpose.
+ *
+ * The record is replaced on every visual change so its identity tells React the
+ * leg moved; folding these flags into it would churn that identity on events
+ * nobody paints, and folding the record into these would put mutable state back
+ * in a rendered position. They are separate because they answer to different
+ * consumers.
+ */
+interface FlightStatus {
+  /** The layer has committed a surface for this id. */
+  mounted: boolean;
+  /** The current leg's animation has finished. */
+  settled: boolean;
+  /** A destination surface has reported that it is live. */
+  handedOff: boolean;
+  /** Waiters on `flyTo`'s promise, resolved once `mounted` turns true. */
+  mountWaiters: Array<() => void>;
+  mountTimer: ReturnType<typeof setTimeout> | null;
+}
+
 interface Registry {
   anchors: Map<string, MediaFlightAnchorNode>;
   flights: Map<string, MediaFlight>;
+  status: Map<string, FlightStatus>;
   listeners: Set<() => void>;
   /**
    * The array handed to `useSyncExternalStore`. Cached because that hook
@@ -78,10 +102,42 @@ function emptyRegistry(): Registry {
   return {
     anchors: new Map(),
     flights: new Map(),
+    status: new Map(),
     listeners: new Set(),
     snapshot: [],
     progress: makeMutable(0),
   };
+}
+
+function statusFor(id: string): FlightStatus {
+  const reg = registry();
+  let status = reg.status.get(id);
+  if (!status) {
+    status = {
+      mounted: false,
+      settled: false,
+      handedOff: false,
+      mountWaiters: [],
+      mountTimer: null,
+    };
+    reg.status.set(id, status);
+  }
+  return status;
+}
+
+function clearTimers(status: FlightStatus): void {
+  if (status.mountTimer !== null) clearTimeout(status.mountTimer);
+  status.mountTimer = null;
+}
+
+function resolveMountWaiters(status: FlightStatus): void {
+  const waiters = status.mountWaiters;
+  status.mountWaiters = [];
+  if (status.mountTimer !== null) {
+    clearTimeout(status.mountTimer);
+    status.mountTimer = null;
+  }
+  for (const waiter of waiters) waiter();
 }
 
 function registry(): Registry {
@@ -151,13 +207,37 @@ export function hasFlight(id: string): boolean {
  * same mounted `VideoView` — which is the whole point. A second record would be
  * a second surface for one id, and swapping between them is exactly the remount
  * that restarts playback.
+ *
+ * ## Why it returns a promise, and what the promise means
+ *
+ * It resolves once the layer has COMMITTED a surface for this id — not once
+ * that surface has painted.
+ *
+ * The distinction is the whole ordering contract. expo-video's web player keeps
+ * a `Set` of mounted `<video>` elements and, on each mount, copies
+ * `currentTime`, play state, volume, muted and rate from `[...set][0]`. If the
+ * set is EMPTY when the new element mounts, it returns early and the element
+ * starts at zero — a restart. So the layer's surface has to enter that set while
+ * the origin's is still in it, which means the caller must not tear the origin
+ * down (on web: must not navigate) until this promise resolves.
+ *
+ * That knowledge lives here rather than in the caller, which is the point: a
+ * consumer that has to know the mount order is a consumer that will get it wrong
+ * once and produce an intermittent restart nobody can reproduce locally.
+ *
+ * Painting is deliberately NOT waited on. `MediaSurface` renders the poster
+ * BEHIND the video on both platforms, and neither an unpainted `<video>` (no
+ * `poster` attribute is set) nor an Android `TextureView` with the ExoPlayer
+ * shutter off draws anything opaque — so the still shows through until the first
+ * frame lands, and there is no black box to hide. Waiting for a decode would
+ * trade an invisible problem for a laggy tap.
  */
 export function flyTo(
   id: string,
   rect: MeasuredRect,
   content: MediaSurfaceContent,
   options?: MediaFlightOptions,
-): void {
+): Promise<void> {
   const reg = registry();
   const existing = reg.flights.get(id);
 
@@ -182,9 +262,11 @@ export function flyTo(
       generation: existing.generation + 1,
     };
     reg.flights.set(id, next);
+    const retargeted = statusFor(id);
+    retargeted.settled = false;
     animate(next, false);
     publish(reg);
-    return;
+    return awaitSurfaceMount(id);
   }
 
   // Nothing live yet. `from` is the origin rect the caller measured; without one
@@ -201,8 +283,76 @@ export function flyTo(
     generation: 0,
   };
   reg.flights.set(id, flight);
+  const status = statusFor(id);
+  status.mounted = false;
+  status.settled = false;
+  status.handedOff = false;
   animate(flight, false);
   publish(reg);
+  return awaitSurfaceMount(id);
+}
+
+/**
+ * Resolve once `<MediaFlightLayer>` reports it has committed the surface, or
+ * after {@link SURFACE_MOUNT_TIMEOUT_MS} — which is what happens when no layer
+ * is mounted at all. Degrading to "carry on without a transition" is right;
+ * never resolving would mean an app that forgot one line at its root has a feed
+ * whose videos cannot be opened.
+ */
+function awaitSurfaceMount(id: string): Promise<void> {
+  const status = statusFor(id);
+  if (status.mounted) return Promise.resolve();
+  return new Promise<void>((resolve) => {
+    status.mountWaiters.push(resolve);
+    if (status.mountTimer !== null) return;
+    status.mountTimer = setTimeout(() => {
+      status.mountTimer = null;
+      warnNoLayerMounted();
+      resolveMountWaiters(status);
+    }, SURFACE_MOUNT_TIMEOUT_MS);
+  });
+}
+
+/**
+ * The layer calls this from the surface's mount effect. It is the commit signal
+ * `flyTo` waits on, and the only thing that makes the ordering contract above
+ * true rather than hopeful.
+ */
+export function notifySurfaceMounted(id: string): void {
+  const status = statusFor(id);
+  status.mounted = true;
+  resolveMountWaiters(status);
+}
+
+/** The layer calls this when a leg's animation finishes. */
+export function notifySurfaceSettled(id: string): void {
+  const status = statusFor(id);
+  status.settled = true;
+  if (status.handedOff) releaseFlight(id);
+}
+
+/**
+ * A destination surface reporting that it is LIVE — it has presented a frame of
+ * its own, so the flying copy is now redundant and can go.
+ *
+ * This is the release condition, and it is deliberately not the animation's
+ * clock. Measured against production, a fullscreen video route needs ~1 s from
+ * tap to first presented frame; releasing when a ~300 ms animation ends would
+ * leave ~700 ms with nothing live on screen — the hole the transition exists to
+ * cover, made longer.
+ *
+ * Wire it by giving the destination's `<MediaSurface>` a `flightId`; it calls
+ * this itself on its first frame. A destination that renders something other
+ * than a Bloom surface can call it directly.
+ */
+export function handOffFlight(id: string): void {
+  const reg = registry();
+  if (!reg.flights.has(id)) return;
+  const status = statusFor(id);
+  status.handedOff = true;
+  // Mid-flight the surface is still travelling: releasing now would make it
+  // vanish somewhere between the two rects. `notifySurfaceSettled` picks it up.
+  if (status.settled) releaseFlight(id);
 }
 
 /**
@@ -242,13 +392,47 @@ export function flyBack(id: string): void {
 /** Drop the surface for `id`. Called when a landing leg settles, and on teardown. */
 export function releaseFlight(id: string): void {
   const reg = registry();
+  const status = reg.status.get(id);
+  if (status) {
+    // A waiter still parked on `flyTo`'s promise would otherwise hang until its
+    // own timeout, holding a caller that has nothing left to wait for.
+    clearTimers(status);
+    resolveMountWaiters(status);
+    reg.status.delete(id);
+  }
   if (!reg.flights.delete(id)) return;
   publish(reg);
 }
 
 /** Test seam — drops every anchor and surface. */
 export function resetMediaFlight(): void {
+  const existing = globalThis.__oxyhq_bloom_media_flight__;
+  // Timers outlive a registry swap: an unfired mount timeout from the previous
+  // suite would warn — and resolve a waiter nobody is holding — inside the next.
+  if (existing) for (const status of existing.status.values()) clearTimers(status);
   globalThis.__oxyhq_bloom_media_flight__ = emptyRegistry();
+  hasWarnedNoLayer = false;
+}
+
+let hasWarnedNoLayer = false;
+
+/**
+ * One warning per module lifetime, and none in production — the same mechanism
+ * as the optional-peer boundaries. A missing `<MediaFlightLayer>` is otherwise
+ * completely silent: every `flyTo` resolves on its timeout and the app simply
+ * never shows a transition, which looks like the feature not being wired rather
+ * than the root not being.
+ */
+function warnNoLayerMounted(): void {
+  if (process.env.NODE_ENV === 'production' || hasWarnedNoLayer) return;
+  hasWarnedNoLayer = true;
+  // eslint-disable-next-line no-console
+  console.warn(
+    '[Bloom] flyTo() timed out waiting for a media surface to mount. Nothing is ' +
+      'rendering <MediaFlightLayer>, so no media transition will ever run and a ' +
+      'video opened from a feed will restart. Mount it ONCE at the app root ' +
+      '(app/_layout.tsx), above the router.',
+  );
 }
 
 /** Rect at `t` along `from` → `to`, so a retarget resumes rather than snapping. */
@@ -278,15 +462,18 @@ function interpolateRect(from: MeasuredRect, to: MeasuredRect, t: number): Measu
 function animate(flight: MediaFlight, landing: boolean): void {
   const reg = registry();
   const id = flight.id;
-  // Only a LANDING leg ends in a release. A `finished === false` callback means
-  // the leg was interrupted by a retarget, which owns the surface from then on.
-  const onSettled = landing
-    ? (finished?: boolean) => {
-        'worklet';
-        if (finished === false) return;
-        runOnJS(releaseFlight)(id);
-      }
-    : undefined;
+  // EVERY leg reports its settlement, because the release condition is now
+  // "settled AND the destination is live" and either can arrive first. A
+  // `finished === false` callback means the leg was interrupted by a retarget,
+  // which owns the surface from then on.
+  //
+  // A LANDING leg is the one case that releases on its own: it has flown back to
+  // its anchor and there is nothing left to cover.
+  const onSettled = (finished?: boolean) => {
+    'worklet';
+    if (finished === false) return;
+    runOnJS(landing ? releaseFlight : notifySurfaceSettled)(id);
+  };
 
   flight.progress.value = 0;
   reg.progress.value = 0;

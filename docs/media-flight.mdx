@@ -26,7 +26,8 @@ const flight = useMediaFlight();
   ref={(node) => flight.registerAnchor(mediaId, node)}
   onPress={async () => {
     const from = await flight.measureAnchor(mediaId);
-    flight.flyTo(mediaId, targetRect, { kind: 'video', player, poster }, { from: from ?? undefined });
+    // AWAIT, then navigate. Never the other way round — see below.
+    await flight.flyTo(mediaId, targetRect, { kind: 'video', player, poster }, { from: from ?? undefined });
     router.push(`/videos?id=${mediaId}`);
   }}
 >
@@ -35,9 +36,56 @@ const flight = useMediaFlight();
 ```
 
 ```tsx
-// the destination: it declares where it wants the surface, and hands it back
-useEffect(() => () => flight.flyBack(mediaId), [flight]);
+// the destination: it says where it wants the surface, and takes it over by
+// reporting its own first frame. `flightId` is the entire wiring.
+<MediaSurface content={{ kind: 'video', player, poster }} flightId={mediaId} />
 ```
+
+## The one rule: await `flyTo` before tearing the origin down
+
+expo-video's **web** player keeps a `Set` of mounted `<video>` elements and, on
+each new mount, copies `currentTime`, play state, volume, muted and rate from
+`[...set][0]`. If that set is EMPTY when the new element mounts it returns early
+and the element starts **at zero**.
+
+So the layer's surface has to enter the set while the origin's is still in it.
+On web, navigating unmounts the origin route — so navigating before the layer
+has committed is exactly the restart, and it is intermittent, because whether
+you win the race depends on a commit you do not control.
+
+`flyTo` returns a promise that resolves on that commit. Awaiting it is the whole
+contract, and it is the only ordering fact a consumer has to know — everything
+else is the layer's problem. It resolves on a short timeout when no
+`<MediaFlightLayer>` is mounted, so a missing root component degrades to "no
+transition" and warns once in dev, rather than leaving a feed whose videos
+cannot be opened.
+
+It does **not** wait for a decode. `MediaSurface` renders the poster BEHIND the
+video on both platforms, and neither an unpainted `<video>` (expo-video sets no
+`poster` attribute) nor an Android `TextureView` with the ExoPlayer shutter off
+draws anything opaque — so the still shows through until the first frame lands.
+Waiting for paint would trade an invisible problem for a laggy tap.
+
+## The layer leaves when the DESTINATION is live, not when the animation ends
+
+Measured against production: opening a full-screen video route takes **~996 ms**
+(median, n=10) from tap to first presented frame — ~545 ms to mount the route,
+~380 ms to `loadedmetadata`, ~40 ms to the frame. A flight animation lasts about
+300 ms. Releasing the surface when the animation ends would therefore uncover a
+~700 ms hole *exactly* where the transition was supposed to hide one.
+
+So the release condition is an observable fact, not a clock: the destination's
+own first frame. Give the destination's `<MediaSurface>` a `flightId` and it
+reports that itself (expo-video's `onFirstFrameRender`, expo-image's `onLoad`).
+`flight.handOff(id)` is there for a destination that renders something else.
+
+Called mid-flight, a hand-off is remembered rather than obeyed — the surface
+finishes travelling first, or it would vanish between the two rects.
+
+**The success criterion is continuity, not speed.** With a shared player the
+frame is already on screen before the tap; the flight does not make the video
+appear sooner, it makes it never disappear. Measure "was there ever no frame?"
+and "did `currentTime` advance monotonically?", not time-to-first-frame.
 
 ## Why this exists rather than `react-native-teleport`
 
@@ -54,6 +102,24 @@ So the surface is moved OUT of both screens for the duration of the flight.
 `Portal`, whose outlet lives above the router on both platforms. The surface it
 paints belongs to neither route, so neither route can take it down. Origin and
 destination only **declare** where they want it; the layer is what paints it.
+
+## Why the layer does not own the surface at rest
+
+A tempting design is for the feed cell to render only an anchor and let the
+layer paint every video, so there is never a swap at all. It does not work, and
+the reason is not performance.
+
+The layer paints through the `Portal`, which is outside every `overflow: hidden`
+and every z-index in the app. A feed video painted there would render **over** a
+sticky header, over a sidebar, over any open sheet, and it would not be clipped
+by the feed column's own rounded corners. That is not a risk to be measured away
+— the layer would have to know the app's clip regions, which is exactly what it
+cannot know. It holds on web and on native alike.
+
+Covering the whole screen is correct for the ~300 ms of a transition and wrong
+for the rest of the time. So: the cell owns its surface at rest, the layer owns
+it during the flight, and the handshake above is what makes the two swaps
+invisible.
 
 ## One live surface per id
 
@@ -122,6 +188,19 @@ package.
 
 The registry: that a flight is created, that a second `flyTo` retargets rather
 than duplicating, that `flyBack` releases, that the layer renders nothing while
-idle and a surface when one is live. The MOTION — and whether the layer is
-click-through — belongs to a browser, which is what
-`MediaFlight.stories.tsx` and `scripts/verify-overlay-stacking.mjs` are for.
+idle and a surface when one is live, and that `flyTo` really waits for the
+layer's commit.
+
+What it can never see is the MOTION. Every reanimated animation resolves
+synchronously under the test mock, so a mapper that runs once and freezes at the
+opening frame — the documented web failure mode of this package — produces the
+same tree as one that animates. Two browser gates cover it, both headful against
+real Chrome:
+
+- `node scripts/verify-media-flight.mjs` samples the flying surface's
+  `getBoundingClientRect` during and after the flight, and distinguishes frozen
+  (never leaves the origin) from snapped (already at the destination) from
+  animating, then asserts it lands on the destination rect and is released.
+- `node scripts/verify-overlay-stacking.mjs` parks a surface over a button and
+  clicks the button with trusted input, which is the only way to tell a layer
+  that is `pointer-events: none` from one that merely looks like it.

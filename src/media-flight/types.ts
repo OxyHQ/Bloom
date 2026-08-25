@@ -150,19 +150,37 @@ export interface MediaFlightController {
    * the caller measured an origin, and appears in place when it did not. A call
    * for an id already in flight RETARGETS the same surface — one surface per
    * id, always.
+   *
+   * **Await it before tearing the origin down** (on web: before navigating).
+   * The promise resolves once the layer has committed its surface, which is what
+   * puts it in expo-video's mounted set while the origin is still there — the
+   * mechanism that carries `currentTime` across instead of restarting at zero.
+   * It resolves on a short timeout if no layer is mounted, so a missing root
+   * component degrades to "no transition" rather than to a dead feed.
    */
   flyTo: (
     id: string,
     rect: MeasuredRect,
     content: MediaSurfaceContent,
     options?: MediaFlightOptions,
-  ) => void;
+  ) => Promise<void>;
   /**
    * Fly the live surface for `id` back to its current anchor and release it
    * once it lands. With no measurable anchor the surface is released at once —
    * the caller is expected to render its own copy again at that point.
    */
   flyBack: (id: string) => void;
+  /**
+   * Tell the layer a destination surface is LIVE, so the flying copy can go.
+   *
+   * Usually you do not call this: give the destination's `<MediaSurface>` a
+   * `flightId` and it reports its own first frame. It is here for a destination
+   * that renders something other than a Bloom surface.
+   *
+   * Called mid-flight it is remembered, not obeyed — the surface finishes
+   * travelling first, or it would vanish between the two rects.
+   */
+  handOff: (id: string) => void;
   /**
    * Progress of the most recent leg, 0 → 1. Read it from a worklet to fade an
    * origin placeholder out and a destination's chrome in, in lockstep with the

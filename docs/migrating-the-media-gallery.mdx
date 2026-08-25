@@ -1,0 +1,103 @@
+---
+title: Migrating the media gallery
+description: ZoomableImageGallery became ZoomableMediaGallery when the family learned to page video. Two symbols, seven files, two repos — and the subpath you already import still resolves.
+order: 3
+---
+
+# Migrating the media gallery
+
+The full-screen viewer now pages **video as well as images**, so the family is
+`zoomable-media-gallery` and the component is `ZoomableMediaGallery`. Bloom
+follows the clean-cut rule: there is no `@deprecated` alias and no old-name
+shim. This page is the whole bridge.
+
+## What actually changed
+
+Two exported names, and nothing else:
+
+| Old | New |
+| --- | --- |
+| `ZoomableImageGallery` | `ZoomableMediaGallery` |
+| `ZoomableImageGalleryHandle` | `ZoomableMediaGalleryHandle` |
+| `ZoomableImageGalleryProps` | `ZoomableMediaGalleryProps` |
+
+Everything else you import from this family keeps its name: `GalleryImage`,
+`MeasureThumb`, `MeasuredRect`, and every constant.
+
+<Callout variant="info" title="The subpath still resolves">
+`@oxyhq/bloom/zoomable-image-gallery` and
+`@oxyhq/bloom/zoomable-media-gallery` are two specifiers for the SAME module.
+The old one is not a shim being tolerated — an image gallery is exactly what
+this serves when every item is an image, so it stays a first-class entry point.
+You only have to change the *names you import*, not the path you import them
+from. Changing the path too is tidier, and optional.
+</Callout>
+
+## An image item is unchanged
+
+`kind` is optional on the image arm precisely so this stays true:
+
+```tsx
+const images: GalleryImage[] = [
+  { uri: 'https://…/a.jpg', alt: 'A photo', aspectRatio: 1.5 },
+];
+```
+
+If your call site only ever passes images, the rename is the entire migration.
+
+## Every affected file in the ecosystem
+
+Measured across `~/Oxy` (agent worktrees excluded). **Two repos, seven files,
+and in every one of them the fix is the two symbol renames above.**
+
+| Repo | File |
+| --- | --- |
+| Homiio | `packages/frontend/hooks/usePropertyPhotoGallery.ts` |
+| Homiio | `packages/frontend/components/property/PhotoGallery.tsx` |
+| Homiio | `packages/frontend/components/property/PhotoGrid.tsx` |
+| Homiio | `packages/frontend/utils/propertyUtils.ts` |
+| Mention | `packages/frontend/components/ZoomableAvatar.tsx` |
+| Mention | `packages/frontend/components/Post/PostAttachmentsRow.tsx` |
+| Mention | `packages/frontend/components/Post/Attachments/PostAttachmentMedia.tsx` |
+
+`propertyUtils.ts` and `PostAttachmentMedia.tsx` import only `GalleryImage` /
+`MeasuredRect`, which did not change — they appear here because they name the
+subpath, and they need no edit at all.
+
+<Callout variant="info" title="Noted is not affected">
+`Noted/packages/frontend/components/notes/attachments/ZoomableImageGallery.tsx`
+is an app-local component (a port of Mention's original), reached through
+`@/components/...`. It imports nothing from Bloom, so this rename does not touch
+it. It is listed here because a `grep` for the old name finds it and it looks
+like a call site.
+</Callout>
+
+## Why the failure is safe
+
+A symbol that no longer exists fails at RESOLUTION — a TypeScript error and a
+bundler error, at build time, naming the identifier. There is no version of this
+that renders wrong or misbehaves at runtime, and nothing sees it until the app
+deliberately bumps Bloom.
+
+## While you are here: video
+
+Adding a video page needs a `VideoPlayer` **you** create and own — Bloom never
+creates or destroys one:
+
+```tsx
+import { useVideoPlayer } from 'expo-video';
+import type { GalleryMedia } from '@oxyhq/bloom/zoomable-media-gallery';
+
+const player = useVideoPlayer(videoUrl);
+
+const items: GalleryMedia[] = [
+  { uri: 'https://…/a.jpg', alt: 'A photo', aspectRatio: 1.5 },
+  { kind: 'video', id: 'clip-1', player, poster: 'https://…/still.jpg', aspectRatio: 1.777 },
+];
+```
+
+`expo-video` is an optional peer. An app that pages only images never installs
+it; one that pages video without it gets posters and a single dev warning.
+
+See [MediaFlight](./media-flight) for moving that same player between a feed
+thumbnail and a full-screen route without restarting playback.

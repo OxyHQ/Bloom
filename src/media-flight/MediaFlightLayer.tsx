@@ -35,14 +35,14 @@
  * layer mounted for the whole life of the app that swallowed presses would be
  * indistinguishable from a frozen UI.
  */
-import { useSyncExternalStore } from 'react';
+import { useEffect, useSyncExternalStore } from 'react';
 import { StyleSheet } from 'react-native';
 import { interpolate, useAnimatedStyle } from 'react-native-reanimated';
 
 import { OverlayRoot } from '../overlay';
 import { Portal } from '../portal';
 import { MediaSurface } from './MediaSurface';
-import { getFlights, subscribeToFlights } from './store';
+import { getFlights, notifySurfaceMounted, subscribeToFlights } from './store';
 import type { MediaFlight } from './types';
 
 /**
@@ -88,7 +88,18 @@ MediaFlightLayer.displayName = 'MediaFlightLayer';
  * work per frame is one absolutely-positioned node resizing.
  */
 function MediaFlightSurface({ flight }: { flight: MediaFlight }) {
-  const { from, to, progress, content, cornerRadius, contentFit } = flight;
+  const { id, from, to, progress, content, cornerRadius, contentFit } = flight;
+
+  // The COMMIT signal `flyTo`'s promise waits on, and the reason it is an effect
+  // rather than anything derived: what the caller needs to know is that React
+  // has actually put this surface in the tree, and an effect is the only thing
+  // in React that means exactly that. On web it is also the moment the
+  // `<video>` element joined expo-video's mounted set — which is what carries
+  // `currentTime` across from the origin, and what stops working the instant
+  // the caller navigates first.
+  useEffect(() => {
+    notifySurfaceMounted(id);
+  }, [id]);
 
   // Deltas rather than absolute rects, so the worklet closes over four numbers.
   const originX = from.x - to.x;

@@ -6,7 +6,14 @@
  * a caller may hold it in a dependency array, a callback ref or a gesture
  * closure without any of them going stale, and there is no provider to mount.
  */
-import { flightProgress, flyBack, flyTo, measureAnchor, registerAnchor } from './store';
+import {
+  flightProgress,
+  flyBack,
+  flyTo,
+  handOffFlight,
+  measureAnchor,
+  registerAnchor,
+} from './store';
 import type { MediaFlightController } from './types';
 
 /**
@@ -23,6 +30,7 @@ const controller: MediaFlightController = Object.freeze({
   measureAnchor,
   flyTo,
   flyBack,
+  handOff: handOffFlight,
   get progress() {
     return flightProgress();
   },

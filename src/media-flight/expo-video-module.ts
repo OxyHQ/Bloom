@@ -88,6 +88,13 @@ export interface VideoViewLikeProps {
   style?: StyleProp<ViewStyle>;
   pointerEvents?: 'auto' | 'none' | 'box-none' | 'box-only';
   accessibilityLabel?: string;
+  /**
+   * Raised once the mounted player has rendered its first frame into this view.
+   * On web expo-video raises it from the element's `loadeddata` event; it is the
+   * only OBSERVABLE "this surface is live now" the package offers, and the media
+   * flight layer's hand-off depends on it rather than on a timer.
+   */
+  onFirstFrameRender?: () => void;
 }
 
 /** The slice of expo-video's module surface Bloom renders. */

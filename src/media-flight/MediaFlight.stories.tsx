@@ -60,12 +60,17 @@ function FlightDemo() {
     const from = await measure(thumbRef.current);
     const to = await measure(targetRef.current);
     if (!to) return;
-    setFlying(true);
-    flight.flyTo('story-media', to, CONTENT, {
+    // AWAIT before hiding the origin. In an app this is the line before
+    // `router.push`, and it is the whole ordering contract: the promise resolves
+    // once the layer has committed its surface, which on web is the moment that
+    // surface joined expo-video's mounted set — while the origin's was still in
+    // it. Hiding the origin first is what makes a video restart at zero.
+    await flight.flyTo('story-media', to, CONTENT, {
       from: from ?? undefined,
       contentFit: 'cover',
       cornerRadius: 16,
     });
+    setFlying(true);
   }, [flight]);
 
   const back = React.useCallback(() => {

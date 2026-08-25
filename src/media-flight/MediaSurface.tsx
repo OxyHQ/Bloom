@@ -13,7 +13,7 @@
  * platform video surface the way it rounds an image, and the transform lands on
  * a node reanimated is allowed to drive (expo-video's own host is not one).
  */
-import { memo, useState, type ComponentProps } from 'react';
+import { memo, useCallback, useState, type ComponentProps } from 'react';
 import {
   Platform,
   StyleSheet,
@@ -25,6 +25,7 @@ import {
 import { Image } from 'expo-image';
 import Animated from 'react-native-reanimated';
 
+import { handOffFlight } from './store';
 import type { MediaSurfaceContent } from './types';
 import {
   loadExpoVideo,
@@ -77,6 +78,21 @@ export interface MediaSurfaceProps {
    * the RN-only `box-none`/`box-only` values from the prop path only.
    */
   pointerEvents?: 'auto' | 'none' | 'box-none' | 'box-only';
+  /**
+   * Set this on the DESTINATION surface of a media flight, to the same id the
+   * flight was started with. When this surface presents its first frame it tells
+   * the layer to let the flying copy go.
+   *
+   * It exists so the ordering knowledge stays in Bloom. The alternative is a
+   * consumer releasing the flight on a timer — and the timer is always wrong,
+   * because a fullscreen video route measured ~1 s from tap to first frame
+   * against production while a flight animation lasts ~300 ms. Whoever guessed
+   * would be choosing between a hole and a surface that overstays.
+   *
+   * Leave it unset on an origin surface, and on the flight layer's own: a
+   * surface that handed off to itself would release on its own first frame.
+   */
+  flightId?: string;
 }
 
 /**
@@ -95,11 +111,20 @@ export const MediaSurface = memo(function MediaSurface({
   nativeControls = false,
   accessibilityLabel,
   pointerEvents,
+  flightId,
 }: MediaSurfaceProps) {
   // Captured once — see `surfaceType` above. A consumer changing it later gets
   // the value the view was mounted with, which is the only value expo-video
   // supports.
   const [mountedSurfaceType] = useState(surfaceType);
+
+  // Both arms report the same fact — "there is a picture here now" — because the
+  // destination of a flight can be either, and a caller should not have to know
+  // which one it wired. expo-video raises `onFirstFrameRender` from `loadeddata`
+  // on web; expo-image raises `onLoad` once the source is decoded and displayed.
+  const reportLive = useCallback(() => {
+    if (flightId !== undefined) handOffFlight(flightId);
+  }, [flightId]);
 
   const still = content.kind === 'video' ? content.poster : content.uri;
   // Loaded for the video arm only, and only when there is one — an image
@@ -118,13 +143,20 @@ export const MediaSurface = memo(function MediaSurface({
       {still === undefined ? null : (
         // Behind the video (and the whole picture on the image arm), so the box
         // is never empty while a first frame decodes and a flight that starts
-        // before playback still carries a picture.
+        // before playback still carries a picture. This is also why a flight
+        // never has to wait for a decode: an unpainted `<video>` sets no
+        // `poster` attribute and an Android TextureView runs with the ExoPlayer
+        // shutter off, so neither draws anything opaque over this.
         <Image
           source={{ uri: still }}
           contentFit={contentFit}
           style={StyleSheet.absoluteFill}
           transition={0}
           accessibilityLabel={accessibilityLabel}
+          // Only the arm that IS the picture reports being live. On the video
+          // arm the poster is scenery: handing off on it would release the
+          // flying surface while the destination still had no video.
+          onLoad={content.kind === 'video' ? undefined : reportLive}
           {...webDraggableProps}
         />
       )}
@@ -136,6 +168,7 @@ export const MediaSurface = memo(function MediaSurface({
           nativeControls={nativeControls}
           style={StyleSheet.absoluteFill}
           accessibilityLabel={accessibilityLabel}
+          onFirstFrameRender={reportLive}
         />
       ) : null}
     </Animated.View>

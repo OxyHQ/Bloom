@@ -19,6 +19,9 @@
  */
 import React from 'react';
 import { act, render } from '@testing-library/react-native';
+// A NAMESPACE import, not `jest.requireMock`: this is the very module object
+// `store.ts` calls through, so a spy written here is a spy the store sees.
+import * as Reanimated from 'react-native-reanimated';
 import type { VideoPlayer } from 'expo-video';
 
 import { PortalOutlet, PortalProvider } from '../portal';
@@ -34,13 +37,17 @@ import {
   flyBack,
   flyTo,
   getFlights,
+  handOffFlight,
   hasFlight,
   measureAnchor,
+  notifySurfaceMounted,
+  notifySurfaceSettled,
   registerAnchor,
   releaseFlight,
   resetMediaFlight,
   subscribeToFlights,
 } from '../media-flight/store';
+import { SURFACE_MOUNT_TIMEOUT_MS } from '../media-flight/constants';
 import type { MediaFlightAnchorNode, MediaSurfaceContent } from '../media-flight/types';
 import type { VideoPlayerLike } from '../media-flight/expo-video-module';
 import { hostNodes, resolvedStyle } from './support/rendered-style';
@@ -61,6 +68,32 @@ const VIDEO: MediaSurfaceContent = {
 
 const RECT = { x: 10, y: 20, width: 100, height: 50 };
 const TARGET = { x: 0, y: 0, width: 400, height: 300 };
+
+/**
+ * The reanimated MOCK settles every animation synchronously — `withSpring` and
+ * `withTiming` invoke their completion callback and return. That is what makes
+ * a release observable in jest at all, and it is also why "mid-flight" cannot be
+ * reached through the public path: by the time `flyTo` returns, the leg has
+ * already finished.
+ *
+ * So a test that needs a leg genuinely IN FLIGHT suspends the callback. This is
+ * an instrument, not a seam in the source: it makes the mock behave like a real
+ * animation that has not finished yet.
+ */
+function suspendAnimations(): { restore: () => void; ran: () => boolean } {
+  const spring = jest.spyOn(Reanimated, 'withSpring').mockImplementation((value) => value);
+  const timing = jest.spyOn(Reanimated, 'withTiming').mockImplementation((value) => value);
+  return {
+    restore: () => {
+      spring.mockRestore();
+      timing.mockRestore();
+    },
+    // The instrument's own positive control: "the flight was still live" is
+    // also what a spy that never intercepted anything reports, by suspending
+    // nothing and coincidentally not releasing.
+    ran: () => spring.mock.calls.length + timing.mock.calls.length > 0,
+  };
+}
 
 /** A node that answers `measureInWindow` with a fixed rect, like a laid-out View. */
 function anchorAt(rect: typeof RECT): MediaFlightAnchorNode {
@@ -224,6 +257,7 @@ describe('useMediaFlight', () => {
     const controller = useMediaFlight();
     expect(controller.flyTo).toBe(flyTo);
     expect(controller.flyBack).toBe(flyBack);
+    expect(controller.handOff).toBe(handOffFlight);
     expect(controller.registerAnchor).toBe(registerAnchor);
     expect(controller.measureAnchor).toBe(measureAnchor);
   });
@@ -255,6 +289,23 @@ describe('MediaFlightLayer', () => {
   it('renders nothing while no flight is live', () => {
     const { toJSON } = renderLayer();
     expect(hostNodes(toJSON()).filter((node) => node.type === 'ExpoImage')).toHaveLength(0);
+  });
+
+  it('reports the COMMIT that flyTo waits on', () => {
+    // The layer half of the ordering contract. Every store-level test drives
+    // `notifySurfaceMounted` by hand and would pass against a layer that never
+    // called it — leaving every `flyTo` to resolve on its timeout instead, which
+    // is 250 ms of navigation lag AND the restart it was meant to prevent.
+    let resolved = false;
+    renderLayer();
+    act(() => {
+      void flyTo('a', TARGET, IMAGE, { from: RECT }).then(() => {
+        resolved = true;
+      });
+    });
+    return act(async () => {}).then(() => {
+      expect(resolved).toBe(true);
+    });
   });
 
   it('paints a surface once one is live — i.e. it really is subscribed', () => {
@@ -367,6 +418,176 @@ describe('MediaPoster', () => {
       <MediaPoster content={{ kind: 'video', player: PLAYER }} />,
     );
     expect(hostNodes(toJSON()).filter((node) => node.type === 'ExpoImage')).toHaveLength(0);
+  });
+});
+
+/**
+ * The ordering contract, which is the only thing standing between this package
+ * and an intermittent restart nobody can reproduce.
+ *
+ * expo-video's WEB player keeps a `Set` of mounted `<video>` elements and, on
+ * each mount, copies `currentTime` and play state from `[...set][0]`. An EMPTY
+ * set makes it return early and the new element starts at zero. So the layer's
+ * surface has to join that set while the origin's is still in it — i.e. the
+ * caller must not navigate until the layer has committed. `flyTo`'s promise is
+ * that signal, and these assert it is a real signal rather than a resolved
+ * promise wearing one.
+ */
+describe('flyTo waits for the layer to commit a surface', () => {
+  it('does NOT resolve before the layer reports a mounted surface', async () => {
+    // The assertion that makes the rest mean something. Without it, a `flyTo`
+    // that returned `Promise.resolve()` would satisfy every other test here and
+    // let a consumer navigate one commit too early — which on web is exactly the
+    // restart, and only on a cold cache, only sometimes.
+    let resolved = false;
+    void flyTo('a', TARGET, VIDEO, { from: RECT }).then(() => {
+      resolved = true;
+    });
+    await act(async () => {});
+    expect(resolved).toBe(false);
+
+    act(() => {
+      notifySurfaceMounted('a');
+    });
+    await act(async () => {});
+    expect(resolved).toBe(true);
+  });
+
+  it('resolves as soon as the layer is already showing the surface', async () => {
+    flyTo('a', TARGET, VIDEO);
+    notifySurfaceMounted('a');
+    // A retarget of a surface already on screen must not re-block the caller.
+    await expect(flyTo('a', RECT, VIDEO)).resolves.toBeUndefined();
+  });
+
+  it('gives up after the timeout, so a missing layer degrades to no transition', async () => {
+    // An app that forgot `<MediaFlightLayer>` at its root would otherwise have a
+    // feed whose videos cannot be opened at all — the promise never settling and
+    // the caller never navigating. Loud in dev, harmless in behaviour.
+    jest.useFakeTimers();
+    const warn = jest.spyOn(console, 'warn').mockImplementation(() => {});
+    try {
+      let resolved = false;
+      void flyTo('a', TARGET, VIDEO).then(() => {
+        resolved = true;
+      });
+      jest.advanceTimersByTime(SURFACE_MOUNT_TIMEOUT_MS + 1);
+      await Promise.resolve();
+      expect(resolved).toBe(true);
+      expect(warn).toHaveBeenCalledWith(expect.stringContaining('MediaFlightLayer'));
+    } finally {
+      warn.mockRestore();
+      jest.useRealTimers();
+    }
+  });
+
+  it('resolves a waiter when the flight is released out from under it', async () => {
+    // Otherwise a caller sits on a promise for a surface that no longer exists,
+    // until its own timeout fires — a navigation stalled by a quarter second for
+    // no reason anybody could find.
+    let resolved = false;
+    void flyTo('a', TARGET, VIDEO).then(() => {
+      resolved = true;
+    });
+    releaseFlight('a');
+    await act(async () => {});
+    expect(resolved).toBe(true);
+  });
+});
+
+describe('hand-off: the layer leaves when the DESTINATION is live', () => {
+  it('holds the surface until a destination reports itself live', () => {
+    // Releasing on the animation's own clock is the thing this replaces:
+    // measured against production, a fullscreen video route needs ~1 s from tap
+    // to first presented frame, and a ~300 ms animation would uncover a ~700 ms
+    // hole exactly where the transition was supposed to hide one.
+    flyTo('a', TARGET, VIDEO, { from: RECT });
+    notifySurfaceMounted('a');
+    notifySurfaceSettled('a');
+    expect(hasFlight('a')).toBe(true);
+
+    handOffFlight('a');
+    expect(hasFlight('a')).toBe(false);
+  });
+
+  it('does not release MID-FLIGHT when the destination reports early', () => {
+    // A destination that is live before the surface has finished travelling
+    // would otherwise make it vanish somewhere between the two rects.
+    const suspended = suspendAnimations();
+    try {
+      flyTo('a', TARGET, VIDEO, { from: RECT });
+      notifySurfaceMounted('a');
+      // The instrument really intercepted the leg — otherwise "still live"
+      // below would be true for the wrong reason.
+      expect(suspended.ran()).toBe(true);
+
+      handOffFlight('a');
+      expect(hasFlight('a')).toBe(true);
+
+      notifySurfaceSettled('a');
+      expect(hasFlight('a')).toBe(false);
+    } finally {
+      suspended.restore();
+    }
+  });
+
+  it('is inert for an id with nothing live', () => {
+    expect(() => handOffFlight('nope')).not.toThrow();
+    expect(hasFlight('nope')).toBe(false);
+  });
+
+  it('a surface with NO flightId never hands off', () => {
+    // The layer paints its own `MediaSurface`, and it must not pass a flightId:
+    // a surface that handed off to itself would release on its own first frame,
+    // i.e. immediately, and there would be no transition at all.
+    flyTo('a', TARGET, VIDEO, { from: RECT });
+    notifySurfaceMounted('a');
+    notifySurfaceSettled('a');
+    render(<MediaSurface content={VIDEO} />);
+    expect(hasFlight('a')).toBe(true);
+  });
+
+  it('a destination MediaSurface hands off on its first video frame', () => {
+    // The entrypoint. Every assertion above drives the store directly and would
+    // pass against a `flightId` prop that was declared and never wired.
+    flyTo('a', TARGET, VIDEO, { from: RECT });
+    notifySurfaceMounted('a');
+    notifySurfaceSettled('a');
+
+    const { toJSON } = render(<MediaSurface content={VIDEO} flightId="a" />);
+    const [view] = hostNodes(toJSON()).filter((node) => node.type === 'ExpoVideoView');
+    const onFirstFrameRender = view?.props?.onFirstFrameRender;
+    expect(typeof onFirstFrameRender).toBe('function');
+
+    act(() => {
+      (onFirstFrameRender as () => void)();
+    });
+    expect(hasFlight('a')).toBe(false);
+  });
+
+  it('a destination IMAGE surface hands off on load, and its poster never does', () => {
+    // Both arms report the same fact, because a flight can land on either. But
+    // on the VIDEO arm the poster is scenery — handing off on it would release
+    // the flying copy while the destination still had no video.
+    flyTo('a', TARGET, IMAGE, { from: RECT });
+    notifySurfaceMounted('a');
+    notifySurfaceSettled('a');
+
+    const image = render(<MediaSurface content={IMAGE} flightId="a" />);
+    const [imageNode] = hostNodes(image.toJSON()).filter((n) => n.type === 'ExpoImage');
+    expect(typeof imageNode?.props?.onLoad).toBe('function');
+    act(() => {
+      (imageNode?.props?.onLoad as () => void)();
+    });
+    expect(hasFlight('a')).toBe(false);
+
+    flyTo('b', TARGET, VIDEO, { from: RECT });
+    notifySurfaceMounted('b');
+    notifySurfaceSettled('b');
+    const video = render(<MediaSurface content={VIDEO} flightId="b" />);
+    const [poster] = hostNodes(video.toJSON()).filter((n) => n.type === 'ExpoImage');
+    expect(poster?.props?.onLoad).toBeUndefined();
+    expect(hasFlight('b')).toBe(true);
   });
 });
 
