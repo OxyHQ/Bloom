@@ -55,6 +55,8 @@ const CHROME = process.env.CHROME_PATH ?? '/opt/google/chrome/chrome';
 const argUrl = process.argv.indexOf('--url');
 const BASE = argUrl !== -1 ? process.argv[argUrl + 1] : 'http://localhost:6006';
 const STORY = 'overlays-mediaflight--fly-to-and-back';
+/** Mounts the layer AND a button under it, with no flight ever started. */
+const IDLE_STORY = 'overlays-mediaflight--click-through';
 
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
@@ -117,6 +119,59 @@ function report(failures, condition, message) {
   if (!condition) failures.push(message);
 }
 
+/**
+ * THE IDLE CASE, which no flight test can reach.
+ *
+ * `<MediaFlightLayer>` lives at an app's root for the whole life of the process,
+ * so it is idle almost always. A full-viewport box emitted while idle swallows
+ * every tap in the app — not just media taps — and the app renders perfectly
+ * while being completely dead.
+ *
+ * The existing "does not steal the click" case in
+ * `verify-overlay-stacking.mjs` cannot see this: it starts a flight first, so it
+ * is blind to the state where there is none. Asked in the currency the symptom
+ * arrives in — `document.elementFromPoint` — plus the structural question
+ * underneath it, which is whether the layer put anything in the portal at all.
+ */
+async function checkIdle(page, failures) {
+  await page.goto(`${BASE}/iframe.html?id=${IDLE_STORY}&viewMode=story`, {
+    waitUntil: 'networkidle0',
+  });
+  await page.waitForSelector('[data-testid="top-action"]', { timeout: 20000 });
+
+  const idle = await page.evaluate(() => {
+    const button = document.querySelector('[data-testid="top-action"]');
+    const r = button.getBoundingClientRect();
+    const hit = document.elementFromPoint(r.left + r.width / 2, r.top + r.height / 2);
+    const portalRoot = document.getElementById('bloom-portal-root');
+    const describe = (node) => {
+      if (!node) return '<nothing>';
+      const cs = getComputedStyle(node);
+      return `${node.tagName.toLowerCase()} pos=${cs.position} z=${cs.zIndex} pe=${cs.pointerEvents}`;
+    };
+    return {
+      buttonHasBox: r.width > 0 && r.height > 0,
+      reachable: hit ? button.contains(hit) || button === hit : false,
+      hit: describe(hit),
+      portalChildren: portalRoot ? portalRoot.querySelectorAll('*').length : 0,
+    };
+  });
+
+  // Vacuity floor: if the button had no box, "unreachable" would be true for a
+  // reason that has nothing to do with the layer.
+  report(failures, idle.buttonHasBox, 'idle: the button under test has no box');
+  report(
+    failures,
+    idle.portalChildren === 0,
+    `idle: the layer parked ${idle.portalChildren} element(s) in the portal with NO flight live`,
+  );
+  report(
+    failures,
+    idle.reachable,
+    `idle: a control under the idle layer is not reachable — elementFromPoint returned ${idle.hit}`,
+  );
+}
+
 async function main() {
   const puppeteer = loadPuppeteer();
   const browser = await puppeteer.launch({
@@ -134,6 +189,10 @@ async function main() {
     await page.emulateMediaFeatures([
       { name: 'prefers-reduced-motion', value: 'no-preference' },
     ]);
+    // The idle case first: it is the state the layer spends its life in, and it
+    // loads its own story (one that mounts the layer and never flies anything).
+    await checkIdle(page, failures);
+
     await page.goto(`${BASE}/iframe.html?id=${STORY}&viewMode=story`, {
       waitUntil: 'networkidle0',
     });
@@ -220,7 +279,10 @@ async function main() {
   }
 
   for (const failure of failures) console.log(`FAIL  ${failure}`);
-  if (failures.length === 0) console.log('PASS  media flight animates from the origin to the destination and releases');
+  if (failures.length === 0) {
+    console.log('PASS  idle layer contributes no node and steals no click');
+    console.log('PASS  media flight animates from the origin to the destination and releases');
+  }
   process.exitCode = failures.length === 0 ? 0 : 1;
 }
 
