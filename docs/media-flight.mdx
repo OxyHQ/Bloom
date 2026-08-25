@@ -198,9 +198,87 @@ Concretely:
 | `flyBack(id)`                   | flies it to its anchor and releases it on landing              |
 | `progress`                      | `SharedValue<number>`, 0 → 1 for the most recent leg           |
 
+And one component, `<MediaFlightHost id content style … />` — where the media
+lives when it is not flying. See below.
+
 The most recently registered node for an id **is** the anchor, which is what
 makes a destination mounting over an origin take over as the fly-back target
 without either of them coordinating.
+
+## `MediaFlightHost`: one element for the whole flight, on web
+
+Everything above is what a flight does with a **picture**. A video needs one
+more thing, and it is not a matter of ordering: on web the pause and the
+restart are properties of TWO elements sharing one player.
+
+Measured against expo-video's real `VideoPlayerWeb` (57.0.2), across every
+element topology a consumer can produce on one player:
+
+| topology                                   | position | playback |
+| ------------------------------------------ | -------- | -------- |
+| origin dies BEFORE the destination mounts   | `ct=0`   | playing  |
+| origin dies AFTER the destination mounts    | `ct=4.28`| paused   |
+| one element, re-parented                    | `ct=4.28`| playing  |
+
+The first two rows contain no Bloom surface at all — a feed row and a fullscreen
+player sharing a player produce them on their own. Two elements give you the
+position or the playback, never both, because `mountVideoView` seeds a new
+element from the first one already mounted and `_addListeners` gives every
+element an `onpause` that pauses all the others — handlers `unmountVideoView`
+never removes. An element on its way out still governs the player.
+
+So on web, Bloom paints the media **once**, into a wrapper it created outside
+React, and moves that wrapper between the boxes that want it:
+
+```tsx
+// The feed row
+<MediaFlightHost id={mediaId} content={{ kind: 'video', player }} contentFit="cover"
+  style={{ width: 320, height: 180, borderRadius: 12, overflow: 'hidden' }} />
+
+// The fullscreen route, later, with the same id and the same player
+<MediaFlightHost id={mediaId} content={{ kind: 'video', player }} contentFit="contain"
+  style={StyleSheet.absoluteFill} />
+```
+
+A host **declares a box**; it does not own the media. It also registers itself
+as the flight's anchor, so `flyTo`/`flyBack` measure the box the media actually
+paints in rather than a box the consumer measured separately.
+
+On **native** `MediaFlightHost` renders its own `MediaSurface` inline, exactly
+as consumers did before it existed. One API, two implementations, and nothing
+about the call site says which one you got.
+
+### Why it works, in three parts
+
+- **React never sees the move.** The media is rendered with `createPortal` into
+  a container whose identity never changes, and a portal's container is not part
+  of React's tree. `createPortal` to a container that *changes* unmounts and
+  remounts — the thing being avoided — so the container is created once, outside
+  React, and only its position in the document changes.
+- **The browser never sees a removal.** HTML's removal steps for a media element
+  await a stable state and then abort if the element is back in a document, so a
+  synchronous `appendChild` from one parent to another does not pause playback.
+  (This is why re-parenting a `<video>` works and re-parenting an `<iframe>`
+  does not: an iframe reloads.)
+- **A node with no host waits IN the document.** It parks in a 1×1 transparent
+  holder, because a detached `<video>` is auto-paused. It is disposed when
+  nothing can want it back — no claim and no flight live for that id — which is
+  a fact the registry reads rather than a timeout it guesses.
+
+### The flight outranks every host
+
+A destination that mounts mid-flight claims its id, and the layer keeps the node
+anyway until the leg ends — otherwise the media would jump to its landing place
+while still travelling. That claim IS the hand-off: with one element there is no
+first frame to wait for, because the element the destination just claimed has
+been playing since the origin. `flightId` and `handOff` remain for native and
+for a destination that paints its own surface.
+
+### What it does not change
+
+`flyTo` with an id that has no host still paints its own `MediaSurface`, which
+is what every image flight does. Nothing about the gallery, the anchors or the
+animation changes.
 
 ## It never takes a click
 
