@@ -317,11 +317,38 @@ Three things about the props Bloom passes:
 - **Memoise the slot.** It is part of what a host publishes to the layer,
   compared by identity.
 
+All three fail silently and only in production, so Bloom says so in development
+instead: a slot that changes identity five times warns once about `useCallback`,
+and a media element that does not fill its wrapper warns once with both
+rectangles. Neither is a gate — they are the three trap-doors of this contract
+turned into three messages.
+
 The flight itself never brings an element. Its claim on a shared node says only
 WHERE the node lives — a flight that published its own render would swap a
 consumer's element out for Bloom's and back again, which is two remounts in the
 middle of the one operation whose whole point is that the element is never
 rebuilt.
+
+### What the slot proved about the mechanism
+
+The slot exists because of picture-in-picture. What it FOUND is worth more.
+
+Before it, a flight published a *render* of its own alongside its position — so
+for the length of a leg the layer painted the media its own way. With Bloom's
+own view that is invisible: rebuilding the element and not rebuilding it produce
+exactly the same tree, the same props and the same picture. The moment a
+consumer's element went through the same path, it stopped being invisible: the
+element was swapped out at take-off and back at the landing, two remounts inside
+the one operation whose entire purpose is that the element is never rebuilt, and
+the original ended the flight disconnected.
+
+**The abstraction was hiding the defect the abstraction existed to prevent.** No
+sharper test found it; giving up ownership of the element did. That is why a
+flight's claim on a shared node now says only WHERE the node lives, and why the
+mutation that gives it a render back fails three identity tests by name.
+
+Keep it that way. A claim that carries a render again will look like a
+simplification and will pass everything except those three.
 
 ### The flight outranks every host
 

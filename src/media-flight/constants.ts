@@ -30,3 +30,25 @@ export const SURFACE_MOUNT_TIMEOUT_MS = 250;
  * `flyBack(id)` and `releaseFlight(id)` are the escape hatches, and they are
  * the caller's to use.
  */
+
+/**
+ * How many times a video slot may change identity before Bloom says so.
+ *
+ * `renderVideo` is part of what a host publishes to the layer and is compared
+ * by identity, so an unmemoised slot republishes on every render of the row it
+ * lives in — silently, and only under load. Five is well past any legitimate
+ * cause (a mute toggle, a fit change) and far below the churn of a slot rebuilt
+ * per render in a scrolling feed.
+ */
+export const SLOT_IDENTITY_CHURN_LIMIT = 5;
+
+/**
+ * How far a media element may sit from the box it is supposed to fill, in px,
+ * before Bloom says so.
+ *
+ * Two, not zero: subpixel layout and a box mid-animation both land within a
+ * pixel, and the defect this catches is not subtle — a `<video>` that never
+ * received Bloom's sizing style paints at its intrinsic 300x150 inside whatever
+ * box it was given.
+ */
+export const SLOT_FILL_TOLERANCE_PX = 2;

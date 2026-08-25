@@ -50,7 +50,10 @@ import {
   resetMediaFlight,
   subscribeToFlights,
 } from '../media-flight/store';
-import { SURFACE_MOUNT_TIMEOUT_MS } from '../media-flight/constants';
+import {
+  SLOT_IDENTITY_CHURN_LIMIT,
+  SURFACE_MOUNT_TIMEOUT_MS,
+} from '../media-flight/constants';
 import type { MediaFlightAnchorNode, MediaSurfaceContent } from '../media-flight/types';
 import type { VideoPlayerLike } from '../media-flight/expo-video-module';
 import { hostNodes, resolvedStyle } from './support/rendered-style';
@@ -533,6 +536,71 @@ describe('MediaSurface renderVideo', () => {
     // WITHOUT an event. See `releaseFlight`.
     render(<MediaSurface content={VIDEO} renderVideo={slot} detached />);
     expect(slotProps[0]?.player).toBeNull();
+  });
+
+  it('stays quiet for a memoised slot, however often it renders (control)', () => {
+    // FIRST in this file on purpose. The warning is one-shot per module
+    // lifetime, so a control placed after the test that fires it can never see
+    // one and passes whatever the code does — measured: a mutation that counted
+    // RENDERS instead of identity changes survived this control until it moved
+    // above the test that spends the flag.
+    //
+    // What it asserts: identity never changes, so no amount of rendering
+    // reaches the limit. A counter driven by renders fires here, and it would
+    // fire for every correct consumer, which is worse than not warning at all.
+    const warn = jest.spyOn(console, 'warn').mockImplementation(() => {});
+    try {
+      const stable = () => null;
+      const view = render(<MediaSurface content={VIDEO} renderVideo={stable} />);
+      for (let i = 0; i < SLOT_IDENTITY_CHURN_LIMIT + 5; i += 1) {
+        // A DIFFERENT prop each time, so `memo` cannot skip the render. With a
+        // constant one it skips after the first, the effect never runs again,
+        // and a counter driven by renders rather than by identity would go
+        // unnoticed here — measured: that mutation survived this control until
+        // the label started changing.
+        view.rerender(
+          <MediaSurface content={VIDEO} renderVideo={stable} accessibilityLabel={`r${i}`} />,
+        );
+      }
+      expect(
+        warn.mock.calls.map((call) => String(call[0])).filter((t) => t.startsWith('[Bloom]')),
+      ).toEqual([]);
+    } finally {
+      warn.mockRestore();
+    }
+  });
+
+  /**
+   * ONE test, with the under-limit case FIRST, because the warning fires once
+   * per module lifetime and the flag is not exported.
+   *
+   * The order is the whole assertion. Two separate tests could not tell a
+   * counter that fires AT the limit from one that fires on the first change:
+   * both produce exactly one warning, because the warning is one-shot. Only
+   * "silent below the limit, then loud" distinguishes them, and a slot that
+   * changes twice is what every legitimate consumer does.
+   */
+  it('is silent below the churn limit and says so above it', () => {
+    const warn = jest.spyOn(console, 'warn').mockImplementation(() => {});
+    const bloomWarnings = () =>
+      warn.mock.calls.map((call) => String(call[0])).filter((text) => text.startsWith('[Bloom]'));
+    try {
+      const view = render(<MediaSurface content={VIDEO} renderVideo={() => null} />);
+      // A NEW function each time, which is what `useCallback`-less code does —
+      // but not enough of them to be churn.
+      for (let i = 0; i < SLOT_IDENTITY_CHURN_LIMIT - 2; i += 1) {
+        view.rerender(<MediaSurface content={VIDEO} renderVideo={() => null} />);
+      }
+      expect(bloomWarnings()).toEqual([]);
+
+      for (let i = 0; i < 4; i += 1) {
+        view.rerender(<MediaSurface content={VIDEO} renderVideo={() => null} />);
+      }
+      expect(bloomWarnings()).toHaveLength(1);
+      expect(bloomWarnings()[0]).toContain('useCallback');
+    } finally {
+      warn.mockRestore();
+    }
   });
 
   it('never loads the optional peer, so a consumer without expo-video can use it', () => {

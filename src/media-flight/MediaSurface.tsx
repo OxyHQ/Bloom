@@ -13,7 +13,7 @@
  * platform video surface the way it rounds an image, and the transform lands on
  * a node reanimated is allowed to drive (expo-video's own host is not one).
  */
-import { memo, useCallback, useState, type ComponentProps } from 'react';
+import { memo, useCallback, useEffect, useRef, useState, type ComponentProps } from 'react';
 import {
   Platform,
   StyleSheet,
@@ -25,6 +25,7 @@ import {
 import { Image } from 'expo-image';
 import Animated from 'react-native-reanimated';
 
+import { SLOT_IDENTITY_CHURN_LIMIT } from './constants';
 import { handOffFlight } from './store';
 import type { MediaSurfaceContent, MediaVideoSlot } from './types';
 import {
@@ -148,6 +149,18 @@ export const MediaSurface = memo(function MediaSurface({
   // supports.
   const [mountedSurfaceType] = useState(surfaceType);
 
+  // A slot rebuilt on every render republishes this surface to the layer on
+  // every render, which nothing at runtime reports — the picture is correct and
+  // the app is doing work in proportion to how often its rows re-render. The
+  // counter lives in an effect rather than in render: a render-phase ref write
+  // makes the React Compiler bail on the whole component.
+  const slotChurn = useRef(0);
+  useEffect(() => {
+    if (renderVideo === undefined) return;
+    slotChurn.current += 1;
+    if (slotChurn.current === SLOT_IDENTITY_CHURN_LIMIT) warnSlotNotMemoised();
+  }, [renderVideo]);
+
   // Both arms report the same fact — "there is a picture here now" — because the
   // destination of a flight can be either, and a caller should not have to know
   // which one it wired. expo-video raises `onFirstFrameRender` from `loadeddata`
@@ -227,6 +240,24 @@ export const MediaSurface = memo(function MediaSurface({
 });
 
 MediaSurface.displayName = 'MediaSurface';
+
+let hasWarnedAboutSlotChurn = false;
+
+/**
+ * One warning per module lifetime, and none in production — same mechanism as
+ * `warnExpoVideoUnavailable`.
+ */
+function warnSlotNotMemoised(): void {
+  if (process.env.NODE_ENV === 'production' || hasWarnedAboutSlotChurn) return;
+  hasWarnedAboutSlotChurn = true;
+  // eslint-disable-next-line no-console
+  console.warn(
+    `[Bloom] A \`renderVideo\` slot changed identity ${SLOT_IDENTITY_CHURN_LIMIT} times. ` +
+      'It is part of what a media host publishes to the flight layer and is compared by ' +
+      'identity, so a slot rebuilt on every render republishes the surface on every render. ' +
+      'Wrap it in `useCallback` with the props it actually reads.',
+  );
+}
 
 /**
  * The STILL of a media item — a video's poster, or the image itself — and never

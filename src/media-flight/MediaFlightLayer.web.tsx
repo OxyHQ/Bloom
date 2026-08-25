@@ -37,6 +37,7 @@ import { StyleSheet, type View } from 'react-native';
 import { createPortal } from 'react-dom';
 import Animated, { interpolate, useAnimatedStyle } from 'react-native-reanimated';
 
+import { SLOT_FILL_TOLERANCE_PX } from './constants';
 import { OverlayRoot } from '../overlay';
 import { Portal } from '../portal/index.web';
 import { MediaSurface, type MediaSurfaceStyle } from './MediaSurface';
@@ -89,6 +90,22 @@ MediaFlightLayer.displayName = 'MediaFlightLayer';
 /** One media element, painted into the wrapper its id owns, and never again. */
 function SharedMediaNode({ node }: { node: MediaNodeView }) {
   const { content, contentFit, renderVideo, nativeControls, accessibilityLabel, flightId } = node.render;
+
+  // DOES THE MEDIA ACTUALLY FILL ITS BOX?
+  //
+  // Bloom hands a `renderVideo` slot a style that sizes a replaced element, and
+  // a slot that forgets to spread it paints a 300x150 `<video>` inside whatever
+  // box it was given — correct in every other respect, wrong on screen, and
+  // reported by nothing. That defect shipped once from Bloom's own view and
+  // cost a day to find; a consumer writing the slot can reproduce it in a line.
+  //
+  // Measured one frame after the commit, because layout has to have happened.
+  useEffect(() => {
+    if (process.env.NODE_ENV === 'production' || renderVideo === undefined) return undefined;
+    const frame = requestAnimationFrame(() => warnIfNotFilling(node.wrapper));
+    return () => cancelAnimationFrame(frame);
+  }, [node.wrapper, renderVideo]);
+
   return createPortal(
     <MediaSurface
       content={content}
@@ -100,6 +117,37 @@ function SharedMediaNode({ node }: { node: MediaNodeView }) {
       style={StyleSheet.absoluteFill}
     />,
     node.wrapper,
+  );
+}
+
+let hasWarnedAboutFill = false;
+
+/**
+ * One warning per module lifetime, and none in production — same mechanism as
+ * `warnExpoVideoUnavailable`.
+ *
+ * It compares the media element with the WRAPPER, not with a fixed size: the
+ * invariant is "the media fills the box it was given", and a box that happens
+ * to be 300x150 is not a defect.
+ */
+function warnIfNotFilling(wrapper: HTMLElement): void {
+  if (hasWarnedAboutFill || !wrapper.isConnected) return;
+  const media = wrapper.querySelector('video');
+  if (media === null) return;
+  const box = wrapper.getBoundingClientRect();
+  const painted = media.getBoundingClientRect();
+  if (box.width === 0 || box.height === 0) return;
+  const off =
+    Math.abs(painted.width - box.width) > SLOT_FILL_TOLERANCE_PX ||
+    Math.abs(painted.height - box.height) > SLOT_FILL_TOLERANCE_PX;
+  if (!off) return;
+  hasWarnedAboutFill = true;
+  // eslint-disable-next-line no-console
+  console.warn(
+    `[Bloom] A \`renderVideo\` element is ${Math.round(painted.width)}x${Math.round(painted.height)} ` +
+      `inside a ${Math.round(box.width)}x${Math.round(box.height)} box. A DOM \`<video>\` is a ` +
+      'REPLACED element: without an explicit size it paints at its intrinsic 300x150 whatever ' +
+      'its inset says. Spread the `style` Bloom passes the slot.',
   );
 }
 

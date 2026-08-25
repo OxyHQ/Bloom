@@ -365,6 +365,72 @@ describe('a host that paints its own video keeps the same node too', () => {
   });
 });
 
+describe('a slot that forgets Bloom’s sizing style is reported', () => {
+  /**
+   * ONE test, with the control FIRST, because the warning fires once per module
+   * lifetime and the flag is not exported. The order is the point: a correct
+   * slot must be shown to produce no warning BEFORE a broken one is shown to
+   * produce one, or "it warned" is also what a warning on every mount looks
+   * like.
+   */
+  it('stays quiet when the media fills its box, and warns when it does not', () => {
+    const warn = jest.spyOn(console, 'warn').mockImplementation(() => {});
+    // react-native-web warns about `props.pointerEvents` on its own account, so
+    // counting every warning would fail the control for a reason that has
+    // nothing to do with this check.
+    const bloomWarnings = () =>
+      warn.mock.calls.map((call) => String(call[0])).filter((text) => text.startsWith('[Bloom]'));
+    const size = (el: Element, width: number, height: number) => {
+      // jsdom lays nothing out, so every rect is zero and the check would exit
+      // early on both arms. These are the numbers a browser would report.
+      el.getBoundingClientRect = () =>
+        ({ width, height, x: 0, y: 0, top: 0, left: 0, right: width, bottom: height, toJSON: () => ({}) }) as DOMRect;
+    };
+    const paint = (id: string, mediaWidth: number, mediaHeight: number) => {
+      const host = mount(
+        createElement(MediaFlightHost, {
+          id,
+          content: VIDEO,
+          renderVideo: () => createElement('video', { 'data-testid': 'media' }),
+        }),
+      );
+      const wrapper = document.querySelector<HTMLElement>('[data-bloom-media-node]');
+      const media = wrapper?.querySelector('video');
+      if (wrapper && media) {
+        size(wrapper, 320, 200);
+        size(media, mediaWidth, mediaHeight);
+      }
+      act(() => {
+        jest.advanceTimersByTime(32);
+      });
+      return host;
+    };
+
+    jest.useFakeTimers();
+    const layer = mount(createElement(MediaFlightLayer));
+    try {
+      // CONTROL: the media fills the box.
+      const good = paint('fill-ok', 320, 200);
+      expect(bloomWarnings()).toEqual([]);
+      unmount(good);
+
+      // …and one that does not fill it. Deliberately NOT 300x150: the check
+      // must compare the element with its BOX, not with the intrinsic size of a
+      // `<video>`. A check hardcoded to 300x150 passes every test that only
+      // ever feeds it 300x150, and misses a slot that applies a wrong size.
+      const bad = paint('fill-bad', 160, 90);
+      expect(bloomWarnings()).toHaveLength(1);
+      expect(bloomWarnings()[0]).toContain('160x90');
+      expect(bloomWarnings()[0]).toContain('320x200');
+      unmount(bad);
+    } finally {
+      unmount(layer);
+      jest.useRealTimers();
+      warn.mockRestore();
+    }
+  });
+});
+
 describe('the idle layer still contributes nothing', () => {
   it('renders no element with neither a flight nor a host', () => {
     // The web fork now has a second reason to render (shared nodes), so the
