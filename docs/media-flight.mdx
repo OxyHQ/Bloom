@@ -78,26 +78,36 @@ resolving to the flying surface having visible pixels:
 | already rendered by the page (in the image cache) | **1–5** |
 | never requested before (same file, cache-busted) | **510–900** |
 
-So a **warm** poster makes the commit a frame, and a **cold** one opens a
-half-second hole exactly where the origin has just disappeared. Measured in a
-consuming app the hole was ~350 ms, framed by "the feed row stopped painting"
-and "the flight had not started".
+So a **warm** poster makes the commit a frame, and a **cold** one would open a
+half-second hole exactly where the origin has just disappeared.
 
-**The fix is not to make `flyTo` wait.** Waiting would move that half second in
-front of the user's tap, which is worse in the place people actually feel it.
-The fix is to make sure the origin has already painted the exact URI the flight
-will carry.
+**The remedy is not to make `flyTo` wait.** Waiting would move that half second
+in front of the user's tap, which is worse in the place people actually feel it.
+The remedy is to make sure the origin has already painted the exact URI the
+flight will carry.
 
-<Callout variant="warning" title="expo-video does not fetch your poster">
+<Callout variant="warning" title="expo-video will not fetch your poster for you">
 On web, expo-video's `VideoView` renders `<video src=…>` with **no `poster`
-attribute**. So a feed that shows video and passes a poster to the video view
-never actually requests that URL — and the flight is then the first thing that
-asks for it, at the worst possible moment. Render the still yourself under the
-video (`MediaPoster` is exported for exactly this), or prefetch it.
+attribute**, so passing a poster to the video view does not cause that URL to be
+requested. Something else has to paint it — render the still yourself under the
+video (`MediaPoster` is exported for exactly this, and Mention does it with
+`expo-image` at `cachePolicy="memory-disk"`), or prefetch it. Do that and it is
+warm by the time anything flies.
 </Callout>
 
 One-minute check: in the Network panel, does the poster request appear **when
-you tap**? If so, this is what you are looking at.
+you tap**, or was it already there?
+
+<Callout variant="info" title="A poster is invisible to `requestVideoFrameCallback`">
+If you measure continuity by counting decoded video frames, **a flight covered
+by its poster reads as a gap** — `requestVideoFrameCallback` fires only for
+decoded VIDEO, and a poster is an `<img>` that never triggers it. A ~350 ms
+"hole" measured that way in a consuming app turned out to be exactly this: a CDP
+screencast over the same transition showed 25 frames in 844 ms, luminance gliding
+218 → 99, **zero black frames**, with the frame at t=360 ms — inside the supposed
+hole — showing video filling the viewport. Measure what the screen shows, not
+what one API reports.
+</Callout>
 
 `scripts/verify-media-flight.mjs` gates Bloom's half — that a warm surface
 presents within a frame or two, with no re-fetch and no fade. Its control flies

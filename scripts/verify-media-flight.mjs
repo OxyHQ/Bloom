@@ -191,6 +191,16 @@ async function checkIdle(page, failures) {
  * stands or falls on the poster being WARM, and this is the assertion that keeps
  * Bloom's half of that true — no re-fetch, no fade, `transition={0}`.
  *
+ * The consuming app that prompted this turned out to have a WARM poster already
+ * (it paints the still itself with expo-image rather than relying on
+ * expo-video's absent `poster` attribute), and the ~350 ms "hole" it reported
+ * was an artifact of counting `requestVideoFrameCallback` — which fires only for
+ * decoded VIDEO, so a flight covered by its poster reads as a gap. A CDP
+ * screencast over the same transition showed zero black frames. The numbers
+ * above are still the reason the contract is safe; they are just not a bug that
+ * was happening. Written down because "the gate that caught nothing" and "the
+ * gate that had nothing to catch" are worth telling apart later.
+ *
  * THE COLD LEG IS THE CONTROL, and it is throttled rather than left to the
  * network. "Warm is fast" is also what a harness that always reports zero says;
  * the control proves the same instrument can produce a large number. Throttling
