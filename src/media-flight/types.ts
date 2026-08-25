@@ -1,3 +1,4 @@
+import type { ReactNode } from 'react';
 import type { StyleProp, ViewStyle } from 'react-native';
 import type { SharedValue } from 'react-native-reanimated';
 
@@ -224,6 +225,51 @@ export interface MediaFlightController {
 }
 
 /**
+ * What Bloom hands a video slot: the three things it must decide, and nothing
+ * else.
+ *
+ * `style` is not advisory. A DOM `<video>` is a REPLACED element, and
+ * `position:absolute; inset:0` with `width/height:auto` resolves it to its
+ * INTRINSIC size (300x150) instead of stretching — so a slot that drops this
+ * style paints a 300x150 video inside whatever box it was given. Spread it.
+ */
+export interface MediaVideoSlotProps {
+  /**
+   * The player Bloom was given — never one Bloom created.
+   *
+   * `null` means UNBIND THIS ELEMENT NOW, and it must be passed straight
+   * through. expo-video answers a null player by emptying the source, which
+   * pauses the element without an event; that silence is what stops a surface
+   * on its way out from pausing the one the viewer just landed on. Substituting
+   * anything else here — keeping the old player, unmounting instead — brings
+   * that defect back. See `releaseFlight`.
+   */
+  player: VideoPlayerLike | null;
+  /** Fills the box. Spread it — see above. */
+  style: StyleProp<ViewStyle>;
+  contentFit: 'contain' | 'cover';
+}
+
+/**
+ * Paint the video yourself.
+ *
+ * Bloom mounts a `VideoView` with the handful of props it knows about, which is
+ * enough until a consumer needs something only its OWN element can give it: a
+ * `ref` for `startPictureInPicture()` or `enterFullscreen()`, expo-video's
+ * picture-in-picture callbacks, `onFirstFrameRender`, anything expo-video adds
+ * later. Widening Bloom's props to cover those would drag expo-video's surface
+ * into Bloom's API, and it would be behind again on the next release.
+ *
+ * So the consumer may build the element instead, with Bloom deciding only what
+ * it has to: which player, and a style that fills the box.
+ *
+ * MEMOISE IT (`useCallback`). The slot is part of what a host publishes to the
+ * layer, compared by identity — a new function every render republishes every
+ * render. Correct either way, wasteful if you skip it.
+ */
+export type MediaVideoSlot = (props: MediaVideoSlotProps) => ReactNode;
+
+/**
  * A place a media surface may live: the feed row it starts in, the fullscreen
  * player it lands in, and every other end of a flight.
  *
@@ -242,6 +288,11 @@ export interface MediaFlightHostProps {
   style?: StyleProp<ViewStyle>;
   /** How the media fills the box. Defaults to `'cover'`. */
   contentFit?: 'contain' | 'cover';
+  /**
+   * Paint the video yourself, keeping your own `ref` and expo-video props. See
+   * {@link MediaVideoSlot}; memoise it.
+   */
+  renderVideo?: MediaVideoSlot;
   /** Whether the video arm shows expo-video's own controls. Defaults to `false`. */
   nativeControls?: boolean;
   accessibilityLabel?: string;

@@ -26,7 +26,7 @@ import { Image } from 'expo-image';
 import Animated from 'react-native-reanimated';
 
 import { handOffFlight } from './store';
-import type { MediaSurfaceContent } from './types';
+import type { MediaSurfaceContent, MediaVideoSlot } from './types';
 import {
   loadExpoVideo,
   warnExpoVideoUnavailable,
@@ -70,6 +70,14 @@ export interface MediaSurfaceProps {
    * is every property a flying box relies on.
    */
   surfaceType?: VideoSurfaceType;
+  /**
+   * Paint the video yourself, keeping your own `ref` and expo-video props.
+   *
+   * When this is given, Bloom builds no `VideoView` at all and the optional
+   * peer is never loaded on this path — the consumer already imported
+   * expo-video to write the slot. See {@link MediaVideoSlot}.
+   */
+  renderVideo?: MediaVideoSlot;
   /** Whether the video arm shows expo-video's own controls. Defaults to `false`. */
   nativeControls?: boolean;
   accessibilityLabel?: string;
@@ -125,6 +133,7 @@ export const MediaSurface = memo(function MediaSurface({
   style,
   contentFit = 'contain',
   surfaceType = 'textureView',
+  renderVideo,
   nativeControls = false,
   accessibilityLabel,
   pointerEvents,
@@ -145,10 +154,12 @@ export const MediaSurface = memo(function MediaSurface({
   }, [flightId]);
 
   const still = content.kind === 'video' ? content.poster : content.uri;
-  // Loaded for the video arm only, and only when there is one — an image
-  // surface must never make an app resolve an optional native peer.
-  const expoVideo = content.kind === 'video' ? loadExpoVideo() : null;
-  if (content.kind === 'video' && expoVideo === null) {
+  // Loaded for the video arm only, and only when Bloom is the one building the
+  // element — an image surface must never make an app resolve an optional
+  // native peer, and neither must a consumer that brought its own view.
+  const expoVideo =
+    content.kind === 'video' && renderVideo === undefined ? loadExpoVideo() : null;
+  if (content.kind === 'video' && renderVideo === undefined && expoVideo === null) {
     // Degrade to the poster rather than to nothing: a black hole where a video
     // should be reads as a broken app, a still frame reads as a video that has
     // not started. The warning is what makes the difference visible to the
@@ -178,7 +189,16 @@ export const MediaSurface = memo(function MediaSurface({
           {...webDraggableProps}
         />
       )}
-      {content.kind === 'video' && expoVideo !== null ? (
+      {content.kind === 'video' && renderVideo !== undefined
+        ? renderVideo({
+            player: detached ? null : content.player,
+            // The same style Bloom's own view gets, for the same reason: a
+            // replaced element that is not told its size paints at 300x150.
+            style: [StyleSheet.absoluteFill, styles.fillReplaced],
+            contentFit,
+          })
+        : null}
+      {content.kind === 'video' && renderVideo === undefined && expoVideo !== null ? (
         <expoVideo.VideoView
           player={detached ? null : content.player}
           contentFit={contentFit}

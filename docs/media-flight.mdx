@@ -274,6 +274,52 @@ about the call site says which one you got.
   nothing can want it back — no claim and no flight live for that id — which is
   a fact the registry reads rather than a timeout it guesses.
 
+### Paint the video yourself
+
+`MediaFlightHost` mounts a `VideoView` with the handful of props Bloom knows
+about. That is not enough the moment a consumer needs something only its OWN
+element can give it — a `ref` for `startPictureInPicture()` or
+`enterFullscreen()`, expo-video's picture-in-picture callbacks,
+`onFirstFrameRender`, anything expo-video adds next. Measured in a consuming
+app: adopting the host without this left a picture-in-picture BUTTON on screen
+whose ref was attached to nothing. It rendered, it was pressable, and it did
+nothing, silently.
+
+So build the element yourself and let Bloom decide only what it must:
+
+```tsx
+<MediaFlightHost
+  id={mediaId}
+  content={{ kind: 'video', player }}
+  renderVideo={useCallback((props) => (
+    <VideoView
+      {...props}                       // player, style, contentFit
+      ref={videoViewRef}
+      allowsPictureInPicture={isWatched}
+      onFirstFrameRender={handleFirstFrame}
+    />
+  ), [isWatched, handleFirstFrame])}
+/>
+```
+
+Three things about the props Bloom passes:
+
+- **Spread `style`.** A DOM `<video>` is a replaced element: `inset: 0` with
+  `width/height: auto` paints it at its intrinsic 300×150 inside whatever box it
+  was given. Bloom's style carries the sizing.
+- **Pass `player` straight through, including `null`.** Null means unbind now,
+  and expo-video answers it by emptying the source — which pauses the element
+  without an event, which is what stops an outgoing surface from pausing the one
+  the viewer just landed on.
+- **Memoise the slot.** It is part of what a host publishes to the layer,
+  compared by identity.
+
+The flight itself never brings an element. Its claim on a shared node says only
+WHERE the node lives — a flight that published its own render would swap a
+consumer's element out for Bloom's and back again, which is two remounts in the
+middle of the one operation whose whole point is that the element is never
+rebuilt.
+
 ### The flight outranks every host
 
 A destination that mounts mid-flight claims its id, and the layer keeps the node

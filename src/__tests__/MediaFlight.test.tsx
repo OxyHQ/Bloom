@@ -19,6 +19,7 @@
  */
 import React from 'react';
 import { act, render } from '@testing-library/react-native';
+import { StyleSheet, View } from 'react-native';
 // A NAMESPACE import, not `jest.requireMock`: this is the very module object
 // `store.ts` calls through, so a spy written here is a spy the store sees.
 import * as Reanimated from 'react-native-reanimated';
@@ -32,7 +33,8 @@ import {
 } from '../overlay/stack';
 import { MediaFlightLayer } from '../media-flight/MediaFlightLayer';
 import { MediaPoster, MediaSurface } from '../media-flight/MediaSurface';
-import { provideExpoVideo } from '../media-flight/expo-video-module';
+import * as expoVideoModule from '../media-flight/expo-video-module';
+import { provideExpoVideo, resetExpoVideoModule } from '../media-flight/expo-video-module';
 import { useMediaFlight } from '../media-flight/use-media-flight';
 import {
   flyBack,
@@ -462,6 +464,98 @@ describe('MediaSurface', () => {
     const { toJSON } = render(<MediaSurface content={VIDEO} />);
     const nodes = hostNodes(toJSON());
     expect(nodes.filter((node) => node.type === 'ExpoImage')).toHaveLength(1);
+  });
+});
+
+/**
+ * THE CONSUMER'S OWN ELEMENT.
+ *
+ * Bloom's `VideoView` carries the handful of props Bloom knows about, and that
+ * is not enough for anything only the element itself can give: a `ref` for
+ * `startPictureInPicture()`, expo-video's picture-in-picture callbacks,
+ * `onFirstFrameRender`. Measured in a consuming app: adopting the host without
+ * this slot left a picture-in-picture BUTTON on screen whose ref was attached
+ * to nothing — it rendered, it was pressable, and it did nothing, with no error
+ * anywhere.
+ *
+ * Widening Bloom's props to cover expo-video's would drag that surface into
+ * Bloom's API and be behind again on its next release, so the consumer builds
+ * the element and Bloom decides only what it must.
+ */
+describe('MediaSurface renderVideo', () => {
+  const slotProps: Array<{ player: unknown; style: unknown; contentFit: string }> = [];
+  const slot = (props: { player: unknown; style: unknown; contentFit: 'contain' | 'cover' }) => {
+    slotProps.push(props);
+    return <View testID="consumer-video" />;
+  };
+
+  beforeEach(() => {
+    slotProps.length = 0;
+  });
+
+  it('renders the consumer’s element and NOT one of Bloom’s', () => {
+    const { toJSON } = render(<MediaSurface content={VIDEO} renderVideo={slot} />);
+    const nodes = hostNodes(toJSON());
+    expect(nodes.filter((node) => node.props?.testID === 'consumer-video')).toHaveLength(1);
+    expect(nodes.filter((node) => node.type === 'ExpoVideoView')).toHaveLength(0);
+  });
+
+  it('hands it the player it was given, never one of Bloom’s', () => {
+    render(<MediaSurface content={VIDEO} renderVideo={slot} />);
+    expect(slotProps[0]?.player).toBe(PLAYER);
+    expect(slotProps[0]?.contentFit).toBe('contain');
+  });
+
+  it('hands it a style that SIZES a replaced element', () => {
+    // The defect this prevents cost a day: a DOM `<video>` is a replaced
+    // element, so `inset: 0` with `width/height: auto` paints it at its
+    // intrinsic 300x150 inside whatever box it was given. Bloom passes the
+    // sizing style; a slot that drops it reproduces the bug, which is why the
+    // browser geometry gate keeps a view that applies width and not height as
+    // its control.
+    render(<MediaSurface content={VIDEO} renderVideo={slot} />);
+    // Merged by hand rather than with `StyleSheet.flatten`: the repo's
+    // react-native mock returns its argument unchanged, so flattening here
+    // would assert against an ARRAY and read `undefined` for every key —
+    // which is what a style with no sizing in it reads as too.
+    const merged = Object.assign(
+      {},
+      ...(slotProps[0]?.style as Array<Record<string, unknown>>),
+    ) as Record<string, unknown>;
+    expect(merged.width).toBe('100%');
+    expect(merged.height).toBe('100%');
+    expect(merged.position).toBe('absolute');
+  });
+
+  it('hands it a NULL player while releasing, so the element goes quiet', () => {
+    // The release contract, and the reason it cannot be "unmount your element":
+    // expo-video answers a null player by emptying the source, which pauses it
+    // WITHOUT an event. See `releaseFlight`.
+    render(<MediaSurface content={VIDEO} renderVideo={slot} detached />);
+    expect(slotProps[0]?.player).toBeNull();
+  });
+
+  it('never loads the optional peer, so a consumer without expo-video can use it', () => {
+    // A consumer that writes the slot already imported expo-video itself; one
+    // that has not must still be able to paint through a host. Asserted on the
+    // LOADER rather than on a warning: jest maps `expo-video` to a mock, so the
+    // module always resolves here and the "missing peer" warning never fires
+    // for anyone — which would have made a warning-based assertion vacuous in
+    // both directions.
+    const load = jest.spyOn(expoVideoModule, 'loadExpoVideo');
+    try {
+      resetExpoVideoModule();
+      load.mockClear();
+      render(<MediaSurface content={VIDEO} renderVideo={slot} />);
+      expect(load).not.toHaveBeenCalled();
+
+      // CONTROL: the same surface WITHOUT a slot does load it.
+      load.mockClear();
+      render(<MediaSurface content={VIDEO} />);
+      expect(load).toHaveBeenCalled();
+    } finally {
+      load.mockRestore();
+    }
   });
 });
 

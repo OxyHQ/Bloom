@@ -30,8 +30,6 @@ import {
   useCallback,
   useEffect,
   useLayoutEffect,
-  useMemo,
-  useRef,
   useState,
   useSyncExternalStore,
 } from 'react';
@@ -48,7 +46,6 @@ import {
   getMediaNodes,
   releaseMediaNode,
   subscribeToMediaNodes,
-  type MediaNodeRender,
   type MediaNodeView,
 } from './media-node.web';
 import { getFlights, notifySurfaceMounted, subscribeToFlights } from './store';
@@ -91,11 +88,12 @@ MediaFlightLayer.displayName = 'MediaFlightLayer';
 
 /** One media element, painted into the wrapper its id owns, and never again. */
 function SharedMediaNode({ node }: { node: MediaNodeView }) {
-  const { content, contentFit, nativeControls, accessibilityLabel, flightId } = node.render;
+  const { content, contentFit, renderVideo, nativeControls, accessibilityLabel, flightId } = node.render;
   return createPortal(
     <MediaSurface
       content={content}
       contentFit={contentFit}
+      renderVideo={renderVideo}
       nativeControls={nativeControls}
       accessibilityLabel={accessibilityLabel}
       flightId={flightId}
@@ -137,21 +135,9 @@ function MediaFlightSurface({ flight, shared }: { flight: MediaFlight; shared: b
 
   const box = [styles.box, { left: to.x, top: to.y, borderRadius: cornerRadius }, boxStyle];
 
-  const render = useMemo<MediaNodeRender>(
-    () => ({
-      content,
-      contentFit,
-      nativeControls: false,
-      accessibilityLabel: undefined,
-      // A flying surface never hands off to itself.
-      flightId: undefined,
-    }),
-    [content, contentFit],
-  );
-
   // The shared node is already painting this media. The flight is then a BOX
   // that borrows it for the length of the leg, never a second copy.
-  if (shared) return <FlyingSharedNode id={id} style={box} render={render} />;
+  if (shared) return <FlyingSharedNode id={id} style={box} />;
 
   return (
     <MediaSurface
@@ -178,33 +164,19 @@ function MediaFlightSurface({ flight, shared }: { flight: MediaFlight; shared: b
  * is inert here — a descendant asking for `auto` does not override a `none`
  * ancestor.
  */
-function FlyingSharedNode({
-  id,
-  style,
-  render,
-}: {
-  id: string;
-  style: MediaSurfaceStyle;
-  render: MediaNodeRender;
-}) {
+function FlyingSharedNode({ id, style }: { id: string; style: MediaSurfaceStyle }) {
   const [node, setNode] = useState<View | null>(null);
   const setBox = useCallback((next: View | null) => setNode(next), []);
-  const renderRef = useRef(render);
 
-  // Declared first so it runs first on mount, and afterwards is what pushes
-  // prop changes into a live claim IN PLACE — releasing and re-claiming would
-  // move the node away and back, and a move away is a removal.
-  useLayoutEffect(() => {
-    renderRef.current = render;
-    const el = node as unknown as HTMLElement | null;
-    if (el !== null) claimMediaNode(id, el, FLIGHT_RANK, render);
-  }, [id, node, render]);
-
-  // Owns the claim's LIFETIME, and only that.
+  // A POSITION-ONLY claim: it says where the node lives for the length of the
+  // leg and nothing about what is painted in it. A flight that published a
+  // render of its own would replace the hosts' — and swap a consumer's own
+  // element out and back, which is two remounts in the middle of the one
+  // operation whose whole point is that the element is never rebuilt.
   useLayoutEffect(() => {
     const el = node as unknown as HTMLElement | null;
     if (el === null) return undefined;
-    claimMediaNode(id, el, FLIGHT_RANK, renderRef.current);
+    claimMediaNode(id, el, FLIGHT_RANK);
     return () => releaseMediaNode(id, el, FLIGHT_RANK);
   }, [id, node]);
 

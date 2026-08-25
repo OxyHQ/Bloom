@@ -23,6 +23,7 @@ export function MediaFlightHost({
   content,
   style,
   contentFit = 'cover',
+  renderVideo,
   nativeControls = false,
   accessibilityLabel,
   surfaceType,
@@ -41,6 +42,7 @@ export function MediaFlightHost({
       <MediaSurface
         content={content}
         contentFit={contentFit}
+        renderVideo={renderVideo}
         nativeControls={nativeControls}
         accessibilityLabel={accessibilityLabel}
         surfaceType={surfaceType}

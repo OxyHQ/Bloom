@@ -30,6 +30,7 @@ export function MediaFlightHost({
   content,
   style,
   contentFit = 'cover',
+  renderVideo,
   nativeControls = false,
   accessibilityLabel,
   pointerEvents,
@@ -48,8 +49,8 @@ export function MediaFlightHost({
   );
 
   const render = useMemo<MediaNodeRender>(
-    () => ({ content, contentFit, nativeControls, accessibilityLabel, flightId }),
-    [content, contentFit, nativeControls, accessibilityLabel, flightId],
+    () => ({ content, contentFit, renderVideo, nativeControls, accessibilityLabel, flightId }),
+    [content, contentFit, renderVideo, nativeControls, accessibilityLabel, flightId],
   );
   const renderRef = useRef(render);
 

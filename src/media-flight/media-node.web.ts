@@ -60,12 +60,14 @@
  * DETACHED would pause.
  */
 import { hasFlight } from './store';
-import type { MediaSurfaceContent } from './types';
+import type { MediaSurfaceContent, MediaVideoSlot } from './types';
 
 /** What the layer paints into a shared node, as its current holder wants it. */
 export interface MediaNodeRender {
   content: MediaSurfaceContent;
   contentFit: 'contain' | 'cover';
+  /** The consumer's own video element, if it brought one. Compared by identity. */
+  renderVideo: MediaVideoSlot | undefined;
   nativeControls: boolean;
   accessibilityLabel: string | undefined;
   /** Forwarded to the media, so a consumer keeps its own first-frame signal. */
@@ -81,7 +83,19 @@ interface MediaNodeClaim {
   rank: number;
   /** Registration order, so the most recent host wins among equals. */
   seq: number;
-  render: MediaNodeRender;
+  /**
+   * What this claimant wants painted — or `undefined` for a claim that decides
+   * only WHERE the node lives.
+   *
+   * The flight is the second kind, and that distinction is load-bearing. A
+   * flight that published a render of its own would replace whatever the hosts
+   * were painting for the length of the leg, and if a consumer brought its own
+   * element (`renderVideo`) the flight would swap it out and back — two
+   * remounts, in the middle of the one operation whose entire purpose is that
+   * the element is never rebuilt. Measured: the consumer's `<video>` ended the
+   * flight as a different node, with the original left disconnected.
+   */
+  render: MediaNodeRender | undefined;
 }
 
 interface MediaNodeRecord {
@@ -168,20 +182,42 @@ function makeWrapper(): HTMLDivElement {
   return wrapper;
 }
 
-function recordFor(id: string, render: MediaNodeRender): MediaNodeRecord {
+function recordFor(id: string, render: MediaNodeRender | undefined): MediaNodeRecord {
   const reg = registry();
   let record = reg.nodes.get(id);
   if (!record) {
-    record = { wrapper: makeWrapper(), claims: [], render };
+    // A position-only claim can be the first one in: a flight can take off
+    // before the host it flies from has committed. `EMPTY_RENDER` paints
+    // nothing until a host says what, which is the honest state.
+    record = { wrapper: makeWrapper(), claims: [], render: render ?? EMPTY_RENDER };
     reg.nodes.set(id, record);
   }
   return record;
 }
 
+/** Nothing to paint yet. Replaced by the first host claim that arrives. */
+const EMPTY_RENDER: MediaNodeRender = {
+  content: { uri: '' },
+  contentFit: 'cover',
+  renderVideo: undefined,
+  nativeControls: false,
+  accessibilityLabel: undefined,
+  flightId: undefined,
+};
+
 /** The claim that currently holds the node: highest rank, then most recent. */
 function topClaim(record: MediaNodeRecord): MediaNodeClaim | null {
+  return pick(record.claims);
+}
+
+/** The highest-ranked claim that says what to PAINT. See `MediaNodeClaim.render`. */
+function topRender(record: MediaNodeRecord): MediaNodeClaim | null {
+  return pick(record.claims.filter((claim) => claim.render !== undefined));
+}
+
+function pick(claims: readonly MediaNodeClaim[]): MediaNodeClaim | null {
   let best: MediaNodeClaim | null = null;
-  for (const claim of record.claims) {
+  for (const claim of claims) {
     if (best === null || claim.rank > best.rank || (claim.rank === best.rank && claim.seq > best.seq)) {
       best = claim;
     }
@@ -206,6 +242,7 @@ function place(record: MediaNodeRecord): void {
 
 function sameRender(a: MediaNodeRender, b: MediaNodeRender): boolean {
   if (a.contentFit !== b.contentFit) return false;
+  if (a.renderVideo !== b.renderVideo) return false;
   if (a.nativeControls !== b.nativeControls) return false;
   if (a.accessibilityLabel !== b.accessibilityLabel) return false;
   if (a.flightId !== b.flightId) return false;
@@ -221,7 +258,7 @@ function sameRender(a: MediaNodeRender, b: MediaNodeRender): boolean {
 function publish(reg: NodeRegistry): void {
   const next: MediaNodeView[] = [];
   for (const [id, record] of reg.nodes) {
-    record.render = topClaim(record)?.render ?? record.render;
+    record.render = topRender(record)?.render ?? record.render;
     next.push({ id, wrapper: record.wrapper, render: record.render });
   }
   const previous = reg.snapshot;
@@ -256,15 +293,16 @@ export function claimMediaNode(
   id: string,
   el: HTMLElement,
   rank: number,
-  render: MediaNodeRender,
+  render?: MediaNodeRender,
 ): void {
   const reg = registry();
   const record = recordFor(id, render);
   const existing = record.claims.find((claim) => claim.el === el && claim.rank === rank);
   if (existing !== undefined) {
-    if (sameRender(existing.render, render) && record.wrapper.parentElement === topClaim(record)?.el) {
-      return;
-    }
+    const unchanged =
+      existing.render === render ||
+      (existing.render !== undefined && render !== undefined && sameRender(existing.render, render));
+    if (unchanged && record.wrapper.parentElement === topClaim(record)?.el) return;
     existing.render = render;
   } else {
     reg.seq += 1;

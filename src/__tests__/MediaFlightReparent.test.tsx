@@ -79,6 +79,7 @@ function StoryVideoView(props: VideoViewLikeProps) {
 const RENDER = {
   content: VIDEO,
   contentFit: 'cover' as const,
+  renderVideo: undefined,
   nativeControls: false,
   accessibilityLabel: undefined,
   flightId: undefined,
@@ -317,6 +318,47 @@ describe('a re-parented media surface keeps one element for the whole flight', (
     sample();
 
     expect(counts).toEqual([1, 1, 1, 1, 1]);
+
+    unmount(destination);
+    unmount(layer);
+  });
+});
+
+describe('a host that paints its own video keeps the same node too', () => {
+  it('re-parents the CONSUMER’s element across the route change', () => {
+    // The slot exists so a consumer can keep its `ref` and expo-video's
+    // picture-in-picture props. If re-parenting only worked for the element
+    // Bloom builds, the slot would be a way to opt OUT of the whole feature —
+    // and the consuming app needs both at once.
+    const layer = mount(createElement(MediaFlightLayer));
+    const renderVideo = (props: { player: unknown }) =>
+      createElement('video', {
+        'data-testid': 'media',
+        'data-consumer': 'yes',
+        'data-detached': props.player == null ? 'yes' : 'no',
+      });
+
+    const origin = mount(
+      createElement(MediaFlightHost, { id: 'v5', content: VIDEO, renderVideo }),
+    );
+    const atOrigin = theMediaElement();
+    expect(atOrigin.dataset.consumer).toBe('yes');
+
+    act(() => {
+      registerAnchor('v5', anchorAt({ x: 0, y: 0, width: 10, height: 10 }));
+      void flyTo('v5', TARGET, VIDEO);
+    });
+    unmount(origin);
+
+    const destination = mount(
+      createElement(MediaFlightHost, { id: 'v5', content: VIDEO, renderVideo }),
+    );
+    act(() => {
+      notifySurfaceSettled('v5');
+    });
+
+    expect(theMediaElement()).toBe(atOrigin);
+    expect(destination.container.contains(atOrigin)).toBe(true);
 
     unmount(destination);
     unmount(layer);
