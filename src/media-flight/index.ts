@@ -13,6 +13,7 @@ export { SURFACE_MOUNT_TIMEOUT_MS } from './constants';
 export {
   loadExpoVideo,
   warnExpoVideoUnavailable,
+  provideExpoVideo,
   resetExpoVideoModule,
   type ExpoVideoLike,
   type VideoPlayerLike,

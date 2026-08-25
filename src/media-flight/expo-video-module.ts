@@ -104,12 +104,42 @@ export interface ExpoVideoLike {
 
 /** `undefined` until the first load attempt, then the module or `null`. */
 let videoModule: ExpoVideoLike | null | undefined;
+/** Set by {@link provideExpoVideo}; wins over the `require` below. */
+let providedModule: ExpoVideoLike | null | undefined;
 /** Why the load failed, quoted verbatim in the dev warning. */
 let unavailableReason = '';
 let hasWarned = false;
 
+/**
+ * Hand Bloom the expo-video module explicitly.
+ *
+ * REQUIRED ON ANY ESM WEB BUNDLER, and measured rather than assumed: in a Vite
+ * bundle `typeof require` is `undefined`, so the optional-peer `require` below
+ * cannot run and video silently degrades to its poster **even when expo-video
+ * is installed**. Metro has a real `require` and is unaffected, which is why
+ * this went unnoticed — the app that uses this is Metro-built.
+ *
+ * There is no bundler-agnostic sync alternative: `import()` is async and this is
+ * called during render, so making it async would mean the surface renders
+ * without video for a frame and then upgrades. Handing the module over is
+ * explicit, synchronous, and costs the consumer one line at startup:
+ *
+ * ```ts
+ * import * as ExpoVideo from 'expo-video';
+ * provideExpoVideo(ExpoVideo);
+ * ```
+ *
+ * Pass `null` to clear it.
+ */
+export function provideExpoVideo(module: ExpoVideoLike | null): void {
+  providedModule = module;
+  // Drop any cached `require` result so the next load reflects this decision.
+  videoModule = undefined;
+}
+
 /** The expo-video module, or `null` when the optional peer is not installed. */
 export function loadExpoVideo(): ExpoVideoLike | null {
+  if (providedModule !== undefined && providedModule !== null) return providedModule;
   if (videoModule !== undefined) return videoModule;
   videoModule = null;
 
@@ -176,6 +206,7 @@ export function warnExpoVideoUnavailable(): void {
 /** Test seam — drops the cached module handle so a suite can load it again. */
 export function resetExpoVideoModule(): void {
   videoModule = undefined;
+  providedModule = undefined;
   unavailableReason = '';
   hasWarned = false;
 }

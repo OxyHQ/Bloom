@@ -350,6 +350,79 @@ async function checkNoOriginJumps(page, failures) {
   }
 }
 
+/**
+ * THE VIDEO ARM'S GEOMETRY — the half of `MediaSurface` that was never observed.
+ *
+ * A real app reported the flying container animating while the `<video>` inside
+ * it sat at 300x150 (an unsized `<video>`'s default intrinsic size) and then
+ * jumped to its true size. Every story here flew an IMAGE, so no `<video>`
+ * existed to watch, and this gate was green over the expensive half of the
+ * component by construction.
+ *
+ * What it asserts is one property: **the media element tracks the flying box on
+ * every frame**, height included from the first. Height is called out because
+ * that is the axis the report showed frozen — width followed the box while
+ * height sat at the default, which is what "it appeared full-size" looks like
+ * from the inside.
+ *
+ * Sampling the `<video>` AND the container, because only comparing the two says
+ * whose defect a freeze is.
+ */
+async function traceVideoFlight(page, testId) {
+  await page.goto(`${BASE}/iframe.html?id=${STORY}&viewMode=story`, { waitUntil: 'networkidle0' });
+  await page.waitForSelector(`[data-testid="${testId}"]`, { timeout: 20000 });
+  if (!(await clickTestId(page, testId))) return null;
+  return page.evaluate(async () => {
+    const seen = [];
+    const t0 = performance.now();
+    while (performance.now() - t0 < 700) {
+      const root = document.getElementById('bloom-portal-root');
+      const v = root?.querySelector('video');
+      const box = v?.parentElement;
+      if (v && box) {
+        const a = v.getBoundingClientRect();
+        const b = box.getBoundingClientRect();
+        seen.push({
+          v: [Math.round(a.width), Math.round(a.height)],
+          b: [Math.round(b.width), Math.round(b.height)],
+        });
+      }
+      await new Promise((f) => requestAnimationFrame(f));
+    }
+    return seen;
+  });
+}
+
+async function checkVideoGeometry(page, failures) {
+  const good = await traceVideoFlight(page, 'flight-video');
+  report(failures, Array.isArray(good) && good.length > 5,
+    `video: no <video> was observed at all (${good === null ? 'trigger not clickable' : `${good?.length ?? 0} samples`}) — ` +
+    'provideExpoVideo did not install a view, so this phase measures nothing');
+  if (!Array.isArray(good) || good.length <= 5) return;
+
+  // The media element must match its box on EVERY frame, both axes.
+  const off = good.filter(({ v, b }) => Math.abs(v[0] - b[0]) > 2 || Math.abs(v[1] - b[1]) > 2);
+  report(failures, off.length === 0,
+    `video: the media element did not track its box on ${off.length}/${good.length} frames — ` +
+    `e.g. video=${JSON.stringify(off[0]?.v)} box=${JSON.stringify(off[0]?.b)}`);
+
+  // …and the box must actually have moved, or "it tracked" is vacuous.
+  const heights = good.map((f) => f.b[1]);
+  report(failures, Math.max(...heights) - Math.min(...heights) > 20,
+    `video: the box never changed size (heights ${Math.min(...heights)}..${Math.max(...heights)}), so tracking proves nothing`);
+
+  // POSITIVE CONTROL: the same flight with a view that applies width and not
+  // height must be CAUGHT. Without this, "it tracked" is also what a detector
+  // that compares an element with itself reports.
+  const broken = await traceVideoFlight(page, 'flight-video-broken');
+  const brokenOff = Array.isArray(broken)
+    ? broken.filter(({ v, b }) => Math.abs(v[1] - b[1]) > 2).length
+    : 0;
+  report(failures, brokenOff > 0,
+    'video: the control did NOT discriminate — a view that applies no height was ' +
+    'measured as tracking its box, so the assertion above proves nothing');
+}
+
 async function main() {
   const puppeteer = loadPuppeteer();
   const browser = await puppeteer.launch({
@@ -372,6 +445,7 @@ async function main() {
     await checkIdle(page, failures);
     await checkPaintLatency(page, failures);
     await checkNoOriginJumps(page, failures);
+    await checkVideoGeometry(page, failures);
 
     await page.goto(`${BASE}/iframe.html?id=${STORY}&viewMode=story`, {
       waitUntil: 'networkidle0',
@@ -463,6 +537,7 @@ async function main() {
     console.log('PASS  idle layer contributes no node and steals no click');
     console.log('PASS  a warm flight presents pixels within a frame or two of flyTo resolving');
     console.log('PASS  a flight with NO origin rect jumps to the destination (documented degradation)');
+    console.log('PASS  a flying VIDEO element tracks its box on every frame, height included');
     console.log('PASS  media flight animates from the origin to the destination and releases');
   }
   process.exitCode = failures.length === 0 ? 0 : 1;

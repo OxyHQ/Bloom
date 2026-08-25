@@ -166,7 +166,17 @@ export const MediaSurface = memo(function MediaSurface({
           contentFit={contentFit}
           surfaceType={mountedSurfaceType}
           nativeControls={nativeControls}
-          style={StyleSheet.absoluteFill}
+          // `absoluteFill` ALONE does not size this, and the reason is a CSS
+          // rule rather than a bug: expo-video renders a DOM `<video>`, which is
+          // a REPLACED element, and `position:absolute; inset:0` with
+          // `width/height:auto` resolves a replaced element to its INTRINSIC
+          // size — 300x150, the `<video>` default — instead of stretching it.
+          // Measured: inside a 320x200 box the element computed
+          // `left/right/top/bottom: 0px` and `width: 300px; height: 150px`, so
+          // it sat at the default while the box animated around it and then
+          // jumped when metadata arrived. The poster escapes this only because
+          // expo-image sizes its own element.
+          style={[StyleSheet.absoluteFill, styles.fillReplaced]}
           accessibilityLabel={accessibilityLabel}
           onFirstFrameRender={reportLive}
         />
@@ -222,6 +232,14 @@ export function EmptyMediaSurface({ style }: { style?: MediaPosterStyle }) {
 }
 
 const styles = StyleSheet.create({
+  /**
+   * Explicit size for a REPLACED element. Redundant for a `<div>` and
+   * load-bearing for a `<video>` — see the note at the call site.
+   */
+  fillReplaced: {
+    width: '100%',
+    height: '100%',
+  },
   box: {
     // What makes the box's corner radius actually clip a video, and the other
     // half of why the Android surface has to be a `textureView`.
