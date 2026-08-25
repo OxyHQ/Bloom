@@ -4,7 +4,9 @@ import type { Meta, StoryObj } from '@storybook/react-vite';
 
 import { StyleSheet } from 'react-native';
 
+import { MediaFlightHost } from './MediaFlightHost';
 import { MediaFlightLayer } from './MediaFlightLayer';
+import { MediaSurface } from './MediaSurface';
 import { provideExpoVideo, type VideoViewLikeProps } from './expo-video-module';
 import { useMediaFlight } from './use-media-flight';
 import type { MediaSurfaceContent, MeasuredRect } from './types';
@@ -345,4 +347,155 @@ function PaintLatencyDemo() {
 
 export const PaintLatency: Story = {
   render: () => <PaintLatencyDemo />,
+};
+
+/**
+ * ONE ELEMENT IDENTITY, IN A REAL BROWSER.
+ *
+ * Everything above flies a surface and asks where it ended up. This asks
+ * whether it is the SAME ELEMENT — which no earlier story could, because in the
+ * old architecture there were always two: the origin's, the flying copy's, and
+ * the destination's.
+ *
+ * It reproduces the sequence that breaks a video on web: the origin UNMOUNTS
+ * mid-flight (a route change), and the destination mounts a moment later, both
+ * on the same player. `scripts/verify-media-flight.mjs` reads the stamp each
+ * `<video>` gets on creation at three points and requires one identity.
+ *
+ * `ReparentedVideo` uses `MediaFlightHost`; `RecreatedVideo` renders a
+ * `MediaSurface` at each end instead, which is what every consumer did before
+ * hosts existed. The control MUST report a different stamp at each stage, or
+ * the gate is measuring the harness.
+ */
+
+/** Stamps every `<video>` the moment it is created, so identity is observable. */
+function StampedVideoView(props: VideoViewLikeProps) {
+  const flat = (StyleSheet.flatten(props.style) ?? {}) as Record<string, unknown>;
+  return React.createElement('video', {
+    'data-testid': 'reparent-video',
+    ref: (node: HTMLVideoElement | null) => {
+      if (node === null || node.dataset.elId !== undefined) return;
+      STAMP.n += 1;
+      node.dataset.elId = String(STAMP.n);
+    },
+    src: TINY_MP4,
+    autoPlay: true,
+    muted: true,
+    loop: true,
+    playsInline: true,
+    style: { ...flat, objectFit: props.contentFit },
+  });
+}
+
+/** Module-scoped on purpose: the count has to survive a host unmounting. */
+const STAMP = { n: 0 };
+
+// Installed at module scope, not on click: in these two stories the ORIGIN
+// already shows the video before anything is pressed, and a view installed in
+// the press handler would arrive after that first render — the identity chain
+// would then start mid-flight and could not observe the origin's element at
+// all. Every other story in this file installs its own view when pressed, so
+// this is the default rather than a fixture the others inherit.
+provideExpoVideo({ VideoView: StampedVideoView });
+
+const REEL_PLAYER = { playing: true, play: () => {}, pause: () => {} };
+const REEL_CONTENT: MediaSurfaceContent = { kind: 'video', player: REEL_PLAYER };
+
+const ORIGIN_BOX = { width: 120, height: 90, borderRadius: 12, overflow: 'hidden' } as const;
+const DESTINATION_BOX = { width: 320, height: 240, borderRadius: 4, overflow: 'hidden' } as const;
+
+/**
+ * @param reparent  true → both ends are `MediaFlightHost`s sharing one element.
+ *                  false → each end paints its own surface (the control).
+ */
+function RouteChangeDemo({ reparent }: { reparent: boolean }) {
+  const flight = useMediaFlight();
+  const targetRef = React.useRef<View | null>(null);
+  const [stage, setStage] = React.useState<'origin' | 'gap' | 'destination'>('origin');
+
+  const go = React.useCallback(() => {
+    void (async () => {
+      // Measured through the ANCHOR rather than a local ref, because a host
+      // registers itself and the consumer never holds its node. Both arms below
+      // register the same id, so the two are measured the same way.
+      const from = await flight.measureAnchor('reparent-media');
+      const to = await measure(targetRef.current);
+      if (!to) return;
+      await flight.flyTo('reparent-media', to, REEL_CONTENT, {
+        from: from ?? undefined,
+        contentFit: 'contain',
+        cornerRadius: 4,
+      });
+      // The route change: the origin goes, and the destination arrives a beat
+      // later. That gap is where a two-element architecture loses the video.
+      setStage('gap');
+      setTimeout(() => setStage('destination'), 140);
+    })();
+  }, [flight]);
+
+  return (
+    <View style={{ gap: 16 }}>
+      <Pressable onPress={go} testID={reparent ? 'reparent-fly' : 'recreate-fly'}>
+        <Text>Open the video (route change)</Text>
+      </Pressable>
+
+      {stage === 'origin' ? (
+        reparent ? (
+          <MediaFlightHost
+            id="reparent-media"
+            content={REEL_CONTENT}
+            contentFit="cover"
+            style={ORIGIN_BOX}
+          />
+        ) : (
+          <View
+            ref={(node) => flight.registerAnchor('reparent-media', node)}
+            style={ORIGIN_BOX}
+          >
+            <MediaSurface content={REEL_CONTENT} contentFit="cover" style={StyleSheet.absoluteFill} />
+          </View>
+        )
+      ) : null}
+
+      {/* The destination's box exists from the start so it can be measured,
+          and is EMPTY until the route arrives — which is the point. */}
+      <View ref={targetRef} style={DESTINATION_BOX}>
+        {stage === 'destination' ? (
+          reparent ? (
+            <MediaFlightHost
+              id="reparent-media"
+              content={REEL_CONTENT}
+              contentFit="contain"
+              style={StyleSheet.absoluteFill}
+            />
+          ) : (
+            <MediaSurface
+              content={REEL_CONTENT}
+              contentFit="contain"
+              flightId="reparent-media"
+              style={StyleSheet.absoluteFill}
+            />
+          )
+        ) : null}
+      </View>
+    </View>
+  );
+}
+
+export const ReparentedVideo: Story = {
+  render: () => (
+    <View style={{ gap: 16 }}>
+      <RouteChangeDemo reparent />
+      <MediaFlightLayer />
+    </View>
+  ),
+};
+
+export const RecreatedVideo: Story = {
+  render: () => (
+    <View style={{ gap: 16 }}>
+      <RouteChangeDemo reparent={false} />
+      <MediaFlightLayer />
+    </View>
+  ),
 };
