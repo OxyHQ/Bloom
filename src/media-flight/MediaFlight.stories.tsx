@@ -182,3 +182,61 @@ function ClickThroughDemo() {
 export const ClickThrough: Story = {
   render: () => <ClickThroughDemo />,
 };
+
+/**
+ * HOW LONG AFTER `flyTo` RESOLVES DOES THE SURFACE ACTUALLY PRESENT PIXELS?
+ *
+ * `flyTo` resolves on the layer's COMMIT, deliberately — waiting for a decode
+ * would put the whole decode in front of the user's tap. But committing a
+ * surface is not painting one, and measured in a consuming app there was a
+ * ~350 ms window where the origin had already gone and the flight had not yet
+ * drawn: the exact hole the transition exists to cover.
+ *
+ * This is the A/B that says whether that window is the POSTER being fetched
+ * cold. `warm` flies a URI the page has already rendered (so it is in the image
+ * cache); `cold` flies the same image with a cache-buster, which is what a
+ * consumer gets when the origin never actually requested that URL — and
+ * expo-video's web `VideoView` renders NO `poster` attribute, so a feed showing
+ * video may never have fetched its poster at all.
+ *
+ * Driven by `scripts/verify-media-flight.mjs --paint-latency`.
+ */
+function PaintLatencyDemo() {
+  const flight = useMediaFlight();
+  const targetRef = React.useRef<View | null>(null);
+
+  const fly = React.useCallback(
+    async (id: string, uri: string) => {
+      const to = await measure(targetRef.current);
+      if (!to) return;
+      // Stamped on `window` so the harness can time from RESOLUTION — the
+      // moment the consumer would navigate — rather than from the click.
+      await flight.flyTo(id, to, { uri }, { contentFit: 'cover' });
+      (window as unknown as { __flightResolvedAt?: number }).__flightResolvedAt =
+        performance.now();
+    },
+    [flight],
+  );
+
+  return (
+    <View style={{ gap: 12 }}>
+      {/* Rendered so the browser has it decoded: this is what makes `warm` warm. */}
+      <Image source={{ uri: PHOTO }} style={{ width: 96, height: 96 }} />
+      <Pressable onPress={() => void fly('warm', PHOTO)} testID="fly-warm">
+        <Text>Fly a poster the page already painted</Text>
+      </Pressable>
+      <Pressable
+        onPress={() => void fly('cold', `${PHOTO}&cachebust=${Date.now()}`)}
+        testID="fly-cold"
+      >
+        <Text>Fly a poster the page has never requested</Text>
+      </Pressable>
+      <View ref={targetRef} style={{ width: 320, height: 200 }} />
+      <MediaFlightLayer />
+    </View>
+  );
+}
+
+export const PaintLatency: Story = {
+  render: () => <PaintLatencyDemo />,
+};

@@ -57,6 +57,15 @@ const BASE = argUrl !== -1 ? process.argv[argUrl + 1] : 'http://localhost:6006';
 const STORY = 'overlays-mediaflight--fly-to-and-back';
 /** Mounts the layer AND a button under it, with no flight ever started. */
 const IDLE_STORY = 'overlays-mediaflight--click-through';
+/** Flies a warm poster and a cold one, so paint latency can be timed. */
+const PAINT_STORY = 'overlays-mediaflight--paint-latency';
+
+/**
+ * How long a WARM flight may take to put pixels on screen after `flyTo`
+ * resolves, in ms. Measured at 1–5 ms; the ceiling is generous because the
+ * property is "a frame or two", not a number.
+ */
+const WARM_PAINT_BUDGET_MS = 150;
 
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
@@ -172,6 +181,114 @@ async function checkIdle(page, failures) {
   );
 }
 
+/**
+ * `flyTo` RESOLVES ON COMMIT — SO COMMIT HAD BETTER BE A FRAME.
+ *
+ * The promise deliberately does not wait for a decode: waiting would put the
+ * decode in front of the user's tap. That trade is only sound if a surface whose
+ * poster is already in the image cache paints essentially immediately. Measured:
+ * warm 1–5 ms, cold (same file, cache-busted) 514–898 ms. So the transition
+ * stands or falls on the poster being WARM, and this is the assertion that keeps
+ * Bloom's half of that true — no re-fetch, no fade, `transition={0}`.
+ *
+ * THE COLD LEG IS THE CONTROL, and it is throttled rather than left to the
+ * network. "Warm is fast" is also what a harness that always reports zero says;
+ * the control proves the same instrument can produce a large number. Throttling
+ * makes that deterministic instead of a bet on how close the CDN is.
+ */
+async function checkPaintLatency(page, failures) {
+  const timeOne = async (testId, beforeClick) => {
+    await page.goto(`${BASE}/iframe.html?id=${PAINT_STORY}&viewMode=story`, {
+      waitUntil: 'networkidle0',
+    });
+    await page.waitForSelector(`[data-testid="${testId}"]`, { timeout: 20000 });
+    await page.evaluate(() => {
+      delete window.__flightResolvedAt;
+    });
+    const at = await page.evaluate((id) => {
+      const box = document.querySelector(`[data-testid="${id}"]`).getBoundingClientRect();
+      return { x: box.left + box.width / 2, y: box.top + box.height / 2 };
+    }, testId);
+    // Any throttling is applied HERE, after the story has loaded: applied
+    // before, it throttles the page load itself and the navigation times out
+    // long before anything is measured.
+    if (beforeClick) await beforeClick();
+    await page.mouse.click(at.x, at.y);
+    return page.evaluate(async () => {
+      const started = performance.now();
+      for (;;) {
+        const img = document.querySelector('#bloom-portal-root img');
+        const resolvedAt = window.__flightResolvedAt;
+        // Decoded is not the same as VISIBLE. A fade-in leaves the element
+        // complete with pixels while the user still sees nothing, so opacity is
+        // part of the question — without it this gate would pass a surface that
+        // takes half a second to become perceptible, which is the very hole it
+        // is here to measure.
+        const visible = img !== null && Number(getComputedStyle(img).opacity) > 0.99;
+        if (img && img.complete && img.naturalWidth > 0 && visible && resolvedAt !== undefined) {
+          return Math.round(performance.now() - resolvedAt);
+        }
+        if (performance.now() - started > 20000) return -1;
+        await new Promise((frame) => requestAnimationFrame(frame));
+      }
+    });
+  };
+
+  const warm = [];
+  for (let i = 0; i < 3; i += 1) warm.push(await timeOne('fly-warm'));
+  const worstWarm = Math.max(...warm);
+  report(
+    failures,
+    warm.every((ms) => ms >= 0),
+    `paint: a warm flight never painted at all (samples ${warm.join(', ')})`,
+  );
+  report(
+    failures,
+    worstWarm <= WARM_PAINT_BUDGET_MS,
+    `paint: a warm flight took ${worstWarm} ms to present after flyTo resolved ` +
+      `(budget ${WARM_PAINT_BUDGET_MS} ms, samples ${warm.join(', ')}) — the poster is being ` +
+      're-fetched or faded in, which is the whole gap the transition exists to cover',
+  );
+
+  // The control: same measurement, a poster the page never requested, on a
+  // deliberately slow link so the number cannot come out small by luck.
+  const cdp = await page.createCDPSession();
+  await cdp.send('Network.enable');
+  const cold = await timeOne('fly-cold', () =>
+    // LATENCY only, throughput untouched. Throttling bandwidth as well made a
+    // full-size photo take longer than the poll budget and the control reported
+    // "never painted", which is a broken instrument wearing the costume of a
+    // dramatic result. One round trip is all the discrimination this needs.
+    cdp.send('Network.emulateNetworkConditions', {
+      offline: false,
+      latency: 400,
+      downloadThroughput: -1,
+      uploadThroughput: -1,
+    }),
+  );
+  await cdp.send('Network.emulateNetworkConditions', {
+    offline: false,
+    latency: 0,
+    downloadThroughput: -1,
+    uploadThroughput: -1,
+  });
+  await cdp.detach();
+
+  report(
+    failures,
+    cold >= 0,
+    `paint: the control never painted at all (${cold}) — the instrument is broken, not the code`,
+  );
+  report(
+    failures,
+    cold > worstWarm,
+    `paint: the control did not discriminate — a throttled COLD poster measured ${cold} ms ` +
+      `against a warm ${worstWarm} ms, so this harness cannot tell the two apart and the ` +
+      'warm assertion above proves nothing',
+  );
+  console.log(`      paint latency after flyTo resolve: warm ${warm.join('/')} ms, cold(throttled) ${cold} ms`);
+}
+
 async function main() {
   const puppeteer = loadPuppeteer();
   const browser = await puppeteer.launch({
@@ -192,6 +309,7 @@ async function main() {
     // The idle case first: it is the state the layer spends its life in, and it
     // loads its own story (one that mounts the layer and never flies anything).
     await checkIdle(page, failures);
+    await checkPaintLatency(page, failures);
 
     await page.goto(`${BASE}/iframe.html?id=${STORY}&viewMode=story`, {
       waitUntil: 'networkidle0',
@@ -281,6 +399,7 @@ async function main() {
   for (const failure of failures) console.log(`FAIL  ${failure}`);
   if (failures.length === 0) {
     console.log('PASS  idle layer contributes no node and steals no click');
+    console.log('PASS  a warm flight presents pixels within a frame or two of flyTo resolving');
     console.log('PASS  media flight animates from the origin to the destination and releases');
   }
   process.exitCode = failures.length === 0 ? 0 : 1;

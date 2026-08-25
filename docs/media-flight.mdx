@@ -66,6 +66,44 @@ video on both platforms, and neither an unpainted `<video>` (expo-video sets no
 draws anything opaque — so the still shows through until the first frame lands.
 Waiting for paint would trade an invisible problem for a laggy tap.
 
+## The poster must already be in the image cache
+
+`flyTo` resolves on the layer's COMMIT, not on its first painted pixel. That
+trade is only sound if committing is *effectively* painting — and whether it is
+depends entirely on one thing. Measured in Chrome, milliseconds from `flyTo`
+resolving to the flying surface having visible pixels:
+
+| the poster URI | ms |
+| --- | --- |
+| already rendered by the page (in the image cache) | **1–5** |
+| never requested before (same file, cache-busted) | **510–900** |
+
+So a **warm** poster makes the commit a frame, and a **cold** one opens a
+half-second hole exactly where the origin has just disappeared. Measured in a
+consuming app the hole was ~350 ms, framed by "the feed row stopped painting"
+and "the flight had not started".
+
+**The fix is not to make `flyTo` wait.** Waiting would move that half second in
+front of the user's tap, which is worse in the place people actually feel it.
+The fix is to make sure the origin has already painted the exact URI the flight
+will carry.
+
+<Callout variant="warning" title="expo-video does not fetch your poster">
+On web, expo-video's `VideoView` renders `<video src=…>` with **no `poster`
+attribute**. So a feed that shows video and passes a poster to the video view
+never actually requests that URL — and the flight is then the first thing that
+asks for it, at the worst possible moment. Render the still yourself under the
+video (`MediaPoster` is exported for exactly this), or prefetch it.
+</Callout>
+
+One-minute check: in the Network panel, does the poster request appear **when
+you tap**? If so, this is what you are looking at.
+
+`scripts/verify-media-flight.mjs` gates Bloom's half — that a warm surface
+presents within a frame or two, with no re-fetch and no fade. Its control flies
+a cold poster over a latency-throttled link, so "warm is fast" cannot be
+reported by a harness that always says zero.
+
 ## The layer leaves when the DESTINATION is live, not when the animation ends
 
 Measured against production: opening a full-screen video route takes **~996 ms**
