@@ -299,6 +299,57 @@ async function checkPaintLatency(page, failures) {
   console.log(`      paint latency after flyTo resolve: warm ${warm.join('/')} ms, cold(throttled) ${cold} ms`);
 }
 
+/**
+ * THE DEGRADED PATH: `flyTo` WITH NO ORIGIN RECT.
+ *
+ * `MediaFlightOptions.from` is what the surface flies FROM. Without it the store
+ * sets `from = rect`, so the box interpolates from the destination to itself:
+ * it APPEARS AT FULL DESTINATION SIZE INSTANTLY and does not move.
+ *
+ * That is the documented degradation — better than flying in from a corner when
+ * the origin could not be measured — but it is also exactly what a user reports
+ * as "the video appeared full-screen and just sat there". So it is pinned here
+ * rather than left in a doc comment: no test that PASSES `from` can reach this
+ * state, which is why the motion phase above was blind to it.
+ *
+ * If this ever starts failing because the surface animates, the contract
+ * changed and somebody should have said so.
+ */
+async function checkNoOriginJumps(page, failures) {
+  await page.goto(`${BASE}/iframe.html?id=${STORY}&viewMode=story`, { waitUntil: 'networkidle0' });
+  await page.waitForSelector('[data-testid="flight-nofrom"]', { timeout: 20000 });
+
+  const target = await page.evaluate(() => {
+    const box = [...document.querySelectorAll('div')]
+      .find((el) => getComputedStyle(el).borderStyle === 'dashed')
+      ?.getBoundingClientRect();
+    return box ? { x: box.left, y: box.top, width: box.width, height: box.height } : null;
+  });
+  report(failures, target !== null, 'no-origin: the destination box was not found');
+
+  if (!(await clickTestId(page, 'flight-nofrom'))) {
+    failures.push('no-origin: the trigger was not clickable');
+    return;
+  }
+
+  await sleep(80);
+  const early = await flyingRect(page);
+  await sleep(500);
+  const late = await flyingRect(page);
+
+  report(failures, early !== null, 'no-origin: nothing was painted at all');
+  if (early && late && target) {
+    // It arrives full-size on the FIRST sample and never moves: both samples
+    // equal the destination. Asserted on both so "it jumped" is distinguished
+    // from "it happened to be measured after a fast animation finished".
+    report(
+      failures,
+      sameRect(early, target, 4) && sameRect(late, target, 4),
+      `no-origin: expected an instant jump to the destination, got early=${JSON.stringify(early)} late=${JSON.stringify(late)} target=${JSON.stringify(target)}`,
+    );
+  }
+}
+
 async function main() {
   const puppeteer = loadPuppeteer();
   const browser = await puppeteer.launch({
@@ -320,6 +371,7 @@ async function main() {
     // loads its own story (one that mounts the layer and never flies anything).
     await checkIdle(page, failures);
     await checkPaintLatency(page, failures);
+    await checkNoOriginJumps(page, failures);
 
     await page.goto(`${BASE}/iframe.html?id=${STORY}&viewMode=story`, {
       waitUntil: 'networkidle0',
@@ -410,6 +462,7 @@ async function main() {
   if (failures.length === 0) {
     console.log('PASS  idle layer contributes no node and steals no click');
     console.log('PASS  a warm flight presents pixels within a frame or two of flyTo resolving');
+    console.log('PASS  a flight with NO origin rect jumps to the destination (documented degradation)');
     console.log('PASS  media flight animates from the origin to the destination and releases');
   }
   process.exitCode = failures.length === 0 ? 0 : 1;

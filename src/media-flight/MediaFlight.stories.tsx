@@ -122,6 +122,24 @@ function FlightDemo() {
       <Pressable onPress={back} testID="flight-back">
         <Text>Fly back</Text>
       </Pressable>
+
+      {/* The DEGRADED path: no origin was measured, so there is nothing to fly
+          FROM. Exercised on purpose — this is the shape a user reports as "it
+          appeared full-size and just sat there", and no test that passes `from`
+          can reach it. */}
+      <Pressable
+        onPress={() => {
+          void (async () => {
+            const to = await measure(targetRef.current);
+            if (!to) return;
+            setFlying(true);
+            await flight.flyTo('story-media', to, CONTENT, { contentFit: 'cover' });
+          })();
+        }}
+        testID="flight-nofrom"
+      >
+        <Text>Fly with NO origin rect</Text>
+      </Pressable>
     </View>
   );
 }
