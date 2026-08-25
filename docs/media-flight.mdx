@@ -398,6 +398,43 @@ i.e. visibly not the thumbnail it is replacing. `width`/`height` are
 interpolated instead; the position still rides a transform, so the only layout
 work per frame is one absolutely-positioned node resizing.
 
+## Open: three decoders on native, and why the obvious cut is wrong
+
+On web a flight re-parents one element, so there is exactly one video view for
+the whole leg. **On native there is no re-parenting**, so during a flight the
+origin host, the destination host and the layer's own flying surface are three
+views on one player — and the flying one is a `TextureVideoView`, because a
+`SurfaceView` composites outside the view hierarchy and would ignore the clip,
+radius and transform that a flying box is made of.
+
+Three concurrent decoders is not a detail on a phone. Many Android devices
+guarantee only one or two concurrent hardware decoders; the third falls back to
+software or fails, which on a low-end device is a black video — worse than
+anything this transition is trying to hide.
+
+**The obvious cut is to paint the poster on the flying surface for the ~300 ms
+of the leg. Do not do that.** It is the same artefact this package spent a day
+removing from the web path: a 267–282 ms frozen picture mid-flight was measured,
+treated as the defect, and made the merge criterion. A still frame for 300 ms
+cannot be a defect on web and an optimisation on native. And it is in fact
+worse, because the poster is a *different image* — usually frame zero, not the
+frame the viewer was looking at — so the sequence becomes playing at 4.28 s, a
+jump to an unrelated still, then live again at 4.6 s. Two content jumps instead
+of one freeze.
+
+**If the decoder count does turn out to hurt, the cut goes the other way: the
+ENDS paint posters and the flying surface keeps the video.** During a leg the
+two hosts are covered by the surface that is flying; nobody is looking at them.
+The one being watched should be the one that plays.
+
+That costs something honest: it needs the layer to arbitrate who paints while a
+leg is live — the rank machinery that exists on web and that native deliberately
+does not have. It may not be worth it.
+
+**Unmeasured, and not measurable where everything else here was measured.** An
+emulator has no real hardware decoders, so the question needs a physical device.
+Until then this section is the decision, not the code.
+
 ## Android: a flight crosses a surface-type boundary
 
 expo-video renders Android video into a `SurfaceView` by default. A flight
