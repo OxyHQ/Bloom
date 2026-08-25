@@ -222,7 +222,7 @@ describe('tab-bar published surface', () => {
   it('keeps the cross-platform native peers REQUIRED', () => {
     // `expo-blur` and `expo-image` are apple+android native modules imported from
     // platform-NEUTRAL files (`progressive-blur/ProgressiveBlur.tsx`,
-    // `frosted-icon-button/FrostedIconButton.tsx`, `zoomable-image-gallery/`), so
+    // `frosted-icon-button/FrostedIconButton.tsx`, `zoomable-media-gallery/`), so
     // every native platform genuinely needs them. Marking them optional would
     // silence the one warning that tells a consumer their build is about to fail.
     for (const peer of ['expo-blur', 'expo-image']) {

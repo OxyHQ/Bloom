@@ -3,7 +3,7 @@
  * the image source URI.
  *
  * Intended for a thumbnail renderer and a fullscreen viewer (e.g.
- * `@oxyhq/bloom/zoomable-image-gallery`) sharing the SAME image URI to read
+ * `@oxyhq/bloom/zoomable-media-gallery`) sharing the SAME image URI to read
  * from and write to this one map, so an image already resolved as a thumbnail
  * has its ratio on hand when it opens "big" — no second cache, no duplicate
  * `Image.getSize` round-trip on the hot path. If the two surfaces render

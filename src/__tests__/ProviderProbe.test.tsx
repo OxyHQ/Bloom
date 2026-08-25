@@ -1,7 +1,7 @@
 /**
  * What a missing `BloomThemeProvider` actually costs the image gallery.
  *
- * `ZoomableImageGallery` used to bind `useTheme()` and never read the result.
+ * `ZoomableMediaGallery` used to bind `useTheme()` and never read the result.
  * The waste was the smaller half: `useTheme` THROWS outside the provider, so an
  * unread binding is a hard requirement imposed for nothing.
  *
@@ -21,18 +21,18 @@ import { act, render } from '@testing-library/react-native';
 
 import { PortalProvider, PortalOutlet } from '../portal';
 import { useTheme } from '../theme/use-theme';
-import { ZoomableImageGallery } from '../zoomable-image-gallery';
-import type { ZoomableImageGalleryHandle } from '../zoomable-image-gallery';
+import { ZoomableMediaGallery } from '../zoomable-media-gallery';
+import type { ZoomableMediaGalleryHandle } from '../zoomable-media-gallery';
 import { ArrowOutOfBox_Stroke2_Corner0_Rounded as ShareIcon } from '../icons';
 import { hostNodes } from './support/rendered-style';
 
 const IMAGES = [{ uri: 'https://cloud.oxy.so/a.jpg', alt: 'First' }];
 
 function renderGallery() {
-  const ref = createRef<ZoomableImageGalleryHandle>();
+  const ref = createRef<ZoomableMediaGalleryHandle>();
   const utils = render(
     <PortalProvider>
-      <ZoomableImageGallery ref={ref} />
+      <ZoomableMediaGallery ref={ref} />
       <PortalOutlet />
     </PortalProvider>,
   );

@@ -1,5 +1,5 @@
 /**
- * `ZoomableImageGallery` is mounted ONCE near the app root and driven through
+ * `ZoomableMediaGallery` is mounted ONCE near the app root and driven through
  * an imperative handle, which is the part a jest run can hold: it must render
  * nothing at all until `open()` is called, and `open()` must place its content
  * in the portal rather than in the tree position where the gallery was written.
@@ -15,8 +15,8 @@ import { act, render } from '@testing-library/react-native';
 
 import { BloomThemeProvider } from '../theme/BloomThemeProvider';
 import { PortalProvider, PortalOutlet } from '../portal';
-import { ZoomableImageGallery } from '../zoomable-image-gallery';
-import type { ZoomableImageGalleryHandle, GalleryImage } from '../zoomable-image-gallery';
+import { ZoomableMediaGallery } from '../zoomable-media-gallery';
+import type { ZoomableMediaGalleryHandle, GalleryImage } from '../zoomable-media-gallery';
 import { hostNodes } from './support/rendered-style';
 
 const IMAGES: GalleryImage[] = [
@@ -25,11 +25,11 @@ const IMAGES: GalleryImage[] = [
 ];
 
 function renderGallery() {
-  const ref = createRef<ZoomableImageGalleryHandle>();
+  const ref = createRef<ZoomableMediaGalleryHandle>();
   const utils = render(
     <BloomThemeProvider mode="light" colorPreset="oxy">
       <PortalProvider>
-        <ZoomableImageGallery ref={ref} />
+        <ZoomableMediaGallery ref={ref} />
         <PortalOutlet />
       </PortalProvider>
     </BloomThemeProvider>,
@@ -37,7 +37,7 @@ function renderGallery() {
   return { ...utils, ref };
 }
 
-describe('ZoomableImageGallery', () => {
+describe('ZoomableMediaGallery', () => {
   it('renders nothing while closed', () => {
     const { toJSON } = renderGallery();
     const images = hostNodes(toJSON()).filter((node) => node.type === 'ExpoImage');
@@ -49,7 +49,7 @@ describe('ZoomableImageGallery', () => {
     expect(typeof ref.current?.open).toBe('function');
   });
 
-  it('renders the images once opened', () => {
+  it('renders the media once opened', () => {
     const { ref, toJSON } = renderGallery();
     act(() => {
       ref.current?.open(IMAGES, 0);

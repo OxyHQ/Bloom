@@ -18,12 +18,24 @@ const Reanimated = {
     ref.current.value = fn();
     return ref.current;
   },
+  // A shared value created OUTSIDE a component. `media-flight/store.ts` needs
+  // one per flight because the flight is started by an imperative call and only
+  // read by the layer, so there is no hook position to create it in. The real
+  // one is a box with a `.value`; so is this.
+  makeMutable: (init: unknown) => ({ value: init }),
   useAnimatedStyle: (fn: () => Record<string, unknown>) => fn(),
   useAnimatedProps: (fn: () => Record<string, unknown>) => fn(),
   useAnimatedScrollHandler: () => jest.fn(),
   // Reduced motion defaults to off in tests; suites that need it on can override.
   useReducedMotion: () => false,
-  withSpring: (val: number) => val,
+  // Mirrors `withTiming` below: the real `withSpring` also takes a completion
+  // callback and calls it with `finished`. Without it here, any code that ends
+  // a spring by releasing something (media-flight's landing leg) never
+  // completes under jest, and the omission reads as the code being broken.
+  withSpring: (val: number, _config?: unknown, cb?: (finished: boolean) => void) => {
+    cb?.(true);
+    return val;
+  },
   withTiming: (val: number, _config?: unknown, cb?: (finished: boolean) => void) => {
     cb?.(true);
     return val;
@@ -131,6 +143,7 @@ export class Keyframe {
   }
 }
 
+export const makeMutable = Reanimated.makeMutable;
 export const useSharedValue = Reanimated.useSharedValue;
 export const useDerivedValue = Reanimated.useDerivedValue;
 export const useAnimatedStyle = Reanimated.useAnimatedStyle;

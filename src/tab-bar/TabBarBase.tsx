@@ -340,7 +340,7 @@ function TabBarBody({
   // never minimize and the highlight would never move, with no error anywhere.
   // Native (plugin present) auto-tracks and ignores the extra deps, so listing
   // them is correct on both platforms. Same rule as `BottomSheetBase` and
-  // `ZoomableImageGallery`. Do NOT strip these.
+  // `ZoomableMediaGallery`. Do NOT strip these.
   const barStyle = useAnimatedStyle(() => {
     const height = interpolate(
       progress.value,

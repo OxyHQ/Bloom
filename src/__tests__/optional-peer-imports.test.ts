@@ -101,6 +101,7 @@ const DYNAMIC_BOUNDARIES: { peer: string; file: string }[] = [
   { peer: 'nativewind', file: 'theme/color-scope/style-builder.ts' },
   { peer: 'expo-router', file: 'theme/adaptive-colors.ts' },
   { peer: 'react-native-keyboard-controller', file: 'bottom-sheet/BottomSheet.tsx' },
+  { peer: 'expo-video', file: 'media-flight/expo-video-module.ts' },
 ];
 
 /**

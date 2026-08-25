@@ -14,7 +14,7 @@ import { join, relative } from 'node:path';
  * both platforms.
  *
  * This has bitten Bloom three times — `BottomSheetBase` (fixed), `ConnectionDots` /
- * `AnimatedCheck` (fixed), and `ZoomableImageGallery` (fixed in 0.51.0, found by
+ * `AnimatedCheck` (fixed), and `ZoomableMediaGallery` (fixed in 0.51.0, found by
  * static analysis because it had no story). Hence a guard rather than vigilance.
  *
  * jest cannot catch this class at all: the reanimated test mock resolves animations

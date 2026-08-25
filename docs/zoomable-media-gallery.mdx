@@ -1,0 +1,116 @@
+---
+title: ZoomableMediaGallery
+description: The full-screen media viewer — images and video, mounted once, opened imperatively.
+order: 71
+---
+
+# ZoomableMediaGallery
+
+Full-screen images **and video** with pinch-zoom, swipe between, and
+drag-to-dismiss. Mount it once near the app root and open it from anywhere.
+
+```tsx
+import { ZoomableMediaGallery, type ZoomableMediaGalleryHandle } from '@oxyhq/bloom/zoomable-media-gallery';
+
+const gallery = useRef<ZoomableMediaGalleryHandle>(null);
+
+<ZoomableMediaGallery ref={gallery} measureThumb={measureThumb} />
+
+// from a thumbnail
+gallery.current?.open(items, index);
+```
+
+## Two specifiers, one module
+
+`@oxyhq/bloom/zoomable-image-gallery` resolves the same module and keeps
+working: an image gallery is exactly what this serves when every item is an
+image. The COMPONENT was renamed, so update the identifier —
+`ZoomableImageGallery` no longer exists, and there is no alias.
+
+## A page is an image or a video
+
+```tsx
+import { useVideoPlayer } from 'expo-video';
+import type { GalleryMedia } from '@oxyhq/bloom/zoomable-media-gallery';
+
+// YOU create the player and YOU own it. Bloom never creates or releases one.
+const player = useVideoPlayer(videoUrl);
+
+const items: GalleryMedia[] = [
+  { uri: 'https://…/photo.jpg', alt: 'A photo', aspectRatio: 1.5 },
+  { kind: 'video', id: 'clip-1', player, poster: 'https://…/still.jpg', aspectRatio: 1.777 },
+];
+```
+
+An image item is unchanged — `{ uri }` — because `kind` is optional on that
+arm. A video item carries the `VideoPlayer` object itself, and that is the
+whole mechanism behind "the video does not restart when it opens": expo-video
+keeps the player separate from the `VideoView` that shows it, and one player
+can feed several views. Handing the same player to this gallery moves a playing
+video into full screen without re-opening the stream.
+
+Give a video an `aspectRatio`. Unlike an image there is nothing to probe, so
+without one the page opens at the default ratio and resizes when the first
+frame arrives.
+
+## Exactly one video view is mounted
+
+The ACTIVE page. Every other page, and every thumbnail-strip tile, renders the
+poster still. A second `VideoView` on the same player would be a duplicate
+surface — the thing this family and `media-flight` are both built to avoid —
+and on a strip it would be one decoder per tile.
+
+One surface swap happens per opening: the pre-pager open surface hands over to
+the pager's active page once the open animation settles.
+
+## Which prop decides what
+
+| prop               | decides                                                  |
+| ------------------ | --------------------------------------------------------- |
+| `measureThumb`     | the rect the opening animation grows FROM                 |
+| `cornerRadius`     | the thumbnail's corner, so the transition matches it       |
+| `indicatorVariant` | `dots` or `thumbnails` for the page indicator              |
+| `videoControls`    | whether video pages show expo-video's transport controls   |
+
+`open(items, index, rect?)` takes the whole set and which one to show.
+
+## Why it is imperative
+
+One gallery serves every thumbnail on a screen. Making it declarative would
+mean a piece of state per grid, or one shared "which item is open" flag
+threaded through everything that can show media. The ref is what lets a
+thumbnail deep in a list open it without the list knowing the gallery exists.
+
+## `measureThumb` is what makes the transition read
+
+Without it the gallery fades in from nowhere. With it, the image grows out of
+the thumbnail the user pressed, which tells them *which* image they opened —
+useful precisely in the case where a grid has several similar photos.
+
+It returns a promise because measuring is asynchronous on native. Returning
+`null` is fine and degrades to the fade.
+
+## `alt` is the caption and the accessible text
+
+Set `alt` on each item. It is shown as the caption for the active page, and it
+is the only description a screen reader has — a media viewer with no alt text
+is a screen with nothing on it.
+
+## Peers
+
+It requires `expo-image`, which is why the family is **not** on the root
+barrel: Metro does not tree-shake, so importing the barrel would drag that peer
+into every consumer's build whether or not they use a gallery. Import it from
+its subpath.
+
+`expo-video` is an **optional** peer, loaded through
+`media-flight/expo-video-module` with the one dynamic-require shape Metro marks
+optional. An app that ships no video never has to install it; one that does and
+forgets gets its video pages degraded to their posters, with a single dev
+warning naming the package.
+
+## What a jest run can and cannot see
+
+That it renders nothing until `open()` is called, and that it opens at the
+index it was given. The gestures — pinch, pan-to-dismiss, the shared-element
+transition — belong to a device build.

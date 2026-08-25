@@ -224,7 +224,7 @@ function animatedHostAliases(): Set<string> {
     );
     // Where each imported identifier in THIS file comes from. Matching on the
     // wrapped name alone would be the same mistake as deriving a map from
-    // names: `zoomable-image-gallery` wraps `Image` from `expo-image`, which
+    // names: `media-flight` wraps `Image` from `expo-image`, which
     // shares a name with the react-native primitive and shares none of its
     // props.
     const origin = new Map<string, string>();

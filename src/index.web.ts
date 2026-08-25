@@ -22,7 +22,8 @@
 //         `ScrollRestorationProvider` itself. `theme/adaptive-colors.ts` also
 //         names expo-router, but through the optional-`require` boundary, which
 //         links nothing.
-//       · `./zoomable-image-gallery` — statically imports `expo-image`.
+//       · `./zoomable-media-gallery` and `./media-flight` — both reach
+//         `expo-image` through the shared `media-flight/MediaSurface`.
 //     Gate: `src/__tests__/root-barrel-graph.test.ts`.
 //
 //  2. Its exports are generic, collision-prone names. Those come in as a

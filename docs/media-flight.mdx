@@ -1,0 +1,127 @@
+---
+title: MediaFlight
+description: A shared-element media transition that survives the route change — on web and on native.
+order: 75
+---
+
+# MediaFlight
+
+A picture — or a **playing video** — moves from where it is to where it is
+going, across a navigation, without restarting and without being re-downloaded.
+
+```tsx
+// app/_layout.tsx — mounted ONCE, at the root, above the router.
+import { MediaFlightLayer } from '@oxyhq/bloom/media-flight';
+
+<MediaFlightLayer />
+```
+
+```tsx
+// the origin: a feed thumbnail
+import { useMediaFlight } from '@oxyhq/bloom/media-flight';
+
+const flight = useMediaFlight();
+
+<Pressable
+  ref={(node) => flight.registerAnchor(mediaId, node)}
+  onPress={async () => {
+    const from = await flight.measureAnchor(mediaId);
+    flight.flyTo(mediaId, targetRect, { kind: 'video', player, poster }, { from: from ?? undefined });
+    router.push(`/videos?id=${mediaId}`);
+  }}
+>
+  {/* while it is in flight, render a HOLE here — never a second copy */}
+</Pressable>
+```
+
+```tsx
+// the destination: it declares where it wants the surface, and hands it back
+useEffect(() => () => flight.flyBack(mediaId), [flight]);
+```
+
+## Why this exists rather than `react-native-teleport`
+
+A shared-element transition normally assumes the origin screen is still mounted
+while the element travels. That is why `react-native-teleport` requires
+`presentation: 'transparentModal'`, and why it has no web story at all.
+
+Under expo-router on web the origin route is **unmounted** the moment the URL
+changes. Anything the origin was rendering — a `VideoView`, a decoded image —
+is gone before the first frame of the transition.
+
+So the surface is moved OUT of both screens for the duration of the flight.
+`MediaFlightLayer` is mounted once at the app root and renders through Bloom's
+`Portal`, whose outlet lives above the router on both platforms. The surface it
+paints belongs to neither route, so neither route can take it down. Origin and
+destination only **declare** where they want it; the layer is what paints it.
+
+## One live surface per id
+
+That is the contract, and for video it is the whole feature. expo-video keeps
+the `VideoPlayer` **object** separate from the `VideoView` that shows it, and
+one player may feed several views — so moving a video is a matter of mounting
+ONE view in the right place, never of creating a second player.
+
+Concretely:
+
+- `flyTo` on an id that is already flying **retargets** the same surface. It
+  never adds a second one, and the surface resumes from where it currently is
+  rather than snapping back to the original origin.
+- The origin and the destination must render a **hole** (or the poster still —
+  `MediaPoster` is exported for exactly that) while the surface is in the layer.
+  Two copies is what this exists to prevent.
+- `flyBack` measures the current anchor, lands there, and releases. With no
+  measurable anchor it releases immediately, because a flying copy held over a
+  destination that has already drawn its own media is the duplicate again.
+
+## The API
+
+| member                          | does                                                          |
+| ------------------------------- | ------------------------------------------------------------- |
+| `registerAnchor(id, node)`      | declares the host view that anchors `id`; `null` clears it     |
+| `measureAnchor(id)`             | that node's window rect, or `null` when it has none            |
+| `flyTo(id, rect, content, opts)`| takes the surface live and moves it to `rect`                  |
+| `flyBack(id)`                   | flies it to its anchor and releases it on landing              |
+| `progress`                      | `SharedValue<number>`, 0 → 1 for the most recent leg           |
+
+The most recently registered node for an id **is** the anchor, which is what
+makes a destination mounting over an origin take over as the fly-back target
+without either of them coordinating.
+
+## It never takes a click
+
+Every node the layer renders is `pointerEvents="none"`, inside an `OverlayRoot`
+that is `box-none`. A flying surface is a picture of something the app is
+already showing; the controls underneath it stay the ones the user is pressing.
+
+The layer also renders **nothing at all** while no flight is live — which is
+what keeps it out of the overlay stack's live set, so the rank counter can
+still reset (see `overlay/stack.ts`). It takes a rank only while it is
+actually painting, and therefore stacks by open order like every other Bloom
+surface.
+
+## Why the size is animated rather than scaled
+
+`ZoomableMediaGallery` flies its media with a uniform `scale`, which is right
+there: it opens from a thumbnail into a box of the same aspect ratio. A flight
+does not have that luxury — it routinely goes from a cropped square tile to a
+16:9 player — and a uniform scale would leave the first frame the wrong height,
+i.e. visibly not the thumbnail it is replacing. `width`/`height` are
+interpolated instead; the position still rides a transform, so the only layout
+work per frame is one absolutely-positioned node resizing.
+
+## Peers
+
+`expo-image` is required (hence the subpath — the family is deliberately not on
+the root barrel, because Metro does not tree-shake). `expo-video` is
+**optional**: an app that flies only images never installs it, and one that
+flies video without it gets the poster plus a single dev warning naming the
+package.
+
+## What a jest run can and cannot see
+
+The registry: that a flight is created, that a second `flyTo` retargets rather
+than duplicating, that `flyBack` releases, that the layer renders nothing while
+idle and a surface when one is live. The MOTION — and whether the layer is
+click-through — belongs to a browser, which is what
+`MediaFlight.stories.tsx` and `scripts/verify-overlay-stacking.mjs` are for.

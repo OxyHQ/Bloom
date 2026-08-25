@@ -577,18 +577,46 @@
         "default": "./lib/commonjs/media-inset-border/index.js"
       }
     },
-    "./zoomable-image-gallery": {
+    "./zoomable-media-gallery": {
       "react-native": {
-        "types": "./lib/typescript/module/zoomable-image-gallery/index.d.ts",
-        "default": "./src/zoomable-image-gallery/index.ts"
+        "types": "./lib/typescript/module/zoomable-media-gallery/index.d.ts",
+        "default": "./src/zoomable-media-gallery/index.ts"
       },
       "import": {
-        "types": "./lib/typescript/module/zoomable-image-gallery/index.d.ts",
-        "default": "./lib/module/zoomable-image-gallery/index.js"
+        "types": "./lib/typescript/module/zoomable-media-gallery/index.d.ts",
+        "default": "./lib/module/zoomable-media-gallery/index.js"
       },
       "require": {
-        "types": "./lib/typescript/commonjs/zoomable-image-gallery/index.d.ts",
-        "default": "./lib/commonjs/zoomable-image-gallery/index.js"
+        "types": "./lib/typescript/commonjs/zoomable-media-gallery/index.d.ts",
+        "default": "./lib/commonjs/zoomable-media-gallery/index.js"
+      }
+    },
+    "./zoomable-image-gallery": {
+      "react-native": {
+        "types": "./lib/typescript/module/zoomable-media-gallery/index.d.ts",
+        "default": "./src/zoomable-media-gallery/index.ts"
+      },
+      "import": {
+        "types": "./lib/typescript/module/zoomable-media-gallery/index.d.ts",
+        "default": "./lib/module/zoomable-media-gallery/index.js"
+      },
+      "require": {
+        "types": "./lib/typescript/commonjs/zoomable-media-gallery/index.d.ts",
+        "default": "./lib/commonjs/zoomable-media-gallery/index.js"
+      }
+    },
+    "./media-flight": {
+      "react-native": {
+        "types": "./lib/typescript/module/media-flight/index.d.ts",
+        "default": "./src/media-flight/index.ts"
+      },
+      "import": {
+        "types": "./lib/typescript/module/media-flight/index.d.ts",
+        "default": "./lib/module/media-flight/index.js"
+      },
+      "require": {
+        "types": "./lib/typescript/commonjs/media-flight/index.d.ts",
+        "default": "./lib/commonjs/media-flight/index.js"
       }
     },
     "./pressable-scale": {
@@ -1544,6 +1572,7 @@
     "expo-image": "~56.0.11",
     "expo-router": "^56.0.0",
     "expo-symbols": "~56.0.6",
+    "expo-video": "~57.0.2",
     "jest": "^30.3.0",
     "jest-environment-jsdom": "^30.4.1",
     "react": "19.2.0",
@@ -1576,6 +1605,7 @@
     "expo-image": "*",
     "expo-router": ">=3.0.0",
     "expo-symbols": ">=0.4.5",
+    "expo-video": "*",
     "nativewind": ">=5.0.0",
     "react": ">=18.0.0",
     "react-dom": ">=18.0.0",
@@ -1601,6 +1631,9 @@
       "optional": true
     },
     "expo-router": {
+      "optional": true
+    },
+    "expo-video": {
       "optional": true
     },
     "nativewind": {

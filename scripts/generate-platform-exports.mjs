@@ -87,7 +87,17 @@ const SUBPATHS = /** @type {const} */ ([
   ['./grid', 'grid/index.ts'],
   ['./fill', 'fill/index.ts'],
   ['./media-inset-border', 'media-inset-border/index.ts'],
-  ['./zoomable-image-gallery', 'zoomable-image-gallery/index.ts'],
+  // TWO specifiers, ONE module. The family became media-capable (video pages
+  // fed by a consumer-owned expo-video player) and was renamed to match, but
+  // `./zoomable-image-gallery` is what three apps already import and an image
+  // gallery is still exactly what this serves them — so the old specifier stays
+  // a first-class entry point rather than becoming a shim. Both resolve the same
+  // built files; there is no alias module and no re-export layer.
+  ['./zoomable-media-gallery', 'zoomable-media-gallery/index.ts'],
+  ['./zoomable-image-gallery', 'zoomable-media-gallery/index.ts'],
+  // The shared-element layer that survives a route change. Subpath-only for the
+  // same reason as the gallery: it statically links `expo-image`.
+  ['./media-flight', 'media-flight/index.ts'],
   ['./pressable-scale', 'pressable-scale/index.ts'],
   ['./subtle-hover', 'subtle-hover/index.ts'],
   ['./motion', 'motion/index.ts'],

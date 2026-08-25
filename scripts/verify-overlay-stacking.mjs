@@ -61,8 +61,18 @@ const BASE = argUrl !== -1 ? process.argv[argUrl + 1] : 'http://localhost:6006';
 const OUT = process.env.OVERLAY_SHOT_DIR ?? '/tmp/bloom-overlay-shots';
 
 /**
- * Each case opens `open-first`, then `open-second` from inside it, then presses
- * `top-action` — which lives in the surface opened SECOND. `expect` is what the
+ * The default choreography: open `open-first`, then `open-second` from inside
+ * it. The press on `top-action` and the read of `result` are common to every
+ * case and happen after these.
+ */
+const DEFAULT_STEPS = [
+  { click: 'open-first', why: 'open-first not clickable' },
+  { click: 'open-second', why: 'open-second not reachable inside the first surface' },
+];
+
+/**
+ * Each case runs its `steps` (defaulting to the pair above), then presses
+ * `top-action` — which lives in the surface opened LAST. `expect` is what the
  * story writes when that press lands.
  */
 const CASES = [
@@ -85,6 +95,18 @@ const CASES = [
     id: 'overlays-overlay-stacking--menu-over-dialog-story',
     name: 'menu over dialog',
     expect: 'menu',
+  },
+  {
+    // The media-flight layer is the one surface here that must NOT receive the
+    // press: it paints a picture of something the app is already showing, over
+    // controls that stay live underneath it. Reading `pointer-events` off the
+    // node would report a layer the user cannot actually click through as fine,
+    // so the assertion is the same one every case above uses — the result line,
+    // which only the covered button can write.
+    id: 'overlays-mediaflight--click-through',
+    name: 'media flight does not steal the click',
+    steps: [{ click: 'open-first', why: 'open-first not clickable' }],
+    expect: 'flight',
   },
 ];
 
@@ -153,21 +175,21 @@ async function runCase(page, testCase) {
   );
   await page.waitForSelector('[data-testid="open-first"]', { timeout: 20000 });
 
-  if (!(await clickTestId(page, 'open-first'))) {
-    return { ...testCase, pass: false, reason: 'open-first not clickable' };
+  for (const step of testCase.steps ?? DEFAULT_STEPS) {
+    // eslint-disable-next-line no-await-in-loop
+    if (!(await clickTestId(page, step.click))) {
+      return {
+        ...testCase,
+        pass: false,
+        reason: step.why,
+        // eslint-disable-next-line no-await-in-loop
+        occlusion: await describeOcclusion(page, step.click),
+      };
+    }
+    // Entrance animation + mount of the surface this step opened.
+    // eslint-disable-next-line no-await-in-loop
+    await sleep(700);
   }
-  // Entrance animation + mount of the first surface.
-  await sleep(700);
-
-  if (!(await clickTestId(page, 'open-second'))) {
-    return {
-      ...testCase,
-      pass: false,
-      reason: 'open-second not reachable inside the first surface',
-      occlusion: await describeOcclusion(page, 'open-second'),
-    };
-  }
-  await sleep(700);
 
   const shot = path.join(OUT, `${testCase.name.replace(/\s+/g, '-')}.png`);
   await page.screenshot({ path: shot });

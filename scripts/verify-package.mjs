@@ -309,7 +309,22 @@ function packedFiles() {
     stdio: ['ignore', 'pipe', 'inherit'],
     env: { ...process.env, [REENTRY_ENV]: '1' },
   });
-  const [manifest] = JSON.parse(stdout);
+  const parsed = JSON.parse(stdout);
+  // npm 12 changed `pack --json` from an ARRAY of manifests to an OBJECT keyed
+  // by package name. Both shapes are accepted, and an unrecognised one THROWS
+  // rather than yielding an empty set — "no file is missing from the tarball"
+  // and "the tarball listing could not be read" are otherwise the same result,
+  // and the second one is what shipped here silently (`object is not iterable`
+  // only surfaced because the destructure crashed; a shape change that merely
+  // produced `undefined` would have passed the whole gate).
+  const manifest = Array.isArray(parsed) ? parsed[0] : Object.values(parsed)[0];
+  if (!manifest || !Array.isArray(manifest.files)) {
+    throw new Error(
+      `verify-package: could not read a file list out of \`npm pack --json\` ` +
+        `(npm ${process.env.npm_config_user_agent ?? 'unknown'}). Shape was: ` +
+        `${Array.isArray(parsed) ? 'array' : typeof parsed}.`,
+    );
+  }
   return new Set(manifest.files.map((/** @type {{ path: string }} */ f) => f.path));
 }
 

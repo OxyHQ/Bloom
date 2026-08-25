@@ -1,4 +1,5 @@
-// Manual mock for the `expo-image` peer that `zoomable-image-gallery` requires.
+// Manual mock for the `expo-image` peer that `media-flight/MediaSurface` (and
+// through it the media gallery) requires.
 // The real module reaches into expo-modules-core, unavailable under node — and
 // an unresolvable import is not a partial failure: the whole suite fails to
 // load, which is why that family had no test at all.

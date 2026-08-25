@@ -185,7 +185,7 @@ failure, not a type error.
 | `@oxyhq/bloom/menu` | `@oxyhq/bloom/dropdown-menu` | The family was ported to shadcn/react-native-reusables' public API. Every `Menu*` export is `DropdownMenu*`. |
 | `@oxyhq/bloom/collapsible` | `@oxyhq/bloom/accordion` | `Collapsible` called `UIManager.setLayoutAnimationEnabledExperimental(true)` at module scope and reached the root barrel through `export *`, so that side effect ran for every barrel consumer on Android old-arch whether or not the component was used. |
 | `@oxyhq/bloom/grouped-buttons` | `@oxyhq/bloom/settings-list` + `@oxyhq/bloom/item` | The only one of the three row renderers with no `accessibilityRole`, no `accessibilityLabel` and no `aria-disabled`, built on `TouchableOpacity`/`activeOpacity` instead of `useInteractionState`. |
-| `@oxyhq/bloom/pressable-with-hover` | none — inline it | One internal user. It now lives inside `zoomable-image-gallery` as `NavArrow`, the package's only hover-styled control. |
+| `@oxyhq/bloom/pressable-with-hover` | none — inline it | One internal user. It now lives inside `zoomable-media-gallery` as `NavArrow`, the package's only hover-styled control. |
 
 ### Subpaths added
 

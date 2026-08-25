@@ -12,7 +12,6 @@ import {
   NativeScrollEvent,
   type ViewStyle,
 } from 'react-native';
-import { Image } from 'expo-image';
 import Animated, {
   useSharedValue,
   useAnimatedStyle,
@@ -36,6 +35,7 @@ import {
   ArrowOutOfBox_Stroke2_Corner0_Rounded,
 } from '../icons';
 import { WEB_POSITION_FIXED, type WebCssStyle } from '../styles/web-view-style';
+import { MediaPoster, MediaSurface } from '../media-flight/MediaSurface';
 import {
   getAspectRatio,
   getIntrinsicSize,
@@ -65,13 +65,44 @@ import {
   THUMBNAIL_STRIP_TILE_SIZE,
 } from './constants';
 import type {
-  GalleryImage,
+  GalleryMedia,
   MeasuredRect,
-  ZoomableImageGalleryHandle,
-  ZoomableImageGalleryProps,
+  ZoomableMediaGalleryHandle,
+  ZoomableMediaGalleryProps,
 } from './types';
 
-const AnimatedImage = Animated.createAnimatedComponent(Image);
+/**
+ * The still-frame URI of an item: the image itself, or a video's poster.
+ * `undefined` for a video with no poster — there is nothing to probe, size
+ * against or show in the strip, and every caller below handles that.
+ */
+function posterUri(item: GalleryMedia): string | undefined {
+  return item.kind === 'video' ? item.poster : item.uri;
+}
+
+/** The aspect ratio already known for an item, from the shared probe cache. */
+function cachedRatio(item: GalleryMedia): number | undefined {
+  const uri = posterUri(item);
+  return uri === undefined ? undefined : getAspectRatio(uri);
+}
+
+/**
+ * A stable React key. An image is identified by its URI; a video is not (its
+ * player is an object with no URL), which is why `GalleryVideo` carries an
+ * explicit `id`. The index is folded in so a post repeating one image still
+ * pages correctly.
+ */
+function mediaKey(item: GalleryMedia, index: number): string {
+  return item.kind === 'video' ? `video-${item.id}-${index}` : `image-${item.uri}-${index}`;
+}
+
+/**
+ * What the share sheet is handed. A poster is not what "share this video"
+ * means, so a video shares its own `shareUrl` or nothing at all.
+ */
+function shareUri(item: GalleryMedia): string | undefined {
+  return item.kind === 'video' ? item.shareUrl : item.uri;
+}
 
 // Web-only interaction hints (no-ops on native): the zoom surfaces are
 // tap-to-dismiss (`cursor: pointer`) and must not select text or drag the
@@ -108,7 +139,7 @@ function NavArrow({
     <Pressable
       onPress={onPress}
       accessibilityRole="button"
-      accessibilityLabel={isLeft ? 'Previous image' : 'Next image'}
+      accessibilityLabel={isLeft ? 'Previous item' : 'Next item'}
       hitSlop={8}
       onHoverIn={onHoverIn}
       onHoverOut={onHoverOut}
@@ -134,7 +165,7 @@ interface FittedSize {
 }
 
 /**
- * Resolve `cornerRadius` against the size an image is actually rendered at, so
+ * Resolve `cornerRadius` against the size an item is actually rendered at, so
  * `'circle'` stays a circle at every fitted size (and through the open/close
  * animation, which scales this same box).
  */
@@ -143,23 +174,38 @@ function resolveCornerRadius(cornerRadius: number | 'circle', fit: FittedSize): 
 }
 
 /**
- * Fullscreen, swipeable image viewer that replicates the profile avatar's
- * measured-origin zoom transition (`ZoomableAvatar`) for rectangular post media:
+ * Fullscreen, swipeable MEDIA viewer — images and consumer-owned videos in one
+ * pager — replicating the profile avatar's measured-origin zoom transition
+ * (`ZoomableAvatar`) for rectangular post media:
  *
  * - Open/close feel is identical to the avatar (same spring configs, web
  *   timing/easing, blur backdrop, and the measure-origin technique). The viewer
  *   renders through the Bloom `Portal` on BOTH platforms (RN's `Modal` is not
  *   used on native — on the New Architecture / Fabric Android its host views
  *   mount full-screen but never composite, leaving the viewer invisible).
- * - The OPENING (tapped) image animates from its measured rect to a centered,
+ * - The OPENING (tapped) item animates from its measured rect to a centered,
  *   aspect-ratio-preserving fit within {@link FIT_FRACTION} of the screen. Once
  *   the open animation settles, a horizontal paging `ScrollView` mounts seeded at
- *   the tapped index so the user can swipe between every image in the post.
+ *   the tapped index so the user can swipe between every item in the post.
  * - Gesture disambiguation: the pager owns horizontal swipes; a vertical-only
  *   `Gesture.Pan` (`activeOffsetY` + `failOffsetX`) owns drag-to-dismiss, so the
  *   two never fight.
+ *
+ * ## Video, and why it does not restart
+ *
+ * A video page is fed by a `VideoPlayer` the CONSUMER created and owns. Bloom
+ * never creates or destroys one: expo-video keeps the player OBJECT separate
+ * from the `VideoView` that shows it, and one player may feed several views, so
+ * handing the same player to this gallery moves a playing video into fullscreen
+ * without re-opening the stream. Exactly ONE view is mounted per opening — the
+ * active page's — while every other page and every strip tile renders the still
+ * (`MediaPoster`). The single unavoidable swap is the pre-pager open surface
+ * handing over to the pager's active page once the open animation settles.
+ *
+ * `expo-video` is an OPTIONAL peer loaded through `media-flight/expo-video-module`.
+ * Without it a video page degrades to its poster, once, with a dev warning.
  */
-const ZoomableImageGalleryInner = React.forwardRef<ZoomableImageGalleryHandle, ZoomableImageGalleryProps>(({ measureThumb, cornerRadius = DEFAULT_CORNER_RADIUS, indicatorVariant = 'dots' }, ref) => {
+const ZoomableMediaGalleryInner = React.forwardRef<ZoomableMediaGalleryHandle, ZoomableMediaGalleryProps>(({ measureThumb, cornerRadius = DEFAULT_CORNER_RADIUS, indicatorVariant = 'dots', videoControls = false }, ref) => {
   const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = useWindowDimensions();
 
   const radiusFor = useCallback(
@@ -168,17 +214,17 @@ const ZoomableImageGalleryInner = React.forwardRef<ZoomableImageGalleryHandle, Z
   );
 
   const [isOpen, setIsOpen] = useState(false);
-  // Once true, the swipeable pager is mounted and the single open-image hidden.
+  // Once true, the swipeable pager is mounted and the single open-surface hidden.
   const [pagerReady, setPagerReady] = useState(false);
-  const [images, setImages] = useState<GalleryImage[]>([]);
+  const [items, setItems] = useState<GalleryMedia[]>([]);
   const [activeIndex, setActiveIndex] = useState(0);
-  // Whether the active image is currently pinched/double-tapped past its base
+  // Whether the active media is currently pinched/double-tapped past its base
   // size. Drives the pan-while-zoomed gesture, disables the pager's horizontal
-  // paging + the dismiss drag so a pan moves the zoomed image instead.
+  // paging + the dismiss drag so a pan moves the zoomed media instead.
   const [isZoomed, setIsZoomed] = useState(false);
-  // Aspect ratio of the OPENING image (drives the open-animation fit box).
+  // Aspect ratio of the OPENING item (drives the open-animation fit box).
   const [openRatio, setOpenRatio] = useState<number>(DEFAULT_ASPECT_RATIO);
-  // Per-image aspect ratios for the pager pages (index-aligned with `images`).
+  // Per-item aspect ratios for the pager pages (index-aligned with `items`).
   const [pageRatios, setPageRatios] = useState<Record<number, number>>({});
 
   // Native `Share` is always available; web exposes a share button only when the
@@ -193,7 +239,7 @@ const ZoomableImageGalleryInner = React.forwardRef<ZoomableImageGalleryHandle, Z
   const translateY = useSharedValue(0);
   const opacity = useSharedValue(0);
 
-  // Zoom transform of the active image, kept SEPARATE from the open/close +
+  // Zoom transform of the active media, kept SEPARATE from the open/close +
   // dismiss-drag transform above (reusing those would collide two meanings).
   // `zoom*` are the live/persisted values; `baseZoomScale` is captured at pinch
   // start and `savedZoomTranslate*` at pan start for incremental bookkeeping.
@@ -204,7 +250,7 @@ const ZoomableImageGalleryInner = React.forwardRef<ZoomableImageGalleryHandle, Z
   const savedZoomTranslateX = useSharedValue(0);
   const savedZoomTranslateY = useSharedValue(0);
 
-  // Origin (offset from screen center) of the tapped image.
+  // Origin (offset from screen center) of the tapped item.
   const originX = useSharedValue(0);
   const originY = useSharedValue(0);
 
@@ -212,7 +258,7 @@ const ZoomableImageGalleryInner = React.forwardRef<ZoomableImageGalleryHandle, Z
   const startY = useSharedValue(0);
   // Per-drag baseline captured at pan start (transient).
   const startScale = useSharedValue(1);
-  // Persistent scale of the open-image at its thumbnail origin (thumbWidth /
+  // Persistent scale of the open-surface at its thumbnail origin (thumbWidth /
   // fittedWidth). The open animation grows from this to 1; the close animation
   // shrinks back to it. Never overwritten by the drag gesture.
   const originScale = useSharedValue(1);
@@ -271,9 +317,9 @@ const ZoomableImageGalleryInner = React.forwardRef<ZoomableImageGalleryHandle, Z
     setActiveIndex((prev) => (prev === next ? prev : next));
   }, []);
 
-  // Snap the active image back to its un-zoomed baseline (no animation) and clear
-  // all zoom bookkeeping. Called on every path that changes the active page so a
-  // freshly-viewed image always starts un-zoomed.
+  // Snap the active media back to its un-zoomed baseline (no animation) and
+  // clear all zoom bookkeeping. Called on every path that changes the active
+  // page so a freshly-viewed item always starts un-zoomed.
   const resetZoom = useCallback(() => {
     zoomScale.value = 1;
     zoomTranslateX.value = 0;
@@ -291,7 +337,7 @@ const ZoomableImageGalleryInner = React.forwardRef<ZoomableImageGalleryHandle, Z
   );
 
   // Largest width/height for `ratio` that fits inside `fitBox` without cropping
-  // (contain), never exceeding the image's own resolution: filling the viewport
+  // (contain), never exceeding the media's own resolution: filling the viewport
   // with a 512px avatar or a small thumbnail just renders it soft. `uri` is what
   // lets us look the intrinsic size up; without it (not measured yet) the fit
   // box wins and the clamp applies on the next frame.
@@ -311,22 +357,27 @@ const ZoomableImageGalleryInner = React.forwardRef<ZoomableImageGalleryHandle, Z
     return { width, height };
   }, [fitBox]);
 
-  // Fitted size of the single open-image for the CURRENT page. On open this is
-  // the opened image's fit (active index == opened index, ratio == `openRatio`);
-  // after swiping it tracks the viewed image so the collapse-on-dismiss renders
-  // and flies back the image actually on screen.
+  // Fitted size of the single open-surface for the CURRENT page. On open this is
+  // the opened item's fit (active index == opened index, ratio == `openRatio`);
+  // after swiping it tracks the viewed item so the collapse-on-dismiss renders
+  // and flies back the media actually on screen.
+  const activeItem = items[activeIndex];
   const activeRatio = pageRatios[activeIndex] ?? openRatio;
-  const activeUri = images[activeIndex]?.uri;
+  const activeUri = activeItem === undefined ? undefined : posterUri(activeItem);
   const activeFit = useMemo(
     () => fitForRatio(activeRatio, activeUri),
     [fitForRatio, activeRatio, activeUri],
   );
 
-  // Alt text (accessibility description) of the image currently on screen, shown
+  // Alt text (accessibility description) of the item currently on screen, shown
   // as a caption at the bottom of the viewer (Bluesky-style lightbox footer).
-  const activeAlt = images[activeIndex]?.alt?.trim() || undefined;
+  const activeAlt = activeItem?.alt?.trim() || undefined;
 
-  const ensureRatio = useCallback((index: number, uri: string) => {
+  // Probe and cache the ratio of the page at `index`. A video with no poster has
+  // nothing to probe — it keeps whatever ratio the consumer declared, or the
+  // gallery default — so this is a no-op rather than a guess.
+  const ensureRatio = useCallback((index: number, uri: string | undefined) => {
+    if (uri === undefined) return;
     const cached = getAspectRatio(uri);
     if (cached !== undefined) {
       setPageRatios((prev) => (prev[index] === cached ? prev : { ...prev, [index]: cached }));
@@ -348,7 +399,7 @@ const ZoomableImageGalleryInner = React.forwardRef<ZoomableImageGalleryHandle, Z
     opacity.value = 0;
   }, [opacity, scale, translateX, translateY]);
 
-  // Fly the (possibly dragged) image back toward `target` — the rect of the
+  // Fly the (possibly dragged) media back toward `target` — the rect of the
   // thumbnail currently being viewed — shrinking to its footprint. Uses the
   // EXACT same close spring (native) / timing (web) as the avatar transition.
   const flyBackTo = useCallback(
@@ -396,14 +447,14 @@ const ZoomableImageGalleryInner = React.forwardRef<ZoomableImageGalleryHandle, Z
     // fly-back from an already-moving image.
     if (dismissingRef.current) return;
     dismissingRef.current = true;
-    // Collapse the pager back to the single open-image so the fly-back animates
-    // one image (the current one) rather than the whole scrolled strip.
+    // Collapse the pager back to the single open-surface so the fly-back
+    // animates one item (the current one) rather than the whole scrolled strip.
     setPagerReady(false);
 
     const index = activeIndexRef.current;
-    const current = images[index];
-    // Recompute the fly-back target from the CURRENT image: the live rect of its
-    // thumbnail + the same fitted box (`activeFit`) the open-image is rendered
+    const current = items[index];
+    // Recompute the fly-back target from the CURRENT item: the live rect of its
+    // thumbnail + the same fitted box (`activeFit`) the open-surface is rendered
     // at, using the same screen-center math as `open`. Falls back to a center
     // fade-out when the thumbnail can't be measured.
     if (measureThumb && current) {
@@ -428,7 +479,7 @@ const ZoomableImageGalleryInner = React.forwardRef<ZoomableImageGalleryHandle, Z
     activeFit,
     fadeOutCenter,
     flyBackTo,
-    images,
+    items,
     measureThumb,
     SCREEN_HEIGHT,
     SCREEN_WIDTH,
@@ -442,41 +493,43 @@ const ZoomableImageGalleryInner = React.forwardRef<ZoomableImageGalleryHandle, Z
   }, []);
 
   const open = useCallback(
-    (nextImages: GalleryImage[], index: number, rect?: MeasuredRect) => {
-      if (isOpen || nextImages.length === 0) return;
+    (nextItems: GalleryMedia[], index: number, rect?: MeasuredRect) => {
+      if (isOpen || nextItems.length === 0) return;
       dismissingRef.current = false;
-      const safeIndex = Math.min(Math.max(index, 0), nextImages.length - 1);
-      const target = nextImages[safeIndex];
+      const safeIndex = Math.min(Math.max(index, 0), nextItems.length - 1);
+      const target = nextItems[safeIndex];
       if (!target) return;
-      const knownRatio = target.aspectRatio ?? getAspectRatio(target.uri);
+      const targetUri = posterUri(target);
+      const knownRatio = target.aspectRatio ?? cachedRatio(target);
       const ratio = knownRatio ?? DEFAULT_ASPECT_RATIO;
 
-      setImages(nextImages);
+      setItems(nextItems);
       setActiveIndexBoth(safeIndex);
       setOpenRatio(ratio);
       // Seed every page whose ratio is already known (consumer-provided metadata
       // or a previously-cached probe) so swiping never hits the same snap — only
-      // a genuinely-unknown image falls through to `ensureRatio`'s async probe.
+      // a genuinely-unknown item falls through to `ensureRatio`'s async probe.
       const initialRatios: Record<number, number> = {};
-      nextImages.forEach((img, i) => {
-        const r = img.aspectRatio ?? getAspectRatio(img.uri);
+      nextItems.forEach((item, i) => {
+        const r = item.aspectRatio ?? cachedRatio(item);
         if (r !== undefined) initialRatios[i] = r;
       });
       setPageRatios(initialRatios);
 
-      // Resolve the opening ratio if it was not yet known, then re-fit.
-      if (knownRatio === undefined) {
-        void fetchAspectRatio(target.uri).then((resolved) => {
+      // Resolve the opening ratio if it was not yet known, then re-fit. A video
+      // with no poster has nothing to probe and keeps the default.
+      if (knownRatio === undefined && targetUri !== undefined) {
+        void fetchAspectRatio(targetUri).then((resolved) => {
           setOpenRatio(resolved);
           setPageRatios((prev) => ({ ...prev, [safeIndex]: resolved }));
         });
       }
 
-      // The open-image box is rendered at its FINAL fitted size; the open
+      // The open-surface box is rendered at its FINAL fitted size; the open
       // animation grows it from the thumbnail's footprint (scale < 1) up to 1,
       // mirroring the avatar's small→big scale. The initial scale is the ratio
       // of the thumbnail width to the fitted width.
-      const fitted = fitForRatio(ratio, target.uri);
+      const fitted = fitForRatio(ratio, targetUri);
       const centerX = SCREEN_WIDTH / 2;
       const centerY = SCREEN_HEIGHT / 2;
       if (rect && rect.width > 0) {
@@ -591,7 +644,7 @@ const ZoomableImageGalleryInner = React.forwardRef<ZoomableImageGalleryHandle, Z
     [opacity],
   );
 
-  // The single open-image animates from origin → fitted center.
+  // The single open-surface animates from origin → fitted center.
   const openImageStyle = useAnimatedStyle(
     () => ({
       transform: [
@@ -635,7 +688,7 @@ const ZoomableImageGalleryInner = React.forwardRef<ZoomableImageGalleryHandle, Z
   // (web, where paging may not fire a reliable momentum-end).
   const updateIndexFromOffset = useCallback(
     (offsetX: number) => {
-      const lastIndex = images.length - 1;
+      const lastIndex = items.length - 1;
       if (lastIndex < 0) return;
       const next = Math.min(Math.max(Math.round(offsetX / SCREEN_WIDTH), 0), lastIndex);
       if (next === activeIndexRef.current) return;
@@ -643,10 +696,10 @@ const ZoomableImageGalleryInner = React.forwardRef<ZoomableImageGalleryHandle, Z
       // the page scrolling away).
       resetZoom();
       setActiveIndexBoth(next);
-      const img = images[next];
-      if (img) ensureRatio(next, img.uri);
+      const item = items[next];
+      if (item) ensureRatio(next, posterUri(item));
     },
-    [ensureRatio, images, resetZoom, setActiveIndexBoth, SCREEN_WIDTH]
+    [ensureRatio, items, resetZoom, setActiveIndexBoth, SCREEN_WIDTH]
   );
 
   // Programmatically page to `index` (arrow buttons, keyboard, thumbnail taps).
@@ -655,13 +708,13 @@ const ZoomableImageGalleryInner = React.forwardRef<ZoomableImageGalleryHandle, Z
   const pageTo = useCallback(
     (index: number) => {
       if (!pagerReady) return;
-      const lastIndex = images.length - 1;
+      const lastIndex = items.length - 1;
       if (lastIndex < 0) return;
       const clamped = Math.min(Math.max(index, 0), lastIndex);
       resetZoom();
       pagerRef.current?.scrollTo({ x: clamped * SCREEN_WIDTH, y: 0, animated: true });
     },
-    [images.length, pagerReady, resetZoom, SCREEN_WIDTH]
+    [items.length, pagerReady, resetZoom, SCREEN_WIDTH]
   );
 
   const onPagerScroll = useCallback(
@@ -830,10 +883,12 @@ const ZoomableImageGalleryInner = React.forwardRef<ZoomableImageGalleryHandle, Z
     [tapGesture, pinchGesture, panWhileZoomedGesture]
   );
 
-  // Share the active image's URI: the OS share sheet on native; the Web Share API
-  // on supporting browsers (the button is only rendered where it exists).
+  // Share the active item's URI: the OS share sheet on native; the Web Share API
+  // on supporting browsers (the button is only rendered where it exists). A
+  // video shares its own `shareUrl`; its poster is not what "share this" means.
   const handleShare = useCallback(async () => {
-    const uri = images[activeIndexRef.current]?.uri;
+    const item = items[activeIndexRef.current];
+    const uri = item === undefined ? undefined : shareUri(item);
     if (!uri) return;
     try {
       if (Platform.OS === 'web') {
@@ -847,9 +902,9 @@ const ZoomableImageGalleryInner = React.forwardRef<ZoomableImageGalleryHandle, Z
       // A user-cancelled share sheet rejects (AbortError on web) — that's
       // expected, not a failure. Anything else is a real error worth surfacing.
       if (err instanceof Error && err.name === 'AbortError') return;
-      if (typeof console !== 'undefined' && console.error) console.error('Image share failed:', err);
+      if (typeof console !== 'undefined' && console.error) console.error('Media share failed:', err);
     }
-  }, [images]);
+  }, [items]);
 
   // Keyboard navigation (web only), scoped to the open lifetime like Dialog.web's
   // Escape handler. Reads the live index from the ref so it need not re-subscribe
@@ -888,7 +943,7 @@ const ZoomableImageGalleryInner = React.forwardRef<ZoomableImageGalleryHandle, Z
             in isolation. */}
         <Backdrop
           onPress={handleDismiss}
-          accessibilityLabel="Close image viewer"
+          accessibilityLabel="Close media viewer"
           progress={opacity}
         />
 
@@ -902,18 +957,26 @@ const ZoomableImageGalleryInner = React.forwardRef<ZoomableImageGalleryHandle, Z
           ]}
           pointerEvents="box-none"
         >
-          {!pagerReady && (
+          {!pagerReady && activeItem !== undefined && (
             <Pressable onPress={handleDismiss} style={webPointerStyle}>
-              <AnimatedImage
-                source={{ uri: images[activeIndex]?.uri }}
-                contentFit="contain"
+              {/* The animated transform rides the BOX, not the media, so the
+                  image and video arms move identically — and so the box's
+                  radius clips a video the same way it rounds an image. */}
+              <Animated.View
                 style={[
+                  styles.mediaBox,
                   { width: activeFit.width, height: activeFit.height, borderRadius: radiusFor(activeFit) },
                   openImageStyle,
                 ]}
-                transition={0}
-                {...(Platform.OS === 'web' ? { draggable: false } : {})}
-              />
+              >
+                <MediaSurface
+                  content={activeItem}
+                  contentFit="contain"
+                  nativeControls={videoControls}
+                  accessibilityLabel={activeItem.alt}
+                  style={StyleSheet.absoluteFill}
+                />
+              </Animated.View>
             </Pressable>
           )}
 
@@ -933,55 +996,64 @@ const ZoomableImageGalleryInner = React.forwardRef<ZoomableImageGalleryHandle, Z
                 scrollEventThrottle={16}
                 style={StyleSheet.absoluteFill}
               >
-                {images.map((img, idx) => {
-                  const ratio = pageRatios[idx] ?? getAspectRatio(img.uri) ?? DEFAULT_ASPECT_RATIO;
-                  const fit = fitForRatio(ratio, img.uri);
+                {items.map((item, idx) => {
+                  const uri = posterUri(item);
+                  const ratio =
+                    pageRatios[idx] ?? cachedRatio(item) ?? item.aspectRatio ?? DEFAULT_ASPECT_RATIO;
+                  const fit = fitForRatio(ratio, uri);
                   // Only the active page is zoomable + gesture-wrapped (double-tap
-                  // / single-tap dismiss / pinch / pan). Off-screen pages stay a
-                  // plain image; the active image handles its own tap-to-dismiss
-                  // through the gesture, so it isn't wrapped in a Pressable.
+                  // / single-tap dismiss / pinch / pan). It is also the ONLY page
+                  // that mounts a real media surface: an off-screen page renders
+                  // the still, because a second `VideoView` on the same player is
+                  // exactly the duplicate surface this package exists to avoid.
+                  // The active media handles its own tap-to-dismiss through the
+                  // gesture, so it isn't wrapped in a Pressable.
                   if (idx === activeIndex) {
                     return (
                       <Pressable
-                        key={`${img.uri}-${idx}`}
+                        key={mediaKey(item, idx)}
                         // The page fills the screen ON TOP of the backdrop (the
                         // pager below it needs pointer events to swipe), so a
-                        // press on the empty area around the image can never
+                        // press on the empty area around the media can never
                         // reach the backdrop — the page dismisses it itself.
-                        // Same outcome as tapping the image, which already
+                        // Same outcome as tapping the media, which already
                         // dismisses through `singleTapDismissGesture`.
                         onPress={handleDismiss}
-                        accessibilityLabel="Close image viewer"
+                        accessibilityLabel="Close media viewer"
                         style={[styles.page, { width: SCREEN_WIDTH, height: SCREEN_HEIGHT }, webPointerStyle]}
                       >
                         <GestureDetector gesture={activePageGesture}>
-                          <AnimatedImage
-                            source={{ uri: img.uri }}
-                            contentFit="contain"
+                          <Animated.View
                             style={[
+                              styles.mediaBox,
                               { width: fit.width, height: fit.height, borderRadius: radiusFor(fit) },
                               zoomImageStyle,
                             ]}
-                            transition={0}
-                            {...(Platform.OS === 'web' ? { draggable: false } : {})}
-                          />
+                          >
+                            <MediaSurface
+                              content={item}
+                              contentFit="contain"
+                              nativeControls={videoControls}
+                              accessibilityLabel={item.alt}
+                              style={StyleSheet.absoluteFill}
+                            />
+                          </Animated.View>
                         </GestureDetector>
                       </Pressable>
                     );
                   }
                   return (
                     <Pressable
-                      key={`${img.uri}-${idx}`}
+                      key={mediaKey(item, idx)}
                       onPress={handleDismiss}
-                      accessibilityLabel="Close image viewer"
+                      accessibilityLabel="Close media viewer"
                       style={[styles.page, { width: SCREEN_WIDTH, height: SCREEN_HEIGHT }]}
                     >
-                      <Image
-                        source={{ uri: img.uri }}
+                      <MediaPoster
+                        content={item}
                         contentFit="contain"
+                        accessibilityLabel={item.alt}
                         style={{ width: fit.width, height: fit.height, borderRadius: radiusFor(fit) }}
-                        transition={0}
-                        {...(Platform.OS === 'web' ? { draggable: false } : {})}
                       />
                     </Pressable>
                   );
@@ -990,10 +1062,10 @@ const ZoomableImageGalleryInner = React.forwardRef<ZoomableImageGalleryHandle, Z
             </Animated.View>
           )}
 
-          {pagerReady && images.length > 1 && (
+          {pagerReady && items.length > 1 && (
             <Animated.View style={[styles.indicatorWrap, backdropStyle]} pointerEvents="box-none">
               <View style={styles.counterPill} pointerEvents="none">
-                <Text style={styles.counterText}>{`${activeIndex + 1} / ${images.length}`}</Text>
+                <Text style={styles.counterText}>{`${activeIndex + 1} / ${items.length}`}</Text>
               </View>
               {indicatorVariant === 'thumbnails' ? (
                 <ScrollView
@@ -1002,33 +1074,30 @@ const ZoomableImageGalleryInner = React.forwardRef<ZoomableImageGalleryHandle, Z
                   style={styles.thumbStripScroll}
                   contentContainerStyle={styles.thumbStripContent}
                 >
-                  {images.map((img, idx) => (
+                  {items.map((item, idx) => (
                     <Pressable
-                      key={`thumb-${img.uri}-${idx}`}
+                      key={`thumb-${mediaKey(item, idx)}`}
                       onPress={() => pageTo(idx)}
                       accessibilityRole="button"
-                      accessibilityLabel={`Go to image ${idx + 1} of ${images.length}`}
+                      accessibilityLabel={`Go to item ${idx + 1} of ${items.length}`}
                       style={[
                         styles.thumbTile,
                         idx === activeIndex ? styles.thumbTileActive : styles.thumbTileInactive,
                         webPointerStyle,
                       ]}
                     >
-                      <Image
-                        source={{ uri: img.uri }}
-                        contentFit="cover"
-                        style={styles.thumbTileImage}
-                        transition={0}
-                        {...(Platform.OS === 'web' ? { draggable: false } : {})}
-                      />
+                      {/* A STILL, never a surface: one decoder per strip tile is
+                          what mounting the real media here would cost, and for a
+                          video it would be a second view on the live player. */}
+                      <MediaPoster content={item} contentFit="cover" style={styles.thumbTileImage} />
                     </Pressable>
                   ))}
                 </ScrollView>
               ) : (
                 <View style={styles.dotsRow} pointerEvents="none">
-                  {images.map((img, idx) => (
+                  {items.map((item, idx) => (
                     <View
-                      key={`dot-${img.uri}-${idx}`}
+                      key={`dot-${mediaKey(item, idx)}`}
                       style={[styles.dot, idx === activeIndex ? styles.dotActive : styles.dotInactive]}
                     />
                   ))}
@@ -1037,11 +1106,11 @@ const ZoomableImageGalleryInner = React.forwardRef<ZoomableImageGalleryHandle, Z
             </Animated.View>
           )}
 
-          {Platform.OS === 'web' && pagerReady && images.length > 1 && activeIndex > 0 && (
+          {Platform.OS === 'web' && pagerReady && items.length > 1 && activeIndex > 0 && (
             <NavArrow direction="left" onPress={() => pageTo(activeIndex - 1)} />
           )}
 
-          {Platform.OS === 'web' && pagerReady && images.length > 1 && activeIndex < images.length - 1 && (
+          {Platform.OS === 'web' && pagerReady && items.length > 1 && activeIndex < items.length - 1 && (
             <NavArrow direction="right" onPress={() => pageTo(activeIndex + 1)} />
           )}
 
@@ -1049,7 +1118,7 @@ const ZoomableImageGalleryInner = React.forwardRef<ZoomableImageGalleryHandle, Z
             <Pressable
               onPress={handleShare}
               accessibilityRole="button"
-              accessibilityLabel="Share image"
+              accessibilityLabel="Share media"
               hitSlop={8}
               style={[styles.shareButton, webPointerStyle]}
             >
@@ -1061,7 +1130,7 @@ const ZoomableImageGalleryInner = React.forwardRef<ZoomableImageGalleryHandle, Z
             <Animated.View
               style={[
                 styles.altCaptionWrap,
-                images.length > 1 && styles.altCaptionWrapWithIndicator,
+                items.length > 1 && styles.altCaptionWrapWithIndicator,
                 backdropStyle,
               ]}
               pointerEvents="none"
@@ -1088,9 +1157,9 @@ const ZoomableImageGalleryInner = React.forwardRef<ZoomableImageGalleryHandle, Z
   return <Portal>{renderContent()}</Portal>;
 });
 
-ZoomableImageGalleryInner.displayName = 'ZoomableImageGallery';
+ZoomableMediaGalleryInner.displayName = 'ZoomableMediaGallery';
 
-export const ZoomableImageGallery = ZoomableImageGalleryInner;
+export const ZoomableMediaGallery = ZoomableMediaGalleryInner;
 
 const styles = StyleSheet.create({
   modalContainer: {
@@ -1133,6 +1202,12 @@ const styles = StyleSheet.create({
   page: {
     justifyContent: 'center',
     alignItems: 'center',
+  },
+  // The box the media is painted into. `overflow: hidden` is what makes the
+  // box's corner radius clip a VIDEO — an image would round on its own, a
+  // platform video surface will not.
+  mediaBox: {
+    overflow: 'hidden',
   },
   indicatorWrap: {
     position: 'absolute',
@@ -1260,4 +1335,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default ZoomableImageGallery;
+export default ZoomableMediaGallery;
