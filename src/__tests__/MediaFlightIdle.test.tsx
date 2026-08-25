@@ -49,13 +49,28 @@ jest.mock('react-native', () => jest.requireActual('react-native-web'));
 jest.mock('../portal', () => jest.requireActual('../portal/index.web'));
 
 import { MediaFlightLayer } from '../media-flight/MediaFlightLayer';
-import { flyTo, releaseFlight, resetMediaFlight } from '../media-flight/store';
+import {
+  flyTo,
+  getFlights,
+  hasFlight,
+  registerAnchor,
+  releaseFlight,
+  resetMediaFlight,
+  subscribeToFlights,
+} from '../media-flight/store';
 import type { MediaSurfaceContent } from '../media-flight/types';
 
 (globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
 
 const IMAGE: MediaSurfaceContent = { uri: 'https://cloud.oxy.so/a.jpg' };
 const TARGET = { x: 0, y: 0, width: 400, height: 300 };
+const RECT = { x: 10, y: 20, width: 100, height: 50 };
+
+/** A node that answers `measureInWindow`, like a laid-out View. */
+const anchorAt = (rect: typeof RECT) => ({
+  measureInWindow: (cb: (x: number, y: number, w: number, h: number) => void) =>
+    cb(rect.x, rect.y, rect.width, rect.height),
+});
 
 function mount(node: ReactElement): { root: Root; container: HTMLElement } {
   const container = document.createElement('div');
@@ -144,6 +159,40 @@ describe('an idle MediaFlightLayer is not there at all', () => {
     });
     expect(portalChildCount()).toBe(0);
     unmount(mounted);
+  });
+
+  it('wakes ONLY for flight changes, so an idle root costs nothing', () => {
+    // The cost question, which every other gate here is blind to because they
+    // all check correctness. `<MediaFlightLayer>` sits at an app's root and
+    // subscribes to a store; if that subscription woke it on unrelated changes
+    // it would re-render the root on every dialog open, tab switch and toast,
+    // and nothing in the tree would say so.
+    //
+    // Asserted on the SUBSCRIPTION rather than through React on purpose: the
+    // first version of this counted renders of the component that RENDERS the
+    // layer, which cannot see the layer's own re-render at all — its positive
+    // control failed and gave that away. The store's notification discipline is
+    // the actual mechanism, and it is testable without React in the way.
+    let woken = 0;
+    const unsubscribe = subscribeToFlights(() => {
+      woken += 1;
+    });
+    try {
+      // Everything an app does that is not a flight: registering anchors (every
+      // feed row does this on mount), measuring them, asking about state.
+      registerAnchor('x', anchorAt(RECT));
+      registerAnchor('y', anchorAt(RECT));
+      registerAnchor('x', null);
+      getFlights();
+      hasFlight('x');
+      expect(woken).toBe(0);
+
+      // …and the positive control, in the same currency: a flight DOES wake it.
+      void flyTo('a', TARGET, IMAGE);
+      expect(woken).toBeGreaterThan(0);
+    } finally {
+      unsubscribe();
+    }
   });
 
   it('leaves the element under the pointer reachable while idle', () => {
