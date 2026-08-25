@@ -32,6 +32,30 @@ const PHOTO =
 
 const CONTENT: MediaSurfaceContent = { uri: PHOTO };
 
+/**
+ * A video flight — and an honest note about what this harness can NOT show.
+ *
+ * MEASURED: `expo-video` does not load in Storybook, so `loadExpoVideo()`
+ * returns null, `MediaSurface` degrades to the poster, and **no `<video>`
+ * element is ever created here**. So this story exercises the degradation path
+ * (a video flight still flies, carrying its still) and CANNOT exercise the
+ * video arm's geometry.
+ *
+ * That matters, because a real app reported the container animating while the
+ * `<video>` inside it sat at 300x150 — the HTML default intrinsic size of an
+ * unsized `<video>` — and then jumped. **Bloom's browser gate is structurally
+ * incapable of catching that**, which is why it never did. Verifying it needs a
+ * consumer that actually has the optional peer installed; the discriminating
+ * measurement there is to sample the CONTAINER and the `<video>` separately,
+ * because only one of them being frozen says whose defect it is.
+ */
+const INERT_PLAYER = { playing: false, play: () => {}, pause: () => {} };
+const VIDEO_CONTENT: MediaSurfaceContent = {
+  kind: 'video',
+  player: INERT_PLAYER,
+  poster: PHOTO,
+};
+
 function measure(node: View | null): Promise<MeasuredRect | null> {
   return new Promise((resolve) => {
     if (!node) {
@@ -139,6 +163,26 @@ function FlightDemo() {
         testID="flight-nofrom"
       >
         <Text>Fly with NO origin rect</Text>
+      </Pressable>
+
+      {/* The VIDEO arm, with the same options the reporting app uses. */}
+      <Pressable
+        onPress={() => {
+          void (async () => {
+            const from = await measure(thumbRef.current);
+            const to = await measure(targetRef.current);
+            if (!to) return;
+            setFlying(true);
+            await flight.flyTo('story-video', to, VIDEO_CONTENT, {
+              from: from ?? undefined,
+              contentFit: 'contain',
+              cornerRadius: 0,
+            });
+          })();
+        }}
+        testID="flight-video"
+      >
+        <Text>Fly a VIDEO</Text>
       </Pressable>
     </View>
   );
