@@ -161,6 +161,7 @@ const SUBPATHS = /** @type {const} */ ([
 const WEB_FORKED_SUBPATHS = new Set([
   '.',
   './connection-status',
+  './media-flight',
   './surfaces',
   './portal',
   './dialog',

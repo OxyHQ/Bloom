@@ -610,6 +610,11 @@
         "types": "./lib/typescript/module/media-flight/index.d.ts",
         "default": "./src/media-flight/index.ts"
       },
+      "browser": {
+        "types": "./lib/typescript/module/media-flight/index.web.d.ts",
+        "import": "./lib/module/media-flight/index.web.js",
+        "require": "./lib/commonjs/media-flight/index.web.js"
+      },
       "import": {
         "types": "./lib/typescript/module/media-flight/index.d.ts",
         "default": "./lib/module/media-flight/index.js"

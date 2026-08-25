@@ -78,6 +78,11 @@ const ALLOWED: { peer: string; file: string; why: string }[] = [
     why: 'react-native-web depends on react-dom, so a web bundle rendering Bloom always has it',
   },
   {
+    peer: 'react-dom',
+    file: 'media-flight/MediaFlightLayer.web.tsx',
+    why: 'same reason as the portal above, and the same API: this fork paints each shared media node into a container it created outside React, which is `createPortal` and nothing else. A `.web` file is only ever reached by a web bundler, which by definition has react-native-web and therefore react-dom',
+  },
+  {
     peer: 'expo-router',
     file: 'scroll/expo-router/expo-router-adapter.ts',
     why: 'the whole point of this file is to BE the expo-router binding — it is reachable only from `@oxyhq/bloom/scroll/expo-router` and from BloomProvider, both of which are expo-router-only by construction; the scroll core itself no longer imports a router (see AGENTS.md "App Root Provider")',

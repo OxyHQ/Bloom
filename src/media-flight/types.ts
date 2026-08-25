@@ -1,3 +1,4 @@
+import type { StyleProp, ViewStyle } from 'react-native';
 import type { SharedValue } from 'react-native-reanimated';
 
 import type { VideoPlayerLike, VideoSurfaceType } from './expo-video-module';
@@ -220,4 +221,48 @@ export interface MediaFlightController {
    * and each surface's own geometry is driven by its own value regardless.
    */
   progress: SharedValue<number>;
+}
+
+/**
+ * A place a media surface may live: the feed row it starts in, the fullscreen
+ * player it lands in, and every other end of a flight.
+ *
+ * A host DECLARES a box; it does not own the media. On web that distinction is
+ * the whole feature — the media is ONE DOM node the layer paints once and moves
+ * between hosts, so it survives the origin route unmounting mid-flight without
+ * ever leaving the document. On native a host renders its media inline, which
+ * is what it has always done and what the platform makes correct there.
+ */
+export interface MediaFlightHostProps {
+  /** The id this host shares with the flight and with the other end. */
+  id: string;
+  /** What to paint: a still image, or a consumer-owned expo-video player. */
+  content: MediaSurfaceContent;
+  /** Style of the host BOX. Give it the radius and `overflow: 'hidden'` you want. */
+  style?: StyleProp<ViewStyle>;
+  /** How the media fills the box. Defaults to `'cover'`. */
+  contentFit?: 'contain' | 'cover';
+  /** Whether the video arm shows expo-video's own controls. Defaults to `false`. */
+  nativeControls?: boolean;
+  accessibilityLabel?: string;
+  /**
+   * Android's rendering surface for the video arm. See `MediaSurfaceProps`.
+   * Ignored on web, where there is no such choice.
+   */
+  surfaceType?: VideoSurfaceType;
+  /**
+   * Passed through as a PROP, never as a style key — react-native-web resolves
+   * `box-none`/`box-only` from the prop path only.
+   */
+  pointerEvents?: 'auto' | 'none' | 'box-none' | 'box-only';
+  /**
+   * Set on a DESTINATION host, to the id its flight was started with, when the
+   * destination paints its media ITSELF rather than through the shared node —
+   * which on native is always. The web host does not need it: a flight there
+   * ends when the destination host claims the node, because by then the node it
+   * is claiming has been showing the media all along.
+   *
+   * Leave it unset on an origin host, which would otherwise hand off to itself.
+   */
+  flightId?: string;
 }
