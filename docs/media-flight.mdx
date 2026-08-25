@@ -164,6 +164,11 @@ parent.moveBefore(child, before);                                    // insertBe
 createPortal(children, elRef.current);
 ```
 
+Their own documentation says so plainly — "✅ Works across **iOS, Android, and
+Web**" (`docs/docs/intro.mdx`) and "Cross-platform: Consistent on iOS, Android
+and web" (`docs/docs/guides/portal.md`) — which is what this guide should have
+checked before claiming otherwise.
+
 That is **the same mechanism** described elsewhere in this guide as Bloom's:
 a wrapper created outside React, `createPortal` into a container whose identity
 never changes, and the wrapper moved between hosts. Down to the `moveBefore`
