@@ -732,59 +732,97 @@ describe('a video surface unbinds before it leaves the DOM', () => {
 });
 
 /**
- * UNBINDING MUST NOT COST THE DESTINATION ITS POSITION.
+ * WHAT UNBINDING BUYS, AND WHAT IT DOES NOT.
  *
  * expo-video's web player seeds a newly mounted element from the FIRST element
  * already in `_mountedVideos` (`mountVideoView` adds, then
- * `_synchronizeWithFirstVideo` copies `currentTime` from `[...set][0]`). So the
- * flying surface is not only the pause victim — it is what SEEDS the
- * destination. Unbind it before the destination mounts and the destination
- * starts at ZERO: measured in a consuming app at `ct=0` with the unbind, and
- * `ct=1.07` without it.
+ * `_synchronizeWithFirstVideo` copies play state and `currentTime` from
+ * `[...set][0]`). So the flying surface is what SEEDS the destination: unbind
+ * it before the destination mounts and the destination starts at ZERO —
+ * measured in a consuming app at `ct=0` with the unbind and `ct=1.07` without
+ * it, and reproduced below.
  *
  * Bloom's window is safe by construction — release is driven by `handOff`,
  * which the destination raises from its own first frame, so it has mounted and
- * synchronised by then. This asserts that with the destination's `currentTime`
- * rather than by reasoning about effect order, against a double that reproduces
- * expo-video's documented semantics exactly.
+ * synchronised by then. That is asserted here with the destination's
+ * `currentTime` rather than by reasoning about effect order.
+ *
+ * It does NOT keep the destination playing, and this file previously claimed it
+ * did. `unmountVideoView` deletes the element from the set and stops there —
+ * the `onpause` handler `_addListeners` installed is never cleared by anything
+ * in the package. So when the flying element leaves the DOM the browser pauses
+ * it, its handler still runs, and its body pauses every OTHER element in the
+ * set, which by then is the destination. Unbinding takes the dying element out
+ * of its own mirror, not out of everyone else's.
+ *
+ * The double below reproduces that, and the mechanism control names the cause:
+ * silence the dying element's handler and the destination survives. Measured
+ * against the real `VideoPlayerWeb` (expo-video 57.0.2), the full sequence a
+ * consumer sees is `ct=4.28 paused=true` — the right frame, stopped. One
+ * element for the whole flight is what removes it; there is no set to mirror
+ * across and no state to copy.
  */
 describe('unbinding happens after the destination has taken the position', () => {
-  /** The slice of `VideoPlayer.web.js` that decides seeding and mirroring. */
-  function fakePlayer() {
-    const mounted = new Set<{ currentTime: number; paused: boolean }>();
-    return {
-      mounted,
-      playing: true,
-      play: () => {},
-      pause: () => {},
-      mountVideoView(el: { currentTime: number; paused: boolean }) {
-        mounted.add(el);
-        const first = [...mounted][0];
-        if (first) el.currentTime = first.currentTime;
-      },
-      unmountVideoView(el: { currentTime: number; paused: boolean }) {
-        mounted.delete(el);
-      },
-      /** What the browser does to a detached element, then expo-video's mirror. */
-      detach(el: { currentTime: number; paused: boolean }) {
-        el.paused = true;
-        if (mounted.has(el)) for (const other of mounted) if (other !== el) other.paused = true;
-      },
-    };
+  interface FakeElement {
+    currentTime: number;
+    paused: boolean;
+    /** `_addListeners` installs this. Nothing in expo-video ever clears it. */
+    onpause: (() => void) | null;
   }
 
-  it('leaves the destination seeded, not at zero', () => {
-    const player = fakePlayer();
-    // The feed element, already playing.
-    const feed = { currentTime: 4.28, paused: false };
-    player.mountVideoView(feed);
+  /** The slice of `VideoPlayer.web.js` that decides seeding and mirroring. */
+  function fakePlayer() {
+    const mounted = new Set<FakeElement>();
+    const player = {
+      mounted,
+      playing: true,
+      play() {
+        for (const el of mounted) el.paused = false;
+      },
+      pause() {
+        for (const el of mounted) el.paused = true;
+      },
+      mountVideoView(el: FakeElement) {
+        // `mountVideoView`: add, add listeners, then synchronise. The element
+        // is in the set BEFORE the sync reads `[0]`, so the first one to mount
+        // synchronises with itself.
+        mounted.add(el);
+        el.onpause = () => {
+          player.playing = false;
+          for (const other of mounted) if (other !== el) other.paused = true;
+        };
+        const first = [...mounted][0];
+        if (!first) return;
+        el.paused = first.paused;
+        el.currentTime = first.currentTime;
+      },
+      unmountVideoView(el: FakeElement) {
+        // Deletes from the set. Deliberately does NOT clear `onpause` — that is
+        // the whole point of the terminal-pause case below.
+        mounted.delete(el);
+      },
+      /** The browser pausing a `<video>` on removal, and the handler that runs. */
+      detach(el: FakeElement) {
+        if (el.paused) return;
+        el.paused = true;
+        el.onpause?.();
+      },
+    };
+    return player;
+  }
 
-    // Bloom's flying surface mounts through the real MediaSurface, using a view
-    // that binds/unbinds exactly as expo-video's does.
-    const elements: Array<{ currentTime: number; paused: boolean }> = [];
+  const element = (currentTime = 0, paused = true): FakeElement => ({
+    currentTime,
+    paused,
+    onpause: null,
+  });
+
+  /** Mounts Bloom's real `MediaSurface` against a view that binds as expo-video's does. */
+  function flyingSurface(player: ReturnType<typeof fakePlayer>) {
+    const elements: FakeElement[] = [];
     provideExpoVideo({
       VideoView: function FakeVideoView(props: { player?: unknown }) {
-        const [el] = React.useState(() => ({ currentTime: 0, paused: false }));
+        const [el] = React.useState(() => element(0, false));
         React.useEffect(() => {
           const p = props.player as ReturnType<typeof fakePlayer> | null | undefined;
           if (!p) return undefined;
@@ -795,29 +833,40 @@ describe('unbinding happens after the destination has taken the position', () =>
         return null;
       },
     });
+    const content = { kind: 'video' as const, player: player as unknown as VideoPlayerLike };
+    const view = render(<MediaSurface content={content} />);
+    return {
+      elements,
+      /** Bloom's release: unbind while still in the DOM, then let React drop it. */
+      release() {
+        view.rerender(<MediaSurface content={content} detached />);
+        view.unmount();
+        const flying = elements[0];
+        if (flying) player.detach(flying);
+      },
+    };
+  }
 
+  it('leaves the destination seeded, not at zero', () => {
+    const player = fakePlayer();
+    const feed = element(4.28, false);
+    player.mountVideoView(feed);
+
+    const surface = flyingSurface(player);
     try {
-      const content = { kind: 'video' as const, player: player as unknown as VideoPlayerLike };
-      const flight = render(<MediaSurface content={content} />);
-      const flying = elements[0];
-      expect(flying?.currentTime).toBeCloseTo(4.28); // seeded from the feed
+      expect(surface.elements[0]?.currentTime).toBeCloseTo(4.28); // seeded by the feed
 
-      // The feed's route goes away.
+      // The feed's route goes away: expo-video's cleanup, then the browser.
       player.unmountVideoView(feed);
       player.detach(feed);
 
       // The destination mounts while the flying surface is STILL bound.
-      const destination = { currentTime: 0, paused: false };
+      const destination = element();
       player.mountVideoView(destination);
       expect(destination.currentTime).toBeCloseTo(4.28);
 
-      // Only now does Bloom unbind and drop the flying element.
-      flight.rerender(<MediaSurface content={content} detached />);
-      flight.unmount();
-      player.detach(flying as { currentTime: number; paused: boolean });
-
+      surface.release();
       expect(destination.currentTime).toBeCloseTo(4.28);
-      expect(destination.paused).toBe(false);
     } finally {
       provideExpoVideo(null);
     }
@@ -827,13 +876,67 @@ describe('unbinding happens after the destination has taken the position', () =>
     // The failure the ordering avoids, produced deliberately so "seeded" above
     // is known to be a property of the ORDER and not of the double.
     const player = fakePlayer();
-    const feed = { currentTime: 4.28, paused: false };
+    const feed = element(4.28, false);
     player.mountVideoView(feed);
     player.unmountVideoView(feed);
 
-    const destination = { currentTime: 0, paused: false };
+    const destination = element();
     player.mountVideoView(destination);
     expect(destination.currentTime).toBe(0);
+  });
+
+  it('does NOT keep the destination playing: the dying element still mirrors its pause', () => {
+    const player = fakePlayer();
+    const feed = element(4.28, false);
+    player.mountVideoView(feed);
+
+    const surface = flyingSurface(player);
+    try {
+      player.unmountVideoView(feed);
+      player.detach(feed); // the feed's mirror pauses the flying surface
+
+      const destination = element();
+      player.mountVideoView(destination);
+      // The consumer's own playback gate runs on mount and overwrites the
+      // paused state `_synchronizeWithFirstVideo` copied in.
+      player.play();
+      expect(destination.paused).toBe(false);
+
+      surface.release();
+      // …and the flying element's removal pauses it again, after that gate has
+      // already run. This is the defect a single re-parented element removes.
+      expect(destination.paused).toBe(true);
+    } finally {
+      provideExpoVideo(null);
+    }
+  });
+
+  it('names the cause: silencing the dying element leaves the destination playing', () => {
+    // MECHANISM CONTROL. Same sequence, one difference — the element on its way
+    // out cannot mirror. If this also ended paused, the assertion above would be
+    // measuring something other than the handler.
+    const player = fakePlayer();
+    const feed = element(4.28, false);
+    player.mountVideoView(feed);
+
+    const surface = flyingSurface(player);
+    try {
+      player.unmountVideoView(feed);
+      player.detach(feed);
+
+      const destination = element();
+      player.mountVideoView(destination);
+      player.play();
+
+      const flying = surface.elements[0];
+      if (flying) flying.onpause = null;
+      surface.release();
+
+      expect(destination.paused).toBe(false);
+      expect(destination.currentTime).toBeCloseTo(4.28);
+    } finally {
+      provideExpoVideo(null);
+    }
   });
 });
 
