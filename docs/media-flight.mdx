@@ -431,9 +431,41 @@ That costs something honest: it needs the layer to arbitrate who paints while a
 leg is live — the rank machinery that exists on web and that native deliberately
 does not have. It may not be worth it.
 
-**Unmeasured, and not measurable where everything else here was measured.** An
-emulator has no real hardware decoders, so the question needs a physical device.
-Until then this section is the decision, not the code.
+### What is measured about it, and what is not
+
+Measured on an Android emulator (2026-08-26), with the flight isolated from the
+route change by clearing app data and deep-linking straight into the fullscreen
+route:
+
+```
+                              slot called    Cannot set prop 'player'
+cold, no flight   x2             0 / 3                0 / 0
+with a flight     x2             4 / 4                2 / 2
+```
+
+**The third view is real and its mount already fails at something.** With no
+flight there is no `TextureVideoView` and no error; with one, the layer mounts
+its own `MediaSurface` (no `renderVideo`, so `surfaceType` defaults to
+`'textureView'`) and expo-video raises `PropSetException: Cannot set prop
+'player' on view 'TextureVideoView'`, twice per flight. That name is the
+RUNTIME class of the instance — `ConcreteViewProp.kt` throws
+`PropSetException(name, onView::class, …)` — so it is not a mislabelling: a
+`TextureVideoView` is genuinely there.
+
+**No observed consequence.** Playback continues, and picture-in-picture opens
+with the video playing rather than black or frozen, so the view and the player
+do end up correctly married; the assignment that fails is not the one PiP needs.
+
+**What is NOT measured: whether any of this costs anything on real hardware.**
+An emulator has no real hardware decoders, so the decoder-count question — the
+reason this section exists — cannot be answered where everything else in this
+package was measured. It needs a physical device.
+
+Until then this section is the decision, not the code. The upstream report is
+written and deliberately not filed: an issue about an error with no symptom is
+easy to archive, and it may share a root with the web-side defect already filed
+(`expo/expo#49359` — expo-video handling several views on one player). If a real
+device shows a consequence, it goes up with this attached.
 
 ## Android: a flight crosses a surface-type boundary
 
