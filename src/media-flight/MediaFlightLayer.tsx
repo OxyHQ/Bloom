@@ -4,11 +4,10 @@
  * ## The problem it exists for
  *
  * A shared-element transition normally assumes the ORIGIN screen is still
- * mounted while the element travels — which is why `react-native-teleport` needs
- * `presentation: 'transparentModal'` and has no web story at all. Under
- * expo-router on web the origin route is UNMOUNTED the moment the URL changes,
- * so anything the origin was rendering (a `VideoView`, a decoded image) is gone
- * before the first frame of the transition.
+ * mounted while the element travels. Under expo-router on web the origin route
+ * is UNMOUNTED the moment the URL changes, so anything the origin was rendering
+ * (a `VideoView`, a decoded image) is gone before the first frame of the
+ * transition.
  *
  * The fix is to move the surface OUT of both screens for the duration of the
  * flight. `<MediaFlightLayer>` is mounted ONCE at the app root and renders

@@ -149,9 +149,43 @@ and "did `currentTime` advance monotonically?", not time-to-first-frame.
 
 ## Why this exists rather than `react-native-teleport`
 
-A shared-element transition normally assumes the origin screen is still mounted
-while the element travels. That is why `react-native-teleport` requires
-`presentation: 'transparentModal'`, and why it has no web story at all.
+**Correction, 2026-08-26.** This section used to say that `react-native-teleport`
+requires `presentation: 'transparentModal'` and "has no web story at all". Both
+were false, both were written here without checking, and they described someone
+else's work wrongly in a public repository. Verified against the published
+package (`react-native-teleport@1.2.0`), what is actually true is the opposite,
+and it is worth reading:
+
+```js
+// lib/module/views/Portal/index.js — the WEB implementation
+if (!elRef.current) elRef.current = document.createElement("div");   // outside React
+const supportsMoveBefore = "moveBefore" in Element.prototype;
+parent.moveBefore(child, before);                                    // insertBefore fallback
+createPortal(children, elRef.current);
+```
+
+That is **the same mechanism** described elsewhere in this guide as Bloom's:
+a wrapper created outside React, `createPortal` into a container whose identity
+never changes, and the wrapper moved between hosts. Down to the `moveBefore`
+with a fallback. Bloom arrived at it independently, which is corroboration that
+the technique is right — not grounds for having said they lacked it.
+
+**The real reasons Bloom has its own**, both checkable:
+
+- **Bloom needed a flight, not a portal.** The animated box, the anchor
+  registry, the rect measurement, the poster behind the media, `contentFit`, and
+  the shared-player semantics are the feature; teleporting the node is one piece
+  of it.
+- **`react-native-teleport` ships native code** — `codegenConfig`
+  (`TeleportViewSpec`), C++ shadow nodes under `common/cpp/`, `android/build.gradle`,
+  `Teleport.podspec`. Bloom has never shipped native code, deliberately: adding
+  it would force a native rebuild on Mention, Allo, Alia, TNP, Homiio and Inbox
+  at the next bump.
+
+**And what Bloom did NOT do:** their native side re-parents for real. Bloom's
+native path does not — it keeps the origin, the flying surface and the
+destination as three views on one player (see the section on decoders below).
+The re-parenting here is web-only.
 
 Under expo-router on web the origin route is **unmounted** the moment the URL
 changes. Anything the origin was rendering — a `VideoView`, a decoded image —
