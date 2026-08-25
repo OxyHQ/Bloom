@@ -258,6 +258,10 @@ export function flyTo(
       content,
       cornerRadius: options?.cornerRadius ?? existing.cornerRadius,
       contentFit: options?.contentFit ?? existing.contentFit,
+      // NOT retargetable: `MediaSurface` captures it on first render because
+      // expo-video forbids changing it at runtime, so a new value here would be
+      // silently ignored by the view it is meant to configure.
+      surfaceType: existing.surfaceType,
       landing: false,
       generation: existing.generation + 1,
     };
@@ -278,6 +282,7 @@ export function flyTo(
     to: rect,
     cornerRadius: options?.cornerRadius ?? DEFAULT_FLIGHT_CORNER_RADIUS,
     contentFit: options?.contentFit ?? 'cover',
+    surfaceType: options?.surfaceType ?? 'textureView',
     progress: makeMutable(0),
     landing: false,
     generation: 0,

@@ -1,6 +1,6 @@
 import type { SharedValue } from 'react-native-reanimated';
 
-import type { VideoPlayerLike } from './expo-video-module';
+import type { VideoPlayerLike, VideoSurfaceType } from './expo-video-module';
 
 /**
  * On-screen rectangle of a media anchor, in WINDOW coordinates (what
@@ -80,6 +80,8 @@ export interface MediaFlight {
   to: MeasuredRect;
   cornerRadius: number;
   contentFit: 'contain' | 'cover';
+  /** See {@link MediaFlightOptions.surfaceType}. Fixed for the surface's life. */
+  surfaceType: VideoSurfaceType;
   /**
    * The leg's progress, 0 at `from` and 1 at `to`. Owned by the store (created
    * with `makeMutable`, not a hook) because the animation is STARTED by an
@@ -120,6 +122,22 @@ export interface MediaFlightOptions {
    * `'cover'`, because a flight almost always STARTS at a cropped thumbnail.
    */
   contentFit?: 'contain' | 'cover';
+  /**
+   * Android's rendering surface for the FLYING video view.
+   *
+   * Defaults to `'textureView'` because a `SurfaceView` is composited by the
+   * system outside the view hierarchy: it ignores its parent's clip, corner
+   * radius and transform, which is every property a flying box depends on.
+   *
+   * **This means a flight crosses a surface-type boundary at hand-off whenever
+   * the destination uses expo-video's own `'surfaceView'` default.** Whether
+   * that boundary is visible is a device question, not a code question, and it
+   * is the reason this is a knob rather than a constant: with it you can fly as
+   * `'surfaceView'` and match a destination that has not changed, or leave it
+   * and change the destination instead. Measure before choosing — the flight
+   * may not flicker at all, in which case the right answer is to do nothing.
+   */
+  surfaceType?: VideoSurfaceType;
 }
 
 /**

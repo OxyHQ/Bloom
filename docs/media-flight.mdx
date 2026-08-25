@@ -176,6 +176,34 @@ i.e. visibly not the thumbnail it is replacing. `width`/`height` are
 interpolated instead; the position still rides a transform, so the only layout
 work per frame is one absolutely-positioned node resizing.
 
+## Android: a flight crosses a surface-type boundary
+
+expo-video renders Android video into a `SurfaceView` by default. A flight
+cannot: a `SurfaceView` is composited by the system OUTSIDE the view hierarchy,
+so it ignores its parent's clip, corner radius and transform — every property a
+flying box depends on. The layer therefore flies as a `textureView`.
+
+**So unless one side changes, the hand-off swaps surface types.** Whether that
+is visible is a device question and nothing here answers it. Measured on a real
+device it may not flicker at all, in which case the right action is none.
+
+The knob exists so both arrangements can be measured:
+
+```tsx
+// fly as a surfaceView, matching a destination that has not changed
+flight.flyTo(id, rect, content, { surfaceType: 'surfaceView' });
+```
+
+```tsx
+// …or leave the flight alone and give the DESTINATION a textureView
+<MediaSurface content={content} flightId={id} surfaceType="textureView" />
+```
+
+Flying as a `surfaceView` will not transform correctly on Android — that is the
+trade the first option makes. `surfaceType` is captured on first render on both
+sides (expo-video forbids changing it at runtime), so a retarget deliberately
+does not accept a new one.
+
 ## Peers
 
 `expo-image` is required (hence the subpath — the family is deliberately not on

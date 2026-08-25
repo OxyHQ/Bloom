@@ -386,6 +386,31 @@ describe('MediaSurface', () => {
     expect(views[0]?.props?.player).toBe(PLAYER);
   });
 
+  it('lets a flight choose its surface type, so the boundary can be measured', () => {
+    // On Android a flight has to fly as a `textureView` (a `SurfaceView` is
+    // composited outside the hierarchy and ignores the parent's transform), but
+    // expo-video's DEFAULT is `surfaceView` — so a hand-off crosses a
+    // surface-type boundary unless one side changes. Whether that is visible is
+    // a device question. This knob is what makes both arrangements testable
+    // instead of making the choice on someone's behalf.
+    flyTo('a', TARGET, VIDEO, { surfaceType: 'surfaceView' });
+    expect(getFlights()[0]?.surfaceType).toBe('surfaceView');
+    expect(getFlights()[1]).toBeUndefined();
+
+    flyTo('b', TARGET, VIDEO);
+    expect(getFlights()[1]?.surfaceType).toBe('textureView');
+  });
+
+  it('never retargets the surface type, because the view cannot take a new one', () => {
+    // expo-video documents that `surfaceType` must not change at runtime, and
+    // `MediaSurface` captures it on first render — so accepting a new value on a
+    // retarget would record a setting the view ignores, and the record would
+    // then disagree with the pixels.
+    flyTo('a', TARGET, VIDEO, { surfaceType: 'surfaceView' });
+    flyTo('a', RECT, VIDEO, { surfaceType: 'textureView' });
+    expect(getFlights()[0]?.surfaceType).toBe('surfaceView');
+  });
+
   it('asks for a textureView, which is what makes the box clip a video', () => {
     // A `surfaceView` composites outside the view hierarchy: it ignores the
     // parent's clip, radius and transform, i.e. every property a flying box
