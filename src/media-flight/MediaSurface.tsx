@@ -115,7 +115,10 @@ export interface MediaSurfaceProps {
    * algorithm pauses WITHOUT firing `pause` (measured in real Chrome, with
    * controls), so the element goes quiet and its later removal fires nothing.
    * Unbinding alone does not help: `unmountVideoView` never clears the handler
-   * it installed. See `releaseFlight`.
+   * it installed. See `releaseFlight`, and
+   * `scripts/probe-expo-video-listener-leak.mjs`, which measures that in real
+   * Chrome against expo-video's real class — including that grafting the
+   * missing `_removeListeners` into it makes the leak go away.
    */
   detached?: boolean;
 }

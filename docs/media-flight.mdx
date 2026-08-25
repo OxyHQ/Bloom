@@ -135,7 +135,10 @@ leaves the DOM. What that buys is **not** the unbind beside it: expo-video
 answers a null player with `removeAttribute('src'); load()`, and the media
 element load algorithm pauses WITHOUT firing `pause`, so the outgoing element
 goes quiet and its removal mirrors nothing. Unbinding alone would not help —
-`unmountVideoView` never clears the `onpause` it installed. Measured in real
+`unmountVideoView` never clears the `onpause` it installed
+(`scripts/probe-expo-video-listener-leak.mjs` measures that upstream defect
+against expo-video's own class, and confirms the fix it is missing would close
+it). Measured in real
 Chrome with controls, and against real builds: without that commit the
 destination ends stopped, with it playing and in position.
 

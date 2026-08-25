@@ -432,7 +432,10 @@ export function flyBack(id: string): void {
  *
  * DO NOT replace this with a direct `unmountVideoView` call. It looks
  * equivalent, it is the half that does not matter, and the fix would disappear
- * silently. `MediaFlight.test.tsx` makes that substitution its control.
+ * silently. `MediaFlight.test.tsx` makes that substitution its control, and
+ * `scripts/probe-expo-video-listener-leak.mjs` measures the upstream defect
+ * this steps around — run it before touching any of this. The day it prints
+ * LEAK GONE, this commit and the tests that pin it can go.
  *
  * The cost is one frame in which the outgoing surface shows its poster instead
  * of video. It is already on its way out and the destination is live by then —
