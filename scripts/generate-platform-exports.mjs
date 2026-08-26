@@ -98,6 +98,7 @@ const SUBPATHS = /** @type {const} */ ([
   // The shared-element layer that survives a route change. Subpath-only for the
   // same reason as the gallery: it statically links `expo-image`.
   ['./media-flight', 'media-flight/index.ts'],
+  ['./teleport', 'teleport/index.ts'],
   ['./pressable-scale', 'pressable-scale/index.ts'],
   ['./subtle-hover', 'subtle-hover/index.ts'],
   ['./motion', 'motion/index.ts'],

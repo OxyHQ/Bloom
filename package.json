@@ -624,6 +624,20 @@
         "default": "./lib/commonjs/media-flight/index.js"
       }
     },
+    "./teleport": {
+      "react-native": {
+        "types": "./lib/typescript/module/teleport/index.d.ts",
+        "default": "./src/teleport/index.ts"
+      },
+      "import": {
+        "types": "./lib/typescript/module/teleport/index.d.ts",
+        "default": "./lib/module/teleport/index.js"
+      },
+      "require": {
+        "types": "./lib/typescript/commonjs/teleport/index.d.ts",
+        "default": "./lib/commonjs/teleport/index.js"
+      }
+    },
     "./pressable-scale": {
       "react-native": {
         "types": "./lib/typescript/module/pressable-scale/index.d.ts",

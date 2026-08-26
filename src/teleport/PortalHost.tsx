@@ -1,0 +1,61 @@
+/**
+ * COPIED FROM react-native-teleport 1.2.0 — `src/components/PortalHost.tsx`
+ * MIT, Copyright (c) 2025 Kiryl Ziusko. Full licence in `NOTICE` at the root.
+ *
+ * Changed: import paths only, for this flat directory.
+ */
+import { useContext, useEffect } from "react";
+import { usePortalManagerContext } from "./portal-manager";
+import ScrollViewContext from "./scroll-view-context/context";
+import type { PortalHostProps } from "./types";
+import PortalHost from "./PortalHostView";
+
+/**
+ * PortalHost is a component that acts as an anchor for the portals.
+ * You can define multiple portal hosts in your app and use them to render different portals.
+ * Each portal host has a unique name that you can use to identify a necessary one among the others.
+ *
+ * @category components
+ * @param name - The name of the portal host. It's used by `<Portal />` component to identify the host.
+ *
+ * @example
+ * ```tsx
+ * import { StyleSheet, View } from "react-native";
+ * import { PortalHost, PortalProvider } from "react-native-teleport";
+ * export default function App() {
+ *   return (
+ *     <PortalProvider>
+ *        <PortalHost style={StyleSheet.absoluteFillObject} name="overlay" />
+ *     </PortalProvider>
+ *   );
+ * }
+ * ```
+ */
+const PortalHostComponent = ({ name, children, style }: PortalHostProps) => {
+  const { dispatch } = usePortalManagerContext();
+  const scrollViewContext = useContext(ScrollViewContext);
+
+  useEffect(() => {
+    dispatch({ type: "REGISTER_HOST", hostName: name });
+
+    return () => {
+      dispatch({ type: "UNREGISTER_HOST", hostName: name });
+    };
+  }, [name, dispatch]);
+
+  useEffect(() => {
+    dispatch({
+      type: "SET_HOST_SCROLL_VIEW_CONTEXT",
+      hostName: name,
+      value: scrollViewContext,
+    });
+  }, [name, dispatch, scrollViewContext]);
+
+  return (
+    <PortalHost name={name} style={style}>
+      {children}
+    </PortalHost>
+  );
+};
+
+export default PortalHostComponent;

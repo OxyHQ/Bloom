@@ -1,0 +1,63 @@
+---
+title: Teleport
+description: react-native-teleport, vendored — one view moved between hosts, not rebuilt at each end
+---
+
+# Teleport
+
+`@oxyhq/bloom/teleport` is **a copy of [react-native-teleport][upstream] 1.2.0**,
+by Kiryl Ziusko, MIT-licensed. It is not a reimplementation and not an
+adaptation: the files under `src/teleport/` are theirs, each one carrying a
+header that names the file it came from and what changed — import paths, in
+almost every case, and nothing else.
+
+The full licence is in `NOTICE` at the repository root, and it ships in the
+published tarball.
+
+[upstream]: https://github.com/kirillzyusko/react-native-teleport
+
+## Why Bloom carries it rather than depending on it
+
+Bloom needs its **native re-parenting**: moving one platform view between hosts
+instead of mounting a second one somewhere else. That arrives as Fabric
+components — C++ shadow nodes, Kotlin, Objective-C++ — not as JavaScript, and
+Bloom's media flight is the consumer.
+
+Vendoring is a decision with a cost, and the cost is that **this is a fork**.
+Their fixes will not arrive here on their own; their repository is active. Read
+theirs before rewriting anything here.
+
+## The one thing Bloom does differently, and it is not their code
+
+**Bloom mounts these portals from its ROOT LAYER. Never from the origin screen.**
+
+Their `<Portal>` renders `createPortal(children, …)` inside the component that
+mounts it, so the children belong to that component's tree. Their Instagram
+recipe mounts it inside the screen the media starts on and keeps that screen
+alive with `presentation: 'transparentModal'`, which is correct for a navigator
+that behaves that way — and it is the premise the design needs.
+
+Under expo-router on **web** the origin route is unmounted the moment the URL
+changes. Measured against their library, with the origin unmounting:
+
+```
+origin UNMOUNTS   count 1 -> 0 -> 0                      the media is gone
+origin STAYS      stamps ["1","1","1"], ct 0.93 -> 1.73  one element, still playing
+```
+
+The portal is not what fails there; the **ownership** is. Same piece, mounted
+where it does not die — which is what `MediaFlightLayer` does.
+
+`src/__tests__/Teleport.test.tsx` pins all three behaviours, including that last
+one, so nobody re-discovers it in an app.
+
+## Status
+
+- **Web: in, and used.** The move primitive in `media-flight/media-node.web.ts`
+  is theirs (`moveBefore` with an `insertBefore` fallback).
+- **Native: not yet.** The Fabric components are not in this repo. Until they
+  are, Bloom's native flight keeps its three surfaces on one player.
+- **Their own test suite is not here yet.** It is written for
+  `preset: react-native` and collides with Bloom's jest, which has no platform
+  extensions; the options are being decided rather than papered over. A skipped
+  vendored test would claim coverage that does not exist.

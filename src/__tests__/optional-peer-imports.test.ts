@@ -79,6 +79,11 @@ const ALLOWED: { peer: string; file: string; why: string }[] = [
   },
   {
     peer: 'react-dom',
+    file: 'teleport/PortalView.tsx',
+    why: "vendored from react-native-teleport 1.2.0 and deliberately unmodified — their web portal IS `createPortal` into a container it created outside React. Their file layout makes the bare name the web one (`.native` is the fork), so this file is only ever reached by a web bundler, which has react-native-web and therefore react-dom",
+  },
+  {
+    peer: 'react-dom',
     file: 'media-flight/MediaFlightLayer.web.tsx',
     why: 'same reason as the portal above, and the same API: this fork paints each shared media node into a container it created outside React, which is `createPortal` and nothing else. A `.web` file is only ever reached by a web bundler, which by definition has react-native-web and therefore react-dom',
   },
