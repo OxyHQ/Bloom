@@ -47,6 +47,22 @@ Wiring: Expo/Metro apps import `@oxyhq/app-preset/css/base.css` at the top of `g
 
 **A family is on `src/index.ts` unless importing it would add a PACKAGE to the barrel's graph** — Metro doesn't tree-shake, so an unmet peer is a build failure, not a degradation. Three families fail that (`tab-bar`, `provider`, `zoomable-image-gallery` — each doc explains its own peer). Gate: `root-barrel-graph.test.ts`, counting STATIC imports only — `theme/adaptive-colors.ts` names `expo-router` via the optional-`require` boundary and links nothing, the only reason the gate is falsifiable.
 
+## Getting a COMPLETE test pass: shard it
+
+**`bun run test` on this repo can die mid-run**, taking a worker with it: `A jest worker process was terminated by another process: signal=SIGSEGV|SIGTRAP|SIGABRT`, sometimes preceded by `# Fatal error in , line 0`. It is Node's `vm`/contextify, not this code — the victim suite is arbitrary (`glass-colors` most often, but four different colour suites at `--maxWorkers=2`, and six on another tree), it reproduces on `main` as well as on a branch, and the suite passes on its own.
+
+Measured 2026-08-26: `main` 3 green of 4 runs; a branch carrying ~20 more files 0 of 6. **More files per worker, more often.** It is not memory (83 GB free), not the jest cache (`--no-cache` still dies), and fewer workers makes it WORSE, not better.
+
+**So get the pass in pieces:**
+
+```bash
+for i in 1 2 3; do bunx jest --watchman=false --shard=$i/3; done
+```
+
+Three shards of 63 suites each completed where one run of 189 never did. That is a real complete pass, and it is how to produce one here.
+
+**Verify the coverage by SUITES, never by the test count.** Sum `--listTests` per shard and check the union equals the whole (`63×3 = 189`, union `189`). The count of TESTS is not stable between runs — the same shard reported 3502 and then 3514 unchanged — so it cannot be used as a fingerprint for "the same run happened". (Unverified hypothesis: a gate generating cases from a directory listing, with `lib/` present after a build.)
+
 ## Jest resolves no platform extensions, so `.native.*` files are UNTESTED
 
 **Bloom's jest config has no `haste`/platform setup, so a bare `./X` resolves to `X.tsx` — never `X.native.tsx`.** Every `.native.*` file in this repo is therefore unreachable from a test unless a suite imports it BY NAME, and most do not. Web forks are the ones that get exercised, because the bare name is usually the web-safe one.
