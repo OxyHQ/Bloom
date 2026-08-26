@@ -47,6 +47,17 @@ Wiring: Expo/Metro apps import `@oxyhq/app-preset/css/base.css` at the top of `g
 
 **A family is on `src/index.ts` unless importing it would add a PACKAGE to the barrel's graph** — Metro doesn't tree-shake, so an unmet peer is a build failure, not a degradation. Three families fail that (`tab-bar`, `provider`, `zoomable-image-gallery` — each doc explains its own peer). Gate: `root-barrel-graph.test.ts`, counting STATIC imports only — `theme/adaptive-colors.ts` names `expo-router` via the optional-`require` boundary and links nothing, the only reason the gate is falsifiable.
 
+## Jest resolves no platform extensions, so `.native.*` files are UNTESTED
+
+**Bloom's jest config has no `haste`/platform setup, so a bare `./X` resolves to `X.tsx` — never `X.native.tsx`.** Every `.native.*` file in this repo is therefore unreachable from a test unless a suite imports it BY NAME, and most do not. Web forks are the ones that get exercised, because the bare name is usually the web-safe one.
+
+Two consequences, both silent:
+
+- A `.native.*` file can stop compiling and the suite stays green. Precedent in the fleet: **1545 tests passed over a file that did not parse.**
+- A vendored library written for `preset: react-native` cannot be run here as its authors wrote it. `src/teleport`'s own suite is held out of the tree for exactly this reason (see `docs/teleport.mdx`), and it is held rather than `.skip`ped — a skipped vendored test claims coverage that does not exist.
+
+**This is recorded debt, not a rule to work around.** Fixing it means giving jest a platform config and accepting that native paths then need their native peers present or mocked. Do not paper over it by asserting native behaviour from a web-resolved file: that measures the wrong file and passes.
+
 ## App root provider
 
 `BloomProvider` is the ONE root a consumer mounts. Depth hazards (`useScrollRestoration()` THROWS too low; `useMinimizeState()` hands out a silent private fallback), the expo-router-only scroll binding, why outlets stay OUT of it, and `PortalProvider`/`PortalOutlet`'s native-only status are in `docs/provider.mdx` and `docs/portal.mdx` — no duplicate copy here.

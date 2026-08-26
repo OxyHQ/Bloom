@@ -57,7 +57,16 @@ one, so nobody re-discovers it in an app.
   is theirs (`moveBefore` with an `insertBefore` fallback).
 - **Native: not yet.** The Fabric components are not in this repo. Until they
   are, Bloom's native flight keeps its three surfaces on one player.
-- **Their own test suite is not here yet.** It is written for
-  `preset: react-native` and collides with Bloom's jest, which has no platform
-  extensions; the options are being decided rather than papered over. A skipped
-  vendored test would claim coverage that does not exist.
+- **Their own test suite is not here yet, and the reason is measured.** It is
+  written for `preset: react-native`, and Bloom's jest resolves no platform
+  extensions, so it reaches the web files instead. Moving their tests to a web
+  renderer does not work either: they depend on react-native-testing-library's
+  API, not only its renderer — `fireEvent.press` and `toBeOnTheScreen` appear
+  37 times in one 221-line file, and neither exists in
+  `@testing-library/react`. Rewriting those is rewriting every interaction and
+  every assertion, which is not vendoring their tests, it is writing ours.
+
+  So they arrive with the native side, which is what they were written for. They
+  are held, not `.skip`ped: a skipped vendored test claims coverage that does not
+  exist. Meanwhile `src/__tests__/Teleport.test.tsx` covers their code on the
+  path Bloom uses today. See `AGENTS.md`, "Jest resolves no platform extensions".
