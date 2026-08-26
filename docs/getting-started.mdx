@@ -67,31 +67,45 @@ export function Hello() {
 ## If you build with Vite (or any ESM web bundler)
 
 Bloom reaches its **optional** peers through a `require()` that Metro marks
-optional. An ESM web bundle has no `require` at all — measured: `typeof require`
-is `undefined` in a Vite bundle — so those loads cannot run and every optional
-peer degrades **even when the package is installed**. Metro is unaffected, which
-is why this only appears off Metro.
+optional. Off Metro that load does not deliver the package **even when it is
+installed** — and the reason depends on your bundler, which is why this defect
+keeps being diagnosed wrongly:
 
-**Check in one line**, in your app's console:
+| bundler | `typeof require` | what happens |
+| --- | --- | --- |
+| Rollup / Vite | `"undefined"` | the guard sees no `require` and degrades |
+| esbuild | `"function"` | a shim that THROWS, so the guard passes and the call fails inside the `try` |
 
-```js
-typeof require   // "undefined" -> the optional peers below are inert for you
-```
+Same symptom, different causes — so `typeof require` is **not** a reliable check
+for whether you are affected. Metro is unaffected.
 
-Today one of them can be handed over explicitly:
+**What you actually lose on web is the connection toasts**, and only those:
+`ConnectionStatusToasts` calls `loadNetInfo()` with no platform guard, so a web
+app with `@react-native-community/netinfo` installed gets no outage toast.
+
+**The other optional peers are NOT affected on web**, because their callers
+return before the `require` is ever reached:
+
+| peer | why web never reaches it |
+| --- | --- |
+| `expo-router` (adaptive colours) | `getAdaptiveColors` returns `null` unless `Platform.OS` is `android`/`ios` (`theme/adaptive-colors.ts:143-145`) |
+| `nativewind` (scoped presets) | both callers `return` on web (`theme/color-scope/style-builder.ts:159, :192`) |
+| `expo-haptics` | `useHaptics` returns on web (`hooks/use-haptics.tsx:47`) |
+
+If scoped NativeWind presets are wrong in your web app, this is not the cause —
+look at the CSS-variable pipeline instead.
+
+Two peers can be handed over explicitly, which works on any bundler:
 
 ```ts
 import * as ExpoVideo from 'expo-video';
+import NetInfo from '@react-native-community/netinfo';
 import { provideExpoVideo } from '@oxyhq/bloom/media-flight';
+import { provideNetInfo } from '@oxyhq/bloom/connection-status';
 
 provideExpoVideo(ExpoVideo);   // otherwise video silently shows only its poster
+provideNetInfo(NetInfo);       // otherwise the outage toast never appears
 ```
-
-The others have no equivalent yet, so on an ESM bundle you currently lose
-scoped NativeWind presets (`BloomColorScope`), adaptive colours, haptics and the
-connection toasts. Most of them say so in the dev console — the warning ends
-`Reason: this bundle has no CommonJS require` — with the exception noted in
-`theme/adaptive-colors.ts`, which degrades silently.
 
 ## Recommended layout
 

@@ -583,13 +583,19 @@ flies video without it gets the poster plus a single dev warning naming the
 package.
 
 <Callout variant="warning" title="On Vite (or any ESM web bundler) you must hand expo-video over">
-Bloom loads optional peers through a `require()` that Metro marks optional.
-**An ESM web bundle has no `require` at all** — measured: `typeof require` is
-`undefined` in a Vite bundle — so the load cannot run and video degrades to its
-poster **even when `expo-video` is installed**. Metro has a real `require` and
-is unaffected, which is why this only shows up off Metro.
+Bloom loads optional peers through a `require()` that Metro marks optional. Off
+Metro that load does not deliver the package **even when `expo-video` is
+installed**, and video degrades to its poster.
 
-One line at startup fixes it:
+**Do not test for this with `typeof require`.** The cause depends on the
+bundler and the symptom does not:
+
+| bundler | `typeof require` | what happens |
+| --- | --- | --- |
+| Rollup / Vite | `"undefined"` | the guard sees no `require` and degrades |
+| esbuild | `"function"` | a shim that THROWS, so the guard passes and the call fails inside the `try` |
+
+One line at startup fixes it, on any bundler:
 
 ```ts
 import * as ExpoVideo from 'expo-video';
@@ -598,9 +604,8 @@ import { provideExpoVideo } from '@oxyhq/bloom/media-flight';
 provideExpoVideo(ExpoVideo);
 ```
 
-How to tell whether it applies to you: run `typeof require` in your app's
-console. If it answers `"undefined"`, you need this. The dev console also says
-so directly — the warning ends `Reason: this bundle has no CommonJS require`.
+The dev console says so too, and the `Reason:` it prints is the bundler's own
+message rather than a fixed string.
 </Callout>
 
 ## What a jest run can and cannot see
