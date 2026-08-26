@@ -368,6 +368,18 @@ export const PaintLatency: Story = {
  * the gate is measuring the harness.
  */
 
+/**
+ * The clip these two stories play.
+ *
+ * A `data:` URI by default, so the harness needs no server — and swappable for
+ * an http one by a driver that needs to WATCH THE NETWORK, because a data URI
+ * makes no requests and would make "no request was made" vacuous.
+ */
+function clipUrl(): string {
+  const injected = (globalThis as { __BLOOM_CLIP_URL__?: string }).__BLOOM_CLIP_URL__;
+  return injected ?? TINY_MP4;
+}
+
 /** Stamps every `<video>` the moment it is created, so identity is observable. */
 function StampedVideoView(props: VideoViewLikeProps) {
   const flat = (StyleSheet.flatten(props.style) ?? {}) as Record<string, unknown>;
@@ -378,7 +390,7 @@ function StampedVideoView(props: VideoViewLikeProps) {
       STAMP.n += 1;
       node.dataset.elId = String(STAMP.n);
     },
-    src: TINY_MP4,
+    src: clipUrl(),
     autoPlay: true,
     muted: true,
     loop: true,
