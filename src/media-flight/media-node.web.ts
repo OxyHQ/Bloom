@@ -226,6 +226,47 @@ function pick(claims: readonly MediaNodeClaim[]): MediaNodeClaim | null {
 }
 
 /**
+ * An element that can be MOVED rather than removed and re-inserted.
+ *
+ * `moveBefore` is newer than TypeScript's DOM library, so the capability is
+ * named here and checked at runtime rather than assumed.
+ */
+interface MovingParent {
+  moveBefore(node: Node, child: Node | null): void;
+}
+
+/**
+ * DERIVED FROM react-native-teleport 1.2.0 — `src/views/Portal/index.tsx`,
+ * its `moveElementTo`. MIT, Copyright (c) 2025 Kiryl Ziusko; see `NOTICE`.
+ *
+ * Changed: typed for TypeScript's DOM library, which does not know `moveBefore`
+ * yet, and reduced to the append case Bloom needs (no `before` sibling).
+ *
+ * Why it is worth taking rather than keeping `appendChild`: `appendChild` of an
+ * ATTACHED node is a remove followed by an insert, and the only reason media
+ * survives it is that HTML's removal steps await a stable state and abort if
+ * the node is back in a document by then. `moveBefore` does not run the removal
+ * steps at all — it is the state-preserving primitive, which matters for
+ * anything the abort does not cover: focus, `<iframe>`s, CSS animations.
+ *
+ * Measured for a playing `<video>` in Chrome 151: indistinguishable from
+ * `appendChild` (ct 0.60 -> 1.00, never paused, 6 frames, worst frame gap
+ * 100 ms — the clip's own cadence — under both), while a real removal pauses
+ * and freezes. So this is not a fix for a defect Bloom has; it is the correct
+ * primitive for the ones it does not have yet.
+ */
+function moveInto(parent: HTMLElement, child: HTMLElement): void {
+  if (supportsMoveBefore && child.parentNode !== null) {
+    (parent as unknown as MovingParent).moveBefore(child, null);
+    return;
+  }
+  parent.appendChild(child);
+}
+
+const supportsMoveBefore =
+  typeof Element !== 'undefined' && 'moveBefore' in Element.prototype;
+
+/**
  * Put the wrapper where its top claim says, in ONE synchronous move.
  *
  * The `parentElement` check is not an optimisation: re-appending to the same
@@ -237,7 +278,7 @@ function place(record: MediaNodeRecord): void {
   const target = topClaim(record)?.el ?? holder(reg);
   if (target === null) return;
   if (record.wrapper.parentElement === target) return;
-  target.appendChild(record.wrapper);
+  moveInto(target, record.wrapper);
 }
 
 function sameRender(a: MediaNodeRender, b: MediaNodeRender): boolean {

@@ -1457,6 +1457,7 @@
     "./package.json": "./package.json"
   },
   "files": [
+    "NOTICE",
     "src",
     "lib",
     "docs/*.mdx",

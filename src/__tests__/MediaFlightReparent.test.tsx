@@ -324,6 +324,68 @@ describe('a re-parented media surface keeps one element for the whole flight', (
   });
 });
 
+describe('the move primitive', () => {
+  /**
+   * BOTH BRANCHES, because a fallback nobody has watched run is a fallback
+   * nobody knows works. jsdom has no `moveBefore`, so the plain run exercises
+   * the `appendChild` path; the second installs one and proves the other branch
+   * is reachable and is preferred when it exists.
+   *
+   * The browser gate covers the real `moveBefore` (Chrome 151 has it), and this
+   * covers what jest can see: that the node ends up in the right parent either
+   * way, and that the capability check is what chooses.
+   */
+  it('moves the node with appendChild when moveBefore is absent', () => {
+    expect('moveBefore' in Element.prototype).toBe(false); // the branch under test
+    const host = document.createElement('div');
+    document.body.appendChild(host);
+    claimMediaNode('mv1', host, HOST_RANK, RENDER);
+    const wrapper = document.querySelector('[data-bloom-media-node]');
+    expect(host.contains(wrapper)).toBe(true);
+
+    const second = document.createElement('div');
+    document.body.appendChild(second);
+    claimMediaNode('mv1', second, HOST_RANK, RENDER);
+    expect(second.contains(wrapper)).toBe(true);
+  });
+
+  it('prefers moveBefore when the platform has it', () => {
+    // `supportsMoveBefore` is read once at module load, so the capability has to
+    // exist before the module does — hence the isolated registry.
+    jest.isolateModules(() => {
+      const calls: Array<[Node, Node | null]> = [];
+      Object.defineProperty(Element.prototype, 'moveBefore', {
+        configurable: true,
+        writable: true,
+        value(node: Node, before: Node | null) {
+          calls.push([node, before]);
+          // A real move, so the rest of the registry sees what it expects.
+          (this as HTMLElement).appendChild(node as HTMLElement);
+        },
+      });
+      try {
+        // eslint-disable-next-line @typescript-eslint/no-require-imports
+        const fresh = require('../media-flight/media-node.web') as typeof import('../media-flight/media-node.web');
+        const first = document.createElement('div');
+        const second = document.createElement('div');
+        document.body.append(first, second);
+        fresh.claimMediaNode('mv2', first, fresh.HOST_RANK, RENDER);
+        const wrapper = first.querySelector('[data-bloom-media-node]');
+        expect(wrapper).not.toBeNull();
+        // The FIRST placement has no parent yet, so it takes the append path;
+        // the move between hosts is the one that must use `moveBefore`.
+        fresh.claimMediaNode('mv2', second, fresh.HOST_RANK, RENDER);
+        expect(calls).toHaveLength(1);
+        expect(calls[0]?.[0]).toBe(wrapper);
+        expect(second.contains(wrapper)).toBe(true);
+        fresh.resetMediaNodes();
+      } finally {
+        delete (Element.prototype as { moveBefore?: unknown }).moveBefore;
+      }
+    });
+  });
+});
+
 describe('a host that paints its own video keeps the same node too', () => {
   it('re-parents the CONSUMER’s element across the route change', () => {
     // The slot exists so a consumer can keep its `ref` and expo-video's

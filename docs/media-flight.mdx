@@ -187,6 +187,25 @@ the technique is right — not grounds for having said they lacked it.
   it would force a native rebuild on Mention, Allo, Alia, TNP, Homiio and Inbox
   at the next bump.
 
+### What Bloom takes from them, and where to look for more
+
+Bloom's web move primitive is now **theirs**: `moveBefore` with an
+`insertBefore` fallback, derived from `src/views/Portal/index.tsx` in
+react-native-teleport 1.2.0 (MIT, Copyright (c) 2025 Kiryl Ziusko — see
+`NOTICE` at the repository root, and the header on
+`src/media-flight/media-node.web.ts`). `appendChild` of an attached node is a
+remove followed by an insert; `moveBefore` does not run the removal steps at
+all. Measured, it makes no difference to a playing `<video>` — and Bloom is not
+only video, so the correct primitive is worth having for focus, `<iframe>`s and
+CSS animations, where the aborted-removal reprieve does not apply.
+
+**This is a FORK, and forks go stale.** Their fixes will not arrive here on
+their own, and their repository is active — there is a note in their blog from
+August 2026 about faster re-parenting on Android that Bloom does not have.
+Anyone maintaining this in a year: the upstream is
+https://github.com/kirillzyusko/react-native-teleport, and it is worth reading
+before rewriting anything here.
+
 **And what Bloom did NOT do:** their native side re-parents for real. Bloom's
 native path does not — it keeps the origin, the flying surface and the
 destination as three views on one player (see the section on decoders below).
