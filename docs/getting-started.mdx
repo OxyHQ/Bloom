@@ -107,8 +107,15 @@ return before the `require` is ever reached:
 | `expo-haptics` | `useHaptics` returns on web (`hooks/use-haptics.tsx:47`) |
 
 Note the two different reasons: a platform guard inside the file, and a whole
-`.web` fork of the family. Checking only the first is how this guide came to
-name the connection toasts.
+`.web` fork of the family.
+
+> **Before claiming what a consumer loses, check which platform variant their
+> bundler resolves.** This guide named the connection toasts as a casualty
+> because the `.tsx` was read and the `.web.tsx` beside it was not — and the
+> `.web` one had solved the problem months earlier. Reading the source file is
+> not reading the file that runs; the two differ on exactly the axis this
+> section is about. Confirm it from the loaded page
+> (`SomeComponent.toString()`) or from the chunks, not from the repository.
 
 If scoped NativeWind presets are wrong in your web app, this is not the cause —
 look at the CSS-variable pipeline instead.
