@@ -49,9 +49,37 @@ export type AdaptiveColors = Omit<
 
 const c = (v: unknown): string => v as string;
 
+let hasWarned = false;
+
+/**
+ * SAY SO. This boundary degraded in complete silence, which is the worst of the
+ * six: an app simply gets the preset palette instead of the platform's, and
+ * nothing anywhere says the platform read failed.
+ *
+ * It is only reachable on Android and iOS — `getAdaptiveColors` returns `null`
+ * on web before touching `require` — so an ESM bundle never gets here. That is
+ * an argument for warning, not against it: a failure that cannot happen in the
+ * environment you test in is exactly the one that goes unnoticed when it does.
+ */
+function warnAdaptiveColorsUnavailable(reason: string): void {
+  if (process.env.NODE_ENV === 'production' || hasWarned) return;
+  hasWarned = true;
+  // eslint-disable-next-line no-console
+  console.warn(
+    '[Bloom] The adaptive palette fell back to the preset one: `expo-router`’s ' +
+      '`Color` proxy could not be read, so platform colours (Material You, iOS ' +
+      'dynamic) are not in use. Install the optional peer ' +
+      '(`npx expo install expo-router`) if you want them. ' +
+      `Reason: ${reason}`,
+  );
+}
+
 function getAndroidColors(): AdaptiveColors | null {
   try {
-    if (typeof require === 'undefined') return null;
+    if (typeof require === 'undefined') {
+      warnAdaptiveColorsUnavailable('this bundle has no CommonJS `require`');
+      return null;
+    }
     const { Color } = require('expo-router');
     const d = Color.android.dynamic;
     return {
@@ -89,14 +117,18 @@ function getAndroidColors(): AdaptiveColors | null {
       shadow: 'rgba(0, 0, 0, 0.2)',
       overlay: 'rgba(0, 0, 0, 0.5)',
     };
-  } catch {
+  } catch (error) {
+    warnAdaptiveColorsUnavailable(error instanceof Error ? error.message : String(error));
     return null;
   }
 }
 
 function getIOSColors(): AdaptiveColors | null {
   try {
-    if (typeof require === 'undefined') return null;
+    if (typeof require === 'undefined') {
+      warnAdaptiveColorsUnavailable('this bundle has no CommonJS `require`');
+      return null;
+    }
     const { Color } = require('expo-router');
     const i = Color.ios;
     return {
@@ -134,7 +166,8 @@ function getIOSColors(): AdaptiveColors | null {
       shadow: 'rgba(0, 0, 0, 0.15)',
       overlay: 'rgba(0, 0, 0, 0.5)',
     };
-  } catch {
+  } catch (error) {
+    warnAdaptiveColorsUnavailable(error instanceof Error ? error.message : String(error));
     return null;
   }
 }

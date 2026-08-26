@@ -69,12 +69,45 @@ export interface NetInfoLike {
 
 /** `undefined` until the first load attempt, then the module or `null`. */
 let netInfoModule: NetInfoLike | null | undefined;
+/** Handed in by a consumer, which is the only thing that works in an ESM bundle. */
+let providedModule: NetInfoLike | null = null;
 /** Why the load failed, quoted verbatim in the dev warning. */
 let unavailableReason = '';
 let hasWarned = false;
 
+/**
+ * Hand Bloom the netinfo module, from a consumer that has it.
+ *
+ * THIS IS NOT A TEST HOOK. It is the only mechanism that works in an ESM
+ * bundle: the consumer, who knows it has the peer and which entry of it its own
+ * bundler resolved, hands the module in.
+ *
+ * The `require` below cannot be relied on off Metro, and the reason is worth
+ * knowing because the symptom is identical while the cause is not:
+ *
+ *   - Rollup / Vite ESM output: `require` is undefined, the guard catches it,
+ *     and the boundary degrades.
+ *   - esbuild ESM output: `require` EXISTS as a shim that throws
+ *     (`Dynamic require of "…" is not supported`), so the guard PASSES and the
+ *     call throws inside the try. Measured with the peer installed on disk:
+ *     `platform=node` and `platform=browser` both degraded.
+ *
+ * So a fix aimed at the `typeof require` check would have changed nothing under
+ * esbuild. And there is no synchronous, bundler-agnostic alternative: `import()`
+ * is asynchronous AND resolved at build time, so an absent package fails the
+ * BUILD — which is what this boundary exists to prevent.
+ *
+ * Metro is unaffected either way and needs no binding.
+ */
+export function provideNetInfo(module: NetInfoLike | null): void {
+  providedModule = module;
+  netInfoModule = undefined;
+  hasWarned = false;
+}
+
 /** The netinfo module, or `null` when the optional peer is not installed. */
 export function loadNetInfo(): NetInfoLike | null {
+  if (providedModule !== null) return providedModule;
   if (netInfoModule !== undefined) return netInfoModule;
   netInfoModule = null;
 

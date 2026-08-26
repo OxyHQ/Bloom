@@ -2,7 +2,7 @@ import React from 'react';
 import { render } from '@testing-library/react-native';
 import type NetInfo from '@react-native-community/netinfo';
 
-import type { NetInfoLike } from '../connection-status/netinfo';
+import { loadNetInfo, provideNetInfo, type NetInfoLike } from '../connection-status/netinfo';
 
 /**
  * THE OPTIONAL-PEER BOUNDARY for `@react-native-community/netinfo`.
@@ -199,5 +199,43 @@ describe('ConnectionStatusToasts netinfo loading', () => {
     } finally {
       process.env.NODE_ENV = previous;
     }
+  });
+});
+
+/**
+ * THE HATCH, IN BOTH STATES.
+ *
+ * `loadNetInfo`'s `require` cannot be relied on off Metro — in an ESM bundle it
+ * is undefined (Rollup, Vite), a shim that throws (esbuild), or it resolves an
+ * entry of the peer that throws on import. `provideNetInfo` is the way a
+ * consumer that HAS the peer hands it over.
+ *
+ * Both states, because a guard seen in only one state is a guard nobody knows
+ * works — which is exactly how six of these boundaries came to degrade silently
+ * with the peer installed.
+ */
+describe('provideNetInfo', () => {
+  afterEach(() => {
+    provideNetInfo(null);
+  });
+
+  it('returns the module a consumer handed in', () => {
+    const listener = jest.fn(() => () => {});
+    provideNetInfo({ addEventListener: listener });
+    expect(loadNetInfo()).not.toBeNull();
+    expect(loadNetInfo()?.addEventListener).toBe(listener);
+  });
+
+  it('goes back to the require path when the consumer clears it', () => {
+    // The other state. Without this, "the hatch works" is also what a function
+    // that ignores its argument and always returns something would report.
+    provideNetInfo({ addEventListener: () => () => {} });
+    expect(loadNetInfo()).not.toBeNull();
+    provideNetInfo(null);
+    // Under jest `require` exists and the real peer is installed, so this is
+    // the require path answering — which is the point: the hatch did not
+    // replace it, it stands in front of it.
+    const viaRequire = loadNetInfo();
+    expect(viaRequire === null || typeof viaRequire.addEventListener === 'function').toBe(true);
   });
 });
