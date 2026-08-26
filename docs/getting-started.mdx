@@ -71,41 +71,60 @@ optional. Off Metro that load does not deliver the package **even when it is
 installed** — and the reason depends on your bundler, which is why this defect
 keeps being diagnosed wrongly:
 
-| bundler | `typeof require` | what happens |
+| bundler | what the guard sees | what happens |
 | --- | --- | --- |
-| Rollup / Vite | `"undefined"` | the guard sees no `require` and degrades |
-| esbuild | `"function"` | a shim that THROWS, so the guard passes and the call fails inside the `try` |
+| Rollup / Vite (classic) | no `require` | the guard degrades |
+| esbuild | a shim that THROWS | the guard passes, the call fails inside the `try` |
+| Vite 8 / Rolldown | `__require`, a Proxy-backed **function** | the guard passes, the call throws `Calling 'require' for "…" in an environment that doesn't expose the 'require' function` |
 
-Same symptom, different causes — so `typeof require` is **not** a reliable check
-for whether you are affected. Metro is unaffected.
+**Do not test this with `typeof require` in your console.** Measured in a real
+Rolldown app: the console answers `"undefined"` while the COMPILED guard is
+consulting an imported `__require` that is a function — so the one-line check
+reports the first row while the bundle is in the third. It does not distinguish
+the cases, it confuses them. Read the dev warning's `Reason:` instead; it is the
+bundler's own message.
 
-**What you actually lose on web is the connection toasts**, and only those:
-`ConnectionStatusToasts` calls `loadNetInfo()` with no platform guard, so a web
-app with `@react-native-community/netinfo` installed gets no outage toast.
+Metro is unaffected.
+
+**On web you lose one thing: `expo-video`.** `MediaSurface` loads it on every
+platform, so a web app that flies video without handing it over gets the poster.
+That is what `provideExpoVideo` below is for.
+
+**The connection toasts are NOT affected**, though this guide said they were
+until it was checked: `./connection-status` ships a web implementation
+(`ConnectionStatusToasts.web.tsx`) built on `navigator.onLine` and the
+`online`/`offline` events, so `loadNetInfo` is never called in a browser and
+netinfo need not be installed at all.
 
 **The other optional peers are NOT affected on web**, because their callers
 return before the `require` is ever reached:
 
 | peer | why web never reaches it |
 | --- | --- |
+| `@react-native-community/netinfo` | the family has a WEB FORK that uses `navigator.onLine` (`connection-status/index.web.ts` → `ConnectionStatusToasts.web.tsx`) |
 | `expo-router` (adaptive colours) | `getAdaptiveColors` returns `null` unless `Platform.OS` is `android`/`ios` (`theme/adaptive-colors.ts:143-145`) |
 | `nativewind` (scoped presets) | both callers `return` on web (`theme/color-scope/style-builder.ts:159, :192`) |
 | `expo-haptics` | `useHaptics` returns on web (`hooks/use-haptics.tsx:47`) |
 
+Note the two different reasons: a platform guard inside the file, and a whole
+`.web` fork of the family. Checking only the first is how this guide came to
+name the connection toasts.
+
 If scoped NativeWind presets are wrong in your web app, this is not the cause —
 look at the CSS-variable pipeline instead.
 
-Two peers can be handed over explicitly, which works on any bundler:
+The one that matters on web is handed over in a line, and it works on any
+bundler:
 
 ```ts
 import * as ExpoVideo from 'expo-video';
-import NetInfo from '@react-native-community/netinfo';
 import { provideExpoVideo } from '@oxyhq/bloom/media-flight';
-import { provideNetInfo } from '@oxyhq/bloom/connection-status';
 
 provideExpoVideo(ExpoVideo);   // otherwise video silently shows only its poster
-provideNetInfo(NetInfo);       // otherwise the outage toast never appears
 ```
+
+`provideNetInfo` exists in `@oxyhq/bloom/connection-status` for the same
+purpose, but a browser does not need it — see above.
 
 ## Recommended layout
 

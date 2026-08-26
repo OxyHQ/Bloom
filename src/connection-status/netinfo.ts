@@ -82,6 +82,13 @@ let hasWarned = false;
  * bundle: the consumer, who knows it has the peer and which entry of it its own
  * bundler resolved, hands the module in.
  *
+ * A BROWSER DOES NOT NEED IT. `connection-status/index.web.ts` resolves to
+ * `ConnectionStatusToasts.web.tsx`, which uses `navigator.onLine` and the
+ * `online`/`offline` events and never calls `loadNetInfo` — measured in a real
+ * Vite/Rolldown app, where netinfo was installed, unused, and absent from every
+ * chunk. This hatch is for a NON-Metro bundle that still takes the native path:
+ * an SSR pass, a test runner, a future non-Metro native bundler.
+ *
  * The `require` below cannot be relied on off Metro, and the reason is worth
  * knowing because the symptom is identical while the cause is not:
  *

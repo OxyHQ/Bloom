@@ -590,10 +590,15 @@ installed**, and video degrades to its poster.
 **Do not test for this with `typeof require`.** The cause depends on the
 bundler and the symptom does not:
 
-| bundler | `typeof require` | what happens |
+| bundler | what the guard sees | what happens |
 | --- | --- | --- |
-| Rollup / Vite | `"undefined"` | the guard sees no `require` and degrades |
-| esbuild | `"function"` | a shim that THROWS, so the guard passes and the call fails inside the `try` |
+| Rollup / Vite (classic) | no `require` | the guard degrades |
+| esbuild | a shim that THROWS | the guard passes, the call fails inside the `try` |
+| Vite 8 / Rolldown | `__require`, a Proxy-backed **function** | the guard passes, the call throws |
+
+And `typeof require` in your console does NOT tell you which one you are in: in
+a real Rolldown app it answers `"undefined"` while the compiled guard consults
+an imported `__require` that is a function.
 
 One line at startup fixes it, on any bundler:
 
