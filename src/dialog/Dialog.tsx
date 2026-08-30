@@ -26,6 +26,7 @@ import Animated, {
 } from 'react-native-reanimated';
 
 import { BottomSheet, type BottomSheetRef } from '../bottom-sheet';
+import { DETACHED_SHEET_RADIUS } from '../styles/radii';
 import { Z_INDEX, Z_INDEX_LAYER_STEP } from '../styles/z-index';
 import { useTheme } from '../theme/use-theme';
 import { Context, useDialogControl } from './context';
@@ -251,7 +252,7 @@ function CenteredOrSideDialog({
         // All four corners rounded — bloom's BottomSheet defaults to top-only
         // radius in flush mode, but we use `detached` so the whole card is
         // floating and rounded uniformly.
-        borderRadius: 28,
+        borderRadius: DETACHED_SHEET_RADIUS,
       },
       // Drives the card's `height` only while a morph is in flight; at rest it
       // resolves to `height: 'auto'` — the card's normal content sizing.

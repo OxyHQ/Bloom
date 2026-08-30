@@ -77,18 +77,19 @@ jest.mock('react-native-gesture-handler', () => {
 
 function renderSheet(onDismiss: () => void) {
   const ref = createRef<BottomSheetRef>();
-  const utils = render(
+  const tree = () => (
     <BloomThemeProvider mode="light" colorPreset="teal">
       <BottomSheet ref={ref} onDismiss={onDismiss}>
         <Text>Body</Text>
       </BottomSheet>
-    </BloomThemeProvider>,
+    </BloomThemeProvider>
   );
+  const utils = render(tree());
   // Present so the sheet mounts and the pan gesture is constructed.
   act(() => {
     ref.current?.present();
   });
-  return utils;
+  return { ...utils, rerenderSheet: () => utils.rerender(tree()) };
 }
 
 describe('BottomSheet pan-to-dismiss gesture', () => {
@@ -131,5 +132,22 @@ describe('BottomSheet pan-to-dismiss gesture', () => {
       bodyPan?.onEnd?.({ velocityY: 10, translationY: 12 });
     });
     expect(onDismiss).not.toHaveBeenCalled();
+  });
+
+  it('reduces native blur intensity continuously with the downward drag by default', () => {
+    const utils = renderSheet(() => {});
+    const bodyPan = mockPanGestures.find((g) => typeof g.onEnd === 'function');
+    const sheet = utils
+      .UNSAFE_getAllByType('Animated.View' as never)
+      .find((view) => typeof view.props.onLayout === 'function');
+
+    act(() => {
+      sheet?.props.onLayout({ nativeEvent: { layout: { height: 800 } } });
+      bodyPan?.onUpdate?.({ translationY: 400 });
+      utils.rerenderSheet();
+    });
+
+    const blur = utils.UNSAFE_getByType('BlurView' as never);
+    expect(blur.props.animatedProps.intensity).toBeCloseTo(20);
   });
 });

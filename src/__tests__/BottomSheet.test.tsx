@@ -143,7 +143,7 @@ describe('BottomSheet', () => {
         expect(
           animatedViews.some((view) => {
             const style = JSON.stringify(view.props.style);
-            return style.includes('"left":16') && style.includes('"borderRadius":28');
+            return style.includes('"left":16') && style.includes('"borderRadius":32');
           }),
         ).toBe(true);
       } finally {

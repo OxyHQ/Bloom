@@ -20,6 +20,7 @@ import Animated, {
     type SharedValue,
     useAnimatedScrollHandler,
     useAnimatedStyle,
+    useDerivedValue,
     useSharedValue,
     withSpring,
     withTiming,
@@ -27,6 +28,7 @@ import Animated, {
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Backdrop, BACKDROP_DIM_OPACITY } from '../overlay';
 import { useBloomBlurTarget } from '../overlay/blur-target';
+import { DETACHED_SHEET_RADIUS } from '../styles/radii';
 import { useTheme } from '../theme/use-theme';
 
 /** Hook that returns current screen dimensions and updates on rotation/resize. */
@@ -126,12 +128,11 @@ export interface BottomSheetProps {
      */
     manualActivation?: boolean;
     /**
-     * When `true`, the backdrop dims proportionally with drag distance — the
-     * overlay fades from full opacity (sheet at rest) to 30% as the sheet is
-     * pulled down 40% of the screen height. iOS Photos style. The base
-     * `backdropOpacity` still controls the resting dim level.
+     * When `true`, the backdrop and native blur fade proportionally with drag
+     * distance — fully visible at rest and fully gone once the sheet leaves the
+     * viewport. The base `backdropOpacity` still controls the resting dim level.
      *
-     * Defaults to `false` (constant opacity during drag).
+     * Defaults to `true`. Set to `false` only for a deliberately fixed backdrop.
      */
     dynamicBackdrop?: boolean;
     /**
@@ -219,7 +220,7 @@ export const BottomSheetBase = forwardRef((props: BottomSheetBaseProps, ref: Rea
         backdropOpacity = BACKDROP_DIM_OPACITY,
         scrollable = true,
         manualActivation = false,
-        dynamicBackdrop = false,
+        dynamicBackdrop = true,
         handleComponent,
         scrollY: externalScrollY,
         headerOverlay,
@@ -257,6 +258,10 @@ export const BottomSheetBase = forwardRef((props: BottomSheetBaseProps, ref: Rea
     }, [screenHeight, screenHeightSV]);
 
     const translateY = useSharedValue(screenHeight);
+    // The blur must reach zero when the CARD itself has moved fully below the
+    // viewport. A short detached dialog can be far smaller than the screen, so
+    // screen height is not a valid denominator for this interaction.
+    const sheetHeight = useSharedValue(screenHeight);
     const opacity = useSharedValue(0);
     const scrollOffsetY = useSharedValue(0);
     const isScrollAtTop = useSharedValue(true);
@@ -644,19 +649,25 @@ export const BottomSheetBase = forwardRef((props: BottomSheetBaseProps, ref: Rea
     // is multiplied into this group opacity instead, the opaque black child
     // hides the BlurView and Android looks like a plain dark scrim.
     // `dynamicBackdrop` fades the composed blur+dim proportionally with drag.
-    const backdropStyle = useAnimatedStyle(() => {
+    // The SAME progress drives BlurView's native `intensity` prop below:
+    // Android's RenderEffect can remain visibly blurred when only an ancestor's
+    // alpha changes, so reducing the radius itself is required for the content
+    // behind the sheet to become genuinely sharp during the gesture.
+    const backdropProgress = useDerivedValue(() => {
         const dragFactor = dynamicBackdrop
             ? interpolate(
                 translateY.value,
-                [0, screenHeightSV.value * 0.4],
-                [1, 0.3],
+                [0, sheetHeight.value],
+                [1, 0],
                 'clamp',
             )
             : 1;
-        return {
-            opacity: opacity.value * dragFactor,
-        };
-    }, [dynamicBackdrop, opacity, translateY, screenHeightSV]);
+        return opacity.value * dragFactor;
+    }, [dynamicBackdrop, opacity, translateY, sheetHeight]);
+
+    const backdropStyle = useAnimatedStyle(() => ({
+        opacity: backdropProgress.value,
+    }), [backdropProgress]);
 
     const sheetStyle = useAnimatedStyle(() => {
         const scale = interpolate(translateY.value, [0, screenHeightSV.value], [1, 0.95]);
@@ -691,6 +702,12 @@ export const BottomSheetBase = forwardRef((props: BottomSheetBaseProps, ref: Rea
         }
         dismiss();
     }, [onDismissAttempt, dismiss]);
+
+    const handleSheetLayout = useCallback((event: LayoutChangeEvent) => {
+        const measuredHeight = event.nativeEvent.layout.height;
+        if (measuredHeight > 0) sheetHeight.value = measuredHeight;
+        onLayout?.(event);
+    }, [onLayout, sheetHeight]);
 
     const scrollHandler = useAnimatedScrollHandler({
         onScroll: (event) => {
@@ -800,13 +817,14 @@ export const BottomSheetBase = forwardRef((props: BottomSheetBaseProps, ref: Rea
                         onPress={handleBackdropPress}
                         dimOpacity={backdropOpacity}
                         blurTarget={blurTarget ?? undefined}
+                        blurProgress={backdropProgress}
                         style={[styles.backdrop, backdropStyle]}
                     />
                 )}
 
                 <GestureDetector gesture={panGesture}>
                     <Animated.View
-                        onLayout={onLayout}
+                        onLayout={handleSheetLayout}
                         style={[dynamicStyles.sheet, sheetMarginStyle, sheetStyle, sheetHeightStyle, style]}
                     >
                         {backgroundComponent?.({ style: styles.background })}
@@ -845,7 +863,7 @@ const styles = StyleSheet.create({
     sheetDetached: {
         left: 16,
         right: 16,
-        borderRadius: 28,
+        borderRadius: DETACHED_SHEET_RADIUS,
     },
     sheetNormal: {
         left: 0,

@@ -59,7 +59,7 @@ function Example() {
 | `style?` | `StyleProp<ViewStyle>` | — | |
 | `scrollable?` | `boolean` | `true` | When `false`, renders `children` directly without an internal `Animated.ScrollView` wrapper. Required when the sheet's content owns its own scrolling primitive (e.g. `FlatList`). |
 | `manualActivation?` | `boolean` | `false` | When `true`, the body pan uses RNGH's `manualActivation` and only activates when the inner ScrollView is at the top AND the user has moved their finger downward by > 8dp. Recommended for sheets that contain a scrolling region on Android. |
-| `dynamicBackdrop?` | `boolean` | `false` | Backdrop dims proportionally to drag distance — fades from full `backdropOpacity` to 30% as the sheet is pulled down 40% of the screen height. iOS Photos / iMessage look. |
+| `dynamicBackdrop?` | `boolean` | `true` | Backdrop dim and native blur intensity follow the drag continuously, from fully visible at rest to fully gone once the sheet leaves the viewport. |
 | `handleComponent?` | `() => ReactNode` | — | Custom drag-handle renderer. Replaces the default 36×5 pill. |
 
 ## Patterns

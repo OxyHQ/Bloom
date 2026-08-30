@@ -14,6 +14,7 @@ import React, { useCallback, useImperativeHandle, useMemo, useRef } from 'react'
 import { Pressable, StyleSheet, View, type StyleProp, type ViewStyle } from 'react-native';
 
 import { BottomSheet, type BottomSheetRef } from '../bottom-sheet';
+import { DETACHED_SHEET_RADIUS } from '../styles/radii';
 import { Z_INDEX } from '../styles/z-index';
 import { useTheme } from '../theme/use-theme';
 import { Context } from './context';
@@ -87,7 +88,7 @@ export function SheetShell({
     () => ({
       maxWidth: 500,
       backgroundColor: theme.colors.background,
-      borderRadius: 28,
+      borderRadius: DETACHED_SHEET_RADIUS,
     }),
     [theme.colors.background],
   );

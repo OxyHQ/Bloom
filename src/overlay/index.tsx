@@ -41,6 +41,7 @@
  */
 import { forwardRef, memo, type ReactNode, type RefObject } from 'react';
 import { BlurView } from 'expo-blur';
+import Animated, { type SharedValue, useAnimatedProps } from 'react-native-reanimated';
 import {
   Platform,
   Pressable,
@@ -60,6 +61,8 @@ import { WEB_POSITION_FIXED } from '../styles/web-view-style';
 export const BACKDROP_BLUR_INTENSITY = 40;
 /** Dim laid over the blur — the blur alone does not give enough contrast. */
 export const BACKDROP_DIM_OPACITY = 0.45;
+
+const AnimatedBlurView = Animated.createAnimatedComponent(BlurView);
 
 export interface OverlayRootProps {
   children?: ReactNode;
@@ -98,6 +101,8 @@ export interface BackdropProps {
   dimOpacity?: number;
   /** Android view sampled by the native blur. Modal surfaces receive this from BloomProvider. */
   blurTarget?: RefObject<NativeView | null>;
+  /** Live visibility progress used to reduce native blur while a surface leaves. */
+  blurProgress?: SharedValue<number>;
   /** Extra style on the press target — animated opacity, insets, z-index. */
   style?: StyleProp<ViewStyle>;
   /** Rendered ON TOP of the dim, inside the press target (Dialog's panel does this). */
@@ -120,6 +125,7 @@ export const Backdrop = memo(forwardRef<View, BackdropProps>(function Backdrop(
     dimColor = '#000',
     dimOpacity = BACKDROP_DIM_OPACITY,
     blurTarget,
+    blurProgress,
     style,
     children,
     accessibilityLabel = 'Dismiss',
@@ -128,6 +134,10 @@ export const Backdrop = memo(forwardRef<View, BackdropProps>(function Backdrop(
   ref,
 ) {
   const inert = disabled || !onPress;
+  const animatedBlurProps = useAnimatedProps(() => ({
+    intensity: Math.max(0, Math.min(100, blurIntensity * (blurProgress?.value ?? 1))),
+  }), [blurIntensity, blurProgress]);
+
   return (
     <Pressable
       // MUST forward the ref: surfaces animate the backdrop through
@@ -150,8 +160,9 @@ export const Backdrop = memo(forwardRef<View, BackdropProps>(function Backdrop(
       style={[StyleSheet.absoluteFill, style]}
     >
       {blurIntensity > 0 ? (
-        <BlurView
+        <AnimatedBlurView
           intensity={blurIntensity}
+          animatedProps={animatedBlurProps}
           tint={blurTint}
           blurTarget={blurTarget}
           // Expo disables Android blur without an explicit target. Sheets get
