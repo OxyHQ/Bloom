@@ -56,7 +56,8 @@ a second mount duplicates every surface they render. Mount these yourself, under
 
 ### Theme
 
-`BloomProvider` already mounts `BloomThemeProvider`; mount it directly only when you
+`BloomProvider` also installs the Android blur target used by modal backdrops;
+without that root, Android safely falls back to dim-only overlays. It already mounts `BloomThemeProvider`; mount it directly only when you
 need a nested/scoped theme. It accepts controlled `mode` and `colorPreset` props — persist them however you like (AsyncStorage, Zustand, etc.).
 
 ```tsx
@@ -312,7 +313,7 @@ function Example() {
 - `onDismissAttempt?: () => boolean` — return `false` to veto a dismiss attempt.
 - `detached?: boolean` — when `true`, the sheet floats with horizontal margins and rounded corners on all sides; when `false`, it's flush to the bottom edges with rounded top corners only.
 - `showHandle?: boolean` — defaults to `true`. Toggles the drag handle pill at the top of the sheet.
-- `backdropOpacity?: number` — opacity (0–1) of the dimming backdrop once fully visible. Defaults to `0.5`. Use a higher value (e.g. `0.7`) when stacking a sheet over another sheet.
+- `backdropOpacity?: number` — opacity (0–1) of the translucent dim laid over the blur once fully visible. Defaults to `0.45`.
 - `backgroundComponent?` — custom background renderer.
 - `backdropComponent?` — custom backdrop renderer.
 - `style?`

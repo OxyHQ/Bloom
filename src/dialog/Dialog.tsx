@@ -251,7 +251,7 @@ function CenteredOrSideDialog({
         // All four corners rounded — bloom's BottomSheet defaults to top-only
         // radius in flush mode, but we use `detached` so the whole card is
         // floating and rounded uniformly.
-        borderRadius: 20,
+        borderRadius: 28,
       },
       // Drives the card's `height` only while a morph is in flight; at rest it
       // resolves to `height: 'auto'` — the card's normal content sizing.
@@ -344,9 +344,6 @@ function CenteredOrSideDialog({
           />
         ) : undefined
       }
-      // Stronger dim when a Dialog is stacked over another sheet so the
-      // underlying sheet's handle/content doesn't bleed through.
-      backdropOpacity={0.7}
       // Measures the floating card — the size a morph starts from.
       onLayout={morphState.onPanelLayout}
       style={sheetStyle}

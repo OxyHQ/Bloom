@@ -8,3 +8,9 @@ export const BlurView = React.forwardRef<unknown, Record<string, unknown>>(
     return React.createElement('BlurView', props, props.children as React.ReactNode);
   },
 );
+
+export const BlurTargetView = React.forwardRef<unknown, Record<string, unknown>>(
+  function BlurTargetView(props, ref) {
+    return React.createElement('BlurTargetView', { ...props, ref }, props.children as React.ReactNode);
+  },
+);

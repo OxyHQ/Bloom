@@ -25,7 +25,8 @@ import Animated, {
     withTiming,
 } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { Backdrop } from '../overlay';
+import { Backdrop, BACKDROP_DIM_OPACITY } from '../overlay';
+import { useBloomBlurTarget } from '../overlay/blur-target';
 import { useTheme } from '../theme/use-theme';
 
 /** Hook that returns current screen dimensions and updates on rotation/resize. */
@@ -215,7 +216,7 @@ export const BottomSheetBase = forwardRef((props: BottomSheetBaseProps, ref: Rea
         onDismissAttempt,
         detached = false,
         showHandle = true,
-        backdropOpacity = 0.5,
+        backdropOpacity = BACKDROP_DIM_OPACITY,
         scrollable = true,
         manualActivation = false,
         dynamicBackdrop = false,
@@ -226,6 +227,7 @@ export const BottomSheetBase = forwardRef((props: BottomSheetBaseProps, ref: Rea
     } = props;
 
     const insets = useSafeAreaInsets();
+    const blurTarget = useBloomBlurTarget();
     const theme = useTheme();
     const { colors } = theme;
     const { height: screenHeight } = useScreenDimensions();
@@ -637,11 +639,11 @@ export const BottomSheetBase = forwardRef((props: BottomSheetBaseProps, ref: Rea
     // Native (with the plugin) auto-tracks and ignores the extra deps, so this
     // is safe on both platforms. Do NOT strip the shared values from these deps.
     //
-    // `opacity.value` drives the fade in/out (0 -> 1). `backdropOpacity` is the
-    // final dim level once fully visible. We multiply so the consumer-provided
-    // dim opacity applies smoothly across the animation. When
-    // `dynamicBackdrop` is enabled, the dim also fades proportionally with
-    // drag distance (iOS Photos style).
+    // `opacity.value` drives the whole blur+dim layer in/out (0 -> 1).
+    // `backdropOpacity` belongs ONLY to Backdrop's black dim layer below; if it
+    // is multiplied into this group opacity instead, the opaque black child
+    // hides the BlurView and Android looks like a plain dark scrim.
+    // `dynamicBackdrop` fades the composed blur+dim proportionally with drag.
     const backdropStyle = useAnimatedStyle(() => {
         const dragFactor = dynamicBackdrop
             ? interpolate(
@@ -652,9 +654,9 @@ export const BottomSheetBase = forwardRef((props: BottomSheetBaseProps, ref: Rea
             )
             : 1;
         return {
-            opacity: opacity.value * backdropOpacity * dragFactor,
+            opacity: opacity.value * dragFactor,
         };
-    }, [backdropOpacity, dynamicBackdrop, opacity, translateY, screenHeightSV]);
+    }, [dynamicBackdrop, opacity, translateY, screenHeightSV]);
 
     const sheetStyle = useAnimatedStyle(() => {
         const scale = interpolate(translateY.value, [0, screenHeightSV.value], [1, 0.95]);
@@ -792,12 +794,12 @@ export const BottomSheetBase = forwardRef((props: BottomSheetBaseProps, ref: Rea
                     </Animated.View>
                 ) : (
                     // The ONE Bloom backdrop (blur + dim + press-to-dismiss).
-                    // `backdropStyle` drives the fade; the dim level rides on
-                    // `backdropOpacity`, so the shared component's own dim is
-                    // switched off here to keep a single source of dimming.
+                    // `backdropStyle` drives the entrance/drag fade; the black
+                    // dim stays translucent so the BlurView remains visible.
                     <AnimatedBackdrop
                         onPress={handleBackdropPress}
-                        dimOpacity={1}
+                        dimOpacity={backdropOpacity}
+                        blurTarget={blurTarget ?? undefined}
                         style={[styles.backdrop, backdropStyle]}
                     />
                 )}
@@ -827,10 +829,7 @@ BottomSheetBase.displayName = 'BottomSheetBase';
 
 const styles = StyleSheet.create({
     backdrop: {
-        // Color is solid black; the dim level is driven by `backdropOpacity` via
-        // the animated `opacity` style on the wrapping <Animated.View>.
         flex: 1,
-        backgroundColor: '#000',
     },
     backdropTouchable: {
         flex: 1,
@@ -846,7 +845,7 @@ const styles = StyleSheet.create({
     sheetDetached: {
         left: 16,
         right: 16,
-        borderRadius: 24,
+        borderRadius: 28,
     },
     sheetNormal: {
         left: 0,

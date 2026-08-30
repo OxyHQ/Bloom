@@ -1,9 +1,10 @@
 import React, { createRef } from 'react';
-import { Dimensions, Text } from 'react-native';
+import { Dimensions, Platform, Text } from 'react-native';
 import { act, render, within } from '@testing-library/react-native';
 
 import { BloomThemeProvider } from '../theme/BloomThemeProvider';
 import BottomSheet, { type BottomSheetRef } from '../bottom-sheet';
+import { BloomBlurTargetProvider } from '../overlay/blur-target';
 
 function renderWithTheme(ui: React.ReactElement) {
   return render(
@@ -104,6 +105,50 @@ describe('BottomSheet', () => {
         </BottomSheet>,
       );
       unmount();
+    });
+  });
+
+  describe('detached material', () => {
+    it('keeps the Android blur visible over a lighter dim and uses the rounder floating shape', () => {
+      const previousOS = Platform.OS;
+      Platform.OS = 'android';
+      try {
+        const ref = createRef<BottomSheetRef>();
+        const { UNSAFE_getByType, UNSAFE_getAllByType } = renderWithTheme(
+          <BloomBlurTargetProvider>
+            <BottomSheet ref={ref} detached>
+              <Text>Floating content</Text>
+            </BottomSheet>
+          </BloomBlurTargetProvider>,
+        );
+
+        act(() => {
+          ref.current?.present();
+        });
+
+        UNSAFE_getByType('BlurTargetView' as never);
+        const blur = UNSAFE_getByType('BlurView' as never);
+        expect(blur.props.blurMethod).toBe('dimezisBlurViewSdk31Plus');
+        expect(blur.props.blurTarget).toEqual(expect.objectContaining({ current: null }));
+
+        const views = UNSAFE_getAllByType('View' as never);
+        expect(
+          views.some((view) => {
+            const style = JSON.stringify(view.props.style);
+            return style.includes('"backgroundColor":"#000"') && style.includes('"opacity":0.45');
+          }),
+        ).toBe(true);
+
+        const animatedViews = UNSAFE_getAllByType('Animated.View' as never);
+        expect(
+          animatedViews.some((view) => {
+            const style = JSON.stringify(view.props.style);
+            return style.includes('"left":16') && style.includes('"borderRadius":28');
+          }),
+        ).toBe(true);
+      } finally {
+        Platform.OS = previousOS;
+      }
     });
   });
 

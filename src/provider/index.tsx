@@ -34,6 +34,7 @@ import type { ReactNode } from 'react';
 
 import { ImageResolverProvider, type ImageResolver } from '../image-resolver';
 import { BloomHapticsProvider } from '../hooks/useHaptics';
+import { BloomBlurTargetProvider } from '../overlay/blur-target';
 import { TabBarMinimizeProvider } from '../tab-bar/minimize-context';
 import { BloomThemeProvider, type BloomThemeProviderProps } from '../theme';
 import { ScrollRestorationProvider } from './scroll-provider';
@@ -57,17 +58,19 @@ export function BloomProvider({
   ...themeProps
 }: BloomProviderProps) {
   return (
-    // `value` is passed unconditionally (null when unset) so toggling a resolver
-    // never changes the tree shape and remounts everything below it.
-    <ImageResolverProvider value={imageResolver ?? null}>
-      <BloomThemeProvider {...themeProps}>
-        <ScrollRestorationProvider>
-          <BloomHapticsProvider enabled={haptics}>
-            <TabBarMinimizeProvider>{children}</TabBarMinimizeProvider>
-          </BloomHapticsProvider>
-        </ScrollRestorationProvider>
-      </BloomThemeProvider>
-    </ImageResolverProvider>
+    <BloomBlurTargetProvider>
+      {/* `value` is passed unconditionally (null when unset) so toggling a resolver
+          never changes the tree shape and remounts everything below it. */}
+      <ImageResolverProvider value={imageResolver ?? null}>
+        <BloomThemeProvider {...themeProps}>
+          <ScrollRestorationProvider>
+            <BloomHapticsProvider enabled={haptics}>
+              <TabBarMinimizeProvider>{children}</TabBarMinimizeProvider>
+            </BloomHapticsProvider>
+          </ScrollRestorationProvider>
+        </BloomThemeProvider>
+      </ImageResolverProvider>
+    </BloomBlurTargetProvider>
   );
 }
 

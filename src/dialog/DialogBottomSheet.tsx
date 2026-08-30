@@ -30,7 +30,6 @@ import {
   DEFAULT_DIALOG_CONTENT_PADDING,
   DEFAULT_MAX_HEIGHT_RATIO,
   PANEL_RADIUS,
-  SHEET_BACKDROP_OPACITY,
 } from './placement';
 import type { DialogControlProps, DialogProps } from './types';
 
@@ -284,9 +283,6 @@ export function DialogBottomSheet({
           />
         ) : undefined
       }
-      // Stronger dim than a lone sheet so an underlying sheet's handle/content
-      // doesn't bleed through when a Dialog is stacked over one.
-      backdropOpacity={SHEET_BACKDROP_OPACITY + 0.3}
       // Measures the sheet card — the size a morph starts from.
       onLayout={morphState.onPanelLayout}
       style={sheetStyle}

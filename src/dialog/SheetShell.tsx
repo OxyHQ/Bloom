@@ -87,7 +87,7 @@ export function SheetShell({
     () => ({
       maxWidth: 500,
       backgroundColor: theme.colors.background,
-      borderRadius: 20,
+      borderRadius: 28,
     }),
     [theme.colors.background],
   );
@@ -98,7 +98,6 @@ export function SheetShell({
       onDismiss={handleDismiss}
       enablePanDownToClose
       detached
-      backdropOpacity={0.7}
       style={sheetStyle}
     >
       <Context.Provider value={context}>

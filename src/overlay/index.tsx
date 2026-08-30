@@ -39,7 +39,7 @@
  * Use `<OverlayRoot>` for the surface's outermost node and `<Backdrop>` for its
  * dimming layer; do not re-implement either with raw `View`s.
  */
-import { forwardRef, memo, type ReactNode } from 'react';
+import { forwardRef, memo, type ReactNode, type RefObject } from 'react';
 import { BlurView } from 'expo-blur';
 import {
   Platform,
@@ -47,6 +47,7 @@ import {
   StyleSheet,
   View,
   type StyleProp,
+  type View as NativeView,
   type ViewStyle,
 } from 'react-native';
 
@@ -95,6 +96,8 @@ export interface BackdropProps {
   dimColor?: string;
   /** Dim opacity, 0–1. */
   dimOpacity?: number;
+  /** Android view sampled by the native blur. Modal surfaces receive this from BloomProvider. */
+  blurTarget?: RefObject<NativeView | null>;
   /** Extra style on the press target — animated opacity, insets, z-index. */
   style?: StyleProp<ViewStyle>;
   /** Rendered ON TOP of the dim, inside the press target (Dialog's panel does this). */
@@ -116,6 +119,7 @@ export const Backdrop = memo(forwardRef<View, BackdropProps>(function Backdrop(
     blurTint = 'dark',
     dimColor = '#000',
     dimOpacity = BACKDROP_DIM_OPACITY,
+    blurTarget,
     style,
     children,
     accessibilityLabel = 'Dismiss',
@@ -149,9 +153,10 @@ export const Backdrop = memo(forwardRef<View, BackdropProps>(function Backdrop(
         <BlurView
           intensity={blurIntensity}
           tint={blurTint}
-          // Android's default blur is a no-op on many devices; this is the
-          // implementation that actually renders there.
-          experimentalBlurMethod="dimezisBlurView"
+          blurTarget={blurTarget}
+          // Expo disables Android blur without an explicit target. Sheets get
+          // one from BloomProvider; targetless surfaces degrade without warning.
+          blurMethod={Platform.OS === 'android' && blurTarget ? 'dimezisBlurViewSdk31Plus' : undefined}
           pointerEvents="none"
           style={StyleSheet.absoluteFill}
         />
