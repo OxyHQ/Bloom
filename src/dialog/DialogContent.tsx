@@ -1,5 +1,6 @@
 import React, { useCallback } from 'react';
 import {
+  ActivityIndicator,
   Text,
   TouchableOpacity,
   View,
@@ -91,11 +92,13 @@ function ActionButton({ action }: { action: DialogAction }) {
   const theme = useTheme();
   const color: DialogActionColor = action.color ?? 'default';
   const shouldCloseOnPress = action.shouldCloseOnPress ?? true;
+  const inactive = action.disabled === true || action.loading === true;
 
   const { background, foreground } = getActionPalette(color, theme.colors);
 
   const handlePress = useCallback(
     (e: GestureResponderEvent) => {
+      if (inactive) return;
       const onPress = action.onPress;
       if (color === 'cancel') {
         // Cancel always dismisses; consumer's onPress (rare) runs after.
@@ -108,7 +111,7 @@ function ActionButton({ action }: { action: DialogAction }) {
         onPress?.(e);
       }
     },
-    [action.onPress, close, color, shouldCloseOnPress],
+    [action.onPress, close, color, inactive, shouldCloseOnPress],
   );
 
   return (
@@ -118,18 +121,25 @@ function ActionButton({ action }: { action: DialogAction }) {
         alignItems: 'center',
         justifyContent: 'center',
         backgroundColor: background,
-        opacity: action.disabled ? 0.5 : 1,
+        opacity: inactive ? 0.5 : 1,
         paddingVertical: 12,
         paddingHorizontal: 24,
       }}
       onPress={handlePress}
-      disabled={action.disabled}
+      disabled={inactive}
+      accessibilityState={{ disabled: inactive, busy: action.loading === true }}
+      aria-disabled={inactive}
+      aria-busy={action.loading || undefined}
       activeOpacity={0.7}
       testID={action.testID}
     >
-      <Text style={{ fontSize: 16, fontWeight: '500', color: foreground }}>
-        {action.label}
-      </Text>
+      {action.loading ? (
+        <ActivityIndicator color={foreground} size="small" />
+      ) : (
+        <Text style={{ fontSize: 16, fontWeight: '500', color: foreground }}>
+          {action.label}
+        </Text>
+      )}
     </TouchableOpacity>
   );
 }

@@ -186,6 +186,11 @@ export type DialogAction = {
   color?: DialogActionColor;
   disabled?: boolean;
   /**
+   * Replaces the label with a progress indicator and disables interaction while
+   * an async action is in flight.
+   */
+  loading?: boolean;
+  /**
    * Defaults to `true`. When `true`, the dialog closes (and runs the close
    * animation) before `onPress` is invoked, which gives the surrounding
    * screen transition a chance to start before the action's side effects

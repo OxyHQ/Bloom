@@ -1,5 +1,5 @@
 import React from 'react';
-import { Text } from 'react-native';
+import { ActivityIndicator, Text } from 'react-native';
 import { act, fireEvent, render } from '@testing-library/react-native';
 
 import {
@@ -110,6 +110,38 @@ describe('Dialog (unified API)', () => {
       fireEvent.press(getByText('Confirm'));
     });
     expect(onConfirm).toHaveBeenCalledTimes(1);
+  });
+
+  it('renders a busy, non-interactive action while loading', () => {
+    let control: ReturnType<typeof useDialogControl> | undefined;
+    const onSave = jest.fn();
+    const { getByTestId, queryByText, UNSAFE_getByType } = renderWithTheme(
+      <Harness onControl={(c) => { control = c; }}>
+        {(c) => (
+          <Dialog
+            control={c}
+            title="Save changes?"
+            actions={[{
+              label: 'Save',
+              loading: true,
+              onPress: onSave,
+              shouldCloseOnPress: false,
+              testID: 'save-action',
+            }]}
+          />
+        )}
+      </Harness>,
+    );
+    act(() => { control?.open(); });
+
+    const action = getByTestId('save-action');
+    expect(action.props.disabled).toBe(true);
+    expect(action.props.accessibilityState).toEqual({ disabled: true, busy: true });
+    expect(queryByText('Save')).toBeNull();
+    expect(UNSAFE_getByType(ActivityIndicator)).toBeTruthy();
+
+    fireEvent.press(action);
+    expect(onSave).not.toHaveBeenCalled();
   });
 });
 

@@ -200,6 +200,7 @@ Drop the declarative props entirely — `children` owns every pixel.
   - `color?: 'default' | 'cancel' | 'destructive'` — defaults to `'default'`.
   - `onPress?: (e) => void` — invoked after the dialog finishes closing.
   - `disabled?: boolean`
+  - `loading?: boolean` — replaces the label with a spinner and disables the action.
   - `shouldCloseOnPress?: boolean` — defaults to `true`. Set `false` while an async action is in flight.
   - `testID?: string`
 - `children?: React.ReactNode` — custom content rendered after the description.
