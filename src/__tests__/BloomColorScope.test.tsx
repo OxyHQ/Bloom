@@ -200,7 +200,7 @@ describe('BloomColorScope', () => {
       );
     });
 
-    it('clones the single child and merges scope vars into its style array (asChild)', () => {
+    it('clones the single child and merges scope vars into its style object (asChild)', () => {
       const { getByTestId } = render(
         <BloomThemeProvider defaultColorPreset="blue" fonts={false}>
           <BloomColorScopeWeb colorPreset="purple" asChild>
@@ -209,8 +209,14 @@ describe('BloomColorScope', () => {
         </BloomThemeProvider>,
       );
 
+      // The merged shape FOLLOWS THE CHILD. This child's own style is a plain
+      // object, so it may end on a DOM node, and React DOM throws on an array
+      // (`Failed to set an indexed property [0] on 'CSSStyleDeclaration'`).
+      // Only an already-RN-shaped child style keeps the array form — the test
+      // above covers that case.
       const mergedStyle = getByTestId('styled-child').props.style;
-      expect(Array.isArray(mergedStyle)).toBe(true);
+      expect(Array.isArray(mergedStyle)).toBe(false);
+      expect(mergedStyle).toEqual(expect.objectContaining({ padding: 8 }));
       const flat = (Array.isArray(mergedStyle) ? mergedStyle : [mergedStyle])
         .flat(Infinity)
         .filter((entry): entry is Record<string, unknown> => Boolean(entry) && typeof entry === 'object');
