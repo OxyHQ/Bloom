@@ -1,16 +1,18 @@
 import React from 'react';
-import { render } from '@testing-library/react-native';
+import { act, render } from '@testing-library/react-native';
 
 import { Fab } from '../fab';
 import {
   BottomEdgeProvider,
   useBottomEdgeInset,
+  useBottomEdgeLiveInset,
   useClaimBottomEdge,
 } from '../layout/bottom-edge';
 import { EDGE_GAP, windowEdgeGap } from '../layout/edge';
 import { BloomThemeProvider } from '../theme/BloomThemeProvider';
-import { TabBar, TabBarButton } from '../tab-bar';
-import { EXPANDED_HEIGHT } from '../tab-bar/shared';
+import { TabBar, TabBarButton, TabBarMinimizeProvider, setMinimized, useMinimizeState } from '../tab-bar';
+import type { MinimizeState } from '../tab-bar/context';
+import { EXPANDED_HEIGHT, MINIMIZED_HEIGHT } from '../tab-bar/shared';
 import type { TabBarItem } from '../tab-bar/types';
 
 /**
@@ -88,8 +90,13 @@ function Probe({ onValue }: { onValue: (inset: number) => void }) {
   return null;
 }
 
-function Claimant({ height }: { height: number }) {
-  useClaimBottomEdge(height);
+function Claimant({ height, current }: { height: number; current?: number }) {
+  useClaimBottomEdge(height, current);
+  return null;
+}
+
+function BothProbe({ onValue }: { onValue: (v: { reserved: number; live: number }) => void }) {
+  onValue({ reserved: useBottomEdgeInset(), live: useBottomEdgeLiveInset() });
   return null;
 }
 
@@ -142,6 +149,47 @@ describe('the bottom-edge registry', () => {
   });
 });
 
+describe('reserved vs live', () => {
+  it('reports the same number for a surface that does not collapse', () => {
+    const seen: { reserved: number; live: number }[] = [];
+    render(
+      <BottomEdgeProvider>
+        <Claimant height={74} />
+        <BothProbe onValue={(v) => seen.push(v)} />
+      </BottomEdgeProvider>,
+    );
+    expect(seen[seen.length - 1]).toEqual({ reserved: 74, live: 74 });
+  });
+
+  it('keeps RESERVED at full size while LIVE follows the collapse', () => {
+    // The distinction the two channels exist for. A list's bottom padding and a
+    // toast read RESERVED, so neither jitters or jumps while the user scrolls;
+    // only a surface sitting ON the edge reads LIVE.
+    const seen: { reserved: number; live: number }[] = [];
+    render(
+      <BottomEdgeProvider>
+        <Claimant height={74} current={60} />
+        <BothProbe onValue={(v) => seen.push(v)} />
+      </BottomEdgeProvider>,
+    );
+    expect(seen[seen.length - 1]).toEqual({ reserved: 74, live: 60 });
+  });
+
+  it('maxes the two channels independently', () => {
+    // A tall collapsed surface and a short static one: each channel takes its own
+    // maximum. Reading one max for both would report a live inset no surface has.
+    const seen: { reserved: number; live: number }[] = [];
+    render(
+      <BottomEdgeProvider>
+        <Claimant height={90} current={40} />
+        <Claimant height={50} />
+        <BothProbe onValue={(v) => seen.push(v)} />
+      </BottomEdgeProvider>,
+    );
+    expect(seen[seen.length - 1]).toEqual({ reserved: 90, live: 50 });
+  });
+});
+
 function flattenStyle(style: unknown): Record<string, number> {
   if (Array.isArray(style)) return Object.assign({}, ...style.map(flattenStyle));
   return (style ?? {}) as Record<string, number>;
@@ -173,5 +221,75 @@ describe('a Fab beside a floating TabBar', () => {
     const barFootprint = windowEdgeGap(GESTURE_HANDLE_INSET) + EXPANDED_HEIGHT;
     const { bottom } = flattenStyle(getByTestId('fab').props.style);
     expect(bottom).toBeGreaterThanOrEqual(barFootprint);
+  });
+});
+
+function MinimizeDriver({ onState }: { onState: (state: MinimizeState) => void }) {
+  onState(useMinimizeState());
+  return null;
+}
+
+describe('a collapsing TabBar', () => {
+  beforeEach(() => {
+    mockInsets.bottom = GESTURE_HANDLE_INSET;
+  });
+
+  it('shrinks what it occupies without giving up what it reserves', () => {
+    // The bar minimizes 58 -> 44 on scroll, so a surface sitting on the edge
+    // should ride down with it — while anything RESERVING space must keep room
+    // for the full pill, because the bar re-expands the moment the user scrolls
+    // back up. One number could not answer both.
+    const seen: { reserved: number; live: number }[] = [];
+    let state: MinimizeState | undefined;
+
+    const { rerender } = render(
+      <BloomThemeProvider mode="light" colorPreset="teal">
+        <TabBarMinimizeProvider>
+          <BottomEdgeProvider>
+            <MinimizeDriver onState={(s) => (state = s)} />
+            <TabBar activeIndex={0} onIndexChange={() => {}}>
+              {ITEMS.map((item, index) => (
+                <TabBarButton key={item.name} item={item} index={index} />
+              ))}
+            </TabBar>
+            <BothProbe onValue={(v) => seen.push(v)} />
+          </BottomEdgeProvider>
+        </TabBarMinimizeProvider>
+      </BloomThemeProvider>,
+    );
+
+    const gap = windowEdgeGap(GESTURE_HANDLE_INSET);
+    expect(seen[seen.length - 1]).toEqual({
+      reserved: gap + EXPANDED_HEIGHT,
+      live: gap + EXPANDED_HEIGHT,
+    });
+
+    act(() => {
+      setMinimized(state!, 1);
+    });
+    rerender(
+      <BloomThemeProvider mode="light" colorPreset="teal">
+        <TabBarMinimizeProvider>
+          <BottomEdgeProvider>
+            <MinimizeDriver onState={(s) => (state = s)} />
+            <TabBar activeIndex={0} onIndexChange={() => {}}>
+              {ITEMS.map((item, index) => (
+                <TabBarButton key={item.name} item={item} index={index} />
+              ))}
+            </TabBar>
+            <BothProbe onValue={(v) => seen.push(v)} />
+          </BottomEdgeProvider>
+        </TabBarMinimizeProvider>
+      </BloomThemeProvider>,
+    );
+
+    expect(seen[seen.length - 1]).toEqual({
+      reserved: gap + EXPANDED_HEIGHT,
+      live: gap + MINIMIZED_HEIGHT,
+    });
+    // The follow is exactly the pill's own shrink, so the FAB above it neither
+    // lags behind nor overshoots into the bar.
+    const last = seen[seen.length - 1]!;
+    expect(last.reserved - last.live).toBe(EXPANDED_HEIGHT - MINIMIZED_HEIGHT);
   });
 });

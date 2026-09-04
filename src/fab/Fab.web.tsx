@@ -7,7 +7,7 @@ import React, {
   type MouseEvent,
 } from 'react';
 
-import { useBottomEdgeInset } from '../layout/bottom-edge';
+import { useBottomEdgeLiveInset } from '../layout/bottom-edge';
 import { useTheme } from '../theme/use-theme';
 import { animation, borderRadius } from '../styles/tokens';
 import { pressedSurface } from '../theme/press-colors';
@@ -83,8 +83,11 @@ const BLOOM_FAB_CSS = interactiveWebCss({
     box-shadow: var(--bloom-fab-shadow);
     font-family: inherit;
   `,
+  // `bottom` is the collapse follow (see `placementStyle`) and is deliberately
+  // the slow one: it tracks the tab bar's 380ms minimize spring, while every
+  // other property here is interaction feedback and wants to feel instant.
   transition:
-    'opacity 120ms ease, transform 120ms ease, box-shadow 160ms ease, background-color 120ms ease',
+    'opacity 120ms ease, transform 120ms ease, box-shadow 160ms ease, background-color 120ms ease, bottom 380ms ease',
   // A FAB lifts on hover rather than dimming: it floats over the content, so a
   // deeper shadow is the affordance an opacity dip cannot express.
   hover: { declarations: 'box-shadow: var(--bloom-fab-shadow-hover);' },
@@ -129,6 +132,16 @@ const BLOOM_FAB_CSS = interactiveWebCss({
  * behind it. A z-index cannot fix that pairing: the bar's host is the last
  * sibling of the app shell and paints over every descendant, so the FAB has to be
  * somewhere else, not merely on top.
+ *
+ * It is the LIVE inset here, and `bottom` is transitioned — where the native fork
+ * follows a collapsing bar with an Animated TRANSFORM instead. The forks differ
+ * because the constraint does. Native must stay off the JS thread mid-scroll, so
+ * the follow has to be a native-driver transform. On web a transform cannot carry
+ * it: `:active` already sets `transform: scale(...)` from the shared
+ * `interactive-web-css` rule, and an inline transform would beat that stylesheet
+ * rule and eat the press scale — and one property cannot hold the press's 120ms
+ * and the collapse's 380ms at once. `bottom` is a separate property with its own
+ * duration, and it moves twice per scroll gesture rather than per frame.
  */
 function placementStyle(
   placement: FabPlacement,
@@ -197,7 +210,9 @@ const FabWebComponent: React.FC<FabProps> = ({
   type = 'button',
 }) => {
   useInteractiveWebCss(STYLE_ID, BLOOM_FAB_CSS);
-  const bottomEdgeInset = useBottomEdgeInset();
+  // LIVE, not reserved: the FAB sits ON the edge, so it rides down with a
+  // minimizing tab bar rather than leaving a 14px hole above it.
+  const bottomEdgeLive = useBottomEdgeLiveInset();
   const theme = useTheme();
   const reactId = useId();
   const resolvedId = id ?? `bloom-fab-${reactId}`;
@@ -232,7 +247,7 @@ const FabWebComponent: React.FC<FabProps> = ({
         variantColors.foreground,
       ),
       ['--bloom-fab-press-scale' as string]: animation.pressScale,
-      ...placementStyle(placement, offset, bottomEdgeInset),
+      ...placementStyle(placement, offset, bottomEdgeLive),
     };
     if (isExtended) {
       const pad = sizeConfig.diameter <= 44 ? 14 : 20;
