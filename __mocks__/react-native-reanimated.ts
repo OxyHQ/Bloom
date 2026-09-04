@@ -3,7 +3,7 @@
 // (e.g. BottomSheet) capture a shared value in a `useMemo`/gesture closure and
 // later mutate `.value` from a different render; a fresh object per render would
 // desync those reads. Back it with a ref so identity is preserved per call site.
-const { useEffect, useRef } = require('react') as typeof import('react');
+const { useRef } = require('react') as typeof import('react');
 
 const Reanimated = {
   useSharedValue: (init: unknown) => {
@@ -24,25 +24,6 @@ const Reanimated = {
   // one is a box with a `.value`; so is this.
   makeMutable: (init: unknown) => ({ value: init }),
   useAnimatedStyle: (fn: () => Record<string, unknown>) => fn(),
-  // Real `useAnimatedReaction` runs `react(current, previous)` on the UI thread
-  // whenever `prepare()`'s result changes. Under jest there is no UI thread and a
-  // shared value mutates without re-rendering, so this fires on RENDER instead:
-  // a suite mutates `.value` and re-renders to drive it. Deliberately in an
-  // effect, not in render — the reaction sets state in every real caller, and
-  // doing that during render is the one thing React forbids outright.
-  useAnimatedReaction: (
-    prepare: () => unknown,
-    react: (current: unknown, previous: unknown) => void,
-  ) => {
-    const previous = useRef<unknown>(null);
-    const current = prepare();
-    useEffect(() => {
-      if (Object.is(current, previous.current)) return;
-      const before = previous.current;
-      previous.current = current;
-      react(current, before);
-    });
-  },
   useAnimatedProps: (fn: () => Record<string, unknown>) => fn(),
   useAnimatedScrollHandler: () => jest.fn(),
   // Reduced motion defaults to off in tests; suites that need it on can override.
@@ -166,7 +147,6 @@ export const makeMutable = Reanimated.makeMutable;
 export const useSharedValue = Reanimated.useSharedValue;
 export const useDerivedValue = Reanimated.useDerivedValue;
 export const useAnimatedStyle = Reanimated.useAnimatedStyle;
-export const useAnimatedReaction = Reanimated.useAnimatedReaction;
 export const useAnimatedProps = Reanimated.useAnimatedProps;
 export const useAnimatedScrollHandler = Reanimated.useAnimatedScrollHandler;
 export const useReducedMotion = Reanimated.useReducedMotion;

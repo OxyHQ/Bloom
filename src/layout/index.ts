@@ -5,9 +5,4 @@
  * parked there". A surface that floats at the bottom needs both.
  */
 export { EDGE_GAP, windowEdgeGap } from './edge';
-export {
-  BottomEdgeProvider,
-  useBottomEdgeInset,
-  useBottomEdgeCollapsed,
-  useClaimBottomEdge,
-} from './bottom-edge';
+export { BottomEdgeProvider, useBottomEdgeInset, useClaimBottomEdge } from './bottom-edge';

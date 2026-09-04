@@ -7,7 +7,7 @@ import React, {
   type MouseEvent,
 } from 'react';
 
-import { useBottomEdgeCollapsed, useBottomEdgeInset } from '../layout/bottom-edge';
+import { useBottomEdgeInset } from '../layout/bottom-edge';
 import { useTheme } from '../theme/use-theme';
 import { animation, borderRadius } from '../styles/tokens';
 import { pressedSurface } from '../theme/press-colors';
@@ -83,11 +83,8 @@ const BLOOM_FAB_CSS = interactiveWebCss({
     box-shadow: var(--bloom-fab-shadow);
     font-family: inherit;
   `,
-  // `opacity` carries two things: the disabled dim and the collapse fade. 200ms
-  // is the collapse's number — the dim is imperceptibly slower for it, and one
-  // property cannot hold two durations.
   transition:
-    'opacity 200ms ease, transform 120ms ease, box-shadow 160ms ease, background-color 120ms ease',
+    'opacity 120ms ease, transform 120ms ease, box-shadow 160ms ease, background-color 120ms ease',
   // A FAB lifts on hover rather than dimming: it floats over the content, so a
   // deeper shadow is the affordance an opacity dip cannot express.
   hover: { declarations: 'box-shadow: var(--bloom-fab-shadow-hover);' },
@@ -132,16 +129,6 @@ const BLOOM_FAB_CSS = interactiveWebCss({
  * behind it. A z-index cannot fix that pairing: the bar's host is the last
  * sibling of the app shell and paints over every descendant, so the FAB has to be
  * somewhere else, not merely on top.
- *
- * It is the LIVE inset here, and `bottom` is transitioned — where the native fork
- * follows a collapsing bar with an Animated TRANSFORM instead. The forks differ
- * because the constraint does. Native must stay off the JS thread mid-scroll, so
- * the follow has to be a native-driver transform. On web a transform cannot carry
- * it: `:active` already sets `transform: scale(...)` from the shared
- * `interactive-web-css` rule, and an inline transform would beat that stylesheet
- * rule and eat the press scale — and one property cannot hold the press's 120ms
- * and the collapse's 380ms at once. `bottom` is a separate property with its own
- * duration, and it moves twice per scroll gesture rather than per frame.
  */
 function placementStyle(
   placement: FabPlacement,
@@ -211,13 +198,6 @@ const FabWebComponent: React.FC<FabProps> = ({
 }) => {
   useInteractiveWebCss(STYLE_ID, BLOOM_FAB_CSS);
   const bottomEdgeInset = useBottomEdgeInset();
-  // The FAB belongs to the chrome: when the chrome retracts, so does it. Only a
-  // BOTTOM-anchored FAB is affected by the bottom edge collapsing.
-  const bottomEdgeCollapsed = useBottomEdgeCollapsed();
-  // A faded-out FAB must not be tabbable, clickable or announced — an invisible
-  // target that still takes a click is worse than a visible one.
-  const hidden =
-    bottomEdgeCollapsed && (placement === 'bottom-right' || placement === 'bottom-left');
   const theme = useTheme();
   const reactId = useId();
   const resolvedId = id ?? `bloom-fab-${reactId}`;
@@ -254,13 +234,6 @@ const FabWebComponent: React.FC<FabProps> = ({
       ['--bloom-fab-press-scale' as string]: animation.pressScale,
       ...placementStyle(placement, offset, bottomEdgeInset),
     };
-    // Only while HIDDEN, so the `:disabled { opacity }` rule still owns the
-    // dim the rest of the time — an inline opacity would beat that stylesheet
-    // rule unconditionally and a disabled FAB would stop dimming.
-    if (hidden) {
-      base.opacity = 0;
-      base.pointerEvents = 'none';
-    }
     if (isExtended) {
       const pad = sizeConfig.diameter <= 44 ? 14 : 20;
       base.paddingLeft = pad;
@@ -314,8 +287,6 @@ const FabWebComponent: React.FC<FabProps> = ({
       onClick={handleClick}
       disabled={disabled}
       aria-disabled={disabled || undefined}
-      aria-hidden={hidden || undefined}
-      tabIndex={hidden ? -1 : undefined}
       aria-label={ariaLabel}
       title={title ?? accessibilityHint}
       data-testid={testID}

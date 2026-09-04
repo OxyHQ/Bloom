@@ -1,4 +1,4 @@
-import React, { memo, useEffect, useMemo, useRef, type ComponentType } from 'react';
+import React, { memo, useMemo, type ComponentType } from 'react';
 import {
   Animated,
   Pressable,
@@ -11,7 +11,7 @@ import {
 } from 'react-native';
 import { styled } from 'react-native-css';
 
-import { useBottomEdgeCollapsed, useBottomEdgeInset } from '../layout/bottom-edge';
+import { useBottomEdgeInset } from '../layout/bottom-edge';
 import { useTheme } from '../theme/use-theme';
 import { animation, borderRadius } from '../styles/tokens';
 import { bloomShadowStyle } from '../design-tokens/shadows';
@@ -57,23 +57,6 @@ function resolveSize(size: FabSize | number): ResolvedSize {
   return SIZE_CONFIG[size];
 }
 
-/**
- * How long the FAB takes to leave when the bottom edge collapses.
- *
- * A DURATION, not a spring matched to the tab bar's — because the FAB is not
- * trying to stay level with the bar any more. It tried: an earlier version rode
- * the bar down by the 14px it shrank, and on a device the two visibly did not
- * move together. The bar animates on the UI thread while this component learns
- * about the collapse through `runOnJS` plus two React renders, so it starts one
- * to three frames late — worst exactly while scrolling, which is the only time
- * it happens. No spring config fixes a variable start delay.
- *
- * Fading is what makes that latency invisible: there is no spatial relationship
- * left to violate, so nothing betrays the few frames. Slightly quicker than the
- * bar's 380ms minimize, so the FAB is gone before the eye goes looking for it.
- */
-const COLLAPSE_FADE_MS = 200;
-
 const DEFAULT_OFFSET = 16;
 const DEFAULT_Z_INDEX = 50;
 const HIT_SLOP = { top: 8, bottom: 8, left: 8, right: 8 } as const;
@@ -90,10 +73,6 @@ const HIT_SLOP = { top: 8, bottom: 8, left: 8, right: 8 } as const;
  * lands above a floating tab bar instead of behind it. A z-index cannot fix that
  * pairing: the bar's host is the last sibling of the app shell and paints over
  * every descendant, so the FAB has to be somewhere else, not merely on top.
- *
- * It is the RESERVED inset, so this stays a static layout value — it does not
- * shrink when the bar collapses. The FAB fades out instead of chasing the bar
- * down; see `COLLAPSE_FADE_MS` for why chasing it does not work.
  */
 function placementStyle(
   placement: FabPlacement,
@@ -139,13 +118,10 @@ function placementStyle(
  */
 type FabPressableProps = Pick<
   PressableProps,
-  | 'accessibilityElementsHidden'
   | 'accessibilityHint'
   | 'accessibilityLabel'
   | 'accessibilityRole'
   | 'accessibilityState'
-  | 'importantForAccessibility'
-  | 'pointerEvents'
   | 'children'
   | 'className'
   | 'disabled'
@@ -182,34 +158,10 @@ const FabComponent: React.FC<FabProps> = ({
   zIndex = DEFAULT_Z_INDEX,
 }) => {
   const bottomEdgeInset = useBottomEdgeInset();
-  // The FAB belongs to the chrome: when the chrome retracts, so does it.
-  const bottomEdgeCollapsed = useBottomEdgeCollapsed();
   const theme = useTheme();
   const sizeConfig = useMemo(() => resolveSize(size), [size]);
   const isExtended = label != null && label.length > 0;
   const content = icon ?? children;
-
-  // Only a FAB anchored to the BOTTOM edge is affected by the bottom edge
-  // collapsing; a top-placed or consumer-placed one is not.
-  const hidesOnCollapse = placement === 'bottom-right' || placement === 'bottom-left';
-  const hidden = hidesOnCollapse && bottomEdgeCollapsed;
-  const fade = useRef(new Animated.Value(1)).current;
-
-  // An effect because RN's Animated has no declarative form — starting an
-  // animation is imperative by construction. `opacity` is native-drivable, so
-  // once started this never touches the JS thread again, which matters: it runs
-  // while the user is mid-scroll.
-  // The disabled dim rides on the SAME value rather than a second static
-  // `opacity` in the style array: two opacity entries would mean the later one
-  // silently wins, so a disabled FAB would either not dim or not fade.
-  const restingOpacity = disabled ? 0.5 : 1;
-  useEffect(() => {
-    Animated.timing(fade, {
-      toValue: hidden ? 0 : restingOpacity,
-      duration: COLLAPSE_FADE_MS,
-      useNativeDriver: true,
-    }).start();
-  }, [hidden, restingOpacity, fade]);
 
   const { scaleAnim, onPressIn, onPressOut } = usePressAnimation(
     disabled ? undefined : animation.pressScale,
@@ -277,7 +229,7 @@ const FabComponent: React.FC<FabProps> = ({
         placementStyle(placement, offset, bottomEdgeInset),
         { zIndex },
         containerStyle,
-        { opacity: fade },
+        disabled && { opacity: 0.5 },
         pressed && !disabled && { backgroundColor: pressedBackground },
         // Before the caller's `style`, so `style` keeps winning the whole array
         // the way it always has (and the way the web fork spreads it last). The
@@ -287,12 +239,7 @@ const FabComponent: React.FC<FabProps> = ({
         { transform: [{ scale: scaleAnim }] },
         style,
       ]}
-      // A FAB that has faded out must not be pressable or reachable — an
-      // invisible target that still takes a tap is worse than a visible one.
-      pointerEvents={hidden ? 'none' : 'auto'}
-      accessibilityElementsHidden={hidden}
-      importantForAccessibility={hidden ? 'no-hide-descendants' : 'auto'}
-      onPress={disabled || hidden ? undefined : onPress}
+      onPress={disabled ? undefined : onPress}
       onPressIn={handlePressIn}
       onPressOut={handlePressOut}
       disabled={disabled}

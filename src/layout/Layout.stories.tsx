@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React from 'react';
 import { View, Text } from 'react-native';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import { SafeAreaInsetsContext } from 'react-native-safe-area-context';
@@ -6,7 +6,7 @@ import { SafeAreaInsetsContext } from 'react-native-safe-area-context';
 import { BottomEdgeProvider } from './bottom-edge';
 import { Fab } from '../fab';
 import * as Icons from '../icons';
-import { TabBar, TabBarButton, TabBarMinimizeProvider, setMinimized, useMinimizeState } from '../tab-bar';
+import { TabBar, TabBarButton } from '../tab-bar';
 import type { TabBarItem } from '../tab-bar/types';
 
 /**
@@ -75,18 +75,6 @@ function Screen() {
   );
 }
 
-/**
- * Drives the bar into its minimized size on mount, so the collapsed geometry is
- * a story you can look at rather than something you have to scroll to reach.
- */
-function ForceMinimized() {
-  const state = useMinimizeState();
-  useEffect(() => {
-    setMinimized(state, 1);
-  }, [state]);
-  return null;
-}
-
 const meta: Meta<typeof BottomEdgeProvider> = {
   title: 'Layout/Bottom edge',
   component: BottomEdgeProvider,
@@ -118,26 +106,6 @@ export const Unregistered: Story = {
       <Text style={{ position: 'absolute', top: 8, left: 12, fontSize: 11 }}>
         no BottomEdgeProvider
       </Text>
-    </Phone>
-  ),
-};
-
-/**
- * The bar minimized (58 -> 44). The FAB is gone: it reads the registry's
- * COLLAPSED state and fades out rather than trying to stay level with a bar that
- * is animating on another thread. Anything that RESERVES space (a list's
- * padding, a toast) still sees the full expanded footprint, so nothing reflows
- * while the user scrolls.
- */
-export const Collapsed: Story = {
-  render: () => (
-    <Phone>
-      <TabBarMinimizeProvider>
-        <BottomEdgeProvider>
-          <ForceMinimized />
-          <Screen />
-        </BottomEdgeProvider>
-      </TabBarMinimizeProvider>
     </Phone>
   ),
 };
