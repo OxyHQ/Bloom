@@ -27,6 +27,21 @@
  * edge, so two surfaces at that edge overlap rather than stack; the tallest is
  * what a new surface has to clear. Summing would strand it at twice the height.
  *
+ * ## Two numbers, because there are two questions
+ *
+ * A surface that collapses — the tab bar minimizes 58 -> 44 on scroll — occupies
+ * less than it reserves. Readers want different halves of that:
+ *
+ *   - RESERVED (`useBottomEdgeInset`) never shrinks while the claimant is
+ *     mounted. It is what must be kept permanently free: a list's bottom
+ *     padding, a toast stack's offset. Tracking the collapse here would jitter a
+ *     list's content size on every scroll and jump a toast 14px mid-display.
+ *   - LIVE (`useBottomEdgeLiveInset`) follows the collapse. It is what a surface
+ *     SITTING ON the edge wants, so it rides down with the bar instead of
+ *     leaving a hole.
+ *
+ * A claimant that never collapses passes one number and both answers agree.
+ *
  * ## Why an external store
  *
  * The claim set is mutable state living outside React. Reading it in a memoized
@@ -45,33 +60,46 @@ import {
   type PropsWithChildren,
 } from 'react';
 
+interface Claim {
+  /** What the surface keeps permanently free, collapsed or not. */
+  reserved: number;
+  /** What it occupies right now. */
+  current: number;
+}
+
 interface BottomEdgeStore {
   subscribe: (onChange: () => void) => () => void;
   /**
-   * The cached total. Returns the SAME number until a claim actually changes it
-   * — `useSyncExternalStore` re-renders forever if the snapshot is recomputed
-   * per call.
+   * The cached totals. Each returns the SAME number until a claim actually
+   * changes it — `useSyncExternalStore` re-renders forever if the snapshot is
+   * recomputed per call, and a reader of one channel must not re-render when
+   * only the other moved.
    */
-  getInset: () => number;
-  claim: (id: string, height: number) => void;
+  getReserved: () => number;
+  getLive: () => number;
+  claim: (id: string, reserved: number, current: number) => void;
   release: (id: string) => void;
 }
 
 function createBottomEdgeStore(): BottomEdgeStore {
-  const claims = new Map<string, number>();
+  const claims = new Map<string, Claim>();
   const listeners = new Set<() => void>();
-  let inset = 0;
+  let reserved = 0;
+  let live = 0;
 
   const recompute = () => {
-    let next = 0;
-    for (const height of claims.values()) {
-      if (height > next) next = height;
+    let nextReserved = 0;
+    let nextLive = 0;
+    for (const claim of claims.values()) {
+      if (claim.reserved > nextReserved) nextReserved = claim.reserved;
+      if (claim.current > nextLive) nextLive = claim.current;
     }
-    // Bail before notifying: a re-registration at an unchanged height (every
+    // Bail before notifying: a re-registration at unchanged heights (every
     // render of a claimant whose footprint did not move) must not re-render
     // every reader.
-    if (next === inset) return;
-    inset = next;
+    if (nextReserved === reserved && nextLive === live) return;
+    reserved = nextReserved;
+    live = nextLive;
     for (const listener of listeners) listener();
   };
 
@@ -82,10 +110,12 @@ function createBottomEdgeStore(): BottomEdgeStore {
         listeners.delete(onChange);
       };
     },
-    getInset: () => inset,
-    claim(id, height) {
-      if (claims.get(id) === height) return;
-      claims.set(id, height);
+    getReserved: () => reserved,
+    getLive: () => live,
+    claim(id, nextReserved, nextCurrent) {
+      const existing = claims.get(id);
+      if (existing?.reserved === nextReserved && existing.current === nextCurrent) return;
+      claims.set(id, { reserved: nextReserved, current: nextCurrent });
       recompute();
     },
     release(id) {
@@ -116,13 +146,15 @@ const NO_SUBSCRIPTION = () => () => {};
 const NO_INSET = () => 0;
 
 /**
- * How much of the bottom edge is already occupied, in px.
+ * How much of the bottom edge is permanently RESERVED, in px.
  *
- * Add it to whatever offset the surface would otherwise use:
+ * Never shrinks while its claimant is mounted, so it is the number for anything
+ * that must not move as the user scrolls — a list's bottom padding, a toast
+ * stack's offset:
  *
  * ```tsx
- * const occupied = useBottomEdgeInset();
- * <View style={{ position: 'absolute', bottom: windowEdgeGap(insets.bottom) + occupied }} />
+ * const reserved = useBottomEdgeInset();
+ * <FlatList contentContainerStyle={{ paddingBottom: reserved + 12 }} />
  * ```
  *
  * `0` outside a provider, and `0` on the first commit even inside one — a claim
@@ -134,29 +166,54 @@ export function useBottomEdgeInset(): number {
   const store = useContext(BottomEdgeContext);
   return useSyncExternalStore(
     store?.subscribe ?? NO_SUBSCRIPTION,
-    store?.getInset ?? NO_INSET,
-    store?.getInset ?? NO_INSET,
+    store?.getReserved ?? NO_INSET,
+    store?.getReserved ?? NO_INSET,
   );
 }
 
 /**
- * Claim `height` px of the bottom edge for as long as the caller is mounted.
+ * How much of the bottom edge is occupied RIGHT NOW, in px — the same number as
+ * {@link useBottomEdgeInset} for a surface that does not collapse, and smaller
+ * while one does.
+ *
+ * This is what a surface sitting ON the edge wants, so it rides down with a
+ * minimizing tab bar rather than leaving a hole above it. It changes when the
+ * collapse STATE changes, not per frame: a claimant reports its settled
+ * footprint and the reader animates the difference itself, which keeps the
+ * motion on whatever animation system that reader already uses instead of
+ * forcing a shared one through React state.
+ */
+export function useBottomEdgeLiveInset(): number {
+  const store = useContext(BottomEdgeContext);
+  return useSyncExternalStore(
+    store?.subscribe ?? NO_SUBSCRIPTION,
+    store?.getLive ?? NO_INSET,
+    store?.getLive ?? NO_INSET,
+  );
+}
+
+/**
+ * Claim the bottom edge for as long as the caller is mounted.
  *
  * The claimant owns its own placement — claiming does not move it. It declares
- * the space it occupies so that everything reading `useBottomEdgeInset()` stays
- * off it. Pass the FULL footprint (the surface's height plus the gap it holds
- * off the window edge), which is the same number the surface positions itself
- * with.
+ * the space it occupies so that everything reading the edge stays off it. Pass
+ * the FULL footprint (the surface's height plus the gap it holds off the window
+ * edge), which is the same number the surface positions itself with.
+ *
+ * `current` is what the surface occupies right now; it defaults to `reserved`,
+ * which is correct for anything that does not collapse. A surface that shrinks
+ * on scroll passes its live footprint as `current` and keeps `reserved` at its
+ * full size — see the two channels above for why both are needed.
  *
  * A no-op outside a provider, so a surface stays usable standalone.
  */
-export function useClaimBottomEdge(height: number): void {
+export function useClaimBottomEdge(reserved: number, current: number = reserved): void {
   const store = useContext(BottomEdgeContext);
   const id = useId();
 
   useEffect(() => {
     if (!store) return;
-    store.claim(id, height);
+    store.claim(id, reserved, current);
     return () => store.release(id);
-  }, [store, id, height]);
+  }, [store, id, reserved, current]);
 }

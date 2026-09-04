@@ -1,4 +1,4 @@
-import React, { memo, useMemo, type ComponentType } from 'react';
+import React, { memo, useEffect, useMemo, useRef, type ComponentType } from 'react';
 import {
   Animated,
   Pressable,
@@ -11,7 +11,7 @@ import {
 } from 'react-native';
 import { styled } from 'react-native-css';
 
-import { useBottomEdgeInset } from '../layout/bottom-edge';
+import { useBottomEdgeInset, useBottomEdgeLiveInset } from '../layout/bottom-edge';
 import { useTheme } from '../theme/use-theme';
 import { animation, borderRadius } from '../styles/tokens';
 import { bloomShadowStyle } from '../design-tokens/shadows';
@@ -57,6 +57,16 @@ function resolveSize(size: FabSize | number): ResolvedSize {
   return SIZE_CONFIG[size];
 }
 
+/**
+ * Matches the tab bar's own `MINIMIZE_SPRING` (380ms, critically damped) closely
+ * enough that the two read as one movement. It cannot be that exact config: the
+ * bar animates with reanimated, which takes duration/dampingRatio, while this is
+ * RN's Animated, which takes stiffness/damping/mass. `usePressAnimation` — and
+ * therefore Button, Chip, Tabs, Checkbox, Radio and FrostedIconButton — is built
+ * on RN's Animated too, so the FAB cannot switch systems on its own.
+ */
+const COLLAPSE_SPRING = { stiffness: 120, damping: 22, mass: 1 } as const;
+
 const DEFAULT_OFFSET = 16;
 const DEFAULT_Z_INDEX = 50;
 const HIT_SLOP = { top: 8, bottom: 8, left: 8, right: 8 } as const;
@@ -73,6 +83,10 @@ const HIT_SLOP = { top: 8, bottom: 8, left: 8, right: 8 } as const;
  * lands above a floating tab bar instead of behind it. A z-index cannot fix that
  * pairing: the bar's host is the last sibling of the app shell and paints over
  * every descendant, so the FAB has to be somewhere else, not merely on top.
+ *
+ * It is the RESERVED inset, so this stays a static layout value. Following a
+ * collapsing bar is a TRANSFORM (see `collapseAnim`), which costs no layout pass
+ * and can run on the native driver while the user is mid-scroll.
  */
 function placementStyle(
   placement: FabPlacement,
@@ -158,10 +172,34 @@ const FabComponent: React.FC<FabProps> = ({
   zIndex = DEFAULT_Z_INDEX,
 }) => {
   const bottomEdgeInset = useBottomEdgeInset();
+  const bottomEdgeLive = useBottomEdgeLiveInset();
   const theme = useTheme();
   const sizeConfig = useMemo(() => resolveSize(size), [size]);
   const isExtended = label != null && label.length > 0;
   const content = icon ?? children;
+
+  // How far the edge's surface has collapsed below what it reserves: 0 while the
+  // tab bar is expanded, 14 while it is minimized. Deliberately the DIFFERENCE
+  // rather than the live inset itself — both are 0 before the registry settles
+  // and both are equal once it has, so this stays 0 across mount and the FAB
+  // never slides in from the window edge on its first frame. Only a real
+  // collapse moves it.
+  const collapse = placement === 'bottom-right' || placement === 'bottom-left'
+    ? bottomEdgeInset - bottomEdgeLive
+    : 0;
+  const collapseAnim = useRef(new Animated.Value(0)).current;
+
+  // An effect because RN's Animated has no declarative form — starting an
+  // animation is imperative by construction. `useNativeDriver` is what makes this
+  // safe to run during a scroll: the whole point of moving the follow onto a
+  // transform is that it never touches the JS thread once started.
+  useEffect(() => {
+    Animated.spring(collapseAnim, {
+      toValue: collapse,
+      useNativeDriver: true,
+      ...COLLAPSE_SPRING,
+    }).start();
+  }, [collapse, collapseAnim]);
 
   const { scaleAnim, onPressIn, onPressOut } = usePressAnimation(
     disabled ? undefined : animation.pressScale,
@@ -236,7 +274,7 @@ const FabComponent: React.FC<FabProps> = ({
         // cost is that a caller who sets `transform` replaces the press scale
         // instead of composing with it — when the transform sat on a separate
         // wrapper node the two multiplied.
-        { transform: [{ scale: scaleAnim }] },
+        { transform: [{ translateY: collapseAnim }, { scale: scaleAnim }] },
         style,
       ]}
       onPress={disabled ? undefined : onPress}

@@ -38,7 +38,7 @@ height. The inset is already folded into the gap, so adding it again
 double-counts the home indicator and strands a band of dead space.
 </Admonition>
 
-## `useBottomEdgeInset` / `useClaimBottomEdge` — what is already there
+## The registry — what is already there
 
 Knowing where the edge is does not tell a FAB that a tab bar is already parked
 on it. A surface that parks there **claims** its footprint; a surface that wants
@@ -55,6 +55,31 @@ const occupied = useBottomEdgeInset();
 
 Neither imports the other, so any combination composes: a tab bar with no FAB, a
 FAB with no tab bar, both, or a surface written later.
+
+### Two channels, because there are two questions
+
+A surface that **collapses** — the tab bar minimizes 58 → 44 on scroll —
+occupies less than it reserves, and readers want different halves of that.
+
+| hook | answers | who reads it |
+| --- | --- | --- |
+| `useBottomEdgeInset()` | what is permanently **reserved** | a list's `paddingBottom`, a toast stack |
+| `useBottomEdgeLiveInset()` | what is occupied **right now** | a FAB, anything sitting *on* the edge |
+
+```tsx
+// A claimant that collapses reports both. `current` defaults to `reserved`.
+useClaimBottomEdge(gap + EXPANDED_HEIGHT, gap + (minimized ? MINIMIZED_HEIGHT : EXPANDED_HEIGHT));
+```
+
+Reserved never shrinks while its claimant is mounted, because the bar re-expands
+the instant the user scrolls back up: tracking the collapse there would jitter a
+list's content size on every scroll and jump a toast 14px mid-display. Live
+follows it, so a FAB rides down with the bar instead of leaving a hole.
+
+Live changes when the collapse **state** changes, not per frame. The claimant
+reports its settled footprint and the reader animates the difference itself —
+which keeps the motion on whatever animation system that reader already uses,
+rather than forcing a shared one through React state.
 
 `BloomProvider` mounts the registry. Outside one, `useBottomEdgeInset()` returns
 `0` and `useClaimBottomEdge` is a no-op, so a surface stays usable standalone.
@@ -77,3 +102,10 @@ hiding would float it off the bottom of the screen for nothing.
 so a reader mounted in the same commit as its claimant reads `0` on the first
 commit. These are layout offsets rather than measurements, so nothing here waits
 on a real layout pass.
+
+**Animate the difference, not the live inset.** `reserved - live` is `0` both
+before the registry settles and once it has, so a reader that animates the
+DIFFERENCE stays still through mount and moves only on a real collapse. Animating
+the live inset directly would slide the surface in from the window edge on its
+first frame. Bloom's `Fab` does the former — a native-driver `translateY` on
+native, a `bottom` transition on web.
