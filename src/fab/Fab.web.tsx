@@ -7,6 +7,7 @@ import React, {
   type MouseEvent,
 } from 'react';
 
+import { useBottomEdgeInset } from '../layout/bottom-edge';
 import { useTheme } from '../theme/use-theme';
 import { animation, borderRadius } from '../styles/tokens';
 import { pressedSurface } from '../theme/press-colors';
@@ -121,14 +122,24 @@ const BLOOM_FAB_CSS = interactiveWebCss({
  * Horizontal placement uses `align-self` (sticky elements can't be pushed by
  * `left`/`right` the way absolute ones are) plus an inline-edge margin for the
  * `offset`. The consumer column MUST be a flex column that fills the available
- * height, and the FAB MUST be its last child — documented in the usage story.
+ * height, and the FAB MUST be its last child — documented in the usage story. *
+ * `bottomEdgeInset` applies to the BOTTOM axis only. It is not a gap preference
+ * — `offset` is that — but the height of whatever floating surface has already
+ * claimed the bottom edge, so the FAB lands above a floating tab bar instead of
+ * behind it. A z-index cannot fix that pairing: the bar's host is the last
+ * sibling of the app shell and paints over every descendant, so the FAB has to be
+ * somewhere else, not merely on top.
  */
-function placementStyle(placement: FabPlacement, offset: number): CSSProperties {
+function placementStyle(
+  placement: FabPlacement,
+  offset: number,
+  bottomEdgeInset: number,
+): CSSProperties {
   if (placement === 'static') return {};
   const style: CSSProperties = { position: 'sticky' };
   const isBottom = placement === 'bottom-right' || placement === 'bottom-left';
   if (isBottom) {
-    style.bottom = offset;
+    style.bottom = offset + bottomEdgeInset;
     // Push the FAB to the bottom of a (flex-column) container even when the
     // content is too short to scroll, so it never floats mid-column.
     style.marginTop = 'auto';
@@ -186,6 +197,7 @@ const FabWebComponent: React.FC<FabProps> = ({
   type = 'button',
 }) => {
   useInteractiveWebCss(STYLE_ID, BLOOM_FAB_CSS);
+  const bottomEdgeInset = useBottomEdgeInset();
   const theme = useTheme();
   const reactId = useId();
   const resolvedId = id ?? `bloom-fab-${reactId}`;
@@ -220,7 +232,7 @@ const FabWebComponent: React.FC<FabProps> = ({
         variantColors.foreground,
       ),
       ['--bloom-fab-press-scale' as string]: animation.pressScale,
-      ...placementStyle(placement, offset),
+      ...placementStyle(placement, offset, bottomEdgeInset),
     };
     if (isExtended) {
       const pad = sizeConfig.diameter <= 44 ? 14 : 20;

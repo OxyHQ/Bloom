@@ -1,0 +1,79 @@
+---
+title: Layout
+description: Window-edge geometry — how far a floating surface sits from the edge, and what is already parked there.
+order: 76
+---
+
+# Layout
+
+Two questions every floating surface has to answer, answered once for all of
+them.
+
+```tsx
+import { EDGE_GAP, windowEdgeGap, useBottomEdgeInset, useClaimBottomEdge } from '@oxyhq/bloom/layout';
+```
+
+## `windowEdgeGap` — how far from the edge
+
+```tsx
+const insets = useSafeAreaInsets();
+
+windowEdgeGap(insets.bottom);      // 34pt iOS · 24dp Android · 16 web
+windowEdgeGap(insets.bottom, 16);  // 50pt iOS · 40dp Android · 16 web
+```
+
+The safe-area inset is the band the platform has **reserved for its own
+affordance** — the iOS home indicator, the Android gesture handle. A floating
+surface clears it in full. `gap` is that surface's breathing room *on top of*
+the band, never an allowance to spend inside it: a bigger `gap` floats the
+surface further from the affordance, never closer.
+
+`EDGE_GAP` (16) is the floor for every caller, so a device reporting a 4dp inset
+never ends up tighter than a browser reporting none.
+
+<Admonition kind="warning">
+Anything laying out **around** a floating surface wants its total footprint, and
+must get it from the surface — never by adding `insets.bottom` to a hardcoded
+height. The inset is already folded into the gap, so adding it again
+double-counts the home indicator and strands a band of dead space.
+</Admonition>
+
+## `useBottomEdgeInset` / `useClaimBottomEdge` — what is already there
+
+Knowing where the edge is does not tell a FAB that a tab bar is already parked
+on it. A surface that parks there **claims** its footprint; a surface that wants
+to avoid it **reads** the total.
+
+```tsx
+// The surface that parks there — a floating tab bar.
+useClaimBottomEdge(gap + barHeight);
+
+// The surface that avoids it — Bloom's Fab does this for you.
+const occupied = useBottomEdgeInset();
+<View style={{ position: 'absolute', bottom: windowEdgeGap(insets.bottom) + occupied }} />
+```
+
+Neither imports the other, so any combination composes: a tab bar with no FAB, a
+FAB with no tab bar, both, or a surface written later.
+
+`BloomProvider` mounts the registry. Outside one, `useBottomEdgeInset()` returns
+`0` and `useClaimBottomEdge` is a no-op, so a surface stays usable standalone.
+
+## Things that are easy to get wrong
+
+**Claims combine with `max`, not `sum`.** Every claim is measured from the same
+window edge, so two surfaces there overlap rather than stack. Summing would
+strand a reader at twice the height, floating mid-screen.
+
+**A z-index cannot substitute for the offset.** A tab bar host is typically the
+last sibling of the app shell, so it paints over every descendant no matter what
+they claim. The FAB has to be somewhere *else*, not merely on top.
+
+**A modal surface should not read the registry.** A detached `BottomSheet`
+renders above the tab bar and covers it; offsetting it by a bar it is already
+hiding would float it off the bottom of the screen for nothing.
+
+**The registry settles one frame after mount.** A claim registers in an effect,
+so a reader mounted in the same commit as its claimant reads `0` on the first
+commit. These are layout offsets rather than measurements, so nothing here waits
+on a real layout pass.

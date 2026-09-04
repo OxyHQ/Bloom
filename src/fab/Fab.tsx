@@ -11,6 +11,7 @@ import {
 } from 'react-native';
 import { styled } from 'react-native-css';
 
+import { useBottomEdgeInset } from '../layout/bottom-edge';
 import { useTheme } from '../theme/use-theme';
 import { animation, borderRadius } from '../styles/tokens';
 import { bloomShadowStyle } from '../design-tokens/shadows';
@@ -65,12 +66,23 @@ const HIT_SLOP = { top: 8, bottom: 8, left: 8, right: 8 } as const;
  * the nearest positioned ancestor (the consumer's column container), NOT the
  * screen — so it never escapes a constrained layout. `static` returns no
  * positioning (consumer-controlled).
+ *
+ * `bottomEdgeInset` applies to the BOTTOM axis only, and only for a bottom
+ * placement. It is not a gap preference — `offset` is that — but the height of
+ * whatever floating surface has already claimed the bottom edge, so the FAB
+ * lands above a floating tab bar instead of behind it. A z-index cannot fix that
+ * pairing: the bar's host is the last sibling of the app shell and paints over
+ * every descendant, so the FAB has to be somewhere else, not merely on top.
  */
-function placementStyle(placement: FabPlacement, offset: number): ViewStyle {
+function placementStyle(
+  placement: FabPlacement,
+  offset: number,
+  bottomEdgeInset: number,
+): ViewStyle {
   if (placement === 'static') return {};
   const style: ViewStyle = { position: 'absolute' };
   if (placement === 'bottom-right' || placement === 'bottom-left') {
-    style.bottom = offset;
+    style.bottom = offset + bottomEdgeInset;
   } else {
     style.top = offset;
   }
@@ -145,6 +157,7 @@ const FabComponent: React.FC<FabProps> = ({
   testID,
   zIndex = DEFAULT_Z_INDEX,
 }) => {
+  const bottomEdgeInset = useBottomEdgeInset();
   const theme = useTheme();
   const sizeConfig = useMemo(() => resolveSize(size), [size]);
   const isExtended = label != null && label.length > 0;
@@ -213,7 +226,7 @@ const FabComponent: React.FC<FabProps> = ({
     <AnimatedPressable
       className={className}
       style={[
-        placementStyle(placement, offset),
+        placementStyle(placement, offset, bottomEdgeInset),
         { zIndex },
         containerStyle,
         disabled && { opacity: 0.5 },

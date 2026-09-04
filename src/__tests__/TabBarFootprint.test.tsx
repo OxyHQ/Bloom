@@ -46,6 +46,8 @@ const ITEMS: TabBarItem[] = [
 
 /** A device with a home indicator (iPhone-class bottom inset). */
 const HOME_INDICATOR_INSET = 34;
+/** An Android device navigating by gestures — the band the handle is drawn in. */
+const GESTURE_HANDLE_INSET = 24;
 
 function FootprintProbe({ onValue }: { onValue: (space: number) => void }) {
   onValue(useTabBarFootprint());
@@ -98,12 +100,23 @@ describe('useTabBarFootprint', () => {
   });
 
   it('measures the bar plus its gap where there is no bottom inset', () => {
-    // 58pt bar + the 12pt floor the gap never goes below.
-    expect(footprintFor(0)).toBe(70);
+    // 58pt bar + the 16pt EDGE_GAP the gap never goes below.
+    expect(footprintFor(0)).toBe(74);
   });
 
   it('measures more on a device with a home indicator', () => {
-    expect(footprintFor(HOME_INDICATOR_INSET)).toBe(76);
+    expect(footprintFor(HOME_INDICATOR_INSET)).toBe(92);
+  });
+
+  it('clears the OS band in full rather than sitting inside it', () => {
+    // THE REGRESSION THIS SUITE EXISTS FOR. The gap used to absorb 16pt of the
+    // inset and clamp at a 12pt floor, so a gesture-navigation Android device
+    // (24dp reserved) put the pill 12dp off the window edge — INSIDE the band
+    // the system draws its gesture handle in, with the handle running through
+    // the bar. The gap must reach the top of the reserved band, never stop short
+    // of it.
+    const gap = footprintFor(GESTURE_HANDLE_INSET) - 58;
+    expect(gap).toBeGreaterThanOrEqual(GESTURE_HANDLE_INSET);
   });
 
   it('adds no clearance of its own — the number is the bar and only the bar', () => {
@@ -111,22 +124,23 @@ describe('useTabBarFootprint', () => {
     // FAB anchored by `bottom` supplies its own. A margin folded in here would
     // lift every consumer's FAB off its intended position, and would make
     // "footprint" mean two different things in one file.
-    expect(footprintFor(0)).toBe(58 + 12);
-    expect(footprintFor(HOME_INDICATOR_INSET)).toBe(58 + (HOME_INDICATOR_INSET - 16));
+    expect(footprintFor(0)).toBe(58 + 16);
+    expect(footprintFor(HOME_INDICATOR_INSET)).toBe(58 + HOME_INDICATOR_INSET);
   });
 
   it('already includes the inset — adding insets.bottom would double-count it', () => {
-    // The bar absorbs 16pt of the inset into its own gap, so the footprint grows
-    // by the REMAINDER, never by the whole inset. A consumer writing
-    // `footprint + insets.bottom` would account 110pt for a 76pt bar.
+    // The gap already spans the inset, so the footprint grows by what the inset
+    // adds OVER the floor — never by the inset on top of a number that contained
+    // it. A consumer writing `footprint + insets.bottom` would account 126pt for
+    // a 92pt bar.
     const grown = footprintFor(HOME_INDICATOR_INSET) - footprintFor(0);
-    expect(grown).toBe(6);
+    expect(grown).toBe(HOME_INDICATOR_INSET - 16);
     expect(grown).toBeLessThan(HOME_INDICATOR_INSET);
   });
 
   it('does not shrink below the floor for a small inset', () => {
-    // An inset under what the gap absorbs must not pull the bar down toward the
-    // window edge — the gap is clamped, and the footprint with it.
+    // An inset under the floor must not pull the bar down toward the window
+    // edge — the gap is clamped, and the footprint with it.
     expect(footprintFor(8)).toBe(footprintFor(0));
   });
 

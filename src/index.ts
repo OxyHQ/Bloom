@@ -153,6 +153,13 @@ export type {
   SurfacePromptOptions,
 } from './surfaces';
 export * from './button';
+export {
+  EDGE_GAP,
+  windowEdgeGap,
+  BottomEdgeProvider,
+  useBottomEdgeInset,
+  useClaimBottomEdge,
+} from './layout';
 export { Fab } from './fab';
 export type { FabProps, FabVariant, FabSize, FabPlacement } from './fab';
 export { FrostedIconButton } from './frosted-icon-button';

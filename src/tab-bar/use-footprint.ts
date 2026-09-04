@@ -13,7 +13,8 @@
  */
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-import { EXPANDED_HEIGHT, tabBarBottomGap } from './shared';
+import { windowEdgeGap } from '../layout/edge';
+import { EXPANDED_HEIGHT } from './shared';
 
 /**
  * The vertical space the tab bar OCCUPIES above the bottom of the window, in
@@ -30,15 +31,19 @@ import { EXPANDED_HEIGHT, tabBarBottomGap } from './shared';
  * const footprint = useTabBarFootprint();
  *
  * <Animated.ScrollView contentContainerStyle={{ paddingBottom: footprint + 12 }} />
- * <Fab style={{ position: 'absolute', right: 16, bottom: footprint }} />
  * ```
  *
- * The value ALREADY INCLUDES the bottom safe-area inset — the bar folds the
- * inset into its own gap, so this is measured from the true window edge, not
- * from the safe area. Never write `footprint + insets.bottom`: that counts the
- * home indicator twice and strands a visible band of dead space under every
- * list (114px accounted for a 76px bar on an iOS device or PWA). Whatever you
- * add on top is your own clearance — never the inset a second time.
+ * A FAB no longer needs this hook at all — `Fab` reads the bottom edge's
+ * occupancy itself (see `layout/bottom-edge`), which is what the bar publishes
+ * this exact number to. Reach for the hook when laying out something that is not
+ * a Bloom surface.
+ *
+ * The value ALREADY INCLUDES the bottom safe-area inset — `windowEdgeGap` clears
+ * the OS's reserved band in full — so this is measured from the true window
+ * edge, not from the safe area. Never write `footprint + insets.bottom`: that
+ * counts the home indicator twice and strands a visible band of dead space under
+ * every list. Whatever you add on top is your own clearance, never the inset a
+ * second time.
  *
  * It is the EXPANDED height, deliberately. The bar minimizes while scrolling
  * down and re-expands on the way up, so measuring the minimized height would
@@ -46,5 +51,9 @@ import { EXPANDED_HEIGHT, tabBarBottomGap } from './shared';
  */
 export function useTabBarFootprint(): number {
   const insets = useSafeAreaInsets();
-  return tabBarBottomGap(insets.bottom) + EXPANDED_HEIGHT;
+  // Gap 0: the bar hugs the safe area, the tightest any Bloom surface floats. It
+  // is a compact pill, not a panel, and a detached-sheet-sized gap under it would
+  // strand it mid-screen. It used to ABSORB 16px of the inset and clamp at a 12px
+  // floor, which is how it ended up drawn through the Android gesture handle.
+  return windowEdgeGap(insets.bottom) + EXPANDED_HEIGHT;
 }

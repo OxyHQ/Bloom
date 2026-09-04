@@ -66,6 +66,9 @@ const SUBPATHS = /** @type {const} */ ([
   ['./overlay', 'overlay/index.ts'],
   ['./dialog', 'dialog/index.ts'],
   ['./button', 'button/index.ts'],
+  // Window-edge geometry shared by every floating surface, plus the registry
+  // that keeps them off each other. Platform-neutral, no native deps.
+  ['./layout', 'layout/index.ts'],
   ['./fab', 'fab/index.ts'],
   ['./frosted-icon-button', 'frosted-icon-button/index.ts'],
   ['./divider', 'divider/index.ts'],

@@ -16,7 +16,11 @@
  * `getContainerStyle`.
  */
 import type { ViewStyle } from 'react-native';
+import { windowEdgeGap } from '../layout/edge';
 import { ESTIMATED_TOAST_HEIGHT, OUTSIDE_PRESS_PADDING } from './constants';
+
+/** The stack's own breathing room beyond the OS band. */
+const TOAST_EDGE_GAP = 8;
 import type { ToastPosition } from './types';
 
 /**
@@ -55,31 +59,39 @@ export const getContainerStyle = (): ViewStyle => ({
 });
 
 /**
- * How far the stack sits from its screen edge. A falsy `offset` means "derive from
- * the safe area": `inset + 8`, or 16 when there is no inset.
+ * How far the stack sits from its screen edge.
  *
- * `Positioner` applies this over ONE of `getContainerStyle`'s four pinned edges;
- * `calculateOutsidePressableArea` reads the same numbers as a plain edge distance.
+ * The gap is the shared `windowEdgeGap` rule with the stack's own breathing room
+ * on top, so the stack clears the OS's reserved band the same way a detached
+ * sheet and the tab bar do. `offset` overrides that gap outright — it is the
+ * consumer saying where the stack goes.
+ *
+ * `bottomEdgeInset` is separate from both, and additive to either: it is not a
+ * gap preference but an OBSTRUCTION — whatever floating surface has already
+ * claimed the bottom edge (see `layout/bottom-edge`). A floating tab bar occupies
+ * ~82dp on a gesture-navigation Android device while this stack sat at 32dp, so
+ * every bottom toast rendered on top of the bar until the stack started reading
+ * it. An explicit `offset` does not excuse the stack from clearing it.
  */
 export const getInsetValues = ({
   position,
   offset,
   safeAreaInsets,
+  bottomEdgeInset = 0,
 }: {
   position: ToastPosition;
   offset?: number;
   safeAreaInsets?: { top: number; bottom: number };
+  bottomEdgeInset?: number;
 }): { top?: number; bottom?: number } => {
   const { top = 0, bottom = 0 } = safeAreaInsets || {};
 
   if (position === 'bottom-center') {
-    if (offset) return { bottom: offset };
-    return { bottom: bottom > 0 ? bottom + 8 : 16 };
+    return { bottom: (offset || windowEdgeGap(bottom, TOAST_EDGE_GAP)) + bottomEdgeInset };
   }
 
   if (position === 'top-center') {
-    if (offset) return { top: offset };
-    return { top: top > 0 ? top + 8 : 16 };
+    return { top: offset || windowEdgeGap(top, TOAST_EDGE_GAP) };
   }
 
   return {};
