@@ -27,6 +27,7 @@ import Animated, {
     withTiming,
 } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { EDGE_GAP, windowEdgeGap } from '../layout/edge';
 import { Backdrop, BACKDROP_DIM_OPACITY } from '../overlay';
 import { useTheme } from '../theme/use-theme';
 import type { BottomSheetRef, BottomSheetProps, BottomSheetShellProps, BottomSheetBaseProps } from './types';
@@ -526,21 +527,30 @@ export const BottomSheetBase = forwardRef((props: BottomSheetBaseProps, ref: Rea
         };
     }, [translateY, screenHeightSV, keyboardHeight]);
 
+    // The shared window-edge rule, resolved on the JS thread: `windowEdgeGap` is
+    // not a worklet, so the worklets below capture the number rather than call it.
+    //
+    // A detached sheet deliberately does NOT read `useBottomEdgeInset()`. It is a
+    // modal surface rendered in the portal ABOVE whatever owns the bottom edge and
+    // it covers that surface — offsetting it by a tab bar it is already hiding
+    // would float it off the bottom of the screen for nothing.
+    const detachedGap = detached ? windowEdgeGap(insets.bottom, EDGE_GAP) : 0;
+
     const sheetHeightStyle = useAnimatedStyle(() => ({
-        maxHeight: screenHeightSV.value - keyboardHeight.value - insets.top - (detached ? insets.bottom + 16 : 0),
-    }), [insets.top, insets.bottom, detached, screenHeightSV, keyboardHeight]);
+        maxHeight: screenHeightSV.value - keyboardHeight.value - insets.top - detachedGap,
+    }), [insets.top, detachedGap, screenHeightSV, keyboardHeight]);
 
     const sheetMarginStyle = useAnimatedStyle(() => {
         // Only add margin when detached, otherwise extend behind safe area
         if (detached) {
             return {
-                marginBottom: keyboardHeight.value > 0 ? 16 : insets.bottom + 16,
+                marginBottom: keyboardHeight.value > 0 ? EDGE_GAP : detachedGap,
             };
         }
         return {
             marginBottom: 0,
         };
-    }, [insets.bottom, detached, keyboardHeight]);
+    }, [detachedGap, detached, keyboardHeight]);
 
     const handleBackdropPress = useCallback(() => {
         // Always animate close on backdrop press

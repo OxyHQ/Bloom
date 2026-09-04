@@ -26,6 +26,7 @@ import {
   initialWindowMetrics,
 } from 'react-native-safe-area-context';
 
+import { useBottomEdgeInset } from '../layout/bottom-edge';
 import { useDynamicToastContext, useToastContext } from './context';
 import {
   calculateOutsidePressableArea,
@@ -64,10 +65,14 @@ export const Positioner: React.FC<
   const insets = React.useContext(SafeAreaInsetsContext) ?? FALLBACK_INSETS;
 
   const resolvedPosition = position ?? 'bottom-center';
+  // Whatever already owns the bottom edge — a floating tab bar, typically. The
+  // stack stacks above it instead of on it.
+  const bottomEdgeInset = useBottomEdgeInset();
   const insetValues = getInsetValues({
     position: resolvedPosition,
     offset,
     safeAreaInsets: { top: insets.top, bottom: insets.bottom },
+    bottomEdgeInset,
   });
 
   const handleOutsidePress = React.useCallback(() => {

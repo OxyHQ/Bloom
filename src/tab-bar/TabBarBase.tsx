@@ -38,6 +38,8 @@ import Animated, {
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { useHaptics } from '../hooks/use-haptics';
+import { useClaimBottomEdge } from '../layout/bottom-edge';
+import { windowEdgeGap } from '../layout/edge';
 import type { ProgressiveBlurProps } from '../progressive-blur/types';
 import { setMinimized, useMinimizeState } from './context';
 import {
@@ -56,7 +58,6 @@ import {
   MINIMIZED_INSET,
   ROW_PAD_H,
   SLIDE_SPRING,
-  tabBarBottomGap,
   useTabBarTheme,
   type TabBarGlyphProps,
   type TabBarSurfaceProps,
@@ -419,7 +420,15 @@ function TabBarBody({
 
   // Shared with `useTabBarFootprint`, so a consumer accounting for the bar in
   // its own layout can never drift from where the bar actually sits.
-  const bottomOffset = tabBarBottomGap(insets.bottom);
+  const bottomOffset = windowEdgeGap(insets.bottom);
+
+  // Publish what the bar occupies so anything else at this edge stacks above it
+  // rather than behind it. Same number `useTabBarFootprint` reports, derived from
+  // the same two values, so a consumer reading either can never disagree with
+  // where the bar actually sits. The EXPANDED height on purpose: the bar
+  // minimizes on scroll and re-expands, so claiming the minimized height would
+  // drop a FAB onto the pill the moment the user scrolled back up.
+  useClaimBottomEdge(bottomOffset + EXPANDED_HEIGHT);
 
   // How centring and the animated inset compose: centring is STATIC and belongs
   // to the wrap, the inset stays ANIMATED on the pill inside it. The wrap is

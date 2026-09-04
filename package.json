@@ -258,6 +258,20 @@
         "default": "./lib/commonjs/button/index.js"
       }
     },
+    "./layout": {
+      "react-native": {
+        "types": "./lib/typescript/module/layout/index.d.ts",
+        "default": "./src/layout/index.ts"
+      },
+      "import": {
+        "types": "./lib/typescript/module/layout/index.d.ts",
+        "default": "./lib/module/layout/index.js"
+      },
+      "require": {
+        "types": "./lib/typescript/commonjs/layout/index.d.ts",
+        "default": "./lib/commonjs/layout/index.js"
+      }
+    },
     "./fab": {
       "react-native": {
         "types": "./lib/typescript/module/fab/index.d.ts",

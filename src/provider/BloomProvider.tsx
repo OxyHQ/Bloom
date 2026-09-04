@@ -34,6 +34,7 @@
 import type { ReactNode } from 'react';
 
 import { GlassBlurTargetProvider } from '../glass/blur-target';
+import { BottomEdgeProvider } from '../layout/bottom-edge';
 import { ImageResolverProvider, type ImageResolver } from '../image-resolver';
 import { BloomHapticsProvider } from '../hooks/use-haptics';
 import { TabBarMinimizeProvider } from '../tab-bar/context';
@@ -67,7 +68,16 @@ export function BloomProvider({
               provider already does with `children`.
             */}
             <GlassBlurTargetProvider>
-              <TabBarMinimizeProvider>{children}</TabBarMinimizeProvider>
+              {/*
+                The bottom edge's claim registry. Also a provider, not an outlet:
+                it renders nothing and holds only the set of surfaces currently
+                parked at the bottom edge, so a tab bar can publish its footprint
+                and a FAB or a toast stack can read it without either importing
+                the other.
+              */}
+              <BottomEdgeProvider>
+                <TabBarMinimizeProvider>{children}</TabBarMinimizeProvider>
+              </BottomEdgeProvider>
             </GlassBlurTargetProvider>
           </BloomHapticsProvider>
         </ScrollRestorationProvider>

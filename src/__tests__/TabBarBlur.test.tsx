@@ -4,7 +4,8 @@ import type { ReactTestRendererJSON, ReactTestRendererNode } from 'react-test-re
 
 import { BloomThemeProvider } from '../theme/BloomThemeProvider';
 import { TabBar, TabBarButton } from '../tab-bar';
-import { BLUR_BLEED, EXPANDED_HEIGHT, tabBarBottomGap } from '../tab-bar/shared';
+import { windowEdgeGap } from '../layout/edge';
+import { BLUR_BLEED, EXPANDED_HEIGHT } from '../tab-bar/shared';
 import type { TabBarItem, TabBarProps } from '../tab-bar/types';
 
 /**
@@ -31,8 +32,8 @@ const ITEMS: TabBarItem[] = [
   { name: 'you', label: 'You', icon: null },
 ];
 
-/** Insets are all zero under the safe-area mock, so this is the real 114. */
-const BAND_HEIGHT = tabBarBottomGap(0) + EXPANDED_HEIGHT + BLUR_BLEED;
+/** Insets are all zero under the safe-area mock, so this is the real 118. */
+const BAND_HEIGHT = windowEdgeGap(0) + EXPANDED_HEIGHT + BLUR_BLEED;
 
 /** The fork's own default, applied when nothing overrides it. */
 const DEFAULT_INTENSITY = 5;
@@ -117,7 +118,7 @@ describe('TabBar blur', () => {
     expect(style.left).toBe(0);
     expect(style.right).toBe(0);
     expect(style.height).toBe(BAND_HEIGHT);
-    expect(BAND_HEIGHT).toBe(114);
+    expect(BAND_HEIGHT).toBe(118);
   });
 
   it('treats blur={true} as exactly the default', () => {
