@@ -27,20 +27,32 @@
  * edge, so two surfaces at that edge overlap rather than stack; the tallest is
  * what a new surface has to clear. Summing would strand it at twice the height.
  *
- * ## Two numbers, because there are two questions
+ * ## A size and a state, because they travel differently
  *
- * A surface that collapses — the tab bar minimizes 58 -> 44 on scroll — occupies
- * less than it reserves. Readers want different halves of that:
+ * A surface that collapses — the tab bar minimizes 58 -> 44 on scroll — publishes
+ * two things, and only one of them is a measurement:
  *
  *   - RESERVED (`useBottomEdgeInset`) never shrinks while the claimant is
  *     mounted. It is what must be kept permanently free: a list's bottom
- *     padding, a toast stack's offset. Tracking the collapse here would jitter a
- *     list's content size on every scroll and jump a toast 14px mid-display.
- *   - LIVE (`useBottomEdgeLiveInset`) follows the collapse. It is what a surface
- *     SITTING ON the edge wants, so it rides down with the bar instead of
- *     leaving a hole.
+ *     padding, a toast stack's offset. Shrinking it on collapse would jitter a
+ *     list's content size on every scroll and jump a toast 14px mid-display,
+ *     because the bar re-expands the instant the user scrolls back up.
+ *   - COLLAPSED (`useBottomEdgeCollapsed`) is a boolean, deliberately, and this
+ *     is the part that was learned the hard way. It first shipped as a live
+ *     PIXEL height so a FAB could ride down with the bar — and it felt broken on
+ *     a device. The bar animates on the UI thread; a React consumer learns about
+ *     the change through `runOnJS` plus two render passes, so its motion STARTS
+ *     one to three frames late, worst exactly while scrolling because that is
+ *     when the JS thread is busiest. No spring config fixes a variable start
+ *     delay.
  *
- * A claimant that never collapses passes one number and both answers agree.
+ * Two things moving together betray that lag; a state change does not. A reader
+ * that FADES on this boolean has no spatial relationship to violate, so the same
+ * few frames of latency are imperceptible. That is why the channel is a state and
+ * not a geometry: it is the shape of signal that survives the trip to the JS
+ * thread. Anything that genuinely must track the collapse per-frame has to read
+ * the tab bar's own shared value on the UI thread instead — React state is the
+ * wrong transport for it, at any width.
  *
  * ## Why an external store
  *
@@ -63,8 +75,8 @@ import {
 interface Claim {
   /** What the surface keeps permanently free, collapsed or not. */
   reserved: number;
-  /** What it occupies right now. */
-  current: number;
+  /** Whether it is currently in its collapsed state. */
+  collapsed: boolean;
 }
 
 interface BottomEdgeStore {
@@ -76,8 +88,8 @@ interface BottomEdgeStore {
    * only the other moved.
    */
   getReserved: () => number;
-  getLive: () => number;
-  claim: (id: string, reserved: number, current: number) => void;
+  getCollapsed: () => boolean;
+  claim: (id: string, reserved: number, collapsed: boolean) => void;
   release: (id: string) => void;
 }
 
@@ -85,21 +97,25 @@ function createBottomEdgeStore(): BottomEdgeStore {
   const claims = new Map<string, Claim>();
   const listeners = new Set<() => void>();
   let reserved = 0;
-  let live = 0;
+  let collapsed = false;
 
   const recompute = () => {
     let nextReserved = 0;
-    let nextLive = 0;
+    // ANY claimant collapsing collapses the edge. With the one floating bar this
+    // is written for the two readings coincide; where they would not, "something
+    // at this edge just retracted" is still the signal a reader wants, and it is
+    // the safe direction — a FAB that fades when it did not strictly have to
+    // beats one that stays put over a bar that left.
+    let nextCollapsed = false;
     for (const claim of claims.values()) {
       if (claim.reserved > nextReserved) nextReserved = claim.reserved;
-      if (claim.current > nextLive) nextLive = claim.current;
+      if (claim.collapsed) nextCollapsed = true;
     }
-    // Bail before notifying: a re-registration at unchanged heights (every
-    // render of a claimant whose footprint did not move) must not re-render
-    // every reader.
-    if (nextReserved === reserved && nextLive === live) return;
+    // Bail before notifying: a re-registration at an unchanged footprint (every
+    // render of a claimant that did not move) must not re-render every reader.
+    if (nextReserved === reserved && nextCollapsed === collapsed) return;
     reserved = nextReserved;
-    live = nextLive;
+    collapsed = nextCollapsed;
     for (const listener of listeners) listener();
   };
 
@@ -111,11 +127,11 @@ function createBottomEdgeStore(): BottomEdgeStore {
       };
     },
     getReserved: () => reserved,
-    getLive: () => live,
-    claim(id, nextReserved, nextCurrent) {
+    getCollapsed: () => collapsed,
+    claim(id, nextReserved, nextCollapsed) {
       const existing = claims.get(id);
-      if (existing?.reserved === nextReserved && existing.current === nextCurrent) return;
-      claims.set(id, { reserved: nextReserved, current: nextCurrent });
+      if (existing?.reserved === nextReserved && existing.collapsed === nextCollapsed) return;
+      claims.set(id, { reserved: nextReserved, collapsed: nextCollapsed });
       recompute();
     },
     release(id) {
@@ -144,6 +160,7 @@ BottomEdgeProvider.displayName = 'BottomEdgeProvider';
 // would resubscribe `useSyncExternalStore` on every render.
 const NO_SUBSCRIPTION = () => () => {};
 const NO_INSET = () => 0;
+const NO_COLLAPSE = () => false;
 
 /**
  * How much of the bottom edge is permanently RESERVED, in px.
@@ -172,23 +189,28 @@ export function useBottomEdgeInset(): number {
 }
 
 /**
- * How much of the bottom edge is occupied RIGHT NOW, in px — the same number as
- * {@link useBottomEdgeInset} for a surface that does not collapse, and smaller
- * while one does.
+ * Whether the surface owning the bottom edge is currently COLLAPSED — the tab
+ * bar minimized on scroll.
  *
- * This is what a surface sitting ON the edge wants, so it rides down with a
- * minimizing tab bar rather than leaving a hole above it. It changes when the
- * collapse STATE changes, not per frame: a claimant reports its settled
- * footprint and the reader animates the difference itself, which keeps the
- * motion on whatever animation system that reader already uses instead of
- * forcing a shared one through React state.
+ * A boolean rather than a live height, on purpose: see the note at the top of
+ * this file. A reader should FADE or otherwise change state on it, never try to
+ * stay geometrically locked to the collapsing surface — that lock is what a
+ * React-state channel cannot deliver, because the surface animates on the UI
+ * thread and this arrives one to three frames later.
+ *
+ * ```tsx
+ * const collapsed = useBottomEdgeCollapsed();
+ * // fade out; do not chase the bar's new top edge
+ * ```
+ *
+ * `false` outside a provider.
  */
-export function useBottomEdgeLiveInset(): number {
+export function useBottomEdgeCollapsed(): boolean {
   const store = useContext(BottomEdgeContext);
   return useSyncExternalStore(
     store?.subscribe ?? NO_SUBSCRIPTION,
-    store?.getLive ?? NO_INSET,
-    store?.getLive ?? NO_INSET,
+    store?.getCollapsed ?? NO_COLLAPSE,
+    store?.getCollapsed ?? NO_COLLAPSE,
   );
 }
 
@@ -198,22 +220,19 @@ export function useBottomEdgeLiveInset(): number {
  * The claimant owns its own placement — claiming does not move it. It declares
  * the space it occupies so that everything reading the edge stays off it. Pass
  * the FULL footprint (the surface's height plus the gap it holds off the window
- * edge), which is the same number the surface positions itself with.
- *
- * `current` is what the surface occupies right now; it defaults to `reserved`,
- * which is correct for anything that does not collapse. A surface that shrinks
- * on scroll passes its live footprint as `current` and keeps `reserved` at its
- * full size — see the two channels above for why both are needed.
+ * edge), which is the same number the surface positions itself with, and keep it
+ * at the surface's FULL size even while collapsed: `reserved` is what must stay
+ * permanently free, and the collapse is reported separately by `collapsed`.
  *
  * A no-op outside a provider, so a surface stays usable standalone.
  */
-export function useClaimBottomEdge(reserved: number, current: number = reserved): void {
+export function useClaimBottomEdge(reserved: number, collapsed = false): void {
   const store = useContext(BottomEdgeContext);
   const id = useId();
 
   useEffect(() => {
     if (!store) return;
-    store.claim(id, reserved, current);
+    store.claim(id, reserved, collapsed);
     return () => store.release(id);
-  }, [store, id, reserved, current]);
+  }, [store, id, reserved, collapsed]);
 }

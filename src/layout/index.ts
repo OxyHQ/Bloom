@@ -8,6 +8,6 @@ export { EDGE_GAP, windowEdgeGap } from './edge';
 export {
   BottomEdgeProvider,
   useBottomEdgeInset,
-  useBottomEdgeLiveInset,
+  useBottomEdgeCollapsed,
   useClaimBottomEdge,
 } from './bottom-edge';
