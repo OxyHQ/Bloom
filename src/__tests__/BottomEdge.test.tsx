@@ -5,14 +5,14 @@ import { Fab } from '../fab';
 import {
   BottomEdgeProvider,
   useBottomEdgeInset,
-  useBottomEdgeLiveInset,
+  useBottomEdgeCollapsed,
   useClaimBottomEdge,
 } from '../layout/bottom-edge';
 import { EDGE_GAP, windowEdgeGap } from '../layout/edge';
 import { BloomThemeProvider } from '../theme/BloomThemeProvider';
 import { TabBar, TabBarButton, TabBarMinimizeProvider, setMinimized, useMinimizeState } from '../tab-bar';
 import type { MinimizeState } from '../tab-bar/context';
-import { EXPANDED_HEIGHT, MINIMIZED_HEIGHT } from '../tab-bar/shared';
+import { EXPANDED_HEIGHT } from '../tab-bar/shared';
 import type { TabBarItem } from '../tab-bar/types';
 
 /**
@@ -90,13 +90,13 @@ function Probe({ onValue }: { onValue: (inset: number) => void }) {
   return null;
 }
 
-function Claimant({ height, current }: { height: number; current?: number }) {
-  useClaimBottomEdge(height, current);
+function Claimant({ height, collapsed }: { height: number; collapsed?: boolean }) {
+  useClaimBottomEdge(height, collapsed);
   return null;
 }
 
-function BothProbe({ onValue }: { onValue: (v: { reserved: number; live: number }) => void }) {
-  onValue({ reserved: useBottomEdgeInset(), live: useBottomEdgeLiveInset() });
+function BothProbe({ onValue }: { onValue: (v: { reserved: number; collapsed: boolean }) => void }) {
+  onValue({ reserved: useBottomEdgeInset(), collapsed: useBottomEdgeCollapsed() });
   return null;
 }
 
@@ -149,44 +149,42 @@ describe('the bottom-edge registry', () => {
   });
 });
 
-describe('reserved vs live', () => {
-  it('reports the same number for a surface that does not collapse', () => {
-    const seen: { reserved: number; live: number }[] = [];
+describe('reserved size vs collapsed state', () => {
+  it('reports a surface that is not collapsed', () => {
+    const seen: { reserved: number; collapsed: boolean }[] = [];
     render(
       <BottomEdgeProvider>
         <Claimant height={74} />
         <BothProbe onValue={(v) => seen.push(v)} />
       </BottomEdgeProvider>,
     );
-    expect(seen[seen.length - 1]).toEqual({ reserved: 74, live: 74 });
+    expect(seen[seen.length - 1]).toEqual({ reserved: 74, collapsed: false });
   });
 
-  it('keeps RESERVED at full size while LIVE follows the collapse', () => {
-    // The distinction the two channels exist for. A list's bottom padding and a
-    // toast read RESERVED, so neither jitters or jumps while the user scrolls;
-    // only a surface sitting ON the edge reads LIVE.
-    const seen: { reserved: number; live: number }[] = [];
+  it('keeps RESERVED at full size while collapsed', () => {
+    // The whole reason the collapse is not a height. A list's bottom padding and
+    // a toast read RESERVED, so neither resizes or jumps while the user scrolls;
+    // the bar re-expands the instant they scroll back up.
+    const seen: { reserved: number; collapsed: boolean }[] = [];
     render(
       <BottomEdgeProvider>
-        <Claimant height={74} current={60} />
+        <Claimant height={74} collapsed />
         <BothProbe onValue={(v) => seen.push(v)} />
       </BottomEdgeProvider>,
     );
-    expect(seen[seen.length - 1]).toEqual({ reserved: 74, live: 60 });
+    expect(seen[seen.length - 1]).toEqual({ reserved: 74, collapsed: true });
   });
 
-  it('maxes the two channels independently', () => {
-    // A tall collapsed surface and a short static one: each channel takes its own
-    // maximum. Reading one max for both would report a live inset no surface has.
-    const seen: { reserved: number; live: number }[] = [];
+  it('takes the tallest reservation and collapses if any claimant has', () => {
+    const seen: { reserved: number; collapsed: boolean }[] = [];
     render(
       <BottomEdgeProvider>
-        <Claimant height={90} current={40} />
+        <Claimant height={90} collapsed />
         <Claimant height={50} />
         <BothProbe onValue={(v) => seen.push(v)} />
       </BottomEdgeProvider>,
     );
-    expect(seen[seen.length - 1]).toEqual({ reserved: 90, live: 50 });
+    expect(seen[seen.length - 1]).toEqual({ reserved: 90, collapsed: true });
   });
 });
 
@@ -234,62 +232,108 @@ describe('a collapsing TabBar', () => {
     mockInsets.bottom = GESTURE_HANDLE_INSET;
   });
 
-  it('shrinks what it occupies without giving up what it reserves', () => {
-    // The bar minimizes 58 -> 44 on scroll, so a surface sitting on the edge
-    // should ride down with it — while anything RESERVING space must keep room
-    // for the full pill, because the bar re-expands the moment the user scrolls
-    // back up. One number could not answer both.
-    const seen: { reserved: number; live: number }[] = [];
-    let state: MinimizeState | undefined;
+  const tree = () => (
+    <BloomThemeProvider mode="light" colorPreset="teal">
+      <TabBarMinimizeProvider>
+        <BottomEdgeProvider>
+          <MinimizeDriver onState={(s) => (captured = s)} />
+          <TabBar activeIndex={0} onIndexChange={() => {}}>
+            {ITEMS.map((item, index) => (
+              <TabBarButton key={item.name} item={item} index={index} />
+            ))}
+          </TabBar>
+          <BothProbe onValue={(v) => seen.push(v)} />
+        </BottomEdgeProvider>
+      </TabBarMinimizeProvider>
+    </BloomThemeProvider>
+  );
 
-    const { rerender } = render(
-      <BloomThemeProvider mode="light" colorPreset="teal">
-        <TabBarMinimizeProvider>
-          <BottomEdgeProvider>
-            <MinimizeDriver onState={(s) => (state = s)} />
-            <TabBar activeIndex={0} onIndexChange={() => {}}>
-              {ITEMS.map((item, index) => (
-                <TabBarButton key={item.name} item={item} index={index} />
-              ))}
-            </TabBar>
-            <BothProbe onValue={(v) => seen.push(v)} />
-          </BottomEdgeProvider>
-        </TabBarMinimizeProvider>
-      </BloomThemeProvider>,
-    );
+  let seen: { reserved: number; collapsed: boolean }[] = [];
+  let captured: MinimizeState | undefined;
 
-    const gap = windowEdgeGap(GESTURE_HANDLE_INSET);
-    expect(seen[seen.length - 1]).toEqual({
-      reserved: gap + EXPANDED_HEIGHT,
-      live: gap + EXPANDED_HEIGHT,
-    });
+  it('reports the collapse WITHOUT giving up the space it reserves', () => {
+    // The bar minimizes 58 -> 44 on scroll, so readers need to know it happened
+    // — but anything RESERVING space must keep room for the full pill, because
+    // the bar re-expands the moment the user scrolls back up. A single number
+    // could not carry both, and a live HEIGHT could not survive the trip to the
+    // JS thread intact (see `layout/bottom-edge`).
+    seen = [];
+    const { rerender } = render(tree());
+
+    const expectedReserved = windowEdgeGap(GESTURE_HANDLE_INSET) + EXPANDED_HEIGHT;
+    expect(seen[seen.length - 1]).toEqual({ reserved: expectedReserved, collapsed: false });
 
     act(() => {
-      setMinimized(state!, 1);
+      setMinimized(captured!, 1);
     });
-    rerender(
-      <BloomThemeProvider mode="light" colorPreset="teal">
-        <TabBarMinimizeProvider>
-          <BottomEdgeProvider>
-            <MinimizeDriver onState={(s) => (state = s)} />
-            <TabBar activeIndex={0} onIndexChange={() => {}}>
-              {ITEMS.map((item, index) => (
-                <TabBarButton key={item.name} item={item} index={index} />
-              ))}
-            </TabBar>
-            <BothProbe onValue={(v) => seen.push(v)} />
-          </BottomEdgeProvider>
-        </TabBarMinimizeProvider>
-      </BloomThemeProvider>,
-    );
+    rerender(tree());
 
-    expect(seen[seen.length - 1]).toEqual({
-      reserved: gap + EXPANDED_HEIGHT,
-      live: gap + MINIMIZED_HEIGHT,
+    expect(seen[seen.length - 1]).toEqual({ reserved: expectedReserved, collapsed: true });
+  });
+});
+
+describe('a Fab when the edge collapses', () => {
+  beforeEach(() => {
+    mockInsets.bottom = GESTURE_HANDLE_INSET;
+  });
+
+  let captured: MinimizeState | undefined;
+  const tree = () => (
+    <BloomThemeProvider mode="light" colorPreset="teal">
+      <TabBarMinimizeProvider>
+        <BottomEdgeProvider>
+          <MinimizeDriver onState={(s) => (captured = s)} />
+          <TabBar activeIndex={0} onIndexChange={() => {}}>
+            {ITEMS.map((item, index) => (
+              <TabBarButton key={item.name} item={item} index={index} />
+            ))}
+          </TabBar>
+          <Fab testID="fab" onPress={() => {}} accessibilityLabel="Compose" icon={null} />
+        </BottomEdgeProvider>
+      </TabBarMinimizeProvider>
+    </BloomThemeProvider>
+  );
+
+  it('stops being pressable or reachable once it has faded out', () => {
+    // The fade itself is an Animated.Value and says nothing about whether the
+    // FAB can still be tapped. THAT is the part that matters: an invisible
+    // target that still takes a tap is worse than a visible one.
+    //
+    // The default query is the assertion. Testing Library excludes
+    // accessibility-hidden elements, so a FAB that has faded out DISAPPEARS from
+    // it — the same filter a screen reader applies, rather than a prop of ours
+    // asserting about itself.
+    const { getByTestId, queryByTestId, rerender } = render(tree());
+    expect(queryByTestId('fab')).not.toBeNull();
+
+    act(() => {
+      setMinimized(captured!, 1);
     });
-    // The follow is exactly the pill's own shrink, so the FAB above it neither
-    // lags behind nor overshoots into the bar.
-    const last = seen[seen.length - 1]!;
-    expect(last.reserved - last.live).toBe(EXPANDED_HEIGHT - MINIMIZED_HEIGHT);
+    rerender(tree());
+
+    expect(queryByTestId('fab')).toBeNull();
+
+    // And it is genuinely inert, not merely unannounced.
+    const faded = getByTestId('fab', { includeHiddenElements: true });
+    expect(faded.props.pointerEvents).toBe('none');
+    expect(faded.props.onPress).toBeUndefined();
+  });
+
+  it('holds its position rather than chasing the bar down', () => {
+    // It used to ride the bar's 14px shrink, and on a device the two visibly did
+    // not move together — this component learns about the collapse a few frames
+    // after the bar starts animating. `bottom` must stay on the RESERVED inset;
+    // the disappearance is what hides the latency.
+    const { getByTestId, rerender } = render(tree());
+    const before = flattenStyle(getByTestId('fab').props.style).bottom;
+    expect(before).toBe(16 + windowEdgeGap(GESTURE_HANDLE_INSET) + EXPANDED_HEIGHT);
+
+    act(() => {
+      setMinimized(captured!, 1);
+    });
+    rerender(tree());
+
+    const after = getByTestId('fab', { includeHiddenElements: true });
+    expect(flattenStyle(after.props.style).bottom).toBe(before);
   });
 });

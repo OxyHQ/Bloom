@@ -445,15 +445,12 @@ function TabBarBody({
   // from the same geometry, so a consumer reading either can never disagree with
   // where the bar actually sits.
   //
-  // RESERVED stays the EXPANDED height: the bar re-expands the moment the user
-  // scrolls back up, so anything that permanently reserves space (a list's
-  // bottom padding, a toast) must keep room for the full pill or it would jitter
-  // on every scroll. LIVE follows the minimize, so a surface sitting ON the edge
-  // rides down with the bar instead of leaving a 14px hole above it.
-  useClaimBottomEdge(
-    bottomOffset + EXPANDED_HEIGHT,
-    bottomOffset + (isMinimized ? MINIMIZED_HEIGHT : EXPANDED_HEIGHT),
-  );
+  // RESERVED stays the EXPANDED height even while minimized: the bar re-expands
+  // the moment the user scrolls back up, so anything that permanently reserves
+  // space (a list's bottom padding, a toast) must keep room for the full pill or
+  // it would jitter on every scroll. The collapse travels as its own STATE — see
+  // `layout/bottom-edge` for why it is a boolean and not the live height.
+  useClaimBottomEdge(bottomOffset + EXPANDED_HEIGHT, isMinimized);
 
   // How centring and the animated inset compose: centring is STATIC and belongs
   // to the wrap, the inset stays ANIMATED on the pill inside it. The wrap is

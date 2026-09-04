@@ -7,7 +7,7 @@ import React, {
   type MouseEvent,
 } from 'react';
 
-import { useBottomEdgeLiveInset } from '../layout/bottom-edge';
+import { useBottomEdgeCollapsed, useBottomEdgeInset } from '../layout/bottom-edge';
 import { useTheme } from '../theme/use-theme';
 import { animation, borderRadius } from '../styles/tokens';
 import { pressedSurface } from '../theme/press-colors';
@@ -83,11 +83,11 @@ const BLOOM_FAB_CSS = interactiveWebCss({
     box-shadow: var(--bloom-fab-shadow);
     font-family: inherit;
   `,
-  // `bottom` is the collapse follow (see `placementStyle`) and is deliberately
-  // the slow one: it tracks the tab bar's 380ms minimize spring, while every
-  // other property here is interaction feedback and wants to feel instant.
+  // `opacity` carries two things: the disabled dim and the collapse fade. 200ms
+  // is the collapse's number — the dim is imperceptibly slower for it, and one
+  // property cannot hold two durations.
   transition:
-    'opacity 120ms ease, transform 120ms ease, box-shadow 160ms ease, background-color 120ms ease, bottom 380ms ease',
+    'opacity 200ms ease, transform 120ms ease, box-shadow 160ms ease, background-color 120ms ease',
   // A FAB lifts on hover rather than dimming: it floats over the content, so a
   // deeper shadow is the affordance an opacity dip cannot express.
   hover: { declarations: 'box-shadow: var(--bloom-fab-shadow-hover);' },
@@ -210,9 +210,14 @@ const FabWebComponent: React.FC<FabProps> = ({
   type = 'button',
 }) => {
   useInteractiveWebCss(STYLE_ID, BLOOM_FAB_CSS);
-  // LIVE, not reserved: the FAB sits ON the edge, so it rides down with a
-  // minimizing tab bar rather than leaving a 14px hole above it.
-  const bottomEdgeLive = useBottomEdgeLiveInset();
+  const bottomEdgeInset = useBottomEdgeInset();
+  // The FAB belongs to the chrome: when the chrome retracts, so does it. Only a
+  // BOTTOM-anchored FAB is affected by the bottom edge collapsing.
+  const bottomEdgeCollapsed = useBottomEdgeCollapsed();
+  // A faded-out FAB must not be tabbable, clickable or announced — an invisible
+  // target that still takes a click is worse than a visible one.
+  const hidden =
+    bottomEdgeCollapsed && (placement === 'bottom-right' || placement === 'bottom-left');
   const theme = useTheme();
   const reactId = useId();
   const resolvedId = id ?? `bloom-fab-${reactId}`;
@@ -247,8 +252,15 @@ const FabWebComponent: React.FC<FabProps> = ({
         variantColors.foreground,
       ),
       ['--bloom-fab-press-scale' as string]: animation.pressScale,
-      ...placementStyle(placement, offset, bottomEdgeLive),
+      ...placementStyle(placement, offset, bottomEdgeInset),
     };
+    // Only while HIDDEN, so the `:disabled { opacity }` rule still owns the
+    // dim the rest of the time — an inline opacity would beat that stylesheet
+    // rule unconditionally and a disabled FAB would stop dimming.
+    if (hidden) {
+      base.opacity = 0;
+      base.pointerEvents = 'none';
+    }
     if (isExtended) {
       const pad = sizeConfig.diameter <= 44 ? 14 : 20;
       base.paddingLeft = pad;
@@ -302,6 +314,8 @@ const FabWebComponent: React.FC<FabProps> = ({
       onClick={handleClick}
       disabled={disabled}
       aria-disabled={disabled || undefined}
+      aria-hidden={hidden || undefined}
+      tabIndex={hidden ? -1 : undefined}
       aria-label={ariaLabel}
       title={title ?? accessibilityHint}
       data-testid={testID}

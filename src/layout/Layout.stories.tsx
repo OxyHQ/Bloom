@@ -123,10 +123,11 @@ export const Unregistered: Story = {
 };
 
 /**
- * The bar minimized (58 -> 44). The FAB rides the 14px down with it instead of
- * leaving a hole — it reads the registry's LIVE channel. Anything that RESERVES
- * space (a list's padding, a toast) still sees the full expanded footprint, so
- * nothing reflows while the user scrolls.
+ * The bar minimized (58 -> 44). The FAB is gone: it reads the registry's
+ * COLLAPSED state and fades out rather than trying to stay level with a bar that
+ * is animating on another thread. Anything that RESERVES space (a list's
+ * padding, a toast) still sees the full expanded footprint, so nothing reflows
+ * while the user scrolls.
  */
 export const Collapsed: Story = {
   render: () => (

@@ -56,33 +56,40 @@ const occupied = useBottomEdgeInset();
 Neither imports the other, so any combination composes: a tab bar with no FAB, a
 FAB with no tab bar, both, or a surface written later.
 
-### Two channels, because there are two questions
+### A size and a state, because they travel differently
 
 A surface that **collapses** — the tab bar minimizes 58 → 44 on scroll —
-occupies less than it reserves, and readers want different halves of that.
+publishes two things, and only one of them is a measurement.
 
 | hook | answers | who reads it |
 | --- | --- | --- |
-| `useBottomEdgeInset()` | what is permanently **reserved** | a list's `paddingBottom`, a toast stack |
-| `useBottomEdgeLiveInset()` | what is occupied **right now** | a FAB, anything sitting *on* the edge |
+| `useBottomEdgeInset()` | what is permanently **reserved** | a list's `paddingBottom`, a toast stack, a FAB's anchor |
+| `useBottomEdgeCollapsed()` | has the surface **retracted** | a FAB, which fades out |
 
 ```tsx
-// A claimant that collapses reports both. `current` defaults to `reserved`.
-useClaimBottomEdge(gap + EXPANDED_HEIGHT, gap + (minimized ? MINIMIZED_HEIGHT : EXPANDED_HEIGHT));
+// A claimant that collapses keeps `reserved` at its FULL size and reports the
+// collapse separately.
+useClaimBottomEdge(gap + EXPANDED_HEIGHT, isMinimized);
 ```
 
 Reserved never shrinks while its claimant is mounted, because the bar re-expands
-the instant the user scrolls back up: tracking the collapse there would jitter a
-list's content size on every scroll and jump a toast 14px mid-display. Live
-follows it, so a FAB rides down with the bar instead of leaving a hole.
+the instant the user scrolls back up: shrinking it would resize a list's content
+on every scroll and jump a toast 14px mid-display.
 
-Live changes when the collapse **state** changes, not per frame. The claimant
-reports its settled footprint and the reader animates the difference itself —
-which keeps the motion on whatever animation system that reader already uses,
-rather than forcing a shared one through React state.
+<Admonition kind="warning">
+**The collapse is a boolean, and that is the hard-won part.** It first shipped as
+a live pixel height so a FAB could ride down with the bar — and it felt broken on
+a device. The bar animates on the UI thread; a React consumer hears about the
+change through `runOnJS` plus two render passes, so its motion **starts one to
+three frames late**, worst exactly while scrolling because that is when the JS
+thread is busiest. No spring config fixes a variable start delay.
 
-`BloomProvider` mounts the registry. Outside one, `useBottomEdgeInset()` returns
-`0` and `useClaimBottomEdge` is a no-op, so a surface stays usable standalone.
+Two things moving together betray that lag. A state change does not: a reader
+that **fades** has no spatial relationship left to violate, so the same latency
+is imperceptible. Anything that genuinely must track the collapse per-frame has
+to read the tab bar's own shared value on the UI thread — React state is the
+wrong transport for it at any width.
+</Admonition>
 
 ## Things that are easy to get wrong
 
@@ -103,9 +110,7 @@ so a reader mounted in the same commit as its claimant reads `0` on the first
 commit. These are layout offsets rather than measurements, so nothing here waits
 on a real layout pass.
 
-**Animate the difference, not the live inset.** `reserved - live` is `0` both
-before the registry settles and once it has, so a reader that animates the
-DIFFERENCE stays still through mount and moves only on a real collapse. Animating
-the live inset directly would slide the surface in from the window edge on its
-first frame. Bloom's `Fab` does the former — a native-driver `translateY` on
-native, a `bottom` transition on web.
+**A faded surface must also stop taking input.** Bloom's `Fab` sets
+`pointerEvents: 'none'`, drops its `onPress` and hides itself from the
+accessibility tree when it fades — an invisible target that still takes a tap is
+worse than a visible one.
