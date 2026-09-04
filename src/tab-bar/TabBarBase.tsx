@@ -20,7 +20,6 @@ import {
   useContext,
   useEffect,
   useMemo,
-  useState,
   type ComponentType,
 } from 'react';
 import { Pressable, StyleSheet, useWindowDimensions, View, type ViewStyle } from 'react-native';
@@ -30,7 +29,6 @@ import Animated, {
   interpolate,
   interpolateColor,
   runOnJS,
-  useAnimatedReaction,
   useAnimatedStyle,
   useSharedValue,
   withSpring,
@@ -424,33 +422,13 @@ function TabBarBody({
   // its own layout can never drift from where the bar actually sits.
   const bottomOffset = windowEdgeGap(insets.bottom);
 
-  // Whether the bar has settled into its minimized size, as REACT state.
-  //
-  // Reacting on `target` rather than on `progress` is what keeps this cheap:
-  // `target` is the binary 0/1 the minimize spring is heading for, so this fires
-  // twice per scroll gesture instead of once per frame. Crossing `progress > 0.5`
-  // would work too and would cost the same, but it would report the change
-  // halfway through the animation rather than when it was decided.
-  const [isMinimized, setIsMinimized] = useState(false);
-  useAnimatedReaction(
-    () => minimized.target.value,
-    (target, previous) => {
-      if (target !== previous) runOnJS(setIsMinimized)(target === 1);
-    },
-    [minimized],
-  );
-
   // Publish what the bar occupies so anything else at this edge stacks above it
-  // rather than behind it. Same numbers `useTabBarFootprint` reports, derived
-  // from the same geometry, so a consumer reading either can never disagree with
-  // where the bar actually sits.
-  //
-  // RESERVED stays the EXPANDED height even while minimized: the bar re-expands
-  // the moment the user scrolls back up, so anything that permanently reserves
-  // space (a list's bottom padding, a toast) must keep room for the full pill or
-  // it would jitter on every scroll. The collapse travels as its own STATE — see
-  // `layout/bottom-edge` for why it is a boolean and not the live height.
-  useClaimBottomEdge(bottomOffset + EXPANDED_HEIGHT, isMinimized);
+  // rather than behind it. Same number `useTabBarFootprint` reports, derived from
+  // the same two values, so a consumer reading either can never disagree with
+  // where the bar actually sits. The EXPANDED height on purpose: the bar
+  // minimizes on scroll and re-expands, so claiming the minimized height would
+  // drop a FAB onto the pill the moment the user scrolled back up.
+  useClaimBottomEdge(bottomOffset + EXPANDED_HEIGHT);
 
   // How centring and the animated inset compose: centring is STATIC and belongs
   // to the wrap, the inset stays ANIMATED on the pill inside it. The wrap is

@@ -38,7 +38,7 @@ height. The inset is already folded into the gap, so adding it again
 double-counts the home indicator and strands a band of dead space.
 </Admonition>
 
-## The registry — what is already there
+## `useBottomEdgeInset` / `useClaimBottomEdge` — what is already there
 
 Knowing where the edge is does not tell a FAB that a tab bar is already parked
 on it. A surface that parks there **claims** its footprint; a surface that wants
@@ -56,40 +56,31 @@ const occupied = useBottomEdgeInset();
 Neither imports the other, so any combination composes: a tab bar with no FAB, a
 FAB with no tab bar, both, or a surface written later.
 
-### A size and a state, because they travel differently
+`BloomProvider` mounts the registry. Outside one, `useBottomEdgeInset()` returns
+`0` and `useClaimBottomEdge` is a no-op, so a surface stays usable standalone.
 
-A surface that **collapses** — the tab bar minimizes 58 → 44 on scroll —
-publishes two things, and only one of them is a measurement.
+## The collapse is not here, on purpose
 
-| hook | answers | who reads it |
-| --- | --- | --- |
-| `useBottomEdgeInset()` | what is permanently **reserved** | a list's `paddingBottom`, a toast stack, a FAB's anchor |
-| `useBottomEdgeCollapsed()` | has the surface **retracted** | a FAB, which fades out |
+The tab bar minimizes 58 → 44 on scroll. This registry twice tried to publish
+that so a FAB could react — as a live pixel height, then as a boolean. Both felt
+wrong on a device, for a structural reason rather than a tunable one:
 
-```tsx
-// A claimant that collapses keeps `reserved` at its FULL size and reports the
-// collapse separately.
-useClaimBottomEdge(gap + EXPANDED_HEIGHT, isMinimized);
-```
+> The bar animates on the **UI thread**. Anything reading it from this registry
+> arrives via `runOnJS` plus two React render passes.
 
-Reserved never shrinks while its claimant is mounted, because the bar re-expands
-the instant the user scrolls back up: shrinking it would resize a list's content
-on every scroll and jump a toast 14px mid-display.
+The reaction therefore *starts* one to three frames late, and the delay is
+variable — worst exactly while scrolling, because that is when the JS thread is
+busiest. Fading rather than moving does not hide it: the eye still sees two
+pieces of chrome change at different moments.
 
-<Admonition kind="warning">
-**The collapse is a boolean, and that is the hard-won part.** It first shipped as
-a live pixel height so a FAB could ride down with the bar — and it felt broken on
-a device. The bar animates on the UI thread; a React consumer hears about the
-change through `runOnJS` plus two render passes, so its motion **starts one to
-three frames late**, worst exactly while scrolling because that is when the JS
-thread is busiest. No spring config fixes a variable start delay.
+A collapse is **motion**, and motion that must stay locked to a reanimated
+animation has to travel as a shared value on the UI thread. React state is the
+wrong transport for it at any width, so it is not offered here.
 
-Two things moving together betray that lag. A state change does not: a reader
-that **fades** has no spatial relationship left to violate, so the same latency
-is imperceptible. Anything that genuinely must track the collapse per-frame has
-to read the tab bar's own shared value on the UI thread — React state is the
-wrong transport for it at any width.
-</Admonition>
+The **app** owns that signal. Mention drives its header, its tab bar and its FAB
+from one `SharedValue` through `useAnimatedStyle`, and everything moves together
+because nothing crosses a thread. This registry stays what it is good at:
+**geometry** — where things are, not when they move.
 
 ## Things that are easy to get wrong
 
@@ -109,8 +100,3 @@ hiding would float it off the bottom of the screen for nothing.
 so a reader mounted in the same commit as its claimant reads `0` on the first
 commit. These are layout offsets rather than measurements, so nothing here waits
 on a real layout pass.
-
-**A faded surface must also stop taking input.** Bloom's `Fab` sets
-`pointerEvents: 'none'`, drops its `onPress` and hides itself from the
-accessibility tree when it fades — an invisible target that still takes a tap is
-worse than a visible one.
