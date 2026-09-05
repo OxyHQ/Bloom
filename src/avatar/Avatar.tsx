@@ -10,8 +10,8 @@ import { Z_INDEX } from '../styles/z-index';
 import { useAvatarPlaceholder } from './context';
 import { LiveBadge } from './LiveBadge';
 import { AvatarRing, getRingOuterSize } from './AvatarRing';
-import { SQUIRCLE_PATH } from './squircle-path';
-import type { AvatarProps, AvatarRingConfig } from './types';
+import { resolveAvatarShape } from './resolve-shape';
+import type { AvatarProps, AvatarRingConfig, AvatarShapePath } from './types';
 
 // Google Contacts-inspired palette used to pick a deterministic background
 // color for name-based placeholder avatars.
@@ -45,10 +45,19 @@ import DEFAULT_AVATAR_IMAGE from './default-avatar';
 
 let clipIdCounter = 0;
 
-function SquircleImage({
+/**
+ * Renders the avatar image clipped to an arbitrary outline.
+ *
+ * The path and the SVG viewport share one coordinate space, so a 0–1 squircle
+ * and a 0–100 named shape both work without rewriting their numbers: the
+ * viewport is declared at the path's own scale and the whole thing is drawn at
+ * `size` pixels.
+ */
+function ClippedImage({
   uri,
   fallbackSource,
   size,
+  shape,
   fallbackColor,
   placeholderIcon,
   name,
@@ -57,6 +66,7 @@ function SquircleImage({
   uri?: string;
   fallbackSource?: AvatarProps['fallbackSource'];
   size: number;
+  shape: AvatarShapePath;
   fallbackColor: string;
   placeholderIcon?: React.ReactNode;
   name?: string;
@@ -71,6 +81,8 @@ function SquircleImage({
     );
   }
 
+  const span = shape.viewBox ?? 1;
+
   return (
     <>
       {/* Hidden RN Image for error detection on remote URIs */}
@@ -81,16 +93,16 @@ function SquircleImage({
           onError={onError}
         />
       )}
-      <Svg width={size} height={size} viewBox="0 0 1 1">
+      <Svg width={size} height={size} viewBox={`0 0 ${span} ${span}`}>
         <Defs>
           <ClipPath id={clipId}>
-            <Path d={SQUIRCLE_PATH} />
+            <Path d={shape.d} />
           </ClipPath>
         </Defs>
         <SvgImage
           href={href}
-          width={1}
-          height={1}
+          width={span}
+          height={span}
           preserveAspectRatio="xMidYMid slice"
           clipPath={`url(#${clipId})`}
         />
@@ -183,6 +195,10 @@ const AvatarComponent: React.FC<AvatarProps> = ({
   const theme = useTheme();
   const placeholderConfig = useAvatarPlaceholder();
   const radius = size / 2;
+  // `null` means "a circle", which is drawn with borderRadius and never reaches
+  // the SVG renderer. Memoised so an inline `shape={{ d: … }}` object literal
+  // does not produce a new clip descriptor on every render.
+  const clipShape = useMemo(() => resolveAvatarShape(shape), [shape]);
   const hasName = typeof name === 'string' && name.trim().length > 0;
   // Priority: explicit placeholderColor > deterministic color from name > theme default.
   const fallbackColor =
@@ -265,7 +281,7 @@ const AvatarComponent: React.FC<AvatarProps> = ({
   const ringElement = resolvedRing ? (
     <AvatarRing
       size={size}
-      shape={shape}
+      shape={clipShape}
       colors={resolvedRing.colors}
       width={ringWidth}
       gap={ringGap}
@@ -278,11 +294,12 @@ const AvatarComponent: React.FC<AvatarProps> = ({
   // fills the container exactly.
   const avatarBox = (
     <View style={[styles.avatarBox, { width: size, height: size }]}>
-      {shape === 'squircle' ? (
-        <SquircleImage
+      {clipShape ? (
+        <ClippedImage
           uri={effectiveUri}
           fallbackSource={fallbackSource}
           size={size}
+          shape={clipShape}
           fallbackColor={fallbackColor}
           placeholderIcon={resolvedPlaceholderIcon}
           name={name}

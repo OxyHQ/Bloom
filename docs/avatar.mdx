@@ -1,12 +1,12 @@
 ---
 title: Avatar
-description: Image avatar with initials fallback, verified badge, and squircle option.
+description: Image avatar with initials fallback, verified badge, and a registry of clip shapes.
 order: 12
 ---
 
 # Avatar
 
-Display a user's avatar. Accepts a URL, an `ImageSourcePropType`, or no image at all — falls back to a colored circle with the first letter of `name` (deterministic per name). Optional verified badge. Optional squircle shape.
+Display a user's avatar. Accepts a URL, an `ImageSourcePropType`, or no image at all — falls back to a colored circle with the first letter of `name` (deterministic per name). Optional verified badge. Clips to a circle, a squircle, one of the named shapes, or an outline you supply.
 
 ## Basic
 
@@ -36,13 +36,54 @@ Custom badge:
 <Avatar uri={user.avatarUrl} verified verifiedIcon={<StarIcon />} size={64} />
 ```
 
-## Squircle shape
+## Shapes
 
 ```tsx
 <Avatar uri={user.avatarUrl} shape="squircle" size={56} />
 ```
 
-Requires `react-native-svg`. Matches the iOS app-icon shape — a softened super-ellipse.
+`'squircle'` matches the iOS app-icon shape — a softened super-ellipse.
+
+Beyond it there is a registry of named outlines, for apps that let people pick
+how their avatar is cut:
+
+```tsx
+<Avatar uri={user.avatarUrl} shape="heart" size={56} />
+<Avatar uri={user.avatarUrl} shape="pentagon" size={56} />
+<Avatar uri={user.avatarUrl} shape="6-sided-cookie" size={56} />
+```
+
+`AVATAR_SHAPE_LABELS` gives every name with a display label, in a sensible
+order, so a picker does not have to hardcode the list:
+
+```tsx
+import { AVATAR_SHAPE_LABELS } from '@oxyhq/bloom/avatar';
+
+AVATAR_SHAPE_LABELS.map(({ name, label }) => (
+  <Pressable key={name} onPress={() => setShape(name)}>
+    <Avatar uri={user.avatarUrl} shape={name} size={44} />
+    <Text>{label}</Text>
+  </Pressable>
+));
+```
+
+For anything not in the registry, pass your own outline. `viewBox` is the side
+length of the square space the path is drawn in, so a path written over a
+0–100 grid needs no rescaling:
+
+```tsx
+<Avatar
+  uri={user.avatarUrl}
+  shape={{ d: 'M50 2L96 50L50 98L4 50Z', viewBox: 100 }}
+  size={56}
+/>
+```
+
+Every shape except `'circle'` clips through `react-native-svg`; a circle is
+drawn with `borderRadius` and never touches the SVG renderer. A `ring` follows
+whichever outline the avatar uses. A shape name that does not resolve falls
+back to a circle rather than rendering an empty clip — which matters when a
+persisted user preference outlives the build that offered it.
 
 ## Pressable
 
@@ -75,7 +116,7 @@ When no `source`, `uri`, or `name` resolves, you can fully control the placehold
 | `size?` | `number` | `40` | Diameter in dp. |
 | `verified?` | `boolean` | `false` | Show a verified badge bottom-right. |
 | `verifiedIcon?` | `React.ReactNode` | check icon | Custom badge node. |
-| `shape?` | `'circle' \| 'squircle'` | `'circle'` | `'squircle'` needs `react-native-svg`. |
+| `shape?` | `'circle' \| 'squircle' \| AvatarShapeName \| AvatarShapePath` | `'circle'` | A built-in name or your own `{ d, viewBox }` outline. Anything but `'circle'` needs `react-native-svg`. |
 | `style?` | `StyleProp<ViewStyle>` | — | Container style. |
 | `imageStyle?` | `StyleProp<ImageStyle>` | — | Image style (circle only). |
 | `placeholderColor?` | `string` | derived | Override placeholder background. |

@@ -3,8 +3,8 @@ import { View, StyleSheet } from 'react-native';
 import Svg, { Circle, Defs, LinearGradient, Path, Stop } from 'react-native-svg';
 
 import { Z_INDEX } from '../styles/z-index';
-import { SQUIRCLE_PATH } from './squircle-path';
-import type { AvatarRingGradientDirection, AvatarShape } from './types';
+import type { ResolvedAvatarShape } from './resolve-shape';
+import type { AvatarRingGradientDirection } from './types';
 
 // Module counter for unique gradient element ids — mirrors the `clipIdCounter`
 // pattern in `Avatar.tsx`. Deterministic (no `Math.random()`) so ids are stable
@@ -25,8 +25,8 @@ export function getRingOuterSize(size: number, width: number, gap: number): numb
 interface AvatarRingProps {
   /** Avatar diameter in px (the inner content size, before any gap). */
   size: number;
-  /** Matches the avatar shape. */
-  shape: AvatarShape;
+  /** The avatar's resolved outline, or `null` for a circle. */
+  shape: ResolvedAvatarShape;
   /** Solid ring: one color. Gradient ring: 2+ colors. */
   colors: string | string[];
   /** Ring stroke width in px. */
@@ -79,10 +79,10 @@ const AvatarRingComponent: React.FC<AvatarRingProps> = ({
   // box; drawn as a plain border it is a full circle → radius `outer / 2`.
   const ringRadius = outer / 2;
 
-  // SVG is only needed for gradients (both shapes) and for the squircle
-  // outline. A solid circle ring is a plain bordered View — cheaper, and it
-  // keeps the common case off the SVG renderer entirely.
-  const needsSvg = wantsGradient || shape === 'squircle';
+  // SVG is only needed for gradients and for non-circular outlines. A solid
+  // circle ring is a plain bordered View — cheaper, and it keeps the common
+  // case off the SVG renderer entirely.
+  const needsSvg = wantsGradient || shape !== null;
 
   if (!needsSvg) {
     return (
@@ -127,15 +127,22 @@ const AvatarRingComponent: React.FC<AvatarRingProps> = ({
     { zIndex: gap > 0 ? Z_INDEX.base : Z_INDEX.raised },
   ];
 
-  if (shape === 'squircle') {
-    // The path lives in 0–1 space, so the stroke width is expressed in the same
-    // units; center-stroking it and letting the viewport clip the outer half
-    // yields a ~`width`-px band on the inner edge of the outer box.
+  if (shape !== null) {
+    // The path lives in its own square space, so the stroke width has to be
+    // expressed in those units too: one unit is `outer / span` px. Center-
+    // stroking and letting the viewport clip the outer half yields a
+    // ~`width`-px band on the inner edge of the outer box, hence the doubling.
+    const span = shape.viewBox ?? 1;
     return (
       <View pointerEvents="none" style={overlayStyle}>
-        <Svg width={outer} height={outer} viewBox="0 0 1 1">
+        <Svg width={outer} height={outer} viewBox={`0 0 ${span} ${span}`}>
           {gradientDefs}
-          <Path d={SQUIRCLE_PATH} fill="none" stroke={stroke} strokeWidth={(width / outer) * 2} />
+          <Path
+            d={shape.d}
+            fill="none"
+            stroke={stroke}
+            strokeWidth={(width / outer) * 2 * span}
+          />
         </Svg>
       </View>
     );
