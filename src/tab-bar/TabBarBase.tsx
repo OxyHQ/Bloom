@@ -29,6 +29,7 @@ import Animated, {
   interpolate,
   interpolateColor,
   runOnJS,
+  useAnimatedReaction,
   useAnimatedStyle,
   useSharedValue,
   withSpring,
@@ -83,6 +84,13 @@ type BarContextValue = {
   theme: TabBarTheme;
   /** Set only on the CONTROLLED path (see `TabBarProps.activeIndex`). */
   activeIndex: number | undefined;
+  /**
+   * True while a driver owns the highlight's POSITION (see
+   * `TabBarProps.activeProgress`). Buttons read it to stand down: their focus
+   * effect and their press must not spring `slideIndex` out from under a pager
+   * mid-gesture. It says nothing about visibility, which stays where it was.
+   */
+  driven: boolean;
   /** Report a selection made by a button press. */
   selectIndex: (index: number) => void;
 };
@@ -103,6 +111,7 @@ function TabBarBody({
   Blur,
   children,
   activeIndex,
+  activeProgress,
   onIndexChange,
   onIndexLongPress,
   theme: themeOverrides,
@@ -189,6 +198,33 @@ function TabBarBody({
   // a legitimate effect (external-system sync), the same shape `Tabs` uses for
   // its underline. The focus-driven path is handled per-button instead — see
   // `TabBarButtonBody`.
+  // DRIVEN path: a pager owns the highlight's position and writes it every
+  // frame, so the position is COPIED rather than sprung — a spring chasing a
+  // per-frame value lags behind the finger, which is the whole thing this path
+  // exists to avoid.
+  //
+  // `useAnimatedReaction` cannot be called conditionally, so an unsupplied
+  // `activeProgress` is stood in for by a shared value nothing ever writes and
+  // the reaction returns early. `driven` changing flips the identity of `source`
+  // too, and both are in the deps array, so the reaction re-registers either
+  // way.
+  //
+  // Scrubbing still wins: a finger on the BAR is a direct manipulation of the
+  // bar and must not be fought by the pager's settle animation.
+  // (Deps: see the CRITICAL note below.)
+  const idleProgress = useSharedValue(0);
+  const driven = activeProgress !== undefined;
+  const source = activeProgress ?? idleProgress;
+  useAnimatedReaction(
+    () => source.value,
+    (value) => {
+      if (!driven) return;
+      if (isDragging.value) return;
+      slideIndex.value = value;
+    },
+    [source, driven, isDragging, slideIndex],
+  );
+
   useEffect(() => {
     if (activeIndex === undefined) return;
     // While scrubbing the finger owns the highlight; never fight it.
@@ -209,10 +245,17 @@ function TabBarBody({
     // stale index would animate out of a position the user never saw, and would
     // light up every tab in between on the way. Interrupted mid-fade it is
     // still on screen, so from there it slides as it always does.
-    slideIndex.value =
-      highlightOpacity.value === 0 ? activeIndex : withSpring(activeIndex, SLIDE_SPRING);
+    //
+    // On the DRIVEN path this effect keeps owning visibility and gives up the
+    // position: the driver is already writing `slideIndex` every frame, and a
+    // spring started here would drag the capsule across the bar between two of
+    // its writes.
+    if (!driven) {
+      slideIndex.value =
+        highlightOpacity.value === 0 ? activeIndex : withSpring(activeIndex, SLIDE_SPRING);
+    }
     highlightOpacity.value = withTiming(1, HIGHLIGHT_FADE);
-  }, [activeIndex, hasSelection, slideIndex, highlightOpacity, isDragging]);
+  }, [activeIndex, hasSelection, driven, slideIndex, highlightOpacity, isDragging]);
 
   // Scrubbing: the highlight tracks the finger 1:1 while dragging (no spring —
   // it must feel attached), haptic ticks fire on boundary crossings, and
@@ -292,8 +335,15 @@ function TabBarBody({
         const index = Math.round(indexAtX(event.x, progress.value));
         // Same rule as the controlled path above: appear at the tapped tab when
         // hidden, slide to it when already on screen.
-        slideIndex.value =
-          highlightOpacity.value === 0 ? index : withSpring(index, SLIDE_SPRING);
+        //
+        // A tap is a discrete writer, so on the DRIVEN path it stands down like
+        // the others and the driver carries the highlight to the tapped tab.
+        // The scrub is the one gesture that does not: a finger dragging the
+        // pill is manipulating the bar itself, not asking for a page.
+        if (!driven) {
+          slideIndex.value =
+            highlightOpacity.value === 0 ? index : withSpring(index, SLIDE_SPRING);
+        }
         highlightOpacity.value = withTiming(1, HIGHLIGHT_FADE);
         setMinimized(minimized, 0);
         runOnJS(selectIndex)(index);
@@ -324,6 +374,7 @@ function TabBarBody({
     hasLongPress,
     longPressIndex,
     tick,
+    driven,
     isDragging,
     lastTicked,
     slideIndex,
@@ -444,8 +495,8 @@ function TabBarBody({
   const constrainedWrapStyle: ViewStyle | null =
     maxWidth === undefined ? null : { width: barOuterWidth, alignSelf: 'center' };
   const barContext = useMemo(
-    () => ({ slideIndex, highlightOpacity, isDragging, theme, activeIndex, selectIndex }),
-    [slideIndex, highlightOpacity, isDragging, theme, activeIndex, selectIndex],
+    () => ({ slideIndex, highlightOpacity, isDragging, theme, activeIndex, driven, selectIndex }),
+    [slideIndex, highlightOpacity, isDragging, theme, activeIndex, driven, selectIndex],
   );
 
   return (
@@ -522,6 +573,10 @@ function TabBarButtonBody({
   useEffect(() => {
     if (isFocused === undefined || !isFocused || !bar) return;
     if (bar.isDragging.value) return;
+    // A driver owns the position — see `TabBarProps.activeProgress`. It is
+    // already tracking this same focus change; springing from here as well would
+    // be a second writer on one shared value.
+    if (bar.driven) return;
     bar.slideIndex.value = withSpring(index, SLIDE_SPRING);
   }, [isFocused, index, bar]);
 
@@ -589,9 +644,13 @@ function TabBarButtonBody({
         // for assistive-technology activation (VoiceOver) and keyboard focus.
         if (bar) {
           // Appear at the tab when hidden, slide to it when visible — the same
-          // rule the tap gesture and the controlled path follow.
-          bar.slideIndex.value =
-            bar.highlightOpacity.value === 0 ? index : withSpring(index, SLIDE_SPRING);
+          // rule the tap gesture and the controlled path follow. Skipped on the
+          // driven path, where the position belongs to the driver and this
+          // press will reach it as an ordinary selection.
+          if (!bar.driven) {
+            bar.slideIndex.value =
+              bar.highlightOpacity.value === 0 ? index : withSpring(index, SLIDE_SPRING);
+          }
           bar.highlightOpacity.value = withTiming(1, HIGHLIGHT_FADE);
         }
         setMinimized(minimized, 0);
