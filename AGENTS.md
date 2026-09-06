@@ -49,7 +49,7 @@ Wiring: Expo/Metro apps import `@oxyhq/app-preset/css/base.css` at the top of `g
 
 ## Getting a COMPLETE test pass: shard it
 
-**`bun run test` on this repo can die mid-run**, taking a worker with it: `A jest worker process was terminated by another process: signal=SIGSEGV|SIGTRAP|SIGABRT`, sometimes preceded by `# Fatal error in , line 0`. It is Node's `vm`/contextify, not this code — the victim suite is arbitrary (`glass-colors` most often, but four different colour suites at `--maxWorkers=2`, and six on another tree), it reproduces on `main` as well as on a branch, and the suite passes on its own.
+**`bun run test` on this repo can die mid-run**, taking a worker with it: `A jest worker process was terminated by another process: signal=SIGSEGV|SIGTRAP|SIGABRT`, sometimes preceded by `# Fatal error in , line 0`. It is Node's `vm`/contextify, not this code — the victim suite is arbitrary (`glass-colors` most often, but four different colour suites at `--maxWorkers=2`, and six on another tree), it reproduces on `main` as well as on a branch. **It has WORSENED: as of 2026-09-07 on Node 24.20.0 the victim no longer passes on its own** — `theme/__tests__/glass-colors.test.ts` and `theme/__tests__/color-preset-registry.test.ts` die alone AND under `--runInBand`, with `FATAL ERROR: Context::GetNumberOfEmbedderDataFields Not a native context`. Node 24.14.1 dies the same way; Node 22 is NO control — it cannot load `jest.config.ts` without `ts-node`. So a complete pass here is currently 191 of 193 suites, and those two are the shortfall to name rather than to hide.
 
 Measured 2026-08-26: `main` 3 green of 4 runs; a branch carrying ~20 more files 0 of 6. **More files per worker, more often.** It is not memory (83 GB free), not the jest cache (`--no-cache` still dies), and fewer workers makes it WORSE, not better.
 
@@ -59,9 +59,9 @@ Measured 2026-08-26: `main` 3 green of 4 runs; a branch carrying ~20 more files 
 for i in 1 2 3; do bunx jest --watchman=false --shard=$i/3; done
 ```
 
-Three shards of 63 suites each completed where one run of 189 never did. That is a real complete pass, and it is how to produce one here.
+Three shards (65/64/64 suites) completed where one run of 193 never did. That is a real complete pass, and it is how to produce one here.
 
-**Verify the coverage by SUITES, never by the test count.** Sum `--listTests` per shard and check the union equals the whole (`63×3 = 189`, union `189`). The count of TESTS is not stable between runs — the same shard reported 3502 and then 3514 unchanged — so it cannot be used as a fingerprint for "the same run happened". (Unverified hypothesis: a gate generating cases from a directory listing, with `lib/` present after a build.)
+**Verify the coverage by SUITES, never by the test count.** Sum `--listTests` per shard and check the union equals the whole (`65+64+64 = 193`, union `193`). The count of TESTS is not stable between runs — the same shard reported 3502 and then 3514 unchanged — so it cannot be used as a fingerprint for "the same run happened". (Unverified hypothesis: a gate generating cases from a directory listing, with `lib/` present after a build.)
 
 ## Jest resolves no platform extensions, so `.native.*` files are UNTESTED
 
