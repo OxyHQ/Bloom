@@ -123,6 +123,40 @@ Two things about this shape are load-bearing:
 
 `renderFadingTabScreen` is a drop-in for `TabSlot`'s `renderFn`: identical to expo-router's default render, plus a fade and a micro-scale on the screen becoming focused. It is the only place `react-native-screens` is used.
 
+## Driven by a pager
+
+`TabSlot` cross-fades screens; it does not translate them. An app that pages its tab screens side by side — the Instagram gesture — owns that motion itself, and then the highlight has to move with the finger rather than spring to a settled index once the navigation commits. `activeProgress` is that seam: a shared value the pager writes every frame, in TAB UNITS.
+
+With `react-native-pager-view`, the value the bar wants is `position + offset` off `onPageScroll`, which reanimated can read on the UI thread — no bridge hop, no JS frame:
+
+```tsx
+const progress = useSharedValue(0);
+
+const onPageScroll = usePageScrollHandler({
+  onPageScroll: (event) => {
+    'worklet';
+    // 1.4 = 40% of the way from the second tab to the third.
+    progress.value = event.position + event.offset;
+  },
+}, [progress]);
+
+<TabBar
+  activeIndex={activeIndex}   // -1 on a screen that is not a tab → the highlight fades out
+  activeProgress={progress}   // where the highlight IS, every frame
+  onIndexChange={selectTab}
+>
+```
+
+Three things about this are load-bearing:
+
+- **It says where, not whether.** Selection stays with whichever path is already in play — `activeIndex` when the bar is controlled, per-button `isFocused` when it is not. So a fractional value is an ordinary position here, while a fractional `activeIndex` still means [no selection](#no-selection); the two props answer different questions and each has exactly one writer.
+- **Keep it truthful.** While it is supplied, the controlled effect, the focus effect and a button's own press all stop writing the position. Nothing else will put the highlight back where the route says it is, so the driver must spring it to the settled index after a commit **and** after any navigation it did not cause — a deep link, a back gesture, a notification tap.
+- **Scrubbing still wins.** A finger dragging along the pill is direct manipulation of the bar, not a request for a page, so it overrides the driver while it is down and reports through `onIndexChange` on release like any other selection.
+
+<Callout variant="warning" title="A pager and `activeIndex` are not two writers">
+The rule that made `RouterTabBar` omit `activeIndex` — two writers on one shared value — does not apply here, because `activeProgress` and `activeIndex` do not write the same thing. Position has one writer (the driver), visibility has one writer (`activeIndex` or `isFocused`). Passing a pager's progress alongside either is correct and is the intended shape.
+</Callout>
+
 ## Minimizing on scroll
 
 Screens opt in with `useMinimizeOnScroll()`, which returns a scroll handler for `Animated.ScrollView`. Scrolling down minimizes the bar to icons only; scrolling up, or being near the top, expands it.
@@ -347,6 +381,7 @@ The tail gradient is derived from the theme's page background, so it works on li
 |------|------|---------|-------------|
 | `children` | `ReactNode` | — | The `TabBarButton`s, in bar order. |
 | `activeIndex?` | `number` | — | **Controlled path.** The focused tab; an index that names no tab (`-1`, past the last, fractional) hides the highlight — see [No selection](#no-selection). Omit it with a router — use per-button `isFocused` instead. |
+| `activeProgress?` | `SharedValue<number>` | — | **Driven path.** The highlight's live position in tab units, on the UI thread — a pager writes its page position here and the highlight tracks the finger 1:1. Says WHERE, never WHETHER: pair it with `activeIndex` or per-button `isFocused` for selection. See [Driven by a pager](#driven-by-a-pager). |
 | `onIndexChange?` | `(index: number) => void` | — | Called with the chosen index on tap, on scrub release, or on keyboard / assistive-technology activation. |
 | `onIndexLongPress?` | `(index: number) => void` | — | Called with the index under the finger after a 500ms hold. Does not select. The gesture is armed only when this is supplied. |
 | `theme?` | `Partial<TabBarTheme>` | — | Partial override of the token-resolved theme. |

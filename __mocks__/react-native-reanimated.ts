@@ -24,6 +24,32 @@ const Reanimated = {
   // one is a box with a `.value`; so is this.
   makeMutable: (init: unknown) => ({ value: init }),
   useAnimatedStyle: (fn: () => Record<string, unknown>) => fn(),
+  // RENDER-driven, because there is no UI thread here to observe a `.value`
+  // write from. The real hook re-runs `prepare` whenever any shared value it
+  // reads changes and calls `react` when the RESULT changes, starting with one
+  // call on mount (`previous` null); this runs `prepare` on every render and
+  // calls `react` on the same terms.
+  //
+  // So a suite can pin the WIRING — that a reaction's source reaches its target
+  // — but never the transport: a value written by a gesture worklet with no
+  // accompanying render is invisible here, exactly as `useAnimatedStyle`'s
+  // mapper is. That belongs to a device or a browser.
+  useAnimatedReaction: (
+    prepare: () => unknown,
+    react: (current: unknown, previous: unknown) => void,
+    _deps?: unknown[],
+  ) => {
+    const ref = useRef<{ previous: unknown; mounted: boolean } | null>(null);
+    if (ref.current === null) ref.current = { previous: null, mounted: false };
+    const state = ref.current;
+    const current = prepare();
+    if (!state.mounted || !Object.is(current, state.previous)) {
+      const previous = state.mounted ? state.previous : null;
+      state.mounted = true;
+      state.previous = current;
+      react(current, previous);
+    }
+  },
   useAnimatedProps: (fn: () => Record<string, unknown>) => fn(),
   useAnimatedScrollHandler: () => jest.fn(),
   // Reduced motion defaults to off in tests; suites that need it on can override.
@@ -147,6 +173,7 @@ export const makeMutable = Reanimated.makeMutable;
 export const useSharedValue = Reanimated.useSharedValue;
 export const useDerivedValue = Reanimated.useDerivedValue;
 export const useAnimatedStyle = Reanimated.useAnimatedStyle;
+export const useAnimatedReaction = Reanimated.useAnimatedReaction;
 export const useAnimatedProps = Reanimated.useAnimatedProps;
 export const useAnimatedScrollHandler = Reanimated.useAnimatedScrollHandler;
 export const useReducedMotion = Reanimated.useReducedMotion;

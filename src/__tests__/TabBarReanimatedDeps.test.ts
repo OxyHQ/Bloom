@@ -35,6 +35,14 @@ const MAPPERS = [
   'useAnimatedScrollHandler',
   'useDerivedValue',
   'useAnimatedProps',
+  // `useAnimatedReaction` is a mapper in exactly the sense that matters here: its
+  // FIRST argument is the worklet whose reads reanimated must track, and on web
+  // it tracks them from the deps array or not at all. Its failure mode is the
+  // quietest of the set — the reaction fires once on mount and never again, so
+  // the driven highlight (`TabBarProps.activeProgress`) seeds correctly on the
+  // first frame and then never follows the pager, which looks like the CONSUMER
+  // failing to write its shared value.
+  'useAnimatedReaction',
 ] as const;
 
 /**
@@ -42,7 +50,7 @@ const MAPPERS = [
  * fail this suite, but a walk that silently stops finding things must.
  */
 const MIN_FILES = 16;
-const MIN_MAPPERS = 7;
+const MIN_MAPPERS = 8;
 
 type Offender = { location: string; mapper: string; problem: string };
 

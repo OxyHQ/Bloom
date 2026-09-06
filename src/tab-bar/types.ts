@@ -4,14 +4,21 @@
  *
  * Public API types for `@oxyhq/bloom/tab-bar`.
  *
- * This module imports from `react` and `react-native` ONLY. It is resolved by a
- * consumer's `tsc`, by Metro, and by every web bundler alike, so a platform
- * import here (expo-glass-effect / expo-symbols / expo-router) would break all
- * three at once. Platform behaviour lives in `surface.native.tsx` /
- * `glyph.native.tsx` / `surface.web.tsx` and the `expo-router/` adapter.
+ * This module names no PLATFORM package. It is resolved by a consumer's `tsc`,
+ * by Metro, and by every web bundler alike, so an import here of
+ * expo-glass-effect / expo-symbols / expo-router / react-native-screens would
+ * break all three at once. Platform behaviour lives in `surface.native.tsx` /
+ * `glyph.native.tsx` / `surface.web.tsx` and the `expo-router/` adapter; the
+ * gate is `src/__tests__/TabBarWebFork.test.ts`.
+ *
+ * `react-native-reanimated` is exempt and always was: it is a REQUIRED peer that
+ * every neutral module in this family already imports at runtime
+ * (`TabBarBase.tsx`), and the one reference below is `import type`, erased
+ * before any bundler sees it.
  */
 import type { ReactNode } from 'react';
 import type { PressableProps, ViewProps } from 'react-native';
+import type { SharedValue } from 'react-native-reanimated';
 
 export type TabBarItem = {
   /** Stable identity for the tab (a route name in router-driven usage). */
@@ -92,6 +99,30 @@ export type TabBarProps = ViewProps & {
    * highlight from its own `isFocused`.
    */
   activeIndex?: number;
+  /**
+   * DRIVEN path — the highlight's live position, in TAB UNITS, on the UI thread.
+   * A pager writes its own page position here (`1.4` is 40% of the way from the
+   * second tab to the third) and the highlight tracks the finger 1:1 instead of
+   * springing to a settled index after the navigation commits.
+   *
+   * It says WHERE the highlight is, never WHETHER there is one. Selection stays
+   * with the path already in play: `activeIndex` when the bar is controlled (an
+   * index naming no tab still fades the highlight out — see above), each
+   * button's `isFocused` when it is not. Passing this alone, with neither, is a
+   * bar that is always selected, which is what the focus-driven path already
+   * means.
+   *
+   * PRECEDENCE, because a shared value with two writers is a race: the SCRUB
+   * always wins — a finger on the bar is a direct manipulation of the bar, and
+   * releasing it reports through `onIndexChange` like any other selection. Below
+   * that, this value wins over every discrete writer: while it is supplied, the
+   * controlled effect, the focus effect and a `TabBarButton`'s own press all
+   * stop writing the position and leave it to the driver. So a consumer that
+   * passes this must keep it truthful — spring it to the settled index after a
+   * commit, and after any navigation it did not cause (a deep link, a back
+   * gesture), or the highlight stays where the last gesture left it.
+   */
+  activeProgress?: SharedValue<number>;
   /**
    * Called with the chosen index when a tab is picked by tap, by scrub release,
    * or by keyboard/assistive-technology activation of a `TabBarButton`.

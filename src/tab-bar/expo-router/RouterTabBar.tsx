@@ -19,6 +19,11 @@ import type { TabBarItem, TabBarProps } from '../types';
  * by each trigger's own focus (see `RouterTabBarButton`), which is what keeps it
  * correct through deep links, back gestures and any other programmatic
  * navigation. Setting both would put two writers on one shared value.
+ *
+ * `activeProgress` is NOT omitted, and that is not an oversight. It answers a
+ * different question — where the highlight is, not whether there is one — so a
+ * router-focused bar whose screens are PAGED can pass it and keep the focus
+ * path for selection. See `TabBarProps.activeProgress`.
  */
 export type RouterTabBarProps = TabListProps & Omit<TabBarProps, 'activeIndex'>;
 
