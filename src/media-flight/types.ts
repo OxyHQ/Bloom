@@ -276,9 +276,14 @@ export interface MediaVideoSlotProps<P extends VideoPlayerLike = VideoPlayerLike
  * So the consumer may build the element instead, with Bloom deciding only what
  * it has to: which player, and a style that fills the box.
  *
- * MEMOISE IT (`useCallback`). The slot is part of what a host publishes to the
- * layer, compared by identity — a new function every render republishes every
+ * MEMOISE IT (`useCallback`), over the state the element actually reads. The
+ * slot is compared by identity — and on web it is part of what a host publishes
+ * to the layer — so a new function every render re-renders the surface every
  * render. Correct either way, wasteful if you skip it.
+ *
+ * It is expected to change when that state does; only a slot rebuilt on renders
+ * where nothing it reads changed is the mistake, and that is the only one Bloom
+ * warns about.
  */
 export type MediaVideoSlot<P extends VideoPlayerLike = VideoPlayerLike> = (
   props: MediaVideoSlotProps<P>,

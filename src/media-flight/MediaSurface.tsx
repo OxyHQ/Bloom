@@ -25,7 +25,7 @@ import {
 import { Image } from 'expo-image';
 import Animated from 'react-native-reanimated';
 
-import { SLOT_IDENTITY_CHURN_LIMIT } from './constants';
+import { SLOT_IDENTITY_CHURN_LIMIT, SLOT_IDENTITY_CHURN_WINDOW_MS } from './constants';
 import { handOffFlight } from './store';
 import type { MediaSurfaceContent, MediaVideoSlot } from './types';
 import {
@@ -149,17 +149,61 @@ export const MediaSurface = memo(function MediaSurface({
   // supports.
   const [mountedSurfaceType] = useState(surfaceType);
 
-  // A slot rebuilt on every render republishes this surface to the layer on
-  // every render, which nothing at runtime reports — the picture is correct and
-  // the app is doing work in proportion to how often its rows re-render. The
-  // counter lives in an effect rather than in render: a render-phase ref write
-  // makes the React Compiler bail on the whole component.
-  const slotChurn = useRef(0);
+  // A slot rebuilt on every render re-renders this surface — and on web
+  // republishes the shared node — every time the row it lives in renders, which
+  // nothing at runtime reports: the picture is correct and the app is just
+  // doing work in proportion to its render count.
+  //
+  // What is counted is a RUN of consecutive commits that each carried a new
+  // slot, NOT how many times the slot has ever changed. The lifetime count
+  // cannot tell the defect from a correctly memoised slot: Bloom's own
+  // documented example lists `isWatched` in its deps, so its identity changes
+  // once per activation of a long-lived surface, and any such consumer reaches
+  // any fixed lifetime total eventually. It would then be told to do the thing
+  // it is already doing, with no way to make the warning stop — which is worse
+  // than not warning, because the advice is unsatisfiable. A slot rebuilt per
+  // render is different in kind: it is new on EVERY commit, including the ones
+  // where nothing it reads changed.
+  //
+  // The run must also be FAST, and that second condition is what covers the
+  // consumer who memoised everything else too. With `content` and the rest
+  // stable, `memo` skips the renders where only the parent changed, so this
+  // component commits ONLY when the slot changes — every commit carries a new
+  // slot and the run never breaks, even though there is nothing to fix and no
+  // cost to pay. Rate is what tells them apart, and it is what the warning was
+  // ever about: a slot rebuilt per render churns as fast as its row renders,
+  // while one rebuilt when its state changes moves at the speed of a finger.
+  //
+  // All three refs are written from effects rather than in render: a
+  // render-phase ref write makes the React Compiler bail on the whole
+  // component. The first effect fires only when the identity changed, and the
+  // second — declared after it, and with no dependency array, so it runs on
+  // every commit — is what reads that mark and either extends the run or
+  // clears it.
+  const slotChangedInCommit = useRef(false);
+  const slotChurnRun = useRef(0);
+  const slotChurnRunStartedAt = useRef(0);
   useEffect(() => {
-    if (renderVideo === undefined) return;
-    slotChurn.current += 1;
-    if (slotChurn.current === SLOT_IDENTITY_CHURN_LIMIT) warnSlotNotMemoised();
+    slotChangedInCommit.current = true;
   }, [renderVideo]);
+  useEffect(() => {
+    if (renderVideo === undefined || !slotChangedInCommit.current) {
+      slotChurnRun.current = 0;
+      return;
+    }
+    slotChangedInCommit.current = false;
+    const now = Date.now();
+    if (
+      slotChurnRun.current === 0 ||
+      now - slotChurnRunStartedAt.current > SLOT_IDENTITY_CHURN_WINDOW_MS
+    ) {
+      slotChurnRun.current = 1;
+      slotChurnRunStartedAt.current = now;
+      return;
+    }
+    slotChurnRun.current += 1;
+    if (slotChurnRun.current === SLOT_IDENTITY_CHURN_LIMIT) warnSlotNotMemoised();
+  });
 
   // Both arms report the same fact — "there is a picture here now" — because the
   // destination of a flight can be either, and a caller should not have to know
@@ -252,10 +296,12 @@ function warnSlotNotMemoised(): void {
   hasWarnedAboutSlotChurn = true;
   // eslint-disable-next-line no-console
   console.warn(
-    `[Bloom] A \`renderVideo\` slot changed identity ${SLOT_IDENTITY_CHURN_LIMIT} times. ` +
-      'It is part of what a media host publishes to the flight layer and is compared by ' +
-      'identity, so a slot rebuilt on every render republishes the surface on every render. ' +
-      'Wrap it in `useCallback` with the props it actually reads.',
+    `[Bloom] A \`renderVideo\` slot was a NEW function on ${SLOT_IDENTITY_CHURN_LIMIT} ` +
+      'consecutive renders, including ones where nothing it reads changed. The slot is ' +
+      'compared by identity — on web it is part of what a media host publishes to the ' +
+      'flight layer — so one rebuilt per render re-renders the surface per render. Wrap ' +
+      'it in `useCallback` with the props it actually reads. A slot that changes when ' +
+      'those props change is fine and does not reach this.',
   );
 }
 
