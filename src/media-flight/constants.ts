@@ -32,15 +32,40 @@ export const SURFACE_MOUNT_TIMEOUT_MS = 250;
  */
 
 /**
- * How many times a video slot may change identity before Bloom says so.
+ * How many CONSECUTIVE renders a video slot may arrive new on before Bloom says
+ * so.
  *
- * `renderVideo` is part of what a host publishes to the layer and is compared
- * by identity, so an unmemoised slot republishes on every render of the row it
- * lives in — silently, and only under load. Five is well past any legitimate
- * cause (a mute toggle, a fit change) and far below the churn of a slot rebuilt
- * per render in a scrolling feed.
+ * `renderVideo` is compared by identity — and on web it is part of what a host
+ * publishes to the layer — so an unmemoised slot re-renders the surface on
+ * every render of the row it lives in, silently and only under load.
+ *
+ * Consecutive, never a lifetime total. A correctly memoised slot changes
+ * identity whenever the state it reads changes (`isWatched` on a reel slide,
+ * say), so ANY fixed lifetime total is reached eventually by a consumer with
+ * nothing to fix — and the warning's own advice, `useCallback` over the props
+ * the slot reads, is what such a consumer already wrote. Five in a row is
+ * unreachable that way: it takes five commits where nothing the slot reads
+ * changed and the slot was rebuilt anyway.
  */
 export const SLOT_IDENTITY_CHURN_LIMIT = 5;
+
+/**
+ * How long a run of {@link SLOT_IDENTITY_CHURN_LIMIT} new slots may take and
+ * still be reported (ms).
+ *
+ * "Consecutive" alone is not enough for the consumer who memoised the surface's
+ * other props as well: `memo` then skips every render where only the parent
+ * changed, so the surface commits ONLY when the slot changes and the run never
+ * breaks — with nothing to fix and, because the renders were skipped, no cost
+ * paid either.
+ *
+ * Rate is what separates them, and it is what the warning was always about. A
+ * slot rebuilt per render changes as fast as its row renders, which in a
+ * scrolling feed is five times in a fraction of a frame budget. A slot rebuilt
+ * when the state it reads changes moves at the speed of a finger, and half a
+ * second is far too short for five activations of ONE surface.
+ */
+export const SLOT_IDENTITY_CHURN_WINDOW_MS = 500;
 
 /**
  * How far a media element may sit from the box it is supposed to fill, in px,

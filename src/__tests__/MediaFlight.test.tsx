@@ -572,6 +572,75 @@ describe('MediaSurface renderVideo', () => {
     }
   });
 
+  it('stays quiet for a slot memoised on state that CHANGES (control)', () => {
+    // The control the first one cannot be: a slot whose identity never changes
+    // at all is not what a correct consumer writes. Bloom's own documented
+    // example (`docs/media-flight.mdx`) reads `isWatched` in the element and
+    // lists it in the deps, so its identity changes every time that state
+    // does — once per activation of a reel slide, over a surface that renders
+    // several times a second while the video plays.
+    //
+    // A counter of LIFETIME identity changes fires here, and the advice it
+    // gives ("wrap it in `useCallback` with the props it actually reads") is
+    // already what this slot does — so following it cannot make the warning go
+    // away. That is what makes it worse than no warning: it is unsatisfiable.
+    // What distinguishes the defect is that a slot rebuilt per render changes
+    // on CONSECUTIVE commits, and this one does not.
+    const warn = jest.spyOn(console, 'warn').mockImplementation(() => {});
+    try {
+      const slotFor = (watched: boolean) => () => <View testID={`watched-${watched}`} />;
+      let watched = false;
+      let slot = slotFor(watched);
+      const view = render(<MediaSurface content={VIDEO} renderVideo={slot} />);
+      // Far more identity changes than the limit, spread over renders the slot
+      // survives — the shape of a long-lived surface, not of an unmemoised one.
+      for (let i = 0; i < SLOT_IDENTITY_CHURN_LIMIT * 5; i += 1) {
+        if (i % 4 === 3) {
+          watched = !watched;
+          slot = slotFor(watched);
+        }
+        view.rerender(
+          <MediaSurface content={VIDEO} renderVideo={slot} accessibilityLabel={`r${i}`} />,
+        );
+      }
+      expect(
+        warn.mock.calls.map((call) => String(call[0])).filter((t) => t.startsWith('[Bloom]')),
+      ).toEqual([]);
+    } finally {
+      warn.mockRestore();
+    }
+  });
+
+  it('stays quiet when EVERY commit brings a new slot, if they are minutes apart (control)', () => {
+    // The consumer who memoised the surface's other props too. `memo` then
+    // skips every render where only the parent changed, so this component
+    // commits only when the slot changes — an unbroken run of new slots, for a
+    // consumer with nothing to fix and, the renders having been skipped,
+    // nothing to pay either. Consecutiveness alone cannot see the difference;
+    // the clock can, and the cost the warning describes IS a rate.
+    //
+    // `Date.now` is stubbed rather than run under fake timers: the assertion is
+    // about the gaps between commits, and nothing here waits on a timer.
+    const warn = jest.spyOn(console, 'warn').mockImplementation(() => {});
+    let clock = 1_000;
+    const now = jest.spyOn(Date, 'now').mockImplementation(() => clock);
+    try {
+      // The one prop a consumer cannot make stable is the slot, so hold the
+      // rest fixed — a shared `content` object, no changing label.
+      const view = render(<MediaSurface content={VIDEO} renderVideo={() => null} />);
+      for (let i = 0; i < SLOT_IDENTITY_CHURN_LIMIT * 3; i += 1) {
+        clock += 60_000;
+        view.rerender(<MediaSurface content={VIDEO} renderVideo={() => null} />);
+      }
+      expect(
+        warn.mock.calls.map((call) => String(call[0])).filter((t) => t.startsWith('[Bloom]')),
+      ).toEqual([]);
+    } finally {
+      now.mockRestore();
+      warn.mockRestore();
+    }
+  });
+
   /**
    * ONE test, with the under-limit case FIRST, because the warning fires once
    * per module lifetime and the flag is not exported.

@@ -372,14 +372,23 @@ Three things about the props Bloom passes:
   and expo-video answers it by emptying the source — which pauses the element
   without an event, which is what stops an outgoing surface from pausing the one
   the viewer just landed on.
-- **Memoise the slot.** It is part of what a host publishes to the layer,
-  compared by identity.
+- **Memoise the slot.** It is compared by identity, and on web it is part of
+  what a host publishes to the layer. Listing the state it reads — `isWatched`
+  above — is the whole requirement: a slot that changes when those change is
+  memoised, and Bloom does not ask for more.
 
 All three fail silently and only in production, so Bloom says so in development
-instead: a slot that changes identity five times warns once about `useCallback`,
-and a media element that does not fill its wrapper warns once with both
-rectangles. Neither is a gate — they are the three trap-doors of this contract
-turned into three messages.
+instead: a slot that arrives NEW on five consecutive renders inside half a
+second warns once about `useCallback`, and a media element that does not fill
+its wrapper warns once with both rectangles. Neither is a gate — they are the
+three trap-doors of this contract turned into three messages.
+
+Consecutive and fast, never a lifetime total. A slot rebuilt per render changes
+as fast as its row renders; one memoised over changing state changes at the
+speed of a finger, however long the surface lives. Counting total changes cannot
+tell them apart, so it eventually accuses every correct consumer of the one
+thing it is already doing — measured against a reel, where each activation of a
+slide legitimately rebuilt the slot and four of them tripped the old counter.
 
 **The invariant that keeps this a primitive and not a coupling:** Bloom decides
 `player`, `style` and `contentFit`, and those three are exactly the three that
