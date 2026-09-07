@@ -20,8 +20,12 @@ function buildWebScopeVars(
 
 export interface BloomColorScopeProps {
   /**
-   * Preset to apply within this subtree. When `undefined`, the scope is a
-   * no-op and children inherit the parent scope's preset unchanged.
+   * Preset to apply within this subtree. When `undefined`, the scope publishes
+   * nothing of its own and children inherit the parent scope's preset unchanged.
+   *
+   * It is a no-op in what it PUBLISHES, never in what it RENDERS — the element
+   * tree is identical either way, so a preset that arrives late cannot remount
+   * the subtree. `ColorScope.tsx` carries the full account.
    */
   colorPreset: AppColorName | undefined;
   /**
@@ -91,10 +95,6 @@ export function BloomColorScope({
   if (!parent) {
     throw new Error('BloomColorScope must be used within a <BloomThemeProvider>');
   }
-  // `colorPreset` undefined => the scope is a no-op; children inherit the
-  // parent scope. With `parent` present, `contextValue`/`varsStyle` are null
-  // iff `colorPreset` is absent, so this guard also narrows them to non-null.
-  if (!contextValue || !varsStyle) return <>{children}</>;
 
   let content: React.ReactNode;
   if (asChild) {
@@ -111,7 +111,7 @@ export function BloomColorScope({
     const childStyle = child.props.style;
     const childIsRnStyled = Array.isArray(childStyle) || typeof childStyle === 'number';
     const mergedStyle: WebStyle = childIsRnStyled
-      ? [varsStyle, style, childStyle]
+      ? [varsStyle ?? undefined, style, childStyle]
       : { ...varsStyle, ...style, ...(childStyle || undefined) };
     content = cloneElement(child, { style: mergedStyle });
   } else {
@@ -121,7 +121,9 @@ export function BloomColorScope({
     content = <div style={mergedStyle}>{children}</div>;
   }
 
-  return <BloomThemeContext.Provider value={contextValue}>{content}</BloomThemeContext.Provider>;
+  return (
+    <BloomThemeContext.Provider value={contextValue ?? parent}>{content}</BloomThemeContext.Provider>
+  );
 }
 
 /**
