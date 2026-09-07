@@ -22,7 +22,14 @@ import {
   useMemo,
   type ComponentType,
 } from 'react';
-import { Pressable, StyleSheet, useWindowDimensions, View, type ViewStyle } from 'react-native';
+import {
+  Platform,
+  Pressable,
+  StyleSheet,
+  useWindowDimensions,
+  View,
+  type ViewStyle,
+} from 'react-native';
 import { Gesture, GestureDetector } from 'react-native-gesture-handler';
 import Animated, {
   Extrapolation,
@@ -260,8 +267,14 @@ function TabBarBody({
   // Scrubbing: the highlight tracks the finger 1:1 while dragging (no spring —
   // it must feel attached), haptic ticks fire on boundary crossings, and
   // navigation happens only on release. Taps are handled by a Tap gesture
-  // racing the pan — the detector consumes the bar's touches, so the inner
-  // Pressables never receive them.
+  // racing the pan.
+  //
+  // THE DETECTOR DOES NOT CONSUME THE PRESS, which this file assumed for a long
+  // time. A `Tap` gesture activates on RELEASE, by which point the inner
+  // `Pressable` has already fired `onPress`, and RNGH's cancellation of the RN
+  // responder comes too late to stop it. Measured on a Pixel 10 Pro: ONE tap
+  // produced both, ~600ms apart on a busy JS thread, so every consumer got two
+  // selections per tap. `TabBarButtonBody` is where that is resolved.
   const gesture = useMemo(() => {
     const indexAtX = (x: number, minimizedValue: number) => {
       'worklet';
@@ -544,6 +557,9 @@ interface TabBarButtonBodyProps extends TabBarButtonProps {
 }
 
 /** One tab trigger: icon + label that fades out when the bar minimizes. */
+/** Stable identity: a new array each render would re-send the actions to the OS. */
+const ACTIVATE_ACTIONS = [{ name: 'activate' as const }];
+
 function TabBarButtonBody({
   Glyph,
   item,
@@ -639,6 +655,15 @@ function TabBarButtonBody({
       aria-selected={focused}
       accessibilityLabel={item.label}
       {...pressableProps}
+      // ASSISTIVE TECHNOLOGY, on native, is the one activation the bar's gesture
+      // cannot see: TalkBack and VoiceOver activate a view without ever
+      // producing a touch, so the `Tap` gesture never runs and the selection has
+      // to come from here.
+      accessibilityActions={ACTIVATE_ACTIONS}
+      onAccessibilityAction={(event) => {
+        if (event.nativeEvent.actionName !== 'activate') return;
+        if (isFocused === undefined) bar?.selectIndex(index);
+      }}
       onPress={(event) => {
         // The bar's GestureDetector normally consumes touches; this still fires
         // for assistive-technology activation (VoiceOver) and keyboard focus.
@@ -654,10 +679,14 @@ function TabBarButtonBody({
           bar.highlightOpacity.value = withTiming(1, HIGHLIGHT_FADE);
         }
         setMinimized(minimized, 0);
-        // Controlled path only. On the focus-driven path the trigger's own
-        // `onPress` below performs the navigation, so reporting the selection
-        // here as well would navigate twice.
-        if (isFocused === undefined) bar?.selectIndex(index);
+        // Controlled path only, and on WEB only. On the focus-driven path the
+        // trigger's own `onPress` below performs the navigation, so reporting
+        // the selection here as well would navigate twice — and on native the
+        // bar's own tap gesture reports it, which is the double this press used
+        // to add (see the gesture above). Web keeps it because there the press
+        // is also how a keyboard reaches a tab, and `onAccessibilityAction` is
+        // not what react-native-web dispatches for Enter or Space.
+        if (isFocused === undefined && Platform.OS === 'web') bar?.selectIndex(index);
         onPress?.(event);
       }}
       // `Pressable`'s `style` also accepts a function of the press state; both
