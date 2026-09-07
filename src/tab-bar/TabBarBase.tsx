@@ -679,14 +679,19 @@ function TabBarButtonBody({
           bar.highlightOpacity.value = withTiming(1, HIGHLIGHT_FADE);
         }
         setMinimized(minimized, 0);
-        // Controlled path only, and on WEB only. On the focus-driven path the
+        // Controlled path only, and NOT on Android. On the focus-driven path the
         // trigger's own `onPress` below performs the navigation, so reporting
-        // the selection here as well would navigate twice — and on native the
-        // bar's own tap gesture reports it, which is the double this press used
-        // to add (see the gesture above). Web keeps it because there the press
-        // is also how a keyboard reaches a tab, and `onAccessibilityAction` is
-        // not what react-native-web dispatches for Enter or Space.
-        if (isFocused === undefined && Platform.OS === 'web') bar?.selectIndex(index);
+        // the selection here as well would navigate twice.
+        //
+        // ANDROID IS THE ONE PLATFORM THAT DOUBLES. RNGH sets
+        // `cancelsTouchesInView` on iOS, so a recognised tap cancels this press
+        // and the gesture above is the only reporter there; react-native-web
+        // likewise routes a keyboard Enter or Space through this press and
+        // nothing else. Android cancels nothing — measured on a Pixel 10 Pro,
+        // one tap produced `PRESSABLE selectIndex(1)` AND `GESTURE tap
+        // selectIndex(1)` ~600ms apart on a busy JS thread — so there, and only
+        // there, this press stands down.
+        if (isFocused === undefined && Platform.OS !== 'android') bar?.selectIndex(index);
         onPress?.(event);
       }}
       // `Pressable`'s `style` also accepts a function of the press state; both
