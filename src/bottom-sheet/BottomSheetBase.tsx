@@ -20,6 +20,7 @@ import Animated, {
     runOnJS,
     type SharedValue,
     useAnimatedScrollHandler,
+    useAnimatedReaction,
     useAnimatedStyle,
     useDerivedValue,
     useSharedValue,
@@ -70,6 +71,7 @@ export const BottomSheetBase = forwardRef((props: BottomSheetBaseProps, ref: Rea
         scrollable = true,
         manualActivation = false,
         dynamicBackdrop = false,
+        animatedProgress,
         handleComponent,
         scrollY: externalScrollY,
         headerOverlay,
@@ -508,6 +510,17 @@ export const BottomSheetBase = forwardRef((props: BottomSheetBaseProps, ref: Rea
             : 1;
         return opacity.value * dragFactor;
     }, [dynamicBackdrop, opacity, translateY, screenHeightSV]);
+
+    useAnimatedReaction(
+        () => Math.min(
+            opacity.value,
+            interpolate(translateY.value, [0, screenHeightSV.value], [1, 0], 'clamp'),
+        ),
+        (progress) => {
+            if (animatedProgress) animatedProgress.value = progress;
+        },
+        [animatedProgress, opacity, translateY, screenHeightSV],
+    );
 
     // Only the consumer-supplied `backdropComponent` needs the progress as a
     // style — it owns its own visuals, blur included, so the ancestor-opacity

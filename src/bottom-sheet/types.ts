@@ -88,6 +88,12 @@ export interface BottomSheetProps {
      */
     dynamicBackdrop?: boolean;
     /**
+     * Optional UI-thread progress mirror for coordinating content behind the
+     * sheet. `0` means fully closed and `1` fully presented; dragging the sheet
+     * updates every intermediate value without crossing the JS bridge.
+     */
+    animatedProgress?: SharedValue<number>;
+    /**
      * Custom handle slot. When provided, replaces the default drag handle
      * (the 36×5 pill). The rendered handle is wrapped in the dedicated handle
      * gesture detector (when `manualActivation` is `true`) so it remains
