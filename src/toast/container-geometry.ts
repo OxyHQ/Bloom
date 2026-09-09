@@ -47,13 +47,13 @@ import type { ToastPosition } from './types';
  *    them at the screen edge on web. The offset therefore stays an inset on the
  *    container itself, which behaves identically on both.
  */
-export const getContainerStyle = (): ViewStyle => ({
+export const getContainerStyle = (position: ToastPosition = 'bottom-center'): ViewStyle => ({
   position: 'absolute',
   top: 0,
   right: 0,
   bottom: 0,
   left: 0,
-  alignItems: 'center',
+  alignItems: position === 'bottom-right' ? 'flex-end' : 'center',
   // Enter and exit animations translate a row past the container edge on purpose.
   overflow: 'visible',
 });
@@ -81,13 +81,18 @@ export const getInsetValues = ({
 }: {
   position: ToastPosition;
   offset?: number;
-  safeAreaInsets?: { top: number; bottom: number };
+  safeAreaInsets?: { top: number; right?: number; bottom: number };
   bottomEdgeInset?: number;
 }): { top?: number; bottom?: number } => {
-  const { top = 0, bottom = 0 } = safeAreaInsets || {};
+  const { top = 0, right = 0, bottom = 0 } = safeAreaInsets || {};
 
-  if (position === 'bottom-center') {
-    return { bottom: (offset || windowEdgeGap(bottom, TOAST_EDGE_GAP)) + bottomEdgeInset };
+  if (position === 'bottom-center' || position === 'bottom-right') {
+    return {
+      bottom: (offset || windowEdgeGap(bottom, TOAST_EDGE_GAP)) + bottomEdgeInset,
+      ...(position === 'bottom-right'
+        ? { right: offset || windowEdgeGap(right, TOAST_EDGE_GAP) }
+        : {}),
+    };
   }
 
   if (position === 'top-center') {
@@ -145,7 +150,7 @@ export const calculateOutsidePressableArea = ({
     };
   }
 
-  if (position === 'bottom-center') {
+  if (position === 'bottom-center' || position === 'bottom-right') {
     const bottomOffset = (insetValues.bottom || 40) + stackHeight;
     return {
       position: 'absolute',

@@ -35,6 +35,7 @@ import { useSingleOutletGuard } from './use-single-outlet-guard';
 const ALL_POSITIONS: ToastPosition[] = [
   'top-center',
   'bottom-center',
+  'bottom-right',
   'center',
 ];
 

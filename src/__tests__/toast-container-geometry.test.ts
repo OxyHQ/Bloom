@@ -49,6 +49,11 @@ describe('getContainerStyle', () => {
     expect(getContainerStyle().overflow).toBe('visible');
   });
 
+  it('aligns the default toast stack to the right without changing centered positions', () => {
+    expect(getContainerStyle('bottom-right').alignItems).toBe('flex-end');
+    expect(getContainerStyle('bottom-center').alignItems).toBe('center');
+  });
+
   /**
    * THE #26 INVARIANT, on the composition rather than on either half. `Positioner`
    * layers `getInsetValues` over `getContainerStyle` in a style array, so the inset
@@ -104,6 +109,15 @@ describe('getInsetValues', () => {
         safeAreaInsets: { top: 47, bottom: 34 },
       }),
     ).toEqual({ top: 55 });
+  });
+
+  it('insets bottom-right from both safe-area edges', () => {
+    expect(
+      getInsetValues({
+        position: 'bottom-right',
+        safeAreaInsets: { top: 0, right: 20, bottom: 34 },
+      }),
+    ).toEqual({ bottom: 42, right: 28 });
   });
 
   it('falls back to 16 with no safe area and no offset', () => {

@@ -415,6 +415,7 @@ export const ToastRow = React.forwardRef<ToastRef, ToastRowProps>(
 
     return (
       <Animated.View
+        pointerEvents="box-none"
         style={[
           styles.anchor,
           anchorFor(position),
@@ -503,7 +504,7 @@ const styles = StyleSheet.create({
 
 /** Which edge of the (full-bleed, padded) container the row hangs from. */
 function anchorFor(position: ToastPosition) {
-  if (position === 'bottom-center') {
+  if (position === 'bottom-center' || position === 'bottom-right') {
     return styles.anchorBottom;
   }
   if (position === 'center') {

@@ -64,14 +64,14 @@ export const Positioner: React.FC<
   const { isExpanded, collapse, toastHeights } = useDynamicToastContext();
   const insets = React.useContext(SafeAreaInsetsContext) ?? FALLBACK_INSETS;
 
-  const resolvedPosition = position ?? 'bottom-center';
+  const resolvedPosition = position ?? 'bottom-right';
   // Whatever already owns the bottom edge — a floating tab bar, typically. The
   // stack stacks above it instead of on it.
   const bottomEdgeInset = useBottomEdgeInset();
   const insetValues = getInsetValues({
     position: resolvedPosition,
     offset,
-    safeAreaInsets: { top: insets.top, bottom: insets.bottom },
+    safeAreaInsets: { top: insets.top, right: insets.right, bottom: insets.bottom },
     bottomEdgeInset,
   });
 
@@ -104,7 +104,7 @@ export const Positioner: React.FC<
       ) : null}
       <View
         style={[
-          getContainerStyle(),
+          getContainerStyle(resolvedPosition),
           androidElevationStyle,
           // Overrides ONE edge of the four `getContainerStyle` pins, so the box
           // keeps a real height and the rows inside it stay in bounds.

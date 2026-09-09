@@ -107,6 +107,7 @@ export const easeInOutCircFn = Easing.bezierFn(0.785, 0.135, 0.15, 0.86);
 const ENTER_TRANSLATE_Y: Record<ToastPosition, number> = {
   'top-center': -20,
   'bottom-center': 50,
+  'bottom-right': 50,
   center: 50,
 };
 

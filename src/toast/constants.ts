@@ -74,7 +74,7 @@ export const toastDefaults: {
   allowFontScaling: boolean;
 } = {
   duration: 3000,
-  position: 'bottom-center',
+  position: 'bottom-right',
   /**
    * 0 means "derive from the safe-area inset" — `getInsetValues` then yields
    * `inset + 8`, or 16 when there is no inset. A non-zero default would pin the
