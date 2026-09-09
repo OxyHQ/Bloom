@@ -28,7 +28,7 @@ interface RNMock {
   Platform: { OS: 'ios' | 'android' | 'web' | 'windows' | 'macos' };
 }
 
-const POSITIONS: ToastPosition[] = ['bottom-center', 'top-center', 'center'];
+const POSITIONS: ToastPosition[] = ['bottom-center', 'bottom-right', 'top-center', 'center'];
 const DRIVERS: ToastEnterDriver[] = ['imperative', 'layoutAnimation'];
 
 /** Re-evaluate the module against a given `Platform.OS`. */

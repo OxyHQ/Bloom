@@ -207,7 +207,7 @@ describe('calculateToastPosition', () => {
      * returns 1 either way. If this ever stops holding, the store's rule needs a
      * rethink rather than this test an update.
      */
-    it.each<ToastPosition>(['bottom-center', 'top-center', 'center'])(
+    it.each<ToastPosition>(['bottom-center', 'bottom-right', 'top-center', 'center'])(
       'a single row is unmoved by expansion (%s)',
       (position) => {
         const lone = {

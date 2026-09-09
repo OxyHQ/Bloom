@@ -10,7 +10,7 @@ import type {
   ReanimatedKeyframe,
 } from 'react-native-reanimated';
 
-export type ToastPosition = 'top-center' | 'bottom-center' | 'center';
+export type ToastPosition = 'top-center' | 'bottom-center' | 'bottom-right' | 'center';
 
 export type ToastSwipeDirection = 'left' | 'up';
 

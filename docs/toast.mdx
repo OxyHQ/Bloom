@@ -208,7 +208,7 @@ Per-toast options (`ToastOptions`):
 | `cancel?` | `{ label, onClick }` \| `ReactNode` | Secondary button; the object form also dismisses. |
 | `closeButton?` | `boolean` | Show the ✕ affordance. |
 | `dismissible?` | `boolean` | Allow swipe / close. Defaults to `true`. |
-| `position?` | `'top-center' \| 'bottom-center' \| 'center'` | Override the outlet's position for this toast. |
+| `position?` | `'top-center' \| 'bottom-center' \| 'bottom-right' \| 'center'` | Override the outlet's position for this toast. |
 | `icon?` | `ReactNode` | Replaces the variant icon. |
 | `richColors?` | `boolean` | Show the status colour more prominently: it moves from the icon alone to the border and title as well. The surface stays neutral, as do the description, close button and action colours. No effect on `loading` or a variant-less toast, which have no status colour. |
 | `important?` | `boolean` | Announce assertively to screen readers. |
@@ -220,8 +220,9 @@ Per-toast options (`ToastOptions`):
 Outlet options (`ToasterProps`) cover `position`, `offset`, `gap`, `visibleToasts`,
 `duration`, `swipeToDismissDirection`, `closeButton`, `richColors`,
 `enableStacking`, `autoWiggleOnUpdate`, `pauseWhenPageIsHidden`, `icons`,
-`toastOptions` and `positionerStyle`. Their defaults all come from the exported
-`toastDefaults`, so `<ToastOutlet position="top-center" />` changes only that one.
+`toastOptions` and `positionerStyle`. Toasts default to `bottom-right`; their
+defaults all come from the exported `toastDefaults`, so
+`<ToastOutlet position="top-center" />` changes only that one.
 
 <Callout variant="info" title="Documented no-ops">
 `theme` and `invert` are accepted but do nothing: light/dark and per-subtree
@@ -282,4 +283,4 @@ Reach for `toast()` for passive feedback (the user doesn't have to react). Use [
 </Callout>
 
 Upgrading from 0.50.x? `show`, `api`, `DURATION`, `type Toast` and the composition
-exports were removed, and the default position moved to `bottom-center`.
+exports were removed. The default position is `bottom-right`.

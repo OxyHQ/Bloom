@@ -6,7 +6,7 @@ import {
 } from '../toast/animations';
 import type { ToastPosition } from '../toast/types';
 
-const POSITIONS: ToastPosition[] = ['top-center', 'bottom-center', 'center'];
+const POSITIONS: ToastPosition[] = ['top-center', 'bottom-center', 'bottom-right', 'center'];
 
 describe('toast layout animations', () => {
   it('returns the same instance for the same enter shape', () => {

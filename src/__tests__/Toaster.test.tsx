@@ -103,7 +103,7 @@ const positionerFor = (
     const style = flattenStyle(node.props.style);
     return (
       style.position === 'absolute' &&
-      style.alignItems === 'center' &&
+      (style.alignItems === 'center' || style.alignItems === 'flex-end') &&
       typeof style[edge] === 'number' &&
       style[edge] !== 0 &&
       style[other] === 0
@@ -395,6 +395,7 @@ describe('ToastOutlet', () => {
      */
     it.each<[ToastPosition, 'top' | 'bottom', number | string]>([
       ['bottom-center', 'bottom', 0],
+      ['bottom-right', 'bottom', 0],
       ['top-center', 'top', 0],
       ['center', 'top', '50%'],
     ])('anchors a %s row to %s: %s', (position, edge, value) => {
@@ -407,6 +408,12 @@ describe('ToastOutlet', () => {
       expect(style[edge]).toBe(value);
       // Anchoring to both edges would stretch the row instead of placing it.
       expect(style[edge === 'top' ? 'bottom' : 'top']).toBeUndefined();
+    });
+
+    it('makes the full-width row anchor click-through outside the toast card', () => {
+      const rendered = renderOutlet();
+      show(() => toast('Click through'));
+      expect(anchorOf(rendered)?.props.pointerEvents).toBe('box-none');
     });
 
     it('orders each group by its own position, not the outlet position', () => {

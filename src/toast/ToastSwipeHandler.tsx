@@ -114,7 +114,7 @@ export const ToastSwipeHandler: React.FC<
       }
 
       if (direction === 'up') {
-        const isBottomPosition = position === 'bottom-center';
+        const isBottomPosition = position === 'bottom-center' || position === 'bottom-right';
         const rawTranslation = event.translationY * (isBottomPosition ? -1 : 1);
 
         // Negative is the dismissal direction; dragging the other way meets
@@ -185,7 +185,11 @@ export const ToastSwipeHandler: React.FC<
     const transform =
       direction === 'left'
         ? { translateX: translate.value }
-        : { translateY: translate.value * (position === 'bottom-center' ? -1 : 1) };
+        : {
+            translateY:
+              translate.value *
+              (position === 'bottom-center' || position === 'bottom-right' ? -1 : 1),
+          };
 
     return {
       transform: [transform],
