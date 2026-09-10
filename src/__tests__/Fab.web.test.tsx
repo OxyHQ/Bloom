@@ -11,6 +11,7 @@ import '@testing-library/jest-dom';
 import { BloomThemeProvider } from '../theme/BloomThemeProvider';
 import { Fab } from '../fab/Fab.web';
 import { BottomEdgeProvider, useClaimBottomEdge } from '../layout/bottom-edge';
+import { TabBarMinimizeProvider, useMinimizeState } from '../tab-bar/context';
 
 (globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
 
@@ -40,6 +41,11 @@ afterEach(() => {
 });
 
 describe('Fab.web', () => {
+  function InitiallyMinimizedFab(props: React.ComponentProps<typeof Fab>) {
+    useMinimizeState().target.value = 1;
+    return <Fab {...props} />;
+  }
+
   it('moves above a bottom-edge claim registered after the first render', () => {
     function Claim() {
       useClaimBottomEdge(74);
@@ -123,6 +129,31 @@ describe('Fab.web', () => {
   it('renders an extended label', () => {
     const c = mount(<Fab label="Compose" icon={<span>+</span>} />);
     expect(getByText(c, 'Compose')).toBeTruthy();
+  });
+
+  it('collapses an extended FAB to its icon when the tab bar minimizes', () => {
+    const c = mount(
+      <TabBarMinimizeProvider>
+        <InitiallyMinimizedFab
+          label="Compose"
+          icon={<span>+</span>}
+          minimizeBehavior="collapse"
+        />
+      </TabBarMinimizeProvider>,
+    );
+
+    expect(c.querySelector('button')?.style.width).toBe('56px');
+    expect(c).not.toHaveTextContent('Compose');
+  });
+
+  it('hides the whole FAB when the tab bar minimizes in hide mode', () => {
+    const c = mount(
+      <TabBarMinimizeProvider>
+        <InitiallyMinimizedFab label="Compose" icon={<span>+</span>} minimizeBehavior="hide" />
+      </TabBarMinimizeProvider>,
+    );
+
+    expect(c.querySelector('button')).toBeNull();
   });
 
   it('applies aria-label from accessibilityLabel', () => {

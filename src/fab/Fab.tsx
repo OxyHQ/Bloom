@@ -18,9 +18,10 @@ import { bloomShadowStyle } from '../design-tokens/shadows';
 import { pressedSurface } from '../theme/press-colors';
 import { usePressAnimation } from '../hooks/use-press-animation';
 import { useInteractionState } from '../hooks/use-interaction-state';
-import type { FabPlacement, FabProps, FabSize, FabVariant } from './types';
+import { useFabMinimized } from './use-fab-minimized';
+import type { FabMinimizeBehavior, FabPlacement, FabProps, FabSize, FabVariant } from './types';
 
-export type { FabProps, FabVariant, FabSize, FabPlacement } from './types';
+export type { FabProps, FabVariant, FabSize, FabPlacement, FabMinimizeBehavior } from './types';
 
 interface ResolvedSize {
   diameter: number;
@@ -144,6 +145,7 @@ const FabComponent: React.FC<FabProps> = ({
   icon,
   children,
   label,
+  minimizeBehavior = 'none',
   variant = 'tertiary',
   size = 'medium',
   placement = 'bottom-right',
@@ -157,10 +159,12 @@ const FabComponent: React.FC<FabProps> = ({
   testID,
   zIndex = DEFAULT_Z_INDEX,
 }) => {
+  const minimized = useFabMinimized(minimizeBehavior !== 'none');
   const bottomEdgeInset = useBottomEdgeInset();
   const theme = useTheme();
   const sizeConfig = useMemo(() => resolveSize(size), [size]);
   const isExtended = label != null && label.length > 0;
+  const showLabel = isExtended && !(minimized && minimizeBehavior === 'collapse');
   const content = icon ?? children;
 
   const { scaleAnim, onPressIn, onPressOut } = usePressAnimation(
@@ -194,14 +198,14 @@ const FabComponent: React.FC<FabProps> = ({
       // split: on web these props are the deprecated path.
       ...bloomShadowStyle('m'),
     };
-    if (isExtended) {
+    if (showLabel) {
       base.paddingHorizontal = sizeConfig.diameter <= 44 ? 14 : 20;
       base.gap = 8;
     } else {
       base.width = sizeConfig.diameter;
     }
     return base;
-  }, [resolvedColors.background, sizeConfig.diameter, theme.colors.shadow, isExtended]);
+  }, [resolvedColors.background, sizeConfig.diameter, theme.colors.shadow, showLabel]);
 
   const labelTextStyle = useMemo((): TextStyle => ({
     fontSize: sizeConfig.fontSize,
@@ -221,6 +225,8 @@ const FabComponent: React.FC<FabProps> = ({
         onPressOut();
         onPressedOut();
       };
+
+  if (minimized && minimizeBehavior === 'hide') return null;
 
   return (
     <AnimatedPressable
@@ -262,7 +268,7 @@ const FabComponent: React.FC<FabProps> = ({
           {content}
         </View>
       )}
-      {isExtended && (
+      {showLabel && (
         <Text style={[labelTextStyle, labelStyle]} numberOfLines={1}>
           {label}
         </Text>
