@@ -162,4 +162,14 @@ describe('adoptStyleSheet — <style> fallback', () => {
 
     expect(document.getElementById('bloom-test')).toBeNull();
   });
+
+  it('is a no-op while the document head is unavailable', () => {
+    const { adoptStyleSheet } = freshModule();
+    const head = document.head;
+    head.remove();
+
+    expect(() => adoptStyleSheet('bloom-test', '.x {}')).not.toThrow();
+
+    document.documentElement.prepend(head);
+  });
 });

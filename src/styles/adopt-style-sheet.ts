@@ -106,7 +106,7 @@ export function adoptStyleSheet(id: string, css: string): void {
   const element = document.createElement('style');
   element.id = id;
   element.textContent = css;
-  document.head.appendChild(element);
+  document.head?.appendChild(element);
 }
 
 /**
