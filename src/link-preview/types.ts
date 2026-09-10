@@ -3,8 +3,8 @@ import type { StyleProp, ViewStyle } from 'react-native';
 /**
  * Props for {@link LinkPreviewCard}.
  *
- * Structural by design — Bloom does NOT depend on `@oxyhq/contracts`. The shape
- * mirrors the subset of the Oxy SDK's `LinkPreview` DTO (`@oxyhq/core`
+ * Structural by design — Bloom does NOT depend on `@oxy.so/contracts`. The shape
+ * mirrors the subset of the Oxy SDK's `LinkPreview` DTO (`@oxy.so/core`
  * `getLinkPreview` / `getLinkPreviews`) that is needed to render a preview, so a
  * consumer can spread an SDK `LinkPreview` straight onto this component.
  */

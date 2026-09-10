@@ -31,7 +31,7 @@ Styling is NativeWind classes throughout. There are no colour props and no wrapp
 
 Bloom is the presentation layer of [**oxy**](https://github.com/OxyHQ/oxy). It knows nothing about identity or the network, so it has no dependency on the Oxy SDK and can be used on its own.
 
-Where an app does use the SDK, the two meet at one seam: register `imageResolver` once at the root, usually `oxyServices.getFileDownloadUrl` from `@oxyhq/core`, and every `Avatar` and image in the tree resolves bare file ids for free.
+Where an app does use the SDK, the two meet at one seam: register `imageResolver` once at the root, usually `oxyServices.getFileDownloadUrl` from `@oxy.so/core`, and every `Avatar` and image in the tree resolves bare file ids for free.
 
 </td>
 </tr>

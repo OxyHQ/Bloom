@@ -16,7 +16,7 @@
 // that no longer exists.
 //
 // Metro does not carry `woff2` in its default `assetExts`, so a consumer
-// bundling for web with Metro has to register it; `@oxyhq/app-preset`'s Metro
+// bundling for web with Metro has to register it; `@oxy.so/app-preset`'s Metro
 // base already does that for every Oxy app.
 //
 // Native never reaches this module. The default `apply-font-faces.ts` is a

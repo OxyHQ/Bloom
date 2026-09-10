@@ -10,7 +10,7 @@
  * `src/` is therefore green in this repo and red in every consuming app: the
  * library reports success and the fleet reports the error. That inversion is
  * what let `pendingTimer.unref?.()` sit in `src/theme/ambient-store.ts` from
- * 0.67.0 through 1.0.0, breaking three packages of `@oxyhq/services`.
+ * 0.67.0 through 1.0.0, breaking three packages of `@oxy.so/services`.
  *
  * `?.()` is what makes that shape easy to miss: it guards the CALL, not the
  * property ACCESS, so it still demands the property exist on the declared type.

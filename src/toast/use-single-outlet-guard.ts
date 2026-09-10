@@ -49,7 +49,7 @@ export function useSingleOutletGuard(): void {
         `[Bloom] Toaster: ${mountedOutlets} toast outlets are mounted, so every ` +
           'toast renders once per outlet. The copies overlap almost exactly, so ' +
           'this reads as a rendering glitch rather than as duplicate rows. Mount ' +
-          "exactly one: @oxyhq/services' OxyProvider already renders a " +
+          "exactly one: @oxy.so/services' OxyProvider already renders a " +
           'ToastOutlet, so an app that uses it must not render its own.',
       );
     }

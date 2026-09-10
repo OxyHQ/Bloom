@@ -11,7 +11,7 @@ The app registers that function once, at the root.
 
 ```tsx
 import { ImageResolverProvider } from '@oxy.so/bloom/image-resolver';
-import { oxyServices } from '@oxyhq/services';
+import { oxyServices } from '@oxy.so/services';
 
 <ImageResolverProvider value={(id, variant) => oxyServices.getFileDownloadUrl(id, variant)}>
   <App />
@@ -27,7 +27,7 @@ type ImageResolver = (id: string, variant?: string) => string | undefined;
 A URL builder in Bloom would hardcode a host, a path shape and a variant
 vocabulary that belong to the platform, not to a component library — and every
 consumer would then need Bloom released to change any of them. One function,
-registered by the app, keeps the media contract in `@oxyhq/services` where it
+registered by the app, keeps the media contract in `@oxy.so/services` where it
 already lives.
 
 That is also why there is no `avatarUrl` field on any DTO and no per-app URL

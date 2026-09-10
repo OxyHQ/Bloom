@@ -42,7 +42,7 @@ describe('the Storybook Tailwind pipeline is wired', () => {
 
   it('compiles the same stylesheet a consumer compiles', () => {
     const css = read('.storybook/tailwind.css');
-    // The four upstream layers, in the order `@oxyhq/app-preset/css/base.css`
+    // The four upstream layers, in the order `@oxy.so/app-preset/css/base.css`
     // and the website's `src/index.css` use. `utilities.css` must stay
     // UNLAYERED — layered, it loses to react-native-web's unlayered reset.
     expect(css).toContain('@import "tailwindcss/theme.css" layer(theme);');

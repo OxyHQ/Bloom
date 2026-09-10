@@ -42,7 +42,7 @@ This includes three phases in a single rollout:
 | Decision | Choice |
 |---|---|
 | Font set | BlomusModernus + Inter Variable + Geist Mono Variable |
-| Distribution | All three files **inside `@oxy.so/bloom`** (not a separate `@oxyhq/fonts` package) |
+| Distribution | All three files **inside `@oxy.so/bloom`** (not a separate `@oxy.so/fonts` package) |
 | Loading | Automatic via `BloomThemeProvider` (default `fonts={true}`) |
 | Auto-apply to existing components | Yes — `H1-H6` → display, `Text` → sans, new `<Code>`/`<Pre>` → mono |
 | New components | `<Code>` (inline), `<Pre>` (block) for monospace |

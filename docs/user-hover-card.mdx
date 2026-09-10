@@ -12,7 +12,7 @@ your app knows about a person that Bloom does not.
 
 ```tsx
 import { UserHoverCard } from '@oxy.so/bloom/user-hover-card';
-import { FollowButton } from '@oxyhq/services';
+import { FollowButton } from '@oxy.so/services';
 
 <UserHoverCard
   avatar={user.avatar}
@@ -85,7 +85,7 @@ hover trigger around this card, do the same.
 ## Bloom holds no follow state
 
 `action` is a slot, and that is the whole design. Following is session-aware,
-optimistic, and shared across every Oxy app — it belongs to `@oxyhq/services`,
+optimistic, and shared across every Oxy app — it belongs to `@oxy.so/services`,
 which owns the mutation and the cache. A follow button living in Bloom would
 either duplicate that or force Bloom to depend on the SDK.
 

@@ -18,7 +18,7 @@
  *
  * WHY IT IS SHAPED LIKE THIS AND NOT LIKE ANYTHING ELSE
  *
- * The five imports below are, line for line, `@oxyhq/app-preset/css/base.css`
+ * The five imports below are, line for line, `@oxy.so/app-preset/css/base.css`
  * (what every Expo consumer imports at the top of its `global.css`) and the
  * head of the website's `src/index.css` (the reference Vite consumer). A
  * harness that resolved stock Tailwind while consumers resolve something else

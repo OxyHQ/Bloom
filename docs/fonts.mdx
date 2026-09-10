@@ -115,7 +115,7 @@ as content-hashed assets. **Never inline them as base64 again** — that put
 a font embedded in JS cannot be cached as a font.
 
 The one consumer requirement is `woff2` in Metro's `assetExts`, which
-`@oxyhq/app-preset` registers fleet-wide. Bundlers that already treat an asset
+`@oxy.so/app-preset` registers fleet-wide. Bundlers that already treat an asset
 import as a URL (Vite, Rollup, webpack 5) need nothing.
 
 ## Two things that look like cleanups and are not

@@ -30,9 +30,9 @@ The three general web failure modes are in `~/Oxy/AGENTS.md`. Bloom's per-direct
 
 ## Consumer web CSS pipeline (className layout is inert without it)
 
-Any WEB build rendering Bloom or `@oxyhq/services` className screens MUST wire the Tailwind/NativeWind pipeline AND `@source`-scan both packages' built `lib/`, or every LAYOUT utility (`flex-row`, `gap-*`, arbitrary `[Npx]`) is silently inert — react-native-web's base `View` reset shows through. **Colors still work** (applied inline), masking the gap; native is unaffected.
+Any WEB build rendering Bloom or `@oxy.so/services` className screens MUST wire the Tailwind/NativeWind pipeline AND `@source`-scan both packages' built `lib/`, or every LAYOUT utility (`flex-row`, `gap-*`, arbitrary `[Npx]`) is silently inert — react-native-web's base `View` reset shows through. **Colors still work** (applied inline), masking the gap; native is unaffected.
 
-Wiring: Expo/Metro apps import `@oxyhq/app-preset/css/base.css` at the top of `global.css` (first import in `app/_layout.tsx`) plus `@tailwindcss/postcss`; Vite apps use `@tailwindcss/vite` plus a stylesheet `@source`-scanning both `lib/`s. Consumer-side only — `create-oxy-app` scaffolds it.
+Wiring: Expo/Metro apps import `@oxy.so/app-preset/css/base.css` at the top of `global.css` (first import in `app/_layout.tsx`) plus `@tailwindcss/postcss`; Vite apps use `@tailwindcss/vite` plus a stylesheet `@source`-scanning both `lib/`s. Consumer-side only — `create-oxy-app` scaffolds it.
 
 ## Family layout, files and the root barrel
 

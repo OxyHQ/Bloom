@@ -15,5 +15,5 @@
 # No excludes: nothing here comes from an Oxy scope. If a first-party dependency
 # is ever added, its first install fails naming the package, and that name goes
 # in a `minimumReleaseAgeExcludes` list — matched EXACTLY, since a scope glob
-# ("@oxyhq/*") is accepted by the parser and silently matches nothing.
+# ("@oxy.so/*") is accepted by the parser and silently matches nothing.
 minimumReleaseAge = 604800

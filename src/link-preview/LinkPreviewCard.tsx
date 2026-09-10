@@ -3,9 +3,9 @@
  *
  * One component renders the OpenGraph-style "cover image + site name + title +
  * description" card across every Oxy app. It consumes the link-preview DATA
- * produced by the Oxy SDK (`@oxyhq/core` `getLinkPreview` / `getLinkPreviews`,
+ * produced by the Oxy SDK (`@oxy.so/core` `getLinkPreview` / `getLinkPreviews`,
  * DTO `LinkPreview`) but takes a structural prop shape so Bloom never depends on
- * `@oxyhq/contracts`.
+ * `@oxy.so/contracts`.
  *
  * The surface chrome is `Card`'s (`outlined` at the `radius-20` rung): one
  * platform branch for background, border and elevation, shared with every other

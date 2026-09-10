@@ -8,7 +8,7 @@
 // <peer>`, naming a package the app never mentions.
 // `@react-native-community/netinfo` was exactly this shape (with an
 // empty-string version range on top), and the same defect had already shipped
-// fleet-wide from `@oxyhq/protocol`'s `expo-crypto`.
+// fleet-wide from `@oxy.so/protocol`'s `expo-crypto`.
 //
 // (2) DYNAMIC REQUIRE WITH AN UNEVALUABLE SPECIFIER — silent, and therefore
 // worse. Metro can only collect a dependency whose specifier it can evaluate
