@@ -11,14 +11,14 @@ going, across a navigation, without restarting and without being re-downloaded.
 
 ```tsx
 // app/_layout.tsx — mounted ONCE, at the root, above the router.
-import { MediaFlightLayer } from '@oxyhq/bloom/media-flight';
+import { MediaFlightLayer } from '@oxy.so/bloom/media-flight';
 
 <MediaFlightLayer />
 ```
 
 ```tsx
 // the origin: a feed thumbnail
-import { useMediaFlight } from '@oxyhq/bloom/media-flight';
+import { useMediaFlight } from '@oxy.so/bloom/media-flight';
 
 const flight = useMediaFlight();
 
@@ -613,7 +613,7 @@ One line at startup fixes it, on any bundler:
 
 ```ts
 import * as ExpoVideo from 'expo-video';
-import { provideExpoVideo } from '@oxyhq/bloom/media-flight';
+import { provideExpoVideo } from '@oxy.so/bloom/media-flight';
 
 provideExpoVideo(ExpoVideo);
 ```

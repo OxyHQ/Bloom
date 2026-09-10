@@ -103,7 +103,7 @@ interface Registry {
 
 declare global {
   // eslint-disable-next-line no-var
-  var __oxyhq_bloom_overlay_stack__: Registry | undefined;
+  var __oxy_so_bloom_overlay_stack__: Registry | undefined;
 }
 
 /**
@@ -116,8 +116,8 @@ declare global {
  * colliding ranks and reintroducing exactly the bug this module removes.
  */
 function registry(): Registry {
-  globalThis.__oxyhq_bloom_overlay_stack__ ??= { sequence: 0, live: new Set() };
-  return globalThis.__oxyhq_bloom_overlay_stack__;
+  globalThis.__oxy_so_bloom_overlay_stack__ ??= { sequence: 0, live: new Set() };
+  return globalThis.__oxy_so_bloom_overlay_stack__;
 }
 
 /** Z-indices for a given rank. Exported for tests and for the native surfaces. */
@@ -162,5 +162,5 @@ export function releaseOverlayRank(rank: number): void {
 
 /** Test seam — drops all registry state. */
 export function resetOverlayStack(): void {
-  globalThis.__oxyhq_bloom_overlay_stack__ = { sequence: 0, live: new Set() };
+  globalThis.__oxy_so_bloom_overlay_stack__ = { sequence: 0, live: new Set() };
 }

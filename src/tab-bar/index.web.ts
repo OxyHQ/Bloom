@@ -2,7 +2,7 @@
  * Ported from expo-glass-tabs v0.1.1 — src/index.ts
  * (MIT © 2026 David Mokos).
  *
- * WEB entry for `@oxyhq/bloom/tab-bar`, selected through the package's
+ * WEB entry for `@oxy.so/bloom/tab-bar`, selected through the package's
  * `browser` export condition.
  *
  * The web modules are imported by their FULL `.web` name on purpose. Inside the
@@ -26,6 +26,7 @@ export {
   MINIMIZE_SPRING,
   setMinimized,
   TabBarMinimizeProvider,
+  useExpandTabBar,
   useMinimizeOnScroll,
   useMinimizeState,
   useTabBarMinimized,

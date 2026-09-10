@@ -10,7 +10,7 @@
  * named the row component. tsc reported nothing — an explicit re-export shadows a
  * star export by design, so the file is well-formed — and the star's `Item` simply
  * stopped existing on the barrel while staying reachable from
- * `@oxyhq/bloom/grouped-buttons`. The same import specifier meant two different
+ * `@oxy.so/bloom/grouped-buttons`. The same import specifier meant two different
  * components depending on which path a consumer took, and nothing anywhere said so.
  *
  * The two-star case is worse and equally silent: ES modules EXCLUDE a name two

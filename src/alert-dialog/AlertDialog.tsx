@@ -21,7 +21,7 @@ type DialogComponent = React.ComponentType<DialogProps>;
  * confirm surface uses (e.g. Mention's `ConfirmPrompt`), so the button
  * component, layout, and palette stay identical across apps. To trigger a
  * confirm from an event handler without owning visible state, reach for the
- * imperative `confirm()` in `@oxyhq/bloom/surfaces` — it presents onto the
+ * imperative `confirm()` in `@oxy.so/bloom/surfaces` — it presents onto the
  * shared surface stack, so it layers over whatever is already open.
  *
  * Control mode — IMPERATIVE, not controlled. `AlertDialog` keeps its public

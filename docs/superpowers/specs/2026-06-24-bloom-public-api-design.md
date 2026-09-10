@@ -11,7 +11,7 @@ performs" machinery. Internal folder reorg (Phase 2), tokens (Phase 3), a11y/tes
 
 ## 1. Context & problem
 
-`@oxyhq/bloom` is a single React Native + Web component library consumed across the
+`@oxy.so/bloom` is a single React Native + Web component library consumed across the
 whole Oxy ecosystem (Mention, Allo, Homiio, and the Oxy apps: accounts, console,
 inbox, auth, os…). It exposes ~58 subpath entries plus a root barrel (`src/index.ts`),
 with a generator script (`scripts/generate-platform-exports.mjs`) keeping the
@@ -20,7 +20,7 @@ with a generator script (`scripts/generate-platform-exports.mjs`) keeping the
 The public surface is **inconsistent**, which is the first thing an adopter notices:
 
 - The root barrel mixes two export styles for similar things:
-  - `Card` is **flat**: `import { Card, CardHeader, CardBody } from '@oxyhq/bloom'`.
+  - `Card` is **flat**: `import { Card, CardHeader, CardBody } from '@oxy.so/bloom'`.
   - `Tabs` is a **namespace**: `Tabs.TabsBar`, `Tabs.Tab` — redundant and ugly.
   - `Accordion` exports flat parts inside its folder but the root barrel **re-wraps**
     it as `export * as Accordion`, so consumers write `Accordion.AccordionItem`
@@ -35,13 +35,13 @@ The public surface is **inconsistent**, which is the first thing an adopter noti
 1. **One install, everything available, easy but pro.** The headline, officially-taught
    import is the simple root import:
    ```tsx
-   import { Button, Dialog, Tabs, TabsTrigger } from '@oxyhq/bloom'
+   import { Button, Dialog, Tabs, TabsTrigger } from '@oxy.so/bloom'
    ```
    …and it must NOT cost extra bundle size, especially on React Native / Metro (whose
    tree-shaking is weak/unreliable).
 2. **One consistent rule** for how compound components are exposed.
 3. **Subpaths stay** as the power-user / guaranteed-tree-shaking path
-   (`@oxyhq/bloom/button`).
+   (`@oxy.so/bloom/button`).
 4. **Clean cut, no shims** (per AGENTS.md and the 0.16.x precedent): remove the old
    namespace exports outright, document in `MIGRATION.md`, and migrate every consuming
    app in the same rollout.
@@ -57,17 +57,17 @@ The public surface is **inconsistent**, which is the first thing an adopter noti
 
 ## 4. Decision A — package model
 
-**Single package `@oxyhq/bloom`** (NOT a multi-package split à la Radix/MUI-icons).
+**Single package `@oxy.so/bloom`** (NOT a multi-package split à la Radix/MUI-icons).
 This matches the user's mental model ("install one thing, get everything", like
 `@mui/material`) and means **zero import migration for the package boundary** — the
-ecosystem already consumes `@oxyhq/bloom`.
+ecosystem already consumes `@oxy.so/bloom`.
 
 Both import forms are first-class:
 
 | Form | Example | Audience |
 |------|---------|----------|
-| Root barrel (easy, official) | `import { Button } from '@oxyhq/bloom'` | everyone |
-| Subpath (pro, max tree-shaking) | `import { Button } from '@oxyhq/bloom/button'` | power users / perf-critical |
+| Root barrel (easy, official) | `import { Button } from '@oxy.so/bloom'` | everyone |
+| Subpath (pro, max tree-shaking) | `import { Button } from '@oxy.so/bloom/button'` | power users / perf-critical |
 
 ## 5. Decision B — compound component convention: **flat with prefix**
 
@@ -75,7 +75,7 @@ Compound widgets export each part as a top-level prefixed name (shadcn / MUI / R
 style), NOT as a namespace object:
 
 ```tsx
-import { Tabs, TabsList, TabsTrigger, TabsContent } from '@oxyhq/bloom'
+import { Tabs, TabsList, TabsTrigger, TabsContent } from '@oxy.so/bloom'
 <Tabs><TabsList><TabsTrigger/></TabsList><TabsContent/></Tabs>
 ```
 
@@ -228,7 +228,7 @@ wrapper so the already-prefixed parts become top-level.
 
 ## 8. Decision C — easy root import that performs (no bundle penalty)
 
-Three pieces make `import { Button } from '@oxyhq/bloom'` cost the same as the subpath
+Three pieces make `import { Button } from '@oxy.so/bloom'` cost the same as the subpath
 import:
 
 1. **`sideEffects` audit (correctness gate).** `package.json` already declares
@@ -244,7 +244,7 @@ import:
    plugin config that rewrites a root named import into the matching subpath import at
    build time:
    ```
-   import { Button } from '@oxyhq/bloom'  →  import { Button } from '@oxyhq/bloom/button'
+   import { Button } from '@oxy.so/bloom'  →  import { Button } from '@oxy.so/bloom/button'
    ```
    This is the MUI approach (`babel-plugin-import`-style). It requires a **name → subpath
    map**, which we already have as the single source of truth in
@@ -271,7 +271,7 @@ import:
   source of truth. Generated output stays committed for reviewable diffs.
 - No subpath is removed in this phase (the `responsive-sheet`/`centered-dialog`
   removals already happened in 0.16.x). Subpaths for the converted families keep their
-  paths (`@oxyhq/bloom/tabs`, `/select`, …); only their *exported names* change.
+  paths (`@oxy.so/bloom/tabs`, `/select`, …); only their *exported names* change.
 
 ## 10. Versioning, migration & downstream rollout
 
@@ -285,7 +285,7 @@ import:
 - **Downstream migration in the same rollout** (Fix-Upstream workflow): after Bloom
   builds + tests green and is published, spawn per-app agents (mention-frontend,
   allo, homiio, oxy-frontend, oxy-services, …) to:
-  1. bump `@oxyhq/bloom`,
+  1. bump `@oxy.so/bloom`,
   2. codemod `Tabs.TabsBar` → `Tabs`, `Menu.Item` → `MenuItem`, etc. (mechanical,
      driven by the §6/§7 mapping),
   3. run each app's `typescript` + build,

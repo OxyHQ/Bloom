@@ -4,7 +4,7 @@ import { dirname, join, relative, resolve } from 'node:path';
 /**
  * What the root barrel is allowed to LINK.
  *
- * Metro does not tree-shake, so `import { Button } from '@oxyhq/bloom'` links
+ * Metro does not tree-shake, so `import { Button } from '@oxy.so/bloom'` links
  * every module this barrel can reach. A peer that only some apps install is
  * therefore a build failure for the rest — not a degradation, not a warning.
  * That is the whole reason `./tab-bar`, `./provider`,
@@ -28,17 +28,17 @@ const SRC = join(__dirname, '..');
  * `src/index.ts` is the mistake this catches.
  */
 const FORBIDDEN: Record<string, string> = {
-  'expo-glass-effect': '@oxyhq/bloom/tab-bar',
-  'expo-symbols': '@oxyhq/bloom/tab-bar',
-  'expo-router': '@oxyhq/bloom/provider (and ./scroll/expo-router)',
+  'expo-glass-effect': '@oxy.so/bloom/tab-bar',
+  'expo-symbols': '@oxy.so/bloom/tab-bar',
+  'expo-router': '@oxy.so/bloom/provider (and ./scroll/expo-router)',
   // Reached from BOTH families: `media-flight/MediaSurface.tsx` is the one
   // renderer the gallery and the flight layer share, and it is what names
   // `expo-image`. Either subpath entering the root barrel re-links it.
-  'expo-image': '@oxyhq/bloom/zoomable-media-gallery (and ./media-flight)',
+  'expo-image': '@oxy.so/bloom/zoomable-media-gallery (and ./media-flight)',
   // The optional video peer. It is loaded through an optional `require`, which
   // this scan deliberately ignores — listed so the intent is recorded, and
   // caught here the day somebody turns it into a static import.
-  'expo-video': '@oxyhq/bloom/media-flight',
+  'expo-video': '@oxy.so/bloom/media-flight',
 };
 
 /**

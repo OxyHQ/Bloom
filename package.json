@@ -1,6 +1,6 @@
 {
-  "name": "@oxyhq/bloom",
-  "version": "1.14.3",
+  "name": "@oxy.so/bloom",
+  "version": "1.0.0",
   "packageManager": "bun@1.3.14",
   "description": "Bloom UI — Oxy ecosystem component library for React Native + Expo + Web",
   "main": "lib/commonjs/index.js",
@@ -1575,13 +1575,13 @@
   },
   "release-it": {
     "git": {
-      "tagName": "@oxyhq/bloom@${version}",
-      "tagAnnotation": "Release @oxyhq/bloom@${version}",
-      "commitMessage": "chore: release @oxyhq/bloom@${version}"
+      "tagName": "@oxy.so/bloom@${version}",
+      "tagAnnotation": "Release @oxy.so/bloom@${version}",
+      "commitMessage": "chore: release @oxy.so/bloom@${version}"
     },
     "github": {
       "release": true,
-      "releaseName": "@oxyhq/bloom@${version}"
+      "releaseName": "@oxy.so/bloom@${version}"
     },
     "npm": {
       "publish": true

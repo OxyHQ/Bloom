@@ -23,8 +23,8 @@ import {
   DropdownMenuSeparator,
   DropdownMenuShortcut,
   DropdownMenuTrigger,
-} from '@oxyhq/bloom/dropdown-menu';
-import { Button } from '@oxyhq/bloom/button';
+} from '@oxy.so/bloom/dropdown-menu';
+import { Button } from '@oxy.so/bloom/button';
 
 <DropdownMenu>
   <DropdownMenuTrigger asChild label="Open menu">
@@ -80,7 +80,7 @@ Uncontrolled by default; pass `open` to take over. `onOpenChange` fires either w
 ## Checkbox and radio rows
 
 ```tsx
-import { Check_Stroke2_Corner0_Rounded as CheckIcon } from '@oxyhq/bloom/icons';
+import { Check_Stroke2_Corner0_Rounded as CheckIcon } from '@oxy.so/bloom/icons';
 
 <DropdownMenuCheckboxItem checked={dense} onCheckedChange={setDense} keepOpen>
   Dense rows
@@ -181,4 +181,4 @@ Its shape is a class string, not resolved numbers, because that is how the origi
 
 Every part takes a `className` and APPENDS it to its own, so a layout class cannot strip the chrome. Two utilities for one property are then resolved by Tailwind's own emission order, exactly as in any shadcn consumer; `style` remains the unambiguous override.
 
-**A web consumer must have the Tailwind/NativeWind pipeline wired and `@source`-scanning `@oxyhq/bloom/lib`.** That was always required; it is now visible rather than subtle, because the colours moved out of inline style too.
+**A web consumer must have the Tailwind/NativeWind pipeline wired and `@source`-scanning `@oxy.so/bloom/lib`.** That was always required; it is now visible rather than subtle, because the colours moved out of inline style too.

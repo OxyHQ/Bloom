@@ -1,4 +1,4 @@
-# Dependabot configuration for @oxyhq/bloom.
+# Dependabot configuration for @oxy.so/bloom.
 #
 # Bloom uses Bun and tracks `bun.lock` only — there is NO `package-lock.json`.
 # Dependabot's npm updater does not support Bun, so an npm/npm_and_yarn

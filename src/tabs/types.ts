@@ -9,7 +9,7 @@ export interface TabsProps {
    *
    * OMIT it for the focus-driven path, where each trigger supplies its own
    * {@link TabsTriggerProps.isFocused} and performs its own navigation. That is
-   * how `@oxyhq/bloom/tabs/expo-router` keeps the underline correct through
+   * how `@oxy.so/bloom/tabs/expo-router` keeps the underline correct through
    * deep links, browser Back and back gestures — none of which pass through a
    * press handler. Providing both would put two writers on one shared value.
    */

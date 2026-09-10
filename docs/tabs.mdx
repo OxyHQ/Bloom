@@ -12,7 +12,7 @@ and `onValueChange` reports a press — and the caller renders the panel for
 whatever `value` currently is.
 
 ```tsx
-import { Tabs, TabsTrigger } from '@oxyhq/bloom/tabs';
+import { Tabs, TabsTrigger } from '@oxy.so/bloom/tabs';
 
 <Tabs value={tab} onValueChange={setTab}>
   <TabsTrigger value="posts" label="Posts" />
@@ -71,5 +71,5 @@ differently?
 
 ## expo-router
 
-`@oxyhq/bloom/tabs/expo-router` binds the strip to the router so `value` comes
+`@oxy.so/bloom/tabs/expo-router` binds the strip to the router so `value` comes
 from the current route and a press navigates, instead of a local `useState`.

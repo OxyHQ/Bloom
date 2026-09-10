@@ -2,7 +2,7 @@
  * Ported from expo-glass-tabs v0.1.1 — src/index.ts
  * (MIT © 2026 David Mokos).
  *
- * DEFAULT entry for `@oxyhq/bloom/tab-bar`.
+ * DEFAULT entry for `@oxy.so/bloom/tab-bar`.
  *
  * The platform pieces are imported by their BARE relative name so Metro's
  * platform-extension resolution picks `surface.native.tsx` / `glyph.native.tsx`
@@ -24,6 +24,7 @@ export {
   MINIMIZE_SPRING,
   setMinimized,
   TabBarMinimizeProvider,
+  useExpandTabBar,
   useMinimizeOnScroll,
   useMinimizeState,
   useTabBarMinimized,

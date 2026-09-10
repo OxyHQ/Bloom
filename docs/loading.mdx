@@ -13,14 +13,14 @@ One component, three variants. Pick the right one for the affordance:
 - `inline` — small spinner with a text label, for inline buttons or rows
 
 For content placeholders reach for the `Skeleton` family
-(`@oxyhq/bloom/skeleton`), which actually shimmers. `Loading` never had a real
+(`@oxy.so/bloom/skeleton`), which actually shimmers. `Loading` never had a real
 skeleton — its `skeleton` variant drew static rectangles under the same name —
 so the variant is gone.
 
 ## Spinner (default)
 
 ```tsx
-import { Loading } from '@oxyhq/bloom';
+import { Loading } from '@oxy.so/bloom';
 
 <Loading variant="spinner" />
 <Loading variant="spinner" size="large" />
@@ -97,7 +97,7 @@ For native-tailwind users, `className` overrides `color`:
 ### Lazy content placeholders
 
 ```tsx
-import * as Skeleton from '@oxyhq/bloom/skeleton';
+import * as Skeleton from '@oxy.so/bloom/skeleton';
 
 const { data, isPending } = useQuery({ queryKey: ['articles'], queryFn });
 

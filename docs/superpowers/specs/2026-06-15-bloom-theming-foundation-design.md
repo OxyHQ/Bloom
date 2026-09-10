@@ -2,12 +2,12 @@
 
 - **Date:** 2026-06-15
 - **Status:** Approved (design) — pending spec review → implementation plan
-- **Owner:** Bloom (`@oxyhq/bloom`)
-- **Target version:** `@oxyhq/bloom@0.8.0` (token-format change; documented migration)
+- **Owner:** Bloom (`@oxy.so/bloom`)
+- **Target version:** `@oxy.so/bloom@0.8.0` (token-format change; documented migration)
 
 ## Context & scope
 
-`@oxyhq/bloom` is the primary UI library for every Oxy app (Mention, console, auth,
+`@oxy.so/bloom` is the primary UI library for every Oxy app (Mention, console, auth,
 accounts, inbox, website, Homiio, Allo, Alia, agora). Its theming has accreted
 fragility that recently broke production login on console/auth.
 
@@ -105,10 +105,10 @@ var names, (c) the shared presets.
 
 Generated from the token registry and shipped by Bloom:
 
-- **`@oxyhq/bloom/theme.css`** — Tailwind v4 `@theme` + `:root`/`.dark` fallback for
+- **`@oxy.so/bloom/theme.css`** — Tailwind v4 `@theme` + `:root`/`.dark` fallback for
   web apps. console / auth / website `@import` it and delete their hand-written
   `:root` / `@theme` / `@theme inline` blocks.
-- **`@oxyhq/bloom/nativewind-preset`** — a NativeWind/Tailwind preset (token-name →
+- **`@oxy.so/bloom/nativewind-preset`** — a NativeWind/Tailwind preset (token-name →
   `var(--x)` color map) for Expo apps. Mention / Homiio spread it in
   `tailwind.config` and delete their duplicated maps (Mention deletes the
   double-declared map in both `tailwind.config.js` and `global.css`).
@@ -136,7 +136,7 @@ model (useTheme + StyleSheet, RNW on web, web fork only where genuinely web-spec
 
 ### 5. Versioning & band-aid removal
 
-- Bump to **`@oxyhq/bloom@0.8.0`**. Token *names* (CSS var + JS keys) are preserved,
+- Bump to **`@oxy.so/bloom@0.8.0`**. Token *names* (CSS var + JS keys) are preserved,
   so consumers keep working; token *values* become `rgb(...)` (valid everywhere).
 - Same change removes `toWebColorValue` / `hslTripletToRgb` / `--color-*`.
 - Implementation order within P0: (1) token registry + OKLCH source + rgb pipeline +

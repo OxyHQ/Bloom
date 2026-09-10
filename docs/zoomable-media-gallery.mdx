@@ -10,7 +10,7 @@ Full-screen images **and video** with pinch-zoom, swipe between, and
 drag-to-dismiss. Mount it once near the app root and open it from anywhere.
 
 ```tsx
-import { ZoomableMediaGallery, type ZoomableMediaGalleryHandle } from '@oxyhq/bloom/zoomable-media-gallery';
+import { ZoomableMediaGallery, type ZoomableMediaGalleryHandle } from '@oxy.so/bloom/zoomable-media-gallery';
 
 const gallery = useRef<ZoomableMediaGalleryHandle>(null);
 
@@ -22,7 +22,7 @@ gallery.current?.open(items, index);
 
 ## Two specifiers, one module
 
-`@oxyhq/bloom/zoomable-image-gallery` resolves the same module and keeps
+`@oxy.so/bloom/zoomable-image-gallery` resolves the same module and keeps
 working: an image gallery is exactly what this serves when every item is an
 image. The COMPONENT was renamed, so update the identifier —
 `ZoomableImageGallery` no longer exists, and there is no alias.
@@ -31,7 +31,7 @@ image. The COMPONENT was renamed, so update the identifier —
 
 ```tsx
 import { useVideoPlayer } from 'expo-video';
-import type { GalleryMedia } from '@oxyhq/bloom/zoomable-media-gallery';
+import type { GalleryMedia } from '@oxy.so/bloom/zoomable-media-gallery';
 
 // YOU create the player and YOU own it. Bloom never creates or releases one.
 const player = useVideoPlayer(videoUrl);

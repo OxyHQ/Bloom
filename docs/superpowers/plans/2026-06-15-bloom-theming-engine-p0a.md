@@ -8,7 +8,7 @@
 
 **Tech Stack:** TypeScript, React Native, react-native-web, react-native-css, Jest (jsdom + node), `@react-native/normalize-colors`.
 
-**Scope:** P0a is the engine only. Out of scope (separate plans): P0b shared presets (`@oxyhq/bloom/theme.css` + `nativewind-preset`); P0c component build queue (sidebar, command, field, …); consumer-app migration (P1–P3). Do NOT change visible colors or add presets.
+**Scope:** P0a is the engine only. Out of scope (separate plans): P0b shared presets (`@oxy.so/bloom/theme.css` + `nativewind-preset`); P0c component build queue (sidebar, command, field, …); consumer-app migration (P1–P3). Do NOT change visible colors or add presets.
 
 **Parity rule (applies to every task):** the *resolved sRGB value* of every token, for every preset × {light,dark}, must equal the current pipeline's output. The current sRGB oracle is `hslTripletToRgb(currentTriple)` (the existing `--color-*` value). OKLCH authoring is allowed to differ only within ΔE ≤ 1.0 from that oracle (rounding), asserted in tests.
 
@@ -586,7 +586,7 @@ Edit `package.json` `"version": "0.8.0"`. (Publish happens at execution handoff,
 
 ```bash
 git add package.json
-git commit -m "chore(release): @oxyhq/bloom@0.8.0 — single canonical rgb token pipeline"
+git commit -m "chore(release): @oxy.so/bloom@0.8.0 — single canonical rgb token pipeline"
 ```
 
 ---

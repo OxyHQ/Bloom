@@ -16,12 +16,12 @@ import { extname, join, relative } from 'node:path';
  * Two shapes are checked, because the real incident needed both:
  *
  *   1. `Icons.Home` — a member that does not exist.
- *   2. `import { Icons } from '@oxyhq/bloom/icons'` — the NAMESPACE imported as a
+ *   2. `import { Icons } from '@oxy.so/bloom/icons'` — the NAMESPACE imported as a
  *      named export. `Icons` is assembled by the ROOT barrel
  *      (`export * as Icons from './icons'` in `src/index.ts`); the `./icons`
  *      subpath exports the components flat, so that import is `undefined` too.
- *      `import * as Icons from '@oxyhq/bloom/icons'` and
- *      `import { Icons } from '@oxyhq/bloom'` are both correct and must stay
+ *      `import * as Icons from '@oxy.so/bloom/icons'` and
+ *      `import { Icons } from '@oxy.so/bloom'` are both correct and must stay
  *      unflagged.
  *
  * Comments are deliberately NOT stripped here — the inverse of
@@ -202,25 +202,25 @@ describe('icon reference integrity', () => {
 
   it('flags the two mistakes that have actually been made', () => {
     const probe = [
-      "import { Icons } from '@oxyhq/bloom/icons';",
+      "import { Icons } from '@oxy.so/bloom/icons';",
       'const a = <Icons.Home />;',
-      "import { Bell, Home } from '@oxyhq/bloom/icons';",
+      "import { Bell, Home } from '@oxy.so/bloom/icons';",
       " * A doc comment saying `<Icons.Lock size=\"sm\" />`, which is where four of these lived.",
     ].join('\n');
 
     expect(unresolvedIconRefs(probe, ICON_EXPORTS)).toEqual([
-      { line: 1, ref: "{ Icons } from '@oxyhq/bloom/icons'" },
+      { line: 1, ref: "{ Icons } from '@oxy.so/bloom/icons'" },
       { line: 2, ref: 'Icons.Home' },
-      { line: 3, ref: "{ Bell } from '@oxyhq/bloom/icons'" },
-      { line: 3, ref: "{ Home } from '@oxyhq/bloom/icons'" },
+      { line: 3, ref: "{ Bell } from '@oxy.so/bloom/icons'" },
+      { line: 3, ref: "{ Home } from '@oxy.so/bloom/icons'" },
       { line: 4, ref: 'Icons.Lock' },
     ]);
   });
 
   it('leaves every correct form alone', () => {
     const probe = [
-      "import * as Icons from '@oxyhq/bloom/icons';",
-      "import { Icons } from '@oxyhq/bloom';",
+      "import * as Icons from '@oxy.so/bloom/icons';",
+      "import { Icons } from '@oxy.so/bloom';",
       'const a = <Icons.Home_Stroke2_Corner0_Rounded />;',
       "import { Check_Stroke2_Corner0_Rounded as CheckIcon } from '../icons/Check';",
       "import { type IconStyle, type Props as SVGIconProps } from '../icons/shared';",

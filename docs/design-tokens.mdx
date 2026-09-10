@@ -5,7 +5,7 @@ description: The centralized semantic Tailwind / NativeWind vocabulary shared by
 
 # Design Tokens
 
-`@oxyhq/bloom/design-tokens` ships the **Oxy Unified Design Language**: a
+`@oxy.so/bloom/design-tokens` ships the **Oxy Unified Design Language**: a
 namespaced, semantic set of utility classes (`bg-fill`, `text-text-tertiary`,
 `p-space-8`, `rounded-radius-20`, `text-body`, `font-body`, `shadow-s`) that
 resolve to the SAME class names on **web (Tailwind)** and **native (NativeWind)**.
@@ -32,7 +32,7 @@ import {
   COLOR_PRESET_REGISTRY,
   COLOR_PRESET_FAMILY_REGISTRY,
   COLOR_PRESET_GROUPS,
-} from '@oxyhq/bloom';
+} from '@oxy.so/bloom';
 
 const cobalt = COLOR_PRESET_REGISTRY.find((recipe) => recipe.name === 'cobalt');
 cobalt?.displayName;   // 'Cobalt + Signal Yellow'
@@ -66,7 +66,7 @@ registry by family or curated/derived pairing.
 Add the Bloom preset to your `tailwind.config.js`:
 
 ```js
-const { bloomTailwindPreset } = require('@oxyhq/bloom/tailwind-preset');
+const { bloomTailwindPreset } = require('@oxy.so/bloom/tailwind-preset');
 
 module.exports = {
   presets: [bloomTailwindPreset],
@@ -88,7 +88,7 @@ cannot drift) at a dedicated export:
 ```css
 /* your global.css — after the Tailwind import */
 @import "tailwindcss";
-@import "@oxyhq/bloom/design-tokens/theme.css";
+@import "@oxy.so/bloom/design-tokens/theme.css";
 ```
 
 That single `@import` registers the full Bloom `@theme` vocabulary (color-role
@@ -107,7 +107,7 @@ time) rather than via `@import`, `bloomThemeBlock()` / `bloomThemeCss()` return
 the exact same content programmatically:
 
 ```ts
-import { bloomThemeBlock } from '@oxyhq/bloom/design-tokens';
+import { bloomThemeBlock } from '@oxy.so/bloom/design-tokens';
 // write `bloomThemeBlock()` into your generated global.css
 ```
 
@@ -122,7 +122,7 @@ truth that drifts from the preset it claims to mirror.
 Generate it instead, at build time:
 
 ```ts
-import { getPresetVars, buildSeedScopeVars } from '@oxyhq/bloom/design-tokens';
+import { getPresetVars, buildSeedScopeVars } from '@oxy.so/bloom/design-tokens';
 
 // Document root: canonical tokens are all it needs.
 getPresetVars('oxy', 'dark'); // { '--background': 'rgb(16 13 16)', … }
@@ -153,7 +153,7 @@ W3C Design Tokens (DTCG) format, generated from the same colour engine, so the
 JSON and the CSS cannot disagree:
 
 ```ts
-import tokens from '@oxyhq/bloom/design-tokens/tokens.json';
+import tokens from '@oxy.so/bloom/design-tokens/tokens.json';
 
 tokens.color.oxy.dark.card.$value;    // '#3b323c' — the value of --card
 tokens.color.teal.light.primary.$value; // '#1d6a75'
@@ -177,7 +177,7 @@ Font families and shadows are deliberately absent: families resolve to
 `var(--bloom-font-*)`, which is meaningless off the web, and shadows ship as a
 platform-forked style object (`bloomShadowStyle`). If you need the same data in
 memory rather than from the file, `bloomDesignTokens()` from
-`@oxyhq/bloom/design-tokens` returns it.
+`@oxy.so/bloom/design-tokens` returns it.
 
 ## Color roles
 

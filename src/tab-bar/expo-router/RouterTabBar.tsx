@@ -3,9 +3,9 @@
  * (MIT © 2026 David Mokos).
  *
  * expo-router bindings for the tab bar. This subpath
- * (`@oxyhq/bloom/tab-bar/expo-router`) is the ONLY place in Bloom that may
+ * (`@oxy.so/bloom/tab-bar/expo-router`) is the ONLY place in Bloom that may
  * import `expo-router` or `react-native-screens`, which is why it is a separate
- * entry: the core `@oxyhq/bloom/tab-bar` stays usable in an app with no router
+ * entry: the core `@oxy.so/bloom/tab-bar` stays usable in an app with no router
  * at all, and neither optional peer is pulled into a bundle that never asks for
  * it.
  */

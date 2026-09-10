@@ -38,7 +38,7 @@ function dismissById(id: string, result?: unknown): void {
  *
  * Exposed at the package root as `surfaces`, and — for `alert`/`confirm` — as
  * bare names too; every member is also a named export of
- * `@oxyhq/bloom/surfaces` for direct import.
+ * `@oxy.so/bloom/surfaces` for direct import.
  */
 export const surfaces = {
   /** Present a new surface on top. Resolves with the dismissal result. */

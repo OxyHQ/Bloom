@@ -4,7 +4,7 @@
 </p>
 
 <p align="center">
-  <a href="https://www.npmjs.com/package/@oxyhq/bloom"><img alt="npm" src="https://img.shields.io/npm/v/@oxyhq/bloom?style=flat-square&color=440151&label=%40oxyhq%2Fbloom"></a>
+  <a href="https://www.npmjs.com/package/@oxy.so/bloom"><img alt="npm" src="https://img.shields.io/npm/v/@oxy.so/bloom?style=flat-square&color=440151&label=%40oxyhq%2Fbloom"></a>
   <a href="./LICENSE"><img alt="License Apache-2.0" src="https://img.shields.io/badge/license-Apache--2.0-informational?style=flat-square"></a>
   <img alt="React Native" src="https://img.shields.io/badge/React%20Native-0.73%2B-61DAFB?style=flat-square&logo=react&logoColor=black">
   <img alt="Expo" src="https://img.shields.io/badge/Expo-supported-000020?style=flat-square&logo=expo&logoColor=white">
@@ -20,7 +20,7 @@
 
 ### What it is
 
-Components, hooks and design tokens published as `@oxyhq/bloom` across 88 subpath exports, shipped as `src` for Metro and as compiled CommonJS and ESM for everyone else. Web builds resolve platform forks automatically through export conditions, so a `.web.tsx` fork never reaches a native bundle.
+Components, hooks and design tokens published as `@oxy.so/bloom` across 88 subpath exports, shipped as `src` for Metro and as compiled CommonJS and ESM for everyone else. Web builds resolve platform forks automatically through export conditions, so a `.web.tsx` fork never reaches a native bundle.
 
 Styling is NativeWind classes throughout. There are no colour props and no wrapper components to theme a button, because a second way to set a colour is a second thing that can disagree.
 
@@ -40,7 +40,7 @@ Where an app does use the SDK, the two meet at one seam: register `imageResolver
 ## Install
 
 ```bash
-bun add @oxyhq/bloom
+bun add @oxy.so/bloom
 ```
 
 <details>
@@ -83,7 +83,7 @@ Bloom follows the clean cut rule, so there are no `@deprecated` aliases and no o
 That file ships inside the package, so the copy you read is the one that describes the version you installed:
 
 ```bash
-$EDITOR node_modules/@oxyhq/bloom/docs/migrating-to-1.0.mdx
+$EDITOR node_modules/@oxy.so/bloom/docs/migrating-to-1.0.mdx
 ```
 
 ## Getting started
@@ -91,7 +91,7 @@ $EDITOR node_modules/@oxyhq/bloom/docs/migrating-to-1.0.mdx
 Mount `BloomProvider` once, at the very top of the app. It composes every piece of app wide Bloom state, theme, haptics, image resolution, scroll restoration and tab bar minimise progress, so none of them can end up at the wrong depth.
 
 ```tsx
-import { BloomProvider } from '@oxyhq/bloom/provider';
+import { BloomProvider } from '@oxy.so/bloom/provider';
 
 <BloomProvider
   defaultMode="system"
@@ -106,11 +106,11 @@ import { BloomProvider } from '@oxyhq/bloom/provider';
 
 Everything scrollable must sit under it. `useScrollRestoration()` throws outside its provider, so a list rendered beside the root, a right rail or an overlay, crashes that screen.
 
-Outlets are deliberately not included, because where they sit in the tree is a real application decision and a second mount duplicates every surface they render. Mount these yourself, under `BloomProvider`: `ToastOutlet`, the `PortalProvider` and `PortalOutlet` pair from `@oxyhq/bloom/portal`, and `SurfaceHost` (which renders `alert()`, `confirm()`, `prompt()` and everything else on the surface stack).
+Outlets are deliberately not included, because where they sit in the tree is a real application decision and a second mount duplicates every surface they render. Mount these yourself, under `BloomProvider`: `ToastOutlet`, the `PortalProvider` and `PortalOutlet` pair from `@oxy.so/bloom/portal`, and `SurfaceHost` (which renders `alert()`, `confirm()`, `prompt()` and everything else on the surface stack).
 
 ```tsx
-import { Button } from '@oxyhq/bloom/button';
-import { toast } from '@oxyhq/bloom/toast';
+import { Button } from '@oxy.so/bloom/button';
+import { toast } from '@oxy.so/bloom/toast';
 
 <Button onPress={() => toast.success('Saved')}>Save</Button>
 ```
@@ -126,7 +126,7 @@ import { toast } from '@oxyhq/bloom/toast';
 `light`, `dark`, `system`, and `adaptive`, which follows the iOS and Android dynamic colours when the platform offers them.
 
 ```tsx
-import { useTheme } from '@oxyhq/bloom/theme';
+import { useTheme } from '@oxy.so/bloom/theme';
 
 const theme = useTheme();
 // theme.colors.primary, theme.colors.text, theme.isDark
@@ -167,7 +167,7 @@ Bloom publishes 88 subpath exports. Importing from the subpath rather than the r
 
 ## Documentation
 
-Component guides live in [`docs/`](./docs), one `.mdx` per family, and **they ship inside the package** at `node_modules/@oxyhq/bloom/docs/`. The copy you read there always describes the version you installed, which matters most for [migrating to 1.0](./docs/migrating-to-1.0.mdx).
+Component guides live in [`docs/`](./docs), one `.mdx` per family, and **they ship inside the package** at `node_modules/@oxy.so/bloom/docs/`. The copy you read there always describes the version you installed, which matters most for [migrating to 1.0](./docs/migrating-to-1.0.mdx).
 
 Start with [getting started](./docs/getting-started.mdx), [theme](./docs/theme.mdx) and [design tokens](./docs/design-tokens.mdx). Then per surface: [dialog](./docs/dialog.mdx), [bottom sheet](./docs/bottom-sheet.mdx), [toast](./docs/toast.mdx), [alert](./docs/alert.mdx), [dropdown menu](./docs/dropdown-menu.mdx), [select](./docs/select.mdx), [context menu](./docs/context-menu.mdx), [button](./docs/button.mdx), [avatar](./docs/avatar.mdx), [text field](./docs/text-field.mdx), [settings list](./docs/settings-list.mdx), [tab bar](./docs/tab-bar.mdx), [prompt input](./docs/prompt-input.mdx) and [loading](./docs/loading.mdx).
 

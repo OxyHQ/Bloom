@@ -158,7 +158,7 @@ export function createSurfaceHost(Dialog: DialogComponent) {
    * Mount ONCE near your app root — renders `children` plus the stack host.
    * Requires the Bloom Portal provider to be mounted too (same as any `<Dialog>`
    * usage): on web the Portal auto-creates `#bloom-portal-root`; on native mount
-   * `<PortalProvider>`/`<PortalOutlet>` from `@oxyhq/bloom/portal`. Can equally be folded
+   * `<PortalProvider>`/`<PortalOutlet>` from `@oxy.so/bloom/portal`. Can equally be folded
    * next to that Portal provider — `<SurfaceHost>` used directly does the same
    * job without wrapping `children`.
    */

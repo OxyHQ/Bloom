@@ -131,18 +131,18 @@ interface NodeRegistry {
 
 declare global {
   // eslint-disable-next-line no-var
-  var __oxyhq_bloom_media_nodes__: NodeRegistry | undefined;
+  var __oxy_so_bloom_media_nodes__: NodeRegistry | undefined;
 }
 
 function registry(): NodeRegistry {
-  globalThis.__oxyhq_bloom_media_nodes__ ??= {
+  globalThis.__oxy_so_bloom_media_nodes__ ??= {
     nodes: new Map(),
     listeners: new Set(),
     snapshot: [],
     holder: null,
     seq: 0,
   };
-  return globalThis.__oxyhq_bloom_media_nodes__;
+  return globalThis.__oxy_so_bloom_media_nodes__;
 }
 
 /** Where a node with no holder waits: in the document, and not on screen. */

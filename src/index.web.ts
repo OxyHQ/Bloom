@@ -8,13 +8,13 @@
 // A family is HERE unless one of two things is true:
 //
 //  1. Importing it would add a package to this barrel's module graph. Metro
-//     does not tree-shake, so `import { Button } from '@oxyhq/bloom'` links
+//     does not tree-shake, so `import { Button } from '@oxy.so/bloom'` links
 //     everything this file can reach — and an unmet REQUIRED peer is a build
 //     failure, not a degradation. Measured today exactly three families fail
 //     this, and each is reachable only through its own subpath:
 //       · `./tab-bar` — statically imports `expo-glass-effect` + `expo-symbols`
 //         from its `.native` files. Both ship Apple-only native modules, and the
-//         "a consumer that never imports @oxyhq/bloom/tab-bar never reaches
+//         "a consumer that never imports @oxy.so/bloom/tab-bar never reaches
 //         them" rule in AGENTS.md is true only while this stays off the barrel.
 //       · `./provider` — statically imports `expo-router` (via
 //         `scroll/expo-router`). `BloomProvider` is expo-router-only BY
@@ -44,7 +44,7 @@ export * as tokens from './styles/tokens';
 export { web, native, ios, android, platform, select } from './styles/platform';
 
 // Design tokens (Oxy Unified Design Language) — semantic Tailwind/NativeWind
-// vocabulary. The Tailwind preset is consumed from `@oxyhq/bloom/tailwind-preset`
+// vocabulary. The Tailwind preset is consumed from `@oxy.so/bloom/tailwind-preset`
 // in a config file; these named exports cover programmatic/runtime use.
 export {
   bloomTailwindPreset,
@@ -75,7 +75,7 @@ export type {
 } from './design-tokens';
 
 // Hooks — through the family's own barrel, not eight deep paths into it.
-// Reaching THROUGH a family is how `@oxyhq/bloom` and `@oxyhq/bloom/hooks`
+// Reaching THROUGH a family is how `@oxy.so/bloom` and `@oxy.so/bloom/hooks`
 // came to disagree about what the hooks family is: `useInteractionStates`,
 // `usePressAnimation` and `mergeRefs` were on the subpath and not here, for no
 // reason anyone had decided.
@@ -143,7 +143,7 @@ export type {
 // Surface stack — the ONE coordinated overlay system, and the ONE imperative
 // overlay API. `alert()` and `confirm()` present into it (they used to be two
 // separate FIFO queues with hosts of their own); `prompt` and the rest of the
-// stack controls are named exports of `@oxyhq/bloom/surfaces`.
+// stack controls are named exports of `@oxy.so/bloom/surfaces`.
 export { surfaces, alert, confirm, SurfaceProvider, SurfaceHost, useSurface } from './surfaces/index.web';
 export type {
   SurfacePresentation,
@@ -186,7 +186,7 @@ export * from './loading/index.web';
 export * from './prompt-input/index.web';
 export * from './switch';
 // `ToastOutlet` is a required app-root mount, like `SurfaceHost`. The full
-// engine surface lives at `@oxyhq/bloom/toast`.
+// engine surface lives at `@oxy.so/bloom/toast`.
 export { toast, ToastOutlet } from './toast';
 export type { ToastFn, ToastOptions, ToastType } from './toast';
 

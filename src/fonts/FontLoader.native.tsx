@@ -81,7 +81,7 @@ function applyDefaultTextFont(): void {
  * Once the bundled fonts report `loaded === true`, this component also
  * mutates `Text.defaultProps.style` to prepend `{ fontFamily: 'BlomusModernus' }`
  * so every native `<Text>` in the consuming app inherits Bloom's default
- * family without callers needing to import `<Text>` from `@oxyhq/bloom`.
+ * family without callers needing to import `<Text>` from `@oxy.so/bloom`.
  * The mutation is gated by a `useRef` so it runs at most once per
  * FontLoader instance, and the underlying apply is idempotent — the
  * Bloom default is prepended to any caller `defaultProps.style`, so

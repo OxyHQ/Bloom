@@ -1,6 +1,6 @@
 // @ts-check
 /**
- * Generate the platform-aware bits of @oxyhq/bloom's published surface:
+ * Generate the platform-aware bits of @oxy.so/bloom's published surface:
  *
  *   1. The `exports` field of `package.json`.
  *   2. Every WEB BARREL (`src/index.web.ts`, `src/theme/index.web.ts`) — each
@@ -223,7 +223,7 @@ const WEB_FORKED_SUBPATHS = new Set([
  * does NOT work: `theme/BloomThemeProvider.tsx` imports `../fonts/FontLoader`
  * by RELATIVE path, and export conditions do not apply to relative
  * specifiers, so Vite would take the neutral default and silently stop
- * injecting `@font-face` for every `@oxyhq/bloom/theme` consumer. Conditions
+ * injecting `@font-face` for every `@oxy.so/bloom/theme` consumer. Conditions
  * are the only lever that separates Node from a browser bundler here.
  *
  * Ordering matters: `node` is emitted AFTER `browser`, so a browser-targeting

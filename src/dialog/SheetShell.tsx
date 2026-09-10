@@ -1,7 +1,7 @@
 /**
  * Internal bottom-sheet shell shared by `Menu`, `Select` and `ContextMenu`.
  *
- * Not exported from the public `@oxyhq/bloom` surface — these three
+ * Not exported from the public `@oxy.so/bloom` surface — these three
  * components historically used the low-level `Dialog.Outer / Inner /
  * Handle` primitives, which are gone in 0.5.0. This shell captures the
  * shared shape (BottomSheet + drag handle + close-on-tap context) in a

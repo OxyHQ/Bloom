@@ -52,6 +52,10 @@ const Reanimated = {
   },
   useAnimatedProps: (fn: () => Record<string, unknown>) => fn(),
   useAnimatedScrollHandler: () => jest.fn(),
+  useComposedEventHandler: (handlers: (((...args: unknown[]) => unknown) | null)[]) =>
+    (...args: unknown[]) => {
+      handlers.forEach((handler) => handler?.(...args));
+    },
   // Reduced motion defaults to off in tests; suites that need it on can override.
   useReducedMotion: () => false,
   // Mirrors `withTiming` below: the real `withSpring` also takes a completion
@@ -176,6 +180,7 @@ export const useAnimatedStyle = Reanimated.useAnimatedStyle;
 export const useAnimatedReaction = Reanimated.useAnimatedReaction;
 export const useAnimatedProps = Reanimated.useAnimatedProps;
 export const useAnimatedScrollHandler = Reanimated.useAnimatedScrollHandler;
+export const useComposedEventHandler = Reanimated.useComposedEventHandler;
 export const useReducedMotion = Reanimated.useReducedMotion;
 export const withSpring = Reanimated.withSpring;
 export const withTiming = Reanimated.withTiming;

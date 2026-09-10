@@ -290,11 +290,11 @@ function publishedComponents(family: string): string[] {
   return [...fromFiles, ...factoryBoundComponents(family)];
 }
 
-/** Every `@oxyhq/bloom` import a doc's fenced code blocks make, plus its raw text. */
+/** Every `@oxy.so/bloom` import a doc's fenced code blocks make, plus its raw text. */
 interface Doc {
   stem: string;
   text: string;
-  /** Names imported from `@oxyhq/bloom` or one of its subpaths, in code fences. */
+  /** Names imported from `@oxy.so/bloom` or one of its subpaths, in code fences. */
   imported: Set<string>;
   /** Subpaths named anywhere in the file. */
   subpaths: Set<string>;
@@ -305,7 +305,7 @@ function docs(): Doc[] {
     const text = readFileSync(file, 'utf8');
     const imported = new Set<string>();
     const subpaths = new Set<string>();
-    for (const match of text.matchAll(/@oxyhq\/bloom\/([a-z0-9-]+)/g)) {
+    for (const match of text.matchAll(/@oxy\.so\/bloom\/([a-z0-9-]+)/g)) {
       if (match[1] !== undefined) subpaths.add(match[1]);
     }
     for (const block of text.matchAll(/^```(?:tsx|ts|jsx|js)\n([\s\S]*?)^```/gm)) {
@@ -318,7 +318,7 @@ function docs(): Doc[] {
       );
       for (const stmt of sf.statements) {
         if (!ts.isImportDeclaration(stmt) || !ts.isStringLiteral(stmt.moduleSpecifier)) continue;
-        if (!stmt.moduleSpecifier.text.startsWith('@oxyhq/bloom')) continue;
+        if (!stmt.moduleSpecifier.text.startsWith('@oxy.so/bloom')) continue;
         const bindings = stmt.importClause?.namedBindings;
         if (bindings && ts.isNamedImports(bindings)) {
           for (const el of bindings.elements) imported.add(el.name.text);

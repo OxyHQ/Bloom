@@ -15,7 +15,7 @@ Your app root **must** be wrapped with `GestureHandlerRootView` from `react-nati
 ## Declarative (the 90% case)
 
 ```tsx
-import { Dialog, useDialogControl, Button } from '@oxyhq/bloom';
+import { Dialog, useDialogControl, Button } from '@oxy.so/bloom';
 
 function SignOutButton() {
   const control = useDialogControl();
@@ -155,7 +155,7 @@ the app content wrapped in a blur target**, which `BloomProvider` composes — s
 if you mount it, there is nothing to do:
 
 ```tsx
-import { BloomProvider } from '@oxyhq/bloom/provider';
+import { BloomProvider } from '@oxy.so/bloom/provider';
 
 <BloomProvider>{children}</BloomProvider>
 ```
@@ -183,7 +183,7 @@ Two things are worth knowing rather than discovering:
 Inject the CSS animations into your global styles once:
 
 ```tsx
-import { BLOOM_DIALOG_CSS } from '@oxyhq/bloom/dialog';
+import { BLOOM_DIALOG_CSS } from '@oxy.so/bloom/dialog';
 
 // In your HTML head or global CSS file:
 <style>{BLOOM_DIALOG_CSS}</style>
@@ -274,4 +274,4 @@ Bottom-sheet on small screens, left drawer on `md` and wider:
 <Dialog placement={{ base: 'bottom', md: 'left' }} open={o} onClose={c}>…</Dialog>
 ```
 
-Removed exports: `CenteredDialog`, `CenteredDialogProps`, `BLOOM_CENTERED_DIALOG_CSS`, `CENTERED_DIALOG_BACKDROP_TESTID`, `ResponsiveSheet`, `@oxyhq/bloom/responsive-sheet` subpath.
+Removed exports: `CenteredDialog`, `CenteredDialogProps`, `BLOOM_CENTERED_DIALOG_CSS`, `CENTERED_DIALOG_BACKDROP_TESTID`, `ResponsiveSheet`, `@oxy.so/bloom/responsive-sheet` subpath.

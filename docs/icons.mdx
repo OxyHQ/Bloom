@@ -10,7 +10,7 @@ Bloom's icon set. Every glyph is a named export carrying its style and corner
 suffix.
 
 ```tsx
-import { Bell_Stroke2_Corner0_Rounded as BellIcon } from '@oxyhq/bloom/icons';
+import { Bell_Stroke2_Corner0_Rounded as BellIcon } from '@oxy.so/bloom/icons';
 
 <BellIcon size="lg" fill={colors.text} />
 ```
@@ -48,8 +48,8 @@ comments, because the comments are the surface under test.
 ## Two import shapes are correct, one is not
 
 ```tsx
-import * as Icons from '@oxyhq/bloom/icons';   // ✅ the subpath, as a namespace
-import { Icons } from '@oxyhq/bloom';          // ✅ the root barrel's namespace
+import * as Icons from '@oxy.so/bloom/icons';   // ✅ the subpath, as a namespace
+import { Icons } from '@oxy.so/bloom';          // ✅ the root barrel's namespace
 ```
 
 The third shape — importing `Icons` as a *named* export from the **subpath** —

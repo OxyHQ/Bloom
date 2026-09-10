@@ -1,5 +1,5 @@
 /**
- * `@oxyhq/bloom/design-tokens` — the centralized, semantic design-token
+ * `@oxy.so/bloom/design-tokens` — the centralized, semantic design-token
  * vocabulary for the Oxy Unified Design Language.
  *
  * Exposes:
@@ -28,7 +28,7 @@ export type {
 export { bloomThemeCss, bloomThemeBlock } from './theme-css';
 
 /* The same tokens as a data structure rather than a stylesheet, for a consumer
- * that is not a browser (`@oxyhq/bloom/design-tokens/tokens.json` is the
+ * that is not a browser (`@oxy.so/bloom/design-tokens/tokens.json` is the
  * generated artifact; these rebuild it in memory). Both come from the colour
  * engine, so the JSON and the CSS cannot disagree. */
 export {

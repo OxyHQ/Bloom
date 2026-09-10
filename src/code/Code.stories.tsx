@@ -41,7 +41,7 @@ export const Inline: Story = {
 export const Block: Story = {
   render: () => (
     <View style={{ width: 420 }}>
-      <Pre>{`bun add @oxyhq/bloom
+      <Pre>{`bun add @oxy.so/bloom
 bun run build
 bun run test`}</Pre>
     </View>

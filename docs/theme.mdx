@@ -9,7 +9,7 @@ order: 2
 Wrap your app with `BloomThemeProvider`. It accepts controlled `mode` and `colorPreset` props — persist them however you like (AsyncStorage, Zustand, etc.).
 
 ```tsx
-import { BloomThemeProvider } from '@oxyhq/bloom/theme';
+import { BloomThemeProvider } from '@oxy.so/bloom/theme';
 
 <BloomThemeProvider mode="system" colorPreset="teal">
   <App />
@@ -36,7 +36,7 @@ Each preset has a tuned light + dark variant and a contrast-checked primary colo
 ## Reading theme values
 
 ```tsx
-import { useTheme } from '@oxyhq/bloom/theme';
+import { useTheme } from '@oxy.so/bloom/theme';
 
 function MyComponent() {
   const theme = useTheme();

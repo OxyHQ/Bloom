@@ -22,7 +22,7 @@
  * scroll store to the expo-router ADAPTER, which is the only module in the
  * scroll primitive that imports `expo-router`. The scroll core itself is
  * router-agnostic, so a Vite/SPA consumer can mount
- * `<ScrollRestorationProvider adapter={...}>` from `@oxyhq/bloom/scroll` with
+ * `<ScrollRestorationProvider adapter={...}>` from `@oxy.so/bloom/scroll` with
  * an adapter for its own router — alongside `BloomThemeProvider` and whatever
  * else it needs — rather than going without.
  *

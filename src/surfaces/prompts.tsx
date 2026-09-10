@@ -52,7 +52,7 @@ function actionColor(style: AlertButton['style']): DialogAction['color'] {
  * rendered.
  *
  * ```tsx
- * import { alert } from '@oxyhq/bloom';
+ * import { alert } from '@oxy.so/bloom';
  *
  * alert('Sign out?', 'You will need to enter your password to sign in again.', [
  *   { text: 'Cancel', style: 'cancel' },

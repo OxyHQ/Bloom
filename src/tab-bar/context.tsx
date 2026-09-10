@@ -5,11 +5,13 @@
  * The shared 0..1 "minimize" progress the tab bar interpolates on, plus the
  * scroll handler that drives it. Reanimated only — no platform imports.
  */
-import { createContext, useContext, useMemo, type PropsWithChildren } from 'react';
+import { createContext, useCallback, useContext, useMemo, type PropsWithChildren } from 'react';
 import {
+  useComposedEventHandler,
   useAnimatedScrollHandler,
   useSharedValue,
   withSpring,
+  type ScrollHandlerProcessed,
   type SharedValue,
 } from 'react-native-reanimated';
 
@@ -84,7 +86,9 @@ export function setMinimized(state: MinimizeState, next: 0 | 1) {
  * the scrollable range so rubber-band overscroll can't flip the direction for a
  * frame and flicker the bar.
  */
-export function useMinimizeOnScroll() {
+export function useMinimizeOnScroll<Context extends Record<string, unknown> = Record<string, unknown>>(
+  consumerHandler: ScrollHandlerProcessed<Context> | null = null,
+): ScrollHandlerProcessed<Context> {
   const state = useMinimizeState();
   const previousY = useSharedValue(0);
 
@@ -95,7 +99,7 @@ export function useMinimizeOnScroll() {
   // array binds the handler once against the first render's values. Native
   // (plugin present) auto-tracks and ignores the extra deps, so listing them is
   // correct on both platforms. Same rule as every mapper in `TabBarBase`.
-  return useAnimatedScrollHandler(
+  const minimizeHandler = useAnimatedScrollHandler<Context>(
     {
       onScroll: (event) => {
         const maxY = Math.max(event.contentSize.height - event.layoutMeasurement.height, 0);
@@ -114,4 +118,20 @@ export function useMinimizeOnScroll() {
     },
     [state, previousY],
   );
+
+  // Reanimated owns this composition, so both handlers stay on the UI thread
+  // and all events subscribed to by the consumer (begin/end drag and momentum
+  // included) are preserved. Calling a plain JS callback from this worklet
+  // would either cross threads per frame or fail to be shareable.
+  return useComposedEventHandler([minimizeHandler, consumerHandler]);
+}
+
+/**
+ * Return a stable callback that expands the shared bar. Navigation remains an
+ * app concern: call this from the router's focus callback for screens kept
+ * mounted in a tab navigator.
+ */
+export function useExpandTabBar(): () => void {
+  const state = useMinimizeState();
+  return useCallback(() => setMinimized(state, 0), [state]);
 }

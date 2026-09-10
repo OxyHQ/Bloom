@@ -1,9 +1,9 @@
 /**
  * expo-router bindings for the in-screen tab strip.
  *
- * This subpath (`@oxyhq/bloom/tabs/expo-router`) is the ONLY place in the tabs
+ * This subpath (`@oxy.so/bloom/tabs/expo-router`) is the ONLY place in the tabs
  * feature allowed to import `expo-router`, which is why it is a separate entry:
- * the core `@oxyhq/bloom/tabs` stays usable in an app with a different router,
+ * the core `@oxy.so/bloom/tabs` stays usable in an app with a different router,
  * or none, and the optional peer is never pulled into a bundle that does not
  * ask for it. Same split as `tab-bar` / `tab-bar/expo-router` and
  * `scroll` / `scroll/expo-router`.

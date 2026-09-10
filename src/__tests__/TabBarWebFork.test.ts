@@ -4,14 +4,14 @@ import { join } from 'node:path';
 /**
  * Structural guard for the tab bar's platform split.
  *
- * `@oxyhq/bloom/tab-bar` has to resolve cleanly in four places at once: Metro on
+ * `@oxy.so/bloom/tab-bar` has to resolve cleanly in four places at once: Metro on
  * iOS/Android (platform extensions), a web bundler (the `browser` export
  * condition), a non-Metro bundler reading the published `lib/`, and a consumer's
  * `tsc` (which follows the `"react-native"` source condition). Three packages
  * break that the moment they appear outside a `.native` file:
  * `expo-glass-effect` and `expo-symbols` are native-only, and `expo-router` /
  * `react-native-screens` belong solely to the opt-in
- * `@oxyhq/bloom/tab-bar/expo-router` subpath so the core bar stays usable in an
+ * `@oxy.so/bloom/tab-bar/expo-router` subpath so the core bar stays usable in an
  * app with no router at all.
  *
  * None of that is observable from a jest render — a missing `.web` retarget or a

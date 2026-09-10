@@ -6,12 +6,12 @@ order: 55
 
 # Scroll restoration
 
-`@oxyhq/bloom/scroll` remembers where the user was and puts them back. The core
+`@oxy.so/bloom/scroll` remembers where the user was and puts them back. The core
 is router-agnostic; one adapter binds it to a router.
 
 ```tsx
-import { ScrollRestorationProvider } from '@oxyhq/bloom/scroll';
-import { expoRouterScrollAdapter } from '@oxyhq/bloom/scroll/expo-router';
+import { ScrollRestorationProvider } from '@oxy.so/bloom/scroll';
+import { expoRouterScrollAdapter } from '@oxy.so/bloom/scroll/expo-router';
 
 <ScrollRestorationProvider adapter={expoRouterScrollAdapter}>
   <App />

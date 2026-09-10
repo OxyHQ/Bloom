@@ -19,7 +19,7 @@
  *
  * Same reason as the portal group and the overlay stack: `exports` ships a
  * `react-native` → `src` condition beside the `lib/module` and `lib/commonjs`
- * forks, and a bundler can resolve `@oxyhq/bloom/media-flight` through different
+ * forks, and a bundler can resolve `@oxy.so/bloom/media-flight` through different
  * conditions from different call sites. Two physical copies of this module would
  * each keep their own registry, and the `<MediaFlightLayer>` mounted at the app
  * root would never see the flight a screen started.
@@ -97,7 +97,7 @@ interface Registry {
 
 declare global {
   // eslint-disable-next-line no-var
-  var __oxyhq_bloom_media_flight__: Registry | undefined;
+  var __oxy_so_bloom_media_flight__: Registry | undefined;
 }
 
 function emptyRegistry(): Registry {
@@ -146,8 +146,8 @@ function resolveMountWaiters(status: FlightStatus): void {
 }
 
 function registry(): Registry {
-  globalThis.__oxyhq_bloom_media_flight__ ??= emptyRegistry();
-  return globalThis.__oxyhq_bloom_media_flight__;
+  globalThis.__oxy_so_bloom_media_flight__ ??= emptyRegistry();
+  return globalThis.__oxy_so_bloom_media_flight__;
 }
 
 function publish(reg: Registry): void {
@@ -474,11 +474,11 @@ export function releaseFlight(id: string): void {
 
 /** Test seam — drops every anchor and surface. */
 export function resetMediaFlight(): void {
-  const existing = globalThis.__oxyhq_bloom_media_flight__;
+  const existing = globalThis.__oxy_so_bloom_media_flight__;
   // Timers outlive a registry swap: an unfired mount timeout from the previous
   // suite would warn — and resolve a waiter nobody is holding — inside the next.
   if (existing) for (const status of existing.status.values()) clearTimers(status);
-  globalThis.__oxyhq_bloom_media_flight__ = emptyRegistry();
+  globalThis.__oxy_so_bloom_media_flight__ = emptyRegistry();
   hasWarnedNoLayer = false;
 }
 

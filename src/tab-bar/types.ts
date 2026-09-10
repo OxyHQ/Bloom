@@ -2,7 +2,7 @@
  * Ported from expo-glass-tabs v0.1.1 — src/glass-tab-bar.tsx
  * (MIT © 2026 David Mokos).
  *
- * Public API types for `@oxyhq/bloom/tab-bar`.
+ * Public API types for `@oxy.so/bloom/tab-bar`.
  *
  * This module names no PLATFORM package. It is resolved by a consumer's `tsc`,
  * by Metro, and by every web bundler alike, so an import here of
@@ -27,7 +27,7 @@ export type TabBarItem = {
   label: string;
   /**
    * The glyph, as a Bloom icon element (`<Icons.Home_Stroke2_Corner0_Rounded />`)
-   * or any node. Every `@oxyhq/bloom/icons` export carries its full style and
+   * or any node. Every `@oxy.so/bloom/icons` export carries its full style and
    * corner suffix; a shortened `Home` is not an export, and a name that does not
    * exist is simply `undefined`, which React then rejects as an invalid element
    * type. This is the primary icon API — same convention as `Tabs`/`TabsTrigger`

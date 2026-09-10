@@ -3,7 +3,7 @@
   "configVersion": 0,
   "workspaces": {
     "": {
-      "name": "@oxyhq/bloom",
+      "name": "@oxy.so/bloom",
       "dependencies": {
         "@tanstack/react-virtual": "^3.14.3",
         "react-native-css": "3.0.7",

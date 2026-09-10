@@ -13,7 +13,7 @@ The AI chat input component. Auto-resizing textarea, send / stop button, optiona
 The fastest path to a working prompt input:
 
 ```tsx
-import { PromptInput } from '@oxyhq/bloom';
+import { PromptInput } from '@oxy.so/bloom';
 
 const [value, setValue] = useState('');
 const [busy, setBusy] = useState(false);
@@ -38,7 +38,7 @@ That's it — textarea, submit button, stop button, all wired.
 For full control over layout, opt into the compound API:
 
 ```tsx
-import * as Prompt from '@oxyhq/bloom/prompt-input';
+import * as Prompt from '@oxy.so/bloom/prompt-input';
 
 <Prompt.Root value={value} onValueChange={setValue} isLoading={busy} onSubmit={ask}>
   <Prompt.Textarea placeholder="Ask anything…" />

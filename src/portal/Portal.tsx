@@ -87,7 +87,7 @@ type PortalGroup = ReturnType<typeof createPortalGroup>;
 
 declare global {
   // eslint-disable-next-line no-var
-  var __oxyhq_bloom_portal_group__: PortalGroup | undefined;
+  var __oxy_so_bloom_portal_group__: PortalGroup | undefined;
 }
 
 /**
@@ -100,15 +100,15 @@ declare global {
  * forks, and the `Portal` component is consumed cross-subpath from `./tooltip`,
  * `./prompt-input`, `./dialog`, `./select`, `./menu`, `./context-menu`, and `./popover`
  * while `PortalProvider`/`PortalOutlet` are mounted once at the app root via
- * `@oxyhq/bloom/portal`.
+ * `@oxy.so/bloom/portal`.
  * A bundler can resolve those subpaths through different export conditions, so without a
  * guard each physical copy runs its own `createPortalGroup()` and a `<Portal>` from copy
  * A would register against the `Provider`'s map in copy B — its content would never reach
- * the `Outlet`. Anchoring the group on `globalThis` (keyed by `__oxyhq_bloom_portal_group__`)
+ * the `Outlet`. Anchoring the group on `globalThis` (keyed by `__oxy_so_bloom_portal_group__`)
  * collapses all copies onto one group. Same src-vs-lib dual-instance class as
  * `BloomThemeContext`.
  */
-const DefaultPortal: PortalGroup = (globalThis.__oxyhq_bloom_portal_group__ ??=
+const DefaultPortal: PortalGroup = (globalThis.__oxy_so_bloom_portal_group__ ??=
   createPortalGroup());
 
 export const PortalProvider = DefaultPortal.Provider;

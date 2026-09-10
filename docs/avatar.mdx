@@ -11,7 +11,7 @@ Display a user's avatar. Accepts a URL, an `ImageSourcePropType`, or no image at
 ## Basic
 
 ```tsx
-import { Avatar } from '@oxyhq/bloom';
+import { Avatar } from '@oxy.so/bloom';
 
 <Avatar uri="https://cloud.oxy.so/avatars/abc.png" size={48} />
 ```
@@ -57,7 +57,7 @@ how their avatar is cut:
 order, so a picker does not have to hardcode the list:
 
 ```tsx
-import { AVATAR_SHAPE_LABELS } from '@oxyhq/bloom/avatar';
+import { AVATAR_SHAPE_LABELS } from '@oxy.so/bloom/avatar';
 
 AVATAR_SHAPE_LABELS.map(({ name, label }) => (
   <Pressable key={name} onPress={() => setShape(name)}>

@@ -15,7 +15,7 @@ It presents onto Bloom's shared **surface stack**, the same one `confirm()`, `pr
 Mount the surface host once near your app root:
 
 ```tsx
-import { SurfaceProvider } from '@oxyhq/bloom';
+import { SurfaceProvider } from '@oxy.so/bloom';
 
 <SurfaceProvider>
   <App />
@@ -29,7 +29,7 @@ See [Getting started](/docs/bloom/main/getting-started) for the full provider st
 ## Usage
 
 ```tsx
-import { alert } from '@oxyhq/bloom';
+import { alert } from '@oxy.so/bloom';
 
 alert('Sign out?', 'Are you sure you want to sign out of this device?', [
   { text: 'Cancel', style: 'cancel' },
@@ -66,7 +66,7 @@ If you're migrating from React Native's built-in `Alert`, you can swap the impor
 
 ```diff
 -import { Alert } from 'react-native';
-+import { alert } from '@oxyhq/bloom';
++import { alert } from '@oxy.so/bloom';
 
 -Alert.alert('Title', 'Message');
 +alert('Title', 'Message');
@@ -83,7 +83,7 @@ If you're migrating from React Native's built-in `Alert`, you can swap the impor
 `alert()` answers nothing. Its two siblings on the same stack do:
 
 ```tsx
-import { confirm, prompt } from '@oxyhq/bloom/surfaces';
+import { confirm, prompt } from '@oxy.so/bloom/surfaces';
 
 const ok = await confirm({ title: 'Delete app?', destructive: true });
 const name = await prompt({ title: 'Name this list' }); // string | null

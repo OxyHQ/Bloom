@@ -217,7 +217,7 @@ describe('web forks are reachable off Metro', () => {
 
   it('gives every family that carries a web fork a browser condition on its own subpath', () => {
     // Reachability through the ROOT web barrel is not enough: a consumer
-    // importing `@oxyhq/bloom/prompt-input` resolves that subpath's own
+    // importing `@oxy.so/bloom/prompt-input` resolves that subpath's own
     // conditions, so a family whose only route to its fork is `src/index.web.ts`
     // serves the native build to every direct subpath import.
     const offenders: string[] = [];

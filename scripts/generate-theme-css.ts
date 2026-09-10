@@ -6,7 +6,7 @@
  * Tailwind v4 / NativeWind CSS-first consumers `@import` this file instead of
  * pasting the `@theme { … }` body into their own `global.css`:
  *
- *   @import "@oxyhq/bloom/design-tokens/theme.css";
+ *   @import "@oxy.so/bloom/design-tokens/theme.css";
  *
  * The checked-in output is verified in `src/__tests__/design-tokens.test.ts`,
  * which asserts the `@theme` block in this file equals `bloomThemeBlock()`.

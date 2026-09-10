@@ -1,5 +1,5 @@
 /**
- * The expo-router binding for `@oxyhq/bloom/scroll`.
+ * The expo-router binding for `@oxy.so/bloom/scroll`.
  *
  * This is the only file in the scroll primitive that knows a router exists. It
  * is separate from the core so a consumer with a different router — or none —

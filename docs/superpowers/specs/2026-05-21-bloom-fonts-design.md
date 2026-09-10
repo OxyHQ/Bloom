@@ -3,16 +3,16 @@
 **Date:** 2026-05-21
 **Author:** Nate
 **Status:** Approved (pending review)
-**Implemented in:** `@oxyhq/bloom@0.3.0`; asset-path bug fixed in `@oxyhq/bloom@0.3.1`; Metro/woff2 file split landed in `@oxyhq/bloom@0.3.3`
+**Implemented in:** `@oxy.so/bloom@0.3.0`; asset-path bug fixed in `@oxy.so/bloom@0.3.1`; Metro/woff2 file split landed in `@oxy.so/bloom@0.3.3`
 
 ## Summary
 
-Add the Oxy font system to `@oxyhq/bloom` so every Oxy app gets the same typography out of the box. Bloom will ship three fonts — **BlomusModernus** (display, custom Oxy MIT font), **Inter Variable** (sans default), and **Geist Mono Variable** (monospace) — and load + apply them automatically via `BloomThemeProvider` on both web and React Native (Expo).
+Add the Oxy font system to `@oxy.so/bloom` so every Oxy app gets the same typography out of the box. Bloom will ship three fonts — **BlomusModernus** (display, custom Oxy MIT font), **Inter Variable** (sans default), and **Geist Mono Variable** (monospace) — and load + apply them automatically via `BloomThemeProvider` on both web and React Native (Expo).
 
 This includes three phases in a single rollout:
 
 1. **Bloom** — pack fonts, extend the provider, publish a new version to npm.
-2. **Website** — replace Ember Modern (Amazon proprietary, legally risky to redistribute) with BlomusModernus by consuming `@oxyhq/bloom`.
+2. **Website** — replace Ember Modern (Amazon proprietary, legally risky to redistribute) with BlomusModernus by consuming `@oxy.so/bloom`.
 3. **Apps** — Mention, Allo, Homiio, TNP, accounts, inbox, console bump the dep and confirm `<BloomThemeProvider>` wraps their root.
 
 ## Motivation
@@ -24,7 +24,7 @@ This includes three phases in a single rollout:
 
 ## Goals
 
-- Single source of truth for Oxy fonts: `@oxyhq/bloom`.
+- Single source of truth for Oxy fonts: `@oxy.so/bloom`.
 - Zero-config typography for any app already using `<BloomThemeProvider>`.
 - Web + Expo/RN parity (same font names, same look).
 - Legally clean — no redistribution of fonts Oxy doesn't own.
@@ -42,7 +42,7 @@ This includes three phases in a single rollout:
 | Decision | Choice |
 |---|---|
 | Font set | BlomusModernus + Inter Variable + Geist Mono Variable |
-| Distribution | All three files **inside `@oxyhq/bloom`** (not a separate `@oxyhq/fonts` package) |
+| Distribution | All three files **inside `@oxy.so/bloom`** (not a separate `@oxyhq/fonts` package) |
 | Loading | Automatic via `BloomThemeProvider` (default `fonts={true}`) |
 | Auto-apply to existing components | Yes — `H1-H6` → display, `Text` → sans, new `<Code>`/`<Pre>` → mono |
 | New components | `<Code>` (inline), `<Pre>` (block) for monospace |
@@ -299,7 +299,7 @@ export function BloomThemeProvider({
 
 ### Public API
 
-New subpath `@oxyhq/bloom/fonts` exports:
+New subpath `@oxy.so/bloom/fonts` exports:
 
 ```ts
 export { fontFamilies, fontCssVars } from './tokens';
@@ -375,13 +375,13 @@ Web-only consumers (TNP via Vite) won't have `expo-font` installed; marking it o
 12. `bun run build`.
 13. `bun run test` and `bun run typescript`.
 14. `bun publish` (`publishConfig.access: public`).
-15. Confirm with `npm view @oxyhq/bloom version`.
+15. Confirm with `npm view @oxy.so/bloom version`.
 
 ## Phase 2 — Website migration
 
 Working dir: `/home/nate/Oxy/website`.
 
-1. `bun add @oxyhq/bloom@latest` (or workspace link if monorepo).
+1. `bun add @oxy.so/bloom@latest` (or workspace link if monorepo).
 2. Wrap root component in `<BloomThemeProvider>` if not already.
 3. Edit `src/index.css`:
    - Delete the four Ember Modern `@font-face` blocks.
@@ -401,7 +401,7 @@ Working dir: `/home/nate/Oxy/website`.
 Per app (Mention, Allo, Homiio, TNP, accounts, inbox, console):
 
 1. Spawn the app-specific agent (mention-frontend, allo, homiio, tnp, oxy-frontend).
-2. `bun add @oxyhq/bloom@latest`.
+2. `bun add @oxy.so/bloom@latest`.
 3. Confirm root has `<BloomThemeProvider>`; add if missing.
 4. Remove any pre-existing `useFonts(...)` call at the root (it's now done by Bloom). If the app loaded fonts Bloom doesn't ship, decide per-app.
 5. QA visual:
@@ -416,7 +416,7 @@ All five app agents run in parallel.
 
 1. Bloom phase complete and merged → version published to npm.
 2. Wait 1–2 minutes for npm cache propagation.
-3. Spawn website + 5 app agents in parallel. Each bumps `@oxyhq/bloom`.
+3. Spawn website + 5 app agents in parallel. Each bumps `@oxy.so/bloom`.
 4. Each agent runs `test-build` locally before `git-ops` push.
 5. Final docs-keeper run to capture any new conventions discovered.
 

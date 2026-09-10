@@ -25,8 +25,8 @@ Everything else you import from this family keeps its name: `GalleryImage`,
 `MeasureThumb`, `MeasuredRect`, and every constant.
 
 <Callout variant="info" title="The subpath still resolves">
-`@oxyhq/bloom/zoomable-image-gallery` and
-`@oxyhq/bloom/zoomable-media-gallery` are two specifiers for the SAME module.
+`@oxy.so/bloom/zoomable-image-gallery` and
+`@oxy.so/bloom/zoomable-media-gallery` are two specifiers for the SAME module.
 The old one is not a shim being tolerated — an image gallery is exactly what
 this serves when every item is an image, so it stays a first-class entry point.
 You only have to change the *names you import*, not the path you import them
@@ -86,7 +86,7 @@ creates or destroys one:
 
 ```tsx
 import { useVideoPlayer } from 'expo-video';
-import type { GalleryMedia } from '@oxyhq/bloom/zoomable-media-gallery';
+import type { GalleryMedia } from '@oxy.so/bloom/zoomable-media-gallery';
 
 const player = useVideoPlayer(videoUrl);
 

@@ -12,7 +12,7 @@
  * Bloom that build on it — it is deliberately absent from `package.json#exports`
  * and from `src/index.ts`, and `family-layout.test.ts` records that in
  * `INTERNAL_DIRECTORIES`. Nothing here is public API, and a consumer reaching
- * `@oxyhq/bloom/floating` is a bug in the export map, not a supported import.
+ * `@oxy.so/bloom/floating` is a bug in the export map, not a supported import.
  */
 export {
   VIEWPORT_GUTTER,

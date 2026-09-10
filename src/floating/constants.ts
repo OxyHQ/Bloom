@@ -19,7 +19,7 @@
  *
  * CONSEQUENCE, stated because it is a real cost: a web consumer that has not
  * wired the Tailwind/NativeWind pipeline and `@source`-scanned
- * `@oxyhq/bloom/lib` now gets an unstyled menu rather than a merely
+ * `@oxy.so/bloom/lib` now gets an unstyled menu rather than a merely
  * unlaid-out one, because the colours moved out of inline style too. That
  * wiring is already mandatory (Bloom AGENTS.md, "Consumer web CSS pipeline");
  * this makes skipping it visible instead of subtle.

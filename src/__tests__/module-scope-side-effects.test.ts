@@ -7,7 +7,7 @@
  *
  * `collapsible/` called `UIManager.setLayoutAnimationEnabledExperimental(true)`
  * at module scope and reached `src/index.ts` through an `export *`. Metro does
- * not tree-shake, so `import { Button } from '@oxyhq/bloom'` linked it — and every
+ * not tree-shake, so `import { Button } from '@oxy.so/bloom'` linked it — and every
  * root-barrel consumer on Android old-arch had experimental layout animations
  * switched on globally, whether or not they had ever heard of `Collapsible`. It
  * was deleted in tanda 2. Nothing stopped the next one.

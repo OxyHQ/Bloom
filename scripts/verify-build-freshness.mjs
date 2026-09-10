@@ -7,7 +7,7 @@
  * stale one — which is the failure this exists for, and it is silent in the
  * worst direction:
  *
- *   Metro resolved `@oxyhq/bloom/media-flight` through `lib/module`, not `src`.
+ *   Metro resolved `@oxy.so/bloom/media-flight` through `lib/module`, not `src`.
  *   The `lib` there was old, so the app ran the PREVIOUS API — `flyTo`
  *   returning void, no `handOff` — with no error anywhere. Types came from
  *   `lib/typescript`, which was current, so `tsc` was green over an API the

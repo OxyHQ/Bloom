@@ -10,7 +10,7 @@ Bloom components take a **file id** and ask the app how to turn it into a URL.
 The app registers that function once, at the root.
 
 ```tsx
-import { ImageResolverProvider } from '@oxyhq/bloom/image-resolver';
+import { ImageResolverProvider } from '@oxy.so/bloom/image-resolver';
 import { oxyServices } from '@oxyhq/services';
 
 <ImageResolverProvider value={(id, variant) => oxyServices.getFileDownloadUrl(id, variant)}>

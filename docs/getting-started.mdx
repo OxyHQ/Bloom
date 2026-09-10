@@ -9,7 +9,7 @@ order: 1
 ## 1. Install
 
 ```sh
-bun add @oxyhq/bloom
+bun add @oxy.so/bloom
 ```
 
 Install the peer dependencies. The same set covers native and web — Bloom's
@@ -23,7 +23,7 @@ bun add react-native-gesture-handler react-native-reanimated react-native-safe-a
 
 ```tsx
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
-import { BloomThemeProvider, SurfaceProvider } from '@oxyhq/bloom';
+import { BloomThemeProvider, SurfaceProvider } from '@oxy.so/bloom';
 
 export default function Root() {
   return (
@@ -46,7 +46,7 @@ export default function Root() {
 Inject the CSS animations into your global styles once:
 
 ```tsx
-import { BLOOM_DIALOG_CSS } from '@oxyhq/bloom/dialog';
+import { BLOOM_DIALOG_CSS } from '@oxy.so/bloom/dialog';
 
 // In your HTML head or global CSS file:
 <style>{BLOOM_DIALOG_CSS}</style>
@@ -56,8 +56,8 @@ import { BLOOM_DIALOG_CSS } from '@oxyhq/bloom/dialog';
 ## 3. Use a component
 
 ```tsx
-import { Button } from '@oxyhq/bloom/button';
-import { toast } from '@oxyhq/bloom';
+import { Button } from '@oxy.so/bloom/button';
+import { toast } from '@oxy.so/bloom';
 
 export function Hello() {
   return <Button onPress={() => toast.success('Hello, Bloom!')}>Greet</Button>;
@@ -125,12 +125,12 @@ bundler:
 
 ```ts
 import * as ExpoVideo from 'expo-video';
-import { provideExpoVideo } from '@oxyhq/bloom/media-flight';
+import { provideExpoVideo } from '@oxy.so/bloom/media-flight';
 
 provideExpoVideo(ExpoVideo);   // otherwise video silently shows only its poster
 ```
 
-`provideNetInfo` exists in `@oxyhq/bloom/connection-status` for the same
+`provideNetInfo` exists in `@oxy.so/bloom/connection-status` for the same
 purpose, but a browser does not need it — see above.
 
 ## Recommended layout

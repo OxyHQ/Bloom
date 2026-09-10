@@ -9,7 +9,7 @@ order: 25
 A box that keeps a fixed width-to-height ratio while the layout around it decides its width. The usual job: a media well that must not jump as an image loads, because its height was known before the image was.
 
 ```tsx
-import { AspectRatio } from '@oxyhq/bloom/aspect-ratio';
+import { AspectRatio } from '@oxy.so/bloom/aspect-ratio';
 
 <AspectRatio ratio={16 / 9}>
   <Image source={{ uri: cover }} style={{ width: '100%', height: '100%' }} />

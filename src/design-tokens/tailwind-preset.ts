@@ -5,7 +5,7 @@
  * Consumers add it to their Tailwind config:
  *
  *   // tailwind.config.js  (web Tailwind v3/v4 AND native NativeWind)
- *   const { bloomTailwindPreset } = require('@oxyhq/bloom/tailwind-preset');
+ *   const { bloomTailwindPreset } = require('@oxy.so/bloom/tailwind-preset');
  *   module.exports = {
  *     presets: [bloomTailwindPreset],
  *     content: [ ...existing globs ],

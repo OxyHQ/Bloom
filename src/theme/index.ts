@@ -9,7 +9,7 @@ export { BloomSeedScope } from './seed-scope';
 export type { BloomSeedScopeProps } from './seed-scope';
 export { roleColorsToPresetTokens } from './color-scope/seed-scope';
 // `buildSeedScopeVars` + `SeedScopeOptions` are exported by
-// `@oxyhq/bloom/design-tokens` — the react-free barrel a build script can
+// `@oxy.so/bloom/design-tokens` — the react-free barrel a build script can
 // import — and are deliberately NOT duplicated here.
 // Colour engine — the dependency-free tonal system that turns ANY seed colour
 // into a full role set, surfaced so consumers can derive dynamic themes (e.g.

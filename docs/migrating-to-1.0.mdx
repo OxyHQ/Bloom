@@ -13,7 +13,7 @@ under the old spelling.
 
 <Callout variant="info" title="Which version are you on?">
 `0.87.1 → 0.88.0 → 0.89.0` was **purely additive**: seven new symbols on
-`@oxyhq/bloom/design-tokens` plus the `./design-tokens/tokens.json` subpath, and
+`@oxy.so/bloom/design-tokens` plus the `./design-tokens/tokens.json` subpath, and
 nothing removed or renamed. So every change on this page applies in full whether
 you are coming from 0.87.1, 0.88.0 or 0.89.0.
 </Callout>
@@ -31,7 +31,7 @@ Bloom 1.0.0 is not a package you can bump on its own. If your app also uses
 `@oxyhq/services`, the move is **three packages in one commit**:
 
 ```json
-"@oxyhq/bloom": "^1.0.0",
+"@oxy.so/bloom": "^1.0.0",
 "@oxyhq/services": "^30.0.1",
 "@oxyhq/core": "^21.0.0"
 ```
@@ -47,8 +47,8 @@ deleted, from its own source:
 
 | File in `@oxyhq/services` | Imports |
 | --- | --- |
-| `src/ui/components/FollowTargetButton.tsx` | `@oxyhq/bloom/menu` |
-| `src/ui/components/authChooser/TroubleDisclosure.tsx` | `@oxyhq/bloom/collapsible` |
+| `src/ui/components/FollowTargetButton.tsx` | `@oxy.so/bloom/menu` |
+| `src/ui/components/authChooser/TroubleDisclosure.tsx` | `@oxy.so/bloom/collapsible` |
 
 Both are present in the published `29.0.0` tarball in `src/` **and** in both
 compiled `lib/` trees, so it does not matter whether your bundler reads Bloom's
@@ -58,7 +58,7 @@ usually surfaces first, because it is on the follow button most apps render.
 Nothing warns you, and it is not that the warning is easy to miss — **no warning
 is possible.** Every `@oxyhq/services` below 30 declares its Bloom peer as
 `">=0.59.0"` (or looser), an unbounded range that `1.0.0` satisfies. There is no
-mismatch for a package manager to report. `@oxyhq/bloom` declares no `@oxyhq/*`
+mismatch for a package manager to report. `@oxy.so/bloom` declares no `@oxyhq/*`
 peer of its own, so it cannot report one either. The failure appears at bundle
 time as an unresolved module — on web, typically a white screen.
 
@@ -144,14 +144,14 @@ each workspace package:
 ```bash
 bun pm ls | grep -E '@oxyhq/(bloom|services|core)@'
 # or, from the package directory:
-node -e 'for (const p of ["@oxyhq/bloom","@oxyhq/services","@oxyhq/core"]) console.log(p, require(p + "/package.json").version)'
+node -e 'for (const p of ["@oxy.so/bloom","@oxyhq/services","@oxyhq/core"]) console.log(p, require(p + "/package.json").version)'
 ```
 
 Expect `1.0.0`, `30.0.1` and `21.0.0`. Anything else means the edit did not land.
 
 <Callout variant="info" title="How the numbers on this page were measured">
 Everything above was read out of the published npm tarballs and registry
-metadata for `@oxyhq/bloom@1.0.0`, `@oxyhq/services@29.0.0` and `30.0.1`, and
+metadata for `@oxy.so/bloom@1.0.0`, `@oxyhq/services@29.0.0` and `30.0.1`, and
 `@oxyhq/core@20.1.0` and `21.0.0`, on 2026-08-17. The symbol counts come from
 an AST walk of services' `src/` cross-checked against each core version's
 exported symbol set through the TypeScript checker; the error counts and the
@@ -162,7 +162,7 @@ the commands above rather than trusting these.
 
 ## How this list was derived
 
-Not from commit subjects. The published `@oxyhq/bloom@0.87.1` and `0.89.0`
+Not from commit subjects. The published `@oxy.so/bloom@0.87.1` and `0.89.0`
 tarballs were unpacked and their `package.json#exports` compared against this
 build's, and the exported symbol set of each of the 88 typed subpaths was read
 out of `lib/typescript/` on both sides through the TypeScript checker, so a
@@ -182,15 +182,15 @@ failure, not a type error.
 
 | Removed | Replacement | Why |
 | --- | --- | --- |
-| `@oxyhq/bloom/menu` | `@oxyhq/bloom/dropdown-menu` | The family was ported to shadcn/react-native-reusables' public API. Every `Menu*` export is `DropdownMenu*`. |
-| `@oxyhq/bloom/collapsible` | `@oxyhq/bloom/accordion` | `Collapsible` called `UIManager.setLayoutAnimationEnabledExperimental(true)` at module scope and reached the root barrel through `export *`, so that side effect ran for every barrel consumer on Android old-arch whether or not the component was used. |
-| `@oxyhq/bloom/grouped-buttons` | `@oxyhq/bloom/settings-list` + `@oxyhq/bloom/item` | The only one of the three row renderers with no `accessibilityRole`, no `accessibilityLabel` and no `aria-disabled`, built on `TouchableOpacity`/`activeOpacity` instead of `useInteractionState`. |
-| `@oxyhq/bloom/pressable-with-hover` | none — inline it | One internal user. It now lives inside `zoomable-media-gallery` as `NavArrow`, the package's only hover-styled control. |
+| `@oxy.so/bloom/menu` | `@oxy.so/bloom/dropdown-menu` | The family was ported to shadcn/react-native-reusables' public API. Every `Menu*` export is `DropdownMenu*`. |
+| `@oxy.so/bloom/collapsible` | `@oxy.so/bloom/accordion` | `Collapsible` called `UIManager.setLayoutAnimationEnabledExperimental(true)` at module scope and reached the root barrel through `export *`, so that side effect ran for every barrel consumer on Android old-arch whether or not the component was used. |
+| `@oxy.so/bloom/grouped-buttons` | `@oxy.so/bloom/settings-list` + `@oxy.so/bloom/item` | The only one of the three row renderers with no `accessibilityRole`, no `accessibilityLabel` and no `aria-disabled`, built on `TouchableOpacity`/`activeOpacity` instead of `useInteractionState`. |
+| `@oxy.so/bloom/pressable-with-hover` | none — inline it | One internal user. It now lives inside `zoomable-media-gallery` as `NavArrow`, the package's only hover-styled control. |
 
 ### Subpaths added
 
-`@oxyhq/bloom/dropdown-menu`, `@oxyhq/bloom/menubar`, `@oxyhq/bloom/radio`,
-`@oxyhq/bloom/aspect-ratio`, and the `@oxyhq/bloom/design-tokens/tokens.json`
+`@oxy.so/bloom/dropdown-menu`, `@oxy.so/bloom/menubar`, `@oxy.so/bloom/radio`,
+`@oxy.so/bloom/aspect-ratio`, and the `@oxy.so/bloom/design-tokens/tokens.json`
 asset (the last already shipped in 0.89.0).
 
 ## Renamed symbols
@@ -220,15 +220,15 @@ adds `'info'` for Chip, which previously had it on `Badge` only.
 
 ### The colour engine is one namespace
 
-Fifteen flat exports of `@oxyhq/bloom/theme` are now members of the `ColorEngine`
+Fifteen flat exports of `@oxy.so/bloom/theme` are now members of the `ColorEngine`
 namespace, still published from the same subpath:
 
 ```ts
 // before
-import { argbFromHex, generateRoleColors, quantizeImage } from '@oxyhq/bloom/theme';
+import { argbFromHex, generateRoleColors, quantizeImage } from '@oxy.so/bloom/theme';
 
 // after
-import { ColorEngine } from '@oxyhq/bloom/theme';
+import { ColorEngine } from '@oxy.so/bloom/theme';
 ColorEngine.argbFromHex(...);
 ```
 
@@ -247,21 +247,21 @@ were reachable from two subpaths. They now live only in the react-free barrel a
 build script can import:
 
 ```ts
--import { getPresetVars } from '@oxyhq/bloom/theme';
-+import { getPresetVars } from '@oxyhq/bloom/design-tokens';
+-import { getPresetVars } from '@oxy.so/bloom/theme';
++import { getPresetVars } from '@oxy.so/bloom/design-tokens';
 ```
 
-`getPresetVars` and `ExplicitAccents` are also on `@oxyhq/bloom/preset-vars`.
+`getPresetVars` and `ExplicitAccents` are also on `@oxy.so/bloom/preset-vars`.
 
 ### `alert()` and `confirm()` moved to the surface stack
 
 `alert()` lived on `./dialog`, `confirm()` on `./alert-dialog`. Both are now on
-`@oxyhq/bloom/surfaces`, along with `AlertButton` and `AlertButtonStyle`.
+`@oxy.so/bloom/surfaces`, along with `AlertButton` and `AlertButtonStyle`.
 
 ```ts
--import { alert } from '@oxyhq/bloom/dialog';
--import { confirm } from '@oxyhq/bloom/alert-dialog';
-+import { alert, confirm } from '@oxyhq/bloom/surfaces';
+-import { alert } from '@oxy.so/bloom/dialog';
+-import { confirm } from '@oxy.so/bloom/alert-dialog';
++import { alert, confirm } from '@oxy.so/bloom/surfaces';
 ```
 
 Their hosts — `BloomDialogProvider` and `AlertDialogHost` — are **deleted**, not
@@ -354,10 +354,10 @@ the package, which is not a supported entry point.
 
 ## `jest.mock` call sites
 
-A renamed subpath breaks `jest.mock('@oxyhq/bloom/<sub>')` silently — the string
+A renamed subpath breaks `jest.mock('@oxy.so/bloom/<sub>')` silently — the string
 is not an import, so no type checker and no import census sees it.
 
-Measured across the Oxy fleet: **131 `jest.mock('@oxyhq/bloom/…')` call sites in
+Measured across the Oxy fleet: **131 `jest.mock('@oxy.so/bloom/…')` call sites in
 48 files, referencing 20 distinct subpaths — all 20 still exist in 1.0.0.** No
 mock needs to change. The subpaths mocked are `.`, `./avatar`, `./avatar-group`,
 `./bottom-sheet`, `./button`, `./dialog`, `./hooks`, `./icons`, `./item`,
@@ -380,7 +380,7 @@ files services imports from a removed subpath. Treat this as a worked example of
 what an upgrade turns up, not as an inventory of your repo. Scan your own:
 
 ```bash
-git grep -nE "@oxyhq/bloom/(menu|collapsible|grouped-buttons|pressable-with-hover)['\"]"
+git grep -nE "@oxy.so/bloom/(menu|collapsible|grouped-buttons|pressable-with-hover)['\"]"
 ```
 </Callout>
 
@@ -415,12 +415,12 @@ Named bindings that no longer exist, by symbol:
 
 | Symbol | Sites | Fix |
 | --- | --- | --- |
-| `getPresetVars` | 10 | import from `@oxyhq/bloom/design-tokens` |
-| `confirm` (from `./alert-dialog`) | 12 | import from `@oxyhq/bloom/surfaces` |
+| `getPresetVars` | 10 | import from `@oxy.so/bloom/design-tokens` |
+| `confirm` (from `./alert-dialog`) | 12 | import from `@oxy.so/bloom/surfaces` |
 | `Provider` / `Outlet` (from `./portal`) | 6 + 6 | `PortalProvider` / `PortalOutlet` |
 | `generateRoleColors` | 6 | `ColorEngine.generateRoleColors` |
 | `BadgeColor` | 5 | `AccentTone` |
-| `alert` (from `./dialog`) | 3 | import from `@oxyhq/bloom/surfaces` |
+| `alert` (from `./dialog`) | 3 | import from `@oxy.so/bloom/surfaces` |
 | `ChipColor`, `ChipVariant` | 2 + 2 | `AccentTone`, `AccentFill` |
 | `BadgeVariant` | 1 | `AccentFill` |
 | `BloomDialogProvider` | 2 | delete; mount `<SurfaceHost>` |
@@ -428,7 +428,7 @@ Named bindings that no longer exist, by symbol:
 | `Menu*` + `useMenuControl` (one file, `Syra/packages/frontend/components/MediaCard.tsx`) | 7 | `DropdownMenu*` |
 | `Collapsible` (`Astro/webui/.../collapsible-group.tsx`) | 1 | `Accordion` |
 
-`@oxyhq/bloom/icons` is byte-identical between 0.87.1 and 1.0.0 — a census will
+`@oxy.so/bloom/icons` is byte-identical between 0.87.1 and 1.0.0 — a census will
 appear to flag three icon names in Bloom's own
 `src/__tests__/icon-references.test.ts`, but those are that suite's own fixture
 strings, not call sites.

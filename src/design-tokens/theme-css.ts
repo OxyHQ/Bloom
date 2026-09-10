@@ -15,7 +15,7 @@
  *
  * Usage (web Tailwind v4, in the app's global stylesheet):
  *
- *   import { bloomThemeCss } from '@oxyhq/bloom/design-tokens';
+ *   import { bloomThemeCss } from '@oxy.so/bloom/design-tokens';
  *   // build-time: write `@theme { ${bloomThemeCss()} }` into global.css, OR
  *   // paste the generated block once (see docs/design-tokens.md).
  *
@@ -62,7 +62,7 @@ export function bloomThemeCss(): string {
   // shadcn-canonical color utilities (bg-card, bg-primary, bg-background,
   // text-muted-foreground, …). Emitted here — the SINGLE source of truth — for
   // every runtime token, so consumer apps get these utilities by importing
-  // `@oxyhq/bloom/design-tokens/theme.css` and NEVER re-declare a per-app
+  // `@oxy.so/bloom/design-tokens/theme.css` and NEVER re-declare a per-app
   // `@theme { --color-*: var(--*) }` block (that per-app duplication is what let
   // `--color-card` drift to `var(--surface)`). Mirrors the `--color-<token>`
   // aliases `buildScopeVars` emits at runtime, so the static and runtime maps

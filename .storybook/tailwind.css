@@ -40,7 +40,7 @@
  *   - `../src/design-tokens/theme.css` is Bloom's own generated `@theme` block
  *     — the single authority for `rounded-radius-28`, `p-space-8`, `text-body`,
  *     `bg-fill`, `shadow-s` and the colour roles. Consumers import the
- *     published `@oxyhq/bloom/design-tokens/theme.css`; the relative path here
+ *     published `@oxy.so/bloom/design-tokens/theme.css`; the relative path here
  *     is the same file before packing.
  *
  * `bloomTailwindPreset` (`src/design-tokens/tailwind-preset.ts`) is

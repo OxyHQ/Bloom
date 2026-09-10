@@ -6,7 +6,7 @@
 // condition (`./src/theme/index.ts` → `BloomThemeProvider` → this file). Without
 // it the ambient decl is only auto-loaded inside Bloom's own tsconfig
 // (`include: ["src"]`); a consumer's tsconfig never includes
-// `node_modules/@oxyhq/bloom/src/**`, and TypeScript does NOT auto-pick-up
+// `node_modules/@oxy.so/bloom/src/**`, and TypeScript does NOT auto-pick-up
 // ambient `.d.ts` files that live under `node_modules`, so
 // `react-native-css/native-internal` is unresolved (TS2307) unless the reference
 // travels with the source. Bloom now declares react-native-css directly because

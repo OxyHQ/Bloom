@@ -7,7 +7,7 @@
  * full, self-consistent, WCAG-legible set of roles for light and dark at any
  * contrast level — the same dynamic theming MaterialKolor does, but ours.
  *
- * This barrel is the engine's PUBLIC surface — `@oxyhq/bloom/theme` publishes it
+ * This barrel is the engine's PUBLIC surface — `@oxy.so/bloom/theme` publishes it
  * whole, as the `ColorEngine` namespace. Keep it to what a consumer deriving a
  * theme actually calls; the ports underneath (`Hct`, `TonalPalette`,
  * `DynamicScheme`, `ColorRole`, `Roles`, `buildScheme`, `quantizeWu`, `score`)

@@ -158,7 +158,7 @@ const NODE_ESM_UNRESOLVABLE_SUBPATHS = new Set(['./design-tokens', './fonts', '.
 
 /**
  * Load each entry twice — once through `require()`, once through `import()` —
- * from a throwaway package that resolves `@oxyhq/bloom` to this repo, so the
+ * from a throwaway package that resolves `@oxy.so/bloom` to this repo, so the
  * real `exports` map, conditions and all, is what gets exercised. Loading the
  * built file directly would skip the `node` condition that makes these work,
  * which is the part that broke.
@@ -170,8 +170,8 @@ const NODE_ESM_UNRESOLVABLE_SUBPATHS = new Set(['./design-tokens', './fonts', '.
 function assertNodeLoadable(subpaths, esmUnresolvable) {
   const scratch = mkdtempSync(join(tmpdir(), 'bloom-verify-'));
   try {
-    mkdirSync(join(scratch, 'node_modules', '@oxyhq'), { recursive: true });
-    symlinkSync(REPO_ROOT, join(scratch, 'node_modules', '@oxyhq', 'bloom'), 'dir');
+    mkdirSync(join(scratch, 'node_modules', '@oxy.so'), { recursive: true });
+    symlinkSync(REPO_ROOT, join(scratch, 'node_modules', '@oxy.so', 'bloom'), 'dir');
     writeFileSync(
       join(scratch, 'package.json'),
       JSON.stringify({ name: 'bloom-node-load-probe', version: '0.0.0', private: true }),
@@ -195,7 +195,7 @@ function assertNodeLoadable(subpaths, esmUnresolvable) {
     };
 
     return subpaths.flatMap((subpath) => {
-      const specifier = `@oxyhq/bloom${subpath.slice(1)}`;
+      const specifier = `@oxy.so/bloom${subpath.slice(1)}`;
       const quoted = JSON.stringify(specifier);
       const problems = [];
 

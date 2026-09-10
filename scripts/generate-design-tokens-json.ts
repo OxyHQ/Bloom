@@ -5,7 +5,7 @@
  *
  * Consumers that are not browsers read this instead of the CSS:
  *
- *   import tokens from '@oxyhq/bloom/design-tokens/tokens.json';
+ *   import tokens from '@oxy.so/bloom/design-tokens/tokens.json';
  *
  * The checked-in output is verified in `src/__tests__/design-tokens-json.test.ts`,
  * which asserts the file is byte-identical to `renderBloomTokensJson()`.
