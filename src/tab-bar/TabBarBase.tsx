@@ -57,6 +57,7 @@ import {
   HIGHLIGHT_EXPANDED,
   HIGHLIGHT_FADE,
   HIGHLIGHT_MINIMIZED,
+  MAX_EXPANDED_ITEM_WIDTH,
   ICON_SIZE,
   ITEM_GAP,
   ITEM_PAD_V,
@@ -170,14 +171,13 @@ function TabBarBody({
   // the exact failure `maxWidth` exists to prevent, since narrowing the bar from
   // the outside with a `style` override moves only the pixels.
   //
-  // Unconstrained it is what the stretched wrap already measures
-  // (`windowWidth - BAR_MARGIN * 2`), so an existing consumer's geometry is
-  // unchanged to the pixel. `maxWidth` is a ceiling, never a floor: on a window
-  // narrower than it, the bar stays full-bleed.
-  const barOuterWidth =
-    maxWidth === undefined
-      ? windowWidth - BAR_MARGIN * 2
-      : Math.min(windowWidth - BAR_MARGIN * 2, maxWidth);
+  // The bar grows with its tab count instead of stretching a few actions across
+  // the whole window. Each expanded slot gets at most a comfortable 88pt; more
+  // tabs naturally grow the pill until it reaches the available width. An
+  // explicit `maxWidth` remains an additional ceiling, never a width request.
+  const availableWidth = windowWidth - BAR_MARGIN * 2;
+  const contentWidth = tabCount * MAX_EXPANDED_ITEM_WIDTH + ROW_PAD_H * 2;
+  const barOuterWidth = Math.min(availableWidth, contentWidth, maxWidth ?? Infinity);
 
   // Picker-style tick while the highlight crosses tab boundaries mid-drag.
   // `useHaptics` already no-ops on web, when the optional `expo-haptics` peer
@@ -503,10 +503,11 @@ function TabBarBody({
   // its own (its width comes from those margins), which Yoga then sizes from its
   // CONTENT rather than from the constraint.
   //
-  // Applied only when `maxWidth` is set: with no width and no `alignSelf` the
-  // wrap stretches, which is the original full-bleed behaviour.
+  // A full-width bar can keep the stretch layout. A bar made narrower by its
+  // item count or by `maxWidth` gets one definite centred width so layout,
+  // highlight geometry and hit-testing all share the same coordinate space.
   const constrainedWrapStyle: ViewStyle | null =
-    maxWidth === undefined ? null : { width: barOuterWidth, alignSelf: 'center' };
+    barOuterWidth === availableWidth ? null : { width: barOuterWidth, alignSelf: 'center' };
   const barContext = useMemo(
     () => ({ slideIndex, highlightOpacity, isDragging, theme, activeIndex, driven, selectIndex }),
     [slideIndex, highlightOpacity, isDragging, theme, activeIndex, driven, selectIndex],

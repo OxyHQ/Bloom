@@ -333,7 +333,7 @@ It is the bar's **expanded** height, deliberately: the bar minimizes on the way 
 
 ## Constraining the width on a tablet
 
-By default the bar spans the window. That is right on a phone and wrong on a tablet: an iPad 11" gives you an 810pt pill in portrait and 1342pt in landscape, with 21pt glyphs adrift in cells hundreds of points wide. `maxWidth` caps it and centres it:
+By default the pill grows with its tab count: each expanded tab gets at most a comfortable 88pt, and the whole bar remains centred until enough tabs need the available viewport width. Two or three actions therefore stay compact while larger sets grow naturally. `maxWidth` can impose a tighter ceiling:
 
 ```tsx
 <TabBar activeIndex={index} onIndexChange={setIndex} maxWidth={480}>
@@ -431,7 +431,7 @@ The tail gradient is derived from the theme's page background, so it works on li
 | `theme?` | `Partial<TabBarTheme>` | — | Partial override of the token-resolved theme. |
 | `haptics?` | `boolean` | `true` | Picker-style tick as the scrub crosses tab boundaries. Already a no-op on web and when `expo-haptics` is absent. |
 | `blur?` | `boolean \| { intensity?: number }` | `true` | The progressive blur band behind the bar. `false` removes it entirely — the escape hatch for a FAB or scrubber that sits inside its 114pt reach. |
-| `maxWidth?` | `number` | — | Caps the pill's width and centres it, with the item geometry and the hit-testing following. A ceiling, never a floor: narrower windows keep the full-bleed bar. |
+| `maxWidth?` | `number` | adaptive | Adds a ceiling to the tab-count-based width, with item geometry and hit-testing following. It never stretches a compact bar. |
 
 Everything `View` accepts is forwarded.
 

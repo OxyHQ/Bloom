@@ -1,12 +1,11 @@
 import React from 'react';
 import type { ReactTestInstance } from 'react-test-renderer';
 import { act, render } from '@testing-library/react-native';
-import { Dimensions } from 'react-native';
 import { withSpring } from 'react-native-reanimated';
 
 import { BloomThemeProvider } from '../theme/BloomThemeProvider';
 import { TabBar, TabBarButton } from '../tab-bar';
-import { BAR_MARGIN, ROW_PAD_H } from '../tab-bar/shared';
+import { MAX_EXPANDED_ITEM_WIDTH, ROW_PAD_H } from '../tab-bar/shared';
 import type { TabBarItem } from '../tab-bar/types';
 
 /**
@@ -133,16 +132,14 @@ const ITEMS: TabBarItem[] = [
 
 /**
  * Where the capsule sits for a given tab, from the same geometry the bar uses
- * (window width as the react-native mock reports it, expanded — progress 0 — so
- * no minimize inset applies).
+ * (its adaptive expanded item width, so no minimize inset applies).
  */
-const ITEM_WIDTH =
-  (Dimensions.get('window').width - BAR_MARGIN * 2 - ROW_PAD_H * 2) / ITEMS.length;
+const ITEM_WIDTH = MAX_EXPANDED_ITEM_WIDTH;
 const translateXFor = (index: number) => ROW_PAD_H + ITEM_WIDTH * index;
 
 /** Touch x positions inside the bar, named by the tab they land on. */
 const NEAR_LEFT_EDGE = 8;
-const NEAR_RIGHT_EDGE = 340;
+const NEAR_RIGHT_EDGE = ITEMS.length * ITEM_WIDTH - 4;
 
 function withTheme(ui: React.ReactElement) {
   return (
