@@ -3,6 +3,7 @@ import { act, render } from '@testing-library/react-native';
 
 import { BloomThemeProvider } from '../theme/BloomThemeProvider';
 import { TabBar, TabBarButton } from '../tab-bar';
+import { MAX_EXPANDED_ITEM_WIDTH } from '../tab-bar/shared';
 import type { TabBarItem } from '../tab-bar/types';
 
 /**
@@ -115,14 +116,12 @@ const ITEMS: TabBarItem[] = [
 ];
 
 /**
- * Touch x positions inside the bar, in the 375pt window the react-native mock
- * reports. Named by the tab they land on rather than by the geometry that puts
- * them there: an edge touch belongs to the first/last tab and a centered one to
- * the middle tab whatever the exact item width turns out to be.
+ * Touch x positions inside the adaptive bar. Named by the tab they land on: an
+ * edge touch belongs to the first/last tab and a centered one to the middle.
  */
 const NEAR_LEFT_EDGE = 8;
-const WINDOW_CENTER = 187;
-const NEAR_RIGHT_EDGE = 340;
+const WINDOW_CENTER = (ITEMS.length * MAX_EXPANDED_ITEM_WIDTH) / 2;
+const NEAR_RIGHT_EDGE = ITEMS.length * MAX_EXPANDED_ITEM_WIDTH - 4;
 
 function renderBar(props: {
   onIndexChange?: (index: number) => void;

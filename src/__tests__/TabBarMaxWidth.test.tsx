@@ -5,17 +5,22 @@ import type { ReactTestInstance } from 'react-test-renderer';
 import { BloomThemeProvider } from '../theme/BloomThemeProvider';
 import { TabBar, TabBarButton, TabBarMinimizeProvider, useMinimizeState } from '../tab-bar';
 import type { MinimizeState } from '../tab-bar/context';
-import { BAR_MARGIN, MINIMIZED_INSET, ROW_PAD_H } from '../tab-bar/shared';
+import {
+  BAR_MARGIN,
+  MAX_EXPANDED_ITEM_WIDTH,
+  MINIMIZED_INSET,
+  ROW_PAD_H,
+} from '../tab-bar/shared';
 import type { TabBarItem } from '../tab-bar/types';
 
 /**
  * `maxWidth` — constraining the pill on a tablet, and keeping every piece of
  * geometry on the SAME width while doing it.
  *
- * Unconstrained, the bar spans the window: 810pt at iPad 11" portrait, 1342pt
- * in landscape, 21pt glyphs adrift in cells hundreds of points wide. A consumer
- * cannot fix that from the outside, and the reason is what this file is really
- * about: narrowing the bar with a `style` override moves the PIXELS only, while
+ * The default width follows the number of tabs, while `maxWidth` can impose a
+ * tighter ceiling. A consumer cannot safely do that from the outside, and the
+ * reason is what this file is really about: narrowing the bar with a `style`
+ * override moves the PIXELS only, while
  * the highlight's width, its `translateX` and the tap/scrub hit-testing all keep
  * dividing the WINDOW width by the tab count. The highlight then sits under one
  * tab and a tap at the same point selects another.
@@ -132,9 +137,11 @@ const ITEMS: TabBarItem[] = [
   { name: 'search', label: 'Search', icon: null },
   { name: 'you', label: 'You', icon: null },
 ];
+const TWO_ITEMS = ITEMS.slice(0, 2);
 
 /** Comfortably narrower than the tablet window, so the constraint binds. */
-const MAX_WIDTH = 480;
+const ADAPTIVE_WIDTH = ITEMS.length * MAX_EXPANDED_ITEM_WIDTH + ROW_PAD_H * 2;
+const MAX_WIDTH = 240;
 
 /** Captures the shared minimize progress so a test can drive the bar minimized. */
 function MinimizeProbe({ onState }: { onState: (state: MinimizeState) => void }) {
@@ -146,17 +153,19 @@ function Tree({
   maxWidth,
   onIndexChange,
   onState,
+  items = ITEMS,
 }: {
   maxWidth?: number;
   onIndexChange?: (index: number) => void;
   onState?: (state: MinimizeState) => void;
+  items?: TabBarItem[];
 }) {
   return (
     <BloomThemeProvider mode="light" colorPreset="teal">
       <TabBarMinimizeProvider>
         {onState ? <MinimizeProbe onState={onState} /> : null}
         <TabBar activeIndex={0} maxWidth={maxWidth} onIndexChange={onIndexChange}>
-          {ITEMS.map((item, index) => (
+          {items.map((item, index) => (
             <TabBarButton key={item.name} item={item} index={index} />
           ))}
         </TabBar>
@@ -169,6 +178,7 @@ function renderBar(props: {
   maxWidth?: number;
   onIndexChange?: (index: number) => void;
   onState?: (state: MinimizeState) => void;
+  items?: TabBarItem[];
 }) {
   const utils = render(<Tree {...props} />);
   return { ...utils, resettle: () => utils.rerender(<Tree {...props} />) };
@@ -260,12 +270,16 @@ beforeEach(() => {
 
 describe('TabBar maxWidth', () => {
   describe('layout', () => {
-    it('leaves the wrap unconstrained when the prop is omitted', () => {
-      // No default: an existing consumer's bar must be the same bar, so the wrap
-      // keeps stretching to the full window rather than acquiring a width.
+    it('sizes and centres the pill from its tab count by default', () => {
       const style = wrapStyle(renderBar({}).UNSAFE_root);
-      expect(style.width).toBeUndefined();
-      expect(style.alignSelf).toBeUndefined();
+      expect(style.width).toBe(ADAPTIVE_WIDTH);
+      expect(style.alignSelf).toBe('center');
+    });
+
+    it('gets narrower when fewer tabs are present', () => {
+      const style = wrapStyle(renderBar({ items: TWO_ITEMS }).UNSAFE_root);
+      expect(style.width).toBe(TWO_ITEMS.length * MAX_EXPANDED_ITEM_WIDTH + ROW_PAD_H * 2);
+      expect(style.width).toBeLessThan(ADAPTIVE_WIDTH);
     });
 
     it('constrains the wrap and centres it', () => {
@@ -276,18 +290,22 @@ describe('TabBar maxWidth', () => {
       expect(style.alignSelf).toBe('center');
     });
 
-    it('is a ceiling, never a floor', () => {
-      // A phone narrower than the value keeps the full-bleed bar, so one value
-      // can be passed unconditionally from a shared tab layout.
-      mockWindowWidth = 375;
+    it('is a ceiling and never stretches the adaptive width', () => {
+      mockWindowWidth = TABLET_WIDTH;
       const style = wrapStyle(renderBar({ maxWidth: MAX_WIDTH }).UNSAFE_root);
-      expect(style.width).toBe(375 - BAR_MARGIN * 2);
+      expect(style.width).toBe(MAX_WIDTH);
     });
 
     it('never lets the bar exceed the window', () => {
-      mockWindowWidth = 900;
-      const style = wrapStyle(renderBar({ maxWidth: 4000 }).UNSAFE_root);
-      expect(style.width).toBe(900 - BAR_MARGIN * 2);
+      mockWindowWidth = 200;
+      const { UNSAFE_root } = renderBar({ maxWidth: 4000 });
+      const style = wrapStyle(UNSAFE_root);
+      expect(style.width).toBeUndefined();
+      expect(style.alignSelf).toBeUndefined();
+      expect(renderedItemWidth(UNSAFE_root)).toBeCloseTo(
+        (200 - BAR_MARGIN * 2 - ROW_PAD_H * 2) / ITEMS.length,
+        5,
+      );
     });
   });
 
@@ -297,10 +315,9 @@ describe('TabBar maxWidth', () => {
       expect(renderedItemWidth(UNSAFE_root)).toBeCloseTo((MAX_WIDTH - ROW_PAD_H * 2) / 3, 5);
     });
 
-    it('sizes it from the window when the prop is omitted', () => {
+    it('sizes it from the adaptive item width when the prop is omitted', () => {
       const { UNSAFE_root } = renderBar({});
-      const available = TABLET_WIDTH - BAR_MARGIN * 2;
-      expect(renderedItemWidth(UNSAFE_root)).toBeCloseTo((available - ROW_PAD_H * 2) / 3, 5);
+      expect(renderedItemWidth(UNSAFE_root)).toBeCloseTo(MAX_EXPANDED_ITEM_WIDTH, 5);
     });
 
     it('a tap lands on the tab it is visibly over', () => {
@@ -318,9 +335,8 @@ describe('TabBar maxWidth', () => {
     });
 
     it('resolves the far right of the constrained pill to the LAST tab', () => {
-      // The same failure stated as a single number, so what regresses is legible
-      // in the diff: at 1024pt the unconstrained geometry makes each tab 330.7pt
-      // wide, and 479 is only 1.4 of those from the left — the middle tab.
+      // Keep the edge case explicit so gesture geometry cannot accidentally be
+      // derived from the viewport while the pill renders at its capped width.
       const onIndexChange = jest.fn();
       renderBar({ maxWidth: MAX_WIDTH, onIndexChange });
 

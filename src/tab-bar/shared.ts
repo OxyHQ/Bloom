@@ -34,6 +34,8 @@ export const MINIMIZED_INSET = 34;
 export const BAR_MARGIN = 12;
 /** Inner inset between the capsule wall and the tab items. */
 export const ROW_PAD_H = 4;
+/** Comfortable ceiling for one expanded tab; the bar grows with its item count. */
+export const MAX_EXPANDED_ITEM_WIDTH = 88;
 export const LABEL_HEIGHT = 13;
 export const ICON_SIZE = 21;
 /**
