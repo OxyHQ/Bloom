@@ -26,7 +26,7 @@ import { FontLoader } from '../fonts/FontLoader';
 
 import { useAmbientThemeState } from './ambient-store';
 
-import { applyDarkClass, applyVarsToDocument } from './apply-dark-class';
+import { applyDarkClass, applyDocumentTheme, applyVarsToDocument } from './apply-dark-class';
 import { buildTheme } from './build-theme';
 import { buildThemeFromSeed } from './build-theme-from-seed';
 import { buildSeedScopeVars } from './color-scope/seed-scope';
@@ -433,6 +433,8 @@ export function BloomThemeProvider({
     setColorSchemeSafe(effectiveMode);
     applyDarkClass(resolved);
     applyVarsToDocument(themeVars);
+    const background = themeVars['--background'];
+    if (background) applyDocumentTheme(resolved, background);
   }, [effectiveMode, resolved, themeVars]);
 
   // Native only: publish the same vars into react-native-css's GLOBAL root

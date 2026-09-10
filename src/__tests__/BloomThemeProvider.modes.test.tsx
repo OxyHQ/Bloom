@@ -19,7 +19,7 @@ jest.mock('react-native', () => {
 
 import { BloomThemeProvider } from '../theme/BloomThemeProvider';
 import { useTheme } from '../theme/use-theme';
-import { Appearance } from 'react-native';
+import { Appearance, Platform } from 'react-native';
 
 function Display() {
   const t = useTheme();
@@ -37,6 +37,23 @@ beforeEach(() => {
 });
 
 describe('BloomThemeProvider — light/dark/system/adaptive flow', () => {
+  it('can render on web during SSR without a document', () => {
+    const previousOS = Platform.OS;
+    Platform.OS = 'web';
+    try {
+      expect(typeof document).toBe('undefined');
+      const { getByTestId, unmount } = render(
+        <BloomThemeProvider mode="dark" fonts={false}>
+          <Display />
+        </BloomThemeProvider>,
+      );
+      expect(getByTestId('resolved').props.children).toBe('dark');
+      unmount();
+    } finally {
+      Platform.OS = previousOS;
+    }
+  });
+
   it('resolves system to light when OS is light', () => {
     mockColorScheme = 'light';
     const { getByTestId } = render(
