@@ -14,6 +14,7 @@ import { pressedSurface } from '../theme/press-colors';
 import type { Theme } from '../theme/types';
 import { interactiveWebCss, useInteractiveWebCss } from '../styles/interactive-web-css';
 import { flattenWebStyle } from '../styles/flatten-web-style';
+import { applyIconColor } from '../frosted-icon-button/shared';
 import { useFabMinimized } from './use-fab-minimized';
 import type { FabMinimizeBehavior, FabPlacement, FabProps, FabSize, FabVariant } from './types';
 
@@ -208,8 +209,8 @@ const FabWebComponent: React.FC<FabProps> = ({
   const sizeConfig = useMemo(() => resolveSize(size), [size]);
   const isExtended = label != null && label.length > 0;
   const showLabel = isExtended && !(minimized && minimizeBehavior === 'collapse');
-  const content = icon ?? children;
   const variantColors = useMemo(() => resolveVariant(variant, theme.colors), [variant, theme.colors]);
+  const content = applyIconColor(icon ?? children, variantColors.foreground);
 
   // Resolved-token shadows. The token is already a full color (per the Bloom
   // web CSS-var contract), so it is used directly — never wrapped in hsl().

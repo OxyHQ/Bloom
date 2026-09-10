@@ -18,6 +18,7 @@ import { bloomShadowStyle } from '../design-tokens/shadows';
 import { pressedSurface } from '../theme/press-colors';
 import { usePressAnimation } from '../hooks/use-press-animation';
 import { useInteractionState } from '../hooks/use-interaction-state';
+import { applyIconColor } from '../frosted-icon-button/shared';
 import { useFabMinimized } from './use-fab-minimized';
 import type { FabMinimizeBehavior, FabPlacement, FabProps, FabSize, FabVariant } from './types';
 
@@ -165,7 +166,6 @@ const FabComponent: React.FC<FabProps> = ({
   const sizeConfig = useMemo(() => resolveSize(size), [size]);
   const isExtended = label != null && label.length > 0;
   const showLabel = isExtended && !(minimized && minimizeBehavior === 'collapse');
-  const content = icon ?? children;
 
   const { scaleAnim, onPressIn, onPressOut } = usePressAnimation(
     disabled ? undefined : animation.pressScale,
@@ -174,6 +174,7 @@ const FabComponent: React.FC<FabProps> = ({
     useInteractionState();
 
   const resolvedColors = useMemo(() => resolveVariant(variant, theme.colors), [variant, theme.colors]);
+  const content = applyIconColor(icon ?? children, resolvedColors.foreground);
 
   // A FAB is always filled, so the held state is a state layer of its own label
   // colour over its own fill — never a wash, and never an alpha'd fill: it
