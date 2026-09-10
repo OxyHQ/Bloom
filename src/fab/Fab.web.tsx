@@ -252,6 +252,7 @@ const FabWebComponent: React.FC<FabProps> = ({
     hoverShadow,
     placement,
     offset,
+    bottomEdgeInset,
     isExtended,
   ]);
 

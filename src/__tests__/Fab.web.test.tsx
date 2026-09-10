@@ -10,6 +10,7 @@ import '@testing-library/jest-dom';
 
 import { BloomThemeProvider } from '../theme/BloomThemeProvider';
 import { Fab } from '../fab/Fab.web';
+import { BottomEdgeProvider, useClaimBottomEdge } from '../layout/bottom-edge';
 
 (globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
 
@@ -39,6 +40,22 @@ afterEach(() => {
 });
 
 describe('Fab.web', () => {
+  it('moves above a bottom-edge claim registered after the first render', () => {
+    function Claim() {
+      useClaimBottomEdge(74);
+      return null;
+    }
+
+    const c = mount(
+      <BottomEdgeProvider>
+        <Claim />
+        <Fab accessibilityLabel="Add" icon={<span>+</span>} />
+      </BottomEdgeProvider>,
+    );
+
+    expect(getByRole(c, 'button').style.bottom).toBe('90px');
+  });
+
   it('renders a real <button> element', () => {
     const c = mount(<Fab accessibilityLabel="Add" icon={<span>+</span>} />);
     const fab = getByRole(c, 'button', { name: 'Add' });
