@@ -1,4 +1,4 @@
-import React, { memo, useMemo, type ComponentType } from 'react';
+import React, { memo, useEffect, useMemo, useRef, type ComponentType } from 'react';
 import {
   Animated,
   Pressable,
@@ -12,6 +12,7 @@ import {
 import { styled } from 'react-native-css';
 
 import { useBottomEdgeInset } from '../layout/bottom-edge';
+import { EXPANDED_HEIGHT, MINIMIZED_HEIGHT } from '../tab-bar/shared';
 import { useTheme } from '../theme/use-theme';
 import { animation, borderRadius } from '../styles/tokens';
 import { bloomShadowStyle } from '../design-tokens/shadows';
@@ -160,7 +161,7 @@ const FabComponent: React.FC<FabProps> = ({
   testID,
   zIndex = DEFAULT_Z_INDEX,
 }) => {
-  const minimized = useFabMinimized(minimizeBehavior !== 'none');
+  const minimized = useFabMinimized(true);
   const bottomEdgeInset = useBottomEdgeInset();
   const theme = useTheme();
   const sizeConfig = useMemo(() => resolveSize(size), [size]);
@@ -175,6 +176,16 @@ const FabComponent: React.FC<FabProps> = ({
 
   const resolvedColors = useMemo(() => resolveVariant(variant, theme.colors), [variant, theme.colors]);
   const content = applyIconColor(icon ?? children, resolvedColors.foreground);
+  const followsBottomEdge = placement === 'bottom-right' || placement === 'bottom-left';
+  const bottomFollow = useRef(new Animated.Value(0)).current;
+
+  useEffect(() => {
+    Animated.timing(bottomFollow, {
+      toValue: followsBottomEdge && minimized ? EXPANDED_HEIGHT - MINIMIZED_HEIGHT : 0,
+      duration: 200,
+      useNativeDriver: true,
+    }).start();
+  }, [bottomFollow, followsBottomEdge, minimized]);
 
   // A FAB is always filled, so the held state is a state layer of its own label
   // colour over its own fill — never a wash, and never an alpha'd fill: it
@@ -243,7 +254,7 @@ const FabComponent: React.FC<FabProps> = ({
         // cost is that a caller who sets `transform` replaces the press scale
         // instead of composing with it — when the transform sat on a separate
         // wrapper node the two multiplied.
-        { transform: [{ scale: scaleAnim }] },
+        { transform: [{ translateY: bottomFollow }, { scale: scaleAnim }] },
         style,
       ]}
       onPress={disabled ? undefined : onPress}

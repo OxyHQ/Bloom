@@ -8,6 +8,7 @@ import React, {
 } from 'react';
 
 import { useBottomEdgeInset } from '../layout/bottom-edge';
+import { EXPANDED_HEIGHT, MINIMIZED_HEIGHT } from '../tab-bar/shared';
 import { useTheme } from '../theme/use-theme';
 import { animation, borderRadius } from '../styles/tokens';
 import { pressedSurface } from '../theme/press-colors';
@@ -79,14 +80,13 @@ const BLOOM_FAB_CSS = interactiveWebCss({
   // Gate: `interactive-web-css.test.tsx`.
   base: `
     flex-direction: row;
-    gap: 8px;
     border: none;
     background-color: var(--bloom-fab-bg);
     box-shadow: var(--bloom-fab-shadow);
     font-family: inherit;
   `,
   transition:
-    'opacity 120ms ease, transform 120ms ease, box-shadow 160ms ease, background-color 120ms ease',
+    'opacity 120ms ease, transform 120ms ease, box-shadow 160ms ease, background-color 120ms ease, bottom 200ms ease, padding 200ms ease, gap 200ms ease',
   // A FAB lifts on hover rather than dimming: it floats over the content, so a
   // deeper shadow is the affordance an opacity dip cannot express.
   hover: { declarations: 'box-shadow: var(--bloom-fab-shadow-hover);' },
@@ -103,28 +103,13 @@ const BLOOM_FAB_CSS = interactiveWebCss({
 /**
  * Positioning for a placement on web.
  *
- * CRITICAL: the positioned placements use `position: sticky`, NOT `fixed`. A
- * sticky element is positioned relative to its nearest scrolling ancestor and
- * stays within its containing block — so the FAB tracks the bottom-right of the
- * CENTRAL CONTENT COLUMN as it scrolls and never escapes to the viewport edge /
- * over a side rail in a constrained multi-column app layout.
+ * Positioned placements are real overlays (`absolute`), matching native. They
+ * anchor to the nearest positioned ancestor and never reserve a FAB-sized strip
+ * in the consumer's layout. `fixed` would escape a constrained content column;
+ * `sticky` stays in flow and silently shortens a sibling list by the FAB height.
+ * The containing screen therefore owns containment and should fill the available
+ * height, which is the same contract on every platform.
  *
- * Pinning a FAB to the BOTTOM of a column needs TWO mechanisms working together,
- * because sticky alone is not enough:
- *
- *   1. `margin-top: auto` — in a flex COLUMN this consumes all the free vertical
- *      space, pushing the FAB to the bottom of the container EVEN WHEN THE
- *      CONTENT IS SHORT (e.g. an empty feed / loading spinner). Without it, a
- *      short column leaves the FAB at its natural flow position (mid-column) —
- *      which is exactly the "floating in the middle / broken" bug.
- *   2. `position: sticky; bottom` — when the content is TALL and the column
- *      scrolls, sticky keeps the FAB pinned to the bottom of the viewport as the
- *      user scrolls, instead of scrolling away with the content.
- *
- * Horizontal placement uses `align-self` (sticky elements can't be pushed by
- * `left`/`right` the way absolute ones are) plus an inline-edge margin for the
- * `offset`. The consumer column MUST be a flex column that fills the available
- * height, and the FAB MUST be its last child — documented in the usage story. *
  * `bottomEdgeInset` applies to the BOTTOM axis only. It is not a gap preference
  * — `offset` is that — but the height of whatever floating surface has already
  * claimed the bottom edge, so the FAB lands above a floating tab bar instead of
@@ -138,22 +123,17 @@ function placementStyle(
   bottomEdgeInset: number,
 ): CSSProperties {
   if (placement === 'static') return {};
-  const style: CSSProperties = { position: 'sticky' };
+  const style: CSSProperties = { position: 'absolute' };
   const isBottom = placement === 'bottom-right' || placement === 'bottom-left';
   if (isBottom) {
     style.bottom = offset + bottomEdgeInset;
-    // Push the FAB to the bottom of a (flex-column) container even when the
-    // content is too short to scroll, so it never floats mid-column.
-    style.marginTop = 'auto';
   } else {
     style.top = offset;
   }
   if (placement === 'bottom-right' || placement === 'top-right') {
-    style.alignSelf = 'flex-end';
-    style.marginRight = offset;
+    style.right = offset;
   } else {
-    style.alignSelf = 'flex-start';
-    style.marginLeft = offset;
+    style.left = offset;
   }
   return style;
 }
@@ -200,7 +180,7 @@ const FabWebComponent: React.FC<FabProps> = ({
   type = 'button',
 }) => {
   useInteractiveWebCss(STYLE_ID, BLOOM_FAB_CSS);
-  const minimized = useFabMinimized(minimizeBehavior !== 'none');
+  const minimized = useFabMinimized(true);
   const bottomEdgeInset = useBottomEdgeInset();
   const theme = useTheme();
   const reactId = useId();
@@ -237,12 +217,18 @@ const FabWebComponent: React.FC<FabProps> = ({
         variantColors.foreground,
       ),
       ['--bloom-fab-press-scale' as string]: animation.pressScale,
-      ...placementStyle(placement, offset, bottomEdgeInset),
+      ...placementStyle(
+        placement,
+        offset,
+        Math.max(0, bottomEdgeInset - (minimized ? EXPANDED_HEIGHT - MINIMIZED_HEIGHT : 0)),
+      ),
     };
-    if (showLabel) {
+    if (isExtended) {
       const pad = sizeConfig.diameter <= 44 ? 14 : 20;
-      base.paddingLeft = pad;
-      base.paddingRight = pad;
+      base.minWidth = sizeConfig.diameter;
+      base.paddingLeft = showLabel ? pad : 0;
+      base.paddingRight = showLabel ? pad : 0;
+      base.gap = showLabel ? 8 : 0;
     } else {
       base.width = sizeConfig.diameter;
     }
@@ -258,6 +244,8 @@ const FabWebComponent: React.FC<FabProps> = ({
     placement,
     offset,
     bottomEdgeInset,
+    minimized,
+    isExtended,
     showLabel,
   ]);
 
@@ -313,7 +301,28 @@ const FabWebComponent: React.FC<FabProps> = ({
           {content}
         </span>
       )}
-      {showLabel && <span style={resolvedLabelStyle}>{label}</span>}
+      {isExtended && (
+        <span
+          aria-hidden={!showLabel || undefined}
+          style={{
+            display: 'grid',
+            gridTemplateColumns: showLabel ? 'minmax(0, 1fr)' : 'minmax(0, 0fr)',
+            opacity: showLabel ? 1 : 0,
+            transition: 'grid-template-columns 200ms ease, opacity 140ms ease',
+          }}
+        >
+          <span
+            style={{
+              ...resolvedLabelStyle,
+              minWidth: 0,
+              overflow: 'hidden',
+              whiteSpace: 'nowrap',
+            }}
+          >
+            {label}
+          </span>
+        </span>
+      )}
     </button>
   );
 };

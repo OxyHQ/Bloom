@@ -47,12 +47,9 @@ export type FabMinimizeBehavior = 'none' | 'hide' | 'collapse';
  *   - `bottom-right` (default) / `bottom-left` / `top-right` / `top-left` —
  *     the FAB pins itself to that corner of its CONTAINING block, never the
  *     viewport. On native it uses `position: absolute` within the nearest
- *     positioned ancestor. On web a `bottom-*` placement combines
- *     `margin-top: auto` (pins to the bottom of a flex COLUMN even when the
- *     content is short / not scrolling) with `position: sticky; bottom` (keeps
- *     it visible while a tall column scrolls). The consumer column MUST be a
- *     flex column that fills the available height and the FAB MUST be its last
- *     child.
+ *     positioned ancestor. Both web and native use an absolute overlay, so the
+ *     FAB never reserves space in a sibling list. The containing screen must
+ *     fill the available height and establish the containing block.
  *   - `static` — no positioning at all. The FAB is laid out inline and the
  *     consumer is fully responsible for placement (e.g. wrapping it in their
  *     own absolutely/sticky-positioned container). Use this when you need
@@ -60,8 +57,7 @@ export type FabMinimizeBehavior = 'none' | 'hide' | 'collapse';
  *
  * CRITICAL: the positioned placements DO NOT use web `position: fixed` and are
  * never anchored to the viewport. They stay inside the containing column so the
- * FAB never escapes a constrained 3-column app layout and sits over a side rail,
- * and never float mid-column when the content is short.
+ * FAB never escapes a constrained multi-column layout or reserves list space.
  */
 export type FabPlacement =
   | 'bottom-right'
@@ -110,7 +106,7 @@ export interface FabProps {
   /**
    * Corner of the containing block to anchor to. Defaults to `'bottom-right'`.
    * See {@link FabPlacement}. The DEFAULT never escapes the containing column
-   * (web uses `position: sticky`, native uses `position: absolute`).
+   * (both web and native use `position: absolute`).
    */
   placement?: FabPlacement;
 

@@ -54,15 +54,17 @@ most common one and the rest go in the content or a menu.
 ## Following a Bloom tab bar
 
 The FAB automatically clears the bottom-edge footprint claimed by Bloom's tab
-bar. An extended FAB can also react when that bar minimizes:
+bar and follows its compact height when it minimizes. An extended FAB can also
+react to that state:
 
 ```tsx
 <Fab label="Compose" minimizeBehavior="collapse" {...props} />
 <Fab label="Compose" minimizeBehavior="hide" {...props} />
 ```
 
-`collapse` retains the icon-only action. `hide` removes the whole action. The
-default is `none`, which preserves the full FAB.
+`collapse` smoothly retracts the label and horizontal space while retaining the
+icon-only action. `hide` removes the whole action. The default is `none`, which
+preserves the full FAB.
 
 ## `placement="static"` when something else owns the position
 
