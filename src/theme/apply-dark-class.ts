@@ -10,6 +10,38 @@ export function applyDarkClass(resolved: 'light' | 'dark') {
 }
 
 /**
+ * Theme the browser's document canvas as well as the app's React surfaces.
+ * The root background covers exposed viewport/overscroll areas; color-scheme
+ * lets browser-owned controls follow the resolved mode. theme-color is a hint
+ * for mobile browser chrome, whose final appearance remains browser-controlled.
+ * Called only by the app-wide provider, never by color/seed scopes.
+ */
+export function applyDocumentTheme(resolved: 'light' | 'dark', background: string) {
+  if (Platform.OS !== 'web' || typeof document === 'undefined') return;
+
+  for (const element of [document.documentElement, document.body]) {
+    if (!element) continue;
+    element.style.backgroundColor = background;
+    element.style.colorScheme = resolved;
+  }
+
+  // Keep authored media-qualified entries as pre-hydration fallbacks. The
+  // first matching theme-color wins, so a Bloom-owned unconditional entry goes
+  // before them: an explicit in-app mode must override the OS media preference.
+  const head = document.head;
+  if (!head) return;
+  let meta = head.querySelector<HTMLMetaElement>('meta[data-bloom-theme-color]');
+  if (!meta) {
+    meta = document.createElement('meta');
+    meta.setAttribute('data-bloom-theme-color', '');
+    meta.name = 'theme-color';
+  }
+  meta.content = background;
+  const first = head.querySelector('meta[name="theme-color"]');
+  if (first !== meta) head.insertBefore(meta, first);
+}
+
+/**
  * Apply a color preset's CSS custom properties to the document root.
  * No-op on native — only affects web (early-returns on `Platform.OS !== 'web'`).
  *

@@ -65,3 +65,18 @@ Every preset exposes:
 <Callout variant="info" title="Web CSS variables">
 On web, Bloom also writes the active palette to CSS variables on `:root`, so non-React surfaces (e.g. raw HTML pages) can theme themselves with `var(--bloom-primary)`.
 </Callout>
+
+## Mobile web document appearance
+
+The app-wide provider also applies the resolved background and `color-scheme`
+to `html` and `body`, covering the document canvas exposed at viewport edges
+and during overscroll. It places one managed `theme-color` meta before existing
+entries so browser chrome follows the active app palette, including manual
+light/dark choices and dynamic seeds. Existing media-qualified entries are
+preserved as startup fallbacks. Color and seed scopes do not change these
+document-wide settings.
+
+These settings take effect when the provider mounts. Prerendered apps should
+still supply their startup background and theme metadata in the HTML/CSS.
+Browser and operating-system navigation areas may ignore `theme-color`; their
+final appearance must be checked on a real mobile device.
