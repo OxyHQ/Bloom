@@ -131,6 +131,11 @@ describe('Fab.web', () => {
     expect(getByText(c, 'Compose')).toBeTruthy();
   });
 
+  it('injects the variant foreground as the icon fill', () => {
+    const c = mount(<Fab accessibilityLabel="Add" icon={<svg data-testid="icon" />} />);
+    expect(c.querySelector('[data-testid="icon"]')).toHaveAttribute('fill', 'rgb(255 255 255)');
+  });
+
   it('collapses an extended FAB to its icon when the tab bar minimizes', () => {
     const c = mount(
       <TabBarMinimizeProvider>
