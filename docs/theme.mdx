@@ -68,15 +68,19 @@ On web, Bloom also writes the active palette to CSS variables on `:root`, so non
 
 ## Mobile web document appearance
 
-The app-wide provider also applies the resolved background and `color-scheme`
-to `html` and `body`, covering the document canvas exposed at viewport edges
-and during overscroll. It places one managed `theme-color` meta before existing
-entries so browser chrome follows the active app palette, including manual
-light/dark choices and dynamic seeds. Existing media-qualified entries are
-preserved as startup fallbacks. Color and seed scopes do not change these
-document-wide settings.
+The app-wide provider is the sole runtime owner of document appearance. It
+paints `html` and `body` from the canonical `--background` token, applies the
+resolved `color-scheme`, and owns one `theme-color` meta so browser chrome
+follows manual modes, system changes, presets and dynamic seeds. On first
+mount it adopts one startup meta and removes the remaining fallback entries;
+app-specific runtime writers must therefore be removed. Color and seed scopes
+do not change these document-wide settings.
 
-These settings take effect when the provider mounts. Prerendered apps should
-still supply their startup background and theme metadata in the HTML/CSS.
+These settings take effect when the provider mounts. Prerendered apps may
+supply media-qualified light/dark metadata and background CSS as a startup-only
+fallback; Bloom transfers that ownership during hydration. Server rendering
+cannot know a local persisted preference, so the OS preference is the honest
+pre-hydration fallback. Loading and auth gates should paint with
+`theme.colors.background`, never a hardcoded light or dark colour.
 Browser and operating-system navigation areas may ignore `theme-color`; their
 final appearance must be checked on a real mobile device.

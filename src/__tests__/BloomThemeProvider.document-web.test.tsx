@@ -45,11 +45,8 @@ afterEach(() => {
 });
 
 function expectDocument(mode: 'light' | 'dark', background: string) {
-  // CSSOM normalizes modern rgb() syntax, so compare against a parsed color.
-  const swatch = document.createElement('div');
-  swatch.style.backgroundColor = background;
   for (const element of [document.documentElement, document.body]) {
-    expect(element.style.backgroundColor).toBe(swatch.style.backgroundColor);
+    expect(element.style.backgroundColor).toBe('var(--background)');
     expect(element.style.colorScheme).toBe(mode);
   }
   const meta = document.head.querySelector<HTMLMetaElement>('meta[name="theme-color"]');
@@ -73,8 +70,9 @@ it('paints the document for explicit app modes even when the OS prefers the oppo
   act(() => root.render(<BloomThemeProvider mode="light" fonts={false}>app</BloomThemeProvider>));
   expectDocument('light', buildScopeVars('oxy', 'light')['--background']!);
   expect(document.documentElement.classList.contains('dark')).toBe(false);
-  expect(authored.map((element) => element.outerHTML)).toEqual(originalMarkup);
-  expect(document.head.querySelectorAll('meta[name="theme-color"]')).toHaveLength(3);
+  expect(authored[0]?.outerHTML).not.toBe(originalMarkup[0]);
+  expect(authored[1]?.isConnected).toBe(false);
+  expect(document.head.querySelectorAll('meta[name="theme-color"]')).toHaveLength(1);
 });
 
 it.each(['system', 'adaptive'] as const)('tracks OS changes in %s mode', (mode) => {
@@ -111,7 +109,7 @@ it('keeps subtree color and seed changes out of the document theme', () => {
   expectDocument('dark', buildScopeVars('blue', 'dark')['--background']!);
 });
 
-it('keeps one managed entry ahead of theme metadata inserted after startup', () => {
+it('removes theme metadata inserted by a competing runtime writer', () => {
   applyDocumentTheme('dark', '#101010');
   const meta = document.createElement('meta');
   meta.name = 'theme-color';
@@ -119,7 +117,7 @@ it('keeps one managed entry ahead of theme metadata inserted after startup', () 
   document.head.prepend(meta);
   applyDocumentTheme('light', '#fafafa');
   expectDocument('light', '#fafafa');
-  expect(meta.content).toBe('#ffffff');
+  expect(meta.isConnected).toBe(false);
 });
 
 it.each(['ios', 'android'] as const)('does not mutate a document on %s', (platform) => {
