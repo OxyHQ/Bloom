@@ -16,7 +16,13 @@ import { render, fireEvent, within } from '@testing-library/react-native';
 
 import { BloomThemeProvider } from '../theme/BloomThemeProvider';
 import { ImageResolverProvider, type ImageResolver } from '../image-resolver';
-import { UserHoverCard } from '../user-hover-card';
+import {
+  USER_HOVER_CARD_CONTENT_WIDTH,
+  USER_HOVER_CARD_INSET,
+  USER_HOVER_CARD_WIDTH,
+  UserHoverCard,
+} from '../user-hover-card';
+import { findHost, resolvedStyle } from './support/rendered-style';
 
 function renderWithTheme(ui: React.ReactElement) {
   return render(
@@ -75,9 +81,9 @@ describe('UserHoverCard', () => {
   it('renders the footer OUTSIDE the identity button, not within it', () => {
     // The slot is a SIBLING of the identity area on purpose. Nested, a press
     // anywhere on the consumer's content (a chart, a line of text — anything
-    // that is not itself pressable) would open the profile, and a screen reader
-    // would fold the whole block into the identity button's accessible name.
-    // Both failures are silent.
+    // that is not itself pressable) would open the profile, and on web the
+    // block would sit inside a real `<button>`, where interactive content is
+    // invalid HTML. Both failures are silent.
     //
     // The first assertion is this test's positive control: without it, deleting
     // the slot entirely would satisfy "not inside the button".
@@ -91,6 +97,78 @@ describe('UserHoverCard', () => {
     );
     expect(getByText('Contribution graph')).toBeTruthy();
     expect(within(getByLabelText('Nate (@nate)')).queryByText('Contribution graph')).toBeNull();
+  });
+
+  it('renders the badge slot beside the handle, INSIDE the identity area', () => {
+    // The mirror of the footer test above, and the pair is the design: `footer`
+    // is a sibling of the identity area, `badge` is a child of it, because a
+    // marker that belongs beside the handle cannot be anywhere else. Asserting
+    // both directions is what makes either one a decision rather than an
+    // accident of where the JSX happened to land.
+    const { getByText, getByLabelText } = renderWithTheme(
+      <UserHoverCard
+        displayName="Nate"
+        username="nate"
+        onPressProfile={() => {}}
+        badge={<Text>channel</Text>}
+        footer={<Text>Contribution graph</Text>}
+      />,
+    );
+    const identity = within(getByLabelText('Nate (@nate)'));
+    expect(identity.queryByText('channel')).not.toBeNull();
+    expect(identity.queryByText('@nate')).not.toBeNull();
+    expect(identity.queryByText('Contribution graph')).toBeNull();
+    expect(getByText('Contribution graph')).toBeTruthy();
+  });
+
+  it('renders the badge even with no handle, because it describes the account', () => {
+    const { getByText, queryByText } = renderWithTheme(
+      <UserHoverCard displayName="Anon" badge={<Text>channel</Text>} />,
+    );
+    expect(getByText('channel')).toBeTruthy();
+    expect(queryByText('@')).toBeNull();
+  });
+
+  it('keeps a pressable badge’s press out of the identity handler', () => {
+    // Measured in Chrome too: react-native-web implements the responder system,
+    // so this holds on web as well and needs no `stopPropagation`.
+    const onPressProfile = jest.fn();
+    const onPressBadge = jest.fn();
+    const { getByText } = renderWithTheme(
+      <UserHoverCard
+        displayName="Nate"
+        username="nate"
+        onPressProfile={onPressProfile}
+        badge={
+          <Pressable onPress={onPressBadge}>
+            <Text>channel</Text>
+          </Pressable>
+        }
+      />,
+    );
+    fireEvent.press(getByText('channel'));
+    expect(onPressBadge).toHaveBeenCalledTimes(1);
+    expect(onPressProfile).not.toHaveBeenCalled();
+  });
+
+  it('renders at the published geometry, so slot content can be sized to a number', () => {
+    // The card does not clip, so a consumer that guesses the inner width finds
+    // out by painting outside the border. These three numbers are the contract
+    // that makes guessing unnecessary, and the arithmetic between them is the
+    // part worth pinning: the CONTENT width is decided, the card's width is
+    // derived.
+    expect(USER_HOVER_CARD_WIDTH).toBe(
+      USER_HOVER_CARD_CONTENT_WIDTH + USER_HOVER_CARD_INSET * 2,
+    );
+    const { toJSON } = renderWithTheme(<UserHoverCard displayName="Nate" testID="card" />);
+    const host = findHost(toJSON(), 'card');
+    if (host === null) throw new Error('no host rendered for testID "card"');
+    const style = resolvedStyle(host.props.style);
+    expect(style.width).toBe(USER_HOVER_CARD_WIDTH);
+    expect(style.padding).toBe(USER_HOVER_CARD_INSET);
+    // Both reasons `docs/card.mdx` gives for opting out of `Card`'s clip apply
+    // to this card, and slot content that overflows is meant to be visible.
+    expect(style.overflow).toBe('visible');
   });
 
   it('leaves a pressable inside the footer working on its own', () => {

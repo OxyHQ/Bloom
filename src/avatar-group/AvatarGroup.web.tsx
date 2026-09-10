@@ -10,7 +10,7 @@ import { OverlayRoot } from '../overlay';
 // `Dialog.web.tsx` and `BottomSheet.web.tsx` already name it this way.
 import { Portal } from '../portal/index.web';
 import { WEB_POSITION_FIXED } from '../styles/web-view-style';
-import { UserHoverCard } from '../user-hover-card';
+import { USER_HOVER_CARD_WIDTH, UserHoverCard } from '../user-hover-card';
 import {
   AvatarGroupBase,
   getItemName,
@@ -22,7 +22,10 @@ import type { AvatarGroupItem, AvatarGroupProps } from './types';
 const CLOSE_DELAY_MS = 120;
 /** Gap between the anchored avatar and the floating card. */
 const CARD_GAP = 8;
-const CARD_WIDTH = 280;
+// The card's own width, never a second copy of it: this file CENTRES the card
+// on its anchor, so a private constant would mis-place it the first time
+// either number moved, and nothing would error.
+const CARD_WIDTH = USER_HOVER_CARD_WIDTH;
 
 interface HoverState {
   item: AvatarGroupItem;

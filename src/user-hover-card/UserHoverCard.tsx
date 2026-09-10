@@ -12,6 +12,7 @@ import { Card } from '../card';
 import { VerifiedCheck } from '../icons/VerifiedCheck';
 import { useTheme } from '../theme/use-theme';
 import { fontSize, space } from '../styles/tokens';
+import { USER_HOVER_CARD_INSET, USER_HOVER_CARD_WIDTH } from './constants';
 import type { UserHoverCardProps } from './types';
 
 const AVATAR_SIZE = 48;
@@ -27,6 +28,7 @@ const UserHoverCardComponent: React.FC<UserHoverCardProps> = ({
   verified = false,
   onPressProfile,
   action,
+  badge,
   footer,
   style,
   testID,
@@ -34,12 +36,14 @@ const UserHoverCardComponent: React.FC<UserHoverCardProps> = ({
   const theme = useTheme();
 
   // Layout only — the chrome (card background, hairline border, `shadow-m`, the
-  // `radius-16` rung) is `Card`'s. `overflow: 'visible'` restores the RN default
-  // that `Card` overrides: this card clips nothing, and leaving it hidden would
-  // change what an Android elevation draws under a rounded, clipped view.
+  // `radius-16` rung) is `Card`'s. Both reasons `docs/card.mdx` gives for opting
+  // out of its clip apply here: this card carries an Android elevation, AND its
+  // two consumer slots may hold something that deliberately overflows (a
+  // tooltip, a popover). Clipping would silently truncate slot content instead;
+  // the width is published so it does not have to come to that.
   const layoutStyle: ViewStyle = {
-    padding: space.lg,
-    width: 280,
+    padding: USER_HOVER_CARD_INSET,
+    width: USER_HOVER_CARD_WIDTH,
     overflow: 'visible',
   };
 
@@ -64,13 +68,20 @@ const UserHoverCardComponent: React.FC<UserHoverCardProps> = ({
             />
           )}
         </View>
-        {username ? (
-          <Text
-            numberOfLines={1}
-            style={[styles.username, { color: theme.colors.textSecondary }]}
-          >
-            @{username}
-          </Text>
+        {username || badge != null ? (
+          <View style={styles.handleRow}>
+            {username ? (
+              <Text
+                numberOfLines={1}
+                style={[styles.username, { color: theme.colors.textSecondary }]}
+              >
+                @{username}
+              </Text>
+            ) : null}
+            {/* The badge is a fact about the ACCOUNT, not about the handle, so
+                it renders even for a user with no handle to sit beside. */}
+            {badge != null ? <View style={styles.badge}>{badge}</View> : null}
+          </View>
         ) : null}
       </View>
     </View>
@@ -132,9 +143,11 @@ const UserHoverCardComponent: React.FC<UserHoverCardProps> = ({
       ) : null}
 
       {/* The consumer's own content. It is a SIBLING of the identity
-          `Pressable`, not a child, so a button inside it keeps its own press
-          instead of firing `onPressProfile`, and assistive technology reads it
-          as content rather than folding it into the identity button's name. */}
+          `Pressable`, not a child: nested, a press on anything in it that is not
+          itself pressable would open the profile, and on web it would sit inside
+          a real `<button>`, where interactive content is invalid HTML. (The
+          card's accessible NAME is not at stake either way — the identity area
+          has an explicit label, which wins over contents.) */}
       {footer != null ? <View style={styles.footer}>{footer}</View> : null}
     </Card>
   );
@@ -173,9 +186,20 @@ const styles = StyleSheet.create({
   verifiedBadge: {
     flexShrink: 0,
   },
+  handleRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: space.xs,
+    marginTop: space._2xs,
+  },
   username: {
     fontSize: fontSize.sm,
-    marginTop: space._2xs,
+    // The handle yields to the badge rather than pushing it out of the card: a
+    // long handle truncates (`numberOfLines={1}`), a marker cannot.
+    flexShrink: 1,
+  },
+  badge: {
+    flexShrink: 0,
   },
   action: {
     flexShrink: 0,

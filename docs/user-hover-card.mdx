@@ -44,7 +44,7 @@ bio, a couple of counts — and nothing else. Anything past that is yours:
   footer={
     <View style={{ gap: 4 }}>
       <Text>Activity</Text>
-      <ActivityHeatmap data={activity} endDate={today} numDays={112} cellSize={11} gap={3} />
+      <ActivityHeatmap data={activity} endDate={today} numDays={119} cellSize={11} gap={3} />
     </View>
   }
 />
@@ -56,17 +56,66 @@ clip — the block is yours to shape.
 
 It is a **sibling** of the identity area, never a child, and that is the part
 worth knowing. Nested, every press on your content would also fire
-`onPressProfile`, and on web a screen reader would fold the whole block into the
-identity button's accessible name — the identity area is a real `role="button"`,
-and text inside a button becomes part of its name.
+`onPressProfile`, and on web the block would sit inside a real `<button>`, where
+interactive content is invalid HTML.
 
-The card is 280px wide with 16px padding, so content has **248px** of inner
-width, and the card does not clip: anything wider paints outside it. A
-contribution graph of 17 columns at `cellSize={11} gap={3}` is 235px and fits;
-119 days spans eighteen columns once the leading partial week is counted, which
-is 249px and does not.
+## `badge` sits beside the handle
 
-There is one named slot, not three. The positions a second consumer might want —
+The second slot, for the quiet marker that says what KIND of account this is —
+a channel, an account on another server:
+
+```tsx
+<UserHoverCard
+  displayName={user.name.displayName ?? user.username}
+  username={user.username}
+  badge={<AccountBadge kind={user.kind} isFederated={user.isFederated} />}
+/>
+```
+
+It renders after `@handle` in the same row, and it renders even when there is no
+`username`, because it describes the account rather than the handle. A long
+handle truncates to make room; the marker never shrinks.
+
+Unlike `footer`, this slot is **inside** the identity area — that is where it has
+to be to sit beside the handle. Two things follow, both measured rather than
+assumed:
+
+- **Your marker's press stays yours.** react-native-web implements React
+  Native's responder system, so a pressable badge fires its own handler and not
+  `onPressProfile`, on both platforms. No `stopPropagation` is needed. (If you
+  have seen that call in an app's own hover card, it is guarding a different
+  ancestor — a raw `onPointerUp` on a plain `View`, which does receive the
+  bubbled event.)
+- **Prefer an inert marker anyway.** With `onPressProfile` set the identity area
+  is a real `<button>`, so a pressable badge nests a button inside a button:
+  invalid HTML, which Chrome tolerates and other user agents need not. A marker
+  is usually a statement, not a control.
+
+The card's accessible name is unaffected either way. The identity area carries
+an explicit label, and an explicit label wins over contents in the ARIA name
+computation — checked against Chrome's accessibility tree with a badge nested
+inside the button, whose name came back as exactly its label.
+
+## How wide your content can be
+
+```tsx
+import { USER_HOVER_CARD_CONTENT_WIDTH } from '@oxyhq/bloom/user-hover-card';
+```
+
+**256px**, and it is exported so you can size against it rather than discover it.
+The card is `USER_HOVER_CARD_WIDTH` (288) with `USER_HOVER_CARD_INSET` (16) on
+each side; the content width is the decided number and the card's width is
+derived from it. The card does **not** clip, so anything wider paints outside the
+border rather than being cut off — louder than a silent truncation, still wrong.
+
+That inversion is recent, and the reason is worth stating: the width was an
+unexplained `280` from the day the family shipped, and the 248px that fell out of
+it missed the first real slot content by **one pixel**. A contribution graph of
+119 days is eighteen columns once the leading partial week is counted, which at
+`cellSize={11} gap={3}` is 249px. 256 clears it with room, sits on the 8px grid
+the spacing scale follows, and is 16× the inset.
+
+There are two named slots, not three. The positions a third consumer might want —
 above the bio, beside the action — are still free to be added as their own named
 slots; a `children` prop would have claimed the generic name for one arbitrary
 position.

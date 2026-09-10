@@ -9,14 +9,15 @@ const SAMPLE_AVATAR =
   'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=200&h=200&fit=crop';
 
 /**
- * 112 days of deterministic activity — the shape the `footer` slot exists for,
- * and the reason it is 112: the card is 280px wide with `space.lg` padding, so
- * the inner width is 248px, and 112 days spans at most 17 columns of 11px cells
- * at a 3px gap (235px). 119 days spans EIGHTEEN columns once the leading partial
- * week is counted — measured at 249px in Chrome, one pixel past the padding,
- * and the card does not clip.
+ * 119 days of deterministic activity — the shape the `footer` slot exists for,
+ * and deliberately the WIDEST case rather than a comfortable one: 119 days
+ * spans EIGHTEEN columns once the leading partial week is counted, which at
+ * `cellSize={11} gap={3}` is 249px. That is the content that used to miss the
+ * card's inner width by a single pixel, which is why the inner width is now a
+ * published number (`USER_HOVER_CARD_CONTENT_WIDTH`, 256) that this story is
+ * sized against and a test measures.
  */
-const ACTIVITY_DAYS = 112;
+const ACTIVITY_DAYS = 119;
 const ACTIVITY_END = '2026-08-14';
 const ACTIVITY = Array.from({ length: ACTIVITY_DAYS }, (_, i) => {
   const day = new Date(Date.UTC(2026, 7, 14) - (ACTIVITY_DAYS - 1 - i) * 86400000);
@@ -153,6 +154,101 @@ function FooterSlotStory() {
 export const WithFooter: Story = {
   render: () => <FooterSlotStory />,
   name: 'With footer slot (chart)',
+};
+
+/**
+ * Both slots at once, with a PRESSABLE badge — deliberately the hazardous shape
+ * rather than the recommended one. A marker beside a handle is usually inert,
+ * but nothing stops a consumer wiring it to an explainer, and it sits INSIDE the
+ * identity area, so this is where the two presses can be seen not to collide:
+ * pressing the badge writes "badge", never "profile", on both platforms.
+ *
+ * The `stopPropagation` below is belt-and-braces, not a requirement — measured
+ * in Chrome with it removed, the profile still did not fire, because
+ * react-native-web implements React Native's responder system. What a pressable
+ * badge DOES cost is a `<button>` inside a `<button>`, which is invalid HTML;
+ * `docs/user-hover-card.mdx` recommends an inert marker for that reason.
+ */
+function BothSlotsStory() {
+  const [pressed, setPressed] = React.useState('nothing pressed yet');
+  return (
+    <View style={{ gap: 8 }}>
+      <UserHoverCard
+        avatar={SAMPLE_AVATAR}
+        displayName="Oxy Announcements"
+        username="announcements"
+        bio="Product news, one post at a time."
+        stats={[
+          { label: 'Following', value: '4' },
+          { label: 'Followers', value: '92.1K' },
+        ]}
+        verified
+        action={<DemoFollowButton />}
+        onPressProfile={() => setPressed('profile')}
+        badge={
+          <Pressable
+            testID="badge-slot"
+            accessibilityRole="button"
+            accessibilityLabel="What is a channel?"
+            onPress={(event) => {
+              event.stopPropagation();
+              setPressed('badge');
+            }}
+            style={{
+              paddingHorizontal: 6,
+              paddingVertical: 1,
+              borderRadius: 999,
+              backgroundColor: '#E8EAED',
+            }}
+          >
+            <Text style={{ fontSize: 11, color: '#3C4043' }}>channel</Text>
+          </Pressable>
+        }
+        footer={
+          <View style={{ gap: 4 }} testID="footer-slot">
+            <Text style={{ fontSize: 13, opacity: 0.6 }}>Activity</Text>
+            <ActivityHeatmap
+              data={ACTIVITY}
+              endDate={ACTIVITY_END}
+              numDays={ACTIVITY_DAYS}
+              cellSize={11}
+              gap={3}
+              testID="footer-heatmap"
+            />
+          </View>
+        }
+      />
+      <Text testID="press-result">{pressed}</Text>
+    </View>
+  );
+}
+
+export const WithBadge: Story = {
+  render: () => <BothSlotsStory />,
+  name: 'With badge slot (pressable) + footer',
+};
+
+/** A long handle truncates so the marker keeps its place. */
+export const BadgeWithLongHandle: Story = {
+  args: {
+    avatar: SAMPLE_AVATAR,
+    displayName: 'A Very Long Display Name Indeed',
+    username: 'an-extremely-long-handle-that-will-not-fit',
+    bio: 'The handle yields; the marker does not.',
+    badge: (
+      <View
+        style={{
+          paddingHorizontal: 6,
+          paddingVertical: 1,
+          borderRadius: 999,
+          backgroundColor: '#E8EAED',
+        }}
+      >
+        <Text style={{ fontSize: 11, color: '#3C4043' }}>fediverse</Text>
+      </View>
+    ),
+  },
+  name: 'Badge with a long handle',
 };
 
 export const Pressable_: Story = {
