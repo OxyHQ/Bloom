@@ -7,7 +7,7 @@
 # repositories. Adding an ITEM across organisations IS allowed, which is what
 # this does, so one workflow covers both.
 #
-# Inert until ADD_TO_PROJECT_TOKEN exists. It must be a CLASSIC token with the
+# Best-effort until ADD_TO_PROJECT_TOKEN exists and remains valid. It must be a CLASSIC token with the
 # `project` scope: a fine-grained token is scoped to one owner and cannot reach
 # both organisations, and `public_repo` does not cover Projects v2.
 #
@@ -49,8 +49,8 @@ jobs:
           project_id=$(gh api graphql \
             -f query='query($org:String!,$num:Int!){organization(login:$org){projectV2(number:$num){id}}}' \
             -f org=OxyHQ -F num=14 --jq '.data.organization.projectV2.id') || {
-              echo "::error::Could not resolve the roadmap project. Check that ADD_TO_PROJECT_TOKEN carries the 'project' scope."
-              exit 1
+              echo "::warning::Roadmap integration is unavailable. Refresh ADD_TO_PROJECT_TOKEN with the 'project' scope."
+              exit 0
             }
 
           response=$(gh api graphql \
@@ -67,6 +67,6 @@ jobs:
             exit 0
           fi
 
-          echo "::error::Adding the issue to the roadmap failed."
+          echo "::warning::Adding the issue to the roadmap failed; issue delivery must not mark product CI red."
           printf '%s\n' "$response"
-          exit 1
+          exit 0
