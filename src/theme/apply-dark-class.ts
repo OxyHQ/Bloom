@@ -21,24 +21,30 @@ export function applyDocumentTheme(resolved: 'light' | 'dark', background: strin
 
   for (const element of [document.documentElement, document.body]) {
     if (!element) continue;
-    element.style.backgroundColor = background;
+    // The canonical token is the document paint source. The concrete colour is
+    // still passed separately for metadata, which cannot consume CSS variables.
+    element.style.backgroundColor = 'var(--background)';
     element.style.colorScheme = resolved;
   }
 
-  // Keep authored media-qualified entries as pre-hydration fallbacks. The
-  // first matching theme-color wins, so a Bloom-owned unconditional entry goes
-  // before them: an explicit in-app mode must override the OS media preference.
+  // Authored entries are useful before hydration, but become competing runtime
+  // owners afterwards. Adopt one entry and remove every fallback once Bloom's
+  // root provider has resolved the actual app preference.
   const head = document.head;
   if (!head) return;
   let meta = head.querySelector<HTMLMetaElement>('meta[data-bloom-theme-color]');
   if (!meta) {
-    meta = document.createElement('meta');
+    meta = head.querySelector<HTMLMetaElement>('meta[name="theme-color"]') ??
+      document.createElement('meta');
     meta.setAttribute('data-bloom-theme-color', '');
     meta.name = 'theme-color';
   }
   meta.content = background;
-  const first = head.querySelector('meta[name="theme-color"]');
-  if (first !== meta) head.insertBefore(meta, first);
+  meta.removeAttribute('media');
+  if (!meta.isConnected) head.append(meta);
+  for (const candidate of Array.from(head.querySelectorAll('meta[name="theme-color"]'))) {
+    if (candidate !== meta) candidate.remove();
+  }
 }
 
 /**
