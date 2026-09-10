@@ -62,6 +62,24 @@ describe('Fab.web', () => {
     expect(getByRole(c, 'button').style.bottom).toBe('90px');
   });
 
+  it('follows the shorter live tab-bar height when minimized', () => {
+    function Claim() {
+      useClaimBottomEdge(74);
+      return null;
+    }
+
+    const c = mount(
+      <TabBarMinimizeProvider>
+        <BottomEdgeProvider>
+          <Claim />
+          <InitiallyMinimizedFab accessibilityLabel="Add" icon={<span>+</span>} />
+        </BottomEdgeProvider>
+      </TabBarMinimizeProvider>,
+    );
+
+    expect(getByRole(c, 'button').style.bottom).toBe('76px');
+  });
+
   it('renders a real <button> element', () => {
     const c = mount(<Fab accessibilityLabel="Add" icon={<span>+</span>} />);
     const fab = getByRole(c, 'button', { name: 'Add' });
@@ -99,24 +117,25 @@ describe('Fab.web', () => {
     expect(onPress).not.toHaveBeenCalled();
   });
 
-  it('uses position: sticky for the default bottom-right placement (NOT fixed)', () => {
+  it('uses an absolute overlay for the default placement without reserving list space', () => {
     const c = mount(<Fab accessibilityLabel="Add" icon={<span>+</span>} />);
     const fab = getByRole(c, 'button');
-    expect(fab.style.position).toBe('sticky');
+    expect(fab.style.position).toBe('absolute');
     expect(fab.style.bottom).toBe('16px');
-    expect(fab.style.alignSelf).toBe('flex-end');
+    expect(fab.style.right).toBe('16px');
   });
 
-  it('sets margin-top: auto for bottom placements so a short column pins the FAB to the bottom', () => {
+  it('does not use flow margins for bottom placements', () => {
     const c = mount(<Fab accessibilityLabel="Add" icon={<span>+</span>} />);
-    expect(getByRole(c, 'button').style.marginTop).toBe('auto');
+    expect(getByRole(c, 'button').style.marginTop).toBe('');
   });
 
-  it('does NOT set margin-top: auto for top placements', () => {
+  it('anchors top placements to their requested inline edge', () => {
     const c = mount(<Fab accessibilityLabel="Add" placement="top-right" icon={<span>+</span>} />);
     const fab = getByRole(c, 'button');
     expect(fab.style.marginTop).toBe('');
     expect(fab.style.top).toBe('16px');
+    expect(fab.style.right).toBe('16px');
   });
 
   it('applies no positioning for placement="static"', () => {
@@ -147,8 +166,14 @@ describe('Fab.web', () => {
       </TabBarMinimizeProvider>,
     );
 
-    expect(c.querySelector('button')?.style.width).toBe('56px');
-    expect(c).not.toHaveTextContent('Compose');
+    const fab = c.querySelector('button');
+    const label = getByText(c, 'Compose').parentElement;
+    expect(fab?.style.minWidth).toBe('56px');
+    expect(fab?.style.paddingLeft).toBe('0px');
+    expect(fab?.style.gap).toBe('0');
+    expect(label).toHaveAttribute('aria-hidden', 'true');
+    expect(label?.style.opacity).toBe('0');
+    expect(label?.style.gridTemplateColumns).toBe('minmax(0, 0fr)');
   });
 
   it('hides the whole FAB when the tab bar minimizes in hide mode', () => {
