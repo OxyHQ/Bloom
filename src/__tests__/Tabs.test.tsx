@@ -146,7 +146,7 @@ describe('Tabs', () => {
 
   /**
    * The shape a real consumer outside this repo ships, spelled out so a later
-   * refactor of the controlled path cannot break it silently. OxyPay's wallet
+   * refactor of the controlled path cannot break it silently. Peable's wallet
    * screen (`packages/frontend/app/(tabs)/index.tsx`) renders exactly this: a
    * controlled `value` + `onValueChange`, `variant="underline"`, a `style`
    * override zeroing the bottom border, and label-only triggers.
