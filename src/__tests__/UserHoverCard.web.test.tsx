@@ -9,11 +9,19 @@
  * Two things live here that a prop-level test cannot see:
  *
  * 1. WHERE THE `footer` SLOT LANDS. On web the identity area is a real
- *    `role="button"`, and every text node INSIDE a button contributes to its
- *    accessible name. Nested, a contribution graph or a "3 mutual followers"
- *    line would be read out as part of the person's name, and a press anywhere
- *    on it would open the profile. Rendering it as a SIBLING is what prevents
- *    both, and only the emitted DOM shows which one happened.
+ *    `<button>`. Nested inside it, a press anywhere on the consumer's content —
+ *    on a chart, on a line of text, on anything not itself pressable — opens the
+ *    profile, and interactive content inside a button is invalid HTML. Rendering
+ *    it as a SIBLING is what prevents both, and only the emitted DOM shows which
+ *    one happened.
+ *
+ *    An EARLIER VERSION of this comment also claimed the nested content would be
+ *    folded into the identity button's accessible name. That is false, and the
+ *    correction is worth keeping: the identity area carries an explicit
+ *    `accessibilityLabel`, which becomes `aria-label`, and an explicit label wins
+ *    over contents in the ARIA name computation. Measured against Chrome's own
+ *    accessibility tree with a badge nested inside the button — the button's name
+ *    was exactly its label, with none of the badge's text in it.
  *
  * 2. THAT A PRESSABLE INSIDE THE CARD DOES NOT DISMISS IT. react-native-web's
  *    `Pressable` calls `useHover` with `contain: true`, which dispatches a
@@ -81,7 +89,34 @@ afterEach(() => {
 });
 
 describe('UserHoverCard on web', () => {
-  it('keeps the footer out of the identity button, so it is not part of its name', () => {
+  it('renders the badge inside the identity button, and leaves its NAME alone', () => {
+    // The placement is deliberate and the opposite of the footer's, so both are
+    // asserted against the emitted DOM rather than the props.
+    //
+    // The name assertion is here because the reasoning that first justified the
+    // footer's placement was WRONG about it: text inside a button does not
+    // become part of the name when the button carries an explicit `aria-label`,
+    // which this one always does. Chrome's accessibility tree agreed — the
+    // button's name came back as exactly the label — and this pins the property
+    // that makes that true, so removing the label would fail here rather than
+    // silently start folding a marker's text into a person's name.
+    mount(
+      <UserHoverCard
+        displayName="Oxy Announcements"
+        username="announcements"
+        onPressProfile={() => {}}
+        badge={<Text>channel</Text>}
+      />,
+    );
+
+    const identity = getByRole(container, 'button', {
+      name: 'Oxy Announcements (@announcements)',
+    });
+    expect(identity.getAttribute('aria-label')).toBe('Oxy Announcements (@announcements)');
+    expect(queryByText(identity, 'channel')).not.toBeNull();
+  });
+
+  it('keeps the footer out of the identity button', () => {
     mount(
       <UserHoverCard
         displayName="Nate Isern"
