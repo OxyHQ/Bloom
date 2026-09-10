@@ -28,14 +28,15 @@ import { Fab } from '@oxy.so/bloom/fab';
 
 ## Which prop decides what
 
-| prop        | decides                                                        |
-| ----------- | --------------------------------------------------------------- |
-| `icon`      | the glyph                                                       |
-| `label`     | makes it an extended FAB with visible text                      |
-| `variant`   | `primary` · `secondary` · `tertiary` · `surface`                |
-| `size`      | `small` · `medium` · `large`, or a number                       |
-| `placement` | which corner it floats in, or `static` to place it yourself     |
-| `offset`    | distance from the edges                                         |
+| prop               | decides                                                    |
+| ------------------ | ---------------------------------------------------------- |
+| `icon`             | the glyph                                                   |
+| `label`            | makes it an extended FAB with visible text                  |
+| `variant`          | `primary` · `secondary` · `tertiary` · `surface`            |
+| `size`             | `small` · `medium` · `large`, or a number                   |
+| `placement`        | which corner it floats in, or `static` to place it yourself |
+| `offset`           | distance from the edges                                     |
+| `minimizeBehavior` | `none` · `hide` · `collapse` with the nearest Bloom tab bar |
 
 ## An icon-only FAB needs `accessibilityLabel`
 
@@ -50,18 +51,21 @@ primary actions, which means neither is primary, and they compete for the same
 thumb position. If a screen has several important actions, the FAB takes the
 most common one and the rest go in the content or a menu.
 
+## Following a Bloom tab bar
+
+The FAB automatically clears the bottom-edge footprint claimed by Bloom's tab
+bar. An extended FAB can also react when that bar minimizes:
+
+```tsx
+<Fab label="Compose" minimizeBehavior="collapse" {...props} />
+<Fab label="Compose" minimizeBehavior="hide" {...props} />
+```
+
+`collapse` retains the icon-only action. `hide` removes the whole action. The
+default is `none`, which preserves the full FAB.
+
 ## `placement="static"` when something else owns the position
 
-A FAB inside a scroll container, or one that has to sit above a tab bar, is
-easier to place with layout than to nudge with `offset`. `static` turns off the
-absolute positioning and leaves it to you.
-
-Remember the safe area and any bottom chrome: a FAB pinned to `bottom-right`
-with no offset lands under a tab bar on most phones, where it is unreachable
-rather than merely ugly.
-
-## Do not hide it behind scroll
-
-Hiding the FAB while scrolling down is a common pattern and a bad default: the
-action becomes unavailable exactly while the user is looking for it, and the
-reappear animation reads as a glitch. Prefer letting it stay.
+A FAB inside a custom positioned container can use `static` to turn off Bloom's
+anchoring. Do not use it merely to avoid a Bloom tab bar; bottom-edge clearance
+and `minimizeBehavior` already cover that case.

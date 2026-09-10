@@ -14,9 +14,10 @@ import { pressedSurface } from '../theme/press-colors';
 import type { Theme } from '../theme/types';
 import { interactiveWebCss, useInteractiveWebCss } from '../styles/interactive-web-css';
 import { flattenWebStyle } from '../styles/flatten-web-style';
-import type { FabPlacement, FabProps, FabSize, FabVariant } from './types';
+import { useFabMinimized } from './use-fab-minimized';
+import type { FabMinimizeBehavior, FabPlacement, FabProps, FabSize, FabVariant } from './types';
 
-export type { FabProps, FabVariant, FabSize, FabPlacement } from './types';
+export type { FabProps, FabVariant, FabSize, FabPlacement, FabMinimizeBehavior } from './types';
 
 interface ResolvedSize {
   diameter: number;
@@ -179,6 +180,7 @@ const FabWebComponent: React.FC<FabProps> = ({
   icon,
   children,
   label,
+  minimizeBehavior = 'none',
   variant = 'tertiary',
   size = 'medium',
   placement = 'bottom-right',
@@ -197,6 +199,7 @@ const FabWebComponent: React.FC<FabProps> = ({
   type = 'button',
 }) => {
   useInteractiveWebCss(STYLE_ID, BLOOM_FAB_CSS);
+  const minimized = useFabMinimized(minimizeBehavior !== 'none');
   const bottomEdgeInset = useBottomEdgeInset();
   const theme = useTheme();
   const reactId = useId();
@@ -204,6 +207,7 @@ const FabWebComponent: React.FC<FabProps> = ({
 
   const sizeConfig = useMemo(() => resolveSize(size), [size]);
   const isExtended = label != null && label.length > 0;
+  const showLabel = isExtended && !(minimized && minimizeBehavior === 'collapse');
   const content = icon ?? children;
   const variantColors = useMemo(() => resolveVariant(variant, theme.colors), [variant, theme.colors]);
 
@@ -234,7 +238,7 @@ const FabWebComponent: React.FC<FabProps> = ({
       ['--bloom-fab-press-scale' as string]: animation.pressScale,
       ...placementStyle(placement, offset, bottomEdgeInset),
     };
-    if (isExtended) {
+    if (showLabel) {
       const pad = sizeConfig.diameter <= 44 ? 14 : 20;
       base.paddingLeft = pad;
       base.paddingRight = pad;
@@ -253,7 +257,7 @@ const FabWebComponent: React.FC<FabProps> = ({
     placement,
     offset,
     bottomEdgeInset,
-    isExtended,
+    showLabel,
   ]);
 
   const handleClick = useCallback(
@@ -279,6 +283,8 @@ const FabWebComponent: React.FC<FabProps> = ({
   const resolvedStyle = flattenWebStyle(style);
   const resolvedLabelStyle = flattenWebStyle(labelStyle);
 
+  if (minimized && minimizeBehavior === 'hide') return null;
+
   return (
     <button
       id={resolvedId}
@@ -294,7 +300,7 @@ const FabWebComponent: React.FC<FabProps> = ({
     >
       {content != null && (
         <span
-          aria-hidden={isExtended ? 'true' : undefined}
+          aria-hidden={showLabel ? 'true' : undefined}
           style={{
             display: 'inline-flex',
             alignItems: 'center',
@@ -306,7 +312,7 @@ const FabWebComponent: React.FC<FabProps> = ({
           {content}
         </span>
       )}
-      {isExtended && <span style={resolvedLabelStyle}>{label}</span>}
+      {showLabel && <span style={resolvedLabelStyle}>{label}</span>}
     </button>
   );
 };

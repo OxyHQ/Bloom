@@ -39,6 +39,8 @@ export type FabVariant = 'primary' | 'secondary' | 'tertiary' | 'surface';
  */
 export type FabSize = 'small' | 'medium' | 'large';
 
+export type FabMinimizeBehavior = 'none' | 'hide' | 'collapse';
+
 /**
  * Where the FAB anchors itself.
  *
@@ -90,6 +92,13 @@ export interface FabProps {
    * this text label. Omit for the canonical circular icon FAB.
    */
   label?: string;
+
+  /**
+   * How an extended FAB follows the nearest Bloom tab bar when it minimizes.
+   * `hide` removes the whole action; `collapse` keeps its icon and removes the
+   * text; `none` leaves it unchanged. Defaults to `none`.
+   */
+  minimizeBehavior?: FabMinimizeBehavior;
 
   variant?: FabVariant;
   /**
