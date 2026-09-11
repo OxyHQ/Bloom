@@ -103,12 +103,12 @@ const BLOOM_FAB_CSS = interactiveWebCss({
 /**
  * Positioning for a placement on web.
  *
- * Positioned placements are real overlays (`absolute`), matching native. They
- * anchor to the nearest positioned ancestor and never reserve a FAB-sized strip
- * in the consumer's layout. `fixed` would escape a constrained content column;
- * `sticky` stays in flow and silently shortens a sibling list by the FAB height.
- * The containing screen therefore owns containment and should fill the available
- * height, which is the same contract on every platform.
+ * Bottom placements use `sticky`, never `fixed`, so the FAB follows the
+ * document scroll while remaining inside its content column. They combine
+ * `margin-top: auto` (short flex-column content) with `bottom` (long, scrolling
+ * content). The consumer column must fill the available height, use flex-column
+ * layout, and render the FAB last. Top placements remain absolute: a sticky
+ * element rendered last cannot be pulled upward to the top of its container.
  *
  * `bottomEdgeInset` applies to the BOTTOM axis only. It is not a gap preference
  * — `offset` is that — but the height of whatever floating surface has already
@@ -123,17 +123,28 @@ function placementStyle(
   bottomEdgeInset: number,
 ): CSSProperties {
   if (placement === 'static') return {};
-  const style: CSSProperties = { position: 'absolute' };
   const isBottom = placement === 'bottom-right' || placement === 'bottom-left';
+  const style: CSSProperties = { position: isBottom ? 'sticky' : 'absolute' };
   if (isBottom) {
     style.bottom = offset + bottomEdgeInset;
+    style.marginTop = 'auto';
   } else {
     style.top = offset;
   }
   if (placement === 'bottom-right' || placement === 'top-right') {
-    style.right = offset;
+    if (isBottom) {
+      style.alignSelf = 'flex-end';
+      style.marginRight = offset;
+    } else {
+      style.right = offset;
+    }
   } else {
-    style.left = offset;
+    if (isBottom) {
+      style.alignSelf = 'flex-start';
+      style.marginLeft = offset;
+    } else {
+      style.left = offset;
+    }
   }
   return style;
 }

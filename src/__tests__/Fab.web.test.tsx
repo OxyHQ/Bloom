@@ -117,25 +117,28 @@ describe('Fab.web', () => {
     expect(onPress).not.toHaveBeenCalled();
   });
 
-  it('uses an absolute overlay for the default placement without reserving list space', () => {
+  it('uses sticky positioning for the default placement without escaping its column', () => {
     const c = mount(<Fab accessibilityLabel="Add" icon={<span>+</span>} />);
     const fab = getByRole(c, 'button');
-    expect(fab.style.position).toBe('absolute');
+    expect(fab.style.position).toBe('sticky');
     expect(fab.style.bottom).toBe('16px');
-    expect(fab.style.right).toBe('16px');
+    expect(fab.style.alignSelf).toBe('flex-end');
+    expect(fab.style.marginRight).toBe('16px');
   });
 
-  it('does not use flow margins for bottom placements', () => {
+  it('uses the flex-column free space to pin short content to the bottom', () => {
     const c = mount(<Fab accessibilityLabel="Add" icon={<span>+</span>} />);
-    expect(getByRole(c, 'button').style.marginTop).toBe('');
+    expect(getByRole(c, 'button').style.marginTop).toBe('auto');
   });
 
   it('anchors top placements to their requested inline edge', () => {
     const c = mount(<Fab accessibilityLabel="Add" placement="top-right" icon={<span>+</span>} />);
     const fab = getByRole(c, 'button');
     expect(fab.style.marginTop).toBe('');
+    expect(fab.style.position).toBe('absolute');
     expect(fab.style.top).toBe('16px');
     expect(fab.style.right).toBe('16px');
+    expect(fab.style.alignSelf).toBe('');
   });
 
   it('applies no positioning for placement="static"', () => {
