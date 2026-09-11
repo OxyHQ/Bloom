@@ -135,9 +135,10 @@ describe('Fab.web', () => {
     const c = mount(<Fab accessibilityLabel="Add" placement="top-right" icon={<span>+</span>} />);
     const fab = getByRole(c, 'button');
     expect(fab.style.marginTop).toBe('');
+    expect(fab.style.position).toBe('absolute');
     expect(fab.style.top).toBe('16px');
-    expect(fab.style.alignSelf).toBe('flex-end');
-    expect(fab.style.marginRight).toBe('16px');
+    expect(fab.style.right).toBe('16px');
+    expect(fab.style.alignSelf).toBe('');
   });
 
   it('applies no positioning for placement="static"', () => {

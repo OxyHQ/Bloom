@@ -51,10 +51,11 @@ primary actions, which means neither is primary, and they compete for the same
 thumb position. If a screen has several important actions, the FAB takes the
 most common one and the rest go in the content or a menu.
 
-On web, a corner placement stays inside the content column with sticky
+On web, a bottom placement stays inside the content column with sticky
 positioning. The column must fill the available height, use flex-column layout,
 and render the FAB last. This keeps it at the bottom with short content and in
-view while the document scrolls, without escaping over a side rail.
+view while the document scrolls, without escaping over a side rail. Top
+placements remain absolute within their positioned container.
 
 ## Following a Bloom tab bar
 
