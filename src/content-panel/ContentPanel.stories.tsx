@@ -69,6 +69,28 @@ export const Framed: Story = {
  * A screen chooses one panel per column; the sections inside it are plain
  * views.
  */
+/**
+ * `overlaySizing="panel"` — for a consumer whose shell already bounds the
+ * panel's height (no document scroll) and places something OUTSIDE the panel,
+ * such as this header. The default `overlaySizing="viewport"` would size its
+ * overlays to `100dvh` regardless of the header's height and paint over it;
+ * `"panel"` sizes them to the panel's own real box instead.
+ */
+export const ExternalHeaderBoundedShell: Story = {
+  render: () => (
+    <View style={{ width: 720, height: 480, flexDirection: 'column' }}>
+      <View style={{ height: 56, justifyContent: 'center' }}>
+        <Text style={{ fontSize: 16, fontWeight: '700' }}>External header (outside the panel)</Text>
+      </View>
+      <View style={{ flex: 1 }}>
+        <ContentPanel framed overlaySizing="panel">
+          <Body />
+        </ContentPanel>
+      </View>
+    </View>
+  ),
+};
+
 export const SideBySide: Story = {
   render: () => (
     <View style={{ width: 900, flexDirection: 'row', gap: 16 }}>

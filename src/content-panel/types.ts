@@ -46,4 +46,23 @@ export interface ContentPanelProps {
    * API parity — no-op on native (there is no bleed-mask), like `framed`.
    */
   maskColor?: string;
+  /**
+   * How the WEB overlays (bleed-mask, border-frame) size themselves. No-op on
+   * native (there are no overlays to size).
+   * - `'viewport'` (DEFAULT) — sized to the dynamic viewport height (`100dvh`)
+   *   and `position: sticky`-pinned, so they read as a constant frame around
+   *   the visible slice of a panel whose own DOM height can exceed one screen
+   *   — the document-scroll case (e.g. a feed whose page grows with content).
+   *   Requires the panel to sit in a document that actually scrolls; see
+   *   `ContentPanel.web.tsx`'s doc comment.
+   * - `'panel'` — sized to the panel's own real box via CSS Grid layer-
+   *   stacking (the overlays and the content wrapper all occupy the same
+   *   grid cell) instead of viewport math. The right mode for a consumer
+   *   whose own shell already bounds the panel's height (no document
+   *   scroll — a fixed app shell with its own internal scroll containers),
+   *   where anything the consumer places outside the panel (e.g. a header
+   *   above it) must never be overlapped by an overlay sized to the whole
+   *   viewport.
+   */
+  overlaySizing?: 'viewport' | 'panel';
 }
