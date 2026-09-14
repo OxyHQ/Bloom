@@ -43,6 +43,17 @@
  * against the containing block's WIDTH, not its height, so it cannot express
  * "100% of my own height" at all).
  *
+ * The bleed-mask's `clip-path` also changes with the mode, not just its box
+ * size: `inset(-12px)` (viewport mode) is a deliberate small halo — the
+ * `box-shadow`'s `GUTTER_MASK_SPREAD` is 40px, and the clip-path caps how much
+ * of that is actually allowed to paint past the box edge. A document-scroll
+ * consumer has nothing else positioned right above/below the panel for that
+ * halo to land on. A bounded-shell consumer might — the whole reason for
+ * `overlaySizing="panel"` is that something IS placed right outside the panel
+ * — so panel mode clips the shadow flush to the box (`inset(0)`, zero bleed)
+ * rather than merely resizing the box and leaving a smaller bleed that could
+ * still reach a close sibling.
+ *
  * Framing is tri-state via the `framed` prop:
  *
  *  - `undefined` (DEFAULT) → RESPONSIVE, driven purely by NativeWind: full-bleed
@@ -198,7 +209,7 @@ const ContentPanelComponent: React.FC<ContentPanelProps> = ({
             pointerEvents="none"
             className={
               boundToPanel
-                ? `web:[grid-area:1/1] z-30 h-full w-full rounded-radius-28 ${responsive ? bp.overlayHidden : ''} web:[clip-path:inset(-12px)]`
+                ? `web:[grid-area:1/1] z-30 h-full w-full rounded-radius-28 ${responsive ? bp.overlayHidden : ''} web:[clip-path:inset(0)]`
                 : responsive
                   ? `web:sticky web:top-2 z-30 h-[calc(100dvh-16px)] w-full rounded-radius-28 ${bp.overlayHidden} web:[margin-bottom:calc(-100dvh+16px)] web:[clip-path:inset(-12px)]`
                   : 'web:sticky web:top-2 z-30 h-[calc(100dvh-16px)] w-full rounded-radius-28 web:[margin-bottom:calc(-100dvh+16px)] web:[clip-path:inset(-12px)]'
