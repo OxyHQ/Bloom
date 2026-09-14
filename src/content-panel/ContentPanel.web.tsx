@@ -152,6 +152,7 @@ const ContentPanelComponent: React.FC<ContentPanelProps> = ({
   showStickyFrame,
   maskColor,
   overlaySizing = 'viewport',
+  overlayTopOffset,
 }) => {
   // Dev-only invariant — must run unconditionally (before deriving any
   // mode-specific branch) so the hook order stays stable (rules of hooks).
@@ -196,6 +197,30 @@ const ContentPanelComponent: React.FC<ContentPanelProps> = ({
     .filter(Boolean)
     .join(' ');
 
+  // `overlayTopOffset`: the viewport-mode overlays are sized/positioned from
+  // literal Tailwind classes (`top-2`, `h-[calc(100dvh-16px)]`, a matching
+  // negative `margin-bottom`) because those values are constants known at
+  // build time. An offset is a runtime number (a consumer's measured header
+  // height), which a Tailwind arbitrary class can't express — content-scanning
+  // needs the literal class string in source, not a value computed later — so
+  // this shifts the same three properties via inline `style` instead, which
+  // has no such constraint. No-op in `panel` mode (already starts at the
+  // panel's own box) and when unset (0/undefined) — the className values are
+  // left standing on their own in both of those cases.
+  // RN's `ViewStyle.height`/`marginBottom` types only accept a number or a
+  // `${number}%` string (not an arbitrary CSS `calc()` string), because most
+  // of this type is shared with native, where `calc()` doesn't exist. This
+  // file is web-only, where it's a real, valid CSS value react-native-web
+  // passes straight through — the same reasoning `WebViewStyle`/`asViewStyle`
+  // document in OxyHQ/Mention's `types/webStyles.ts` for the identical need.
+  const topOffsetStyle = !boundToPanel && overlayTopOffset
+    ? ({
+        top: 8 + overlayTopOffset,
+        height: `calc(100dvh - ${16 + overlayTopOffset}px)`,
+        marginBottom: `calc(-100dvh + ${16 + overlayTopOffset}px)`,
+      } as unknown as ViewStyle)
+    : undefined;
+
   return (
     <ContentPanelNestingContext.Provider value={true}>
       <StyledView testID="content-panel-surface" className={surfaceClass} style={surfaceStyle}>
@@ -214,7 +239,7 @@ const ContentPanelComponent: React.FC<ContentPanelProps> = ({
                   ? `web:sticky web:top-2 z-30 h-[calc(100dvh-16px)] w-full rounded-radius-28 ${bp.overlayHidden} web:[margin-bottom:calc(-100dvh+16px)] web:[clip-path:inset(-12px)]`
                   : 'web:sticky web:top-2 z-30 h-[calc(100dvh-16px)] w-full rounded-radius-28 web:[margin-bottom:calc(-100dvh+16px)] web:[clip-path:inset(-12px)]'
             }
-            style={{ boxShadow: `0 0 0 ${GUTTER_MASK_SPREAD}px ${maskColor ?? colors.background}` }}
+            style={{ ...topOffsetStyle, boxShadow: `0 0 0 ${GUTTER_MASK_SPREAD}px ${maskColor ?? colors.background}` }}
           />
         )}
         {/* (2) Border-frame overlay — one continuous rounded border, above all.
@@ -224,6 +249,7 @@ const ContentPanelComponent: React.FC<ContentPanelProps> = ({
             key="border-frame"
             testID="content-panel-border-frame"
             pointerEvents="none"
+            style={topOffsetStyle}
             className={
               boundToPanel
                 ? `web:[grid-area:1/1] z-[120] h-full w-full rounded-radius-28 border border-border ${responsive ? bp.overlayHidden : ''}`
