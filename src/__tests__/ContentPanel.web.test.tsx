@@ -4,7 +4,7 @@ import { render } from '@testing-library/react-native';
 
 import { BloomThemeProvider } from '../theme/BloomThemeProvider';
 import { ContentPanel } from '../content-panel/ContentPanel.web';
-import { classNamesOn, findHost } from './support/rendered-style';
+import { classNamesOn, findHost, resolvedStyle } from './support/rendered-style';
 
 /**
  * `overlaySizing` is WEB-only, so it must be exercised against `ContentPanel.web`
@@ -139,5 +139,44 @@ describe('ContentPanel.web overlaySizing="panel"', () => {
     const tree = toJSON();
     expect(findHost(tree, 'content-panel-border-frame')).toBeNull();
     expect(findHost(tree, 'content-panel-bleed-mask')).not.toBeNull();
+  });
+});
+
+describe('ContentPanel.web overlayTopOffset', () => {
+  it('shifts the default viewport-mode overlays down by the offset, shrinking height and margin to match', () => {
+    const { toJSON } = renderPanel(
+      <ContentPanel framed overlayTopOffset={64}>
+        <Text>content</Text>
+      </ContentPanel>,
+    );
+    const tree = toJSON();
+    const mask = resolvedStyle(findHost(tree, 'content-panel-bleed-mask')?.props.style);
+    expect(mask.top).toBe(72); // 8 + 64
+    expect(mask.height).toBe('calc(100dvh - 80px)'); // 16 + 64
+    expect(mask.marginBottom).toBe('calc(-100dvh + 80px)');
+    const border = resolvedStyle(findHost(tree, 'content-panel-border-frame')?.props.style);
+    expect(border.top).toBe(72);
+  });
+
+  it('is a no-op when unset — the className-driven base values stand alone', () => {
+    const { toJSON } = renderPanel(
+      <ContentPanel framed>
+        <Text>content</Text>
+      </ContentPanel>,
+    );
+    const mask = resolvedStyle(findHost(toJSON(), 'content-panel-bleed-mask')?.props.style);
+    expect(mask.top).toBeUndefined();
+    expect(mask.height).toBeUndefined();
+  });
+
+  it('is a no-op in panel mode — that mode already starts at the panel\'s own box', () => {
+    const { toJSON } = renderPanel(
+      <ContentPanel framed overlaySizing="panel" overlayTopOffset={64}>
+        <Text>content</Text>
+      </ContentPanel>,
+    );
+    const mask = resolvedStyle(findHost(toJSON(), 'content-panel-bleed-mask')?.props.style);
+    expect(mask.top).toBeUndefined();
+    expect(mask.height).toBeUndefined();
   });
 });

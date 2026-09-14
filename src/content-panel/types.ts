@@ -65,4 +65,21 @@ export interface ContentPanelProps {
    *   viewport.
    */
   overlaySizing?: 'viewport' | 'panel';
+  /**
+   * Pixels of REAL, persistent chrome the consumer has placed above the panel
+   * — outside it, in normal document flow — that the viewport-mode overlays
+   * (`overlaySizing="viewport"`, the default) do not otherwise know about.
+   * No-op when `overlaySizing="panel"` (that mode already starts at the
+   * panel's own box, wherever that is) and on native (no overlays there).
+   *
+   * The overlays are sized/positioned off the VIEWPORT (`top: 8px`,
+   * `height: calc(100dvh - 16px)`) on the assumption that the panel begins
+   * near the true top of the screen. A consumer with its own sticky chrome
+   * above the panel (a header, say, kept sticky-pinned the same way) shifts
+   * where the panel visually starts without moving the panel's own DOM
+   * position, so the overlays would still read from viewport 0 and paint
+   * over that chrome. This shifts their `top` down and shrinks their height
+   * by the same amount, so they begin exactly where the panel visually does.
+   */
+  overlayTopOffset?: number;
 }
