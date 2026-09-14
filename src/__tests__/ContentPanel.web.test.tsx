@@ -106,17 +106,28 @@ describe('ContentPanel.web overlaySizing="panel"', () => {
     expect(mask).not.toContain('hidden');
   });
 
-  it('keeps the clip-path bleed guard and the visible border in panel mode', () => {
+  it('clips the bleed-mask shadow flush to the box in panel mode (no escape bleed onto a close sibling)', () => {
     const { toJSON } = renderPanel(
       <ContentPanel framed overlaySizing="panel">
         <Text>content</Text>
       </ContentPanel>,
     );
     const tree = toJSON();
-    expect(classesFor(tree, 'content-panel-bleed-mask')).toContain('web:[clip-path:inset(-12px)]');
+    const mask = classesFor(tree, 'content-panel-bleed-mask');
+    expect(mask).toContain('web:[clip-path:inset(0)]');
+    expect(mask).not.toContain('web:[clip-path:inset(-12px)]');
     const border = classesFor(tree, 'content-panel-border-frame');
     expect(border).toContain('border');
     expect(border).toContain('border-border');
+  });
+
+  it('keeps the deliberate 12px bleed halo in the default viewport mode', () => {
+    const { toJSON } = renderPanel(
+      <ContentPanel framed>
+        <Text>content</Text>
+      </ContentPanel>,
+    );
+    expect(classesFor(toJSON(), 'content-panel-bleed-mask')).toContain('web:[clip-path:inset(-12px)]');
   });
 
   it('still respects showStickyFrame={false} to omit only the border overlay', () => {
