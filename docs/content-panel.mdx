@@ -28,6 +28,32 @@ import { ContentPanel } from '@oxy.so/bloom/content-panel';
 | `surfaceStyle` / `surfaceClassName` | the surface itself                        |
 | `contentStyle` / `contentClassName` | the column inside it                      |
 | `maskColor`        | the colour the gutter mask fades to                        |
+| `overlaySizing`     | (web) how the mask/border overlays size themselves — see below |
+
+## `overlaySizing`: viewport chrome vs. a bounded shell
+
+The web overlays default to `overlaySizing="viewport"`: sized to `100dvh` and
+`position: sticky`-pinned, so they read as a constant frame around the visible
+slice of a panel whose own DOM height can exceed one screen — the right choice
+in a document that actually scrolls (a feed page that grows with content).
+
+A consumer whose OWN shell already bounds the panel's height — a fixed app
+shell with its own internal scroll containers, no document scroll — doesn't
+have that problem, and viewport-sizing there is actively wrong: the overlay
+still reads `100dvh` regardless of how much of the viewport is actually the
+panel's, so anything placed OUTSIDE the panel (a header above it, say) gets
+painted over. `overlaySizing="panel"` fixes that: the overlays size to the
+panel's own real box via CSS Grid layer-stacking instead of viewport math, so
+they never extend past whatever height the panel actually has.
+
+```tsx
+<View style={{ flex: 1 }}>
+  <ExternalHeader />
+  <ContentPanel framed overlaySizing="panel">
+    <SettingsScreen />
+  </ContentPanel>
+</View>
+```
 
 ## `framedFrom` is why the branch is not in your screen
 

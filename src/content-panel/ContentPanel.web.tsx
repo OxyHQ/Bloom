@@ -23,6 +23,26 @@
  * content rather than displacing it). They render BEFORE the content wrapper so
  * z-index — not DOM order — decides layering.
  *
+ * That sticky/`100dvh` sizing is itself a CHOICE, not the only mode — see
+ * `overlaySizing`. It is correct exactly when the panel's own DOM height can
+ * exceed one viewport in a document that actually scrolls (dvh gives the
+ * overlay a fixed, viewport-sized height that a percentage cannot: percentage
+ * heights need a definite ancestor height, which an auto-height document-flow
+ * ancestor never has). A consumer whose OWN shell already bounds the panel's
+ * height (no document scroll) doesn't have that problem, and viewport-sizing
+ * there is actively wrong — the overlay reads `100dvh` regardless of how much
+ * of the viewport is actually the panel's, so anything the consumer placed
+ * outside the panel (a header above it, say) gets painted over.
+ * `overlaySizing="panel"` is that second mode: CSS Grid layer-stacking (every
+ * child placed in the same `grid-area: 1/1`) instead of sticky/dvh/negative-
+ * margin — each child fills exactly the grid cell, i.e. exactly the panel's
+ * own box, whatever that box's real height is. No `position: absolute` (that
+ * takes the content wrapper out of flow, which is not what "panel" mode
+ * changes — only the two overlays' sizing mechanism changes) and no percentage
+ * margin (the well-known CSS quirk where a vertical margin percentage resolves
+ * against the containing block's WIDTH, not its height, so it cannot express
+ * "100% of my own height" at all).
+ *
  * Framing is tri-state via the `framed` prop:
  *
  *  - `undefined` (DEFAULT) → RESPONSIVE, driven purely by NativeWind: full-bleed
@@ -120,6 +140,7 @@ const ContentPanelComponent: React.FC<ContentPanelProps> = ({
   contentStyle,
   showStickyFrame,
   maskColor,
+  overlaySizing = 'viewport',
 }) => {
   // Dev-only invariant — must run unconditionally (before deriving any
   // mode-specific branch) so the hook order stays stable (rules of hooks).
@@ -133,6 +154,7 @@ const ContentPanelComponent: React.FC<ContentPanelProps> = ({
   // Responsive mode selects a pre-shipped literal breakpoint bundle by value;
   // `framed === true`/`false` ignore `framedFrom` (fixed always/never framing).
   const bp = RESPONSIVE_WEB[framedFrom];
+  const boundToPanel = overlaySizing === 'panel';
 
   // Whole literal class strings selected per mode (the Tailwind content-scan
   // over `lib/**` requires each arbitrary/`min-*`/`max-*`/`web:` token stay
@@ -148,23 +170,38 @@ const ContentPanelComponent: React.FC<ContentPanelProps> = ({
     : framed
       ? 'flex-1 rounded-radius-28 web:overflow-x-clip'
       : 'flex-1';
-  const surfaceClass = [surfaceBase, surfaceClassName ?? 'bg-card'].join(' ');
-  const contentClass = [contentBase, contentClassName].filter(Boolean).join(' ');
+  // `overlaySizing="panel"`: the surface becomes a single-cell CSS Grid so the
+  // overlays and the content wrapper below can all be placed in that ONE cell
+  // (`web:[grid-area:1/1]`) and each fill it exactly — `minmax(0,1fr)` (not
+  // `1fr` alone) on both axes so the track can still SHRINK below its content's
+  // intrinsic size, the grid-track equivalent of the flex `min-height: 0`
+  // fix — without it, a tall scrollable child would grow the row instead of
+  // being clipped/scrolled inside a fixed-height cell.
+  const gridStackClass = boundToPanel
+    ? 'web:grid web:[grid-template-columns:minmax(0,1fr)] web:[grid-template-rows:minmax(0,1fr)]'
+    : '';
+  const surfaceClass = [surfaceBase, gridStackClass, surfaceClassName ?? 'bg-card'].filter(Boolean).join(' ');
+  const contentClass = [contentBase, boundToPanel ? 'web:[grid-area:1/1]' : '', contentClassName]
+    .filter(Boolean)
+    .join(' ');
 
   return (
     <ContentPanelNestingContext.Provider value={true}>
-      <StyledView className={surfaceClass} style={surfaceStyle}>
+      <StyledView testID="content-panel-surface" className={surfaceClass} style={surfaceStyle}>
         {/* (1) Bleed-mask overlay — gutter box-shadow ring, below chrome. Not
             rendered when never-framed; `max-md:hidden` (display:none <md) when
             responsive, so the breakpoint is decided in CSS, not by remounting. */}
         {showOverlays && (
           <StyledView
             key="bleed-mask"
+            testID="content-panel-bleed-mask"
             pointerEvents="none"
             className={
-              responsive
-                ? `web:sticky web:top-2 z-30 h-[calc(100dvh-16px)] w-full rounded-radius-28 ${bp.overlayHidden} web:[margin-bottom:calc(-100dvh+16px)] web:[clip-path:inset(-12px)]`
-                : 'web:sticky web:top-2 z-30 h-[calc(100dvh-16px)] w-full rounded-radius-28 web:[margin-bottom:calc(-100dvh+16px)] web:[clip-path:inset(-12px)]'
+              boundToPanel
+                ? `web:[grid-area:1/1] z-30 h-full w-full rounded-radius-28 ${responsive ? bp.overlayHidden : ''} web:[clip-path:inset(-12px)]`
+                : responsive
+                  ? `web:sticky web:top-2 z-30 h-[calc(100dvh-16px)] w-full rounded-radius-28 ${bp.overlayHidden} web:[margin-bottom:calc(-100dvh+16px)] web:[clip-path:inset(-12px)]`
+                  : 'web:sticky web:top-2 z-30 h-[calc(100dvh-16px)] w-full rounded-radius-28 web:[margin-bottom:calc(-100dvh+16px)] web:[clip-path:inset(-12px)]'
             }
             style={{ boxShadow: `0 0 0 ${GUTTER_MASK_SPREAD}px ${maskColor ?? colors.background}` }}
           />
@@ -174,11 +211,14 @@ const ContentPanelComponent: React.FC<ContentPanelProps> = ({
         {showOverlays && showStickyFrame !== false && (
           <StyledView
             key="border-frame"
+            testID="content-panel-border-frame"
             pointerEvents="none"
             className={
-              responsive
-                ? `web:sticky web:top-2 z-[120] h-[calc(100dvh-16px)] w-full rounded-radius-28 border border-border ${bp.overlayHidden} web:[margin-bottom:calc(-100dvh+16px)]`
-                : 'web:sticky web:top-2 z-[120] h-[calc(100dvh-16px)] w-full rounded-radius-28 border border-border web:[margin-bottom:calc(-100dvh+16px)]'
+              boundToPanel
+                ? `web:[grid-area:1/1] z-[120] h-full w-full rounded-radius-28 border border-border ${responsive ? bp.overlayHidden : ''}`
+                : responsive
+                  ? `web:sticky web:top-2 z-[120] h-[calc(100dvh-16px)] w-full rounded-radius-28 border border-border ${bp.overlayHidden} web:[margin-bottom:calc(-100dvh+16px)]`
+                  : 'web:sticky web:top-2 z-[120] h-[calc(100dvh-16px)] w-full rounded-radius-28 border border-border web:[margin-bottom:calc(-100dvh+16px)]'
             }
           />
         )}
@@ -186,7 +226,7 @@ const ContentPanelComponent: React.FC<ContentPanelProps> = ({
             in place instead of remounting `{children}` (which would reset feed
             scroll/virtualizer + refetch on a breakpoint cross). Clipped to the
             rounded panel shape on web when framed. */}
-        <StyledView key="content" className={contentClass} style={contentStyle}>
+        <StyledView key="content" testID="content-panel-content" className={contentClass} style={contentStyle}>
           {children}
         </StyledView>
       </StyledView>
