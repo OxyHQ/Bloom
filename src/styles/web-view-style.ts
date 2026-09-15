@@ -21,6 +21,16 @@ import type { ViewStyle } from 'react-native';
 export const WEB_POSITION_FIXED = 'fixed' as ViewStyle['position'];
 
 /**
+ * `position: sticky`, typed for React Native's `ViewStyle`. Same gap as
+ * {@link WEB_POSITION_FIXED} — RN's `position` union has no `'sticky'` member
+ * at all, while react-native-web passes it straight through as real CSS. Used
+ * by a surface that pins itself within its own scroll container (a desktop
+ * sidebar, a framed panel's overlay chrome) rather than to the viewport,
+ * which is what `'fixed'` is for.
+ */
+export const WEB_POSITION_STICKY = 'sticky' as ViewStyle['position'];
+
+/**
  * A `ViewStyle` that may ALSO carry CSS react-native-web forwards straight to the
  * DOM node but React Native does not model at all.
  *

@@ -221,6 +221,8 @@ export type {
   VirtualListRenderItemInfo,
   VirtualListSlot,
 } from './list/index.web';
+export { Rail } from './rail';
+export type { RailItem, RailProps } from './rail';
 
 // Interaction primitives
 export { PressableScale } from './pressable-scale';

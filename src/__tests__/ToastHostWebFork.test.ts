@@ -79,13 +79,15 @@ describe('ToastHost platform split', () => {
     expect(styleModule).toMatch(
       /export const WEB_POSITION_FIXED = 'fixed' as ViewStyle\['position'\]/,
     );
-    // Exactly one cast in the module, and it is the only RUNTIME export.
-    // (Counted against code — the doc comment discusses casts in prose.)
-    // The module's other export is the `WebCssStyle` interface, which covers the
-    // other half of the same RN/RNW gap and emits nothing — see
-    // `web-css-style.test.ts`.
-    expect(code('styles/web-view-style.ts').match(/ as /g)).toHaveLength(1);
-    expect(styleModule.match(/^export const /gm)).toHaveLength(1);
+    // `WEB_POSITION_STICKY` is the same gap for `'sticky'` (a surface pinned
+    // within its own scroll container, e.g. `rail/Rail.tsx`, rather than to the
+    // viewport) — same module, same cast shape. Exactly one cast PER constant,
+    // and the two `export const`s are the only RUNTIME exports. (Counted
+    // against code — the doc comment discusses casts in prose.) The module's
+    // other export is the `WebCssStyle` interface, which covers the other half
+    // of the same RN/RNW gap and emits nothing — see `web-css-style.test.ts`.
+    expect(code('styles/web-view-style.ts').match(/ as /g)).toHaveLength(2);
+    expect(styleModule.match(/^export const /gm)).toHaveLength(2);
     expect(styleModule.match(/^export (?!const |interface )/gm)).toBeNull();
   });
 
