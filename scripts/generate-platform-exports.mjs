@@ -151,6 +151,7 @@ const SUBPATHS = /** @type {const} */ ([
   ['./scroll/expo-router', 'scroll/expo-router/index.ts'],
   ['./content-panel', 'content-panel/index.ts'],
   ['./list', 'list/index.ts'],
+  ['./rail', 'rail/index.ts'],
   ['./tab-bar', 'tab-bar/index.ts'],
   ['./tab-bar/expo-router', 'tab-bar/expo-router/index.ts'],
   ['./progressive-blur', 'progressive-blur/index.ts'],

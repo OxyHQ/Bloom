@@ -1,7 +1,7 @@
 import { readdirSync, readFileSync, statSync } from 'node:fs';
 import { join } from 'node:path';
 
-import { WEB_POSITION_FIXED } from '../styles/web-view-style';
+import { WEB_POSITION_FIXED, WEB_POSITION_STICKY } from '../styles/web-view-style';
 
 /**
  * `position: fixed` is web-only CSS that React Native's `ViewStyle` does not
@@ -13,6 +13,13 @@ import { WEB_POSITION_FIXED } from '../styles/web-view-style';
  *
  * They now all import `WEB_POSITION_FIXED`, whose single documented cast lives in
  * `styles/web-view-style.ts`. This guard stops the inline spellings coming back.
+ *
+ * `WEB_POSITION_STICKY` is the same gap for `'sticky'` (a surface that pins
+ * itself within its own scroll container, e.g. `rail/Rail.tsx`, rather than to
+ * the viewport). It lives in the same module for the same reason, so the "only
+ * cast" count below is two now — one per constant — and stays an EQUALITY
+ * rather than a widened threshold: a third inline cast anywhere else in `src/`
+ * is still exactly what this file exists to catch.
  */
 
 const SRC = join(__dirname, '..');
@@ -32,6 +39,7 @@ const files = sourceFiles(SRC);
 describe('web position: fixed', () => {
   it('resolves to the CSS value at runtime', () => {
     expect(WEB_POSITION_FIXED).toBe('fixed');
+    expect(WEB_POSITION_STICKY).toBe('sticky');
   });
 
   it('finds source files to scan (guards against a broken walk)', () => {
@@ -53,11 +61,13 @@ describe('web position: fixed', () => {
     expect(offenders.map((f) => f.replace(`${SRC}/`, ''))).toEqual([]);
   });
 
-  it('keeps the only cast inside styles/web-view-style.ts', () => {
+  it('keeps only the two documented casts inside styles/web-view-style.ts', () => {
     const module = readFileSync(join(SRC, 'styles/web-view-style.ts'), 'utf8')
       .replace(/\/\*[\s\S]*?\*\//g, '')
       .replace(/^\s*\/\/.*$/gm, '');
-    expect(module.match(/ as /g)).toHaveLength(1);
+    // One per constant (`WEB_POSITION_FIXED`, `WEB_POSITION_STICKY`) — an
+    // equality, not a floor, so a third inline cast anywhere is still caught.
+    expect(module.match(/ as /g)).toHaveLength(2);
   });
 
   it('is imported by every fork that positions something fixed', () => {

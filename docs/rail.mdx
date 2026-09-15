@@ -1,0 +1,112 @@
+---
+title: Rail
+description: A full-height, sticky desktop sidebar navigation column.
+order: 77
+---
+
+# Rail
+
+A vertical column of destinations for a desktop-width layout — the sidebar a
+multi-column web shell renders beside its content. It is the non-animated,
+ID-selected sibling of [`TabBar`](/docs/bloom/main/tab-bar): a fixed set of
+items, one active at a time, a selection callback. No router of its own; a
+consumer resolves `activeId` from its own routing state, the same "consumer
+owns routing, Bloom owns rendering" split a `TabBar` consumer already uses for
+`activeIndex`.
+
+```tsx
+import { useState } from 'react';
+import * as Icons from '@oxy.so/bloom/icons';
+import { Rail } from '@oxy.so/bloom/rail';
+
+const ITEMS = [
+  {
+    id: 'home',
+    label: 'Home',
+    icon: <Icons.Home_Stroke2_Corner0_Rounded />,
+    activeIcon: <Icons.Home_Filled_Corner0_Rounded />,
+  },
+  {
+    id: 'settings',
+    label: 'Settings',
+    icon: <Icons.SettingsGear2_Stroke2_Corner0_Rounded />,
+    activeIcon: <Icons.SettingsGear2_Filled_Corner0_Rounded />,
+  },
+];
+
+export function Shell() {
+  const [activeId, setActiveId] = useState('home');
+
+  return (
+    <View style={{ flex: 1, flexDirection: 'row' }}>
+      <Rail items={ITEMS} activeId={activeId} onSelect={setActiveId} />
+      {/* routed content */}
+    </View>
+  );
+}
+```
+
+## Which prop decides what
+
+| prop       | decides                                                      |
+| ---------- | ------------------------------------------------------------- |
+| `items`    | the destinations, top to bottom                               |
+| `activeId` | which item's `id` is selected; an id naming no item selects none |
+| `onSelect` | called with an item's `id` on press                           |
+| `width`    | the column's width in px, default `80`                        |
+
+## Icons
+
+`item.icon` takes any node — a Bloom icon, an SVG, your own icon component —
+and no crossfade layer to feed, unlike `TabBar`. `item.activeIcon` is an
+optional second node rendered instead of `icon` while that item is active,
+resolved directly rather than tinted by `Rail` itself: a consumer colors both
+states the way it wants, the same `icon`/`activeIcon` split `TabBarItem` uses.
+
+```tsx
+{
+  id: 'home',
+  label: 'Home',
+  icon: <Home color={inactiveColor} />,
+  activeIcon: <Home color={activeColor} filled />,
+}
+```
+
+Without `activeIcon`, an item renders `icon` in both states.
+
+## Sticky positioning on web
+
+`Rail` pins itself full-height with `position: sticky; top: 0` on web, so it
+stays in view while a document-scroll shell — no fixed-height app container,
+the window is the real scroller — scrolls the content beside it. This is the
+same load-bearing behavior a hand-rolled desktop sidebar needs to reproduce
+itself; `Rail` owns it so a consumer doesn't. On native, where there is no
+document scroll to defend against, it is a plain flex sibling that already
+reserves its own space.
+
+<Callout variant="warning" title="The rail's parent must be a flex row">
+The sticky pin only keeps the rail in view; it does not create the side-by-side
+layout. Render it as the first child of a `flex-direction: row` container
+alongside your content, the way the usage example above does.
+</Callout>
+
+## Rail props
+
+| Prop        | Type                    | Default | Description                                                        |
+| ----------- | ----------------------- | ------- | -------------------------------------------------------------------- |
+| `items`     | `RailItem[]`             | —       | The destinations, top to bottom.                                    |
+| `activeId?` | `string`                 | —       | `id` of the active item. An id naming no item selects nothing.      |
+| `onSelect`  | `(id: string) => void`   | —       | Called with an item's `id` when it is pressed.                      |
+| `width?`    | `number`                 | `80`    | Width of the column, in px.                                         |
+| `style?`    | `StyleProp<ViewStyle>`   | —       | Merged after the rail's own sticky/width positioning.                |
+| `testID?`   | `string`                 | —       | Forwarded to the outer container.                                   |
+
+`RailItem` is `{ id, label, icon, activeIcon? }`.
+
+## Exports
+
+| Export | From | Description |
+|--------|------|-------------|
+| `Rail` | `@oxy.so/bloom/rail` | The sidebar column. |
+
+Types: `RailItem`, `RailProps`.

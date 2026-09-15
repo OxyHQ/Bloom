@@ -49,14 +49,19 @@ const files = sourceFiles(SRC);
  */
 const ALLOWED: Record<string, { count: number; reason: string }> = {
   'styles/web-view-style.ts': {
-    count: 1,
+    count: 2,
     reason:
-      "`WEB_POSITION_FIXED` — a VALUE-level cast on a key RN does model, just with a narrower union. It is the one documented crossing point and cannot be an annotation, because `position: 'fixed'` has to be writable inside an ordinary style object.",
+      "`WEB_POSITION_FIXED` and `WEB_POSITION_STICKY` — VALUE-level casts on a key RN does model, just with a narrower union. They are the documented crossing points for `position` and cannot be annotations, because `position: 'fixed'`/`'sticky'` has to be writable inside an ordinary style object.",
   },
   'skeleton/Skeleton.tsx': {
     count: 1,
     reason:
       '`(flattened as ViewStyle)?.width` narrows a `StyleSheet.flatten` result, which is legitimately `ViewStyle | TextStyle | ImageStyle`. Not a web-CSS cast.',
+  },
+  'rail/Rail.tsx': {
+    count: 1,
+    reason:
+      "`height: '100vh' as ViewStyle['height']` — the same shape of VALUE-level cast `WEB_POSITION_FIXED`/`WEB_POSITION_STICKY` document (a key RN does model, `DimensionValue`, just with no bare CSS-unit string), on the full-height sticky sidebar. Kept local rather than promoted to `web-view-style.ts` because `'100vh'` has no other consumer in the package the way `'fixed'`/`'sticky'` do.",
   },
 };
 

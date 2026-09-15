@@ -1428,6 +1428,20 @@
         "default": "./lib/commonjs/list/index.js"
       }
     },
+    "./rail": {
+      "react-native": {
+        "types": "./lib/typescript/module/rail/index.d.ts",
+        "default": "./src/rail/index.ts"
+      },
+      "import": {
+        "types": "./lib/typescript/module/rail/index.d.ts",
+        "default": "./lib/module/rail/index.js"
+      },
+      "require": {
+        "types": "./lib/typescript/commonjs/rail/index.d.ts",
+        "default": "./lib/commonjs/rail/index.js"
+      }
+    },
     "./tab-bar": {
       "react-native": {
         "types": "./lib/typescript/module/tab-bar/index.d.ts",
