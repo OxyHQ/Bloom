@@ -85,9 +85,13 @@ export function buildColorsFromSeed(
     iconActive: g('primary'),
 
     success: g('success'),
+    successForeground: g('success-foreground'),
     error: g('error'),
+    errorForeground: g('error-foreground'),
     warning: g('warning'),
+    warningForeground: g('warning-foreground'),
     info: g('info'),
+    infoForeground: g('info-foreground'),
 
     successSubtle: g('success-subtle'),
     successSubtleForeground: g('success-text'),

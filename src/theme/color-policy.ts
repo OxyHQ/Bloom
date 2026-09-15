@@ -110,6 +110,21 @@ const FILL_TONE_SEARCH_CEILING = 56;
 const LIGHT_DEPTH_STEP = 5;
 
 /**
+ * How much a PINNED action steps below its own peak in light mode — smaller
+ * than `LIGHT_DEPTH_STEP`, because staying close to the peak (not the full
+ * depth every other fill takes) is this branch's entire reason to exist (see
+ * `pinnedAction` below). 5 — `LIGHT_DEPTH_STEP` itself — was tried first and
+ * rejected: two curated presets can declare tertiary hues a fraction of a
+ * degree apart (`indigo-ember` and `pewter-current`, both a "turquoise
+ * action", 0.26° apart), and at THAT specific offset the two hues' peaks
+ * happened to round to the same quantized 8-bit colour, so one pinned action
+ * rendered two presets identically. The offset has no other significance
+ * than clearing that — any of {3, 4, 7, 8} does, checked against every
+ * built-in preset's own pinned `tertiaryHex`.
+ */
+const PINNED_ACTION_LIGHT_STEP = 4;
+
+/**
  * How deep a light-mode fill may go. Deliberately BELOW the search's lower bound,
  * which those two used to share — and sharing them silently voided the depth step
  * for any seed whose dark fill already sits at that bound. A high-chroma seed is
@@ -550,11 +565,27 @@ export function buildPolicyTokens(
           ? MONOCHROME_SECONDARY_TONE.dark
           : MONOCHROME_SECONDARY_TONE.light
       : pinnedAction
-        // A deliberately paired action stays at the hue's vivid peak instead of
-        // turning signal yellow into ochre or lime into olive on a light page.
-        // The matched foreground may be black; legibility is decided by the pair,
-        // not by a blanket white-label preference.
-        ? Math.max(peakTone(hue), isDark ? DARK_ACCENT_FLOOR : LIGHT_FILL_FLOOR)
+        // A deliberately paired action stays NEAR the hue's vivid peak instead of
+        // turning signal yellow into ochre or lime into olive on a light page. The
+        // matched foreground may be black; legibility is decided by the pair, not
+        // by a blanket white-label preference.
+        //
+        // Light and dark still have to differ, same as every other fill in this
+        // file — an EARLIER version of this branch floored both modes on
+        // `peakTone(hue)` directly with only the FLOOR differing (`LIGHT_FILL_FLOOR`
+        // vs `DARK_ACCENT_FLOOR`), so for any hue whose peak sits above both floors
+        // — the common case — the floor never bound anything and light and dark
+        // landed on the IDENTICAL tone: the same fill and the same foreground
+        // rendered twice. Measured across the 47 built-in presets that declare a
+        // `tertiaryHex`, that was ~30 of them, plus any app pinning its own
+        // `tertiaryColor`. Dark keeps the pure peak (the "stay vivid" case this
+        // branch exists for is a dark-page problem — deepening costs nothing
+        // there); light steps `PINNED_ACTION_LIGHT_STEP` below its own peak, so it
+        // still reads as "the same brand, a page deeper" rather than vanishing
+        // into the dark-mode swatch.
+        ? isDark
+          ? Math.max(peakTone(hue), DARK_ACCENT_FLOOR)
+          : Math.max(LIGHT_FILL_FLOOR, peakTone(hue) - PINNED_ACTION_LIGHT_STEP)
         : accentTone(hue, isDark);
     const pair = fillPair(fillPalette, tone);
     tokens[`--${role}`] = pair.fill;
