@@ -31,9 +31,13 @@ export interface ThemeColors {
   iconActive: string;
 
   success: string;
+  successForeground: string;
   error: string;
+  errorForeground: string;
   warning: string;
+  warningForeground: string;
   info: string;
+  infoForeground: string;
 
   /**
    * The tinted status SURFACES and the text that is legible on them.

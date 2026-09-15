@@ -86,9 +86,13 @@ function buildColorsFromPreset(
     // The status family is themed per mode and legible, from the same pipeline
     // as everything else — not four frozen hexes that fail AA under white text.
     success: g('success'),
+    successForeground: g('success-foreground'),
     error: g('error'),
+    errorForeground: g('error-foreground'),
     warning: g('warning'),
+    warningForeground: g('warning-foreground'),
     info: g('info'),
+    infoForeground: g('info-foreground'),
 
     // The tinted half of the same four families. `-subtle` is the translucent
     // surface, `-text` the member legible on it — the pair the policy generates

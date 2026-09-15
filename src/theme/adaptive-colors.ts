@@ -24,12 +24,14 @@ import type { ThemeColors } from './types';
  *
  * Material You and iOS dynamic ship a brand family and an error family and
  * NOTHING for success/warning/info — which is why the four status fills below
- * are frozen hexes rather than platform reads. The tinted status members have no
- * platform counterpart at all, so they are deliberately absent here and come
- * from the preset-derived palette underneath (`buildTheme` overlays this on it).
- * That keeps the four `*Subtle`/`*SubtleForeground` pairs coming from ONE source
- * — the colour policy, whose pairs are gated at AA — instead of four hand-picked
- * tints that would only be legible by luck.
+ * are frozen hexes rather than platform reads. The tinted status members, and
+ * now the solid `-foreground` members alongside them, have no platform
+ * counterpart at all, so they are deliberately absent here and come from the
+ * preset-derived palette underneath (`buildTheme` overlays this on it). That
+ * keeps every `success`/`error`/`warning`/`info` pair — both the `*Subtle`/
+ * `*SubtleForeground` tint and the solid `*Foreground` — coming from ONE source
+ * — the colour policy, whose pairs are gated at AA — instead of hand-picked
+ * labels for a fill this file already admits it is only guessing at.
  *
  * Consequence for anyone extending this file: adding one of those keys to a
  * branch below is a type error, on purpose. Answering it needs a real platform
@@ -45,6 +47,10 @@ export type AdaptiveColors = Omit<
   | 'warningSubtleForeground'
   | 'infoSubtle'
   | 'infoSubtleForeground'
+  | 'successForeground'
+  | 'errorForeground'
+  | 'warningForeground'
+  | 'infoForeground'
 >;
 
 const c = (v: unknown): string => v as string;

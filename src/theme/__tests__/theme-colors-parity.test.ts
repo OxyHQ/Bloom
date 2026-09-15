@@ -81,6 +81,14 @@ describe.each(APP_COLOR_NAMES)('engine-backed theme.colors (%s)', (preset: AppCo
         ['warningSubtleForeground', '--warning-text'],
         ['infoSubtle', '--info-subtle'],
         ['infoSubtleForeground', '--info-text'],
+        // The solid status foregrounds — legible directly on `success`/`error`/
+        // `warning`/`info` (not the `-subtle` tint), the same job
+        // `primaryForeground`/`secondaryForeground`/`tertiaryForeground` already do
+        // for the M3 accent trio.
+        ['successForeground', '--success-foreground'],
+        ['errorForeground', '--error-foreground'],
+        ['warningForeground', '--warning-foreground'],
+        ['infoForeground', '--info-foreground'],
       ];
       for (const [colorKey, tokenKey] of field) {
         expect(colors[colorKey]).toBe(t[tokenKey]);
