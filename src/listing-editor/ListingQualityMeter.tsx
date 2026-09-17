@@ -1,6 +1,5 @@
 import React, { memo, useEffect, useMemo } from 'react';
 import { Platform, Pressable, View } from 'react-native';
-import Svg, { Circle } from 'react-native-svg';
 
 import { resolveButtonRamps } from '../button/shared';
 import { useInteractionState } from '../hooks/use-interaction-state';
@@ -8,6 +7,7 @@ import { RiArrowRightSLine } from '../icons/remix/RiArrowRightSLine';
 import { RiCheckboxBlankCircleLine } from '../icons/remix/RiCheckboxBlankCircleLine';
 import { RiCheckboxCircleFill } from '../icons/remix/RiCheckboxCircleFill';
 import { RiLightbulbFlashLine } from '../icons/remix/RiLightbulbFlashLine';
+import { MeterRing } from '../stat-bar';
 import { adoptStyleSheet } from '../styles/adopt-style-sheet';
 import type { WebCssStyle } from '../styles/web-view-style';
 import { webDataSet } from '../styles/web-data';
@@ -20,10 +20,10 @@ import type { ListingQualityItem, ListingQualityMeterProps } from './types';
  * How complete a listing is: a score ring, a checklist of what is left, and
  * tips.
  *
- *   head      the 72 ring (6 stroke, track neutral-200 / dark neutral-700,
- *             progress accent-500, round cap) with the score (headline-semibold)
- *             in it; title (headline-semibold) and summary (body-regular,
- *             text-secondary) beside it
+ *   head      a 72 `MeterRing` (6 stroke, the shared neutral-200 / dark
+ *             neutral-700 track, accent arc, round cap) with the score
+ *             (headline-semibold) in it; title (headline-semibold) and summary
+ *             (body-regular, text-secondary) beside it
  *   rows      12 apart; a 20 glyph — filled success check when done, an empty
  *             neutral-400 circle when not — the label (body-medium; done rows in
  *             text-secondary) and the tip under an open row (caption-1-regular,
@@ -33,7 +33,8 @@ import type { ListingQualityItem, ListingQualityMeterProps } from './types';
  *             lightbulb glyph and the tips as lines
  *
  * The score defaults to the done items' share of the total weight, rounded.
- * The ring eases on web over 400ms (not under reduced motion); native snaps.
+ * The ring eases on web over 400ms (not under reduced motion); native snaps —
+ * `MeterRing` owns that transition.
  *
  * Accessibility: the ring is a `progressbar` 0..100 named by
  * `accessibilityLabel`; each row's name carries its state ("Add at least 5
@@ -43,14 +44,11 @@ import type { ListingQualityItem, ListingQualityMeterProps } from './types';
 const IS_WEB = Platform.OS === 'web';
 const RING = 72;
 const STROKE = 6;
+const RING_TRANSITION_MS = 400;
 
 const STYLE_ID = 'bloom-listing-quality-web-css';
-const ARC = '[data-bloom-quality-arc]';
 const ROW = '[data-bloom-quality-row]';
 const CSS = `
-${ARC} circle:last-child {
-  transition: stroke-dashoffset 400ms ease-out;
-}
 ${ROW} {
   outline: none;
   cursor: pointer;
@@ -58,11 +56,6 @@ ${ROW} {
 ${ROW}:focus-visible {
   outline: 2px solid var(--bloom-quality-ring, currentColor);
   outline-offset: 2px;
-}
-@media (prefers-reduced-motion: reduce) {
-  ${ARC} circle:last-child {
-    transition: none;
-  }
 }
 `;
 
@@ -79,8 +72,6 @@ export function listingQualityScore(items: ReadonlyArray<ListingQualityItem>): n
 }
 
 interface QualityPaint {
-  track: string;
-  progress: string;
   text: string;
   textSecondary: string;
   done: string;
@@ -93,8 +84,6 @@ function resolveQualityPaint(theme: Theme): QualityPaint {
   const { accent, neutral: n } = resolveButtonRamps(theme);
   const dark = theme.isDark;
   return {
-    track: dark ? n[700] : n[200],
-    progress: accent[500],
     text: theme.colors.text,
     textSecondary: theme.colors.textSecondary,
     done: theme.colors.success,
@@ -125,42 +114,24 @@ function ListingQualityMeterComponent({
   const paint = useMemo(() => resolveQualityPaint(theme), [theme]);
   const score = Math.min(100, Math.max(0, Math.round(scoreProp ?? listingQualityScore(items))));
   const line = summary ?? (score < 50 ? 'Needs work' : score < 80 ? 'Good' : 'Excellent');
-  const radius = (RING - STROKE) / 2;
-  const circumference = 2 * Math.PI * radius;
 
   return (
     <View testID={testID} style={[{ gap: 20 }, style]}>
       <View style={{ flexDirection: 'row', alignItems: 'center', gap: 16 }}>
-        <View
-          role="progressbar"
+        <MeterRing
+          value={score}
+          max={100}
+          size={RING}
+          thickness={STROKE}
+          transitionMs={RING_TRANSITION_MS}
           accessibilityLabel={accessibilityLabel}
-          aria-valuemin={0}
-          aria-valuemax={100}
-          aria-valuenow={score}
-          aria-valuetext={`${formatScore(score)}, ${line}`}
+          valueText={`${formatScore(score)}, ${line}`}
           testID={testID ? `${testID}-ring` : undefined}
-          style={{ width: RING, height: RING, alignItems: 'center', justifyContent: 'center' }}
         >
-          <View {...webDataSet({ bloomQualityArc: '' })} style={{ position: 'absolute', top: 0, left: 0 }}>
-            <Svg width={RING} height={RING} style={{ transform: [{ rotate: '-90deg' }] }}>
-              <Circle cx={RING / 2} cy={RING / 2} r={radius} stroke={paint.track} strokeWidth={STROKE} fill="none" />
-              <Circle
-                cx={RING / 2}
-                cy={RING / 2}
-                r={radius}
-                stroke={paint.progress}
-                strokeWidth={STROKE}
-                fill="none"
-                strokeLinecap={score > 0 ? 'round' : 'butt'}
-                strokeDasharray={`${circumference} ${circumference}`}
-                strokeDashoffset={circumference * (1 - score / 100)}
-              />
-            </Svg>
-          </View>
           <Text variant="headline-semibold" style={{ color: paint.text, fontVariant: ['tabular-nums'] }}>
             {formatScore(score)}
           </Text>
-        </View>
+        </MeterRing>
         <View style={{ flex: 1, minWidth: 0, gap: 2 }}>
           <Text variant="headline-semibold" style={{ color: paint.text }}>
             {title}

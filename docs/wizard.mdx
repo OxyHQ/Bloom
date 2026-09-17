@@ -43,9 +43,12 @@ function Flow() {
 
 ## `WizardProgress`
 
-One segment per step, sharing the width. Done steps are filled, later steps are
-empty, and the current step fills to `currentProgress` (default `0.5`, so it
-always reads as under way). Under the bar: the count ("Step 3 of 8") with an
+One segment per step, sharing the width. Each segment is a decorative
+[`Meter`](/docs/stat-bar) — the shared neutral-200 (dark neutral-700) track and
+the ACCENT fill; it used to fill with text-primary, a near-black bar reading as
+ink rather than as a measurement. Done steps are filled, later steps are empty,
+and the current step fills to `currentProgress` (default `0.5`, so it always
+reads as under way). Under the bar: the count ("Step 3 of 8") with an
 optional `action` on its right — a "Save and exit" button, say — then the
 current step's title as a heading and its description.
 
@@ -63,7 +66,9 @@ current step's title as a heading and its description.
 The bar is ONE `progressbar` over the whole flow: `aria-valuemax` is the number
 of steps and `aria-valuenow` the done steps plus the current step's progress, so
 a screen reader hears "Step 3 of 8, Photos" with a value, not eight unnamed
-bars. The fill eases on web and snaps under reduced motion.
+bars. The segments themselves carry no role, which is what `Meter`'s
+`decorative` is for. The fill eases on web (300ms) and snaps under reduced
+motion.
 
 ## `WizardFooter`
 

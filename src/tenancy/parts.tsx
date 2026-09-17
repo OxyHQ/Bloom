@@ -3,6 +3,7 @@ import { Pressable, View, type StyleProp, type ViewStyle } from 'react-native';
 
 import { BUTTON_GEOMETRY, BUTTON_RADIUS, mixColor } from '../button/shared';
 import { useInteractionState } from '../hooks/use-interaction-state';
+import { Meter } from '../stat-bar';
 import { adoptStyleSheet } from '../styles/adopt-style-sheet';
 import type { WebCssStyle } from '../styles/web-view-style';
 import { webDataSet } from '../styles/web-data';
@@ -205,7 +206,12 @@ export function HousingToggleButton({
   );
 }
 
-/** A 6px progress bar: neutral track, text-colour fill. */
+/**
+ * A 6px `Meter`: the shared neutral track, the accent fill.
+ *
+ * The fill was `palette.text` — a near-black bar — until the meters were folded
+ * onto one primitive. A lease's elapsed share is a measurement, not ink.
+ */
 export function ProgressTrack({
   value,
   accessibilityLabel,
@@ -218,24 +224,15 @@ export function ProgressTrack({
   valueText?: string;
   testID?: string;
 }) {
-  const palette = useHousingPalette();
-  const clamped = Math.min(1, Math.max(0, value));
-  const percent = Math.round(clamped * 100);
+  const percent = Math.round(Math.min(1, Math.max(0, value)) * 100);
   return (
-    <View
-      accessibilityRole="progressbar"
+    <Meter
+      value={percent}
+      max={100}
+      height={6}
       accessibilityLabel={accessibilityLabel}
-      aria-valuemin={0}
-      aria-valuemax={100}
-      aria-valuenow={percent}
-      aria-valuetext={valueText}
+      valueText={valueText}
       testID={testID}
-      style={{ height: 6, borderRadius: 3, overflow: 'hidden', backgroundColor: palette.track }}
-    >
-      <View
-        testID={testID ? `${testID}-fill` : undefined}
-        style={{ width: `${percent}%`, height: '100%', borderRadius: 3, backgroundColor: palette.text }}
-      />
-    </View>
+    />
   );
 }

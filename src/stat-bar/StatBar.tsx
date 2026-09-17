@@ -4,6 +4,7 @@ import { View, StyleSheet } from 'react-native';
 import { useTheme } from '../theme/use-theme';
 import { clamp } from '../styles/clamp';
 import { Text } from '../typography';
+import { Meter } from './Meter';
 import type { StatBarProps } from './types';
 
 function clampPercent(value: number): number {
@@ -12,7 +13,7 @@ function clampPercent(value: number): number {
 }
 
 /**
- * A horizontal labeled value bar with two variants:
+ * A LABELLED bar — `Meter` plus the text around it — in two variants:
  *
  * - `progress` — a rounded capsule track with a proportional `value / max`
  *   fill, an optional top-right `icon`, and an optional min/max footer row.
@@ -20,23 +21,22 @@ function clampPercent(value: number): number {
  *   track color), a bold percentage right of the label, and a two-sided footer
  *   of opposing values (inflow/outflow style).
  *
- * Colors come from the theme (the same NativeWind token pipeline that backs the
- * `--*` vars) — text via `text`/`textSecondary`/`textTertiary`, the track from
- * `backgroundSecondary` — with the fill overridable per-prop. Pure `<View>`
- * composition, so it renders identically on web and native.
+ * The bar itself is `Meter`, so the geometry, the default colours and the
+ * `progressbar` accessibility are the same ones every other bar in Bloom uses.
+ * This family owns only the label row and the footer. Text comes from the theme
+ * (`text`/`textSecondary`/`textTertiary`); the fill and the track default to
+ * `resolveMeterColors` (the accent over `neutral-200` / dark `neutral-700`) and
+ * stay overridable per-prop. Pure `<View>` composition, so it renders
+ * identically on web and native.
  */
 const StatBarComponent: React.FC<StatBarProps> = (props) => {
   const { colors } = useTheme();
   const { label, fillColor, trackColor, height = 6, icon, style, testID } = props;
-  const fill = fillColor ?? colors.primary;
-  const track = trackColor ?? colors.backgroundSecondary;
   const radius = height / 2;
 
   if (props.variant === 'split') {
     const { percent, leftValue, rightValue, leftColor, rightColor } = props;
     const leftPercent = clampPercent(percent);
-    const activeLeft = leftColor ?? fill;
-    const remainder = rightColor ?? track;
 
     return (
       <View style={[styles.wrap, style]} testID={testID}>
@@ -49,11 +49,17 @@ const StatBarComponent: React.FC<StatBarProps> = (props) => {
           </Text>
         </View>
 
-        <View style={[styles.track, { height, borderRadius: radius, backgroundColor: remainder }]}>
-          <View
-            style={{ width: `${leftPercent}%`, height, borderRadius: radius, backgroundColor: activeLeft }}
-          />
-        </View>
+        <Meter
+          value={leftPercent}
+          max={100}
+          height={height}
+          radius={radius}
+          fill={leftColor ?? fillColor}
+          track={rightColor ?? trackColor}
+          accessibilityLabel={label}
+          valueText={`${Math.round(leftPercent)}%`}
+          style={styles.track}
+        />
 
         <View style={styles.footerRow}>
           <Text style={[styles.footerValue, { color: colors.textTertiary }]} numberOfLines={1}>
@@ -68,7 +74,6 @@ const StatBarComponent: React.FC<StatBarProps> = (props) => {
   }
 
   const { value, max, minLabel, maxLabel } = props;
-  const ratio = max > 0 ? clampPercent((value / max) * 100) : 0;
   const hasFooter = minLabel != null || maxLabel != null;
 
   return (
@@ -80,20 +85,16 @@ const StatBarComponent: React.FC<StatBarProps> = (props) => {
         {icon != null && <View style={styles.icon}>{icon}</View>}
       </View>
 
-      <View
-        style={[styles.track, { height, borderRadius: radius, backgroundColor: track }]}
-        accessibilityRole="progressbar"
-        // The FLAT `aria-value*` props, not the `accessibilityValue` object:
-        // react-native-web has no handling for the latter at all, so the bar
-        // announced its role and no value whatsoever. React Native folds these
-        // three back into `accessibilityValue`, so native keeps what it had.
-        aria-valuemin={0}
-        aria-valuemax={max}
-        aria-valuenow={value}
+      <Meter
+        value={value}
+        max={max}
+        height={height}
+        radius={radius}
+        fill={fillColor}
+        track={trackColor}
         accessibilityLabel={label}
-      >
-        <View style={{ width: `${ratio}%`, height, borderRadius: radius, backgroundColor: fill }} />
-      </View>
+        style={styles.track}
+      />
 
       {hasFooter && (
         <View style={styles.footerRow}>
@@ -120,7 +121,7 @@ const styles = StyleSheet.create({
   label: { flexShrink: 1, fontSize: 13, fontWeight: '500' },
   percent: { fontSize: 14, fontWeight: '700', letterSpacing: -0.2, fontVariant: ['tabular-nums'] },
   icon: { marginLeft: 8 },
-  track: { width: '100%', overflow: 'hidden', flexDirection: 'row', borderCurve: 'continuous' },
+  track: { width: '100%', flexDirection: 'row', borderCurve: 'continuous' },
   footerRow: {
     flexDirection: 'row',
     alignItems: 'center',

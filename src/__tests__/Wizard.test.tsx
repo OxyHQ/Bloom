@@ -11,6 +11,7 @@ import { createRoot, type Root } from 'react-dom/client';
 
 jest.mock('react-native', () => jest.requireActual('react-native-web'));
 
+import { resolveMeterColors } from '../stat-bar';
 import { BloomThemeProvider } from '../theme/BloomThemeProvider';
 import type { Theme } from '../theme/types';
 import { useTheme } from '../theme/use-theme';
@@ -89,7 +90,16 @@ describe('WizardProgress', () => {
     expect(byTestId('wp-segment-2-fill').style.width).toBe('25%');
     expect(byTestId('wp-segment-3-fill').style.width).toBe('0%');
     expect(byTestId('wp-segment-0').style.height).toBe('4px');
-    expect(normalise(byTestId('wp-segment-0-fill').style.backgroundColor)).toBe(normalise(theme.colors.text));
+    // The fill is the METER's default — the accent, not `colors.text`. A
+    // near-black segment read as ink rather than as a measurement, and it was
+    // one of three bars in the tree painting itself that way; asserted against
+    // `resolveMeterColors` so the two cannot drift apart silently.
+    const meter = resolveMeterColors(theme);
+    expect(normalise(byTestId('wp-segment-0-fill').style.backgroundColor)).toBe(normalise(meter.fill));
+    expect(normalise(byTestId('wp-segment-0').style.backgroundColor)).toBe(normalise(meter.track));
+    // Each segment is DECORATIVE: the whole bar carries the one progressbar.
+    expect(byTestId('wp-segment-0').getAttribute('role')).toBeNull();
+    expect(byTestId('wp-segment-0').getAttribute('aria-hidden')).toBe('true');
   });
 
   it('is a named progressbar over the whole flow', () => {

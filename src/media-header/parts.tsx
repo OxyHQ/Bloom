@@ -8,6 +8,7 @@ import { RiHeart3Fill } from '../icons/remix/RiHeart3Fill';
 import { RiMusic2Line } from '../icons/remix/RiMusic2Line';
 import { useImageResolver } from '../image-resolver/context';
 import { useContainerWidth } from '../hooks/use-container-width';
+import { Meter } from '../stat-bar';
 import { useInteractiveWebCss } from '../styles/interactive-web-css';
 import type { WebCssStyle } from '../styles/web-view-style';
 import { useTheme } from '../theme/use-theme';
@@ -355,7 +356,7 @@ export function MetaLine({
   );
 }
 
-/** A thin determinate bar with a progressbar role. */
+/** A thin determinate `Meter`. */
 export function ProgressBar({
   value,
   label,
@@ -373,17 +374,17 @@ export function ProgressBar({
 }) {
   const pct = Math.round(clamp01(value) * 100);
   return (
-    <View
-      role="progressbar"
+    <Meter
+      value={pct}
+      max={100}
+      height={4}
+      width={width}
+      fill={fill}
+      track={rail}
       accessibilityLabel={label}
-      aria-valuemin={0}
-      aria-valuemax={100}
-      aria-valuenow={pct}
-      style={{ width: width ?? '100%', height: 4, borderRadius: 2, backgroundColor: rail, overflow: 'hidden' }}
+      valueText={`${pct}%`}
       testID={testID}
-    >
-      <View style={{ width: `${pct}%`, height: 4, borderRadius: 2, backgroundColor: fill }} />
-    </View>
+    />
   );
 }
 

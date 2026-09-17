@@ -67,7 +67,7 @@ export function resolveCreatorStudioPaint(theme: Theme): CreatorStudioPaint {
     text: theme.colors.text,
     textSecondary: dark ? n[400] : n[500],
     textTertiary: dark ? n[500] : n[400],
-    track: dark ? n[800] : n[200],
+    track: dark ? n[700] : n[200],
     ring: dark ? n[700] : n[300],
     placeholder: dark ? n[800] : n[200],
     placeholderIcon: dark ? n[500] : n[400],

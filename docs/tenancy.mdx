@@ -127,8 +127,10 @@ tint halo and a semibold title, `upcoming` draws a hollow marker and secondary t
 - The timeline is a `list` of `listitem`s; each marker is an `img` named by its state
   ("Done", "In progress", "Not yet" — `stateLabels`), so the state is announced before
   the title.
-- The lease bar is a `progressbar` named by `periodLabel`, with flat `aria-value*`
-  (0–100) and `aria-valuetext` from `remainingLabel`.
+- The lease bar is a [`Meter`](/docs/stat-bar) — the shared neutral track and the
+  ACCENT fill; it used to fill with the text colour, a near-black bar reading as ink
+  rather than as a measurement. It is a `progressbar` named by `periodLabel`, with
+  flat `aria-value*` (0–100) and `aria-valuetext` from `remainingLabel`.
 - Icon-only buttons are named after what they act on: "Download receipt for August
   2026" (`receiptLabel`), "View Tenancy agreement.pdf" (`viewLabel`,
   `downloadLabel`). A photo is "Pipe under the sink, photo 1 of 3" (`photoLabel`).
