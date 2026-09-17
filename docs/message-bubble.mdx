@@ -1,0 +1,279 @@
+---
+title: Message Bubble
+description: The transcript — bubbles, runs, reactions, replies, separators and the service rows a person-to-person chat repeats on every screen.
+order: 64
+---
+
+# Message Bubble
+
+```tsx
+import {
+  CallSummaryRow,
+  DateSeparator,
+  MessageBubble,
+  MessageGroup,
+  MessageList,
+  SystemMessage,
+  TypingBubble,
+  UnreadSeparator,
+  bubblePositions,
+  groupMessages,
+  senderNameColor,
+} from '@oxy.so/bloom/message-bubble';
+```
+
+The bubble SHELL, its text and its metadata. Rich media — images, voice notes,
+files, polls — is a slot (`media`), not this family's job: pass whatever draws
+it and the bubble clips it to its own radius.
+
+Everything is a prop. No component here reads the clock: `"12:41"`,
+`"Yesterday"`, `"4 min"` and `"12.4K"` arrive already formatted, because what
+counts as "today" depends on a timezone and a locale the component cannot see.
+
+## `MessageBubble`
+
+```tsx
+<MessageBubble direction="incoming" text="Doors open at half six." time="18:02" />
+<MessageBubble direction="outgoing" text="On my way." time="18:04" status="read" />
+```
+
+| prop                      | decides                                                                      |
+| ------------------------- | ---------------------------------------------------------------------------- |
+| `direction`               | `'incoming'` a neutral surface · `'outgoing'` the theme accent fill           |
+| `position`                | `'single' \| 'first' \| 'middle' \| 'last'` — which corner is cut             |
+| `text` / `children`       | the body; `children` wins                                                     |
+| `media`                   | the rich-media slot, edge to edge inside the radius                           |
+| `metaOverlay`             | float the meta over the media on a translucent pill (default on media-only)   |
+| `tail`                    | the SVG notch on the cut corner — OFF by default                              |
+| `senderName`              | the coloured name line (a group; `MessageGroup` normally draws it instead)    |
+| `senderColorSeed`         | what `senderNameColor` hashes; defaults to `senderName`                       |
+| `replyTo` / `onPressReply`| the quote block, and what pressing it does                                    |
+| `forwardedFrom`           | the "Forwarded from …" line                                                   |
+| `editedLabel`             | the "edited" mark in the meta row                                             |
+| `time` / `status`         | the meta row: a pre-formatted time and the delivery ticks                      |
+| `channelViews` / `authorSignature` | a channel post's view count and signature                           |
+| `reactions`               | the pills under the bubble; `onToggleReaction`, `onAddReaction`               |
+| `pending` `failed` `deleted` `selected` `highlighted` | the five states                            |
+| `onPress` `onLongPress` `onContextMenu` `onDoublePress` `onSwipeReply` | the gestures              |
+| `maxWidth`                | default `'78%'`                                                               |
+| `labels`                  | every English string this family draws                                        |
+
+### Colour
+
+`outgoing` is the theme accent. The text on it is chosen by CONTRAST rather
+than assumed: `primaryForeground`, white or near-black, whichever clears AA over
+the accent this preset resolved to. The meta row inside it is the most
+transparent mix of that on-colour that STILL clears AA — quiet, but never the
+2.8:1 a flat 60% opacity gives you on a mid-blue.
+
+`incoming` is the card in light mode and neutral-800 in dark, with a hairline in
+light mode only: a card on a near-white page has no edge of its own, a
+neutral-800 bubble on a neutral-950 page already does.
+
+### Grouping geometry
+
+Radius 18 on every corner, except ONE: the last bubble of a run cuts its own
+side to 4. `'first'` and `'middle'` stay fully round, which is what makes a run
+read as one block with a single spout instead of a column of identical
+lozenges. `MessageGroup` and `MessageList` compute `position` for you;
+`bubblePositions(count)` is exported for a list that renders its own rows.
+
+`tail` draws the notch on that corner. It is off by default and drawn OUTSIDE
+the bubble box, so turning it on re-lays out nothing.
+
+### The meta row tucks
+
+Time, "edited", views and the ticks sit bottom-right INSIDE the bubble, on the
+same line as the last words when they fit and on a line of their own when they
+do not. It is a wrapping flex row with an `auto` left margin on the meta — the
+one spelling of "float after the text" that Yoga and the browser agree on. On a
+media-only bubble it becomes a translucent pill over the media (`metaOverlay`).
+
+### States
+
+```tsx
+<MessageBubble direction="outgoing" text="Queued." status="sending" pending />
+<MessageBubble direction="outgoing" text="Did not send." failed onRetry={retry} />
+<MessageBubble direction="incoming" deleted />
+<MessageBubble direction="incoming" text="…" selected onPress={toggle} />
+<MessageBubble direction="incoming" text="…" highlighted />
+```
+
+`pending` dims. `failed` washes the fill towards the error colour and offers
+`onRetry` beside the bubble. `deleted` replaces everything with one italic line
+and no meta. `selected` bands the whole ROW — selection is a property of the
+message and the band has to reach the avatar gutter — and `highlighted` flashes
+that same band once, which is what a jump-to-message lands on. Under reduced
+motion the flash appears without animating.
+
+### Interaction
+
+`onPress`, `onLongPress` and `onDoublePress` work on both platforms;
+`onContextMenu` is web only (right-click, defaulted for you) and `onSwipeReply`
+is native only. That last split is deliberate: on web the same horizontal drag
+is text selection, and a pan handler that won that race would take away the one
+thing people do with a transcript in a browser.
+
+`onDoublePress` suppresses the second `onPress` of a pair, so "double-press to
+react" does not also toggle selection twice.
+
+### Entities
+
+`text` is scanned for links, `@mentions` and `#hashtags`. Without
+`renderEntity` they are simply painted in the accent; with it you decide:
+
+```tsx
+<MessageBubble
+  direction="incoming"
+  text="Ping @marcel about #gear"
+  renderEntity={(entity) =>
+    entity.type === 'mention' ? <Mention handle={entity.text} /> : undefined
+  }
+/>
+```
+
+Return `undefined` for a span you want the default paint for. `messageEntities`
+and `splitMessageText` are exported and pure if you want the ranges yourself.
+
+## `MessageGroup`
+
+```tsx
+<MessageGroup direction="incoming" senderName="Ana Restrepo" avatarSource={ana}>
+  <MessageBubble direction="incoming" text="First." />
+  <MessageBubble direction="incoming" text="Second." time="12:41" />
+</MessageGroup>
+```
+
+A run of consecutive messages from one sender. It computes each child's
+`position`, puts the avatar at the run's BOTTOM edge (beside the last bubble,
+the one the tail hangs off) and draws the sender name once above the first.
+Spacing is 2px inside a run and 8px between runs, so the block reads as one
+utterance and the gap reads as a turn.
+
+`showAvatar={false}` in a 1:1 chat — an avatar repeated beside every message of
+a two-person conversation is noise.
+
+### `senderNameColor(seed, theme)`
+
+The per-sender hue, exported. It hashes the seed onto the eight chart hues,
+which rotate with the theme preset, then walks that hue's ramp (600 → 900 in
+light, 400 → 100 in dark) to the first stop that clears AA over the incoming
+bubble. A single stop per mode is not enough: the hues are not equally light,
+and the yellow at 400 lands at 2.8:1 on a neutral-800 bubble where the indigo
+clears comfortably.
+
+Deterministic: same seed, same theme, same colour. Seed on a stable id
+(`senderId`), not on a display name someone can change.
+
+**Eight hues means collisions.** Two seeds in a group land on the same hue
+roughly one time in eight — the `Group conversation` story shows exactly that,
+with two of its three speakers in the same green. If a chat has to guarantee
+distinct colours, assign them yourself and pass `senderColor`.
+
+## `MessageList`
+
+```tsx
+<MessageList items={messages} showAvatars={false} showSenderNames={false} />
+```
+
+A plain vertical stack — date separators, the unread rule, service rows and runs
+— from one array. **Not virtualised**, and that is the contract: right for a
+thread you have just opened, wrong for a year of history.
+
+For a long history, render the parts yourself:
+
+```tsx
+const entries = useMemo(() => groupMessages(items), [items]);
+
+<FlatList
+  data={entries}
+  keyExtractor={(entry) => entry.key}
+  renderItem={({ item: entry }) =>
+    entry.kind === 'date' ? <DateSeparator label={entry.label} />
+    : entry.kind === 'unread' ? <UnreadSeparator />
+    : entry.kind === 'system' ? <SystemMessage text={entry.item.system} />
+    : <MessageGroup direction={entry.direction} senderName={entry.messages[0]?.item.senderName}>
+        {entry.messages.map(({ item, position }) => (
+          <MessageBubble key={item.id} {...item} position={position} />
+        ))}
+      </MessageGroup>
+  }
+/>
+```
+
+Every one of those is a standalone export that takes props and holds no list
+state.
+
+### `groupMessages(items)`
+
+Pure, exported. It inserts a `DateSeparator` when `dateKey` changes, an
+`UnreadSeparator` above an item with `unreadBefore`, and breaks a run on a
+change of `senderId`, a change of `direction`, or anything BETWEEN two messages
+— a day, the read marker, a service line. That last one matters: "Ana joined the
+group" between two of Ana's messages is a break, and a grouper that ignored it
+would round the corners of a run that no longer looks like one.
+
+## Separators and service rows
+
+```tsx
+<DateSeparator label="Today" />
+<UnreadSeparator />
+<SystemMessage text="Ana Restrepo joined the group" />
+<SystemMessage text="You pinned a message" icon={<RiPushpinLine width={12} height={12} fill={color} />} />
+<CallSummaryRow direction="incoming" outcome="missed" title="Missed voice call" time="09:41" />
+<TypingBubble senderName="Ana Restrepo" avatarSource={ana} label="Ana is typing…" />
+```
+
+`CallSummaryRow` splits direction from outcome on purpose: the ARROW says which
+way the call went and the COLOUR says whether it connected, because a missed
+incoming call and a missed outgoing call are different events and one red glyph
+for both would lose that.
+
+`TypingBubble` draws no text, so nothing can name it by contents — `label`
+(default "Typing…") is its accessible name, and an empty string is not one.
+
+## Accessibility
+
+The bubble is ONE node with a composed name: sender, text, time, then what a
+sighted reader gets from colour and a tick glyph — "Read", "Not sent",
+"Selected". The ticks inside it are hidden (`label=""`), because announcing the
+delivery state twice per message is the price of announcing it in words at all.
+
+With `selected` defined the bubble becomes a TOGGLE and carries both spellings —
+`aria-pressed` for web and `accessibilityState.selected` for native — and so
+does every reaction pill. React Native has no pressed state and react-native-web
+ignores `accessibilityState`; missing either half is silent on one platform.
+
+Pass your own `accessibilityLabel` to replace the composed one entirely.
+
+## Reaction pills
+
+```tsx
+<MessageBubble
+  direction="outgoing"
+  text="Booked it."
+  reactions={[{ emoji: '🎸', count: 2, mine: true }]}
+  onToggleReaction={(emoji) => toggle(emoji)}
+  onAddReaction={openPicker}
+/>
+```
+
+They overlap the bubble's bottom edge by 8px, which is what makes them read as
+attached to the message rather than as a row of their own, and they wrap. `mine`
+paints the pill in the accent and flips its pressed state. `onAddReaction` adds
+the `+` pill at the end; leave it out and there is none.
+
+## Localisation
+
+Every English string is in `labels`:
+
+```tsx
+<MessageList
+  items={items}
+  labels={{ deleted: 'Se eliminó este mensaje', forwardedFrom: 'Reenviado de' }}
+/>
+```
+
+`DateSeparator`, `UnreadSeparator`, `SystemMessage`, `CallSummaryRow` and
+`TypingBubble` take their text directly, since every string they draw is one
+the app already had to format.
