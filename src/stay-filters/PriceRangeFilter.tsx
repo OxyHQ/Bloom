@@ -1,10 +1,10 @@
-import React, { memo, useCallback, useState } from 'react';
+import React, { memo, useCallback, useMemo } from 'react';
 import { View } from 'react-native';
 
 import { RangeSlider } from '../slider';
-import { TextFieldInput } from '../text-field';
 import { PriceHistogram } from './PriceHistogram';
-import type { PriceRangeFilterProps } from './types';
+import { parseAmountInput, RangeFields, snapToStep } from './RangeFields';
+import type { PriceRangeFilterProps, PriceScale } from './types';
 
 /**
  * A price range: the histogram, a `RangeSlider` whose rail meets the bars'
@@ -23,25 +23,59 @@ import type { PriceRangeFilterProps } from './types';
  * to its own side of the range (the minimum can not pass the maximum), snapped
  * to `step`, and committed through `onValueChange` + `onValueCommit`. A draft
  * that does not parse restores the committed value.
+ *
+ * SALE PRICES: `scale="log"`. A linear slider over 50,000 – 2,000,000 spends
+ * nearly all of its width above the prices most people search, so the log
+ * scale moves by RATIO instead — equal slider distance is an equal percentage
+ * change. The slider then runs over {@link PRICE_SCALE_POSITIONS} positions,
+ * the buckets split that POSITION span evenly (so the app buckets its counts
+ * in log space too), and every value the slider reports is snapped to `step`
+ * in price space (pass a round step such as 5,000). With `min` above 0 the
+ * scale is geometric; with `min` of 0 it is offset by one (`log(1 + p)`), so 0
+ * stays reachable.
  */
 
-function clamp(v: number, lo: number, hi: number): number {
-  return Math.min(hi, Math.max(lo, v));
-}
-
-function snap(v: number, min: number, step: number): number {
-  if (step <= 0) return v;
-  const snapped = min + Math.round((v - min) / step) * step;
-  const decimals = (String(step).split('.')[1] ?? '').length;
-  return decimals > 0 ? Number(snapped.toFixed(decimals)) : snapped;
-}
-
 /** Parse a typed price ("$1,200" → 1200); `null` when there is no number in it. */
-export function parsePriceInput(text: string): number | null {
-  const cleaned = text.replace(/[^0-9.]/g, '');
-  if (cleaned === '' || cleaned === '.') return null;
-  const n = Number.parseFloat(cleaned);
-  return Number.isFinite(n) ? n : null;
+export const parsePriceInput = parseAmountInput;
+
+/** How many slider positions a `log` scale runs over. */
+export const PRICE_SCALE_POSITIONS = 200;
+
+export interface PriceScaleMapping {
+  /** The slider's own bounds. */
+  sliderMin: number;
+  sliderMax: number;
+  /** A price → its slider position. */
+  toPosition: (price: number) => number;
+  /** A slider position → its price, snapped to `step` and kept in `min`..`max`. */
+  toPrice: (position: number) => number;
+}
+
+/** The price ↔ slider mapping for a scale. Pure; exported for the tests. */
+export function priceScaleMapping(scale: PriceScale, min: number, max: number, step: number): PriceScaleMapping {
+  if (scale !== 'log' || max <= min) {
+    return { sliderMin: min, sliderMax: max, toPosition: (p) => p, toPrice: (p) => p };
+  }
+  const n = PRICE_SCALE_POSITIONS;
+  const clampPrice = (p: number) => Math.min(max, Math.max(min, p));
+  const geometric = min > 0;
+  const span = geometric ? Math.log(max / min) : Math.log(max - min + 1);
+  return {
+    sliderMin: 0,
+    sliderMax: n,
+    toPosition: (price) => {
+      const p = clampPrice(price);
+      const t = geometric ? Math.log(p / min) / span : Math.log(p - min + 1) / span;
+      return Math.round(t * n);
+    },
+    toPrice: (position) => {
+      if (position <= 0) return min;
+      if (position >= n) return max;
+      const t = position / n;
+      const raw = geometric ? min * Math.exp(t * span) : min + Math.exp(t * span) - 1;
+      return clampPrice(snapToStep(raw, min, step));
+    },
+  };
 }
 
 const RAIL_OFFSET = 13; // (32px track region − 6px rail) / 2
@@ -55,6 +89,7 @@ function PriceRangeFilterComponent({
   onValueCommit,
   formatPrice = String,
   step = 1,
+  scale = 'linear',
   minLabel = 'Minimum',
   maxLabel = 'Maximum',
   accessibilityLabel = 'Price range',
@@ -63,66 +98,56 @@ function PriceRangeFilterComponent({
   style,
   testID,
 }: PriceRangeFilterProps) {
-  const [draft, setDraft] = useState<{ index: 0 | 1; text: string } | null>(null);
   const hasHistogram = buckets != null && buckets.length > 0;
+  const mapping = useMemo(() => priceScaleMapping(scale, min, max, step), [scale, min, max, step]);
+  const linear = scale !== 'log';
+  const positions: [number, number] = [mapping.toPosition(value[0]), mapping.toPosition(value[1])];
 
-  const commitDraft = useCallback(() => {
-    if (!draft) return;
-    const parsed = parsePriceInput(draft.text);
-    setDraft(null);
-    if (parsed == null) return;
-    const [low, high] = value;
-    const next: [number, number] =
-      draft.index === 0
-        ? [clamp(snap(parsed, min, step), min, high), high]
-        : [low, clamp(snap(parsed, min, step), low, max)];
-    if (next[0] !== low || next[1] !== high) onValueChange(next);
-    onValueCommit?.(next);
-  }, [draft, value, min, max, step, onValueChange, onValueCommit]);
+  const fromPositions = useCallback(
+    ([a, b]: [number, number]): [number, number] => {
+      const low = mapping.toPrice(a);
+      return [low, Math.max(low, mapping.toPrice(b))];
+    },
+    [mapping],
+  );
 
-  const field = (index: 0 | 1) => {
-    const label = index === 0 ? minLabel : maxLabel;
-    const editing = draft?.index === index;
-    return (
-      <View style={{ flex: 1, minWidth: 0 }}>
-        <TextFieldInput
-          floatingLabel
-          label={label}
-          accessibilityLabel={label}
-          value={editing ? draft.text : formatPrice(value[index])}
-          onChangeText={(text) => setDraft({ index, text })}
-          onFocus={() => setDraft({ index, text: String(value[index]) })}
-          onBlur={commitDraft}
-          onSubmitEditing={commitDraft}
-          keyboardType="numeric"
-          inputMode="numeric"
-          returnKeyType="done"
-          disabled={disabled}
-          testID={testID ? `${testID}-${index === 0 ? 'min' : 'max'}` : undefined}
-        />
-      </View>
-    );
-  };
+  const onSlide = useCallback(
+    (next: [number, number]) => onValueChange(linear ? next : fromPositions(next)),
+    [linear, fromPositions, onValueChange],
+  );
+  const onSlideEnd = useMemo(
+    () => (onValueCommit ? (next: [number, number]) => onValueCommit(linear ? next : fromPositions(next)) : undefined),
+    [linear, fromPositions, onValueCommit],
+  );
+
+  const onFieldCommit = useCallback(
+    ([low, high]: [number | null, number | null]) => {
+      const next: [number, number] = [low ?? min, high ?? max];
+      if (next[0] !== value[0] || next[1] !== value[1]) onValueChange(next);
+      onValueCommit?.(next);
+    },
+    [min, max, value, onValueChange, onValueCommit],
+  );
 
   return (
     <View testID={testID} style={[{ width: '100%' }, style]}>
       {hasHistogram ? (
         <PriceHistogram
           buckets={buckets}
-          min={min}
-          max={max}
-          value={value}
+          min={mapping.sliderMin}
+          max={mapping.sliderMax}
+          value={positions}
           height={histogramHeight}
           testID={testID ? `${testID}-histogram` : undefined}
         />
       ) : null}
       <RangeSlider
-        value={value}
-        onValueChange={onValueChange}
-        onSlidingComplete={onValueCommit}
-        min={min}
-        max={max}
-        step={step}
+        value={positions}
+        onValueChange={onSlide}
+        onSlidingComplete={onSlideEnd}
+        min={mapping.sliderMin}
+        max={mapping.sliderMax}
+        step={linear ? step : 1}
         disabled={disabled}
         showTooltip={false}
         accessibilityLabel={accessibilityLabel}
@@ -130,9 +155,18 @@ function PriceRangeFilterComponent({
         testID={testID ? `${testID}-slider` : undefined}
         style={hasHistogram ? { marginTop: -RAIL_OFFSET } : undefined}
       />
-      <View style={{ flexDirection: 'row', gap: 16, marginTop: 24 }}>
-        {field(0)}
-        {field(1)}
+      <View style={{ marginTop: 24 }}>
+        <RangeFields
+          value={value}
+          onCommit={onFieldCommit}
+          format={formatPrice}
+          labels={[minLabel, maxLabel]}
+          min={min}
+          max={max}
+          step={step}
+          disabled={disabled}
+          testID={testID}
+        />
       </View>
     </View>
   );

@@ -19,7 +19,13 @@ import type { Theme } from '../theme/types';
 import { useTheme } from '../theme/use-theme';
 import {
   AmenityFilter,
+  AreaRangeFilter,
+  AvailabilityFilter,
   CountFilter,
+  EnergyRatingFilter,
+  FeatureFilter,
+  FloorFilter,
+  PropertyTypeFilter,
   FilterFooter,
   FilterSection,
   FilterTriggerButton,
@@ -30,7 +36,10 @@ import {
   ToggleChipGroup,
 } from '../stay-filters';
 import { histogramSelection } from '../stay-filters/PriceHistogram';
-import { parsePriceInput } from '../stay-filters/PriceRangeFilter';
+import { parsePriceInput, priceScaleMapping, PRICE_SCALE_POSITIONS } from '../stay-filters/PriceRangeFilter';
+import { contrastRatio, resolveEnergyRatingPaint } from '../stay-filters/EnergyRatingFilter';
+import { commitRangeField } from '../stay-filters/RangeFields';
+import type { EnergyRating, HousingFeature } from '../stay-filters';
 
 (globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
 
@@ -455,5 +464,225 @@ describe('FilterTriggerButton', () => {
     mount(<FilterTriggerButton count={3} testID="t" />);
     expect(byTestId('t').getAttribute('aria-label')).toBe('Filters, 3 applied');
     expect(container.textContent).toContain('3');
+  });
+});
+
+// ---------------------------------------------------------------------------
+//  Housing filters
+// ---------------------------------------------------------------------------
+
+describe('PriceRangeFilter scale="log"', () => {
+  it('maps prices by ratio: the geometric midpoint sits mid-slider, ends are exact, steps snap', () => {
+    const m = priceScaleMapping('log', 50_000, 2_000_000, 5000);
+    expect([m.sliderMin, m.sliderMax]).toEqual([0, PRICE_SCALE_POSITIONS]);
+    expect(m.toPrice(0)).toBe(50_000);
+    expect(m.toPrice(PRICE_SCALE_POSITIONS)).toBe(2_000_000);
+    // sqrt(50k × 2M) ≈ 316,228 → snapped to 5,000
+    expect(m.toPrice(PRICE_SCALE_POSITIONS / 2)).toBe(315_000);
+    expect(m.toPosition(316_228)).toBe(PRICE_SCALE_POSITIONS / 2);
+    expect(m.toPrice(m.toPosition(600_000)) % 5000).toBe(0);
+  });
+
+  it('offsets by one when min is 0, and stays linear by default', () => {
+    const m = priceScaleMapping('log', 0, 1000, 1);
+    expect(m.toPrice(0)).toBe(0);
+    expect(m.toPrice(PRICE_SCALE_POSITIONS)).toBe(1000);
+    expect(m.toPrice(PRICE_SCALE_POSITIONS / 2)).toBe(31);
+    const linear = priceScaleMapping('linear', 0, 1000, 1);
+    expect([linear.sliderMin, linear.sliderMax, linear.toPrice(400)]).toEqual([0, 1000, 400]);
+  });
+
+  it('drives the slider in positions and keeps the fields in prices', () => {
+    function H() {
+      const [v, setV] = useState<[number, number]>([200_000, 800_000]);
+      return (
+        <PriceRangeFilter scale="log" step={5000} min={50_000} max={2_000_000} value={v} onValueChange={setV} formatPrice={(n) => `€${n}`} testID="p" />
+      );
+    }
+    mount(<H />);
+    const thumbs = Array.from(byTestId('p-slider').querySelectorAll('[role="slider"]'));
+    expect(thumbs[0]?.getAttribute('aria-valuemax')).not.toBeNull();
+    expect(thumbs.map((t) => t.getAttribute('aria-valuenow'))).toEqual(['75', '150']);
+    expect((byTestId('p-min') as HTMLInputElement).value).toBe('€200000');
+    typeInto('p-min', '1,000,000');
+    expect((byTestId('p-min') as HTMLInputElement).value).toBe('€800000');
+  });
+});
+
+describe('range fields', () => {
+  it('snaps and clamps a typed value to its own side, open ends allowed', () => {
+    expect(commitRangeField([null, 100], 0, 130, { min: 0, step: 5 })).toEqual([100, 100]);
+    expect(commitRangeField([40, null], 1, 22, { min: 0, step: 5 })).toEqual([40, 40]);
+    expect(commitRangeField([null, null], 1, 72, { min: 0, max: 500, step: 5 })).toEqual([null, 70]);
+  });
+});
+
+describe('AreaRangeFilter', () => {
+  it('is a named group of m² fields; an emptied field commits null; the slider is optional', () => {
+    const onChange = jest.fn();
+    function H({ slider }: { slider?: boolean }) {
+      const [v, setV] = useState<[number | null, number | null]>([60, null]);
+      return (
+        <AreaRangeFilter
+          slider={slider}
+          value={v}
+          onValueChange={(n) => {
+            onChange(n);
+            setV(n);
+          }}
+          testID="a"
+        />
+      );
+    }
+    mount(<H />);
+    expect(byTestId('a').getAttribute('role')).toBe('group');
+    expect(byTestId('a').getAttribute('aria-label')).toBe('Area');
+    expect(maybeTestId('a-slider')).toBeNull();
+    expect((byTestId('a-min') as HTMLInputElement).value).toBe('60 m²');
+    expect((byTestId('a-max') as HTMLInputElement).value).toBe('');
+    typeInto('a-max', '121');
+    expect(onChange).toHaveBeenLastCalledWith([60, 120]);
+    typeInto('a-min', '');
+    expect(onChange).toHaveBeenLastCalledWith([null, 120]);
+
+    // Same component, so the state carries over: an open end rests on its bound.
+    mount(<H slider />);
+    const thumbs = Array.from(byTestId('a-slider').querySelectorAll('[role="slider"]'));
+    expect(thumbs.map((t) => t.getAttribute('aria-valuenow'))).toEqual(['0', '120']);
+  });
+});
+
+describe('PropertyTypeFilter', () => {
+  it('draws the large tiles as a group of aria-pressed toggles', () => {
+    const onChange = jest.fn();
+    mount(<PropertyTypeFilter value={['room']} onValueChange={onChange} columns={2} testID="pt" />);
+    expect(byTestId('pt').getAttribute('aria-label')).toBe('Property type');
+    expect(byTestId('pt-room').getAttribute('aria-pressed')).toBe('true');
+    expect(byTestId('pt-room').style.minHeight).toBe('100px');
+    expect(byTestId('pt-apartment').parentElement?.children).toHaveLength(2);
+    press('pt-hostel');
+    expect(onChange).toHaveBeenLastCalledWith(['room', 'hostel']);
+  });
+});
+
+describe('FeatureFilter', () => {
+  it('chips: the eleven features as aria-pressed toggles with icons', () => {
+    const onChange = jest.fn();
+    mount(<FeatureFilter<HousingFeature> value={['pool']} onValueChange={onChange} labels={{ pets: 'Pet friendly' }} testID="f" />);
+    const buttons = Array.from(byTestId('f').querySelectorAll('[role="button"]'));
+    expect(buttons.map((b) => b.textContent)).toEqual([
+      'Elevator', 'Parking', 'Terrace', 'Garden', 'Pool', 'Furnished', 'Pet friendly',
+      'Air conditioning', 'Heating', 'Accessible', 'Storage room',
+    ]);
+    expect(byTestId('f').getAttribute('aria-label')).toBe('Features');
+    expect(byTestId('f-pool').getAttribute('aria-pressed')).toBe('true');
+    expect(byTestId('f-elevator').querySelector('svg')).not.toBeNull();
+    press('f-elevator');
+    expect(onChange).toHaveBeenLastCalledWith(['elevator', 'pool']);
+  });
+
+  it('checkboxes: checkbox roles with aria-checked, reporting in option order', () => {
+    const onChange = jest.fn();
+    mount(<FeatureFilter variant="checkboxes" value={['heating']} onValueChange={onChange} testID="f" />);
+    const boxes = Array.from(byTestId('f').querySelectorAll('[role="checkbox"]'));
+    expect(boxes).toHaveLength(11);
+    const heating = boxes.find((b) => b.getAttribute('aria-checked') === 'true');
+    expect(heating).toBeDefined();
+    act(() => {
+      (boxes[0] as HTMLElement).click();
+    });
+    expect(onChange).toHaveBeenLastCalledWith(['elevator', 'heating']);
+  });
+});
+
+describe('EnergyRatingFilter', () => {
+  it('paints A→G from success to error with a legible letter', () => {
+    mount(<EnergyRatingFilter value={null} onValueChange={() => {}} />);
+    const paint = resolveEnergyRatingPaint(theme);
+    expect(paint.A.fill).toBe(theme.colors.success);
+    expect(paint.D.fill).toBe(theme.colors.warning);
+    expect(paint.G.fill).toBe(theme.colors.error);
+    for (const r of ['A', 'B', 'C', 'D', 'E', 'F', 'G'] as EnergyRating[]) {
+      expect(contrastRatio(paint[r].fill, paint[r].foreground)).toBeGreaterThanOrEqual(3);
+    }
+  });
+
+  it('"and better": the chosen letter and everything above it stay coloured; pressing it again clears', () => {
+    const onChange = jest.fn();
+    function H() {
+      const [v, setV] = useState<EnergyRating | null>(null);
+      return (
+        <EnergyRatingFilter
+          value={v}
+          onValueChange={(n) => {
+            onChange(n);
+            setV(n);
+          }}
+          testID="e"
+        />
+      );
+    }
+    mount(<H />);
+    const group = container.querySelector('[role="radiogroup"]') as HTMLElement;
+    expect(group.getAttribute('aria-label')).toBe('Energy rating');
+    expect(byTestId('e-summary').textContent).toBe('Any rating');
+    expect(byTestId('e-C').getAttribute('aria-label')).toBe('C and better');
+    expect(byTestId('e-A').getAttribute('aria-label')).toBe('A only');
+    press('e-C');
+    expect(onChange).toHaveBeenLastCalledWith('C');
+    expect(byTestId('e-C').getAttribute('aria-checked')).toBe('true');
+    expect(byTestId('e-B').getAttribute('aria-checked')).toBe('false');
+    expect(byTestId('e-summary').textContent).toBe('C and better');
+    const paint = resolveEnergyRatingPaint(theme);
+    expect(bg(byTestId('e-B'))).toBe(normaliseBg(paint.B.fill));
+    expect(bg(byTestId('e-D'))).not.toBe(normaliseBg(paint.D.fill));
+    expect(byTestId('e-C').style.borderTopColor).not.toBe('transparent');
+    press('e-C');
+    expect(onChange).toHaveBeenLastCalledWith(null);
+  });
+});
+
+describe('AvailabilityFilter', () => {
+  it('names the switch; "available now" disables the date picker', () => {
+    const onNow = jest.fn();
+    function H() {
+      const [now, setNow] = useState(false);
+      return (
+        <AvailabilityFilter
+          availableNow={now}
+          onAvailableNowChange={(n) => {
+            onNow(n);
+            setNow(n);
+          }}
+          date={null}
+          onDateChange={() => {}}
+          testID="av"
+        />
+      );
+    }
+    mount(<H />);
+    const sw = container.querySelector('[role="switch"]') as HTMLElement;
+    expect(sw.getAttribute('aria-label')).toBe('Available now');
+    expect(container.textContent).toContain('Available from');
+    const picker = byTestId('av-date');
+    expect(picker.getAttribute('aria-disabled')).not.toBe('true');
+    act(() => {
+      sw.click();
+    });
+    expect(onNow).toHaveBeenLastCalledWith(true);
+    expect(byTestId('av-date').getAttribute('aria-disabled')).toBe('true');
+  });
+});
+
+describe('FloorFilter', () => {
+  it('Ground, Middle, Top, With elevator as a named group of toggles', () => {
+    const onChange = jest.fn();
+    mount(<FloorFilter value={[]} onValueChange={onChange} testID="fl" />);
+    expect(byTestId('fl').getAttribute('aria-label')).toBe('Floor');
+    expect(Array.from(byTestId('fl').querySelectorAll('[role="button"]')).map((b) => b.textContent)).toEqual([
+      'Ground', 'Middle', 'Top', 'With elevator',
+    ]);
+    press('fl-elevator');
+    expect(onChange).toHaveBeenLastCalledWith(['elevator']);
   });
 });

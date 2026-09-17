@@ -1,5 +1,5 @@
 import React, { memo, useEffect, useMemo } from 'react';
-import { Pressable, View } from 'react-native';
+import { Pressable, View, type StyleProp, type ViewStyle } from 'react-native';
 
 import { resolveButtonRamps } from '../button/shared';
 import { FOCUS_RING_OFFSET_COLOR, webDataSet } from '../checkbox/shared';
@@ -13,7 +13,8 @@ import type { FilterIconComponent } from './types';
 
 /**
  * The selectable pill both chip filters are built from. Internal: `CountFilter`
- * uses it as a radio, `ToggleChipGroup` as a toggle button.
+ * uses it as a radio, `ToggleChipGroup` as a toggle button, and the search's
+ * `SaveSearchButton` as its bell toggle.
  *
  *   geometry   40 tall, full pill, 1px border, px 16 (12 before an icon),
  *              8 between icon (18) and label; minWidth 48 so "1" is not a dot
@@ -58,10 +59,11 @@ export interface FilterChipProps {
   mode: 'radio' | 'toggle';
   icon?: FilterIconComponent;
   disabled?: boolean;
+  style?: StyleProp<ViewStyle>;
   testID?: string;
 }
 
-function FilterChipComponent({ label, selected, onPress, mode, icon: Icon, disabled = false, testID }: FilterChipProps) {
+function FilterChipComponent({ label, selected, onPress, mode, icon: Icon, disabled = false, style: styleOverride, testID }: FilterChipProps) {
   const theme = useTheme();
   useEffect(() => {
     adoptStyleSheet(STYLE_ID, FILTER_CHIP_CSS);
@@ -111,7 +113,7 @@ function FilterChipComponent({ label, selected, onPress, mode, icon: Icon, disab
       onHoverOut={onHoverOut}
       testID={testID}
       {...webDataSet({ bloomFilterChip: '' })}
-      style={style}
+      style={[style, styleOverride]}
     >
       {Icon ? (
         <View style={{ width: ICON_SIZE, height: ICON_SIZE, alignItems: 'center', justifyContent: 'center' }}>
