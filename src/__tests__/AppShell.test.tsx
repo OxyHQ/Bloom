@@ -1,6 +1,7 @@
 import React from 'react';
 import * as ReactNative from 'react-native';
 import { fireEvent, render } from '@testing-library/react-native';
+import { SafeAreaInsetsContext } from 'react-native-safe-area-context';
 
 import { BloomThemeProvider } from '../theme/BloomThemeProvider';
 import { PortalOutlet, PortalProvider } from '../portal';
@@ -8,6 +9,7 @@ import { AppShell, AppShellHeader, AppShellMenuButton, NotificationBell, ProOffe
 import { RiHomeLine } from '../icons/remix';
 import type { NotificationCenterItem } from '../notification-center';
 import { resolvedStyle } from './support/rendered-style';
+import { resolveScrollMode } from '../app-shell/layout';
 
 const NAV = [{ key: 'home', label: 'Home', icon: RiHomeLine, href: '/' }];
 const ITEMS: NotificationCenterItem[] = [
@@ -281,5 +283,392 @@ describe('ProOfferCard', () => {
     expect(dismiss.props.accessibilityLabel).toBe('Dismiss');
     fireEvent.press(dismiss);
     expect(onDismiss).toHaveBeenCalledTimes(1);
+  });
+});
+
+// ---------------------------------------------------------------------------
+//  Variants, slots and sizes
+// ---------------------------------------------------------------------------
+
+/**
+ * The shell lays out from the box it was GIVEN, not from the window — the one
+ * property every variant below rests on, and the one no window-width hook can
+ * express. A preview pane, one half of a split view or a desktop app's own
+ * chrome is narrower than the window, and the layout has to follow the pane.
+ */
+describe('AppShell measures itself', () => {
+  it('takes its breakpoints from its own width once it has been laid out', () => {
+    setWidth(1440);
+    const screen = renderIn(<AppShell testID="shell" title="Home" sidebar={{ items: NAV }} />);
+    // The window says desktop, so the rail is in flow and there is no hamburger.
+    expect(screen.getByTestId('sidebar-item-home')).toBeTruthy();
+    expect(screen.queryByTestId('shell-header-menu')).toBeNull();
+
+    fireEvent(screen.getByTestId('shell'), 'layout', {
+      nativeEvent: { layout: { width: 480, height: 900, x: 0, y: 0 } },
+    });
+
+    // The BOX says phone. The window never changed.
+    expect(screen.queryByTestId('sidebar-item-home')).toBeNull();
+    expect(screen.getByTestId('shell-header-menu')).toBeTruthy();
+  });
+
+  it('falls back to the window before the first layout, so frame one is not a phone', () => {
+    setWidth(1440);
+    const screen = renderIn(<AppShell testID="shell" title="Home" sidebar={{ items: NAV }} />);
+    expect(screen.getByTestId('sidebar-item-home')).toBeTruthy();
+  });
+});
+
+describe('AppShell variant="feed"', () => {
+  it('is a contentWidth column that SHRINKS rather than overflowing', () => {
+    setWidth(1440);
+    const wide = renderIn(<AppShell testID="shell" variant="feed" title="Home" />);
+    expect(resolvedStyle(wide.getByTestId('shell-content').props.style)).toMatchObject({
+      flexGrow: 0,
+      flexShrink: 1,
+      flexBasis: 600,
+      maxWidth: 600,
+      minWidth: 0,
+    });
+    // A `width` would be the bug: 600 inside a 360 phone overflows sideways.
+    expect(resolvedStyle(wide.getByTestId('shell-content').props.style).width).toBeUndefined();
+    wide.unmount();
+
+    setWidth(360);
+    const phone = renderIn(<AppShell testID="shell" variant="feed" contentWidth={520} title="Home" />);
+    expect(resolvedStyle(phone.getByTestId('shell-content').props.style)).toMatchObject({
+      flexShrink: 1,
+      flexBasis: 520,
+      maxWidth: 520,
+    });
+  });
+
+  it('centres the content and the aside as a PAIR in what the nav leaves', () => {
+    setWidth(1440);
+    const screen = renderIn(
+      <AppShell testID="shell" variant="feed" title="Home" sidebar={{ items: NAV }} aside={<ReactNative.Text>Side</ReactNative.Text>} />,
+    );
+    const content = screen.getByTestId('shell-content');
+    const aside = screen.getByTestId('shell-aside');
+    const row = hostParent(content);
+    expect(hostParent(aside)).toBe(row);
+    expect(resolvedStyle(row?.props.style)).toMatchObject({ flexDirection: 'row', justifyContent: 'center' });
+    expect(resolvedStyle(aside.props.style)).toMatchObject({ width: 320 });
+  });
+
+  it('below asideFrom the side column stacks under the content instead', () => {
+    setWidth(1100);
+    const screen = renderIn(
+      <AppShell testID="shell" variant="feed" title="Home" aside={<ReactNative.Text>Side</ReactNative.Text>} />,
+    );
+    expect(screen.getByText('Side')).toBeTruthy();
+    expect(resolvedStyle(screen.getByTestId('shell-aside').props.style).width).toBeUndefined();
+  });
+
+  it('uses one gutter for padding and gap, where dashboard keeps its 12/16 pair', () => {
+    setWidth(1440);
+    const feed = renderIn(<AppShell testID="shell" variant="feed" title="Home" />);
+    expect(resolvedStyle(feed.getByTestId('shell').props.style)).toMatchObject({ padding: 16, gap: 16 });
+    feed.unmount();
+    const dash = renderIn(<AppShell testID="shell" title="Home" />);
+    expect(resolvedStyle(dash.getByTestId('shell').props.style)).toMatchObject({ padding: 12, gap: 16 });
+    dash.unmount();
+    const wide = renderIn(<AppShell testID="shell" variant="feed" gutter={24} title="Home" />);
+    expect(resolvedStyle(wide.getByTestId('shell').props.style)).toMatchObject({ padding: 24, gap: 24 });
+  });
+});
+
+describe('AppShell variant="focus"', () => {
+  it('draws no navigation at all, sidebar or not', () => {
+    setWidth(1440);
+    const screen = renderIn(<AppShell testID="shell" variant="focus" title="Sign in" sidebar={{ items: NAV }} />);
+    expect(screen.queryByTestId('sidebar-item-home')).toBeNull();
+    expect(screen.queryByTestId('shell-header-menu')).toBeNull();
+    expect(resolvedStyle(screen.getByTestId('shell-content').props.style)).toMatchObject({ flexBasis: 600 });
+  });
+
+  it('takes no aside in either position — it is a single column by definition', () => {
+    setWidth(1440);
+    const wide = renderIn(
+      <AppShell testID="shell" variant="focus" title="Sign in" aside={<ReactNative.Text>Side</ReactNative.Text>} />,
+    );
+    expect(wide.queryByText('Side')).toBeNull();
+    wide.unmount();
+    // Below `asideFrom` an aside STACKS under the content — also not here.
+    setWidth(500);
+    const narrow = renderIn(
+      <AppShell testID="shell" variant="focus" title="Sign in" aside={<ReactNative.Text>Side</ReactNative.Text>} />,
+    );
+    expect(narrow.queryByText('Side')).toBeNull();
+  });
+
+  it('keeps the bar slots, so a sign-up flow still gets its footer CTA', () => {
+    setWidth(1440);
+    const screen = renderIn(
+      <AppShell
+        testID="shell"
+        variant="focus"
+        title="Sign in"
+        bottomBarVisibility="always"
+        bottomBar={<ReactNative.Text>Continue</ReactNative.Text>}
+      />,
+    );
+    expect(screen.getByText('Continue')).toBeTruthy();
+  });
+});
+
+describe('AppShell variant="split"', () => {
+  const PANES = {
+    list: <ReactNative.Text>List</ReactNative.Text>,
+    info: <ReactNative.Text>Info</ReactNative.Text>,
+  };
+
+  it('shows two panes from splitFrom and the third from infoFrom', () => {
+    setWidth(1440);
+    const three = renderIn(
+      <AppShell testID="shell" variant="split" title="Inbox" list={PANES.list} info={PANES.info}>
+        <ReactNative.Text>Detail</ReactNative.Text>
+      </AppShell>,
+    );
+    expect(three.getByTestId('shell-pane-list')).toBeTruthy();
+    expect(three.getByTestId('shell-pane-detail')).toBeTruthy();
+    expect(three.getByTestId('shell-pane-info')).toBeTruthy();
+    expect(resolvedStyle(three.getByTestId('shell-pane-list').props.style)).toMatchObject({ width: 360 });
+    expect(resolvedStyle(three.getByTestId('shell-pane-info').props.style)).toMatchObject({ width: 320 });
+    three.unmount();
+
+    setWidth(1100);
+    const two = renderIn(
+      <AppShell testID="shell" variant="split" title="Inbox" list={PANES.list} info={PANES.info}>
+        <ReactNative.Text>Detail</ReactNative.Text>
+      </AppShell>,
+    );
+    expect(two.getByTestId('shell-pane-list')).toBeTruthy();
+    expect(two.getByTestId('shell-pane-detail')).toBeTruthy();
+    expect(two.queryByTestId('shell-pane-info')).toBeNull();
+  });
+
+  it('below splitFrom renders EXACTLY the one pane `pane` names', () => {
+    setWidth(500);
+    const list = renderIn(
+      <AppShell testID="shell" variant="split" list={PANES.list} info={PANES.info}>
+        <ReactNative.Text>Detail</ReactNative.Text>
+      </AppShell>,
+    );
+    expect(list.getByTestId('shell-pane-list')).toBeTruthy();
+    expect(list.queryByTestId('shell-pane-detail')).toBeNull();
+    expect(list.queryByTestId('shell-pane-info')).toBeNull();
+    // Alone, the pane fills the row rather than keeping its column width.
+    expect(resolvedStyle(list.getByTestId('shell-pane-list').props.style).width).toBeUndefined();
+    list.unmount();
+
+    const detail = renderIn(
+      <AppShell testID="shell" variant="split" pane="detail" list={PANES.list} info={PANES.info}>
+        <ReactNative.Text>Detail</ReactNative.Text>
+      </AppShell>,
+    );
+    expect(detail.queryByTestId('shell-pane-list')).toBeNull();
+    expect(detail.getByTestId('shell-pane-detail')).toBeTruthy();
+    detail.unmount();
+
+    // `pane` names a pane that was never given content: fall back rather than
+    // render an empty screen.
+    const empty = renderIn(
+      <AppShell testID="shell" variant="split" pane="info">
+        <ReactNative.Text>Detail</ReactNative.Text>
+      </AppShell>,
+    );
+    expect(empty.getByTestId('shell-pane-detail')).toBeTruthy();
+    expect(empty.queryByTestId('shell-pane-info')).toBeNull();
+  });
+
+  it('gives each pane its own scroller, or none when the page owns one', () => {
+    setWidth(1440);
+    const own = renderIn(
+      <AppShell testID="shell" variant="split" list={PANES.list}>
+        <ReactNative.Text>Detail</ReactNative.Text>
+      </AppShell>,
+    );
+    const panes = own.UNSAFE_queryAllByType(ReactNative.ScrollView).filter((node) => {
+      for (let n = node.parent; n; n = n.parent) if (n.props.role === 'complementary') return false;
+      return true;
+    });
+    expect(panes.length).toBe(2);
+    own.unmount();
+
+    const none = renderIn(
+      <AppShell testID="shell" variant="split" paneScroll={false} list={PANES.list}>
+        <ReactNative.Text>Detail</ReactNative.Text>
+      </AppShell>,
+    );
+    expect(
+      none.UNSAFE_queryAllByType(ReactNative.ScrollView).filter((node) => {
+        for (let n = node.parent; n; n = n.parent) if (n.props.role === 'complementary') return false;
+        return true;
+      }).length,
+    ).toBe(0);
+  });
+
+  it('names the divider and lets the keyboard move it', () => {
+    setWidth(1440);
+    const onListWidthChange = jest.fn();
+    const screen = renderIn(
+      <AppShell testID="shell" variant="split" list={PANES.list} onListWidthChange={onListWidthChange}>
+        <ReactNative.Text>Detail</ReactNative.Text>
+      </AppShell>,
+    );
+    const divider = screen.getByTestId('shell-divider');
+    expect(divider.props.accessibilityLabel).toBe('Resize panes');
+    expect(divider.props['aria-orientation']).toBe('vertical');
+  });
+
+  it('is one screen, never a document scroll', () => {
+    // The reduction itself is a pure function, and it is the part that matters:
+    // three columns that each keep their own scroll position cannot also be
+    // growing one document.
+    expect(resolveScrollMode('split', 'document')).toBe('fixed');
+    expect(resolveScrollMode('split', 'container')).toBe('container');
+    expect(resolveScrollMode('split', 'fixed')).toBe('fixed');
+    // (`fixedRoot`'s web spelling — `height: 100dvh` — is read from
+    // `Platform.OS` at module load, which jest has already fixed as native by
+    // the time a test could mock it. What is assertable here is the frame's
+    // shape: bounded and clipped, so the panes scroll instead of the page.)
+    setWidth(1440);
+    const screen = renderIn(
+      <AppShell testID="shell" variant="split" scroll="document" list={PANES.list}>
+        <ReactNative.Text>Detail</ReactNative.Text>
+      </AppShell>,
+    );
+    expect(resolvedStyle(screen.getByTestId('shell').props.style)).toMatchObject({ overflow: 'hidden' });
+  });
+});
+
+describe('AppShell pinned slots', () => {
+  const original = ReactNative.Platform.OS;
+  const INSETS = { top: 44, bottom: 34, left: 0, right: 0 };
+  beforeEach(() => {
+    Object.defineProperty(ReactNative.Platform, 'OS', { value: 'web', configurable: true, writable: true });
+  });
+  afterEach(() => {
+    Object.defineProperty(ReactNative.Platform, 'OS', { value: original, configurable: true, writable: true });
+  });
+
+  function renderWithInsets(ui: React.ReactElement) {
+    return renderIn(<SafeAreaInsetsContext.Provider value={INSETS}>{ui}</SafeAreaInsetsContext.Provider>);
+  }
+
+  it('pins the bottom bar to the viewport with the safe-area inset as its own padding', () => {
+    setWidth(500);
+    const screen = renderWithInsets(
+      <AppShell testID="shell" variant="feed" sidebar={{ items: NAV }} bottomBar={<ReactNative.Text>Tabs</ReactNative.Text>} />,
+    );
+    const bar = screen.getByTestId('shell-bottom-bar');
+    expect(resolvedStyle(bar.props.style)).toMatchObject({
+      position: 'fixed',
+      left: 0,
+      right: 0,
+      bottom: 0,
+      paddingBottom: 34,
+    });
+    // A style entry is dropped by react-native-web; this has to be the PROP.
+    expect(bar.props.pointerEvents).toBe('box-none');
+  });
+
+  it('reserves the bar and the action button MEASURED heights under the content', () => {
+    setWidth(500);
+    const screen = renderWithInsets(
+      <AppShell
+        testID="shell"
+        variant="feed"
+        sidebar={{ items: NAV }}
+        bottomBar={<ReactNative.Text>Tabs</ReactNative.Text>}
+        floatingAction={<ReactNative.Text>+</ReactNative.Text>}
+      />,
+    );
+    fireEvent(screen.getByTestId('shell-bottom-bar'), 'layout', {
+      nativeEvent: { layout: { width: 500, height: 72, x: 0, y: 0 } },
+    });
+    fireEvent(screen.getByTestId('shell-floating-action'), 'layout', {
+      nativeEvent: { layout: { width: 500, height: 56, x: 0, y: 0 } },
+    });
+    // The action sits ABOVE the bar, a gutter clear of it…
+    expect(resolvedStyle(screen.getByTestId('shell-floating-action').props.style)).toMatchObject({ bottom: 72 + 16 });
+    // …and the page reserves both, so the last row is never behind either.
+    expect(resolvedStyle(screen.getByTestId('shell-page').props.style)).toMatchObject({
+      paddingBottom: 72 + 56 + 16,
+    });
+  });
+
+  it('reserves nothing when there is no bar and no action', () => {
+    setWidth(500);
+    const screen = renderWithInsets(<AppShell testID="shell" variant="feed" sidebar={{ items: NAV }} />);
+    expect(resolvedStyle(screen.getByTestId('shell-page').props.style)).toMatchObject({ paddingBottom: 0 });
+  });
+
+  it('draws the bars while the nav is a drawer, or always', () => {
+    setWidth(1440);
+    const flow = renderWithInsets(
+      <AppShell testID="shell" variant="feed" sidebar={{ items: NAV }} bottomBar={<ReactNative.Text>Tabs</ReactNative.Text>} />,
+    );
+    expect(flow.queryByTestId('shell-bottom-bar')).toBeNull();
+    flow.unmount();
+
+    const always = renderWithInsets(
+      <AppShell
+        testID="shell"
+        variant="feed"
+        sidebar={{ items: NAV }}
+        bottomBarVisibility="always"
+        bottomBar={<ReactNative.Text>Tabs</ReactNative.Text>}
+      />,
+    );
+    expect(always.getByTestId('shell-bottom-bar')).toBeTruthy();
+  });
+
+  it('pins the top bar above the columns, and gives it the menu button', () => {
+    setWidth(500);
+    const screen = renderWithInsets(
+      <AppShell
+        testID="shell"
+        variant="feed"
+        title="Home"
+        sidebar={{ items: NAV }}
+        topBar={<AppShellMenuButton testID="bar-menu" />}
+      />,
+    );
+    const bar = screen.getByTestId('shell-top-bar');
+    expect(resolvedStyle(bar.props.style)).toMatchObject({ position: 'sticky', top: 0, paddingTop: 44 });
+    // It is a sibling ABOVE the row, not a child of the content column.
+    expect(hostParent(bar)?.props.testID).toBe('shell');
+    // ONE hamburger: the bar's. The header does not add a second under it.
+    expect(screen.getByTestId('bar-menu')).toBeTruthy();
+    expect(screen.queryByTestId('shell-header-menu')).toBeNull();
+  });
+});
+
+describe('AppShell nav sizing', () => {
+  it('navFrom moves the tier the rail sits in flow from', () => {
+    setWidth(800);
+    const md = renderIn(<AppShell testID="shell" title="Home" navFrom="md" sidebar={{ items: NAV }} />);
+    expect(md.getByTestId('sidebar-item-home')).toBeTruthy();
+    expect(md.queryByTestId('shell-header-menu')).toBeNull();
+    md.unmount();
+
+    const lg = renderIn(<AppShell testID="shell" title="Home" sidebar={{ items: NAV }} />);
+    expect(lg.queryByTestId('sidebar-item-home')).toBeNull();
+    expect(lg.getByTestId('shell-header-menu')).toBeTruthy();
+  });
+
+  it('navExpandedFrom swaps icons for labels, and lets the rail sit in flow from sm', () => {
+    setWidth(700);
+    const rail = renderIn(<AppShell testID="shell" title="Home" navExpandedFrom="lg" sidebar={{ items: NAV }} />);
+    // The rail's own item geometry (64 tall) is what says it is the rail.
+    expect(resolvedStyle(rail.getByTestId('sidebar-item-home').props.style)).toMatchObject({ minHeight: 64 });
+    rail.unmount();
+
+    setWidth(1440);
+    const panel = renderIn(<AppShell testID="shell" title="Home" navExpandedFrom="lg" sidebar={{ items: NAV }} />);
+    expect(resolvedStyle(panel.getByTestId('sidebar-item-home').props.style).minHeight).toBeUndefined();
   });
 });

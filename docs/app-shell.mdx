@@ -1,6 +1,6 @@
 ---
 title: AppShell
-description: Page frame with the sidebar, a responsive drawer, a breadcrumb + title header, a notification bell and a floating Pro offer card.
+description: Page frame with four layout variants, the sidebar and a responsive drawer, pinned top/bottom/floating slots, a breadcrumb + title header, a notification bell and a floating Pro offer card.
 order: 83
 ---
 
@@ -25,6 +25,206 @@ import { AppShell, NotificationBell, ProOfferCard } from '@oxy.so/bloom/app-shel
 </AppShell>
 ```
 
+## Variants
+
+One engine, four shapes. `variant` picks the shape; everything else — the nav,
+the drawer, the pinned regions, the slots, the sizes — works the same in all
+four.
+
+| `variant` | The page | Scroll |
+| --- | --- | --- |
+| `dashboard` (default) | nav + one fluid column capped at `contentMaxWidth`, optional `aside` | `document` / `container` / `fixed` |
+| `feed` | nav + a `contentWidth` reading column CENTRED in what the nav leaves, optional `aside` beside it, optionally in a `ContentPanel` | `document` / `container` / `fixed` |
+| `split` | a list pane, a detail pane and an optional info pane, each scrolling on its own, with a draggable divider | always one screen |
+| `focus` | one centred `contentWidth` column and NO nav | `document` / `container` / `fixed` |
+
+`dashboard` is what this component always was, unchanged to the pixel — the
+existing stories render byte-identically against the version before variants
+existed.
+
+### `feed`
+
+```tsx
+<AppShell variant="feed" sidebar={sidebar} title="Home" aside={<Trending />} contentWidth={600}>
+  {posts}
+</AppShell>
+```
+
+The nav sits in flow, and the content column plus the aside are centred as a
+PAIR in the space it leaves. The column is `flexBasis: contentWidth` with
+`flexShrink: 1` and a matching `maxWidth`, never a `width` — so on a 360px phone
+it shrinks to the screen instead of pushing the page sideways.
+
+With `scroll="document"` (the default on web) the nav and the aside pin
+themselves (`position: sticky`) and the centre column scrolls the page. Measured
+in Chrome at 1440: after scrolling 406px the nav stayed at `y = 121` and the
+aside at `y = 16` while the content moved from `16` to `-390`.
+
+`panel` wraps the centre column in a [`ContentPanel`](/docs/bloom/main/content-panel),
+so the page background reads as a gutter around a framed surface; `framedFrom`
+is forwarded. The panel's content is inset by `gutter` — without it the page sits
+ON the frame, and a radius-28 corner clips whatever is in it (the heading loses
+its first letter). So `contentWidth` is the COLUMN's width, and the reading
+measure inside a panel is that minus two gutters. Do not render your own
+`ContentPanel` inside this one; it trips the nesting guard.
+
+### `split`
+
+```tsx
+<AppShell
+  variant="split"
+  sidebar={sidebar}
+  title="Inbox"
+  list={<ThreadList />}
+  info={<ThreadDetails />}
+  pane={selected ? 'detail' : 'list'}
+>
+  <Thread id={selected} />
+</AppShell>
+```
+
+`list`, then `children` as the detail pane, then `info`. Each pane gets its own
+`ScrollView` (`paneScroll={false}` when the pane's content already scrolls — a
+`FlatList`, a virtualizer). The divider between the first two is `ai-chat`'s
+`AiChatResizeHandle`, reused rather than rewritten: pointer-capture dragging on
+web, a `PanResponder` on native, arrow keys, and the same grip. It is named
+`resizeLabel` (`"Resize panes"`) with `role="separator"`. `listWidth` (360) is
+the resting width and a drag is clamped to `listMinWidth`/`listMaxWidth`
+(280/520); `onListWidthChange` reports where it settled.
+
+Two panes from `splitFrom` (`md`, 768), three from `infoFrom` (`xl`, 1280).
+Below `splitFrom` EXACTLY ONE pane renders — the one `pane` names, falling back
+to the detail pane when that one was never given content.
+
+**`split` never scrolls the document**, whatever `scroll` says: there is one
+document, so at most one region could scroll it, and three columns that each
+keep their own position is a bounded-box layout by definition. `scroll="document"`
+resolves to `fixed` (one screen) and `scroll="container"` is honoured as-is.
+
+### `focus`
+
+A single centred column and no navigation at all — sign-in, onboarding, a
+reader. A `sidebar` passed to a `focus` shell is ignored (and `AppShellMenuButton`
+renders nothing, because there is no drawer to open). The header and all three
+bar slots still work, so a sign-up flow gets its pinned footer CTA:
+
+```tsx
+<AppShell variant="focus" contentWidth={480} title="Create your account"
+  bottomBarVisibility="always" bottomBar={<Footer />}>
+  {form}
+</AppShell>
+```
+
+## Pinned slots
+
+`topBar`, `bottomBar` and `floatingAction` exist so that **nothing in a
+consumer's code needs `position: fixed`, a negative margin, or a window-width
+hook to sit in the right place.** Every app that has drawn a phone tab bar has
+written the same four lines, and all four are wrong somewhere: a fixed bar is
+wrong inside an embedded shell, a hardcoded `bottom` is wrong on a notched
+phone, and a negative margin is wrong the moment the page's padding changes.
+
+```tsx
+<AppShell
+  variant="feed"
+  sidebar={sidebar}
+  topBar={<PhoneHeader leading={<AppShellMenuButton />} />}
+  bottomBar={<Tabs />}
+  floatingAction={<Button iconOnly leadingIcon={RiQuillPenLine} accessibilityLabel="Compose" />}
+>
+  {feed}
+</AppShell>
+```
+
+- **`topBar`** is a sibling ABOVE the shell's columns, so it spans the shell edge
+  to edge without escaping the frame's padding. Sticky to the top with document
+  scroll; simply outside the scroller otherwise. It takes the TOP safe-area inset
+  as padding. `header` is the in-column page heading and is unaffected — a shell
+  may have both — but while a `topBar` is drawn the default header does not add a
+  SECOND hamburger under it; put an `AppShellMenuButton` in the bar.
+  Not drawn under `drawer="reveal"`, which slides the whole page sideways.
+- **`bottomBar`** is pinned to the bottom of the viewport (document scroll) or of
+  the frame, with the BOTTOM safe-area inset as its own padding — so the bar's
+  background paints under the home indicator instead of leaving a stripe of page
+  showing through.
+- **`floatingAction`** sits a `gutter` above the bar (or above the safe area when
+  there is no bar), in the `floatingActionPlacement` corner (`end` by default).
+  The wrapper spans the width and ALIGNS its child, so the button never has to
+  know its own width. It has no `compact`/`always` switch: a compose button is
+  not phone chrome, so it is drawn whenever it is given — pass `null` to drop it.
+
+Both bars are MEASURED, and the content column reserves exactly their height, so
+the last row of a feed is never hidden behind them. Measured in Chrome at 390,
+scrolled to the page end: last item bottom `768`, action top `784`, bar top `844`.
+
+`topBarVisibility` / `bottomBarVisibility` are `compact` (the default — only
+while the nav is a drawer, the phone case the slots exist for) or `always`, for
+a bar that is part of the app at every width.
+
+## Sizes and breakpoints
+
+Every number is a prop, and `APP_SHELL_DEFAULTS` is the exported record of the
+defaults.
+
+| Prop | Default | Why |
+| --- | --- | --- |
+| `contentMaxWidth` | 1300 | `dashboard`'s cap. The column is fluid and stops growing here. |
+| `contentWidth` | 600 | `feed`/`focus`. The measure a single column of `body-regular` holds at ~75 characters — wider loses the line, narrower breaks too often. |
+| `asideWidth` | 320 | |
+| `asideFrom` | `xl` (1280) | 272 (panel) + 600 + 320 + three gutters is 1216: `xl` is the first tier where three columns fit without squeezing the content. |
+| `navFrom` | `lg` for the panel, `sm` for a rail | Where the nav sits in FLOW; below it the same props drive the drawer. |
+| `navExpandedFrom` | unset | Icons below, labels above: the shell swaps `sidebar.variant` between `rail` and `panel`. Setting it also makes `navFrom` default to `sm`, because below that tier the nav IS a rail. |
+| `gutter` | 12 (`dashboard`), 16 (others) | The space between the shell's edge and its regions, and between the regions. `dashboard` keeps the 12-padding/16-gap pair it shipped with, because changing either moves every existing page by four pixels. |
+| `splitFrom` | `md` (768) | 360 of list still leaves ~380 of detail (~280 once a nav rail takes its share) — a phone's worth of reading width. Below it a second pane is a sliver, not a pane. |
+| `infoFrom` | `xl` (1280) | Same headroom the aside needs. |
+| `listWidth` / `listMinWidth` / `listMaxWidth` | 360 / 280 / 520 | |
+| `infoWidth` | 320 | |
+
+## The shell measures ITSELF
+
+Every breakpoint above is read off the shell's own laid-out width, not the
+window. A shell mounted in a preview pane, in one half of a split view, or
+inside a desktop app's own chrome is narrower than the window, and a
+window-width decision puts three columns into a 480px box.
+
+The fallback before the first layout is the WINDOW rather than zero: otherwise
+frame one would be a phone layout for every shell and the correction would be a
+visible reflow on every page load. A shell that spans the page is therefore
+right on the first paint, and only an embedded one pays a single layout pass.
+
+One consequence worth knowing: where the browser draws a CLASSIC (space-taking)
+document scrollbar, the shell's box is `innerWidth` minus its width, so a
+breakpoint crossed within ~15px of the boundary lands one tier lower than the
+equivalent CSS media query would. That is the layout reading the space it
+actually has, and it is the same reason the measurement exists — but it is a
+real difference from `@media`, not an accident. (Chrome's headless shell uses
+overlay scrollbars, so every measurement below has the shell's width exactly
+equal to `innerWidth`.)
+
+(The measurement is `useContainerWidth`, the hook `listing-details` already uses
+for the same reason.)
+
+## Why there are no tricks in here
+
+The shape this replaced was a template full of them: negative margins to escape
+the preview's padding, an ad-hoc `position: fixed` for the bottom bar and the
+floating button, a per-story sticky column — and it broke at phone widths. None
+of that is in the shell, and none of it is left for a consumer:
+
+- Every region is a flex child of one row, sized by `flexBasis` + `maxWidth` and
+  allowed to SHRINK. A `width` is what overflows; a basis that shrinks cannot.
+- The only `position` values in the family are the sticky nav/aside and the bar
+  slots' own anchor, all inside the shell. No `100vw`, no negative margin, no
+  window-width hook anywhere.
+- Stories set `parameters: { bleed: true }` (see `.storybook/preview.tsx`) and
+  the shell fills what it is given — no per-story CSS.
+
+Verified in Chrome across `dashboard`, `dashboard + aside`, `feed`,
+`feed + panel`, `feed + chrome`, `split` and `focus`, at 360, 390, 414, 768,
+834, 1024, 1280, 1440 and 1920, in light and dark: 126 renders, no sideways
+scroll anywhere (`scrollWidth === innerWidth` in every one), no sibling region
+overlapping another, and no console error.
+
 ## Layout
 
 - `lg` and up: the rail sits in flow; the content column is centred, max `contentMaxWidth` (1300), header then content 16 apart.
@@ -42,7 +242,8 @@ import { AppShell, NotificationBell, ProOfferCard } from '@oxy.so/bloom/app-shel
 </AppShell>
 ```
 
-A second column on the right of the page. From `asideFrom` (`xl`, 1280; or `md` / `lg`) it sits beside the content at `asideWidth` (320), pinned like the sidebar — with document scroll it is sticky and scrolls its own overflow, so give it `flex: 1` content if it should fill the height. Below the breakpoint it is stacked after the content (`asideCollapse="stack"`, the default) or dropped (`"hidden"`). Under `drawer="reveal"` it slides with the page.
+A second column on the right of the page (`dashboard` and `feed`; `split` has
+its `info` pane instead and `focus` has no second column at all). From `asideFrom` (`xl`, 1280; or `md` / `lg`) it sits beside the content at `asideWidth` (320), pinned like the sidebar — with document scroll it is sticky and scrolls its own overflow, so give it `flex: 1` content if it should fill the height. Below the breakpoint it is stacked after the content (`asideCollapse="stack"`, the default) or dropped (`"hidden"`). Under `drawer="reveal"` it slides with the page.
 
 ## Opening the drawer without a title
 
@@ -87,6 +288,34 @@ The page scrolls the **document**, like a [`ContentPanel`](/docs/bloom/main/cont
 - `scroll="container"` restores the old behaviour — the shell fills its parent and the page scrolls inside its own `ScrollView` — for a shell embedded in a bounded box rather than owning the page.
 
 Native has no document: `document` behaves as `container` there, and `fixed` works the same as on web.
+
+## On native
+
+Every variant and every slot works on native; what changes is the mechanism,
+never the arrangement:
+
+- The nav and the aside are not sticky — on native the shell is always a bounded
+  box (`container` / `fixed`), so they are ordinary full-height flex columns and
+  stay put by construction.
+- `bottomBar` and `floatingAction` anchor `position: absolute` inside the
+  shell's own frame rather than `fixed` to a viewport. Yoga has no `fixed`, and
+  it ignores it SILENTLY — a bar written that way would scroll away with no
+  error to explain it.
+- `topBar` is simply the first child above the columns and outside the scroller,
+  which pins it without any positioning at all.
+- Safe-area insets come from `SafeAreaInsetsContext` — read with `useContext`,
+  not `useSafeAreaInsets`, which throws outside a provider. `AppShell` is
+  mounted at an app's root, and making a previously optional provider mandatory
+  would break every consumer that never had a bar to inset. Outside one the
+  insets are zero.
+- `split`'s divider drags through a `PanResponder` (`ai-chat`'s handle owns both
+  paths).
+- `panel` resolves to `ContentPanel`'s native variant — a plain rounded,
+  bordered surface, with none of the web sticky-overlay machinery, which is what
+  it should be where there is no document to bleed into.
+
+None of this is exercised by the web gate: jest resolves no platform extensions
+here, and Storybook is react-native-web. It is reasoned, not measured.
 
 ## NotificationBell
 

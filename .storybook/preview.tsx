@@ -62,13 +62,28 @@ const withProviders: Decorator = (Story, context) => {
         <PortalProvider>
           <SurfaceProvider>
             <View
-              style={{
-                padding: 24,
-                minHeight: '100%',
-                alignItems: 'flex-start',
-                justifyContent: 'flex-start',
-                gap: 16,
-              }}
+              style={
+                // `parameters: { bleed: true }` — the story IS the page (an app
+                // shell, a template), so the harness gives it the whole preview
+                // instead of a 24px-padded, left-aligned box.
+                //
+                // OPT-IN, and deliberately not keyed off `layout: 'fullscreen'`:
+                // ~30 stories already carry that parameter and several cancel
+                // this padding with a negative margin, which is exactly the
+                // trick this removes — flipping them all at once would move
+                // every one of them. A story that sets `bleed` needs no margin
+                // hack at all, and the two spellings are pixel-equivalent
+                // (`padding: 24` + `margin: -24` === no padding).
+                context.parameters?.bleed === true
+                  ? { minHeight: '100%', alignItems: 'stretch', justifyContent: 'flex-start' }
+                  : {
+                      padding: 24,
+                      minHeight: '100%',
+                      alignItems: 'flex-start',
+                      justifyContent: 'flex-start',
+                      gap: 16,
+                    }
+              }
             >
               <Story />
             </View>
