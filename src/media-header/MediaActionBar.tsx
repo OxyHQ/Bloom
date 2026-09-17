@@ -17,7 +17,9 @@ import { borderRadius } from '../styles/tokens';
 import type { WebCssStyle } from '../styles/web-view-style';
 import { Text } from '../typography';
 import { useMediaHeaderPaint } from './parts';
-import { clamp01, IS_WEB, webData } from './shared';
+import { IS_WEB } from './shared';
+import { clamp01 } from '../styles/clamp';
+import { webDataSet as webData } from '../styles/web-data';
 import type {
   DownloadButtonProps,
   FollowButtonProps,

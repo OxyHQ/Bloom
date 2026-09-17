@@ -2,7 +2,7 @@ import React, { memo, useEffect, useMemo, useRef, useState } from 'react';
 import { Pressable, ScrollView, TextInput, View, type TextStyle } from 'react-native';
 
 import { GlyphButton } from '../button';
-import { webDataSet } from '../checkbox/shared';
+import { webDataSet } from '../styles/web-data';
 import { Chip } from '../chip';
 import {
   DropdownMenu,

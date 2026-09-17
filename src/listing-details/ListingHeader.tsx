@@ -10,16 +10,10 @@ import type { WebCssStyle } from '../styles/web-view-style';
 import { useTheme } from '../theme/use-theme';
 import { Text } from '../typography';
 import { LISTING_HEADER_WIDE_MIN_WIDTH } from './constants';
-import {
-  IS_WEB,
-  LISTING_DETAILS_CSS,
-  LISTING_DETAILS_STYLE_ID,
-  resolveListingPalette,
-  webData,
-  type ListingPalette,
-} from './shared';
+import { IS_WEB, LISTING_DETAILS_CSS, LISTING_DETAILS_STYLE_ID, resolveListingPalette, type ListingPalette } from './shared';
+import { webDataSet as webData } from '../styles/web-data';
 import type { ListingHeaderActionProps, ListingHeaderProps } from './types';
-import { useContainerWidth } from './use-container-width';
+import { useContainerWidth } from '../hooks/use-container-width';
 
 /**
  * The title block of a listing page.

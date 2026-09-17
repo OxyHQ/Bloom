@@ -7,24 +7,16 @@ import { useInteractionState } from '../hooks/use-interaction-state';
 import { RiHeart3Fill } from '../icons/remix/RiHeart3Fill';
 import { RiMusic2Line } from '../icons/remix/RiMusic2Line';
 import { useImageResolver } from '../image-resolver/context';
-import { useContainerWidth } from '../listing-details/use-container-width';
+import { useContainerWidth } from '../hooks/use-container-width';
 import { useInteractiveWebCss } from '../styles/interactive-web-css';
 import type { WebCssStyle } from '../styles/web-view-style';
 import { useTheme } from '../theme/use-theme';
 import { Text } from '../typography';
 import type { TypeScaleVariant } from '../typography/scale';
-import {
-  clamp01,
-  gradientStyle,
-  isUrl,
-  MEDIA_HEADER_CSS,
-  MEDIA_HEADER_STYLE_ID,
-  MEDIA_HEADER_WIDE_MIN_WIDTH,
-  resolveLikedGradient,
-  resolveMediaHeaderPaint,
-  webData,
-  type MediaHeaderPaint,
-} from './shared';
+import { gradientStyle, MEDIA_HEADER_CSS, MEDIA_HEADER_STYLE_ID, MEDIA_HEADER_WIDE_MIN_WIDTH, resolveLikedGradient, resolveMediaHeaderPaint, type MediaHeaderPaint } from './shared';
+import { clamp01 } from '../styles/clamp';
+import { isImageUrl as isUrl } from '../image-resolver';
+import { webDataSet as webData } from '../styles/web-data';
 import type { MediaHeaderPerson, MediaImageSource } from './types';
 
 /** The family's paint for an artwork colour, plus its web sheet. */
