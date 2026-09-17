@@ -1,19 +1,25 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
   Platform,
+  Pressable,
+  Text as RNText,
   ScrollView,
   StyleSheet,
-  type TextInput,
+  TextInput,
   View,
+  type TextStyle,
 } from 'react-native';
 
-import { useTheme } from '../theme/use-theme';
 import { useControllableState } from '../hooks/use-controllable-state';
-import { Text } from '../typography';
-import { Item } from '../item';
+import { useInteractionState } from '../hooks/use-interaction-state';
+import { RiSearchLine } from '../icons/remix/RiSearchLine';
 import { Kbd } from '../kbd';
-import { Search } from '../search';
-import { fontSize, space } from '../styles/tokens';
+import { useMenuPalette, type MenuPalette } from '../floating/menu-palette';
+import { MENU_FONT_FAMILY } from '../floating/menu-type';
+import { ROW_ICON_SIZE } from '../floating/constants';
+import { TYPE_SCALE } from '../typography/scale';
+import { CloseButton } from '../button/CloseButton';
+import type { WebCssStyle } from '../styles/web-view-style';
 import type { DialogProps } from '../dialog';
 import { useDialogControl } from '../dialog/context';
 import type { CommandItem, CommandProps } from './types';
@@ -46,7 +52,8 @@ interface FlatEntry {
  * relies on implicit `.web` resolution. The body is single-source.
  *
  * `Command` is a ⌘K command palette built on `<Dialog placement="center">`,
- * `Search`, an `Item` results list and `Kbd` shortcut hints. Items group
+ * dressed as a floating menu (the palette `floating/menu-palette.ts`
+ * resolves), with a bare search field, menu rows and `Kbd` shortcut hints. Items group
  * by their `group` field (ungrouped first). On web the list is
  * keyboard-navigable (Up/Down/Enter); on native, tap to select.
  *
@@ -78,7 +85,6 @@ export function createCommand(Dialog: DialogComponent) {
     style,
     testID,
   }: CommandProps) {
-    const theme = useTheme();
     const control = useDialogControl();
     const searchRef = useRef<TextInput>(null);
     const [activeIndex, setActiveIndex] = useState(0);
@@ -138,12 +144,7 @@ export function createCommand(Dialog: DialogComponent) {
   const prevVisibleRef = useRef(visible);
   if (prevVisibleRef.current !== visible) {
     prevVisibleRef.current = visible;
-    if (visible) {
-      if (activeIndex !== 0) setActiveIndex(0);
-      if (Platform.OS === 'web') {
-        requestAnimationFrame(() => searchRef.current?.focus());
-      }
-    }
+    if (visible && activeIndex !== 0) setActiveIndex(0);
   }
 
   const clampedActive = Math.min(activeIndex, Math.max(0, selectable.length - 1));
@@ -217,6 +218,25 @@ export function createCommand(Dialog: DialogComponent) {
         }
       : {};
 
+  // Keep the keyboard-highlighted row inside the scroll viewport (web).
+  const listRef = useRef<ScrollView | null>(null);
+  useEffect(() => {
+    if (Platform.OS !== 'web') return undefined;
+    const frame = requestAnimationFrame(() => {
+      const node = (listRef.current as unknown as { getScrollableNode?: () => HTMLElement | null })
+        ?.getScrollableNode?.();
+      const active = node?.querySelector<HTMLElement>('[aria-selected="true"]');
+      if (!node || !active) return;
+      const top = active.offsetTop;
+      const bottom = top + active.offsetHeight;
+      if (top < node.scrollTop) node.scrollTop = top;
+      else if (bottom > node.scrollTop + node.clientHeight) node.scrollTop = bottom - node.clientHeight;
+    });
+    return () => cancelAnimationFrame(frame);
+  }, [clampedActive]);
+
+  const palette = useMenuPalette();
+
   return (
     <Dialog
       control={control}
@@ -224,66 +244,79 @@ export function createCommand(Dialog: DialogComponent) {
       placement="center"
       dismissOnBackdrop
       maxWidth={COMMAND_MAX_WIDTH}
+      // The palette owns its insets (full-bleed separator) and its own results
+      // ScrollView, so the Dialog adds neither padding nor a wrapping scroller.
+      contentPadding={0}
+      scrollable={false}
       label="Command palette"
-      // The palette owns its own edge-to-edge layout (full-bleed search border,
-      // padded results) so the Dialog panel contributes no padding of its own.
-      style={[styles.panel, style]}
+      // The palette is the floating menu surface: card/neutral-800 panel,
+      // 1px border, radius 16, `shadow-dropdown`, edge-to-edge content.
+      style={[
+        styles.panel,
+        {
+          backgroundColor: palette.surface,
+          borderColor: palette.border,
+          boxShadow: palette.shadow,
+        },
+        style,
+      ]}
       testID={testID}>
       <View {...webKeyHandler}>
-        <View style={[styles.searchWrap, { borderBottomColor: theme.colors.borderLight }]}>
-          <Search
+        <View style={styles.searchRow}>
+          <RiSearchLine width={20} height={20} fill={palette.textPlaceholder} />
+          <TextInput
             ref={searchRef}
-            label={placeholder}
+            accessibilityLabel={placeholder}
             placeholder={placeholder}
+            placeholderTextColor={palette.textPlaceholder}
             value={query}
             onChangeText={setQuery}
-            onClearText={() => setQuery('')}
-            autoFocus={Platform.OS !== 'web'}
+            // Focus as the field mounts, on every platform: a focus requested on
+            // the closed→open flip runs before the Dialog has mounted the input.
+            autoFocus
+            autoCorrect={false}
+            autoCapitalize="none"
+            style={[styles.searchInput, SEARCH_WEB_RESET, { color: palette.text }]}
           />
+          {query ? (
+            <CloseButton size="xs" accessibilityLabel="Clear search" onPress={() => setQuery('')} />
+          ) : null}
         </View>
+        <View style={[styles.separator, { backgroundColor: palette.border }]} />
 
         {selectable.length === 0 ? (
           <View style={styles.empty}>
-            <Text style={{ color: theme.colors.textSecondary, fontSize: fontSize.sm }}>
+            <Text palette={palette} variant="body-medium" color={palette.textSecondary}>
               {emptyText}
             </Text>
           </View>
         ) : (
           <ScrollView
+            ref={listRef}
             style={{ maxHeight: maxListHeight }}
             contentContainerStyle={styles.list}
-            keyboardShouldPersistTaps="handled"
-            showsVerticalScrollIndicator={false}>
+            keyboardShouldPersistTaps="handled">
             {entries.map((entry, i) => {
               if (entry.type === 'header') {
                 return (
-                  <Text
-                    key={`h-${entry.group}-${i}`}
-                    style={[styles.groupHeader, { color: theme.colors.textTertiary }]}>
-                    {entry.group}
-                  </Text>
+                  <View key={`h-${entry.group}-${i}`} style={i === 0 ? styles.groupFirst : styles.group}>
+                    <Text palette={palette} variant="body-medium" color={palette.textSecondary}>
+                      {entry.group}
+                    </Text>
+                  </View>
                 );
               }
               const item = entry.item;
               if (!item) return null;
-              const Icon = item.icon;
-              const isActive = entry.selectableIndex === clampedActive;
+              const index = entry.selectableIndex ?? 0;
               return (
-                <Item
+                <CommandRow
                   key={item.id}
-                  title={item.label}
-                  subtitle={item.description}
-                  density="compact"
-                  disabled={item.disabled}
-                  active={isActive}
-                  role="option"
+                  item={item}
+                  active={index === clampedActive}
+                  palette={palette}
+                  onHover={() => setActiveIndex(index)}
                   onPress={() => select(item)}
-                  leading={
-                    Icon ? (
-                      <Icon size="sm" fill={theme.colors.textSecondary} />
-                    ) : null
-                  }
-                  trailing={item.shortcut ? <Kbd size="sm">{item.shortcut}</Kbd> : null}
                 />
               );
             })}
@@ -300,35 +333,162 @@ export function createCommand(Dialog: DialogComponent) {
 
 export type CommandType = ReturnType<typeof createCommand>;
 
+/** Text in the menu type step and Inter, coloured from the palette. */
+function Text({
+  children,
+  variant,
+  color,
+  numberOfLines,
+}: {
+  children: React.ReactNode;
+  palette: MenuPalette;
+  variant: 'body-medium' | 'body-regular' | 'body-2-regular';
+  color: string;
+  numberOfLines?: number;
+}) {
+  const style: TextStyle = { ...MENU_FONT_FAMILY, ...TYPE_SCALE[variant], color };
+  return (
+    <RNText numberOfLines={numberOfLines} style={style}>
+      {children}
+    </RNText>
+  );
+}
+
+/** One result: 8px padding, 8px gap, radius 10, row highlight. */
+function CommandRow({
+  item,
+  active,
+  palette,
+  onHover,
+  onPress,
+}: {
+  item: CommandItem;
+  active: boolean;
+  palette: MenuPalette;
+  onHover: () => void;
+  onPress: () => void;
+}) {
+  const { state: pressed, onIn, onOut } = useInteractionState();
+  const Icon = item.icon;
+  const highlighted = !item.disabled && (active || pressed);
+  const label = item.disabled ? palette.textDisabled : palette.text;
+  return (
+    <Pressable
+      role="option"
+      accessibilityLabel={item.description ? `${item.label}, ${item.description}` : item.label}
+      aria-selected={active}
+      accessibilityState={{ selected: active, disabled: item.disabled }}
+      disabled={item.disabled}
+      onPress={item.disabled ? undefined : onPress}
+      onPressIn={item.disabled ? undefined : onIn}
+      onPressOut={item.disabled ? undefined : onOut}
+      onHoverIn={item.disabled ? undefined : onHover}
+      style={[
+        styles.row,
+        ROW_TRANSITION,
+        { backgroundColor: highlighted ? palette.rowHighlight : 'transparent' },
+      ]}>
+      {Icon ? (
+        <View style={styles.rowIcon}>
+          <Icon width={ROW_ICON_SIZE} height={ROW_ICON_SIZE} fill={item.disabled ? palette.textDisabled : palette.textSecondary} />
+        </View>
+      ) : null}
+      <View style={styles.rowText}>
+        <Text palette={palette} variant="body-medium" color={label} numberOfLines={1}>
+          {item.label}
+        </Text>
+        {item.description ? (
+          <Text palette={palette} variant="body-2-regular" color={palette.textSecondary} numberOfLines={1}>
+            {item.description}
+          </Text>
+        ) : null}
+      </View>
+      {item.shortcut ? <Kbd size="sm">{item.shortcut}</Kbd> : null}
+    </Pressable>
+  );
+}
+
+/** The row's `transition-colors`. */
+const ROW_TRANSITION: WebCssStyle = {
+  transitionProperty: 'background-color',
+  transitionDuration: '150ms',
+  transitionTimingFunction: 'cubic-bezier(0.4, 0, 0.2, 1)',
+};
+
+/**
+ * The browser's focus outline on the bare `<input>` — the palette itself is the
+ * focus context, as in `TextField`. `outlineStyle: 'none'` is RN-Web only and
+ * absent from RN's types, hence the same cast `TextField` makes.
+ */
+const SEARCH_WEB_RESET: TextStyle | undefined =
+  Platform.OS === 'web'
+    ? ({ outlineWidth: 0, outlineStyle: 'none' } as unknown as TextStyle)
+    : undefined;
+
 const styles = StyleSheet.create({
-  // Zero out the Dialog panel's default padding (longhands beat the web
-  // panel's `padding` shorthand and the native panel's longhand paddings) so
-  // the palette renders edge-to-edge.
+  // The floating panel: radius 16, 1px border, content edge to edge.
   panel: {
     paddingTop: 0,
     paddingHorizontal: 0,
-    paddingBottom: space.xs,
+    paddingBottom: 0,
+    borderRadius: 16,
+    borderWidth: 1,
+    overflow: 'hidden',
   },
+  searchRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    height: 52,
+    paddingLeft: 16,
+    paddingRight: 12,
+  },
+  searchInput: {
+    flex: 1,
+    minWidth: 0,
+    height: 52,
+    ...MENU_FONT_FAMILY,
+    ...TYPE_SCALE['body-medium'],
+  },
+  separator: {
+    height: 1,
+  },
+  // The menu panel's `p-[10px]` and `gap-1`.
   list: {
-    paddingBottom: space.xs,
+    padding: 10,
+    gap: 4,
   },
-  searchWrap: {
-    paddingHorizontal: space.md,
-    paddingTop: space.sm,
-    paddingBottom: space.sm,
-    borderBottomWidth: StyleSheet.hairlineWidth,
+  // The group label: `pl-2`, 6px above its first row, 4px more than the gap
+  // between groups.
+  groupFirst: {
+    paddingLeft: 8,
+    paddingBottom: 2,
   },
-  groupHeader: {
-    fontSize: fontSize.xs,
-    fontWeight: '600',
-    textTransform: 'uppercase',
-    letterSpacing: 0.6,
-    paddingHorizontal: space.lg,
-    paddingTop: space.sm,
-    paddingBottom: space.xs,
+  group: {
+    paddingLeft: 8,
+    paddingTop: 8,
+    paddingBottom: 2,
+  },
+  row: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    padding: 8,
+    minHeight: 36,
+    borderRadius: 10,
+  },
+  rowIcon: {
+    width: ROW_ICON_SIZE,
+    height: ROW_ICON_SIZE,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  rowText: {
+    flex: 1,
+    minWidth: 0,
   },
   empty: {
-    paddingVertical: space._2xl,
+    paddingVertical: 32,
     alignItems: 'center',
   },
 });

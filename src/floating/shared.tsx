@@ -32,7 +32,7 @@
  * DOM, so a layout class and a visual class cannot land in different places.
  */
 import React from 'react';
-import { type StyleProp, type ViewStyle } from 'react-native';
+import { Platform, type StyleProp, type ViewStyle } from 'react-native';
 
 import {
   StyledPressable,
@@ -45,15 +45,33 @@ import {
   ROW_CHEVRON_CLASS,
   ROW_CLASS,
   ROW_DISABLED_CLASS,
+  ROW_DISABLED_DIM_CLASS,
   ROW_ENABLED_CLASS,
   ROW_GUTTER_CLASS,
   ROW_GUTTER_END_CLASS,
-  ROW_HIGHLIGHT_CLASS,
   ROW_INSET_CLASS,
   ROW_LEADING_CLASS,
   ROW_TEXT_CLASS,
-  ROW_TEXT_DESTRUCTIVE_CLASS,
 } from './constants';
+import { useMenuPalette } from './menu-palette';
+import { menuType } from './menu-type';
+import type { WebCssStyle } from '../styles/web-view-style';
+
+/**
+ * The row highlight's `transition-colors` (150ms). Web only: on
+ * native a style transition is not something a `Pressable` animates, and the
+ * highlight is a press flash there anyway.
+ */
+const ROW_TRANSITION: WebCssStyle | null =
+  Platform.OS === 'web'
+    ? {
+        transitionProperty: 'background-color',
+        transitionDuration: '150ms',
+        transitionTimingFunction: 'cubic-bezier(0.4, 0, 0.2, 1)',
+      }
+    : null;
+
+const ROW_LABEL_TYPE = menuType('body-medium');
 
 /**
  * Join class strings, dropping the empty ones.
@@ -115,6 +133,11 @@ export interface MenuRowShellProps {
   hasPopup?: WebAriaProps['aria-haspopup'];
   disabled: boolean;
   destructive?: boolean;
+  /**
+   * Paint the highlight at rest — the `selected` row (`MENU_ITEM_ACTIVE`),
+   * the current choice of a radio or checkbox row.
+   */
+  selected?: boolean;
   /** Indent to line up with the rows that carry an indicator. */
   inset?: boolean;
   /** This row carries an out-of-flow indicator at the named edge. */
@@ -129,6 +152,18 @@ export interface MenuRowShellProps {
   style?: StyleProp<ViewStyle>;
   testID?: string;
   children?: React.ReactNode;
+}
+
+function safeMatches(
+  target: { matches?: (selector: string) => boolean },
+  selector: string,
+): boolean {
+  try {
+    return target.matches?.(selector) ?? true;
+  } catch {
+    // An engine without `:focus-visible` (jsdom) — treat every focus as visible.
+    return true;
+  }
 }
 
 /**
@@ -146,6 +181,7 @@ export function MenuRowShell({
   hasPopup,
   disabled,
   destructive = false,
+  selected = false,
   inset = false,
   gutter,
   leading,
@@ -160,11 +196,16 @@ export function MenuRowShell({
 }: MenuRowShellProps) {
   const { state: hovered, onIn: onHoverIn, onOut: onHoverOut } = useInteractionState();
   const { state: pressed, onIn: onPressIn, onOut: onPressOut } = useInteractionState();
-  const highlighted = (hovered || pressed) && !disabled;
+  const { state: focused, onIn: onFocus, onOut: onBlur } = useInteractionState();
+  const palette = useMenuPalette();
+  // `MENU_ITEM_INTERACTIVE` + `MENU_ITEM_ACTIVE`: hover, keyboard focus
+  // and the current selection all paint the same `dropdown-item-hover-background`.
+  const highlighted = !disabled && (hovered || pressed || focused || selected);
 
   const rowClass = cx(
     ROW_CLASS,
     disabled ? ROW_DISABLED_CLASS : ROW_ENABLED_CLASS,
+    disabled && title == null && ROW_DISABLED_DIM_CLASS,
     gutter === 'leading'
       ? ROW_GUTTER_CLASS
       : gutter === 'trailing'
@@ -172,9 +213,13 @@ export function MenuRowShell({
         : inset
           ? ROW_INSET_CLASS
           : false,
-    highlighted && ROW_HIGHLIGHT_CLASS,
     className,
   );
+  const labelColor = disabled
+    ? palette.textDisabled
+    : destructive
+      ? palette.destructive
+      : palette.text;
 
   return (
     <StyledPressable
@@ -199,8 +244,27 @@ export function MenuRowShell({
       // a touch never flashes a hover state on its way to a press.
       onHoverIn={disabled ? undefined : onHoverIn}
       onHoverOut={disabled ? undefined : onHoverOut}
+      onFocus={
+        disabled
+          ? undefined
+          : (event: { target?: unknown }) => {
+              // `focus-visible` only, matching `focus-visible:bg-…`: a
+              // mouse press also focuses the row, and a `keepOpen` row must not
+              // stay painted after the pointer has left it.
+              const target = event.target as { matches?: (selector: string) => boolean };
+              if (typeof target?.matches === 'function' && !safeMatches(target, ':focus-visible')) {
+                return;
+              }
+              onFocus();
+            }
+      }
+      onBlur={onBlur}
       className={rowClass}
-      style={style}
+      style={[
+        ROW_TRANSITION,
+        { backgroundColor: highlighted ? palette.rowHighlight : 'transparent' },
+        style,
+      ]}
       testID={testID}>
       {leading != null ? (
         <StyledView className={ROW_LEADING_CLASS}>{leading}</StyledView>
@@ -208,7 +272,9 @@ export function MenuRowShell({
       {title != null ? (
         <StyledText
           numberOfLines={1}
-          className={destructive ? ROW_TEXT_DESTRUCTIVE_CLASS : ROW_TEXT_CLASS}>
+          className={ROW_TEXT_CLASS}
+          // `text-body-medium`, in Inter.
+          style={[ROW_LABEL_TYPE, { color: labelColor }]}>
           {title}
         </StyledText>
       ) : (

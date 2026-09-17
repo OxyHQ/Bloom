@@ -23,7 +23,7 @@ import { PortalProvider, PortalOutlet } from '../portal';
 import { useTheme } from '../theme/use-theme';
 import { ZoomableMediaGallery } from '../zoomable-media-gallery';
 import type { ZoomableMediaGalleryHandle } from '../zoomable-media-gallery';
-import { ArrowOutOfBox_Stroke2_Corner0_Rounded as ShareIcon } from '../icons';
+import { RiUpload2Line as ShareIcon } from '../icons';
 import { hostNodes } from './support/rendered-style';
 
 const IMAGES = [{ uri: 'https://cloud.oxy.so/a.jpg', alt: 'First' }];

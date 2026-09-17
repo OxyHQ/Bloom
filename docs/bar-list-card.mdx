@@ -1,0 +1,66 @@
+---
+title: Bar list card
+description: An analytics breakdown list — ranked rows over share bars, underline tabs, a metric caption and a "more" pill — on native and web.
+order: 46
+---
+
+# Bar list card
+
+`BarListCard` renders traffic by device, browser, OS, referrer… as a ranked list where each row's background bar is its share of the TOP row.
+
+```tsx
+import { BarListCard } from '@oxy.so/bloom/chart-cards';
+import { RiComputerLine, RiSmartphoneLine } from '@oxy.so/bloom/icons';
+
+<BarListCard
+  metricLabel="Sessions"
+  tabs={[
+    { id: 'devices', label: 'Devices', items: [
+      { label: 'Desktop', value: 5980, icon: RiComputerLine },
+      { label: 'Mobile', value: 3020, icon: RiSmartphoneLine },
+    ] },
+    { id: 'browsers', label: 'Browsers', items: browsers },
+  ]}
+/>
+
+// One list: a title instead of tabs.
+<BarListCard title="Top pages" metricLabel="Views" metric="value" items={pages} />
+```
+
+## Props
+
+| Prop | Default | |
+|---|---|---|
+| `tabs` | — | `{ id, label, items }[]`; the strip is Bloom's underline `Tabs` |
+| `items` / `title` | — / `"Breakdown"` | a single list with a heading instead of tabs |
+| `metricLabel` | `"Visitors"` | caption over the values, uppercased |
+| `metric` | `"share"` | `share` of the tab total (`61%`, `<0.5%`, `0%`) or the raw `value` |
+| `format` | en-US grouping | raw values |
+| `color` | chart-6 (blue) | the bars' tint; an item's own `color` wins |
+| `mono` | `false` | single ink (neutral-500 light, neutral-50 @ 84% dark) |
+| `limit` | `5` | rows before the "more" pill |
+| `defaultTab` / `onTabChange` | first tab | |
+
+Item: `{ label, value, color?, icon? }`. `icon` is an icon COMPONENT (`RiComputerLine` — sized 16 and tinted text-secondary by the card) or a node you size yourself.
+
+## Geometry
+
+| | |
+|---|---|
+| card | `background-secondary`, radius 16, padding 4 / 16 / 12 (longhands), content-sized, 12px between header and rows |
+| header | pulled 16px past the card padding and padded back, so its 1px `separator-border` rule runs edge to edge; tabs (px 10 py 8, underline flush with the strip's bottom) or the title (`body-medium`, px 10 py 8) on the left; the caption `caption-1-medium`, 0.06em tracking, uppercase, text-tertiary, 10px above the rule |
+| rows | bleed 8px past the card sides and 4px into its bottom; 36 tall, 4px apart, radius 8, padding 10, a 16px icon 8px before the label (`body-regular`), the value `body-medium` tabular on the right |
+| bar | behind the row, width = value ÷ top row, radius 8, the row colour at 14% — 26% of its hover step while hovered |
+| more pill | 40 × 20, fully round, `border-button`, `background-primary`, `shadow-xs`, hover `background-primary-hover` (150ms), 14px chevron turning 180° (200ms); 4px above the list's bottom collapsed, 8px below it expanded |
+
+## Motion
+
+- Bars grow from 0 over 500ms `ease-out`, 60ms after the card mounts. A tab opened later renders at its widths, matching a CSS width transition; a data change eases to the new widths.
+- Collapsed, the list fades out over its last 44px. Expanding shows every row **at once** — the reveal ends up animating only its 4px top padding, so that 4px tail is all that moves (300ms, `[0.22, 1, 0.36, 1]`).
+- Row tints ease 500ms on web; everything snaps under reduced motion and on native.
+
+## Platform notes
+
+- **The fade is an overlay, not a mask.** The card behind the rows is one known colour, so a gradient of that colour over the rows paints the same pixels on web AND native (which has no `mask-image`). A `style` that changes the card's `backgroundColor` therefore needs the matching surface — the gradient reads `useChartCardPalette().surface`.
+- **The tab strip's edge fades are web only.** They read the strip's scroll position from the DOM; Bloom's `Tabs` exposes no scroll events, so native tabs scroll without the 28px fades.
+- Hover: rows respond to pointer enter / leave; on native a press-and-hold highlights a row.

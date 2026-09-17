@@ -5,7 +5,7 @@ import { useTheme } from '../theme/use-theme';
 import { useInteractionState } from '../hooks/use-interaction-state';
 import { Card } from '../card';
 import { Divider } from '../divider';
-import { ChevronRight_Stroke2_Corner0_Rounded as ChevronRightIcon } from '../icons/Chevron';
+import { RiArrowRightSLine as ChevronRightIcon } from '../icons/remix/RiArrowRightSLine';
 import type {
   SettingsListItemProps,
   SettingsListGroupProps,

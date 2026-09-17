@@ -1,0 +1,101 @@
+---
+title: AiChat
+description: The AI chat workspace — shell with drawers and a resizable panel, chat container, animated thread turns, image generation frame, code and gallery panels.
+order: 101
+---
+
+# AiChat
+
+The pieces of the AI chat and AI image generation screens. Everything is data and callbacks — no model, transport or storage. The full screens are composed in Storybook under `Templates/AI Chat` and `Templates/AI Image Generation`.
+
+| Export | What it is |
+| --- | --- |
+| `AiChatShell` | The page frame: sidebar, chat container, resizable right panel, and the phone / tablet drawers |
+| `AiChatMobileHeader` | The in-container header below `xl` (menu button, title, panel button), wired to the shell |
+| `AiChatResizeHandle` | The grip on the chat's right edge |
+| `AiChatContainer` | The chat card: breadcrumb header, thread, composer slot, `AgentThinking` while working |
+| `AiChatThread` | The bottom-anchored, self-following scroll of turns |
+| `AiChatUserMessage` / `AiChatAssistantMessage` | The turns, with the staggered blur-in |
+| `AiChatMessageLine`, `AiChatBulletList`, `AiChatBullet`, `AiChatStrong`, `AiChatLinkChip` | A reply's blocks and inline runs |
+| `AiChatFeedbackRow` | Like / dislike / copy with tooltips |
+| `AiChatImageGeneration` | An image generating: dot wave, split-flap countdown, radial reveal, feedback and toast |
+| `AiChatCodePanel` | Changes / Browser panel: uncommitted-changes card and a numbered code view |
+| `AiChatGalleryPanel` | Gallery / Styles panel: masonry wall of generations that expand in place |
+
+It composes Bloom's own families: `Sidebar` (with `tree` and `plan`), `ComposerPill` + `ComposerStatusBar` inside `ComposerLoader`, `CodeBlock` / `CodeLines`, `AgentProgress`, `AgentThinking`, `Tabs` (pill), `Breadcrumb`, `Tooltip`, `Button`.
+
+```tsx
+import { AiChatShell, AiChatContainer, AiChatMobileHeader, AiChatThread, AiChatUserMessage, AiChatAssistantMessage, AiChatCodePanel } from '@oxy.so/bloom/ai-chat';
+
+<AiChatShell
+  sidebar={<Sidebar {...rail} />}
+  mobileSidebar={<Sidebar {...rail} mobile flat />}
+  panelLabel="Code"
+  panel={(width) => <AiChatCodePanel width={width} code={file} language="tsx" />}>
+  <AiChatContainer
+    project="vibl coding project"
+    title="coding scenario"
+    header={<AiChatMobileHeader title="Agentic chat" />}
+    working={working}
+    composer={<ComposerLoader active={working}><ComposerPill surface={false} glass={working} /></ComposerLoader>}>
+    <AiChatThread>
+      <AiChatUserMessage>update our colour tokens for dark mode</AiChatUserMessage>
+      <AiChatAssistantMessage>Done — the tokens are wired.</AiChatAssistantMessage>
+    </AiChatThread>
+  </AiChatContainer>
+</AiChatShell>
+```
+
+Give the shell a sized parent — it fills it.
+
+## Shell
+
+- **lg and up** (1024): the floating `sidebar` in flow, 16 from the workspace, inside a 12px frame on background-full.
+- **xl and up** (1280): the `panel` 12 right of the chat at its width (410, dragged within 320–560). The grip is a 20px strip straddling the chat's edge; hovering it reveals a 15×25 grip (radius 4, border, background-primary, shadow-xs, three 1×13 icon-quaternary lines) that follows the pointer along the edge and stays while dragging. Dragging right widens the chat. With keyboard focus, ←/→ nudge by 16.
+- **below xl** the panel is a right drawer — min(410, 100% − 12) wide, background-full, p 12, shadow-sidebar, a 40-tall header with the panel name and a close button — over a 40% black backdrop, sliding 300ms. `panel` receives `'100%'` there.
+- **below lg** the `mobileSidebar` rests under the workspace (272 wide, py 12 / pl 6). Opening it slides the whole workspace 272 right and rounds it to 32 while the sidebar scales from 94% and fades in (325ms `cubic-bezier(0.42, 0, 0.58, 1)`); a 10% black / 5% white veil over the workspace closes it. Opening one drawer closes the other.
+- `navOpen` / `panelOpen` are controllable. Reduced motion snaps.
+
+## Container and thread
+
+Radius 24 on background-secondary: the breadcrumb header (px 16 / pt 16, share and more glyphs 8 apart, deepening to black / white on hover), the thread, then the footer (px 10 / pt 12 / pb 10, gap 10) with `AgentThinking` (infinity) while `working` and the `composer`.
+
+The thread scrolls with a thin scrollbar, px 16 / pt 16, turns 12 apart, and is **bottom-anchored**: a short exchange sits just above the composer. It follows the newest content with a smooth scroll whenever it grows.
+
+**Hazard (web):** react-native-web gives every view `min-height: 0`, so the usual `flexGrow: 1` + `justifyContent: 'flex-end'` content container stays the viewport's height and its children overflow it instead of scrolling — and `onContentSizeChange` never sees the growth. The thread floors its container at `minHeight: '100%'` on web instead.
+
+## Turns
+
+- **User** — pushed right with a 6px bleed past the column, as wide as its text up to half the column + 6; radius 16, background-primary, px 12 / py 11, shadow-card.
+- **Assistant** — full width, blocks 8 apart, with `AiChatFeedbackRow` last (`feedback={false}` drops it).
+- **Blocks** — `AiChatMessageLine` (body-regular; `tone="secondary"` for status lines; `block` for a card), `AiChatBulletList` (a 5px disc in a 21px indent, items 8 apart), `AiChatStrong` (body-medium), `AiChatLinkChip` (inline, radius 8, px 4 / py 3, accent-100 with a 16px link glyph and caption-2-medium accent-500). A bare string child becomes a line; any other element a block line.
+- **Motion** — a turn fades in over 400ms while its blocks rise 6px, un-blur 6px (web) and fade in, 500ms `cubic-bezier(0.25, 0.1, 0.25, 1)`, 180ms apart; a bullet list staggers its own items from its slot. `animate={false}` mounts settled (history), as does reduced motion.
+
+## Feedback row
+
+28px squares 6 apart: radius 8, p 6, background-tertiary, background-secondary-hover on hover with the 16px glyph deepening to icon-primary. Each has a `sm` tooltip above after 200ms (keyboard focus raises it too; a press does not). Copy swaps the glyph for a check (blur, 75% scale, fade, 200ms) and holds the tooltip open reading "Copied!" for 1.6s, then dismisses it even if the pointer is still there.
+
+## Image generation
+
+- The frame unfolds from 0 to 250 tall (550ms `cubic-bezier(0.22, 1, 0.36, 1)`) while it fades in and un-blurs, pushing the thread up instead of popping in.
+- A 200×250 card (radius 16, background-primary, shadow-card): on web a canvas of 9px-spaced dots swelling and brightening as rings ripple out from the centre (icon-primary on a ring, icon-quaternary elsewhere, faded at the edges); native draws the still field. Along the bottom, "Generating image" shimmers against a **split-flap countdown** of whole seconds — each digit an 11-wide card whose old top half falls (150ms ease-in to −90°) as the new bottom half rises with a small slap past 0° (230ms, 150ms late).
+- It lands after `duration` (4000) — or when a controlled `ready` turns true — firing `onGenerated` once. The status fades out (300ms); on web the artwork is revealed through a radial mask feathered 26% wide sweeping from the centre to 132% while it fades in and un-blurs 10px (1550ms, a registered `@property`); native fades it in.
+- The feedback row rises in under it; like and dislike raise a toast over the image's bottom edge (radius 8, neutral-950 @80% with an 8px backdrop blur, body-2-medium white) that rises 8px in and out (420ms) and leaves after 2.2s.
+
+## Panels
+
+Both share a shell: `width` wide, full height, pt 8, gap 10, and a 30-tall header of pill tabs with actions on the right.
+
+- **Code** — Changes (∞) / Browser (globe) with terminal / expand / sidebar glyphs (16px, 8 apart). A summary strip framed on three sides by a 1px background-secondary line (radius 10 on top): "N Uncomitted changes" (body-2-medium secondary), `+156` / `-23` (body-regular success-700 / negative-600) and an undo glyph; each changed file tucks 7px up under it (radius 10, background-secondary, py 4 / pr 5 / pl 6: a 16px mark, the path with its additions, a `status` chip). Then the code as `CodeLines` at `md`, soft-wrapping, scrolling with a thin scrollbar. The Browser tab shows `browser` or a placeholder.
+- **Gallery** — Gallery (an 18px glyph, optically matching the 20px sparkle) / Styles, with 18px actions on 2px padding (radius 6, primary-hover, tooltips). The wall is explicit balanced columns 8 apart — always filling the shortest — so an insertion only moves its own column; `generated` images are pinned to the head of the first. Tiles (radius 10, background-secondary, the artwork covering them at its `aspectRatio`) cascade in top-left → bottom-right (fade + 8px blur over 400ms, scale from 95% over 550ms, 130ms × order late; a generated tile only fades). Hovering lifts the image 3% and fades in a scrim (neutral-950 40% → clear → 55%) with glass download / more actions (22px, neutral-950 @45%, 65% hovered, 4px blur) and the prompt (body-2-regular, two lines). Pressing a tile lifts it into a full-width row above the wall (body-medium prompt, p 10, a minimize action); on web it morphs between the two boxes by FLIP (550ms, 600ms for the enlarged tile) while its neighbours glide, painting above the wall in flight, and the scroller jumps to the top first.
+
+## Colour
+
+Semantic tokens resolved onto Bloom's ramps (`ai-chat/shared.ts`): background-full card / neutral-925, background-primary card / 800, secondary 100 / 900, tertiary 200 / 800, border 200 / 700, text-secondary 500, text-tertiary 400 / 600, icon-primary 950 / 50, icon-quaternary 300 / 700. Additions and the copied check follow `success`, deletions `negative`, the link chip the accent.
+
+## Known gaps
+
+- **Native:** no dot-wave animation (a still field), no radial mask (a fade), no gallery morph (the tile moves instantly), and the gallery's hover scrim shows only on the enlarged tile. The resize grip works by pan but only appears while dragging.
+- **The glass chips** are frost + tint + sheen + rim; the SVG refraction layer of the reference material is not reproduced.
+- **Effort at Max** has no flame / starfield flourish (see `composer-panel`).
+- The gallery re-baselines rather than animating when the panel's own width changes during a resize drag.

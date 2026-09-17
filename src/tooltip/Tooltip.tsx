@@ -16,23 +16,21 @@ import {
 import Animated, { Easing, ZoomIn } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-import { useTheme } from '../theme/use-theme';
-import { bloomShadowStyle } from '../design-tokens/shadows';
+import { useMenuPalette } from '../floating/menu-palette';
 import { atoms as a } from '../styles';
 import { OverlayRoot } from '../overlay';
 import { Portal } from '../portal';
 import {
+  ARROW_DEPTH,
   ARROW_HALF_SIZE,
-  ARROW_SIZE,
   BUBBLE_MAX_WIDTH,
   MIN_EDGE_SPACE,
+  TOOLTIP_OFFSET,
+  TOOLTIP_SIZES,
+  type TooltipSize,
 } from './constants';
 import { createTextBubble } from './TextBubble';
-
-/**
- * These are native specific values, not shared with web
- */
-const ARROW_VISUAL_OFFSET = ARROW_SIZE / 1.25;
+import { TooltipCaret } from './TooltipCaret';
 
 type TooltipContextType = {
   position: 'top' | 'bottom';
@@ -145,9 +143,12 @@ export function TooltipTrigger({ children }: { children: React.ReactNode }) {
 export function TooltipContent({
   children,
   label,
+  size = 'sm',
 }: {
   children: React.ReactNode;
   label: string;
+  /** `sm` (default) or `md` surface — padding and corner. */
+  size?: TooltipSize;
 }) {
   const { position, visible, onVisibleChange } = useContext(TooltipContext);
   const { targetMeasurements } = useContext(TargetContext);
@@ -166,6 +167,7 @@ export function TooltipContent({
       <OverlayRoot>
         <Bubble
           label={label}
+          size={size}
           position={position}
           targetMeasurements={targetMeasurements}
           requestClose={requestClose}>
@@ -179,17 +181,19 @@ export function TooltipContent({
 function Bubble({
   children,
   label,
+  size,
   position,
   requestClose,
   targetMeasurements,
 }: {
   children: React.ReactNode;
   label: string;
+  size: TooltipSize;
   position: TooltipContextType['position'];
   requestClose: () => void;
   targetMeasurements: TargetMeasurements;
 }) {
-  const theme = useTheme();
+  const palette = useMenuPalette();
   const insets = useSafeAreaInsets();
   const dimensions = useWindowDimensions();
   const [bubbleMeasurements, setBubbleMeasurements] = useState<
@@ -200,9 +204,6 @@ function Bubble({
     | undefined
   >(undefined);
 
-  const bubbleBg = theme.isDark
-    ? { backgroundColor: theme.colors.backgroundSecondary }
-    : { backgroundColor: theme.colors.background };
 
   const coords = useMemo(() => {
     if (!bubbleMeasurements)
@@ -229,7 +230,9 @@ function Bubble({
       minLeft,
       targetMeasurements.x + targetMeasurements.width / 2 - cw / 2,
     );
-    const tipTranslate = ARROW_HALF_SIZE * -1;
+    // The caret sits OUTSIDE the bubble and overlaps its 1px border, so its
+    // fill covers the border where the two join.
+    const tipTranslate = -(ARROW_DEPTH - 1);
     let tipTop = tipTranslate;
 
     if (left + cw > maxLeft) {
@@ -247,7 +250,7 @@ function Bubble({
     function positionTop() {
       top = top - ch - targetMeasurements.height;
       bottom = top + ch;
-      tipTop = tipTop + ch;
+      tipTop = ch - 1;
       computedPosition = 'top';
     }
 
@@ -269,12 +272,13 @@ function Bubble({
       }
     }
 
+    // A 10px gap (`offset={10}`) between the trigger and the bubble's edge.
     if (computedPosition === 'bottom') {
-      top += ARROW_VISUAL_OFFSET;
-      bottom += ARROW_VISUAL_OFFSET;
+      top += TOOLTIP_OFFSET;
+      bottom += TOOLTIP_OFFSET;
     } else {
-      top -= ARROW_VISUAL_OFFSET;
-      bottom -= ARROW_VISUAL_OFFSET;
+      top -= TOOLTIP_OFFSET;
+      bottom -= TOOLTIP_OFFSET;
     }
 
     return {
@@ -320,37 +324,20 @@ function Bubble({
         ]}>
         <Animated.View
           entering={ZoomIn.easing(Easing.out(Easing.exp))}
-          style={{ transformOrigin: opposite(position) }}>
+          style={{ transformOrigin: opposite(coords.computedPosition) }}>
+          {/* A light-surface tooltip: `bg-background-primary-default`,
+              1px `border-button-default`, `shadow-dropdown`, `sm` 10/6 padding
+              on an 8px corner or `md` 12/8 on 10px. */}
           <View
-            style={[
-              a.absolute,
-              a.top_0,
-              a.z_10,
-              bubbleBg,
-              {
-                borderTopLeftRadius: a.rounded_2xs.borderRadius,
-                borderBottomRightRadius: a.rounded_2xs.borderRadius,
-                width: ARROW_SIZE,
-                height: ARROW_SIZE,
-                transform: [{ rotate: '45deg' }],
-                top: coords.tipTop,
-                left: coords.tipLeft,
-              },
-            ]}
-          />
-          <View
-            style={[
-              a.px_md,
-              a.py_sm,
-              a.rounded_sm,
-              bubbleBg,
-              // `shadow-m` — the overlay role, and the token owns the platform
-              // split, which the hand-rolled version only had the native half
-              // of. The offset no longer flips with the bubble's side: one
-              // shadow vocabulary is the point, and at a 12px blur the
-              // direction was not readable anyway.
-              bloomShadowStyle('m'),
-            ]}
+            style={{
+              paddingHorizontal: TOOLTIP_SIZES[size].paddingHorizontal,
+              paddingVertical: TOOLTIP_SIZES[size].paddingVertical,
+              borderRadius: TOOLTIP_SIZES[size].borderRadius,
+              borderWidth: 1,
+              borderColor: palette.border,
+              backgroundColor: palette.surface,
+              boxShadow: palette.shadow,
+            }}
             onLayout={(e) => {
               setBubbleMeasurements({
                 width: e.nativeEvent.layout.width,
@@ -359,6 +346,13 @@ function Bubble({
             }}>
             {children}
           </View>
+          {/* After the bubble, so it paints over the border it overlaps. */}
+          <TooltipCaret
+            position={coords.computedPosition}
+            fill={palette.surface}
+            stroke={palette.border}
+            style={{ position: 'absolute', top: coords.tipTop, left: coords.tipLeft }}
+          />
         </Animated.View>
       </View>
     </>

@@ -15,7 +15,7 @@ import { Card } from '../card';
 import { useTheme } from '../theme';
 
 const meta: Meta = {
-  title: 'Foundations/Image aspect-ratio cache',
+  title: 'Foundations/Image Aspect Ratio Cache',
 };
 
 export default meta;

@@ -26,7 +26,7 @@ import type {
  * dependency array is ever dropped again these stories freeze visibly.
  */
 const meta: Meta = {
-  title: 'Overlays/ZoomableMediaGallery',
+  title: 'Base/Zoomable Media Gallery',
 };
 
 export default meta;

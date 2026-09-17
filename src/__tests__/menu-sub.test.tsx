@@ -113,7 +113,8 @@ describe('the native sub-menu is an inline disclosure', () => {
     );
 
     expect(classNamesOn(getByTestId('submenu-content').props.style)).toContain(
-      'pl-space-16 min-w-[150px]',
+      // The inline sub's own indent and 4px row rhythm, then the caller's class.
+      'pl-space-16 gap-space-4 min-w-[150px]',
     );
   });
 });

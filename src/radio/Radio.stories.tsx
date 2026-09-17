@@ -2,10 +2,11 @@ import React, { useState } from 'react';
 import { View } from 'react-native';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
-import { Radio, RadioGroup } from './index';
+import { Radio, RadioCard, RadioGroup } from './index';
+import { useTheme } from '../theme/use-theme';
 
 const meta: Meta<typeof RadioGroup> = {
-  title: 'Forms/Radio',
+  title: 'Base/Radio',
   component: RadioGroup,
 };
 
@@ -96,6 +97,32 @@ export const StandaloneItems: Story = {
   },
 };
 
+const noop = () => {};
+
+/**
+ * Every size against every state, for side-by-side comparison.
+ * Tab onto a row for the focus ring around the dot.
+ */
+export const Matrix: Story = {
+  render: function RadioMatrix() {
+    const theme = useTheme();
+    return (
+      <View style={{ gap: 16, padding: 16, backgroundColor: theme.colors.background }}>
+        {(['small', 'medium', 'large'] as const).map((size) => (
+          <View key={size} style={{ flexDirection: 'row', alignItems: 'center', gap: 24 }}>
+            <Radio size={size} value="a" selected={false} onSelect={noop} accessibilityLabel="Unselected" />
+            <Radio size={size} value="b" selected onSelect={noop} accessibilityLabel="Selected" />
+            <Radio size={size} value="c" selected onSelect={noop} label="Option A" />
+            <Radio size={size} value="d" selected={false} onSelect={noop} label="Option B" />
+            <Radio size={size} value="e" selected={false} disabled onSelect={noop} label="Disabled" />
+            <Radio size={size} value="f" selected disabled onSelect={noop} label="Disabled selected" />
+          </View>
+        ))}
+      </View>
+    );
+  },
+};
+
 /** Sizes. */
 export const Sizes: Story = {
   render: function SizesStory() {
@@ -110,6 +137,56 @@ export const Sizes: Story = {
             selected={value === (size === 'medium' ? 'b' : size)}
             onSelect={setValue}
             label={size}
+          />
+        ))}
+      </View>
+    );
+  },
+};
+
+/**
+ * `RadioCard`, through `RadioGroup variant="card"`: title +
+ * description left, the dot right, the whole card selects. Hover a card for the
+ * background; Tab onto one for the ring around its dot.
+ */
+export const Cards: Story = {
+  render: function CardsStory() {
+    const theme = useTheme();
+    const [value, setValue] = useState('pro');
+    return (
+      <View style={{ width: 400, padding: 16, backgroundColor: theme.colors.background }}>
+        <RadioGroup
+          label="Plan"
+          variant="card"
+          value={value}
+          onValueChange={setValue}
+          options={[
+            { value: 'starter', label: 'Starter', description: 'Up to 3 projects.' },
+            { value: 'pro', label: 'Pro', description: 'Unlimited projects and history.' },
+            { value: 'team', label: 'Team' },
+            { value: 'enterprise', label: 'Enterprise', description: 'Contact sales.', disabled: true },
+          ]}
+        />
+      </View>
+    );
+  },
+};
+
+/** A lone `RadioCard`, for a custom layout inside your own `radiogroup`. */
+export const StandaloneCard: Story = {
+  render: function StandaloneCardStory() {
+    const [value, setValue] = useState('a');
+    return (
+      <View role="radiogroup" aria-label="Region" style={{ width: 400, flexDirection: 'row', gap: 8 }}>
+        {['a', 'b'].map((v) => (
+          <RadioCard
+            key={v}
+            value={v}
+            selected={value === v}
+            onSelect={setValue}
+            title={v === 'a' ? 'Europe' : 'United States'}
+            description={v === 'a' ? 'Frankfurt' : 'Virginia'}
+            style={{ flex: 1 }}
           />
         ))}
       </View>

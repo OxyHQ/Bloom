@@ -1,5 +1,4 @@
 import React from 'react';
-import { Text } from 'react-native';
 import { render, fireEvent } from '@testing-library/react-native';
 
 import { BloomThemeProvider } from '../theme/BloomThemeProvider';
@@ -8,11 +7,9 @@ import {
   DotGridMeter,
   StatBar,
   ActivityHeatmap,
-  ProfileCard,
   bucketByDay,
 } from '../index';
 import type { CompositionCategory, AvatarGroupItem } from '../index';
-import { pressHost } from './support/press-host';
 
 function renderWithTheme(ui: React.ReactElement) {
   return render(
@@ -151,47 +148,5 @@ describe('bucketByDay', () => {
   it('skips unparseable dates', () => {
     const items = [{ at: 'not-a-date' }, { at: '2026-06-01' }];
     expect(bucketByDay(items, (i) => i.at)).toEqual([{ date: '2026-06-01', count: 1 }]);
-  });
-});
-
-describe('ProfileCard', () => {
-  it('renders headline, subtitle, metric label and footer label; fires onPress', () => {
-    const onPress = jest.fn();
-    const { getByText, getByTestId } = renderWithTheme(
-      <ProfileCard
-        testID="card"
-        variant="wallet"
-        avatar={{ source: 'https://example.com/a.png', name: 'Wallet' }}
-        value="$167,395"
-        subtitle="*5bF5"
-        headlineIcon={<Text>ICON</Text>}
-        metric={{ kind: 'dots', label: 'Token diversity', filled: 3, total: 10 }}
-        footer={{ label: 'Top tokens', items: TOP }}
-        onPress={onPress}
-      />,
-    );
-    expect(getByText('$167,395')).toBeTruthy();
-    expect(getByText('*5bF5')).toBeTruthy();
-    expect(getByText('Token diversity')).toBeTruthy();
-    expect(getByText('Top tokens')).toBeTruthy();
-    // Through `pressHost`: a bare `fireEvent.press` walks up past the card to
-    // `<ProfileCard onPress={…}>` in this file's own JSX, so the call it
-    // reports says nothing about what the component wired.
-    pressHost(getByTestId('card'));
-    expect(onPress).toHaveBeenCalledTimes(1);
-  });
-
-  it('renders the wide layout with a progress metric', () => {
-    const { getByText } = renderWithTheme(
-      <ProfileCard
-        layout="wide"
-        avatar={{ source: null, name: 'Ada' }}
-        value="12,480"
-        subtitle="@ada"
-        metric={{ kind: 'progress', label: 'Weekly goal', value: 5, max: 7 }}
-      />,
-    );
-    expect(getByText('12,480')).toBeTruthy();
-    expect(getByText('Weekly goal')).toBeTruthy();
   });
 });

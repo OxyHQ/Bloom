@@ -1,12 +1,19 @@
 import React from 'react';
-import { Pressable, Text, View } from 'react-native';
+import { View } from 'react-native';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
 import { ActivityHeatmap } from '../activity-heatmap';
+import { Button } from '../button';
+import { BloomThemeProvider } from '../theme/BloomThemeProvider';
+import { useTheme } from '../theme/use-theme';
+import { Text } from '../typography';
 import { UserHoverCard } from './UserHoverCard';
+import type { UserHoverCardProps } from './types';
 
 const SAMPLE_AVATAR =
   'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=200&h=200&fit=crop';
+const SAMPLE_COVER =
+  'https://images.unsplash.com/photo-1506744038136-46273834b3fb?w=600&h=200&fit=crop';
 
 /**
  * 119 days of deterministic activity — the shape the `footer` slot exists for,
@@ -28,28 +35,35 @@ const ACTIVITY = Array.from({ length: ACTIVITY_DAYS }, (_, i) => {
   };
 });
 
-function DemoFollowButton() {
+const STATS = [
+  { label: 'Following', value: '312' },
+  { label: 'Followers', value: '4.8K' },
+];
+
+/**
+ * Stand-in for the SDK's FollowButton, which is what a real app passes. Bloom's
+ * own `Button`, small and pill-shaped: primary to follow, secondary once
+ * following.
+ */
+function DemoFollowButton({ initial = false }: { initial?: boolean }) {
+  const [following, setFollowing] = React.useState(initial);
   return (
-    <Pressable
-      style={{
-        paddingHorizontal: 14,
-        paddingVertical: 7,
-        borderRadius: 999,
-        backgroundColor: '#1A73E8',
-      }}
+    <Button
+      size="small"
+      variant={following ? 'secondary' : 'primary'}
+      onPress={() => setFollowing((value) => !value)}
     >
-      <Text style={{ color: '#fff', fontWeight: '600', fontSize: 13 }}>
-        Follow
-      </Text>
-    </Pressable>
+      {following ? 'Following' : 'Follow'}
+    </Button>
   );
 }
 
 const meta: Meta<typeof UserHoverCard> = {
-  title: 'Data Display/UserHoverCard',
+  title: 'Blocks/User Hover Card',
   component: UserHoverCard,
   argTypes: {
     verified: { control: 'boolean' },
+    loading: { control: 'boolean' },
   },
 };
 
@@ -57,23 +71,28 @@ export default meta;
 
 type Story = StoryObj<typeof UserHoverCard>;
 
-export const Basic: Story = {
-  args: {
-    avatar: SAMPLE_AVATAR,
-    displayName: 'Nate Isern',
-    username: 'nate',
-    bio: 'Building the Oxy ecosystem. Designer, engineer, and occasional rose grower.',
-    stats: [
-      { label: 'Following', value: '312' },
-      { label: 'Followers', value: '4.8K' },
-    ],
-    verified: true,
-  },
+const BASE: UserHoverCardProps = {
+  avatar: SAMPLE_AVATAR,
+  displayName: 'Nate Isern',
+  username: 'nate',
+  bio: 'Building the Oxy ecosystem. Designer, engineer, and occasional rose grower.',
+  stats: STATS,
+  verified: true,
 };
 
-export const WithAction: Story = {
+export const Basic: Story = {
+  args: { ...BASE, action: <DemoFollowButton /> },
+};
+
+export const WithCover: Story = {
+  args: { ...BASE, cover: SAMPLE_COVER, action: <DemoFollowButton /> },
+  name: 'With cover',
+};
+
+export const Following: Story = {
   args: {
-    avatar: SAMPLE_AVATAR,
+    ...BASE,
+    avatar: null,
     displayName: 'Ada Lovelace',
     username: 'ada',
     bio: 'Mathematician. Wrote the first algorithm intended for a machine.',
@@ -81,31 +100,86 @@ export const WithAction: Story = {
       { label: 'Following', value: '12' },
       { label: 'Followers', value: '1.2M' },
     ],
-    verified: true,
+    action: <DemoFollowButton initial />,
+  },
+  name: 'Following (initials avatar)',
+};
+
+export const NoBio: Story = {
+  args: {
+    ...BASE,
+    bio: undefined,
+    verified: false,
+    displayName: 'Grace Hopper',
+    username: 'grace',
     action: <DemoFollowButton />,
   },
-  name: 'With action slot',
+  name: 'Without bio, not verified',
 };
 
 export const NoAction: Story = {
-  args: {
-    avatar: null,
-    displayName: 'Grace Hopper',
-    username: 'grace',
-    bio: 'Computer scientist and US Navy rear admiral.',
-    stats: [
-      { label: 'Following', value: '88' },
-      { label: 'Followers', value: '900K' },
-    ],
-  },
+  args: { ...BASE, action: undefined },
   name: 'No action slot',
 };
 
 export const Minimal: Story = {
-  args: {
-    displayName: 'Anonymous',
-  },
+  args: { displayName: 'Anonymous' },
   name: 'Minimal (name only)',
+};
+
+export const Loading: Story = {
+  args: { displayName: '', loading: true },
+};
+
+export const LoadingWithCover: Story = {
+  args: { displayName: '', loading: true, cover: SAMPLE_COVER },
+  name: 'Loading with cover',
+};
+
+/** Every state side by side, for a one-screenshot review. */
+function MatrixGrid() {
+  return (
+    <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 24, alignItems: 'flex-start' }}>
+      <UserHoverCard {...BASE} action={<DemoFollowButton />} testID="card-basic" />
+      <UserHoverCard {...BASE} cover={SAMPLE_COVER} action={<DemoFollowButton />} testID="card-cover" />
+      <UserHoverCard
+        {...BASE}
+        avatar={null}
+        displayName="Ada Lovelace"
+        username="ada"
+        bio={undefined}
+        verified={false}
+        action={<DemoFollowButton initial />}
+        testID="card-following"
+      />
+      <UserHoverCard displayName="" loading testID="card-loading" />
+      <UserHoverCard displayName="" loading cover={SAMPLE_COVER} testID="card-loading-cover" />
+    </View>
+  );
+}
+
+export const Matrix: Story = {
+  render: () => <MatrixGrid />,
+};
+
+function DarkSurface({ children }: { children: React.ReactNode }) {
+  const theme = useTheme();
+  return (
+    <View style={{ padding: 24, backgroundColor: theme.colors.background }}>{children}</View>
+  );
+}
+
+export const Dark: Story = {
+  render: (_args, context) => (
+    <BloomThemeProvider
+      mode="dark"
+      colorPreset={context.globals.colorPreset as React.ComponentProps<typeof BloomThemeProvider>['colorPreset']}
+    >
+      <DarkSurface>
+        <MatrixGrid />
+      </DarkSurface>
+    </BloomThemeProvider>
+  ),
 };
 
 /**
@@ -120,20 +194,15 @@ function FooterSlotStory() {
   return (
     <View style={{ gap: 8 }}>
       <UserHoverCard
-        avatar={SAMPLE_AVATAR}
-        displayName="Nate Isern"
-        username="nate"
+        {...BASE}
         bio="Building the Oxy ecosystem."
-        stats={[
-          { label: 'Following', value: '312' },
-          { label: 'Followers', value: '4.8K' },
-        ]}
-        verified
         action={<DemoFollowButton />}
         onPressProfile={() => setPressed('profile')}
         footer={
           <View style={{ gap: 4 }} testID="footer-slot">
-            <Text style={{ fontSize: 13, opacity: 0.6 }}>Activity</Text>
+            <Text variant="body-2-medium" style={{ opacity: 0.6 }}>
+              Activity
+            </Text>
             <ActivityHeatmap
               data={ACTIVITY}
               endDate={ACTIVITY_END}
@@ -256,14 +325,11 @@ export const Pressable_: Story = {
     <View style={{ gap: 8 }}>
       <UserHoverCard
         {...args}
-        avatar={SAMPLE_AVATAR}
+        {...BASE}
         displayName="Linus Torvalds"
         username="linus"
         bio="Creator of Linux and Git."
-        stats={[
-          { label: 'Following', value: '3' },
-          { label: 'Followers', value: '2.1M' },
-        ]}
+        cover={SAMPLE_COVER}
         action={<DemoFollowButton />}
         onPressProfile={() => {
           // eslint-disable-next-line no-alert

@@ -1,12 +1,13 @@
 /**
- * `Card` is the one place that decides what a card surface is made of, and five
- * families now compose it instead of drawing that chrome by hand. Two distinct
+ * `Card` is the one place that decides what a card surface is made of, and the
+ * card-shaped families compose it instead of drawing that chrome by hand. Two distinct
  * things therefore need pinning:
  *
  *   1. the axes themselves — a rung from `RADIUS` rather than a free number, and
  *      an explicit `border`/`elevation` beating the variant's default, which is
  *      what keeps "this surface is a bit different" from becoming a new variant;
- *   2. the RESOLVED chrome of each of the five composing surfaces, because the
+ *   2. the RESOLVED chrome of each composing surface (plus the hover card's own
+ *      floating-panel chrome, pinned here beside them), because the
  *      composition's whole warrant was that it moved no pixels. A browser run
  *      measured that once; this is what keeps it true, and it can see it because
  *      Bloom applies background, radius, border and shadow as inline resolved
@@ -21,8 +22,7 @@ import { RADIUS, BORDER_WIDTH } from '../design-tokens/scales';
 import { SHADOW_BOX } from '../design-tokens/shadows';
 import { SettingsListGroup, SettingsListItem } from '../settings-list';
 import { UserHoverCard } from '../user-hover-card';
-import { BenefitList, BenefitRow } from '../benefit-list';
-import { Lock_Stroke2_Corner0_Rounded as LockIcon } from '../icons/Lock';
+import { MENU_SHADOW } from '../floating/menu-palette';
 import { LinkPreviewCard } from '../link-preview';
 import { findHost, resolvedStyle, type HostNode } from './support/rendered-style';
 
@@ -170,29 +170,17 @@ describe('the surfaces that compose Card keep their own chrome', () => {
     expect(style.overflow).toBe('hidden');
   });
 
-  it('benefit-list: radius-20, hairline border, shadow-s, unclipped', () => {
+  it('user-hover-card: floating panel — radius 16, 1px border, shadow-dropdown', () => {
+    // No longer composes `Card`: the hover card now wears the ported menu
+    // surface (`floating/menu-palette.ts`) so it matches the panels around it.
     const { toJSON } = renderWithTheme(
-      <BenefitList>
-        <BenefitRow icon={<LockIcon size="sm" />} label="Share your name" />
-      </BenefitList>,
+      <UserHoverCard displayName="Nate" username="nate" animateIn={false} />,
     );
     const style = resolvedStyle(roundedNode(toJSON()).props.style);
-    expect(style.borderRadius).toBe(RADIUS['radius-20']);
-    expect(style.borderWidth).toBe(BORDER_WIDTH.hairline);
-    expect(style.boxShadow).toBe(SHADOW_BOX.s);
-    // A benefit list clips nothing; leaving Card's clip on would change what an
-    // Android elevation draws under a rounded, clipped view.
+    expect(style.borderRadius).toBe(16);
+    expect(style.borderWidth).toBe(1);
+    expect(style.boxShadow).toBe(MENU_SHADOW.light);
     expect(style.overflow).toBe('visible');
-  });
-
-  it('user-hover-card: radius-16, hairline border, shadow-m (the overlay role)', () => {
-    const { toJSON } = renderWithTheme(
-      <UserHoverCard displayName="Nate" username="nate" />,
-    );
-    const style = resolvedStyle(roundedNode(toJSON()).props.style);
-    expect(style.borderRadius).toBe(RADIUS['radius-16']);
-    expect(style.borderWidth).toBe(BORDER_WIDTH.hairline);
-    expect(style.boxShadow).toBe(SHADOW_BOX.m);
   });
 
   it('link-preview: radius-20 with a real border and background, not classes', () => {

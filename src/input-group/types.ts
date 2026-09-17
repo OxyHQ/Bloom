@@ -29,7 +29,10 @@ export interface InputGroupProps {
   isInvalid?: boolean;
   /** Disabled styling. */
   disabled?: boolean;
-  /** Size affects height + horizontal padding. Defaults to `'md'`. */
+  /**
+   * `sm` is the `small` input (32 tall), `md` the `medium` (36, the
+   * default), `lg` extends the ramp (44).
+   */
   size?: 'sm' | 'md' | 'lg';
   style?: StyleProp<ViewStyle>;
   testID?: string;

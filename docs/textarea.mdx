@@ -1,0 +1,90 @@
+---
+title: Textarea
+description: Multiline text field — rows, auto-grow, a character counter, and TextField's shell.
+order: 12
+---
+
+# Textarea
+
+The multiline sibling of [`TextField`](/docs/bloom/main/text-field). It paints the same filled shell with the same tokens (`text-field/shared.ts`), so a textarea stacked under an input lines up to the pixel and changes colour with it.
+
+```tsx
+import { Textarea } from '@oxy.so/bloom/textarea';
+
+<Textarea
+  label="Bio"
+  hint="Markdown is fine."
+  placeholder="Tell us about yourself"
+  value={bio}
+  onChangeText={setBio}
+/>
+```
+
+## Look
+
+The `Textarea`'s geometry:
+
+|              | `medium` (default) | `small` |
+|--------------|--------------------|---------|
+| shell padding | 8 all round       | 6 × 8   |
+| text inset   | 4 each side        | 4 each side |
+| text         | 14/20 regular      | 14/20 regular |
+| height       | `rows` × 20 (3 → 60, shell 76) | same |
+| radius       | 10                 | 10      |
+
+Rest, hover, focus, invalid and disabled paint exactly as `TextField` does: neutral fill, 2px inset ring (hover `neutral-300`, focus `neutral-400`), red tint when invalid, dimmed fill when disabled. The ring is a 2px border here rather than an overlay, so the shell's padding is 2px smaller and the text keeps its intended inset.
+
+The label (14/20 medium, optional `required` asterisk and `tooltip` glyph) sits 4px above; the footer 4px below holds the hint on the left and the counter on the right (12/16 medium, tabular numerals, error colour when invalid).
+
+## Growing with the content
+
+```tsx
+<Textarea
+  label="Prompt"
+  value={prompt}
+  onChangeText={setPrompt}
+  autoResize
+  rows={1}
+  maxRows={6}
+/>
+```
+
+`autoResize` starts at `rows` lines and grows a line at a time up to `maxRows`, then scrolls. Native multiline inputs already grow with their content between a minimum and maximum height; on web the same is CSS `field-sizing: content`, which also shrinks back. A browser without `field-sizing` keeps the `rows` height and scrolls — nothing breaks, it just does not grow.
+
+Without `autoResize` the height is fixed at `rows` lines and, on web, `resize="vertical"` (the default) shows the browser's grab handle. `resize="none"` hides it.
+
+## Counter
+
+```tsx
+<Textarea label="Bio" showCount maxLength={280} defaultValue="Hello" />
+```
+
+`showCount` shows `5/280` with `maxLength`, or just the count without. It works controlled (it reads `value`) and uncontrolled (it tracks the typed length).
+
+## Props
+
+Accepts React Native's `TextInputProps` (except `multiline`, which is always on), plus:
+
+| Prop | Type | Description |
+|------|------|-------------|
+| `label?` | `string` | Visible label and the accessible name. |
+| `hint?` | `string` | Caption under the field. |
+| `placeholder?` | `string` | Also the fallback name when there is no `label` or `accessibilityLabel`. |
+| `value?` / `defaultValue?` / `onChangeText?` | | Controlled or uncontrolled. |
+| `size?` | `'medium' \| 'small'` | Shell insets. Default `medium`. |
+| `rows?` | `number` | Resting height in lines. Default `3`. |
+| `autoResize?` / `maxRows?` | `boolean` / `number` | Grow with the content up to `maxRows`. |
+| `resize?` | `'none' \| 'vertical'` | Web grab handle. Default `vertical`; forced `none` under `autoResize`. |
+| `maxLength?` / `showCount?` | `number` / `boolean` | Limit and counter. |
+| `isInvalid?` | `boolean` | Red tint, red hint and counter, `aria-invalid`. |
+| `disabled?` | `boolean` | Non-editable, dimmed, `aria-disabled`; a real `disabled` textarea on web. |
+| `required?` / `tooltip?` | `boolean` | Label asterisk / info glyph. |
+| `style?` | `StyleProp<ViewStyle>` | The whole field (label, shell, footer). |
+| `inputStyle?` | `StyleProp<TextStyle>` | The `TextInput` itself. |
+| `inputRef?` | `Ref<TextInput>` | Forwarded to the input. |
+
+## Accessibility
+
+- The name is `label`, else `accessibilityLabel`, else `placeholder`. A placeholder is a poor name — give the field a label.
+- Invalid and disabled reach the input as `aria-invalid` / `aria-disabled`, the spellings react-native-web reads.
+- Invalid is also shown as text when you pass a `hint`; colour alone is not an announcement.

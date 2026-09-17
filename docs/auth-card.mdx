@@ -1,0 +1,87 @@
+---
+title: AuthCard
+description: Sign-in, sign-up and one-time-code cards with provider buttons, plus an auto-advancing media carousel for the split layout.
+order: 98
+---
+
+# AuthCard
+
+The shell around a sign-in flow. Three modes, three provider layouts, an optional split layout with artwork, and no opinion about your auth library: the card holds the field values and hands them to `onSubmit`.
+
+```tsx
+import { AuthCard, AuthMediaCarousel } from '@oxy.so/bloom/auth-card';
+
+<AuthCard
+  mode="signin"
+  layout="stacked"
+  providers={['google', 'apple', 'github']}
+  onSubmit={({ email, password, remember }) => signIn(email, password, remember)}
+  onProvider={(provider) => startOAuth(provider)}
+  switchHref="/signup"
+  forgotPasswordHref="/forgot"
+  onNavigate={(href) => router.push(href)}
+/>
+```
+
+## Modes
+
+| `mode` | Fields | Footer |
+| --- | --- | --- |
+| `signin` (default) | Email, Password, "Remember me" + "Forgot password?" | "New here? Create an account" |
+| `signup` | Full name, Email (with hint), Password — or Password + Confirm password with `confirmPassword` | "Already have an account? Sign in" |
+| `verify` | OTP boxes (`codeLength`, grouped in halves when even); no providers | "Code not arriving? Send a new one" → `onResend` |
+
+`verify` shows a 32px mail-check mark when no `logo` is passed, and puts `email` into the description. `onComplete` fires once the last box fills.
+
+`onSubmit` receives an `AuthCardValues` object with only the fields the mode renders (`name`, `email`, `password`, `confirmPassword`, `remember`, `code`) — a typed stand-in for `FormData`, since React Native has no form element. Enter in the last password field submits too.
+
+## Provider layouts
+
+All three sit **below** the form, after an "or continue with" divider, and all take the same `providers` array. The buttons are `SocialButton` at `appearance="white"`.
+
+- `stacked` — full-width labelled buttons, 10 apart.
+- `inline` — icon-only 36px buttons, wrapping and centred, 8 apart. Each keeps "Continue with <Brand>" as its accessible name.
+- `grid` — icon-only across equal columns, 10 apart.
+
+An empty `providers` array hides the section and its divider.
+
+## Split layout
+
+Passing `media` makes a two-column card (max 880): form left, media right on the secondary surface. The columns are equal; **below the `md` breakpoint (768) the media is dropped**, not stacked above the fields. `centered` centres the mark and heading, which the split usually wants. `footnote` puts small print 16px under the card instead of the sign-up terms line inside it.
+
+```tsx
+<AuthCard
+  centered
+  media={<AuthMediaCarousel slides={[{ source: url1 }, { source: url2 }]} />}
+  footnote="By continuing you agree to our Terms of Service and Privacy Policy."
+/>
+```
+
+### AuthMediaCarousel
+
+Fills its (positioned) parent and advances on its own, every `interval` ms (3200). Each change follows a four-beat cycle: the image **shrinks** into a rounded card (0.82, radius 24, 450ms) and **holds** (200ms), **slides** left on an 850px-perspective drum — pushed back 220px and turned 48° — while the next rides in card-sized (700ms), then **grows** back to full bleed (500ms). Dots at the bottom track the index. Slides are decorative unless given `alt`. It offers no controls, and holds on the first slide under reduced motion.
+
+## Geometry
+
+| Part | Value |
+| --- | --- |
+| Card | max 400 (split 880), radius 24, 1px `border-button-default`, `shadow-xs`; padding 24, 32 from `sm` (640) |
+| Surface | light `card`; dark neutral-900 (`background-secondary`) |
+| Mark | 20 below |
+| Heading | `title-2-medium` / `body-regular` text-secondary, 6 apart |
+| Form | 24 below the heading, fields 16 apart; CTA primary medium, full width |
+| Links | `body-medium` accent-600 (accent-800 pressed), underlined on hover, offset 3 |
+| Divider | 20 above and below |
+| Footer | 24 below, centred |
+
+## Accessibility
+
+- The title is a heading: `role="heading"` + `aria-level={headingLevel}` on web, `accessibilityRole="header"` on native. `headingLevel` defaults to `1` — drop it to `2`+ when the card is embedded in a page that already has one.
+- The links render real `<a href>` on web (`switchHref`, `forgotPasswordHref`); pass `onNavigate` for client-side routing, which prevents the browser navigation. "Send a new one" is a button.
+- Required fields carry the red asterisk and `aria-required`.
+
+## Design notes
+
+- Provider buttons and the CTA are full pills (Bloom's button radius rule).
+- The default sign-up description is generic ("Start building in a couple of minutes.").
+- `translateZ` has no React Native equivalent: the carousel expresses the depth as the projection it produces (`perspective(850) translateX(t·k) scale(k)`, k = 850/1070), which is exact and runs on native.

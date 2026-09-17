@@ -15,7 +15,7 @@ function mediaViolations(source: string): string[] {
 
 describe('Color System Playground media ownership', () => {
   it('uses local avatar fallback and deterministic illustrations without remote media', () => {
-    expect(storySource).toContain("title: 'Theme/Color System Playground'");
+    expect(storySource).toContain("title: 'Foundations/Color System Playground'");
     expect((storySource.match(/<Image\b/g) ?? []).length).toBeGreaterThanOrEqual(5);
     expect((storySource.match(/source=\{defaultAvatarSource\}/g) ?? []).length).toBeGreaterThanOrEqual(5);
     expect((storySource.match(/<PostIllustration\b/g) ?? []).length).toBe(3);

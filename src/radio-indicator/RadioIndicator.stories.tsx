@@ -7,7 +7,7 @@ import { Text } from '../typography';
 import { Card } from '../card';
 
 const meta: Meta<typeof RadioIndicator> = {
-  title: 'Forms/RadioIndicator',
+  title: 'Base/Radio Indicator',
   component: RadioIndicator,
 };
 

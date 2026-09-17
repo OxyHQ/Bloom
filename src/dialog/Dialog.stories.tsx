@@ -8,7 +8,7 @@ import { useDialogControl } from './context';
 import { alert } from '../surfaces';
 
 const meta: Meta<typeof Dialog> = {
-  title: 'Overlays/Dialog',
+  title: 'Base/Dialog',
   component: Dialog,
 };
 

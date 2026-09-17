@@ -91,30 +91,26 @@ const preview: Preview = {
     },
     options: {
       /**
-       * ONE taxonomy, so a reader can predict where a family lives before
-       * looking. Five groups, and the boundaries are behavioural rather than
-       * visual — a finer split (Actions / Layout / Navigation / Feedback) reads
-       * well in a sidebar and then puts `Toast` and `Dialog` in different
-       * places, which is the question a reader is actually asking.
+       * The catalogue taxonomy:
        *
-       *   Foundations   not a component you place — theme, tokens, type, icons,
-       *                 motion
-       *   Forms         inputs and controls: things you fill in or choose with
-       *   Overlays      anything that opens over the page and dismisses,
-       *                 whoever opened it (Dialog, BottomSheet, Toast, Command)
-       *   Data Display  things whose job is to show you a value or a person
-       *   Components    everything else
+       *   Foundations   not a component you place — colour, tokens, type, fonts,
+       *                 icons, motion, and the plumbing families (portal, scroll…)
+       *   Base          the everyday building blocks, alphabetical
+       *   Blocks        larger assemblies, ready to drop in
+       *   Charts        data cards for dashboards
+       *   Templates     complete screens composed from the above (`templates/`, unpublished)
        */
       storySort: {
         order: [
           'Introduction',
           'Foundations',
-          ['Theme', 'Design Tokens', 'Typography', 'Icons', 'Motion'],
-          'Components',
-          'Forms',
-          'Overlays',
-          'Data Display',
+          ['Color', 'Color System Playground', 'Typography', 'Fonts', 'Icons', 'Design Tokens', 'Motion'],
+          'Base',
+          'Blocks',
+          'Charts',
+          'Templates',
         ],
+        method: 'alphabetical',
       },
     },
   },

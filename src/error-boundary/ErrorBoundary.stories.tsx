@@ -6,7 +6,7 @@ import { ErrorBoundary } from './index';
 import { Text } from '../typography';
 
 const meta: Meta<typeof ErrorBoundary> = {
-  title: 'Components/ErrorBoundary',
+  title: 'Base/Error Boundary',
   component: ErrorBoundary,
 };
 

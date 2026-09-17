@@ -7,7 +7,7 @@ import { Switch } from '../switch';
 import { TextFieldInput } from '../text-field';
 
 const meta: Meta = {
-  title: 'Forms/Field',
+  title: 'Base/Field',
 };
 
 export default meta;

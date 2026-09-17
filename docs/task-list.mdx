@@ -1,0 +1,70 @@
+---
+title: TaskList
+description: A streaming agent log — tasks with running titles, the steps under each drawing a curved guide as they land, and inline resource chips.
+order: 68
+---
+
+# TaskList
+
+The agent's working log as it happens, meant to sit inline in a chat thread. One entry per task ("Found project files"), each holding the steps the agent actually took. It streams its own units in, one per tick, so the thread grows the way the work does. Reveal, guide and shimmer come from [AgentLog](./agent-log.mdx), shared with [WebSearch](./web-search.mdx).
+
+```tsx
+import { TaskList } from '@oxy.so/bloom/task-list';
+import { RiFolder3Line } from '@oxy.so/bloom/icons';
+
+<TaskList
+  run={isAgentRunning}
+  collapseOnComplete="all"
+  tasks={[
+    {
+      title: 'Found project files',
+      runningTitle: 'Finding project files',
+      icon: RiFolder3Line,
+      steps: [
+        { label: 'Scanning 52 files' },
+        { label: 'Reading', chips: [{ label: 'package.json' }, { label: 'tsconfig.json' }] },
+      ],
+    },
+  ]}
+/>
+```
+
+The component is UI only. Let the ticker pace it (`stepInterval`, `startDelay`, `run` to hold and resume, a new `key` to replay) or drive `revealed` from real agent events.
+
+## Units
+
+Each task contributes one unit for its header and one per step, so a header always lands a tick ahead of the steps it introduces. While a task's steps are still arriving its header shows `runningTitle` with a travelling shimmer; once the last one lands it swaps to `title` — the old title lifts 4px out into a 3px blur as the new one rises in, 260ms on the soft curve. The newest step shimmers too, and a **Working** indicator (`working`, or `false`) trails the whole log. Uncontrolled, the ticker runs one tick past the last step so it holds before `onComplete`.
+
+The guide ends on the last **revealed** step, not the last in the data, and extends as the log grows.
+
+## Collapsing
+
+Every header is a toggle. `collapseOnComplete`:
+
+- `false` (default) — tasks stay open.
+- `true` — each task closes the moment its own steps have landed.
+- `"all"` — every task stays open until the whole run lands, then they close together as one motion.
+
+Once the reader presses a header, their choice wins from then on. Collapse animates height (300ms soft) and opacity (220ms ease-out); the steps stay mounted, so reopening never replays their reveal.
+
+## Chips
+
+`chips` render inline after a step's label, in the text flow: `{ label, icon? }`, the icon a ready-made 14px node. Quiet at rest — a half-strength border on background-secondary — they firm up on hover (border-button-hover on background-tertiary, 150ms) so a row of chips never out-shouts the step text.
+
+## Geometry
+
+| Part | Value |
+| --- | --- |
+| Tasks | column, 5px apart |
+| Header | full-width button, py 2, radius 6, gap 8: icon 16 (icon-secondary), `body-medium` text-secondary truncated, chevron 16 (icon-tertiary → icon-secondary on hover, 300ms turn) |
+| Steps | list 2 below the header, indented 8 (the trunk sits under the icon's centre); rows py 4 `body-regular` text-secondary |
+| Chip | ml 3 mr 2, lifted 1px, radius 6, border 1, py 2, pr 6, pl 6 (4 with an icon), icon 14 + gap 4, `caption-2-medium` text-primary truncated |
+
+## Platform notes
+
+- A chip is a `View` nested in the step's `Text`: react-native-web makes it `inline-flex` (with `vertical-align: middle` from the family's adopted sheet); native lays it out as an inline view. Chip hover is web-only.
+- The reveal's blur/soft edge, the title-swap blur and the shimmer are web-only; native keeps the height, opacity and lift.
+
+## Accessibility
+
+Headers are `button`s named by the current title, with `aria-expanded` + `accessibilityState.expanded` and a keyboard-only focus ring. Each task's steps are a `list` with `aria-live="polite"`; rows are `listitem`s. The leaving title in a swap is `aria-hidden`.

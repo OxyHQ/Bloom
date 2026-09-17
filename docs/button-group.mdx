@@ -1,0 +1,56 @@
+---
+title: ButtonGroup
+description: Secondary-style buttons fused into one bordered pill — toolbars, filters and pagers.
+order: 11
+---
+
+# ButtonGroup
+
+A row of secondary-style buttons fused into one control: one bordered, shadowed container, items divided by 1px hairlines, only the outer ends rounded. The container is a full pill, like `Button`. Colours come from the same Bloom-derived ramps as `Button` (`src/button/shared.ts`).
+
+```tsx
+import { ButtonGroup, ButtonGroupItem } from '@oxy.so/bloom/button-group';
+
+<ButtonGroup accessibilityLabel="Alignment">
+  <ButtonGroupItem onPress={alignLeft}>Left</ButtonGroupItem>
+  <ButtonGroupItem onPress={alignCenter}>Center</ButtonGroupItem>
+  <ButtonGroupItem onPress={alignRight}>Right</ButtonGroupItem>
+</ButtonGroup>
+```
+
+## Selection
+
+`selected` paints an item with its hover fill and announces it as pressed (`aria-pressed` on web, `accessibilityState.selected` on native). Drive it from state for single- or multi-select toolbars; leave every item unselected for a pure action row. For an animated thumb, use `SegmentedControl`.
+
+```tsx
+<ButtonGroup accessibilityLabel="Range">
+  {ranges.map((range) => (
+    <ButtonGroupItem key={range} selected={value === range} onPress={() => setValue(range)}>
+      {range}
+    </ButtonGroupItem>
+  ))}
+</ButtonGroup>
+```
+
+## Sizes and icons
+
+| | medium | small |
+|---|---|---|
+| item height | 34 | 30 |
+| padding-x | 12 | 10 |
+| icon | 20 | 18 |
+
+Text is `body-medium` (Inter 14/20 500) through Bloom's typography `Text` — a bare React Native `Text` falls back to the system font. Pass icon components to `leadingIcon` / `trailingIcon`; `iconOnly` makes a square item that needs `accessibilityLabel`.
+
+## Props
+
+| Prop | Type | Default | Description |
+|------|------|---------|-------------|
+| `ButtonGroup.size?` | `'medium' \| 'small'` | `'medium'` | Size for every item. |
+| `ButtonGroup.accessibilityLabel?` | `string` | — | Names the group. |
+| `ButtonGroupItem.onPress?` | `() => void` | — | Press handler. |
+| `ButtonGroupItem.selected?` | `boolean` | `false` | Hover fill + pressed state. |
+| `ButtonGroupItem.disabled?` | `boolean` | `false` | Disabled paint, blocks presses. |
+| `ButtonGroupItem.iconOnly?` | `boolean` | `false` | Square icon-only item. |
+| `ButtonGroupItem.leadingIcon?` / `trailingIcon?` | `ComponentType<{ width, height, fill }>` | — | Icon components. |
+| `ButtonGroupItem.size?` | `'medium' \| 'small'` | group size | Per-item override. |

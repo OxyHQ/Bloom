@@ -8,39 +8,44 @@ import React, {
 } from 'react';
 import { FlatList, StyleSheet } from 'react-native';
 
-import { bloomShadowStyle } from '../design-tokens/shadows';
 import { useTheme } from '../theme/use-theme';
 import { Text } from '../typography';
 import { useDialogContext, useDialogControl } from '../dialog/context';
 import { SheetShell } from '../dialog/SheetShell';
 import {
-  ROW_HIGHLIGHT_CLASS,
   ROW_ICON_SIZE,
   ROW_INDICATOR_END_CLASS,
-  ROW_SEPARATOR_CLASS,
+  SELECT_CHEVRON_SIZE,
   SELECT_ITEM_CLASS,
+  SELECT_ITEM_SIZE_CLASS,
   SELECT_ITEM_TEXT_CLASS,
-  SELECT_PLACEHOLDER_CLASS,
+  SELECT_SEPARATOR_CLASS,
   SELECT_TRIGGER_CLASS,
-  SELECT_VALUE_CLASS,
   SELECT_TRIGGER_POPUP,
+  SELECT_TRIGGER_SIZE_CLASS,
+  SELECT_VALUE_CLASS,
 } from '../floating/constants';
+import { useMenuPalette } from '../floating/menu-palette';
+import { menuType, menuTypeClass } from '../floating/menu-type';
 import { cx } from '../floating/shared';
 import { TriggerSlot } from '../floating/TriggerSlot';
 import type { DialogControlProps } from '../dialog/types';
 import { useInteractionState } from '../hooks/use-interaction-state';
-import {
-  Check_Stroke2_Corner0_Rounded as CheckIcon,
-} from '../icons/Check';
-import {
-  ChevronTopBottom_Stroke2_Corner0_Rounded as ChevronUpDownIcon,
-} from '../icons/Chevron';
+import { RiCheckLine as CheckIcon } from '../icons/remix';
 import {
   StyledPressable,
   StyledText,
   StyledView,
 } from '../styles/styled-primitives';
-import { defaultItemValueExtractor, ItemContext, useSelectItemContext } from './shared';
+import { borderRadius } from '../styles/tokens';
+import {
+  defaultItemValueExtractor,
+  ItemContext,
+  SelectChevron,
+  SelectTriggerStateContext,
+  SelectValueRow,
+  useSelectItemContext,
+} from './shared';
 import type {
   SelectContentProps,
   SelectIconProps,
@@ -59,6 +64,7 @@ import type {
 
 type SelectContextValue = {
   control: DialogControlProps;
+  size: NonNullable<SelectProps['size']>;
 } & Pick<SelectProps, 'value' | 'onValueChange' | 'disabled'>;
 
 const SelectContext = createContext<SelectContextValue | null>(null);
@@ -81,13 +87,13 @@ function useSelectContext(): SelectContextValue {
 // Select
 // ---------------------------------------------------------------------------
 
-export function Select({ children, value, onValueChange, disabled }: SelectProps) {
+export function Select({ children, value, onValueChange, disabled, size = 'md' }: SelectProps) {
   const control = useDialogControl();
   const valueStoreState = useState<unknown>(undefined);
 
   const ctx = useMemo<SelectContextValue>(
-    () => ({ control, value, onValueChange, disabled }),
-    [control, value, onValueChange, disabled],
+    () => ({ control, value, onValueChange, disabled, size }),
+    [control, value, onValueChange, disabled, size],
   );
 
   return (
@@ -122,41 +128,56 @@ export function SelectTrigger({
   label,
   className,
   style,
+  fieldStyle,
   testID,
 }: SelectTriggerProps) {
-  const { control } = useSelectContext();
+  const { control, size, disabled: rootDisabled } = useSelectContext();
+  const palette = useMenuPalette();
+  const isDisabled = disabled === true || rootDisabled === true;
+  const t = palette.trigger;
 
-  // The same field chrome the web fork draws — `border-input bg-background
-  // h-10 flex-row items-center justify-between gap-2 rounded-md border px-3
-  // py-2 shadow-sm` — so the two platforms agree about what a select trigger
-  // looks like even though only one of them opens an anchored list.
+  // The same field the web fork draws — a bordered white select trigger
+  // with the xs contact shadow, as a full pill — so the two platforms agree about
+  // what a select trigger looks like even though only one of them opens an
+  // anchored list. No hover or focus ring here: native has neither.
   const field = (
     <StyledView
-      className={cx(SELECT_TRIGGER_CLASS, disabled && 'opacity-50', className)}
-      // `shadow-s` reaches WEB through the class; NATIVE takes the same role as
-      // an inline style, because `design-tokens/shadows` is platform-forked and
-      // its own contract is that a multi-layer `box-shadow` is not something to
-      // rely on NativeWind translating to RN elevation. On web the two agree, so
-      // whichever wins paints the same thing.
-      style={bloomShadowStyle('s')}>
+      className={cx(SELECT_TRIGGER_CLASS, SELECT_TRIGGER_SIZE_CLASS[size], className)}
+      style={[
+        {
+          borderRadius: borderRadius.full,
+          backgroundColor: isDisabled ? t.disabledBackground : t.background,
+          borderColor: t.border,
+          boxShadow: isDisabled ? undefined : t.shadow,
+        },
+        fieldStyle,
+      ]}>
       {children}
     </StyledView>
   );
 
+  const triggerState = useMemo(
+    // `open` stays false: the native chevron never turns over (see `SelectIcon`).
+    () => ({ disabled: isDisabled, open: false, size }),
+    [isDisabled, size],
+  );
+
   return (
-    <TriggerSlot
-      asChild={asChild}
-      style={[styles.triggerSlot, style]}
-      testID={testID}
-      handle={{
-        onPress: () => control.open(),
-        disabled,
-        accessibilityLabel: label,
-        accessibilityRole: 'button',
-        'aria-haspopup': SELECT_TRIGGER_POPUP,
-      }}>
-      {asChild ? children : field}
-    </TriggerSlot>
+    <SelectTriggerStateContext.Provider value={triggerState}>
+      <TriggerSlot
+        asChild={asChild}
+        style={[styles.triggerSlot, style]}
+        testID={testID}
+        handle={{
+          onPress: () => control.open(),
+          disabled: isDisabled,
+          accessibilityLabel: label,
+          accessibilityRole: 'button',
+          'aria-haspopup': SELECT_TRIGGER_POPUP,
+        }}>
+        {asChild ? children : field}
+      </TriggerSlot>
+    </SelectTriggerStateContext.Provider>
   );
 }
 
@@ -167,26 +188,48 @@ export function SelectTrigger({
 export function SelectValue({
   placeholder,
   children: extractLabel = defaultExtractLabel,
+  leading,
   className,
   style,
 }: SelectValueProps) {
   const [storedValue] = useContext(ValueStoreContext);
+  const trigger = useContext(SelectTriggerStateContext);
+  const palette = useMenuPalette();
 
-  const display = storedValue != null ? extractLabel(storedValue) : placeholder;
+  const hasValue = storedValue != null;
+  const display = hasValue ? extractLabel(storedValue) : placeholder;
+  // Same colours as the web fork: `text-primary`, `text-placeholder`, and the
+  // disabled trigger's `text-tertiary`. Inline only without a caller className.
+  const color = trigger.disabled
+    ? palette.trigger.disabledForeground
+    : hasValue
+      ? palette.text
+      : palette.textPlaceholder;
 
-  return (
+  const text = (
     <StyledText
       numberOfLines={1}
       className={cx(
-        storedValue != null ? SELECT_VALUE_CLASS : SELECT_PLACEHOLDER_CLASS,
+        SELECT_VALUE_CLASS[trigger.size],
+        menuTypeClass(VALUE_TYPE[trigger.size], className),
+        className && (hasValue ? 'text-foreground' : 'text-muted-foreground'),
         className,
       )}
-      style={style}
+      style={[menuType(VALUE_TYPE[trigger.size], className), className ? null : { color }, style]}
     >
       {display}
     </StyledText>
   );
+  if (leading === undefined) return text;
+  return (
+    <SelectValueRow size={trigger.size} leading={typeof leading === 'function' ? leading(storedValue) : leading}>
+      {text}
+    </SelectValueRow>
+  );
 }
+
+/** `text-body-medium` on `md`, `text-body-2-medium` on `sm` — trigger value and option label alike. */
+const VALUE_TYPE = { md: 'body-medium', sm: 'body-2-medium' } as const;
 
 function defaultExtractLabel(item: unknown): React.ReactNode {
   if (item != null && typeof item === 'object' && 'label' in item) {
@@ -199,14 +242,16 @@ function defaultExtractLabel(item: unknown): React.ReactNode {
 // SelectIcon
 // ---------------------------------------------------------------------------
 
-export function SelectIcon(_props: SelectIconProps) {
-  const theme = useTheme();
-  // `text-muted-foreground size-4`.
+export function SelectIcon({ style }: SelectIconProps) {
+  const palette = useMenuPalette();
+  const trigger = useContext(SelectTriggerStateContext);
+  // A `ChevronDownSmall` in `text-text-secondary` — the same glyph the web
+  // trigger draws. It does not turn over: the sheet covers the trigger.
   return (
-    <ChevronUpDownIcon
-      width={ROW_ICON_SIZE}
-      height={ROW_ICON_SIZE}
-      fill={theme.colors.textSecondary}
+    <SelectChevron
+      size={SELECT_CHEVRON_SIZE[trigger.size]}
+      color={palette.textSecondary}
+      style={[{ flexShrink: 0 }, style]}
     />
   );
 }
@@ -220,21 +265,22 @@ export function SelectContent<T>({
   valueExtractor = defaultItemValueExtractor,
   ...props
 }: SelectContentProps<T>) {
-  const { control, ...context } = useSelectContext();
+  const { control, size, ...context } = useSelectContext();
   const [, setStoredValue] = useContext(ValueStoreContext);
 
   useLayoutEffect(() => {
     const item = items.find(
       (candidate) => valueExtractor(candidate) === context.value,
     );
-    if (item !== undefined) {
-      setStoredValue(item);
-    }
+    // Cleared too, so a value reset to `undefined` shows the placeholder again
+    // instead of the last item it matched.
+    setStoredValue(() => item);
   }, [items, context.value, valueExtractor, setStoredValue]);
 
   return (
     <SelectContentInner
       control={control}
+      size={size}
       items={items}
       valueExtractor={valueExtractor}
       {...props}
@@ -248,6 +294,7 @@ export function SelectContent<T>({
 type SelectContentInnerProps<T> = SelectContentProps<T> &
   Pick<SelectProps, 'value' | 'onValueChange' | 'disabled'> & {
     control: DialogControlProps;
+    size: SelectContextValue['size'];
   };
 
 function SelectContentInner<T>({
@@ -256,6 +303,7 @@ function SelectContentInner<T>({
   renderItem,
   valueExtractor = defaultItemValueExtractor,
   control,
+  size,
   ...contextValues
 }: SelectContentInnerProps<T>) {
   const theme = useTheme();
@@ -270,11 +318,12 @@ function SelectContentInner<T>({
   const ctx = useMemo<SelectContextValue>(
     () => ({
       control,
+      size,
       value: contextValues.value,
       onValueChange: contextValues.onValueChange,
       disabled: contextValues.disabled,
     }),
-    [control, contextValues.value, contextValues.onValueChange, contextValues.disabled],
+    [control, size, contextValues.value, contextValues.onValueChange, contextValues.disabled],
   );
 
   return (
@@ -283,7 +332,7 @@ function SelectContentInner<T>({
       label={label}
       header={
         <StyledView className="pt-space-24 pb-space-8 px-space-16">
-          <Text style={[styles.contentHeaderText, { color: theme.colors.text }]}>
+          <Text variant="title-2-semibold" style={{ color: theme.colors.text }}>
             {label}
           </Text>
         </StyledView>
@@ -295,6 +344,8 @@ function SelectContentInner<T>({
           renderItem={render}
           keyExtractor={valueExtractor}
           style={styles.flatList}
+          // `gap-1` between options.
+          contentContainerStyle={styles.list}
         />
       </SelectContext.Provider>
     </SheetShell>
@@ -305,9 +356,18 @@ function SelectContentInner<T>({
 // SelectItem
 // ---------------------------------------------------------------------------
 
-export function SelectItem({ children, value, label, className, style }: SelectItemProps) {
+export function SelectItem({
+  children,
+  value,
+  label,
+  disabled = false,
+  leading,
+  className,
+  style,
+}: SelectItemProps) {
   const { close } = useDialogContext();
-  const { value: selectedValue, onValueChange } = useSelectContext();
+  const { value: selectedValue, onValueChange, size } = useSelectContext();
+  const palette = useMenuPalette();
   const { state: focused, onIn: onFocus, onOut: onBlur } = useInteractionState();
   const {
     state: pressed,
@@ -324,9 +384,11 @@ export function SelectItem({ children, value, label, className, style }: SelectI
   }, [close, onValueChange, value]);
 
   const itemCtx = useMemo<SelectItemContextValue>(
-    () => ({ selected: isSelected }),
-    [isSelected],
+    () => ({ selected: isSelected, disabled }),
+    [isSelected, disabled],
   );
+  // Press, focus and the chosen option share the row highlight.
+  const highlighted = !disabled && (focused || pressed || isSelected);
 
   return (
     <StyledPressable
@@ -336,15 +398,19 @@ export function SelectItem({ children, value, label, className, style }: SelectI
       // as `aria-checked` because react-native-web never reads
       // `accessibilityState`; React Native folds this back into it.
       aria-checked={isSelected}
-      onPress={handlePress}
-      onFocus={onFocus}
+      disabled={disabled}
+      onPress={disabled ? undefined : handlePress}
+      onFocus={disabled ? undefined : onFocus}
       onBlur={onBlur}
-      onPressIn={onPressIn}
+      onPressIn={disabled ? undefined : onPressIn}
       onPressOut={onPressOut}
-      className={cx(SELECT_ITEM_CLASS, (focused || pressed) && ROW_HIGHLIGHT_CLASS, className)}
-      style={style}
+      className={cx(SELECT_ITEM_CLASS, SELECT_ITEM_SIZE_CLASS[size], className)}
+      style={[{ backgroundColor: highlighted ? palette.rowHighlight : 'transparent' }, style]}
     >
-      <ItemContext.Provider value={itemCtx}>{children}</ItemContext.Provider>
+      <ItemContext.Provider value={itemCtx}>
+        {leading}
+        {children}
+      </ItemContext.Provider>
     </StyledPressable>
   );
 }
@@ -354,10 +420,26 @@ export function SelectItem({ children, value, label, className, style }: SelectI
 // ---------------------------------------------------------------------------
 
 export function SelectItemText({ children, className, style }: SelectItemTextProps) {
-  // The selected option is marked with the check ALONE: its label stays at the
-  // same weight as every other row's, which is what the target does.
+  const { size } = useSelectContext();
+  const { disabled } = useSelectItemContext();
+  const palette = useMenuPalette();
+  // The selected option is marked with the check and the row highlight: its
+  // label stays at the same weight as every other row's, which is what the
+  // target does.
   return (
-    <StyledText numberOfLines={1} className={cx(SELECT_ITEM_TEXT_CLASS, className)} style={style}>
+    <StyledText
+      numberOfLines={1}
+      className={cx(
+        SELECT_ITEM_TEXT_CLASS[size],
+        menuTypeClass(VALUE_TYPE[size], className),
+        className && 'text-foreground',
+        className,
+      )}
+      style={[
+        menuType(VALUE_TYPE[size], className),
+        className ? null : { color: disabled ? palette.textDisabled : palette.text },
+        style,
+      ]}>
       {children}
     </StyledText>
   );
@@ -368,7 +450,7 @@ export function SelectItemText({ children, className, style }: SelectItemTextPro
 // ---------------------------------------------------------------------------
 
 export function SelectItemIndicator({ icon: IconComponent = CheckIcon }: SelectItemIndicatorProps) {
-  const theme = useTheme();
+  const palette = useMenuPalette();
   const { selected } = useSelectItemContext();
 
   // The same right-hand gutter the web fork draws: `absolute right-2 size-3.5`
@@ -382,7 +464,7 @@ export function SelectItemIndicator({ icon: IconComponent = CheckIcon }: SelectI
       <IconComponent
         width={ROW_ICON_SIZE}
         height={ROW_ICON_SIZE}
-        fill={theme.colors.textSecondary}
+        fill={palette.textSecondary}
       />
     </StyledView>
   );
@@ -393,9 +475,12 @@ export function SelectItemIndicator({ icon: IconComponent = CheckIcon }: SelectI
 // ---------------------------------------------------------------------------
 
 export function SelectSeparator() {
-  // `bg-border -mx-1 my-1 h-px` — a filled 1px rule, not a bottom border on a
-  // stretched box.
-  return <StyledView className={ROW_SEPARATOR_CLASS} />;
+  const palette = useMenuPalette();
+  // `-mx-2 my-1.5 h-px bg-border-button-default` — a filled 1px rule, not a
+  // bottom border on a stretched box.
+  return (
+    <StyledView className={SELECT_SEPARATOR_CLASS} style={{ backgroundColor: palette.border }} />
+  );
 }
 
 // ---------------------------------------------------------------------------
@@ -405,19 +490,17 @@ export function SelectSeparator() {
 const styles = StyleSheet.create({
   // `TriggerSlot`'s wrapper is `alignSelf: 'flex-start'` so an anchored surface
   // lines up with the CONTROL. A select trigger is a full-width field, so it
-  // stretches instead — the same exception the combobox makes. Inline rather
+  // stretches instead. Inline rather
   // than a class because it overrides `TriggerSlot`'s own inline default, and a
   // class cannot outrank one.
   triggerSlot: {
     alignSelf: 'stretch',
   },
-  contentHeaderText: {
-    fontSize: 20,
-    fontWeight: '700',
-    textAlign: 'left',
-  },
   flatList: {
     flexGrow: 0,
+  },
+  list: {
+    gap: 4,
   },
 });
 

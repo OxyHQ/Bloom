@@ -114,12 +114,12 @@ async function run(story, trigger) {
 }
 
 try {
-  const good = await run('overlays-mediaflight--reparented-video', 'reparent-fly');
-  const control = await run('overlays-mediaflight--recreated-video', 'recreate-fly');
+  const good = await run('base-media-flight--reparented-video', 'reparent-fly');
+  const control = await run('base-media-flight--recreated-video', 'recreate-fly');
 
   for (const r of [good, control]) {
     console.log(
-      `\n${r.story.replace('overlays-mediaflight--', '')}` +
+      `\n${r.story.replace('base-media-flight--', '')}` +
       `\n  requests for the clip: ${r.requests}  ${JSON.stringify(r.byPhase)}` +
       `\n  buffered before: ${JSON.stringify(r.before?.ranges)}  (ready ${r.before?.ready}, ${r.before?.count} element(s))` +
       `\n  buffered during: ${JSON.stringify(r.during?.ranges)}  (ready ${r.during?.ready}, ${r.during?.count} element(s))` +

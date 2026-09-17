@@ -7,7 +7,7 @@ import { Text } from '../typography';
 import { Divider } from '../divider';
 
 const meta: Meta = {
-  title: 'Components/VirtualList',
+  title: 'Base/Virtual List',
 };
 
 export default meta;

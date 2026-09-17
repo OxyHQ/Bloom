@@ -4,8 +4,8 @@
 </p>
 
 <p align="center">
-  <a href="https://www.npmjs.com/package/@oxy.so/bloom"><img alt="npm" src="https://img.shields.io/npm/v/@oxy.so/bloom?style=flat-square&color=440151&label=%40oxyhq%2Fbloom"></a>
-  <a href="./LICENSE"><img alt="License Apache-2.0" src="https://img.shields.io/badge/license-Apache--2.0-informational?style=flat-square"></a>
+  <a href="https://www.npmjs.com/package/@oxy.so/bloom"><img alt="npm" src="https://img.shields.io/npm/v/@oxy.so/bloom?style=flat-square&color=440151&label=%40oxy.so%2Fbloom"></a>
+  <a href="./LICENSE"><img alt="License Breathe 1.0" src="https://img.shields.io/badge/license-Breathe%201.0-informational?style=flat-square"></a>
   <img alt="React Native" src="https://img.shields.io/badge/React%20Native-0.73%2B-61DAFB?style=flat-square&logo=react&logoColor=black">
   <img alt="Expo" src="https://img.shields.io/badge/Expo-supported-000020?style=flat-square&logo=expo&logoColor=white">
   <img alt="TypeScript" src="https://img.shields.io/badge/TypeScript-3178C6?style=flat-square&logo=typescript&logoColor=white">
@@ -31,7 +31,7 @@ Styling is NativeWind classes throughout. There are no colour props and no wrapp
 
 Bloom is the presentation layer of [**oxy**](https://github.com/OxyHQ/oxy). It knows nothing about identity or the network, so it has no dependency on the Oxy SDK and can be used on its own.
 
-Where an app does use the SDK, the two meet at one seam: register `imageResolver` once at the root, usually `oxyServices.getFileDownloadUrl` from `@oxy.so/core`, and every `Avatar` and image in the tree resolves bare file ids for free.
+Where an app does use the SDK, the two meet at one seam: register `imageResolver` once at the root, usually `oxyServices.getFileDownloadUrl` from `@oxyhq/core`, and every `Avatar` and image in the tree resolves bare file ids for free.
 
 </td>
 </tr>
@@ -156,12 +156,12 @@ Bloom publishes 88 subpath exports. Importing from the subpath rather than the r
 | Providers and theme | `provider`, `theme`, `color-presets`, `preset-vars`, `design-tokens`, `tailwind-preset`, `styles`, `hooks` |
 | Overlays | `dialog`, `alert-dialog`, `bottom-sheet`, `popover`, `context-menu`, `dropdown-menu`, `menubar`, `tooltip`, `overlay`, `portal`, `surfaces` |
 | Actions | `button`, `fab`, `frosted-icon-button`, `pressable-scale`, `subtle-hover` |
-| Forms | `text-field`, `field`, `input-group`, `label`, `select`, `combobox`, `command`, `checkbox`, `radio`, `switch`, `slider`, `segmented-control`, `search`, `prompt-input` |
+| Forms | `text-field`, `field`, `input-group`, `label`, `select`, `command`, `checkbox`, `radio`, `switch`, `slider`, `segmented-control`, `search` |
 | Layout and lists | `grid`, `list`, `scroll`, `tabs`, `tab-bar`, `settings-list`, `content-panel`, `card`, `accordion`, `aspect-ratio`, `divider`, `item` |
-| Identity and media | `avatar`, `avatar-group`, `user-hover-card`, `profile-card`, `image-resolver`, `image-aspect-ratio-cache`, `zoomable-image-gallery`, `media-inset-border`, `progressive-blur`, `fill` |
+| Identity and media | `avatar`, `avatar-group`, `user-hover-card`, `image-resolver`, `image-aspect-ratio-cache`, `zoomable-image-gallery`, `media-inset-border`, `progressive-blur`, `fill` |
 | Feedback and data | `toast`, `admonition`, `loading`, `skeleton`, `error-boundary`, `badge`, `chip`, `kbd`, `code`, `link-preview`, `connection-status`, `connection-dots` |
 | Charts and motion | `composition-bar`, `dot-grid-meter`, `stat-bar`, `activity-heatmap`, `motion`, `animated-check`, `icon-circle`, `radio-indicator` |
-| Assets | `icons`, `typography`, `fonts`, `benefit-list` |
+| Assets | `icons`, `typography`, `fonts` |
 
 `tabs`, `scroll` and `tab-bar` each ship an `/expo-router` variant for apps on Expo Router.
 
@@ -169,7 +169,7 @@ Bloom publishes 88 subpath exports. Importing from the subpath rather than the r
 
 Component guides live in [`docs/`](./docs), one `.mdx` per family, and **they ship inside the package** at `node_modules/@oxy.so/bloom/docs/`. The copy you read there always describes the version you installed, which matters most for [migrating to 1.0](./docs/migrating-to-1.0.mdx).
 
-Start with [getting started](./docs/getting-started.mdx), [theme](./docs/theme.mdx) and [design tokens](./docs/design-tokens.mdx). Then per surface: [dialog](./docs/dialog.mdx), [bottom sheet](./docs/bottom-sheet.mdx), [toast](./docs/toast.mdx), [alert](./docs/alert.mdx), [dropdown menu](./docs/dropdown-menu.mdx), [select](./docs/select.mdx), [context menu](./docs/context-menu.mdx), [button](./docs/button.mdx), [avatar](./docs/avatar.mdx), [text field](./docs/text-field.mdx), [settings list](./docs/settings-list.mdx), [tab bar](./docs/tab-bar.mdx), [prompt input](./docs/prompt-input.mdx) and [loading](./docs/loading.mdx).
+Start with [getting started](./docs/getting-started.mdx), [theme](./docs/theme.mdx) and [design tokens](./docs/design-tokens.mdx). Then per surface: [dialog](./docs/dialog.mdx), [bottom sheet](./docs/bottom-sheet.mdx), [toast](./docs/toast.mdx), [alert](./docs/alert.mdx), [dropdown menu](./docs/dropdown-menu.mdx), [select](./docs/select.mdx), [context menu](./docs/context-menu.mdx), [button](./docs/button.mdx), [avatar](./docs/avatar.mdx), [text field](./docs/text-field.mdx), [settings list](./docs/settings-list.mdx), [tab bar](./docs/tab-bar.mdx) and [loading](./docs/loading.mdx).
 
 The theme reference is in [README.theme.md](./README.theme.md).
 
@@ -192,6 +192,4 @@ Issues and pull requests are welcome. Please run `bun run typescript` and `bun r
 
 ## License
 
-Apache-2.0, The Oxy Collective, Inc. See [LICENSE](./LICENSE).
-
-Bloom moved from AGPL-3.0-only to Apache-2.0 at `0.87.0`. Versions published before that keep AGPL-3.0-only permanently; a licence change binds future versions only.
+[The Breathe License 1.0](./LICENSE), The Oxy Collective, Inc.

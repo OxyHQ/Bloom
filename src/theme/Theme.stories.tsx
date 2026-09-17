@@ -9,7 +9,7 @@ import { Button } from '../button';
 import { Card } from '../card';
 
 const meta: Meta = {
-  title: 'Foundations/Theme',
+  title: 'Foundations/Color',
 };
 
 export default meta;

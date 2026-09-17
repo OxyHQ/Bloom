@@ -2,16 +2,39 @@ import React from 'react';
 import { View } from 'react-native';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
-import { Code, Pre } from './index';
+import { Code, CodeBlock, CodeLines, Pre } from './index';
 import { Text } from '../typography';
 
 const meta: Meta = {
-  title: 'Components/Code',
+  title: 'Base/Code',
 };
 
 export default meta;
 
 type Story = StoryObj;
+
+const TOGGLE = `const nextTheme = theme === "dark" ? "light" : "dark";
+
+document.documentElement.classList.toggle(
+  "dark",
+  nextTheme === "dark",
+);
+localStorage.setItem("app:theme", nextTheme);`;
+
+const COMPONENT = `import type { Metadata } from "next";
+import { DashboardShell } from "@/components/dashboard/dashboard-shell";
+
+// Full screen: floating sidebar, header and KPI cards.
+export const metadata: Metadata = {
+  title: "Home Dashboard",
+  description: "A complete admin dashboard screen with a customers data table and an earnings chart.",
+};
+
+const MAX_WIDTH = 1560;
+
+export default function DashboardPage({ wide = true }: { wide?: boolean }) {
+  return <DashboardShell className="h-full w-full" maxWidth={wide ? MAX_WIDTH : 1200} />;
+}`;
 
 /**
  * `Code` is INLINE monospace — an identifier, a flag, a key inside a sentence.
@@ -34,25 +57,59 @@ export const Inline: Story = {
 };
 
 /**
- * `Pre` is a BLOCK: it keeps its own line breaks and indentation and scrolls
- * horizontally rather than wrapping, because a wrapped command is a command
- * someone will copy wrong.
+ * `CodeBlock` — the code card: language chip, file name, diff counts and a
+ * copy button over numbered, highlighted lines that scroll sideways.
  */
 export const Block: Story = {
   render: () => (
-    <View style={{ width: 420 }}>
-      <Pre>{`bun add @oxy.so/bloom
-bun run build
-bun run test`}</Pre>
+    <View style={{ width: 560 }}>
+      <CodeBlock code={TOGGLE} language="tsx" filename="theme-toggle.tsx" additions={156} deletions={23} highlight={['nextTheme']} />
     </View>
   ),
 };
 
-/** A long line: the block scrolls instead of reflowing. */
-export const LongLine: Story = {
+/** A narrow card: long lines scroll instead of reflowing; `wrap` soft-wraps them instead. */
+export const LongLines: Story = {
   render: () => (
-    <View style={{ width: 420 }}>
+    <View style={{ width: 380, gap: 16 }}>
+      <CodeBlock code={COMPONENT} language="tsx" filename="page.tsx" />
+      <CodeBlock code={COMPONENT} language="tsx" filename="page.tsx (wrap)" wrap />
+    </View>
+  ),
+};
+
+/** No header content, no chrome above the code. A language the highlighter does not know renders plain. */
+export const Plain: Story = {
+  render: () => (
+    <View style={{ width: 420, gap: 16 }}>
+      <CodeBlock code={`bun add @oxy.so/bloom\nbun run build`} copyable={false} lineNumbers={false} />
+      <CodeBlock code={`[package]\nname = "bloom"\nversion = "1.0.0"`} language="toml" filename="Cargo.toml" />
+    </View>
+  ),
+};
+
+/**
+ * `Pre` is the card without a header. It keeps its own line breaks and
+ * indentation and scrolls horizontally rather than wrapping, because a wrapped
+ * command is a command someone will copy wrong.
+ */
+export const Preformatted: Story = {
+  render: () => (
+    <View style={{ width: 420, gap: 16 }}>
+      <Pre>{`bun add @oxy.so/bloom
+bun run build
+bun run test`}</Pre>
       <Pre>{`bunx storybook dev -p 6006 --no-open --quiet # one very long line that should not wrap`}</Pre>
+      <Pre language="ts" lineNumbers>{`export const answer: number = 42;`}</Pre>
+    </View>
+  ),
+};
+
+/** `CodeLines` bare, at the panel size (`md`, 13/23), soft-wrapping. */
+export const Lines: Story = {
+  render: () => (
+    <View style={{ width: 400 }}>
+      <CodeLines code={COMPONENT} language="tsx" size="md" wrap />
     </View>
   ),
 };

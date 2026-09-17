@@ -2,14 +2,14 @@ import React, { useState } from 'react';
 import { View } from 'react-native';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
-import { Check_Stroke2_Corner0_Rounded as CheckIcon } from '../icons/Check';
+import { RiCheckLine } from '../icons/remix';
 import { Text } from '../typography';
 import { useTheme } from '../theme/use-theme';
 import type { AccentFill, AccentTone } from '../theme/accent-colors';
-import { Chip } from './index';
+import { Chip, type ChipHue } from './index';
 
 const meta: Meta<typeof Chip> = {
-  title: 'Data Display/Chip',
+  title: 'Base/Chip',
   component: Chip,
 };
 
@@ -43,6 +43,33 @@ export const Tones: Story = {
   ),
 };
 
+const HUES: ChipHue[] = ['lime', 'rose', 'yellow', 'cyan', 'blue', 'purple', 'neutral', 'gray', 'soft'];
+
+/**
+ * Data hues — `hue` instead of `color` + `variant`. Rows are the
+ * three emphasis levels: `bold` (`medium`), `subtle` (`large`) and `caption`
+ * (`small`). The dark fills are translucent and are pre-mixed over
+ * the page background; `surface` names another one.
+ */
+export const Hues: Story = {
+  render: function HueChips() {
+    const theme = useTheme();
+    return (
+      <View style={{ gap: 12, padding: 16, backgroundColor: theme.colors.background }}>
+        {(['medium', 'large', 'small'] as const).map((size) => (
+          <View key={size} style={{ flexDirection: 'row', gap: 8, flexWrap: 'wrap' }}>
+            {HUES.map((hue) => (
+              <Chip key={hue} size={size} hue={hue} testID={`chip-hue-${size}-${hue}`}>
+                {hue}
+              </Chip>
+            ))}
+          </View>
+        ))}
+      </View>
+    );
+  },
+};
+
 export const Sizes: Story = {
   render: () => (
     <View style={{ flexDirection: 'row', gap: 8, alignItems: 'center' }}>
@@ -59,13 +86,13 @@ export const WithIcons: Story = {
     const theme = useTheme();
     return (
       <View style={{ flexDirection: 'row', gap: 8, alignItems: 'center' }}>
-        <Chip size="small" startIcon={<CheckIcon size="lg" fill={theme.colors.text} />}>
+        <Chip size="small" startIcon={<RiCheckLine width={16} height={16} fill={theme.colors.text} />}>
           Small
         </Chip>
-        <Chip size="medium" startIcon={<CheckIcon size="lg" fill={theme.colors.text} />}>
+        <Chip size="medium" startIcon={<RiCheckLine width={16} height={16} fill={theme.colors.text} />}>
           Medium
         </Chip>
-        <Chip size="large" startIcon={<CheckIcon size="lg" fill={theme.colors.text} />}>
+        <Chip size="large" startIcon={<RiCheckLine width={16} height={16} fill={theme.colors.text} />}>
           Large
         </Chip>
       </View>

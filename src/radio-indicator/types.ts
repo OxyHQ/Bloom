@@ -6,17 +6,15 @@ export interface RadioIndicatorProps {
   /**
    * Whether the control it belongs to is currently HELD.
    *
-   * The indicator paints the press because it is the only node that holds both
-   * colours the state layer is built from — its own fill and its dot. A caller
-   * that owns the gesture (`Radio`) passes its pressed flag straight through
-   * rather than computing a colour it would have to keep in step by hand.
+   * @deprecated Accepted for compatibility and ignored. There is
+   * no pressed paint — selection animates, a press does not.
    */
   pressed?: boolean;
-  /** Outer circle size in pixels (defaults to 20) */
+  /** Outer circle size in pixels (defaults to 16, the `md` size; 14 is `sm`) */
   size?: number;
-  /** Color when selected (defaults to theme.colors.primary) */
+  /** Accent the selected gradient is built around (defaults to theme.colors.primary) */
   selectedColor?: string;
-  /** Border color when unselected (defaults to theme.colors.border) */
+  /** Border color when unselected (defaults to the neutral-300 stop; neutral-700 in dark) */
   borderColor?: string;
   /** Custom style */
   style?: StyleProp<ViewStyle>;

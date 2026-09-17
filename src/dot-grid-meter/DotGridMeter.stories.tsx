@@ -26,7 +26,7 @@ function Demo() {
 }
 
 const meta: Meta<typeof DotGridMeter> = {
-  title: 'Data Display/DotGridMeter',
+  title: 'Charts/Dot Grid Meter',
   component: DotGridMeter,
 };
 

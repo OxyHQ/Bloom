@@ -36,9 +36,55 @@ an ancestor of what it switches.
 | `value`         | the open tab                                                   |
 | `onValueChange` | receives the pressed trigger's `value`                         |
 | `hasSelection`  | whether **any** tab is selected — see below                    |
-| `variant`       | `underline` · `filled` · `outlined`                            |
+| `variant`       | `underline` · `pill` · `filled` · `outlined` — see below       |
 | `fullWidth`     | spread the triggers across the container instead of hugging    |
-| `count`         | a number beside a trigger's label                              |
+| `count`         | a count badge beside a trigger's label                         |
+| `leadingIcon`   | an icon component, sized and tinted by the trigger             |
+
+## Look
+
+The strip is built from `Tab` and `PillTab`, with colours from the theme through
+the shared ramp recipe (`button/shared.ts`).
+
+| variant     | component         | selected                                            | idle                          |
+| ----------- | ----------------- | --------------------------------------------------- | ----------------------------- |
+| `underline` | `Tab`             | 2px accent-600 underline over a 1px baseline, body-medium accent-600 label | body-regular text-primary |
+| `pill`      | `PillTab` blue    | sliding accent-50 pill (dark accent-950 @60%), accent-500 label + icon | neutral-500, neutral-100 hover layer |
+| `filled`    | `PillTab` gray    | sliding neutral-200 pill (dark neutral-800), text-primary label + icon | neutral-500, neutral-100 hover layer |
+| `outlined`  | —                 | kept for existing call sites; renders as `pill`     |                               |
+
+- **Geometry.** Underline triggers are px 10 / py 8 with a 10px gap to the count
+  and a 16px icon; pill triggers are px 8 / py 5 / gap 4 with a 20px icon. Strips
+  space triggers 4px apart. The underline strip's baseline runs the full width of
+  its container.
+- **Count badge.** 4px radius, px 4 / py 1, caption-1-medium. Selected:
+  accent-100 on accent-600. Idle: black/10 on text-primary, the whole badge at 50%.
+- **Motion.** The underline slides in 200ms `ease`; the pill thumb in 300ms with
+  a slight overshoot (`cubic-bezier(0.34, 1.2, 0.64, 1)`); the idle hover layer
+  fades over 200ms. All of it is skipped under reduced motion. There is no press
+  scale — on native a held press shows the hover layer instead.
+- **Both pill variants are full pills.** Bloom rounds every button-like control
+  fully, rather than to a 10px corner.
+- **Selecting changes the label weight** on `underline` (regular → medium), so
+  the trigger resizes a frame into the slide. The strip keeps animating toward a
+  selection re-measured within the slide rather than snapping, which would cut
+  the slide off.
+- **The underline is laid over the baseline**, pulled down by the baseline's own
+  width. That width is read from `style` too: a caller that zeroes
+  `borderBottomWidth` gets an underline flush with the strip's bottom edge, not
+  one hanging 1px below it.
+
+`icon` still accepts a pre-rendered node, which the caller sizes and colours;
+prefer `leadingIcon`, which follows the selection:
+
+```tsx
+import { RiChat3Line, RiSettings3Line } from '@oxy.so/bloom/icons';
+
+<Tabs variant="pill" value={view} onValueChange={setView}>
+  <TabsTrigger value="changes" label="Changes" leadingIcon={RiChat3Line} />
+  <TabsTrigger value="settings" label="Settings" leadingIcon={RiSettings3Line} />
+</Tabs>
+```
 
 ## `hasSelection` exists for a state a tab strip usually cannot express
 

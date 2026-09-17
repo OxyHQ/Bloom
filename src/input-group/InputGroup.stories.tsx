@@ -8,7 +8,7 @@ import { Button } from '../button';
 import { Kbd } from '../kbd';
 
 const meta: Meta = {
-  title: 'Forms/InputGroup',
+  title: 'Base/Input Group',
 };
 
 export default meta;

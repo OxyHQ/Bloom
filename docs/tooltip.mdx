@@ -28,6 +28,30 @@ const [visible, setVisible] = useState(false);
 </Tooltip>
 ```
 
+## Look
+
+The light-surface tooltip (`components/base/tooltip`), coloured from the theme (`floating/menu-palette.ts`):
+
+| | `sm` (default) | `md` |
+| --- | --- | --- |
+| padding | 10 / 6 | 12 / 8 |
+| corner | 8px | 10px |
+| text | 12/16 medium, +0.15px | 14/20 medium |
+
+A card-coloured bubble with the `neutral-200` hairline and `shadow-dropdown`, `text-primary`, hugging its text up to 240px, 10px from the trigger with a 12×7 caret pointing at it (filled with the surface, stroked with the hairline, joined to the bubble's border). On web it enters and leaves on a 200ms `ease-out` fade + `scale-90` + 4px blur and ignores the pointer. Dark mode takes `neutral-800` and `neutral-700`.
+
+```tsx
+<TooltipTextBubble size="md">Copies the link to your clipboard</TooltipTextBubble>
+```
+
+`size` is on `TooltipTextBubble` and `TooltipContent`; a `TooltipContent` with your own children sizes the surface only, so style your text to match.
+
+The web bubble is portaled (`OverlayRoot`) and `position: fixed` against the TRIGGER's measured box, centred on it and nudged inside an 8px viewport gutter (the caret keeps pointing at the trigger). It follows the trigger every frame while mounted, because a web font swapping in reflows the page without any scroll or resize — measured once, bubbles drifted 2–15px off their triggers after Inter loaded. It used to be `position: absolute` in the tree, which on react-native-web (every `View` is `position: relative`) anchored it to whatever box contained the `Tooltip`. The bubble centres on `TooltipTrigger`'s box, so in a stretching column wrap the trigger in a box that hugs it.
+
+**No dismiss layer on web.** An outside press closes the tooltip through a capture-phase document `pointerdown` listener (presses on the trigger are left to the trigger). It used to be a full-screen pressable over the page — which covered the trigger itself, so a hover-opened tooltip got an immediate hover-out and closed within a frame, and the next click landed on the layer instead of the control.
+
+Text uses the type ramp: `TYPE_SCALE['caption-1-medium']` (`sm`) and `['body-medium']` (`md`), in Inter.
+
 ## Why it is controlled
 
 What should open a tooltip differs by platform and by trigger — hover for a

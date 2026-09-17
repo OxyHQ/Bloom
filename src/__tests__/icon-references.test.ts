@@ -5,8 +5,8 @@ import { extname, join, relative } from 'node:path';
  * Every `Icons.*` reference in this repo must name an identifier `src/icons`
  * actually exports.
  *
- * Icon exports carry their full style and corner suffix
- * (`Home_Stroke2_Corner0_Rounded`), there are 250-odd of them, and a shortened
+ * Icon exports carry Remix's full name (`RiHome5Line`, `RiCheckLine`), there are
+ * hundreds of them, and a shortened
  * name is not a compile error anywhere it usually appears: in a DOC COMMENT or an
  * `.mdx` example, `tsc` never sees it. A reader copies it, gets `undefined`, and
  * React reports "Element type is invalid … but got: undefined" against the
@@ -175,8 +175,8 @@ describe('icon reference integrity', () => {
     // The suffixed component itself, the helpers, and the two TYPE exports that an
     // earlier version of this check mistook for phantom references.
     for (const name of [
-      'Home_Stroke2_Corner0_Rounded',
-      'PlusLarge_Stroke2_Corner0_Rounded',
+      'RiAddLine',
+      'RiCloseLine',
       'sizes',
       'useCommonSVGProps',
       'createSinglePathSVG',
@@ -192,11 +192,11 @@ describe('icon reference integrity', () => {
 
   it('resolves the export/import directions of `as` correctly', () => {
     // `export { A as B }` publishes B; `import { A as B }` reads A.
-    expect(exportedNames("export { TimesLarge_Stroke2_Corner0_Rounded as X } from './Times';")).toEqual(
+    expect(exportedNames("export { RiCloseLine as X } from './remix';")).toEqual(
       ['X'],
     );
-    expect(namedBindings('Check_Stroke2_Corner0_Rounded as CheckIcon', 'import')).toEqual([
-      'Check_Stroke2_Corner0_Rounded',
+    expect(namedBindings('RiCheckLine as CheckIcon', 'import')).toEqual([
+      'RiCheckLine',
     ]);
   });
 
@@ -221,8 +221,8 @@ describe('icon reference integrity', () => {
     const probe = [
       "import * as Icons from '@oxy.so/bloom/icons';",
       "import { Icons } from '@oxy.so/bloom';",
-      'const a = <Icons.Home_Stroke2_Corner0_Rounded />;',
-      "import { Check_Stroke2_Corner0_Rounded as CheckIcon } from '../icons/Check';",
+      'const a = <Icons.RiHomeLine />;',
+      "import { RiCheckLine as CheckIcon } from '../icons/remix/RiCheckLine';",
       "import { type IconStyle, type Props as SVGIconProps } from '../icons/shared';",
       '| `Icons` | `export * as Icons` | keep namespace | `Icons.*` |',
       "import { useState } from 'react';",

@@ -34,7 +34,10 @@
  *
  * Fade + `zoom-95` + an 8px slide from the side it landed on, 200ms on
  * `--ease-out-quint`, scaling from the corner nearest the trigger — the target's
- * own enter, and the same shape reversed on the way out.
+ * own enter, and the same shape reversed on the way out. That is the `popover`
+ * surface; the `menu` and `listbox` surfaces run a separate menu motion instead
+ * (150ms `ease-out`, fade + `scale-95` + 2px blur, no slide) and wear matching
+ * chrome, coloured inline from `menu-palette.ts`.
  *
  * Driven IMPERATIVELY from one shared value, which is the only mechanism
  * available here and is what both platform rules point at:
@@ -77,6 +80,12 @@ import { WEB_POSITION_FIXED } from '../styles/web-view-style';
 import {
   DEFAULT_ALIGN_OFFSET,
   DEFAULT_SIDE_OFFSET,
+  LISTBOX_PANEL_CLASS,
+  MENU_MOTION_BLUR,
+  MENU_MOTION_DURATION,
+  MENU_MOTION_EASING,
+  MENU_MOTION_SCALE_FROM,
+  MENU_PANEL_CLASS,
   PANEL_CLASS,
   PANEL_MOTION_DURATION,
   PANEL_MOTION_EASING,
@@ -84,6 +93,7 @@ import {
   PANEL_MOTION_SLIDE,
   VIEWPORT_GUTTER,
 } from './constants';
+import { useMenuPalette } from './menu-palette';
 import { cx } from './shared';
 import type { FloatingPanelProps, FloatingSide } from './types';
 
@@ -97,6 +107,41 @@ const AnimatedPanel = Animated.createAnimatedComponent(StyledView);
 
 /** `cubic-bezier(0.22, 1, 0.36, 1)`, the target's `--ease-out-quint`. */
 const EASING = Easing.bezier(...PANEL_MOTION_EASING);
+
+/** Tailwind v4 `ease-out`, the menu curve. */
+const MENU_EASING = Easing.bezier(...MENU_MOTION_EASING);
+
+/**
+ * The per-surface chrome and motion. `popover` is the original Radix-derived
+ * panel; `menu` and `listbox` use the menu recipe (`menu-styles.ts`), whose
+ * colours come from `menu-palette.ts`.
+ */
+const SURFACE = {
+  popover: {
+    className: PANEL_CLASS,
+    duration: PANEL_MOTION_DURATION,
+    easing: EASING,
+    scaleFrom: PANEL_MOTION_SCALE_FROM,
+    slide: PANEL_MOTION_SLIDE,
+    blur: 0,
+  },
+  menu: {
+    className: MENU_PANEL_CLASS,
+    duration: MENU_MOTION_DURATION,
+    easing: MENU_EASING,
+    scaleFrom: MENU_MOTION_SCALE_FROM,
+    slide: 0,
+    blur: MENU_MOTION_BLUR,
+  },
+  listbox: {
+    className: LISTBOX_PANEL_CLASS,
+    duration: MENU_MOTION_DURATION,
+    easing: MENU_EASING,
+    scaleFrom: MENU_MOTION_SCALE_FROM,
+    slide: 0,
+    blur: MENU_MOTION_BLUR,
+  },
+} as const;
 
 /**
  * `closed` renders nothing; `closing` keeps the panel mounted and frozen in
@@ -152,7 +197,11 @@ export function FloatingPanel({
   style,
   testID,
   children,
+  surface = 'popover',
 }: FloatingPanelProps) {
+  const chrome = SURFACE[surface];
+  const isMenuSurface = surface !== 'popover';
+  const palette = useMenuPalette();
   // The mounted panel as STATE, not a bare ref: placement has to measure it,
   // and `Portal` renders null on its first pass (it resolves its host in its own
   // layout effect), so the node lands one render after the panel mounts. An
@@ -190,10 +239,10 @@ export function FloatingPanel({
     // never land before the animation finishes or long after it.
     const timer = setTimeout(
       () => setPhase('closed'),
-      reducedMotion ? 0 : PANEL_MOTION_DURATION,
+      reducedMotion ? 0 : chrome.duration,
     );
     return () => clearTimeout(timer);
-  }, [phase, reducedMotion]);
+  }, [phase, reducedMotion, chrome.duration]);
 
   useLayoutEffect(() => {
     // While closing, the panel holds the position it was last placed at: the
@@ -289,15 +338,15 @@ export function FloatingPanel({
 
   const slideX =
     geometry?.side === 'right'
-      ? -PANEL_MOTION_SLIDE
+      ? -chrome.slide
       : geometry?.side === 'left'
-        ? PANEL_MOTION_SLIDE
+        ? chrome.slide
         : 0;
   const slideY =
     geometry?.side === 'bottom'
-      ? -PANEL_MOTION_SLIDE
+      ? -chrome.slide
       : geometry?.side === 'top'
-        ? PANEL_MOTION_SLIDE
+        ? chrome.slide
         : 0;
 
   // The one imperative drive. It only starts once a placement exists, so the
@@ -308,34 +357,42 @@ export function FloatingPanel({
       if (!placement) return;
       progress.value = reducedMotion
         ? 1
-        : withTiming(1, { duration: PANEL_MOTION_DURATION, easing: EASING });
+        : withTiming(1, { duration: chrome.duration, easing: chrome.easing });
       return;
     }
     if (phase === 'closing') {
       progress.value = reducedMotion
         ? 0
-        : withTiming(0, { duration: PANEL_MOTION_DURATION, easing: EASING });
+        : withTiming(0, { duration: chrome.duration, easing: chrome.easing });
       return;
     }
     progress.value = 0;
-  }, [phase, placement, reducedMotion, progress]);
+  }, [phase, placement, reducedMotion, progress, chrome]);
 
   // `progress`, `slideX` and `slideY` are ALL in the deps: the shared value
   // because that is what subscribes the mapper to it without the worklets babel
   // plugin, and the two numbers because the mapper closes over them.
+  //
+  // A menu surface also un-blurs (`blur-[2px]` → none). The resting value is
+  // `'none'`, not `blur(0px)`, so a settled panel is not left on a filter layer.
+  const scaleFrom = chrome.scaleFrom;
+  const blurFrom = chrome.blur;
   const motionStyle = useAnimatedStyle(
     () => ({
       opacity: progress.value,
       transform: [
         { translateX: slideX * (1 - progress.value) },
         { translateY: slideY * (1 - progress.value) },
-        {
-          scale:
-            PANEL_MOTION_SCALE_FROM + (1 - PANEL_MOTION_SCALE_FROM) * progress.value,
-        },
+        { scale: scaleFrom + (1 - scaleFrom) * progress.value },
       ],
+      ...(blurFrom > 0
+        ? {
+            filter:
+              progress.value >= 1 ? 'none' : `blur(${blurFrom * (1 - progress.value)}px)`,
+          }
+        : null),
     }),
-    [progress, slideX, slideY],
+    [progress, slideX, slideY, scaleFrom, blurFrom],
   );
 
   useEffect(() => {
@@ -402,9 +459,19 @@ export function FloatingPanel({
           role={role}
           aria-label={label}
           testID={testID}
-          className={cx(PANEL_CLASS, className)}
+          className={cx(chrome.className, className)}
           style={[
             styles.panel,
+            // `bg-background-primary-default border-border-button-default
+            // shadow-dropdown`, resolved from the theme. Inline, and BEFORE the
+            // caller's `style`, which still overrides it.
+            isMenuSurface
+              ? {
+                  backgroundColor: palette.surface,
+                  borderColor: palette.border,
+                  boxShadow: palette.shadow,
+                }
+              : null,
             {
               // Before the first measurement the panel sits at the anchor, on
               // the side it will end up on — so the box it is measured in is

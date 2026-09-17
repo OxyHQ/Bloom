@@ -27,4 +27,5 @@ export type {
   SelectItemIndicatorProps,
   SelectGroupProps,
   SelectLabelProps,
+  SelectSize,
 } from './types';

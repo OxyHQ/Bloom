@@ -10,7 +10,7 @@ import { Portal, PortalHost, PortalProvider } from './index';
  * for what Bloom changed (import paths) and what Bloom does differently (who
  * mounts the portal).
  */
-const meta: Meta = { title: 'Overlays/Teleport' };
+const meta: Meta = { title: 'Foundations/Teleport' };
 export default meta;
 type Story = StoryObj;
 

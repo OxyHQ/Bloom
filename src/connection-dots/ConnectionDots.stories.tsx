@@ -4,11 +4,11 @@ import type { Meta, StoryObj } from '@storybook/react-vite';
 
 import { ConnectionDots } from './index';
 import { IconCircle } from '../icon-circle';
-import { Person_Stroke2_Corner0_Rounded as PersonIcon } from '../icons/Person';
-import { Lock_Stroke2_Corner0_Rounded as LockIcon } from '../icons/Lock';
+import { RiUserLine as PersonIcon } from '../icons/remix/RiUserLine';
+import { RiLockLine as LockIcon } from '../icons/remix/RiLockLine';
 
 const meta: Meta<typeof ConnectionDots> = {
-  title: 'Data Display/ConnectionDots',
+  title: 'Base/Connection Dots',
   component: ConnectionDots,
 };
 

@@ -17,11 +17,11 @@ import React, { useMemo } from 'react';
 
 import { useControllableState } from '../hooks/use-controllable-state';
 import {
-  ChevronBottom_Stroke2_Corner0_Rounded as ChevronBottomIcon,
-  ChevronTop_Stroke2_Corner0_Rounded as ChevronTopIcon,
-} from '../icons/Chevron';
+  RiArrowDownSLine as ChevronBottomIcon,
+  RiArrowUpSLine as ChevronTopIcon,
+} from '../icons/remix';
 import { StyledView } from '../styles/styled-primitives';
-import { useTheme } from '../theme/use-theme';
+import { useMenuPalette } from './menu-palette';
 import { ROW_ICON_SIZE } from './constants';
 import { MenuSubProvider, useMenuSub } from './context';
 import { cx, MenuRowChevron, MenuRowShell, splitChildren, SUB_TRIGGER_CLASS } from './shared';
@@ -55,7 +55,7 @@ export function createInlineMenuSub(prefix: string): MenuSubParts {
     style,
     testID,
   }: MenuSubTriggerProps) {
-    const theme = useTheme();
+    const palette = useMenuPalette();
     const sub = useMenuSub();
     const { title, body } = splitChildren(children);
     // Down when closed, up when open: the disclosure states an INLINE
@@ -77,7 +77,7 @@ export function createInlineMenuSub(prefix: string): MenuSubParts {
             <Chevron
               width={ROW_ICON_SIZE}
               height={ROW_ICON_SIZE}
-              fill={theme.colors.textSecondary}
+              fill={palette.textSecondary}
             />
           </MenuRowChevron>
         }
@@ -107,7 +107,7 @@ export function createInlineMenuSub(prefix: string): MenuSubParts {
     return (
       <StyledView
         accessibilityLabel={label}
-        className={cx('pl-space-16', className)}
+        className={cx('pl-space-16 gap-space-4', className)}
         style={style}
         testID={testID}>
         {children}

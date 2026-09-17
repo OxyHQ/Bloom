@@ -77,22 +77,22 @@ const DEFAULT_STEPS = [
  */
 const CASES = [
   {
-    id: 'overlays-overlay-stacking--dialog-over-sheet-story',
+    id: 'foundations-overlay-stacking--dialog-over-sheet-story',
     name: 'dialog over sheet',
     expect: 'dialog',
   },
   {
-    id: 'overlays-overlay-stacking--sheet-over-dialog-story',
+    id: 'foundations-overlay-stacking--sheet-over-dialog-story',
     name: 'sheet over dialog',
     expect: 'sheet',
   },
   {
-    id: 'overlays-overlay-stacking--dialog-over-dialog-story',
+    id: 'foundations-overlay-stacking--dialog-over-dialog-story',
     name: 'dialog over dialog',
     expect: 'second',
   },
   {
-    id: 'overlays-overlay-stacking--menu-over-dialog-story',
+    id: 'foundations-overlay-stacking--menu-over-dialog-story',
     name: 'menu over dialog',
     expect: 'menu',
   },
@@ -103,7 +103,7 @@ const CASES = [
     // node would report a layer the user cannot actually click through as fine,
     // so the assertion is the same one every case above uses — the result line,
     // which only the covered button can write.
-    id: 'overlays-mediaflight--click-through',
+    id: 'base-media-flight--click-through',
     name: 'media flight does not steal the click',
     steps: [{ click: 'open-first', why: 'open-first not clickable' }],
     expect: 'flight',

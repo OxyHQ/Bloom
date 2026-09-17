@@ -8,10 +8,15 @@
  * `fontCssVars` is the inverse map: name -> CSS custom property name.
  */
 
+/**
+ * Type families: Inter for every UI surface (`sans`), JetBrains Mono
+ * for code (`mono`). BlomusModernus, Oxy's brand face, stays as `display` —
+ * headings and brand moments that ask for it explicitly.
+ */
 export const fontFamilies = {
   display: 'BlomusModernus, Georgia, "Times New Roman", serif',
-  sans: 'BlomusModernus, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
-  mono: '"Geist Mono", ui-monospace, SFMono-Regular, Menlo, monospace',
+  sans: 'Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
+  mono: '"JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace',
 } as const;
 
 export const fontCssVars = {

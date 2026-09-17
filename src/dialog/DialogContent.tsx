@@ -1,12 +1,11 @@
 import React, { useCallback } from 'react';
-import { Pressable, View, type GestureResponderEvent } from 'react-native';
+import { View, type GestureResponderEvent } from 'react-native';
 
 import { Text } from '../typography';
 
-import type { ThemeColors } from '../theme/types';
 import { useTheme } from '../theme/use-theme';
-import { useInteractionState } from '../hooks/use-interaction-state';
-import { borderRadius } from '../styles/tokens';
+import { Button } from '../button';
+import type { ButtonVariant } from '../button/types';
 import { useDialogContext } from './context';
 import type { DialogAction, DialogActionColor } from './types';
 
@@ -91,14 +90,8 @@ export function ActionRow({ actions }: { actions: DialogAction[] }) {
 
 function ActionButton({ action }: { action: DialogAction }) {
   const { close } = useDialogContext();
-  const theme = useTheme();
   const color: DialogActionColor = action.color ?? 'default';
   const shouldCloseOnPress = action.shouldCloseOnPress ?? true;
-
-  const { background, foreground } = getActionPalette(color, theme.colors);
-  // Component state, not `Pressable`'s function-form `style`: css-interop
-  // swallows the function form and every base style with it.
-  const { state: pressed, onIn: onPressIn, onOut: onPressOut } = useInteractionState();
 
   // `shouldCloseOnPress` (default true) is the ONLY switch, for every colour.
   // `cancel` used to bypass it — on the premise that a cancel button must always
@@ -108,65 +101,44 @@ function ActionButton({ action }: { action: DialogAction }) {
   // promise, and the entry's `'closing'` status is what runs the exit animation.
   // The default is unchanged, so a caller that says nothing still gets
   // dismiss-on-press.
+  //
+  // `Button`'s own `onPress` carries no event, so the press is captured through
+  // `onClick` on web as well; `onPress` still receives the event where one exists.
   const handlePress = useCallback(
-    (e: GestureResponderEvent) => {
+    (e?: GestureResponderEvent) => {
       const onPress = action.onPress;
+      const event = e as GestureResponderEvent;
       if (shouldCloseOnPress) {
-        close(onPress ? () => onPress(e) : undefined);
+        close(onPress ? () => onPress(event) : undefined);
       } else {
-        onPress?.(e);
+        onPress?.(event);
       }
     },
     [action.onPress, close, shouldCloseOnPress],
   );
 
+  // Bloom's own `Button`, so a dialog's actions are the same control as every
+  // other button in the library: the gradient/secondary/danger recipe,
+  // its states and its focus ring, rather than a private pill.
   return (
-    <Pressable
-      style={[
-        {
-          borderRadius: borderRadius.full,
-          alignItems: 'center',
-          justifyContent: 'center',
-          backgroundColor: background,
-          opacity: action.disabled ? 0.5 : 1,
-          paddingVertical: 12,
-          paddingHorizontal: 24,
-        },
-        !action.disabled && pressed && { opacity: 0.7 },
-      ]}
-      onPress={handlePress}
-      onPressIn={onPressIn}
-      onPressOut={onPressOut}
+    <Button
+      variant={ACTION_VARIANT[color]}
+      size="large"
       disabled={action.disabled}
-      accessibilityRole="button"
+      onPress={() => handlePress()}
       accessibilityLabel={action.label}
       testID={action.testID}
+      fullWidth
+      style={{ alignSelf: 'stretch' }}
     >
-      <Text style={{ fontSize: 16, fontWeight: '500', color: foreground }}>
-        {action.label}
-      </Text>
-    </Pressable>
+      {action.label}
+    </Button>
   );
 }
 
-export function getActionPalette(
-  color: DialogActionColor,
-  colors: ThemeColors,
-): { background: string; foreground: string } {
-  switch (color) {
-    case 'destructive':
-      return {
-        background: colors.negative,
-        foreground: colors.negativeForeground,
-      };
-    case 'cancel':
-      return { background: colors.contrast50, foreground: colors.text };
-    case 'default':
-      return { background: colors.primary, foreground: colors.primaryForeground };
-    /* c8 ignore next 3 -- TS exhaustiveness check guards this branch */
-    default: {
-      const _exhaustive: never = color;
-      return { background: colors.primary, foreground: colors.primaryForeground };
-    }
-  }
-}
+/** `DialogAction.color` → the `Button` variant that paints it. */
+const ACTION_VARIANT: Record<DialogActionColor, ButtonVariant> = {
+  default: 'primary',
+  cancel: 'secondary',
+  destructive: 'destructive',
+};

@@ -2,7 +2,8 @@
  * Replaces sonner-native v0.26.4's `src/icons.tsx` (MIT © Gunnar Torfi
  * Steinarsson), which ships its own inline SVG paths
  * and imports `react-native-svg` directly. Bloom maps variants onto its own icon
- * set instead, so the toast picks up icon changes with the rest of the library.
+ * set instead — the notification glyphs, drawn inside the card's 40px status
+ * disc by `ToastContent`.
  *
  * The spinner is RN's `ActivityIndicator` rather than Bloom's `Loading`: the
  * `./loading` subpath is web-forked, so importing it from this universal file
@@ -15,21 +16,23 @@
  */
 import { ActivityIndicator } from 'react-native';
 
-import { CircleCheck_Stroke2_Corner0_Rounded as CircleCheckIcon } from '../icons/CircleCheck';
-import { CircleInfo_Stroke2_Corner0_Rounded as CircleInfoIcon } from '../icons/CircleInfo';
-import { CircleX_Stroke2_Corner0_Rounded as CircleXIcon } from '../icons/CircleX';
-import { Warning_Stroke2_Corner0_Rounded as WarningIcon } from '../icons/Warning';
+import { NOTIFICATION_GEOMETRY } from '../notification/shared';
+import { RiAlertFill } from '../icons/remix/RiAlertFill';
+import { RiCheckboxCircleFill } from '../icons/remix/RiCheckboxCircleFill';
+import { RiErrorWarningFill } from '../icons/remix/RiErrorWarningFill';
+import { RiInformationFill } from '../icons/remix/RiInformationFill';
 import type { ToastVariant } from './types';
 
-const ICON_MAP: Record<
-  Exclude<ToastVariant, 'loading'>,
-  typeof CircleCheckIcon
-> = {
-  success: CircleCheckIcon,
-  error: CircleXIcon,
-  warning: WarningIcon,
-  info: CircleInfoIcon,
-};
+/**
+ * The notification status glyphs (Remix fill icons, 20px). `warning` has
+ * no dedicated status glyph; it takes Remix's `alert-fill`.
+ */
+const ICON_MAP = {
+  success: RiCheckboxCircleFill,
+  error: RiErrorWarningFill,
+  warning: RiAlertFill,
+  info: RiInformationFill,
+} as const satisfies Record<Exclude<ToastVariant, 'loading'>, unknown>;
 
 export function ToastIcon({
   variant,
@@ -49,7 +52,7 @@ export function ToastIcon({
   }
 
   const Icon = ICON_MAP[variant];
-  return <Icon fill={color} size="md" />;
+  return <Icon width={NOTIFICATION_GEOMETRY.icon} height={NOTIFICATION_GEOMETRY.icon} fill={color} />;
 }
 
 ToastIcon.displayName = 'ToastIcon';

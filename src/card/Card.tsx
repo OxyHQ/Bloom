@@ -3,11 +3,12 @@
  * the `card` background role, a border colour and width, an elevation, a corner
  * rung, and the clip that keeps content inside those corners.
  *
- * Five families used to draw that chrome by hand (`settings-list`'s group,
- * `user-hover-card`, `benefit-list`, `link-preview` and `profile-card`), which
- * is the duplication this component exists to remove. They differ in the RUNG
- * and the border/elevation, not in what a card IS — so the axes are props drawn
- * from the token scales rather than five more variants:
+ * Families used to draw that chrome by hand (`settings-list`'s group and
+ * `link-preview` compose it now; `user-hover-card` has since moved to the
+ * floating-panel surface the menus share), which is the duplication this
+ * component exists to remove. They differ in the RUNG and the border/elevation,
+ * not in what a card IS — so the axes are props drawn from the token scales
+ * rather than more variants:
  *
  *   variant   the preset (`plain` is the bare surface; the other three add one axis)
  *   radius    a rung of `RADIUS` — never a free number

@@ -24,14 +24,14 @@ const require = createRequire(import.meta.url);
 const puppeteer = require('/home/nate/Oxy/Homiio/node_modules/puppeteer-core');
 
 const CASES = [
-  { name: 'Fab',               story: 'components-fab--default',                click: 'button.bloom-fab',                measure: 'button.bloom-fab',            raw: true },
-  { name: 'FrostedIconButton', story: 'components-frostediconbutton--over-image', click: 'button.bloom-frosted-icon-btn', measure: 'button.bloom-frosted-icon-btn', raw: true },
-  { name: 'Chip',              story: 'data-display-chip--selectable',          click: '[data-bloom-chip]',               measure: '[data-bloom-chip]' },
-  { name: 'Tabs',              story: 'components-tabs--basic',                 click: '[role="tab"]',                    measure: '[role="tab"]', index: 1 },
-  { name: 'Checkbox',          story: 'forms-checkbox--basic',                  click: '[data-bloom-checkbox]',           measure: '[data-bloom-checkbox] > *' },
+  { name: 'Fab',               story: 'base-fab--default',                click: 'button.bloom-fab',                measure: 'button.bloom-fab',            raw: true },
+  { name: 'FrostedIconButton', story: 'base-frosted-icon-button--over-image', click: 'button.bloom-frosted-icon-btn', measure: 'button.bloom-frosted-icon-btn', raw: true },
+  { name: 'Chip',              story: 'base-chip--selectable',          click: '[data-bloom-chip]',               measure: '[data-bloom-chip]' },
+  { name: 'Tabs',              story: 'base-tabs--basic',                 click: '[role="tab"]',                    measure: '[role="tab"]', index: 1 },
+  { name: 'Checkbox',          story: 'base-checkbox--basic',                  click: '[data-bloom-checkbox]',           measure: '[data-bloom-checkbox] > *' },
   // The indicator sits one node deeper: the Pressable's first child is the
   // Animated.View that carries the scale, and the circle is inside THAT.
-  { name: 'Radio',             story: 'forms-radio--group',                     click: '[role="radio"][aria-checked="false"]', measure: '[role="radio"][aria-checked="false"] > * > *' },
+  { name: 'Radio',             story: 'base-radio--group',                     click: '[role="radio"][aria-checked="false"]', measure: '[role="radio"][aria-checked="false"] > * > *' },
 ];
 
 const argUrl = process.argv.indexOf('--url');

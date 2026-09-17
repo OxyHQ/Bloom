@@ -99,11 +99,11 @@ inside the button, whose name came back as exactly its label.
 ## How wide your content can be
 
 ```tsx
-import { USER_HOVER_CARD_CONTENT_WIDTH } from '@oxyhq/bloom/user-hover-card';
+import { USER_HOVER_CARD_CONTENT_WIDTH } from '@oxy.so/bloom/user-hover-card';
 ```
 
 **256px**, and it is exported so you can size against it rather than discover it.
-The card is `USER_HOVER_CARD_WIDTH` (288) with `USER_HOVER_CARD_INSET` (16) on
+The card is `USER_HOVER_CARD_WIDTH` (286) with `USER_HOVER_CARD_INSET` (15) on
 each side; the content width is the decided number and the card's width is
 derived from it. The card does **not** clip, so anything wider paints outside the
 border rather than being cut off — louder than a silent truncation, still wrong.
@@ -112,8 +112,8 @@ That inversion is recent, and the reason is worth stating: the width was an
 unexplained `280` from the day the family shipped, and the 248px that fell out of
 it missed the first real slot content by **one pixel**. A contribution graph of
 119 days is eighteen columns once the leading partial week is counted, which at
-`cellSize={11} gap={3}` is 249px. 256 clears it with room, sits on the 8px grid
-the spacing scale follows, and is 16× the inset.
+`cellSize={11} gap={3}` is 249px. 256 clears it with room and sits on the 8px grid
+the spacing scale follows.
 
 There are two named slots, not three. The positions a third consumer might want —
 above the bio, beside the action — are still free to be added as their own named
@@ -163,27 +163,52 @@ wrong in one app or the other.
 
 ## Chrome
 
-The card composes [`Card`](/docs/bloom/main/card) at the `radius-16` rung with a
-`hairline` border and `shadow-m` — the overlay elevation role it shares with
-menus, popovers and dialogs. It does not clip, so nothing inside it needs to
-know it is in a card.
+This card is built from the vocabulary of Bloom's existing components, and
+sits beside them as one family:
 
-The border asks for **0.5px**, `BORDER_WIDTH.hairline`, the same width
-[`BenefitList`](/docs/bloom/main/benefit-list) asks for — verified in Chrome,
-both surfaces, both densities. That is worth stating because
-`StyleSheet.hairlineWidth`, the older spelling, is hardcoded to **1** on web:
-the two surfaces both called themselves hairline and did not match. Bloom's
-scale defines the hairline as 0.5, and this card follows the scale.
+| Part | Recipe |
+| --- | --- |
+| Panel | The floating menu surface from `floating/menu-palette.ts` (the same one `DropdownMenu`, `Select` and the `Sidebar` account menu wear): radius 16, 1px `border/button/default` (neutral-200 / neutral-700), `background/primary` (card / neutral-800), `shadow-dropdown`. 286 wide (`USER_HOVER_CARD_WIDTH`), p15 — 256 of inner width. |
+| Cover | Optional `cover`: full-bleed, 88 tall, clipped to the inner radius (15), `background/tertiary` under the image (neutral-200 / neutral-700). |
+| Avatar | Bloom's ported `Avatar` at 48 (initials disc when there is no photo). Over a cover it wears a 3px ring of the panel colour and overlaps the cover's edge by half. |
+| Action | Pinned top-right and centred on the avatar's visible band. Pass Bloom's `Button` (`size="small"`, `primary` to follow, `secondary` once following) or the SDK's FollowButton. |
+| Name | `headline-medium`, `text-primary`, one line, + 16px `RiVerifiedBadgeFill` in accent-500. |
+| Handle | `body-regular`, `text-secondary` (neutral-500), 2px under the name. |
+| Bio | `body-regular`, `text-primary`, three lines. |
+| Stats | Profile-card stat tiles: flex-1, radius 10, p10, `background/secondary` (neutral-100 / neutral-900), value `body-medium` over label `body-2-medium` `text-secondary`, 8 apart. |
+| Rhythm | 12 between blocks. |
 
-**What the browser actually paints depends on pixel density**, and the 0.5 is
-only visible on half of it. Measured in Chrome: at `devicePixelRatio` 1 the used
-border width is **1px** — a sub-pixel border is snapped up to one device pixel,
-never down to zero — so on an ordinary 1× monitor `hairline` and the 1px `thin`
-are indistinguishable. At `devicePixelRatio` 2 it is 0.5px, one device pixel, and
-visibly finer. Native does no such snapping — but it is not untouched either:
-`StyleSheet.hairlineWidth` is 0.5 at @2x and ~0.333 at @3x, so the scale's flat
-0.5 is identical at @2x and 0.167px thicker at @3x. So the distinction the scale
-draws is real on HiDPI and inert on a 1× browser; that is the trade for one
-number that holds on both platforms. The alternative, a density branch, is what
-`MediaInsetBorder` does (`PixelRatio.get() > 1 ? 0.5 : StyleSheet.hairlineWidth`)
-where the line sits on top of an image and 1px would read as a frame.
+Colours come from the theme through `resolveButtonRamps(theme)`, in light and dark.
+
+### `loading`
+
+`loading` draws the skeleton in the same geometry — avatar disc, name and handle
+bars, two bio lines, two stat tiles (and the cover band, if `cover` is set) — so
+the card does not jump when the profile lands. The card reports itself busy
+(`aria-busy` on web, `accessibilityState.busy` on native). `action` and `footer`
+are not rendered while loading.
+
+### `cover` resolves like `avatar`
+
+A non-URL `cover` goes through the app's `ImageResolver` with `coverVariant`, the
+same rule the avatar hazard above describes. `null`/`''` draws no cover band at
+all, so an absent image never leaves an empty grey strip.
+
+### Motion
+
+On mount the card runs the floating-menu entrance — opacity 0 → 1, scale 0.95 →
+1, and on web `blur(2px)` → none, 150ms Tailwind `ease-out`, growing from the top
+edge — the constants `FloatingPanel`'s `menu` surface uses. There is no press
+scale. Reduced motion skips it; `animateIn={false}` turns it off.
+
+### Why the border is 1px, not the 0.5px hairline
+
+The card used to compose `Card` with `BORDER_WIDTH.hairline` (0.5px). It now
+draws a 1px `border`, the width every neighbouring panel uses. The
+measured facts behind that choice still hold: in Chrome a 0.5px border is snapped
+UP to one device pixel, so at `devicePixelRatio` 1 it paints 1px and is
+indistinguishable from `thin`, while at `devicePixelRatio` 2 it paints 0.5px and
+is visibly finer. `StyleSheet.hairlineWidth` is hardcoded to **1** on web, and on
+native is 0.5 at @2x and ~0.333 at @3x. A hairline card beside 1px menus would
+therefore match them on a 1× monitor and look lighter than them on every HiDPI
+screen — the mismatch this card now avoids.

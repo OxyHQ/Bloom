@@ -6,7 +6,9 @@ order: 10
 
 # Button
 
-The all-purpose Bloom button. Variants for primary/secondary/inverse/icon/ghost/text actions, three sizes, loading state, optional icons on either side, and full accessibility props.
+The all-purpose Bloom button. Variants for primary/secondary/ghost/destructive actions plus inverse/icon/text/link, four sizes, loading state, sized icon components, and full accessibility props.
+
+Both forks read ONE table — `src/button/shared.ts` — for geometry and every state's colours, so native and web cannot drift apart.
 
 ## Basic
 
@@ -21,109 +23,49 @@ import { Button } from '@oxy.so/bloom';
 ```tsx
 <Button variant="primary">Primary</Button>
 <Button variant="secondary">Secondary</Button>
-<Button variant="inverse">Inverse</Button>
 <Button variant="ghost">Ghost</Button>
+<Button variant="destructive">Delete</Button>
+<Button variant="inverse">Inverse</Button>
 <Button variant="text">Text</Button>
-<Button variant="icon" icon={<XIcon />} accessibilityLabel="Close" />
 ```
 
-`primary`, `secondary`, and `inverse` get a press-scale animation; the rest don't. `icon` renders as a square hit target — pair it with `accessibilityLabel`.
+| Variant | Paint |
+|---|---|
+| `primary` | Top-to-bottom gradient of `primary` (500 → 600). Hover lightens it (400 → 500), press deepens it (600 → 700). Label `primaryForeground`. xs drop shadow. |
+| `destructive` | The same recipe on `negative` / `negativeForeground`. |
+| `secondary` / `outline` | `card` surface, 1px `border`, `text` label, xs drop shadow; hover/press step the surface and border toward the label colour. |
+| `ghost` | The `primarySubtle` tint with its `primarySubtleForeground` label — the policy's own legibility-checked pair; hover/press deepen the tint. |
+| `icon` | `secondary`'s surface as a fixed square (border included), glyph 20 / 16 at medium / small; disabled dims the whole control to 0.6. |
+| `inverse` | White surface, black label — for use over media. |
+| `text` | Borderless `primary` label on a compact 4/8 padding with a hover wash (Bloom-only). |
+| `link` | No container at all — label only, `accent-600` (`linkTone="secondary"`: secondary text), underline (offset 3) on hover, `accent-800` while held. |
 
-## The filled variants are glass
+The accent and neutral ramps are rebuilt around the theme colours in OKLCH (`button/shared.ts`), since Bloom presets carry one `primary` rather than a Tailwind ramp. There is NO press scale — a press is the active paint alone — and disabled buttons take their own paint instead of an opacity dip (`icon` excepted).
 
-`primary` and `destructive` are **tinted glass**: the brand colour at 85% over a `blur(10px)` of whatever is behind them, a hairline of the same colour at full strength, a lit white top rim and a soft drop shadow. The label is the fill's own on-colour, exactly as on the solid button — the pane IS the fill, so it carries the same label.
-
-The glass is the sheen, not the wash. What reads as glass is the rim, the vertical gradient and the hairline; the 15% of the backdrop that shows through is a hint of depth, not the effect itself.
-
-**One measured cost, stated because it is real.** The 15% bleed moves the pane toward the surface under it, which in light mode means lighter — the one direction a white label cannot afford. Of `primary`'s 640 preset × mode × surface combinations, **73 fall below WCAG AA**, in the band 4.17–4.50, all in light mode, on `acid-canopy`, `arctic-signal`, `blue`, `bronze-neon`, `clay-current`, `copper-field`, `electric-tide`, `faircoin`, `green`, `lagoon`, `lavender`, `malachite-rush`, `midnight-citrus`, `mint`, `olive`, `orange`, `pacific-flare`, `pine`, `plum`, `pumpkin`, `reef-pulse`, `rose`, `saffron-depth`, `sky`, `solar-flux`, `viridian-orbit` and `yellow`. Both solid Button fills pass all 1,280 rows; glass `destructive` is also unaffected (0/640, worst 5.32). The alpha at which the failures reach zero remains 0.89.
-
-The 1.0.1 catalog remains exactly 38/340, including the original 18-preset oracle at 30/180. The 30 new three-seed combinations contribute 35/300 and do not lower the existing 4.17 floor. These cohorts are asserted independently, so an unchanged total cannot hide a regression moving from one into the other.
-
-If your app runs one of those 27 presets in light mode and needs AA on its primary button, use `variant="inverse"` for that call site, or raise `GLASS_FILL_ALPHA`.
-
-Over a retained black/mid-grey/white media sample, **50 of 384** preset × mode × backdrop rows fall below AA, worst 3.61 (`destructive`: 0). The 1.0.1 catalog remains 25/204; the additions contribute 25/180, worst 4.17. That is a sample rather than a promise about arbitrary pixels. If a CTA must be legible over an image, `variant="inverse"` is opaque and backdrop-independent:
-
-```tsx
-<Button variant="inverse">Comprar</Button>
-```
-
-`secondary`, `outline`, `ghost`, `text`, `link` and `icon` are unchanged: they have no fill for the tint to replace.
-
-### On Android the blur is not applied, and it cannot be
-
-Measured on an Android emulator (API 37): the pane paints its tint and the backdrop behind it is **not blurred**. `expo-blur`'s `blurMethod` defaults to `'none'` on Android, and `dimezisBlurView` additionally needs a `blurTarget` ref pointing at a `BlurTargetView` that wraps the content to blur.
-
-The obvious fix — wrap the app in a `BlurTargetView` and hand the ref down — **crashes the app**. A `BlurView` that is a DESCENDANT of the view it points at makes the Android render tree recurse into itself: `SIGSEGV` in `RenderThread`, `RenderNode::prepareTreeImpl` repeating past 500 frames. Reproduced twice, isolated to one target and one pane. A glass `Button` fills its caller and therefore sits inside the content it would need to blur, so the only topology available to it is the one that crashes.
-
-Three topologies, all measured on device (over 10dp stripes, where `std` is the discriminator — the MEAN is nearly identical in every case, so a mean-only comparison reports "no difference"):
-
-| `BlurView` position | result |
-| --- | --- |
-| descendant of its own `blurTarget` | **native crash** |
-| sibling of the target | blurs; std 0.70 vs 11.95 unblurred |
-| inside a `Modal`, target in the root window | blurs; std 0.68, matches the blurred composite to 0.36/255 |
-
-So Bloom asks for no blur method on Android at all. What that costs:
-
-- Over Bloom's own flat surfaces — the documented backdrop range — nothing visible changes. A blur over a uniform colour is a no-op, so the painted pane matched the web composite to **0.75/255**, and every AA number above still holds.
-- Over **textured** content (a photograph, a busy list) the Android pane transmits that texture at 15% instead of smoothing it. The pill clip, the hairline, the rim, the sheen and the drop shadow are all unaffected.
-
-The third row is where an Android blur is still available, and Bloom now takes it — but only for surfaces inside a real RN `<Modal>`, which is the bottom-sheet path and not a `Button`. See `docs/dialog.mdx` for how to switch it on.
-
-**So on Android, "glass" means tint, top sheen, hairline and drop shadow — plus a blur only where a target exists.** A glass `Button` has the first four and never the fifth.
-
-iOS uses `UIVisualEffectView` and needs none of this, but it has not been verified on hardware.
-
-### What a lower alpha would buy, and what it would cost
-
-The recurring question about this material is whether it is transparent enough to be glass at all. `backdrop-filter` only acts on the fraction of the backdrop that gets **through** the pane, so at 0.85 the blur is running at full radius on 15% of the picture. Reproduce the whole trade with:
-
-```bash
-bun run storybook          # the DEV server; the script reads the theme through Vite
-node scripts/measure-glass-alpha.mjs --url http://localhost:6006 --image docs/glass-alpha-sweep.png
-```
-
-![The same button at thirteen fill alphas, over a flat page, a photograph and a hard stripe pattern](./glass-alpha-sweep.png)
-
-Measured in Chrome off painted pixels, with the label removed from the measurement clones so a white glyph cannot be mistaken for backdrop:
-
-| alpha | backdrop response | blur delta over a photo (max/mean) | blur delta on a flat page | `primary` rows < AA | `destructive` rows < AA |
-| --- | --- | --- | --- | --- | --- |
-| 0.91 | 23.0 | 11 / 2.9 | 1 | 0 / 640 | 0 / 640 |
-| 0.90 | 25.0 | 12 / 3.1 | 1 | 0 / 640 | 0 / 640 |
-| 0.89 | 28.0 | 13 / 3.5 | 1 | 0 / 640 | 0 / 640 |
-| 0.88 | 31.0 | 15 / 3.8 | 1 | 8 / 640 | 0 / 640 |
-| 0.87 | 33.0 | 16 / 4.0 | 1 | 26 / 640 | 0 / 640 |
-| 0.86 | 36.0 | 17 / 4.4 | 1 | 49 / 640 | 0 / 640 |
-| **0.85** (shipped) | 38.0 | 18 / 4.7 | 1 | 73 / 640 | 0 / 640 |
-| 0.75 | 63.7 | 31 / 7.8 | 1 | 431 / 640 | 128 / 640 |
-| 0.65 | 88.7 | 43 / 10.9 | 1 | 492 / 640 | 640 / 640 |
-| 0.55 | 114.7 | 55 / 14.2 | 1 | 531 / 640 | 640 / 640 |
-| 0.45 | 139.3 | 67 / 17.4 | 0 | 580 / 640 | 640 / 640 |
-| 0.35 | 165.3 | 79 / 20.6 | 1 | 635 / 640 | 640 / 640 |
-| 0.25 | 190.3 | 91 / 23.8 | 1 | 635 / 640 | 640 / 640 |
-
-Everything is out of 255. Backdrop response is how far the painted pane moves between a white and a black backdrop — linear in `1 - alpha`, at 25.4 ± 0.7 per 0.10 of alpha. Blur delta is how much the picture changes when the blur is switched off, which is the honest form of "can you see the blur".
-
-Three things the table settles:
-
-- **On a flat page the blur is worth ~1/255 at every alpha, including 0.25.** There is nothing behind the pane to blur, so lowering the alpha does not make a flat page glassy — it only makes the button paler. That is the whole of the "it doesn't look glassy" complaint, and no alpha fixes it.
-- **Over a photograph the blur is already visible at 0.85** (18/255 peak). Where there is something to see, the shipped material is doing the thing.
-- **Legibility falls off a cliff immediately below 0.85.** One step down takes `primary` from 73 to 431 failures and `destructive` from 0 to 128; two steps down puts every one of `destructive`'s 640 rows under AA.
-
-So there is no single alpha that both matches the reference and reads as glass on a flat surface. That is a property of the material — a blur needs a backdrop — not a constant nobody has tuned yet. To make a specific surface read as glass, put something behind it.
+On web the state colours arrive as `--bloom-btn-*` custom properties and are declared only in the adopted stylesheet — an inline `background-color` would silence the `:hover` rule. The gradient variants cross-fade their hover gradient in through `::before`, because `background-image` does not transition. On native the gradient is a `react-native-svg` layer; every gradient stop is an opaque composite, since react-native-svg drops alpha in `stopColor`.
 
 ## Sizes
 
 ```tsx
+<Button size="xs">Xs</Button>
 <Button size="small">Small</Button>
 <Button size="medium">Medium</Button>
 <Button size="large">Large</Button>
 ```
 
-Heights are 32 / 36 / 44 dp; font sizes 14 / 15 / 16. The height comes from `minHeight` alone — the vertical padding is sized to keep the label's line box underneath it — so a button measures the same on native and on web, and in every variant. The one exception is `text` / `link`, which clears `minHeight` on web so the control hugs its label and sits inline.
+| | xs | small | medium | large |
+|---|---|---|---|---|
+| height | 24 | 32 | 36 | 44 |
+| radius | full pill | full pill | full pill | full pill |
+| padding-x | 8 | 8 | 8 | 12 |
+| gap | 2 | 2 | 2 | 2 |
+| icon | 14 | 18 | 20 | 20 |
+| text (`TYPE_SCALE`, Inter) | `caption-1-semibold` | `body-medium` | `body-medium` | `headline-medium` |
+| icon-only | 24 × 24 | 32 × 32 | 36 × (36 + 2 × border) | 44 × 44 |
 
-Native adds vertical `hitSlop` to bring `small` and `medium` up to a 44 dp touch target; `large` is already there. Horizontal slop is zero, so two buttons in a row cannot steal each other's presses. On web `hitSlop` does not exist and the target is the box: 32 / 36 / 44 px.
+`large` extends the ramp to the 44 dp touch floor. Bloom keeps every button-like control a full pill. Height is fixed and the label's line box is centred inside it, so a bordered variant measures the same as a filled one. A medium icon-only button is NOT forced square — its width is content (8 + 20 + 8) plus the border, so a `secondary` one is 38 × 36; small and xs are forced squares. `text` / `link` drop the fixed height on web so the control hugs its label and sits inline.
+
+Native adds vertical `hitSlop` to bring every size up to a 44 dp touch target; horizontal slop is zero, so two buttons in a row cannot steal each other's presses. On web `hitSlop` does not exist and the target is the box.
 
 ## Loading
 
@@ -141,14 +83,40 @@ const [busy, setBusy] = useState(false);
 </Button>
 ```
 
-When `loading` is true, a centered spinner appears, children stay in the layout (hidden) so width doesn't jump, and presses are blocked. `loadingColor` overrides the spinner color (defaults to the resolved text color).
+When `loading` is true, a centered spinner appears, children stay in the layout (hidden) so width doesn't jump, presses are blocked, and the button keeps its resting paint. `loadingColor` overrides the spinner color (defaults to the label color).
 
-## With an icon
+## With icons
+
+Pass icon COMPONENTS, not elements — the button sizes and colours them for the current size and state:
 
 ```tsx
-<Button icon={<DownloadIcon />} iconPosition="left">Download</Button>
-<Button icon={<ArrowRightIcon />} iconPosition="right">Continue</Button>
+import { RiAddLine, RiArrowRightLine } from '@oxy.so/bloom/icons';
+
+<Button leadingIcon={RiAddLine}>New</Button>
+<Button leadingIcon={RiAddLine} trailingIcon={RiArrowRightLine}>Both sides</Button>
+<Button iconOnly leadingIcon={RiAddLine} accessibilityLabel="New" />
 ```
+
+Use Remix icons (`RiAddLine`, `RiArrowRightLine`, `RiDeleteBinLine`…). `iconOnly` renders the icon-only shape from the table above and drops the label — name it with `accessibilityLabel`. `icon` takes either a component (sized like `leadingIcon`) or a pre-rendered node, which the button does not size.
+
+## IconButton, LinkButton, CloseButton
+
+Three companions to `Button`, exported from the same family:
+
+```tsx
+<IconButton icon={RiMore2Line} accessibilityLabel="More" />          // 36, glyph 20
+<IconButton icon={RiMore2Line} size="small" accessibilityLabel="More" /> // 32, glyph 16
+
+<LinkButton trailingIcon={RiArrowRightSLine}>Browse components</LinkButton>
+<LinkButton variant="secondary" href="/docs">Docs</LinkButton>
+
+<CloseButton size="md" accessibilityLabel="Close" onPress={close} />
+```
+
+- `IconButton` is `<Button variant="icon">` and still accepts every `Button` prop (existing call sites keep working).
+- `LinkButton` is `<Button variant="link">`; its `variant` is the link COLOUR (`primary` | `secondary`). Sizes medium / small / xs use `body-medium` / `body-medium` / `caption-1-semibold` with 20 / 18 / 14 icons and a 4px gap.
+- `href` (any `Button`) renders a real `<a href>` on web and drops the `href` while disabled; on native a press opens the URL unless `onPress` is set.
+- `CloseButton` is a round `background/tertiary` disc (16 / 20 / 24 / 32) with a two-stroke X drawn per size in its own viewBox, so the stroke is a literal pixel value (1.6 / 2 / 2 / 2.5); the glyph turns `text/primary` on hover (held press on native). The control draws no text, so `accessibilityLabel` is required.
 
 ## Disabled
 
@@ -156,7 +124,7 @@ When `loading` is true, a centered spinner appears, children stay in the layout 
 <Button disabled>Can't click me</Button>
 ```
 
-`disabled` blocks presses, drops opacity, and removes the press animation.
+`disabled` blocks presses and switches to the variant's disabled paint.
 
 ## Props
 
@@ -164,27 +132,32 @@ When `loading` is true, a centered spinner appears, children stay in the layout 
 |------|------|---------|-------------|
 | `onPress?` | `() => void` | — | Press handler. |
 | `children?` | `React.ReactNode` | — | Button label. Strings are auto-wrapped in `Text`. |
-| `disabled?` | `boolean` | `false` | Blocks presses + drops opacity. |
-| `variant?` | `'primary' \| 'secondary' \| 'inverse' \| 'icon' \| 'ghost' \| 'text'` | `'primary'` | Visual style. |
-| `size?` | `'small' \| 'medium' \| 'large'` | `'medium'` | Padding + font size + min height. |
-| `icon?` | `React.ReactNode` | — | Icon node rendered next to the label. |
-| `iconPosition?` | `'left' \| 'right'` | `'left'` | Which side of the label. |
+| `disabled?` | `boolean` | `false` | Blocks presses, disabled paint. |
+| `variant?` | `'primary' \| 'secondary' \| 'ghost' \| 'destructive' \| 'outline' \| 'inverse' \| 'icon' \| 'text' \| 'link'` | `'primary'` | Visual style. |
+| `size?` | `'xs' \| 'small' \| 'medium' \| 'large'` (+ `sm \| md \| lg \| icon`) | `'medium'` | Height, radius, padding, type and icon size. |
+| `leadingIcon?` | `ComponentType<{ width, height, fill }>` | — | Icon component before the label, sized by the button. |
+| `trailingIcon?` | `ComponentType<{ width, height, fill }>` | — | Icon component after the label. |
+| `iconOnly?` | `boolean` | `false` | Square icon-only button. |
+| `icon?` | `React.ReactNode \| ComponentType` | — | Icon component (sized) or pre-rendered node next to the label. |
+| `linkTone?` | `'primary' \| 'secondary'` | `'primary'` | Colour of the `link` variant. |
+| `href?` | `string` | — | Renders an anchor on web; opens the URL on native. `target` / `rel` pass through on web. |
+| `iconPosition?` | `'left' \| 'right'` | `'left'` | Which side of the label `icon` goes. |
 | `loading?` | `boolean` | `false` | Show centered spinner, block presses. |
-| `loadingColor?` | `string` | text color | Override the spinner color. |
+| `loadingColor?` | `string` | label color | Override the spinner color. |
 | `style?` | `StyleProp<ViewStyle>` | — | Outer container style. |
 | `textStyle?` | `StyleProp<TextStyle>` | — | Label style. |
 | `accessibilityLabel?` | `string` | — | Required for icon-only buttons. |
 | `accessibilityHint?` | `string` | — | |
 | `hitSlop?` | `{ top, bottom, left, right }` | — | Expand the touch target. |
 | `testID?` | `string` | — | RN testing id. |
-| `className?` | `string` | — | NativeWind class (web). |
+| `className?` | `string` | — | NativeWind class. |
 
 ## Recipes
 
 ### Destructive confirmation
 
 ```tsx
-<Button variant="primary" style={{ backgroundColor: theme.colors.negative }} onPress={destroy}>
+<Button variant="destructive" onPress={destroy}>
   Delete forever
 </Button>
 ```
@@ -213,8 +186,8 @@ const [busy, setBusy] = useState(false);
 
 ```tsx
 <View style={{ flexDirection: 'row', gap: 4 }}>
-  <Button variant="icon" icon={<BoldIcon />} accessibilityLabel="Bold" />
-  <Button variant="icon" icon={<ItalicIcon />} accessibilityLabel="Italic" />
-  <Button variant="icon" icon={<LinkIcon />} accessibilityLabel="Link" />
+  <Button variant="secondary" iconOnly leadingIcon={RiBold} accessibilityLabel="Bold" />
+  <Button variant="secondary" iconOnly leadingIcon={RiItalic} accessibilityLabel="Italic" />
+  <Button variant="secondary" iconOnly leadingIcon={RiLink} accessibilityLabel="Link" />
 </View>
 ```

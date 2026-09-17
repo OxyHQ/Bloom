@@ -6,7 +6,7 @@ import { Tooltip, TooltipTrigger, TooltipTextBubble } from './index';
 import { Text } from '../typography';
 
 const meta: Meta = {
-  title: 'Overlays/Tooltip',
+  title: 'Base/Tooltip',
 };
 
 export default meta;
@@ -93,6 +93,66 @@ export const MultiLine: Story = {
             {'Sends without leaving the composer'}
           </TooltipTextBubble>
         </Tooltip>
+      </View>
+    );
+  },
+};
+
+/**
+ * The two sizes, open, on both sides: `sm` (12px Caption 1/Medium, 10/6
+ * padding, 8px corner) and `md` (14px Body 1/Medium, 12/8 padding, 10px corner).
+ * A white surface with the button hairline, `shadow-dropdown`, and a 12×7 caret
+ * 10px from the trigger.
+ */
+export const Sizes: Story = {
+  render: function SizesStory() {
+    return (
+      <View style={{ paddingVertical: 80, paddingHorizontal: 60, flexDirection: 'row', gap: 120 }}>
+        {(['sm', 'md'] as const).map((size) =>
+          (['top', 'bottom'] as const).map((position) => (
+            <View key={`${size}-${position}`} style={{ alignItems: 'flex-start' }}>
+              <Tooltip position={position} visible onVisibleChange={() => {}}>
+                <TooltipTrigger>
+                  <Text testID={`tooltip-trigger-${size}-${position}`}>
+                    {size} {position}
+                  </Text>
+                </TooltipTrigger>
+                <TooltipTextBubble size={size}>Copies the link</TooltipTextBubble>
+              </Tooltip>
+            </View>
+          )),
+        )}
+      </View>
+    );
+  },
+};
+
+/**
+ * The bubble anchors to its TRIGGER, not to the box the tooltip sits in: here
+ * the trigger is pushed to the right of a wide column and the bubble still
+ * centres on it. (The web bubble is portaled and `position: fixed` against the
+ * trigger's measured box, re-measured on scroll and resize.)
+ */
+export const AnchoredToTrigger: Story = {
+  render: function AnchoredStory() {
+    return (
+      <View style={{ width: 560, paddingVertical: 80, gap: 80 }}>
+        <View style={{ flexDirection: 'row', justifyContent: 'flex-end' }}>
+          <Tooltip position="top" visible onVisibleChange={() => {}}>
+            <TooltipTrigger>
+              <Text testID="tooltip-anchored-top">Trigger at the end</Text>
+            </TooltipTrigger>
+            <TooltipTextBubble>Centred on this trigger</TooltipTextBubble>
+          </Tooltip>
+        </View>
+        <View style={{ alignItems: 'center' }}>
+          <Tooltip visible onVisibleChange={() => {}}>
+            <TooltipTrigger>
+              <Text testID="tooltip-anchored-bottom">Centred trigger</Text>
+            </TooltipTrigger>
+            <TooltipTextBubble size="md">Below, still on its trigger</TooltipTextBubble>
+          </Tooltip>
+        </View>
       </View>
     );
   },

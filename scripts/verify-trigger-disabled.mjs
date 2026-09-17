@@ -13,7 +13,7 @@
  * MEASURES ITS OWN BLIND SPOT. Both facts below were measured, each by
  * reverting `cloneTrigger` to the body it shipped with and re-running:
  *
- *  - `combobox-disabled` STAYS CLOSED against the broken code. Its child is a
+ *  - `popover-pressable-disabled` STAYS CLOSED against the broken code. Its child is a
  *    real `Pressable` carrying its own `disabled`, and react-native-web's
  *    `Pressable` swallows the press before the composed handler runs. The
  *    widget hides the missing guard and the browser reports a broken build as
@@ -24,7 +24,7 @@
  *    forwards `onPress` and has no notion of `disabled`, so nothing masks it.
  *    That row is the gate.
  *
- * The jest suite (`src/__tests__/Combobox.test.tsx`) catches the same defect
+ * The jest suite (`src/__tests__/PopoverTriggerDisabled.test.tsx`) catches the same defect
  * for the opposite reason: its `Pressable` mock ignores `disabled`, so the
  * composed handler runs. The mock is the sharper tool there. Neither instrument
  * supersedes the other, which is the whole point of keeping both rows here.
@@ -91,35 +91,21 @@ const BASE = argUrl !== -1 ? process.argv[argUrl + 1] : 'http://localhost:6006';
  */
 const CASES = [
   {
-    story: 'forms-combobox--basic',
-    testId: 'combobox-basic',
-    mustOpen: true,
-    gatesGuard: false,
-    note: 'control',
-  },
-  {
-    story: 'forms-combobox--disabled',
-    testId: 'combobox-disabled',
+    story: 'base-popover--as-child-disabled',
+    testId: 'popover-pressable-disabled',
     mustOpen: false,
     gatesGuard: false,
     note: 'BLIND — a Pressable child masks a missing guard',
   },
   {
-    story: 'forms-combobox--disabled',
-    testId: 'combobox-disabled-selected',
-    mustOpen: false,
-    gatesGuard: false,
-    note: 'BLIND — a Pressable child masks a missing guard',
-  },
-  {
-    story: 'overlays-popover--as-child-disabled',
+    story: 'base-popover--as-child-disabled',
     testId: 'popover-forwarding-enabled',
     mustOpen: true,
     gatesGuard: false,
     note: 'control',
   },
   {
-    story: 'overlays-popover--as-child-disabled',
+    story: 'base-popover--as-child-disabled',
     testId: 'popover-forwarding-disabled',
     mustOpen: false,
     gatesGuard: true,

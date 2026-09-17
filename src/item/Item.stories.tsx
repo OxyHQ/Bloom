@@ -4,10 +4,10 @@ import type { Meta, StoryObj } from '@storybook/react-vite';
 
 import { Item } from './Item';
 import { Badge } from '../badge';
-import { Person_Stroke2_Corner0_Rounded as PersonIcon } from '../icons/Person';
+import { RiUserLine as PersonIcon } from '../icons/remix/RiUserLine';
 
 const meta: Meta<typeof Item> = {
-  title: 'Components/Item',
+  title: 'Base/Item',
   component: Item,
 };
 

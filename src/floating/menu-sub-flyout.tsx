@@ -42,9 +42,9 @@ import React, {
 import { View } from 'react-native';
 
 import { useControllableState } from '../hooks/use-controllable-state';
-import { ChevronRight_Stroke2_Corner0_Rounded as ChevronRightIcon } from '../icons/Chevron';
+import { RiArrowRightSLine as ChevronRightIcon } from '../icons/remix';
 import { StyledView } from '../styles/styled-primitives';
-import { useTheme } from '../theme/use-theme';
+import { useMenuPalette } from './menu-palette';
 import {
   MENU_SUB_PANEL_CLASS,
   MENU_SUB_SCROLL_CLASS,
@@ -381,7 +381,7 @@ export function createFlyoutMenuSub(prefix: string): MenuSubParts {
     style,
     testID,
   }: MenuSubTriggerProps) {
-    const theme = useTheme();
+    const palette = useMenuPalette();
     const sub = useSubFlyout();
     const { title, body } = splitChildren(children);
     const [node, setNode] = useState<View | null>(null);
@@ -453,7 +453,7 @@ export function createFlyoutMenuSub(prefix: string): MenuSubParts {
               <ChevronRightIcon
                 width={ROW_ICON_SIZE}
                 height={ROW_ICON_SIZE}
-                fill={theme.colors.textSecondary}
+                fill={palette.textSecondary}
               />
             </MenuRowChevron>
           }
@@ -576,17 +576,19 @@ export function createFlyoutMenuSub(prefix: string): MenuSubParts {
         dismissible={false}
         modal={false}
         onDismiss={sub.closeAndRefocus}
+        surface="menu"
         minWidth={minWidth}
         maxWidth={maxWidth}
-        // `w-64` — a sub panel is a FIXED 256px, so a column of flyouts does not
-        // step in and out as their labels change length.
+        // `w-[266px]` — a sub panel is a FIXED width (one menu width),
+        // so a column of flyouts does not step in and out as their labels change
+        // length.
         className={cx(MENU_SUB_PANEL_CLASS, className)}
         style={style}
         testID={testID}>
-        {/* `-mx-1 px-1 max-h-96 overflow-y-auto`: the negative inset bleeds the
-            scroller to the panel edge and pads the content back, so the
-            scrollbar is not inset by the panel's own `p-1`. It doubles as the
-            flyout's pointer hit box — without it that 4px ring is a place where
+        {/* `-mx-2.5 px-2.5 max-h-96 overflow-y-auto`: the negative inset bleeds
+            the scroller to the panel edge and pads the content back, so the
+            scrollbar is not inset by the panel's own `p-2.5`. It doubles as the
+            flyout's pointer hit box — without it that ring of padding is a place where
             the pointer is over the panel but over nothing listening, and a
             pointer resting there would schedule a close. */}
         <StyledView ref={attachContent} className={MENU_SUB_SCROLL_CLASS}>

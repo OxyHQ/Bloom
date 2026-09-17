@@ -34,9 +34,9 @@
  * change, not a dodge — because JSX is what forces the `.tsx` extension in the
  * first place.
  *
- * THE FACTORY BRANCH IS NOT A CONVENIENCE. `alert-dialog`, `combobox`, `command`
+ * THE FACTORY BRANCH IS NOT A CONVENIENCE. `alert-dialog`, `command`
  * and `surfaces` declare their component in a `.ts` BARREL (`createAlertDialog(Dialog)`),
- * so the `.tsx` half of the rule alone silently exempts four families that plainly
+ * so the `.tsx` half of the rule alone silently exempts three families that plainly
  * render. That is why the derived not-required set is asserted as an EQUALITY
  * rather than left to speak for itself: a detector that stops recognising a
  * shape fails here, instead of quietly shrinking what the gate asks for.

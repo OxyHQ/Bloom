@@ -36,6 +36,36 @@ import { RadioGroup } from '@oxy.so/bloom/radio';
 | `size`                    | `small` · `medium` · `large`                         |
 | `disabled`                | the whole group, or one option via its `disabled`    |
 
+## What it looks like
+
+The dot is [`RadioIndicator`](/docs/bloom/main/radio-indicator); the row puts an 8px gap between it and the label.
+
+|       | `small` | `medium` | `large` |
+| ----- | ------- | -------- | ------- |
+| dot   | 14      | 16       | 20      |
+| label | `body-2-medium` 13/18 | `body-medium` 14/20 | `headline-medium` 16/22 |
+
+`small` is the `sm` size and `medium` the `md` size; `large` extends the ramp — the same rungs as `Checkbox`, so a form mixing the two lines up. A disabled option dims the whole row to 50%. On web, keyboard focus draws a `ring-2 ring-offset-2` around the dot: a 2px accent ring outside a 2px white offset (white in dark mode too — Tailwind's default offset colour). Text is Inter from Bloom's type ramp. There is no hover or press paint and no press scale — selection is the only thing that animates.
+
+## Cards
+
+`RadioCard`: title and an optional description on the left, the 16px dot on the right, the whole card selects. The easy spelling is the group:
+
+```tsx
+<RadioGroup
+  label="Plan"
+  variant="card"
+  value={plan}
+  onValueChange={setPlan}
+  options={[
+    { value: 'starter', label: 'Starter', description: 'Up to 3 projects.' },
+    { value: 'pro', label: 'Pro', description: 'Unlimited projects and history.' },
+  ]}
+/>
+```
+
+`RadioCard` is also exported for a custom layout — put it inside your own `radiogroup`. The card is radius 10 with a 1px `border-button-default` edge, padding 12 / 16 left / 20 right, the surface fill turning `background-primary-hover` under a pointer; the title is `body-medium`, the description `body-regular` in `text-secondary`, each one line. Disabled dims the whole card to 50%. Keyboard focus rings the dot.
+
 ## The label belongs to the radio, not next to it
 
 `Radio` renders its own `label` and `description` and makes the whole row the

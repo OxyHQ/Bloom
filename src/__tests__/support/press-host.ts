@@ -6,8 +6,8 @@
  * ancestor carrying an `onPress` prop, and it does not stop at host nodes — a
  * COMPOSITE counts, because `getEventHandler` only reads `element.props`. So
  * `<Thing onPress={fn}>` written in a test's own JSX catches the press itself.
- * Measured on `ProfileCard`: with the handler deleted from the component the
- * card rendered as an inert `View`, and the test still reported exactly one
+ * Measured on a (since removed) card component: with the handler deleted from the
+ * component the card rendered as an inert `View`, and the test still reported exactly one
  * call. Green, and measuring nothing. Nine suites had the same shape.
  *
  * Asserting the host node's own `onPress` FIRST closes both halves:

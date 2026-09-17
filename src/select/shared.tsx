@@ -12,25 +12,118 @@
  * owner and neither fork re-exports the other's work.
  */
 import React, { createContext, useContext } from 'react';
+import Svg, { Path } from 'react-native-svg';
 
-import { ROW_ICON_SIZE } from '../floating/constants';
+import { ROW_ICON_SIZE, ROW_LABEL_CLASS } from '../floating/constants';
+import { useMenuPalette } from '../floating/menu-palette';
+import { menuType, menuTypeClass } from '../floating/menu-type';
 import { cx } from '../floating/shared';
 import {
-  ChevronBottom_Stroke2_Corner0_Rounded as ChevronDownIcon,
-  ChevronTop_Stroke2_Corner0_Rounded as ChevronUpIcon,
-} from '../icons/Chevron';
+  RiArrowDownSLine as ChevronDownIcon,
+  RiArrowUpSLine as ChevronUpIcon,
+} from '../icons/remix';
 import {
   StyledPressable,
   StyledText,
   StyledView,
 } from '../styles/styled-primitives';
-import { useTheme } from '../theme/use-theme';
 import type {
   SelectGroupProps,
   SelectItemContextValue,
   SelectLabelProps,
   SelectScrollButtonProps,
+  SelectSize,
 } from './types';
+
+// ---------------------------------------------------------------------------
+// Trigger state
+// ---------------------------------------------------------------------------
+
+/**
+ * What a trigger tells the `SelectValue` and `SelectIcon` inside it: whether it
+ * is disabled (`disabled:text-text-tertiary`) and whether its list is
+ * open (the chevron's `rotate-180`). Published by BOTH forks' `SelectTrigger`.
+ */
+export interface SelectTriggerState {
+  disabled: boolean;
+  open: boolean;
+  size: SelectSize;
+}
+
+export const SelectTriggerStateContext = createContext<SelectTriggerState>({
+  disabled: false,
+  open: false,
+  size: 'md',
+});
+SelectTriggerStateContext.displayName = 'SelectTriggerStateContext';
+
+// ---------------------------------------------------------------------------
+// Value leading slot
+// ---------------------------------------------------------------------------
+
+/** `gap-[5px]` on `md`, `gap-1` on `sm` — the trigger value's own gap. */
+const VALUE_LEADING_GAP = { md: 5, sm: 4 } as const;
+
+/**
+ * `SelectValue` with a `leading` node: `flex min-w-0 items-center`, so a dot
+ * or icon in the option's content sits in a row with the label. Both forks
+ * wrap their value text in this.
+ */
+export function SelectValueRow({
+  size,
+  leading,
+  children,
+}: {
+  size: SelectSize;
+  leading: React.ReactNode;
+  children: React.ReactNode;
+}) {
+  return (
+    <StyledView
+      style={{
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: VALUE_LEADING_GAP[size],
+        minWidth: 0,
+        flexShrink: 1,
+      }}
+    >
+      {leading}
+      {children}
+    </StyledView>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// Chevron
+// ---------------------------------------------------------------------------
+
+/**
+ * A `ChevronDownSmall` — a 16-unit viewBox, 2-unit ROUND-capped stroke
+ * — drawn with its own path rather than a Bloom icon, because Bloom's filled
+ * chevrons are a different glyph. `size-4` on `md`, `size-3.5` on `sm`,
+ * `text-text-secondary`.
+ */
+export function SelectChevron({
+  size,
+  color,
+  style,
+}: {
+  size: number;
+  color: string;
+  style?: React.ComponentProps<typeof Svg>['style'];
+}) {
+  return (
+    <Svg width={size} height={size} viewBox="0 0 16 16" fill="none" style={style}>
+      <Path
+        d="M4 7L7.29289 10.2929C7.68342 10.6834 8.31658 10.6834 8.70711 10.2929L12 7"
+        stroke={color}
+        strokeWidth={2}
+        strokeLinecap="round"
+      />
+    </Svg>
+  );
+}
 
 // ---------------------------------------------------------------------------
 // defaultItemValueExtractor
@@ -47,7 +140,10 @@ export function defaultItemValueExtractor(item: unknown): string {
 // Item context
 // ---------------------------------------------------------------------------
 
-export const ItemContext = createContext<SelectItemContextValue>({ selected: false });
+export const ItemContext = createContext<SelectItemContextValue>({
+  selected: false,
+  disabled: false,
+});
 ItemContext.displayName = 'SelectItemContext';
 
 export function useSelectItemContext(): SelectItemContextValue {
@@ -78,7 +174,7 @@ export const SelectScrollProvider = SelectScrollContext.Provider;
 export function SelectGroup({ children, className, style }: SelectGroupProps) {
   // `group` carries no ARIA state, so there is no `aria-*` counterpart here.
   return (
-    <StyledView role="group" className={className} style={style}>
+    <StyledView role="group" className={cx('gap-space-4', className)} style={style}>
       {children}
     </StyledView>
   );
@@ -87,13 +183,23 @@ SelectGroup.displayName = 'SelectGroup';
 
 /** The heading of a `SelectGroup`. */
 export function SelectLabel({ children, className, style }: SelectLabelProps) {
-  // `text-muted-foreground px-2 py-1.5 text-xs` — a select's group heading is
-  // the one label in this vocabulary that IS muted and IS `text-xs`, unlike a
-  // menu's (`text-foreground text-sm font-medium`).
+  const palette = useMenuPalette();
+  // The group label (`pl-2 text-body-medium text-text-secondary`), the same
+  // heading a menu group carries. Colour inline only without a caller
+  // `className`, which an inline colour would outrank on native.
   return (
     <StyledText
-      className={cx('px-space-8 py-1.5 text-xs text-muted-foreground', className)}
-      style={style}>
+      className={cx(
+        ROW_LABEL_CLASS,
+        menuTypeClass('body-medium', className),
+        className && 'text-muted-foreground',
+        className,
+      )}
+      style={[
+        menuType('body-medium', className),
+        className ? null : { color: palette.textSecondary },
+        style,
+      ]}>
       {children}
     </StyledText>
   );
@@ -110,11 +216,13 @@ SelectLabel.displayName = 'SelectLabel';
  * the same conclusion with an explicit `Platform.OS !== 'web'` early return; here
  * it falls out of the context, which the native fork simply never publishes.
  *
- * `SelectContent` renders both, so a caller gets them by default. They are
- * exported as well, for a caller composing their own content.
+ * `SelectContent` does NOT render them: the list scrolls with the native
+ * scrollbar, and the chevrons made the panel jump in height as they appeared and
+ * disappeared. They stay exported for a caller composing their own content
+ * inside a `SelectScrollProvider`.
  */
 function SelectScrollButton({ direction, className, style }: SelectScrollButtonProps) {
-  const theme = useTheme();
+  const palette = useMenuPalette();
   const scroll = useContext(SelectScrollContext);
   const isUp = direction === 'up';
   if (!scroll) return null;
@@ -128,13 +236,13 @@ function SelectScrollButton({ direction, className, style }: SelectScrollButtonP
       onPress={() => scroll.scrollBy(direction)}
       // `flex cursor-default items-center justify-center py-1`, opaque so the
       // rows scrolling under it do not show through.
-      className={cx('items-center justify-center py-space-4 bg-popover', className)}
-      style={style}>
+      className={cx('items-center justify-center py-space-4', className)}
+      style={[{ backgroundColor: palette.surface }, style]}>
       {/* `size-4` — the same 16px glyph the rows use. */}
       <Chevron
         width={ROW_ICON_SIZE}
         height={ROW_ICON_SIZE}
-        fill={theme.colors.textSecondary}
+        fill={palette.textSecondary}
       />
     </StyledPressable>
   );

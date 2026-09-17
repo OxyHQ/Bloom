@@ -64,7 +64,26 @@ about appearance.
 | `type`     | radio group vs tab list (see above)             |
 | `value`    | the selected segment — fully controlled         |
 | `onChange` | receives the pressed segment's `value`          |
-| `size`     | `small` (32px) for a toolbar, `large` (40px)    |
+| `size`     | `small` (32) · `medium` (36, default) · `large` (44) |
+| `variant`  | `solid` (track + sliding thumb) or `plain`      |
+
+## What it looks like
+
+A segmented control, in Bloom's colours. `medium` is the default control:
+28-tall segments with 10px side padding on a 4px-padded track, 2px apart.
+
+- **Track** neutral-100 (dark: neutral-925); **thumb** the card surface (dark:
+  neutral-800) with the `2xs` shadow, sliding under the selected segment over
+  200ms `ease`.
+- **Selected** text is medium weight in the primary text colour; **unselected**
+  is regular weight in neutral-500 and turns primary on hover.
+- Track and thumb are full pills, like `Button`.
+- `variant="plain"` draws no track, padding or thumb.
+- Text is Inter from the type ramp: `body` (`body-2` at `small`), `-medium` when selected and `-regular` when not.
+- Disabled segments sit at 50%; keyboard focus rings the segment (2px).
+
+The control hugs its segments. To fill a row, stretch it (`style={{ alignSelf:
+'stretch' }}` or a width) — the segments share the extra space.
 
 `SegmentedControlItemText` takes no `value` — it reads whether its segment is
 active from context. Passing one is a type error.

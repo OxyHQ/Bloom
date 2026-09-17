@@ -42,9 +42,8 @@
  */
 import React, { useCallback, useMemo } from 'react';
 
-import { Check_Stroke2_Corner0_Rounded as CheckIcon } from '../icons/Check';
+import { RiCheckLine as CheckIcon } from '../icons/remix';
 import { StyledText, StyledView } from '../styles/styled-primitives';
-import { useTheme } from '../theme/use-theme';
 import {
   ROW_ICON_SIZE,
   ROW_INDICATOR_CLASS,
@@ -56,6 +55,8 @@ import {
   ROW_SHORTCUT_CLASS,
 } from './constants';
 import { MenuRadioGroupProvider, useMenuRadioGroup, useMenuSurface } from './context';
+import { useMenuPalette } from './menu-palette';
+import { menuType, menuTypeClass } from './menu-type';
 import { cx, MenuRowShell, splitChildren } from './shared';
 import type {
   MenuCheckboxRowProps,
@@ -172,15 +173,16 @@ export function createMenuRows(prefix: string, createSub: MenuSubFactory): MenuR
     style,
     testID,
   }: MenuCheckboxRowProps) {
-    const theme = useTheme();
+    const palette = useMenuPalette();
     const surface = useMenuSurface();
     const { title, body } = splitChildren(children);
+    // The selection tick: `size-4 shrink-0 text-text-secondary`.
     const selectedIndicator =
       indicator === undefined ? (
         <CheckIcon
           width={ROW_ICON_SIZE}
           height={ROW_ICON_SIZE}
-          fill={theme.colors.text}
+          fill={palette.textSecondary}
         />
       ) : (
         indicator
@@ -193,6 +195,7 @@ export function createMenuRows(prefix: string, createSub: MenuSubFactory): MenuR
         <MenuRowShell
           role="checkbox"
           checked={checked}
+          selected={checked}
           disabled={disabled}
           gutter={indicatorPosition}
           trailing={trailing}
@@ -216,7 +219,10 @@ export function createMenuRows(prefix: string, createSub: MenuSubFactory): MenuR
     const context = useMemo(() => ({ value, onValueChange }), [value, onValueChange]);
     return (
       <MenuRadioGroupProvider value={context}>
-        <StyledView role="radiogroup">{children}</StyledView>
+        {/* `gap-1` — the panel's own 4px row rhythm, carried into the group. */}
+        <StyledView role="radiogroup" className="gap-space-4">
+          {children}
+        </StyledView>
       </MenuRadioGroupProvider>
     );
   }
@@ -252,6 +258,7 @@ export function createMenuRows(prefix: string, createSub: MenuSubFactory): MenuR
         <MenuRowShell
           role="radio"
           checked={checked}
+          selected={checked}
           disabled={disabled}
           gutter={indicatorPosition}
           trailing={trailing}
@@ -272,13 +279,25 @@ export function createMenuRows(prefix: string, createSub: MenuSubFactory): MenuR
   MenuRadioItem.displayName = `${prefix}RadioItem`;
 
   function MenuLabel({ children, inset = false, className, style }: MenuLabelProps) {
-    // `text-foreground px-2 py-1.5 text-sm font-medium` — NOT muted. A menu label
-    // is a heading over its group, set in the same colour and size as the rows
-    // under it and separated only by its weight.
+    const palette = useMenuPalette();
+    // The group label: `pl-2 text-body-medium text-text-secondary` — the
+    // rows' size and weight, one step back in colour. The colour is inline only
+    // while the caller passes no `className`: an inline colour would outrank a
+    // caller's `text-*` utility on native.
     return (
       <StyledText
-        className={cx(ROW_LABEL_CLASS, inset && ROW_LABEL_INSET_CLASS, className)}
-        style={style}>
+        className={cx(
+          ROW_LABEL_CLASS,
+          inset && ROW_LABEL_INSET_CLASS,
+          menuTypeClass('body-medium', className),
+          className && 'text-muted-foreground',
+          className,
+        )}
+        style={[
+          menuType('body-medium', className),
+          className ? null : { color: palette.textSecondary },
+          style,
+        ]}>
         {children}
       </StyledText>
     );
@@ -286,16 +305,32 @@ export function createMenuRows(prefix: string, createSub: MenuSubFactory): MenuR
   MenuLabel.displayName = `${prefix}Label`;
 
   function MenuSeparator() {
-    // `bg-border -mx-1 my-1 h-px`. Not `Divider`: the negative inset is what
-    // makes the rule reach the panel's edge through its own `p-1`, and a
-    // hairline is not what the target draws — `h-px` is one whole pixel.
-    return <StyledView className={ROW_SEPARATOR_CLASS} />;
+    const palette = useMenuPalette();
+    // `-mx-2.5 my-1.5 h-px bg-border-button-default`. Not `Divider`: the
+    // negative inset is what makes the rule reach the panel's edge through its
+    // own `p-2.5`, and a hairline is not what the target draws — `h-px` is one
+    // whole pixel.
+    return (
+      <StyledView className={ROW_SEPARATOR_CLASS} style={{ backgroundColor: palette.border }} />
+    );
   }
   MenuSeparator.displayName = `${prefix}Separator`;
 
   function MenuShortcut({ children, className, style }: MenuShortcutProps) {
+    const palette = useMenuPalette();
     return (
-      <StyledText className={cx(ROW_SHORTCUT_CLASS, className)} style={style}>
+      <StyledText
+        className={cx(
+          ROW_SHORTCUT_CLASS,
+          menuTypeClass('caption-1-medium', className),
+          className && 'text-muted-foreground',
+          className,
+        )}
+        style={[
+          menuType('caption-1-medium', className),
+          className ? null : { color: palette.textSecondary },
+          style,
+        ]}>
         {children}
       </StyledText>
     );
@@ -306,7 +341,7 @@ export function createMenuRows(prefix: string, createSub: MenuSubFactory): MenuR
     // `group` is the ARIA role for a set of related menu rows; it carries no
     // state, so there is no `aria-*` counterpart to spell.
     return (
-      <StyledView role="group" className={className} style={style}>
+      <StyledView role="group" className={cx('gap-space-4', className)} style={style}>
         {children}
       </StyledView>
     );

@@ -80,7 +80,7 @@ Uncontrolled by default; pass `open` to take over. `onOpenChange` fires either w
 ## Checkbox and radio rows
 
 ```tsx
-import { Check_Stroke2_Corner0_Rounded as CheckIcon } from '@oxy.so/bloom/icons';
+import { RiCheckLine as CheckIcon } from '@oxy.so/bloom/icons';
 
 <DropdownMenuCheckboxItem checked={dense} onCheckedChange={setDense} keepOpen>
   Dense rows
@@ -177,8 +177,21 @@ On WEB none of this applies — the browser owns focus and the hooks return earl
 
 Every row is one pressable node built from Bloom's `styled()` primitives, shared by all three menu families through `floating/shared.tsx` — so the disabled treatment, the destructive colour, the pointer highlight and the ARIA state stay in one place and a fix lands in every menu at once.
 
-Its shape is a class string, not resolved numbers, because that is how the originals are built and it is the only form a consumer can override with a utility (an inline `style` outranks a class on web whatever the array order). `floating/constants.ts` holds the vocabulary: `relative flex-row items-center px-2 py-1.5 gap-2 min-h-8 rounded-xl` on a row, `pl-8 pr-2` on the two that carry an indicator, `text-sm` throughout, and a 32px minimum height. There is no `sm:` breakpoint any more — the row is the same density at every window width.
+Its shape is a class string, not resolved numbers, because that is how the originals are built and it is the only form a consumer can override with a utility (an inline `style` outranks a class on web whatever the array order). `floating/constants.ts` holds the vocabulary: `relative flex-row items-center p-2 gap-2 rounded-[10px]` on a row, `pl-8 pr-2` on the two that carry an indicator. Type is NOT a class: rows and labels are `text-body-medium` and shortcuts `text-caption-1-medium`, applied inline as `TYPE_SCALE` + Inter by `floating/menu-type.ts` — the class-only `text-sm font-medium` rendered in the browser's system stack, never Inter. With a caller `className` on a label or shortcut the inline size/weight step back (only `fontFamily` stays inline) and the matching utilities are appended instead, so the caller's `text-*` still cascades. There is no `sm:` breakpoint — the row is the same density at every window width.
 
 Every part takes a `className` and APPENDS it to its own, so a layout class cannot strip the chrome. Two utilities for one property are then resolved by Tailwind's own emission order, exactly as in any shadcn consumer; `style` remains the unambiguous override.
 
-**A web consumer must have the Tailwind/NativeWind pipeline wired and `@source`-scanning `@oxy.so/bloom/lib`.** That was always required; it is now visible rather than subtle, because the colours moved out of inline style too.
+**A web consumer must have the Tailwind/NativeWind pipeline wired and `@source`-scanning `@oxy.so/bloom/lib`.** That was always required; without it the rows keep their colours (inline, below) but lose every piece of geometry.
+
+## Look
+
+The panel and rows share one menu recipe, used by `DropdownMenu`, `ContextMenu`, `Menubar` and the select list:
+
+- **Panel** (web) — 266px minimum width (a sub-panel is a fixed 266), `p-2.5`, 16px corner, 1px `neutral-200` hairline, card surface, `shadow-dropdown`, rows 4px apart. It opens and closes on a 150ms `ease-out` fade + `scale-95` + 2px blur, with no slide. A popover keeps its own panel and motion (`FloatingPanel`'s `surface` prop).
+- **Row** — 36px (`p-2`, 8px gap, 10px corner), 14/20 medium `text-primary`. Hover, keyboard focus (`:focus-visible` only — a mouse press does not leave a row painted) and a CHECKED checkbox or radio row share the `neutral-100` wash, on a 150ms colour transition (web). Destructive rows are `red-500` (`red-400` dark); disabled rows are `text-disabled` with a not-allowed cursor.
+- **Label** — `pl-2`, 14/20 medium in `text-secondary`, 4px above and 6px to the first row.
+- **Separator** — a full-bleed 1px `neutral-200` rule with 10px either side.
+- **Check, shortcut, sub chevron** — `text-secondary`, Remix glyphs at 16px: `RiCheckLine`, `RiArrowRightSLine` (web flyout), `RiArrowDownSLine` / `RiArrowUpSLine` (native disclosure).
+- **Dark** — `neutral-800` surface, `neutral-700` hairlines, `neutral-700`-at-60% wash, and `neutral-600` disabled text (the semantic dark `text-disabled` equals the panel colour).
+
+These colours come from the theme through `button/shared.ts`'s ramps (`floating/menu-palette.ts`) and are applied INLINE, since the ramp stops exist as no CSS variable. A caller's `style` still overrides them; a `className` on a label or shortcut drops the inline colour so a `text-*` utility applies. The leading slot no longer dims its icon — pass the glyph in `text-secondary`.

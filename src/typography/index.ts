@@ -16,3 +16,5 @@ export {
   fontFamilies,
 } from './Typography';
 export type { TextProps, BlockquoteProps } from './types';
+export { TYPE_SCALE, typeScale } from './scale';
+export type { TypeScaleFamily, TypeScaleStyle, TypeScaleVariant, TypeScaleWeight } from './scale';

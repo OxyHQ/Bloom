@@ -25,7 +25,7 @@ import type { MediaSurfaceContent, MeasuredRect } from './types';
  * none` from one that merely looks like it.
  */
 const meta: Meta = {
-  title: 'Overlays/MediaFlight',
+  title: 'Base/Media Flight',
 };
 
 export default meta;

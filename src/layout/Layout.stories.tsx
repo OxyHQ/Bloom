@@ -20,9 +20,9 @@ import type { TabBarItem } from '../tab-bar/types';
  * before/after of the bug this family was written for.
  */
 const ITEMS: TabBarItem[] = [
-  { name: 'home', label: 'Home', icon: <Icons.Home_Stroke2_Corner0_Rounded size="lg" /> },
-  { name: 'search', label: 'Search', icon: <Icons.MagnifyingGlass_Stroke2_Corner0_Rounded size="lg" /> },
-  { name: 'you', label: 'You', icon: <Icons.PersonCheck_Stroke2_Corner0_Rounded size="lg" /> },
+  { name: 'home', label: 'Home', icon: <Icons.RiHomeLine size="lg" /> },
+  { name: 'search', label: 'Search', icon: <Icons.RiSearchLine size="lg" /> },
+  { name: 'you', label: 'You', icon: <Icons.RiUserFollowLine size="lg" /> },
 ];
 
 /** An Android device navigating by gestures — the band the handle is drawn in. */
@@ -64,7 +64,7 @@ function Screen() {
         placement="bottom-right"
         onPress={() => {}}
         accessibilityLabel="Compose"
-        icon={<Icons.PlusLarge_Stroke2_Corner0_Rounded size="lg" fill="#fff" />}
+        icon={<Icons.RiAddLine size="lg" fill="#fff" />}
       />
       <TabBar activeIndex={0} onIndexChange={() => {}}>
         {ITEMS.map((item, index) => (
@@ -76,7 +76,7 @@ function Screen() {
 }
 
 const meta: Meta<typeof BottomEdgeProvider> = {
-  title: 'Layout/Bottom edge',
+  title: 'Foundations/Bottom Edge',
   component: BottomEdgeProvider,
 };
 

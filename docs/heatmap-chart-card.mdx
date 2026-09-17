@@ -1,0 +1,47 @@
+---
+title: Heatmap chart card
+description: A matrix heatmap — rows × columns of cells tinted by share of max, hover ring and "Row · Column" headline, a Less → More ramp legend.
+order: 44
+---
+
+# Heatmap chart card
+
+`HeatmapChartCard` is built on the shared chart-card primitives (`src/chart-cards/README.md`). Plain `View`s — a matrix needs no SVG — so it renders on native and web.
+
+```tsx
+import { HeatmapChartCard } from '@oxy.so/bloom/chart-cards';
+
+<HeatmapChartCard
+  title="Active users"
+  columns={['00', '02', '04', /* … */ '22']}
+  rows={[{ label: 'Mon', values: [4, 2, 1, /* … */] }, /* … */]}
+  delta={0.052}
+  range="Last 7 days"
+/>
+```
+
+## Props
+
+| Prop | Default | |
+|---|---|---|
+| `rows` / `columns` | — | `{ label, values[] }[]` and the value slots' names |
+| `title` | `"Active users"` | swaps to `"Row · Column"` while a cell is hovered |
+| `color` / `activeColor` | `chart-6` (blue) on the theme | ramp accent, and the hovered cell's |
+| `max` | largest value | value that paints the fully saturated cell |
+| `headline` | sum of all cells | resting number |
+| `delta` | — | ratio for the chip (`0.052` → `+5.2%`) |
+| `range` / `ranges` / `defaultRange` / `onRangeChange` | — | static pill, or periods overriding `rows`, `columns`, `max`, `delta`, `headline` |
+| `format` | en-US grouping | headline and cell names |
+| `columnLabelEvery` | fits ~12 labels | show every n-th column label (the rest keep their slot) |
+| `legendLabels` | `['Less', 'More']` | ramp legend captions |
+| `activeCell` / `onActiveCellChange` | tracked | `{ row, col }` or `null` |
+
+## Geometry
+
+Card 329 tall (radius 16, padding 16/16/12, gap 16). The grid fills the rest: row labels in an auto-width column (`caption-1-medium`, text-tertiary, 8px before the cells), equal cells 4px apart with radius 4, filling the height; an 18px column-label row (`pt-0.5`). Footer: right-aligned `Less ▢▢▢▢▢ More`, 12px swatches radius 3, 6px apart, 4px bottom padding.
+
+Cell colour: the accent mixed into `chart-track` by share of `max` — 8% floor, 100% at max (`heatmapCellColor`, a `color-mix(in srgb …)`, pre-mixed because RN has no `color-mix`).
+
+Hover: the cell takes its `-active` colour and a 2px `chart-cursor` ring (`boxShadow` spread), its row and column labels turn text-primary (150ms ease on web), the delta chip hides and the headline swaps to the cell. Leaving the grid clears; the gaps between cells keep the last cell, since only a grid-level leave clears it. Native: press and scrub, letting go clears.
+
+Every cell is `role="img"` named `"Thu 14: 64"`.

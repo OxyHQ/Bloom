@@ -8,7 +8,7 @@ import { Item } from '../item';
 import { Text } from '../typography';
 
 const meta: Meta = {
-  title: 'Overlays/Popover',
+  title: 'Base/Popover',
 };
 
 export default meta;
@@ -107,14 +107,14 @@ function ForwardingTrigger(props: InjectedTriggerProps) {
  * a real `Pressable` swallows the press itself, and a control like the one
  * below — which forwards `onPress` and ignores `disabled` — does not.
  *
- * That asymmetry is why `Combobox`'s own disabled story cannot gate this: its
- * child IS a `Pressable` carrying its own `disabled`, so the widget hides the
- * missing guard and the browser reports a broken build as correct. Measured,
+ * That asymmetry is why the third trigger below cannot gate this: its child IS
+ * a `Pressable` carrying its own `disabled`, so the widget hides the missing
+ * guard and the browser reports a broken build as correct. Measured,
  * with a control, both ways. Here the child hides nothing, so removing the
  * guard in `cloneTrigger` opens the panel on the right-hand popover and Chrome
  * says so.
  *
- * Both triggers are the same component. Only `disabled` differs.
+ * The first two triggers are the same component; only `disabled` differs.
  */
 export const AsChildDisabled: Story = {
   render: () => (
@@ -137,6 +137,25 @@ export const AsChildDisabled: Story = {
         <PopoverContent label="Disabled panel">
           <View style={{ padding: 16, minWidth: 200 }}>
             <Text>This one must never appear.</Text>
+          </View>
+        </PopoverContent>
+      </Popover>
+
+      {/* The BLIND-SPOT control: a real Pressable carrying its own `disabled`.
+          react-native-web swallows its press before the composed handler runs,
+          so this stays closed even with the guard removed — the browser cannot
+          gate the defect through it (formerly `Combobox`'s disabled story). */}
+      <Popover>
+        <PopoverTrigger asChild disabled label="Pressable disabled" testID="popover-pressable-disabled">
+          <Pressable
+            disabled
+            style={{ paddingVertical: 10, paddingHorizontal: 16, borderWidth: 1, borderRadius: 8, opacity: 0.5 }}>
+            <Text>Pressable disabled</Text>
+          </Pressable>
+        </PopoverTrigger>
+        <PopoverContent label="Pressable disabled panel">
+          <View style={{ padding: 16, minWidth: 200 }}>
+            <Text>This one must never appear either.</Text>
           </View>
         </PopoverContent>
       </Popover>

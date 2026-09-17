@@ -7,7 +7,7 @@ import { Text } from '../typography';
 import { useTheme } from '../theme';
 
 const meta: Meta = {
-  title: 'Components/Grid',
+  title: 'Base/Grid',
 };
 
 export default meta;

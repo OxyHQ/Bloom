@@ -4,9 +4,10 @@ import type { Meta, StoryObj } from '@storybook/react-vite';
 
 import { Tabs, TabsTrigger } from './index';
 import { Text } from '../typography';
+import { RiChat3Line, RiHome5Line, RiSettings3Line } from '../icons/remix';
 
 const meta: Meta = {
-  title: 'Components/Tabs',
+  title: 'Base/Tabs',
 };
 
 export default meta;
@@ -65,17 +66,89 @@ export const WithCounts: Story = {
   },
 };
 
-/** The three variants. The choice is how loudly the strip separates from the content below it. */
+/**
+ * `leadingIcon` takes an icon COMPONENT and paints it in the label's colour for
+ * the current state — 16px on the underline strip.
+ */
+export const WithIcons: Story = {
+  render: function WithIconsStory() {
+    const [value, setValue] = useState('overview');
+    return (
+      <View style={{ width: 520 }}>
+        <Tabs value={value} onValueChange={setValue}>
+          <TabsTrigger value="overview" label="Overview" count={12} />
+          <TabsTrigger value="activity" label="Activity" count={3} />
+          <TabsTrigger value="settings" label="Settings" leadingIcon={RiSettings3Line} />
+        </Tabs>
+      </View>
+    );
+  },
+};
+
+/**
+ * `pill` — a blue pill switcher. The selected pill slides between
+ * triggers; an idle trigger shows a hover layer.
+ */
+export const Pill: Story = {
+  render: function PillStory() {
+    const [value, setValue] = useState('changes');
+    return (
+      <View style={{ width: 520 }}>
+        <Tabs variant="pill" value={value} onValueChange={setValue}>
+          <TabsTrigger value="changes" label="Changes" leadingIcon={RiChat3Line} />
+          <TabsTrigger value="browser" label="Browser" leadingIcon={RiHome5Line} />
+          <TabsTrigger value="plain" label="Plain" />
+        </Tabs>
+      </View>
+    );
+  },
+};
+
+/** `filled` — a gray pill: a quieter neutral pill for scope/filter rows. */
+export const Filled: Story = {
+  render: function FilledStory() {
+    const [value, setValue] = useState('all');
+    return (
+      <View style={{ width: 520 }}>
+        <Tabs variant="filled" value={value} onValueChange={setValue}>
+          <TabsTrigger value="all" label="All" />
+          <TabsTrigger value="tools" label="Tools" leadingIcon={RiHome5Line} />
+          <TabsTrigger value="agents" label="Agents" />
+        </Tabs>
+      </View>
+    );
+  },
+};
+
+/** Every variant, sharing one selection. `outlined` is an alias of `pill`. */
 export const Variants: Story = {
   render: function VariantsStory() {
     const [value, setValue] = useState('one');
     return (
       <View style={{ width: 420, gap: 24 }}>
-        {(['underline', 'filled', 'outlined'] as const).map((variant) => (
+        {(['underline', 'pill', 'filled', 'outlined'] as const).map((variant) => (
           <Tabs key={variant} variant={variant} value={value} onValueChange={setValue}>
-            <TabsTrigger value="one" label="One" />
-            <TabsTrigger value="two" label="Two" />
+            <TabsTrigger value="one" label="One" leadingIcon={RiHome5Line} />
+            <TabsTrigger value="two" label="Two" count={4} />
             <TabsTrigger value="three" label="Three" />
+          </Tabs>
+        ))}
+      </View>
+    );
+  },
+};
+
+/** A disabled trigger dims to 50% and ignores presses, on every variant. */
+export const Disabled: Story = {
+  render: function DisabledStory() {
+    const [value, setValue] = useState('a');
+    return (
+      <View style={{ width: 420, gap: 24 }}>
+        {(['underline', 'pill', 'filled'] as const).map((variant) => (
+          <Tabs key={variant} variant={variant} value={value} onValueChange={setValue}>
+            <TabsTrigger value="a" label="Active" />
+            <TabsTrigger value="b" label="Disabled" disabled />
+            <TabsTrigger value="c" label="Other" />
           </Tabs>
         ))}
       </View>

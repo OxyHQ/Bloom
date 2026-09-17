@@ -26,7 +26,7 @@ export type TabBarItem = {
   /** Text under the icon; fades out and is clipped when the bar minimizes. */
   label: string;
   /**
-   * The glyph, as a Bloom icon element (`<Icons.Home_Stroke2_Corner0_Rounded />`)
+   * The glyph, as a Bloom icon element (`<Icons.RiHomeLine />`)
    * or any node. Every `@oxy.so/bloom/icons` export carries its full style and
    * corner suffix; a shortened `Home` is not an export, and a name that does not
    * exist is simply `undefined`, which React then rejects as an invalid element
@@ -169,11 +169,12 @@ export type TabBarProps = ViewProps & {
    */
   blur?: boolean | { intensity?: number };
   /**
-   * Maximum width of the pill, in points. By default the pill already grows
-   * with its tab count, up to a comfortable per-item width and the viewport.
+   * Maximum width of the pill, in points. No default — omit it and the bar
+   * spans the window exactly as it always has.
    *
-   * A CEILING, never a floor or a requested width: a larger value does not
-   * stretch a compact bar. When it binds, the pill is constrained to this width and
+   * A CEILING, never a floor: on a window narrower than this the bar keeps its
+   * full-bleed width, so a phone layout is untouched by any value big enough to
+   * matter on a tablet. When it binds, the pill is constrained to this width and
    * CENTRED, and the ITEM geometry follows it — the item width, the sliding
    * highlight's position and the tap/scrub hit-testing all derive from the same
    * constrained width, so a tap still lands on the tab it is visibly over.
@@ -182,8 +183,9 @@ export type TabBarProps = ViewProps & {
    * bar with a `style` override moves the pixels only: the highlight and the
    * scrub worklet would still divide the WINDOW width by the tab count, leaving
    * the highlight sized and positioned for a bar that is no longer there. On an
-   * Use this when a product wants a tighter pill than Bloom's adaptive default,
-   * especially on tablet and desktop layouts.
+   * iPad the unconstrained bar is the reason to reach for this at all — 810pt at
+   * 11" portrait, 1342pt in landscape, leaving 21pt glyphs adrift in cells
+   * hundreds of points wide.
    */
   maxWidth?: number;
 };

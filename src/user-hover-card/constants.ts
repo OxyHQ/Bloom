@@ -1,5 +1,3 @@
-import { space } from '../styles/tokens';
-
 /**
  * The card's geometry, in one place, because two of these numbers are now a
  * CONTRACT rather than an implementation detail: the card has two consumer
@@ -21,14 +19,13 @@ import { space } from '../styles/tokens';
  * columns at `cellSize={11} gap={3}` is 249px, and 18 columns is what 119 days
  * spans once the leading partial week is counted.
  *
- * 256 is a step up on the 8px grid the spacing scale follows, it is 16× the
- * inset, and it clears that measured requirement with room rather than exactly
+ * 256 is a step up on the 8px grid the spacing scale follows, and it clears that measured requirement with room rather than exactly
  * — a number chosen to be sized against, not nudged to fit one consumer.
  */
 export const USER_HOVER_CARD_CONTENT_WIDTH = 256;
 
-/** Padding on all four sides. */
-export const USER_HOVER_CARD_INSET = space.lg;
+/** Padding on all four sides (15px — the card's own inset, not a spacing-scale rung). */
+export const USER_HOVER_CARD_INSET = 15;
 
 /**
  * Total card width — derived, never the other way round. Anything positioning
