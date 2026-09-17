@@ -1,7 +1,7 @@
 import React, { memo, useEffect, useMemo, useState } from 'react';
 import { View } from 'react-native';
 
-import { webDataSet } from '../checkbox/shared';
+import { webDataSet } from '../styles/web-data';
 import { adoptStyleSheet } from '../styles/adopt-style-sheet';
 import type { WebCssStyle } from '../styles/web-view-style';
 import { useTheme } from '../theme/use-theme';

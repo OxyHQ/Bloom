@@ -1,7 +1,7 @@
 import React, { memo, useEffect, useMemo, useRef, useState } from 'react';
 import { Pressable, TextInput, View, type TextStyle } from 'react-native';
 
-import { webDataSet } from '../checkbox/shared';
+import { webDataSet } from '../styles/web-data';
 import { RiCloseLine } from '../icons/remix/RiCloseLine';
 import { RiSearchLine } from '../icons/remix/RiSearchLine';
 import { adoptStyleSheet } from '../styles/adopt-style-sheet';

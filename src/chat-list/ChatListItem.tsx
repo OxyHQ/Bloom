@@ -1,7 +1,7 @@
 import React, { memo, useEffect, useMemo, useState } from 'react';
 import { View, type TextStyle } from 'react-native';
 
-import { webDataSet } from '../checkbox/shared';
+import { webDataSet } from '../styles/web-data';
 import { MessageStatus, TypingDots, UnreadBadge } from '../chat-indicators';
 import { RiNotificationOffFill } from '../icons/remix/RiNotificationOffFill';
 import { RiPushpinFill } from '../icons/remix/RiPushpinFill';

@@ -2,7 +2,7 @@ import React, { memo, useMemo } from 'react';
 import { Pressable, View } from 'react-native';
 
 import { Avatar } from '../avatar';
-import { webDataSet } from '../checkbox/shared';
+import { webDataSet } from '../styles/web-data';
 import { borderRadius, space } from '../styles/tokens';
 import type { WebCssStyle } from '../styles/web-view-style';
 import { useTheme } from '../theme/use-theme';

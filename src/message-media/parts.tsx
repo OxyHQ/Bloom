@@ -10,7 +10,7 @@ import Animated, {
 } from 'react-native-reanimated';
 import Svg, { Circle } from 'react-native-svg';
 
-import { webDataSet } from '../checkbox/shared';
+import { webDataSet } from '../styles/web-data';
 import { RiCloseLine } from '../icons/remix/RiCloseLine';
 import { RiErrorWarningFill } from '../icons/remix/RiErrorWarningFill';
 import { RiEyeOffLine } from '../icons/remix/RiEyeOffLine';

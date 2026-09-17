@@ -29,13 +29,7 @@ import Animated, {
 
 import { Button, CloseButton } from '../button';
 import { mixColor, resolveButtonRamps } from '../button/shared';
-import {
-  CHECKBOX_GLYPH_CSS,
-  CHECKBOX_GLYPH_STYLE_ID,
-  CheckboxGlyph,
-  resolveCheckboxPaint,
-  type CheckboxPaint,
-} from '../checkbox/shared';
+import { CHECKBOX_GLYPH_CSS, CHECKBOX_GLYPH_STYLE_ID, CheckboxGlyph, resolveCheckboxPaint, type CheckboxPaint } from '../checkbox/shared';
 import { adoptStyleSheet } from '../styles/adopt-style-sheet';
 import { borderRadius } from '../styles/tokens';
 import type { WebCssStyle } from '../styles/web-view-style';

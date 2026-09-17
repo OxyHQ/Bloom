@@ -1,7 +1,7 @@
 import type { LayoutChangeEvent } from 'react-native';
 import { useWindowDimensions } from 'react-native';
 
-import { useContainerWidth } from '../listing-details/use-container-width';
+import { useContainerWidth } from '../hooks/use-container-width';
 
 /**
  * The width `AppShell` lays itself out from: its OWN measured box, falling back

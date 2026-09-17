@@ -2,7 +2,7 @@ import React, { memo, useEffect, useMemo } from 'react';
 import { ScrollView, View } from 'react-native';
 
 import { Avatar } from '../avatar';
-import { webDataSet } from '../checkbox/shared';
+import { webDataSet } from '../styles/web-data';
 import { StoryRing } from '../chat-indicators';
 import { RiAddFill } from '../icons/remix/RiAddFill';
 import { adoptStyleSheet } from '../styles/adopt-style-sheet';

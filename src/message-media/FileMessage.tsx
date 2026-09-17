@@ -1,7 +1,7 @@
 import React, { memo, useMemo } from 'react';
 import { Pressable, View } from 'react-native';
 
-import { webDataSet } from '../checkbox/shared';
+import { webDataSet } from '../styles/web-data';
 import { formatFileSize } from '../file-upload/shared';
 import { RiCheckLine } from '../icons/remix/RiCheckLine';
 import { RiDownload2Line } from '../icons/remix/RiDownload2Line';

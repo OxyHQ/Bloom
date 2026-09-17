@@ -10,7 +10,7 @@ import Animated, {
 
 import { mixColor } from '../button/shared';
 import { MESSAGE_STATUS_LABELS } from '../chat-indicators';
-import { webDataSet } from '../checkbox/shared';
+import { webDataSet } from '../styles/web-data';
 import { adoptStyleSheet } from '../styles/adopt-style-sheet';
 import type { WebCssStyle } from '../styles/web-view-style';
 import { useTheme } from '../theme/use-theme';
