@@ -17,7 +17,7 @@ import {
   type ViewStyle,
 } from 'react-native';
 
-import { ChevronBottom_Stroke2_Corner0_Rounded as ChevronBottomIcon } from '../icons/Chevron';
+import { RiArrowDownSLine as ChevronBottomIcon } from '../icons/remix/RiArrowDownSLine';
 import { useTheme } from '../theme/use-theme';
 import { useInteractionState } from '../hooks/use-interaction-state';
 import { animation, borderRadius, space } from '../styles/tokens';

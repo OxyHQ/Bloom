@@ -9,15 +9,6 @@ import React, {
 } from 'react';
 
 import { useTheme } from '../theme/use-theme';
-import { animation, borderRadius } from '../styles/tokens';
-import { SHADOW_BOX } from '../design-tokens/shadows';
-import type { Theme } from '../theme/types';
-import {
-  GLASS_BLUR_FILTER,
-  GLASS_RIM_HIGHLIGHT,
-  GLASS_SHEEN_GRADIENT,
-  resolveGlassColors,
-} from '../theme/glass-colors';
 import { SpinnerIcon } from '../loading/SpinnerIcon.web';
 import { flattenWebStyle } from '../styles/flatten-web-style';
 import {
@@ -25,263 +16,139 @@ import {
   interactiveWebCss,
   useInteractiveWebCss,
 } from '../styles/interactive-web-css';
-import type { ButtonProps, ButtonSize, ButtonVariant } from './types';
+import {
+  BUTTON_GEOMETRY,
+  BUTTON_RADIUS,
+  BUTTON_SHADOW,
+  BUTTON_SIZE_ALIAS,
+  BUTTON_TRANSITION_MS,
+  ICON_BUTTON_ICON_SIZE,
+  LINK_BUTTON_GAP,
+  LINK_BUTTON_UNDERLINE_OFFSET,
+  iconOnlyWidth,
+  isIconComponent,
+  paintToCssImage,
+  resolveButtonPalette,
+  type ButtonResolvedSize,
+} from './shared';
+import type { ButtonIconComponent, ButtonProps, ButtonVariant, LinkButtonProps } from './types';
 
-export type { ButtonProps, ButtonVariant, ButtonSize } from './types';
+export type {
+  ButtonProps,
+  ButtonVariant,
+  ButtonSize,
+  ButtonIconComponent,
+  ButtonLinkTone,
+  LinkButtonProps,
+} from './types';
 
 // ---------------------------------------------------------------------------
-//  Geometry — mirrors the native (`Button.tsx`) impl so the web button is
-//  pixel-consistent with native. Sizes below are the resolved primitives; the
-//  shadcn-style aliases (`sm | md | lg | icon`) are normalized first.
+//  Per-state CSS injection — button-press colour transitions for the
+//  primary/danger fills, expressed against per-instance custom properties.
+//  A 0.98 press scale is deliberately not used: a press is the active paint
+//  alone.
 //
-//  ONE deliberate exception, in `containerStyle`: `text`/`link` clear
-//  `minHeight` here so the control hugs its label and sits inline (which is what
-//  makes `asChild` anchors work), while native keeps the size config's value to
-//  preserve the touch target. The 4/8 padding override those variants get is NOT
-//  an exception — native applies exactly the same one, so `text` is a compact
-//  affordance and `ghost` a full-size button without a background on both
-//  platforms. Only the variant COLOR table below is shared between them.
-// ---------------------------------------------------------------------------
-
-type NativeSize = 'small' | 'medium' | 'large';
-
-interface SizeConfig {
-  paddingVertical: number;
-  paddingHorizontal: number;
-  fontSize: number;
-  minHeight: number;
-  /** The square `icon` variant's own padding — see `Button.tsx`'s SIZE_CONFIG. */
-  iconPadding: number;
-}
-
-/**
- * Mirrors `Button.tsx`'s table exactly, including why the padding is what it is:
- * `minHeight` is the single authority on the height, and these values keep the
- * content box (padding + a `1.5 × fontSize` line box + a 1px border on each
- * side) underneath it. Heights are 32 / 36 / 44 on both platforms.
- */
-const SIZE_CONFIG: Record<NativeSize, SizeConfig> = {
-  small: { paddingVertical: 4, paddingHorizontal: 12, fontSize: 14, minHeight: 32, iconPadding: 8 },
-  medium: { paddingVertical: 5, paddingHorizontal: 16, fontSize: 15, minHeight: 36, iconPadding: 6 },
-  large: { paddingVertical: 8, paddingHorizontal: 20, fontSize: 16, minHeight: 44, iconPadding: 6 },
-};
-
-const SIZE_ALIAS: Record<ButtonSize, NativeSize> = {
-  small: 'small',
-  medium: 'medium',
-  large: 'large',
-  sm: 'small',
-  md: 'medium',
-  lg: 'large',
-  icon: 'medium',
-};
-
-/** Variants that get a tactile press-scale (matches native `SCALE_VARIANTS`). */
-const SCALE_VARIANTS = new Set<ButtonVariant>(['primary', 'secondary', 'inverse', 'destructive']);
-
-/**
- * The two variants painted as GLASS, and which theme fill each is tinted with.
- *
- * They are exactly the variants that carry a brand FILL today, which is what
- * makes the treatment coherent: glass REPLACES a fill, it does not add one, so
- * the button's colour does not move — only its opacity, and the chrome around
- * it. The other seven are excluded for reasons that are not aesthetic:
- *
- *  - `secondary`/`outline`/`ghost`/`text`/`link` have no fill to replace. A blur
- *    behind a transparent control shows nothing, and the hairline is only "the
- *    edge of the tinted pane" where there IS a tint for it to be the edge of.
- *  - `inverse` is the on-image CTA, and it is precisely the surface this material
- *    cannot be. Over content Bloom does not own, half the preset matrix falls
- *    below AA (worst 1.02) — and so does the reference itself, whose own label
- *    measures 4.05 over a mid-tone photo. `inverse` being opaque is the answer to
- *    that case, not an oversight.
- *  - `icon` keeps the neutral chrome that distinguishes it from a bare glyph.
- */
-const GLASS_FILLS: Record<string, (theme: Theme) => { fill: string; onFill: string }> = {
-  primary: (theme) => ({ fill: theme.colors.primary, onFill: theme.colors.primaryForeground }),
-  destructive: (theme) => ({ fill: theme.colors.negative, onFill: theme.colors.negativeForeground }),
-};
-
-// ---------------------------------------------------------------------------
-//  Per-state CSS injection
+//  EVERY colour a state rule changes arrives as a `--bloom-btn-*` property and
+//  is declared only in the sheet. An inline `background-color` would outrank the
+//  `:hover` rule and silence it (`interactive-web-css.test.tsx` gates that).
 //
-//  Shared recipe — see `styles/interactive-web-css.ts` for why the focus ring is
-//  `:focus-visible` and why injection goes through `adoptStyleSheet`. Per-instance
-//  resolved colours stay inline, reaching the static rules as custom properties
-//  (`--bloom-btn-ring`, `--bloom-btn-press-scale`).
+//  The gradient variants cross-fade their hover gradient in through `::before`,
+//  since `background-image` does not transition; the solid variants transition
+//  `background-color` directly.
+//
+//  `aria-busy` is excluded from the disabled paint: a loading button keeps its
+//  rest colours under the spinner instead of greying out.
 // ---------------------------------------------------------------------------
 
 const STYLE_ID = 'bloom-button-web-css';
+
+const T = `${BUTTON_TRANSITION_MS}ms`;
+const DISABLED = '.bloom-btn:disabled:not([aria-busy="true"]),\n.bloom-btn[aria-disabled="true"]:not([aria-busy="true"])';
 
 const BLOOM_BUTTON_CSS = interactiveWebCss({
   selector: '.bloom-btn',
   varPrefix: 'bloom-btn',
   base: `
     flex-direction: row;
-    gap: 8px;
+    gap: var(--bloom-btn-gap, 2px);
     position: relative;
-    border: none;
-    background: transparent;
+    isolation: isolate;
+    overflow: hidden;
+    white-space: nowrap;
+    border-style: solid;
+    border-width: var(--bloom-btn-border-width, 0px);
+    border-color: var(--bloom-btn-border, transparent);
+    background-color: var(--bloom-btn-bg, transparent);
+    background-image: var(--bloom-btn-bg-image, none);
+    box-shadow: var(--bloom-btn-shadow, none);
+    color: var(--bloom-btn-fg, inherit);
     font-family: var(--bloom-font-sans, inherit);
     text-decoration: none;
   `,
-  transition:
-    'opacity 120ms ease, transform 120ms ease, background-color 120ms ease, border-color 120ms ease',
-  hover: { declarations: 'opacity: 0.9;' },
+  transition: `background-color ${T} ease, border-color ${T} ease, box-shadow ${T} ease, color ${T} ease`,
+  hover: {
+    declarations: `
+      background-color: var(--bloom-btn-bg-hover);
+      border-color: var(--bloom-btn-border-hover);
+    `,
+  },
+  pressDeclarations: `
+    background-color: var(--bloom-btn-bg-active);
+    border-color: var(--bloom-btn-border-active);
+    color: var(--bloom-btn-fg-active, var(--bloom-btn-fg));
+  `,
   outlineOffset: 2,
-  // Two variants undo the shared opacity dip, each for its own reason.
-  //
-  // `link` is the one button that IS text: it underlines instead of dimming.
-  //
-  // `glass` is translucent, so dimming it is the wrong axis twice over — it
-  // fades the LABEL along with the surface, and it makes a pane that is already
-  // showing the page through it show more of it, which reads as the button
-  // retreating rather than responding. The reference darkens its background
-  // instead (`hover:bg-[rgba(0,0,0,.1)]`), and that is what this does: one more
-  // flat layer on top of the sheen, in a direction the instance chooses, since
-  // black-over-dark-mode would be invisible. The whole `background-image` list
-  // is restated because CSS has no way to prepend to one, and the sheen has to
-  // stay under the new layer.
-  extraRules: `.bloom-btn--link${NOT_DISABLED}:hover {
+  extraRules: `${DISABLED} {
+  opacity: var(--bloom-btn-disabled-opacity, 1);
+  cursor: not-allowed;
+  background-color: var(--bloom-btn-bg-disabled);
+  background-image: var(--bloom-btn-bg-image-disabled, none);
+  border-color: var(--bloom-btn-border-disabled);
+  color: var(--bloom-btn-fg-disabled);
+  box-shadow: none;
+  transform: none;
+}
+.bloom-btn[aria-busy="true"] {
   opacity: 1;
+  cursor: progress;
+}
+.bloom-btn--gradient::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  border-radius: inherit;
+  background-image: var(--bloom-btn-bg-image-hover);
+  opacity: 0;
+  transition: opacity ${T} ease;
+}
+.bloom-btn--gradient${NOT_DISABLED}:hover::before {
+  opacity: 1;
+}
+.bloom-btn--gradient${NOT_DISABLED}:active {
+  background-image: var(--bloom-btn-bg-image-active);
+}
+.bloom-btn--gradient${NOT_DISABLED}:active::before {
+  opacity: 0;
+}
+.bloom-btn--gradient:disabled::before,
+.bloom-btn--gradient[aria-disabled="true"]::before {
+  display: none;
+}
+.bloom-btn--link {
+  text-underline-offset: ${LINK_BUTTON_UNDERLINE_OFFSET}px;
+}
+.bloom-btn--link${NOT_DISABLED}:hover {
   text-decoration: underline;
 }
-.bloom-btn--glass {
-  backdrop-filter: ${GLASS_BLUR_FILTER};
-  -webkit-backdrop-filter: ${GLASS_BLUR_FILTER};
-  background-image: ${GLASS_SHEEN_GRADIENT};
+@media (prefers-reduced-motion: reduce) {
+.bloom-btn,
+.bloom-btn--gradient::before {
+  transition: none;
 }
-.bloom-btn--glass${NOT_DISABLED}:hover {
-  opacity: 1;
-  background-image:
-    linear-gradient(var(--bloom-btn-glass-hover), var(--bloom-btn-glass-hover)),
-    ${GLASS_SHEEN_GRADIENT};
 }`,
 });
-
-// ---------------------------------------------------------------------------
-//  Variant styling — all colors come from the SAME Bloom theme tokens native
-//  uses, so primary/secondary/etc. look identical across platforms. The added
-//  web variants (`outline | link | destructive`) are styled from those tokens
-//  too (no new palette).
-//
-//  Every variant, text and icon alike, takes `borderRadius.full` — the same
-//  token native reads, so the fully-rounded shape cannot drift between the two
-//  forks, and a square icon button at that radius renders as a perfect circle.
-// ---------------------------------------------------------------------------
-
-interface VariantStyle {
-  /** Container CSS (background, border, radius). */
-  container: CSSProperties;
-  /** Resolved text/icon color. */
-  textColor: string;
-  /** The `:focus-visible` ring color. */
-  ringColor: string;
-}
-
-/**
- * The glass container, from the reference's five declarations.
- *
- * The blur and the sheen are NOT here — they are constant, so they live in the
- * `.bloom-btn--glass` rule where `:hover` can restate the `background-image`
- * without an inline style outranking it. That split is the reference's own:
- * `.glassy-effect` carries the blur and the gradient, the element's `style`
- * attribute carries the per-instance fill, border and shadow.
- */
-function glassContainer(fill: string, onFill: string, theme: Theme): VariantStyle {
-  const glass = resolveGlassColors(fill);
-  return {
-    container: {
-      backgroundColor: glass.fill,
-      borderWidth: glass.hairlineWidth,
-      borderStyle: 'solid',
-      borderColor: glass.hairline,
-      borderRadius: borderRadius.full,
-      // The lit rim first, then the drop — the reference's own order, and the
-      // only order that works: an inset painted after a drop is still an inset,
-      // but reading it in the same sequence the reference wrote it is what makes
-      // the two diffable.
-      boxShadow: `${GLASS_RIM_HIGHLIGHT}, ${SHADOW_BOX.glass}`,
-      // Consumed by `.bloom-btn--glass:hover`. Black over a light pane, white
-      // over a dark one — the reference only ever needed the first, being a
-      // light-page component.
-      ['--bloom-btn-glass-hover' as string]: theme.isDark
-        ? 'rgba(255, 255, 255, 0.10)'
-        : 'rgba(0, 0, 0, 0.10)',
-    },
-    // The fill's OWN on-colour. At 0.85 the pane is the fill, so it carries the
-    // label the fill was calibrated for — not the page's reading colour, which
-    // is what a 0.25 wash needed and what fails 1015 of 1260 rows here.
-    textColor: onFill,
-    ringColor: fill,
-  };
-}
-
-function resolveVariantStyle(
-  variant: ButtonVariant,
-  size: NativeSize,
-  theme: Theme,
-): VariantStyle {
-  const c = theme.colors;
-  const sizeConfig = SIZE_CONFIG[size];
-
-  const glass = GLASS_FILLS[variant];
-  if (glass) {
-    const { fill, onFill } = glass(theme);
-    return glassContainer(fill, onFill, theme);
-  }
-
-  switch (variant) {
-    case 'inverse':
-      return {
-        container: { backgroundColor: '#FFFFFF', borderRadius: borderRadius.full },
-        textColor: '#000000',
-        ringColor: c.primary,
-      };
-    case 'secondary':
-    case 'outline':
-      return {
-        container: {
-          backgroundColor: 'transparent',
-          borderWidth: 1,
-          borderStyle: 'solid',
-          borderColor: c.border,
-          borderRadius: borderRadius.full,
-        },
-        textColor: c.text,
-        ringColor: c.primary,
-      };
-    case 'ghost':
-      return {
-        container: { backgroundColor: 'transparent', borderRadius: borderRadius.full },
-        textColor: c.primary,
-        ringColor: c.primary,
-      };
-    case 'icon':
-      return {
-        container: {
-          backgroundColor: c.background,
-          borderWidth: 1,
-          borderStyle: 'solid',
-          borderColor: c.border,
-          borderRadius: borderRadius.full,
-          padding: sizeConfig.iconPadding,
-          width: sizeConfig.minHeight,
-          height: sizeConfig.minHeight,
-        },
-        textColor: c.text,
-        ringColor: c.primary,
-      };
-    case 'text':
-    case 'link':
-    default:
-      return {
-        container: { backgroundColor: 'transparent', borderRadius: borderRadius.full },
-        textColor: c.primary,
-        ringColor: c.primary,
-      };
-  }
-}
 
 // ---------------------------------------------------------------------------
 //  Component
@@ -295,8 +162,16 @@ const ButtonWebComponent: React.FC<ButtonProps> = ({
   variant = 'primary',
   size: sizeProp = 'medium',
   style,
+  textStyle,
   icon,
   iconPosition = 'left',
+  leadingIcon: LeadingIcon,
+  trailingIcon: TrailingIcon,
+  iconOnly = false,
+  linkTone = 'primary',
+  href,
+  target,
+  rel,
   loading = false,
   loadingColor,
   accessibilityLabel,
@@ -325,54 +200,98 @@ const ButtonWebComponent: React.FC<ButtonProps> = ({
   // explicitly picked one — mirrors native + shadcn behavior.
   const resolvedVariant: ButtonVariant =
     sizeProp === 'icon' && variant === 'primary' ? 'icon' : variant;
-  const size: NativeSize = SIZE_ALIAS[sizeProp];
-  const isIcon = resolvedVariant === 'icon';
+  const size: ButtonResolvedSize = BUTTON_SIZE_ALIAS[sizeProp];
+  const geometry = BUTTON_GEOMETRY[size];
+  const isIconVariant = resolvedVariant === 'icon';
+  const isSquare = iconOnly || isIconVariant;
+  const isLink = resolvedVariant === 'link';
+  const isText = resolvedVariant === 'text';
   const isInteractionBlocked = disabled || loading;
+  const iconSize = isIconVariant ? ICON_BUTTON_ICON_SIZE[size] : geometry.iconSize;
 
-  const variantStyle = useMemo(
-    () => resolveVariantStyle(resolvedVariant, size, theme),
-    [resolvedVariant, size, theme],
+  const palette = useMemo(
+    () => resolveButtonPalette(resolvedVariant, theme, linkTone),
+    [resolvedVariant, theme, linkTone],
   );
-
-  const sizeConfig = SIZE_CONFIG[size];
+  const isGradient = palette.rest.gradient !== null;
 
   const containerStyle = useMemo((): CSSProperties => {
+    const shadow = palette.shadow ? BUTTON_SHADOW[theme.isDark ? 'dark' : 'light'] : 'none';
     const base: CSSProperties = {
-      fontSize: sizeConfig.fontSize,
-      fontWeight: 'bold',
-      color: variantStyle.textColor,
+      height: geometry.height,
+      paddingLeft: geometry.paddingHorizontal,
+      paddingRight: geometry.paddingHorizontal,
+      borderRadius: BUTTON_RADIUS,
+      fontSize: geometry.fontSize,
+      lineHeight: `${geometry.lineHeight}px`,
+      fontWeight: Number(geometry.fontWeight),
+      letterSpacing: geometry.letterSpacing || undefined,
       width: fullWidth ? '100%' : undefined,
-      // CSS custom props consumed by the static stylesheet.
-      ['--bloom-btn-ring' as string]: variantStyle.ringColor,
-      ['--bloom-btn-press-scale' as string]: SCALE_VARIANTS.has(resolvedVariant)
-        ? animation.pressScale
-        : 1,
-      ...variantStyle.container,
+      // CSS custom props consumed by the static stylesheet — see its header.
+      ['--bloom-btn-gap' as string]: `${geometry.gap}px`,
+      ['--bloom-btn-ring' as string]: palette.ring,
+      // No press scale — the pressed state is the active paint alone.
+      ['--bloom-btn-press-scale' as string]: 1,
+      ['--bloom-btn-shadow' as string]: shadow,
+      ['--bloom-btn-border-width' as string]: `${palette.borderWidth}px`,
+      ['--bloom-btn-fg' as string]: palette.rest.foreground,
+      ['--bloom-btn-fg-active' as string]: palette.active.foreground,
+      ['--bloom-btn-fg-disabled' as string]: palette.disabled.foreground,
+      ['--bloom-btn-disabled-opacity' as string]: palette.disabledOpacity ?? 1,
+      ['--bloom-btn-bg' as string]: palette.rest.background,
+      ['--bloom-btn-bg-hover' as string]: isGradient
+        ? palette.rest.background
+        : palette.hover.background,
+      ['--bloom-btn-bg-active' as string]: isGradient
+        ? palette.rest.background
+        : palette.active.background,
+      ['--bloom-btn-bg-disabled' as string]: palette.disabled.background,
+      ['--bloom-btn-border' as string]: palette.rest.border,
+      ['--bloom-btn-border-hover' as string]: palette.hover.border,
+      ['--bloom-btn-border-active' as string]: palette.active.border,
+      ['--bloom-btn-border-disabled' as string]: palette.disabled.border,
     };
-    if (!isIcon) {
-      base.paddingTop = sizeConfig.paddingVertical;
-      base.paddingBottom = sizeConfig.paddingVertical;
-      base.paddingLeft = sizeConfig.paddingHorizontal;
-      base.paddingRight = sizeConfig.paddingHorizontal;
-      base.minHeight = sizeConfig.minHeight;
+    if (isGradient) {
+      Object.assign(base, {
+        '--bloom-btn-bg-image': paintToCssImage(palette.rest),
+        '--bloom-btn-bg-image-hover': paintToCssImage(palette.hover),
+        '--bloom-btn-bg-image-active': paintToCssImage(palette.active),
+        '--bloom-btn-bg-image-disabled': paintToCssImage(palette.disabled),
+      });
     }
-    if (resolvedVariant === 'text' || resolvedVariant === 'link') {
+    if (isSquare) {
+      base.width = isIconVariant ? geometry.height : iconOnlyWidth(geometry, palette.borderWidth);
+      base.paddingLeft = 0;
+      base.paddingRight = 0;
+    }
+    if (isText) {
+      // The compact inline affordance: hugs its label so an `asChild` anchor
+      // sits in running text. Same 4/8 padding as the native fork.
+      base.height = undefined;
       base.paddingTop = 4;
       base.paddingBottom = 4;
       base.paddingLeft = 8;
       base.paddingRight = 8;
-      base.minHeight = undefined;
+    }
+    if (isLink && !isSquare) {
+      // LinkButton: no container at all — the label's own line box,
+      // a 4px gap, and a 4px corner that only the focus ring shows.
+      base.height = undefined;
+      base.paddingLeft = 0;
+      base.paddingRight = 0;
+      base.borderRadius = 4;
+      (base as Record<string, unknown>)['--bloom-btn-gap'] = `${LINK_BUTTON_GAP}px`;
     }
     return base;
-  }, [sizeConfig, variantStyle, fullWidth, isIcon, resolvedVariant]);
+  }, [geometry, palette, theme.isDark, fullWidth, isSquare, isIconVariant, isText, isLink, isGradient]);
 
   const handleClick = useCallback(
-    (event: MouseEvent<HTMLButtonElement>) => {
+    (event: MouseEvent<HTMLElement>) => {
       if (isInteractionBlocked) {
         event.preventDefault();
         return;
       }
-      onClick?.(event);
+      onClick?.(event as MouseEvent<HTMLButtonElement>);
       onPress?.();
     },
     [isInteractionBlocked, onClick, onPress],
@@ -380,29 +299,64 @@ const ButtonWebComponent: React.FC<ButtonProps> = ({
 
   const ariaLabel = ariaLabelProp ?? accessibilityLabel;
   const composedClassName = ['bloom-btn']
-    .concat(resolvedVariant === 'link' ? ['bloom-btn--link'] : [])
-    .concat(GLASS_FILLS[resolvedVariant] ? ['bloom-btn--glass'] : [])
+    .concat(isLink ? ['bloom-btn--link'] : [])
+    .concat(isGradient ? ['bloom-btn--gradient'] : [])
     .concat(className ? [className] : [])
     .join(' ');
 
-  const spinnerColor = loadingColor ?? variantStyle.textColor;
+  const spinnerColor =
+    loadingColor ?? (disabled ? palette.disabled.foreground : palette.rest.foreground);
 
   // Normalize the caller's `style` (single object, StyleProp array, or falsy)
   // into ONE flat plain object here, once, so neither raw-DOM merge site below
   // spreads a StyleProp array (which would leak numeric keys onto the button's
   // CSSStyleDeclaration). See `flattenWebStyle` for the full rationale.
   const resolvedStyle = flattenWebStyle(style);
+  const resolvedTextStyle = flattenWebStyle(textStyle);
 
+  // Icon components are sized by the button and painted `currentColor`, so they
+  // follow the state colours the stylesheet sets without a re-render.
+  const renderIcon = (Icon: ButtonIconComponent) => (
+    <span
+      aria-hidden="true"
+      style={{
+        display: 'inline-flex',
+        flexShrink: 0,
+        width: iconSize,
+        height: iconSize,
+      }}
+    >
+      <Icon width={iconSize} height={iconSize} fill="currentColor" />
+    </span>
+  );
+  const iconNode =
+    icon == null ? null : isIconComponent(icon) ? renderIcon(icon) : (icon as React.ReactNode);
+
+  const labelPadding = isLink ? 0 : geometry.labelPaddingHorizontal;
+  const hasLabel = !isSquare && children != null && children !== false;
   const content = (
     <>
-      {iconPosition === 'left' && icon}
-      {children != null &&
+      {LeadingIcon ? renderIcon(LeadingIcon) : null}
+      {iconPosition === 'left' && iconNode}
+      {hasLabel &&
         (typeof children === 'string' || typeof children === 'number' ? (
-          <span>{children}</span>
+          <span
+            style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              paddingLeft: labelPadding,
+              paddingRight: labelPadding,
+              ...resolvedTextStyle,
+            }}
+          >
+            {children}
+          </span>
         ) : (
           children
         ))}
-      {iconPosition === 'right' && icon}
+      {isSquare && !LeadingIcon && !iconNode && children != null ? children : null}
+      {iconPosition === 'right' && iconNode}
+      {!isSquare && TrailingIcon ? renderIcon(TrailingIcon) : null}
     </>
   );
 
@@ -415,7 +369,7 @@ const ButtonWebComponent: React.FC<ButtonProps> = ({
           display: 'inline-flex',
           alignItems: 'center',
           justifyContent: 'center',
-          gap: 8,
+          gap: geometry.gap,
           opacity: 0,
           pointerEvents: 'none',
         }}
@@ -433,7 +387,7 @@ const ButtonWebComponent: React.FC<ButtonProps> = ({
           pointerEvents: 'none',
         }}
       >
-        <SpinnerIcon size={Math.round(sizeConfig.fontSize * 1.2)} color={spinnerColor} />
+        <SpinnerIcon size={iconSize} color={spinnerColor} />
       </span>
     </>
   ) : (
@@ -474,6 +428,30 @@ const ButtonWebComponent: React.FC<ButtonProps> = ({
       id: childProps.id ?? resolvedId,
       tabIndex: isInteractionBlocked ? -1 : childProps.tabIndex,
     });
+  }
+
+  // `href` renders a real anchor, for a button link or an anchor `LinkButton`.
+  // A disabled link drops its `href`, so it is not a navigable link at all.
+  if (href != null && !asChild) {
+    return (
+      <a
+        id={resolvedId}
+        href={isInteractionBlocked ? undefined : href}
+        target={target}
+        rel={rel}
+        className={composedClassName}
+        style={{ ...containerStyle, ...resolvedStyle }}
+        onClick={handleClick}
+        aria-disabled={isInteractionBlocked || undefined}
+        aria-busy={loading || undefined}
+        aria-label={ariaLabel}
+        title={title ?? accessibilityHint}
+        tabIndex={tabIndex}
+        data-testid={testID}
+      >
+        {body}
+      </a>
+    );
   }
 
   return (
@@ -541,8 +519,13 @@ export const OutlineButton = memo((props: Omit<ButtonProps, 'variant'>) => (
 ));
 OutlineButton.displayName = 'OutlineButton';
 
-export const LinkButton = memo((props: Omit<ButtonProps, 'variant'>) => (
-  <Button {...props} variant="link" />
+/**
+ * `LinkButton`: an inline text action — no fill, no border, the label
+ * (plus icons) underlined on hover. `variant` is its colour; pass `href` for an
+ * anchor.
+ */
+export const LinkButton = memo(({ variant = 'primary', ...props }: LinkButtonProps) => (
+  <Button {...props} variant="link" linkTone={variant} />
 ));
 LinkButton.displayName = 'LinkButton';
 

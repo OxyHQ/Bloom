@@ -1,0 +1,157 @@
+---
+title: DataTable
+description: An advanced data table — toolbar, sortable columns, row selection, pagination and the Normal / Compact density toggle, on Bloom's own Table.
+order: 13
+---
+
+# DataTable
+
+An advanced data table for a customers-style dashboard view. Bloom has no react-aria or `@tanstack/react-table` dependency, so `DataTable` is Bloom's own [`Table`](./table.mdx) plus plain React state for sorting, selection and paging — with TanStack's sorting defaults kept.
+
+Filtering stays **outside**: filter `rows` yourself (the toolbar's selects and search are yours), and the table sorts and pages what it is given.
+
+```tsx
+import { DataTable, DataTableRowAction, type DataTableColumn } from '@oxy.so/bloom/data-table';
+
+const columns: DataTableColumn<Customer>[] = [
+  { id: 'name', header: 'Customer name', basis: 240, accessor: (c) => c.name,
+    cell: ({ row, size }) => <CustomerName customer={row} size={size} /> },
+  { id: 'status', header: 'Status', basis: 168,
+    cell: ({ row, size }) => <Chip size={size === 'sm' ? 'small' : 'medium'}>{row.status}</Chip> },
+  { id: 'price', header: 'Price', basis: 140, accessor: (c) => c.price },
+  { id: 'actions', header: 'Actions', basis: 132, minWidth: 140,
+    cell: () => <DataTableRowAction icon={RiEditLine} label="Edit" onPress={edit} /> },
+];
+
+<DataTable
+  accessibilityLabel="Customers"
+  rows={filtered}
+  columns={columns}
+  getRowId={(c) => c.id}
+  title="Total Results"
+  summary={`${filtered.length} customers`}
+  toolbar={<>{/* filter selects, search field */}</>}
+  selectable
+  showSizeToggle
+  minWidth={1000}
+  emptyState="No customers match your filters."
+/>
+```
+
+Every piece of state — `sort`, `selectedRowIds`, `page`, `size` — is uncontrolled by default and controlled the moment its value prop is passed, with an `on…Change` either way. A controlled `sort={null}` means "unsorted", not "uncontrolled".
+
+## Geometry
+
+| part | spec |
+|---|---|
+| surface | 1px `border-table`, radius 16, `pt-2`, `pb-3` — `pb-0` when there is no pagination footer |
+| toolbar | `px-3 py-1`, gap 12; title (`text-tertiary`) over summary (`text-primary`), both `body-medium`; controls gap 10 |
+| table | 8 under the toolbar; the rows are `Table`'s (`md` 10/12 inset, `sm` 6/10) |
+| selection | 16px checkbox, 8 gap, then the first column's own content — header and every row |
+| footer | 1px `separator-border` on top, `px-3 pt-3`, [`Pagination`](./pagination.mdx) |
+| density | `SegmentedControl` 20 under the surface, centred |
+
+Below 640px of its own width (`sm`, measured with `onLayout` so it works on native) the toolbar stacks and its controls become one horizontally scrolling row that bleeds to the surface edges.
+
+| token | light | dark |
+|---|---|---|
+| `border-table`, `separator-border` | neutral-200 | neutral-800 |
+| `text-tertiary` (title) | neutral-400 | neutral-600 |
+
+## Layouts
+
+`layout` picks the row recipe. Both share the surface, toolbar, footer and density control above.
+
+| | `table` (default) | `inset` |
+|---|---|---|
+| used for | standalone data tables | the dashboard templates' flex-row tables — customers, transactions, campaigns |
+| first column | 12px inset like every cell | flush against a 12px leading gutter (`pl-3` on the header and rows) |
+| row hairlines | full width, between rows only | start after the gutter; the last row draws one too while the table paginates |
+| footer hairline | 1px on top | none — the last row's hairline stands in |
+| selected row | `background-secondary` wash | not painted (still `aria-selected`) |
+| sorted header label | `text-tertiary` | `text-primary` (the chevron is `text-secondary` in both) |
+| empty state | 160px band | `py-10 pr-3` band |
+
+```tsx
+<DataTable layout="inset" minWidth={900} pageSize={10} … />
+```
+
+With `inset`, give columns `flex` shares (`flex: 1.4` for the first, `1` for the rest, `width: 140` for actions) — the templates' `flex-[1.4]` / `flex-1` / `w-[140px]` columns.
+
+## Columns
+
+- **`accessor`** is the value a column sorts by, and the cell text when there is no `cell`. A column with an accessor is sortable unless `sortable: false`.
+- **`cell({ row, rowId, index, size, selected })`** renders anything. `size` is the current density — chips move to `caption` and selects to `sm` on Compact, and the renderer is where that happens.
+- **`basis`** behaves like a `w-[240px]` column class inside an HTML table: a preferred width that grows and shrinks in proportion with the other `basis` columns. `width` (fixed) and `flex` (a share of the remainder, from zero) are `Table`'s and still work; `minWidth` floors any of them — the actions column grows to 140 to fit three 32px buttons.
+
+## Sorting (TanStack's defaults)
+
+- A header press cycles **first → other → unsorted**.
+- The first direction is **ascending for text, descending for numbers and dates** (`sortDescFirst: 'auto'`); `sortDescFirst` on a column overrides it.
+- Pressing another column replaces the sort. Text compares alphanumerically ("Row 9" before "Row 10"); empty values sort last in both directions; ties keep input order.
+- A sort change returns to page 1, and a `rows` change that no longer reaches the current page clamps it (`autoResetPageIndex`).
+
+## Selection
+
+`selectable` puts a checkbox in the first column. The header checkbox is **page-scoped**, like TanStack's `toggleAllPageRowsSelected`: checked when every row on the page is selected, `mixed` when some are, and pressing it selects (or clears) the page only. Selection is by `getRowId`, so it survives sorting, paging and filtering. A selectable table's rows carry `aria-selected` (web) and `accessibilityState.selected` (native); a non-selectable table's rows carry neither.
+
+## `DataTableRowAction`
+
+A small icon button under a 200ms `md` tooltip: Bloom's secondary `Button`, 32×32 with a 16px glyph — a full pill, per Bloom's radius rule. `label` is both its accessible name and the tooltip's text; `accessibilityLabel` overrides the name (e.g. "More actions for John Clarkson" with the tooltip "More actions"). `active` paints the pressed state while a menu it opened is showing. It forwards the props an anchored family's `asChild` trigger merges in, so it is the trigger of a row's `DropdownMenu`:
+
+```tsx
+<DropdownMenu open={open} onOpenChange={setOpen}>
+  <DropdownMenuTrigger asChild label={`More actions for ${name}`}>
+    <DataTableRowAction icon={RiMore2Fill} label="More actions" active={open} />
+  </DropdownMenuTrigger>
+  <DropdownMenuContent align="end" minWidth={220} maxWidth={220}>…</DropdownMenuContent>
+</DropdownMenu>
+```
+
+The tooltip opens on hover after 200ms and on KEYBOARD focus, closes on leave, blur and press — react-aria's behaviour. It is web-only; on native the button is named and the tooltip is not rendered.
+
+### Hazard: the web `Tooltip` backdrop under a hover tooltip
+
+The web `Tooltip` lays a full-screen press-to-dismiss backdrop over the page while it is open. Under a hover tooltip that backdrop lands **under the pointer**: measured in Chrome, the trigger received `pointerleave` with the backdrop as `relatedTarget` in the frame the bubble opened, so the tooltip closed again after one frame — and a click in that window would have hit the backdrop instead of the button. `DataTableRowAction` wraps its `Tooltip` in a `pointerEvents="none"` View (react-native-web emits `>* { pointer-events: none }`, which makes the backdrop inert) and hands the button its events back with a `pointerEvents="auto"` View. Keep both props — a `pointerEvents` STYLE entry is silently dropped (see `docs/overlay.mdx`). Jest cannot see this; verify hover in a real browser.
+
+## Cell and toolbar parts
+
+Every dashboard table (customers, transactions, campaigns, employees, patients) builds its toolbar and its select / actions cells from the same pieces. They ship here so a table composes them instead of copying them:
+
+```tsx
+import {
+  DataTableFilter, DataTableRowActions, DataTableSearch, DataTableSelect,
+} from '@oxy.so/bloom/data-table';
+
+toolbar={<>
+  <DataTableFilter label="Filter by region" value={region} onValueChange={setRegion}
+    options={[{ value: 'all', label: 'All regions' }, …]} />
+  <DataTableSearch label="Search customers" value={query} onChangeText={setQuery} />
+</>}
+
+{ id: 'purchase', header: 'Purchase', cell: ({ row, size }) => (
+  <DataTableSelect label={`Purchase status for ${row.name}`} defaultValue={row.purchase}
+    options={[{ value: 'completed', label: 'Completed', dot: 'success' }, …]} width={142} size={size} />
+) },
+{ id: 'actions', header: 'Actions', width: 140, cell: ({ row }) => (
+  <DataTableRowActions name={row.name}
+    actions={[{ icon: RiDeleteBin6Line, label: 'Delete' }, { icon: RiEditLine, label: 'Edit' }]}
+    menu={[{ icon: RiUserLine, label: 'View profile' }, …]} />
+) },
+```
+
+| part | spec |
+|---|---|
+| `DataTableFilter` | `<Select className="shrink-0" popoverClassName="min-w-40">`; the trigger hugs its value; the standard 266px list; the chosen row marked by the row wash alone — no check drawn. Uncontrolled from the first option unless `value`/`defaultValue` |
+| `DataTableSearch` | `InputBase` with `leadingIcon={RiSearchLine}`; `body-medium`, full pill; `w-[153px]` from `sm`, below it `flex-1 min-w-[153px]` in the scrolling toolbar row (window width, like the class) |
+| `DataTableSelect` | a `w-[Npx]` select; an option's `dot` (a `Badge dot`: `green` = `success`, `yellow` = `warning`, `indigo` = `info`) or 18px `icon` (`foreground-icon-secondary`) leads its label in the list and in the trigger (`gap-[5px]`, via `SelectValue`'s [`leading`](./select.mdx#leading-marks)); an icon option trims the trigger's left inset to 8 (`pl-2`) |
+| `DataTableRowActions` | `justify-end gap-2.5`; one `DataTableRowAction` per `actions` entry, then — when `menu` has entries — the "⋮" trigger of a `DropdownMenu` (`placement="bottom end"`, `w-[220px] p-2`, entries `px-2 py-1.5` with an 18px `foreground-icon-secondary` glyph), painted pressed while open and named `` `${menuLabel} for ${name}` `` |
+
+### `DataTableSelect` shrinks like a width class
+
+`w-[142px]` on the select is a width on a FLEX ITEM, so when the column is narrower than 142 (a table at its minimum width on a phone) the trigger shrinks — down to its own content, never below. `DataTableSelect` gives its trigger `flexShrink: 1` and `min-width: min-content` on web to match. A fixed width instead overflows into the next column; that is what the dashboard templates did before these parts existed. Native keeps the fixed width.
+
+## Known gaps
+
+- Jest resolves no platform extensions, so the suite exercises the native `Button`, `Select` and `DropdownMenu`; the tooltip path is web-only and verified in Chrome, not in jest.
+- Native was not run on a device.

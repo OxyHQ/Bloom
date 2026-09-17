@@ -86,32 +86,32 @@ function useDemoItems(): RailItem[] {
     {
       id: 'home',
       label: 'Home',
-      icon: <Icons.Home_Stroke2_Corner0_Rounded fill={colors.textSecondary} />,
-      activeIcon: <Icons.Home_Filled_Corner0_Rounded fill={colors.primary} />,
+      icon: <Icons.RiHomeLine fill={colors.textSecondary} />,
+      activeIcon: <Icons.RiHomeFill fill={colors.primary} />,
     },
     {
       id: 'search',
       label: 'Search',
-      icon: <Icons.MagnifyingGlass_Stroke2_Corner0_Rounded fill={colors.textSecondary} />,
-      activeIcon: <Icons.MagnifyingGlass_Filled_Stroke2_Corner0_Rounded fill={colors.primary} />,
+      icon: <Icons.RiSearchLine fill={colors.textSecondary} />,
+      activeIcon: <Icons.RiSearchFill fill={colors.primary} />,
     },
     {
       id: 'inbox',
       label: 'Inbox',
-      icon: <Icons.Message_Stroke2_Corner0_Rounded fill={colors.textSecondary} />,
-      activeIcon: <Icons.Message_Stroke2_Corner0_Rounded_Filled fill={colors.primary} />,
+      icon: <Icons.RiChat3Line fill={colors.textSecondary} />,
+      activeIcon: <Icons.RiChat3Fill fill={colors.primary} />,
     },
     {
       id: 'profile',
       label: 'Profile',
-      icon: <Icons.Person_Stroke2_Corner0_Rounded fill={colors.textSecondary} />,
-      activeIcon: <Icons.Person_Filled_Corner2_Rounded fill={colors.primary} />,
+      icon: <Icons.RiUserLine fill={colors.textSecondary} />,
+      activeIcon: <Icons.RiUserFill fill={colors.primary} />,
     },
     {
       id: 'settings',
       label: 'Settings',
-      icon: <Icons.SettingsGear2_Stroke2_Corner0_Rounded fill={colors.textSecondary} />,
-      activeIcon: <Icons.SettingsGear2_Filled_Corner0_Rounded fill={colors.primary} />,
+      icon: <Icons.RiSettings3Line fill={colors.textSecondary} />,
+      activeIcon: <Icons.RiSettings3Fill fill={colors.primary} />,
     },
   ];
 }

@@ -180,6 +180,57 @@ describe('ToastContent', () => {
     );
   });
 
+  describe('the notification card', () => {
+    const flat = (style: unknown): Record<string, unknown> =>
+      Array.isArray(style)
+        ? Object.assign({}, ...style.map(flat))
+        : style && typeof style === 'object'
+          ? (style as Record<string, unknown>)
+          : {};
+
+    const discsOf = ({ UNSAFE_root }: ReturnType<typeof renderContent>) =>
+      UNSAFE_root.findAll((n) => hostName(n) === 'View' && flat(n.props.style).width === 40);
+
+    it('puts a variant glyph in a 40px status disc, and a plain toast has none', () => {
+      expect(discsOf(renderContent({ variant: 'success' }))).toHaveLength(1);
+      expect(discsOf(renderContent())).toHaveLength(0);
+    });
+
+    it('keeps the disc for the spinner and for a caller icon', () => {
+      expect(discsOf(renderContent({ variant: 'loading' }))).toHaveLength(1);
+      expect(discsOf(renderContent({ icon: <Text>mine</Text> }))).toHaveLength(1);
+    });
+
+    it('opens the 44px close lane only when the close button renders', () => {
+      const surface = (r: ReturnType<typeof renderContent>) =>
+        flat(
+          r.UNSAFE_root.findAll((n) => hostName(n) === 'View' && flat(n.props.style).borderRadius === 16)[0]
+            ?.props.style,
+        );
+      expect(surface(renderContent())).toMatchObject({ paddingLeft: 16, paddingRight: 16, borderWidth: 1 });
+      expect(surface(renderContent({ dismissible: true, closeButton: true }))).toMatchObject({ paddingRight: 44 });
+    });
+
+    it('places the close button at top 12 / right 12 of the card', () => {
+      const [close] = pressablesOf(
+        renderContent({ dismissible: true, closeButton: true, description: 'More detail' }),
+      );
+      // Offsets are from the row, which sits inside the card's 16 / 44 padding.
+      expect(flat(close?.props.style)).toMatchObject({ position: 'absolute', top: -4, right: -32, width: 20 });
+    });
+
+    it('centres a title-only toast: no empty band under the title, ✕ on the row centre', () => {
+      const [close] = pressablesOf(renderContent({ dismissible: true, closeButton: true }));
+      // No leading visual: the row is the title's 20px line, so the ✕ sits at 0.
+      expect(flat(close?.props.style)).toMatchObject({ top: 0 });
+      const [withIcon] = pressablesOf(
+        renderContent({ dismissible: true, closeButton: true, variant: 'success' }),
+      );
+      // With the 40px disc: (40 − 20) / 2.
+      expect(flat(withIcon?.props.style)).toMatchObject({ top: 10 });
+    });
+  });
+
   it('drops its own surface and text styling when unstyled', () => {
     const { getByText } = renderContent({ unstyled: true });
     // Only the (absent) override slot remains, so nothing carries a colour.

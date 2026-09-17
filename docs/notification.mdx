@@ -1,0 +1,104 @@
+---
+title: Notification
+description: The notification card — status disc or avatar, message, actions, dismiss and an optional auto-dismiss countdown.
+order: 90
+---
+
+# Notification
+
+A self-contained notification card, `Notification`
+(`components/base/notification/notification.tsx`). Use it inline — a
+notification list, an activity panel, a banner slot. For **transient,
+stacked** notifications use [`toast`](./toast.mdx): its default renderer is
+this same card, drawn from the same table (`notification/shared.ts`).
+
+```tsx
+import { Notification } from '@oxy.so/bloom/notification';
+
+<Notification
+  status="error"
+  title="Deploy failed"
+  timestamp="2m ago"
+  description="Build step exited with code 1."
+  actions={[
+    { label: 'View logs', onPress: openLogs },
+    { label: 'Retry', onPress: retry },
+  ]}
+  onDismiss={() => setVisible(false)}
+/>
+
+<Notification
+  avatar={{ source: user.avatar, name: user.name, presence: 'online' }}
+  title={user.name}
+  timestamp="Just now"
+  description="Can you review the Q3 report?"
+/>
+```
+
+## Anatomy
+
+| Part | Value |
+|---|---|
+| card | radius 16, 1px border/button/default, card surface (dark `neutral-800`), `shadow-dropdown`, padding 16 / right 44, gap 12 |
+| visual | 40px full-round disc, 20px Remix fill glyph — or a 40px `Avatar` with a 12px presence dot (2px card-coloured ring) |
+| header | wraps; title body-medium text/primary, timestamp body-regular text/tertiary, gap 8 × 2 |
+| description | body-regular text/secondary; content column gap 4 |
+| actions | margin-top 6, gap 8, `Button size="small"` — first `secondary`, the rest `primary` unless `variant` is set |
+| close | `CloseButton` xs (20px disc) at top 12 / right 12 |
+| countdown | 3px accent-600 bar along the bottom edge, shrinking linearly over `autoDismissDuration` |
+
+Buttons are full pills (Bloom's rule for button-like controls); everything else
+keeps the radii listed above.
+
+## Status colours
+
+| `status` | disc | glyph |
+|---|---|---|
+| `neutral` (default) | background/tertiary | text/secondary, `RiNotification3Fill` |
+| `information` | `info` 100 / dark 800 @ 50% | `info` 600 / dark 300, `RiInformationFill` |
+| `success` | `success` ramp, same stops | `RiCheckboxCircleFill` |
+| `warning` (Bloom addition) | `warning` ramp, same stops | `RiAlertFill` |
+| `error` | `error` on the red ramp, same stops | `RiErrorWarningFill` |
+
+Hues are Bloom's STATUS roles through the shared ramp recipe (`button/shared.ts`),
+never a brand pair. Presence: `online` success-500, `busy` error-500, `offline`
+neutral-400 (dark 600).
+
+## Props
+
+| Prop | Type | Notes |
+|---|---|---|
+| `title` | `ReactNode` | Required. |
+| `description?` | `ReactNode` | |
+| `timestamp?` | `ReactNode` | Muted, after the title. |
+| `status?` | `'neutral' \| 'information' \| 'success' \| 'warning' \| 'error'` | Default `neutral`. |
+| `icon?` | icon component | Replaces the status glyph. Pass the component, not an element. |
+| `avatar?` | `AvatarProps` minus `size`, plus `presence?` | Takes precedence over `icon`. |
+| `actions?` | `{ label, onPress?, variant? }[]` | |
+| `dismissible?` | `boolean` | Default `true`. |
+| `closeLabel?` | `string` | Close button NAME. Default `Dismiss notification`. |
+| `onDismiss?` | `() => void` | Fires after the exit animation, once the card has unmounted. |
+| `autoDismissDuration?` | `number` (ms) | Dismisses after this long (plus `introDelay`) and draws the countdown bar. |
+| `introDelay?` | `number` (**seconds**) | Opts into the entrance animation. |
+| `role?` | `'alert' \| 'status'` | Default `alert` for `error`, `status` otherwise. |
+| `style?`, `testID?` | | |
+
+## Motion
+
+- **Entrance** (only with `introDelay`): from opacity 0, 12px down, scale 0.97,
+  4px blur → rest over 250ms ease-out.
+- **Exit** (on dismiss): to opacity 0, 8px down, scale 0.96, 3px blur over 180ms
+  ease-out, then unmount, then `onDismiss`.
+- RN `Animated` (no worklets runtime needed on web); transforms and opacity ride
+  the native driver on native. **The blur is web-only** — native has no CSS
+  `filter`.
+- **Reduced motion** skips both: the card appears in place and dismissal is
+  immediate. The countdown bar still runs — it is a progress indicator, not
+  decoration.
+
+## Why there is no `NotificationViewport`
+
+A portal viewport that anchors a stack of notifications to a
+corner is exactly what the toast engine already owns — placement,
+stacking, swipe, pause-on-hover, single-outlet guard — and it renders this card.
+A second viewport would be a second, weaker stacking authority; use `toast`.

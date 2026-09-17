@@ -5,7 +5,7 @@ import type { Meta, StoryObj } from '@storybook/react-vite';
 import { LinkPreviewCard } from './index';
 
 const meta: Meta<typeof LinkPreviewCard> = {
-  title: 'Data Display/LinkPreviewCard',
+  title: 'Blocks/Link Preview Card',
   component: LinkPreviewCard,
 };
 

@@ -132,8 +132,9 @@ const NAMED_BY_SPREAD = ['pressable-scale/PressableScale.tsx <AnimatedPressable 
 /**
  * Elements named by their own CONTENTS, listed exactly, for the same reason.
  *
- * Each renders text inside the role — a toast action renders its label, an
- * accordion trigger its heading — so ARIA computes a name with no prop. The set
+ * Each renders text inside the role — an accordion trigger renders its heading —
+ * so ARIA computes a name with no prop. (The toast's action buttons were listed
+ * here until they became Bloom `Button`s, which carry their own contract.) The set
  * is an equality because the branch is the weak one: an element that stops
  * rendering text silently keeps passing under it otherwise, which is how
  * `ToastCloseButton` (a lone glyph, `role="button"`, no name) survived beside
@@ -141,7 +142,6 @@ const NAMED_BY_SPREAD = ['pressable-scale/PressableScale.tsx <AnimatedPressable 
  */
 const NAMED_BY_CONTENTS = [
   'accordion/Accordion.tsx <Pressable role="button">',
-  'toast/ToastContent.tsx <Pressable role="button">',
 ];
 
 /**
@@ -181,14 +181,15 @@ const RN_HOSTS = new Set([
  *
  * An EQUALITY, not an allow-list floor: a new component that starts accepting a
  * stateful role has to be added here deliberately, and adding it is a claim that
- * its own file translates the role. `item/Item.tsx` does (`role === 'option'` →
- * `aria-selected`, a `button` toggle → `aria-pressed`, `menuitem`/`listitem` →
- * neither) and `floating/shared.tsx`'s `MenuRowShell` does (`checkbox`/`radio` →
+ * its own file translates the role. `floating/shared.tsx`'s `MenuRowShell` does (`checkbox`/`radio` →
  * `aria-checked`, `menuitem` → no checked state and `accessibilityRole="button"`,
  * plus `aria-expanded` for a sub-trigger). The runtime suite pins every one of
  * those cases against the real DOM.
  */
-const DELEGATING_TAGS = ['Item', 'MenuRowShell'];
+// `Item` also translates a role it is handed (`option` → `aria-selected`, a
+// `button` toggle → `aria-pressed`), but no caller hands it one since `Combobox`
+// and the old `Command` rows were removed — add it back here with the first.
+const DELEGATING_TAGS = ['MenuRowShell'];
 
 /**
  * The same equality for the NAME rule, which covers a wider role set and so
@@ -199,7 +200,7 @@ const DELEGATING_TAGS = ['Item', 'MenuRowShell'];
  * `onPress` is not a link. `link-preview` is its one role-passing caller and it
  * always passes `onPress`.
  */
-const NAME_DELEGATING_TAGS = ['Card', 'Item', 'MenuRowShell'];
+const NAME_DELEGATING_TAGS = ['Card', 'MenuRowShell'];
 
 /**
  * `const X = Animated.createAnimatedComponent(<host>)`, collected from the
@@ -387,17 +388,23 @@ describe('the census can see', () => {
     expect(ALL.length).toBeGreaterThan(800);
   });
 
-  it('finds at least one element for every role it has a rule for', () => {
+  /**
+   * Roles present in source. `slider` and `adjustable` are ONE rule spelled twice
+   * (react-native-web maps the second to the first), so either spelling gives
+   * both a live subject — `Slider` writes `adjustable`, and no raw-DOM control
+   * writes `slider` since `LevelPicker` was removed.
+   */
+  const seenRoles = (): Set<string> => {
     const seen = new Set(ALL.map((e) => e.role).filter((r): r is string => r !== undefined));
+    if (seen.has('adjustable')) seen.add('slider');
+    if (seen.has('slider')) seen.add('adjustable');
+    return seen;
+  };
+
+  it('finds at least one element for every role it has a rule for', () => {
+    const seen = seenRoles();
     const missing = Object.keys(REQUIRED_BY_ROLE).filter((role) => !seen.has(role));
     // Every rule must have a live subject or it is guarding nothing.
-    //
-    // `slider` was the one exception for as long as it was purely the web
-    // spelling react-native-web PRODUCES from `adjustable`. It is not any more:
-    // `level-picker/LevelPicker.web.tsx` renders a RAW `<div role="slider">`,
-    // because a DOM element gets no `accessibilityRole` translation — and that
-    // is exactly the element these rules have to reach, since nothing else
-    // gives it a value or a name.
     expect(missing).toEqual([]);
   });
 
@@ -433,10 +440,9 @@ describe('the census can see', () => {
   });
 
   it('finds at least one element for every role the name rule covers', () => {
-    const seen = new Set(ALL.map((e) => e.role).filter((r): r is string => r !== undefined));
+    const seen = seenRoles();
     const missing = Object.keys(NAME_REQUIRED_ROLES).filter((role) => !seen.has(role));
-    // `slider` is present now that a raw-DOM fork writes it (see above). The two
-    // menu-item checkbox/radio spellings are ARIA's and Bloom uses the plain
+    // The two menu-item checkbox/radio spellings are ARIA's and Bloom uses the plain
     // `checkbox`/`radio` roles inside its menus, so they are covered but unused
     // — kept because a role list derived from what happens to be present today
     // is a rule that cannot fail tomorrow.

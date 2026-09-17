@@ -53,7 +53,7 @@ export const Modal = createComponent('Modal');
 export const ActivityIndicator = createComponent('ActivityIndicator');
 // Its absence is not a missing convenience — an undefined element type makes
 // the WHOLE subtree fail to render ("Element type is invalid"), so every family
-// composing one (`PromptInput`) was untestable rather than partly tested.
+// composing one was untestable rather than partly tested.
 export const KeyboardAvoidingView = createComponent('KeyboardAvoidingView');
 
 export const PanResponder = {
@@ -109,6 +109,7 @@ export const Animated = {
     _value: number;
     constructor(val: number) { this._value = val; }
     setValue(val: number) { this._value = val; }
+    stopAnimation(cb?: (value: number) => void) { cb?.(this._value); }
     interpolate(_config: Record<string, unknown>) {
       // Return a stand-in animated node; tests only assert structure, not
       // interpolated output.
@@ -132,12 +133,23 @@ export const Animated = {
     stop: () => {},
   }),
   multiply: (a: unknown, _b: unknown) => a,
+  add: (a: unknown, _b: unknown) => a,
   createAnimatedComponent: (comp: unknown) => comp,
 };
 
 const dimensionValues = {
   window: { width: 375, height: 812 },
   screen: { width: 375, height: 812 },
+};
+
+const identityEasing = (t: number) => t;
+export const Easing = {
+  linear: identityEasing,
+  ease: identityEasing,
+  bezier: (_x1: number, _y1: number, _x2: number, _y2: number) => identityEasing,
+  in: (e: (t: number) => number) => e,
+  out: (e: (t: number) => number) => e,
+  inOut: (e: (t: number) => number) => e,
 };
 
 export const Dimensions = {

@@ -4,11 +4,11 @@ import type { Meta, StoryObj } from '@storybook/react-vite';
 
 import { Badge } from './index';
 import { IconCircle } from '../icon-circle';
-import { Bell_Stroke2_Corner0_Rounded as BellIcon } from '../icons/Bell';
+import { RiNotificationLine as BellIcon } from '../icons/remix';
 import type { AccentFill, AccentTone } from '../theme/accent-colors';
 
 const meta: Meta<typeof Badge> = {
-  title: 'Data Display/Badge',
+  title: 'Base/Badge',
   component: Badge,
 };
 
@@ -37,6 +37,44 @@ export const Tones: Story = {
               content={color}
               testID={`badge-${variant}-${color}`}
             />
+          ))}
+        </View>
+      ))}
+    </View>
+  ),
+};
+
+/**
+ * Sidebar counters: `medium` is 18 tall, 12/16 semibold, 4px
+ * padding-x. A single digit keeps a circle.
+ */
+export const Counters: Story = {
+  render: () => (
+    <View style={{ gap: 12 }}>
+      {FILLS.map((variant) => (
+        <View key={variant} style={{ flexDirection: 'row', gap: 12, alignItems: 'center' }}>
+          {(['primary', 'default'] as const).map((color) =>
+            [3, 12, 128].map((count) => (
+              <Badge key={`${color}-${count}`} variant={variant} color={color} content={count} />
+            )),
+          )}
+        </View>
+      ))}
+    </View>
+  ),
+};
+
+/**
+ * A standalone `dot` is a status dot: a solid centre on the tone's tint
+ * halo, at every size (medium is 12 / 6).
+ */
+export const StatusDots: Story = {
+  render: () => (
+    <View style={{ gap: 12 }}>
+      {(['small', 'medium', 'large'] as const).map((size) => (
+        <View key={size} style={{ flexDirection: 'row', gap: 12, alignItems: 'center' }}>
+          {TONES.map((color) => (
+            <Badge key={color} dot size={size} color={color} testID={`dot-${size}-${color}`} />
           ))}
         </View>
       ))}

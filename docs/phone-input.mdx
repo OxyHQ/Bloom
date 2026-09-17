@@ -1,0 +1,96 @@
+---
+title: PhoneInput
+description: Phone number field with a country-code select.
+order: 12
+---
+
+# PhoneInput
+
+A phone number field: a [`TextField`](./text-field.mdx) whose leading addon is a country-code [`Select`](./select.mdx) showing the country's flag and dial code.
+
+```tsx
+import { PhoneInput } from '@oxy.so/bloom/phone-input';
+import { RiQuestionLine } from '@oxy.so/bloom/icons';
+
+<PhoneInput
+  label="Phone Number"
+  required
+  tooltip
+  placeholder="(123) 000-0000"
+  hint="This is a hint about this input."
+  trailingIcon={RiQuestionLine}
+/>
+```
+
+## Subpath only
+
+`PhoneInput`, `CountryCodeSelect`, `CountryFlag` and `COUNTRIES` are published at `@oxy.so/bloom/phone-input` and are **not** on the root barrel. The family carries the flag artwork for 252 countries (`flags.ts`, ~145 KB of source) and Metro does not tree-shake: on the root barrel, every app importing `Button` would bundle every flag.
+
+## Value and country
+
+`value` is the number as typed; the dial code belongs to the selected country. Both are controlled or uncontrolled:
+
+```tsx
+const [country, setCountry] = useState<Country>(findCountry('ES')!);
+const [number, setNumber] = useState('');
+
+<PhoneInput
+  label="Phone Number"
+  country={country.iso2}
+  onCountryChange={(iso2, next) => setCountry(next)}
+  value={number}
+  onChangeText={setNumber}
+/>;
+
+const e164 = `+${country.dial}${number.replace(/\D/g, '')}`;
+```
+
+`defaultCountry` (default `US`) and `defaultValue` are the uncontrolled spellings. Formatting and validation are the caller's: `PhoneInput` does not reformat what is typed. `isInvalid` and `hint` paint the error state as on any `TextField`; `disabled` disables the select too.
+
+## Look
+
+Dimensions:
+
+| part | value |
+| --- | --- |
+| field | `TextField` with a leading addon: 36 tall, `pl-1 pr-2` (`small`: 32, `pl-1 pr-1.5`) |
+| trigger | the select trigger's own chrome (card fill, `neutral-200` hairline, xs shadow, 6px gap) at `rounded-lg px-1.5 py-1` — 8px corner, 30px tall. A control INSIDE an input, so not a pill. |
+| trigger value | 18 × 12 flag (2px corner), 5px, `+dial` in `body-medium` `text-secondary`, 16px chevron |
+| list (web) | 220px wide, `p-2`, 16px corner, 4px below the trigger, scrolls past 240px, opens scrolled to the chosen country |
+| row | 36px, `p-2`, 8px gap: flag, name (`body-medium`, `text-primary`, truncates), `+dial` in `text-tertiary`. No tick — the chosen row takes the highlight wash. |
+
+The input sits 2px after the trigger. Hovering anywhere in the field, the select included, shows the hover ring; the field's focus ring follows focus within it (see [leading addon](./text-field.mdx#leading-addon-phone-input)). On native the list is `Select`'s bottom sheet.
+
+## Parts
+
+```tsx
+import { CountryCodeSelect, CountryFlag, COUNTRIES, findCountry } from '@oxy.so/bloom/phone-input';
+import { TextField, TextFieldInput } from '@oxy.so/bloom/text-field';
+
+<TextField leadingAddon={<CountryCodeSelect value={iso2} onValueChange={setIso2} />}>
+  <TextFieldInput label="Phone" value={number} onChangeText={setNumber} />
+</TextField>
+
+<CountryFlag iso2="JP" size={24} accessibilityLabel="Japan" />
+```
+
+- `CountryCodeSelect` — `value` / `defaultValue` / `onValueChange(iso2, country)`, `countries` to narrow the list, `label` (default `Country code`), `disabled`.
+- `CountryFlag` — `iso2`, `size` (width; height is ⅔ of it, default 18). Drawn with react-native-svg on both platforms. Unknown codes render nothing.
+- `COUNTRIES` — `{ iso2, name, dial }[]`, sorted by name; `findCountry(iso2)` looks one up case-insensitively.
+
+## Accessibility
+
+- The select trigger's name is `Country code` (`countrySelectLabel` to change it); options are `role="radio"` named by the country.
+- The input is named by `label`, else `accessibilityLabel`, else `Phone number`. It sets `keyboardType="phone-pad"`, `autoComplete="tel"` and `textContentType="telephoneNumber"`.
+- Flags are decorative (`aria-hidden`) next to the name or dial code. A standalone `CountryFlag` should get an `accessibilityLabel`, which makes it `role="img"`.
+
+## Data
+
+`countries.ts` and `flags.ts` are GENERATED — never edit them by hand. `scripts/generate-country-flags.mjs` packs `country-flag-icons` (3x2 SVGs) and `countries-list` at pinned versions into a temp directory and writes plain TypeScript, so neither package is a dependency. The filter keeps a country with a flag and a dial code, `dial` = its first calling code, sorted by name. Both packages are MIT; their licences are in `src/phone-input/LICENSES.md`.
+
+```bash
+node scripts/generate-country-flags.mjs
+```
+
+- Names follow `countries-list` 3.4.1 (`Czechia`, `Cabo Verde`, `Myanmar`).
+- A flag is stored as shape tuples (`flag-art.ts`), with `<g>` presentation attributes pushed down onto the shapes, so rendering parses no XML. `UM` and `US` share artwork upstream.

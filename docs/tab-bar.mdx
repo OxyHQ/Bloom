@@ -44,9 +44,9 @@ import * as Icons from '@oxy.so/bloom/icons';
 import { TabBar, TabBarButton, TabBarMinimizeProvider } from '@oxy.so/bloom/tab-bar';
 
 const TABS = [
-  { name: 'home', label: 'Home', icon: <Icons.Home_Stroke2_Corner0_Rounded /> },
-  { name: 'search', label: 'Search', icon: <Icons.MagnifyingGlass_Stroke2_Corner0_Rounded /> },
-  { name: 'you', label: 'You', icon: <Icons.UserCircle_Stroke2_Corner0_Rounded /> },
+  { name: 'home', label: 'Home', icon: <Icons.RiHomeLine /> },
+  { name: 'search', label: 'Search', icon: <Icons.RiSearchLine /> },
+  { name: 'you', label: 'You', icon: <Icons.RiAccountCircleLine /> },
 ];
 
 export function Shell() {
@@ -91,9 +91,9 @@ import { Tabs, TabList, TabSlot, TabTrigger } from 'expo-router/ui';
 import { router } from 'expo-router';
 
 const TABS = [
-  { name: 'home', label: 'Home', href: '/', icon: <Icons.Home_Stroke2_Corner0_Rounded /> },
-  { name: 'search', label: 'Search', href: '/search', icon: <Icons.MagnifyingGlass_Stroke2_Corner0_Rounded /> },
-  { name: 'you', label: 'You', href: '/you', icon: <Icons.UserCircle_Stroke2_Corner0_Rounded /> },
+  { name: 'home', label: 'Home', href: '/', icon: <Icons.RiHomeLine /> },
+  { name: 'search', label: 'Search', href: '/search', icon: <Icons.RiSearchLine /> },
+  { name: 'you', label: 'You', href: '/you', icon: <Icons.RiAccountCircleLine /> },
 ];
 
 export default function TabLayout() {
@@ -243,13 +243,13 @@ const TABS = [
   {
     name: 'home',
     label: 'Home',
-    icon: <Icons.Home_Stroke2_Corner0_Rounded />,
+    icon: <Icons.RiHomeLine />,
     sfSymbol: 'house.fill',
   },
   {
     name: 'you',
     label: 'You',
-    icon: <Icons.UserCircle_Stroke2_Corner0_Rounded />,
+    icon: <Icons.RiAccountCircleLine />,
     sfSymbol: 'person.crop.circle',
   },
 ];

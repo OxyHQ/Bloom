@@ -1,0 +1,57 @@
+---
+title: Funnel chart card
+description: A horizontal flow funnel — S-curve or trapezoid bands with layered edges, percentage pills and a tile per stage — in react-native-svg.
+order: 48
+---
+
+# Funnel chart card
+
+recharts' `FunnelChart` only stacks vertical trapezoids, so `FunnelChartCard` hand-rolls this SVG instead, drawing the same paths with react-native-svg (`funnelBandPath`, `funnelGeometry` in `src/chart-cards/FunnelChartCard.tsx`, pinned against the expected output in the test).
+
+```tsx
+import { FunnelChartCard } from '@oxy.so/bloom/chart-cards';
+
+<FunnelChartCard
+  title="Acquisition funnel"
+  range="Last 30 days"
+  delta={0.034}
+  stages={[
+    { label: 'Link opened', value: 842 },
+    { label: 'Started', value: 463 },
+    { label: 'Completed', value: 301 },
+    { label: 'Converted', value: 152 },
+  ]}
+/>
+```
+
+## Props
+
+| Prop | Default | |
+|---|---|---|
+| `stages` | — | `{ label, value, color?, activeColor? }[]`, left to right |
+| `shape` | `"curved"` | `curved` S-curve with edge layers, `sharp` trapezoid over a backing band |
+| `mono` | `false` | bands in the mono ink, no tile swatches |
+| `title` | `"Sign-up funnel"` | |
+| `headline` | first stage's value | |
+| `delta`, `range`, `ranges`, `defaultRange`, `onRangeChange`, `format` | | as every chart card |
+| `activeIndex` / `onActiveIndexChange` | tracked | the hovered stage |
+| `accessibilityLabel` | a summary of every stage | names the plot (`role="img"`) |
+
+## Geometry
+
+The chart card shell (329 tall); the plot fills what the header and tiles leave.
+
+| | |
+|---|---|
+| columns | one per stage, 3px apart; each band is centred on the plot's midline, starts at its stage's height and tapers to the NEXT stage's height at its right edge (the last stays flat) |
+| heights | value ÷ first stage × plot height (less 12px top and bottom when `curved`), at least 2px |
+| curved | flat for 42% of the column, then a cubic with both control points halfway along the rest; two copies behind every band, 12px (10% fill) and 6px (22%) taller on each side |
+| sharp | a straight trapezoid over a 36px band of its colour at 14% |
+| pills | share of the first stage, centred on the column: 20 tall, `label length × 7.2 + 16` wide, fully round, the card colour, 12px medium tabular text-primary; dropped when wider than the column + 3px |
+| tiles | one per stage in a row from `sm` (640) up, two per row below, never stretched; the stage-bars tile recipe |
+
+## Interaction
+
+Hovering a band, a sharp backing band or a pill swaps the header to that stage, darkens its band (400 → 500) and fades every other column — layers, bands, pills — to 30% and every other tile to 50%, over 200ms. Empty space between shapes keeps the last stage, since only entering a new shape updates it; leaving the plot clears it. On native a finger presses and scrubs across the columns (same hit test), releasing clears.
+
+The plot's hit surface is one `View` with its own geometric hit test (band edges solved on the curve), because react-native-svg shapes take no pointer-enter events on native. SVG fill / opacity easing on web comes from an adopted stylesheet keyed on a `data-*` hook (react-native-svg shapes accept no `style`); native snaps, and reduced motion drops it.

@@ -1,36 +1,53 @@
 ---
 title: Code
-description: Inline monospace and code blocks, as real elements rather than styled text.
+description: Inline monospace, and code cards with a header, numbered lines and JavaScript/TypeScript highlighting — as real elements rather than styled text.
 order: 53
 ---
 
 # Code
 
 `Code` is **inline** — an identifier, a flag, a token inside a sentence.
-`Pre` is a **block** — a command, a snippet, a config file.
+`CodeBlock` is a **code card** — a file name, diff counts, a copy button and numbered, highlighted lines.
+`Pre` is the card **without a header** — a command, a snippet, a config file.
+`CodeLines` is the **lines alone**, for a surface that brings its own frame (a code panel).
 
 ```tsx
-import { Code, Pre } from '@oxy.so/bloom/code';
+import { Code, CodeBlock, CodeLines, Pre } from '@oxy.so/bloom/code';
 
 <Text>
   Pass <Code>variant="outlined"</Code> to draw the border.
 </Text>
 
+<CodeBlock code={source} language="tsx" filename="theme-toggle.tsx" additions={156} deletions={23} />
+
 <Pre>{`bun add @oxy.so/bloom
 bun run build`}</Pre>
+
+<CodeLines code={source} language="tsx" size="md" wrap />
 ```
+
+From the root barrel the family is the `Code` namespace: `Code.Code`, `Code.CodeBlock`, `Code.Pre`, `Code.CodeLines`, `Code.tokenizeCode`.
 
 ## They are elements, not fonts
 
-On web `Code` renders a real `<code>`. That matters for more than styling:
-find-in-page, copy behaviour, and assistive technology all treat it as code
-rather than as decoration. On native it is a `Text` in the monospace family.
+On web `Code` renders a real `<code>`, and the lines of `CodeBlock`, `Pre` and `CodeLines` are a real `<pre><code>`. That matters for more than styling: find-in-page, copy behaviour, and assistive technology all treat it as code rather than as decoration. On native they are `Text` in JetBrains Mono (`fontFamilies.mono`; `var(--bloom-font-mono)` on web).
+
+JetBrains Mono's contextual ligatures are switched off in the lines (`font-variant-ligatures: none`) — `===` and `=>` read character by character, as code is copied.
+
+## Anatomy
+
+- **Card** (`CodeBlock`, `Pre`) — radius 16, a 1px border (neutral-200 / dark 800), the page surface (card / dark neutral-925), shadow-xs, clipped.
+- **Header** (`CodeBlock` only, left out when empty) — 36 tall, px 10, gap 12, a 1px rule under it. The language chip (14 tall, radius 6, a purple-100 border on purple-50, px 6, JetBrains Mono 10/1 medium purple-500; dark purple-950 @50% / 800 / 400) and the file name (JetBrains Mono 12/20, secondary); on the right `+156 -23` (JetBrains Mono 11/1, success-700 / negative-600) and a 24px copy button (radius 6, hover fill) whose 14px glyph becomes a success check for 1.6s. `onCopy` replaces the clipboard (the default on web; native shows the button only with `onCopy`).
+- **Lines** (`CodeLines`) — each a row: the number (right-aligned, the punctuation tone, never selected) and the code. `sm` is 11/18 with 12-wide numbers 12 from the code (the card, px 12 / py 10); `md` is 13/23 with 20-wide numbers 13 from the code (a panel). `lineNumbers` defaults on for `CodeBlock` / `CodeLines`, off for `Pre`.
 
 ## `Pre` keeps its whitespace and scrolls
 
 A block preserves line breaks and indentation and scrolls horizontally rather
 than wrapping. Wrapping is the wrong default for a command: a wrapped command
 is a command someone will copy wrong, and the break is invisible once pasted.
+`CodeBlock` and `CodeLines` scroll the same way unless you pass `wrap` — right
+for a narrow read-only panel, where a long line soft-wraps under itself and its
+number stays on the first row.
 
 Write the content as a template literal so the source's own indentation does
 not leak into the block.
@@ -42,9 +59,33 @@ a file path, an env var. It is not a way to make a word stand out — monospace
 in the middle of a sentence tells the reader "this is exact", and using it for
 emphasis makes the real literals unfindable.
 
-## No syntax highlighting
+## Highlighting covers JavaScript and TypeScript only
 
-`Pre` renders text. Highlighting means shipping a grammar for every language a
-consumer might use, and getting it wrong is worse than not having it —
-mis-tokenised code reads as broken code. If a surface genuinely needs
-highlighting, it belongs to that surface.
+`language` accepts `js`, `jsx`, `ts`, `tsx`, `javascript` and `typescript`
+(any case) and colours them with a small built-in tokenizer — keywords and
+operators lime, class names and JSX tags success-500, constants and numbers
+accent-500, strings and comments neutral-500, punctuation and line numbers in
+the tertiary tone, everything else secondary. `highlight` names identifiers to
+paint as class names wherever they appear.
+
+**Every other language renders plain.** Highlighting means shipping a grammar
+for every language a consumer might use, and getting it wrong is worse than not
+having it — mis-tokenised code reads as broken code. The tokenizer is not a
+parser either: it colours everyday JS/TS/JSX the way Prism's `tsx` grammar does,
+and an exotic construct (a regex literal, a generic arrow in a `.tsx` file) may
+paint as plain text. If a surface needs a real grammar, it belongs to that
+surface.
+
+`tokenizeCode(source, language, highlight)` is exported for surfaces that lay
+the tokens out themselves; it returns one array of `{ kind, text }` per line.
+
+## Props
+
+| Component | Prop | Default | |
+| --- | --- | --- | --- |
+| `CodeBlock` | `code`, `language`, `languageLabel`, `filename`, `additions`, `deletions`, `highlight` | — | Content and header. The chip is `languageLabel` or the upper-cased `language`. |
+| | `lineNumbers` / `wrap` / `copyable` | `true` / `false` / `true` | |
+| | `onCopy`, `headerAccessory`, `labels` (`copy`, `copied`) | — | |
+| `CodeLines` | `code`, `language`, `highlight`, `lineNumbers` (`true`), `wrap` (`false`), `size` (`'sm'`) | | `style` is the scroll box — padding there scrolls with the code. |
+| `Pre` | `children`, `language`, `lineNumbers` (`false`), `containerStyle`, `style` | | A string child is laid out as lines; any other child renders as monospace text in the same card. |
+| `Code` | Text props | | |

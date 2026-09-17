@@ -1,0 +1,47 @@
+---
+title: ThemeToggle
+description: Light / dark control that drives BloomThemeProvider's mode — a sidebar switch row, a collapsed icon button, or sun/moon segments.
+order: 80
+---
+
+# ThemeToggle
+
+The theme toggle. It reads `useTheme().isDark` and writes `useBloomTheme().setMode('light' | 'dark')` — it keeps no state or storage of its own, so whatever `BloomThemeProvider` is configured to persist is what persists.
+
+```tsx
+import { ThemeToggle } from '@oxy.so/bloom/theme-toggle';
+
+<ThemeToggle />                                   // "Dark mode" row with a 28×16 pill switch
+<ThemeToggle collapsed />                         // 36px icon button for a collapsed rail
+<ThemeToggle appearance="sidebar-segmented" />    // sun / moon segments on the sidebar track
+<ThemeToggle appearance="segmented" />            // the same on the secondary surface
+<ThemeToggle appearance="glass-segmented" />      // no track; black / white literals for a glass host
+```
+
+## Geometry
+
+| appearance | geometry |
+| --- | --- |
+| `sidebar` | row p8, radius 10, moon 20 + body-medium label, switch 28×16 (thumb 12, travel 12, 5px chip) |
+| `collapsed` | 36×36, radius 10, sun (dark) / moon (light) 20 |
+| segmented | track p4 gap4 full radius; segments 32 circular, icon 16; thumb slides 36px in 200ms |
+
+On the segmented appearances `style` lands on the **track**, so a host can repaint it (the sidebar's flat mobile variant does).
+
+## Controlled providers
+
+`setMode` goes through `BloomThemeProvider`. If the provider is CONTROLLED (`mode={…}`), the toggle only reports the choice through `onModeChange`; the host has to apply it. Storybook's decorator is controlled, which is why the toolbar, not the toggle, flips the stories.
+
+## Web reveal
+
+On web the change plays a circular reveal through the View Transition API, growing from the pointer (the control's centre for keyboard activation). Two hazards shaped it:
+
+- The `::view-transition-new(root)` keyframes are adopted with `adoptStyleSheet`, not a `<style>` element — CSP `style-src 'self'` silently drops a style element's text.
+- Bloom's mode commits through React state and applies its CSS variables in a layout effect, so the transition's update callback waits two macrotasks for that commit. This module is shared with native and cannot import `react-dom`.
+
+Browsers without the API, reduced motion, and native all change immediately.
+
+## Accessibility
+
+- Row: `role="switch"`, named "Dark mode", `aria-checked`.
+- Collapsed and segments: `role="button"` with `aria-pressed` AND `accessibilityState.selected` (React Native has no `aria-pressed`); named "Use light mode" / "Use dark mode". Segments sit in a `role="group"` named "Theme".

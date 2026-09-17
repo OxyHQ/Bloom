@@ -23,9 +23,9 @@ import Animated, {
 } from 'react-native-reanimated';
 
 import {
-  ChevronLeft_Stroke2_Corner0_Rounded,
-  DotGrid3x1_Stroke2_Corner0_Rounded,
-  TimesLarge_Stroke2_Corner0_Rounded,
+  RiArrowLeftSLine,
+  RiMoreFill,
+  RiCloseLine,
 } from '../icons';
 import { FrostedIconButton } from '../frosted-icon-button';
 import { Button } from '../button';
@@ -322,7 +322,7 @@ function HeaderOverflowMenu({
         <FrostedIconButton
           size="sm"
           icon={
-            <DotGrid3x1_Stroke2_Corner0_Rounded
+            <RiMoreFill
               size="md"
               fill={onImage ? ON_IMAGE_TEXT : undefined}
             />
@@ -333,7 +333,7 @@ function HeaderOverflowMenu({
         label="More actions"
         align="end"
         // A row list, not a prose card: it opts out of the popover's `w-72 p-4`
-        // for the same reason `Combobox` does, and shadcn would build this
+        // as any row-list popover does, and shadcn would build this
         // surface out of a `DropdownMenu` rather than a `Popover` at all. A
         // CLASS, because that is what the popover's own chrome is now.
         className="w-auto p-space-4">
@@ -507,7 +507,7 @@ export const DialogNavHeader = memo(function DialogNavHeader({
     <FrostedIconButton
       onPress={onDismiss}
       accessibilityLabel="Close"
-      icon={<TimesLarge_Stroke2_Corner0_Rounded size="md" fill={iconFill} />}
+      icon={<RiCloseLine size="md" fill={iconFill} />}
     />
   );
 
@@ -548,7 +548,7 @@ export const DialogNavHeader = memo(function DialogNavHeader({
       <FrostedIconButton
         onPress={config.onBack}
         accessibilityLabel="Go back"
-        icon={<ChevronLeft_Stroke2_Corner0_Rounded size="md" fill={iconFill} />}
+        icon={<RiArrowLeftSLine size="md" fill={iconFill} />}
       />
     ) : hasRichTrailing && config.showClose !== false ? (
       closeButton
@@ -675,6 +675,8 @@ export const DialogLargeTitle = memo(function DialogLargeTitle({
               label={config.title ?? 'View'}
               type="tabs"
               size="small"
+              // The segmented control sizes to its segments; the header tabs span the row.
+              style={{ alignSelf: 'stretch' }}
               value={config.segments.value}
               onChange={config.segments.onChange}
             >

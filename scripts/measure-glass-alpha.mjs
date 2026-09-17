@@ -102,7 +102,7 @@ const browser = await puppeteer.launch({
 const page = await browser.newPage();
 page.on('pageerror', (e) => console.log('PAGEERROR', e.message));
 
-await page.goto(`${BASE}/iframe.html?id=components-button--glass&viewMode=story`, {
+await page.goto(`${BASE}/iframe.html?id=base-button--glass&viewMode=story`, {
   waitUntil: 'networkidle0',
 });
 await page.waitForSelector('button.bloom-btn--glass');

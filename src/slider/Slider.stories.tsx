@@ -2,16 +2,45 @@ import React, { useState } from 'react';
 import { View } from 'react-native';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
-import { Slider } from './Slider';
+import { RangeSlider, Slider } from './Slider';
 import { Text } from '../typography';
+import { useTheme } from '../theme/use-theme';
 
 const meta: Meta = {
-  title: 'Forms/Slider',
+  title: 'Base/Slider',
 };
 
 export default meta;
 
 type Story = StoryObj;
+
+/**
+ * Every state side by side: labelled with the value bubble, bare, disabled.
+ * Hover the track (rail darkens) or the thumb (border darkens); drag to see
+ * the accent border and lifted bubble; Tab onto a thumb for the focus ring.
+ */
+export const Matrix: Story = {
+  render: function SliderMatrix() {
+    const theme = useTheme();
+    const [a, setA] = useState(40);
+    const [b, setB] = useState(60);
+    const [r, setR] = useState<[number, number]>([20, 70]);
+    return (
+      <View style={{ width: 352, gap: 16, padding: 16, backgroundColor: theme.colors.background }}>
+        <Slider label="Volume" value={a} onValueChange={setA} />
+        <Slider value={b} onValueChange={setB} showTooltip={false} accessibilityLabel="Brightness" />
+        <Slider value={30} onValueChange={() => {}} disabled showTooltip={false} accessibilityLabel="Locked" />
+        <Slider
+          value={a}
+          onValueChange={setA}
+          formatValue={(v) => `${v}%`}
+          accessibilityLabel="Opacity"
+        />
+        <RangeSlider value={r} onValueChange={setR} accessibilityLabel="Price" />
+      </View>
+    );
+  },
+};
 
 export const Basic: Story = {
   render: () => {
@@ -56,4 +85,24 @@ export const Disabled: Story = {
       <Slider value={60} onValueChange={() => {}} disabled accessibilityLabel="Volume, unavailable" />
     </View>
   ),
+};
+
+/** A range slider: two thumbs that cannot pass each other, one bubble each. */
+export const Range: Story = {
+  render: function RangeStory() {
+    const [value, setValue] = useState<[number, number]>([200, 800]);
+    return (
+      <View style={{ width: 320 }}>
+        <RangeSlider
+          label="Price"
+          value={value}
+          onValueChange={setValue}
+          min={0}
+          max={1000}
+          step={10}
+          formatValue={(v) => `$${v}`}
+        />
+      </View>
+    );
+  },
 };

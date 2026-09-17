@@ -42,6 +42,19 @@ export interface AvatarRingConfig {
   gradientDirection?: AvatarRingGradientDirection;
 }
 
+/**
+ * Size rungs: `xs` 20 (breadcrumb marks), `sm` 24 (table rows), `md` 32
+ * (sidebar / team card), `lg` 36 (people cards).
+ */
+export type AvatarSizeToken = 'xs' | 'sm' | 'md' | 'lg';
+
+/**
+ * Initials tints. `neutral` is the quiet grey disc; the three hues are
+ * painted from the theme — `blue` from `primary`, `lime` from `success`,
+ * `pink` from `negative` — through the ramp recipe.
+ */
+export type AvatarColor = 'neutral' | 'blue' | 'lime' | 'pink';
+
 export interface AvatarProps {
   /**
    * Flexible image source — accepts a URL string, an ImageSourcePropType
@@ -62,8 +75,26 @@ export interface AvatarProps {
   variant?: string;
   /** Fallback image source when source/uri is missing or errors (defaults to colored circle) */
   fallbackSource?: ImageSourcePropType;
-  /** Avatar size in pixels (defaults to 40) */
-  size?: number;
+  /**
+   * Avatar size: a diameter in pixels, or one of the size rungs
+   * (`'xs'` 20, `'sm'` 24, `'md'` 32, `'lg'` 36). Defaults to 40.
+   */
+  size?: number | AvatarSizeToken;
+  /**
+   * Tint of the initials disc. Defaults to a tint derived
+   * deterministically from `name`, or `'neutral'` for explicit `initials`.
+   */
+  color?: AvatarColor;
+  /**
+   * Explicit initials for the fallback disc, e.g. `"M"` or `"AL"`. Wins
+   * over the letter derived from `name`.
+   */
+  initials?: string;
+  /**
+   * Accessible description of the photo. When omitted the
+   * avatar is decorative unless `onPress` makes it a control named by `name`.
+   */
+  alt?: string;
   /** Whether to show a verified badge */
   verified?: boolean;
   /** Custom verified badge icon (rendered at bottom-right) */
@@ -80,14 +111,14 @@ export interface AvatarProps {
   style?: StyleProp<ViewStyle>;
   /** Image style (circle shape only) */
   imageStyle?: StyleProp<ImageStyle>;
-  /** Custom background color for the placeholder circle (overrides theme default) */
+  /** Custom background color for the placeholder circle (overrides the tint) */
   placeholderColor?: string;
   /** Custom icon rendered inside the placeholder circle when no image is available */
   placeholderIcon?: ReactNode;
   /**
-   * Contact/user name used to derive a deterministic initial and background color.
+   * Contact/user name used to derive a deterministic initial and tint.
    * When no image resolves (missing `source`/`uri` or image error), the Avatar renders
-   * a colored circle with the first letter of the name in white.
+   * a tinted initials disc with the first letter of the name.
    * Consumers can still override via `placeholderColor` / `placeholderIcon`.
    */
   name?: string;

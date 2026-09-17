@@ -33,7 +33,7 @@ import type { TabBarItem, TabBarProps } from './types';
  * moving while nothing errors.
  */
 const meta: Meta<typeof TabBar> = {
-  title: 'Components/TabBar',
+  title: 'Base/Tab Bar',
   component: TabBar,
   // The bar is a screen-level element: its highlight geometry comes from
   // `useWindowDimensions()`, so the demo has to be exactly window-wide or the
@@ -48,10 +48,10 @@ export default meta;
 type Story = StoryObj<typeof TabBar>;
 
 const ITEMS: TabBarItem[] = [
-  { name: 'home', label: 'Home', icon: <Icons.Home_Stroke2_Corner0_Rounded /> },
-  { name: 'search', label: 'Search', icon: <Icons.MagnifyingGlass_Stroke2_Corner0_Rounded /> },
-  { name: 'inbox', label: 'Inbox', icon: <Icons.Message_Stroke2_Corner0_Rounded /> },
-  { name: 'profile', label: 'Profile', icon: <Icons.Person_Stroke2_Corner0_Rounded /> },
+  { name: 'home', label: 'Home', icon: <Icons.RiHomeLine /> },
+  { name: 'search', label: 'Search', icon: <Icons.RiSearchLine /> },
+  { name: 'inbox', label: 'Inbox', icon: <Icons.RiChat3Line /> },
+  { name: 'profile', label: 'Profile', icon: <Icons.RiUserLine /> },
 ];
 
 /** Padding the preview decorator puts around every story (`.storybook/preview.tsx`). */

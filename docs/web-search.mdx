@@ -1,0 +1,80 @@
+---
+title: WebSearch
+description: A streaming research trail — the queries an agent ran and the pages it opened, with the sources each step surfaced behind a stack of real site marks.
+order: 67
+---
+
+# WebSearch
+
+Where [TaskList](./task-list.mdx) logs the work an agent *did*, this logs where it *went*: each step is a query it ran or a page it opened, and a step can carry the sources it surfaced, drawn as a stack of real site marks that fly out into a list of links. Reveal, guide and shimmer come from [AgentLog](./agent-log.mdx), so the two logs move as one.
+
+```tsx
+import { WebSearch } from '@oxy.so/bloom/web-search';
+import { RiGlobalLine, RiSearchLine } from '@oxy.so/bloom/icons';
+
+<WebSearch
+  steps={[
+    { label: 'Researching budget keyboards', icon: RiSearchLine, heading: true },
+    {
+      label: 'Searched the web for',
+      query: 'best budget mechanical keyboard',
+      icon: RiGlobalLine,
+      meta: '10 results',
+      sources: [
+        { title: 'The best budget mechanical keyboards', domain: 'www.pcgamer.com', href: 'https://www.pcgamer.com' },
+        { title: "What's the best keyboard under $100?", domain: 'www.reddit.com', brand: 'reddit' },
+      ],
+    },
+    { label: 'Searched X for', brand: 'x', query: 'aula f75 review', meta: '12 posts' },
+  ]}
+/>
+```
+
+The component is UI only — it streams nothing itself. Either let its ticker pace the demo-style reveal (`stepInterval`, `startDelay`, per-step `dwell`), or drive `revealed` from your agent's real events.
+
+## Steps
+
+| Field | |
+| --- | --- |
+| `label` | The line. Plain text — it is also the shimmer's accessible label. |
+| `query` | Set in mono after the label, as the agent sent it. |
+| `brand` / `icon` | Leading glyph: a real site mark (any `SocialButton` provider), or any Bloom icon component (drawn 16px, icon-secondary). |
+| `meta` | Right-aligned tabular tally (`7 posts`). |
+| `dwell` | How long this step holds before the next arrives. |
+| `sources` | Branches into a **Sources** row beneath the step. |
+| `heading` | First step only: the root the trail hangs from — no branch of its own, everything else nests under its glyph. Carries no sources. |
+
+A source is `{ title, domain, href?, brand?, icon? }`. `icon` (a ready-made 12px node) wins over `brand`; with neither, the mark is a quiet dot. Near-black brands (`x`, `github`, `apple`, `notion`) paint in the text colour so they survive dark mode; Google's mark takes the theme accent, as `SocialButton` does.
+
+## Units and `revealed`
+
+Every row is a **unit**: a step is one, and a non-heading step with sources is **two** (the sources land 900ms after the step that found them). Uncontrolled, the ticker runs one extra tick past the last unit, so the final step shimmers for its own dwell before `onComplete` fires; controlled, it doesn't — you know when the agent is done.
+
+While running, the newest step shimmers and a **Working** indicator (`working`, or `false`) trails the log: level with the heading when there is one, on the glyphs' edge when there isn't — never on the guide, since it is not a result.
+
+## Sources
+
+Collapsed, the row shows up to six marks overlapping by 6px, then `+N`. Pressing it opens the links bottom-up, one per 100ms (the first after 100ms), and each mark **flies** from the stack to its row on a 420/36 spring while the stack's width follows 70ms behind; titles fade in 50ms after their mark leaves. Closing walks back down at the same cadence. A mark past the sixth has nowhere to fly from and simply appears. Links with `href` are real `<a target="_blank">` on web and `Linking.openURL` on native; the domain column hides below 640px wide.
+
+## Geometry
+
+| Part | Value |
+| --- | --- |
+| Step row | py 4, content inset 14 (2 tighter than the log's 16 — a glyph's ink starts inside its box) |
+| Glyph | 16px slot, 2px down; brand marks drawn 13px inside it |
+| Label / query / meta | `body-regular` text-secondary / `caption-1-regular` mono text-tertiary, 6px after / `body-regular` text-tertiary, 1px down |
+| Nested sources | bridge 5 tall, trunk 7 in (heading: 6 / 7) |
+| Mark | 20px disc, 1px border-button ring on background-primary, 12px glyph or 8px dot |
+| Link row | radius 6, px 4 py 4, gap 8, background-secondary on hover (150ms) |
+| Chevron | 16px, 4px after the stack, icon-quaternary → icon-secondary on hover, 300ms turn |
+
+## Design notes
+
+- **The `+N` count is part of the stack's width**, so the chevron sits after it rather than overprinting it.
+- **The flight is measured, not projected.** Motion's shared `layoutId` has no React Native equivalent: the departing mark is measured just before it moves, the arriving one measures itself on mount and springs across the difference (DOM rects on web, `measureLayout` on native). On native an arriving mark stays hidden until its measurement answers (at most 48ms).
+- **Hidden links are out of the tab order** (`tabIndex -1` while collapsed).
+- **Native**: the blur/soft-edge reveal and the shimmer are web-only (see AgentLog); the query's 6px gap is a space, since nested text takes no margin; there is no hover.
+
+## Accessibility
+
+The trail is a `list` with `aria-live="polite"`, rows are `listitem`s. The Sources toggle is a `button` named by its label (`labels.sources`) with `aria-expanded` + `accessibilityState.expanded`, and a keyboard-only focus ring. Every mark is `aria-hidden`; a link is named `title, domain`.

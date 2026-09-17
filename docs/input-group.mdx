@@ -9,6 +9,11 @@ order: 34
 An input with prefixes, suffixes or buttons attached, drawn as **one** bordered
 box so the whole thing reads as a single control.
 
+The box paints exactly what [`TextField`](/docs/bloom/main/text-field) paints —
+a filled input shell: a 10px radius, the neutral fill, a 2px inset ring
+on hover and focus, the red tint when invalid and the dimmed fill when disabled
+— so a group sits flush beside a plain field.
+
 ```tsx
 import { InputGroup, InputGroupAddon } from '@oxy.so/bloom/input-group';
 
@@ -29,11 +34,25 @@ import { InputGroup, InputGroupAddon } from '@oxy.so/bloom/input-group';
 
 | prop        | decides                                                       |
 | ----------- | -------------------------------------------------------------- |
-| `size`      | `sm` · `md` · `lg` — applied to the group, so parts agree       |
-| `isInvalid` | the error border on the whole box                              |
-| `disabled`  | dims and disables the group                                    |
+| `size`      | `sm` 32 · `md` 36 (default) · `lg` 44 — plus a larger rung |
+| `isInvalid` | the error tint on the whole box (and no hover / focus ring)     |
+| `disabled`  | paints the disabled fill and marks the group `aria-disabled`    |
 | `divider`   | per addon, a rule between it and the input                     |
 | `noPadding` | per addon, for an addon that supplies its own (a button)        |
+
+## One shell, not a field inside a field
+
+A `TextFieldInput` (or a `Search`, or any `TextField`) placed in a group renders
+**bare**: it draws no fill or ring of its own, takes no side padding, stretches
+to fill the middle and inherits the group's `size`, `isInvalid` and `disabled`.
+Before this, the field painted its own shell inside the group's and sized
+itself to the group's full width, pushing a trailing addon out of the clipped
+box.
+
+Spacing: the shell's side padding (8 at `md`, 6 at `sm`), a leading
+addon 2px before the control, a trailing addon 8px after it, and a `noPadding`
+addon reaching 4px from the shell's edge. A plain-string addon is `body-regular`
+in `text-secondary`.
 
 ## Why the state lives on the group
 

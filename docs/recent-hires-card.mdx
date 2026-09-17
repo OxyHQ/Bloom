@@ -1,0 +1,57 @@
+---
+title: RecentHiresCard
+description: The dashboard's "Recent hires" card — a headline count, a team switcher, four people in a 2 × 2 grid with role chips, and Previous / Next.
+order: 84
+---
+
+# RecentHiresCard
+
+Used by the Home Dashboard and HR templates. The people are props; the card has room for four.
+
+```tsx
+import { RecentHiresCard } from '@oxy.so/bloom/recent-hires-card';
+
+<RecentHiresCard
+  count={56}
+  teamLabel="Design team"
+  onTeamPress={openTeamMenu}
+  hires={[
+    { name: 'Livia Saris', joined: 'Joined today', role: 'Backend Engineer', avatar: 'https://…/livia.webp' },
+    { name: 'Zaire Torff', joined: '2 weeks ago', role: 'Account Executive', avatarColor: 'blue' },
+    …
+  ]}
+  onPreviousPress={prev}
+  onNextPress={next}
+/>
+```
+
+## Geometry
+
+| part | spec |
+|---|---|
+| card | 329 tall (`height`, or `'auto'` for content height), radius 16, padding 8, `background-secondary` |
+| header | padding 8 8 0; label `body-medium` text-secondary, 2, count `title-1-medium`; team switcher `body-medium` + 16px chevron (text-secondary), gap 6, px 2 |
+| grid | 11 under the header, 2 × 2, gap 8; the two rows share the height left over |
+| person | radius 10, padding 10, `background-inner`, `shadow-card`, space-between: `Avatar` lg (36) + name `body-medium` / joined `body-2-medium` text-secondary (both truncate), gap 8; then the role `Chip` (small, full width, centred, full pill per Bloom's radius rule) |
+| pager | 8 under the grid: two small secondary `Button`s, gap 8, half the width each, arrow-left leading / arrow-right trailing |
+
+| token | light | dark |
+|---|---|---|
+| `background-secondary` | neutral-100 | neutral-900 |
+| `background-inner` | card (white) | neutral-800 @60% over the card |
+| `background-recent-hire-role` | neutral-100 | neutral-900 @60% over the tile |
+| `shadow-card` | `0 1px 1px black/5` | `0 1px 1px black/14` |
+
+A hire without `avatar` shows `initials` (default: the first letters of the first two words) on `avatarColor`.
+
+## Layout note
+
+Inside a CSS-grid-like row, give the card an equal share with a wrapper (`flexBasis: 0`, `minWidth: 0`) rather than `flex: 1` on the card itself: a padded flex item's basis never drops below its padding, so an 8-padded card beside 16-padded chart cards ends up 16px narrower. In a stacked column `flex: 1` wins over the fixed height — pass `height="auto"` there.
+
+## Accessibility
+
+The team switcher is a `button` named by `teamAccessibilityLabel` (default `teamLabel`), with a keyboard focus ring on web. Previous / Next are Bloom `Button`s and take `previousDisabled` / `nextDisabled`.
+
+## Known gaps
+
+- Native was not run on a device.

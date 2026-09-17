@@ -1,0 +1,122 @@
+---
+title: Migrating to 2.0
+description: Every breaking change between @oxy.so/bloom 1.3.0 and 2.0.0 — removed families, the Remix icon set, Inter as the UI face, changed defaults and the Breathe License — and what to do about each.
+order: 2
+---
+
+# Migrating to 2.0
+
+Bloom 2.0 is a redesign. Almost every existing component was repainted, 38 new
+families arrived, the icon set was replaced and the UI typeface changed. Most of
+that needs nothing from you. This guide lists what does.
+
+Bloom keeps its clean-cut rule: there are no `@deprecated` aliases and no shims
+for anything removed. If you import something listed here, the build fails
+until you migrate it.
+
+## The short version
+
+1. Install `@oxy.so/bloom@^2.0.0`.
+2. Run the icon codemod — the one change `tsc` will not catch for you.
+3. Replace the five removed families.
+4. Check the changed defaults below against your screens.
+5. Read the license section if you ship Bloom inside a commercial product.
+
+## 1. Icons: the Remix set replaces Bloom's own
+
+Every hand-drawn icon (`Check_Stroke2_Corner0_Rounded`, `VerifiedCheck`,
+`AppleLogo`, …) is gone. `@oxy.so/bloom/icons` now exports
+[Remix Icon](https://remixicon.com) components named `Ri<Subject><Line|Fill>`,
+with the same `size` / `fill` / `style` props.
+
+Every retired name has a reviewed Remix equivalent in
+`src/icons/remix-mapping.json`, and a codemod applies it:
+
+```bash
+node node_modules/@oxy.so/bloom/scripts/migrate-icons-to-remix.mjs <app-root> --dry-run --diff
+node node_modules/@oxy.so/bloom/scripts/migrate-icons-to-remix.mjs <app-root>
+```
+
+The script ships in the package. It rewrites named imports, `Icons.<Name>` namespace members and
+Markdown prose, and **reports** what it cannot rewrite safely rather than
+guessing.
+
+**Run it even if your app compiles.** A retired icon name inside a string, a
+doc comment or an untyped `Icons[name]` lookup is not a type error anywhere. Two
+visual differences are worth a look afterwards: `RiVerifiedBadgeFill` cuts its
+check out instead of painting it white, and a few subjects with no Remix drawing
+map to the nearest concept. [Icons](./icons.mdx) has the details.
+
+## 2. Removed families
+
+| Removed | Exports | Use instead |
+| --- | --- | --- |
+| `@oxy.so/bloom/prompt-input` | `PromptInput`, `PromptInputTextarea`, `PromptInputActions`, `PromptInputAttachments`, `PromptInputSubmitButton` | [`ComposerPanel`](./composer-panel.mdx) — prompt, add menu, model picker, voice, send and an attachment strip. The panel is UI and state only; sending and uploading stay in your app. |
+| `@oxy.so/bloom/combobox` | `Combobox`, `ComboboxProps`, `ComboboxOption` | [`Select`](./select.mdx) for choosing a value, [`Command`](./command.mdx) for a searchable list of actions. Neither filters as you type the way `Combobox` did; if you depend on that, keep your own input above a `Select`. |
+| `@oxy.so/bloom/profile-card` | `ProfileCard` and its prop types | No direct replacement. [`AiProfileCard`](./ai-profile-card.mdx) and [`UserHoverCard`](./user-hover-card.mdx) cover the two common shapes; otherwise compose `Card`, `Avatar` and `Typography`. |
+| `@oxy.so/bloom/benefit-list` | `BenefitList`, `BenefitRow` and their prop types | No direct replacement. Compose `IconCircle` with `Typography` in a column. |
+| `@oxy.so/bloom/level-picker` | `LevelPicker`, `LevelPickerProps` | No direct replacement. [`SegmentedControl`](./segmented-control.mdx) for a few named levels, [`Slider`](./slider.mdx) for a continuous one. |
+
+## 3. Typography: Inter is the UI face
+
+`fontFamilies.sans` now leads with **Inter**, and native `<Text>` inherits Inter
+once the fonts load. Before 2.0 the UI face was BlomusModernus, which stays as
+`fontFamilies.display` for headings and brand moments. `fontFamilies.mono` is
+**JetBrains Mono** (it was Geist Mono).
+
+- If you set `fontFamily: 'BlomusModernus'` to match Bloom, you are now
+  mismatched — drop it, or use `fontFamilies.display` where you want the brand
+  face on purpose.
+- If you set `'Inter'` by hand to override Bloom, that now matches the default
+  and can go.
+
+See [Fonts](./fonts.mdx).
+
+## 4. Changed defaults and looks
+
+Nothing here changes a prop's type. Each one changes what an existing call site
+renders.
+
+| Component | What changed | To keep the old behaviour |
+| --- | --- | --- |
+| `Slider` | `showTooltip` defaults to `true` (a value bubble that reserves 32px above the track). `trackHeight` defaults to 6 (was 4). The fill is the accent gradient. | `showTooltip={false}`, `trackHeight={4}` |
+| `SegmentedControl` | `size` defaults to `'medium'` (36px); the ramp is small 32 / medium 36 / large 44. | `size="large"` for the previous default look |
+| `Tabs` | `variant="outlined"` renders as the new `pill` variant. | Nothing to restore; switch to `variant="pill"` |
+| `Avatar` | Initials discs use four deterministic tints (`neutral`, `blue`, `lime`, `pink`) derived from `name`, instead of a hashed palette with white letters. Every fallback avatar changes colour. | Pass `color` for a fixed tint |
+| `Radio`, `RadioIndicator` | The dot is smaller at every size (medium 16). `pressed` is accepted but ignored — selection animates, a press does not. | Remove `pressed` |
+| `Divider` | `thickness` defaults to `1` instead of `StyleSheet.hairlineWidth`. | `thickness={StyleSheet.hairlineWidth}` |
+| `Select` | The web dropdown grows to 240px (was 208) and has no scroll buttons by default. | `maxHeight={208}`; wrap custom content in `SelectScrollProvider` to render `SelectScrollUpButton` / `SelectScrollDownButton` |
+| `Button` | No longer glass: a solid or gradient fill from the theme, no press scale, tighter horizontal padding. | — |
+| `Toast` | The card is repainted to match `Notification`; the close glyph is fixed, so `closeButtonIconStyle` no longer has an effect. Stacking stays on by default. | — |
+| `Kbd`, `Tooltip`, `Label`, `Field`, `Dialog` actions, `DropdownMenu`, `ContextMenu`, `Menubar`, `Popover`, `Code` / `Pre` | Repainted; no API change. `Label` text is `text-primary` (was secondary). Menus fade and scale in over 150ms. | — |
+
+## 5. New in 2.0
+
+Nothing to migrate, but worth knowing before you build your own:
+
+- **Forms:** `phone-input`, `input-otp`, `textarea`, `date-picker`, `file-upload`, `button-group`, `social-button`, `auth-card`, `settings-modal`, `questionnaire`, plus `RangeSlider`, `CheckboxCard`, `RadioCard` and `CloseButton` in existing families.
+- **Data and charts:** `table`, `data-table`, `chart-cards` (twenty-one dashboard chart cards), `stat-cards`, `recent-hires-card`, `patient-info-card`, `important-alerts-card`, `agent-limits-card`, `ai-profile-card`.
+- **App shell and navigation:** `app-shell`, `sidebar`, `breadcrumb`, `pagination`, `carousel`, `calendar`, `theme-toggle`.
+- **AI and agents:** `agent-chat`, `ai-chat`, `agent-thinking`, `agent-log`, `agent-progress`, `composer-loader`, `composer-panel`, `web-search`, `task-list`.
+- **Notifications:** `notification`, `notification-center`, `announcement`.
+
+Each family has its own guide in `docs/`.
+
+## 6. License: the Breathe License 1.0
+
+Bloom 2.0 is licensed under the [Breathe License 1.0](https://github.com/OxyHQ/Bloom/blob/main/LICENSE)
+(`LicenseRef-Breathe-1.0`; `package.json` reads `"SEE LICENSE IN LICENSE"`).
+
+- Non-commercial use is free. Commercial use needs the Commercial Terms, with a
+  no-charge path for co-operatives, non-profits, education and public bodies.
+- Attribution is required of everyone and cannot be waived.
+- Deploying Bloom, or a modified Bloom, over a network means publishing the
+  corresponding source.
+- It is not compatible with the GPL or the AGPL in either direction.
+
+Third-party material Bloom vendors (Remix Icon, Inter, JetBrains Mono, the
+teleport, toast and colour-engine code, the phone-input country data) stays under
+its own license; `NOTICE` lists each one and where its full text is.
+
+If a license scanner in your pipeline rejects unknown licenses, add an explicit
+allowance for `LicenseRef-Breathe-1.0` before you upgrade.

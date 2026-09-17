@@ -1,0 +1,118 @@
+---
+title: SettingsModal
+description: The app-wide settings modal — a navigation rail, titled pages, settings cards and the General/Profile/Tools/Storage pages.
+order: 97
+---
+
+# SettingsModal
+
+An 871×614 panel with a 274px navigation rail on the left and a titled, scrolling page on the right, plus the row chrome and the four pages it ships (General, Profile, Tools, Storage). Everything the demo hardcodes — rail groups, plan, servers, files — comes in as props.
+
+```tsx
+import { useDialogControl } from '@oxy.so/bloom/dialog';
+import {
+  SettingsModal,
+  SettingsProfilePage,
+  SettingsTextField,
+} from '@oxy.so/bloom/settings-modal';
+import { RiSchoolLine, RiSettings6Line, RiBankCardLine } from '@oxy.so/bloom/icons';
+
+const control = useDialogControl();
+
+<Button onPress={() => control.open()}>Settings</Button>
+<SettingsModal
+  control={control}
+  groups={[
+    {
+      label: 'Settings',
+      items: [
+        { key: 'general', label: 'General', icon: RiSettings6Line, page: 'general' },
+        { key: 'profile', label: 'Profile', icon: RiSchoolLine, page: 'profile' },
+        { key: 'billing', label: 'Billing', icon: RiBankCardLine, onPress: openBillingPortal },
+      ],
+    },
+  ]}
+  pages={{
+    general: { title: 'General', content: <GeneralSettings /> },
+    profile: {
+      title: 'Profile',
+      content: (
+        <SettingsProfilePage
+          sections={[
+            {
+              key: 'identity',
+              rows: [
+                {
+                  key: 'first',
+                  label: 'First name',
+                  control: <SettingsTextField label="First name" value={user.first} onCommit={saveFirst} />,
+                },
+              ],
+            },
+          ]}
+        />
+      ),
+    },
+  }}
+/>
+```
+
+## Driving it
+
+Drive it like `Dialog`: **`control` from `useDialogControl()`** is the preferred path (`control.open()` / `control.close()`), and `open` + `onClose` is the controlled alternative (in controlled mode `onClose` is a close *request* — backdrop, close button, Escape, Android back — and you flip `open`). The page shown on every open is `defaultPage` (or the first rail row with a `page`); `page` + `onPageChange` control it.
+
+Rail rows with a `page` navigate; rows without one call their `onPress` (or are static). The Storage page sets `compactTitle` — its page already reserves headroom for the upload badge, so the title row's bottom padding drops from 12 to 6.
+
+## Responsive layout
+
+The modal's base size is a fixed 871×614 panel. Bloom adapts it to the window width (`useSettingsLayout()` exposes the current one to pages):
+
+| Layout | Window | What changes |
+|---|---|---|
+| `regular` | ≥ 900px | The base panel: 274px rail, 32px insets, radius 24. |
+| `medium` | 640–899px | Same panel inside a 16px gutter; rail 220px, insets 24px. |
+| `compact` | < 640px | Full screen (no radius or gutter, content inside the safe area). Two levels: the section list with chevrons, then the page pushed over it with a back button in a 56px title bar. Android's back button returns to the list before it closes. The panel rises 16px instead of scaling from .85. |
+
+In `compact`, `SettingsRow` lets its control wrap under the label when both do not fit (a switch stays beside it, a `SettingsValueField` drops below and fills the row), and the Storage table keeps the file name and actions while the date and size columns drop and its toolbar wraps. `labels.back` names the back button (default `Back`).
+
+## Why it is not a `Dialog`
+
+This shell differs from `Dialog`'s centered card in every load-bearing way: black 70% backdrop with no blur, 24px radius on `background/full`, a fixed 871×614 size, a fade + scale-from-0.85 + 4px blur on `cubic-bezier(0.32, 0.72, 0, 1)`, and a **Saved toast that straddles the panel's bottom edge** — outside the panel's clip, which `Dialog`'s card owns. So the shell is built from the same authorities `Dialog` uses — `Portal`, `OverlayRoot` (the one stacking rank) and `Backdrop` (the pointer-events contract) — and accepts `Dialog`'s `control`.
+
+Menus, selects, tooltips and the date popover opened inside a page stack above it through the overlay stack. **Escape closes the innermost surface first:** the modal listens on `window`, and the floating surfaces stop the key on `document`.
+
+## The saved toast
+
+`useSettingsSavedToast()` returns the enclosing modal's trigger (a no-op outside one). `SettingsTextField` and `SettingsDateField` call it when a changed value commits (`showSavedToast={false}` opts out); a custom control calls it itself. It rises 12px in, holds 2s and drifts 10px up as it fades.
+
+## Rows
+
+| Export | Geometry |
+| --- | --- |
+| `SettingsCard` | background/secondary, radius 16, **pl 12** |
+| `SettingsRow` | min-height 52, py 10 pr 10, gap 16, 1px separator under every row **except the last** |
+| `SettingsSection` | label body-2-medium (inset 12, or 8 on Tools), optional description and trailing action, 8 above the card |
+| `SettingsSectionLabel` | body-2-medium text/secondary |
+| `SettingsValueField` | 32×202, radius 10, background/tertiary |
+| `SettingsTextField` | small `TextField`, 202 wide, commits on submit/blur only when changed |
+| `SettingsDateField` | 32×202 bordered trigger (pill) opening `Calendar` in a `Popover` |
+
+**The hairline stops 12px short of the card's left edge** because the padding lives on the card, not the row — rows must be direct children of `SettingsCard` (fragments are flattened). "Last" is derived from the card's children, since React Native has no `:last-child`.
+
+## Pages
+
+- **`SettingsGeneralPage`** — `plan` (`SettingsPlanCard`) then `sections`. The plan card's artwork is `SettingsPlanArt`: on web, a WebGL "burning flag" shader over `artworkSource` (or Bloom's generated accent/success/warning discs), eased toward the pointer; native, reduced motion and a failed WebGL context get the static discs. A radial fade melts it into the card.
+- **`SettingsProfilePage`** — cards of rows.
+- **`SettingsToolsPage`** — scope pills (sliding thumb), the authentication switch, the scope's servers (`SettingsServerList`), Team servers (empty state when none) and plugin servers. Server tiles take a theme `tone`; the "…" menu's actions and callbacks are props.
+- **`SettingsStoragePage`** — Bloom's `FileUpload` dropzone (`upload` props) over the file table: type/order selects, search, sortable columns, row selection, delete (rows collapse out before `onDeleteFile`), the "⋮" menu and pagination. Files that appear in `files` grow in from under the header.
+
+## Colours
+
+All surfaces come from the theme ramps (`button/shared`): background/secondary is neutral-100 (dark 900), secondary/hover neutral-200 (800), tertiary neutral-200 (800), separators neutral-200 (800), background/full the card (dark neutral-925). The status dot and error text use `colors.error` through the danger table — not `negative`, whose dark value is M3's pale on-container pink and never reaches a saturated red.
+
+## Known gaps
+
+- The 871px panel does not reflow on phones; it caps at the viewport minus 32.
+- Bespoke file-type illustrations aren't included; the default is the Remix document / spreadsheet / video glyph. Pass `renderFileIcon` for artwork.
+- The Storage search uses `TextField`'s own tertiary fill — `TextField` owns its shell paint.
+- The panel's 4px blur during open/close is web-only; native fades and scales.

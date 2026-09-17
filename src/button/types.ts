@@ -1,3 +1,4 @@
+import type { ComponentType } from 'react';
 import type { StyleProp, ViewStyle, TextStyle } from 'react-native';
 import type { WebAriaProps } from '../styles/styled-primitives';
 
@@ -36,9 +37,10 @@ export type ButtonVariant =
  * Bloom sizes plus shadcn-style aliases. `sm | md | lg` map onto
  * `small | medium | large`; `icon` maps onto a square icon button at the medium
  * height. The aliases exist so web consumers migrating from shadcn keep their
- * call sites unchanged.
+ * call sites unchanged. `xs` (24px) is the compact tier.
  */
 export type ButtonSize =
+  | 'xs'
   | 'small'
   | 'medium'
   | 'large'
@@ -57,8 +59,42 @@ export interface ButtonProps {
   style?: StyleProp<ViewStyle>;
   textStyle?: StyleProp<TextStyle>;
 
-  icon?: React.ReactNode;
+  /**
+   * An icon ELEMENT rendered as-is, or an icon COMPONENT (`icon={RiMore2Line}`),
+   * which the button sizes and colours like `leadingIcon`.
+   */
+  icon?: React.ReactNode | ButtonIconComponent;
   iconPosition?: 'left' | 'right';
+
+  /**
+   * The `link` variant's colour: `primary` is the accent
+   * label, `secondary` the secondary-text label. Ignored by other variants.
+   */
+  linkTone?: ButtonLinkTone;
+
+  /**
+   * Makes the button a link. On web it renders a real `<a href>` (dropped
+   * while disabled); on native a press opens the URL unless `onPress` is set.
+   */
+  href?: string;
+  /** Anchor `target` (web only, with `href`). */
+  target?: string;
+  /** Anchor `rel` (web only, with `href`). */
+  rel?: string;
+
+  /**
+   * An icon COMPONENT (`leadingIcon={RiAddLine}`, not an
+   * element) rendered before the label. The button sizes and colours it for the
+   * current size and state, so a caller cannot pass the wrong size.
+   */
+  leadingIcon?: ButtonIconComponent;
+  /** Same as {@link ButtonProps.leadingIcon}, after the label. Ignored when `iconOnly`. */
+  trailingIcon?: ButtonIconComponent;
+  /**
+   * Render a square icon-only button (24 / 32 / 36 / 44) from `leadingIcon` or
+   * `icon`. Name it with `accessibilityLabel` — there is no text to read.
+   */
+  iconOnly?: boolean;
 
   /**
    * When true, displays a centered loading spinner overlay and prevents
@@ -156,3 +192,30 @@ export interface ButtonProps {
    */
   fullWidth?: boolean;
 }
+
+/** `LinkButton`'s two colours. */
+export type ButtonLinkTone = 'primary' | 'secondary';
+
+/** Props of `LinkButton`: its `variant` is the link colour. */
+export interface LinkButtonProps extends Omit<ButtonProps, 'variant' | 'linkTone'> {
+  variant?: ButtonLinkTone;
+}
+
+/** Props of `CloseButton`. */
+export interface CloseButtonProps {
+  onPress?: () => void;
+  /** `2xs` 16 · `xs` 20 (default) · `sm` 24 · `md` 32. */
+  size?: '2xs' | 'xs' | 'sm' | 'md';
+  disabled?: boolean;
+  /** Required — the control draws no text. */
+  accessibilityLabel: string;
+  style?: StyleProp<ViewStyle>;
+  testID?: string;
+}
+
+/** The props `Button` hands an icon component: Bloom icons accept all three. */
+export type ButtonIconComponent = ComponentType<{
+  width?: number;
+  height?: number;
+  fill?: string;
+}>;

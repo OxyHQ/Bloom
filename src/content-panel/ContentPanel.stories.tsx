@@ -7,7 +7,7 @@ import { Text } from '../typography';
 import { Divider } from '../divider';
 
 const meta: Meta<typeof ContentPanel> = {
-  title: 'Components/ContentPanel',
+  title: 'Base/Content Panel',
   component: ContentPanel,
 };
 

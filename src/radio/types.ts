@@ -62,5 +62,31 @@ export interface RadioGroupProps<Value extends string = string> {
   color?: string;
   style?: StyleProp<ViewStyle>;
   labelStyle?: StyleProp<TextStyle>;
+  /**
+   * `default` renders each option as a `Radio` row; `card` as a `RadioCard`
+   * (title + description left, the dot right, the whole
+   * card selectable). A card's title is the option's `label`.
+   */
+  variant?: 'default' | 'card';
+  testID?: string;
+}
+
+export interface RadioCardProps<Value extends string = string> {
+  /** The value this card stands for. */
+  value: Value;
+  /** Whether this card is the selected one. */
+  selected: boolean;
+  /** Called with `value` when the card is chosen. Re-choosing it is a no-op. */
+  onSelect: (value: Value) => void;
+  /** The card's title (one line); also its accessible name. */
+  title: string;
+  /** Optional one-line description under the title. */
+  description?: string;
+  /** Dims the whole card and stops it selecting. */
+  disabled?: boolean;
+  /** Accent for the selected dot. Uses the theme primary by default. */
+  color?: string;
+  style?: StyleProp<ViewStyle>;
+  accessibilityLabel?: string;
   testID?: string;
 }

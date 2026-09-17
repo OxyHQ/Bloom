@@ -1,6 +1,6 @@
 ---
 title: Fonts
-description: How Bloom's typefaces reach a web bundle and a native build — and where the documented stacks and current fleet practice diverge.
+description: Bloom's three typefaces — Inter, JetBrains Mono and BlomusModernus — and how they reach a web bundle and a native build.
 order: 58
 ---
 
@@ -33,56 +33,39 @@ import { fontFamilies, fontCssVars, FONT_ASSETS, applyFontFaces, FontLoader } fr
 | `applyFontFaces()` | Injects the `@font-face` rules and the `:root` variables. Web only, idempotent, SSR-safe. |
 | `FontLoader` | The component `BloomThemeProvider` mounts. `enabled`, `fallback`, `children`. |
 
-`fontFamilies.display` and `.sans` both lead with **BlomusModernus**;
-`.mono` leads with **Geist Mono**. On native, `FontLoader` prepends
-`{ fontFamily: 'BlomusModernus' }` to `Text.defaultProps.style` once the assets
-report loaded, so every `<Text>` in the app inherits it — which is why an app
-setting its own `fontFamily` is overriding Bloom rather than complementing it.
+| Stack | Leads with | Used for |
+| --- | --- | --- |
+| `fontFamilies.sans` | **Inter** (variable, 100–900) | Every UI surface: the type ramp, controls, body text |
+| `fontFamilies.mono` | **JetBrains Mono** (variable, 100–800) | `Code`, `Pre` and `CodeBlock` |
+| `fontFamilies.display` | **BlomusModernus** (400, 700) | Oxy's brand face, for headings and brand moments that ask for it explicitly |
 
-## A fourth family ships and registers unconditionally: Inter
+On native, `FontLoader` prepends `{ fontFamily: 'Inter' }` to
+`Text.defaultProps.style` once the assets report loaded, so every `<Text>` in
+the app inherits it — an app setting its own `fontFamily` is overriding Bloom
+rather than complementing it.
 
-Bloom bundles Inter alongside BlomusModernus and Geist Mono, on both platforms,
-and loading it is not gated the way you'd expect:
+The assets ship in `src/fonts/assets/`: `InterVariable` (48,256 bytes as
+`.woff2`, 879,708 as `.ttf`), `JetBrainsMono-Variable` (40,404 / 187,208) and
+the two BlomusModernus cuts. Inter and JetBrains Mono are under the SIL Open Font
+License 1.1; the full texts sit beside the files (`Inter-OFL.txt`,
+`JetBrainsMono-OFL.txt`).
 
-- `FONT_ASSETS` (native) requires `InterVariable.ttf` (879,708 bytes) under the
-  key `Inter`. `FontLoader.native.tsx` calls `useFonts(FONT_ASSETS)`
-  unconditionally — per the Rules of Hooks the hook has to fire whether or not
-  `<BloomThemeProvider fonts={false}>` is set — so Inter is bundled into the
-  native binary and loaded into the platform font registry for every consumer
-  that mounts `BloomThemeProvider`, regardless of that prop.
-- `apply-font-faces.web.ts` injects an `@font-face` rule for `'Inter'` from
-  `InterVariable.woff2` (48,256 bytes) alongside the other two families. This
-  half *is* gated on the `fonts` prop (default `true`).
+### Registration
 
-**But `Inter` is not a member of `fontFamilies.display`, `.sans` or `.mono`** —
-those three stacks lead with BlomusModernus and Geist Mono only, as shown
-above. There is no exported constant that names Inter; a consumer reaches it
-only by writing the literal string `'Inter'` itself.
+`FONT_ASSETS` (native) maps `Inter`, `JetBrains Mono`, `BlomusModernus` and
+`BlomusModernus-Bold`. `FontLoader.native.tsx` calls `useFonts(FONT_ASSETS)`
+unconditionally — per the Rules of Hooks the hook has to fire whether or not
+`<BloomThemeProvider fonts={false}>` is set — so all four are bundled into the
+native binary for every consumer that mounts `BloomThemeProvider`.
 
-In practice, several apps in the fleet do exactly that. Mention's
-`packages/frontend/global.css` and `tailwind.config.js`, and CrowdSource's
-`console` and `reviewer` apps, set `--font-sans: Inter` / `sans: ['Inter', …]`
-directly. Alia's `packages/app/tailwind.config.js` does the same — and ships
-no font file of its own for it: the built `InterVariable-*.woff2` in
-`alia-canvas`, `alia-console` and `alia-gateway-admin` is byte-identical
-(md5 `260c81a4759baf163c025001c4f27872`, 48,256 bytes) to Bloom's own
-`src/fonts/assets/InterVariable.woff2`. This resolves today only because
-Bloom happens to register the family, unconditionally, on both platforms.
+On web, `apply-font-faces.web.ts` injects one `@font-face` rule per family (the
+two variable faces declare their weight ranges) plus the `--bloom-font-*`
+variables. That half *is* gated on the `fonts` prop (default `true`).
 
-`'Inter-Regular'`, which appears as a fallback in Mention's and CrowdSource's
-`font-family` declarations (`font-family: 'Inter', 'Inter-Regular', sans-serif`),
-names nothing Bloom — or anything else in this repo — ever registers. Only the
-bare family `Inter` is registered, as a single variable face. That fallback
-entry has been dead since it was written; on a machine without a
-system-installed `Inter-Regular` it just falls through to the next name in the
-stack.
-
-Whether selecting `'Inter'` by hand is a supported way to reach it, or several
-apps happening to line up with a family Bloom bundles for its own reasons, is
-not settled anywhere in this repo. Treat it as an open question, not a green
-light or a ban — and treat any *other* hand-set literal the same way `'Inter-Regular'`
-turned out: it either matches a family one of the four platform conditions
-above actually registers, or it silently falls back to the system face.
+Reach a family through `fontFamilies` or the `--bloom-font-*` variables rather
+than a hand-written literal. Only the family names above are registered: a
+literal such as `'Inter-Regular'` names nothing Bloom registers and silently
+falls back to the system face.
 
 ## Four ways in, one surface
 
@@ -109,7 +92,7 @@ through to the default file and the fonts silently stop being injected.
 
 ## The `.woff2` files are assets, not base64
 
-`font-urls.web.ts` imports the four files so the consuming bundler emits them
+`font-urls.web.ts` imports the four `.woff2` files so the consuming bundler emits them
 as content-hashed assets. **Never inline them as base64 again** — that put
 ~219 KB gzip into every web entry bundle and made the fonts uncacheable, since
 a font embedded in JS cannot be cached as a font.

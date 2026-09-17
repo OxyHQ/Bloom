@@ -63,7 +63,7 @@ function cloneTrigger(
   }
   const childProps = child.props;
   // A disabled trigger must not OPEN, and the child's own `disabled` is where a
-  // caller most naturally writes that — `Combobox` disables its `Pressable`, not
+  // caller most naturally writes that — a disabled `Pressable` child rather than
   // the family's trigger. Composing unconditionally left the guard to whatever
   // element the caller passed: a real `Pressable` swallows the press, a plain
   // `View` or a custom control that forwards `onPress` does not, so `disabled`

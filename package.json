@@ -258,6 +258,20 @@
         "default": "./lib/commonjs/button/index.js"
       }
     },
+    "./button-group": {
+      "react-native": {
+        "types": "./lib/typescript/module/button-group/index.d.ts",
+        "default": "./src/button-group/index.ts"
+      },
+      "import": {
+        "types": "./lib/typescript/module/button-group/index.d.ts",
+        "default": "./lib/module/button-group/index.js"
+      },
+      "require": {
+        "types": "./lib/typescript/commonjs/button-group/index.d.ts",
+        "default": "./lib/commonjs/button-group/index.js"
+      }
+    },
     "./layout": {
       "react-native": {
         "types": "./lib/typescript/module/layout/index.d.ts",
@@ -322,6 +336,474 @@
       "require": {
         "types": "./lib/typescript/commonjs/divider/index.d.ts",
         "default": "./lib/commonjs/divider/index.js"
+      }
+    },
+    "./breadcrumb": {
+      "react-native": {
+        "types": "./lib/typescript/module/breadcrumb/index.d.ts",
+        "default": "./src/breadcrumb/index.ts"
+      },
+      "import": {
+        "types": "./lib/typescript/module/breadcrumb/index.d.ts",
+        "default": "./lib/module/breadcrumb/index.js"
+      },
+      "require": {
+        "types": "./lib/typescript/commonjs/breadcrumb/index.d.ts",
+        "default": "./lib/commonjs/breadcrumb/index.js"
+      }
+    },
+    "./pagination": {
+      "react-native": {
+        "types": "./lib/typescript/module/pagination/index.d.ts",
+        "default": "./src/pagination/index.ts"
+      },
+      "import": {
+        "types": "./lib/typescript/module/pagination/index.d.ts",
+        "default": "./lib/module/pagination/index.js"
+      },
+      "require": {
+        "types": "./lib/typescript/commonjs/pagination/index.d.ts",
+        "default": "./lib/commonjs/pagination/index.js"
+      }
+    },
+    "./agent-limits-card": {
+      "react-native": {
+        "types": "./lib/typescript/module/agent-limits-card/index.d.ts",
+        "default": "./src/agent-limits-card/index.ts"
+      },
+      "import": {
+        "types": "./lib/typescript/module/agent-limits-card/index.d.ts",
+        "default": "./lib/module/agent-limits-card/index.js"
+      },
+      "require": {
+        "types": "./lib/typescript/commonjs/agent-limits-card/index.d.ts",
+        "default": "./lib/commonjs/agent-limits-card/index.js"
+      }
+    },
+    "./carousel": {
+      "react-native": {
+        "types": "./lib/typescript/module/carousel/index.d.ts",
+        "default": "./src/carousel/index.ts"
+      },
+      "import": {
+        "types": "./lib/typescript/module/carousel/index.d.ts",
+        "default": "./lib/module/carousel/index.js"
+      },
+      "require": {
+        "types": "./lib/typescript/commonjs/carousel/index.d.ts",
+        "default": "./lib/commonjs/carousel/index.js"
+      }
+    },
+    "./file-upload": {
+      "react-native": {
+        "types": "./lib/typescript/module/file-upload/index.d.ts",
+        "default": "./src/file-upload/index.ts"
+      },
+      "import": {
+        "types": "./lib/typescript/module/file-upload/index.d.ts",
+        "default": "./lib/module/file-upload/index.js"
+      },
+      "require": {
+        "types": "./lib/typescript/commonjs/file-upload/index.d.ts",
+        "default": "./lib/commonjs/file-upload/index.js"
+      }
+    },
+    "./social-button": {
+      "react-native": {
+        "types": "./lib/typescript/module/social-button/index.d.ts",
+        "default": "./src/social-button/index.ts"
+      },
+      "import": {
+        "types": "./lib/typescript/module/social-button/index.d.ts",
+        "default": "./lib/module/social-button/index.js"
+      },
+      "require": {
+        "types": "./lib/typescript/commonjs/social-button/index.d.ts",
+        "default": "./lib/commonjs/social-button/index.js"
+      }
+    },
+    "./notification": {
+      "react-native": {
+        "types": "./lib/typescript/module/notification/index.d.ts",
+        "default": "./src/notification/index.ts"
+      },
+      "import": {
+        "types": "./lib/typescript/module/notification/index.d.ts",
+        "default": "./lib/module/notification/index.js"
+      },
+      "require": {
+        "types": "./lib/typescript/commonjs/notification/index.d.ts",
+        "default": "./lib/commonjs/notification/index.js"
+      }
+    },
+    "./announcement": {
+      "react-native": {
+        "types": "./lib/typescript/module/announcement/index.d.ts",
+        "default": "./src/announcement/index.ts"
+      },
+      "import": {
+        "types": "./lib/typescript/module/announcement/index.d.ts",
+        "default": "./lib/module/announcement/index.js"
+      },
+      "require": {
+        "types": "./lib/typescript/commonjs/announcement/index.d.ts",
+        "default": "./lib/commonjs/announcement/index.js"
+      }
+    },
+    "./data-table": {
+      "react-native": {
+        "types": "./lib/typescript/module/data-table/index.d.ts",
+        "default": "./src/data-table/index.ts"
+      },
+      "import": {
+        "types": "./lib/typescript/module/data-table/index.d.ts",
+        "default": "./lib/module/data-table/index.js"
+      },
+      "require": {
+        "types": "./lib/typescript/commonjs/data-table/index.d.ts",
+        "default": "./lib/commonjs/data-table/index.js"
+      }
+    },
+    "./chart-cards": {
+      "react-native": {
+        "types": "./lib/typescript/module/chart-cards/index.d.ts",
+        "default": "./src/chart-cards/index.ts"
+      },
+      "import": {
+        "types": "./lib/typescript/module/chart-cards/index.d.ts",
+        "default": "./lib/module/chart-cards/index.js"
+      },
+      "require": {
+        "types": "./lib/typescript/commonjs/chart-cards/index.d.ts",
+        "default": "./lib/commonjs/chart-cards/index.js"
+      }
+    },
+    "./calendar": {
+      "react-native": {
+        "types": "./lib/typescript/module/calendar/index.d.ts",
+        "default": "./src/calendar/index.ts"
+      },
+      "import": {
+        "types": "./lib/typescript/module/calendar/index.d.ts",
+        "default": "./lib/module/calendar/index.js"
+      },
+      "require": {
+        "types": "./lib/typescript/commonjs/calendar/index.d.ts",
+        "default": "./lib/commonjs/calendar/index.js"
+      }
+    },
+    "./stat-cards": {
+      "react-native": {
+        "types": "./lib/typescript/module/stat-cards/index.d.ts",
+        "default": "./src/stat-cards/index.ts"
+      },
+      "import": {
+        "types": "./lib/typescript/module/stat-cards/index.d.ts",
+        "default": "./lib/module/stat-cards/index.js"
+      },
+      "require": {
+        "types": "./lib/typescript/commonjs/stat-cards/index.d.ts",
+        "default": "./lib/commonjs/stat-cards/index.js"
+      }
+    },
+    "./recent-hires-card": {
+      "react-native": {
+        "types": "./lib/typescript/module/recent-hires-card/index.d.ts",
+        "default": "./src/recent-hires-card/index.ts"
+      },
+      "import": {
+        "types": "./lib/typescript/module/recent-hires-card/index.d.ts",
+        "default": "./lib/module/recent-hires-card/index.js"
+      },
+      "require": {
+        "types": "./lib/typescript/commonjs/recent-hires-card/index.d.ts",
+        "default": "./lib/commonjs/recent-hires-card/index.js"
+      }
+    },
+    "./ai-profile-card": {
+      "react-native": {
+        "types": "./lib/typescript/module/ai-profile-card/index.d.ts",
+        "default": "./src/ai-profile-card/index.ts"
+      },
+      "import": {
+        "types": "./lib/typescript/module/ai-profile-card/index.d.ts",
+        "default": "./lib/module/ai-profile-card/index.js"
+      },
+      "require": {
+        "types": "./lib/typescript/commonjs/ai-profile-card/index.d.ts",
+        "default": "./lib/commonjs/ai-profile-card/index.js"
+      }
+    },
+    "./important-alerts-card": {
+      "react-native": {
+        "types": "./lib/typescript/module/important-alerts-card/index.d.ts",
+        "default": "./src/important-alerts-card/index.ts"
+      },
+      "import": {
+        "types": "./lib/typescript/module/important-alerts-card/index.d.ts",
+        "default": "./lib/module/important-alerts-card/index.js"
+      },
+      "require": {
+        "types": "./lib/typescript/commonjs/important-alerts-card/index.d.ts",
+        "default": "./lib/commonjs/important-alerts-card/index.js"
+      }
+    },
+    "./patient-info-card": {
+      "react-native": {
+        "types": "./lib/typescript/module/patient-info-card/index.d.ts",
+        "default": "./src/patient-info-card/index.ts"
+      },
+      "import": {
+        "types": "./lib/typescript/module/patient-info-card/index.d.ts",
+        "default": "./lib/module/patient-info-card/index.js"
+      },
+      "require": {
+        "types": "./lib/typescript/commonjs/patient-info-card/index.d.ts",
+        "default": "./lib/commonjs/patient-info-card/index.js"
+      }
+    },
+    "./sidebar": {
+      "react-native": {
+        "types": "./lib/typescript/module/sidebar/index.d.ts",
+        "default": "./src/sidebar/index.ts"
+      },
+      "import": {
+        "types": "./lib/typescript/module/sidebar/index.d.ts",
+        "default": "./lib/module/sidebar/index.js"
+      },
+      "require": {
+        "types": "./lib/typescript/commonjs/sidebar/index.d.ts",
+        "default": "./lib/commonjs/sidebar/index.js"
+      }
+    },
+    "./app-shell": {
+      "react-native": {
+        "types": "./lib/typescript/module/app-shell/index.d.ts",
+        "default": "./src/app-shell/index.ts"
+      },
+      "import": {
+        "types": "./lib/typescript/module/app-shell/index.d.ts",
+        "default": "./lib/module/app-shell/index.js"
+      },
+      "require": {
+        "types": "./lib/typescript/commonjs/app-shell/index.d.ts",
+        "default": "./lib/commonjs/app-shell/index.js"
+      }
+    },
+    "./notification-center": {
+      "react-native": {
+        "types": "./lib/typescript/module/notification-center/index.d.ts",
+        "default": "./src/notification-center/index.ts"
+      },
+      "import": {
+        "types": "./lib/typescript/module/notification-center/index.d.ts",
+        "default": "./lib/module/notification-center/index.js"
+      },
+      "require": {
+        "types": "./lib/typescript/commonjs/notification-center/index.d.ts",
+        "default": "./lib/commonjs/notification-center/index.js"
+      }
+    },
+    "./theme-toggle": {
+      "react-native": {
+        "types": "./lib/typescript/module/theme-toggle/index.d.ts",
+        "default": "./src/theme-toggle/index.ts"
+      },
+      "import": {
+        "types": "./lib/typescript/module/theme-toggle/index.d.ts",
+        "default": "./lib/module/theme-toggle/index.js"
+      },
+      "require": {
+        "types": "./lib/typescript/commonjs/theme-toggle/index.d.ts",
+        "default": "./lib/commonjs/theme-toggle/index.js"
+      }
+    },
+    "./settings-modal": {
+      "react-native": {
+        "types": "./lib/typescript/module/settings-modal/index.d.ts",
+        "default": "./src/settings-modal/index.ts"
+      },
+      "import": {
+        "types": "./lib/typescript/module/settings-modal/index.d.ts",
+        "default": "./lib/module/settings-modal/index.js"
+      },
+      "require": {
+        "types": "./lib/typescript/commonjs/settings-modal/index.d.ts",
+        "default": "./lib/commonjs/settings-modal/index.js"
+      }
+    },
+    "./auth-card": {
+      "react-native": {
+        "types": "./lib/typescript/module/auth-card/index.d.ts",
+        "default": "./src/auth-card/index.ts"
+      },
+      "import": {
+        "types": "./lib/typescript/module/auth-card/index.d.ts",
+        "default": "./lib/module/auth-card/index.js"
+      },
+      "require": {
+        "types": "./lib/typescript/commonjs/auth-card/index.d.ts",
+        "default": "./lib/commonjs/auth-card/index.js"
+      }
+    },
+    "./agent-thinking": {
+      "react-native": {
+        "types": "./lib/typescript/module/agent-thinking/index.d.ts",
+        "default": "./src/agent-thinking/index.ts"
+      },
+      "import": {
+        "types": "./lib/typescript/module/agent-thinking/index.d.ts",
+        "default": "./lib/module/agent-thinking/index.js"
+      },
+      "require": {
+        "types": "./lib/typescript/commonjs/agent-thinking/index.d.ts",
+        "default": "./lib/commonjs/agent-thinking/index.js"
+      }
+    },
+    "./agent-log": {
+      "react-native": {
+        "types": "./lib/typescript/module/agent-log/index.d.ts",
+        "default": "./src/agent-log/index.ts"
+      },
+      "import": {
+        "types": "./lib/typescript/module/agent-log/index.d.ts",
+        "default": "./lib/module/agent-log/index.js"
+      },
+      "require": {
+        "types": "./lib/typescript/commonjs/agent-log/index.d.ts",
+        "default": "./lib/commonjs/agent-log/index.js"
+      }
+    },
+    "./agent-progress": {
+      "react-native": {
+        "types": "./lib/typescript/module/agent-progress/index.d.ts",
+        "default": "./src/agent-progress/index.ts"
+      },
+      "import": {
+        "types": "./lib/typescript/module/agent-progress/index.d.ts",
+        "default": "./lib/module/agent-progress/index.js"
+      },
+      "require": {
+        "types": "./lib/typescript/commonjs/agent-progress/index.d.ts",
+        "default": "./lib/commonjs/agent-progress/index.js"
+      }
+    },
+    "./composer-loader": {
+      "react-native": {
+        "types": "./lib/typescript/module/composer-loader/index.d.ts",
+        "default": "./src/composer-loader/index.ts"
+      },
+      "browser": {
+        "types": "./lib/typescript/module/composer-loader/index.web.d.ts",
+        "import": "./lib/module/composer-loader/index.web.js",
+        "require": "./lib/commonjs/composer-loader/index.web.js"
+      },
+      "import": {
+        "types": "./lib/typescript/module/composer-loader/index.d.ts",
+        "default": "./lib/module/composer-loader/index.js"
+      },
+      "require": {
+        "types": "./lib/typescript/commonjs/composer-loader/index.d.ts",
+        "default": "./lib/commonjs/composer-loader/index.js"
+      }
+    },
+    "./composer-panel": {
+      "react-native": {
+        "types": "./lib/typescript/module/composer-panel/index.d.ts",
+        "default": "./src/composer-panel/index.ts"
+      },
+      "browser": {
+        "types": "./lib/typescript/module/composer-panel/index.web.d.ts",
+        "import": "./lib/module/composer-panel/index.web.js",
+        "require": "./lib/commonjs/composer-panel/index.web.js"
+      },
+      "import": {
+        "types": "./lib/typescript/module/composer-panel/index.d.ts",
+        "default": "./lib/module/composer-panel/index.js"
+      },
+      "require": {
+        "types": "./lib/typescript/commonjs/composer-panel/index.d.ts",
+        "default": "./lib/commonjs/composer-panel/index.js"
+      }
+    },
+    "./questionnaire": {
+      "react-native": {
+        "types": "./lib/typescript/module/questionnaire/index.d.ts",
+        "default": "./src/questionnaire/index.ts"
+      },
+      "import": {
+        "types": "./lib/typescript/module/questionnaire/index.d.ts",
+        "default": "./lib/module/questionnaire/index.js"
+      },
+      "require": {
+        "types": "./lib/typescript/commonjs/questionnaire/index.d.ts",
+        "default": "./lib/commonjs/questionnaire/index.js"
+      }
+    },
+    "./web-search": {
+      "react-native": {
+        "types": "./lib/typescript/module/web-search/index.d.ts",
+        "default": "./src/web-search/index.ts"
+      },
+      "import": {
+        "types": "./lib/typescript/module/web-search/index.d.ts",
+        "default": "./lib/module/web-search/index.js"
+      },
+      "require": {
+        "types": "./lib/typescript/commonjs/web-search/index.d.ts",
+        "default": "./lib/commonjs/web-search/index.js"
+      }
+    },
+    "./task-list": {
+      "react-native": {
+        "types": "./lib/typescript/module/task-list/index.d.ts",
+        "default": "./src/task-list/index.ts"
+      },
+      "import": {
+        "types": "./lib/typescript/module/task-list/index.d.ts",
+        "default": "./lib/module/task-list/index.js"
+      },
+      "require": {
+        "types": "./lib/typescript/commonjs/task-list/index.d.ts",
+        "default": "./lib/commonjs/task-list/index.js"
+      }
+    },
+    "./agent-chat": {
+      "react-native": {
+        "types": "./lib/typescript/module/agent-chat/index.d.ts",
+        "default": "./src/agent-chat/index.ts"
+      },
+      "browser": {
+        "types": "./lib/typescript/module/agent-chat/index.web.d.ts",
+        "import": "./lib/module/agent-chat/index.web.js",
+        "require": "./lib/commonjs/agent-chat/index.web.js"
+      },
+      "import": {
+        "types": "./lib/typescript/module/agent-chat/index.d.ts",
+        "default": "./lib/module/agent-chat/index.js"
+      },
+      "require": {
+        "types": "./lib/typescript/commonjs/agent-chat/index.d.ts",
+        "default": "./lib/commonjs/agent-chat/index.js"
+      }
+    },
+    "./ai-chat": {
+      "react-native": {
+        "types": "./lib/typescript/module/ai-chat/index.d.ts",
+        "default": "./src/ai-chat/index.ts"
+      },
+      "browser": {
+        "types": "./lib/typescript/module/ai-chat/index.web.d.ts",
+        "import": "./lib/module/ai-chat/index.web.js",
+        "require": "./lib/commonjs/ai-chat/index.web.js"
+      },
+      "import": {
+        "types": "./lib/typescript/module/ai-chat/index.d.ts",
+        "default": "./lib/module/ai-chat/index.js"
+      },
+      "require": {
+        "types": "./lib/typescript/commonjs/ai-chat/index.d.ts",
+        "default": "./lib/commonjs/ai-chat/index.js"
       }
     },
     "./radio-indicator": {
@@ -444,25 +926,6 @@
       "require": {
         "types": "./lib/typescript/commonjs/switch/index.d.ts",
         "default": "./lib/commonjs/switch/index.js"
-      }
-    },
-    "./prompt-input": {
-      "react-native": {
-        "types": "./lib/typescript/module/prompt-input/index.d.ts",
-        "default": "./src/prompt-input/index.ts"
-      },
-      "browser": {
-        "types": "./lib/typescript/module/prompt-input/index.web.d.ts",
-        "import": "./lib/module/prompt-input/index.web.js",
-        "require": "./lib/commonjs/prompt-input/index.web.js"
-      },
-      "import": {
-        "types": "./lib/typescript/module/prompt-input/index.d.ts",
-        "default": "./lib/module/prompt-input/index.js"
-      },
-      "require": {
-        "types": "./lib/typescript/commonjs/prompt-input/index.d.ts",
-        "default": "./lib/commonjs/prompt-input/index.js"
       }
     },
     "./toast": {
@@ -802,34 +1265,6 @@
         "default": "./lib/commonjs/activity-heatmap/index.js"
       }
     },
-    "./profile-card": {
-      "react-native": {
-        "types": "./lib/typescript/module/profile-card/index.d.ts",
-        "default": "./src/profile-card/index.ts"
-      },
-      "import": {
-        "types": "./lib/typescript/module/profile-card/index.d.ts",
-        "default": "./lib/module/profile-card/index.js"
-      },
-      "require": {
-        "types": "./lib/typescript/commonjs/profile-card/index.d.ts",
-        "default": "./lib/commonjs/profile-card/index.js"
-      }
-    },
-    "./benefit-list": {
-      "react-native": {
-        "types": "./lib/typescript/module/benefit-list/index.d.ts",
-        "default": "./src/benefit-list/index.ts"
-      },
-      "import": {
-        "types": "./lib/typescript/module/benefit-list/index.d.ts",
-        "default": "./lib/module/benefit-list/index.js"
-      },
-      "require": {
-        "types": "./lib/typescript/commonjs/benefit-list/index.d.ts",
-        "default": "./lib/commonjs/benefit-list/index.js"
-      }
-    },
     "./text-field": {
       "react-native": {
         "types": "./lib/typescript/module/text-field/index.d.ts",
@@ -856,6 +1291,76 @@
       "require": {
         "types": "./lib/typescript/commonjs/segmented-control/index.d.ts",
         "default": "./lib/commonjs/segmented-control/index.js"
+      }
+    },
+    "./textarea": {
+      "react-native": {
+        "types": "./lib/typescript/module/textarea/index.d.ts",
+        "default": "./src/textarea/index.ts"
+      },
+      "import": {
+        "types": "./lib/typescript/module/textarea/index.d.ts",
+        "default": "./lib/module/textarea/index.js"
+      },
+      "require": {
+        "types": "./lib/typescript/commonjs/textarea/index.d.ts",
+        "default": "./lib/commonjs/textarea/index.js"
+      }
+    },
+    "./input-otp": {
+      "react-native": {
+        "types": "./lib/typescript/module/input-otp/index.d.ts",
+        "default": "./src/input-otp/index.ts"
+      },
+      "import": {
+        "types": "./lib/typescript/module/input-otp/index.d.ts",
+        "default": "./lib/module/input-otp/index.js"
+      },
+      "require": {
+        "types": "./lib/typescript/commonjs/input-otp/index.d.ts",
+        "default": "./lib/commonjs/input-otp/index.js"
+      }
+    },
+    "./phone-input": {
+      "react-native": {
+        "types": "./lib/typescript/module/phone-input/index.d.ts",
+        "default": "./src/phone-input/index.ts"
+      },
+      "import": {
+        "types": "./lib/typescript/module/phone-input/index.d.ts",
+        "default": "./lib/module/phone-input/index.js"
+      },
+      "require": {
+        "types": "./lib/typescript/commonjs/phone-input/index.d.ts",
+        "default": "./lib/commonjs/phone-input/index.js"
+      }
+    },
+    "./table": {
+      "react-native": {
+        "types": "./lib/typescript/module/table/index.d.ts",
+        "default": "./src/table/index.ts"
+      },
+      "import": {
+        "types": "./lib/typescript/module/table/index.d.ts",
+        "default": "./lib/module/table/index.js"
+      },
+      "require": {
+        "types": "./lib/typescript/commonjs/table/index.d.ts",
+        "default": "./lib/commonjs/table/index.js"
+      }
+    },
+    "./date-picker": {
+      "react-native": {
+        "types": "./lib/typescript/module/date-picker/index.d.ts",
+        "default": "./src/date-picker/index.ts"
+      },
+      "import": {
+        "types": "./lib/typescript/module/date-picker/index.d.ts",
+        "default": "./lib/module/date-picker/index.js"
+      },
+      "require": {
+        "types": "./lib/typescript/commonjs/date-picker/index.d.ts",
+        "default": "./lib/commonjs/date-picker/index.js"
       }
     },
     "./search": {
@@ -1052,25 +1557,6 @@
         "default": "./lib/commonjs/alert-dialog/index.js"
       }
     },
-    "./combobox": {
-      "react-native": {
-        "types": "./lib/typescript/module/combobox/index.d.ts",
-        "default": "./src/combobox/index.ts"
-      },
-      "browser": {
-        "types": "./lib/typescript/module/combobox/index.web.d.ts",
-        "import": "./lib/module/combobox/index.web.js",
-        "require": "./lib/commonjs/combobox/index.web.js"
-      },
-      "import": {
-        "types": "./lib/typescript/module/combobox/index.d.ts",
-        "default": "./lib/module/combobox/index.js"
-      },
-      "require": {
-        "types": "./lib/typescript/commonjs/combobox/index.d.ts",
-        "default": "./lib/commonjs/combobox/index.js"
-      }
-    },
     "./command": {
       "react-native": {
         "types": "./lib/typescript/module/command/index.d.ts",
@@ -1172,25 +1658,6 @@
       "require": {
         "types": "./lib/typescript/commonjs/slider/index.d.ts",
         "default": "./lib/commonjs/slider/index.js"
-      }
-    },
-    "./level-picker": {
-      "react-native": {
-        "types": "./lib/typescript/module/level-picker/index.d.ts",
-        "default": "./src/level-picker/index.ts"
-      },
-      "browser": {
-        "types": "./lib/typescript/module/level-picker/index.web.d.ts",
-        "import": "./lib/module/level-picker/index.web.js",
-        "require": "./lib/commonjs/level-picker/index.web.js"
-      },
-      "import": {
-        "types": "./lib/typescript/module/level-picker/index.d.ts",
-        "default": "./lib/module/level-picker/index.js"
-      },
-      "require": {
-        "types": "./lib/typescript/commonjs/level-picker/index.d.ts",
-        "default": "./lib/commonjs/level-picker/index.js"
       }
     },
     "./card": {
@@ -1500,6 +1967,7 @@
   },
   "files": [
     "NOTICE",
+    "scripts/migrate-icons-to-remix.mjs",
     "src",
     "lib",
     "docs/*.mdx",
@@ -1526,7 +1994,6 @@
     "loading",
     "divider",
     "error-boundary",
-    "prompt-input",
     "icons",
     "typography",
     "skeleton",
@@ -1550,7 +2017,6 @@
     "fonts",
     "popover",
     "command",
-    "combobox",
     "alert-dialog",
     "slider",
     "field",
@@ -1560,13 +2026,33 @@
     "item",
     "list",
     "virtual-list",
-    "ai"
+    "ai",
+    "data-table",
+    "table",
+    "charts",
+    "dashboard",
+    "app-shell",
+    "sidebar",
+    "breadcrumb",
+    "pagination",
+    "date-picker",
+    "calendar",
+    "phone-input",
+    "input-otp",
+    "textarea",
+    "file-upload",
+    "notification",
+    "chat",
+    "agent",
+    "composer",
+    "remix-icon",
+    "inter"
   ],
   "repository": {
     "type": "git",
     "url": "https://github.com/OxyHQ/Bloom.git"
   },
-  "license": "Apache-2.0",
+  "license": "SEE LICENSE IN LICENSE",
   "scripts": {
     "generate:exports": "node scripts/generate-platform-exports.mjs",
     "generate:theme-css": "bun scripts/generate-theme-css.ts",

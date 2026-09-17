@@ -1,0 +1,127 @@
+---
+title: CalendarView
+description: A month calendar block — header, month switcher, inbox feeds, a six-week event grid and the event details panel.
+order: 67
+---
+
+# CalendarView
+
+A header over a card holding a Sunday-first, always-six-week month grid of events, with no app shell around it. Pressing an event opens its details beside the day; pressing the month title in the header enlarges the switcher into a day grid that jumps to (and pulses) any day.
+
+```tsx
+import { CalendarView } from '@oxy.so/bloom/calendar';
+
+<CalendarView
+  events={[
+    { id: 'standup', date: new Date(2026, 7, 2), title: 'Stand-up', time: '11:30', color: 'pink' },
+    { id: 'holidays', date: new Date(2026, 7, 11), title: 'Holidays', color: 'emerald' },
+    {
+      id: 'birthday',
+      date: new Date(2026, 7, 11),
+      title: 'Birthday night at Bacalar’s',
+      time: '20:30',
+      endTime: '23:30',
+      color: 'purple',
+      meeting: { label: 'Google Meet', code: 'igc-mfrq-sse', icon: <MeetLogo /> },
+      timeZone: 'Amsterdam',
+      participants: [{ email: 'hi@example.com', initials: 'M' }],
+      reminder: '2h before',
+    },
+  ]}
+  defaultMonth={new Date(2026, 7, 1)}
+  breadcrumb={<Breadcrumb>…</Breadcrumb>}
+  actions={<NotificationsButton />}
+  inboxAccounts={[{ email: 'hi@example.com', feeds: [{ id: 'f1', label: 'F1 Schedule', color: 'red' }] }]}
+  onNewEvent={openComposer}
+/>
+```
+
+`CalendarView` is named for its role, not `Calendar`: that name is the date picker's single-month panel (`@oxy.so/bloom/date-picker`), and both are on the root barrel.
+
+## Parts
+
+Every piece is exported, for a layout the block does not cover.
+
+| part | what it is |
+| --- | --- |
+| `CalendarView` | header + card; owns the month (controlled `month` / uncontrolled `defaultMonth`, `onMonthChange`) and the jump highlight |
+| `CalendarViewHeader` | breadcrumb slot, title (`headingLevel`, default `1`), `actions` slot, inbox, month switcher, "New event" |
+| `CalendarViewMonthSwitcher` | the pill that grows in place into a day grid |
+| `CalendarViewInboxMenu` | inbox button + subscribed-feeds panel |
+| `CalendarViewMonthGrid` | weekday pills + six weeks of day cards; opens the details panel |
+| `CalendarViewEventDetails` | the details panel on its own (`bare` drops its card chrome) |
+
+The data is all props. An event's details panel shows only the rows it has data for: an all-day event (no `time`) shows just its title block; a timed one adds the time row (with a duration chip when `endTime` is set), then `meeting`, `timeZone`, `participants` and `reminder` rows when given. Bloom does not invent defaults for those — omit the prop and the row doesn't render.
+
+## Geometry
+
+Two layouts, switched at Tailwind's `sm` (a 640px VIEWPORT — not the container):
+
+| | below `sm` (dense) | `sm` and up |
+| --- | --- | --- |
+| card | flush, square | radius 24, padding 12 |
+| grid | 1px lattice (`separator-border-strong`), no gaps; every row as tall as the tallest | 8px gaps, rows sized by content |
+| weekday | 11/16, padding 4/2 | pill: 13/16, radius 12, padding 5/10 |
+| day card | min 72 | radius 12, `shadow-card` on in-month days; min 94 · `lg` 105 · `xl` 128 · `2xl` 164 |
+| day number | 11/16 medium, inset 6 | 13/16 medium, inset 8 top / 10 left |
+| chip | 10/12 regular title only; radius 4, padding 2/4, gap 2 | 13/12 medium title + 12/16 time at 70%; radius 6, padding 2/6, gap 4 |
+| events | 2 apart, inset 4 | 5 apart, inset 8 |
+
+The 13/12, 13/16 and 11/16 steps are the rendered values: `leading-3` / `leading-4` utilities sit next to `sm:text-body-2-*` and win the cascade, so the ramp's size lands on a tighter line box. The dense chip title has no weight of its own — medium arrives only with `sm:`.
+
+`compact` pins every day card at 76px for embedded previews.
+
+More than three events in a day shows the **last four**, bottom-anchored, under a "+N more" label.
+
+- **Details panel:** 302 wide, radius 20, 1px `border-button-default`, padding 10, rows 10 apart, Figma's raw `0 1 2 / .04, 0 7 8 / .04` shadow. Title block radius 10, padding 8/10, headline-medium over body-medium. Image 99 tall, radius 10. Rows 36 tall, radius 10, padding 8 / 6 right / 8 left, 18px secondary icons, body-2-medium. Info chips radius 4, padding 4, caption-1-medium. Row buttons are secondary `xs` icon-only.
+- **Inbox panel:** 266 wide, radius 16, 1px border, padding 10, `shadow-dropdown`, groups 16 apart with a full-bleed 1px divider pulled 4px into the gap on each side (between groups only). Feed rows 32 tall, radius 10, padding 6/8, 20px radius-6 swatch with a 12px `rss-fill`; full-width secondary small "Add new account".
+- **Month switcher:** a 36px footprint (`width`, default 320, at `sm`+; flex-1 below). The surface — radius 10, 1px border, `shadow-dropdown` — is absolutely positioned inside it, so opening never moves anything beside or below it. The grid is 296 wide in 12px of padding: a 24px weekday row, 32px days 12px apart, radius 8, `background-secondary-hover` on hover. Below `sm` the title is the short month and pressing it does nothing.
+
+## Colours
+
+Semantic tokens through `Button`'s ramps:
+
+| token | light | dark |
+| --- | --- | --- |
+| card, weekday pills, detail rows (`background-secondary-default`) | neutral-100 | neutral-900 |
+| in-month day, panels (`background-primary-default`) | `card` | neutral-800 |
+| out-of-month day (`background-tertiary-default`), info chip | neutral-200 | neutral-800 |
+| dense day cards | `card` in month, neutral-100 outside | neutral-900 both |
+| lattice (`separator-border-strong` / dark `separator-border`) | neutral-200 | neutral-800 |
+| panel border (`border-button-default`) | neutral-200 | neutral-700 |
+| feed row hover (`background-primary-hover`) | neutral-100 | neutral-700 at 60% over neutral-800 |
+| secondary text and icons | neutral-500 | neutral-500 |
+| highlight ring, focus ring | accent-500 | accent-500 |
+
+The event and swatch hues are hardcoded (Tailwind blue, pink, purple, lime, emerald, red, teal); they keep Tailwind's lightness and take their chroma ratio and hue distance from `blue-500` re-anchored on the theme's `primary`: a Tailwind-blue brand reproduces those hues exactly and any other preset turns the whole set with it. The chroma ratio is floored at 0.5 so a near-grey primary cannot collapse five categories into one grey.
+
+- Event chips (`--color-calendar-event-*`): light `*-100` surface, `*-700` title (`*-800` for lime and emerald), `*-700` time; dark `*-950` with `*-300` title and time.
+- Feed swatches: `*-200` with a `*-700` icon — blue's icon is `*-900`, straight from Figma's variables.
+- Participant avatars are `Avatar` with `size="xs"`, `color` and `initials`.
+
+## Motion
+
+- **Switcher:** height 0 → natural in 380ms on `cubic-bezier(.34, 1.2, .64, 1)` (a small overshoot), opacity in 280ms ease-out, both ways; the panel stays mounted through the collapse.
+- **Jump highlight:** a 2px accent ring over the day, opacity `0 → 1 → .35 → 1 → .35 → 1 → 0` with a 1.5% swell on the first two peaks, over 3s ease-in-out; then `onHighlightEnd`. Under reduced motion the ring holds still for the same 3s instead.
+- **Event chip hover:** `brightness(0.95)`, 150ms (web).
+- **Feed row hover:** background, 150ms.
+
+## Platforms and overlays
+
+- **Web:** the inbox panel anchors below its button, aligned to its end, 8px away; the details panel anchors to the right of the DAY CARD (not the chip), 6px away, flipping left when it does not fit. Both are `Popover` surfaces — portaled, ranked by open order, dismissed by outside press and Escape; no `zIndex` of their own.
+- **Native:** both present in the bottom sheet every Bloom popover uses; the details panel becomes a bottom sheet on phones.
+- The details popover takes its anchor from the popover's own context (`popover/context`) rather than a `PopoverTrigger`: the anchor is whichever day card holds the pressed chip, and a trigger can only wrap one fixed element.
+- The switcher and the header are raised with `Z_INDEX.floating` — the switcher grows DOWN over the grid in document flow, which is local stacking, not an overlay.
+
+## Design decisions
+
+- **Panel motion:** the inbox and details panels wear `Popover`'s motion (fade + zoom + a short slide, 200ms). The motion belongs to the overlay family, not the block itself.
+- **Switcher chevrons** are full pills rather than a 3px corner, as in `date-picker`'s panel.
+- **Slots, not ports:** the breadcrumb (with its workspace avatars), the notification bell and the dashboard sidebar are the app shell's; the block takes `breadcrumb` and `actions` and leaves the sidebar to the page.
+- **Keyboard (switcher grid):** one tab stop, arrow keys / Home / End / PageUp / PageDown move focus; leaving the month pages the pill's own month.
+
+## Accessibility
+
+- The title is a `heading` at `headingLevel`; the grid is a `table` of weekday `columnheader`s (named with the full weekday) and day cells.
+- Event chips are buttons named `title, time`; the switcher title is a button with `aria-expanded`; the switcher's day grid is a `grid` named "Jump to date" whose days carry their full date as name.
+- Icon-only buttons are named: "Inbox", "Previous month", "Next month", "Open navigation", "Edit timezone", "Edit participants", "Edit reminders".

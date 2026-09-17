@@ -38,14 +38,14 @@ Wiring: Expo/Metro apps import `@oxy.so/app-preset/css/base.css` at the top of `
 
 **`index.ts` is a PURE BARREL. `<Pascal>.tsx` holds the implementation, `types.ts` the props.** An index that is both barrel and implementation makes a family's public surface invisible — anything it exports becomes API by being written rather than decided. Gate: `family-layout.test.ts`.
 
-- **The FACTORY layout is the one exception** — a web-forked family whose fork differs only in which component it's BUILT FROM can't express that as a re-export (the shared implementation would have to import the surface that imports it). `alert-dialog`, `combobox`, `command`, `surfaces`, `tab-bar` call `createAlertDialog(Dialog)` etc. The gate's exemption list is an EQUALITY, not a floor.
+- **The FACTORY layout is the one exception** — a web-forked family whose fork differs only in which component it's BUILT FROM can't express that as a re-export (the shared implementation would have to import the surface that imports it). `alert-dialog`, `command`, `surfaces`, `tab-bar` call `createAlertDialog(Dialog)` etc. The gate's exemption list is an EQUALITY, not a floor.
 - **A barrel is `.ts`** — no JSX to justify `.tsx`. **File names:** hooks `use-kebab-case.ts`, context module `context.ts`, constants `constants.ts` (never `const.ts`), cross-fork module `shared.ts`.
 
 **Compound components are flat-prefixed** (`Tabs`/`TabsTrigger`); collection families stay namespaces (`Icons`, `Typography`, `Skeleton`, `Grid`, `Code`, `Fonts`, `ColorEngine`, `ImageAspectRatio`).
 
 - **Flat-prefix** for the fixed-arity pieces of ONE component, **with no static alias beside it** — no `Tabs.Trigger`, `Menu.Item`, `Select.Trigger` or `InputGroup.Addon`; two spellings of one part is the ambiguity this removes. **Namespace** for an open/large set of sibling primitives with generic, collision-prone names (`Text`, `Box`, `Row`) — each ships as a subpath so `import * as` costs no tree-shaking.
 
-**A family is on `src/index.ts` unless importing it would add a PACKAGE to the barrel's graph** — Metro doesn't tree-shake, so an unmet peer is a build failure, not a degradation. Three families fail that (`tab-bar`, `provider`, `zoomable-image-gallery` — each doc explains its own peer). Gate: `root-barrel-graph.test.ts`, counting STATIC imports only — `theme/adaptive-colors.ts` names `expo-router` via the optional-`require` boundary and links nothing, the only reason the gate is falsifiable.
+**A family is on `src/index.ts` unless importing it would add a PACKAGE to the barrel's graph** — Metro doesn't tree-shake, so an unmet peer is a build failure, not a degradation. Three families fail that (`tab-bar`, `provider`, `zoomable-image-gallery` — each doc explains its own peer). `phone-input` is subpath-only too, for its WEIGHT (~145 KB of vendored flags) rather than a peer; the gate pins it. Gate: `root-barrel-graph.test.ts`, counting STATIC imports only — `theme/adaptive-colors.ts` names `expo-router` via the optional-`require` boundary and links nothing, the only reason the gate is falsifiable.
 
 ## Getting a COMPLETE test pass: shard it
 
@@ -111,7 +111,7 @@ Only TWO exist: `CenteredDialog` and `ResponsiveSheet` were removed with no shim
 - `AlertDialog` and `Command` bridge onto `Dialog`'s imperative control; reuse its `actions` prop rather than hand-rolling a confirm row.
 - **Menu behavior belongs in `floating/menu-*`, never consumers.** Gate it once. Flyouts require pointer movement, keyboard or press; layout motion under a parked pointer is not hover intent.
 - The `surface.dismiss(result)` mechanism (`docs/surfaces.mdx`) is pinned at the prop boundary with a mock Dialog: `surface-prompts.test.tsx`.
-- **`disabled` on an `asChild` trigger is guarded in `cloneTrigger`, not the child alone** (composition mechanism: `docs/dropdown-menu.mdx` `asChild`). **The browser is the WEAKER instrument:** an unguarded `Pressable` child stays closed in Chrome (RNW masks it) while jest goes red (mock ignores `disabled`). Gates: `Combobox.test.tsx` + `scripts/verify-trigger-disabled.mjs`.
+- **`disabled` on an `asChild` trigger is guarded in `cloneTrigger`, not the child alone** (composition mechanism: `docs/dropdown-menu.mdx` `asChild`). **The browser is the WEAKER instrument:** an unguarded `Pressable` child stays closed in Chrome (RNW masks it) while jest goes red (mock ignores `disabled`). Gates: `PopoverTriggerDisabled.test.tsx` + `scripts/verify-trigger-disabled.mjs`.
 - **KNOWN GAP — the native tooltip cannot position itself inside a sheet** (mechanism: `docs/tooltip.mdx`).
 
 ## Theme and design tokens
@@ -126,21 +126,23 @@ Only TWO exist: `CenteredDialog` and `ResponsiveSheet` were removed with no shim
 - **The neutral surface tones (`SURFACE_RAMP` in `theme/color-policy.ts`) are owned by the policy, not M3's container roles** — the ΔE00/JND rationale, the spacing, and which token sits at which tone are in `docs/design-tokens.mdx`. What that doc doesn't say: **"it separates all 18" is a claim about a PAIR, not a ladder — say which neighbours you measured against.** A candidate can land exactly on a neighbour, so a fix measured against the pair you're chasing reads as a success while silently closing another. Measure every pair; read the WORSENED list, not the target.
 - **Never derive a colour from a token — read the pair.** The mechanism (why appended alpha fails) is in `docs/badge.mdx`; every tinted/filled/outlined control calls `resolveAccentColors(colors, tone, fill)` (`theme/accent-colors.ts`), className contexts use the opacity utility (`bg-primary/10`) instead — both gated by `theme/__tests__/accent-colors.test.ts`. **`theme/glass-colors.ts` is the ONE exception** — `withAlpha` (parse-and-re-emit, not concatenation), since a glass material IS an alpha of a fill; same gate.
 
-## Glass (`theme/glass-colors.ts` + `glass/GlassSurface.tsx`; `Button`'s `primary`/`destructive` are the only consumers)
+## Glass (`theme/glass-colors.ts` + `glass/GlassSurface.tsx`)
 
-- **THE GLASS IS THE SHEEN, NOT THE WASH** — transparency is the least of five things that make the material; reference is **0.85**, 0.25 read as a pale stain with no body. Full description and the AA cost table: `docs/button.mdx`.
+`Button` is NOT glass any more — it paints the gradient/solid recipe from `button/shared.ts` (`docs/button.mdx`). The rules below still govern any glass surface.
+
+- **THE GLASS IS THE SHEEN, NOT THE WASH** — transparency is the least of five things that make the material; reference is **0.85**, 0.25 read as a pale stain with no body. Full description and the AA cost table: `docs/glass.mdx`.
 - **The LABEL follows the alpha, and flips with it** — at 0.25 the pane takes its luminance from the page (`colors.text` was right); at 0.85 the pane IS the fill (the fill's own on-colour is right). Neither is permanent: `resolveGlassColors`'s doc comment in `glass-colors.ts` carries the exact failure counts over the `presets × modes × tones × surfaces` matrix and is re-measured on every alpha or surface change — read it there rather than copying the numbers.
-- **A THRESHOLD erodes; an EQUALITY has to be looked at.** When a material can't clear a bar, don't lower the bar — pin the shortfall exactly (count, band, named set: `docs/button.mdx`, `glass-colors.test.ts`), so a one-hundredth alpha change goes red in either direction and IMPROVING it fails as loudly as regressing it — the count moving on a surface-ramp change (`docs/button.mdx`) is exactly that, not a relaxation.
+- **A THRESHOLD erodes; an EQUALITY has to be looked at.** When a material can't clear a bar, don't lower the bar — pin the shortfall exactly (count, band, named set: `docs/glass.mdx`, `glass-colors.test.ts`), so a one-hundredth alpha change goes red in either direction and IMPROVING it fails as loudly as regressing it — the count moving on a surface-ramp change (`docs/glass.mdx`) is exactly that, not a relaxation.
 - **Prove translucency DIRECTLY, not by proxy.** The 0.25 gate proved it via "still fails AA over black/white", which stops discriminating near opaque. Measure whether the PAINTED pane moves with the backdrop: 0 at opacity, monotonic in alpha (figures: `glass-colors.test.ts`). Floors must be LITERALS, not derived from the alpha constant, or both sides move together and it measures nothing.
-- **Glass replaces a FILL, never adds one** — a blur behind a transparent control shows nothing, and the hairline reads as "the pane's edge" only where there's a tint. `inverse` stays opaque as the backdrop-independent CTA over content Bloom does not own (numbers: `docs/button.mdx`).
-- **`expo-blur` cannot give a radius without a tint** (one `intensity` drives both); `backdrop-filter` is a pure blur. Assert the gap small AND non-zero, or a native stack that silently dropped the blur passes. **Android blurs only in a PORTALED surface, and never wrap the app in a `BlurTargetView` to change that** — a `BlurView` descendant of its own target SIGSEGVs. Cause, discriminator and per-channel gap: `docs/button.mdx`, `glass-colors.ts`.
+- **Glass replaces a FILL, never adds one** — a blur behind a transparent control shows nothing, and the hairline reads as "the pane's edge" only where there's a tint. `inverse` stays opaque as the backdrop-independent CTA over content Bloom does not own (numbers: `docs/glass.mdx`).
+- **`expo-blur` cannot give a radius without a tint** (one `intensity` drives both); `backdrop-filter` is a pure blur. Assert the gap small AND non-zero, or a native stack that silently dropped the blur passes. **Android blurs only in a PORTALED surface, and never wrap the app in a `BlurTargetView` to change that** — a `BlurView` descendant of its own target SIGSEGVs. Cause, discriminator and per-channel gap: `docs/glass.mdx`, `glass-colors.ts`.
 - **Never let a colour-with-alpha reach an SVG stop** — react-native-svg discards the alpha inside `stopColor` (CSS gradients don't), so a shared `rgba()` token renders correctly on web and OPAQUE on native; it made the Android pane an achromatic white→black wipe while the gate pinning both forks to the same stops stayed green — **sharing a token is not agreeing about it.** Full mechanism and the measured regression: `GLASS_SHEEN`'s doc comment in `glass-colors.ts`.
 - **A glass variant must not set `overflow: 'hidden'`** — `GlassSurface` self-clips, and `clipsToBounds` on iOS clips the drop shadow away.
 - **Read the PAINTED PIXEL** — a translucent surface reports a plausible `background-color` for a slot it isn't using, so a computed-style diff can't tell a pane from a wash. Screenshot, reload the capture into the page, sample on a canvas.
 
 ## Web fonts
 
-Font-loading hazards (base64-inlining the `.woff2`s, the empty-stub requirement on `apply-font-faces.ts`, `FontLoader` forking, the `node` export condition, the Inter/`fontFamilies` gap) are in `docs/fonts.mdx` — no duplicate copy here.
+Font-loading hazards (base64-inlining the `.woff2`s, the empty-stub requirement on `apply-font-faces.ts`, `FontLoader` forking, the `node` export condition, which families are registered) are in `docs/fonts.mdx` — no duplicate copy here.
 
 ## Peers
 

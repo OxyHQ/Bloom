@@ -31,7 +31,7 @@ function sampleData(days: number, endKey: string): ActivityHeatmapDay[] {
 const DATA = sampleData(364, END_DATE);
 
 const meta: Meta<typeof ActivityHeatmap> = {
-  title: 'Data Display/ActivityHeatmap',
+  title: 'Charts/Activity Heatmap',
   component: ActivityHeatmap,
 };
 

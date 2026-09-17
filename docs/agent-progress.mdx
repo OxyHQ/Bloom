@@ -1,0 +1,99 @@
+---
+title: AgentProgress
+description: An agent's plan as a card that ticks steps off one by one, minimizable to a one-line bar.
+order: 99
+---
+
+# AgentProgress
+
+The "what is the agent doing" module. A card lists the plan; the active step carries a ring that fills over the step, a shimmering label and a pill outline that springs from row to row; finished steps get a filled check and are struck through. A header ring fills across the whole plan. The minimize button folds the card into a 44px bar showing the current step.
+
+```tsx
+import { AgentProgress } from '@oxy.so/bloom/agent-progress';
+
+// Driven by your agent: steps land when it reports them.
+<AgentProgress
+  steps={['Read project files', 'Implement dark mode tokens', 'Run the build']}
+  completedCount={doneCount}
+  stepDuration={4000} // estimate: how long each ring takes to fill
+/>
+```
+
+## Clock or controlled
+
+- **Uncontrolled (the default):** after the card's reveal (1.1s) a step completes every `stepDuration` ms; `completionDelay` ms after the last one, `onFinished` fires. `paused` freezes the clock (useful for pausing instances scrolled out of view) — nothing advances and `onFinished` waits.
+- **Controlled:** pass `completedCount` and the clock no longer advances steps. The rings still animate each step over `stepDuration` as an estimate and jump ahead when a step lands early; the header ring is piecewise-linear per step, collapsing to a single linear pass when the timings agree.
+
+Minimized state is uncontrolled (`defaultMinimized`) or controlled (`minimized` + `onMinimizedChange`).
+
+## Anatomy and geometry
+
+| Part | Geometry |
+|---|---|
+| card | 341 wide (`max-width: 100%`), radius 16, 1px `border-button-default`, `shadow-xs`; height `45 + 38·n` expanded, 44 minimized |
+| plan ring | 16px at top 14 / left 14; stroke 2.5 on r 6.75, drawn from 12 o'clock |
+| expanded | padding 8 (+4) top, 10 sides, 10 bottom; header row 20 tall, 4px inset, 24px ring spacer; steps 9px below, 6 apart |
+| step row | 32 tall; padding 4 / 4, active 9 / 13; gap 8; icon box 14 (check / pending glyphs 15, bleeding 0.5px) |
+| step ring | stroke 1.5 on r 5.75 |
+| minimize button | 20px, radius 4; an 18px `background-quaternary` square with a 12×2 bar; 80% opacity on hover |
+| minimized bar | padding 6 / 10, gap 8; current step area padding 6 top/bottom, 24 right; expand glyph 20px at right 10 |
+
+Labels use `TYPE_SCALE['body-medium']`; the header label never wraps and step labels truncate.
+
+## Motion
+
+All on `cubic-bezier(0.22, 1, 0.36, 1)` unless noted:
+
+- Card enters from opacity 0 / y -12 / blur 8 (350 / 500 / 400ms) while its height grows from 0 (650ms). Minimizing takes 420ms, reopening 240ms.
+- Rows reveal from opacity 0 / y -4 / blur 6, 160ms apart after the card (450ms each); on reopen 35ms apart (240ms).
+- The active outline springs between rows (stiffness 260, damping 30, mass 0.8); row padding eases over 360ms.
+- Icons swap in place: the check pops from scale 0.72 / -18° (340ms), the step ring from 0.82 (250ms, ease-out), the dashed circle fades.
+- A finished label is struck through left → right (scaleX 0 → 1, opacity 0.8, 380ms) while its colour fades from primary to secondary (300ms).
+- The header label crossfades with a 4px rise (260ms); the ring spacer collapses once everything is done (400ms).
+- Hovering the minimized bar reveals the expand glyph (200ms) and, on web, fades the current step out under a mask (`#000 68% → transparent 94%`).
+
+**Blur is web-only** — React Native has no cross-platform blur filter, so native keeps the opacity and offset parts of each transition. **Reduced motion snaps every transition** and stops the shimmer.
+
+## AgentProgressLoadingText
+
+The shimmering label on its own (used for text like "Generating image"):
+
+```tsx
+import { AgentProgressLoadingText } from '@oxy.so/bloom/agent-progress';
+
+<AgentProgressLoadingText>Generating image</AgentProgressLoadingText>
+```
+
+`text-secondary` with a `text-primary` highlight sweeping across every 3.4s. **Web** draws it with CSS — a 300%-wide `linear-gradient(100deg, …)` clipped to the glyphs, `background-position` 200% → -100% — self-injected through `adoptStyleSheet`, one rule per resolved colour pair, hung off a `dataSet` attribute. **Native** has no `background-clip: text` (and Bloom takes no masked-view dependency), so the same gradient is sampled per character: each glyph is a nested span coloured by the gradient at its centre, re-sampled every 50ms. Glyph centres assume even advance widths; the highlight is ±36% of the label wide, so that approximation does not read. Under reduced motion it is plain `text-secondary` on both.
+
+## Colours
+
+| Token | light | dark |
+|---|---|---|
+| `background-primary-default` (card) | `colors.card` | neutral-800 |
+| `border-button-default` (border, ring tracks, active outline) | neutral-200 | neutral-700 |
+| `background-quaternary-default` (glyph fills) | neutral-300 | neutral-700 |
+| `foreground-icon-secondary`, `text-secondary` | neutral-500 | neutral-500 |
+| `text-primary` (shimmer highlight) | `colors.text` | `colors.text` |
+| `agent-progress-ring` | neutral-700 | white 50% over the neutral-700 track |
+
+Ramps come from `resolveButtonRamps(theme)`. SVG colours are passed as hex so react-native-svg's native colour parser never sees CSS4 `rgb(r g b)` syntax.
+
+## Accessibility
+
+The card is an `aria-live="polite"` region, so the header count is announced as steps finish. The minimize button ("Minimize steps") and the minimized bar ("Expand steps") are named buttons; rename them with `labels`. Glyphs and rings are `aria-hidden`. On web the bar shows the browser's focus ring on keyboard focus and reveals the expand glyph with it.
+
+## Props
+
+| Prop | Type | Default | Description |
+|------|------|---------|-------------|
+| `steps?` | `readonly string[]` | `DEFAULT_AGENT_PROGRESS_STEPS` | Ordered labels (also React keys — keep them unique). |
+| `stepDuration?` | `number` | `3000` | ms per step: ring fill, and the clock when uncontrolled. |
+| `completionDelay?` | `number` | `1000` | ms after the last step before `onFinished`. |
+| `onFinished?` | `() => void` | — | Fires once complete (and not paused). |
+| `paused?` | `boolean` | `false` | Freeze the clock and `onFinished`. |
+| `completedCount?` | `number` | — | Controlled progress. |
+| `minimized?` / `defaultMinimized?` / `onMinimizedChange?` | | `false` | Minimized state. |
+| `labels?` | `{ stepsLeft?(n), allCompleted?, minimize?, expand? }` | English | Fixed strings. |
+| `style?` | `StyleProp<ViewStyle>` | — | Card style. |
+| `testID?` | `string` | `'agent-progress'` | Also derives `-expanded`, `-minimized`, `-minimize`, `-ring`, `-step-<i>`. |

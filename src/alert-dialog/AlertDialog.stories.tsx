@@ -8,7 +8,7 @@ import { Button } from '../button';
 import { Text } from '../typography';
 
 const meta: Meta = {
-  title: 'Overlays/AlertDialog',
+  title: 'Base/Alert Dialog',
 };
 
 export default meta;

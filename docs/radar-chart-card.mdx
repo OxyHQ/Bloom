@@ -1,0 +1,67 @@
+---
+title: Radar chart card
+description: A radar chart card — filled, dotted, outline and score looks with a pulsing hover dot per series — in react-native-svg on recharts' polar geometry.
+order: 52
+---
+
+# Radar chart card
+
+`RadarChartCard` rebuilds recharts' `RadarChart` in react-native-svg on the geometry recharts computes (`src/chart-cards/polar-geometry.ts`), so it renders on native as well as web and lands on the same pixels.
+
+```tsx
+import { RadarChartCard } from '@oxy.so/bloom/chart-cards';
+
+<RadarChartCard
+  series={[{ key: 'desktop', label: 'Desktop' }, { key: 'mobile', label: 'Mobile' }]}
+  ranges={[{ id: 'h1', label: 'H1 2024', data: firstHalf, delta: 0.052 }, { id: 'h2', label: 'H2 2024', data: secondHalf }]}
+/>
+```
+
+`data` is one row per axis — `{ label, [series.key]: number }`; add a row to add an axis, add a series to draw another polygon.
+
+| Prop | Default | |
+|---|---|---|
+| `variant` | `'filled'` | `filled` soft fill + outline · `dots` a dot on every vertex · `lines` outlines only · `score` values on the labels and the average in a centre disc |
+| `title` | `"Visitors"` (`"Weekly score"`) | header label; the hovered axis while hovering |
+| `data`, `series` | — | a selected range's own `data` / `series` / `max` / `delta` / `headline` override them |
+| `max` | largest value (100 for `score`) | radius axis ceiling |
+| `headline` | the first series' total | resting number (`score` shows no number in the header) |
+| `delta` | none | chip ratio: `0.052` → `+5.2%` |
+| `range` / `ranges`, `defaultRange`, `onRangeChange` | — | static pill, or a period dropdown |
+| `format` | `1,424` | headline, legend, tiles and `score` values |
+| `alertBelow` | — | `score`: values under it are painted in the negative text colour |
+| `scoreCaption` | Excellent ≥ 90 · Strong ≥ 75 · Fair ≥ 50 · Needs work | string or `(score) => string` |
+| `legend` | `'bottom'` | multi-series legend under the chart, in the header (`top`), or over the chart's bottom edge (`overlay`) |
+| `tiles` | `false` | a tile per axis (first series, no swatch); the card grows, the chart area stays 231 |
+| `radiusScale`, `plotOffsetY` | `1`, `0` | scale the polygon / nudge the plot inside the same card |
+| `activeIndex` / `onActiveIndexChange` | tracked | control the hovered axis |
+| `accessibilityLabel` | `"Visitors radar chart: January, February, …"` | names the chart (`role="img"`) |
+
+## Geometry
+
+Card 329 tall, radius 16, padding 16 / 16 / 12, gap 16 (the shared `ChartCardSurface` / `ChartHeader`).
+
+| | |
+|---|---|
+| frame | margin 4; centre at 50% of the WHOLE area (44% down with an `overlay` legend); outer radius 74% of half the smaller side inside the margin (62% `score`, 66% `overlay`), × `radiusScale` — 81.77 on a 448 × 229 area |
+| axes | first at twelve o'clock, clockwise, `360 / n` apart |
+| grid | chart-cursor 1px: a concentric polygon at every radius tick (`getTickValuesFixedDomain([0, max], 5)` — `0 · 80 · 160 · 240 · 305`) and a spoke per axis to the outer radius |
+| polygons | per series in order: fill `color` at 28% (none for `lines`), 2px `-active` outline, round joins |
+| dots | `dots` / `score`: r 3.5 `-active` with a 2px ring in the card colour |
+| labels | 8px outside the outer radius, anchored start / middle / end by side; 12px medium text-tertiary |
+| score labels | 11px medium, 0.02em tracking, lifted 22px above axes whose sine > 0.3, dropped 12px below those < −0.3, else −6; the 16px medium value 17px under it |
+| score disc | 84 round, `background-inner` (neutral-800 at 60% with a 2px backdrop blur in dark), `shadow-card`; `title-1-medium` at line-height 1, `caption-1-medium` caption 4px under, max 72 wide |
+| top legend | 32 tall, 12 between items, right-aligned beside the pill |
+
+## Hover
+
+recharts' polar tooltip: inside the outer radius the axis nearest the pointer by angle is active; outside it (or leaving) clears. The header swaps to that axis and its first-series value, the chip hides, the axis label darkens to text-primary over 150ms, each series gets a `PulsingDot` on that vertex, the legend shows that axis's values and the other tiles dim. On native a finger presses and scrubs; lifting it clears.
+
+## Motion
+
+Polygons grow out of the centre over 450ms (CSS `ease`) on mount and morph vertex by vertex on a data or range change — in pixels, so a new ceiling morphs too. The headline counts up; the pulse halo runs 1.4s. All of it snaps under reduced motion.
+
+## Deviations
+
+- Labels are Bloom `Text` over the SVG (placed on recharts' `<text y dy>` baselines, measured in Chrome), so they take Bloom's font on native.
+- While hovering, a long headline in the `top`-legend layout truncates rather than overflowing — the shared `ChartHeadline` shrinks its number.

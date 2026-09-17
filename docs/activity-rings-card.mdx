@@ -1,0 +1,56 @@
+---
+title: Activity rings card
+description: A medical dashboard activity card — three concentric goal rings under their stat tiles, hover-linked — in react-native-svg.
+order: 54
+---
+
+# Activity rings card
+
+`ActivityRingsCard` is a medical dashboard activity card: three Apple Watch-style goal rings under a row of stat tiles, drawn as plain SVG circles (no recharts) with react-native-svg.
+
+```tsx
+import { ActivityRingsCard } from '@oxy.so/bloom/chart-cards';
+
+<ActivityRingsCard
+  title="Activity"
+  rings={[
+    { label: 'Move', value: '1,592 kcal', goalPct: 82 },
+    { label: 'Exercise', value: '1h 45m', goalPct: 60 },
+    { label: 'Running', value: '5.2 km', goalPct: 75 },
+  ]}
+/>
+```
+
+The rings are taken as props — pass a day's `rings` and a title such as `"Activity for July 4, 2026"`, and the arcs sweep to the new goals.
+
+| Prop | Default | |
+|---|---|---|
+| `rings` | — | up to three `{ label, value, goalPct, color?, activeColor? }`, outermost first |
+| `title` | `"Activity"` | |
+| `height` | 330 | |
+| `activeIndex` / `onActiveIndexChange` | tracked | control the hovered ring |
+| `accessibilityLabel` | `"Activity: Move 1,592 kcal, 82% of goal; …"` | names the rings (`role="img"`) |
+
+## Geometry
+
+| | |
+|---|---|
+| card | 330 tall, radius 20, padding 10, background-secondary, 16 between the title block and the rings |
+| title | `body-medium` text-secondary, padded 6 / 6 / 0; tiles 11 under it |
+| tiles | 57 tall, 8 apart, equal widths, radius 10, `background-inner`, padding 8 / 10, content bottom-aligned: 12px swatch (radius 4) + `body-regular` label over a `body-medium` value |
+| rings | a 200 × 200 viewBox, at most 210 tall, fitted and centred in the rest; r 82 / 58 / 34, 18 wide, round caps, from twelve o'clock clockwise; each over a full track of its own colour at 16% |
+| colours | `chart-3` pink, `chart-2` lime, `chart-4` sky (re-anchored on the theme's `primary`), hover `-active` |
+
+`goalPct` is clamped to 0–100; keep it under 100 for the never-closed look.
+
+## Hover
+
+Per ring band (the 18px stroke): the ring takes its `-active` tone, the other rings drop to 50% and their tracks to 6%, and every other tile fades to 50% — 200ms on web. The gap between two bands keeps the last ring (it clears only when the pointer leaves the drawing). On native a finger presses and scrubs; lifting it clears.
+
+## Motion
+
+A change of `goalPct` sweeps the arc over 200ms ease-out (a `stroke-dasharray` transition); colour and opacity ease over 200ms on web. Snaps under reduced motion.
+
+## Deviations
+
+SVG's normalized `pathLength={100}` isn't reliably supported by react-native-svg, so the dash is computed in real lengths (`2πr × goalPct / 100`) — the same pixels.

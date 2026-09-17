@@ -45,10 +45,10 @@ const argUrl = process.argv.indexOf('--url');
 const BASE = argUrl !== -1 ? process.argv[argUrl + 1] : 'http://localhost:6006';
 const OUT = '/tmp/bloom-submenu-shots';
 
-const STORY = 'overlays-dropdownmenu--submenu';
-const EDGE_STORY = 'overlays-dropdownmenu--submenu-with-no-room-to-the-right';
-const LAYOUT_STORY = 'overlays-dropdownmenu--submenu-layout-shift-does-not-open';
-const SIBLING_STORY = 'overlays-dropdownmenu--sibling-submenus';
+const STORY = 'base-dropdown--submenu';
+const EDGE_STORY = 'base-dropdown--submenu-with-no-room-to-the-right';
+const LAYOUT_STORY = 'base-dropdown--submenu-layout-shift-does-not-open';
+const SIBLING_STORY = 'base-dropdown--sibling-submenus';
 
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 

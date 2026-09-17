@@ -6,7 +6,34 @@ order: 11
 
 # TextField
 
-A composable text input. `TextField` is the field itself; put a `TextFieldInput` inside it, plus any of `TextFieldIcon`, `TextFieldSuffix` and `TextFieldGhost`. The field tracks focus, hover and invalid state and hands it to those parts, so the whole chrome reacts as one.
+A composable text input. `TextField` is the field itself; put a `TextFieldInput` inside it, plus any of `TextFieldIcon`, `TextFieldSuffix` and `TextFieldGhost`. The field tracks focus, hover, invalid and disabled state and hands it to those parts, so the whole chrome reacts as one.
+
+## Look
+
+Coloured by Bloom's theme through the same ramps as `Button`:
+
+|                 | `medium` (default) | `small` |
+|-----------------|--------------------|---------|
+| height          | 36                 | 32      |
+| shell padding-x | 8                  | 6       |
+| text inset      | 4                  | 4       |
+| text            | 14/20 regular      | 14/20 regular |
+| icon            | 20                 | 20      |
+| radius          | 10                 | 10      |
+
+The shell is a **filled** surface (`neutral-200`, `neutral-800` in dark) with a 2px **inset** ring: transparent at rest, `neutral-300` under the pointer, `neutral-400` while focused. The focus ring is neutral on purpose — the accent ring is reserved for the OTP boxes. A focused field darkens its placeholder to the text colour.
+
+- **Invalid** tints the fill red (`red-100`; red-950 at 60% over the page in dark), reddens the placeholder and the icons, and drops the ring.
+- **Disabled** dims the fill, the value, the placeholder and the icons, drops the ring, and (web) shows the `not-allowed` cursor over the control.
+
+All of it is resolved by `text-field/shared.ts`, which `Textarea` and `InputGroup` read too, so the three always agree.
+
+| part | typography | colour |
+|------|-----------|--------|
+| `TextFieldLabel` | `body-medium` 14/20, 4px above the shell, 2px between text, asterisk and glyph | text; asterisk in the error colour; info glyph is Remix `RiInformationFill` at 16px in `foreground-icon-quaternary` |
+| `TextFieldHint` | `caption-1-medium` 12/16, tracking .15, 1px top inset, 4px below | secondary; error colour when invalid |
+
+Every size above is a `TYPE_SCALE` step (`typography/scale.ts`), set in Inter. Adornments use Remix icons (`RiMailLine`, `RiQuestionLine`… from `icons/remix`).
 
 ## Basic
 
@@ -37,7 +64,7 @@ import { TextField, TextFieldInput } from '@oxy.so/bloom/text-field';
 
 ```tsx
 <TextField>
-  <TextFieldIcon icon={Envelope_Stroke2_Corner0_Rounded} />
+  <TextFieldIcon icon={RiMailLine} />
   <TextFieldInput label="Email" value={email} onChangeText={setEmail} />
 </TextField>
 ```
@@ -54,6 +81,45 @@ TextField parts must be rendered inside a <TextField>.
 
 `TextFieldInput` does not throw: a missing field is how it knows to wrap itself. `TextFieldLabel` sits above the field by design, and `TextFieldGhost` reads no state — both render anywhere.
 
+## Sizes, label and hint
+
+```tsx
+<TextFieldLabel required tooltip>Email</TextFieldLabel>
+<TextField size="small" isInvalid={isInvalid}>
+  <TextFieldIcon icon={RiMailLine} />
+  <TextFieldInput label="Email" value={email} onChangeText={setEmail} />
+  <TextFieldIcon icon={RiQuestionLine} position="trailing" />
+</TextField>
+<TextFieldHint isInvalid={isInvalid}>We never share it.</TextFieldHint>
+```
+
+## Leading addon (phone input)
+
+```tsx
+<TextField leadingAddon={<CountryCodeSelect />}>
+  <TextFieldInput label="Phone Number" placeholder="(123) 000-0000" value={number} onChangeText={setNumber} />
+  <TextFieldIcon icon={RiQuestionLine} position="trailing" />
+</TextField>
+```
+
+`leadingAddon` puts a CONTROL in the leading slot — e.g. [`PhoneInput`](./phone-input.mdx), whose country-code select sits inside the field. With an addon the shell tightens its left padding to 4px (`pl-1`) and keeps its right one (`pr-2`, `pr-1.5` on `small`), in longhands; the addon is `shrink-0`, 2px before the input. It replaces a leading `TextFieldIcon` — don't render both.
+
+- **Focus within.** While the addon holds focus (web) the shell draws its focus ring — but not while the focused control reports `aria-expanded="true"`: while the list is open the ring falls back to the hover ring, and comes back when it closes. The input's `focus:` placeholder colour stays the input's alone.
+- **Clicks.** A click on the addon stops there: the shell's own click focuses the input, which would take focus from the control that was pressed.
+
+The finished component, with the vendored country list and flags, is [`PhoneInput`](./phone-input.mdx) (`@oxy.so/bloom/phone-input`).
+
+## Disabled
+
+```tsx
+<TextField disabled>
+  <TextFieldIcon icon={RiMailLine} />
+  <TextFieldInput label="Email" value={email} onChangeText={setEmail} />
+</TextField>
+```
+
+`disabled` on the field makes the input non-editable (and, on web, a real `disabled` input that leaves the tab order), sets `aria-disabled` and paints every part disabled. An input with `disabled` or `editable={false}` reports the same state up to the field on its own, so the icon beside it dims too.
+
 ## Validation
 
 ```tsx
@@ -69,10 +135,10 @@ const isInvalid = touched && !value.includes('@');
     onBlur={() => setTouched(true)}
   />
 </TextField>
-{isInvalid ? <Text style={{ color: theme.colors.negative }}>Enter a valid email</Text> : null}
+<TextFieldHint isInvalid={isInvalid}>Enter a valid email</TextFieldHint>
 ```
 
-`isInvalid` paints the field in the negative palette and reaches every part through context. `TextFieldInput` takes its own `isInvalid` too, for the wrapper-less spelling.
+`isInvalid` paints the field in the negative palette, sets `aria-invalid` on the input and reaches every part through context. `TextFieldInput` takes its own `isInvalid` too, for the wrapper-less spelling.
 
 ## Floating label
 
@@ -82,7 +148,7 @@ const isInvalid = touched && !value.includes('@');
 </TextField>
 ```
 
-The label starts inside the field and animates to a caption at the top on focus or once there is a value. State drives it, not CSS, so web and native behave identically; reduced motion snaps instead of animating.
+The label starts inside the field and animates to a caption at the top on focus or once there is a value. State drives it, not CSS, so web and native behave identically; reduced motion snaps instead of animating. Its taller geometry is Bloom's own; its colours are the input palette above.
 
 ## Multiline
 
@@ -91,6 +157,8 @@ The label starts inside the field and animates to a caption at the top on focus 
   <TextFieldInput label="Bio" value={bio} onChangeText={setBio} multiline />
 </TextField>
 ```
+
+For a real multiline field — rows, auto-grow, a character counter — use [`Textarea`](/docs/bloom/main/textarea), which shares this shell.
 
 ## Suffix
 
@@ -108,7 +176,10 @@ The label starts inside the field and animates to a caption at the top on focus 
 | Prop | Type | Description |
 |------|------|-------------|
 | `isInvalid?` | `boolean` | Paints the field in the negative palette and exposes it via context. |
+| `disabled?` | `boolean` | Disables the input and paints every part disabled. |
+| `size?` | `'medium' \| 'small'` | 36 or 32 tall. Default `medium`. |
 | `radius?` | `number` | Corner radius of the chrome, default `10`. A large value (999) reads as a pill. |
+| `leadingAddon?` | `React.ReactNode` | A control before the input (the phone input's country code); the shell's left padding becomes 4px. |
 | `style?` | `StyleProp<ViewStyle>` | Override the container style. |
 | `children?` | `React.ReactNode` | The input, plus any icon / suffix / ghost. |
 
@@ -122,6 +193,8 @@ Accepts React Native's `TextInputProps`, plus:
 | `value?` / `onChangeText?` | `string` / `(v: string) => void` | The controlled value. |
 | `placeholder?` | `string \| null` | Overrides the label as placeholder; `null` for none. |
 | `isInvalid?` | `boolean` | For the wrapper-less spelling. |
+| `disabled?` | `boolean` | Disables the input; the field around it paints disabled. |
+| `size?` | `'medium' \| 'small'` | For the wrapper-less spelling. |
 | `floatingLabel?` | `boolean` | Material-style animated label. Default `false`. |
 | `inputRef?` | `RefObject<TextInput \| null>` | Merged with the field's own ref. |
 
@@ -129,13 +202,12 @@ Accepts React Native's `TextInputProps`, plus:
 
 | Prop | Type | Description |
 |------|------|-------------|
-| `icon` | `React.ComponentType<SVGIconProps>` | A Bloom icon component. Takes the field's hover / focus / error colour. |
-
-Renders before the input, so put it first.
+| `icon` | `React.ComponentType<SVGIconProps>` | A Bloom icon component, drawn at 20px in the tertiary colour; dimmed when disabled, red when invalid. |
+| `position?` | `'leading' \| 'trailing'` | `leading` (default) sits 2px before the input; `trailing` 8px after it. Place it in that order. |
 
 ### `TextFieldLabel`
 
-A visible label rendered ABOVE the field, outside it:
+A visible label rendered ABOVE the field, outside it. `required` appends the asterisk, `tooltip` the info glyph.
 
 ```tsx
 <TextFieldLabel>Workspace</TextFieldLabel>
@@ -143,6 +215,10 @@ A visible label rendered ABOVE the field, outside it:
   <TextFieldInput label="Workspace" value={name} onChangeText={setName} />
 </TextField>
 ```
+
+### `TextFieldHint`
+
+The caption under the field. `isInvalid` paints it in the error colour; `nativeID` and `style` are optional.
 
 ### `TextFieldSuffix`
 
@@ -156,7 +232,8 @@ Greyed completion text drawn behind the input, for "type `acme`, see `acme.oxy.s
 
 - Clicking anywhere in the field focuses the input (web).
 - `label` is the input's `accessibilityLabel`; the floating label itself is hidden from assistive tech so it is not announced twice.
-- On web the browser's own focus ring is stripped, because it follows the input's box rather than the field's and pokes out of a pill's corners. The animated border IS the focus signal.
+- On web the browser's own focus ring is stripped, because it follows the input's box rather than the field's and pokes out of a pill's corners. The inset ring IS the focus signal.
+- `isInvalid` and `disabled` reach the input as `aria-invalid` / `aria-disabled` — react-native-web reads only the `aria-*` spellings.
 - Invalid state paints the chrome. Surface the reason as text under the field — colour alone is not an announcement.
 
 ## Recipes
@@ -175,7 +252,7 @@ const [show, setShow] = useState(false);
   />
   <Button
     variant="icon"
-    icon={show ? <EyeSlash_Stroke2_Corner0_Rounded /> : <Eye_Stroke2_Corner0_Rounded />}
+    icon={show ? <RiEyeOffLine /> : <RiEyeLine />}
     accessibilityLabel={show ? 'Hide password' : 'Show password'}
     onPress={() => setShow(!show)}
   />

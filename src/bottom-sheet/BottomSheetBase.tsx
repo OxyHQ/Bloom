@@ -582,7 +582,7 @@ export const BottomSheetBase = forwardRef((props: BottomSheetBaseProps, ref: Rea
             // re-binds if the shared value identity changes.
             if (externalScrollY) externalScrollY.value = event.contentOffset.y;
         },
-    }, [externalScrollY]);
+    }, [externalScrollY, scrollOffsetY, isScrollAtTop]);
 
     const dynamicStyles = useMemo(() => {
         return StyleSheet.create({

@@ -3,16 +3,45 @@ import { View } from 'react-native';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
 import { Text } from '../typography';
-import { Checkbox } from './index';
+import { useTheme } from '../theme/use-theme';
+import { Checkbox, CheckboxCard } from './index';
 
 const meta: Meta<typeof Checkbox> = {
-  title: 'Forms/Checkbox',
+  title: 'Base/Checkbox',
   component: Checkbox,
 };
 
 export default meta;
 
 type Story = StoryObj<typeof Checkbox>;
+
+const noop = () => {};
+
+/**
+ * Every size against every state.
+ * Hover (border / gradient lightens) needs a pointer; Tab onto a row for the
+ * focus ring around the box.
+ */
+export const Matrix: Story = {
+  render: function CheckboxMatrix() {
+    const theme = useTheme();
+    return (
+    <View style={{ gap: 16, padding: 16, backgroundColor: theme.colors.background }}>
+      {(['small', 'medium', 'large'] as const).map((size) => (
+        <View key={size} style={{ flexDirection: 'row', alignItems: 'center', gap: 24 }}>
+          <Checkbox size={size} checked={false} onCheckedChange={noop} accessibilityLabel="Unchecked" />
+          <Checkbox size={size} checked onCheckedChange={noop} accessibilityLabel="Checked" />
+          <Checkbox size={size} checked={false} indeterminate onCheckedChange={noop} accessibilityLabel="Mixed" />
+          <Checkbox size={size} checked={false} disabled onCheckedChange={noop} accessibilityLabel="Disabled" />
+          <Checkbox size={size} checked disabled onCheckedChange={noop} accessibilityLabel="Disabled checked" />
+          <Checkbox size={size} checked onCheckedChange={noop} label="Label text" />
+          <Checkbox size={size} checked={false} disabled onCheckedChange={noop} label="Disabled" />
+        </View>
+      ))}
+    </View>
+    );
+  },
+};
 
 /** Controlled: `checked` + `onCheckedChange` are both required. */
 export const Basic: Story = {
@@ -109,7 +138,7 @@ export const Disabled: Story = {
 };
 
 /**
- * No label — the case the touch target exists for. The box is 22dp; `hitSlop`
+ * No label — the case the touch target exists for. The box is 16dp; `hitSlop`
  * grows the pressable to 44dp without growing the drawing. Tab onto one in a
  * browser to see the `:focus-visible` ring.
  */
@@ -129,6 +158,46 @@ export const Bare: Story = {
             accessibilityLabel={`Option ${i + 1}`}
           />
         ))}
+      </View>
+    );
+  },
+};
+
+/**
+ * `CheckboxCard`: title + description left, the box right, the whole
+ * card toggles. Hover a card for the background; Tab onto one for the ring
+ * around its box.
+ */
+export const Cards: Story = {
+  render: function CheckboxCards() {
+    const theme = useTheme();
+    const [on, setOn] = useState({ digest: true, mentions: false, product: true });
+    return (
+      <View style={{ width: 400, gap: 8, padding: 16, backgroundColor: theme.colors.background }}>
+        <CheckboxCard
+          title="Weekly digest"
+          description="A summary of activity every Monday."
+          checked={on.digest}
+          onCheckedChange={(v) => setOn((c) => ({ ...c, digest: v }))}
+        />
+        <CheckboxCard
+          title="Mentions"
+          description="When someone mentions you in a thread."
+          checked={on.mentions}
+          onCheckedChange={(v) => setOn((c) => ({ ...c, mentions: v }))}
+        />
+        <CheckboxCard
+          title="Product updates"
+          checked={on.product}
+          onCheckedChange={(v) => setOn((c) => ({ ...c, product: v }))}
+        />
+        <CheckboxCard
+          title="Billing alerts"
+          description="Managed by your workspace admin."
+          checked
+          disabled
+          onCheckedChange={noop}
+        />
       </View>
     );
   },

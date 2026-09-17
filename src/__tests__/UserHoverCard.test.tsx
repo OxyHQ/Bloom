@@ -165,7 +165,8 @@ describe('UserHoverCard', () => {
     if (host === null) throw new Error('no host rendered for testID "card"');
     const style = resolvedStyle(host.props.style);
     expect(style.width).toBe(USER_HOVER_CARD_WIDTH);
-    expect(style.padding).toBe(USER_HOVER_CARD_INSET);
+    expect(style.paddingLeft).toBe(USER_HOVER_CARD_INSET);
+    expect(style.paddingRight).toBe(USER_HOVER_CARD_INSET);
     // Both reasons `docs/card.mdx` gives for opting out of `Card`'s clip apply
     // to this card, and slot content that overflows is meant to be visible.
     expect(style.overflow).toBe('visible');
@@ -212,5 +213,46 @@ describe('UserHoverCard', () => {
       </BloomThemeProvider>,
     );
     expect(resolve).toHaveBeenCalledWith('file-abc123', 'thumb');
+  });
+
+  it('resolves a bare cover id through the ImageResolver with its own variant', () => {
+    const resolve = jest.fn<ReturnType<ImageResolver>, Parameters<ImageResolver>>(
+      (id, variant) => `https://cloud.oxy.so/${id}?variant=${variant ?? ''}`,
+    );
+    const { getByTestId } = render(
+      <BloomThemeProvider mode="light" colorPreset="oxy">
+        <ImageResolverProvider value={resolve}>
+          <UserHoverCard displayName="Nate" cover="file-cover" coverVariant="medium" testID="card" />
+        </ImageResolverProvider>
+      </BloomThemeProvider>,
+    );
+    expect(getByTestId('card-cover')).toBeTruthy();
+    expect(resolve).toHaveBeenCalledWith('file-cover', 'medium');
+  });
+
+  it('draws no cover band when there is no cover', () => {
+    const { queryByTestId } = renderWithTheme(
+      <UserHoverCard displayName="Nate" cover={null} testID="card" />,
+    );
+    expect(queryByTestId('card-cover')).toBeNull();
+  });
+
+  it('loading: announces busy and renders no content, action or footer', () => {
+    const { getByTestId, queryByText } = renderWithTheme(
+      <UserHoverCard
+        displayName="Nate"
+        username="nate"
+        loading
+        action={<Text>Follow</Text>}
+        footer={<Text>Footer</Text>}
+        testID="card"
+      />,
+    );
+    const card = getByTestId('card');
+    expect(card.props['aria-busy']).toBe(true);
+    expect(card.props.accessibilityState).toEqual({ busy: true });
+    expect(queryByText('Nate')).toBeNull();
+    expect(queryByText('Follow')).toBeNull();
+    expect(queryByText('Footer')).toBeNull();
   });
 });

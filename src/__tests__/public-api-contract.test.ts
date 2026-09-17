@@ -9,19 +9,19 @@ const ALLOWED_NAMESPACES = ['Icons', 'Typography', 'Skeleton', 'Grid', 'Code', '
 // Compound families converted to flat: the top-level name is the root component.
 const FLATTENED_ROOTS = [
   'Tabs', 'Accordion', 'Select', 'DropdownMenu', 'ContextMenu', 'Menubar', 'Popover',
-  'Tooltip', 'SegmentedControl', 'TextField', 'Admonition', 'PromptInput',
+  'Tooltip', 'SegmentedControl', 'TextField', 'Admonition',
 ] as const;
 
 // One renamed part per converted family — proves the flat rename landed.
 const REPRESENTATIVE_PARTS = [
   'TabsTrigger', 'AccordionItem', 'SelectItem', 'DropdownMenuItem', 'ContextMenuItem',
   'MenubarItem', 'PopoverTrigger', 'TooltipTrigger', 'SegmentedControlItem', 'TextFieldInput',
-  'AdmonitionIcon', 'PromptInputTextarea',
+  'AdmonitionIcon',
 ] as const;
 
 // Stat / profile widget components added to the public surface.
 const NEW_FLAT_COMPONENTS = [
-  'CompositionBar', 'DotGridMeter', 'StatBar', 'ActivityHeatmap', 'ProfileCard',
+  'CompositionBar', 'DotGridMeter', 'StatBar', 'ActivityHeatmap',
 ] as const;
 
 /**

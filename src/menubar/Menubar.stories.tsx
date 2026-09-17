@@ -21,7 +21,7 @@ import {
 } from './index';
 
 const meta: Meta = {
-  title: 'Overlays/Menubar',
+  title: 'Base/Menubar',
 };
 
 export default meta;

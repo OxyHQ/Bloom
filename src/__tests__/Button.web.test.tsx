@@ -15,6 +15,7 @@ import {
   LinkButton,
   DestructiveButton,
 } from '../button/Button.web';
+import { BUTTON_RADIUS } from '../button/shared';
 
 // react-dom 19 logs a guard unless this flag is set in test environments.
 (globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
@@ -193,6 +194,31 @@ describe('Button.web', () => {
       expect(getByRole(c, 'button', { name: 'Link' })).toHaveClass('bloom-btn--link');
     });
 
+    it('LinkButton is a bare label: no height, no padding, 4px gap', () => {
+      const c = mount(<LinkButton>Link</LinkButton>);
+      const el = getByRole(c, 'button', { name: 'Link' });
+      expect(el.style.height).toBe('');
+      expect(el.style.paddingLeft).toBe('0px');
+      expect(el.style.getPropertyValue('--bloom-btn-gap')).toBe('4px');
+    });
+
+    it('href renders a real anchor, and drops the href while disabled', () => {
+      const c = mount(
+        <>
+          <LinkButton href="/docs">Docs</LinkButton>
+          <LinkButton href="/off" disabled>
+            Off
+          </LinkButton>
+        </>,
+      );
+      const link = getByRole(c, 'link', { name: 'Docs' });
+      expect(link.tagName).toBe('A');
+      expect(link).toHaveAttribute('href', '/docs');
+      const off = getByText(c, 'Off').closest('a');
+      expect(off).not.toHaveAttribute('href');
+      expect(off).toHaveAttribute('aria-disabled', 'true');
+    });
+
     it('DestructiveButton renders a button', () => {
       const c = mount(<DestructiveButton>Delete</DestructiveButton>);
       expect(getByRole(c, 'button', { name: 'Delete' }).tagName).toBe('BUTTON');
@@ -267,42 +293,67 @@ describe('Button.web', () => {
   });
 
   // -------------------------------------------------------------------------
-  //  Geometry parity with the native fork
-  //
-  //  The two forks hold two INDEPENDENT `SIZE_CONFIG` literals — nothing in the
-  //  type system makes them agree, and a compaction applied to one of them is a
-  //  fleet-wide platform split that renders correctly on the platform you are
-  //  looking at. `Button.test.tsx` pins the same three rows against the native
-  //  fork; both must move together.
+  //  Geometry parity with the native fork — both read `button/shared.ts`, and
+  //  `Button.test.tsx` pins the same rows against the native fork.
   // -------------------------------------------------------------------------
   describe('geometry', () => {
     const GEOMETRY = [
-      { size: 'small', height: '32px', paddingVertical: '4px', iconPadding: '8px' },
-      { size: 'medium', height: '36px', paddingVertical: '5px', iconPadding: '6px' },
-      { size: 'large', height: '44px', paddingVertical: '8px', iconPadding: '6px' },
+      { size: 'xs', height: '24px' },
+      { size: 'small', height: '32px' },
+      { size: 'medium', height: '36px' },
+      { size: 'large', height: '44px' },
     ] as const;
 
-    it.each(GEOMETRY)('$size matches the native table', ({ size, height, paddingVertical }) => {
+    it.each(GEOMETRY)('$size matches the native table', ({ size, height }) => {
       const c = mount(
         <Button size={size} variant="secondary">
           Save changes
         </Button>,
       );
       const btn = getByRole(c, 'button', { name: 'Save changes' });
-      expect(btn.style.minHeight).toBe(height);
-      expect(btn.style.paddingTop).toBe(paddingVertical);
-      expect(btn.style.paddingBottom).toBe(paddingVertical);
+      expect(btn.style.height).toBe(height);
+      expect(btn.style.borderRadius).toBe(`${BUTTON_RADIUS}px`);
     });
 
-    it.each(GEOMETRY)(
-      '$size icon variant is a square whose glyph box the compaction did not shrink',
-      ({ size, height, iconPadding }) => {
-        const c = mount(<Button size={size} variant="icon" aria-label="Act" />);
-        const btn = getByRole(c, 'button', { name: 'Act' });
-        expect(btn.style.width).toBe(height);
-        expect(btn.style.height).toBe(height);
-        expect(btn.style.padding).toBe(iconPadding);
-      },
-    );
+    it.each(GEOMETRY)('$size icon variant is an unpadded square', ({ size, height }) => {
+      const c = mount(<Button size={size} variant="icon" aria-label="Act" />);
+      const btn = getByRole(c, 'button', { name: 'Act' });
+      expect(btn.style.width).toBe(height);
+      expect(btn.style.height).toBe(height);
+      expect(btn.style.paddingLeft).toBe('0px');
+    });
+  });
+
+  describe('gradient paint', () => {
+    it('paints primary as a gradient through custom properties, never inline background', () => {
+      const c = mount(<Button>Go</Button>);
+      const btn = getByRole(c, 'button', { name: 'Go' });
+      expect(btn).toHaveClass('bloom-btn--gradient');
+      expect(btn.style.getPropertyValue('--bloom-btn-bg-image')).toMatch(/^linear-gradient\(180deg/);
+      expect(btn.style.getPropertyValue('--bloom-btn-bg-image-hover')).toMatch(/^linear-gradient/);
+      expect(btn.style.backgroundColor).toBe('');
+    });
+
+    it('has no press scale', () => {
+      const c = mount(<Button>Go</Button>);
+      expect(getByRole(c, 'button', { name: 'Go' }).style.getPropertyValue('--bloom-btn-press-scale')).toBe('1');
+    });
+
+    it('does not paint solid variants with a gradient', () => {
+      const c = mount(<Button variant="secondary">Cancel</Button>);
+      expect(getByRole(c, 'button', { name: 'Cancel' })).not.toHaveClass('bloom-btn--gradient');
+    });
+
+    it('iconOnly sizes the icon component and drops the label', () => {
+      const Glyph = jest.fn((props: { width?: number }) => <svg data-width={props.width} />);
+      const c = mount(
+        <Button size="xs" iconOnly leadingIcon={Glyph} aria-label="Add">
+          Add
+        </Button>,
+      );
+      const btn = getByRole(c, 'button', { name: 'Add' });
+      expect(btn.textContent).toBe('');
+      expect(btn.querySelector('svg')?.getAttribute('data-width')).toBe('14');
+    });
   });
 });

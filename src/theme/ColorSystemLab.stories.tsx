@@ -54,7 +54,7 @@ function resolveLabPalette(recipe: ColorRecipe, mode: ColorMode): LabPalette {
   };
 }
 const meta: Meta = {
-  title: 'Theme/Color System Playground',
+  title: 'Foundations/Color System Playground',
   parameters: {
     layout: 'fullscreen',
   },

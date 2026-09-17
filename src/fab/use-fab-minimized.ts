@@ -12,7 +12,7 @@ export function useFabMinimized(enabled: boolean): boolean {
     (next, previous) => {
       if (next !== previous) runOnJS(setIsMinimized)(next);
     },
-    [enabled, target],
+    [enabled, target, setIsMinimized],
   );
 
   return isMinimized;

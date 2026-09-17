@@ -5,7 +5,7 @@ import type { Meta, StoryObj } from '@storybook/react-vite';
 import { Loading } from './Loading';
 
 const meta: Meta<typeof Loading> = {
-  title: 'Components/Loading',
+  title: 'Base/Loading',
   component: Loading,
   argTypes: {
     variant: {

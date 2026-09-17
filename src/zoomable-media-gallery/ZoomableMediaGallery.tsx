@@ -30,9 +30,9 @@ import { Backdrop, OverlayRoot } from '../overlay';
 import { Portal } from '../portal';
 import { useInteractionState } from '../hooks/use-interaction-state';
 import {
-  ArrowLeft_Stroke2_Corner0_Rounded,
-  ArrowRight_Stroke2_Corner0_Rounded,
-  ArrowOutOfBox_Stroke2_Corner0_Rounded,
+  RiArrowLeftLine,
+  RiArrowRightLine,
+  RiUpload2Line,
 } from '../icons';
 import { WEB_POSITION_FIXED, type WebCssStyle } from '../styles/web-view-style';
 import { MediaPoster, MediaSurface } from '../media-flight/MediaSurface';
@@ -151,9 +151,9 @@ function NavArrow({
       ]}
     >
       {isLeft ? (
-        <ArrowLeft_Stroke2_Corner0_Rounded fill="#fff" size="lg" />
+        <RiArrowLeftLine fill="#fff" size="lg" />
       ) : (
-        <ArrowRight_Stroke2_Corner0_Rounded fill="#fff" size="lg" />
+        <RiArrowRightLine fill="#fff" size="lg" />
       )}
     </Pressable>
   );
@@ -1122,7 +1122,7 @@ const ZoomableMediaGalleryInner = React.forwardRef<ZoomableMediaGalleryHandle, Z
               hitSlop={8}
               style={[styles.shareButton, webPointerStyle]}
             >
-              <ArrowOutOfBox_Stroke2_Corner0_Rounded fill="#fff" size="md" />
+              <RiUpload2Line fill="#fff" size="md" />
             </Pressable>
           )}
 

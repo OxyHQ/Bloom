@@ -26,7 +26,11 @@ import { Label } from '@oxy.so/bloom/label';
 | `htmlFor`  | the reverse association on web                                |
 | `required` | the required marker, and that it is announced as required      |
 | `disabled` | dims it in step with the control                              |
-| `size`     | `xs` · `sm` · `md`                                            |
+| `size`     | `xs` body-2-medium · `sm` body-medium (default) · `md` headline-medium |
+
+## What it looks like
+
+The field label, identical to `TextFieldLabel`: Inter `body-medium` in the primary text colour, 4px above the control, with the required asterisk 2px after the text in the error colour. `disabled` drops the text to the tertiary colour.
 
 ## Without the wiring it is just text above a box
 

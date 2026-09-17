@@ -10,7 +10,7 @@ import {
   TextFieldLabel,
   TextFieldSuffix,
 } from '../text-field';
-import { MagnifyingGlass_Stroke2_Corner0_Rounded as MagnifyingGlassIcon } from '../icons/MagnifyingGlass';
+import { RiSearchLine as MagnifyingGlassIcon } from '../icons/remix/RiSearchLine';
 
 function renderWithTheme(ui: React.ReactElement) {
   return render(

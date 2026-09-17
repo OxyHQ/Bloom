@@ -1,0 +1,53 @@
+---
+title: Carousel
+description: A horizontal run of slides that snap into place, with prev/next buttons and a position indicator.
+order: 95
+---
+
+# Carousel
+
+A gallery you slide through: prev/next buttons above, a track that snaps to each slide, and dots below.
+
+```tsx
+import { Carousel, CarouselItem } from '@oxy.so/bloom/carousel';
+
+<Carousel accessibilityLabel="Product photos">
+  {photos.map((photo) => (
+    <CarouselItem key={photo.id}>
+      <Image source={photo} style={{ height: 240, borderRadius: 12 }} />
+    </CarouselItem>
+  ))}
+</Carousel>
+```
+
+`accessibilityLabel` is required: the region announces itself as a "carousel" (web `aria-roledescription`) and each slide as "N of M", so callers never number their own slides.
+
+## Props
+
+| Prop | Default | |
+| --- | --- | --- |
+| `showArrows` | `true` | Prev/next buttons, right-aligned above the track. They disable at each end. |
+| `showDots` | `true` | Position indicator; never shown for a single slide. Each dot is a button. |
+| `align` | `'start'` | Where a slide rests when it snaps: `'start'` or `'center'`. |
+| `gap` | `16` | Space between slides, px. |
+| `onIndexChange` | | The slide in view changed. |
+| `previousLabel` / `nextLabel` / `dotLabel` | English | Localised button names. |
+
+`CarouselItem` fills the track by default, so exactly one slide is in view. Pass a smaller `width` to peek the next slide (pair it with `align="center"` for a centred gallery).
+
+## What it looks like
+
+Column gap 16; arrows are small secondary icon buttons 8 apart; dots are 6px-tall pills 6 apart — the active one 16 wide in the text colour, the rest 6 wide in the tertiary surface (neutral-200, dark neutral-800), hovering to neutral-400 (dark neutral-600); width and colour ease over 200ms, skipped under reduced motion.
+
+The arrows are Bloom's `Button` (full pill, 18px glyph), per Bloom's radius rule for button-like controls.
+
+## How it works
+
+The track is a real horizontal `ScrollView` — a native scroller rather than a transformed strip — so swipe, momentum, trackpad and (on web, once the track has focus) arrow-key scrolling come for free.
+
+- **Snapping** is CSS `scroll-snap` on web and `snapToOffsets` on native (computed from the measured slides, centre-adjusted for `align="center"`).
+- **Positions are measured** with each slide's `onLayout`, never derived from a width, so mixed-width slides keep working.
+- **The ends are pinned, not measured.** At the far end the last slide can never reach the left edge, so a nearest-slide search would never light the last dot and a press on it would look broken. Within 1px of either end the first/last slide is active.
+- Programmatic scrolls animate unless the user prefers reduced motion.
+
+Web CSS (snap, hidden scrollbar, the track's `:focus-visible` ring, dot transitions) is self-injected through `adoptStyleSheet` on `dataSet` hooks — nothing to copy into a consumer stylesheet.

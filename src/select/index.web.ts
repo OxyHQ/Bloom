@@ -13,9 +13,11 @@ export {
 export {
   SelectGroup,
   SelectLabel,
+  SelectScrollProvider,
   SelectScrollUpButton,
   SelectScrollDownButton,
 } from './shared';
+export type { SelectScrollContextValue } from './shared';
 export type {
   SelectProps,
   SelectTriggerProps,
@@ -27,4 +29,5 @@ export type {
   SelectItemIndicatorProps,
   SelectGroupProps,
   SelectLabelProps,
+  SelectSize,
 } from './types';

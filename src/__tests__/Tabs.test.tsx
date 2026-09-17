@@ -4,7 +4,10 @@ import { act, fireEvent, render } from '@testing-library/react-native';
 
 import { BloomThemeProvider } from '../theme/BloomThemeProvider';
 import { Tabs, TabsTrigger } from '../tabs';
-import type { TabsDragController } from '../tabs/Tabs';
+import { resolveTabsPaint, type TabsDragController } from '../tabs/Tabs';
+import { resolveButtonRamps } from '../button/shared';
+import { TYPE_SCALE } from '../typography/scale';
+import type { Theme } from '../theme/types';
 import { pressHost } from './support/press-host';
 
 function renderWithTheme(ui: React.ReactElement) {
@@ -91,9 +94,16 @@ describe('Tabs', () => {
     }
   });
 
-  it('does not render the underline indicator for the filled variant', () => {
-    const { queryByTestId } = renderWithTheme(<Bar value="a" variant="filled" />);
-    expect(queryByTestId('tabs-indicator')).toBeNull();
+  it('draws the pill variants\' indicator as a full-height pill thumb, not an underline', () => {
+    for (const variant of ['pill', 'filled', 'outlined'] as const) {
+      const { getByTestId, unmount } = renderWithTheme(<Bar value="a" variant={variant} />);
+      const thumb = flattenStyle(getByTestId('tabs-indicator').props.style);
+      expect(thumb.top).toBe(0);
+      expect(thumb.bottom).toBe(0);
+      expect(thumb.height).toBeUndefined();
+      expect(thumb.borderRadius).toBe(9999);
+      unmount();
+    }
   });
 
   it('stretches each trigger to equal width when fullWidth is set', () => {
@@ -575,6 +585,154 @@ describe('Tabs', () => {
       await bar.settle();
 
       expect(bar.indicator()).toEqual({ x: 80, width: 80 });
+    });
+  });
+  /**
+   * The tabs and the pill tab switcher, pinned at their
+   * measured geometry and paint.
+   */
+  describe('tabs geometry and paint', () => {
+    function labelStyle(getByText: (t: string) => ReactTestInstance, label: string) {
+      return flattenStyle(getByText(label).props.style);
+    }
+
+    it('underline: px 10 / py 8 / gap 10 triggers, selected body-medium, idle body-regular', () => {
+      const { getByText } = renderWithTheme(<Bar value="a" />);
+      const trigger = flattenStyle(triggerFor(getByText('First')).props.style);
+      expect(trigger).toMatchObject({
+        paddingLeft: 10,
+        paddingRight: 10,
+        paddingTop: 8,
+        paddingBottom: 8,
+        gap: 10,
+      });
+      expect(labelStyle(getByText, 'First')).toMatchObject(TYPE_SCALE['body-medium']);
+      expect(labelStyle(getByText, 'Second')).toMatchObject(TYPE_SCALE['body-regular']);
+    });
+
+    it('pill: px 8 / py 5 / gap 4 full-pill triggers with body-medium labels in both states', () => {
+      const { getByText } = renderWithTheme(<Bar value="a" variant="pill" />);
+      const trigger = flattenStyle(triggerFor(getByText('Second')).props.style);
+      expect(trigger).toMatchObject({
+        paddingLeft: 8,
+        paddingRight: 8,
+        paddingTop: 5,
+        paddingBottom: 5,
+        gap: 4,
+        borderRadius: 9999,
+      });
+      expect(labelStyle(getByText, 'First')).toMatchObject(TYPE_SCALE['body-medium']);
+      expect(labelStyle(getByText, 'Second')).toMatchObject(TYPE_SCALE['body-medium']);
+    });
+
+    it('lays the underline OVER the 1px baseline, and flush when a caller removes it', () => {
+      const withBaseline = renderWithTheme(<Bar value="a" />);
+      expect(flattenStyle(withBaseline.getByTestId('tabs-indicator').props.style).bottom).toBe(-1);
+      withBaseline.unmount();
+      const without = renderWithTheme(<Bar value="a" style={{ borderBottomWidth: 0 }} />);
+      expect(flattenStyle(without.getByTestId('tabs-indicator').props.style).bottom === 0).toBe(true);
+    });
+
+    it('has no press scale — a trigger carries no transform', () => {
+      const { getByText } = renderWithTheme(<Bar value="a" variant="pill" />);
+      let node: ReactTestInstance | null = triggerFor(getByText('First'));
+      while (node) {
+        expect(flattenStyle(node.props?.style).transform).toBeUndefined();
+        if (node.props?.onLayout) break;
+        node = node.parent;
+      }
+    });
+
+    it('sizes and tints a leadingIcon component from the variant and selection', () => {
+      const Icon = jest.fn((_props: { width?: number; height?: number; fill?: string }) => null);
+      const underline = renderWithTheme(
+        <Tabs value="a" onValueChange={() => {}}>
+          <TabsTrigger value="a" label="First" leadingIcon={Icon} />
+          <TabsTrigger value="b" label="Second" leadingIcon={Icon} />
+        </Tabs>,
+      );
+      const sizes = Icon.mock.calls.map(([props]) => props.width);
+      expect(new Set(sizes)).toEqual(new Set([16]));
+      const fills = new Set(Icon.mock.calls.map(([props]) => props.fill));
+      // Selected and idle paint differently.
+      expect(fills.size).toBe(2);
+      underline.unmount();
+
+      Icon.mockClear();
+      renderWithTheme(
+        <Tabs variant="pill" value="a" onValueChange={() => {}}>
+          <TabsTrigger value="a" label="First" leadingIcon={Icon} />
+        </Tabs>,
+      );
+      expect(Icon.mock.calls[0]?.[0]).toMatchObject({ width: 20, height: 20 });
+    });
+
+    it('renders an idle pill hover layer, and none on the selected pill or the underline strip', () => {
+      const pill = renderWithTheme(<Bar value="a" variant="pill" />);
+      const layers = (label: string) =>
+        triggerFor(pill.getByText(label)).findAll(
+          (n) => typeof n.type === 'string' && flattenStyle(n.props.style).position === 'absolute',
+        );
+      expect(layers('First')).toHaveLength(0);
+      expect(layers('Second').length).toBeGreaterThan(0);
+      // Hidden at rest; a press borrows the hover paint on native.
+      expect(flattenStyle(layers('Second')[0]!.props.style).opacity).toBe(0);
+      pill.unmount();
+
+      const underline = renderWithTheme(<Bar value="a" />);
+      const none = triggerFor(underline.getByText('Second')).findAll(
+        (n) => typeof n.type === 'string' && flattenStyle(n.props.style).position === 'absolute',
+      );
+      expect(none).toHaveLength(0);
+    });
+
+    describe('resolveTabsPaint', () => {
+      function themeFor(isDark: boolean): Theme {
+        let captured: Theme | undefined;
+        const { useTheme } = jest.requireActual('../theme/use-theme') as {
+          useTheme: () => Theme;
+        };
+        function Capture() {
+          captured = useTheme();
+          return null;
+        }
+        const { unmount } = render(
+          <BloomThemeProvider mode={isDark ? 'dark' : 'light'} colorPreset="blue">
+            <Capture />
+          </BloomThemeProvider>,
+        );
+        unmount();
+        if (!captured) throw new Error('theme not captured');
+        return captured;
+      }
+
+      it.each([false, true])('maps tokens onto the ramps (dark=%s)', (isDark) => {
+        const theme = themeFor(isDark);
+        const { accent, neutral: n } = resolveButtonRamps(theme);
+
+        const underline = resolveTabsPaint(theme, 'underline');
+        expect(underline.underline).toBe(accent[600]);
+        expect(underline.selectedLabel).toBe(accent[600]);
+        expect(underline.idleLabel).toBe(theme.colors.text);
+        expect(underline.separator).toBe(isDark ? n[800] : n[200]);
+        expect(underline.countSelectedForeground).toBe(accent[600]);
+        expect(underline.countIdleBackground).toBe('rgba(0, 0, 0, 0.1)');
+        if (!isDark) expect(underline.countSelectedBackground).toBe(accent[100]);
+
+        const pill = resolveTabsPaint(theme, 'pill');
+        expect(pill.selectedLabel).toBe(accent[500]);
+        expect(pill.idleLabel).toBe(n[500]);
+        expect(pill.hover).toBe(isDark ? n[800] : n[100]);
+        if (!isDark) expect(pill.thumb).toBe(accent[50]);
+
+        const filled = resolveTabsPaint(theme, 'filled');
+        expect(filled.thumb).toBe(isDark ? n[800] : n[200]);
+        expect(filled.selectedLabel).toBe(theme.colors.text);
+        if (!isDark) expect(filled.hover).toBe(n[100]);
+
+        // `outlined` is a legacy alias for the accent pill.
+        expect(resolveTabsPaint(theme, 'outlined')).toEqual(pill);
+      });
     });
   });
 });

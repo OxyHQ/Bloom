@@ -54,15 +54,15 @@ const CHROME = process.env.CHROME_PATH ?? '/opt/google/chrome/chrome';
 
 const argUrl = process.argv.indexOf('--url');
 const BASE = argUrl !== -1 ? process.argv[argUrl + 1] : 'http://localhost:6006';
-const STORY = 'overlays-mediaflight--fly-to-and-back';
+const STORY = 'base-media-flight--fly-to-and-back';
 /** Mounts the layer AND a button under it, with no flight ever started. */
-const IDLE_STORY = 'overlays-mediaflight--click-through';
+const IDLE_STORY = 'base-media-flight--click-through';
 /** Flies a warm poster and a cold one, so paint latency can be timed. */
-const PAINT_STORY = 'overlays-mediaflight--paint-latency';
+const PAINT_STORY = 'base-media-flight--paint-latency';
 /** A route change: the origin unmounts mid-flight and the destination arrives. */
-const REPARENT_STORY = 'overlays-mediaflight--reparented-video';
+const REPARENT_STORY = 'base-media-flight--reparented-video';
 /** The same story with a surface at each end — the identity control. */
-const RECREATE_STORY = 'overlays-mediaflight--recreated-video';
+const RECREATE_STORY = 'base-media-flight--recreated-video';
 
 /**
  * How long a WARM flight may take to put pixels on screen after `flyTo`

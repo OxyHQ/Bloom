@@ -12,9 +12,10 @@ export interface BadgeProps {
   variant?: AccentFill;
   /** Semantic color. */
   color?: AccentTone;
-  /** Size preset. */
+  /** Size preset. `medium` is the counter size: 18 tall, 12/16 semibold. */
   size?: BadgeSize;
-  /** If true, renders as a small dot without content. A dot always paints the
+  /** If true, renders a dot without content — standalone, a status dot
+   * (a solid centre on the tone's tint halo); attached, a plain marker. A dot always paints the
    * tone's fill, whatever the `variant`. */
   dot?: boolean;
   /** Maximum number to display. Values above this show "{max}+". */

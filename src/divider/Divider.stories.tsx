@@ -6,7 +6,7 @@ import { Divider } from './index';
 import { Text } from '../typography';
 
 const meta: Meta<typeof Divider> = {
-  title: 'Components/Divider',
+  title: 'Base/Divider',
   component: Divider,
 };
 
@@ -25,6 +25,26 @@ export const Horizontal: Story = {
       <Text>Above</Text>
       <Divider spacing={12} />
       <Text>Below</Text>
+    </View>
+  ),
+};
+
+/**
+ * The three treatments, empty and with content in every alignment.
+ */
+export const Variants: Story = {
+  render: () => (
+    <View style={{ width: 620, gap: 16 }}>
+      <Divider />
+      <Divider variant="double" />
+      <Divider variant="fill" />
+      <Divider>Today</Divider>
+      <Divider align="start">Start</Divider>
+      <Divider align="end">End</Divider>
+      <Divider variant="double">Double</Divider>
+      <Divider variant="double" align="start">Double start</Divider>
+      <Divider variant="fill" align="start">Fill</Divider>
+      <Divider variant="fill" align="end">Fill end</Divider>
     </View>
   ),
 };

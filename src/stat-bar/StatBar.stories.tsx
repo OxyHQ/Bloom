@@ -4,7 +4,7 @@ import type { Meta, StoryObj } from '@storybook/react-vite';
 
 import { StatBar } from './index';
 import { BloomThemeProvider } from '../theme';
-import { Star_Filled_Corner0_Rounded as StarIcon } from '../icons/Star';
+import { RiStarFill as StarIcon } from '../icons/remix/RiStarFill';
 
 function Demo() {
   return (
@@ -32,7 +32,7 @@ function Demo() {
 }
 
 const meta: Meta<typeof StatBar> = {
-  title: 'Data Display/StatBar',
+  title: 'Charts/Stat Bar',
   component: StatBar,
 };
 

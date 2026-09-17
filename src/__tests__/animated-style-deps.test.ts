@@ -32,16 +32,10 @@ const MAPPERS = ['useAnimatedStyle', 'useDerivedValue', 'useAnimatedProps'] as c
  * Keyed by FILE, not line, so an unrelated edit above them doesn't invalidate the
  * entry — and with an exact count, so a NEW offender in the same file still fails.
  */
-const ALLOWED: Array<{ file: string; count: number; reason: string }> = [
-  {
-    file: 'dialog/Dialog.tsx',
-    count: 1,
-    reason:
-      'Native-only fork: web resolves Dialog.web.tsx (see dialog/index.web.ts), ' +
-      'and on native the worklets plugin auto-tracks reads, so the deps array is ' +
-      'not what drives these mappers. Harmless where this file actually runs.',
-  },
-];
+// Empty: `dialog/Dialog.tsx`'s one mapper (native-only fork) was the last entry,
+// and it now names `progress` and `travel` like every other mapper
+// (`scripts/reanimated-deps.mjs`, gated by `reanimated-deps.test.ts`).
+const ALLOWED: Array<{ file: string; count: number; reason: string }> = [];
 
 type Offender = {
   location: string;
@@ -165,10 +159,12 @@ describe('reanimated mapper dependency arrays', () => {
     ).toEqual([]);
   });
 
-  it.each(ALLOWED)('allowlisted $file has exactly $count known mapper(s)', ({ file, count }) => {
-    // A NEW offender in an allowlisted file must still fail.
-    expect(offenders.filter((o) => o.location.startsWith(`${file}:`))).toHaveLength(count);
-  });
+  for (const { file, count } of ALLOWED) {
+    it(`allowlisted ${file} has exactly ${count} known mapper(s)`, () => {
+      // A NEW offender in an allowlisted file must still fail.
+      expect(offenders.filter((o) => o.location.startsWith(`${file}:`))).toHaveLength(count);
+    });
+  }
 
   it('keeps the allowlist small enough to be reviewable', () => {
     // If this grows, that is a finding about the repo — not something to encode.

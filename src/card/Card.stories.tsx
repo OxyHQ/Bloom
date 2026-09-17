@@ -14,7 +14,7 @@ import { Button } from '../button';
 import type { CardRadius } from './types';
 
 const meta: Meta<typeof Card> = {
-  title: 'Data Display/Card',
+  title: 'Base/Card',
   component: Card,
 };
 
@@ -95,7 +95,7 @@ export const Axes: Story = {
       <Card variant="outlined" border="hairline" elevation="s" radius="radius-20">
         <CardBody>
           <CardTitle>hairline + shadow-s</CardTitle>
-          <CardDescription>What `BenefitList` is.</CardDescription>
+          <CardDescription>A light raised surface.</CardDescription>
         </CardBody>
       </Card>
       <Card variant="outlined" border="hairline" elevation="m" radius="radius-16">

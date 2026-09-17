@@ -18,7 +18,7 @@ export interface FrostedIconButtonProps {
 
   /**
    * The icon to render, centered inside the circle. Typically a Bloom icon
-   * element (`<Icons.ArrowLeft_Stroke2_Corner0_Rounded />` — icon exports carry
+   * element (`<Icons.RiArrowLeftLine />` — icon exports carry
    * their full style and corner suffix). If the icon does not set its own `fill`,
    * the button injects the theme-aware icon color (foreground when frosted,
    * `primaryForeground` when `active`) as a fallback so a bare icon is colored

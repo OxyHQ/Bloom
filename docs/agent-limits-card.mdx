@@ -1,0 +1,92 @@
+---
+title: AgentLimitsCard
+description: Context-window usage with an expandable breakdown, and rolling plan limits — the agent budget widget.
+order: 64
+---
+
+# AgentLimitsCard
+
+The "how much of my agent budget is left" widget. Two sections, each optional:
+
+- **Context window** — a stacked 6px bar, one segment per counted bucket, with a `used / max (pct)` readout. Pressing the heading grows the card to a legend row per bucket (swatch, label, tokens, share), free space, deferred buckets (listed with `—`, not drawn or counted) and collapsible groups listing their members.
+- **Plan usage limits** — one row per rolling limit: label, reset time, percent and a progress bar.
+
+```tsx
+import { AgentLimitsCard } from '@oxy.so/bloom/agent-limits-card';
+
+<AgentLimitsCard
+  context={{
+    max: 1_000_000,
+    segments: [
+      { label: 'Messages', tokens: 520_000 },
+      { label: 'System tools', tokens: 96_000 },
+      { label: 'MCP tools (deferred)', tokens: 69_900, deferred: true },
+    ],
+    groups: [
+      { label: 'MCP tools', tokens: 137_900, items: [{ label: 'browser', tokens: 54_200 }] },
+    ],
+  }}
+  plan="Max (5x)"
+  limits={[
+    { label: '5-hour limit', used: 0.38, resets: 'Resets in 2 hr 46 min' },
+    { label: 'Weekly · all models', used: 0.03, resets: 'Resets Tue 3:00 PM' },
+  ]}
+  onPlanPress={openBilling}
+/>
+```
+
+The card fills its container's width; give the container the width you want (320–400 reads well).
+
+## Sections
+
+Pass `context` alone for just the context window, or `limits` (and/or `plan`) alone for just the plan section. The separator only appears when both are present. The arrow beside the plan heading appears only when `onPlanPress` is set; it is a 24px `rounded-md` link (Remix `RiArrowRightLine`, tertiary, turning secondary over the hover fill), named "Manage plan" unless `labels.managePlan` says otherwise.
+
+## Expanding
+
+Uncontrolled by default (`defaultExpanded`), or controlled with `expanded` + `onExpandedChange`. Group rows keep their own open state. The heading and group rows are buttons that announce `aria-expanded`; collapsed content is unmounted once the close animation ends, so it never reaches the accessibility tree while hidden.
+
+## Colours
+
+Everything comes from the theme through the same ramps as `Button` (`resolveButtonRamps`):
+
+| Token | light | dark |
+|---|---|---|
+| card | neutral-100 | neutral-900 |
+| row hover | neutral-200 | neutral-800 |
+| primary text | `colors.text` | `colors.text` |
+| secondary / tertiary text | neutral-500 / 400 | neutral-500 / 600 |
+| bar track | neutral-200 | neutral-800 |
+| deferred swatch | neutral-300 | neutral-700 |
+| separator | neutral-200 | neutral-700 at 60% over the card |
+| limit fill | accent-400 | accent-400 |
+| focus ring (web) | accent-500 | accent-500 |
+
+Segments cycle a fixed chart order — blue, purple, pink, yellow, emerald, sky, teal, lime — re-anchored on the theme: the first tone is the accent ramp's 400 (around `primary`) and every other tone keeps Tailwind's lightness step, chroma ratio and hue distance from blue-400. A blue preset lands on that palette exactly; another preset rotates the set with its primary. A segment's `color` overrides its tone.
+
+## Motion
+
+Breakdown height and opacity animate over 320ms, group members over 260ms (`cubic-bezier(0.22, 1, 0.36, 1)`); chevrons rotate over 200ms and bar widths ease to new values over 500ms. Under the system's reduced-motion setting all of it snaps. There is no press or scale animation.
+
+Text uses the type ramp (`TYPE_SCALE['body-medium' | 'body-regular' | 'body-2-regular']`) on EVERY run, including the nested `(82%)` span — a nested Bloom `Text` without its own ramp step falls back to the 13px default and silently shrinks. Icons are the Remix set at 16px: `RiArrowDownSLine`, `RiArrowRightSLine`, `RiArrowRightLine`.
+
+## Accessibility
+
+The context bar and every limit bar are `progressbar`s named by their label, with flat `aria-valuemin/max/now` (context: tokens of `max`; limits: percent of 100). The heading's name includes the readout, e.g. "Context window, 820k / 1M (82%)".
+
+## Props
+
+| Prop | Type | Default | Description |
+|------|------|---------|-------------|
+| `context?` | `{ max, segments, groups? }` | — | Context-window usage. Omit to hide the section. |
+| `context.segments[]` | `{ label, tokens, color?, deferred? }` | — | Buckets. `deferred` ones are listed, not drawn or counted. |
+| `context.groups[]` | `{ label, tokens, items: { label, tokens }[] }` | — | Collapsible member lists. |
+| `plan?` | `string` | — | Appended to the plan heading as `· plan`. |
+| `limits?` | `{ label, used, resets }[]` | — | `used` is a 0–1 share, clamped. |
+| `onPlanPress?` | `() => void` | — | Shows and handles the plan arrow. |
+| `expanded?` | `boolean` | — | Controlled breakdown state. |
+| `defaultExpanded?` | `boolean` | `false` | Initial state when uncontrolled. |
+| `onExpandedChange?` | `(expanded: boolean) => void` | — | Called on every toggle. |
+| `formatTokens?` | `(tokens: number) => string` | `482800 → "482.8k"` | Token formatter. |
+| `labels?` | `{ contextWindow?, freeSpace?, planUsageLimits?, managePlan? }` | English | Fixed strings. |
+| `style?` | `StyleProp<ViewStyle>` | — | Card style. Override padding with longhands (`paddingLeft`, …). |
+| `testID?` | `string` | — | Also derives `-context-toggle`, `-context-bar`, `-breakdown`, `-plan-button`. |

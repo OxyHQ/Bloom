@@ -30,10 +30,11 @@ export const MIN_STACK_SCALE_X = 0.8;
  * screen-width-minus-32. That is correct for the platform it was written for and
  * wrong everywhere else — on a 1280px desktop viewport it produces a ~1248px
  * card, which reads as a page banner rather than a toast. sonner (web) instead
- * fixes the card at `--width: 356px`.
+ * fixes the card at `--width: 356px`; Bloom's notification viewport instead
+ * follows `w-[min(400px,calc(100vw-24px))]`.
  *
  * The cap therefore sizes the ROW BOX, which carries the card's two `space.lg`
- * gutters, so the visible card lands on sonner's 356px on any viewport wide
+ * gutters, so the visible card lands on 400px on any viewport wide
  * enough to reach it. `maxWidth` needs no platform fork because it degrades by
  * itself: below a 388px viewport the row is still screen-width and the card is
  * still screen-width-minus-32, exactly as before, so phone portrait — the case
@@ -47,7 +48,7 @@ export const MIN_STACK_SCALE_X = 0.8;
  * A consumer who overrides the cap through `toastOptions.toastContainerStyle`
  * moves the card only; both of those keep measuring against this default.
  */
-export const TOAST_MAX_ROW_WIDTH = 356 + space.lg * 2;
+export const TOAST_MAX_ROW_WIDTH = 400 + space.lg * 2;
 
 /** Enter animation length; also the auto-close timer's head start and the overlay teardown delay. */
 export const ENTERING_ANIMATION_DURATION = 300;
@@ -94,25 +95,23 @@ export const toastDefaults: {
   unstyled: false,
   invert: false,
   pauseWhenPageIsHidden: true,
-  gap: 8,
+  /** The viewport `gap-3`. */
+  gap: 12,
   theme: 'system',
   autoWiggleOnUpdate: 'never',
   richColors: false,
   /**
-   * ON, unlike upstream — the same class of correction as `TOAST_MAX_ROW_WIDTH`.
+   * ON, unlike sonner-native — the same class of correction as `TOAST_MAX_ROW_WIDTH`.
    *
    * sonner-NATIVE defaults this off; sonner (web) has no switch at all, because a
    * collapsed stack — front row full size, the ones behind scaled and offset,
-   * expanding on interaction — IS its default presentation. The port inherited the
-   * mobile default onto every desktop consumer, where an unstacked run of toasts
-   * is a column of full cards rather than a stack.
+   * expanding on interaction — IS its default presentation. The mobile default
+   * would otherwise reach every desktop consumer, where an unstacked run of
+   * toasts is a column of full cards rather than a stack.
    *
-   * Bloom already deviates deliberately elsewhere (`position: 'bottom-center'` vs
-   * upstream's `top-center`, `duration: 3000` vs 4000, `gap: 8` vs 14), so this is
-   * in keeping rather than a break with the port.
-   *
-   * Turning it OFF (`<ToastOutlet enableStacking={false} />`) restores the flat
-   * column, which is still the right choice for a surface that must show several
+   * Turning it OFF (`<ToastOutlet enableStacking={false} />`) gives the flat
+   * column — full cards, `gap` apart, springing into place as rows enter and
+   * leave — which is the right choice for a surface that must show several
    * toasts at once without an interaction.
    */
   enableStacking: true,

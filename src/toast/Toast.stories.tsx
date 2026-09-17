@@ -36,7 +36,7 @@ import type { ToasterProps } from './types';
  * only a browser can judge the geometry.)
  */
 const meta: Meta = {
-  title: 'Overlays/Toast',
+  title: 'Base/Toast',
 };
 
 export default meta;
@@ -142,6 +142,35 @@ export const CloseButton: Story = {
     <Demo outlet={{ closeButton: true }}>
       <Button onPress={() => toast('Dismiss me with the close button', { duration: Infinity })}>
         Close button
+      </Button>
+    </Demo>
+  ),
+};
+
+/**
+ * The notification card every default toast renders: status disc,
+ * title + description, secondary/primary actions and the xs close button. Fire
+ * `All` and compare against `Notification`'s `Matrix` story — the geometry is
+ * the same table (`notification/shared.ts`).
+ */
+export const NotificationLook: Story = {
+  render: () => (
+    <Demo outlet={{ closeButton: true, enableStacking: false, visibleToasts: 6, duration: Infinity }}>
+      <Button
+        onPress={() => {
+          toast('Saved');
+          toast.info('Update available', { description: 'Version 2.4 ships with faster sync.' });
+          toast.success('Payment received', { description: '$1,240.00 from Acme Inc.' });
+          toast.warning('Storage almost full', { description: 'You have used 92% of 10 GB.' });
+          toast.error('Deploy failed', {
+            description: 'Build step exited with code 1.',
+            action: { label: 'Retry', onClick: () => {} },
+            cancel: { label: 'View logs', onClick: () => {} },
+          });
+          toast.loading('Uploading…');
+        }}
+      >
+        All
       </Button>
     </Demo>
   ),

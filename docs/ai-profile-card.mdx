@@ -1,0 +1,62 @@
+---
+title: AiProfileCard
+description: The AI profile card — cover photo, overlapping avatar, name and handle with a badge, a count-up contributions headline, stat tiles and the contributions heatmap.
+order: 104
+---
+
+# AiProfileCard
+
+The heatmap is `ContributionsGrid` from `chart-cards`.
+
+```tsx
+import { AiProfileCard } from '@oxy.so/bloom/ai-profile-card';
+
+<AiProfileCard
+  name="Maya Collins"
+  handle="@maya"
+  badge="PRO"
+  coverSource={cover}
+  actions={
+    <>
+      <Button variant="secondary" size="small" leadingIcon={RiShare2Line}>Share</Button>
+      <Button variant="secondary" size="small" leadingIcon={RiEditBoxLine}>Edit</Button>
+    </>
+  }
+  contributions={7462}
+  delta="+14.8%"
+  stats={[{ value: '9B', label: 'Lifetime tokens' }, /* … */]}
+  cells={cells /* 38 × 7, column-major */}
+/>
+```
+
+## Props
+
+| Prop | Default | |
+|---|---|---|
+| `name` / `handle` / `badge` | — | the name row; the badge is the neutral counter badge |
+| `coverSource` / `coverPosition` | — / `{ x: 0.5, y: 0.45 }` | photo over the top 165px, cropped like `object-position` |
+| `avatarSource` / `initials` | — / first letter of `name` | the 80px disc |
+| `actions` | — | buttons hung 34px above the name row's right edge |
+| `contributionsLabel` | `"Contributions this year"` | |
+| `contributions` / `format` | — / `$7,462` | the headline, counting up from 0 on mount |
+| `countUpDuration` | 1600 | `0` shows the number at once |
+| `delta` | — | status-purple chip text |
+| `stats` | — | tiles: one row from 640px, two columns below |
+| `activityLabel` | `"Activity"` | |
+| `periods` / `period` / `defaultPeriod` / `onPeriodChange` | Weekly / Monthly / Yearly | the plain switcher; `[]` hides it |
+| `cells` / `columns` / `color` | — / 38 / violet-500 | the heatmap |
+| `animateIn` | `true` | pop the cells in on mount |
+| `activeCell` / `onActiveCellChange` | tracked | |
+
+## Layout
+
+- **Card:** radius 24, a 1px `border-ai-profile-card` (neutral-200 / 800), no fill, clipping its children.
+- **Cover:** absolute over the top 165px, top corners 23, `background-tertiary` (neutral-200 / 800) under the photo.
+- **Content:** a column 15 apart, padding 124 top / 16 sides / 16 bottom — the avatar overlaps the cover's bottom edge by 41.
+- **Avatar:** 80, `background-tertiary`, initials 30 / 42.5 medium text-secondary (an arbitrary size off the type ramp).
+- **Name row:** `title-2-medium`, 4 under it the handle (`headline-medium` text-secondary) and badge, 6 apart. `actions` sit absolutely 34 above the row, 4 from its right edge, 10 apart.
+- **Block:** 8 apart — label `body-medium` text-secondary / 2 / headline `title-1-medium` tabular with the chip 8 after it; tiles radius 10, padding 10, `background-secondary`, value `body-medium` over label `body-2-medium` text-secondary, both truncating; the Activity row (6 top, 2 left, `body-2-medium`) with a plain `SegmentedControl`; the heatmap, which below 640px takes fixed 13px cells in a horizontal scroller.
+
+## Motion
+
+The headline counts 0 → `contributions` on mount over 1.6s (ease-out cubic), in its own component so the roll re-renders only the number — re-rendering the ~270 heatmap cells each frame starved their pop-in animation on web. The cells pop in scattered over 0–800ms. Reduced motion snaps both.
