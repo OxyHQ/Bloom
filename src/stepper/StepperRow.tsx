@@ -37,7 +37,9 @@ function StepperRowComponent({
           paddingTop: 16,
           paddingBottom: 16,
           borderBottomWidth: divider ? 1 : 0,
-          borderBottomColor: theme.isDark ? neutral[800] : neutral[200],
+          // neutral-700 in dark, not 800: 800 is the floating surface (a popover, a
+          // sheet) these rows usually sit on, where an 800 hairline disappears.
+          borderBottomColor: theme.isDark ? neutral[700] : neutral[200],
         },
         style,
       ]}

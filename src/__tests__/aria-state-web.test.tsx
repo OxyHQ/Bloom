@@ -67,6 +67,13 @@ import { Radio, RadioGroup } from '../radio';
 import { StatBar } from '../stat-bar';
 import { Stepper } from '../stepper';
 import { RatingBar } from '../rating';
+import { AmenityFilter, CountFilter, ToggleChipGroup } from '../stay-filters';
+import { DestinationSuggestions, StaySearchBar, StaySearchStep } from '../stay-search';
+import { BookingCard } from '../booking';
+import { FavoriteButton } from '../listing-card';
+import { CategoryBar } from '../category-bar';
+import { MapPriceMarker, MapSearchAreaButton } from '../map-marker';
+import { RiFireLine } from '../icons/remix/RiFireLine';
 import {
   DropdownMenuCheckboxItem,
   DropdownMenuItem,
@@ -285,6 +292,16 @@ describe('role="button" toggles use aria-pressed', () => {
       <FrostedIconButton accessibilityLabel="Back" icon={<Text>x</Text>} active testID="fib" />,
     );
     expect(byTestId(c, 'fib').getAttribute('aria-pressed')).toBe('true');
+  });
+
+  it('FavoriteButton emits aria-pressed and a name for what pressing does', () => {
+    let c = mount(<FavoriteButton favorite onFavoriteChange={() => {}} testID="fav" />);
+    expect(byTestId(c, 'fav').getAttribute('role')).toBe('button');
+    expect(byTestId(c, 'fav').getAttribute('aria-pressed')).toBe('true');
+    expect(byTestId(c, 'fav').getAttribute('aria-label')).toBe('Remove from wishlist');
+    c = mount(<FavoriteButton favorite={false} onFavoriteChange={() => {}} testID="fav" />);
+    expect(byTestId(c, 'fav').getAttribute('aria-pressed')).toBe('false');
+    expect(byTestId(c, 'fav').getAttribute('aria-label')).toBe('Save to wishlist');
   });
 
   it('CompositionBar marks the selected segment with aria-pressed', () => {
@@ -898,5 +915,135 @@ describe('RatingBar', () => {
     expect(el.getAttribute('aria-valuenow')).toBe('4.9');
     expect(el.getAttribute('aria-valuemin')).toBe('0');
     expect(el.getAttribute('aria-valuemax')).toBe('5');
+  });
+});
+
+describe('Stay filters', () => {
+  it('CountFilter: a named radiogroup whose pills spell the selection as aria-checked', () => {
+    const c = mount(<CountFilter title="Bedrooms" value={2} max={3} onValueChange={() => {}} disabled testID="cf" />);
+    expect(byRole(c, 'radiogroup').getAttribute('aria-label')).toBe('Bedrooms');
+    expect(allByRole(c, 'radio').map((r) => r.getAttribute('aria-checked'))).toEqual(['false', 'false', 'true', 'false']);
+    expect(byTestId(c, 'cf-2').getAttribute('aria-label')).toBe('2');
+    expect(byTestId(c, 'cf-2').getAttribute('aria-disabled')).toBe('true');
+  });
+
+  it('ToggleChipGroup: role="button" toggles use aria-pressed, inside a named group', () => {
+    const c = mount(
+      <ToggleChipGroup
+        options={[
+          { value: 'wifi', label: 'Wifi' },
+          { value: 'pool', label: 'Pool' },
+        ]}
+        value={['pool']}
+        onValueChange={() => {}}
+        accessibilityLabel="Amenities"
+        testID="tg"
+      />,
+    );
+    expect(byTestId(c, 'tg').getAttribute('aria-label')).toBe('Amenities');
+    expect(byTestId(c, 'tg-wifi').getAttribute('aria-pressed')).toBe('false');
+    expect(byTestId(c, 'tg-pool').getAttribute('aria-pressed')).toBe('true');
+    expect(byTestId(c, 'tg-pool').getAttribute('aria-label')).toBe('Pool');
+  });
+
+  it('AmenityFilter: the "Show more" disclosure emits aria-expanded', () => {
+    const c = mount(
+      <AmenityFilter
+        options={['a', 'b', 'c'].map((v) => ({ value: v, label: v }))}
+        collapsedCount={1}
+        value={[]}
+        onValueChange={() => {}}
+        accessibilityLabel="Amenities"
+        testID="af"
+      />,
+    );
+    expect(byTestId(c, 'af-toggle').getAttribute('aria-expanded')).toBe('false');
+  });
+});
+
+describe('StaySearchBar', () => {
+  it('a segment is a named button carrying aria-expanded', () => {
+    const c = mount(
+      <StaySearchBar activeSegment="guests" onActiveSegmentChange={() => {}} dismissible={false} testID="bar" />,
+    );
+    expect(byTestId(c, 'bar-guests').getAttribute('aria-expanded')).toBe('true');
+    expect(byTestId(c, 'bar-guests').getAttribute('aria-label')).toBe('Who, Add guests');
+    expect(byTestId(c, 'bar-checkIn').getAttribute('aria-expanded')).toBe('false');
+  });
+});
+
+describe('DestinationSuggestions', () => {
+  it('emits aria-selected on every option of a named listbox', () => {
+    const c = mount(
+      <DestinationSuggestions
+        items={[{ id: 'a', title: 'Marrowfield' }, { id: 'b', title: 'Old Halden' }]}
+        highlightedIndex={1}
+        onSelect={() => {}}
+        testID="ds"
+      />,
+    );
+    expect(byTestId(c, 'ds').getAttribute('aria-label')).toBe('Destinations');
+    expect(byTestId(c, 'ds-0').getAttribute('aria-selected')).toBe('false');
+    expect(byTestId(c, 'ds-1').getAttribute('aria-selected')).toBe('true');
+  });
+});
+
+describe('StaySearchStep', () => {
+  it('a collapsed step is a named button with aria-expanded="false"', () => {
+    const c = mount(<StaySearchStep label="Who" summary="Add guests" expanded={false} onPress={() => {}} testID="st" />);
+    expect(byTestId(c, 'st').getAttribute('aria-expanded')).toBe('false');
+    expect(byTestId(c, 'st').getAttribute('aria-label')).toBe('Who, Add guests');
+  });
+});
+
+describe('BookingCard', () => {
+  it('names each field cell and spells the open picker as aria-expanded, on every cell', () => {
+    const c = mount(<BookingCard price="$180" guests="2 guests" checkIn="10/12/2026" activeField="checkIn" testID="bc" />);
+    const checkIn = byTestId(c, 'bc-check-in');
+    expect(checkIn.getAttribute('role')).toBe('button');
+    expect(checkIn.getAttribute('aria-label')).toBe('Check-in: 10/12/2026');
+    expect(checkIn.getAttribute('aria-expanded')).toBe('true');
+    expect(byTestId(c, 'bc-check-out').getAttribute('aria-expanded')).toBe('false');
+    expect(byTestId(c, 'bc-guests').getAttribute('aria-expanded')).toBe('false');
+  });
+
+  it('claims no expanded state when the card cannot know it', () => {
+    const c = mount(<BookingCard price="$180" guests="2 guests" testID="bc" />);
+    expect(byTestId(c, 'bc-check-in').hasAttribute('aria-expanded')).toBe(false);
+  });
+});
+
+describe('CategoryBar', () => {
+  it('emits a named tablist whose tabs carry aria-selected', () => {
+    const c = mount(
+      <CategoryBar
+        items={[
+          { key: 'a', label: 'Trending', icon: RiFireLine },
+          { key: 'b', label: 'Cabins', icon: RiFireLine },
+        ]}
+        value="b"
+        accessibilityLabel="Categories"
+        testID="cb"
+      />,
+    );
+    expect(byTestId(c, 'cb-track').getAttribute('role')).toBe('tablist');
+    expect(byTestId(c, 'cb-track').getAttribute('aria-label')).toBe('Categories');
+    expect(byTestId(c, 'cb-item-a').getAttribute('aria-selected')).toBe('false');
+    expect(byTestId(c, 'cb-item-b').getAttribute('aria-selected')).toBe('true');
+    expect(byTestId(c, 'cb-item-b').getAttribute('aria-label')).toBe('Cabins');
+  });
+});
+
+describe('Map pieces', () => {
+  it('a price marker emits aria-pressed for the active state', () => {
+    const c = mount(<MapPriceMarker price="€120" state="active" accessibilityLabel="€120 per night, Lisbon" testID="pm" />);
+    expect(byTestId(c, 'pm').getAttribute('aria-pressed')).toBe('true');
+    expect(byTestId(c, 'pm').getAttribute('aria-label')).toBe('€120 per night, Lisbon');
+  });
+
+  it('the search toggle emits aria-checked', () => {
+    const c = mount(<MapSearchAreaButton variant="toggle" checked onCheckedChange={() => {}} testID="sa" />);
+    expect(byTestId(c, 'sa').getAttribute('role')).toBe('checkbox');
+    expect(byTestId(c, 'sa').getAttribute('aria-checked')).toBe('true');
   });
 });

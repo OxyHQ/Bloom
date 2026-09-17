@@ -1,0 +1,253 @@
+---
+title: Stay Filters
+description: The parts of a results page's filters surface — sections, a price histogram over a range slider, count pills, amenity chips, switches, a sticky footer and the trigger.
+order: 111
+---
+
+# Stay Filters
+
+The filters surface of a search results page, as parts the app composes inside
+Bloom's `Dialog`. Data is props: the app owns the filter state, the result
+count and every label.
+
+```tsx
+import {
+  AmenityFilter,
+  CountFilter,
+  FilterFooter,
+  FilterSection,
+  FilterTriggerButton,
+  PriceRangeFilter,
+  SegmentedFilter,
+  SwitchFilterRow,
+} from '@oxy.so/bloom/stay-filters';
+import { Dialog, useDialogControl } from '@oxy.so/bloom/dialog';
+import { RiWifiLine } from '@oxy.so/bloom/icons';
+```
+
+## Composing the dialog
+
+A centred 780-wide dialog from `md` up and a bottom sheet below it are the
+`Dialog`'s own responsive placement — nothing here builds a modal. The sections
+scroll; the footer stays, because it is rendered **after** the scroll view
+rather than inside it. That needs `scrollable={false}` (the children own the
+scrolling) and `contentPadding={0}` (the sections and footer own their insets).
+
+```tsx
+function Filters() {
+  const control = useDialogControl();
+  const [draft, setDraft] = useState(initialFilters);
+
+  return (
+    <>
+      <FilterTriggerButton count={appliedCount} onPress={() => control.open()} />
+      <Dialog
+        control={control}
+        label="Filters"
+        header={{ title: 'Filters', largeTitle: false }}
+        placement={{ base: 'bottom', md: 'center' }}
+        maxWidth={780}
+        scrollable={false}
+        contentPadding={0}
+      >
+        <ScrollView style={{ flexShrink: 1 }} contentContainerStyle={{ paddingLeft: 24, paddingRight: 24 }}>
+          <FilterSection title="Type of place">
+            <SegmentedFilter
+              options={[
+                { value: 'any', label: 'Any type' },
+                { value: 'room', label: 'Room' },
+                { value: 'entire', label: 'Entire home' },
+              ]}
+              value={draft.type}
+              onValueChange={(type) => setDraft({ ...draft, type })}
+              accessibilityLabel="Type of place"
+            />
+          </FilterSection>
+          <FilterSection title="Price range" description="Nightly prices before fees and taxes">
+            <PriceRangeFilter
+              buckets={priceBuckets}
+              min={20}
+              max={620}
+              step={5}
+              value={draft.price}
+              onValueChange={(price) => setDraft({ ...draft, price })}
+              formatPrice={(n) => formatCurrency(n)}
+            />
+          </FilterSection>
+          <FilterSection title="Rooms and beds">
+            <CountFilter title="Bedrooms" value={draft.bedrooms} onValueChange={(bedrooms) => setDraft({ ...draft, bedrooms })} />
+          </FilterSection>
+          <FilterSection title="Amenities">
+            <AmenityFilter
+              options={[{ value: 'wifi', label: 'Wifi', icon: RiWifiLine } /* … */]}
+              value={draft.amenities}
+              onValueChange={(amenities) => setDraft({ ...draft, amenities })}
+              accessibilityLabel="Amenities"
+            />
+          </FilterSection>
+          <FilterSection title="Booking options" divider={false}>
+            <SwitchFilterRow
+              title="Instant Book"
+              description="Listings you can book without waiting for host approval"
+              value={draft.instant}
+              onValueChange={(instant) => setDraft({ ...draft, instant })}
+            />
+          </FilterSection>
+        </ScrollView>
+        <FilterFooter
+          resultsLabel={resultsLabel} // "Show 1,000+ places", formatted by the app
+          loading={countIsLoading}
+          onClear={() => setDraft(initialFilters)}
+          onApply={() => {
+            apply(draft);
+            control.close();
+          }}
+        />
+      </Dialog>
+    </>
+  );
+}
+```
+
+On a phone, add the bottom safe-area inset to the footer
+(`style={{ paddingBottom: 16 + insets.bottom }}`) — the footer is the sheet's
+last row.
+
+## Parts
+
+### `FilterSection`
+
+| prop | decides |
+| --- | --- |
+| `title` | the heading, `headline-semibold`, `role="heading"`; a string also names the section's `group` |
+| `description` | a `body-regular` text-secondary line under it |
+| `children` | the section's control, 24 under the heading |
+| `divider` | a 1px neutral hairline under the section (default `true`; pass `false` on the last) |
+| `accessibilityLabel` | the group's name when `title` is a node |
+
+32 above and below, no side padding — the surface owns the inset.
+
+### `PriceRangeFilter` and `PriceHistogram`
+
+| prop | decides |
+| --- | --- |
+| `buckets` | listing counts per price bucket, lowest first; they split `min`..`max` evenly. Omit for no histogram |
+| `min` / `max` / `step` | the slider's bounds and granularity |
+| `value` / `onValueChange` | the controlled `[low, high]` |
+| `onValueCommit` | once per drag end, or per committed field |
+| `formatPrice` | how a field shows a price at rest, e.g. `(n) => (n >= max ? '$620+' : '$' + n)` |
+| `minLabel` / `maxLabel` | the field labels and the thumbs' names (default "Minimum" / "Maximum") |
+| `accessibilityLabel` | the slider's name (default "Price range") |
+| `histogramHeight` | the tallest bar (default 64) |
+
+This one **computes** prices — bucket bounds, clamping, snapping — so they are
+numbers, and `formatPrice` is where the app's currency and locale come in.
+
+- **The histogram** draws equal-width bars 2 apart with 2px top corners. A
+  bucket whose midpoint is inside the range is text-primary; the rest are
+  neutral-300 (dark neutral-700). It is hidden from assistive technology: the
+  slider announces the same range as numbers. `PriceHistogram` is exported on
+  its own for a custom layout.
+- **The slider** is Bloom's `RangeSlider` without value bubbles, pulled up so
+  its rail sits on the bars' baseline. Both map `min`..`max` across the full
+  width, so each bar sits over the prices it counts.
+- **The fields** are floating-label `TextField`s. Focused, a field shows the
+  bare number; the typed text is a draft until blur or submit, when it is
+  parsed ("$1,200" reads as 1200), snapped, clamped to its own side of the
+  range and committed. Unparseable text restores the committed value.
+
+### `SegmentedFilter`
+
+Bloom's `SegmentedControl` at `large`, stretched to the full width.
+`options`, `value`, `onValueChange`, and a required `accessibilityLabel` naming
+the radio group.
+
+### `CountFilter`
+
+A title and a row of pills: "Any" (`null`), then `min`..`max` (default 1..8),
+the last reading `8+`. Single select. The row scrolls sideways when it does not
+fit, so the counts keep their order on a narrow screen.
+
+| prop | decides |
+| --- | --- |
+| `title` | the label above; a string also names the `radiogroup` |
+| `value` / `onValueChange` | a count, or `null` for any |
+| `min` / `max` | the range of pills (default `1` / `8`) |
+| `anyLabel` | default "Any" |
+| `formatCount` | a pill's label, default the number with `+` on `max` |
+| `disabled` | every pill |
+
+For an exact count rather than a minimum, use `StepperRow` from
+`@oxy.so/bloom/stepper`:
+
+```tsx
+<StepperRow title="Guests" value={guests} onValueChange={setGuests} min={1} max={16} />
+```
+
+### `ToggleChipGroup` and `AmenityFilter`
+
+`ToggleChipGroup` is wrapped multi-select pills, each with an optional icon
+component. The selection is reported in `options` order. It needs an
+`accessibilityLabel` for its group.
+
+`AmenityFilter` is a `ToggleChipGroup` that shows the first `collapsedCount`
+(default 6) options and an underlined "Show more" / "Show less" link
+(`showMoreLabel`, `showLessLabel`, `defaultExpanded`). A selected option past
+the fold stays visible while collapsed.
+
+### `SwitchFilterRow`
+
+`title`, `description`, `value`, `onValueChange`, `disabled`. The switch is
+named by the string `title` or by `accessibilityLabel` — the caption beside a
+switch never names it.
+
+### `FilterFooter`
+
+| prop | decides |
+| --- | --- |
+| `resultsLabel` | the primary button's label, pre-formatted ("Show 1,000+ places") |
+| `onApply` / `onClear` | the two actions |
+| `clearLabel` | default "Clear all" |
+| `clearDisabled` | nothing is applied yet |
+| `loading` | the result count is being fetched: the `Button`'s own loading state |
+| `applyDisabled` | disables the primary button |
+
+A 1px hairline on top, 16 / 24 padding, the page background.
+
+### `FilterTriggerButton`
+
+An `outline` `Button` with `RiEqualizerLine` and "Filters" (`label`). While
+`count > 0` a solid count `Badge` sits on its top-right corner and the name
+becomes "Filters, 3 applied" (`accessibilityLabel` overrides it). `size`,
+`disabled`, `onPress`.
+
+## What it looks like
+
+- **Pills** (count and amenity) are 40 tall full pills with a 1px neutral-200
+  (dark neutral-700) border and a `body-medium` label. Selected is **inverted**:
+  a text-primary fill with the page background as the label, the page's own
+  reading pair turned over, legible in both modes and every preset. Hover
+  darkens the border; press fills neutral-100 (dark neutral-800). Colour only —
+  nothing scales. They are not `Chip`: that tops out at 28 tall and selects in
+  the brand tone.
+- **Text actions** ("Clear all", "Show more") are underlined `body-semibold` in
+  text-primary, text-secondary on hover.
+- Keyboard focus draws a 2px accent ring outside a 2px white offset.
+
+## Accessibility
+
+- `FilterSection`: a named `group` with a level-3 `heading`.
+- `CountFilter`: a named `radiogroup` of `radio`s with `aria-checked`
+  (`accessibilityState.checked` on native). Every pill is in the tab order.
+- `ToggleChipGroup`: a named `group` of toggle `button`s with `aria-pressed`
+  (`accessibilityState.selected` on native).
+- "Show more" carries `aria-expanded`.
+- The price thumbs are named "Minimum" and "Maximum" and carry `aria-value*`.
+
+## Platform notes
+
+- On web the dialog's centred and bottom placements both give a
+  `scrollable={false}` body a bounded height, so the footer stays put.
+- On native the `center` placement always scrolls its content: a tablet sees
+  the footer scroll with the sections. Phones take the `bottom` placement,
+  which keeps it fixed.
