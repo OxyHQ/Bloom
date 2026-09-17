@@ -6,6 +6,7 @@ import { useInteractionState } from '../hooks/use-interaction-state';
 import { RiHeart3Fill } from '../icons/remix/RiHeart3Fill';
 import { RiMusic2Line } from '../icons/remix/RiMusic2Line';
 import { useImageResolver } from '../image-resolver/context';
+import { isImageUrl } from '../image-resolver/is-image-url';
 import { useContainerWidth } from '../listing-details/use-container-width';
 import { useInteractiveWebCss } from '../styles/interactive-web-css';
 import type { WebCssStyle } from '../styles/web-view-style';
@@ -16,7 +17,6 @@ import type { TypeScaleVariant } from '../typography/scale';
 import {
   clamp01,
   gradientStyle,
-  isUrl,
   MEDIA_HEADER_CSS,
   MEDIA_HEADER_STYLE_ID,
   MEDIA_HEADER_WIDE_MIN_WIDTH,
@@ -37,7 +37,7 @@ export function useMediaHeaderPaint(artworkColor?: string | null): MediaHeaderPa
 export function useImageUri(source: MediaImageSource | undefined, variant?: string): string | undefined {
   const resolver = useImageResolver();
   if (!source) return undefined;
-  return isUrl(source) ? source : (resolver?.(source, variant) ?? undefined);
+  return isImageUrl(source) ? source : (resolver?.(source, variant) ?? undefined);
 }
 
 // ---------------------------------------------------------------------------

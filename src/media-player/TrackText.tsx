@@ -5,11 +5,12 @@ import { resolveButtonRamps } from '../button/shared';
 import { adoptStyleSheet } from '../styles/adopt-style-sheet';
 import { webDataSet } from '../styles/web-data';
 import { useImageResolver } from '../image-resolver/context';
+import { isImageUrl } from '../image-resolver/is-image-url';
 import { RiMusic2Line } from '../icons/remix/RiMusic2Line';
 import type { TypeScaleVariant } from '../typography/scale';
 import { useTheme } from '../theme/use-theme';
 import { Text } from '../typography';
-import { isUrl, MEDIA_PLAYER_CSS, MEDIA_PLAYER_STYLE_ID } from './shared';
+import { MEDIA_PLAYER_CSS, MEDIA_PLAYER_STYLE_ID } from './shared';
 import type { MediaArtist, MediaPlayerTrack } from './types';
 
 /** The cover: an `Image` for a URL or a resolved id, a neutral well with a note glyph otherwise. */
@@ -29,7 +30,7 @@ export function Artwork({
   const theme = useTheme();
   const resolver = useImageResolver();
   const { neutral } = useMemo(() => resolveButtonRamps(theme), [theme]);
-  const uri = source ? (isUrl(source) ? source : resolver?.(source)) : undefined;
+  const uri = source ? (isImageUrl(source) ? source : resolver?.(source)) : undefined;
   const box: ViewStyle =
     size === '100%' ? { width: '100%', aspectRatio: 1 } : { width: size, height: size };
   return (

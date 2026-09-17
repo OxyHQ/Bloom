@@ -8,6 +8,7 @@ import { RiCloseLine } from '../icons/remix/RiCloseLine';
 import { RiHeart3Fill } from '../icons/remix/RiHeart3Fill';
 import { RiHeart3Line } from '../icons/remix/RiHeart3Line';
 import { useImageResolver } from '../image-resolver/context';
+import { isImageUrl } from '../image-resolver/is-image-url';
 import { ListingFacts, ListingOfferings, ListingPriceLines } from '../listing-card/parts';
 import { resolvePriceLines } from '../listing-card/shared';
 import { Rating } from '../rating';
@@ -56,16 +57,6 @@ const PHOTO_HEIGHT = 200;
 const COMPACT_PHOTO_WIDTH = 112;
 const HEART_SIZE = 24;
 const INSET = 8;
-
-function isUrl(value: string): boolean {
-  return (
-    value.startsWith('http://') ||
-    value.startsWith('https://') ||
-    value.startsWith('data:') ||
-    value.startsWith('blob:') ||
-    value.startsWith('file:')
-  );
-}
 
 function FavoriteButton({
   favorite,
@@ -147,7 +138,7 @@ function MapListingPreviewComponent({
   }, []);
 
   const compact = layout === 'compact';
-  const uri = image ? (isUrl(image) ? image : resolver?.(image, imageVariant)) : undefined;
+  const uri = image ? (isImageUrl(image) ? image : resolver?.(image, imageVariant)) : undefined;
   const showRating = rating !== undefined;
 
   const cardStyle: WebCssStyle = {

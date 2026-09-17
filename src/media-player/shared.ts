@@ -42,9 +42,6 @@ export function artistNames(artists: string | MediaArtist[]): string {
   return typeof artists === 'string' ? artists : artists.map((a) => a.name).join(', ');
 }
 
-export function isUrl(value: string): boolean {
-  return /^(https?:|data:|blob:|file:)/.test(value);
-}
 
 // ---------------------------------------------------------------------------
 //  Sizes

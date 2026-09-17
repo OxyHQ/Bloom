@@ -2,7 +2,7 @@ import { Platform } from 'react-native';
 
 import { ACCENT_TABLE, colorRamp, mixColor, resolveButtonRamps, type RampStop } from '../button/shared';
 import type { ImageResolver } from '../image-resolver/context';
-import { isUrl } from '../listing-card/shared';
+import { isImageUrl } from '../image-resolver/is-image-url';
 import { parseRgba } from '../theme/color-utils';
 import type { Theme } from '../theme/types';
 import type { MediaCardLayout, MediaCardPlayButton, MediaCardSize } from './types';
@@ -86,7 +86,7 @@ export function resolveArtworkUri(
   variant?: string,
 ): string | undefined {
   if (!source) return undefined;
-  return isUrl(source) ? source : (resolver?.(source, variant) ?? undefined);
+  return isImageUrl(source) ? source : (resolver?.(source, variant) ?? undefined);
 }
 
 // ---------------------------------------------------------------------------

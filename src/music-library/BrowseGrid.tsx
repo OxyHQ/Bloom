@@ -3,12 +3,12 @@ import { Image, Pressable, View } from 'react-native';
 
 import { mixColor } from '../button/shared';
 import { useImageResolver } from '../image-resolver/context';
+import { isImageUrl } from '../image-resolver/is-image-url';
 import { adoptStyleSheet } from '../styles/adopt-style-sheet';
 import type { WebCssStyle } from '../styles/web-view-style';
 import { webDataSet } from '../styles/web-data';
 import { useTheme } from '../theme/use-theme';
 import { Text } from '../typography';
-import { isUrl } from './Cover';
 import {
   IS_WEB,
   MUSIC_LIBRARY_CSS,
@@ -59,7 +59,7 @@ function Tile({
   );
   const height = Math.round(width / TILE_RATIO);
   const imageSize = Math.round(height * 0.4 * 1.15);
-  const uri = item.image ? (isUrl(item.image) ? item.image : resolver?.(item.image) ?? undefined) : undefined;
+  const uri = item.image ? (isImageUrl(item.image) ? item.image : resolver?.(item.image) ?? undefined) : undefined;
   const hoverFill = mixColor(paint.background, paint.text === TILE_LIGHT_TEXT ? '#000000' : '#ffffff', 0.12);
 
   const style: WebCssStyle = {

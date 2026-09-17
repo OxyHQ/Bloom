@@ -2,6 +2,7 @@ import { Platform } from 'react-native';
 
 import { resolveButtonRamps } from '../button/shared';
 import type { ImageResolver } from '../image-resolver/context';
+import { isImageUrl } from '../image-resolver/is-image-url';
 import type { Theme } from '../theme/types';
 
 export const IS_WEB = Platform.OS === 'web';
@@ -59,16 +60,6 @@ export function resolveListingPalette(theme: Theme): ListingPalette {
   };
 }
 
-export function isUrl(value: string): boolean {
-  return (
-    value.startsWith('http://') ||
-    value.startsWith('https://') ||
-    value.startsWith('data:') ||
-    value.startsWith('blob:') ||
-    value.startsWith('file:')
-  );
-}
-
 /** A URL passes through; an id goes to the resolver; nothing resolves to `undefined`. */
 export function resolveImageUri(
   source: string | undefined,
@@ -76,7 +67,7 @@ export function resolveImageUri(
   variant: string,
 ): string | undefined {
   if (!source) return undefined;
-  return isUrl(source) ? source : resolver?.(source, variant) ?? undefined;
+  return isImageUrl(source) ? source : resolver?.(source, variant) ?? undefined;
 }
 
 // ---------------------------------------------------------------------------

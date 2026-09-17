@@ -69,15 +69,6 @@ export function queueDragShift(index: number, from: number, target: number, rowH
   return 0;
 }
 
-export function isImageUrl(value: string): boolean {
-  return (
-    value.startsWith('http://') ||
-    value.startsWith('https://') ||
-    value.startsWith('data:') ||
-    value.startsWith('blob:') ||
-    value.startsWith('file:')
-  );
-}
 
 export interface QueuePanelPaint {
   surface: string;

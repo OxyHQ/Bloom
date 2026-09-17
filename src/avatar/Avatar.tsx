@@ -6,6 +6,7 @@ import Svg, { ClipPath, Defs, Image as SvgImage, Path } from 'react-native-svg';
 import { useTheme } from '../theme/use-theme';
 import { useInteractionState } from '../hooks/use-interaction-state';
 import { useImageResolver } from '../image-resolver/context';
+import { isImageUrl } from '../image-resolver/is-image-url';
 import { Z_INDEX } from '../styles/z-index';
 import { useAvatarPlaceholder } from './context';
 import { LiveBadge } from './LiveBadge';
@@ -239,17 +240,16 @@ const AvatarComponent: React.FC<AvatarProps> = ({
   const imageResolver = useImageResolver();
 
   // Resolve source prop: string → uri, object → ImageSourcePropType.
-  // HTTP/data URLs pass through directly. Non-URL strings (e.g. Oxy file
-  // IDs) are resolved via the app-provided ImageResolver if available, with the
-  // requested `variant` forwarded so the resolver (the single URL chokepoint)
-  // can build the right rendition. `variant` defaults to `'thumb'` (see prop
-  // default) so a bare-id avatar never accidentally requests the full-size
-  // original; callers wanting the full image pass an explicit variant.
+  // A URL passes through directly (`isImageUrl`, the package's one answer to
+  // "URL or id"). Non-URL strings (e.g. Oxy file IDs) are resolved via the
+  // app-provided ImageResolver if available, with the requested `variant`
+  // forwarded so the resolver (the single URL chokepoint) can build the right
+  // rendition. `variant` defaults to `'thumb'` (see prop default) so a bare-id
+  // avatar never accidentally requests the full-size original; callers wanting
+  // the full image pass an explicit variant.
   const resolvedUri = useMemo(() => {
     if (typeof source === 'string') {
-      if (source.startsWith('http://') || source.startsWith('https://') || source.startsWith('data:')) {
-        return source;
-      }
+      if (isImageUrl(source)) return source;
       return imageResolver?.(source, variant);
     }
     return uri;

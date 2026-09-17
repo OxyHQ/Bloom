@@ -7,15 +7,12 @@ import { RiMic2Line } from '../icons/remix/RiMic2Line';
 import { RiMusic2Line } from '../icons/remix/RiMusic2Line';
 import { RiUserLine } from '../icons/remix/RiUserLine';
 import { useImageResolver } from '../image-resolver/context';
+import { isImageUrl } from '../image-resolver/is-image-url';
 import type { LibraryItemKind } from './types';
 
 // ---------------------------------------------------------------------------
 //  Cover
 // ---------------------------------------------------------------------------
-
-export function isUrl(value: string): boolean {
-  return /^(https?:|data:|blob:|file:)/.test(value);
-}
 
 type Glyph = ComponentType<{ width?: number; height?: number; fill?: string }>;
 
@@ -47,7 +44,7 @@ export interface CoverProps {
 export function Cover({ source, size, round, radius = 4, kind, placeholder, glyphColor, style, testID }: CoverProps) {
   const resolver = useImageResolver();
   const [failed, setFailed] = useState(false);
-  const uri = source ? (isUrl(source) ? source : resolver?.(source) ?? undefined) : undefined;
+  const uri = source ? (isImageUrl(source) ? source : resolver?.(source) ?? undefined) : undefined;
   const Glyph = KIND_GLYPH[kind];
   const glyph = Math.round(size * 0.45);
   return (

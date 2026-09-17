@@ -23,6 +23,7 @@ import { resolveMenuPalette } from '../floating/menu-palette';
 import { useInsideHoverCardSurface } from '../hover-card/context';
 import { RiVerifiedBadgeFill } from '../icons/remix/RiVerifiedBadgeFill';
 import { useImageResolver } from '../image-resolver/context';
+import { isImageUrl } from '../image-resolver/is-image-url';
 import { SUPPORTS_NATIVE_DRIVER } from '../styles/native-driver';
 import type { WebCssStyle } from '../styles/web-view-style';
 import type { Theme } from '../theme/types';
@@ -105,16 +106,6 @@ export function resolveUserHoverCardPalette(theme: Theme): HoverCardPalette {
     skeleton: dark ? mixColor(n[800], n[700], 0.6) : n[100],
     verified: accent[500],
   };
-}
-
-function isUrl(value: string): boolean {
-  return (
-    value.startsWith('http://') ||
-    value.startsWith('https://') ||
-    value.startsWith('data:') ||
-    value.startsWith('blob:') ||
-    value.startsWith('file:')
-  );
 }
 
 /** Entrance only: the card is mounted when it is shown and unmounted to hide. */
@@ -202,7 +193,7 @@ const UserHoverCardComponent: React.FC<UserHoverCardProps> = ({
 
   const hasCover = typeof cover === 'string' && cover.length > 0;
   const coverUri = hasCover
-    ? isUrl(cover) ? cover : resolver?.(cover, coverVariant)
+    ? isImageUrl(cover) ? cover : resolver?.(cover, coverVariant)
     : undefined;
 
   const cardStyle: WebCssStyle = bare

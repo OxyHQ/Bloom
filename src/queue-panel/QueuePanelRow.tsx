@@ -4,6 +4,7 @@ import { Image, Pressable, View } from 'react-native';
 import { useInteractionState } from '../hooks/use-interaction-state';
 import { RiMusic2Line } from '../icons/remix/RiMusic2Line';
 import { useImageResolver } from '../image-resolver/context';
+import { isImageUrl } from '../image-resolver/is-image-url';
 import { ExplicitBadge } from '../media-controls/ExplicitBadge';
 import { NowPlayingIndicator } from '../media-controls/NowPlayingIndicator';
 import { adoptStyleSheet } from '../styles/adopt-style-sheet';
@@ -17,7 +18,6 @@ import {
   QUEUE_PANEL_CSS,
   QUEUE_PANEL_STYLE_ID,
   QUEUE_ROW_HEIGHT,
-  isImageUrl,
   resolveQueuePanelPaint,
 } from './shared';
 import type { QueuePanelRowProps } from './types';

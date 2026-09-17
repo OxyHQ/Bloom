@@ -213,16 +213,6 @@ export function artworkDimensionsError(
   return null;
 }
 
-/** A URL (or data/blob URI) rather than an ImageResolver id. */
-export function isImageUrl(value: string): boolean {
-  return (
-    value.startsWith('http://') ||
-    value.startsWith('https://') ||
-    value.startsWith('data:') ||
-    value.startsWith('blob:') ||
-    value.startsWith('file:')
-  );
-}
 
 /** Adds a string to a list once, trimmed; returns the same list when nothing changes. */
 export function addUnique(list: readonly string[], value: string, max?: number): string[] {

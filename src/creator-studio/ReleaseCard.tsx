@@ -15,6 +15,7 @@ import { RiAlbumLine } from '../icons/remix/RiAlbumLine';
 import { RiErrorWarningLine } from '../icons/remix/RiErrorWarningLine';
 import { RiMoreFill } from '../icons/remix/RiMoreFill';
 import { useImageResolver } from '../image-resolver/context';
+import { isImageUrl } from '../image-resolver/is-image-url';
 import { useInteractiveWebCss } from '../styles/interactive-web-css';
 import type { WebCssStyle } from '../styles/web-view-style';
 import { useTheme } from '../theme/use-theme';
@@ -24,7 +25,6 @@ import {
   COVER_RADIUS,
   CREATOR_STUDIO_CSS,
   CREATOR_STUDIO_STYLE_ID,
-  isImageUrl,
   pressDataSet,
   RELEASE_STATUS_LABELS,
   RELEASE_STATUS_TONES,
