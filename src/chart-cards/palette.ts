@@ -1,5 +1,7 @@
 import { ACCENT_TABLE, BUTTON_SHADOW, DANGER_TABLE, colorRamp, mixColor, resolveButtonRamps } from '../button/shared';
 import { oklchToSrgb, srgbToOklch, srgbToRgbString, type Oklch } from '../theme/color-space';
+import { quietText, quietTextOver } from '../styles/color-contrast';
+import { AA_TEXT, AA_TEXT_STRONG } from '../styles/surface-levels';
 import { parseRgba } from '../theme/color-utils';
 import type { Theme } from '../theme/types';
 
@@ -9,8 +11,8 @@ import type { Theme } from '../theme/types';
  *                              light           dark
  *   background-secondary       neutral-100     neutral-900     card surface
  *   text-primary               text            text            headline
- *   text-secondary             neutral-500     neutral-500     label, legend
- *   text-tertiary              neutral-400     neutral-600     caption, ticks
+ *   text-secondary             surfaceTextOn().textSecondary   label, legend
+ *   text-tertiary              surfaceTextOn().textTertiary    caption, ticks
  *   chart-neutral              neutral-300     neutral-800     last year
  *   chart-cursor               neutral-300     neutral-700     line hover rule
  *   chart-track                neutral-200     neutral-800     bar hover band
@@ -64,33 +66,47 @@ export function resolveChartCardPalette(theme: Theme): ChartCardPalette {
   const lime = colorRamp(theme.colors.success, ACCENT_TABLE);
   const rose = colorRamp(theme.colors.negative, DANGER_TABLE);
   const surface = theme.isDark ? n[900] : n[100];
+  // The two quiet text rungs are read off THIS card's fill, not off a ramp stop.
+  // As ramp stops they measured 4.38:1 (light) / 3.78:1 (dark) for the label and
+  // 2.42:1 / 2.29:1 for the axis ticks — a chart whose own captions were below
+  // AA, because `neutral-400` was chosen against the page and the card is not
+  // the page. `surfaceTextOn` floors both against the surface they land on.
+  // The stat tiles (`inner`) are a second fill these labels land on, and in dark
+  // they sit on the OTHER side of the text from the card — so the rungs are
+  // floored over both, not over whichever one happened to be checked.
+  const inner = theme.isDark ? mixColor(surface, n[800], 0.6) : theme.colors.card;
+  const fills = [surface, inner];
+  const quiet = {
+    textSecondary: quietTextOver(fills, theme.colors.text, AA_TEXT_STRONG),
+    textTertiary: quietTextOver(fills, theme.colors.text, AA_TEXT),
+  };
   return theme.isDark
     ? {
         surface,
         text: theme.colors.text,
-        textSecondary: n[500],
-        textTertiary: n[600],
+        textSecondary: quiet.textSecondary,
+        textTertiary: quiet.textTertiary,
         neutralSeries: n[800],
         cursor: n[700],
         track: n[800],
         positive: { background: mixColor(surface, lime[950], 0.6), foreground: lime[500] },
         negative: { background: mixColor(surface, rose[950], 0.6), foreground: rose[500] },
-        neutral: { background: n[800], foreground: n[500] },
-        inner: mixColor(surface, n[800], 0.6),
+        neutral: { background: n[800], foreground: quietText(n[800], theme.colors.text, AA_TEXT) },
+        inner,
         pill: { background: n[800], hover: mixColor(n[800], n[700], 0.6), border: n[700], shadow: BUTTON_SHADOW.dark },
       }
     : {
         surface,
         text: theme.colors.text,
-        textSecondary: n[500],
-        textTertiary: n[400],
+        textSecondary: quiet.textSecondary,
+        textTertiary: quiet.textTertiary,
         neutralSeries: n[300],
         cursor: n[300],
         track: n[200],
         positive: { background: lime[200], foreground: lime[800] },
         negative: { background: rose[200], foreground: rose[800] },
-        neutral: { background: n[200], foreground: n[500] },
-        inner: theme.colors.card,
+        neutral: { background: n[200], foreground: quietText(n[200], theme.colors.text, AA_TEXT) },
+        inner,
         pill: { background: theme.colors.card, hover: n[100], border: n[200], shadow: BUTTON_SHADOW.light },
       };
 }

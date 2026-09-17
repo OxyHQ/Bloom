@@ -347,3 +347,11 @@ becomes "Filters, 3 applied" (`accessibilityLabel` overrides it). `size`,
 - On native the `center` placement always scrolls its content: a tablet sees
   the footer scroll with the sections. Phones take the `bottom` placement,
   which keeps it fixed.
+
+## Web CSS
+
+`FilterChip`, `FilterTextButton` and the property tiles build their stylesheets
+with `interactiveWebCss()` (`reset: 'none'`, `focus: { mode: 'ring' }`) rather
+than hand-writing them — see [Styles](/docs/bloom/main/styles). Each ring's gap
+takes the surface colour; it used to be a hardcoded white, which in dark mode was
+a halo.

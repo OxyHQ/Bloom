@@ -16,6 +16,7 @@ import type { WebCssStyle } from '../styles/web-view-style';
 import { CONTROL_SIZE, resolveChatComposerPalette } from './shared';
 import type { ComposerIconButtonProps } from './types';
 import { dataHook, IS_WEB } from './web-hooks';
+import { DISABLED_OPACITY } from '../styles/tokens';
 
 let gradientId = 0;
 
@@ -103,7 +104,7 @@ export function ComposerIconButton({
     alignItems: 'center',
     justifyContent: 'center',
     borderRadius: 9999,
-    opacity: disabled ? 0.4 : 1,
+    opacity: disabled ? DISABLED_OPACITY : 1,
     backgroundColor: accent
       ? 'transparent'
       : pressed

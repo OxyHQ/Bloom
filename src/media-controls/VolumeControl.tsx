@@ -5,7 +5,7 @@ import { RiVolumeDownLine } from '../icons/remix/RiVolumeDownLine';
 import { RiVolumeMuteLine } from '../icons/remix/RiVolumeMuteLine';
 import { RiVolumeUpLine } from '../icons/remix/RiVolumeUpLine';
 import { adoptStyleSheet } from '../styles/adopt-style-sheet';
-import { borderRadius } from '../styles/tokens';
+import { borderRadius, DISABLED_OPACITY } from '../styles/tokens';
 import type { WebCssStyle } from '../styles/web-view-style';
 import { webDataSet } from '../styles/web-data';
 import { clamp } from '../styles/clamp';
@@ -96,7 +96,7 @@ function VolumeControlComponent({
         bloomVolumeReveal: IS_WEB ? sliderVisibility : 'always',
       })}
       style={[
-        { flexDirection: 'row', alignItems: 'center', gap: 4, opacity: disabled ? 0.5 : 1 },
+        { flexDirection: 'row', alignItems: 'center', gap: 4, opacity: disabled ? DISABLED_OPACITY : 1 },
         style,
       ]}
       testID={testID}

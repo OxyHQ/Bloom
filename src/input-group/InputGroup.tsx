@@ -8,7 +8,6 @@ import React, {
 } from 'react';
 import { Platform, StyleSheet, View } from 'react-native';
 
-import { useTheme } from '../theme/use-theme';
 import { useInteractionState } from '../hooks/use-interaction-state';
 import { Text } from '../typography';
 import {
@@ -19,7 +18,7 @@ import {
   TEXT_FIELD_TRAILING_GAP,
   TEXT_FIELD_WEB_TRANSITION,
   resolveShellPaint,
-  resolveTextFieldPalette,
+  useTextFieldPalette,
   type TextFieldPalette,
   type TextFieldSize,
 } from '../text-field/shared';
@@ -75,10 +74,9 @@ const InputGroupAddonComponent = function InputGroupAddon({
   style,
   testID,
 }: InputGroupAddonProps) {
-  const theme = useTheme();
   const group = useContext(InputGroupContext);
   const position = useContext(AddonPositionContext);
-  const fallbackPalette = useMemo(() => resolveTextFieldPalette(theme), [theme]);
+  const fallbackPalette = useTextFieldPalette();
   const palette = group?.palette ?? fallbackPalette;
   const cfg = SIZE_CONFIG[group?.size ?? 'md'];
   const leading = position === 'leading';
@@ -157,13 +155,12 @@ const InputGroupComponent = function InputGroup({
   style,
   testID,
 }: InputGroupProps) {
-  const theme = useTheme();
   const cfg = SIZE_CONFIG[size];
   const { state: focused, onIn: onFocus, onOut: onBlur } = useInteractionState();
   const { state: hovered, onIn: onHoverIn, onOut: onHoverOut } =
     useInteractionState();
 
-  const palette = useMemo(() => resolveTextFieldPalette(theme), [theme]);
+  const palette = useTextFieldPalette();
   const { backgroundColor, borderColor } = resolveShellPaint(palette, {
     hovered,
     focused,

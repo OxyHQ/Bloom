@@ -12,6 +12,7 @@ import type { Theme } from '../theme/types';
 import { useTheme } from '../theme/use-theme';
 import { Text } from '../typography';
 import type { ListingEditorIcon } from './types';
+import { DISABLED_OPACITY } from '../styles/tokens';
 
 /**
  * The large selectable card the listing editor's pickers are built from.
@@ -174,7 +175,7 @@ function SelectionCardComponent({
     backgroundColor: paint.fill,
     borderWidth,
     borderColor: selected ? paint.borderSelected : highlighted ? paint.borderHover : paint.border,
-    opacity: disabled ? 0.5 : 1,
+    opacity: disabled ? DISABLED_OPACITY : 1,
     ...(IS_WEB ? { transitionProperty: 'border-color, background-color', transitionDuration: '120ms' } : null),
     ...style,
   };

@@ -13,6 +13,7 @@ import Animated, {
 import Svg, { Defs, LinearGradient, Rect, Stop } from 'react-native-svg';
 
 import { paintToCssImage, type ButtonStatePaint } from '../button/shared';
+import { DISABLED_OPACITY } from '../styles/tokens';
 import { RiArrowUpLine } from '../icons/remix/RiArrowUpLine';
 import { RiMic2Line } from '../icons/remix/RiMic2Line';
 import type { WebCssStyle } from '../styles/web-view-style';
@@ -187,7 +188,7 @@ function GradientFill({ paint, opacity = 1 }: { paint: ButtonStatePaint; opacity
 /**
  * Send (`bg-button-primary` disc): the accent gradient, its hover
  * gradient crossfading in over 150ms, the active gradient while held; disabled
- * paints the disabled gradient at 40% opacity (200ms). White 20px arrow.
+ * paints the disabled gradient at the disabled opacity (200ms). White 20px arrow.
  */
 export function SendButton({
   disabled,
@@ -211,7 +212,7 @@ export function SendButton({
     alignItems: 'center',
     justifyContent: 'center',
     borderRadius: 9999,
-    opacity: disabled ? 0.4 : 1,
+    opacity: disabled ? DISABLED_OPACITY : 1,
     cursor: disabled ? 'auto' : 'pointer',
     '--bloom-composer-ring': palette.focusRing,
   };

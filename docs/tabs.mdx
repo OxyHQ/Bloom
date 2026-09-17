@@ -119,3 +119,14 @@ differently?
 
 `@oxy.so/bloom/tabs/expo-router` binds the strip to the router so `value` comes
 from the current route and a press navigates, instead of a local `useState`.
+
+## The rail reads on whatever the strip sits on
+
+`resolveTabsPaint(theme, variant, surface)` takes the fill the strip lands on;
+the component reads it from the ambient `SurfaceLevelProvider`
+([Styles → Surface levels](/docs/bloom/main/styles)). The underline rail, the
+hover row and the `filled` thumb are steps off that surface.
+
+The rail used to be `neutral-800` in dark — the exact fill `QueuePanel` (and
+every other menu-surface family) paints its panel with, **ΔE 0**. A tab strip
+inside one had no rail. On the page the rail lands within 0.04 of its old colour.

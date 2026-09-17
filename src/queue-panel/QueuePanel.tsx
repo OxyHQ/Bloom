@@ -1,6 +1,7 @@
 import React, { memo, useCallback, useMemo, useState } from 'react';
 import { AccessibilityInfo, ScrollView, View } from 'react-native';
 
+import { SurfaceLevelProvider } from '../styles/surface-levels';
 import { Button } from '../button';
 import { RiCloseLine } from '../icons/remix/RiCloseLine';
 import { RiPlayListAddLine } from '../icons/remix/RiPlayListAddLine';
@@ -116,6 +117,10 @@ function QueuePanelComponent({
   const empty = !nowPlaying && queue.length === 0 && context.length === 0;
 
   return (
+    // The panel is a surface: children step off IT, not off the page. A tab
+    // strip inside used to paint its rail `neutral-800` — the panel's own fill
+    // (`styles/surface-levels.ts`).
+    <SurfaceLevelProvider level={isPanel ? 1 : 0}>
     <View
       testID={testID}
       style={[
@@ -273,6 +278,7 @@ function QueuePanelComponent({
         </View>
       ) : null}
     </View>
+    </SurfaceLevelProvider>
   );
 }
 

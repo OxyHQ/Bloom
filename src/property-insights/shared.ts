@@ -4,6 +4,8 @@ import { groupThousands } from '../chart-cards/primitives/format';
 import { resolveButtonRamps } from '../button/shared';
 import { oklchToSrgb, srgbToOklch, srgbToRgbString, type Oklch } from '../theme/color-space';
 import { parseRgba } from '../theme/color-utils';
+import { quietTextOver } from '../styles/color-contrast';
+import { AA_TEXT } from '../styles/surface-levels';
 import type { Theme } from '../theme/types';
 import type { EnergyClass } from './types';
 import { contrastRatio, relativeLuminance } from '../styles/color-contrast';
@@ -50,7 +52,10 @@ export function resolveInsightPalette(theme: Theme): InsightPalette {
   return {
     text: c.text,
     textSecondary: c.textSecondary,
-    muted: c.textTertiary,
+    // `theme.colors.textTertiary` is the theme's ONE quiet-text token, which is
+    // floored against the page — and this family paints quiet labels on `card`
+    // too. Read the rung off the card so the harder of the two surfaces decides.
+    muted: quietTextOver([c.background, dark ? n[900] : c.card], c.text, AA_TEXT),
     hairline: dark ? n[800] : n[200],
     track: dark ? n[800] : n[100],
     bar: dark ? n[700] : n[300],

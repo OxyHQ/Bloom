@@ -91,6 +91,7 @@ type UploadPhase = 'idle' | 'uploading' | 'complete';
 type StaggerState = 'shown' | 'hiding' | 'hidden';
 
 import { formatFileSize } from './shared';
+import { DISABLED_OPACITY } from '../styles/tokens';
 
 export { formatFileSize };
 
@@ -632,7 +633,7 @@ const FileUploadComponent = function FileUpload({
     flexShrink: 0,
     borderRadius: BOX_RADIUS,
     ...(IS_WEB ? { backgroundColor: busy ? paint.busyBackground : paint.idleBackground } : null),
-    opacity: disabled ? 0.5 : 1,
+    opacity: disabled ? DISABLED_OPACITY : 1,
     '--bloom-file-upload-ring': paint.ring,
   };
 

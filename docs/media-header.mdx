@@ -175,3 +175,9 @@ const { progress } = useMediaHeaderScroll({ start: 260, window: true });
 ## Platform notes
 
 Hover states (the edit overlay, underlined links, row washes) are web affordances; native shows the pencil badge and needs no hover. The band gradients use `background-image` on web and the native CSS-gradient style elsewhere. Keyboard focus rings hang off `data-bloom-media-header-press` in one adopted sheet.
+
+## Quiet labels
+
+`textMuted` is floored with `quietTextOver` against both the page and the card it
+paints on. As `neutral-500` it measured 4.38:1 on the light card. See
+[Styles → Quiet text](/docs/bloom/main/styles).

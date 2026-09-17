@@ -3,6 +3,7 @@ import { Pressable, View, type GestureResponderEvent } from 'react-native';
 import Svg, { Defs, LinearGradient, Rect, Stop } from 'react-native-svg';
 
 import { paintToCssImage, type ButtonStatePaint } from '../button/shared';
+import { DISABLED_OPACITY } from '../styles/tokens';
 import type { WebAriaProps } from '../styles/styled-primitives';
 import type { WebCssStyle } from '../styles/web-view-style';
 import { dataHook, IS_WEB, TRANSITION_MS, type AgentChatPalette } from './shared';
@@ -68,7 +69,7 @@ export function IconAction({
     justifyContent: 'center',
     borderRadius: 9999,
     backgroundColor: lit ? hoverBackground : 'transparent',
-    opacity: disabled ? 0.4 : 1,
+    opacity: disabled ? DISABLED_OPACITY : 1,
     '--bloom-agent-chat-ring': palette.ring,
   };
   const webAria: WebAriaProps | null =
@@ -156,7 +157,7 @@ export interface PrimaryDiscProps {
 /**
  * `bg-button-primary` on a bare circle: the accent gradient, the hover
  * gradient crossfading in over 150ms, the active gradient while held; disabled
- * paints the disabled gradient at 40% opacity. No drop shadow — the utility
+ * paints the disabled gradient at the disabled opacity. No drop shadow — the utility
  * carries none (Bloom's `Button` adds one, which is why this is not a `Button`).
  */
 export function PrimaryDisc({
@@ -181,7 +182,7 @@ export function PrimaryDisc({
     alignItems: 'center',
     justifyContent: 'center',
     borderRadius: size / 2,
-    opacity: disabled ? 0.4 : hovered ? hoverOpacity : 1,
+    opacity: disabled ? DISABLED_OPACITY : hovered ? hoverOpacity : 1,
     '--bloom-agent-chat-ring': palette.ring,
   };
   return (

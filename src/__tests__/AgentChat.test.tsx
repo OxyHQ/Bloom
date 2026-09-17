@@ -1,4 +1,5 @@
 import React from 'react';
+import { DISABLED_OPACITY } from '../styles/tokens';
 import { act, fireEvent, render, within } from '@testing-library/react-native';
 
 // The shared mocks stub neither `useFrameCallback` nor the SVG blur filter the
@@ -178,7 +179,7 @@ describe('AgentChatComposer', () => {
     let pill = getByLabelText('Add attachment');
     while (pill && resolvedStyle(pill.props.style)?.height !== 52) pill = pill.parent!;
     expect(resolvedStyle(pill.props.style)).toMatchObject({ height: 52, padding: 8, gap: 10, borderRadius: 9999 });
-    expect(resolvedStyle(getByTestId('c-send').props.style)).toMatchObject({ width: 36, height: 36, opacity: 0.4 });
+    expect(resolvedStyle(getByTestId('c-send').props.style)).toMatchObject({ width: 36, height: 36, opacity: DISABLED_OPACITY });
   });
 
   it('enables send once there is text, submits it and clears when uncontrolled', () => {
@@ -237,7 +238,7 @@ describe('AgentChatActions', () => {
       </BloomThemeProvider>,
     );
     expect(getByTestId('a-share').props.accessibilityState).toMatchObject({ disabled: true });
-    expect(resolvedStyle(getByTestId('a-more').props.style).opacity).toBe(0.4);
+    expect(resolvedStyle(getByTestId('a-more').props.style).opacity).toBe(DISABLED_OPACITY);
   });
 });
 

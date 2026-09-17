@@ -1,6 +1,15 @@
 import type { TextStyle } from 'react-native';
 
-import { ACCENT_TABLE, colorRamp, resolveButtonRamps, type RampTable } from '../button/shared';
+import {
+  ACCENT_TABLE,
+  colorRamp,
+  resolveButtonRamps,
+  type Ramp,
+  type RampStop,
+  type RampTable,
+} from '../button/shared';
+import { contrastRatio } from '../styles/color-contrast';
+import { AA_TEXT } from '../styles/surface-levels';
 import { TYPE_SCALE } from '../typography/scale';
 import { parseRgba } from '../theme/color-utils';
 import { srgbToOklch } from '../theme/color-space';
@@ -16,14 +25,23 @@ import type { AvatarColor, AvatarSizeToken } from './types';
  *   md     32   headline-semibold (16/22)
  *   lg     36   18/24 semibold
  *
- *   tint      disc                 initials
- *   neutral   neutral-300          text-secondary (neutral-500)
+ *   tint      disc                 initials (preferred stop)
+ *   neutral   neutral-300          neutral-500      ← the neutral ramp
  *             (dark: neutral-800)
  *   blue      blue-300             blue-900         ← theme `primary`
  *   lime      lime-200             lime-700         ← theme `success`
  *   pink      pink-200             pink-500         ← theme `negative`
  *
- * The hue tints are not repainted in dark mode.
+ * The hue tints are not repainted in dark mode — the DISC is the same colour in
+ * both, so only the letter has to move, and {@link legibleStop} moves it.
+ *
+ * The preferred stop is a preference, not the answer. A tint's ramp is rebuilt
+ * around a THEME role whose lightness moves with the mode, so a stop pair chosen
+ * in light can collapse in dark: `pink` measured **1.24:1** there
+ * (`#ffb4ab` on `#ecd8d6`) because dark `negative` is a bright red and the 500
+ * stop went pale, `lime` 4.29:1 and `neutral` 3.19:1 — and the name hash sends
+ * a quarter of all fallback avatars to the worst of them. The disc keeps its
+ * hue; the letter walks outward along its own ramp until it clears AA.
  */
 export const AVATAR_SIZES: Record<AvatarSizeToken, number> = {
   xs: 20,
@@ -89,28 +107,56 @@ export interface AvatarTint {
   foreground: string;
 }
 
+const STOP_ORDER: readonly RampStop[] = [50, 100, 200, 300, 400, 500, 600, 700, 800, 900, 950];
+
+/**
+ * The stop nearest `preferred` whose colour clears AA on `background`.
+ *
+ * Nearest, not darkest: the tint has to stay recognisable, so the letter moves
+ * the smallest distance along its OWN ramp that buys legibility. Ties go to the
+ * lighter stop, which is the one that reads as the same hue on a pale disc.
+ *
+ * The fallback is black or white — whichever the disc can carry. It is
+ * unreachable for every built-in preset (an 11-stop ramp always has a legible
+ * member of a mid-tone disc) and exists so the function is total rather than
+ * because a preset needs it.
+ */
+function legibleStop(ramp: Ramp, background: string, preferred: RampStop): string {
+  const home = STOP_ORDER.indexOf(preferred);
+  const order = STOP_ORDER.map((stop, i) => ({ stop, distance: Math.abs(i - home) })).sort(
+    (a, b) => a.distance - b.distance,
+  );
+  for (const { stop } of order) {
+    if (contrastRatio(ramp[stop], background) >= AA_TEXT) return ramp[stop];
+  }
+  const white = 'rgb(255 255 255)';
+  const black = 'rgb(0 0 0)';
+  return contrastRatio(background, black) >= contrastRatio(background, white) ? black : white;
+}
+
 /** Every colour one tint paints. Pure, so it can be walked over presets. */
 export function resolveAvatarTint(theme: Theme, color: AvatarColor): AvatarTint {
   switch (color) {
     case 'blue': {
       const ramp = colorRamp(theme.colors.primary, ACCENT_TABLE);
-      return { background: ramp[300], foreground: ramp[900] };
+      return { background: ramp[300], foreground: legibleStop(ramp, ramp[300], 900) };
     }
     case 'lime': {
       const ramp = absoluteRamp(theme.colors.success, LIME_TABLE);
-      return { background: ramp[200], foreground: ramp[700] };
+      return { background: ramp[200], foreground: legibleStop(ramp, ramp[200], 700) };
     }
     case 'pink': {
       // `negative`, not `tertiary`: a preset's tertiary can be a pale yellow,
       // which leaves no legible initial on its own 200 stop. Rose is pink's
       // nearest theme role. The 500 stop IS the theme colour.
       const ramp = absoluteRamp(theme.colors.negative, PINK_TABLE);
-      return { background: ramp[200], foreground: ramp[500] };
+      return { background: ramp[200], foreground: legibleStop(ramp, ramp[200], 500) };
     }
     case 'neutral':
     default: {
       const { neutral: n } = resolveButtonRamps(theme);
-      return { background: theme.isDark ? n[800] : n[300], foreground: n[500] };
+      const background = theme.isDark ? n[800] : n[300];
+      return { background, foreground: legibleStop(n, background, 500) };
     }
   }
 }

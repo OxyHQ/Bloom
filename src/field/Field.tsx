@@ -1,11 +1,10 @@
 import React, { memo, useMemo } from 'react';
 import { View } from 'react-native';
 
-import { useTheme } from '../theme/use-theme';
 import { Text } from '../typography';
 import { Label } from '../label';
 import { atoms as a } from '../styles';
-import { TEXT_FIELD_STACK_GAP, resolveTextFieldPalette } from '../text-field/shared';
+import { TEXT_FIELD_STACK_GAP, useTextFieldPalette } from '../text-field/shared';
 import type { FieldProps } from './types';
 
 /**
@@ -31,8 +30,7 @@ const FieldComponent = function Field({
   style,
   testID,
 }: FieldProps) {
-  const theme = useTheme();
-  const palette = useMemo(() => resolveTextFieldPalette(theme), [theme]);
+  const palette = useTextFieldPalette();
   const hasError = typeof error === 'string' && error.length > 0;
   const descriptionID = nativeID ? `${nativeID}-description` : undefined;
   const errorID = nativeID ? `${nativeID}-error` : undefined;

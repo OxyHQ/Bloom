@@ -1,16 +1,17 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import { Pressable, View, type LayoutChangeEvent } from 'react-native';
 
 import { resolveButtonRamps } from '../button/shared';
-import { FOCUS_RING_OFFSET_COLOR } from '../checkbox/shared';
-import { useInteractionState } from '../hooks/use-interaction-state';
-import { adoptStyleSheet } from '../styles/adopt-style-sheet';
-import type { WebCssStyle } from '../styles/web-view-style';
 import { webDataSet } from '../styles/web-data';
+import { useInteractionState } from '../hooks/use-interaction-state';
+import { useRingOffsetStyle } from '../styles/surface-levels';
+import { interactiveWebCss, useInteractiveWebCss } from '../styles/interactive-web-css';
+import type { WebCssStyle } from '../styles/web-view-style';
 import { useTheme } from '../theme/use-theme';
 import { Text } from '../typography';
 import { PROPERTY_TYPE_OPTIONS, relabelOptions } from './constants';
 import type { FilterIconComponent, PropertyType, PropertyTypeOption, PropertyTypeTilesProps } from './types';
+import { DISABLED_OPACITY } from '../styles/tokens';
 
 /**
  * A multi-select grid of icon tiles, one per property type. Internal: the
@@ -44,22 +45,22 @@ const ICON_SIZE = 24;
 
 const STYLE_ID = 'bloom-property-type-tile-web-css';
 const SELECTOR = '[data-bloom-property-tile]';
-const CSS = `
-${SELECTOR} {
-  outline: none;
-  cursor: pointer;
-  transition: background-color 120ms ease, border-color 120ms ease;
-}
-${SELECTOR}[aria-disabled="true"] {
-  cursor: default;
-}
-${SELECTOR}:focus-visible {
-  box-shadow: 0 0 0 2px ${FOCUS_RING_OFFSET_COLOR}, 0 0 0 4px var(--bloom-property-tile-ring, currentColor);
-}
-@media (prefers-reduced-motion: reduce) {
+const CSS = interactiveWebCss({
+  selector: SELECTOR,
+  varPrefix: 'bloom-property-tile',
+  // A react-native-web control, not a raw `<button>`: no `<button>` reset, and
+  // no `:active` scale — Bloom's controls change colour on press.
+  reset: 'none',
+  base: '',
+  transition: 'background-color 120ms ease, border-color 120ms ease',
+  focus: { mode: 'ring' },
+      // The FADE lives in the inline style, not here: it has to apply on native
+      // too, and two sources for one state is how they drift apart.
+      disabled: { opacity: null },
+  extraRules: `@media (prefers-reduced-motion: reduce) {
   ${SELECTOR} { transition: none; }
-}
-`;
+}`,
+});
 
 /** How many tiles fit a width: at least 2, at most 4. Pure; exported for the tests. */
 export function tileColumns(width: number, minTileWidth: number): number {
@@ -79,6 +80,7 @@ interface TileProps {
 
 function Tile({ label, icon: Icon, selected, disabled, size, onPress, testID }: TileProps) {
   const theme = useTheme();
+  const ringOffset = useRingOffsetStyle();
   const { accent, neutral } = useMemo(() => resolveButtonRamps(theme), [theme]);
   const hover = useInteractionState();
   const press = useInteractionState();
@@ -104,8 +106,9 @@ function Tile({ label, icon: Icon, selected, disabled, size, onPress, testID }: 
     paddingRight: inset,
     justifyContent: 'space-between',
     gap: 8,
-    opacity: disabled ? 0.5 : 1,
+    opacity: disabled ? DISABLED_OPACITY : 1,
     '--bloom-property-tile-ring': accent[500],
+    ...ringOffset,
   };
 
   return (
@@ -149,9 +152,7 @@ export function PropertyTypeTiles<T extends string = PropertyType>({
   style,
   testID,
 }: PropertyTypeTilesInternalProps<T>) {
-  useEffect(() => {
-    adoptStyleSheet(STYLE_ID, CSS);
-  }, []);
+  useInteractiveWebCss(STYLE_ID, CSS);
   const [width, setWidth] = useState(0);
   const items = relabelOptions<T, PropertyTypeOption<T>>(
     options ?? (PROPERTY_TYPE_OPTIONS as unknown as readonly PropertyTypeOption<T>[]),

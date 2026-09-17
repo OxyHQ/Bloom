@@ -10,10 +10,10 @@ import { useInteractionState } from '../hooks/use-interaction-state';
 import { RiHome4Line } from '../icons/remix/RiHome4Line';
 import { RiInformationLine } from '../icons/remix/RiInformationLine';
 import { useImageResolver } from '../image-resolver/context';
-import { isImageUrl } from '../image-resolver/is-image-url';
-import { borderRadius } from '../styles/tokens';
+import { DISABLED_OPACITY, borderRadius } from '../styles/tokens';
 import { adoptStyleSheet } from '../styles/adopt-style-sheet';
 import type { WebCssStyle } from '../styles/web-view-style';
+import { isImageUrl } from '../image-resolver';
 import { webDataSet } from '../styles/web-data';
 import type { Theme } from '../theme/types';
 import { useTheme } from '../theme/use-theme';
@@ -177,7 +177,7 @@ export function SelectChip({
     borderWidth: 1,
     borderColor: selected ? palette.text : palette.fieldBorder,
     backgroundColor: background,
-    opacity: disabled ? 0.4 : 1,
+    opacity: disabled ? DISABLED_OPACITY : 1,
     ...(shape === 'day'
       ? { width: 56, paddingTop: 8, paddingBottom: 8, borderRadius: BOOKING_FIELD_RADIUS, gap: 2 }
       : { height: 36, paddingLeft: 12, paddingRight: 12, borderRadius: borderRadius.full }),

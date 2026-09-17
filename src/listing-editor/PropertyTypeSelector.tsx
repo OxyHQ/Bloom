@@ -23,6 +23,7 @@ import {
   type SelectionPaint,
 } from './SelectionCard';
 import type { PropertyType, PropertyTypeOption, PropertyTypeSelectorProps } from './types';
+import { DISABLED_OPACITY } from '../styles/tokens';
 
 /**
  * The kind of home, picked from large icon tiles. Single select.
@@ -150,7 +151,7 @@ function PropertyTile<T extends string>({
     paddingRight: inset,
     justifyContent: 'space-between',
     gap: 16,
-    opacity: disabled ? 0.5 : 1,
+    opacity: disabled ? DISABLED_OPACITY : 1,
     '--bloom-selection-card-ring': paint.ring,
   };
 

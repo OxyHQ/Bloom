@@ -12,13 +12,14 @@ import { useTheme } from '../theme/use-theme';
 import { withAlpha } from '../theme/color-utils';
 import type { Theme } from '../theme/types';
 import { Text } from '../typography';
-import { borderRadius } from '../styles/tokens';
+import { borderRadius, DISABLED_OPACITY } from '../styles/tokens';
+import { useRingOffsetStyle } from '../styles/surface-levels';
+import { focusRingShadow } from '../styles/interactive-web-css';
 import { adoptStyleSheet } from '../styles/adopt-style-sheet';
 import type { WebCssStyle } from '../styles/web-view-style';
 import { webDataSet } from '../styles/web-data';
 import { clamp } from '../styles/clamp';
 import { BUTTON_SHADOW, mixColor, resolveButtonRamps } from '../button/shared';
-import { FOCUS_RING_OFFSET_COLOR } from '../checkbox/shared';
 import { useAccessibleNameWarning } from '../hooks/use-accessible-name-warning';
 import type { RangeSliderProps, SliderProps } from './types';
 
@@ -144,7 +145,7 @@ ${THUMB} {
   cursor: grabbing;
 }
 ${THUMB}:focus-visible:not([data-bloom-slider-pointer="true"]) {
-  box-shadow: 0 0 0 2px ${FOCUS_RING_OFFSET_COLOR}, 0 0 0 4px var(--bloom-slider-ring, currentColor), var(--bloom-slider-shadow) !important;
+  box-shadow: ${focusRingShadow('--bloom-slider-ring', {}, 'var(--bloom-slider-shadow)')} !important;
 }
 @media (prefers-reduced-motion: reduce) {
 ${THUMB}, ${THUMB} * {
@@ -198,6 +199,7 @@ function SliderBase({
   testID,
 }: SliderBaseProps) {
   const theme = useTheme();
+  const ringOffset = useRingOffsetStyle();
   React.useEffect(() => {
     adoptStyleSheet(STYLE_ID, BLOOM_SLIDER_CSS);
   }, []);
@@ -385,7 +387,7 @@ function SliderBase({
           minWidth: 0,
           flexDirection: 'column',
           gap: 8,
-          opacity: disabled ? 0.5 : 1,
+          opacity: disabled ? DISABLED_OPACITY : 1,
         },
         style,
       ]}
@@ -513,6 +515,7 @@ function SliderBase({
             justifyContent: 'center',
             zIndex: dragging ? 20 : 1,
             '--bloom-slider-ring': paint.ring,
+            ...ringOffset,
             '--bloom-slider-shadow': shadow,
             ...webTransition('box-shadow, border-color'),
           };

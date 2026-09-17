@@ -11,6 +11,7 @@ import { useTheme } from '../theme/use-theme';
 import { Text } from '../typography';
 import { MAP_MARKER_CSS, MAP_MARKER_STYLE_ID, mapWebData, resolveMapMarkerPaint } from './shared';
 import type { MapSearchAreaButtonProps } from './types';
+import { DISABLED_OPACITY } from '../styles/tokens';
 
 /**
  * The floating pill over a map that ties the results to the visible area.
@@ -48,7 +49,7 @@ function MapSearchAreaButtonComponent(props: MapSearchAreaButtonProps) {
     borderWidth: 1,
     borderColor: paint.border,
     backgroundColor: hovered && !disabled ? paint.hoverSurface : paint.surface,
-    opacity: disabled ? 0.5 : 1,
+    opacity: disabled ? DISABLED_OPACITY : 1,
     '--bloom-map-ring': paint.ring,
     ...bloomShadowStyle('m'),
   };

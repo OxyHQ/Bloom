@@ -165,3 +165,14 @@ Series tones follow the `CHART_TONES` order — `chart-2` lime, `chart-6` blue, 
 # Building a chart card
 
 The chrome is published for composing your own card: `ChartCardSurface`, `ChartHeader` / `ChartHeadline`, `ChartRangePill` / `ChartRangeSelect` + `useChartRange`, `ChartLegend`, `ChartStatTiles`, `ChartCenterReadout` and `CartesianPlot`. `src/chart-cards/README.md` documents each one and how a card is assembled from them.
+
+## Axis labels and captions are floored on the card
+
+`textSecondary` and `textTertiary` are read off the card's own fill (and the
+stat tiles', which are a second fill they land on) with `quietTextOver` — see
+[Styles → Quiet text](/docs/bloom/main/styles). As ramp stops they measured
+4.38:1 light / 3.78:1 dark for the label and **2.42:1 / 2.29:1** for the axis
+ticks, because `neutral-400` was chosen against the page and a chart card is not
+the page. They now clear 7:1 and 4.5:1 on every preset in both modes; the delta
+chips' labels clear 4.5:1 on their own chips. Gate:
+`surface-level-adoption.test.ts`.

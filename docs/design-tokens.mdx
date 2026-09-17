@@ -204,6 +204,40 @@ memory rather than from the file, `bloomDesignTokens()` from
 | `border-border-input` | input border | `--input` |
 | `border-border-input-active` | focused input | `--ring` |
 
+### One quiet-text role, one colour
+
+`text-text-tertiary` and `theme.colors.textTertiary` are the **same colour**:
+`--muted-foreground`, the theme's one quiet-text token.
+
+They were not. The utility has always aliased `--muted-foreground` (8.42:1 light
+/ 11.33:1 dark) while `theme.colors.textTertiary` read the engine's `outline`
+(4.04:1 / 6.12:1) — one named role, two colours, and the JS one was **below AA
+for body text in light**. The tie is broken toward the token, because a fixed
+third grey cannot be a third rung: it is measured against one surface and used on
+all of them. `neutral-400` is the same mistake one ramp over — it clears AA on
+the page and measures 2.42:1 on a chart card.
+
+**A genuinely quieter rung is asked for against the fill it lands on**, with
+`surfaceTextOn(theme, fill).textTertiary` — see
+[Styles](/docs/bloom/main/styles). That is what `chart-cards`, `creator-studio`,
+`property-insights`, `media-header` and `text-field` now do.
+
+Gates: `surface-levels.test.ts` (both spellings agree, and clear AA, over all 64
+presets x 2 modes) and `surface-level-adoption.test.ts` (the families).
+
+## Surfaces above the page
+
+The ramp below answers where the PAGE's own rungs sit. It does not answer "the
+surface one level above the current one", which is what a card, a popover tile
+or a field inside either of them needs — and thirty families each answered that
+by hand, leaving four different dark card fills in one tree.
+
+That question belongs to `styles/surface-levels.ts`
+([Styles](/docs/bloom/main/styles)): `resolveSurfaceLevel`, `surfaceFillOn`,
+`hairlineOn`, `surfaceTextOn` and the `SurfaceLevelProvider` that lets a
+container publish the rung its children sit on. It is built BESIDE the policy,
+reading `theme.colors`, and changes no preset and no token.
+
 ## The neutral surface ramp
 
 `--background`, `--surface`, `--popover`, `--muted`/`--accent` and `--card` are a

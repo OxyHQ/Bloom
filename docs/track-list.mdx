@@ -234,3 +234,8 @@ An `Episode` is `{ id, title, show?, description?, cover?, date?, duration, prog
 Each row draws a 112 cover (radius 12), the title (accent while current), the show, a two-line description, "date · length" (or an accent "Played" check), and a row of actions: an inverse play button, a progress bar with the time left while `progress` is between 0 and `duration`, and save, download and more at the end. Under 560 wide (`width`) the cover shrinks to 64 beside the title and the description is dropped.
 
 Accessibility: the title is a `link` that opens the episode (so does a press anywhere on the row); play is named "Play <title>"; save and download are toggle buttons with `aria-pressed`; the progress bar is a `progressbar` named "Listened" with the time left as its value text. `EpisodeList` is a `list` of `listitem`s with hairlines between rows. Translate with `labels` (`played`, `save`, `download`, `moreOptions`, `progress`, `formatLength`, `formatRemaining`).
+
+## Disabled
+
+Rows and controls fade to `tokens.DISABLED_OPACITY` (0.5), not the 0.4 they
+carried. See [Styles → Disabled](/docs/bloom/main/styles).

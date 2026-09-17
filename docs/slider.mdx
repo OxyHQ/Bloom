@@ -89,3 +89,11 @@ throwing; an empty or whitespace-only string counts as missing, because
   [`Radio`](/docs/bloom/main/radio) group — they name the options.
 - **The range is huge and non-linear.** A slider over 1–1,000,000 gives most of
   its travel to values nobody wants.
+
+## The thumb's focus ring
+
+The ring around a focused thumb is the `box-shadow` form (an outline on the
+focusable ancestor would draw round the wrong box), and its gap takes
+`var(--bloom-ring-offset)` from the surface behind the control. It was a
+hardcoded `#FFFFFF`, which in dark mode was a white halo. See
+[Styles → The focus ring gap](/docs/bloom/main/styles).

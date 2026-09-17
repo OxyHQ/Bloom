@@ -13,7 +13,7 @@ import { RiShuffleLine } from '../icons/remix/RiShuffleLine';
 import { GlyphButton } from '../button';
 import { LikeButton } from '../media-controls/LikeButton';
 import { PlayButton } from '../media-controls/PlayButton';
-import { borderRadius } from '../styles/tokens';
+import { borderRadius, DISABLED_OPACITY } from '../styles/tokens';
 import type { WebCssStyle } from '../styles/web-view-style';
 import { Text } from '../typography';
 import { useMediaHeaderPaint } from './parts';
@@ -191,7 +191,7 @@ function DownloadButtonComponent({
     borderRadius: borderRadius.full,
     alignItems: 'center',
     justifyContent: 'center',
-    opacity: disabled ? 0.5 : 1,
+    opacity: disabled ? DISABLED_OPACITY : 1,
     '--bloom-media-header-ring': paint.ring,
   };
   const stroke = 2.5;
@@ -293,7 +293,7 @@ function FollowButtonComponent({
     borderColor: active ? fg : color ? fg : paint.border,
     alignItems: 'center',
     justifyContent: 'center',
-    opacity: disabled ? 0.5 : 1,
+    opacity: disabled ? DISABLED_OPACITY : 1,
     '--bloom-media-header-ring': paint.ring,
     ...(IS_WEB ? { transitionProperty: 'border-color', transitionDuration: '150ms' } : null),
   };

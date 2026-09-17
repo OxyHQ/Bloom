@@ -3,6 +3,8 @@ import { Platform } from 'react-native';
 import { mixColor, resolveButtonRamps } from '../button/shared';
 import { oklchToSrgb, srgbToOklch, srgbToRgbString } from '../theme/color-space';
 import { parseRgba } from '../theme/color-utils';
+import { quietTextOver } from '../styles/color-contrast';
+import { AA_TEXT } from '../styles/surface-levels';
 import type { Theme } from '../theme/types';
 import type { TypeScaleVariant } from '../typography/scale';
 import { TYPE_SCALE } from '../typography/scale';
@@ -135,7 +137,9 @@ export function resolveMediaHeaderPaint(
     bar: bandTop,
     onBar: readableOn([bandTop], [colors.text, colors.background]),
     text: colors.text,
-    textMuted: dark ? n[400] : n[500],
+    // Floored on `card` — the harder of the two fills this label lands on. As
+    // `neutral-500` it measured 4.38:1 on the light card.
+    textMuted: quietTextOver([colors.background, dark ? n[900] : n[100]], colors.text, AA_TEXT),
     wash: dark ? n[800] : n[100],
     border: dark ? n[600] : n[300],
     borderHover: colors.text,

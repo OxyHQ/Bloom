@@ -10,6 +10,7 @@ import { useTheme } from '../theme/use-theme';
 import { Text } from '../typography';
 import { resolveChatPeoplePaint } from './shared';
 import type { ContactRowProps, ContactRowTrailing } from './types';
+import { DISABLED_OPACITY } from '../styles/tokens';
 
 /**
  * `ContactRow`: one person in a list of people.
@@ -138,7 +139,7 @@ function ContactRowComponent(props: ContactRowProps) {
     paddingRight: 10,
     paddingBottom: 8,
     paddingLeft: 10,
-    opacity: disabled ? 0.5 : 1,
+    opacity: disabled ? DISABLED_OPACITY : 1,
   };
 
   const main = checkboxRow ? (

@@ -1,4 +1,5 @@
 import React from 'react';
+import { DISABLED_OPACITY } from '../styles/tokens';
 import { act, fireEvent, render, within } from '@testing-library/react-native';
 
 import { BloomThemeProvider } from '../theme/BloomThemeProvider';
@@ -77,12 +78,12 @@ describe('ComposerPanel', () => {
     expect(getByTestId('composer-input').props.value).toBe('');
   });
 
-  it('greys send to 40% and ignores it while disabled', () => {
+  it('greys send to the disabled opacity and ignores it while disabled', () => {
     const onSubmit = jest.fn();
     const { getByLabelText } = renderIn(<ComposerPanel disabled onSubmit={onSubmit} />);
     const send = getByLabelText('Send message');
     expect(send.props['aria-disabled']).toBe(true);
-    expect(resolvedStyle(send.props.style).opacity).toBe(0.4);
+    expect(resolvedStyle(send.props.style).opacity).toBe(DISABLED_OPACITY);
     fireEvent.press(send);
     expect(onSubmit).not.toHaveBeenCalled();
   });

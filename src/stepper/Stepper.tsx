@@ -1,15 +1,15 @@
-import React, { memo, useCallback, useEffect, useMemo } from 'react';
+import React, { memo, useCallback, useMemo } from 'react';
 import { Platform, View, type AccessibilityActionEvent } from 'react-native';
 
 import { Button } from '../button';
 import { resolveButtonRamps } from '../button/shared';
-import { FOCUS_RING_OFFSET_COLOR } from '../checkbox/shared';
+import { webDataSet } from '../styles/web-data';
 import { useAccessibleNameWarning } from '../hooks/use-accessible-name-warning';
 import { RiAddLine } from '../icons/remix/RiAddLine';
 import { RiSubtractLine } from '../icons/remix/RiSubtractLine';
-import { adoptStyleSheet } from '../styles/adopt-style-sheet';
+import { useRingOffsetStyle } from '../styles/surface-levels';
+import { interactiveWebCss, useInteractiveWebCss } from '../styles/interactive-web-css';
 import type { WebCssStyle } from '../styles/web-view-style';
-import { webDataSet } from '../styles/web-data';
 import { useTheme } from '../theme/use-theme';
 import { Text } from '../typography';
 import type { TypeScaleVariant } from '../typography/scale';
@@ -59,14 +59,17 @@ function stepperClamp(raw: number, min: number, max: number | undefined, step: n
 
 const STYLE_ID = 'bloom-stepper-web-css';
 const VALUE = '[data-bloom-stepper-value]';
-const BLOOM_STEPPER_CSS = `
-${VALUE} {
-  outline: none;
-}
-${VALUE}:focus-visible {
-  box-shadow: 0 0 0 2px ${FOCUS_RING_OFFSET_COLOR}, 0 0 0 4px var(--bloom-stepper-ring, currentColor);
-}
-`;
+const BLOOM_STEPPER_CSS = interactiveWebCss({
+  selector: VALUE,
+  varPrefix: 'bloom-stepper',
+  // The VALUE is a focusable readout, not a button: no `<button>` reset, no
+  // hover rule, no press scale — only focus.
+  reset: 'none',
+  base: 'cursor: default;',
+  transition: 'box-shadow 120ms ease',
+  focus: { mode: 'ring' },
+  disabled: { opacity: null },
+});
 
 function StepperComponent({
   value,
@@ -84,10 +87,9 @@ function StepperComponent({
   testID,
 }: StepperProps) {
   const theme = useTheme();
+  const ringOffset = useRingOffsetStyle();
   useAccessibleNameWarning('Stepper', accessibilityLabel);
-  useEffect(() => {
-    adoptStyleSheet(STYLE_ID, BLOOM_STEPPER_CSS);
-  }, []);
+  useInteractiveWebCss(STYLE_ID, BLOOM_STEPPER_CSS);
   const { accent } = useMemo(() => resolveButtonRamps(theme), [theme]);
   const config = SIZE_CONFIG[size];
 
@@ -157,6 +159,7 @@ function StepperComponent({
     alignItems: 'center',
     justifyContent: 'center',
     '--bloom-stepper-ring': accent[500],
+    ...ringOffset,
   };
 
   return (

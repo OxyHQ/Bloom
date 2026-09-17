@@ -2,6 +2,7 @@ import React, { memo, useMemo } from 'react';
 import { Pressable, View, type GestureResponderEvent } from 'react-native';
 
 import { RiHeart3Fill } from '../icons/remix/RiHeart3Fill';
+import { DISABLED_OPACITY } from '../styles/tokens';
 import { RiHeart3Line } from '../icons/remix/RiHeart3Line';
 import { useInteractiveWebCss } from '../styles/interactive-web-css';
 import type { WebCssStyle } from '../styles/web-view-style';
@@ -51,7 +52,7 @@ function FavoriteButtonComponent({
     height: box,
     alignItems: 'center',
     justifyContent: 'center',
-    opacity: disabled ? 0.6 : 1,
+    opacity: disabled ? DISABLED_OPACITY : 1,
     '--bloom-listing-card-ring': paint.ring,
   };
 

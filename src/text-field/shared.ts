@@ -1,3 +1,4 @@
+import { useMemo } from 'react';
 import { Platform, type ViewStyle } from 'react-native';
 
 import type { WebCssStyle } from '../styles/web-view-style';
@@ -8,7 +9,9 @@ import {
   mixColor,
   resolveButtonRamps,
 } from '../button/shared';
+import { hairlineOn, surfaceFillOn, surfaceTextOn, useSurfaceFill } from '../styles/surface-levels';
 import type { Theme } from '../theme/types';
+import { useTheme } from '../theme/use-theme';
 import { TYPE_SCALE } from '../typography/scale';
 
 /**
@@ -136,59 +139,87 @@ const TRANSPARENT = 'rgba(0, 0, 0, 0)';
 export { TRANSPARENT as TEXT_FIELD_TRANSPARENT };
 
 /**
- * Resolve the input tokens against a Bloom theme, light (`:root`) or dark
- * (`.dark`). Pure, so it can be walked over every preset × mode without
- * rendering.
+ * Resolve the input tokens against a Bloom theme and the SURFACE the field sits
+ * on. Pure, so it can be walked over every preset × mode without rendering.
  *
- * The dark `color-mix(... N%, transparent)` tokens are composited over
- * the theme's page background, which is what they sit on there
- * (`background-full`).
+ * `surface` is what makes the field a field. As fixed ramp stops the dark fill
+ * was `neutral-800` — byte for byte the surface `floating/menu-palette` paints a
+ * menu, a popover, a select and a tooltip with, measured 1.000:1 against it. A
+ * field dropped into any of those had no shell at all, and one inside a `card`
+ * had 1.225:1. Every fill and every quiet text colour here is now a step off
+ * whatever it was given, so the field keeps a shell wherever it lands; on the
+ * page it lands within 0.04 of the colour it always had.
+ *
+ * The dark `color-mix(... N%, transparent)` tokens are composited over that same
+ * surface, which is what they sit on.
  */
-export function resolveTextFieldPalette(theme: Theme): TextFieldPalette {
+export function resolveTextFieldPalette(
+  theme: Theme,
+  surface: string = theme.colors.background,
+): TextFieldPalette {
   const c = theme.colors;
   const { neutral: n } = resolveButtonRamps(theme);
   const red = colorRamp(c.negative, DANGER_TABLE);
+  const background = surfaceFillOn(theme, surface);
+  // The value, the placeholder and the counter sit on the FILL; the hint and the
+  // label sit on the surface behind it. Both are floored on the right one.
+  const onField = surfaceTextOn(theme, background);
+  const onSurface = surfaceTextOn(theme, surface);
 
   if (theme.isDark) {
-    const backgroundDisabled = mixColor(c.background, n[800], 0.3);
+    const backgroundDisabled = mixColor(surface, background, 0.3);
     return {
-      background: n[800],
+      background,
       backgroundDisabled,
-      backgroundInvalid: mixColor(c.background, red[950], 0.6),
-      ringHover: n[500],
+      backgroundInvalid: mixColor(surface, red[950], 0.6),
+      ringHover: hairlineOn(theme, background),
       ringFocus: n[600],
       text: c.text,
       textDisabled: mixColor(backgroundDisabled, n[500], 0.4),
-      placeholder: n[600],
+      placeholder: onField.textTertiary,
       placeholderInvalid: red[400],
-      icon: n[600],
+      icon: onField.textTertiary,
       iconDisabled: n[600],
       iconInvalid: red[400],
-      hint: n[500],
+      hint: onSurface.textTertiary,
       error: red[400],
       infoIcon: n[700],
-      count: n[600],
+      count: onField.textTertiary,
     };
   }
 
   return {
-    background: n[200],
-    backgroundDisabled: n[100],
+    background,
+    backgroundDisabled: mixColor(surface, background, 0.5),
     backgroundInvalid: red[100],
-    ringHover: n[300],
+    ringHover: hairlineOn(theme, background),
     ringFocus: n[400],
     text: c.text,
     textDisabled: n[300],
-    placeholder: n[400],
+    placeholder: onField.textTertiary,
     placeholderInvalid: red[400],
-    icon: n[400],
+    icon: onField.textTertiary,
     iconDisabled: n[300],
     iconInvalid: red[600],
-    hint: n[500],
+    hint: onSurface.textTertiary,
     error: red[500],
     infoIcon: n[300],
-    count: n[400],
+    count: onField.textTertiary,
   };
+}
+
+/**
+ * The field palette for the surface this subtree is actually on.
+ *
+ * Every `TextField` / `Textarea` / `InputGroup` / `Label` / `Field` reads it
+ * through this hook rather than calling `resolveTextFieldPalette(theme)`, so a
+ * field inside a `SurfaceLevelProvider` steps off that container instead of off
+ * the page.
+ */
+export function useTextFieldPalette(): TextFieldPalette {
+  const theme = useTheme();
+  const surface = useSurfaceFill();
+  return useMemo(() => resolveTextFieldPalette(theme, surface), [theme, surface]);
 }
 
 export interface TextFieldState {

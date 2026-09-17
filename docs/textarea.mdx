@@ -88,3 +88,9 @@ Accepts React Native's `TextInputProps` (except `multiline`, which is always on)
 - The name is `label`, else `accessibilityLabel`, else `placeholder`. A placeholder is a poor name — give the field a label.
 - Invalid and disabled reach the input as `aria-invalid` / `aria-disabled`, the spellings react-native-web reads.
 - Invalid is also shown as text when you pass a `hint`; colour alone is not an announcement.
+
+## The fill is a step off the surface
+
+`Textarea` shares `text-field`'s palette, so its shell steps off whatever surface
+it lands on — see [TextField](/docs/bloom/main/text-field) and
+[Styles → Surface levels](/docs/bloom/main/styles).

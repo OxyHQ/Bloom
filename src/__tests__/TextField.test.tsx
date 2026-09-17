@@ -1,4 +1,7 @@
 import React from 'react';
+import { contrastRatio } from '../styles/color-contrast';
+import { AA_TEXT, hairlineOn, resolveSurfaceLevel, surfaceFillOn, surfaceTextOn } from '../styles/surface-levels';
+import { resolveMenuPalette } from '../floating/menu-palette';
 import { View } from 'react-native';
 import { act, render } from '@testing-library/react-native';
 
@@ -62,51 +65,78 @@ describe('TextField palette (input tokens)', () => {
     const theme = captureTheme('light');
     const { neutral: n } = resolveButtonRamps(theme);
     const red = colorRamp(theme.colors.negative, DANGER_TABLE);
+    const surface = theme.colors.background;
+    const background = surfaceFillOn(theme, surface);
     expect(resolveTextFieldPalette(theme)).toEqual({
-      background: n[200],
-      backgroundDisabled: n[100],
+      background,
+      backgroundDisabled: mixColor(surface, background, 0.5),
       backgroundInvalid: red[100],
-      ringHover: n[300],
+      ringHover: hairlineOn(theme, background),
       ringFocus: n[400],
       text: theme.colors.text,
       textDisabled: n[300],
-      placeholder: n[400],
+      placeholder: surfaceTextOn(theme, background).textTertiary,
       placeholderInvalid: red[400],
-      icon: n[400],
+      icon: surfaceTextOn(theme, background).textTertiary,
       iconDisabled: n[300],
       iconInvalid: red[600],
-      hint: n[500],
+      hint: surfaceTextOn(theme, surface).textTertiary,
       error: red[500],
       infoIcon: n[300],
-      count: n[400],
+      count: surfaceTextOn(theme, background).textTertiary,
     });
   });
 
-  it('maps the dark tokens, compositing the color-mix ones over the page', () => {
+  it('maps the dark tokens, compositing the color-mix ones over the surface', () => {
     const theme = captureTheme('dark');
     expect(theme.isDark).toBe(true);
     const { neutral: n } = resolveButtonRamps(theme);
     const red = colorRamp(theme.colors.negative, DANGER_TABLE);
-    const disabledBg = mixColor(theme.colors.background, n[800], 0.3);
+    const surface = theme.colors.background;
+    const background = surfaceFillOn(theme, surface);
+    const disabledBg = mixColor(surface, background, 0.3);
     expect(resolveTextFieldPalette(theme)).toEqual({
-      background: n[800],
+      background,
       backgroundDisabled: disabledBg,
-      backgroundInvalid: mixColor(theme.colors.background, red[950], 0.6),
-      ringHover: n[500],
+      backgroundInvalid: mixColor(surface, red[950], 0.6),
+      ringHover: hairlineOn(theme, background),
       ringFocus: n[600],
       text: theme.colors.text,
       textDisabled: mixColor(disabledBg, n[500], 0.4),
-      placeholder: n[600],
+      placeholder: surfaceTextOn(theme, background).textTertiary,
       placeholderInvalid: red[400],
-      icon: n[600],
+      icon: surfaceTextOn(theme, background).textTertiary,
       iconDisabled: n[600],
       iconInvalid: red[400],
-      hint: n[500],
+      hint: surfaceTextOn(theme, surface).textTertiary,
       error: red[400],
       infoIcon: n[700],
-      count: n[600],
+      count: surfaceTextOn(theme, background).textTertiary,
     });
   });
+
+  it.each(['light', 'dark'] as const)(
+    'gives the field a shell on every surface it can land on (%s)',
+    (mode) => {
+      const theme = captureTheme(mode);
+      const parents = [
+        theme.colors.background,
+        theme.colors.card,
+        resolveMenuPalette(theme).surface,
+        resolveSurfaceLevel(theme, 1).background,
+        resolveSurfaceLevel(theme, 2).background,
+      ];
+      for (const parent of parents) {
+        const p = resolveTextFieldPalette(theme, parent);
+        // The bug this replaced: the dark fill was `neutral-800`, the EXACT
+        // colour of a menu surface — 1.000:1, a field with no shell.
+        expect(contrastRatio(p.background, parent)).toBeGreaterThanOrEqual(1.1);
+        // And the placeholder stays AA on whatever fill that produced.
+        expect(contrastRatio(p.placeholder, p.background)).toBeGreaterThanOrEqual(AA_TEXT);
+        expect(contrastRatio(p.hint, parent)).toBeGreaterThanOrEqual(AA_TEXT);
+      }
+    },
+  );
 
   it('follows the precedence for the shell: focus over hover, no ring when invalid or disabled', () => {
     const p = resolveTextFieldPalette(captureTheme('light'));
