@@ -163,6 +163,7 @@ export { RiFilePaper2Line } from './RiFilePaper2Line';
 export { RiFilePdf2Line } from './RiFilePdf2Line';
 export { RiFileTextLine } from './RiFileTextLine';
 export { RiFileWord2Line } from './RiFileWord2Line';
+export { RiFileZipLine } from './RiFileZipLine';
 export { RiFilmLine } from './RiFilmLine';
 export { RiFilter3Fill } from './RiFilter3Fill';
 export { RiFilterLine } from './RiFilterLine';
