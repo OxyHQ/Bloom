@@ -159,6 +159,8 @@ export { RiHand } from './RiHand';
 export { RiHandCoinLine } from './RiHandCoinLine';
 export { RiHandHeartLine } from './RiHandHeartLine';
 export { RiHashtag } from './RiHashtag';
+export { RiHeart3Fill } from './RiHeart3Fill';
+export { RiHeart3Line } from './RiHeart3Line';
 export { RiHeartFill } from './RiHeartFill';
 export { RiHeartLine } from './RiHeartLine';
 export { RiHeartPulseFill } from './RiHeartPulseFill';
