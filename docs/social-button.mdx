@@ -1,23 +1,40 @@
 ---
 title: SocialButton
-description: A sign-in button for a third-party provider — 24 brands plus your own.
+description: A sign-in button for an identity provider — Oxy, 24 third-party brands, or your own.
 order: 24
 ---
 
 # SocialButton
 
-A "Continue with …" button for a third-party identity provider. The brand is **named**, not passed as artwork: `brand="google"` supplies the logo, the brand colour and the accessible label together, so a stack of these cannot drift out of sync.
+A "Continue with …" / "Sign in with …" button for an identity provider. The brand is **named**, not passed as artwork: `brand="google"` supplies the logo, the brand colour and the accessible label together, so a stack of these cannot drift out of sync.
 
 ```tsx
 import { SocialButton } from '@oxy.so/bloom/social-button';
 
+<SocialButton brand="oxy" action="signIn" onPress={signIn} />   // Sign in with Oxy
 <SocialButton brand="google" onPress={signInWithGoogle} />      // Continue with Google
 <SocialButton brand="github" appearance="white" />               // outlined, colour mark
 <SocialButton brand="apple" iconOnly />                          // circle, logo only
 <SocialButton brand="figma" href="https://example.com/auth/figma" />  // a link
 ```
 
-Providers: `google`, `apple`, `github`, `gitlab`, `microsoft`, `x`, `facebook`, `linkedin`, `discord`, `slack`, `figma`, `notion`, `dropbox`, `spotify`, `twitch`, `reddit`, `tiktok`, `instagram`, `telegram`, `whatsapp`, `amazon`, `bitbucket`, `auth0`, `okta` — also exported as `SOCIAL_PROVIDERS`.
+Providers: `oxy`, `google`, `apple`, `github`, `gitlab`, `microsoft`, `x`, `facebook`, `linkedin`, `discord`, `slack`, `figma`, `notion`, `dropbox`, `spotify`, `twitch`, `reddit`, `tiktok`, `instagram`, `telegram`, `whatsapp`, `amazon`, `bitbucket`, `auth0`, `okta` — also exported as `SOCIAL_PROVIDERS`.
+
+## Wording
+
+`action` picks the verb of the default label — and of the accessible name when `iconOnly`:
+
+| `action` | Label |
+| --- | --- |
+| `continue` (default) | Continue with Google |
+| `signIn` | Sign in with Google |
+| `signUp` | Sign up with Google |
+
+Pass `children` to write the label yourself (a localized string, say).
+
+## Oxy
+
+`brand="oxy"` is Oxy's own mark, drawn two-tone — the mark, and its letters in the colour behind it. It follows Google's treatment: `colorful` is Bloom's **primary button** painted with the theme accent, so it matches the app it sits in; `white` is the secondary button with the mark in the accent; `black` draws it white on near-black. The Oxy SDK's `OxySignInButton` is this button with `action="signIn"`.
 
 ## Appearance
 

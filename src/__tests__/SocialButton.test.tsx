@@ -40,19 +40,19 @@ function themeFor(mode: 'light' | 'dark'): Theme {
 const BRANDS = Object.keys(SOCIAL_PROVIDERS) as SocialProvider[];
 
 describe('SocialButton — data', () => {
-  it('ships all 24 providers, each with a label, viewBox and glyph', () => {
-    expect(BRANDS).toHaveLength(24);
+  it('ships all 25 providers, each with a label, viewBox and glyph', () => {
+    expect(BRANDS).toHaveLength(25);
     for (const brand of BRANDS) {
       const meta = SOCIAL_PROVIDERS[brand];
       expect(meta.label.length).toBeGreaterThan(0);
-      expect(meta.viewBox).toMatch(/^0 0 \d+ \d+$/);
+      expect(meta.viewBox).toMatch(/^-?[\d.]+ -?[\d.]+ [\d.]+ [\d.]+$/);
       expect(meta.path.length).toBeGreaterThan(20);
     }
   });
 
-  it('has a colour mark for every provider but Amazon (absent upstream)', () => {
+  it('has a colour mark for every provider but Amazon (absent upstream) and Oxy (drawn two-tone)', () => {
     const missing = BRANDS.filter((b) => !SOCIAL_COLOR_LOGOS[b]);
-    expect(missing).toEqual(['amazon']);
+    expect(missing.sort()).toEqual(['amazon', 'oxy']);
   });
 
   it('resolves every url(#id) fill to a gradient of the same logo', () => {
@@ -146,6 +146,33 @@ describe('SocialButton — render', () => {
     expect(flat(button.props.style)).toMatchObject({ width: 36, height: 36, paddingLeft: 0 });
     expect(queryByText('Continue with Apple')).toBeNull();
     expect(button.props.accessibilityLabel).toBe('Continue with Apple');
+  });
+
+  it('words the default label and the icon-only name by action', () => {
+    const { getByText, getByTestId } = renderWithTheme(
+      <>
+        <SocialButton brand="oxy" action="signIn" />
+        <SocialButton brand="google" action="signUp" />
+        <SocialButton brand="github" action="continue" />
+        <SocialButton testID="icon" brand="oxy" action="signIn" iconOnly />
+      </>,
+    );
+    expect(getByText('Sign in with Oxy')).toBeTruthy();
+    expect(getByText('Sign up with Google')).toBeTruthy();
+    expect(getByText('Continue with GitHub')).toBeTruthy();
+    expect(getByTestId('icon').props.accessibilityLabel).toBe('Sign in with Oxy');
+  });
+
+  it('paints Oxy like Google: the primary button on colorful, the secondary on white', () => {
+    for (const mode of ['light', 'dark'] as const) {
+      const theme = themeFor(mode);
+      const oxy = resolveSocialButtonPaint('oxy', 'colorful', theme);
+      const google = resolveSocialButtonPaint('google', 'colorful', theme);
+      expect(oxy).toEqual(google);
+      expect(resolveSocialButtonPaint('oxy', 'white', theme)).toEqual(
+        resolveSocialButtonPaint('google', 'white', theme),
+      );
+    }
   });
 
   it('uses the custom config label and a caller label', () => {

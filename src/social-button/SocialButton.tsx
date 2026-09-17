@@ -19,8 +19,15 @@ import { interactiveWebCss, useInteractiveWebCss } from '../styles/interactive-w
 import { StyledPressable } from '../styles/styled-primitives';
 import type { WebCssStyle } from '../styles/web-view-style';
 import { SOCIAL_COLOR_LOGOS } from './color-logos';
+import { OxyMark } from './OxyMark';
 import { SOCIAL_PROVIDERS, type SocialColorLogo, type SocialProvider } from './providers';
-import type { SocialBrand, SocialButtonAppearance, SocialButtonProps, SocialButtonSize } from './types';
+import type {
+  SocialBrand,
+  SocialButtonAction,
+  SocialButtonAppearance,
+  SocialButtonProps,
+  SocialButtonSize,
+} from './types';
 
 /**
  * The social sign-in button (`base/social-button`).
@@ -47,6 +54,10 @@ import type { SocialBrand, SocialButtonAppearance, SocialButtonProps, SocialButt
  *              with the provider's real multi-colour mark. Apple, GitHub and X
  *              draw in near-black, so dark mode repaints their paths white.
  *   disabled   the whole button at 60% opacity.
+ *
+ *   oxy        the Oxy mark, two-tone: the mark in the glyph colour and its
+ *              letters in the fill behind it (the accent on `colorful`,
+ *              neutral-950 on `black`, white on `white`).
  *
  * No press scale on this control.
  */
@@ -124,6 +135,17 @@ export interface SocialButtonPaint {
 }
 
 const TRANSPARENT = 'rgba(0, 0, 0, 0)';
+
+const ACTION_PHRASE: Record<SocialButtonAction, string> = {
+  continue: 'Continue with',
+  signIn: 'Sign in with',
+  signUp: 'Sign up with',
+};
+
+/** The default label and icon-only accessible name: `"Sign in with Oxy"`. */
+export function socialButtonLabel(brandLabel: string, action: SocialButtonAction = 'continue'): string {
+  return `${ACTION_PHRASE[action]} ${brandLabel}`;
+}
 
 /**
  * The `oklch(from <fill> calc(l - 0.04) calc(c + 0.01) h)` transform — down in
@@ -362,6 +384,7 @@ const SocialButtonComponent: React.FC<SocialButtonProps> = ({
   appearance = 'colorful',
   iconOnly = false,
   fullWidth = false,
+  action = 'continue',
   children,
   onPress,
   href,
@@ -450,6 +473,14 @@ const SocialButtonComponent: React.FC<SocialButtonProps> = ({
   let glyph: React.ReactNode;
   if (custom) {
     glyph = config?.icon;
+  } else if (brand === 'oxy') {
+    glyph = (
+      <OxyMark
+        size={geometry.glyph}
+        color={paint.glyph}
+        letterColor={appearance === 'white' ? '#FFFFFF' : paint.rest.background}
+      />
+    );
   } else if (colorLogo) {
     glyph = (
       <ColorLogo
@@ -478,7 +509,8 @@ const SocialButtonComponent: React.FC<SocialButtonProps> = ({
   const isLink = href != null;
   // The visible label already names the brand; when it is hidden the control
   // needs that name back, or it announces as an unlabelled button.
-  const name = accessibilityLabel ?? (iconOnly ? `Continue with ${label}` : undefined);
+  const phrase = socialButtonLabel(label, action);
+  const name = accessibilityLabel ?? (iconOnly ? phrase : undefined);
 
   return (
     <StyledPressable
@@ -524,7 +556,7 @@ const SocialButtonComponent: React.FC<SocialButtonProps> = ({
       </View>
       {iconOnly ? null : typeof children === 'string' || children == null ? (
         <Text variant="body-medium" numberOfLines={1} style={[labelStyle, textStyle]}>
-          {children ?? `Continue with ${label}`}
+          {children ?? phrase}
         </Text>
       ) : (
         children
