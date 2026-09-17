@@ -321,6 +321,82 @@ export type {
   VolumeControlProps,
   VolumeSliderVisibility,
 } from './media-controls';
+export { FilterChips, Shelf, ShelfSkeleton, shelfGridColumns } from './media-shelf';
+export type {
+  FilterChipOption,
+  FilterChipsProps,
+  ShelfLayout,
+  ShelfProps,
+  ShelfSkeletonProps,
+} from './media-shelf';
+export {
+  DEFAULT_QUEUE_PANEL_LABELS,
+  moveQueueItem,
+  QUEUE_ROW_HEIGHT,
+  QueuePanel,
+  QueuePanelRow,
+  queueDragShift,
+  queueDragTarget,
+  RecentlyPlayedList,
+} from './queue-panel';
+export type {
+  QueuePanelLabels,
+  QueuePanelProps,
+  QueuePanelRowProps,
+  QueuePanelTab,
+  QueuePanelVariant,
+  QueueSection,
+  QueueTrack,
+  RecentlyPlayedListProps,
+} from './queue-panel';
+export {
+  activeLyricIndex,
+  LyricsPreviewCard,
+  lyricsScrollTarget,
+  LyricsView,
+  normalizeLyricLines,
+  resolveLyricsPalette,
+} from './lyrics';
+export type {
+  LyricLine,
+  LyricsPalette,
+  LyricsPreviewCardProps,
+  LyricsSize,
+  LyricsViewProps,
+} from './lyrics';
+export {
+  BrowseGrid,
+  filterLibraryItems,
+  LibraryItem,
+  LibraryPanel,
+  RecentSearches,
+  SearchField,
+  SearchResultTabs,
+  sortLibraryItems,
+  TopResultCard,
+} from './music-library';
+export type {
+  BrowseGridProps,
+  BrowseTile,
+  LibraryEntry,
+  LibraryFilter,
+  LibraryFilterState,
+  LibraryItemKind,
+  LibraryItemProps,
+  LibraryItemVariant,
+  LibraryKindLabels,
+  LibraryPanelLabels,
+  LibraryPanelProps,
+  LibrarySort,
+  LibraryView,
+  RecentSearchEntry,
+  RecentSearchesProps,
+  SearchFieldProps,
+  SearchResultTab,
+  SearchResultTabsProps,
+  TopResultCardProps,
+  TopResultKind,
+} from './music-library';
 export {
   AmenityFilter,
   CountFilter,
