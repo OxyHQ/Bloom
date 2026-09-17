@@ -284,3 +284,111 @@ export interface ListingSectionProps {
   style?: StyleProp<ViewStyle>;
   testID?: string;
 }
+
+// ---------------------------------------------------------------------------
+//  PropertyFacts
+// ---------------------------------------------------------------------------
+
+export interface PropertyFact {
+  icon?: ListingIcon;
+  /** "Built area", "Bedrooms", "Energy rating". */
+  label: string;
+  /** Pre-formatted ("96 m²", "3", "2nd of 5", "Yes"). */
+  value: string;
+}
+
+export interface PropertyFactsProps {
+  items: readonly PropertyFact[];
+  /** `auto` (default): 2 below 480 wide, 3 from 480, 4 from 720. */
+  columns?: 2 | 3 | 4 | 'auto';
+  /** Draw only the first `limit` facts. */
+  limit?: number;
+  /** Draws "Show all" when set and some facts are hidden, or `total` exceeds the drawn count. */
+  onShowAll?: () => void;
+  /** The full fact count, when `items` is already a subset. Default `items.length`. */
+  total?: number;
+  /** Default `(n) => \`Show all ${n} features\``. */
+  showAllLabel?: (total: number) => string;
+  /** Names the list. Default `"Property features"`. */
+  accessibilityLabel?: string;
+  style?: StyleProp<ViewStyle>;
+  testID?: string;
+}
+
+// ---------------------------------------------------------------------------
+//  ContactCard
+// ---------------------------------------------------------------------------
+
+/** Who the contact is to the listing. Picks the default role label and message label. */
+export type ContactRole = 'host' | 'landlord' | 'agent' | 'agency';
+
+export interface ContactCardProps extends Omit<HostCardProps, 'messageLabel'> {
+  /** Default `host`. */
+  role?: ContactRole;
+  /**
+   * The line under the name when `label` is not set. Default: nothing for a
+   * host (`HostCard`'s look), `"Landlord"`, `"Agent"`, `"Agency"` otherwise.
+   */
+  roleLabel?: string;
+  /** The agency an agent works for ("Harbourline Homes"), drawn with `logo`. */
+  agency?: string;
+  /**
+   * The agency's logo: a URL / `ImageResolver` id drawn in a 40px rounded
+   * tile, or any node. For `role="agency"` without an `avatar` it also
+   * replaces the avatar.
+   */
+  logo?: string | ReactNode;
+  /** "Usually responds within an hour" — a row with a clock. */
+  responseTime?: string;
+  /** Active listings, counted ("12 active listings"). */
+  activeListings?: number;
+  /** Default `(n) => n === 1 ? '1 active listing' : \`${n} active listings\``. */
+  activeListingsLabel?: (count: number) => string;
+  /** Pressing the active-listings row (open the contact's other listings). */
+  onPressListings?: () => void;
+  /** The phone number, pre-formatted. Hidden behind "Show phone" until revealed. */
+  phone?: string;
+  /** Controlled reveal. */
+  phoneRevealed?: boolean;
+  /** Called with `true` when "Show phone" is pressed (log the lead). */
+  onPhoneRevealedChange?: (revealed: boolean) => void;
+  /** Default `"Show phone"`. */
+  showPhoneLabel?: string;
+  /** Draws the "Call" button when set. */
+  onCall?: () => void;
+  /** Default `"Call"`. */
+  callLabel?: string;
+  /** Default `"Message"` (`"Message host"` for a host). */
+  messageLabel?: string;
+}
+
+// ---------------------------------------------------------------------------
+//  FloorPlan
+// ---------------------------------------------------------------------------
+
+export interface FloorPlanItem {
+  /** A URL, or an image id handed to the app's `ImageResolver`. */
+  source: string;
+  /** "Ground floor", "Upper floor · 42 m²". Drawn under the tile. */
+  label: string;
+  /** A second line ("2 bedrooms, 1 bath"). */
+  description?: string;
+  /** What the plan shows, for a screen reader. Default `label`. */
+  alt?: string;
+}
+
+export interface FloorPlanProps {
+  plans: readonly FloorPlanItem[];
+  /** Pressed plan, by index — open `ZoomableMediaGallery` here. Tiles are images without it. */
+  onPressPlan?: (index: number) => void;
+  /** `auto` (default): 1 below 560 wide, 2 from 560. A single plan always takes the full width. */
+  columns?: 1 | 2 | 'auto';
+  /** Tile width / height. Default `4 / 3`. */
+  aspectRatio?: number;
+  /** A tile's accessible name. Default `"<alt>, floor plan 1 of 2"`. */
+  planLabel?: (plan: FloorPlanItem, position: number, total: number) => string;
+  /** Rendition forwarded to the `ImageResolver` for an id `source`. Default `"large"`. */
+  imageVariant?: string;
+  style?: StyleProp<ViewStyle>;
+  testID?: string;
+}

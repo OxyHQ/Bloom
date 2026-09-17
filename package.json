@@ -1791,6 +1791,20 @@
         "default": "./lib/commonjs/listing-details/index.js"
       }
     },
+    "./property-insights": {
+      "react-native": {
+        "types": "./lib/typescript/module/property-insights/index.d.ts",
+        "default": "./src/property-insights/index.ts"
+      },
+      "import": {
+        "types": "./lib/typescript/module/property-insights/index.d.ts",
+        "default": "./lib/module/property-insights/index.js"
+      },
+      "require": {
+        "types": "./lib/typescript/commonjs/property-insights/index.d.ts",
+        "default": "./lib/commonjs/property-insights/index.js"
+      }
+    },
     "./booking": {
       "react-native": {
         "types": "./lib/typescript/module/booking/index.d.ts",

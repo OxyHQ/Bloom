@@ -437,6 +437,7 @@ export type {
   SearchModeTabsProps,
 } from './home-search';
 export * from './listing-details';
+export * from './property-insights';
 export { BookingBar, BookingCard, PriceBreakdown, TRIP_STATUS, TripCard } from './booking';
 export type {
   BookingBarProps,
