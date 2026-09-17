@@ -53,13 +53,20 @@ import { useTheme } from '../theme/use-theme';
 import type { Theme } from '../theme/types';
 import { FavoriteButton, ListingCard, ListingCardGrid, WishlistCard } from '../listing-card';
 import {
+  describePriceLine,
   DOT_EDGE_SIZE,
   DOT_SIZE,
   dotWindow,
   listingGridColumns,
+  locationText,
   resolveListingCardPaint,
   resolvePhoto,
+  resolvePriceLines,
+  STATUS_WASH_OPACITY,
+  statusLabelFor,
 } from '../listing-card/shared';
+import { RiDropLine, RiHotelBedLine, RiRulerLine } from '../icons/remix';
+import { resolveOfferingBadgePaint } from '../offering-badge/shared';
 import { colorRamp, DANGER_TABLE, resolveButtonRamps } from '../button/shared';
 
 (globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
@@ -446,5 +453,202 @@ describe('WishlistCard', () => {
     expect(byTestId('w').tagName).toBe('A');
     expect(byTestId('w').getAttribute('href')).toBe('/wishlists/cabins');
     expect(byTestId('w').getAttribute('aria-label')).toBe('Cabins');
+  });
+});
+
+// ---------------------------------------------------------------------------
+//  Housing: offerings, price lines, facts, location, status, compact density
+// ---------------------------------------------------------------------------
+
+const home = {
+  photos: PHOTOS.slice(0, 3),
+  title: 'Townhouse with a patio',
+  address: 'Talmar Hill',
+  offerings: ['sale', 'long_term_rent'] as const,
+  priceLines: [
+    { price: '€1,250', unit: '/ month' },
+    { price: '€240,000', secondary: '€3,200/m²', originalPrice: '€255,000' },
+  ],
+  facts: [
+    { icon: RiHotelBedLine, label: '3', accessibilityLabel: '3 bedrooms' },
+    { icon: RiDropLine, label: '2', accessibilityLabel: '2 bathrooms' },
+    { icon: RiRulerLine, label: '110 m²' },
+  ],
+};
+
+describe('housing helpers', () => {
+  it('resolvePriceLines: priceLines win; otherwise the legacy single line; empty without a price', () => {
+    expect(resolvePriceLines({ price: '€124', priceUnit: 'night', originalPrice: '€150' })).toEqual([
+      { price: '€124', unit: 'night', originalPrice: '€150' },
+    ]);
+    expect(resolvePriceLines({ price: '€1', priceLines: [{ price: '€2' }] })).toEqual([{ price: '€2' }]);
+    expect(resolvePriceLines({})).toEqual([]);
+    expect(describePriceLine({ price: '€240,000', secondary: '€3,200/m²', originalPrice: '€255,000' })).toBe(
+      '€240,000, €3,200/m², originally €255,000',
+    );
+  });
+
+  it('locationText and statusLabelFor', () => {
+    expect(locationText('Talmar Hill', true)).toBe('Talmar Hill · Approximate location');
+    expect(locationText(undefined, true, 'Ubicación aproximada')).toBe('Ubicación aproximada');
+    expect(locationText('Talmar Hill', false)).toBe('Talmar Hill');
+    expect(locationText(undefined, false)).toBeNull();
+    expect(statusLabelFor('available')).toBeNull();
+    expect(statusLabelFor(undefined)).toBeNull();
+    expect(statusLabelFor('sold')).toBe('Sold');
+    expect(statusLabelFor('rented', 'Alquilado')).toBe('Alquilado');
+  });
+});
+
+describe('ListingCard — housing', () => {
+  it('stacks the price lines: struck original, semibold price, unit, secondary in text-secondary', () => {
+    mount(<ListingCard {...home} testID="c" />);
+    const price = byTestId('c-price');
+    expect(byTestId('c-price-0').textContent).toBe('€1,250 / month');
+    expect(byTestId('c-price-1').textContent).toBe('€255,000 €240,000 · €3,200/m²');
+    const spans = Array.from(byTestId('c-price-1').querySelectorAll('span')) as HTMLElement[];
+    const secondary = spans.find((el) => el.textContent === ' · €3,200/m²') as HTMLElement;
+    const amount = spans.find((el) => el.textContent === '€240,000') as HTMLElement;
+    const original = spans.find((el) => el.textContent === '€255,000') as HTMLElement;
+    expect(getComputedStyle(secondary).color).toBe(normalise(theme.colors.textSecondary));
+    expect(getComputedStyle(amount).fontWeight).toBe('600');
+    expect(getComputedStyle(original).textDecorationLine || getComputedStyle(original).textDecoration).toContain(
+      'line-through',
+    );
+    // The block sits 4 under the text above it; one line per price.
+    expect(getComputedStyle(price).marginTop).toBe('4px');
+    expect(price.children).toHaveLength(2);
+  });
+
+  it('priceLines replace the legacy price props', () => {
+    mount(<ListingCard {...home} price="€9" priceUnit="night" testID="c" />);
+    expect(byTestId('c-link').textContent).not.toContain('€9 night');
+  });
+
+  it('facts: icons hidden, labels in body-2 text-secondary, one clipped wrapping row', () => {
+    mount(<ListingCard {...home} testID="c" />);
+    const facts = byTestId('c-facts');
+    const style = getComputedStyle(facts);
+    expect(style.flexWrap).toBe('wrap');
+    expect(style.height).toBe('18px');
+    expect(style.overflowX === 'hidden' || style.overflow === 'hidden').toBe(true);
+    expect(style.columnGap).toBe('12px');
+    expect(Array.from(facts.children).map((el) => el.textContent)).toEqual(['3', '2', '110 m²']);
+    const firstIcon = byTestId('c-facts-0').querySelector('[aria-hidden="true"] svg');
+    expect(firstIcon?.getAttribute('width')).toBe('16');
+    const text = byTestId('c-facts-2').querySelector('[dir="auto"]') as HTMLElement;
+    expect(getComputedStyle(text).fontSize).toBe('13px');
+    expect(getComputedStyle(text).color).toBe(normalise(theme.colors.textSecondary));
+  });
+
+  it('address with a pin, and "Approximate location"', () => {
+    mount(<ListingCard {...home} approximateLocation testID="c" />);
+    const location = byTestId('c-location');
+    expect(location.textContent).toBe('Talmar Hill · Approximate location');
+    expect(location.querySelector('[aria-hidden="true"] svg')).not.toBeNull();
+    mount(<ListingCard {...home} address={undefined} approximateLocation approximateLocationLabel="Zona aproximada" testID="c" />);
+    expect(byTestId('c-location').textContent).toBe('Zona aproximada');
+  });
+
+  it('offerings are onMedia badges in the top-left slot after the badge, outside the link, de-duplicated', () => {
+    mount(<ListingCard {...home} offerings={['sale', 'long_term_rent', 'sale']} badge="New build" testID="c" />);
+    const slot = byTestId('c-slot');
+    expect(Array.from(slot.children).map((el) => el.textContent)).toEqual(['New build', 'For sale', 'For rent']);
+    expect(byTestId('c-link').contains(slot)).toBe(false);
+    const paint = resolveOfferingBadgePaint(theme, 'sale', 'onMedia');
+    expect(getComputedStyle(byTestId('c-offering-sale')).backgroundColor).toBe(normalise(paint.background));
+    expect(getComputedStyle(slot).flexWrap).toBe('wrap');
+    expect(getComputedStyle(slot).top).toBe('12px');
+    expect(getComputedStyle(slot).left).toBe('12px');
+  });
+
+  it('offering labels are overridable', () => {
+    mount(<ListingCard {...home} offeringLabels={{ sale: 'En venta' }} testID="c" />);
+    expect(byTestId('c-offering-sale').textContent).toBe('En venta');
+    expect(byTestId('c-link').getAttribute('aria-label')).toContain('En venta, For rent');
+  });
+
+  it('composes the housing name: title, status, badge, offerings, location, prices, facts', () => {
+    mount(<ListingCard {...home} status="reserved" href="/homes/talmar" testID="c" />);
+    expect(byTestId('c-link').getAttribute('aria-label')).toBe(
+      'Townhouse with a patio, Reserved, For sale, For rent, Talmar Hill, €1,250 / month, €240,000, €3,200/m², originally €255,000, 3 bedrooms, 2 bathrooms, 110 m²',
+    );
+  });
+
+  it.each(['light', 'dark'] as const)('a status washes the photo and draws the inverted pill first (%s)', (mode) => {
+    mount(<ListingCard {...home} status="sold" testID="c" />, mode);
+    const paint = resolveListingCardPaint(theme);
+    const wash = byTestId('c-wash');
+    expect(byTestId('c-photo').contains(wash)).toBe(true);
+    expect(getComputedStyle(wash).backgroundColor).toBe(normalise(theme.colors.background));
+    expect(getComputedStyle(wash).opacity).toBe(String(STATUS_WASH_OPACITY));
+    const pill = byTestId('c-status');
+    expect(pill.textContent).toBe('Sold');
+    expect(byTestId('c-slot').firstElementChild).toBe(pill);
+    expect(getComputedStyle(pill).backgroundColor).toBe(normalise(paint.statusFill));
+    expect(getComputedStyle(pill.querySelector('[dir="auto"]') as HTMLElement).color).toBe(normalise(paint.statusText));
+  });
+
+  it('available (or no status) draws neither wash nor pill', () => {
+    mount(<ListingCard {...home} status="available" testID="c" />);
+    expect(maybe('c-wash')).toBeNull();
+    expect(maybe('c-status')).toBeNull();
+  });
+});
+
+describe('ListingCard — compact density', () => {
+  it('a row: 112 square thumbnail with radius 12, the text beside it, one named link', () => {
+    mount(<ListingCard {...home} density="compact" href="/homes/talmar" testID="c" />);
+    const link = byTestId('c-link');
+    expect(link.tagName).toBe('A');
+    expect(getComputedStyle(link).flexDirection).toBe('row');
+    const photo = getComputedStyle(byTestId('c-photo'));
+    expect(photo.width).toBe('112px');
+    expect(photo.height).toBe('112px');
+    expect(photo.borderTopLeftRadius).toBe('12px');
+    expect(byTestId('c').getAttribute('data-bloom-listing-card')).toBe('compact');
+    // One static photo: no dots, no arrows, no track.
+    expect(container.querySelectorAll('[data-bloom-listing-card-dot], [data-bloom-listing-card-track]')).toHaveLength(0);
+    expect(link.getAttribute('aria-label')).toContain('Townhouse with a patio, For sale, For rent');
+  });
+
+  it('offerings are small TINTED badges above the title, inside the text column', () => {
+    mount(<ListingCard {...home} density="compact" status="reserved" testID="c" />);
+    const slot = byTestId('c-slot');
+    expect(byTestId('c-link').contains(slot)).toBe(true);
+    expect(Array.from(slot.children).map((el) => el.textContent)).toEqual(['Reserved', 'For sale', 'For rent']);
+    const badge = byTestId('c-offering-sale');
+    expect(getComputedStyle(badge).height).toBe('20px');
+    expect(getComputedStyle(badge).backgroundColor).toBe(
+      normalise(resolveOfferingBadgePaint(theme, 'sale', 'tinted').background),
+    );
+    expect(byTestId('c-photo').contains(byTestId('c-wash'))).toBe(true);
+    // Facts at the small size.
+    expect(byTestId('c-facts-0').querySelector('svg')?.getAttribute('width')).toBe('14');
+  });
+
+  it('the heart is over the thumbnail, a sibling of the link', () => {
+    const onPress = jest.fn();
+    const onFavoriteChange = jest.fn();
+    mount(<ListingCard {...home} density="compact" onPress={onPress} favorite={false} onFavoriteChange={onFavoriteChange} testID="c" />);
+    const heart = byTestId('c-favorite');
+    expect(byTestId('c-link').contains(heart)).toBe(false);
+    expect(getComputedStyle(heart.parentElement as HTMLElement).left).toBe('78px');
+    act(() => heart.click());
+    expect(onFavoriteChange).toHaveBeenCalledWith(true);
+    expect(onPress).not.toHaveBeenCalled();
+  });
+
+  it('keeps the legacy price props working', () => {
+    mount(<ListingCard {...stay} density="compact" testID="c" />);
+    expect(byTestId('c-price-0').textContent).toBe('€124 night');
+  });
+
+  it('loading draws a compact skeleton', () => {
+    mount(<ListingCard {...home} density="compact" loading testID="c" />);
+    const el = byTestId('c');
+    expect(el.getAttribute('aria-busy')).toBe('true');
+    expect(getComputedStyle(el).flexDirection).toBe('row');
+    expect(getComputedStyle(el.firstElementChild as HTMLElement).width).toBe('112px');
   });
 });

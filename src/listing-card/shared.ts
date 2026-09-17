@@ -4,6 +4,7 @@ import { colorRamp, DANGER_TABLE, mixColor, resolveButtonRamps } from '../button
 import { resolveMenuPalette } from '../floating/menu-palette';
 import type { ImageResolver } from '../image-resolver/context';
 import type { Theme } from '../theme/types';
+import type { ListingCardProps, ListingFact, ListingPriceLine, ListingStatus, Offering } from './types';
 
 export const IS_WEB = Platform.OS === 'web';
 
@@ -35,7 +36,19 @@ export interface ListingCardPaint {
   text: string;
   textSecondary: string;
   ring: string;
+  /** The status pill: the page's reading pair inverted, legible by construction in both modes. */
+  statusFill: string;
+  statusText: string;
+  /** Laid over the photo of a listing that is not available, at {@link STATUS_WASH_OPACITY}. */
+  statusWash: string;
 }
+
+/** A listing that is not available has its photo washed this far toward the page. */
+export const STATUS_WASH_OPACITY = 0.5;
+
+/** The compact density's thumbnail: square, this wide, radius {@link COMPACT_PHOTO_RADIUS}. */
+export const COMPACT_PHOTO_SIZE = 112;
+export const COMPACT_PHOTO_RADIUS = 12;
 
 /** The heart's dark body over imagery is this opaque. */
 export const HEART_SCRIM_OPACITY = 0.5;
@@ -51,6 +64,8 @@ export const DOT_INACTIVE_OPACITY = 0.6;
  *   favourite           red-500 (`error`)      both modes — over a photo
  *   surface             the menu surface       card / neutral-800
  *   text                text / text-secondary
+ *   status pill         text fill, background label (the page pair inverted)
+ *   status wash         background at 50% over the photo
  */
 export function resolveListingCardPaint(theme: Theme): ListingCardPaint {
   const { accent, neutral: n } = resolveButtonRamps(theme);
@@ -69,7 +84,69 @@ export function resolveListingCardPaint(theme: Theme): ListingCardPaint {
     text: theme.colors.text,
     textSecondary: theme.colors.textSecondary,
     ring: accent[500],
+    statusFill: theme.colors.text,
+    statusText: theme.colors.background,
+    statusWash: theme.colors.background,
   };
+}
+
+// ---------------------------------------------------------------------------
+//  Housing data — pure, shared by the card and the map preview
+// ---------------------------------------------------------------------------
+
+/** The English default status labels. `available` draws nothing. */
+export const STATUS_LABELS: Readonly<Record<Exclude<ListingStatus, 'available'>, string>> = {
+  reserved: 'Reserved',
+  sold: 'Sold',
+  rented: 'Rented',
+  unavailable: 'Unavailable',
+};
+
+/** The status pill's label, or `null` for an available listing. */
+export function statusLabelFor(status: ListingStatus | undefined, override?: string): string | null {
+  if (!status || status === 'available') return null;
+  return override ?? STATUS_LABELS[status];
+}
+
+/**
+ * The price lines to draw: `priceLines` when given, otherwise the legacy
+ * single line built from `price`, `priceUnit` and `originalPrice`.
+ */
+export function resolvePriceLines(
+  props: Pick<ListingCardProps, 'priceLines' | 'price' | 'priceUnit' | 'originalPrice'>,
+): ReadonlyArray<ListingPriceLine> {
+  if (props.priceLines) return props.priceLines.filter((line) => line.price !== '');
+  if (!props.price) return [];
+  return [{ price: props.price, unit: props.priceUnit, originalPrice: props.originalPrice }];
+}
+
+/** "€240,000, €3,200/m², originally €250,000" — one line in words. */
+export function describePriceLine(line: ListingPriceLine): string {
+  const unit = line.unit ? ` ${line.unit}` : '';
+  const secondary = line.secondary ? `, ${line.secondary}` : '';
+  const original = line.originalPrice ? `, originally ${line.originalPrice}` : '';
+  return `${line.price}${unit}${secondary}${original}`;
+}
+
+export function describeFacts(facts: ReadonlyArray<ListingFact> | undefined): string | null {
+  if (!facts || facts.length === 0) return null;
+  return facts.map((fact) => fact.accessibilityLabel ?? fact.label).join(', ');
+}
+
+/** The address line as drawn: the address, "Approximate location", or both. */
+export function locationText(
+  address: string | undefined,
+  approximate: boolean | undefined,
+  approximateLabel = 'Approximate location',
+): string | null {
+  if (address && approximate) return `${address} · ${approximateLabel}`;
+  if (address) return address;
+  return approximate ? approximateLabel : null;
+}
+
+/** De-duplicated, in the order given. */
+export function uniqueOfferings(offerings: ReadonlyArray<Offering> | undefined): Offering[] {
+  return offerings ? Array.from(new Set(offerings)) : [];
 }
 
 export function isUrl(value: string): boolean {

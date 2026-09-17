@@ -1805,6 +1805,20 @@
         "default": "./lib/commonjs/listing-card/index.js"
       }
     },
+    "./offering-badge": {
+      "react-native": {
+        "types": "./lib/typescript/module/offering-badge/index.d.ts",
+        "default": "./src/offering-badge/index.ts"
+      },
+      "import": {
+        "types": "./lib/typescript/module/offering-badge/index.d.ts",
+        "default": "./lib/module/offering-badge/index.js"
+      },
+      "require": {
+        "types": "./lib/typescript/commonjs/offering-badge/index.d.ts",
+        "default": "./lib/commonjs/offering-badge/index.js"
+      }
+    },
     "./category-bar": {
       "react-native": {
         "types": "./lib/typescript/module/category-bar/index.d.ts",

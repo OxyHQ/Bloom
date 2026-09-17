@@ -14,9 +14,13 @@ import type { MapPriceMarkerProps } from './types';
 /**
  * A price pill for the app's own map.
  *
- *   geometry   28 tall, full pill, 10 side padding (8 before a heart), 1px hairline
- *   text       body-2-semibold, tabular
- *   default    surface, hairline, shadow-s; hover: the hairline darkens
+ *   default    28 tall, 10 side padding (8 before a heart), body-2-semibold,
+ *              12px heart
+ *   compact    22 tall, 8 side padding (6 before a heart), caption-1-semibold,
+ *              10px heart — for a dense map
+ *   both       full pill, 1px hairline, tabular figures, never truncated: the
+ *              app passes a SHORT price ("€240K", "€950/mo")
+ *   at rest    surface, hairline, shadow-s; hover: the hairline darkens
  *   active     inverted fill and label, no hairline, shadow-m
  *   visited    muted fill and secondary label, shadow-s
  *   saved      a 12px heart before the price
@@ -28,11 +32,15 @@ import type { MapPriceMarkerProps } from './types';
  * `accessibilityLabel`.
  */
 
-const HEIGHT = 28;
+const GEOMETRY = {
+  default: { height: 28, padding: 10, heartPadding: 8, heart: 12, gap: 4, type: 'body-2-semibold' },
+  compact: { height: 22, padding: 8, heartPadding: 6, heart: 10, gap: 3, type: 'caption-1-semibold' },
+} as const;
 
 function MapPriceMarkerComponent({
   price,
   state = 'default',
+  size = 'default',
   saved = false,
   onPress,
   accessibilityLabel,
@@ -46,6 +54,7 @@ function MapPriceMarkerComponent({
     adoptStyleSheet(MAP_MARKER_STYLE_ID, MAP_MARKER_CSS);
   }, []);
 
+  const geometry = GEOMETRY[size];
   const active = state === 'active';
   const visited = state === 'visited';
 
@@ -62,11 +71,11 @@ function MapPriceMarkerComponent({
   const pillStyle: WebCssStyle = {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 4,
-    height: HEIGHT,
-    paddingLeft: saved ? 8 : 10,
-    paddingRight: 10,
-    borderRadius: HEIGHT / 2,
+    gap: geometry.gap,
+    height: geometry.height,
+    paddingLeft: saved ? geometry.heartPadding : geometry.padding,
+    paddingRight: geometry.padding,
+    borderRadius: geometry.height / 2,
     borderWidth: 1,
     borderColor: border,
     backgroundColor: fill,
@@ -84,17 +93,17 @@ function MapPriceMarkerComponent({
       onPress={onPress}
       onHoverIn={onIn}
       onHoverOut={onOut}
-      hitSlop={{ top: 8, bottom: 8, left: 4, right: 4 }}
+      hitSlop={size === 'compact' ? { top: 11, bottom: 11, left: 4, right: 4 } : { top: 8, bottom: 8, left: 4, right: 4 }}
       testID={testID}
       style={[pillStyle, style]}
     >
       {saved ? (
         <View testID={testID ? `${testID}-saved` : undefined}>
-          <RiHeart3Fill width={12} height={12} fill={active ? paint.activeHeart : paint.heart} />
+          <RiHeart3Fill width={geometry.heart} height={geometry.heart} fill={active ? paint.activeHeart : paint.heart} />
         </View>
       ) : null}
       <Text
-        variant="body-2-semibold"
+        variant={geometry.type}
         numberOfLines={1}
         style={{ color: label, fontVariant: ['tabular-nums'] }}
       >

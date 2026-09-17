@@ -14,6 +14,7 @@
  *   visited label      neutral-500        neutral-400
  *   saved heart        red-500            red-500
  *   saved heart, active red-400           red-700   (on the inverted fill)
+ *   area                accent-500         accent-400  (fill at 15%, 1.5px edge)
  *
  * The surface family is `floating/menu-palette.ts`'s — a marker, the preview
  * card and the search pill are floating things over a map, painted like a
@@ -45,7 +46,14 @@ export interface MapMarkerPaint {
   /** Photo placeholder behind an image that has not loaded. */
   placeholder: string;
   ring: string;
+  /** The approximate-area circle's edge; its fill is this at {@link AREA_FILL_OPACITY}. */
+  area: string;
 }
+
+/** The approximate-area circle's fill opacity. */
+export const AREA_FILL_OPACITY = 0.15;
+/** The approximate-area circle's edge width. */
+export const AREA_BORDER_WIDTH = 1.5;
 
 /** Pure, so it can be walked over presets and modes. */
 export function resolveMapMarkerPaint(theme: Theme): MapMarkerPaint {
@@ -71,6 +79,7 @@ export function resolveMapMarkerPaint(theme: Theme): MapMarkerPaint {
     activeHeart: dark ? red[700] : red[400],
     placeholder: dark ? n[700] : n[100],
     ring: accent[500],
+    area: dark ? accent[400] : accent[500],
   };
 }
 
