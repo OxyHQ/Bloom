@@ -67,6 +67,9 @@ import { Radio, RadioGroup } from '../radio';
 import { StatBar } from '../stat-bar';
 import { Stepper } from '../stepper';
 import { RatingBar } from '../rating';
+import { CategoryBar } from '../category-bar';
+import { MapPriceMarker, MapSearchAreaButton } from '../map-marker';
+import { RiFireLine } from '../icons/remix/RiFireLine';
 import {
   DropdownMenuCheckboxItem,
   DropdownMenuItem,
@@ -898,5 +901,40 @@ describe('RatingBar', () => {
     expect(el.getAttribute('aria-valuenow')).toBe('4.9');
     expect(el.getAttribute('aria-valuemin')).toBe('0');
     expect(el.getAttribute('aria-valuemax')).toBe('5');
+  });
+});
+
+describe('CategoryBar', () => {
+  it('emits a named tablist whose tabs carry aria-selected', () => {
+    const c = mount(
+      <CategoryBar
+        items={[
+          { key: 'a', label: 'Trending', icon: RiFireLine },
+          { key: 'b', label: 'Cabins', icon: RiFireLine },
+        ]}
+        value="b"
+        accessibilityLabel="Categories"
+        testID="cb"
+      />,
+    );
+    expect(byTestId(c, 'cb-track').getAttribute('role')).toBe('tablist');
+    expect(byTestId(c, 'cb-track').getAttribute('aria-label')).toBe('Categories');
+    expect(byTestId(c, 'cb-item-a').getAttribute('aria-selected')).toBe('false');
+    expect(byTestId(c, 'cb-item-b').getAttribute('aria-selected')).toBe('true');
+    expect(byTestId(c, 'cb-item-b').getAttribute('aria-label')).toBe('Cabins');
+  });
+});
+
+describe('Map pieces', () => {
+  it('a price marker emits aria-pressed for the active state', () => {
+    const c = mount(<MapPriceMarker price="€120" state="active" accessibilityLabel="€120 per night, Lisbon" testID="pm" />);
+    expect(byTestId(c, 'pm').getAttribute('aria-pressed')).toBe('true');
+    expect(byTestId(c, 'pm').getAttribute('aria-label')).toBe('€120 per night, Lisbon');
+  });
+
+  it('the search toggle emits aria-checked', () => {
+    const c = mount(<MapSearchAreaButton variant="toggle" checked onCheckedChange={() => {}} testID="sa" />);
+    expect(byTestId(c, 'sa').getAttribute('role')).toBe('checkbox');
+    expect(byTestId(c, 'sa').getAttribute('aria-checked')).toBe('true');
   });
 });

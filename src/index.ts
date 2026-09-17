@@ -293,6 +293,17 @@ export * from './card';
 export * from './badge';
 export { Rating, RatingBar } from './rating';
 export type { RatingBarProps, RatingCountStyle, RatingProps, RatingSize } from './rating';
+export { CategoryBar } from './category-bar';
+export type { CategoryBarIcon, CategoryBarItem, CategoryBarProps } from './category-bar';
+export { MapClusterMarker, MapListingPreview, MapPriceMarker, MapSearchAreaButton } from './map-marker';
+export type {
+  MapClusterMarkerProps,
+  MapListingPreviewLayout,
+  MapListingPreviewProps,
+  MapMarkerState,
+  MapPriceMarkerProps,
+  MapSearchAreaButtonProps,
+} from './map-marker';
 export * from './chip';
 export * from './aspect-ratio';
 export * from './tabs';

@@ -1,0 +1,115 @@
+---
+title: Map Marker
+description: Price pills, cluster bubbles, the listing preview card and the search-area pill to place on an app's own map.
+order: 63
+---
+
+# Map Marker
+
+The pieces a listings map is made of. Bloom ships no map: these render
+anywhere, and the app's map library positions them.
+
+```tsx
+import {
+  MapClusterMarker,
+  MapListingPreview,
+  MapPriceMarker,
+  MapSearchAreaButton,
+} from '@oxy.so/bloom/map-marker';
+
+<MapPriceMarker
+  price="€120"
+  state={activeId === id ? 'active' : visited.has(id) ? 'visited' : 'default'}
+  saved={saved.has(id)}
+  onPress={() => open(id)}
+  accessibilityLabel="€120 per night, Valdoria"
+/>
+
+<MapClusterMarker count={14} onPress={zoomIn} />
+
+<MapListingPreview
+  image={listing.photo}
+  title="Cabin by the pines"
+  rating={4.92}
+  reviewCount={128}
+  subtitle="Entire cabin · 2 beds"
+  price="€120"
+  priceDetail="night"
+  favorite={saved.has(id)}
+  onFavoriteChange={toggleSaved}
+  onClose={close}
+  onPress={openListing}
+/>
+
+<MapSearchAreaButton variant="toggle" checked={follow} onCheckedChange={setFollow} />
+<MapSearchAreaButton onPress={searchHere} />
+```
+
+Placement is the app's: centre a marker on its coordinate (for an absolutely
+positioned overlay, `transform: [{ translateX: '-50%' }, { translateY: '-50%' }]`)
+and raise the active marker and the preview card above their neighbours.
+Prices arrive formatted — the app owns currency and locale.
+
+## `MapPriceMarker`
+
+| prop                 | decides                                                                  |
+| -------------------- | ------------------------------------------------------------------------ |
+| `price`              | the text in the pill ("€120")                                            |
+| `state`              | `'default'`, `'active'` (the open one) or `'visited'` (opened before)     |
+| `saved`              | a small heart before the price                                           |
+| `onPress`            |                                                                          |
+| `accessibilityLabel` | a sentence — the pill shows only a number. Defaults to `price`           |
+| `style`, `testID`    | the heart is `<testID>-saved`                                             |
+
+A 28px full pill, `body-2-semibold` tabular text, 10px sides.
+
+| state    | fill                    | label             | edge / elevation            |
+| -------- | ----------------------- | ----------------- | --------------------------- |
+| default  | surface (card; dark neutral-800) | text-primary | hairline, `shadow-s`; hover darkens the hairline |
+| active   | text-primary (inverted) | card; dark neutral-900 | `shadow-m`             |
+| visited  | neutral-100; dark neutral-900 | neutral-500; dark neutral-400 | hairline, `shadow-s` |
+
+The heart is the theme's danger red. The marker is a `button` whose
+`aria-pressed` (native `accessibilityState.selected`) is the active state.
+
+## `MapClusterMarker`
+
+`count` (number or a string like `"99+"`), `state` (`default` | `active`),
+`onPress`, `accessibilityLabel` (default `"<count> stays"` — translate it),
+`style`, `testID`. A 36px round bubble that widens for longer counts, painted
+like the price pill.
+
+## `MapListingPreview`
+
+| prop                 | decides                                                                  |
+| -------------------- | ------------------------------------------------------------------------ |
+| `image`, `imageVariant` | a URL, or an id for the app's `ImageResolver`                         |
+| `title`              | one line, truncated                                                      |
+| `rating`, `reviewCount` | handed to `Rating` (`null` draws "New"); omit `rating` to hide it     |
+| `subtitle`           | the secondary line                                                       |
+| `price`, `priceDetail`, `originalPrice` | "€150 **€120** night" — the original struck through   |
+| `favorite`, `onFavoriteChange` | the heart; shown only with the handler                         |
+| `onClose`            | the close button; shown only with the handler                           |
+| `onPress`            | opens the listing — the whole card is the target                         |
+| `layout`             | `'vertical'` (photo on top, default) or `'compact'` (photo left, 112 wide) |
+| `width`              | default `327`                                                            |
+| `closeLabel`, `favoriteLabel`, `accessibilityLabel` | names; defaults "Close", "Save", `title` |
+
+A 16-radius card on the floating surface (hairline, `shadow-m`). Vertical: a
+200px photo, then 12px of padding around the title and `Rating` on one line,
+the subtitle, and the price line. The close button is Bloom's `xs` secondary
+icon button over the photo's top-left; the heart a 24px round button in the
+opposite corner (compact: heart over the photo, close in the card's top-right).
+The card never clips — the photo clips itself — so the native shadow survives.
+
+The open target is a button laid over the card BESIDE the close and heart
+buttons rather than around them, so no button nests inside another. The heart
+is a toggle with `aria-pressed` and native `accessibilityState.selected`.
+
+## `MapSearchAreaButton`
+
+`variant="toggle"` with `checked` / `onCheckedChange` draws a Bloom checkbox box
+and "Search as I move the map" as a `checkbox` with `aria-checked`; the default
+`variant="button"` with `onPress` draws a search icon and "Search this area".
+Both take `label`, `disabled`, `style` and `testID`. A 40px floating pill on the
+surface with a hairline and `shadow-m`; hover takes the menu hover fill.

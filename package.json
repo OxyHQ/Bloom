@@ -1721,6 +1721,34 @@
         "default": "./lib/commonjs/rating/index.js"
       }
     },
+    "./category-bar": {
+      "react-native": {
+        "types": "./lib/typescript/module/category-bar/index.d.ts",
+        "default": "./src/category-bar/index.ts"
+      },
+      "import": {
+        "types": "./lib/typescript/module/category-bar/index.d.ts",
+        "default": "./lib/module/category-bar/index.js"
+      },
+      "require": {
+        "types": "./lib/typescript/commonjs/category-bar/index.d.ts",
+        "default": "./lib/commonjs/category-bar/index.js"
+      }
+    },
+    "./map-marker": {
+      "react-native": {
+        "types": "./lib/typescript/module/map-marker/index.d.ts",
+        "default": "./src/map-marker/index.ts"
+      },
+      "import": {
+        "types": "./lib/typescript/module/map-marker/index.d.ts",
+        "default": "./lib/module/map-marker/index.js"
+      },
+      "require": {
+        "types": "./lib/typescript/commonjs/map-marker/index.d.ts",
+        "default": "./lib/commonjs/map-marker/index.js"
+      }
+    },
     "./card": {
       "react-native": {
         "types": "./lib/typescript/module/card/index.d.ts",
