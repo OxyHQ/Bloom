@@ -1,0 +1,332 @@
+---
+title: Chat List
+description: The conversations screen — rows with previews and unread state, folders, stories, search and the swipe actions behind each row.
+order: 64
+---
+
+# Chat List
+
+```tsx
+import {
+  ArchivedRow,
+  ChatFolderTabs,
+  ChatList,
+  ChatListItem,
+  ChatListItemSkeleton,
+  ChatSearchField,
+  ChatSearchResults,
+  GroupAvatar,
+  HighlightedText,
+  NewChatButton,
+  StoriesRow,
+} from '@oxy.so/bloom/chat-list';
+```
+
+Everything a messaging app's first screen needs. It builds on
+[`chat-indicators`](./chat-indicators.mdx) — the presence dot, the delivery
+ticks, the unread badge, the typing dots and the story ring are all from there,
+and nothing is reimplemented here.
+
+Every string is a PROP. No component in this family reads the clock, formats a
+duration, pluralises a count or decides what "recently" means: `time` arrives as
+`"12:41"` or `"Yesterday"`, an attachment arrives as `"Voice message 0:12"`, and
+a typing line arrives as `"Ana is typing…"`. The app owns the locale.
+
+## `ChatListItem`
+
+```tsx
+<ChatListItem
+  name="Mirela Antunes"
+  avatar="https://…/mirela.jpg"
+  status="online"
+  verified
+  time="12:41"
+  preview={{ sender: 'You', text: 'Sent the floor plan over' }}
+  outgoingStatus="read"
+  onPress={() => router.push('/chats/mirela')}
+/>
+```
+
+Two densities:
+
+| `density` | height | avatar | padding | name / preview |
+| --- | --- | --- | --- | --- |
+| `comfortable` (default) | 72 | 48 | 16 | `headline` / `body` |
+| `compact` | 56 | 36 | 12 | `body` / `body-2` |
+
+`comfortable` is the phone conversations screen; `compact` is the narrow pane of
+a desktop split view and the search results. A one-line row (no `preview`) keeps
+the same height, so a list never develops a ragged rhythm.
+
+### The preview line
+
+Exactly one shape wins, in this order:
+
+```tsx
+<ChatListItem preview={{ draft: true, text: 'about the deposit — can we' }} />
+<ChatListItem preview={{ attachment: { kind: 'voice', label: 'Voice message 0:12' } }} />
+<ChatListItem preview={{ sender: 'You', text: 'on my way' }} />
+<ChatListItem preview={{ sender: 'Pau', text: 'Meeting at the car park at seven' }} />
+```
+
+- **A draft** turns the line into an italic `Draft:` in the negative colour
+  followed by what was typed. It beats everything, including an attachment —
+  a half-written reply is the thing you came back for.
+- **An attachment** draws its glyph beside the label. The glyph comes from
+  `kind` (`photo`, `video`, `voice`, `audio`, `file`, `sticker`, `gif`,
+  `location`, `contact`, `poll`); the WORDS come from `label`, always, because
+  "Photo" is a translation and a duration is a format.
+- **A sender prefix** (`sender`) is the muted `"You: "` or a member's name in a
+  group, and is dropped on a draft (two lead-ins compete).
+
+`typingLabel` replaces the whole line with bouncing dots and that text:
+
+```tsx
+<ChatListItem name="Inés Bordoy" typingLabel="typing…" unreadCount={3} />
+```
+
+### The right column
+
+The time sits over the states: the mute bell, the pin, then EITHER the unread
+badge OR the delivery ticks of your own last message.
+
+**Those two are mutually exclusive, and the badge wins.** If their message is
+the last one in the conversation, yours is not in this row and has no status to
+report — so `unreadCount={3}` with `outgoingStatus="read"` draws the badge and
+no ticks. `unreadDot` counts as unread for the same rule. The time turns accent
+while there is something unread, except on a muted chat.
+
+### Groups
+
+```tsx
+<ChatListItem
+  name="Tramuntana Hikers"
+  kind="group"
+  faces={[{ source: a, name: 'Nuria' }, { source: b, name: 'Pau' }, { name: 'Ivet' }]}
+/>
+```
+
+`faces` draws a `GroupAvatar` cluster instead of one avatar. A group has no
+presence dot: "online" is a property of a person, and a dot on a cluster of four
+claims it about whichever face it lands on.
+
+`kind` also picks the marker beside the name — `channel` a megaphone, `bot` a
+robot, `group` a pair of figures — and `verified` beats all three. Pass `marker`
+for your own node.
+
+### Actions
+
+```tsx
+const actions = {
+  left: [{ key: 'read', label: 'Read', icon: RiCheckDoubleLine, tone: 'accent' }],
+  right: [
+    { key: 'mute', label: 'Mute', icon: RiNotificationOffLine },
+    { key: 'archive', label: 'Archive', icon: RiArchiveLine, tone: 'accent' },
+    { key: 'delete', label: 'Delete', icon: RiDeleteBinLine, tone: 'negative' },
+  ],
+};
+
+<ChatListItem name="Ana" swipeActions={actions} onAction={(key) => run(key)} />
+```
+
+One list, two affordances:
+
+- **Touch** — dragging right uncovers `left`, dragging left uncovers `right`. The
+  row travels with the finger and snaps open past 40% of the pane, closed below;
+  while a pane is open, pressing the row closes it rather than opening the chat.
+  The gesture fails on vertical travel, so a list scroll never becomes a swipe.
+- **Web** — the same actions appear as icon buttons over the right column on
+  hover and on keyboard focus, because a drag is undiscoverable with a mouse.
+  They are hidden entirely under `@media (hover: none)`.
+
+`swipeEnabled` defaults to "on wherever the platform is not web"; set it to
+`false` to keep the hover buttons and drop the gesture.
+
+`tone` paints the pane: `accent`, `negative` (delete), or the default neutral.
+
+### Accessibility
+
+The row is ONE target with ONE name, and its content is hidden from assistive
+technology. A pin, a bell, a badge and a pair of ticks are four states no text on
+the row carries, so the name says all of them:
+
+> Ana Ferrer, Verified, Draft: see you at eight, 12:41, 3 unread messages, Muted, Pinned
+
+Pass `accessibilityLabel` to replace it whole (a translated row), or `labels` to
+translate just the words this family supplies (`draft`, `pinned`, `muted`,
+`verified`, `channel`, `bot`, `group`).
+
+With `href` the row is a `link`; with `onPress` alone it is a `button`; with
+neither it is not a control at all. `selected` is `aria-current` on web and
+`accessibilityState.selected` on native.
+
+## `ChatList`
+
+```tsx
+<ChatList
+  sections={[
+    { key: 'pinned', title: 'Pinned', chats: pinned },
+    { key: 'all', title: 'All', chats: all },
+  ]}
+  selectedId={openChatId}
+  onChatPress={openChat}
+  onChatAction={(key, id) => run(key, id)}
+  archived={{ count: 6, onPress: openArchive }}
+  header={<ScreenHeader />}
+/>
+```
+
+`chats` is the shorthand for one unlabelled section. `archived` pins the archive
+row above the first section — it is a destination, not a conversation, so it
+never sorts in among them.
+
+`header` and `footer` are where the search field, the stories row and the folder
+tabs go; putting them inside the list is what makes the whole screen scroll as
+one.
+
+It MAPS every chat, which is right for the few hundred a phone shows. For a
+longer list render `ChatListItem` yourself inside a virtualised list — every row
+prop is on `ChatSummary` and `ChatList` holds no list state of its own.
+
+`loading` draws `ChatListItemSkeleton` rows at the same geometry and marks the
+region `aria-busy`, so "loading" is announced once rather than eight times.
+`empty` replaces the built-in empty state; `labels.emptyTitle` /
+`labels.emptyDescription` just reword it.
+
+## `ChatFolderTabs`
+
+```tsx
+<ChatFolderTabs
+  folders={[
+    { key: 'all', label: 'All', unreadCount: 15 },
+    { key: 'unread', label: 'Unread', unreadCount: 4 },
+    { key: 'groups', label: 'Groups', unreadCount: 12 },
+    { key: 'channels', label: 'Channels', unreadCount: 148, muted: true },
+    { key: 'bots', label: 'Bots' },
+  ]}
+  value={folder}
+  onValueChange={setFolder}
+  accessibilityLabel="Chat folders"
+/>
+```
+
+A horizontally scrolling tablist with a 2px accent underline under the selected
+tab, flush with the strip's hairline. Controlled with `value`, uncontrolled with
+`defaultValue` (or neither, which selects the first folder).
+
+**Why not `CategoryBar`.** The two look adjacent and are not: `CategoryBar` is an
+ICON over a label — its `icon` is required and it sizes and tints it — it carries
+no per-item count, and it marks the selection with a heavier label rather than an
+underline. Adding a badge slot and an icon-less mode would make one component
+answer two shapes. Both are `role="tablist"`, so an app that wants icon
+categories still has one.
+
+The count goes into the tab's NAME ("Unread, 4 unread"), because the badge is a
+bare number with no label of its own, and the badge itself is hidden from the
+reader so the tab does not announce it twice.
+
+## `StoriesRow`
+
+```tsx
+<StoriesRow
+  stories={stories}
+  own={{ avatar: me.avatar }}
+  onStoryPress={openStory}
+  onOwnPress={addStory}
+/>
+```
+
+"Your story" first with a `+` badge, then the rest with the UNSEEN ones before
+the seen (`seenLast`, on by default) — the point of the row is what is new, and a
+seen ring holding its place pushes the new ones off the right edge. The reorder
+is a STABLE sort, so two unseen stories keep the order you gave them; `state:
+'none'` counts as seen.
+
+Names sit under the rings, one line, clipped to the ring's footprint. Each ring
+is named `"<name>'s story"`, and the caption under it is hidden so the name is
+announced once.
+
+## `ChatSearchField` and `ChatSearchResults`
+
+```tsx
+<ChatSearchField value={query} onChangeText={setQuery} onClear={() => setQuery('')} />
+<ChatSearchResults query={query} results={results} onResultPress={open} />
+```
+
+A 40-tall pill: search glyph, input, and a clear button once there is text.
+Pressing anywhere on the pill focuses the input; focus takes the border, with no
+size change, so nothing reflows.
+
+**Why not `Search` or the music library's field.** [`Search`](./search.mdx) is a
+`TextField` with a floating LABEL — taller, and a label above a one-word search
+box is chrome a chat header has no room for.
+[`music-library`](./music-library.mdx)'s field is the right geometry but it is 48
+tall with a Browse toggle and a divider baked in, and reusing it would make a
+messaging screen import the music library's whole module graph for a pill.
+
+`ChatSearchResults` groups hits by `kind` in a fixed order — Chats, Messages,
+Contacts — keeping your order inside each group, and DROPS an empty group rather
+than printing a heading over nothing. Each row is the compact chat row with the
+matched run of the name and of the detail marked.
+
+### `HighlightedText`
+
+```tsx
+<HighlightedText text="José Ferrer" query="jose" />
+```
+
+Matching folds case AND accents, so `jose` finds `José` — but the runs are sliced
+out of the ORIGINAL string, never the folded one, so what is drawn is exactly
+what was passed in. (Folding is not length-preserving: a combining mark
+disappears, which is why the offsets are mapped back through a per-character
+index instead of assuming the two strings line up.) `highlightRuns(text, query)`
+is exported for the same logic without the rendering.
+
+The match is marked with COLOUR, not a band: inside a one-line result a tinted
+background reads as a second badge beside the unread pill. Pass
+`highlightBackground` where the text has room.
+
+## `GroupAvatar`
+
+```tsx
+<GroupAvatar size={48} faces={[{ source: a }, { source: b }, { name: 'Rut' }]} />
+```
+
+Two to four faces packed into one avatar-sized cluster: diagonal at 62% for two,
+one-above-two at 55% for three, a 2×2 rosette at 48% for four. A longer array is
+truncated; ONE face renders as a plain avatar at the full size, so a group that
+lost a member does not suddenly draw a lone disc in the corner.
+
+Every face carries a hairline ring in the surface colour, which is what makes the
+overlap read as two discs rather than one silhouette — pass `ringColor` when the
+cluster sits on a card rather than the page.
+
+It is decorative by default. Inside a `ChatListItem` the row's own name already
+says which group this is; pass `accessibilityLabel` when it stands alone.
+
+## `NewChatButton`
+
+```tsx
+<NewChatButton onPress={startChat} />
+<NewChatButton extended onPress={startChat} accessibilityLabel="New chat" />
+```
+
+It IS Bloom's [`Fab`](./fab.mdx) — placement, sizing, the minimize behaviour that
+follows a tab bar and the web/native fork all come from there. This only fixes
+the glyph and the name, so every messaging screen spells the action the same way
+instead of each one picking an icon. Every `Fab` prop passes through.
+
+`extended` promotes it to the pill with `accessibilityLabel` as its text, which
+is the one place the name is also the label.
+
+## Exported helpers
+
+| | |
+| --- | --- |
+| `highlightRuns(text, query)` | the matched/unmatched runs, accent-folded |
+| `groupSearchResults(results)` | hits bucketed by kind, empty groups dropped |
+| `sortStories(stories)` | unseen first, stable |
+| `hasUnread(count, dot)` | the rule the badge-vs-ticks precedence is built on |
+| `CHAT_ROW_GEOMETRY` | the two density rungs, as numbers |
+| `CHAT_ATTACHMENT_ICONS` | the glyph per attachment kind |
+| `CHAT_SEARCH_KINDS` | the group order |

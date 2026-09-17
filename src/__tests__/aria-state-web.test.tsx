@@ -109,6 +109,7 @@ import { ContextMenu, ContextMenuTrigger } from '../context-menu';
 import { Menubar, MenubarMenu, MenubarTrigger } from '../menubar';
 import { Popover, PopoverTrigger } from '../popover';
 import { TabBar, TabBarButton } from '../tab-bar';
+import { ChatFolderTabs, ChatListItem } from '../chat-list';
 
 (globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
 
@@ -1124,5 +1125,40 @@ describe('Media cards', () => {
       expect(el.getAttribute('aria-valuemin')).toBe('0');
       expect(el.getAttribute('aria-valuemax')).toBe('100');
     }
+  });
+});
+
+describe('Chat list', () => {
+  it('ChatFolderTabs emits aria-selected AND a name carrying the count', () => {
+    // The badge is a bare number with no label of its own, so a tab that only
+    // painted it would announce "Unread" and nothing about the four waiting.
+    const c = mount(
+      <ChatFolderTabs
+        folders={[
+          { key: 'all', label: 'All', unreadCount: 15 },
+          { key: 'unread', label: 'Unread', unreadCount: 4 },
+        ]}
+        value="unread"
+        accessibilityLabel="Chat folders"
+      />,
+    );
+    const tabs = allByRole(c, 'tab');
+    expect(tabs).toHaveLength(2);
+    expect(tabs[0]?.getAttribute('aria-selected')).toBe('false');
+    expect(tabs[1]?.getAttribute('aria-selected')).toBe('true');
+    expect(tabs[1]?.getAttribute('aria-label')).toBe('Unread, 4 unread');
+  });
+
+  it('ChatListItem marks the open conversation with aria-current, not aria-selected', () => {
+    // A row is a link or a button, and neither takes `aria-selected` — the
+    // native side reads `accessibilityState.selected`, which web drops.
+    const c = mount(
+      <ChatListItem name="Ana Ferrer" href="/chats/ana" selected time="12:41" testID="row" />,
+    );
+    const link = byTestId(c, 'row-link');
+    expect(link.getAttribute('role')).toBe('link');
+    expect(link.getAttribute('aria-current')).toBe('true');
+    expect(link.hasAttribute('aria-selected')).toBe(false);
+    expect(link.getAttribute('aria-label')).toBe('Ana Ferrer, 12:41');
   });
 });
