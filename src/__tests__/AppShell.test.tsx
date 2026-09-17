@@ -206,6 +206,33 @@ describe('AppShell without a title', () => {
   });
 });
 
+describe('AppShell breakpoints as numbers', () => {
+  const Aside = () => <ReactNative.Text>Details</ReactNative.Text>;
+
+  it('takes a literal width where an app does not land on a named tier', () => {
+    // A feed whose side column earns its place at 990, between lg and xl.
+    setWidth(1000);
+    const beside = renderIn(
+      <AppShell testID="shell" variant="feed" title="Home" aside={<Aside />} asideFrom={990} asideWidth={350} />,
+    );
+    expect(resolvedStyle(beside.getByTestId('shell-aside').props.style)).toMatchObject({ width: 350 });
+    beside.unmount();
+
+    setWidth(980);
+    const stacked = renderIn(
+      <AppShell testID="shell" variant="feed" title="Home" aside={<Aside />} asideFrom={990} asideWidth={350} />,
+    );
+    expect(resolvedStyle(stacked.getByTestId('shell-aside').props.style).width).toBeUndefined();
+    stacked.unmount();
+
+    // …and the rail goes in flow at 500, where the named tiers say `sm` is 640.
+    setWidth(520);
+    const rail = renderIn(<AppShell testID="shell" variant="feed" title="Home" sidebar={{ items: NAV }} navFrom={500} />);
+    expect(rail.getByTestId('sidebar-item-home')).toBeTruthy();
+    expect(rail.queryByTestId('shell-header-menu')).toBeNull();
+  });
+});
+
 describe('AppShell aside', () => {
   const Aside = () => <ReactNative.Text>Details</ReactNative.Text>;
 

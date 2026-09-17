@@ -20,7 +20,7 @@ import { useTheme } from '../theme/use-theme';
 import { AppShellBottomBar, AppShellFloatingAction, AppShellTopBar, useShellInsets } from './AppShellBars';
 import { AppShellHeader } from './AppShellHeader';
 import { AppShellSplitPanes } from './AppShellSplit';
-import { APP_SHELL_DEFAULTS as D } from './constants';
+import { APP_SHELL_DEFAULTS as D, breakpointPx } from './constants';
 import { AppShellProvider } from './context';
 import { resolveScrollMode, rootFrame, stickyRail, type ScrollMode } from './layout';
 import type { AppShellProps } from './types';
@@ -158,12 +158,12 @@ const AppShellComponent: React.FC<AppShellProps> = ({
   // variant decides how early it can sit in flow (a rail is narrow enough at
   // `sm`; the panel needs `lg`). `navFrom` overrides the tier outright.
   const navVariant = navExpandedFrom
-    ? width >= BREAKPOINTS[navExpandedFrom]
+    ? width >= breakpointPx(navExpandedFrom)
       ? ('panel' as const)
       : ('rail' as const)
     : sidebar?.variant;
   const navTier = navFrom ?? (navExpandedFrom || navVariant === 'rail' ? 'sm' : 'lg');
-  const wide = width >= BREAKPOINTS[navTier];
+  const wide = width >= breakpointPx(navTier);
   // `focus` is the one shape with no navigation at all.
   const hasNav = variant !== 'focus' && sidebar != null;
   const navInFlow = hasNav && wide;
@@ -182,7 +182,7 @@ const AppShellComponent: React.FC<AppShellProps> = ({
   // `focus` is a single column by definition and `split` has its `info` pane
   // instead, so neither takes an aside in EITHER position — beside or stacked.
   const hasAside = aside != null && variant !== 'focus' && variant !== 'split';
-  const asideBeside = hasAside && width >= BREAKPOINTS[asideFrom];
+  const asideBeside = hasAside && width >= breakpointPx(asideFrom);
   const asideStacked = hasAside && !asideBeside && asideCollapse === 'stack';
 
   const reducedMotion = useReducedMotion();
@@ -508,7 +508,7 @@ const AppShellComponent: React.FC<AppShellProps> = ({
     </View>
   );
 
-  const splitWide = width >= BREAKPOINTS[splitFrom];
+  const splitWide = width >= breakpointPx(splitFrom);
   // Below the breakpoint exactly one pane renders — the one `pane` names, or
   // the detail pane when that one was never given any content.
   const solePane = (pane === 'list' && list == null) || (pane === 'info' && info == null) ? 'detail' : pane;
@@ -533,7 +533,7 @@ const AppShellComponent: React.FC<AppShellProps> = ({
           info={info}
           showList={splitWide ? list != null : solePane === 'list'}
           showDetail={splitWide ? true : solePane === 'detail'}
-          showInfo={splitWide ? info != null && width >= BREAKPOINTS[infoFrom] : solePane === 'info'}
+          showInfo={splitWide ? info != null && width >= breakpointPx(infoFrom) : solePane === 'info'}
           listWidth={listWidth}
           listMinWidth={listMinWidth}
           listMaxWidth={listMaxWidth}
