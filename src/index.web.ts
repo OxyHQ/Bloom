@@ -356,6 +356,9 @@ export type {
   StaySearchStepProps,
 } from './stay-search';
 export * from './listing-details';
+export * from './tenancy';
+export * from './eviction';
+export * from './place-reviews';
 export { BookingBar, BookingCard, PriceBreakdown, TRIP_STATUS, TripCard } from './booking';
 export type {
   BookingBarProps,

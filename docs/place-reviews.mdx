@@ -1,0 +1,80 @@
+---
+title: Place reviews
+description: Reviews of a building by its past tenants — an anonymised review card with housing categories, a summary with deposit and recommendation stats, and an invitation to review.
+order: 122
+---
+
+# Place reviews
+
+Reviews of a BUILDING, not a listing: they outlive any one listing and stay with the
+place.
+
+```tsx
+import { PlaceReviewCard, PlaceReviewSummary, WriteReviewPrompt } from '@oxy.so/bloom/place-reviews';
+
+<PlaceReviewSummary
+  rating={3.9}
+  title="Rated by past tenants"
+  reviewCount={46}
+  categories={[
+    { label: 'Landlord responsiveness', value: 3.4, icon: RiCustomerService2Line },
+    { label: 'Maintenance', value: 3.1, icon: RiToolsLine },
+    { label: 'Noise', value: 4.2, icon: RiVolumeDownLine },
+  ]}
+  depositReturnedRate={0.82}
+  recommendRate={0.71}
+/>
+
+<WriteReviewPrompt buildingTitle="Calle del Olmo 14" onStart={openReviewForm} onDismiss={hide} />
+
+<PlaceReviewCard
+  authorLabel="Tenant, 2021–2024"
+  authorInitial="T"
+  date="Reviewed March 2026"
+  rating={4}
+  wouldRecommend
+  depositReturned
+  categories={[{ label: 'Maintenance', value: 3.5 }, { label: 'Neighbours', value: 5 }]}
+  text={review.text}
+  helpfulCount={12}
+  helpful={helpful}
+  onHelpfulChange={setHelpful}
+  onReport={report}
+/>
+```
+
+## Anonymous by construction
+
+`PlaceReviewCard` has no name field: `authorLabel` is the anonymised line ("Tenant,
+2021–2023") and `authorInitial` an optional single letter in the avatar disc. A review
+of a building can reach the landlord, so the app decides what the line reveals.
+
+## `PlaceReviewSummary` reuses `ReviewSummary`
+
+It renders `ReviewSummary` from `@oxy.so/bloom/listing-details` — the big rating, the
+title, "46 reviews" and the category `RatingBar`s in two columns from 640 wide — and adds
+the tenancy stat lines under it. It does not copy that part, so the two stay one design.
+
+The rates are fractions (0..1) and are the one thing computed here: rounded to a whole
+percent and passed to `formatDepositReturned` ("Deposit returned in 82% of tenancies")
+and `formatRecommend` ("71% would recommend living here"). Each line is one accessible
+element. `formatReviewCount` defaults to "1 review" / "46 reviews".
+
+## `PlaceReviewCard`
+
+- **Chips:** would recommend (success) or not (neutral); deposit returned (success) or
+  not (error). `undefined` draws neither — unknown is not "no".
+- **Categories:** `RatingBar`s, two columns from 520 wide (`layout="auto"`), one below.
+- **Text:** clamped to `numberOfLines` (4); "Show more" appears only when the text IS
+  clamped (measured), with `aria-expanded` / `expanded`.
+- **Helpful:** a pill toggle with `aria-pressed` (web) and `accessibilityState.selected`
+  (native), named "Helpful, 12". The count is the caller's — add the viewer's vote
+  yourself.
+- **Report:** a secondary link button, drawn with `onReport`.
+
+## `WriteReviewPrompt`
+
+A card with a building tile, "Did you live here?" (a heading), a description that names
+`buildingTitle`, and a small primary "Write a review" button that drops under the text
+when narrow. `onDismiss` adds a close button named `dismissLabel`. `media` replaces the
+tile (a photo of the building).

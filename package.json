@@ -1819,6 +1819,48 @@
         "default": "./lib/commonjs/map-marker/index.js"
       }
     },
+    "./tenancy": {
+      "react-native": {
+        "types": "./lib/typescript/module/tenancy/index.d.ts",
+        "default": "./src/tenancy/index.ts"
+      },
+      "import": {
+        "types": "./lib/typescript/module/tenancy/index.d.ts",
+        "default": "./lib/module/tenancy/index.js"
+      },
+      "require": {
+        "types": "./lib/typescript/commonjs/tenancy/index.d.ts",
+        "default": "./lib/commonjs/tenancy/index.js"
+      }
+    },
+    "./eviction": {
+      "react-native": {
+        "types": "./lib/typescript/module/eviction/index.d.ts",
+        "default": "./src/eviction/index.ts"
+      },
+      "import": {
+        "types": "./lib/typescript/module/eviction/index.d.ts",
+        "default": "./lib/module/eviction/index.js"
+      },
+      "require": {
+        "types": "./lib/typescript/commonjs/eviction/index.d.ts",
+        "default": "./lib/commonjs/eviction/index.js"
+      }
+    },
+    "./place-reviews": {
+      "react-native": {
+        "types": "./lib/typescript/module/place-reviews/index.d.ts",
+        "default": "./src/place-reviews/index.ts"
+      },
+      "import": {
+        "types": "./lib/typescript/module/place-reviews/index.d.ts",
+        "default": "./lib/module/place-reviews/index.js"
+      },
+      "require": {
+        "types": "./lib/typescript/commonjs/place-reviews/index.d.ts",
+        "default": "./lib/commonjs/place-reviews/index.js"
+      }
+    },
     "./card": {
       "react-native": {
         "types": "./lib/typescript/module/card/index.d.ts",
