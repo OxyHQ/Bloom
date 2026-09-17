@@ -90,18 +90,27 @@ function MessageGroupComponent({
             onPress={onPressAvatar}
           />
         ) : null}
-        <View
-          style={{
-            flexShrink: 1,
-            gap: RUN_GAP,
-            alignItems: outgoing ? 'flex-end' : 'flex-start',
-          }}
-        >
+        {/*
+          The run column GROWS, and its children STRETCH. Both halves matter,
+          and both were wrong: a bubble's `maxWidth` is a PERCENTAGE, so a
+          shrink-to-fit ancestor resolves it against that ancestor's own content
+          width and every bubble gets clamped to 78% of its natural width and
+          wraps for no reason. A column that grows but aligns its children to
+          one edge re-introduces the same shrink one level down — which is why
+          the side alignment is left to each row's own `justifyContent`, not
+          taken here.
+        */}
+        <View style={{ flexGrow: 1, flexShrink: 1, flexBasis: 0, gap: RUN_GAP }}>
           {drawName ? (
             <Text
               variant="body-2-medium"
               numberOfLines={1}
-              style={{ color: nameColor, paddingLeft: BUBBLE_PADDING_X, paddingRight: BUBBLE_PADDING_X }}
+              style={{
+                color: nameColor,
+                paddingLeft: BUBBLE_PADDING_X,
+                paddingRight: BUBBLE_PADDING_X,
+                textAlign: outgoing ? 'right' : 'left',
+              }}
             >
               {senderName}
             </Text>

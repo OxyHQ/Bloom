@@ -42,8 +42,8 @@ export const RUN_GAP = 2;
 export const GROUP_GAP = 8;
 export const DEFAULT_MAX_WIDTH: DimensionValue = '78%';
 /** Width of the SVG notch, and how far it hangs outside the bubble. */
-export const TAIL_WIDTH = 8;
-export const TAIL_HEIGHT = 13;
+export const TAIL_WIDTH = 9;
+export const TAIL_HEIGHT = 15;
 /** The reply quote's left bar. */
 export const QUOTE_BAR_WIDTH = 3;
 /** A second press inside this window is a double press. */
@@ -436,7 +436,6 @@ export function sidePaint(paint: MessageBubblePaint, direction: MessageDirection
 
 export const DEFAULT_MESSAGE_LABELS: MessageBubbleLabels = {
   forwardedFrom: 'Forwarded from',
-  edited: 'edited',
   deleted: 'This message was deleted',
   retry: 'Retry sending',
   addReaction: 'Add a reaction',
@@ -484,12 +483,19 @@ export function reactionLabel(emoji: string, count: number, mine: boolean): stri
 export const MESSAGE_BUBBLE_STYLE_ID = 'bloom-message-bubble-web-css';
 
 const BUBBLE = '[data-bloom-message-bubble]';
+/**
+ * The PRESSABLE, which is the node the browser focuses — not the bubble box
+ * inside it. Hanging the ring off the box drew nothing: `:focus-visible` never
+ * matched, and a focus ring that silently does not exist is indistinguishable
+ * from one nobody tabbed to.
+ */
+const PRESS = '[data-bloom-message-press]';
 
 export const MESSAGE_BUBBLE_CSS = `
-${BUBBLE} {
+${PRESS} {
   outline: none;
 }
-${BUBBLE}:focus-visible {
+${PRESS}:focus-visible {
   box-shadow: 0 0 0 2px var(--bloom-message-ring);
 }
 ${BUBBLE} ::selection {

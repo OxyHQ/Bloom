@@ -155,11 +155,20 @@ a two-person conversation is noise.
 
 ### `senderNameColor(seed, theme)`
 
-The per-sender hue, exported. It cycles the chart hues, which rotate with the
-theme preset, then reads the picked hue at 600 in light mode and 400 in dark —
-the chart stops are FILL lightnesses and small text on them clears nothing.
+The per-sender hue, exported. It hashes the seed onto the eight chart hues,
+which rotate with the theme preset, then walks that hue's ramp (600 → 900 in
+light, 400 → 100 in dark) to the first stop that clears AA over the incoming
+bubble. A single stop per mode is not enough: the hues are not equally light,
+and the yellow at 400 lands at 2.8:1 on a neutral-800 bubble where the indigo
+clears comfortably.
+
 Deterministic: same seed, same theme, same colour. Seed on a stable id
 (`senderId`), not on a display name someone can change.
+
+**Eight hues means collisions.** Two seeds in a group land on the same hue
+roughly one time in eight — the `Group conversation` story shows exactly that,
+with two of its three speakers in the same green. If a chat has to guarantee
+distinct colours, assign them yourself and pass `senderColor`.
 
 ## `MessageList`
 

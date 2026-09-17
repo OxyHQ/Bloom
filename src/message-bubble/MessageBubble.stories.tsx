@@ -230,6 +230,7 @@ const GROUP: MessageListItem[] = [
     id: 'g6',
     direction: 'incoming',
     senderId: 'ana',
+    avatarSource: ANA,
     text: 'This message was removed',
     deleted: true,
     time: '11:10',

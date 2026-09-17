@@ -8,7 +8,6 @@ import { webDataSet } from '../checkbox/shared';
 import { RiAddLine, RiEyeLine, RiRefreshLine, RiShareForwardLine } from '../icons/remix';
 import { Text } from '../typography';
 import {
-  BUBBLE_TAIL_RADIUS,
   QUOTE_BAR_WIDTH,
   TAIL_HEIGHT,
   TAIL_WIDTH,
@@ -48,10 +47,17 @@ function BubbleTailComponent({
   border: string | undefined;
 }) {
   const outgoing = direction === 'outgoing';
-  // A 8 x 13 box whose left edge is the bubble's edge.
+  const w = TAIL_WIDTH;
+  const h = TAIL_HEIGHT;
+  // A w x h box whose INNER edge (x = 0 outgoing, x = w incoming) lies exactly
+  // on the bubble's straight side, so the hairline along it coincides with the
+  // bubble's own border instead of drawing a second line across it. The wing
+  // runs down that edge, fills the 4px cut corner, sweeps out to a tip at the
+  // bottom outer corner, and returns concave — which is what makes it read as
+  // the bubble's spout rather than as a triangle parked beside it.
   const d = outgoing
-    ? `M0 0 L0 ${TAIL_HEIGHT} C${TAIL_WIDTH * 0.2} ${TAIL_HEIGHT} ${TAIL_WIDTH} ${TAIL_HEIGHT - 2} ${TAIL_WIDTH} ${TAIL_HEIGHT - 5} C${TAIL_WIDTH - 1} ${TAIL_HEIGHT - 7} ${BUBBLE_TAIL_RADIUS} ${TAIL_HEIGHT - 6} ${BUBBLE_TAIL_RADIUS} ${TAIL_HEIGHT - 9} L${BUBBLE_TAIL_RADIUS} 0 Z`
-    : `M${TAIL_WIDTH} 0 L${TAIL_WIDTH} ${TAIL_HEIGHT} C${TAIL_WIDTH * 0.8} ${TAIL_HEIGHT} 0 ${TAIL_HEIGHT - 2} 0 ${TAIL_HEIGHT - 5} C1 ${TAIL_HEIGHT - 7} ${TAIL_WIDTH - BUBBLE_TAIL_RADIUS} ${TAIL_HEIGHT - 6} ${TAIL_WIDTH - BUBBLE_TAIL_RADIUS} ${TAIL_HEIGHT - 9} L${TAIL_WIDTH - BUBBLE_TAIL_RADIUS} 0 Z`;
+    ? `M0 0 L0 ${h - 4} C0 ${h - 1} 2 ${h} ${w} ${h} C${w - 3} ${h - 3} ${w - 5} ${h - 6} ${w - 6} ${h - 10} Z`
+    : `M${w} 0 L${w} ${h - 4} C${w} ${h - 1} ${w - 2} ${h} 0 ${h} C3 ${h - 3} 5 ${h - 6} 6 ${h - 10} Z`;
   return (
     <View
       aria-hidden
@@ -61,7 +67,7 @@ function BubbleTailComponent({
         bottom: 0,
         width: TAIL_WIDTH,
         height: TAIL_HEIGHT,
-        ...(outgoing ? { right: -TAIL_WIDTH + 1 } : { left: -TAIL_WIDTH + 1 }),
+        ...(outgoing ? { right: -TAIL_WIDTH } : { left: -TAIL_WIDTH }),
       }}
     >
       <Svg width={TAIL_WIDTH} height={TAIL_HEIGHT} viewBox={`0 0 ${TAIL_WIDTH} ${TAIL_HEIGHT}`}>
@@ -103,7 +109,7 @@ function MessageTextComponent({
       selectable
       style={[{ color: side.text, userSelect: 'text' }, style]}
     >
-      {parts.map((part, index) => {
+      {parts.map((part) => {
         if (part.entity === undefined) return part.text;
         const key = `${part.entity.type}-${part.entity.start}`;
         const custom = renderEntity?.(part.entity);

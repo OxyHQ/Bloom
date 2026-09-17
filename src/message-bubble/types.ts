@@ -51,8 +51,6 @@ export type CallOutcome = 'incoming' | 'outgoing' | 'missed';
 export interface MessageBubbleLabels {
   /** Prefixes the forwarded line. Default `"Forwarded from"`. */
   forwardedFrom: string;
-  /** The `editedLabel` default. */
-  edited: string;
   /** What a deleted bubble says. */
   deleted: string;
   /** Names the retry control on a failed message. */

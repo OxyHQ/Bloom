@@ -27,6 +27,7 @@ import {
 import {
   BUBBLE_PADDING_X,
   BUBBLE_PADDING_Y,
+  BUBBLE_RADIUS,
   DEFAULT_MAX_WIDTH,
   DOUBLE_PRESS_MS,
   IS_WEB,
@@ -225,7 +226,10 @@ function MessageBubbleComponent({
     />
   ) : null;
 
-  const bubbleWebStyle: WebCssStyle = IS_WEB
+  // The two custom properties the adopted sheet reads. They sit on the ROW so
+  // both the focus ring (on the pressable) and the selection colour (inside the
+  // bubble) inherit them from one place.
+  const rowWebStyle: WebCssStyle = IS_WEB
     ? { '--bloom-message-ring': paint.focusRing, '--bloom-message-selection': side.quoteFill }
     : {};
 
@@ -247,7 +251,6 @@ function MessageBubbleComponent({
           opacity: pending && !failed ? 0.65 : 1,
           overflow: 'hidden',
         },
-        bubbleWebStyle,
         bubbleStyle,
       ]}
     >
@@ -335,7 +338,12 @@ function MessageBubbleComponent({
             },
           }
         : null)}
-      style={{ alignSelf: outgoing ? 'flex-end' : 'flex-start', maxWidth: '100%' }}
+      {...webDataSet({ bloomMessagePress: '' })}
+      style={{
+        alignSelf: outgoing ? 'flex-end' : 'flex-start',
+        maxWidth: '100%',
+        borderRadius: BUBBLE_RADIUS,
+      }}
     >
       {body}
       {showTail ? <BubbleTail direction={direction} color={fill} border={side.border} /> : null}
@@ -377,6 +385,7 @@ function MessageBubbleComponent({
           paddingRight: 2,
           backgroundColor: selected === true ? paint.selectedBand : 'transparent',
         },
+        rowWebStyle,
         style,
       ]}
       testID={testID}
