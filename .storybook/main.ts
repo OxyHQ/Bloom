@@ -8,7 +8,9 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 const config: StorybookConfig = {
-  stories: ['../src/**/*.stories.@(ts|tsx|mdx)'],
+  // `templates/` holds full-screen templates as stories only: composed
+  // from Bloom's components, never published (outside `src`, not in `files`).
+  stories: ['../src/**/*.stories.@(ts|tsx|mdx)', '../templates/**/*.stories.@(ts|tsx)'],
   addons: ['@storybook/addon-docs'],
   framework: {
     name: '@storybook/react-vite',

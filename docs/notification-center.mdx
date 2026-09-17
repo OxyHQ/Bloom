@@ -1,0 +1,49 @@
+---
+title: NotificationCenter
+description: Inbox panel with unread count, mark-all-read, category tabs with counts, and notification cards with avatars, status discs and actions.
+order: 81
+---
+
+# NotificationCenter
+
+The notification center. Data comes in through `notifications`; read state is local to the instance (an action press or "Mark all read" marks items read here, then calls `onAction` / `onMarkAllRead` so the host can persist it).
+
+```tsx
+import { NotificationCenter } from '@oxyhq/bloom/notification-center';
+import { RiDownloadCloud2Line } from '@oxyhq/bloom/icons';
+
+<NotificationCenter
+  notifications={[
+    {
+      id: 'mention', category: 'mentions', group: 'Today',
+      title: 'Livia mentioned you', description: 'Can you review the empty state?',
+      timestamp: '2m', unread: true,
+      avatar: { initials: 'LS', name: 'Livia Saris', color: 'pink' },
+      actions: [{ id: 'reply', label: 'Reply', variant: 'primary' }],
+    },
+    {
+      id: 'backup', category: 'system', group: 'Today',
+      title: 'Workspace backup is ready', description: 'Ready to download.',
+      timestamp: '18m', status: 'success', icon: RiDownloadCloud2Line,
+    },
+  ]}
+  onAction={(notificationId, actionId) => {}}
+/>
+```
+
+## Props
+
+| prop | |
+| --- | --- |
+| `notifications` | items: `category` (`mentions` / `system` / `activity`), `title`, `description`, `timestamp`, `unread?`, `status?` (`neutral` / `information` / `success` / `error`), `icon?`, `avatar?` (`source` or `initials` + `color`), `actions?` |
+| `tab` / `defaultTab` / `onTabChange` | All / Mentions / System; `activity` items appear under All only |
+| `onAction`, `onMarkAllRead` | fire after the local read state updates |
+| `title`, `emptyMessage`, `emptyDescription` | copy |
+
+## Geometry and colour
+
+Section max 430, radius 24, 1px border, dropdown shadow; header p16/pb6; list well p6 → radius 16 → max-height 516 scroller p8 → cards radius 10, p12, gap 12, 40px visual. Status discs take the theme's `info`, `success` and `negative` ramps (100 / 600, dark 800 at 50% / 300); avatar tints are the accent (blue), success (lime) and the accent rotated to pink.
+
+## Known gap
+
+Segments would ideally be equal width (`flex-1`); Bloom's `SegmentedControl` sizes each segment by its content instead, so the three tabs are slightly uneven.

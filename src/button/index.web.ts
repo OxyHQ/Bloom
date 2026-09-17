@@ -23,5 +23,14 @@ export {
   LinkButton,
   DestructiveButton,
 } from './Button.web';
+export { CloseButton } from './CloseButton';
 
-export type { ButtonProps, ButtonVariant, ButtonSize } from './types';
+export type {
+  ButtonProps,
+  ButtonVariant,
+  ButtonSize,
+  ButtonIconComponent,
+  ButtonLinkTone,
+  LinkButtonProps,
+  CloseButtonProps,
+} from './types';

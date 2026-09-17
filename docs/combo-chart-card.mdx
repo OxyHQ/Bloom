@@ -1,0 +1,55 @@
+---
+title: Combo chart card
+description: The combo chart — bars on a left axis, a line on its own right axis, with casing, dots, a pulsing active dot and optional stat tiles.
+order: 42
+---
+
+# Combo chart card
+
+`ComboChartCard` is the "volume plus rate" chart (sessions and conversion, revenue and margin). Each series keeps its own axis and `format`.
+
+```tsx
+import { ComboChartCard } from '@oxyhq/bloom/chart-cards';
+
+<ComboChartCard
+  bar={{ key: 'sessions', label: 'Sessions' }}
+  line={{ key: 'rate', label: 'Conversion', format: (n) => `${n}%` }}
+  ranges={ranges}
+  tiles
+/>
+```
+
+## Props
+
+| Prop | Default | |
+|---|---|---|
+| `bar` / `line` | required | `{ key, label, color?, activeColor?, format? }` — bars default lime (tone 0), the line blue (tone 1) |
+| `data` | — | `{ label, [key]: number }[]` |
+| `title` | `"Sessions"` | label at rest; the category while hovering |
+| `headline`, `delta` | bar total / none | |
+| `range` / `ranges`, `defaultRange`, `onRangeChange` | — | static pill or dropdown (`ChartHeader`) |
+| `headlineFrom` | `'bar'` | `'line'` makes the line the big number (its total) and puts the bar total in the label |
+| `caption` | `"<other series> <value>"` | replaces the label's second part; gets the hovered row or `undefined` |
+| `tiles` | `false` | bar total + line average tiles under a 196px plot; the card grows |
+| `activeIndex` / `onActiveIndexChange`, `accessibilityLabel` | | |
+
+## Geometry
+
+| | |
+|---|---|
+| card | `ChartCardSurface`: 329, gap 16 (`auto` with tiles) |
+| plot | margin 4/0/0/0, left axis 44 (`4.5K`), right axis 40 (line format, labels 8px right of the plot), 4 nice ticks each |
+| grid | dashed `4 4` chart-track at the plot's top and bottom edge only |
+| bars | band scale, `barCategoryGap` 22%, whole-pixel width, `maxBarSize` 34, radius 8 on all corners |
+| casing | the line again at 7px in the card colour, round caps / joins — cuts the line out of the bars it crosses |
+| line | 2px `-active`, monotone, round caps / joins |
+| dots | r 3 `-active`, 2px card ring, on every point once the series has settled |
+| hover | hovered bar `-active`, others 30%, fill + opacity eased 200ms (web); `PulsingDot` on the line |
+
+Over the axes the category clears. Bars grow from the base and the line reveals left to right over 450ms; a range change morphs both.
+
+## Hazards
+
+- **The grid is two lines, on purpose.** recharts' `CartesianGrid` finds no default Y axis among two named ones and draws only the box's horizontal edges; drawing a line per tick would not match the intended look.
+- **Deliberate fix:** formatting the caption value naively would show the bar total (`83,200%`) under `headlineFrom="line"`. Bloom shows the line's own average / hovered reading instead.
+- The plot is `MultiAxisPlot` (`primitives/MultiAxisPlot.tsx`), `CartesianPlot` plus a right axis, a configurable margin and X `interval`.

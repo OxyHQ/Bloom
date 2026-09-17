@@ -1,0 +1,52 @@
+---
+title: Radial chart card
+description: A radial chart card — rings, labelled rings, grid, gauge, solid gauge and a stacked half gauge — in react-native-svg on recharts' radial bar and pie geometry.
+order: 53
+---
+
+# Radial chart card
+
+`RadialChartCard` rebuilds recharts' `RadialBarChart` (and a `PieChart` for the half gauge) in react-native-svg on recharts' geometry (`src/chart-cards/polar-geometry.ts`, pinned against recharts' SVG in `RadialChartCard.test.tsx`).
+
+```tsx
+import { RadialChartCard } from '@oxyhq/bloom/chart-cards';
+
+<RadialChartCard ranges={[{ id: '7d', label: 'Last 7 days', data: browsers, delta: 0.052 }]} />
+<RadialChartCard variant="gauge" data={[{ label: 'Visitors', value: 1260 }]} max={2000} range="Last 7 days" />
+```
+
+`data` is a flat list of `{ label, value, color?, activeColor? }`; colours cycle the chart palette unless overridden.
+
+| Prop | Default | |
+|---|---|---|
+| `variant` | `'rings'` | `rings` · `labels` names along each arc · `grid` no tracks, over a circular grid · `gauge` one thin ring against `max` · `solid` thicker, on an inner disc · `stacked` half gauge of stacked segments |
+| `title` | `"Visitors"` | header label; the hovered item's name while hovering |
+| `max` | rings: `ceil(largest × 1.1)`; gauges: the total | the full-circle value |
+| `headline` | the total | resting number |
+| `delta`, `range`, `ranges`, `defaultRange`, `onRangeChange`, `format` | | as every chart card; a range overrides `data`, `max`, `delta`, `headline` |
+| `centerCaption` | `"of goal"` / the segment's name | caption under the centre percentage |
+| `tiles` | `false` | a tile per item; the card grows, the chart area stays 231 |
+| `activeIndex` / `onActiveIndexChange` | tracked | control the hovered item |
+| `accessibilityLabel` | `"Visitors radial chart: Other 90, Edge 173, …"` | names the chart (`role="img"`) |
+
+## Geometry
+
+| | |
+|---|---|
+| rings | centred; radius axis 44 → 106 (26 → 106 `labels`) as a band per item, 22% of each band clear on both sides (14% `labels`), bar size rounded to whole pixels; first item innermost |
+| arcs | from twelve o'clock clockwise to `value / max`, `cornerRadius` 99 → clamped to half the thickness (fully round ends) |
+| tracks | a full chart-track ring per band (`RadialBar background`), not for `grid` |
+| grid | chart-cursor 1px circles through the band centres and spokes at 0°, 45° … 315° from 44 to 106 |
+| labels | 10px medium in the card colour, set along the band's middle radius from 10° into the arc, `dominant-baseline: central`; hidden while the arcs animate, as recharts does |
+| gauge / solid | one band 88 → 104 / 72 → 104; `solid` sits on a `background-inner` disc r 64; the centre reads `value / max` in `display-4-medium` over a `caption-1-medium` caption |
+| stacked | a 180° pie, radii 96 → 128, centre 78% down; a round chart-track half ring under the segments, 3° apart, round ends; an unclaimed remainder (`max` above the total) stays exposed track. The centre sits on the gauge's base and follows the hovered segment |
+| short card | the half gauge's radii shrink (`fitHalfOuter`: `min(128, round(h × 0.78) − 6)`, floor 48) so its apex never clips; below the `sm` viewport the chart area keeps a 180 floor and the card grows past 329 |
+| legend | `stacked` only (without tiles): swatch, name and value, hover-linked |
+
+## Hover
+
+A ring's TRACK is hoverable as well as its arc (recharts hands `RadialBar`'s background its mouse handlers), so a ring focuses anywhere on its band; `grid` has no tracks, so only the arcs. The half gauge hit-tests its segments; the remainder focuses nothing. The hovered arc takes its `-active` tone, the others drop to 25% (30% on the half gauge), eased over 200ms on web; the header, centre, legend and tiles follow.
+
+## Motion
+
+Arcs sweep in from twelve o'clock over 450ms and morph on a data or range change; the half gauge's segments grow in turn. Hovering replays nothing. Snaps under reduced motion.

@@ -42,6 +42,16 @@ const FORBIDDEN: Record<string, string> = {
 };
 
 /**
+ * Families that must stay out of the root barrel's graph for their WEIGHT, not
+ * for a peer — so no package scan would notice them. Each is subpath-only.
+ */
+const FORBIDDEN_FAMILIES: Record<string, string> = {
+  // 252 vendored flags as shape data (`flags.ts`, ~145 KB of source): on the
+  // root barrel every app importing `Button` would bundle every flag.
+  'phone-input': '@oxyhq/bloom/phone-input',
+};
+
+/**
  * Positive control. If the walk breaks, "no forbidden package found" and "no
  * package found at all" are the same result — so a package the barrel
  * unambiguously DOES link must show up in the same measurement.
@@ -136,6 +146,17 @@ describe('root barrel module graph', () => {
       it('links the packages it unambiguously does link (positive control)', () => {
         const missing = MUST_REACH.filter((name) => !packages.has(name));
         expect(missing).toEqual([]);
+      });
+
+      it('does not link a family kept subpath-only for its weight', () => {
+        const offenders = Object.keys(FORBIDDEN_FAMILIES).filter((family) =>
+          [...files].some((file) => relative(SRC, file).startsWith(`${family}/`)),
+        );
+        expect(offenders).toEqual([]);
+        // The family must exist, or this passes by looking for nothing.
+        for (const family of Object.keys(FORBIDDEN_FAMILIES)) {
+          expect(existsSync(join(SRC, family, 'index.ts'))).toBe(true);
+        }
       });
 
       it('does not statically link a subpath-only peer', () => {

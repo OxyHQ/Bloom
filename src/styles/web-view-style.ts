@@ -66,6 +66,8 @@ export interface WebCssStyle extends ViewStyle {
   backgroundImage?: string;
   scrollbarWidth?: 'auto' | 'thin' | 'none';
   scrollbarColor?: string;
+  /** Stops a nested scroller chaining its overscroll into the page behind it. */
+  overscrollBehavior?: 'auto' | 'contain' | 'none';
   /** RN declares this on `TextStyle`, not `ViewStyle`. */
   userSelect?: 'auto' | 'none' | 'text' | 'contain' | 'all';
   /**

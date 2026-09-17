@@ -1,25 +1,87 @@
-import React, { memo, useCallback } from 'react';
-import { View, Text, Pressable, Animated } from 'react-native';
+import React, { memo, useCallback, useMemo } from 'react';
+import { View, Platform, Pressable } from 'react-native';
 
 import { useTheme } from '../theme/use-theme';
-import { animation, space } from '../styles/tokens';
-import { usePressAnimation } from '../hooks/use-press-animation';
-import { useInteractionState } from '../hooks/use-interaction-state';
+import { Text } from '../typography';
+import type { TypeScaleVariant } from '../typography';
+import { TYPE_SCALE } from '../typography/scale';
+import { FOCUS_RING_OFFSET_COLOR } from '../checkbox/shared';
+import { space } from '../styles/tokens';
+import { resolveButtonRamps } from '../button/shared';
+import { interactiveWebCss, useInteractiveWebCss } from '../styles/interactive-web-css';
+import type { WebCssStyle } from '../styles/web-view-style';
 import { RadioIndicator } from '../radio-indicator';
+import { RadioCard } from './RadioCard';
 import type { RadioGroupProps, RadioProps } from './types';
 
 /**
- * The size ramp, matching `Checkbox` rung for rung so a form mixing the two
- * lines up. The indicator is a circle, so its rung is a DIAMETER where the
- * checkbox's is a box side — the same number, meaning the same thing.
+ * The radio: the dot is `RadioIndicator`, this is the row.
+ *
+ *              small           medium        large
+ *   dot        14              16            20
+ *   label      body-2-medium   body-medium   headline-medium
+ *   gap        8               8             8
+ *
+ * `large` extends the ramp beyond the standard two sizes — the same rungs
+ * `Checkbox` uses, so a form mixing the two lines up. Disabled dims the whole
+ * row to 50%. The radio has no hover or press paint, and no press scale.
  */
-const SIZE_CONFIG = {
-  small: { indicator: 18, fontSize: 14, lineHeight: 20, descFontSize: 12 },
-  medium: { indicator: 22, fontSize: 15, lineHeight: 22, descFontSize: 13 },
-  large: { indicator: 26, fontSize: 16, lineHeight: 24, descFontSize: 14 },
-} as const;
+const SIZE_CONFIG: Record<
+  NonNullable<RadioProps['size']>,
+  { indicator: number; label: TypeScaleVariant; description: TypeScaleVariant }
+> = {
+  small: { indicator: 14, label: 'body-2-medium', description: 'body-2-regular' },
+  medium: { indicator: 16, label: 'body-medium', description: 'body-regular' },
+  large: { indicator: 20, label: 'headline-medium', description: 'body-regular' },
+};
+
+/** The `gap-2` between the dot and its label, at every size. */
+const LABEL_GAP = 8;
+
+/** Space between the label and the description under it. */
+const DESCRIPTION_GAP = 2;
 
 const HIT_SLOP = { top: 8, bottom: 8, left: 8, right: 8 } as const;
+
+// ---------------------------------------------------------------------------
+//  Keyboard focus on web
+//
+//  The row is the focusable element, but the ring belongs on the DOT (`ring-2
+//  ring-offset-2` — a white 2px offset in both modes, Tailwind's default): the row's own outline is suppressed and the ring is drawn
+//  on the dot's wrapper while the row has keyboard focus. The hooks are `data-*`
+//  attributes through `dataSet` — a class never reaches the DOM here; see
+//  `chip/Chip.tsx`.
+// ---------------------------------------------------------------------------
+
+const STYLE_ID = 'bloom-radio-web-css';
+const ROW = '[data-bloom-radio]';
+const DOT = '[data-bloom-radio-dot]';
+
+const BLOOM_RADIO_CSS = interactiveWebCss({
+  selector: ROW,
+  varPrefix: 'bloom-radio',
+  base: `
+    display: flex;
+    align-items: flex-start;
+    justify-content: flex-start;
+    box-sizing: border-box;
+  `,
+  transition: 'none',
+  hover: { declarations: 'opacity: 1;' },
+  outlineOffset: 2,
+  extraRules: `${ROW}:disabled,
+${ROW}[aria-disabled="true"] {
+  cursor: not-allowed;
+}
+${ROW}:focus-visible {
+  outline: none;
+}
+${ROW}:focus-visible ${DOT} {
+  box-shadow: 0 0 0 2px ${FOCUS_RING_OFFSET_COLOR}, 0 0 0 4px var(--bloom-radio-ring, currentColor);
+}`,
+});
+
+const IS_WEB = Platform.OS === 'web';
 
 const RadioComponent = function Radio<Value extends string = string>({
   value,
@@ -36,19 +98,10 @@ const RadioComponent = function Radio<Value extends string = string>({
   testID,
 }: RadioProps<Value>) {
   const theme = useTheme();
+  useInteractiveWebCss(STYLE_ID, BLOOM_RADIO_CSS);
   const sizeConfig = SIZE_CONFIG[size];
-  // The shared press hook, which is where the reduced-motion and pointer-type
-  // suppressions live — the same dip `Checkbox` applies to its box.
-  const { scaleAnim, onPressIn: onScaleIn, onPressOut: onScaleOut } = usePressAnimation(
-    disabled ? undefined : animation.pressScale,
-  );
-  // Driven separately from the scale — see `Chip` for why. The INDICATOR answers
-  // the press, not the row: a wash across the option and its description would
-  // read as a list row rather than as one of N. The flag travels rather than a
-  // colour, because the indicator holds both colours the state layer needs.
-  const { state: pressed, onIn: onPressedIn, onOut: onPressedOut } = useInteractionState();
-  const onPressIn = () => { onScaleIn(); onPressedIn(); };
-  const onPressOut = () => { onScaleOut(); onPressedOut(); };
+  const { accent, neutral } = useMemo(() => resolveButtonRamps(theme), [theme]);
+  const hasText = Boolean(label || description);
 
   const handlePress = useCallback(() => {
     // Re-choosing the chosen option is a no-op. A radio, unlike a checkbox, has
@@ -58,20 +111,21 @@ const RadioComponent = function Radio<Value extends string = string>({
     onSelect(value);
   }, [disabled, selected, onSelect, value]);
 
+  const rowStyle: WebCssStyle = {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    gap: LABEL_GAP,
+    // `opacity-50` on the whole row.
+    opacity: disabled ? 0.5 : 1,
+    // The `:focus-visible` ring colour, read by the adopted sheet.
+    '--bloom-radio-ring': color ?? accent[500],
+  };
+
   return (
     <Pressable
-      style={[
-        {
-          flexDirection: 'row',
-          alignItems: 'flex-start',
-          gap: space.sm,
-          opacity: disabled ? 0.4 : 1,
-        },
-        style,
-      ]}
+      {...(IS_WEB ? ({ dataSet: { bloomRadio: '' } } as Record<string, unknown>) : {})}
+      style={[rowStyle, style]}
       onPress={handlePress}
-      onPressIn={onPressIn}
-      onPressOut={onPressOut}
       disabled={disabled}
       accessibilityRole="radio"
       // `aria-checked`, not `accessibilityState`: react-native-web never reads
@@ -84,40 +138,28 @@ const RadioComponent = function Radio<Value extends string = string>({
       hitSlop={HIT_SLOP}
       testID={testID}
     >
-      <Animated.View style={{ transform: [{ scale: scaleAnim }] }}>
-        <RadioIndicator
-          selected={selected}
-          pressed={pressed && !disabled}
-          size={sizeConfig.indicator}
-          selectedColor={color}
-        />
-      </Animated.View>
+      <View
+        {...(IS_WEB ? ({ dataSet: { bloomRadioDot: '' } } as Record<string, unknown>) : {})}
+        style={{
+          borderRadius: sizeConfig.indicator / 2,
+          // Centre the dot on the label's first line box.
+          marginTop: hasText ? (TYPE_SCALE[sizeConfig.label].lineHeight - sizeConfig.indicator) / 2 : 0,
+        }}
+      >
+        <RadioIndicator selected={selected} size={sizeConfig.indicator} selectedColor={color} />
+      </View>
 
-      {(label || description) && (
-        <View style={{ flex: 1, paddingTop: 1 }}>
+      {hasText && (
+        <View style={{ flex: 1 }}>
           {label && (
-            <Text
-              style={[
-                {
-                  fontSize: sizeConfig.fontSize,
-                  lineHeight: sizeConfig.lineHeight,
-                  color: theme.colors.text,
-                  fontWeight: '500',
-                },
-                labelStyle,
-              ]}
-            >
+            <Text variant={sizeConfig.label} style={[{ color: theme.colors.text }, labelStyle]}>
               {label}
             </Text>
           )}
           {description && (
             <Text
-              style={{
-                fontSize: sizeConfig.descFontSize,
-                color: theme.colors.textSecondary,
-                lineHeight: sizeConfig.descFontSize + 6,
-                marginTop: 2,
-              }}
+              variant={sizeConfig.description}
+              style={{ color: neutral[500], marginTop: label ? DESCRIPTION_GAP : 0 }}
             >
               {description}
             </Text>
@@ -148,6 +190,7 @@ const RadioGroupComponent = function RadioGroup<Value extends string = string>({
   color,
   style,
   labelStyle,
+  variant = 'default',
   testID,
 }: RadioGroupProps<Value>) {
   return (
@@ -158,7 +201,20 @@ const RadioGroupComponent = function RadioGroup<Value extends string = string>({
       aria-label={label}
       testID={testID}
     >
-      {options.map((option) => (
+      {options.map((option) =>
+        variant === 'card' ? (
+          <RadioCard
+            key={option.value}
+            value={option.value}
+            selected={option.value === value}
+            onSelect={onValueChange}
+            title={option.label ?? option.value}
+            description={option.description}
+            disabled={disabled || option.disabled === true}
+            color={color}
+            testID={option.testID}
+          />
+        ) : (
         <Radio
           key={option.value}
           value={option.value}
@@ -172,7 +228,8 @@ const RadioGroupComponent = function RadioGroup<Value extends string = string>({
           labelStyle={labelStyle}
           testID={option.testID}
         />
-      ))}
+        ),
+      )}
     </View>
   );
 };

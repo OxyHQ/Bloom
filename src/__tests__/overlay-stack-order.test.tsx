@@ -204,9 +204,9 @@ describe('no surface picks its own depth', () => {
     'context-menu/ContextMenu.web.tsx',
     'popover/Popover.web.tsx',
     'tooltip/Tooltip.tsx',
+    'tooltip/Tooltip.web.tsx',
     'zoomable-media-gallery/ZoomableMediaGallery.tsx',
     'media-flight/MediaFlightLayer.tsx',
-    'prompt-input/PromptInputBase.tsx',
     'avatar-group/AvatarGroup.web.tsx',
     'toast/ToastHost.tsx',
   ];
@@ -251,13 +251,12 @@ describe('no surface picks its own depth', () => {
     expect(scale).toMatch(/portalRoot: 999999/);
   });
 
-  it('the WEB tooltip is deliberately NOT in this list', () => {
-    // It is the one tooltip that is not portaled: the bubble is absolutely
-    // positioned against its own trigger and renders inline, so it cannot be
-    // lifted over another surface and has no rank to take. The NATIVE tooltip
-    // does portal, and IS in the list above. If this ever starts portaling,
-    // move it into `SURFACES`.
-    expect(code('tooltip/Tooltip.web.tsx')).not.toMatch(/from '\.\.\/portal/);
+  it('BOTH tooltips portal, so both are ranked surfaces', () => {
+    // The web bubble used to render inline, absolutely positioned — which on
+    // react-native-web anchored it to whatever box contained the Tooltip rather
+    // than to its trigger. It now portals and is `position: fixed` against the
+    // trigger's measured box, so it takes a rank like every other surface.
+    expect(code('tooltip/Tooltip.web.tsx')).toMatch(/from '\.\.\/portal/);
     expect(code('tooltip/Tooltip.tsx')).toMatch(/from '\.\.\/portal/);
   });
 

@@ -7,7 +7,7 @@ import { useTheme } from '../theme/use-theme';
 import { AspectRatio } from './index';
 
 const meta: Meta<typeof AspectRatio> = {
-  title: 'Components/AspectRatio',
+  title: 'Base/Aspect Ratio',
   component: AspectRatio,
 };
 

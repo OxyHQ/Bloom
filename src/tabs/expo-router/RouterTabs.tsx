@@ -18,7 +18,7 @@ import { runOnJS } from 'react-native-reanimated';
 import { router, usePathname, type Href } from 'expo-router';
 
 import { Tabs, TabsTrigger, type TabsDragController } from '../Tabs';
-import type { TabsProps } from '../types';
+import type { TabsIconComponent, TabsProps } from '../types';
 
 export interface RouterTabItem {
   /** Stable id for the tab. Used as a React key and a callback argument. */
@@ -29,6 +29,8 @@ export interface RouterTabItem {
   href: Href;
   /** Icon rendered before the label. */
   icon?: ReactNode;
+  /** Icon component before the label, sized and tinted by the trigger. Wins over `icon`. */
+  leadingIcon?: TabsIconComponent;
   /** Optional tally beside the label; `0` or omitted renders nothing. */
   count?: number;
   disabled?: boolean;
@@ -238,6 +240,7 @@ export function RouterTabs({
           value={item.value}
           label={item.label}
           icon={item.icon}
+          leadingIcon={item.leadingIcon}
           count={item.count}
           disabled={item.disabled}
           // Focus, never a press, is what drives the underline — so a deep

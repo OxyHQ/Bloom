@@ -97,8 +97,8 @@ export function PopoverContent({
       // `w-72 p-4` — shadcn's popover is a FIXED 288px card with a 16px inset,
       // not a shrink-wrap around its content. A caller whose body is a row list
       // rather than prose overrides them, which is exactly what a shadcn call
-      // site does with `className="w-[200px] p-0"` and what `Combobox` and
-      // `DialogHeader` do here — their rows have to reach the panel edge to show
+      // site does with `className="w-[200px] p-0"` and what
+      // `DialogHeader` does here — its rows have to reach the panel edge to show
       // a full-width highlight.
       className={cx(POPOVER_CLASS, className)}
       style={style}

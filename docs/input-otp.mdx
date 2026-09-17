@@ -1,0 +1,61 @@
+---
+title: InputOtp
+description: One-time-code input — one box per digit, one value.
+order: 13
+---
+
+# InputOtp
+
+A one-time-code field: a row of single-digit boxes that behaves as one value.
+
+```tsx
+import { InputOtp } from '@oxyhq/bloom/input-otp';
+
+<InputOtp value={code} onChange={setCode} onComplete={verify} />
+```
+
+## Look
+
+The `InputOtp` look, coloured by Bloom's theme:
+
+- Each box is **48 × 48**, radius 10, a 1px `neutral-200` border (`neutral-700` in dark) on the card surface, with the `shadow-xs` drop shadow.
+- Digits are **mono**, 18/26 medium, centred, with tabular numerals, so a row of `1`s and `8`s stays optically even.
+- Boxes sit **8px** apart; `groupEvery={3}` adds **12px** more before each group (`000 000`).
+- **Hover** darkens the border to `neutral-300`. **Focus** paints the border and a 2px ring outside it in the accent (`primary`) — on every focus, since a text input is `:focus-visible` on a click too.
+- **Invalid** gives every box a red border, a red tint and red digits; focus still wins over the red border.
+- **Disabled** dims the fill and the digits and drops the shadow.
+
+## Behaviour
+
+| input | result |
+|-------|--------|
+| type a digit | fills the box and moves to the next |
+| Backspace on a filled box | clears it in place |
+| Backspace on an empty box | clears the previous box and moves back |
+| ← / → (web, hardware keys) | move between boxes |
+| paste / OS autofill | distributes the digits from that box onwards |
+
+Non-digits are dropped. `onChange` fires with the cleaned code on every change, `onComplete` once all `length` boxes are filled. Every box carries the one-time-code autofill hint (`one-time-code` on iOS and web, `sms-otp` on Android) and accepts more than one character, because the OS delivers the whole code into whichever box has focus.
+
+Clearing a box removes its digit from the value, so later digits move left.
+
+## Props
+
+| Prop | Type | Description |
+|------|------|-------------|
+| `length?` | `number` | Number of boxes. Default `6`. |
+| `value?` / `defaultValue?` | `string` | Controlled / initial code. |
+| `onChange?` | `(value: string) => void` | Every change. |
+| `onComplete?` | `(value: string) => void` | Once the last box is filled. |
+| `isInvalid?` | `boolean` | Error paint and `aria-invalid` on every box. |
+| `isDisabled?` / `disabled?` | `boolean` | Disable every box. |
+| `groupEvery?` | `number` | Gap between groups. |
+| `autoFocus?` | `boolean` | Focus the first box on mount. |
+| `accessibilityLabel?` | `string` | The group's name. Default `"One-time code"`. |
+| `style?` / `testID?` | | The row; box `testID`s are `${testID}-${index}`. |
+
+## Accessibility
+
+- The row is a `group` named by `accessibilityLabel`; each box is named `Digit 1 of 6` and so on.
+- `aria-invalid` sits on each box, not the group — `group` does not support it.
+- Say why the code is invalid in text next to the field; the red border is not an announcement.

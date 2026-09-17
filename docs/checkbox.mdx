@@ -44,16 +44,55 @@ const [checked, setChecked] = useState(false);
 
 ## Sizes and colour
 
-`size` is `small`, `medium` (default) or `large`. `color` overrides the checked fill; it defaults to the theme primary, and the mark on top of it resolves to that preset's readable foreground rather than a hardcoded white.
+`size` is `small`, `medium` (default) or `large`. `color` overrides the accent the checked gradient is built from; it defaults to the theme primary, and the mark on top of it resolves to that preset's readable foreground rather than a hardcoded white (a caller `color` falls back to white).
+
+## What it looks like
+
+Geometry and colours, the latter run through the shared recipe (the `button/shared.ts` ramps).
+
+|         | `small` | `medium` | `large` |
+| ------- | ------- | -------- | ------- |
+| box     | 14      | 16       | 20      |
+| label   | `body-2-medium` 13/18 | `body-medium` 14/20 | `headline-medium` 16/22 |
+| gap     | 6       | 8        | 8       |
+
+`large` extends the ramp beyond the standard two sizes. The box has a 4px radius. Label and description are set in Inter from the type ramp (`TYPE_SCALE`), not the platform face.
+
+- **Unchecked** — the card surface, a 1px neutral-300 border and the `xs` shadow (dark: neutral-800 fill, neutral-700 border). Hover darkens the border one stop.
+- **Checked / mixed** — an accent-500 → accent-600 gradient with an inset white top highlight and an inset 1px accent edge; hover lightens it to 400 → 500. The tick draws itself in over 200ms (skipped under reduced motion); the mixed state is a rounded bar.
+- **Disabled** — the BOX drops to 50% opacity. The label stays at full strength.
+- No press scale. On native, where there is no hover, a held press shows the hover paint.
+
+## CheckboxCard
+
+A selectable card: the title and an optional description on the left, the box on the right, and a press anywhere on the card toggles it.
+
+```tsx
+import { CheckboxCard } from '@oxyhq/bloom/checkbox';
+
+<CheckboxCard
+  title="Weekly digest"
+  description="A summary of activity every Monday."
+  checked={digest}
+  onCheckedChange={setDigest}
+/>
+```
+
+- **Card** radius 10, 1px `border-button-default` edge, padding 12 top/bottom, 16 left, 20 right, a 12px gap; the surface fill, and `background-primary-hover` under a pointer (native: while held).
+- **Title** `body-medium`, **description** `body-regular` in `text-secondary`, 2px apart, each truncated to one line.
+- **Box** the medium checkbox, taking the card's hover paint; keyboard focus rings the box, not the card.
+- **Disabled** the whole card at 50% — the box takes the card's disabled state and applies its own 50% opacity inside it.
+
+`title` is the accessible name and `description` the hint.
 
 ## Touch target
 
-The box is 22dp at the default size, which is half of what a finger needs. The pressable is grown to 44dp with `hitSlop` — the target grows, the drawing does not — and the slack is derived per size, so `large` does not overshoot into a neighbouring row.
+The box is 16dp at the default size, well under what a finger needs. The pressable is grown to 44dp with `hitSlop` — the target grows, the drawing does not — and the slack is derived per size, so `large` does not overshoot into a neighbouring row.
 
 For a labelled checkbox the pressable already spans the label, so the whole row is the target.
 
 ## Keyboard focus on web
 
-The pressable takes a `:focus-visible` ring, drawn from the same shared recipe every Bloom control's web CSS is built from. It rings the element the browser actually focuses — the box AND its label — because ringing anything else would point at something that does not have focus.
+The pressable takes a `:focus-visible` ring, drawn from the same shared recipe every Bloom control's web CSS is built from. The browser focuses the row — the box AND its label — but the ring is drawn around the BOX whenever that row has keyboard focus — `ring-2 ring-offset-2`: a 2px accent ring outside a 2px **white** offset. The offset is white in dark mode too; that is Tailwind's default `ring-offset-color`, left un-overridden; the row's own outline is suppressed so there is exactly one ring, and it is only ever shown for the focused row.
 
 `:focus-visible`, not `:focus`: a mouse click never leaves a ring behind.

@@ -1,0 +1,97 @@
+---
+title: Sidebar
+description: The floating app rail — account switcher, quick search, navigation with counters, theme toggle, secondary rows and a team menu — collapsible to a 60px icon rail.
+order: 82
+---
+
+# Sidebar
+
+The floating dashboard sidebar with its team and account menus. Every row, person and link is a prop; the component owns only interaction state (collapse, search, the two menus).
+
+```tsx
+import { Sidebar } from '@oxyhq/bloom/sidebar';
+import { RiHomeLine, RiSettings4Line } from '@oxyhq/bloom/icons';
+
+<Sidebar
+  items={[{ key: 'home', label: 'Home', icon: RiHomeLine, href: '/', badge: 152 }]}
+  secondaryItems={[{ key: 'settings', label: 'Settings', icon: RiSettings4Line, onPress: openSettings }]}
+  selected={currentKey}
+  onNavigate={(item) => router.push(item.href!)}
+  account={{ name: 'Maya Collins', avatar: { initials: 'M' }, users, onAddUser, onManage }}
+  team={{ name: 'Design team', email: 'team@example.com', groups, footer: { label: 'Bloom', version: 'v1.0.1' } }}
+/>
+```
+
+Give it a height (it fills `100%`); its width is its own.
+
+## Parts
+
+| export | |
+| --- | --- |
+| `Sidebar` | the rail |
+| `SidebarItem` | one navigation row, a full pill: rest / hover / selected (solid accent fill with the primary foreground — no gradient, ring or highlight), optional badge, `collapsed` 36px square |
+| `SidebarUserMenu` | the account trigger (2px hover pill outside its box) and its menu |
+| `SidebarAccountMenuContent` | that menu's body, for another trigger |
+| `SidebarTeamMenu` | the team card and its grouped menu with a version footer |
+| `SidebarFolder` | one expandable folder of a `tree` |
+| `SidebarPlanCard` | the plan card (avatar, name, plan, action) |
+| `SidebarRailItem` | one `rail` destination: icon on a 48 × 32 pill over a 10px label |
+| `SIDEBAR_RAIL_WIDTH` | the rail's width (80) |
+
+## Rail
+
+```tsx
+<Sidebar
+  variant="rail"
+  items={[{ key: 'home', label: 'Home', icon: RiHomeLine, activeIcon: RiHomeFill, href: '/' }]}
+  secondaryItems={[{ key: 'settings', label: 'Settings', icon: RiSettings3Line, activeIcon: RiSettings3Fill, href: '/settings' }]}
+  selected={currentKey}
+  onNavigate={(item) => router.push(item.href!)}
+/>
+```
+
+- An 80px column on background-full with no panel chrome. The primary items are centred vertically in a scroller (px 8, py 24, gap 8); `secondaryItems` sit at the foot.
+- Each item (`SidebarRailItem`) is min-height 64, radius 20, py 8: a 48 × 32 pill behind a 22px icon, and 5 below it a one-line 10px label. Selected, the pill takes the accent-500 fill with the primary foreground, the label turns text-primary medium, and `activeIcon` (e.g. the filled glyph) replaces `icon`. Hover fills the pill with background-secondary-hover. A `badge` sits over the pill's top-right corner.
+- Navigation only: `account`, `team`, `plan`, `tree`, quick search, the theme toggle and collapse belong to the panel and are ignored here. Routing (`href`, `onPress`, `onNavigate`) works as below.
+- In `AppShell` the rail stays in flow from `sm`; see `docs/app-shell.mdx`.
+
+## Tree and plan (the AI chat rail)
+
+```tsx
+<Sidebar
+  items={[{ key: 'new', label: 'New agent', icon: RiAddFill }]}
+  tree={{ label: 'Repositories', folders: [{ key: 'web', label: 'web', defaultOpen: true, items: [{ key: 'c1', label: 'coding scenario', meta: 'now' }] }] }}
+  selectedTreeItem={chatId}
+  onTreeItemPress={(item) => openChat(item.key)}
+  plan={{ name: 'Design team', plan: 'Pro Plan', avatar: { initials: 'D', color: 'blue' }, onAction: upgrade }}
+/>
+```
+
+- With a `tree` the header and quick search stay put and only the rows scroll (hidden scrollbar): the primary rows, then 24 below them the tree — its label (body-medium text-secondary) and, 10 below, the folders 4 apart. The footer gains 12 on top.
+- A folder row is p 8 with a 20px folder glyph (open while expanded) and the label; its rows are py 5 / pr 8 / pl 36 with the label and a `meta` chip (radius 4, background-tertiary, px 4 / py 1, caption-1-medium), background-secondary-hover while selected or hovered. A curved 1px icon-quaternary connector drops from the folder glyph into each row. The rows' height and opacity ease open and shut together over 300ms; collapsed rows leave the tab order.
+- Quick search filters the tree too: a folder whose label matches keeps every row, otherwise only its matching rows, held open while the query is set. "No results" counts the tree.
+- The tree hides while collapsed.
+- `plan` replaces the team card: radius 12, background-tertiary (the panel colour when `flat`), py 8 / pr 12 / pl 10, a 32px avatar (initials 18.8/22.6 medium), the name (body-medium) over the plan (body-regular text-secondary), and a small secondary button (`actionLabel`, default "Upgrade"). Collapsed, only the avatar.
+
+## Navigation
+
+- `href` rows are links (a real anchor on web). With `onNavigate`, the browser's navigation is prevented and the host routes; without it, the anchor navigates on web and nothing happens natively.
+- `onPress` makes a row an action (Settings → a modal) and takes precedence over `onNavigate`.
+
+## Collapse
+
+`collapsed` / `defaultCollapsed` / `onCollapsedChange`. The panel morphs 260 → 52 in 300ms while labels, badges and the shortcut hint collapse (max-width, opacity, 3px blur on web) and the icons stay put. `mobile` is always expanded and shows a close button; `flat` removes the panel chrome for a rail revealed under the page (and moves the search into the header). `fluid` fills the container while expanded. Reduced motion snaps.
+
+After expanding, the account trigger's hover pill stays off until the pointer leaves it, so a stationary pointer does not light it up.
+
+## Quick search
+
+The pill button (or ⌘L / Ctrl+L on web; `searchShortcut={false}` to unbind) opens a field that filters every row by label; "No results" shows when nothing matches. Escape, the clear button, or a press outside the field (web) closes it and clears the query. Activating search on a collapsed rail expands it.
+
+## Menus
+
+Both menus are `Popover`s: beside the rail (team bottom-aligned, account top-aligned) and below the trigger under `sm`. On native, `Popover` presents as a bottom sheet. `Popover`'s own motion runs here.
+
+## Colour
+
+Panel background-secondary with a card-coloured hairline and a three-layer sidebar shadow; rows and chips from the neutral ramp; the selected row from the accent ramp (500 → 600). Initials tints: `neutral`, `blue` (accent), `lime` (success), `pink` (the accent rotated to pink).

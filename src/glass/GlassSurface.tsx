@@ -84,7 +84,7 @@ const GlassSurfaceComponent: React.FC<GlassSurfaceProps> = ({
         tint={theme.isDark ? 'dark' : 'light'}
         // No blur METHOD is requested on Android, and that is the honest state
         // rather than an oversight — see the `dimezisBlurView` note in
-        // `docs/button.mdx`. `expo-blur` needs a `blurTarget` ref to a
+        // `docs/glass.mdx`. `expo-blur` needs a `blurTarget` ref to a
         // `BlurTargetView` wrapping the content to blur, and a `BlurView` that
         // is a DESCENDANT of the view it points at takes the process down with
         // SIGSEGV (unbounded `RenderNode::prepareTreeImpl` recursion, measured

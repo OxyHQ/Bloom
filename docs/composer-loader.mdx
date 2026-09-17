@@ -1,0 +1,67 @@
+---
+title: ComposerLoader
+description: An iridescent light band orbiting a composer pill's rim while the agent works.
+order: 98
+---
+
+# ComposerLoader
+
+The loading state that wraps a chat composer while an agent works: an iridescent band of light laps the pill's rim with a soft bloom bleeding inward. `active` fades the whole effect in and out over 450ms, so toggling it on send / reply reads as the composer lighting up rather than snapping.
+
+```tsx
+import { ComposerLoader } from '@oxyhq/bloom/composer-loader';
+
+<ComposerLoader active={isWaitingForReply}>
+  <MyComposer style={{ backgroundColor: 'transparent' }} />
+</ComposerLoader>
+```
+
+**The loader paints the pill surface itself** (the card colour — neutral-800 in dark — with `shadow-xs`) and layers the light above it, beneath the children. A wrapped composer must not paint its own opaque background while `active`, or it covers the light entirely — swap it to `bg-transparent shadow-none` while busy.
+
+The loader takes its width from its container and its height from its children; the default radius is a full pill.
+
+## How the light is drawn
+
+Three dash strokes on the rounded-rect outline, normalised to a path length of 100, each lapping once per `speed` seconds:
+
+| layer | stroke width | blur (σ) | opacity | dash length | head pulled back |
+|---|---|---|---|---|---|
+| bloom | `bloom × 2` | 14 | `bloomStrength` | band × 0.9 | `bloom + 16` px |
+| glow | `line × 3.2` | 6 | 0.8 | band × 0.95 | 10 px |
+| line | `line` | 0.5 (taper: `max(0.5, line × 0.8)`) | 1 | band | — |
+
+`band = arc / 360 × 100`. The crisp line leads and every soft layer trails it. The gradient runs left → right across the pill through the four `colors`, with the centre stop a blend of the middle two so the band never washes out to white. `taper` stacks each layer as 14 shorter, centred copies at a fraction of its opacity; the blur melts the steps into a fade.
+
+- **Web** draws a DOM `<svg>`, `pathLength={100}` rects, a self-injected `@keyframes` on `stroke-dashoffset` (0 → -100) with each layer's phase as an `animation-delay`. Blur is an SVG `feGaussianBlur`, not a CSS `filter` — WebKit ignores CSS filters on individual SVG elements, which rendered the light razor-sharp on every iPhone browser.
+- **Native** draws the same layers in react-native-svg. react-native-svg ignores `pathLength`, so the dashes are scaled to the measured perimeter in px, and the lap runs on a `useFrameCallback` clock that reproduces the CSS delays exactly (a positive delay holds the dash at 0 before it starts). The clock only runs while `active` (and through the fade-out). Blur uses react-native-svg 15's `Filter` / `FeGaussianBlur`, implemented on iOS and Android — not yet verified on a device.
+
+Under reduced motion the band stops (web: `animation: none`; native: no clock), resting in place.
+
+## Props
+
+| Prop | Type | Default | Description |
+|------|------|---------|-------------|
+| `children` | `ReactNode` | — | The composer. |
+| `active?` | `boolean` | `true` | Show the light; fades in/out over 450ms. |
+| `colors?` | `[string, string, string, string]` | `#5eead4 #46baec #e633a4 #00faa7` | Gradient left → right. Any colour string. |
+| `speed?` | `number` | `4.5` | Seconds per lap. |
+| `intensity?` | `number` | `0.7` | Overall light opacity. |
+| `bloom?` | `number` | `16` | How far the bloom bleeds inward, px. `0` drops the layer. |
+| `bloomStrength?` | `number` | `0.3` | Bloom layer opacity. |
+| `arc?` | `number` | `120` | Band length, degrees of 360. |
+| `reverse?` | `boolean` | `false` | Travel counter-clockwise. |
+| `radius?` | `number` | full pill | Corner radius, px. |
+| `line?` | `number` | `2.5` | Crisp line width, px; the glow scales with it. |
+| `bloomOnly?` | `boolean` | `false` | Only the wide bloom — a soft wash for a beam to lead. |
+| `surface?` | `boolean` | `true` | Paint the pill surface + `shadow-xs` behind the light. |
+| `taper?` | `number` | `0` | 0–1: fraction of the band's length that fades at each end. |
+| `blend?` | `ViewStyle['mixBlendMode']` | — | How the light composites, e.g. `'screen'`. |
+| `offset?` | `number` | `0` | Moves the band forward, as a fraction of the lap. Lines up two loaders on one pill: a short beam with `offset = (glowArc − beamArc) / 360` leads a wider `bloomOnly` glow tip to tip. |
+| `style?` | `StyleProp<ViewStyle>` | — | Outer wrapper. |
+| `testID?` | `string` | — | Also derives `-surface` and `-light`. |
+
+The default colours are an iridescent set, kept literal on purpose: they are the effect's identity, not a theme role. Pass `colors` to tint it to a brand.
+
+## Accessibility
+
+The surface and the light are decorative (`aria-hidden`, `pointerEvents="none"`); only the children are exposed. Announce the busy state from the composer itself (for example on its send / stop button).

@@ -33,7 +33,7 @@ import {
 } from '../dropdown-menu';
 
 const meta: Meta = {
-  title: 'Overlays/Overlay stacking',
+  title: 'Foundations/Overlay Stacking',
 };
 
 export default meta;

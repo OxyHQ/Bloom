@@ -6,7 +6,7 @@ order: 12
 
 # Avatar
 
-Display a user's avatar. Accepts a URL, an `ImageSourcePropType`, or no image at all — falls back to a colored circle with the first letter of `name` (deterministic per name). Optional verified badge. Clips to a circle, a squircle, one of the named shapes, or an outline you supply.
+Display a user's avatar. Accepts a URL, an `ImageSourcePropType`, or no image at all — falls back to a tinted initials disc with the first letter of `name` (tint deterministic per name). Optional verified badge. Clips to a circle, a squircle, one of the named shapes, or an outline you supply.
 
 ## Basic
 
@@ -20,9 +20,46 @@ import { Avatar } from '@oxyhq/bloom';
 
 ```tsx
 <Avatar name="Ada Lovelace" size={48} />
+<Avatar initials="M" color="blue" size="md" />
 ```
 
-Picks a deterministic background color from the `name` so the same user always gets the same color. White letter on top.
+The fallback is an initials disc. `initials`
+sets the text explicitly; otherwise it is the first letter of `name`. `color`
+picks the tint; without it a `name` lands deterministically on one of the four,
+so the same user always gets the same tint, and explicit `initials` default to
+`neutral`.
+
+| `color`   | disc                               | initials                  |
+| --------- | ---------------------------------- | ------------------------- |
+| `neutral` | `neutral-300` (dark `neutral-800`) | `neutral-500`             |
+| `blue`    | `primary` ramp 300                 | `primary` ramp 900        |
+| `lime`    | `success` ramp 200 (lime shape)    | `success` ramp 700        |
+| `pink`    | `negative` ramp 200 (pink shape)   | `negative` (500)          |
+
+The hue tints are not repainted in dark mode. `lime` and `pink` read Tailwind's lime/pink lightness ABSOLUTELY
+(`absoluteRamp` in `avatar/initials.ts`): `colorRamp`'s gradient offsets would
+sink `lime-700` to near-black against a theme `success`. `pink` reads
+`negative` rather than `tertiary`, whose value can be a pale yellow that leaves
+no legible letter.
+
+`placeholderColor` still overrides the disc; with it and no `color` the letter
+is white, since Bloom cannot know the contrast of an arbitrary colour.
+
+## Sizes
+
+`size` takes pixels or one of four rungs; the initials follow the rung:
+
+| `size` | px | initials                          |
+| ------ | -- | --------------------------------- |
+| `xs`   | 20 | 10/15 semibold                    |
+| `sm`   | 24 | `caption-1-semibold`, tracking 0  |
+| `md`   | 32 | `headline-semibold` (16/22)       |
+| `lg`   | 36 | 18/24 semibold                    |
+
+A numeric size between rungs takes the next rung up's type (40 keeps `lg`'s);
+above 40 the letter scales with the
+disc (45% / 60% line height), since there is no larger rung to follow. On web a
+size change animates width, height and font size over 200ms.
 
 ## Verified badge
 
@@ -113,7 +150,10 @@ When no `source`, `uri`, or `name` resolves, you can fully control the placehold
 | `uri?` | `string` | — | Direct URI string. |
 | `variant?` | `string` | `'thumb'` | Rendition forwarded to the `ImageResolver` when `source` is a bare file ID. Defaults to `'thumb'` so avatars never request the full-size original; pass an explicit larger variant when you need a bigger image. Ignored for full URL / `{uri}` sources. |
 | `fallbackSource?` | `ImageSourcePropType` | — | Shown when `source`/`uri` errors. |
-| `size?` | `number` | `40` | Diameter in dp. |
+| `size?` | `number \| 'xs' \| 'sm' \| 'md' \| 'lg'` | `40` | Diameter in dp, or a named rung (20/24/32/36). |
+| `color?` | `'neutral' \| 'blue' \| 'lime' \| 'pink'` | from `name` | Initials disc tint. |
+| `initials?` | `string` | first letter of `name` | Explicit fallback text. |
+| `alt?` | `string` | — | Accessible description of the photo. |
 | `verified?` | `boolean` | `false` | Show a verified badge bottom-right. |
 | `verifiedIcon?` | `React.ReactNode` | check icon | Custom badge node. |
 | `shape?` | `'circle' \| 'squircle' \| AvatarShapeName \| AvatarShapePath` | `'circle'` | A built-in name or your own `{ d, viewBox }` outline. Anything but `'circle'` needs `react-native-svg`. |
@@ -121,7 +161,7 @@ When no `source`, `uri`, or `name` resolves, you can fully control the placehold
 | `imageStyle?` | `StyleProp<ImageStyle>` | — | Image style (circle only). |
 | `placeholderColor?` | `string` | derived | Override placeholder background. |
 | `placeholderIcon?` | `React.ReactNode` | initial | Override placeholder icon/letter. |
-| `name?` | `string` | — | Used to derive initials + a stable background color. |
+| `name?` | `string` | — | Used to derive the initial + a stable tint. |
 | `onPress?` | `() => void` | — | Wraps in `TouchableOpacity`. |
 | `testID?` | `string` | — | |
 

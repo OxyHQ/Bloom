@@ -1,0 +1,45 @@
+---
+title: Earnings chart card
+description: The "Earned so far" card — rounded bars in full-height tracks with a hover outline, a Weekly / Monthly / Yearly switcher and a count-up headline.
+order: 43
+---
+
+# Earnings chart card
+
+`EarningsChartCard` is the "Earned so far" card.
+
+```tsx
+import { EarningsChartCard } from '@oxyhq/bloom/chart-cards';
+
+<EarningsChartCard ranges={ranges} yTicks={[0, 3000, 5000, 10000]} yMax={12000} />
+```
+
+## Props
+
+| Prop | Default | |
+|---|---|---|
+| `title` | `"Earned so far"` | |
+| `data` / `headline` / `delta` | — / sum / none | `{ label, value }[]` |
+| `ranges`, `defaultRange`, `onRangeChange`, `rangesLabel` | — / `"Earnings period"` | the segmented switcher |
+| `yTicks`, `yMax` | nice ticks for the data | e.g. ticks `0 · 3K · 5K · 10K` over `[0, 12000]` |
+| `format` / `formatAxisValue` | `$7,462` / `$10K` (no rounding: `$2.5K`) | |
+| `getPointTitle` | `Jun` → `June` | |
+| `color`, `activeColor` | chart-2 | bar / hovered bar |
+| `activeIndex` / `onActiveIndexChange`, `accessibilityLabel` | | |
+
+## Geometry
+
+| | |
+|---|---|
+| card | 329, radius 16, padding 16/16/12, gap 24; header as `LineChartCard` |
+| plot | margin 4/0/0/0, Y axis 44, no grid, X `preserveEnd` (recharts' default) |
+| bars | band scale, `barCategoryGap` 18%, whole-pixel width, `maxBarSize` 40, radius 10 on all corners |
+| track | the bar's slot from plot top to bottom, radius 10, chart-track |
+| outline | the track grown 3px each way, radius 13, 2px chart-cursor, only on the hovered bar, 150ms opacity ease (web) |
+
+Hover clears over the axis. Bars grow from the base over 450ms and morph on a period change.
+
+## Hazards
+
+- **The outline's ease is web-only** — a CSS `transition` on the SVG `rect` (react-native-svg forwards `style` on web). Native snaps.
+- The phone header keeps the switcher's 4px track padding — see `docs/line-chart-card.mdx`.

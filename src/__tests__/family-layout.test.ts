@@ -19,8 +19,8 @@ import ts from 'typescript';
  *
  * THE ONE EXCEPTION IS THE FACTORY LAYOUT, and it is a real one. A web-forked
  * family whose fork differs only in which component it is BUILT FROM cannot
- * express that as a re-export: `alert-dialog`, `combobox` and `command`
- * construct themselves from `Dialog`/`Popover`, and each barrel binds the
+ * express that as a re-export: `alert-dialog` and `command`
+ * construct themselves from `Dialog`, and each barrel binds the
  * platform's own. Written as a normal import, the shared implementation would
  * have to import the surface that imports it. So those barrels carry exactly
  * one `const X = createY(Z)` binding and nothing else.
@@ -39,8 +39,6 @@ const SKIP = new Set(['__tests__']);
 const FACTORY_BARRELS = [
   'alert-dialog/index.ts',
   'alert-dialog/index.web.ts',
-  'combobox/index.ts',
-  'combobox/index.web.ts',
   'command/index.ts',
   'command/index.web.ts',
   'surfaces/index.ts',
@@ -152,9 +150,9 @@ describe('one family layout', () => {
     // green a private directory would be PUBLISHING it, which is the opposite
     // of what its author wanted and enlarges the public API by accident.
     // `floating/` is the shared layer `dropdown-menu`, `context-menu`,
-    // `menubar`, `popover`, `select` and `level-picker` build on — a trigger
+    // `menubar`, `popover` and `select` build on — a trigger
     // slot, a panel, a row vocabulary and an anchor measurement, written once.
-    // It has a barrel so those six have one surface to import through, and it
+    // It has a barrel so those five have one surface to import through, and it
     // stays out of `exports` and the root barrel because none of it is API a
     // consumer should reach for.
     //

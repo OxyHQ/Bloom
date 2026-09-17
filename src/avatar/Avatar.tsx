@@ -1,5 +1,5 @@
 import React, { memo, useMemo, useRef, useState } from 'react';
-import { View, Image, StyleSheet, Text, Pressable } from 'react-native';
+import { View, Image, StyleSheet, Pressable, Platform } from 'react-native';
 import type { TextStyle } from 'react-native';
 import Svg, { ClipPath, Defs, Image as SvgImage, Path } from 'react-native-svg';
 
@@ -11,31 +11,25 @@ import { useAvatarPlaceholder } from './context';
 import { LiveBadge } from './LiveBadge';
 import { AvatarRing, getRingOuterSize } from './AvatarRing';
 import { resolveAvatarShape } from './resolve-shape';
+import { Text } from '../typography';
+import type { WebCssStyle } from '../styles/web-view-style';
+import {
+  avatarInitialsType,
+  avatarTintForName,
+  getInitial,
+  resolveAvatarSize,
+  resolveAvatarTint,
+} from './initials';
 import type { AvatarProps, AvatarRingConfig, AvatarShapePath } from './types';
 
-// Google Contacts-inspired palette used to pick a deterministic background
-// color for name-based placeholder avatars.
-const NAME_AVATAR_COLORS = [
-  '#D93025', '#E8710A', '#F9AB00', '#1E8E3E', '#12B5CB',
-  '#1A73E8', '#7627BB', '#C5221F', '#0B8043', '#A142F4',
-] as const;
-
-function getInitial(name: string): string {
-  const trimmed = name.trim();
-  if (!trimmed) return '?';
-  const firstCodePoint = [...trimmed][0] ?? '?';
-  return firstCodePoint.toUpperCase();
-}
-
-function getNameColor(name: string): string {
-  let hash = 0;
-  for (let i = 0; i < name.length; i++) {
-    hash = (hash * 31 + name.charCodeAt(i)) | 0;
-  }
-  const index = Math.abs(hash) % NAME_AVATAR_COLORS.length;
-  // Palette has a fixed, non-empty length, so this lookup always succeeds.
-  return NAME_AVATAR_COLORS[index] ?? NAME_AVATAR_COLORS[0];
-}
+/**
+ * `transition-[width,height,font-size] duration-200 ease` — web only;
+ * native has no style transitions and a size change there is a relayout.
+ */
+const SIZE_TRANSITION: WebCssStyle =
+  Platform.OS === 'web'
+    ? { transitionProperty: 'width, height, font-size', transitionDuration: '200ms', transitionTimingFunction: 'ease' }
+    : {};
 
 // Built-in default avatar image — used when no source, fallbackSource, or placeholderIcon is provided.
 // Sourced from a TypeScript module that exports an inlined base64 data URI, so no
@@ -60,7 +54,8 @@ function ClippedImage({
   shape,
   fallbackColor,
   placeholderIcon,
-  name,
+  text,
+  textColor,
   onError,
 }: {
   uri?: string;
@@ -69,7 +64,8 @@ function ClippedImage({
   shape: AvatarShapePath;
   fallbackColor: string;
   placeholderIcon?: React.ReactNode;
-  name?: string;
+  text?: string;
+  textColor: string;
   onError: () => void;
 }) {
   const clipId = useMemo(() => `bloom-sqc${clipIdCounter++}`, []);
@@ -77,7 +73,13 @@ function ClippedImage({
   const href = uri ? { uri } : fallbackSource;
   if (!href) {
     return (
-      <CircleFallback size={size} fallbackColor={fallbackColor} icon={placeholderIcon} name={name} />
+      <CircleFallback
+        size={size}
+        fallbackColor={fallbackColor}
+        icon={placeholderIcon}
+        text={text}
+        textColor={textColor}
+      />
     );
   }
 
@@ -115,22 +117,19 @@ function CircleFallback({
   size,
   fallbackColor,
   icon,
-  name,
+  text,
+  textColor,
 }: {
   size: number;
   fallbackColor: string;
   icon?: React.ReactNode;
-  name?: string;
+  text?: string;
+  textColor: string;
 }) {
   const radius = size / 2;
-  // If a name is provided (and no custom icon was supplied), render a
-  // centered initial in white instead of the default avatar image.
-  const hasName = typeof name === 'string' && name.trim().length > 0;
   const initialStyle: TextStyle = {
-    color: '#FFFFFF',
-    fontSize: Math.round(size * 0.42),
-    fontWeight: '600',
-    lineHeight: Math.round(size * 0.48),
+    ...avatarInitialsType(size),
+    color: textColor,
     textAlign: 'center',
     includeFontPadding: false,
   };
@@ -146,13 +145,9 @@ function CircleFallback({
         overflow: 'hidden',
       }}
     >
-      {icon ?? (hasName ? (
-        <Text
-          allowFontScaling={false}
-          numberOfLines={1}
-          style={initialStyle}
-        >
-          {getInitial(name)}
+      {icon ?? (text ? (
+        <Text allowFontScaling={false} numberOfLines={1} style={initialStyle}>
+          {text}
         </Text>
       ) : (
         <Image
@@ -170,7 +165,10 @@ const AvatarComponent: React.FC<AvatarProps> = ({
   uri,
   variant = 'thumb',
   fallbackSource,
-  size = 40,
+  size: sizeProp,
+  color,
+  initials,
+  alt,
   verified = false,
   verifiedIcon,
   shape = 'circle',
@@ -194,19 +192,29 @@ const AvatarComponent: React.FC<AvatarProps> = ({
   const { state: pressed, onIn: onPressIn, onOut: onPressOut } = useInteractionState();
   const theme = useTheme();
   const placeholderConfig = useAvatarPlaceholder();
+  const size = resolveAvatarSize(sizeProp);
   const radius = size / 2;
   // `null` means "a circle", which is drawn with borderRadius and never reaches
   // the SVG renderer. Memoised so an inline `shape={{ d: … }}` object literal
   // does not produce a new clip descriptor on every render.
   const clipShape = useMemo(() => resolveAvatarShape(shape), [shape]);
   const hasName = typeof name === 'string' && name.trim().length > 0;
-  // Priority: explicit placeholderColor > deterministic color from name > theme default.
-  const fallbackColor =
-    placeholderColor || (hasName ? getNameColor(name) : theme.colors.backgroundTertiary);
-  // When a name is provided, we render an initial instead of invoking the
-  // default placeholder-context icon. Explicit placeholderIcon still wins.
+  const hasInitials = typeof initials === 'string' && initials.trim().length > 0;
+  // The fallback text: explicit `initials` > the first letter of `name`.
+  const fallbackText = hasInitials ? initials.trim() : hasName ? getInitial(name) : undefined;
+  // The tint: explicit `color` > deterministic from `name` > neutral.
+  const tint = useMemo(
+    () => resolveAvatarTint(theme, color ?? (hasName && !hasInitials ? avatarTintForName(name) : 'neutral')),
+    [theme, color, hasName, hasInitials, name],
+  );
+  // Priority: explicit placeholderColor > the tint. A caller's own colour gets
+  // a white letter (Bloom cannot know its contrast) unless a tint is also named.
+  const fallbackColor = placeholderColor || tint.background;
+  const fallbackTextColor = placeholderColor && !color ? '#FFFFFF' : tint.foreground;
+  // With fallback text we render it instead of invoking the default
+  // placeholder-context icon. Explicit placeholderIcon still wins.
   const resolvedPlaceholderIcon =
-    placeholderIcon ?? (hasName ? undefined : placeholderConfig?.icon?.(size * 0.6));
+    placeholderIcon ?? (fallbackText ? undefined : placeholderConfig?.icon?.(size * 0.6));
 
   // Reset error state when source/uri/variant changes (e.g., list item
   // recycling, async URL resolution replacing an initial file ID, or a
@@ -302,14 +310,23 @@ const AvatarComponent: React.FC<AvatarProps> = ({
           shape={clipShape}
           fallbackColor={fallbackColor}
           placeholderIcon={resolvedPlaceholderIcon}
-          name={name}
+          text={fallbackText}
+          textColor={fallbackTextColor}
           onError={() => setErrored(true)}
         />
       ) : (
-        <View style={[styles.imageContainer, { width: size, height: size, borderRadius: radius }]}>
+        <View
+          style={[
+            styles.imageContainer,
+            SIZE_TRANSITION,
+            { width: size, height: size, borderRadius: radius },
+          ]}
+        >
           {imageSource ? (
             <Image
               source={imageSource}
+              accessibilityLabel={alt}
+              accessible={alt ? true : undefined}
               onError={() => setErrored(true)}
               resizeMode="cover"
               style={[StyleSheet.absoluteFill, { borderRadius: radius }, imageStyle]}
@@ -319,7 +336,8 @@ const AvatarComponent: React.FC<AvatarProps> = ({
               size={size}
               fallbackColor={fallbackColor}
               icon={resolvedPlaceholderIcon}
-              name={name}
+              text={fallbackText}
+              textColor={fallbackTextColor}
             />
           )}
         </View>
@@ -370,7 +388,7 @@ const AvatarComponent: React.FC<AvatarProps> = ({
         onPressIn={onPressIn}
         onPressOut={onPressOut}
         accessibilityRole="button"
-        accessibilityLabel={hasName ? name : undefined}
+        accessibilityLabel={alt ?? (hasName ? name : undefined)}
         style={pressed ? styles.pressed : undefined}
       >
         {content}

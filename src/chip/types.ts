@@ -4,6 +4,12 @@ import type { AccentFill, AccentTone } from '../theme/accent-colors';
 
 export type ChipSize = 'small' | 'medium' | 'large';
 
+/**
+ * Data hues: a category, a department, an objective — colours that carry
+ * data rather than a status role.
+ */
+export type ChipHue = 'lime' | 'rose' | 'yellow' | 'cyan' | 'blue' | 'purple' | 'neutral' | 'gray' | 'soft';
+
 export interface ChipProps {
   /** Text content of the chip. */
   children?: React.ReactNode;
@@ -15,6 +21,18 @@ export interface ChipProps {
   variant?: AccentFill;
   /** Semantic color. */
   color?: AccentTone;
+  /**
+   * Paints the chip in one of the data hues instead of `color` +
+   * `variant` (both are ignored while it is set; `selected` still promotes the
+   * chip to the brand tone). Pair it with a size for the right emphasis:
+   * `bold` is `medium`, `subtle` is `large`, `caption` is `small`.
+   */
+  hue?: ChipHue;
+  /**
+   * The colour the chip sits on. A hue's dark fill is translucent,
+   * so it is mixed over this. Defaults to the page background.
+   */
+  surface?: string;
   /** Size preset. */
   size?: ChipSize;
   /** Icon rendered before the label. */

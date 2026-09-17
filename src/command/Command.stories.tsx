@@ -5,11 +5,11 @@ import type { Meta, StoryObj } from '@storybook/react-vite';
 import { Command } from './index';
 import type { CommandItem } from './types';
 import { Button } from '../button';
-import { Person_Stroke2_Corner0_Rounded as PersonIcon } from '../icons/Person';
-import { SettingsGear2_Stroke2_Corner0_Rounded as GearIcon } from '../icons/SettingsGear2';
+import { RiUserLine as PersonIcon } from '../icons/remix/RiUserLine';
+import { RiSettings3Line as GearIcon } from '../icons/remix/RiSettings3Line';
 
 const meta: Meta = {
-  title: 'Overlays/Command',
+  title: 'Base/Command',
 };
 
 export default meta;

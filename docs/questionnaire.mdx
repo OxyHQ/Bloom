@@ -1,0 +1,118 @@
+---
+title: Questionnaire
+description: Plan-mode questions an agent asks before it commits to a plan, one step at a time.
+order: 82
+---
+
+# Questionnaire
+
+One question at a time as a card in the chat thread: the prompt across the top with an optional dismiss in the corner, the answers as bordered rows, and a footer with a step pill per question beside Previous / Next.
+
+```tsx
+import { Questionnaire } from '@oxyhq/bloom/questionnaire';
+
+<Questionnaire
+  questions={[
+    {
+      id: 'scope',
+      question: 'Which parts of the app should the migration cover?',
+      options: [
+        { value: 'api', label: 'API routes', description: 'Move handlers to the new router' },
+        { value: 'db', label: 'Database layer', description: 'Swap the ORM and regenerate types' },
+      ],
+      other: true,
+    },
+    {
+      id: 'tests',
+      question: 'How should we handle the test suite?',
+      select: 'single',
+      options: [
+        { value: 'keep', label: 'Keep existing tests' },
+        { value: 'rewrite', label: 'Rewrite from scratch' },
+      ],
+    },
+  ]}
+  onComplete={(answers) => agent.submitPlanAnswers(answers)}
+  onDismiss={closeQuestions}
+/>
+```
+
+The card fills its container's width. It holds only interaction state; sending the answers anywhere is the caller's job (`onComplete`, or `onAnswersChange` for live updates).
+
+## Selection modes
+
+- **`multiple`** (the default) — each row is a checkbox (Bloom's 16px `CheckboxGlyph`, which hovers with its ROW, not by itself). Next advances.
+- **`single`** — each row carries a number key; picking a row lifts it and advances after `advanceDelay` (180ms, immediate under reduced motion). On web the digit keys 1–9 pick too (the row announces `aria-keyshortcuts`), and the key one past the last option focuses the "Other" field.
+
+`select` sets the card-level mode; a question's own `select` overrides it.
+
+## The "Other" row
+
+`other: true` adds a free-text row after the options (`{ label, placeholder }` rewords it). It reads like the other rows — title over a bare 20px field, no box or ring — until you type. Typing selects it, focus lifts the row like hover, and Enter continues (in `single` mode only when the text is non-empty). The draft survives unticking the row and coming back to the question.
+
+## Answers
+
+Keyed by question id: `{ values, other? }` — the selected option values in OPTION order (not press order), plus `other` while the free-text row is selected. `step` / `answers` are controllable (`defaultStep` / `defaultAnswers` otherwise); `onStepChange` and `onAnswersChange` report every change, `onComplete` fires with every answer when the last question is answered (Next on the last step reads "Done").
+
+## Geometry
+
+| Part | Value |
+|---|---|
+| card | radius 20, padding 12, gap 10, shadow `0 4px 2px 2%, 0 1px 0.5px 5%` |
+| prompt | `body-medium`, 2px left inset, 28px right when dismissable |
+| dismiss | Bloom `CloseButton` `xs` (20px), 12/12 from the corner |
+| row | radius 16, 1px border, padding 9/19/9/11 inside the border (a 60px row with a description), gap 16, rows 8 apart |
+| row text | `body-medium` title over `body-regular` secondary description |
+| number key | `body-2-medium`, radius 4, padding 2/5 |
+| footer | 2px top padding; step pills (8/5 padding, 8 apart, full radius) and small secondary / primary buttons 8 apart |
+
+## Colours
+
+From the theme through `resolveButtonRamps`:
+
+| Token | light | dark |
+|---|---|---|
+| card / row surface | `colors.card` | neutral-800 |
+| row border | neutral-200 | neutral-700 |
+| row hover · selected fill | neutral-100 | neutral-700 at 60% over the card |
+| row pressed | neutral-200 | neutral-800 |
+| selected / pressed border | neutral-300 | neutral-500 |
+| number key → raised (row hover or pick) | neutral-100 → 200 | neutral-700 → 600 |
+| secondary text · placeholder | neutral-500 · 400 | neutral-500 · 600 |
+| step pill selected fill · label | accent-50 · accent-500 | accent-950 at 60% · accent-500 |
+| step pill hover | neutral-100 | neutral-800 |
+| focus ring (web) | accent-500 | accent-500 |
+
+## Motion
+
+Questions cross-fade and slide 28px in the direction of travel over 320ms (`cubic-bezier(0.22, 1, 0.36, 1)`, with a 4px blur on web) while the viewport animates to the next question's height over 380ms, so the footer glides instead of jumping. The outgoing question is popped out of flow while it leaves. The step thumb slides over 300ms with a small overshoot; the idle pill's hover layer fades over 200ms; row, key and checkbox colours transition over 150ms (web). Everything snaps under reduced motion. No press scale.
+
+The viewport keeps 4px above and below the rows so their focus rings aren't clipped. On web, when the picked row unmounts with its question, focus parks on the new question's panel so the digit keys keep working.
+
+## Accessibility
+
+- The card and the option list are `group`s named by the question.
+- `multiple` rows are `checkbox`es with `aria-checked`; `single` rows are buttons with `aria-pressed` (and `accessibilityState.selected`) plus `aria-keyshortcuts`. The "Other" field and its checkbox are named by the row's label.
+- Step pills are buttons with `aria-pressed`, in a group named `labels.steps` ("Steps").
+- `label` / `description` are rendered inside a `Text`: pass text content. A row's accessible name is its `label` when that is a string, else its `value`.
+
+## Native
+
+Same layout, paint and motion; no hover (a held press paints the pressed state), no digit-key shortcuts, no blur on the question slide.
+
+## Props
+
+| Prop | Type | Default | Description |
+|------|------|---------|-------------|
+| `questions` | `QuestionnaireQuestion[]` | — | `{ id, question, select?, options: { value, label, description? }[], other?, stepLabel? }`. |
+| `select?` | `'single' \| 'multiple'` | `'multiple'` | Mode for questions that don't set their own. |
+| `step?` / `defaultStep?` | `number` | `0` | Visible question (zero-based), controlled / initial. |
+| `onStepChange?` | `(step) => void` | — | Every step change. |
+| `answers?` / `defaultAnswers?` | `QuestionnaireAnswers` | `{}` | Controlled / initial answers. |
+| `onAnswersChange?` | `(answers) => void` | — | Every answer change. |
+| `onComplete?` | `(answers) => void` | — | The last question was answered. |
+| `onDismiss?` | `() => void` | — | Shows the corner dismiss. |
+| `advanceDelay?` | `number` | `180` | ms a single-select pick stays visible before advancing. |
+| `labels?` | `{ previous?, next?, complete?, other?, otherPlaceholder?, dismiss?, steps? }` | English | Fixed strings. |
+| `style?` | `StyleProp<ViewStyle>` | — | Card style. Override padding with longhands. |
+| `testID?` | `string` | — | Also derives `-option-<value>`, `-other`, `-other-input`, `-other-toggle`, `-dismiss`, `-step-<i>`, `-previous`, `-next`. |

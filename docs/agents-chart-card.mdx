@@ -1,0 +1,57 @@
+---
+title: Agents chart card
+description: An AI profile agents card — a month of daily runs as plain rounded bars, idle days as 4px stubs, a month switcher pill and a count-up headline that follows the hovered day.
+order: 102
+---
+
+# Agents chart card
+
+`AgentsChartCard` draws with plain `View`s (no recharts), so the bars ease their colour with CSS on web.
+
+```tsx
+import { AgentsChartCard } from '@oxyhq/bloom/chart-cards';
+
+<AgentsChartCard
+  data={days /* { label: 'Dec 12', value: 32 }[] */}
+  headline={32}
+  range={monthName}
+  onPrevRange={() => setMonth((m) => (m + 11) % 12)}
+  onNextRange={() => setMonth((m) => (m + 1) % 12)}
+/>
+```
+
+## Props
+
+| Prop | Default | |
+|---|---|---|
+| `data` | — | `{ label, value }[]`, one bar per day; `0` is an idle day |
+| `headline` | — | the resting number (the period's agents) |
+| `title` | `"Agents"` | header label at rest |
+| `format` | `` `${n} agents` `` | resting and hovered number |
+| `getPointTitle` | the point's `label` | header label while a day is hovered |
+| `range` | — | the 128px month pill's label; no pill when omitted |
+| `onPrevRange` / `onNextRange` | — | with either, the chevrons become buttons and the label rolls |
+| `prevRangeLabel` / `nextRangeLabel` | `"Previous"` / `"Next"` | chevron names |
+| `startLabel` / `endLabel` | `"Jun 14"` / `"Today"` | the axis row — pass your own |
+| `trackHeight` / `maxBarHeight` | 206 / 158 | |
+| `max` | the largest value | the value `maxBarHeight` stands for |
+| `color` / `activeColor` | chart-agents-bar / -active | |
+| `activeIndex` / `onActiveIndexChange` | tracked | |
+| `accessibilityLabel` | a summary of every day | names the plot (`role="img"`) |
+
+## Geometry
+
+| | |
+|---|---|
+| card | radius 20, `background-secondary`, padding 12 top / bottom, 10 sides, gap 10 |
+| header | 6 further in, 4 from the top: label `body-medium` text-secondary, 2px, number `title-2-medium` tabular |
+| pill | `WeekRangePill` at 128 wide, absolutely 16 from the top and right |
+| track | 206 tall, one flex column per day, 7px apart (15.2px bars at 680 wide) |
+| bars | radius 4; `value / max × 158` tall; light purple-300 → hovered 400, dark 500 → 600; an idle day is a 4px `chart-track` stub, `chart-cursor` hovered |
+| axis | `caption-2-medium` text-tertiary, 6px in |
+
+Purple is a data hue, not a status: `purpleStop(theme, stop)` (`chart-cards/ai-profile-hues.ts`) keeps Tailwind's lightness and re-anchors chroma and hue on `primary`, so a blue preset reproduces purple exactly and any other rotates with the brand.
+
+## Interaction and motion
+
+Hovering a day's column (web) or pressing and scrubbing (native) swaps the label to the day and rolls the number to its rounded value, replaying the 220ms number fade. The 7px gaps keep the last day; leaving the track clears. Every bar rises from its base over 360ms `cubic-bezier(0.22, 1, 0.36, 1)`, staggered 22ms left to right, replayed when the data or the pill label changes; the background eases over 300ms on web. Reduced motion drops the rise.

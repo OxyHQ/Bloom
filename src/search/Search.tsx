@@ -6,8 +6,8 @@ import { atoms as a } from '../styles';
 import { borderRadius } from '../styles/tokens';
 import { Button } from '../button';
 import { TextField, TextFieldIcon, TextFieldInput, type TextFieldInputProps } from '../text-field';
-import { MagnifyingGlass_Stroke2_Corner0_Rounded as MagnifyingGlassIcon } from '../icons/MagnifyingGlass';
-import { TimesLarge_Stroke2_Corner0_Rounded as X } from '../icons/Times';
+import { RiSearchLine as MagnifyingGlassIcon } from '../icons/remix/RiSearchLine';
+import { RiCloseLine as X } from '../icons/remix/RiCloseLine';
 
 type SearchProps = Omit<TextFieldInputProps, 'label'> & {
   label?: TextFieldInputProps['label'];

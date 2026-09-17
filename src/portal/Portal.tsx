@@ -98,7 +98,7 @@ declare global {
  * Why this is required: like the theme module, `exports["./portal"]` ships a
  * `react-native` → `./src/...` condition alongside the `lib/module` / `lib/commonjs`
  * forks, and the `Portal` component is consumed cross-subpath from `./tooltip`,
- * `./prompt-input`, `./dialog`, `./select`, `./menu`, `./context-menu`, and `./popover`
+ * `./dialog`, `./select`, `./menu`, `./context-menu`, and `./popover`
  * while `PortalProvider`/`PortalOutlet` are mounted once at the app root via
  * `@oxyhq/bloom/portal`.
  * A bundler can resolve those subpaths through different export conditions, so without a

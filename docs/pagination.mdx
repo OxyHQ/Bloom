@@ -1,0 +1,64 @@
+---
+title: Pagination
+description: Previous, a window of page numbers with ellipses, Next — controlled.
+order: 27
+---
+
+# Pagination
+
+A controlled page selector: Previous and Next are Bloom's own secondary small `Button`, with a window of page numbers between them. Colours come from the ramps in `src/button/shared.ts`.
+
+```tsx
+import { Pagination } from '@oxyhq/bloom/pagination';
+
+const [page, setPage] = useState(1);
+
+<Pagination page={page} totalPages={10} onChange={setPage} />
+```
+
+It renders nothing when `totalPages` is 1 or fewer.
+
+## Which pages show
+
+The first and last page always show, plus the current page and `siblingCount` pages either side of it (default 1); a gap collapses into an ellipsis. `paginationRange(page, totalPages, siblingCount)` is exported if you need the same list elsewhere.
+
+```
+page 1 of 10   1 2 3 4 5 … 10
+page 5 of 10   1 … 4 5 6 … 10
+page 10 of 10  1 … 6 7 8 9 10
+```
+
+## Look
+
+| | |
+|---|---|
+| row | space-between, gap 8 |
+| Previous / Next | `Button` secondary, `small` (32), Remix `RiArrowLeftLine` / `RiArrowRightLine`; disabled at either end |
+| page cell | 32×32 circle, `body-medium` (Inter 14/20 500), gap 2 |
+| current | card surface (dark: neutral-800), 1px neutral-200 border (dark: neutral-700), shadow-xs, text colour |
+| other pages | text-secondary (neutral-500); hover neutral-200 fill (dark: neutral-800) and the text colour |
+| ellipsis | 32×32, text-tertiary (neutral-400 / dark neutral-600), not focusable |
+| focus | 2px accent-500 ring, 2px offset (`:focus-visible`) |
+
+Page cells are circles, like every other button-like control. They deliberately have **no transition**: animating the fill makes the previously current page visibly fade out on every change.
+
+## Compact layout
+
+Below 420px of width (measured with `onLayout`, so it works on native too) Previous and Next drop their labels to icon-only buttons named by `previousLabel` / `nextLabel`, and `siblingCount` clamps to 0 — the row never overflows a narrow container.
+
+## Accessibility
+
+The row is a `navigation` landmark named `"Pagination"`. Every page is a button named `"Go to page N"` (`getPageLabel` to localise). The current page carries `aria-current="page"` on web and `accessibilityState.selected` on native — `aria-selected` is invalid on a button.
+
+## Props
+
+| Prop | Type | Default | Description |
+|------|------|---------|-------------|
+| `page` | `number` | — | Current page, 1-based. |
+| `totalPages` | `number` | — | Total pages. |
+| `onChange` | `(page: number) => void` | — | Called with the requested page. |
+| `siblingCount?` | `number` | `1` | Pages either side of the current one. |
+| `previousLabel?` / `nextLabel?` | `string` | `'Previous'` / `'Next'` | Button labels and compact names. |
+| `getPageLabel?` | `(page: number) => string` | `Go to page N` | Page button names. |
+| `accessibilityLabel?` | `string` | `'Pagination'` | Names the landmark. |
+| `style?` | `StyleProp<ViewStyle>` | — | Row style. |

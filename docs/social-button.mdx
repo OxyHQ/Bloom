@@ -1,0 +1,64 @@
+---
+title: SocialButton
+description: A sign-in button for a third-party provider — 24 brands plus your own.
+order: 24
+---
+
+# SocialButton
+
+A "Continue with …" button for a third-party identity provider. The brand is **named**, not passed as artwork: `brand="google"` supplies the logo, the brand colour and the accessible label together, so a stack of these cannot drift out of sync.
+
+```tsx
+import { SocialButton } from '@oxyhq/bloom/social-button';
+
+<SocialButton brand="google" onPress={signInWithGoogle} />      // Continue with Google
+<SocialButton brand="github" appearance="white" />               // outlined, colour mark
+<SocialButton brand="apple" iconOnly />                          // circle, logo only
+<SocialButton brand="figma" href="https://example.com/auth/figma" />  // a link
+```
+
+Providers: `google`, `apple`, `github`, `gitlab`, `microsoft`, `x`, `facebook`, `linkedin`, `discord`, `slack`, `figma`, `notion`, `dropbox`, `spotify`, `twitch`, `reddit`, `tiktok`, `instagram`, `telegram`, `whatsapp`, `amazon`, `bitbucket`, `auth0`, `okta` — also exported as `SOCIAL_PROVIDERS`.
+
+## Appearance
+
+| `appearance` | Look |
+| --- | --- |
+| `colorful` (default) | A top-to-bottom gradient from the brand colour into a stop 0.04 darker and 0.01 more chromatic in OKLCH, white glyph. Hover brightens 6%, press darkens 5%. |
+| `black` | Solid near-black (`neutral-950`, hover 800, press 900), white label. |
+| `white` | The secondary button — surface, 1px border and its hover/press — with the provider's **real multi-colour mark**. What most sign-in screens use. |
+
+Google's `colorful` button is Bloom's **primary button**, gradients and states included, painted with the theme's accent rather than Google's own `#4285F4` (the two side by side read as a mistake). Its multi-colour G under `white` stays Google's own.
+
+Apple, GitHub and X draw their marks in near-black, which vanishes on a dark surface, so in dark mode the `white` appearance repaints those marks white — the treatment both publish for dark backgrounds. Amazon has no colour mark upstream; its `white` button uses the monochrome glyph tinted with the brand colour.
+
+## Size and shape
+
+| `size` | Height | Width | Padding | Glyph |
+| --- | --- | --- | --- | --- |
+| `medium` (default) | 36 | 300 | 12 | 18 |
+| `small` | 32 | 250 | 10 | 16 |
+
+The fixed width lines a column of providers up without a wrapper; `fullWidth` fills the container instead. `iconOnly` makes it square (a circle — every Bloom button-like control is a full pill). Label is `body-medium` and truncates.
+
+## Custom providers
+
+```tsx
+<SocialButton
+  brand="custom"
+  config={{ label: 'Acme SSO', color: '#7C3AED', icon: <AcmeLogo width={18} height={18} /> }}
+/>
+```
+
+`color` must be `#rrggbb` or `rgb()` to get the derived gradient; anything else paints flat. The icon is rendered as given — colour it yourself for the appearance.
+
+## Links
+
+`href` makes the button a link, since an OAuth start is a navigation. On web it renders a real `<a href>` (role `link`); on native a press runs `onPress` and then `Linking.openURL(href)`. A disabled button drops its `href`.
+
+## Accessibility
+
+The visible label names the button. With `iconOnly` there is no visible label, so the button is named `"Continue with <Brand>"` — override with `accessibilityLabel`. On web a keyboard user gets a 2px accent `:focus-visible` ring with a 2px offset. `disabled` dims the whole button to 60% and ignores presses.
+
+## Trademarks
+
+The logos are trademarks of their owners (Simple Icons CC0 / Bootstrap Icons MIT glyphs; SVG Logos CC0 colour marks). Several providers — Google and Apple in particular — publish sign-in button guidelines covering colour, clear space and wording; check them before shipping a production login.

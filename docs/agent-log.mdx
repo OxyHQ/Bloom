@@ -1,0 +1,101 @@
+---
+title: AgentLog
+description: The shared machinery behind a streaming agent transcript — the unit reveal, the curved tree guide, the in-progress shimmer and the reveal ticker.
+order: 66
+---
+
+# AgentLog
+
+Task List and Web Search are both "a line of work drawing itself down the page": rows arrive one at a time, each blurring in while a curved guide strokes itself alongside them. This family is that machinery, so every log built on it moves identically. It says nothing about what a row *says* — that is the consumer's.
+
+```tsx
+import {
+  AgentLogRow,
+  AgentLogShimmerText,
+  AgentLogWorkingRow,
+  useAgentLogMotion,
+  useAgentLogRevealTicker,
+} from '@oxyhq/bloom/agent-log';
+
+function Steps({ steps }: { steps: string[] }) {
+  const reduce = useAgentLogMotion();
+  const revealed = useAgentLogRevealTicker({ total: steps.length });
+  const busy = revealed < steps.length;
+  return (
+    <View>
+      <View role="list">
+        {steps.slice(0, revealed).map((label, i) => (
+          <AgentLogRow key={label} first={i === 0} last={i === revealed - 1} reduce={reduce}>
+            <Text variant="body-regular" style={{ paddingTop: 4, paddingBottom: 4, color: textSecondary }}>
+              {busy && i === revealed - 1 ? <AgentLogShimmerText>{label}</AgentLogShimmerText> : label}
+            </Text>
+          </AgentLogRow>
+        ))}
+      </View>
+      {busy && <AgentLogWorkingRow label="Working" reduce={reduce} />}
+    </View>
+  );
+}
+```
+
+## Exports
+
+| Export | What it is |
+| --- | --- |
+| `AgentLogReveal` | One unit blurring in, as a component. Use it for units that are not guide rows — a task header, a web-search heading. |
+| `AgentLogRow` | A guide row: a reveal with `role="listitem"`, a `position: relative` content box with a 16px left inset, and its `AgentLogRowConnector`. |
+| `AgentLogRowConnector` | The curved branch + trunk for one row. Rendered by `AgentLogRow`; exported for rows that build their own. |
+| `AgentLogGuideBridge` | Drops from a parent row's glyph into a nested list's trunk. |
+| `AgentLogWorkingRow` | The tail indicator while the log runs: `AgentThinking variant="stars"`, 4px above and below, off the guide. |
+| `AgentLogShimmerText` | A line still in progress. Nests inside your row's `Text`. |
+| `useAgentLogRevealTicker(options)` | Paces units, returns how many are revealed. |
+| `useAgentLogMotion()` | The system reduced-motion flag, read once for a whole log. |
+| `AGENT_LOG_SOFT_EASE` | `cubic-bezier(0.22, 1, 0.36, 1)` as a reanimated easing. |
+| `AGENT_LOG_UNIT_MOTION` | `{ heightMs: 380, revealMs: 420, fadeMs: 440, liftPx: 4, blurPx: 6, fadePx: 22 }`. |
+| `AGENT_LOG_BRANCH` | `{ y: 14, radius: 6, width: 12 }` — the elbow geometry. |
+| `AGENT_LOG_ROW_INDENT` | `16` — the row's left inset. |
+
+Every component takes an optional `reduce`; omitted, it reads the system setting. Pass it once from the log root so every unit agrees.
+
+## The reveal
+
+A unit lands from opacity 0, a 4px lift and 6px of blur, resolving over 420ms on the soft ease; its height grows from 0 over 380ms — a touch shorter, so the container has settled before the words finish sharpening. On web a 22px soft bottom edge (`mask-image`) resolves over 440ms, so a growing row is always faintest exactly where it is being clipped. When it settles, the mask and blur are removed and the height returns to `auto` (a nested list growing later still grows the row).
+
+- **`style` lands on the CONTENT box, inside the clip.** The clip measures that box to grow to it; put padding there.
+- **The reveal plays once, at mount.** A unit mounted under `reduce` never animates afterwards. Replay by remounting (`key`).
+- **Blur and mask are web-only.** React Native has no cross-platform `filter: blur` or `mask-image`; native keeps the height, opacity and lift.
+- **Settled styles are written as `none`, not omitted** — reanimated's web path never clears a style key a later frame leaves out, so an omitted mask would stay stuck at its last in-flight value.
+
+## The guide
+
+Drawn per row rather than as one measured SVG, so rows of variable, animating height need no measurement. Two pieces, because one stroke cannot fork:
+
+- **Branch** — `M0.5 0 V8 Q0.5 14 6.5 14 H11.5`, an SVG path drawing itself (dash offset over its measured length, 22.74). The elbow sits 14px from the row's top — half the 20px line plus the row's 4px top padding — so a wrapping label still branches at its first line.
+- **Trunk** — a 1px bar from the elbow (top 8) to the row's bottom, scaling from its top edge. The `last` row omits it, so the guide ends on the corner.
+
+The guide draws as ONE pen, so pieces run in sequence at ~160px/s, `linear`: when a row arrives, the row above's trunk draws first (120ms), then the new branch (140ms) waits 120ms and picks the stroke up where it left off. `first` rows have nothing to wait for. An eased draw would slow at every junction and give the handoff away.
+
+Colour is `foreground-icon-quaternary`: neutral-300 light, neutral-700 dark.
+
+### Nested lists
+
+A second level indents so its trunk sits under the parent's glyph, but that trunk would start at the top of the nested row — in mid-air. Put an `AgentLogGuideBridge` inside a `position: relative` wrapper directly above the nested list, with the same `offset` as the list's left margin, and give the nested list's first row `first={false}` so its branch waits for the bridge:
+
+```tsx
+<View style={{ position: 'relative', marginTop: 2 }}>
+  <AgentLogGuideBridge height={6} offset={8} reduce={reduce} />
+  <View role="list" style={{ marginLeft: 8 }}>
+    {files.map((f, i) => (
+      <AgentLogRow key={f} first={false} last={i === files.length - 1} reduce={reduce}>…</AgentLogRow>
+    ))}
+  </View>
+</View>
+```
+
+## The ticker
+
+`useAgentLogRevealTicker({ total, run, stepInterval = 850, startDelay = 320, revealed, delayFor, onComplete })` reveals one unit per tick and fires `onComplete` once when the last lands (guarded by a ref, so an inline callback cannot fire it twice). `run: false` pauses; `delayFor(index)` paces per unit; `revealed` makes it controlled — clamped to `[0, total]`, no timer. Real agent steps do not take equal time: drive `revealed` from real events as soon as you have them.
+
+## Shimmer
+
+`AgentLogShimmerText` draws text-secondary with a text-primary highlight travelling across it every 3.4s (web, `background-clip: text`, `color: transparent !important` because react-native-web writes the colour inline). It is a bare React Native `Text` so it inherits the typography of the `Text` it is nested in — standalone, it has no type ramp. Native and reduced motion show flat text-secondary.

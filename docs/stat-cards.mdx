@@ -1,0 +1,74 @@
+---
+title: StatCards
+description: KPI stat cards — a compact icon/value/delta row, or gradient tiles with an info tooltip and a comparison footer band.
+order: 65
+---
+
+# StatCards
+
+Dashboard KPI cards, in two looks:
+
+- **`plain`** — a 132px card: icon tile, label, value and a delta `Chip`.
+- **`footer`** — a gradient icon tile (plus an optional info glyph with a tooltip), a display-size value, and an inner footer band carrying a caption and a delta pill.
+
+```tsx
+import { StatCards } from '@oxyhq/bloom/stat-cards';
+import { RiGroupLine, RiCoinsFill } from '@oxyhq/bloom/icons';
+
+<StatCards
+  stats={[
+    { icon: RiGroupLine, label: 'Customers', value: '14,592', delta: '+5.3%', deltaColor: 'lime' },
+  ]}
+/>
+
+<StatCards
+  variant="footer"
+  stats={[
+    {
+      icon: RiCoinsFill,
+      label: 'Total revenue',
+      value: '$152,313.92',
+      delta: '16%',
+      deltaColor: 'lime',
+      tone: 'blue',
+      hint: 'Gross revenue across every channel this month.',
+    },
+  ]}
+/>
+```
+
+Values and deltas are pre-formatted strings — the card never formats numbers. `icon` is a component (`RiGroupLine`), not an element; the card sizes and colours it. `StatCard` renders one card on its own, for a layout that is not a grid.
+
+## Grid
+
+The grid follows the WINDOW width, using Tailwind's breakpoints:
+
+| variant | columns |
+|---|---|
+| `plain` | 2, then 4 from 1024px |
+| `footer` | 1, 2 from 640px, 4 from 1280px |
+
+`columns={2}` stops at two; `columns={1}` pins a single column. Cards in a row stretch to one height (CSS grid rows do), and a short last row keeps the grid's column widths. `count` renders the first N stats.
+
+## Geometry
+
+| part | plain | footer |
+|---|---|---|
+| card | radius 16, padding 16, 132 tall | radius 16, padding 8 |
+| icon | tile radius 6 padding 6, icon 20 | 40 tile radius 10, gradient, icon 20 white |
+| label → value | 14/20 medium → 2 → 24/34 medium | 14/20 medium (truncates) → 2 → 32/44 medium, tabular |
+| delta | `Chip` (medium) | pill: padding 2 / 8 right / 4 left, arrow-circle 16, 14/20 medium tabular |
+| band | — | radius 10, padding 6 / 6 / 10 left, `shadow-card` |
+
+## Colours
+
+Surfaces are built on Bloom's ramps (`button/shared`): the card is `neutral-100` / `neutral-900`, the icon tile and band are the card colour (`white`) in light and `neutral-800` (at 60% over the card, for the band) in dark.
+
+- **Deltas.** `lime` / `rose` / `neutral`. The plain card's `Chip` reads `success` / `error` / `default`. The footer pill uses a status recipe on the theme's `success` and `negative` ramps: light `200` fill with `800` text, dark `950` at 60% over the band with `500` text.
+- **Tile tones.** `blue` is the accent ramp, `orange` the `warning` ramp, `sky` the `info` ramp and `emerald` the `success` ramp — so a preset that moves a status colour moves the tile with it. `purple` and `pink` have no theme role: they keep Tailwind's offset from `blue-500` (lightness step, chroma ratio, hue distance), measured from the theme's `primary`. Stops are fixed (`500 → 600`, `orange`/`sky` `400 → 500`), always opaque (react-native-svg drops alpha in `stopColor`).
+
+## Info tooltip
+
+`hint` adds a 20px info glyph (named `` `About ${label}` ``, or `hintLabel`). The tooltip opens on hover after 200ms, on keyboard focus, and on press — a glyph this small reads as a button and gets tapped.
+
+**Hazard (web):** the web `Tooltip` mounts a full-page dismiss layer over its trigger while open, so the trigger receives a hover-out the moment the bubble appears, with the pointer still on it. Closing on that event made the tooltip flash open and shut. On web the card instead tracks `pointermove` while hovered and closes when the pointer leaves the glyph's box.

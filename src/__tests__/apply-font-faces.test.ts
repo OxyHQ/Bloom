@@ -57,7 +57,7 @@ describe('applyFontFaces (web)', () => {
     const cssText = document.getElementById('bloom-fonts')?.textContent ?? '';
     expect(cssText).toMatch(/font-family: 'BlomusModernus'/);
     expect(cssText).toMatch(/font-family: 'Inter'/);
-    expect(cssText).toMatch(/font-family: 'Geist Mono'/);
+    expect(cssText).toMatch(/font-family: 'JetBrains Mono'/);
   });
 
   // The whole point of `font-urls.web.ts` is that the browser fetches and

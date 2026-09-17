@@ -26,7 +26,7 @@ export type TabBarItem = {
   /** Text under the icon; fades out and is clipped when the bar minimizes. */
   label: string;
   /**
-   * The glyph, as a Bloom icon element (`<Icons.Home_Stroke2_Corner0_Rounded />`)
+   * The glyph, as a Bloom icon element (`<Icons.RiHomeLine />`)
    * or any node. Every `@oxyhq/bloom/icons` export carries its full style and
    * corner suffix; a shortened `Home` is not an export, and a name that does not
    * exist is simply `undefined`, which React then rejects as an invalid element

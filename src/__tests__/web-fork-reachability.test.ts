@@ -12,8 +12,8 @@ import { dirname, join, relative, resolve } from 'node:path';
  *
  * A fork nobody names is therefore silently absent for most of the fleet, with
  * no error anywhere: the native file loads and simply does less. Measured
- * before this gate existed: `prompt-input/Textarea.web.tsx` (the only file that
- * attaches a DOM paste listener, i.e. all of `onImagePaste`) and both
+ * before this gate existed: the (since removed) `prompt-input/Textarea.web.tsx`
+ * (the only file that attached a DOM paste listener) and both
  * `theme/{color,seed}-scope/index.web.tsx` (which write the scoped CSS custom
  * properties Tailwind utilities read) were unreachable from any `browser`
  * condition. `./prompt-input` and `./theme` had no `browser` condition at all.
@@ -217,7 +217,7 @@ describe('web forks are reachable off Metro', () => {
 
   it('gives every family that carries a web fork a browser condition on its own subpath', () => {
     // Reachability through the ROOT web barrel is not enough: a consumer
-    // importing `@oxyhq/bloom/prompt-input` resolves that subpath's own
+    // importing `@oxyhq/bloom/select` resolves that subpath's own
     // conditions, so a family whose only route to its fork is `src/index.web.ts`
     // serves the native build to every direct subpath import.
     const offenders: string[] = [];
@@ -243,7 +243,7 @@ describe('web forks are reachable off Metro', () => {
 
   it('gives every subpath whose OWN entry file is forked a browser condition', () => {
     // The rule above maps a fork to its FAMILY, which is the right grain for
-    // `prompt-input/Textarea.web.tsx`. It is the wrong grain for a subpath that
+    // `select/Select.web.tsx`. It is the wrong grain for a subpath that
     // publishes a file from inside a family: `./preset-vars` resolves
     // `src/theme/preset-vars.ts`, so forking that file would be answered by
     // `./theme`'s browser condition while `./preset-vars` — the specifier a

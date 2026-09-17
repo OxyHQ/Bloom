@@ -33,6 +33,24 @@ import { Slider } from '@oxyhq/bloom/slider';
 | `min` / `max`       | the range                                                  |
 | `step`              | the granularity; omit for continuous                       |
 | `disabled`          | dims and ignores gestures                                  |
+| `label`             | a visible label above the track; also the fallback name    |
+| `showTooltip`       | the value bubble above the thumb (default `true`)          |
+| `formatValue`       | the text in the bubble                                     |
+
+`RangeSlider` takes the same props with `value: [number, number]` (and `onValueChange` / `onSlidingComplete` receiving the pair), `formatValue(value, index)`, and `thumbLabels` — the accessible name of each thumb, default `['Minimum', 'Maximum']`. The thumbs cannot pass each other; the fill runs between them; each carries its own bubble, and each is its own `adjustable` control with its own value.
+
+## What it looks like
+
+The slider, in Bloom's colours.
+
+- **Track region** 32 tall, with 32 more reserved above it while `showTooltip` is on (the default — pass `showTooltip={false}` where the bubble would crowd a row).
+- **Rail** 6 tall, full pill, neutral-200 with an inset shade (dark: neutral-800); hovering the track darkens it a stop.
+- **Fill** an accent-500 → accent-600 left-to-right gradient with a white top highlight.
+- **Thumb** 20, white, 1px neutral-200 border, a soft drop plus inset highlight, holding an 8px accent dot. Hover darkens the border; dragging turns it accent with an accent-tinted shadow and brightens the dot. The thumb does not scale on press — no Bloom control scales on press.
+- **Bubble** 28 tall, min 32 wide, radius 8, `caption-1-medium` text, with an 8px arrow whose tip sits 4.5px below the bubble; it lifts 2px with a deeper shadow while dragging or focused. A press focuses the thumb, so the bubble stays lifted after the drag until focus moves on.
+- **Label** `body-medium`, 8px above the track.
+- **Cursor** (web) `grab` over a thumb, `grabbing` while dragging, `not-allowed` when disabled.
+- **Disabled** 50% opacity. Keyboard focus rings the thumb: a 2px accent ring outside a 2px white offset (`ring-offset-2`, white in both modes).
 
 ## The two callbacks are the whole API
 
@@ -68,8 +86,6 @@ throwing; an empty or whitespace-only string counts as missing, because
   into and is hard to land on a specific value.
 - **There are fewer than about five positions.** Use a
   [`SegmentedControl`](/docs/bloom/main/segmented-control) or a
-  [`Radio`](/docs/bloom/main/radio) group — they name the options. A
-  [`LevelPicker`](/docs/bloom/main/level-picker) is the third answer: a rail
-  with named stops, for a short scale that still reads as a continuum.
+  [`Radio`](/docs/bloom/main/radio) group — they name the options.
 - **The range is huge and non-linear.** A slider over 1–1,000,000 gives most of
   its travel to values nobody wants.

@@ -7,7 +7,7 @@ import { Button } from '../button';
 import { Text } from '../typography';
 
 const meta: Meta = {
-  title: 'Overlays/Surfaces',
+  title: 'Base/Surfaces',
 };
 
 export default meta;

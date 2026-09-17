@@ -1,0 +1,53 @@
+---
+title: Steps card
+description: A medical dashboard steps card — a week of rounded bars over a neutral track with a hover outline, a count-up headline and a week pill.
+order: 49
+---
+
+# Steps card
+
+`StepsCard` rebuilds recharts' `BarChart` in react-native-svg on recharts' own bar geometry.
+
+```tsx
+import { StepsCard } from '@oxyhq/bloom/chart-cards';
+
+<StepsCard
+  data={[{ label: 'Mon', value: 5600 }, { label: 'Tue', value: 2200 }, /* … */]}
+  range="29 Jun - 5 Jul"
+  onPrevRange={() => setWeek((w) => w - 1)}
+  onNextRange={() => setWeek((w) => w + 1)}
+/>
+```
+
+## Props
+
+| Prop | Default | |
+|---|---|---|
+| `data` | — | `{ label, value }[]`, one bar each |
+| `title` | `"Steps"` | header label at rest |
+| `getPointTitle` | `Mon` → `Monday` | header label while a day is hovered |
+| `headline` | sum of `data` | |
+| `totalSuffix` / `pointSuffix` | `"total steps"` / `"steps"` | caption after the number |
+| `format` | en-US grouping | |
+| `range` | — | the pill's label; no pill when omitted |
+| `onPrevRange` / `onNextRange` | — | with either, the chevrons become buttons and the label rolls on change |
+| `color` / `activeColor` | chart-1 (teal) 400 / 500 | |
+| `activeIndex` / `onActiveIndexChange` | tracked | |
+| `accessibilityLabel` | a summary of every day | names the plot (`role="img"`) |
+
+## Geometry
+
+| | |
+|---|---|
+| card | 330 tall, radius 20, padding 10, gap 16 — the medical cards' shell (`MEDICAL_CARD_*`) |
+| header | 6px further in (16 from the edge): label `body-medium` text-secondary, 2px, number `title-1-medium` tabular with the suffix `caption-1-medium` text-secondary 4px after it on its baseline; pill on the right |
+| pill | `WeekRangePill`: 151 × 32, radius 10, 1px `border-button`, `background-primary`, `shadow-xs`, padding 4, 16px round-capped chevrons (16px buttons, radius 3, `background-secondary-hover` over 150ms) |
+| plot | the card's 10px inset stretched 5.5px past it on both sides; 4px top margin, 26px label row |
+| bars | band = width ÷ days; recharts' numeric `barCategoryGap` 4.5 on each side, width rounded, capped at 50 and centred; all four corners radius 10 (clamped to half the bar); domain `[0, nice max]` from recharts' default five ticks |
+| track | full plot height behind every bar, radius 10, `chart-track` |
+| hover | 2px `chart-cursor` outline 3px outside the track, radius 13, fading in over 150ms; the bar goes to its `-active` step |
+| labels | 12px text-secondary, centred on the band, recharts' `y + tickSize 6 + tickMargin 8` |
+
+## Interaction and motion
+
+Hovering (web) or pressing and scrubbing (native) inside the plot picks the day whose band is under the pointer; over the label row it clears. The header number counts up to the hovered day and replays the `animate-number-fade`. Bars grow from the base over 450ms on mount and morph on a data change (`useChartProgress`). The week label rolls: the old label lifts 10px and fades while the new one rises in, 220ms `ease-out`, clipped. Reduced motion snaps all of it.

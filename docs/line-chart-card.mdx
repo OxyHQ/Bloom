@@ -1,0 +1,56 @@
+---
+title: Line chart card
+description: A dashboard revenue line — a line over a soft gradient, a Weekly / Monthly / Yearly switcher, a count-up headline and a pulsing active dot, drawn with react-native-svg on recharts' geometry.
+order: 41
+---
+
+# Line chart card
+
+`LineChartCard` is the "Revenue" card on the home dashboard. It renders on native and web from the shared chart-card primitives (`src/chart-cards/README.md`).
+
+```tsx
+import { LineChartCard } from '@oxyhq/bloom/chart-cards';
+
+<LineChartCard
+  ranges={[
+    { id: 'weekly', label: 'Weekly', headline: 18240, delta: 0.094, data: weekly },
+    { id: 'monthly', label: 'Monthly', headline: 64820, delta: 0.126, data: monthly },
+    { id: 'yearly', label: 'Yearly', headline: 512400, delta: -0.032, data: yearly },
+  ]}
+/>
+```
+
+`data` is `{ label, value }[]`. With `ranges` the header carries a `SegmentedControl` (a `radiogroup` named `rangesLabel`, default `"<title> period"`); each range overrides `data`, `headline` and `delta`. Without ranges there is no switcher.
+
+## Props
+
+| Prop | Default | |
+|---|---|---|
+| `shape` | `'curved'` | `'curved'` monotone spline, `'sharp'` straight segments |
+| `title` | `"Revenue"` | header label at rest |
+| `data` / `headline` / `delta` | — / sum / none | points, resting headline, delta ratio (`0.094` → `+9.4%`) |
+| `ranges`, `defaultRange`, `onRangeChange`, `rangesLabel` | — | the switcher |
+| `getPointTitle` | `Jul` → `July` | header label for the hovered point |
+| `format` / `formatAxisValue` | `$18,240` / `$6K` | headline / Y ticks |
+| `color`, `activeColor` | chart-2 | gradient fill / line + dot |
+| `activeIndex` / `onActiveIndexChange` | tracked | controlled hover (`null` = none) |
+| `accessibilityLabel` | `"Revenue line chart"` | names the plot (`role="img"`) |
+
+## Geometry and motion
+
+| | |
+|---|---|
+| card | 329 tall, radius 16, padding 16/16/12, gap **24** |
+| header | ≥ `sm`: headline + switcher on one row 2px apart; below: stacked, 12px |
+| plot | margin 4/6/0/0, Y axis 44 wide, domain `[0, max × 1.1]`, 4 ticks (recharts `getTickValuesFixedDomain`), no grid |
+| area | curve closed on the base, gradient 35% → 0% |
+| line | 2.5px, `-active` |
+| cursor | 1px dashed `4 4`, chart-cursor |
+| active dot | r 5 with a 3px card-coloured ring; halo r 5 → 13, 35% → 0, every 1.4s |
+
+Hover (web) / press-and-scrub (native) swaps the header to the point and hides the delta chip (hidden, not removed, so the row does not reflow). Over the axes the point stays — the handler only sets, not clears. The series reveals left to right over 450ms on mount and morphs on a period change; the headline counts up over 320ms with a 220ms fade.
+
+## Hazards
+
+- **The halo is a frame clock, not SMIL.** SVG's `<animate>` isn't implemented by react-native-svg; `PulsingDot` re-renders itself every frame while a point is active (only itself). Under reduced motion it holds r 5 at 30%.
+- **The phone header keeps the switcher's track padding.** Dropping it below `sm` would shrink `SegmentedControl`'s thumb, which pins 4px inside the track. The selected segment sits 4px right of the heading on phones.

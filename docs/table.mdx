@@ -1,0 +1,81 @@
+---
+title: Table
+description: A data table — header surface, hairlines between rows, two densities and sortable columns.
+order: 12
+---
+
+# Table
+
+A data table, geometry to the pixel; colours come from the same Bloom-derived ramps as `Button` (`src/button/shared.ts`). The table has no radius or outer border of its own — wrap it in the surface that owns those.
+
+```tsx
+import { Table, TableHeader, TableColumn, TableBody, TableRow, TableCell } from '@oxyhq/bloom/table';
+
+<Table accessibilityLabel="Customers">
+  <TableHeader>
+    <TableColumn width={240} onSort={toggleName} sortDirection={nameSort}>Name</TableColumn>
+    <TableColumn>Role</TableColumn>
+    <TableColumn align="end">Status</TableColumn>
+  </TableHeader>
+  <TableBody emptyState="No customers match your filters.">
+    {rows.map((row) => (
+      <TableRow key={row.id} selected={selection.has(row.id)}>
+        <TableCell>{row.name}</TableCell>
+        <TableCell>{row.role}</TableCell>
+        <TableCell>{row.status}</TableCell>
+      </TableRow>
+    ))}
+  </TableBody>
+</Table>
+```
+
+## Geometry
+
+| | `md` (default) | `sm` |
+|---|---|---|
+| cell inset (vertical / horizontal) | 10 / 12 | 6 / 10 |
+| text | `TYPE_SCALE['body-medium']` (14/20 medium) in Inter | `['body-2-medium']` (13/18 medium) |
+| body row | 40 + 1px hairline | 30 + 1px hairline |
+| header row | 40, hairline above and below (44 with a sort chevron) | 30 (36) |
+
+Hairlines sit BETWEEN body rows only; whatever follows the table draws its last edge.
+
+On web, cells ease their padding and type over 200ms when `size` changes, and a row's selection wash fades over 150ms.
+
+| Surface | light | dark | Token |
+|---|---|---|---|
+| header | neutral-100 | neutral-900 | `background-secondary-default` |
+| hairlines | neutral-200 | neutral-800 | `separator-border` |
+| header text | neutral-400 | neutral-600 | `text-tertiary` |
+| cell text | `text` | `text` | `text-primary` |
+| sorted chevron | neutral-500 | neutral-500 | `text-secondary` |
+| selected row | neutral-100 | neutral-900 | `background-secondary-default` |
+
+## Columns
+
+React Native has no table layout, so HTML's automatic column sizing cannot be ported. Every row is a flex row: a column takes a fixed `width`, or a `flex` share (default `1`) with an optional `minWidth`. Write the layout once on `TableColumn` — `Table` applies it to the cell at the same index in every row. A `TableCell` may override its own `width`/`flex`/`align`.
+
+`minWidth` on `Table` makes it scroll horizontally when its container is narrower (an `overflow-x-auto` wrapper).
+
+## Sorting and selection
+
+`onSort` turns a header into a button — label plus a 24px sort chevron, rotated for `'ascending'`, dimmed for `'none'` — and puts `aria-sort` on the column header. Sorting the data is the caller's job.
+
+`selected` paints a row with the header surface and announces it (`aria-selected` on web, `accessibilityState.selected` on native). Leave it undefined on a table without selection so rows announce nothing.
+
+Roles are ARIA's table set (`table` › `rowgroup` › `row` › `columnheader` | `cell`), not react-aria's `grid`: there is no keyboard cell navigation to announce.
+
+## Props
+
+| Prop | Type | Default | Description |
+|------|------|---------|-------------|
+| `Table.size?` | `'md' \| 'sm'` | `'md'` | Density for every row. |
+| `Table.accessibilityLabel?` | `string` | — | Names the table. |
+| `Table.minWidth?` | `number` | — | Scrolls horizontally below this width. |
+| `Table.containerStyle?` | `StyleProp<ViewStyle>` | — | The scroll container. |
+| `TableColumn.width?` / `flex?` / `minWidth?` / `align?` | layout | `flex: 1` | Column layout, applied to every row. |
+| `TableColumn.onSort?` | `() => void` | — | Makes the header a sort button. |
+| `TableColumn.sortDirection?` | `'ascending' \| 'descending' \| 'none'` | `'none'` | Current sort. |
+| `TableBody.emptyState?` | `ReactNode` | — | Shown in a 160px band with no rows. |
+| `TableRow.selected?` | `boolean` | — | Selected paint and state. |
+| `TableCell.width?` / `flex?` / `minWidth?` / `align?` | layout | column's | Per-cell override. |

@@ -1,21 +1,169 @@
-import React, { memo } from 'react';
+import React, { memo, useEffect, useMemo, useRef, useState } from 'react';
 import {
+  Animated,
+  Easing,
+  Image,
+  Platform,
   Pressable,
   StyleSheet,
-  Text,
   View,
   type ViewStyle,
 } from 'react-native';
+import { useReducedMotion } from 'react-native-reanimated';
 
 import { Avatar } from '../avatar';
-import { Card } from '../card';
-import { VerifiedCheck } from '../icons/VerifiedCheck';
+import { mixColor, resolveButtonRamps } from '../button/shared';
+import {
+  MENU_MOTION_BLUR,
+  MENU_MOTION_DURATION,
+  MENU_MOTION_EASING,
+  MENU_MOTION_SCALE_FROM,
+} from '../floating/constants';
+import { resolveMenuPalette } from '../floating/menu-palette';
+import { RiVerifiedBadgeFill } from '../icons/remix/RiVerifiedBadgeFill';
+import { useImageResolver } from '../image-resolver/context';
+import { SUPPORTS_NATIVE_DRIVER } from '../styles/native-driver';
+import type { WebCssStyle } from '../styles/web-view-style';
+import type { Theme } from '../theme/types';
 import { useTheme } from '../theme/use-theme';
-import { fontSize, space } from '../styles/tokens';
+import { Text } from '../typography';
 import type { UserHoverCardProps } from './types';
 
+/**
+ * A profile hover card, built from Bloom's existing component vocabulary:
+ *
+ *   panel    the floating menu surface (`menu-palette.ts`): radius 16, 1px
+ *            border/button/default, background/primary, `shadow-dropdown`;
+ *            280 wide, p15 — 248 of inner width
+ *   cover    optional, full-bleed 88 tall, clipped to the panel's inner radius
+ *            (15), background/tertiary under the image (the ai-profile card)
+ *   avatar   48, the ported `Avatar` (initials disc when no photo); over a cover
+ *            it wears a 3px ring of the panel colour and overlaps the edge by half
+ *   action   pinned top-right, centred on the avatar's visible band
+ *   name     headline-medium text-primary + 16px `RiVerifiedBadgeFill` accent-500
+ *   handle   body-regular text-secondary, 2 under the name
+ *   bio      body-regular text-primary, three lines
+ *   stats    the ai-profile stat tiles: flex-1, radius 10, p10,
+ *            background/secondary, value body-medium over label body-2-medium
+ *            text-secondary, 8 apart
+ *   rhythm   12 between blocks (the notification card's gap)
+ *   motion   the menu entrance: 150ms ease-out from opacity 0 / scale 0.95 /
+ *            blur 2px (web), growing from the top edge. No press scale.
+ *
+ *   token                        light          dark
+ *   background/primary           card           neutral-800
+ *   border/button/default        neutral-200    neutral-700
+ *   background/secondary (tile)  neutral-100    neutral-900
+ *   background/tertiary (cover)  neutral-200    neutral-700
+ *   skeleton block               neutral-100    neutral-700 @60% over 800
+ *   text-secondary               neutral-500    neutral-500
+ */
+
+const WIDTH = 280;
+const PADDING = 15;
 const AVATAR_SIZE = 48;
+const AVATAR_RING = 3;
+const COVER_HEIGHT = 88;
+const GAP = 12;
 const VERIFIED_SIZE = 16;
+const RADIUS = 16;
+const STAT_RADIUS = 10;
+
+const IS_WEB = Platform.OS === 'web';
+const MENU_EASING = Easing.bezier(...MENU_MOTION_EASING);
+
+interface HoverCardPalette {
+  surface: string;
+  border: string;
+  shadow: string;
+  text: string;
+  textSecondary: string;
+  tile: string;
+  cover: string;
+  skeleton: string;
+  verified: string;
+}
+
+export function resolveUserHoverCardPalette(theme: Theme): HoverCardPalette {
+  const menu = resolveMenuPalette(theme);
+  const { accent, neutral: n } = resolveButtonRamps(theme);
+  const dark = theme.isDark;
+  return {
+    surface: menu.surface,
+    border: menu.border,
+    shadow: menu.shadow,
+    text: menu.text,
+    textSecondary: menu.textSecondary,
+    tile: dark ? n[900] : n[100],
+    cover: dark ? n[700] : n[200],
+    skeleton: dark ? mixColor(n[800], n[700], 0.6) : n[100],
+    verified: accent[500],
+  };
+}
+
+function isUrl(value: string): boolean {
+  return (
+    value.startsWith('http://') ||
+    value.startsWith('https://') ||
+    value.startsWith('data:') ||
+    value.startsWith('blob:') ||
+    value.startsWith('file:')
+  );
+}
+
+/** Entrance only: the card is mounted when it is shown and unmounted to hide. */
+function useEntrance(enabled: boolean) {
+  const reducedMotion = useReducedMotion();
+  const animate = enabled && !reducedMotion;
+  const progress = useRef(new Animated.Value(animate ? 0 : 1)).current;
+  // Once the entrance lands the animated style is dropped, so a settled card is
+  // not left on a `blur(0px)` filter layer (FloatingPanel rests on `none` too).
+  const [settled, setSettled] = useState(false);
+
+  useEffect(() => {
+    if (!animate) return;
+    const animation = Animated.timing(progress, {
+      toValue: 1,
+      duration: MENU_MOTION_DURATION,
+      easing: MENU_EASING,
+      // The blur is a CSS filter and only exists on web, where there is no
+      // native driver anyway.
+      useNativeDriver: SUPPORTS_NATIVE_DRIVER,
+    });
+    animation.start((result) => {
+      if (result?.finished !== false) setSettled(true);
+    });
+    return () => animation.stop();
+    // Mount-only, like the panel's own enter.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  return useMemo(() => {
+    if (!animate || settled) return null;
+    const style: Record<string, unknown> = {
+      opacity: progress,
+      transform: [
+        {
+          scale: progress.interpolate({
+            inputRange: [0, 1],
+            outputRange: [MENU_MOTION_SCALE_FROM, 1],
+          }),
+        },
+      ],
+    };
+    if (IS_WEB) {
+      style.filter = progress.interpolate({
+        inputRange: [0, 1],
+        outputRange: [`blur(${MENU_MOTION_BLUR}px)`, 'blur(0px)'],
+      });
+    }
+    return style as Animated.WithAnimatedObject<WebCssStyle>;
+  }, [animate, settled, progress]);
+}
+
+function SkeletonBlock({ style, color }: { style: ViewStyle; color: string }) {
+  return <View style={[style, { backgroundColor: color }]} />;
+}
 
 const UserHoverCardComponent: React.FC<UserHoverCardProps> = ({
   avatar,
@@ -25,6 +173,10 @@ const UserHoverCardComponent: React.FC<UserHoverCardProps> = ({
   bio,
   stats,
   verified = false,
+  cover,
+  coverVariant,
+  loading = false,
+  animateIn = true,
   onPressProfile,
   action,
   footer,
@@ -32,32 +184,136 @@ const UserHoverCardComponent: React.FC<UserHoverCardProps> = ({
   testID,
 }) => {
   const theme = useTheme();
+  const palette = useMemo(() => resolveUserHoverCardPalette(theme), [theme]);
+  const resolver = useImageResolver();
+  const entrance = useEntrance(animateIn);
 
-  // Layout only — the chrome (card background, hairline border, `shadow-m`, the
-  // `radius-16` rung) is `Card`'s. `overflow: 'visible'` restores the RN default
-  // that `Card` overrides: this card clips nothing, and leaving it hidden would
-  // change what an Android elevation draws under a rounded, clipped view.
-  const layoutStyle: ViewStyle = {
-    padding: space.lg,
-    width: 280,
+  const hasCover = typeof cover === 'string' && cover.length > 0;
+  const coverUri = hasCover
+    ? isUrl(cover) ? cover : resolver?.(cover, coverVariant)
+    : undefined;
+
+  const cardStyle: WebCssStyle = {
+    width: WIDTH,
+    paddingTop: PADDING,
+    paddingBottom: PADDING,
+    paddingLeft: PADDING,
+    paddingRight: PADDING,
+    borderRadius: RADIUS,
+    borderWidth: 1,
+    borderColor: palette.border,
+    backgroundColor: palette.surface,
+    boxShadow: palette.shadow,
+    // The card clips nothing: the `footer` slot is documented as unclipped, and
+    // the cover clips itself to the inner radius.
     overflow: 'visible',
+    transformOrigin: 'top',
   };
 
+  // Where the avatar's visible band sits, so the action can centre on it.
+  const avatarOuter = hasCover ? AVATAR_SIZE + AVATAR_RING * 2 : AVATAR_SIZE;
+  const avatarOverlap = hasCover ? avatarOuter / 2 : 0;
+  const actionZone: ViewStyle = hasCover
+    ? { top: COVER_HEIGHT + 6, height: avatarOuter - avatarOverlap }
+    : { top: PADDING, height: AVATAR_SIZE };
+
+  const coverView = hasCover ? (
+    <View
+      testID={testID ? `${testID}-cover` : undefined}
+      style={[styles.cover, { backgroundColor: palette.cover }]}
+    >
+      {coverUri ? (
+        <Image
+          source={{ uri: coverUri }}
+          style={styles.coverImage}
+          resizeMode="cover"
+          accessibilityIgnoresInvertColors
+        />
+      ) : null}
+    </View>
+  ) : null;
+
+  const avatarView = (
+    <View
+      style={[
+        styles.avatarWrap,
+        hasCover
+          ? {
+              marginTop: -avatarOverlap,
+              padding: AVATAR_RING,
+              borderRadius: avatarOuter / 2,
+              backgroundColor: palette.surface,
+            }
+          : null,
+      ]}
+    >
+      {loading ? (
+        <SkeletonBlock
+          color={palette.skeleton}
+          style={{ width: AVATAR_SIZE, height: AVATAR_SIZE, borderRadius: AVATAR_SIZE / 2 }}
+        />
+      ) : (
+        <Avatar
+          source={avatar ?? undefined}
+          variant={variant}
+          name={displayName}
+          size={AVATAR_SIZE}
+        />
+      )}
+    </View>
+  );
+
+  if (loading) {
+    return (
+      <Animated.View
+        testID={testID}
+        aria-busy
+        accessibilityState={{ busy: true }}
+        style={[cardStyle, entrance, style]}
+      >
+        {coverView}
+        {avatarView}
+        <View style={styles.identityText}>
+          <SkeletonBlock color={palette.skeleton} style={styles.skeletonName} />
+          <SkeletonBlock color={palette.skeleton} style={styles.skeletonHandle} />
+        </View>
+        <View style={styles.bio}>
+          <SkeletonBlock color={palette.skeleton} style={styles.skeletonLine} />
+          <SkeletonBlock color={palette.skeleton} style={styles.skeletonLineShort} />
+        </View>
+        <View style={styles.statsRow}>
+          {[0, 1].map((key) => (
+            <View key={key} style={[styles.stat, { backgroundColor: palette.tile }]}>
+              <SkeletonBlock
+                color={theme.isDark ? palette.skeleton : palette.cover}
+                style={styles.skeletonStatValue}
+              />
+              <SkeletonBlock
+                color={theme.isDark ? palette.skeleton : palette.cover}
+                style={styles.skeletonStatLabel}
+              />
+            </View>
+          ))}
+        </View>
+      </Animated.View>
+    );
+  }
+
   const identity = (
-    <View style={styles.identityRow}>
-      <Avatar source={avatar ?? undefined} variant={variant} name={displayName} size={AVATAR_SIZE} />
+    <View>
+      {avatarView}
       <View style={styles.identityText}>
         <View style={styles.nameRow}>
           <Text
+            variant="headline-medium"
             numberOfLines={1}
-            style={[styles.displayName, { color: theme.colors.text }]}
+            style={[styles.displayName, { color: palette.text }]}
           >
             {displayName}
           </Text>
           {verified && (
-            <VerifiedCheck
-              size="sm"
-              fill={theme.colors.primary}
+            <RiVerifiedBadgeFill
+              fill={palette.verified}
               width={VERIFIED_SIZE}
               height={VERIFIED_SIZE}
               style={styles.verifiedBadge}
@@ -66,8 +322,9 @@ const UserHoverCardComponent: React.FC<UserHoverCardProps> = ({
         </View>
         {username ? (
           <Text
+            variant="body-regular"
             numberOfLines={1}
-            style={[styles.username, { color: theme.colors.textSecondary }]}
+            style={{ color: palette.textSecondary }}
           >
             @{username}
           </Text>
@@ -77,38 +334,34 @@ const UserHoverCardComponent: React.FC<UserHoverCardProps> = ({
   );
 
   return (
-    <Card
-      variant="outlined"
-      radius="radius-16"
-      border="hairline"
-      // `shadow-m` is the overlay role — menus, popovers, dialogs, and this card,
-      // which is one.
-      elevation="m"
-      style={[layoutStyle, style]}
+    <Animated.View
       testID={testID}
+      style={[cardStyle, entrance, style]}
     >
-      <View style={styles.header}>
-        {onPressProfile ? (
-          <Pressable
-            onPress={onPressProfile}
-            accessibilityRole="button"
-            accessibilityLabel={
-              username ? `${displayName} (@${username})` : displayName
-            }
-            style={styles.identityPressable}
-          >
-            {identity}
-          </Pressable>
-        ) : (
-          <View style={styles.identityPressable}>{identity}</View>
-        )}
-        {action != null ? <View style={styles.action}>{action}</View> : null}
-      </View>
+      {coverView}
+      {onPressProfile ? (
+        <Pressable
+          onPress={onPressProfile}
+          accessibilityRole="button"
+          accessibilityLabel={username ? `${displayName} (@${username})` : displayName}
+        >
+          {identity}
+        </Pressable>
+      ) : (
+        identity
+      )}
+
+      {/* After the identity in document order, so it paints above it; pinned
+          top-right and centred on the avatar's visible band. */}
+      {action != null ? (
+        <View style={[styles.action, actionZone]}>{action}</View>
+      ) : null}
 
       {bio ? (
         <Text
+          variant="body-regular"
           numberOfLines={3}
-          style={[styles.bio, { color: theme.colors.text }]}
+          style={[styles.bio, { color: palette.text }]}
         >
           {bio}
         </Text>
@@ -117,12 +370,14 @@ const UserHoverCardComponent: React.FC<UserHoverCardProps> = ({
       {stats && stats.length > 0 ? (
         <View style={styles.statsRow}>
           {stats.map((stat) => (
-            <View key={stat.label} style={styles.stat}>
-              <Text style={[styles.statValue, { color: theme.colors.text }]}>
+            <View key={stat.label} style={[styles.stat, { backgroundColor: palette.tile }]}>
+              <Text variant="body-medium" numberOfLines={1} style={{ color: palette.text }}>
                 {stat.value}
               </Text>
               <Text
-                style={[styles.statLabel, { color: theme.colors.textSecondary }]}
+                variant="body-2-medium"
+                numberOfLines={1}
+                style={{ color: palette.textSecondary }}
               >
                 {stat.label}
               </Text>
@@ -136,75 +391,81 @@ const UserHoverCardComponent: React.FC<UserHoverCardProps> = ({
           instead of firing `onPressProfile`, and assistive technology reads it
           as content rather than folding it into the identity button's name. */}
       {footer != null ? <View style={styles.footer}>{footer}</View> : null}
-    </Card>
+    </Animated.View>
   );
 };
 
 const styles = StyleSheet.create({
-  header: {
-    flexDirection: 'row',
-    alignItems: 'flex-start',
-    justifyContent: 'space-between',
-    gap: space.sm,
+  cover: {
+    height: COVER_HEIGHT,
+    marginTop: -PADDING,
+    marginLeft: -PADDING,
+    marginRight: -PADDING,
+    // The panel's 16 minus its 1px border.
+    borderTopLeftRadius: RADIUS - 1,
+    borderTopRightRadius: RADIUS - 1,
+    overflow: 'hidden',
   },
-  identityPressable: {
-    flexShrink: 1,
-    flexGrow: 1,
+  coverImage: {
+    width: '100%',
+    height: '100%',
   },
-  identityRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: space.sm,
+  avatarWrap: {
+    alignSelf: 'flex-start',
   },
   identityText: {
-    flexShrink: 1,
-    flexGrow: 1,
+    marginTop: GAP,
+    gap: 2,
+    minWidth: 0,
   },
   nameRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: space.xs,
+    gap: 4,
+    minWidth: 0,
   },
   displayName: {
-    fontSize: fontSize.lg,
-    fontWeight: '700',
     flexShrink: 1,
   },
   verifiedBadge: {
     flexShrink: 0,
   },
-  username: {
-    fontSize: fontSize.sm,
-    marginTop: space._2xs,
-  },
   action: {
-    flexShrink: 0,
+    position: 'absolute',
+    right: PADDING,
+    justifyContent: 'center',
+    alignItems: 'flex-end',
   },
   bio: {
-    fontSize: fontSize.sm,
-    lineHeight: fontSize.sm * 1.4,
-    marginTop: space.md,
+    marginTop: GAP,
+    gap: 6,
   },
   statsRow: {
     flexDirection: 'row',
-    gap: space.lg,
-    marginTop: space.md,
+    gap: 8,
+    marginTop: GAP,
   },
   stat: {
-    flexDirection: 'row',
-    alignItems: 'baseline',
-    gap: space.xs,
-  },
-  statValue: {
-    fontSize: fontSize.sm,
-    fontWeight: '700',
-  },
-  statLabel: {
-    fontSize: fontSize.sm,
+    flexGrow: 1,
+    flexShrink: 1,
+    flexBasis: 0,
+    minWidth: 0,
+    alignItems: 'flex-start',
+    borderRadius: STAT_RADIUS,
+    paddingTop: 10,
+    paddingBottom: 10,
+    paddingLeft: 10,
+    paddingRight: 10,
   },
   footer: {
-    marginTop: space.md,
+    marginTop: GAP,
   },
+  skeletonName: { width: 136, height: 16, marginTop: 3, marginBottom: 3, borderRadius: 6 },
+  skeletonHandle: { width: 88, height: 14, marginTop: 3, marginBottom: 3, borderRadius: 6 },
+  skeletonLine: { width: '100%', height: 14, borderRadius: 6 },
+  skeletonLineShort: { width: '64%', height: 14, borderRadius: 6 },
+  skeletonStatValue: { width: 40, height: 14, marginTop: 3, marginBottom: 3, borderRadius: 6 },
+  skeletonStatLabel: { width: 64, height: 12, marginTop: 3, marginBottom: 3, borderRadius: 6 },
 });
 
 export const UserHoverCard = memo(UserHoverCardComponent);

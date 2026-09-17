@@ -8,14 +8,68 @@ import {
   SegmentedControlItemText,
 } from './index';
 import { Text } from '../typography';
+import { useTheme } from '../theme/use-theme';
 
 const meta: Meta = {
-  title: 'Forms/SegmentedControl',
+  title: 'Base/Segmented Control',
 };
 
 export default meta;
 
 type Story = StoryObj;
+
+/**
+ * Every size and variant. Hover an unselected segment for the text
+ * colour; Tab onto one for the focus ring; press another to watch the thumb
+ * slide.
+ */
+export const Matrix: Story = {
+  render: function MatrixStory() {
+    const theme = useTheme();
+    const [value, setValue] = useState<'weekly' | 'monthly' | 'yearly'>('weekly');
+    return (
+      <View style={{ gap: 16, padding: 16, alignItems: 'flex-start', backgroundColor: theme.colors.background }}>
+        {(['small', 'medium', 'large'] as const).map((size) => (
+          <SegmentedControl key={size} label={`Period ${size}`} type="radio" size={size} value={value} onChange={setValue}>
+            <SegmentedControlItem value="weekly">
+              <SegmentedControlItemText>Weekly</SegmentedControlItemText>
+            </SegmentedControlItem>
+            <SegmentedControlItem value="monthly">
+              <SegmentedControlItemText>Monthly</SegmentedControlItemText>
+            </SegmentedControlItem>
+            <SegmentedControlItem value="yearly">
+              <SegmentedControlItemText>Yearly</SegmentedControlItemText>
+            </SegmentedControlItem>
+          </SegmentedControl>
+        ))}
+        <SegmentedControl label="Period plain" type="radio" variant="plain" value={value} onChange={setValue}>
+          <SegmentedControlItem value="weekly">
+            <SegmentedControlItemText>Weekly</SegmentedControlItemText>
+          </SegmentedControlItem>
+          <SegmentedControlItem value="monthly">
+            <SegmentedControlItemText>Monthly</SegmentedControlItemText>
+          </SegmentedControlItem>
+          <SegmentedControlItem value="yearly" disabled>
+            <SegmentedControlItemText>Yearly</SegmentedControlItemText>
+          </SegmentedControlItem>
+        </SegmentedControl>
+        <View style={{ width: 380 }}>
+          <SegmentedControl label="Stretched" type="radio" value={value} onChange={setValue} style={{ alignSelf: 'stretch' }}>
+            <SegmentedControlItem value="weekly">
+              <SegmentedControlItemText>Weekly</SegmentedControlItemText>
+            </SegmentedControlItem>
+            <SegmentedControlItem value="monthly">
+              <SegmentedControlItemText>Monthly</SegmentedControlItemText>
+            </SegmentedControlItem>
+            <SegmentedControlItem value="yearly" disabled>
+              <SegmentedControlItemText>Yearly</SegmentedControlItemText>
+            </SegmentedControlItem>
+          </SegmentedControl>
+        </View>
+      </View>
+    );
+  },
+};
 
 /**
  * `type` is the decision, and it is an ACCESSIBILITY one, not a visual one:
@@ -67,7 +121,7 @@ export const Tabs: Story = {
   },
 };
 
-/** Both sizes. `small` is for a toolbar, `large` for a settings screen. */
+/** `small` is for a toolbar, `medium` is the default, `large` for a settings screen. */
 export const Sizes: Story = {
   render: function SizesStory() {
     const [a, setA] = useState<'one' | 'two'>('one');

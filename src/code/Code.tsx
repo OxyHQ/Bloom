@@ -1,24 +1,16 @@
 import React, { memo } from 'react';
-import {
-  Text as RNText,
-  type TextProps as RNTextProps,
-  Platform,
-  type StyleProp,
-  type TextStyle,
-} from 'react-native';
+import { Platform, Text as RNText } from 'react-native';
 
-import { useTheme } from '../theme/use-theme';
-
-export interface CodeProps extends RNTextProps {
-  style?: StyleProp<TextStyle>;
-}
+import { MONO_FAMILY, useCodePalette } from './shared';
+import type { CodeProps } from './types';
 
 /**
- * Inline monospace text — render as `<code>` on web (CSS var family) and
- * `<Text fontFamily="Geist Mono">` on native.
+ * Inline monospace text — a real `<code>` on web and a `Text` in JetBrains Mono
+ * on native, in the text colour, a touch smaller than the sentence around it
+ * (0.92em on web, 13 on native).
  */
 const CodeComponent = function Code({ children, style, ...rest }: CodeProps) {
-  const { colors } = useTheme();
+  const palette = useCodePalette();
 
   if (Platform.OS === 'web') {
     return React.createElement(
@@ -26,9 +18,9 @@ const CodeComponent = function Code({ children, style, ...rest }: CodeProps) {
       {
         ...rest,
         style: {
-          fontFamily: 'var(--bloom-font-mono)',
+          fontFamily: MONO_FAMILY,
           fontSize: '0.92em',
-          color: colors.text,
+          color: palette.inline,
           ...(style as object | undefined),
         },
       },
@@ -37,12 +29,7 @@ const CodeComponent = function Code({ children, style, ...rest }: CodeProps) {
   }
 
   return (
-    <RNText
-      {...rest}
-      style={[
-        { fontFamily: 'Geist Mono', fontSize: 13, color: colors.text },
-        style,
-      ]}>
+    <RNText {...rest} style={[{ fontFamily: MONO_FAMILY, fontSize: 13, color: palette.inline }, style]}>
       {children}
     </RNText>
   );
@@ -50,3 +37,5 @@ const CodeComponent = function Code({ children, style, ...rest }: CodeProps) {
 
 export const Code = memo(CodeComponent);
 Code.displayName = 'Code';
+
+export type { CodeProps } from './types';

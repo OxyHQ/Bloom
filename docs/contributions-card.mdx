@@ -1,0 +1,60 @@
+---
+title: Contributions card
+description: The "Contributions this year" dashboard card — headline and chip, stat cards, a Weekly / Monthly / Yearly control and a 37 × 7 activity grid with per-day tooltips.
+order: 47
+---
+
+# Contributions card
+
+`ContributionsGrid` is its bare grid, reused on the AI profile at 38 columns. Views only, native and web.
+
+```tsx
+import { ContributionsCard, contributionCellsFromDays } from '@oxyhq/bloom/chart-cards';
+import { bucketByDay } from '@oxyhq/bloom/activity-heatmap';
+
+const days = bucketByDay(commits, (c) => c.createdAt);
+
+<ContributionsCard
+  delta={0.148}
+  stats={[{ value: '9B', label: 'Lifetime tokens' }, { value: '62 days', label: 'Top streak' }]}
+  cells={contributionCellsFromDays(days, 2026)}
+/>
+```
+
+## Data
+
+The grid is not a calendar: cells spread `columns × 7` column-major over the year (first cell Jan 1, last Dec 31) so 37 columns sit under Jan … Dec. `cells` is that flat, column-major list of `{ count, date?, tier? }`.
+
+- `contributionCellsFromDays(days, year, columns?)` folds `ActivityHeatmap`'s `{ date, count }[]` (e.g. from `bucketByDay`) into those slots, summing days that share one and naming each cell after its first day.
+- Tier 0–5 comes from `count` with these bands — 0 · 1–4 · 5–9 · 10–15 · 16–24 · 25+ — unless `tier` is given.
+- Tooltip copy: `"12 contributions on Apr 26"` / `"No contributions on Apr 26"` (`contributionLabel`).
+
+## Props
+
+| Prop | Default | |
+|---|---|---|
+| `title` | `"Contributions this year"` | |
+| `total` | sum of the counts | headline |
+| `delta` | — | chip ratio (`0.148` → `+14.8%`) |
+| `stats` | — | `{ value, label }[]` stat cards |
+| `cells` / `columns` | — / 37 | see above |
+| `color` | theme accent | ramp base (the `accent` family prop) |
+| `periods` / `defaultPeriod` / `onPeriodChange` | Weekly · Monthly · Yearly | the segmented control; a period may override `cells`, `total`, `delta`, `stats` |
+| `activityLabel` / `months` | `"Activity"` / Jan … Dec | |
+| `animateIn` | `false` | cells pop in (380ms ease-out, scale 0.5 → 1, scattered 0–800ms delays from a per-cell hash) |
+| `activeCell` / `onActiveCellChange` | tracked | hovered cell index |
+
+## Geometry
+
+- Card: radius 16, padding 16 all round, gap 16, `background-secondary`; 337 tall from `sm` (640) with overflow clipped — the month row runs ~2px past the padding and is clipped the same way — auto height below.
+- Header: `ChartHeadline` — label body-medium text-secondary, number title-1-medium, delta `Chip` 8px after it.
+- Stat cards: bleed 8px past the padding, 8px gaps, one row from `sm` and 2 × 2 below; radius 10, padding 10, `background-inner`, `shadow-card` (0 1px 1px black 5% / dark 14%); value body-medium text-primary over label body-medium text-secondary, both truncating.
+- Activity: 8px closer (`-mt-2`), header row "Activity" + `SegmentedControl variant="plain"`, 4px, then the grid and the month row (body-2-medium text-tertiary, spread edge to edge) 6px under it.
+- Grid: 4px gaps, radius 3. From `sm` equal columns kept square (`aspectRatio: 1`); below, fixed 13px cells in a horizontal `ScrollView`.
+- Tiers: `chart-neutral` for 0, then the accent ramp — light 200 / 400 / 500 / 600 / 700, dark 950 / 800 / 700 / 600 / 500, so more activity always means more contrast.
+
+## Tooltip
+
+One Bloom `Tooltip` (position top) anchored on the hovered cell rather than one per cell — 259 triggers would each measure themselves. Moving between cells moves the bubble; the clear on leaving a cell is deferred a frame so crossing a gap doesn't close and reopen it. Native: a press shows the day, dragging moves it, the tooltip's own outside-press dismisses.
+
+Cells are named `role="img"` views excluded from tab order (still announced, not focusable).

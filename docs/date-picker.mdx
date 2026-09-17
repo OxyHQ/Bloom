@@ -1,0 +1,83 @@
+---
+title: DatePicker
+description: Date and date-range pickers, plus the month calendars they are built from.
+order: 13
+---
+
+# DatePicker
+
+`DatePicker`, `DateRangePicker` and `MeetingScheduler`. Bloom takes no dependency on react-aria or `@internationalized/date`, so the month layout, selection, constraints and keyboard navigation are plain TypeScript over local-midnight `Date`s. Colours come from the Bloom-derived ramps in `src/button/shared.ts`.
+
+```tsx
+import { DatePicker, DateRangePicker, MeetingScheduler, Calendar, RangeCalendar } from '@oxyhq/bloom/date-picker';
+
+const [day, setDay] = useState<Date | null>(null);
+<DatePicker value={day} onChange={setDay} minDate={new Date()} />
+
+const [range, setRange] = useState<DateRange | null>(null);
+<DateRangePicker value={range} onChange={setRange} />
+```
+
+## Pickers
+
+A secondary `Button` trigger (calendar icon + value, 38 tall, full pill) opens Bloom's `Popover`: on web an anchored panel 4px below the trigger, aligned to its end, radius 24, `background-secondary-default`, `shadow-dropdown`; on native a bottom sheet.
+
+The choice is **pending until Apply**. Pressing days or presets, or typing in the `DD/MM/YYYY` chips, only moves the pending value; Cancel restores the committed one, and every open starts again from it. `onChange` fires on Apply.
+
+`DateRangePicker` adds a quick-select column (Today, Yesterday, Last week, This month, Last month, This year, Last year, All time; hide it with `quickSelect={false}`), two adjacent months, and an "N days selected" pill. Where the window is narrower than the 814px popup it shows one month and no quick select.
+
+Every line of text is set in Inter (`TYPE_SCALE['body-medium']`; the chip `TextInput` sets the face itself, since a field inherits none), the trigger icon is Remix `RiCalendarLine`. The footer summary — the chips, and the range's "N days selected" pill — drops in and out with a presence transition: 12px from above with a fade, 250ms on `cubic-bezier(0.34, 1.2, 0.64, 1)` (snaps under reduced motion). On web the range layers fade and ease their corners over 100ms, presets and nav chevrons ease their hover over 150ms, and the chip border over 100ms.
+
+**Known gap — popup motion.** The intended entrance is the menu motion (150ms fade + `scale-95` + 2px blur, `origin-top`); Bloom's `Popover` has no way to ask `FloatingPanel` for that surface, so the popup runs the popover's own 200ms motion.
+
+## MeetingScheduler
+
+A Calendly-style booking popup. The trigger is the pickers' trigger with a 16px `ChevronDownSmall` turning over while open; the popup (8px below, end-aligned) is 429 tall in three columns 16 apart:
+
+- **Host** (207 wide): `md` blue initials avatar, name / email, the meeting title (`title-3-medium`) and description (`body-2-medium`, secondary), and duration / language / conferencing rows (20px Remix icons, 5 gap) pinned to the bottom.
+- **Calendar**: the month panel, then a bordered summary chip (date, time in secondary — `Select a time` until one is picked) and "Send meeting", disabled until a time is chosen.
+- **Slots** (170 wide): the timezone row (globe, chevron — pass `onTimezonePress` to make it a button), a tertiary `We 16` day chip beside the 12h/24h toggle (selected option on the panel surface with `shadow-2xs`), and the half-hour slots (09:00–18:30 unless `timeSlots` says otherwise), chosen slot tertiary, hover secondary-hover, scrolling under a 16px top fade mask (web).
+
+```tsx
+<MeetingScheduler
+  host={{ name: 'Maya Collins', email: 'hi@example.com', avatarInitial: 'M' }}
+  meeting={{ title: '30 min intro meeting', durationMinutes: 30, language: 'English', conferencing: 'Google meet' }}
+  timezone="Amsterdam"
+  value={booking}
+  onChange={setBooking}
+/>
+```
+
+Values are `{ date: Date; time: string | null }` with 24h `"HH:mm"` times; nothing commits until Send. Bloom ships no brand bitmap for the conferencing row, so the default is `RiVideoLine` — pass `meeting.conferencingIcon` for the real mark. Where the window is narrower than the 767px row (phones, the native sheet) the columns stack in a scroll view.
+
+## Calendars
+
+`Calendar` (one day) and `RangeCalendar` (a span, `visibleMonths={2}` for the dual view) are the month panels on their own.
+
+| | value |
+|---|---|
+| panel | 326 wide, radius 16, padding 15, shadow-xs |
+| header | 16px chevron buttons (full pills) around a 14/20 title, 20 above the grid |
+| weekday row | 24 tall, two-letter weekday |
+| day | 32×32, radius 8, 14/20 medium, 12 apart both ways |
+
+A selected day is an `accent-300` pill (`accent-800` dark). A range is an `accent-100` band (`accent-950` dark) that bridges the 12px gap toward selected neighbours and rounds at the first and last column, with pills on both ends. Disabled days use `text-tertiary`; hover is `background-secondary-hover`; outside-month positions are empty.
+
+A range takes two presses in either order; between them the band follows the pointer or keyboard focus. The grid is one tab stop — arrows, Home/End and PageUp/PageDown move focus and page the months. Days announce their full date, `aria-selected` sits on each `gridcell` (with `accessibilityState` for native) and today carries `aria-current="date"` on web.
+
+## Props
+
+| Prop | Type | Default | Description |
+|------|------|---------|-------------|
+| `value?` / `defaultValue?` | `Date \| null` (`DateRange \| null` for ranges) | — | Committed value. |
+| `onChange?` | `(value) => void` | — | Pickers: on Apply. Calendars: on press / completed range. |
+| `minDate?` / `maxDate?` | `Date \| null` | — | Disable days outside. |
+| `isDateUnavailable?` | `(date: Date) => boolean` | — | Disable arbitrary days. |
+| `weekStartsOn?` | `0 … 6` | `0` (Sunday) | First grid column. |
+| `locale?` | `string` | runtime | Month, weekday and trigger text. |
+| `DatePicker.placeholder?` | `string` | `'Select date'` | Trigger text with no value. |
+| `DateRangePicker.quickSelect?` | `boolean` | `true` | Preset column. |
+| `open?` / `defaultOpen?` / `onOpenChange?` | | — | Popup state (pickers). |
+| `disabled?` | `boolean` | `false` | Blocks opening (pickers). |
+| `RangeCalendar.visibleMonths?` | `1 \| 2` | `1` | Months side by side. |
+| `defaultMonth?` | `Date` | value's month, else today's | First month shown (calendars). |

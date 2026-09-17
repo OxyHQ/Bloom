@@ -1,0 +1,57 @@
+---
+title: Breadcrumb
+description: The trail of ancestor pages, separated by chevrons.
+order: 27
+---
+
+# Breadcrumb
+
+A trail of ancestor pages. Compose `BreadcrumbItem`s inside `Breadcrumb`; the chevron separators are inserted between them. Colours come from the theme-tinted neutral ramp every button-like control paints from (`src/button/shared.ts`).
+
+```tsx
+import { Breadcrumb, BreadcrumbItem } from '@oxyhq/bloom/breadcrumb';
+
+<Breadcrumb>
+  <BreadcrumbItem icon={HomeIcon} href="/">Home</BreadcrumbItem>
+  <BreadcrumbItem onPress={openProjects}>Projects</BreadcrumbItem>
+  <BreadcrumbItem current>Board</BreadcrumbItem>
+</Breadcrumb>
+```
+
+## Items
+
+An item is a **link** with `href`, a **button** with `onPress`, and a plain label otherwise; `current` marks the active page.
+
+| | |
+|---|---|
+| label | `caption-1-medium` (Inter 12/16 500, tracking 0.15) |
+| icon | 16, coloured with the label, gap 6 |
+| link / button | padding 2 × 4, margin-x −4 (the text stays aligned with the trail), full pill |
+| rest | text-tertiary — neutral-400 light, neutral-600 dark |
+| hover | text-secondary (neutral-500) on a neutral-100 pill (dark: neutral-700 at 60%), 150ms |
+| focus | 2px accent-500 ring, no offset (`:focus-visible`) |
+| current | text-secondary, not interactive |
+| separator | 12×12 chevron, 1.5 stroke, text-tertiary, gap 10 |
+
+The list scrolls horizontally, with no scrollbar, when it outgrows its container. Bloom uses a full pill, like every other pressable, rather than a 6px corner.
+
+### `href` and routers
+
+On web an `href` item is a real `<a href>`, so middle-click and "open in new tab" work. Pass `onPress` too and the browser's navigation is prevented so the router can navigate instead. On native, an `href` item without `onPress` opens the URL with `Linking`.
+
+## Accessibility
+
+`Breadcrumb` is a `navigation` landmark named `"Breadcrumb"` (override with `accessibilityLabel`) wrapping a list; the separators are hidden from assistive tech. A link or button is named by its string label, or by `accessibilityLabel` when the label is not a string. The current item carries `aria-current="page"` on web.
+
+## Props
+
+| Prop | Type | Default | Description |
+|------|------|---------|-------------|
+| `Breadcrumb.accessibilityLabel?` | `string` | `'Breadcrumb'` | Names the landmark. |
+| `BreadcrumbItem.href?` | `string` | — | Makes the item a link. |
+| `BreadcrumbItem.onPress?` | `() => void` | — | Makes the item a button (or routes an `href`). |
+| `BreadcrumbItem.current?` | `boolean` | `false` | The active page. |
+| `BreadcrumbItem.icon?` | `ComponentType<{ width, height, fill }>` | — | Leading 16px icon. |
+| `BreadcrumbItem.leading?` | `ReactNode` | — | A node before the icon and label, gap 6 — the dashboard trail's 20px `Avatar` (`<BreadcrumbItem leading={<Avatar size="xs" color="blue" initials="B" />} href="#">Design team</BreadcrumbItem>`). Not recoloured on hover. |
+| `BreadcrumbItem.accessibilityLabel?` | `string` | string `children` | Accessible name. |
+| `BreadcrumbItem.style?` / `textStyle?` | style | — | Overrides. |

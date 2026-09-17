@@ -2,8 +2,16 @@ import type { StyleProp, TextStyle, View, ViewStyle } from 'react-native';
 
 import type { Props as SVGIconProps } from '../icons/shared';
 
+/** Two select densities: `md` (38px trigger) and `sm` (28px). */
+export type SelectSize = 'sm' | 'md';
+
 export type SelectProps = {
   children?: React.ReactNode;
+  /**
+   * `md` (default) or `sm` for compact contexts — the trigger's padding, type
+   * and chevron, and the option rows' padding and type.
+   */
+  size?: SelectSize;
   value?: string;
   onValueChange?: (value: string) => void;
   disabled?: boolean;
@@ -24,7 +32,19 @@ export type SelectTriggerProps = {
    * a single layout class cannot strip the chrome.
    */
   className?: string;
+  /**
+   * Style for the TRIGGER BOX (the slot around the field). To restyle the
+   * bordered field itself, use `fieldStyle`.
+   */
   style?: StyleProp<ViewStyle>;
+  /**
+   * Inline style on the bordered field itself, applied after its own — the
+   * unambiguous override for a trigger embedded in another control (the
+   * phone input's country code uses `rounded-lg px-1.5 py-1`). Use longhands
+   * (`paddingLeft`, not `paddingHorizontal`), which is what outranks the
+   * field's own padding classes on web.
+   */
+  fieldStyle?: StyleProp<ViewStyle>;
   testID?: string;
 };
 
@@ -40,6 +60,13 @@ export type SelectValueProps = {
    * Defaults to `item => item.label`.
    */
   children?: (value: unknown) => React.ReactNode;
+  /**
+   * A node before the value — a status dot, an icon — laid out `gap-[5px]`
+   * (`gap-1` on `sm`), the way the trigger shows an option whose content
+   * leads with one. A function receives the selected item (`undefined` while
+   * nothing is chosen), so the mark can follow the value.
+   */
+  leading?: React.ReactNode | ((item: unknown) => React.ReactNode);
   placeholder?: string;
   className?: string;
   style?: TextStyle;
@@ -58,7 +85,7 @@ export type SelectContentProps<T> = {
    */
   label?: string;
   /** The array of items to choose from. */
-  items: T[];
+  items: readonly T[];
   /** Renders a single item. Use `SelectItem` inside this callback. */
   renderItem: (
     item: T,
@@ -75,6 +102,12 @@ export type SelectContentProps<T> = {
    * the native sheet sizes itself). Defaults to 320.
    */
   maxHeight?: number;
+  /**
+   * A FIXED width for the web dropdown (`popoverClassName="w-[220px]"`). By
+   * default the panel is at least 266px and at least the trigger's width.
+   * The native sheet sizes itself and ignores it.
+   */
+  width?: number;
   /** Appended to the dropdown panel's own chrome. */
   className?: string;
 };
@@ -101,6 +134,10 @@ export type SelectItemProps = {
   ref?: React.Ref<View>;
   value: string;
   label: string;
+  /** Not choosable: `text-disabled`, `cursor-not-allowed`, no press. */
+  disabled?: boolean;
+  /** A node before the option's content — a status dot, an icon — 8px from it. */
+  leading?: React.ReactNode;
   children: React.ReactNode;
   className?: string;
   style?: StyleProp<ViewStyle>;
@@ -119,7 +156,8 @@ export type SelectItemIndicatorProps = {
 /**
  * What a row publishes to `SelectItemText` and `SelectItemIndicator`.
  *
- * `selected` and nothing else. It used to carry `hovered`, `focused` and
+ * `selected` and `disabled` — both computed from props, both read by a part
+ * (`SelectItemIndicator`, `SelectItemText`). It used to carry `hovered`, `focused` and
  * `pressed` as well — three members no part in the library ever read, two of
  * which were hardcoded literals (`hovered: false` on native, `pressed: false` on
  * web) rather than computed at all. A context member that is a literal is worse
@@ -127,4 +165,6 @@ export type SelectItemIndicatorProps = {
  */
 export type SelectItemContextValue = {
   selected: boolean;
+  /** Read by `SelectItemText`, which paints `text-disabled`. */
+  disabled: boolean;
 };

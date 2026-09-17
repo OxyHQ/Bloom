@@ -5,7 +5,7 @@ import type { Meta, StoryObj } from '@storybook/react-vite';
 import { Label } from './Label';
 
 const meta: Meta<typeof Label> = {
-  title: 'Forms/Label',
+  title: 'Base/Label',
   component: Label,
 };
 

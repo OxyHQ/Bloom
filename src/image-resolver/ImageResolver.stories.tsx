@@ -9,7 +9,7 @@ import { Text } from '../typography';
 import { Card } from '../card';
 
 const meta: Meta = {
-  title: 'Foundations/ImageResolver',
+  title: 'Foundations/Image Resolver',
 };
 
 export default meta;

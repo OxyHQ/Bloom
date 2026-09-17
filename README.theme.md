@@ -21,6 +21,6 @@ Use `BloomColorScope` to tint a subtree with a different preset without changing
 
 ```tsx
 <BloomColorScope colorPreset="mint">
-  <ProfileCard />
+  <StatCards />
 </BloomColorScope>
 ```

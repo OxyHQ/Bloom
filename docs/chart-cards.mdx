@@ -1,0 +1,167 @@
+---
+title: Chart cards
+description: Dashboard revenue and orders cards — a year against the year before, drawn with react-native-svg on recharts' own geometry.
+order: 40
+---
+
+# Chart cards
+
+`RevenueChartCard`, `OrdersChartCard`, `AreaChartCard`, and the shared chrome every card is built from, draw on recharts' geometry; Bloom rebuilds every layer in `react-native-svg` on the geometry recharts computes, so they render on native as well as web and land on the same pixels.
+
+```tsx
+import { OrdersChartCard, RevenueChartCard } from '@oxyhq/bloom/chart-cards';
+
+<View style={{ flexDirection: 'row', gap: 16 }}>
+  <RevenueChartCard data={revenueByMonth} style={{ flex: 1 }} />
+  <OrdersChartCard data={ordersByMonth} style={{ flex: 1 }} />
+</View>
+```
+
+`data` is one `{ label, current, previous }` per category, typically twelve months. The headline is the year's total with its delta against last year; hovering a month (web) or pressing and scrubbing (native) swaps it for that month and its year-earlier figure.
+
+| | `RevenueChartCard` | `OrdersChartCard` |
+|---|---|---|
+| chart | dashed last-year line, gradient area + solid line this year | paired bars, last year beside this year |
+| headline | `$152,314` | `25,162` |
+| Y axis | 44 wide, `$16k` | 40 wide, `2.7k` |
+| hover | dashed cursor rule + active dot | the month's band tinted |
+
+## Props
+
+| Prop | Default | |
+|---|---|---|
+| `data` | — | `{ label, current, previous }[]` |
+| `title` | `"Revenue"` / `"Orders"` | headline label with nothing hovered |
+| `getPointTitle` | `Jan` → `January` | headline label for a hovered point |
+| `formatValue` | `$1,234` / `1,234` | headline + caption; the count-up steps in whole units |
+| `formatAxisValue` | `$16k` / `2.7k` | Y ticks |
+| `currentLabel` / `previousLabel` | `"This year"` / `"Last year"` | legend |
+| `totalComparisonLabel` / `pointComparisonLabel` | `"last year"` / `"a year earlier"` | caption suffix |
+| `color`, `activeColor`, `previousColor` | theme | series overrides |
+| `activeIndex` / `onActiveIndexChange` | tracked | control the hovered category (`null` = none) |
+| `accessibilityLabel` | `"Revenue chart: this year against last year"` | names the plot (`role="img"`) |
+
+The card is 344 tall and does not grow on its own — lay two out in a row of `flex-1` cards, so pass `style={{ flex: 1 }}` in a row.
+
+## Geometry
+
+Card: radius 16, padding 16 / 16 / 12 (longhands), gap 24 between header and chart. Header at `sm` (640) and up: label column left, legend right; below it the legend stacks under the caption (gap 12). Label `body-medium`, headline `title-1-medium` tabular, delta `Chip` (24 tall) 8px after it, caption `body-2-medium`, legend 8px dots / 6 gap / 16 between items.
+
+The plot copies recharts 3.10, measured at 528×216 (`src/chart-cards/geometry.ts`):
+
+| | |
+|---|---|
+| plot box | margin 4 / 6 / 0 / 0, minus the Y axis width on the left and recharts' 30px X axis at the bottom |
+| Y ticks | `getTickValuesFixedDomain([0, max × 1.1], 4)`: an adaptive step (5,500 / 900), then the domain max itself; right edge 8px left of the plot |
+| X ticks | 18px under the plot (tickSize 6 + tickMargin 12), centred on the category |
+| tick culling | recharts' `preserveEnd` (Y) / `preserveStartEnd` (X), 5px min gap, bounded by the whole surface — so the last month is pulled in by its overflow and the top Y label sits at 9, not 4. A narrow card drops colliding month labels, keeping the first and last |
+| lines | category point scale, d3 `curveMonotoneX`; last year 2px dashed `5 5`, this year 2.5px |
+| area | the same curve closed on the base, gradient 35% → 0% |
+| active dot | r 7 at 25% under r 4 with a 2px ring in the card colour |
+| bars | band scale, 28% category gap, 3px between the pair, width rounded to whole pixels (not re-centred), radius 4 on the top corners clamped to half the bar |
+| cursor | line card: 1px dashed `4 4` rule; bar card: the whole band at 50% |
+
+Hover follows recharts: the category only changes while the pointer is inside the plot rectangle (over the axes the last month stays), and leaving the chart clears it. Month label widths are measured on layout before culling, so the labels appear one frame after the chart.
+
+## Motion
+
+| | |
+|---|---|
+| headline | counts up 320ms ease-out cubic, fading in from 0.35 over 220ms on each change |
+| series | 450ms CSS `ease` (recharts' default): lines and area reveal left to right, bars grow from the base on mount; a data change morphs every point / bar from its old value |
+
+All of it snaps under the OS reduced-motion setting.
+
+## Colour
+
+| | light | dark | Token |
+|---|---|---|---|
+| card | neutral-100 | neutral-900 | `background-secondary-default` |
+| label, legend | neutral-500 | neutral-500 | `text-secondary` |
+| caption, ticks | neutral-400 | neutral-600 | `text-tertiary` |
+| last year | neutral-300 | neutral-800 | `chart-neutral` |
+| line cursor | neutral-300 | neutral-700 | `chart-cursor` |
+| bar cursor | neutral-200 | neutral-800 | `chart-track` |
+| rising delta | success 200 / 800 | success 950 at 60% / 500 | `status-lime` |
+| falling delta | negative 200 / 800 | negative 950 at 60% / 500 | `status-rose` |
+| flat delta | neutral-200 / 500 | neutral-800 / 500 | `background-tertiary` / `text-secondary` |
+
+The series hues — lime (`chart-2`) for revenue, indigo (`chart-9-active`) for orders — keep Tailwind's lightness and take their chroma ratio and hue distance from `blue-500` re-anchored on the theme's `primary`: a Tailwind-blue brand reproduces those hues exactly, any other preset rotates both hues with it. A chart hue is data, not status, so it does not follow `success` (whose deep green would paint a heavy teal line). The delta chips are status and do.
+
+## Accessibility
+
+The plot is one `role="img"` element named by `accessibilityLabel`; the headline, delta and caption are plain text that updates with the hovered month. There is no keyboard navigation between months (recharts' accessibility layer offers arrow keys; this port does not).
+
+## Native
+
+- A finger presses and scrubs; letting go clears the month (recharts on a touch browser leaves the last tapped month shown). A hovering pointer — an iPad trackpad — arrives as pointer events like the web.
+- Axis labels are `Text` views over the SVG rather than SVG `<text>`, so they take Bloom's font (`var(--bloom-font-sans)` / Inter) on both platforms. Their vertical placement reproduces recharts' `dy` offsets for Inter's metrics.
+
+# Area chart card
+
+`AreaChartCard`: composition over time, several series in one card.
+
+```tsx
+import { AreaChartCard } from '@oxyhq/bloom/chart-cards';
+
+<AreaChartCard
+  title="Visitors"
+  series={[{ key: 'organic', label: 'Organic' }, { key: 'referral', label: 'Referral' }, { key: 'paid', label: 'Paid' }]}
+  ranges={[{ id: 'year', label: 'This year', data: rows, delta: 0.082 }, { id: 'prev', label: 'Last year', data: lastYear }]}
+/>
+```
+
+`data` is one row per category — `{ label, [series.key]: number }`; `series` names the fields, bottom of the stack first.
+
+| Prop | Default | |
+|---|---|---|
+| `variant` | `'stacked'` | `stacked` one silhouette · `overlap` translucent areas over each other (headline = first series) · `percent` 100% stacked |
+| `shape` | `'curved'` | `curved` (d3 monotone-X) or `sharp` (straight segments) |
+| `title` | `"Visitors"` | header label at rest; the hovered category's label while hovering |
+| `data`, `series` | — | rows and series; a selected range's own `data` / `series` override them |
+| `headline` | the total | resting number (sum of every series; the first series' in `overlap`) |
+| `delta` | none | ratio for the chip: `0.082` → `+8.2%` (lime), negative → rose, 0 → `0.0%` neutral |
+| `range` | — | static period pill |
+| `ranges`, `defaultRange`, `onRangeChange` | — | the pill becomes a period dropdown; a range overrides `data`, `series`, `delta`, `headline` |
+| `format` | `94,700` | headline, legend and tile values |
+| `formatAxisValue` | `4.5K` / `25%` | Y ticks |
+| `tiles` | `false` | stat tiles instead of the legend; the card grows (`height: auto`, plot fixed at 196) |
+| `activeIndex` / `onActiveIndexChange` | tracked | control the hovered category |
+| `accessibilityLabel` | `"Visitors stacked area chart: Organic, Referral, Paid"` | names the plot (`role="img"`) |
+
+## Geometry
+
+Card 329 tall, radius 16, padding 16 / 16 / 12 (longhands), gap 16 between header, plot and legend. Header: label `body-medium` text-secondary, number `title-1-medium` tabular, delta `Chip` 8px after it (hidden — space kept — while hovering); the period pill on the right: 32 tall, radius 10, 1px `border-button`, `shadow-xs`, 16px calendar glyph, `body-medium` label, chevron that turns while open. Its menu is 188 wide with 8px padding, rows `px-2 py-1.5` and a check on the current period.
+
+| | |
+|---|---|
+| plot box | margin 4 / 6 / 0 / 0, Y axis 44, X axis 30 — 44..442 × 4..159 on a 448 × 189 plot |
+| Y ticks | recharts' auto domain `[0, 'auto']` with 4 nice ticks — `getNiceTickValues` (`0 · 4.5K · 9K · 13.5K` for a 12,200 peak), the domain widened to the last tick; `percent` pins `0%…100%` in quarters |
+| grid | horizontal only, 1px dashed `4 4`, chart-track, at every Y tick |
+| areas | d3 stack (`expand` for percent); each band is the top curve, a drop to the base, then the base curve back (recharts' `Area` with a base line); gradient 55% → 4% (40% → 4% overlap) under `fillOpacity` 0.6; top curve 2px in the `-active` colour |
+| hover | 1px dashed `4 4` cursor (chart-cursor) and an r 4 dot per series in `-active` with a 2px card-coloured ring |
+| legend | centred wrap, 16 / 4 gaps; 12px swatch radius 4, `body-regular` label, `body-medium` value; 4px under it |
+| tiles | rows of 3 (≥ 640 viewport) or 2, 8px gaps, bleeding 8px past the card sides and 4px into its bottom; tile radius 10, padding 8 / 10, `background-inner` |
+
+Hovering clears whenever recharts reports no active tooltip: over the axes the category clears (the dashboard cards keep it).
+
+## Colour
+
+Series tones follow the `CHART_TONES` order — `chart-2` lime, `chart-6` blue, `chart-5` purple, `chart-3` pink, `chart-8` yellow, `chart-7` emerald, `chart-4` sky, `chart-1` teal — 400 as the fill, 500 as `-active`, each re-anchored on the theme's `primary` like the dashboard cards (a Tailwind-blue brand reproduces those tones exactly). A series `color` overrides; without an `activeColor` it is darkened 18% towards black (`color-mix(… 82%, black)`).
+
+| | light | dark | Token |
+|---|---|---|---|
+| grid | neutral-200 | neutral-800 | `chart-track` |
+| cursor | neutral-300 | neutral-700 | `chart-cursor` |
+| tiles | card | neutral-800 at 60% over the card | `background-inner` |
+| pill | card / hover neutral-100 / border neutral-200 | neutral-800 / neutral-700 at 60% / neutral-700 | `background-primary`, `border-button` |
+
+## Deviations
+
+- Chips are full pills (Bloom's `Chip`) rather than radius 6.
+- The hover-time reference render drops "Nov" at 480 wide because recharts measured its label widths before the web font loaded (a wider fallback). With Inter loaded the label fits, and Bloom — which measures the rendered label — shows it.
+- A data change morphs values in data units under the new domain; recharts tweens pixel positions from the old domain. Only the in-between frames differ.
+
+# Building a chart card
+
+The chrome is published for composing your own card: `ChartCardSurface`, `ChartHeader` / `ChartHeadline`, `ChartRangePill` / `ChartRangeSelect` + `useChartRange`, `ChartLegend`, `ChartStatTiles`, `ChartCenterReadout` and `CartesianPlot`. `src/chart-cards/README.md` documents each one and how a card is assembled from them.

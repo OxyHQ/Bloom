@@ -1,0 +1,48 @@
+---
+title: Tokens chart card
+description: An AI profile tokens card — a sharp line over a fading area bleeding to the card edges, idle days as a dashed baseline, a pulsing active dot and a count-up headline with a chip.
+order: 103
+---
+
+# Tokens chart card
+
+`TokensChartCard` rebuilds recharts' `ComposedChart` in react-native-svg on recharts' own geometry (the segment paths are pinned to recharts' `d` strings).
+
+```tsx
+import { TokensChartCard } from '@oxyhq/bloom/chart-cards';
+
+<TokensChartCard data={days /* { label: 'Jul 5', value: 48.3 }[] */} headline={667.7} delta="+9.4%" />
+```
+
+## Props
+
+| Prop | Default | |
+|---|---|---|
+| `data` | — | `{ label, value }[]`, one point per day; `0` is idle |
+| `headline` | sum of `data` | the resting number |
+| `title` | `"Tokens"` | |
+| `format` | `` `${n.toFixed(1)}M tokens` `` | resting and hovered number |
+| `getPointTitle` | the point's `label` | |
+| `delta` | — | the status-purple chip's text |
+| `startLabel` / `endLabel` | `"Jun 14"` / `"Today"` | the axis row — pass your own |
+| `plotHeight` | 200 | |
+| `color` / `activeColor` | purple-400 / purple-500 | line and area / active dot |
+| `activeIndex` / `onActiveIndexChange` | tracked | |
+| `accessibilityLabel` | a summary of every day | names the plot (`role="img"`) |
+
+## Geometry
+
+| | |
+|---|---|
+| card | radius 20, `background-secondary`, padding 12 top and bottom only — the plot runs to the edges |
+| header | 16 in, 4 from the top, overlapping the plot by 32: label `body-medium` text-secondary / 2 / number `title-2-medium` tabular + `Chip` 8 after it (light purple-100 / 600, dark purple-900 at 50% over the card / 300) |
+| plot | 200 tall, margin top 27 / bottom 2; X a point scale edge to edge; Y `[0, nice max]` from recharts' five ticks |
+| area | the line closed on the base, purple-400 32% → 0% |
+| line | 2px, straight joins, cut into runs (`tokensSegments`): purple between idle stretches, each run reaching one point into the zeros around it; neutral-400 dashed `5 5` along every run of zeros |
+| cursor | 1px dashed `4 4` `chart-cursor`, plot top to bottom, over the series |
+| dot | `PulsingDot` in purple-500, neutral-400 on an idle day, ringed in the card colour |
+| axis | 8 under the plot, `caption-2-medium` text-tertiary, 16 in |
+
+## Interaction and motion
+
+Inside the plot rectangle the pointer (web) or a pressing finger (native) picks the nearest day: the label becomes its date, the number rolls to its value in tenths and the fade replays. Above the 27px margin, or leaving the plot, clears. The plot wipes in left to right over 1800ms `cubic-bezier(0.33, 0, 0.15, 1)` — a clip-path sweep — as an SVG clip; reduced motion shows it at once.

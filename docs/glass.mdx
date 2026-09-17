@@ -1,0 +1,94 @@
+---
+title: Glass
+description: The tinted glass material (`GlassSurface`) — what makes it read as glass, its measured AA cost, and the Android blur limit.
+order: 90
+---
+
+# Glass
+
+`glass/GlassSurface.tsx` + `theme/glass-colors.ts`. Until `@oxyhq/bloom` 1.14.3 this material painted `Button`'s `primary` and `destructive` variants; `Button` now uses its own gradient recipe (`docs/button.mdx`). The measurements below were taken on that button and remain the reference for any glass surface.
+
+## The material
+
+`primary` and `destructive` are **tinted glass**: the brand colour at 85% over a `blur(10px)` of whatever is behind them, a hairline of the same colour at full strength, a lit white top rim and a soft drop shadow. The label is the fill's own on-colour, exactly as on the solid button — the pane IS the fill, so it carries the same label.
+
+The glass is the sheen, not the wash. What reads as glass is the rim, the vertical gradient and the hairline; the 15% of the backdrop that shows through is a hint of depth, not the effect itself.
+
+**One measured cost, stated because it is real.** The 15% bleed moves the pane toward the surface under it, which in light mode means lighter — the one direction a white label cannot afford. Of `primary`'s 640 preset × mode × surface combinations, **73 fall below WCAG AA**, in the band 4.17–4.50, all in light mode, on `acid-canopy`, `arctic-signal`, `blue`, `bronze-neon`, `clay-current`, `copper-field`, `electric-tide`, `faircoin`, `green`, `lagoon`, `lavender`, `malachite-rush`, `midnight-citrus`, `mint`, `olive`, `orange`, `pacific-flare`, `pine`, `plum`, `pumpkin`, `reef-pulse`, `rose`, `saffron-depth`, `sky`, `solar-flux`, `viridian-orbit` and `yellow`. Both solid Button fills pass all 1,280 rows; glass `destructive` is also unaffected (0/640, worst 5.32). The alpha at which the failures reach zero remains 0.89.
+
+The 1.0.1 catalog remains exactly 38/340, including the original 18-preset oracle at 30/180. The 30 new three-seed combinations contribute 35/300 and do not lower the existing 4.17 floor. These cohorts are asserted independently, so an unchanged total cannot hide a regression moving from one into the other.
+
+If your app runs one of those 27 presets in light mode and needs AA on its primary button, use `variant="inverse"` for that call site, or raise `GLASS_FILL_ALPHA`.
+
+Over a retained black/mid-grey/white media sample, **50 of 384** preset × mode × backdrop rows fall below AA, worst 3.61 (`destructive`: 0). The 1.0.1 catalog remains 25/204; the additions contribute 25/180, worst 4.17. That is a sample rather than a promise about arbitrary pixels. If a CTA must be legible over an image, `variant="inverse"` is opaque and backdrop-independent:
+
+```tsx
+<Button variant="inverse">Comprar</Button>
+```
+
+`secondary`, `outline`, `ghost`, `text`, `link` and `icon` are unchanged: they have no fill for the tint to replace.
+
+### On Android the blur is not applied, and it cannot be
+
+Measured on an Android emulator (API 37): the pane paints its tint and the backdrop behind it is **not blurred**. `expo-blur`'s `blurMethod` defaults to `'none'` on Android, and `dimezisBlurView` additionally needs a `blurTarget` ref pointing at a `BlurTargetView` that wraps the content to blur.
+
+The obvious fix — wrap the app in a `BlurTargetView` and hand the ref down — **crashes the app**. A `BlurView` that is a DESCENDANT of the view it points at makes the Android render tree recurse into itself: `SIGSEGV` in `RenderThread`, `RenderNode::prepareTreeImpl` repeating past 500 frames. Reproduced twice, isolated to one target and one pane. A glass `Button` fills its caller and therefore sits inside the content it would need to blur, so the only topology available to it is the one that crashes.
+
+Three topologies, all measured on device (over 10dp stripes, where `std` is the discriminator — the MEAN is nearly identical in every case, so a mean-only comparison reports "no difference"):
+
+| `BlurView` position | result |
+| --- | --- |
+| descendant of its own `blurTarget` | **native crash** |
+| sibling of the target | blurs; std 0.70 vs 11.95 unblurred |
+| inside a `Modal`, target in the root window | blurs; std 0.68, matches the blurred composite to 0.36/255 |
+
+So Bloom asks for no blur method on Android at all. What that costs:
+
+- Over Bloom's own flat surfaces — the documented backdrop range — nothing visible changes. A blur over a uniform colour is a no-op, so the painted pane matched the web composite to **0.75/255**, and every AA number above still holds.
+- Over **textured** content (a photograph, a busy list) the Android pane transmits that texture at 15% instead of smoothing it. The pill clip, the hairline, the rim, the sheen and the drop shadow are all unaffected.
+
+The third row is where an Android blur is still available, and Bloom now takes it — but only for surfaces inside a real RN `<Modal>`, which is the bottom-sheet path and not a `Button`. See `docs/dialog.mdx` for how to switch it on.
+
+**So on Android, "glass" means tint, top sheen, hairline and drop shadow — plus a blur only where a target exists.** A glass `Button` has the first four and never the fifth.
+
+iOS uses `UIVisualEffectView` and needs none of this, but it has not been verified on hardware.
+
+### What a lower alpha would buy, and what it would cost
+
+The recurring question about this material is whether it is transparent enough to be glass at all. `backdrop-filter` only acts on the fraction of the backdrop that gets **through** the pane, so at 0.85 the blur is running at full radius on 15% of the picture. Reproduce the whole trade with:
+
+```bash
+bun run storybook          # the DEV server; the script reads the theme through Vite
+node scripts/measure-glass-alpha.mjs --url http://localhost:6006 --image docs/glass-alpha-sweep.png
+```
+
+![The same button at thirteen fill alphas, over a flat page, a photograph and a hard stripe pattern](./glass-alpha-sweep.png)
+
+Measured in Chrome off painted pixels, with the label removed from the measurement clones so a white glyph cannot be mistaken for backdrop:
+
+| alpha | backdrop response | blur delta over a photo (max/mean) | blur delta on a flat page | `primary` rows < AA | `destructive` rows < AA |
+| --- | --- | --- | --- | --- | --- |
+| 0.91 | 23.0 | 11 / 2.9 | 1 | 0 / 640 | 0 / 640 |
+| 0.90 | 25.0 | 12 / 3.1 | 1 | 0 / 640 | 0 / 640 |
+| 0.89 | 28.0 | 13 / 3.5 | 1 | 0 / 640 | 0 / 640 |
+| 0.88 | 31.0 | 15 / 3.8 | 1 | 8 / 640 | 0 / 640 |
+| 0.87 | 33.0 | 16 / 4.0 | 1 | 26 / 640 | 0 / 640 |
+| 0.86 | 36.0 | 17 / 4.4 | 1 | 49 / 640 | 0 / 640 |
+| **0.85** (shipped) | 38.0 | 18 / 4.7 | 1 | 73 / 640 | 0 / 640 |
+| 0.75 | 63.7 | 31 / 7.8 | 1 | 431 / 640 | 128 / 640 |
+| 0.65 | 88.7 | 43 / 10.9 | 1 | 492 / 640 | 640 / 640 |
+| 0.55 | 114.7 | 55 / 14.2 | 1 | 531 / 640 | 640 / 640 |
+| 0.45 | 139.3 | 67 / 17.4 | 0 | 580 / 640 | 640 / 640 |
+| 0.35 | 165.3 | 79 / 20.6 | 1 | 635 / 640 | 640 / 640 |
+| 0.25 | 190.3 | 91 / 23.8 | 1 | 635 / 640 | 640 / 640 |
+
+Everything is out of 255. Backdrop response is how far the painted pane moves between a white and a black backdrop — linear in `1 - alpha`, at 25.4 ± 0.7 per 0.10 of alpha. Blur delta is how much the picture changes when the blur is switched off, which is the honest form of "can you see the blur".
+
+Three things the table settles:
+
+- **On a flat page the blur is worth ~1/255 at every alpha, including 0.25.** There is nothing behind the pane to blur, so lowering the alpha does not make a flat page glassy — it only makes the button paler. That is the whole of the "it doesn't look glassy" complaint, and no alpha fixes it.
+- **Over a photograph the blur is already visible at 0.85** (18/255 peak). Where there is something to see, the shipped material is doing the thing.
+- **Legibility falls off a cliff immediately below 0.85.** One step down takes `primary` from 73 to 431 failures and `destructive` from 0 to 128; two steps down puts every one of `destructive`'s 640 rows under AA.
+
+So there is no single alpha that both matches the reference and reads as glass on a flat surface. That is a property of the material — a blur needs a backdrop — not a constant nobody has tuned yet. To make a specific surface read as glass, put something behind it.
+

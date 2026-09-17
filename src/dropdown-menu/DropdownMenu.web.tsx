@@ -103,6 +103,7 @@ export function DropdownMenuContent({
       open={menu.open}
       anchor={anchor}
       role="menu"
+      surface="menu"
       label={label}
       side={side}
       align={align}

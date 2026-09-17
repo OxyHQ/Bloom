@@ -1,0 +1,84 @@
+---
+title: FileUpload
+description: A drag-and-drop file zone with validation, a perimeter progress ring and a success state.
+order: 96
+---
+
+# FileUpload
+
+A drop zone that validates a file, shows its upload progress as a ring running round its own edge, and confirms when it is done.
+
+## Self-running (demo behaviour)
+
+```tsx
+import { FileUpload } from '@oxyhq/bloom/file-upload';
+
+<FileUpload onUploadComplete={(file) => console.log(file.name)} />
+```
+
+With no `progress`, the progress is simulated and `onUploadComplete` fires after the success state. Useful for prototypes; real integrations control it.
+
+## Controlled — a real upload
+
+```tsx
+const [file, setFile] = useState<FileUploadFile | null>(null);
+const [progress, setProgress] = useState(0);
+
+<FileUpload
+  file={file}
+  progress={progress}
+  onFileSelected={(picked) => {
+    setFile(picked);
+    setProgress(0);
+    upload(picked.raw ?? picked.uri, setProgress); // your transport
+  }}
+  onUploadComplete={() => setFile(null)}
+/>
+```
+
+- `file` set (even to `null`) makes it **fully controlled**: `null` is the idle zone, a file below 100% is uploading, 100% shows the success state, holds 1.6s, calls `onUploadComplete` and waits for you to clear `file`.
+- `progress` alone (no `file`) keeps the file internal but uses your progress instead of the simulation.
+- `onFileSelected` fires only for files that pass validation; `onReject(message, file)` for the rest.
+
+## Picking files
+
+- **Web:** click / Enter / Space opens a hidden `<input type="file">` restricted to `allowedExtensions`; dropping a file on the zone works too. `file.raw` is the DOM `File`.
+- **Native:** there is no built-in picker, and Bloom adds no dependency for one. Pass `onPickFiles`, returning (or resolving) a file or array of files — typically from `expo-document-picker`:
+
+```tsx
+<FileUpload
+  onPickFiles={async () => {
+    const result = await DocumentPicker.getDocumentAsync();
+    return result.canceled
+      ? null
+      : result.assets.map((a) => ({ name: a.name, size: a.size ?? 0, uri: a.uri, mimeType: a.mimeType }));
+  }}
+/>
+```
+
+`onPickFiles` also replaces the input on web when given.
+
+## Validation and copy
+
+`allowedExtensions` (default `pdf, jpg, jpeg, png, xlsx`) and `maxBytes` (default 8 MB) drive both the checks and the hint line (`PDF, JPG, PNG, XLSX (max 8 MB)` — `JPEG` is accepted but left out of the hint). A rejection replaces the prompt in the error colour for 2.6s. Every visible string is overridable through `labels` (`prompt`, `select`, `uploading(size)`, `uploaded`, `unsupported(exts)`, `tooLarge(max)`). On native the default prompt reads "Tap to select a file", since there is nothing to drag.
+
+`formatFileSize(bytes)` is exported (`312 KB`, `2.4 MB`, `15 MB`).
+
+## What it looks like
+
+The "Upload file" / "Upload in progress" frames, pixel-matched on web.
+
+| | |
+| --- | --- |
+| zone | 164 tall, full width, radius 16 |
+| idle | secondary fill (neutral-100, dark neutral-900), 2px **dashed** border (neutral-300 / 700) that darkens on hover or drag-over (neutral-400 / 600); 40px disc with a 24px upload-cloud icon that darkens on hover; 14 below it the Body/Medium prompt with the action word in accent-500, 8 below that the Body 2 hint |
+| uploading | surface fill; the dashed border fades out and a 2px neutral outline fades in with an accent-400 stroke running **clockwise from top-centre**; an accent-400 `42%` pill (Caption 1/Medium, tabular figures) drops in over the top edge; bordered 40px disc with a file-type icon (spreadsheet / image / document, or `renderFileIcon`), the name (Body/Medium, truncated at 90%) and "Uploading 2.4 MB..." |
+| complete | the ring closes and the status line cross-fades to "Uploaded successfully!" |
+
+Motion: fills and borders ease over 300ms, the ring's dash over 200ms linear, the pill over 160/300ms. Content swaps use a staggered reveal — each line rises 12px out of a 3px blur over 500ms (`cubic-bezier(0.22, 1, 0.36, 1)`), 40ms apart, and leaves with a 200ms fade. Web runs all of it as self-injected CSS on `dataSet` hooks; native drives opacity and translate with `Animated` **without the blur** (no portable blur filter). Reduced motion removes every transition.
+
+## Hazards
+
+- **The progress dash is computed in real units, rather than a normalized `pathLength={100}`** — react-native-svg does not honour `pathLength` everywhere, so the length of the rounded-rect path is computed from the measured box instead. Change the inset or radius in one place only (`RING_INSET` / `RING_RADIUS`).
+- **The hidden input stops its own click propagating.** A programmatic `input.click()` bubbles to the zone's `Pressable`, which reads a detail-less click as keyboard activation and would open the picker a second time.
+- **The zone is removed from the tab order while busy** with an explicit web `tabIndex={-1}`: react-native-web's `Pressable` does not turn `focusable={false}` into a negative tab index.

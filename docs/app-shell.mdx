@@ -1,0 +1,45 @@
+---
+title: AppShell
+description: Page frame with the sidebar, a responsive drawer, a breadcrumb + title header, a notification bell and a floating Pro offer card.
+order: 83
+---
+
+# AppShell
+
+`AppShell`, with `AppShellHeader`, `NotificationBell` and `ProOfferCard`.
+
+```tsx
+import { AppShell, NotificationBell, ProOfferCard } from '@oxyhq/bloom/app-shell';
+
+<AppShell
+  sidebar={{ items, secondaryItems, selected, onNavigate, account, team }}
+  title="Welcome Maya"
+  breadcrumb={<Breadcrumb>…</Breadcrumb>}
+  actions={<>
+    <NotificationBell notifications={inbox} onAction={handle} />
+    <Button variant="primary" leadingIcon={RiAddFill}>Create ticket</Button>
+  </>}
+  overlay={showOffer ? <ProOfferCard … onDismiss={hideOffer} /> : null}
+>
+  {page}
+</AppShell>
+```
+
+## Layout
+
+- `lg` and up: the rail sits in flow; the content column is centred, max `contentMaxWidth` (1300), header then content 16 apart.
+- Below `lg` the header shows a menu button, and `drawer` picks how the rail arrives:
+  - `overlay` — a drawer over the page on a 40% black backdrop (portaled through `OverlayRoot`, so it ranks with every other overlay).
+  - `reveal` — the rail waits flat beneath the page; the page slides 272 right and rounds to 32 while the rail scales in from 0.94 (325ms). Pressing the page closes it.
+- `drawerOpen` / `onDrawerOpenChange` control it.
+- `sidebar={{ variant: 'rail', … }}` keeps the 80px navigation rail in flow from `sm` instead of `lg`; below `sm` the menu button opens the drawer, which always shows the full panel.
+
+## NotificationBell
+
+A medium secondary icon button with the unread count (16px red disc, 1.5px ring in the button's surface that drops on hover) and a `NotificationCenter` in a bottom-end popover, 440 wide. `unreadCount` overrides the computed count.
+
+## ProOfferCard
+
+280 wide, 12 from the bottom-left (`placement="inline"` renders in flow), radius 16, card-coloured hairline, the waitlist shadow; a light band across the top (default: an accent gradient; pass `backdrop` for your own, masked the same way on web), the copy, a full-width CTA with a sweeping shimmer (hidden under reduced motion) and an xs close button. It rises in after `enterDelay` (1.2s). Persisting the dismissal is the host's job.
+
+A live ray-field WebGL backdrop and animated Pro logo are brand artwork and are not included — pass `backdrop` / `logo`.

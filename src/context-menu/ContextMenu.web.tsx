@@ -135,6 +135,7 @@ export function ContextMenuContent({
       open={menu.open}
       anchor={menu.anchor}
       role="menu"
+      surface="menu"
       label={label}
       side={side}
       align={align}

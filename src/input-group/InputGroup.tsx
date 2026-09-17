@@ -1,5 +1,7 @@
 import React, {
+  Children,
   createContext,
+  isValidElement,
   memo,
   useContext,
   useMemo,
@@ -9,21 +11,62 @@ import { Platform, StyleSheet, View } from 'react-native';
 import { useTheme } from '../theme/use-theme';
 import { useInteractionState } from '../hooks/use-interaction-state';
 import { Text } from '../typography';
-import { borderRadius, fontSize, space } from '../styles/tokens';
+import {
+  TEXT_FIELD_GEOMETRY,
+  TEXT_FIELD_LEADING_GAP,
+  TEXT_FIELD_RADIUS,
+  TEXT_FIELD_RING_WIDTH,
+  TEXT_FIELD_TRAILING_GAP,
+  TEXT_FIELD_WEB_TRANSITION,
+  resolveShellPaint,
+  resolveTextFieldPalette,
+  type TextFieldPalette,
+  type TextFieldSize,
+} from '../text-field/shared';
+import { TextFieldGroupContext } from '../text-field/TextField';
 import type { InputGroupAddonProps, InputGroupProps } from './types';
 
-const SIZE_CONFIG = {
-  sm: { minHeight: 36, paddingHorizontal: space.sm },
-  md: { minHeight: 44, paddingHorizontal: space.md },
-  lg: { minHeight: 52, paddingHorizontal: space.lg },
-} as const;
+/**
+ * The group is the input shell (`base/input/input.tsx`) with its adornment
+ * slots opened up: the same fill, inset ring, radius and state paint as
+ * `TextField` (`text-field/shared`).
+ *
+ *                 sm        md        lg
+ *   height        32        36        44
+ *   shell px      6         8         10
+ *
+ * `sm` corresponds to `small` and `md` to `medium`; `lg` extends the ramp.
+ *
+ *   leading addon   2px before the control (`leftSection gap-0.5`)
+ *   trailing addon  8px after it (`content gap-2`)
+ *   `noPadding`     the addon reaches 4px from the shell's edge —
+ *                   `pl-1` for a leading addon (Phone basic)
+ *
+ * A `TextFieldInput` (or a `Search`) inside renders BARE through
+ * `TextFieldGroupContext`: the group paints the one shell, the field draws none.
+ */
+const SIZE_CONFIG: Record<NonNullable<InputGroupProps['size']>, { height: number; paddingHorizontal: number; field: TextFieldSize }> = {
+  sm: { height: TEXT_FIELD_GEOMETRY.small.height, paddingHorizontal: TEXT_FIELD_GEOMETRY.small.paddingHorizontal, field: 'small' },
+  md: { height: TEXT_FIELD_GEOMETRY.medium.height, paddingHorizontal: TEXT_FIELD_GEOMETRY.medium.paddingHorizontal, field: 'medium' },
+  lg: { height: 44, paddingHorizontal: 10, field: 'medium' },
+};
+
+/** `pl-1`: how close a padding-less addon sits to the shell's edge. */
+const ADDON_EDGE_INSET = 4;
+/** Space between an addon's content and its divider. */
+const DIVIDER_GAP = 8;
 
 interface InputGroupContextValue {
   size: 'sm' | 'md' | 'lg';
+  palette: TextFieldPalette;
+  disabled: boolean;
 }
 
-const InputGroupContext = createContext<InputGroupContextValue>({ size: 'md' });
+const InputGroupContext = createContext<InputGroupContextValue | null>(null);
 InputGroupContext.displayName = 'InputGroupContext';
+
+/** Where an addon sits relative to the control; set by the group per child. */
+const AddonPositionContext = createContext<'leading' | 'trailing'>('trailing');
 
 const InputGroupAddonComponent = function InputGroupAddon({
   children,
@@ -33,33 +76,52 @@ const InputGroupAddonComponent = function InputGroupAddon({
   testID,
 }: InputGroupAddonProps) {
   const theme = useTheme();
-  const { size } = useContext(InputGroupContext);
-  const cfg = SIZE_CONFIG[size];
+  const group = useContext(InputGroupContext);
+  const position = useContext(AddonPositionContext);
+  const fallbackPalette = useMemo(() => resolveTextFieldPalette(theme), [theme]);
+  const palette = group?.palette ?? fallbackPalette;
+  const cfg = SIZE_CONFIG[group?.size ?? 'md'];
+  const leading = position === 'leading';
 
-  // Plain string/number content is wrapped in a themed Text so it reads as a
-  // subdued addon label (and never trips RN's "raw text outside <Text>" rule).
+  // Plain string/number content reads as a subdued `text-body-regular` label in
+  // `text-secondary` (and never trips RN's "raw text outside <Text>" rule).
   const content =
     typeof children === 'string' || typeof children === 'number' ? (
       <Text
+        variant="body-regular"
         numberOfLines={1}
-        style={{ color: theme.colors.textSecondary, fontSize: fontSize.md }}>
+        style={{ color: group?.disabled ? palette.textDisabled : palette.hint }}>
         {children}
       </Text>
     ) : (
       children
     );
 
+  // Longhands throughout: react-native-web ranks `marginHorizontal` /
+  // `paddingHorizontal` above a caller's `marginLeft`, so a shorthand here would
+  // silently beat the `style` override on web.
+  const edgeMargin = noPadding ? ADDON_EDGE_INSET - cfg.paddingHorizontal : 0;
+  const spacing = leading
+    ? {
+        marginLeft: edgeMargin,
+        marginRight: TEXT_FIELD_LEADING_GAP,
+        paddingRight: divider ? DIVIDER_GAP : 0,
+      }
+    : {
+        marginLeft: TEXT_FIELD_TRAILING_GAP,
+        marginRight: edgeMargin,
+        paddingLeft: divider ? DIVIDER_GAP : 0,
+      };
+
   return (
-    <View
-      testID={testID}
-      style={[
-        styles.addon,
-        !noPadding && { paddingHorizontal: cfg.paddingHorizontal },
-        style,
-      ]}>
+    <View testID={testID} style={[styles.addon, spacing, style]}>
       {divider ? (
         <View
-          style={[styles.divider, { backgroundColor: theme.colors.borderLight }]}
+          style={[
+            styles.divider,
+            leading ? { right: 0 } : { left: 0 },
+            { backgroundColor: palette.ringHover },
+          ]}
         />
       ) : null}
       {content}
@@ -72,8 +134,9 @@ InputGroupAddon.displayName = 'InputGroupAddon';
 
 /**
  * Horizontal group that wraps an input with leading/trailing addons (icons,
- * text, buttons, `Kbd`). Renders a single bordered chrome — radii, border,
- * focus/error colors match Bloom's `TextField` so a group reads as one field.
+ * text, buttons, `Kbd`). Renders a single filled chrome — radius, fill, inset
+ * ring and its hover/focus/invalid/disabled paint are `TextField`'s own
+ * (`text-field/shared`), so a group reads as one field.
  * The input child stretches to fill the middle.
  *
  * ```tsx
@@ -100,19 +163,39 @@ const InputGroupComponent = function InputGroup({
   const { state: hovered, onIn: onHoverIn, onOut: onHoverOut } =
     useInteractionState();
 
-  const borderColor = isInvalid
-    ? theme.colors.negative
-    : focused
-      ? theme.colors.primary
-      : hovered
-        ? theme.colors.borderLight
-        : 'transparent';
+  const palette = useMemo(() => resolveTextFieldPalette(theme), [theme]);
+  const { backgroundColor, borderColor } = resolveShellPaint(palette, {
+    hovered,
+    focused,
+    invalid: isInvalid,
+    disabled,
+  });
 
-  const backgroundColor = isInvalid
-    ? theme.colors.negativeSubtle
-    : theme.colors.contrast50;
+  const ctx = useMemo<InputGroupContextValue>(
+    () => ({ size, palette, disabled }),
+    [size, palette, disabled],
+  );
+  const fieldCtx = useMemo(
+    () => ({ size: cfg.field, isInvalid, disabled }),
+    [cfg.field, isInvalid, disabled],
+  );
 
-  const ctx = useMemo<InputGroupContextValue>(() => ({ size }), [size]);
+  // Addons before the first non-addon child are leading; the rest trail.
+  const items = Children.toArray(children);
+  const controlIndex = items.findIndex(
+    (child) => !(isValidElement(child) && child.type === InputGroupAddon),
+  );
+  const positioned = items.map((child, index) =>
+    isValidElement(child) && child.type === InputGroupAddon ? (
+      <AddonPositionContext.Provider
+        key={child.key ?? index}
+        value={controlIndex === -1 || index < controlIndex ? 'leading' : 'trailing'}>
+        {child}
+      </AddonPositionContext.Provider>
+    ) : (
+      child
+    ),
+  );
 
   const webHandlers: Record<string, unknown> =
     Platform.OS === 'web'
@@ -124,30 +207,36 @@ const InputGroupComponent = function InputGroup({
 
   return (
     <InputGroupContext.Provider value={ctx}>
-      <View
-        testID={testID}
-        // `aria-disabled`, not `accessibilityState`: this is a `View`, so
-        // react-native-web has no `disabled` prop to derive the attribute from
-        // and never reads `accessibilityState`. React Native folds it back.
-        aria-disabled={disabled || undefined}
-        // Capture focus bubbling from a nested input so the whole chrome
-        // reflects focus — RN-web bubbles focus/blur, native does not but a
-        // nested TextInput's own focus ring is sufficient there.
-        onFocus={onFocus}
-        onBlur={onBlur}
-        {...webHandlers}
-        style={[
-          styles.container,
-          {
-            minHeight: cfg.minHeight,
-            backgroundColor,
-            borderColor,
-          },
-          disabled && styles.disabled,
-          style,
-        ]}>
-        {children}
-      </View>
+      <TextFieldGroupContext.Provider value={fieldCtx}>
+        <View
+          testID={testID}
+          // `aria-disabled`, not `accessibilityState`: this is a `View`, so
+          // react-native-web has no `disabled` prop to derive the attribute from
+          // and never reads `accessibilityState`. React Native folds it back.
+          aria-disabled={disabled || undefined}
+          // Capture focus bubbling from a nested input so the whole chrome
+          // reflects focus — RN-web bubbles focus/blur, native does not but a
+          // nested TextInput's own focus ring is sufficient there.
+          onFocus={onFocus}
+          onBlur={onBlur}
+          {...webHandlers}
+          style={[
+            styles.container,
+            {
+              height: cfg.height,
+              // The ring is a 2px border here, so it takes its share of the
+              // shell's side padding and the content stays put.
+              paddingLeft: cfg.paddingHorizontal - TEXT_FIELD_RING_WIDTH,
+              paddingRight: cfg.paddingHorizontal - TEXT_FIELD_RING_WIDTH,
+              backgroundColor,
+              borderColor,
+            },
+            TEXT_FIELD_WEB_TRANSITION,
+            style,
+          ]}>
+          {positioned}
+        </View>
+      </TextFieldGroupContext.Provider>
     </InputGroupContext.Provider>
   );
 };
@@ -155,29 +244,26 @@ const InputGroupComponent = function InputGroup({
 const styles = StyleSheet.create({
   container: {
     flexDirection: 'row',
-    alignItems: 'stretch',
+    alignItems: 'center',
     width: '100%',
-    borderRadius: borderRadius.sm,
-    borderWidth: 2,
+    borderRadius: TEXT_FIELD_RADIUS,
+    borderWidth: TEXT_FIELD_RING_WIDTH,
     overflow: 'hidden',
   },
   addon: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    gap: space.xs,
+    alignSelf: 'stretch',
+    gap: 4,
     flexShrink: 0,
     position: 'relative',
   },
   divider: {
     position: 'absolute',
-    left: 0,
-    top: space.sm,
-    bottom: space.sm,
+    top: 6,
+    bottom: 6,
     width: StyleSheet.hairlineWidth,
-  },
-  disabled: {
-    opacity: 0.5,
   },
 });
 

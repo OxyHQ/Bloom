@@ -26,7 +26,7 @@ function Demo() {
 }
 
 const meta: Meta<typeof CompositionBar> = {
-  title: 'Data Display/CompositionBar',
+  title: 'Charts/Composition Bar',
   component: CompositionBar,
 };
 

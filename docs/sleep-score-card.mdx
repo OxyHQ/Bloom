@@ -1,0 +1,53 @@
+---
+title: Sleep score card
+description: A medical dashboard sleep score — a verdict, a segmented score ring and ruled sub-score rows — in react-native-svg on recharts' pie geometry.
+order: 55
+---
+
+# Sleep score card
+
+`SleepScoreCard` rebuilds recharts' `PieChart` score ring in react-native-svg on recharts' pie and sector geometry (`src/chart-cards/polar-geometry.ts`), with its verdict header and sub-score panel.
+
+```tsx
+import { SleepScoreCard } from '@oxyhq/bloom/chart-cards';
+
+<SleepScoreCard
+  range="29 Jun - 5 Jul"
+  metrics={[
+    { label: 'Duration', detail: '7h 50m', score: 49, max: 50 },
+    { label: 'Bedtime', detail: '20m earlier', score: 29, max: 30 },
+    { label: 'Interruptions', detail: '5m wake up', score: 20, max: 20 },
+  ]}
+/>
+```
+
+| Prop | Default | |
+|---|---|---|
+| `metrics` | — | `{ label, detail, score, max, color? }` per sub-score |
+| `title` | `"Sleep score"` | |
+| `scoreLabel` | Excellent ≥ 90 · Good ≥ 75 · Fair ≥ 50 · Poor | string or `(total) => string` |
+| `range` | none | the static week pill's label |
+| `height` | 330 | |
+| `activeIndex` / `onActiveIndexChange` | tracked | control the hovered arc |
+| `accessibilityLabel` | `"Sleep score: 98 of 100, Excellent. Duration 49 of 50, …"` | names the ring (`role="img"`) |
+
+## Geometry
+
+| | |
+|---|---|
+| card | 330 tall, radius 20, padding 10, background-secondary, gap 16 |
+| header | padded 6 / 6 / 0, 8 between columns: `body-medium` text-secondary label, 2px, `title-1-medium` verdict |
+| week pill | 151 × 32, radius 10, 1px `border-button`, `background-primary`, `shadow-xs`, padding 4, gap 4; 16px chevrons (text-secondary) around a centred `body-medium` label — decorative, a static week-range pill |
+| ring | a 104-tall area pulled 8 up; radii 37 → 52 centred; a full chart-track ring under one arc per sub-score from twelve o'clock clockwise, 4° apart (also between the last and the first), `cornerRadius` 99 → 7.5; the unearned points (`Σmax − Σscore`) are a transparent slice, so they read as exposed track |
+| centre | `display-4-medium`, tabular: the total, or the hovered arc's score, with the 220ms number fade |
+| panel | fills the rest; radius 10, `background-inner`, padded 10 on the LEFT only. Rows share its height, padded 8 top / bottom and 10 right, a 1px `separator-border-strong` hairline under every row but the last — the rules run to the panel's right edge and stay inset on the left |
+| rows | 12px swatch (radius 4), 6px, `body-regular` "Label: detail" text-secondary; `body-medium` `score/max` text-primary tabular |
+| colours | `chart-5` purple, `chart-3` pink, `chart-6` blue, re-anchored on the theme's `primary`; separator neutral-200 (dark: neutral-700 at 60% over the panel) |
+
+## Hover
+
+Hovering an arc swaps the centre for its score and drops the other arcs to 70% (200ms on web). The unearned slice is hoverable but focuses nothing. On native a finger presses and scrubs; lifting it clears.
+
+## Motion
+
+The arcs grow in turn from twelve o'clock over 450ms on mount (recharts' pie entrance) and morph on a data change. Snaps under reduced motion.

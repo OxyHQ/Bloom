@@ -47,6 +47,10 @@ const [country, setCountry] = useState('us');
 
 `SelectContent` takes the whole `items` array rather than children, so the native fork can hand it to a `FlatList` and the web fork can measure and scroll it. `renderItem` receives `(item, index, selectedValue)`.
 
+`SelectValue` shows the selected ITEM's label on both platforms (`item => item.label` by default; pass a `children` function for other item shapes — it receives the item, not the value). `SelectContent` resolves that item even while its panel is closed, so the trigger reads `Apple`, not `apple`, from the first paint; the web fork used to print the raw value. A value that matches no item clears it, so resetting to `undefined` brings the placeholder back.
+
+Type is the shared ramp, inline in Inter: `text-body-medium` on `md` triggers and options, `text-body-2-medium` on `sm`.
+
 `SelectTrigger` renders a pressable around its children, or hands the open handler to your own control with `asChild` — the same escape hatch every anchored Bloom family offers:
 
 ```tsx
@@ -58,7 +62,71 @@ const [country, setCountry] = useState('us');
 </SelectTrigger>
 ```
 
+## Look
+
+Colours are taken from the theme through the same ramps `Button` paints from (`floating/menu-palette.ts`):
+
+| part | `md` (default) | `sm` |
+| --- | --- | --- |
+| trigger | 38px tall (`px-2.5 py-2`, 6px gap), full pill | 28px (`px-[7px] py-1`, 4px gap), full pill |
+| value | 14/20 medium | 13/18 medium |
+| chevron | 16px round-capped stroke, `text-secondary` | 14px |
+| option row | 36px (`p-2`, 10px corner) | `px-2 py-1.5` |
+
+- **Trigger** — a card-coloured field with the `neutral-200` hairline and the xs contact shadow. Hover washes it `neutral-100` and darkens the border to `neutral-300`; keyboard focus draws a 2px accent ring 2px out; disabled is `neutral-100` with `text-tertiary` and no shadow. The value is `text-primary`, the placeholder `text-placeholder` (`neutral-400`). The chevron turns over while the list is open (web). Bloom's button-like controls are full pills rather than a 10px corner here.
+- **List** (web) — a 266px-minimum panel (it grows to the trigger's width when that is wider), `p-2`, 16px corner, `shadow-dropdown`, 4px below the trigger, rows 4px apart, scrolling past 240px. It opens and closes on a 150ms fade + `scale-95` + 2px blur.
+- **Rows** — hover, keyboard focus and the chosen option share one `neutral-100` wash; the chosen one also carries `SelectItemIndicator`'s `text-secondary` tick. `disabled` options are `text-disabled` and cannot be pressed.
+- **Dark** — surfaces go to `neutral-800` with `neutral-700` hairlines and a `neutral-700`-at-60% wash; disabled text uses `neutral-600` (the semantic dark `text-disabled` is the panel colour, which hides the row).
+
+```tsx
+<Select size="sm" value={v} onValueChange={setV}>…</Select>
+<SelectItem value="x" label="X" disabled>…</SelectItem>
+```
+
+### A trigger inside another control
+
+`SelectTrigger`'s `style` sizes the trigger BOX; `fieldStyle` restyles the bordered field itself and is applied after the field's own style, so it is the unambiguous override (a `className` can only compete with the padding classes in Tailwind's emit order). `SelectContent`'s `width` fixes the web list's width instead of the 266px / trigger-width floor. The phone input's country code uses both — a `rounded-lg px-1.5 py-1` trigger and a 220px list:
+
+```tsx
+<SelectTrigger label="Country code" fieldStyle={{ borderRadius: 8, paddingLeft: 6, paddingRight: 6, paddingTop: 4, paddingBottom: 4 }}>
+  …
+</SelectTrigger>
+<SelectContent width={220} items={countries} renderItem={…} />
+```
+
+Spell padding in longhands: react-native-web ranks the `padding-inline` a `paddingHorizontal` becomes above the field's own classes AND above `padding-left`, so a longhand is what lands on both platforms.
+
+The colours are INLINE (or, for the web trigger's hover and ring, custom properties an adopted sheet reads): the ramp stops exist as no CSS variable a class could name. A caller's `style` still overrides them; a `className` on `SelectValue`/`SelectItemText` drops the inline colour so a `text-*` utility can apply.
+
 It used to take a render prop instead, which handed its child a `state` object whose `pressed` was a hardcoded `false` and whose `hovered` the native fork never computed. Press and hover styling on a select trigger was therefore dead while the API read as though it worked. Bring your own control through `asChild` and its own states are real.
+
+## Leading marks
+
+`leading` on `SelectValue` and on `SelectItem` puts a node — a status dot, an icon — before the label, so an option's content can lead with a status dot or a glyph:
+
+```tsx
+<Select value={status} onValueChange={setStatus}>
+  <SelectTrigger label="Purchase status">
+    <SelectValue leading={(item) => item && <Badge dot color={(item as Status).tone} />} />
+    <SelectIcon />
+  </SelectTrigger>
+  <SelectContent
+    items={STATUSES}
+    renderItem={(item) => (
+      <SelectItem value={item.value} label={item.label} leading={<Badge dot color={item.tone} />}>
+        <SelectItemText>{item.label}</SelectItemText>
+      </SelectItem>
+    )}
+  />
+</Select>
+```
+
+- In the trigger the mark sits `gap-[5px]` from the value (`gap-1` on `sm`) — the trigger's own gap, not the row's 8.
+- A function `leading` receives the selected ITEM (`undefined` until `SelectContent` has resolved one), so the mark follows the value without the caller looking the option up again.
+- In a row the mark is the row's first in-flow child, 8px (`gap-2`) from the label; the indicator stays in its absolute right-hand gutter.
+- An icon mark can also trim the trigger's left inset to 8: pass `className="pl-2"` to `SelectTrigger`.
+
+[`DataTableSelect`](./data-table.mdx#cell-and-toolbar-parts) packages this for table rows.
 
 ## Groups and labels
 
@@ -74,13 +142,11 @@ It used to take a render prop instead, which handed its child a `state` object w
 
 ## Long lists
 
-The web dropdown grows to `maxHeight` (default 208, shadcn's `max-h-52`) and then scrolls. When it does, `SelectScrollUpButton` and `SelectScrollDownButton` appear at whichever end still has something to show, and disappear at the ends — a scroll affordance that is always visible tells the user a list scrolls when it does not.
-
-`SelectContent` renders both, so you get them by default. They are exported for a caller composing their own content, and on NATIVE they render nothing at all: the sheet's list already scrolls under the finger, and a chevron there is a target with no pointer to hit it.
+The web dropdown grows to `maxHeight` (default 240, `max-h-[240px]`) and then scrolls with the native scrollbar. Opening it scrolls the selected option into view. There are no scroll buttons by default: they appeared and disappeared as the list moved and made the panel jump in height. `SelectScrollUpButton` and `SelectScrollDownButton` stay exported for a caller composing their own content inside a `SelectScrollProvider`; on native they render nothing, since the sheet's list scrolls under the finger.
 
 ## Selection state
 
-Both forks render each option as `role="radio"` with `aria-checked` — the only spelling react-native-web reads, and one React Native folds back into `accessibilityState`. `SelectItemIndicator` draws the mark: the shared `RadioIndicator` on native, a check on web.
+Both forks render each option as `role="radio"` with `aria-checked` — the only spelling react-native-web reads, and one React Native folds back into `accessibilityState`. `SelectItemIndicator` draws the mark — a `text-secondary` check in the row's right-hand gutter on both platforms — and the chosen row also takes the highlight wash.
 
 `SelectSeparator` draws a rule between runs.
 
@@ -88,6 +154,6 @@ Both forks render each option as `role="radio"` with `aria-checked` — the only
 
 Every menu row in Bloom is an `Item`. A select row is not, and the reason is its layout.
 
-The web option reserves a 30px indicator gutter and paints the indicator into it ABSOLUTELY, so the label's left edge does not move between a selected row and an unselected one; `Item` has an in-flow leading slot and no absolute one. On top of that, `Item` couples `selected` — which select needs purely to emit `aria-checked` — to a selected BACKGROUND, and the web select deliberately paints none, because the check mark is its selection signal.
+The web option reserves a 30px indicator gutter and paints the indicator into it ABSOLUTELY, so the label's left edge does not move between a selected row and an unselected one; `Item` has an in-flow leading slot and no absolute one. On top of that, `Item` couples `selected` to its OWN selected background, while the select paints its own row wash — the same one hover and focus use — from the menu palette.
 
-Composing would mean flattening one of those two, and both are visible: the first as a label that jumps sideways on selection, the second as a highlighted row where there was none. So select keeps its own row, and `radio-indicator` stays the one indicator both it and `Radio` draw.
+Composing would mean flattening one of those two, and both are visible: the first as a label that jumps sideways on selection, the second as a selected row painted in a colour no other menu row uses. So select keeps its own row, and `radio-indicator` stays the one indicator both it and `Radio` draw.

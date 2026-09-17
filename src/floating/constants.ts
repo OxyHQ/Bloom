@@ -52,6 +52,12 @@
  * | destructive row          | `text-error`           | Bloom's themed negative, legible in both modes |
  * | `shadow-md shadow-black/5` | `shadow-m`           | Bloom's overlay elevation role |
  * | `shadow-sm shadow-black/5` | `shadow-s`           | Bloom's control-raise role |
+ *
+ * That table is now the POPOVER's (`PANEL_CLASS`). The three menu families and
+ * the select paint a separate menu recipe instead — geometry still as classes
+ * here (`MENU_PANEL_CLASS`, `ROW_CLASS`, …), but colours resolved from the theme
+ * ramps by `menu-palette.ts` and applied inline, because those stops exist as no
+ * CSS variable a class could name.
  */
 
 /* -------------------------------------------------------------------------- */
@@ -119,11 +125,11 @@ export const MENUBAR_SIDE_OFFSET = 8;
 export const ROW_ICON_SIZE = 16;
 
 /**
- * `max-h-52` — how tall a web select list grows before it scrolls. A number
+ * `max-h-[240px]` — how tall a web select list grows before it scrolls. A number
  * because it is `SelectContent`'s public `maxHeight` prop, which a caller sets
  * to its own value.
  */
-export const SELECT_MAX_HEIGHT = 208;
+export const SELECT_MAX_HEIGHT = 240;
 
 /**
  * How long the enter and the exit run, and the curve they run on.
@@ -142,6 +148,18 @@ export const PANEL_MOTION_SCALE_FROM = 0.95;
 /** `slide-in-from-<side>-2` — 8px along the axis the surface sits on. */
 export const PANEL_MOTION_SLIDE = 8;
 
+/**
+ * The MENU surfaces' own motion: `transition
+ * duration-150 ease-out` between the resting panel and `opacity-0 scale-95
+ * blur-[2px]`, the same shape in and out, with no slide. `ease-out` is Tailwind
+ * v4's `cubic-bezier(0, 0, 0.2, 1)`. A popover keeps the `PANEL_MOTION_*` above.
+ */
+export const MENU_MOTION_DURATION = 150;
+export const MENU_MOTION_EASING = [0, 0, 0.2, 1] as const;
+export const MENU_MOTION_SCALE_FROM = 0.95;
+/** `blur-[2px]` — web only; `FloatingPanel` is itself web-only. */
+export const MENU_MOTION_BLUR = 2;
+
 /* -------------------------------------------------------------------------- */
 /*  The floating panel                                                        */
 /* -------------------------------------------------------------------------- */
@@ -157,27 +175,53 @@ export const PANEL_MOTION_SLIDE = 8;
 export const PANEL_CLASS =
   'overflow-hidden rounded-radius-16 border border-border bg-popover p-space-4 shadow-m';
 
-/** `min-w-40` — 160px, a dropdown and context menu panel's own floor. */
-export const MENU_MIN_WIDTH_CLASS = 'min-w-40';
-
-/** `min-w-[12rem]` — a menubar menu is wider than a dropdown. */
-export const MENUBAR_MENU_MIN_WIDTH_CLASS = 'min-w-48';
-
 /**
- * `min-w-[200px] w-64` — a sub panel is a FIXED 256px, not a shrink-wrap, so a
- * column of flyouts does not step in and out as their labels change length.
+ * The menu panel: `rounded-2xl border p-2.5
+ * max-w-[calc(100vw-32px)]`, with the rows 4px apart (`gap-1` on the panel's
+ * flex column). Colour — `bg-background-primary-default`,
+ * `border-border-button-default`, `shadow-dropdown` — is NOT a class here: it is
+ * resolved from the theme by `menu-palette.ts` and applied inline by
+ * `FloatingPanel`, because the ramp stops it uses exist as no CSS variable.
  */
-export const MENU_SUB_PANEL_CLASS = 'w-64';
+export const MENU_PANEL_CLASS =
+  'overflow-hidden rounded-radius-16 border p-[10px] gap-space-4 max-w-[calc(100vw-32px)]';
 
 /**
- * The sub panel's scroller: `-mx-1 px-1 max-h-96 overflow-y-auto
- * overflow-x-hidden`. The negative inset bleeds the scroll container to the
- * panel edge and pads the content back, so the scrollbar track is not inset by
- * the panel's own `p-1` — and it doubles as the flyout's pointer hit box, which
- * is why the ring of panel padding no longer schedules a close.
+ * The select's listbox panel: the same surface, `p-2` rather than `p-2.5`
+ * ("listbox rows already space themselves 4px apart, so the surface sits a touch
+ * tighter than the action-menu Dropdown").
+ */
+export const LISTBOX_PANEL_CLASS =
+  'overflow-hidden rounded-radius-16 border p-space-8 max-w-[calc(100vw-32px)]';
+
+/**
+ * `w-[266px]`, as a FLOOR: a menu of short rows is exactly that
+ * width, and a longer label grows the panel rather than being cut.
+ */
+export const MENU_MIN_WIDTH_CLASS = 'min-w-[266px]';
+
+/** The same 266px as a number, for a surface whose floor is an inline `minWidth`. */
+export const MENU_WIDTH = 266;
+
+/** A menubar menu takes the same 266px floor — one menu width throughout. */
+export const MENUBAR_MENU_MIN_WIDTH_CLASS = 'min-w-[266px]';
+
+/**
+ * A sub panel is a FIXED 266px, not a shrink-wrap, so a column of flyouts does
+ * not step in and out as their labels change length.
+ */
+export const MENU_SUB_PANEL_CLASS = 'w-[266px]';
+
+/**
+ * The sub panel's scroller: `-mx-2.5 px-2.5 max-h-96 overflow-y-auto
+ * overflow-x-hidden`, with the panel's own 4px row rhythm. The negative inset
+ * bleeds the scroll container to the panel edge and pads the content back, so
+ * the scrollbar track is not inset by the panel's own padding — and it doubles as
+ * the flyout's pointer hit box, which is why the ring of panel padding no longer
+ * schedules a close.
  */
 export const MENU_SUB_SCROLL_CLASS =
-  '-mx-space-4 px-space-4 max-h-96 overflow-y-auto overflow-x-hidden';
+  '-mx-[10px] px-[10px] gap-space-4 max-h-96 overflow-y-auto overflow-x-hidden';
 
 /** `w-72 p-4` — a popover holds prose, so it is a fixed card with a real inset. */
 export const POPOVER_CLASS = 'w-72 p-space-16';
@@ -187,19 +231,16 @@ export const POPOVER_CLASS = 'w-72 p-space-16';
 /* -------------------------------------------------------------------------- */
 
 /**
- * `relative flex select-none items-center cursor-pointer px-2 py-1.5 rounded-xl
- * text-sm gap-2 outline-hidden min-h-8`.
- *
- * The 32px MINIMUM is the target's, and it is what makes a menu of one-line rows
- * read as a list rather than as text: the row's own content is 20px of line box
- * plus 12px of inset, so it only bites when a row is shorter than that.
+ * The menu item recipe: `flex w-full items-center gap-2 rounded-2lg p-2
+ * text-left` — 8px on every side and a 10px corner, so a one-line row is
+ * 20px of line box + 16px = 36px tall.
  *
  * `min-w-0` is on the row as well as the label, because a flex item's default
  * `min-width: auto` is what stops a long label from ever shrinking.
  */
 export const ROW_CLASS =
   'relative flex-row items-center select-none ' +
-  'px-space-8 py-1.5 gap-space-8 min-h-space-32 min-w-0 rounded-radius-12';
+  'p-space-8 gap-space-8 min-w-0 rounded-[10px]';
 
 /**
  * `cursor-pointer`, applied only while the row is ENABLED.
@@ -213,11 +254,17 @@ export const ROW_CLASS =
  */
 export const ROW_ENABLED_CLASS = 'cursor-pointer';
 
-/** `data-[highlighted]:bg-button-ghost-hover` — pointer hover and press. */
-export const ROW_HIGHLIGHT_CLASS = 'bg-accent';
+/**
+ * `cursor-not-allowed`. The dimming itself is the label's `text-disabled`
+ * colour, set inline by the row.
+ */
+export const ROW_DISABLED_CLASS = 'cursor-not-allowed';
 
-/** `aria-disabled:opacity-50 aria-disabled:cursor-not-allowed`. */
-export const ROW_DISABLED_CLASS = 'opacity-50 cursor-not-allowed';
+/**
+ * A disabled row with NO string label has no label to recolour, so its whole
+ * content dims instead.
+ */
+export const ROW_DISABLED_DIM_CLASS = 'opacity-50';
 
 /** `pl-8` — the checkbox/radio gutter, and what `inset` lines a plain row up with. */
 export const ROW_INSET_CLASS = 'pl-space-32';
@@ -229,7 +276,9 @@ export const ROW_GUTTER_CLASS = 'pl-space-32 pr-space-8';
 export const ROW_GUTTER_END_CLASS = 'pl-space-8 pr-space-32';
 
 /**
- * The row's own label: `text-sm`, no weight of its own.
+ * The row's own label's LAYOUT. Its type is `text-body-medium`, applied
+ * inline by `menu-type.ts` (`TYPE_SCALE` + Inter) — the class-only spelling this
+ * used to carry rendered in the system font stack, never Inter.
  *
  * `flex-1 min-w-0` is the target's `<span class="min-w-0 truncate">` — except
  * that the truncation itself is `numberOfLines={1}`, a PROP both platforms
@@ -245,17 +294,14 @@ export const ROW_GUTTER_END_CLASS = 'pl-space-8 pr-space-32';
  * and so is `leading-[20px]`. Every Oxy consumer imports `nativewind/theme`, so
  * this holds fleet-wide — spell a menu line height by leaving `leading-*` off.
  */
-export const ROW_TEXT_CLASS = 'flex-1 min-w-0 text-sm text-foreground';
-
-/** The same label on a `variant="destructive"` row. */
-export const ROW_TEXT_DESTRUCTIVE_CLASS = 'flex-1 min-w-0 text-sm text-error';
+export const ROW_TEXT_CLASS = 'flex-1 min-w-0';
 
 /**
- * `16×16, stroke-[2], opacity-70` — the target's base leading-icon treatment is a
- * FULL-COLOUR glyph at 70%, not a secondary-coloured one, so an icon reads as
- * part of its row rather than as a second de-emphasised thing beside the label.
+ * The leading slot dims nothing here — row icons are `size-4
+ * text-text-secondary` glyphs, and the colour belongs to the icon the caller
+ * passes (`MenuPalette.textSecondary` is the matching fill).
  */
-export const ROW_LEADING_CLASS = 'shrink-0 opacity-70';
+export const ROW_LEADING_CLASS = 'shrink-0';
 
 /**
  * `absolute left-2 inset-y-0 size-3.5 items-center justify-center`, stretched
@@ -275,18 +321,28 @@ export const ROW_INDICATOR_END_CLASS =
 /** `bg-foreground h-2 w-2 rounded-full` — a filled dot with no ring. */
 export const ROW_RADIO_DOT_CLASS = 'w-space-8 h-space-8 rounded-full bg-foreground';
 
-/** `text-foreground px-2 py-1.5 text-sm font-medium` — a heading over its group. */
-export const ROW_LABEL_CLASS = 'px-space-8 py-1.5 text-sm font-medium text-foreground';
+/**
+ * The dropdown group label: `pl-2 text-body-medium text-text-secondary`,
+ * `pt-1` above it and 6px (`gap-1.5`) to the first row — the panel's 4px gap
+ * plus `pb-0.5`. The colour is inline (`MenuPalette.textSecondary`).
+ */
+export const ROW_LABEL_CLASS = 'px-space-8 pt-space-4 pb-0.5';
 
 /** `pl-8` on a label asking to line up with an indicator row. */
 export const ROW_LABEL_INSET_CLASS = 'pl-space-32';
 
-/** `bg-border -mx-1 my-1 h-px` — one whole pixel, bleeding through the panel's `p-1`. */
-export const ROW_SEPARATOR_CLASS = '-mx-space-4 my-space-4 h-px bg-border';
+/**
+ * The dropdown divider: `-mx-2.5 my-1.5 h-px` — one whole pixel bleeding
+ * through the panel's `p-2.5`, 10px from the rows on either side once the
+ * panel's 4px gap is added. Colour inline (`MenuPalette.border`).
+ */
+export const ROW_SEPARATOR_CLASS = '-mx-[10px] my-1.5 h-px';
 
-/** `text-muted-foreground ms-auto text-xs tracking-widest`. */
-export const ROW_SHORTCUT_CLASS =
-  'shrink-0 ms-auto text-xs tracking-widest text-muted-foreground';
+/** The same rule inside the select's `p-2` listbox. */
+export const SELECT_SEPARATOR_CLASS = '-mx-space-8 my-1.5 h-px';
+
+/** `ms-auto text-xs tracking-widest`, in `MenuPalette.textSecondary`. */
+export const ROW_SHORTCUT_CLASS = 'shrink-0 ms-auto';
 
 /**
  * `size-4 shrink-0 ms-auto` — the sub-trigger's chevron slot. Its colour is the
@@ -300,46 +356,72 @@ export const ROW_CHEVRON_CLASS = 'shrink-0 ms-auto';
 /*  The menu bar itself                                                       */
 /* -------------------------------------------------------------------------- */
 
-/** `bg-background border flex h-10 flex-row items-center gap-1 rounded-md border p-1 shadow-sm`. */
+/**
+ * The bar: `flex h-10 items-center gap-1 p-1 border`, `rounded-2lg`
+ * (10px, concentric with the 6px triggers inside its 4px padding). Its colours —
+ * the select trigger's white field, `border-button-default` and `shadow-xs` —
+ * are inline from `MenuPalette.trigger`, as every other menu surface's.
+ */
 export const MENUBAR_CLASS =
-  'flex-row items-center self-start h-10 gap-space-4 p-space-4 ' +
-  'border border-border bg-background rounded-radius-8 shadow-s';
+  'flex-row items-center self-start h-10 gap-space-4 p-space-4 border rounded-[10px]';
 
-/** The trigger: `flex items-center rounded-md px-2 py-1.5 text-sm font-medium`. */
+/** The trigger: `flex items-center rounded-md px-2 py-1.5`. */
 export const MENUBAR_TRIGGER_CLASS =
-  'items-center justify-center px-space-8 py-1.5 rounded-radius-8';
+  'items-center justify-center px-space-8 py-1.5 rounded-[6px]';
 
-/** `bg-accent` while its own menu is open. */
-export const MENUBAR_TRIGGER_OPEN_CLASS = 'bg-accent';
+/**
+ * Retired: the open trigger's wash is `MenuPalette.rowHighlight`, inline. Kept
+ * (empty) so the export does not disappear from under a consumer.
+ */
+export const MENUBAR_TRIGGER_OPEN_CLASS = '';
 
-export const MENUBAR_TRIGGER_TEXT_CLASS = 'text-sm font-medium text-foreground';
+export const MENUBAR_TRIGGER_TEXT_CLASS = '';
 
 /* -------------------------------------------------------------------------- */
 /*  The select                                                                */
 /* -------------------------------------------------------------------------- */
 
 /**
- * `border-input bg-background flex h-10 flex-row items-center justify-between
- * gap-2 rounded-md border px-3 py-2 shadow-sm`. The trigger IS the field.
+ * The select trigger: `flex items-center justify-between border
+ * shadow-xs`, `md` → `gap-1.5 px-2.5 py-2 text-body-medium` (38px tall with its
+ * border), `sm` → `gap-1 px-[7px] py-1 text-body-2-medium` (28px). The corner is
+ * Bloom's full pill (inline `borderRadius.full`), and the colours come from
+ * `MenuPalette.trigger`. The trigger IS the field.
  */
-export const SELECT_TRIGGER_CLASS =
-  'flex-row items-center justify-between h-10 gap-space-8 px-space-12 py-space-8 ' +
-  'border border-input bg-background rounded-radius-8 shadow-s';
-
-/** `text-foreground line-clamp-1 text-sm` — the value the trigger displays. */
-export const SELECT_VALUE_CLASS = 'text-sm text-foreground';
-
-/** The same line while the select is showing its placeholder. */
-export const SELECT_PLACEHOLDER_CLASS = 'text-sm text-muted-foreground';
+export const SELECT_TRIGGER_CLASS = 'flex-row items-center justify-between border';
+export const SELECT_TRIGGER_SIZE_CLASS = {
+  md: 'gap-1.5 px-[10px] py-space-8',
+  sm: 'gap-space-4 px-[7px] py-space-4',
+} as const;
 
 /**
- * `relative flex w-full flex-row items-center gap-2 rounded-xl py-1.5 pl-2 pr-8`
- * — a select option, whose 32px gutter is on the RIGHT because that is the side
- * its tick sits on.
+ * `text-body-medium` / `text-body-2-medium` — the value and the placeholder.
+ * The 18px line of `sm` rides the size utility's own `/[18px]` modifier, never a
+ * `leading-*` class (see {@link ROW_TEXT_CLASS} for why that one is a trap).
+ */
+export const SELECT_VALUE_CLASS = {
+  md: 'shrink min-w-0',
+  sm: 'shrink min-w-0',
+} as const;
+
+/** The chevron: `size-4` (`md`) / `size-3.5` (`sm`). */
+export const SELECT_CHEVRON_SIZE = { md: 16, sm: 14 } as const;
+
+/**
+ * A select option — the same menu item recipe (`p-2 gap-2 rounded-2lg`), with a
+ * 32px gutter on the RIGHT because that is the side `SelectItemIndicator`'s
+ * tick sits on. `sm` rows are `px-2 py-1.5 text-body-2-medium`.
  */
 export const SELECT_ITEM_CLASS =
-  'relative flex-row items-center w-full min-w-0 select-none cursor-pointer ' +
-  'py-1.5 pl-space-8 pr-space-32 gap-space-8 min-h-space-32 rounded-radius-12';
+  'relative flex-row items-center w-full min-w-0 select-none ' +
+  'gap-space-8 pr-space-32 rounded-[10px]';
+export const SELECT_ITEM_SIZE_CLASS = {
+  md: 'pl-space-8 py-space-8',
+  sm: 'pl-space-8 py-1.5',
+} as const;
 
-/** `text-foreground select-none text-sm`. */
-export const SELECT_ITEM_TEXT_CLASS = 'flex-1 min-w-0 text-sm text-foreground';
+/** The option's label; colour inline (`text-primary` / `text-disabled`). */
+export const SELECT_ITEM_TEXT_CLASS = {
+  md: 'flex-1 min-w-0',
+  sm: 'flex-1 min-w-0',
+} as const;

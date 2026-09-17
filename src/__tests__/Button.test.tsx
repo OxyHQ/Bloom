@@ -4,9 +4,18 @@ import { render } from '@testing-library/react-native';
 
 import { BloomThemeProvider } from '../theme/BloomThemeProvider';
 import { useTheme } from '../theme/use-theme';
-import type { ThemeColors } from '../theme/types';
-import { Button, PrimaryButton, SecondaryButton, IconButton, GhostButton, TextButton } from '../button';
-import { borderRadius } from '../styles/tokens';
+import type { Theme } from '../theme/types';
+import {
+  Button,
+  CloseButton,
+  PrimaryButton,
+  SecondaryButton,
+  IconButton,
+  GhostButton,
+  LinkButton,
+  TextButton,
+} from '../button';
+import { BUTTON_GEOMETRY, BUTTON_RADIUS, resolveButtonPalette } from '../button/shared';
 import { pressHost } from './support/press-host';
 import {
   classNamesOn,
@@ -22,11 +31,11 @@ function renderWithTheme(ui: React.ReactElement) {
   );
 }
 
-/** Read the live resolved theme colors the same way `Button` does. */
-function captureThemeColors(): ThemeColors {
-  let captured: ThemeColors | undefined;
+/** Read the live resolved theme the same way `Button` does. */
+function captureTheme(): Theme {
+  let captured: Theme | undefined;
   function Probe() {
-    captured = useTheme().colors;
+    captured = useTheme();
     return null;
   }
   renderWithTheme(<Probe />);
@@ -160,14 +169,21 @@ describe('layout: the button IS the node its parent lays out', () => {
     const style = getByTestId('btn').props.style;
     expect(classNamesOn(style)).toContain('flex-1');
     // Same node, so a layout class and the button's visuals cannot diverge. The
-    // radius is read from the token rather than restated: what this asserts is
-    // that the button's BOX is on the classed node, not what the pill rung is.
-    expect(resolvedStyle(style).borderRadius).toBe(borderRadius.full);
+    // radius is read from the geometry table rather than restated: what this
+    // asserts is that the button's BOX is on the classed node.
+    expect(resolvedStyle(style).borderRadius).toBe(BUTTON_RADIUS);
   });
 
-  it('applies the press-scale transform to that node too, not to a wrapper', () => {
-    const { getByTestId } = renderWithTheme(<Button testID="btn">Press</Button>);
-    expect(resolvedStyle(getByTestId('btn').props.style).transform).toBeDefined();
+  // There is no press scale: a press is the active paint alone, so nothing
+  // may put a transform on the button.
+  it('never scales on press', () => {
+    const { getByTestId } = renderWithTheme(
+      <Button testID="btn" onPress={() => {}}>
+        Press
+      </Button>,
+    );
+    pressHost(getByTestId('btn'));
+    expect(resolvedStyle(getByTestId('btn').props.style).transform).toBeUndefined();
   });
 
   it('keeps the caller style winning over the button box', () => {
@@ -186,11 +202,12 @@ describe('layout: the button IS the node its parent lays out', () => {
   // `<IconButton className="flex-1" />` shipped transparent and borderless. It
   // now comes from the same resolved tokens `Button.web.tsx` already used.
   it('keeps the icon variant chrome when the caller passes a className', () => {
-    const colors = captureThemeColors();
+    const theme = captureTheme();
+    const palette = resolveButtonPalette('icon', theme);
     const { getByTestId } = renderWithTheme(<IconButton testID="icon" className="flex-1" />);
     const style = resolvedStyle(getByTestId('icon').props.style);
-    expect(style.backgroundColor).toBe(colors.background);
-    expect(style.borderColor).toBe(colors.border);
+    expect(style.backgroundColor).toBe(palette.rest.background);
+    expect(style.borderColor).toBe(palette.rest.border);
     expect(style.borderWidth).toBe(1);
     expect(classNamesOn(getByTestId('icon').props.style)).toContain('flex-1');
   });
@@ -215,64 +232,50 @@ describe('variant="text" geometry', () => {
   it('ghost keeps the full size-config padding', () => {
     const { getByTestId } = renderWithTheme(<GhostButton testID="ghost">Ghost</GhostButton>);
     const style = resolvedStyle(getByTestId('ghost').props.style);
-    expect(style.paddingVertical).toBe(5);
-    expect(style.paddingHorizontal).toBe(16);
+    expect(style.paddingVertical).toBeUndefined();
+    expect(style.paddingHorizontal).toBe(BUTTON_GEOMETRY.medium.paddingHorizontal);
   });
 
-  it('keeps the size-config minHeight so the touch target survives', () => {
+  it('keeps the size-config height so the touch target survives', () => {
     const { getByTestId } = renderWithTheme(<TextButton testID="txt">Text</TextButton>);
-    expect(resolvedStyle(getByTestId('txt').props.style).minHeight).toBe(36);
+    expect(resolvedStyle(getByTestId('txt').props.style).height).toBe(36);
   });
 });
 
 // ---------------------------------------------------------------------------
-//  Geometry table
+//  Geometry table — button sizes (`button/shared.ts`)
 //
-//  `minHeight` is the only thing that decides how tall a button is, on BOTH
-//  platforms — which is a property of the PADDING as much as of `minHeight`
-//  itself, since a content box that outgrows the floor takes the height back.
-//  Measured in Chrome (Tailwind preflight's `line-height: 1.5`, which every
-//  consumer inherits): a `medium` button was 40.5px tall with a border and 40px
-//  without, against a `minHeight` of 40 that never applied.
-//
-//  These assertions therefore pin BOTH numbers per size, and the arithmetic
-//  between them, so shrinking one without the other goes red here rather than
-//  silently on a consumer's page.
+//  Height is FIXED on both forks and the label's line box is centred inside
+//  it, so these pin the height, the radius, and that the line box plus the
+//  widest border fits — a line height that outgrew the box would clip.
 // ---------------------------------------------------------------------------
 
 /** The floor `SIZE_HIT_SLOP` exists to reach — Apple's HIG, and `Checkbox`'s. */
 const MIN_TOUCH_TARGET = 44;
 
-/** Web's line box: Tailwind preflight sets `line-height: 1.5` on `html`. */
-const WEB_LINE_HEIGHT_RATIO = 1.5;
-
 /** The widest border any variant draws, on each of the two vertical edges. */
 const MAX_VERTICAL_BORDER = 2;
 
 const GEOMETRY = [
-  { size: 'small', height: 32, paddingVertical: 4, fontSize: 14, verticalSlop: 6 },
-  { size: 'medium', height: 36, paddingVertical: 5, fontSize: 15, verticalSlop: 4 },
-  { size: 'large', height: 44, paddingVertical: 8, fontSize: 16, verticalSlop: 0 },
+  { size: 'xs', height: 24, lineHeight: 16, verticalSlop: 10 },
+  { size: 'small', height: 32, lineHeight: 20, verticalSlop: 6 },
+  { size: 'medium', height: 36, lineHeight: 20, verticalSlop: 4 },
+  { size: 'large', height: 44, lineHeight: 20, verticalSlop: 0 },
 ] as const;
 
 describe('Button geometry', () => {
   it.each(GEOMETRY)(
-    '$size is $height tall, from minHeight and not from padding',
-    ({ size, height, paddingVertical, fontSize }) => {
+    '$size is a $height tall pill',
+    ({ size, height, lineHeight }) => {
       const { getByTestId } = renderWithTheme(
-        <Button testID="btn" size={size}>
+        <Button testID="btn" size={size} variant="secondary">
           Save changes
         </Button>,
       );
       const style = resolvedStyle(getByTestId('btn').props.style);
-      expect(style.minHeight).toBe(height);
-      expect(style.paddingVertical).toBe(paddingVertical);
-
-      // The content box has to FIT inside `minHeight`, or the height comes from
-      // the padding instead and the two forks drift apart again.
-      const contentBox =
-        2 * paddingVertical + WEB_LINE_HEIGHT_RATIO * fontSize + MAX_VERTICAL_BORDER;
-      expect(contentBox).toBeLessThanOrEqual(height);
+      expect(style.height).toBe(height);
+      expect(style.borderRadius).toBe(BUTTON_RADIUS);
+      expect(lineHeight + MAX_VERTICAL_BORDER).toBeLessThanOrEqual(height);
     },
   );
 
@@ -297,18 +300,26 @@ describe('Button geometry', () => {
     },
   );
 
-  it.each(GEOMETRY)('$size icon variant is a square that clears its glyph', ({ size, height }) => {
+  it.each(GEOMETRY)('$size icon variant is an unpadded square', ({ size, height }) => {
     const { getByTestId } = renderWithTheme(
       <IconButton testID="btn" size={size} icon={<View testID="glyph" />} />,
     );
     const style = resolvedStyle(getByTestId('btn').props.style);
     expect(style.width).toBe(height);
     expect(style.height).toBe(height);
-    // Not a fixed 8: at `medium` that would leave an 18px box, and the 20px
-    // default icon would be clipped by the variant's own `overflow: 'hidden'`
-    // with nothing thrown. The glyph box stays 14 / 22 / 30.
-    const glyphBox = height - 2 * Number(style.padding) - MAX_VERTICAL_BORDER;
-    expect(glyphBox).toBe({ small: 14, medium: 22, large: 30 }[size]);
+    expect(style.paddingHorizontal).toBe(0);
+  });
+
+  it('iconOnly renders the leading icon at the size\'s glyph size and no label', () => {
+    const Glyph = jest.fn((_: { width?: number; height?: number; fill?: string }) => null);
+    const { getByTestId, queryByText } = renderWithTheme(
+      <Button testID="btn" size="small" iconOnly leadingIcon={Glyph} accessibilityLabel="Add">
+        Add
+      </Button>,
+    );
+    expect(queryByText('Add')).toBeNull();
+    expect(Glyph.mock.calls[0]?.[0]).toMatchObject({ width: 18, height: 18 });
+    expect(resolvedStyle(getByTestId('btn').props.style).width).toBe(32);
   });
 
   it('a caller hitSlop still replaces the default', () => {
@@ -356,5 +367,76 @@ describe('Button variants', () => {
       <TextButton>Text</TextButton>,
     );
     expect(getByText('Text')).toBeTruthy();
+  });
+});
+
+// ---------------------------------------------------------------------------
+//  IconButton / LinkButton / CloseButton details
+// ---------------------------------------------------------------------------
+
+describe('button details', () => {
+  it('xs keeps the 2px gap (`gap-0.5` applies to every size)', () => {
+    expect(BUTTON_GEOMETRY.xs.gap).toBe(2);
+  });
+
+  it('labels use the type ramp step, in Inter', () => {
+    const { getByText } = renderWithTheme(<Button size="xs">Go</Button>);
+    const style = resolvedStyle(getByText('Go').props.style);
+    expect(style).toMatchObject({ fontSize: 12, lineHeight: 16, letterSpacing: 0.15, fontWeight: '600' });
+    expect(style.fontFamily).toBe('Inter');
+  });
+
+  it('a bordered medium icon-only button grows with its border (38 × 36)', () => {
+    const { getByTestId } = renderWithTheme(
+      <Button testID="btn" variant="secondary" iconOnly accessibilityLabel="Add" />,
+    );
+    const style = resolvedStyle(getByTestId('btn').props.style);
+    expect(style.width).toBe(38);
+    expect(style.height).toBe(36);
+  });
+
+  it('IconButton takes an icon COMPONENT and draws it 16px at small', () => {
+    const Glyph = jest.fn((_: { width?: number; height?: number; fill?: string }) => null);
+    renderWithTheme(<IconButton size="small" icon={Glyph} accessibilityLabel="More" />);
+    expect(Glyph.mock.calls[0]?.[0]).toMatchObject({ width: 16, height: 16 });
+  });
+
+  it('IconButton dims to 0.6 when disabled', () => {
+    const { getByTestId } = renderWithTheme(
+      <IconButton testID="btn" disabled icon={<View />} accessibilityLabel="More" />,
+    );
+    expect(resolvedStyle(getByTestId('btn').props.style).opacity).toBe(0.6);
+  });
+
+  it('LinkButton has no container: no height, no padding, a 4px gap', () => {
+    const { getByTestId } = renderWithTheme(<LinkButton testID="btn">Learn more</LinkButton>);
+    const style = resolvedStyle(getByTestId('btn').props.style);
+    expect(style.height).toBeUndefined();
+    expect(style.paddingHorizontal).toBe(0);
+    expect(style.gap).toBe(4);
+    expect(style.backgroundColor).toBe('rgba(0, 0, 0, 0)');
+  });
+
+  it('LinkButton variant picks the link colour', () => {
+    const theme = captureTheme();
+    const { getByText } = renderWithTheme(<LinkButton variant="secondary">Docs</LinkButton>);
+    expect(resolvedStyle(getByText('Docs').props.style).color).toBe(
+      resolveButtonPalette('link', theme, 'secondary').rest.foreground,
+    );
+  });
+
+  it.each([
+    ['2xs', 16],
+    ['xs', 20],
+    ['sm', 24],
+    ['md', 32],
+  ] as const)('CloseButton %s is a %ipx disc', (size, box) => {
+    const { getByTestId } = renderWithTheme(
+      <CloseButton testID="close" size={size} accessibilityLabel="Close" />,
+    );
+    const style = resolvedStyle(getByTestId('close').props.style);
+    expect(style.width).toBe(box);
+    expect(style.height).toBe(box);
+    expect(style.borderRadius).toBe(box / 2);
   });
 });

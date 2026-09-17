@@ -3,10 +3,10 @@ import { View } from 'react-native';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
 import { Avatar } from './Avatar';
-import { Verified_Stroke2_Corner2_Rounded } from '../icons/Verified';
+import { RiVerifiedBadgeLine } from '../icons/remix/RiVerifiedBadgeLine';
 
 const meta: Meta<typeof Avatar> = {
-  title: 'Data Display/Avatar',
+  title: 'Base/Avatar',
   component: Avatar,
   argTypes: {
     size: {
@@ -36,6 +36,29 @@ const SAMPLE_URI =
 const STORY_GRADIENT = ['#F58529', '#DD2A7B', '#8134AF', '#515BD4'];
 // Muted gray used by IG for an already-seen story.
 const SEEN_GRAY = '#C7C7CC';
+
+/**
+ * The avatar matrix: the four rungs (xs 20 · sm 24 · md 32 · lg 36) ×
+ * the four initials tints, plus a photo per rung.
+ */
+export const SizeMatrix: Story = {
+  render: () => (
+    <View testID="avatar-matrix" style={{ padding: 24, gap: 16 }}>
+      {(['neutral', 'blue', 'lime', 'pink'] as const).map((color) => (
+        <View key={color} style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
+          {(['xs', 'sm', 'md', 'lg'] as const).map((size) => (
+            <Avatar key={size} size={size} color={color} initials="M" />
+          ))}
+        </View>
+      ))}
+      <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
+        {(['xs', 'sm', 'md', 'lg'] as const).map((size) => (
+          <Avatar key={size} size={size} source={SAMPLE_URI} alt="Profile photo" />
+        ))}
+      </View>
+    </View>
+  ),
+};
 
 export const Basic: Story = {
   args: { size: 64, name: 'Nate Isern' },
@@ -107,7 +130,7 @@ export const LiveVerified: Story = {
     live: true,
     verified: true,
     verifiedIcon: (
-      <Verified_Stroke2_Corner2_Rounded size="lg" fill="#1D9BF0" />
+      <RiVerifiedBadgeLine size="lg" fill="#1D9BF0" />
     ),
   },
   name: 'Live + verified',

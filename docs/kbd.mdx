@@ -6,8 +6,9 @@ order: 44
 
 # Kbd
 
-Renders a keyboard key with the raised-cap look, so a shortcut in running text
-reads as a key rather than as a stray capital letter.
+Renders a keyboard shortcut hint on a fully rounded neutral pill, so a
+shortcut in running text reads as a key rather than as a stray capital
+letter.
 
 ```tsx
 import { Kbd } from '@oxyhq/bloom/kbd';
@@ -24,6 +25,20 @@ import { Kbd } from '@oxyhq/bloom/kbd';
 | prop   | decides                                          |
 | ------ | ------------------------------------------------- |
 | `size` | `sm` for inside a row or a menu, `md` for prose   |
+
+## Look
+
+Painted from the theme's neutral ramp (`button/shared.ts`):
+
+|            | `sm`                 | `md` (default)                 |
+| ---------- | -------------------- | ------------------------------ |
+| text       | `caption-2-semibold` | `caption-1-semibold` (12/16)   |
+| padding    | 4 × 1                | 4 × 2                          |
+| height     | 17                   | 20                             |
+
+Fill `neutral-300` (dark `neutral-700`), label `neutral-500` (dark
+`neutral-400`), sans family with tracking reset to 0, full-pill radius, no
+border. There is no minimum width: a one-glyph key is narrower than it is tall.
 
 ## One key per `Kbd`
 

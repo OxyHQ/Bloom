@@ -2,7 +2,7 @@ import React from 'react';
 import { render, fireEvent } from '@testing-library/react-native';
 
 import { BloomThemeProvider } from '../theme/BloomThemeProvider';
-import { Radio, RadioGroup } from '../radio';
+import { Radio, RadioCard, RadioGroup } from '../radio';
 
 function renderWithTheme(ui: React.ReactElement) {
   return render(
@@ -174,5 +174,48 @@ describe('RadioGroup', () => {
     const radios = radioNodes(UNSAFE_root);
     expect(radios).toHaveLength(3);
     expect(radios.filter((r) => r.props['aria-checked'] === true)).toHaveLength(0);
+  });
+});
+
+describe('RadioCard', () => {
+  it('selects its value when pressed, and re-choosing is a no-op', () => {
+    const onSelect = jest.fn();
+    const { getByLabelText, rerender } = renderWithTheme(
+      <RadioCard value="pro" title="Pro" description="Unlimited." selected={false} onSelect={onSelect} />,
+    );
+    const card = getByLabelText('Pro');
+    expect(card.props.accessibilityRole).toBe('radio');
+    expect(card.props['aria-checked']).toBe(false);
+    fireEvent.press(card);
+    expect(onSelect).toHaveBeenCalledWith('pro');
+
+    onSelect.mockClear();
+    rerender(
+      <BloomThemeProvider mode="light" colorPreset="teal">
+        <RadioCard value="pro" title="Pro" selected onSelect={onSelect} />
+      </BloomThemeProvider>,
+    );
+    fireEvent.press(getByLabelText('Pro'));
+    expect(onSelect).not.toHaveBeenCalled();
+  });
+
+  it('is what a card-variant group renders, one per option', () => {
+    const onValueChange = jest.fn();
+    const { root, getByText, getByLabelText } = renderWithTheme(
+      <RadioGroup
+        label="Plan"
+        variant="card"
+        value="daily"
+        onValueChange={onValueChange}
+        options={[
+          { value: 'daily', label: 'Daily', description: 'Every day.' },
+          { value: 'weekly', label: 'Weekly' },
+        ]}
+      />,
+    );
+    expect(radioNodes(root)).toHaveLength(2);
+    expect(getByText('Every day.')).toBeTruthy();
+    fireEvent.press(getByLabelText('Weekly'));
+    expect(onValueChange).toHaveBeenCalledWith('weekly');
   });
 });

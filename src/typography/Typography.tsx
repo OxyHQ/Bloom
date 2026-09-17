@@ -13,6 +13,7 @@ import { fontFamilies } from '../fonts/tokens';
 import { BREAKPOINTS } from '../styles/breakpoints';
 import { space } from '../styles/tokens';
 import { mergeTypographyStyle, typographyDefaultsWhenNoClassName } from './defaults';
+import { TYPE_SCALE } from './scale';
 import { StyledText } from '../styles/styled-primitives';
 import type { BlockquoteProps, TextProps } from './types';
 
@@ -28,13 +29,12 @@ function fontFamilyStyle(
   if (Platform.OS === 'web') {
     return { fontFamily: `var(--bloom-font-${kind})` };
   }
-  if (kind === 'mono') return { fontFamily: 'Geist Mono' };
-  // `display` and `sans` both resolve to BlomusModernus on native — Bloom's
-  // default body font. The CSS stack in `tokens.ts` differs (display vs sans
-  // have different fallback chains for web), but on RN the literal family
-  // name is the only thing that matters; the .ttf is registered via
-  // `useFonts(FONT_ASSETS)` in `FontLoader.native.tsx`.
-  return { fontFamily: 'BlomusModernus' };
+  if (kind === 'mono') return { fontFamily: 'JetBrains Mono' };
+  // On RN the literal family name is the only thing that matters; the .ttf is
+  // registered via `useFonts(FONT_ASSETS)` in `FontLoader.native.tsx`. `sans`
+  // is Inter (the UI face); `display` keeps BlomusModernus.
+  if (kind === 'display') return { fontFamily: 'BlomusModernus' };
+  return { fontFamily: 'Inter' };
 }
 
 const SANS_FONT_FAMILY = fontFamilyStyle('sans');
@@ -49,7 +49,7 @@ const DEFAULT_TEXT_TYPOGRAPHY: TextStyle = {
  * font family applied. NativeWind `className` utilities (text-*, font-*,
  * leading-*, text-foreground, …) override defaults when provided.
  */
-const TextComponent = function Text({ children, style, className, ...rest }: TextProps) {
+const TextComponent = function Text({ children, style, className, variant, ...rest }: TextProps) {
   const { colors } = useTheme();
   const trimmedClassName = className?.trim() ? className : undefined;
 
@@ -59,7 +59,7 @@ const TextComponent = function Text({ children, style, className, ...rest }: Tex
       {...(trimmedClassName ? { className: trimmedClassName } : {})}
       style={mergeTypographyStyle(
         trimmedClassName,
-        { ...DEFAULT_TEXT_TYPOGRAPHY, color: colors.text },
+        { ...(variant ? TYPE_SCALE[variant] : DEFAULT_TEXT_TYPOGRAPHY), color: colors.text },
         SANS_FONT_FAMILY,
         style,
       )}

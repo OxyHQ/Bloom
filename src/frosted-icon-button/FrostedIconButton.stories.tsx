@@ -6,11 +6,11 @@ import { FrostedIconButton } from './FrostedIconButton';
 import * as Icons from '../icons';
 
 const meta: Meta<typeof FrostedIconButton> = {
-  title: 'Components/FrostedIconButton',
+  title: 'Base/Frosted Icon Button',
   component: FrostedIconButton,
   args: {
     accessibilityLabel: 'Back',
-    icon: <Icons.ChevronLeft_Stroke2_Corner0_Rounded size="md" />,
+    icon: <Icons.RiArrowLeftSLine size="md" />,
     onPress: () => {},
   },
   argTypes: {

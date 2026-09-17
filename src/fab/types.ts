@@ -74,7 +74,7 @@ export interface FabProps {
 
   /**
    * The icon to render inside the FAB. Typically a Bloom icon element
-   * (`<Icons.PlusLarge_Stroke2_Corner0_Rounded />` — icon exports carry their full
+   * (`<Icons.RiAddLine />` — icon exports carry their full
    * style and corner suffix, and there is no shortened alias). For an icon-only
    * FAB this is the whole content; for the extended variant it sits to the left of
    * the `label`.

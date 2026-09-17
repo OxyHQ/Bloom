@@ -121,6 +121,13 @@ export interface FloatingPanelProps extends FloatingPositionProps {
   style?: StyleProp<ViewStyle>;
   testID?: string;
   children?: React.ReactNode;
+  /**
+   * Which chrome and motion the panel wears. `'popover'` (the default) is the
+   * original panel; `'menu'` and `'listbox'` are the menu recipe — the
+   * `p-2.5` action menu and the `p-2` select listbox — painted from
+   * `menu-palette.ts`, on a 150ms fade + scale + blur with no slide.
+   */
+  surface?: 'popover' | 'menu' | 'listbox';
 }
 
 /**

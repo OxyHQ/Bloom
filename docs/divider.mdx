@@ -6,9 +6,11 @@ order: 27
 
 # Divider
 
-A hairline in the `border` role. Three families used to draw their own 1px
+A 1px rule in the separator colour. Three families used to draw their own 1px
 separator and each had a slightly different colour — that is the whole reason
-this component exists.
+this component exists. The colour is the separator stop of the theme-tinted
+neutral ramp every Bloom control paints from (`src/button/shared.ts`):
+neutral-200 in light mode, neutral-800 in dark.
 
 ```tsx
 import { Divider } from '@oxyhq/bloom/divider';
@@ -16,7 +18,25 @@ import { Divider } from '@oxyhq/bloom/divider';
 <Divider />
 <Divider spacing={12} />
 <Divider vertical spacing={12} />
+<Divider>Today</Divider>
+<Divider variant="fill" align="start">Pinned</Divider>
 ```
+
+## Variants and content
+
+|          | empty                               | with `children`                                     |
+| -------- | ----------------------------------- | --------------------------------------------------- |
+| `single` | 1px line                            | row, gap 12, a flexible line on each open side      |
+| `double` | 8 tall, 1px top + bottom line       | 1px top + bottom line, padding-y 10                 |
+| `fill`   | 8 tall pill, secondary surface      | radius 10, padding 10 × 16, secondary surface       |
+
+`align` (`start` · `center` · `end`) positions the content; with `single` the
+line on the aligned side is dropped. A string child is set in `body-medium` (Inter 14/20 500),
+secondary text (neutral-500); any other child (a button, a small control) is
+rendered as is. The secondary surface is neutral-100 light, neutral-900 dark.
+`contentStyle` and `textStyle` style the wrapper and the label. An empty divider
+carries `role="separator"`. Variants are horizontal only — `vertical` is always
+a single rule.
 
 ## Which prop decides what
 
@@ -24,8 +44,10 @@ import { Divider } from '@oxyhq/bloom/divider';
 | ----------- | ------------------------------------------------------------ |
 | `vertical`  | the axis                                                     |
 | `spacing`   | margin on the axis it separates — the prop you usually want   |
-| `thickness` | the weight; defaults to the platform hairline                 |
-| `color`     | an override; defaults to the `border` role                    |
+| `thickness` | the weight of a `single` rule; defaults to 1                  |
+| `color`     | an override for the lines; defaults to the separator stop     |
+| `variant`   | `single` · `double` · `fill`                                  |
+| `align`     | where `children` sit                                          |
 
 Reach for `spacing` first. Most "the divider looks wrong" cases are margin, not
 weight — a rule pressed against the text above it reads as heavier than it is.

@@ -1,20 +1,25 @@
-import React, { memo } from 'react';
+import React, { memo, useMemo } from 'react';
 import { View } from 'react-native';
 
 import { useTheme } from '../theme/use-theme';
 import { Text } from '../typography';
 import { Label } from '../label';
 import { atoms as a } from '../styles';
-import { fontSize, space } from '../styles/tokens';
+import { TEXT_FIELD_STACK_GAP, resolveTextFieldPalette } from '../text-field/shared';
 import type { FieldProps } from './types';
 
 /**
+ * The field stack — `Label`, the control, `HintText` — around ANY control.
+ *
  * Standalone form-field wrapper: an optional `Label`, the control (passed as
  * `children`), and a description **or** error message below it. Composes
  * Bloom's `Label`. Unlike `TextField` — which bakes its label/error into the
  * input chrome — `Field` wraps any arbitrary control (a `Switch`, a
  * `SegmentedControl`, a custom picker, etc.).
  */
+/** `HintText`: 4px under the control (`gap-1`) plus its own 1px `pt-px`. */
+const hintStyle = { marginTop: TEXT_FIELD_STACK_GAP, paddingTop: 1 } as const;
+
 const FieldComponent = function Field({
   children,
   label,
@@ -27,6 +32,7 @@ const FieldComponent = function Field({
   testID,
 }: FieldProps) {
   const theme = useTheme();
+  const palette = useMemo(() => resolveTextFieldPalette(theme), [theme]);
   const hasError = typeof error === 'string' && error.length > 0;
   const descriptionID = nativeID ? `${nativeID}-description` : undefined;
   const errorID = nativeID ? `${nativeID}-error` : undefined;
@@ -43,29 +49,17 @@ const FieldComponent = function Field({
 
       {hasError ? (
         <Text
+          variant="caption-1-medium"
           nativeID={errorID}
           accessibilityRole="alert"
-          style={[
-            {
-              fontSize: fontSize.sm,
-              color: theme.colors.negative,
-              marginTop: space.xs,
-            },
-          ]}>
+          style={[hintStyle, { color: palette.error }]}>
           {error}
         </Text>
       ) : description != null ? (
         <Text
+          variant="caption-1-medium"
           nativeID={descriptionID}
-          style={[
-            {
-              fontSize: fontSize.sm,
-              color: disabled
-                ? theme.colors.textTertiary
-                : theme.colors.textSecondary,
-              marginTop: space.xs,
-            },
-          ]}>
+          style={[hintStyle, { color: disabled ? palette.placeholder : palette.hint }]}>
           {description}
         </Text>
       ) : null}

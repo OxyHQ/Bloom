@@ -497,7 +497,7 @@ function SideSheet({
       opacity: progress.value,
       transform: [{ translateX: hidden * travel.value * hiddenSign }],
     };
-  }, [hiddenSign]);
+  }, [hiddenSign, progress, travel]);
 
   const measurePanel = useCallback(
     (e: { nativeEvent: { layout: { width: number } } }) => {

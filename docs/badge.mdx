@@ -21,6 +21,28 @@ import { Badge } from '@oxyhq/bloom/badge';
 </Badge>
 ```
 
+## Shape
+
+Geometry is a standard counter badge; colours stay on Bloom's accent recipe.
+
+| size | height | text | padding-x |
+| ---- | ------ | ---- | --------- |
+| `small` | 17 | `caption-2-semibold` (11/15), tracking 0 | 4 |
+| `medium` | 18 | `caption-1-semibold` (12/16), tracking 0 | 4 |
+| `large` | 24 | `body-semibold` (14/20) | 6 |
+
+Every label is Bloom's typography `Text` on a `TYPE_SCALE` step, so it is set in Inter on both platforms.
+
+Every badge is a full pill with a `minWidth` equal to
+its height, so a single digit is a circle rather than a pill narrower than it is
+tall.
+
+A **standalone** `dot` is a status dot: a solid centre on a tinted halo —
+12 / 6 at `medium` (8 / 4 `small`, 16 / 8 `large`). The halo is the tone's
+`subtle` tint from the same recipe, so it follows the preset and mode like a
+subtle badge. An **attached** dot (one wrapping a child) stays a plain 6 / 8 / 10
+marker: a halo over the child's corner reads as a second ring on the icon.
+
 ## Which prop decides what
 
 | prop        | decides                                                     |
@@ -57,7 +79,7 @@ is. Unmounting the badge is fine; unmounting the wrapper reflows the row.
 ```
 
 **`dot`** — a dot has no label to make legible, so it always paints the tone's
-**fill**, whatever the `variant`. Following the variant made
+**fill** (the centre, for a standalone status dot), whatever the `variant`. Following the variant made
 `dot variant="outlined"` a fully transparent circle: visually absent, with
 markup that reads as correct.
 

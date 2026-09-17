@@ -25,9 +25,19 @@ import { RadioIndicator } from '@oxyhq/bloom/radio-indicator';
 | prop            | decides                                        |
 | --------------- | ----------------------------------------------- |
 | `selected`      | filled or hollow                                |
-| `size`          | the diameter; the dot scales with it            |
-| `selectedColor` | the fill when selected                          |
+| `size`          | the diameter (16); the dot and hairline scale   |
+| `selectedColor` | the accent the selected gradient is built from  |
 | `borderColor`   | the ring when not                               |
+
+`pressed` is still accepted and ignored: there is no pressed paint.
+
+## What it looks like
+
+The `RadioDot`, in Bloom's colours. At 16px (the `md` size) the inner dot is 6 and the border 1; at 14 (`sm`) 5 and 0.875 — both scale with `size`.
+
+- **Unselected** — the card surface, a neutral-300 border and the `xs` shadow (dark: neutral-800, neutral-700).
+- **Selected** — an accent-500 → accent-600 gradient with an inset accent edge and a white top highlight, holding the light inner dot.
+- Selecting cross-fades the two surfaces over 200ms (a gradient cannot transition directly) while the dot scales in.
 
 ## Use it only where the row is already the control
 
@@ -56,5 +66,7 @@ know the right contrast for an arbitrary colour. If you pass one, check it.
 
 ## Selected drops the border
 
-A filled circle with a ring around it reads as two states at once. When
-`selected` is true the border goes to zero and the fill carries the state.
+A filled circle with a ring around it reads as two states at once. The bordered
+surface and the selected gradient are separate layers that cross-fade, so the
+neutral border is never drawn over the fill: once `selected` settles, the only
+edge is the gradient's own inset accent hairline, and the fill carries the state.

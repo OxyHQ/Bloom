@@ -22,9 +22,37 @@ import { Chip } from '@oxyhq/bloom/chip';
 
 ## Tone and fill
 
-`color` picks the tone (`default`, `primary`, `success`, `warning`, `error`, `info`) and `variant` picks how loudly it is painted (`solid`, `subtle`, `outlined` — default `outlined`). shadcn's four badge variants map onto that pair: `default` is `solid` + `primary`, `secondary` is `subtle` + `default`, `destructive` is `solid` + `error`, and `outline` is `outlined` + `default`.
+`color` picks the tone (`default`, `primary`, `success`, `warning`, `error`, `info`) and `variant` picks how loudly it is painted (`solid`, `subtle`, `outlined` — default `subtle`, a tinted chip). shadcn's four badge variants map onto that pair: `default` is `solid` + `primary`, `secondary` is `subtle` + `default`, `destructive` is `solid` + `error`, and `outline` is `outlined` + `default`.
 
 Both come from `theme/accent-colors.ts`, the one resolver `Chip` and `Badge` share. Never derive a tint yourself by appending alpha to a token — an accent resolves to `rgb(...)`, so the appended-hex form parses back fully opaque and paints the label on its own colour at contrast 1.00.
+
+## Data hues
+
+Chip has a second colour system beside the status tones: DATA hues, for a category, a department, an objective. `hue` paints one of them instead of `color` + `variant`:
+
+```tsx
+import { Chip, resolveChipHueColors, type ChipHue } from '@oxyhq/bloom/chip';
+
+<Chip size="medium" hue="lime">Shipped</Chip>
+<Chip size="large" hue="gray">$1.290</Chip>
+<Chip size="small" hue="purple">Design</Chip>
+```
+
+| hue | light | dark | theme source |
+|---|---|---|---|
+| `lime` | 200 / 800 | 950 at 60% / 500 | `success` ramp |
+| `rose` | 200 / 800 | 950 at 60% / 500 | `negative` ramp (danger table) |
+| `yellow` | 200 / 800 | 950 at 60% / 500 | `warning` ramp |
+| `cyan` | 200 / 800 | 950 at 60% / 400 | `info` ramp |
+| `blue` | 200 / 800 | 950 at 60% / 300 | accent ramp |
+| `purple` | 100 / 600 | 900 at 50% / 300 | Tailwind purple re-anchored on `primary` — the same stops `AiProfileCard`'s delta chips use |
+| `neutral` | neutral-200 / neutral-500 | neutral-800 / neutral-500 | `background-tertiary` / `text-secondary` |
+| `gray` | neutral-100 / text | neutral-900 / text | `background-secondary` / `text-primary` |
+| `soft` | neutral-100 / neutral-500 | neutral-900 / neutral-500 | `background-secondary` / `text-secondary` |
+
+The hues sit BESIDE the accent recipe, not inside it: `resolveAccentColors` is untouched, and a chip without `hue` paints exactly as before. While `hue` is set, `color` and `variant` are ignored (no border); `selected` still promotes a pressable chip to the brand tone.
+
+**The dark fills are translucent** (`color-mix(… 60%, transparent)`), so what paints depends on what the chip sits on. They are pre-mixed over `surface` — by default the page background (`background-full`: the card colour, dark neutral-925), where a dashboard table's chips typically sit. A chip on a card in dark mode should pass that card's colour as `surface`, or its fill reads a shade off. `resolveChipHueColors(theme, hue, surface?)` returns the same pair for a caller painting its own element.
 
 ## Filter pills
 
@@ -46,7 +74,7 @@ The close affordance is its own control inside the pill, with its own label and 
 
 ## Sizes and icons
 
-`size` is `small`, `medium` (default) or `large`. `startIcon` and `endIcon` take any node, and both are sized to the pill rather than to whatever was passed — an icon in a `small` chip and the same icon in a `large` one come out proportional.
+`size` is `small` (`caption-1-medium`, 24 tall), `medium` (default, `body-medium`, 24 tall) or `large` (`body-medium`, 28 tall), all with 6px side padding and set in Inter through the typography `Text`. The close glyph is Remix `close-line` at 16. `startIcon` and `endIcon` take any node, and both are sized to the pill rather than to whatever was passed — an icon in a `small` chip and the same icon in a `large` one come out proportional.
 
 ## A pill does not shrink
 

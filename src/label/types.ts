@@ -20,7 +20,10 @@ export interface LabelProps {
   required?: boolean;
   /** Visually subdued label (e.g. for optional fields). Defaults to `false`. */
   disabled?: boolean;
-  /** Typography size token. Defaults to `'sm'`. */
+  /**
+   * Type-ramp step: `xs` body-2-medium, `sm` body-medium
+   * (the default), `md` headline-medium.
+   */
   size?: 'xs' | 'sm' | 'md';
   style?: StyleProp<TextStyle>;
   testID?: string;

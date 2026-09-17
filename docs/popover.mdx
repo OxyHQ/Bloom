@@ -34,7 +34,7 @@ import { P } from '@oxyhq/bloom/typography';
 
 ## The panel has no padding of its own
 
-Deliberate, and worth knowing before you wonder where the inset went. A popover's body is as often a list of `Item` rows (the combobox, the dialog header's overflow) as it is prose, and rows have to reach the panel edge to show their full-width highlight. So the panel keeps only the 4px vertical rhythm every anchored Bloom surface has, and a prose popover pads its own body — as the example above does.
+Deliberate, and worth knowing before you wonder where the inset went. A popover's body is as often a list of `Item` rows (an option picker, the dialog header's overflow) as it is prose, and rows have to reach the panel edge to show their full-width highlight. So the panel keeps only the 4px vertical rhythm every anchored Bloom surface has, and a prose popover pads its own body — as the example above does.
 
 ## Controlled
 
@@ -62,7 +62,7 @@ shadcn's popover is `w-72 p-4`: a fixed 288px card with a 16px inset, not a shri
 </PopoverContent>
 ```
 
-Rows have to reach the panel's edge to draw a full-width highlight, which is why `Combobox` and the dialog header's overflow menu both do this.
+Rows have to reach the panel's edge to draw a full-width highlight, which is why the dialog header's overflow menu does this.
 
 On native these are ignored; the sheet is anchored to the screen.
 

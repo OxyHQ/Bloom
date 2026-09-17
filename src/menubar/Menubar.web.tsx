@@ -28,6 +28,8 @@ import { TriggerSlot } from '../floating/TriggerSlot';
 import { useAnchorRect } from '../floating/use-anchor-rect';
 import { useControllableState } from '../hooks/use-controllable-state';
 import { StyledText, StyledView } from '../styles/styled-primitives';
+import { useMenuPalette } from '../floating/menu-palette';
+import { menuType } from '../floating/menu-type';
 import {
   MenubarMenuProvider,
   MenubarProvider,
@@ -57,6 +59,12 @@ export function Menubar({
     onChange: onValueChange,
   });
   const context = useMemo(() => ({ value: openValue, setValue }), [openValue, setValue]);
+  const palette = useMenuPalette();
+  const barPaint = {
+    backgroundColor: palette.trigger.background,
+    borderColor: palette.trigger.border,
+    boxShadow: palette.trigger.shadow,
+  };
 
   return (
     <MenubarProvider value={context}>
@@ -67,7 +75,7 @@ export function Menubar({
         aria-label={label}
         testID={testID}
         className={cx(MENUBAR_CLASS, className)}
-        style={style}>
+        style={[barPaint, style]}>
         {children}
       </StyledView>
     </MenubarProvider>
@@ -101,6 +109,7 @@ export function MenubarTrigger({
   testID,
 }: MenubarTriggerProps) {
   const menu = useMenubarMenu();
+  const palette = useMenuPalette();
 
   // `flex items-center rounded-md px-2 py-1.5`, plus `bg-accent` while its menu
   // is open, and `text-sm font-medium` for the label. A menubar trigger is a
@@ -113,9 +122,15 @@ export function MenubarTrigger({
         MENUBAR_TRIGGER_CLASS,
         menu.open && MENUBAR_TRIGGER_OPEN_CLASS,
         className,
-      )}>
+      )}
+      style={{ backgroundColor: menu.open ? palette.rowHighlight : 'transparent' }}>
       {typeof children === 'string' ? (
-        <StyledText className={MENUBAR_TRIGGER_TEXT_CLASS}>{children}</StyledText>
+        <StyledText
+          className={MENUBAR_TRIGGER_TEXT_CLASS}
+          // `text-body-medium text-text-primary`, in Inter.
+          style={[menuType('body-medium'), { color: palette.text }]}>
+          {children}
+        </StyledText>
       ) : (
         children
       )}
@@ -171,6 +186,7 @@ export function MenubarContent({
       open={menu.open}
       anchor={anchor}
       role="menu"
+      surface="menu"
       label={label}
       side={side}
       align={align}

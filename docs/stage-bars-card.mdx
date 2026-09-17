@@ -1,0 +1,59 @@
+---
+title: Stage bars card
+description: A funnel as a list — a pill per stage over the chart track, value and share of the first stage, and a tile grid — on native and web.
+order: 47
+---
+
+# Stage bars card
+
+`StageBarsCard` is a funnel drawn as a list. `FunnelChartCard` is its flow-shaped sibling and takes the same stages.
+
+```tsx
+import { StageBarsCard } from '@oxyhq/bloom/chart-cards';
+import { RiEyeLine, RiUserAddLine } from '@oxyhq/bloom/icons';
+
+<StageBarsCard
+  title="Pipeline"
+  ranges={[
+    { id: '30d', label: 'Last 30 days', delta: 0.061, stages: [
+      { label: 'Visits', value: 4820, icon: RiEyeLine },
+      { label: 'Sign-up', value: 3260, icon: RiUserAddLine },
+    ] },
+  ]}
+/>
+```
+
+## Props
+
+| Prop | Default | |
+|---|---|---|
+| `stages` | — | `{ label, value, color?, activeColor?, icon? }[]`, top to bottom |
+| `title` | `"Pipeline"` | header label at rest |
+| `mono` | `false` | every pill in the mono ink, no tile swatches |
+| `showIcons` | `true` | draw each stage's `icon` inside its bar |
+| `headline` | first stage's value | |
+| `delta` | — | ratio for the chip (`0.061` → `+6.1%`) |
+| `range` / `ranges` / `defaultRange` / `onRangeChange` | — | static pill, or a period dropdown whose fields override the props |
+| `format` | en-US grouping | headline, rows, tiles |
+| `activeIndex` / `onActiveIndexChange` | tracked | the hovered stage (`null` = none) |
+| `accessibilityLabel` | a summary of every stage | names the rows (`role="img"`) |
+
+Colours cycle the chart palette by index (`useChartTones()`); `icon` is an icon component, sized 14 and inked neutral-950 (the fills are bright 400 tones in both modes), or a node.
+
+## Geometry
+
+| | |
+|---|---|
+| card | the chart card shell, content-sized with a 329px floor |
+| rows | centred in the space the card has left, 8px above and below, 12px apart; three columns 12px apart — names (`body-regular` text-secondary, right-aligned, as wide as the longest name), tracks, values |
+| track | 20 tall, fully round, `chart-track`, clips its fill and icon |
+| fill | at least 2% wide, fully round, the stage tone (its `-active` step while hovered) |
+| icon | 14px, 4px inside the TRACK's left end, so icons line up down the column |
+| value | `body-medium` tabular, then 6px and the share of the first stage `caption-1-medium` text-tertiary, on one baseline |
+| tiles | three per row, never stretched; radius 10, `background-inner`, padding 8 / 10, swatch 12 (radius 4) · name over value; bleed 8px past the card sides and 4px into its bottom |
+
+The rows read as a CSS grid (`auto minmax(0,1fr) auto`); every cell is 20px tall, so three flex columns reproduce it exactly on native.
+
+## Interaction and motion
+
+Hovering any cell of a row, or its tile, swaps the header to that stage (count-up + fade, delta chip hidden), darkens its fill, fades the other rows to 35% and the other tiles to 50% (200ms). Fills grow from 0 over 500ms `ease-out` 60ms after mount and ease to new widths on a range change; their colour eases 500ms on web. Native: press and hold a row or tile. Reduced motion snaps.

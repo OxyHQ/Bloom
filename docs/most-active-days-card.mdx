@@ -1,0 +1,60 @@
+---
+title: Most active days card
+description: A medical dashboard calendar — a year of days as one continuous scroll of activity rings, with a month pill that follows the scroll.
+order: 50
+---
+
+# Most active days card
+
+`MostActiveDaysCard` stacks every month of a year in one scroll viewport, each day a button with a 28px three-ring chart.
+
+```tsx
+import { MostActiveDaysCard } from '@oxyhq/bloom/chart-cards';
+
+<MostActiveDaysCard
+  year={2026}
+  initialMonth={6}
+  headline={32459}
+  rings={({ month, day }) => (isFuture(month, day) ? null : activity(month, day))}
+  selectedDay={selected}
+  onSelectDay={setSelected}
+/>
+```
+
+Demo fractions are hashed for the story; `rings` takes real data — returning each ring's fraction (outermost first: move, exercise, running), or `null` for a day with nothing yet, which draws the tracks alone.
+
+## Props
+
+| Prop | Default | |
+|---|---|---|
+| `rings` | — | `({ month, day }) => number[] \| null` |
+| `year` | current year | month lengths, leap years |
+| `headline` | — | the number in the header |
+| `title` / `suffix` | `"Most active days"` / `"total steps"` | |
+| `format` | en-US grouping | |
+| `initialMonth` | `0` | the calendar glides from January to it once laid out |
+| `ringColors` | chart-3-active, chart-2, chart-4 | outermost first |
+| `monthNames` | English | titles take the first three letters |
+| `selectedDay` / `onSelectDay` | — | `{ month: 0–11, day }` |
+| `getDayLabel` | `"Activity for July 8"` | each cell's accessible name |
+
+## Geometry
+
+| | |
+|---|---|
+| card | the medical shell (330 tall, radius 20, padding 10, gap 16); header as `StepsCard`, with a 128px month pill |
+| panel | `background-inner`, radius 10, 10px side padding, clipping; the scroll CONTENT carries 10px top and bottom |
+| month | 16px apart; title `title-3-medium` 4px in, 10px, a 7-column grid, 5px between columns, none between rows |
+| day | 78 tall, radius 10, 2px border (transparent unless selected), padding 10; the number `body-medium`, 10px, the rings. The content is 4px taller than the box and overflows centred, as CSS does |
+| states | hover `background-primary-hover`; selected `background-primary` + `border-button-hover`; 150ms colour ease; keyboard focus draws an inset 2px `border-focus-ring` (web) |
+| rings | radii 12 / 8.4 / 4.8, stroke 2.2, from 12 o'clock: a 16% track and a round-capped arc |
+
+## Scrolling
+
+The pill names the month whose title is within 24px of the viewport top (`currentMonthAt`), updated on scroll. Its chevrons scroll to the previous / next month's title with 9px of air above it, and its label rolls like the steps pill.
+
+## Platform notes
+
+- **`overscroll-behavior: contain` is not applied on web.** `WebCssStyle` has no `overscrollBehavior` key and a cast is not allowed, so reaching the end of the calendar can scroll the page behind it on web. Native `ScrollView` does not chain.
+- A short last week keeps its columns: the filler cells carry the day cells' padding and border, because flex shares space out after the box.
+- 365 small SVGs is a deliberate trade (plain dash-array circles, no recharts). On low-end native devices, consider fewer months per card.

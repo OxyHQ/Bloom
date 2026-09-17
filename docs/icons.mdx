@@ -1,44 +1,83 @@
 ---
 title: Icons
-description: 250-odd glyphs with full names — and why a shortened one is invisible to the compiler.
+description: Remix Icon, one component per glyph — how to import it, how apps migrate off the retired Bloom set, and why a wrong name is invisible to the compiler.
 order: 66
 ---
 
 # Icons
 
-Bloom's icon set. Every glyph is a named export carrying its style and corner
-suffix.
+Bloom draws [Remix Icon](https://remixicon.com) (Remix Icon 4.9.1, **Remix Icon
+License 1.0** — the full text ships at `src/icons/remix/LICENSE.txt`). Every
+glyph is its own module under `src/icons/remix/`, named exactly as Remix's
+React package names it, and re-exported flat from `@oxyhq/bloom/icons`.
 
 ```tsx
-import { Bell_Stroke2_Corner0_Rounded as BellIcon } from '@oxyhq/bloom/icons';
+import { RiNotification3Line as BellIcon } from '@oxyhq/bloom/icons';
 
 <BellIcon size="lg" fill={colors.text} />
 ```
 
-## The naming is `<Subject>_<Style>_Corner0_Rounded`
+## The naming is `Ri<Subject><Line|Fill>`
 
-The suffix is not decoration — it is *which drawing you get*. `Stroke2` and
-`Filled` are separate exports rather than a prop on one component, because they
-are different artwork: filled reads as "on"/selected, stroke as the resting
-state. A tab bar uses both for the same subject.
+The name on remixicon.com is the import: `arrow-right-s-line` is
+`RiArrowRightSLine`. The suffix is not decoration — it is *which drawing you
+get*. `Line` and `Fill` are separate exports rather than a prop on one
+component, because they are different artwork: `Fill` reads as "on"/selected,
+`Line` as the resting state. A tab bar uses both for the same subject. A handful
+of Remix glyphs have no variant and no suffix (`RiHashtag`, `RiLinkM`,
+`RiDoubleQuotesL`).
 
 Import the exact identifier and alias it locally, as above.
 
 ## `fill` and `size`, not inheritance
 
-Colour travels on `fill` and size on `size`. Neither is inherited from a
-surrounding `Text`, so an icon beside a label has to be told both — an icon
-that "looks black in dark mode" is almost always one that was never given a
-`fill`.
+Colour travels on `fill` and size on `size` (the `xs`…`xl` rung, or `width` /
+`height`). Neither is inherited from a surrounding `Text`, so an icon beside a
+label has to be told both — an icon that "looks black in dark mode" is almost
+always one that was never given a `fill`.
 
-## A shortened name is invisible to `tsc`
+## Migrating from the retired Bloom icon set
 
-Dropping the suffix — writing the bare subject where the full identifier
-belongs — is not a compile error anywhere such a reference usually appears: in
-a **doc comment** or an `.mdx` example, TypeScript never sees it. A reader
-copies it, gets `undefined`, and React reports "Element type is invalid … but
-got: undefined" against *their* file — which is how a phantom release blocker
-once got filed against the tab bar.
+The old `<Subject>_<Stroke2|Filled>_Corner0_Rounded` exports (and the unsuffixed
+`VerifiedCheck`, `AppleLogo`, `Bookmark`, …) are replaced by Remix. Every old
+name has a reviewed Remix equivalent in **`src/icons/remix-mapping.json`**
+(`{ "Check_Stroke2_Corner0_Rounded": "RiCheckLine", … }`); the
+`Foundations/Icons → Migration` story renders each mapping so a decision can be
+checked against its drawing.
+
+The codemod applies it to an app:
+
+```bash
+node <bloom>/scripts/migrate-icons-to-remix.mjs <app-root> --dry-run --diff   # review
+node <bloom>/scripts/migrate-icons-to-remix.mjs <app-root>                    # write
+```
+
+It rewrites named imports from `@oxyhq/bloom/icons` (and the legacy
+`@oxy.so/bloom/icons`), `Icons.<Name>` namespace members, bare in-file usages of
+an unaliased import, relative imports inside Bloom (`../icons/Check` →
+`../icons/remix/RiCheckLine`), and old names in Markdown prose. Props need no
+change — Remix components take the same `size` / `fill` / `style`. Anything it
+cannot rewrite safely is **reported, not guessed**: an old name left in a string
+or a shape it does not parse, and the logo wordmark `Full`, whose `markFill` /
+`textFill` props have no Remix equivalent.
+
+Two visual differences worth checking after migrating:
+
+- **The two-tone badges are one colour now.** `VerifiedCheck` / `VerifierCheck`
+  painted a white check over the badge; `RiVerifiedBadgeFill` cuts the check out,
+  so it shows whatever is *behind* the icon.
+- **Some subjects have no Remix drawing** and map to the nearest concept (a
+  bell-with-plus becomes `RiNotificationBadgeLine`, a shaka `RiHandHeartLine`, a
+  pizza slice `RiRestaurantLine`). The mapping file is the list.
+
+## A wrong name is invisible to `tsc`
+
+A name that does not exist — a shortened one, or a retired Bloom name in a doc
+that was never migrated — is not a compile error anywhere such a reference
+usually appears: in a **doc comment** or an `.mdx` example, TypeScript never
+sees it. A reader copies it, gets `undefined`, and React reports "Element type is
+invalid … but got: undefined" against *their* file — which is how a phantom
+release blocker once got filed against the tab bar.
 
 `src/__tests__/icon-references.test.ts` scans `src/`, `docs/`, `README.md` and
 `AGENTS.md` for references that do not resolve against the real export union.
@@ -63,7 +102,8 @@ from the mistake it warns about, and the scan is right to flag both.
 
 ## Adding an icon
 
-One file per subject under `src/icons/`, exporting the full identifiers, and
-re-exported from the barrel. Keep the stroke and filled variants together in
-the same file — they are the same subject, and separating them is how one gets
-updated without the other.
+Generate it from the Remix SVG rather than hand-copying a path: one
+`src/icons/remix/<RiName>.tsx` per glyph (a `createSinglePathSVG` call on the
+24×24 viewBox), and `src/icons/remix/index.ts` regenerated from the directory
+listing — never hand-edited. Use the exact Remix name, so a glyph found on
+remixicon.com is findable here by the same string.

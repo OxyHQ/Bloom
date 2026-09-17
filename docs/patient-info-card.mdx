@@ -1,0 +1,33 @@
+---
+title: PatientInfoCard
+description: A profile card — avatar with an add-photo button, name, and label/value detail rows.
+order: 67
+---
+
+# PatientInfoCard
+
+A medical-dashboard patient card: an avatar, the patient's name, and a stack of label/value rows.
+
+```tsx
+import { PatientInfoCard } from '@oxyhq/bloom/patient-info-card';
+import { RiAsterisk, RiDropLine } from '@oxyhq/bloom/icons';
+
+<PatientInfoCard
+  name="Maya Collins"
+  initials="M"
+  onAddPhoto={pickPhoto}
+  details={[
+    { icon: RiAsterisk, label: 'Date of Birth', value: '28 July, 1997' },
+    { icon: RiDropLine, label: 'Blood Type', value: 'A rh+' },
+  ]}
+/>
+```
+
+## Layout
+
+- **Card:** 330 tall (`height`), radius 20, padding 24 top / 10 sides / 10 bottom, with the children centred and 15px apart. The 15 comes from the Figma frame's absolute positions (avatar bottom 90 → name 105 → details 146), not from the spacing scale.
+- **Avatar:** Bloom's `Avatar` at 66px. With no `avatarSource` it shows `initials` (default: the first letter of `name`) at a 24.75px semibold on the neutral disc. A 24px secondary icon `Button` (`RiAddLine`, named by `addPhotoLabel`, `"Add profile photo"` by default) sits 2px outside the avatar's top-right corner. `hideAddPhoto` removes it.
+- **Name:** 20/26 medium, one line.
+- **Rows:** they fill the remaining height, 10px apart; radius 10, padding 8/10. Each row has a 16px icon and a 14/20 regular label, both in the secondary colour, and a 14/20 medium value on the right.
+
+Rows are the card colour (white) in light mode, and `neutral-800` at 60% over the `neutral-900` card in dark mode.

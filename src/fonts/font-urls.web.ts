@@ -24,7 +24,7 @@
 // `useFonts` instead, so no web font bytes enter a native bundle.
 import blomusModernusBold from './assets/BlomusModernus-Bold.woff2';
 import blomusModernusRegular from './assets/BlomusModernus-Regular.woff2';
-import geistMonoVariable from './assets/GeistMono-Variable.woff2';
+import jetbrainsMonoVariable from './assets/JetBrainsMono-Variable.woff2';
 import interVariable from './assets/InterVariable.woff2';
 
-export { blomusModernusRegular, blomusModernusBold, interVariable, geistMonoVariable };
+export { blomusModernusRegular, blomusModernusBold, interVariable, jetbrainsMonoVariable };

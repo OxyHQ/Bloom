@@ -33,6 +33,29 @@ export interface UserHoverCardProps {
   stats?: UserHoverCardStat[];
   /** Whether to show the verified badge next to the display name. */
   verified?: boolean;
+  /**
+   * Optional cover image drawn full-bleed across the top of the card, with the
+   * avatar overlapping its bottom edge. Accepts a
+   * full URL OR a resolver-handled id, exactly like {@link avatar}: a non-URL
+   * string goes through the consumer's ImageResolver (with
+   * {@link coverVariant}). Omit for the compact card without a cover.
+   */
+  cover?: string | null;
+  /** Rendition variant forwarded to the ImageResolver for a bare-id {@link cover}. */
+  coverVariant?: string;
+  /**
+   * Renders the card's skeleton — avatar disc, name and handle bars, bio lines
+   * and stat tiles in the same geometry — while the profile is being fetched.
+   * The card announces itself busy (`aria-busy` on web, `accessibilityState.busy`
+   * on native). `action` and `footer` are not rendered while loading.
+   */
+  loading?: boolean;
+  /**
+   * Plays the floating-panel entrance on mount (fade + `scale-95` +
+   * `blur-[2px]` on web, 150ms `ease-out`) — the motion menus and popovers use.
+   * Default `true`; skipped under reduced motion.
+   */
+  animateIn?: boolean;
   /** Makes the identity area (avatar + name + handle) pressable. */
   onPressProfile?: () => void;
   /**
@@ -52,8 +75,9 @@ export interface UserHoverCardProps {
    * — and a screen reader reads it as content, not as part of the identity
    * button's name.
    *
-   * The card is 280px wide with `space.lg` padding, so content has ~248px of
-   * inner width; the card does not clip, so anything wider paints outside it.
+   * The card is 280px wide with a 1px border and 15px padding, so content has
+   * 248px of inner width; the card does not clip, so anything wider paints
+   * outside it.
    */
   footer?: ReactNode;
   /** Container style override. */

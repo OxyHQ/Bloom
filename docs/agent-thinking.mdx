@@ -1,0 +1,57 @@
+---
+title: AgentThinking
+description: The agent "thinking" state above a chat composer — an animated indicator, a shimmering label and an elapsed timer.
+order: 65
+---
+
+# AgentThinking
+
+It sits above a chat composer while a response is being worked on: an indicator, a label with a highlight travelling across it, and the seconds elapsed since it mounted.
+
+```tsx
+import { AgentThinking } from '@oxyhq/bloom/agent-thinking';
+
+{working && <AgentThinking variant="infinity" label="Generating" />}
+```
+
+The component is purely presentational — mount it while your transport is waiting and unmount it when the reply starts streaming. The timer starts on mount, so remount (or change `key`) to restart it.
+
+## Variants
+
+| `variant` | Indicator | Default tone |
+| --- | --- | --- |
+| `wave` (default) | 3×3 grid of 4px dots (2px gap, radius 1); a diagonal wavefront glides top-left → bottom-right | `default` |
+| `spin` | the same grid; a bright head orbits it clockwise | `default` |
+| `stars` | five 4-point sparkles in a 21×21 box, twinkling on a 1.4s cycle, staggered | `subtle` |
+| `infinity` | a 32×16 figure-eight: a 15% track and an 11% comet lapping it every 1.2s | `default` |
+
+The dot grids tick every 80ms and each dot eases its opacity over 220ms (comet trail 0.3, floor opacity 0.12). The infinity box is pulled in 4px per side, because the glyph only spans x 9–47 of its 56-wide viewBox; without it the label would sit visibly further away than the 10px gap.
+
+## Props
+
+| Prop | Type | Default | |
+| --- | --- | --- | --- |
+| `variant` | `'wave' \| 'spin' \| 'stars' \| 'infinity'` | `'wave'` | |
+| `label` | `string` | `'Thinking'` | `body-medium` |
+| `tone` | `'subtle' \| 'default' \| 'primary' \| 'accent'` | per variant | colours indicator AND label |
+| `shimmer` | `boolean` | `true` | highlight across the label (web) |
+| `showTimer` | `boolean` | `true` | `12.3s`, mono `caption-1-regular`, text-tertiary, tabular |
+| `style`, `testID` | | | root row (flex row, centred, gap 10, `role="status"`) |
+
+## Tones
+
+| Tone | Light | Dark |
+| --- | --- | --- |
+| `subtle` | neutral-400 (text-tertiary) | neutral-600 |
+| `default` | neutral-500 (text-secondary) | neutral-500 |
+| `primary` | `colors.text` | `colors.text` |
+| `accent` | accent-500 | accent-500 |
+
+Neutrals and accent come from `resolveButtonRamps(theme)`, so every preset tints them. In light mode the star glyphs (not the label) are softened to 75% of the tone — they read heavier than the dot grids on a light page; dark keeps the full tone.
+
+## Motion and platforms
+
+- **Label shimmer is web-only.** It is `background-clip: text` with a `tone 55% → tone → tone 55%` gradient travelling 200% → -100% every 2.6s, from a self-adopted stylesheet hooked through `dataSet` (`[data-bloom-agent-thinking-label]`). React Native has no clipped-text gradient, so native renders the label in the flat tone — the same resting state used under reduced motion.
+- **The sheet sets `color: transparent !important`.** react-native-web writes the text colour inline, and an inline declaration beats any sheet rule without `!important`; dropping it leaves an opaque label painted over its own gradient, with no error.
+- **Reduced motion** (reanimated's `useReducedMotion`, and the sheet's `prefers-reduced-motion` query on web): the dots rest on their seed frame, stars rest visible at opacity 0.7 instead of frozen at scale 0, the comet stops, the label drops its shimmer. The timer keeps counting.
+- The comet uses the figure-eight's measured length (101.3 viewBox units) rather than a normalized `pathLength={100}`, which react-native-svg does not honour everywhere.

@@ -1,0 +1,50 @@
+---
+title: Scatter chart card
+description: A scatter / bubble card — one symbol per record on two measures, sized by a third, series legend or stat tiles, drawn with react-native-svg on recharts' geometry.
+order: 45
+---
+
+# Scatter chart card
+
+`ScatterChartCard` renders recharts' `ScatterChart` onto the shared chart-card primitives (`src/chart-cards/README.md`), in `react-native-svg`.
+
+```tsx
+import { ScatterChartCard } from '@oxyhq/bloom/chart-cards';
+
+<ScatterChartCard
+  series={[
+    { label: 'Starter', points: [{ x: 12, y: 180, z: 40, label: 'Acme' }, /* … */] },
+    { label: 'Growth', points: [/* … */] },
+  ]}
+  axisLabels={['Seats', 'MRR']}
+  delta={0.068}
+  range="This quarter"
+/>
+```
+
+## Props
+
+| Prop | Default | |
+|---|---|---|
+| `series` | — | `{ label, points: { x, y, z?, label? }[], color?, activeColor? }[]`; colours default to the chart palette by index |
+| `title` | `"Revenue per account"` | swaps to `"Label · x"` for a hovered point |
+| `bubble` | any `z` present | force bubbles on / off |
+| `headline` | rounded average y | resting number |
+| `delta` | — | ratio for the chip |
+| `range` / `ranges` / … | — | static pill, or periods overriding `series`, `delta`, `headline` |
+| `format` / `formatX` | en-US grouping / `4.5K` | y measure (headline, legend, tiles) / x measure (ticks, hovered caption) |
+| `axisLabels` | — | `[x, y]` captions under the plot — drawn y left, x right |
+| `tiles` | `false` | stat tiles (`"Series · avg"`) instead of the legend; plot fixed at 196, card auto height |
+| `activePoint` / `onActivePointChange` | tracked | `{ series, index }` or `null` |
+| `accessibilityLabel` | `"… bubble chart: Starter, Growth, Scale"` | names the plot (`role="img"`) |
+
+## Geometry (recharts 3.10, measured at 448 × 189)
+
+- Plot box: margin top 8 / right 8, Y axis 48 wide, X axis 30 tall → `48..440 × 8..159` (`scatterPlotBox`).
+- Axes: number domains from `min(0, dataMin)` with recharts' nice ticks — 5 on X (`0 · 25 · 50 · 75 · 100`), 4 on Y (`0 · 550 · 1.1K · 1.7K`). 12px text-tertiary; X labels 16px under the plot (`preserveStartEnd`), Y labels right-aligned 8px left of it (`preserveEnd`).
+- Grid: dashed `4 4` in `chart-track`, horizontal at every Y tick and vertical at every X tick.
+- Symbols: circles of 64px² (r 4.51); bubbles map `z` over `[0, zMax]` onto 90–620px² (`bubbleRadius`). Fill the series colour at 85%, a 1.5px ring in its `-active` colour.
+- Hover: the symbol under the pointer (hit-tested including the ring) swaps the header, hides the delta chip, and dims every other series to 25% fill and stroke. The legend does not dim; tiles fade to 40% and hovering a tile focuses its series' first point.
+- Motion: recharts' Scatter animation, 450ms linear — symbols grow from nothing on mount; on a data change symbols matched by index glide and resize. Snaps under reduced motion.
+
+Known difference: recharts pulls the last X label (`100`) about 1.5px further in than Bloom — it measures tick text with its own off-screen span, Bloom with the rendered `Text`.

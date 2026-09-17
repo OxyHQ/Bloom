@@ -1,24 +1,34 @@
-import React, { memo } from 'react';
+import React, { memo, useMemo } from 'react';
 import { Platform } from 'react-native';
 
 import { useTheme } from '../theme/use-theme';
 import { Text } from '../typography';
-import { atoms as a } from '../styles';
-import { fontSize } from '../styles/tokens';
+import type { TypeScaleVariant } from '../typography';
+import {
+  TEXT_FIELD_LEADING_GAP,
+  TEXT_FIELD_STACK_GAP,
+  resolveTextFieldPalette,
+} from '../text-field/shared';
 import type { LabelProps } from './types';
 
-const SIZE_FONT = {
-  xs: fontSize.xs,
-  sm: fontSize.sm,
-  md: fontSize.md,
-} as const;
-
 /**
- * Themed form label. A thin wrapper over Bloom's `Text` that applies the
- * label typography (medium weight, secondary color) and optionally renders a
- * required marker. On web it forwards `htmlFor` so a click focuses the
- * associated control.
+ * The field `Label` (`base/input/label.tsx`): `text-body-medium` in
+ * `text-primary`, a `text-error-primary` asterisk 2px after it, 4px above the
+ * control (the field's `gap-1`) — the same label `TextFieldLabel` draws, so a
+ * `Field` and a `TextField` stack identically.
+ *
+ *   xs   body-2-medium    13/18
+ *   sm   body-medium      14/20   (default)
+ *   md   headline-medium  16/22
  */
+const SIZE_VARIANT: Record<NonNullable<LabelProps['size']>, TypeScaleVariant> = {
+  xs: 'body-2-medium',
+  sm: 'body-medium',
+  md: 'headline-medium',
+};
+
+const IS_WEB = Platform.OS === 'web';
+
 const LabelComponent = function Label({
   children,
   nativeID,
@@ -30,30 +40,33 @@ const LabelComponent = function Label({
   testID,
 }: LabelProps) {
   const theme = useTheme();
+  const palette = useMemo(() => resolveTextFieldPalette(theme), [theme]);
 
   const webProps: Record<string, unknown> =
-    Platform.OS === 'web' ? { htmlFor: htmlFor ?? nativeID } : {};
+    IS_WEB ? { htmlFor: htmlFor ?? nativeID } : {};
 
   return (
     <Text
       {...webProps}
+      variant={SIZE_VARIANT[size]}
       nativeID={nativeID}
       testID={testID}
       style={[
-        a.font_medium,
-        a.mb_sm,
         {
-          fontSize: SIZE_FONT[size],
-          color: disabled ? theme.colors.textTertiary : theme.colors.textSecondary,
+          marginBottom: TEXT_FIELD_STACK_GAP,
+          color: disabled ? palette.placeholder : palette.text,
         },
         style,
       ]}>
       {children}
       {required ? (
         <Text
+          variant={SIZE_VARIANT[size]}
           accessibilityLabel="required"
-          style={{ color: theme.colors.negative }}>
-          {' *'}
+          // `gap-0.5`: an inline margin on web; a nested native
+          // `Text` ignores margins, so a thin space stands in for it there.
+          style={[{ color: palette.error }, IS_WEB ? { marginLeft: TEXT_FIELD_LEADING_GAP } : null]}>
+          {IS_WEB ? '*' : ' *'}
         </Text>
       ) : null}
     </Text>

@@ -5,10 +5,13 @@ import { BloomThemeProvider } from '../theme/BloomThemeProvider';
 import { buildTheme } from '../theme/build-theme';
 import { useToastColors } from '../toast/use-toast-colors';
 import type { ToastVariant } from '../toast/types';
+import { resolveNotificationPaint } from '../notification/shared';
 
 const MODE = 'light';
 const PRESET = 'oxy';
-const tokens = buildTheme(PRESET, MODE).colors;
+const theme = buildTheme(PRESET, MODE);
+const tokens = theme.colors;
+const card = resolveNotificationPaint(theme);
 
 const wrapper = ({ children }: { children: React.ReactNode }) => (
   <BloomThemeProvider mode={MODE} colorPreset={PRESET}>
@@ -40,35 +43,23 @@ describe('useToastColors', () => {
 
       for (const variant of ALL) {
         const colors = colorsFor(variant);
-        expect({ variant, surface: colors.surface }).toEqual({
-          variant,
-          surface: baseline.surface,
-        });
-        expect({ variant, border: colors.border }).toEqual({
-          variant,
-          border: baseline.border,
-        });
-        expect({ variant, title: colors.title }).toEqual({
-          variant,
-          title: baseline.title,
-        });
-        expect({ variant, description: colors.description }).toEqual({
-          variant,
-          description: baseline.description,
-        });
-        expect({ variant, closeButton: colors.closeButton }).toEqual({
-          variant,
-          closeButton: baseline.closeButton,
-        });
+        for (const key of ['surface', 'border', 'shadow', 'title', 'description', 'closeButton'] as const) {
+          expect({ variant, key, value: colors[key] }).toEqual({
+            variant,
+            key,
+            value: baseline[key],
+          });
+        }
       }
     });
 
-    it('uses the theme surface roles, never a brand *Subtle tint', () => {
+    it('uses the notification card, never a brand *Subtle tint', () => {
       const colors = colorsFor('success');
-      expect(colors.surface).toBe(tokens.backgroundSecondary);
-      expect(colors.border).toBe(tokens.border);
+      expect(colors.surface).toBe(card.surface);
+      expect(colors.border).toBe(card.border);
       expect(colors.title).toBe(tokens.text);
-      expect(colors.description).toBe(tokens.textSecondary);
+      expect(colors.description).toBe(card.description);
+      expect(colors.shadow).toBe(card.shadow);
       expect(colors.surface).not.toBe(tokens.primarySubtle);
     });
 
@@ -83,8 +74,7 @@ describe('useToastColors', () => {
       ];
       for (const variant of ALL) {
         for (const rich of [false, true]) {
-          const { action, ...flat } = colorsFor(variant, rich);
-          const emitted = [...Object.values(flat), ...Object.values(action)];
+          const emitted = Object.values(colorsFor(variant, rich));
           expect({
             variant,
             rich,
@@ -94,77 +84,57 @@ describe('useToastColors', () => {
       }
     });
 
-    it.each<[ToastVariant | undefined, keyof typeof tokens]>([
+    it.each<[ToastVariant | undefined, keyof typeof card.status]>([
       ['success', 'success'],
       ['error', 'error'],
       ['warning', 'warning'],
-      ['info', 'info'],
-      ['loading', 'textSecondary'],
-      [undefined, 'textSecondary'],
-    ])('tints only the icon: %s -> colors.%s', (variant, token) => {
-      expect(colorsFor(variant).icon).toBe(tokens[token]);
+      ['info', 'information'],
+      ['loading', 'neutral'],
+      [undefined, 'neutral'],
+    ])('tints only the status disc: %s -> %s', (variant, status) => {
+      const colors = colorsFor(variant);
+      expect(colors.icon).toBe(card.status[status].foreground);
+      expect(colors.iconBackground).toBe(card.status[status].background);
     });
 
-    it('keeps the action button neutral for every variant', () => {
-      const baseline = colorsFor(undefined).action;
-      expect(baseline.background).toBe(tokens.backgroundTertiary);
-      expect(baseline.pressedBackground).toBe(tokens.contrast50);
-
-      for (const variant of ALL) {
-        expect({ variant, action: colorsFor(variant).action }).toEqual({
-          variant,
-          action: baseline,
-        });
-      }
+    it('gives every status variant a disc of its own hue', () => {
+      const discs = (['success', 'error', 'warning', 'info'] as const).map(
+        (variant) => colorsFor(variant).iconBackground,
+      );
+      expect(new Set(discs).size).toBe(4);
     });
   });
 
   describe('with richColors', () => {
     /** The four variants that carry a status colour. */
-    const STATUS: Array<[ToastVariant, keyof typeof tokens]> = [
-      ['success', 'success'],
-      ['error', 'error'],
-      ['warning', 'warning'],
-      ['info', 'info'],
-    ];
+    const STATUS: ToastVariant[] = ['success', 'error', 'warning', 'info'];
 
     it('never tints the surface — that is the whole point of the prop', () => {
       for (const variant of ALL) {
         expect({ variant, surface: colorsFor(variant, true).surface }).toEqual({
           variant,
-          surface: tokens.backgroundSecondary,
+          surface: card.surface,
         });
       }
     });
 
-    it.each(STATUS)(
-      'lifts border, title and icon to the status colour: %s',
-      (variant, token) => {
-        const colors = colorsFor(variant, true);
-        expect(colors.border).toBe(tokens[token]);
-        expect(colors.title).toBe(tokens[token]);
-        expect(colors.icon).toBe(tokens[token]);
-      },
-    );
+    it.each(STATUS)('lifts border and title to the status glyph colour: %s', (variant) => {
+      const colors = colorsFor(variant, true);
+      expect(colors.border).toBe(colors.icon);
+      expect(colors.title).toBe(colors.icon);
+    });
 
-    it.each(STATUS)(
-      'never reaches for a brand token, so the %s icon keeps its hue with the prop on',
-      (variant) => {
-        expect(colorsFor(variant, true).icon).toBe(colorsFor(variant).icon);
-      },
-    );
+    it.each(STATUS)('keeps the disc identical with the prop on: %s', (variant) => {
+      expect(colorsFor(variant, true).icon).toBe(colorsFor(variant).icon);
+      expect(colorsFor(variant, true).iconBackground).toBe(colorsFor(variant).iconBackground);
+    });
 
-    it.each(STATUS)(
-      'leaves description, close button and actions neutral: %s',
-      (variant) => {
-        const rich = colorsFor(variant, true);
-        const plain = colorsFor(variant);
-        expect(rich.description).toBe(plain.description);
-        expect(rich.closeButton).toBe(plain.closeButton);
-        expect(rich.cancelText).toBe(plain.cancelText);
-        expect(rich.action).toEqual(plain.action);
-      },
-    );
+    it.each(STATUS)('leaves description and close button neutral: %s', (variant) => {
+      const rich = colorsFor(variant, true);
+      const plain = colorsFor(variant);
+      expect(rich.description).toBe(plain.description);
+      expect(rich.closeButton).toBe(plain.closeButton);
+    });
 
     it('leaves a variant-less and a loading toast completely untouched', () => {
       expect(colorsFor(undefined, true)).toEqual(colorsFor(undefined));
@@ -172,14 +142,10 @@ describe('useToastColors', () => {
     });
 
     it('is still visibly different from the default for every status variant', () => {
-      for (const [variant] of STATUS) {
+      for (const variant of STATUS) {
         const rich = colorsFor(variant, true);
         const plain = colorsFor(variant);
-        expect({ variant, changed: rich.border !== plain.border }).toEqual({
-          variant,
-          changed: true,
-        });
-        expect({ variant, changed: rich.title !== plain.title }).toEqual({
+        expect({ variant, changed: rich.border !== plain.border && rich.title !== plain.title }).toEqual({
           variant,
           changed: true,
         });

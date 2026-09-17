@@ -89,3 +89,5 @@
  */
 @source "../src/**/*.{ts,tsx}";
 @source not "../src/**/__tests__/**/*";
+/* The unpublished template screens (`templates/`) are stories too. */
+@source "../templates/**/*.{ts,tsx}";

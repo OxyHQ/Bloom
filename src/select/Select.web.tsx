@@ -1,28 +1,32 @@
 import React, {
   createContext,
-  useCallback,
   useContext,
+  useEffect,
+  useLayoutEffect,
   useMemo,
   useRef,
   useState,
 } from 'react';
 import { ScrollView, StyleSheet, View } from 'react-native';
 
-import { useTheme } from '../theme/use-theme';
 import {
+  MENU_WIDTH,
   ROW_ICON_SIZE,
   ROW_INDICATOR_END_CLASS,
-  ROW_SEPARATOR_CLASS,
+  SELECT_CHEVRON_SIZE,
   SELECT_ITEM_CLASS,
+  SELECT_ITEM_SIZE_CLASS,
   SELECT_ITEM_TEXT_CLASS,
   SELECT_MAX_HEIGHT,
-  SELECT_PLACEHOLDER_CLASS,
+  SELECT_SEPARATOR_CLASS,
   SELECT_TRIGGER_CLASS,
-  SELECT_VALUE_CLASS,
-  ROW_HIGHLIGHT_CLASS,
   SELECT_TRIGGER_POPUP,
+  SELECT_TRIGGER_SIZE_CLASS,
+  SELECT_VALUE_CLASS,
 } from '../floating/constants';
 import { FloatingPanel } from '../floating/FloatingPanel';
+import { useMenuPalette } from '../floating/menu-palette';
+import { menuType, menuTypeClass } from '../floating/menu-type';
 import { cx } from '../floating/shared';
 import { TriggerSlot } from '../floating/TriggerSlot';
 import { useAnchorRect } from '../floating/use-anchor-rect';
@@ -32,16 +36,16 @@ import {
   StyledText,
   StyledView,
 } from '../styles/styled-primitives';
-import {
-  ChevronBottom_Stroke2_Corner0_Rounded as ChevronDownIcon,
-} from '../icons/Chevron';
-import { Check_Stroke2_Corner0_Rounded as CheckIcon } from '../icons/Check';
+import { RiCheckLine as CheckIcon } from '../icons/remix';
+import { adoptStyleSheet } from '../styles/adopt-style-sheet';
+import { borderRadius } from '../styles/tokens';
+import type { WebCssStyle } from '../styles/web-view-style';
 import {
   defaultItemValueExtractor,
   ItemContext,
-  SelectScrollDownButton,
-  SelectScrollProvider,
-  SelectScrollUpButton,
+  SelectChevron,
+  SelectTriggerStateContext,
+  SelectValueRow,
   useSelectItemContext,
 } from './shared';
 import type {
@@ -56,21 +60,68 @@ import type {
   SelectValueProps,
 } from './types';
 
-const SELECT_OFFSET = 6;
-/** How far one press of a scroll button moves the list. */
-const SCROLL_STEP = 96;
+/** The trigger's `offset={4}`. */
+const SELECT_OFFSET = 4;
+
 /**
- * Sub-pixel slack. A scroll container's content height and its viewport height
- * are fractional, so an exact comparison leaves a scroll button visible on a
- * list that is already at its end and cannot move.
+ * The trigger's interactive states — `hover:bg-background-primary-hover
+ * hover:border-border-button-hover` and `focus-visible:ring-2 ring-offset-2
+ * ring-border-focus-ring`, on `transition-[background-color,border-color,
+ * box-shadow] duration-200 ease`.
+ *
+ * A sheet because inline styles have no `:hover`, and every colour arrives as a
+ * `--bloom-select-*` custom property set inline, since the ramp stops exist as no
+ * CSS variable. The field is the CHILD of `TriggerSlot`'s pressable — the node
+ * that is hovered and focused — so the rules select through that parent, and the
+ * pressable's own focus outline gives way to the ring.
  */
-const SCROLL_EPSILON = 1;
+const TRIGGER_STYLE_ID = 'bloom-select-trigger-web-css';
+const FIELD = '[data-bloom-select-field]';
+const TRIGGER_CSS = `
+${FIELD} {
+  background-color: var(--bloom-select-bg);
+  border-color: var(--bloom-select-border);
+  box-shadow: var(--bloom-select-shadow);
+  transition: background-color 200ms ease, border-color 200ms ease, box-shadow 200ms ease;
+}
+*:hover > ${FIELD}:not([data-disabled]) {
+  background-color: var(--bloom-select-bg-hover);
+  border-color: var(--bloom-select-border-hover);
+}
+*:focus-visible > ${FIELD} {
+  box-shadow: 0 0 0 2px var(--bloom-select-ring-offset), 0 0 0 4px var(--bloom-select-ring), var(--bloom-select-shadow);
+}
+*:has(> ${FIELD}):focus-visible {
+  outline: none;
+}
+*:has(> ${FIELD}[data-disabled]) {
+  cursor: not-allowed;
+}
+@media (prefers-reduced-motion: reduce) {
+  ${FIELD} { transition: none; }
+}
+`;
+
+/** The chevron's `transition-transform duration-200 ease` into `rotate-180`. */
+const CHEVRON_TRANSITION: WebCssStyle = {
+  transitionProperty: 'transform',
+  transitionDuration: '200ms',
+  transitionTimingFunction: 'ease',
+};
+
+/** The row `transition-colors`. */
+const ROW_TRANSITION: WebCssStyle = {
+  transitionProperty: 'background-color',
+  transitionDuration: '150ms',
+  transitionTimingFunction: 'cubic-bezier(0.4, 0, 0.2, 1)',
+};
 
 // ---------------------------------------------------------------------------
 // Context
 // ---------------------------------------------------------------------------
 
 type SelectContextValue = Pick<SelectProps, 'value' | 'onValueChange' | 'disabled'> & {
+  size: NonNullable<SelectProps['size']>;
   isOpen: boolean;
   open: () => void;
   close: () => void;
@@ -80,6 +131,20 @@ type SelectContextValue = Pick<SelectProps, 'value' | 'onValueChange' | 'disable
 
 const SelectContext = createContext<SelectContextValue | null>(null);
 SelectContext.displayName = 'SelectContext';
+
+/**
+ * The ITEM behind the current value, published by `SelectContent` and read by
+ * `SelectValue` — the native fork's store, on web too.
+ *
+ * `SelectContent` renders (and so resolves the item) while its panel is still
+ * closed, so the trigger shows the option's LABEL from the first paint. Web used
+ * to show the raw `value` string instead (`apple`, not `Apple`), because its
+ * `SelectValue` had nothing but the value to read.
+ */
+const ValueStoreContext = createContext<
+  [unknown, React.Dispatch<React.SetStateAction<unknown>>]
+>([undefined, () => {}]);
+ValueStoreContext.displayName = 'SelectValueStoreContext';
 
 function useSelectContext(): SelectContextValue {
   const ctx = useContext(SelectContext);
@@ -93,24 +158,30 @@ function useSelectContext(): SelectContextValue {
 // Select
 // ---------------------------------------------------------------------------
 
-export function Select({ children, value, onValueChange, disabled }: SelectProps) {
+export function Select({ children, value, onValueChange, disabled, size = 'md' }: SelectProps) {
   const [isOpen, setIsOpen] = useState(false);
   const triggerRef = useRef<View | null>(null);
+  const valueStoreState = useState<unknown>(undefined);
 
   const ctx = useMemo<SelectContextValue>(
     () => ({
       value,
       onValueChange,
       disabled,
+      size,
       isOpen,
       open: () => setIsOpen(true),
       close: () => setIsOpen(false),
       triggerRef,
     }),
-    [value, onValueChange, disabled, isOpen],
+    [value, onValueChange, disabled, size, isOpen],
   );
 
-  return <SelectContext.Provider value={ctx}>{children}</SelectContext.Provider>;
+  return (
+    <SelectContext.Provider value={ctx}>
+      <ValueStoreContext.Provider value={valueStoreState}>{children}</ValueStoreContext.Provider>
+    </SelectContext.Provider>
+  );
 }
 
 // ---------------------------------------------------------------------------
@@ -133,42 +204,72 @@ export function SelectTrigger({
   label,
   className,
   style,
+  fieldStyle: fieldStyleOverride,
   testID,
 }: SelectTriggerProps) {
   const ctx = useSelectContext();
+  const palette = useMenuPalette();
+  const isDisabled = disabled === true || ctx.disabled === true;
+  useEffect(() => {
+    adoptStyleSheet(TRIGGER_STYLE_ID, TRIGGER_CSS);
+  }, []);
 
-  // `border-input bg-background flex h-10 flex-row items-center justify-between
-  //  gap-2 rounded-md border px-3 py-2 shadow-sm`.
-  //
-  // The trigger IS the field. It used to render its children into a bare
-  // pressable with no border, height or background at all, so a ported shadcn
-  // select was a line of text and a chevron floating on the page — the single
-  // largest visual gap in this family.
+  const t = palette.trigger;
+  const fieldStyle: WebCssStyle = {
+    borderRadius: borderRadius.full,
+    '--bloom-select-bg': isDisabled ? t.disabledBackground : t.background,
+    '--bloom-select-bg-hover': t.hoverBackground,
+    '--bloom-select-border': t.border,
+    '--bloom-select-border-hover': t.hoverBorder,
+    '--bloom-select-shadow': isDisabled ? '0 0 #0000' : t.shadow,
+    '--bloom-select-ring': t.ring,
+    '--bloom-select-ring-offset': t.ringOffset,
+  };
+
+  // The select trigger — a bordered white field with the xs contact
+  // shadow, `md` 38px / `sm` 28px tall from its padding — as a full pill. The
+  // trigger IS the field. It used to render its children into a bare pressable
+  // with no border, height or background at all, so the select was a line
+  // of text and a chevron floating on the page.
   const field = (
-    <StyledView className={cx(SELECT_TRIGGER_CLASS, disabled && 'opacity-50', className)}>
+    <StyledView
+      {...({
+        dataSet: isDisabled
+          ? { bloomSelectField: '', disabled: '' }
+          : { bloomSelectField: '' },
+      } as Record<string, unknown>)}
+      className={cx(SELECT_TRIGGER_CLASS, SELECT_TRIGGER_SIZE_CLASS[ctx.size], className)}
+      style={[fieldStyle, fieldStyleOverride]}>
       {children}
     </StyledView>
   );
 
+  const triggerState = useMemo(
+    () => ({ disabled: isDisabled, open: ctx.isOpen, size: ctx.size }),
+    [isDisabled, ctx.isOpen, ctx.size],
+  );
+
   return (
-    <TriggerSlot
-      asChild={asChild}
-      anchorRef={ctx.triggerRef}
-      style={[styles.triggerSlot, style]}
-      testID={testID}
-      handle={{
-        // A dropdown trigger TOGGLES — pressing an open select's trigger closes
-        // it rather than reopening it.
-        onPress: () => (ctx.isOpen ? ctx.close() : ctx.open()),
-        disabled,
-        accessibilityLabel: label,
-        accessibilityRole: 'button',
-        'aria-haspopup': SELECT_TRIGGER_POPUP,
-        'aria-expanded': ctx.isOpen,
-      }}
-    >
-      {asChild ? children : field}
-    </TriggerSlot>
+    <SelectTriggerStateContext.Provider value={triggerState}>
+      <TriggerSlot
+        asChild={asChild}
+        anchorRef={ctx.triggerRef}
+        style={[styles.triggerSlot, style]}
+        testID={testID}
+        handle={{
+          // A dropdown trigger TOGGLES — pressing an open select's trigger closes
+          // it rather than reopening it.
+          onPress: () => (ctx.isOpen ? ctx.close() : ctx.open()),
+          disabled: isDisabled,
+          accessibilityLabel: label,
+          accessibilityRole: 'button',
+          'aria-haspopup': SELECT_TRIGGER_POPUP,
+          'aria-expanded': ctx.isOpen,
+        }}
+      >
+        {asChild ? children : field}
+      </TriggerSlot>
+    </SelectTriggerStateContext.Provider>
   );
 }
 
@@ -177,24 +278,61 @@ export function SelectTrigger({
 // ---------------------------------------------------------------------------
 
 export function SelectValue({
-  children: extractLabel,
+  children: extractLabel = defaultExtractLabel,
+  leading,
   placeholder,
   className,
   style,
 }: SelectValueProps) {
   const { value } = useSelectContext();
+  const [storedItem] = useContext(ValueStoreContext);
+  const trigger = useContext(SelectTriggerStateContext);
+  const palette = useMenuPalette();
 
-  const display = value ?? placeholder ?? '';
+  // The selected ITEM's label (`item => item.label` by default), exactly as the
+  // native fork reads it. Before any `SelectContent` has resolved an item the raw
+  // value is the fallback, so a select with no content still shows something.
+  const display =
+    value == null ? (placeholder ?? '') : storedItem !== undefined ? extractLabel(storedItem) : value;
+  // `text-text-primary`, `text-placeholder` while nothing is chosen,
+  // and `disabled:text-text-tertiary`. Inline only without a caller
+  // `className` — an inline colour outranks a caller's `text-*` utility.
+  const color = trigger.disabled
+    ? palette.trigger.disabledForeground
+    : value
+      ? palette.text
+      : palette.textPlaceholder;
 
-  return (
+  const text = (
     <StyledText
       numberOfLines={1}
-      className={cx(value ? SELECT_VALUE_CLASS : SELECT_PLACEHOLDER_CLASS, className)}
-      style={style}
+      className={cx(
+        SELECT_VALUE_CLASS[trigger.size],
+        menuTypeClass(VALUE_TYPE[trigger.size], className),
+        className && (value ? 'text-foreground' : 'text-muted-foreground'),
+        className,
+      )}
+      style={[menuType(VALUE_TYPE[trigger.size], className), className ? null : { color }, style]}
     >
-      {extractLabel && value ? extractLabel(value) : display}
+      {display}
     </StyledText>
   );
+  if (leading === undefined) return text;
+  return (
+    <SelectValueRow size={trigger.size} leading={typeof leading === 'function' ? leading(storedItem) : leading}>
+      {text}
+    </SelectValueRow>
+  );
+}
+
+/** `text-body-medium` on `md`, `text-body-2-medium` on `sm` — trigger value and option label alike. */
+const VALUE_TYPE = { md: 'body-medium', sm: 'body-2-medium' } as const;
+
+function defaultExtractLabel(item: unknown): React.ReactNode {
+  if (item != null && typeof item === 'object' && 'label' in item) {
+    return (item as { label: React.ReactNode }).label;
+  }
+  return String(item);
 }
 
 // ---------------------------------------------------------------------------
@@ -202,14 +340,19 @@ export function SelectValue({
 // ---------------------------------------------------------------------------
 
 export function SelectIcon({ style }: SelectIconProps) {
-  const theme = useTheme();
-  // `text-muted-foreground size-4`.
+  const palette = useMenuPalette();
+  const trigger = useContext(SelectTriggerStateContext);
+  // `ChevronDownSmall`: `shrink-0 text-text-secondary`, `size-4` /
+  // `size-3.5`, turning over (`rotate-180`) while the list is open.
   return (
-    <ChevronDownIcon
-      style={style}
-      width={ROW_ICON_SIZE}
-      height={ROW_ICON_SIZE}
-      fill={theme.colors.textSecondary}
+    <SelectChevron
+      size={SELECT_CHEVRON_SIZE[trigger.size]}
+      color={palette.textSecondary}
+      style={[
+        CHEVRON_TRANSITION,
+        { flexShrink: 0, transform: [{ rotate: trigger.open ? '180deg' : '0deg' }] },
+        style,
+      ]}
     />
   );
 }
@@ -224,37 +367,43 @@ export function SelectContent<T>({
   label = 'Select an option',
   valueExtractor = defaultItemValueExtractor,
   maxHeight = SELECT_MAX_HEIGHT,
+  width,
   className,
 }: SelectContentProps<T>) {
   const ctx = useSelectContext();
+  const [, setStoredItem] = useContext(ValueStoreContext);
+  // Resolve the item behind the value on every change — including while closed,
+  // which is what gives the trigger its label on the first paint — and clear it
+  // when the value no longer matches an item.
+  useLayoutEffect(() => {
+    const item = items.find((candidate) => valueExtractor(candidate) === ctx.value);
+    setStoredItem(() => item);
+  }, [items, ctx.value, valueExtractor, setStoredItem]);
   const anchor = useAnchorRect(ctx.triggerRef, ctx.isOpen);
   const listRef = useRef<ScrollView | null>(null);
-  // Where the option list is scrolled to, tracked so the two scroll buttons can
-  // hide when there is nothing left in their direction. A button that is always
-  // there says the list scrolls when it does not.
-  const [scrollState, setScrollState] = useState({ offset: 0, content: 0, viewport: 0 });
 
-  const scrollBy = useCallback(
-    (direction: 'up' | 'down') => {
-      const step = direction === 'down' ? SCROLL_STEP : -SCROLL_STEP;
-      const next = Math.max(
-        0,
-        Math.min(scrollState.offset + step, scrollState.content - scrollState.viewport),
-      );
-      listRef.current?.scrollTo({ y: next, animated: true });
-    },
-    [scrollState],
-  );
+  // The list is a plain `max-h-[240px] overflow-auto` box: the native
+  // scrollbar and nothing else. It used to carry shadcn's scroll-up/down
+  // chevrons, which appeared and disappeared as the list moved and made the
+  // whole panel jump in height under the pointer.
+  //
+  // Like react-aria's listbox, opening scrolls the selected option into view, so
+  // a value far down a long list is not hidden below the fold.
+  useEffect(() => {
+    if (!ctx.isOpen) return undefined;
+    const frame = requestAnimationFrame(() => {
+      const node = (listRef.current as unknown as { getScrollableNode?: () => HTMLElement | null })
+        ?.getScrollableNode?.();
+      const selected = node?.querySelector<HTMLElement>('[aria-checked="true"]');
+      if (!node || !selected) return;
+      const top = selected.offsetTop;
+      const bottom = top + selected.offsetHeight;
+      if (top < node.scrollTop) node.scrollTop = top;
+      else if (bottom > node.scrollTop + node.clientHeight) node.scrollTop = bottom - node.clientHeight;
+    });
+    return () => cancelAnimationFrame(frame);
+  }, [ctx.isOpen]);
 
-  const scroll = useMemo(
-    () => ({
-      canScrollUp: scrollState.offset > SCROLL_EPSILON,
-      canScrollDown:
-        scrollState.content - scrollState.viewport - scrollState.offset > SCROLL_EPSILON,
-      scrollBy,
-    }),
-    [scrollState, scrollBy],
-  );
   // The dropdown is the same anchored surface the four menu families render, so
   // it goes through the same `FloatingPanel`. That deletes this fork's own
   // portal, its own backdrop and its own copy of the measure/flip/clamp effect,
@@ -270,40 +419,33 @@ export function SelectContent<T>({
       label={label}
       align="start"
       sideOffset={SELECT_OFFSET}
-      minWidth={anchor ? anchor.right - anchor.left : undefined}
+      // `w-[266px]` as a floor, so a narrow trigger still opens the
+      // standard menu width while a wide one keeps lining up under its field.
+      // A number rather than the class: this inline `minWidth` would outrank it.
+      minWidth={
+        width !== undefined
+          ? width
+          : anchor
+            ? Math.max(MENU_WIDTH, anchor.right - anchor.left)
+            : undefined
+      }
+      style={width !== undefined ? { width } : undefined}
       onDismiss={ctx.close}
+      surface="listbox"
       className={className}
     >
-      <SelectScrollProvider value={scroll}>
-        <SelectScrollUpButton />
-        <ScrollView
-          ref={listRef}
-          style={{ maxHeight }}
-          scrollEventThrottle={16}
-          onScroll={(event) =>
-            setScrollState({
-              offset: event.nativeEvent.contentOffset.y,
-              content: event.nativeEvent.contentSize.height,
-              viewport: event.nativeEvent.layoutMeasurement.height,
-            })
-          }
-          onContentSizeChange={(_width, height) =>
-            setScrollState((current) => ({ ...current, content: height }))
-          }
-          onLayout={(event) =>
-            setScrollState((current) => ({
-              ...current,
-              viewport: event.nativeEvent.layout.height,
-            }))
-          }>
-          {items.map((item, index) => (
-            <React.Fragment key={valueExtractor(item)}>
-              {renderItem(item, index, ctx.value)}
-            </React.Fragment>
-          ))}
-        </ScrollView>
-        <SelectScrollDownButton />
-      </SelectScrollProvider>
+      <ScrollView
+        ref={listRef}
+        style={{ maxHeight }}
+        // `flex flex-col gap-1` — the rows sit 4px apart.
+        contentContainerStyle={styles.list}
+        showsVerticalScrollIndicator>
+        {items.map((item, index) => (
+          <React.Fragment key={valueExtractor(item)}>
+            {renderItem(item, index, ctx.value)}
+          </React.Fragment>
+        ))}
+      </ScrollView>
     </FloatingPanel>
   );
 }
@@ -312,8 +454,18 @@ export function SelectContent<T>({
 // SelectItem
 // ---------------------------------------------------------------------------
 
-export function SelectItem({ ref, value, label, children, className, style }: SelectItemProps) {
+export function SelectItem({
+  ref,
+  value,
+  label,
+  disabled = false,
+  leading,
+  children,
+  className,
+  style,
+}: SelectItemProps) {
   const ctx = useSelectContext();
+  const palette = useMenuPalette();
   const {
     state: hovered,
     onIn: onMouseEnter,
@@ -327,9 +479,12 @@ export function SelectItem({ ref, value, label, children, className, style }: Se
   // background below, but they are no longer PUBLISHED — nothing ever read
   // them, and `pressed` was published as a literal `false`.
   const itemCtx = useMemo<SelectItemContextValue>(
-    () => ({ selected: isSelected }),
-    [isSelected],
+    () => ({ selected: isSelected, disabled }),
+    [isSelected, disabled],
   );
+  // `(isFocused || isSelected) && MENU_ITEM_ACTIVE`: hover, keyboard
+  // focus and the chosen option share one `dropdown-item-hover-background`.
+  const highlighted = !disabled && (hovered || focused || isSelected);
 
   return (
     <StyledPressable
@@ -343,22 +498,37 @@ export function SelectItem({ ref, value, label, children, className, style }: Se
       // only one react-native-web emits — it never reads `accessibilityState`,
       // so this fork's options announced no selection at all.
       aria-checked={isSelected}
-      onPress={() => {
-        ctx.onValueChange?.(value);
-        ctx.close();
-      }}
-      onFocus={onFocus}
+      disabled={disabled}
+      onPress={
+        disabled
+          ? undefined
+          : () => {
+              ctx.onValueChange?.(value);
+              ctx.close();
+            }
+      }
+      onFocus={disabled ? undefined : onFocus}
       onBlur={onBlur}
       {...({
-        onMouseEnter,
+        onMouseEnter: disabled ? undefined : onMouseEnter,
         onMouseLeave,
-      } as Record<string, () => void>)}
-      // `focus:bg-accent` — the same wash a menu row takes, which is what every
-      // other highlighted row in the library paints.
-      className={cx(SELECT_ITEM_CLASS, (hovered || focused) && ROW_HIGHLIGHT_CLASS, className)}
-      style={style}
+      } as Record<string, (() => void) | undefined>)}
+      className={cx(
+        SELECT_ITEM_CLASS,
+        SELECT_ITEM_SIZE_CLASS[ctx.size],
+        disabled ? 'cursor-not-allowed' : 'cursor-pointer',
+        className,
+      )}
+      style={[
+        ROW_TRANSITION,
+        { backgroundColor: highlighted ? palette.rowHighlight : 'transparent' },
+        style,
+      ]}
     >
-      <ItemContext.Provider value={itemCtx}>{children}</ItemContext.Provider>
+      <ItemContext.Provider value={itemCtx}>
+        {leading}
+        {children}
+      </ItemContext.Provider>
     </StyledPressable>
   );
 }
@@ -368,8 +538,25 @@ export function SelectItem({ ref, value, label, children, className, style }: Se
 // ---------------------------------------------------------------------------
 
 export function SelectItemText({ children, className, style }: SelectItemTextProps) {
+  const { size } = useSelectContext();
+  const { disabled } = useSelectItemContext();
+  const palette = useMenuPalette();
+  // `text-text-primary`, or `text-text-disabled` on a disabled option. Inline
+  // only without a caller `className` (see `SelectValue`).
   return (
-    <StyledText numberOfLines={1} className={cx(SELECT_ITEM_TEXT_CLASS, className)} style={style}>
+    <StyledText
+      numberOfLines={1}
+      className={cx(
+        SELECT_ITEM_TEXT_CLASS[size],
+        menuTypeClass(VALUE_TYPE[size], className),
+        className && 'text-foreground',
+        className,
+      )}
+      style={[
+        menuType(VALUE_TYPE[size], className),
+        className ? null : { color: disabled ? palette.textDisabled : palette.text },
+        style,
+      ]}>
       {children}
     </StyledText>
   );
@@ -380,11 +567,11 @@ export function SelectItemText({ children, className, style }: SelectItemTextPro
 // ---------------------------------------------------------------------------
 
 export function SelectItemIndicator({ icon: IconComponent = CheckIcon }: SelectItemIndicatorProps) {
-  const theme = useTheme();
+  const palette = useMenuPalette();
   const { selected } = useSelectItemContext();
 
-  // `absolute right-2 flex size-3.5 items-center justify-center` holding a
-  // `text-muted-foreground size-4` check. A select's tick sits on the RIGHT — the
+  // `absolute right-2 flex size-3.5 items-center justify-center` holding
+  // a `size-4 text-text-secondary` check. A select's tick sits on the RIGHT — the
   // opposite side from a menu's — which is what leaves the option's own text
   // starting flush at `pl-2` like every other line in the panel. Bloom drew it in
   // a 30px LEFT gutter, so a select and a dropdown menu disagreed about which
@@ -396,7 +583,7 @@ export function SelectItemIndicator({ icon: IconComponent = CheckIcon }: SelectI
       <IconComponent
         width={ROW_ICON_SIZE}
         height={ROW_ICON_SIZE}
-        fill={theme.colors.textSecondary}
+        fill={palette.textSecondary}
       />
     </StyledView>
   );
@@ -407,17 +594,24 @@ export function SelectItemIndicator({ icon: IconComponent = CheckIcon }: SelectI
 // ---------------------------------------------------------------------------
 
 export function SelectSeparator() {
-  return <StyledView className={ROW_SEPARATOR_CLASS} />;
+  const palette = useMenuPalette();
+  // `-mx-2 my-1.5 h-px bg-border-button-default`, bleeding through the listbox's `p-2`.
+  return (
+    <StyledView className={SELECT_SEPARATOR_CLASS} style={{ backgroundColor: palette.border }} />
+  );
 }
 
 const styles = StyleSheet.create({
   // `TriggerSlot`'s wrapper is `alignSelf: 'flex-start'` so an anchored surface
   // lines up with the CONTROL. A select trigger is a full-width field, so it
-  // stretches instead — the same exception the combobox makes. Inline rather
+  // stretches instead. Inline rather
   // than a class because it overrides `TriggerSlot`'s own inline default, and a
   // class cannot outrank one.
   triggerSlot: {
     alignSelf: 'stretch',
+  },
+  list: {
+    gap: 4,
   },
 });
 

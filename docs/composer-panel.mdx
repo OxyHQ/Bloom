@@ -1,0 +1,183 @@
+---
+title: ComposerPanel
+description: The two-row agent composer — prompt, add menu, permission modes, model picker with effort, voice and send, with an attachment strip and a status tab.
+order: 97
+---
+
+# ComposerPanel
+
+A two-row agent composer: a radius-24 card with the prompt on its first row and the controls on its second, a grey status tab hanging off its top edge, and a strip of 56px attachment tiles that draw an upload ring while a file lands.
+
+```tsx
+import {
+  ComposerPanel,
+  ComposerPanelStatusTab,
+} from '@oxyhq/bloom/composer-panel';
+
+<ComposerPanel
+  value={draft}
+  onValueChange={setDraft}
+  onSubmit={send}
+  disabled={isStreaming}
+  providers={providers}
+  model={model}
+  onModelChange={setModel}
+  effort={effort}
+  onEffortChange={setEffort}
+  permission={permission}
+  onPermissionChange={setPermission}
+  attachments={files}
+  onRemoveAttachment={removeFile}
+  status={<ComposerPanelStatusTab branch="main" project="oxy-web" context={57} />}
+/>
+```
+
+The panel is UI and interaction state only. Sending, streaming, uploading and model routing belong to the consumer: `onSubmit` hands you the draft, `disabled` greys send while a turn is in flight, and each attachment's `progress` is yours to drive.
+
+## Exports
+
+| Export | What it is |
+|---|---|
+| `ComposerPanel` | The composer. |
+| `ComposerAttachments` | `ComposerPanel` with a **simulated** sequential upload queue: files arriving with `progress: 0` land one after another. For demos and prototypes — real uploads pass their own `progress` to `ComposerPanel`. |
+| `ModelPicker` | The model picker on its own (provider rail, Quick Search, effort). |
+| `ComposerPanelStatusTab` | The status tab — branch, project folder, context meter. Pass it as `status`. |
+| `ComposerPill` | The AI chat's one-row pill composer: add menu, field, a simple Models + Effort menu, mic and send. |
+| `ComposerStatusBar` | The line under the pill: branch, a Local Folders menu, agent mode and the context meter. |
+| `COMPOSER_PANEL_PERMISSIONS`, `COMPOSER_PANEL_ADD_MENU`, `MODEL_PICKER_EFFORT_LEVELS` | The default modes, add-menu rows and effort stops, for extending rather than retyping. |
+
+## ComposerPill and ComposerStatusBar
+
+```tsx
+import { ComposerLoader } from '@oxyhq/bloom/composer-loader';
+import { ComposerPill, ComposerStatusBar } from '@oxyhq/bloom/composer-panel';
+
+<ComposerLoader active={working}>
+  <ComposerPill surface={false} glass={working} models={['Composer 2.5', 'Fable 5']} onSubmit={send} />
+</ComposerLoader>
+<ComposerStatusBar branch="Main" folders={folders} mode="Agent" context={57} />
+```
+
+- **Pill** — 52 tall, full radius, p 8, gap 10, background-primary + shadow-xs. The add disc is a step lighter than the panel's (neutral-100 / dark 700, hovered 200 / 600) and reuses the panel's `AddMenu`. The field is body-regular with an accent-500 caret; its placeholder shortens to `compactPlaceholder` ("Ask me") under 640 wide, and unfocused on web its last 32px fade into the pill.
+- **Model menu** — a 32-tall trigger (radius 12, py 6 / pr 4 / pl 8) with a turning 18px chevron, opening a 266px panel upward: "Models" radio rows (p 8, radius 10, 14px radio, primary-hover while selected), a full-bleed divider (7 above, 12 below), "Effort *value*" (the value blurs in on change), Faster / Smarter and the six-stop slider. Choosing a model closes it; the slider leaves it open. Omit `models` to hide the button.
+- **Mic and send** — the panel's own controls, 8 apart after a 6px lead.
+- **`surface={false}`** inside a `ComposerLoader`, which paints the pill surface behind its light.
+- **`glass`** — the add, model and mic controls drop their fill, border and shadow over 480ms onto frosted chips (web: 6px saturated backdrop blur, a 12% / dark 6% white tint, a 155° sheen, a 0.3px conic rim; native: the tint). Pair it with an active loader.
+- **Status bar** — 26 tall; branch (mirrored merge glyph), the project folder (a caret that turns over while its 266px "Local Folders" panel is open: rows of a 20px folder glyph, the path prefix in text-secondary and the name in text-primary), the agent mode (∞ + caret) and the context meter on a radius-40 background-tertiary pill. Labels body-2-medium text-secondary, glyphs 16px icon-secondary.
+
+Both take their menus from the same platform binding as `ComposerPanel`.
+
+**Hazard:** the anchored panel (`floating/FloatingPanel`) lays its direct children out 4px apart. A panel whose sections carry their own measured spacing (the model menu's divider margins) must set `gap: 0` on the panel style, or every section boundary drifts 4px.
+
+## Anatomy
+
+| Part | Geometry |
+|---|---|
+| card | radius 24, padding 10, two 2% shadow layers (1px and 4px) |
+| status tab | 34 tall, inset 28 each side, radius 16 on the top corners, px 8 / py 4 |
+| attachment strip | tiles 8 apart, wrapping; collapses (height + opacity, 250ms) with its own 4px foot |
+| prompt | pt 6 / px 6, `body-regular`, grows 20px a line up to 200, then scrolls |
+| controls | left: add (36) + permission pill (30), 8 apart; right: model picker (32), 16, mic + send (36), 8 apart |
+| permission panel | 323 wide, radius 20, p 6; rows p 8, radius 14 |
+| add panel | 361 wide, radius 16, p 8; groups 8 apart; rows px 8 py 6, radius 10 |
+| model panel | 341 × 282, radius 20; rail 42 wide, marks 36×30 six apart; rows 36 tall, radius 10 |
+| effort panel | 266 wide, radius 16, p 4; track 27 tall (radius 8), thumb 21×27 (radius 7), six 3×13 ticks |
+
+Every text run uses the type ramp (`body-medium`, `body-2-medium`, `body-regular`); the tile name and percentage are set at a literal 9px, which has no ramp step. The model trigger is a full pill (Bloom's button-like-control rule), not a 12px corner.
+
+## Menus
+
+- **Add** — the plus turns 45° while open. Groups of rows (`addMenu`), each with a 20px icon or 24px artwork and an inline muted description. `onAddMenuSelect(rowId)` fires and the menu closes. `addMenu={[]}` hides the button.
+- **Permissions** — a pill that paints only on hover, press or while open; the panel lists `permissions` as radios (`aria-checked`). `onLearnMore` shows "Learn more" in the header.
+- **Model picker** — the rail browses providers (tabs, `aria-selected`) and always reopens on the chosen model's provider, keeping its mark in view. "Quick Search" (or `/` and ⌘K on web) filters every lineup; Escape clears the query, then leaves search. The selected row carries the effort chip, which opens the effort panel. Pass `providers` to `ComposerPanel` to show it.
+
+All three panels open upward and hang from the trigger's left edge. On **web** they are `floating/FloatingPanel` on its menu surface — a 150ms fade + scale + blur, non-modal (except the model picker, which catches the outside press so a press inside its separately-portaled effort panel is not read as "outside"). On **native** each is a transparent `Modal` placed against the trigger's `measureInWindow` box (flipped when it does not fit, clamped 8px inside the window), not a bottom sheet: the effort panel opens from inside the picker, and nested `Modal`s stack where sheets do not.
+
+## Attachments
+
+```ts
+interface ComposerPanelAttachment {
+  id: string;
+  name: string;
+  kind: 'image' | 'document' | 'spreadsheet' | 'presentation' | 'code' | 'video';
+  src?: string;        // image thumbnail URI
+  icon?: ReactNode;    // your own 24px artwork for a non-image tile
+  progress?: number;   // 0–100 draws the ring; omit once landed
+}
+```
+
+While `progress` is set the tile's content dims to 60%, the accent ring draws clockwise from top-centre over the 1px border (closed at 100) and the percentage sits top-right (white over a photo). Once `progress` is removed the percentage blurs out as the dismiss blurs in on the same spot; the dismiss is out of the accessibility tree until then. Tiles scale and blur in on arrival and out on removal (280ms).
+
+Non-image tiles default to Remix file glyphs — illustrated plugin icons use SVG filters react-native-svg cannot draw; pass `icon` (and `image` on add-menu rows) for your own artwork.
+
+## Providers
+
+```ts
+interface ModelPickerProvider {
+  id: string;
+  name: string;
+  logo?: (props: { size: number; color: string }) => ReactNode;
+  logoSize?: 18 | 20;
+  models: ReadonlyArray<{ id: string; name: string }>;
+}
+```
+
+`logo` receives the box size (18/20 on the rail, 16 on a row) and the mark colour — black at 30%, inverted in dark. Without one, the provider's initial stands in. Bloom ships no provider marks.
+
+## State
+
+Everything is controllable and works uncontrolled: `value`/`defaultValue`, `permission`/`defaultPermission`, `model`/`defaultModel`, `effort`/`defaultEffort`, `listening`/`defaultListening`. Enter submits on web (Shift+Enter breaks the line; IME composition is respected); on native the send button submits. An uncontrolled draft clears after submit.
+
+## Colours
+
+From the theme through `button/shared` ramps:
+
+| Token | light | dark |
+|---|---|---|
+| card, panels, mic | `colors.card` | neutral-800 |
+| hover / selected row | neutral-100 | neutral-700 at 60% over neutral-800 |
+| panel hairline, mic border | neutral-200 | neutral-700 |
+| status tab | neutral-200 | neutral-700 at 50% (translucent) |
+| add button / hover | neutral-200 / 300 | neutral-700 / 600 |
+| tile border | neutral-200 | white at 14% over neutral-800 |
+| rail | neutral-100 | neutral-900 at 50% over neutral-800 |
+| effort chip / hover | neutral-200 / 300 | neutral-800 / 700 |
+| effort track / fill | neutral-100 / 300 | neutral-900 / 700 |
+| secondary / tertiary text | neutral-500 / 400 | neutral-500 / 600 |
+| send | `bg-button-primary` accent gradient; disabled gradient at 40% | same |
+| upload ring / percentage | accent-400 / accent-500 | same |
+
+## Motion
+
+State colours 150ms; chevrons and the plus 200ms; mic ↔ equalizer crossfade 280ms (scale 0.8 + blur on web); equalizer bars on staggered clocks; effort level blurs in over 350ms; the list's soft top edge fades in over 200ms once scrolled (backdrop blurs on web, a wash on native). Everything snaps under reduced motion. No press or scale feedback on any control.
+
+**Known gaps:** a Max-effort flourish (a WebGL rocket-exhaust shader over a canvas starfield, with the ticks blown off the track) has no native counterpart; the slider simply rests at Max. A layout animation of sibling tiles sliding into a removed tile's slot is not reproduced — siblings reflow when the tile unmounts.
+
+## Accessibility
+
+Every control is named: the triggers announce their current value ("Permission: Auto", "Models: GPT-5.6 Mini", "Effort: Medium") with `aria-expanded`; permission modes and model rows are radios (`aria-checked` + `accessibilityState`); rail marks are tabs; the mic is a toggle (`aria-pressed`); send carries `aria-disabled`; the effort slider is `adjustable` with flat `aria-value*`, `aria-valuetext` (the level name), increment/decrement actions, and arrow/Home/End keys on web.
+
+## Props
+
+| Prop | Type | Default | Description |
+|------|------|---------|-------------|
+| `value` / `defaultValue` / `onValueChange` | `string` | `''` | The draft. |
+| `onSubmit` | `(value) => void` | — | Send button and Enter (web). |
+| `disabled` | `boolean` | `false` | Greys send. |
+| `placeholder` | `string` | `'Hi, what do you need today?'` | |
+| `permissions` | `ComposerPanelPermissionOption[]` | the default four | `[]` hides the picker. |
+| `permission` / `defaultPermission` / `onPermissionChange` | `string` | first mode | |
+| `onLearnMore` | `() => void` | — | Shows "Learn more". |
+| `addMenu` / `onAddMenuSelect` | `ComposerPanelAddMenuGroup[]` / `(id) => void` | Add + Plugins | `[]` hides the button. |
+| `providers` | `ModelPickerProvider[]` | — | Shows the model picker. |
+| `model` / `defaultModel` / `onModelChange` | `string` | first model | |
+| `effort` / `defaultEffort` / `onEffortChange` | `number` | `1` | Index into `effortLevels`. |
+| `effortLevels` | `string[]` | the default six | |
+| `listening` / `defaultListening` / `onListeningChange` | `boolean` | `false` | Voice input toggle. |
+| `attachments` / `onRemoveAttachment` | `ComposerPanelAttachment[]` / `(id) => void` | — | |
+| `status` | `ReactNode` | — | Usually `<ComposerPanelStatusTab />`. |
+| `inputRef` | `RefObject<TextInput>` | — | The prompt field. |
+| `labels`, `modelPickerLabels` | objects | English | Localisation. |
+| `style`, `testID` | | | |
+
+`ComposerAttachments` takes the same props plus `attachments` (required), `uploadDuration` (1100), `uploadGap` (240), `onAttachmentsChange`, `onUploadComplete`, `onAllUploaded`. `ModelPicker` takes `providers`, `value`/`defaultValue`/`onValueChange`, the effort trio, `effortLevels`, `labels`, `style`, `testID`.

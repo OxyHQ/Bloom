@@ -3,10 +3,12 @@ import { View } from 'react-native';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
 import { Button } from '../button';
-import { Check_Stroke2_Corner0_Rounded as CheckIcon } from '../icons/Check';
-import { ChevronBottom_Stroke2_Corner0_Rounded as ChevronBottomIcon } from '../icons/Chevron';
-import { Person_Stroke2_Corner0_Rounded as PersonIcon } from '../icons/Person';
-import { LevelPicker } from '../level-picker';
+import {
+  RiArrowDownSLine as ChevronBottomIcon,
+  RiCheckLine as CheckIcon,
+  RiUserLine as PersonIcon,
+} from '../icons/remix';
+import { useMenuPalette } from '../floating/menu-palette';
 import { StyledView } from '../styles/styled-primitives';
 import { useTheme } from '../theme/use-theme';
 import { Text } from '../typography';
@@ -28,13 +30,24 @@ import {
 } from './index';
 
 const meta: Meta = {
-  title: 'Overlays/DropdownMenu',
+  title: 'Base/Dropdown',
 };
 
 export default meta;
 
 type Story = StoryObj;
 
+/** A leading icon in `text-secondary`, matching the rows. */
+function SecondaryPersonIcon() {
+  const palette = useMenuPalette();
+  return <PersonIcon size="sm" fill={palette.textSecondary} />;
+}
+
+/**
+ * A 266px `p-2.5` panel with a 16px corner and `shadow-dropdown`,
+ * 36px rows 4px apart on a `neutral-100` hover wash, a `text-secondary` group
+ * label, a full-bleed separator, a `text-disabled` row and a destructive row.
+ */
 export const Basic: Story = {
   render: () => (
     <View style={{ padding: 80 }}>
@@ -46,11 +59,9 @@ export const Basic: Story = {
           <DropdownMenuLabel>My account</DropdownMenuLabel>
           <DropdownMenuSeparator />
           <DropdownMenuGroup>
-            {/* A leading glyph takes the target's base treatment: full colour
-                at 70%, not a secondary-coloured icon. */}
             <DropdownMenuItem
               testID="menu-profile"
-              leading={<PersonIcon size="sm" />}
+              leading={<SecondaryPersonIcon />}
               trailing={<DropdownMenuShortcut>⇧⌘P</DropdownMenuShortcut>}>
               Profile
             </DropdownMenuItem>
@@ -290,149 +301,4 @@ export const AlignEnd: Story = {
       </DropdownMenu>
     </View>
   ),
-};
-
-const POWER_LABELS = ['Instant', 'Medium', 'High', 'Extra High', 'Pro'] as const;
-
-/**
- * The complete menu shape a product composer needs — a measured trigger, a
- * stepped power slider, an advanced region, lateral sub-menus and radio checks
- * on the trailing edge — with every part of the SURFACE now coming from
- * `LevelPicker` rather than from ~200 lines of absolute positioning written
- * here.
- *
- * The story is still in this file because the menu is what the picker is a body
- * FOR: it is the case that proves a `DropdownMenuContent` can hold one, that
- * the sub-menus inside its details region still fly out, and that the panel
- * resizes around the reveal. What it demonstrates now is composition — the
- * picker knows the number of stops and their names, and nothing about what a
- * stop means.
- */
-export const IntelligencePicker: Story = {
-  render: function IntelligencePickerMenu() {
-    const theme = useTheme();
-    const [power, setPower] = useState(1);
-    const [advanced, setAdvanced] = useState(true);
-    const [effortSubmenuOpen, setEffortSubmenuOpen] = useState(true);
-    const [model, setModel] = useState('automatic');
-    const [effort, setEffort] = useState('medium');
-    const selectedMark = <CheckIcon size="sm" fill={theme.colors.text} />;
-
-    return (
-      <StyledView className="min-h-[420px] w-[680px] items-end px-space-80 py-space-40">
-        <DropdownMenu defaultOpen>
-          <DropdownMenuTrigger
-            asChild
-            label="Power and model"
-            className="w-[171px]"
-            testID="intelligence-trigger">
-            <Button
-              variant="ghost"
-              size="small"
-              className="h-9 w-full justify-center rounded-full"
-              icon={<ChevronBottomIcon size="sm" />}
-              iconPosition="right">
-              {POWER_LABELS[power]}
-            </Button>
-          </DropdownMenuTrigger>
-
-          <DropdownMenuContent
-            align="end"
-            sideOffset={4}
-            className="w-[224px] min-w-[224px] rounded-[20px] py-space-8"
-            testID="intelligence-menu">
-            <LevelPicker
-              testID="intelligence-picker"
-              accessibilityLabel="Power"
-              levels={[...POWER_LABELS]}
-              value={power}
-              onValueChange={setPower}
-              minLabel="Faster"
-              maxLabel="Smarter"
-              detailsLabel="Advanced"
-              expanded={advanced}
-              onExpandedChange={setAdvanced}>
-              <DropdownMenuSub>
-                <DropdownMenuSubTrigger accessibilityLabel="Model, Automatic">
-                  <StyledView className="min-w-0 flex-1 flex-row items-center">
-                    <Text className="text-sm text-foreground">Model</Text>
-                    <Text
-                      className="ms-auto max-w-24 text-sm text-muted-foreground"
-                      numberOfLines={1}>
-                      Automatic
-                    </Text>
-                  </StyledView>
-                </DropdownMenuSubTrigger>
-                <DropdownMenuSubContent
-                  label="Model"
-                  side="right"
-                  align="start"
-                  sideOffset={2}
-                  className="w-[202px]"
-                  testID="model-submenu">
-                  <DropdownMenuRadioGroup value={model} onValueChange={setModel}>
-                    <DropdownMenuRadioItem
-                      value="automatic"
-                      indicator={selectedMark}
-                      indicatorPosition="trailing">
-                      Automatic
-                    </DropdownMenuRadioItem>
-                    <DropdownMenuRadioItem
-                      value="balanced"
-                      indicator={selectedMark}
-                      indicatorPosition="trailing">
-                      Balanced
-                    </DropdownMenuRadioItem>
-                  </DropdownMenuRadioGroup>
-                </DropdownMenuSubContent>
-              </DropdownMenuSub>
-
-              <DropdownMenuSub
-                open={advanced && effortSubmenuOpen}
-                onOpenChange={setEffortSubmenuOpen}>
-                <DropdownMenuSubTrigger
-                  accessibilityLabel="Effort, Medium"
-                  testID="effort-submenu-trigger">
-                  <StyledView className="min-w-0 flex-1 flex-row items-center">
-                    <Text className="text-sm text-foreground">Effort</Text>
-                    <Text
-                      className="ms-auto max-w-24 text-sm text-muted-foreground"
-                      numberOfLines={1}>
-                      Medium
-                    </Text>
-                  </StyledView>
-                </DropdownMenuSubTrigger>
-                <DropdownMenuSubContent
-                  label="Effort"
-                  side="right"
-                  align="start"
-                  sideOffset={2}
-                  className="w-[150px]"
-                  testID="effort-submenu">
-                  <DropdownMenuRadioGroup value={effort} onValueChange={setEffort}>
-                    {([
-                      ['instant', 'Instant'],
-                      ['medium', 'Medium'],
-                      ['high', 'High'],
-                      ['extra-high', 'Extra High'],
-                      ['pro', 'Pro'],
-                    ] as const).map(([value, label]) => (
-                      <DropdownMenuRadioItem
-                        key={value}
-                        value={value}
-                        disabled={value === 'pro'}
-                        indicator={selectedMark}
-                        indicatorPosition="trailing">
-                        {label}
-                      </DropdownMenuRadioItem>
-                    ))}
-                  </DropdownMenuRadioGroup>
-                </DropdownMenuSubContent>
-              </DropdownMenuSub>
-            </LevelPicker>
-          </DropdownMenuContent>
-        </DropdownMenu>
-      </StyledView>
-    );
-  },
 };

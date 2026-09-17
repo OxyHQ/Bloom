@@ -4,12 +4,12 @@ import type { Meta, StoryObj } from '@storybook/react-vite';
 
 import { IconCircle } from './index';
 import { Text } from '../typography';
-import { Bell_Stroke2_Corner0_Rounded as BellIcon } from '../icons/Bell';
-import { Lock_Stroke2_Corner0_Rounded as LockIcon } from '../icons/Lock';
-import { Shield_Stroke2_Corner0_Rounded as ShieldIcon } from '../icons/Shield';
+import { RiNotification3Line as BellIcon } from '../icons/remix/RiNotification3Line';
+import { RiLockLine as LockIcon } from '../icons/remix/RiLockLine';
+import { RiShieldLine as ShieldIcon } from '../icons/remix/RiShieldLine';
 
 const meta: Meta<typeof IconCircle> = {
-  title: 'Data Display/IconCircle',
+  title: 'Base/Icon Circle',
   component: IconCircle,
 };
 

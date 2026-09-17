@@ -153,6 +153,7 @@ export type {
   SurfacePromptOptions,
 } from './surfaces';
 export * from './button';
+export * from './button-group';
 export {
   EDGE_GAP,
   windowEdgeGap,
@@ -165,6 +166,41 @@ export type { FabProps, FabVariant, FabSize, FabPlacement } from './fab';
 export { FrostedIconButton } from './frosted-icon-button';
 export type { FrostedIconButtonProps, FrostedIconButtonSize } from './frosted-icon-button';
 export * from './divider';
+export * from './breadcrumb';
+export * from './pagination';
+export * from './agent-limits-card';
+export { Carousel, CarouselItem } from './carousel';
+export type { CarouselProps, CarouselItemProps } from './carousel';
+export { FileUpload, formatFileSize } from './file-upload';
+export type { FileUploadFile, FileUploadLabels, FileUploadProps } from './file-upload';
+export { SocialButton, SOCIAL_PROVIDERS } from './social-button';
+export type { SocialBrand, SocialBrandConfig, SocialButtonAppearance, SocialButtonProps, SocialButtonSize, SocialProvider } from './social-button';
+export * from './notification';
+export * from './announcement';
+export * from './data-table';
+export * from './chart-cards';
+export * from './calendar';
+export * from './stat-cards';
+export * from './recent-hires-card';
+export * from './ai-profile-card';
+export * from './important-alerts-card';
+export * from './patient-info-card';
+export * from './sidebar';
+export * from './app-shell';
+export * from './notification-center';
+export * from './theme-toggle';
+export * from './settings-modal';
+export * from './auth-card';
+export * from './agent-thinking';
+export * from './agent-log';
+export * from './agent-progress';
+export * from './composer-loader';
+export * from './composer-panel';
+export * from './questionnaire';
+export * from './web-search';
+export * from './task-list';
+export * from './agent-chat';
+export * from './ai-chat';
 export * from './radio-indicator';
 export { ErrorBoundary } from './error-boundary';
 export type {
@@ -178,7 +214,6 @@ export type { AvatarGroupProps, AvatarGroupItem } from './avatar-group';
 export { UserHoverCard } from './user-hover-card';
 export type { UserHoverCardProps, UserHoverCardStat } from './user-hover-card';
 export * from './loading';
-export * from './prompt-input';
 export * from './switch';
 // `ToastOutlet` is a required app-root mount, like `SurfaceHost`. The full
 // engine surface lives at `@oxyhq/bloom/toast`.
@@ -197,8 +232,6 @@ export type { MediaInsetBorderProps } from './media-inset-border';
 export { IconCircle } from './icon-circle';
 export { ConnectionDots } from './connection-dots';
 export type { ConnectionDotsProps } from './connection-dots';
-export { BenefitRow, BenefitList } from './benefit-list';
-export type { BenefitRowProps, BenefitListProps } from './benefit-list';
 export {
   ContentPanel,
   GUTTER_MASK_SPREAD,
@@ -232,6 +265,10 @@ export type { AnimatedCheckProps, AnimatedCheckRef } from './animated-check';
 // Form components
 export * from './text-field';
 export * from './segmented-control';
+export * from './textarea';
+export * from './input-otp';
+export * from './table';
+export * from './date-picker';
 export { Search } from './search';
 export { Label } from './label';
 export type { LabelProps } from './label';
@@ -239,12 +276,8 @@ export { Field } from './field';
 export type { FieldProps } from './field';
 export { InputGroup, InputGroupAddon } from './input-group';
 export type { InputGroupProps, InputGroupAddonProps } from './input-group';
-export { Slider } from './slider';
-export type { SliderProps } from './slider';
-export { LevelPicker } from './level-picker';
-export type { LevelPickerProps } from './level-picker';
-export { Combobox } from './combobox';
-export type { ComboboxProps, ComboboxOption } from './combobox';
+export { RangeSlider, Slider } from './slider';
+export type { RangeSliderProps, SliderProps } from './slider';
 
 // Bottom sheet
 export { BottomSheet } from './bottom-sheet';
@@ -276,15 +309,6 @@ export type {
 } from './stat-bar';
 export { ActivityHeatmap, bucketByDay } from './activity-heatmap';
 export type { ActivityHeatmapProps, ActivityHeatmapDay } from './activity-heatmap';
-export { ProfileCard } from './profile-card';
-export type {
-  ProfileCardProps,
-  ProfileCardLayout,
-  ProfileCardVariant,
-  ProfileCardAvatar,
-  ProfileCardMetric,
-  ProfileCardFooter,
-} from './profile-card';
 
 // Settings / Grouped list
 export * from './settings-list';

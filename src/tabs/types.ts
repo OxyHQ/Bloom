@@ -1,6 +1,27 @@
+import type { ComponentType } from 'react';
 import type { StyleProp, ViewStyle, TextStyle } from 'react-native';
 
-export type TabsVariant = 'underline' | 'filled' | 'outlined';
+/**
+ * The strip's look.
+ *
+ * - `underline` — a 1px baseline with a sliding 2px accent underline. The
+ *   default.
+ * - `pill` — a sliding accent-tinted pill behind the selected trigger.
+ * - `filled` — the same, with a neutral pill and a text-primary label.
+ *   Quieter, for scope/filter rows.
+ * - `outlined` — kept for existing call sites; renders as `pill`.
+ */
+export type TabsVariant = 'underline' | 'pill' | 'filled' | 'outlined';
+
+/**
+ * A Remix-style icon component (`RiSettings3Line`, not `<RiSettings3Line />`),
+ * sized and tinted by the trigger.
+ */
+export type TabsIconComponent = ComponentType<{
+  width?: number;
+  height?: number;
+  fill?: string;
+}>;
 
 export interface TabsProps {
   /**
@@ -55,10 +76,20 @@ export interface TabsTriggerProps {
   value: string;
   /** Tab label text. */
   label: string;
-  /** Icon rendered before the label. */
+  /**
+   * A pre-rendered node before the label. The caller sizes and colours it; prefer
+   * {@link TabsTriggerProps.leadingIcon}, which follows the selection.
+   */
   icon?: React.ReactNode;
   /**
-   * Optional tally rendered as a small muted number beside the label. Omitted
+   * Icon component before the label — 16px on `underline`, 20px on the pill
+   * variants — painted in the label's colour for the current state. Wins over
+   * `icon`.
+   */
+  leadingIcon?: TabsIconComponent;
+  /**
+   * Optional tally rendered as a small count badge beside the label (accent
+   * when the tab is selected, muted otherwise). Omitted
    * (or `0`) renders nothing. The underline tracks the trigger's measured
    * width, so a count never changes where it sits.
    */

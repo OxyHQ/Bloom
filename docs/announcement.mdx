@@ -1,0 +1,68 @@
+---
+title: Announcement
+description: A compact announcement card — icon, title, description, optional CTA and dismiss — sized for a sidebar slot.
+order: 91
+---
+
+# Announcement
+
+A compact announcement / onboarding card. It fills its container — 236px
+inside a 260px sidebar.
+
+**Not an [`Admonition`](./admonition.mdx).** An admonition is an inline status
+callout inside content (info / tip / warning / error); an announcement is a
+promotional card with its own dismissal and call to action. The two do not share
+code, and `Admonition` is unchanged.
+
+```tsx
+import { Announcement } from '@oxyhq/bloom/announcement';
+
+<Announcement
+  title="Upgrade to Pro"
+  description="Unlock unlimited projects and priority support."
+  actionLabel="Upgrade now"
+  onAction={openBilling}
+  dismissible
+  onClose={() => markSeen('pro-upsell')}
+/>
+```
+
+## Anatomy
+
+| Part | Value |
+|---|---|
+| card | column, gap 12, padding 12, radius 12, 1px border/button/default, card surface (dark `neutral-800`), **no shadow** |
+| content | column, gap 4 |
+| icon | 20px, foreground/icon/secondary — default `RiShieldStarFill` |
+| close | `CloseButton` xs at top 12 / right 12 of the card |
+| text | column, gap 2 — title body-medium text/primary, description body-2-medium text/secondary |
+| action | `Button variant="secondary" size="small"`, full width (a full pill — Bloom's button rule) |
+
+Full height with every part: 12 + 20 + 4 + (20 + 2 + 36) + 12 + 32 + 12 = 150
+(plus the 1px border each side).
+
+## Props
+
+| Prop | Type | Notes |
+|---|---|---|
+| `title` | `ReactNode` | Required. |
+| `description?` | `ReactNode` | |
+| `icon?` | icon component | Pass the component (`RiSparklingFill`), not an element. |
+| `actionLabel?` | `ReactNode` | Renders the full-width CTA. |
+| `onAction?` | `() => void` | |
+| `dismissible?` | `boolean` | Default `false`. |
+| `onClose?` | `() => void` | Fires after the exit animation, once the card has unmounted. |
+| `closeLabel?` | `string` | Close button NAME. Default `Dismiss`. |
+| `introDelay?` | `number` (**seconds**) | Opts into the entrance animation. |
+| `style?`, `testID?` | | |
+
+Dismissal is self-managed: the card unmounts itself. Persist "seen" state in
+`onClose` if it should stay gone.
+
+## Motion
+
+- **Exit**: to opacity 0, scale 0.85, 6px blur over 250ms ease-in-out.
+- **Entrance** (only with `introDelay`): from opacity 0, 15px down, scale 0.85,
+  6px blur → rest over 250ms ease-out.
+- The blur is web-only; reduced motion skips both animations. Shared with
+  `Notification` (`notification/use-card-motion.ts`).

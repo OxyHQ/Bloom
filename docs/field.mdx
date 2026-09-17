@@ -59,6 +59,14 @@ A placeholder disappears as soon as there is text, so a form filled in from
 autofill or a paste has no visible labels at all. `Field`'s `label` is the
 label; a placeholder is at most an example of the format.
 
+## What it looks like
+
+The field stack: the [`Label`](/docs/bloom/main/label), the control 4px
+under it, and the description or error 4px under the control —
+Inter `caption-1-medium` (12/16, tracking .15) with a 1px top inset,
+`text-secondary` for a description and the error colour for an error. It lines
+up to the pixel with a `TextField` built from `TextFieldLabel` / `TextFieldHint`.
+
 ## Composition
 
 `Field` does not care what it wraps — a `TextField`, a `Switch`, a

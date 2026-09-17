@@ -1,7 +1,7 @@
 // Native font asset map for `useFonts(FONT_ASSETS)`.
 //
-// We ship variable .ttf files for Inter and Geist Mono (extracted from the
-// official rsms/inter and vercel/geist-font releases) so the same family name
+// We ship variable .ttf files for Inter and JetBrains Mono (from the official
+// rsms/inter release and google/fonts) so the same family name
 // covers all weights at runtime. `@fontsource(-variable)?/*` packages only
 // publish .woff2 for their variable axes — modern react-native font loading
 // requires .ttf, so we use the upstream variable TTFs instead.
@@ -21,5 +21,5 @@ export const FONT_ASSETS: FontAssetMap = {
   BlomusModernus: require('./assets/BlomusModernus-Regular.ttf'),
   'BlomusModernus-Bold': require('./assets/BlomusModernus-Bold.ttf'),
   Inter: require('./assets/InterVariable.ttf'),
-  'Geist Mono': require('./assets/GeistMono-Variable.ttf'),
+  'JetBrains Mono': require('./assets/JetBrainsMono-Variable.ttf'),
 };

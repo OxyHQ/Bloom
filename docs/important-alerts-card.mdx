@@ -1,0 +1,42 @@
+---
+title: ImportantAlertsCard
+description: A fixed-height alert feed — tinted icon circles, title, description and a corner date pill, scrolling under a fading header.
+order: 66
+---
+
+# ImportantAlertsCard
+
+A medical-dashboard alerts card: a headline count, an optional range pill, and a scrolling feed of alerts.
+
+```tsx
+import { ImportantAlertsCard } from '@oxyhq/bloom/important-alerts-card';
+import { RiHeartPulseFill } from '@oxyhq/bloom/icons';
+
+<ImportantAlertsCard
+  count={12}
+  rangeLabel="29 Jun - 5 Jul"
+  alerts={[
+    {
+      icon: RiHeartPulseFill,
+      tone: 'rose',
+      title: 'High Heart rate',
+      description: 'Your heart rate rose above 120 BPM while you seemed to be inactive.',
+      date: 'June, 12',
+    },
+  ]}
+/>
+```
+
+`count` is the period's total, which may be larger than `alerts.length` — the feed shows only the most recent ones. `title` (`"Important alerts"`) and `countCaption` (`"this week"`) are props. `rangeLabel` renders a static 151×32 week pill; omit it to hide the pill.
+
+## Layout
+
+- **Card:** 330 tall (`height`), radius 20, padding 10 on the top and sides and **none at the bottom**. The feed runs flush to the bottom edge and clips there; the last row has 10px of padding after it, so it clears the edge once scrolled to the end. The card has a 1px border in its own colour: content clips inside the border, so a scrolled row stops 1px short of the rounded edge.
+- **Header:** 14/20 title over a 24/34 count with a 12/16 caption on its baseline.
+- **Row:** radius 10, padding 10; a 32px icon circle with an 18px white glyph, then the title (one line, 14/20 medium) and description (13/18). The date pill is absolutely pinned 10/10 from the row's top-right corner (radius 6, padding 1/6).
+- **Fade:** while the feed is scrolled, a 40px gradient from the card colour to transparent fades in over its top edge (200ms ease-out, instant under reduced motion), so rows dissolve under the header. Transparency is `stopOpacity`, not an `rgba` stop — react-native-svg drops alpha in `stopColor`.
+- **Web:** the feed has `overscroll-behavior: contain`, so its scroll never chains to the page.
+
+## Tones
+
+`tone` picks the icon-circle colour: `rose` (600), `amber` (400), `emerald` (500), `blue` (400), `purple` (400), `teal` (400). `rose` reads the theme's `negative` ramp, `amber` the `warning` ramp, `emerald` the `success` ramp, `blue` the accent ramp. `purple` and `teal` have no theme role: they keep Tailwind's offset from `blue-500`, measured from `primary`. `iconBackground` sets an explicit opaque colour instead.

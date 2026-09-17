@@ -6,7 +6,7 @@ import { Search } from './index';
 import { Text } from '../typography';
 
 const meta: Meta<typeof Search> = {
-  title: 'Forms/Search',
+  title: 'Base/Search',
   component: Search,
 };
 

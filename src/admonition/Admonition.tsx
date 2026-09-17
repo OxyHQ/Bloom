@@ -4,10 +4,10 @@ import { StyleSheet, View, type StyleProp, type TextStyle, type ViewStyle } from
 import { useTheme } from '../theme/use-theme';
 import { Text as BaseText } from '../typography';
 import { Button as BaseButton, type ButtonProps } from '../button';
-import { CircleInfo_Stroke2_Corner0_Rounded as CircleInfoIcon } from '../icons/CircleInfo';
-import { CircleX_Stroke2_Corner0_Rounded as CircleXIcon } from '../icons/CircleX';
-import { Warning_Stroke2_Corner0_Rounded as WarningIcon } from '../icons/Warning';
-import { EmojiSad_Stroke2_Corner0_Rounded as EmojiSadIcon } from '../icons/Emoji';
+import { RiInformationLine as CircleInfoIcon } from '../icons/remix/RiInformationLine';
+import { RiCloseCircleLine as CircleXIcon } from '../icons/remix/RiCloseCircleLine';
+import { RiAlertLine as WarningIcon } from '../icons/remix/RiAlertLine';
+import { RiEmotionUnhappyLine as EmojiSadIcon } from '../icons/remix/RiEmotionUnhappyLine';
 
 type AdmonitionType = 'info' | 'tip' | 'warning' | 'error' | 'apology';
 

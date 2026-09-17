@@ -9,10 +9,11 @@
  * `invert` are documented no-ops (light/dark and per-subtree recolouring are
  * `BloomThemeProvider` / `BloomColorScope` concerns).
  *
- * THE SURFACE IS ALWAYS NEUTRAL — `backgroundSecondary` with the `border`, `text`
- * and `textSecondary` roles, for every variant, with `richColors` on or off. The
- * variant only ever colours the leading ICON, and `richColors` only ever widens
- * that to the border and title as well. Exactly like sonner.
+ * THE SURFACE IS ALWAYS NEUTRAL — the notification card (`notification/
+ * shared.ts`: card surface, border/button/default, text/primary, text/secondary),
+ * for every variant, with `richColors` on or off. The variant only ever colours
+ * the leading STATUS DISC (tinted background + glyph), and `richColors` only ever
+ * widens the glyph colour to the border and title as well. Exactly like sonner.
  *
  * NOTHING HERE MAY REACH FOR A BRAND TOKEN. `success` / `error` / `warning` /
  * `info` are STATUS colours; `primarySubtle` / `negativeSubtle` are BRAND pairs.
@@ -34,47 +35,42 @@
  */
 import { useMemo } from 'react';
 
+import { resolveCloseButtonPaint } from '../button/shared';
+import { resolveNotificationPaint } from '../notification/shared';
+import type { NotificationStatus } from '../notification/types';
 import { useTheme } from '../theme/use-theme';
-import type { ThemeColors } from '../theme/types';
+import type { Theme } from '../theme/types';
 import type { ToastVariant } from './types';
-
-export type ToastActionColors = {
-  background: string;
-  text: string;
-  pressedBackground: string;
-  pressedText: string;
-};
 
 export type ToastColors = {
   surface: string;
   border: string;
+  shadow: string;
   title: string;
   description: string;
+  /** The leading glyph (or spinner). */
   icon: string;
+  /** The 40px disc behind it. */
+  iconBackground: string;
   closeButton: string;
-  action: ToastActionColors;
-  cancelText: string;
 };
 
 /**
- * The variant's STATUS colour, or `undefined` for the variants that have none.
+ * The variant's STATUS disc, or `undefined` for the variants that have none.
  * `loading` and an absent variant are deliberately in the second group: they carry
  * no status meaning, so `richColors` has nothing to make more prominent and both
- * stay fully neutral.
+ * stay fully neutral (`loading` still gets the neutral disc for its spinner).
  */
-function statusColor(
-  variant: ToastVariant | undefined,
-  colors: ThemeColors,
-): string | undefined {
+function statusOf(variant: ToastVariant | undefined): NotificationStatus | undefined {
   switch (variant) {
     case 'success':
-      return colors.success;
+      return 'success';
     case 'error':
-      return colors.error;
+      return 'error';
     case 'warning':
-      return colors.warning;
+      return 'warning';
     case 'info':
-      return colors.info;
+      return 'information';
     case 'loading':
     case undefined:
       return undefined;
@@ -82,44 +78,39 @@ function statusColor(
 }
 
 /**
- * `richColors` widens the status colour from the icon alone to the border and
+ * `richColors` widens the status colour from the disc alone to the border and
  * title as well. It does NOT tint the surface, and it does not touch the
- * description, close button or action colours — those stay neutral so the row
- * still reads as a toast rather than a status banner.
+ * description or close button — those stay neutral so the row still reads as a
+ * toast rather than a status banner. Pure, so it can be walked over presets.
  */
-function resolveColors({
+export function resolveToastColors({
   variant,
   richColors,
-  colors,
+  theme,
 }: {
   variant: ToastVariant | undefined;
   richColors: boolean;
-  colors: ThemeColors;
+  theme: Theme;
 }): ToastColors {
-  const status = statusColor(variant, colors);
+  const paint = resolveNotificationPaint(theme);
+  const status = statusOf(variant);
+  const disc = paint.status[status ?? 'neutral'];
 
-  // The whole surface, for EVERY variant and both values of `richColors`. Because
-  // the action colours live here, they can never pick up a variant tint either.
   const neutral: ToastColors = {
-    surface: colors.backgroundSecondary,
-    border: colors.border,
-    title: colors.text,
-    description: colors.textSecondary,
-    icon: status ?? colors.textSecondary,
-    closeButton: colors.textSecondary,
-    action: {
-      background: colors.backgroundTertiary,
-      text: colors.textSecondary,
-      pressedBackground: colors.contrast50,
-      pressedText: colors.text,
-    },
-    cancelText: colors.textSecondary,
+    surface: paint.surface,
+    border: paint.border,
+    shadow: paint.shadow,
+    title: paint.title,
+    description: paint.description,
+    icon: disc.foreground,
+    iconBackground: disc.background,
+    closeButton: resolveCloseButtonPaint(theme).foreground,
   };
 
   if (!richColors || status === undefined) {
     return neutral;
   }
-  return { ...neutral, border: status, title: status };
+  return { ...neutral, border: disc.foreground, title: disc.foreground };
 }
 
 export function useToastColors({
@@ -129,9 +120,9 @@ export function useToastColors({
   variant: ToastVariant | undefined;
   richColors: boolean;
 }): ToastColors {
-  const { colors } = useTheme();
+  const theme = useTheme();
   return useMemo(
-    () => resolveColors({ variant, richColors, colors }),
-    [variant, richColors, colors],
+    () => resolveToastColors({ variant, richColors, theme }),
+    [variant, richColors, theme],
   );
 }

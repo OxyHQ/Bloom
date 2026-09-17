@@ -1,0 +1,106 @@
+---
+title: AgentChat
+description: The agent chat workspace — overlaid header with share and chat actions, a streamed transcript, the pill composer with its light band, and the history rail with an account menu.
+order: 100
+---
+
+# AgentChat
+
+The chat workspace. Five public pieces, usable together or alone:
+
+| Export | What it is |
+| --- | --- |
+| `AgentChat` | The workspace: chat card (header, transcript, composer) beside the history rail |
+| `AgentChatMessage` | One turn — the user bubble, or an assistant reply with copy / read-aloud / timestamp |
+| `AgentChatComposer` | The 52px pill composer and its status row, wrapped in `ComposerLoader` |
+| `AgentChatActions` | The header's share button and "more" menu |
+| `AgentChatHistory` | The 260px history rail: new chat, recent threads, account strip |
+
+```tsx
+import { AgentChat } from '@oxyhq/bloom/agent-chat';
+
+const { messages, status, sendMessage, stop } = useChat({ transport });
+
+<AgentChat
+  messages={messages.map((m) => ({ id: m.id, role: m.role, text: textOf(m), at: arrivedAt[m.id] }))}
+  status={status}
+  onSubmit={(text) => sendMessage({ text })}
+  onStop={stop}
+  model="openai/gpt-5-nano"
+  provider="OpenAI"
+  threads={threads}
+  activeThreadId={activeId}
+  onSelectThread={openThread}
+  onNewChat={startNewChat}
+  onRenameThread={renameThread}
+  onToggleUnread={toggleUnread}
+  onDeleteThread={deleteThread}
+  onExport={exportThreads}
+  historyProps={{ account: { name: 'Maya Collins' }, onLogOut: signOut }}
+/>
+```
+
+Give it a sized parent — it fills it (`flex: 1`); a 12px page frame on `background-full` is a good default.
+
+## Data, not transport
+
+Bloom wires none of the AI SDK (`useChat`), `localStorage`, or a `/api/chat` route into this component. Everything it needs from them is a prop:
+
+- **`messages`** — `{ id, role, text, at? }`. Text only: fold reasoning and tool parts into `text` or drop them.
+- **`status`** — `'ready' | 'submitted' | 'streaming' | 'error'`, the AI SDK's own values. `submitted` and `streaming` are *busy*: the composer shows stop and lights its `ComposerLoader` band, the rail is disabled (switching mid-stream would strand the reply), and suggestions and Enter are refused.
+- **`threads`** — `{ id, title, updatedAt, unread? }`, in the order you want them listed. Ordering, persistence, title derivation and "reading a chat marks it read" are the consumer's.
+- **Every action** — `onSubmit` (trimmed, non-empty), `onStop`, `onAttach`, `onShare`, `onExport`, `onCopyMessage`, `onReadAloud`, and the thread callbacks.
+
+What the component still owns is interaction state: the composer text (uncontrolled unless you pass `value`), the menus, inline rename, the "Copied" confirmations, the scroll-under measurement, and following the newest message.
+
+## Anatomy
+
+### Header
+
+Overlaid on the transcript (absolute, 48 tall, `px 16 / pt 7`), so text scrolls under it up to the card's own rounded top instead of being cut at a header edge. `headerLeading` (e.g. a nav toggle), the title (`headline-medium`, truncated — the active thread's title unless `title` is given), and `AgentChatActions` pushed right.
+
+The 1px bottom rule is always there but transparent, so appearing never shifts anything. It shows — `separator-border`, with the band frosting to white/black 20% behind a 20px backdrop blur (web) — only when **both** the transcript is scrolled **and** the title actually reaches the message column (measured, with a 16px buffer). On a wide card the column sits well clear of a short title, and a rule would be drawing a line under nothing.
+
+### Transcript
+
+A column max 768 wide, `px 16 / pt 72 / pb 24`, 20px between turns. While empty it centres the empty state: `title-2-medium` heading, a `body-regular` line and wrapping suggestion pills (`suggestions`, three by default; `[]` hides them). `emptyState` replaces the **whole card body** — transcript and composer — which is where an "Add an API key" notice would go.
+
+While busy and the last reply has no text yet, `AgentThinking` (wave, "Thinking") sits under the transcript: reasoning models stream nothing visible first, so the indicator stays up until a word exists. `error` (default `status === 'error'`) adds the `role="alert"` line.
+
+### AgentChatMessage
+
+- **User** — right-aligned bubble, max 75%, radius 16, `px 12 / py 11`, `background-primary`, `shadow-card`.
+- **Assistant** — the reply split into its non-empty lines, 12px apart. Each line softens in **once** as it first appears (opacity, 5px blur on web, 4px lift, 420ms `cubic-bezier(0.22, 0.61, 0.36, 1)`) and then only grows, so a streamed reply never re-animates what is already on screen. Line-level, not word-level: a token arrives as a fragment and a per-word blur stutters as the fragment mutates. Reduced motion mounts lines settled.
+- **Action row** — copy and read aloud (28px circles, 16px glyphs) and the timestamp (`"3 minutes ago"`, `formatTime`). Mounted at all times so it is reachable by keyboard and never shifts layout; hidden and inert while `streaming`.
+
+### AgentChatComposer
+
+A 52px full pill, `p 8`, 10px gap: the attachment disc, the single-line field (`body-regular`, "Ask me anything"), the model (sparkle + short model id, max 13ch, name hidden below 640 wide) and send / stop. Send is `bg-button-primary` on a 36px disc — no drop shadow, 40% while the field is empty. Below it, a 26px status row: provider (∞, `"Not configured"` without one) and the message count.
+
+While `busy` the pill turns transparent so `ComposerLoader`'s own surface and light band show through it.
+
+### AgentChatHistory
+
+260 wide, radius 24, `p 12`, 24px between "New chat", the list and the footer.
+
+- **Threads** — radius 10; the active row, a row whose menu is open, and a hovered row share the `background-secondary-hover` fill, so hovering previews selecting. Unread rows carry a 6px dot and primary text. A 28px trailing slot holds the compact age (`now`, `34m`, `5h`, `3d`; `formatAge`) and, stacked on it, the `⋮` trigger — the age steps aside on hover or keyboard focus, never both at once. The menu offers Rename (inline field; Enter or blur commits the trimmed title, Escape cancels), Mark as unread and Delete, each shown only when its callback is set.
+- **Footer** — a 1px `separator-border` rule, the account trigger (`account`: avatar + name) and the 24px export disc (`onExport`; disabled with no threads). The account menu opens upward: "Usage left" (`usage`) expands in place to measured rows and "Upgrade" (`onUpgrade`), then `accountItems`, a divider and "Log out" (`onLogOut`).
+
+## Platforms
+
+`composer-loader` and `dropdown-menu` are web-forked, so `agent-chat` is too: `AgentChat.web.tsx` binds the web `ComposerLoader` (DOM `<svg>` on CSS keyframes) and `DropdownMenu` (anchored `FloatingPanel`); `AgentChat.tsx` binds the native ones (react-native-svg loader, menus as sheets). The implementation is shared and receives them through context — so a web bundler that resolves `package.json#exports` rather than platform extensions still reaches the web pieces.
+
+On **native**:
+
+- There is no hover, so the assistant action row simply shows (except while streaming), and a thread row's `⋮` trigger is transparent over the age — pressing the slot still opens the menu, as expected on touch.
+- Copy and read aloud render only when `onCopyMessage` / `onReadAloud` are given (web defaults to `navigator.clipboard` and `speechSynthesis`). Share defaults to the Web Share sheet or the clipboard on web and does nothing on native without `onShare`.
+- The header frost is a 20% wash without the backdrop blur, and message lines animate without the blur.
+
+## Design notes
+
+- **Pill rule** — the header, message and row-menu icon buttons are circles, per Bloom's full-radius rule for button-like controls. Rows, cards and the model chip keep a smaller corner radius.
+- **No press scale** anywhere; hover is colour only.
+- **No native `title` tooltips** on icon buttons — the accessible names are kept, the browser tooltip is not.
+- **App shell left out** — a sidebar navigation with its phone drawer, plan/upgrade prompts and a setup notice aren't included. Use `headerLeading`, your own layout, and `emptyState`.
+- **No markdown or code rendering** — replies render as plain paragraphs.
+- **The rail's visibility** — it shows when `threads` is given and the window is at least 1280 wide, or as `showHistory` says.

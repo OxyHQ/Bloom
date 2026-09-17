@@ -6,11 +6,11 @@ import { Fab } from './Fab';
 import * as Icons from '../icons';
 
 const meta: Meta<typeof Fab> = {
-  title: 'Components/Fab',
+  title: 'Base/Fab',
   component: Fab,
   args: {
     accessibilityLabel: 'Compose',
-    icon: <Icons.PlusLarge_Stroke2_Corner0_Rounded size="lg" fill="#fff" />,
+    icon: <Icons.RiAddLine size="lg" fill="#fff" />,
     onPress: () => {},
   },
   argTypes: {

@@ -22,7 +22,7 @@ import { useConnectionStatusToasts } from './shared';
  * buttons cannot reach: the browser's own signal, which is what ships.
  */
 const meta: Meta = {
-  title: 'Overlays/ConnectionStatusToasts',
+  title: 'Base/Connection Status Toasts',
 };
 
 export default meta;

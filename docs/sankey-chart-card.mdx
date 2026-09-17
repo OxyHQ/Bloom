@@ -1,0 +1,56 @@
+---
+title: Sankey chart card
+description: The flow card — recharts' sankey layout in plain TypeScript, source-coloured ribbons, node and link hover, drawn with react-native-svg.
+order: 46
+---
+
+# Sankey chart card
+
+`SankeyChartCard` is built on the shared chart-card primitives (`src/chart-cards/README.md`). recharts' `Sankey` layout is reimplemented without d3 in `src/chart-cards/sankey-layout.ts` (`layoutSankey`) and reproduces its node and ribbon coordinates exactly.
+
+```tsx
+import { SankeyChartCard } from '@oxyhq/bloom/chart-cards';
+
+<SankeyChartCard
+  nodes={[
+    { name: 'Focus', hue: 7 },
+    { name: 'Meetings', hue: 5 },
+    { name: 'Browsing', color: 'neutral' },
+    { name: 'Video calls', color: 'neutral' },
+  ]}
+  links={[
+    { source: 'Focus', target: 'Browsing', value: 10.4 },
+    { source: 'Meetings', target: 'Video calls', value: 9.6 },
+  ]}
+  axisLabels={['Category', 'App']}
+  range="This week"
+/>
+```
+
+## Props
+
+| Prop | Default | |
+|---|---|---|
+| `nodes` | — | `{ name, color?, activeColor?, hue? }[]`. `color: 'neutral'` is the grey for minor sinks; `hue` (1–9) picks a `chart-n` token on the theme; neither → the chart palette by index |
+| `links` | — | `{ source, target, value }[]`, ends by node name or index |
+| `title` | `"Tracked time"` | swaps to the node name or `"Source → Target"` |
+| `headline` | total out of the source nodes | resting number |
+| `format` | hours (`32h`, `10.4h`) | headline and source values |
+| `linkColor` | `'source'` | `'target'` paints each ribbon in its sink's colour |
+| `axisLabels` | — | captions under the left and right columns |
+| `height` | 480 | a flow needs more room than the 329 chart cards |
+| `range` / `ranges` / … | — | static pill, or periods overriding `nodes`, `links`, `delta`, `headline` |
+| `activeItem` / `onActiveItemChange` | tracked | `{ type: 'node' \| 'link', index }` or `null` |
+| `accessibilityLabel` | `"… flow diagram: sources to sinks"` | names the diagram (`role="img"`) |
+
+## Layout and drawing
+
+- recharts' props: `nodeWidth` 12, `nodePadding` 14, `linkCurvature` 0.55, 32 iterations, `sort={false}`, margin top/bottom 2, left 88 and right 150 for the labels. Justified: every sink sits in the last column.
+- Nodes: rounded 5 only on their outward side (sources left, sinks right, pass-through square), so ribbons meet a flat edge (`sankeyNodePath`).
+- Ribbons: one cubic per link stroked at its thickness, stroke-opacity 0.32 at rest; neutral ink ×1.6 (capped 0.85).
+- Labels (Bloom `Text` over the SVG, placed on recharts' baselines — `svg-text.ts`): sources right-aligned 8px left of the node, name `body-2-medium` text-primary over its value `caption-1` text-tertiary (a node under 26px keeps the name only); sinks 8px right, `"Name · 22%"`, the share in text-tertiary. Pass-through nodes are unlabelled.
+- Neutral: light neutral-400 (hover 500), dark neutral-300 (hover 100).
+
+## Hover
+
+Web hover, native press-and-scrub (letting go clears). The pointer is hit-tested in `hitTestSankey`: nodes first (they paint on top), then the topmost ribbon whose stroke contains the point. A node lifts its ribbons to 0.7, fades the rest to 0.08 and every unconnected node to 35%; a link isolates itself and its two ends. The node fill steps to its `-active` colour. Opacities ease over 200ms and the fill over 150ms (`use-eased-values.ts` — react-native-svg can't CSS-transition presentation attributes); snaps under reduced motion.

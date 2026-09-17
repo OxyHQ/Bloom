@@ -501,8 +501,8 @@ describe('ToastOutlet', () => {
 
     it('leaves the card its gutters inside the cap', () => {
       // The cap sizes the ROW, which carries the card's two `space.lg` gutters,
-      // so the visible card lands on sonner's 356px reference width.
-      expect(TOAST_MAX_ROW_WIDTH - space.lg * 2).toBe(356);
+      // so the visible card lands on a 400px notification width.
+      expect(TOAST_MAX_ROW_WIDTH - space.lg * 2).toBe(400);
     });
 
     it('lets a consumer widen the cap through toastContainerStyle', () => {
@@ -963,8 +963,9 @@ describe('ToastOutlet', () => {
    * rendered style still carries the previous frame's numbers; asserting them from
    * the tree would read a stale value rather than the stack.
    */
-  it('stacks by default — the deliberate deviation from sonner-native', () => {
-    expect(toastDefaults.enableStacking).toBe(true);
+  it('does not stack by default — the notification viewport is a flat column', () => {
+    expect(toastDefaults.enableStacking).toBe(false);
+    expect(toastDefaults.gap).toBe(12);
   });
 
   /**

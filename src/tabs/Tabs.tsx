@@ -11,34 +11,72 @@ import React, {
 } from 'react';
 import {
   View,
-  Text,
   Pressable,
-  // The press-scale comes from `usePressAnimation`, which owns an RN
-  // `Animated.Value`; a reanimated `Animated.View` cannot consume one. The two
-  // namespaces coexist on purpose: reanimated drives the SHARED underline (the
-  // part that has to animate from a shared value, including on web), RN
-  // Animated drives the per-trigger press scale it already drove.
-  Animated as RNAnimated,
+  Platform,
   ScrollView,
+  StyleSheet,
   type LayoutRectangle,
-  type ViewStyle,
   type TextStyle,
 } from 'react-native';
 import Animated, {
+  Easing,
   useAnimatedStyle,
+  useReducedMotion,
   useSharedValue,
-  withSpring,
   withTiming,
   type SharedValue,
 } from 'react-native-reanimated';
 
 import { useTheme } from '../theme/use-theme';
-import { usePressAnimation } from '../hooks/use-press-animation';
+import type { Theme } from '../theme/types';
+import { Text } from '../typography';
+import { TYPE_SCALE } from '../typography/scale';
 import { useInteractionState } from '../hooks/use-interaction-state';
-import { pressedSurface } from '../theme/press-colors';
-import { animation, borderRadius, space } from '../styles/tokens';
-import { bloomShadowStyle } from '../design-tokens/shadows';
-import type { TabsProps, TabsTriggerProps, TabsContentProps, TabsVariant } from './types';
+import { borderRadius } from '../styles/tokens';
+import { interactiveWebCss, useInteractiveWebCss } from '../styles/interactive-web-css';
+import type { WebCssStyle } from '../styles/web-view-style';
+import { mixColor, resolveButtonRamps } from '../button/shared';
+import type {
+  TabsContentProps,
+  TabsIconComponent,
+  TabsProps,
+  TabsTriggerProps,
+  TabsVariant,
+} from './types';
+
+/**
+ * Tabs and its pill tab switcher.
+ * Colours are Bloom's theme through the button recipe (`button/shared.ts`
+ * ramps).
+ *
+ * `underline` — `Tab`:
+ *   strip      gap 4, 1px separator baseline (neutral-200 / dark neutral-800)
+ *   trigger    px 10, py 8, gap 10 (label group ↔ count)
+ *   label      gap 6 with a 16px icon; selected body-medium accent-600,
+ *              idle body-regular text-primary. The icon takes the label colour.
+ *   count      radius 4, px 4, py 1, caption-1-medium.
+ *              selected: accent-100 (dark accent-800 @60%) on accent-600.
+ *              idle:     black/10 on text-primary, the whole badge at 50%.
+ *   underline  2px accent-600 laid OVER the baseline, sliding 200ms `ease`.
+ *
+ * `pill` / `filled` — `PillTab` blue / gray:
+ *   strip      gap 4, no chrome
+ *   trigger    px 8, py 5, gap 4, 20px icon, body-medium label
+ *   idle       label + icon neutral-500; a hover layer fades in over 200ms
+ *              (blue: neutral-100 / dark neutral-800; gray: neutral-100 /
+ *              dark neutral-700 @60%)
+ *   selected   a thumb slides between pills over 300ms with a small overshoot
+ *              (`cubic-bezier(0.34, 1.2, 0.64, 1)`).
+ *              blue: accent-50 (dark accent-950 @60%), label + icon accent-500
+ *              gray: neutral-200 (dark neutral-800), label + icon text-primary
+ *
+ * `outlined` is kept for existing call sites and renders as `pill`.
+ *
+ * Both pill variants are FULL pills (Bloom's rule for button-like controls);
+ * the gray one is not given a smaller corner radius. No press scale; press
+ * borrows the hover paint on native. Every slide and fade is skipped under
+ * reduced motion.
+ */
 
 type TriggerLayout = Pick<LayoutRectangle, 'x' | 'width'>;
 
@@ -54,16 +92,29 @@ type TriggerLayout = Pick<LayoutRectangle, 'x' | 'width'>;
  */
 type TriggerMeasure = (report: (layout: TriggerLayout) => void) => void;
 
-/**
- * Underline travel. The same spring the floating `TabBar` highlight uses, so the
- * two strips read as one motion language; stated here rather than imported
- * because they are separate component families and a shared constant would tie
- * their feel together permanently.
- */
-const SLIDE_SPRING = { duration: 420, dampingRatio: 0.82 };
+/** The underline: `transition-[transform,width] duration-200 ease`. */
+const UNDERLINE_TIMING = { duration: 200, easing: Easing.bezier(0.25, 0.1, 0.25, 1) };
 
-/** Visibility, not travel — the underline fades, it does not slide, in and out. */
+/** The pill thumb: 300ms with a spring-like settle. */
+const PILL_TIMING = { duration: 300, easing: Easing.bezier(0.34, 1.2, 0.64, 1) };
+
+/** Visibility, not travel — the indicator fades, it does not slide, in and out. */
 const HIGHLIGHT_FADE = { duration: 160 };
+
+/** `transition-colors duration-150 ease` on a trigger's label. */
+const COLOR_TRANSITION_MS = 150;
+
+/** The pill hover layer, `transition-opacity duration-200 ease-out`. */
+const HOVER_FADE_MS = 200;
+
+/**
+ * How long after an animated selection a re-measured trigger keeps animating
+ * instead of snapping. A selection changes the label WEIGHT (regular → medium),
+ * which resizes the trigger a frame after the slide started; snapping on that
+ * report would cut the slide off mid-flight. Covers the longer of the two
+ * timings.
+ */
+const SELECTION_SETTLE_MS = 320;
 
 /**
  * Fraction of the distance to the neighbour a drag must cover before releasing
@@ -87,6 +138,151 @@ function formatCount(count: number): string {
   return count > MAX_DISPLAYED_COUNT ? `${MAX_DISPLAYED_COUNT}+` : String(count);
 }
 
+/** `outlined` is a legacy alias and renders as the accent pill. */
+type ResolvedVariant = 'underline' | 'pill' | 'filled';
+
+function resolveVariant(variant: TabsVariant): ResolvedVariant {
+  return variant === 'outlined' ? 'pill' : variant;
+}
+
+export interface TabsPaint {
+  /** The strip's 1px baseline (`underline`). */
+  separator: string;
+  /** The 2px underline. */
+  underline: string;
+  /** The sliding pill thumb. */
+  thumb: string;
+  /** The idle pill's hover layer. */
+  hover: string;
+  selectedLabel: string;
+  selectedIcon: string;
+  idleLabel: string;
+  idleIcon: string;
+  countSelectedBackground: string;
+  countSelectedForeground: string;
+  countIdleBackground: string;
+  countIdleForeground: string;
+  /** Keyboard focus ring (`border-focus-ring`, accent-500). */
+  ring: string;
+}
+
+/**
+ * Every colour a strip paints, per variant. Pure — takes the theme rather than
+ * calling `useTheme()`, so it can be walked over presets and modes.
+ */
+export function resolveTabsPaint(theme: Theme, variant: TabsVariant): TabsPaint {
+  const { accent, neutral: n } = resolveButtonRamps(theme);
+  const c = theme.colors;
+  const dark = theme.isDark;
+  const count = {
+    countSelectedBackground: dark ? mixColor(c.background, accent[800], 0.6) : accent[100],
+    countSelectedForeground: accent[600],
+    // `bg-black/10` in both modes.
+    countIdleBackground: 'rgba(0, 0, 0, 0.1)',
+    countIdleForeground: c.text,
+    separator: dark ? n[800] : n[200],
+    underline: accent[600],
+    ring: accent[500],
+  };
+  switch (resolveVariant(variant)) {
+    case 'underline':
+      return {
+        ...count,
+        thumb: 'transparent',
+        hover: 'transparent',
+        selectedLabel: accent[600],
+        selectedIcon: accent[600],
+        idleLabel: c.text,
+        idleIcon: c.text,
+      };
+    case 'pill':
+      return {
+        ...count,
+        thumb: dark ? mixColor(c.background, accent[950], 0.6) : accent[50],
+        hover: dark ? n[800] : n[100],
+        selectedLabel: accent[500],
+        selectedIcon: accent[500],
+        idleLabel: n[500],
+        idleIcon: n[500],
+      };
+    case 'filled':
+    default:
+      return {
+        ...count,
+        thumb: dark ? n[800] : n[200],
+        hover: dark ? mixColor(c.background, n[700], 0.6) : n[100],
+        selectedLabel: c.text,
+        selectedIcon: c.text,
+        idleLabel: n[500],
+        idleIcon: n[500],
+      };
+  }
+}
+
+/** Per-variant trigger geometry (`Tab` vs `PillTab`). */
+const GEOMETRY = {
+  underline: { paddingHorizontal: 10, paddingVertical: 8, gap: 10, labelGap: 6, icon: 16, radius: 4 },
+  pill: { paddingHorizontal: 8, paddingVertical: 5, gap: 4, labelGap: 4, icon: 20, radius: borderRadius.full },
+  filled: { paddingHorizontal: 8, paddingVertical: 5, gap: 4, labelGap: 4, icon: 20, radius: borderRadius.full },
+} as const;
+
+/** The strip's gap between triggers (`gap-1`), both variants. */
+const STRIP_GAP = 4;
+
+const IS_WEB = Platform.OS === 'web';
+
+function webData(data: Record<string, string>): Record<string, unknown> {
+  return IS_WEB ? ({ dataSet: data } as Record<string, unknown>) : {};
+}
+
+// ---------------------------------------------------------------------------
+//  Web: keyboard focus ring, colour transitions, disabled cursor
+//
+//  A trigger is a react-native-web `Pressable`, so no inline style can carry
+//  `:focus-visible` or a transition keyed to a state change. The hook is a
+//  `data-*` attribute through `dataSet` because a class never reaches the DOM
+//  (react-native-css consumes `className`). `base` puts the LAYOUT half of the
+//  shared reset back, which is written for a raw `<button>`.
+// ---------------------------------------------------------------------------
+
+const STYLE_ID = 'bloom-tabs-web-css';
+const TRIGGER = '[data-bloom-tabs-trigger]';
+
+const BLOOM_TABS_CSS = interactiveWebCss({
+  selector: TRIGGER,
+  varPrefix: 'bloom-tabs',
+  base: `
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: center;
+    box-sizing: border-box;
+    position: relative;
+    white-space: nowrap;
+  `,
+  transition: 'none',
+  hover: { declarations: 'opacity: 1;' },
+  outlineOffset: 0,
+  extraRules: `${TRIGGER}:disabled,
+${TRIGGER}[aria-disabled="true"] {
+  cursor: not-allowed;
+}
+${TRIGGER} [data-bloom-tabs-label],
+${TRIGGER} [data-bloom-tabs-icon] {
+  transition: color ${COLOR_TRANSITION_MS}ms ease;
+}
+[data-bloom-tabs-hover] {
+  transition: opacity ${HOVER_FADE_MS}ms ease-out;
+}
+@media (prefers-reduced-motion: reduce) {
+${TRIGGER} [data-bloom-tabs-label],
+${TRIGGER} [data-bloom-tabs-icon],
+[data-bloom-tabs-hover] {
+  transition: none;
+}
+}`,
+});
+
 interface TabsContextValue {
   /**
    * The selected value on the CONTROLLED path, `undefined` on the focus-driven
@@ -96,7 +292,8 @@ interface TabsContextValue {
    */
   selectedValue: string | undefined;
   onValueChange: ((value: string) => void) | undefined;
-  variant: TabsVariant;
+  variant: ResolvedVariant;
+  paint: TabsPaint;
   fullWidth: boolean;
   /**
    * A trigger hands the strip a way to RE-READ its own geometry, and takes it
@@ -175,7 +372,12 @@ const TabsBarComponent = forwardRef<TabsDragController, TabsProps>(function Tabs
   dragRef,
 ) {
   const theme = useTheme();
-  const isUnderline = variant === 'underline';
+  useInteractiveWebCss(STYLE_ID, BLOOM_TABS_CSS);
+  const resolvedVariant = resolveVariant(variant);
+  const isUnderline = resolvedVariant === 'underline';
+  const paint = useMemo(() => resolveTabsPaint(theme, variant), [theme, variant]);
+  const reducedMotion = useReducedMotion();
+  const slideTiming = isUnderline ? UNDERLINE_TIMING : PILL_TIMING;
 
   // One shared underline that translates + resizes between triggers. Triggers
   // report their measured {x, width}; whoever owns the selection drives these
@@ -206,11 +408,15 @@ const TabsBarComponent = forwardRef<TabsDragController, TabsProps>(function Tabs
   // being re-created — and therefore re-firing — on every selection change.
   const selectedValueRef = useRef<string | undefined>(value);
 
+  // Until when a re-measure of the selection should keep animating rather than
+  // snap — see `SELECTION_SETTLE_MS`.
+  const settleUntilRef = useRef(0);
+
   const moveIndicator = useCallback(
     (target: TriggerLayout, animate: boolean) => {
-      if (animate) {
-        indicatorX.value = withSpring(target.x, SLIDE_SPRING);
-        indicatorWidth.value = withSpring(target.width, SLIDE_SPRING);
+      if (animate && !reducedMotion) {
+        indicatorX.value = withTiming(target.x, slideTiming);
+        indicatorWidth.value = withTiming(target.width, slideTiming);
       } else {
         indicatorX.value = target.x;
         indicatorWidth.value = target.width;
@@ -224,7 +430,7 @@ const TabsBarComponent = forwardRef<TabsDragController, TabsProps>(function Tabs
       if (!hasSelection) return;
       indicatorOpacity.value = withTiming(1, HIGHLIGHT_FADE);
     },
-    [indicatorX, indicatorWidth, indicatorOpacity, hasSelection],
+    [indicatorX, indicatorWidth, indicatorOpacity, hasSelection, reducedMotion, slideTiming],
   );
 
   // Keep the active tab in view when the strip overflows its viewport. Centring
@@ -247,6 +453,7 @@ const TabsBarComponent = forwardRef<TabsDragController, TabsProps>(function Tabs
       // Not measured yet — `reportTriggerLayout` places it on arrival.
       if (!target) return;
       const animate = indicatorPlacedRef.current;
+      if (animate) settleUntilRef.current = Date.now() + SELECTION_SETTLE_MS;
       moveIndicator(target, animate);
       revealTrigger(target, animate);
       indicatorPlacedRef.current = true;
@@ -273,7 +480,10 @@ const TabsBarComponent = forwardRef<TabsDragController, TabsProps>(function Tabs
       }
       triggerLayoutsRef.current[tabValue] = layout;
       if (tabValue !== selectedValueRef.current) return;
-      moveIndicator(layout, false);
+      // The one exception: a selection that is still sliding. Selecting changes
+      // the label's weight, so the trigger re-reports a new width a frame into
+      // the slide — retarget it rather than cutting it off.
+      moveIndicator(layout, Date.now() < settleUntilRef.current);
       revealTrigger(layout, false);
       indicatorPlacedRef.current = true;
     },
@@ -430,8 +640,8 @@ const TabsBarComponent = forwardRef<TabsDragController, TabsProps>(function Tabs
       },
       release(committed) {
         if (committed === null) {
-          dragOffset.value = withSpring(0, SLIDE_SPRING);
-          dragWidthDelta.value = withSpring(0, SLIDE_SPRING);
+          dragOffset.value = reducedMotion ? 0 : withTiming(0, slideTiming);
+          dragWidthDelta.value = reducedMotion ? 0 : withTiming(0, slideTiming);
           return;
         }
         // Fold, do not zero — see `TabsDragController.release`.
@@ -441,14 +651,15 @@ const TabsBarComponent = forwardRef<TabsDragController, TabsProps>(function Tabs
         dragWidthDelta.value = 0;
       },
     }),
-    [dragOffset, dragWidthDelta, indicatorX, indicatorWidth],
+    [dragOffset, dragWidthDelta, indicatorX, indicatorWidth, reducedMotion, slideTiming],
   );
 
   const contextValue = useMemo(
     (): TabsContextValue => ({
       selectedValue: value,
       onValueChange,
-      variant,
+      variant: resolvedVariant,
+      paint,
       fullWidth,
       registerTrigger,
       reportTriggerLayout,
@@ -457,7 +668,8 @@ const TabsBarComponent = forwardRef<TabsDragController, TabsProps>(function Tabs
     [
       value,
       onValueChange,
-      variant,
+      resolvedVariant,
+      paint,
       fullWidth,
       registerTrigger,
       reportTriggerLayout,
@@ -465,32 +677,30 @@ const TabsBarComponent = forwardRef<TabsDragController, TabsProps>(function Tabs
     ],
   );
 
-  const containerStyle = useMemo((): ViewStyle => {
-    const base: ViewStyle = {
+  const containerStyle = useMemo(
+    (): WebCssStyle => ({
       flexDirection: 'row',
       alignItems: 'center',
-    };
+      gap: STRIP_GAP,
+      // The strip is `w-full`: the baseline runs the container's whole
+      // width even when the triggers do not fill it. As a scroll view's content
+      // this is a floor, so an overflowing strip still scrolls.
+      flexGrow: 1,
+      // `border-b border-separator-border` — underline only; the pill
+      // strips carry no chrome of their own.
+      ...(isUnderline ? { borderBottomWidth: 1, borderBottomColor: paint.separator } : null),
+    }),
+    [isUnderline, paint.separator],
+  );
 
-    switch (variant) {
-      case 'underline':
-        base.borderBottomWidth = 1;
-        base.borderBottomColor = theme.colors.borderLight;
-        break;
-      case 'filled':
-        base.backgroundColor = theme.colors.backgroundSecondary;
-        base.borderRadius = borderRadius.sm;
-        base.padding = 2;
-        break;
-      case 'outlined':
-        base.borderWidth = 1;
-        base.borderColor = theme.colors.border;
-        base.borderRadius = borderRadius.sm;
-        base.padding = 2;
-        break;
-    }
-
-    return base;
-  }, [variant, theme]);
+  // The underline sits OVER the baseline: it is `bottom-0` of a wrapper whose
+  // child carries the border. An absolute child is placed inside the border,
+  // so it is pulled down by the baseline's own width — read from the caller's
+  // `style` too, so a strip that zeroes the border (a published consumer
+  // does) does not get an underline hanging 1px below the strip.
+  const baselineWidth = isUnderline
+    ? (StyleSheet.flatten(style)?.borderBottomWidth ?? 1)
+    : 0;
 
   // Deps: every shared value the mapper READS is listed. On web WITHOUT the
   // react-native-worklets babel plugin — the production reality for Bloom's
@@ -516,31 +726,39 @@ const TabsBarComponent = forwardRef<TabsDragController, TabsProps>(function Tabs
   // relative to the container the underline is absolutely positioned in. That
   // is why nothing here subtracts a scroll offset — an underline parked outside
   // the scroller would have to, and would lag by a frame on every scroll event.
-  const indicator = isUnderline ? (
+  const indicator = (
     <Animated.View
       pointerEvents="none"
       testID={testID ? `${testID}-indicator` : undefined}
       style={[
-        {
-          position: 'absolute',
-          left: 0,
-          bottom: 0,
-          height: 2,
-          borderTopLeftRadius: 2,
-          borderTopRightRadius: 2,
-          backgroundColor: theme.colors.primary,
-        },
+        isUnderline
+          ? {
+              position: 'absolute',
+              left: 0,
+              bottom: -baselineWidth,
+              height: 2,
+              backgroundColor: paint.underline,
+            }
+          : {
+              position: 'absolute',
+              left: 0,
+              top: 0,
+              bottom: 0,
+              borderRadius: borderRadius.full,
+              backgroundColor: paint.thumb,
+            },
         indicatorStyle,
       ]}
     />
-  ) : null;
+  );
 
   return (
     <TabsContext.Provider value={contextValue}>
       {fullWidth ? (
         <View style={[containerStyle, style]} testID={testID}>
+          {isUnderline ? null : indicator}
           {children}
-          {indicator}
+          {isUnderline ? indicator : null}
         </View>
       ) : (
         <ScrollView
@@ -553,8 +771,9 @@ const TabsBarComponent = forwardRef<TabsDragController, TabsProps>(function Tabs
           }}
           testID={testID}
         >
+          {isUnderline ? null : indicator}
           {children}
-          {indicator}
+          {isUnderline ? indicator : null}
         </ScrollView>
       )}
     </TabsContext.Provider>
@@ -565,6 +784,7 @@ const TabComponent: React.FC<TabsTriggerProps> = ({
   value,
   label,
   icon,
+  leadingIcon: LeadingIcon,
   count,
   isFocused,
   disabled = false,
@@ -572,11 +792,11 @@ const TabComponent: React.FC<TabsTriggerProps> = ({
   style,
   textStyle,
 }) => {
-  const theme = useTheme();
   const {
     selectedValue,
     onValueChange,
     variant,
+    paint,
     fullWidth,
     registerTrigger,
     reportTriggerLayout,
@@ -585,14 +805,14 @@ const TabComponent: React.FC<TabsTriggerProps> = ({
   // The two paths meet here: an explicit `isFocused` (router adapter) wins;
   // otherwise selection comes from the bar's controlled `value`.
   const isSelected = isFocused ?? value === selectedValue;
-  const { scaleAnim, onPressIn: onScaleIn, onPressOut: onScaleOut } =
-    usePressAnimation(animation.pressScale);
-  // Driven separately from the scale — see `Chip` for why.
-  const { state: pressed, onIn: onPressedIn, onOut: onPressedOut } = useInteractionState();
-  const onPressIn = () => { onScaleIn(); onPressedIn(); };
-  const onPressOut = () => { onScaleOut(); onPressedOut(); };
+  const { state: hovered, onIn: onHoverIn, onOut: onHoverOut } = useInteractionState();
+  // Native has no hover, so a held press borrows the hover paint — the only
+  // other state defined. No press scale.
+  const { state: pressed, onIn: onPressIn, onOut: onPressOut } = useInteractionState();
   const resolvedCount = count ?? 0;
   const showCount = resolvedCount > 0;
+  const geometry = GEOMETRY[variant];
+  const isUnderline = variant === 'underline';
 
   // The trigger's own host view. It stays here rather than in the strip because
   // the strip has no way to reach a child it did not create — it receives them
@@ -631,92 +851,68 @@ const TabComponent: React.FC<TabsTriggerProps> = ({
     if (isFocused === undefined) onValueChange?.(value);
   }, [value, disabled, onValueChange, onPressProp, isFocused]);
 
-  const tabStyle = useMemo((): ViewStyle & { backgroundColor: string } => {
-    const base: ViewStyle & { backgroundColor: string } = {
+  const labelColor = isSelected ? paint.selectedLabel : paint.idleLabel;
+  const iconColor = isSelected ? paint.selectedIcon : paint.idleIcon;
+
+  const triggerStyle = useMemo(
+    (): WebCssStyle => ({
       flexDirection: 'row',
       alignItems: 'center',
       justifyContent: 'center',
-      paddingHorizontal: space.lg,
-      paddingVertical: space.sm,
-      gap: space.xs,
-      // The rest fill, narrowed to a required `string` so the press resolver can
-      // read it straight off. Only the two SELECTED states below overwrite it.
-      backgroundColor: 'transparent',
-      // Every trigger, selected or not, in every variant — not just the two that
-      // paint a fill. Invisible on a transparent background, and it is what gives
-      // the press wash a shape: without it an `underline` tab answers a press
-      // with a hard-edged rectangle while its `filled` sibling answers with a
-      // rounded one. Same rung the two filled states already use.
-      borderRadius: borderRadius.xs + 2,
-    };
+      paddingLeft: geometry.paddingHorizontal,
+      paddingRight: geometry.paddingHorizontal,
+      paddingTop: geometry.paddingVertical,
+      paddingBottom: geometry.paddingVertical,
+      gap: geometry.gap,
+      borderRadius: geometry.radius,
+      // `ring-2`, no offset — read by the adopted sheet's `:focus-visible` rule.
+      '--bloom-tabs-ring': paint.ring,
+    }),
+    [geometry, paint.ring],
+  );
 
-    switch (variant) {
-      case 'underline':
-        // Active state is drawn by the shared sliding indicator, not a
-        // per-trigger border — nothing to add here.
-        break;
-      case 'filled':
-        if (isSelected) {
-          base.backgroundColor = theme.colors.card;
-          // Subtle raise (`shadow-s`) — `boxShadow` on web, RN shadow/elevation on native.
-          Object.assign(base, bloomShadowStyle('s'));
-        }
-        break;
-      case 'outlined':
-        if (isSelected) {
-          base.backgroundColor = theme.colors.primary;
-        }
-        break;
-    }
-
-    return base;
-  }, [variant, isSelected, theme]);
-
-  const labelColor = useMemo((): string => {
-    if (variant === 'outlined' && isSelected) return theme.colors.primaryForeground;
-    if (isSelected) return theme.colors.primary;
-    return theme.colors.textSecondary;
-  }, [variant, isSelected, theme]);
-
-  const labelStyle = useMemo(
+  const labelTextStyle = useMemo(
     (): TextStyle => ({
-      fontSize: 14,
-      fontWeight: isSelected ? '600' : '500',
+      // Selected underline tabs go medium, idle ones regular; pill labels are
+      // medium in both states.
+      ...TYPE_SCALE[isUnderline && !isSelected ? 'body-regular' : 'body-medium'],
       color: labelColor,
     }),
-    [isSelected, labelColor],
+    [isUnderline, isSelected, labelColor],
   );
 
-  // An unselected trigger has no fill, so its press IS the fill and it takes the
-  // neutral wash. A SELECTED one keeps its fill and gains a state layer of its
-  // own label colour, so pressing the current tab still says something instead
-  // of repainting it as one of its neighbours.
-  const pressedBackground = useMemo(
-    () => pressedSurface(theme.colors, tabStyle.backgroundColor, labelColor),
-    [theme.colors, tabStyle.backgroundColor, labelColor],
+  const renderedIcon = LeadingIcon ? (
+    <View {...webData({ bloomTabsIcon: '' })} style={{ flexShrink: 0 }}>
+      <LeadingIcon width={geometry.icon} height={geometry.icon} fill={iconColor} />
+    </View>
+  ) : (
+    (icon ?? null)
   );
+
+  const showHoverLayer = !isUnderline && !isSelected && !disabled;
 
   return (
-    <RNAnimated.View
+    <View
       ref={nodeRef}
       onLayout={(e) => {
         const { x, width } = e.nativeEvent.layout;
         reportTriggerLayout(value, { x, width });
       }}
-      style={[{ transform: [{ scale: scaleAnim }] }, fullWidth && { flex: 1 }]}
+      style={fullWidth ? { flex: 1 } : undefined}
     >
       <Pressable
+        {...webData({ bloomTabsTrigger: variant })}
         style={[
-          tabStyle,
+          triggerStyle,
           fullWidth && { flex: 1 },
-          disabled && { opacity: 0.4 },
-          // Before the caller's `style`, so `style` still wins the array.
-          pressed && !disabled && { backgroundColor: pressedBackground },
+          disabled && { opacity: 0.5 },
           style,
         ]}
         onPress={handlePress}
         onPressIn={onPressIn}
         onPressOut={onPressOut}
+        onHoverIn={onHoverIn}
+        onHoverOut={onHoverOut}
         disabled={disabled}
         accessibilityRole="tab"
         accessibilityLabel={showCount ? `${label}, ${resolvedCount}` : label}
@@ -732,18 +928,59 @@ const TabComponent: React.FC<TabsTriggerProps> = ({
         // the `disabled` prop above.
         aria-selected={isSelected}
       >
-        {icon}
-        <Text style={[labelStyle, textStyle]}>{label}</Text>
-        {showCount ? (
+        {showHoverLayer ? (
+          <View
+            pointerEvents="none"
+            {...webData({ bloomTabsHover: '' })}
+            style={{
+              position: 'absolute',
+              top: 0,
+              right: 0,
+              bottom: 0,
+              left: 0,
+              borderRadius: geometry.radius,
+              backgroundColor: paint.hover,
+              opacity: hovered || pressed ? 1 : 0,
+            }}
+          />
+        ) : null}
+        <View style={{ flexDirection: 'row', alignItems: 'center', gap: geometry.labelGap }}>
+          {renderedIcon}
           <Text
-            style={{ fontSize: 11, fontWeight: '600', color: theme.colors.textTertiary }}
+            {...webData({ bloomTabsLabel: '' })}
             numberOfLines={1}
+            style={[labelTextStyle, textStyle]}
           >
-            {formatCount(resolvedCount)}
+            {label}
           </Text>
+        </View>
+        {showCount ? (
+          <View
+            style={{
+              borderRadius: 4,
+              paddingLeft: 4,
+              paddingRight: 4,
+              paddingTop: 1,
+              paddingBottom: 1,
+              backgroundColor: isSelected
+                ? paint.countSelectedBackground
+                : paint.countIdleBackground,
+              opacity: isSelected ? 1 : 0.5,
+            }}
+          >
+            <Text
+              numberOfLines={1}
+              style={{
+                ...TYPE_SCALE['caption-1-medium'],
+                color: isSelected ? paint.countSelectedForeground : paint.countIdleForeground,
+              }}
+            >
+              {formatCount(resolvedCount)}
+            </Text>
+          </View>
         ) : null}
       </Pressable>
-    </RNAnimated.View>
+    </View>
   );
 };
 
