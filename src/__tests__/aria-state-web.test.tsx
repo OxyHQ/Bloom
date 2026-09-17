@@ -67,6 +67,7 @@ import { Radio, RadioGroup } from '../radio';
 import { StatBar } from '../stat-bar';
 import { Stepper } from '../stepper';
 import { RatingBar } from '../rating';
+import { BookingCard } from '../booking';
 import {
   DropdownMenuCheckboxItem,
   DropdownMenuItem,
@@ -898,5 +899,22 @@ describe('RatingBar', () => {
     expect(el.getAttribute('aria-valuenow')).toBe('4.9');
     expect(el.getAttribute('aria-valuemin')).toBe('0');
     expect(el.getAttribute('aria-valuemax')).toBe('5');
+  });
+});
+
+describe('BookingCard', () => {
+  it('names each field cell and spells the open picker as aria-expanded, on every cell', () => {
+    const c = mount(<BookingCard price="$180" guests="2 guests" checkIn="10/12/2026" activeField="checkIn" testID="bc" />);
+    const checkIn = byTestId(c, 'bc-check-in');
+    expect(checkIn.getAttribute('role')).toBe('button');
+    expect(checkIn.getAttribute('aria-label')).toBe('Check-in: 10/12/2026');
+    expect(checkIn.getAttribute('aria-expanded')).toBe('true');
+    expect(byTestId(c, 'bc-check-out').getAttribute('aria-expanded')).toBe('false');
+    expect(byTestId(c, 'bc-guests').getAttribute('aria-expanded')).toBe('false');
+  });
+
+  it('claims no expanded state when the card cannot know it', () => {
+    const c = mount(<BookingCard price="$180" guests="2 guests" testID="bc" />);
+    expect(byTestId(c, 'bc-check-in').hasAttribute('aria-expanded')).toBe(false);
   });
 });
