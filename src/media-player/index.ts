@@ -7,7 +7,6 @@ export { SleepTimerMenu } from './SleepTimerMenu';
 export { DevicePicker } from './DevicePicker';
 export { ConnectBanner } from './ConnectBanner';
 export {
-  contrastRatio,
   nextRepeatMode,
   resolveArtworkTint,
   PLAYBACK_RATES,

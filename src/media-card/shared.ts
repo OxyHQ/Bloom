@@ -6,6 +6,7 @@ import { isUrl } from '../listing-card/shared';
 import { parseRgba } from '../theme/color-utils';
 import type { Theme } from '../theme/types';
 import type { MediaCardLayout, MediaCardPlayButton, MediaCardSize } from './types';
+import { contrastRatio, relativeLuminance } from '../styles/color-contrast';
 
 export const IS_WEB = Platform.OS === 'web';
 
@@ -111,25 +112,8 @@ export function clampFraction(value: number | undefined): number {
 //  Contrast
 // ---------------------------------------------------------------------------
 
-function channel(v: number): number {
-  const s = v / 255;
-  return s <= 0.03928 ? s / 12.92 : ((s + 0.055) / 1.055) ** 2.4;
-}
 
-export function relativeLuminance(color: string): number | null {
-  const rgb = parseRgba(color);
-  if (!rgb) return null;
-  return 0.2126 * channel(rgb.r) + 0.7152 * channel(rgb.g) + 0.0722 * channel(rgb.b);
-}
 
-/** WCAG contrast ratio of two opaque colours; 1 when either does not parse. */
-export function contrastRatio(a: string, b: string): number {
-  const la = relativeLuminance(a);
-  const lb = relativeLuminance(b);
-  if (la === null || lb === null) return 1;
-  const [hi, lo] = la > lb ? [la, lb] : [lb, la];
-  return (hi + 0.05) / (lo + 0.05);
-}
 
 /** Text drawn over a generated cover must clear this. */
 export const COVER_TEXT_CONTRAST = 4.5;
@@ -292,3 +276,5 @@ ${CARD}:focus-within [data-bloom-media-card-conceal] {
   }
 }
 `;
+
+export { contrastRatio, relativeLuminance };

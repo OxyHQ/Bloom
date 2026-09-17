@@ -957,19 +957,6 @@ describe('Listing actions', () => {
     expect(el.getAttribute('aria-valuenow')).toBe('1');
     expect(el.getAttribute('aria-valuemin')).toBe('0');
     expect(el.getAttribute('aria-valuemax')).toBe('2');
-describe('Media cards', () => {
-  it('EpisodeCard and AudiobookCard emit a named listened progressbar with aria-value*', () => {
-    for (const ui of [
-      <EpisodeCard key="e" title="Tide Tables" progress={0.62} remaining="18 min left" />,
-      <AudiobookCard key="b" title="Tide Tables" progress={0.62} />,
-    ]) {
-      const c = mount(ui);
-      const el = byRole(c, 'progressbar');
-      expect(el.getAttribute('aria-label')).toBe('Tide Tables progress');
-      expect(el.getAttribute('aria-valuenow')).toBe('62');
-      expect(el.getAttribute('aria-valuemin')).toBe('0');
-      expect(el.getAttribute('aria-valuemax')).toBe('100');
-    }
   });
 });
 
@@ -1121,5 +1108,21 @@ describe('Player toggles', () => {
     expect(byTestId(c, 'tc-shuffle').getAttribute('aria-label')).toBe('Shuffle');
     expect(byTestId(c, 'tc-repeat').getAttribute('aria-pressed')).toBe('false');
     expect(byTestId(c, 'tc-previous').hasAttribute('aria-pressed')).toBe(false);
+  });
+});
+
+describe('Media cards', () => {
+  it('EpisodeCard and AudiobookCard emit a named listened progressbar with aria-value*', () => {
+    for (const ui of [
+      <EpisodeCard key="e" title="Tide Tables" progress={0.62} remaining="18 min left" />,
+      <AudiobookCard key="b" title="Tide Tables" progress={0.62} />,
+    ]) {
+      const c = mount(ui);
+      const el = byRole(c, 'progressbar');
+      expect(el.getAttribute('aria-label')).toBe('Tide Tables progress');
+      expect(el.getAttribute('aria-valuenow')).toBe('62');
+      expect(el.getAttribute('aria-valuemin')).toBe('0');
+      expect(el.getAttribute('aria-valuemax')).toBe('100');
+    }
   });
 });

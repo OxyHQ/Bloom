@@ -12,6 +12,7 @@ import type {
   LibraryPanelLabels,
   LibrarySort,
 } from './types';
+import { contrastRatio, relativeLuminance } from '../styles/color-contrast';
 
 export const IS_WEB = Platform.OS === 'web';
 
@@ -170,25 +171,8 @@ export function gridColumns(width: number, minTile: number, gap: number): number
   return Math.max(1, Math.floor((width + gap) / (minTile + gap)));
 }
 
-function channel(v: number): number {
-  const s = v / 255;
-  return s <= 0.03928 ? s / 12.92 : ((s + 0.055) / 1.055) ** 2.4;
-}
 
-/** WCAG relative luminance, or `null` for an unparseable colour. */
-export function relativeLuminance(color: string): number | null {
-  const rgb = parseRgb(color);
-  if (!rgb) return null;
-  return 0.2126 * channel(rgb.r) + 0.7152 * channel(rgb.g) + 0.0722 * channel(rgb.b);
-}
 
-export function contrastRatio(a: string, b: string): number {
-  const la = relativeLuminance(a);
-  const lb = relativeLuminance(b);
-  if (la === null || lb === null) return 1;
-  const [hi, lo] = la > lb ? [la, lb] : [lb, la];
-  return (hi + 0.05) / (lo + 0.05);
-}
 
 export const TILE_LIGHT_TEXT = '#ffffff';
 export const TILE_DARK_TEXT = '#141414';
@@ -343,3 +327,4 @@ ${FOCUSABLE}:focus-visible {
 }
 `;
 
+export { contrastRatio, relativeLuminance };

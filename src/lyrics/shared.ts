@@ -5,6 +5,7 @@ import { parseRgba } from '../theme/color-utils';
 import type { Theme } from '../theme/types';
 import type { TypeScaleVariant } from '../typography/scale';
 import type { LyricLine, LyricsPalette, LyricsSize } from './types';
+import { contrastRatio, relativeLuminance } from '../styles/color-contrast';
 
 export const IS_WEB = Platform.OS === 'web';
 
@@ -127,26 +128,8 @@ export function lyricsSizeForWidth(width: number): LyricsSize {
 //  Colour
 // ---------------------------------------------------------------------------
 
-function channel(value: number): number {
-  const c = value / 255;
-  return c <= 0.04045 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4;
-}
 
-/** WCAG relative luminance, or `null` for an unparseable colour. */
-export function relativeLuminance(color: string): number | null {
-  const rgba = parseRgba(color);
-  if (!rgba) return null;
-  return 0.2126 * channel(rgba.r) + 0.7152 * channel(rgba.g) + 0.0722 * channel(rgba.b);
-}
 
-/** WCAG contrast ratio between two opaque colours (1..21); `1` if either does not parse. */
-export function contrastRatio(a: string, b: string): number {
-  const la = relativeLuminance(a);
-  const lb = relativeLuminance(b);
-  if (la === null || lb === null) return 1;
-  const [hi, lo] = la > lb ? [la, lb] : [lb, la];
-  return (hi + 0.05) / (lo + 0.05);
-}
 
 /**
  * The smallest alpha (in hundredths) at which `foreground` mixed over
@@ -265,3 +248,5 @@ export const LYRICS_CSS = `
   }
 }
 `;
+
+export { contrastRatio, relativeLuminance };

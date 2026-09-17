@@ -19,9 +19,9 @@ import { RiArrowGoForwardLine } from '../icons/remix/RiArrowGoForwardLine';
 import { RiForward30Line } from '../icons/remix/RiForward30Line';
 import { RiReplay15Line } from '../icons/remix/RiReplay15Line';
 import { resolveMediaControlsPaint } from '../media-controls/shared';
+import { contrastRatio } from '../styles/color-contrast';
 import {
   ConnectBanner,
-  contrastRatio,
   DevicePicker,
   FullScreenPlayer,
   MiniPlayer,

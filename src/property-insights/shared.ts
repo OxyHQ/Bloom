@@ -5,6 +5,7 @@ import { oklchToSrgb, srgbToOklch, srgbToRgbString, type Oklch } from '../theme/
 import { parseRgba } from '../theme/color-utils';
 import type { Theme } from '../theme/types';
 import type { EnergyClass } from './types';
+import { contrastRatio, relativeLuminance } from '../styles/color-contrast';
 
 export const IS_WEB = Platform.OS === 'web';
 
@@ -104,22 +105,7 @@ function fitRgb({ l, c, h }: Oklch): string {
   return srgbToRgbString(oklchToSrgb({ l, c: chroma, h }));
 }
 
-/** WCAG relative luminance of an opaque colour. */
-export function relativeLuminance(color: string): number {
-  const rgba = parseRgba(color);
-  if (!rgba) return 0;
-  const lin = (v: number) => {
-    const s = v / 255;
-    return s <= 0.03928 ? s / 12.92 : ((s + 0.055) / 1.055) ** 2.4;
-  };
-  return 0.2126 * lin(rgba.r) + 0.7152 * lin(rgba.g) + 0.0722 * lin(rgba.b);
-}
 
-export function contrastRatio(a: string, b: string): number {
-  const la = relativeLuminance(a);
-  const lb = relativeLuminance(b);
-  return (Math.max(la, lb) + 0.05) / (Math.min(la, lb) + 0.05);
-}
 
 /**
  * Lightness and chroma per class, A → G: a dark green, brightening to a light
@@ -203,3 +189,5 @@ export const PROPERTY_INSIGHTS_CSS = `
   outline-offset: 2px;
 }
 `;
+
+export { contrastRatio, relativeLuminance };

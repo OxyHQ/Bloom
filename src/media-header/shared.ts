@@ -7,6 +7,7 @@ import type { Theme } from '../theme/types';
 import type { TypeScaleVariant } from '../typography/scale';
 import { TYPE_SCALE } from '../typography/scale';
 import type { WebCssStyle } from '../styles/web-view-style';
+import { contrastRatio, relativeLuminance } from '../styles/color-contrast';
 
 export const IS_WEB = Platform.OS === 'web';
 
@@ -36,25 +37,8 @@ export function clamp01(value: number): number {
 //  Contrast
 // ---------------------------------------------------------------------------
 
-function channel(v: number): number {
-  const s = v / 255;
-  return s <= 0.03928 ? s / 12.92 : ((s + 0.055) / 1.055) ** 2.4;
-}
 
-/** WCAG relative luminance of an opaque colour, `0..1`. Unparsable → 0. */
-export function relativeLuminance(color: string): number {
-  const rgb = parseRgba(color);
-  if (!rgb) return 0;
-  return 0.2126 * channel(rgb.r) + 0.7152 * channel(rgb.g) + 0.0722 * channel(rgb.b);
-}
 
-/** WCAG contrast ratio between two opaque colours, `1..21`. */
-export function contrastRatio(a: string, b: string): number {
-  const la = relativeLuminance(a);
-  const lb = relativeLuminance(b);
-  const [hi, lo] = la > lb ? [la, lb] : [lb, la];
-  return (hi + 0.05) / (lo + 0.05);
-}
 
 /**
  * Of `candidates`, the colour whose WORST contrast over every surface in
@@ -286,3 +270,5 @@ export const MEDIA_HEADER_CSS = `
   }
 }
 `;
+
+export { contrastRatio, relativeLuminance };

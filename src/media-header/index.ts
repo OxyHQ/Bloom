@@ -20,7 +20,6 @@ export { EpisodeHeader } from './EpisodeHeader';
 export { ProfileHeader } from './ProfileHeader';
 export { AudiobookHeader } from './AudiobookHeader';
 export {
-  contrastRatio,
   resolveMediaHeaderPaint,
   selectTitleVariant,
   TITLE_STEPS,

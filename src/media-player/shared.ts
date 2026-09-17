@@ -4,6 +4,7 @@ import { neutralRamp } from '../button/shared';
 import { parseRgba } from '../theme/color-utils';
 import type { WebCssStyle } from '../styles/web-view-style';
 import type { MediaArtist, RepeatMode, SleepTimerValue, TransportControlsSize } from './types';
+import { contrastRatio, relativeLuminance } from '../styles/color-contrast';
 
 export const IS_WEB = Platform.OS === 'web';
 
@@ -70,26 +71,8 @@ export const TRANSPORT_GEOMETRY: Record<TransportControlsSize, TransportGeometry
 //  Contrast — artwork colours arrive from the backend and can be anything.
 // ---------------------------------------------------------------------------
 
-function channel(v: number): number {
-  const s = v / 255;
-  return s <= 0.04045 ? s / 12.92 : ((s + 0.055) / 1.055) ** 2.4;
-}
 
-/** WCAG relative luminance of an opaque colour, or `null` if it does not parse. */
-export function relativeLuminance(color: string): number | null {
-  const c = parseRgba(color);
-  if (!c) return null;
-  return 0.2126 * channel(c.r) + 0.7152 * channel(c.g) + 0.0722 * channel(c.b);
-}
 
-/** WCAG contrast ratio between two opaque colours (1..21); `1` if either does not parse. */
-export function contrastRatio(a: string, b: string): number {
-  const la = relativeLuminance(a);
-  const lb = relativeLuminance(b);
-  if (la === null || lb === null) return 1;
-  const [hi, lo] = la > lb ? [la, lb] : [lb, la];
-  return (hi + 0.05) / (lo + 0.05);
-}
 
 function hex(v: number): string {
   return Math.round(Math.max(0, Math.min(255, v))).toString(16).padStart(2, '0');
@@ -168,3 +151,5 @@ export const MEDIA_PLAYER_CSS = `
   text-decoration-line: underline;
 }
 `;
+
+export { contrastRatio, relativeLuminance };
