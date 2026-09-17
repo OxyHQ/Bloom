@@ -1749,6 +1749,20 @@
         "default": "./lib/commonjs/chat-indicators/index.js"
       }
     },
+    "./message-bubble": {
+      "react-native": {
+        "types": "./lib/typescript/module/message-bubble/index.d.ts",
+        "default": "./src/message-bubble/index.ts"
+      },
+      "import": {
+        "types": "./lib/typescript/module/message-bubble/index.d.ts",
+        "default": "./lib/module/message-bubble/index.js"
+      },
+      "require": {
+        "types": "./lib/typescript/commonjs/message-bubble/index.d.ts",
+        "default": "./lib/commonjs/message-bubble/index.js"
+      }
+    },
     "./creator-studio": {
       "react-native": {
         "types": "./lib/typescript/module/creator-studio/index.d.ts",
