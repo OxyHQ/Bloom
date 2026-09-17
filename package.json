@@ -1749,6 +1749,20 @@
         "default": "./lib/commonjs/chat-indicators/index.js"
       }
     },
+    "./chat-composer": {
+      "react-native": {
+        "types": "./lib/typescript/module/chat-composer/index.d.ts",
+        "default": "./src/chat-composer/index.ts"
+      },
+      "import": {
+        "types": "./lib/typescript/module/chat-composer/index.d.ts",
+        "default": "./lib/module/chat-composer/index.js"
+      },
+      "require": {
+        "types": "./lib/typescript/commonjs/chat-composer/index.d.ts",
+        "default": "./lib/commonjs/chat-composer/index.js"
+      }
+    },
     "./creator-studio": {
       "react-native": {
         "types": "./lib/typescript/module/creator-studio/index.d.ts",
