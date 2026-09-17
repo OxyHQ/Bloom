@@ -73,6 +73,7 @@ import { BookingCard } from '../booking';
 import { FavoriteButton } from '../listing-card';
 import { CategoryBar } from '../category-bar';
 import { MapPriceMarker, MapSearchAreaButton } from '../map-marker';
+import { TransportControls } from '../media-player';
 import { RiFireLine } from '../icons/remix/RiFireLine';
 import {
   DropdownMenuCheckboxItem,
@@ -1045,5 +1046,26 @@ describe('Map pieces', () => {
     const c = mount(<MapSearchAreaButton variant="toggle" checked onCheckedChange={() => {}} testID="sa" />);
     expect(byTestId(c, 'sa').getAttribute('role')).toBe('checkbox');
     expect(byTestId(c, 'sa').getAttribute('aria-checked')).toBe('true');
+  });
+});
+
+describe('Player toggles', () => {
+  it('shuffle and repeat emit aria-pressed; previous stays a plain button', () => {
+    const c = mount(
+      <TransportControls
+        playing={false}
+        onPlayPause={() => {}}
+        onPrevious={() => {}}
+        shuffle
+        onShuffleChange={() => {}}
+        repeat="off"
+        onRepeatChange={() => {}}
+        testID="tc"
+      />,
+    );
+    expect(byTestId(c, 'tc-shuffle').getAttribute('aria-pressed')).toBe('true');
+    expect(byTestId(c, 'tc-shuffle').getAttribute('aria-label')).toBe('Shuffle');
+    expect(byTestId(c, 'tc-repeat').getAttribute('aria-pressed')).toBe('false');
+    expect(byTestId(c, 'tc-previous').hasAttribute('aria-pressed')).toBe(false);
   });
 });

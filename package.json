@@ -1735,6 +1735,20 @@
         "default": "./lib/commonjs/media-controls/index.js"
       }
     },
+    "./media-player": {
+      "react-native": {
+        "types": "./lib/typescript/module/media-player/index.d.ts",
+        "default": "./src/media-player/index.ts"
+      },
+      "import": {
+        "types": "./lib/typescript/module/media-player/index.d.ts",
+        "default": "./lib/module/media-player/index.js"
+      },
+      "require": {
+        "types": "./lib/typescript/commonjs/media-player/index.d.ts",
+        "default": "./lib/commonjs/media-player/index.js"
+      }
+    },
     "./stay-filters": {
       "react-native": {
         "types": "./lib/typescript/module/stay-filters/index.d.ts",
