@@ -161,6 +161,28 @@ scrolled to the page end: last item bottom `768`, action top `784`, bar top `844
 while the nav is a drawer, the phone case the slots exist for) or `always`, for
 a bar that is part of the app at every width.
 
+## Breakpoints an app can name itself
+
+Every `*From` prop takes a named tier (`sm` 640 · `md` 768 · `lg` 1024 · `xl` 1280) **or a width in pixels**, because a real app's layout rarely lands on the tiers. A feed whose side column earns its place at 990 and whose rail goes in flow at 500 says so:
+
+```tsx
+<AppShell
+  variant="feed"
+  panel                     // the reading column inside a framed ContentPanel
+  navFrom={500}             // rail in flow from 500, a drawer below it
+  navExpandedFrom={1300}    // icons until 1300, labels past it
+  asideFrom={990}
+  asideWidth={350}
+  sidebar={sidebar}
+  aside={<SideColumn />}
+>
+  {feed}
+</AppShell>
+```
+
+The tiers stay the default vocabulary — `breakpointPx` resolves either — so a
+shell that says nothing still lays out on Bloom's own scale.
+
 ## Sizes and breakpoints
 
 Every number is a prop, and `APP_SHELL_DEFAULTS` is the exported record of the

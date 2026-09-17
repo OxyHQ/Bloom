@@ -39,7 +39,14 @@ export type AppShellVariant = 'dashboard' | 'feed' | 'split' | 'focus';
 export type AppShellPane = 'list' | 'detail' | 'info';
 
 /** A tier from `BREAKPOINTS`, the one source of truth for widths. */
-export type AppShellBreakpoint = 'sm' | 'md' | 'lg' | 'xl';
+/**
+ * Where a region changes shape: one of Bloom's named tiers, or a WIDTH IN
+ * PIXELS for an app whose own layout does not land on them — a feed whose side
+ * column earns its place at 990, a rail that goes in flow at 500. The named
+ * tiers stay the default vocabulary; a number is the escape hatch, resolved by
+ * `breakpointPx`.
+ */
+export type AppShellBreakpoint = 'sm' | 'md' | 'lg' | 'xl' | number;
 
 /** What scrolls the page. See `AppShellProps['scroll']`. */
 export type AppShellScroll = 'document' | 'container' | 'fixed';
@@ -95,7 +102,7 @@ export interface AppShellProps {
   /** The aside column's width. Defaults to 320. */
   asideWidth?: number;
   /** The breakpoint the aside sits beside the content from. Defaults to `xl` (1280). */
-  asideFrom?: 'md' | 'lg' | 'xl';
+  asideFrom?: AppShellBreakpoint;
   /** Below `asideFrom`: `stack` (default) renders it after the content, `hidden` drops it. */
   asideCollapse?: 'stack' | 'hidden';
   children?: ReactNode;

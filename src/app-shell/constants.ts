@@ -1,3 +1,5 @@
+import { BREAKPOINTS } from '../styles/breakpoints';
+import type { AppShellBreakpoint } from './types';
 /**
  * `AppShell`'s measured defaults, in one place so a story, a test and the docs
  * can name the same number instead of each repeating a literal.
@@ -56,3 +58,8 @@ export const APP_SHELL_DEFAULTS = {
   /** `split`: the third pane needs the same headroom the aside does. */
   infoFrom: 'xl',
 } as const;
+
+/** A named tier or a literal width, in pixels. */
+export function breakpointPx(value: AppShellBreakpoint): number {
+  return typeof value === 'number' ? value : BREAKPOINTS[value];
+}
