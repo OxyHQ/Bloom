@@ -150,8 +150,10 @@ Rows of label + `display` over an 8-tall bar from zero. This is the one family h
 that is a CHART rather than a meter — each bar is a different subject compared with
 the others — so its colours come from the chart palette, not the meter's: the
 `highlight` row takes the brand-anchored data hue (`chartHueTone(theme, 6)`) and the
-comparators the single-ink neutral (`resolveMonoTone`). Painting them with the accent
-would have said each row was progress toward something. A named list; each row reads
+comparators `neutralSeries`. Painting them with the accent would have said each row was
+progress toward something. There is no rail: `neutralSeries` is neutral-800 in dark, so
+on any rail dark enough to read as one the comparators land on its colour — and a bar
+chart does not draw the remainder anyway. A named list; each row reads
 "This home: €2,790/m²".
 
 ## `NeighbourhoodScores` and `NearbyPlaces`

@@ -1,7 +1,7 @@
 import React, { memo, useMemo } from 'react';
 import { View } from 'react-native';
 
-import { chartHueTone, resolveMonoTone } from '../chart-cards/palette';
+import { chartHueTone, resolveChartCardPalette } from '../chart-cards/palette';
 import { Meter } from '../stat-bar';
 import { useTheme } from '../theme/use-theme';
 import { Text } from '../typography';
@@ -14,23 +14,24 @@ import type { PricePerAreaComparisonProps } from './types';
  *   row     label (body-regular; body-semibold when highlighted) and the
  *           display value right-aligned (body-semibold, tabular), 8 above an
  *           8-tall bar; rows 16 apart
- *   bar     the shared meter rail, radius 4; the fill is `value / largest
- *           value` of the track
+ *   bar     8 tall, radius 4, `value / largest value` wide — and NO rail
  *
- * THE COLOURS COME FROM THE CHART PALETTE, NOT THE METER'S. This is the one
- * family in the fold that is a CHART rather than a meter: each bar is a
- * different subject compared against the others, so its colour encodes WHICH
- * datum it is, not how much of one thing there is. The highlighted row takes
- * `chart-6` — the brand-anchored blue, a data hue that rotates with the preset
- * — and the comparators take the single-ink neutral (`resolveMonoTone`), which
- * is the chart family's own answer for "a series with no identity of its own".
- * Painting them with the accent would have said they were progress toward
- * something.
+ * THE COLOURS COME FROM THE CHART PALETTE, NOT THE METER'S, AND THERE IS NO
+ * RAIL. This is the one family in the fold that is a CHART rather than a meter:
+ * each bar is a different subject compared against the others, so its colour
+ * encodes WHICH datum it is, not how much of one thing there is. The
+ * highlighted row takes `chart-6` — the brand-anchored blue, a data hue that
+ * rotates with the preset — and the comparators `neutralSeries`. Painting them
+ * with the accent would have said they were progress toward something.
  *
- * `resolveMonoTone` rather than `neutralSeries`: the neutral series is
- * `neutral-800` in dark, drawn against a `neutral-900` card — on a rail it
- * lands on the rail's own colour and disappears. The mono tone (`neutral-500`
- * light, near-white dark) is legible over the rail in both modes.
+ * The rail went with them, and it had to: `neutralSeries` is `neutral-800` in
+ * dark, drawn against a `neutral-900` card, so on ANY rail dark enough to read
+ * as a rail it lands on the rail's own colour and disappears. A bar chart does
+ * not draw the remainder anyway — the row already states the value in words,
+ * and the lengths are the comparison. The first attempt kept the rail and used
+ * `resolveMonoTone` instead, which is legible in both modes but paints the
+ * comparators heavier than the highlighted row: the emphasis inverted, which a
+ * colour assertion cannot see and a screenshot can.
  *
  * Bars start from zero — a price-per-area bar cropped at a baseline would
  * exaggerate a small difference. The list is named by `accessibilityLabel`,
@@ -45,7 +46,7 @@ function PricePerAreaComparisonComponent({
   const theme = useTheme();
   const palette = useMemo(() => resolveInsightPalette(theme), [theme]);
   const series = useMemo(
-    () => ({ highlight: chartHueTone(theme, 6).color, rest: resolveMonoTone(theme).color }),
+    () => ({ highlight: chartHueTone(theme, 6).color, rest: resolveChartCardPalette(theme).neutralSeries }),
     [theme],
   );
   const max = Math.max(0, ...rows.map((r) => r.value));
@@ -79,6 +80,7 @@ function PricePerAreaComparisonComponent({
             max={max}
             height={8}
             fill={row.highlight ? series.highlight : series.rest}
+            track="transparent"
             fillTestID={testID ? `${testID}-row-${index}-fill` : undefined}
           />
         </View>

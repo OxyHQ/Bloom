@@ -11,7 +11,7 @@ import { createRoot, type Root } from 'react-dom/client';
 
 jest.mock('react-native', () => jest.requireActual('react-native-web'));
 
-import { chartHueTone, resolveMonoTone } from '../chart-cards/palette';
+import { chartHueTone, resolveChartCardPalette } from '../chart-cards/palette';
 import { RiBusLine, RiSubwayLine } from '../icons/remix';
 import {
   EnergyBadge,
@@ -422,17 +422,20 @@ describe('PricePerAreaComparison', () => {
     expect(getComputedStyle(byTestId('pc-row-1-fill')).width).toBe('100%');
     // This is a CHART, not a meter: each bar is a different subject, so its
     // colour says WHICH one it is. The highlighted row is the brand-anchored
-    // data hue and the comparators the single-ink neutral — neither is the
-    // accent, which would have claimed the row was progress toward something.
+    // data hue and the comparators the neutral series — neither is the accent,
+    // which would have claimed the row was progress toward something.
     expect(getComputedStyle(byTestId('pc-row-0-fill')).backgroundColor).toBe(
       normalise(chartHueTone(theme, 6).color),
     );
     expect(getComputedStyle(byTestId('pc-row-1-fill')).backgroundColor).toBe(
-      normalise(resolveMonoTone(theme).color),
+      normalise(resolveChartCardPalette(theme).neutralSeries),
     );
     expect(getComputedStyle(byTestId('pc-row-0-fill')).backgroundColor).not.toBe(
       normalise(resolveMeterColors(theme).fill),
     );
+    // And it draws NO rail: `neutralSeries` is `neutral-800` in dark, so on any
+    // rail dark enough to read as one the comparators land on its own colour.
+    expect(getComputedStyle(byTestId('pc-row-0-fill').parentElement!).backgroundColor).toBe('rgba(0, 0, 0, 0)');
     expect(byTestId('pc-row-0').getAttribute('aria-label')).toBe('This home: €2,000/m²');
   });
 });
