@@ -28,6 +28,23 @@ function Surface({ children }: { children: React.ReactNode }) {
   );
 }
 
+/** Sign in with Oxy: colorful (the primary button), white and black, plus icon-only. */
+export const SignInWithOxy: Story = {
+  render: () => (
+    <Surface>
+      <View style={{ gap: 12, width: 300 }}>
+        <SocialButton brand="oxy" action="signIn" />
+        <SocialButton brand="oxy" action="signIn" appearance="white" />
+        <SocialButton brand="oxy" action="signIn" appearance="black" />
+        <View style={{ flexDirection: 'row', gap: 12 }}>
+          <SocialButton brand="oxy" action="signIn" iconOnly />
+          <SocialButton brand="oxy" action="signIn" appearance="white" iconOnly />
+        </View>
+      </View>
+    </Surface>
+  ),
+};
+
 /** A realistic sign-in stack: the three providers most screens offer. */
 export const SignInStack: Story = {
   render: () => (

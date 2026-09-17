@@ -15,10 +15,16 @@
  * #4285F4, since the two side by side read as a mistake. The multi-colour G
  * of `appearance="white"` stays Google's own.
  *
+ * `oxy` is Oxy's own mark (the drawing the Oxy SDK ships), not an upstream
+ * glyph. Like Google it paints `colorful` with the theme accent, and the
+ * button draws it two-tone (`OxyMark.tsx`); `path` is its outer silhouette.
+ *
  * The logos are trademarks of their owners. Several providers (Google and Apple
  * in particular) publish sign-in button guidelines covering colour, clear space
  * and wording; check them before shipping a production login.
  */
+
+import { OXY_MARK_OUTER_PATH, OXY_MARK_VIEW_BOX } from './OxyMark';
 
 export interface SocialProviderMeta {
   label: string;
@@ -52,6 +58,12 @@ export interface SocialColorLogo {
 }
 
 export const SOCIAL_PROVIDERS = {
+  "oxy": {
+    label: "Oxy",
+    brand: null,
+    viewBox: OXY_MARK_VIEW_BOX,
+    path: OXY_MARK_OUTER_PATH,
+  },
   "google": {
     label: "Google",
     brand: null,

@@ -17,6 +17,12 @@ export type SocialButtonSize = 'medium' | 'small';
  */
 export type SocialButtonAppearance = 'colorful' | 'black' | 'white';
 
+/**
+ * The verb of the default label: `continue` — "Continue with Google" (the
+ * default), `signIn` — "Sign in with Google", `signUp` — "Sign up with Google".
+ */
+export type SocialButtonAction = 'continue' | 'signIn' | 'signUp';
+
 /** Everything a brand needs, for providers that are not built in. */
 export interface SocialBrandConfig {
   /** The logo, rendered inside the glyph box (18 / 16). */
@@ -43,7 +49,9 @@ export interface SocialButtonProps {
   iconOnly?: boolean;
   /** Drop the fixed width and fill the container instead. */
   fullWidth?: boolean;
-  /** The label. Defaults to `"Continue with <Brand>"`. */
+  /** The verb of the default label and accessible name. Defaults to `'continue'`. */
+  action?: SocialButtonAction;
+  /** The label. Defaults to the `action` phrase, e.g. `"Continue with <Brand>"`. */
   children?: ReactNode;
   onPress?: () => void;
   /**
@@ -59,8 +67,8 @@ export interface SocialButtonProps {
   textStyle?: StyleProp<TextStyle>;
   className?: string;
   /**
-   * Overrides the accessible name. Defaults to the visible label, or to
-   * `"Continue with <Brand>"` when `iconOnly`.
+   * Overrides the accessible name. Defaults to the visible label, or to the
+   * `action` phrase (`"Continue with <Brand>"`) when `iconOnly`.
    */
   accessibilityLabel?: string;
   accessibilityHint?: string;
