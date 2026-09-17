@@ -13,7 +13,7 @@ import {
   RiThumbUpFill,
   RiThumbUpLine,
 } from '../icons/remix';
-import { useContainerWidth } from '../listing-details/use-container-width';
+import { useContainerWidth } from '../hooks/use-container-width';
 import { Rating, RatingBar } from '../rating';
 import type { WebCssStyle } from '../styles/web-view-style';
 import { webDataSet } from '../styles/web-data';

@@ -4,7 +4,7 @@ import { Pressable, View } from 'react-native';
 import { Chip } from '../chip';
 import { useControllableState } from '../hooks/use-controllable-state';
 import { RiArrowDownSLine, RiArrowUpSLine } from '../icons/remix';
-import { useContainerWidth } from '../listing-details/use-container-width';
+import { useContainerWidth } from '../hooks/use-container-width';
 import { useInteractiveWebCss } from '../styles/interactive-web-css';
 import type { WebCssStyle } from '../styles/web-view-style';
 import { webDataSet } from '../styles/web-data';

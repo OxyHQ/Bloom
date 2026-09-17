@@ -7,7 +7,7 @@ import { Text } from '../typography';
 import { PROPERTY_FACTS_FOUR_COLUMN_MIN_WIDTH, PROPERTY_FACTS_THREE_COLUMN_MIN_WIDTH } from './constants';
 import { resolveListingPalette } from './shared';
 import type { PropertyFactsProps } from './types';
-import { useContainerWidth } from './use-container-width';
+import { useContainerWidth } from '../hooks/use-container-width';
 
 /**
  * The key facts of a home for rent or sale: a grid of icon + value + label.

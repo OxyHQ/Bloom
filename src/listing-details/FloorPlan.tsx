@@ -18,7 +18,7 @@ import {
   resolveListingPalette,
 } from './shared';
 import type { FloorPlanItem, FloorPlanProps } from './types';
-import { useContainerWidth } from './use-container-width';
+import { useContainerWidth } from '../hooks/use-container-width';
 
 /**
  * The floor plans of a home: one tile per plan, a label under each.

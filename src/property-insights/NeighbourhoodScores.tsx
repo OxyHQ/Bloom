@@ -2,7 +2,7 @@ import React, { memo, useMemo } from 'react';
 import { View } from 'react-native';
 import Svg, { Circle } from 'react-native-svg';
 
-import { useContainerWidth } from '../listing-details/use-container-width';
+import { useContainerWidth } from '../hooks/use-container-width';
 import { useTheme } from '../theme/use-theme';
 import { Text } from '../typography';
 import { NEIGHBOURHOOD_SCORES_TWO_COLUMN_MIN_WIDTH } from './constants';

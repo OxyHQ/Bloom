@@ -9,7 +9,7 @@ import { Text } from '../typography';
 import { REVIEW_SUMMARY_WIDE_MIN_WIDTH } from './constants';
 import { IS_WEB, resolveListingPalette } from './shared';
 import type { ReviewSummaryProps } from './types';
-import { useContainerWidth } from './use-container-width';
+import { useContainerWidth } from '../hooks/use-container-width';
 
 /**
  * The top of a reviews section.

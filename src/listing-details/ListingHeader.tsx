@@ -18,7 +18,7 @@ import {
   type ListingPalette,
 } from './shared';
 import type { ListingHeaderActionProps, ListingHeaderProps } from './types';
-import { useContainerWidth } from './use-container-width';
+import { useContainerWidth } from '../hooks/use-container-width';
 
 /**
  * The title block of a listing page.

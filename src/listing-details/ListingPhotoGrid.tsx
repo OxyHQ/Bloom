@@ -26,7 +26,7 @@ import {
   type ListingPalette,
 } from './shared';
 import type { ListingPhoto, ListingPhotoGridProps } from './types';
-import { useContainerWidth } from './use-container-width';
+import { useContainerWidth } from '../hooks/use-container-width';
 
 /**
  * The photos at the top of a listing page.
