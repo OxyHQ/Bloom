@@ -29,6 +29,7 @@ import { useSidebarPalette, type SidebarPalette } from './palette';
 import { Collapsible, CollapseProvider, IS_WEB, MORPH_MS, useSidebarWebCss } from './parts';
 import { SidebarFolder } from './SidebarFolder';
 import { SidebarItem } from './SidebarItem';
+import { SidebarModeSwitcher } from './SidebarModeSwitcher';
 import { SidebarPlanCard } from './SidebarPlanCard';
 import { SidebarRail } from './SidebarRail';
 import { SidebarTeamMenu } from './SidebarTeamMenu';
@@ -132,6 +133,10 @@ function SearchField({
 const SidebarPanel: React.FC<SidebarProps> = ({
   items = [],
   secondaryItems = [],
+  modes,
+  mode,
+  onModeChange,
+  modesLabel,
   selected,
   onNavigate,
   collapsed: collapsedProp,
@@ -459,6 +464,18 @@ const SidebarPanel: React.FC<SidebarProps> = ({
     shownItems.length === 0 && shownSecondary.length === 0 && shownFolders.length === 0 && !collapsed;
   const hasTree = !!tree;
 
+  const modeSwitcher =
+    modes && modes.length > 0 ? (
+      <SidebarModeSwitcher
+        modes={modes}
+        value={mode ?? modes[0]!.key}
+        onValueChange={(key) => onModeChange?.(key)}
+        collapsed={collapsed}
+        accessibilityLabel={modesLabel}
+        testID={testID ? `${testID}-modes` : 'sidebar-modes'}
+      />
+    ) : null;
+
   const headerRow = (
     <View
       style={
@@ -521,6 +538,7 @@ const SidebarPanel: React.FC<SidebarProps> = ({
           // 24 between the primary rows and the tree section.
           <View style={{ width: '100%', minHeight: 0, flexShrink: 1, gap: 12 }}>
             {headerRow}
+            {modeSwitcher}
             {showSearch && !flat ? searchButton : null}
             <ScrollView
               {...(IS_WEB ? { dataSet: { bloomSidebarScroll: 'none' } } : {})}
@@ -569,6 +587,7 @@ const SidebarPanel: React.FC<SidebarProps> = ({
           showsVerticalScrollIndicator={false}
         >
           {headerRow}
+          {modeSwitcher}
 
           <View style={{ width: '100%', gap: 12 }}>
             {showSearch && !flat ? searchButton : null}

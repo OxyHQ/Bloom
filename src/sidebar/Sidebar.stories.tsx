@@ -4,6 +4,8 @@ import type { Meta, StoryObj } from '@storybook/react-vite';
 
 import { Badge } from '../badge';
 import {
+  RiSearchLine,
+  RiComputerLine,
   RiAddFill,
   RiAsterisk,
   RiBankCardLine,
@@ -36,8 +38,8 @@ import {
   RiShieldUserLine,
   RiUserSmileLine,
 } from '../icons/remix';
-import { Sidebar, SidebarFolder, SidebarItem, SidebarPlanCard, SidebarRailItem } from './index';
-import type { SidebarAccount, SidebarNavItem, SidebarPlan, SidebarTeam, SidebarTree } from './types';
+import { Sidebar, SidebarFolder, SidebarItem, SidebarModeSwitcher, SidebarPlanCard, SidebarRailItem } from './index';
+import type { SidebarAccount, SidebarMode, SidebarNavItem, SidebarPlan, SidebarTeam, SidebarTree } from './types';
 
 const meta: Meta<typeof Sidebar> = {
   title: 'Blocks/Sidebar',
@@ -138,6 +140,71 @@ export const Default: Story = {
           team={DEMO_TEAM}
         />
       </Frame>
+    );
+  },
+};
+
+/** Search / Computer: the modes a sidebar switches between. */
+export const DEMO_MODES: SidebarMode[] = [
+  { key: 'search', label: 'Search', icon: RiSearchLine, shortcut: '⌥⌃1' },
+  { key: 'computer', label: 'Computer', icon: RiComputerLine, shortcut: '⌥⌃2' },
+];
+
+/** A mode switcher under the header (`modes`), expanded and collapsed. */
+export const WithModes: Story = {
+  render: function Render() {
+    const [mode, setMode] = useState('search');
+    const [selected, setSelected] = useState('home');
+    return (
+      <Frame>
+        <Sidebar
+          testID="sidebar"
+          modes={DEMO_MODES}
+          mode={mode}
+          onModeChange={setMode}
+          items={DEMO_NAV}
+          secondaryItems={DEMO_SECONDARY}
+          selected={selected}
+          onNavigate={(item) => setSelected(item.key)}
+          account={DEMO_ACCOUNT}
+          team={DEMO_TEAM}
+        />
+        <Sidebar
+          collapsed
+          modes={DEMO_MODES}
+          mode={mode}
+          onModeChange={setMode}
+          items={DEMO_NAV}
+          secondaryItems={DEMO_SECONDARY}
+          selected={selected}
+          onNavigate={(item) => setSelected(item.key)}
+          account={DEMO_ACCOUNT}
+          team={DEMO_TEAM}
+        />
+      </Frame>
+    );
+  },
+};
+
+/** `SidebarModeSwitcher` on its own: two and three modes. */
+export const ModeSwitcher: Story = {
+  render: function Render() {
+    const [two, setTwo] = useState('search');
+    const [three, setThree] = useState('chat');
+    return (
+      <View testID="mode-switchers" style={{ width: 236, gap: 24, padding: 12 }}>
+        <SidebarModeSwitcher testID="modes-two" modes={DEMO_MODES} value={two} onValueChange={setTwo} />
+        <SidebarModeSwitcher
+          testID="modes-three"
+          modes={[
+            { key: 'chat', label: 'Chat', icon: RiSearchLine },
+            { key: 'agents', label: 'Agents', icon: RiComputerLine },
+            { key: 'search', label: 'Search', icon: RiSearchLine },
+          ]}
+          value={three}
+          onValueChange={setThree}
+        />
+      </View>
     );
   },
 };
