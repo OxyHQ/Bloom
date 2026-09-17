@@ -1,0 +1,105 @@
+---
+title: Lyrics
+description: Synced lyrics that follow playback, with seeking, a way back after scrolling, and a preview card.
+order: 116
+---
+
+# Lyrics
+
+`LyricsView` draws a track's lyrics and follows the player: lines already sung are dimmed, the line playing is in the full text colour and a heavier weight, and lines to come sit between the two. `LyricsPreviewCard` is the small version — a few lines around the current one and a "Show lyrics" button.
+
+```tsx
+import { LyricsPreviewCard, LyricsView, type LyricLine } from '@oxy.so/bloom/lyrics';
+
+const lines: LyricLine[] = [
+  { time: 4, text: 'Streetlights hum a quiet tune' },
+  { time: 7.5, text: 'Paper lanterns chase the moon' },
+  { time: 11, text: '' }, // an instrumental break
+  { time: 14.5, text: 'Hold the night a little longer' },
+];
+
+<LyricsView
+  lines={lines}
+  currentTime={position}
+  onSeekLine={(line) => player.seekTo(line.time ?? 0)}
+  artworkColor={track.artworkColor}
+  providerText="Lyrics licensed from the song’s publisher"
+/>
+
+<LyricsPreviewCard
+  lines={lines}
+  currentTime={position}
+  artworkColor={track.artworkColor}
+  onShowLyrics={openLyrics}
+/>
+```
+
+Both are controlled by `currentTime`: they draw where playback is and report presses. They never sample the artwork — the colour arrives as a prop.
+
+## `LyricsView`
+
+| prop                 | decides                                                                                           |
+| -------------------- | ------------------------------------------------------------------------------------------------- |
+| `lines`              | `{ time?, text, key? }[]` in any order; synced lines are sorted by `time` (seconds)               |
+| `text`               | plain unsynced lyrics as one string, used when `lines` is empty                                   |
+| `currentTime`        | the playback position in seconds                                                                   |
+| `onSeekLine`         | `(line, index)` — makes each synced line a button; seek to `line.time`                             |
+| `artworkColor`       | hex or `rgb()`; the view paints a deep shade of it (see Colour). Absent → the neutral surface       |
+| `providerText`       | the small footer under the last line, e.g. "Lyrics provided by …"                                  |
+| `footer`             | replaces that footer with your own node                                                           |
+| `emptyText`          | drawn with no lyrics at all; default "Lyrics aren’t available for this track"                      |
+| `backToCurrentLabel` | the pill after a user scroll; default "Back to current line"                                       |
+| `resumeDelay`        | ms after the last user scroll before auto-scroll resumes; default `3000`                            |
+| `anchor`             | where the active line's centre is kept, as a fraction of the height; default `1/3`                  |
+| `size`               | `'large'` display-4 32/44, `'medium'` title-1 24/34, `'small'` title-2 20/26; default by width (720 / 480) |
+| `accessibilityLabel` | the region's name; default "Lyrics"                                                                 |
+| `style`, `testID`    | the view fills its parent (`flex: 1`), so give the parent a height                                  |
+
+### Which line is active
+
+`activeLyricIndex(lines, time)` is the last line whose `time` is at or before `time` — a line becomes active exactly at its time and stays active until the next one starts. Before the first line nothing is active (`-1`), and the last line stays active to the end of the track, since lyrics carry no end time. It is a binary search over lines sorted by time; `normalizeLyricLines` produces that order (stable, so lines sharing a time keep their order and the last of them wins).
+
+A blank synced line is an instrumental break: a gap, which draws three dots while it is the active line.
+
+### Scrolling
+
+The view scrolls so the active line's centre sits `anchor` of the way down (`lyricsScrollTarget`, clamped to the content). The bottom is padded by the rest of the view's height so the last lines can reach that point too. The first placement jumps; later ones animate, and with reduced motion on they jump too.
+
+A scroll the user makes — drag, wheel, touch, or any scroll the view did not start — pauses following for `resumeDelay` and shows the "Back to current line" pill at the bottom. Pressing the pill scrolls back at once; otherwise following resumes after the delay. The pill never appears for unsynced lyrics or before the first line.
+
+Only colour and weight change with playback: no line grows, moves or scales. The active line keeps the resting line's size so the weight change is the only reflow.
+
+### Unsynced lyrics
+
+If any line has no `time`, or only `text` is given, the lyrics draw as plain text in the full colour. Nothing is active, nothing scrolls on its own, and nothing seeks.
+
+## `LyricsPreviewCard`
+
+| prop                          | decides                                                           |
+| ----------------------------- | ----------------------------------------------------------------- |
+| `lines` / `text` / `currentTime` / `artworkColor` | as on `LyricsView`                             |
+| `visibleLines`                | `5` (default) or `4`; the active line is second from the top, clamped at both ends |
+| `onShowLyrics`                | draws the "Show lyrics" pill; without it there is no button        |
+| `showLyricsLabel`             | default "Show lyrics"                                              |
+| `onSeekLine`                  | makes the lines buttons, as on `LyricsView`                        |
+| `title`                       | the heading and the region's name; default "Lyrics"                 |
+| `providerText`, `emptyText`, `style`, `testID` |                                                   |
+
+A card with a 16 radius and 20 padding, lines in title-3 (18/26). Unsynced text shows its first lines and skips the blank lines between verses.
+
+## Colour
+
+`resolveLyricsPalette(theme, artworkColor)`:
+
+- **With an artwork colour**, the background is the first stop of that colour's ramp — from 800 in light mode, 900 in dark — under which white keeps **7:1**, and the text is white. The ramp's 950 stop always clears it, so a pale colour (a cream, a yellow) simply lands deeper rather than flipping to dark text.
+- **Without one** (or with something that does not parse), the background is the neutral surface (`neutral-100` light, `neutral-900` dark) under the theme's text colour.
+- Upcoming lines and the footer are the text colour mixed toward the background no further than **4.5:1**; past lines no further than **3:1** (they are 20px and larger). The pills are filled in the text colour with the background as their label.
+
+The test suite checks those ratios for every colour preset in both modes over a spread of artwork colours, including white, black and unparseable input.
+
+## Accessibility
+
+- The view and the card are each a `region` named by `accessibilityLabel` / `title`.
+- With `onSeekLine`, each synced line is a `button` named by its words; without it lines are plain text and there is nothing to tab to.
+- The active line carries `aria-current="true"` on web.
+- Keyboard focus draws a ring in the text colour. Colour changes on hover are instant with reduced motion.

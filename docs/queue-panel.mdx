@@ -1,0 +1,116 @@
+---
+title: Queue Panel
+description: The play queue — now playing, what the listener added, what follows from the context — with drag, keyboard and menu reordering, and a recently played tab.
+order: 64
+---
+
+# Queue Panel
+
+The play queue as a side panel on web and as bottom-sheet content on native.
+
+```tsx
+import { moveQueueItem, QueuePanel } from '@oxy.so/bloom/queue-panel';
+
+<QueuePanel
+  nowPlaying={current}
+  playing={isPlaying}
+  queue={queue}
+  context={upNext}
+  contextName="Night Drive"
+  recentlyPlayed={history}
+  onReorder={(section, from, to) => {
+    const set = section === 'queue' ? setQueue : setUpNext;
+    set((list) => moveQueueItem(list, from, to));
+  }}
+  onRemove={(section, index) => removeAt(section, index)}
+  onPlay={(section, index, track) => playFrom(section, index, track)}
+  onClearQueue={() => setQueue([])}
+  onClose={closeQueue}
+  style={{ height: '100%' }}
+/>
+```
+
+Every list is a prop and every change is a callback. The panel reorders, removes and clears nothing itself; it draws what it is given, so the player stays the one owner of the queue.
+
+## Layout
+
+| part | what it shows |
+| --- | --- |
+| header | `Tabs` — Queue / Recently played — and a close button when `onClose` is set |
+| Now playing | `nowPlaying` with an accent title and `NowPlayingIndicator` (still while `playing` is false) |
+| Next in queue | `queue`, the tracks the listener added, with "Clear queue" when `onClearQueue` is set |
+| Next from: *context* | `context`, what follows from the playing album, playlist or radio (`contextName` names it; without one the heading is "Next up") |
+| Recently played | `recentlyPlayed` through `RecentlyPlayedList`; the loaded track is marked there too |
+
+A section with no rows is not drawn. With no now-playing track and both lists empty the panel shows an empty state.
+
+`variant="panel"` (the web default) is a rounded-8 surface `width` wide (360) with a hairline, in the same surface colours as a menu. `variant="sheet"` (the native default) is flat and full width. Give either a height — the list scrolls inside it.
+
+## Rows
+
+Each row is 56 tall: a 40px cover, the title (`body-medium`) over the artists (`caption-1-regular`, with the explicit badge when `explicit`), and the track's `meta` string — a duration in the queue, a "when" in the history. The cover and text are one button named "Play *title*"; the controls sit beside it, never inside it.
+
+| control | when | web | native |
+| --- | --- | --- | --- |
+| remove (×) | `onRemove`, `panel` only | revealed on hover or keyboard focus | — (use the menu) |
+| more (⋯) | `onReorder` or `onRemove` | revealed on hover or keyboard focus | always |
+| drag handle | `onReorder` | revealed on hover or keyboard focus | always |
+
+On a device without hover (`(hover: none)`) web draws the controls all the time, like native.
+
+`QueueTrack` is `{ id, title, artists?, cover?, explicit?, meta? }`. `cover` is a URL or an id your `ImageResolver` turns into one. `id` must be stable: rows are keyed by it.
+
+## Reordering
+
+Three ways, one callback — `onReorder(section, from, to)`, with indices inside that section (`'queue'` or `'context'`). A row never moves between sections.
+
+- **Drag** the handle. The row lifts under the pointer or finger, and its neighbours slide to show where it will land. Rows are a fixed 56 tall, so the landing slot is `from + round(dy / 56)` (`queueDragTarget`) with no measuring; the row cannot be dragged past its section's first or last slot. The panel's scroll view stops scrolling while a drag is live.
+- **Keyboard**: focus a handle and press <kbd>↑</kbd> / <kbd>↓</kbd>. Focus stays on the handle as the row moves — the panel puts it back once your new list arrives. On native the handle offers "Move up" and "Move down" as accessibility actions.
+- **Menu**: "Move up", "Move down" (disabled at the ends) and "Remove from queue".
+
+Every move is announced: "Slow Tide moved to position 2 of 3" — through a polite live region on web and `AccessibilityInfo.announceForAccessibility` on native.
+
+`moveQueueItem(list, from, to)` applies a move to your array (a new array, target clamped). `queueDragTarget` and `queueDragShift` are the arithmetic the drag uses, exported for anything that wants to draw the same preview.
+
+## `RecentlyPlayedList`
+
+```tsx
+import { RecentlyPlayedList } from '@oxy.so/bloom/queue-panel';
+
+<RecentlyPlayedList items={history} currentId={current.id} onPlay={(index, track) => play(track)} />
+```
+
+The same rows, without reordering. `currentId` marks the loaded track.
+
+## `QueuePanelRow`
+
+The row on its own, for a list of your own: `track`, `onPress`, `current`, `playing`, `trailing` (your controls), `highlighted` (keep the hover paint, e.g. while your menu is open), `accessibilityLabel`.
+
+## Labels
+
+Every string is in `labels` — pass any subset to translate. The ones that name a track are functions:
+
+```tsx
+<QueuePanel
+  labels={{
+    queueTab: 'Cola',
+    recentTab: 'Escuchado',
+    nextFrom: (context) => `A continuación de: ${context}`,
+    moreOptions: (title) => `Más opciones para ${title}`,
+    reorder: (title) => `Reordenar ${title}`,
+    moved: (title, position, total) => `${title}, posición ${position} de ${total}`,
+  }}
+/>
+```
+
+`DEFAULT_QUEUE_PANEL_LABELS` holds the English defaults.
+
+## Accessibility
+
+- Section titles are `role="heading"`; each section is a `list` of `listitem`s.
+- The row's play area, the handle, remove, more and close are all buttons with names that include the track ("Reorder Slow Tide", "More options for Slow Tide").
+- Moves are announced (above). The tabs are `Tabs`, so they carry `role="tab"` and `aria-selected`.
+
+## Colours
+
+From the theme only, light and dark: the panel is the menu surface and hairline, a row under the pointer takes the menu row highlight, the glyph buttons one neutral step above it, and the playing title the accent. Hover and press change colour only; nothing scales.
