@@ -70,6 +70,7 @@ import { RatingBar } from '../rating';
 import { AmenityFilter, CountFilter, ToggleChipGroup } from '../stay-filters';
 import { DestinationSuggestions, StaySearchBar, StaySearchStep } from '../stay-search';
 import { BookingCard } from '../booking';
+import { FavoriteButton } from '../listing-card';
 import {
   DropdownMenuCheckboxItem,
   DropdownMenuItem,
@@ -288,6 +289,16 @@ describe('role="button" toggles use aria-pressed', () => {
       <FrostedIconButton accessibilityLabel="Back" icon={<Text>x</Text>} active testID="fib" />,
     );
     expect(byTestId(c, 'fib').getAttribute('aria-pressed')).toBe('true');
+  });
+
+  it('FavoriteButton emits aria-pressed and a name for what pressing does', () => {
+    let c = mount(<FavoriteButton favorite onFavoriteChange={() => {}} testID="fav" />);
+    expect(byTestId(c, 'fav').getAttribute('role')).toBe('button');
+    expect(byTestId(c, 'fav').getAttribute('aria-pressed')).toBe('true');
+    expect(byTestId(c, 'fav').getAttribute('aria-label')).toBe('Remove from wishlist');
+    c = mount(<FavoriteButton favorite={false} onFavoriteChange={() => {}} testID="fav" />);
+    expect(byTestId(c, 'fav').getAttribute('aria-pressed')).toBe('false');
+    expect(byTestId(c, 'fav').getAttribute('aria-label')).toBe('Save to wishlist');
   });
 
   it('CompositionBar marks the selected segment with aria-pressed', () => {

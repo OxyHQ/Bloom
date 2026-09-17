@@ -1,0 +1,132 @@
+---
+title: Listing Card
+description: A stay in a results grid — paged photos, a heart, rating and price — plus the responsive grid, the heart on its own, and a saved-collection card.
+order: 106
+---
+
+# Listing Card
+
+```tsx
+import {
+  FavoriteButton,
+  ListingCard,
+  ListingCardGrid,
+  WishlistCard,
+} from '@oxy.so/bloom/listing-card';
+
+<ListingCardGrid>
+  {stays.map((stay) => (
+    <ListingCard
+      key={stay.id}
+      photos={stay.photos}
+      title="Alvora, Coast of Merin"
+      subtitle="Hosted by Ilse"
+      dates="12 – 17 Oct"
+      rating={4.92}
+      reviewCount={128}
+      originalPrice="€150"
+      price="€124"
+      priceUnit="night"
+      badge="Guest favourite"
+      href={`/stays/${stay.id}`}
+      onPress={() => router.push(`/stays/${stay.id}`)}
+      favorite={saved.has(stay.id)}
+      onFavoriteChange={(next) => setSaved(stay.id, next)}
+    />
+  ))}
+</ListingCardGrid>
+```
+
+Prices, dates and counts arrive **pre-formatted** — the app owns currency, locale
+and plural rules. Nothing here computes a price.
+
+## `ListingCard`
+
+| prop                                   | decides                                                                                                   |
+| -------------------------------------- | --------------------------------------------------------------------------------------------------------- |
+| `photos`                               | URLs or `ImageResolver` ids (resolved with `photoVariant`); the first is the cover                         |
+| `title`                                | the headline, one line                                                                                     |
+| `subtitle`, `dates`                    | two secondary lines, one line each                                                                         |
+| `rating`, `reviewCount`, `newLabel`    | Bloom's `Rating`, right of the title. `undefined` draws nothing; `null` or `''` draws "New"                |
+| `price`, `priceUnit`, `originalPrice`  | the price line: `originalPrice` struck through, `price` semibold, then the unit                           |
+| `total`                                | a line under the price; with no `price` it IS the price line, semibold                                     |
+| `badge`                                | top-left over the photo — a string draws the white pill, any node is placed as given                      |
+| `favorite`, `onFavoriteChange`         | the heart, top-right; drawn only when `onFavoriteChange` is given                                          |
+| `onPress`, `href`                      | see below                                                                                                  |
+| `loading`                              | a skeleton in the same geometry (`aria-busy`)                                                              |
+| `layout`                               | `'vertical'` (default, photo 20:19) or `'horizontal'` (square photo 40% wide, for lists and map sheets)   |
+| `onPhotoIndexChange`                   | the photo in view changed                                                                                  |
+| `accessibilityLabel`                   | replaces the composed name                                                                                 |
+| `previousPhotoLabel`, `nextPhotoLabel`, `saveLabel`, `removeLabel` | the controls' names — translate them                                          |
+| `style`, `testID`                      |                                                                                                            |
+
+**Anatomy.** The photo is radius 16 and pages: swipe on touch, scroll on a
+trackpad, and — on web, with a mouse — round previous/next buttons that fade in
+while the pointer is over the card (or a button has keyboard focus). They are
+absent on native and on touch-only browsers, where swiping is the gesture. Up to
+five dots sit at the bottom; with more photos the five follow the one in view and
+the edge dots shrink while more lie beyond. Photos mount as they come near, so a
+card with twenty photos loads two.
+
+**Press, and a real link.** With `href` the card is an `<a href>` on web, so
+open-in-new-tab, copy link and middle-click work. With `onPress` as well, the
+anchor's default navigation is prevented and `onPress` runs — a router takes it.
+On native, `href` alone opens with `Linking`. With neither the card is not a
+control.
+
+**The controls are siblings of the link, not children.** The heart and arrows are
+laid over the photo from outside the link: a button inside an anchor is invalid
+HTML, and would make pressing the heart open the stay. Each is its own tab stop.
+
+**Accessible name.** The link is named for the stay — "Alvora, Coast of Merin,
+Guest favourite, Rated 4.92 out of 5, 128 reviews, Hosted by Ilse, 12 – 17 Oct,
+€124 night, originally €150". That sentence is English; apps in other languages
+pass `accessibilityLabel`.
+
+## `FavoriteButton`
+
+```tsx
+<FavoriteButton favorite={saved} onFavoriteChange={setSaved} />
+```
+
+A heart for over a photo: a light outline around a dark body at 50%, legible on a
+bright photo and a dark one; saved, the body turns the theme's red. Colour change
+only — no scale. The target is at least 32 square (`size` sets the heart, default
+24). It is a toggle — `aria-pressed` on web, `accessibilityState.selected` on native
+— named for what pressing does: "Save to wishlist" / "Remove from wishlist"
+(`saveLabel`, `removeLabel`). Its press does not reach a pressable card behind it.
+
+## `ListingCardGrid`
+
+```tsx
+<ListingCardGrid>{cards}</ListingCardGrid>
+<ListingCardGrid columns={2} columnGap={16} rowGap={24}>{cards}</ListingCardGrid>
+```
+
+Wraps its children into columns by its **own measured width** — 1 below 640, 2
+below 950, 3 below 1280, 4 from there — so a grid beside a map counts the room it
+has, not the window's. Gaps default to 24 between columns and 40 between rows.
+`columns` fixes the count. Rendered as a list (`role="list"`, one `listitem` per
+card).
+
+Bloom's `Grid` (`Row`/`Col`) is not a fit here: it is one fixed row of fractional
+columns that neither wraps nor responds to width.
+
+## `WishlistCard`
+
+```tsx
+<WishlistCard name="Coast weekends" description="12 saved" photos={covers} href="/wishlists/coast" />
+```
+
+A saved collection: a square cover, radius 16, with 2px seams — one photo fills
+it, two sit side by side, three put one tall photo beside two, four (or more) make
+a 2×2 of the first four. The name and `description` sit under it. `onPress` and
+`href` behave as on `ListingCard`; the name is "Coast weekends, 12 saved".
+
+## Colours
+
+All from the theme: the text is `text` / `textSecondary`; the badge pill and the
+arrow buttons are the floating surface (the menu palette and Bloom's secondary
+`Button`); the heart's outline and the dots are `neutral-50`, its body
+`neutral-950` at 50%, saved `red-500` from the theme's `error` hue. The photo
+placeholder is `neutral-100` (dark: the raised neutral).

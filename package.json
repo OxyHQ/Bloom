@@ -1777,6 +1777,20 @@
         "default": "./lib/commonjs/booking/index.js"
       }
     },
+    "./listing-card": {
+      "react-native": {
+        "types": "./lib/typescript/module/listing-card/index.d.ts",
+        "default": "./src/listing-card/index.ts"
+      },
+      "import": {
+        "types": "./lib/typescript/module/listing-card/index.d.ts",
+        "default": "./lib/module/listing-card/index.js"
+      },
+      "require": {
+        "types": "./lib/typescript/commonjs/listing-card/index.d.ts",
+        "default": "./lib/commonjs/listing-card/index.js"
+      }
+    },
     "./card": {
       "react-native": {
         "types": "./lib/typescript/module/card/index.d.ts",
