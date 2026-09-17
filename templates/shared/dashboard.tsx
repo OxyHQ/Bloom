@@ -41,7 +41,7 @@ import {
 import type { NotificationCenterItem } from '../../src/notification-center';
 import type { SidebarAccount, SidebarNavItem, SidebarTeam } from '../../src/sidebar';
 import { BREAKPOINTS } from '../../src/styles/breakpoints';
-import { WEB_POSITION_FIXED, type WebCssStyle } from '../../src/styles/web-view-style';
+import type { WebCssStyle } from '../../src/styles/web-view-style';
 import { useTheme } from '../../src/theme/use-theme';
 import { Text } from '../../src/typography';
 
@@ -288,10 +288,14 @@ export const NOTIFICATIONS: NotificationCenterItem[] = [
 //  `MedicalShell`, and their identical `*-header.tsx`)
 // ---------------------------------------------------------------------------
 
-/** The template fills the viewport — over the preview decorator's padding on web. */
+/**
+ * The template spans the preview edge to edge — bleeding over the preview
+ * decorator's 24px padding on web — and scrolls the DOCUMENT, the way an app
+ * page does: `AppShell` grows the page and pins its own rail.
+ */
 export const TEMPLATE_FRAME: WebCssStyle =
   Platform.OS === 'web'
-    ? { position: WEB_POSITION_FIXED, top: 0, left: 0, right: 0, bottom: 0 }
+    ? { alignSelf: 'stretch', marginTop: -24, marginBottom: -24, marginLeft: -24, marginRight: -24 }
     : { flex: 1, width: '100%' };
 
 export interface DashboardShellProps {

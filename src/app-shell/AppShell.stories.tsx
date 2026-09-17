@@ -21,7 +21,14 @@ import { AppShell, AppShellHeader, NotificationBell, ProOfferCard } from './inde
 const meta: Meta<typeof AppShell> = {
   title: 'Blocks/App Shell',
   component: AppShell,
+  parameters: { layout: 'fullscreen' },
 };
+
+/**
+ * The shell owns the page: it spans the preview edge to edge (over the
+ * decorator's 24px padding) and scrolls the document.
+ */
+const PAGE_FRAME = { alignSelf: 'stretch', marginTop: -24, marginBottom: -24, marginLeft: -24, marginRight: -24 } as const;
 
 export default meta;
 
@@ -74,7 +81,7 @@ function Shell({ drawer, rail = false }: { drawer: 'overlay' | 'reveal'; rail?: 
   const [selected, setSelected] = useState('home');
   const [offer, setOffer] = useState(true);
   return (
-    <View style={{ width: '100%', height: 860 }}>
+    <View style={PAGE_FRAME}>
       <AppShell
         testID="shell"
         drawer={drawer}

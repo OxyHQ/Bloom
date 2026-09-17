@@ -37,6 +37,20 @@ export interface AppShellProps {
   /** Controlled drawer state (below `lg`). */
   drawerOpen?: boolean;
   onDrawerOpenChange?: (open: boolean) => void;
+  /**
+   * What scrolls the page on WEB.
+   *
+   * - `document` (default) — the page grows the document and the browser
+   *   scrolls it, like a `ContentPanel` page: scroll restoration, the mobile
+   *   address bar collapsing, anchor links and `window.scrollTo` all work, and
+   *   the in-flow sidebar stays pinned (`position: sticky`).
+   * - `container` — the shell fills its parent and the page scrolls inside its
+   *   own `ScrollView`. For a shell embedded in a bounded box rather than
+   *   owning the page.
+   *
+   * Native has no document and always scrolls its own `ScrollView`.
+   */
+  scroll?: 'document' | 'container';
   style?: StyleProp<ViewStyle>;
   testID?: string;
 }

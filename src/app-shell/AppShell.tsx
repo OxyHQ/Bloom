@@ -1,5 +1,5 @@
 import React, { memo, useEffect } from 'react';
-import { Pressable, ScrollView, View, useWindowDimensions } from 'react-native';
+import { Platform, Pressable, ScrollView, View, useWindowDimensions } from 'react-native';
 import Animated, {
   Easing,
   useAnimatedStyle,
@@ -14,6 +14,14 @@ import { Backdrop, OverlayRoot } from '../overlay';
 import { Portal } from '../portal';
 import { Sidebar } from '../sidebar';
 import { BREAKPOINTS } from '../styles/breakpoints';
+import {
+  WEB_OVERFLOW_CLIP,
+  WEB_POSITION_FIXED,
+  WEB_POSITION_STICKY,
+  WEB_VIEWPORT_HEIGHT,
+  webViewportHeightMinus,
+  type WebCssStyle,
+} from '../styles/web-view-style';
 import { useTheme } from '../theme/use-theme';
 import { AppShellHeader } from './AppShellHeader';
 import type { AppShellProps } from './types';
@@ -26,7 +34,8 @@ import type { AppShellProps } from './types';
  *   lg and up  the sidebar in flow (from `sm` for `variant: 'rail'`, whose
  *              drawer below `sm` opens the panel); `overlay` pads the whole frame 12 with a
  *              16 gap, `reveal` sits the rail 12 from the top-left
- *   main       scrolls; the content column is centred, max 1300, gap 10:
+ *   main       scrolls — on web the DOCUMENT (see `scroll`), elsewhere its own
+ *              ScrollView; the content column is centred, max 1300, gap 10:
  *              header (breadcrumb + title row), then the content (gap 16,
  *              16 below). `overlay` insets the column 12 from the top at `sm`,
  *              `reveal` pads the page 12 (24 on top at `sm`)
@@ -42,6 +51,29 @@ const REVEAL_EASE = Easing.bezier(0.42, 0, 0.58, 1);
 const REVEAL_MS = 325;
 const REVEAL_OFFSET = 272;
 
+/**
+ * The page's scroller. In `document` mode it is a plain box and the page grows
+ * the document; otherwise a `ScrollView` filling the frame.
+ */
+function Scroller({
+  document: inDocument,
+  style,
+  contentStyle,
+  children,
+}: {
+  document: boolean;
+  style: WebCssStyle;
+  contentStyle: WebCssStyle;
+  children: React.ReactNode;
+}) {
+  if (inDocument) return <View style={[style, contentStyle]}>{children}</View>;
+  return (
+    <ScrollView style={[{ flex: 1 }, style]} contentContainerStyle={contentStyle}>
+      {children}
+    </ScrollView>
+  );
+}
+
 const AppShellComponent: React.FC<AppShellProps> = ({
   sidebar,
   drawer = 'overlay',
@@ -54,11 +86,14 @@ const AppShellComponent: React.FC<AppShellProps> = ({
   overlay,
   drawerOpen,
   onDrawerOpenChange,
+  scroll = 'document',
   style,
   testID,
 }) => {
   const theme = useTheme();
   const { width } = useWindowDimensions();
+  // Native has no document; `scroll` only chooses on web.
+  const doc = Platform.OS === 'web' && scroll === 'document';
   const small = width >= BREAKPOINTS.sm;
   // The rail is narrow enough to stay in flow from `sm`; the panel needs `lg`.
   const rail = sidebar?.variant === 'rail';
@@ -115,10 +150,10 @@ const AppShellComponent: React.FC<AppShellProps> = ({
     return (
       <View
         testID={testID}
-        style={[{ flex: 1, height: '100%', flexDirection: 'row', overflow: 'hidden', backgroundColor: background }, style]}
+        style={[doc ? revealDocumentRoot : { flex: 1, height: '100%', overflow: 'hidden' }, { flexDirection: 'row', backgroundColor: background }, style]}
       >
         {sidebar && wide ? (
-          <View style={{ paddingTop: 12, paddingBottom: 12, paddingLeft: 12, flexShrink: 0 }}>
+          <View style={[{ paddingTop: 12, paddingBottom: 12, paddingLeft: 12, flexShrink: 0 }, doc ? stickyRail(0) : null]}>
             <Sidebar {...sidebar} />
           </View>
         ) : null}
@@ -126,7 +161,9 @@ const AppShellComponent: React.FC<AppShellProps> = ({
           <View
             aria-hidden={!isOpen}
             pointerEvents={isOpen ? 'auto' : 'none'}
-            style={{ position: 'absolute', top: 0, bottom: 0, left: 0, width: 272, paddingTop: 12, paddingBottom: 12, paddingLeft: 6 }}
+            // Fixed on web in document mode: the rail waits beneath the VIEWPORT,
+            // wherever the page is scrolled to.
+            style={{ position: doc ? WEB_POSITION_FIXED : 'absolute', top: 0, bottom: 0, left: 0, width: 272, paddingTop: 12, paddingBottom: 12, paddingLeft: 6 }}
           >
             <Animated.View style={[{ height: '100%', width: 260, transformOrigin: 'left center' }, railStyle]}>
               <Sidebar {...drawerSidebar} mobile flat onClose={() => setOpen(false)} />
@@ -134,14 +171,11 @@ const AppShellComponent: React.FC<AppShellProps> = ({
           </View>
         ) : null}
         <Animated.View
-          style={[{ flex: 1, minWidth: 0, overflow: 'hidden', backgroundColor: background }, wide ? null : pageStyle]}
+          style={[{ flex: 1, minWidth: 0, overflow: doc ? WEB_OVERFLOW_CLIP : 'hidden', backgroundColor: background }, wide ? null : pageStyle]}
         >
-          <ScrollView
-            style={{ flex: 1 }}
-            contentContainerStyle={{ padding: 12, paddingTop: small ? 24 : 12 }}
-          >
+          <Scroller document={doc} style={{}} contentStyle={{ padding: 12, paddingTop: small ? 24 : 12 }}>
             {column}
-          </ScrollView>
+          </Scroller>
           {!wide ? (
             <Animated.View
               pointerEvents={isOpen ? 'auto' : 'none'}
@@ -170,11 +204,20 @@ const AppShellComponent: React.FC<AppShellProps> = ({
     <View
       testID={testID}
       style={[
-        { flex: 1, height: '100%', flexDirection: 'row', gap: 16, overflow: 'hidden', padding: 12, backgroundColor: background },
+        doc ? documentRoot : { flex: 1, height: '100%', overflow: 'hidden' },
+        { flexDirection: 'row', gap: 16, padding: 12, backgroundColor: background },
         style,
       ]}
     >
-      {sidebar && wide ? <Sidebar {...sidebar} /> : null}
+      {sidebar && wide ? (
+        doc ? (
+          <View style={stickyRail(12)}>
+            <Sidebar {...sidebar} />
+          </View>
+        ) : (
+          <Sidebar {...sidebar} />
+        )
+      ) : null}
       {sidebar && isOpen ? (
         <Portal>
           <OverlayRoot>
@@ -195,16 +238,40 @@ const AppShellComponent: React.FC<AppShellProps> = ({
           </OverlayRoot>
         </Portal>
       ) : null}
-      <ScrollView
+      <Scroller
+        document={doc}
         style={{ flex: 1, minWidth: 0, backgroundColor: background }}
-        contentContainerStyle={{ paddingTop: small ? 12 : 0 }}
+        contentStyle={{ paddingTop: small ? 12 : 0 }}
       >
         {column}
-      </ScrollView>
+      </Scroller>
       {overlay}
     </View>
   );
 };
+
+/**
+ * Document mode: the frame is at least one viewport tall and grows with the
+ * page, so the browser scrolls the document (scroll restoration, the address
+ * bar collapsing, anchor links, `window.scrollTo`) exactly as it does for a
+ * `ContentPanel` page. Nothing here may be a scroll container — no `hidden`
+ * overflow — or the sticky rail would stick to a box that never scrolls.
+ */
+const documentRoot: WebCssStyle = { flexGrow: 1, minHeight: WEB_VIEWPORT_HEIGHT };
+// The page slides 272 right under `reveal`; `clip` keeps that from widening the
+// document with a horizontal scrollbar, without becoming a scroll container.
+const revealDocumentRoot: WebCssStyle = { ...documentRoot, overflow: WEB_OVERFLOW_CLIP };
+
+/** The in-flow rail, pinned to the viewport while the document scrolls under it. */
+function stickyRail(inset: number): WebCssStyle {
+  return {
+    position: WEB_POSITION_STICKY,
+    top: inset,
+    height: webViewportHeightMinus(inset * 2),
+    alignSelf: 'flex-start',
+    flexShrink: 0,
+  };
+}
 
 export const AppShell = memo(AppShellComponent);
 AppShell.displayName = 'AppShell';
