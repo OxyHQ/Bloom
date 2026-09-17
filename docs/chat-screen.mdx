@@ -1,0 +1,389 @@
+---
+title: Chat Screen
+description: Everything around the transcript — header, pinned bar, wallpaper, jump buttons, date pill, empty state, info panel and the desktop split frame.
+order: 64
+---
+
+# Chat Screen
+
+```tsx
+import {
+  ChatBackground,
+  ChatDateHeader,
+  ChatEmptyState,
+  ChatHeader,
+  ChatInfoPanel,
+  ChatMemberRow,
+  ChatSplitLayout,
+  JumpToMentionButton,
+  PinnedMessageBar,
+  ScrollToBottomButton,
+} from '@oxy.so/bloom/chat-screen';
+```
+
+Nine components and one frame. Everything that is not a message: the chrome
+above the transcript, the wallpaper behind it, the controls floating over it, and
+the panel beside it. The bubbles themselves live in `message-bubble`, the media
+grids in `message-media`, the input in `chat-composer`.
+
+**Every string is a prop.** Nothing here reads a clock, counts a roster, formats
+a name or decides what "recently" means. `"12:41"`, `"last seen recently"`,
+`"5 members, 2 online"` and `"Today"` all arrive pre-formatted, because the app
+owns the locale and the timezone.
+
+## The screen, assembled
+
+```tsx
+<ChatSplitLayout
+  list={<ConversationList />}
+  info={showInfo ? <ChatInfoPanel {...info} onClose={() => setShowInfo(false)} /> : undefined}
+  pane={pane}
+>
+  <View style={{ flex: 1 }}>
+    <ChatHeader
+      title="Ana Restrepo"
+      marker="verified"
+      status="online"
+      statusTone="accent"
+      avatarSource={avatarUrl}
+      presence="online"
+      onPressBack={goBack}
+      onPressHeader={() => setShowInfo(true)}
+      onPressCall={call}
+      onPressVideoCall={videoCall}
+      onPressSearch={search}
+      onPressMore={openMenu}
+    />
+    <PinnedMessageBar pins={pins} index={pinIndex} onPressPin={jumpTo} onDismiss={hideBar} />
+    <ChatBackground variant="pattern">
+      <Transcript />
+      <ChatDateHeader label={visibleDay} visible={scrolling} />
+      <View style={{ position: 'absolute', right: 16, bottom: 16, gap: 10 }}>
+        <JumpToMentionButton visible={mentions > 0} count={mentions} onPress={jumpToMention} />
+        <ScrollToBottomButton visible={scrolledUp} unreadCount={unread} onPress={jumpToEnd} />
+      </View>
+    </ChatBackground>
+    <Composer />
+  </View>
+</ChatSplitLayout>
+```
+
+## `ChatHeader`
+
+| prop                                                         | decides                                                        |
+| ------------------------------------------------------------ | -------------------------------------------------------------- |
+| `title`                                                       | the conversation's name                                        |
+| `marker`                                                      | `'verified'` (accent badge) · `'bot'` · `'channel'` (both quiet) |
+| `markerLabel`                                                 | names the marker; `""` hides it from assistive tech            |
+| `status`, `statusTone`                                        | the second line and whether it takes the accent                |
+| `typingLabel`                                                 | `TypingDots` + "Ana is typing…"                                |
+| `connecting`, `connectingLabel`                               | the transport is down                                          |
+| `avatar` / `avatarSource`, `avatarName`, `presence`, `avatarSize` | the identity mark; pass a node for a group                 |
+| `onPressBack`, `showBack`, `backLabel`                        | back navigation                                                |
+| `onPressHeader`, `openInfoLabel`                              | wraps the identity block in a button that opens the info panel |
+| `onPressCall` · `onPressVideoCall` · `onPressSearch` · `onPressMore` | the four right-hand controls; each is drawn only when given a handler |
+| `renderMore`                                                  | REPLACES the more button with your own trigger                 |
+| `actions`                                                     | extra controls, after the built-in ones                        |
+| `compact`, `divider`                                          | layout                                                         |
+
+### The status line has one writer
+
+`connecting` > `typingLabel` > `status`. Each is newer news than the one under
+it, and a header that stacked them would claim, in one row, both that the socket
+is down and that somebody is typing over it.
+
+```tsx
+<ChatHeader title="Ana" status="last seen recently" />                       // "last seen recently"
+<ChatHeader title="Ana" status="last seen recently" typingLabel="Ana is typing…" />  // typing
+<ChatHeader title="Ana" status="online" typingLabel="Ana is typing…" connecting />   // "Connecting…"
+```
+
+### The back button is derived
+
+On by default when `onPressBack` is set AND the header is compact — below
+`1024`, or on native, where there is no list pane beside the conversation to go
+back to on screen. `showBack` overrules the derivation in either direction.
+
+### Selection mode REPLACES the header
+
+```tsx
+<ChatHeader
+  title="Ana Restrepo"
+  status="online"
+  onPressCall={call}
+  selectionCount={3}
+  onClearSelection={clear}
+  onForward={forward}
+  onCopy={copy}
+  onPin={pin}
+  onDelete={remove}
+/>
+```
+
+Any `selectionCount` above `0` removes the identity block, the status line and
+every call/video/search control. Keeping a call button beside "3 selected" is how
+a selection gets lost to a mis-tap. `formatSelectionCount` owns the wording;
+`selectionActions` replaces the four buttons outright. `0` and below is not a
+selection, so the normal header comes back.
+
+## `PinnedMessageBar`
+
+| prop                              | decides                                                                  |
+| --------------------------------- | ------------------------------------------------------------------------ |
+| `pins`                            | `{ id, preview, author?, thumbnail? }[]`; EMPTY renders nothing           |
+| `index`                           | which one shows — CLAMPED into range                                     |
+| `onPressPin(pin, index)`          | jump to it                                                               |
+| `onPressList` / `onDismiss`       | the two optional buttons; omitted without a handler                      |
+| `dismissIcon`                     | `'close'` (default) hides the bar · `'unpin'` removes the pin            |
+| `formatTitle(index, total)`       | default `"Pinned message"` for one, `"Pinned message #2"` for several    |
+
+The vertical rule carries one segment per pin, the current one at full accent and
+the rest washed. **Past eight pins it becomes one solid rule**: nine segments
+inside 32px are sub-pixel slivers, and a progress indicator that cannot be
+counted is decoration that looks like information.
+
+`index` is clamped rather than trusted. The list shrinks under you when somebody
+unpins the message you were looking at, and a bar that reads `undefined.preview`
+for one frame is a crash, not a state.
+
+## `ChatBackground`
+
+| prop                        | decides                                                          |
+| --------------------------- | ---------------------------------------------------------------- |
+| `variant`                   | `'plain'` · `'pattern'` · `'gradient'` · `'image'`                |
+| `source`                    | the wallpaper image (`image` only); URL, `ImageResolver` id or source |
+| `overlayOpacity`            | how hard the image is dimmed. Default `0.55` light / `0.62` dark  |
+| `tint`, `patternOpacity`    | the pattern's ink and its strength (default `0.5`)                |
+| `colors`                    | override the gradient stops                                       |
+| `children`                  | the transcript, drawn above the wallpaper                         |
+
+It is the CONTAINER, not a layer: put the transcript and the floating controls
+inside it.
+
+### Measured contrast
+
+A bubble is an OPAQUE fill, so the wallpaper never gets between a fill and its
+own label — **bubble text contrast is a property of the bubble**, and it does not
+move with the wallpaper. What a wallpaper CAN do is stop a bubble being told
+apart from the page. So the number that matters is the SEPARATION between a
+bubble fill and the worst pixel a variant can paint behind it, and that needs the
+extremes, not an average.
+
+Measured over 16 presets × light and dark (32 themes), against an incoming bubble
+(the chrome surface) and an outgoing one (accent-500):
+
+| what                                          | worst  | best  |
+| --------------------------------------------- | ------ | ----- |
+| incoming bubble text over its own fill        | 13.82  | —     |
+| outgoing bubble text over its own fill        | 4.55   | —     |
+| date-pill text over the pill                  | 4.71   | —     |
+| bubble ↔ `plain` wallpaper (the baseline)     | 1.07   | 1.11  |
+| bubble ↔ `pattern` wallpaper                  | 1.07   | 1.11  |
+| bubble ↔ `gradient` wallpaper                 | 1.07   | 1.11  |
+| bubble ↔ `image` wallpaper (dimmed)           | 1.12   | 1.24  |
+
+Both text figures clear WCAG AA (the incoming one clears AAA). **No variant
+separates worse than the bare page**, and the dimmed image variant separates
+BETTER than it — that is what the dim is for, not taste. The figures are pinned
+as equalities in `ChatBackgroundContrast.test.ts`, so a recipe change goes red in
+either direction.
+
+Two decisions fall out of the measurement, and both are counter-intuitive:
+
+- **The image dim is toward a mid-light neutral, not toward white.** White
+  dimmed toward white is white, which is the card colour — a white incoming
+  bubble over a bright photo then separated by exactly **1.00**, i.e. not at all.
+  The gate keeps that as a negative control.
+- **The gradient's stops move AWAY from the page, never toward the card**:
+  darker than the page in light, lighter in dark. The first recipe brightened a
+  light page and put its lightest pixel onto the incoming bubble's own colour —
+  16 of 32 themes separated worse than no wallpaper at all.
+
+The floating surfaces (the date pill, the two jump buttons) are deliberately NOT
+in that measurement: their separation reaches 1.00 in the worst case — a dark
+patterned wallpaper IS the pill's own surface colour — which is exactly why every
+one of them carries a 1px hairline. A bubble has no such rule to fall back on.
+
+## `ScrollToBottomButton` and `JumpToMentionButton`
+
+```tsx
+<ScrollToBottomButton visible={scrolledUp} unreadCount={7} onPress={jumpToEnd} />
+<JumpToMentionButton visible={mentions > 0} count={mentions} onPress={jumpToMention} />
+```
+
+| prop                   | decides                                                        |
+| ---------------------- | -------------------------------------------------------------- |
+| `visible`              | `false` renders NOTHING                                        |
+| `unreadCount` / `count`| the badge; `0` draws none                                      |
+| `badgeMax`             | `"99+"` past this. Default `99`                                |
+| `size`                 | diameter. Default `44`                                         |
+| `accessibilityLabel`   | default "Scroll to latest messages" / "Jump to mention"        |
+
+`visible={false}` unmounts rather than fades. A faded button leaves a focusable
+control in the tab order nobody can see, and a reader announcing "Scroll to
+latest messages" for a transcript already at the bottom is worse than silence.
+The badge carries its own name (`UnreadBadge` composes "7 unread messages") with
+the REAL count, not the clamped text, so the button's name never has to be
+rewritten per count.
+
+Two buttons rather than one mode: "newest" and "the message that named me" are
+different destinations, and someone scrolled far up wants both offered at once.
+
+## `ChatDateHeader`
+
+```tsx
+<ChatDateHeader label="Today" visible={scrolling} />
+<ChatDateHeader label="Yesterday" placement="inline" />   // a separator, in flow
+```
+
+`visible={false}` fades to nothing and leaves the accessibility tree, but stays
+MOUNTED — the pill is not focusable, so there is no phantom tab stop, and keeping
+it mounted stops the label re-announcing every time a scroll crosses a day
+boundary. It hides with `opacity`, never `display: none`: collapsing an element
+inside a scroller is how a restored scroll offset gets clamped to 0.
+
+The floating strip is `pointerEvents="box-none"` and the pill itself `"none"` —
+a band across the top of a conversation that swallowed taps would eat every press
+on the newest messages.
+
+## `ChatEmptyState`
+
+```tsx
+<ChatEmptyState
+  illustration={<Avatar name="Ana Restrepo" source={avatarUrl} size={80} />}
+  description="Say hello to Ana — this conversation is brand new."
+  notice="Messages in this conversation are end-to-end encrypted."
+/>
+```
+
+**`notice` has no default, and that is the point.** "Messages are end-to-end
+encrypted" is a claim about an app's transport, not about a component; a default
+would make it on behalf of every app that mounts this, including the ones that
+cannot keep it. Pass the wording you can stand behind, or pass nothing and no
+line is drawn. `noticeIcon={false}` drops the padlock.
+
+`title` DOES default to "No messages yet" — an empty transcript is a fact the
+component can see for itself.
+
+## `ChatInfoPanel`
+
+One component, two shapes. `variant="pane"` is the desktop right-hand column at a
+fixed `width` (default `380`) with a left hairline; `variant="screen"` is the
+mobile full page with no frame of its own. Nothing else differs, so a responsive
+app swaps the variant and not the composition.
+
+| prop                                                    | decides                                             |
+| -------------------------------------------------------- | --------------------------------------------------- |
+| `title`, `onClose`, `closeLabel`, `headerActions`         | the title bar                                       |
+| `cover` / `coverSource`, `coverHeight`                    | a banner behind the identity block                  |
+| `avatar` / `avatarSource`, `presence`, `avatarSize`       | the identity mark (96, or 72 over a cover)          |
+| `name`, `handle`, `bio`, `meta`                           | the identity block                                  |
+| `actions`                                                 | the action tile row: `{ key, label, icon, onPress, tone? }` |
+| `settings`, `settingsTitle`                               | the settings block — a SLOT (see below)             |
+| `tabs`, `tab`, `onTabChange`, `defaultTab`                | shared content; each pane's `content` is yours      |
+| `members`, `membersTitle`, `onPressMember`, `roleLabels`  | the roster                                          |
+| `memberSearch`, `memberQuery`, `onMemberQueryChange`      | roster search (see below)                           |
+| `onAddMember`, `addMemberLabel`, `membersEmptyLabel`      | the rest of the roster block                        |
+| `destructiveActions`                                      | Leave / Block / Report, in the negative tone        |
+| `scrollable`, `children`                                  | the panel scrolls itself by default                 |
+
+### The settings block is a slot, not a schema
+
+A notifications switch owns state, a disappearing-messages row owns a picker, an
+encryption key owns a verification flow. Every one of them needs semantics the
+panel cannot hold, so it takes a node:
+
+```tsx
+<ChatInfoPanel
+  settingsTitle="Settings"
+  settings={
+    <SettingsListGroup variant="filled">
+      <SettingsListItem
+        title="Notifications"
+        icon={<RiNotification3Line width={20} height={20} fill={colors.textSecondary} />}
+        rightElement={
+          <Switch
+            value={notifications}
+            onValueChange={setNotifications}
+            accessibilityLabel="Notifications for this conversation"
+          />
+        }
+        showChevron={false}
+      />
+      <SettingsListItem title="Disappearing messages" value="Off" onPress={openTimer} />
+      <SettingsListItem title="Encryption key" onPress={openKey} />
+      <SettingsListItem title="Conversation theme" value="Default" onPress={openTheme} />
+    </SettingsListGroup>
+  }
+/>
+```
+
+The shared-content tabs are the same bargain one level up: the panel owns the
+strip and the selection, the grids inside each pane come from `message-media`.
+
+### Roster search has two modes and they are not the same component
+
+- **Uncontrolled** (`memberQuery` omitted): the panel keeps its own query and
+  filters `members` by name.
+- **Controlled** (`memberQuery` set): the panel filters NOTHING and reports every
+  keystroke through `onMemberQueryChange`. This is the only correct behaviour
+  once the roster lives on a server — filtering a result set the server produced
+  would fight it.
+
+The field appears automatically from eight members up; `memberSearch` forces it
+either way.
+
+## `ChatMemberRow`
+
+```tsx
+<ChatMemberRow member={{ id, name, source, status, role, subtitle }} onPress={open} />
+```
+
+`owner` and `admin` draw a badge; `member` draws none — a badge on every row is a
+badge on nobody. The accessible name is composed as
+`"Ana Restrepo, Owner, last seen recently"`, so a reader hears one stop rather
+than three. `roleLabels` translates the two words.
+
+## `ChatSplitLayout`
+
+| prop                                               | decides                                              |
+| ---------------------------------------------------- | ---------------------------------------------------- |
+| `list`, `children`, `info`                           | the three panes                                      |
+| `pane`                                               | which ONE a narrow layout builds. Default `'conversation'` |
+| `listWidth` / `defaultListWidth`, `onListWidthChange`| the resizable pane (default `340`)                   |
+| `minWidth`, `maxWidth`                               | `280` … `480`                                        |
+| `infoWidth`                                          | default `380`                                        |
+| `resizable`, `resizeLabel`                           | the drag grip                                        |
+| `breakpoint`, `compact`                              | when one pane replaces three. Default `900`          |
+
+**The compact layout RENDERS one pane, it does not hide two.** A hidden pane is
+still mounted, still subscribed, still measuring, and on web still in the tab
+order; on a phone that is three screens' worth of work to show one. Asking for
+`pane="info"` with no `info` node falls back to the conversation rather than
+rendering an empty screen.
+
+Compact is MEASURED from the layout, not from the window — this frame is
+regularly mounted inside something narrower than the screen. The first render has
+no measurement, so it is seeded from the window and corrected on the next frame.
+
+The grip is `ai-chat`'s `AiChatResizeHandle`: the same pointer-capture drag,
+arrow-key nudging and hover grip the AI shell uses, rather than a second
+implementation of the same ninety lines. It reports a DELTA, so the width is
+rebased on every drag start and cannot drift.
+
+## Tokens
+
+`resolveChatScreenPaint(theme)` is the one place this family reads colour, and it
+keeps two families of surface apart:
+
+- **Chrome** (`surface`, `surfaceSubtle`, `border`) — the header, the pinned bar,
+  the info panel. In the page, separated from it by a hairline.
+- **Floating** (`floatingSurface`, `floatingBorder`, `floatingShadow`) — the date
+  pill and the two jump buttons, which hover over a wallpaper Bloom does not own.
+  These come from `floating/menu-palette.ts`, the same recipe every menu and
+  tooltip uses, so a pill over a photo is the same material as a menu over a page.
+
+`chatBackgroundExtremes(paint, variant)` returns the lightest and darkest colour a
+variant can paint, and `chatBackgroundReferenceSurfaces(paint)` the two bubble
+fills it is measured against. Both are exported so an app that invents its own
+wallpaper can measure it the same way.
