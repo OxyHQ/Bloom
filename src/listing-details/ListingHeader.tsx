@@ -1,12 +1,12 @@
 import React, { memo, useMemo } from 'react';
 import { Pressable, View } from 'react-native';
 
+import { Button } from '../button';
 import { useInteractionState } from '../hooks/use-interaction-state';
 import { Rating } from '../rating';
 import { useInteractiveWebCss } from '../styles/interactive-web-css';
 import { borderRadius } from '../styles/tokens';
 import type { WebCssStyle } from '../styles/web-view-style';
-import { webDataSet } from '../styles/web-data';
 import { useTheme } from '../theme/use-theme';
 import { Text } from '../typography';
 import { LISTING_HEADER_WIDE_MIN_WIDTH } from './constants';
@@ -15,10 +15,11 @@ import {
   LISTING_DETAILS_CSS,
   LISTING_DETAILS_STYLE_ID,
   resolveListingPalette,
+  webData,
   type ListingPalette,
 } from './shared';
 import type { ListingHeaderActionProps, ListingHeaderProps } from './types';
-import { useContainerWidth } from '../hooks/use-container-width';
+import { useContainerWidth } from './use-container-width';
 
 /**
  * The title block of a listing page.
@@ -47,6 +48,11 @@ function Separator({ palette }: { palette: ListingPalette }) {
   );
 }
 
+/**
+ * `Button variant="link"` with the reading tone and the underline at rest —
+ * what this drew by hand before `linkTone="text"` / `underline="rest"` existed.
+ * Without a handler it is not a control at all, so it stays plain text.
+ */
 function InlineLink({
   label,
   onPress,
@@ -58,7 +64,6 @@ function InlineLink({
   palette: ListingPalette;
   testID?: string;
 }) {
-  const textStyle = { color: palette.text, textDecorationLine: 'underline' as const };
   if (!onPress) {
     return (
       <Text variant="body-medium" style={{ color: palette.text }} testID={testID}>
@@ -66,20 +71,20 @@ function InlineLink({
       </Text>
     );
   }
-  const ring: WebCssStyle = { '--bloom-listing-ring': palette.ring, borderRadius: 4 };
   return (
-    <Pressable
-      {...webDataSet({ bloomListingPress: '' })}
+    <Button
+      variant="link"
+      linkTone="text"
+      underline="rest"
+      size="small"
+      textVariant="body-medium"
       accessibilityRole={IS_WEB ? 'link' : 'button'}
       accessibilityLabel={label}
       onPress={onPress}
-      style={ring}
       testID={testID}
     >
-      <Text variant="body-medium" style={textStyle}>
-        {label}
-      </Text>
-    </Pressable>
+      {label}
+    </Button>
   );
 }
 
@@ -110,7 +115,7 @@ function ListingHeaderActionComponent({
   };
   return (
     <Pressable
-      {...webDataSet({ bloomListingPress: '' })}
+      {...webData({ bloomListingPress: '' })}
       accessibilityRole="button"
       accessibilityLabel={accessibilityLabel ?? label}
       {...(pressed === undefined

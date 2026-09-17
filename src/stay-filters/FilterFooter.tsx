@@ -4,7 +4,6 @@ import { View } from 'react-native';
 import { Button } from '../button';
 import { resolveButtonRamps } from '../button/shared';
 import { useTheme } from '../theme/use-theme';
-import { FilterTextButton } from './FilterTextButton';
 import type { FilterFooterProps } from './types';
 
 /**
@@ -54,12 +53,19 @@ function FilterFooterComponent({
         style,
       ]}
     >
-      <FilterTextButton
-        label={clearLabel}
+      <Button
+        variant="link"
+        linkTone="text"
+        underline="rest"
+        size="small"
+        textVariant="body-semibold"
+        style={{ paddingTop: 6, paddingBottom: 6, marginTop: -6, marginBottom: -6 }}
         onPress={onClear}
         disabled={clearDisabled}
         testID={testID ? `${testID}-clear` : undefined}
-      />
+      >
+        {clearLabel}
+      </Button>
       <Button
         variant="primary"
         size="large"

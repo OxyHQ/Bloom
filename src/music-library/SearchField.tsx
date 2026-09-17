@@ -1,17 +1,17 @@
 import React, { memo, useEffect, useMemo, useRef, useState } from 'react';
 import { Pressable, TextInput, View, type TextStyle } from 'react-native';
 
+import { GlyphButton } from '../button';
+import { webDataSet } from '../checkbox/shared';
 import { RiCloseLine } from '../icons/remix/RiCloseLine';
 import { RiCompass3Line } from '../icons/remix/RiCompass3Line';
 import { RiSearchLine } from '../icons/remix/RiSearchLine';
 import { adoptStyleSheet } from '../styles/adopt-style-sheet';
 import { borderRadius } from '../styles/tokens';
 import type { WebCssStyle } from '../styles/web-view-style';
-import { webDataSet } from '../styles/web-data';
 import { SANS_FONT_FAMILY } from '../text-field/shared';
 import { useTheme } from '../theme/use-theme';
 import { TYPE_SCALE } from '../typography/scale';
-import { GlyphButton } from './GlyphButton';
 import { IS_WEB, MUSIC_LIBRARY_CSS, MUSIC_LIBRARY_STYLE_ID, resolveMusicLibraryPaint } from './shared';
 import type { SearchFieldProps } from './types';
 
@@ -134,8 +134,12 @@ function SearchFieldComponent({
       />
       {hasText ? (
         <GlyphButton
-          label={clearLabel}
+          accessibilityLabel={clearLabel}
           size={32}
+          icon={RiCloseLine}
+          glyphSize={20}
+          color={paint.textMuted}
+          hoverColor={paint.textMuted}
           fill="transparent"
           hoverFill={paint.hover}
           ring={paint.ring}
@@ -144,25 +148,27 @@ function SearchFieldComponent({
             inputRef.current?.focus();
           }}
           testID={testID ? `${testID}-clear` : undefined}
-        >
-          <RiCloseLine width={20} height={20} fill={paint.textMuted} />
-        </GlyphButton>
+        />
       ) : null}
       {onBrowsePress ? (
         <>
           <View style={{ width: 1, height: 24, backgroundColor: paint.divider }} />
           <GlyphButton
-            label={browseLabel}
+            accessibilityLabel={browseLabel}
             size={40}
+            icon={RiCompass3Line}
+            glyphSize={22}
+            color={paint.textMuted}
+            hoverColor={paint.textMuted}
+            activeColor={paint.text}
+            activeHoverColor={paint.text}
+            pressed={browseActive}
             fill={browseActive ? paint.selected : 'transparent'}
             hoverFill={browseActive ? paint.selected : paint.fieldHover}
-            pressedState={browseActive}
             ring={paint.ring}
             onPress={onBrowsePress}
             testID={testID ? `${testID}-browse` : undefined}
-          >
-            <RiCompass3Line width={22} height={22} fill={browseActive ? paint.text : paint.textMuted} />
-          </GlyphButton>
+          />
         </>
       ) : null}
     </Pressable>

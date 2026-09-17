@@ -1,75 +1,60 @@
 import React, { forwardRef, useMemo } from 'react';
-import { Pressable, View, type PressableProps } from 'react-native';
+import type { GestureResponderEvent, View } from 'react-native';
 
-import { useInteractionState } from '../hooks/use-interaction-state';
+import { GlyphButton } from '../button';
+import type { ButtonIconComponent } from '../button';
+import type { WebAriaProps } from '../styles/styled-primitives';
 import type { WebCssStyle } from '../styles/web-view-style';
-import { webDataSet } from '../styles/web-data';
 import { useTheme } from '../theme/use-theme';
 import { resolveQueuePanelPaint } from './shared';
-import type { BloomIconComponent } from '../icons/icon-component';
 
-export interface QueueIconButtonProps extends Omit<PressableProps, 'children' | 'style'> {
-  icon: BloomIconComponent;
+export interface QueueIconButtonProps {
+  icon: ButtonIconComponent;
   accessibilityLabel: string;
   /** Diameter. Default `32`; the glyph is half of it. */
   size?: number;
+  onPress?: (event: GestureResponderEvent) => void;
+  disabled?: boolean;
   style?: WebCssStyle;
+  testID?: string;
+  /** Set by a menu/popover trigger composing onto this with `asChild`. */
+  'aria-expanded'?: boolean;
+  'aria-haspopup'?: WebAriaProps['aria-haspopup'];
 }
 
 /**
  * A quiet round glyph button: no fill at rest, a neutral wash one step above
  * the row highlight under the pointer or finger, glyph in the secondary text
- * colour turning primary. Colour change only. Props beyond its own pass
- * through to the `Pressable`, which is what lets a menu trigger compose onto
- * it with `asChild`.
+ * colour turning primary. Colour change only.
+ *
+ * `button/GlyphButton` with this family's palette and its 0.5 glyph ratio (the
+ * lowest of the five that shared its shape, hence the explicit `glyphSize`).
+ * The trigger props a menu composes onto it with `asChild` — `onPress`,
+ * `aria-expanded`, `aria-haspopup`, the name — are NAMED here, because a
+ * component that destructures a known prop list drops whatever it does not.
  */
 export const QueueIconButton = forwardRef<View, QueueIconButtonProps>(function QueueIconButton(
-  { icon: Icon, accessibilityLabel, size = 32, style, onHoverIn, onHoverOut, onPressIn, onPressOut, ...rest },
+  { icon, accessibilityLabel, size = 32, style, testID, ...rest },
   ref,
 ) {
   const theme = useTheme();
   const paint = useMemo(() => resolveQueuePanelPaint(theme), [theme]);
-  const hover = useInteractionState();
-  const press = useInteractionState();
-  const active = !rest.disabled && (hover.state || press.state);
-  const glyph = Math.round(size / 2);
-  const buttonStyle: WebCssStyle = {
-    width: size,
-    height: size,
-    borderRadius: size / 2,
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: active ? paint.buttonHover : 'transparent',
-    '--bloom-queue-ring': paint.ring,
-    ...style,
-  };
 
   return (
-    <Pressable
+    <GlyphButton
       ref={ref}
-      {...webDataSet({ bloomQueueFocusable: '' })}
-      role="button"
-      accessibilityLabel={accessibilityLabel}
       {...rest}
-      onHoverIn={(e) => {
-        hover.onIn();
-        onHoverIn?.(e);
-      }}
-      onHoverOut={(e) => {
-        hover.onOut();
-        onHoverOut?.(e);
-      }}
-      onPressIn={(e) => {
-        press.onIn();
-        onPressIn?.(e);
-      }}
-      onPressOut={(e) => {
-        press.onOut();
-        onPressOut?.(e);
-      }}
-      style={buttonStyle}
-    >
-      <Icon width={glyph} height={glyph} fill={active ? paint.text : paint.textSecondary} />
-    </Pressable>
+      icon={icon}
+      accessibilityLabel={accessibilityLabel}
+      size={size}
+      glyphSize={Math.round(size / 2)}
+      color={paint.textSecondary}
+      hoverColor={paint.text}
+      fill="transparent"
+      hoverFill={paint.buttonHover}
+      ring={paint.ring}
+      style={style}
+      testID={testID}
+    />
   );
 });

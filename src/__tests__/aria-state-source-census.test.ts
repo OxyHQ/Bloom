@@ -325,7 +325,7 @@ interface Element {
  * text-bearing on the strength of `{color}`, and the toast close button this
  * rule was written to catch survived its own mutation test.
  */
-const NAME_DELEGATING_TAGS = ['Card', 'MediaPressable', 'MenuRowShell'];
+// (merged above: Button, Card, MediaPressable, MenuRowShell)
 function hasTextChildren(sf: ts.SourceFile, opening: ts.Node): boolean {
   const parent = opening.parent;
   if (!ts.isJsxElement(parent)) return false;

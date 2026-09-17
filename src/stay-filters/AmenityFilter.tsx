@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { View } from 'react-native';
 
-import { FilterTextButton } from './FilterTextButton';
+import { Button } from '../button';
 import { ToggleChipGroup } from './ToggleChipGroup';
 import type { AmenityFilterProps } from './types';
 
@@ -43,12 +43,19 @@ export function AmenityFilter<T extends string = string>({
       />
       {foldable ? (
         <View style={{ alignItems: 'flex-start' }}>
-          <FilterTextButton
-            label={expanded ? showLessLabel : showMoreLabel}
-            expanded={expanded}
+          <Button
+            variant="link"
+            linkTone="text"
+            underline="rest"
+            size="small"
+            textVariant="body-semibold"
+            style={{ paddingTop: 6, paddingBottom: 6, marginTop: -6, marginBottom: -6 }}
+            aria-expanded={expanded}
             onPress={() => setExpanded((e) => !e)}
             testID={testID ? `${testID}-toggle` : undefined}
-          />
+          >
+            {expanded ? showLessLabel : showMoreLabel}
+          </Button>
         </View>
       ) : null}
     </View>

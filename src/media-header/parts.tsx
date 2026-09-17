@@ -2,26 +2,27 @@ import React, { useMemo, type ReactNode } from 'react';
 import { Image, Pressable, View, type StyleProp, type ViewStyle } from 'react-native';
 
 import { Avatar } from '../avatar';
+import { Button } from '../button';
 import { useInteractionState } from '../hooks/use-interaction-state';
 import { RiHeart3Fill } from '../icons/remix/RiHeart3Fill';
 import { RiMusic2Line } from '../icons/remix/RiMusic2Line';
 import { useImageResolver } from '../image-resolver/context';
-import { isImageUrl } from '../image-resolver/is-image-url';
-import { useContainerWidth } from '../hooks/use-container-width';
+import { useContainerWidth } from '../listing-details/use-container-width';
 import { useInteractiveWebCss } from '../styles/interactive-web-css';
 import type { WebCssStyle } from '../styles/web-view-style';
-import { webDataSet } from '../styles/web-data';
-import { clamp01 } from '../styles/clamp';
 import { useTheme } from '../theme/use-theme';
 import { Text } from '../typography';
 import type { TypeScaleVariant } from '../typography/scale';
 import {
+  clamp01,
   gradientStyle,
+  isUrl,
   MEDIA_HEADER_CSS,
   MEDIA_HEADER_STYLE_ID,
   MEDIA_HEADER_WIDE_MIN_WIDTH,
   resolveLikedGradient,
   resolveMediaHeaderPaint,
+  webData,
   type MediaHeaderPaint,
 } from './shared';
 import type { MediaHeaderPerson, MediaImageSource } from './types';
@@ -37,7 +38,7 @@ export function useMediaHeaderPaint(artworkColor?: string | null): MediaHeaderPa
 export function useImageUri(source: MediaImageSource | undefined, variant?: string): string | undefined {
   const resolver = useImageResolver();
   if (!source) return undefined;
-  return isImageUrl(source) ? source : (resolver?.(source, variant) ?? undefined);
+  return isUrl(source) ? source : (resolver?.(source, variant) ?? undefined);
 }
 
 // ---------------------------------------------------------------------------
@@ -232,7 +233,7 @@ export function HeaderTitle({
       numberOfLines={numberOfLines}
       style={{ color }}
       testID={testID}
-      {...webDataSet({ bloomMediaHeaderTitle: variant })}
+      {...webData({ bloomMediaHeaderTitle: variant })}
     >
       {children}
     </Text>
@@ -253,7 +254,16 @@ export function Dot({ color }: { color: string }) {
   );
 }
 
-/** A name that is a link when it has a handler, plain text otherwise. Underlines on hover. */
+/**
+ * A name that is a link when it has a handler, plain text otherwise.
+ *
+ * `Button variant="link" underline="hover"` — the underline-on-hover this drew
+ * by hand before `underline` existed. The COLOUR stays the caller's: it is
+ * contrast-picked against the band's artwork, so it overrides the palette's
+ * foreground through `textStyle` rather than taking a tone. `--bloom-btn-ring`
+ * is the web fork's focus-ring custom property, which is how the band hands it
+ * a ring that reads over its own colours.
+ */
 export function InlineLink({
   label,
   onPress,
@@ -276,20 +286,22 @@ export function InlineLink({
       </Text>
     );
   }
-  const style: WebCssStyle = { borderRadius: 4, '--bloom-media-header-ring': ring };
+  const style: WebCssStyle = { '--bloom-btn-ring': ring };
   return (
-    <Pressable
-      {...webDataSet({ bloomMediaHeaderPress: '', bloomMediaHeaderLink: '' })}
-      role="link"
+    <Button
+      variant="link"
+      underline="hover"
+      size="small"
+      textVariant={variant}
+      accessibilityRole="link"
       accessibilityLabel={label}
       onPress={onPress}
       style={style}
+      textStyle={{ color }}
       testID={testID}
     >
-      <Text variant={variant} style={{ color }} {...webDataSet({ bloomMediaHeaderLinkText: '' })}>
-        {label}
-      </Text>
-    </Pressable>
+      {label}
+    </Button>
   );
 }
 
@@ -415,7 +427,7 @@ export function ClampedText({
       </Text>
       {canOverflow ? (
         <Pressable
-          {...webDataSet({ bloomMediaHeaderPress: '' })}
+          {...webData({ bloomMediaHeaderPress: '' })}
           role="button"
           accessibilityLabel={expanded ? showLessLabel : showMoreLabel}
           aria-expanded={expanded}

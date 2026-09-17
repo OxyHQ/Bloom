@@ -3,7 +3,6 @@ import { Platform, View } from 'react-native';
 
 import { Button } from '../button';
 import { resolveButtonRamps } from '../button/shared';
-import { FilterTextButton } from '../stay-filters/FilterTextButton';
 import { WEB_POSITION_STICKY, type WebCssStyle } from '../styles/web-view-style';
 import { useTheme } from '../theme/use-theme';
 import { Text } from '../typography';
@@ -70,12 +69,19 @@ function WizardFooterComponent({
     >
       {onBack ? (
         <View>
-          <FilterTextButton
-            label={backLabel}
+          <Button
+            variant="link"
+            linkTone="text"
+            underline="rest"
+            size="small"
+            textVariant="body-semibold"
+            style={{ paddingTop: 6, paddingBottom: 6, marginTop: -6, marginBottom: -6 }}
             onPress={onBack}
             disabled={backDisabled}
             testID={testID ? `${testID}-back` : undefined}
-          />
+          >
+            {backLabel}
+          </Button>
         </View>
       ) : (
         <View />
