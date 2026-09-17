@@ -46,10 +46,12 @@ export interface LikeButtonProps {
   /** The liked heart's colour. Default: the theme accent. */
   activeColor?: string;
   disabled?: boolean;
-  /** Name while not liked. Default `"Save to Your Library"`. */
-  likeLabel?: string;
-  /** Name while liked. Default `"Remove from Your Library"`. */
-  unlikeLabel?: string;
+  /**
+   * The toggle's name. Default `"Save to Your Library"`. It stays the same in
+   * both states — `aria-pressed` carries the state; a name that also flipped
+   * would be announced as "Remove from Your Library, pressed".
+   */
+  accessibilityLabel?: string;
   style?: StyleProp<ViewStyle>;
   testID?: string;
 }

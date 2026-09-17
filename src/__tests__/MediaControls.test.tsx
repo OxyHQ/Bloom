@@ -169,7 +169,8 @@ describe('LikeButton', () => {
 
     mount(<LikeButton liked onLikedChange={onLikedChange} testID="l" />);
     expect(byTestId('l').getAttribute('aria-pressed')).toBe('true');
-    expect(byTestId('l').getAttribute('aria-label')).toBe('Remove from Your Library');
+    // The name is fixed; the state is aria-pressed.
+    expect(byTestId('l').getAttribute('aria-label')).toBe('Save to Your Library');
     act(() => byTestId('l').click());
     expect(onLikedChange).toHaveBeenLastCalledWith(false);
   });
@@ -187,7 +188,7 @@ describe('LikeButton', () => {
   });
 
   it('takes translated labels', () => {
-    mount(<LikeButton liked={false} likeLabel="Guardar" onLikedChange={() => {}} testID="l" />);
+    mount(<LikeButton liked={false} accessibilityLabel="Guardar" onLikedChange={() => {}} testID="l" />);
     expect(byTestId('l').getAttribute('aria-label')).toBe('Guardar');
   });
 });

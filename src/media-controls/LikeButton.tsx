@@ -48,8 +48,7 @@ function LikeButtonComponent({
   size = 'medium',
   activeColor,
   disabled = false,
-  likeLabel = 'Save to Your Library',
-  unlikeLabel = 'Remove from Your Library',
+  accessibilityLabel = 'Save to Your Library',
   style,
   testID,
 }: LikeButtonProps) {
@@ -82,7 +81,7 @@ function LikeButtonComponent({
     <Pressable
       {...webDataSet({ bloomMediaFocusable: '', bloomLikeButton: liked ? 'liked' : '' })}
       role="button"
-      accessibilityLabel={liked ? unlikeLabel : likeLabel}
+      accessibilityLabel={accessibilityLabel}
       aria-pressed={liked}
       accessibilityState={{ selected: liked, disabled }}
       aria-disabled={disabled || undefined}

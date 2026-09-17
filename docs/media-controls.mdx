@@ -62,10 +62,10 @@ Every control is controlled: it draws the props it is given and reports what the
 | `liked`, `onLikedChange`    | the state, and the callback with the next state                          |
 | `size`                      | glyph `'small'` 16 / `'medium'` 20 (default) / `'large'` 24; hit area 32 / 32 / 40 |
 | `activeColor`               | the liked heart's colour, default the theme accent                       |
-| `likeLabel` / `unlikeLabel` | default "Save to Your Library" / "Remove from Your Library"              |
+| `accessibilityLabel`        | the name, default "Save to Your Library" — fixed in both states         |
 | `disabled`, `style`, `testID` |                                                                        |
 
-A toggle: `aria-pressed` on web and `accessibilityState.selected` on native (React Native has no pressed state). The press does not reach a pressable row behind it.
+A toggle with one fixed name: `aria-pressed` on web and `accessibilityState.selected` on native (React Native has no pressed state). The press does not reach a pressable row behind it.
 
 ## `ExplicitBadge`
 
