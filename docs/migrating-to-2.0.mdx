@@ -37,8 +37,7 @@ node node_modules/@oxy.so/bloom/scripts/migrate-icons-to-remix.mjs <app-root> --
 node node_modules/@oxy.so/bloom/scripts/migrate-icons-to-remix.mjs <app-root>
 ```
 
-If the script is not in your installed copy, run it from a checkout of the Bloom
-repository. It rewrites named imports, `Icons.<Name>` namespace members and
+The script ships in the package. It rewrites named imports, `Icons.<Name>` namespace members and
 Markdown prose, and **reports** what it cannot rewrite safely rather than
 guessing.
 
@@ -96,7 +95,7 @@ renders.
 Nothing to migrate, but worth knowing before you build your own:
 
 - **Forms:** `phone-input`, `input-otp`, `textarea`, `date-picker`, `file-upload`, `button-group`, `social-button`, `auth-card`, `settings-modal`, `questionnaire`, plus `RangeSlider`, `CheckboxCard`, `RadioCard` and `CloseButton` in existing families.
-- **Data and charts:** `table`, `data-table`, `chart-cards` (eighteen dashboard chart cards), `stat-cards`, `recent-hires-card`, `patient-info-card`, `important-alerts-card`, `agent-limits-card`, `ai-profile-card`.
+- **Data and charts:** `table`, `data-table`, `chart-cards` (twenty-one dashboard chart cards), `stat-cards`, `recent-hires-card`, `patient-info-card`, `important-alerts-card`, `agent-limits-card`, `ai-profile-card`.
 - **App shell and navigation:** `app-shell`, `sidebar`, `breadcrumb`, `pagination`, `carousel`, `calendar`, `theme-toggle`.
 - **AI and agents:** `agent-chat`, `ai-chat`, `agent-thinking`, `agent-log`, `agent-progress`, `composer-loader`, `composer-panel`, `web-search`, `task-list`.
 - **Notifications:** `notification`, `notification-center`, `announcement`.

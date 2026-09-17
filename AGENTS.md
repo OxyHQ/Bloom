@@ -142,7 +142,7 @@ Only TWO exist: `CenteredDialog` and `ResponsiveSheet` were removed with no shim
 
 ## Web fonts
 
-Font-loading hazards (base64-inlining the `.woff2`s, the empty-stub requirement on `apply-font-faces.ts`, `FontLoader` forking, the `node` export condition, the Inter/`fontFamilies` gap) are in `docs/fonts.mdx` — no duplicate copy here.
+Font-loading hazards (base64-inlining the `.woff2`s, the empty-stub requirement on `apply-font-faces.ts`, `FontLoader` forking, the `node` export condition, which families are registered) are in `docs/fonts.mdx` — no duplicate copy here.
 
 ## Peers
 
