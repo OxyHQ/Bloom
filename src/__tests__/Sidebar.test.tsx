@@ -4,9 +4,9 @@ import { fireEvent, render } from '@testing-library/react-native';
 import { BloomThemeProvider } from '../theme/BloomThemeProvider';
 import { buildTheme } from '../theme/build-theme';
 import { resolveButtonRamps } from '../button/shared';
-import { RiHomeFill, RiHomeLine, RiKanbanView2, RiSettings4Line } from '../icons/remix';
-import { Sidebar, SidebarFolder, SidebarItem } from '../sidebar';
-import type { SidebarNavItem, SidebarTree } from '../sidebar';
+import { RiComputerLine, RiHomeFill, RiHomeLine, RiKanbanView2, RiSearchLine, RiSettings4Line } from '../icons/remix';
+import { Sidebar, SidebarFolder, SidebarItem, SidebarModeSwitcher } from '../sidebar';
+import type { SidebarMode, SidebarNavItem, SidebarTree } from '../sidebar';
 import { pressHost } from './support/press-host';
 import { resolvedStyle } from './support/rendered-style';
 
@@ -109,6 +109,55 @@ describe('Sidebar', () => {
     fireEvent.press(screen.getByLabelText('Clear navigation search'));
     expect(screen.getByTestId('sidebar-search')).toBeTruthy();
     expect(screen.getByTestId('sidebar-item-home')).toBeTruthy();
+  });
+});
+
+const MODES: SidebarMode[] = [
+  { key: 'search', label: 'Search', icon: RiSearchLine, shortcut: '⌥⌃1' },
+  { key: 'computer', label: 'Computer', icon: RiComputerLine, shortcut: '⌥⌃2' },
+];
+
+describe('SidebarModeSwitcher', () => {
+  it('is a named radio group: one checked radio per mode, pressing reports its key', () => {
+    const onValueChange = jest.fn();
+    const screen = renderIn(
+      <SidebarModeSwitcher testID="modes" modes={MODES} value="search" onValueChange={onValueChange} accessibilityLabel="Sidebar mode" />,
+    );
+    const group = screen.getByTestId('modes');
+    expect(group.props.role).toBe('radiogroup');
+    expect(group.props.accessibilityLabel).toBe('Sidebar mode');
+    const search = screen.getByTestId('modes-search');
+    const computer = screen.getByTestId('modes-computer');
+    expect(search.props.role).toBe('radio');
+    expect(search.props['aria-checked']).toBe(true);
+    expect(computer.props['aria-checked']).toBe(false);
+    expect(computer.props.accessibilityLabel).toBe('Computer');
+    pressHost(computer);
+    expect(onValueChange).toHaveBeenCalledWith('computer');
+  });
+
+  it('keeps the track geometry: p4, 32px rows 4 apart, a 32px thumb on the tertiary track', () => {
+    const screen = renderIn(<SidebarModeSwitcher testID="modes" modes={MODES} value="computer" onValueChange={() => {}} />, 'dark');
+    const { neutral } = resolveButtonRamps(buildTheme('teal', 'dark'));
+    expect(resolvedStyle(screen.getByTestId('modes').props.style)).toMatchObject({
+      padding: 4,
+      gap: 4,
+      borderRadius: 20,
+      backgroundColor: neutral[800],
+    });
+    expect(resolvedStyle(screen.getByTestId('modes-computer').props.style)).toMatchObject({ height: 32 });
+    expect(resolvedStyle(screen.getByTestId('modes-thumb', { includeHiddenElements: true }).props.style)).toMatchObject({
+      height: 32,
+      backgroundColor: neutral[700],
+    });
+  });
+
+  it('renders under the Sidebar header from `modes`, defaulting to the first mode', () => {
+    const onModeChange = jest.fn();
+    const screen = renderIn(<Sidebar testID="sb" items={ITEMS} modes={MODES} onModeChange={onModeChange} />);
+    expect(screen.getByTestId('sb-modes-search').props['aria-checked']).toBe(true);
+    pressHost(screen.getByTestId('sb-modes-computer'));
+    expect(onModeChange).toHaveBeenCalledWith('computer');
   });
 });
 

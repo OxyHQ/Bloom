@@ -29,6 +29,7 @@ Give it a height (it fills `100%`); its width is its own.
 | export | |
 | --- | --- |
 | `Sidebar` | the rail |
+| `SidebarModeSwitcher` | a vertical segmented control of icon + label modes (Search / Computer); the `modes` prop renders it under the header |
 | `SidebarItem` | one navigation row, a full pill: rest / hover / selected (solid accent fill with the primary foreground — no gradient, ring or highlight), optional badge, `collapsed` 36px square |
 | `SidebarUserMenu` | the account trigger (2px hover pill outside its box) and its menu |
 | `SidebarAccountMenuContent` | that menu's body, for another trigger |
@@ -37,6 +38,25 @@ Give it a height (it fills `100%`); its width is its own.
 | `SidebarPlanCard` | the plan card (avatar, name, plan, action) |
 | `SidebarRailItem` | one `rail` destination: icon on a 48 × 32 pill over a 10px label |
 | `SIDEBAR_RAIL_WIDTH` | the rail's width (80) |
+
+## Modes
+
+```tsx
+<Sidebar
+  modes={[
+    { key: 'search', label: 'Search', icon: RiSearchLine, shortcut: '⌥⌃1' },
+    { key: 'computer', label: 'Computer', icon: RiComputerLine, shortcut: '⌥⌃2' },
+  ]}
+  mode={mode}
+  onModeChange={setMode}
+  items={items}
+/>
+```
+
+- A switch between whole sidebar modes, rendered under the header and above quick search. Standalone it is `SidebarModeSwitcher` (`modes`, `value`, `onValueChange`).
+- Track p4, radius 20, background-tertiary (neutral-200 / neutral-800). Rows are 32 tall and 4 apart: an 18px icon in a 32 box, 4 gap, `body-2-medium`. The selected row's 32px pill — card / neutral-700 with shadow-xs, the sidebar theme toggle's thumb — slides 200ms ease between rows, instantly under reduced motion.
+- Rest is text-secondary, selected text-primary. On web a `shortcut` hint (`caption-2`, text-tertiary) appears at the row's end on hover.
+- Collapsed, labels and hints collapse and the icons stay pinned. It is a `radiogroup` of `radio` rows, named `"Mode"` unless `modesLabel` / `accessibilityLabel` says otherwise. The keyboard shortcuts themselves are the app's to bind.
 
 ## Rail
 

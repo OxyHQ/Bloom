@@ -35,6 +35,28 @@ export interface SidebarNavItem {
   onPress?: () => void;
 }
 
+/** One mode of a {@link SidebarModeSwitcherProps.modes} switcher. */
+export interface SidebarMode {
+  key: string;
+  label: string;
+  icon: SidebarIcon;
+  /** A shortcut hint shown on hover (web), e.g. `⌥⌃1`. */
+  shortcut?: string;
+}
+
+export interface SidebarModeSwitcherProps {
+  modes: ReadonlyArray<SidebarMode>;
+  /** Key of the selected mode. */
+  value: string;
+  onValueChange: (key: string) => void;
+  /** Collapses the labels and hints, leaving the icons. */
+  collapsed?: boolean;
+  /** The radio group's accessible name. Defaults to `"Mode"`. */
+  accessibilityLabel?: string;
+  style?: StyleProp<ViewStyle>;
+  testID?: string;
+}
+
 export interface SidebarItemProps {
   icon: SidebarIcon;
   label: string;
@@ -143,6 +165,16 @@ export interface SidebarProps {
   variant?: SidebarVariant;
   /** Primary navigation rows. */
   items?: SidebarNavItem[];
+  /**
+   * A mode switcher under the header (Search / Computer): a vertical segmented
+   * control of icon + label rows. Rendered when given; see `SidebarModeSwitcher`.
+   */
+  modes?: ReadonlyArray<SidebarMode>;
+  /** Key of the selected mode. */
+  mode?: string;
+  onModeChange?: (key: string) => void;
+  /** The mode group's accessible name. Defaults to `"Mode"`. */
+  modesLabel?: string;
   /** Rows pinned to the bottom above the team card (Support, Settings). */
   secondaryItems?: SidebarNavItem[];
   /** Key of the selected row. */
