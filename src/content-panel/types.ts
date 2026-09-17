@@ -12,6 +12,9 @@ import { type StyleProp, type ViewStyle } from 'react-native';
  */
 export type ContentPanelFramedBreakpoint = 500 | 640 | 768 | 1024;
 
+/** How a framed `ContentPanel` draws its edge. */
+export type ContentPanelChrome = 'elevated' | 'border' | 'none';
+
 export interface ContentPanelProps {
   children: React.ReactNode;
   /**
@@ -30,6 +33,25 @@ export interface ContentPanelProps {
    * to `768` (Tailwind `md`), reproducing the prior fixed behavior exactly.
    */
   framedFrom?: ContentPanelFramedBreakpoint;
+  /**
+   * The panel's EDGE, when it is framed.
+   *
+   * - `'elevated'` (DEFAULT) — the hairline plus the floating-panel shadow the
+   *   `Sidebar` wears (`styles/panel-chrome.ts`), so the panel reads as a
+   *   surface lifted off the page rather than a box drawn on it.
+   * - `'border'` — the hairline alone, which is what this panel drew before.
+   * - `'none'` — no edge at all: a flat surface that still clips and rounds,
+   *   for an app whose page background already separates the two.
+   *
+   * Ignored while the panel is full-bleed (below `framedFrom`, or
+   * `framed={false}`) — there is no edge to draw.
+   */
+  chrome?: ContentPanelChrome;
+  /**
+   * Overrides the shadow `chrome="elevated"` draws (any `box-shadow` string).
+   * For an app that wants its own elevation without giving up the hairline.
+   */
+  shadow?: string;
   /** Override the surface background utility (defaults to `bg-card`). */
   surfaceClassName?: string;
   surfaceStyle?: StyleProp<ViewStyle>;

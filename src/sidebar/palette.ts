@@ -2,6 +2,7 @@ import { useMemo } from 'react';
 
 import { ACCENT_TABLE, colorRamp, mixColor, resolveButtonRamps } from '../button/shared';
 import { MENU_SHADOW } from '../floating/menu-palette';
+import { PANEL_SHADOW, resolvePanelChrome } from '../styles/panel-chrome';
 import type { Theme } from '../theme/types';
 import { useTheme } from '../theme/use-theme';
 import { parseRgba } from '../theme/color-utils';
@@ -70,10 +71,12 @@ export interface SidebarPalette {
 }
 
 /** `shadow-sidebar`, light and dark. */
-export const SIDEBAR_SHADOW = {
-  light: '0 1px 0 0 rgba(0, 0, 0, 0.0196), 0 1px 12px 0 rgba(0, 0, 0, 0.0588), 0 0 1px 0 rgba(0, 0, 0, 0.3216)',
-  dark: '0 1px 0 0 rgba(0, 0, 0, 0.1), 0 1px 12px 0 rgba(0, 0, 0, 0.16), 0 0 1px 0 rgba(0, 0, 0, 0.42)',
-} as const;
+/**
+ * The panel edge, now shared with the framed `ContentPanel` — see
+ * `styles/panel-chrome.ts`. Kept exported under its own name because it is
+ * public API of this family.
+ */
+export const SIDEBAR_SHADOW = PANEL_SHADOW;
 
 /** Tailwind `pink-500` sits this far round the OKLCH hue wheel from `blue-500`. */
 const PINK_HUE_OFFSET = 354.308 - 259.815;
@@ -90,12 +93,13 @@ export function resolveSidebarPalette(theme: Theme): SidebarPalette {
   const success = colorRamp(theme.colors.success, ACCENT_TABLE);
   const pink = colorRamp(rotateHue(theme.colors.primary, PINK_HUE_OFFSET), ACCENT_TABLE);
   const dark = theme.isDark;
-  const panel = dark ? n[900] : n[100];
+  const chrome = resolvePanelChrome(theme);
+  const panel = chrome.surface;
   const card = theme.colors.card;
   return {
     panel,
-    panelBorder: dark ? n[800] : card,
-    panelShadow: dark ? SIDEBAR_SHADOW.dark : SIDEBAR_SHADOW.light,
+    panelBorder: chrome.border,
+    panelShadow: chrome.shadow,
     // `neutral-925` (#121212), between the 900 and 950 stops.
     flat: dark ? mixColor(n[900], n[950], 0.4) : card,
     rowHover: dark ? n[800] : n[200],

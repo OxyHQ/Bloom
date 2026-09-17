@@ -4,4 +4,4 @@ export {
   PANEL_BOTTOM_INSET,
   ContentPanel,
 } from './ContentPanel.web';
-export type { ContentPanelFramedBreakpoint, ContentPanelProps } from './types';
+export type { ContentPanelChrome, ContentPanelFramedBreakpoint, ContentPanelProps } from './types';

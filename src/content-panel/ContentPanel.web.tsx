@@ -87,6 +87,7 @@ import { type StyleProp, type ViewStyle } from 'react-native';
 
 import { StyledView } from '../styles/styled-primitives';
 
+import { useOptionalPanelChrome } from '../styles/panel-chrome';
 import { useTheme } from '../theme/use-theme';
 import {
   ContentPanelNestingContext,
@@ -150,6 +151,8 @@ const ContentPanelComponent: React.FC<ContentPanelProps> = ({
   contentClassName,
   contentStyle,
   showStickyFrame,
+  chrome = 'elevated',
+  shadow,
   maskColor,
   overlaySizing = 'viewport',
   overlayTopOffset,
@@ -158,6 +161,10 @@ const ContentPanelComponent: React.FC<ContentPanelProps> = ({
   // mode-specific branch) so the hook order stays stable (rules of hooks).
   useContentPanelNestingGuard();
   const { colors } = useTheme();
+  // The floating-panel edge the `Sidebar` wears. Optional: the panel drew its
+  // own surface long before it had a shadow, so it must not start throwing
+  // outside a provider.
+  const panelChrome = useOptionalPanelChrome();
 
   // Tri-state: `undefined` → responsive (md:-gated), `true` → always framed,
   // `false` → never framed (full-bleed).
@@ -244,12 +251,17 @@ const ContentPanelComponent: React.FC<ContentPanelProps> = ({
         )}
         {/* (2) Border-frame overlay — one continuous rounded border, above all.
             Same visibility gating as the bleed-mask. */}
-        {showOverlays && showStickyFrame !== false && (
+        {showOverlays && showStickyFrame !== false && chrome !== 'none' && (
           <StyledView
             key="border-frame"
             testID="content-panel-border-frame"
             pointerEvents="none"
-            style={topOffsetStyle}
+            // The shadow rides the SAME element as the hairline, so the lift and
+            // the edge can never disagree about where the panel ends. It paints
+            // outward, into the gutter the page background shows.
+            style={[topOffsetStyle, chrome === 'elevated' && (shadow || panelChrome)
+                ? { boxShadow: shadow ?? panelChrome?.shadow }
+                : null]}
             className={
               boundToPanel
                 ? `web:[grid-area:1/1] z-[120] h-full w-full rounded-radius-28 border border-border ${responsive ? bp.overlayHidden : ''}`

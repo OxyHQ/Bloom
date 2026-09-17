@@ -18,6 +18,28 @@ import { ContentPanel } from '@oxy.so/bloom/content-panel';
 </ContentPanel>
 ```
 
+## The panel's edge
+
+```tsx
+<ContentPanel framed chrome="elevated" />   {/* default: hairline + panel shadow */}
+<ContentPanel framed chrome="border" />     {/* hairline only */}
+<ContentPanel framed chrome="none" />       {/* flat rounded surface */}
+<ContentPanel framed shadow="0 8px 24px rgba(0,0,0,.12)" />  {/* your own lift */}
+```
+
+A framed panel wears the same edge the [`Sidebar`](/docs/bloom/main/sidebar)
+does — a hairline **and** the floating-panel shadow, from one recipe in
+`styles/panel-chrome.ts` (`resolvePanelChrome`, `PANEL_SHADOW`) so the two
+surfaces cannot drift apart. The border alone read as a box drawn on the page;
+the shadow is what makes it a panel lifted off it.
+
+- On **web** the shadow rides the same sticky overlay as the hairline, so the
+  lift and the edge always describe the same rectangle, and it paints outward
+  into the gutter the page background shows.
+- On **native** the surface carries both.
+- `chrome` is ignored while the panel is full-bleed (below `framedFrom`, or
+  `framed={false}`) — there is no edge to draw.
+
 ## Which prop decides what
 
 | prop               | decides                                                  |
