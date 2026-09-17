@@ -355,6 +355,7 @@ export type {
   StaySearchSegment,
   StaySearchStepProps,
 } from './stay-search';
+export * from './listing-details';
 export * from './chip';
 export * from './aspect-ratio';
 export * from './tabs';
