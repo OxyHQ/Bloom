@@ -298,6 +298,36 @@ export * from './card';
 export * from './badge';
 export { Rating, RatingBar } from './rating';
 export type { RatingBarProps, RatingCountStyle, RatingProps, RatingSize } from './rating';
+
+// Stays
+export {
+  DateFlexibilityChips,
+  DestinationSuggestions,
+  GuestPicker,
+  StaySearchBar,
+  StaySearchCompact,
+  StaySearchPanel,
+  StaySearchStep,
+  applyGuestCount,
+  minimumAdults,
+} from './stay-search';
+export type {
+  DateFlexibilityChipsProps,
+  DateFlexibilityOption,
+  DestinationSuggestion,
+  DestinationSuggestionsProps,
+  GuestCounts,
+  GuestKind,
+  GuestPickerProps,
+  StaySearchBarLabels,
+  StaySearchBarProps,
+  StaySearchCompactProps,
+  StaySearchDates,
+  StaySearchDatesMode,
+  StaySearchPanelProps,
+  StaySearchSegment,
+  StaySearchStepProps,
+} from './stay-search';
 export * from './chip';
 export * from './aspect-ratio';
 export * from './tabs';
