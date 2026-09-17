@@ -1,0 +1,125 @@
+---
+title: HoverCard
+description: Decides when and where a preview card appears — hover or focus on web, long press on native.
+order: 22
+---
+
+# HoverCard
+
+A preview that opens while the pointer rests on something — a name, an avatar, a
+link — and stays up while the pointer moves onto it. On native, where there is no
+hover, a long press opens it in a bottom sheet.
+
+Three parts, shadcn's own: `HoverCard`, `HoverCardTrigger`, `HoverCardContent`.
+The trigger decides **when** the card appears; the content decides **where**.
+What the card shows is up to you — for a person, that is
+[`UserHoverCard`](/docs/bloom/main/user-hover-card).
+
+```tsx
+import { HoverCard, HoverCardContent, HoverCardTrigger } from '@oxy.so/bloom/hover-card';
+import { UserHoverCard } from '@oxy.so/bloom/user-hover-card';
+import { FollowButton } from '@oxy.so/services';
+
+<HoverCard>
+  <HoverCardTrigger asChild>
+    <Link href={`/@${user.username}`}>@{user.username}</Link>
+  </HoverCardTrigger>
+  <HoverCardContent label={user.name.displayName}>
+    <UserHoverCard
+      avatar={user.avatar}
+      displayName={user.name.displayName ?? user.username}
+      username={user.username}
+      bio={user.bio}
+      action={<FollowButton userId={user.id} />}
+    />
+  </HoverCardContent>
+</HoverCard>
+```
+
+`UserHoverCard` notices it is inside a `HoverCardContent` and draws only its
+content — the panel is its surface, so there is never a card inside a card, and
+the entrance plays once.
+
+## When it opens
+
+| Platform | Opens                                                   | Closes                                              |
+| -------- | ------------------------------------------------------- | --------------------------------------------------- |
+| Web      | pointer rests on the trigger for `openDelay` (400ms), or keyboard focus reaches it | pointer away from trigger **and** card for `closeDelay` (150ms), blur, Escape, a press outside |
+| Native   | long press on the trigger                               | swipe the sheet down, tap the scrim                 |
+
+- **The open delay is a filter, not latency.** A pointer crossing a page of
+  names on its way somewhere else opens nothing.
+- **The close delay is a bridge.** The card sits 8px from its trigger; the
+  pointer crosses that gap well within 150ms, so moving onto the card keeps it
+  up. Everything inside the card — a follow button, the profile link — stays
+  reachable.
+- **Touch pointers are ignored on web.** A tap is a press, and it belongs to the
+  element under the finger.
+- **Only keyboard focus opens it** (`:focus-visible`). A mouse click focuses what
+  it lands on too, and opening on that would reopen a card the click meant to
+  get past.
+- **A plain press is never the card's.** On native the trigger composes a long
+  press into its child and leaves `onPress` alone, so a link or an avatar that
+  navigates still navigates.
+
+Pass `openDelay` / `closeDelay` on the root to tune it; they do nothing on
+native.
+
+## `asChild` on native
+
+When the trigger's child is itself pressable, pass `asChild`. Without it the
+child renders inside Bloom's own `Pressable`, and the inner pressable wins the
+responder — the outer long press never fires. With it, the long press is merged
+into your element, composed with any `onLongPress` it already has. On web the
+prop is ignored: the trigger listens for pointer and focus on a wrapper, so
+there is nothing to merge.
+
+## Load on open
+
+`onOpenChange(true)` fires when the card is about to show, which is the moment to
+fetch. Render `UserHoverCard` with `loading` until the profile lands — the
+skeleton has the card's own geometry, so nothing jumps.
+
+```tsx
+const [open, setOpen] = useState(false);
+const { data: user } = useProfile(username, { enabled: open });
+
+<HoverCard open={open} onOpenChange={setOpen}>
+  <HoverCardTrigger asChild>
+    <Link href={`/@${username}`}>@{username}</Link>
+  </HoverCardTrigger>
+  <HoverCardContent label={username}>
+    <UserHoverCard loading={!user} displayName={user?.name ?? username} username={username} />
+  </HoverCardContent>
+</HoverCard>
+```
+
+## Where it opens
+
+`HoverCardContent` takes the anchored-surface props every Bloom floating surface
+takes: `side` (default `'bottom'`), `align` (default `'center'`), `sideOffset`
+(default `8`) and `alignOffset`. `side` is a preference — the card flips when it
+does not fit and is clamped inside the viewport.
+
+The surface is Bloom's floating panel: radius 16, 1px border, the dropdown
+shadow, a 15px inset (`padded={false}` removes the inset) and the 150ms fade,
+`scale-95` and 2px blur entrance, reversed on the way out. It is **not modal** —
+nothing is laid over the page, which stays scrollable and clickable.
+
+## The bridge must not be a `Pressable`
+
+The pointer bridge that keeps the card open is a `View` listening to
+`pointerenter`/`pointerleave`. react-native-web's `Pressable` dispatches a
+bubbling `react-gui:hover:lock` event on hover, and a hovered ancestor
+`Pressable` ends its own hover for any lock it did not send — so a `Pressable`
+bridge dismissed the card the moment the cursor reached a button inside it, with
+nothing logged. `pointerenter`/`pointerleave` do not bubble and do not fire
+between descendants. Gates: `HoverCard.web.test.tsx` and
+`UserHoverCard.web.test.tsx`, both mutation-checked against removing the bridge.
+
+## `AvatarGroup`
+
+`AvatarGroup`'s `hoverCard` floats its card in the same panel, so placement,
+motion and dismissal match. It keeps ONE card for the whole pile, re-anchored as
+the cursor moves between faces, which is the one thing a `HoverCard` per avatar
+could not do.

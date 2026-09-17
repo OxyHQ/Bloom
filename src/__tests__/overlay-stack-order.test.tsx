@@ -207,7 +207,9 @@ describe('no surface picks its own depth', () => {
     'tooltip/Tooltip.web.tsx',
     'zoomable-media-gallery/ZoomableMediaGallery.tsx',
     'media-flight/MediaFlightLayer.tsx',
-    'avatar-group/AvatarGroup.web.tsx',
+    // `AvatarGroup.web.tsx` and `HoverCard.web.tsx` both float their card in
+    // this one panel, so it is the file that presents the surface.
+    'hover-card/HoverCardPanel.tsx',
     'toast/ToastHost.tsx',
   ];
 
@@ -265,8 +267,8 @@ describe('no surface picks its own depth', () => {
     // own `OverlayRoot`; the centred branch mounts one directly. Both files are
     // covered by the membership check below.
     //
-    // The four ANCHORED families (`dropdown-menu`, `context-menu`, `menubar`,
-    // `popover`) do not mount one each: their web forks render
+    // The ANCHORED families (`dropdown-menu`, `context-menu`, `menubar`,
+    // `popover`, and the hover card) do not mount one each: their web forks render
     // `floating/FloatingPanel`, which mounts the single `OverlayRoot` they
     // share. Delegating counts, and the assertion below is what stops that from
     // being a hole — if `FloatingPanel` ever stopped mounting one, every

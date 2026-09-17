@@ -19,7 +19,7 @@ import type { FloatingAnchor } from './types';
  * interface, so a ref that is NOT a DOM node (a jsdom stub, a native build that
  * reached this file by accident) answers `null` instead of throwing.
  */
-function rectOf(node: View | null): FloatingAnchor | null {
+export function rectOf(node: View | null): FloatingAnchor | null {
   const element = node as unknown as { getBoundingClientRect?: () => DOMRect } | null;
   if (typeof element?.getBoundingClientRect !== 'function') return null;
   const box = element.getBoundingClientRect();

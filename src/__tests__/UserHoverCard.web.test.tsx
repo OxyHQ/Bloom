@@ -27,9 +27,9 @@
  *    `Pressable` calls `useHover` with `contain: true`, which dispatches a
  *    BUBBLING `react-gui:hover:lock` event on itself; an ancestor `Pressable`
  *    that is currently hovered ends its own hover for any lock whose target is
- *    not itself. The hover bridge in `AvatarGroup.web.tsx` used to be such a
+ *    not itself. The hover bridge (now `hover-card/HoverCardPanel.tsx`) used to be such a
  *    `Pressable`, so reaching the FollowButton — or the identity area — closed
- *    the card ~120ms later, with nothing in the console. The bridge is now a
+ *    the card a moment later, with nothing in the console. The bridge is now a
  *    `View` with `pointerenter`/`pointerleave`, which do not bubble and do not
  *    fire when the cursor moves between descendants.
  */
@@ -190,19 +190,23 @@ describe('AvatarGroup hover bridge', () => {
     );
   }
 
-  /** The bridge: the nearest fixed-position ancestor of the card's content. */
+  /**
+   * The bridge: the `View` filling the floating panel (the nearest
+   * fixed-position ancestor of the card's content) — its first child.
+   */
   function bridgeOf(node: HTMLElement): HTMLElement {
     let n: HTMLElement | null = node;
     while (n && getComputedStyle(n).position !== 'fixed') n = n.parentElement;
-    if (!n) throw new Error('no positioned bridge above the card');
-    return n;
+    const bridge = n?.firstElementChild;
+    if (!(bridge instanceof HTMLElement)) throw new Error('no bridge inside the panel');
+    return bridge;
   }
 
   /** Hovers the first avatar and moves the cursor onto the card. */
   function openCard(): { bridge: HTMLElement; action: HTMLElement } {
     const cell = getByRole(container, 'button', { name: 'Ada Lovelace (@ada)' });
     hoverIn(cell);
-    // `measureInWindow` positions the card from a `setTimeout(0)`.
+    // The card opens with no delay, but through the intent timer.
     act(() => {
       jest.advanceTimersByTime(1);
     });
@@ -237,7 +241,12 @@ describe('AvatarGroup hover bridge', () => {
 
     hoverIn(action, bridge);
     act(() => {
-      // Well past the bridge's 120ms close delay.
+      // Well past the bridge's close delay.
+      jest.advanceTimersByTime(500);
+    });
+    // And past the exit a close would have scheduled, or a closing card that is
+    // still mounted would pass for an open one.
+    act(() => {
       jest.advanceTimersByTime(500);
     });
 
@@ -250,6 +259,10 @@ describe('AvatarGroup hover bridge', () => {
     expect(queryByText(document.body, 'Follow')).not.toBeNull();
 
     hoverOut(bridge, document.body);
+    act(() => {
+      jest.advanceTimersByTime(500);
+    });
+    // The panel's exit runs on a timer scheduled by the close itself.
     act(() => {
       jest.advanceTimersByTime(500);
     });
