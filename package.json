@@ -1735,6 +1735,20 @@
         "default": "./lib/commonjs/media-controls/index.js"
       }
     },
+    "./track-list": {
+      "react-native": {
+        "types": "./lib/typescript/module/track-list/index.d.ts",
+        "default": "./src/track-list/index.ts"
+      },
+      "import": {
+        "types": "./lib/typescript/module/track-list/index.d.ts",
+        "default": "./lib/module/track-list/index.js"
+      },
+      "require": {
+        "types": "./lib/typescript/commonjs/track-list/index.d.ts",
+        "default": "./lib/commonjs/track-list/index.js"
+      }
+    },
     "./stay-filters": {
       "react-native": {
         "types": "./lib/typescript/module/stay-filters/index.d.ts",
