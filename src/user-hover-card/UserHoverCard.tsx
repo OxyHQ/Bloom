@@ -20,6 +20,7 @@ import {
   MENU_MOTION_SCALE_FROM,
 } from '../floating/constants';
 import { resolveMenuPalette } from '../floating/menu-palette';
+import { useInsideHoverCardSurface } from '../hover-card/context';
 import { RiVerifiedBadgeFill } from '../icons/remix/RiVerifiedBadgeFill';
 import { useImageResolver } from '../image-resolver/context';
 import { SUPPORTS_NATIVE_DRIVER } from '../styles/native-driver';
@@ -27,7 +28,11 @@ import type { WebCssStyle } from '../styles/web-view-style';
 import type { Theme } from '../theme/types';
 import { useTheme } from '../theme/use-theme';
 import { Text } from '../typography';
-import { USER_HOVER_CARD_INSET, USER_HOVER_CARD_WIDTH } from './constants';
+import {
+  USER_HOVER_CARD_CONTENT_WIDTH,
+  USER_HOVER_CARD_INSET,
+  USER_HOVER_CARD_WIDTH,
+} from './constants';
 import type { UserHoverCardProps } from './types';
 
 /**
@@ -188,29 +193,36 @@ const UserHoverCardComponent: React.FC<UserHoverCardProps> = ({
   const theme = useTheme();
   const palette = useMemo(() => resolveUserHoverCardPalette(theme), [theme]);
   const resolver = useImageResolver();
-  const entrance = useEntrance(animateIn);
+  // Inside a `HoverCardContent` (or `AvatarGroup`'s hover card) the floating
+  // panel already IS the surface — border, background, shadow, inset — and runs
+  // the same entrance and an exit. Drawing them again would put a card inside a
+  // card and play the entrance twice.
+  const bare = useInsideHoverCardSurface();
+  const entrance = useEntrance(animateIn && !bare);
 
   const hasCover = typeof cover === 'string' && cover.length > 0;
   const coverUri = hasCover
     ? isUrl(cover) ? cover : resolver?.(cover, coverVariant)
     : undefined;
 
-  const cardStyle: WebCssStyle = {
-    width: WIDTH,
-    paddingTop: PADDING,
-    paddingBottom: PADDING,
-    paddingLeft: PADDING,
-    paddingRight: PADDING,
-    borderRadius: RADIUS,
-    borderWidth: 1,
-    borderColor: palette.border,
-    backgroundColor: palette.surface,
-    boxShadow: palette.shadow,
-    // The card clips nothing: the `footer` slot is documented as unclipped, and
-    // the cover clips itself to the inner radius.
-    overflow: 'visible',
-    transformOrigin: 'top',
-  };
+  const cardStyle: WebCssStyle = bare
+    ? { width: USER_HOVER_CARD_CONTENT_WIDTH, maxWidth: '100%', overflow: 'visible' }
+    : {
+        width: WIDTH,
+        paddingTop: PADDING,
+        paddingBottom: PADDING,
+        paddingLeft: PADDING,
+        paddingRight: PADDING,
+        borderRadius: RADIUS,
+        borderWidth: 1,
+        borderColor: palette.border,
+        backgroundColor: palette.surface,
+        boxShadow: palette.shadow,
+        // The card clips nothing: the `footer` slot is documented as unclipped,
+        // and the cover clips itself to the inner radius.
+        overflow: 'visible',
+        transformOrigin: 'top',
+      };
 
   // Where the avatar's visible band sits, so the action can centre on it.
   const avatarOuter = hasCover ? AVATAR_SIZE + AVATAR_RING * 2 : AVATAR_SIZE;

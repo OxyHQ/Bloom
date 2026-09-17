@@ -328,6 +328,7 @@ export * from './select';
 export * from './context-menu';
 export * from './menubar';
 export * from './popover';
+export * from './hover-card';
 export { AlertDialog } from './alert-dialog';
 export type { AlertDialogProps, AlertDialogActionStyle } from './alert-dialog';
 export { Command } from './command';

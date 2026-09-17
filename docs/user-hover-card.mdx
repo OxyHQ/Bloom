@@ -1,6 +1,6 @@
 ---
 title: UserHoverCard
-description: A presentational profile card. Bloom holds no follow logic — the consumer passes the button in.
+description: A profile card. Show it with HoverCard; Bloom holds no follow logic — the consumer passes the button in.
 order: 23
 ---
 
@@ -28,6 +28,30 @@ import { FollowButton } from '@oxy.so/services';
   onPressProfile={() => router.push(`/@${user.username}`)}
 />
 ```
+
+## Showing it
+
+`UserHoverCard` draws the person and nothing else — it does not decide **when**
+or **where** it appears. That is [`HoverCard`](/docs/bloom/main/hover-card)'s
+job: hover or keyboard focus on web, long press on native, anchored to the
+trigger and kept open while the pointer travels onto it.
+
+```tsx
+import { HoverCard, HoverCardContent, HoverCardTrigger } from '@oxy.so/bloom/hover-card';
+
+<HoverCard>
+  <HoverCardTrigger asChild>
+    <Link href={`/@${user.username}`}>@{user.username}</Link>
+  </HoverCardTrigger>
+  <HoverCardContent label={user.name.displayName}>
+    <UserHoverCard displayName={user.name.displayName} username={user.username} />
+  </HoverCardContent>
+</HoverCard>
+```
+
+Inside `HoverCardContent` the card draws no surface of its own — the panel's
+border, background, shadow and inset are the card's, and the entrance plays
+once. Rendered anywhere else it wears the same surface itself.
 
 ## `footer` is where your own content goes
 
@@ -122,14 +146,10 @@ position.
 
 ### Inside a hover card, everything you put here stays pressable
 
-`AvatarGroup`'s `hoverCard` floats this card under a bridge that keeps it open
-while the cursor is over it. That bridge is a `View` with
-`onPointerEnter`/`onPointerLeave`, **not** a `Pressable`, and it has to be: a
-`Pressable` bridge dismisses the card the moment the cursor reaches anything
-pressable inside it. react-native-web's `Pressable` dispatches a bubbling
-`react-gui:hover:lock` event, and an ancestor `Pressable` that is currently
-hovered ends its own hover for any lock it did not send. If you build your own
-hover trigger around this card, do the same.
+`HoverCard` (and `AvatarGroup`'s `hoverCard`) keep the card open with a pointer
+bridge that is deliberately not a `Pressable`, so the cursor can reach a button
+in `action` or `footer` without the card closing. Why, measured:
+[HoverCard](/docs/bloom/main/hover-card).
 
 ## Bloom holds no follow state
 

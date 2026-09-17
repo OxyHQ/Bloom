@@ -1538,6 +1538,25 @@
         "default": "./lib/commonjs/popover/index.js"
       }
     },
+    "./hover-card": {
+      "react-native": {
+        "types": "./lib/typescript/module/hover-card/index.d.ts",
+        "default": "./src/hover-card/index.ts"
+      },
+      "browser": {
+        "types": "./lib/typescript/module/hover-card/index.web.d.ts",
+        "import": "./lib/module/hover-card/index.web.js",
+        "require": "./lib/commonjs/hover-card/index.web.js"
+      },
+      "import": {
+        "types": "./lib/typescript/module/hover-card/index.d.ts",
+        "default": "./lib/module/hover-card/index.js"
+      },
+      "require": {
+        "types": "./lib/typescript/commonjs/hover-card/index.d.ts",
+        "default": "./lib/commonjs/hover-card/index.js"
+      }
+    },
     "./aspect-ratio": {
       "react-native": {
         "types": "./lib/typescript/module/aspect-ratio/index.d.ts",

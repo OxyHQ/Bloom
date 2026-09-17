@@ -1,3 +1,5 @@
+import { HOVER_CARD_INSET } from '../hover-card/constants';
+
 /**
  * The card's geometry, in one place, because two of these numbers are now a
  * CONTRACT rather than an implementation detail: the card has two consumer
@@ -24,8 +26,13 @@
  */
 export const USER_HOVER_CARD_CONTENT_WIDTH = 256;
 
-/** Padding on all four sides (15px — the card's own inset, not a spacing-scale rung). */
-export const USER_HOVER_CARD_INSET = 15;
+/**
+ * Padding on all four sides (15px — the card's own inset, not a spacing-scale
+ * rung). The SAME number as the floating hover-card panel's inset, by reference:
+ * inside that panel the card draws no padding of its own and its full-bleed
+ * cover reaches the panel edge by pulling out exactly this far.
+ */
+export const USER_HOVER_CARD_INSET = HOVER_CARD_INSET;
 
 /**
  * Total card width — derived, never the other way round. Anything positioning

@@ -333,6 +333,7 @@ export * from './select/index.web';
 export * from './context-menu/index.web';
 export * from './menubar/index.web';
 export * from './popover/index.web';
+export * from './hover-card/index.web';
 export { AlertDialog } from './alert-dialog/index.web';
 export type { AlertDialogProps, AlertDialogActionStyle } from './alert-dialog/index.web';
 export { Command } from './command/index.web';
