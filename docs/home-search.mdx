@@ -1,0 +1,246 @@
+---
+title: Home Search
+description: Search for every housing mode — rent, buy, vacation rentals and swap — with the mode tabs, a segmented search bar per mode, budget, move-in and property-type panels, and saved searches.
+order: 114
+---
+
+# Home Search
+
+One search surface for every way to find a home. `SearchModeTabs` switches
+between Rent, Buy, Vacation rentals and Swap; `HomeSearchBar` draws that mode's
+segments; the panel parts fill the dropdown under the open segment; and
+`SavedSearchCard` / `SaveSearchButton` keep a search for later.
+
+```tsx
+import {
+  BudgetPicker,
+  HomeSearchBar,
+  MoveInPicker,
+  PropertyTypePicker,
+  SavedSearchCard,
+  SaveSearchButton,
+  SearchModeTabs,
+  homeSearchSegments,
+  type HomeSearchMode,
+} from '@oxy.so/bloom/home-search';
+import { DestinationSuggestions, StaySearchPanel } from '@oxy.so/bloom/stay-search';
+
+const [mode, setMode] = useState<HomeSearchMode>('rent');
+const [segment, setSegment] = useState<string | null>(null);
+
+<SearchModeTabs value={mode} onValueChange={(m) => { setMode(m); setSegment(null); }} />
+<HomeSearchBar
+  segments={homeSearchSegments('rent', {
+    location: area,
+    moveIn: moveInText,
+    budget: budgetText, // "€800 – €1,200", formatted by the app
+  })}
+  activeSegment={segment}
+  onActiveSegmentChange={setSegment}
+  query={query}
+  onQueryChange={setQuery}
+  onSearch={search}
+  panel={
+    segment === 'budget' ? (
+      <StaySearchPanel width={420} padding={24} accessibilityLabel="Budget">
+        <BudgetPicker value={budget} onValueChange={setBudget} formatAmount={formatEuro} />
+      </StaySearchPanel>
+    ) : segment === 'moveIn' ? (
+      <StaySearchPanel width={380} padding={24} accessibilityLabel="Move-in">
+        <MoveInPicker value={moveIn} onValueChange={setMoveIn} />
+      </StaySearchPanel>
+    ) : segment === 'location' ? (
+      <StaySearchPanel width={420} accessibilityLabel="Areas">
+        <DestinationSuggestions heading="Suggested areas" items={areas} onSelect={chooseArea} />
+      </StaySearchPanel>
+    ) : null
+  }
+/>
+```
+
+Everything is controlled. Segment values arrive as text the app formatted; the
+panel parts that compute (budgets, property types) take numbers or keys and
+hand them back.
+
+## SearchModeTabs
+
+| prop | decides |
+| --- | --- |
+| `value` / `onValueChange` | the selected mode key |
+| `modes` | which modes and in what order. Default `rent`, `buy`, `stays`, `swap`; any subset works |
+| `labels` | override by key. Defaults Rent, Buy, Vacation rentals, Swap |
+| `variant` | `tabs` (default) or `segmented` |
+| `accessibilityLabel` | the tablist's name, default "Search mode" |
+| `testID` | derives `-<key>` per tab (and `-<key>-bar` for the underline) |
+
+- **`tabs`** — text tabs with the same selected underline as `CategoryBar`:
+  a `body-medium` label, text-secondary at rest and text-primary on hover or
+  when selected, with a 2px text-primary bar the width of the label under the
+  selected one. 24 between labels. The label weight never changes, so
+  switching does not reflow the row.
+- **`segmented`** — Bloom's `SegmentedControl` at `large`, a full pill
+  stretched to the width. Use it on a phone above `StaySearchCompact`.
+
+Both are a `tablist` of `tab`s with `aria-selected`. The `tabs` variant is one
+tab stop on web (the selected tab); ArrowLeft/ArrowRight, Home and End move
+focus, Enter and Space select.
+
+## HomeSearchBar
+
+The segmented search pill for any mode — the shared implementation behind
+`StaySearchBar`, which is its vacation-rental preset (see
+[Stay Search](/docs/bloom/main/stay-search)). Its look is the same: 66 tall, a hairline and a
+soft shadow, segments that fill on hover, a raised pill for the open segment,
+and a round search button that widens to its label while a segment is open.
+
+| prop | decides |
+| --- | --- |
+| `segments` | `{ key, label, value?, placeholder, flex?, panelAlign? }[]`, left to right |
+| `activeSegment` / `onActiveSegmentChange` | the open segment's key, or `null` |
+| `query` / `onQueryChange` | with the handler set, the open **first** segment is a focused text field (a typed location) |
+| `panel` | drops 12 below the bar while a segment is open |
+| `onSearch` / `searchLabel` | the search button in the **last** segment (default "Search") |
+| `dismissible` | Escape and a press outside close it on web. Default `true` |
+| `testID` | derives `-<key>`, `-separator-<i>`, `-search`, `-panel`, `-<firstKey>-input` |
+
+`flex` sets a segment's relative width (default 1). The panel aligns under the
+open segment: `start` for the first, `end` for the last, `center` between —
+`panelAlign` overrides it per segment.
+
+### Presets per mode
+
+`HOME_SEARCH_SEGMENTS` holds each mode's segments with labels, placeholders and
+widths; `homeSearchSegments(mode, values, overrides)` fills the values in and
+applies per-key overrides.
+
+| mode | keys | labels |
+| --- | --- | --- |
+| `rent` | `location`, `moveIn`, `budget` | Location · Move-in · Budget |
+| `buy` | `location`, `price`, `propertyType` | Location · Price · Property type |
+| `stays` | `destination`, `checkIn`, `checkOut`, `guests` | Where · Check in · Check out · Who |
+| `swap` | `destination`, `dates`, `homeSize` | Where · Dates · Home size |
+
+```tsx
+homeSearchSegments('buy', { location: 'Marrowfield', price: '€150K – €300K' }, { propertyType: { label: 'Type' } });
+```
+
+For locations, reuse `DestinationSuggestions` from `@oxy.so/bloom/stay-search`
+with a heading such as "Suggested areas" — there is no separate location list.
+For stay dates and guests, reuse `RangeCalendar`, `DateFlexibilityChips` and
+`GuestPicker`; for a swap's home size, `StepperRow` from
+`@oxy.so/bloom/stepper`.
+
+## BudgetPicker
+
+A title, a Minimum / Maximum pair of fields and preset chips.
+
+| prop | decides |
+| --- | --- |
+| `value` / `onValueChange` | `[min, max]`; `null` is open-ended |
+| `period` | `month` (rent, default) or `total` (sale) — picks the defaults below |
+| `presets` | `{ min, max, label? }[]`; `[]` hides the row |
+| `formatAmount` | how amounts show in the fields and preset labels (the app's currency and locale). Default `String(n)` |
+| `title` / `description` | defaults "Monthly budget" / "Rent per month, before bills", or "Price" / "Total price"; `description={null}` hides it |
+| `minLabel` / `maxLabel` | default "Minimum" / "Maximum" |
+| `step` | typed amounts snap to it. Default 50 per month, 5,000 total |
+| `presetsLabel` | names the chip group, default "Budget presets" |
+
+Default presets: `month` — up to 800, 800–1,200, 1,200–1,800, 1,800+; `total`
+— up to 150,000, 150,000–300,000, 300,000–600,000, 600,000+. A preset's label
+is built from `formatAmount` ("Up to €800", "€800 – €1,200", "€1,800+") unless
+it has its own.
+
+This part **computes**: typed text is a draft until blur or submit, then
+parsed ("€1,200" reads as 1200), snapped to `step` and kept on its own side of
+the range. An emptied field commits `null`. A preset sets both ends; pressing
+the chosen preset again clears the budget. Chips are Bloom `Chip`s (`large`,
+`outlined`, brand tone when chosen) with `aria-pressed`.
+
+## MoveInPicker
+
+A single-day `Calendar`, "Flexible" / "As soon as possible" chips, and the
+contract length.
+
+| prop | decides |
+| --- | --- |
+| `value` / `onValueChange` | `{ timing: 'date' \| 'flexible' \| 'asap', date, contractLength }` |
+| `contractLengths` | `{ value, label }[]`. Default `any` Any, `short` 1–6 months, `medium` 6–12 months, `long` 1+ year |
+| `labels` | `date`, `flexible`, `asap`, `contractLength` headings and chip labels |
+| `defaultMonth`, `minDate`, `maxDate`, `isDateUnavailable`, `weekStartsOn`, `locale` | passed to `Calendar` |
+
+There is one answer to "when": picking a day sets `timing: 'date'`; a timing
+chip sets its timing and clears the day, and pressing it again goes back to
+`date`. While a chip is chosen the calendar shows no day. The contract length
+is independent and single-select.
+
+## PropertyTypePicker
+
+A multi-select grid of icon tiles: Apartment, House, Room, Studio,
+Duplex / Penthouse, Coliving, Hostel, Land / Other. An empty selection means
+any type.
+
+| prop | decides |
+| --- | --- |
+| `value` / `onValueChange` | the selected keys, reported in option order |
+| `options` | `{ value, label, icon }[]`. Default `PROPERTY_TYPE_OPTIONS` from `@oxy.so/bloom/stay-filters` |
+| `labels` | override built-in labels by key |
+| `columns` | tiles per row. Default: as many as fit (2 to 4) |
+| `accessibilityLabel` | default "Property type" |
+
+Tiles have radius 12, a 24px icon over a `body-2-medium` label, 12 inset, at
+least 92 tall so a two-line label fits. At rest they have a 1px neutral-200
+(dark neutral-700) border; hover turns the border text-primary. **Selected** is
+a 2px text-primary border on a neutral-100 (dark neutral-800) tint — the inset
+gives back the extra pixel, so the content does not move. Each tile is a toggle
+`button` with `aria-pressed`. The same tiles, larger, are
+`PropertyTypeFilter` in [Stay Filters](/docs/bloom/main/stay-filters).
+
+## SavedSearchCard
+
+| prop | decides |
+| --- | --- |
+| `title` | the search's name, two lines at most |
+| `criteria` | short pre-formatted strings drawn as outlined chips |
+| `newCount` / `formatNewCount` | a primary `Badge` ("12 new") while above 0 |
+| `alertFrequency` / `alertsOffLabel` | the footer line with a bell; without a frequency a struck bell and "Alerts off" |
+| `icon` | the 44px tile's glyph. Default a search glyph |
+| `onPress` | opens the results; makes the header a button |
+| `onEdit` / `onDelete` | an "Edit" button and a delete icon button (`editLabel`, `deleteLabel`) |
+
+The card has radius 16, the card surface with a hairline, 16 inset. The header
+button is named "title, 12 new" and fills neutral on hover. The Edit and Delete
+buttons sit beside it, not inside it, and are named "Edit <title>" and
+"Delete <title>".
+
+## SaveSearchButton
+
+`saved`, `onSavedChange`, `label` (default "Save search"), `savedLabel`
+(default "Saved"), `disabled`. It is the 40-tall filter pill with a bell: an
+outline bell at rest, and inverted with a filled bell once saved. It is a
+toggle `button` with `aria-pressed`, named by the label it shows.
+
+## Mobile
+
+On a phone, put `SearchModeTabs variant="segmented"` above a
+`StaySearchCompact` whose `title` and `summary` describe the mode ("Find a home
+to rent", "Anywhere · Any time · Any budget"). It opens a sheet of
+`StaySearchStep` cards, one per segment, with the same panel parts inside. The
+stories show the flow for each mode at 375.
+
+## Accessibility
+
+- Mode tabs are a `tablist` with `aria-selected` on web and
+  `accessibilityState.selected` on native.
+- Bar segments are `button`s with `aria-expanded`; the typed location field is
+  named by its segment label.
+- Chips carry `aria-pressed`; property tiles and the save toggle carry
+  `aria-pressed` plus `accessibilityState.selected` for native.
+- Keyboard focus draws an accent ring on tabs, segments, tiles and the saved
+  card's header (`:focus-visible` only). Hover and selection are colour changes
+  only, and nothing scales.
+
+## Platform notes
+
+The panel drops below the bar with absolute positioning. On Android a panel
+that reaches past its parent's bounds does not receive touches, so use the
+compact trigger and a sheet on phones.

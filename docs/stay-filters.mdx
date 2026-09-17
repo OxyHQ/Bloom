@@ -7,7 +7,9 @@ order: 111
 # Stay Filters
 
 The filters surface of a search results page, as parts the app composes inside
-Bloom's `Dialog`. Data is props: the app owns the filter state, the result
+Bloom's `Dialog`. They cover stays and every other housing mode: the housing
+parts (property type, area, features, energy rating, availability, floor, and a
+log-scale sale price) sit alongside the stay ones. Data is props: the app owns the filter state, the result
 count and every label.
 
 ```tsx
@@ -133,6 +135,7 @@ last row.
 | --- | --- |
 | `buckets` | listing counts per price bucket, lowest first; they split `min`..`max` evenly. Omit for no histogram |
 | `min` / `max` / `step` | the slider's bounds and granularity |
+| `scale` | `linear` (default) or `log`, for sale prices — see below |
 | `value` / `onValueChange` | the controlled `[low, high]` |
 | `onValueCommit` | once per drag end, or per committed field |
 | `formatPrice` | how a field shows a price at rest, e.g. `(n) => (n >= max ? '$620+' : '$' + n)` |
@@ -151,6 +154,18 @@ numbers, and `formatPrice` is where the app's currency and locale come in.
 - **The slider** is Bloom's `RangeSlider` without value bubbles, pulled up so
   its rail sits on the bars' baseline. Both map `min`..`max` across the full
   width, so each bar sits over the prices it counts.
+- **`scale="log"` for sale prices.** A linear slider over €50K – €2M spends
+  nearly all of its width above what most people search. With `scale="log"`,
+  the same slider distance is the same **ratio**: the midpoint of 50,000 –
+  2,000,000 is about 316,000, not 1,025,000. The slider then runs over 200
+  positions (`PRICE_SCALE_POSITIONS`), and every price it reports is snapped to
+  `step` in price space, so pass a round step (5,000). `buckets` then split the
+  **position** span evenly, so bucket your counts in log space. With `min > 0`
+  the scale is geometric; with `min` of 0 it is offset by one (`log(1 + p)`) so
+  0 stays reachable. The fields are unchanged. Known gap: on a log scale the
+  thumbs' `aria-valuenow` is the position (0–200), not the price —
+  `RangeSlider` has no value text yet — so screen-reader users should rely on
+  the Minimum and Maximum fields.
 - **The fields** are floating-label `TextField`s. Focused, a field shows the
   bare number; the typed text is a draft until blur or submit, when it is
   parsed ("$1,200" reads as 1200), snapped, clamped to its own side of the
@@ -194,6 +209,78 @@ component. The selection is reported in `options` order. It needs an
 (default 6) options and an underlined "Show more" / "Show less" link
 (`showMoreLabel`, `showLessLabel`, `defaultExpanded`). A selected option past
 the fold stays visible while collapsed.
+
+### `PropertyTypeFilter`
+
+Multi-select icon tiles for the property type: Apartment, House, Room, Studio,
+Duplex / Penthouse, Coliving, Hostel, Land / Other (`PROPERTY_TYPE_OPTIONS`).
+`value` / `onValueChange` (in option order; empty means any type), `options`,
+`labels` (override by key), `columns` (default: as many as fit, 2 to 4, at 120
+wide), `accessibilityLabel` (default "Property type"). Tiles have radius 12,
+are at least 100 tall with 16 inset, and have a hairline at rest. Selected is a
+2px text-primary border on a neutral tint. Each tile is a toggle `button` with
+`aria-pressed`. The search panel's `PropertyTypePicker`
+(`@oxy.so/bloom/home-search`) is the same grid, compact.
+
+### `AreaRangeFilter`
+
+Floor area in m²: a Minimum / Maximum pair of fields, and with `slider` a
+`RangeSlider` above them. `value: [min | null, max | null]` — `null` is
+open-ended. An emptied field commits `null`, and a thumb resting on `min` or
+`max` reports `null`, so dragging back to an end removes that bound. `min`
+(0), `max` (500), `step` (5), `formatArea` (default `` `${n} m²` ``),
+`minLabel`, `maxLabel`, `onValueCommit`, and `accessibilityLabel` (default
+"Area", naming the group and the slider).
+
+### `FeatureFilter`
+
+What the home must have: Elevator, Parking, Terrace, Garden, Pool, Furnished,
+Pets allowed, Air conditioning, Heating, Accessible, Storage room
+(`HOUSING_FEATURE_OPTIONS`, each with an icon). `variant="chips"` (default)
+draws the filter pills, a `group` of `aria-pressed` toggles. `variant="checkboxes"`
+draws two columns of Bloom `Checkbox`es, which read better as a long list.
+`value`, `onValueChange` (in option order), `options`, `labels`,
+`accessibilityLabel` (default "Features").
+
+### `EnergyRatingFilter`
+
+Seven small coloured letter pills, A (best) to G (worst), 32 tall.
+
+**"And better" semantics:** `value` is the **worst** rating accepted. `'C'`
+matches A, B and C. The pills from A to the chosen letter keep their colour,
+the rest turn neutral, the chosen one has a 2px text-primary ring, and the line
+underneath reads "C and better". `null` means any rating, and every pill is
+coloured. Pressing the chosen letter again clears it.
+
+Colours come from the theme's `success` → `warning` → `error`: A, D and G are
+those colours, and the letters between each pair are mixed at thirds. The letter
+is white or near-black, whichever has more contrast with its fill. It is a
+`radiogroup` (default name "Energy rating"); each pill is a `radio` with
+`aria-checked`, named by the summary it would set ("C and better", "A only").
+`formatSummary` changes both.
+
+### `AvailabilityFilter`
+
+An "Available now" `SwitchFilterRow`, then "Available from" with Bloom's
+`DatePicker`. While `availableNow` is on, the picker is disabled and its day is
+ignored. The app keeps `date`, so switching off brings it back. Props:
+`availableNow`, `onAvailableNowChange`, `date`, `onDateChange`, the four labels,
+`minDate`, `locale`.
+
+### `FloorFilter`
+
+Multi-select pills: Ground, Middle, Top, With elevator (`FLOOR_OPTIONS`).
+Nothing selected means any floor. "With elevator" combines with the floor
+choices rather than replacing them. `value`, `onValueChange`, `options`,
+`labels`, `accessibilityLabel` (default "Floor").
+
+### Housing dialogs
+
+The stories compose a **Buy** dialog (property type, a log-scale price, rooms,
+area with a slider, feature chips, energy rating, floor, new builds only) and a
+**Rent** dialog (property type, monthly rent, rooms, area fields, availability,
+feature checkboxes, energy rating, floor). Both use the same `Dialog`,
+`FilterSection` and `FilterFooter` setup shown above.
 
 ### `SwitchFilterRow`
 

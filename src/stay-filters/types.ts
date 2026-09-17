@@ -38,6 +38,9 @@ export interface PriceHistogramProps {
   testID?: string;
 }
 
+/** `PriceRangeFilter`'s slider scale. */
+export type PriceScale = 'linear' | 'log';
+
 export interface PriceRangeFilterProps {
   /** Listing counts per price bucket for the histogram. Omit (or pass `[]`) to draw no histogram. */
   buckets?: number[];
@@ -58,8 +61,18 @@ export interface PriceRangeFilterProps {
    * Default `String(n)`.
    */
   formatPrice?: (price: number) => string;
-  /** Slider granularity. Default `1`. */
+  /**
+   * Price granularity. Default `1`. On a `log` scale every value the slider
+   * reports is snapped to it in price space — pass a round sale step (5,000).
+   */
   step?: number;
+  /**
+   * How the slider spreads `min`..`max`. `linear` (default): equal distance is
+   * an equal amount. `log`: equal distance is an equal RATIO, for sale prices
+   * that span orders of magnitude; the histogram buckets then split the log
+   * span evenly. See `PriceRangeFilter`.
+   */
+  scale?: PriceScale;
   /** Label of the lower field and the lower thumb's name. Default `"Minimum"`. */
   minLabel?: string;
   /** Label of the upper field and the upper thumb's name. Default `"Maximum"`. */
@@ -189,4 +202,159 @@ export interface FilterTriggerButtonProps {
   disabled?: boolean;
   style?: StyleProp<ViewStyle>;
   testID?: string;
+}
+
+export interface AreaRangeFilterProps {
+  /** Smallest selectable area. Default `0`. */
+  min?: number;
+  /** Largest selectable area. Default `500`. */
+  max?: number;
+  /** The selected `[low, high]`; `null` is open-ended ("no minimum") (controlled). */
+  value: [number | null, number | null];
+  /** Called with the next range when a field is committed, or as the slider moves. */
+  onValueChange: (value: [number | null, number | null]) => void;
+  /** Called once when a slider drag ends, or when a field is committed. */
+  onValueCommit?: (value: [number | null, number | null]) => void;
+  /** Granularity. Default `5`. */
+  step?: number;
+  /** Draws a `RangeSlider` above the fields. Default `false`. */
+  slider?: boolean;
+  /** Formats an area for the fields at rest. Default `` (n) => `${n} m²` ``. */
+  formatArea?: (area: number) => string;
+  /** Default `"Minimum"`. */
+  minLabel?: string;
+  /** Default `"Maximum"`. */
+  maxLabel?: string;
+  /** Names the group and the slider. Default `"Area"`. */
+  accessibilityLabel?: string;
+  disabled?: boolean;
+  style?: StyleProp<ViewStyle>;
+  /** Derives `-slider`, `-min` and `-max`. */
+  testID?: string;
+}
+
+/** The built-in property types. Any string works as a custom one. */
+export type PropertyType =
+  | 'apartment'
+  | 'house'
+  | 'room'
+  | 'studio'
+  | 'duplex'
+  | 'coliving'
+  | 'hostel'
+  | 'other';
+
+export interface PropertyTypeOption<T extends string = PropertyType> {
+  value: T;
+  label: string;
+  icon: FilterIconComponent;
+}
+
+export interface PropertyTypeTilesProps<T extends string = PropertyType> {
+  /** The selected types (controlled). Empty means any type. */
+  value: T[];
+  /** Called with the next selection, kept in `options` order. */
+  onValueChange: (value: T[]) => void;
+  /** The tiles, in order. Default the eight built-in types. */
+  options?: readonly PropertyTypeOption<T>[];
+  /** Override the built-in labels by value. */
+  labels?: Partial<Record<T, string>>;
+  /**
+   * Tiles per row. Default: as many as fit (at least 2, at most 4) at the
+   * tile's minimum width.
+   */
+  columns?: number;
+  /** Names the group. Default `"Property type"`. */
+  accessibilityLabel?: string;
+  disabled?: boolean;
+  style?: StyleProp<ViewStyle>;
+  /** Derives `-<value>` per tile. */
+  testID?: string;
+}
+
+export type PropertyTypeFilterProps<T extends string = PropertyType> = PropertyTypeTilesProps<T>;
+
+/** The built-in housing features. */
+export type HousingFeature =
+  | 'elevator'
+  | 'parking'
+  | 'terrace'
+  | 'garden'
+  | 'pool'
+  | 'furnished'
+  | 'pets'
+  | 'airConditioning'
+  | 'heating'
+  | 'accessible'
+  | 'storage';
+
+export interface FeatureFilterProps<T extends string = HousingFeature>
+  extends Omit<ToggleChipGroupProps<T>, 'options' | 'accessibilityLabel'> {
+  /** The features, in order. Default the eleven built-in ones, with icons. */
+  options?: ToggleChipOption<T>[];
+  /** Override built-in labels by value. */
+  labels?: Partial<Record<T, string>>;
+  /** `chips` (default): filter pills with icons. `checkboxes`: a two-column list of `Checkbox`es. */
+  variant?: 'chips' | 'checkboxes';
+  /** Names the group. Default `"Features"`. */
+  accessibilityLabel?: string;
+}
+
+/** An EU-style energy rating, A (best) to G (worst). */
+export type EnergyRating = 'A' | 'B' | 'C' | 'D' | 'E' | 'F' | 'G';
+
+export interface EnergyRatingFilterProps {
+  /**
+   * The WORST rating accepted, or `null` for any rating (controlled). `'C'`
+   * means "C and better": A, B and C match.
+   */
+  value: EnergyRating | null;
+  /** Pressing the selected letter again clears it (`null`). */
+  onValueChange: (value: EnergyRating | null) => void;
+  /** Formats the line under the letters. Default `"C and better"`, `"A only"`, `"Any rating"`. */
+  formatSummary?: (value: EnergyRating | null) => string;
+  /** Names the radio group. Default `"Energy rating"`. */
+  accessibilityLabel?: string;
+  disabled?: boolean;
+  style?: StyleProp<ViewStyle>;
+  /** Derives `-<letter>` per pill and `-summary`. */
+  testID?: string;
+}
+
+export interface AvailabilityFilterProps {
+  /** Only places free to move into today. */
+  availableNow: boolean;
+  onAvailableNowChange: (value: boolean) => void;
+  /** Available from this day at the latest; ignored (and the picker disabled) while `availableNow`. */
+  date: Date | null;
+  onDateChange: (date: Date | null) => void;
+  /** Default `"Available now"`. */
+  availableNowLabel?: string;
+  /** Default `"Ready to move in today"`. */
+  availableNowDescription?: string;
+  /** The date row's title. Default `"Available from"`. */
+  dateLabel?: string;
+  /** The picker trigger with no day chosen. Default `"Any date"`. */
+  datePlaceholder?: string;
+  /** Days before this can not be picked. */
+  minDate?: Date | null;
+  /** BCP 47 locale for the picker. */
+  locale?: string;
+  disabled?: boolean;
+  style?: StyleProp<ViewStyle>;
+  /** Derives `-now` and `-date`. */
+  testID?: string;
+}
+
+/** The built-in floor choices. */
+export type FloorOption = 'ground' | 'middle' | 'top' | 'elevator';
+
+export interface FloorFilterProps<T extends string = FloorOption>
+  extends Omit<ToggleChipGroupProps<T>, 'options' | 'accessibilityLabel'> {
+  /** Default Ground, Middle, Top, With elevator. */
+  options?: ToggleChipOption<T>[];
+  /** Override built-in labels by value. */
+  labels?: Partial<Record<T, string>>;
+  /** Names the group. Default `"Floor"`. */
+  accessibilityLabel?: string;
 }
