@@ -89,13 +89,9 @@ const HIDE_MS = 200;
 type UploadPhase = 'idle' | 'uploading' | 'complete';
 type StaggerState = 'shown' | 'hiding' | 'hidden';
 
-export function formatFileSize(bytes: number): string {
-  if (bytes >= 1024 * 1024) {
-    const mb = bytes / (1024 * 1024);
-    return `${mb >= 10 ? Math.round(mb) : Math.round(mb * 10) / 10} MB`;
-  }
-  return `${Math.max(1, Math.round(bytes / 1024))} KB`;
-}
+import { formatFileSize } from './shared';
+
+export { formatFileSize };
 
 function extensionFor(fileName: string): string {
   return fileName.split('.').pop()?.toLowerCase() ?? '';

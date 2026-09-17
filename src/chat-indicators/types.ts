@@ -1,3 +1,4 @@
+import type { ComponentType } from 'react';
 import type { ReactNode } from 'react';
 import type { StyleProp, TextStyle, ViewStyle } from 'react-native';
 
@@ -170,3 +171,15 @@ export interface StoryRingProps {
   style?: StyleProp<ViewStyle>;
   testID?: string;
 }
+
+/**
+ * A chat icon: the caller passes the component, and the part that draws it
+ * decides the size and the tint. One declaration for every chat family — two
+ * of them had grown their own, which collided in the root barrel.
+ */
+export type ChatIconComponent = ComponentType<{
+  width?: number;
+  height?: number;
+  fill?: string;
+  testID?: string;
+}>;

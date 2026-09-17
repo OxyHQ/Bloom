@@ -1,0 +1,297 @@
+---
+title: Call UI
+description: Voice and video calls — the stage, the controls, the incoming banner and screen, the group grid and the call log. Presentational only.
+order: 64
+---
+
+# Call UI
+
+```tsx
+import {
+  CallScreen,
+  CallControls,
+  CallControlButton,
+  CallMinimisedPill,
+  IncomingCallBanner,
+  IncomingCallScreen,
+  GroupCallGrid,
+  GroupCallTile,
+  GroupCallBar,
+  CallHistoryRow,
+  CallHistoryList,
+} from '@oxy.so/bloom/call-ui';
+```
+
+**Nothing here knows what WebRTC is.** A video frame arrives as a `ReactNode`
+slot, the elapsed time arrives as the string your app already formatted
+(`"00:42"`), and `speaking` arrives from whatever audio-level meter you run. The
+family draws a call; it does not place one.
+
+## The stage is dark in both modes
+
+A `CallScreen` backs a video frame Bloom does not own. White chrome over an
+unknown frame is the only thing that survives a bright kitchen and a dark
+bedroom in the same call, so the stage stays a deep neutral and the MODE picks
+the depth only — `neutral-900` in light, `neutral-950` in dark. The preset's hue
+still tints both, and the accent still comes from your theme.
+
+The surfaces that sit IN the app — `IncomingCallBanner`, `GroupCallBar`,
+`CallHistoryRow`/`List` — take the ordinary theme surface and flip with the mode
+like every other card in Bloom.
+
+## `CallScreen`
+
+```tsx
+<CallScreen
+  mode="voice"
+  name="Ana Restrepo"
+  subtitle="Mobile"
+  avatar={avatarUrl}
+  status="active"
+  duration="00:42"
+  encryption="End-to-end encrypted"
+  onMinimise={minimise}
+  onOpenChat={openChat}
+  controls={{
+    muted,
+    onMutedChange: setMuted,
+    speaker,
+    onSpeakerChange: setSpeaker,
+    onEndCall: hangUp,
+  }}
+/>
+```
+
+| prop                  | decides                                                                  |
+| --------------------- | ------------------------------------------------------------------------ |
+| `mode`                | `'voice'` (avatar over an accent wash) or `'video'`                       |
+| `status`              | `calling · ringing · connecting · active · reconnecting · onHold · ended` |
+| `duration`            | the elapsed time, PRE-FORMATTED. Only drawn while `active`                |
+| `statusText`          | replaces the status line entirely                                         |
+| `accentColor`         | the hue the voice stage is washed with — derive it from artwork yourself  |
+| `encryption`          | a string beside a padlock, or your own node                               |
+| `remoteVideo`         | fills the stage                                                          |
+| `localVideo`          | the picture-in-picture                                                   |
+| `localVideoCorner`    | `'top-right'` by default; CONTROLLED                                      |
+| `onMoveLocal(corner)` | called with the NEXT corner when the PiP is pressed                       |
+| `controls`            | `CallControlsProps` — the bar at the foot                                 |
+| `controlsSlot`        | replaces the bar entirely                                                 |
+| `minimised`           | collapses the whole screen to `CallMinimisedPill`                         |
+
+### The status line has a precedence, and it is a function
+
+`resolveCallStatusLine({ status, duration, statusText, labels })` is exported,
+and `CallScreen` calls it rather than branching in JSX:
+
+1. `statusText` — you said exactly what to show
+2. `ended` — **never** a timer; a frozen last tick reads as a live call
+3. `reconnecting` — the timer keeps counting underneath, but saying so while
+   the media is down is a lie the user can see
+4. `active` — `duration`, or "Connected" until the first tick arrives
+5. anything else — that status's own label
+
+Every label is overridable through `labels` for translation.
+
+### The PiP moves by PRESS
+
+A drag has no keyboard and no screen-reader equivalent, so pressing the local
+frame cycles the corners clockwise and reports the new one through
+`onMoveLocal`. The whole 96×140 frame is the target. If you want a real drag
+gesture, wrap the screen and report the corner it landed in — `localVideoCorner`
+is a controlled prop, so both paths drive the same state.
+
+## `CallControls`
+
+**A control appears when you hand it a HANDLER.** `onMutedChange` draws the mic,
+`onVideoChange` the camera, `onFlipCamera` the flip, `onEndCall` the red button.
+There is no `mode` prop and no `show*` booleans, because a list of what to show
+kept in sync with a list of what to do is two sources of truth for one row — and
+the failure is a button that does nothing.
+
+```tsx
+<CallControls
+  muted={muted}
+  onMutedChange={setMuted}
+  videoOn={cameraOn}
+  onVideoChange={setCameraOn}
+  onFlipCamera={flip}
+  onScreenShareChange={setSharing}
+  onEndCall={hangUp}
+  size="large"
+  showLabels
+/>
+```
+
+`controls` reorders and narrows the set; a key in it with no handler is still
+skipped, so it can never put a dead button back. The end button is last, always.
+
+| size     | button | glyph |
+| -------- | ------ | ----- |
+| `small`  | 40     | 20    |
+| `medium` | 48     | 22    |
+| `large`  | 56     | 26    |
+
+### Toggle accessibility
+
+`CallControlButton`'s `active` prop decides the accessibility SHAPE. Passing it
+makes the button a toggle: it emits `aria-pressed` for web **and**
+`accessibilityState.selected` for native, because react-native-web reads only
+the first and React Native has no concept of the second. Leaving `active`
+undefined makes a plain action button — "flip camera" is not a state, and a
+button reporting `aria-pressed="false"` forever announces one it does not have.
+
+The name flips with the state and says what pressing DOES: "Mute" → "Unmute".
+
+## `CallMinimisedPill`
+
+```tsx
+<CallMinimisedPill
+  name="Ana Restrepo"
+  duration="00:42"
+  muted
+  onMutedChange={setMuted}
+  onExpand={reopen}
+  onEndCall={hangUp}
+  style={{ position: 'absolute', left: x, top: y }}
+/>
+```
+
+The timer is in tabular figures, so a running clock does not jitter sideways.
+
+**It does not drag itself.** Your app knows the safe areas, the keyboard and
+what is underneath; a component that moves itself inside a layout it cannot see
+ends up under a tab bar. Pass `style` with the offsets — an animated one is
+fine.
+
+`<CallScreen minimised />` renders exactly this, reading `name`, `duration`,
+`mode`, `accentColor` and `controls.muted` from the screen's own props, with
+`onMinimise` becoming the pill's EXPAND press.
+
+## `IncomingCallBanner` and `IncomingCallScreen`
+
+The banner is a card for a call arriving while the app is open. Its two round
+buttons are SIBLINGS of the banner's own press target, never nested inside it: a
+button inside a button is one hit area on web and two announcements on native.
+
+```tsx
+<IncomingCallBanner
+  name="Marcel Dubé"
+  mode="video"            // "Incoming video call"
+  status="online"
+  onAccept={answer}
+  onDecline={decline}
+  onPress={openFullScreen}
+/>
+```
+
+The screen is the full-bleed version, with two answer modes:
+
+```tsx
+<IncomingCallScreen
+  name="Lucía Ferrer"
+  answerMode="slide"      // or "buttons" (the default)
+  onAccept={answer}
+  onDecline={decline}
+  onMessage={reply}
+  onRemind={snooze}
+/>
+```
+
+**The slide track answers a PRESS as well as a drag**, and that is not a
+convenience: the press is the same control's accessible path, so the knob
+carries `role="button"` and the accept name whichever way it is used. A release
+past 60% of the track answers (`SLIDE_ANSWER_THRESHOLD`); an unmeasured track
+never does, because `dx >= 0` is true for every stray touch.
+
+The chevrons behind the knob breathe on a 1.4s loop and stand still under
+reduced motion — the hint is the arrows, not the movement.
+
+## `GroupCallGrid`
+
+```tsx
+<GroupCallGrid
+  participants={people}          // { id, name, avatar?, video?, muted?, speaking?, presenting? }
+  maxTiles={9}
+  onParticipantPress={focus}
+/>
+```
+
+Columns are `ceil(sqrt(n))` — 2 side by side, 4 a square, 6 as 3×2, 9 as 3×3,
+12 as 4×3. `callGridColumns(n)` and `callGridLayout(count, maxTiles, columns?)`
+are exported and pure, so the arithmetic is testable without rendering.
+
+**Past `maxTiles` the last CELL becomes `+N`**, rather than a cell being added
+beside the grid: a 9-up that quietly becomes a 10-cell 4×3 the moment a tenth
+person joins is the failure that shape exists to stop. With `maxTiles={9}` and
+12 people you get 8 faces and a `+4`.
+
+`layout="spotlight"` draws one big tile over a strip of the rest. The big one is
+`spotlightId`, else whoever is `presenting`, else whoever is `speaking`, else the
+first — `callSpotlightIndex` is exported too.
+
+The grid MEASURES itself unless you pass `width`, and draws nothing until it has
+one: a first paint at zero stacks every tile on top of itself, and on native
+that frame is visible.
+
+### The speaking ring
+
+`GroupCallTile` draws it as an OVERLAY, never as the tile's own border — a
+border that appears changes the content box, so every tile would shift by 3px
+each time somebody started talking. It pulses by opacity on a 900ms loop and
+holds still at full opacity under reduced motion.
+
+## `GroupCallBar`
+
+```tsx
+<GroupCallBar
+  title="Saturday planning"
+  speakingName="Marcel"        // wins over statusText, with a live dot
+  statusText="4 on the call"
+  participants={people}
+  joined={joined}
+  onJoin={join}
+  onLeave={leave}
+  muted={muted}
+  onMutedChange={setMuted}
+  onPress={openCall}
+/>
+```
+
+The speaking line REPLACES the status line rather than sitting beside it: two
+lines in a 56px strip is a strip that scrolls, and "who is talking" is the only
+thing on it that changes second to second. Avatars overlap by 10px and the tail
+becomes a `+N` mark.
+
+## `CallHistoryRow` and `CallHistoryList`
+
+```tsx
+<CallHistoryList
+  sections={[
+    { title: 'Today', items: [{ id: '1', name: 'Ana Restrepo', direction: 'missed', meta: '09:14', count: 2 }] },
+    { title: 'Yesterday', items: [...] },
+  ]}
+  onItemPress={open}
+  onCallBack={ring}
+/>
+```
+
+**Direction is two signals, not one.** The arrow says which way the call went
+(down-left arrived, up-right left) and the COLOUR says whether it connected —
+`missed` and `declined` are drawn in the negative colour. A missed call told
+apart from a received one by hue alone is a distinction one reader in twelve
+cannot make, so the second line names it in words ("Missed · Yesterday, 18:40")
+and the row's accessible name carries it too.
+
+`meta` and every section `title` arrive PRE-FORMATTED. Deciding what
+"yesterday" means needs a locale and a timezone your app has and a component
+does not. An empty section is dropped rather than drawn with a heading and
+nothing under it; `emptyState` covers the case where every section is empty.
+
+## What jest cannot see here
+
+The suite (`src/__tests__/CallUi.test.tsx`) reads the emitted DOM through the
+real react-native-web, so it pins every accessible name, both toggle spellings
+and the grid's geometry. It cannot see whether the stage's scrim actually keeps
+the controls legible over a bright frame, whether the PiP overlaps the top bar
+on a short screen, or whether the speaking ring reads as a ring at all. Those
+are browser and device checks.

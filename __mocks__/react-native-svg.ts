@@ -36,6 +36,8 @@ export const LinearGradient = createSvgComponent('LinearGradient');
 export const RadialGradient = createSvgComponent('RadialGradient');
 export const Stop = createSvgComponent('Stop');
 export const ClipPath = createSvgComponent('ClipPath');
+// `<Pattern>` inside `<Defs>` — the chat wallpaper's repeated-glyph tile.
+export const Pattern = createSvgComponent('Pattern');
 export const Mask = createSvgComponent('Mask');
 export const Line = createSvgComponent('Line');
 export const Polygon = createSvgComponent('Polygon');

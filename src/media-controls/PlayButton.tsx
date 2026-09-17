@@ -52,6 +52,7 @@ const SIZE_CONFIG: Record<PlayButtonSize, { box: number; glyph: number }> = {
 function PlayButtonComponent({
   playing,
   onPress,
+  interactive = true,
   size = 'medium',
   variant = 'accent',
   loading = false,
@@ -103,6 +104,39 @@ function PlayButtonComponent({
     ...(IS_WEB ? { transitionProperty: 'background-color', transitionDuration: '150ms' } : null),
   };
 
+  const glyphBox = (
+    <View pointerEvents="none" style={{ width: glyph, height: glyph }}>
+      {loading ? (
+        <SpinnerRing size={glyph} color={glyphColor} />
+      ) : (
+        <Glyph width={glyph} height={glyph} fill={glyphColor} />
+      )}
+    </View>
+  );
+
+  // `interactive={false}` makes this DECORATION — the poster frame or the row around it
+  // is the press target, and a second `role="button"` inside one is invalid HTML
+  // (react-dom says so out loud) and a second stop for a screen reader on the
+  // same action. It keeps its box and its fill; it just stops claiming to be a
+  // control. An explicit `accessibilityLabel` still names it, for the rare case
+  // where the glyph is the only thing saying what state the media is in.
+  if (!interactive) {
+    return (
+      <View
+        {...webDataSet({ bloomPlayButton: variant })}
+        role={accessibilityLabel ? 'img' : undefined}
+        accessibilityLabel={accessibilityLabel}
+        aria-hidden={accessibilityLabel ? undefined : true}
+        importantForAccessibility={accessibilityLabel ? 'yes' : 'no-hide-descendants'}
+        accessibilityElementsHidden={!accessibilityLabel}
+        style={[rootStyle, style]}
+        testID={testID}
+      >
+        {glyphBox}
+      </View>
+    );
+  }
+
   return (
     <Pressable
       {...webDataSet({ bloomMediaFocusable: '', bloomPlayButton: variant })}
@@ -120,13 +154,7 @@ function PlayButtonComponent({
       style={[rootStyle, style]}
       testID={testID}
     >
-      <View pointerEvents="none" style={{ width: glyph, height: glyph }}>
-        {loading ? (
-          <SpinnerRing size={glyph} color={glyphColor} />
-        ) : (
-          <Glyph width={glyph} height={glyph} fill={glyphColor} />
-        )}
-      </View>
+      {glyphBox}
     </Pressable>
   );
 }

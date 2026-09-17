@@ -1,0 +1,330 @@
+---
+title: Message Media
+description: Everything that goes inside a chat bubble besides text — photos, albums, video, voice notes, files, locations, contacts, polls, stickers, GIFs, link previews — plus the info panel's media and file grids.
+order: 64
+---
+
+# Message Media
+
+```tsx
+import {
+  ContactMessage,
+  DocumentGrid,
+  FileMessage,
+  GifMessage,
+  ImageMessage,
+  LinkPreviewMessage,
+  LocationMessage,
+  MediaAlbum,
+  PollMessage,
+  SharedMediaGrid,
+  StickerMessage,
+  VideoMessage,
+  VoiceMessage,
+} from '@oxy.so/bloom/message-media';
+```
+
+Thirteen blocks that go INSIDE a bubble, and none of them draw one. The shell —
+grouping, the tail, the meta row, reactions — is `message-bubble`'s job; these
+fill its `media` slot, or stand on their own in a panel.
+
+## The two things every block has
+
+**`tone`.** `'incoming'` (default) is the neutral bubble, `'outgoing'` the accent
+one. It is not styling: half of these surfaces sit on a saturated fill where
+`colors.textSecondary` lands anywhere between 1.1:1 and 3:1 depending on the
+preset, so a block that reads page colours is illegible on one of the two
+bubbles and nobody notices until a preset changes. `resolveMessageMediaPaint()`
+takes the bubble fill and MIXES the bubble's own on-colour up from it until the
+result clears 4.5:1 — so the muted label is muted by the same amount on every
+preset, in both modes, and is never unreadable.
+
+```tsx
+<ImageMessage tone="outgoing" source={photo} />
+<FileMessage tone="incoming" name="Lease.pdf" sizeBytes={2_560_000} />
+```
+
+`onColor` and `bubbleColor` override the two ends for an app painting its own
+bubble; everything between them is re-derived, so the contrast guarantee holds.
+
+**`radius`.** The BUBBLE owns the corners. A photo flush with the bubble's edge
+has to take the bubble's radius on the side it touches, or the two draw two arcs
+a pixel apart. Default 16; `message-bubble` passes its own.
+
+## `ImageMessage`
+
+```tsx
+<ImageMessage
+  source={photo}                    // URL, {uri}, require(), or an Oxy file ID
+  aspectRatio={4 / 3}
+  placeholderColor="#5b6f7a"        // the flat colour a blurhash resolves to
+  spoiler
+  onPress={(index) => open(index)}  // index is always 0, so one handler serves a photo and an album
+/>
+```
+
+| prop                              | decides                                                             |
+| --------------------------------- | ------------------------------------------------------------------- |
+| `aspectRatio` / `maxWidth` / `maxHeight` | the frame; the photo is fitted inside both caps, never cropped |
+| `placeholderColor`                | the fill shown until the photo paints. Bloom decodes no blurhash — that needs a decoder dependency; pass the average colour the decoder gives you |
+| `spoiler` / `spoilerLabel` / `onReveal` | hides the photo until pressed. Revealing LATCHES               |
+| `state` / `progress` / `onCancel` / `onRetry` | `'sending'` draws the ring, `'failed'` the retry row     |
+
+**The spoiler is opaque on native.** On web it is a translucent wash with a
+`backdrop-filter` blur, which is the look. A real blur on native needs
+`expo-blur`, an optional peer this family does not take, and a translucent cover
+with no blur behind it shows the photo it exists to hide — so native covers it
+completely. A spoiler that half-works is not a spoiler.
+
+## `MediaAlbum`
+
+```tsx
+<MediaAlbum
+  items={photos}          // 2–10 cells; past `maxTiles` the last takes a "+N"
+  width={260}
+  onPress={(index) => open(index)}
+/>
+```
+
+The packed grid, laid out by `albumLayout(count, width, { gap, radius, maxTiles })`,
+which is exported so an app (or a test) can read the geometry without rendering:
+
+| items | rows      | shape                                      |
+| ----- | --------- | ------------------------------------------- |
+| 2     | `[2]`     | two squares                                 |
+| 3     | `[1, 2]`  | one banner over two halves                  |
+| 4     | `[2, 2]`  | 2 × 2                                       |
+| 5     | `[2, 3]`  |                                             |
+| 6     | `[3, 3]`  |                                             |
+| 7     | `[2, 2, 3]` |                                           |
+| 8     | `[2, 3, 3]` |                                           |
+| 9     | `[3, 3, 3]` |                                           |
+| 10    | `[3, 3, 4]` |                                           |
+
+Cells are ABSOLUTE rectangles with integer widths that sum to the frame exactly.
+A flex row rounds each child independently, and the last cell in a row of three
+ends up a pixel short of a ROUNDED outer corner — which reads as a rendering
+fault rather than as a gap. Only the group's four outer corners are rounded; a
+cell in the middle is square on every side.
+
+A `video` cell draws a play glyph and a duration pill; `spoiler` works per cell.
+
+## `VideoMessage`
+
+```tsx
+<VideoMessage source={poster} duration={187} sizeBytes={25_800_000} onPress={play} />
+<VideoMessage source={poster} variant="videoNote" duration={31} position={19} />
+```
+
+`thumbnail` is a poster with the shared `PlayButton` (`media-controls`,
+`inverse`) centred on it and a duration pill. `watched` dims the pill and adds a
+tick rather than removing anything — a watched video is still a video.
+
+`videoNote` is the round short note: the circle is a mask and the ring around it
+is `position / duration`.
+
+**The play disc is drawn, not pressed.** The whole poster is the button; the
+`PlayButton` inside it carries no handler and is hidden from the pointer and
+from assistive tech. A second `role="button"` nested in the first swallows the
+press on web and is read twice by a screen reader.
+
+## `VoiceMessage`
+
+```tsx
+<VoiceMessage
+  samples={amplitudes}          // any length — resampled to `barCount`
+  duration={14}
+  position={position}
+  playing={playing}
+  onPlayPress={toggle}
+  onSeek={setPosition}
+  rate={rate} onRateChange={setRate}   // 1 → 1.5 → 2 → 1
+  unplayed={position === 0}
+  transcript="Left the keys with the neighbour."
+/>
+```
+
+`samples` are amplitudes 0..1, oldest first. Down-sampling takes the PEAK of
+each bucket, not the mean: a voice note is silence with peaks in it, and
+averaging flattens every recording into the same grey slab. Every bar has an 18%
+floor, so real silence is a short bar rather than a hole in the waveform.
+
+Played bars take the accent, unplayed ones the rail — two colours, NOT one at
+two opacities. An opacity composites against what is behind it, and behind it is
+the accent bubble half the time.
+
+The waveform is a `slider` (`accessibilityRole="adjustable"`) with flat
+`aria-value*` props, focusable on web, answering arrows / Home / End and the
+native `increment` / `decrement` actions. `seekPositionAt(x, width, duration)`
+is exported and clamps at BOTH ends — hit slop reports a negative `locationX`.
+
+The clock shows the LENGTH before playback starts and the ELAPSED position
+after. Two numbers side by side is a player's idiom; in a bubble the second one
+is chrome.
+
+## `FileMessage`
+
+```tsx
+<FileMessage name="Tenancy agreement.pdf" sizeBytes={2_560_000} onDownload={save} />
+<FileMessage variant="compact" name="Rents.xlsx" sizeBytes={831_488} transfer="downloading" progress={0.4} onCancel={stop} />
+```
+
+The kind comes from `fileKindFor(name, mimeType)` — the NAME first, because a
+`.csv` served as `text/plain` is still a spreadsheet to its sender. Ten kinds:
+`pdf doc sheet slides zip audio video image code other`, each with its own glyph
+and hue from the theme's status / accent roles.
+
+**The kind colour survives BOTH tones.** On the neutral bubble the disc is a
+light tint of the hue. On the accent bubble a tint of the hue would be a tint of
+a saturated fill, so the disc becomes a near-white plate and the hue is darkened
+onto it — rather than the colour being dropped because the bubble is coloured.
+
+The meta line is `"2.4 MB · PDF"`, formatted with `formatFileSize` from
+`file-upload` — the SAME formatter the uploader uses, extended with a gigabyte
+branch, so a size cannot read two ways in one app.
+
+The ring IS the button: the thing you press to cancel is the thing showing you
+how far it got.
+
+## `LocationMessage`
+
+```tsx
+<LocationMessage
+  title="Casa del Puerto"
+  address="Carrer de la Marina 118"
+  renderMap={({ width, height }) => <YourMapView width={width} height={height} />}
+/>
+<LocationMessage live liveUntilLabel="Live until 18:30" onStopSharing={stop} />
+```
+
+Bloom ships no map engine — a tile provider is a dependency, a key and a licence
+— so `renderMap` is the slot. Without it the frame draws a neutral grid, which
+is deliberately abstract: a fake coastline would be a map of somewhere.
+
+`live` swaps the pin for a pulsing dot (still under reduced motion — it reports
+"sharing", not "working", and the label already says so) and puts "Stop sharing"
+BELOW the frame rather than on it: it is destructive and must not be one mis-tap
+from "open the map". `liveUntilLabel` arrives pre-formatted; a component that
+reads the clock renders differently in every test and every timezone.
+
+## `ContactMessage`
+
+```tsx
+<ContactMessage name="Marta Ferreira" detail="+34 600 11 22 33" onMessage={chat} onAdd={save} />
+```
+
+Avatar, name, handle, and two EQUAL actions. "Message" and "Add" are the same
+size of decision, and ranking one with a filled button puts a second accent
+surface inside an accent surface. Only the actions are pressable.
+
+## `PollMessage`
+
+```tsx
+<PollMessage question="When should we do the handover?" options={options} onVote={vote} />
+<PollMessage question="…" multiple anonymous onVote={vote} />
+<PollMessage question="…" quiz voted options={[{ id: 'a', label: '…', votes: 3, correct: true }]} />
+```
+
+| prop                        | decides                                                          |
+| --------------------------- | ---------------------------------------------------------------- |
+| `multiple`                  | checkboxes, picks held locally until "Vote"                      |
+| `anonymous` / `quiz`        | labels on the question — they change what voting MEANS            |
+| `voted` / `showResults`     | bars and percentages replace the marks                            |
+| `totalVotes`                | defaults to the sum of `votes`                                    |
+
+Percentages come from `pollPercentages(votes, total?)`, which distributes the
+rounding remainder by largest fraction so the column sums to exactly 100.
+Rounding each share on its own gives three equal options 33/33/33 and two equal
+ones 51/51 — a poll that visibly cannot add up is a poll nobody believes. No
+votes at all is all zeroes, not an even split: "nobody voted" and "everyone
+agrees" are different facts. An explicit `total` LARGER than the votes cast is
+not inflated back to 100.
+
+Before the results an option is a `radio` / `checkbox` with `aria-checked`;
+after them it is a `progressbar` with its own name and the three `aria-value*`
+attributes, because pressing it no longer does anything. A quiz marks the right
+answer AND the viewer's wrong pick — hiding the right answer teaches nobody.
+
+## `StickerMessage` and `GifMessage`
+
+```tsx
+<StickerMessage source={sticker} accessibilityLabel="Sticker: grinning sun" />
+<GifMessage source={gif} aspectRatio={1.6} />
+```
+
+**A sticker draws NO surface** — no background, no radius, no padding. Render it
+with `message-bubble`'s `variant="bare"`: a bubble behind a sticker is a picture
+of a sticker, and its scrim turns a cut-out into a square. `resizeMode` is
+`contain`; cropping one cuts the drawing. The NAME matters more here than
+anywhere else — a sticker IS its meaning and there is no caption beside it, so
+pass the emotion rather than letting it announce "Sticker".
+
+A GIF is capped narrower than a photo (220 rather than 260) because they are
+usually low-resolution. The pill is the only thing that says the frame moves,
+which matters when it has not started — Android's `Image` decodes an animated
+GIF as a still unless the app enables the animated decoders in its Fresco
+config, so `playing={false}` plus the play glyph is the honest state there.
+
+## `LinkPreviewMessage`
+
+```tsx
+<LinkPreviewMessage
+  url="https://example.invalid/guides/moving-in"
+  siteName="Vila Nova Guide"
+  title="What to check before you sign a lease"
+  description="Damp, meters, deposits…"
+  image={cover}
+  layout="large"        // or "inline": a 56px thumb beside the text
+/>
+```
+
+**Why this is not `link-preview`'s `LinkPreviewCard`.** That card was read first
+and is the right component everywhere else; it is a `Card variant="outlined"` at
+`radius-20` painting `colors.text` / `colors.textSecondary` on `colors.card`.
+All three are PAGE colours. Dropped into an outgoing bubble it draws a
+page-coloured card on the accent fill — a second surface inside the message,
+with its own border and background, and a body colour that is a grey on a
+saturated fill. Giving it a tone, a palette and a no-chrome mode would be a
+different component wearing the same name. So the bubble's preview is its own
+block: no surface, an accent RULE down the left edge instead of a border, every
+colour from the tone's palette. Use `LinkPreviewCard` outside a bubble and this
+inside one.
+
+## `SharedMediaGrid` and `DocumentGrid`
+
+The two tabs of a chat's info panel.
+
+```tsx
+<SharedMediaGrid items={media} width={340} maxItems={9} onPressItem={open} onPressOverflow={seeAll} />
+<DocumentGrid items={files} onPressItem={open} onDownloadItem={save} />
+```
+
+`SharedMediaGrid` is the tight 3-column grid: square tiles, 2px gaps, radius 4 —
+a grid, not a row of cards. At three columns a 16px radius on every tile turns
+it into a pattern of gaps, and the outer corners belong to the panel. Column
+widths are integers summing to the width, the same arithmetic the album uses.
+"+N more" REPLACES the last tile so the grid stays rectangular.
+
+`DocumentGrid` is the files tab: a list of `FileMessage variant="compact"` rows,
+so the icons, colours, meta line and download ring are the ones the bubble draws.
+A second file-row implementation is a second place for the size format to drift.
+
+**The row's press target is the identity half only.** The download / cancel
+control beside it is its own button, laid out as a sibling — nesting it inside
+the row's `Pressable` would be a button inside a button (invalid HTML, and one
+action announced twice). `testID`-wise that is `<id>-open` for the row's press
+target and `<id>-row` for the box around both.
+
+## Exports
+
+Components aside, the family publishes the maths so an app can lay out against
+it: `albumLayout`, `albumRows`, `pollPercentages`, `formatVoteCount`,
+`resampleWaveform`, `seekPositionAt`, `nextPlaybackRate`, `fileKindFor`,
+`fileTypeLabel`, `resolveMessageMediaPaint`, `resolveBubbleColor`.
+
+## Images
+
+Every `source` accepts a full URL, an RN source object, a `require()` result, or
+a bare Oxy file ID resolved through the registered `ImageResolver` — the same
+rule `Avatar` uses, so one registration covers the whole family. A file ID with
+no resolver renders the placeholder rather than requesting a broken URL.

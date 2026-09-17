@@ -199,8 +199,14 @@ const DELEGATING_TAGS = ['MenuRowShell'];
  * the label and drops the role, which is correct, because a card with no
  * `onPress` is not a link. `link-preview` is its one role-passing caller and it
  * always passes `onPress`.
+ *
+ * `message-media/parts.tsx`'s `MediaPressable` is the third. It is handed
+ * `role="link"` by `LinkPreviewMessage` and forwards it to its own `Pressable`
+ * alongside `accessibilityLabel`, which is a REQUIRED prop on it — every press
+ * target in that family renders a photo, a waveform or a map tile and so has no
+ * contents to be named by, and making the name mandatory at the type level is
+ * what stops one shipping without it.
  */
-const NAME_DELEGATING_TAGS = ['Card', 'MenuRowShell'];
 
 /**
  * `const X = Animated.createAnimatedComponent(<host>)`, collected from the
@@ -312,6 +318,7 @@ interface Element {
  * text-bearing on the strength of `{color}`, and the toast close button this
  * rule was written to catch survived its own mutation test.
  */
+const NAME_DELEGATING_TAGS = ['Card', 'MediaPressable', 'MenuRowShell'];
 function hasTextChildren(sf: ts.SourceFile, opening: ts.Node): boolean {
   const parent = opening.parent;
   if (!ts.isJsxElement(parent)) return false;
