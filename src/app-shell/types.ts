@@ -21,14 +21,35 @@ export interface AppShellProps {
    */
   sidebar?: Omit<SidebarProps, 'mobile' | 'onClose' | 'flat'>;
   drawer?: AppShellDrawer;
-  /** Heading over the content. */
+  /**
+   * Heading over the content. Optional: without it (and without `breadcrumb` /
+   * `actions`) the header still renders the menu button while the sidebar is a
+   * drawer, and nothing otherwise. A page with its own `header` opens the
+   * drawer with `AppShellMenuButton` or `useAppShell()`.
+   */
   title?: string;
   /** Breadcrumb trail above the heading (a `Breadcrumb`). */
   breadcrumb?: ReactNode;
   /** Header actions on the right (`NotificationBell`, buttons). */
   actions?: ReactNode;
-  /** Replaces the whole header. */
+  /**
+   * Replaces the whole header. Put an `AppShellMenuButton` in it to keep the
+   * drawer reachable on narrow screens.
+   */
   header?: ReactNode;
+  /**
+   * A second column on the right of the page (a detail panel, activity, a
+   * chat). In flow from `asideFrom`; below it, stacked under the content or
+   * hidden (`asideCollapse`). Pinned like the sidebar — with document scroll
+   * it is sticky and scrolls its own overflow.
+   */
+  aside?: ReactNode;
+  /** The aside column's width. Defaults to 320. */
+  asideWidth?: number;
+  /** The breakpoint the aside sits beside the content from. Defaults to `xl` (1280). */
+  asideFrom?: 'md' | 'lg' | 'xl';
+  /** Below `asideFrom`: `stack` (default) renders it after the content, `hidden` drops it. */
+  asideCollapse?: 'stack' | 'hidden';
   children?: ReactNode;
   /** The content column's max width. Defaults to 1300. */
   contentMaxWidth?: number;
@@ -38,25 +59,35 @@ export interface AppShellProps {
   drawerOpen?: boolean;
   onDrawerOpenChange?: (open: boolean) => void;
   /**
-   * What scrolls the page on WEB.
+   * What scrolls the page.
    *
-   * - `document` (default) — the page grows the document and the browser
+   * - `document` (default) — WEB: the page grows the document and the browser
    *   scrolls it, like a `ContentPanel` page: scroll restoration, the mobile
    *   address bar collapsing, anchor links and `window.scrollTo` all work, and
-   *   the in-flow sidebar stays pinned (`position: sticky`).
+   *   the in-flow sidebar stays pinned (`position: sticky`). Native has no
+   *   document and treats it as `container`.
    * - `container` — the shell fills its parent and the page scrolls inside its
-   *   own `ScrollView`. For a shell embedded in a bounded box rather than
-   *   owning the page.
-   *
-   * Native has no document and always scrolls its own `ScrollView`.
+   *   own `ScrollView`. For a shell embedded in a bounded box.
+   * - `fixed` — the shell is exactly one screen tall and NOTHING scrolls: the
+   *   header stays, and the content fills the rest of the height (`flex: 1`),
+   *   so the page owns its own scrolling — a chat, a map, a board. On web the
+   *   frame is `100dvh`; on native it fills its parent.
    */
-  scroll?: 'document' | 'container';
+  scroll?: 'document' | 'container' | 'fixed';
+  style?: StyleProp<ViewStyle>;
+  testID?: string;
+}
+
+export interface AppShellMenuButtonProps {
+  /** Defaults to `"Open navigation"`. */
+  accessibilityLabel?: string;
   style?: StyleProp<ViewStyle>;
   testID?: string;
 }
 
 export interface AppShellHeaderProps {
-  title: string;
+  /** Optional: a header can be just the menu button, breadcrumb or actions. */
+  title?: string;
   breadcrumb?: ReactNode;
   actions?: ReactNode;
   /** Shows the hamburger (below `lg`); omit for no menu button. */

@@ -57,15 +57,17 @@ const AppShellHeaderComponent: React.FC<AppShellHeaderProps> = ({
               testID={testID ? `${testID}-menu` : undefined}
             />
           ) : null}
-          <Text
-            role="heading"
-            aria-level={1}
-            variant="title-2-medium"
-            numberOfLines={1}
-            style={{ paddingLeft: 4, paddingRight: 4, color: theme.colors.text }}
-          >
-            {title}
-          </Text>
+          {title != null ? (
+            <Text
+              role="heading"
+              aria-level={1}
+              variant="title-2-medium"
+              numberOfLines={1}
+              style={{ paddingLeft: 4, paddingRight: 4, color: theme.colors.text }}
+            >
+              {title}
+            </Text>
+          ) : null}
         </View>
         {actions ? (
           <View

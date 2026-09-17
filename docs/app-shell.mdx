@@ -6,7 +6,7 @@ order: 83
 
 # AppShell
 
-`AppShell`, with `AppShellHeader`, `NotificationBell` and `ProOfferCard`.
+`AppShell`, with `AppShellHeader`, `AppShellMenuButton`, `useAppShell`, `NotificationBell` and `ProOfferCard`.
 
 ```tsx
 import { AppShell, NotificationBell, ProOfferCard } from '@oxy.so/bloom/app-shell';
@@ -32,6 +32,51 @@ import { AppShell, NotificationBell, ProOfferCard } from '@oxy.so/bloom/app-shel
   - `overlay` — a drawer over the page on a 40% black backdrop (portaled through `OverlayRoot`, so it ranks with every other overlay).
   - `reveal` — the rail waits flat beneath the page; the page slides 272 right and rounds to 32 while the rail scales in from 0.94 (325ms). Pressing the page closes it.
 - `drawerOpen` / `onDrawerOpenChange` control it.
+- `sidebar={{ variant: 'rail', … }}` keeps the 80px navigation rail in flow from `sm` instead of `lg`; below `sm` the menu button opens the drawer, which always shows the full panel.
+
+## Aside
+
+```tsx
+<AppShell sidebar={sidebar} title="Tickets" aside={<ActivityPanel />} asideWidth={320} asideFrom="xl">
+  {page}
+</AppShell>
+```
+
+A second column on the right of the page. From `asideFrom` (`xl`, 1280; or `md` / `lg`) it sits beside the content at `asideWidth` (320), pinned like the sidebar — with document scroll it is sticky and scrolls its own overflow, so give it `flex: 1` content if it should fill the height. Below the breakpoint it is stacked after the content (`asideCollapse="stack"`, the default) or dropped (`"hidden"`). Under `drawer="reveal"` it slides with the page.
+
+## Opening the drawer without a title
+
+The default header renders whenever it has something to show, and below `lg` the menu button counts — so `<AppShell sidebar={…}>` with no `title` still gets a hamburger, and nothing at all while the sidebar sits in flow.
+
+A page that draws its own `header` keeps the drawer reachable with either:
+
+```tsx
+import { AppShellMenuButton, useAppShell } from '@oxy.so/bloom/app-shell';
+
+<AppShell sidebar={sidebar} header={<MyHeader leading={<AppShellMenuButton />} />}>…</AppShell>
+
+function MyHeader() {
+  const { drawerAvailable, drawerOpen, openDrawer, closeDrawer, toggleDrawer } = useAppShell();
+  …
+}
+```
+
+`AppShellMenuButton` is the same button the header uses and renders nothing while the sidebar is in flow. `useAppShell()` works anywhere inside the shell (the header, the page, the aside); `drawerAvailable` says whether there is a drawer to open right now.
+
+## A fixed screen
+
+`scroll="fixed"` makes the shell exactly one screen tall (`100dvh` on web, its parent on native) and scrolls nothing: the header stays, and the content column fills the height left under it (`flex: 1`). The page owns its scrolling — a chat with a pinned composer, a map, a board:
+
+```tsx
+<AppShell scroll="fixed" sidebar={sidebar} title="Chat">
+  <View style={{ flex: 1, minHeight: 0 }}>
+    <MessageList style={{ flex: 1 }} />
+    <Composer />
+  </View>
+</AppShell>
+```
+
+Give the page `flex: 1` and `minHeight: 0`, or a tall child grows the column past the screen instead of scrolling inside it.
 
 ## Scrolling on web
 
@@ -41,8 +86,7 @@ The page scrolls the **document**, like a [`ContentPanel`](/docs/bloom/main/cont
 - `reveal` clips the sliding page with `overflow: clip`, not `hidden`, for the same reason — and so the 272px slide never adds a horizontal scrollbar. The waiting rail is `position: fixed`.
 - `scroll="container"` restores the old behaviour — the shell fills its parent and the page scrolls inside its own `ScrollView` — for a shell embedded in a bounded box rather than owning the page.
 
-Native has no document: the page always scrolls its own `ScrollView`, and `scroll` is ignored.
-- `sidebar={{ variant: 'rail', … }}` keeps the 80px navigation rail in flow from `sm` instead of `lg`; below `sm` the menu button opens the drawer, which always shows the full panel.
+Native has no document: `document` behaves as `container` there, and `fixed` works the same as on web.
 
 ## NotificationBell
 

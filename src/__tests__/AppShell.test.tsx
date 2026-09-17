@@ -4,7 +4,7 @@ import { fireEvent, render } from '@testing-library/react-native';
 
 import { BloomThemeProvider } from '../theme/BloomThemeProvider';
 import { PortalOutlet, PortalProvider } from '../portal';
-import { AppShell, AppShellHeader, NotificationBell, ProOfferCard } from '../app-shell';
+import { AppShell, AppShellHeader, AppShellMenuButton, NotificationBell, ProOfferCard, useAppShell } from '../app-shell';
 import { RiHomeLine } from '../icons/remix';
 import type { NotificationCenterItem } from '../notification-center';
 import { resolvedStyle } from './support/rendered-style';
@@ -138,6 +138,98 @@ describe('AppShell scroll on web', () => {
     setWidth(1440);
     const screen = renderIn(<AppShell testID="shell" scroll="container" title="Home" sidebar={{ items: NAV }} />);
     expect(pageScrollViews(screen)).toHaveLength(1);
+  });
+});
+
+/** The nearest HOST ancestor (skipping composite components). */
+function hostParent(node: { parent: unknown }) {
+  let n = node.parent as { type: unknown; parent: unknown; props: Record<string, unknown> } | null;
+  while (n && typeof n.type !== 'string') n = n.parent as typeof n;
+  return n;
+}
+
+describe('AppShell without a title', () => {
+  it('still shows the menu button while the sidebar is a drawer, and nothing when it is in flow', () => {
+    setWidth(700);
+    const narrow = renderIn(<AppShell testID="shell" sidebar={{ items: NAV }} />);
+    fireEvent.press(narrow.getByTestId('shell-header-menu'));
+    expect(narrow.getByTestId('sidebar-item-home')).toBeTruthy();
+    narrow.unmount();
+
+    setWidth(1440);
+    const wide = renderIn(<AppShell testID="shell" sidebar={{ items: NAV }} />);
+    expect(wide.queryByTestId('shell-header')).toBeNull();
+  });
+
+  it('a custom header opens the drawer with AppShellMenuButton or useAppShell', () => {
+    setWidth(700);
+    function Opener() {
+      const shell = useAppShell();
+      return (
+        <ReactNative.Pressable testID="custom-open" onPress={shell.openDrawer}>
+          <ReactNative.Text>{shell.drawerAvailable ? 'drawer' : 'in flow'}</ReactNative.Text>
+        </ReactNative.Pressable>
+      );
+    }
+    const screen = renderIn(
+      <AppShell sidebar={{ items: NAV }} header={<><AppShellMenuButton testID="menu" /><Opener /></>} />,
+    );
+    expect(screen.getByText('drawer')).toBeTruthy();
+    fireEvent.press(screen.getByTestId('menu'));
+    expect(screen.getByTestId('sidebar-item-home')).toBeTruthy();
+    fireEvent.press(screen.getByTestId('sidebar-close'));
+    expect(screen.queryByTestId('sidebar-item-home')).toBeNull();
+    fireEvent.press(screen.getByTestId('custom-open'));
+    expect(screen.getByTestId('sidebar-item-home')).toBeTruthy();
+  });
+
+  it('AppShellMenuButton renders nothing while the sidebar is in flow', () => {
+    setWidth(1440);
+    const screen = renderIn(<AppShell sidebar={{ items: NAV }} header={<AppShellMenuButton testID="menu" />} />);
+    expect(screen.queryByTestId('menu')).toBeNull();
+  });
+});
+
+describe('AppShell aside', () => {
+  const Aside = () => <ReactNative.Text>Details</ReactNative.Text>;
+
+  it('sits beside the content from asideFrom, at asideWidth', () => {
+    setWidth(1440);
+    const screen = renderIn(<AppShell testID="shell" title="Home" aside={<Aside />} asideWidth={280} />);
+    expect(resolvedStyle(screen.getByTestId('shell-aside').props.style)).toMatchObject({ width: 280 });
+    // Beside: a child of the frame itself, not inside the content column.
+    expect(hostParent(screen.getByTestId('shell-aside'))?.props.testID).toBe('shell');
+  });
+
+  it('below asideFrom it stacks after the content, or is hidden', () => {
+    setWidth(1100);
+    const stacked = renderIn(<AppShell testID="shell" title="Home" aside={<Aside />} />);
+    expect(stacked.getByText('Details')).toBeTruthy();
+    expect(resolvedStyle(stacked.getByTestId('shell-aside').props.style).width).toBeUndefined();
+    stacked.unmount();
+    const hidden = renderIn(<AppShell testID="shell" title="Home" aside={<Aside />} asideCollapse="hidden" />);
+    expect(hidden.queryByText('Details')).toBeNull();
+    hidden.unmount();
+    const lg = renderIn(<AppShell testID="shell" title="Home" aside={<Aside />} asideFrom="lg" />);
+    expect(resolvedStyle(lg.getByTestId('shell-aside').props.style)).toMatchObject({ width: 320 });
+  });
+});
+
+describe('AppShell scroll="fixed"', () => {
+  it('no page ScrollView; the content column fills the height', () => {
+    setWidth(1440);
+    const screen = renderIn(
+      <AppShell testID="shell" scroll="fixed" title="Chat" sidebar={{ items: NAV }}>
+        <ReactNative.View testID="page" />
+      </AppShell>,
+    );
+    const pageScrollers = screen.UNSAFE_queryAllByType(ReactNative.ScrollView).filter((node) => {
+      for (let n = node.parent; n; n = n.parent) if (n.props.role === 'complementary') return false;
+      return true;
+    });
+    expect(pageScrollers).toHaveLength(0);
+    expect(resolvedStyle(screen.getByTestId('shell').props.style)).toMatchObject({ overflow: 'hidden' });
+    expect(resolvedStyle(hostParent(screen.getByTestId('page'))?.props.style)).toMatchObject({ flex: 1, minHeight: 0 });
   });
 });
 
