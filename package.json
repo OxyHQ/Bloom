@@ -1763,6 +1763,20 @@
         "default": "./lib/commonjs/listing-details/index.js"
       }
     },
+    "./booking": {
+      "react-native": {
+        "types": "./lib/typescript/module/booking/index.d.ts",
+        "default": "./src/booking/index.ts"
+      },
+      "import": {
+        "types": "./lib/typescript/module/booking/index.d.ts",
+        "default": "./lib/module/booking/index.js"
+      },
+      "require": {
+        "types": "./lib/typescript/commonjs/booking/index.d.ts",
+        "default": "./lib/commonjs/booking/index.js"
+      }
+    },
     "./card": {
       "react-native": {
         "types": "./lib/typescript/module/card/index.d.ts",
