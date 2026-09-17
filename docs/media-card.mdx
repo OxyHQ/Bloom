@@ -1,0 +1,105 @@
+---
+title: Media Cards
+description: Every card a music or audio app shows — songs, albums, artists, playlists, mixes, shows, episodes, audiobooks, genres, events, profiles, friend activity, quick-access tiles, recaps and share cards.
+order: 63
+---
+
+# Media Cards
+
+One anatomy — a cover, a title, a line or two under it, a play button that appears on hover and a "More options" menu — and a typed card on top of it for each kind of thing a listening app shows.
+
+```tsx
+import {
+  AlbumCard,
+  ArtistCard,
+  AudiobookCard,
+  EpisodeCard,
+  EventCard,
+  FriendActivityCard,
+  GenreCard,
+  MediaCard,
+  MixCard,
+  PlaylistCard,
+  PodcastCard,
+  ProfileCard,
+  QuickAccessTile,
+  RecapCard,
+  ShareCard,
+  SongCard,
+} from '@oxy.so/bloom/media-card';
+
+<SongCard
+  title="Night Drive"
+  artists={['Mara Vell']}
+  artwork={track.coverId}
+  explicit
+  href={`/track/${track.id}`}
+  onPlay={() => player.toggle(track.id)}
+  playing={player.id === track.id && player.playing}
+  current={player.id === track.id}
+  menuItems={[
+    { label: 'Add to queue', onPress: () => queue.add(track.id) },
+    { label: 'Go to artist', onPress: () => router.push(`/artist/${track.artistId}`) },
+  ]}
+/>
+```
+
+Every card is controlled and draws only what it is given: text arrives pre-formatted (dates, durations, counts — the app owns the locale), and the card reports presses. Colours come from the theme in light and dark; artwork-derived colours arrive as a hex prop and are never sampled from an image.
+
+## The shared props
+
+| prop | decides |
+| --- | --- |
+| `onPress` / `href` | the card is a button, or a real `<a href>` on web (native opens the URL when there is no `onPress`) |
+| `artwork`, `artworkVariant` | a URL, or an id passed to the app's `ImageResolver` with the variant |
+| `artworkColor` | the hex a missing cover's gradient is generated from; neutral without it |
+| `onPlay`, `playing`, `loading`, `current` | the play button (`PlayButton`) and its state |
+| `playButton` | `'auto'` (default), `'always'`, `'never'` — see below |
+| `menuItems` / `menu` / `menuLabel` | the "More options" menu: rows as data (`{ label, onPress, icon, disabled, destructive }`) or your own `DropdownMenuItem` nodes |
+| `size` | `'large'` 200, `'medium'` 160 (default), `'small'` 120 — the tile's cover side |
+| `layout` | `'tile'` (cover on top) or `'row'` (a 56 cover — 48 at small — on the left, then text, a trailing slot and the menu) |
+| `selected` | the selected wash; `aria-current` on web, `selected` state on native |
+| `skeleton` | the shimmering placeholder in the same geometry |
+| `accessibilityLabel` | replaces the composed name |
+
+## Hover, play and the menu
+
+- **Web.** Hovering a card paints a wash (the text colour over the page at 6%) and reveals the play button — it fades in and rises 8px at the cover's bottom-right on a tile, centred on the cover in a row — and the menu trigger. Keyboard focus anywhere inside the card reveals them too, and a right-click opens the menu. Colour, opacity and that small rise only: nothing scales. With reduced motion the rise and the transitions are dropped.
+- **Native.** There is no hover, so the play button is drawn only while the card is `playing`, `loading` or `current` (tap the card to open it), the menu trigger is always drawn, and a long press opens the menu as a sheet.
+- `playing`, `loading` and `current` keep the play button visible on both platforms. `playButton="always"` draws it at rest everywhere; `"never"` removes it.
+
+## The link sits UNDER the content
+
+The press target is a pressable that fills the card and carries its whole accessible name. The cover and the text are drawn over it with `pointerEvents="none"`, so pressing them falls through to it; the play button, the menu trigger, a like button, artist links and slot buttons are drawn over it as their own targets. That is how a card can be a real `<a href>` on web without a button nested inside an anchor (invalid HTML, and every inner press would also navigate).
+
+The name is composed from the title, the type and the lines under it — "Night Drive, Explicit, Song, Mara Vell". The menu trigger is named "More options for Night Drive".
+
+## The cards
+
+| card | cover | lines |
+| --- | --- | --- |
+| `SongCard` | square | title + `ExplicitBadge`; artists (each a link with `onPressArtist`). `current` adds `NowPlayingIndicator` and an accent title. Row: + album, `LikeButton` (`liked`/`onLikedChange`), `duration` |
+| `AlbumCard` | square, radius 8 | "2026 · Album" (`year`, `albumType`: album / single / ep / compilation, `typeLabels`), `artist` |
+| `ArtistCard` | **round** | name + accent verified mark (`verified`), "Artist", `followers` |
+| `PlaylistCard` | `artwork` → a 2×2 `mosaic` of up to four track covers → a gradient from `artworkColor` with a music note | "By Maya · 42 songs" (`owner`, `ownerPrefix`, `trackCount`), `collaborative` glyph |
+| `MixCard` | generated: the gradient, "Mix" and `coverTitle` big top-left, up to four `faces` bottom-left | `description` |
+| `PodcastCard` | rounded square, radius **12** | `publisher` |
+| `EpisodeCard` | radius 12 on top; a 112 / 96 / 72 cover on the left in a row | "12 Sep · 48 min", title (2 lines), `show`, `description` (2 lines); `progress` bar + `remaining`, or `played` check; `actions` (save, download). The row always draws the play button under the text |
+| `AudiobookCard` | **2:3** | `author`, "Narrated by …", `duration`, a full-width `progress` bar |
+| `GenreCard` | a solid `color` tile, radius 8 | the title top-left in bold light text, `artwork` rotated 25° peeking from the bottom-right |
+| `EventCard` | image with a month/day leaf; in a row the leaf is the cover | "venue · city", `time`, `action` (the tickets button) or the `soldOut` badge |
+| `ProfileCard` | round | "Profile · Follows you", `followers`, `action` (a follow button) |
+| `FriendActivityCard` | 40 round avatar, an accent dot when `live` | name + `time` (or moving bars when `live`), "Track — Artist", the `context` with a playlist or album glyph |
+| `QuickAccessTile` | 56 flush left (a 40 round photo with `round`) | bold title (2 lines) on a neutral tile; one trailing slot for the play button, which shows the now-playing bars while `current` and swaps them for pause on hover |
+| `RecapCard` | — | a big gradient card: `eyebrow`, the headline `value`, `unit`, `highlights` (cover + label + title) and a Share pill (`onShare`) |
+| `ShareCard` | full width, radius 12 | on an `artworkColor` gradient: title, artist, an optional `lyrics` excerpt block and a `footer` |
+
+`MediaCard` is the shared anatomy itself, for anything the typed cards do not cover. Beyond the shared props it takes `subtitle` (text or nodes), `meta` lines, `eyebrow`, `description`, `typeLabel`, `artworkShape`, `artworkRadius`, `artworkAspectRatio`, `artworkSize`, `renderArtwork`, `artworkOverlay`, `placeholderIcon`, `titleLeading`, `titleAccessory` (+ `titleAccessoryLabel` for the name), `titleLines`, `subtitleLines`, `interactiveSubtitle`, `trailing`, `footer`, `accessibilityDetail`, `centered` and `rowAlign`.
+
+## Generated covers keep their text legible
+
+A mix, a recap, a share card, a genre tile and a cover-less playlist are painted from `artworkColor`. The colour's own ramp is stepped darker (its 500, then 600 … 900) until the light text drawn on it clears **4.5:1**, and the gradient runs two stops further down — so a pale colour yields a deeper tile rather than unreadable text. Without a colour, or with one that does not parse, the cover is the theme's neutral 700 → 900. Gradient stops are always opaque: react-native-svg drops the alpha inside a stop colour.
+
+## Laying cards out
+
+Tiles have a fixed width (the cover plus 12 either side), which is what a horizontal shelf wants — a plain horizontal `ScrollView` of cards works. `QuickAccessTile`, `FriendActivityCard`, `RecapCard` and rows stretch to their parent; put quick-access tiles in a 2 (narrow) to 4 (wide) column grid. `GenreCard` takes `style={{ width: '100%' }}` in a grid and keeps its square.
