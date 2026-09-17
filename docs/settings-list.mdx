@@ -88,6 +88,27 @@ When `rightElement` is set, the chevron is hidden automatically (you can overrid
 />
 ```
 
+## On a card-coloured surface
+
+A group paints the `card` colour, which reads as a raised card on a page painted
+in `background`. Inside something that is already `card` — a `ContentPanel`, a
+Dialog body — that same group has no edge left and its rows float on the page.
+`variant="filled"` paints the group in `backgroundSecondary` instead, the same
+surface `Card variant="filled"` uses:
+
+```tsx
+<ContentPanel>
+  <SettingsListGroup variant="filled" title="Account">
+    <SettingsListItem title="Privacy" onPress={openPrivacy} />
+  </SettingsListGroup>
+</ContentPanel>
+```
+
+| `variant` | Surface | Use on |
+| --- | --- | --- |
+| `plain` (default) | `card` | a page painted in `background` |
+| `filled` | `backgroundSecondary` | a surface painted in `card` |
+
 ## Footer / header text
 
 ```tsx
@@ -113,6 +134,7 @@ When `rightElement` is set, the chevron is hidden automatically (you can overrid
 | `footer?` | `string` | Section footer. |
 | `children` | `React.ReactNode` | `Item`, `Divider`. |
 | `style?` | `StyleProp<ViewStyle>` | Override group container style. |
+| `variant?` | `'plain' \| 'filled'` | The group's surface: `card` (default) or `backgroundSecondary`, for a group on a card-coloured surface. |
 
 ### `SettingsListItem`
 

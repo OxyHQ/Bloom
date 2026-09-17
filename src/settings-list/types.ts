@@ -38,7 +38,18 @@ export interface SettingsListGroupProps {
   children: React.ReactNode;
   /** Override group container style */
   style?: StyleProp<ViewStyle>;
+  /**
+   * The surface the group's card paints, named after `Card`'s own variants.
+   * `plain` (default) is the `card` colour, which reads on a page painted in
+   * `background`. `filled` is `backgroundSecondary`, for a group that sits on a
+   * surface already painted in `card` — a `ContentPanel`, a Dialog body — where a
+   * `plain` group would vanish into its parent.
+   */
+  variant?: SettingsListGroupVariant;
 }
+
+/** The card surface a {@link SettingsListGroupProps} paints. */
+export type SettingsListGroupVariant = 'plain' | 'filled';
 
 export interface SettingsListDividerProps {
   /** Inset from left edge to align with text (default: 52) */
