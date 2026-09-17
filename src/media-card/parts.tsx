@@ -35,8 +35,7 @@ import {
   type MediaCardPaint,
 } from './shared';
 import type { MediaCardMenuItem } from './types';
-
-type GlyphComponent = React.ComponentType<{ width?: number; height?: number; fill?: string }>;
+import type { BloomIconComponent } from '../icons/icon-component';
 
 export function useMediaCardCss(): void {
   React.useEffect(() => {
@@ -79,7 +78,7 @@ export interface ArtworkProps {
   /** Paints a generated gradient cover when there is no image. */
   color?: string;
   /** Glyph on the generated / placeholder cover. */
-  icon?: GlyphComponent;
+  icon?: BloomIconComponent;
   /** Replaces the drawn content. */
   children?: React.ReactNode;
   paint: MediaCardPaint;

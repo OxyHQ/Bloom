@@ -1,6 +1,7 @@
 import { createContext, useContext, type ComponentType, type ReactNode } from 'react';
 
 import type { TooltipSize } from '../tooltip/constants';
+import type { BloomIconComponent } from '../icons/icon-component';
 
 /**
  * The web-forked families `ai-chat` renders, injected by each platform binding
@@ -52,7 +53,8 @@ export interface AiChatShellState {
   };
 }
 
-export type AiChatShellIcon = ComponentType<{ width?: number; height?: number; fill?: string }>;
+/** @deprecated Use `BloomIconComponent` from `@oxy.so/bloom/icons`; this is an alias of it. */
+export type AiChatShellIcon = BloomIconComponent;
 
 export const AiChatShellContext = createContext<AiChatShellState | null>(null);
 

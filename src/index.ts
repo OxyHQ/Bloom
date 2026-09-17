@@ -79,6 +79,7 @@ export * from './hooks';
 // Icons
 export * as Icons from './icons';
 export { type Props as IconProps, sizes as iconSizes, useCommonSVGProps } from './icons/shared';
+export type { BloomIconComponent } from './icons/icon-component';
 
 // App-wide plumbing (pure JS — no peer beyond what this barrel already links)
 export { ImageResolverProvider, useImageResolver, isImageUrl } from './image-resolver';

@@ -1,8 +1,10 @@
 import type { ComponentType, ReactNode } from 'react';
 import type { StyleProp, ViewStyle } from 'react-native';
+import type { BloomIconComponent } from '../icons/icon-component';
 
 /** A Remix-style icon: `width` / `height` / `fill`. */
-export type SidebarIcon = ComponentType<{ width?: number; height?: number; fill?: string }>;
+/** @deprecated Use `BloomIconComponent` from `@oxy.so/bloom/icons`; this is an alias of it. */
+export type SidebarIcon = BloomIconComponent;
 
 /**
  * The avatar tints for initials: `neutral`, `blue` (the accent ramp),

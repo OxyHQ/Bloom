@@ -3,5 +3,6 @@
 // equivalents in `remix-mapping.json`; `scripts/migrate-icons-to-remix.mjs`
 // rewrites an app's imports.
 export type { IconStyle, Props } from './shared';
+export type { BloomIconComponent } from './icon-component';
 export { sizes, useCommonSVGProps } from './shared';
 export * from './remix';

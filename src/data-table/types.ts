@@ -4,6 +4,7 @@ import type { StyleProp, ViewStyle } from 'react-native';
 import type { ButtonProps } from '../button/types';
 import type { AccentTone } from '../theme/accent-colors';
 import type { TableColumnLayout, TableSize } from '../table/types';
+import type { BloomIconComponent } from '../icons/icon-component';
 
 /** The table's two densities, `md` ("Normal") and `sm` ("Compact"). */
 export type DataTableSize = TableSize;
@@ -150,7 +151,8 @@ export interface DataTableProps<T> {
 }
 
 /** A Remix-style icon component: `width`, `height`, `fill`. */
-export type DataTableIconComponent = ComponentType<{ width?: number; height?: number; fill?: string }>;
+/** @deprecated Use `BloomIconComponent` from `@oxy.so/bloom/icons`; this is an alias of it. */
+export type DataTableIconComponent = BloomIconComponent;
 
 export interface DataTableRowActionProps
   extends Omit<ButtonProps, 'children' | 'variant' | 'size' | 'iconOnly' | 'icon' | 'leadingIcon' | 'trailingIcon'> {

@@ -6,11 +6,10 @@ import type { WebCssStyle } from '../styles/web-view-style';
 import { webDataSet } from '../styles/web-data';
 import { useTheme } from '../theme/use-theme';
 import { resolveQueuePanelPaint } from './shared';
-
-type Glyph = React.ComponentType<{ width?: number; height?: number; fill?: string }>;
+import type { BloomIconComponent } from '../icons/icon-component';
 
 export interface QueueIconButtonProps extends Omit<PressableProps, 'children' | 'style'> {
-  icon: Glyph;
+  icon: BloomIconComponent;
   accessibilityLabel: string;
   /** Diameter. Default `32`; the glyph is half of it. */
   size?: number;

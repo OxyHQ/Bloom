@@ -3,6 +3,7 @@ import type { StyleProp, ViewStyle } from 'react-native';
 
 import type { CalendarConstraintProps } from '../date-picker';
 import type { PropertyType, PropertyTypeTilesProps } from '../stay-filters';
+import type { BloomIconComponent } from '../icons/icon-component';
 
 /** The housing search modes, in their default order. */
 export type HomeSearchMode = 'rent' | 'buy' | 'stays' | 'swap';
@@ -194,7 +195,8 @@ export interface SavedSearchCardProps {
   testID?: string;
 }
 
-export type SavedSearchIcon = ComponentType<{ width?: number; height?: number; fill?: string }>;
+/** @deprecated Use `BloomIconComponent` from `@oxy.so/bloom/icons`; this is an alias of it. */
+export type SavedSearchIcon = BloomIconComponent;
 
 export interface SaveSearchButtonProps {
   saved: boolean;

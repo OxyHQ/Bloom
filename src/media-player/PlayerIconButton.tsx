@@ -12,9 +12,11 @@ import type { WebCssStyle } from '../styles/web-view-style';
 import { webDataSet } from '../styles/web-data';
 import { useTheme } from '../theme/use-theme';
 import { Text } from '../typography';
+import type { BloomIconComponent } from '../icons/icon-component';
 
 /** A glyph component (any `Ri*` icon). */
-export type PlayerGlyph = React.ComponentType<{ width?: number; height?: number; fill?: string }>;
+/** @deprecated Use `BloomIconComponent` from `@oxy.so/bloom/icons`; this is an alias of it. */
+export type PlayerGlyph = BloomIconComponent;
 
 /** The dot under an active glyph. */
 export const ACTIVE_DOT = 4;

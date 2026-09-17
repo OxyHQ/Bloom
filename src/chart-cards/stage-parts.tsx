@@ -16,6 +16,7 @@ import { Text } from '../typography';
 import { TABULAR } from './primitives/ChartHeader';
 import { useChartCardPalette } from './primitives/use-chart-palette';
 import { useWebTransition } from './primitives/use-web-transition';
+import type { BloomIconComponent } from '../icons/icon-component';
 
 /**
  * Parts shared by the stage-shaped cards — `BarListCard`, `StageBarsCard` and
@@ -24,7 +25,8 @@ import { useWebTransition } from './primitives/use-web-transition';
  */
 
 /** An icon component (`RiEyeLine`) — sized and tinted by the card. */
-export type ChartIconComponent = ComponentType<{ width?: number; height?: number; fill?: string }>;
+/** @deprecated Use `BloomIconComponent` from `@oxy.so/bloom/icons`; this is an alias of it. */
+export type ChartIconComponent = BloomIconComponent;
 
 /** A leading glyph: a rendered node the caller sizes, or an icon component the card sizes and tints. */
 export type ChartIcon = React.ReactNode | ChartIconComponent;

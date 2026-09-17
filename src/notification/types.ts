@@ -3,6 +3,7 @@ import type { StyleProp, ViewStyle } from 'react-native';
 
 import type { AvatarProps } from '../avatar';
 import type { ButtonVariant } from '../button';
+import type { BloomIconComponent } from '../icons/icon-component';
 
 /**
  * `warning` is Bloom's addition to `neutral | information | success | error`,
@@ -13,11 +14,8 @@ export type NotificationStatus = 'neutral' | 'information' | 'success' | 'warnin
 export type NotificationPresence = 'online' | 'busy' | 'offline';
 
 /** A leading glyph component — pass the component (`RiMailFill`), not an element. */
-export type NotificationIconComponent = React.ComponentType<{
-  width?: number;
-  height?: number;
-  fill?: string;
-}>;
+/** @deprecated Use `BloomIconComponent` from `@oxy.so/bloom/icons`; this is an alias of it. */
+export type NotificationIconComponent = BloomIconComponent;
 
 /** Avatar leading visual. `size` is fixed at 40 by the card. */
 export type NotificationAvatar = Omit<AvatarProps, 'size'> & {

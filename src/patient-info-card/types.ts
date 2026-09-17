@@ -1,8 +1,10 @@
 import type { ComponentType } from 'react';
 import type { ImageSourcePropType, StyleProp, ViewStyle } from 'react-native';
+import type { BloomIconComponent } from '../icons/icon-component';
 
 /** An icon COMPONENT (`RiDropLine`, not an element) — the row sizes and colours it. */
-export type PatientInfoCardIcon = ComponentType<{ width?: number; height?: number; fill?: string }>;
+/** @deprecated Use `BloomIconComponent` from `@oxy.so/bloom/icons`; this is an alias of it. */
+export type PatientInfoCardIcon = BloomIconComponent;
 
 export interface PatientInfoCardDetail {
   icon: PatientInfoCardIcon;

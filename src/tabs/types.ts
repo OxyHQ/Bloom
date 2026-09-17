@@ -1,5 +1,6 @@
 import type { ComponentType } from 'react';
 import type { StyleProp, ViewStyle, TextStyle } from 'react-native';
+import type { BloomIconComponent } from '../icons/icon-component';
 
 /**
  * The strip's look.
@@ -17,11 +18,8 @@ export type TabsVariant = 'underline' | 'pill' | 'filled' | 'outlined';
  * A Remix-style icon component (`RiSettings3Line`, not `<RiSettings3Line />`),
  * sized and tinted by the trigger.
  */
-export type TabsIconComponent = ComponentType<{
-  width?: number;
-  height?: number;
-  fill?: string;
-}>;
+/** @deprecated Use `BloomIconComponent` from `@oxy.so/bloom/icons`; this is an alias of it. */
+export type TabsIconComponent = BloomIconComponent;
 
 export interface TabsProps {
   /**

@@ -1,6 +1,7 @@
 import type { ComponentType } from 'react';
 import type { StyleProp, ViewStyle, TextStyle } from 'react-native';
 import type { WebAriaProps } from '../styles/styled-primitives';
+import type { BloomIconComponent } from '../icons/icon-component';
 
 /**
  * Bloom's canonical button variants (shared across native + web) plus the
@@ -214,8 +215,5 @@ export interface CloseButtonProps {
 }
 
 /** The props `Button` hands an icon component: Bloom icons accept all three. */
-export type ButtonIconComponent = ComponentType<{
-  width?: number;
-  height?: number;
-  fill?: string;
-}>;
+/** @deprecated Use `BloomIconComponent` from `@oxy.so/bloom/icons`; this is an alias of it. */
+export type ButtonIconComponent = BloomIconComponent;

@@ -9,14 +9,13 @@ import { RiUserLine } from '../icons/remix/RiUserLine';
 import { useImageResolver } from '../image-resolver/context';
 import { isImageUrl } from '../image-resolver/is-image-url';
 import type { LibraryItemKind } from './types';
+import type { BloomIconComponent } from '../icons/icon-component';
 
 // ---------------------------------------------------------------------------
 //  Cover
 // ---------------------------------------------------------------------------
 
-type Glyph = ComponentType<{ width?: number; height?: number; fill?: string }>;
-
-const KIND_GLYPH: Record<LibraryItemKind | 'song' | 'profile' | 'episode', Glyph> = {
+const KIND_GLYPH: Record<LibraryItemKind | 'song' | 'profile' | 'episode', BloomIconComponent> = {
   playlist: RiMusic2Line,
   album: RiMusic2Line,
   song: RiMusic2Line,
