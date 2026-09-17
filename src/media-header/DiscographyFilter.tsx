@@ -4,9 +4,9 @@ import { Pressable, View } from 'react-native';
 import { Chip } from '../chip';
 import { useInteractionState } from '../hooks/use-interaction-state';
 import type { WebCssStyle } from '../styles/web-view-style';
+import { webDataSet } from '../styles/web-data';
 import { Text } from '../typography';
 import { useMediaHeaderPaint } from './parts';
-import { webData } from './shared';
 import type { DiscographyFilterOption, DiscographyFilterProps } from './types';
 
 /**
@@ -48,7 +48,7 @@ function DiscographyFilterComponent({
           )}
           {onShowAll ? (
             <Pressable
-              {...webData({ bloomMediaHeaderPress: '' })}
+              {...webDataSet({ bloomMediaHeaderPress: '' })}
               role="link"
               accessibilityLabel={showAllLabel}
               onPress={onShowAll}

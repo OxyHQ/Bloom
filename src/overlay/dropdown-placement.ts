@@ -21,6 +21,8 @@
  * job and is verified in a browser.
  */
 
+import { clamp } from '../styles/clamp';
+
 /** Viewport-relative box the surface is positioned against. A right-click point is a zero-area anchor. */
 export interface DropdownAnchor {
   top: number;
@@ -70,18 +72,6 @@ export type DropdownSide = 'bottom' | 'top' | 'right' | 'left';
 export interface DropdownPlacement {
   top: number;
   left: number;
-}
-
-/**
- * Clamp into `[min, max]`, resolving an inverted range to `min`.
- *
- * The range inverts exactly when the surface is larger than the viewport minus
- * its gutters. Preferring `min` then pins the surface to the top/left gutter and
- * lets it overflow the far edge, so its FIRST rows stay reachable — the opposite
- * choice would push its start off-screen and strand every row.
- */
-function clamp(value: number, min: number, max: number): number {
-  return Math.max(min, Math.min(value, max));
 }
 
 /**

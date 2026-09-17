@@ -1,4 +1,5 @@
 import React, { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { dragShift, dragTarget } from '../hooks/list-reorder';
 import {
   PanResponder,
   View,
@@ -6,7 +7,6 @@ import {
   type PanResponderGestureState,
 } from 'react-native';
 
-import { webDataSet } from '../checkbox/shared';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -21,14 +21,13 @@ import { RiDeleteBinLine } from '../icons/remix/RiDeleteBinLine';
 import { RiDraggable } from '../icons/remix/RiDraggable';
 import { RiMoreFill } from '../icons/remix/RiMoreFill';
 import type { WebCssStyle } from '../styles/web-view-style';
+import { webDataSet } from '../styles/web-data';
 import { useTheme } from '../theme/use-theme';
 import { QueueIconButton } from './QueueIconButton';
 import { QueuePanelRow } from './QueuePanelRow';
 import {
   IS_WEB,
   QUEUE_ROW_HEIGHT,
-  queueDragShift,
-  queueDragTarget,
   resolveQueuePanelPaint,
   type QueuePanelPaint,
 } from './shared';
@@ -155,7 +154,7 @@ function QueueReorderRow({
     [move, index, canUp, canDown],
   );
 
-  const offset = drag ? (dragging ? drag.dy : queueDragShift(index, drag.from, target, QUEUE_ROW_HEIGHT)) : 0;
+  const offset = drag ? (dragging ? drag.dy : dragShift(index, drag.from, target, QUEUE_ROW_HEIGHT)) : 0;
 
   const liftStyle: WebCssStyle = {
     transform: [{ translateY: offset }],
@@ -282,7 +281,7 @@ function QueueReorderListComponent({
   const paint = useMemo(() => resolveQueuePanelPaint(theme), [theme]);
   const [drag, setDrag] = useState<DragState | null>(null);
   const count = tracks.length;
-  const target = drag ? queueDragTarget(drag.from, drag.dy, QUEUE_ROW_HEIGHT, count) : -1;
+  const target = drag ? dragTarget(drag.from, drag.dy, QUEUE_ROW_HEIGHT, count) : -1;
 
   const handles = useRef(new Map<string, View>());
   const pendingFocus = useRef<string | null>(null);
@@ -340,7 +339,7 @@ function QueueReorderListComponent({
       setDrag(null);
       onDragActiveChange?.(false);
       if (!commit || !current) return;
-      const to = queueDragTarget(current.from, current.dy, QUEUE_ROW_HEIGHT, tracksRef.current.length);
+      const to = dragTarget(current.from, current.dy, QUEUE_ROW_HEIGHT, tracksRef.current.length);
       if (to !== current.from) {
         pendingFocus.current = null;
         const track = tracksRef.current[current.from];

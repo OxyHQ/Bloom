@@ -44,6 +44,68 @@ Platform-conditional style helpers. Use them for a genuine platform difference
 — a shadow, a font smoothing, a scrollbar — and not to work around something
 that should be the same on both.
 
+## `webDataSet`
+
+The web-only `dataSet` hook an adopted sheet's selectors hang off, as spread
+props. On web react-native-web turns it into a `data-*` attribute; on native it
+spreads nothing.
+
+```tsx
+<Pressable {...webDataSet({ bloomTrackRow: 'true' })} />
+// web:    <div data-bloom-track-row="true">
+// native: nothing
+```
+
+This is how a component reaches a CSS rule it cannot express inline — a hover
+state, a focus ring, a transition. A class never reaches the DOM here, so a
+`data-*` attribute is the only hook an
+[adopted sheet](/docs/bloom/main/styles) can select on.
+
+## `clamp` / `clamp01`
+
+```ts
+clamp(value, min, max)   // held inside [min, max]
+clamp01(value)           // held inside [0, 1]; undefined / NaN / ±Infinity → 0
+```
+
+Two edges worth knowing, because the copies these replaced disagreed about
+them:
+
+- `clamp` resolves an INVERTED range (`min > max`) to `min`. That is what pins
+  a dropdown taller than the viewport to the top gutter, so its first rows stay
+  reachable instead of its start going off-screen.
+- `clamp01` answers `0` for a non-finite value, including `Infinity`, where
+  `clamp(v, 0, 1)` would answer `1`. A non-finite share means "not measured
+  yet", and a full bar is the wrong thing to draw for that.
+
+## `contrastRatio` / `relativeLuminance` / `readableOn` / `darken` / `darkenUntilContrast`
+
+WCAG maths and the two decisions every surface painted from a computed colour
+has to make. `AA_TEXT_CONTRAST` (4.5), `AA_LARGE_TEXT_CONTRAST` (3) and
+`AAA_TEXT_CONTRAST` (7) are the bars, named once.
+
+```ts
+readableOn(background, ['#ffffff', '#141414'])       // which ink reads on it
+darkenUntilContrast(artworkColor, '#ffffff', 7)      // { color, amount } | null
+```
+
+`readableOn` takes one surface or several, and picks the candidate whose WORST
+contrast across them is highest — text over a gradient has to read at both ends.
+
+`darkenUntilContrast` returns the LIGHTEST shade of a colour on which every
+given foreground clears the ratio: the colour itself when it already does, else
+pulled toward black in 5% steps. `null` for a colour that does not parse, so a
+caller falls back to its own neutral rather than being handed one it did not ask
+for.
+
+**Darken the colour; never walk its ramp.** A generated ramp re-derives every
+stop's lightness and chroma from the hue, so a near-black input comes back ten
+times lighter than it went in and a vivid one has a channel zeroed. Scaling
+every channel by the same factor keeps their ratio, which is why a darkened teal
+is still teal. Four music surfaces — the lyrics pane, the immersive player, a
+generated cover and a browse tile — had five implementations of this between
+them, under four names for 4.5.
+
 ## `Z_INDEX`
 
 **Within-context values only.** Which overlay paints on top is decided by the

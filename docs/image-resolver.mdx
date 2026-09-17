@@ -34,6 +34,35 @@ That is also why there is no `avatarUrl` field on any DTO and no per-app URL
 helper: **one chokepoint**, `getFileDownloadUrl(id, variant)`, plus this
 resolver.
 
+## `isImageUrl` — the one answer to "URL or id"
+
+Every component that takes a `source` has to decide the same thing: render the
+string, or hand it to the resolver. That decision is one exported function.
+
+```tsx
+import { isImageUrl } from '@oxy.so/bloom/image-resolver';
+
+const uri = isImageUrl(source) ? source : resolver?.(source, 'thumb');
+```
+
+It is true for `http://`, `https://`, `data:`, `blob:`, `file:` and **a leading
+slash** — `/img/cover.jpg` is a root-relative path to an asset the app already
+serves. It is deliberately not a URL parser: it routes, and anything that is
+not one of those shapes is an id.
+
+**This used to differ per family.** Twelve copies of this predicate had grown across the
+package under three spellings (`isUrl`, `isImageUrl`, and an inline check in
+`Avatar`), and they disagreed. Only `listing-card`'s accepted a leading slash;
+`Avatar`'s accepted neither `blob:` nor `file:`. All of them now behave like the
+one above, which is strictly more permissive — a path or a `blob:` URL used to
+be sent to the resolver, and a resolver has nothing to answer for one, so the
+image rendered as its placeholder. If an app really does mint ids that start
+with `/`, `blob:` or `file:`, they are no longer routed to the resolver.
+
+It also tightened in one place: `media-player` and `music-library` matched on
+the bare scheme (`http:a.jpg` with no `//`), which `<Image>` cannot load anyway.
+Those strings are now treated as ids.
+
 ## `source` versus `uri` — the failure that is total and silent
 
 `Avatar` invokes the resolver only for a **non-URL string** passed as `source`.

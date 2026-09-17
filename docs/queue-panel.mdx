@@ -70,7 +70,9 @@ Three ways, one callback — `onReorder(section, from, to)`, with indices inside
 
 Every move is announced: "Slow Tide moved to position 2 of 3" — through a polite live region on web and `AccessibilityInfo.announceForAccessibility` on native.
 
-`moveQueueItem(list, from, to)` applies a move to your array (a new array, target clamped). `queueDragTarget` and `queueDragShift` are the arithmetic the drag uses, exported for anything that wants to draw the same preview.
+`moveQueueItem(list, from, to)` applies a move to your array (a new array, target clamped; an out-of-range `from` is refused rather than clamped, so a stale index cannot move the wrong row). `queueDragTarget` and `queueDragShift` are the arithmetic the drag uses, exported for anything that wants to draw the same preview.
+
+All three are re-exports of `moveItem` / `dragTarget` / `dragShift` from [`@oxy.so/bloom/hooks`](/docs/bloom/main/hooks), which the track list and the sortable photo grid share. `queueDragTarget` used to answer slot `0` when the row height was not measured; it now answers `from`, i.e. "it has not moved".
 
 ## `RecentlyPlayedList`
 

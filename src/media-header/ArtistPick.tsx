@@ -5,9 +5,9 @@ import { Avatar } from '../avatar';
 import { useInteractionState } from '../hooks/use-interaction-state';
 import { RiPushpinFill } from '../icons/remix/RiPushpinFill';
 import type { WebCssStyle } from '../styles/web-view-style';
+import { webDataSet } from '../styles/web-data';
 import { Text } from '../typography';
 import { Cover, useMediaHeaderPaint } from './parts';
-import { webData } from './shared';
 import type { ArtistPickProps } from './types';
 
 /**
@@ -93,7 +93,7 @@ function ArtistPickComponent({
   }
   return (
     <Pressable
-      {...webData({ bloomMediaHeaderPress: '' })}
+      {...webDataSet({ bloomMediaHeaderPress: '' })}
       role="button"
       accessibilityLabel={title}
       onPress={onPress}

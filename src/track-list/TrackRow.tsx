@@ -15,7 +15,6 @@ import {
   type GestureResponderEvent,
 } from 'react-native';
 
-import { webDataSet } from '../checkbox/shared';
 import { mergeRefs } from '../hooks/merge-refs';
 import { RiArrowDownLine } from '../icons/remix/RiArrowDownLine';
 import { RiArrowDownCircleFill } from '../icons/remix/RiArrowDownCircleFill';
@@ -24,6 +23,7 @@ import { RiDraggable } from '../icons/remix/RiDraggable';
 import { ExplicitBadge, formatDuration, LikeButton, NowPlayingIndicator, PlayButton } from '../media-controls';
 import { adoptStyleSheet } from '../styles/adopt-style-sheet';
 import type { WebCssStyle } from '../styles/web-view-style';
+import { webDataSet } from '../styles/web-data';
 import { useTheme } from '../theme/use-theme';
 import { Text } from '../typography';
 import { TrackCover, TrackMenu } from './parts';

@@ -18,6 +18,7 @@ import { RiArrowLeftSLine } from '../icons/remix/RiArrowLeftSLine';
 import { RiArrowRightSLine } from '../icons/remix/RiArrowRightSLine';
 import { adoptStyleSheet } from '../styles/adopt-style-sheet';
 import type { WebCssStyle } from '../styles/web-view-style';
+import { webDataSet } from '../styles/web-data';
 import type { Theme } from '../theme/types';
 import { useTheme } from '../theme/use-theme';
 import { Text } from '../typography';
@@ -159,10 +160,6 @@ ${ITEM}:focus-visible [data-bloom-category-bar-ring] {
 }
 `;
 
-function webData(data: Record<string, string>): Record<string, unknown> {
-  return IS_WEB ? { dataSet: data } : {};
-}
-
 // ---------------------------------------------------------------------------
 //  Item
 // ---------------------------------------------------------------------------
@@ -205,7 +202,7 @@ function CategoryBarTab({
   return (
     <Pressable
       ref={(node) => registerRef(key, node)}
-      {...webData({ bloomCategoryBarItem: selected ? 'selected' : '' })}
+      {...webDataSet({ bloomCategoryBarItem: selected ? 'selected' : '' })}
       {...webProps}
       role="tab"
       accessibilityLabel={item.label}
@@ -225,7 +222,7 @@ function CategoryBarTab({
       {/* The keyboard ring, drawn above the selection bar so it never hides it. */}
       <View
         pointerEvents="none"
-        {...webData({ bloomCategoryBarRing: '' })}
+        {...webDataSet({ bloomCategoryBarRing: '' })}
         style={{ position: 'absolute', top: 4, left: 0, right: 0, bottom: 8, borderRadius: 8 }}
       />
       <Icon width={ICON_SIZE} height={ICON_SIZE} fill={color} />
@@ -443,7 +440,7 @@ function CategoryBarComponent({
       <View style={{ flex: 1, minWidth: 0, position: 'relative' }}>
         <ScrollView
           ref={scrollRef}
-          {...webData({ bloomCategoryBarTrack: '' })}
+          {...webDataSet({ bloomCategoryBarTrack: '' })}
           horizontal
           role="tablist"
           accessibilityLabel={accessibilityLabel}

@@ -35,12 +35,11 @@ import { resolveMiniPlayerSurface } from '../media-player/MiniPlayer';
 import { nowPlayingBarLayout, NOW_PLAYING_BAR_HEIGHT } from '../media-player/NowPlayingBar';
 import { PlaybackSpeedRows } from '../media-player/PlaybackSpeedMenu';
 import {
-  darken,
   formatPlaybackRate,
-  IMMERSIVE_TEXT_TARGET,
   parseSleepTimerKey,
   sleepTimerKey,
 } from '../media-player/shared';
+import { AA_TEXT_CONTRAST, darken } from '../styles/color-contrast';
 import { SleepTimerRows } from '../media-player/SleepTimerMenu';
 import { skipGlyphFor } from '../media-player/TransportControls';
 import type { PlaybackDevice, RepeatMode } from '../media-player/types';
@@ -365,13 +364,13 @@ describe('artwork tint contrast', () => {
     for (const pale of ['#FFFFFF', '#F4E3A1', '#9FE3C5', '#FF7A59']) {
       const tint = resolveArtworkTint(pale, '#fafafa', '#a3a3a3');
       expect(tint.darkened).toBeGreaterThan(0);
-      expect(contrastRatio(tint.background as string, '#fafafa')).toBeGreaterThanOrEqual(IMMERSIVE_TEXT_TARGET);
-      expect(contrastRatio(tint.background as string, '#a3a3a3')).toBeGreaterThanOrEqual(IMMERSIVE_TEXT_TARGET);
+      expect(contrastRatio(tint.background as string, '#fafafa')).toBeGreaterThanOrEqual(AA_TEXT_CONTRAST);
+      expect(contrastRatio(tint.background as string, '#a3a3a3')).toBeGreaterThanOrEqual(AA_TEXT_CONTRAST);
       // …and stops at the FIRST step that holds, rather than going to black.
       const lighter = darken(pale, tint.darkened - 0.05) as string;
       expect(
         Math.min(contrastRatio(lighter, '#fafafa'), contrastRatio(lighter, '#a3a3a3')),
-      ).toBeLessThan(IMMERSIVE_TEXT_TARGET);
+      ).toBeLessThan(AA_TEXT_CONTRAST);
     }
   });
 });
@@ -394,7 +393,7 @@ describe('MiniPlayer', () => {
     expect(byTestId('m').style.backgroundColor).toBe(normalise(surface.background));
     const dark = immersiveDarkTheme(theme, 'teal');
     const darkText = resolveMediaControlsPaint(dark).text;
-    expect(contrastRatio(surface.background, darkText)).toBeGreaterThanOrEqual(IMMERSIVE_TEXT_TARGET);
+    expect(contrastRatio(surface.background, darkText)).toBeGreaterThanOrEqual(AA_TEXT_CONTRAST);
     // The 2px line: 50 of 200 = 25%, in the dark theme's text colour.
     const fill = byTestId('m-progress-fill');
     expect(fill.style.width).toBe('25%');

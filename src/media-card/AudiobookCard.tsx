@@ -4,8 +4,9 @@ import { RiBookOpenFill } from '../icons/remix/RiBookOpenFill';
 import { useTheme } from '../theme/use-theme';
 import { MediaCard } from './MediaCard';
 import { ListenProgress } from './parts';
-import { clampFraction, joinMeta, resolveMediaCardPaint } from './shared';
+import { joinMeta, resolveMediaCardPaint } from './shared';
 import type { AudiobookCardProps } from './types';
+import { clamp01 } from '../styles/clamp';
 
 /** A book cover is 2:3. */
 export const AUDIOBOOK_ASPECT_RATIO = 2 / 3;
@@ -33,7 +34,7 @@ function AudiobookCardComponent({
   const paint = useMemo(() => resolveMediaCardPaint(theme), [theme]);
   const row = layout === 'row';
   const narratedBy = narrator ? `${narratorPrefix} ${narrator}` : undefined;
-  const heard = clampFraction(progress);
+  const heard = clamp01(progress);
   return (
     <MediaCard
       {...rest}

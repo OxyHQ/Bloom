@@ -9,6 +9,7 @@ import { useImageResolver } from '../image-resolver/context';
 import { useInteractiveWebCss } from '../styles/interactive-web-css';
 import { borderRadius } from '../styles/tokens';
 import type { WebCssStyle } from '../styles/web-view-style';
+import { webDataSet } from '../styles/web-data';
 import { useTheme } from '../theme/use-theme';
 import { Text } from '../typography';
 import {
@@ -22,11 +23,10 @@ import {
   LISTING_DETAILS_STYLE_ID,
   resolveImageUri,
   resolveListingPalette,
-  webData,
   type ListingPalette,
 } from './shared';
 import type { ListingPhoto, ListingPhotoGridProps } from './types';
-import { useContainerWidth } from './use-container-width';
+import { useContainerWidth } from '../hooks/use-container-width';
 
 /**
  * The photos at the top of a listing page.
@@ -93,7 +93,7 @@ function PhotoTile({ photo, uri, label, palette, onPress, style, testID }: Photo
 
   return (
     <Pressable
-      {...webData({ bloomListingPress: 'inset' })}
+      {...webDataSet({ bloomListingPress: 'inset' })}
       accessibilityRole="button"
       accessibilityLabel={label}
       onPress={onPress}
@@ -104,7 +104,7 @@ function PhotoTile({ photo, uri, label, palette, onPress, style, testID }: Photo
     >
       {image}
       <View
-        {...webData({ bloomListingScrim: '' })}
+        {...webDataSet({ bloomListingScrim: '' })}
         pointerEvents="none"
         testID={testID ? `${testID}-scrim` : undefined}
         style={[

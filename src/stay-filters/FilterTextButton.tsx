@@ -2,10 +2,11 @@ import React, { memo, useEffect, useMemo } from 'react';
 import { Pressable } from 'react-native';
 
 import { resolveButtonRamps } from '../button/shared';
-import { FOCUS_RING_OFFSET_COLOR, webDataSet } from '../checkbox/shared';
+import { FOCUS_RING_OFFSET_COLOR } from '../checkbox/shared';
 import { useInteractionState } from '../hooks/use-interaction-state';
 import { adoptStyleSheet } from '../styles/adopt-style-sheet';
 import type { WebCssStyle } from '../styles/web-view-style';
+import { webDataSet } from '../styles/web-data';
 import { useTheme } from '../theme/use-theme';
 import { Text } from '../typography';
 

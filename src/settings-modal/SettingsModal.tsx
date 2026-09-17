@@ -30,6 +30,7 @@ import { RiArrowLeftSLine, RiArrowRightSLine, RiCheckboxCircleFill, RiCloseLine 
 import { VerticalFade } from './SettingsArt';
 import { Backdrop, OverlayRoot } from '../overlay';
 import type { WebCssStyle } from '../styles/web-view-style';
+import { webDataSet } from '../styles/web-data';
 import { Text } from '../typography';
 import {
   SettingsModalContext,
@@ -40,7 +41,7 @@ import {
 import { ModalPortal } from './modal-portal';
 import type { SettingsPalette } from './palette';
 import type { SettingsModalProps, SettingsNavGroup, SettingsNavItem } from './types';
-import { IS_WEB, useSettingsWebCss, webData } from './web-css';
+import { IS_WEB, useSettingsWebCss } from './web-css';
 
 /**
  * A settings modal.
@@ -366,7 +367,7 @@ export function SettingsModal({
                   aria-modal
                   aria-label={labels?.dialog ?? 'Settings'}
                   testID={testID}
-                  {...webData({ bloomSettingsDialog: '' })}
+                  {...webDataSet({ bloomSettingsDialog: '' })}
                   style={[
                     styles.panel,
                     layout === 'compact'
@@ -593,7 +594,7 @@ function RailRow({
       accessibilityState={{ selected, disabled: item.disabled }}
       aria-disabled={item.disabled}
       {...(IS_WEB ? { 'aria-current': selected ? 'page' : undefined } : null)}
-      {...webData({ bloomSettingsPress: '' })}
+      {...webDataSet({ bloomSettingsPress: '' })}
       disabled={item.disabled}
       onPress={onPress}
       onHoverIn={() => setHovered(true)}
@@ -650,7 +651,7 @@ function SettingsCloseButton({
     <Pressable
       role="button"
       accessibilityLabel={label}
-      {...webData({ bloomSettingsPress: '' })}
+      {...webDataSet({ bloomSettingsPress: '' })}
       onPress={onPress}
       onHoverIn={() => setHovered(true)}
       onHoverOut={() => setHovered(false)}
@@ -695,7 +696,7 @@ function CompactHeader({
         <Pressable
           role="button"
           accessibilityLabel={backLabel}
-          {...webData({ bloomSettingsPress: '' })}
+          {...webDataSet({ bloomSettingsPress: '' })}
           onPress={onBack}
           hitSlop={8}
           testID={testID ? `${testID}-back` : undefined}

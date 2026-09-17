@@ -6,9 +6,10 @@ import { RiMusic2Line } from '../icons/remix/RiMusic2Line';
 import { ExplicitBadge } from '../media-controls/ExplicitBadge';
 import { NowPlayingIndicator } from '../media-controls/NowPlayingIndicator';
 import type { WebCssStyle } from '../styles/web-view-style';
+import { webDataSet } from '../styles/web-data';
 import { Text } from '../typography';
 import { useImageUri, useMediaHeaderPaint } from './parts';
-import { webData, type MediaHeaderPaint } from './shared';
+import { type MediaHeaderPaint } from './shared';
 import type { PopularTrack, PopularTracksProps } from './types';
 
 /**
@@ -58,7 +59,7 @@ function TrackRow({
   };
   return (
     <Pressable
-      {...webData({ bloomMediaHeaderPress: 'inset' })}
+      {...webDataSet({ bloomMediaHeaderPress: 'inset' })}
       role="button"
       accessibilityLabel={track.title}
       aria-current={active || undefined}
@@ -183,7 +184,7 @@ function PopularTracksComponent({
       </View>
       {canExpand ? (
         <Pressable
-          {...webData({ bloomMediaHeaderPress: '' })}
+          {...webDataSet({ bloomMediaHeaderPress: '' })}
           role="button"
           accessibilityLabel={expanded ? showLessLabel : showMoreLabel}
           aria-expanded={expanded}

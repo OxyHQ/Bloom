@@ -4,7 +4,12 @@ import { neutralRamp } from '../button/shared';
 import { parseRgba } from '../theme/color-utils';
 import type { WebCssStyle } from '../styles/web-view-style';
 import type { MediaArtist, RepeatMode, SleepTimerValue, TransportControlsSize } from './types';
-import { contrastRatio, relativeLuminance } from '../styles/color-contrast';
+import {
+  AA_TEXT_CONTRAST,
+  contrastRatio,
+  darkenUntilContrast,
+  relativeLuminance,
+} from '../styles/color-contrast';
 
 export const IS_WEB = Platform.OS === 'web';
 
@@ -42,9 +47,6 @@ export function artistNames(artists: string | MediaArtist[]): string {
   return typeof artists === 'string' ? artists : artists.map((a) => a.name).join(', ');
 }
 
-export function isUrl(value: string): boolean {
-  return /^(https?:|data:|blob:|file:)/.test(value);
-}
 
 // ---------------------------------------------------------------------------
 //  Sizes
@@ -74,20 +76,6 @@ export const TRANSPORT_GEOMETRY: Record<TransportControlsSize, TransportGeometry
 
 
 
-function hex(v: number): string {
-  return Math.round(Math.max(0, Math.min(255, v))).toString(16).padStart(2, '0');
-}
-
-/** `color` darkened toward black by `amount` (0..1), as `#rrggbb`. */
-export function darken(color: string, amount: number): string | null {
-  const c = parseRgba(color);
-  if (!c) return null;
-  const k = 1 - amount;
-  return `#${hex(c.r * k)}${hex(c.g * k)}${hex(c.b * k)}`;
-}
-
-/** The two foregrounds the immersive surfaces draw on a tint: body text and secondary text. */
-export const IMMERSIVE_TEXT_TARGET = 4.5;
 
 export interface ArtworkTint {
   /** The background to paint, or `null` when the artwork colour is absent / unparseable. */
@@ -98,7 +86,7 @@ export interface ArtworkTint {
 
 /**
  * The artwork colour, darkened in 5% steps until BOTH `text` and `textMuted`
- * clear 4.5:1 on it. A missing or unparseable colour gives `background: null`
+ * clear AA on it. A missing or unparseable colour gives `background: null`
  * — the caller falls back to its neutral surface. Black clears any light
  * foreground, so the loop always ends with a colour.
  */
@@ -107,18 +95,10 @@ export function resolveArtworkTint(
   text: string,
   textMuted: string,
 ): ArtworkTint {
-  if (!artworkColor || !parseRgba(artworkColor)) return { background: null, darkened: 0 };
-  for (let step = 0; step <= 20; step++) {
-    const amount = step / 20;
-    const bg = darken(artworkColor, amount) as string;
-    if (
-      contrastRatio(bg, text) >= IMMERSIVE_TEXT_TARGET &&
-      contrastRatio(bg, textMuted) >= IMMERSIVE_TEXT_TARGET
-    ) {
-      return { background: bg, darkened: amount };
-    }
-  }
-  return { background: '#000000', darkened: 1 };
+  const shade = artworkColor
+    ? darkenUntilContrast(artworkColor, [text, textMuted], AA_TEXT_CONTRAST)
+    : null;
+  return shade ? { background: shade.color, darkened: shade.amount } : { background: null, darkened: 0 };
 }
 
 /** The dark surface the full-screen gradient ends on: neutral-950 tinted by the theme text. */

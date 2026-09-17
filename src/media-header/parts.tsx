@@ -6,22 +6,22 @@ import { useInteractionState } from '../hooks/use-interaction-state';
 import { RiHeart3Fill } from '../icons/remix/RiHeart3Fill';
 import { RiMusic2Line } from '../icons/remix/RiMusic2Line';
 import { useImageResolver } from '../image-resolver/context';
-import { useContainerWidth } from '../listing-details/use-container-width';
+import { isImageUrl } from '../image-resolver/is-image-url';
+import { useContainerWidth } from '../hooks/use-container-width';
 import { useInteractiveWebCss } from '../styles/interactive-web-css';
 import type { WebCssStyle } from '../styles/web-view-style';
+import { webDataSet } from '../styles/web-data';
+import { clamp01 } from '../styles/clamp';
 import { useTheme } from '../theme/use-theme';
 import { Text } from '../typography';
 import type { TypeScaleVariant } from '../typography/scale';
 import {
-  clamp01,
   gradientStyle,
-  isUrl,
   MEDIA_HEADER_CSS,
   MEDIA_HEADER_STYLE_ID,
   MEDIA_HEADER_WIDE_MIN_WIDTH,
   resolveLikedGradient,
   resolveMediaHeaderPaint,
-  webData,
   type MediaHeaderPaint,
 } from './shared';
 import type { MediaHeaderPerson, MediaImageSource } from './types';
@@ -37,7 +37,7 @@ export function useMediaHeaderPaint(artworkColor?: string | null): MediaHeaderPa
 export function useImageUri(source: MediaImageSource | undefined, variant?: string): string | undefined {
   const resolver = useImageResolver();
   if (!source) return undefined;
-  return isUrl(source) ? source : (resolver?.(source, variant) ?? undefined);
+  return isImageUrl(source) ? source : (resolver?.(source, variant) ?? undefined);
 }
 
 // ---------------------------------------------------------------------------
@@ -232,7 +232,7 @@ export function HeaderTitle({
       numberOfLines={numberOfLines}
       style={{ color }}
       testID={testID}
-      {...webData({ bloomMediaHeaderTitle: variant })}
+      {...webDataSet({ bloomMediaHeaderTitle: variant })}
     >
       {children}
     </Text>
@@ -279,14 +279,14 @@ export function InlineLink({
   const style: WebCssStyle = { borderRadius: 4, '--bloom-media-header-ring': ring };
   return (
     <Pressable
-      {...webData({ bloomMediaHeaderPress: '', bloomMediaHeaderLink: '' })}
+      {...webDataSet({ bloomMediaHeaderPress: '', bloomMediaHeaderLink: '' })}
       role="link"
       accessibilityLabel={label}
       onPress={onPress}
       style={style}
       testID={testID}
     >
-      <Text variant={variant} style={{ color }} {...webData({ bloomMediaHeaderLinkText: '' })}>
+      <Text variant={variant} style={{ color }} {...webDataSet({ bloomMediaHeaderLinkText: '' })}>
         {label}
       </Text>
     </Pressable>
@@ -415,7 +415,7 @@ export function ClampedText({
       </Text>
       {canOverflow ? (
         <Pressable
-          {...webData({ bloomMediaHeaderPress: '' })}
+          {...webDataSet({ bloomMediaHeaderPress: '' })}
           role="button"
           accessibilityLabel={expanded ? showLessLabel : showMoreLabel}
           aria-expanded={expanded}

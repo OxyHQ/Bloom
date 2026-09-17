@@ -1,5 +1,6 @@
 import { Platform } from 'react-native';
 
+import { groupThousands } from '../chart-cards/primitives/format';
 import { resolveButtonRamps } from '../button/shared';
 import { oklchToSrgb, srgbToOklch, srgbToRgbString, type Oklch } from '../theme/color-space';
 import { parseRgba } from '../theme/color-utils';
@@ -8,11 +9,6 @@ import type { EnergyClass } from './types';
 import { contrastRatio, relativeLuminance } from '../styles/color-contrast';
 
 export const IS_WEB = Platform.OS === 'web';
-
-/** `dataSet` hooks for the adopted sheet; nothing on native. */
-export function webData(data: Record<string, string>): Record<string, unknown> {
-  return IS_WEB ? { dataSet: data } : {};
-}
 
 /**
  * Every neutral and accent colour the insight parts paint. Pure.
@@ -105,8 +101,6 @@ function fitRgb({ l, c, h }: Oklch): string {
   return srgbToRgbString(oklchToSrgb({ l, c: chroma, h }));
 }
 
-
-
 /**
  * Lightness and chroma per class, A → G: a dark green, brightening to a light
  * yellow at D, darkening again to a deep red. The standard scale's shape —
@@ -155,15 +149,8 @@ export function resolveEnergyTones(theme: Theme): EnergyTone[] {
 //  Formatting
 // ---------------------------------------------------------------------------
 
-/** `385000` → `"385,000"`. */
-export function groupDigits(value: number): string {
-  const rounded = Math.round(value);
-  const sign = rounded < 0 ? '-' : '';
-  return sign + String(Math.abs(rounded)).replace(/\B(?=(\d{3})+(?!\d))/g, ',');
-}
-
 /** The default price format: `€385,000`. Apps pass their own `format` for currency and locale. */
-export const formatEuros = (value: number) => `€${groupDigits(value)}`;
+export const formatEuros = (value: number) => `€${groupThousands(value)}`;
 
 /** The default axis format: `€385K`, `€1.2M`. */
 export function formatEurosCompact(value: number): string {

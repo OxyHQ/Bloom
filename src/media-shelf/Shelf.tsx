@@ -17,6 +17,7 @@ import { RiArrowLeftSLine } from '../icons/remix/RiArrowLeftSLine';
 import { RiArrowRightSLine } from '../icons/remix/RiArrowRightSLine';
 import { adoptStyleSheet } from '../styles/adopt-style-sheet';
 import type { WebCssStyle } from '../styles/web-view-style';
+import { webDataSet } from '../styles/web-data';
 import { useTheme } from '../theme/use-theme';
 import { Text } from '../typography';
 import {
@@ -27,7 +28,6 @@ import {
   shelfGridColumns,
   shelfOverflow,
   shelfPageTarget,
-  webData,
   type ShelfScroll,
 } from './shared';
 import type { ShelfProps } from './types';
@@ -195,7 +195,7 @@ function ShelfComponent({
             />
           ) : null}
           {showArrows ? (
-            <View {...webData({ bloomShelfArrows: '' })} style={{ flexDirection: 'row', gap: 8 }}>
+            <View {...webDataSet({ bloomShelfArrows: '' })} style={{ flexDirection: 'row', gap: 8 }}>
               <Button
                 variant="secondary"
                 size="small"
@@ -253,7 +253,7 @@ function ShelfComponent({
     body = (
       <ScrollView
         ref={scrollRef}
-        {...webData({ bloomShelfTrack: '' })}
+        {...webDataSet({ bloomShelfTrack: '' })}
         horizontal
         showsHorizontalScrollIndicator={false}
         scrollEventThrottle={16}
@@ -275,7 +275,7 @@ function ShelfComponent({
         {items.map((child, index) => (
           <View
             key={(child as { key?: React.Key }).key ?? index}
-            {...webData({ bloomShelfItem: '' })}
+            {...webDataSet({ bloomShelfItem: '' })}
             style={itemWidth ? { width: itemWidth } : undefined}
           >
             {child}
@@ -332,7 +332,7 @@ function ShelfTitle({
   const linkStyle: WebCssStyle = { alignSelf: 'flex-start', maxWidth: '100%', '--bloom-shelf-ring': ring };
   return (
     <Pressable
-      {...webData({ bloomShelfLink: '' })}
+      {...webDataSet({ bloomShelfLink: '' })}
       role="link"
       accessibilityLabel={title}
       onPress={onPress}
@@ -370,7 +370,7 @@ function ShowAllButton({
   };
   return (
     <Pressable
-      {...webData({ bloomShelfLink: '' })}
+      {...webDataSet({ bloomShelfLink: '' })}
       role="button"
       // The visible text leads the name, so a voice command of "Show all" still matches.
       accessibilityLabel={`${label}: ${title}`}

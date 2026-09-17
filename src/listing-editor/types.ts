@@ -3,12 +3,14 @@ import type { StyleProp, ViewStyle } from 'react-native';
 
 import type { ListingCardProps } from '../listing-card/types';
 import type { PropertyType, PropertyTypeOption } from '../stay-filters/types';
+import type { BloomIconComponent } from '../icons/icon-component';
 
 /** The shared property-type vocabulary lives with the filters; re-exported for this family's own modules. */
 export type { PropertyType, PropertyTypeOption };
 
 /** An icon component: a Remix icon from `@oxy.so/bloom/icons` or one of the same shape. */
-export type ListingEditorIcon = ComponentType<{ width?: number; height?: number; fill?: string }>;
+/** @deprecated Use `BloomIconComponent` from `@oxy.so/bloom/icons`; this is an alias of it. */
+export type ListingEditorIcon = BloomIconComponent;
 
 // ---------------------------------------------------------------------------
 //  OfferingEditor

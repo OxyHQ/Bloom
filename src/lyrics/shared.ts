@@ -1,11 +1,18 @@
 import { Platform } from 'react-native';
 
-import { ACCENT_TABLE, colorRamp, mixColor, resolveButtonRamps, type RampStop } from '../button/shared';
+import { mixColor, resolveButtonRamps } from '../button/shared';
 import { parseRgba } from '../theme/color-utils';
 import type { Theme } from '../theme/types';
 import type { TypeScaleVariant } from '../typography/scale';
 import type { LyricLine, LyricsPalette, LyricsSize } from './types';
-import { contrastRatio, relativeLuminance } from '../styles/color-contrast';
+import {
+  AAA_TEXT_CONTRAST,
+  AA_LARGE_TEXT_CONTRAST,
+  AA_TEXT_CONTRAST,
+  contrastRatio,
+  darkenUntilContrast,
+  relativeLuminance,
+} from '../styles/color-contrast';
 
 export const IS_WEB = Platform.OS === 'web';
 
@@ -144,23 +151,17 @@ function alphaForContrast(background: string, foreground: string, ratio: number)
 }
 
 const WHITE = '#ffffff';
-/** Contrast the active line keeps against the background. */
-export const LYRICS_ACTIVE_CONTRAST = 7;
-/** Upcoming lines and the footer: AA for body text. */
-export const LYRICS_UPCOMING_CONTRAST = 4.5;
-/** Past lines: AA for large text — they are 24px and up. */
-export const LYRICS_PAST_CONTRAST = 3;
 
 function paletteFrom(background: string, foreground: string, fromArtwork: boolean): LyricsPalette {
   const upcoming = mixColor(
     background,
     foreground,
-    Math.max(0.72, alphaForContrast(background, foreground, LYRICS_UPCOMING_CONTRAST)),
+    Math.max(0.72, alphaForContrast(background, foreground, AA_TEXT_CONTRAST)),
   );
   const past = mixColor(
     background,
     foreground,
-    Math.max(0.5, alphaForContrast(background, foreground, LYRICS_PAST_CONTRAST)),
+    Math.max(0.5, alphaForContrast(background, foreground, AA_LARGE_TEXT_CONTRAST)),
   );
   return {
     background,
@@ -179,27 +180,28 @@ function paletteFrom(background: string, foreground: string, fromArtwork: boolea
 /**
  * The lyrics colours.
  *
- * With a parseable `artworkColor`: a deep shade of it — the first stop of its
- * ramp (from 800 in light mode, 900 in dark) where white keeps
- * {@link LYRICS_ACTIVE_CONTRAST}:1 — under white text. The ramp's 950 stop
- * always clears it, so a pale colour just lands deeper.
+ * With a parseable `artworkColor`: the colour itself, pulled toward black only
+ * as far as it takes for white to keep AAA on it, under white text. Black
+ * clears any light foreground, so a pale colour just lands deeper.
  *
  * Without one: the neutral surface (`neutral-100` light, `neutral-900` dark)
  * under the theme's text colour.
  *
  * Either way upcoming lines are the text colour mixed toward the background no
- * further than 4.5:1 (and at least 72% of it), past lines no further than 3:1
- * (and at least 50%).
+ * further than AA (and at least 72% of it), past lines no further than AA for
+ * large text (and at least 50%).
+ *
+ * It DARKENS the colour rather than walking its generated ramp, which is what
+ * fixed two visible defects: a ramp re-derives every stop's lightness and
+ * chroma from the hue, so a near-black `#101820` came back as a mid-slate ten
+ * times lighter than it went in, and a vivid `#1db98a` lost its red channel
+ * entirely. Scaling every channel by the same factor keeps their ratio, so a
+ * darkened teal is still teal. The pane no longer differs between light and
+ * dark mode, which is right: the artwork does not.
  */
 export function resolveLyricsPalette(theme: Theme, artworkColor?: string | null): LyricsPalette {
-  if (artworkColor && parseRgba(artworkColor)) {
-    const ramp = colorRamp(artworkColor, ACCENT_TABLE);
-    const stops: RampStop[] = theme.isDark ? [900, 950] : [800, 900, 950];
-    const background =
-      stops.map((stop) => ramp[stop]).find((c) => contrastRatio(c, WHITE) >= LYRICS_ACTIVE_CONTRAST) ??
-      ramp[950];
-    return paletteFrom(background, WHITE, true);
-  }
+  const shade = artworkColor ? darkenUntilContrast(artworkColor, WHITE, AAA_TEXT_CONTRAST) : null;
+  if (shade) return paletteFrom(shade.color, WHITE, true);
   const { neutral } = resolveButtonRamps(theme);
   return paletteFrom(theme.isDark ? neutral[900] : neutral[100], theme.colors.text, false);
 }

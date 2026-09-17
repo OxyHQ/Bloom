@@ -1,7 +1,6 @@
 import React, { memo, useEffect, useMemo, useRef, useState } from 'react';
 import { Pressable, ScrollView, TextInput, View, type TextStyle } from 'react-native';
 
-import { webDataSet } from '../checkbox/shared';
 import { Chip } from '../chip';
 import {
   DropdownMenu,
@@ -24,6 +23,7 @@ import { RiMenuLine } from '../icons/remix/RiMenuLine';
 import { RiSearchLine } from '../icons/remix/RiSearchLine';
 import { adoptStyleSheet } from '../styles/adopt-style-sheet';
 import type { WebCssStyle } from '../styles/web-view-style';
+import { webDataSet } from '../styles/web-data';
 import { SANS_FONT_FAMILY } from '../text-field/shared';
 import { useTheme } from '../theme/use-theme';
 import { Text } from '../typography';

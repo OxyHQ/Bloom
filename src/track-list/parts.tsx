@@ -1,7 +1,6 @@
 import React, { Fragment, memo, useMemo, useState } from 'react';
 import { Image, Pressable, View, type GestureResponderEvent } from 'react-native';
 
-import { webDataSet } from '../checkbox/shared';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -16,6 +15,7 @@ import { useImageResolver } from '../image-resolver/context';
 import { borderRadius } from '../styles/tokens';
 import type { WebCssStyle } from '../styles/web-view-style';
 import type { WebAriaProps } from '../styles/styled-primitives';
+import { webDataSet } from '../styles/web-data';
 import { useTheme } from '../theme/use-theme';
 import { IS_WEB, resolveTrackListPaint } from './shared';
 import type { TrackIconComponent, TrackMenuItem } from './types';

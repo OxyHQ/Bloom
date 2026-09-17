@@ -2,6 +2,7 @@ import { Platform } from 'react-native';
 
 import { resolveButtonRamps } from '../button/shared';
 import { resolveMenuPalette } from '../floating/menu-palette';
+import { dragShift, dragTarget, moveItem } from '../hooks/list-reorder';
 import type { Theme } from '../theme/types';
 import type { QueuePanelLabels } from './types';
 
@@ -33,51 +34,15 @@ export const DEFAULT_QUEUE_PANEL_LABELS: QueuePanelLabels = {
   emptyRecent: 'Nothing played yet',
 };
 
-function clampIndex(index: number, count: number): number {
-  if (count <= 0) return 0;
-  return Math.min(count - 1, Math.max(0, Math.round(index)));
-}
+/** @deprecated Use `moveItem` from `@oxy.so/bloom/hooks`; this is a re-export of it. */
+export const moveQueueItem = moveItem;
 
-/**
- * `list` with the item at `from` moved to `to` (both clamped into range). Always
- * a new array; an out-of-range or no-op move returns an unchanged copy.
- */
-export function moveQueueItem<T>(list: readonly T[], from: number, to: number): T[] {
-  const next = list.slice();
-  if (list.length === 0 || from < 0 || from >= list.length) return next;
-  const target = clampIndex(to, list.length);
-  if (target === from) return next;
-  const [item] = next.splice(from, 1);
-  next.splice(target, 0, item as T);
-  return next;
-}
+/** @deprecated Use `dragTarget` from `@oxy.so/bloom/hooks`; this is a re-export of it. */
+export const queueDragTarget = dragTarget;
 
-/** The index a row dragged `dy` px from `from` lands on: nearest whole row, clamped. */
-export function queueDragTarget(from: number, dy: number, rowHeight: number, count: number): number {
-  if (count <= 0 || rowHeight <= 0) return 0;
-  return clampIndex(from + dy / rowHeight, count);
-}
+/** @deprecated Use `dragShift` from `@oxy.so/bloom/hooks`; this is a re-export of it. */
+export const queueDragShift = dragShift;
 
-/**
- * How far a row that is NOT being dragged slides to make room, while the row at
- * `from` hovers over `target`: rows between the two move one row towards `from`.
- */
-export function queueDragShift(index: number, from: number, target: number, rowHeight: number): number {
-  if (index === from) return 0;
-  if (from < target && index > from && index <= target) return -rowHeight;
-  if (target < from && index >= target && index < from) return rowHeight;
-  return 0;
-}
-
-export function isImageUrl(value: string): boolean {
-  return (
-    value.startsWith('http://') ||
-    value.startsWith('https://') ||
-    value.startsWith('data:') ||
-    value.startsWith('blob:') ||
-    value.startsWith('file:')
-  );
-}
 
 export interface QueuePanelPaint {
   surface: string;

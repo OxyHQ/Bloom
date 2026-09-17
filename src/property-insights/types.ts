@@ -2,9 +2,11 @@ import type { ComponentType } from 'react';
 import type { StyleProp, ViewStyle } from 'react-native';
 
 import type { AccentTone } from '../theme/accent-colors';
+import type { BloomIconComponent } from '../icons/icon-component';
 
 /** An icon COMPONENT (`RiBusLine`, not `<RiBusLine />`); the part sizes and colours it. */
-export type InsightIcon = ComponentType<{ width?: number; height?: number; fill?: string }>;
+/** @deprecated Use `BloomIconComponent` from `@oxy.so/bloom/icons`; this is an alias of it. */
+export type InsightIcon = BloomIconComponent;
 
 // ---------------------------------------------------------------------------
 //  EnergyLabel / EnergyBadge

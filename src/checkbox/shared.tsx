@@ -14,6 +14,7 @@ import {
 import type { TypeScaleVariant } from '../typography';
 import { TYPE_SCALE } from '../typography/scale';
 import type { WebCssStyle } from '../styles/web-view-style';
+import { webDataSet } from '../styles/web-data';
 import type { CheckboxSize } from './types';
 
 /**
@@ -114,15 +115,6 @@ export function resolveCheckboxPaint(theme: Theme, color?: string): CheckboxPain
 }
 
 const IS_WEB = Platform.OS === 'web';
-
-/**
- * The web-only `dataSet` hook an adopted sheet's selectors hang off, as spread
- * props: react-native-web's channel to a `data-*` attribute (a class never
- * reaches the DOM here), and nothing on native.
- */
-export function webDataSet(entries: Record<string, string>): Record<string, unknown> {
-  return IS_WEB ? { dataSet: entries } : {};
-}
 
 /**
  * A top-to-bottom gradient as a style: `background-image` on web (react-native-web

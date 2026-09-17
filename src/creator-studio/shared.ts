@@ -9,6 +9,7 @@ import type {
   ReleaseType,
   TrackUploadStatus,
 } from './types';
+import { clamp } from '../styles/clamp';
 
 export const IS_WEB = Platform.OS === 'web';
 
@@ -137,10 +138,14 @@ export const DEFAULT_CREDIT_ROLES: readonly CreatorOption[] = [
 //  Uploads
 // ---------------------------------------------------------------------------
 
-/** Clamps a progress value to a whole 0–100. */
+/**
+ * Clamps a progress value to a whole 0–100.
+ *
+ * NOT `clamp01` under another name: this is a PERCENTAGE and it rounds.
+ */
 export function clampProgress(value: number | undefined): number {
   if (value === undefined || !Number.isFinite(value)) return 0;
-  return Math.round(Math.min(100, Math.max(0, value)));
+  return Math.round(clamp(value, 0, 100));
 }
 
 /** What a row draws for a status: a determinate bar, a running bar, or none. */
@@ -211,17 +216,6 @@ export function artworkDimensionsError(
     return `Artwork is too small (${width}×${height} px). Upload at least ${minSize}×${minSize} px.`;
   }
   return null;
-}
-
-/** A URL (or data/blob URI) rather than an ImageResolver id. */
-export function isImageUrl(value: string): boolean {
-  return (
-    value.startsWith('http://') ||
-    value.startsWith('https://') ||
-    value.startsWith('data:') ||
-    value.startsWith('blob:') ||
-    value.startsWith('file:')
-  );
 }
 
 /** Adds a string to a list once, trimmed; returns the same list when nothing changes. */

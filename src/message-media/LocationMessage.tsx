@@ -10,7 +10,7 @@ import Animated, {
   withTiming,
 } from 'react-native-reanimated';
 
-import { webDataSet } from '../checkbox/shared';
+import { webDataSet } from '../styles/web-data';
 import { RiMapPin2Fill } from '../icons/remix/RiMapPin2Fill';
 import { borderRadius, space } from '../styles/tokens';
 import type { WebCssStyle } from '../styles/web-view-style';

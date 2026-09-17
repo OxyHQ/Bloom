@@ -7,7 +7,7 @@ import { Text } from '../typography';
 import { AMENITY_LIST_TWO_COLUMN_MIN_WIDTH } from './constants';
 import { resolveListingPalette } from './shared';
 import type { AmenityListProps } from './types';
-import { useContainerWidth } from './use-container-width';
+import { useContainerWidth } from '../hooks/use-container-width';
 
 /**
  * What a listing offers: icon + label rows in one or two columns.

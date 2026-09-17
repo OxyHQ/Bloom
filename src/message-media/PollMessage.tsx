@@ -1,7 +1,7 @@
 import React, { memo, useCallback, useMemo, useState } from 'react';
 import { Pressable, View } from 'react-native';
 
-import { webDataSet } from '../checkbox/shared';
+import { webDataSet } from '../styles/web-data';
 import { RiCheckLine } from '../icons/remix/RiCheckLine';
 import { RiCloseLine } from '../icons/remix/RiCloseLine';
 import { borderRadius, space } from '../styles/tokens';

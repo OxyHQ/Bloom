@@ -1,9 +1,9 @@
 import React from 'react';
 import { Pressable, View, type GestureResponderEvent, type StyleProp, type ViewStyle } from 'react-native';
 
-import { webDataSet } from '../checkbox/shared';
 import { useInteractionState } from '../hooks/use-interaction-state';
 import type { WebCssStyle } from '../styles/web-view-style';
+import { webDataSet } from '../styles/web-data';
 import { Text } from '../typography';
 import { BOOKING_FIELD_RADIUS, type BookingPalette } from './shared';
 

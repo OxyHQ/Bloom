@@ -1,3 +1,5 @@
+import { groupThousands } from '../chart-cards/primitives/format';
+
 import type { MortgageInput, MortgageResult } from './types';
 
 function finite(value: number, fallback = 0): number {
@@ -40,11 +42,14 @@ export function computeMortgage({ price, downPayment, years, annualRate }: Mortg
   };
 }
 
-/** Rounded, grouped digits without a currency: 1234567.8 → "1,234,568". */
+/**
+ * Rounded, grouped digits without a currency: 1234567.8 → "1,234,568".
+ *
+ * `groupThousands` renders a non-finite number as `"NaN"`; a mortgage field
+ * reads `0` instead, which is why `finite()` stays here.
+ */
 export function formatPlainAmount(value: number): string {
-  const rounded = Math.round(finite(value));
-  const sign = rounded < 0 ? '-' : '';
-  return sign + String(Math.abs(rounded)).replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+  return groupThousands(finite(value));
 }
 
 /** "250,000" / "€ 250.000" → 250000; anything without digits → 0. */

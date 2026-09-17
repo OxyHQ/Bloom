@@ -2,18 +2,18 @@ import React, { memo, useEffect, useMemo } from 'react';
 import { Pressable, View } from 'react-native';
 
 import { mixColor, resolveButtonRamps } from '../button/shared';
-import { FOCUS_RING_OFFSET_COLOR, webDataSet } from '../checkbox/shared';
+import { FOCUS_RING_OFFSET_COLOR } from '../checkbox/shared';
 import { useInteractionState } from '../hooks/use-interaction-state';
 import { adoptStyleSheet } from '../styles/adopt-style-sheet';
 import { borderRadius } from '../styles/tokens';
 import type { WebCssStyle } from '../styles/web-view-style';
-import { parseRgba } from '../theme/color-utils';
 import type { Theme } from '../theme/types';
 import { useTheme } from '../theme/use-theme';
 import { Text } from '../typography';
 import { ENERGY_RATINGS } from './constants';
 import type { EnergyRating, EnergyRatingFilterProps } from './types';
 import { contrastRatio, relativeLuminance } from '../styles/color-contrast';
+import { webDataSet } from '../styles/web-data';
 
 /**
  * An energy rating threshold, A (best) to G (worst), as seven small coloured
@@ -60,17 +60,6 @@ ${SELECTOR}:focus-visible {
 `;
 
 export const ENERGY_PILL_HEIGHT = 32;
-
-function luminance(color: string): number {
-  const c = parseRgba(color);
-  if (!c) return 0;
-  const lin = (v: number) => {
-    const s = v / 255;
-    return s <= 0.03928 ? s / 12.92 : ((s + 0.055) / 1.055) ** 2.4;
-  };
-  return 0.2126 * lin(c.r) + 0.7152 * lin(c.g) + 0.0722 * lin(c.b);
-}
-
 
 export interface EnergyRatingPaint {
   fill: string;

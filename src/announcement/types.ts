@@ -1,12 +1,10 @@
 import type React from 'react';
 import type { StyleProp, ViewStyle } from 'react-native';
+import type { BloomIconComponent } from '../icons/icon-component';
 
 /** A leading glyph component — pass the component (`RiSparklingFill`), not an element. */
-export type AnnouncementIconComponent = React.ComponentType<{
-  width?: number;
-  height?: number;
-  fill?: string;
-}>;
+/** @deprecated Use `BloomIconComponent` from `@oxy.so/bloom/icons`; this is an alias of it. */
+export type AnnouncementIconComponent = BloomIconComponent;
 
 export interface AnnouncementProps {
   title: React.ReactNode;

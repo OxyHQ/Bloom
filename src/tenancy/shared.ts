@@ -24,6 +24,7 @@ import { Platform } from 'react-native';
 import { resolveButtonRamps } from '../button/shared';
 import { resolveMenuPalette } from '../floating/menu-palette';
 import type { ImageResolver } from '../image-resolver/context';
+import { isImageUrl } from '../image-resolver/is-image-url';
 import type { Theme } from '../theme/types';
 
 export const IS_WEB = Platform.OS === 'web';
@@ -77,16 +78,6 @@ export const HOUSING_CARD_RADIUS = 20;
 export const HOUSING_CARD_PADDING = 20;
 export const HOUSING_TILE_RADIUS = 12;
 
-export function isImageUrl(value: string): boolean {
-  return (
-    value.startsWith('http://') ||
-    value.startsWith('https://') ||
-    value.startsWith('data:') ||
-    value.startsWith('blob:') ||
-    value.startsWith('file:')
-  );
-}
-
 /** A URL passes through; an id goes to the resolver; nothing resolves to `undefined`. */
 export function resolveImageUri(
   source: string | undefined,
@@ -95,11 +86,6 @@ export function resolveImageUri(
 ): string | undefined {
   if (!source) return undefined;
   return isImageUrl(source) ? source : resolver?.(source, variant) ?? undefined;
-}
-
-/** `dataSet` hooks for the adopted sheet; nothing on native. */
-export function webData(data: Record<string, string>): Record<string, unknown> {
-  return IS_WEB ? { dataSet: data } : {};
 }
 
 /** Joins the non-empty parts of an accessible name. */

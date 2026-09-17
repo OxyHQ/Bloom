@@ -2,18 +2,18 @@ import React, { memo, useCallback, useEffect, useMemo, useState } from 'react';
 import { Image, Platform, Pressable, View, type LayoutChangeEvent, type ViewStyle } from 'react-native';
 
 import { Badge } from '../badge';
-import { webDataSet } from '../checkbox/shared';
 import { useInteractionState } from '../hooks/use-interaction-state';
 import { useImageResolver } from '../image-resolver/context';
+import { isImageUrl } from '../image-resolver/is-image-url';
 import { adoptStyleSheet } from '../styles/adopt-style-sheet';
 import type { WebCssStyle } from '../styles/web-view-style';
+import { webDataSet } from '../styles/web-data';
 import { useTheme } from '../theme/use-theme';
 import { Text } from '../typography';
 import { TRIP_STATUS } from './constants';
 import {
   BOOKING_STYLE_ID,
   BOOKING_WEB_CSS,
-  isImageUrl,
   resolveBookingPalette,
   TRIP_CARD_HORIZONTAL_MIN_WIDTH,
   TRIP_CARD_RADIUS,

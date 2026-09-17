@@ -1,7 +1,6 @@
 import React, { memo, useMemo, useState } from 'react';
 import { Pressable, StyleSheet, View, useWindowDimensions } from 'react-native';
 
-import { webDataSet } from '../checkbox/shared';
 import { RiAddCircleLine } from '../icons/remix/RiAddCircleLine';
 import { RiArrowDownCircleFill } from '../icons/remix/RiArrowDownCircleFill';
 import { RiArrowDownCircleLine } from '../icons/remix/RiArrowDownCircleLine';
@@ -17,6 +16,7 @@ import {
   resolveTrackListPaint,
 } from './shared';
 import type { EpisodeRowProps } from './types';
+import { webDataSet } from '../styles/web-data';
 
 /** Below this the cover shrinks to 64 and the description is dropped. */
 const EPISODE_NARROW_WIDTH = 560;

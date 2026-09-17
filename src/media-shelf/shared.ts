@@ -90,6 +90,3 @@ ${ITEM} {
 }
 `;
 
-export function webData(data: Record<string, string>): Record<string, unknown> {
-  return IS_WEB ? { dataSet: data } : {};
-}

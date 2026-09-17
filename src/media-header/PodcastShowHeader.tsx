@@ -6,10 +6,11 @@ import { useInteractionState } from '../hooks/use-interaction-state';
 import { PlayButton } from '../media-controls/PlayButton';
 import { Rating } from '../rating';
 import type { WebCssStyle } from '../styles/web-view-style';
+import { webDataSet } from '../styles/web-data';
 import { Text } from '../typography';
 import { FollowButton } from './MediaActionBar';
 import { ClampedText, Cover, HeaderTitle, InlineLink, MediaHeaderFrame, useMediaHeaderPaint } from './parts';
-import { selectTitleVariant, webData, type MediaHeaderPaint } from './shared';
+import { selectTitleVariant, type MediaHeaderPaint } from './shared';
 import type { LatestEpisode, PodcastShowHeaderProps } from './types';
 
 /**
@@ -70,7 +71,7 @@ function LatestEpisodeCard({
     <View style={{ position: 'relative' }} testID={testID}>
       {episode.onPress ? (
         <Pressable
-          {...webData({ bloomMediaHeaderPress: '' })}
+          {...webDataSet({ bloomMediaHeaderPress: '' })}
           role="button"
           accessibilityLabel={`${label}: ${episode.title}`}
           onPress={episode.onPress}

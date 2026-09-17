@@ -4,7 +4,7 @@ import { View } from 'react-native';
 import { Badge } from '../badge';
 import { Button } from '../button';
 import { RiDownload2Line, RiEyeLine, RiQuillPenLine } from '../icons/remix';
-import { useContainerWidth } from '../listing-details/use-container-width';
+import { useContainerWidth } from '../hooks/use-container-width';
 import { Text } from '../typography';
 import { DOCUMENT_LIST_WIDE_MIN_WIDTH, TENANCY_DOCUMENT_ICON, TENANCY_DOCUMENT_STATUS } from './constants';
 import { HousingCard, IconTile, useHousingPalette } from './parts';

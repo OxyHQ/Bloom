@@ -2,6 +2,7 @@ import React, { memo, useCallback, useState } from 'react';
 import { View } from 'react-native';
 
 import { TextFieldInput } from '../text-field';
+import { clamp } from '../styles/clamp';
 
 /**
  * The "Minimum" / "Maximum" pair of floating-label fields every range filter
@@ -34,10 +35,6 @@ export interface RangeFieldsProps {
   disabled?: boolean;
   /** Derives `-min` and `-max`. */
   testID?: string;
-}
-
-function clamp(v: number, lo: number, hi: number): number {
-  return Math.min(hi, Math.max(lo, v));
 }
 
 /** Snap `v` to the `step` grid anchored at `origin`, keeping the step's decimals. */

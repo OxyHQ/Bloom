@@ -9,9 +9,10 @@ import { RiArrowUpLine } from '../icons/remix/RiArrowUpLine';
 import { RiMusic2Line } from '../icons/remix/RiMusic2Line';
 import { RiSubtractLine } from '../icons/remix/RiSubtractLine';
 import { useImageResolver } from '../image-resolver/context';
+import { isImageUrl } from '../image-resolver/is-image-url';
 import { useTheme } from '../theme/use-theme';
 import { Text } from '../typography';
-import { isImageUrl, resolveCreatorStudioPaint, type CreatorStudioPaint } from './shared';
+import { resolveCreatorStudioPaint, type CreatorStudioPaint } from './shared';
 import type { TopTrackTrend, TopTracksTableLabels, TopTracksTableProps } from './types';
 
 /**

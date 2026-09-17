@@ -4,7 +4,7 @@ import Svg, { Path } from 'react-native-svg';
 
 import { MessageStatus } from '../chat-indicators';
 import type { MessageDeliveryStatus } from '../chat-indicators';
-import { webDataSet } from '../checkbox/shared';
+import { webDataSet } from '../styles/web-data';
 import { RiAddLine, RiEyeLine, RiRefreshLine, RiShareForwardLine } from '../icons/remix';
 import { Text } from '../typography';
 import {

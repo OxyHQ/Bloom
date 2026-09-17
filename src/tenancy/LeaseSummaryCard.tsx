@@ -3,7 +3,7 @@ import { View } from 'react-native';
 
 import { Avatar } from '../avatar';
 import { Badge } from '../badge';
-import { useContainerWidth } from '../listing-details/use-container-width';
+import { useContainerWidth } from '../hooks/use-container-width';
 import { Text } from '../typography';
 import { LEASE_CARD_WIDE_MIN_WIDTH, LEASE_PAYMENT_STATUS } from './constants';
 import { FigureLabel, HousingCard, ProgressTrack, useHousingPalette } from './parts';

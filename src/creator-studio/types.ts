@@ -2,9 +2,11 @@ import type { ComponentType, ReactNode } from 'react';
 import type { StyleProp, ViewStyle } from 'react-native';
 
 import type { FileUploadFile } from '../file-upload/types';
+import type { BloomIconComponent } from '../icons/icon-component';
 
 /** A Remix-style icon component: `width`, `height`, `fill`. */
-export type CreatorStudioIcon = ComponentType<{ width?: number; height?: number; fill?: string }>;
+/** @deprecated Use `BloomIconComponent` from `@oxy.so/bloom/icons`; this is an alias of it. */
+export type CreatorStudioIcon = BloomIconComponent;
 
 /** Which way a figure moved against the previous period. */
 export type CreatorTrend = 'up' | 'down' | 'flat';

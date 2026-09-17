@@ -8,10 +8,11 @@ import { NowPlayingIndicator } from '../media-controls';
 import { Box as SkeletonBox, Circle as SkeletonCircle } from '../skeleton';
 import { borderRadius } from '../styles/tokens';
 import type { WebCssStyle } from '../styles/web-view-style';
+import { webDataSet } from '../styles/web-data';
 import { useTheme } from '../theme/use-theme';
 import { Text } from '../typography';
 import { Artwork, CardLink, useMediaCardCss } from './parts';
-import { composeName, resolveMediaCardPaint, ROW_PADDING, ROW_RADIUS, webData } from './shared';
+import { composeName, resolveMediaCardPaint, ROW_PADDING, ROW_RADIUS } from './shared';
 import type { FriendActivityCardProps } from './types';
 
 const AVATAR = 40;
@@ -86,7 +87,7 @@ function FriendActivityCardComponent({
 
   return (
     <View
-      {...webData({ bloomMediaCard: 'activity', ...(onPress || href ? { bloomMediaCardHover: '' } : null) })}
+      {...webDataSet({ bloomMediaCard: 'activity', ...(onPress || href ? { bloomMediaCardHover: '' } : null) })}
       style={[rootStyle, style]}
       testID={testID}
     >

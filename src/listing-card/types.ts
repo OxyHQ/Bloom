@@ -1,5 +1,6 @@
 import type { ComponentType, ReactNode } from 'react';
 import type { StyleProp, ViewStyle } from 'react-native';
+import type { BloomIconComponent } from '../icons/icon-component';
 
 /**
  * How a home is offered. A listing may carry several at once (a flat for rent
@@ -35,7 +36,8 @@ export interface ListingPriceLine {
 }
 
 /** An icon component a fact draws at 16px in the secondary text colour (`RiHotelBedLine`). */
-export type ListingFactIcon = ComponentType<{ width?: number; height?: number; fill?: string }>;
+/** @deprecated Use `BloomIconComponent` from `@oxy.so/bloom/icons`; this is an alias of it. */
+export type ListingFactIcon = BloomIconComponent;
 
 /** One compact fact about the home ("3" beside a bed, "110 m²"). */
 export interface ListingFact {

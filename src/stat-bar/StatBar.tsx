@@ -2,12 +2,13 @@ import React, { memo } from 'react';
 import { View, StyleSheet } from 'react-native';
 
 import { useTheme } from '../theme/use-theme';
+import { clamp } from '../styles/clamp';
 import { Text } from '../typography';
 import type { StatBarProps } from './types';
 
 function clampPercent(value: number): number {
   if (Number.isNaN(value)) return 0;
-  return Math.max(0, Math.min(100, value));
+  return clamp(value, 0, 100);
 }
 
 /**

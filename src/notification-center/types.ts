@@ -2,13 +2,15 @@ import type { ComponentType } from 'react';
 import type { StyleProp, ViewStyle } from 'react-native';
 
 import type { ButtonVariant } from '../button/types';
+import type { BloomIconComponent } from '../icons/icon-component';
 
 export type NotificationCenterTab = 'all' | 'mentions' | 'system';
 export type NotificationCenterCategory = Exclude<NotificationCenterTab, 'all'> | 'activity';
 export type NotificationCenterStatus = 'neutral' | 'information' | 'success' | 'error';
 
 /** A Remix-style icon: `width` / `height` / `fill`. */
-export type NotificationCenterIcon = ComponentType<{ width?: number; height?: number; fill?: string }>;
+/** @deprecated Use `BloomIconComponent` from `@oxy.so/bloom/icons`; this is an alias of it. */
+export type NotificationCenterIcon = BloomIconComponent;
 
 /**
  * Avatar tints for initials (`neutral`, `blue`, `lime`, `pink`),

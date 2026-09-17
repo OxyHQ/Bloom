@@ -4,6 +4,7 @@ import { Image, Linking, Pressable, View, type GestureResponderEvent, type ViewS
 import { useImageResolver } from '../image-resolver/context';
 import { useInteractiveWebCss } from '../styles/interactive-web-css';
 import type { WebCssStyle } from '../styles/web-view-style';
+import { webDataSet } from '../styles/web-data';
 import { useTheme } from '../theme/use-theme';
 import { Text } from '../typography';
 import {
@@ -13,7 +14,6 @@ import {
   PHOTO_RADIUS,
   resolveListingCardPaint,
   resolvePhoto,
-  webData,
   type ListingCardPaint,
 } from './shared';
 import type { WishlistCardProps } from './types';
@@ -104,7 +104,7 @@ function WishlistCardComponent({
 
   return (
     <Pressable
-      {...webData({ bloomWishlistCard: '' })}
+      {...webDataSet({ bloomWishlistCard: '' })}
       {...(IS_WEB && href ? { href } : null)}
       role={href ? 'link' : onPress ? 'button' : undefined}
       accessibilityLabel={accessibilityLabel ?? (description ? `${name}, ${description}` : name)}

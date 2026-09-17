@@ -79,15 +79,6 @@ export function priceAccessibilityName(price: string, unit?: string, originalPri
   return `${price}${unit ? ` per ${unit}` : ''}${originalPrice ? `, originally ${originalPrice}` : ''}`;
 }
 
-export function isImageUrl(value: string): boolean {
-  return (
-    value.startsWith('http://') ||
-    value.startsWith('https://') ||
-    value.startsWith('data:') ||
-    value.startsWith('blob:') ||
-    value.startsWith('file:')
-  );
-}
 
 // ---------------------------------------------------------------------------
 //  Keyboard focus on web

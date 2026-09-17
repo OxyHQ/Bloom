@@ -6,6 +6,7 @@ import { useControllableState } from '../hooks/use-controllable-state';
 import { RiStarFill } from '../icons/remix';
 import { useInteractiveWebCss } from '../styles/interactive-web-css';
 import type { WebCssStyle } from '../styles/web-view-style';
+import { webDataSet } from '../styles/web-data';
 import { useTheme } from '../theme/use-theme';
 import { Text } from '../typography';
 import {
@@ -13,7 +14,6 @@ import {
   LISTING_DETAILS_CSS,
   LISTING_DETAILS_STYLE_ID,
   resolveListingPalette,
-  webData,
   type ListingPalette,
 } from './shared';
 import type { ReviewCardProps } from './types';
@@ -168,7 +168,7 @@ function ReviewCardComponent({
         </View>
         {truncatable ? (
           <Pressable
-            {...webData({ bloomListingPress: '' })}
+            {...webDataSet({ bloomListingPress: '' })}
             accessibilityRole="button"
             accessibilityLabel={expanded ? showLessLabel : showMoreLabel}
             aria-expanded={expanded}

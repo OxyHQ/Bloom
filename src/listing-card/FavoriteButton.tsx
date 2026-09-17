@@ -5,6 +5,7 @@ import { RiHeart3Fill } from '../icons/remix/RiHeart3Fill';
 import { RiHeart3Line } from '../icons/remix/RiHeart3Line';
 import { useInteractiveWebCss } from '../styles/interactive-web-css';
 import type { WebCssStyle } from '../styles/web-view-style';
+import { webDataSet } from '../styles/web-data';
 import { useTheme } from '../theme/use-theme';
 import {
   HEART_SCRIM_OPACITY,
@@ -12,7 +13,6 @@ import {
   LISTING_CARD_CSS,
   LISTING_CARD_STYLE_ID,
   resolveListingCardPaint,
-  webData,
 } from './shared';
 import type { FavoriteButtonProps } from './types';
 
@@ -57,7 +57,7 @@ function FavoriteButtonComponent({
 
   return (
     <Pressable
-      {...webData({ bloomFavoriteButton: '' })}
+      {...webDataSet({ bloomFavoriteButton: '' })}
       role="button"
       accessibilityLabel={favorite ? removeLabel : saveLabel}
       aria-pressed={favorite}

@@ -14,9 +14,11 @@ import { LikeButton } from '../media-controls/LikeButton';
 import { PlayButton } from '../media-controls/PlayButton';
 import { borderRadius } from '../styles/tokens';
 import type { WebCssStyle } from '../styles/web-view-style';
+import { webDataSet } from '../styles/web-data';
+import { clamp01 } from '../styles/clamp';
 import { Text } from '../typography';
 import { useMediaHeaderPaint } from './parts';
-import { clamp01, IS_WEB, webData } from './shared';
+import { IS_WEB } from './shared';
 import type {
   DownloadButtonProps,
   FollowButtonProps,
@@ -79,7 +81,7 @@ function MediaIconButtonComponent({
   };
   return (
     <Pressable
-      {...webData({ bloomMediaHeaderPress: '' })}
+      {...webDataSet({ bloomMediaHeaderPress: '' })}
       role="button"
       accessibilityLabel={accessibilityLabel}
       aria-pressed={toggle ? pressed : undefined}
@@ -208,7 +210,7 @@ function DownloadButtonComponent({
   return (
     <View style={[{ alignItems: 'center', justifyContent: 'center' }, style]}>
       <Pressable
-        {...webData({ bloomMediaHeaderPress: '' })}
+        {...webDataSet({ bloomMediaHeaderPress: '' })}
         role="button"
         accessibilityLabel={accessibilityLabel}
         aria-pressed={downloaded}
@@ -304,7 +306,7 @@ function FollowButtonComponent({
   };
   return (
     <Pressable
-      {...webData({ bloomMediaHeaderPress: '' })}
+      {...webDataSet({ bloomMediaHeaderPress: '' })}
       role="button"
       accessibilityLabel={label}
       aria-pressed={following}

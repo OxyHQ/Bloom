@@ -23,20 +23,19 @@ import { useImageResolver } from '../image-resolver/context';
 import { adoptStyleSheet } from '../styles/adopt-style-sheet';
 import { borderRadius } from '../styles/tokens';
 import type { WebCssStyle } from '../styles/web-view-style';
+import { webDataSet } from '../styles/web-data';
+import { clamp01 } from '../styles/clamp';
 import { useTheme } from '../theme/use-theme';
 import {
-  clampFraction,
   IS_WEB,
   MEDIA_CARD_CSS,
   MEDIA_CARD_STYLE_ID,
   resolveArtworkUri,
   resolveCoverTint,
-  webData,
   type MediaCardPaint,
 } from './shared';
 import type { MediaCardMenuItem } from './types';
-
-type GlyphComponent = React.ComponentType<{ width?: number; height?: number; fill?: string }>;
+import type { BloomIconComponent } from '../icons/icon-component';
 
 export function useMediaCardCss(): void {
   React.useEffect(() => {
@@ -79,7 +78,7 @@ export interface ArtworkProps {
   /** Paints a generated gradient cover when there is no image. */
   color?: string;
   /** Glyph on the generated / placeholder cover. */
-  icon?: GlyphComponent;
+  icon?: BloomIconComponent;
   /** Replaces the drawn content. */
   children?: React.ReactNode;
   paint: MediaCardPaint;
@@ -233,7 +232,7 @@ export function ListenProgress({
   style?: StyleProp<ViewStyle>;
   testID?: string;
 }) {
-  const pct = Math.round(clampFraction(value) * 100);
+  const pct = Math.round(clamp01(value) * 100);
   return (
     <View
       role="progressbar"
@@ -305,7 +304,7 @@ export function CardLink({ name, onPress, href, onLongPress, selected = false, r
   const interactive = Boolean(onPress || href);
   return (
     <Pressable
-      {...webData({ bloomMediaCardLink: '' })}
+      {...webDataSet({ bloomMediaCardLink: '' })}
       {...(IS_WEB && href ? { href } : null)}
       {...(IS_WEB && selected ? { 'aria-current': 'true' } : null)}
       role={href ? 'link' : interactive ? 'button' : undefined}
@@ -354,7 +353,7 @@ export function CardMenu({
   const name = `${label} for ${subject}`;
   return (
     <View
-      {...webData({ bloomMediaCardMenu: '', ...(reveal ? { bloomMediaCardReveal: 'hover' } : null) })}
+      {...webDataSet({ bloomMediaCardMenu: '', ...(reveal ? { bloomMediaCardReveal: 'hover' } : null) })}
       style={{ flexShrink: 0 }}
     >
       <DropdownMenu open={open} onOpenChange={onOpenChange}>

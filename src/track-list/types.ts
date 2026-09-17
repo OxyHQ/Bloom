@@ -1,5 +1,6 @@
 import type { ComponentType } from 'react';
 import type { StyleProp, ViewStyle } from 'react-native';
+import type { BloomIconComponent } from '../icons/icon-component';
 
 /**
  * The columns a track table can draw, in the order they are laid out.
@@ -51,7 +52,8 @@ export interface Track {
 }
 
 /** An icon component from `@oxy.so/bloom/icons` (`RiPlayListAddLine`). */
-export type TrackIconComponent = ComponentType<{ width?: number; height?: number; fill?: string }>;
+/** @deprecated Use `BloomIconComponent` from `@oxy.so/bloom/icons`; this is an alias of it. */
+export type TrackIconComponent = BloomIconComponent;
 
 export interface TrackMenuItem {
   key: string;

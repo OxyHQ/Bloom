@@ -7,19 +7,15 @@ import { RiMic2Line } from '../icons/remix/RiMic2Line';
 import { RiMusic2Line } from '../icons/remix/RiMusic2Line';
 import { RiUserLine } from '../icons/remix/RiUserLine';
 import { useImageResolver } from '../image-resolver/context';
+import { isImageUrl } from '../image-resolver/is-image-url';
 import type { LibraryItemKind } from './types';
+import type { BloomIconComponent } from '../icons/icon-component';
 
 // ---------------------------------------------------------------------------
 //  Cover
 // ---------------------------------------------------------------------------
 
-export function isUrl(value: string): boolean {
-  return /^(https?:|data:|blob:|file:)/.test(value);
-}
-
-type Glyph = ComponentType<{ width?: number; height?: number; fill?: string }>;
-
-const KIND_GLYPH: Record<LibraryItemKind | 'song' | 'profile' | 'episode', Glyph> = {
+const KIND_GLYPH: Record<LibraryItemKind | 'song' | 'profile' | 'episode', BloomIconComponent> = {
   playlist: RiMusic2Line,
   album: RiMusic2Line,
   song: RiMusic2Line,
@@ -47,7 +43,7 @@ export interface CoverProps {
 export function Cover({ source, size, round, radius = 4, kind, placeholder, glyphColor, style, testID }: CoverProps) {
   const resolver = useImageResolver();
   const [failed, setFailed] = useState(false);
-  const uri = source ? (isUrl(source) ? source : resolver?.(source) ?? undefined) : undefined;
+  const uri = source ? (isImageUrl(source) ? source : resolver?.(source) ?? undefined) : undefined;
   const Glyph = KIND_GLYPH[kind];
   const glyph = Math.round(size * 0.45);
   return (

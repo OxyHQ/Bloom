@@ -36,6 +36,41 @@ Colour travels on `fill` and size on `size` (the `xs`…`xl` rung, or `width` /
 label has to be told both — an icon that "looks black in dark mode" is almost
 always one that was never given a `fill`.
 
+## `BloomIconComponent` — the type of an icon you hand to a component
+
+Most Bloom components that take an icon take the COMPONENT, not an element, so
+they can size and colour it themselves.
+
+```tsx
+import type { BloomIconComponent } from '@oxy.so/bloom/icons';
+import { RiHotelBedLine } from '@oxy.so/bloom/icons';
+
+interface FactProps {
+  icon: BloomIconComponent;
+  label: string;
+}
+
+<ListingFact icon={RiHotelBedLine} label="2 beds" />   // ✅ the component
+<ListingFact icon={<RiHotelBedLine />} label="2 beds" />  // ✗ an element
+```
+
+```ts
+type BloomIconComponent = ComponentType<{
+  width?: number; height?: number; fill?: string;
+}>;
+```
+
+All three props are optional, which makes this the WIDEST icon a component can
+be handed: a component whose props are stricter is not assignable, on purpose.
+A component that accepts more — an `IconStyle`, a stroke width — takes `Props`
+from `@oxy.so/bloom/icons` instead.
+
+Twenty-six families had declared this same type under their own name
+(`SidebarIcon`, `TrackIconComponent`, `ListingFactIcon`, `InsightIcon`,
+`HousingIcon`, `PlayerGlyph`, …). Those names still work — they are aliases of
+this one, marked deprecated — so nothing needs changing; new code should reach
+for `BloomIconComponent`.
+
 ## Migrating from the retired Bloom icon set
 
 The old `<Subject>_<Stroke2|Filled>_Corner0_Rounded` exports (and the unsuffixed

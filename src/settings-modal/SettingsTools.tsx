@@ -30,7 +30,8 @@ import type {
   SettingsServerTone,
   SettingsToolsPageProps,
 } from './types';
-import { useSettingsWebCss, webData } from './web-css';
+import { useSettingsWebCss } from './web-css';
+import { webDataSet } from '../styles/web-data';
 
 /**
  * The Tools page (`settings/settings-tools.tsx`) — MCP server management:
@@ -166,7 +167,7 @@ function InlineAction({ label, onPress, accessibilityLabel }: { label: string; o
     <Pressable
       role="button"
       accessibilityLabel={accessibilityLabel}
-      {...webData({ bloomSettingsPress: '' })}
+      {...webDataSet({ bloomSettingsPress: '' })}
       onPress={onPress}
       onHoverIn={() => setHovered(true)}
       onHoverOut={() => setHovered(false)}
@@ -229,7 +230,7 @@ function ServerMenu({
         <Pressable
           role="button"
           accessibilityLabel={label}
-          {...webData({ bloomSettingsPress: '' })}
+          {...webDataSet({ bloomSettingsPress: '' })}
           onHoverIn={() => setHovered(true)}
           onHoverOut={() => setHovered(false)}
           style={[
@@ -313,7 +314,7 @@ function ServerRow({
                   accessibilityLabel={`${expanded ? 'Hide' : 'Show'} ${server.name} tools`}
                   aria-expanded={expanded}
                   accessibilityState={{ expanded }}
-                  {...webData({ bloomSettingsPress: '' })}
+                  {...webDataSet({ bloomSettingsPress: '' })}
                   onPress={() => setExpanded((v) => !v)}
                   onHoverIn={() => setChevronHovered(true)}
                   onHoverOut={() => setChevronHovered(false)}
@@ -377,7 +378,7 @@ function NewServerRow({
     <Pressable
       role="button"
       accessibilityLabel={label}
-      {...webData({ bloomSettingsPress: '', ringInset: '' })}
+      {...webDataSet({ bloomSettingsPress: '', ringInset: '' })}
       onPress={onPress}
       onHoverIn={() => setHovered(true)}
       onHoverOut={() => setHovered(false)}
@@ -479,7 +480,7 @@ function ScopePills({
     <ScrollView
       horizontal
       showsHorizontalScrollIndicator={false}
-      {...webData({ bloomSettingsScroll: '' })}
+      {...webDataSet({ bloomSettingsScroll: '' })}
       style={styles.pillScroller}
       contentContainerStyle={styles.pillList}
     >
@@ -497,7 +498,7 @@ function ScopePills({
               accessibilityLabel={scope.label}
               aria-pressed={selected}
               accessibilityState={{ selected }}
-              {...webData({ bloomSettingsPress: '' })}
+              {...webDataSet({ bloomSettingsPress: '' })}
               onPress={() => onChange(scope.id)}
               onHoverIn={() => setHovered(scope.id)}
               onHoverOut={() => setHovered((cur) => (cur === scope.id ? null : cur))}

@@ -4,6 +4,7 @@ import { Image, View } from 'react-native';
 import { useImageResolver } from '../image-resolver/context';
 import { Box as SkeletonBox } from '../skeleton';
 import type { WebCssStyle } from '../styles/web-view-style';
+import { webDataSet } from '../styles/web-data';
 import { useTheme } from '../theme/use-theme';
 import { Text } from '../typography';
 import type { TypeScaleVariant } from '../typography/scale';
@@ -16,7 +17,6 @@ import {
   resolveCoverTint,
   resolveMediaCardPaint,
   TILE_ARTWORK,
-  webData,
 } from './shared';
 import type { GenreCardProps, MediaCardSize } from './types';
 
@@ -81,7 +81,7 @@ function GenreCardComponent({
 
   return (
     <View
-      {...webData({ bloomMediaCard: 'genre', ...(onPress || href ? { bloomMediaCardHover: '' } : null) })}
+      {...webDataSet({ bloomMediaCard: 'genre', ...(onPress || href ? { bloomMediaCardHover: '' } : null) })}
       style={[rootStyle, style]}
       testID={testID}
     >

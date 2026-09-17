@@ -1,7 +1,6 @@
 import React, { useMemo, useState } from 'react';
 import { Pressable, View } from 'react-native';
 
-import { webDataSet } from '../checkbox/shared';
 import { useInteractionState } from '../hooks/use-interaction-state';
 import { RiArmchairLine } from '../icons/remix/RiArmchairLine';
 import { RiBuilding2Line } from '../icons/remix/RiBuilding2Line';
@@ -13,6 +12,7 @@ import { RiHotelBedLine } from '../icons/remix/RiHotelBedLine';
 import { RiMoreLine } from '../icons/remix/RiMoreLine';
 import { RiStackLine } from '../icons/remix/RiStackLine';
 import type { WebCssStyle } from '../styles/web-view-style';
+import { webDataSet } from '../styles/web-data';
 import { useTheme } from '../theme/use-theme';
 import { Text } from '../typography';
 import {

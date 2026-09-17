@@ -1,7 +1,7 @@
 import React, { memo, useEffect, useMemo, useState } from 'react';
 import { Pressable, ScrollView, View } from 'react-native';
 
-import { webDataSet } from '../checkbox/shared';
+import { webDataSet } from '../styles/web-data';
 import { UnreadBadge } from '../chat-indicators';
 import { adoptStyleSheet } from '../styles/adopt-style-sheet';
 import type { WebCssStyle } from '../styles/web-view-style';

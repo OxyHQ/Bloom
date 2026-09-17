@@ -220,7 +220,10 @@ describe('OfferingEditor', () => {
     await mount(<OfferingHarness initial={{ kinds: ['sale'], sale: { price: '' } }} area={96} />);
     expect(byTestId('o-sale-per-area').textContent).toContain('Add a price');
     typeInto('o-sale-price', '385000');
-    expect(byTestId('o-sale-per-area').textContent).toContain('€4 010 / m²');
+    // Grouped with a comma, like every other number in the package. This screen
+    // used a non-breaking space until the four copies of the formatter were
+    // consolidated, so one screen read `1 200 000` where another read `1,200,000`.
+    expect(byTestId('o-sale-per-area').textContent).toContain('€4,010 / m²');
   });
 
   it('sets the swap mode and the stay fields', async () => {

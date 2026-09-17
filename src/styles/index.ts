@@ -6,4 +6,15 @@ export type { Breakpoint } from './breakpoints';
 export { Z_INDEX } from './z-index';
 export { web, native, ios, android, platform, select } from './platform';
 export { SUPPORTS_NATIVE_DRIVER } from './native-driver';
-export { contrastRatio, relativeLuminance } from './color-contrast';
+export {
+  contrastRatio,
+  relativeLuminance,
+  readableOn,
+  darken,
+  darkenUntilContrast,
+  AA_TEXT_CONTRAST,
+  AA_LARGE_TEXT_CONTRAST,
+  AAA_TEXT_CONTRAST,
+} from './color-contrast';
+export { webDataSet } from './web-data';
+export { clamp, clamp01 } from './clamp';

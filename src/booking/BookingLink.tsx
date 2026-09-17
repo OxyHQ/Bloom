@@ -1,10 +1,10 @@
 import React, { useEffect, useMemo } from 'react';
 import { Pressable, type GestureResponderEvent, type StyleProp, type TextStyle, type ViewStyle } from 'react-native';
 
-import { webDataSet } from '../checkbox/shared';
 import { useInteractionState } from '../hooks/use-interaction-state';
 import { adoptStyleSheet } from '../styles/adopt-style-sheet';
 import type { WebCssStyle } from '../styles/web-view-style';
+import { webDataSet } from '../styles/web-data';
 import { useTheme } from '../theme/use-theme';
 import { Text } from '../typography';
 import type { TypeScaleVariant } from '../typography/scale';

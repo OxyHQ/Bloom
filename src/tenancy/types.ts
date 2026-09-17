@@ -2,13 +2,15 @@ import type { ComponentType, ReactNode } from 'react';
 import type { StyleProp, ViewStyle } from 'react-native';
 
 import type { AccentTone } from '../theme/accent-colors';
+import type { BloomIconComponent } from '../icons/icon-component';
 
 /**
  * An icon COMPONENT (`RiDropLine`, not `<RiDropLine />`). The part sizes and
  * colours it, so a caller cannot pass the wrong size or a colour that ignores
  * the theme.
  */
-export type HousingIcon = ComponentType<{ width?: number; height?: number; fill?: string }>;
+/** @deprecated Use `BloomIconComponent` from `@oxy.so/bloom/icons`; this is an alias of it. */
+export type HousingIcon = BloomIconComponent;
 
 /** A width-driven layout: `auto` measures the part's own width. */
 export type TenancyLayout = 'auto' | 'wide' | 'narrow';

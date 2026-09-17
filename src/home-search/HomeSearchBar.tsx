@@ -3,7 +3,6 @@ import { Platform, Pressable, TextInput, View, type TextStyle, type ViewStyle } 
 
 import { Button } from '../button';
 import { resolveButtonRamps } from '../button/shared';
-import { webDataSet } from '../checkbox/shared';
 import { RiSearchLine } from '../icons/remix/RiSearchLine';
 import {
   STAY_SEARCH_BAR_HEIGHT,
@@ -16,6 +15,7 @@ import { adoptStyleSheet } from '../styles/adopt-style-sheet';
 import { borderRadius } from '../styles/tokens';
 import type { WebCssStyle } from '../styles/web-view-style';
 import { Z_INDEX } from '../styles/z-index';
+import { webDataSet } from '../styles/web-data';
 import { SANS_FONT_FAMILY } from '../text-field/shared';
 import { useTheme } from '../theme/use-theme';
 import { Text } from '../typography';

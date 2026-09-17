@@ -7,6 +7,7 @@ import { RiExpandDiagonalSLine } from '../icons/remix';
 import { useImageResolver } from '../image-resolver/context';
 import { useInteractiveWebCss } from '../styles/interactive-web-css';
 import type { WebCssStyle } from '../styles/web-view-style';
+import { webDataSet } from '../styles/web-data';
 import { useTheme } from '../theme/use-theme';
 import { Text } from '../typography';
 import { FLOOR_PLAN_TWO_COLUMN_MIN_WIDTH } from './constants';
@@ -15,10 +16,9 @@ import {
   LISTING_DETAILS_STYLE_ID,
   resolveImageUri,
   resolveListingPalette,
-  webData,
 } from './shared';
 import type { FloorPlanItem, FloorPlanProps } from './types';
-import { useContainerWidth } from './use-container-width';
+import { useContainerWidth } from '../hooks/use-container-width';
 
 /**
  * The floor plans of a home: one tile per plan, a label under each.
@@ -114,7 +114,7 @@ function PlanTile({ plan, uri, name, aspectRatio, onPress, testID }: PlanTilePro
     <View style={{ gap: 12 }}>
       {onPress ? (
         <Pressable
-          {...webData({ bloomListingPress: '' })}
+          {...webDataSet({ bloomListingPress: '' })}
           accessibilityRole="button"
           accessibilityLabel={name}
           onPress={onPress}

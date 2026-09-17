@@ -3,6 +3,7 @@ import { Platform } from 'react-native';
 import { colorRamp, DANGER_TABLE, mixColor, resolveButtonRamps } from '../button/shared';
 import { resolveMenuPalette } from '../floating/menu-palette';
 import type { ImageResolver } from '../image-resolver/context';
+import { isImageUrl } from '../image-resolver/is-image-url';
 import type { Theme } from '../theme/types';
 import type { ListingCardProps, ListingFact, ListingPriceLine, ListingStatus, Offering } from './types';
 
@@ -149,17 +150,6 @@ export function uniqueOfferings(offerings: ReadonlyArray<Offering> | undefined):
   return offerings ? Array.from(new Set(offerings)) : [];
 }
 
-export function isUrl(value: string): boolean {
-  return (
-    value.startsWith('http://') ||
-    value.startsWith('https://') ||
-    value.startsWith('data:') ||
-    value.startsWith('blob:') ||
-    value.startsWith('file:') ||
-    value.startsWith('/')
-  );
-}
-
 /** A URL passes through; an id goes to the app's resolver (`undefined` without one). */
 export function resolvePhoto(
   photo: string,
@@ -167,7 +157,7 @@ export function resolvePhoto(
   variant?: string,
 ): string | undefined {
   if (!photo) return undefined;
-  return isUrl(photo) ? photo : resolver?.(photo, variant);
+  return isImageUrl(photo) ? photo : resolver?.(photo, variant);
 }
 
 /** The responsive column count of a results grid of the given width. */
@@ -206,10 +196,6 @@ export function dotWindow(count: number, active: number): DotSlot[] {
     });
   }
   return slots;
-}
-
-export function webData(data: Record<string, string>): Record<string, unknown> {
-  return IS_WEB ? { dataSet: data } : {};
 }
 
 // ---------------------------------------------------------------------------

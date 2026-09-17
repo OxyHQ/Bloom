@@ -1,10 +1,10 @@
 import React, { memo } from 'react';
 import { Pressable, View, type LayoutChangeEvent, type StyleProp, type ViewStyle } from 'react-native';
 
-import { webDataSet } from '../checkbox/shared';
 import { useInteractionState } from '../hooks/use-interaction-state';
 import { borderRadius } from '../styles/tokens';
 import type { WebCssStyle } from '../styles/web-view-style';
+import { webDataSet } from '../styles/web-data';
 import { Text } from '../typography';
 import type { TypeScaleVariant } from '../typography/scale';
 import { IS_WEB } from './shared';

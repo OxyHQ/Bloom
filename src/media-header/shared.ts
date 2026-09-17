@@ -7,58 +7,23 @@ import type { Theme } from '../theme/types';
 import type { TypeScaleVariant } from '../typography/scale';
 import { TYPE_SCALE } from '../typography/scale';
 import type { WebCssStyle } from '../styles/web-view-style';
-import { contrastRatio, relativeLuminance } from '../styles/color-contrast';
+import {
+  AA_TEXT_CONTRAST,
+  contrastRatio,
+  readableOn,
+  relativeLuminance,
+} from '../styles/color-contrast';
 
 export const IS_WEB = Platform.OS === 'web';
 
 /** A header lays its cover beside the text from this container width. */
 export const MEDIA_HEADER_WIDE_MIN_WIDTH = 600;
 
-export function webData(data: Record<string, string>): Record<string, unknown> {
-  return IS_WEB ? { dataSet: data } : {};
-}
-
-/** `true` for a URL the image can load as-is; anything else is an ImageResolver id. */
-export function isUrl(value: string): boolean {
-  return (
-    value.startsWith('http://') ||
-    value.startsWith('https://') ||
-    value.startsWith('data:') ||
-    value.startsWith('blob:') ||
-    value.startsWith('file:')
-  );
-}
-
-export function clamp01(value: number): number {
-  return Number.isFinite(value) ? Math.min(1, Math.max(0, value)) : 0;
-}
 
 // ---------------------------------------------------------------------------
 //  Contrast
 // ---------------------------------------------------------------------------
 
-
-
-
-/**
- * Of `candidates`, the colour whose WORST contrast over every surface in
- * `over` is highest — text laid over a gradient has to read at both ends.
- */
-export function pickReadable(over: readonly string[], candidates: readonly string[]): string {
-  let best = candidates[0]!;
-  let bestScore = -1;
-  for (const candidate of candidates) {
-    const score = Math.min(...over.map((surface) => contrastRatio(candidate, surface)));
-    if (score > bestScore) {
-      best = candidate;
-      bestScore = score;
-    }
-  }
-  return best;
-}
-
-/** AA for body text — the bar every label on the band is held to. */
-export const MIN_TEXT_CONTRAST = 4.5;
 
 // ---------------------------------------------------------------------------
 //  The band — every colour a header paints
@@ -149,13 +114,13 @@ export function resolveMediaHeaderPaint(
   const bandTop = tinted ?? (dark ? n[800] : n[200]);
   const bandBottom = mixColor(colors.background, bandTop, 0.55);
 
-  const onBand = pickReadable([bandTop, bandBottom], [colors.text, colors.background]);
+  const onBand = readableOn([bandTop, bandBottom], [colors.text, colors.background]);
   // Walk the secondary text towards the band until one more step would fail AA.
   let onBandMuted = onBand;
   for (let t = 0.04; t <= 0.4; t += 0.04) {
     const candidate = mixColor(onBand, bandTop, t);
     const worst = Math.min(contrastRatio(candidate, bandTop), contrastRatio(candidate, bandBottom));
-    if (worst < MIN_TEXT_CONTRAST + 0.25) break;
+    if (worst < AA_TEXT_CONTRAST + 0.25) break;
     onBandMuted = candidate;
   }
 
@@ -168,7 +133,7 @@ export function resolveMediaHeaderPaint(
     onBandMuted,
     bandRail: mixColor(bandTop, onBand, 0.2),
     bar: bandTop,
-    onBar: pickReadable([bandTop], [colors.text, colors.background]),
+    onBar: readableOn([bandTop], [colors.text, colors.background]),
     text: colors.text,
     textMuted: dark ? n[400] : n[500],
     wash: dark ? n[800] : n[100],

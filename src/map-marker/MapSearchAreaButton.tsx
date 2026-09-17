@@ -1,12 +1,7 @@
 import React, { memo, useEffect, useMemo } from 'react';
 import { Pressable } from 'react-native';
 
-import {
-  CHECKBOX_GLYPH_CSS,
-  CHECKBOX_GLYPH_STYLE_ID,
-  CheckboxGlyph,
-  resolveCheckboxPaint,
-} from '../checkbox/shared';
+import { CHECKBOX_GLYPH_CSS, CHECKBOX_GLYPH_STYLE_ID, CheckboxGlyph, resolveCheckboxPaint } from '../checkbox/shared';
 import { bloomShadowStyle } from '../design-tokens/shadows';
 import { useInteractionState } from '../hooks/use-interaction-state';
 import { RiSearchLine } from '../icons/remix/RiSearchLine';

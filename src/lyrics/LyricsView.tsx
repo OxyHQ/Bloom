@@ -8,9 +8,9 @@ import {
 } from 'react-native';
 import { useReducedMotion } from 'react-native-reanimated';
 
-import { webDataSet } from '../checkbox/shared';
 import { adoptStyleSheet } from '../styles/adopt-style-sheet';
 import type { WebCssStyle } from '../styles/web-view-style';
+import { webDataSet } from '../styles/web-data';
 import { useTheme } from '../theme/use-theme';
 import { Text } from '../typography';
 import { TYPE_SCALE } from '../typography/scale';

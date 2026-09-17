@@ -9,7 +9,7 @@ import {
   type ViewStyle,
 } from 'react-native';
 
-import { webDataSet } from '../checkbox/shared';
+import { webDataSet } from '../styles/web-data';
 import { AvatarPresence } from '../chat-indicators';
 import type { WebCssStyle } from '../styles/web-view-style';
 import { Text } from '../typography';

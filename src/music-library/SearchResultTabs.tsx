@@ -1,10 +1,10 @@
 import React, { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Pressable, ScrollView, View } from 'react-native';
 
-import { webDataSet } from '../checkbox/shared';
 import { adoptStyleSheet } from '../styles/adopt-style-sheet';
 import { borderRadius } from '../styles/tokens';
 import type { WebCssStyle } from '../styles/web-view-style';
+import { webDataSet } from '../styles/web-data';
 import { resolveAccentColors } from '../theme/accent-colors';
 import { pressedSurface } from '../theme/press-colors';
 import { useTheme } from '../theme/use-theme';

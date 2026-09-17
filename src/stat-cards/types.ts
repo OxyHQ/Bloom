@@ -1,8 +1,10 @@
 import type { ComponentType, ReactNode } from 'react';
 import type { StyleProp, ViewStyle } from 'react-native';
+import type { BloomIconComponent } from '../icons/icon-component';
 
 /** An icon COMPONENT (`RiGroupLine`, not `<RiGroupLine />`) — the card sizes and colours it. */
-export type StatCardsIcon = ComponentType<{ width?: number; height?: number; fill?: string }>;
+/** @deprecated Use `BloomIconComponent` from `@oxy.so/bloom/icons`; this is an alias of it. */
+export type StatCardsIcon = BloomIconComponent;
 
 /**
  * Two looks:

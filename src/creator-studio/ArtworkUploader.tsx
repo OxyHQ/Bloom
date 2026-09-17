@@ -9,9 +9,10 @@ import { RiErrorWarningLine } from '../icons/remix/RiErrorWarningLine';
 import { RiImageLine } from '../icons/remix/RiImageLine';
 import { RiRefreshLine } from '../icons/remix/RiRefreshLine';
 import { useImageResolver } from '../image-resolver/context';
+import { isImageUrl } from '../image-resolver/is-image-url';
 import { useTheme } from '../theme/use-theme';
 import { Text } from '../typography';
-import { CARD_RADIUS, isImageUrl, resolveCreatorStudioPaint } from './shared';
+import { CARD_RADIUS, resolveCreatorStudioPaint } from './shared';
 import type { ArtworkUploaderLabels, ArtworkUploaderProps } from './types';
 
 /**

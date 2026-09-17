@@ -6,8 +6,8 @@ import { RiPlayFill } from '../icons/remix/RiPlayFill';
 import { borderRadius } from '../styles/tokens';
 import { adoptStyleSheet } from '../styles/adopt-style-sheet';
 import type { WebCssStyle } from '../styles/web-view-style';
+import { webDataSet } from '../styles/web-data';
 import { useTheme } from '../theme/use-theme';
-import { webDataSet } from '../checkbox/shared';
 import {
   IS_WEB,
   MEDIA_CONTROLS_CSS,

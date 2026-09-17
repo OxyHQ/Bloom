@@ -30,6 +30,7 @@ import {
 import { Pagination } from '../pagination';
 import { Select, SelectContent, SelectIcon, SelectItem, SelectItemIndicator, SelectItemText, SelectTrigger, SelectValue } from '../select';
 import { borderRadius } from '../styles/tokens';
+import { webDataSet } from '../styles/web-data';
 import { TextField, TextFieldIcon, TextFieldInput } from '../text-field';
 import { Tooltip, TooltipTextBubble, TooltipTrigger } from '../tooltip';
 import { Text } from '../typography';
@@ -42,7 +43,7 @@ import type {
   SettingsStoragePageProps,
   SettingsStoredFile,
 } from './types';
-import { useSettingsWebCss, webData } from './web-css';
+import { useSettingsWebCss } from './web-css';
 
 /**
  * The Storage page.
@@ -110,7 +111,7 @@ function SortableHeader({
     <Pressable
       role="button"
       accessibilityLabel={`Sort by ${label}`}
-      {...webData({ bloomSettingsPress: '', ringOffset: '' })}
+      {...webDataSet({ bloomSettingsPress: '', ringOffset: '' })}
       onPress={() => onSort(sortKey)}
       style={styles.sortable}
     >
@@ -180,7 +181,7 @@ function RowMoreMenu({
             accessibilityLabel={label}
             aria-expanded={open}
             accessibilityState={{ expanded: open }}
-            {...webData({ bloomSettingsPress: '', ringOffset: '' })}
+            {...webDataSet({ bloomSettingsPress: '', ringOffset: '' })}
             onHoverIn={() => setHovered(true)}
             onHoverOut={() => setHovered(false)}
             style={[

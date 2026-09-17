@@ -26,11 +26,10 @@ import {
   type Episode,
   type Track,
 } from '../track-list';
+import { dragShift, dragTarget } from '../hooks/list-reorder';
 import {
-  dragShift,
   formatEpisodeLength,
   nextSelection,
-  reorderTarget,
   resolveTrackListPaint,
   rowGeometry,
 } from '../track-list/shared';
@@ -139,12 +138,12 @@ describe('selection logic', () => {
 
 describe('reorder maths', () => {
   it('lands a dragged row by whole rows, clamped to the list', () => {
-    expect(reorderTarget(1, 0, 56, 5)).toBe(1);
-    expect(reorderTarget(1, 27, 56, 5)).toBe(1);
-    expect(reorderTarget(1, 29, 56, 5)).toBe(2);
-    expect(reorderTarget(1, 120, 56, 5)).toBe(3);
-    expect(reorderTarget(1, -500, 56, 5)).toBe(0);
-    expect(reorderTarget(1, 5000, 56, 5)).toBe(4);
+    expect(dragTarget(1, 0, 56, 5)).toBe(1);
+    expect(dragTarget(1, 27, 56, 5)).toBe(1);
+    expect(dragTarget(1, 29, 56, 5)).toBe(2);
+    expect(dragTarget(1, 120, 56, 5)).toBe(3);
+    expect(dragTarget(1, -500, 56, 5)).toBe(0);
+    expect(dragTarget(1, 5000, 56, 5)).toBe(4);
   });
 
   it('parts the rows between the origin and the target', () => {

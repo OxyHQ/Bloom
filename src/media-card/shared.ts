@@ -1,12 +1,18 @@
 import { Platform } from 'react-native';
 
-import { ACCENT_TABLE, colorRamp, mixColor, resolveButtonRamps, type RampStop } from '../button/shared';
+import { mixColor, resolveButtonRamps } from '../button/shared';
 import type { ImageResolver } from '../image-resolver/context';
-import { isUrl } from '../listing-card/shared';
+import { isImageUrl } from '../image-resolver/is-image-url';
 import { parseRgba } from '../theme/color-utils';
 import type { Theme } from '../theme/types';
 import type { MediaCardLayout, MediaCardPlayButton, MediaCardSize } from './types';
-import { contrastRatio, relativeLuminance } from '../styles/color-contrast';
+import {
+  AA_TEXT_CONTRAST,
+  contrastRatio,
+  darken,
+  darkenUntilContrast,
+  relativeLuminance,
+} from '../styles/color-contrast';
 
 export const IS_WEB = Platform.OS === 'web';
 
@@ -86,7 +92,7 @@ export function resolveArtworkUri(
   variant?: string,
 ): string | undefined {
   if (!source) return undefined;
-  return isUrl(source) ? source : (resolver?.(source, variant) ?? undefined);
+  return isImageUrl(source) ? source : (resolver?.(source, variant) ?? undefined);
 }
 
 // ---------------------------------------------------------------------------
@@ -103,20 +109,9 @@ export function joinMeta(parts: ReadonlyArray<string | false | null | undefined>
   return parts.filter((part): part is string => typeof part === 'string' && part.trim() !== '').join(' · ');
 }
 
-export function clampFraction(value: number | undefined): number {
-  if (value === undefined || !Number.isFinite(value)) return 0;
-  return Math.min(1, Math.max(0, value));
-}
-
 // ---------------------------------------------------------------------------
 //  Contrast
 // ---------------------------------------------------------------------------
-
-
-
-
-/** Text drawn over a generated cover must clear this. */
-export const COVER_TEXT_CONTRAST = 4.5;
 
 export interface CoverTint {
   /** Gradient top (also the solid fill). */
@@ -129,30 +124,38 @@ export interface CoverTint {
   textMuted: string;
 }
 
-const TINT_STOPS: ReadonlyArray<RampStop> = [500, 600, 700, 800, 900];
+/** How much darker the gradient's bottom is than its top. */
+const COVER_GRADIENT_FALLOFF = 0.25;
 
 /**
  * The colours of a cover generated from an artwork colour.
  *
- * The fill is the colour's own ramp, stepped darker (500 → 900) until light
- * text on it clears {@link COVER_TEXT_CONTRAST}; the gradient's bottom is two
- * stops further down. Without a colour — or with one that does not parse — the
- * cover is the theme's neutral 700 → 900, which clears it in both modes.
+ * The fill is the artwork colour itself, pulled toward black only as far as it
+ * takes for BOTH foregrounds — the title and the muted line under it — to clear
+ * AA on it; the gradient's bottom is a further 25% darker, so the text keeps its
+ * contrast all the way down. Without a colour — or with one that does not parse
+ * — the cover is the theme's neutral 700 → 900, which clears it in both modes.
+ *
+ * Checking `textMuted` too is what the previous implementation did not do, and
+ * it painted a muted line at 4.18:1 over the palest artwork colours.
+ *
+ * It DARKENS the colour rather than walking its generated ramp. A ramp
+ * re-derives each stop's lightness and chroma from the hue, so a near-black
+ * artwork colour used to come back as a mid-slate and a vivid one lost a
+ * channel; scaling keeps the channels' ratio, so a darkened teal is still teal.
  */
 export function resolveCoverTint(theme: Theme, color?: string): CoverTint {
   const { neutral: n } = resolveButtonRamps(theme);
   const text = n[50];
   const textMuted = mixColor(n[50], n[300], 0.35);
-  if (color && parseRgba(color)) {
-    const ramp = colorRamp(color, ACCENT_TABLE);
-    const index = TINT_STOPS.findIndex((stop) => contrastRatio(ramp[stop], text) >= COVER_TEXT_CONTRAST);
-    const at = index === -1 ? TINT_STOPS.length - 1 : index;
-    const stop = TINT_STOPS[at] as RampStop;
-    const bottom = TINT_STOPS[Math.min(at + 2, TINT_STOPS.length - 1)] as RampStop;
-    // The ramp's 900 can still be light for a very pale input; fall back.
-    if (contrastRatio(ramp[stop], text) >= COVER_TEXT_CONTRAST) {
-      return { top: ramp[stop], bottom: ramp[bottom] === ramp[stop] ? ramp[950] : ramp[bottom], text, textMuted };
-    }
+  const shade = color ? darkenUntilContrast(color, [text, textMuted], AA_TEXT_CONTRAST) : null;
+  if (shade) {
+    return {
+      top: shade.color,
+      bottom: darken(shade.color, COVER_GRADIENT_FALLOFF) as string,
+      text,
+      textMuted,
+    };
   }
   return { top: n[700], bottom: n[900], text, textMuted };
 }
@@ -213,10 +216,6 @@ export function resolveMediaCardPaint(theme: Theme): MediaCardPaint {
     surface: colors.background,
     ring: accent[500],
   };
-}
-
-export function webData(data: Record<string, string>): Record<string, unknown> {
-  return IS_WEB ? { dataSet: data } : {};
 }
 
 // ---------------------------------------------------------------------------

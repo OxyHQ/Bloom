@@ -6,12 +6,12 @@ import { Text } from '../typography';
 import { useInteractionState } from '../hooks/use-interaction-state';
 import { useInteractiveWebCss } from '../styles/interactive-web-css';
 import type { WebCssStyle } from '../styles/web-view-style';
+import { webDataSet } from '../styles/web-data';
 import {
   CHECKBOX_GLYPH_CSS,
   CHECKBOX_GLYPH_STYLE_ID,
   CheckboxGlyph,
   resolveCheckboxPaint,
-  webDataSet,
 } from './shared';
 import type { CheckboxCardProps } from './types';
 

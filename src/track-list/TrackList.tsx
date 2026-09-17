@@ -1,17 +1,16 @@
 import React, { Fragment, useEffect, useMemo, useRef, useState } from 'react';
+import { dragShift, dragTarget } from '../hooks/list-reorder';
 import { View, useWindowDimensions, type LayoutChangeEvent } from 'react-native';
 
-import { webDataSet } from '../checkbox/shared';
 import { RiDiscLine } from '../icons/remix/RiDiscLine';
 import type { WebCssStyle } from '../styles/web-view-style';
+import { webDataSet } from '../styles/web-data';
 import { useTheme } from '../theme/use-theme';
 import { Text } from '../typography';
 import {
-  dragShift,
   IS_WEB,
   isNarrow,
   nextSelection,
-  reorderTarget,
   resolveTrackListPaint,
   ROLE_GRIDCELL,
   resolveVisibleColumns,
@@ -174,11 +173,11 @@ export function TrackList({
     }
     setDrag(null);
     if (phase === 'end') {
-      const to = reorderTarget(index, dy, geo.height, tracks.length);
+      const to = dragTarget(index, dy, geo.height, tracks.length);
       if (to !== index) onReorder?.(index, to);
     }
   };
-  const dragTarget = drag ? reorderTarget(drag.from, drag.dy, geo.height, tracks.length) : -1;
+  const target = drag ? dragTarget(drag.from, drag.dy, geo.height, tracks.length) : -1;
 
   // --- layout --------------------------------------------------------------
   const onLayout = (event: LayoutChangeEvent) => {
@@ -223,7 +222,7 @@ export function TrackList({
         const groupRow = group ? ++rowNumber : 0;
         const trackRow = ++rowNumber;
         const dragged = drag?.from === index;
-        const shift = drag && !dragged ? dragShift(index, drag.from, dragTarget, geo.height) : 0;
+        const shift = drag && !dragged ? dragShift(index, drag.from, target, geo.height) : 0;
         const wrapperStyle: WebCssStyle | null = drag
           ? dragged
             ? {

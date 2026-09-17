@@ -22,6 +22,7 @@ import { Box as SkeletonBox } from '../skeleton';
 import { borderRadius } from '../styles/tokens';
 import { useInteractiveWebCss } from '../styles/interactive-web-css';
 import type { WebCssStyle } from '../styles/web-view-style';
+import { webDataSet } from '../styles/web-data';
 import { useTheme } from '../theme/use-theme';
 import { Text } from '../typography';
 import { OfferingBadge } from '../offering-badge/OfferingBadge';
@@ -54,7 +55,6 @@ import {
   STATUS_WASH_OPACITY,
   statusLabelFor,
   uniqueOfferings,
-  webData,
   type ListingCardPaint,
 } from './shared';
 import type { ListingCardLayout, ListingCardProps } from './types';
@@ -176,7 +176,7 @@ function PhotoTrack({
       {width > 0 ? (
         <ScrollView
           ref={scrollRef}
-          {...webData({ bloomListingCardTrack: '' })}
+          {...webDataSet({ bloomListingCardTrack: '' })}
           horizontal
           pagingEnabled
           showsHorizontalScrollIndicator={false}
@@ -190,7 +190,7 @@ function PhotoTrack({
             return (
               <View
                 key={`${index}-${photo}`}
-                {...webData({ bloomListingCardSlide: '' })}
+                {...webDataSet({ bloomListingCardSlide: '' })}
                 style={{ width, height: '100%' }}
               >
                 {uri ? (
@@ -237,7 +237,7 @@ function Dots({ count, active, paint }: { count: number; active: number; paint: 
       {slots.map((slot) => (
         <View
           key={slot.index}
-          {...webData({ bloomListingCardDot: slot.active ? 'active' : '' })}
+          {...webDataSet({ bloomListingCardDot: slot.active ? 'active' : '' })}
           style={{
             width: slot.size,
             height: slot.size,
@@ -495,7 +495,7 @@ function CompactRow(props: CompactRowProps) {
   const secondary = { color: paint.textSecondary };
 
   return (
-    <View {...webData({ bloomListingCard: 'compact' })} style={[{ position: 'relative' }, style]} testID={testID}>
+    <View {...webDataSet({ bloomListingCard: 'compact' })} style={[{ position: 'relative' }, style]} testID={testID}>
       <Pressable {...linkProps} style={linkStyle}>
         <View
           style={{
@@ -722,7 +722,7 @@ function ListingCardComponent(props: ListingCardProps) {
   };
 
   const linkProps = {
-    ...webData({ bloomListingCardLink: '' }),
+    ...webDataSet({ bloomListingCardLink: '' }),
     ...(IS_WEB && href ? { href } : null),
     role: href ? ('link' as const) : onPress ? ('button' as const) : undefined,
     accessibilityLabel: name,
@@ -752,7 +752,7 @@ function ListingCardComponent(props: ListingCardProps) {
 
   return (
     <View
-      {...webData({ bloomListingCard: layout })}
+      {...webDataSet({ bloomListingCard: layout })}
       style={[{ position: 'relative' }, style]}
       testID={testID}
     >
@@ -833,7 +833,7 @@ function ListingCardComponent(props: ListingCardProps) {
           <>
             {active > 0 ? (
               <View
-                {...webData({ bloomListingCardArrow: 'previous' })}
+                {...webDataSet({ bloomListingCardArrow: 'previous' })}
                 style={{ position: 'absolute', left: 8, top: '50%', marginTop: -16 }}
               >
                 <Button
@@ -849,7 +849,7 @@ function ListingCardComponent(props: ListingCardProps) {
             ) : null}
             {active < count - 1 ? (
               <View
-                {...webData({ bloomListingCardArrow: 'next' })}
+                {...webDataSet({ bloomListingCardArrow: 'next' })}
                 style={{ position: 'absolute', right: 8, top: '50%', marginTop: -16 }}
               >
                 <Button
