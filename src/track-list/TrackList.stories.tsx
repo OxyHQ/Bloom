@@ -29,7 +29,8 @@ type Story = StoryObj;
 /** A generated two-stop gradient square — demo artwork with no external image. */
 function art(from: string, to: string): string {
   const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="96" height="96"><defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="${from}"/><stop offset="1" stop-color="${to}"/></linearGradient></defs><rect width="96" height="96" fill="url(#g)"/></svg>`;
-  return `data:image/svg+xml;utf8,${encodeURIComponent(svg)}`;
+  // The plain `data:image/svg+xml,` prefix: react-native-web mangles the `;utf8,` form.
+  return `data:image/svg+xml,${encodeURIComponent(svg)}`;
 }
 
 const COVERS = [
@@ -68,6 +69,8 @@ function Page({ children, maxWidth }: { children: React.ReactNode; maxWidth?: nu
     <View
       style={{
         backgroundColor: theme.colors.background,
+        alignSelf: 'stretch',
+        width: '100%',
         paddingTop: 24,
         paddingBottom: 24,
         paddingLeft: 16,
@@ -159,6 +162,7 @@ export const PlaylistOwner: Story = {
         <Heading>Late Night Drive</Heading>
         <TrackList
           tracks={tracks}
+          columns={['index', 'title', 'album', 'dateAdded', 'duration', 'actions']}
           {...player}
           reorderable
           onReorder={(from, to) =>
@@ -197,11 +201,12 @@ export const LikedSongsWithSelection: Story = {
     const [selected, setSelected] = useState<string[]>(['p2', 'p3', 'p4']);
     const player = usePlayer('p1');
     return (
-      <View style={{ position: 'relative', minHeight: 640 }}>
+      <View style={{ position: 'relative', minHeight: 640, alignSelf: 'stretch', width: '100%' }}>
         <Page maxWidth={1200}>
           <Heading>Liked Songs</Heading>
           <TrackList
             tracks={tracks}
+            columns={['index', 'title', 'album', 'dateAdded', 'duration', 'actions']}
             {...player}
             isPlaying={false}
             selectedIds={selected}

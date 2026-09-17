@@ -48,7 +48,7 @@ export function TrackListEmpty({
           width: 64,
           height: 64,
           borderRadius: borderRadius.full,
-          backgroundColor: theme.isDark ? neutral[800] : neutral[100],
+          backgroundColor: theme.isDark ? neutral[800] : neutral[200],
           alignItems: 'center',
           justifyContent: 'center',
           marginBottom: 16,

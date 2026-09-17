@@ -71,11 +71,11 @@ export function SelectionBar({
         variant="body-semibold"
         aria-live="polite"
         numberOfLines={1}
-        style={{ color: paint.text, marginRight: 12 }}
+        style={{ color: paint.text, marginRight: 12, flexShrink: 0 }}
       >
         {countText}
       </Text>
-      <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4, flexShrink: 1 }}>
+      <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
         {actions.map((action) => (
           <Button
             key={action.key}
