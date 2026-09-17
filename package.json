@@ -1819,6 +1819,48 @@
         "default": "./lib/commonjs/map-marker/index.js"
       }
     },
+    "./wizard": {
+      "react-native": {
+        "types": "./lib/typescript/module/wizard/index.d.ts",
+        "default": "./src/wizard/index.ts"
+      },
+      "import": {
+        "types": "./lib/typescript/module/wizard/index.d.ts",
+        "default": "./lib/module/wizard/index.js"
+      },
+      "require": {
+        "types": "./lib/typescript/commonjs/wizard/index.d.ts",
+        "default": "./lib/commonjs/wizard/index.js"
+      }
+    },
+    "./sortable-media": {
+      "react-native": {
+        "types": "./lib/typescript/module/sortable-media/index.d.ts",
+        "default": "./src/sortable-media/index.ts"
+      },
+      "import": {
+        "types": "./lib/typescript/module/sortable-media/index.d.ts",
+        "default": "./lib/module/sortable-media/index.js"
+      },
+      "require": {
+        "types": "./lib/typescript/commonjs/sortable-media/index.d.ts",
+        "default": "./lib/commonjs/sortable-media/index.js"
+      }
+    },
+    "./listing-editor": {
+      "react-native": {
+        "types": "./lib/typescript/module/listing-editor/index.d.ts",
+        "default": "./src/listing-editor/index.ts"
+      },
+      "import": {
+        "types": "./lib/typescript/module/listing-editor/index.d.ts",
+        "default": "./lib/module/listing-editor/index.js"
+      },
+      "require": {
+        "types": "./lib/typescript/commonjs/listing-editor/index.d.ts",
+        "default": "./lib/commonjs/listing-editor/index.js"
+      }
+    },
     "./card": {
       "react-native": {
         "types": "./lib/typescript/module/card/index.d.ts",
