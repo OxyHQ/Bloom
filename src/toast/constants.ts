@@ -101,28 +101,20 @@ export const toastDefaults: {
   autoWiggleOnUpdate: 'never',
   richColors: false,
   /**
-   * OFF — the notification viewport is a plain column of full cards
-   * (`flex-col gap-3`) that springs rows into place as they enter and leave; it
-   * has no collapsed deck. The sonner-style stack stays available as an opt-in
-   * (`<ToastOutlet enableStacking />`). History of the previous default, kept for
-   * whoever turns it back on:
-   *
-   * It was ON, unlike upstream — the same class of correction as `TOAST_MAX_ROW_WIDTH`.
+   * ON, unlike sonner-native — the same class of correction as `TOAST_MAX_ROW_WIDTH`.
    *
    * sonner-NATIVE defaults this off; sonner (web) has no switch at all, because a
    * collapsed stack — front row full size, the ones behind scaled and offset,
-   * expanding on interaction — IS its default presentation. The port inherited the
-   * mobile default onto every desktop consumer, where an unstacked run of toasts
-   * is a column of full cards rather than a stack.
+   * expanding on interaction — IS its default presentation. The mobile default
+   * would otherwise reach every desktop consumer, where an unstacked run of
+   * toasts is a column of full cards rather than a stack.
    *
-   * Bloom already deviates deliberately elsewhere (`position: 'bottom-center'` vs
-   * upstream's `top-center`, `duration: 3000` vs 4000, `gap: 8` vs 14), so this is
-   * in keeping rather than a break with the port.
-   *
-   * The flat column is also the right choice for a surface that must show
-   * several toasts at once without an interaction.
+   * Turning it OFF (`<ToastOutlet enableStacking={false} />`) gives the flat
+   * column — full cards, `gap` apart, springing into place as rows enter and
+   * leave — which is the right choice for a surface that must show several
+   * toasts at once without an interaction.
    */
-  enableStacking: false,
+  enableStacking: true,
   stackGap: 8,
   allowFontScaling: true,
 };

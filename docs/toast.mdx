@@ -172,22 +172,18 @@ gesture distances.
 
 ### Stacking
 
-By default toasts render as **a plain column**: full cards, 12px apart (`gap`),
-each springing into place as rows enter and leave. Nothing is hidden behind
-anything, so every action button is reachable without an interaction.
-
-The sonner-style **collapsed deck** is an opt-in per outlet:
+By default toasts render as the sonner-style **collapsed deck**:
 
 ```tsx
-<ToastOutlet enableStacking />
+<ToastOutlet />
 ```
 
-There the newest row sits in front at full size, older ones sit behind it scaled
+The newest row sits in front at full size, older ones sit behind it scaled
 down and offset by `stackGap` (8px), and pressing the stack expands it into a
 readable column. Pressing outside collapses it again, and timers pause for as long
 as it is expanded. Measured on a 1280px viewport with three rows, front to back:
-`scaleX` 1 / 0.959 / 0.918 at 0 / -8 / -16px, expanding to 1 / 1 / 1. Two
-consequences to know about when you turn it on:
+`scaleX` 1 / 0.959 / 0.918 at 0 / -8 / -16px, expanding to 1 / 1 / 1.
+Consequences to know about:
 
 - Only the front row's action button is reachable while the stack is collapsed.
   Expand it (a press) to reach the others.
@@ -196,6 +192,10 @@ consequences to know about when you turn it on:
 - No press on a stacked row is inert: it dismisses if it lands on a ✕ that is
   actually rendered (`closeButton` and `dismissible` both on), and otherwise
   expands or collapses like the rest of the row.
+
+`<ToastOutlet enableStacking={false} />` renders **a plain column** instead: full
+cards, 12px apart (`gap`), each springing into place as rows enter and leave, with
+every action button reachable without an interaction.
 
 ### Hover (web)
 

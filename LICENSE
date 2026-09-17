@@ -28,10 +28,7 @@ WHAT THIS LICENSE IS:
   -   NOT COMPATIBLE WITH THE GPL OR THE AGPL. Code under the GPL or the
       AGPL cannot be combined into a work licensed under these terms, and a
       work licensed under these terms cannot be combined into a GPL or AGPL
-      work. This is a hard constraint, not a preference. It is one reason
-      Oxy publishes its SDK and client libraries under Apache-2.0 instead.
-      The other reason is simpler: if integrating Oxy login cost money,
-      nobody would integrate it.
+      work. This is a hard constraint, not a preference.
 
   -   COPYLEFT, INCLUDING OVER A NETWORK, FOR EVERYONE. If you deploy this
       software or anything derived from it, you publish the corresponding
@@ -671,6 +668,6 @@ Governing Law means the jurisdiction named in the Parameters table.
 
 16. How to apply these terms
 
-See licensing/README.md for the full procedure: which Oxy works use these
-terms and which use Apache-2.0, the file layout, the license identifier, the
-package.json license field, the source header, and the NOTICE file.
+See licensing/README.md for the full procedure: the file layout, the license
+identifier, the package.json license field, the source header, and the NOTICE
+file.

@@ -963,8 +963,8 @@ describe('ToastOutlet', () => {
    * rendered style still carries the previous frame's numbers; asserting them from
    * the tree would read a stale value rather than the stack.
    */
-  it('does not stack by default — the notification viewport is a flat column', () => {
-    expect(toastDefaults.enableStacking).toBe(false);
+  it('stacks by default — an outlet with no props gets the collapsed deck', () => {
+    expect(toastDefaults.enableStacking).toBe(true);
     expect(toastDefaults.gap).toBe(12);
   });
 
