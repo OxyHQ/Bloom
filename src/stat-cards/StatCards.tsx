@@ -320,9 +320,20 @@ function StatCardComponent({ stat, variant = 'plain', style, testID }: StatCardP
       testID={testID}
       style={[styles.plainCard, { backgroundColor: surfaces.secondary }, style]}
     >
-      <View style={[styles.iconTile, { backgroundColor: surfaces.iconTile }]}>
-        <Icon width={20} height={20} fill={surfaces.text} />
-      </View>
+      {stat.accessory != null ? (
+        <View style={styles.plainHeader}>
+          <View style={[styles.iconTile, { backgroundColor: surfaces.iconTile }]}>
+            <Icon width={20} height={20} fill={surfaces.text} />
+          </View>
+          <View testID={testID ? `${testID}-accessory` : undefined} style={styles.accessory}>
+            {stat.accessory}
+          </View>
+        </View>
+      ) : (
+        <View style={[styles.iconTile, { backgroundColor: surfaces.iconTile }]}>
+          <Icon width={20} height={20} fill={surfaces.text} />
+        </View>
+      )}
       <View style={styles.plainBody}>
         <Text variant="body-medium" style={{ color: surfaces.textSecondary }}>
           {stat.label}
@@ -431,6 +442,14 @@ const styles = StyleSheet.create({
     paddingRight: 6,
   },
   plainBody: { width: '100%', gap: 2 },
+  plainHeader: {
+    width: '100%',
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    justifyContent: 'space-between',
+    gap: 8,
+  },
+  accessory: { flexShrink: 1, minWidth: 0, alignItems: 'flex-end' },
   valueRow: {
     width: '100%',
     flexDirection: 'row',

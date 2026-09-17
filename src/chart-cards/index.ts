@@ -13,6 +13,7 @@ export {
   ChartRangePill,
   ChartRangeSelect,
   ChartStatTiles,
+  Sparkline,
   useChartRange,
 } from './primitives';
 
@@ -45,6 +46,8 @@ export type {
   ChartSize,
   ChartStatTile,
   ChartStatTilesProps,
+  SparklineProps,
+  SparklineTone,
 } from './primitives';
 
 export { LineChartCard } from './LineChartCard';

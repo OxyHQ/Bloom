@@ -620,3 +620,4 @@ export * as Code from './code';
 
 // Fonts
 export * as Fonts from './fonts/index.web';
+export * from './creator-studio';
