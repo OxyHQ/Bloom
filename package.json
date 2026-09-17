@@ -1735,6 +1735,20 @@
         "default": "./lib/commonjs/stay-filters/index.js"
       }
     },
+    "./stay-search": {
+      "react-native": {
+        "types": "./lib/typescript/module/stay-search/index.d.ts",
+        "default": "./src/stay-search/index.ts"
+      },
+      "import": {
+        "types": "./lib/typescript/module/stay-search/index.d.ts",
+        "default": "./lib/module/stay-search/index.js"
+      },
+      "require": {
+        "types": "./lib/typescript/commonjs/stay-search/index.d.ts",
+        "default": "./lib/commonjs/stay-search/index.js"
+      }
+    },
     "./card": {
       "react-native": {
         "types": "./lib/typescript/module/card/index.d.ts",

@@ -1,0 +1,185 @@
+---
+title: Stay Search
+description: The stays search bar with its drop-down panels, the narrow-screen trigger, and the step cards of the mobile search flow.
+order: 61
+---
+
+# Stay Search
+
+Search for a place to stay by destination, dates and guests. On a wide screen
+that is `StaySearchBar` with a `StaySearchPanel` under the open segment; on a
+narrow one it is `StaySearchCompact`, which opens a sheet of `StaySearchStep`
+cards.
+
+```tsx
+import {
+  DateFlexibilityChips,
+  DestinationSuggestions,
+  GuestPicker,
+  StaySearchBar,
+  StaySearchCompact,
+  StaySearchPanel,
+  StaySearchStep,
+  applyGuestCount,
+} from '@oxy.so/bloom/stay-search';
+import { RangeCalendar } from '@oxy.so/bloom/date-picker';
+
+const [segment, setSegment] = useState<StaySearchSegment | null>(null);
+
+<StaySearchBar
+  activeSegment={segment}
+  onActiveSegmentChange={setSegment}
+  destination={destination}
+  destinationQuery={query}
+  onDestinationQueryChange={setQuery}
+  dates={{ checkIn: 'Oct 12', checkOut: 'Oct 16' }}
+  guests="3 guests, 1 pet"
+  onSearch={search}
+  panel={
+    segment === 'guests' ? (
+      <StaySearchPanel width={400} padding={8} accessibilityLabel="Guests">
+        <View style={{ paddingLeft: 24, paddingRight: 24 }}>
+          <GuestPicker value={guests} onChange={setGuests} max={16} />
+        </View>
+      </StaySearchPanel>
+    ) : segment === 'destination' ? (
+      <StaySearchPanel width={420} accessibilityLabel="Destinations">
+        <DestinationSuggestions heading="Suggested destinations" items={items} onSelect={choose} />
+      </StaySearchPanel>
+    ) : (
+      <StaySearchPanel padding={24} accessibilityLabel="Dates">
+        <RangeCalendar value={range} onChange={setRange} visibleMonths={2} />
+        <DateFlexibilityChips value={flex} onChange={setFlex} />
+      </StaySearchPanel>
+    )
+  }
+/>
+```
+
+Everything is controlled and every value arrives as text: the app formats
+dates and guest counts in its own locale. The only thing the family computes
+is the guest rule below.
+
+## StaySearchBar
+
+| prop                                               | decides                                                                                          |
+| -------------------------------------------------- | ------------------------------------------------------------------------------------------------ |
+| `activeSegment` / `onActiveSegmentChange`          | the open segment — `destination`, `checkIn`, `checkOut`, `dates` or `guests` — or `null`   |
+| `destination`, `dates`, `guests`                   | the values; an empty one shows its placeholder                                                   |
+| `datesMode`                                        | `'split'` (default): Check in + Check out; `'single'`: one When segment showing `dates.summary`, else `checkIn – checkOut` |
+| `destinationQuery` / `onDestinationQueryChange`    | with the handler set, the open Where segment is a focused text field                             |
+| `panel`                                            | drops 12 below the bar while a segment is open: left-aligned for Where, centred for dates, right-aligned for Who |
+| `onSearch`                                         | the round search button                                                                          |
+| `labels`                                           | any of `where`, `checkIn`, `checkOut`, `when`, `who`, the three placeholders, `search`           |
+| `dismissible`                                      | Escape and a press outside the bar and its panel set `null` (web). Default `true`                |
+| `style`, `testID`                                  | `testID` derives `-<segment>`, `-search`, `-panel`, `-destination-input`                         |
+
+What it looks like:
+
+- **Bar** 66 tall, full pill, a hairline (neutral-200, dark neutral-700) and a
+  soft two-layer shadow, on the card surface (dark neutral-800).
+- **Segment** a small bold label (`caption-1-semibold`) over the value
+  (`body-regular`, text-primary; the placeholder text-secondary). Hover fills
+  the segment neutral-100 (dark neutral-700 at 60%). Colour change only; no scale.
+- **Open** the bar turns neutral-100 (dark neutral-900); the open segment
+  becomes a raised card-coloured pill (dark neutral-700) with its own shadow;
+  the search button widens from a 44 circle to "Search" with its icon.
+- **Separators** 1 × 32 hairlines between segments, hidden next to a hovered or
+  open segment so a filled pill never has a line at its edge.
+
+While a segment is open the bar lifts its own root to `Z_INDEX.dropdown`:
+react-native-web gives every `View` `z-index: 0`, so without the lift content
+after the bar paints over the panel.
+
+On native the bar and its panel render the same way, but a panel that extends
+below its parent's bounds cannot take touches on Android — use it where the
+parent is tall enough, or use the compact trigger and sheet on phones.
+
+## StaySearchPanel
+
+The floating surface: the menu palette's surface and hairline, the menu shadow
+plus a wider ambient layer, radius 32. `width` (default: its content),
+`padding` (default 16), `accessibilityLabel` (names it as a `dialog` region).
+
+### DestinationSuggestions
+
+Rows of a 48px icon tile (radius 12, neutral-100 / dark neutral-700) with a
+`RiMapPinLine` default — pass `RiTimeLine` for a recent search,
+`RiBuilding2Line` for a city — then the title (`body-medium`) over an optional
+description (`body-2-regular`, secondary). `items`, `onSelect`, `heading`,
+and an optional controlled `highlightedIndex` / `onHighlightedIndexChange`.
+
+It is a `listbox` of `option`s with `aria-selected` on the highlighted row. The
+list takes focus on web and answers ArrowDown/ArrowUp (wrapping) and Enter;
+hover moves the same highlight. The rows stay out of the tab order.
+
+### GuestPicker
+
+`StepperRow`s for adults, children, infants and pets, with hairlines between
+rows. `value: { adults, children, infants, pets }`, `onChange`, `max` (one
+number or per kind), `kinds` (which rows, in order), `labels`, `descriptions`
+(`null` hides one).
+
+**The guest rule.** While any child, infant or pet is counted, adults cannot go
+below 1: the adults `−` disables there, and adding a child, infant or pet with
+no adults sets adults to 1. The rule is exported as two pure helpers so an app
+can apply it to its own controls: `minimumAdults(value)` and
+`applyGuestCount(value, kind, count)`.
+
+### DateFlexibilityChips
+
+A single-select row of Bloom `Chip`s (`large`, `outlined`; the selected one in
+the brand tone): Exact dates, ± 1 day, ± 2 days, ± 3 days, ± 7 days, with values
+`exact`, `1`, `2`, `3`, `7`. Pass `options` to change them. It draws no calendar —
+put it under `RangeCalendar` or `DateRangePicker` from
+`@oxy.so/bloom/date-picker`. The group is named "Date flexibility"; each chip
+carries `aria-pressed`.
+
+## StaySearchCompact
+
+The narrow-screen trigger: a full-width 56-tall pill with `RiSearchLine`, a bold
+`title` (default "Where to?") over a secondary `summary`
+("Anywhere · Any week · Add guests"), and — with `onFilterPress` — a round
+secondary filter button (`RiEqualizer3Line`, named by `filterLabel`, default
+"Filters"). The trigger and the filter button are sibling controls, never
+nested. Hover and press fill the pill neutral-100.
+
+## StaySearchStep and the mobile flow
+
+Pressing the compact trigger opens the search as a sheet — a `Dialog` with
+`placement="bottom"`, driven by `useDialogControl()` — holding a column of
+`StaySearchStep` cards, one expanded at a time, over a footer with a "Clear all"
+link button and a primary "Search" button. Bloom ships the card; the app owns
+the flow (which step is open, the footer, what Search does). The stories
+compose the full flow.
+
+| prop       | decides                                                                     |
+| ---------- | --------------------------------------------------------------------------- |
+| `label`    | the collapsed row's left text, e.g. "Where"                                  |
+| `summary`  | the collapsed row's right text, e.g. "I'm flexible"                          |
+| `title`    | the expanded card's heading, e.g. "Where to?" (default `label`)              |
+| `expanded` | which of the two shapes renders                                             |
+| `onPress`  | pressing the collapsed row — expand this step                               |
+| `children` | the expanded card's content                                                 |
+
+Collapsed: a 56-tall row, the label (`body-medium`, secondary) left and the
+summary (`body-semibold`) right, a `button` with `aria-expanded="false"`.
+Expanded: the title (`title-2-semibold`, a `heading`) over the children, 24
+inset, with the bar's soft shadow. Both are card-coloured with a hairline,
+radius 20.
+
+`RangeCalendar`'s month panel is a fixed 326 wide. In a 375-wide sheet give it
+some of the card's inset back (`marginLeft: -16, marginRight: -16`,
+`alignItems: 'center'`).
+
+## Accessibility
+
+- The bar is a `search` landmark on web. Each segment is a `button` named
+  "label, value" (or "label, placeholder") with `aria-expanded` on web and
+  `accessibilityState.expanded` on native. The search button is named by
+  `labels.search` in both of its shapes.
+- The destination text field is named by the Where label.
+- Keyboard focus draws an inset accent ring on segments, the compact trigger,
+  collapsed steps and the suggestions list (`:focus-visible` only).
+- Hover transitions are 150ms colour fades and are dropped under
+  `prefers-reduced-motion: reduce`.

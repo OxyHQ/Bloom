@@ -68,6 +68,7 @@ import { StatBar } from '../stat-bar';
 import { Stepper } from '../stepper';
 import { RatingBar } from '../rating';
 import { AmenityFilter, CountFilter, ToggleChipGroup } from '../stay-filters';
+import { DestinationSuggestions, StaySearchBar, StaySearchStep } from '../stay-search';
 import {
   DropdownMenuCheckboxItem,
   DropdownMenuItem,
@@ -942,5 +943,37 @@ describe('Stay filters', () => {
       />,
     );
     expect(byTestId(c, 'af-toggle').getAttribute('aria-expanded')).toBe('false');
+describe('StaySearchBar', () => {
+  it('a segment is a named button carrying aria-expanded', () => {
+    const c = mount(
+      <StaySearchBar activeSegment="guests" onActiveSegmentChange={() => {}} dismissible={false} testID="bar" />,
+    );
+    expect(byTestId(c, 'bar-guests').getAttribute('aria-expanded')).toBe('true');
+    expect(byTestId(c, 'bar-guests').getAttribute('aria-label')).toBe('Who, Add guests');
+    expect(byTestId(c, 'bar-checkIn').getAttribute('aria-expanded')).toBe('false');
+  });
+});
+
+describe('DestinationSuggestions', () => {
+  it('emits aria-selected on every option of a named listbox', () => {
+    const c = mount(
+      <DestinationSuggestions
+        items={[{ id: 'a', title: 'Marrowfield' }, { id: 'b', title: 'Old Halden' }]}
+        highlightedIndex={1}
+        onSelect={() => {}}
+        testID="ds"
+      />,
+    );
+    expect(byTestId(c, 'ds').getAttribute('aria-label')).toBe('Destinations');
+    expect(byTestId(c, 'ds-0').getAttribute('aria-selected')).toBe('false');
+    expect(byTestId(c, 'ds-1').getAttribute('aria-selected')).toBe('true');
+  });
+});
+
+describe('StaySearchStep', () => {
+  it('a collapsed step is a named button with aria-expanded="false"', () => {
+    const c = mount(<StaySearchStep label="Who" summary="Add guests" expanded={false} onPress={() => {}} testID="st" />);
+    expect(byTestId(c, 'st').getAttribute('aria-expanded')).toBe('false');
+    expect(byTestId(c, 'st').getAttribute('aria-label')).toBe('Who, Add guests');
   });
 });

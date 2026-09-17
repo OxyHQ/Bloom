@@ -320,6 +320,36 @@ export type {
   ToggleChipGroupProps,
   ToggleChipOption,
 } from './stay-filters';
+
+// Stays
+export {
+  DateFlexibilityChips,
+  DestinationSuggestions,
+  GuestPicker,
+  StaySearchBar,
+  StaySearchCompact,
+  StaySearchPanel,
+  StaySearchStep,
+  applyGuestCount,
+  minimumAdults,
+} from './stay-search';
+export type {
+  DateFlexibilityChipsProps,
+  DateFlexibilityOption,
+  DestinationSuggestion,
+  DestinationSuggestionsProps,
+  GuestCounts,
+  GuestKind,
+  GuestPickerProps,
+  StaySearchBarLabels,
+  StaySearchBarProps,
+  StaySearchCompactProps,
+  StaySearchDates,
+  StaySearchDatesMode,
+  StaySearchPanelProps,
+  StaySearchSegment,
+  StaySearchStepProps,
+} from './stay-search';
 export * from './chip';
 export * from './aspect-ratio';
 export * from './tabs';
