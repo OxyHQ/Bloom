@@ -60,6 +60,14 @@ export const ASIDE_STICKY_TOP = 50;
 
 const IS_WEB = Platform.OS === 'web';
 
+/**
+ * The app owns the whole viewport: in Storybook that means bleeding over the
+ * preview decorator's 24px padding, the way the other templates do.
+ */
+export const SOCIAL_FRAME: WebCssStyle = IS_WEB
+  ? { alignSelf: 'stretch', marginTop: -24, marginBottom: -24, marginLeft: -24, marginRight: -24 }
+  : { flex: 1, width: '100%' };
+
 export interface SocialLayoutProps {
   /** The rail's routes. */
   items: SidebarNavItem[];
@@ -120,14 +128,19 @@ export function SocialLayout({
     items,
     selected,
     onNavigate,
+    // `flat` drops the floating-panel chrome; the rail then sits ON the page
+    // background — only the centre panel is a card, or the two whites meet in a
+    // seam down the middle of the app.
     flat: true,
     collapsed: !expanded,
+    style: [{ backgroundColor: 'transparent' }, sidebar?.style],
   };
 
   return (
     <View
       testID={testID}
       style={{
+        ...SOCIAL_FRAME,
         flexGrow: 1,
         minHeight: IS_WEB ? WEB_VIEWPORT_HEIGHT : undefined,
         width: '100%',
