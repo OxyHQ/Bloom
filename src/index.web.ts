@@ -299,6 +299,29 @@ export * from './badge';
 export { Rating, RatingBar } from './rating';
 export type { RatingBarProps, RatingCountStyle, RatingProps, RatingSize } from './rating';
 export {
+  ExplicitBadge,
+  formatDuration,
+  LikeButton,
+  NowPlayingIndicator,
+  PlayButton,
+  PlaybackProgress,
+  VolumeControl,
+} from './media-controls';
+export type {
+  ExplicitBadgeProps,
+  ExplicitBadgeSize,
+  LikeButtonProps,
+  LikeButtonSize,
+  NowPlayingIndicatorProps,
+  PlayButtonProps,
+  PlayButtonSize,
+  PlayButtonVariant,
+  PlaybackProgressProps,
+  PlaybackProgressTimes,
+  VolumeControlProps,
+  VolumeSliderVisibility,
+} from './media-controls';
+export {
   AmenityFilter,
   CountFilter,
   FilterFooter,

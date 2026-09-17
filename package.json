@@ -1721,6 +1721,20 @@
         "default": "./lib/commonjs/rating/index.js"
       }
     },
+    "./media-controls": {
+      "react-native": {
+        "types": "./lib/typescript/module/media-controls/index.d.ts",
+        "default": "./src/media-controls/index.ts"
+      },
+      "import": {
+        "types": "./lib/typescript/module/media-controls/index.d.ts",
+        "default": "./lib/module/media-controls/index.js"
+      },
+      "require": {
+        "types": "./lib/typescript/commonjs/media-controls/index.d.ts",
+        "default": "./lib/commonjs/media-controls/index.js"
+      }
+    },
     "./stay-filters": {
       "react-native": {
         "types": "./lib/typescript/module/stay-filters/index.d.ts",

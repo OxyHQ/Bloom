@@ -354,6 +354,7 @@ export { RiVerifiedBadgeFill } from './RiVerifiedBadgeFill';
 export { RiVerifiedBadgeLine } from './RiVerifiedBadgeLine';
 export { RiVideoLine } from './RiVideoLine';
 export { RiVipCrownLine } from './RiVipCrownLine';
+export { RiVolumeDownLine } from './RiVolumeDownLine';
 export { RiVolumeMuteLine } from './RiVolumeMuteLine';
 export { RiVolumeUpLine } from './RiVolumeUpLine';
 export { RiVolumeVibrateLine } from './RiVolumeVibrateLine';
