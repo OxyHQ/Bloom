@@ -305,6 +305,13 @@ export function DialogBottomSheet({
             // Nav-header mode: the large title + screens own their padding, so the
             // wrapper adds none. Otherwise the Dialog's uniform content padding.
             header ? null : { padding: contentPadding },
+            // A `scrollable={false}` body hands its scrolling to the children,
+            // which need a BOUNDED height for it: the sheet's own non-scrollable
+            // body is `flex: 1, minHeight: 0` for exactly that, and these two
+            // wrappers have to pass the bound on rather than grow to content —
+            // otherwise a nested ScrollView never scrolls and anything under it
+            // (a sticky footer) is pushed past the sheet's edge.
+            scrollableResolved ? null : FILL_BOUNDED,
             // `containerStyle` carries the host's CSS-var theme scope; it wraps
             // the content subtree so descendants read the scoped palette.
             containerStyle,
@@ -315,7 +322,7 @@ export function DialogBottomSheet({
           {/* The morph layer is its own node INSIDE the class-name'd container:
               a className'd component's `onLayout` never fires on web, and this
               one has to measure the incoming frame. */}
-          <DialogMorphContent morph={morphState}>
+          <DialogMorphContent morph={morphState} style={scrollableResolved ? undefined : FILL_BOUNDED}>
             {header ? headerBody : dialogBody}
           </DialogMorphContent>
         </StyledView>
@@ -323,6 +330,9 @@ export function DialogBottomSheet({
     </BottomSheet>
   );
 }
+
+/** Passes a bounded height down to a `scrollable={false}` body. */
+const FILL_BOUNDED = { flex: 1, minHeight: 0 } as const;
 
 /**
  * Props the shared bottom-sheet surface consumes — the `bottom`-relevant subset
