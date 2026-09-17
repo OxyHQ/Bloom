@@ -1,0 +1,177 @@
+---
+title: Property insights
+description: The data parts of a home for rent or sale — energy label and badge, price history chart, explainable price estimate, price per area comparison, neighbourhood scores, nearby places and rent history.
+order: 114
+---
+
+# Property insights
+
+```tsx
+import {
+  EnergyBadge,
+  EnergyLabel,
+  NearbyPlaces,
+  NeighbourhoodScores,
+  PriceEstimate,
+  PriceHistoryChart,
+  PricePerAreaComparison,
+  RentHistoryList,
+} from '@oxy.so/bloom/property-insights';
+
+<ListingSection title="Energy certificate">
+  <EnergyLabel
+    consumption={{ rating: 'C', value: '112 kWh/m²·year' }}
+    emissions={{ rating: 'D', value: '24 kg CO₂/m²·year' }}
+  />
+</ListingSection>
+
+<ListingSection title="Is the price right?">
+  <PriceEstimate
+    low={362000}
+    high={398000}
+    estimate={381000}
+    asking={385000}
+    confidence="high"
+    confidenceNote="Nine recent sales nearby"
+    reasons={reasons}
+    comparables={24}
+    method="Automated valuation"
+    version="Model 3.2"
+    updated="Updated 2 Sep 2026"
+    format={formatPrice}
+  />
+  <PriceHistoryChart periods={periods} format={formatPrice} formatAxisValue={formatPriceShort} />
+  <PricePerAreaComparison rows={[
+    { label: 'This home', value: 2790, display: '€2,790/m²', highlight: true },
+    { label: 'Cedofeita', value: 2940, display: '€2,940/m²' },
+  ]} />
+</ListingSection>
+
+<ListingSection title="The neighbourhood">
+  <NeighbourhoodScores items={scores} />
+  <NearbyPlaces items={places} />
+</ListingSection>
+
+<ListingSection title="Rent history">
+  <RentHistoryList items={history} />
+</ListingSection>
+```
+
+The page around them — facts, floor plans, the agent or landlord card — is in
+[`@oxy.so/bloom/listing-details`](./listing-details) (`PropertyFacts`, `FloorPlan`,
+`ContactCard`). Storybook: **Blocks/Housing/Property Insights** has a full sale page
+and a rental page at 1280 and 390, light and dark, and every part alone.
+
+## What arrives formatted, and what the parts compute
+
+Labels, dates, units, `display` values and deltas are pre-formatted strings. Three
+parts must do arithmetic, so they take NUMBERS plus a `format` function (the app owns
+currency and locale; the default is `€385,000`):
+
+| part | computes |
+| --- | --- |
+| `PriceHistoryChart` | the Y domain and ticks, the path, the headline and the chart summary |
+| `PriceEstimate` | the bar positions, the verdict and its percentage |
+| `PricePerAreaComparison` | bar lengths (`value / largest value`); the label is `display` |
+| `NeighbourhoodScores` | `value / max`; the label is `display`, default `value` to one decimal |
+
+## `EnergyLabel` and `EnergyBadge`
+
+Seven bars, A → G, 24 tall and 4 apart; A is 40% of the scale column and each class
+adds 10%. The colours are Bloom's own scale on the theme: a fixed lightness curve
+(dark green, up to a light yellow at D, down to a deep red) with the HUES taken from
+the theme's `success` (A), `warning` (E) and `error` (G), interpolated in OKLCH. The
+letter is white or neutral-950, whichever contrasts more — at least 4.5:1 in every
+preset and mode (gated).
+
+Each rating given (`consumption`, `emissions`) gets a column with an arrow tag on its
+class's row, in the class colour: "C · 112 kWh/m²·year". With both columns below 560
+wide the tags hold the letter only and the values move under the scale, so nothing
+truncates on a phone. `pending` draws the scale neutral, no tags, and "Certificate in
+progress" (`pendingLabel`).
+
+The label is one image with a composed name ("Energy rating. Consumption: C,
+112 kWh/m²·year. Emissions: D, 24 kg CO₂/m²·year.").
+
+`EnergyBadge` is the class inline — a neutral pill (20 / 24 tall, `size`) with a disc in
+the class colour and `label` ("Energy"; `""` for the class alone). Without `rating`, or
+with `pending`, it draws a clock and "Pending". Named "Energy rating C".
+
+## `PriceHistoryChart`
+
+Built on the chart-card primitives (`ChartCardSurface`, `PeriodChartHeader`,
+`CartesianPlot`): the headline is the current price and follows the hovered point;
+`periods` are the 1Y / 3Y / All segments, each with its own `data` and `events`.
+
+- `shape="step"` (default) holds each price until it changes — an asking price does not
+  glide between listings. `shape="line"` joins the points.
+- The Y axis is nice ticks AROUND the prices, not from zero, so a 5% drop is visible.
+- `events` are markers on their point, coloured by `kind`: `listed` primary,
+  `price-drop` success, `price-rise` warning, `rented` / `sold` text, `delisted`
+  tertiary — and repeated as text in a legend under the plot.
+- The last point carries a "Now · €385,000" callout (`currentLabel`), hidden while a
+  point is hovered.
+- Fewer than two points draw "No price history yet" (`emptyLabel`) instead of a plot.
+
+**Accessible summary.** The plot's `role="img"` is named by a composed summary: "Price
+history, 1Y: from €405,000 in September 2025 to €385,000 in March 2026. Listed,
+September 2025. Price drop −5%, March 2026." (`accessibilityLabel` overrides it). Give
+points a `title` so the summary reads in full months, not axis labels.
+
+## `PriceEstimate`
+
+An estimate that explains itself and never implies precision it does not have.
+
+- The range as a heading, then a bar: the band `low` → `high`, the point `estimate` as
+  a tick, the `asking` price as a taller marker with its label, and the ends labelled.
+- The verdict compares `asking` with the NEAREST edge of the range: inside is "Fair
+  price" (success); below is "Below estimate by 6%" (success); above is "Above estimate
+  by 8%" — warning up to `highAboveRatio` (10%), error beyond. `formatVerdict`
+  translates it.
+- `confidence` is a 3-segment meter (a `progressbar`, 1–3) with its label and
+  `confidenceNote`.
+- "Why this estimate" expands `reasons` and the `comparables` count; the footer joins
+  `method`, `version` and `updated`.
+
+### Confidence changes the drawing, not just the label
+
+| confidence | band drawn | core band | estimate tick | verdict |
+| --- | --- | --- | --- | --- |
+| `high` | `low` → `high` | accent | shown | shown |
+| `medium` | widened by 25% of the range each side, soft | accent | shown | shown |
+| `low` | widened by 50% of the range each side, soft | **soft, no firm edge** | **hidden** | **replaced by "Not enough data for a verdict"** |
+
+`confidence: 'low'` widens the visual band and hides the verdict. The numbers under
+the band stay the model's range — only the picture refuses to look precise.
+
+## `PricePerAreaComparison`
+
+Rows of label + `display` over an 8-tall bar from zero; the `highlight` row is primary,
+the rest neutral. A named list; each row reads "This home: €2,790/m²".
+
+## `NeighbourhoodScores` and `NearbyPlaces`
+
+`NeighbourhoodScores` draws each score as a bar (`variant="bars"`, default) or a 56px
+ring (`rings`), with an optional icon and a short `description`. The labels are yours
+("Transport", "Schools", "Quiet"…); `max` defaults to 10. Columns: 1 below 560 wide,
+2 from 560 (`columns`). Every bar or ring is a `progressbar` named by its label with
+flat `aria-valuemin/max/now` and `aria-valuetext` ("9.2 out of 10").
+
+`NearbyPlaces` rows: a 40 icon disc, name and category, and the walking time on the
+right (`modeIcon` for another mode). Each row reads "Lapa station, Metro, 4 min walk"
+(`formatTime`).
+
+## `RentHistoryList`
+
+The rents (or prices) a place has had, for a place page that outlives its listings:
+amount, period, note, and a small `Chip` for the delta. A leading "+" is warning, "−"
+success (`deltaTone` overrides). An empty list draws "No history for this home yet".
+
+## Accessibility
+
+- Charts and scales are images with composed names; the history legend repeats the
+  events as text.
+- Every meter is a `progressbar` with flat `aria-value*`.
+- "Why this estimate" carries `aria-expanded` (web) and `expanded` (native).
+- Nothing relies on colour alone: verdicts are words, events are labelled, the energy
+  class is a letter.

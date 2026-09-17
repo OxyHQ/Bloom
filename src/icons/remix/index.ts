@@ -182,6 +182,7 @@ export { RiHeartFill } from './RiHeartFill';
 export { RiHeartLine } from './RiHeartLine';
 export { RiHeartPulseFill } from './RiHeartPulseFill';
 export { RiHeartPulseLine } from './RiHeartPulseLine';
+export { RiHistoryLine } from './RiHistoryLine';
 export { RiHome4Line } from './RiHome4Line';
 export { RiHome5Fill } from './RiHome5Fill';
 export { RiHome5Line } from './RiHome5Line';
