@@ -16,7 +16,9 @@ import {
   DEMO_TEAM,
 } from '../sidebar/Sidebar.stories';
 import { useTheme } from '../theme/use-theme';
-import { AppShell, AppShellHeader, NotificationBell, ProOfferCard } from './index';
+import { AppShell, AppShellHeader, AppShellMenuButton, NotificationBell, ProOfferCard, useAppShell } from './index';
+import { ScrollView, Text as RNText } from 'react-native';
+import { Text } from '../typography';
 
 const meta: Meta<typeof AppShell> = {
   title: 'Blocks/App Shell',
@@ -137,6 +139,125 @@ export const Reveal: Story = {
 /** The navigation rail in flow from `sm`; below it the drawer opens the full panel. */
 export const Rail: Story = {
   render: () => <Shell drawer="overlay" rail />,
+};
+
+function DemoSidebar() {
+  return {
+    items: DEMO_NAV,
+    secondaryItems: DEMO_SECONDARY,
+    selected: 'home',
+    account: DEMO_ACCOUNT,
+    team: DEMO_TEAM,
+  };
+}
+
+function AsidePanel() {
+  const theme = useTheme();
+  const { neutral } = resolveButtonRamps(theme);
+  return (
+    <View
+      style={{
+        flex: 1,
+        gap: 12,
+        padding: 16,
+        borderRadius: 16,
+        borderWidth: 1,
+        borderColor: theme.isDark ? neutral[800] : neutral[200],
+        backgroundColor: theme.isDark ? neutral[900] : neutral[100],
+      }}
+    >
+      <Text variant="headline-semibold" style={{ color: theme.colors.text }}>
+        Activity
+      </Text>
+      {Array.from({ length: 24 }, (_, i) => (
+        <Text key={i} variant="body-regular" style={{ color: theme.colors.text }}>
+          Maya updated ticket #{120 + i}
+        </Text>
+      ))}
+    </View>
+  );
+}
+
+/**
+ * `aside`: a second column on the right from `xl` (1280), pinned like the rail
+ * and scrolling its own overflow; below it, stacked under the content.
+ */
+export const WithAside: Story = {
+  name: 'With aside',
+  render: () => (
+    <View style={PAGE_FRAME}>
+      <AppShell testID="shell" sidebar={DemoSidebar()} title="Tickets" breadcrumb={<Trail />} aside={<AsidePanel />}>
+        <Placeholder height={280} />
+        <Placeholder height={420} />
+        <Placeholder height={420} />
+      </AppShell>
+    </View>
+  ),
+};
+
+/** The page's own header: `AppShellMenuButton` keeps the drawer reachable below `lg`. */
+function CustomHeader() {
+  const theme = useTheme();
+  const shell = useAppShell();
+  return (
+    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, minHeight: 36 }}>
+      <AppShellMenuButton testID="menu" />
+      <Text variant="body-medium" style={{ color: theme.colors.text }}>
+        {shell.drawerAvailable ? 'Narrow: the button opens the drawer' : 'Wide: the rail is in flow, no button'}
+      </Text>
+    </View>
+  );
+}
+
+/** No `title`: a custom header with `AppShellMenuButton` (or `useAppShell().openDrawer`). */
+export const NoTitle: Story = {
+  name: 'No title',
+  render: () => (
+    <View style={PAGE_FRAME}>
+      <AppShell testID="shell" sidebar={DemoSidebar()} header={<CustomHeader />}>
+        <Placeholder height={420} />
+        <Placeholder height={420} />
+      </AppShell>
+    </View>
+  ),
+};
+
+/**
+ * `scroll="fixed"`: one screen, nothing scrolls — the header stays and the page
+ * fills the rest, owning its own scrolling (here a message list).
+ */
+export const Fixed: Story = {
+  render: function Render() {
+    const theme = useTheme();
+    const { neutral } = resolveButtonRamps(theme);
+    return (
+      <View style={PAGE_FRAME}>
+        <AppShell testID="shell" scroll="fixed" sidebar={DemoSidebar()} title="Chat">
+          <View
+            style={{
+              flex: 1,
+              minHeight: 0,
+              borderRadius: 16,
+              borderWidth: 1,
+              borderColor: theme.isDark ? neutral[800] : neutral[200],
+              overflow: 'hidden',
+            }}
+          >
+            <ScrollView testID="messages" style={{ flex: 1 }} contentContainerStyle={{ padding: 16, gap: 8 }}>
+              {Array.from({ length: 60 }, (_, i) => (
+                <RNText key={i} style={{ color: theme.colors.text }}>
+                  Message {i + 1}
+                </RNText>
+              ))}
+            </ScrollView>
+            <View style={{ height: 56, borderTopWidth: 1, borderColor: theme.isDark ? neutral[800] : neutral[200], justifyContent: 'center', paddingLeft: 16 }}>
+              <Text variant="body-regular" style={{ color: theme.colors.text }}>Composer stays put</Text>
+            </View>
+          </View>
+        </AppShell>
+      </View>
+    );
+  },
 };
 
 export const Header: Story = {
