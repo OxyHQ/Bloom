@@ -1735,60 +1735,18 @@
         "default": "./lib/commonjs/media-controls/index.js"
       }
     },
-    "./media-shelf": {
+    "./media-card": {
       "react-native": {
-        "types": "./lib/typescript/module/media-shelf/index.d.ts",
-        "default": "./src/media-shelf/index.ts"
+        "types": "./lib/typescript/module/media-card/index.d.ts",
+        "default": "./src/media-card/index.ts"
       },
       "import": {
-        "types": "./lib/typescript/module/media-shelf/index.d.ts",
-        "default": "./lib/module/media-shelf/index.js"
+        "types": "./lib/typescript/module/media-card/index.d.ts",
+        "default": "./lib/module/media-card/index.js"
       },
       "require": {
-        "types": "./lib/typescript/commonjs/media-shelf/index.d.ts",
-        "default": "./lib/commonjs/media-shelf/index.js"
-      }
-    },
-    "./queue-panel": {
-      "react-native": {
-        "types": "./lib/typescript/module/queue-panel/index.d.ts",
-        "default": "./src/queue-panel/index.ts"
-      },
-      "import": {
-        "types": "./lib/typescript/module/queue-panel/index.d.ts",
-        "default": "./lib/module/queue-panel/index.js"
-      },
-      "require": {
-        "types": "./lib/typescript/commonjs/queue-panel/index.d.ts",
-        "default": "./lib/commonjs/queue-panel/index.js"
-      }
-    },
-    "./lyrics": {
-      "react-native": {
-        "types": "./lib/typescript/module/lyrics/index.d.ts",
-        "default": "./src/lyrics/index.ts"
-      },
-      "import": {
-        "types": "./lib/typescript/module/lyrics/index.d.ts",
-        "default": "./lib/module/lyrics/index.js"
-      },
-      "require": {
-        "types": "./lib/typescript/commonjs/lyrics/index.d.ts",
-        "default": "./lib/commonjs/lyrics/index.js"
-      }
-    },
-    "./music-library": {
-      "react-native": {
-        "types": "./lib/typescript/module/music-library/index.d.ts",
-        "default": "./src/music-library/index.ts"
-      },
-      "import": {
-        "types": "./lib/typescript/module/music-library/index.d.ts",
-        "default": "./lib/module/music-library/index.js"
-      },
-      "require": {
-        "types": "./lib/typescript/commonjs/music-library/index.d.ts",
-        "default": "./lib/commonjs/music-library/index.js"
+        "types": "./lib/typescript/commonjs/media-card/index.d.ts",
+        "default": "./lib/commonjs/media-card/index.js"
       }
     },
     "./stay-filters": {
