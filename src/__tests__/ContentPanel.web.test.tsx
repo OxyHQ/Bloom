@@ -3,6 +3,7 @@ import { Text } from 'react-native';
 import { render } from '@testing-library/react-native';
 
 import { BloomThemeProvider } from '../theme/BloomThemeProvider';
+import { PANEL_SHADOW } from '../styles/panel-chrome';
 import { ContentPanel } from '../content-panel/ContentPanel.web';
 import { classNamesOn, findHost, resolvedStyle } from './support/rendered-style';
 
@@ -178,5 +179,45 @@ describe('ContentPanel.web overlayTopOffset', () => {
     const mask = resolvedStyle(findHost(toJSON(), 'content-panel-bleed-mask')?.props.style);
     expect(mask.top).toBeUndefined();
     expect(mask.height).toBeUndefined();
+  });
+});
+
+describe('chrome', () => {
+  it('elevated (the default) puts the panel shadow on the same element as the hairline', () => {
+    const { toJSON } = renderPanel(
+      <ContentPanel framed>
+        <Text>content</Text>
+      </ContentPanel>,
+    );
+    const frame = findHost(toJSON(), 'content-panel-border-frame');
+    expect(classesFor(toJSON(), 'content-panel-border-frame')).toContain('border-border');
+    expect(resolvedStyle(frame?.props.style).boxShadow).toBe(PANEL_SHADOW.light);
+  });
+
+  it('border keeps the hairline and drops the shadow; none drops the frame entirely', () => {
+    const bordered = renderPanel(
+      <ContentPanel framed chrome="border">
+        <Text>content</Text>
+      </ContentPanel>,
+    );
+    const frame = findHost(bordered.toJSON(), 'content-panel-border-frame');
+    expect(frame).not.toBeNull();
+    expect(resolvedStyle(frame?.props.style).boxShadow).toBeUndefined();
+
+    const bare = renderPanel(
+      <ContentPanel framed chrome="none">
+        <Text>content</Text>
+      </ContentPanel>,
+    );
+    expect(findHost(bare.toJSON(), 'content-panel-border-frame')).toBeNull();
+  });
+
+  it('takes a shadow override', () => {
+    const { toJSON } = renderPanel(
+      <ContentPanel framed shadow="0 0 0 2px red">
+        <Text>content</Text>
+      </ContentPanel>,
+    );
+    expect(resolvedStyle(findHost(toJSON(), 'content-panel-border-frame')?.props.style).boxShadow).toBe('0 0 0 2px red');
   });
 });

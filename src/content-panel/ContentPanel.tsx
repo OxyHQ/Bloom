@@ -33,6 +33,7 @@
 import React, { memo } from 'react';
 import { type StyleProp, type ViewStyle } from 'react-native';
 
+import { useOptionalPanelChrome } from '../styles/panel-chrome';
 import { StyledView } from '../styles/styled-primitives';
 import {
   ContentPanelNestingContext,
@@ -70,11 +71,14 @@ const ContentPanelComponent: React.FC<ContentPanelProps> = ({
   framedFrom = 768,
   surfaceClassName,
   surfaceStyle,
+  chrome = 'elevated',
+  shadow,
   contentClassName,
   contentStyle,
 }) => {
   // Dev-only invariant — a ContentPanel must never be nested inside another.
   useContentPanelNestingGuard();
+  const panelChrome = useOptionalPanelChrome();
 
   // Tri-state: `undefined` → responsive (breakpoint-gated), `true` → always
   // framed, `false` → never framed (plain full-bleed). Whole literal class
@@ -89,11 +93,19 @@ const ContentPanelComponent: React.FC<ContentPanelProps> = ({
         ? 'flex-1 overflow-hidden rounded-radius-28 border border-border'
         : 'flex-1';
   const surfaceClass = [surfaceBase, surfaceClassName ?? 'bg-card'].join(' ');
+  // Native has no overlays: the surface itself carries the edge. `none` drops
+  // both, `border` keeps the class-drawn hairline, `elevated` adds the lift.
+  const chromeStyle =
+    framed === false || chrome === 'none' || chrome === 'border'
+      ? null
+      : shadow || panelChrome
+        ? { boxShadow: shadow ?? panelChrome?.shadow }
+        : null;
   const contentClass = ['flex-1', contentClassName].filter(Boolean).join(' ');
 
   return (
     <ContentPanelNestingContext.Provider value={true}>
-      <StyledView className={surfaceClass} style={surfaceStyle}>
+      <StyledView className={surfaceClass} style={[chromeStyle, surfaceStyle]}>
         <StyledView className={contentClass} style={contentStyle}>
           {children}
         </StyledView>

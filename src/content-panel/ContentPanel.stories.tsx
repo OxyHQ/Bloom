@@ -107,3 +107,28 @@ export const SideBySide: Story = {
     </View>
   ),
 };
+
+/**
+ * The panel's EDGE. `chrome` decides how much of it there is: `elevated` (the
+ * default) is the hairline plus the floating-panel shadow the `Sidebar` wears,
+ * so the panel reads as a surface lifted off the page; `border` is the hairline
+ * alone; `none` leaves a flat rounded surface for an app whose page background
+ * already does the separating.
+ */
+export const Chrome: Story = {
+  render: () => (
+    <View style={{ gap: 32, padding: 24, width: 760 }}>
+      {(['elevated', 'border', 'none'] as const).map((chrome) => (
+        <View key={chrome} style={{ gap: 8 }}>
+          <Text variant="body-2-medium">{`chrome="${chrome}"`}</Text>
+          {/* `overlaySizing="panel"`: three panels stacked in one story are
+              each a bounded box, not a document that scrolls — the viewport-sized
+              default would draw every frame a screen tall. */}
+          <ContentPanel framed framedFrom={640} chrome={chrome} overlaySizing="panel">
+            <Body />
+          </ContentPanel>
+        </View>
+      ))}
+    </View>
+  ),
+};
