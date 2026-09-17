@@ -43,7 +43,8 @@ Object.defineProperty(HTMLElement.prototype, 'offsetWidth', {
 
 import { SortablePhotoGrid } from '../sortable-media';
 import type { SortablePhoto } from '../sortable-media';
-import { moveItem, slotAtPoint, sortableGridColumns } from '../sortable-media/reorder';
+import { moveItem } from '../hooks/list-reorder';
+import { slotAtPoint, sortableGridColumns } from '../sortable-media/reorder';
 import { BloomThemeProvider } from '../theme/BloomThemeProvider';
 
 (globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;

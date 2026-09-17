@@ -20,7 +20,8 @@ import { webDataSet } from '../styles/web-data';
 import type { Theme } from '../theme/types';
 import { useTheme } from '../theme/use-theme';
 import { Text } from '../typography';
-import { moveItem, slotAtPoint, sortableGridColumns } from './reorder';
+import { moveItem } from '../hooks/list-reorder';
+import { slotAtPoint, sortableGridColumns } from './reorder';
 import type { SortablePhoto, SortablePhotoGridLabels, SortablePhotoGridProps } from './types';
 
 /**

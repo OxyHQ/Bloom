@@ -116,6 +116,9 @@ function panel(props: Partial<QueuePanelProps> = {}) {
   );
 }
 
+// `moveQueueItem` / `queueDragTarget` / `queueDragShift` are re-exports of
+// `moveItem` / `dragTarget` / `dragShift` from `@oxy.so/bloom/hooks`, kept as
+// the queue panel's published names. These pin the published behaviour.
 describe('moveQueueItem', () => {
   it('moves down, up, and to both ends, returning a new array', () => {
     const list = ['a', 'b', 'c', 'd'];
@@ -150,8 +153,11 @@ describe('queueDragTarget', () => {
   it('clamps to the first and last slot, and survives degenerate input', () => {
     expect(queueDragTarget(0, -10 * H, H, 5)).toBe(0);
     expect(queueDragTarget(4, 10 * H, H, 5)).toBe(4);
+    // Degenerate input answers "it has not moved" — `from`, not slot 0. The
+    // two copies of this function disagreed here; sending a row to the top of
+    // a list nobody has measured yet is the one that was wrong.
     expect(queueDragTarget(0, 100, H, 0)).toBe(0);
-    expect(queueDragTarget(2, 100, 0, 5)).toBe(0);
+    expect(queueDragTarget(2, 100, 0, 5)).toBe(2);
   });
 });
 

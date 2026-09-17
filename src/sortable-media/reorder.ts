@@ -1,19 +1,7 @@
 /**
- * The list maths behind `SortablePhotoGrid`. Pure, so the drag and the move
- * buttons share one definition of "move" and a test can pin it without a DOM.
+ * The GRID maths behind `SortablePhotoGrid` — where a point falls and how many
+ * columns fit. The list maths (`moveItem`) is shared: `hooks/list-reorder`.
  */
-
-/** A copy of `list` with the item at `from` moved to `to` (both clamped). */
-export function moveItem<T>(list: ReadonlyArray<T>, from: number, to: number): T[] {
-  const next = list.slice();
-  if (list.length === 0) return next;
-  const source = Math.min(Math.max(0, from), list.length - 1);
-  const target = Math.min(Math.max(0, to), list.length - 1);
-  if (source === target) return next;
-  const [item] = next.splice(source, 1);
-  next.splice(target, 0, item as T);
-  return next;
-}
 
 /**
  * The slot under a point, for a grid of `count` equal square-ish cells laid

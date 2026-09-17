@@ -199,24 +199,6 @@ export function nextSelection(
   return { selected: order.slice(from, to + 1), anchor };
 }
 
-/** The index a dragged row lands on after moving `dy` px through rows `rowHeight` tall. */
-export function reorderTarget(from: number, dy: number, rowHeight: number, count: number): number {
-  if (count <= 0 || rowHeight <= 0) return from;
-  const target = from + Math.round(dy / rowHeight);
-  return Math.min(count - 1, Math.max(0, target));
-}
-
-/**
- * How far row `index` shifts while row `from` is dragged over `to`: the rows
- * between close the gap the dragged row left and open one where it will land.
- */
-export function dragShift(index: number, from: number, to: number, rowHeight: number): number {
-  if (index === from) return 0;
-  if (from < to && index > from && index <= to) return -rowHeight;
-  if (to < from && index >= to && index < from) return rowHeight;
-  return 0;
-}
-
 // ---------------------------------------------------------------------------
 //  Web CSS — hover/focus reveals and focus rings have no inline spelling, so
 //  they hang off `dataSet` attributes in one adopted sheet.

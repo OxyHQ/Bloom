@@ -78,6 +78,29 @@ changes, so a resize that lands on the same pixel does not re-render.
 Nine families across housing and music reached into `listing-details` for this
 before it lived here.
 
+## `moveItem` / `dragTarget` / `dragShift`
+
+The list maths behind every drag-to-reorder surface — a track list, a queue, a
+photo grid. Pure, so the drag, the keyboard path and the move buttons share one
+definition of "move".
+
+```tsx
+const target = dragTarget(drag.from, drag.dy, ROW_HEIGHT, rows.length);
+const shift  = dragShift(index, drag.from, target, ROW_HEIGHT);   // px, per row
+onReorder(moveItem(rows, drag.from, target));
+```
+
+Degenerate input, where the three copies of this used to disagree:
+
+- `moveItem` clamps and rounds the TARGET into range, but refuses an
+  out-of-range SOURCE — clamping that would silently move the wrong item.
+- `dragTarget` answers `from` when there are no rows or the row has not been
+  measured (`rowHeight <= 0`). Answering `0` sends the row to the top of a list
+  nobody has measured yet.
+
+`@oxy.so/bloom/queue-panel` publishes the same three as `moveQueueItem`,
+`queueDragTarget` and `queueDragShift`; they are re-exports.
+
 ## `useHaptics`
 
 Haptic feedback through Bloom's optional-peer boundary — a no-op when

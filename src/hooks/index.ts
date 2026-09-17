@@ -13,3 +13,4 @@ export { useGutters } from './use-gutters';
 export type { Gutter, Gutters } from './use-gutters';
 export { useImagePreload, preloadImage } from './use-image-preload';
 export { useContainerWidth } from './use-container-width';
+export { moveItem, dragTarget, dragShift } from './list-reorder';
