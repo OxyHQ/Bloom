@@ -433,6 +433,9 @@ export type {
 } from './home-search';
 export * from './listing-details';
 export * from './property-insights';
+export * from './tenancy';
+export * from './eviction';
+export * from './place-reviews';
 export { BookingBar, BookingCard, PriceBreakdown, TRIP_STATUS, TripCard } from './booking';
 export type {
   BookingBarProps,
@@ -507,6 +510,7 @@ export type {
 } from './offering-badge';
 export { CategoryBar } from './category-bar';
 export type { CategoryBarIcon, CategoryBarItem, CategoryBarProps } from './category-bar';
+export { MapClusterMarker, MapListingPreview, MapPriceMarker, MapSearchAreaButton } from './map-marker';
 export {
   MapAreaCircle,
   MapClusterMarker,

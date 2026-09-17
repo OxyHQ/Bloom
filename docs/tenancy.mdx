@@ -1,0 +1,143 @@
+---
+title: Tenancy
+description: Managing a rental as a tenant or a landlord — the lease summary, rent payments, maintenance requests, documents and a tenancy timeline.
+order: 120
+---
+
+# Tenancy
+
+```tsx
+import {
+  DocumentList,
+  LeaseSummaryCard,
+  MaintenanceRequestCard,
+  RentPaymentList,
+  TenancyTimeline,
+} from '@oxy.so/bloom/tenancy';
+
+<LeaseSummaryCard
+  title="Calle de los Tilos 27, 3º B"
+  subtitle="Two-bedroom flat · Arganzuela, Madrid"
+  parties={[
+    { name: 'Tomás Aranda', role: 'Landlord', avatar: landlordPhoto },
+    { name: 'Lucía Ferrer', role: 'Tenant (you)' },
+  ]}
+  startDate="1 Sep 2025"
+  endDate="31 Aug 2027"
+  progress={0.5}
+  remainingLabel="11 months left"
+  rent="€1,150"
+  deposit="€2,300"
+  nextPayment={{ date: '1 Oct', status: 'due', statusLabel: 'Due in 5 days' }}
+  actions={<Button size="small" onPress={pay}>Pay rent</Button>}
+/>
+
+<RentPaymentList
+  paidThisYear="€9,800"
+  outstanding="€550"
+  outstandingTone="error"
+  payments={[
+    { id: 'aug', month: 'August 2026', dueDate: '1 Aug 2026', amount: '€1,150', method: 'Bank transfer', status: 'paid', onDownloadReceipt: () => download('aug') },
+  ]}
+/>
+
+<MaintenanceRequestCard
+  title="Kitchen sink is leaking"
+  category="plumbing"
+  reference="#1042"
+  priority="high"
+  photos={photos}
+  onPressPhoto={openPhoto}
+  stage="scheduled"
+  stages={{
+    reported: { date: '12 Sep, 18:40', actor: 'You' },
+    acknowledged: { date: '13 Sep', actor: 'Tomás (landlord)' },
+    scheduled: { date: 'Thu 18 Sep, 9:00–11:00', actor: 'Plumber' },
+  }}
+  commentCount={4}
+  onPressComments={openThread}
+/>
+
+<DocumentList
+  documents={[
+    { id: 'lease', name: 'Tenancy agreement.pdf', type: 'pdf', size: '412 KB', status: 'signed', onView, onDownload },
+    { id: 'addendum', name: 'Rent review.pdf', type: 'pdf', status: 'pending', onSign },
+  ]}
+/>
+```
+
+## Nothing reads the clock
+
+Every date, amount and relative phrase is a pre-formatted string the app computes
+("11 months left", "Due in 5 days", "Overdue 12 days"). The one number a part takes is
+`LeaseSummaryCard`'s `progress` — the ELAPSED share of the lease, 0..1 — which draws the
+bar. That keeps the parts deterministic (stories, tests, server rendering) and leaves
+locale and currency with the app. Every default English string is a prop.
+
+## Status colours
+
+Statuses are subtle `Badge`s painted through `resolveAccentColors`, so they follow
+the theme in both modes. The maps are exported (`LEASE_PAYMENT_STATUS`,
+`RENT_PAYMENT_STATUS`, `MAINTENANCE_STAGE`, `MAINTENANCE_PRIORITY`,
+`TENANCY_DOCUMENT_STATUS`) for anything that needs to match them.
+
+| part | status → tone |
+| --- | --- |
+| `LeaseSummaryCard` next payment | `upcoming` info · `due` warning · `overdue` error · `paid` success |
+| `RentPaymentList` row | `paid` success · `pending` warning · `overdue` error · `partial` info |
+| `MaintenanceRequestCard` stage | `reported` warning · `acknowledged` info · `scheduled` primary · `resolved` success |
+| `MaintenanceRequestCard` priority chip | `low` neutral · `medium` info · `high` warning · `urgent` error |
+| `DocumentList` row | `signed` success · `pending` warning · `expired` error |
+
+## Layout from the part's own width
+
+`LeaseSummaryCard`, `RentPaymentList` and `DocumentList` measure themselves
+(`layout="auto"`), not the window, so they fit a dashboard column as well as a phone.
+Pass `layout="wide" | "narrow"` to skip measuring.
+
+| part | narrow | wide (from) |
+| --- | --- | --- |
+| `LeaseSummaryCard` | rent, deposit, next payment stacked | one row with hairlines (520) |
+| `RentPaymentList` | month over "Due … · method", amount over badge | columns with hidden headings (640) |
+| `DocumentList` | badge under the meta line | badge in its own column (560) |
+
+## `TenancyTimeline`
+
+A generic vertical timeline — the lease's history, a repair's progress
+(`MaintenanceRequestCard` draws one at `density="compact"`), an eviction case
+(`EvictionTimeline` in `@oxy.so/bloom/eviction`).
+
+```tsx
+<TenancyTimeline
+  accessibilityLabel="Tenancy history"
+  events={[
+    { title: 'Lease signed', date: '28 Aug 2025', actor: 'Lucía and Tomás', icon: RiFileTextLine },
+    { title: 'Rent review', date: '1 Sep 2026', state: 'current', tone: 'warning' },
+    { title: 'Lease ends', date: '31 Aug 2027', state: 'upcoming' },
+  ]}
+/>
+```
+
+`complete` (default) fills the marker with `tone` (default `primary`), `current` adds a
+tint halo and a semibold title, `upcoming` draws a hollow marker and secondary text.
+`icon` draws a 24 disc at comfortable density; compact always draws 8px dots.
+
+## Accessibility
+
+- The timeline is a `list` of `listitem`s; each marker is an `img` named by its state
+  ("Done", "In progress", "Not yet" — `stateLabels`), so the state is announced before
+  the title.
+- The lease bar is a `progressbar` named by `periodLabel`, with flat `aria-value*`
+  (0–100) and `aria-valuetext` from `remainingLabel`.
+- Icon-only buttons are named after what they act on: "Download receipt for August
+  2026" (`receiptLabel`), "View Tenancy agreement.pdf" (`viewLabel`,
+  `downloadLabel`). A photo is "Pipe under the sink, photo 1 of 3" (`photoLabel`).
+- The payment table's column headings are `aria-hidden`; each row reads as its own
+  `listitem`.
+- Titles are `heading`s (level 3).
+
+## Native
+
+Everything is React Native views; the only web-only addition is the keyboard focus ring,
+adopted once as a constructed stylesheet. Hover washes are colour changes that simply do
+not fire on touch.
