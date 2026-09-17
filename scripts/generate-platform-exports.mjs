@@ -175,6 +175,7 @@ const SUBPATHS = /** @type {const} */ ([
   ['./rating', 'rating/index.ts'],
   ['./media-controls', 'media-controls/index.ts'],
   ['./chat-indicators', 'chat-indicators/index.ts'],
+  ['./chat-screen', 'chat-screen/index.ts'],
   ['./creator-studio', 'creator-studio/index.ts'],
   ['./media-card', 'media-card/index.ts'],
   ['./media-shelf', 'media-shelf/index.ts'],
