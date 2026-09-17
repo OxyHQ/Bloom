@@ -1,0 +1,244 @@
+---
+title: Media Player
+description: The transport row, the desktop now-playing bar, the phone's mini player, the full-screen player, speed and sleep-timer menus, the device picker and the connect banner.
+order: 63
+---
+
+# Media Player
+
+The player surfaces of a music or podcast app. They are **presentational only**: there is no audio engine inside. Every state (playing, position, repeat, volume, device…) is a prop and every user action is a callback — the app's player owns the truth and re-renders these.
+
+```tsx
+import {
+  ConnectBanner,
+  DevicePicker,
+  FullScreenPlayer,
+  MiniPlayer,
+  NowPlayingBar,
+  PlaybackSpeedMenu,
+  SleepTimerMenu,
+  TransportControls,
+} from '@oxy.so/bloom/media-player';
+```
+
+They are built from [Media Controls](/docs/bloom/main/media-controls) (`PlayButton`, `LikeButton`, `PlaybackProgress`, `VolumeControl`, `ExplicitBadge`) and share their colours: the theme accent, the neutral ramps, light and dark. No control scales or bounces; hover and press change colour only.
+
+## The track
+
+`NowPlayingBar`, `MiniPlayer` and `FullScreenPlayer` take a `track`:
+
+```ts
+interface MediaPlayerTrack {
+  title: string;
+  artists: string | { id?: string; name: string }[];
+  artwork?: string; // a URL, or an ImageResolver id
+  explicit?: boolean;
+}
+```
+
+A list of artists makes each credit a link when `onArtistPress(artist, index)` is given; a string is one plain credit. Artwork resolves the way `Avatar` does: a URL passes through, anything else goes to the app's `ImageResolver`.
+
+## `TransportControls`
+
+```tsx
+<TransportControls
+  playing={playing}
+  onPlayPause={toggle}
+  onPrevious={previous}
+  onNext={next}
+  shuffle={shuffle}
+  onShuffleChange={setShuffle}
+  repeat={repeat}
+  onRepeatChange={setRepeat}
+/>
+
+<TransportControls
+  variant="podcast"
+  playing={playing}
+  onPlayPause={toggle}
+  onSkipBack={() => seekBy(-15)}
+  onSkipForward={() => seekBy(30)}
+  playbackRate={rate}
+  onPlaybackRateChange={setRate}
+  trailing={<SleepTimerMenu value={sleep} onValueChange={setSleep} />}
+/>
+```
+
+| | play | glyphs | previous / next | hit box | gap |
+| --- | --- | --- | --- | --- | --- |
+| `compact` | 32 | 16 | 20 | 32 | 8 |
+| `regular` (default) | 48 | 20 | 24 | 32 | 16 |
+| `large` | 56 | 24 | 32 | 40 | 24 |
+
+- **music** — shuffle · previous · play · next · repeat. **podcast** — speed · back N · play · forward N · `trailing`.
+- The play button is `PlayButton` `inverse`, named "Play &lt;subject&gt;" / "Pause &lt;subject&gt;".
+- Shuffle and repeat show when their `on…Change` is given; their slot is kept either way, so play stays centred. Previous / next are disabled without a handler or with `previousDisabled` / `nextDisabled`.
+- **Repeat cycles `off` → `all` → `one` → `off`.** `onRepeatChange` receives the NEXT mode (`nextRepeatMode(mode)`). `one` draws `RiRepeatOneLine`.
+- **Skip glyphs** are the numbered ones for 5, 10, 15 and 30 seconds; any other `skipBackSeconds` / `skipForwardSeconds` draws a plain curved arrow, and the name still says the count ("Forward 45 seconds").
+- **Active state**: accent glyph plus a 4px accent dot underneath — shuffle on, repeat `all`/`one`, a speed other than 1×, a running sleep timer.
+- `labels` translates every name: `shuffle`, `previous`, `next`, `play`, `pause`, `repeat`, `repeatOne`, `skipBack(s)`, `skipForward(s)`.
+
+**Accessibility.** Shuffle and repeat are toggles: `aria-pressed` on web and `accessibilityState.selected` on native, with a fixed name. Repeat is "Repeat" while off or `all` and "Repeat one" while `one` — the pressed state says whether it is on, the name which repeat. Previous, next, skip and play are plain buttons (no pressed state).
+
+## `NowPlayingBar`
+
+The desktop bar, full width at the bottom of the window.
+
+```tsx
+<NowPlayingBar
+  track={track}
+  onTitlePress={openAlbum}
+  onArtistPress={(artist) => openArtist(artist.id)}
+  liked={liked}
+  onLikedChange={setLiked}
+  transport={{ playing, onPlayPause: toggle, onPrevious, onNext, shuffle, onShuffleChange, repeat, onRepeatChange }}
+  position={position}
+  duration={duration}
+  buffered={buffered}
+  onSeekPreview={setPreview}
+  onSeek={seekTo}
+  lyricsActive={lyricsOpen}
+  onLyricsChange={setLyricsOpen}
+  queueActive={queueOpen}
+  onQueueChange={setQueueOpen}
+  deviceName={remoteDevice?.name}
+  devicePicker={<DevicePicker current={device} devices={devices} onSelect={connect} />}
+  volume={volume}
+  onVolumeChange={setVolume}
+  muted={muted}
+  onMutedChange={setMuted}
+  onFullscreenPress={openFullScreen}
+/>
+```
+
+- **80 tall**, 16 side inset, the page background and a 1px neutral-200 (dark neutral-800) top rule.
+- **Left** — 56 cover (8 corner), title (a link with `onTitlePress`) with the explicit badge, artists, and the like button (with `onLikedChange`).
+- **Centre** (≤ 722) — `compact` transport over `PlaybackProgress` with times beside it.
+- **Right** — lyrics (`RiMicLine`) and queue (`RiPlayListLine`) toggles, the device button, `VolumeControl`, fullscreen. Each shows when its handler is given.
+- **Device button** — with `devicePicker` it opens a `Popover` above itself holding that content (`devicePickerOpen` / `onDevicePickerOpenChange` to control it); otherwise it calls `onDevicePress`. It is lit (accent + dot) while `deviceName` is set, and its name adds the device.
+- **Collapse** — the bar measures its OWN width (seeded from the window): under **1024** the fullscreen button goes and the volume slider shortens to 64; under **768** lyrics, volume and the scrubber times go, the device button stays only while casting, and the actions column shrinks to what it draws.
+
+Put a `ConnectBanner` under it while casting.
+
+## `MiniPlayer`
+
+The phone's floating bar above the tab bar. Press it to open the full player.
+
+```tsx
+<MiniPlayer
+  track={track}
+  artworkColor={track.color}
+  playing={playing}
+  onPlayPause={toggle}
+  position={position}
+  duration={duration}
+  liked={liked}
+  onLikedChange={setLiked}
+  deviceName={remoteDevice?.name}
+  onPress={openPlayer}
+  onNext={next}
+  onPrevious={previous}
+/>
+```
+
+- **56 tall, 12 corner** (a panel, not a pill), 8 side margins. 40 cover, title (`body-2-semibold`) and artist (`caption-1-regular`), like, and a plain play button. Text truncates — nothing scrolls.
+- **A 2px progress line** along the bottom, 8 in from each side: the text colour over the text colour composited at 24% on the bar's fill. It is decorative (`aria-hidden`) — the full player has the scrubber.
+- **Casting** — the artist line becomes the device name with a speaker glyph (accent on the neutral surface, the text colour on a tint).
+- **Swipe** — on native, a horizontal swipe past 48 calls `onNext` (left) or `onPrevious` (right). Web does not swipe.
+- **Accessibility** — the cover and text are ONE button, "Open player: Title, Artists" (`openLabel` translates the prefix). Like and play are its siblings, not nested inside it.
+
+### The artwork tint and its contrast fallback
+
+`artworkColor` is a hex from the backend — never sampled from the image. `resolveArtworkTint(color, text, textMuted)` darkens it in 5% steps until BOTH the dark theme's text and muted text clear **4.5:1**, stopping at the first step that holds (a dark colour is used as given; `#F4E3A1` comes out as a deep olive). The bar's content then renders under the dark theme, so it reads light-on-colour in a light app too.
+
+No colour, or one that does not parse, falls back to the floating-surface recipe under the app's own theme: the card with a neutral-200 hairline (dark: neutral-800 with neutral-700).
+
+`contrastRatio(a, b)` is the WCAG ratio the check uses, exported for an app that wants the same guarantee elsewhere.
+
+## `FullScreenPlayer`
+
+The phone's expanded player and the desktop's immersive view. It **fills its parent** and presents nothing itself:
+
+- **Phone** — render it as a route (a modal stack screen sliding up), or inside a full-height `BottomSheet` with `showHandle={false}`; wire `onCollapse` to going back / dismissing.
+- **Desktop** — render it as a page, or in a `Dialog` sized to the window; wire `onCollapse` to closing it.
+
+```tsx
+<FullScreenPlayer
+  track={track}
+  artworkColor={track.color}
+  contextLabel="Playing from playlist"
+  contextName="Night Drive"
+  onCollapse={close}
+  onMore={openTrackMenu}
+  liked={liked}
+  onLikedChange={setLiked}
+  transport={{ playing, onPlayPause: toggle, onPrevious, onNext, shuffle, onShuffleChange, repeat, onRepeatChange }}
+  position={position}
+  duration={duration}
+  onSeek={seekTo}
+  deviceName={remoteDevice?.name}
+  onDevicePress={openDevices}
+  onShare={share}
+  queueActive={queueOpen}
+  onQueuePress={openQueue}
+  lyrics={{ lines, activeIndex, onPress: openLyrics }}
+  aboutArtist={<ArtistCard artist={artist} />}
+/>
+```
+
+- **Top bar** — collapse chevron, "PLAYING FROM PLAYLIST" over "Night Drive", more.
+- **Narrow** — square artwork (16 corner, ≤ 480) over title + artists + like, the scrubber with times below it, the `large` transport spread to the column's width, and a row of device (with the device name while casting), share and queue.
+- **Wide (≥ 900, measured)** — artwork and details side by side, 64 apart.
+- **The first screen is exactly the parent's height**, painted with a vertical gradient from the contrast-safe artwork tint to neutral-950. **Below the fold**, in the same scroll, a lyrics preview card (earlier lines dimmed up to `activeIndex`; a button when `onPress` is given) and the `aboutArtist` slot — side by side when wide.
+- **It is always dark.** Its content renders under the dark theme whatever the app's mode. A light app on a named preset gets that preset's dark accent; an app whose accent is a seed or scope keeps its accent as given.
+- `labels` translates `collapse`, `more`, `devices`, `share`, `queue`.
+
+## `PlaybackSpeedMenu` and `SleepTimerMenu`
+
+```tsx
+<PlaybackSpeedMenu rate={rate} onRateChange={setRate} />
+
+<SleepTimerMenu
+  value={sleep}                 // 'off' | 'end' | minutes
+  onValueChange={setSleep}
+  remaining={sleep === 'off' ? undefined : '12:04'}
+  endLabel="End of episode"
+/>
+```
+
+Both are a `DropdownMenu`: an anchored dropdown on web, a bottom sheet on native — so on a phone they already ARE sheet content.
+
+- **Speed** — a text trigger showing the rate ("1.25×", lit when not 1×), a "Playback speed" heading, and radio rows for `rates` (default `PLAYBACK_RATES`: 0.5× to 3×) with a trailing check. `onRateChange` receives a number. `formatRate` and `label` translate it.
+- **Sleep timer** — a timer glyph (lit while a timer runs), a "Sleep timer" heading that adds "Stops in 12:04" from `remaining`, then Off, the `minutes` (default `SLEEP_TIMER_MINUTES`: 5, 10, 15, 30, 45, 60) and "End of episode" (`endLabel` — pass "End of track" for music). `onValueChange` receives `'off'`, `'end'` or the minutes. `remaining` arrives pre-formatted; the app owns the countdown.
+- Pass `children` to replace the trigger (it goes through `asChild`), and `open` / `onOpenChange` to control the menu.
+- The rows announce `aria-checked`, as every Bloom radio row does.
+
+## `DevicePicker`
+
+Content only — host it in a `Popover` on web (as `NowPlayingBar`'s `devicePicker` does) or a sheet on native; a `Popover` on native already presents as a sheet.
+
+```tsx
+<DevicePicker
+  current={{ id: 'this', name: 'This computer', kind: 'computer' }}
+  devices={devices}
+  onSelect={connect}
+  onHelpPress={openHelp}
+/>
+```
+
+- `kind` picks the glyph: `computer`, `phone`, `tablet`, `speaker`, `tv`, `car`, `headphones`, `group`.
+- "Current device" heading, then the current device: accent icon well, accent name and "Listening on". It is not a button.
+- "Select a device", then one 52-tall row per other device (36 icon well, name, optional `description` such as "Wi-Fi" or "3 speakers"). Each is a button named "Name, description"; `disabled` devices dim and do not press. The current device is left out of the list even if `devices` includes it.
+- `emptyLabel` when there is nothing else; a help link with `onHelpPress`. `title`, `currentLabel`, `devicesTitle` and `helpLabel` translate it.
+
+## `ConnectBanner`
+
+```tsx
+<ConnectBanner deviceName="Living Room Speaker" kind="speaker" onPress={openDevices} />
+```
+
+A 28-tall full-width strip in the accent with the device glyph and "Listening on Living Room Speaker" in the accent's foreground. With `onPress` it is a button named by that sentence; without, a plain strip. `label` translates "Listening on".
+
+## Native
+
+Everything renders on native. The web-only parts degrade: hover washes and link underlines do not exist there, the menus and the device popover present as sheets, the mini player gains its swipe, and focus rings are the platform's. The gradient uses the native CSS-gradient style.

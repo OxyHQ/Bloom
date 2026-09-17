@@ -1735,18 +1735,18 @@
         "default": "./lib/commonjs/media-controls/index.js"
       }
     },
-    "./media-header": {
+    "./media-player": {
       "react-native": {
-        "types": "./lib/typescript/module/media-header/index.d.ts",
-        "default": "./src/media-header/index.ts"
+        "types": "./lib/typescript/module/media-player/index.d.ts",
+        "default": "./src/media-player/index.ts"
       },
       "import": {
-        "types": "./lib/typescript/module/media-header/index.d.ts",
-        "default": "./lib/module/media-header/index.js"
+        "types": "./lib/typescript/module/media-player/index.d.ts",
+        "default": "./lib/module/media-player/index.js"
       },
       "require": {
-        "types": "./lib/typescript/commonjs/media-header/index.d.ts",
-        "default": "./lib/commonjs/media-header/index.js"
+        "types": "./lib/typescript/commonjs/media-player/index.d.ts",
+        "default": "./lib/commonjs/media-player/index.js"
       }
     },
     "./stay-filters": {
