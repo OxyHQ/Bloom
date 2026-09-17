@@ -1,5 +1,6 @@
 import { Platform } from 'react-native';
 
+import { groupThousands } from '../chart-cards/primitives/format';
 import { resolveButtonRamps } from '../button/shared';
 import { oklchToSrgb, srgbToOklch, srgbToRgbString, type Oklch } from '../theme/color-space';
 import { parseRgba } from '../theme/color-utils';
@@ -148,15 +149,8 @@ export function resolveEnergyTones(theme: Theme): EnergyTone[] {
 //  Formatting
 // ---------------------------------------------------------------------------
 
-/** `385000` → `"385,000"`. */
-export function groupDigits(value: number): string {
-  const rounded = Math.round(value);
-  const sign = rounded < 0 ? '-' : '';
-  return sign + String(Math.abs(rounded)).replace(/\B(?=(\d{3})+(?!\d))/g, ',');
-}
-
 /** The default price format: `€385,000`. Apps pass their own `format` for currency and locale. */
-export const formatEuros = (value: number) => `€${groupDigits(value)}`;
+export const formatEuros = (value: number) => `€${groupThousands(value)}`;
 
 /** The default axis format: `€385K`, `€1.2M`. */
 export function formatEurosCompact(value: number): string {

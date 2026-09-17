@@ -1,6 +1,7 @@
 import React, { memo, useMemo, useState } from 'react';
 import { View } from 'react-native';
 
+import { groupThousands } from '../chart-cards/primitives/format';
 import { DatePicker } from '../date-picker';
 import { RiExchangeLine } from '../icons/remix/RiExchangeLine';
 import { RiKey2Line } from '../icons/remix/RiKey2Line';
@@ -93,10 +94,6 @@ export function pricePerArea(price: string | undefined, area: number | undefined
   const amount = Number(sanitizeAmount(price ?? ''));
   if (!amount || !area || area <= 0) return null;
   return amount / area;
-}
-
-function groupThousands(value: number): string {
-  return String(Math.round(value)).replace(/\B(?=(\d{3})+(?!\d))/g, ' ');
 }
 
 /** Toggles `kind` in `value.kinds`, keeping every kind's fields. Pure. */
