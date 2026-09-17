@@ -180,6 +180,7 @@ const SUBPATHS = /** @type {const} */ ([
   ['./listing-details', 'listing-details/index.ts'],
   ['./property-insights', 'property-insights/index.ts'],
   ['./booking', 'booking/index.ts'],
+  ['./listing-actions', 'listing-actions/index.ts'],
   ['./listing-card', 'listing-card/index.ts'],
   ['./offering-badge', 'offering-badge/index.ts'],
   ['./category-bar', 'category-bar/index.ts'],

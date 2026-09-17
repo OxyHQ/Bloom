@@ -12,7 +12,7 @@ Five pieces for booking a stay, all under one subpath:
 | ---------------- | ----------------------------------------------------------------------------------- |
 | `BookingCard`    | the reservation card beside a listing: price, dates, guests, Reserve, breakdown     |
 | `PriceBreakdown` | itemised charges and a bold total — inside the card, or alone on a checkout page    |
-| `BookingBar`     | the phone-width bar pinned under a listing: price, dates, Reserve                   |
+| `BookingBar`     | the phone-width bar pinned under a listing: price, dates, Reserve — the stay preset of [`ActionBar`](/docs/bloom/main/listing-actions) |
 | `TripCard`       | an upcoming or past reservation: photo, place, host, dates, status, actions         |
 
 ```tsx
@@ -66,6 +66,7 @@ const [guests, setGuests] = useState({ adults: 2, children: 0, infants: 0, pets:
 | prop                                          | decides                                                                                  |
 | --------------------------------------------- | ---------------------------------------------------------------------------------------- |
 | `price`, `originalPrice`, `priceUnit`         | the header; `originalPrice` is struck through before the price                            |
+| `priceUnitPrefix`                             | drawn before the unit, not spoken: `"/"` draws "$180 / night"                             |
 | `priceAccessibilityLabel`                     | the spoken price, default `"$162 per night, originally $180"`                            |
 | `rating`, `reviewCount`                       | a small `Rating` on the right; `null` draws "New", omitted draws nothing                 |
 | `checkIn`, `checkOut`, `guests`               | the values in the box; an empty date shows `datePlaceholder` ("Add date")                |
@@ -79,7 +80,9 @@ const [guests, setGuests] = useState({ adults: 2, children: 0, infants: 0, pets:
 | `breakdown`                                   | `PriceBreakdown` props, drawn 24 below                                                    |
 | `footer`                                      | anything centred at the bottom                                                            |
 
-**What it looks like.** Up to 372 wide (`width: 100%`), radius 16, a 1px hairline
+**What it looks like.** The chrome every listing action card shares (the rental,
+sale and swap cards in [Listing actions](/docs/bloom/main/listing-actions) draw
+the same shell). Up to 372 wide (`width: 100%`), radius 16, a 1px hairline
 (neutral-200, dark neutral-700), `shadow-m`, padding 24 on the card surface. The
 box is radius 12 with a 1px neutral-300 (dark neutral-600) border and dividers;
 each cell is a `caption-2-bold` uppercase label over a `body-regular` value. A
@@ -154,7 +157,9 @@ are documented with it, in [StaySearch](/docs/bloom/main/stay-search).
 />
 ```
 
-A 1px top hairline, the page background, padding 12 above and 24 at the sides,
+`BookingBar` is [`ActionBar`](/docs/bloom/main/listing-actions) with the stay
+wording (`dates` as its subtitle, "Reserve" as its button); use `ActionBar` for a
+rental, a sale or a swap. A 1px top hairline, the page background, padding 12 above and 24 at the sides,
 and **12 plus the bottom safe-area inset** below — read from
 `react-native-safe-area-context`'s context when a provider is mounted, 0 when
 not; `bottomInset` overrides it. The dates are underlined `body-2-medium`, a

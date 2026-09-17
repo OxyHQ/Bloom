@@ -1,0 +1,286 @@
+---
+title: Listing actions
+description: The "act on this listing" cards for every housing offering — rent, buy, swap — plus a viewing scheduler, a mortgage calculator, a rental application checklist and the phone action bar.
+order: 114
+---
+
+# Listing actions
+
+The card beside a listing is where someone acts on it. A stay books
+(`BookingCard`, in [Booking](/docs/bloom/main/booking)); the rest live here, and
+all of them draw the **same card chrome** as `BookingCard`:
+
+| component              | what it is                                                                                  |
+| ---------------------- | ------------------------------------------------------------------------------------------- |
+| `RentalActionCard`     | long-term rent: monthly price, bills note, key facts, Request a viewing + Apply, status     |
+| `SaleActionCard`       | a home for sale: price, price per m², mortgage teaser, Contact agent + Request a visit      |
+| `ExchangeProposalCard` | a home swap: your home and theirs, dates, guests, swap mode, Propose a swap                 |
+| `ViewingScheduler`     | a day, a time, in person or video, a note, Request viewing                                  |
+| `MortgageCalculator`   | price, down payment, term and rate in; monthly payment, a principal / interest donut out    |
+| `ApplicationChecklist` | the documents a rental application needs, each with its status and action                 |
+| `ActionBar`            | the phone bar pinned under any listing; `BookingBar` is its stay preset                    |
+
+```tsx
+import {
+  ActionBar,
+  ApplicationChecklist,
+  ExchangeProposalCard,
+  MortgageCalculator,
+  RentalActionCard,
+  SaleActionCard,
+  ViewingScheduler,
+  computeMortgage,
+} from '@oxy.so/bloom/listing-actions';
+```
+
+Prices, dates and facts arrive as **pre-formatted strings** — the app owns
+currency, locale and plurals. The one exception is `MortgageCalculator`, which
+computes; see below.
+
+## The shared card
+
+Every card is up to 372 wide (`width: 100%`), radius 16, a 1px hairline
+(neutral-200, dark neutral-700), `shadow-m`, padding 24 on the card surface —
+the recipe `BookingCard` draws, from one internal shell, so a rental page and a
+stay page put the same card beside the listing. The price header is
+`title-3-semibold` with a `body-regular` unit, spoken as ONE element
+(`role="img"`): "€1,250 per month", "€362,500, originally €385,000".
+
+Buttons are full width and large: primary first, secondary 8 under it. Hover
+and press change colour only. Placing the card sticky beside a listing, or the
+bar at the bottom of the screen, is the page's job — see
+[Booking](/docs/bloom/main/booking).
+
+## RentalActionCard
+
+```tsx
+<RentalActionCard
+  price="€1,250"                      // drawn "€1,250 / month"
+  billsNote="Bills included"
+  facts={[
+    { label: 'Deposit', value: '€2,500' },
+    { label: 'Available from', value: 'Sep 1, 2026' },
+    { label: 'Minimum stay', value: '12 months' },
+    { label: 'Contract type', value: 'Long-term lease' },
+  ]}
+  status="available"                  // 'available' | 'reserved' | 'rented'
+  onRequestViewing={openScheduler}
+  onApply={openApplication}           // omit: no Apply button
+  note="Usually responds within a day"
+/>
+```
+
+| prop                                            | decides                                                                                  |
+| ----------------------------------------------- | ---------------------------------------------------------------------------------------- |
+| `price`, `originalPrice`, `priceAccessibilityLabel` | the header, as on `BookingCard`                                                      |
+| `priceUnit`, `priceUnitPrefix`                  | default `"month"` and `"/"` — "/ month"; the prefix is not spoken                        |
+| `billsNote`                                     | `body-2-regular` text-secondary under the price                                          |
+| `facts`                                         | label / value rows in a radius-12 box (neutral-300 / 600 border, 1px dividers)          |
+| `status`, `statusLabel`, `statusMessage`        | `reserved` / `rented` add a subtle `Badge` beside the price, an information tile above the buttons, disable both buttons and hide `note`. Defaults in `RENTAL_STATUS` |
+| `requestViewingLabel`, `applyLabel`, `loading`  | the buttons; `loading` spins the primary one                                             |
+| `note`, `footer`                                | the centred line under the buttons; anything at the bottom                               |
+
+## SaleActionCard
+
+```tsx
+<SaleActionCard
+  price="€385,000"
+  pricePerArea="€3,438 / m²"
+  mortgageEstimate="Est. €1,540/month"
+  onPressMortgage={() => calculator.open()}
+  facts={[{ label: 'Living area', value: '112 m²' }]}
+  status="available"                  // 'available' | 'reserved' | 'sold'
+  onContact={contactAgent}
+  onRequestVisit={requestVisit}       // omit: no secondary button
+  onMakeOffer={makeOffer}             // omit: no "Make an offer" link
+/>
+```
+
+- The mortgage teaser is a calculator glyph and an underlined `body-2-medium`
+  button (with `onPressMortgage`) — open the `MortgageCalculator` in a
+  `Dialog` or `BottomSheet`. Build its text from `computeMortgage` so the teaser
+  and the calculator agree.
+- `reserved` / `sold` badge the price, explain above the buttons (`SALE_STATUS`),
+  disable both buttons and hide "Make an offer".
+
+## ExchangeProposalCard
+
+```tsx
+const [mode, setMode] = useState<ExchangeMode>('swap');
+
+<ExchangeProposalCard
+  yourHome={{ image: mine.photoId, title: 'Stone house by the harbour', location: 'Porto Lindo', details: '3 beds · 6 guests' }}
+  theirHome={{ image: theirs.photoId, title: 'Farmhouse with an olive grove', location: 'Valle Serra', details: '2 beds · 4 guests' }}
+  dates="Jul 4 – 18"
+  onPressDates={openDates}
+  guests="4 guests"
+  onPressGuests={openGuests}
+  mode={mode}                          // 'swap' | 'host' | 'both'; omit for no chips
+  onModeChange={setMode}
+  onPropose={propose}
+/>
+```
+
+- **Homes.** Each is a caption-2-bold uppercase label ("YOUR HOME", "THEIR
+  HOME"), a 4:3 photo at radius 12 (a home glyph on a neutral tile while absent),
+  the title `body-2-medium` and location / size `caption-1-regular`. `image` is a
+  URL or an id for `ImageResolverProvider`. A 36 round swap glyph sits between
+  them on the photos' centre line.
+- **Narrow.** `layout="auto"` (default) measures the card and, below 360 wide,
+  stacks the homes as 72-square rows with the glyph turned 90°. Force it with
+  `'horizontal'` or `'vertical'`.
+- **Box.** DATES | GUESTS are `BookingCard`'s cells; empty ones show
+  `datesPlaceholder` / `guestsPlaceholder`.
+- **Mode.** `Chip`s — `swap` "Reciprocal swap", `host` "Guest points", `both`
+  "Either" (`EXCHANGE_MODE_LABELS`, override with `modeLabels`, restrict with
+  `modes`). The chosen one is `selected` (`aria-pressed`).
+
+## ViewingScheduler
+
+Fully controlled — the app owns which days and times exist, and reloads `slots`
+when the day changes.
+
+```tsx
+<ViewingScheduler
+  days={[
+    { value: '2026-09-14', weekday: 'Mon', day: '14' },
+    { value: '2026-09-16', weekday: 'Wed', day: '16', disabled: true },
+  ]}
+  day={day}
+  onDayChange={(value) => { setDay(value); setSlot(null); }}
+  slots={slotsFor(day)}                // [{ value: '10:00', label: '10:00', disabled? }]
+  slot={slot}
+  onSlotChange={setSlot}
+  mode={mode}                          // 'in-person' | 'video'; omit for no toggle
+  onModeChange={setMode}
+  note={note}
+  onNoteChange={setNote}               // omit for no note field
+  onSubmit={requestViewing}
+/>
+```
+
+- **Days** scroll horizontally: 56-wide tiles at radius 12, weekday
+  `caption-1-regular` over the date `headline-semibold`. Unavailable days are at
+  40%, struck through and not pressable.
+- **Times** are 36-tall pill chips at least 76 wide, as many columns as fit,
+  8 apart. An empty `slots` shows `emptySlotsLabel`.
+- **Selected** days and times are INVERTED: text-primary fill, surface ink.
+- **Mode** is a `SegmentedControl`; the **note** a two-row `Textarea`.
+- **Request viewing** is disabled until a day and an enabled time are chosen;
+  `submitDisabled` overrides. `maxWidth` (default 372, `null` fills the column).
+
+## MortgageCalculator
+
+```tsx
+<MortgageCalculator
+  defaultPrice={385000}
+  defaultDownPayment={77000}           // default 20% of the price
+  defaultYears={25}
+  defaultAnnualRate={3.4}              // percent
+  formatCurrency={(n) => formatEuro(n)}
+/>
+```
+
+Every input is controlled (`price` / `onPriceChange`, `downPayment`,
+`years`, `annualRate`) or uncontrolled (`default…`).
+
+- **Inputs.** Property price; down payment as an amount AND a percent, kept in
+  sync, with a `Slider` (0–100%) under them; the term as radio chips
+  (`termOptions`, default 10, 15, 20, 25, 30); the interest rate with a "%"
+  suffix. A field keeps what is typed ("3." mid-typing) and reformats on blur.
+- **Result.** The monthly payment in `title-1-semibold` (a polite live region),
+  a 136 donut of principal (chart-6) against interest (chart-2) on the chart
+  cards' polar geometry, a legend, and rows for loan amount, total interest and
+  total cost (down payment plus everything repaid).
+- **Layout.** `layout="auto"` stacks the result under the inputs and puts them
+  side by side from 640 wide; `'stacked'` / `'split'` force it. `maxWidth`
+  defaults to `null` (fills its column).
+- **Text.** `formatCurrency` formats every amount (default: rounded, grouped
+  digits, no currency); `labels` translates every label.
+
+**It is an estimate.** The default `disclaimer` says so ("An estimate, not an
+offer…"); pass your own, or `null` only where the page already says it. The
+math leaves out fees, taxes, insurance and rate changes.
+
+### computeMortgage
+
+The calculator's math, pure and exported — use it for a teaser line or a
+server-side check:
+
+```ts
+computeMortgage({ price: 250000, downPayment: 50000, years: 30, annualRate: 6 });
+// { loanAmount: 200000, payments: 360, monthlyPayment: 1199.10…,
+//   totalRepaid: 431676.38…, totalInterest: 231676.38…, totalCost: 481676.38… }
+```
+
+A fixed-rate annuity compounded monthly: `r = annualRate / 100 / 12`,
+`n = years × 12`, `monthly = loan × r / (1 − (1 + r)^−n)` (`loan / n` at 0%). The
+down payment is clamped to `0…price`; nothing is rounded.
+
+## ApplicationChecklist
+
+```tsx
+<ApplicationChecklist
+  items={[
+    { key: 'id', title: 'Proof of identity', description: 'Passport or national ID', status: 'verified' },
+    { key: 'payslips', title: 'Last three payslips', status: 'uploaded' },
+    { key: 'contract', title: 'Employment contract', status: 'missing' },
+    { key: 'bank', title: 'Bank statement', status: 'rejected', reason: 'The name is cut off.' },
+  ]}
+  onItemAction={(item) => (item.status === 'missing' || item.status === 'rejected' ? upload(item) : view(item))}
+/>
+```
+
+- **Progress.** "{done} of {total} ready" (`formatProgress`) and a 6-tall bar
+  (accent-500 on neutral-200 / 700) counting uploaded and verified items.
+- **Rows.** A 20 status glyph — missing neutral, in review accent, verified
+  success, rejected error — the title `body-medium` with a subtle status `Badge`,
+  the description `body-2-regular` text-secondary, or the rejection `reason` in
+  the error colour.
+- **Action.** A small button on the right: Upload / Replace (primary) while
+  missing or rejected, View (secondary) otherwise (`APPLICATION_ITEM_STATUS`).
+  `actionLabel` renames it, `null` removes it; `onAction` per item overrides
+  `onItemAction`. Default `maxWidth` 560.
+
+## ActionBar
+
+```tsx
+<ActionBar
+  price="€385,000"
+  subtitle="Est. €1,540/month"
+  onPressSubtitle={openCalculator}
+  primaryLabel="Contact agent"
+  onPrimary={contactAgent}
+  secondaryIcon={RiHeart3Line}
+  secondaryLabel="Save"                // the icon button's name — required with an icon
+  onSecondary={save}
+/>
+```
+
+The phone bar under any listing: a 1px top hairline, the page background,
+padding 12 above and 24 at the sides, 12 plus the bottom safe-area inset below
+(`bottomInset` overrides). The price is `headline-semibold`; `subtitle` is
+`body-2-medium`, underlined and a button with `onPressSubtitle`. An optional
+large icon-only secondary button sits before the primary one.
+`BookingBar` is this bar with `dates` → `subtitle` and "Reserve".
+
+## Accessibility
+
+- **Prices** read as one `role="img"` element with a spoken name — "per month",
+  "originally …" — because a strikethrough and a "/" are not announced.
+- **Disabled** actions carry the disabled state; the status tile says why.
+- **Homes** are one named group each ("Your home, Stone house by the harbour,
+  Porto Lindo, 3 beds · 6 guests"); the swap glyph is hidden.
+- **Scheduler** days, times and calculator terms are `radio`s in named
+  `radiogroup`s with `aria-checked` and `aria-disabled` (and
+  `accessibilityState` on native). Mode chips are toggle buttons (`aria-pressed`).
+- **Calculator** fields are named by their labels; the slider is named
+  "Down payment percent" with `aria-value*`; the donut is `role="img"` named by
+  its two amounts; the monthly payment is a polite live region.
+- **Checklist** progress is a `progressbar` with `aria-valuenow` / `-max` /
+  `-text`; each action is named with its item ("Upload Employment contract").
+- Every custom pressable shows a 2px accent ring under keyboard focus on web.
+
+**Dark mode note.** `TextField` and `Textarea` fill with neutral-800 in dark
+mode, the same tone as the card surface, so the calculator's and scheduler's
+fields read by their labels and focus ring there rather than by a filled shell.

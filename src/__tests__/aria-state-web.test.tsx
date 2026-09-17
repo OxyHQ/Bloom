@@ -70,6 +70,7 @@ import { RatingBar } from '../rating';
 import { AmenityFilter, CountFilter, ToggleChipGroup } from '../stay-filters';
 import { DestinationSuggestions, StaySearchBar, StaySearchStep } from '../stay-search';
 import { BookingCard } from '../booking';
+import { ApplicationChecklist, ViewingScheduler } from '../listing-actions';
 import { FavoriteButton } from '../listing-card';
 import { CategoryBar } from '../category-bar';
 import { MapPriceMarker, MapSearchAreaButton } from '../map-marker';
@@ -915,6 +916,45 @@ describe('RatingBar', () => {
     expect(el.getAttribute('aria-valuenow')).toBe('4.9');
     expect(el.getAttribute('aria-valuemin')).toBe('0');
     expect(el.getAttribute('aria-valuemax')).toBe('5');
+  });
+});
+
+describe('Listing actions', () => {
+  it('ViewingScheduler: named radiogroups whose day and time chips spell aria-checked / aria-disabled', () => {
+    const c = mount(
+      <ViewingScheduler
+        days={[
+          { value: 'mon', weekday: 'Mon', day: '14' },
+          { value: 'tue', weekday: 'Tue', day: '15', disabled: true },
+        ]}
+        day="mon"
+        slots={[{ value: '10:00', label: '10:00' }]}
+        slot={null}
+        testID="vs"
+      />,
+    );
+    expect(allByRole(c, 'radiogroup').map((g) => g.getAttribute('aria-label'))).toEqual(['Day', 'Time']);
+    expect(byTestId(c, 'vs-day-mon').getAttribute('aria-checked')).toBe('true');
+    expect(byTestId(c, 'vs-day-tue').getAttribute('aria-checked')).toBe('false');
+    expect(byTestId(c, 'vs-day-tue').getAttribute('aria-disabled')).toBe('true');
+    expect(byTestId(c, 'vs-slot-10:00').getAttribute('aria-checked')).toBe('false');
+    expect(byTestId(c, 'vs-slot-10:00').getAttribute('aria-label')).toBe('10:00');
+  });
+
+  it('ApplicationChecklist: a named progressbar with aria-value*', () => {
+    const c = mount(
+      <ApplicationChecklist
+        items={[
+          { key: 'a', title: 'ID', status: 'verified' },
+          { key: 'b', title: 'Payslips', status: 'missing' },
+        ]}
+      />,
+    );
+    const el = byRole(c, 'progressbar');
+    expect(el.getAttribute('aria-label')).toBe('Your application');
+    expect(el.getAttribute('aria-valuenow')).toBe('1');
+    expect(el.getAttribute('aria-valuemin')).toBe('0');
+    expect(el.getAttribute('aria-valuemax')).toBe('2');
   });
 });
 

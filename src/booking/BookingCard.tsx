@@ -1,39 +1,19 @@
 import React, { memo, useCallback, useEffect, useMemo, useState } from 'react';
-import {
-  Pressable,
-  View,
-  type GestureResponderEvent,
-  type LayoutChangeEvent,
-  type StyleProp,
-  type ViewStyle,
-} from 'react-native';
+import { View, type LayoutChangeEvent } from 'react-native';
 
 import { Button } from '../button';
-import { webDataSet } from '../checkbox/shared';
-import { bloomShadowStyle } from '../design-tokens/shadows';
 import { useControllableState } from '../hooks/use-controllable-state';
-import { useInteractionState } from '../hooks/use-interaction-state';
 import { RiArrowDownSLine } from '../icons/remix/RiArrowDownSLine';
 import { RiArrowUpSLine } from '../icons/remix/RiArrowUpSLine';
 import { Popover, PopoverContent, PopoverTrigger } from '../popover';
 import { Rating } from '../rating';
 import { adoptStyleSheet } from '../styles/adopt-style-sheet';
-import type { WebCssStyle } from '../styles/web-view-style';
 import { useTheme } from '../theme/use-theme';
-import { Text } from '../typography';
-import { BookingPrice } from './BookingPrice';
 import { GuestPickerCloseProvider } from '../stay-search/context';
+import { ActionCardHeader, ActionCardNote, ActionCardShell } from './ActionCard';
+import { BookingFieldCell } from './BookingFieldCell';
 import { PriceBreakdown } from './PriceBreakdown';
-import {
-  BOOKING_CARD_MAX_WIDTH,
-  BOOKING_CARD_PADDING,
-  BOOKING_CARD_RADIUS,
-  BOOKING_FIELD_RADIUS,
-  BOOKING_STYLE_ID,
-  BOOKING_WEB_CSS,
-  resolveBookingPalette,
-  type BookingPalette,
-} from './shared';
+import { BOOKING_FIELD_RADIUS, BOOKING_STYLE_ID, BOOKING_WEB_CSS, resolveBookingPalette } from './shared';
 import type { BookingCardProps, BookingFieldKey } from './types';
 
 /**
@@ -55,114 +35,11 @@ import type { BookingCardProps, BookingFieldKey } from './types';
  * Sticky beside a listing is the page's job: the card is a plain block.
  */
 
-type FieldHandleProps = Record<string, unknown>;
-
-interface BookingFieldCellProps extends FieldHandleProps {
-  label: string;
-  value?: string;
-  placeholder: string;
-  active: boolean;
-  /** Only set when the card knows whether this field's picker is open. */
-  expanded?: boolean;
-  trailing?: React.ReactNode;
-  palette: BookingPalette;
-  onPress?: (event: GestureResponderEvent) => void;
-  style?: StyleProp<ViewStyle>;
-  testID?: string;
-}
-
-function BookingFieldCell({
-  label,
-  value,
-  placeholder,
-  active,
-  expanded,
-  trailing,
-  palette,
-  onPress,
-  style,
-  testID,
-  ...handle
-}: BookingFieldCellProps) {
-  const { state: hovered, onIn: onHoverIn, onOut: onHoverOut } = useInteractionState();
-  const { state: pressed, onIn: onPressIn, onOut: onPressOut } = useInteractionState();
-  const shown = value && value.length > 0 ? value : placeholder;
-
-  const cellStyle: WebCssStyle = {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-    paddingTop: 10,
-    paddingBottom: 10,
-    paddingLeft: 12,
-    paddingRight: 12,
-    borderRadius: BOOKING_FIELD_RADIUS,
-    backgroundColor: !active && (hovered || pressed) ? palette.highlight : 'transparent',
-    '--bloom-booking-ring': palette.ring,
-    '--bloom-booking-ring-offset': '-2px',
-  };
-
-  return (
-    <Pressable
-      // First, so the cell's own name wins over the `undefined` a
-      // `PopoverTrigger` hands an `asChild` child that carries none — spread
-      // last, that explicit `undefined` erased the name (measured in Chrome).
-      // The trigger's `aria-expanded` / `aria-haspopup` still come through.
-      {...handle}
-      {...webDataSet({ bloomBookingFocus: '' })}
-      accessibilityRole="button"
-      accessibilityLabel={`${label}: ${shown}`}
-      accessibilityState={expanded === undefined ? undefined : { expanded }}
-      aria-expanded={expanded ?? (handle['aria-expanded'] as boolean | undefined)}
-      onPress={onPress}
-      onHoverIn={onHoverIn}
-      onHoverOut={onHoverOut}
-      onPressIn={onPressIn}
-      onPressOut={onPressOut}
-      testID={testID}
-      style={[cellStyle, style]}
-    >
-      <View style={{ flex: 1, minWidth: 0, gap: 2 }}>
-        <Text
-          variant="caption-2-bold"
-          numberOfLines={1}
-          style={{ color: palette.text, textTransform: 'uppercase' }}
-        >
-          {label}
-        </Text>
-        <Text
-          variant="body-regular"
-          numberOfLines={1}
-          style={{ color: value ? palette.text : palette.textSecondary }}
-        >
-          {shown}
-        </Text>
-      </View>
-      {trailing}
-      {active ? (
-        <View
-          pointerEvents="none"
-          testID={testID ? `${testID}-active` : undefined}
-          style={{
-            position: 'absolute',
-            top: 0,
-            left: 0,
-            right: 0,
-            bottom: 0,
-            borderWidth: 2,
-            borderColor: palette.active,
-            borderRadius: BOOKING_FIELD_RADIUS,
-          }}
-        />
-      ) : null}
-    </Pressable>
-  );
-}
-
 function BookingCardComponent({
   price,
   originalPrice,
   priceUnit,
+  priceUnitPrefix,
   priceAccessibilityLabel,
   rating,
   reviewCount,
@@ -231,37 +108,21 @@ function BookingCardComponent({
     />
   );
 
-  const cardStyle: ViewStyle = {
-    width: '100%',
-    maxWidth: BOOKING_CARD_MAX_WIDTH,
-    paddingTop: BOOKING_CARD_PADDING,
-    paddingBottom: BOOKING_CARD_PADDING,
-    paddingLeft: BOOKING_CARD_PADDING,
-    paddingRight: BOOKING_CARD_PADDING,
-    borderRadius: BOOKING_CARD_RADIUS,
-    borderWidth: 1,
-    borderColor: palette.border,
-    backgroundColor: palette.surface,
-    ...bloomShadowStyle('m'),
-  };
-
   return (
-    <View testID={testID} style={[cardStyle, style]}>
-      <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
-        <BookingPrice
-          price={price}
-          originalPrice={originalPrice}
-          priceUnit={priceUnit}
-          priceAccessibilityLabel={priceAccessibilityLabel}
-          priceVariant="title-3-semibold"
-          unitVariant="body-regular"
-          style={{ flex: 1, minWidth: 0 }}
-          testID={id('price')}
-        />
-        {rating !== undefined ? (
-          <Rating value={rating} count={reviewCount} countStyle="reviews" size="small" />
-        ) : null}
-      </View>
+    <ActionCardShell testID={testID} style={style}>
+      <ActionCardHeader
+        price={price}
+        originalPrice={originalPrice}
+        priceUnit={priceUnit}
+        priceUnitPrefix={priceUnitPrefix}
+        priceAccessibilityLabel={priceAccessibilityLabel}
+        testID={id('price')}
+        trailing={
+          rating !== undefined ? (
+            <Rating value={rating} count={reviewCount} countStyle="reviews" size="small" />
+          ) : null
+        }
+      />
 
       <View
         onLayout={onBoxLayout}
@@ -331,23 +192,12 @@ function BookingCardComponent({
         {buttonLabel}
       </Button>
 
-      {shownNote != null ? (
-        typeof shownNote === 'string' ? (
-          <Text
-            variant="body-2-regular"
-            style={{ marginTop: 12, color: palette.textSecondary, textAlign: 'center' }}
-          >
-            {shownNote}
-          </Text>
-        ) : (
-          <View style={{ marginTop: 12, alignItems: 'center' }}>{shownNote}</View>
-        )
-      ) : null}
+      {shownNote != null ? <ActionCardNote style={{ marginTop: 12 }}>{shownNote}</ActionCardNote> : null}
 
       {breakdown ? <PriceBreakdown {...breakdown} style={[{ marginTop: 24 }, breakdown.style]} /> : null}
 
       {footer != null ? <View style={{ marginTop: 24, alignItems: 'center' }}>{footer}</View> : null}
-    </View>
+    </ActionCardShell>
   );
 }
 
