@@ -1,0 +1,277 @@
+---
+title: Chat People
+description: Contacts with an A–Z rail, picked-people chips, group creation, member roles, channel posts and the story viewer.
+order: 65
+---
+
+# Chat People
+
+```tsx
+import {
+  ContactRow,
+  ContactList,
+  SelectedChipsRow,
+  NewGroupForm,
+  MemberRow,
+  MemberList,
+  ChannelPostCard,
+  StoryViewer,
+  StoryProgressBars,
+} from '@oxy.so/bloom/chat-people';
+```
+
+The surfaces a messaging app has BESIDE the conversation: who you can talk to,
+who is in a group, what a channel broadcast looks like, and the story viewer.
+
+**Every time here is a pre-formatted string** — `"last seen recently"`,
+`"12:41"`, `"2 h"`. Your app owns the locale, the timezone and what "recently"
+means; a component that reads the clock is wrong for every user who is not in
+the timezone the data came from.
+
+## `ContactRow`
+
+```tsx
+<ContactRow id="ana" name="Ana Restrepo" subtitle="online" status="online" onPress={open} />
+<ContactRow id="ana" name="Ana Restrepo" selected={picked} onSelectedChange={pick} />
+<ContactRow id="ana" name="Ana Restrepo" actionLabel="Invite" onAction={invite} />
+```
+
+The trailing affordance is DERIVED from the handlers by default — a checkbox
+with `onSelectedChange`, an action button with `onAction`, nothing otherwise.
+`trailing` (`'none' | 'chevron' | 'checkbox' | 'action'`) overrides it, and
+`trailingSlot` replaces it with your own node.
+
+| prop                    | decides                                                 |
+| ----------------------- | -------------------------------------------------------- |
+| `status`                | the presence dot on the avatar (`chat-indicators`)        |
+| `subtitle`              | the quiet second line — a handle, a last-seen string      |
+| `actionDone`            | swaps the button for a quiet "Added" mark                 |
+| `size`                  | `'medium'` 44px avatar (default), `'small'` 36 for a picker |
+
+### Selection is ONE target
+
+When the row is a checkbox row, the **row itself** carries `role="checkbox"` and
+`aria-checked`, and the mark inside it is drawn, not a Bloom `Checkbox`. Nesting
+one would put a second `role="checkbox"` inside the first — two hit areas that
+disagree about which the user meant, and a screen reader announcing the same
+control twice. The mark is a circle, not a square, so it is not mistaken for the
+settings checkbox it is not.
+
+## `ContactList`
+
+```tsx
+<ContactList
+  sections={[{ letter: 'A', contacts: [...] }, { letter: 'K', contacts: [...] }]}
+  activeLetter="A"
+  height={480}
+  onContactPress={open}
+  onJumpToLetter={(letter) => track(letter)}
+/>
+```
+
+Section headings PIN while their own rows scroll under them, through
+`stickyHeaderIndices` — react-native-web implements the same prop the native
+`ScrollView` does, so one spelling works on both platforms. `position: sticky`
+would pin on web and do nothing at all on native, which is the shape of bug
+nothing in jest can see.
+
+The rail down the right edge scrolls the list itself when it can (it measures
+each section with `onLayout`) and always reports the letter through
+`onJumpToLetter`, so an app driving a virtualised list gets what it needs. **A
+letter with no section does nothing** — a rail showing the whole alphabet over
+six sections must not jump to whatever happens to be nearest. It appears
+automatically for 2+ sections; `showIndex` forces it either way.
+
+`indexLetters` replaces the rail's contents; `CONTACT_ALPHABET` is A–Z plus `#`,
+with `#` LAST — it is the least-used target and the bottom of the rail is where
+the thumb naturally lands.
+
+Empty sections are dropped from the list and from the rail.
+
+## `SelectedChipsRow`
+
+```tsx
+<SelectedChipsRow people={picked} onRemove={unpick} />
+<SelectedChipsRow people={picked} layout="wrap" onRemove={unpick} />
+```
+
+`layout="scroll"` (the default) is one row that scrolls sideways: a picker whose
+chip row grows downwards pushes the field and the list it is filtering off the
+screen as you type. `layout="wrap"` is for a sheet with the room.
+
+The × is its own button named "Remove Ana Restrepo". The chip is not pressable —
+there is nothing else it could do, and a chip that removes on any press removes
+people who were only being read.
+
+## `NewGroupForm`
+
+```tsx
+<NewGroupForm
+  name={name}
+  onNameChange={setName}
+  nameMaxLength={64}
+  description={about}
+  onDescriptionChange={setAbout}
+  onPickPhoto={pickPhoto}
+  members={picked}
+  onRemoveMember={unpick}
+  onAddMembers={openPicker}
+/>
+```
+
+**The counter and the limit are one number.** `nameMaxLength` is both the
+denominator drawn under the field and the input's own `maxLength`; setting them
+from two constants is how a counter ends up saying 64 while the field stops at
+50, and nothing catches it, because both halves look right on their own.
+
+The counter goes amber at 90%, not at 100%: the input has already stopped
+accepting characters by then, so a warning that arrives at the limit is telling
+the user about something that has already happened. `nameCounterTone(length,
+max)` is exported.
+
+## `MemberRow` and `MemberList`
+
+```tsx
+<MemberList
+  members={members}                 // { id, name, role?: 'owner' | 'admin' | 'member', subtitle? }
+  title="412 members"
+  search={query}
+  onSearchChange={setQuery}
+  onAddMembers={openPicker}
+  onPromote={promote}
+  onRestrict={restrict}
+  onRemove={remove}
+/>
+```
+
+**The badge is a word, not a colour.** `owner` is amber and `admin` is the
+accent, but each also carries a glyph and its own text — a role told apart by
+hue alone is a role one reader in twelve cannot read at all, and "who can remove
+me from this group" is not a detail to encode in a tint. `roleLabel` overrides
+the text ("Creator").
+
+The per-member menu appears only when at least one of `onPromote` / `onRestrict`
+/ `onRemove` is given, and lists only the actions that exist. `trailingSlot`
+replaces it with your own.
+
+**The search field filters nothing.** Which members match "an" depends on how
+you normalise accents, whether you search handles and phone numbers, and whether
+the list is paged from a server — none of which a component can guess, and all
+of which it would get wrong silently. Pass the filtered `members`; `emptyState`
+covers the search that found nobody.
+
+## `ChannelPostCard`
+
+```tsx
+<ChannelPostCard
+  channelName="Coast Weather Watch"
+  channelAvatar={avatarUrl}
+  verified
+  pinned
+  time="12:41"
+  media={<Image source={{ uri }} style={{ width: '100%', height: 180 }} />}
+  views="12.4K"
+  forwards="318"
+  comments="128 comments"
+  onComments={openComments}
+  onShare={share}
+  reactions={<ReactionChips />}
+>
+  Swell picks up after midnight along the whole north shore.
+</ChannelPostCard>
+```
+
+**Counts are strings.** "12.4K" is a locale decision and an abbreviation policy
+your feed already made; a card that formats numbers itself would disagree with
+the list it sits in, in the one place a reader compares them side by side.
+
+The eye and forward glyphs are decorative — the counts beside them are text, so
+the glyph would announce a second time. The names for both pairs live in
+`labels`, on the row that holds each pair.
+
+The footer buttons sit OUTSIDE the card's own press target, so opening a post
+and opening its comments are two targets rather than a race.
+
+## `StoryViewer`
+
+```tsx
+const [index, setIndex] = useState(0);
+
+<StoryViewer
+  stories={stories}                        // { id, media?, duration? }
+  index={index}
+  onNext={() => setIndex((i) => i + 1)}
+  onPrevious={() => setIndex((i) => Math.max(0, i - 1))}
+  onClose={close}
+  paused={held}
+  name="Saoirse Byrne"
+  avatar={avatarUrl}
+  time="2 h"
+  muted={muted}
+  onMutedChange={setMuted}
+  replyValue={reply}
+  onReplyChange={setReply}
+  onReplySend={send}
+  reactions={['❤️', '🔥', '😂']}
+  onReact={react}
+/>
+```
+
+`index` is CONTROLLED. The viewer never advances itself: `onNext` fires from the
+forward tap zone and from the progress strip running out, and you decide whether
+that means the next story, the next person, or closing.
+
+### The tap zones are not symmetric
+
+Forward is what a reader means nine times out of ten and must not require aim,
+so it gets two thirds of the width; back is a correction and gets one.
+`storyTapZone(x, width)` is exported for a surface measuring the gesture itself.
+Both zones are real `button`s with names, because a tap zone that is only a
+gesture is a story set a keyboard user cannot get through.
+
+### Hold-to-pause is yours
+
+A long press has to compete with whatever scrolling, swiping and dismissing the
+surface around the viewer does, and a component that claims it in isolation
+fights its own host. Bind the gesture and pass `paused`:
+
+```tsx
+<Pressable onLongPress={() => setHeld(true)} onPressOut={() => setHeld(false)}>
+  <StoryViewer paused={held} … />
+</Pressable>
+```
+
+## `StoryProgressBars`
+
+Exported on its own, for a viewer you are building yourself:
+
+```tsx
+<StoryProgressBars count={5} index={1} duration={5000} paused={held} onComplete={next} />
+<StoryProgressBars count={5} index={1} progress={0.4} />   // controlled
+```
+
+Everything before the current bar is full, everything after it is empty, and
+only the current one moves — `storyProgressFill(bar, index, progress)`, a pure
+function of three numbers, exported and tested as one. Writing that per-segment
+inside the map is how a viewer ends up drawing an empty bar for a story the user
+has already watched: a segment knows its own position and nothing about the
+sequence.
+
+Two modes, and the difference is who owns the clock. Pass `progress` and the
+strip draws what it is told and runs no timer (use this when a video already
+drives playback). Omit it and the strip animates 0→1 over `duration` and calls
+`onComplete`; `paused` freezes it where it is.
+
+**Reduced motion stops the ANIMATION, not the story.** The bar jumps to full and
+the `onComplete` timer still runs, so a story set still advances — a viewer that
+stops advancing under reduced motion strands the reader on story one with
+nothing to say anything was meant to happen.
+
+## What jest cannot see here
+
+`src/__tests__/ChatPeople.test.tsx` reads the emitted DOM through the real
+react-native-web, so it pins the checkbox row's role and state, the rail's names
+and its refusal to jump to an absent letter, the role badges, and both pure
+functions. It cannot see whether the sticky headings actually stick, whether the
+rail is reachable with a thumb, or whether the story chrome stays legible over a
+bright photo. Those are browser and device checks.
