@@ -149,7 +149,7 @@ The phone's floating bar above the tab bar. Press it to open the full player.
 
 ### The artwork tint and its contrast fallback
 
-`artworkColor` is a hex from the backend — never sampled from the image. `resolveArtworkTint(color, text, textMuted)` darkens it in 5% steps until BOTH the dark theme's text and muted text clear **4.5:1**, stopping at the first step that holds (a dark colour is used as given; `#F4E3A1` comes out as a deep olive). The bar's content then renders under the dark theme, so it reads light-on-colour in a light app too.
+`artworkColor` is a hex from the backend — never sampled from the image. `resolveArtworkTint(color, text, textMuted)` darkens it in 5% steps until BOTH the dark theme's text and muted text clear **4.5:1**, stopping at the first step that holds (a dark colour is used as given; `#F4E3A1` comes out as a deep olive). The walk itself is `darkenUntilContrast` from [`@oxy.so/bloom/styles`](/docs/bloom/main/styles), shared with the lyrics pane, the generated covers and the browse tiles. The bar's content then renders under the dark theme, so it reads light-on-colour in a light app too.
 
 No colour, or one that does not parse, falls back to the floating-surface recipe under the app's own theme: the card with a neutral-200 hairline (dark: neutral-800 with neutral-700).
 

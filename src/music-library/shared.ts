@@ -12,7 +12,12 @@ import type {
   LibraryPanelLabels,
   LibrarySort,
 } from './types';
-import { contrastRatio, relativeLuminance } from '../styles/color-contrast';
+import {
+  AA_TEXT_CONTRAST,
+  contrastRatio,
+  darkenUntilContrast,
+  relativeLuminance,
+} from '../styles/color-contrast';
 
 export const IS_WEB = Platform.OS === 'web';
 
@@ -178,7 +183,7 @@ export const TILE_LIGHT_TEXT = '#ffffff';
 export const TILE_DARK_TEXT = '#141414';
 
 /**
- * A browse tile's fill and title colour, always at least 4.5:1.
+ * A browse tile's fill and title colour, always at least AA.
  *
  * White when it clears 4.5:1 on the colour; otherwise near-black when THAT
  * does. A mid-grey clears neither (`#777777` is 4.48 against white), so the
@@ -191,13 +196,11 @@ export function browseTilePaint(
   fallback: { background: string; text: string },
 ): { background: string; text: string } {
   if (relativeLuminance(color) === null) return fallback;
-  if (contrastRatio(color, TILE_LIGHT_TEXT) >= 4.5) return { background: color, text: TILE_LIGHT_TEXT };
-  if (contrastRatio(color, TILE_DARK_TEXT) >= 4.5) return { background: color, text: TILE_DARK_TEXT };
-  for (let alpha = 0.05; alpha <= 1; alpha += 0.05) {
-    const darker = mixColor(color, '#000000', alpha);
-    if (contrastRatio(darker, TILE_LIGHT_TEXT) >= 4.5) return { background: darker, text: TILE_LIGHT_TEXT };
+  for (const text of [TILE_LIGHT_TEXT, TILE_DARK_TEXT]) {
+    if (contrastRatio(color, text) >= AA_TEXT_CONTRAST) return { background: color, text };
   }
-  return { background: '#000000', text: TILE_LIGHT_TEXT };
+  const darker = darkenUntilContrast(color, TILE_LIGHT_TEXT, AA_TEXT_CONTRAST);
+  return { background: darker?.color ?? '#000000', text: TILE_LIGHT_TEXT };
 }
 
 // ---------------------------------------------------------------------------

@@ -25,3 +25,93 @@ export function contrastRatio(a: string, b: string): number {
   const [hi, lo] = la > lb ? [la, lb] : [lb, la];
   return (hi + 0.05) / (lo + 0.05);
 }
+
+// ---------------------------------------------------------------------------
+//  The bars
+//
+//  Four families had each named 4.5 for themselves (`COVER_TEXT_CONTRAST`,
+//  `IMMERSIVE_TEXT_TARGET`, `LYRICS_UPCOMING_CONTRAST`, `MIN_TEXT_CONTRAST`),
+//  which made "do these two surfaces hold text to the same bar?" a question you
+//  had to answer by reading five files.
+// ---------------------------------------------------------------------------
+
+/** WCAG AA for body text. The bar every label on a computed surface is held to. */
+export const AA_TEXT_CONTRAST = 4.5;
+
+/** WCAG AA for LARGE text — 24px and up, or 19px bold. */
+export const AA_LARGE_TEXT_CONTRAST = 3;
+
+/** WCAG AAA for body text. What a surface holds its most important line to. */
+export const AAA_TEXT_CONTRAST = 7;
+
+/**
+ * Of `candidates`, the colour whose WORST contrast over every surface in `over`
+ * is highest — text laid over a gradient has to read at both ends, and text on
+ * a computed tint has to read on whatever the tint turned out to be.
+ *
+ * Returns the first candidate when none is better than another, so the caller's
+ * order is its preference order.
+ */
+export function readableOn(over: string | readonly string[], candidates: readonly string[]): string {
+  const surfaces = typeof over === 'string' ? [over] : over;
+  let best = candidates[0]!;
+  let bestScore = -1;
+  for (const candidate of candidates) {
+    const score = Math.min(...surfaces.map((surface) => contrastRatio(candidate, surface)));
+    if (score > bestScore) {
+      best = candidate;
+      bestScore = score;
+    }
+  }
+  return best;
+}
+
+/**
+ * `color` pulled toward black by `amount` (0..1), as `#rrggbb`; `null` if it
+ * does not parse.
+ *
+ * Scaling every channel by the same factor keeps their RATIO, so the hue and
+ * the saturation survive — this is why a darkened teal is still teal. It is
+ * exactly `mixColor(color, '#000000', amount)`, which is how two of the copies
+ * spelled it.
+ */
+export function darken(color: string, amount: number): string | null {
+  const c = parseRgba(color);
+  if (!c) return null;
+  const k = 1 - amount;
+  const hex = (v: number) =>
+    Math.round(Math.max(0, Math.min(255, v * k)))
+      .toString(16)
+      .padStart(2, '0');
+  return `#${hex(c.r)}${hex(c.g)}${hex(c.b)}`;
+}
+
+/**
+ * The lightest shade of `color` on which EVERY colour in `foreground` clears
+ * `ratio`: the colour itself when it already does, else pulled toward black in
+ * `1 / steps` increments until it does.
+ *
+ * `null` when `color` does not parse — the caller falls back to its own
+ * neutral surface rather than being handed a colour it did not ask for. Black
+ * clears any light foreground, so the walk always ends somewhere.
+ *
+ * **Darken the COLOUR, never walk its ramp.** A generated ramp re-derives every
+ * stop's lightness and chroma from the hue, so a near-black input comes back
+ * ten times lighter than it went in and a vivid one has a channel zeroed. This
+ * keeps what it was handed and only removes light from it.
+ */
+export function darkenUntilContrast(
+  color: string,
+  foreground: string | readonly string[],
+  ratio: number = AA_TEXT_CONTRAST,
+  steps = 20,
+): { color: string; amount: number } | null {
+  if (!parseRgba(color)) return null;
+  const fgs = typeof foreground === 'string' ? [foreground] : foreground;
+  for (let step = 0; step <= steps; step++) {
+    const amount = step / steps;
+    const shade = darken(color, amount) as string;
+    if (fgs.every((fg) => contrastRatio(shade, fg) >= ratio)) return { color: shade, amount };
+  }
+  return { color: '#000000', amount: 1 };
+}

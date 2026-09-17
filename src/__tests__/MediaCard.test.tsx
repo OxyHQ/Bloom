@@ -36,13 +36,14 @@ import { episodeProgressState } from '../media-card/EpisodeCard';
 import { playlistCoverKind } from '../media-card/PlaylistCard';
 import {
   contrastRatio,
-  COVER_TEXT_CONTRAST,
   MEDIA_CARD_CSS,
   resolveCoverTint,
   resolveMediaCardPaint,
   resolvePlayVisibility,
 } from '../media-card/shared';
 import { ImageResolverProvider } from '../image-resolver/context';
+import { AA_TEXT_CONTRAST } from '../styles/color-contrast';
+import { parseRgba } from '../theme/color-utils';
 
 (globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
 
@@ -128,8 +129,8 @@ describe('resolveCoverTint', () => {
       mount(<></>, mode);
       for (const color of ['#7c3aed', '#e0a800', '#f5e9a8', '#bae6fd', '#0e7490', '#ffffff', '#000000']) {
         const tint = resolveCoverTint(theme, color);
-        expect(contrastRatio(tint.top, tint.text)).toBeGreaterThanOrEqual(COVER_TEXT_CONTRAST);
-        expect(contrastRatio(tint.bottom, tint.text)).toBeGreaterThanOrEqual(COVER_TEXT_CONTRAST);
+        expect(contrastRatio(tint.top, tint.text)).toBeGreaterThanOrEqual(AA_TEXT_CONTRAST);
+        expect(contrastRatio(tint.bottom, tint.text)).toBeGreaterThanOrEqual(AA_TEXT_CONTRAST);
       }
     }
   });
@@ -138,13 +139,33 @@ describe('resolveCoverTint', () => {
     mount(<></>);
     const neutral = resolveCoverTint(theme);
     expect(resolveCoverTint(theme, 'not-a-colour')).toEqual(neutral);
-    expect(contrastRatio(neutral.top, neutral.text)).toBeGreaterThanOrEqual(COVER_TEXT_CONTRAST);
+    expect(contrastRatio(neutral.top, neutral.text)).toBeGreaterThanOrEqual(AA_TEXT_CONTRAST);
   });
 
-  it('keeps a colour that already clears the bar at its own 500 stop', () => {
+  it('keeps a colour that already clears the bar exactly as it was given', () => {
     mount(<></>);
     const tint = resolveCoverTint(theme, '#7c3aed');
     expect(normalise(tint.top)).toBe(normalise('#7c3aed'));
+  });
+
+  /**
+   * The tint DARKENS the colour instead of walking its generated ramp. A ramp
+   * re-derives each stop from the hue, so a near-black artwork colour came back
+   * a mid-slate — ten times lighter than it went in.
+   */
+  it('leaves a near-black colour alone instead of lightening it', () => {
+    mount(<></>);
+    const tint = resolveCoverTint(theme, '#101820');
+    expect(normalise(tint.top)).toBe(normalise('#101820'));
+  });
+
+  it('keeps the hue of a vivid colour it has to darken', () => {
+    mount(<></>);
+    const tint = resolveCoverTint(theme, '#1db98a');
+    const rgb = parseRgba(tint.top)!;
+    // Scaling keeps the channels' ratio: green stays the largest, red the smallest.
+    expect(rgb.g).toBeGreaterThan(rgb.b);
+    expect(rgb.b).toBeGreaterThan(rgb.r);
   });
 });
 

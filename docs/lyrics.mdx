@@ -91,11 +91,13 @@ A card with a 16 radius and 20 padding, lines in title-3 (18/26). Unsynced text 
 
 `resolveLyricsPalette(theme, artworkColor)`:
 
-- **With an artwork colour**, the background is the first stop of that colour's ramp — from 800 in light mode, 900 in dark — under which white keeps **7:1**, and the text is white. The ramp's 950 stop always clears it, so a pale colour (a cream, a yellow) simply lands deeper rather than flipping to dark text.
+- **With an artwork colour**, the background is that colour pulled toward black only as far as it takes for white to keep **7:1** on it, and the text is white. Black clears any light foreground, so a pale colour (a cream, a yellow) simply lands deeper rather than flipping to dark text. It is the same in both modes — the artwork is.
+
+  It DARKENS the colour rather than walking its generated ramp, which it used to do. A ramp re-derives every stop's lightness and chroma from the hue, so a near-black `#101820` came back as a mid-slate ten times lighter than it went in, and a vivid `#1db98a` lost its red channel entirely. Scaling every channel by the same factor keeps their ratio, so a darkened teal is still teal. The trade: the pane no longer overshoots its bar, so contrast across the matrix went from a 7.84 floor to 7.00 — still AAA, and the near-black case went from 8.33 at the wrong colour to 17.89 at the right one.
 - **Without one** (or with something that does not parse), the background is the neutral surface (`neutral-100` light, `neutral-900` dark) under the theme's text colour.
 - Upcoming lines and the footer are the text colour mixed toward the background no further than **4.5:1**; past lines no further than **3:1** (they are 20px and larger). The pills are filled in the text colour with the background as their label.
 
-The test suite checks those ratios for every colour preset in both modes over a spread of artwork colours, including white, black and unparseable input.
+`src/__tests__/artwork-contrast.test.ts` checks those ratios for every colour preset in both modes over a spread of artwork colours, including white, black and unparseable input, and pins the measured floor as an EQUALITY — improving it fails as loudly as regressing it, so either way somebody looks.
 
 ## Accessibility
 

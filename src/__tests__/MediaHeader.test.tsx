@@ -40,7 +40,8 @@ import {
   StickyMediaTopBar,
   TITLE_STEPS,
 } from '../media-header';
-import { contrastRatio, MIN_TEXT_CONTRAST, pickReadable, tintArtworkColor } from '../media-header/shared';
+import { tintArtworkColor } from '../media-header/shared';
+import { AA_TEXT_CONTRAST, contrastRatio, readableOn } from '../styles/color-contrast';
 
 (globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
 
@@ -142,11 +143,11 @@ describe('resolveMediaHeaderPaint', () => {
             for (const surface of [p.bandTop, p.bandBottom]) {
               checked++;
               const ratio = contrastRatio(fg, surface);
-              if (ratio < MIN_TEXT_CONTRAST) failures.push(`${preset}/${mode}/${color}/${name}: ${ratio.toFixed(2)}`);
+              if (ratio < AA_TEXT_CONTRAST) failures.push(`${preset}/${mode}/${color}/${name}: ${ratio.toFixed(2)}`);
             }
           }
           checked++;
-          if (contrastRatio(p.onBar, p.bar) < MIN_TEXT_CONTRAST) failures.push(`${preset}/${mode}/${color}/bar`);
+          if (contrastRatio(p.onBar, p.bar) < AA_TEXT_CONTRAST) failures.push(`${preset}/${mode}/${color}/bar`);
         }
       }
     }
@@ -191,10 +192,10 @@ describe('resolveMediaHeaderPaint', () => {
   });
 
   it('picks the candidate with the best WORST contrast', () => {
-    expect(pickReadable(['#ffffff', '#eeeeee'], ['#ffffff', '#111111'])).toBe('#111111');
-    expect(pickReadable(['#101010', '#303030'], ['#111111', '#ffffff'])).toBe('#ffffff');
+    expect(readableOn(['#ffffff', '#eeeeee'], ['#ffffff', '#111111'])).toBe('#111111');
+    expect(readableOn(['#101010', '#303030'], ['#111111', '#ffffff'])).toBe('#ffffff');
     // A gradient from white to black: the mid-grey end decides.
-    expect(pickReadable(['#ffffff', '#555555'], ['#000000', '#ffffff'])).toBe('#000000');
+    expect(readableOn(['#ffffff', '#555555'], ['#000000', '#ffffff'])).toBe('#000000');
   });
 });
 

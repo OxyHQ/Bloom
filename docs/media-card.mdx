@@ -98,7 +98,12 @@ The name is composed from the title, the type and the lines under it — "Night 
 
 ## Generated covers keep their text legible
 
-A mix, a recap, a share card, a genre tile and a cover-less playlist are painted from `artworkColor`. The colour's own ramp is stepped darker (its 500, then 600 … 900) until the light text drawn on it clears **4.5:1**, and the gradient runs two stops further down — so a pale colour yields a deeper tile rather than unreadable text. Without a colour, or with one that does not parse, the cover is the theme's neutral 700 → 900. Gradient stops are always opaque: react-native-svg drops the alpha inside a stop colour.
+A mix, a recap, a share card, a genre tile and a cover-less playlist are painted from `artworkColor`. The colour is pulled toward black in 5% steps until BOTH foregrounds drawn on it — the title and the muted line under it — clear **4.5:1**, and the gradient's bottom is a further 25% darker, so a pale colour yields a deeper tile rather than unreadable text. Without a colour, or with one that does not parse, the cover is the theme's neutral 700 → 900. Gradient stops are always opaque: react-native-svg drops the alpha inside a stop colour.
+
+Two things changed when this moved onto the shared `darkenUntilContrast` ([`@oxy.so/bloom/styles`](/docs/bloom/main/styles)), which the immersive player and the browse tiles already used:
+
+- **The muted line is checked now.** It was not, and it painted at **4.18:1** — under AA — over the palest artwork colours. The title's own floor rose from 4.69 to 5.07 in the same change.
+- **The colour is darkened, not re-derived from a ramp.** A ramp re-derives each stop's lightness and chroma from the hue, so a vivid `#1db98a` came back with its red channel zeroed. Scaling keeps the channels in ratio, so a darkened teal is still teal. Pale colours land on a lighter, less saturated tile than before — more faithful to the colour the backend sent.
 
 ## Laying cards out
 
