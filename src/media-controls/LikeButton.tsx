@@ -1,12 +1,12 @@
 import React, { memo, useEffect, useMemo, useState } from 'react';
 import { Pressable, View, type GestureResponderEvent } from 'react-native';
 
-import { webDataSet } from '../checkbox/shared';
 import { RiHeart3Fill } from '../icons/remix/RiHeart3Fill';
 import { RiHeart3Line } from '../icons/remix/RiHeart3Line';
 import { adoptStyleSheet } from '../styles/adopt-style-sheet';
 import { borderRadius } from '../styles/tokens';
 import type { WebCssStyle } from '../styles/web-view-style';
+import { webDataSet } from '../styles/web-data';
 import { useTheme } from '../theme/use-theme';
 import {
   IS_WEB,

@@ -7,6 +7,7 @@ import { RiArrowDownSLine, RiArrowUpSLine } from '../icons/remix';
 import { useContainerWidth } from '../listing-details/use-container-width';
 import { useInteractiveWebCss } from '../styles/interactive-web-css';
 import type { WebCssStyle } from '../styles/web-view-style';
+import { webDataSet } from '../styles/web-data';
 import type { AccentTone } from '../theme/accent-colors';
 import { useTheme } from '../theme/use-theme';
 import { Text } from '../typography';
@@ -15,7 +16,6 @@ import {
   PROPERTY_INSIGHTS_STYLE_ID,
   formatEuros,
   resolveInsightPalette,
-  webData,
 } from './shared';
 import type { EstimateConfidence, PriceEstimateProps, PriceVerdict } from './types';
 
@@ -366,7 +366,7 @@ function PriceEstimateComponent({
       {hasReasons ? (
         <View style={{ gap: 10 }}>
           <Pressable
-            {...webData({ bloomInsightPress: '' })}
+            {...webDataSet({ bloomInsightPress: '' })}
             accessibilityRole="button"
             accessibilityLabel={reasonsLabel}
             aria-expanded={expanded}

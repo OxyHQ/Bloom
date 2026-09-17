@@ -10,6 +10,7 @@ import { RiCheckLine, RiHome4Line, RiPhoneLine, RiStarFill, RiTimeLine } from '.
 import { useImageResolver } from '../image-resolver/context';
 import { useInteractiveWebCss } from '../styles/interactive-web-css';
 import type { WebCssStyle } from '../styles/web-view-style';
+import { webDataSet } from '../styles/web-data';
 import { useTheme } from '../theme/use-theme';
 import { Text } from '../typography';
 import { HOST_CARD_AVATAR_SIZE } from './constants';
@@ -19,7 +20,6 @@ import {
   LISTING_DETAILS_STYLE_ID,
   resolveImageUri,
   resolveListingPalette,
-  webData,
 } from './shared';
 import type { ContactCardProps, ContactRole, ListingIcon } from './types';
 
@@ -221,7 +221,7 @@ function ContactCardComponent({
 
   const card = onPressProfile ? (
     <Pressable
-      {...webData({ bloomListingPress: '' })}
+      {...webDataSet({ bloomListingPress: '' })}
       accessibilityRole="button"
       accessibilityLabel={cardName}
       onPress={onPressProfile}
@@ -374,7 +374,7 @@ function ContactCardComponent({
               <View key={id} role="listitem" testID={testID ? `${testID}-${id}` : undefined}>
                 {onPress ? (
                   <Pressable
-                    {...webData({ bloomListingPress: '' })}
+                    {...webDataSet({ bloomListingPress: '' })}
                     accessibilityRole="link"
                     accessibilityLabel={text}
                     onPress={onPress}

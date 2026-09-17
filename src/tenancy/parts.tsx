@@ -5,6 +5,7 @@ import { BUTTON_GEOMETRY, BUTTON_RADIUS, mixColor } from '../button/shared';
 import { useInteractionState } from '../hooks/use-interaction-state';
 import { adoptStyleSheet } from '../styles/adopt-style-sheet';
 import type { WebCssStyle } from '../styles/web-view-style';
+import { webDataSet } from '../styles/web-data';
 import { useTheme } from '../theme/use-theme';
 import { Text } from '../typography';
 import {
@@ -13,7 +14,6 @@ import {
   HOUSING_STYLE_ID,
   HOUSING_WEB_CSS,
   resolveHousingPalette,
-  webData,
   type HousingPalette,
 } from './shared';
 import type { HousingIcon } from './types';
@@ -183,7 +183,7 @@ export function HousingToggleButton({
 
   return (
     <Pressable
-      {...webData({ bloomHousingFocus: '' })}
+      {...webDataSet({ bloomHousingFocus: '' })}
       accessibilityRole="button"
       accessibilityLabel={accessibilityLabel ?? label}
       aria-pressed={pressed}

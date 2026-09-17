@@ -35,6 +35,7 @@ import { useInteractionState } from '../hooks/use-interaction-state';
 import { borderRadius } from '../styles/tokens';
 import { interactiveWebCss, useInteractiveWebCss } from '../styles/interactive-web-css';
 import type { WebCssStyle } from '../styles/web-view-style';
+import { webDataSet } from '../styles/web-data';
 import { mixColor, resolveButtonRamps } from '../button/shared';
 import type {
   TabsContentProps,
@@ -230,10 +231,6 @@ const GEOMETRY = {
 const STRIP_GAP = 4;
 
 const IS_WEB = Platform.OS === 'web';
-
-function webData(data: Record<string, string>): Record<string, unknown> {
-  return IS_WEB ? ({ dataSet: data } as Record<string, unknown>) : {};
-}
 
 // ---------------------------------------------------------------------------
 //  Web: keyboard focus ring, colour transitions, disabled cursor
@@ -882,7 +879,7 @@ const TabComponent: React.FC<TabsTriggerProps> = ({
   );
 
   const renderedIcon = LeadingIcon ? (
-    <View {...webData({ bloomTabsIcon: '' })} style={{ flexShrink: 0 }}>
+    <View {...webDataSet({ bloomTabsIcon: '' })} style={{ flexShrink: 0 }}>
       <LeadingIcon width={geometry.icon} height={geometry.icon} fill={iconColor} />
     </View>
   ) : (
@@ -901,7 +898,7 @@ const TabComponent: React.FC<TabsTriggerProps> = ({
       style={fullWidth ? { flex: 1 } : undefined}
     >
       <Pressable
-        {...webData({ bloomTabsTrigger: variant })}
+        {...webDataSet({ bloomTabsTrigger: variant })}
         style={[
           triggerStyle,
           fullWidth && { flex: 1 },
@@ -931,7 +928,7 @@ const TabComponent: React.FC<TabsTriggerProps> = ({
         {showHoverLayer ? (
           <View
             pointerEvents="none"
-            {...webData({ bloomTabsHover: '' })}
+            {...webDataSet({ bloomTabsHover: '' })}
             style={{
               position: 'absolute',
               top: 0,
@@ -947,7 +944,7 @@ const TabComponent: React.FC<TabsTriggerProps> = ({
         <View style={{ flexDirection: 'row', alignItems: 'center', gap: geometry.labelGap }}>
           {renderedIcon}
           <Text
-            {...webData({ bloomTabsLabel: '' })}
+            {...webDataSet({ bloomTabsLabel: '' })}
             numberOfLines={1}
             style={[labelTextStyle, textStyle]}
           >

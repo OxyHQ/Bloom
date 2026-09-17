@@ -6,6 +6,7 @@ import { Chip } from '../chip';
 import { RiChat3Line } from '../icons/remix';
 import { useImageResolver } from '../image-resolver/context';
 import type { WebCssStyle } from '../styles/web-view-style';
+import { webDataSet } from '../styles/web-data';
 import { Text } from '../typography';
 import {
   MAINTENANCE_CATEGORY,
@@ -14,7 +15,7 @@ import {
   MAINTENANCE_STAGES,
 } from './constants';
 import { HousingCard, IconTile, useHousingPalette, useHousingWebCss } from './parts';
-import { HOUSING_TILE_RADIUS, resolveImageUri, webData } from './shared';
+import { HOUSING_TILE_RADIUS, resolveImageUri } from './shared';
 import { TenancyTimeline } from './TenancyTimeline';
 import type { MaintenancePhoto, MaintenanceRequestCardProps, TenancyTimelineEvent } from './types';
 
@@ -95,7 +96,7 @@ function MaintenanceRequestCardComponent({
   const comments = commentText ? (
     onPressComments ? (
       <Pressable
-        {...webData({ bloomHousingFocus: '' })}
+        {...webDataSet({ bloomHousingFocus: '' })}
         accessibilityRole="button"
         accessibilityLabel={commentText}
         onPress={onPressComments}
@@ -182,7 +183,7 @@ function MaintenanceRequestCardComponent({
             return onPressPhoto ? (
               <Pressable
                 key={`${photo.source}-${index}`}
-                {...webData({ bloomHousingFocus: '' })}
+                {...webDataSet({ bloomHousingFocus: '' })}
                 accessibilityRole="button"
                 accessibilityLabel={name}
                 onPress={() => onPressPhoto(index)}

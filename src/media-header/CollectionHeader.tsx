@@ -5,10 +5,11 @@ import { useInteractionState } from '../hooks/use-interaction-state';
 import { RiPencilLine } from '../icons/remix/RiPencilLine';
 import { borderRadius } from '../styles/tokens';
 import type { WebCssStyle } from '../styles/web-view-style';
+import { webDataSet } from '../styles/web-data';
 import { useTheme } from '../theme/use-theme';
 import { Text } from '../typography';
 import { Cover, HeaderTitle, MediaHeaderFrame, MetaLine, useMediaHeaderPaint } from './parts';
-import { IS_WEB, resolveLikedGradient, selectTitleVariant, webData } from './shared';
+import { IS_WEB, resolveLikedGradient, selectTitleVariant } from './shared';
 import type { CollectionHeaderProps } from './types';
 
 /**
@@ -120,7 +121,7 @@ function CollectionHeaderComponent({
         const press: WebCssStyle = { borderRadius: 6, '--bloom-media-header-ring': paint.ring };
         return (
           <Pressable
-            {...webData({ bloomMediaHeaderPress: '' })}
+            {...webDataSet({ bloomMediaHeaderPress: '' })}
             role="button"
             accessibilityLabel={editLabel}
             onPress={onEdit}
@@ -159,7 +160,7 @@ function CollectionHeaderComponent({
             </Text>
             {canEdit ? (
               <Pressable
-                {...webData({ bloomMediaHeaderPress: '' })}
+                {...webDataSet({ bloomMediaHeaderPress: '' })}
                 role="button"
                 accessibilityLabel={`${editLabel}: ${title}`}
                 onPress={onEdit}

@@ -2,11 +2,11 @@ import React, { useCallback, useEffect, useMemo, useRef } from 'react';
 import { Platform, Pressable, View } from 'react-native';
 
 import { resolveCategoryBarPaint, type CategoryBarPaint } from '../category-bar/CategoryBar';
-import { webDataSet } from '../checkbox/shared';
 import { useInteractionState } from '../hooks/use-interaction-state';
 import { SegmentedControl, SegmentedControlItem, SegmentedControlItemText } from '../segmented-control';
 import { adoptStyleSheet } from '../styles/adopt-style-sheet';
 import type { WebCssStyle } from '../styles/web-view-style';
+import { webDataSet } from '../styles/web-data';
 import { useTheme } from '../theme/use-theme';
 import { Text } from '../typography';
 import { DEFAULT_HOME_SEARCH_MODE_LABELS, HOME_SEARCH_MODES } from './constants';

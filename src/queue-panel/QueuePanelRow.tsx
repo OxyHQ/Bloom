@@ -1,7 +1,6 @@
 import React, { memo, useEffect, useMemo } from 'react';
 import { Image, Pressable, View } from 'react-native';
 
-import { webDataSet } from '../checkbox/shared';
 import { useInteractionState } from '../hooks/use-interaction-state';
 import { RiMusic2Line } from '../icons/remix/RiMusic2Line';
 import { useImageResolver } from '../image-resolver/context';
@@ -9,6 +8,7 @@ import { ExplicitBadge } from '../media-controls/ExplicitBadge';
 import { NowPlayingIndicator } from '../media-controls/NowPlayingIndicator';
 import { adoptStyleSheet } from '../styles/adopt-style-sheet';
 import type { WebCssStyle } from '../styles/web-view-style';
+import { webDataSet } from '../styles/web-data';
 import { useTheme } from '../theme/use-theme';
 import { Text } from '../typography';
 import {

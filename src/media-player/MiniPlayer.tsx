@@ -2,7 +2,6 @@ import React, { memo, useContext, useMemo, useRef } from 'react';
 import { PanResponder, Pressable, View } from 'react-native';
 
 import { mixColor, resolveButtonRamps } from '../button/shared';
-import { webDataSet } from '../checkbox/shared';
 import { LikeButton } from '../media-controls/LikeButton';
 import { PlayButton } from '../media-controls/PlayButton';
 import { clamp, resolveMediaControlsPaint } from '../media-controls/shared';
@@ -16,6 +15,7 @@ import { ImmersiveTheme, immersiveDarkTheme } from './ImmersiveTheme';
 import { Artwork } from './TrackText';
 import { artistNames, IS_WEB, resolveArtworkTint } from './shared';
 import type { MiniPlayerProps } from './types';
+import { webDataSet } from '../styles/web-data';
 
 export const MINI_PLAYER_HEIGHT = 56;
 /** Horizontal travel that counts as a swipe (native). */

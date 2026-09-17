@@ -4,6 +4,7 @@ import { View, type StyleProp, type ViewStyle } from 'react-native';
 import { PlayButton } from '../media-controls';
 import { Box as SkeletonBox, Circle as SkeletonCircle } from '../skeleton';
 import type { WebCssStyle } from '../styles/web-view-style';
+import { webDataSet } from '../styles/web-data';
 import { useTheme } from '../theme/use-theme';
 import { Text } from '../typography';
 import type { TypeScaleVariant } from '../typography/scale';
@@ -21,7 +22,6 @@ import {
   TILE_ARTWORK,
   TILE_PADDING,
   TILE_RADIUS,
-  webData,
 } from './shared';
 import type { MediaCardLayout, MediaCardProps, MediaCardSize } from './types';
 
@@ -240,7 +240,7 @@ function MediaCardComponent(props: MediaCardProps) {
   const play =
     visibility === 'none' ? null : (
       <View
-        {...webData(visibility === 'hover' ? { bloomMediaCardReveal: 'hover', bloomMediaCardPlay: '' } : { bloomMediaCardPlay: '' })}
+        {...webDataSet(visibility === 'hover' ? { bloomMediaCardReveal: 'hover', bloomMediaCardPlay: '' } : { bloomMediaCardPlay: '' })}
         style={
           row
             ? { position: 'absolute', top: 0, left: 0, width: box.width, height: box.height, alignItems: 'center', justifyContent: 'center' }
@@ -388,7 +388,7 @@ function MediaCardComponent(props: MediaCardProps) {
 
   return (
     <View
-      {...webData({
+      {...webDataSet({
         bloomMediaCard: layout,
         ...(interactive ? { bloomMediaCardHover: '' } : null),
         ...(menuOpen ? { bloomMediaCardMenuOpen: '' } : null),

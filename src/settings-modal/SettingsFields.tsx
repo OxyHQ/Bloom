@@ -2,6 +2,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import { Platform, Pressable, StyleSheet, View, type ViewStyle } from 'react-native';
 
 import { borderRadius } from '../styles/tokens';
+import { webDataSet } from '../styles/web-data';
 import { Calendar } from '../date-picker';
 import { RiCalendarLine } from '../icons/remix';
 import { Popover, PopoverContent, PopoverTrigger } from '../popover';
@@ -9,7 +10,7 @@ import { TextField, TextFieldIcon, TextFieldInput } from '../text-field';
 import { Text } from '../typography';
 import { useSettingsPalette, useSettingsSavedToast } from './context';
 import type { SettingsDateFieldProps, SettingsTextFieldProps } from './types';
-import { useSettingsWebCss, webData } from './web-css';
+import { useSettingsWebCss } from './web-css';
 
 /**
  * The Profile page's editable controls.
@@ -121,7 +122,7 @@ export function SettingsDateField({
         <Pressable
           role="button"
           accessibilityLabel={`${label}, ${text}`}
-          {...webData({ bloomSettingsPress: '' })}
+          {...webDataSet({ bloomSettingsPress: '' })}
           onHoverIn={() => setHovered(true)}
           onHoverOut={() => setHovered(false)}
           testID={testID}

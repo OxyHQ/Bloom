@@ -97,11 +97,6 @@ export function resolveImageUri(
   return isImageUrl(source) ? source : resolver?.(source, variant) ?? undefined;
 }
 
-/** `dataSet` hooks for the adopted sheet; nothing on native. */
-export function webData(data: Record<string, string>): Record<string, unknown> {
-  return IS_WEB ? { dataSet: data } : {};
-}
-
 /** Joins the non-empty parts of an accessible name. */
 export function joinName(parts: ReadonlyArray<string | false | null | undefined>, separator = ', '): string {
   return parts.filter((part): part is string => typeof part === 'string' && part !== '').join(separator);

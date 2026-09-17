@@ -52,7 +52,3 @@ export function useSettingsWebCss(): void {
   }, []);
 }
 
-/** `dataSet` for a react-native-web node; nothing on native. */
-export function webData(data: Record<string, string>): Record<string, unknown> {
-  return IS_WEB ? { dataSet: data } : {};
-}

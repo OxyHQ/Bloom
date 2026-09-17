@@ -2,11 +2,11 @@ import React, { memo, useEffect, useMemo, useState } from 'react';
 import { Pressable, View } from 'react-native';
 
 import { Button } from '../button';
-import { webDataSet } from '../checkbox/shared';
 import { RiCloseLine } from '../icons/remix/RiCloseLine';
 import { adoptStyleSheet } from '../styles/adopt-style-sheet';
 import { borderRadius } from '../styles/tokens';
 import type { WebCssStyle } from '../styles/web-view-style';
+import { webDataSet } from '../styles/web-data';
 import { useTheme } from '../theme/use-theme';
 import { Text } from '../typography';
 import { Cover } from './Cover';

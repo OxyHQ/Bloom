@@ -6,8 +6,9 @@ import { RiMusic2Fill } from '../icons/remix/RiMusic2Fill';
 import { useTheme } from '../theme/use-theme';
 import { Text } from '../typography';
 import { Artwork, CoverGradient } from './parts';
-import { RECAP_RADIUS, resolveCoverTint, resolveMediaCardPaint, webData } from './shared';
+import { RECAP_RADIUS, resolveCoverTint, resolveMediaCardPaint } from './shared';
 import type { ShareCardProps } from './types';
+import { webDataSet } from '../styles/web-data';
 
 /**
  * A track laid out to be shared as an image.
@@ -40,7 +41,7 @@ function ShareCardComponent({
 
   return (
     <View
-      {...webData({ bloomMediaCard: 'share' })}
+      {...webDataSet({ bloomMediaCard: 'share' })}
       style={[{ width: 320, borderRadius: RECAP_RADIUS, overflow: 'hidden', backgroundColor: tint.top }, style]}
       testID={testID}
     >

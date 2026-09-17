@@ -112,9 +112,6 @@ export function clampFraction(value: number | undefined): number {
 //  Contrast
 // ---------------------------------------------------------------------------
 
-
-
-
 /** Text drawn over a generated cover must clear this. */
 export const COVER_TEXT_CONTRAST = 4.5;
 
@@ -213,10 +210,6 @@ export function resolveMediaCardPaint(theme: Theme): MediaCardPaint {
     surface: colors.background,
     ring: accent[500],
   };
-}
-
-export function webData(data: Record<string, string>): Record<string, unknown> {
-  return IS_WEB ? { dataSet: data } : {};
 }
 
 // ---------------------------------------------------------------------------

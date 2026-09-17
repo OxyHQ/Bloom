@@ -14,10 +14,6 @@ export const IS_WEB = Platform.OS === 'web';
 /** A header lays its cover beside the text from this container width. */
 export const MEDIA_HEADER_WIDE_MIN_WIDTH = 600;
 
-export function webData(data: Record<string, string>): Record<string, unknown> {
-  return IS_WEB ? { dataSet: data } : {};
-}
-
 /** `true` for a URL the image can load as-is; anything else is an ImageResolver id. */
 export function isUrl(value: string): boolean {
   return (
@@ -36,9 +32,6 @@ export function clamp01(value: number): number {
 // ---------------------------------------------------------------------------
 //  Contrast
 // ---------------------------------------------------------------------------
-
-
-
 
 /**
  * Of `candidates`, the colour whose WORST contrast over every surface in

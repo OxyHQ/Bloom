@@ -1,9 +1,9 @@
 import React, { Fragment, useEffect, useMemo, useRef, useState } from 'react';
 import { View, useWindowDimensions, type LayoutChangeEvent } from 'react-native';
 
-import { webDataSet } from '../checkbox/shared';
 import { RiDiscLine } from '../icons/remix/RiDiscLine';
 import type { WebCssStyle } from '../styles/web-view-style';
+import { webDataSet } from '../styles/web-data';
 import { useTheme } from '../theme/use-theme';
 import { Text } from '../typography';
 import {

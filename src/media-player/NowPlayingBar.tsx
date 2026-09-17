@@ -2,7 +2,6 @@ import React, { memo, useMemo, useState } from 'react';
 import { useWindowDimensions, View, type LayoutChangeEvent } from 'react-native';
 
 import { resolveButtonRamps } from '../button/shared';
-import { webDataSet } from '../checkbox/shared';
 import { RiFullscreenLine } from '../icons/remix/RiFullscreenLine';
 import { RiMicLine } from '../icons/remix/RiMicLine';
 import { RiPlayListLine } from '../icons/remix/RiPlayListLine';
@@ -18,6 +17,7 @@ import { PlayerIconButton } from './PlayerIconButton';
 import { Artwork, TrackText } from './TrackText';
 import { TransportControls } from './TransportControls';
 import type { NowPlayingBarLabels, NowPlayingBarProps } from './types';
+import { webDataSet } from '../styles/web-data';
 
 export const NOW_PLAYING_BAR_HEIGHT = 80;
 /** At and above: every control. Below: no fullscreen button, a shorter volume slider. */

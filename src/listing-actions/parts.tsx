@@ -6,7 +6,6 @@ import { isImageUrl, resolveBookingPalette, BOOKING_FIELD_RADIUS, BOOKING_STYLE_
 import { mixColor, resolveButtonRamps } from '../button/shared';
 import { chartHueTone } from '../chart-cards/palette';
 import { pieSectorAngles, sectorPath } from '../chart-cards/polar-geometry';
-import { webDataSet } from '../checkbox/shared';
 import { useInteractionState } from '../hooks/use-interaction-state';
 import { RiHome4Line } from '../icons/remix/RiHome4Line';
 import { RiInformationLine } from '../icons/remix/RiInformationLine';
@@ -14,6 +13,7 @@ import { useImageResolver } from '../image-resolver/context';
 import { borderRadius } from '../styles/tokens';
 import { adoptStyleSheet } from '../styles/adopt-style-sheet';
 import type { WebCssStyle } from '../styles/web-view-style';
+import { webDataSet } from '../styles/web-data';
 import type { Theme } from '../theme/types';
 import { useTheme } from '../theme/use-theme';
 import { Text } from '../typography';

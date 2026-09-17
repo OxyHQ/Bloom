@@ -2,8 +2,8 @@ import React, { useEffect, useMemo } from 'react';
 import { Image, View, type StyleProp, type ViewStyle } from 'react-native';
 
 import { resolveButtonRamps } from '../button/shared';
-import { webDataSet } from '../checkbox/shared';
 import { adoptStyleSheet } from '../styles/adopt-style-sheet';
+import { webDataSet } from '../styles/web-data';
 import { useImageResolver } from '../image-resolver/context';
 import { RiMusic2Line } from '../icons/remix/RiMusic2Line';
 import type { TypeScaleVariant } from '../typography/scale';

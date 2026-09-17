@@ -22,6 +22,7 @@ import {
 import { useInteractionState } from '../hooks/use-interaction-state';
 import { useInteractiveWebCss } from '../styles/interactive-web-css';
 import type { WebCssStyle } from '../styles/web-view-style';
+import { webDataSet } from '../styles/web-data';
 import type { Theme } from '../theme/types';
 import { useTheme } from '../theme/use-theme';
 import { Text } from '../typography';
@@ -215,10 +216,6 @@ function useStaggerState(active: boolean): StaggerState {
   return active ? 'shown' : hiding ? 'hiding' : 'hidden';
 }
 
-function webData(data: Record<string, string>): Record<string, unknown> {
-  return IS_WEB ? { dataSet: data } : {};
-}
-
 // ---------------------------------------------------------------------------
 //  Web CSS — the transitions, the blur and the focus ring, none of which has an
 //  inline-style spelling. Hung off `dataSet` attributes; `adoptStyleSheet`
@@ -378,7 +375,7 @@ function StaggerLine({
   if (IS_WEB) {
     return (
       <View
-        {...webData(
+        {...webDataSet(
           kind === 'line'
             ? { bloomFileUploadLine: String(order), bloomFileUploadState: state }
             : { bloomFileUploadSub: state },
@@ -644,7 +641,7 @@ const FileUploadComponent = function FileUpload({
   return (
     <Pressable
       ref={rootRef}
-      {...webData({ bloomFileUpload: busy ? 'busy' : 'idle' })}
+      {...webDataSet({ bloomFileUpload: busy ? 'busy' : 'idle' })}
       accessibilityRole="button"
       accessibilityLabel={accessibilityLabel}
       aria-busy={busy}
@@ -709,7 +706,7 @@ const FileUploadComponent = function FileUpload({
 
       {/* Dashed idle border. */}
       <Animated.View
-        {...webData({ bloomFileUploadDash: '' })}
+        {...webDataSet({ bloomFileUploadDash: '' })}
         pointerEvents="none"
         style={[
           fill,
@@ -725,7 +722,7 @@ const FileUploadComponent = function FileUpload({
 
       {/* Progress outline. */}
       <Animated.View
-        {...webData({ bloomFileUploadRing: '' })}
+        {...webDataSet({ bloomFileUploadRing: '' })}
         pointerEvents="none"
         style={[fill, { opacity: IS_WEB ? (busy ? 1 : 0) : busyFade }]}
       >
@@ -757,7 +754,7 @@ const FileUploadComponent = function FileUpload({
         style={{ position: 'absolute', top: -9.5, left: 0, right: 0, alignItems: 'center' }}
       >
         <Animated.View
-          {...webData({ bloomFileUploadPill: busy ? 'shown' : 'hidden' })}
+          {...webDataSet({ bloomFileUploadPill: busy ? 'shown' : 'hidden' })}
           style={[
             {
               borderRadius: 6,
@@ -804,7 +801,7 @@ const FileUploadComponent = function FileUpload({
             backgroundColor: paint.discBackground,
           }}
         >
-          <View {...webData({ bloomFileUploadIcon: '' })}>
+          <View {...webDataSet({ bloomFileUploadIcon: '' })}>
             <RiUploadCloud2Line
               width={24}
               height={24}

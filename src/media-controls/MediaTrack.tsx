@@ -10,10 +10,10 @@ import {
   type ViewStyle,
 } from 'react-native';
 
-import { webDataSet } from '../checkbox/shared';
 import { adoptStyleSheet } from '../styles/adopt-style-sheet';
 import { borderRadius } from '../styles/tokens';
 import type { WebCssStyle } from '../styles/web-view-style';
+import { webDataSet } from '../styles/web-data';
 import { useTheme } from '../theme/use-theme';
 import {
   IS_WEB,

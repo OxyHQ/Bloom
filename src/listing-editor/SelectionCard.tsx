@@ -2,12 +2,12 @@ import React, { memo, useEffect, useMemo, type ReactNode } from 'react';
 import { Platform, Pressable, View } from 'react-native';
 
 import { resolveButtonRamps } from '../button/shared';
-import { webDataSet } from '../checkbox/shared';
 import { useInteractionState } from '../hooks/use-interaction-state';
 import { RiCheckLine } from '../icons/remix/RiCheckLine';
 import { RadioIndicator } from '../radio-indicator';
 import { adoptStyleSheet } from '../styles/adopt-style-sheet';
 import type { WebCssStyle } from '../styles/web-view-style';
+import { webDataSet } from '../styles/web-data';
 import type { Theme } from '../theme/types';
 import { useTheme } from '../theme/use-theme';
 import { Text } from '../typography';

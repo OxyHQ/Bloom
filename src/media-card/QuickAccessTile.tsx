@@ -5,6 +5,7 @@ import { RiMusic2Fill } from '../icons/remix/RiMusic2Fill';
 import { NowPlayingIndicator, PlayButton } from '../media-controls';
 import { Box as SkeletonBox } from '../skeleton';
 import type { WebCssStyle } from '../styles/web-view-style';
+import { webDataSet } from '../styles/web-data';
 import { useTheme } from '../theme/use-theme';
 import { Text } from '../typography';
 import { Artwork, CardLink, useMediaCardCss } from './parts';
@@ -15,7 +16,6 @@ import {
   QUICK_TILE_RADIUS,
   resolveMediaCardPaint,
   resolvePlayVisibility,
-  webData,
 } from './shared';
 import type { QuickAccessTileProps } from './types';
 
@@ -86,7 +86,7 @@ function QuickAccessTileComponent({
 
   return (
     <View
-      {...webData({ bloomMediaCard: 'quick', ...(onPress || href ? { bloomMediaCardHover: '' } : null) })}
+      {...webDataSet({ bloomMediaCard: 'quick', ...(onPress || href ? { bloomMediaCardHover: '' } : null) })}
       style={[rootStyle, style]}
       testID={testID}
     >
@@ -116,13 +116,13 @@ function QuickAccessTileComponent({
           pointerEvents="box-none"
         >
           {current && (swap || visibility === 'none') ? (
-            <View pointerEvents="none" {...webData(swap ? { bloomMediaCardConceal: '' } : {})}>
+            <View pointerEvents="none" {...webDataSet(swap ? { bloomMediaCardConceal: '' } : {})}>
               <NowPlayingIndicator playing={playing} size={14} testID={testID ? `${testID}-now-playing` : undefined} />
             </View>
           ) : null}
           {visibility !== 'none' ? (
             <View
-              {...webData(swap || visibility === 'hover' ? { bloomMediaCardReveal: 'hover' } : {})}
+              {...webDataSet(swap || visibility === 'hover' ? { bloomMediaCardReveal: 'hover' } : {})}
               style={{ position: 'absolute', top: 0, left: 0 }}
               testID={testID ? `${testID}-play` : undefined}
             >

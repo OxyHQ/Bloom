@@ -2,10 +2,10 @@ import React, { memo, useCallback, useEffect, useMemo, useState } from 'react';
 import { Platform, Pressable, View } from 'react-native';
 
 import { resolveButtonRamps } from '../button/shared';
-import { webDataSet } from '../checkbox/shared';
 import { RiMapPinLine } from '../icons/remix/RiMapPinLine';
 import { adoptStyleSheet } from '../styles/adopt-style-sheet';
 import type { WebCssStyle } from '../styles/web-view-style';
+import { webDataSet } from '../styles/web-data';
 import { useTheme } from '../theme/use-theme';
 import { Text } from '../typography';
 import { STAY_SEARCH_TILE_RADIUS, STAY_SEARCH_TILE_SIZE } from './constants';

@@ -3,7 +3,7 @@ import { Image, Platform, Pressable, View } from 'react-native';
 
 import { Button } from '../button';
 import { mixColor, resolveButtonRamps } from '../button/shared';
-import { FOCUS_RING_OFFSET_COLOR, webDataSet } from '../checkbox/shared';
+import { FOCUS_RING_OFFSET_COLOR } from '../checkbox/shared';
 import { resolveMenuPalette } from '../floating/menu-palette';
 import { useInteractionState } from '../hooks/use-interaction-state';
 import { RiArrowLeftSLine } from '../icons/remix/RiArrowLeftSLine';
@@ -16,6 +16,7 @@ import { resolvePhoto } from '../listing-card/shared';
 import { Loading } from '../loading';
 import { adoptStyleSheet } from '../styles/adopt-style-sheet';
 import type { WebCssStyle } from '../styles/web-view-style';
+import { webDataSet } from '../styles/web-data';
 import type { Theme } from '../theme/types';
 import { useTheme } from '../theme/use-theme';
 import { Text } from '../typography';

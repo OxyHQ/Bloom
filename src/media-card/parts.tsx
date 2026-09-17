@@ -23,6 +23,7 @@ import { useImageResolver } from '../image-resolver/context';
 import { adoptStyleSheet } from '../styles/adopt-style-sheet';
 import { borderRadius } from '../styles/tokens';
 import type { WebCssStyle } from '../styles/web-view-style';
+import { webDataSet } from '../styles/web-data';
 import { useTheme } from '../theme/use-theme';
 import {
   clampFraction,
@@ -31,7 +32,6 @@ import {
   MEDIA_CARD_STYLE_ID,
   resolveArtworkUri,
   resolveCoverTint,
-  webData,
   type MediaCardPaint,
 } from './shared';
 import type { MediaCardMenuItem } from './types';
@@ -305,7 +305,7 @@ export function CardLink({ name, onPress, href, onLongPress, selected = false, r
   const interactive = Boolean(onPress || href);
   return (
     <Pressable
-      {...webData({ bloomMediaCardLink: '' })}
+      {...webDataSet({ bloomMediaCardLink: '' })}
       {...(IS_WEB && href ? { href } : null)}
       {...(IS_WEB && selected ? { 'aria-current': 'true' } : null)}
       role={href ? 'link' : interactive ? 'button' : undefined}
@@ -354,7 +354,7 @@ export function CardMenu({
   const name = `${label} for ${subject}`;
   return (
     <View
-      {...webData({ bloomMediaCardMenu: '', ...(reveal ? { bloomMediaCardReveal: 'hover' } : null) })}
+      {...webDataSet({ bloomMediaCardMenu: '', ...(reveal ? { bloomMediaCardReveal: 'hover' } : null) })}
       style={{ flexShrink: 0 }}
     >
       <DropdownMenu open={open} onOpenChange={onOpenChange}>

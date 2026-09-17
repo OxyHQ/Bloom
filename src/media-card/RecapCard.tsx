@@ -6,10 +6,11 @@ import { RiShareForwardLine } from '../icons/remix/RiShareForwardLine';
 import { Box as SkeletonBox } from '../skeleton';
 import { borderRadius } from '../styles/tokens';
 import type { WebCssStyle } from '../styles/web-view-style';
+import { webDataSet } from '../styles/web-data';
 import { useTheme } from '../theme/use-theme';
 import { Text } from '../typography';
 import { Artwork, CoverGradient, useMediaCardCss } from './parts';
-import { IS_WEB, RECAP_RADIUS, resolveCoverTint, resolveMediaCardPaint, webData, type CoverTint } from './shared';
+import { IS_WEB, RECAP_RADIUS, resolveCoverTint, resolveMediaCardPaint, type CoverTint } from './shared';
 import type { RecapCardProps } from './types';
 
 /**
@@ -33,7 +34,7 @@ function SharePill({ label, onPress, tint, testID }: { label: string; onPress: (
   };
   return (
     <Pressable
-      {...webData({ bloomMediaCardShare: '' })}
+      {...webDataSet({ bloomMediaCardShare: '' })}
       role="button"
       accessibilityLabel={label}
       onPress={onPress}
@@ -90,7 +91,7 @@ function RecapCardComponent({
 
   return (
     <View
-      {...webData({ bloomMediaCard: 'recap' })}
+      {...webDataSet({ bloomMediaCard: 'recap' })}
       style={[{ position: 'relative', borderRadius: RECAP_RADIUS, overflow: 'hidden', backgroundColor: tint.top }, style]}
       testID={testID}
     >

@@ -3,13 +3,13 @@ import { Pressable, View } from 'react-native';
 
 import { Button } from '../button';
 import { resolveButtonRamps } from '../button/shared';
-import { webDataSet } from '../checkbox/shared';
 import { useInteractionState } from '../hooks/use-interaction-state';
 import { RiEqualizer3Line } from '../icons/remix/RiEqualizer3Line';
 import { RiSearchLine } from '../icons/remix/RiSearchLine';
 import { adoptStyleSheet } from '../styles/adopt-style-sheet';
 import { borderRadius } from '../styles/tokens';
 import type { WebCssStyle } from '../styles/web-view-style';
+import { webDataSet } from '../styles/web-data';
 import { useTheme } from '../theme/use-theme';
 import { Text } from '../typography';
 import { STAY_SEARCH_COMPACT_HEIGHT } from './constants';

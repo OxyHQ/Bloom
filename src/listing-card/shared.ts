@@ -208,10 +208,6 @@ export function dotWindow(count: number, active: number): DotSlot[] {
   return slots;
 }
 
-export function webData(data: Record<string, string>): Record<string, unknown> {
-  return IS_WEB ? { dataSet: data } : {};
-}
-
 // ---------------------------------------------------------------------------
 //  Web CSS — hover-only arrows, the snapping track and focus rings have no
 //  inline-style spelling, so they hang off `dataSet` attributes in an adopted

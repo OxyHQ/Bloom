@@ -1,13 +1,13 @@
 import React, { memo, useEffect, useMemo, useRef, useState } from 'react';
 import { Pressable, TextInput, View, type TextStyle } from 'react-native';
 
-import { webDataSet } from '../checkbox/shared';
 import { RiCloseLine } from '../icons/remix/RiCloseLine';
 import { RiCompass3Line } from '../icons/remix/RiCompass3Line';
 import { RiSearchLine } from '../icons/remix/RiSearchLine';
 import { adoptStyleSheet } from '../styles/adopt-style-sheet';
 import { borderRadius } from '../styles/tokens';
 import type { WebCssStyle } from '../styles/web-view-style';
+import { webDataSet } from '../styles/web-data';
 import { SANS_FONT_FAMILY } from '../text-field/shared';
 import { useTheme } from '../theme/use-theme';
 import { TYPE_SCALE } from '../typography/scale';

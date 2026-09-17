@@ -1,13 +1,13 @@
 import React, { memo, useEffect, useMemo, useState } from 'react';
 import { Pressable, View, type ViewStyle } from 'react-native';
 
-import { webDataSet } from '../checkbox/shared';
 import { ContextMenu, ContextMenuContent, ContextMenuTrigger } from '../context-menu';
 import { RiArrowDownCircleFill } from '../icons/remix/RiArrowDownCircleFill';
 import { RiPushpinFill } from '../icons/remix/RiPushpinFill';
 import { NowPlayingIndicator } from '../media-controls';
 import { adoptStyleSheet } from '../styles/adopt-style-sheet';
 import type { WebCssStyle } from '../styles/web-view-style';
+import { webDataSet } from '../styles/web-data';
 import { useTheme } from '../theme/use-theme';
 import { Tooltip, TooltipTextBubble, TooltipTrigger } from '../tooltip';
 import { Text } from '../typography';

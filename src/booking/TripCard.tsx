@@ -2,11 +2,11 @@ import React, { memo, useCallback, useEffect, useMemo, useState } from 'react';
 import { Image, Platform, Pressable, View, type LayoutChangeEvent, type ViewStyle } from 'react-native';
 
 import { Badge } from '../badge';
-import { webDataSet } from '../checkbox/shared';
 import { useInteractionState } from '../hooks/use-interaction-state';
 import { useImageResolver } from '../image-resolver/context';
 import { adoptStyleSheet } from '../styles/adopt-style-sheet';
 import type { WebCssStyle } from '../styles/web-view-style';
+import { webDataSet } from '../styles/web-data';
 import { useTheme } from '../theme/use-theme';
 import { Text } from '../typography';
 import { TRIP_STATUS } from './constants';

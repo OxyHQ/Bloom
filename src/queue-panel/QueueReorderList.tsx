@@ -6,7 +6,6 @@ import {
   type PanResponderGestureState,
 } from 'react-native';
 
-import { webDataSet } from '../checkbox/shared';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -21,6 +20,7 @@ import { RiDeleteBinLine } from '../icons/remix/RiDeleteBinLine';
 import { RiDraggable } from '../icons/remix/RiDraggable';
 import { RiMoreFill } from '../icons/remix/RiMoreFill';
 import type { WebCssStyle } from '../styles/web-view-style';
+import { webDataSet } from '../styles/web-data';
 import { useTheme } from '../theme/use-theme';
 import { QueueIconButton } from './QueueIconButton';
 import { QueuePanelRow } from './QueuePanelRow';

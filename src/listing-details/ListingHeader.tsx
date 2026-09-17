@@ -6,6 +6,7 @@ import { Rating } from '../rating';
 import { useInteractiveWebCss } from '../styles/interactive-web-css';
 import { borderRadius } from '../styles/tokens';
 import type { WebCssStyle } from '../styles/web-view-style';
+import { webDataSet } from '../styles/web-data';
 import { useTheme } from '../theme/use-theme';
 import { Text } from '../typography';
 import { LISTING_HEADER_WIDE_MIN_WIDTH } from './constants';
@@ -14,7 +15,6 @@ import {
   LISTING_DETAILS_CSS,
   LISTING_DETAILS_STYLE_ID,
   resolveListingPalette,
-  webData,
   type ListingPalette,
 } from './shared';
 import type { ListingHeaderActionProps, ListingHeaderProps } from './types';
@@ -69,7 +69,7 @@ function InlineLink({
   const ring: WebCssStyle = { '--bloom-listing-ring': palette.ring, borderRadius: 4 };
   return (
     <Pressable
-      {...webData({ bloomListingPress: '' })}
+      {...webDataSet({ bloomListingPress: '' })}
       accessibilityRole={IS_WEB ? 'link' : 'button'}
       accessibilityLabel={label}
       onPress={onPress}
@@ -110,7 +110,7 @@ function ListingHeaderActionComponent({
   };
   return (
     <Pressable
-      {...webData({ bloomListingPress: '' })}
+      {...webDataSet({ bloomListingPress: '' })}
       accessibilityRole="button"
       accessibilityLabel={accessibilityLabel ?? label}
       {...(pressed === undefined

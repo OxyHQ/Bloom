@@ -3,12 +3,13 @@ import { Platform, View, type AccessibilityActionEvent } from 'react-native';
 
 import { Button } from '../button';
 import { resolveButtonRamps } from '../button/shared';
-import { FOCUS_RING_OFFSET_COLOR, webDataSet } from '../checkbox/shared';
+import { FOCUS_RING_OFFSET_COLOR } from '../checkbox/shared';
 import { useAccessibleNameWarning } from '../hooks/use-accessible-name-warning';
 import { RiAddLine } from '../icons/remix/RiAddLine';
 import { RiSubtractLine } from '../icons/remix/RiSubtractLine';
 import { adoptStyleSheet } from '../styles/adopt-style-sheet';
 import type { WebCssStyle } from '../styles/web-view-style';
+import { webDataSet } from '../styles/web-data';
 import { useTheme } from '../theme/use-theme';
 import { Text } from '../typography';
 import type { TypeScaleVariant } from '../typography/scale';

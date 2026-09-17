@@ -2,7 +2,6 @@ import React, { memo, useContext, useMemo, useState } from 'react';
 import { Pressable, ScrollView, View, type LayoutChangeEvent } from 'react-native';
 
 import { resolveButtonRamps } from '../button/shared';
-import { webDataSet } from '../checkbox/shared';
 import { RiArrowDownSLine } from '../icons/remix/RiArrowDownSLine';
 import { RiMore2Fill } from '../icons/remix/RiMore2Fill';
 import { RiPlayListLine } from '../icons/remix/RiPlayListLine';
@@ -21,6 +20,7 @@ import { Artwork, TrackText } from './TrackText';
 import { TransportControls } from './TransportControls';
 import { immersiveBase, resolveArtworkTint, verticalGradient } from './shared';
 import type { FullScreenPlayerLabels, FullScreenPlayerProps, LyricsPreview } from './types';
+import { webDataSet } from '../styles/web-data';
 
 /** At and above this measured width the artwork sits beside the controls. */
 export const FULL_SCREEN_PLAYER_WIDE = 900;

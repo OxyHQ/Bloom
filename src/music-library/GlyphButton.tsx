@@ -1,9 +1,9 @@
 import React, { useState } from 'react';
 import { Pressable } from 'react-native';
 
-import { webDataSet } from '../checkbox/shared';
 import { borderRadius } from '../styles/tokens';
 import type { WebCssStyle } from '../styles/web-view-style';
+import { webDataSet } from '../styles/web-data';
 
 /**
  * The family's round glyph-only control: transparent (or `fill`) at rest,

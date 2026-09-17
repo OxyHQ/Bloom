@@ -79,11 +79,6 @@ export function resolveImageUri(
   return isUrl(source) ? source : resolver?.(source, variant) ?? undefined;
 }
 
-/** `dataSet` hooks for the adopted sheet; nothing on native. */
-export function webData(data: Record<string, string>): Record<string, unknown> {
-  return IS_WEB ? { dataSet: data } : {};
-}
-
 // ---------------------------------------------------------------------------
 //  Web CSS
 //

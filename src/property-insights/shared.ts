@@ -9,11 +9,6 @@ import { contrastRatio, relativeLuminance } from '../styles/color-contrast';
 
 export const IS_WEB = Platform.OS === 'web';
 
-/** `dataSet` hooks for the adopted sheet; nothing on native. */
-export function webData(data: Record<string, string>): Record<string, unknown> {
-  return IS_WEB ? { dataSet: data } : {};
-}
-
 /**
  * Every neutral and accent colour the insight parts paint. Pure.
  *
@@ -104,8 +99,6 @@ function fitRgb({ l, c, h }: Oklch): string {
   }
   return srgbToRgbString(oklchToSrgb({ l, c: chroma, h }));
 }
-
-
 
 /**
  * Lightness and chroma per class, A → G: a dark green, brightening to a light

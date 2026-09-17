@@ -16,8 +16,9 @@ import {
 import { useContainerWidth } from '../listing-details/use-container-width';
 import { Rating, RatingBar } from '../rating';
 import type { WebCssStyle } from '../styles/web-view-style';
+import { webDataSet } from '../styles/web-data';
 import { HousingCard, HousingToggleButton, useHousingPalette, useHousingWebCss } from '../tenancy/parts';
-import { IS_WEB, webData } from '../tenancy/shared';
+import { IS_WEB } from '../tenancy/shared';
 import { resolveAccentColors, type AccentTone } from '../theme/accent-colors';
 import { useTheme } from '../theme/use-theme';
 import { Text } from '../typography';
@@ -206,7 +207,7 @@ function PlaceReviewCardComponent({
           </View>
           {truncatable ? (
             <Pressable
-              {...webData({ bloomHousingFocus: '' })}
+              {...webDataSet({ bloomHousingFocus: '' })}
               accessibilityRole="button"
               accessibilityLabel={expanded ? showLessLabel : showMoreLabel}
               aria-expanded={expanded}

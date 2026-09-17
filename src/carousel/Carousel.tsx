@@ -28,6 +28,7 @@ import { useInteractionState } from '../hooks/use-interaction-state';
 import { useInteractiveWebCss } from '../styles/interactive-web-css';
 import { borderRadius } from '../styles/tokens';
 import type { WebCssStyle } from '../styles/web-view-style';
+import { webDataSet } from '../styles/web-data';
 import type { Theme } from '../theme/types';
 import { useTheme } from '../theme/use-theme';
 import { CarouselContext, CarouselItemIndexContext } from './context';
@@ -137,10 +138,6 @@ ${DOT} {
 }
 `;
 
-function webData(data: Record<string, string>): Record<string, unknown> {
-  return IS_WEB ? { dataSet: data } : {};
-}
-
 // ---------------------------------------------------------------------------
 //  Slide
 // ---------------------------------------------------------------------------
@@ -168,7 +165,7 @@ const CarouselItemComponent = function CarouselItem({
 
   return (
     <View
-      {...webData({ bloomCarouselItem: '' })}
+      {...webDataSet({ bloomCarouselItem: '' })}
       role="group"
       {...(IS_WEB ? { 'aria-roledescription': 'slide' } : {})}
       accessibilityLabel={accessibilityLabel ?? (ctx ? `${index + 1} of ${ctx.count}` : undefined)}
@@ -224,7 +221,7 @@ function CarouselDot({
 
   return (
     <Pressable
-      {...webData({ bloomCarouselDot: '' })}
+      {...webDataSet({ bloomCarouselDot: '' })}
       accessibilityRole="button"
       accessibilityLabel={label}
       aria-current={active}
@@ -431,7 +428,7 @@ const CarouselComponent = function Carousel({
       <CarouselContext.Provider value={contextValue}>
         <ScrollView
           ref={scrollRef}
-          {...webData({ bloomCarouselTrack: align })}
+          {...webDataSet({ bloomCarouselTrack: align })}
           // Focusable so the arrow keys scroll it once it has focus, the
           // browser's own behaviour (`tabIndex={0}`).
           {...(IS_WEB ? { tabIndex: 0 } : {})}
