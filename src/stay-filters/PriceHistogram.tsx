@@ -2,16 +2,19 @@ import React, { memo, useMemo } from 'react';
 import { View } from 'react-native';
 
 import { resolveButtonRamps } from '../button/shared';
+import { chartHueTone } from '../chart-cards/palette';
 import { useTheme } from '../theme/use-theme';
 import type { PriceHistogramProps } from './types';
 
 /**
  * How many listings sit at each price, as a row of bars.
  *
- *   bars      equal width (flex 1), 2px apart, top corners radius 2
+ *   bars      equal width (flex 1), 2px apart, top corners radius 3
  *   height    count / tallest count × `height` (default 64); a non-empty bucket
  *             is at least 2 tall so it stays visible, an empty one draws nothing
- *   in range  text-primary — a bucket whose MIDPOINT lies inside `value`
+ *   in range  the chart series tone (`chart-6`, the blue hue re-anchored on the
+ *             theme's primary — the same ink every chart card and the range
+ *             slider underneath use) — a bucket whose MIDPOINT lies inside `value`
  *   outside   neutral-300 (dark neutral-700)
  *
  * The buckets split `min`..`max` evenly, so the row spans exactly the width a
@@ -35,7 +38,7 @@ export function histogramSelection(
 }
 
 const BAR_GAP = 2;
-const BAR_RADIUS = 2;
+const BAR_RADIUS = 3;
 const MIN_BAR = 2;
 
 function PriceHistogramComponent({ buckets, min, max, value, height = 64, style, testID }: PriceHistogramProps) {
@@ -43,7 +46,7 @@ function PriceHistogramComponent({ buckets, min, max, value, height = 64, style,
   const { neutral } = useMemo(() => resolveButtonRamps(theme), [theme]);
   const tallest = buckets.reduce((m, n) => Math.max(m, n), 0);
   const selected = histogramSelection(buckets.length, min, max, value);
-  const inColor = theme.colors.text;
+  const inColor = useMemo(() => chartHueTone(theme, 6).color, [theme]);
   const outColor = theme.isDark ? neutral[700] : neutral[300];
 
   return (
