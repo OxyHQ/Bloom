@@ -80,6 +80,8 @@ function FeedTabs({ value, onChange }: { value: string; onChange: (v: string) =>
     <View
       style={{
         flexDirection: 'row',
+        // The panel is the surface under this row, not the page.
+        backgroundColor: theme.colors.card,
         borderBottomWidth: 1,
         borderColor: theme.isDark ? neutral[800] : neutral[200],
       }}
