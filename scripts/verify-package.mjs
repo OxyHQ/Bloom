@@ -102,9 +102,12 @@ const REQUIRED_ROOT_DOCS = [
   'README.md',
   'README.theme.md',
   'LICENSE',
+  'NOTICE',
+  'scripts/migrate-icons-to-remix.mjs',
   `${DOCS_DIR}/index.mdx`,
   `${DOCS_DIR}/getting-started.mdx`,
   `${DOCS_DIR}/migrating-to-1.0.mdx`,
+  `${DOCS_DIR}/migrating-to-2.0.mdx`,
 ];
 
 /**

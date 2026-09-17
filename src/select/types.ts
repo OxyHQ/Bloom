@@ -99,7 +99,7 @@ export type SelectContentProps<T> = {
   valueExtractor?: (item: T) => string;
   /**
    * Tallest the anchored dropdown grows before its options scroll (web only —
-   * the native sheet sizes itself). Defaults to 320.
+   * the native sheet sizes itself). Defaults to 240.
    */
   maxHeight?: number;
   /**

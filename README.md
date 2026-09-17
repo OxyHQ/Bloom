@@ -20,7 +20,7 @@
 
 ### What it is
 
-Components, hooks and design tokens published as `@oxy.so/bloom` across 88 subpath exports, shipped as `src` for Metro and as compiled CommonJS and ESM for everyone else. Web builds resolve platform forks automatically through export conditions, so a `.web.tsx` fork never reaches a native bundle.
+Components, hooks and design tokens published as `@oxy.so/bloom` across 128 subpath exports, shipped as `src` for Metro and as compiled CommonJS and ESM for everyone else. Web builds resolve platform forks automatically through export conditions, so a `.web.tsx` fork never reaches a native bundle.
 
 Styling is NativeWind classes throughout. There are no colour props and no wrapper components to theme a button, because a second way to set a colour is a second thing that can disagree.
 
@@ -76,15 +76,17 @@ On native, wrap the app root in `GestureHandlerRootView` from `react-native-gest
 
 </details>
 
-## Upgrading from 0.x
+## Upgrading to 2.0
 
-Bloom follows the clean cut rule, so there are no `@deprecated` aliases and no old name shims anywhere in 1.0.0. If a symbol you import was renamed, nothing re-exports it under the old spelling and the build fails. **[`docs/migrating-to-1.0.mdx`](./docs/migrating-to-1.0.mdx) is the only bridge** — every removed subpath, every rename, every prop change, derived from the published 0.89.0 and 1.0.0 tarballs rather than from commit messages.
+Bloom follows the clean cut rule, so there are no `@deprecated` aliases and no old name shims. If a symbol you import was removed, nothing re-exports it and the build fails. **[`docs/migrating-to-2.0.mdx`](./docs/migrating-to-2.0.mdx) is the bridge**: the five removed families and what replaces them, the Remix icon set and its codemod, Inter as the UI face, every changed default, and the Breathe License.
 
-That file ships inside the package, so the copy you read is the one that describes the version you installed:
+The icon codemod ships with the package:
 
 ```bash
-$EDITOR node_modules/@oxy.so/bloom/docs/migrating-to-1.0.mdx
+node node_modules/@oxy.so/bloom/scripts/migrate-icons-to-remix.mjs <app-root> --dry-run --diff
 ```
+
+Coming from 0.x, read [`docs/migrating-to-1.0.mdx`](./docs/migrating-to-1.0.mdx) first. Both guides ship inside the package, so the copy under `node_modules/@oxy.so/bloom/docs/` describes the version you installed.
 
 ## Getting started
 
@@ -149,27 +151,29 @@ Every palette is generated from a single seed colour by a dependency free colour
 
 ## Components
 
-Bloom publishes 88 subpath exports. Importing from the subpath rather than the root keeps a bundle to what it actually renders.
+Bloom publishes 128 subpath exports. Importing from the subpath rather than the root keeps a bundle to what it actually renders.
 
 | Group | Exports |
 |---|---|
-| Providers and theme | `provider`, `theme`, `color-presets`, `preset-vars`, `design-tokens`, `tailwind-preset`, `styles`, `hooks` |
-| Overlays | `dialog`, `alert-dialog`, `bottom-sheet`, `popover`, `context-menu`, `dropdown-menu`, `menubar`, `tooltip`, `overlay`, `portal`, `surfaces` |
-| Actions | `button`, `fab`, `frosted-icon-button`, `pressable-scale`, `subtle-hover` |
-| Forms | `text-field`, `field`, `input-group`, `label`, `select`, `command`, `checkbox`, `radio`, `switch`, `slider`, `segmented-control`, `search` |
-| Layout and lists | `grid`, `list`, `scroll`, `tabs`, `tab-bar`, `settings-list`, `content-panel`, `card`, `accordion`, `aspect-ratio`, `divider`, `item` |
-| Identity and media | `avatar`, `avatar-group`, `user-hover-card`, `image-resolver`, `image-aspect-ratio-cache`, `zoomable-image-gallery`, `media-inset-border`, `progressive-blur`, `fill` |
-| Feedback and data | `toast`, `admonition`, `loading`, `skeleton`, `error-boundary`, `badge`, `chip`, `kbd`, `code`, `link-preview`, `connection-status`, `connection-dots` |
-| Charts and motion | `composition-bar`, `dot-grid-meter`, `stat-bar`, `activity-heatmap`, `motion`, `animated-check`, `icon-circle`, `radio-indicator` |
-| Assets | `icons`, `typography`, `fonts` |
+| Providers and theme | `provider`, `theme`, `theme-toggle`, `color-presets`, `preset-vars`, `design-tokens`, `tailwind-preset`, `styles`, `hooks` |
+| App shell and navigation | `app-shell`, `sidebar`, `rail`, `breadcrumb`, `pagination`, `tabs`, `tab-bar`, `layout`, `content-panel` |
+| Overlays | `dialog`, `alert-dialog`, `bottom-sheet`, `popover`, `context-menu`, `dropdown-menu`, `menubar`, `tooltip`, `overlay`, `portal`, `teleport`, `surfaces`, `settings-modal` |
+| Actions | `button`, `button-group`, `social-button`, `fab`, `frosted-icon-button`, `pressable-scale`, `subtle-hover` |
+| Forms | `text-field`, `textarea`, `phone-input`, `input-otp`, `field`, `input-group`, `label`, `select`, `command`, `checkbox`, `radio`, `switch`, `slider`, `segmented-control`, `search`, `date-picker`, `file-upload`, `auth-card` |
+| Layout and lists | `grid`, `list`, `scroll`, `settings-list`, `card`, `accordion`, `aspect-ratio`, `divider`, `item`, `carousel` |
+| Data and charts | `table`, `data-table`, `chart-cards`, `stat-cards`, `calendar`, `composition-bar`, `dot-grid-meter`, `stat-bar`, `activity-heatmap`, `recent-hires-card`, `patient-info-card`, `important-alerts-card`, `agent-limits-card`, `ai-profile-card` |
+| AI and agents | `agent-chat`, `ai-chat`, `composer-panel`, `composer-loader`, `agent-thinking`, `agent-log`, `agent-progress`, `task-list`, `web-search`, `questionnaire` |
+| Identity and media | `avatar`, `avatar-group`, `user-hover-card`, `image-resolver`, `image-aspect-ratio-cache`, `zoomable-image-gallery`, `zoomable-media-gallery`, `media-flight`, `media-inset-border`, `progressive-blur`, `fill` |
+| Feedback | `toast`, `notification`, `notification-center`, `announcement`, `admonition`, `loading`, `skeleton`, `error-boundary`, `badge`, `chip`, `kbd`, `code`, `link-preview`, `connection-status`, `connection-dots` |
+| Motion and assets | `motion`, `animated-check`, `icon-circle`, `radio-indicator`, `icons`, `typography`, `fonts` |
 
 `tabs`, `scroll` and `tab-bar` each ship an `/expo-router` variant for apps on Expo Router.
 
 ## Documentation
 
-Component guides live in [`docs/`](./docs), one `.mdx` per family, and **they ship inside the package** at `node_modules/@oxy.so/bloom/docs/`. The copy you read there always describes the version you installed, which matters most for [migrating to 1.0](./docs/migrating-to-1.0.mdx).
+Component guides live in [`docs/`](./docs), one `.mdx` per family, and **they ship inside the package** at `node_modules/@oxy.so/bloom/docs/`. The copy you read there always describes the version you installed, which matters most for [migrating to 2.0](./docs/migrating-to-2.0.mdx).
 
-Start with [getting started](./docs/getting-started.mdx), [theme](./docs/theme.mdx) and [design tokens](./docs/design-tokens.mdx). Then per surface: [dialog](./docs/dialog.mdx), [bottom sheet](./docs/bottom-sheet.mdx), [toast](./docs/toast.mdx), [alert](./docs/alert.mdx), [dropdown menu](./docs/dropdown-menu.mdx), [select](./docs/select.mdx), [context menu](./docs/context-menu.mdx), [button](./docs/button.mdx), [avatar](./docs/avatar.mdx), [text field](./docs/text-field.mdx), [settings list](./docs/settings-list.mdx), [tab bar](./docs/tab-bar.mdx) and [loading](./docs/loading.mdx).
+Start with [getting started](./docs/getting-started.mdx), [theme](./docs/theme.mdx) and [design tokens](./docs/design-tokens.mdx). Then per surface: [app shell](./docs/app-shell.mdx), [sidebar](./docs/sidebar.mdx), [data table](./docs/data-table.mdx), [chart cards](./docs/chart-cards.mdx), [composer panel](./docs/composer-panel.mdx), [dialog](./docs/dialog.mdx), [bottom sheet](./docs/bottom-sheet.mdx), [toast](./docs/toast.mdx), [alert](./docs/alert.mdx), [dropdown menu](./docs/dropdown-menu.mdx), [select](./docs/select.mdx), [context menu](./docs/context-menu.mdx), [button](./docs/button.mdx), [avatar](./docs/avatar.mdx), [text field](./docs/text-field.mdx), [settings list](./docs/settings-list.mdx), [tab bar](./docs/tab-bar.mdx) and [loading](./docs/loading.mdx).
 
 The theme reference is in [README.theme.md](./README.theme.md).
 

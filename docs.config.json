@@ -6,6 +6,7 @@
   "category": "ui-library",
   "versioned": true,
   "versions": [
+    "2.0.0",
     "1.0.0",
     "0.89.0",
     "0.88.0",
@@ -261,5 +262,5 @@
     "entry": "src/index.ts"
   },
   "description": "Shared UI component library for React Native + Expo + Web.",
-  "versionsNote": "The version list is derived from the npm registry, which is the only complete record of this package: git tags cover 74 of the 243 releases, and 69 minor series carry no tag at all (0.7.x-0.32.x, 0.46.x-0.71.x and 0.73.x-0.89.x among them). Every version listed is published on npm except 1.0.0, which is this release."
+  "versionsNote": "The version list is derived from the npm registry, which is the only complete record of this package: git tags cover 74 of the 243 releases, and 69 minor series carry no tag at all (0.7.x-0.32.x, 0.46.x-0.71.x and 0.73.x-0.89.x among them). Every version listed is published on npm except 2.0.0, which is this release."
 }
