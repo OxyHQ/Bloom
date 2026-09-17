@@ -20,7 +20,8 @@ until you migrate it.
 2. Run the icon codemod — the one change `tsc` will not catch for you.
 3. Replace the five removed families.
 4. Check the changed defaults below against your screens.
-5. Read the license section if you ship Bloom inside a commercial product.
+5. Import from subpaths, not the root barrel.
+6. Read the license section if you ship Bloom inside a commercial product.
 
 ## 1. Icons: the Remix set replaces Bloom's own
 
@@ -90,7 +91,24 @@ renders.
 | `Toast` | The card is repainted to match `Notification`; the close glyph is fixed, so `closeButtonIconStyle` no longer has an effect. Stacking stays on by default. | — |
 | `Kbd`, `Tooltip`, `Label`, `Field`, `Dialog` actions, `DropdownMenu`, `ContextMenu`, `Menubar`, `Popover`, `Code` / `Pre` | Repainted; no API change. `Label` text is `text-primary` (was secondary). Menus fade and scale in over 150ms. | — |
 
-## 5. New in 2.0
+## 5. Import from subpaths
+
+Bloom 2.0's root barrel carries all 38 new families, and Metro does not
+tree-shake. An app that imports `Skeleton` or `ErrorBoundary` from
+`@oxy.so/bloom` bundles every chart card, composer and settings modal with them.
+Measured while migrating Oxy's own apps: +272 KB gzipped in one web bundle and
+a bundle budget broken in another, both back below their 1.x size once the root
+imports moved to subpaths.
+
+```tsx
+// Pulls the whole library into the bundle
+import { Skeleton } from '@oxy.so/bloom';
+
+// Pulls in one family
+import * as Skeleton from '@oxy.so/bloom/skeleton';
+```
+
+## 6. New in 2.0
 
 Nothing to migrate, but worth knowing before you build your own:
 
@@ -102,7 +120,7 @@ Nothing to migrate, but worth knowing before you build your own:
 
 Each family has its own guide in `docs/`.
 
-## 6. License: the Breathe License 1.0
+## 7. License: the Breathe License 1.0
 
 Bloom 2.0 is licensed under the [Breathe License 1.0](https://github.com/OxyHQ/Bloom/blob/main/LICENSE)
 (`LicenseRef-Breathe-1.0`; `package.json` reads `"SEE LICENSE IN LICENSE"`).
