@@ -39,6 +39,7 @@ import {
 import { adoptStyleSheet } from '../styles/adopt-style-sheet';
 import { borderRadius } from '../styles/tokens';
 import type { WebCssStyle } from '../styles/web-view-style';
+import { clamp } from '../styles/clamp';
 import type { Theme } from '../theme/types';
 import { useTheme } from '../theme/use-theme';
 import { Text } from '../typography';
@@ -160,7 +161,6 @@ const PILL_HOVER_MS = 200;
 const EASE = Easing.bezier(0.22, 1, 0.36, 1);
 const PILL_EASE = Easing.bezier(0.34, 1.2, 0.64, 1);
 
-
 const BODY_MEDIUM: TextStyle = TYPE_SCALE['body-medium'];
 const BODY_REGULAR: TextStyle = TYPE_SCALE['body-regular'];
 const BODY_2_MEDIUM: TextStyle = TYPE_SCALE['body-2-medium'];
@@ -176,8 +176,6 @@ const DEFAULT_LABELS: Required<QuestionnaireLabels> = {
   dismiss: 'Dismiss',
   steps: 'Steps',
 };
-
-const clamp = (value: number, min: number, max: number) => Math.min(Math.max(value, min), max);
 
 // ---------------------------------------------------------------------------
 //  Web CSS: focus rings, colour transitions, the check draw-in. Every hook is a

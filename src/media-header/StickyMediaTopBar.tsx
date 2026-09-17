@@ -11,8 +11,8 @@ import Animated, {
 import { PlayButton } from '../media-controls/PlayButton';
 import { Text } from '../typography';
 import { useMediaHeaderPaint } from './parts';
-import { clamp01 } from './shared';
 import type { StickyMediaTopBarProps } from './types';
+import { clamp01 } from '../styles/clamp';
 
 /** Built once, at module scope, so the fade, `style` and the a11y props share one node. */
 const FadeView = Animated.createAnimatedComponent(View);

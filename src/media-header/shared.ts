@@ -15,10 +15,6 @@ export const IS_WEB = Platform.OS === 'web';
 export const MEDIA_HEADER_WIDE_MIN_WIDTH = 600;
 
 
-export function clamp01(value: number): number {
-  return Number.isFinite(value) ? Math.min(1, Math.max(0, value)) : 0;
-}
-
 // ---------------------------------------------------------------------------
 //  Contrast
 // ---------------------------------------------------------------------------

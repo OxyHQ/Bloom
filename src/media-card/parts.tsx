@@ -24,9 +24,9 @@ import { adoptStyleSheet } from '../styles/adopt-style-sheet';
 import { borderRadius } from '../styles/tokens';
 import type { WebCssStyle } from '../styles/web-view-style';
 import { webDataSet } from '../styles/web-data';
+import { clamp01 } from '../styles/clamp';
 import { useTheme } from '../theme/use-theme';
 import {
-  clampFraction,
   IS_WEB,
   MEDIA_CARD_CSS,
   MEDIA_CARD_STYLE_ID,
@@ -233,7 +233,7 @@ export function ListenProgress({
   style?: StyleProp<ViewStyle>;
   testID?: string;
 }) {
-  const pct = Math.round(clampFraction(value) * 100);
+  const pct = Math.round(clamp01(value) * 100);
   return (
     <View
       role="progressbar"

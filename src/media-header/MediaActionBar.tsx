@@ -15,9 +15,10 @@ import { PlayButton } from '../media-controls/PlayButton';
 import { borderRadius } from '../styles/tokens';
 import type { WebCssStyle } from '../styles/web-view-style';
 import { webDataSet } from '../styles/web-data';
+import { clamp01 } from '../styles/clamp';
 import { Text } from '../typography';
 import { useMediaHeaderPaint } from './parts';
-import { clamp01, IS_WEB } from './shared';
+import { IS_WEB } from './shared';
 import type {
   DownloadButtonProps,
   FollowButtonProps,

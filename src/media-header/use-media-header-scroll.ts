@@ -1,8 +1,9 @@
 import { useCallback, useEffect, useState } from 'react';
 import type { NativeScrollEvent, NativeSyntheticEvent } from 'react-native';
 
-import { clamp01, IS_WEB } from './shared';
+import { IS_WEB } from './shared';
 import type { MediaHeaderScrollOptions } from './types';
+import { clamp01 } from '../styles/clamp';
 
 /** The bar's progress for a scroll offset: 0 before `start`, 1 from `end`. */
 export function mediaHeaderScrollProgress(offset: number, start: number, end: number): number {

@@ -8,3 +8,4 @@ export { web, native, ios, android, platform, select } from './platform';
 export { SUPPORTS_NATIVE_DRIVER } from './native-driver';
 export { contrastRatio, relativeLuminance } from './color-contrast';
 export { webDataSet } from './web-data';
+export { clamp, clamp01 } from './clamp';

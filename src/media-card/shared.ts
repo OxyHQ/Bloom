@@ -103,11 +103,6 @@ export function joinMeta(parts: ReadonlyArray<string | false | null | undefined>
   return parts.filter((part): part is string => typeof part === 'string' && part.trim() !== '').join(' · ');
 }
 
-export function clampFraction(value: number | undefined): number {
-  if (value === undefined || !Number.isFinite(value)) return 0;
-  return Math.min(1, Math.max(0, value));
-}
-
 // ---------------------------------------------------------------------------
 //  Contrast
 // ---------------------------------------------------------------------------

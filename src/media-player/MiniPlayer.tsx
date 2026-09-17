@@ -4,7 +4,7 @@ import { PanResponder, Pressable, View } from 'react-native';
 import { mixColor, resolveButtonRamps } from '../button/shared';
 import { LikeButton } from '../media-controls/LikeButton';
 import { PlayButton } from '../media-controls/PlayButton';
-import { clamp, resolveMediaControlsPaint } from '../media-controls/shared';
+import { resolveMediaControlsPaint } from '../media-controls/shared';
 import { resolveMenuPalette } from '../floating/menu-palette';
 import { useTheme } from '../theme/use-theme';
 import type { Theme } from '../theme/types';
@@ -16,6 +16,7 @@ import { Artwork } from './TrackText';
 import { artistNames, IS_WEB, resolveArtworkTint } from './shared';
 import type { MiniPlayerProps } from './types';
 import { webDataSet } from '../styles/web-data';
+import { clamp } from '../styles/clamp';
 
 export const MINI_PLAYER_HEIGHT = 56;
 /** Horizontal travel that counts as a swipe (native). */

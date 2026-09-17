@@ -16,14 +16,11 @@ import { borderRadius } from '../styles/tokens';
 import { adoptStyleSheet } from '../styles/adopt-style-sheet';
 import type { WebCssStyle } from '../styles/web-view-style';
 import { webDataSet } from '../styles/web-data';
+import { clamp } from '../styles/clamp';
 import { BUTTON_SHADOW, mixColor, resolveButtonRamps } from '../button/shared';
 import { FOCUS_RING_OFFSET_COLOR } from '../checkbox/shared';
 import { useAccessibleNameWarning } from '../hooks/use-accessible-name-warning';
 import type { RangeSliderProps, SliderProps } from './types';
-
-function clamp(v: number, min: number, max: number): number {
-  return Math.min(max, Math.max(min, v));
-}
 
 function quantize(raw: number, min: number, max: number, step: number): number {
   if (step <= 0) return clamp(raw, min, max);

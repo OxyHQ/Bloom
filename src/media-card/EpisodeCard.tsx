@@ -8,8 +8,9 @@ import { useTheme } from '../theme/use-theme';
 import { Text } from '../typography';
 import { MediaCard } from './MediaCard';
 import { ListenProgress } from './parts';
-import { clampFraction, joinMeta, resolveMediaCardPaint } from './shared';
+import { joinMeta, resolveMediaCardPaint } from './shared';
 import type { EpisodeCardProps, MediaCardSize } from './types';
+import { clamp01 } from '../styles/clamp';
 
 /** An episode row's cover side. */
 export const EPISODE_ROW_ARTWORK: Record<MediaCardSize, number> = { large: 112, medium: 96, small: 72 };
@@ -17,7 +18,7 @@ export const EPISODE_ROW_ARTWORK: Record<MediaCardSize, number> = { large: 112, 
 /** What the progress line draws: the check, the bar, or nothing. */
 export function episodeProgressState(played: boolean, progress: number | undefined): 'played' | 'progress' | 'none' {
   if (played) return 'played';
-  return clampFraction(progress) > 0 ? 'progress' : 'none';
+  return clamp01(progress) > 0 ? 'progress' : 'none';
 }
 
 /**

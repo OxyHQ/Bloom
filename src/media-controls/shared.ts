@@ -19,10 +19,6 @@ export function formatDuration(seconds: number): string {
   return h > 0 ? `${h}:${String(m).padStart(2, '0')}:${ss}` : `${m}:${ss}`;
 }
 
-export function clamp(v: number, min: number, max: number): number {
-  return Math.min(max, Math.max(min, v));
-}
-
 /** Every colour the family paints, from the theme only. */
 export interface MediaControlsPaint {
   accent: string;

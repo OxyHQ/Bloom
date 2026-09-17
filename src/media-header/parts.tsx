@@ -11,11 +11,11 @@ import { useContainerWidth } from '../hooks/use-container-width';
 import { useInteractiveWebCss } from '../styles/interactive-web-css';
 import type { WebCssStyle } from '../styles/web-view-style';
 import { webDataSet } from '../styles/web-data';
+import { clamp01 } from '../styles/clamp';
 import { useTheme } from '../theme/use-theme';
 import { Text } from '../typography';
 import type { TypeScaleVariant } from '../typography/scale';
 import {
-  clamp01,
   gradientStyle,
   MEDIA_HEADER_CSS,
   MEDIA_HEADER_STYLE_ID,
