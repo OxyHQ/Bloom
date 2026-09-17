@@ -1693,6 +1693,34 @@
         "default": "./lib/commonjs/slider/index.js"
       }
     },
+    "./stepper": {
+      "react-native": {
+        "types": "./lib/typescript/module/stepper/index.d.ts",
+        "default": "./src/stepper/index.ts"
+      },
+      "import": {
+        "types": "./lib/typescript/module/stepper/index.d.ts",
+        "default": "./lib/module/stepper/index.js"
+      },
+      "require": {
+        "types": "./lib/typescript/commonjs/stepper/index.d.ts",
+        "default": "./lib/commonjs/stepper/index.js"
+      }
+    },
+    "./rating": {
+      "react-native": {
+        "types": "./lib/typescript/module/rating/index.d.ts",
+        "default": "./src/rating/index.ts"
+      },
+      "import": {
+        "types": "./lib/typescript/module/rating/index.d.ts",
+        "default": "./lib/module/rating/index.js"
+      },
+      "require": {
+        "types": "./lib/typescript/commonjs/rating/index.d.ts",
+        "default": "./lib/commonjs/rating/index.js"
+      }
+    },
     "./card": {
       "react-native": {
         "types": "./lib/typescript/module/card/index.d.ts",

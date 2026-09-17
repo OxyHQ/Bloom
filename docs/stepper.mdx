@@ -1,0 +1,73 @@
+---
+title: Stepper
+description: A − value + counter for small whole quantities — guests, rooms, beds — and the row that labels it.
+order: 60
+---
+
+# Stepper
+
+For a small count the user nudges rather than types: guests, rooms, beds, tickets.
+
+```tsx
+import { Stepper, StepperRow } from '@oxy.so/bloom/stepper';
+
+<Stepper value={rooms} onValueChange={setRooms} min={1} max={10} accessibilityLabel="Rooms" />
+
+<StepperRow
+  title="Adults"
+  description="Ages 13 or above"
+  value={adults}
+  onValueChange={setAdults}
+  min={1}
+  max={16}
+  divider
+/>
+```
+
+## Props
+
+| prop                                | decides                                                                  |
+| ----------------------------------- | ------------------------------------------------------------------------ |
+| `value` / `onValueChange`           | fully controlled; the callback receives a value already clamped and snapped |
+| `min` / `max`                       | bounds (default `0` / unbounded); the matching button disables at each   |
+| `step`                              | the change per press or key (default `1`); fractional steps do not drift |
+| `disabled`                          | disables both buttons and the keyboard                                   |
+| `size`                              | `'small'` (32px buttons, body text) or `'medium'` (default, 36px, headline text) |
+| `formatValue`                       | the drawn and announced text, e.g. `(n) => (n === 8 ? '8+' : String(n))` |
+| `accessibilityLabel`                | **required** — what is being counted                                     |
+| `decrementLabel` / `incrementLabel` | the buttons' names, default `"Decrease"` / `"Increase"` — translate them  |
+| `style`, `testID`                   | the row; `testID` also derives `-decrement`, `-value`, `-increment`      |
+
+`StepperRow` takes every `Stepper` prop plus `title`, `description`, `divider`
+(a 1px neutral hairline under the row) and `stepperStyle`. Its
+`accessibilityLabel` is optional and defaults to `title` when that is a string.
+
+## What it looks like
+
+- **Buttons** Bloom `Button`s — `secondary`, icon-only, full pill — drawing
+  `RiSubtractLine` and `RiAddLine`. They change colour on hover and press and
+  never scale.
+- **Value** `headline-semibold` (`body-semibold` at `small`), tabular figures,
+  centred in a fixed minimum width (32, or 24 at `small`), so going from 9 to 10
+  does not move the buttons.
+- **Row** title `headline-medium` text-primary over a `body-regular`
+  text-secondary description, the stepper on the right, 16 above and below.
+
+## Accessibility
+
+The stepper is a `group` named by `accessibilityLabel`. Inside it the value is
+the `adjustable` element (`role="slider"` on web) carrying `aria-valuenow`,
+`aria-valuemin`, `aria-valuemax` (omitted when unbounded) and `aria-valuetext`
+(the `formatValue` output).
+
+- **Web** — the value takes focus (2px accent ring outside a 2px white offset)
+  and answers ArrowUp/ArrowRight (+`step`), ArrowDown/ArrowLeft (−`step`), Home
+  (`min`) and End (`max`). The two buttons stay out of the tab order: they are
+  the pointer route to the same action, and a guest picker of four rows would
+  otherwise cost twelve tab stops.
+- **Native** — the value answers the `increment` / `decrement` accessibility
+  actions (swipe up and down on iOS).
+
+The label is required in the type because nothing else can name the control:
+it draws a number and two glyphs, and a title beside it is a sibling element.
+An empty or missing label also warns once in development.

@@ -1,0 +1,51 @@
+---
+title: Rating
+description: A compact star, value and review count, and the bar for a rating breakdown.
+order: 61
+---
+
+# Rating
+
+```tsx
+import { Rating, RatingBar } from '@oxy.so/bloom/rating';
+
+<Rating value={4.92} count={128} />                        // ★ 4.92 (128)
+<Rating value={4.81} count={214} countStyle="reviews" />   // ★ 4.81 · 214 reviews
+<Rating value={null} />                                     // ★ New
+
+<RatingBar label="Cleanliness" value={4.9} display="4.9" />
+<RatingBar label="5" labelWidth={12} value={0.86} max={1} display="86%" />
+```
+
+## `Rating`
+
+| prop                 | decides                                                                                 |
+| -------------------- | --------------------------------------------------------------------------------------- |
+| `value`              | a number (drawn 5.0, 4.9, 4.92) or a pre-formatted string; `null`/`undefined`/`''` = no rating yet |
+| `count`              | the review count, number or string (`"1.2k"`); hidden when there is no rating           |
+| `countStyle`         | `'parenthesis'` → "(128)" (default) or `'reviews'` → "· 128 reviews"                    |
+| `reviewsLabel`       | the word after the count, default `"reviews"` — translate it                            |
+| `newLabel`           | drawn instead of the value when there is no rating yet, default `"New"`                 |
+| `size`               | `'small'` (14px star, body-2 text) or `'medium'` (default, 16px star, body text)        |
+| `accessibilityLabel` | replaces the composed name — pass a translated sentence                                 |
+| `style`, `testID`    |                                                                                          |
+
+The star and value are text-primary (`body-semibold`), the count text-secondary
+(`body-regular`). The whole row is one accessible element — `role="img"` on web —
+named "Rated 4.92 out of 5, 128 reviews", so a screen reader does not read the
+star, the number and the brackets as separate items. That sentence is English;
+apps in other languages pass `accessibilityLabel`.
+
+## `RatingBar`
+
+| prop         | decides                                                                     |
+| ------------ | --------------------------------------------------------------------------- |
+| `label`      | the row's text and the bar's accessible name                                |
+| `value`      | position on the scale, clamped to `0..max`                                  |
+| `max`        | the scale, default `5`; pass `1` for a fraction                             |
+| `display`    | the text on the right ("4.9", "86%"), also the bar's `aria-valuetext`      |
+| `labelWidth` | without it the label flexes and the bar is 96 wide (a category list); with it the bar flexes (a distribution) |
+
+The track is 4 tall with a 2px radius, neutral-200 (dark neutral-800), filled
+with text-primary. The bar is a `progressbar` carrying `aria-valuemin`,
+`aria-valuemax` and `aria-valuenow`.
