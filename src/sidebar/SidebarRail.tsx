@@ -4,6 +4,7 @@ import { ScrollView, View } from 'react-native';
 import { Badge } from '../badge';
 import { useSidebarPalette } from './palette';
 import { IS_WEB } from './parts';
+import { SidebarLogoView } from './SidebarLogoView';
 import { SidebarRailItem } from './SidebarRailItem';
 import type { SidebarNavItem, SidebarProps } from './types';
 
@@ -16,12 +17,14 @@ export const SIDEBAR_RAIL_WIDTH = 80;
  *   panel      80 wide, full height, background-full, no chrome
  *   items      centred vertically in a scroller (px 8, py 24, gap 8), one
  *              `SidebarRailItem` per row
+ *   logo       the mark only, centred at the top (pt 24), when `logo` is given
  *   secondary  pinned to the foot (px 8, pb 24, gap 8)
  *
- * The rail carries navigation only: account, team, plan, tree, quick search and
+ * The rail carries navigation and the logo's mark only: account, team, plan, tree, quick search and
  * the theme toggle belong to the panel variant and are not rendered here.
  */
 export function SidebarRail({
+  logo,
   items = [],
   secondaryItems = [],
   selected,
@@ -73,6 +76,11 @@ export function SidebarRail({
         style,
       ]}
     >
+      {logo ? (
+        <View style={{ flexShrink: 0, alignItems: 'center', paddingTop: 24 }}>
+          <SidebarLogoView logo={logo} showWordmark={false} testID="sidebar-logo" />
+        </View>
+      ) : null}
       <ScrollView
         {...(IS_WEB ? { dataSet: { bloomSidebarScroll: 'none' } } : {})}
         style={{ flex: 1 }}
