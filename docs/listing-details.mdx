@@ -1,0 +1,180 @@
+---
+title: Listing details
+description: The parts of a stay's listing page — photo grid, header, highlights, amenities, host card, review summary and review cards — and the section wrapper that stacks them.
+order: 106
+---
+
+# Listing details
+
+```tsx
+import {
+  AmenityList,
+  HostCard,
+  ListingHeader,
+  ListingHeaderAction,
+  ListingHighlights,
+  ListingPhotoGrid,
+  ListingSection,
+  ReviewCard,
+  ReviewSummary,
+} from '@oxy.so/bloom/listing-details';
+
+<ListingHeader
+  title="Sunlit flat above the river steps"
+  subtitle={['Entire rental unit in Porto', '4 guests', '2 bedrooms', '3 beds', '1 bath']}
+  rating={4.92}
+  reviewsLabel="128 reviews"
+  onPressReviews={scrollToReviews}
+  location="Porto, Portugal"
+  onPressLocation={openMap}
+  actions={<>
+    <ListingHeaderAction icon={RiShareLine} label="Share" onPress={share} />
+    <ListingHeaderAction icon={saved ? RiHeart3Fill : RiHeart3Line} label="Save" pressed={saved} onPress={toggleSaved} />
+  </>}
+/>
+<ListingPhotoGrid photos={photos} onPressPhoto={openGallery} onShowAll={() => openGallery(0)} />
+
+<ListingSection>
+  <ListingHighlights items={highlights} />
+</ListingSection>
+<ListingSection title="What this place offers">
+  <AmenityList items={amenities} limit={10} total={42} onShowAll={openAmenities} />
+</ListingSection>
+<ListingSection title="Reviews">
+  <ReviewSummary rating={4.92} title="Loved by guests" description="128 reviews" categories={categories} distribution={distribution} />
+  {reviews.map((r) => <ReviewCard key={r.id} {...r} />)}
+</ListingSection>
+<ListingSection title="Meet your host">
+  <HostCard name="Marta" avatar={hostPhoto} verified label="Top host" stats={stats} onMessage={message} />
+</ListingSection>
+```
+
+Everything is data in props. Counts, prices, dates and ratings arrive pre-formatted
+as strings, except where a part must compute: `ReviewSummary` and `Rating` format a
+numeric rating (4.92, 5.0), `ReviewCard` rounds `rating` to whole stars, and
+`AmenityList` fills the count into its "Show all" label. The default English strings
+(`"Show all photos"`, `"Show more"`, `"Unavailable"`, `"Rated 4 out of 5"`, …) are all
+props — translate them.
+
+## Each part picks its layout from its OWN width
+
+`ListingPhotoGrid`, `ListingHeader`, `AmenityList` and `ReviewSummary` measure the
+width they are laid out at (`onLayout`), not the window, so a page that splits into a
+content column and a booking column gets the right layout in each.
+
+| part | below | from |
+| --- | --- | --- |
+| `ListingPhotoGrid` (`layout="auto"`) | 744: full-bleed carousel | 744: grid |
+| `ListingHeader` | 640: actions under the meta row | 640: actions beside the title |
+| `AmenityList` (`columns="auto"`) | 560: one column | 560: two columns |
+| `ReviewSummary` | 640: stacked, one category column | 640: distribution beside two category columns |
+
+Before the first layout the photo grid holds its height with an empty frame, so the
+page does not jump. `layout="grid" | "carousel"` and `columns={1 | 2}` skip the
+measuring.
+
+## `ListingPhotoGrid`
+
+One large photo on the left half and a 2×2 grid on the right, 8px apart. The frame
+rounds its outer corners to 16 and clips, so the inner corners stay square. Fewer
+photos degrade: 1 fills the frame, 2 split it, 3 are a large photo plus two stacked,
+4 a large photo plus one over two. A photo darkens slightly on hover (web; native has
+no hover). "Show all photos" is a small secondary `Button` with `RiLayoutGridLine`,
+drawn only when `onShowAll` is set.
+
+Narrow, it is Bloom's `Carousel` without arrows or dots, one photo per page, with a
+"1 / 24" counter pill (`formatCounter`). The pill is `aria-hidden`: each slide already
+announces "Living room, photo 1 of 24" (`photoLabel`).
+
+| prop | decides |
+| --- | --- |
+| `photos` | `{ source, alt? }[]` — `source` is a URL or an `ImageResolver` id (`imageVariant`, default `"large"`) |
+| `onPressPhoto(index)` | makes each photo a button; without it a photo is a named image |
+| `onShowAll`, `showAllLabel` | the "Show all photos" button |
+| `layout` | `auto` (default), `grid`, `carousel` |
+| `aspectRatio` / `carouselAspectRatio` | `2` / `4 / 3` |
+
+### Opening the full-screen gallery
+
+The grid does not import `ZoomableMediaGallery` (it lives on its own subpath with its
+own peers); wire the two together in the app:
+
+```tsx
+import { ZoomableMediaGallery, type ZoomableMediaGalleryHandle } from '@oxy.so/bloom/zoomable-media-gallery';
+
+const gallery = useRef<ZoomableMediaGalleryHandle>(null);
+const items = photos.map((p) => ({ uri: p.source, alt: p.alt }));
+const open = (index: number) => gallery.current?.open(items, index);
+
+<ListingPhotoGrid photos={photos} onPressPhoto={open} onShowAll={() => open(0)} />
+<ZoomableMediaGallery ref={gallery} indicatorVariant="thumbnails" />
+```
+
+## `ListingHeader` and `ListingHeaderAction`
+
+The title is a heading (`headingLevel`, default 1) in title-1-semibold, or
+title-2-semibold with `size="medium"`. The subtitle (body, text-secondary) joins an
+array with " · ". The meta row is `badge` · `Rating` · the reviews link · the location
+link, wrapping; a link without its handler draws as plain text.
+
+`ListingHeaderAction` is the text button for `actions`: a 16px icon and an underlined
+body-semibold label, a neutral wash on hover, pill-shaped. `pressed` makes it a toggle
+(`aria-pressed` on web, `selected` on native); `iconOnly` drops the label on a narrow
+header and keeps it as the accessible name.
+
+## `ListingHighlights`
+
+Rows of an icon (`iconSize` 24 / 28 / 32, default 28), a headline-semibold title and a
+body description in text-secondary, 24 apart. A `list` of `listitem`s.
+
+## `AmenityList`
+
+Icon (24) + label rows, 12 above and below, in one or two columns. `available: false`
+strikes the label through, mutes the icon to text-tertiary and announces
+"Unavailable: Air conditioning" (`unavailableLabel`). `limit` draws the first N;
+the "Show all 42 amenities" secondary button appears when `onShowAll` is set and more
+exist than are drawn — pass `total` when `items` is already a subset.
+
+## `HostCard`
+
+A card (radius 20, card surface / dark neutral-900, hairline border, dropdown shadow):
+a 104px `Avatar` with a check badge on a primary disc when `verified`, the name in
+title-1-semibold and a `label` ("Top host", with an optional `labelIcon`); on the right
+a column of `stats` separated by hairlines. Below it: `details` (20px icon + body
+lines), `responseLines` (text-secondary) and a "Message host" secondary button when
+`onMessage` is set. `onPressProfile` makes the card one button named
+"Marta, Top host, Verified, 214 Reviews, …".
+
+## `ReviewSummary`
+
+A 32px star and the rating in display-2-semibold, with `title` / `description` beside
+it — one accessible element ("Rated 4.92 out of 5, Loved by guests"). Below: the 5→1
+distribution (`RatingBar` with `labelWidth={12}` and `max={1}`) and the category
+breakdown (`RatingBar` with a 16px category icon, `display` defaulting to
+`value.toFixed(1)`).
+
+## `ReviewCard`
+
+Avatar (48) + name + secondary line; five 10px stars (one image, "Rated 5 out of 5")
+and the date; the text clamped to `numberOfLines` (default 4, `0` never clamps).
+
+"Show more" is drawn only when the text IS clamped. That is measured, not guessed from
+the string's length: an invisible, unclamped copy is laid out behind the text and the
+two heights compared, which works identically on web and native. The toggle carries
+`aria-expanded` (web) and `accessibilityState.expanded` (native); `expanded` /
+`onExpandedChange` control it. `hostResponse` draws a tinted block (radius 12) with
+the response title, date and text.
+
+## `ListingSection`
+
+The wrapper that gives a page one rhythm: a top hairline (`divider`, default on), 32
+above and below, the title as a level-2 heading (title-3-semibold, or headline with
+`size="small"`), an optional `subtitle` and `action`, and the content 24 below.
+
+## Accessibility
+
+- Photos are buttons named by `photoLabel` when pressable, named images otherwise.
+- Heading levels are props (`ListingHeader` 1, `ListingSection` 2).
+- Links in the meta row are `role="link"` on web, buttons on native.
+- Every state is spelled for both platforms: `aria-pressed` + `selected` on a toggled
+  action, `aria-expanded` + `expanded` on "Show more", `aria-value*` on every bar.

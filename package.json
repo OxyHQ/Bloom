@@ -1721,6 +1721,20 @@
         "default": "./lib/commonjs/rating/index.js"
       }
     },
+    "./listing-details": {
+      "react-native": {
+        "types": "./lib/typescript/module/listing-details/index.d.ts",
+        "default": "./src/listing-details/index.ts"
+      },
+      "import": {
+        "types": "./lib/typescript/module/listing-details/index.d.ts",
+        "default": "./lib/module/listing-details/index.js"
+      },
+      "require": {
+        "types": "./lib/typescript/commonjs/listing-details/index.d.ts",
+        "default": "./lib/commonjs/listing-details/index.js"
+      }
+    },
     "./card": {
       "react-native": {
         "types": "./lib/typescript/module/card/index.d.ts",

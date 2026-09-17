@@ -298,6 +298,7 @@ export * from './card';
 export * from './badge';
 export { Rating, RatingBar } from './rating';
 export type { RatingBarProps, RatingCountStyle, RatingProps, RatingSize } from './rating';
+export * from './listing-details';
 export * from './chip';
 export * from './aspect-ratio';
 export * from './tabs';

@@ -173,6 +173,7 @@ const SUBPATHS = /** @type {const} */ ([
   ['./slider', 'slider/index.ts'],
   ['./stepper', 'stepper/index.ts'],
   ['./rating', 'rating/index.ts'],
+  ['./listing-details', 'listing-details/index.ts'],
   ['./card', 'card/index.ts'],
   ['./badge', 'badge/index.ts'],
   ['./chip', 'chip/index.ts'],
