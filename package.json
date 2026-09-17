@@ -590,6 +590,20 @@
         "default": "./lib/commonjs/app-shell/index.js"
       }
     },
+    "./page-header": {
+      "react-native": {
+        "types": "./lib/typescript/module/page-header/index.d.ts",
+        "default": "./src/page-header/index.ts"
+      },
+      "import": {
+        "types": "./lib/typescript/module/page-header/index.d.ts",
+        "default": "./lib/module/page-header/index.js"
+      },
+      "require": {
+        "types": "./lib/typescript/commonjs/page-header/index.d.ts",
+        "default": "./lib/commonjs/page-header/index.js"
+      }
+    },
     "./notification-center": {
       "react-native": {
         "types": "./lib/typescript/module/notification-center/index.d.ts",
