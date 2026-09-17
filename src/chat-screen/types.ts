@@ -3,16 +3,9 @@ import type { ImageSourcePropType, StyleProp, TextStyle, ViewStyle } from 'react
 
 import type { PresenceStatus } from '../chat-indicators/types';
 
-/**
- * A Remix-style icon COMPONENT (`RiPhoneLine`, not `<RiPhoneLine />`) — the
- * caller passes the component and the part that draws it decides the size and
- * the tint, so an icon can never arrive at the wrong rung.
- */
-export type ChatIconComponent = ComponentType<{
-  width?: number;
-  height?: number;
-  fill?: string;
-}>;
+
+import type { ChatIconComponent } from '../chat-indicators/types';
+export type { ChatIconComponent };
 
 // ---------------------------------------------------------------------------
 //  ChatHeader

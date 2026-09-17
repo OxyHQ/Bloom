@@ -137,7 +137,8 @@ function FileMessageComponent({
     '--bloom-message-media-ring': paint.ring,
   };
 
-  const body = (
+  // The identity half: what the row's own press target covers.
+  const identity = (
     <>
       <View
         style={{
@@ -173,6 +174,14 @@ function FileMessageComponent({
         ) : null}
       </View>
 
+    </>
+  );
+
+  // The trailing action is a CONTROL of its own — it must not sit inside the
+  // row's press target, or it is a button inside a button (invalid HTML, and
+  // one action announced twice).
+  const trailing = (
+    <>
       {transferring ? (
         <MediaProgressRing
           progress={progress}
@@ -212,23 +221,25 @@ function FileMessageComponent({
 
   return (
     <View style={style ?? null} testID={testID}>
-      {onPress ? (
-        <Pressable
-          {...webDataSet({ bloomMessageMediaPressable: '' })}
-          {...handlers}
-          role="button"
-          accessibilityLabel={rowName}
-          onPress={onPress}
-          style={rowStyle}
-          testID={testID ? `${testID}-row` : undefined}
-        >
-          {body}
-        </Pressable>
-      ) : (
-        <View style={rowStyle} testID={testID ? `${testID}-row` : undefined}>
-          {body}
-        </View>
-      )}
+      <View style={rowStyle} {...handlers} testID={testID ? `${testID}-row` : undefined}>
+        {onPress ? (
+          <Pressable
+            {...webDataSet({ bloomMessageMediaPressable: '' })}
+            role="button"
+            accessibilityLabel={rowName}
+            onPress={onPress}
+            style={{ flexDirection: 'row', alignItems: 'center', gap: space.md, flexGrow: 1, flexShrink: 1, minWidth: 0 }}
+            testID={testID ? `${testID}-open` : undefined}
+          >
+            {identity}
+          </Pressable>
+        ) : (
+          <View style={{ flexDirection: 'row', alignItems: 'center', gap: space.md, flexGrow: 1, flexShrink: 1, minWidth: 0 }}>
+            {identity}
+          </View>
+        )}
+        {trailing}
+      </View>
       {state === 'failed' ? (
         <MediaFailure paint={paint} onRetry={onRetry} testID={testID ? `${testID}-failed` : undefined} />
       ) : null}

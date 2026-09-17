@@ -11,6 +11,13 @@ export type PlayButtonSize = 'small' | 'medium' | 'large';
 export type PlayButtonVariant = 'accent' | 'inverse' | 'plain';
 
 export interface PlayButtonProps {
+  /**
+   * `false` draws the disc without making it a control: no `role="button"`, no
+   * focus stop, hidden from assistive tech unless `accessibilityLabel` names it.
+   * For a play glyph that sits INSIDE a pressable poster frame or row — a
+   * button inside a button is invalid HTML and a second stop for one action.
+   */
+  interactive?: boolean;
   /** Whether the media is playing: draws the pause glyph and is named "Pause". */
   playing: boolean;
   /** Called on press. The button does not toggle anything itself. */

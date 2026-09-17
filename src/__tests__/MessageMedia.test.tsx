@@ -451,7 +451,9 @@ describe('accessibility names', () => {
     expect(byTestId('video-frame').getAttribute('aria-label')).toBe('Video · 3:07');
 
     mount(<FileMessage name="Lease.pdf" sizeBytes={2.44 * 1024 * 1024} onPress={() => {}} testID="file" />);
-    expect(byTestId('file-row').getAttribute('aria-label')).toBe('Lease.pdf · 2.4 MB · PDF');
+    // The row's press target is the identity half; the download button beside it
+    // is its own control (a button inside a button is invalid HTML).
+    expect(byTestId('file-open').getAttribute('aria-label')).toBe('Lease.pdf · 2.4 MB · PDF');
     expect(byTestId('file-meta').textContent).toBe('2.4 MB · PDF');
   });
 

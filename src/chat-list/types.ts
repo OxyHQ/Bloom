@@ -10,16 +10,8 @@ import type {
 import type { FabProps } from '../fab/types';
 import type { TypeScaleVariant } from '../typography/scale';
 
-/**
- * An icon COMPONENT; every part here sizes and colours it. Bloom's Remix icons
- * (`RiArchiveLine`, …) have exactly this shape.
- */
-export type ChatIconComponent = ComponentType<{
-  width?: number;
-  height?: number;
-  fill?: string;
-  testID?: string;
-}>;
+import type { ChatIconComponent } from '../chat-indicators/types';
+export type { ChatIconComponent };
 
 // ---------------------------------------------------------------------------
 //  Row geometry

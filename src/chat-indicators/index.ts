@@ -12,6 +12,7 @@ export {
   presenceSizeForAvatar,
 } from './shared';
 export type {
+  ChatIconComponent,
   AvatarPresenceProps,
   MessageDeliveryStatus,
   MessageStatusProps,

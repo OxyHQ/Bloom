@@ -309,6 +309,12 @@ widths are integers summing to the width, the same arithmetic the album uses.
 so the icons, colours, meta line and download ring are the ones the bubble draws.
 A second file-row implementation is a second place for the size format to drift.
 
+**The row's press target is the identity half only.** The download / cancel
+control beside it is its own button, laid out as a sibling — nesting it inside
+the row's `Pressable` would be a button inside a button (invalid HTML, and one
+action announced twice). `testID`-wise that is `<id>-open` for the row's press
+target and `<id>-row` for the box around both.
+
 ## Exports
 
 Components aside, the family publishes the maths so an app can lay out against
