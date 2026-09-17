@@ -501,8 +501,14 @@ export function FloatingPanel({
             Without it a `TextField` inside a menu or popover stepped off the PAGE
             and landed on the panel's own fill — 1.000:1, no shell at all
             (`styles/surface-levels.ts`).
+
+            Level 1 for EVERY surface, not only `isMenuSurface`: that flag says
+            who PAINTS the chrome (`popover` resolves its own in
+            `popover/surface.ts`), not whether there is one. Keying the rung off
+            it published level 0 inside a popover, which is the case the ladder
+            exists for.
           */}
-          <SurfaceLevelProvider level={isMenuSurface ? 1 : 0}>{children}</SurfaceLevelProvider>
+          <SurfaceLevelProvider level={1}>{children}</SurfaceLevelProvider>
         </AnimatedPanel>
       </OverlayRoot>
     </Portal>
