@@ -456,3 +456,4 @@ export * as Code from './code';
 
 // Fonts
 export * as Fonts from './fonts';
+export * from './creator-studio';

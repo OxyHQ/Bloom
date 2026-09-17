@@ -1735,6 +1735,20 @@
         "default": "./lib/commonjs/media-controls/index.js"
       }
     },
+    "./creator-studio": {
+      "react-native": {
+        "types": "./lib/typescript/module/creator-studio/index.d.ts",
+        "default": "./src/creator-studio/index.ts"
+      },
+      "import": {
+        "types": "./lib/typescript/module/creator-studio/index.d.ts",
+        "default": "./lib/module/creator-studio/index.js"
+      },
+      "require": {
+        "types": "./lib/typescript/commonjs/creator-studio/index.d.ts",
+        "default": "./lib/commonjs/creator-studio/index.js"
+      }
+    },
     "./stay-filters": {
       "react-native": {
         "types": "./lib/typescript/module/stay-filters/index.d.ts",

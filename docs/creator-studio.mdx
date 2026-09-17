@@ -1,0 +1,146 @@
+---
+title: Creator Studio
+description: The artist and podcaster portal — audience KPIs, streams over time with release markers, top tracks, audience breakdown, the release catalog and its distribution timeline, uploads, track metadata and credits, artwork, payouts and editorial pitching.
+order: 114
+---
+
+# Creator Studio
+
+Everything an artist sees after signing in to their studio. Every block is built on Bloom's own families — `StatCards`, the chart cards (`CartesianPlot`, `BarListCard`, `RadialChartCard`, `PeriodChartHeader`), `DataTable`, `FileUpload`, and the form primitives — so they share geometry, colour, motion and accessibility with the rest of the library.
+
+```tsx
+import {
+  AudienceOverview,
+  StreamsChart,
+  TopTracksTable,
+  AudienceBreakdown,
+  PayoutSummaryCard,
+  ReleaseCard,
+  ReleaseTimeline,
+  TrackUploadRow,
+  TrackMetadataForm,
+  ArtworkUploader,
+  PitchCard,
+} from '@oxy.so/bloom/creator-studio';
+```
+
+Data is props. Numbers that are only displayed (`value`, `delta`, prices, dates) arrive pre-formatted — the app owns currency and locale. Charts take raw numbers and format them with `format` / `formatAxisValue`.
+
+## Dashboard
+
+### AudienceOverview
+
+```tsx
+<AudienceOverview
+  period={period}
+  onPeriodChange={setPeriod}
+  caption="Compared with the previous 28 days"
+  metrics={[
+    { kind: 'listeners', label: 'Listeners', value: '48,210', delta: '+12.4%', trend: 'up', series: last14Days },
+    { kind: 'streams', label: 'Streams', value: '312,904', delta: '+8.1%', trend: 'up', series },
+    { kind: 'followers', label: 'Followers', value: '9,846', delta: '0.0%', trend: 'flat' },
+    { kind: 'saves', label: 'Saves', value: '6,120', delta: '-3.2%', trend: 'down' },
+  ]}
+/>
+```
+
+A heading with a `SegmentedControl` (7 days · 28 days · 12 months · All time, override with `periods`) over plain `StatCards`. Each tile's `accessory` is a `Sparkline` of `series` in the trend's status colour; it is hidden from assistive tech because the value and delta chip already say the same. `trend` maps `up → lime`, `down → rose`, `flat → neutral` on the delta chip. Below 560px of its own width the switcher drops under the heading; the tiles follow `StatCards`' grid (2 columns, 4 from a 1024px window). `kind` picks the icon (headphones, play, follow, bookmark); `icon` overrides it.
+
+### StreamsChart
+
+```tsx
+<StreamsChart
+  metrics={[
+    { id: 'streams', label: 'Streams', data: streamsByDay, delta: 0.081 },
+    { id: 'listeners', label: 'Listeners', data: listenersByDay, delta: 0.124 },
+  ]}
+  events={[{ index: 14, label: 'Low Tide · Single' }]}
+/>
+```
+
+A 360-tall chart card: `PeriodChartHeader` with the metric switcher, then an area + 2.5px monotone line on `CartesianPlot` (dashed grid, Y axis 44). Each metric takes the next chart hue (the first blue, the second purple). An `event` draws a dashed rule, a ring dot on the line, and a label chip pinned to the plot top on whichever side has more room. Hovering (web) or scrubbing (native) moves the headline to the point, and a marked point's release name appears as the caption. The plot is one `role="img"` named `"Streams over time; releases: Low Tide · Single (15 Mar)"`. Controlled with `metric` / `onMetricChange`, or uncontrolled with `defaultMetric`.
+
+### TopTracksTable
+
+`DataTable` in the `inset` layout: rank, 40px cover + title/subtitle, Streams, Listeners, Saves (sortable, descending first) and a trend glyph named Rising / Falling / Steady / New entry. `tracks` is in rank order; the rank stays attached through sorting. Below 560px of its own width the Listeners and Saves columns drop and the cover shrinks to 32, so a phone keeps rank, track, streams and trend without horizontal scrolling. `artwork` is a URL or an ImageResolver id (resolved with the `thumb` variant).
+
+### AudienceBreakdown
+
+Four chart cards on the container's own width — two columns from 720px, one below:
+
+| card | family |
+|---|---|
+| Top locations | `BarListCard` with Cities / Countries tabs, share of listeners |
+| Listening sources | `RadialChartCard` `stacked` (the half-gauge donut with a legend) |
+| Age | `BarListCard`, every group shown |
+| Gender | `RadialChartCard` `stacked` |
+
+### PayoutSummaryCard
+
+The estimate this month (`title-1-medium`) with a delta chip, a 112px monthly bar chart on `CartesianPlot` (band scale, radius 6, the current — last — month in `chart-6`, the rest `chart-track`; hovering names the month and value above the bars), Last payout / Next payout rows under a divider, and a "View statements" link (`onViewStatements` or `statementsHref`).
+
+## Releases
+
+### ReleaseCard and ReleaseStatusBadge
+
+```tsx
+<ReleaseCard
+  release={{ id, title: 'Northbound', artist: 'Juno Varga', type: 'single', releaseDate: '9 Jul 2026',
+             status: 'rejected', statusReason: 'The artwork contains a web address.', trackCount: 2, artwork }}
+  onPress={openRelease}
+  actions={[{ label: 'Edit metadata', icon: RiEditLine }, { label: 'Delete', icon: RiDeleteBinLine, destructive: true }]}
+/>
+```
+
+`layout="grid"` (square cover on top) or `"row"` (64px cover leading, badge and menu trailing). The card is radius 16 with a 12 cover radius; hovering the pressable part deepens the surface (colour only). `onPress` makes the cover and text ONE pressable named by the title; the "⋯" `DropdownMenu` button (named "More actions for &lt;title&gt;") is its sibling, never nested. A rejected or taken-down release with a `statusReason` shows it in an error-tinted note.
+
+`ReleaseStatusBadge` is a `Chip` whose recipe is `RELEASE_STATUS_TONES`:
+
+| status | label | tone |
+|---|---|---|
+| `draft` | Draft | default, subtle |
+| `in-review` | In review | warning, subtle |
+| `scheduled` | Scheduled | info, subtle |
+| `live` | Live | success, subtle |
+| `rejected` | Rejected | error, subtle |
+| `takedown` | Taken down | error, outlined |
+
+### ReleaseTimeline
+
+`steps` of `{ id, label, state, date?, description? }` with states `complete` (accent disc + check), `current` (accent ring + dot), `upcoming` (neutral ring) and `error` (error disc + cross). Connectors turn accent after a complete step. `orientation="horizontal"` lays the steps out in a row — it falls back to vertical when its own width gives a step less than 96px. It is a `role="list"` of `listitem`s named "Review, in progress, Usually 2–3 days."; the current step carries `aria-current="step"`.
+
+## New release
+
+### TrackUploadRow
+
+| status | draws |
+|---|---|
+| `queued` | "Queued" |
+| `uploading` | a 4px `progressbar` (named "Uploading &lt;file&gt;", flat `aria-value*`) + "42% · About 20 s left" |
+| `processing` | a decorative running segment (CSS keyframes on web, reanimated on native, still under reduced motion) + "Transcoding…" |
+| `ready` | an accent check tile, a placeholder waveform derived from the file name, "Ready · 3:42" |
+| `failed` | a warning tile, the message in the error colour, and a "Retry" button |
+
+The row is `aria-busy` while uploading or processing; the remove button is named "Remove &lt;file&gt;". `size` is bytes (formatted like `FileUpload`) or a string. Pair the rows with a `FileUpload` limited to audio extensions for the drop zone.
+
+### TrackMetadataForm, ArtistChipsInput, IsrcField, CreditsEditor
+
+`TrackMetadataForm` is controlled (`value` / `onChange` with the whole next value) and composes: title + version (side by side from 560px of its own width), an explicit `Switch` row, genre + language `Select`s, primary (required) and featured `ArtistChipsInput`s, `IsrcField`, a lyrics `Textarea` with a counter, and `CreditsEditor` (`showCredits={false}` to place your own). `errors` paints a field invalid and shows its message.
+
+- `ArtistChipsInput` — names as `Chip`s, each with a remove glyph named "Remove &lt;name&gt;"; Enter or "Add" adds the trimmed name once (case-insensitive). `max` disables the input at the cap.
+- `IsrcField` — groups the value as `CC-XXX-YY-NNNNN` while typing (`formatIsrc`); a complete but malformed code turns invalid (`isValidIsrc`).
+- `CreditsEditor` — rows of role `Select` · name `TextFieldInput` · delete button ("Remove credit 2, Teodor Brask"), and "Add credit" (the new row takes the first role). Below 480px of its own width the role takes its own line. `createId` builds new ids.
+
+### ArtworkUploader
+
+A square up to 320 wide (or `size`). Without `artwork` it is a `FileUpload` limited to JPG / PNG (drag and drop or pick on web; `onPickFiles` on native). With `artwork` it previews the image with "Replace" (swaps back to the drop zone with a Cancel) and a delete button. `error` draws a 2px error ring and the message under the square. The component never decodes an image — measure it in the app and pass `artworkDimensionsError(width, height)`, which returns the "too small" / "must be square" message or `null`.
+
+## Pitching
+
+### PitchCard
+
+A release `Select`, Mood and Genre chip groups (selectable `Chip`s with `aria-pressed`, capped at `maxTags` — the rest disable), a pitch `Textarea` with a `maxLength` counter and a "Send pitch" button that stays disabled until a release and text are in (`loading` while `status="submitting"`). Once `status` is `submitted`, `accepted` or `declined`, the form is replaced by a status panel with the release and `submittedAt`; `onEdit` offers "Edit pitch" while still `submitted`.
+
+## Native
+
+Everything renders on native with the same props. Web-only: hover states (colour changes), the focus ring, drag and drop in the upload zones, and the CSS keyframes of the processing bar (native runs the same sweep with reanimated). On native the upload zones need `onPickFiles`.
