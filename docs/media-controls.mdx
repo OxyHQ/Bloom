@@ -1,0 +1,114 @@
+---
+title: Media Controls
+description: Play and like buttons, the explicit badge, the now-playing bars, a playback scrubber and a volume control.
+order: 62
+---
+
+# Media Controls
+
+The small pieces every player, track row and library screen is built from.
+
+```tsx
+import {
+  ExplicitBadge,
+  formatDuration,
+  LikeButton,
+  NowPlayingIndicator,
+  PlayButton,
+  PlaybackProgress,
+  VolumeControl,
+} from '@oxy.so/bloom/media-controls';
+
+<PlayButton playing={playing} subject="Night Drive" onPress={toggle} />
+<LikeButton liked={liked} onLikedChange={setLiked} />
+<ExplicitBadge />
+<NowPlayingIndicator playing={playing} />
+<PlaybackProgress
+  value={position}
+  duration={225}
+  buffered={buffered}
+  showTimes
+  onSeekPreview={setPreview}
+  onSeek={seekTo}
+/>
+<VolumeControl volume={volume} onVolumeChange={setVolume} muted={muted} onMutedChange={setMuted} />
+
+formatDuration(83);   // "1:23"
+formatDuration(3725); // "1:02:05"
+```
+
+Every control is controlled: it draws the props it is given and reports what the user did. Colours come from the theme — the accent is the theme's `primary` — in light and dark. No control scales or bounces; hover and press change colour only.
+
+## `PlayButton`
+
+| prop                 | decides                                                                                       |
+| -------------------- | --------------------------------------------------------------------------------------------- |
+| `playing`            | draws the pause glyph and is named "Pause"; otherwise the play glyph and "Play"               |
+| `onPress`            | called on press — the button toggles nothing itself                                           |
+| `size`               | `'small'` 32, `'medium'` 48 (default), `'large'` 56 — the circle's diameter                    |
+| `variant`            | `'accent'` (default) filled accent; `'inverse'` filled in the text colour; `'plain'` the glyph alone, for rows |
+| `loading`            | a spinning ring replaces the glyph and `aria-busy` is set; the button still presses          |
+| `subject`            | appended to the name: "Play Night Drive"                                                      |
+| `playLabel` / `pauseLabel` | the two actions, default "Play" / "Pause" — translate them                              |
+| `accessibilityLabel` | replaces the composed name                                                                    |
+| `disabled`, `style`, `testID` |                                                                                      |
+
+**Why no `aria-pressed`.** A toggle button keeps ONE name and flips a pressed state. This button instead names what pressing does next ("Pause Night Drive"), which is what a listener needs to hear. Doing both would announce "Pause, pressed" — two answers to one question. So it is a plain `button` whose name changes.
+
+## `LikeButton`
+
+| prop                        | decides                                                                  |
+| --------------------------- | ------------------------------------------------------------------------ |
+| `liked`, `onLikedChange`    | the state, and the callback with the next state                          |
+| `size`                      | glyph `'small'` 16 / `'medium'` 20 (default) / `'large'` 24; hit area 32 / 32 / 40 |
+| `activeColor`               | the liked heart's colour, default the theme accent                       |
+| `accessibilityLabel`        | the name, default "Save to Your Library" — fixed in both states         |
+| `disabled`, `style`, `testID` |                                                                        |
+
+A toggle with one fixed name: `aria-pressed` on web and `accessibilityState.selected` on native (React Native has no pressed state). The press does not reach a pressable row behind it.
+
+## `ExplicitBadge`
+
+`size` `'small'` (14) or `'medium'` (16, default); `letter` (default "E"); `label` (default "Explicit"). A neutral square with a small radius — a mark, not a pill. It is one `img` named by `label`; the letter is hidden from assistive tech.
+
+## `NowPlayingIndicator`
+
+`playing` (default `true`), `size` (default 16), `bars` `3 | 4` (default 4), `color` (default the accent), `label` (default "Now playing"). The bars swing on staggered periods while playing; paused, or with the system's reduced-motion setting on, they stand still at their resting heights.
+
+## `PlaybackProgress`
+
+| prop                 | decides                                                                                  |
+| -------------------- | ---------------------------------------------------------------------------------------- |
+| `value`, `duration`  | position and length, in **seconds**                                                      |
+| `buffered`           | how far the media has loaded, in seconds — drawn as a lighter segment                   |
+| `onSeekPreview`      | called while dragging with the position under the pointer; the fill and elapsed time follow it |
+| `onSeek`             | called once on release, and on each key press / accessibility action                     |
+| `showTimes`          | draws elapsed and total time (`formatDuration`)                                          |
+| `showRemaining`      | the right-hand time counts down: "−2:22"                                                 |
+| `timesPosition`      | `'inline'` (default) either side of the rail, or `'below'` under its two ends            |
+| `keyboardStep`       | seconds per arrow key, default 5                                                         |
+| `accessibilityLabel` | the slider's name, default "Seek"                                                        |
+| `formatValueText`    | `(seconds, duration) => string` — the announced value, default "1:23 of 3:45"            |
+| `disabled`, `style`, `testID` |                                                                                 |
+
+The rail is 4px inside a 16px hit area. The fill is the text colour at rest and turns accent under the pointer, while dragging and with keyboard focus; the 12px thumb shows in those same states only (on native: while dragging).
+
+It is a `slider` (`role="slider"`) with `aria-valuemin` 0, `aria-valuemax` the duration, `aria-valuenow` the position and `aria-valuetext`. On web it takes focus: arrows seek ±`keyboardStep`, Home and End jump to the ends. On native it answers the `increment` / `decrement` accessibility actions. The drawn times are hidden from assistive tech — the value text already says them.
+
+## `VolumeControl`
+
+| prop                          | decides                                                                         |
+| ----------------------------- | ------------------------------------------------------------------------------- |
+| `volume`, `onVolumeChange`    | level `0`..`1`; called while dragging and on each key (5% per arrow)            |
+| `muted`, `onMutedChange`      | the speaker button toggles it; moving the slider while muted also calls `onMutedChange(false)` |
+| `sliderWidth`                 | default 96                                                                      |
+| `sliderVisibility`            | `'always'` (default) or `'hover'` — on web the slider appears on hover or keyboard focus, its width reserved; a device without hover, and native, always show it |
+| `muteLabel` / `unmuteLabel`   | the button's name, default "Mute" / "Unmute"                                    |
+| `accessibilityLabel`          | the slider's name, default "Volume"; its value text is "40%"                    |
+| `disabled`, `style`, `testID` |                                                                                 |
+
+The speaker glyph follows the level: muted or 0, under 50%, and above. While muted the slider draws 0.
+
+## `formatDuration(seconds)`
+
+`m:ss` under an hour, `h:mm:ss` from an hour. Fractions are floored; negative, `NaN` and infinite input give `0:00`.
