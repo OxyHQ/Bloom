@@ -189,7 +189,14 @@ const RN_HOSTS = new Set([
 // `Item` also translates a role it is handed (`option` → `aria-selected`, a
 // `button` toggle → `aria-pressed`), but no caller hands it one since `Combobox`
 // and the old `Command` rows were removed — add it back here with the first.
-const DELEGATING_TAGS = ['MenuRowShell'];
+//
+// `chip/Chip.tsx` is the second: it takes `role` as `'button' | 'radio' | 'tab'`
+// and picks the state attribute the ROLE defines — `aria-pressed`,
+// `aria-checked`, `aria-selected` — alongside the native `accessibilityState`
+// spelling of the same thing. It is a claim its own file makes and
+// `Chip.test.tsx` pins against the real DOM, role by role, including that the
+// other two attributes are ABSENT (`aria-pressed` on a tab is invalid ARIA).
+const DELEGATING_TAGS = ['Chip', 'MenuRowShell'];
 
 /**
  * The same equality for the NAME rule, which covers a wider role set and so
@@ -213,7 +220,11 @@ const DELEGATING_TAGS = ['MenuRowShell'];
 // `StyledPressable` — where every rule below applies. Its two role-passing
 // callers are `listing-details`' and `media-header`'s inline links, both of
 // which pass the name too.
-const NAME_DELEGATING_TAGS = ['Button', 'Card', 'MediaPressable', 'MenuRowShell'];
+//
+// `Chip` forwards `accessibilityLabel` to the `Pressable` that carries the
+// role, on the pressable branch only — the non-pressable branch has no role to
+// name. Its string child names it otherwise.
+const NAME_DELEGATING_TAGS = ['Button', 'Card', 'Chip', 'MediaPressable', 'MenuRowShell'];
 
 /**
  * `const X = Animated.createAnimatedComponent(<host>)`, collected from the

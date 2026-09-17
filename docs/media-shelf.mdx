@@ -83,4 +83,6 @@ The same header rhythm and gaps as `Shelf`, with square (or `round`) covers over
 | `accessibilityLabel` | the group's name, default "Filters" |
 | `contentInset` | horizontal padding inside the scroll track |
 
-Each option is a large `Chip`: subtle at rest, the solid accent when selected. The row scrolls horizontally when it does not fit. Each chip is a toggle button with `aria-pressed` (and `accessibilityState.selected` on native — the `Chip` contract).
+Each option is an `xl` `Chip` (32 tall, 12px sides): neutral subtle at rest, the brand subtle tint when selected. The row is a `ChipRow`, so it scrolls sideways with an edge fade. Each chip is a toggle button with `aria-pressed` (and `accessibilityState.selected` on native — the `Chip` contract).
+
+Two things changed here and are worth knowing if you were matching them. It asked for `variant="solid"` when selected, the one filter row in the library that shouted its selection where every other one tints it. And it overrode the side padding with `paddingLeft`/`paddingRight` against a base that spells it `paddingHorizontal`, so on WEB the override dropped and the pills drew at 6 — native got 12, web got 6, and nothing failed. The rung carries 12 for both.

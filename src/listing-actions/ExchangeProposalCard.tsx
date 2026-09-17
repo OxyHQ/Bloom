@@ -29,7 +29,8 @@ const ALL_MODES: readonly ExchangeMode[] = ['swap', 'host', 'both'];
  *              (`layout="auto"`) they stack as 72-square rows and the glyph
  *              turns 90°
  *   box        20 below; DATES | GUESTS cells, `BookingCard`'s box
- *   modes      16 below; `Chip`s (medium, `selected` for the chosen mode)
+ *   modes      16 below; `Chip`s (xl — 32 tall, a target rather than a tag —
+ *              `selected` for the chosen mode)
  *   button     16 below; "Propose a swap" primary large, full width
  *   note       12 below; centred
  */
@@ -173,7 +174,7 @@ function ExchangeProposalCardComponent({
           {modes.map((value) => (
             <Chip
               key={value}
-              size="medium"
+              size="xl"
               variant="outlined"
               selected={mode === value}
               onPress={onModeChange ? () => onModeChange(value) : undefined}

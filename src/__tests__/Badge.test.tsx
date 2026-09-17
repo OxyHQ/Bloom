@@ -11,7 +11,10 @@ import { Text } from 'react-native';
 import { render } from '@testing-library/react-native';
 
 import { BloomThemeProvider } from '../theme/BloomThemeProvider';
-import { Badge } from '../badge';
+import { Badge, BADGE_GEOMETRY, resolveBadgePaint } from '../badge';
+import { resolveButtonRamps } from '../button/shared';
+import { RiKey2Line } from '../icons/remix/RiKey2Line';
+import { useTheme } from '../theme/use-theme';
 import { borderRadius } from '../styles/tokens';
 import {
   findHost,
@@ -100,7 +103,8 @@ describe('Badge', () => {
     expect(resolvedStyle(getByTestId('b').props.style)).toMatchObject({
       height: 18,
       minWidth: 18,
-      paddingHorizontal: 4,
+      paddingLeft: 4,
+      paddingRight: 4,
       borderRadius: borderRadius.full,
     });
     expect(resolvedStyle(getByText('12').props.style)).toMatchObject({
@@ -141,6 +145,127 @@ describe('Badge', () => {
     expect(positioned[0]?.bottom).toBe(-4);
     expect(positioned[0]?.left).toBe(-4);
     expect(positioned[0]?.top).toBeUndefined();
+  });
+
+  // --- the label rungs ---------------------------------------------------
+
+  it.each([
+    ['label-small', 20, 8, 12, 12],
+    ['label-medium', 24, 10, 13, 14],
+  ] as const)(
+    '%s is a %ipx pill with %ipx sides, %i/… semibold and a %ipx icon',
+    (size, height, padding, fontSize, icon) => {
+      const { getByTestId, getByText } = renderWithTheme(
+        <Badge size={size} variant="subtle" color="info" content="For rent" testID="b" />,
+      );
+      const style = resolvedStyle(getByTestId('b').props.style);
+      expect(style).toMatchObject({
+        height,
+        paddingLeft: padding,
+        paddingRight: padding,
+        borderRadius: borderRadius.full,
+      });
+      // A word yields before the card around it does: it shrinks and truncates,
+      // where a COUNTER rung pins minWidth to its height and never shrinks.
+      expect(style.flexShrink).toBe(1);
+      expect(style.minWidth).toBe(0);
+      expect(resolvedStyle(getByText('For rent').props.style).fontSize).toBe(fontSize);
+      expect(BADGE_GEOMETRY[size].icon).toBe(icon);
+    },
+  );
+
+  it('draws the leading icon at the rung size, in the label colour, hidden from assistive tech', () => {
+    const { getByTestId, UNSAFE_getByType } = renderWithTheme(
+      <Badge size="label-medium" variant="subtle" color="info" icon={RiKey2Line} content="For rent" testID="b" />,
+    );
+    // `includeHiddenElements`, because the slot is hidden from assistive
+    // technology — which is the property being asserted.
+    const slot = getByTestId('b-icon', { includeHiddenElements: true });
+    expect(slot.props['aria-hidden']).toBe(true);
+    expect(slot.props.importantForAccessibility).toBe('no-hide-descendants');
+    const svg = UNSAFE_getByType(RiKey2Line as never);
+    expect(svg.props.width).toBe(14);
+    expect(svg.props.height).toBe(14);
+  });
+
+  it('tucks the leading padding in by 2 when it carries an icon', () => {
+    const withIcon = renderWithTheme(<Badge size="label-medium" icon={RiKey2Line} content="x" testID="b" />);
+    const style = resolvedStyle(withIcon.getByTestId('b').props.style);
+    expect(style.paddingLeft).toBe(8);
+    expect(style.paddingRight).toBe(10);
+    expect(style.gap).toBe(4);
+  });
+
+  it('never renders an icon slot without an icon', () => {
+    const { queryByTestId } = renderWithTheme(<Badge size="label-small" content="Swap" testID="b" />);
+    expect(queryByTestId('b-icon', { includeHiddenElements: true })).toBeNull();
+  });
+
+  // --- onMedia -------------------------------------------------------------
+
+  it.each(['light', 'dark'] as const)(
+    'onMedia is the same light pill with a shadow in %s, whatever the tone',
+    (mode) => {
+      const { getByTestId, getByText, UNSAFE_getByType } = render(
+        <BloomThemeProvider mode={mode} colorPreset="oxy">
+          <Badge variant="onMedia" color="error" size="label-medium" icon={RiKey2Line} content="Swap" testID="b" />
+        </BloomThemeProvider>,
+      );
+      const style = resolvedStyle(getByTestId('b').props.style);
+      // The photograph under it does not change with the mode, so neither does
+      // the pill: the neutral ramp's 50 with a 900 label, in both modes.
+      expect(style.backgroundColor).toBeTruthy();
+      expect(style.boxShadow ?? style.shadowColor).toBeTruthy();
+      const label = resolvedStyle(getByText('Swap').props.style);
+      expect(UNSAFE_getByType(RiKey2Line as never).props.fill).toBe(label.color);
+    },
+  );
+
+  it('onMedia ignores the tone, and stays LIGHT-on-dark in dark mode', () => {
+    const paint = (mode: 'light' | 'dark', color: 'error' | 'success') => {
+      let out: ReturnType<typeof resolveBadgePaint> | null = null;
+      function Probe() {
+        out = resolveBadgePaint(useTheme(), color, 'onMedia');
+        return null;
+      }
+      render(
+        <BloomThemeProvider mode={mode} colorPreset="oxy">
+          <Probe />
+        </BloomThemeProvider>,
+      );
+      return out!;
+    };
+    // The tone is not in the recipe at all: a red "Sold" and a green "New" are
+    // the same pill over a photograph.
+    expect(paint('light', 'error')).toEqual(paint('light', 'success'));
+    expect(paint('dark', 'error')).toEqual(paint('dark', 'success'));
+    // And the mode does not FLIP it. The neutral ramp is theme-derived, so the
+    // two modes land a unit or two apart per channel rather than identical —
+    // what must hold is that dark mode does not hand back a dark pill with a
+    // light label, which is what a tone-following badge would do over a photo.
+    const [light, dark] = [paint('light', 'error'), paint('dark', 'error')];
+    const lum = (c: string) => c.split(/[^0-9.]+/).filter(Boolean).slice(0, 3).reduce((a, b) => a + Number(b), 0);
+    expect(lum(dark.background)).toBeGreaterThan(lum(dark.foreground));
+    expect(Math.abs(lum(dark.background) - lum(light.background))).toBeLessThan(10);
+  });
+
+  it('onMedia reads the neutral ramp rather than a hand-written colour', () => {
+    let ramp: ReturnType<typeof resolveButtonRamps> | null = null;
+    let paint: ReturnType<typeof resolveBadgePaint> | null = null;
+    function Probe() {
+      const theme = useTheme();
+      ramp = resolveButtonRamps(theme);
+      paint = resolveBadgePaint(theme, 'default', 'onMedia');
+      return null;
+    }
+    render(
+      <BloomThemeProvider mode="dark" colorPreset="oxy">
+        <Probe />
+      </BloomThemeProvider>,
+    );
+    expect(paint!.background).toBe(ramp!.neutral[50]);
+    expect(paint!.foreground).toBe(ramp!.neutral[900]);
+    expect(paint!.shadow).toBe('s');
   });
 
   it('grows with size rather than clipping the label', () => {

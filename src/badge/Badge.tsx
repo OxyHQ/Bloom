@@ -1,37 +1,43 @@
 import React, { memo, useMemo } from 'react';
 import { View, type ViewStyle, type TextStyle } from 'react-native';
 
+import { bloomShadowStyle } from '../design-tokens/shadows';
 import { useTheme } from '../theme/use-theme';
 import { Text } from '../typography/Typography';
-import type { TypeScaleVariant } from '../typography/scale';
-import { resolveAccentColors } from '../theme/accent-colors';
 import { borderRadius } from '../styles/tokens';
 import { Z_INDEX } from '../styles/z-index';
+import { BADGE_GEOMETRY, resolveBadgePaint } from './shared';
 import type { BadgeProps } from './types';
 
 /**
- * The counter badge and status dot, with colours from Bloom's accent recipe
- * (`resolveAccentColors`).
+ * The counter badge, the status dot and the label pill, with colours from
+ * Bloom's accent recipe (`resolveAccentColors`) and geometry from
+ * `shared.ts`'s rung table — five rungs in two families:
  *
- *            text                            padding-x  height  (py 1)
- *   small    caption-2-semibold, tracking 0  4          17
- *   medium   caption-1-semibold, tracking 0  4          18      ← default size
- *   large    body-semibold,      tracking 0  6          24
+ *                   height  padding-x  icon  text
+ *   small           17      4          10    caption-2-semibold
+ *   medium          18      4          11    caption-1-semibold   ← default
+ *   large           24      6          14    body-semibold
+ *   label-small     20      8          12    caption-1-semibold
+ *   label-medium    24      10         14    body-2-semibold
  *
- * Bloom uses the full pill radius, like `Button`, rather than a 4px corner,
- * and keeps a `minWidth` of the height so a single digit is a circle rather
- * than a pill narrower than it is tall.
+ * Bloom uses the full pill radius, like `Button`, rather than a 4px corner. A
+ * COUNTER rung keeps a `minWidth` of its height, so a single digit is a circle
+ * rather than a pill narrower than it is tall, and never shrinks. A LABEL rung
+ * shrinks and truncates instead — it carries a word, and a word must yield
+ * before the card around it does.
+ *
+ * `icon` is a leading glyph drawn at the rung's size in the LABEL's colour and
+ * hidden from assistive technology: the badge reads as its text, never as
+ * "image, key". An icon tucks the leading padding in by 2, optically.
  *
  * A standalone `dot` is a status dot: a solid centre on a tinted halo
  * (12 / 6 at `medium`). An attached dot stays a plain presence marker — a halo
  * over the child's corner would read as a second ring on the icon.
+ *
+ * `variant="onMedia"` is the over-a-photograph pill: a light fill with
+ * shadow-s, the same in both modes because the photograph is.
  */
-const SIZE_CONFIG = {
-  small: { height: 17, type: 'caption-2-semibold', paddingHorizontal: 4, dotSize: 6, halo: 8, core: 4 },
-  medium: { height: 18, type: 'caption-1-semibold', paddingHorizontal: 4, dotSize: 8, halo: 12, core: 6 },
-  large: { height: 24, type: 'body-semibold', paddingHorizontal: 6, dotSize: 10, halo: 16, core: 8 },
-} as const satisfies Record<string, { height: number; type: TypeScaleVariant; paddingHorizontal: number; dotSize: number; halo: number; core: number }>;
-
 const PLACEMENT_CONFIG = {
   'top-right': { top: -4, right: -4 },
   'top-left': { top: -4, left: -4 },
@@ -44,6 +50,7 @@ const BadgeComponent: React.FC<BadgeProps> = ({
   variant = 'solid',
   color = 'error',
   size = 'medium',
+  icon: Icon,
   dot = false,
   max,
   invisible = false,
@@ -57,11 +64,14 @@ const BadgeComponent: React.FC<BadgeProps> = ({
   // A dot has no label to make legible, so it always paints the tone's FILL. It
   // used to follow the variant, which made `dot variant="outlined"` a fully
   // transparent circle — visually absent, with markup that looks correct.
-  const colors = resolveAccentColors(theme.colors, color, dot ? 'solid' : variant);
+  const paint = useMemo(
+    () => resolveBadgePaint(theme, color, dot ? 'solid' : variant),
+    [theme, color, dot, variant],
+  );
   // The status dot's halo is the same tone's tint — the recipe's `subtle` pair,
   // so it follows the preset and mode exactly as a subtle badge does.
-  const halo = resolveAccentColors(theme.colors, color, 'subtle').background;
-  const sizeConfig = SIZE_CONFIG[size];
+  const halo = useMemo(() => resolveBadgePaint(theme, color, 'subtle').background, [theme, color]);
+  const geometry = BADGE_GEOMETRY[size];
   const attached = Boolean(children);
 
   const displayContent = useMemo(() => {
@@ -76,16 +86,16 @@ const BadgeComponent: React.FC<BadgeProps> = ({
   const badgeStyle = useMemo((): ViewStyle => {
     if (dot && attached) {
       return {
-        width: sizeConfig.dotSize,
-        height: sizeConfig.dotSize,
+        width: geometry.dotSize,
+        height: geometry.dotSize,
         borderRadius: borderRadius.full,
-        backgroundColor: colors.background,
+        backgroundColor: paint.background,
       };
     }
     if (dot) {
       return {
-        width: sizeConfig.halo,
-        height: sizeConfig.halo,
+        width: geometry.halo,
+        height: geometry.halo,
         borderRadius: borderRadius.full,
         backgroundColor: halo,
         alignItems: 'center',
@@ -95,44 +105,77 @@ const BadgeComponent: React.FC<BadgeProps> = ({
     }
 
     const base: ViewStyle = {
-      minWidth: sizeConfig.height,
-      height: sizeConfig.height,
+      height: geometry.height,
       borderRadius: borderRadius.full,
-      paddingHorizontal: sizeConfig.paddingHorizontal,
-      backgroundColor: colors.background,
+      // LONGHANDS, not `paddingHorizontal`: react-native-web maps the shorthand
+      // to `padding-inline`, which its atomic sheet ranks above `padding-left`
+      // whatever the array order — so a caller's `paddingLeft` override would
+      // drop on web and land on native. An icon also needs the two sides to
+      // differ. Overrides must use these same longhands.
+      paddingLeft: Icon ? Math.max(0, geometry.paddingHorizontal - 2) : geometry.paddingHorizontal,
+      paddingRight: geometry.paddingHorizontal,
+      backgroundColor: paint.background,
+      flexDirection: 'row',
       alignItems: 'center',
       justifyContent: 'center',
-      flexShrink: 0,
+      ...(Icon ? { gap: geometry.gap } : null),
+      // A word shrinks and truncates; a digit is a fixed token that keeps its
+      // circle. See `BadgeGeometry.word`.
+      ...(geometry.word
+        ? { alignSelf: 'flex-start', flexShrink: 1, minWidth: 0 }
+        : { minWidth: geometry.height, flexShrink: 0 }),
+      ...(paint.shadow ? bloomShadowStyle(paint.shadow) : null),
     };
 
     if (variant === 'outlined') {
       base.borderWidth = 1;
-      base.borderColor = colors.border;
+      base.borderColor = paint.border;
     }
 
     return base;
-  }, [dot, attached, sizeConfig, colors, halo, variant]);
+  }, [dot, attached, geometry, paint, halo, variant, Icon]);
 
   const badgeTextStyle = useMemo(
     (): TextStyle => ({
       // `tracking-normal` overrides the caption scale's 0.15px.
       letterSpacing: 0,
-      color: colors.foreground,
+      color: paint.foreground,
       textAlign: 'center',
+      ...(geometry.word ? { flexShrink: 1, minWidth: 0 } : null),
     }),
-    [sizeConfig, colors],
+    [geometry, paint],
   );
 
   const core =
     dot && !attached ? (
       <View
         style={{
-          width: sizeConfig.core,
-          height: sizeConfig.core,
+          width: geometry.core,
+          height: geometry.core,
           borderRadius: borderRadius.full,
-          backgroundColor: colors.background,
+          backgroundColor: paint.background,
         }}
       />
+    ) : null;
+
+  // The icon is a glyph OF the label, so it is hidden: a badge announces its
+  // text, never "image, key" beside it.
+  const iconNode =
+    Icon && !dot ? (
+      <View
+        aria-hidden
+        importantForAccessibility="no-hide-descendants"
+        testID={testID ? `${testID}-icon` : undefined}
+      >
+        <Icon width={geometry.icon} height={geometry.icon} fill={paint.foreground} />
+      </View>
+    ) : null;
+
+  const label =
+    displayContent != null ? (
+      <Text variant={geometry.type} numberOfLines={1} style={[badgeTextStyle, textStyle]}>
+        {displayContent}
+      </Text>
     ) : null;
 
   // Standalone badge (no children)
@@ -142,11 +185,8 @@ const BadgeComponent: React.FC<BadgeProps> = ({
     return (
       <View style={[badgeStyle, style]} testID={testID}>
         {core}
-        {displayContent != null && (
-          <Text variant={sizeConfig.type} numberOfLines={1} style={[badgeTextStyle, textStyle]}>
-            {displayContent}
-          </Text>
-        )}
+        {iconNode}
+        {label}
       </View>
     );
   }
@@ -167,11 +207,8 @@ const BadgeComponent: React.FC<BadgeProps> = ({
             style,
           ]}
         >
-          {displayContent != null && (
-            <Text variant={sizeConfig.type} numberOfLines={1} style={[badgeTextStyle, textStyle]}>
-              {displayContent}
-            </Text>
-          )}
+          {iconNode}
+          {label}
         </View>
       )}
     </View>

@@ -1,2 +1,4 @@
 export { Badge } from './Badge';
-export type { BadgeProps, BadgeSize, BadgePlacement } from './types';
+export { BADGE_GEOMETRY, resolveBadgePaint } from './shared';
+export type { BadgeGeometry, BadgePaint } from './shared';
+export type { BadgeProps, BadgeSize, BadgeVariant, BadgeIcon, BadgePlacement } from './types';

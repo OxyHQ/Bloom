@@ -1,14 +1,13 @@
 import type { ComponentType } from 'react';
 
-import { resolveButtonRamps } from '../button/shared';
+import { BADGE_GEOMETRY, resolveBadgePaint, type BadgeGeometry, type BadgeSize } from '../badge';
 import { RiArrowLeftRightLine } from '../icons/remix/RiArrowLeftRightLine';
 import { RiKey2Line } from '../icons/remix/RiKey2Line';
 import { RiPriceTag3Line } from '../icons/remix/RiPriceTag3Line';
 import { RiSuitcaseLine } from '../icons/remix/RiSuitcaseLine';
 import type { Offering } from '../listing-card/types';
-import { resolveAccentColors, type AccentTone } from '../theme/accent-colors';
+import type { AccentTone } from '../theme/accent-colors';
 import type { Theme } from '../theme/types';
-import type { TypeScaleVariant } from '../typography/scale';
 import type { OfferingBadgeSize, OfferingBadgeVariant } from './types';
 
 /** Every offering, in the order a listing lists them. */
@@ -47,28 +46,35 @@ export const OFFERING_TONES: Readonly<Record<Offering, AccentTone>> = {
   exchange: 'default',
 };
 
-export interface OfferingBadgeGeometry {
-  height: number;
-  paddingHorizontal: number;
-  gap: number;
-  icon: number;
-  type: TypeScaleVariant;
-}
+/**
+ * Which `Badge` rung each offering size is. The geometry itself is `Badge`'s —
+ * this family owns the housing VOCABULARY (which word, which glyph, which
+ * tone) and nothing else. It used to own a second copy of the rung table, which
+ * is how the listing card's status pill ended up with a third.
+ */
+export const OFFERING_BADGE_RUNG: Readonly<Record<OfferingBadgeSize, BadgeSize>> = {
+  small: 'label-small',
+  medium: 'label-medium',
+};
+
+export type OfferingBadgeGeometry = BadgeGeometry;
 
 /**
  *             height  padding-x  gap  icon  text
  *   small     20      8          4    12    caption-1-semibold
  *   medium    24      10         4    14    body-2-semibold
+ *
+ * Read through from `BADGE_GEOMETRY` so there is one table, not two.
  */
 export const OFFERING_BADGE_GEOMETRY: Readonly<Record<OfferingBadgeSize, OfferingBadgeGeometry>> = {
-  small: { height: 20, paddingHorizontal: 8, gap: 4, icon: 12, type: 'caption-1-semibold' },
-  medium: { height: 24, paddingHorizontal: 10, gap: 4, icon: 14, type: 'body-2-semibold' },
+  small: BADGE_GEOMETRY['label-small'],
+  medium: BADGE_GEOMETRY['label-medium'],
 };
 
 export interface OfferingBadgePaint {
   background: string;
   foreground: string;
-  /** The icon: the tone's own accent when tinted; over a photo, the same dark neutral as the label. */
+  /** The icon: the same colour as the label, on both variants. */
   icon: string;
   /** `bloomShadowStyle` step, or `null` for none. */
   shadow: 's' | null;
@@ -81,16 +87,15 @@ export interface OfferingBadgePaint {
  *             colour policy gates at AA over the page, so nothing is derived here
  *   onMedia   neutral-50 pill, neutral-900 label and icon, shadow-s; the same in
  *             both modes, because the photo under it does not change with them
+ *
+ * Both are `Badge`'s own paint (`resolveBadgePaint`); this maps the offering to
+ * its tone and the variant to the badge's fill.
  */
 export function resolveOfferingBadgePaint(
   theme: Theme,
   offering: Offering,
   variant: OfferingBadgeVariant,
 ): OfferingBadgePaint {
-  if (variant === 'onMedia') {
-    const { neutral: n } = resolveButtonRamps(theme);
-    return { background: n[50], foreground: n[900], icon: n[900], shadow: 's' };
-  }
-  const pair = resolveAccentColors(theme.colors, OFFERING_TONES[offering], 'subtle');
-  return { background: pair.background, foreground: pair.foreground, icon: pair.foreground, shadow: null };
+  const paint = resolveBadgePaint(theme, OFFERING_TONES[offering], variant === 'onMedia' ? 'onMedia' : 'subtle');
+  return { background: paint.background, foreground: paint.foreground, icon: paint.foreground, shadow: paint.shadow };
 }

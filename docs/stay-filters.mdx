@@ -317,17 +317,24 @@ becomes "Filters, 3 applied" (`accessibilityLabel` overrides it). `size`,
   a text-primary fill with the page background as the label, the page's own
   reading pair turned over, legible in both modes and every preset. Hover
   darkens the border; press fills neutral-100 (dark neutral-800). Colour only —
-  nothing scales. They are not `Chip`: that tops out at 28 tall and selects in
-  the brand tone.
+  nothing scales. That IS `Chip` now: the `2xl` rung and the `inverted` fill
+  (see [`Chip`](/docs/bloom/main/chip)). It used not to be — `Chip` topped out
+  at 28 tall and selected in the brand tone — so `FilterChip` had its own
+  stylesheet, its own hover and press colours and its own focus ring; it is now
+  a preset over the two.
 - **Text actions** ("Clear all", "Show more") are underlined `body-semibold` in
   text-primary, text-secondary on hover.
-- Keyboard focus draws a 2px accent ring outside a 2px white offset.
+- Keyboard focus draws `Chip`'s own 2px accent ring, offset 2px. It used to be
+  a box-shadow ring outside a hardcoded WHITE offset, which is a white halo on a
+  dark page.
 
 ## Accessibility
 
 - `FilterSection`: a named `group` with a level-3 `heading`.
 - `CountFilter`: a named `radiogroup` of `radio`s with `aria-checked`
-  (`accessibilityState.checked` on native). Every pill is in the tab order.
+  (`accessibilityState.checked` on native). Every pill is in the tab order. The
+  row is a `ChipRow`, so it scrolls sideways with an edge fade and keeps room
+  for each pill's focus ring.
 - `ToggleChipGroup`: a named `group` of toggle `button`s with `aria-pressed`
   (`accessibilityState.selected` on native).
 - "Show more" carries `aria-expanded`.

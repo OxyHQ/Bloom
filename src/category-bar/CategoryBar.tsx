@@ -11,6 +11,7 @@ import {
 import { useReducedMotion } from 'react-native-reanimated';
 
 import { Button } from '../button';
+import { chipRowOverflow } from '../chip/shared';
 import { resolveButtonRamps } from '../button/shared';
 import { useAccessibleNameWarning } from '../hooks/use-accessible-name-warning';
 import { useInteractionState } from '../hooks/use-interaction-state';
@@ -86,14 +87,16 @@ export interface CategoryBarScroll {
   content: number;
 }
 
-/** Whether there is more to scroll to each side. 1px slack for fractional offsets. */
-export function categoryBarOverflow({ x, viewport, content }: CategoryBarScroll): {
-  previous: boolean;
-  next: boolean;
-} {
-  if (viewport <= 0 || content <= viewport + 1) return { previous: false, next: false };
-  return { previous: x > 1, next: x < content - viewport - 1 };
-}
+/**
+ * Whether there is more to scroll to each side. 1px slack for fractional
+ * offsets.
+ *
+ * `ChipRow` asks the same question of the same shape, so this is one function
+ * (`chipRowOverflow`, in `chip/shared.ts`) and not two: the strip and the pill
+ * row cannot disagree about when an edge fade is up.
+ */
+export const categoryBarOverflow: (scroll: CategoryBarScroll) => { previous: boolean; next: boolean } =
+  chipRowOverflow;
 
 function clampOffset(target: number, { viewport, content }: CategoryBarScroll): number {
   return Math.min(Math.max(0, target), Math.max(0, content - viewport));

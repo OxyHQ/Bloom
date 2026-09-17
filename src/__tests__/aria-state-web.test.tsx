@@ -292,6 +292,24 @@ describe('role="button" toggles use aria-pressed', () => {
     expect(byTestId(c, 'chip').getAttribute('aria-pressed')).toBe('false');
   });
 
+  it.each([
+    ['radio', 'aria-checked'],
+    ['tab', 'aria-selected'],
+  ] as const)('Chip with role="%s" emits %s, and nothing the role forbids', (role, attribute) => {
+    // `aria-pressed` is what this component emitted for every role. It is
+    // invalid on a radio and on a tab, and a screen reader reading a tab as
+    // "pressed" is a bug no prop-level test can see: the prop is set.
+    const c = mount(
+      <Chip role={role} onPress={() => {}} selected accessibilityLabel="Songs" testID="chip">
+        Songs
+      </Chip>,
+    );
+    const el = byTestId(c, 'chip');
+    expect(el.getAttribute('role')).toBe(role);
+    expect(el.getAttribute(attribute)).toBe('true');
+    expect(el.getAttribute('aria-pressed')).toBeNull();
+  });
+
   it('FrostedIconButton emits aria-pressed, matching its .web fork', () => {
     const c = mount(
       <FrostedIconButton accessibilityLabel="Back" icon={<Text>x</Text>} active testID="fib" />,

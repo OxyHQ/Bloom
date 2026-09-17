@@ -1,11 +1,11 @@
 import React from 'react';
 import { View, type StyleProp, type ViewStyle } from 'react-native';
 
+import { Badge } from '../badge';
 import { RiMapPinLine } from '../icons/remix/RiMapPinLine';
 import { OfferingBadge } from '../offering-badge/OfferingBadge';
-import { OFFERING_BADGE_GEOMETRY } from '../offering-badge/shared';
+import { OFFERING_BADGE_RUNG } from '../offering-badge/shared';
 import type { OfferingBadgeSize, OfferingBadgeVariant } from '../offering-badge/types';
-import { borderRadius } from '../styles/tokens';
 import { Text } from '../typography';
 import { TYPE_SCALE, type TypeScaleVariant } from '../typography/scale';
 import { uniqueOfferings } from './shared';
@@ -206,25 +206,27 @@ export interface ListingStatusPillProps {
   testID?: string;
 }
 
-/** The status pill: the page's reading pair inverted, the badges' geometry. */
+/**
+ * The status pill: `Badge` on the same label rung the offering badges use, in
+ * the page's own reading pair INVERTED.
+ *
+ * It is `variant="solid"` on the neutral tone — a filled pill with a label the
+ * colour policy guarantees on it — with one override: the neutral solid fill is
+ * `textSecondary`, and this pill sits on a photograph under a wash, where the
+ * louder `text` is what stays readable. So the two colours arrive as props from
+ * the card's own paint, and only the fill and the label colour are overridden;
+ * the geometry, the radius and the truncation are `Badge`'s.
+ */
 export function ListingStatusPill({ label, fill, text, size, testID }: ListingStatusPillProps) {
-  const geometry = OFFERING_BADGE_GEOMETRY[size];
   return (
-    <View
-      style={{
-        alignSelf: 'flex-start',
-        justifyContent: 'center',
-        height: geometry.height,
-        paddingLeft: geometry.paddingHorizontal,
-        paddingRight: geometry.paddingHorizontal,
-        borderRadius: borderRadius.full,
-        backgroundColor: fill,
-      }}
+    <Badge
+      content={label}
+      size={OFFERING_BADGE_RUNG[size]}
+      variant="solid"
+      color="default"
+      style={{ backgroundColor: fill }}
+      textStyle={{ color: text }}
       testID={testID}
-    >
-      <Text variant={geometry.type} numberOfLines={1} style={{ color: text }}>
-        {label}
-      </Text>
-    </View>
+    />
   );
 }
