@@ -417,6 +417,8 @@ describe('the census can see', () => {
       'AnimatedPanel',
       'AnimatedPressable',
       'AnimatedStyledView',
+      // media-header/StickyMediaTopBar: the fade and the aria-hidden share one node.
+      'FadeView',
     ]);
   });
 
