@@ -1,6 +1,6 @@
 {
   "name": "@oxy.so/bloom",
-  "version": "2.9.0",
+  "version": "2.8.0",
   "packageManager": "bun@1.3.14",
   "description": "Bloom UI — Oxy ecosystem component library for React Native + Expo + Web",
   "main": "lib/commonjs/index.js",
@@ -1721,20 +1721,6 @@
         "default": "./lib/commonjs/rating/index.js"
       }
     },
-    "./media-controls": {
-      "react-native": {
-        "types": "./lib/typescript/module/media-controls/index.d.ts",
-        "default": "./src/media-controls/index.ts"
-      },
-      "import": {
-        "types": "./lib/typescript/module/media-controls/index.d.ts",
-        "default": "./lib/module/media-controls/index.js"
-      },
-      "require": {
-        "types": "./lib/typescript/commonjs/media-controls/index.d.ts",
-        "default": "./lib/commonjs/media-controls/index.js"
-      }
-    },
     "./stay-filters": {
       "react-native": {
         "types": "./lib/typescript/module/stay-filters/index.d.ts",
@@ -1763,20 +1749,6 @@
         "default": "./lib/commonjs/stay-search/index.js"
       }
     },
-    "./home-search": {
-      "react-native": {
-        "types": "./lib/typescript/module/home-search/index.d.ts",
-        "default": "./src/home-search/index.ts"
-      },
-      "import": {
-        "types": "./lib/typescript/module/home-search/index.d.ts",
-        "default": "./lib/module/home-search/index.js"
-      },
-      "require": {
-        "types": "./lib/typescript/commonjs/home-search/index.d.ts",
-        "default": "./lib/commonjs/home-search/index.js"
-      }
-    },
     "./listing-details": {
       "react-native": {
         "types": "./lib/typescript/module/listing-details/index.d.ts",
@@ -1789,20 +1761,6 @@
       "require": {
         "types": "./lib/typescript/commonjs/listing-details/index.d.ts",
         "default": "./lib/commonjs/listing-details/index.js"
-      }
-    },
-    "./property-insights": {
-      "react-native": {
-        "types": "./lib/typescript/module/property-insights/index.d.ts",
-        "default": "./src/property-insights/index.ts"
-      },
-      "import": {
-        "types": "./lib/typescript/module/property-insights/index.d.ts",
-        "default": "./lib/module/property-insights/index.js"
-      },
-      "require": {
-        "types": "./lib/typescript/commonjs/property-insights/index.d.ts",
-        "default": "./lib/commonjs/property-insights/index.js"
       }
     },
     "./booking": {
@@ -1819,20 +1777,6 @@
         "default": "./lib/commonjs/booking/index.js"
       }
     },
-    "./listing-actions": {
-      "react-native": {
-        "types": "./lib/typescript/module/listing-actions/index.d.ts",
-        "default": "./src/listing-actions/index.ts"
-      },
-      "import": {
-        "types": "./lib/typescript/module/listing-actions/index.d.ts",
-        "default": "./lib/module/listing-actions/index.js"
-      },
-      "require": {
-        "types": "./lib/typescript/commonjs/listing-actions/index.d.ts",
-        "default": "./lib/commonjs/listing-actions/index.js"
-      }
-    },
     "./listing-card": {
       "react-native": {
         "types": "./lib/typescript/module/listing-card/index.d.ts",
@@ -1845,20 +1789,6 @@
       "require": {
         "types": "./lib/typescript/commonjs/listing-card/index.d.ts",
         "default": "./lib/commonjs/listing-card/index.js"
-      }
-    },
-    "./offering-badge": {
-      "react-native": {
-        "types": "./lib/typescript/module/offering-badge/index.d.ts",
-        "default": "./src/offering-badge/index.ts"
-      },
-      "import": {
-        "types": "./lib/typescript/module/offering-badge/index.d.ts",
-        "default": "./lib/module/offering-badge/index.js"
-      },
-      "require": {
-        "types": "./lib/typescript/commonjs/offering-badge/index.d.ts",
-        "default": "./lib/commonjs/offering-badge/index.js"
       }
     },
     "./category-bar": {
@@ -1889,46 +1819,46 @@
         "default": "./lib/commonjs/map-marker/index.js"
       }
     },
-    "./tenancy": {
+    "./wizard": {
       "react-native": {
-        "types": "./lib/typescript/module/tenancy/index.d.ts",
-        "default": "./src/tenancy/index.ts"
+        "types": "./lib/typescript/module/wizard/index.d.ts",
+        "default": "./src/wizard/index.ts"
       },
       "import": {
-        "types": "./lib/typescript/module/tenancy/index.d.ts",
-        "default": "./lib/module/tenancy/index.js"
+        "types": "./lib/typescript/module/wizard/index.d.ts",
+        "default": "./lib/module/wizard/index.js"
       },
       "require": {
-        "types": "./lib/typescript/commonjs/tenancy/index.d.ts",
-        "default": "./lib/commonjs/tenancy/index.js"
+        "types": "./lib/typescript/commonjs/wizard/index.d.ts",
+        "default": "./lib/commonjs/wizard/index.js"
       }
     },
-    "./eviction": {
+    "./sortable-media": {
       "react-native": {
-        "types": "./lib/typescript/module/eviction/index.d.ts",
-        "default": "./src/eviction/index.ts"
+        "types": "./lib/typescript/module/sortable-media/index.d.ts",
+        "default": "./src/sortable-media/index.ts"
       },
       "import": {
-        "types": "./lib/typescript/module/eviction/index.d.ts",
-        "default": "./lib/module/eviction/index.js"
+        "types": "./lib/typescript/module/sortable-media/index.d.ts",
+        "default": "./lib/module/sortable-media/index.js"
       },
       "require": {
-        "types": "./lib/typescript/commonjs/eviction/index.d.ts",
-        "default": "./lib/commonjs/eviction/index.js"
+        "types": "./lib/typescript/commonjs/sortable-media/index.d.ts",
+        "default": "./lib/commonjs/sortable-media/index.js"
       }
     },
-    "./place-reviews": {
+    "./listing-editor": {
       "react-native": {
-        "types": "./lib/typescript/module/place-reviews/index.d.ts",
-        "default": "./src/place-reviews/index.ts"
+        "types": "./lib/typescript/module/listing-editor/index.d.ts",
+        "default": "./src/listing-editor/index.ts"
       },
       "import": {
-        "types": "./lib/typescript/module/place-reviews/index.d.ts",
-        "default": "./lib/module/place-reviews/index.js"
+        "types": "./lib/typescript/module/listing-editor/index.d.ts",
+        "default": "./lib/module/listing-editor/index.js"
       },
       "require": {
-        "types": "./lib/typescript/commonjs/place-reviews/index.d.ts",
-        "default": "./lib/commonjs/place-reviews/index.js"
+        "types": "./lib/typescript/commonjs/listing-editor/index.d.ts",
+        "default": "./lib/commonjs/listing-editor/index.js"
       }
     },
     "./card": {
