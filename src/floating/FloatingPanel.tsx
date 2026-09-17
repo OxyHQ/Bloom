@@ -18,10 +18,12 @@
  *    `pointer-events: none` and the property inherits.
  *  - Placement goes through `overlay/dropdown-placement`, which fits, flips and
  *    clamps on the axis `side` names and aligns-then-clamps on the other one.
- *  - The chrome — radius, border, background, inset, elevation — is a class
- *    string (`PANEL_CLASS`), so a consumer can restyle a surface with utilities.
- *    Only what is COMPUTED stays inline: the resolved position, the caller's
- *    numeric `minWidth`/`maxWidth`, the transform origin and the motion.
+ *  - The menu surfaces' geometry — radius, border width, inset — is a class
+ *    string (`MENU_PANEL_CLASS`, `LISTBOX_PANEL_CLASS`) and their colours are
+ *    inline from `menu-palette.ts`. The `popover` surface carries NO chrome of
+ *    its own here: `popover/surface.ts` resolves the whole panel inline and
+ *    hands it over as `style`, so a caller's `className` can still override
+ *    any one piece of it (see that module).
  *
  * `alignOffset` is applied by SHIFTING THE ANCHOR before resolving, not by
  * nudging the result: the resolver's own clamp then still owns the align axis,
@@ -32,12 +34,9 @@
  *
  * ── MOTION ───────────────────────────────────────────────────────────────────
  *
- * Fade + `zoom-95` + an 8px slide from the side it landed on, 200ms on
- * `--ease-out-quint`, scaling from the corner nearest the trigger — the target's
- * own enter, and the same shape reversed on the way out. That is the `popover`
- * surface; the `menu` and `listbox` surfaces run a separate menu motion instead
- * (150ms `ease-out`, fade + `scale-95` + 2px blur, no slide) and wear matching
- * chrome, coloured inline from `menu-palette.ts`.
+ * The one popover motion, on every surface: 150ms `ease-out`, fade +
+ * `scale-95` + 2px blur, no slide, scaling from the corner nearest the trigger
+ * — and the same shape reversed on the way out.
  *
  * Driven IMPERATIVELY from one shared value, which is the only mechanism
  * available here and is what both platform rules point at:
@@ -86,11 +85,6 @@ import {
   MENU_MOTION_EASING,
   MENU_MOTION_SCALE_FROM,
   MENU_PANEL_CLASS,
-  PANEL_CLASS,
-  PANEL_MOTION_DURATION,
-  PANEL_MOTION_EASING,
-  PANEL_MOTION_SCALE_FROM,
-  PANEL_MOTION_SLIDE,
   VIEWPORT_GUTTER,
 } from './constants';
 import { useMenuPalette } from './menu-palette';
@@ -105,25 +99,23 @@ import type { FloatingPanelProps, FloatingSide } from './types';
  */
 const AnimatedPanel = Animated.createAnimatedComponent(StyledView);
 
-/** `cubic-bezier(0.22, 1, 0.36, 1)`, the target's `--ease-out-quint`. */
-const EASING = Easing.bezier(...PANEL_MOTION_EASING);
-
 /** Tailwind v4 `ease-out`, the menu curve. */
 const MENU_EASING = Easing.bezier(...MENU_MOTION_EASING);
 
 /**
- * The per-surface chrome and motion. `popover` is the original Radix-derived
- * panel; `menu` and `listbox` use the menu recipe (`menu-styles.ts`), whose
- * colours come from `menu-palette.ts`.
+ * The per-surface chrome and motion. All three share the one popover motion;
+ * `menu` and `listbox` use the menu recipe (`menu-styles.ts`) with colours from
+ * `menu-palette.ts`, while `popover` leaves the whole panel to its caller's
+ * resolved `style` (`popover/surface.ts`).
  */
 const SURFACE = {
   popover: {
-    className: PANEL_CLASS,
-    duration: PANEL_MOTION_DURATION,
-    easing: EASING,
-    scaleFrom: PANEL_MOTION_SCALE_FROM,
-    slide: PANEL_MOTION_SLIDE,
-    blur: 0,
+    className: '',
+    duration: MENU_MOTION_DURATION,
+    easing: MENU_EASING,
+    scaleFrom: MENU_MOTION_SCALE_FROM,
+    slide: 0,
+    blur: MENU_MOTION_BLUR,
   },
   menu: {
     className: MENU_PANEL_CLASS,

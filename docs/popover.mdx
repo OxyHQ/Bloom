@@ -8,33 +8,89 @@ order: 21
 
 A small surface of arbitrary content, anchored to what opened it. An anchored panel on web, a bottom sheet on native.
 
-Three parts, shadcn's own: `Popover`, `PopoverTrigger`, `PopoverContent`.
+Three structural parts, shadcn's own — `Popover`, `PopoverTrigger`, `PopoverContent` — plus the panel parts every floating surface repeats: `PopoverHeader`, `PopoverTitle`, `PopoverDescription`, `PopoverFooter` and `PopoverSeparator`.
 
 Reach for it when the content is not a list of actions. When it IS a list of actions, reach for [DropdownMenu](/docs/bloom/main/dropdown-menu) — it gives you the rows, the keyboard state and the ARIA roles for free.
 
 ## Basic
 
 ```tsx
-import { Popover, PopoverContent, PopoverTrigger } from '@oxy.so/bloom/popover';
+import {
+  Popover,
+  PopoverContent,
+  PopoverDescription,
+  PopoverHeader,
+  PopoverTitle,
+  PopoverTrigger,
+} from '@oxy.so/bloom/popover';
 import { Button } from '@oxy.so/bloom/button';
-import { P } from '@oxy.so/bloom/typography';
 
 <Popover>
   <PopoverTrigger asChild label="What is this?">
     <Button variant="secondary">What is this?</Button>
   </PopoverTrigger>
 
-  <PopoverContent label="Two-factor authentication">
-    <View style={{ padding: 16, gap: 8 }}>
-      <P>A second step when you sign in, so a leaked password is not enough on its own.</P>
-    </View>
+  <PopoverContent label="Two-factor authentication" align="start">
+    <PopoverHeader>
+      <PopoverTitle>Two-factor authentication</PopoverTitle>
+      <PopoverDescription numberOfLines={0}>
+        A second step when you sign in, so a leaked password is not enough on its own.
+      </PopoverDescription>
+    </PopoverHeader>
   </PopoverContent>
 </Popover>
 ```
 
-## The panel has no padding of its own
+## The panel
 
-Deliberate, and worth knowing before you wonder where the inset went. A popover's body is as often a list of `Item` rows (an option picker, the dialog header's overflow) as it is prose, and rows have to reach the panel edge to show their full-width highlight. So the panel keeps only the 4px vertical rhythm every anchored Bloom surface has, and a prose popover pads its own body — as the example above does.
+`PopoverContent` is Bloom's floating surface — the one every menu, picker and account panel shares (`MENU_POPOVER_SURFACE`):
+
+| | |
+| --- | --- |
+| width | `266` (`w-[266px]`), capped at the viewport minus 32 |
+| corner | `16` (`rounded-2xl`) |
+| border | 1px `border-button-default` |
+| surface | `background-primary-default` — the theme's card in light, `neutral-800` in dark |
+| inset | `10` on every side (`p-2.5`) |
+| elevation | `shadow-dropdown` |
+| motion | 150ms `ease-out`: fade + `scale-95` + 2px blur, in and out, from the corner nearest the trigger |
+| offset | `8` from the trigger |
+
+The colours come from the same theme ramps as `Button` and the menus (`floating/menu-palette.ts`), in light and dark. Popovers have no close button or arrow.
+
+## Panel parts
+
+| Part | Classes | Use |
+| --- | --- | --- |
+| `PopoverHeader` | `flex items-center gap-2 px-2 pt-1` | A heading row; `leading` takes an avatar or icon beside the text column |
+| `PopoverTitle` | `text-body-medium text-text-primary` | `tone="secondary"` is the group-label colour ("Users with access") |
+| `PopoverDescription` | `text-body-regular text-text-secondary` | One line by default; `numberOfLines={0}` for prose |
+| `PopoverFooter` | `flex items-center gap-3 px-2 pb-2` | Actions — `px-2 pb-2` puts them 18px from the panel edge on every side |
+| `PopoverSeparator` | `-mx-2.5 my-2.5 h-px bg-border-button-default` | Full-bleed rule between sections |
+
+The `px-2` of the header and footer is measured against the panel's `p-2.5`, and the separator bleeds back through exactly that inset — so they line up only inside a `PopoverContent` that keeps its default padding.
+
+## The inset: row lists and prose share it
+
+The panel keeps its `p-2.5` whatever the body is. A row list (an option picker, the dialog header's overflow) puts its rows straight inside — rows carry their own `p-2` and their own 10px corner, so a hover wash sits 10px in from the border, which is the intended look, not a missing full-bleed highlight. Prose pads itself through the parts (`PopoverHeader`'s `px-2`), not through an extra wrapper.
+
+## Overriding the panel
+
+Every default is resolved INLINE, before the caller's `style`, so `style` overrides any of it:
+
+```tsx
+<PopoverContent label="Event details" side="right" style={{ width: 302, borderRadius: 20 }}>
+```
+
+`className` works too, and this is the part worth knowing. On web an inline style outranks every class, so an inline default would silently beat a caller's `w-[200px]`. `PopoverContent` reads which chrome properties the caller's utilities name — width (`w-*`, `size-*`), `max-w-*`, padding (`p-*`, `px-*`, …), `rounded-*`, border width (`border`, `border-0`, `border-x-2`), border colour (`border-red-500`), `bg-*`, `shadow-*`, `overflow-*`, through `md:`/`dark:` variants and `!` — and leaves THAT default out, so the class is the only rule for it:
+
+```tsx
+<PopoverContent label="More actions" className="w-[200px] p-2">
+```
+
+Anything the panel sets no default for (`gap-*`, `flex-row`, margins) is a plain class and needs nothing.
+
+A padding override from `style` may use the shorthand (`padding: 0`) — the defaults are longhands, and an inline shorthand still replaces them.
 
 ## Controlled
 
@@ -48,26 +104,24 @@ Uncontrolled by default. `onOpenChange` fires either way. Closing it from inside
 
 ## Placement (web)
 
-`PopoverContent` takes `side` (`'top' | 'bottom'`, default `'bottom'`), `align` (`'start' | 'center' | 'end'`, default `'center'`), `sideOffset`, `alignOffset`, `minWidth` and `maxWidth`. The surface flips to the other side when the named one does not fit and clamps into the viewport when neither does.
+`PopoverContent` takes `side` (`'top' | 'bottom' | 'left' | 'right'`, default `'bottom'`), `align` (`'start' | 'center' | 'end'`, default `'center'`), `sideOffset` (default `8`, the panel's own `offset={8}`), `alignOffset`, `minWidth` and `maxWidth`. The surface flips to the other side when the named one does not fit and clamps into the viewport when neither does.
 
 A popover centres on its trigger by default, where a menu starts at its left edge — that is the one placement default the two families disagree on, and it matches shadcn.
 
-## Shape
+A numeric `maxWidth` prop replaces the viewport cap.
 
-shadcn's popover is `w-72 p-4`: a fixed 288px card with a 16px inset, not a shrink-wrap around its content. Bloom applies both, first in the style array, so a body that is a list of rows rather than prose overrides them from `style` — the same thing a shadcn call site says with `className="w-auto p-0"`:
+## Native
 
-```tsx
-<PopoverContent label="Actions" style={{ width: 'auto', padding: 4 }}>
-  <Item title="Profile" onPress={openProfile} />
-</PopoverContent>
-```
+The popover is a bottom sheet on native: a phone has no room to float a panel beside a control, and every Bloom overlay resolving to the same sheet is what makes the native surfaces feel like one system. The sheet is the chrome (its surface, corner and drag handle), so the placement props are ignored and only the body takes the panel geometry — the same 10px inset on the sides and bottom, below the handle's clearance — so the panel parts line up exactly as they do on web. `className`, `style` and `testID` land on that body.
 
-Rows have to reach the panel's edge to draw a full-width highlight, which is why the dialog header's overflow menu does this.
+## `asChild` and `disabled`
 
-On native these are ignored; the sheet is anchored to the screen.
+`disabled` on an `asChild` trigger keeps the panel closed whatever element the caller passed. The guard lives in `floating/TriggerSlot`'s `cloneTrigger`, not in the child: a child that forwards `onPress` but has no notion of `disabled` would otherwise still open the panel. The browser is the weaker instrument here — a real `Pressable` child swallows its own press and hides a missing guard — which is why the `Base/Popover` `AsChildDisabled` story carries a forwarding control, gated by `scripts/verify-trigger-disabled.mjs` and `src/__tests__/PopoverTriggerDisabled.test.tsx`.
 
 ## Dismissal
 
 Press outside or hit Escape. `dismissible={false}` turns both off, for a popover the user has to answer.
 
 Escape stops at the innermost open surface, so a popover opened from inside a dialog closes the popover and leaves the dialog up.
+
+The outside press is caught by a transparent backdrop (it closes the popover and goes no further). Popovers are non-modal — a press outside would otherwise also reach the page — but Bloom keeps the caught press so a popover opened inside a dialog cannot dismiss the dialog with the same click.

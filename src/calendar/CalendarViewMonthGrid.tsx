@@ -67,8 +67,8 @@ import type { CalendarViewEvent, CalendarViewMonthGridProps } from './types';
  * state next to the near-black card), out-of-month days on tertiary at `sm`+.
  * The lattice is `separator-border-strong` (dark: `separator-border`).
  *
- * OVERFLOW (from the one Figma cell that shows it): more than 3 events shows the
- * LAST 4, bottom-anchored, under a "+N more" label.
+ * OVERFLOW: more than 3 events shows the LAST 4, bottom-anchored, under a
+ * "+N more" label.
  *
  * Pressing a chip opens `CalendarViewEventDetails` beside its DAY (web: right
  * of the card, 6px away, flipping left when it does not fit; native: the bottom
@@ -424,17 +424,13 @@ export function CalendarViewMonthGrid({
 
   const detailsStyle: WebCssStyle | undefined = Platform.select<WebCssStyle | undefined>({
     web: {
+      // The event-details surface is the popover panel with its own
+      // width, a 20px corner and a deeper shadow; border, surface and
+      // `p-2.5` are the popover's defaults.
       width: 302,
       overflow: 'visible',
       borderRadius: 20,
-      borderWidth: 1,
-      borderColor: palette.panelBorder,
-      backgroundColor: palette.panel,
       boxShadow: palette.shadowDetails,
-      paddingTop: 10,
-      paddingBottom: 10,
-      paddingLeft: 10,
-      paddingRight: 10,
     },
     default: undefined,
   });

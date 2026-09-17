@@ -34,30 +34,15 @@
  * vocabulary rather than rounded onto a Bloom rung — rounding is exactly the
  * substitution that stops a port looking like its original.
  *
- * ── COLOUR ROLES ─────────────────────────────────────────────────────────────
+ * ── COLOUR ──────────────────────────────────────────────────────────────────
  *
- * The target's tokens are its own app's (`bg-surface-elevated`, `border-border-l1`,
- * `bg-button-ghost-hover`, `text-fg-secondary`) and are not portable. They map
- * onto Bloom's like this. Nothing below is a literal colour, and no token is
- * ever alpha-suffixed (Bloom tokens resolve to `rgb(...)`, so appending hex
- * alpha parses back OPAQUE).
- *
- * | target                   | Bloom class            | why |
- * | ------------------------ | ---------------------- | --- |
- * | `bg-surface-elevated`    | `bg-popover`           | `--popover` is `surfaceContainer`, which sits one step off the page in BOTH schemes (light 249,233,247 vs background 255,239,253; dark 37,29,38 vs 19,12,20). One token, so the panel needs no `dark:` fork — and a `dark:` fork would not be portable anyway, since the fleet disagrees about what `dark:` matches (the website and this harness use the `.dark` class, Mention's build uses the OS scheme) |
- * | `text-primary` (its body colour) | `text-foreground` | same role, same contrast target. NOT Bloom's `--primary`, which is a brand accent |
- * | `border-border-l1`       | `border-border`        | the hairline between surfaces. `--border` and `--input` are the same expression (`outlineVariant`) in every preset |
- * | `bg-button-ghost-hover`  | `bg-accent`            | the row highlight wash — already what every other Bloom row paints |
- * | `text-fg-secondary`      | `text-muted-foreground`| the single de-emphasis step. Bloom has a third, `textTertiary`, that the target has no name for; using it for a shortcut would be a step further out than the original |
- * | destructive row          | `text-error`           | Bloom's themed negative, legible in both modes |
- * | `shadow-md shadow-black/5` | `shadow-m`           | Bloom's overlay elevation role |
- * | `shadow-sm shadow-black/5` | `shadow-s`           | Bloom's control-raise role |
- *
- * That table is now the POPOVER's (`PANEL_CLASS`). The three menu families and
- * the select paint a separate menu recipe instead — geometry still as classes
- * here (`MENU_PANEL_CLASS`, `ROW_CLASS`, …), but colours resolved from the theme
- * ramps by `menu-palette.ts` and applied inline, because those stops exist as no
- * CSS variable a class could name.
+ * No colour lives here. Every anchored surface — the three menus, the select
+ * and the popover — paints `bg-background-primary-default
+ * border-border-button-default shadow-dropdown`, resolved from the theme ramps
+ * by `menu-palette.ts` and applied INLINE, because those stops exist as no CSS
+ * variable a class could name. (The retired shadcn popover chrome —
+ * `bg-popover`, `shadow-m`, `w-72 p-4` — is gone; its geometry now lives in
+ * `popover/surface.ts`, also inline.)
  */
 
 /* -------------------------------------------------------------------------- */
@@ -132,27 +117,11 @@ export const ROW_ICON_SIZE = 16;
 export const SELECT_MAX_HEIGHT = 240;
 
 /**
- * How long the enter and the exit run, and the curve they run on.
- *
- * `200ms` and `--ease-out-quint` = `cubic-bezier(0.22, 1, 0.36, 1)` are the
- * target's own. Both directions take the same duration, as the target does; the
- * exit's value is also what `FloatingPanel` waits before it unmounts, so the two
- * cannot drift apart.
- */
-export const PANEL_MOTION_DURATION = 200;
-export const PANEL_MOTION_EASING = [0.22, 1, 0.36, 1] as const;
-
-/** `zoom-in-95` / `zoom-out-95`. */
-export const PANEL_MOTION_SCALE_FROM = 0.95;
-
-/** `slide-in-from-<side>-2` — 8px along the axis the surface sits on. */
-export const PANEL_MOTION_SLIDE = 8;
-
-/**
- * The MENU surfaces' own motion: `transition
+ * The motion EVERY anchored surface runs — menus, the listbox and the popover
+ * alike, because every popover class string carries it: `transition
  * duration-150 ease-out` between the resting panel and `opacity-0 scale-95
  * blur-[2px]`, the same shape in and out, with no slide. `ease-out` is Tailwind
- * v4's `cubic-bezier(0, 0, 0.2, 1)`. A popover keeps the `PANEL_MOTION_*` above.
+ * v4's `cubic-bezier(0, 0, 0.2, 1)`.
  */
 export const MENU_MOTION_DURATION = 150;
 export const MENU_MOTION_EASING = [0, 0, 0.2, 1] as const;
@@ -163,17 +132,6 @@ export const MENU_MOTION_BLUR = 2;
 /* -------------------------------------------------------------------------- */
 /*  The floating panel                                                        */
 /* -------------------------------------------------------------------------- */
-
-/**
- * `rounded-2xl border bg-surface-elevated p-1 shadow-md text-primary`.
- *
- * `p-space-4` is FOUR-sided: the rows sit 4px in from the border on every edge,
- * which is also what gives the separator's `-mx-space-4` something to bleed back
- * through. `overflow-hidden` keeps a row's 12px highlight inside the panel's own
- * 16px corner.
- */
-export const PANEL_CLASS =
-  'overflow-hidden rounded-radius-16 border border-border bg-popover p-space-4 shadow-m';
 
 /**
  * The menu panel: `rounded-2xl border p-2.5
@@ -222,9 +180,6 @@ export const MENU_SUB_PANEL_CLASS = 'w-[266px]';
  */
 export const MENU_SUB_SCROLL_CLASS =
   '-mx-[10px] px-[10px] gap-space-4 max-h-96 overflow-y-auto overflow-x-hidden';
-
-/** `w-72 p-4` — a popover holds prose, so it is a fixed card with a real inset. */
-export const POPOVER_CLASS = 'w-72 p-space-16';
 
 /* -------------------------------------------------------------------------- */
 /*  The menu row vocabulary                                                   */
