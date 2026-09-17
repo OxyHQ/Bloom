@@ -20,7 +20,7 @@ import {
 import { RiArrowDownSLine as ChevronBottomIcon } from '../icons/remix/RiArrowDownSLine';
 import { useTheme } from '../theme/use-theme';
 import { useInteractionState } from '../hooks/use-interaction-state';
-import { animation, borderRadius, space } from '../styles/tokens';
+import { DISABLED_OPACITY, animation, borderRadius, space } from '../styles/tokens';
 import { SUPPORTS_NATIVE_DRIVER } from '../styles/native-driver';
 import type {
   AccordionProps,
@@ -184,7 +184,7 @@ const AccordionTriggerComponent: React.FC<AccordionTriggerProps> = ({
           paddingVertical: space.md,
           paddingHorizontal: space.xs,
           gap: space.sm,
-          opacity: disabled ? 0.4 : pressed ? 0.7 : 1,
+          opacity: disabled ? DISABLED_OPACITY : pressed ? 0.7 : 1,
         },
         style,
       ]}

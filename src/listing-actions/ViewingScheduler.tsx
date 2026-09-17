@@ -33,7 +33,7 @@ export function slotGrid(width: number): { columns: number; chipWidth: number } 
  *   title      headline-semibold
  *   days       16 below; a horizontal scroll of 56-wide day tiles, 8 apart,
  *              radius 12, weekday caption-1-regular over the date
- *              headline-semibold; unavailable days at 40% and not pressable
+ *              headline-semibold; unavailable days at the disabled opacity and not pressable
  *   times      20 below; caption label, then a grid of 36-tall pill chips at
  *              least 76 wide, 8 apart, filling the row
  *   selected   INVERTED — text-primary fill, surface ink — on days and times

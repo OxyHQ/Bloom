@@ -75,6 +75,7 @@ import {
 } from '../overlay/dropdown-placement';
 import { Portal } from '../portal/index.web';
 import { StyledView } from '../styles/styled-primitives';
+import { SurfaceLevelProvider } from '../styles/surface-levels';
 import { WEB_POSITION_FIXED } from '../styles/web-view-style';
 import {
   DEFAULT_ALIGN_OFFSET,
@@ -495,7 +496,13 @@ export function FloatingPanel({
             motionStyle,
             style,
           ]}>
-          {children}
+          {/*
+            The panel IS a surface, so it publishes the rung its children sit on.
+            Without it a `TextField` inside a menu or popover stepped off the PAGE
+            and landed on the panel's own fill — 1.000:1, no shell at all
+            (`styles/surface-levels.ts`).
+          */}
+          <SurfaceLevelProvider level={isMenuSurface ? 1 : 0}>{children}</SurfaceLevelProvider>
         </AnimatedPanel>
       </OverlayRoot>
     </Portal>

@@ -1,4 +1,5 @@
 import React from 'react';
+import { hairlineOn, surfaceFillOn } from '../styles/surface-levels';
 import type { ReactTestInstance } from 'react-test-renderer';
 import { act, fireEvent, render } from '@testing-library/react-native';
 
@@ -714,7 +715,13 @@ describe('Tabs', () => {
         expect(underline.underline).toBe(accent[600]);
         expect(underline.selectedLabel).toBe(accent[600]);
         expect(underline.idleLabel).toBe(theme.colors.text);
-        expect(underline.separator).toBe(isDark ? n[800] : n[200]);
+        // The rail is a STEP off the strip's surface, not a ramp stop. As
+        // `neutral-800` it was the exact fill a menu-surface panel paints, so a
+        // strip inside one had no rail (ΔE 0). Default surface is the page.
+        expect(underline.separator).toBe(hairlineOn(theme, theme.colors.background));
+        expect(resolveTabsPaint(theme, 'underline', '#123456').separator).not.toBe(
+          underline.separator,
+        );
         expect(underline.countSelectedForeground).toBe(accent[600]);
         expect(underline.countIdleBackground).toBe('rgba(0, 0, 0, 0.1)');
         if (!isDark) expect(underline.countSelectedBackground).toBe(accent[100]);
@@ -722,13 +729,13 @@ describe('Tabs', () => {
         const pill = resolveTabsPaint(theme, 'pill');
         expect(pill.selectedLabel).toBe(accent[500]);
         expect(pill.idleLabel).toBe(n[500]);
-        expect(pill.hover).toBe(isDark ? n[800] : n[100]);
+        expect(pill.hover).toBe(surfaceFillOn(theme, theme.colors.background));
         if (!isDark) expect(pill.thumb).toBe(accent[50]);
 
         const filled = resolveTabsPaint(theme, 'filled');
-        expect(filled.thumb).toBe(isDark ? n[800] : n[200]);
+        expect(filled.thumb).toBe(surfaceFillOn(theme, theme.colors.background));
         expect(filled.selectedLabel).toBe(theme.colors.text);
-        if (!isDark) expect(filled.hover).toBe(n[100]);
+
 
         // `outlined` is a legacy alias for the accent pill.
         expect(resolveTabsPaint(theme, 'outlined')).toEqual(pill);

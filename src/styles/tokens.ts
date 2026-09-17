@@ -136,3 +136,29 @@ export const gradients = {
     hover_value: '#0A7AFF',
   },
 } as const;
+
+/**
+ * How far a disabled control fades.
+ *
+ * ONE value, because three were in the tree: 0.5 in twenty-five places, 0.4 in
+ * six (`listing-actions`, `track-list`, `accordion`, `composer-panel`,
+ * `agent-chat`) and 0.6 in one (`listing-card`'s favourite button). Nothing
+ * distinguished them — the same kind of icon button faded to three different
+ * depths depending on which family drew it.
+ *
+ * **The convention.** A control that can RECOLOUR when disabled recolours: it
+ * swaps to the theme's own disabled fill and foreground and keeps opacity 1.
+ * That is what `Button` does, and it is preferred, because a fade multiplies
+ * against whatever is behind the control — over a coloured card a 0.5 label goes
+ * muddy rather than quiet, and a fade stacks when a disabled control sits inside
+ * a disabled group.
+ *
+ * Opacity is the fallback, for a control with NO token pair to swap to — an icon
+ * drawn in `currentColor`, a `Pressable` painting nothing of its own, a row of
+ * mixed children. When it is used, it is this number. A disabled control is
+ * exempt from the WCAG contrast floors, which is what makes a single blanket
+ * value defensible at all; it is not licence to pick a new one per family.
+ *
+ * Gate: `disabled-convention.test.ts`.
+ */
+export const DISABLED_OPACITY = 0.5;

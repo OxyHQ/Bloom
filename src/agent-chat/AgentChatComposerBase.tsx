@@ -38,7 +38,7 @@ import type { AgentChatComposerProps } from './types';
  *   model      32 tall, radius 12, py 6 / px 8, gap 4: 16px sparkle
  *              (icon-secondary) + body-2-medium text-secondary, max 13ch
  *   controls   pl 6, gap 8: send (36 `bg-button-primary` disc, white 20px arrow,
- *              40% while empty) or stop (36 background-secondary disc, 20px
+ *              the disabled opacity while empty) or stop (36 background-secondary disc, 20px
  *              icon-secondary square, one step darker on hover)
  *   status     26 tall, space-between: provider (∞) and message count (✦),
  *              16px icon-secondary + body-2-medium text-secondary, gap 4

@@ -8,6 +8,7 @@
  * DOM attributes and computed styles rather than props.
  */
 import React, { useState } from 'react';
+import { DISABLED_OPACITY } from '../styles/tokens';
 import { act } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
 
@@ -391,7 +392,7 @@ describe('ViewingScheduler', () => {
     expect(getComputedStyle(chip.querySelector('div')!).color).toBe(css(palette.surface));
     expect(getComputedStyle(chip).borderTopLeftRadius).toBe('9999px');
     expect(getComputedStyle(byTestId('v-day-mon')).borderTopLeftRadius).toBe('12px');
-    expect(getComputedStyle(byTestId('v-slot-09:30')).opacity).toBe('0.4');
+    expect(getComputedStyle(byTestId('v-slot-09:30')).opacity).toBe(String(DISABLED_OPACITY));
   });
 
   it('enables the button once a day and a time are chosen, and shows the empty label', () => {

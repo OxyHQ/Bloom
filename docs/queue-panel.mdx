@@ -116,3 +116,10 @@ Every string is in `labels` — pass any subset to translate. The ones that name
 ## Colours
 
 From the theme only, light and dark: the panel is the menu surface and hairline, a row under the pointer takes the menu row highlight, the glyph buttons one neutral step above it, and the playing title the accent. Hover and press change colour only; nothing scales.
+
+## The panel publishes its surface
+
+In `panel` variant the family wraps its content in `SurfaceLevelProvider level={1}`
+([Styles → Ambient level](/docs/bloom/main/styles)), so a control inside steps off
+the PANEL rather than off the page. Without it a `Tabs` strip inside painted its
+rail `neutral-800` — the panel's own fill, ΔE 0.

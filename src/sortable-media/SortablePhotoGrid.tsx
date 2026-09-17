@@ -3,7 +3,7 @@ import { Image, Platform, Pressable, View } from 'react-native';
 
 import { Button } from '../button';
 import { mixColor, resolveButtonRamps } from '../button/shared';
-import { FOCUS_RING_OFFSET_COLOR } from '../checkbox/shared';
+import { webDataSet } from '../styles/web-data';
 import { resolveMenuPalette } from '../floating/menu-palette';
 import { useInteractionState } from '../hooks/use-interaction-state';
 import { RiArrowLeftSLine } from '../icons/remix/RiArrowLeftSLine';
@@ -15,6 +15,8 @@ import { useImageResolver } from '../image-resolver/context';
 import { resolvePhoto } from '../listing-card/shared';
 import { Loading } from '../loading';
 import { adoptStyleSheet } from '../styles/adopt-style-sheet';
+import { useRingOffsetStyle } from '../styles/surface-levels';
+import { focusRingShadow } from '../styles/interactive-web-css';
 import type { WebCssStyle } from '../styles/web-view-style';
 import { webDataSet } from '../styles/web-data';
 import type { Theme } from '../theme/types';
@@ -117,7 +119,7 @@ ${ADD}[aria-disabled="true"] {
   cursor: default;
 }
 ${ADD}:focus-visible {
-  box-shadow: 0 0 0 2px ${FOCUS_RING_OFFSET_COLOR}, 0 0 0 4px var(--bloom-sortable-ring, currentColor);
+  box-shadow: ${focusRingShadow('--bloom-sortable-ring')};
 }
 @media (prefers-reduced-motion: reduce) {
   ${CONTROLS} {
@@ -202,6 +204,7 @@ function SortablePhotoGridComponent({
   testID,
 }: SortablePhotoGridProps) {
   const theme = useTheme();
+  const ringOffset = useRingOffsetStyle();
   const resolver = useImageResolver();
   const paint = useMemo(() => resolveGridPaint(theme), [theme]);
   const labels = useMemo(() => ({ ...DEFAULT_LABELS, ...labelsProp }), [labelsProp]);
@@ -745,6 +748,7 @@ function AddTile({
   onPress?: () => void;
   testID?: string;
 }) {
+  const ringOffset = useRingOffsetStyle();
   const { state: hovered, onIn: onHoverIn, onOut: onHoverOut } = useInteractionState();
   const { state: pressed, onIn: onPressIn, onOut: onPressOut } = useInteractionState();
   const active = !disabled && (hovered || pressed);
@@ -765,6 +769,7 @@ function AddTile({
     paddingRight: 8,
     opacity: disabled ? 0.5 : 1,
     '--bloom-sortable-ring': paint.ring,
+    ...ringOffset,
   };
 
   return (

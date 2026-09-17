@@ -144,3 +144,10 @@ A release `Select`, Mood and Genre chip groups (selectable `Chip`s with `aria-pr
 ## Native
 
 Everything renders on native with the same props. Web-only: hover states (colour changes), the focus ring, drag and drop in the upload zones, and the CSS keyframes of the processing bar (native runs the same sweep with reanimated). On native the upload zones need `onPickFiles`.
+
+## Quiet text is floored on the card
+
+`textSecondary` and `textTertiary` come from `surfaceTextOn(theme, surface)`, not
+from `neutral-400`/`neutral-500` — the same copy of the ramp stops that put
+chart-card captions at 2.42:1. See
+[Styles → Quiet text](/docs/bloom/main/styles).

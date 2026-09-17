@@ -17,6 +17,77 @@ export function relativeLuminance(color: string): number | null {
   return 0.2126 * channel(c.r) + 0.7152 * channel(c.g) + 0.0722 * channel(c.b);
 }
 
+/** Composite `top` at `alpha` over opaque `base` — CSS `color-mix(in srgb)`. */
+export function mixColors(base: string, top: string, alpha: number): string {
+  const b = parseRgba(base);
+  const t = parseRgba(top);
+  if (!b || !t) return base;
+  const ch = (x: number, y: number) => Math.round(y * alpha + x * (1 - alpha));
+  return `rgb(${ch(b.r, t.r)} ${ch(b.g, t.g)} ${ch(b.b, t.b)})`;
+}
+
+/**
+ * The quietest blend of `text` over `surface` that still clears `minRatio`.
+ *
+ * Contrast rises monotonically with the blend, so a bisection finds the rung —
+ * and then the QUANTIZED colour is re-checked and nudged upward, because an
+ * 8-bit round turns a nominal 4.50 into a measured 4.49. What a caller gets back
+ * therefore clears the floor as RENDERED, not as computed.
+ *
+ * This is the one way Bloom builds a quiet text colour. A ramp STOP cannot do
+ * the job: `neutral-400` clears AA on the page and measures 2.42:1 on a chart
+ * card, because the card is not the page. Reading the rung off the fill it
+ * actually lands on is the whole difference — and it needs no new colours, since
+ * every rung is the theme's own `text` over the theme's own surface.
+ */
+export function quietText(surface: string, text: string, minRatio: number): string {
+  if (contrastRatio(surface, text) <= minRatio) return text;
+  let lo = 0;
+  let hi = 1;
+  for (let i = 0; i < 16; i += 1) {
+    const midpoint = (lo + hi) / 2;
+    if (contrastRatio(mixColors(surface, text, midpoint), surface) >= minRatio) hi = midpoint;
+    else lo = midpoint;
+  }
+  for (let t = hi; t <= 1; t += 1 / 255) {
+    const candidate = mixColors(surface, text, t);
+    if (contrastRatio(candidate, surface) >= minRatio) return candidate;
+  }
+  return text;
+}
+
+/**
+ * One quiet colour for SEVERAL surfaces — the rung that clears `minRatio` on the
+ * hardest of them.
+ *
+ * A family's caption grey usually lands on more than one fill: a chart card's
+ * ticks sit on the card AND on the stat tiles inset into it, and those two are
+ * on opposite sides of the text in dark mode. Flooring against one of them is
+ * how `2.42:1` happened in the first place, one level up.
+ *
+ * Each surface proposes its own rung and the one with the best WORST case wins,
+ * rather than assuming which surface is hardest — that assumption flips between
+ * light and dark for exactly these pairs. Falls back to `text` if no rung clears
+ * every surface, which is the honest answer: there is no quiet colour there.
+ */
+export function quietTextOver(
+  surfaces: readonly string[],
+  text: string,
+  minRatio: number,
+): string {
+  let best = text;
+  let bestWorstCase = -1;
+  for (const surface of surfaces) {
+    const candidate = quietText(surface, text, minRatio);
+    const worstCase = Math.min(...surfaces.map((s) => contrastRatio(candidate, s)));
+    if (worstCase > bestWorstCase) {
+      bestWorstCase = worstCase;
+      best = candidate;
+    }
+  }
+  return bestWorstCase >= minRatio ? best : text;
+}
+
 /** WCAG contrast ratio between two opaque colours (1..21); `1` if either does not parse. */
 export function contrastRatio(a: string, b: string): number {
   const la = relativeLuminance(a);

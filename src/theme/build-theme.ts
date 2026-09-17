@@ -60,7 +60,22 @@ function buildColorsFromPreset(
 
     text: g('foreground'),
     textSecondary: g('muted-foreground'),
-    textTertiary: r.outline,
+    // ONE quiet-text colour, not two spellings of a role that disagreed.
+    //
+    // `--color-text-tertiary` has always aliased `--muted-foreground` in
+    // `design-tokens/theme.css`, so `className="text-tertiary"` rendered at
+    // 8.42:1 in light / 11.33:1 in dark, while this field read `r.outline` and
+    // rendered the SAME named role at 4.04:1 / 6.12:1 — below AA for body text
+    // in light. One name, two colours, and only the JS side failed.
+    //
+    // The tie is broken toward the token, because a fixed third grey cannot BE
+    // a third rung: it is measured against one surface and used on all of them.
+    // `neutral-400` is the same mistake one ramp over — it clears AA on the page
+    // and measures 2.42:1 on a chart card. A genuinely quieter rung has to be
+    // asked for against the fill it lands on, which is what
+    // `styles/surface-levels.ts` `surfaceTextOn()` returns and what every family
+    // that wants a caption grey now calls.
+    textTertiary: g('muted-foreground'),
 
     border: g('border'),
     borderLight: g('input'),

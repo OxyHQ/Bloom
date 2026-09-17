@@ -56,7 +56,7 @@ import type { AgentChatHistoryProps, AgentChatThread } from './types';
  *   footer     margin-top auto, 1px separator-border top rule, pt 12 / pr 4,
  *              gap 4: account trigger (flex 1, radius 10, p 4, gap 8, 24px
  *              avatar + body-2-medium name) and the 24px export disc
- *              (`bg-button-primary`, 14px download, 90% on hover, 40% disabled)
+ *              (`bg-button-primary`, 14px download, 90% on hover, the disabled opacity when disabled)
  *
  * The account menu opens `top start`, 248 wide, p 10, 7px between its parts:
  * "Usage left" expands in place (chevron rotates 180° over 150ms) to usage rows

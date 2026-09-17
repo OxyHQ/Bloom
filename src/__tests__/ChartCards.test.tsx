@@ -1,4 +1,6 @@
 import React from 'react';
+import { quietText, quietTextOver } from '../styles/color-contrast';
+import { AA_TEXT, AA_TEXT_STRONG } from '../styles/surface-levels';
 import { act, fireEvent, render } from '@testing-library/react-native';
 import { resolvedStyle } from './support/rendered-style';
 
@@ -290,8 +292,6 @@ describe('chart card palette', () => {
     const nd = resolveButtonRamps(dark).neutral;
     expect(resolveChartCardPalette(light)).toMatchObject({
       surface: nl[100],
-      textSecondary: nl[500],
-      textTertiary: nl[400],
       neutralSeries: nl[300],
       cursor: nl[300],
       track: nl[200],
@@ -299,12 +299,26 @@ describe('chart card palette', () => {
     const p = resolveChartCardPalette(dark);
     expect(p).toMatchObject({
       surface: nd[900],
-      textTertiary: nd[600],
       neutralSeries: nd[800],
       cursor: nd[700],
       track: nd[800],
-      neutral: { background: nd[800], foreground: nd[500] },
+      neutral: { background: nd[800] },
     });
+    // The two quiet TEXT rungs are not ramp stops any more: they are read off the
+    // card's own fill, because a stop chosen against the page measured 2.42:1
+    // here. `chart-card-contrast.test.ts` walks every preset; this pins the
+    // mechanism — the rung moves when the SURFACE moves.
+    for (const [theme, palette] of [[light, resolveChartCardPalette(light)], [dark, p]] as const) {
+      // Floored over the card AND the stat tiles inset into it — in dark those
+      // two sit on opposite sides of the text, so one of them is not enough.
+      const fills = [palette.surface, palette.inner];
+      expect(palette.textSecondary).toBe(quietTextOver(fills, theme.colors.text, AA_TEXT_STRONG));
+      expect(palette.textTertiary).toBe(quietTextOver(fills, theme.colors.text, AA_TEXT));
+      expect(palette.neutral.foreground).toBe(
+        quietText(palette.neutral.background, theme.colors.text, AA_TEXT),
+      );
+    }
+
     // Dark status fills are the 950 stop at 60% over the card, not a translucent string.
     expect(p.positive.background).toMatch(/^rgb\(/);
     expect(p.positive.background).not.toBe(mixColor(p.surface, p.surface, 0.6));

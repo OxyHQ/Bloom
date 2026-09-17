@@ -9,7 +9,22 @@ order: 74
 `@oxy.so/bloom/styles` holds the style primitives Bloom itself uses.
 
 ```tsx
-import { atoms as a, tokens, BREAKPOINTS, web, native, select } from '@oxy.so/bloom/styles';
+import {
+  atoms as a,
+  tokens,
+  BREAKPOINTS,
+  web,
+  native,
+  select,
+  resolveSurfaceLevel,
+  useSurfaceLevel,
+  SurfaceLevelProvider,
+  surfaceFillOn,
+  hairlineOn,
+  surfaceTextOn,
+  quietText,
+  contrastRatio,
+} from '@oxy.so/bloom/styles';
 ```
 
 ## `atoms`
@@ -114,6 +129,140 @@ they OPENED, and a per-component z-index answers that question by what a
 surface *is*, which leaves some pairings permanently inverted.
 
 Never give an overlay surface a `zIndex` of its own.
+
+## Surface levels
+
+**The answer to "what colour is the thing I am sitting on, and what do I put on
+top of it".** Before this existed every family resolved it alone, and the tree
+carried four different dark "card on a page" fills and two light ones. Two of
+those collisions were not drift: a dark `TextField` painted `neutral-800` inside
+a menu painted `neutral-800` measured **1.000:1**, and a tab rail painted
+`neutral-800` inside a queue panel measured **ΔE 0**. Both controls simply were
+not there.
+
+A control cannot know its parent, so the answer is relative. Three primitives,
+all pure, all taking the fill they land on:
+
+| | what it answers |
+| --- | --- |
+| `surfaceFillOn(theme, parent)` | the next surface up — a field, a track, a tile, a hovered row |
+| `hairlineOn(theme, parent)` | the line that separates them — a divider, a card edge, a tab rail |
+| `surfaceTextOn(theme, parent)` | `text` / `textSecondary` / `textTertiary` / `textGraphical`, each floored on that fill |
+
+A step moves the parent toward `theme.colors.text` by a fixed alpha, so nothing
+new enters the palette. Light and dark are ONE rule: moving toward the text
+colour darkens a light surface and lightens a dark one.
+
+### The named rungs
+
+`resolveSurfaceLevel(theme, level)` names the four a screen stacks, and levels 0
+and 1 land on what Bloom already painted, so adopting the API is not a repaint.
+
+| level | light | dark |
+| --- | --- | --- |
+| 0 page | `theme.colors.background` | `theme.colors.background` |
+| 1 card on page | `theme.colors.card` (white) | a step off the page — within 1.03:1 of the menu surface |
+| 2 card on card | a step off level 1 — a popover's inner tile, a field | ditto |
+| 3 deep | a step off level 2 | ditto |
+
+The ladder is **not monotonic in lightness**: in light the first step goes up to
+white and every step after goes down. What is monotonic is the SEPARATION —
+measured on `blue`, 1.11 / 1.15 / 1.15 in light and 1.23 / 1.30 / 1.30 in dark.
+1.11 is thin, which is why every rung also carries the `border` that separates it
+from its parent (1.21 / 1.53 / 1.50 in light). `surface-levels.test.ts` pins both
+mechanisms over all 64 presets, so losing either goes red.
+
+### Ambient level
+
+A container that PAINTS a surface publishes it, and everything inside steps off
+the right parent without being told:
+
+```tsx
+<SurfaceLevelProvider level={1}>{children}</SurfaceLevelProvider>
+```
+
+`FloatingPanel` (so every menu, popover, select and tooltip) and `QueuePanel` do
+this. `useSurfaceLevel()` reads the current rung's paint, `useSurfaceLevel(1)`
+the one above it, `useSurfaceFill()` just the fill. Nothing published means level
+0 — the page — which is what every unwrapped consumer already assumed.
+
+### Quiet text is not a ramp stop
+
+`quietText(surface, text, minRatio)` returns the QUIETEST blend of the theme's
+text over the theme's surface that still clears `minRatio` **as rendered** (the
+8-bit colour is re-checked, because a nominal 4.50 quantizes to 4.49).
+`quietTextOver([surfaces], text, min)` does it for a label that lands on more
+than one fill.
+
+This is the only way to build a caption grey in Bloom. A ramp stop cannot do the
+job: `neutral-400` clears AA on the page and measured **2.42:1** on a chart card,
+because the card is not the page. The floors are `AA_TEXT` (4.5, body text),
+`AA_TEXT_STRONG` (7, the secondary rung) and `AA_GRAPHICAL` (3, gridlines, rules
+and disabled glyphs).
+
+## Interactive web CSS — the one recipe
+
+`interactiveWebCss()` builds the stylesheet for a raw-DOM fork or a
+`dataSet`-hooked react-native-web control. **It is THE way to write one.** It
+existed before and nobody called it — thirty-odd families used only the
+`useInteractiveWebCss()` adopter and hand-wrote the sheet, which is exactly why
+rings, hovers and disabled states drifted apart.
+
+```tsx
+const CSS = interactiveWebCss({
+  selector: '[data-bloom-filter-chip]',
+  varPrefix: 'bloom-filter-chip',
+  reset: 'none',            // react-native-web: no <button> reset, no press scale
+  transition: 'background-color 120ms ease, border-color 120ms ease',
+  focus: { mode: 'ring' },  // gap colour from the surface
+  disabled: { opacity: null }, // this family fades in its inline style, for native parity
+});
+useInteractiveWebCss(STYLE_ID, CSS);
+```
+
+- **`reset`** — `button` (default) emits the `<button>` reset. A react-native-web
+  caller passes `none`: RNW lays a `View` out with `display: flex`, so
+  `inline-flex` from a stylesheet silently changes how the control participates
+  in its parent's layout.
+- **`focus`** — `outline` (default) is the canonical 2px outline at
+  `outline-offset`. `ring` is the `box-shadow` form, for a control whose ring
+  must sit on a CHILD element (a slider thumb, a checkbox glyph).
+- **`hover`** is optional. An RNW control gets `onHoverIn` in JS and paints hover
+  through its inline style; a CSS rule would be a second source of truth.
+- **`disabled`** defaults to `cursor: default` plus `DISABLED_OPACITY`.
+
+### The focus ring gap
+
+**One mechanism.** The gap is `var(--bloom-ring-offset)`, set inline from the
+surface behind the control with `useRingOffsetStyle()`. It used to be the literal
+`#FFFFFF` — Tailwind's `ring-offset-color` default, never overridden — so in DARK
+mode a focused filter chip, filter text button, stepper value, slider thumb,
+checkbox, radio, radio card, property tile, energy-rating pill and sortable photo
+tile each drew a 2px white halo against a near-black page. A gap is a hole in the
+ring, and a hole is the colour of what is behind it.
+
+Three families (`sidebar`, `select`, `settings-modal`) name their own offset
+variable. Each is already surface-derived and each knows its surface exactly, so
+they stay — as a written list in `interactive-recipe.test.ts`, not as a
+threshold.
+
+## Disabled
+
+**Recolour if you can; fade only if you cannot.**
+
+A control with a token pair to swap to swaps to it and keeps opacity 1 — that is
+what `Button` does. A fade multiplies against whatever is behind the control, so
+over a coloured card a 0.5 label goes muddy rather than quiet, and fades stack
+when a disabled control sits inside a disabled group.
+
+Opacity is the fallback, for a control with no pair to swap to: an icon drawn in
+`currentColor`, a `Pressable` that paints nothing of its own, a row of mixed
+children. When it is used it is `tokens.DISABLED_OPACITY` (**0.5**) — one value,
+because three were in the tree (0.5 in twenty-five places, 0.4 in six, 0.6 in
+one) and nothing distinguished them. A disabled control is exempt from the WCAG
+contrast floors, which is what makes one blanket value defensible at all; it is
+not licence to pick a new one per family. Gate:
+`interactive-recipe.test.ts`.
 
 ## `flatten`
 

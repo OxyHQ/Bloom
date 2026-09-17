@@ -71,3 +71,11 @@ the `adjustable` element (`role="slider"` on web) carrying `aria-valuenow`,
 The label is required in the type because nothing else can name the control:
 it draws a number and two glyphs, and a title beside it is a sibling element.
 An empty or missing label also warns once in development.
+
+## Web CSS
+
+The value's focus ring is built by `interactiveWebCss()`
+([Styles](/docs/bloom/main/styles)) with `reset: 'none'` — it is a focusable
+readout, not a button, so it takes no `<button>` reset, no hover rule and no
+press scale. Its ring gap takes the surface colour rather than the white it used
+to hardcode.

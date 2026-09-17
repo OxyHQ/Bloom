@@ -41,7 +41,7 @@ import {
   resolveIconColor,
   resolvePlaceholderColor,
   resolveShellPaint,
-  resolveTextFieldPalette,
+  useTextFieldPalette,
   type TextFieldPalette,
   type TextFieldSize,
 } from './shared';
@@ -178,7 +178,7 @@ export function TextField({
   const [addonFocused, setAddonFocused] = useState(false);
   const hasAddon = leadingAddon !== undefined && leadingAddon !== null;
 
-  const palette = useMemo(() => resolveTextFieldPalette(theme), [theme]);
+  const palette = useTextFieldPalette();
   const resolvedDisabled = disabled || inputDisabled;
 
   const context = useMemo(
@@ -661,7 +661,7 @@ export function TextFieldLabel({
   style,
 }: TextFieldLabelProps) {
   const theme = useTheme();
-  const palette = useMemo(() => resolveTextFieldPalette(theme), [theme]);
+  const palette = useTextFieldPalette();
   return (
     <View
       style={[
@@ -702,7 +702,7 @@ export function TextFieldHint({
   style,
 }: TextFieldHintProps) {
   const theme = useTheme();
-  const palette = useMemo(() => resolveTextFieldPalette(theme), [theme]);
+  const palette = useTextFieldPalette();
   return (
     <Text
       variant="caption-1-medium"
@@ -800,7 +800,7 @@ export function TextFieldGhost({
   value: string;
 }) {
   const theme = useTheme();
-  const palette = useMemo(() => resolveTextFieldPalette(theme), [theme]);
+  const palette = useTextFieldPalette();
   // Aligned with the typed text after a leading icon: icon + gap + input inset.
   const textOffset = TEXT_FIELD_ICON_SIZE + TEXT_FIELD_LEADING_GAP + TEXT_FIELD_INPUT_INSET;
   return (

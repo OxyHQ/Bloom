@@ -1,13 +1,12 @@
 import React, { memo, useMemo } from 'react';
 import { Platform } from 'react-native';
 
-import { useTheme } from '../theme/use-theme';
 import { Text } from '../typography';
 import type { TypeScaleVariant } from '../typography';
 import {
   TEXT_FIELD_LEADING_GAP,
   TEXT_FIELD_STACK_GAP,
-  resolveTextFieldPalette,
+  useTextFieldPalette,
 } from '../text-field/shared';
 import type { LabelProps } from './types';
 
@@ -39,8 +38,7 @@ const LabelComponent = function Label({
   style,
   testID,
 }: LabelProps) {
-  const theme = useTheme();
-  const palette = useMemo(() => resolveTextFieldPalette(theme), [theme]);
+  const palette = useTextFieldPalette();
 
   const webProps: Record<string, unknown> =
     IS_WEB ? { htmlFor: htmlFor ?? nativeID } : {};

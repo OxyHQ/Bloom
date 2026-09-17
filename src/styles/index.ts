@@ -18,3 +18,25 @@ export {
 } from './color-contrast';
 export { webDataSet } from './web-data';
 export { clamp, clamp01 } from './clamp';
+export { contrastRatio, relativeLuminance } from './color-contrast';
+export { mixColors, quietText, quietTextOver } from './color-contrast';
+export {
+  AA_GRAPHICAL,
+  AA_TEXT,
+  AA_TEXT_STRONG,
+  hairlineOn,
+  resolveSurfaceLevel,
+  SURFACE_LEVELS,
+  SurfaceLevelProvider,
+  surfaceFillOn,
+  surfaceTextOn,
+  useSurfaceFill,
+  useSurfaceLevel,
+  useSurfaceLevelValue,
+} from './surface-levels';
+export type {
+  SurfaceLevel,
+  SurfaceLevelPaint,
+  SurfaceLevelProviderProps,
+  SurfaceTextPaint,
+} from './surface-levels';

@@ -33,6 +33,7 @@ import { Text } from '../typography';
 import { TYPE_SCALE } from '../typography/scale';
 import { useInteractionState } from '../hooks/use-interaction-state';
 import { borderRadius } from '../styles/tokens';
+import { hairlineOn, surfaceFillOn, useSurfaceFill } from '../styles/surface-levels';
 import { interactiveWebCss, useInteractiveWebCss } from '../styles/interactive-web-css';
 import type { WebCssStyle } from '../styles/web-view-style';
 import { webDataSet } from '../styles/web-data';
@@ -171,17 +172,28 @@ export interface TabsPaint {
  * Every colour a strip paints, per variant. Pure — takes the theme rather than
  * calling `useTheme()`, so it can be walked over presets and modes.
  */
-export function resolveTabsPaint(theme: Theme, variant: TabsVariant): TabsPaint {
+export function resolveTabsPaint(
+  theme: Theme,
+  variant: TabsVariant,
+  surface: string = theme.colors.background,
+): TabsPaint {
   const { accent, neutral: n } = resolveButtonRamps(theme);
   const c = theme.colors;
   const dark = theme.isDark;
+  // The rail, the hover row and the filled thumb are STEPS OFF the strip's own
+  // surface, not ramp stops. As `neutral-800` the dark rail was byte for byte
+  // the fill `queue-panel` (and every other menu-surface family) paints its
+  // panel with — ΔE 0, so a tab strip inside one had no rail at all. On the page
+  // these land within 0.04 of the colours they replaced.
+  const hairline = hairlineOn(theme, surface);
+  const raised = surfaceFillOn(theme, surface);
   const count = {
     countSelectedBackground: dark ? mixColor(c.background, accent[800], 0.6) : accent[100],
     countSelectedForeground: accent[600],
     // `bg-black/10` in both modes.
     countIdleBackground: 'rgba(0, 0, 0, 0.1)',
     countIdleForeground: c.text,
-    separator: dark ? n[800] : n[200],
+    separator: hairline,
     underline: accent[600],
     ring: accent[500],
   };
@@ -200,7 +212,7 @@ export function resolveTabsPaint(theme: Theme, variant: TabsVariant): TabsPaint 
       return {
         ...count,
         thumb: dark ? mixColor(c.background, accent[950], 0.6) : accent[50],
-        hover: dark ? n[800] : n[100],
+        hover: raised,
         selectedLabel: accent[500],
         selectedIcon: accent[500],
         idleLabel: n[500],
@@ -210,8 +222,8 @@ export function resolveTabsPaint(theme: Theme, variant: TabsVariant): TabsPaint 
     default:
       return {
         ...count,
-        thumb: dark ? n[800] : n[200],
-        hover: dark ? mixColor(c.background, n[700], 0.6) : n[100],
+        thumb: raised,
+        hover: dark ? mixColor(surface, n[700], 0.6) : surfaceFillOn(theme, raised),
         selectedLabel: c.text,
         selectedIcon: c.text,
         idleLabel: n[500],
@@ -372,7 +384,8 @@ const TabsBarComponent = forwardRef<TabsDragController, TabsProps>(function Tabs
   useInteractiveWebCss(STYLE_ID, BLOOM_TABS_CSS);
   const resolvedVariant = resolveVariant(variant);
   const isUnderline = resolvedVariant === 'underline';
-  const paint = useMemo(() => resolveTabsPaint(theme, variant), [theme, variant]);
+  const surface = useSurfaceFill();
+  const paint = useMemo(() => resolveTabsPaint(theme, variant, surface), [theme, variant, surface]);
   const reducedMotion = useReducedMotion();
   const slideTiming = isUnderline ? UNDERLINE_TIMING : PILL_TIMING;
 

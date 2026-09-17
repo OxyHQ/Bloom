@@ -17,7 +17,7 @@ import {
   TEXT_FIELD_WEB_TRANSITION,
   resolvePlaceholderColor,
   resolveShellPaint,
-  resolveTextFieldPalette,
+  useTextFieldPalette,
 } from '../text-field/shared';
 import type { TextareaProps } from './types';
 
@@ -71,7 +71,7 @@ export function Textarea({
   ...rest
 }: TextareaProps) {
   const theme = useTheme();
-  const palette = useMemo(() => resolveTextFieldPalette(theme), [theme]);
+  const palette = useTextFieldPalette();
   const innerRef = useRef<TextInput>(null);
   const { state: hovered, onIn: onHoverIn, onOut: onHoverOut } = useInteractionState();
   const { state: focused, onIn: onFocusIn, onOut: onFocusOut } = useInteractionState();

@@ -205,3 +205,17 @@ This is the recommended fallback when you don't have an avatar URL — never sho
   }} />
 </View>
 ```
+
+## Fallback tints keep their hue and clear AA
+
+The four initials tints paint a disc from a theme role (`primary`, `success`,
+`negative`, the neutral ramp) and the letter from a stop on the same ramp. The
+stop is a PREFERENCE: `legibleStop` walks outward from it along that ramp until
+the letter clears 4.5:1 on its own disc, so the hue survives and the letter is
+always readable.
+
+It has to walk, because the ramp is rebuilt around a theme role whose lightness
+moves with the mode. Measured in dark on `blue`: `pink` **1.24:1**
+(`#ffb4ab` on `#ecd8d6`), `lime` 4.29:1, `neutral` 3.19:1 — and
+`avatarTintForName` sends a quarter of all fallback avatars to each tint. After:
+5.42, 6.09 and 5.85. The discs are unchanged. Gate: `surface-levels.test.ts`.

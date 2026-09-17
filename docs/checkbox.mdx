@@ -96,3 +96,12 @@ For a labelled checkbox the pressable already spans the label, so the whole row 
 The pressable takes a `:focus-visible` ring, drawn from the same shared recipe every Bloom control's web CSS is built from. The browser focuses the row — the box AND its label — but the ring is drawn around the BOX whenever that row has keyboard focus — `ring-2 ring-offset-2`: a 2px accent ring outside a 2px **white** offset. The offset is white in dark mode too; that is Tailwind's default `ring-offset-color`, left un-overridden; the row's own outline is suppressed so there is exactly one ring, and it is only ever shown for the focused row.
 
 `:focus-visible`, not `:focus`: a mouse click never leaves a ring behind.
+
+## The focus ring's gap
+
+The 2px gap between the box and the ring takes `var(--bloom-ring-offset)`, set
+inline from the surface behind the control. It was the literal `#FFFFFF` —
+Tailwind's `ring-offset-color` default, never overridden — so in dark mode a
+focused checkbox drew a white halo on a near-black page. `FOCUS_RING_OFFSET_COLOR`
+survives only as a deprecated alias of the fallback. See
+[Styles → The focus ring gap](/docs/bloom/main/styles).

@@ -24,7 +24,7 @@ import type { AgentChatActionsProps } from './types';
  *   row      gap 2 (`gap-0.5`)
  *   button   28 circle, 18px glyph, icon-secondary → icon-primary on a
  *            background-primary-hover fill (also while its menu is open);
- *            disabled 40%
+ *            disabled at the disabled opacity
  *   menu     `bottom end`, 190 wide, p 8; rows px 8 / py 6 (32 tall),
  *            body-medium; "Delete chat" in text-error-primary
  */

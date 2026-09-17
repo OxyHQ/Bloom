@@ -262,3 +262,18 @@ const [show, setShow] = useState(false);
 ### Search
 
 Reach for `Search` rather than rebuilding it: it is a `TextField` at the pill radius with the magnifier, the clear button and the keyboard settings a query field wants.
+
+## The fill is a step off the surface, not a ramp stop
+
+`resolveTextFieldPalette(theme, surface)` takes the fill the field lands on, and
+every fill and quiet text colour it returns is a step off THAT — see
+[Styles → Surface levels](/docs/bloom/main/styles). `useTextFieldPalette()` reads
+the surface from the ambient `SurfaceLevelProvider`, which `FloatingPanel` and
+`QueuePanel` publish, so a field inside a menu or a popover steps off the panel
+rather than off the page.
+
+It used to be `neutral-800` in dark — byte for byte the colour
+`floating/menu-palette` paints a menu, a popover, a select and a tooltip with.
+Measured **1.000:1**: a field dropped into any of them had no shell at all, and
+one inside a `card` had 1.225:1. On the page the fill lands within 0.04 of the
+colour it always had. Gate: `surface-level-adoption.test.ts`.

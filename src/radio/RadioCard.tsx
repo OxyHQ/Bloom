@@ -5,10 +5,10 @@ import { useTheme } from '../theme/use-theme';
 import { Text } from '../typography';
 import { useInteractionState } from '../hooks/use-interaction-state';
 import { mixColor, resolveButtonRamps } from '../button/shared';
-import { useInteractiveWebCss } from '../styles/interactive-web-css';
+import { focusRingShadow, useInteractiveWebCss } from '../styles/interactive-web-css';
+import { useRingOffsetStyle } from '../styles/surface-levels';
 import type { WebCssStyle } from '../styles/web-view-style';
 import { webDataSet } from '../styles/web-data';
-import { FOCUS_RING_OFFSET_COLOR } from '../checkbox/shared';
 import { RadioIndicator } from '../radio-indicator';
 import type { RadioCardProps } from './types';
 
@@ -49,7 +49,7 @@ ${CARD}:focus-visible {
   outline: none;
 }
 ${CARD}:focus-visible ${DOT} {
-  box-shadow: 0 0 0 2px ${FOCUS_RING_OFFSET_COLOR}, 0 0 0 4px var(--bloom-radio-ring, currentColor);
+  box-shadow: ${focusRingShadow('--bloom-radio-ring')};
 }
 @media (prefers-reduced-motion: reduce) {
 ${CARD} {
@@ -70,6 +70,7 @@ const RadioCardComponent = function RadioCard<Value extends string = string>({
   testID,
 }: RadioCardProps<Value>) {
   const theme = useTheme();
+  const ringOffset = useRingOffsetStyle();
   useInteractiveWebCss(STYLE_ID, CARD_CSS);
   const { state: hovered, onIn: onHoverIn, onOut: onHoverOut } = useInteractionState();
   const { state: pressed, onIn: onPressIn, onOut: onPressOut } = useInteractionState();
@@ -111,6 +112,7 @@ const RadioCardComponent = function RadioCard<Value extends string = string>({
     backgroundColor: highlighted ? paint.backgroundHover : paint.background,
     opacity: disabled ? 0.5 : 1,
     '--bloom-radio-ring': paint.ring,
+    ...ringOffset,
     ...(IS_WEB
       ? {
           transitionProperty: 'background-color, border-color, color',

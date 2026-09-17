@@ -2,6 +2,7 @@ import { Platform } from 'react-native';
 
 import { ACCENT_TABLE, colorRamp, DANGER_TABLE, mixColor, resolveButtonRamps } from '../button/shared';
 import type { AccentTone } from '../theme/accent-colors';
+import { surfaceTextOn } from '../styles/surface-levels';
 import type { Theme } from '../theme/types';
 import type {
   CreatorOption,
@@ -60,14 +61,18 @@ export function resolveCreatorStudioPaint(theme: Theme): CreatorStudioPaint {
   const rose = colorRamp(theme.colors.negative, DANGER_TABLE);
   const green = colorRamp(theme.colors.success, ACCENT_TABLE);
   const surface = dark ? n[900] : n[100];
+  const quiet = surfaceTextOn(theme, surface);
   return {
     surface,
     inner: dark ? mixColor(surface, n[800], 0.6) : theme.colors.card,
     border: dark ? n[800] : n[200],
     text: theme.colors.text,
-    textSecondary: dark ? n[400] : n[500],
-    textTertiary: dark ? n[500] : n[400],
-    track: dark ? n[700] : n[200],
+    // Read off THIS card's fill, not off a ramp stop chosen against the page —
+    // the same copy of `neutral-400`/`neutral-500` that put chart-card captions
+    // at 2.42:1. `surfaceTextOn` floors them on `surface`.
+    textSecondary: quiet.textSecondary,
+    textTertiary: quiet.textTertiary,
+    track: dark ? n[800] : n[200],
     ring: dark ? n[700] : n[300],
     placeholder: dark ? n[800] : n[200],
     placeholderIcon: dark ? n[500] : n[400],

@@ -93,3 +93,10 @@ right.
 `value` may be `undefined`. Prefer that over pre-selecting an option the user
 did not choose: a default that happens to be first is indistinguishable from an
 answer, and it silently becomes the submitted value.
+
+## The focus ring's gap
+
+Both the row's dot ring and `RadioCard`'s ring take their 2px gap from
+`var(--bloom-ring-offset)`, set inline from the surface behind the control. It
+was a hardcoded `#FFFFFF` — a white halo in dark mode. See
+[Styles → The focus ring gap](/docs/bloom/main/styles).

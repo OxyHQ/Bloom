@@ -5,10 +5,11 @@ import { useTheme } from '../theme/use-theme';
 import { Text } from '../typography';
 import type { TypeScaleVariant } from '../typography';
 import { TYPE_SCALE } from '../typography/scale';
-import { FOCUS_RING_OFFSET_COLOR } from '../checkbox/shared';
+
 import { space } from '../styles/tokens';
+import { useRingOffsetStyle } from '../styles/surface-levels';
 import { resolveButtonRamps } from '../button/shared';
-import { interactiveWebCss, useInteractiveWebCss } from '../styles/interactive-web-css';
+import { focusRingShadow, interactiveWebCss, useInteractiveWebCss } from '../styles/interactive-web-css';
 import type { WebCssStyle } from '../styles/web-view-style';
 import { RadioIndicator } from '../radio-indicator';
 import { RadioCard } from './RadioCard';
@@ -77,7 +78,7 @@ ${ROW}:focus-visible {
   outline: none;
 }
 ${ROW}:focus-visible ${DOT} {
-  box-shadow: 0 0 0 2px ${FOCUS_RING_OFFSET_COLOR}, 0 0 0 4px var(--bloom-radio-ring, currentColor);
+  box-shadow: ${focusRingShadow('--bloom-radio-ring')};
 }`,
 });
 
@@ -98,6 +99,7 @@ const RadioComponent = function Radio<Value extends string = string>({
   testID,
 }: RadioProps<Value>) {
   const theme = useTheme();
+  const ringOffset = useRingOffsetStyle();
   useInteractiveWebCss(STYLE_ID, BLOOM_RADIO_CSS);
   const sizeConfig = SIZE_CONFIG[size];
   const { accent, neutral } = useMemo(() => resolveButtonRamps(theme), [theme]);
@@ -119,6 +121,7 @@ const RadioComponent = function Radio<Value extends string = string>({
     opacity: disabled ? 0.5 : 1,
     // The `:focus-visible` ring colour, read by the adopted sheet.
     '--bloom-radio-ring': color ?? accent[500],
+    ...ringOffset,
   };
 
   return (

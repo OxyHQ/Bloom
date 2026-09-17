@@ -125,3 +125,10 @@ Press outside or hit Escape. `dismissible={false}` turns both off, for a popover
 Escape stops at the innermost open surface, so a popover opened from inside a dialog closes the popover and leaves the dialog up.
 
 The outside press is caught by a transparent backdrop (it closes the popover and goes no further). Popovers are non-modal — a press outside would otherwise also reach the page — but Bloom keeps the caught press so a popover opened inside a dialog cannot dismiss the dialog with the same click.
+
+## The panel publishes its surface
+
+`FloatingPanel` — the surface behind every menu, popover, select and tooltip —
+wraps its children in `SurfaceLevelProvider level={1}`
+([Styles → Ambient level](/docs/bloom/main/styles)). A `TextField` inside used to
+step off the PAGE and land on exactly the panel's own fill (1.000:1, no shell).
