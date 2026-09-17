@@ -13,12 +13,15 @@ jest.mock('react-native', () => jest.requireActual('react-native-web'));
 import { resolveButtonRamps } from '../button/shared';
 import { ImageResolverProvider } from '../image-resolver';
 import {
+  MapAreaCircle,
   MapClusterMarker,
   MapListingPreview,
   MapPriceMarker,
   MapSearchAreaButton,
 } from '../map-marker';
-import { resolveMapMarkerPaint, type MapMarkerPaint } from '../map-marker/shared';
+import { AREA_FILL_OPACITY, resolveMapMarkerPaint, type MapMarkerPaint } from '../map-marker/shared';
+import { RiHotelBedLine } from '../icons/remix/RiHotelBedLine';
+import { resolveOfferingBadgePaint } from '../offering-badge/shared';
 import { BloomThemeProvider } from '../theme/BloomThemeProvider';
 import type { Theme } from '../theme/types';
 import { useTheme } from '../theme/use-theme';
@@ -288,5 +291,100 @@ describe('MapSearchAreaButton', () => {
     expect(disabled.getAttribute('aria-label')).toBe('Search here');
     act(() => disabled.click());
     expect(onPress).toHaveBeenCalledTimes(1);
+  });
+});
+
+// ---------------------------------------------------------------------------
+//  Housing additions
+// ---------------------------------------------------------------------------
+
+
+describe('MapPriceMarker — compact size', () => {
+  it('is 22 tall with 8px sides, caption text and a 10px heart', () => {
+    mount(<MapPriceMarker price="€240K" size="compact" saved testID="m" />);
+    const style = getComputedStyle(byTestId('m'));
+    expect(style.height).toBe('22px');
+    expect(style.borderTopLeftRadius).toBe('11px');
+    expect(style.paddingRight).toBe('8px');
+    expect(style.paddingLeft).toBe('6px');
+    expect(getComputedStyle(byTestId('m').querySelector('[dir="auto"]') as HTMLElement).fontSize).toBe('12px');
+    expect(byTestId('m-saved').querySelector('svg')?.getAttribute('width')).toBe('10');
+    expect(byTestId('m').textContent).toBe('€240K');
+  });
+
+  it('keeps the default size unchanged', () => {
+    mount(<MapPriceMarker price="€950/mo" testID="m" />);
+    expect(getComputedStyle(byTestId('m')).height).toBe('28px');
+    expect(getComputedStyle(byTestId('m')).paddingLeft).toBe('10px');
+  });
+});
+
+describe('MapAreaCircle', () => {
+  it.each(['light', 'dark'] as const)('a 2r round circle: accent fill at 15%%, a solid 1.5px accent edge (%s)', (mode) => {
+    mount(<MapAreaCircle radius={60} testID="a" />, mode);
+    const { accent } = resolveButtonRamps(theme);
+    expect(paint.area).toBe(mode === 'dark' ? accent[400] : accent[500]);
+    const el = byTestId('a');
+    expect(getComputedStyle(el).width).toBe('120px');
+    expect(getComputedStyle(el).height).toBe('120px');
+    expect(getComputedStyle(el).borderTopLeftRadius).toBe('60px');
+    expect(getComputedStyle(el).pointerEvents).toBe('none');
+    const fill = getComputedStyle(byTestId('a-fill'));
+    expect(fill.backgroundColor).toBe(normalise(paint.area));
+    expect(fill.opacity).toBe(String(AREA_FILL_OPACITY));
+    const edge = getComputedStyle(byTestId('a-edge'));
+    expect(edge.borderTopWidth).toBe('1.5px');
+    expect(edge.borderTopColor).toBe(normalise(paint.area));
+    expect(edge.opacity === '' || edge.opacity === '1').toBe(true);
+  });
+
+  it('decorative without a name; an img with one; a centred surface label', () => {
+    mount(<MapAreaCircle radius={40} testID="a" />);
+    expect(byTestId('a').getAttribute('role')).toBeNull();
+    expect(query('a-label')).toBeNull();
+    mount(<MapAreaCircle radius={40} label="~300 m" accessibilityLabel="Approximate location, within 300 metres" testID="a" />);
+    expect(byTestId('a').getAttribute('role')).toBe('img');
+    expect(byTestId('a').getAttribute('aria-label')).toBe('Approximate location, within 300 metres');
+    const label = byTestId('a-label');
+    expect(label.textContent).toBe('~300 m');
+    expect(getComputedStyle(label).backgroundColor).toBe(normalise(paint.surface));
+    expect(getComputedStyle(byTestId('a')).justifyContent).toBe('center');
+  });
+
+  it('a negative radius draws nothing rather than a negative box', () => {
+    mount(<MapAreaCircle radius={-5} testID="a" />);
+    expect(getComputedStyle(byTestId('a')).width).toBe('0px');
+  });
+});
+
+describe('MapListingPreview — housing', () => {
+  const home = {
+    title: 'Villa above the bay',
+    offerings: ['sale', 'long_term_rent'] as const,
+    priceLines: [{ price: '€4,800', unit: '/ month' }, { price: '€1,200,000', secondary: '€6,000/m²' }],
+    facts: [{ icon: RiHotelBedLine, label: '5' }, { label: '200 m²' }],
+  };
+
+  it('draws the card\'s parts at the small size: tinted offerings, stacked prices, facts', () => {
+    mount(<MapListingPreview {...home} testID="p" />);
+    const offerings = byTestId('p-offerings');
+    expect(Array.from(offerings.children).map((el) => el.textContent)).toEqual(['For sale', 'For rent']);
+    expect(getComputedStyle(byTestId('p-offerings-sale')).height).toBe('20px');
+    expect(getComputedStyle(byTestId('p-offerings-sale')).backgroundColor).toBe(
+      normalise(resolveOfferingBadgePaint(theme, 'sale', 'tinted').background),
+    );
+    expect(byTestId('p-price-0').textContent).toBe('€4,800 / month');
+    expect(byTestId('p-price-1').textContent).toBe('€1,200,000 · €6,000/m²');
+    expect(getComputedStyle(byTestId('p-price-1').querySelector('span') as HTMLElement).fontSize).toBe('13px');
+    expect(Array.from(byTestId('p-facts').children).map((el) => el.textContent)).toEqual(['5', '200 m²']);
+    expect(byTestId('p-facts-0').querySelector('svg')?.getAttribute('width')).toBe('14');
+  });
+
+  it('priceLines replace the single price line; neither draws none', () => {
+    mount(<MapListingPreview {...home} price="€9" priceDetail="night" testID="p" />);
+    expect(byTestId('p').textContent).not.toContain('€9 night');
+    mount(<MapListingPreview title="Garden cottage" testID="p" />);
+    expect(query('p-price')).toBeNull();
+    expect(byTestId('p').textContent).toBe('Garden cottage');
   });
 });

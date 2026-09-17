@@ -1,0 +1,73 @@
+---
+title: Offering Badge
+description: A small pill naming how a home is offered — for rent, for sale, vacation rental or swap — tinted on the page or light over a photo.
+order: 106
+---
+
+# Offering Badge
+
+```tsx
+import { OfferingBadge } from '@oxy.so/bloom/offering-badge';
+import type { Offering } from '@oxy.so/bloom/offering-badge';
+
+<OfferingBadge offering="long_term_rent" />
+<OfferingBadge offering="sale" size="small" />
+<OfferingBadge offering="short_term_rent" variant="onMedia" />
+<OfferingBadge offering="exchange" label="Intercambio" />
+```
+
+An **offering** is how a home is put on the market, and a listing may carry
+several at once (a flat for rent and for sale). A room, a studio or a house is
+the property's _type_, not an offering.
+
+```ts
+type Offering = 'long_term_rent' | 'short_term_rent' | 'sale' | 'exchange';
+```
+
+The type lives with the listing card (`@oxy.so/bloom/listing-card`) and is
+re-exported here.
+
+| prop       | decides                                                                                      |
+| ---------- | -------------------------------------------------------------------------------------------- |
+| `offering` | the default label, icon and tint                                                             |
+| `label`    | replaces the English label — "For rent", "For sale", "Vacation rental", "Swap"               |
+| `icon`     | `true` (default) the offering's icon, `false` none, or an icon component to draw instead     |
+| `size`     | `'medium'` (default) or `'small'`                                                            |
+| `variant`  | `'tinted'` (default) on the page, `'onMedia'` over a photo                                   |
+| `style`, `testID` | the icon is `<testID>-icon`                                                           |
+
+## Anatomy
+
+|          | height | padding-x | icon | text                 |
+| -------- | ------ | --------- | ---- | -------------------- |
+| `small`  | 20     | 8         | 12   | `caption-1-semibold` |
+| `medium` | 24     | 10        | 14   | `body-2-semibold`    |
+
+A full pill, 4 between the icon and the label, the leading padding 2 tighter
+when there is an icon. One line, truncated.
+
+| offering          | icon                   | tone      |
+| ----------------- | ---------------------- | --------- |
+| `long_term_rent`  | `RiKey2Line`           | `info`    |
+| `sale`            | `RiPriceTag3Line`      | `success` |
+| `short_term_rent` | `RiSuitcaseLine`       | `warning` |
+| `exchange`        | `RiArrowLeftRightLine` | `default` (neutral) |
+
+## Colour
+
+`tinted` paints the tone's `subtle` pair from `resolveAccentColors` — the tint and
+its foreground, gated at AA by the colour policy, so nothing is derived here.
+The tones are **fixed**, never the preset's brand colour: `info`, `success` and
+`warning` do not move with the preset, so "blue is rent" holds in every app,
+whereas a brand tint would collide with one of them (a blue brand IS `info`, a
+green one `success`). Swap takes the one neutral, which no preset can collide
+with. The four stay distinct on every preset in both modes.
+
+`onMedia` is a `neutral-50` pill with a `neutral-900` label and icon and
+`shadow-s`, the same in both modes because the photo under it does not change
+with the theme.
+
+## Accessibility
+
+It is text, not a control: no role, the icon hidden, so it reads as its label.
+Inside a pressable card, fold the label into the card's name — `ListingCard` does.

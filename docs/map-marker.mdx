@@ -1,6 +1,6 @@
 ---
 title: Map Marker
-description: Price pills, cluster bubbles, the listing preview card and the search-area pill to place on an app's own map.
+description: Price pills, cluster bubbles, approximate-area circles, the listing preview card and the search-area pill to place on an app's own map.
 order: 110
 ---
 
@@ -11,6 +11,7 @@ anywhere, and the app's map library positions them.
 
 ```tsx
 import {
+  MapAreaCircle,
   MapClusterMarker,
   MapListingPreview,
   MapPriceMarker,
@@ -24,6 +25,10 @@ import {
   onPress={() => open(id)}
   accessibilityLabel="€120 per night, Valdoria"
 />
+
+<MapPriceMarker price="€240K" size="compact" accessibilityLabel="€240,000, Talmar Hill" />
+
+<MapAreaCircle radius={metresToPixels(500)} label="~500 m" accessibilityLabel="Approximate location" />
 
 <MapClusterMarker count={14} onPress={zoomIn} />
 
@@ -54,14 +59,21 @@ Prices arrive formatted — the app owns currency and locale.
 
 | prop                 | decides                                                                  |
 | -------------------- | ------------------------------------------------------------------------ |
-| `price`              | the text in the pill ("€120")                                            |
+| `price`              | the text in the pill — SHORT: "€120", "€950/mo", "€240K", "€1.2M"         |
 | `state`              | `'default'`, `'active'` (the open one) or `'visited'` (opened before)     |
+| `size`               | `'default'` (28 tall) or `'compact'` (22 tall), for a dense map            |
 | `saved`              | a small heart before the price                                           |
 | `onPress`            |                                                                          |
 | `accessibilityLabel` | a sentence — the pill shows only a number. Defaults to `price`           |
 | `style`, `testID`    | the heart is `<testID>-saved`                                             |
 
-A 28px full pill, `body-2-semibold` tabular text, 10px sides.
+A 28px full pill, `body-2-semibold` tabular text, 10px sides; `compact` is 22px
+with `caption-1-semibold`, 8px sides and a 10px heart.
+
+**Short prices.** The pill never truncates, so the app abbreviates: whole
+currency under a thousand ("€168"), a rent with its period ("€950/mo"), sales in
+thousands or millions ("€240K", "€1.2M"). Put the full price in
+`accessibilityLabel` ("€240,000, Talmar Hill").
 
 | state    | fill                    | label             | edge / elevation            |
 | -------- | ----------------------- | ----------------- | --------------------------- |
@@ -79,6 +91,23 @@ The heart is the theme's danger red. The marker is a `button` whose
 `style`, `testID`. A 36px round bubble that widens for longer counts, painted
 like the price pill.
 
+## `MapAreaCircle`
+
+| prop                 | decides                                                                  |
+| -------------------- | ------------------------------------------------------------------------ |
+| `radius`             | the radius in PIXELS — the app converts metres with its map projection and re-renders on zoom |
+| `label`              | an optional pill at the centre ("~500 m", "Approximate area")            |
+| `accessibilityLabel` | makes it an `img` with that name; without it the circle is decorative    |
+| `style`, `testID`    | parts are `<testID>-fill`, `-edge`, `-label`                              |
+
+The approximate location of a home whose address is private: a round
+`2 × radius` box with the accent (`accent-500`; dark `accent-400`) as a fill
+layer at 15% opacity and a solid 1.5px accent edge. The fill is a separate layer
+at `opacity` rather than a colour with alpha, so the edge stays solid. The label
+is a 24px surface pill with a hairline and `shadow-s`, `caption-1-semibold`.
+It never takes a press (`pointerEvents="none"`), so the map keeps its gestures.
+Centre it on the coordinate like a marker and draw it under the markers.
+
 ## `MapListingPreview`
 
 | prop                 | decides                                                                  |
@@ -88,6 +117,9 @@ like the price pill.
 | `rating`, `reviewCount` | handed to `Rating` (`null` draws "New"); omit `rating` to hide it     |
 | `subtitle`           | the secondary line                                                       |
 | `price`, `priceDetail`, `originalPrice` | "€150 **€120** night" — the original struck through   |
+| `priceLines`         | stacked lines, as on `ListingCard`; replaces the three props above       |
+| `facts`              | the facts row, as on `ListingCard`, 14px icons                           |
+| `offerings`, `offeringLabels` | small tinted `OfferingBadge`s above the title                   |
 | `favorite`, `onFavoriteChange` | the heart; shown only with the handler                         |
 | `onClose`            | the close button; shown only with the handler                           |
 | `onPress`            | opens the listing — the whole card is the target                         |
@@ -101,6 +133,10 @@ the subtitle, and the price line. The close button is Bloom's `xs` secondary
 icon button over the photo's top-left; the heart a 24px round button in the
 opposite corner (compact: heart over the photo, close in the card's top-right).
 The card never clips — the photo clips itself — so the native shadow survives.
+
+The housing parts — offerings, price lines and facts — are the SAME components
+`ListingCard` draws, at the body-2 size, so the preview and the card cannot
+drift apart. With neither `price` nor `priceLines` there is no price line.
 
 The open target is a button laid over the card BESIDE the close and heart
 buttons rather than around them, so no button nests inside another. The heart
