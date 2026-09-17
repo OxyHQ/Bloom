@@ -134,6 +134,20 @@ describe('AppShell scroll on web', () => {
     });
   });
 
+  it('reveal + document: the page column shrinks to the screen instead of growing to its longest line', () => {
+    setWidth(390);
+    const screen = renderIn(
+      <AppShell testID="shell" drawer="reveal" title="Home" sidebar={{ items: NAV }}>
+        <ReactNative.View testID="page" />
+      </AppShell>,
+    );
+    // page → children wrapper → column → the page scroller.
+    let node = hostParent(screen.getByTestId('page'));
+    node = node && hostParent(node);
+    node = node && hostParent(node);
+    expect(resolvedStyle(node?.props.style)).toMatchObject({ flexGrow: 1, flexShrink: 1, flexBasis: 0, minWidth: 0 });
+  });
+
   it('container: the page scrolls its own ScrollView', () => {
     setWidth(1440);
     const screen = renderIn(<AppShell testID="shell" scroll="container" title="Home" sidebar={{ items: NAV }} />);
