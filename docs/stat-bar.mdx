@@ -1,12 +1,94 @@
 ---
-title: StatBar
-description: A labelled bar in two shapes — progress toward a maximum, or a split between two sides.
+title: Meter and StatBar
+description: The one determinate bar and ring behind every progress bar in Bloom, and the labelled bar built on it.
 order: 63
 ---
 
+# Meter
+
+`Meter` is the determinate bar. Every progress bar in Bloom is this one —
+seventeen families used to hand-roll it, and they disagreed about both colours.
+
+```tsx
+import { Meter, MeterRing } from '@oxy.so/bloom/stat-bar';
+
+<Meter value={4} max={5} accessibilityLabel="Cleanliness" valueText="4 of 5" />
+
+<MeterRing value={72} max={100} size={72} thickness={6} accessibilityLabel="Listing quality">
+  <Text variant="headline-semibold">72</Text>
+</MeterRing>
+```
+
+It draws nothing but the rail and the fill: no label, no value, no footer. A bar
+with a label is `StatBar`; a bar inside a card is that card's business.
+
+## Props
+
+| prop                  | decides                                                       |
+| --------------------- | ------------------------------------------------------------- |
+| `value` / `max`       | how far along; clamped into `[0, max]`, `max` defaults to 1    |
+| `height`              | 6 by default; `radius` follows it unless you set one           |
+| `width`               | a fixed width; without one the bar fills its parent            |
+| `fill` / `track`      | the two colours — see below before you pass either             |
+| `transitionMs`        | ease the fill on WEB; native snaps, reduced motion snaps       |
+| `accessibilityLabel`  | what the bar measures — REQUIRED                               |
+| `valueText`           | `aria-valuetext`, the reading ("4 of 5" rather than "80%")     |
+| `decorative`          | no role at all, for one segment of a larger progressbar        |
+| `fillTestID`          | the fill's own `testID`; defaults to `` `${testID}-fill` ``    |
+
+`MeterRing` takes `size` (56) and `thickness` (5) instead of `height`/`width`,
+plus `cap` and centred `children`.
+
+## The fill is the accent
+
+Three families used to paint the fill `theme.colors.text` — `RatingBar`,
+`WizardProgress` and the lease bar in `tenancy` — while six others used the
+accent. A near-black fill reads as **ink**, not as a measurement: on a neutral
+rail it is the highest-contrast thing on the row, so a fifth-full bar shouts
+louder than the text beside it. The accent is the one colour in the theme that
+means "this is the quantity", so that is the default, and `fill` stays
+overridable for a status tone.
+
+## The track is `neutral-200`, `neutral-700` in dark
+
+Measured before the fold: seven families at `200/700`, two at `200/800`, one at
+`300/700` and one at `100/800`. The majority won on numbers and it is also the
+one that holds in both modes — `neutral-100` is invisible on a card, and
+`neutral-800` against a `neutral-900` surface is a rail you have to look for.
+
+## A chart is not a meter
+
+If the bars in a group encode **which datum** each one is rather than **how much
+of one thing** there is, it is a chart: colour it from `chart-cards/palette.ts`
+(`chartHueTone`, `resolveMonoTone`), not from the meter's defaults.
+`PricePerAreaComparison` is the case — its rows are a home against its street,
+neighbourhood and city, so the highlighted row takes the brand-anchored data hue
+and the comparators the single-ink neutral. Painting them with the accent would
+have said each row was progress toward something.
+
+## `Meter` is determinate only
+
+There is no `indeterminate` prop. An indeterminate bar is a sweeping segment —
+reanimated on native, a keyframe on web, a layout measurement for the sweep
+distance — and none of that is shared with a determinate fill. `creator-studio`
+owns the one indeterminate bar in the library; a second caller is the moment to
+move it here, not before.
+
+## Accessibility
+
+A `progressbar` named by `accessibilityLabel`, with the FLAT `aria-value*`
+attributes. react-native-web drops the `accessibilityValue` object entirely, so
+a bar setting only that announces its role and no value at all; React Native
+folds the flat props back, so native is unchanged. ARIA never computes a name
+for `progressbar` from its contents and the bar draws no text of its own, which
+is why the label is required rather than optional.
+
+A bar that is one segment of a larger progressbar passes `decorative` and is
+hidden: two nested progressbars announce the same measurement twice.
+
 # StatBar
 
-One bar, two meanings.
+`Meter` plus the text around it — one bar, two meanings.
 
 ```tsx
 import { StatBar } from '@oxy.so/bloom/stat-bar';
@@ -27,7 +109,7 @@ import { StatBar } from '@oxy.so/bloom/stat-bar';
 | `minLabel` / `maxLabel`   | progress: the ends of the range                     |
 | `label`                   | what the bar is about — required                    |
 | `icon`                    | a glyph beside the label                            |
-| `fillColor` / `trackColor`| the colours                                         |
+| `fillColor` / `trackColor`| the colours — default to the meter's                |
 
 The two variants are one component because they are the same object visually,
 and one prop rather than two components because a row often switches between

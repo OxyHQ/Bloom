@@ -6,6 +6,7 @@ import { RiArrowDownCircleFill } from '../icons/remix/RiArrowDownCircleFill';
 import { RiArrowDownCircleLine } from '../icons/remix/RiArrowDownCircleLine';
 import { RiCheckboxCircleFill } from '../icons/remix/RiCheckboxCircleFill';
 import { ExplicitBadge, PlayButton } from '../media-controls';
+import { Meter } from '../stat-bar';
 import { useTheme } from '../theme/use-theme';
 import { Text } from '../typography';
 import { TrackCover, TrackIconButton, TrackMenu } from './parts';
@@ -38,7 +39,7 @@ const EPISODE_NARROW_WIDTH = 560;
  * Accessibility: the title is a `link` that opens the episode (a press
  * anywhere on the row does too); play is a button named "Play <title>"; save
  * and download are toggle buttons (`aria-pressed` + `accessibilityState`); the
- * progress bar is a `progressbar` named "Listened" whose value text is the time
+ * progress bar is a `Meter` named "Listened" whose value text is the time
  * left.
  */
 function EpisodeRowComponent({
@@ -132,29 +133,16 @@ function EpisodeRowComponent({
       ) : null}
       {inProgress ? (
         <View style={{ flexDirection: 'row', alignItems: 'center', marginLeft: 12, flexShrink: 1 }}>
-          <View
-            role="progressbar"
+          <Meter
+            value={Math.round(progress)}
+            max={Math.round(episode.duration)}
+            height={4}
+            width={narrow ? 56 : 80}
+            fill={paint.accent}
+            track={paint.rail}
             accessibilityLabel={labels?.progress ?? 'Listened'}
-            aria-valuemin={0}
-            aria-valuemax={Math.round(episode.duration)}
-            aria-valuenow={Math.round(progress)}
-            aria-valuetext={remaining}
-            style={{
-              width: narrow ? 56 : 80,
-              height: 4,
-              borderRadius: 2,
-              backgroundColor: paint.rail,
-              overflow: 'hidden',
-            }}
-          >
-            <View
-              style={{
-                width: `${Math.round((progress / episode.duration) * 100)}%`,
-                height: 4,
-                backgroundColor: paint.accent,
-              }}
-            />
-          </View>
+            valueText={remaining}
+          />
           <Text
             variant="caption-1-medium"
             numberOfLines={1}

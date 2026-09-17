@@ -11,6 +11,7 @@ import { createRoot, type Root } from 'react-dom/client';
 
 jest.mock('react-native', () => jest.requireActual('react-native-web'));
 
+import { chartHueTone, resolveMonoTone } from '../chart-cards/palette';
 import { RiBusLine, RiSubwayLine } from '../icons/remix';
 import {
   EnergyBadge,
@@ -38,6 +39,7 @@ import {
   resolveEnergyTones,
   resolveInsightPalette,
 } from '../property-insights/shared';
+import { resolveMeterColors } from '../stat-bar';
 import { buildTheme } from '../theme/build-theme';
 import { APP_COLOR_PRESETS, type AppColorName } from '../theme/color-presets';
 import { srgbToOklch } from '../theme/color-space';
@@ -404,7 +406,7 @@ describe('PriceHistoryChart', () => {
 // ---------------------------------------------------------------------------
 
 describe('PricePerAreaComparison', () => {
-  it('bars are shares of the largest value; the highlighted row is primary', () => {
+  it('bars are shares of the largest value, painted from the CHART palette', () => {
     mount(
       <PricePerAreaComparison
         rows={[
@@ -414,13 +416,23 @@ describe('PricePerAreaComparison', () => {
         testID="pc"
       />,
     );
-    const palette = resolveInsightPalette(theme);
     expect(byTestId('pc').getAttribute('role')).toBe('list');
     expect(byTestId('pc').getAttribute('aria-label')).toBe('Price per square metre');
     expect(byTestId('pc-row-0-fill').style.width || getComputedStyle(byTestId('pc-row-0-fill')).width).toBe('50%');
     expect(getComputedStyle(byTestId('pc-row-1-fill')).width).toBe('100%');
-    expect(getComputedStyle(byTestId('pc-row-0-fill')).backgroundColor).toBe(normalise(palette.accent));
-    expect(getComputedStyle(byTestId('pc-row-1-fill')).backgroundColor).toBe(normalise(palette.bar));
+    // This is a CHART, not a meter: each bar is a different subject, so its
+    // colour says WHICH one it is. The highlighted row is the brand-anchored
+    // data hue and the comparators the single-ink neutral — neither is the
+    // accent, which would have claimed the row was progress toward something.
+    expect(getComputedStyle(byTestId('pc-row-0-fill')).backgroundColor).toBe(
+      normalise(chartHueTone(theme, 6).color),
+    );
+    expect(getComputedStyle(byTestId('pc-row-1-fill')).backgroundColor).toBe(
+      normalise(resolveMonoTone(theme).color),
+    );
+    expect(getComputedStyle(byTestId('pc-row-0-fill')).backgroundColor).not.toBe(
+      normalise(resolveMeterColors(theme).fill),
+    );
     expect(byTestId('pc-row-0').getAttribute('aria-label')).toBe('This home: €2,000/m²');
   });
 });

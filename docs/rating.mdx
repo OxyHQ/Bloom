@@ -46,6 +46,10 @@ apps in other languages pass `accessibilityLabel`.
 | `display`    | the text on the right ("4.9", "86%"), also the bar's `aria-valuetext`      |
 | `labelWidth` | without it the label flexes and the bar is 96 wide (a category list); with it the bar flexes (a distribution) |
 
-The track is 4 tall with a 2px radius, neutral-200 (dark neutral-800), filled
-with text-primary. The bar is a `progressbar` carrying `aria-valuemin`,
-`aria-valuemax` and `aria-valuenow`.
+The bar is a [`Meter`](/docs/stat-bar): 4 tall with a 2px radius, the shared
+neutral-200 (dark neutral-700) track, filled with the ACCENT. It used to be
+filled with text-primary — a near-black bar reading as ink rather than as a
+measurement — and a rating breakdown is not a chart: the rows do not encode
+different categories by colour, they all say "how good is this, out of 5". It is
+a `progressbar` carrying `aria-valuemin`, `aria-valuemax`, `aria-valuenow` and
+`aria-valuetext` (from `display`).

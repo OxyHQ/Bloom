@@ -1172,8 +1172,13 @@ export { CompositionBar } from './composition-bar';
 export type { CompositionBarProps, CompositionCategory } from './composition-bar';
 export { DotGridMeter } from './dot-grid-meter';
 export type { DotGridMeterProps } from './dot-grid-meter';
-export { StatBar } from './stat-bar';
+export { Meter, MeterRing, StatBar, meterFraction, meterValue, resolveMeterColors } from './stat-bar';
 export type {
+  AnyMeterProps,
+  MeterColors,
+  MeterDecorativeProps,
+  MeterProps,
+  MeterRingProps,
   StatBarProps,
   StatBarProgressProps,
   StatBarSplitProps,

@@ -4,13 +4,13 @@ import { View } from 'react-native';
 import { ActionCardShell } from '../booking/ActionCard';
 import { Badge } from '../badge';
 import { Button, type ButtonIconComponent } from '../button';
-import { resolveButtonRamps } from '../button/shared';
 import { RiCheckboxBlankCircleLine } from '../icons/remix/RiCheckboxBlankCircleLine';
 import { RiCheckboxCircleFill } from '../icons/remix/RiCheckboxCircleFill';
 import { RiCloseCircleFill } from '../icons/remix/RiCloseCircleFill';
 import { RiEyeLine } from '../icons/remix/RiEyeLine';
 import { RiTimeLine } from '../icons/remix/RiTimeLine';
 import { RiUploadLine } from '../icons/remix/RiUploadLine';
+import { Meter } from '../stat-bar';
 import { resolveAccentColors } from '../theme/accent-colors';
 import { Text } from '../typography';
 import { APPLICATION_CHECKLIST_MAX_WIDTH, APPLICATION_ITEM_STATUS } from './constants';
@@ -34,8 +34,8 @@ export function isApplicationItemReady(item: ApplicationItem): boolean {
  *
  *   header     title headline-semibold; "{done} of {total} ready"
  *              body-2-regular text-secondary on the right
- *   progress   12 below; 6 tall, radius 3, neutral-200 / 700 track, accent-500
- *              fill — a `progressbar` over uploaded + verified items
+ *   progress   12 below; a 6-tall `Meter` — the shared neutral-200 / 700 track
+ *              and accent fill — a `progressbar` over uploaded + verified items
  *   rows       16 below, 1px hairlines between; each: a 20 status glyph
  *              (missing neutral, in review accent, verified success, rejected
  *              error), title body-medium + subtle status `Badge`, the
@@ -56,7 +56,6 @@ function ApplicationChecklistComponent({
 }: ApplicationChecklistProps) {
   const palette = useActionPalette();
   const { theme } = palette;
-  const { accent, neutral } = useMemo(() => resolveButtonRamps(theme), [theme]);
   const id = (part: string) => (testID ? `${testID}-${part}` : undefined);
   const done = items.filter(isApplicationItemReady).length;
   const total = items.length;
@@ -97,32 +96,15 @@ function ApplicationChecklistComponent({
         </Text>
       </View>
 
-      <View
-        accessibilityRole="progressbar"
+      <Meter
+        value={done}
+        max={total}
+        height={6}
         accessibilityLabel={title ?? 'Application progress'}
-        aria-valuemin={0}
-        aria-valuemax={total}
-        aria-valuenow={done}
-        aria-valuetext={progressText}
+        valueText={progressText}
         testID={id('progress')}
-        style={{
-          marginTop: 12,
-          height: 6,
-          borderRadius: 3,
-          overflow: 'hidden',
-          backgroundColor: theme.isDark ? neutral[700] : neutral[200],
-        }}
-      >
-        <View
-          testID={id('progress-fill')}
-          style={{
-            width: `${total > 0 ? (done / total) * 100 : 0}%`,
-            height: '100%',
-            borderRadius: 3,
-            backgroundColor: accent[500],
-          }}
-        />
-      </View>
+        style={{ marginTop: 12 }}
+      />
 
       <View style={{ marginTop: 8 }}>
         {items.map((item, index) => {

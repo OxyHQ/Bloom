@@ -17,6 +17,7 @@ import { RiCloseLine } from '../icons/remix/RiCloseLine';
 import { RiErrorWarningLine } from '../icons/remix/RiErrorWarningLine';
 import { RiFileMusicLine } from '../icons/remix/RiFileMusicLine';
 import { RiRefreshLine } from '../icons/remix/RiRefreshLine';
+import { Meter } from '../stat-bar';
 import { useInteractiveWebCss } from '../styles/interactive-web-css';
 import { useTheme } from '../theme/use-theme';
 import { Text } from '../typography';
@@ -42,7 +43,7 @@ import type { TrackUploadRowLabels, TrackUploadRowProps } from './types';
  *   name      `body-medium` truncating, size `caption-1-regular` text-tertiary
  *   status    queued     "Queued" text-secondary
  *             uploading  4px bar (track / accent) + "42% · About 20 s left",
- *                        tabular; a `progressbar` named "Uploading <file>"
+ *                        tabular; a `Meter` named "Uploading <file>"
  *             processing a 40%-wide segment sweeping the track every 1.4s
  *                        (static under reduced motion) + "Transcoding…"
  *             ready      a placeholder waveform (bars from the file name) +
@@ -220,17 +221,16 @@ function TrackUploadRowComponent({
           </Text>
         </View>
         {bar === 'determinate' ? (
-          <View
-            accessibilityRole="progressbar"
-            aria-valuemin={0}
-            aria-valuemax={100}
-            aria-valuenow={percent}
+          <Meter
+            value={percent}
+            max={100}
+            height={BAR_HEIGHT}
+            fill={paint.accent}
+            track={paint.track}
             accessibilityLabel={labels.progress(fileName)}
+            valueText={`${percent}%`}
             testID={testID ? `${testID}-progress` : undefined}
-            style={[styles.bar, { backgroundColor: paint.track }]}
-          >
-            <View style={[styles.fill, { width: `${percent}%`, backgroundColor: paint.accent }]} />
-          </View>
+          />
         ) : bar === 'indeterminate' ? (
           <IndeterminateBar paint={paint} testID={testID ? `${testID}-processing` : undefined} />
         ) : status === 'ready' ? (

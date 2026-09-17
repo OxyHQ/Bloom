@@ -1,18 +1,24 @@
-import React, { memo, useMemo } from 'react';
+import React, { memo } from 'react';
 import { View } from 'react-native';
 
-import { resolveButtonRamps } from '../button/shared';
+import { Meter } from '../stat-bar';
 import { useTheme } from '../theme/use-theme';
 import { Text } from '../typography';
 import type { RatingBarProps } from './types';
 
 /**
- * One row of a rating breakdown: label, a 4px bar, and an optional value.
+ * One row of a rating breakdown: label, a 4px `Meter`, and an optional value.
  *
  *   label     body-regular, text-primary
- *   track     4 tall, radius 2, neutral-200 (dark neutral-800)
- *   fill      text-primary, `value / max` of the track
+ *   track     4 tall, radius 2, neutral-200 (dark neutral-700)
+ *   fill      the accent, `value / max` of the track
  *   display   body-semibold, text-primary, tabular, min width 28, right-aligned
+ *
+ * The fill was text-primary — a near-black bar — until the meters were folded
+ * onto one primitive. A rating breakdown is NOT a chart: the rows do not encode
+ * different categories by colour (they are all "how good is this, out of 5"),
+ * so a chart hue would claim a distinction that is not there. It is a
+ * measurement, and the accent is the theme's colour for one.
  *
  * Without `labelWidth` the label flexes and the bar is 96 wide, so a column of
  * categories lines up on the right; with it the bar flexes, for a 5→1
@@ -24,10 +30,7 @@ const BAR_WIDTH = 96;
 
 function RatingBarComponent({ label, value, max = 5, display, labelWidth, style, testID }: RatingBarProps) {
   const theme = useTheme();
-  const { neutral } = useMemo(() => resolveButtonRamps(theme), [theme]);
   const safeMax = max > 0 ? max : 1;
-  const clamped = Math.min(safeMax, Math.max(0, value));
-  const fraction = clamped / safeMax;
 
   return (
     <View
@@ -46,29 +49,16 @@ function RatingBarComponent({ label, value, max = 5, display, labelWidth, style,
       >
         {label}
       </Text>
-      <View
-        accessibilityRole="progressbar"
+      <Meter
+        value={value}
+        max={safeMax}
+        height={4}
         accessibilityLabel={label}
-        aria-valuemin={0}
-        aria-valuemax={safeMax}
-        aria-valuenow={clamped}
-        aria-valuetext={display}
+        valueText={display}
         testID={testID ? `${testID}-bar` : undefined}
-        style={[
-          {
-            height: 4,
-            borderRadius: 2,
-            overflow: 'hidden',
-            backgroundColor: theme.isDark ? neutral[800] : neutral[200],
-          },
-          labelWidth === undefined ? { width: BAR_WIDTH } : { flex: 1, minWidth: 0 },
-        ]}
-      >
-        <View
-          testID={testID ? `${testID}-fill` : undefined}
-          style={{ width: `${fraction * 100}%`, height: '100%', backgroundColor: theme.colors.text }}
-        />
-      </View>
+        fillTestID={testID ? `${testID}-fill` : undefined}
+        style={labelWidth === undefined ? { width: BAR_WIDTH } : { flex: 1, minWidth: 0 }}
+      />
       {display != null && (
         <Text
           variant="body-semibold"

@@ -97,7 +97,9 @@ const [offering, setOffering] = useState<OfferingValue>({ kinds: [] });
 
 ## `ListingQualityMeter`
 
-A completeness score: a ring, a checklist and tips.
+A completeness score: a ring, a checklist and tips. The ring is a 72px
+[`MeterRing`](/docs/stat-bar) — the shared neutral-200 (dark neutral-700) track
+and accent arc — easing over 400ms on web.
 
 ```tsx
 <ListingQualityMeter

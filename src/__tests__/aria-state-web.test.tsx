@@ -65,7 +65,7 @@ import { SettingsListItem } from '../settings-list/SettingsList';
 import { FrostedIconButton } from '../frosted-icon-button';
 import { CompositionBar } from '../composition-bar';
 import { Radio, RadioGroup } from '../radio';
-import { StatBar } from '../stat-bar';
+import { Meter, MeterRing, StatBar } from '../stat-bar';
 import { Stepper } from '../stepper';
 import { RatingBar } from '../rating';
 import { AudiobookCard, EpisodeCard } from '../media-card';
@@ -604,6 +604,45 @@ describe('Radio', () => {
 // census.test.ts` is the half that fails by default; these are the three it
 // found, asserted against the DOM react-native-web actually emits.
 describe('progressbars announce their value', () => {
+  it('Meter — the primitive every bar above is now built from', () => {
+    // `StatBar`, `RatingBar`, the wizard's bar, the lease bar, the score bars
+    // and rings and the listening bars all render THIS. Asserting it here is
+    // what makes the fold worth doing: one subject in this suite now covers
+    // eleven families, instead of eleven chances to forget to join.
+    const c = mount(<Meter value={4} max={5} accessibilityLabel="Cleanliness" valueText="4 of 5" testID="m" />);
+    const el = byRole(c, 'progressbar');
+    expect(el.getAttribute('aria-label')).toBe('Cleanliness');
+    expect(el.getAttribute('aria-valuemin')).toBe('0');
+    expect(el.getAttribute('aria-valuemax')).toBe('5');
+    expect(el.getAttribute('aria-valuenow')).toBe('4');
+    // `aria-valuetext`: without it a screen reader announces the raw number as
+    // a percentage of the range, so "4 of 5" is read as "80 percent".
+    expect(el.getAttribute('aria-valuetext')).toBe('4 of 5');
+  });
+
+  it('Meter: a decorative segment announces NOTHING rather than an unnamed value', () => {
+    // The wizard's step segments. A nested progressbar would announce the same
+    // measurement a second time, with no name of its own.
+    const c = mount(<Meter decorative value={1} max={2} testID="m" />);
+    const el = byTestId(c, 'm');
+    expect(el.getAttribute('role')).toBeNull();
+    expect(el.getAttribute('aria-hidden')).toBe('true');
+    expect(el.getAttribute('aria-valuenow')).toBeNull();
+  });
+
+  it('MeterRing', () => {
+    const c = mount(
+      <MeterRing value={50} max={100} accessibilityLabel="Listing quality" valueText="50, Good" testID="r" />,
+    );
+    const el = byTestId(c, 'r');
+    expect(el.getAttribute('role')).toBe('progressbar');
+    expect(el.getAttribute('aria-label')).toBe('Listing quality');
+    expect(el.getAttribute('aria-valuemin')).toBe('0');
+    expect(el.getAttribute('aria-valuemax')).toBe('100');
+    expect(el.getAttribute('aria-valuenow')).toBe('50');
+    expect(el.getAttribute('aria-valuetext')).toBe('50, Good');
+  });
+
   it('StatBar', () => {
     const c = mount(<StatBar label="Storage" value={30} max={120} testID="sb" />);
     const el = byRole(c, 'progressbar');

@@ -146,13 +146,19 @@ the band stay the model's range — only the picture refuses to look precise.
 
 ## `PricePerAreaComparison`
 
-Rows of label + `display` over an 8-tall bar from zero; the `highlight` row is primary,
-the rest neutral. A named list; each row reads "This home: €2,790/m²".
+Rows of label + `display` over an 8-tall bar from zero. This is the one family here
+that is a CHART rather than a meter — each bar is a different subject compared with
+the others — so its colours come from the chart palette, not the meter's: the
+`highlight` row takes the brand-anchored data hue (`chartHueTone(theme, 6)`) and the
+comparators the single-ink neutral (`resolveMonoTone`). Painting them with the accent
+would have said each row was progress toward something. A named list; each row reads
+"This home: €2,790/m²".
 
 ## `NeighbourhoodScores` and `NearbyPlaces`
 
 `NeighbourhoodScores` draws each score as a bar (`variant="bars"`, default) or a 56px
-ring (`rings`), with an optional icon and a short `description`. The labels are yours
+ring (`rings`) — both [`Meter`](/docs/stat-bar) and `MeterRing`, so the shared
+neutral track and accent fill — with an optional icon and a short `description`. The labels are yours
 ("Transport", "Schools", "Quiet"…); `max` defaults to 10. Columns: 1 below 560 wide,
 2 from 560 (`columns`). Every bar or ring is a `progressbar` named by its label with
 flat `aria-valuemin/max/now` and `aria-valuetext` ("9.2 out of 10").

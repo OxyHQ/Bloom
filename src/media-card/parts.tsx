@@ -20,6 +20,7 @@ import {
 } from '../dropdown-menu';
 import { RiMoreFill } from '../icons/remix/RiMoreFill';
 import { useImageResolver } from '../image-resolver/context';
+import { Meter } from '../stat-bar';
 import { adoptStyleSheet } from '../styles/adopt-style-sheet';
 import { borderRadius } from '../styles/tokens';
 import type { WebCssStyle } from '../styles/web-view-style';
@@ -214,8 +215,8 @@ export function Mosaic({
 // ---------------------------------------------------------------------------
 
 /**
- * How much of an episode or book has been heard: a 4px pill rail, accent fill.
- * A `progressbar` named by `label`, valued 0..100.
+ * How much of an episode or book has been heard: a 4px pill `Meter`, accent
+ * fill. A `progressbar` named by `label`, valued 0..100.
  */
 export function ListenProgress({
   value,
@@ -234,33 +235,22 @@ export function ListenProgress({
 }) {
   const pct = Math.round(clamp01(value) * 100);
   return (
-    <View
-      role="progressbar"
+    <Meter
+      value={pct}
+      max={100}
+      height={4}
+      radius={borderRadius.full}
+      width={width}
+      fill={paint.fill}
+      track={paint.rail}
       accessibilityLabel={label}
-      aria-valuemin={0}
-      aria-valuemax={100}
-      aria-valuenow={pct}
-      aria-valuetext={`${pct}%`}
+      valueText={`${pct}%`}
       style={[
-        {
-          height: 4,
-          width,
-          flexGrow: width === undefined ? 1 : 0,
-          flexShrink: 1,
-          minWidth: 24,
-          borderRadius: borderRadius.full,
-          backgroundColor: paint.rail,
-          overflow: 'hidden',
-        },
+        { flexGrow: width === undefined ? 1 : 0, flexShrink: 1, minWidth: 24 },
         style,
       ]}
       testID={testID}
-    >
-      <View
-        style={{ width: `${pct}%`, height: '100%', borderRadius: borderRadius.full, backgroundColor: paint.fill }}
-        testID={testID ? `${testID}-fill` : undefined}
-      />
-    </View>
+    />
   );
 }
 
