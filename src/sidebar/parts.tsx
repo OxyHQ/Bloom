@@ -225,18 +225,15 @@ export function ChevronUpDownSmall({ color, size = 16 }: { color: string; size?:
   );
 }
 
-/** Popover chrome for both sidebar menus: `w-[265px] rounded-2xl border p-2.5 shadow-dropdown`. */
-export function menuPanelStyle(palette: SidebarPalette): ViewStyle {
-  return {
-    width: 265,
-    padding: 10,
-    borderRadius: 16,
-    borderWidth: 1,
-    borderColor: palette.menu.border,
-    backgroundColor: palette.menu.surface,
-    boxShadow: palette.menu.shadow,
-  };
+/** The width both sidebar menus give their popover: `w-[265px]`. */
+export function menuPanelStyle(_palette?: SidebarPalette): ViewStyle {
+  // `w-[265px]` is the only thing these menus say differently from the popover
+  // panel itself — radius, border, surface, `p-2.5` and `shadow-dropdown` are
+  // `Popover`'s own defaults now (`popover/surface.ts`).
+  return MENU_PANEL;
 }
+
+const MENU_PANEL: ViewStyle = { width: 265 };
 
 /** Full-bleed menu divider: `-mx-2.5 h-px bg-border-button-default`. */
 export function MenuDivider({ palette, spacing }: { palette: SidebarPalette; spacing: number }) {

@@ -1,10 +1,29 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Pressable, View } from 'react-native';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
-import { Popover, PopoverTrigger, PopoverContent } from './index';
+import {
+  Popover,
+  PopoverContent,
+  PopoverDescription,
+  PopoverFooter,
+  PopoverHeader,
+  PopoverSeparator,
+  PopoverTitle,
+  PopoverTrigger,
+} from './index';
+import { Avatar } from '../avatar';
 import { Button } from '../button';
-import { Item } from '../item';
+import { useMenuPalette } from '../floating/menu-palette';
+import {
+  RiAddFill,
+  RiEqualizer3Line,
+  RiInformationLine,
+  RiLogoutBoxRLine,
+  RiSettings3Line,
+  RiUserLine,
+} from '../icons/remix';
+import { TextField, TextFieldInput, TextFieldLabel } from '../text-field';
 import { Text } from '../typography';
 
 const meta: Meta = {
@@ -16,49 +35,230 @@ export default meta;
 type Story = StoryObj;
 
 /**
- * The shadcn shape: `asChild` hands the caller's own control to the trigger, so
- * the `Button` below IS the trigger rather than something wrapped in one.
+ * A menu row as the panels draw it: `flex items-center gap-2 rounded-2lg
+ * p-2`, a 20px secondary icon and a `text-body-medium` label, washed with the
+ * dropdown hover colour. Story-local — a popover whose body is ONLY rows wants
+ * `DropdownMenu`, which ships them with keyboard state and ARIA roles.
+ */
+function PanelRow({
+  icon: Icon,
+  label,
+  onPress,
+}: {
+  icon: React.ComponentType<{ width?: number; height?: number; fill?: string }>;
+  label: string;
+  onPress?: () => void;
+}) {
+  const palette = useMenuPalette();
+  return (
+    <Pressable
+      role="button"
+      accessibilityLabel={label}
+      onPress={onPress}
+      style={({ hovered, pressed }: { hovered?: boolean; pressed: boolean }) => ({
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 8,
+        padding: 8,
+        borderRadius: 10,
+        backgroundColor: hovered || pressed ? palette.rowHighlight : 'transparent',
+      })}>
+      <Icon width={20} height={20} fill={palette.textSecondary} />
+      <Text variant="body-medium" numberOfLines={1} style={{ color: palette.text, flex: 1 }}>
+        {label}
+      </Text>
+    </Pressable>
+  );
+}
+
+/**
+ * The default panel: the floating surface — 266px, `rounded-2xl`, 1px
+ * `border-button-default`, `bg-background-primary-default`, `p-2.5`,
+ * `shadow-dropdown` — holding a titled explanation.
  */
 export const Basic: Story = {
   render: () => (
-    <View style={{ padding: 80 }}>
-      <Popover>
-        <PopoverTrigger asChild label="Open popover">
-          <Button testID="popover-trigger">Open popover</Button>
+    <View style={{ padding: 80, alignItems: 'flex-start' }}>
+      <Popover defaultOpen>
+        <PopoverTrigger asChild label="What is this?">
+          <Button variant="secondary" leadingIcon={RiInformationLine} testID="popover-trigger">
+            What is this?
+          </Button>
         </PopoverTrigger>
-        {/* A row list rather than prose, so it opts out of the panel's own
-            `w-72 p-4` — the same thing a shadcn call site says with
-            `className="w-auto p-0"`. */}
-        <PopoverContent
-          label="Account actions"
-          align="start"
-          style={{ width: 'auto', padding: 4 }}>
-          <View style={{ minWidth: 200 }} testID="popover-panel">
-            <Item title="Profile" density="compact" onPress={() => {}} />
-            <Item title="Settings" density="compact" onPress={() => {}} />
-            <Item title="Sign out" density="compact" destructive onPress={() => {}} />
-          </View>
+        <PopoverContent label="Two-factor authentication" align="start" testID="popover-panel">
+          <PopoverHeader style={{ paddingBottom: 4 }}>
+            <PopoverTitle>Two-factor authentication</PopoverTitle>
+            <PopoverDescription numberOfLines={0}>
+              A second step when you sign in, so a leaked password is not enough on its own.
+            </PopoverDescription>
+          </PopoverHeader>
         </PopoverContent>
       </Popover>
     </View>
   ),
 };
 
-/** Prose rather than rows — the panel's own `w-72 p-4` is the shape for it. */
-export const Prose: Story = {
+/**
+ * Header, grouped rows, separator and footer — the dashboard team menu's
+ * anatomy: a `px-2 pt-1` header (avatar + title + description) 7px above the
+ * rows, a full-bleed `-mx-2.5` rule, and a `px-2 pb-2` footer.
+ */
+export const WithHeaderAndFooter: Story = {
   render: () => (
-    <View style={{ padding: 80, alignItems: 'flex-end' }}>
-      <Popover>
-        <PopoverTrigger asChild label="What is this?">
-          <Button variant="secondary">What is this?</Button>
+    <View style={{ padding: 80, alignItems: 'flex-start' }}>
+      <Popover defaultOpen>
+        <PopoverTrigger asChild label="Design team">
+          <Button variant="secondary">Design team</Button>
         </PopoverTrigger>
-        <PopoverContent label="Explanation" align="end">
-          <View style={{ gap: 8 }}>
-            <Text style={{ fontWeight: '600' }}>Two-factor authentication</Text>
-            <Text>
-              A second step when you sign in, so a leaked password is not enough on its own.
-            </Text>
+        <PopoverContent label="Design team menu" align="start" testID="popover-header-footer">
+          <View style={{ gap: 7 }}>
+            <PopoverHeader leading={<Avatar name="Design team" size={32} />}>
+              <PopoverTitle>Design team</PopoverTitle>
+              <PopoverDescription>team@example.com</PopoverDescription>
+            </PopoverHeader>
+            <View style={{ gap: 4 }}>
+              <PanelRow icon={RiUserLine} label="Profile" />
+              <PanelRow icon={RiSettings3Line} label="Settings" />
+            </View>
           </View>
+          <PopoverSeparator />
+          <PanelRow icon={RiLogoutBoxRLine} label="Sign out" />
+          <PopoverSeparator />
+          <PopoverFooter style={{ justifyContent: 'space-between', paddingTop: 4 }}>
+            <PopoverTitle tone="secondary">Bloom</PopoverTitle>
+            <PopoverDescription>v1.0.1</PopoverDescription>
+          </PopoverFooter>
+        </PopoverContent>
+      </Popover>
+    </View>
+  ),
+};
+
+/**
+ * A labelled row list over an action footer — the account menu's anatomy:
+ * a `pt-[5px]` group label in `text-secondary` 6px above the rows, a 28px
+ * separator gap, and two `flex-1` small secondary buttons in the `px-2 pb-2`
+ * footer (18px from the panel edge on every side).
+ */
+export const RowList: Story = {
+  render: () => (
+    <View style={{ padding: 80, alignItems: 'flex-start' }}>
+      <Popover defaultOpen>
+        <PopoverTrigger asChild label="Account">
+          <Button variant="secondary">Account</Button>
+        </PopoverTrigger>
+        <PopoverContent label="Account menu" align="start" testID="popover-row-list">
+          <View style={{ gap: 6, paddingTop: 5 }}>
+            <PopoverTitle tone="secondary" style={{ paddingLeft: 8, paddingRight: 8 }}>
+              Users with access
+            </PopoverTitle>
+            <View style={{ gap: 4 }}>
+              <PanelRow icon={RiUserLine} label="Maya Chen" />
+              <PanelRow icon={RiUserLine} label="Leo Park" />
+              <PanelRow icon={RiUserLine} label="Sam Rivera" />
+            </View>
+          </View>
+          <PopoverSeparator style={{ marginTop: 14, marginBottom: 14 }} />
+          <PopoverFooter>
+            <Button variant="secondary" size="small" leadingIcon={RiAddFill} style={{ flex: 1 }}>
+              Add user
+            </Button>
+            <Button variant="secondary" size="small" leadingIcon={RiEqualizer3Line} style={{ flex: 1 }}>
+              Manage
+            </Button>
+          </PopoverFooter>
+        </PopoverContent>
+      </Popover>
+    </View>
+  ),
+};
+
+/** Form content: a field and a confirm row, closed from inside via `onOpenChange`. */
+export const FormContent: Story = {
+  render: function FormPopover() {
+    const [open, setOpen] = useState(true);
+    const [name, setName] = useState('Q3 roadmap');
+    return (
+      <View style={{ padding: 80, alignItems: 'flex-start' }}>
+        <Popover open={open} onOpenChange={setOpen}>
+          <PopoverTrigger asChild label="Rename">
+            <Button variant="secondary">Rename</Button>
+          </PopoverTrigger>
+          <PopoverContent label="Rename board" align="start" testID="popover-form">
+            <PopoverHeader>
+              <PopoverTitle>Rename board</PopoverTitle>
+            </PopoverHeader>
+            <View style={{ paddingHorizontal: 8, paddingTop: 10, paddingBottom: 12, gap: 6 }}>
+              <TextFieldLabel>Name</TextFieldLabel>
+              <TextField>
+                <TextFieldInput label="Name" value={name} onChangeText={setName} />
+              </TextField>
+            </View>
+            <PopoverFooter style={{ justifyContent: 'flex-end', gap: 10 }}>
+              <Button variant="secondary" size="small" onPress={() => setOpen(false)}>
+                Cancel
+              </Button>
+              <Button size="small" onPress={() => setOpen(false)}>
+                Save
+              </Button>
+            </PopoverFooter>
+          </PopoverContent>
+        </Popover>
+      </View>
+    );
+  },
+};
+
+const PLACEMENTS = [
+  { side: 'bottom', align: 'start' },
+  { side: 'bottom', align: 'center' },
+  { side: 'bottom', align: 'end' },
+  { side: 'top', align: 'start' },
+  { side: 'right', align: 'start' },
+  { side: 'left', align: 'end' },
+] as const;
+
+/**
+ * `side` × `align`, each at the default 8px offset. The panel scales in from the
+ * corner nearest its trigger, and flips when the named side does not fit.
+ */
+export const Placements: Story = {
+  render: () => (
+    <View style={{ padding: 120, flexDirection: 'row', flexWrap: 'wrap', gap: 32, maxWidth: 1100 }}>
+      {PLACEMENTS.map(({ side, align }) => (
+        <Popover key={`${side}-${align}`}>
+          <PopoverTrigger asChild label={`${side} ${align}`}>
+            <Button variant="secondary" testID={`placement-${side}-${align}`}>
+              {`${side} / ${align}`}
+            </Button>
+          </PopoverTrigger>
+          <PopoverContent label={`${side} ${align} panel`} side={side} align={align}>
+            <PopoverHeader style={{ paddingBottom: 4 }}>
+              <PopoverTitle>{`side="${side}"`}</PopoverTitle>
+              <PopoverDescription>{`align="${align}"`}</PopoverDescription>
+            </PopoverHeader>
+          </PopoverContent>
+        </Popover>
+      ))}
+    </View>
+  ),
+};
+
+/**
+ * A caller's `className` still reaches the panel: every chrome property its
+ * utilities name drops the matching inline default (`w-[200px] p-2` here, the
+ * `DropdownPopover` call-site shape).
+ */
+export const ClassNameOverride: Story = {
+  render: () => (
+    <View style={{ padding: 80, alignItems: 'flex-start' }}>
+      <Popover defaultOpen>
+        <PopoverTrigger asChild label="More">
+          <Button variant="secondary">More</Button>
+        </PopoverTrigger>
+        <PopoverContent label="More actions" align="start" className="w-[200px] p-2" testID="popover-classname">
+          <PanelRow icon={RiSettings3Line} label="Settings" />
+          <PanelRow icon={RiLogoutBoxRLine} label="Sign out" />
         </PopoverContent>
       </Popover>
     </View>
@@ -164,21 +364,24 @@ export const AsChildDisabled: Story = {
 };
 
 /**
- * Controlled: the caller owns `open`. Both stories above are uncontrolled, which
+ * Controlled: the caller owns `open`. The other stories are uncontrolled, which
  * is the same pair of modes every anchored Bloom family offers.
  */
 export const Controlled: Story = {
   render: function ControlledPopover() {
     const [open, setOpen] = React.useState(false);
     return (
-      <View style={{ padding: 80, gap: 12 }}>
+      <View style={{ padding: 80, gap: 12, alignItems: 'flex-start' }}>
         <Text>open: {String(open)}</Text>
         <Popover open={open} onOpenChange={setOpen}>
           <PopoverTrigger asChild label="Toggle">
             <Button variant="secondary">Toggle</Button>
           </PopoverTrigger>
-          <PopoverContent label="Controlled panel">
-            <Text>Driven by the story's own state.</Text>
+          <PopoverContent label="Controlled panel" align="start">
+            <PopoverHeader style={{ paddingBottom: 4 }}>
+              <PopoverTitle>Controlled</PopoverTitle>
+              <PopoverDescription>Driven by the story's own state.</PopoverDescription>
+            </PopoverHeader>
           </PopoverContent>
         </Popover>
       </View>
