@@ -67,6 +67,7 @@ import { Radio, RadioGroup } from '../radio';
 import { StatBar } from '../stat-bar';
 import { Stepper } from '../stepper';
 import { RatingBar } from '../rating';
+import { AudiobookCard, EpisodeCard } from '../media-card';
 import { AmenityFilter, CountFilter, ToggleChipGroup } from '../stay-filters';
 import { DestinationSuggestions, StaySearchBar, StaySearchStep } from '../stay-search';
 import { BookingCard } from '../booking';
@@ -74,6 +75,7 @@ import { ApplicationChecklist, ViewingScheduler } from '../listing-actions';
 import { FavoriteButton } from '../listing-card';
 import { CategoryBar } from '../category-bar';
 import { MapPriceMarker, MapSearchAreaButton } from '../map-marker';
+import { TransportControls } from '../media-player';
 import { RiFireLine } from '../icons/remix/RiFireLine';
 import {
   DropdownMenuCheckboxItem,
@@ -1085,5 +1087,42 @@ describe('Map pieces', () => {
     const c = mount(<MapSearchAreaButton variant="toggle" checked onCheckedChange={() => {}} testID="sa" />);
     expect(byTestId(c, 'sa').getAttribute('role')).toBe('checkbox');
     expect(byTestId(c, 'sa').getAttribute('aria-checked')).toBe('true');
+  });
+});
+
+describe('Player toggles', () => {
+  it('shuffle and repeat emit aria-pressed; previous stays a plain button', () => {
+    const c = mount(
+      <TransportControls
+        playing={false}
+        onPlayPause={() => {}}
+        onPrevious={() => {}}
+        shuffle
+        onShuffleChange={() => {}}
+        repeat="off"
+        onRepeatChange={() => {}}
+        testID="tc"
+      />,
+    );
+    expect(byTestId(c, 'tc-shuffle').getAttribute('aria-pressed')).toBe('true');
+    expect(byTestId(c, 'tc-shuffle').getAttribute('aria-label')).toBe('Shuffle');
+    expect(byTestId(c, 'tc-repeat').getAttribute('aria-pressed')).toBe('false');
+    expect(byTestId(c, 'tc-previous').hasAttribute('aria-pressed')).toBe(false);
+  });
+});
+
+describe('Media cards', () => {
+  it('EpisodeCard and AudiobookCard emit a named listened progressbar with aria-value*', () => {
+    for (const ui of [
+      <EpisodeCard key="e" title="Tide Tables" progress={0.62} remaining="18 min left" />,
+      <AudiobookCard key="b" title="Tide Tables" progress={0.62} />,
+    ]) {
+      const c = mount(ui);
+      const el = byRole(c, 'progressbar');
+      expect(el.getAttribute('aria-label')).toBe('Tide Tables progress');
+      expect(el.getAttribute('aria-valuenow')).toBe('62');
+      expect(el.getAttribute('aria-valuemin')).toBe('0');
+      expect(el.getAttribute('aria-valuemax')).toBe('100');
+    }
   });
 });

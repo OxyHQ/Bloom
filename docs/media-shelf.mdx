@@ -1,0 +1,86 @@
+---
+title: Media Shelf
+description: Home and search sections — a titled row or grid of tiles, its loading placeholder, and the filter pills above a feed.
+order: 63
+---
+
+# Media Shelf
+
+The building blocks of a music home feed: a `Shelf` is one section (a heading, an optional "Show all", and a run of tiles), `ShelfSkeleton` stands in while it loads, and `FilterChips` is the single-select pill row above the feed.
+
+```tsx
+import { FilterChips, Shelf, ShelfSkeleton } from '@oxy.so/bloom/media-shelf';
+
+<FilterChips
+  options={[
+    { value: 'all', label: 'All' },
+    { value: 'music', label: 'Music' },
+    { value: 'podcasts', label: 'Podcasts' },
+    { value: 'audiobooks', label: 'Audiobooks' },
+  ]}
+  value={filter}
+  onValueChange={setFilter}
+/>
+
+<Shelf
+  title="Maya"
+  eyebrow="Made for"
+  eyebrowAvatar={user.avatar}
+  onTitlePress={openMixes}
+  onShowAll={openMixes}
+>
+  {mixes.map((mix) => <MixTile key={mix.id} mix={mix} />)}
+</Shelf>
+
+<Shelf title="Recently played" layout="grid" minItemWidth={240} rows={2} gap={8}>
+  {recent.map((item) => <CompactTile key={item.id} item={item} />)}
+</Shelf>
+
+{loading ? <ShelfSkeleton count={8} /> : null}
+```
+
+The tiles are yours — any card works. The shelf only lays them out.
+
+## `Shelf`
+
+| prop | decides |
+| --- | --- |
+| `title` | the heading (`title-2-bold`); also names the group and the arrow buttons |
+| `subtitle` | a `body-2-regular` secondary line under the title |
+| `eyebrow` / `eyebrowAvatar` | a small line above the title ("Made for") with a 24px avatar (URL, ImageResolver id or image source) |
+| `onTitlePress` | makes the title a link; it underlines on hover |
+| `onShowAll` / `showAllLabel` | the "Show all" button on the right of the header (default text "Show all") |
+| `layout` | `'row'` (default) scrolls horizontally; `'grid'` wraps |
+| `itemWidth` | row: the width each item is laid out at (items keep their own width when omitted) |
+| `minItemWidth` | grid: the narrowest a column may get, default `160` |
+| `rows` | grid: rows shown, default `1`; extra items are dropped. `Infinity` shows all |
+| `gap` | between items, default `16` on web and `12` on native |
+| `contentInset` | row: padding inside the track so it can scroll edge to edge while the first item lines up with the page gutter |
+| `headingLevel` | the heading's `aria-level`, default `2` |
+| `previousLabel` / `nextLabel` | the arrow buttons' names, default "Previous" / "Next", suffixed with the title |
+| `style`, `testID` | |
+
+**Row on web.** The scrollbar is hidden, items snap to their start (`scroll-snap-type`), and two round secondary buttons in the header page through the row by 90% of its width. Each disables at its end; both are hidden while nothing overflows, and on touch screens (`hover: none`), where a swipe already scrolls. Paging is not animated under reduced motion.
+
+**Row on native.** A plain horizontal `ScrollView`. With `itemWidth` it snaps one item at a time.
+
+**Grid.** The column count is computed from the container's measured width: as many columns of at least `minItemWidth` as fit, at least one, stretched to fill. Nothing renders until the first layout, so a grid never flashes at the wrong column count. The rule is exported as `shelfGridColumns(width, minItemWidth, gap)`.
+
+**Semantics.** The shelf is a `role="group"` named by `title`, the title is a `role="heading"`, and "Show all" is a button named "Show all: *title*" — the visible text leads the name, so a voice command of "Show all" still matches.
+
+## `ShelfSkeleton`
+
+The same header rhythm and gaps as `Shelf`, with square (or `round`) covers over two text lines. Props: `layout`, `count` (6), `itemWidth` (160), `minItemWidth`, `round`, `eyebrow`, `gap`, `accessibilityLabel` ("Loading"). It renders a `role="group"` with `aria-busy`, so a screen reader hears one "Loading" rather than a dozen blank shapes.
+
+## `FilterChips`
+
+| prop | decides |
+| --- | --- |
+| `options` | `{ value, label }[]` |
+| `value` | the selected option |
+| `onValueChange` | called with the pressed value — or `undefined` when `allowDeselect` and the selected chip is pressed |
+| `allowDeselect` | default `false`: pressing the selected chip does nothing |
+| `accessibilityLabel` | the group's name, default "Filters" |
+| `contentInset` | horizontal padding inside the scroll track |
+
+Each option is a large `Chip`: subtle at rest, the solid accent when selected. The row scrolls horizontally when it does not fit. Each chip is a toggle button with `aria-pressed` (and `accessibilityState.selected` on native — the `Chip` contract).

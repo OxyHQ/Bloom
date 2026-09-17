@@ -81,14 +81,17 @@ describe('ToastHost platform split', () => {
     );
     // `WEB_POSITION_STICKY` is the same gap for `'sticky'` (a surface pinned
     // within its own scroll container, e.g. `rail/Rail.tsx`, rather than to the
-    // viewport) — same module, same cast shape. Exactly one cast PER constant,
-    // and the two `export const`s are the only RUNTIME exports. (Counted
+    // viewport) — same module, same cast shape. Exactly one cast PER crossing:
+    // the two positions plus the viewport height (a constant and a `calc()`
+    // helper) and `overflow: clip`, which the document-scrolling `AppShell`
+    // needs. Those are the only RUNTIME exports. (Counted
     // against code — the doc comment discusses casts in prose.) The module's
     // other export is the `WebCssStyle` interface, which covers the other half
     // of the same RN/RNW gap and emits nothing — see `web-css-style.test.ts`.
-    expect(code('styles/web-view-style.ts').match(/ as /g)).toHaveLength(2);
-    expect(styleModule.match(/^export const /gm)).toHaveLength(2);
-    expect(styleModule.match(/^export (?!const |interface )/gm)).toBeNull();
+    expect(code('styles/web-view-style.ts').match(/ as /g)).toHaveLength(5);
+    expect(styleModule.match(/^export const /gm)).toHaveLength(4);
+    expect(styleModule.match(/^export function /gm)).toHaveLength(1);
+    expect(styleModule.match(/^export (?!const |function |interface )/gm)).toBeNull();
   });
 
   it('no engine file other than the host reaches for a platform overlay', () => {

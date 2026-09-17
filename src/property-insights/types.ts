@@ -13,7 +13,7 @@ export type InsightIcon = ComponentType<{ width?: number; height?: number; fill?
 /** The efficiency classes, best to worst. */
 export type EnergyClass = 'A' | 'B' | 'C' | 'D' | 'E' | 'F' | 'G';
 
-export interface EnergyRating {
+export interface EnergyMeasurement {
   rating: EnergyClass;
   /** Pre-formatted, unit included ("112 kWh/m²·year", "24 kg CO₂/m²·year"). */
   value?: string;
@@ -21,9 +21,9 @@ export interface EnergyRating {
 
 export interface EnergyLabelProps {
   /** The energy consumption rating. */
-  consumption?: EnergyRating;
+  consumption?: EnergyMeasurement;
   /** The emissions rating. */
-  emissions?: EnergyRating;
+  emissions?: EnergyMeasurement;
   /** Draws the scale muted with a "Certificate in progress" note instead of the marks. */
   pending?: boolean;
   /** Default `"Certificate in progress"`. */

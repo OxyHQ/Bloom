@@ -13,6 +13,7 @@ import { useTheme } from '../theme/use-theme';
 import { Text } from '../typography';
 import { ENERGY_RATINGS } from './constants';
 import type { EnergyRating, EnergyRatingFilterProps } from './types';
+import { contrastRatio, relativeLuminance } from '../styles/color-contrast';
 
 /**
  * An energy rating threshold, A (best) to G (worst), as seven small coloured
@@ -70,11 +71,6 @@ function luminance(color: string): number {
   return 0.2126 * lin(c.r) + 0.7152 * lin(c.g) + 0.0722 * lin(c.b);
 }
 
-/** WCAG contrast ratio of two opaque colours. */
-export function contrastRatio(a: string, b: string): number {
-  const [hi, lo] = [luminance(a), luminance(b)].sort((x, y) => y - x) as [number, number];
-  return (hi + 0.05) / (lo + 0.05);
-}
 
 export interface EnergyRatingPaint {
   fill: string;
@@ -225,3 +221,5 @@ function EnergyRatingFilterComponent({
 
 export const EnergyRatingFilter = memo(EnergyRatingFilterComponent);
 EnergyRatingFilter.displayName = 'EnergyRatingFilter';
+
+export { contrastRatio };

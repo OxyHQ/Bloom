@@ -61,13 +61,14 @@ describe('web position: fixed', () => {
     expect(offenders.map((f) => f.replace(`${SRC}/`, ''))).toEqual([]);
   });
 
-  it('keeps only the two documented casts inside styles/web-view-style.ts', () => {
+  it('keeps only the documented casts inside styles/web-view-style.ts', () => {
     const module = readFileSync(join(SRC, 'styles/web-view-style.ts'), 'utf8')
       .replace(/\/\*[\s\S]*?\*\//g, '')
       .replace(/^\s*\/\/.*$/gm, '');
-    // One per constant (`WEB_POSITION_FIXED`, `WEB_POSITION_STICKY`) — an
-    // equality, not a floor, so a third inline cast anywhere is still caught.
-    expect(module.match(/ as /g)).toHaveLength(2);
+    // One per crossing (`WEB_POSITION_FIXED`, `WEB_POSITION_STICKY`,
+    // `WEB_VIEWPORT_HEIGHT`, `webViewportHeightMinus`, `WEB_OVERFLOW_CLIP`) — an
+    // equality, not a floor, so one more inline cast anywhere is still caught.
+    expect(module.match(/ as /g)).toHaveLength(5);
   });
 
   it('is imported by every fork that positions something fixed', () => {

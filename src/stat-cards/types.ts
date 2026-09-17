@@ -1,4 +1,4 @@
-import type { ComponentType } from 'react';
+import type { ComponentType, ReactNode } from 'react';
 import type { StyleProp, ViewStyle } from 'react-native';
 
 /** An icon COMPONENT (`RiGroupLine`, not `<RiGroupLine />`) — the card sizes and colours it. */
@@ -35,6 +35,12 @@ export interface StatCardsItem {
   hint?: string;
   /** `footer` only: accessible name of the info glyph. Defaults to `` `About ${label}` ``. */
   hintLabel?: string;
+  /**
+   * `plain` only: a node at the top right, level with the icon tile — a
+   * sparkline, a status dot. Decorative by default; give it its own name if it
+   * carries information the label and value do not.
+   */
+  accessory?: ReactNode;
 }
 
 export interface StatCardProps {

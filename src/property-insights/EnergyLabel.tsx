@@ -12,7 +12,7 @@ import {
   ENERGY_LABEL_ROW_HEIGHT,
 } from './constants';
 import { ENERGY_CLASSES, resolveEnergyTones, resolveInsightPalette, type EnergyTone } from './shared';
-import type { EnergyLabelProps, EnergyRating } from './types';
+import type { EnergyLabelProps, EnergyMeasurement } from './types';
 
 /**
  * The A–G energy efficiency scale of a home.
@@ -50,7 +50,7 @@ const COMPACT_COLUMN_WIDTH = 84;
 interface Column {
   key: 'consumption' | 'emissions';
   label: string;
-  rating: EnergyRating;
+  rating: EnergyMeasurement;
 }
 
 function Tag({ tone, text, testID }: { tone: EnergyTone; text: string; testID?: string }) {

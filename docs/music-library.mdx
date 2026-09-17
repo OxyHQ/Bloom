@@ -1,0 +1,159 @@
+---
+title: Music Library
+description: The Your Library side panel and its rows, plus the search page parts — the search pill, result tabs, top result card, recent searches and the browse grid.
+order: 66
+---
+
+# Music Library
+
+Two screens of a music app: the library panel on the left, and the search page.
+
+```tsx
+import {
+  BrowseGrid,
+  LibraryItem,
+  LibraryPanel,
+  RecentSearches,
+  SearchField,
+  SearchResultTabs,
+  TopResultCard,
+  filterLibraryItems,
+  sortLibraryItems,
+} from '@oxy.so/bloom/music-library';
+```
+
+Colours come from the theme in light and dark: surfaces are the page background stepped toward the text colour (so a panel reads as a panel on any page), the accent is the theme's `primary`. Hover and press change colour only — nothing scales.
+
+## `LibraryPanel`
+
+```tsx
+<LibraryPanel
+  items={entries}
+  selectedId={openPageId}
+  nowPlayingId={context?.id}
+  paused={!playing}
+  onItemPress={(item) => router.push(`/library/${item.id}`)}
+  onCreatePress={openCreateMenu}
+  collapsed={railOpen}
+  onCollapsedChange={setRailOpen}
+  expanded={wide}
+  onExpandedChange={setWide}
+  renderContextMenu={(item) => (
+    <>
+      <ContextMenuItem onPress={() => pin(item)}>{item.pinned ? 'Unpin' : 'Pin'}</ContextMenuItem>
+      <ContextMenuItem variant="destructive" onPress={() => remove(item)}>Remove from Your Library</ContextMenuItem>
+    </>
+  )}
+  style={{ width: wide ? 560 : 360, height: '100%' }}
+/>
+```
+
+| prop | decides |
+| --- | --- |
+| `items` | `LibraryEntry[]` — `id`, `title`, `kind` (`playlist` · `artist` · `album` · `podcast` · `audiobook` · `folder`), `subtitle` ("Maya"), `meta` (replaces "Playlist · Maya"), `cover` (URL or ImageResolver id), `pinned`, `downloaded`, `addedAt`, `lastPlayedAt`, `creator` |
+| `filter` / `onFilterChange` | the kind chip, or `null`. Pressing the active chip turns it off; the × chip clears the kind and Downloaded |
+| `downloadedOnly` / `onDownloadedOnlyChange` | the Downloaded chip — combines with the kind filter (AND) |
+| `sort` / `onSortChange` | `recents` (default) · `recently-added` · `alphabetical` · `creator` |
+| `view` / `onViewChange` | `compact` · `list` (default) · `grid` |
+| `query` / `onQueryChange` | the in-library search, opened from the search glyph |
+| `filters`, `hideDownloadedFilter` | which chips to draw |
+| `collapsed`, `onCollapsedChange` | the rail: 72 wide, covers only, tooltips on web. The title becomes the rail toggle when `onCollapsedChange` is set |
+| `expanded`, `onExpandedChange` | draws the expand toggle; the panel's width is yours to change |
+| `onCreatePress` | draws the + button |
+| `selectedId`, `nowPlayingId`, `paused` | the open page's fill, the playing entry's accent title and bars |
+| `renderContextMenu` | `ContextMenuItem` rows per entry — right-click on web, long press on native |
+| `labels` | every string, merged over English defaults (nested `filter`, `sort`, `view`, `kind`) |
+| `emptyState` | replaces "Nothing here yet" |
+
+**Controlled or not, per value.** Filter, Downloaded, sort, view and query each follow their prop when it is set and keep their own state when it is not; the change callback fires in both cases. So `sort="alphabetical"` alone pins the sort while the chips stay interactive.
+
+**Order.** Pinned entries always lead, in the current sort among themselves. `recents` and `recently-added` put entries without the timestamp last; `alphabetical` ignores case and accents; `creator` sorts by `creator`, else `subtitle`, then title. The sort is stable.
+
+The logic is exported so a server-backed library can apply the same rules:
+
+```ts
+const shown = sortLibraryItems(filterLibraryItems(items, { filter, downloadedOnly, query }), sort);
+```
+
+The sort and view menu is one `DropdownMenu` with two radio groups; its trigger is named "Sort and view: Recents, List".
+
+## `LibraryItem`
+
+One row, used by the panel and usable on its own (a "Your playlists" list elsewhere).
+
+| `variant` | draws |
+| --- | --- |
+| `list` (default) | 48 cover (a circle for artists) · title over "Playlist · Maya", led by the pinned and downloaded glyphs · the now-playing bars |
+| `compact` | title · meta on one line, no cover |
+| `grid` | a square cover filling the tile, title, meta |
+| `rail` | the cover alone, the bars on its corner while playing; a tooltip on web hover |
+
+The row is a `button` named by everything it shows — "Night Drive, Playlist · Maya, Pinned, Downloaded, Now playing" — because the glyphs carry state no text does. `selected` sets `aria-current="page"` on web and `accessibilityState.selected` on native. `pinnedLabel`, `downloadedLabel`, `nowPlayingLabel` and `kindLabels` translate it.
+
+## `SearchField`
+
+```tsx
+<SearchField
+  value={query}
+  onChangeText={setQuery}
+  onClear={() => setQuery('')}
+  onSubmit={runSearch}
+  onBrowsePress={() => router.push('/search')}
+  browseActive={onBrowsePage}
+/>
+```
+
+A 48-tall full pill: search glyph, input, a clear × once there is text, then a divider and the browse button. The field is controlled — `onClear` reports, it does not clear. The browse button is a toggle (`aria-pressed` on web, `accessibilityState.selected` on native). A press anywhere on the pill focuses the input; focus draws a text-coloured border without changing the size.
+
+## `SearchResultTabs`
+
+```tsx
+<SearchResultTabs
+  tabs={[{ value: 'all', label: 'All' }, { value: 'songs', label: 'Songs' }, { value: 'artists', label: 'Artists' }]}
+  value={tab}
+  onValueChange={setTab}
+/>
+```
+
+Pills painted like `Chip` (neutral at rest, primary subtle when selected), 32 tall, scrolling sideways when they do not fit. A `tablist` of `tab`s with `aria-selected`; on web the row is one tab stop and the arrow keys, Home and End move focus.
+
+## `TopResultCard`
+
+```tsx
+<TopResultCard
+  title="Lumen Vale"
+  kind="artist"
+  subtitle="4.2M monthly listeners"
+  cover={artist.image}
+  onPress={openArtist}
+  onPlayPress={playArtist}
+  playing={isPlaying}
+/>
+```
+
+A 16-radius card: a 92 cover (round for `artist` and `profile`), the title in `title-1-bold`, a kind pill and the subtitle. The `PlayButton` sits in the bottom-right corner — on web it fades in on hover or keyboard focus (and stays while playing), on touch and native it is always shown. It is a sibling of the card's button, not nested in it, so both are reachable. `kindLabel` translates the pill.
+
+## `RecentSearches`
+
+```tsx
+<RecentSearches
+  items={recent}
+  onItemPress={(item) => setQuery(item.title)}
+  onRemove={(item) => forget(item.id)}
+  onClearAll={forgetAll}
+/>
+```
+
+Rows of cover, title and meta with a × button beside each (a separate control named "Remove Paper Moons"), and a "Clear recent searches" button while there is anything to clear. `round` draws an artist's cover as a circle.
+
+## `BrowseGrid`
+
+```tsx
+<BrowseGrid title="Browse all" items={genres} onItemPress={openGenre} />
+
+<BrowseGrid minTileWidth={200}>
+  {moods.map((mood) => <MoodCard key={mood.id} {...mood} />)}
+</BrowseGrid>
+```
+
+Columns are as many as fit at `minTileWidth` (default 128, which is two on a phone), measured from the grid's width. With `items` each tile is a 12-radius colour block with its title and a tilted image in the corner. **The title always clears 4.5:1**: white when white does, near-black when that does, and for a mid-grey that neither clears the tile's fill is darkened until white does — so any colour the backend sends stays readable. An unparseable colour falls back to a neutral tile. With `children`, each child is one cell and draws itself.

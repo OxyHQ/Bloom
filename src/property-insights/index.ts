@@ -12,7 +12,7 @@ export type {
   EnergyBadgeSize,
   EnergyClass,
   EnergyLabelProps,
-  EnergyRating,
+  EnergyMeasurement,
   EstimateConfidence,
   InsightIcon,
   NearbyPlace,

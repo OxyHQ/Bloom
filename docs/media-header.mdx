@@ -1,0 +1,177 @@
+---
+title: Media Headers
+description: The top of every music page — album, playlist, liked songs, artist, podcast show, episode, profile and audiobook headers, the media action bar, the sticky top bar and the artist page sections.
+order: 114
+---
+
+# Media Headers
+
+The header block of a collection or entity page, and the controls that sit under it.
+
+```tsx
+import {
+  ArtistAbout,
+  ArtistHero,
+  ArtistPick,
+  ArtistStats,
+  AudiobookHeader,
+  CollectionHeader,
+  DiscographyFilter,
+  EpisodeHeader,
+  MediaActionBar,
+  PodcastShowHeader,
+  PopularTracks,
+  ProfileHeader,
+  StickyMediaTopBar,
+  useMediaHeaderScroll,
+} from '@oxy.so/bloom/media-header';
+
+<CollectionHeader
+  typeLabel="Album"
+  title="Lanterns Over Kessel Bay"
+  cover={album.coverUrl}
+  artworkColor={album.dominantColor}
+  owners={[{ name: 'Velvet Harbour', avatar: artist.avatar, onPress: openArtist }]}
+  year="2025"
+  summary="12 songs, 48 min"
+  actions={
+    <MediaActionBar
+      playing={playing}
+      onPlayPress={togglePlay}
+      playSubject="Lanterns Over Kessel Bay"
+      shuffle={shuffle}
+      onShuffleChange={setShuffle}
+      liked={saved}
+      onLikedChange={setSaved}
+      download={downloadState}
+      downloadProgress={progress}
+      onDownloadPress={toggleDownload}
+      onMorePress={openMenu}
+    />
+  }
+/>
+```
+
+Everything is data in props: counts, durations, dates and listener figures arrive pre-formatted as strings — the app owns locale and plurals. Images are a URL or an ImageResolver id. Every header is controlled: it draws what it is given and reports what the user did.
+
+## The band
+
+Each header paints a gradient band from `artworkColor` — the artwork's dominant colour, as a hex or `rgb()` string from the backend. Components never sample images.
+
+- The colour is **tinted towards the page**: its OKLCH lightness is clamped to 0.66–0.84 in light mode and 0.30–0.44 in dark, chroma to 0.14, hue kept. A near-black or neon artwork colour still gives a band that belongs to the page.
+- The band runs from that colour to 55% of it over the page background; the `actions` area continues the fade into the page.
+- **Text on the band** is the theme's text or background colour — whichever has the better *worst* contrast over both ends of the band. Secondary text is walked towards the band only while it stays above AA. The test suite checks AA for every preset × mode × 47 artwork colours.
+- Absent or unparsable, the band is **neutral** (neutral-200 light, neutral-800 dark).
+- Over an `ArtistHero` banner photo the text is white on a bottom scrim, because it sits on a photo rather than the theme.
+
+`resolveMediaHeaderPaint(theme, artworkColor)` is exported and pure, for a page that wants to tint its own surroundings to match.
+
+## Title size
+
+Titles shrink through the display steps of the type ramp — `large-title` 64, `display-1` 56, `display-2` 48, `display-3` 40, `display-4` 32, then `title-1` 24, all bold. `selectTitleVariant(title, width)` picks the largest step whose estimated line count (a glyph-width estimate, stable on first render and identical on both platforms) fits that step's allowance: one line for 64 and 56, two for 48–32. Below 480 wide the largest step is `display-4`. An episode title starts at `display-3`.
+
+## Layout
+
+From **600 wide** (the header measures itself, not the window) the cover stands beside the text and the text sits on the cover's baseline; below it the cover is centred on top. Covers: collections 232 (narrow 240), podcast 232 radius 12, episode 160, audiobook 2:3 at 200×300, artist and profile round.
+
+## `CollectionHeader`
+
+Album, single, EP, playlist, liked songs, audiobook-as-collection.
+
+| prop | decides |
+| --- | --- |
+| `typeLabel` | "Album", "Public playlist" |
+| `title`, `description` | the heading (level `headingLevel`, default 1) and a two-line description |
+| `cover`, `artworkColor` | the image and the band colour |
+| `variant` | `'liked'`: an accent gradient cover with a heart, and an accent-tinted band |
+| `owners` | people at the start of the meta line: up to three overlapped 24 avatars, then names — links when they have `onPress` |
+| `year`, `summary`, `saves` | the rest of the meta line, joined by bullets |
+| `editable`, `onEdit`, `editLabel` | a pencil badge on the cover (web: the cover darkens with "Edit details" on hover); the cover and the title are buttons to `onEdit` |
+| `actions` | rendered on the fade under the header |
+
+## `MediaActionBar`
+
+Each control draws only when its handler is given.
+
+| control | props | accessibility |
+| --- | --- | --- |
+| Play (56, accent) | `playing`, `onPlayPress`, `playSubject`, `playDisabled` | "Play Lanterns…" / "Pause Lanterns…" |
+| Shuffle | `shuffle`, `onShuffleChange` | toggle "Shuffle", `aria-pressed`; accent with a dot when on |
+| Heart | `liked`, `onLikedChange` | `LikeButton` |
+| Outline pill | `following`, `onFollowChange`, `followLabel`, `followingLabel` | toggle named by `followLabel` in both states, `aria-pressed` |
+| Download | `download` (`'idle' \| 'downloading' \| 'downloaded'`), `downloadProgress`, `onDownloadPress` | "Download", `aria-pressed` once downloaded, `aria-busy` plus a named `progressbar` while downloading |
+| More | `onMorePress`, or `more` to replace it | "More options" |
+| Search (right) | `onSearchPress`, `searchLabel` | "Search in playlist" |
+| View (right) | `view`, `onViewChange`, `compactViewLabel` | toggle "Compact view", `aria-pressed` |
+| `trailing` | anything at the far right | |
+
+The pieces are exported too: `ShuffleButton`, `DownloadButton`, `FollowButton`, `MediaMoreButton`, `MediaIconButton`. `MediaMoreButton` forwards `aria-expanded` / `aria-haspopup`, so it works as a menu trigger:
+
+```tsx
+<MediaActionBar
+  playing={playing}
+  more={
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        <MediaMoreButton />
+      </DropdownMenuTrigger>
+      <DropdownMenuContent>
+        <DropdownMenuItem onPress={addToQueue}>Add to queue</DropdownMenuItem>
+      </DropdownMenuContent>
+    </DropdownMenu>
+  }
+/>
+```
+
+## `StickyMediaTopBar`
+
+The compact bar (64 high, band colour, play button + title) that takes over when the header scrolls away. It does not position itself — put it in an absolutely positioned, `sticky` or `fixed` container over the page. Below half shown it is `aria-hidden` and takes no pointer events.
+
+Drive it one of two ways:
+
+- `visible` — fades over 200ms (instant under reduced motion).
+- `progress` 0..1 — drawn at that opacity. Feed it from `useMediaHeaderScroll`:
+
+```tsx
+// A ScrollView
+const { progress, onScroll } = useMediaHeaderScroll({ start: 260, end: 340 });
+<ScrollView onScroll={onScroll} scrollEventThrottle={16}>…</ScrollView>
+<StickyMediaTopBar title={album.title} playing={playing} progress={progress} artworkColor={album.color} />
+
+// Web, a page that scrolls the document: no handler to wire
+const { progress } = useMediaHeaderScroll({ start: 260, window: true });
+```
+
+`start` is normally the header's height minus the bar's; `end` defaults to `start + 80`. `mediaHeaderScrollProgress(offset, start, end)` is the pure mapping.
+
+## `ArtistHero`
+
+`name`, `verified` + `verifiedLabel` ("Verified artist"), `listeners` ("1,234,567 monthly listeners"). With `banner` the image fills the band (400 tall wide) under a scrim; without it the band is tinted from `artworkColor` beside a round `avatar`. Pass the Play / Follow / shuffle / more row as `actions`.
+
+## Artist page sections
+
+- **`PopularTracks`** — `tracks` (`id`, `title`, `image`, `plays`, `duration`, `explicit`); five rows, "See more" shows ten (`collapsedCount`, `expandedCount`, controlled `expanded` / `onExpandedChange`; the toggle carries `aria-expanded`). `activeTrackId` + `playing` draw the now-playing bars and an accent title (`aria-current`). Rows are buttons named by the title; plays hide under 480 wide. The rows are internal to this part.
+- **`DiscographyFilter`** — `value`, `onValueChange`, `options` (default Albums / Singles and EPs / Compilations), `title` ("Discography", `null` for none), `onShowAll`. Chips are `Chip`s, the chosen one `selected`.
+- **`ArtistPick`** — the pinned item: `image`, `title`, `subtitle`, `note` (with a round `avatar`), `label` ("Artist pick"), `onPress`.
+- **`ArtistAbout`** — `image` (16:9 on the card), `bio` clamped to `bioLines` (3) with "Show more", `stats`, `cities` (`{ city, count }`, "Where people listen").
+- **`ArtistStats`** — `stats` (`{ value, label }`), each announced as one element: "1,204,331 Followers".
+
+## `PodcastShowHeader`
+
+`title`, `cover`, `publisher` + `onPublisherPress` (a link), `rating` + `ratingCount` (drawn with `Rating`), `categories` + `onCategoryPress` (chips), `following` + `onFollowChange` (outline pill), `description` clamped to `descriptionLines` with "Show more", and `latestEpisode` (`title`, `date`, `duration`, `description`, `onPress`, `playing`, `onPlayPress`) as a callout card.
+
+## `EpisodeHeader`
+
+`showTitle` + `onShowPress` (link over the title), `title`, `cover`, `date`, `duration`, `playing` + `onPlayPress`, `progress` 0..1 + `remainingLabel` (a named `progressbar`), `saved` + `onSavedChange` (toggle "Save episode"), `onSharePress`, `download` / `downloadProgress` / `onDownloadPress`, `onMorePress`.
+
+## `ProfileHeader`
+
+`name`, `avatar` (round), `typeLabel` ("Profile"), `stats` (`{ label, onPress }` — "12 public playlists" — links when pressable), and either `following` + `onFollowChange` (another listener) or `onEditPress` ("Edit profile", your own), plus `onMorePress`.
+
+## `AudiobookHeader`
+
+`title`, 2:3 `cover`, `author` + `onAuthorPress`, `narrator`, `duration`, `chapters`, `rating` + `ratingCount`, `progress` 0..1 + `progressLabel`.
+
+## Platform notes
+
+Hover states (the edit overlay, underlined links, row washes) are web affordances; native shows the pencil badge and needs no hover. The band gradients use `background-image` on web and the native CSS-gradient style elsewhere. Keyboard focus rings hang off `data-bloom-media-header-press` in one adopted sheet.

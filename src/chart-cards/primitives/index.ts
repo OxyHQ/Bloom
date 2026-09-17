@@ -28,3 +28,5 @@ export { useChartCardPalette, useChartTones, useMonoTone } from './use-chart-pal
 export { useChartRange } from './use-chart-range';
 export type { ChartRange, ChartRangeOption } from './use-chart-range';
 export { useWebTransition } from './use-web-transition';
+export { Sparkline, sparklinePoints } from './Sparkline';
+export type { SparklineProps, SparklineTone } from './Sparkline';

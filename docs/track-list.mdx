@@ -1,0 +1,236 @@
+---
+title: Track List
+description: The table of tracks for albums, playlists, liked songs and search results, podcast episode rows, loading and empty states, and the bar for bulk actions on a selection.
+order: 63
+---
+
+# Track List
+
+```tsx
+import {
+  EpisodeList,
+  EpisodeRow,
+  SelectionBar,
+  TrackList,
+  TrackListEmpty,
+  TrackListHeader,
+  TrackRow,
+  TrackRowSkeleton,
+  resolveVisibleColumns,
+} from '@oxy.so/bloom/track-list';
+```
+
+Everything is data in, callbacks out. Durations are seconds (drawn with `formatDuration` from `@oxy.so/bloom/media-controls`); dates and play counts arrive pre-formatted, because the app owns the locale. The list never mutates anything: it reports a press, a selection, a like or a reorder, and the app hands back new props.
+
+## TrackList
+
+```tsx
+<TrackList
+  tracks={tracks}
+  currentTrackId={player.trackId}
+  isPlaying={player.playing}
+  onPlay={(track, index) => player.play(queueFrom(index))}
+  onPause={() => player.pause()}
+  selectedIds={selected}
+  onSelectionChange={setSelected}
+  onLikedChange={(track, liked) => library.setLiked(track.id, liked)}
+  onArtistPress={(artist) => router.push(`/artist/${artist.id}`)}
+  onAlbumPress={(track) => router.push(`/album/${track.id}`)}
+  menuItems={(track) => [
+    { key: 'queue', label: 'Add to queue', icon: RiPlayListAddLine, onPress: () => queue.add(track) },
+  ]}
+  accessibilityLabel="Late Night Drive"
+/>
+```
+
+A `Track` is `{ id, title, artists: [{ id?, name }], album?, cover?, number?, duration, dateAdded?, plays?, explicit?, liked?, unavailable?, downloaded? }`. `cover` is a URL or an id your `ImageResolver` turns into one (asked for the `thumb` variant).
+
+### Columns
+
+`columns` picks from `index`, `title` (cover, title and artists), `album`, `dateAdded`, `plays`, `duration` and `actions` (the like button when `onLikedChange` is set, and the more button when the row has a menu). The default is all of them. Whatever you offer still collapses by the list's own width:
+
+| Width | Shown |
+| --- | --- |
+| 1024 and up | everything offered |
+| 768 – 1023 | date added hidden |
+| 640 – 767 | album and plays hidden too |
+| under 640 | the narrow list: cover, title/artists and the more button, no header |
+
+The width is measured with `onLayout` (the window width until the first layout); pass `width` to lay out for a known size. `resolveVisibleColumns(columns, width)` is the same rule as a function, for a header you render yourself.
+
+An album usually drops the date: `columns={['index', 'title', 'plays', 'duration', 'actions']}`.
+
+### Rows
+
+| | comfortable | compact | narrow |
+| --- | --- | --- | --- |
+| height | 56 | 40 | 64 (48 compact) |
+| radius | 6 | 4 | 6 (4 compact) |
+| cover | 40 | 28 | 48 (40 compact) |
+
+Hover paints the row neutral-100 (dark 800), swaps the number for a plain small `PlayButton` and brings in the like, more and drag-handle controls; a liked track keeps its heart. Selected rows are neutral-200 (dark 700). The current track has an accent title and shows `NowPlayingIndicator` while playing, or an accent number while paused. An explicit track draws `ExplicitBadge` before the artists; `showDownloaded` draws the downloaded mark for `downloaded` tracks. An `unavailable` track is drawn at half strength, has no play button and does not play; it can still be selected and opened.
+
+Controls that appear on hover are **mounted** on hover or when focus is inside the row, not hidden with opacity, so a row you are not on is never a Tab stop.
+
+### Disc groups
+
+```tsx
+<TrackList
+  tracks={album.tracks}
+  groups={[
+    { key: 'disc-1', title: 'Disc 1', startIndex: 0 },
+    { key: 'disc-2', title: 'Disc 2', startIndex: 12 },
+  ]}
+/>
+```
+
+A group header row is drawn before the track at `startIndex`. Give tracks their own `number` so each disc counts from 1. Groups are ignored while `reorderable` is on.
+
+### Selection and playing
+
+| | Web | Native |
+| --- | --- | --- |
+| Press / click | selects that row | plays |
+| Cmd/Ctrl-click | toggles the row | — |
+| Shift-click | selects from the last clicked row to this one | — |
+| Double-click | plays | — |
+| Long press | — | opens the row menu (toggles selection when there is no menu) |
+
+Selection is controlled with `selectedIds` + `onSelectionChange`, or uncontrolled with `defaultSelectedIds`. Ids come back in list order. `selectable={false}` turns it off. `onPause` is called instead of `onPlay` for the current, playing track (it defaults to `onPlay`).
+
+### Keyboard (web)
+
+The list is **one** Tab stop: the focused row carries `tabIndex={0}` and every other row `-1`.
+
+| Key | Does |
+| --- | --- |
+| ↑ / ↓ | focus the previous / next row |
+| Home / End | focus the first / last row |
+| Shift + ↑ / ↓ (Home / End) | move focus and extend the selection |
+| Enter / Space | play the focused row |
+| Menu key / Shift+F10 | open the row menu |
+| Alt + ↑ / ↓ | move the row (with `reorderable`) |
+| Tab | into the focused row's own buttons, then out of the list |
+
+### Reordering
+
+```tsx
+<TrackList
+  tracks={tracks}
+  reorderable
+  onReorder={(from, to) => setTracks((list) => move(list, from, to))}
+/>
+```
+
+`reorderable` (with `onReorder`) draws a drag handle at the start of the row on hover. While a row is dragged it lifts onto the menu surface with a shadow and the rows between part to show where it will land (a 150 ms slide, none with reduced motion). The same move is available without a pointer: **Move up** / **Move down** rows at the end of the row menu, and Alt+↑/↓. Those are the path for screen reader and keyboard users, and for native, where the handle also drags. The handle itself is hidden from assistive technology.
+
+`from` and `to` are indexes into `tracks`; the app moves the item and passes the new array back.
+
+### Accessibility
+
+- The list is `role="grid"` named by `accessibilityLabel` (default "Tracks"), with `aria-multiselectable` (when selectable) and `aria-rowcount`.
+- The header is a `row` of `columnheader`s; the clock is named "Duration".
+- Each track is a `row` with `aria-selected` and `aria-rowindex`, named "title, artists" (plus "Unavailable"); its cells are `gridcell`s. Native gets the same name and `accessibilityState.selected`.
+- `grid`, not `listbox`: an `option`'s contents are presentational, and these rows contain buttons (play, like, more) and links (artists, album).
+- Artist and album names are `link`s when their handlers are set. Like is a toggle (`aria-pressed`); the more button carries `aria-haspopup` and `aria-expanded`.
+- Every word is in `labels` for translation.
+
+### Long lists
+
+`TrackList` maps every track, which is fine up to a few hundred rows. Past that, render the header and rows inside a virtualised list yourself. `TrackRow` is the same row `TrackList` draws, and works on its own:
+
+```tsx
+const columns = resolveVisibleColumns(undefined, width);
+
+<FlatList
+  data={tracks}
+  keyExtractor={(track) => track.id}
+  getItemLayout={(_, index) => ({ length: 56, offset: 56 * index, index })}
+  ListHeaderComponent={<TrackListHeader columns={columns} likeable hasMenu />}
+  stickyHeaderIndices={[0]}
+  renderItem={({ item, index }) => (
+    <TrackRow
+      track={item}
+      index={index}
+      columns={columns}
+      width={width}
+      current={item.id === currentId}
+      playing={item.id === currentId && playing}
+      selected={selected.has(item.id)}
+      onPlay={play}
+      onPress={(track, i, { shiftKey, toggleKey }) => select(track, i, shiftKey, toggleKey)}
+      onLikedChange={setLiked}
+      menuItems={menuFor}
+    />
+  )}
+/>
+```
+
+A standalone row plays on press on native and does nothing on a single web click until you pass `onPress` (a double-click plays). Keyboard focus movement is the list's job: wire `onNavigate` and `tabIndex` if you need it in a virtualised list.
+
+## TrackListHeader
+
+`columns` (already collapsed), `density`, and `reorderable` / `likeable` / `hasMenu` to reserve the gutters a row will draw so the labels line up. On web it is `position: sticky` (`sticky`, `stickyOffset` under an app bar) over `background`, which defaults to the page background. `TrackList` exposes these as `stickyHeader`, `stickyHeaderOffset` and `headerBackground`.
+
+## TrackRowSkeleton
+
+```tsx
+{loading ? <TrackRowSkeleton count={8} /> : <TrackList tracks={tracks} />}
+```
+
+Same geometry and column collapsing as the rows (`columns`, `width`, `density`), so nothing jumps when the tracks arrive. Hidden from assistive technology: announce loading on the region around it.
+
+## TrackListEmpty
+
+```tsx
+<TrackListEmpty
+  icon={RiPlayList2Line}
+  title="Songs you add will appear here"
+  description="Use the menu on any song to add it to this playlist."
+  actionLabel="Find songs"
+  onAction={openSearch}
+/>
+```
+
+A round neutral well with the icon, a heading, a muted description and a primary button, centred and at most 360 wide.
+
+## SelectionBar
+
+```tsx
+<View style={{ flex: 1 }}>
+  <TrackList tracks={tracks} selectedIds={selected} onSelectionChange={setSelected} />
+  <SelectionBar
+    count={selected.length}
+    onClear={() => setSelected([])}
+    actions={[
+      { key: 'playlist', label: 'Add to playlist', icon: RiAddLine, onPress: addToPlaylist },
+      { key: 'queue', label: 'Add to queue', icon: RiPlayListAddLine, onPress: addToQueue },
+      { key: 'remove', label: 'Remove', icon: RiDeleteBinLine, destructive: true, onPress: remove },
+    ]}
+  />
+</View>
+```
+
+Renders nothing at `count` 0. The default `placement="floating"` sits absolutely 16 above the bottom of the nearest positioned parent, centred; `inline` leaves placement to you. A panel on the menu surface, radius 16, with ghost buttons that drop to icon-only under 640 (`width`). It is a `toolbar` named by its count text ("3 selected", `formatCount`), and the count is a polite live region.
+
+## EpisodeRow and EpisodeList
+
+```tsx
+<EpisodeList
+  episodes={episodes}
+  currentEpisodeId={player.episodeId}
+  isPlaying={player.playing}
+  onPlay={(episode) => player.play(episode)}
+  onPause={() => player.pause()}
+  onPress={(episode) => router.push(`/episode/${episode.id}`)}
+  onSavedChange={(episode, saved) => library.setSaved(episode.id, saved)}
+  onDownloadedChange={(episode, downloaded) => downloads.set(episode.id, downloaded)}
+  menuItems={(episode) => [{ key: 'share', label: 'Share episode', onPress: () => share(episode) }]}
+/>
+```
+
+An `Episode` is `{ id, title, show?, description?, cover?, date?, duration, progress?, played?, saved?, downloaded?, explicit? }` (`duration` and `progress` in seconds).
+
+Each row draws a 112 cover (radius 12), the title (accent while current), the show, a two-line description, "date · length" (or an accent "Played" check), and a row of actions: an inverse play button, a progress bar with the time left while `progress` is between 0 and `duration`, and save, download and more at the end. Under 560 wide (`width`) the cover shrinks to 64 beside the title and the description is dropped.
+
+Accessibility: the title is a `link` that opens the episode (so does a press anywhere on the row); play is named "Play <title>"; save and download are toggle buttons with `aria-pressed`; the progress bar is a `progressbar` named "Listened" with the time left as its value text. `EpisodeList` is a `list` of `listitem`s with hairlines between rows. Translate with `labels` (`played`, `save`, `download`, `moreOptions`, `progress`, `formatLength`, `formatRemaining`).

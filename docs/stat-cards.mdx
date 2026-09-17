@@ -67,6 +67,17 @@ Surfaces are built on Bloom's ramps (`button/shared`): the card is `neutral-100`
 - **Deltas.** `lime` / `rose` / `neutral`. The plain card's `Chip` reads `success` / `error` / `default`. The footer pill uses a status recipe on the theme's `success` and `negative` ramps: light `200` fill with `800` text, dark `950` at 60% over the band with `500` text.
 - **Tile tones.** `blue` is the accent ramp, `orange` the `warning` ramp, `sky` the `info` ramp and `emerald` the `success` ramp — so a preset that moves a status colour moves the tile with it. `purple` and `pink` have no theme role: they keep Tailwind's offset from `blue-500` (lightness step, chroma ratio, hue distance), measured from the theme's `primary`. Stops are fixed (`500 → 600`, `orange`/`sky` `400 → 500`), always opaque (react-native-svg drops alpha in `stopColor`).
 
+## Accessory
+
+`accessory` (plain only) puts a node at the top right of the card, level with the icon tile — a `Sparkline` from `@oxy.so/bloom/chart-cards` is the usual one. It shrinks before the tile does and is right-aligned; without it the card renders exactly as before.
+
+```tsx
+import { Sparkline } from '@oxy.so/bloom/chart-cards';
+
+{ icon: RiHeadphoneLine, label: 'Listeners', value: '48,210', delta: '+12%', deltaColor: 'lime',
+  accessory: <Sparkline data={[3, 4, 4, 6, 5, 7, 9]} tone="positive" /> }
+```
+
 ## Info tooltip
 
 `hint` adds a 20px info glyph (named `` `About ${label}` ``, or `hintLabel`). The tooltip opens on hover after 200ms, on keyboard focus, and on press — a glyph this small reads as a button and gets tapped.
