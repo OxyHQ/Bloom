@@ -22,7 +22,7 @@ import type { WebCssStyle } from '../styles/web-view-style';
 import { useTheme } from '../theme/use-theme';
 import { Text } from '../typography';
 import { BookingPrice } from './BookingPrice';
-import { GuestSelectCloseProvider } from './context';
+import { GuestPickerCloseProvider } from '../stay-search/context';
 import { PriceBreakdown } from './PriceBreakdown';
 import {
   BOOKING_CARD_MAX_WIDTH,
@@ -172,7 +172,7 @@ function BookingCardComponent({
   onPressDates,
   onPressGuests,
   activeField,
-  guestSelect,
+  guestPicker,
   guestsOpen,
   onGuestsOpenChange,
   checkInLabel = 'Check-in',
@@ -207,9 +207,9 @@ function BookingCardComponent({
     setBoxWidth(Math.round(e.nativeEvent.layout.width));
   }, []);
 
-  const hasGuestSelect = guestSelect != null;
+  const hasGuestPicker = guestPicker != null;
   const active: BookingFieldKey | null =
-    activeField != null ? activeField : hasGuestSelect && open ? 'guests' : null;
+    activeField != null ? activeField : hasGuestPicker && open ? 'guests' : null;
   const knowsOpen = activeField !== undefined;
   const datesSet = Boolean(checkIn) && Boolean(checkOut);
   const buttonLabel = reserveLabel ?? (datesSet ? 'Reserve' : checkAvailabilityLabel);
@@ -223,7 +223,7 @@ function BookingCardComponent({
       value={guests}
       placeholder=""
       active={active === 'guests'}
-      expanded={hasGuestSelect ? undefined : knowsOpen ? active === 'guests' : undefined}
+      expanded={hasGuestPicker ? undefined : knowsOpen ? active === 'guests' : undefined}
       palette={palette}
       onPress={onPressGuests ? () => onPressGuests() : undefined}
       trailing={<Chevron width={20} height={20} fill={palette.text} />}
@@ -299,7 +299,7 @@ function BookingCardComponent({
           />
         </View>
         <View style={{ height: 1, backgroundColor: palette.fieldBorder }} />
-        {hasGuestSelect ? (
+        {hasGuestPicker ? (
           <Popover open={open} onOpenChange={setOpen}>
             <PopoverTrigger asChild style={{ alignSelf: 'stretch' }}>
               {guestsCell}
@@ -310,7 +310,7 @@ function BookingCardComponent({
               sideOffset={8}
               style={boxWidth ? { width: boxWidth } : undefined}
             >
-              <GuestSelectCloseProvider value={closeGuests}>{guestSelect}</GuestSelectCloseProvider>
+              <GuestPickerCloseProvider value={closeGuests}>{guestPicker}</GuestPickerCloseProvider>
             </PopoverContent>
           </Popover>
         ) : (

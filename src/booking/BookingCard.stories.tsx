@@ -4,10 +4,11 @@ import type { Meta, StoryObj } from '@storybook/react-vite';
 
 import { BookingBar } from './BookingBar';
 import { BookingCard } from './BookingCard';
-import { GuestSelect } from './GuestSelect';
+import { GuestPicker } from '../stay-search';
+import type { GuestCounts } from '../stay-search';
 import { PriceBreakdown } from './PriceBreakdown';
 import { TripCard } from './TripCard';
-import type { GuestCounts, PriceBreakdownProps } from './types';
+import type { PriceBreakdownProps } from './types';
 import { Button } from '../button';
 import { RiFlagLine } from '../icons/remix/RiFlagLine';
 import { useTheme } from '../theme/use-theme';
@@ -62,7 +63,7 @@ function ReportLink() {
 function GuestsDemo({ initialOpen = false }: { initialOpen?: boolean }) {
   const [counts, setCounts] = useState<GuestCounts>({ adults: 2, children: 0, infants: 1, pets: 0 });
   const [open, setOpen] = useState(initialOpen);
-  const guests = (counts.adults ?? 0) + (counts.children ?? 0);
+  const guests = counts.adults + counts.children;
   const summary = [
     `${guests} guest${guests === 1 ? '' : 's'}`,
     counts.infants ? `${counts.infants} infant${counts.infants === 1 ? '' : 's'}` : null,
@@ -81,10 +82,11 @@ function GuestsDemo({ initialOpen = false }: { initialOpen?: boolean }) {
       guests={summary}
       guestsOpen={open}
       onGuestsOpenChange={setOpen}
-      guestSelect={
-        <GuestSelect
+      guestPicker={
+        <GuestPicker
+          size="small"
           value={counts}
-          onValueChange={setCounts}
+          onChange={setCounts}
           maxGuests={4}
           note="This place has a maximum of 4 guests, not including infants. Pets aren't allowed."
         />

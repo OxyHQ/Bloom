@@ -51,7 +51,9 @@ export interface MapMarkerPaint {
 export function resolveMapMarkerPaint(theme: Theme): MapMarkerPaint {
   const menu = resolveMenuPalette(theme);
   const { accent, neutral: n } = resolveButtonRamps(theme);
-  const red = colorRamp(theme.colors.negative, DANGER_TABLE);
+  // `error`, not `negative` — the same red as the listing card's heart: dark
+  // mode's `negative` is a pale tint for text and reads salmon on a pill.
+  const red = colorRamp(theme.colors.error, DANGER_TABLE);
   const dark = theme.isDark;
   return {
     surface: menu.surface,

@@ -1,7 +1,7 @@
 ---
 title: Stay Search
 description: The stays search bar with its drop-down panels, the narrow-screen trigger, and the step cards of the mobile search flow.
-order: 61
+order: 108
 ---
 
 # Stay Search
@@ -119,6 +119,18 @@ hover moves the same highlight. The rows stay out of the tab order.
 rows. `value: { adults, children, infants, pets }`, `onChange`, `max` (one
 number or per kind), `kinds` (which rows, in order), `labels`, `descriptions`
 (`null` hides one).
+
+It is the ONE guests picker: the search bar's "Who" panel and `BookingCard`'s
+guests popover both use it. For the booking side:
+
+- `maxGuests` caps adults + children (infants and pets do not count): their `+`
+  buttons disable once the sum is reached, and each stepper's `aria-valuemax`
+  drops to what is left.
+- `note` adds a line under the rows ("This place has a maximum of 4 guests, not
+  including infants.").
+- `onClose` / `closeLabel` add a right-aligned "Close" link; inside a
+  `BookingCard` guests popover it appears on its own and closes the popover.
+- `size="small"` for a popover.
 
 **The guest rule.** While any child, infant or pet is counted, adults cannot go
 below 1: the adults `−` disables there, and adding a child, infant or pet with

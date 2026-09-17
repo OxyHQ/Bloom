@@ -356,15 +356,12 @@ export type {
   StaySearchStepProps,
 } from './stay-search';
 export * from './listing-details';
-export { BookingBar, BookingCard, DEFAULT_GUEST_CATEGORIES, GuestSelect, PriceBreakdown, TRIP_STATUS, TripCard } from './booking';
+export { BookingBar, BookingCard, PriceBreakdown, TRIP_STATUS, TripCard } from './booking';
 export type {
   BookingBarProps,
   BookingCardProps,
   BookingFieldKey,
   BookingPriceProps,
-  GuestCategory,
-  GuestCounts,
-  GuestSelectProps,
   PriceBreakdownProps,
   PriceBreakdownRow,
   PriceBreakdownTone,

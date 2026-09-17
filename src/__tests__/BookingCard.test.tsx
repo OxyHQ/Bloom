@@ -1,7 +1,7 @@
 /**
  * @jest-environment jsdom
  *
- * The booking family — `BookingCard`, `PriceBreakdown`, `GuestSelect`,
+ * The booking family — `BookingCard`, `PriceBreakdown`, the `GuestPicker` it hosts,
  * `BookingBar`, `TripCard` — rendered through the REAL react-native-web, so the
  * assertions read emitted DOM attributes and computed styles rather than props.
  */
@@ -18,14 +18,13 @@ import { resolveAccentColors } from '../theme/accent-colors';
 import {
   BookingBar,
   BookingCard,
-  DEFAULT_GUEST_CATEGORIES,
-  GuestSelect,
   PriceBreakdown,
   TRIP_STATUS,
   TripCard,
 } from '../booking';
-import type { GuestCounts } from '../booking';
-import { GuestSelectCloseProvider } from '../booking/context';
+import { GuestPicker } from '../stay-search';
+import type { GuestCounts } from '../stay-search';
+import { GuestPickerCloseProvider } from '../stay-search/context';
 import { discountAmount, priceAccessibilityName, resolveBookingPalette } from '../booking/shared';
 import { useTheme } from '../theme/use-theme';
 import type { Theme } from '../theme/types';
@@ -131,15 +130,6 @@ describe('booking helpers', () => {
     expect(darkPalette.surface).not.toBe(lightPalette.surface);
     expect(darkPalette.fieldBorder).not.toBe(lightPalette.fieldBorder);
     expect(darkPalette.discount).toBe(resolveAccentColors(theme().colors, 'success', 'outlined').foreground);
-  });
-
-  it('ships four default guest categories, infants and pets outside the cap', () => {
-    expect(DEFAULT_GUEST_CATEGORIES.map((c) => c.key)).toEqual(['adults', 'children', 'infants', 'pets']);
-    expect(DEFAULT_GUEST_CATEGORIES[0]?.min).toBe(1);
-    expect(DEFAULT_GUEST_CATEGORIES.filter((c) => c.countsTowardMax === false).map((c) => c.key)).toEqual([
-      'infants',
-      'pets',
-    ]);
   });
 });
 
@@ -266,13 +256,13 @@ describe('BookingCard', () => {
 
   it('turns the guests cell into a popover trigger that keeps its name', () => {
     function Harness() {
-      const [counts, setCounts] = useState<GuestCounts>({ adults: 2 });
+      const [counts, setCounts] = useState<GuestCounts>({ adults: 2, children: 0, infants: 0, pets: 0 });
       return (
         <BookingCard
           testID="card"
           price="$180"
           guests="2 guests"
-          guestSelect={<GuestSelect value={counts} onValueChange={setCounts} />}
+          guestPicker={<GuestPicker value={counts} onChange={setCounts} />}
         />
       );
     }
@@ -332,17 +322,18 @@ describe('PriceBreakdown', () => {
   });
 });
 
-describe('GuestSelect', () => {
+describe('GuestPicker in a booking card', () => {
   function Harness({ onChange, maxGuests, onClose }: { onChange?: (c: GuestCounts) => void; maxGuests?: number; onClose?: () => void }) {
     const [counts, setCounts] = useState<GuestCounts>({ adults: 2, children: 1, infants: 0, pets: 0 });
     return (
-      <GuestSelect
+      <GuestPicker
         testID="gs"
+        size="small"
         value={counts}
         maxGuests={maxGuests}
         onClose={onClose}
         note="Max 4 guests"
-        onValueChange={(next) => {
+        onChange={(next) => {
           onChange?.(next);
           setCounts(next);
         }}
@@ -350,7 +341,7 @@ describe('GuestSelect', () => {
     );
   }
 
-  it('renders a named stepper per category and merges changes', () => {
+  it('renders a named stepper per kind and merges changes', () => {
     const onChange = jest.fn();
     mount(<Harness onChange={onChange} />);
     expect(byTestId('gs-adults').getAttribute('aria-label')).toBe('Adults');
@@ -360,7 +351,7 @@ describe('GuestSelect', () => {
     expect(byTestId('gs-adults-value').getAttribute('aria-valuemin')).toBe('1');
   });
 
-  it('caps the counted categories at maxGuests, leaving infants and pets free', () => {
+  it('caps adults + children at maxGuests, leaving infants and pets free', () => {
     mount(<Harness maxGuests={4} />);
     expect(byTestId('gs-adults-increment').getAttribute('aria-disabled')).not.toBe('true');
     click(byTestId('gs-children-increment'));
@@ -379,13 +370,14 @@ describe('GuestSelect', () => {
     mount(<Harness onClose={onClose} />);
     click(byTestId('gs-close'));
     expect(onClose).toHaveBeenCalledTimes(1);
-    expect(byTestId('gs-close').getAttribute('aria-label')).toBe('Close');
+    // Named by its text: a Bloom link `Button`.
+    expect(byTestId('gs-close').textContent).toBe('Close');
 
     const fromCard = jest.fn();
     mount(
-      <GuestSelectCloseProvider value={fromCard}>
+      <GuestPickerCloseProvider value={fromCard}>
         <Harness />
-      </GuestSelectCloseProvider>,
+      </GuestPickerCloseProvider>,
     );
     click(byTestId('gs-close'));
     expect(fromCard).toHaveBeenCalledTimes(1);

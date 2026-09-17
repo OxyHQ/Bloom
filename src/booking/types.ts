@@ -37,53 +37,6 @@ export interface PriceBreakdownProps {
 }
 
 // ---------------------------------------------------------------------------
-//  GuestSelect
-// ---------------------------------------------------------------------------
-
-export interface GuestCategory {
-  /** Key in `value` ("adults"). */
-  key: string;
-  title: string;
-  /** "Ages 13 or above". */
-  description?: string;
-  /** Default `0`. */
-  min?: number;
-  /** Per-category cap. */
-  max?: number;
-  /**
-   * Whether this category counts against `maxGuests`. Default `true`; the
-   * default `infants` and `pets` categories set it to `false`.
-   */
-  countsTowardMax?: boolean;
-}
-
-/** Counts by category key. */
-export type GuestCounts = Record<string, number>;
-
-export interface GuestSelectProps {
-  value: GuestCounts;
-  onValueChange: (next: GuestCounts) => void;
-  /** Default: adults (min 1), children, infants, pets — English titles; pass your own to translate. */
-  categories?: GuestCategory[];
-  /**
-   * The most guests the place takes, summed over the categories that count
-   * toward it. Their `+` buttons disable once the sum reaches it.
-   */
-  maxGuests?: number;
-  /** A line under the rows ("This place has a maximum of 4 guests, not including infants."). */
-  note?: ReactNode;
-  /**
-   * The "Close" link. Inside a `BookingCard`'s guests popover it closes the
-   * popover by default; elsewhere the link renders only when this is set.
-   */
-  onClose?: () => void;
-  /** Default `"Close"`. */
-  closeLabel?: string;
-  style?: StyleProp<ViewStyle>;
-  testID?: string;
-}
-
-// ---------------------------------------------------------------------------
 //  BookingCard
 // ---------------------------------------------------------------------------
 
@@ -114,19 +67,20 @@ export interface BookingCardProps extends BookingPriceProps {
   guests: string;
   /** Called by either date cell. Open your date picker here. */
   onPressDates?: (field: 'checkIn' | 'checkOut') => void;
-  /** Called by the guests cell (also when `guestSelect` opens its popover). */
+  /** Called by the guests cell (also when `guestPicker` opens its popover). */
   onPressGuests?: () => void;
   /**
    * The field whose picker is open: drawn with the active outline and
-   * announced as expanded. When `guestSelect` is set, an open guests popover
+   * announced as expanded. When `guestPicker` is set, an open guests popover
    * marks `guests` active by itself.
    */
   activeField?: BookingFieldKey | null;
   /**
    * Content of the guests popover (a bottom sheet on native) the guests cell
-   * opens — normally a `GuestSelect`. Omit to handle `onPressGuests` yourself.
+   * opens — normally a `GuestPicker` (`@oxy.so/bloom/stay-search`), whose "Close"
+   * closes the popover. Omit to handle `onPressGuests` yourself.
    */
-  guestSelect?: ReactNode;
+  guestPicker?: ReactNode;
   /** Controlled open state of the guests popover. */
   guestsOpen?: boolean;
   onGuestsOpenChange?: (open: boolean) => void;

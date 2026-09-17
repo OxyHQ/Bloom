@@ -2,6 +2,7 @@ import type { ReactNode } from 'react';
 import type { StyleProp, ViewStyle } from 'react-native';
 
 import type { ButtonIconComponent } from '../button/types';
+import type { StepperSize } from '../stepper';
 
 /**
  * A segment of {@link StaySearchBarProps}. `split` dates mode shows
@@ -134,6 +135,22 @@ export interface GuestPickerProps {
   labels?: Partial<Record<GuestKind, string>>;
   /** Override descriptions (`null` hides one). */
   descriptions?: Partial<Record<GuestKind, string | null>>;
+  /**
+   * The most guests the place takes, counting adults and children (infants and
+   * pets do not count). Their `+` buttons disable once the sum reaches it.
+   */
+  maxGuests?: number;
+  /** A line under the rows ("This place has a maximum of 4 guests, not including infants."). */
+  note?: ReactNode;
+  /**
+   * The "Close" link under the rows. Inside a `BookingCard` guests popover it
+   * closes the popover by default; elsewhere it renders only when this is set.
+   */
+  onClose?: () => void;
+  /** Default `"Close"`. */
+  closeLabel?: string;
+  /** Stepper size. Default `'medium'`; `'small'` for a popover. */
+  size?: StepperSize;
   style?: StyleProp<ViewStyle>;
   /** Derives `-<kind>` per row (then the stepper's own suffixes). */
   testID?: string;

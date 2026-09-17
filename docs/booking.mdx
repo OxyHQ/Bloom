@@ -1,7 +1,7 @@
 ---
 title: Booking
 description: The reservation card beside a listing, its price breakdown and guest picker, the phone booking bar, and the trip card for a reservation.
-order: 62
+order: 113
 ---
 
 # Booking
@@ -12,7 +12,6 @@ Five pieces for booking a stay, all under one subpath:
 | ---------------- | ----------------------------------------------------------------------------------- |
 | `BookingCard`    | the reservation card beside a listing: price, dates, guests, Reserve, breakdown     |
 | `PriceBreakdown` | itemised charges and a bold total — inside the card, or alone on a checkout page    |
-| `GuestSelect`    | a `StepperRow` per guest category, a note and "Close" — the guests panel's content   |
 | `BookingBar`     | the phone-width bar pinned under a listing: price, dates, Reserve                   |
 | `TripCard`       | an upcoming or past reservation: photo, place, host, dates, status, actions         |
 
@@ -20,11 +19,14 @@ Five pieces for booking a stay, all under one subpath:
 import {
   BookingBar,
   BookingCard,
-  GuestSelect,
   PriceBreakdown,
   TripCard,
 } from '@oxy.so/bloom/booking';
+import { GuestPicker } from '@oxy.so/bloom/stay-search';
 ```
+
+The guests panel is [`GuestPicker`](/docs/bloom/main/stay-search) — the same
+picker the search bar's "Who" panel uses, so guests behave identically in both.
 
 Prices, dates and guest summaries arrive **pre-formatted strings** — the app owns
 currency, locale and plurals. Nothing here adds amounts up or formats a date.
@@ -44,8 +46,8 @@ const [guests, setGuests] = useState({ adults: 2, children: 0, infants: 0, pets:
   guests="2 guests"
   onPressDates={(field) => openDatePicker(field)}
   activeField={datePickerField} // 'checkIn' | 'checkOut' | null — outlines the open field
-  guestSelect={
-    <GuestSelect value={guests} onValueChange={setGuests} maxGuests={4} note="Pets aren't allowed." />
+  guestPicker={
+    <GuestPicker size="small" value={guests} onChange={setGuests} maxGuests={4} note="Pets aren't allowed." />
   }
   onReserve={reserve}
   loading={reserving}
@@ -69,7 +71,7 @@ const [guests, setGuests] = useState({ adults: 2, children: 0, infants: 0, pets:
 | `checkIn`, `checkOut`, `guests`               | the values in the box; an empty date shows `datePlaceholder` ("Add date")                |
 | `onPressDates(field)`, `onPressGuests`        | the cells' presses — open your pickers here                                              |
 | `activeField`                                 | the field whose picker is open: 2px text-primary outline, and `aria-expanded` on all three cells. Leave it `undefined` if the card cannot know, and no cell claims a state |
-| `guestSelect`, `guestsOpen`, `onGuestsOpenChange` | makes the guests cell open a `Popover` (a bottom sheet on native) holding `guestSelect`, as wide as the box; controlled or not. A `GuestSelect` inside it closes it with "Close" without extra wiring |
+| `guestPicker`, `guestsOpen`, `onGuestsOpenChange` | makes the guests cell open a `Popover` (a bottom sheet on native) holding `guestPicker`, as wide as the box; controlled or not. A `GuestSelect` inside it closes it with "Close" without extra wiring |
 | `checkInLabel`, `checkOutLabel`, `guestsLabel` | translate the cell labels (drawn uppercase)                                             |
 | `reserveLabel`, `checkAvailabilityLabel`      | the button reads `"Reserve"` once both dates are set and `"Check availability"` before, unless `reserveLabel` is given |
 | `onReserve`, `reserveDisabled`, `loading`     | the primary large `Button`; `loading` shows its spinner and ignores presses              |
@@ -132,29 +134,13 @@ native, and below the breakpoint where the card sits beside the listing, use
 - `total` adds a hairline and a `headline-semibold` total row; omit it for no
   total.
 
-## GuestSelect
+## The guests popover
 
-```tsx
-<GuestSelect
-  value={counts}                 // { adults: 2, children: 0, infants: 1, pets: 0 }
-  onValueChange={setCounts}      // receives the whole object
-  maxGuests={4}
-  note="This place has a maximum of 4 guests, not including infants."
-  onClose={close}                // optional inside a BookingCard
-/>
-```
-
-- `categories` defaults to `DEFAULT_GUEST_CATEGORIES`: adults (min 1, "Ages 13 or
-  above"), children ("Ages 2–12"), infants ("Under 2") and pets — English
-  strings, so pass your own to translate. Each is `{ key, title, description?,
-  min?, max?, countsTowardMax? }`.
-- `maxGuests` caps the **sum** of the categories that count toward it (infants
-  and pets do not, by default): once it is reached, their `+` buttons disable and
-  each stepper's `aria-valuemax` drops to its current value.
-- "Close" is an underlined `body-semibold` button, right-aligned, and renders
-  only with `onClose` or inside a `BookingCard`'s guests popover.
-- It is content, not a surface. Outside the card, put it in your own `Popover`,
-  `BottomSheet` or page section.
+`guestPicker` turns the guests cell into a `Popover` trigger (a bottom sheet on
+native) as wide as the date/guest box. A `GuestPicker` inside it gets a "Close"
+that closes the popover without wiring `onClose`; `maxGuests` caps adults +
+children and `note` adds the line under the rows. The picker's rules and props
+are documented with it, in [StaySearch](/docs/bloom/main/stay-search).
 
 ## BookingBar
 
@@ -212,7 +198,7 @@ Keeping it at the bottom of the screen is the screen's job:
 ## Accessibility
 
 - **Cells** are buttons named `"Check-in: 10/12/2026"` (or the placeholder). With
-  `activeField` set they carry `aria-expanded`; with `guestSelect` the guests
+  `activeField` set they carry `aria-expanded`; with `guestPicker` the guests
   cell also gets `aria-haspopup` from the popover trigger.
 - **Price** reads as one element, `"$162 per night, originally $180"` —
   `role="img"` on web, one `accessible` node on native — because a
@@ -223,5 +209,5 @@ Keeping it at the bottom of the screen is the screen's job:
   assistive tech so they are not read twice, and the actions stay reachable.
 - Every pressable shows a 2px accent focus ring under keyboard focus on web
   (`:focus-visible`, from an adopted stylesheet); the cells draw it inset.
-- `GuestSelect` steppers are named by their category titles; see
+- `GuestPicker` steppers are named by their kind (Adults, Children…); see
   [Stepper](/docs/bloom/main/stepper).

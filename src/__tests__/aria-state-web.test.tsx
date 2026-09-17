@@ -958,6 +958,9 @@ describe('Stay filters', () => {
       />,
     );
     expect(byTestId(c, 'af-toggle').getAttribute('aria-expanded')).toBe('false');
+  });
+});
+
 describe('StaySearchBar', () => {
   it('a segment is a named button carrying aria-expanded', () => {
     const c = mount(
@@ -990,6 +993,9 @@ describe('StaySearchStep', () => {
     const c = mount(<StaySearchStep label="Who" summary="Add guests" expanded={false} onPress={() => {}} testID="st" />);
     expect(byTestId(c, 'st').getAttribute('aria-expanded')).toBe('false');
     expect(byTestId(c, 'st').getAttribute('aria-label')).toBe('Who, Add guests');
+  });
+});
+
 describe('BookingCard', () => {
   it('names each field cell and spells the open picker as aria-expanded, on every cell', () => {
     const c = mount(<BookingCard price="$180" guests="2 guests" checkIn="10/12/2026" activeField="checkIn" testID="bc" />);
@@ -1004,6 +1010,9 @@ describe('BookingCard', () => {
   it('claims no expanded state when the card cannot know it', () => {
     const c = mount(<BookingCard price="$180" guests="2 guests" testID="bc" />);
     expect(byTestId(c, 'bc-check-in').hasAttribute('aria-expanded')).toBe(false);
+  });
+});
+
 describe('CategoryBar', () => {
   it('emits a named tablist whose tabs carry aria-selected', () => {
     const c = mount(
