@@ -20,8 +20,6 @@ export type {
   OfferingField,
   OfferingKind,
   OfferingValue,
-  PropertyType,
-  PropertyTypeOption,
   PropertyTypeSelectorProps,
   RentOffering,
   SaleOffering,

@@ -473,7 +473,7 @@ export type {
   ExchangeLayout,
   ExchangeMode,
   ExchangeProposalCardProps,
-  ListingFact,
+  KeyFact,
   MortgageCalculatorLabels,
   MortgageCalculatorProps,
   MortgageInput,
@@ -510,7 +510,6 @@ export type {
 } from './offering-badge';
 export { CategoryBar } from './category-bar';
 export type { CategoryBarIcon, CategoryBarItem, CategoryBarProps } from './category-bar';
-export { MapClusterMarker, MapListingPreview, MapPriceMarker, MapSearchAreaButton } from './map-marker';
 export {
   MapAreaCircle,
   MapClusterMarker,
@@ -555,8 +554,6 @@ export type {
   OfferingField,
   OfferingKind,
   OfferingValue,
-  PropertyType,
-  PropertyTypeOption,
   PropertyTypeSelectorProps,
   RentOffering,
   SaleOffering,

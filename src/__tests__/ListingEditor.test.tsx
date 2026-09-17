@@ -46,7 +46,8 @@ import {
   OfferingEditor,
   PropertyTypeSelector,
 } from '../listing-editor';
-import type { AddressPrecision, OfferingValue, PropertyType } from '../listing-editor';
+import type { AddressPrecision, OfferingValue } from '../listing-editor';
+import type { PropertyType } from '../stay-filters';
 import { pricePerArea, sanitizeAmount, toggleOfferingKind } from '../listing-editor/OfferingEditor';
 import { propertyTypeColumns } from '../listing-editor/PropertyTypeSelector';
 import { resolveSelectionPaint } from '../listing-editor/SelectionCard';
@@ -421,7 +422,7 @@ describe('ListingPreviewPane', () => {
     price: '€1450',
     priceUnit: 'month',
     description: 'Light from two sides.',
-    facts: ['3 bedrooms', '2 baths'],
+    facts: [{ label: '3', accessibilityLabel: '3 bedrooms' }, { label: '2', accessibilityLabel: '2 baths' }],
   };
 
   it('starts on the card and switches to the page through tabs', async () => {

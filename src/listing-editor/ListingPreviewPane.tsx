@@ -148,7 +148,7 @@ function PagePreview({ listing }: { listing: ListingPreviewData }) {
         />
         {listing.facts && listing.facts.length > 0 ? (
           <Text variant="body-2-regular" style={{ color: theme.colors.textSecondary }}>
-            {listing.facts.join(' · ')}
+            {listing.facts.map((fact) => fact.accessibilityLabel ?? fact.label).join(' · ')}
           </Text>
         ) : null}
         {listing.description ? (

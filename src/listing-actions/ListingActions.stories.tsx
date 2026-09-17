@@ -17,7 +17,7 @@ import { computeMortgage } from './mortgage';
 import { RentalActionCard } from './RentalActionCard';
 import { SaleActionCard } from './SaleActionCard';
 import { ViewingScheduler } from './ViewingScheduler';
-import type { ApplicationItem, ExchangeMode, ListingFact, ViewingMode, ViewingSlot } from './types';
+import type { ApplicationItem, ExchangeMode, KeyFact, ViewingMode, ViewingSlot } from './types';
 
 const meta: Meta = {
   title: 'Blocks/Housing/Listing Actions',
@@ -79,14 +79,14 @@ function Column({ label, children }: { label: string; children: React.ReactNode 
   );
 }
 
-const RENTAL_FACTS: ListingFact[] = [
+const RENTAL_FACTS: KeyFact[] = [
   { label: 'Deposit', value: '€2,500' },
   { label: 'Available from', value: 'Sep 1, 2026' },
   { label: 'Minimum stay', value: '12 months' },
   { label: 'Contract type', value: 'Long-term lease' },
 ];
 
-const SALE_FACTS: ListingFact[] = [
+const SALE_FACTS: KeyFact[] = [
   { label: 'Living area', value: '112 m²' },
   { label: 'Built', value: '1978, renovated 2021' },
   { label: 'Energy rating', value: 'B' },

@@ -22,7 +22,7 @@ export type {
   ExchangeLayout,
   ExchangeMode,
   ExchangeProposalCardProps,
-  ListingFact,
+  KeyFact,
   MortgageCalculatorLabels,
   MortgageCalculatorProps,
   MortgageInput,

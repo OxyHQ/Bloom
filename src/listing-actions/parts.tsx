@@ -17,7 +17,7 @@ import type { WebCssStyle } from '../styles/web-view-style';
 import type { Theme } from '../theme/types';
 import { useTheme } from '../theme/use-theme';
 import { Text } from '../typography';
-import type { ExchangeHome, ListingFact } from './types';
+import type { ExchangeHome, KeyFact } from './types';
 
 const IS_WEB = Platform.OS === 'web';
 
@@ -52,7 +52,7 @@ export function FactList({
   style,
   testID,
 }: {
-  facts: readonly ListingFact[];
+  facts: readonly KeyFact[];
   style?: StyleProp<ViewStyle>;
   testID?: string;
 }) {

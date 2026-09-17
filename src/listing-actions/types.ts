@@ -9,7 +9,7 @@ import type { ButtonIconComponent } from '../button/types';
 // ---------------------------------------------------------------------------
 
 /** One label / value row of a card's key facts ("Deposit" — "€2,500"). */
-export interface ListingFact {
+export interface KeyFact {
   /** React key; defaults to `label`. */
   key?: string;
   label: string;
@@ -31,7 +31,7 @@ export interface RentalActionCardProps extends BookingPriceProps {
   /** Under the price: "Bills included", "Bills not included". */
   billsNote?: string;
   /** Deposit, Available from, Minimum stay, Contract type… as label / value rows. */
-  facts?: readonly ListingFact[];
+  facts?: readonly KeyFact[];
   /** Default `'available'`. */
   status?: RentalStatus;
   /** The status badge's text. Default "Reserved" / "Rented". */
@@ -69,7 +69,7 @@ export interface SaleActionCardProps extends BookingPriceProps {
   /** Open your `MortgageCalculator` here. */
   onPressMortgage?: () => void;
   /** Key facts under the header (Bedrooms, Built, Energy rating…). */
-  facts?: readonly ListingFact[];
+  facts?: readonly KeyFact[];
   /** Default `'available'`. */
   status?: SaleStatus;
   /** Default "Reserved" / "Sold". */

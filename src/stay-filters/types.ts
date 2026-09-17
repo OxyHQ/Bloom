@@ -233,13 +233,17 @@ export interface AreaRangeFilterProps {
   testID?: string;
 }
 
-/** The built-in property types. Any string works as a custom one. */
+/**
+ * The built-in property types — the ONE list the search filters, the search
+ * panel and the listing editor share. Any string works as a custom one.
+ */
 export type PropertyType =
   | 'apartment'
   | 'house'
   | 'room'
   | 'studio'
   | 'duplex'
+  | 'penthouse'
   | 'coliving'
   | 'hostel'
   | 'other';
@@ -248,6 +252,9 @@ export interface PropertyTypeOption<T extends string = PropertyType> {
   value: T;
   label: string;
   icon: FilterIconComponent;
+  /** A second line under the label (the listing editor's larger tiles). */
+  description?: string;
+  disabled?: boolean;
 }
 
 export interface PropertyTypeTilesProps<T extends string = PropertyType> {

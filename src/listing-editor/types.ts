@@ -2,6 +2,10 @@ import type { ComponentType, ReactNode } from 'react';
 import type { StyleProp, ViewStyle } from 'react-native';
 
 import type { ListingCardProps } from '../listing-card/types';
+import type { PropertyType, PropertyTypeOption } from '../stay-filters/types';
+
+/** The shared property-type vocabulary lives with the filters; re-exported for this family's own modules. */
+export type { PropertyType, PropertyTypeOption };
 
 /** An icon component: a Remix icon from `@oxy.so/bloom/icons` or one of the same shape. */
 export type ListingEditorIcon = ComponentType<{ width?: number; height?: number; fill?: string }>;
@@ -144,26 +148,6 @@ export interface OfferingEditorProps {
 //  PropertyTypeSelector
 // ---------------------------------------------------------------------------
 
-export type PropertyType =
-  | 'apartment'
-  | 'house'
-  | 'room'
-  | 'studio'
-  | 'duplex'
-  | 'penthouse'
-  | 'coliving'
-  | 'hostel'
-  | 'other';
-
-export interface PropertyTypeOption<T extends string = PropertyType> {
-  value: T;
-  label: string;
-  /** A second line under the label (hidden below 140 wide tiles). */
-  description?: string;
-  icon: ListingEditorIcon;
-  disabled?: boolean;
-}
-
 export interface PropertyTypeSelectorProps<T extends string = PropertyType> {
   value: T | null;
   onValueChange: (value: T) => void;
@@ -266,8 +250,6 @@ export type ListingPreviewData = Omit<
 > & {
   /** The page preview's description paragraph. */
   description?: string;
-  /** The page preview's facts row ("3 bedrooms", "2 baths", "96 m²"). */
-  facts?: ReadonlyArray<string>;
   /** The page preview's location line. */
   location?: string;
 };

@@ -171,7 +171,12 @@ function previewData(draft: Draft): ListingPreviewData {
     priceUnit: rent ? 'month' : nightly ? 'night' : undefined,
     badge: draft.offering.kinds.includes('swap') ? 'Open to swaps' : undefined,
     location: draft.precision === 'approximate' ? 'Near the old harbour, Varnholm' : 'Calle Lirio, Varnholm',
-    facts: [`${draft.bedrooms} bedrooms`, `${draft.bathrooms} baths`, `${draft.beds} beds`, `${draft.area} m²`],
+    facts: [
+      { label: `${draft.bedrooms}`, accessibilityLabel: `${draft.bedrooms} bedrooms` },
+      { label: `${draft.bathrooms}`, accessibilityLabel: `${draft.bathrooms} baths` },
+      { label: `${draft.beds}`, accessibilityLabel: `${draft.beds} beds` },
+      { label: `${draft.area} m²` },
+    ],
     description: draft.description || undefined,
   };
 }
