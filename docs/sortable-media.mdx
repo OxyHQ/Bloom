@@ -1,0 +1,68 @@
+---
+title: Sortable Media
+description: SortablePhotoGrid — an editable grid of uploaded photos with a cover, drag to reorder on web, move buttons everywhere, per-photo upload progress, errors with retry and an add tile.
+order: 115
+---
+
+# Sortable Media
+
+`SortablePhotoGrid` is the photo step of an editor: the photos the user has
+added, in order, the first one marked as the cover.
+
+```tsx
+import { SortablePhotoGrid, type SortablePhoto } from '@oxy.so/bloom/sortable-media';
+
+const [photos, setPhotos] = useState<SortablePhoto[]>([
+  { id: 'living', uri: 'https://…/living.jpg', alt: 'Living room' },
+  { id: 'kitchen', uri: localPreviewUri, status: 'uploading', progress: 42 },
+  { id: 'bath', uri: localPreviewUri2, status: 'error', error: 'File too large' },
+]);
+
+<SortablePhotoGrid
+  photos={photos}
+  onReorder={setPhotos}
+  onRemove={(id) => setPhotos((list) => list.filter((p) => p.id !== id))}
+  onRetry={(id) => restartUpload(id)}
+  onAdd={openPicker}
+  maxPhotos={20}
+  addHint="JPG or PNG"
+/>
+```
+
+## Data
+
+The list is controlled. Each photo is `{ id, uri, status?, progress?, error?, alt? }`:
+
+- `uri` is an absolute URL (a local `file:` or `blob:` preview works while the
+  upload runs) or an `ImageResolver` id, resolved with `photoVariant`.
+- `status` is `uploading`, `uploaded` (the default) or `error`. While uploading,
+  `progress` (0..100) draws a percentage and a bar over a scrim; without it, a
+  spinner.
+- `onReorder` receives the WHOLE list in its new order — after a drag, and after
+  every move-button press — so the app stores it as is.
+
+## Reordering
+
+- **Web, mouse or pen:** press a tile and drag. After 5px of travel the tile
+  lifts and follows the pointer, the other tiles make room live, and releasing
+  commits. Escape cancels. Buttons inside a tile never start a drag.
+- **Everywhere else — touch, native, keyboard and screen readers:** each tile
+  has "Move photo 2 earlier" / "Move photo 2 later" buttons. After a move the
+  focus stays on the moved photo's button (or its other one, if it reached an
+  end) and the new position is announced politely.
+
+On a web pointer that can hover, the tile's buttons appear while the tile is
+hovered or holds focus; on touch screens and native they are always shown.
+
+## Layout
+
+Square tiles, 3 columns below 640 wide and 4 from there (`columns` fixes it),
+12 apart (8 below 480). The add tile follows the photos until `maxPhotos` is
+reached.
+
+## Accessibility
+
+The grid is a `list` named by `accessibilityLabel` (default "Photos"); each tile
+is a `listitem` named "Photo 1 of 6, Cover, Living room" (the error is added
+to a failed photo). The upload overlay is a `progressbar` named "Uploading photo
+3". Every string is in `labels` for localisation.

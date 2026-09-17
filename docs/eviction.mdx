@@ -1,0 +1,95 @@
+---
+title: Eviction reports
+description: Community reports of upcoming evictions — a report card with status, a coarse area, support counters and an "I'll be there" toggle, and the case history timeline.
+order: 121
+---
+
+# Eviction reports
+
+People publish upcoming evictions so neighbours and support groups can turn up and help.
+These parts draw a report and its history; the moderation, verification and location
+policy live in the app.
+
+```tsx
+import { EvictionReportCard, EvictionTimeline } from '@oxy.so/bloom/eviction';
+
+<EvictionReportCard
+  date="Tuesday, 23 September"
+  time="09:00"
+  relativeLabel="in 3 days"
+  status="scheduled"
+  area="Carabanchel, Madrid"
+  household={['Family with minors', 'Elderly person']}
+  description={report.summary}
+  attendeesLabel="12 people will attend"
+  organisationsLabel="3 organisations supporting"
+  verified
+  attending={attending}
+  onAttendingChange={setAttending}
+  onShare={share}
+  onContactSupport={openSupportChat}
+/>
+
+<EvictionTimeline
+  events={[
+    { kind: 'published', title: 'Report published', date: '2 Sep 2026', source: 'Neighbourhood assembly' },
+    { kind: 'postponed', title: 'Postponed to 23 September', date: '15 Sep 2026', source: 'Family’s lawyer' },
+    { kind: 'date-set', title: 'Eviction scheduled', date: '23 Sep 2026, 09:00', upcoming: true },
+  ]}
+/>
+```
+
+## Privacy: the card takes an AREA, never an address
+
+`area` is a coarse string — a neighbourhood and city ("Carabanchel, Madrid") or a street
+without a number. There is deliberately no field for a door, floor or exact position,
+and no map. **How precise the area is gets decided upstream**, where the report is
+moderated: the component draws whatever it is given, so an app that passes a full
+address has published one. Household details are short free strings ("Family with
+minors") — never names.
+
+`verified` means checked by the community (neighbours, a housing group), NOT by an
+authority, and the default label says so ("Community verified"). Keep that meaning
+when translating.
+
+## Status
+
+| status | badge | meaning |
+| --- | --- | --- |
+| `scheduled` | subtle warning | a date is set |
+| `postponed` | subtle info | the date moved |
+| `suspended` | subtle success | stopped, for now |
+| `executed` | solid neutral (dark on light) | it happened |
+| `cancelled` | subtle neutral | withdrawn |
+
+`relativeLabel` is drawn in the status's text colour. The app computes it ("in 3 days",
+"10 days ago"); the card never reads the clock. `EVICTION_STATUS` is exported.
+
+## Actions
+
+- **I'll be there** is a pill toggle: `aria-pressed` on web and
+  `accessibilityState.selected` on native. Its name stays `attendLabel` in both states —
+  the pressed state carries the change, and the check icon replaces the heart.
+- **Share** and **Contact support group** are small secondary `Button`s, drawn only when
+  their handlers are set. The row wraps on narrow screens.
+
+## `EvictionTimeline`
+
+`TenancyTimeline` (from `@oxy.so/bloom/tenancy`) at comfortable density with a marker
+per `kind`: `published` file, `date-set` calendar (warning), `postponed` clock (info),
+`suspended` shield (success), `executed` house and `cancelled` x (neutral),
+`mobilisation` group, `update` info. `source` is drawn beside the date through
+`formatSource` ("Source: Court notice") so readers can weigh each claim. `upcoming`
+draws a hollow marker. The list is named "Case history" (`accessibilityLabel`).
+
+## A list with a filter
+
+There is no list component — compose the cards with a `SegmentedControl`:
+
+```tsx
+<SegmentedControl label="Show evictions" type="tabs" size="large" value={tab} onChange={setTab}>
+  <SegmentedControlItem value="upcoming"><SegmentedControlItemText>Upcoming</SegmentedControlItemText></SegmentedControlItem>
+  <SegmentedControlItem value="past"><SegmentedControlItemText>Past</SegmentedControlItemText></SegmentedControlItem>
+</SegmentedControl>
+{reports.filter(byTab).map((r) => <EvictionReportCard key={r.id} {...r} />)}
+```

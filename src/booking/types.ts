@@ -50,6 +50,11 @@ export interface BookingPriceProps {
   originalPrice?: string;
   /** "night". Drawn after the price. */
   priceUnit?: string;
+  /**
+   * Drawn before the unit: `"/"` draws "€1,250 / month". Not spoken — the
+   * price still reads "€1,250 per month".
+   */
+  priceUnitPrefix?: string;
   /** The price's spoken form. Default: "$180 per night, originally $210". */
   priceAccessibilityLabel?: string;
 }

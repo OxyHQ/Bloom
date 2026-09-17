@@ -1,5 +1,53 @@
-import type { ReactNode } from 'react';
+import type { ComponentType, ReactNode } from 'react';
 import type { StyleProp, ViewStyle } from 'react-native';
+
+/**
+ * How a home is offered. A listing may carry several at once (a flat for rent
+ * AND for sale). A room, a house or a studio is the property's TYPE, not an
+ * offering.
+ *
+ *   long_term_rent    a lease — "For rent"
+ *   short_term_rent   nights or weeks — "Vacation rental"
+ *   sale              "For sale"
+ *   exchange          a home swap — "Swap"
+ */
+export type Offering = 'long_term_rent' | 'short_term_rent' | 'sale' | 'exchange';
+
+/**
+ * Where a listing stands. `available` draws nothing; every other status washes
+ * the photo toward the page and draws a status pill.
+ */
+export type ListingStatus = 'available' | 'reserved' | 'sold' | 'rented' | 'unavailable';
+
+/** `comfortable` is the full card; `compact` a dense list row with a small thumbnail. */
+export type ListingCardDensity = 'comfortable' | 'compact';
+
+/** One price, pre-formatted by the app. */
+export interface ListingPriceLine {
+  /** The amount, semibold ("€950", "€240,000"). */
+  price: string;
+  /** After the amount in regular weight ("/ month", "night"). */
+  unit?: string;
+  /** After the line in secondary text, past a middle dot ("€3,200/m²"). */
+  secondary?: string;
+  /** Struck through before the amount ("€1,050"). */
+  originalPrice?: string;
+}
+
+/** An icon component a fact draws at 16px in the secondary text colour (`RiHotelBedLine`). */
+export type ListingFactIcon = ComponentType<{ width?: number; height?: number; fill?: string }>;
+
+/** One compact fact about the home ("3" beside a bed, "110 m²"). */
+export interface ListingFact {
+  icon?: ListingFactIcon;
+  /** As drawn, short ("3", "110 m²", "Floor 4"). */
+  label: string;
+  /**
+   * The fact in words for the card's accessible name ("3 bedrooms") — a bare
+   * "3" beside an icon means nothing read aloud. Defaults to `label`.
+   */
+  accessibilityLabel?: string;
+}
 
 /** `vertical` stacks the photo over the text (a results grid); `horizontal` puts a 40% photo left (a list, a map sheet). */
 export type ListingCardLayout = 'vertical' | 'horizontal';
@@ -28,6 +76,12 @@ export interface ListingCardProps {
   reviewCount?: number | string;
   /** The "New" label of an unrated stay. Default `"New"`. */
   newLabel?: string;
+  /**
+   * The price lines, stacked ("€950 / month"; "€240,000 · €3,200/m²"). When
+   * given it replaces `price`, `priceUnit` and `originalPrice`, which are its
+   * single-line case.
+   */
+  priceLines?: ReadonlyArray<ListingPriceLine>;
   /** The pre-formatted price ("€120"), bold. */
   price?: string;
   /** The unit after the price ("night"). */
@@ -39,6 +93,28 @@ export interface ListingCardProps {
    * given; otherwise it IS the price line, bold.
    */
   total?: string;
+  /**
+   * Compact facts with icons, one row ("3 · 2 · 110 m² · Floor 4"). Facts that
+   * do not fit are left out whole, never cut in half.
+   */
+  facts?: ReadonlyArray<ListingFact>;
+  /**
+   * How the home is offered. Drawn as `OfferingBadge`s in the top-left slot over
+   * the photo (after `badge`); in the compact density, as a row above the title.
+   */
+  offerings?: ReadonlyArray<Offering>;
+  /** Replaces the English offering labels ("For rent", …). */
+  offeringLabels?: Partial<Record<Offering, string>>;
+  /** The address or area line, with a pin ("Calle Mayor, Old Town"). */
+  address?: string;
+  /** Adds "Approximate location" to the address line — or is the line, without `address`. */
+  approximateLocation?: boolean;
+  /** Default `"Approximate location"`. */
+  approximateLocationLabel?: string;
+  /** Default `available`. Anything else washes the photo out and draws a status pill. */
+  status?: ListingStatus;
+  /** Replaces the English status label ("Reserved", "Sold", "Rented", "Unavailable"). */
+  statusLabel?: string;
   /**
    * The top-left slot over the photo. A string draws Bloom's white pill
    * ("Guest favourite"); any other node is placed as given.
@@ -59,8 +135,10 @@ export interface ListingCardProps {
   href?: string;
   /** Draws a skeleton in the same geometry instead of the stay. */
   loading?: boolean;
-  /** Default `vertical`. */
+  /** Default `vertical`. Ignored by the compact density. */
   layout?: ListingCardLayout;
+  /** Default `comfortable`. `compact` is a dense list row: a 112 thumbnail beside the text. */
+  density?: ListingCardDensity;
   /**
    * Replaces the composed accessible name ("Lisbon, Portugal, Guest favourite,
    * Rated 4.92 out of 5, €120 night"), which is English.

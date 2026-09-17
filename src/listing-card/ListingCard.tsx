@@ -24,8 +24,20 @@ import { useInteractiveWebCss } from '../styles/interactive-web-css';
 import type { WebCssStyle } from '../styles/web-view-style';
 import { useTheme } from '../theme/use-theme';
 import { Text } from '../typography';
+import { OfferingBadge } from '../offering-badge/OfferingBadge';
+import { OFFERING_LABELS } from '../offering-badge/shared';
 import { FavoriteButton } from './FavoriteButton';
 import {
+  ListingFacts,
+  ListingLocationLine,
+  ListingPriceLines,
+  ListingStatusPill,
+} from './parts';
+import {
+  COMPACT_PHOTO_RADIUS,
+  COMPACT_PHOTO_SIZE,
+  describeFacts,
+  describePriceLine,
   DOT_INACTIVE_OPACITY,
   DOT_SIZE,
   dotWindow,
@@ -36,14 +48,19 @@ import {
   PHOTO_ASPECT_RATIO,
   PHOTO_RADIUS,
   resolveListingCardPaint,
+  locationText,
   resolvePhoto,
+  resolvePriceLines,
+  STATUS_WASH_OPACITY,
+  statusLabelFor,
+  uniqueOfferings,
   webData,
   type ListingCardPaint,
 } from './shared';
 import type { ListingCardLayout, ListingCardProps } from './types';
 
 /**
- * A stay in a results grid.
+ * A home in a results grid — a stay, a rental, a home for sale or a swap.
  *
  *   vertical     photo 20:19, radius 16; 12 below it, the text block
  *   horizontal   photo 40% wide, square, radius 16; 12 right of it, the text
@@ -55,6 +72,14 @@ import type { ListingCardLayout, ListingCardProps } from './types';
  *                dates body-regular text-secondary; the price line — an
  *                optional struck original price, the price body-semibold and
  *                the unit body-regular; a total line under it
+ *   housing      the address line (pin, body-regular secondary); facts (body-2,
+ *                16px icons, one clipped row); stacked `priceLines`
+ *   top-left     one wrapping row, 6 apart: the status pill, the `badge`, then
+ *                the offerings as `onMedia` badges
+ *   status       not `available`: the photo washed 50% toward the page
+ *   compact      a list row: a 112 square thumbnail (radius 12), 12 right of it
+ *                the offerings/status row (small, tinted), title, address,
+ *                price lines, facts
  *
  * THE CARD IS A LINK AND THE CONTROLS ARE ITS SIBLINGS, NOT ITS CHILDREN. The
  * photo and the text sit inside one pressable (a real `<a href>` on web), and
@@ -91,7 +116,27 @@ interface PhotoTrackProps {
   onIndex: (index: number) => void;
   /** Photos past this index are not mounted yet. */
   mountedThrough: number;
+  /** Wash the photo toward the page (a listing that is not available). */
+  washed: boolean;
   testID?: string;
+}
+
+function StatusWash({ paint, testID }: { paint: ListingCardPaint; testID?: string }) {
+  return (
+    <View
+      pointerEvents="none"
+      style={{
+        position: 'absolute',
+        top: 0,
+        right: 0,
+        bottom: 0,
+        left: 0,
+        backgroundColor: paint.statusWash,
+        opacity: STATUS_WASH_OPACITY,
+      }}
+      testID={testID ? `${testID}-wash` : undefined}
+    />
+  );
 }
 
 function PhotoTrack({
@@ -104,6 +149,7 @@ function PhotoTrack({
   onWidth,
   onIndex,
   mountedThrough,
+  washed,
   testID,
 }: PhotoTrackProps) {
   const resolver = useImageResolver();
@@ -160,6 +206,7 @@ function PhotoTrack({
           })}
         </ScrollView>
       ) : null}
+      {washed ? <StatusWash paint={paint} testID={testID} /> : null}
     </View>
   );
 }
@@ -232,7 +279,12 @@ function BadgePill({ label, paint }: { label: string; paint: ListingCardPaint })
 
 function composeName(props: ListingCardProps): string {
   const parts: string[] = [props.title];
+  const status = statusLabelFor(props.status, props.statusLabel);
+  if (status) parts.push(status);
   if (typeof props.badge === 'string' && props.badge) parts.push(props.badge);
+  for (const offering of uniqueOfferings(props.offerings)) {
+    parts.push(props.offeringLabels?.[offering] ?? OFFERING_LABELS[offering]);
+  }
   if (props.rating !== undefined) {
     const rated = props.rating !== null && props.rating !== '';
     if (rated) {
@@ -244,20 +296,22 @@ function composeName(props: ListingCardProps): string {
     }
   }
   if (props.subtitle) parts.push(props.subtitle);
+  const location = locationText(props.address, props.approximateLocation, props.approximateLocationLabel);
+  if (location) parts.push(location);
   if (props.dates) parts.push(props.dates);
-  if (props.price) {
-    const unit = props.priceUnit ? ` ${props.priceUnit}` : '';
-    const original = props.originalPrice ? `, originally ${props.originalPrice}` : '';
-    parts.push(`${props.price}${unit}${original}`);
-  }
+  for (const line of resolvePriceLines(props)) parts.push(describePriceLine(line));
   if (props.total) parts.push(props.total);
+  const facts = describeFacts(props.facts);
+  if (facts) parts.push(facts);
   return parts.join(', ');
 }
 
 function Details(props: ListingCardProps & { paint: ListingCardPaint; horizontal: boolean }) {
-  const { title, subtitle, dates, rating, reviewCount, newLabel, price, priceUnit, originalPrice, total, paint } =
-    props;
+  const { title, subtitle, dates, rating, reviewCount, newLabel, total, facts, paint } = props;
   const secondary = { color: paint.textSecondary };
+  const lines = resolvePriceLines(props);
+  const location = locationText(props.address, props.approximateLocation, props.approximateLocationLabel);
+  const testID = props.testID;
   return (
     <View
       style={{
@@ -282,30 +336,41 @@ function Details(props: ListingCardProps & { paint: ListingCardPaint; horizontal
           {subtitle}
         </Text>
       ) : null}
+      {location ? (
+        <ListingLocationLine
+          text={location}
+          size="medium"
+          color={paint.textSecondary}
+          testID={testID ? `${testID}-location` : undefined}
+        />
+      ) : null}
       {dates ? (
         <Text variant="body-regular" numberOfLines={1} style={secondary}>
           {dates}
         </Text>
       ) : null}
-      {price ? (
-        <Text variant="body-regular" numberOfLines={1} style={{ marginTop: 4, color: paint.text }}>
-          {originalPrice ? (
-            <Text variant="body-regular" style={{ ...secondary, textDecorationLine: 'line-through' }}>
-              {originalPrice}
-            </Text>
-          ) : null}
-          {originalPrice ? ' ' : null}
-          <Text variant="body-semibold" style={{ color: paint.text }}>
-            {price}
-          </Text>
-          {priceUnit ? ` ${priceUnit}` : null}
-        </Text>
+      {facts && facts.length > 0 ? (
+        <ListingFacts
+          facts={facts}
+          size="medium"
+          color={paint.textSecondary}
+          style={{ marginTop: 2 }}
+          testID={testID ? `${testID}-facts` : undefined}
+        />
       ) : null}
+      <ListingPriceLines
+        lines={lines}
+        size="medium"
+        color={paint.text}
+        secondaryColor={paint.textSecondary}
+        style={{ marginTop: 4 }}
+        testID={testID ? `${testID}-price` : undefined}
+      />
       {total ? (
         <Text
-          variant={price ? 'body-regular' : 'body-semibold'}
+          variant={lines.length > 0 ? 'body-regular' : 'body-semibold'}
           numberOfLines={1}
-          style={price ? secondary : { marginTop: 4, color: paint.text }}
+          style={lines.length > 0 ? secondary : { marginTop: 4, color: paint.text }}
         >
           {total}
         </Text>
@@ -320,10 +385,34 @@ function Details(props: ListingCardProps & { paint: ListingCardPaint; horizontal
 
 function ListingCardSkeleton({
   layout,
+  compact,
   style,
   testID,
-}: Pick<ListingCardProps, 'style' | 'testID'> & { layout: ListingCardLayout }) {
+}: Pick<ListingCardProps, 'style' | 'testID'> & { layout: ListingCardLayout; compact: boolean }) {
   const horizontal = layout === 'horizontal';
+  if (compact) {
+    return (
+      <View
+        aria-busy
+        accessibilityLabel="Loading"
+        style={[{ flexDirection: 'row', alignItems: 'center' }, style]}
+        testID={testID}
+      >
+        <SkeletonBox
+          width={COMPACT_PHOTO_SIZE}
+          height={COMPACT_PHOTO_SIZE}
+          borderRadius={COMPACT_PHOTO_RADIUS}
+          style={{ flexShrink: 0 }}
+        />
+        <View style={{ flex: 1, marginLeft: TEXT_GAP, gap: 8 }}>
+          <SkeletonBox width="65%" height={14} borderRadius={4} />
+          <SkeletonBox width="45%" height={12} borderRadius={4} />
+          <SkeletonBox width="35%" height={14} borderRadius={4} />
+          <SkeletonBox width="55%" height={12} borderRadius={4} />
+        </View>
+      </View>
+    );
+  }
   return (
     <View
       aria-busy
@@ -357,6 +446,172 @@ function ListingCardSkeleton({
 }
 
 // ---------------------------------------------------------------------------
+//  Compact row
+// ---------------------------------------------------------------------------
+
+interface CompactRowProps extends ListingCardProps {
+  paint: ListingCardPaint;
+  linkProps: Record<string, unknown>;
+  linkStyle: WebCssStyle;
+  statusText: string | null;
+}
+
+/**
+ * The dense list row: one static thumbnail (no paging, no dots, no arrows),
+ * the heart over its top-right corner, and the text beside it. Offerings and
+ * the status sit in a small tinted row ABOVE the title — a 112 thumbnail has no
+ * room for pills over it.
+ */
+function CompactRow(props: CompactRowProps) {
+  const {
+    photos,
+    photoVariant,
+    title,
+    subtitle,
+    dates,
+    rating,
+    reviewCount,
+    newLabel,
+    total,
+    facts,
+    offerings,
+    offeringLabels,
+    favorite = false,
+    onFavoriteChange,
+    saveLabel,
+    removeLabel,
+    paint,
+    linkProps,
+    linkStyle,
+    statusText,
+    style,
+    testID,
+  } = props;
+  const resolver = useImageResolver();
+  const cover = photos[0] ? resolvePhoto(photos[0], resolver, photoVariant) : undefined;
+  const lines = resolvePriceLines(props);
+  const location = locationText(props.address, props.approximateLocation, props.approximateLocationLabel);
+  const offeringList = uniqueOfferings(offerings);
+  const secondary = { color: paint.textSecondary };
+
+  return (
+    <View {...webData({ bloomListingCard: 'compact' })} style={[{ position: 'relative' }, style]} testID={testID}>
+      <Pressable {...linkProps} style={linkStyle}>
+        <View
+          style={{
+            width: COMPACT_PHOTO_SIZE,
+            height: COMPACT_PHOTO_SIZE,
+            flexShrink: 0,
+            borderRadius: COMPACT_PHOTO_RADIUS,
+            overflow: 'hidden',
+            backgroundColor: paint.photoPlaceholder,
+          }}
+          testID={testID ? `${testID}-photo` : undefined}
+        >
+          {cover ? (
+            <Image
+              source={{ uri: cover }}
+              resizeMode="cover"
+              accessibilityIgnoresInvertColors
+              style={{ width: '100%', height: '100%' }}
+            />
+          ) : null}
+          {statusText ? <StatusWash paint={paint} testID={testID} /> : null}
+        </View>
+        <View style={{ flex: 1, minWidth: 0, marginLeft: TEXT_GAP, gap: 2 }}>
+          {statusText || offeringList.length > 0 ? (
+            <View
+              style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 4, marginBottom: 4 }}
+              testID={testID ? `${testID}-slot` : undefined}
+            >
+              {statusText ? (
+                <ListingStatusPill
+                  label={statusText}
+                  fill={paint.statusFill}
+                  text={paint.statusText}
+                  size="small"
+                  testID={testID ? `${testID}-status` : undefined}
+                />
+              ) : null}
+              {offeringList.map((offering) => (
+                <OfferingBadge
+                  key={offering}
+                  offering={offering}
+                  label={offeringLabels?.[offering]}
+                  size="small"
+                  testID={testID ? `${testID}-offering-${offering}` : undefined}
+                />
+              ))}
+            </View>
+          ) : null}
+          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+            <Text variant="body-semibold" numberOfLines={1} style={{ flex: 1, minWidth: 0, color: paint.text }}>
+              {title}
+            </Text>
+            {rating !== undefined ? (
+              <Rating size="small" value={rating} count={reviewCount} newLabel={newLabel} style={{ flexShrink: 0 }} />
+            ) : null}
+          </View>
+          {subtitle ? (
+            <Text variant="body-2-regular" numberOfLines={1} style={secondary}>
+              {subtitle}
+            </Text>
+          ) : null}
+          {location ? (
+            <ListingLocationLine
+              text={location}
+              size="small"
+              color={paint.textSecondary}
+              testID={testID ? `${testID}-location` : undefined}
+            />
+          ) : null}
+          {dates ? (
+            <Text variant="body-2-regular" numberOfLines={1} style={secondary}>
+              {dates}
+            </Text>
+          ) : null}
+          <ListingPriceLines
+            lines={lines}
+            size="small"
+            color={paint.text}
+            secondaryColor={paint.textSecondary}
+            style={{ marginTop: 2 }}
+            testID={testID ? `${testID}-price` : undefined}
+          />
+          {total ? (
+            <Text variant={lines.length > 0 ? 'body-2-regular' : 'body-2-semibold'} numberOfLines={1} style={lines.length > 0 ? secondary : { marginTop: 2, color: paint.text }}>
+              {total}
+            </Text>
+          ) : null}
+          {facts && facts.length > 0 ? (
+            <ListingFacts
+              facts={facts}
+              size="small"
+              color={paint.textSecondary}
+              style={{ marginTop: 2 }}
+              testID={testID ? `${testID}-facts` : undefined}
+            />
+          ) : null}
+        </View>
+      </Pressable>
+
+      {onFavoriteChange ? (
+        <View style={{ position: 'absolute', top: 2, left: COMPACT_PHOTO_SIZE - 34 }}>
+          <FavoriteButton
+            favorite={favorite}
+            size={20}
+            onFavoriteChange={onFavoriteChange}
+            saveLabel={saveLabel}
+            removeLabel={removeLabel}
+            testID={testID ? `${testID}-favorite` : undefined}
+          />
+        </View>
+      ) : null}
+    </View>
+  );
+}
+
+// ---------------------------------------------------------------------------
 //  Card
 // ---------------------------------------------------------------------------
 
@@ -371,6 +626,11 @@ function ListingCardComponent(props: ListingCardProps) {
     href,
     loading = false,
     layout = 'vertical',
+    density = 'comfortable',
+    offerings,
+    offeringLabels,
+    status,
+    statusLabel,
     accessibilityLabel,
     previousPhotoLabel = 'Previous photo',
     nextPhotoLabel = 'Next photo',
@@ -437,10 +697,14 @@ function ListingCardComponent(props: ListingCardProps) {
     scrollRef.current?.scrollTo({ x: target * width, animated: !reducedMotion });
   };
 
-  if (loading) return <ListingCardSkeleton layout={layout} style={style} testID={testID} />;
+  const compact = density === 'compact';
+  if (loading) return <ListingCardSkeleton layout={layout} compact={compact} style={style} testID={testID} />;
 
   const horizontal = layout === 'horizontal';
   const name = accessibilityLabel ?? composeName(props);
+  const shownStatus = statusLabelFor(status, statusLabel);
+  const hasBadge = badge != null && badge !== '';
+  const offeringList = uniqueOfferings(offerings);
 
   const linkStyle: WebCssStyle = {
     flexDirection: horizontal ? 'row' : 'column',
@@ -457,6 +721,27 @@ function ListingCardComponent(props: ListingCardProps) {
     if (!IS_WEB && href) void Linking.openURL(href).catch(() => undefined);
   };
 
+  const linkProps = {
+    ...webData({ bloomListingCardLink: '' }),
+    ...(IS_WEB && href ? { href } : null),
+    role: href ? ('link' as const) : onPress ? ('button' as const) : undefined,
+    accessibilityLabel: name,
+    onPress: onPress || (!IS_WEB && href) ? handlePress : undefined,
+    testID: testID ? `${testID}-link` : undefined,
+  };
+
+  if (compact) {
+    return (
+      <CompactRow
+        {...props}
+        paint={paint}
+        linkProps={linkProps}
+        linkStyle={{ flexDirection: 'row', alignItems: 'flex-start', '--bloom-listing-card-ring': paint.ring }}
+        statusText={shownStatus}
+      />
+    );
+  }
+
   const overlayStyle: ViewStyle = {
     position: 'absolute',
     top: 0,
@@ -471,15 +756,7 @@ function ListingCardComponent(props: ListingCardProps) {
       style={[{ position: 'relative' }, style]}
       testID={testID}
     >
-      <Pressable
-        {...webData({ bloomListingCardLink: '' })}
-        {...(IS_WEB && href ? { href } : null)}
-        role={href ? 'link' : onPress ? 'button' : undefined}
-        accessibilityLabel={name}
-        onPress={onPress || (!IS_WEB && href) ? handlePress : undefined}
-        style={linkStyle}
-        testID={testID ? `${testID}-link` : undefined}
-      >
+      <Pressable {...linkProps} style={linkStyle}>
         <PhotoTrack
           photos={photos}
           variant={photoVariant}
@@ -490,6 +767,7 @@ function ListingCardComponent(props: ListingCardProps) {
           onWidth={setWidth}
           onIndex={onScrollIndex}
           mountedThrough={mountedThrough}
+          washed={shownStatus != null}
           testID={testID}
         />
         <Details {...props} paint={paint} horizontal={horizontal} />
@@ -498,13 +776,44 @@ function ListingCardComponent(props: ListingCardProps) {
       <View pointerEvents="box-none" style={overlayStyle}>
         <Dots count={count} active={active} paint={paint} />
 
-        {badge != null && badge !== '' ? (
+        {shownStatus || hasBadge || offeringList.length > 0 ? (
           <View
             pointerEvents="none"
-            style={{ position: 'absolute', top: 12, left: 12, right: 56 }}
-            testID={testID ? `${testID}-badge` : undefined}
+            style={{
+              position: 'absolute',
+              top: 12,
+              left: 12,
+              right: 56,
+              flexDirection: 'row',
+              flexWrap: 'wrap',
+              alignItems: 'flex-start',
+              gap: 6,
+            }}
+            testID={testID ? `${testID}-slot` : undefined}
           >
-            {typeof badge === 'string' ? <BadgePill label={badge} paint={paint} /> : badge}
+            {shownStatus ? (
+              <ListingStatusPill
+                label={shownStatus}
+                fill={paint.statusFill}
+                text={paint.statusText}
+                size="medium"
+                testID={testID ? `${testID}-status` : undefined}
+              />
+            ) : null}
+            {hasBadge ? (
+              <View style={{ maxWidth: '100%' }} testID={testID ? `${testID}-badge` : undefined}>
+                {typeof badge === 'string' ? <BadgePill label={badge} paint={paint} /> : badge}
+              </View>
+            ) : null}
+            {offeringList.map((offering) => (
+              <OfferingBadge
+                key={offering}
+                offering={offering}
+                label={offeringLabels?.[offering]}
+                variant="onMedia"
+                testID={testID ? `${testID}-offering-${offering}` : undefined}
+              />
+            ))}
           </View>
         ) : null}
 

@@ -1,0 +1,79 @@
+---
+title: Wizard
+description: The header and footer of a multi-step flow — a segmented progress bar with the step count and title, and a sticky Back / Next bar.
+order: 114
+---
+
+# Wizard
+
+Two parts for any flow that walks the user through steps: `WizardProgress` on
+top, `WizardFooter` at the bottom. The steps themselves are the app's — these
+parts only show where the user is and move them along.
+
+```tsx
+import { WizardFooter, WizardProgress } from '@oxy.so/bloom/wizard';
+
+const steps = [
+  { title: 'Property type' },
+  { title: 'Address', description: 'Only people you confirm see the exact address.' },
+  { title: 'Photos' },
+  { title: 'Publish' },
+];
+
+function Flow() {
+  const [step, setStep] = useState(0);
+  const last = step === steps.length - 1;
+  return (
+    <View style={{ flex: 1 }}>
+      <ScrollView contentContainerStyle={{ paddingLeft: 24, paddingRight: 24 }}>
+        <WizardProgress steps={steps} current={step} />
+        {renderStep(step)}
+      </ScrollView>
+      <WizardFooter
+        onBack={step > 0 ? () => setStep(step - 1) : undefined}
+        onNext={last ? publish : () => setStep(step + 1)}
+        nextLabel={last ? 'Publish' : 'Next'}
+        nextDisabled={!canContinue}
+        loading={publishing}
+      />
+    </View>
+  );
+}
+```
+
+## `WizardProgress`
+
+One segment per step, sharing the width. Done steps are filled, later steps are
+empty, and the current step fills to `currentProgress` (default `0.5`, so it
+always reads as under way). Under the bar: the count ("Step 3 of 8") with an
+optional `action` on its right — a "Save and exit" button, say — then the
+current step's title as a heading and its description.
+
+| prop | default | |
+| --- | --- | --- |
+| `steps` | — | `{ key?, title, description? }[]` |
+| `current` | — | 0-based index, clamped |
+| `currentProgress` | `0.5` | 0..1 fill of the current segment |
+| `formatStepCount` | `Step n of total` | localise the count line |
+| `hideTitle` | `false` | keep only the bar and the count |
+| `action` | — | node right of the count |
+| `headingLevel` | `1` | the title's heading level on web |
+| `accessibilityLabel` | count + title | the bar's name |
+
+The bar is ONE `progressbar` over the whole flow: `aria-valuemax` is the number
+of steps and `aria-valuenow` the done steps plus the current step's progress, so
+a screen reader hears "Step 3 of 8, Photos" with a value, not eight unnamed
+bars. The fill eases on web and snaps under reduced motion.
+
+## `WizardFooter`
+
+Back is the underlined text action on the left (omit `onBack` on the first
+step and it disappears; Next stays right). Next is a primary `Button` at
+`large`; `loading` is the Button's own loading state and keeps its width.
+An optional `status` line ("Draft saved") sits between them from 480 wide.
+
+**Sticky.** On web the bar is `position: sticky; bottom: 0`, so inside a
+scrolling page it stays on screen while the step scrolls. Native has no sticky
+positioning — render the footer AFTER the `ScrollView`, outside it, as above,
+and it stays put by placement. Pass `sticky={false}` for a footer inside a card
+or a dialog.

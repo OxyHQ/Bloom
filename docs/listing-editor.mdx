@@ -1,0 +1,148 @@
+---
+title: Listing Editor
+description: The parts of a publish-a-listing flow — property type tiles, address precision cards, the offering editor, a quality meter and a live preview pane.
+order: 116
+---
+
+# Listing Editor
+
+The steps of publishing a home, as parts the app composes with
+[`WizardProgress` / `WizardFooter`](/docs/bloom/main/wizard), `StepperRow` and
+[`SortablePhotoGrid`](/docs/bloom/main/sortable-media). Every value is controlled; the app
+owns the draft, the validation and every label.
+
+```tsx
+import {
+  AddressPrecisionPicker,
+  ListingPreviewPane,
+  ListingQualityMeter,
+  OfferingEditor,
+  PropertyTypeSelector,
+} from '@oxy.so/bloom/listing-editor';
+import { SortablePhotoGrid } from '@oxy.so/bloom/sortable-media';
+import { StepperRow } from '@oxy.so/bloom/stepper';
+import { Textarea } from '@oxy.so/bloom/textarea';
+import { WizardFooter, WizardProgress } from '@oxy.so/bloom/wizard';
+```
+
+A typical flow is eight steps: type → address and precision → the basics
+(`StepperRow`s for rooms and area) → offerings → photos → description
+(`Textarea` with `maxLength` and `showCount`) → quality → publish. On a wide
+screen put `ListingPreviewPane` in a 360 column beside the step; on a phone show
+it on the last step. The Storybook story "Publish Flow" is that composition.
+
+## `PropertyTypeSelector`
+
+Large icon tiles, single select. Without `options` it draws Bloom's nine types
+(apartment, house, room, studio, duplex, penthouse, coliving, hostel, other)
+with English labels; pass your own `options` (`{ value, label, description?, icon }`)
+to localise or change the set — `DEFAULT_PROPERTY_TYPES` is exported to start
+from. 2 columns below 400 wide, 3 below 640, 4 from there.
+
+```tsx
+<PropertyTypeSelector value={draft.type} onValueChange={(type) => setDraft({ ...draft, type })} />
+```
+
+## `AddressPrecisionPicker`
+
+Three radio cards — exact address, street only, approximate area (~500 m) —
+each with a map preview over its explanation. `renderMap(precision)` draws a
+real static map; without it Bloom draws a placeholder street grid with a pin, a
+highlighted street or a circle.
+
+**The choice decides what is published, and enforcing that is the app's job.**
+The component only records `value`. Derive the public location on the server:
+the exact point for `exact`, the street's centreline for `street`, and a point
+jittered within about 500 m for `approximate` — and never send the exact
+coordinates to a client that should not have them. Hiding the pin in the UI
+while the API returns the coordinates publishes the address anyway.
+
+## `OfferingEditor`
+
+How the home is offered: four selectable cards — for rent, for sale, vacation
+rental, swap — any number at once. A selected card opens its fields:
+
+| kind | fields |
+| --- | --- |
+| `rent` | monthly amount, deposit in months (pills), available from (`DatePicker`), minimum stay in months |
+| `sale` | asking price, and the price per m² computed from `area` (read-only) |
+| `stay` | nightly rate, cleaning fee, minimum nights |
+| `swap` | the exchange mode: swap, host, or both |
+
+```tsx
+const [offering, setOffering] = useState<OfferingValue>({ kinds: [] });
+
+<OfferingEditor
+  value={offering}
+  onValueChange={setOffering}
+  currencySymbol="€"
+  area={96}
+  errors={submitted ? validate(offering) : undefined}
+/>
+```
+
+- `value.kinds` is the selection; each kind's fields live beside it
+  (`value.rent`, `value.sale`, …). Deselecting a kind KEEPS its fields, so
+  selecting it again restores what was typed — drop unselected kinds when you
+  save.
+- Money fields keep digits only, as strings; the currency symbol is drawn before
+  the input. Format and parse amounts in the app.
+- The price per area is the one number the component computes:
+  `price ÷ area`, rounded, formatted with `formatPricePerArea` (default
+  `€4 010 / m²`).
+- Validation is yours: `errors` is keyed by field (`'rent.amount'`,
+  `'stay.nightlyRate'`, `'swap.mode'`, …) and each message sits under its field;
+  `errors.kinds` sits under the cards.
+- `kinds` restricts or reorders the cards; `labels` localises every string.
+
+## `ListingQualityMeter`
+
+A completeness score: a ring, a checklist and tips.
+
+```tsx
+<ListingQualityMeter
+  items={[
+    { key: 'photos', label: 'Add at least 5 photos', tip: 'You have 3.', done: photos.length >= 5, weight: 2, onPress: () => goTo('photos') },
+    { key: 'kitchen', label: 'Describe the kitchen', done: mentionsKitchen },
+    { key: 'energy', label: 'Add energy certificate', done: !!certificate },
+  ]}
+  tips={['Photos taken in daylight make rooms look larger.']}
+/>
+```
+
+Without `score` it is the done items' share of the total `weight`, rounded
+(`listingQualityScore(items)` is exported). The summary follows the score
+("Needs work" under 50, "Good" under 80, "Excellent") unless `summary` is given.
+A row with `onPress` is a button that takes the user to the step.
+
+## `ListingPreviewPane`
+
+A side panel with a card / page toggle. The card is Bloom's own `ListingCard`
+drawn from `listing`; the page is a compact listing page (cover photo,
+`ListingHeader`, the facts, the description and the price). Pass the draft being
+edited and the preview is live. `renderPage` replaces the built-in page; `mode`
+/ `onModeChange` control the toggle.
+
+```tsx
+<ListingPreviewPane
+  listing={{
+    photos: draft.photos.map((p) => p.uri),
+    title: draft.title,
+    subtitle: '3 bedrooms · 96 m²',
+    price: '€1,450',
+    priceUnit: 'month',
+    facts: ['3 bedrooms', '2 baths', '96 m²'],
+    description: draft.description,
+  }}
+/>
+```
+
+## Accessibility
+
+- Offering cards are `checkbox`es with `aria-checked` in a named `group`; the
+  fields sit OUTSIDE the pressable card head, so no input is nested in a control.
+- Property tiles and precision cards are `radio`s with `aria-checked` in a named
+  `radiogroup`; the deposit and swap-mode pills are `radiogroup`s too.
+- The quality ring is a `progressbar` (0..100); each row's name carries its
+  state ("Add at least 5 photos, To do").
+- The preview toggle is a `SegmentedControl` of type `tabs` over a `tabpanel`.

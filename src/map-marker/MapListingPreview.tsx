@@ -8,6 +8,8 @@ import { RiCloseLine } from '../icons/remix/RiCloseLine';
 import { RiHeart3Fill } from '../icons/remix/RiHeart3Fill';
 import { RiHeart3Line } from '../icons/remix/RiHeart3Line';
 import { useImageResolver } from '../image-resolver/context';
+import { ListingFacts, ListingOfferings, ListingPriceLines } from '../listing-card/parts';
+import { resolvePriceLines } from '../listing-card/shared';
 import { Rating } from '../rating';
 import { adoptStyleSheet } from '../styles/adopt-style-sheet';
 import type { WebCssStyle } from '../styles/web-view-style';
@@ -31,6 +33,9 @@ import type { MapListingPreviewProps } from './types';
  *   body        title body-2-semibold + Rating small on one line,
  *               subtitle body-2-regular secondary, 4 · price line:
  *               [original struck, secondary] price body-2-semibold, detail body-2-regular secondary
+ *   housing     offerings: small tinted badges above the title; `priceLines`
+ *               stacked; facts a 14px-icon row under them — the SAME parts
+ *               `ListingCard` draws (`listing-card/parts.tsx`)
  *   close       Button secondary xs iconOnly — over the photo's top-left
  *               (vertical) or the card's top-right (compact)
  *   heart       24 round surface pill, 14px heart — the photo's other top corner;
@@ -118,6 +123,10 @@ function MapListingPreviewComponent({
   price,
   priceDetail,
   originalPrice,
+  priceLines,
+  facts,
+  offerings,
+  offeringLabels,
   favorite = false,
   onFavoriteChange,
   onClose,
@@ -228,6 +237,16 @@ function MapListingPreviewComponent({
           paddingRight: compact && onClose ? INSET + 24 + 8 : 12,
         }}
       >
+        {offerings && offerings.length > 0 ? (
+          <ListingOfferings
+            offerings={offerings}
+            labels={offeringLabels}
+            size="small"
+            variant="tinted"
+            style={{ gap: 4, marginBottom: 4 }}
+            testID={testID ? `${testID}-offerings` : undefined}
+          />
+        ) : null}
         <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
           <Text
             variant="body-2-semibold"
@@ -248,20 +267,40 @@ function MapListingPreviewComponent({
             {subtitle}
           </Text>
         ) : null}
-        <Text variant="body-2-regular" numberOfLines={1} style={{ marginTop: 4, color: paint.labelSecondary }}>
-          {originalPrice ? (
-            <Text
-              variant="body-2-regular"
-              style={{ color: paint.labelSecondary, textDecorationLine: 'line-through' }}
-            >
-              {originalPrice}{' '}
+        {priceLines ? (
+          <ListingPriceLines
+            lines={resolvePriceLines({ priceLines })}
+            size="small"
+            color={paint.label}
+            secondaryColor={paint.labelSecondary}
+            style={{ marginTop: 4 }}
+            testID={testID ? `${testID}-price` : undefined}
+          />
+        ) : price ? (
+          <Text variant="body-2-regular" numberOfLines={1} style={{ marginTop: 4, color: paint.labelSecondary }}>
+            {originalPrice ? (
+              <Text
+                variant="body-2-regular"
+                style={{ color: paint.labelSecondary, textDecorationLine: 'line-through' }}
+              >
+                {originalPrice}{' '}
+              </Text>
+            ) : null}
+            <Text variant="body-2-semibold" style={{ color: paint.label }}>
+              {price}
             </Text>
-          ) : null}
-          <Text variant="body-2-semibold" style={{ color: paint.label }}>
-            {price}
+            {priceDetail ? ` ${priceDetail}` : null}
           </Text>
-          {priceDetail ? ` ${priceDetail}` : null}
-        </Text>
+        ) : null}
+        {facts && facts.length > 0 ? (
+          <ListingFacts
+            facts={facts}
+            size="small"
+            color={paint.labelSecondary}
+            style={{ marginTop: 4 }}
+            testID={testID ? `${testID}-facts` : undefined}
+          />
+        ) : null}
       </View>
 
       {onPress ? (

@@ -1,16 +1,26 @@
 import type { StyleProp, ViewStyle } from 'react-native';
 
+import type { ListingFact, ListingPriceLine, Offering } from '../listing-card/types';
+
 /**
  * `default` at rest; `active` for the marker whose listing is open (inverted
  * and raised); `visited` for one already opened (muted).
  */
 export type MapMarkerState = 'default' | 'active' | 'visited';
 
+/** `default` is 28 tall; `compact` is 22 tall, for a dense map. */
+export type MapPriceMarkerSize = 'default' | 'compact';
+
 export interface MapPriceMarkerProps {
-  /** The price as drawn, pre-formatted by the app ("€120"). */
+  /**
+   * The price as drawn, pre-formatted and SHORT — the app abbreviates it
+   * ("€120", "€950/mo", "€240K", "€1.2M"); the pill never truncates.
+   */
   price: string;
   /** Default `default`. */
   state?: MapMarkerState;
+  /** Default `default`. */
+  size?: MapPriceMarkerSize;
   /** Draws a small heart before the price. */
   saved?: boolean;
   onPress?: () => void;
@@ -49,12 +59,23 @@ export interface MapListingPreviewProps {
   reviewCount?: number | string;
   /** The secondary line ("Entire cabin · 2 beds"). */
   subtitle?: string;
-  /** Pre-formatted ("€120"). */
-  price: string;
+  /** Pre-formatted ("€120"). Optional when `priceLines` is given. */
+  price?: string;
   /** Drawn after the price in secondary text ("night", "total"). */
   priceDetail?: string;
   /** A struck-through earlier price before `price` ("€150"). */
   originalPrice?: string;
+  /**
+   * Stacked price lines, as on `ListingCard` ("€950 / month"; "€240,000 ·
+   * €3,200/m²"). Replaces `price`, `priceDetail` and `originalPrice`.
+   */
+  priceLines?: ReadonlyArray<ListingPriceLine>;
+  /** The facts row, as on `ListingCard` (bed 3 · bath 2 · 110 m²). */
+  facts?: ReadonlyArray<ListingFact>;
+  /** Offering badges, a small tinted row above the title. */
+  offerings?: ReadonlyArray<Offering>;
+  /** Replaces the English offering labels. */
+  offeringLabels?: Partial<Record<Offering, string>>;
   /** Whether the listing is saved. The heart shows only with `onFavoriteChange`. */
   favorite?: boolean;
   onFavoriteChange?: (favorite: boolean) => void;
@@ -74,6 +95,25 @@ export interface MapListingPreviewProps {
   accessibilityLabel?: string;
   style?: StyleProp<ViewStyle>;
   /** Parts get `<testID>-open`, `-close`, `-favorite`, `-image`. */
+  testID?: string;
+}
+
+export interface MapAreaCircleProps {
+  /**
+   * The circle's radius in PIXELS. The app computes it from its map projection
+   * (metres at this latitude and zoom → pixels) and re-renders on zoom.
+   */
+  radius: number;
+  /** A small pill at the centre ("Approximate area", "~500 m"). */
+  label?: string;
+  /**
+   * The circle's name, which makes it an image to assistive technology
+   * ("Approximate location, within 500 metres"). Without it the circle is
+   * decorative and only its `label` is read.
+   */
+  accessibilityLabel?: string;
+  style?: StyleProp<ViewStyle>;
+  /** Parts get `<testID>-fill`, `-label`. */
   testID?: string;
 }
 

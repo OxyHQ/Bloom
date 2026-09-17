@@ -1,6 +1,6 @@
 ---
 title: Listing details
-description: The parts of a stay's listing page — photo grid, header, highlights, amenities, host card, review summary and review cards — and the section wrapper that stacks them.
+description: The parts of a listing page — photo grid, header, highlights, amenities, property facts, floor plans, the host / landlord / agent contact card, review summary and review cards — and the section wrapper that stacks them.
 order: 112
 ---
 
@@ -9,12 +9,15 @@ order: 112
 ```tsx
 import {
   AmenityList,
+  ContactCard,
+  FloorPlan,
   HostCard,
   ListingHeader,
   ListingHeaderAction,
   ListingHighlights,
   ListingPhotoGrid,
   ListingSection,
+  PropertyFacts,
   ReviewCard,
   ReviewSummary,
 } from '@oxy.so/bloom/listing-details';
@@ -68,6 +71,8 @@ content column and a booking column gets the right layout in each.
 | `ListingHeader` | 640: actions under the meta row | 640: actions beside the title |
 | `AmenityList` (`columns="auto"`) | 560: one column | 560: two columns |
 | `ReviewSummary` | 640: stacked, one category column | 640: distribution beside two category columns |
+| `PropertyFacts` (`columns="auto"`) | 480: two columns | 480: three; 720: four |
+| `FloorPlan` (`columns="auto"`) | 560: one column | 560: two columns |
 
 Before the first layout the photo grid holds its height with an empty frame, so the
 page does not jump. `layout="grid" | "carousel"` and `columns={1 | 2}` skip the
@@ -144,6 +149,77 @@ a column of `stats` separated by hairlines. Below it: `details` (20px icon + bod
 lines), `responseLines` (text-secondary) and a "Message host" secondary button when
 `onMessage` is set. `onPressProfile` makes the card one button named
 "Marta, Top host, Verified, 214 Reviews, …".
+
+## Homes for rent and sale
+
+A rental or sale page reuses the same header, photos and sections, and adds three
+parts here plus the data parts in [`@oxy.so/bloom/property-insights`](./property-insights).
+Storybook: **Blocks/Housing/Property Insights**.
+
+```tsx
+<ListingSection title="Features">
+  <PropertyFacts items={[
+    { icon: RiRulerLine, label: 'Built area', value: '138 m²' },
+    { icon: RiHotelBedLine, label: 'Bedrooms', value: '3' },
+    { icon: RiStairsLine, label: 'Floor', value: '3rd of 5' },
+  ]} limit={8} total={12} onShowAll={openFeatures} />
+</ListingSection>
+<ListingSection title="Floor plans">
+  <FloorPlan plans={plans} onPressPlan={(i) => gallery.current?.open(planImages, i)} />
+</ListingSection>
+<ContactCard
+  role="agent"
+  name="Leonor Brandão"
+  avatar={photo}
+  verified
+  agency="Casa Ribeirinha Imóveis"
+  logo={agencyLogo}
+  responseTime="Usually responds within an hour"
+  activeListings={12}
+  onPressListings={openListings}
+  phone="+351 912 480 316"
+  onPhoneRevealedChange={logLead}
+  onMessage={message}
+  onCall={call}
+/>
+```
+
+### `PropertyFacts`
+
+A grid of icon (24) + value (headline-semibold) + label (body-2, text-secondary). The
+columns are equal shares with a 16px gutter as each cell's right padding, so explicit
+`columns={2 | 3 | 4}` need no layout pass; `auto` measures (table above). `limit`,
+`total`, `onShowAll` and `showAllLabel` work like `AmenityList`'s ("Show all 12
+features"). A named list (`accessibilityLabel`, default "Property features"); each fact
+reads "Built area: 138 m²".
+
+### `FloorPlan`
+
+A tile per plan — radius 16, hairline border, the plan CONTAINED with a 16 inset on a
+light sheet in both modes (a plan is dark line work and would vanish on a dark tile) —
+with `label` and `description` under it. With `onPressPlan` a tile is a button named
+"Main floor · 96 m², floor plan 1 of 2" (`planLabel`) with an expand disc top-right;
+without it, a named image. One plan spans the width; `auto` columns are 1 below 560
+wide and 2 from 560. Open `ZoomableMediaGallery` from `onPressPlan`, exactly as for
+the photo grid.
+
+### `ContactCard`
+
+`HostCard` generalised to landlords, agents and agencies: the same profile card (avatar,
+verified badge, name, label, stats column), then:
+
+| prop | draws |
+| --- | --- |
+| `role` | `host` (default) · `landlord` · `agent` · `agency` — the label under the name when `label` is not set ("Landlord", "Agent", "Agency"; nothing for a host), `roleLabel` overrides it |
+| `agency`, `logo` | a row with the logo in a 40px rounded tile and the agency name; `role="agency"` without an `avatar` uses the logo as a square-cornered avatar instead |
+| `responseTime` | a clock row |
+| `activeListings`, `onPressListings` | "12 active listings" (`activeListingsLabel`), a link when pressable |
+| `onMessage`, `messageLabel` | "Message" — secondary for a host ("Message host"), primary for everyone else |
+| `onCall`, `callLabel` | a secondary "Call" button with a phone icon |
+| `phone` | "Show phone"; pressed, the number replaces the label (announced politely). It then calls `onCall` when pressed, or becomes plain selectable text when there is nothing to call. `phoneRevealed` / `onPhoneRevealedChange` control it — log the lead there. |
+
+`HostCard` is `ContactCard` with `role="host"` and `messageLabel="Message host"`; its
+props, geometry and testIDs are unchanged.
 
 ## `ReviewSummary`
 
