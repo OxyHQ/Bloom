@@ -1,0 +1,101 @@
+---
+title: PageHeader
+description: A screen's top bar — back button, title and subtitle, a leading node and actions — sticky on web, safe-area aware on native, with a scroll-linked border, shadow and transparent-over-media mode.
+order: 105
+---
+
+# PageHeader
+
+```tsx
+import { PageHeader } from '@oxy.so/bloom/page-header';
+
+<PageHeader
+  onBack={router.back}
+  title="Order #4821"
+  subtitle="Placed today"
+  actions={<>
+    <Button variant="secondary" iconOnly leadingIcon={RiShare2Line} accessibilityLabel="Share" />
+    <Button variant="primary" leadingIcon={RiAddFill}>New order</Button>
+  </>}
+/>
+```
+
+Router-agnostic: the back button renders when `onBack` is set. Pass `router.back`, your app's safe-back helper, or omit it on a root screen (`router.canGoBack() ? router.back : undefined`).
+
+## Props
+
+| Prop | Default | |
+| --- | --- | --- |
+| `title` | — | A string is the heading (`role="heading"`, `aria-level={headingLevel}`); a node renders as-is and owns its semantics. |
+| `subtitle` | — | A string is a secondary line; a node renders as-is. |
+| `titleAlign` | `'start'` | `'center'` centres the title on the bar whatever the two sides hold. |
+| `headingLevel` | `1` | |
+| `onBack` / `backLabel` | — / `"Back"` | `backLabel` is the button's accessible name — localise it. |
+| `leading` | — | After the back button, before the title (an avatar, a logo). |
+| `actions` | — | End of the bar, 10 apart. Use Bloom `Button`s. |
+| `border` | `'auto'` | `auto` fades the separator in with scroll; `always`; `none`. |
+| `transparent` | `false` | Background, shadow and title fade in with scroll — for a header over media. The back button and actions stay (their own fill reads over any photo). |
+| `scrollY` | — | A Reanimated `SharedValue<number>` driving the scroll-linked paint. |
+| `scrollThreshold` | `20` | The offset over which border, shadow and background fade in. Over a hero, use the hero height minus the bar. |
+| `sticky` | `true` | Web: `position: sticky; top: 0`. No effect on native. |
+| `safeArea` | native `true`, web `false` | Pads the top by the safe-area inset (read from `SafeAreaInsetsContext`; no provider → 0). |
+
+## Look
+
+- Bar min-height 56; side inset 16 below `sm`, 24 from `sm`.
+- Back: the secondary medium icon-only `Button` (36, pill, hairline, shadow-xs) with `RiArrowLeftLine`.
+- Start group gap 6; title `headline-medium` text-primary, 4px side padding (`gap-1.5` + `px-1`, as in the template headers); subtitle `body-2-regular` text-secondary. Both truncate to one line.
+- Background `background/full` (card; dark neutral-925). Separator 1px `separator-border` (neutral-200; dark neutral-800). Shadow `shadow-xs`, only once scrolled.
+- No press scale. The fades are scroll-linked, not timed, so there is no motion to reduce.
+
+## Scroll
+
+Border (`auto`), shadow and — with `transparent` — background and title interpolate over `[0, scrollThreshold]` of the scroll offset:
+
+- **Web, window scroll:** omit `scrollY`; the header follows `window.scrollY`.
+- **A scroll container (any platform):** pass the offset.
+
+```tsx
+const scrollY = useSharedValue(0);
+const onScroll = useAnimatedScrollHandler({ onScroll: (e) => { scrollY.value = e.contentOffset.y; } }, [scrollY]);
+
+<PageHeader title="Inbox" onBack={back} scrollY={scrollY} sticky={false} />
+<Animated.ScrollView onScroll={onScroll} scrollEventThrottle={16}>…</Animated.ScrollView>
+```
+
+Without `scrollY` on native the header stays at rest (border `auto` hidden, `transparent` stays transparent). Name `scrollY` in the handler's dependency array — without the worklets Babel plugin (Storybook, some web builds) a shared value missing from it never updates.
+
+**Over media** (`transparent`): let the photo start under the bar (`marginTop: -56` on the hero, or absolutely position the header), and set `scrollThreshold` to the hero height minus the bar so the bar arrives as the photo leaves.
+
+## Accessibility
+
+- The title is a `heading` (level 1 by default: the page header titles the page).
+- The container carries no landmark role. `role="banner"` would be one banner per header, and an app shell already owns the page's banner; a page header inside `main` is not a landmark in HTML either.
+- The back button is named by `backLabel`.
+
+## Not included
+
+- **iOS large title.** A large title that collapses into the bar needs to live inside the scroll content (so it scrolls under the bar) while the bar lives outside it; a standalone header cannot own both without making content move at twice the scroll speed on native. `Dialog`'s own header (`docs/dialog.mdx`) does it because the Dialog owns its scroller.
+
+## Migrating from app headers
+
+Mention, Allo and Homiio each hand-roll a `Header` with an `options` object. The mapping:
+
+| App header | `PageHeader` |
+| --- | --- |
+| `options.title` | `title` |
+| `options.titlePosition: 'left' \| 'center'` | `titleAlign: 'start' \| 'center'` |
+| `options.subtitle` (string or node) | `subtitle` |
+| `options.showBackButton` (+ `useSafeBack` / `router.back` inside) | `onBack={safeBack}` — omit to hide |
+| Homiio `showBackButton && router.canGoBack()` | `onBack={router.canGoBack() ? router.back : undefined}` |
+| `options.leftComponents: ReactNode[]` | `leading={<>…</>}` |
+| `options.rightComponents: ReactNode[]` | `actions={<>…</>}` |
+| `hideBottomBorder` | `border="none"` (the apps drew it at rest: `border="always"` for the old look) |
+| `disableSticky` | `sticky={false}` |
+| web `window.scrollY > 20` sticky state | built in (`scrollThreshold`, default 20) |
+| Homiio `options.transparent` / `options.scrollThreshold` | `transparent` / `scrollThreshold` |
+| Homiio `scrollY` | `scrollY` |
+| Homiio `useSafeAreaInsets().top` | `safeArea` (default on native) |
+| Mention `options.headerTitleStyle` | pass a node `title` |
+
+Two visual changes: the title is `headline-medium` (16/22, 500) instead of 18/800, and the back button is a pill icon button instead of a bare arrow.

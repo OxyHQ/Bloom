@@ -187,6 +187,7 @@ export * from './important-alerts-card';
 export * from './patient-info-card';
 export * from './sidebar';
 export * from './app-shell';
+export * from './page-header';
 export * from './notification-center';
 export * from './theme-toggle';
 export * from './settings-modal';
