@@ -115,7 +115,7 @@ A 48-tall full pill: search glyph, input, a clear × once there is text, then a 
 />
 ```
 
-Pills painted like `Chip` (neutral at rest, primary subtle when selected), 32 tall, scrolling sideways when they do not fit. A `tablist` of `tab`s with `aria-selected`; on web the row is one tab stop and the arrow keys, Home and End move focus.
+`Chip`s on the `xl` rung (32 tall, 12px sides): neutral at rest, the brand subtle tint when selected. The row is a `ChipRow`, so it scrolls sideways with a fade at whichever edge has more behind it. A `tablist` of `tab`s with `aria-selected` — `Chip`'s `role="tab"`, which picks `aria-selected` over `aria-pressed`; on web the row is one tab stop and the arrow keys, Home and End move focus.
 
 ## `TopResultCard`
 

@@ -131,7 +131,7 @@ const [mode, setMode] = useState<ExchangeMode>('swap');
   `'horizontal'` or `'vertical'`.
 - **Box.** DATES | GUESTS are `BookingCard`'s cells; empty ones show
   `datesPlaceholder` / `guestsPlaceholder`.
-- **Mode.** `Chip`s — `swap` "Reciprocal swap", `host` "Guest points", `both`
+- **Mode.** `Chip`s on the `xl` rung (32 tall — a target rather than a tag) — `swap` "Reciprocal swap", `host` "Guest points", `both`
   "Either" (`EXCHANGE_MODE_LABELS`, override with `modeLabels`, restrict with
   `modes`). The chosen one is `selected` (`aria-pressed`).
 

@@ -6,7 +6,7 @@ import { RiCheckLine } from '../icons/remix';
 import { Text } from '../typography';
 import { useTheme } from '../theme/use-theme';
 import type { AccentFill, AccentTone } from '../theme/accent-colors';
-import { Chip, type ChipHue } from './index';
+import { Chip, ChipRow, type ChipHue } from './index';
 
 const meta: Meta<typeof Chip> = {
   title: 'Base/Chip',
@@ -68,16 +68,6 @@ export const Hues: Story = {
       </View>
     );
   },
-};
-
-export const Sizes: Story = {
-  render: () => (
-    <View style={{ flexDirection: 'row', gap: 8, alignItems: 'center' }}>
-      <Chip size="small">Small</Chip>
-      <Chip size="medium">Medium</Chip>
-      <Chip size="large">Large</Chip>
-    </View>
-  ),
 };
 
 /** Icons inside the pill are sized to the pill, not to whatever was passed. */
@@ -181,6 +171,131 @@ export const Disabled: Story = {
       </Chip>
       <Chip disabled variant="solid" color="primary" onPress={() => {}}>
         Disabled
+      </Chip>
+    </View>
+  ),
+};
+
+/**
+ * The five rungs. The scale used to stop at `large` (28 tall, 6px sides), which
+ * is why five families grew a pill of their own rather than use this one: 28
+ * with 6px sides is a TAG, and a filter you tap needs a target. `xl` is the
+ * filter/segment pill, `2xl` the filters-sheet pill.
+ */
+export const Sizes: Story = {
+  render: () => (
+    <View style={{ gap: 12, alignItems: 'flex-start' }}>
+      {(['small', 'medium', 'large', 'xl', '2xl'] as const).map((size) => (
+        <View key={size} style={{ flexDirection: 'row', gap: 8, alignItems: 'center' }}>
+          <Chip size={size} variant="subtle" color="primary" testID={`chip-size-${size}`}>
+            {size}
+          </Chip>
+          <Chip size={size} variant="outlined" startIcon={<RiCheckLine width={16} height={16} />}>
+            with an icon
+          </Chip>
+        </View>
+      ))}
+    </View>
+  ),
+};
+
+/**
+ * `inverted` is the fourth fill and a different idea rather than a fourth
+ * loudness: a hairline on the page at rest, and selected it turns the page's own
+ * reading pair OVER — fill `text`, label `background`. That pair is legible by
+ * construction in both modes and under every preset, which is what a filters
+ * sheet needs and what promoting to the brand tone cannot promise.
+ *
+ * The `2xl` rung also pins a `minWidth` of 48, so a one-character count ("1",
+ * "8+") is a pill rather than a dot.
+ */
+export const Inverted: Story = {
+  render: function InvertedStory() {
+    const [count, setCount] = useState<number | null>(null);
+    return (
+      <View style={{ gap: 16, alignItems: 'flex-start' }}>
+        <View style={{ flexDirection: 'row', gap: 8 }}>
+          <Chip size="2xl" variant="inverted" role="radio" selected={count == null} onPress={() => setCount(null)}>
+            Any
+          </Chip>
+          {[1, 2, 3, 4].map((n) => (
+            <Chip
+              key={n}
+              size="2xl"
+              variant="inverted"
+              role="radio"
+              selected={count === n}
+              onPress={() => setCount(n)}
+              accessibilityLabel={String(n)}
+            >
+              {String(n)}
+            </Chip>
+          ))}
+        </View>
+        <View style={{ flexDirection: 'row', gap: 8 }}>
+          <Chip size="xl" variant="inverted" onPress={() => {}}>
+            Rest
+          </Chip>
+          <Chip size="xl" variant="inverted" selected onPress={() => {}}>
+            Selected
+          </Chip>
+          <Chip size="xl" variant="inverted" disabled onPress={() => {}}>
+            Disabled
+          </Chip>
+        </View>
+      </View>
+    );
+  },
+};
+
+/**
+ * `ChipRow` is the pill row that scrolls sideways with a fade at whichever edge
+ * has more behind it. Without the fade a clipped pill stops mid-glyph and reads
+ * as a rendering fault rather than as "there is more". Pass `fadeColor` when the
+ * row sits on anything but the page background — the row cannot know what is
+ * behind it.
+ */
+export const Row: Story = {
+  render: function RowStory() {
+    const [value, setValue] = useState('all');
+    const OPTIONS = ['All', 'Playlists', 'Artists', 'Albums', 'Podcasts', 'Audiobooks', 'Downloaded', 'Shared'];
+    return (
+      <View style={{ width: 320 }}>
+        <ChipRow accessibilityLabel="Library filters" testID="chip-row">
+          {OPTIONS.map((label) => (
+            <Chip
+              key={label}
+              size="xl"
+              selected={value === label.toLowerCase()}
+              onPress={() => setValue(label.toLowerCase())}
+              accessibilityLabel={label}
+            >
+              {label}
+            </Chip>
+          ))}
+        </ChipRow>
+      </View>
+    );
+  },
+};
+
+/**
+ * A pressable chip's ROLE decides which state attribute it carries, and the
+ * three are not interchangeable: a toggle `button` is `aria-pressed`, a `radio`
+ * is `aria-checked`, a `tab` is `aria-selected`. `aria-pressed` on a tab is
+ * invalid ARIA, and it is what this component used to emit for every one.
+ */
+export const Roles: Story = {
+  render: () => (
+    <View style={{ flexDirection: 'row', gap: 8 }}>
+      <Chip size="xl" role="button" selected onPress={() => {}}>
+        button
+      </Chip>
+      <Chip size="xl" role="radio" selected onPress={() => {}}>
+        radio
+      </Chip>
+      <Chip size="xl" role="tab" selected onPress={() => {}}>
+        tab
       </Chip>
     </View>
   ),

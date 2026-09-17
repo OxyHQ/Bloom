@@ -2,8 +2,8 @@ import React, { memo, useEffect, useMemo, useRef, useState } from 'react';
 import { Pressable, ScrollView, TextInput, View, type TextStyle } from 'react-native';
 
 import { GlyphButton } from '../button';
+import { Chip, ChipRow } from '../chip';
 import { webDataSet } from '../styles/web-data';
-import { Chip } from '../chip';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -57,7 +57,8 @@ import type {
  *   header    16/8 padding · the library glyph + "Your Library" (headline-bold;
  *             a rail toggle when `onCollapsedChange` is set) · + · expand toggle
  *   chips     × (clear, while a filter is on) · Playlists · Artists · Albums ·
- *             Podcasts · Audiobooks · Downloaded — `Chip`s, scrolling sideways
+ *             Podcasts · Audiobooks · Downloaded — `Chip`s (`xl`, 32 tall) in a
+ *             `ChipRow`, scrolling sideways with an edge fade
  *   toolbar   search glyph (opens a 32 field in place) · "Recents" + the view
  *             glyph, opening one menu of sort and view radio rows
  *   list      `LibraryItem`s in the chosen view; grid columns from the width
@@ -343,26 +344,19 @@ function LibraryPanelComponent({
         ) : null}
       </View>
 
-      {/* Filter chips */}
-      <ScrollView
-        {...webDataSet({ bloomMusicScrollX: '' })}
-        horizontal
-        showsHorizontalScrollIndicator={false}
-        style={{ flexGrow: 0 }}
-        contentContainerStyle={{
-          gap: 8,
-          alignItems: 'center',
-          paddingTop: 8,
-          paddingBottom: 8,
-          paddingLeft: 16,
-          paddingRight: 16,
-        }}
+      {/* Filter chips. The pills used to carry `{ paddingLeft: 12, paddingRight:
+          12 }` over a base spelling it `paddingHorizontal` — inert on web, 12 on
+          native. The `xl` rung is that padding, on both. */}
+      <ChipRow
+        contentInset={16 - 4}
+        ringInset={4}
         accessibilityLabel={labels.filters}
+        style={{ marginTop: 8, marginBottom: 8 }}
         testID={pid('filters')}
       >
         {anyFilter ? (
           <Chip
-            size="large"
+            size="xl"
             onPress={() => {
               setFilter(null);
               setDownloadedOnly(false);
@@ -375,11 +369,10 @@ function LibraryPanelComponent({
         {filters.map((key) => (
           <Chip
             key={key}
-            size="large"
+            size="xl"
             selected={filter === key}
             onPress={() => setFilter(filter === key ? null : key)}
             accessibilityLabel={labels.filter[key]}
-            style={{ paddingLeft: 12, paddingRight: 12 }}
             testID={pid(`filter-${key}`)}
           >
             {labels.filter[key]}
@@ -387,17 +380,16 @@ function LibraryPanelComponent({
         ))}
         {hideDownloadedFilter ? null : (
           <Chip
-            size="large"
+            size="xl"
             selected={downloadedOnly}
             onPress={() => setDownloadedOnly(!downloadedOnly)}
             accessibilityLabel={labels.downloaded}
-            style={{ paddingLeft: 12, paddingRight: 12 }}
             testID={pid('filter-downloaded')}
           >
             {labels.downloaded}
           </Chip>
         )}
-      </ScrollView>
+      </ChipRow>
 
       {/* Toolbar */}
       <View

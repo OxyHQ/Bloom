@@ -46,6 +46,12 @@ re-exported here.
 A full pill, 4 between the icon and the label, the leading padding 2 tighter
 when there is an icon. One line, truncated.
 
+Those two rows ARE [`Badge`](/docs/bloom/main/badge)'s `label-small` and
+`label-medium` rungs, and this component is a preset over them — about forty
+lines that map an offering to a word, a glyph and a tone. It used to carry its
+own copy of the geometry, its own paint resolver and its own pill, and the
+listing card's status pill had grown a third copy of the same table.
+
 | offering          | icon                   | tone      |
 | ----------------- | ---------------------- | --------- |
 | `long_term_rent`  | `RiKey2Line`           | `info`    |
@@ -63,9 +69,9 @@ whereas a brand tint would collide with one of them (a blue brand IS `info`, a
 green one `success`). Swap takes the one neutral, which no preset can collide
 with. The four stay distinct on every preset in both modes.
 
-`onMedia` is a `neutral-50` pill with a `neutral-900` label and icon and
-`shadow-s`, the same in both modes because the photo under it does not change
-with the theme.
+`onMedia` is `Badge`'s own `onMedia` fill: a `neutral-50` pill with a
+`neutral-900` label and icon and `shadow-s`, the same in both modes because the
+photo under it does not change with the theme.
 
 ## Accessibility
 

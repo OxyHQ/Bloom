@@ -6,10 +6,13 @@ import { DEFAULT_DATE_FLEXIBILITY_OPTIONS } from './constants';
 import type { DateFlexibilityChipsProps } from './types';
 
 /**
- * A single-select row of Bloom `Chip`s (`large`, `outlined`; the selected one
+ * A single-select row of Bloom `Chip`s (`xl`, `outlined`; the selected one
  * takes the brand tone) that says how flexible the chosen dates are. Put it
  * under a `RangeCalendar` or `DateRangePicker` — this part does not draw a
  * calendar.
+ *
+ * It used to be `large` with `{ paddingHorizontal: 12, height: 32 }` written on
+ * every pill, because `Chip`'s scale stopped at 28. `xl` IS that pill.
  */
 function DateFlexibilityChipsComponent({
   value,
@@ -29,13 +32,11 @@ function DateFlexibilityChipsComponent({
       {options.map((option) => (
         <Chip
           key={option.value}
-          size="large"
+          size="xl"
           variant="outlined"
           selected={option.value === value}
           onPress={() => onChange(option.value)}
           testID={testID ? `${testID}-${option.value}` : undefined}
-          // `paddingHorizontal`, the spelling Chip's base uses — a longhand would lose on web.
-          style={{ paddingHorizontal: 12, height: 32 }}
         >
           {option.label}
         </Chip>

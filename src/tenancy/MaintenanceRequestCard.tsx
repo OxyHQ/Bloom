@@ -2,7 +2,6 @@ import React, { memo } from 'react';
 import { Image, Pressable, ScrollView, View } from 'react-native';
 
 import { Badge } from '../badge';
-import { Chip } from '../chip';
 import { RiChat3Line } from '../icons/remix';
 import { useImageResolver } from '../image-resolver/context';
 import type { WebCssStyle } from '../styles/web-view-style';
@@ -26,7 +25,7 @@ import type { MaintenancePhoto, MaintenanceRequestCardProps, TenancyTimelineEven
  *   header      a 40 category tile (radius 12, neutral-100 / 700, 20 icon),
  *               title headline-semibold, "Plumbing · #1042" body-2-regular
  *               text-secondary; the stage `Badge` (subtle) on the right
- *   chips       the priority `Chip` (small, subtle: low neutral, medium info,
+ *   chips       the priority `Badge` (label-small, subtle: low neutral, medium info,
  *               high warning, urgent error)
  *   description body-regular, clamped to 3 lines
  *   photos      a horizontal strip of 64 squares, radius 12, 8 apart; each a
@@ -148,9 +147,15 @@ function MaintenanceRequestCardComponent({
 
       {priorityInfo ? (
         <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 6 }}>
-          <Chip size="small" variant="subtle" color={priorityInfo.tone} testID={id('priority')}>
-            {priorityLabel ?? priorityInfo.label}
-          </Chip>
+          {/* A `Badge`, like every other status in the housing families: it is
+              read, not pressed. */}
+          <Badge
+            size="label-small"
+            variant="subtle"
+            color={priorityInfo.tone}
+            content={priorityLabel ?? priorityInfo.label}
+            testID={id('priority')}
+          />
         </View>
       ) : null}
 

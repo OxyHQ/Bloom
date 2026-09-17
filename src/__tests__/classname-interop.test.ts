@@ -58,6 +58,8 @@ const CAST_EXEMPTIONS = [
   // by react-native-css into `style`, so no class ever reaches the DOM for a
   // `:focus-visible` rule to match.
   'chip/Chip.tsx',
+  // The same, for the hook the pill row's hidden scrollbar rule hangs off.
+  'chip/ChipRow.tsx',
   // The same, for the checkbox's focus ring.
   'checkbox/Checkbox.tsx',
   // The same, for the button group items' inset focus ring.

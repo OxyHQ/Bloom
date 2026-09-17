@@ -94,7 +94,7 @@ The estimate this month (`title-1-medium`) with a delta chip, a 112px monthly ba
 
 `layout="grid"` (square cover on top) or `"row"` (64px cover leading, badge and menu trailing). The card is radius 16 with a 12 cover radius; hovering the pressable part deepens the surface (colour only). `onPress` makes the cover and text ONE pressable named by the title; the "⋯" `DropdownMenu` button (named "More actions for &lt;title&gt;") is its sibling, never nested. A rejected or taken-down release with a `statusReason` shows it in an error-tinted note.
 
-`ReleaseStatusBadge` is a `Chip` whose recipe is `RELEASE_STATUS_TONES`:
+`ReleaseStatusBadge` is a `Badge` on a label rung (`small` → `label-small`, 20 tall; `medium` → `label-medium`, 24) whose recipe is `RELEASE_STATUS_TONES`. A `Badge` rather than a `Chip`, which is what it used to be: a status that is READ is a `Badge` across the whole fleet, and a `Chip` with no `onPress` is a pill that merely looks like a control.
 
 | status | label | tone |
 |---|---|---|

@@ -195,11 +195,23 @@ describe('FilterChips', () => {
     expect(onValueChange).toHaveBeenLastCalledWith(undefined);
   });
 
-  it('paints the selected chip in the solid accent and the rest subtle', () => {
+  it('tints the selected chip with the brand and leaves the rest neutral', () => {
     mount(<FilterChips options={OPTIONS} value="all" onValueChange={jest.fn()} testID="fc" />);
     const selected = getComputedStyle(byTestId('fc-all')).backgroundColor;
     const rest = getComputedStyle(byTestId('fc-music')).backgroundColor;
     expect(selected).not.toBe('');
     expect(selected).not.toBe(rest);
+  });
+
+  it('is the canonical 32-tall pill, with the side padding landing on WEB', () => {
+    // The row used to ask for 12 with `paddingLeft`/`paddingRight` over a base
+    // that spells it `paddingHorizontal`; react-native-web ranks
+    // `padding-inline` above `padding-left` whatever the order, so the override
+    // dropped here and landed on native. The rung carries it for both now.
+    mount(<FilterChips options={OPTIONS} value="all" onValueChange={jest.fn()} testID="fc" />);
+    const style = getComputedStyle(byTestId('fc-music'));
+    expect(style.height).toBe('32px');
+    expect(style.paddingLeft).toBe('12px');
+    expect(style.paddingRight).toBe('12px');
   });
 });

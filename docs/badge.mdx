@@ -25,17 +25,23 @@ import { Badge } from '@oxy.so/bloom/badge';
 
 Geometry is a standard counter badge; colours stay on Bloom's accent recipe.
 
-| size | height | text | padding-x |
-| ---- | ------ | ---- | --------- |
-| `small` | 17 | `caption-2-semibold` (11/15), tracking 0 | 4 |
-| `medium` | 18 | `caption-1-semibold` (12/16), tracking 0 | 4 |
-| `large` | 24 | `body-semibold` (14/20) | 6 |
+There are five rungs in TWO families, and the difference between them is not just height.
 
-Every label is Bloom's typography `Text` on a `TYPE_SCALE` step, so it is set in Inter on both platforms.
+| size | height | text | padding-x | icon |
+| ---- | ------ | ---- | --------- | ---- |
+| `small` | 17 | `caption-2-semibold` (11/15), tracking 0 | 4 | 10 |
+| `medium` | 18 | `caption-1-semibold` (12/16), tracking 0 | 4 | 11 |
+| `large` | 24 | `body-semibold` (14/20) | 6 | 14 |
+| `label-small` | 20 | `caption-1-semibold` (12/16) | 8 | 12 |
+| `label-medium` | 24 | `body-2-semibold` (13/18) | 10 | 14 |
 
-Every badge is a full pill with a `minWidth` equal to
-its height, so a single digit is a circle rather than a pill narrower than it is
-tall.
+`small` / `medium` / `large` are the COUNTER rungs, sized to a digit: `minWidth` equals the height so "3" is a circle rather than a pill narrower than it is tall, and the pill never shrinks — it is a fixed token in the row it sits in.
+
+`label-small` and `label-medium` are sized to a WORD: the side padding a word needs, a leading icon slot, and they SHRINK and truncate, because a two-word status in a narrow card has to yield before the card's title does. They are the rung the housing badges live on — `OfferingBadge` and the listing card's status pill are presets over them.
+
+Every label is Bloom's typography `Text` on a `TYPE_SCALE` step, so it is set in Inter on both platforms. Every badge is a full pill.
+
+**Override the side padding with `paddingLeft`/`paddingRight`, the longhands the component uses** — react-native-web ranks `padding-inline` above `padding-left` whatever the array order, so mixing the spellings drops the override on web while it lands on native.
 
 A **standalone** `dot` is a status dot: a solid centre on a tinted halo —
 12 / 6 at `medium` (8 / 4 `small`, 16 / 8 `large`). The halo is the tone's
@@ -49,7 +55,8 @@ marker: a halo over the child's corner reads as a second ring on the icon.
 | ----------- | ----------------------------------------------------------- |
 | `content`   | the label; absent, the badge draws nothing                   |
 | `color`     | the semantic tone                                            |
-| `variant`   | how loudly it is painted — `solid` · `subtle` · `outlined`   |
+| `variant`   | how loudly it is painted — `solid` · `subtle` · `outlined` · `onMedia` |
+| `icon`      | a leading glyph, drawn at the rung's size in the LABEL's colour |
 | `dot`       | drops the label entirely for a presence marker               |
 | `max`       | caps a number and appends a plus                             |
 | `invisible` | hides the badge **without unmounting the child**             |
@@ -62,6 +69,37 @@ by appending alpha to a token would not be. Concretely: an accent token
 resolves to `rgb(...)`, so hand-appending a hex alpha suffix parses back
 OPAQUE (contrast 1.00, a label on its own colour) rather than translucent —
 `resolveAccentColors` is what makes the pairing legible instead of that.
+
+## `icon`
+
+A leading glyph, given as a component (`RiKey2Line`), drawn at the rung's icon size in the LABEL's own colour and hidden from assistive technology — the badge announces its text, never "image, key" beside it. Its testID is `<testID>-icon`. An icon tucks the leading padding in by 2, optically.
+
+```tsx
+<Badge size="label-medium" variant="subtle" color="info" icon={RiKey2Line} content="For rent" />
+```
+
+## `onMedia`
+
+A fourth fill: a `neutral-50` pill with a `neutral-900` label and `shadow-s`, for over a photograph. It IGNORES `color`, and it is the same in both modes — because the photograph under it does not change with them. A badge that followed the mode would go dark-on-dark over half the images in a library.
+
+```tsx
+<Badge variant="onMedia" size="label-medium" icon={RiKey2Line} content="For rent" />
+```
+
+## Status labels are a `Badge`, not a `Chip`
+
+One pattern across the fleet. A status that is READ — a lease payment, an eviction stage, a trip, a release, a maintenance priority — is a `Badge`, driven by a `Record<Status, { tone, fill, label }>` in the family's own `constants.ts` (or `shared.ts`), wrapped in a named preset when more than one card draws it:
+
+```tsx
+export const TRIP_STATUS: Record<TripStatus, { tone: AccentTone; label: string }> = {
+  confirmed: { tone: 'success', label: 'Confirmed' },
+  cancelled: { tone: 'error', label: 'Cancelled' },
+};
+
+<Badge content={label ?? TRIP_STATUS[status].label} color={TRIP_STATUS[status].tone} variant="subtle" />
+```
+
+A [`Chip`](/docs/bloom/main/chip) is for a pill the user PRESSES — a filter, a toggle, a removable tag. A `Chip` with no `onPress` is a pill that merely looks like a control, and `tenancy`, `eviction`, `booking`, `creator-studio` and `listing-card` had drifted into three different answers to one question.
 
 ## Three props that each prevent a specific bug
 

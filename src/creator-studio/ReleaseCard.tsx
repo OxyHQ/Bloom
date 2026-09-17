@@ -2,6 +2,7 @@ import React, { memo, useMemo } from 'react';
 import { Image, Pressable, StyleSheet, View } from 'react-native';
 
 import { mixColor, resolveButtonRamps } from '../button/shared';
+import { Badge } from '../badge';
 import { GlyphButton } from '../button';
 import { Chip } from '../chip';
 import {
@@ -35,16 +36,27 @@ import {
 import type { ReleaseCardLabels, ReleaseCardProps, ReleaseStatusBadgeProps } from './types';
 
 /**
- * `ReleaseStatusBadge`: a release's distribution status as a `Chip` — the
- * tone per status is `RELEASE_STATUS_TONES` (draft default, in review warning,
- * scheduled info, live success, rejected error, taken down error outlined).
+ * `ReleaseStatusBadge`: a release's distribution status as a `Badge` on a label
+ * rung — the tone per status is `RELEASE_STATUS_TONES` (draft default, in
+ * review warning, scheduled info, live success, rejected error, taken down
+ * error outlined).
+ *
+ * `Badge`, not `Chip`. It is the shape the whole fleet uses for a status that
+ * is read rather than pressed — `tenancy`, `eviction` and `booking` all draw
+ * theirs as a `Badge` over a `status -> { tone, fill }` map — and a `Chip` with
+ * no `onPress` is a pill that merely looks like a control. This was a `Chip`
+ * `small`/`medium`, both 24 tall; the label rungs are 20 and 24.
  */
 export function ReleaseStatusBadge({ status, label, size = 'small', testID }: ReleaseStatusBadgeProps) {
   const { tone, fill } = RELEASE_STATUS_TONES[status];
   return (
-    <Chip size={size} color={tone} variant={fill} testID={testID}>
-      {label ?? RELEASE_STATUS_LABELS[status]}
-    </Chip>
+    <Badge
+      size={size === 'small' ? 'label-small' : 'label-medium'}
+      color={tone}
+      variant={fill}
+      content={label ?? RELEASE_STATUS_LABELS[status]}
+      testID={testID}
+    />
   );
 }
 

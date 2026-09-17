@@ -4,7 +4,7 @@ import type { Meta, StoryObj } from '@storybook/react-vite';
 
 import { Badge } from './index';
 import { IconCircle } from '../icon-circle';
-import { RiNotificationLine as BellIcon } from '../icons/remix';
+import { RiNotificationLine as BellIcon, RiKey2Line as KeyIcon } from '../icons/remix';
 import type { AccentFill, AccentTone } from '../theme/accent-colors';
 
 const meta: Meta<typeof Badge> = {
@@ -122,13 +122,66 @@ export const CountsAndDots: Story = {
   ),
 };
 
-/** The three sizes, inline. */
+/**
+ * Five rungs in two families. `small`/`medium`/`large` are sized to a DIGIT:
+ * `minWidth` equals the height so "3" stays a circle, and the pill never
+ * shrinks. `label-small` (20) and `label-medium` (24) are sized to a WORD —
+ * the side padding a word needs, a leading icon slot, and they SHRINK, because
+ * a two-word status in a narrow card has to yield before the card's title does.
+ */
 export const Sizes: Story = {
   render: () => (
-    <View style={{ flexDirection: 'row', gap: 12, alignItems: 'center' }}>
-      <Badge size="small" color="primary" content="small" />
-      <Badge size="medium" color="primary" content="medium" />
-      <Badge size="large" color="primary" content="large" />
+    <View style={{ gap: 12 }}>
+      <View style={{ flexDirection: 'row', gap: 12, alignItems: 'center' }}>
+        <Badge size="small" color="primary" content="small" />
+        <Badge size="medium" color="primary" content="medium" />
+        <Badge size="large" color="primary" content="large" />
+      </View>
+      <View style={{ flexDirection: 'row', gap: 12, alignItems: 'center' }}>
+        <Badge size="label-small" variant="subtle" color="info" icon={KeyIcon} content="label-small" />
+        <Badge size="label-medium" variant="subtle" color="info" icon={KeyIcon} content="label-medium" />
+      </View>
+    </View>
+  ),
+};
+
+/**
+ * `icon` is a leading glyph drawn at the rung's size in the LABEL's own colour
+ * and hidden from assistive technology — the badge announces its text, never
+ * "image, key" beside it. It tucks the leading padding in by 2, optically.
+ */
+export const WithIcon: Story = {
+  render: () => (
+    <View style={{ flexDirection: 'row', gap: 8, alignItems: 'center', flexWrap: 'wrap' }}>
+      {TONES.map((color) => (
+        <Badge key={color} size="label-medium" variant="subtle" color={color} icon={KeyIcon} content={color} />
+      ))}
+    </View>
+  ),
+};
+
+/**
+ * `onMedia` is the fourth fill: a light pill with a shadow, for over a
+ * photograph. It ignores `color` and is the same in both modes, because the
+ * photograph under it does not change with them — a badge that followed the
+ * mode would go dark-on-dark over half the images in a library.
+ */
+export const OnMedia: Story = {
+  render: () => (
+    <View
+      style={{
+        padding: 16,
+        gap: 8,
+        borderRadius: 16,
+        alignItems: 'flex-start',
+        backgroundColor: '#3f4b5b',
+        backgroundImage:
+          'linear-gradient(135deg, #2b3440 0%, #5c6b7a 50%, #8a99a8 100%)',
+      } as object}
+    >
+      <Badge variant="onMedia" size="label-medium" icon={KeyIcon} content="For rent" />
+      <Badge variant="onMedia" size="label-small" content="Reserved" />
+      <Badge variant="onMedia" size="label-medium" color="error" content="Tone is ignored" />
     </View>
   ),
 };
