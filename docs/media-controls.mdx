@@ -54,6 +54,15 @@ Every control is controlled: it draws the props it is given and reports what the
 | `accessibilityLabel` | replaces the composed name                                                                    |
 | `disabled`, `style`, `testID` |                                                                                      |
 
+**The pause glyph is Bloom's own.** Measured in the shared 24 viewBox, the play
+triangle covers 95.5 units² and a stock two-bar pause (2 × 14, twice) covers 56 —
+0.59 ×. The button therefore changed WEIGHT as it toggled, at every size, which
+is the one thing a play/pause pair must not do, since the two are the same
+control. `PauseGlyph` widens the bars to 3 and gives them the triangle's own
+vertical extent (y 4 → 20): 96 units², 1.005 ×, gap unchanged at 6. The sizes
+were always right; only the ink was not. Gate: `PauseGlyph.test.ts`, which
+measures both paths rather than pinning a remembered number.
+
 **Why no `aria-pressed`.** A toggle button keeps ONE name and flips a pressed state. This button instead names what pressing does next ("Pause Night Drive"), which is what a listener needs to hear. Doing both would announce "Pause, pressed" — two answers to one question. So it is a plain `button` whose name changes.
 
 ## `LikeButton`

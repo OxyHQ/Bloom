@@ -1,7 +1,6 @@
 import React, { memo, useEffect, useMemo, useState } from 'react';
 import { Pressable, View } from 'react-native';
 
-import { RiPauseFill } from '../icons/remix/RiPauseFill';
 import { RiPlayFill } from '../icons/remix/RiPlayFill';
 import { borderRadius } from '../styles/tokens';
 import { adoptStyleSheet } from '../styles/adopt-style-sheet';
@@ -14,6 +13,7 @@ import {
   MEDIA_CONTROLS_STYLE_ID,
   resolveMediaControlsPaint,
 } from './shared';
+import { PauseGlyph } from './PauseGlyph';
 import { SpinnerRing } from './SpinnerRing';
 import type { PlayButtonProps, PlayButtonSize } from './types';
 
@@ -34,6 +34,11 @@ import type { PlayButtonProps, PlayButtonSize } from './types';
  * Colour change only — no scale. `RiPlayFill`'s triangle already sits right of
  * its box's centre (the path spans x 8..19.6 of 24), which puts its visual
  * weight on the circle's centre, so no further nudge is applied.
+ *
+ * The pause glyph is Bloom's own (`PauseGlyph`), not the stock media one: the
+ * stock two-bar pause carries 0.59 × the triangle's ink, so the button changed
+ * WEIGHT as it toggled at every size. The measurement and the widened path are
+ * in `PauseGlyph.tsx`.
  *
  * Accessibility: a plain `button` whose NAME is the action ("Play Night Drive"
  * / "Pause Night Drive"). It deliberately carries no `aria-pressed`: a toggle
@@ -90,7 +95,7 @@ function PlayButtonComponent({
     glyphColor = active ? paint.accent : paint.text;
   }
 
-  const Glyph = playing ? RiPauseFill : RiPlayFill;
+  const Glyph = playing ? PauseGlyph : RiPlayFill;
 
   const rootStyle: WebCssStyle = {
     width: box,
