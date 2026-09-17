@@ -386,10 +386,10 @@ describe('FavoriteButton', () => {
 describe('ListingCardGrid', () => {
   it.each([
     [375, 1, 375],
-    [800, 2, 388],
-    [1100, 3, (1100 - 48) / 3],
-    [1440, 4, 342],
-  ])('at %ipx: %i columns, cells sized from the width with 24/40 gaps', async (width, columns, cell) => {
+    [800, 2, (799 - 24) / 2],
+    [1100, 3, (1099 - 48) / 3],
+    [1440, 4, (1439 - 72) / 4],
+  ])('at %ipx: %i columns, cells sized from the width (a pixel kept back for rounding) with 24/40 gaps', async (width, columns, cell) => {
     layoutWidth = width;
     mount(
       <ListingCardGrid testID="g">
@@ -407,6 +407,21 @@ describe('ListingCardGrid', () => {
     const items = grid.querySelectorAll(':scope > [role="listitem"]');
     expect(items).toHaveLength(5);
     expect(parseFloat(getComputedStyle(items[0] as HTMLElement).width)).toBe(Math.floor(cell * 100) / 100);
+  });
+
+  it('keeps a row whole when the measured width was rounded UP from a fraction', async () => {
+    // A column 591.69px wide (48% of a row) measures 592 on web.
+    layoutWidth = 592;
+    mount(
+      <ListingCardGrid columns={2} testID="g">
+        <span>a</span>
+        <span>b</span>
+      </ListingCardGrid>,
+    );
+    await flushLayout();
+    const items = byTestId('g').querySelectorAll(':scope > [role="listitem"]');
+    const cell = parseFloat(getComputedStyle(items[0] as HTMLElement).width);
+    expect(cell * 2 + 24).toBeLessThanOrEqual(591.5);
   });
 
   it('a fixed column count wins over the width', async () => {

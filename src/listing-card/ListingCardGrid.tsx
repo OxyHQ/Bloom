@@ -17,7 +17,8 @@ import type { ListingCardGridProps } from './types';
  * this measures and wraps instead. Until the first layout it counts from the
  * window, so the first frame is already close.
  *
- * Cells are sized in pixels from the measured width, rounded DOWN to a
+ * Cells are sized in pixels from the measured width less one pixel (the web
+ * measures a fractional width as a whole number), rounded DOWN to a
  * hundredth: a fraction that rounds up can push the last cell of a row onto
  * the next.
  */
@@ -33,7 +34,12 @@ function ListingCardGridComponent({
   const [measured, setMeasured] = useState(0);
   const width = measured > 0 ? measured : window.width;
   const columns = Math.max(1, fixedColumns ?? listingGridColumns(width));
-  const cell = Math.max(0, Math.floor(((width - columnGap * (columns - 1)) / columns) * 100) / 100);
+  // react-native-web reports layout from `offsetWidth`, an INTEGER: a grid
+  // 591.69px wide measures 592, and cells sized from that overflow the row by
+  // a fraction and wrap one per row. Keep a pixel back whenever a row holds
+  // more than one cell (a lone cell cannot wrap).
+  const usable = columns > 1 ? width - 1 : width;
+  const cell = Math.max(0, Math.floor(((usable - columnGap * (columns - 1)) / columns) * 100) / 100);
 
   const items = Children.toArray(children).filter(isValidElement);
 

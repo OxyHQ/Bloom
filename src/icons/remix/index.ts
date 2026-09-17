@@ -258,6 +258,7 @@ export { RiMailCheckLine } from './RiMailCheckLine';
 export { RiMailFill } from './RiMailFill';
 export { RiMailLine } from './RiMailLine';
 export { RiMailOpenLine } from './RiMailOpenLine';
+export { RiMap2Line } from './RiMap2Line';
 export { RiMapPin2Fill } from './RiMapPin2Fill';
 export { RiMapPin2Line } from './RiMapPin2Line';
 export { RiMapPinFill } from './RiMapPinFill';

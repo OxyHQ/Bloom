@@ -234,7 +234,13 @@ const AppShellComponent: React.FC<AppShellProps> = ({
               wide ? null : pageStyle,
             ]}
           >
-            <Scroller mode={mode} style={{ flex: doc ? undefined : 1, flexGrow: 1, minWidth: 0 }} contentStyle={{ padding: 12, paddingTop: small ? 24 : 12 }}>
+            {/*
+              Basis 0 and shrink 1: with only `flexGrow` the column's basis is its
+              content's max-content width (react-native-web defaults `flexShrink`
+              to 0), so one long unwrapped line of text pushed the page past a
+              phone's edge in document mode.
+            */}
+            <Scroller mode={mode} style={{ flex: doc ? undefined : 1, flexGrow: 1, flexShrink: 1, flexBasis: 0, minWidth: 0 }} contentStyle={{ padding: 12, paddingTop: small ? 24 : 12 }}>
               {column}
             </Scroller>
             {asideColumn({ paddingTop: small ? 24 : 12, paddingBottom: 12, paddingRight: 12 })}

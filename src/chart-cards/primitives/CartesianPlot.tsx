@@ -239,6 +239,16 @@ export function CartesianPlot({
               </Text>
             </View>
           ))}
+          {/*
+            Each label slot is LABEL_SLOT wide and centred on its tick, so the
+            last one reaches half a slot past the plot. The labels themselves
+            are placed inside it (`preserveStartEnd`); clip the empty slot, or a
+            card at a phone's edge widens the page into a horizontal scroll.
+          */}
+          <View
+            pointerEvents="none"
+            style={[StyleSheet.absoluteFill, { overflow: 'hidden' }]}
+            testID={testID ? `${testID}-x-labels` : undefined}>
           {categories.map((label, i) => {
             const key = `${i}:${label}`;
             const placed = placedX?.find((t) => t.index === i);
@@ -266,6 +276,7 @@ export function CartesianPlot({
               </View>
             );
           })}
+          </View>
           <View
             role="img"
             accessibilityLabel={accessibilityLabel}
