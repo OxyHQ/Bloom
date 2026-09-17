@@ -1,6 +1,6 @@
 import React from 'react';
 import { Pressable, Text, View } from 'react-native';
-import { render } from '@testing-library/react-native';
+import { fireEvent, render } from '@testing-library/react-native';
 
 import { BloomThemeProvider } from '../theme/BloomThemeProvider';
 import { useTheme } from '../theme/use-theme';
@@ -16,6 +16,7 @@ import {
   TextButton,
 } from '../button';
 import { BUTTON_GEOMETRY, BUTTON_RADIUS, resolveButtonPalette } from '../button/shared';
+import { TYPE_SCALE } from '../typography/scale';
 import { pressHost } from './support/press-host';
 import {
   classNamesOn,
@@ -438,5 +439,118 @@ describe('button details', () => {
     expect(style.width).toBe(box);
     expect(style.height).toBe(box);
     expect(style.borderRadius).toBe(box / 2);
+  });
+});
+
+// ---------------------------------------------------------------------------
+//  `underline`, `linkTone="text"`, `textVariant` — the inline text action.
+//
+//  Four families hand-rolled an underlined `Pressable` because `variant="link"`
+//  underlined only on HOVER and painted the accent. These assert the three props
+//  that closed that gap, on the fork every react-native consumer renders.
+// ---------------------------------------------------------------------------
+describe('Button underline and the reading tone', () => {
+  it('underline="rest" draws the underline with no pointer at all', () => {
+    const { getByText } = renderWithTheme(
+      <Button variant="link" underline="rest">
+        Clear all
+      </Button>,
+    );
+    expect(resolvedStyle(getByText('Clear all').props.style).textDecorationLine).toBe('underline');
+  });
+
+  it('underline="hover" and the link default draw NO underline at rest', () => {
+    const { getByText, rerender } = renderWithTheme(
+      <Button variant="link" underline="hover">
+        Learn more
+      </Button>,
+    );
+    expect(resolvedStyle(getByText('Learn more').props.style).textDecorationLine).toBeUndefined();
+    rerender(
+      <BloomThemeProvider mode="light" colorPreset="teal">
+        <Button variant="link">Learn more</Button>
+      </BloomThemeProvider>,
+    );
+    expect(resolvedStyle(getByText('Learn more').props.style).textDecorationLine).toBeUndefined();
+  });
+
+  it('underline="hover" underlines once the pointer arrives', () => {
+    const { getByTestId, getByText } = renderWithTheme(
+      <Button testID="btn" variant="link" underline="hover">
+        Learn more
+      </Button>,
+    );
+    fireEvent(getByTestId('btn'), 'hoverIn');
+    expect(resolvedStyle(getByText('Learn more').props.style).textDecorationLine).toBe('underline');
+    fireEvent(getByTestId('btn'), 'hoverOut');
+    expect(resolvedStyle(getByText('Learn more').props.style).textDecorationLine).toBeUndefined();
+  });
+
+  it('every other variant underlines nothing unless asked', () => {
+    const { getByText } = renderWithTheme(<Button variant="primary">Save</Button>);
+    expect(resolvedStyle(getByText('Save').props.style).textDecorationLine).toBeUndefined();
+  });
+
+  it('linkTone="text" is the READING colour, and the only tone whose hover changes it', () => {
+    const theme = captureTheme();
+    const palette = resolveButtonPalette('link', theme, 'text');
+    expect(palette.rest.foreground).toBe(theme.colors.text);
+    expect(palette.hover.foreground).toBe(theme.colors.textSecondary);
+    expect(palette.disabled.foreground).toBe(theme.colors.textTertiary);
+    // The three tones that existed before keep a hover colour equal to rest,
+    // which is why no fork ever painted `palette.hover.foreground` until now.
+    for (const tone of ['primary', 'secondary'] as const) {
+      const other = resolveButtonPalette('link', theme, tone);
+      expect(other.hover.foreground).toBe(other.rest.foreground);
+    }
+  });
+
+  it('linkTone="text" takes the secondary colour under a pointer', () => {
+    const theme = captureTheme();
+    const { getByTestId, getByText } = renderWithTheme(
+      <Button testID="btn" variant="link" linkTone="text" underline="rest">
+        Show more
+      </Button>,
+    );
+    expect(resolvedStyle(getByText('Show more').props.style).color).toBe(theme.colors.text);
+    fireEvent(getByTestId('btn'), 'hoverIn');
+    expect(resolvedStyle(getByText('Show more').props.style).color).toBe(
+      theme.colors.textSecondary,
+    );
+  });
+
+  it('textVariant replaces the ramp step the SIZE picked, and nothing else', () => {
+    const { getByTestId, getByText } = renderWithTheme(
+      <Button testID="btn" size="small" textVariant="body-semibold">
+        Back
+      </Button>,
+    );
+    // The label's step is the caller's…
+    const label = resolvedStyle(getByText('Back').props.style);
+    expect(label.fontSize).toBe(TYPE_SCALE['body-semibold'].fontSize);
+    expect(label.fontWeight).toBe(TYPE_SCALE['body-semibold'].fontWeight);
+    expect(label.fontWeight).not.toBe(TYPE_SCALE[BUTTON_GEOMETRY.small.type].fontWeight);
+    // …while the BOX is still the size's.
+    expect(resolvedStyle(getByTestId('btn').props.style).height).toBe(
+      BUTTON_GEOMETRY.small.height,
+    );
+  });
+
+  it('numberOfLines reaches the label', () => {
+    const { getByText } = renderWithTheme(
+      <Button variant="link" numberOfLines={1}>
+        A label far longer than its button
+      </Button>,
+    );
+    expect(getByText('A label far longer than its button').props.numberOfLines).toBe(1);
+  });
+
+  it('accessibilityRole overrides the role, for a link with no href', () => {
+    const { getByTestId } = renderWithTheme(
+      <Button testID="btn" variant="link" accessibilityRole="link">
+        128 reviews
+      </Button>,
+    );
+    expect(getByTestId('btn').props.accessibilityRole).toBe('link');
   });
 });

@@ -193,3 +193,61 @@ export const LinkButtons: Story = {
     </View>
   ),
 };
+
+/**
+ * `underline` and the `text` link tone — the inline text action four families
+ * hand-rolled before these existed. `rest` makes the underline the affordance,
+ * `hover` keeps it as the pointer cue, and `linkTone="text"` keeps the label at
+ * the READING colour so it sits inside a sentence.
+ */
+export const TextLinks: Story = {
+  render: () => (
+    <View style={{ gap: 16, alignItems: 'flex-start' }}>
+      {(['text', 'primary', 'secondary'] as const).map((tone) => (
+        <View key={tone} style={{ flexDirection: 'row', gap: 20, alignItems: 'center' }}>
+          <BloomText variant="caption-1-semibold" style={{ width: 72 }}>
+            {tone}
+          </BloomText>
+          <Button variant="link" linkTone={tone} underline="rest">
+            Underlined at rest
+          </Button>
+          <Button variant="link" linkTone={tone} underline="hover">
+            Underlined on hover
+          </Button>
+          <Button variant="link" linkTone={tone} underline="none">
+            Never underlined
+          </Button>
+          <Button variant="link" linkTone={tone} underline="rest" disabled>
+            Disabled
+          </Button>
+        </View>
+      ))}
+      <View style={{ flexDirection: 'row', gap: 20, alignItems: 'center' }}>
+        <BloomText variant="caption-1-semibold" style={{ width: 72 }}>
+          ramp
+        </BloomText>
+        {(['caption-1-regular', 'body-2-medium', 'body-medium', 'body-semibold', 'title-3-semibold'] as const).map(
+          (step) => (
+            <Button key={step} variant="link" linkTone="text" underline="rest" textVariant={step}>
+              {step}
+            </Button>
+          ),
+        )}
+      </View>
+    </View>
+  ),
+};
+
+/** `numberOfLines={1}` truncates rather than clipping a label with no warning. */
+export const TruncatedLabel: Story = {
+  render: () => (
+    <View style={{ gap: 12, width: 180 }}>
+      <Button variant="secondary" numberOfLines={1} style={{ width: 180 }}>
+        A label far longer than its button
+      </Button>
+      <Button variant="link" linkTone="text" underline="rest" numberOfLines={1} style={{ width: 180 }}>
+        A link far longer than its box
+      </Button>
+    </View>
+  ),
+};

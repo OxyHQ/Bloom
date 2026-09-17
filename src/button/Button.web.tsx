@@ -17,7 +17,6 @@ import {
   useInteractiveWebCss,
 } from '../styles/interactive-web-css';
 import {
-  BUTTON_GEOMETRY,
   BUTTON_RADIUS,
   BUTTON_SHADOW,
   BUTTON_SIZE_ALIAS,
@@ -28,7 +27,9 @@ import {
   iconOnlyWidth,
   isIconComponent,
   paintToCssImage,
+  resolveButtonGeometry,
   resolveButtonPalette,
+  resolveButtonUnderline,
   type ButtonResolvedSize,
 } from './shared';
 import type { ButtonIconComponent, ButtonProps, ButtonVariant, LinkButtonProps } from './types';
@@ -65,7 +66,12 @@ const STYLE_ID = 'bloom-button-web-css';
 const T = `${BUTTON_TRANSITION_MS}ms`;
 const DISABLED = '.bloom-btn:disabled:not([aria-busy="true"]),\n.bloom-btn[aria-disabled="true"]:not([aria-busy="true"])';
 
-const BLOOM_BUTTON_CSS = interactiveWebCss({
+/**
+ * The adopted stylesheet. Exported so a suite can assert the RULES: jsdom
+ * applies none of them, so a modifier class alone proves nothing about whether
+ * an underline is drawn.
+ */
+export const BLOOM_BUTTON_CSS = interactiveWebCss({
   selector: '.bloom-btn',
   varPrefix: 'bloom-btn',
   base: `
@@ -90,6 +96,7 @@ const BLOOM_BUTTON_CSS = interactiveWebCss({
     declarations: `
       background-color: var(--bloom-btn-bg-hover);
       border-color: var(--bloom-btn-border-hover);
+      color: var(--bloom-btn-fg-hover, var(--bloom-btn-fg));
     `,
   },
   pressDeclarations: `
@@ -136,10 +143,14 @@ const BLOOM_BUTTON_CSS = interactiveWebCss({
 .bloom-btn--gradient[aria-disabled="true"]::before {
   display: none;
 }
-.bloom-btn--link {
+.bloom-btn--underline-rest,
+.bloom-btn--underline-hover {
   text-underline-offset: ${LINK_BUTTON_UNDERLINE_OFFSET}px;
 }
-.bloom-btn--link${NOT_DISABLED}:hover {
+.bloom-btn--underline-rest {
+  text-decoration: underline;
+}
+.bloom-btn--underline-hover${NOT_DISABLED}:hover {
   text-decoration: underline;
 }
 @media (prefers-reduced-motion: reduce) {
@@ -169,6 +180,9 @@ const ButtonWebComponent: React.FC<ButtonProps> = ({
   trailingIcon: TrailingIcon,
   iconOnly = false,
   linkTone = 'primary',
+  underline,
+  textVariant,
+  numberOfLines,
   href,
   target,
   rel,
@@ -179,6 +193,7 @@ const ButtonWebComponent: React.FC<ButtonProps> = ({
   'aria-expanded': ariaExpanded,
   'aria-haspopup': ariaHasPopup,
   accessibilityHint,
+  accessibilityRole,
   testID,
   className,
   type = 'button',
@@ -201,7 +216,7 @@ const ButtonWebComponent: React.FC<ButtonProps> = ({
   const resolvedVariant: ButtonVariant =
     sizeProp === 'icon' && variant === 'primary' ? 'icon' : variant;
   const size: ButtonResolvedSize = BUTTON_SIZE_ALIAS[sizeProp];
-  const geometry = BUTTON_GEOMETRY[size];
+  const geometry = resolveButtonGeometry(size, textVariant);
   const isIconVariant = resolvedVariant === 'icon';
   const isSquare = iconOnly || isIconVariant;
   const isLink = resolvedVariant === 'link';
@@ -214,6 +229,7 @@ const ButtonWebComponent: React.FC<ButtonProps> = ({
     [resolvedVariant, theme, linkTone],
   );
   const isGradient = palette.rest.gradient !== null;
+  const underlineMode = resolveButtonUnderline(resolvedVariant, underline);
 
   const containerStyle = useMemo((): CSSProperties => {
     const shadow = palette.shadow ? BUTTON_SHADOW[theme.isDark ? 'dark' : 'light'] : 'none';
@@ -235,6 +251,7 @@ const ButtonWebComponent: React.FC<ButtonProps> = ({
       ['--bloom-btn-shadow' as string]: shadow,
       ['--bloom-btn-border-width' as string]: `${palette.borderWidth}px`,
       ['--bloom-btn-fg' as string]: palette.rest.foreground,
+      ['--bloom-btn-fg-hover' as string]: palette.hover.foreground,
       ['--bloom-btn-fg-active' as string]: palette.active.foreground,
       ['--bloom-btn-fg-disabled' as string]: palette.disabled.foreground,
       ['--bloom-btn-disabled-opacity' as string]: palette.disabledOpacity ?? 1,
@@ -300,6 +317,7 @@ const ButtonWebComponent: React.FC<ButtonProps> = ({
   const ariaLabel = ariaLabelProp ?? accessibilityLabel;
   const composedClassName = ['bloom-btn']
     .concat(isLink ? ['bloom-btn--link'] : [])
+    .concat(underlineMode === 'none' ? [] : [`bloom-btn--underline-${underlineMode}`])
     .concat(isGradient ? ['bloom-btn--gradient'] : [])
     .concat(className ? [className] : [])
     .join(' ');
@@ -346,6 +364,11 @@ const ButtonWebComponent: React.FC<ButtonProps> = ({
               alignItems: 'center',
               paddingLeft: labelPadding,
               paddingRight: labelPadding,
+              // `.bloom-btn` already clips; this is what makes the clip READ as
+              // a truncation. Only one line is expressible here.
+              ...(numberOfLines === 1
+                ? { display: 'inline-block', overflow: 'hidden', textOverflow: 'ellipsis' }
+                : null),
               ...resolvedTextStyle,
             }}
           >
@@ -463,6 +486,7 @@ const ButtonWebComponent: React.FC<ButtonProps> = ({
       className={composedClassName}
       style={{ ...containerStyle, ...resolvedStyle }}
       onClick={handleClick}
+      role={accessibilityRole}
       disabled={disabled && !loading}
       aria-disabled={isInteractionBlocked || undefined}
       aria-busy={loading || undefined}

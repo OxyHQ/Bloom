@@ -15,7 +15,8 @@ import {
   LinkButton,
   DestructiveButton,
 } from '../button/Button.web';
-import { BUTTON_RADIUS } from '../button/shared';
+import { BUTTON_RADIUS, LINK_BUTTON_UNDERLINE_OFFSET } from '../button/shared';
+import { BLOOM_BUTTON_CSS } from '../button/Button.web';
 
 // react-dom 19 logs a guard unless this flag is set in test environments.
 (globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
@@ -222,6 +223,120 @@ describe('Button.web', () => {
     it('DestructiveButton renders a button', () => {
       const c = mount(<DestructiveButton>Delete</DestructiveButton>);
       expect(getByRole(c, 'button', { name: 'Delete' }).tagName).toBe('BUTTON');
+    });
+  });
+
+  // -------------------------------------------------------------------------
+  //  `underline`, `linkTone="text"` and `textVariant` — the inline text action
+  //  four families hand-rolled. The web fork expresses the underline as a
+  //  MODIFIER CLASS, because a rest underline and a hover one are two different
+  //  rules and only a stylesheet can hold the second.
+  // -------------------------------------------------------------------------
+  describe('underline and the reading tone', () => {
+    it('link underlines on hover by default, and says so in its class', () => {
+      const c = mount(<LinkButton>Link</LinkButton>);
+      const el = getByRole(c, 'button', { name: 'Link' });
+      expect(el).toHaveClass('bloom-btn--underline-hover');
+      expect(el).not.toHaveClass('bloom-btn--underline-rest');
+    });
+
+    it('underline="rest" swaps the modifier', () => {
+      const c = mount(
+        <Button variant="link" underline="rest">
+          Clear all
+        </Button>,
+      );
+      const el = getByRole(c, 'button', { name: 'Clear all' });
+      expect(el).toHaveClass('bloom-btn--underline-rest');
+      expect(el).not.toHaveClass('bloom-btn--underline-hover');
+    });
+
+    it('underline="none" removes it from a link', () => {
+      const c = mount(
+        <Button variant="link" underline="none">
+          Plain
+        </Button>,
+      );
+      const el = getByRole(c, 'button', { name: 'Plain' });
+      expect(el.className).not.toMatch(/bloom-btn--underline/);
+    });
+
+    it('a non-link variant carries no underline modifier unless asked', () => {
+      let c = mount(<Button>Save</Button>);
+      expect(getByRole(c, 'button', { name: 'Save' }).className).not.toMatch(
+        /bloom-btn--underline/,
+      );
+      c = mount(
+        <Button underline="rest" variant="secondary">
+          Cancel
+        </Button>,
+      );
+      expect(getByRole(c, 'button', { name: 'Cancel' })).toHaveClass('bloom-btn--underline-rest');
+    });
+
+    it('the stylesheet has a rest rule and a hover rule, and they are different', () => {
+      // The classes are inert without the rules; assert the sheet the fork
+      // adopts, since jsdom applies neither.
+      expect(BLOOM_BUTTON_CSS).toContain('.bloom-btn--underline-rest {');
+      expect(BLOOM_BUTTON_CSS).toMatch(/\.bloom-btn--underline-hover[^{]*:hover \{/);
+      expect(BLOOM_BUTTON_CSS).toContain(`text-underline-offset: ${LINK_BUTTON_UNDERLINE_OFFSET}px`);
+    });
+
+    it('linkTone="text" paints the reading colour and hands the hover one to CSS', () => {
+      const c = mount(
+        <Button variant="link" linkTone="text" underline="rest">
+          Show more
+        </Button>,
+      );
+      const el = getByRole(c, 'button', { name: 'Show more' });
+      // A hover FOREGROUND is the thing this tone needs and no variant needed
+      // before, so it arrives as its own custom property; the hover rule reads
+      // it, falling back to the rest colour for every other variant.
+      const rest = el.style.getPropertyValue('--bloom-btn-fg');
+      const hover = el.style.getPropertyValue('--bloom-btn-fg-hover');
+      expect(rest).not.toBe('');
+      expect(hover).not.toBe('');
+      expect(hover).not.toBe(rest);
+      expect(BLOOM_BUTTON_CSS).toContain('color: var(--bloom-btn-fg-hover, var(--bloom-btn-fg));');
+    });
+
+    it('every OTHER variant keeps its rest colour on hover', () => {
+      const c = mount(<Button variant="primary">Save</Button>);
+      const el = getByRole(c, 'button', { name: 'Save' });
+      expect(el.style.getPropertyValue('--bloom-btn-fg-hover')).toBe(
+        el.style.getPropertyValue('--bloom-btn-fg'),
+      );
+    });
+
+    it('textVariant replaces the ramp step, keeping the size`s box', () => {
+      const c = mount(
+        <Button size="small" textVariant="caption-1-semibold">
+          Back
+        </Button>,
+      );
+      const el = getByRole(c, 'button', { name: 'Back' });
+      expect(el.style.fontSize).toBe('12px');
+      expect(el.style.fontWeight).toBe('600');
+      // The BOX is the size's, not the ramp step's.
+      expect(el.style.height).toBe('32px');
+    });
+
+    it('numberOfLines={1} truncates instead of clipping silently', () => {
+      const c = mount(<Button numberOfLines={1}>A label far longer than its button</Button>);
+      const label = getByText(c, 'A label far longer than its button');
+      expect(label.style.textOverflow).toBe('ellipsis');
+      expect(label.style.overflow).toBe('hidden');
+    });
+
+    it('accessibilityRole overrides the role, for a link with no href', () => {
+      const c = mount(
+        <Button variant="link" accessibilityRole="link">
+          128 reviews
+        </Button>,
+      );
+      const el = getByRole(c, 'link', { name: '128 reviews' });
+      expect(el.tagName).toBe('BUTTON');
+      expect(el).not.toHaveAttribute('href');
     });
   });
 
