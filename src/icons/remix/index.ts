@@ -47,6 +47,7 @@ export { RiAttachmentLine } from './RiAttachmentLine';
 export { RiBankCard2Line } from './RiBankCard2Line';
 export { RiBankCardLine } from './RiBankCardLine';
 export { RiBankLine } from './RiBankLine';
+export { RiBarChartHorizontalLine } from './RiBarChartHorizontalLine';
 export { RiBearSmileLine } from './RiBearSmileLine';
 export { RiBikeLine } from './RiBikeLine';
 export { RiBlueskyFill } from './RiBlueskyFill';

@@ -1,0 +1,233 @@
+---
+title: Chat Composer
+description: The message bar of a person-to-person chat — attach, autosizing field, emoji, the mic that becomes send — with its banners, suggestions, voice recorder and the emoji, reaction and message menus.
+order: 64
+---
+
+# Chat Composer
+
+```tsx
+import {
+  ChatComposer,
+  ComposerBanner,
+} from '@oxy.so/bloom/chat-composer';
+
+<ChatComposer
+  value={draft}
+  onValueChange={setDraft}
+  onSend={send}
+  banner={replyTo ? <ComposerBanner kind="reply" title={replyTo.author} preview={replyTo.text} onClose={clearReply} /> : null}
+  attachments={pending}
+  onRemoveAttachment={remove}
+  onAttachPress={openAttachMenu}
+  onEmojiPress={openEmojiPicker}
+  onMicPress={startRecording}
+/>
+```
+
+A radius-24 pill: an attach button, an autosizing field that grows one 20px line at a time up to `maxLines` and then scrolls, an emoji button, and a right control that cross-fades between a mic (nothing to send) and an accent send disc (there is). Everything above the bar — reply and edit previews, the attachment strip, a slow-mode line, the suggestion list — is a separate part that composes into it.
+
+## Why this is not `composer-panel`
+
+`composer-panel` is Bloom's AI-prompt composer and stays that. It is two rows tall and its second row is a control strip: a permission mode, a model picker, an effort slider. Its state is about *how the model will answer*.
+
+This one is one row, and its state lives **above** the bar — who you are replying to, which message you are editing, what is uploading, whether the channel is in slow mode. Its right control swaps between two different actions rather than staying a send button, and its keyboard has to choose between Enter-sends and Enter-newlines because a chat message is usually one line and a prompt usually is not.
+
+What genuinely transfers is reused rather than retyped: the 56px attachment tile and the rounded-rect progress path come from `composer-panel/shared` (`ringPath`), and the 36px round control, the pill geometry and the `bg-button-primary` send gradient are the same recipe. What did **not** transfer is the two-row card, the model/permission/effort surface and the status tab.
+
+## Exports
+
+| Export | What it is |
+|---|---|
+| `ChatComposer` | The bar. |
+| `ComposerBanner` | One reply / edit / forward preview, or a one-line `note`. |
+| `ComposerAttachmentStrip` | The pending-attachment tiles. `ChatComposer` draws one from `attachments`; export it for a standalone strip. |
+| `ComposerIconButton` | The 36px round control, for a slot that has to match. |
+| `SuggestionList` | `@mention`, `/command` and `:shortcode` rows — one part, three `kind`s. |
+| `VoiceRecorder` | Recording, locked and preview. |
+| `AttachmentMenu` | The plus menu, as a `Popover`. |
+| `EmojiPicker` | The controlled emoji grid. |
+| `ReactionPicker` | The quick reaction bar. |
+| `MessageContextMenu` | The per-message menu, as a `DropdownMenu`. |
+| `formatRecordingTime`, `filterEmojiGroups`, `applySkinTone`, `emojiChar` | The pure helpers, so an app can format and search the same way. |
+| `ATTACHMENT_MENU_ITEMS`, `REACTION_PICKER_EMOJIS`, `EMOJI_CATEGORY_ICONS`, `SKIN_TONE_MODIFIERS` | Defaults, for extending rather than retyping. |
+
+## Anatomy
+
+| Part | Geometry |
+|---|---|
+| bar | radius 24, 1px border, padding 6, min height 48 |
+| controls | 36 round; the send disc paints the `bg-button-primary` gradient, the rest paint only on hover/press/focus |
+| field | `body-regular`, one 20px line, up to `maxLines` (6) then scrolls |
+| banner | radius 12, accent wash, a 3px accent rail, padding 6 / left 8 / right 4 |
+| note banner | no rail, no wash — a `caption-1-regular` line |
+| attachment tile | 56, radius 12, 1px border; the ring is a 2px accent stroke over that border |
+| suggestion row | min 44, radius 10, in a radius-16 panel |
+| emoji cell | 36; category tabs 32; the grid body is 288 tall by default |
+| reaction cell | 36 (`small` 30), in a full-pill bar |
+
+Full pill radius only on the button-like parts — the controls, the reaction bar, the emoji category tabs. The banner, the tiles and the panels keep normal radii.
+
+## Keyboard (web)
+
+| Key | What happens |
+|---|---|
+| Enter | Sends (`sendOn="enter"`, the default). With `sendOn="mod-enter"` it breaks the line. |
+| Shift + Enter | Breaks the line. |
+| ⌘ / Ctrl + Enter | Sends when `sendOn="mod-enter"`. |
+| Escape | `onEscape` — cancel the reply or the edit. |
+| ↑ on an empty draft | `onEditLast`. |
+| ↑ / ↓ with `suggestions` open | Moves `activeIndex` (wrapping) through `onActiveIndexChange`. |
+| Enter with a highlighted suggestion | Takes it instead of sending. |
+
+An open IME composition is respected: committing a candidate with Enter never sends the half-written word behind it. Native has no key events to read here — the send button is the only way to submit, and `showKeyboardHint` draws nothing off web.
+
+## State
+
+`value` / `defaultValue` / `onValueChange` — the draft, controlled or not; an uncontrolled draft clears after a send and a controlled one is left to its owner. **Everything else is a prop**, deliberately: the app owns a draft per conversation, which banner is up, what is uploading and which suggestion is highlighted. A composer that kept its own would lose all of it on the first navigation, and a highlight it owned would fight the pointer for it.
+
+Times ("12:41", "Yesterday") never appear here. `VoiceRecorder` takes `seconds` and `duration` as numbers and formats them with `formatRecordingTime`; nothing in this family reads the clock.
+
+## Slots
+
+`leading` replaces the attach button, `emojiSlot` the emoji button and `recorder` the entire bar. That is how a menu gets anchored to a control that lives inside the composer:
+
+```tsx
+<ChatComposer
+  leading={
+    <AttachmentMenu onSelect={handleAttachment}>
+      <ComposerIconButton icon={RiAddLine} accessibilityLabel="Attach" iconSize={22} />
+    </AttachmentMenu>
+  }
+  recorder={recording ? <VoiceRecorder state="recording" seconds={elapsed} amplitudes={levels} onCancel={cancel} onLock={lock} /> : undefined}
+/>
+```
+
+`AttachmentMenu` renders its child through `PopoverTrigger asChild`, which merges the open handler, `aria-expanded` and `aria-haspopup` onto it — `ComposerIconButton` accepts and forwards all three, so any other trigger you write must too.
+
+## Banners
+
+```tsx
+<ComposerBanner kind="reply" title="Ana Restrepo" preview="Still on for Thursday?" onClose={clear} />
+<ComposerBanner kind="edit" title="Edit message" preview="See you at six" onClose={clear} />
+<ComposerBanner kind="forward" title="Forward to Harbour crew" preview="1 photo" thumbnail={uri} onClose={clear} />
+<ComposerBanner kind="note" title="Slow mode: 12s" icon={RiTimerLine} />
+```
+
+`reply`, `edit` and `forward` are one row — rail, glyph, optional thumbnail, two lines, close — because they are the same affordance: *the next message is about this, and here is how to get out of it*. `note` drops the rail and the wash, which is the difference between "you are in a mode" and "here is a fact about sending". Stack several by passing a `View` of them as `banner`.
+
+`accentColor` paints the rail and the title; pass a per-sender colour to match the quoted bubble. The banner names itself from both lines, so assistive tech announces it as one thing rather than two.
+
+## Suggestions
+
+```tsx
+<ChatComposer
+  suggestions={people}
+  suggestionKind="mention"
+  activeIndex={active}
+  onActiveIndexChange={setActive}
+  onSelectSuggestion={(suggestion) => insert(suggestion.handle)}
+/>
+```
+
+One `SuggestionList` serves all three kinds; only the leading slot differs (an avatar, a glyph disc, the emoji). Rows are `role="option"` inside a `role="listbox"` with `aria-selected` — the spelling react-native-web reads; `accessibilityState` alone would render a list with no state on web. Each row is named by its label **and** handle, because "Ana" alone is ambiguous in a group.
+
+The list renders **in flow** above the bar rather than in a portal. Anchoring it over the conversation is a layout decision an app makes with its own container (`position: absolute` on a wrapper); a portal here would have to guess the scroll parent.
+
+## Voice recorder
+
+```tsx
+<VoiceRecorder state="recording" seconds={7} amplitudes={levels} onCancel={cancel} onLock={lock} />
+<VoiceRecorder state="locked" seconds={64} amplitudes={levels} onCancel={cancel} onSend={send} />
+<VoiceRecorder state="preview" seconds={position} duration={41} amplitudes={levels} playing={playing} onPlayToggle={toggle} onDelete={discard} onSend={send} />
+```
+
+`amplitudes` is `0`–`1`, oldest first. The bar count is derived from the MEASURED width, so the same recorder reads correctly in a 390px column and a 900px one, and `waveformBars` drops the overflow from the **front** — a growing array scrolls left like a live meter. Silence is floored at `0.06` so a quiet passage is a row of ticks rather than an invisible gap that reads as a dropped recording.
+
+`slideToCancel` defaults to `true` off web: a pointer has no slide gesture, so on web the hint is replaced with an explicit cancel button. The gesture itself belongs to the app — this part draws the affordance and takes `onCancel`.
+
+## Attachment menu
+
+`Popover`, not a surface of its own. Bloom's popover is already an anchored panel on a pointer and a bottom sheet on a phone, so this family ships **no platform fork**: it inherits the dismissal, stacking and focus behaviour those surfaces were gated for. `layout="grid"` (default, `columns` 4) draws 48px tinted discs with captions; `layout="list"` draws rows. `recent` is a slot above the items for a recent-gallery strip.
+
+## Emoji picker
+
+**Bloom ships no emoji dataset**, and that is the design. A full set with names and keywords is tens of kilobytes that every app with its own would still pay for, and emoji names are localised.
+
+```ts
+interface EmojiGroup {
+  key: string;      // 'smileys' | 'people' | … keys the built-in category glyph
+  label: string;
+  emojis: (string | { char: string; name?: string; keywords?: string[] })[];
+  icon?: ChatComposerIcon;
+}
+```
+
+The object form is what the built-in search matches on. A dataset of **bare glyphs still renders** — it just only matches a pasted glyph, which is the honest behaviour rather than a silent one. Pass `filter={false}` to hand searching to the app entirely and supply pre-filtered `groups`.
+
+The grid is a `FlatList` on **both** platforms, over pre-chunked rows rather than single emoji, with exact `getItemLayout` offsets. A few thousand entries is the normal case: at eight columns that is a few hundred rows of which a dozen are mounted, and the exact offsets are what let a category tab jump straight to its header instead of estimating. The active category follows a TAP, not the scroll position — tracking the scroll would need viewability callbacks whose thresholds differ per platform.
+
+`skinTone` (0–5) applies a Fitzpatrick modifier through `applySkinTone`, which only modifies an emoji whose base accepts one and never splices a modifier into a ZWJ sequence — that renders a stray colour square beside the glyph. `tabs` adds top-level siblings to "Emoji" (stickers, GIFs) whose `content` replaces the body.
+
+## Reactions and the message menu
+
+```tsx
+<ReactionPicker selected={mine} onSelectEmoji={react} onMorePress={openPicker} />
+
+<MessageContextMenu items={items} onSelect={run} selectedReaction={mine} onSelectReaction={react} onMoreReactions={openPicker}>
+  <MessageBubble … />
+</MessageContextMenu>
+```
+
+The viewer's own reaction is marked with **both** `aria-pressed` and `accessibilityState` — React Native has no concept of `aria-pressed` and react-native-web reads nothing else, so a toggle that sets one of the two is stateless on one platform.
+
+`MessageContextMenu` is a `DropdownMenu`: an anchored panel on a pointer, a bottom sheet on a phone, with Bloom's own row vocabulary (destructive colour, disabled, shortcuts). `items` is a prop and not a fixed list — which actions exist depends on who sent the message, how old it is and what the channel allows, and a menu that hid its own rows would be deciding policy the app owns. Drive it from a long-press or a right-click with the controlled `open`.
+
+## Accessibility
+
+Every control is named (`Attach`, `Emoji`, `Camera`, `Record a voice message`, `Send`), and `labels` translates all of them — a glyph-only button has no other name.
+
+**The mic and the send disc both stay mounted for the cross-fade**, so the hidden one leaves the accessibility tree: `aria-hidden` for react-native-web and `importantForAccessibility="no-hide-descendants"` for React Native. Setting one of the two hides it on one platform only, and the symptom is a composer that announces "Send" and "Record a voice message" side by side while only one of them does anything.
+
+`pointerEvents` on those layers is a **prop**, never a style entry — react-native-web drops it from a style object silently, and a hidden layer that still takes the press is a send button that fires on an empty draft.
+
+## Motion
+
+State colours 150ms; the mic ↔ send cross-fade 220ms; the recording dot pulses on a 1s clock (CSS keyframes on web, a reanimated loop on native). Everything snaps under reduced motion. No press or scale feedback on any control.
+
+## Props
+
+### `ChatComposer`
+
+| Prop | Type | Default | Description |
+|---|---|---|---|
+| `value` / `defaultValue` / `onValueChange` | `string` | `''` | The draft. |
+| `onSend` | `(value) => void` | — | Send button and the keyboard. |
+| `sendOn` | `'enter' \| 'mod-enter'` | `'enter'` | Which keystroke sends on web. |
+| `maxLines` / `minLines` | `number` | `6` / `1` | The field's growth range. |
+| `placeholder` | `string` | `'Message'` | |
+| `disabled` | `boolean` | `false` | Greys the bar; no callback fires. |
+| `notice` / `noticeIcon` | `ReactNode` / icon | — | Replaces the input row. |
+| `banner` | `ReactNode` | — | Usually one or more `ComposerBanner`. |
+| `attachments` / `onRemoveAttachment` | `ChatComposerAttachment[]` / `(id) => void` | — | |
+| `leading` / `emojiSlot` / `recorder` | `ReactNode` | — | Slots. |
+| `onAttachPress` / `onEmojiPress` / `onCameraPress` | `() => void` | — | Draw the matching default control. |
+| `onMicPress` / `onMicPressIn` / `onMicPressOut` | `() => void` | — | Press-and-hold lives here. |
+| `canSend` | `boolean` | derived | Forces the send disc. |
+| `suggestions` / `suggestionKind` / `activeIndex` / `onActiveIndexChange` / `onSelectSuggestion` | | | The list above the bar. |
+| `onEscape` / `onEditLast` | `() => void` | — | Escape, and ↑ on an empty draft. |
+| `showKeyboardHint` | `boolean` | `false` | The hint line under the bar (web). |
+| `inputRef`, `onFocus`, `onBlur`, `labels`, `style`, `testID`, `accessibilityLabel` | | | |
+
+### The other parts
+
+`ComposerBanner` — `kind`, `title`, `preview`, `thumbnail`, `icon`, `accentColor`, `onClose`, `closeLabel`, `trailing`.
+`ComposerAttachmentStrip` — `attachments`, `onRemove`, `size` (56), `removeLabel`.
+`SuggestionList` — `kind`, `suggestions`, `activeIndex`, `onSelectSuggestion`, `onActiveIndexChange`, `header`, `maxHeight` (232).
+`VoiceRecorder` — `state`, `seconds`, `duration`, `amplitudes`, `playing`, `onPlayToggle`, `onCancel`, `onDelete`, `onSend`, `onLock`, `slideToCancel`, `labels`.
+`AttachmentMenu` — `open`/`defaultOpen`/`onOpenChange`, `items`, `layout`, `columns`, `onSelect`, `recent`, `label`.
+`EmojiPicker` — `groups`, `onSelectEmoji`, `activeGroup`, `query`, `filter`, `frequentlyUsed`, `skinTone`, `columns` (8), `height` (288), `tabs`, `activeTab`, `labels`.
+`ReactionPicker` — `emojis`, `selected`, `onSelectEmoji`, `onMorePress`, `moreLabel`, `size`, `surface`, `emojiLabel`.
+`MessageContextMenu` — `items`, `onSelect`, `reactions`, `selectedReaction`, `onSelectReaction`, `onMoreReactions`, `open`/`defaultOpen`/`onOpenChange`, `label`.
+
+All of them take `style` and `testID`.
