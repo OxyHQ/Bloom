@@ -71,6 +71,9 @@ import { AmenityFilter, CountFilter, ToggleChipGroup } from '../stay-filters';
 import { DestinationSuggestions, StaySearchBar, StaySearchStep } from '../stay-search';
 import { BookingCard } from '../booking';
 import { FavoriteButton } from '../listing-card';
+import { CategoryBar } from '../category-bar';
+import { MapPriceMarker, MapSearchAreaButton } from '../map-marker';
+import { RiFireLine } from '../icons/remix/RiFireLine';
 import {
   DropdownMenuCheckboxItem,
   DropdownMenuItem,
@@ -1001,5 +1004,37 @@ describe('BookingCard', () => {
   it('claims no expanded state when the card cannot know it', () => {
     const c = mount(<BookingCard price="$180" guests="2 guests" testID="bc" />);
     expect(byTestId(c, 'bc-check-in').hasAttribute('aria-expanded')).toBe(false);
+describe('CategoryBar', () => {
+  it('emits a named tablist whose tabs carry aria-selected', () => {
+    const c = mount(
+      <CategoryBar
+        items={[
+          { key: 'a', label: 'Trending', icon: RiFireLine },
+          { key: 'b', label: 'Cabins', icon: RiFireLine },
+        ]}
+        value="b"
+        accessibilityLabel="Categories"
+        testID="cb"
+      />,
+    );
+    expect(byTestId(c, 'cb-track').getAttribute('role')).toBe('tablist');
+    expect(byTestId(c, 'cb-track').getAttribute('aria-label')).toBe('Categories');
+    expect(byTestId(c, 'cb-item-a').getAttribute('aria-selected')).toBe('false');
+    expect(byTestId(c, 'cb-item-b').getAttribute('aria-selected')).toBe('true');
+    expect(byTestId(c, 'cb-item-b').getAttribute('aria-label')).toBe('Cabins');
+  });
+});
+
+describe('Map pieces', () => {
+  it('a price marker emits aria-pressed for the active state', () => {
+    const c = mount(<MapPriceMarker price="€120" state="active" accessibilityLabel="€120 per night, Lisbon" testID="pm" />);
+    expect(byTestId(c, 'pm').getAttribute('aria-pressed')).toBe('true');
+    expect(byTestId(c, 'pm').getAttribute('aria-label')).toBe('€120 per night, Lisbon');
+  });
+
+  it('the search toggle emits aria-checked', () => {
+    const c = mount(<MapSearchAreaButton variant="toggle" checked onCheckedChange={() => {}} testID="sa" />);
+    expect(byTestId(c, 'sa').getAttribute('role')).toBe('checkbox');
+    expect(byTestId(c, 'sa').getAttribute('aria-checked')).toBe('true');
   });
 });

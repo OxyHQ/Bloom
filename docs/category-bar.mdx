@@ -1,0 +1,83 @@
+---
+title: Category Bar
+description: A horizontal, scrollable strip of icon-over-label categories with a fixed trailing slot.
+order: 62
+---
+
+# Category Bar
+
+A row of categories to browse by — each an icon over a short label — that
+scrolls sideways when it does not fit, with something pinned on the right
+(a Filters button, a switch).
+
+```tsx
+import { CategoryBar } from '@oxy.so/bloom/category-bar';
+import { Badge } from '@oxy.so/bloom/badge';
+import { Button } from '@oxy.so/bloom/button';
+import { RiEqualizerLine, RiFireLine, RiSunLine, RiTreeLine } from '@oxy.so/bloom/icons';
+
+const CATEGORIES = [
+  { key: 'trending', label: 'Trending', icon: RiFireLine },
+  { key: 'beachfront', label: 'Beachfront', icon: RiSunLine },
+  { key: 'cabins', label: 'Cabins', icon: RiTreeLine },
+];
+
+const [category, setCategory] = useState('trending');
+
+<CategoryBar
+  items={CATEGORIES}
+  value={category}
+  onValueChange={setCategory}
+  accessibilityLabel="Categories"
+  trailing={
+    <Badge content={3} placement="top-right">
+      <Button variant="outline" leadingIcon={RiEqualizerLine}>Filters</Button>
+    </Badge>
+  }
+/>
+```
+
+| prop                 | decides                                                                                  |
+| -------------------- | ---------------------------------------------------------------------------------------- |
+| `items`              | `{ key, label, icon }[]` — `icon` is a component (a Remix icon); the bar sizes it 24 and colours it |
+| `value`              | the selected `key`; `undefined` selects nothing                                          |
+| `onValueChange`      | called with the pressed `key`                                                             |
+| `trailing`           | pinned right, 24 from the strip, never scrolls                                           |
+| `accessibilityLabel` | required — names the tablist                                                              |
+| `gap`                | space between items, default `32`                                                        |
+| `fadeColor`          | what the web edge fades blend into, default the page background — set it when the bar sits on a card |
+| `previousLabel`, `nextLabel` | the web arrows' names, default "Previous categories" / "Next categories"          |
+| `style`, `testID`    | items get `<testID>-item-<key>`, arrows `<testID>-previous` / `-next`                    |
+
+## Look
+
+Each item is a 24px icon, 8px, a `caption-1-medium` label, and a 2px bar 10px
+below the label. At rest the icon and label are text-secondary; under a pointer
+they turn text-primary; the selected item is text-primary with the bar in
+text-primary, as wide as its label. The label keeps one weight in every state,
+so selecting never reflows the strip. Colour changes only — nothing scales.
+
+## Scrolling
+
+- **Web.** No scrollbar. At an edge with more to scroll, a round secondary arrow
+  button sits over a 72px fade into `fadeColor`; it disappears when there is
+  nothing more that way. An arrow scrolls by the viewport less both fades, so
+  the item half-hidden under a fade lands in full view. Smooth unless the reader
+  asked for reduced motion.
+- **Native.** A plain horizontal `ScrollView` — swipe it. No arrows, no fades.
+- **Both.** The selected item is scrolled into view on the first layout
+  (without animation) and whenever `value` changes — so a restored or deep-linked
+  category is never off-screen.
+
+## Accessibility
+
+The strip is a `tablist` named by `accessibilityLabel`; every item is a `tab`
+named by its label, with `aria-selected` (React Native folds it into
+`accessibilityState.selected`). On web the strip is ONE tab stop — the selected
+item, or the first when nothing is selected — and inside it ArrowLeft /
+ArrowRight / Home / End move focus, Enter or Space select. The keyboard ring is
+drawn above the selection bar so it never hides it. The arrow buttons stay out
+of the tab order; focus moving along the strip scrolls it.
+
+Selecting a tab calls `onValueChange` — the bar controls no panel, so what the
+selection filters is the app's.
