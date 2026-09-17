@@ -286,6 +286,8 @@ export { InputGroup, InputGroupAddon } from './input-group';
 export type { InputGroupProps, InputGroupAddonProps } from './input-group';
 export { RangeSlider, Slider } from './slider';
 export type { RangeSliderProps, SliderProps } from './slider';
+export { Stepper, StepperRow } from './stepper';
+export type { StepperProps, StepperRowProps, StepperSize } from './stepper';
 
 // Bottom sheet
 export { BottomSheet } from './bottom-sheet/index.web';
@@ -294,6 +296,8 @@ export type { BottomSheetRef, BottomSheetProps } from './bottom-sheet/index.web'
 // Data display
 export * from './card';
 export * from './badge';
+export { Rating, RatingBar } from './rating';
+export type { RatingBarProps, RatingCountStyle, RatingProps, RatingSize } from './rating';
 export * from './chip';
 export * from './aspect-ratio';
 export * from './tabs';

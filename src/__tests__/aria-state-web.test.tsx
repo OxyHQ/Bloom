@@ -65,6 +65,8 @@ import { FrostedIconButton } from '../frosted-icon-button';
 import { CompositionBar } from '../composition-bar';
 import { Radio, RadioGroup } from '../radio';
 import { StatBar } from '../stat-bar';
+import { Stepper } from '../stepper';
+import { RatingBar } from '../rating';
 import {
   DropdownMenuCheckboxItem,
   DropdownMenuItem,
@@ -870,5 +872,31 @@ describe('a trigger announces what it opens', () => {
   it('an ordinary Button opens nothing and says so by omission', () => {
     const c = mount(<Button onPress={() => {}} testID="btn">Save</Button>);
     expect(byTestId(c, 'btn').getAttribute('aria-haspopup')).toBeNull();
+  });
+});
+
+describe('Stepper', () => {
+  it('emits the value as aria-value* on a named slider, and aria-disabled when disabled', () => {
+    const c = mount(
+      <Stepper value={2} min={1} max={16} onValueChange={() => {}} accessibilityLabel="Adults" disabled testID="st" />,
+    );
+    const el = byTestId(c, 'st-value');
+    expect(el.getAttribute('role')).toBe('slider');
+    expect(el.getAttribute('aria-label')).toBe('Adults');
+    expect(el.getAttribute('aria-valuenow')).toBe('2');
+    expect(el.getAttribute('aria-valuemin')).toBe('1');
+    expect(el.getAttribute('aria-valuemax')).toBe('16');
+    expect(el.getAttribute('aria-disabled')).toBe('true');
+  });
+});
+
+describe('RatingBar', () => {
+  it('emits a named progressbar with aria-value*', () => {
+    const c = mount(<RatingBar label="Cleanliness" value={4.9} display="4.9" testID="rb" />);
+    const el = byRole(c, 'progressbar');
+    expect(el.getAttribute('aria-label')).toBe('Cleanliness');
+    expect(el.getAttribute('aria-valuenow')).toBe('4.9');
+    expect(el.getAttribute('aria-valuemin')).toBe('0');
+    expect(el.getAttribute('aria-valuemax')).toBe('5');
   });
 });

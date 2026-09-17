@@ -297,6 +297,7 @@ export { RiStarLine } from './RiStarLine';
 export { RiStethoscopeLine } from './RiStethoscopeLine';
 export { RiStockLine } from './RiStockLine';
 export { RiStopFill } from './RiStopFill';
+export { RiSubtractLine } from './RiSubtractLine';
 export { RiSunFoggyLine } from './RiSunFoggyLine';
 export { RiSunLine } from './RiSunLine';
 export { RiTabletLine } from './RiTabletLine';
