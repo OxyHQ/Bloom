@@ -2,7 +2,7 @@ import React, { memo, useEffect, useMemo } from 'react';
 import { Platform, View } from 'react-native';
 import Svg, { Circle } from 'react-native-svg';
 
-import { webDataSet } from '../checkbox/shared';
+import { webDataSet } from '../styles/web-data';
 import type { WebCssStyle } from '../styles/web-view-style';
 import { useTheme } from '../theme/use-theme';
 import { METER_DURATION_VAR, adoptMeterStyleSheet, meterFraction, meterValue, resolveMeterColors } from './shared';
