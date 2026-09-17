@@ -20,7 +20,7 @@
 
 ### What it is
 
-Components, hooks and design tokens published as `@oxy.so/bloom` across 139 subpath exports, shipped as `src` for Metro and as compiled CommonJS and ESM for everyone else. Web builds resolve platform forks automatically through export conditions, so a `.web.tsx` fork never reaches a native bundle.
+Components, hooks and design tokens published as `@oxy.so/bloom` across 160 subpath exports, shipped as `src` for Metro and as compiled CommonJS and ESM for everyone else. Web builds resolve platform forks automatically through export conditions, so a `.web.tsx` fork never reaches a native bundle.
 
 Styling is NativeWind classes throughout. There are no colour props and no wrapper components to theme a button, because a second way to set a colour is a second thing that can disagree.
 
@@ -151,7 +151,7 @@ Every palette is generated from a single seed colour by a dependency free colour
 
 ## Components
 
-Bloom publishes 139 subpath exports. Importing from the subpath rather than the root keeps a bundle to what it actually renders.
+Bloom publishes 160 subpath exports. Importing from the subpath rather than the root keeps a bundle to what it actually renders.
 
 | Group | Exports |
 |---|---|
@@ -159,12 +159,15 @@ Bloom publishes 139 subpath exports. Importing from the subpath rather than the 
 | App shell and navigation | `app-shell`, `page-header`, `sidebar`, `rail`, `breadcrumb`, `pagination`, `tabs`, `tab-bar`, `layout`, `content-panel` |
 | Overlays | `dialog`, `alert-dialog`, `bottom-sheet`, `popover`, `context-menu`, `dropdown-menu`, `menubar`, `tooltip`, `overlay`, `portal`, `teleport`, `surfaces`, `settings-modal` |
 | Actions | `button`, `button-group`, `social-button`, `fab`, `frosted-icon-button`, `pressable-scale`, `subtle-hover` |
-| Forms | `text-field`, `textarea`, `phone-input`, `input-otp`, `field`, `input-group`, `label`, `select`, `command`, `checkbox`, `radio`, `switch`, `slider`, `segmented-control`, `search`, `date-picker`, `file-upload`, `auth-card`, `stepper`, `rating` |
+| Forms | `text-field`, `textarea`, `phone-input`, `input-otp`, `field`, `input-group`, `label`, `select`, `command`, `checkbox`, `radio`, `switch`, `slider`, `segmented-control`, `search`, `date-picker`, `file-upload`, `auth-card`, `stepper`, `rating`, `wizard` |
 | Layout and lists | `grid`, `list`, `scroll`, `settings-list`, `card`, `accordion`, `aspect-ratio`, `divider`, `item`, `carousel` |
 | Data and charts | `table`, `data-table`, `chart-cards`, `stat-cards`, `calendar`, `composition-bar`, `dot-grid-meter`, `stat-bar`, `activity-heatmap`, `recent-hires-card`, `patient-info-card`, `important-alerts-card`, `agent-limits-card`, `ai-profile-card` |
+| Music and media | `media-card`, `media-controls`, `media-header`, `media-player`, `media-shelf`, `track-list`, `queue-panel`, `lyrics`, `music-library`, `creator-studio`, `sortable-media` |
+| Housing | `home-search`, `listing-actions`, `listing-editor`, `offering-badge`, `place-reviews`, `property-insights`, `tenancy`, `eviction` |
 | Stays and booking | `listing-card`, `listing-details`, `stay-search`, `stay-filters`, `booking`, `category-bar`, `map-marker` |
 | AI and agents | `agent-chat`, `ai-chat`, `composer-panel`, `composer-loader`, `agent-thinking`, `agent-log`, `agent-progress`, `task-list`, `web-search`, `questionnaire` |
 | Identity and media | `avatar`, `avatar-group`, `hover-card`, `user-hover-card`, `image-resolver`, `image-aspect-ratio-cache`, `zoomable-image-gallery`, `zoomable-media-gallery`, `media-flight`, `media-inset-border`, `progressive-blur`, `fill` |
+| Chat | `chat-indicators` |
 | Feedback | `toast`, `notification`, `notification-center`, `announcement`, `admonition`, `loading`, `skeleton`, `error-boundary`, `badge`, `chip`, `kbd`, `code`, `link-preview`, `connection-status`, `connection-dots` |
 | Motion and assets | `motion`, `animated-check`, `icon-circle`, `radio-indicator`, `icons`, `typography`, `fonts` |
 
