@@ -24,12 +24,17 @@ const AppShellHeaderComponent: React.FC<AppShellHeaderProps> = ({
   actions,
   onMenuPress,
   menuOpen = false,
+  showMenu: showMenuProp,
   style,
   testID,
 }) => {
   const theme = useTheme();
+  // Standalone, the header has no shell to ask, so it falls back to the window
+  // being narrower than `lg`. Inside an `AppShell` it is TOLD, from the shell's
+  // own measured width and `navFrom` — the header must not second-guess a
+  // decision the shell already made against a different number.
   const { width } = useWindowDimensions();
-  const showMenu = onMenuPress != null && width < BREAKPOINTS.lg;
+  const showMenu = onMenuPress != null && (showMenuProp ?? width < BREAKPOINTS.lg);
 
   return (
     <View role="banner" testID={testID} style={[{ width: '100%', gap: 8 }, style]}>

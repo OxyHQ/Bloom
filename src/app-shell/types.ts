@@ -1,6 +1,7 @@
 import type { ReactNode } from 'react';
 import type { StyleProp, ViewStyle } from 'react-native';
 
+import type { ContentPanelFramedBreakpoint } from '../content-panel/types';
 import type { NotificationCenterItem, NotificationCenterTab } from '../notification-center/types';
 import type { SidebarProps } from '../sidebar/types';
 
@@ -13,13 +14,60 @@ import type { SidebarProps } from '../sidebar/types';
  */
 export type AppShellDrawer = 'overlay' | 'reveal';
 
+/**
+ * The layout SHAPE, all drawn by the same engine — the same nav, the same
+ * drawer, the same pinned regions, the same slots.
+ *
+ * - `dashboard` (default) — nav, then one fluid content column capped at
+ *   `contentMaxWidth`, with an optional `aside`. The shape this shell shipped
+ *   with; unchanged in every measurement.
+ * - `feed` — nav, then the routed content CENTRED in a reading column of
+ *   `contentWidth`, with the optional `aside` beside it and the pair centred in
+ *   what the nav leaves. Wrap the column in a `ContentPanel` with `panel` and
+ *   the page background reads as a gutter around it.
+ * - `split` — a list pane, a detail pane and an optional info pane, each
+ *   scrolling on its own, with a draggable divider. One screen, never a
+ *   document scroll (see `scroll`). Below `splitFrom` exactly one pane renders,
+ *   chosen by `pane`.
+ * - `focus` — a single centred column of `contentWidth` and NO nav: sign-in,
+ *   onboarding, a reader. It keeps the header, `topBar`, `bottomBar` and
+ *   `floatingAction` slots, so a sign-up flow still gets its footer CTA.
+ */
+export type AppShellVariant = 'dashboard' | 'feed' | 'split' | 'focus';
+
+/** Which single pane a `split` shell shows below `splitFrom`. */
+export type AppShellPane = 'list' | 'detail' | 'info';
+
+/** A tier from `BREAKPOINTS`, the one source of truth for widths. */
+export type AppShellBreakpoint = 'sm' | 'md' | 'lg' | 'xl';
+
+/** What scrolls the page. See `AppShellProps['scroll']`. */
+export type AppShellScroll = 'document' | 'container' | 'fixed';
+
+/**
+ * When a bar slot is drawn: `compact` (the default) only while the nav is a
+ * drawer — the phone case the slot exists for — or `always`, for a bar that is
+ * part of the app at every width (a player, a status strip).
+ */
+export type AppShellBarVisibility = 'compact' | 'always';
+
 export interface AppShellProps {
+  /**
+   * The layout shape. Defaults to `dashboard` — the behaviour this component
+   * had before variants existed, down to the pixel.
+   */
+  variant?: AppShellVariant;
   /**
    * The rail. Rendered in flow at `lg` and up (`sm` and up with
    * `variant: 'rail'`); below it, the same props drive the drawer (`mobile`,
    * and `flat` for `reveal`), always as the panel.
    */
   sidebar?: Omit<SidebarProps, 'mobile' | 'onClose' | 'flat'>;
+  /**
+   * How the rail arrives below `navFrom`. `reveal` slides the WHOLE page
+   * sideways, which only reads on a one-column page — so it applies to
+   * `variant: 'dashboard'` and the other three always take the overlay drawer.
+   */
   drawer?: AppShellDrawer;
   /**
    * Heading over the content. Optional: without it (and without `breadcrumb` /
@@ -73,7 +121,108 @@ export interface AppShellProps {
    *   so the page owns its own scrolling — a chat, a map, a board. On web the
    *   frame is `100dvh`; on native it fills its parent.
    */
-  scroll?: 'document' | 'container' | 'fixed';
+  scroll?: AppShellScroll;
+
+  // -- sizes and breakpoints -------------------------------------------------
+  /**
+   * `feed` / `focus`: the reading column's width. Default 600 — the measure a
+   * single column of body text stays readable at. It is a MAXIMUM on a narrow
+   * screen: the column shrinks to the space it has rather than overflowing.
+   */
+  contentWidth?: number;
+  /**
+   * The space between the shell's edge and its regions. Default 12 for
+   * `dashboard` (which also keeps its historical 16 column gap, so existing
+   * pages do not move) and 16 for the other variants, where one number drives
+   * both.
+   */
+  gutter?: number;
+  /**
+   * The width the nav sits in FLOW from; below it the same nav is a drawer.
+   * Defaults to the tier the sidebar's own variant implies — `sm` for a rail
+   * (80px fits early), `lg` for the full panel — and to `sm` whenever
+   * `navExpandedFrom` is set, because below that tier the nav IS a rail.
+   */
+  navFrom?: AppShellBreakpoint;
+  /**
+   * Icons below, labels from here up: the shell swaps `sidebar.variant` between
+   * `rail` and `panel` at this width. Unset (the default) the sidebar keeps
+   * whatever variant it was given at every width.
+   */
+  navExpandedFrom?: AppShellBreakpoint;
+
+  // -- feed ------------------------------------------------------------------
+  /**
+   * `feed`: wrap the centre column in a `ContentPanel`, so the page background
+   * reads as a gutter around a framed surface. The shell renders the panel —
+   * a page that renders its own inside this one trips `ContentPanel`'s nesting
+   * guard. The panel's content is inset by `gutter`, so `contentWidth` stays
+   * the COLUMN's width and the reading measure inside it is that minus two
+   * gutters.
+   */
+  panel?: boolean;
+  /** Forwarded to that `ContentPanel`: the width it starts being framed at. */
+  framedFrom?: ContentPanelFramedBreakpoint;
+
+  // -- split -----------------------------------------------------------------
+  /** `split`: the first pane. `children` is the detail pane beside it. */
+  list?: ReactNode;
+  /** `split`: an optional third pane, from `infoFrom`. */
+  info?: ReactNode;
+  /** `split`: which single pane renders below `splitFrom`. Default `list`. */
+  pane?: AppShellPane;
+  /** `split`: the list pane's resting width (360); a drag moves it in range. */
+  listWidth?: number;
+  /** `split`: the range a drag may reach. Defaults 280 and 520. */
+  listMinWidth?: number;
+  listMaxWidth?: number;
+  /** `split`: reports the width a drag settled on. */
+  onListWidthChange?: (width: number) => void;
+  /** `split`: the info pane's width. Default 320. */
+  infoWidth?: number;
+  /** `split`: the width two panes fit from. Default `md` (768). */
+  splitFrom?: AppShellBreakpoint;
+  /** `split`: the width the third pane fits from. Default `xl` (1280). */
+  infoFrom?: AppShellBreakpoint;
+  /** `split`: whether the divider drags. Default `true`. */
+  resizable?: boolean;
+  /** `split`: names the divider. Default `"Resize panes"`. */
+  resizeLabel?: string;
+  /**
+   * `split`: the shell gives each pane its own `ScrollView` (default). Turn it
+   * off when the pane's own content scrolls — a `FlatList`, a virtualizer —
+   * rather than nesting two scrollers.
+   */
+  paneScroll?: boolean;
+
+  // -- pinned slots ----------------------------------------------------------
+  /**
+   * The phone header: a sibling ABOVE the shell's columns, spanning it edge to
+   * edge, pinned to the top (sticky with document scroll). Nothing a consumer
+   * writes needs `position: fixed` or a negative margin to be a top bar.
+   *
+   * `header` is the in-column page heading and is unaffected; a shell may have
+   * both. NOT drawn under `drawer="reveal"`: that drawer slides the whole page
+   * 272px sideways, and a bar pinned to the frame would stay behind while the
+   * page it belongs to left it — so `reveal` keeps its in-column `header`.
+   */
+  topBar?: ReactNode;
+  /** `compact` (default): only while the nav is a drawer. */
+  topBarVisibility?: AppShellBarVisibility;
+  /**
+   * The bottom bar: pinned to the bottom of the viewport (or of the frame when
+   * the shell does not own the page), with the bottom safe-area inset applied
+   * as its own padding. The content column reserves its MEASURED height, so the
+   * last item is never hidden behind it.
+   */
+  bottomBar?: ReactNode;
+  /** `compact` (default): only while the nav is a drawer. */
+  bottomBarVisibility?: AppShellBarVisibility;
+  /** The compose/FAB corner — above the bottom bar when there is one. */
+  floatingAction?: ReactNode;
+  /** Which corner. Default `end` (the right in a left-to-right layout). */
+  floatingActionPlacement?: 'start' | 'end';
+
   style?: StyleProp<ViewStyle>;
   testID?: string;
 }
@@ -94,6 +243,12 @@ export interface AppShellHeaderProps {
   onMenuPress?: () => void;
   /** Swaps the hamburger for a close glyph while the drawer is open. */
   menuOpen?: boolean;
+  /**
+   * Whether the hamburger has anything to open. `AppShell` passes its own
+   * answer, taken from the shell's MEASURED width and `navFrom`; standalone the
+   * header falls back to the window being narrower than `lg`.
+   */
+  showMenu?: boolean;
   style?: StyleProp<ViewStyle>;
   testID?: string;
 }
