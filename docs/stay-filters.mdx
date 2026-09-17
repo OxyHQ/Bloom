@@ -146,8 +146,10 @@ last row.
 This one **computes** prices — bucket bounds, clamping, snapping — so they are
 numbers, and `formatPrice` is where the app's currency and locale come in.
 
-- **The histogram** draws equal-width bars 2 apart with 2px top corners. A
-  bucket whose midpoint is inside the range is text-primary; the rest are
+- **The histogram** draws equal-width bars 2 apart with 3px top corners, in the
+  chart cards' visual language: a bucket whose midpoint is inside the range
+  takes the chart series tone (`chart-6`, the blue hue re-anchored on the
+  theme's primary, so it also matches the range slider); the rest are
   neutral-300 (dark neutral-700). It is hidden from assistive technology: the
   slider announces the same range as numbers. `PriceHistogram` is exported on
   its own for a custom layout.

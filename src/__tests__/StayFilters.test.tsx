@@ -36,6 +36,7 @@ import {
   ToggleChipGroup,
 } from '../stay-filters';
 import { histogramSelection } from '../stay-filters/PriceHistogram';
+import { chartHueTone } from '../chart-cards/palette';
 import { parsePriceInput, priceScaleMapping, PRICE_SCALE_POSITIONS } from '../stay-filters/PriceRangeFilter';
 import { contrastRatio, resolveEnergyRatingPaint } from '../stay-filters/EnergyRatingFilter';
 import { commitRangeField } from '../stay-filters/RangeFields';
@@ -162,7 +163,7 @@ describe('PriceHistogram', () => {
   });
 
   it.each(['light', 'dark'] as const)(
-    'draws in-range bars in text-primary and the rest in neutral, heights proportional (%s)',
+    'draws in-range bars in the chart series tone and the rest in neutral, heights proportional (%s)',
     (mode) => {
       mount(<PriceHistogram buckets={[10, 40, 20, 0]} min={0} max={100} value={[30, 70]} height={80} testID="h" />, mode);
       const h = byTestId('h');
@@ -171,9 +172,9 @@ describe('PriceHistogram', () => {
       expect(bars.map((b) => getComputedStyle(b).height)).toEqual(['20px', '80px', '40px', '0px']);
       const { neutral } = resolveButtonRamps(theme);
       const out = normaliseBg(mode === 'dark' ? neutral[700] : neutral[300]);
-      const inRange = normaliseBg(theme.colors.text);
+      const inRange = normaliseBg(chartHueTone(theme, 6).color);
       expect(bars.map(bg)).toEqual([out, inRange, inRange, out]);
-      expect(getComputedStyle(bars[1] as HTMLElement).borderTopLeftRadius).toBe('2px');
+      expect(getComputedStyle(bars[1] as HTMLElement).borderTopLeftRadius).toBe('3px');
       expect(getComputedStyle(h).columnGap || getComputedStyle(h).gap).toContain('2px');
     },
   );
