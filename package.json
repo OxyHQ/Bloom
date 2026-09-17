@@ -1749,18 +1749,32 @@
         "default": "./lib/commonjs/chat-indicators/index.js"
       }
     },
-    "./chat-screen": {
+    "./call-ui": {
       "react-native": {
-        "types": "./lib/typescript/module/chat-screen/index.d.ts",
-        "default": "./src/chat-screen/index.ts"
+        "types": "./lib/typescript/module/call-ui/index.d.ts",
+        "default": "./src/call-ui/index.ts"
       },
       "import": {
-        "types": "./lib/typescript/module/chat-screen/index.d.ts",
-        "default": "./lib/module/chat-screen/index.js"
+        "types": "./lib/typescript/module/call-ui/index.d.ts",
+        "default": "./lib/module/call-ui/index.js"
       },
       "require": {
-        "types": "./lib/typescript/commonjs/chat-screen/index.d.ts",
-        "default": "./lib/commonjs/chat-screen/index.js"
+        "types": "./lib/typescript/commonjs/call-ui/index.d.ts",
+        "default": "./lib/commonjs/call-ui/index.js"
+      }
+    },
+    "./chat-people": {
+      "react-native": {
+        "types": "./lib/typescript/module/chat-people/index.d.ts",
+        "default": "./src/chat-people/index.ts"
+      },
+      "import": {
+        "types": "./lib/typescript/module/chat-people/index.d.ts",
+        "default": "./lib/module/chat-people/index.js"
+      },
+      "require": {
+        "types": "./lib/typescript/commonjs/chat-people/index.d.ts",
+        "default": "./lib/commonjs/chat-people/index.js"
       }
     },
     "./creator-studio": {
