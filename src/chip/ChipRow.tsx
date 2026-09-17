@@ -92,11 +92,16 @@ function ChipRowComponent({
     setScroll((previous) => (previous.content === width ? previous : { ...previous, content: width }));
   }, []);
 
+  // The fade has to cover the SCROLLER, which sits `ringInset` outside the
+  // wrapper on every side (the negative margins above). Pinned to the wrapper's
+  // own edge instead, it leaves exactly that much uncovered, and a chip clipped
+  // by those few pixels reads as a hard cut with a fade beside it — measured in
+  // Chrome at 4px, which is enough to see.
   const edgeStyle = (side: 'left' | 'right'): WebCssStyle => ({
     position: 'absolute',
-    top: 0,
-    bottom: 0,
-    ...(side === 'left' ? { left: 0 } : { right: 0 }),
+    top: -ringInset,
+    bottom: -ringInset,
+    ...(side === 'left' ? { left: -ringInset } : { right: -ringInset }),
     width: CHIP_ROW_EDGE,
     backgroundImage: `linear-gradient(to ${side === 'left' ? 'right' : 'left'}, ${fade} 0%, ${fade} 40%, transparent 100%)`,
   });

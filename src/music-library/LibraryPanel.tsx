@@ -350,6 +350,8 @@ function LibraryPanelComponent({
       <ChipRow
         contentInset={16 - 4}
         ringInset={4}
+        // The row sits on the PANEL, not the page, and the row cannot know that.
+        fadeColor={paint.surface}
         accessibilityLabel={labels.filters}
         style={{ marginTop: 8, marginBottom: 8 }}
         testID={pid('filters')}
