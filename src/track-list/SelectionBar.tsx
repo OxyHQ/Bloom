@@ -1,7 +1,7 @@
 import React, { useMemo } from 'react';
 import { View, useWindowDimensions } from 'react-native';
 
-import { Button } from '../button';
+import { Button, GlyphButton } from '../button';
 import { RiCloseLine } from '../icons/remix/RiCloseLine';
 import type { WebCssStyle } from '../styles/web-view-style';
 import { useTheme } from '../theme/use-theme';
@@ -19,7 +19,13 @@ const LABELS_MIN_WIDTH = 640;
  *   surface     the menu surface (card / neutral-800) with its hairline border
  *   radius      16 (a panel, not a pill); height 56; padding 8 / 16
  *   shadow      a soft drop shadow, light and dark
- *   actions     ghost buttons, small, with their icon; icon-only under 640
+ *   actions     `text` buttons, small, with their icon; icon-only under 640
+ *   clear       a neutral `GlyphButton`, never a tinted one
+ *
+ * The actions are DELIBERATELY not `ghost`: that variant paints an accent wash,
+ * so a destructive action in it drew a RED label on a BLUE fill. `text` is the
+ * transparent labelled button — a neutral hover wash under an accent label —
+ * and a destructive one paints its own icon and label from `error`.
  *
  * `placement="floating"` (default) positions it absolutely 16 above the bottom
  * of the nearest positioned parent, centred. `inline` leaves layout to the app.
@@ -76,22 +82,33 @@ export function SelectionBar({
         {countText}
       </Text>
       <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
-        {actions.map((action) => (
-          <Button
-            key={action.key}
-            variant="ghost"
-            size="small"
-            leadingIcon={action.icon}
-            iconOnly={iconOnly && action.icon !== undefined}
-            accessibilityLabel={action.label}
-            disabled={action.disabled}
-            onPress={action.onPress}
-            testID={testID ? `${testID}-${action.key}` : undefined}
-            textStyle={action.destructive ? { color: theme.colors.error } : undefined}
-          >
-            {action.label}
-          </Button>
-        ))}
+        {actions.map((action) => {
+          const Icon = action.icon;
+          // A destructive action paints BOTH its label and its glyph from
+          // `error`. `leadingIcon` is coloured by the button, so the glyph goes
+          // in as an `icon` ELEMENT, which the button renders as-is.
+          const destructiveIcon =
+            action.destructive === true && Icon ? (
+              <Icon width={18} height={18} fill={theme.colors.error} />
+            ) : undefined;
+          return (
+            <Button
+              key={action.key}
+              variant="text"
+              size="small"
+              icon={destructiveIcon}
+              leadingIcon={destructiveIcon ? undefined : Icon}
+              iconOnly={iconOnly && Icon !== undefined}
+              accessibilityLabel={action.label}
+              disabled={action.disabled}
+              onPress={action.onPress}
+              testID={testID ? `${testID}-${action.key}` : undefined}
+              textStyle={action.destructive ? { color: theme.colors.error } : undefined}
+            >
+              {action.label}
+            </Button>
+          );
+        })}
       </View>
       <View
         style={{
@@ -104,11 +121,13 @@ export function SelectionBar({
           backgroundColor: paint.panelBorder,
         }}
       />
-      <Button
-        variant="ghost"
-        size="small"
-        iconOnly
-        leadingIcon={RiCloseLine}
+      <GlyphButton
+        size={32}
+        icon={RiCloseLine}
+        glyphSize={20}
+        color={paint.textMuted}
+        hoverColor={paint.text}
+        ring={paint.ring}
         accessibilityLabel={clearLabel}
         onPress={onClear}
         testID={testID ? `${testID}-clear` : undefined}

@@ -211,7 +211,7 @@ A round neutral well with the icon, a heading, a muted description and a primary
 </View>
 ```
 
-Renders nothing at `count` 0. The default `placement="floating"` sits absolutely 16 above the bottom of the nearest positioned parent, centred; `inline` leaves placement to you. A panel on the menu surface, radius 16, with ghost buttons that drop to icon-only under 640 (`width`). It is a `toolbar` named by its count text ("3 selected", `formatCount`), and the count is a polite live region.
+Renders nothing at `count` 0. The default `placement="floating"` sits absolutely 16 above the bottom of the nearest positioned parent, centred; `inline` leaves placement to you. A panel on the menu surface, radius 16, with `text` buttons that drop to icon-only under 640 (`width`) — deliberately not `ghost`, whose accent wash turned a destructive action into a red label on a blue fill. A destructive action paints both its label and its glyph from `error`; the clear (×) is a neutral `GlyphButton`. It is a `toolbar` named by its count text ("3 selected", `formatCount`), and the count is a polite live region.
 
 ## EpisodeRow and EpisodeList
 

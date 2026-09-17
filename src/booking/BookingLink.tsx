@@ -1,29 +1,29 @@
-import React, { useEffect, useMemo } from 'react';
-import { Pressable, type GestureResponderEvent, type StyleProp, type TextStyle, type ViewStyle } from 'react-native';
+import React from 'react';
+import type { GestureResponderEvent, StyleProp, TextStyle, ViewStyle } from 'react-native';
 
-import { useInteractionState } from '../hooks/use-interaction-state';
-import { adoptStyleSheet } from '../styles/adopt-style-sheet';
-import type { WebCssStyle } from '../styles/web-view-style';
-import { webDataSet } from '../styles/web-data';
-import { useTheme } from '../theme/use-theme';
-import { Text } from '../typography';
+import { Button } from '../button';
 import type { TypeScaleVariant } from '../typography/scale';
-import { BOOKING_STYLE_ID, BOOKING_WEB_CSS, resolveBookingPalette } from './shared';
 
 /**
  * INTERNAL — the family's underlined text button: a price row's label, the
- * guests panel's "Close", the bar's dates. Underlined at rest, text-secondary
- * under a pointer or a press (colour only, no scale), a focus ring on web.
+ * guests panel's "Close", the bar's dates.
  *
- * Spreads unknown props onto the `Pressable` so it can be a `PopoverTrigger`'s
+ * It is `Button variant="link"` with the READING tone and the underline at rest
+ * (`linkTone="text"`, `underline="rest"`), which is exactly what it hand-rolled
+ * before those two props existed: text-primary and underlined at rest,
+ * text-secondary under a pointer or a press (colour only, no scale), a focus
+ * ring on web. This wrapper survives only to keep the family's own spelling —
+ * `variant` is the TYPE RAMP STEP here, not the button variant.
+ *
+ * Spreads unknown props onto the `Button` so it can be a `PopoverTrigger`'s
  * `asChild` child, which hands it `onPress`, `aria-expanded` and
- * `aria-haspopup`.
+ * `aria-haspopup` — all three of which `Button` forwards.
  */
 export interface BookingLinkProps {
   children: string;
-  onPress?: (event: GestureResponderEvent) => void;
+  onPress?: (event?: GestureResponderEvent) => void;
   variant?: TypeScaleVariant;
-  /** Colour at rest. Default text-primary. */
+  /** Colour at rest. Default text-primary (and then the hover colour works). */
   color?: string;
   accessibilityLabel?: string;
   disabled?: boolean;
@@ -47,50 +47,23 @@ export function BookingLink({
   numberOfLines,
   ...handle
 }: BookingLinkProps) {
-  const theme = useTheme();
-  const palette = useMemo(() => resolveBookingPalette(theme), [theme]);
-  useEffect(() => {
-    adoptStyleSheet(BOOKING_STYLE_ID, BOOKING_WEB_CSS);
-  }, []);
-  const { state: hovered, onIn: onHoverIn, onOut: onHoverOut } = useInteractionState();
-  const { state: pressed, onIn: onPressIn, onOut: onPressOut } = useInteractionState();
-
-  const ring: WebCssStyle = {
-    borderRadius: 4,
-    alignSelf: 'flex-start',
-    '--bloom-booking-ring': palette.ring,
-  };
-
   return (
-    <Pressable
+    <Button
       {...handle}
-      {...webDataSet({ bloomBookingFocus: '' })}
-      accessibilityRole="button"
-      accessibilityLabel={accessibilityLabel ?? children}
-      accessibilityState={{ disabled: disabled === true }}
-      aria-disabled={disabled || undefined}
-      disabled={disabled}
+      variant="link"
+      linkTone="text"
+      underline="rest"
+      size="small"
+      textVariant={variant}
       onPress={onPress}
-      onHoverIn={onHoverIn}
-      onHoverOut={onHoverOut}
-      onPressIn={onPressIn}
-      onPressOut={onPressOut}
+      disabled={disabled}
+      accessibilityLabel={accessibilityLabel ?? children}
+      style={[{ alignSelf: 'flex-start' }, style]}
+      textStyle={color ? [{ color }, textStyle] : textStyle}
+      numberOfLines={numberOfLines}
       testID={testID}
-      style={[ring, style]}
     >
-      <Text
-        variant={variant}
-        numberOfLines={numberOfLines}
-        style={[
-          {
-            color: hovered || pressed ? palette.textSecondary : (color ?? palette.text),
-            textDecorationLine: 'underline',
-          },
-          textStyle,
-        ]}
-      >
-        {children}
-      </Text>
-    </Pressable>
+      {children}
+    </Button>
   );
 }

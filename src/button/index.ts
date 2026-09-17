@@ -11,6 +11,7 @@ export {
   DestructiveButton,
 } from './Button';
 export { CloseButton } from './CloseButton';
+export { GlyphButton } from './GlyphButton';
 
 export type {
   ButtonProps,
@@ -18,6 +19,8 @@ export type {
   ButtonSize,
   ButtonIconComponent,
   ButtonLinkTone,
+  ButtonUnderline,
   LinkButtonProps,
   CloseButtonProps,
+  GlyphButtonProps,
 } from './types';

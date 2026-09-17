@@ -10,15 +10,16 @@ import { RiListView } from '../icons/remix/RiListView';
 import { RiMoreFill } from '../icons/remix/RiMoreFill';
 import { RiSearchLine } from '../icons/remix/RiSearchLine';
 import { RiShuffleLine } from '../icons/remix/RiShuffleLine';
+import { GlyphButton } from '../button';
 import { LikeButton } from '../media-controls/LikeButton';
 import { PlayButton } from '../media-controls/PlayButton';
 import { borderRadius } from '../styles/tokens';
 import type { WebCssStyle } from '../styles/web-view-style';
-import { webDataSet } from '../styles/web-data';
-import { clamp01 } from '../styles/clamp';
 import { Text } from '../typography';
 import { useMediaHeaderPaint } from './parts';
 import { IS_WEB } from './shared';
+import { clamp01 } from '../styles/clamp';
+import { webDataSet as webData } from '../styles/web-data';
 import type {
   DownloadButtonProps,
   FollowButtonProps,
@@ -47,7 +48,13 @@ function stop(event: GestureResponderEvent) {
   }
 }
 
-/** A glyph-only control; a toggle when `pressed` is given. */
+/**
+ * A glyph-only control; a toggle when `pressed` is given.
+ *
+ * `button/GlyphButton` at this bar's 40 box (`max(40, size + 12)` — the glyph is
+ * the caller's, the TARGET is never under 40) with no fill in any state, plus
+ * the 4px accent dot an active toggle carries.
+ */
 function MediaIconButtonComponent({
   icon: Icon,
   accessibilityLabel,
@@ -62,60 +69,46 @@ function MediaIconButtonComponent({
   'aria-haspopup': ariaHaspopup,
 }: MediaIconButtonProps) {
   const paint = useMediaHeaderPaint();
-  const { state: hovered, onIn, onOut } = useInteractionState();
-  const toggle = pressed !== undefined;
-  const glyphColor = pressed
-    ? paint.accent
-    : hovered && !disabled
-      ? paint.text
-      : (color ?? paint.textMuted);
   const box = Math.max(40, size + 12);
-  const root: WebCssStyle = {
-    width: box,
-    height: box,
-    borderRadius: borderRadius.full,
-    alignItems: 'center',
-    justifyContent: 'center',
-    opacity: disabled ? 0.5 : 1,
-    '--bloom-media-header-ring': paint.ring,
-  };
   return (
-    <Pressable
-      {...webDataSet({ bloomMediaHeaderPress: '' })}
-      role="button"
+    <GlyphButton
+      icon={Icon}
+      size={box}
+      glyphSize={size}
       accessibilityLabel={accessibilityLabel}
-      aria-pressed={toggle ? pressed : undefined}
+      disabled={disabled}
+      pressed={pressed}
+      color={color ?? paint.textMuted}
+      hoverColor={paint.text}
+      activeColor={paint.accent}
+      activeHoverColor={paint.accent}
+      fill="transparent"
+      hoverFill="transparent"
+      ring={paint.ring}
       aria-expanded={ariaExpanded}
       aria-haspopup={ariaHaspopup}
-      aria-disabled={disabled || undefined}
-      accessibilityState={{ selected: toggle ? pressed : undefined, disabled, expanded: ariaExpanded }}
-      disabled={disabled}
-      onHoverIn={onIn}
-      onHoverOut={onOut}
       onPress={(event) => {
         stop(event);
         onPress?.();
       }}
-      style={[root, style]}
+      style={style}
       testID={testID}
-    >
-      <View pointerEvents="none" style={{ width: size, height: size }}>
-        <Icon width={size} height={size} fill={glyphColor} />
-      </View>
-      {pressed ? (
-        <View
-          pointerEvents="none"
-          style={{
-            position: 'absolute',
-            bottom: 1,
-            width: 4,
-            height: 4,
-            borderRadius: 2,
-            backgroundColor: paint.accent,
-          }}
-        />
-      ) : null}
-    </Pressable>
+      decoration={
+        pressed ? (
+          <View
+            pointerEvents="none"
+            style={{
+              position: 'absolute',
+              bottom: 1,
+              width: 4,
+              height: 4,
+              borderRadius: 2,
+              backgroundColor: paint.accent,
+            }}
+          />
+        ) : null
+      }
+    />
   );
 }
 
@@ -210,7 +203,7 @@ function DownloadButtonComponent({
   return (
     <View style={[{ alignItems: 'center', justifyContent: 'center' }, style]}>
       <Pressable
-        {...webDataSet({ bloomMediaHeaderPress: '' })}
+        {...webData({ bloomMediaHeaderPress: '' })}
         role="button"
         accessibilityLabel={accessibilityLabel}
         aria-pressed={downloaded}
@@ -306,7 +299,7 @@ function FollowButtonComponent({
   };
   return (
     <Pressable
-      {...webDataSet({ bloomMediaHeaderPress: '' })}
+      {...webData({ bloomMediaHeaderPress: '' })}
       role="button"
       accessibilityLabel={label}
       aria-pressed={following}

@@ -26,6 +26,7 @@ import {
   iconOnlyWidth,
   isIconComponent,
   resolveButtonPalette,
+  resolveButtonUnderline,
   type ButtonGradient,
   type ButtonResolvedSize,
 } from './shared';
@@ -99,6 +100,8 @@ type ButtonPressableProps = Pick<
   | 'className'
   | 'disabled'
   | 'hitSlop'
+  | 'onHoverIn'
+  | 'onHoverOut'
   | 'onPress'
   | 'onPressIn'
   | 'onPressOut'
@@ -159,11 +162,15 @@ const ButtonComponent: React.FC<ButtonProps> = ({
   trailingIcon: TrailingIcon,
   iconOnly = false,
   linkTone = 'primary',
+  underline,
+  textVariant,
+  numberOfLines,
   href,
   loading = false,
   loadingColor,
   accessibilityLabel,
   accessibilityHint,
+  accessibilityRole,
   hitSlop,
   testID,
   className,
@@ -187,11 +194,19 @@ const ButtonComponent: React.FC<ButtonProps> = ({
     () => resolveButtonPalette(variant, theme, linkTone),
     [variant, theme, linkTone],
   );
+  const underlineMode = resolveButtonUnderline(variant, underline);
 
   // Pressed state drives the ACTIVE palette. Tracked through state rather than
   // Pressable's function-form `style`, which NativeWind's css-interop swallows
   // (dropping every base style with it).
   const { state: pressed, onIn: onPressedIn, onOut: onPressedOut } =
+    useInteractionState();
+  // Hover exists on this fork too: a react-native-web (Metro-web) consumer
+  // renders THIS file, and `linkTone="text"` is the first tone whose hover
+  // changes the foreground rather than only a background the web fork's
+  // stylesheet owned. On a real device no hover event is ever dispatched, so
+  // `hovered` stays false and nothing about native changes.
+  const { state: hovered, onIn: onHoveredIn, onOut: onHoveredOut } =
     useInteractionState();
 
   // No press scale: a 0.98 scale-down was deliberately left out, so a press is
@@ -204,7 +219,9 @@ const ButtonComponent: React.FC<ButtonProps> = ({
     ? palette.disabled
     : pressed && !loading
       ? palette.active
-      : palette.rest;
+      : hovered && !loading
+        ? palette.hover
+        : palette.rest;
 
   const baseStyles = useMemo((): ViewStyle => {
     const styles: ViewStyle = {
@@ -251,8 +268,11 @@ const ButtonComponent: React.FC<ButtonProps> = ({
     (): TextStyle => ({
       paddingHorizontal: isLink ? 0 : geometry.labelPaddingHorizontal,
       color: paint.foreground,
+      ...(underlineMode === 'rest' || (underlineMode === 'hover' && hovered && !disabled)
+        ? { textDecorationLine: 'underline' as const }
+        : null),
     }),
-    [geometry, paint.foreground, isLink],
+    [geometry, paint.foreground, isLink, underlineMode, hovered, disabled],
   );
 
   const defaultHitSlop = isSquare
@@ -275,7 +295,11 @@ const ButtonComponent: React.FC<ButtonProps> = ({
       ) : null}
       {iconPosition === 'left' && iconNode}
       {!isSquare && children != null && (
-        <Text variant={geometry.type} style={[computedTextStyle, textStyle]}>
+        <Text
+          variant={textVariant ?? geometry.type}
+          numberOfLines={numberOfLines}
+          style={[computedTextStyle, textStyle]}
+        >
           {children}
         </Text>
       )}
@@ -300,11 +324,13 @@ const ButtonComponent: React.FC<ButtonProps> = ({
       onPress={handlePress}
       onPressIn={handlePressIn}
       onPressOut={handlePressOut}
+      onHoverIn={isInteractionBlocked ? undefined : onHoveredIn}
+      onHoverOut={isInteractionBlocked ? undefined : onHoveredOut}
       disabled={isInteractionBlocked}
       hitSlop={hitSlop ?? defaultHitSlop}
       accessibilityLabel={accessibilityLabel}
       accessibilityHint={accessibilityHint}
-      accessibilityRole={href != null ? 'link' : 'button'}
+      accessibilityRole={accessibilityRole ?? (href != null ? 'link' : 'button')}
       // `aria-busy` matches what `Button.web.tsx` emits; react-native-web never
       // reads `accessibilityState`, React Native folds `aria-busy` back into it.
       aria-busy={loading || undefined}

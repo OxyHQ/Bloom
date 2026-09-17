@@ -58,6 +58,7 @@ import { Chip } from '../chip';
 import { Item } from '../item';
 import { SegmentedControl, SegmentedControlItem } from '../segmented-control';
 import { Button } from '../button/Button';
+import { GlyphButton } from '../button/GlyphButton';
 import { Slider } from '../slider';
 import { InputGroup } from '../input-group';
 import { SettingsListItem } from '../settings-list/SettingsList';
@@ -306,6 +307,23 @@ describe('role="button" toggles use aria-pressed', () => {
     c = mount(<FavoriteButton favorite={false} onFavoriteChange={() => {}} testID="fav" />);
     expect(byTestId(c, 'fav').getAttribute('aria-pressed')).toBe('false');
     expect(byTestId(c, 'fav').getAttribute('aria-label')).toBe('Save to wishlist');
+  });
+
+  it('GlyphButton emits aria-pressed only when it IS a toggle', () => {
+    let c = mount(
+      <GlyphButton accessibilityLabel="Shuffle" icon={RiFireLine} pressed testID="glyph" />,
+    );
+    expect(byTestId(c, 'glyph').getAttribute('role')).toBe('button');
+    expect(byTestId(c, 'glyph').getAttribute('aria-label')).toBe('Shuffle');
+    expect(byTestId(c, 'glyph').getAttribute('aria-pressed')).toBe('true');
+    c = mount(
+      <GlyphButton accessibilityLabel="Shuffle" icon={RiFireLine} pressed={false} testID="glyph" />,
+    );
+    expect(byTestId(c, 'glyph').getAttribute('aria-pressed')).toBe('false');
+    // A plain button is NOT a toggle: `aria-pressed="false"` on one announces a
+    // state nobody set.
+    c = mount(<GlyphButton accessibilityLabel="More options" icon={RiFireLine} testID="glyph" />);
+    expect(byTestId(c, 'glyph').getAttribute('aria-pressed')).toBeNull();
   });
 
   it('CompositionBar marks the selected segment with aria-pressed', () => {

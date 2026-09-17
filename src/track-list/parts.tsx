@@ -1,6 +1,7 @@
-import React, { Fragment, memo, useMemo, useState } from 'react';
-import { Image, Pressable, View, type GestureResponderEvent } from 'react-native';
+import React, { Fragment, memo, useMemo } from 'react';
+import { Image, View, type GestureResponderEvent } from 'react-native';
 
+import { GlyphButton } from '../button';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -13,9 +14,7 @@ import { RiMusic2Line } from '../icons/remix/RiMusic2Line';
 import { resolvePhoto } from '../listing-card/shared';
 import { useImageResolver } from '../image-resolver/context';
 import { borderRadius } from '../styles/tokens';
-import type { WebCssStyle } from '../styles/web-view-style';
 import type { WebAriaProps } from '../styles/styled-primitives';
-import { webDataSet } from '../styles/web-data';
 import { useTheme } from '../theme/use-theme';
 import { IS_WEB, resolveTrackListPaint } from './shared';
 import type { TrackIconComponent, TrackMenuItem } from './types';
@@ -40,6 +39,9 @@ interface TrackIconButtonProps {
  * A 32px round glyph button: muted at rest, the text colour under the pointer,
  * `activeColor` while pressed. Colour change only. Its press never reaches the
  * row behind it.
+ *
+ * `button/GlyphButton` with this family's 32 box, 20 glyph and 0.4 disabled dim
+ * — the only thing left here is the row-press guard.
  */
 export function TrackIconButton({
   icon: Icon,
@@ -55,46 +57,31 @@ export function TrackIconButton({
 }: TrackIconButtonProps) {
   const theme = useTheme();
   const paint = useMemo(() => resolveTrackListPaint(theme), [theme]);
-  const [hovered, setHovered] = useState(false);
-  const color =
-    pressed && activeColor
-      ? activeColor
-      : hovered && !disabled
-        ? paint.text
-        : paint.textMuted;
-  const rootStyle: WebCssStyle = {
-    width: 32,
-    height: 32,
-    borderRadius: borderRadius.full,
-    alignItems: 'center',
-    justifyContent: 'center',
-    opacity: disabled ? 0.4 : 1,
-    '--bloom-track-ring': paint.ring,
-  };
-  const toggle = pressed !== undefined;
   return (
-    <Pressable
-      {...webDataSet({ bloomTrackFocusable: '' })}
+    <GlyphButton
       {...aria}
-      role="button"
+      icon={Icon}
+      size={32}
+      glyphSize={glyph}
       accessibilityLabel={accessibilityLabel}
-      {...(toggle ? { 'aria-pressed': pressed } : null)}
-      accessibilityState={{ disabled, ...(toggle ? { selected: pressed } : null) }}
-      aria-disabled={disabled || undefined}
       disabled={disabled}
-      onHoverIn={() => setHovered(true)}
-      onHoverOut={() => setHovered(false)}
+      pressed={pressed}
+      color={paint.textMuted}
+      hoverColor={paint.text}
+      // No `activeColor` means the toggle keeps the plain colours, which is what
+      // this drew before: `pressed && activeColor` was the whole condition.
+      activeColor={activeColor ?? paint.textMuted}
+      activeHoverColor={activeColor ?? paint.text}
+      fill="transparent"
+      hoverFill="transparent"
+      ring={paint.ring}
+      disabledOpacity={0.4}
       onPress={(event: GestureResponderEvent) => {
         if (IS_WEB) event.stopPropagation?.();
         onPress?.(event);
       }}
-      style={rootStyle}
       testID={testID}
-    >
-      <View pointerEvents="none" style={{ width: glyph, height: glyph }}>
-        <Icon width={glyph} height={glyph} fill={color} />
-      </View>
-    </Pressable>
+    />
   );
 }
 

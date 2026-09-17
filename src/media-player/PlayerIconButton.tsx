@@ -1,22 +1,14 @@
-import React, { forwardRef, useEffect, useMemo, useState } from 'react';
-import { Pressable, View, type GestureResponderEvent, type StyleProp, type ViewStyle } from 'react-native';
+import React, { forwardRef, useMemo } from 'react';
+import { View, type GestureResponderEvent, type StyleProp, type ViewStyle } from 'react-native';
 
-import {
-  MEDIA_CONTROLS_CSS,
-  MEDIA_CONTROLS_STYLE_ID,
-  resolveMediaControlsPaint,
-} from '../media-controls/shared';
-import { adoptStyleSheet } from '../styles/adopt-style-sheet';
-import { borderRadius } from '../styles/tokens';
-import type { WebCssStyle } from '../styles/web-view-style';
-import { webDataSet } from '../styles/web-data';
+import { GlyphButton } from '../button';
+import { resolveMediaControlsPaint } from '../media-controls/shared';
+import type { WebAriaProps } from '../styles/styled-primitives';
 import { useTheme } from '../theme/use-theme';
 import { Text } from '../typography';
-import type { BloomIconComponent } from '../icons/icon-component';
 
 /** A glyph component (any `Ri*` icon). */
-/** @deprecated Use `BloomIconComponent` from `@oxy.so/bloom/icons`; this is an alias of it. */
-export type PlayerGlyph = BloomIconComponent;
+export type PlayerGlyph = React.ComponentType<{ width?: number; height?: number; fill?: string }>;
 
 /** The dot under an active glyph. */
 export const ACTIVE_DOT = 4;
@@ -39,7 +31,7 @@ export interface PlayerIconButtonProps {
   active?: boolean;
   disabled?: boolean;
   'aria-expanded'?: boolean;
-  'aria-haspopup'?: boolean | 'menu' | 'dialog' | 'listbox' | 'tree' | 'grid' | 'true' | 'false';
+  'aria-haspopup'?: WebAriaProps['aria-haspopup'];
   /** Foreground at rest. Default the family's muted neutral. */
   restColor?: string;
   style?: StyleProp<ViewStyle>;
@@ -54,6 +46,14 @@ export interface PlayerIconButtonProps {
  *   hover    text colour on a neutral-100 (dark neutral-800) round wash
  *   active   accent glyph + a 4px accent dot under it
  *   disabled 50% opacity
+ *
+ * `button/GlyphButton` with this family's wash and two things only it has: the
+ * ACTIVE DOT (its `decoration`) and a TEXT glyph ("1.5×"), which is what `grow`
+ * is for — the box becomes a minimum width and the control widens to its label.
+ *
+ * `lit` is `pressed || active`, so the accent reaches a menu TRIGGER that is not
+ * itself a toggle; that is why the lit colours are handed over as
+ * `color`/`hoverColor` rather than left to `GlyphButton`'s `pressed` default.
  *
  * Colour change only. Forwards the trigger props `asChild` hands it
  * (`aria-expanded`, `aria-haspopup`, `onPress`, the name).
@@ -77,71 +77,58 @@ export const PlayerIconButton = forwardRef<View, PlayerIconButtonProps>(function
   ref,
 ) {
   const theme = useTheme();
-  useEffect(() => {
-    adoptStyleSheet(MEDIA_CONTROLS_STYLE_ID, MEDIA_CONTROLS_CSS);
-  }, []);
   const paint = useMemo(() => resolveMediaControlsPaint(theme), [theme]);
-  const [hovered, setHovered] = useState(false);
   const lit = pressed === true || active === true;
-  const hover = hovered && !disabled;
-  const color = lit ? (hover ? paint.accentHover : paint.accent) : hover ? paint.text : (restColor ?? paint.textMuted);
-
-  const rootStyle: WebCssStyle = {
-    minWidth: box,
-    height: box,
-    paddingLeft: text ? 6 : 0,
-    paddingRight: text ? 6 : 0,
-    borderRadius: borderRadius.full,
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: hover ? paint.wash : undefined,
-    opacity: disabled ? 0.5 : 1,
-    '--bloom-media-ring': paint.ring,
-  };
-
-  const toggle = pressed !== undefined;
 
   return (
-    <Pressable
+    <GlyphButton
       ref={ref}
-      {...webDataSet({ bloomMediaFocusable: '', bloomPlayerButton: lit ? 'active' : '' })}
-      role="button"
-      accessibilityLabel={accessibilityLabel}
-      aria-pressed={toggle ? pressed : undefined}
-      accessibilityState={toggle ? { selected: pressed, disabled } : { disabled }}
-      aria-disabled={disabled || undefined}
+      icon={Icon}
+      size={box}
+      glyphSize={glyph}
+      grow={text !== undefined}
+      accessibilityLabel={accessibilityLabel ?? ''}
+      disabled={disabled}
+      pressed={pressed}
+      color={lit ? paint.accent : (restColor ?? paint.textMuted)}
+      hoverColor={lit ? paint.accentHover : paint.text}
+      activeColor={paint.accent}
+      activeHoverColor={paint.accentHover}
+      fill="transparent"
+      hoverFill={paint.wash}
+      ring={paint.ring}
       aria-expanded={aria['aria-expanded']}
       aria-haspopup={aria['aria-haspopup']}
-      disabled={disabled}
-      onHoverIn={() => setHovered(true)}
-      onHoverOut={() => setHovered(false)}
       onPress={onPress}
-      style={[rootStyle, style]}
+      style={style}
       testID={testID}
+      decoration={
+        lit ? (
+          <View
+            pointerEvents="none"
+            testID={testID ? `${testID}-dot` : undefined}
+            style={{
+              position: 'absolute',
+              bottom: box >= 40 ? 2 : 0,
+              width: ACTIVE_DOT,
+              height: ACTIVE_DOT,
+              borderRadius: ACTIVE_DOT / 2,
+              backgroundColor: paint.accent,
+            }}
+          />
+        ) : null
+      }
     >
-      <View pointerEvents="none" style={{ alignItems: 'center', justifyContent: 'center' }}>
-        {Icon ? (
-          <Icon width={glyph} height={glyph} fill={color} />
-        ) : (
-          <Text variant={glyph >= 20 ? 'body-semibold' : 'caption-1-semibold'} style={{ color }}>
-            {text ?? ''}
-          </Text>
-        )}
-      </View>
-      {lit ? (
-        <View
-          pointerEvents="none"
-          testID={testID ? `${testID}-dot` : undefined}
-          style={{
-            position: 'absolute',
-            bottom: box >= 40 ? 2 : 0,
-            width: ACTIVE_DOT,
-            height: ACTIVE_DOT,
-            borderRadius: ACTIVE_DOT / 2,
-            backgroundColor: paint.accent,
-          }}
-        />
-      ) : null}
-    </Pressable>
+      {Icon
+        ? undefined
+        : (foreground: string) => (
+            <Text
+              variant={glyph >= 20 ? 'body-semibold' : 'caption-1-semibold'}
+              style={{ color: foreground }}
+            >
+              {text ?? ''}
+            </Text>
+          )}
+    </GlyphButton>
   );
 });

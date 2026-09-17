@@ -207,6 +207,13 @@ const DELEGATING_TAGS = ['MenuRowShell'];
  * contents to be named by, and making the name mandatory at the type level is
  * what stops one shipping without it.
  */
+// `button/Button.tsx` is the third: it takes `accessibilityRole` (`'button' |
+// 'link'`, for a control that navigates through a family's own router and so
+// renders no anchor) and forwards it, with `accessibilityLabel`, to its own
+// `StyledPressable` — where every rule below applies. Its two role-passing
+// callers are `listing-details`' and `media-header`'s inline links, both of
+// which pass the name too.
+const NAME_DELEGATING_TAGS = ['Button', 'Card', 'MediaPressable', 'MenuRowShell'];
 
 /**
  * `const X = Animated.createAnimatedComponent(<host>)`, collected from the
@@ -318,7 +325,7 @@ interface Element {
  * text-bearing on the strength of `{color}`, and the toast close button this
  * rule was written to catch survived its own mutation test.
  */
-const NAME_DELEGATING_TAGS = ['Card', 'MediaPressable', 'MenuRowShell'];
+// (merged above: Button, Card, MediaPressable, MenuRowShell)
 function hasTextChildren(sf: ts.SourceFile, opening: ts.Node): boolean {
   const parent = opening.parent;
   if (!ts.isJsxElement(parent)) return false;

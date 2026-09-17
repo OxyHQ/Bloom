@@ -2,10 +2,16 @@ import { isValidElement, type ReactNode } from 'react';
 
 import { borderRadius } from '../styles/tokens';
 import { parseRgba, withAlpha } from '../theme/color-utils';
-import { TYPE_SCALE, type TypeScaleVariant } from '../typography/scale';
+import { TYPE_SCALE, type TypeScaleStyle, type TypeScaleVariant } from '../typography/scale';
 import { oklchToSrgb, srgbToOklch, srgbToRgbString, type Oklch } from '../theme/color-space';
 import type { Theme } from '../theme/types';
-import type { ButtonIconComponent, ButtonLinkTone, ButtonSize, ButtonVariant } from './types';
+import type {
+  ButtonIconComponent,
+  ButtonLinkTone,
+  ButtonSize,
+  ButtonUnderline,
+  ButtonVariant,
+} from './types';
 
 /**
  * The geometry and palette both `Button` forks paint from. One table, read by
@@ -49,7 +55,8 @@ export interface ButtonGeometry {
   type: TypeScaleVariant;
   fontSize: number;
   lineHeight: number;
-  fontWeight: '500' | '600';
+  /** Any ramp weight — `textVariant` can name a step outside the sizes' own. */
+  fontWeight: TypeScaleStyle['fontWeight'];
   letterSpacing: number;
   /** Icon-only width grows with the border (content-derived), vs forced square. */
   iconOnlyGrowsWithBorder: boolean;
@@ -61,9 +68,22 @@ function typeFields(type: TypeScaleVariant) {
     type,
     fontSize: t.fontSize,
     lineHeight: t.lineHeight,
-    fontWeight: t.fontWeight as '500' | '600',
+    fontWeight: t.fontWeight,
     letterSpacing: t.letterSpacing,
   };
+}
+
+/**
+ * The geometry a button paints from: the size's row, with the four TYPE fields
+ * replaced when the caller named a `textVariant`. Height, padding, gap and icon
+ * size stay the SIZE's — a ramp step is a label, not a geometry.
+ */
+export function resolveButtonGeometry(
+  size: ButtonResolvedSize,
+  textVariant?: TypeScaleVariant,
+): ButtonGeometry {
+  const base = BUTTON_GEOMETRY[size];
+  return textVariant ? { ...base, ...typeFields(textVariant) } : base;
 }
 
 export const BUTTON_GEOMETRY: Record<ButtonResolvedSize, ButtonGeometry> = {
@@ -450,6 +470,20 @@ export function resolveButtonPalette(
     case 'link':
       // No surface in any state — the underline is the hover cue and only
       // the press darkens the label.
+      if (linkTone === 'text') {
+        // The READING colour. The one tone whose hover changes the FOREGROUND,
+        // which is why both forks paint `palette.hover.foreground` rather than
+        // assuming it equals the rest colour.
+        return {
+          rest: solidState(TRANSPARENT, TRANSPARENT, c.text),
+          hover: solidState(TRANSPARENT, TRANSPARENT, c.textSecondary),
+          active: solidState(TRANSPARENT, TRANSPARENT, c.textSecondary),
+          disabled: solidState(TRANSPARENT, TRANSPARENT, c.textTertiary),
+          borderWidth: 0,
+          shadow: false,
+          ring: accent[500],
+        };
+      }
       return linkTone === 'secondary'
         ? {
             rest: solidState(TRANSPARENT, TRANSPARENT, n[500]),
@@ -503,6 +537,74 @@ export function resolveCloseButtonPaint(theme: Theme): CloseButtonPaint {
     background: theme.isDark ? n[800] : n[200],
     foreground: n[500],
     foregroundHover: theme.colors.text,
+    ring: accent[500],
+  };
+}
+
+/**
+ * When a variant underlines its label, given the caller's `underline`.
+ *
+ * ONE function, read by both forks, because "the underline is the affordance"
+ * and "the underline is the hover cue" are different controls and a fork that
+ * decided for itself is how they drift. `link` keeps its hover underline,
+ * everything else keeps none, unless the caller says otherwise.
+ */
+export function resolveButtonUnderline(
+  variant: ButtonVariant,
+  underline: ButtonUnderline | undefined,
+): ButtonUnderline {
+  if (underline !== undefined) return underline;
+  return variant === 'link' ? 'hover' : 'none';
+}
+
+// ---------------------------------------------------------------------------
+//  GlyphButton
+// ---------------------------------------------------------------------------
+
+/**
+ * The glyph's share of the box. Measured over the five family-local copies this
+ * replaces, the ratio ran 0.50 (`queue-panel`, glyph = size / 2) to 0.75
+ * (`music-library`'s 40-box compass at 30); 0.6 is the middle and is exactly
+ * what `media-header`'s 40-box controls already drew. Every call site can still
+ * pass `glyphSize` — this is the DEFAULT, not a rule.
+ */
+export const GLYPH_BUTTON_GLYPH_RATIO = 0.6;
+
+/** Default diameter — the same 36 `Button size="medium"` stands at. */
+export const GLYPH_BUTTON_SIZE = 36;
+
+/** The glyph edge for a box, rounded to a whole pixel. */
+export function glyphButtonGlyphSize(size: number): number {
+  return Math.round(size * GLYPH_BUTTON_GLYPH_RATIO);
+}
+
+export interface GlyphButtonPaint {
+  /** Foreground at rest — the muted reading colour. */
+  color: string;
+  /** Foreground under a pointer or a press. */
+  hoverColor: string;
+  /** Foreground while the toggle is on. */
+  activeColor: string;
+  /** Fill at rest: none. A glyph button is transparent by construction. */
+  fill: string;
+  /** Fill under a pointer or a press — the neutral wash, never an accent one. */
+  hoverFill: string;
+  ring: string;
+}
+
+/**
+ * `GlyphButton`'s defaults: a NEUTRAL control. The wash is the neutral ramp's
+ * 100 (dark 800), the same step `text`'s hover uses — deliberately not `ghost`'s
+ * accent wash, which is what makes a ⋯ or a × land tinted.
+ */
+export function resolveGlyphButtonPaint(theme: Theme): GlyphButtonPaint {
+  const { accent, neutral: n } = resolveButtonRamps(theme);
+  return {
+    color: theme.colors.textSecondary,
+    hoverColor: theme.colors.text,
+    activeColor: accent[500],
+    fill: TRANSPARENT,
+    hoverFill: theme.isDark ? n[800] : n[100],
     ring: accent[500],
   };
 }

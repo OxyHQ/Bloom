@@ -1,6 +1,8 @@
 import React, { memo, useEffect, useMemo, useRef, useState } from 'react';
 import { Pressable, ScrollView, TextInput, View, type TextStyle } from 'react-native';
 
+import { GlyphButton } from '../button';
+import { webDataSet } from '../styles/web-data';
 import { Chip } from '../chip';
 import {
   DropdownMenu,
@@ -23,12 +25,10 @@ import { RiMenuLine } from '../icons/remix/RiMenuLine';
 import { RiSearchLine } from '../icons/remix/RiSearchLine';
 import { adoptStyleSheet } from '../styles/adopt-style-sheet';
 import type { WebCssStyle } from '../styles/web-view-style';
-import { webDataSet } from '../styles/web-data';
 import { SANS_FONT_FAMILY } from '../text-field/shared';
 import { useTheme } from '../theme/use-theme';
 import { Text } from '../typography';
 import { TYPE_SCALE } from '../typography/scale';
-import { GlyphButton } from './GlyphButton';
 import { LibraryItem } from './LibraryItem';
 import {
   DEFAULT_LIBRARY_LABELS,
@@ -219,28 +219,32 @@ function LibraryPanelComponent({
       >
         <View style={{ alignItems: 'center', gap: 4, paddingTop: 12, paddingBottom: 8 }}>
           <GlyphButton
-            label={labels.expandRail}
+            accessibilityLabel={labels.expandRail}
             size={40}
+            icon={RiBookShelfLine}
+            glyphSize={24}
+            color={paint.textMuted}
+            hoverColor={paint.textMuted}
             fill="transparent"
             hoverFill={paint.hover}
             ring={paint.ring}
             onPress={onCollapsedChange ? () => onCollapsedChange(false) : undefined}
             testID={pid('rail-toggle')}
-          >
-            <RiBookShelfLine width={24} height={24} fill={paint.textMuted} />
-          </GlyphButton>
+          />
           {onCreatePress ? (
             <GlyphButton
-              label={labels.create}
+              accessibilityLabel={labels.create}
               size={40}
+              icon={RiAddLine}
+              glyphSize={22}
+              color={paint.text}
+              hoverColor={paint.text}
               fill={paint.hover}
               hoverFill={paint.selected}
               ring={paint.ring}
               onPress={onCreatePress}
               testID={pid('create')}
-            >
-              <RiAddLine width={22} height={22} fill={paint.text} />
-            </GlyphButton>
+            />
           ) : null}
         </View>
         <ScrollView
@@ -309,33 +313,33 @@ function LibraryPanelComponent({
         <View style={{ flexGrow: 1 }} />
         {onCreatePress ? (
           <GlyphButton
-            label={labels.create}
+            accessibilityLabel={labels.create}
             size={32}
+            icon={RiAddLine}
+            glyphSize={20}
+            color={paint.text}
+            hoverColor={paint.text}
             fill={paint.hover}
             hoverFill={paint.selected}
             ring={paint.ring}
             onPress={onCreatePress}
             testID={pid('create')}
-          >
-            <RiAddLine width={20} height={20} fill={paint.text} />
-          </GlyphButton>
+          />
         ) : null}
         {onExpandedChange ? (
           <GlyphButton
-            label={expanded ? labels.collapse : labels.expand}
+            accessibilityLabel={expanded ? labels.collapse : labels.expand}
             size={32}
+            icon={expanded ? RiContractLeftRightLine : RiExpandLeftRightLine}
+            glyphSize={20}
+            color={paint.textMuted}
+            hoverColor={paint.textMuted}
             fill="transparent"
             hoverFill={paint.hover}
             ring={paint.ring}
             onPress={() => onExpandedChange(!expanded)}
             testID={pid('expand')}
-          >
-            {expanded ? (
-              <RiContractLeftRightLine width={20} height={20} fill={paint.textMuted} />
-            ) : (
-              <RiExpandLeftRightLine width={20} height={20} fill={paint.textMuted} />
-            )}
-          </GlyphButton>
+          />
         ) : null}
       </View>
 
@@ -454,8 +458,12 @@ function LibraryPanelComponent({
             />
             {query.length > 0 ? (
               <GlyphButton
-                label={labels.clearSearch}
+                accessibilityLabel={labels.clearSearch}
                 size={28}
+                icon={RiCloseLine}
+                glyphSize={16}
+                color={paint.textMuted}
+                hoverColor={paint.textMuted}
                 fill="transparent"
                 hoverFill={paint.selected}
                 ring={paint.ring}
@@ -464,24 +472,24 @@ function LibraryPanelComponent({
                   searchRef.current?.focus();
                 }}
                 testID={pid('search-clear')}
-              >
-                <RiCloseLine width={16} height={16} fill={paint.textMuted} />
-              </GlyphButton>
+              />
             ) : null}
           </View>
         ) : (
           <>
             <GlyphButton
-              label={labels.search}
+              accessibilityLabel={labels.search}
               size={32}
+              icon={RiSearchLine}
+              glyphSize={18}
+              color={paint.textMuted}
+              hoverColor={paint.textMuted}
               fill="transparent"
               hoverFill={paint.hover}
               ring={paint.ring}
               onPress={() => setSearchOpen(true)}
               testID={pid('search')}
-            >
-              <RiSearchLine width={18} height={18} fill={paint.textMuted} />
-            </GlyphButton>
+            />
             <View style={{ flexGrow: 1 }} />
           </>
         )}
