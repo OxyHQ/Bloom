@@ -4,7 +4,7 @@ import { Platform, type TextInput, View } from 'react-native';
 import { useTheme } from '../theme/use-theme';
 import { atoms as a } from '../styles';
 import { borderRadius } from '../styles/tokens';
-import { Button } from '../button';
+import { GlyphButton } from '../button';
 import { TextField, TextFieldIcon, TextFieldInput, type TextFieldInputProps } from '../text-field';
 import { RiSearchLine as MagnifyingGlassIcon } from '../icons/remix/RiSearchLine';
 import { RiCloseLine as X } from '../icons/remix/RiCloseLine';
@@ -55,15 +55,16 @@ export const Search = forwardRef<TextInput, SearchProps>(
               a.pr_sm,
               { left: 'auto' },
             ]}>
-            <Button
+            {/* Neutral and transparent. `variant="ghost"` painted an accent
+                wash inside the field, which read as a state the field was not
+                in. */}
+            <GlyphButton
               testID="searchTextInputClearBtn"
               onPress={onClearText}
               accessibilityLabel="Clear search query"
-              hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
-              variant="ghost"
-              size="small"
-              icon={<X fill={theme.colors.textSecondary} size="xs" />}
-              style={{ padding: 4, minHeight: 0 }}
+              size={28}
+              icon={X}
+              glyphSize={16}
             />
           </View>
         )}

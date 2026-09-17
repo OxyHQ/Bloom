@@ -2,7 +2,7 @@ import React, { memo, useMemo } from 'react';
 import { Image, Pressable, StyleSheet, View } from 'react-native';
 
 import { mixColor, resolveButtonRamps } from '../button/shared';
-import { Button } from '../button';
+import { GlyphButton } from '../button';
 import { Chip } from '../chip';
 import {
   DropdownMenu,
@@ -158,11 +158,16 @@ function ReleaseCardComponent({
     actions.length > 0 ? (
       <DropdownMenu>
         <DropdownMenuTrigger asChild label={labels.actions(release.title)}>
-          <Button
-            variant="secondary"
-            size="small"
-            iconOnly
-            leadingIcon={RiMoreFill}
+          {/* The neutral transparent ⋯: the same affordance `media-card`
+              draws, rather than a bordered `secondary` on a card that already
+              has a border. */}
+          <GlyphButton
+            size={32}
+            icon={RiMoreFill}
+            glyphSize={20}
+            color={paint.textSecondary}
+            hoverColor={paint.text}
+            ring={paint.ring}
             accessibilityLabel={labels.actions(release.title)}
             testID={testID ? `${testID}-actions` : undefined}
           />

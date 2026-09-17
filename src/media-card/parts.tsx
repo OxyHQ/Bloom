@@ -11,7 +11,7 @@ import {
 } from 'react-native';
 import Svg, { Defs, LinearGradient, Rect, Stop } from 'react-native-svg';
 
-import { Button } from '../button';
+import { Button, GlyphButton } from '../button';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -358,11 +358,12 @@ export function CardMenu({
     >
       <DropdownMenu open={open} onOpenChange={onOpenChange}>
         <DropdownMenuTrigger asChild label={name}>
-          <Button
-            variant="ghost"
-            size="small"
-            iconOnly
-            leadingIcon={RiMoreFill}
+          {/* Neutral and transparent — `Button variant="ghost"` painted an
+              accent wash on a card that owns its own surface. */}
+          <GlyphButton
+            size={32}
+            icon={RiMoreFill}
+            glyphSize={20}
             accessibilityLabel={name}
             testID={testID ? `${testID}-menu` : undefined}
           />
