@@ -18,6 +18,7 @@ import { useRingOffsetStyle } from '../styles/surface-levels';
 import type { WebCssStyle } from '../styles/web-view-style';
 import { webDataSet } from '../styles/web-data';
 import type { CheckboxSize } from './types';
+import { DISABLED_OPACITY } from '../styles/tokens';
 
 /**
  * The checkbox glyph — the box and its tick — shared by `Checkbox` and
@@ -316,7 +317,7 @@ export function CheckboxGlyph({
             borderRadius: BOX_RADIUS,
             alignItems: 'center',
             justifyContent: 'center',
-            opacity: disabled ? 0.5 : 1,
+            opacity: disabled ? DISABLED_OPACITY : 1,
           },
           boxStyle,
         ]}

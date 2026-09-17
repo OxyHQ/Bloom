@@ -169,8 +169,11 @@ describe('the builder is used, not just its adopter hook', () => {
   it('has at least the families migrated to it', () => {
     const callers = FILES.filter((f) => /\binteractiveWebCss\(/.test(f.text)).map((f) => f.path);
     expect(callers).toEqual(expect.arrayContaining([
-      'stay-filters/FilterChip.tsx',
-      'stay-filters/FilterTextButton.tsx',
+      // `FilterChip` and `FilterTextButton` folded into `Chip` and `Button`
+      // after this list was written; the recipe now reaches those call sites
+      // through the two base families instead.
+      'chip/Chip.tsx',
+      'button/Button.web.tsx',
       'stay-filters/PropertyTypeTiles.tsx',
       'stepper/Stepper.tsx',
     ]));

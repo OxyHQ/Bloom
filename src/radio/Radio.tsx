@@ -6,7 +6,7 @@ import { Text } from '../typography';
 import type { TypeScaleVariant } from '../typography';
 import { TYPE_SCALE } from '../typography/scale';
 
-import { space } from '../styles/tokens';
+import { space, DISABLED_OPACITY } from '../styles/tokens';
 import { useRingOffsetStyle } from '../styles/surface-levels';
 import { resolveButtonRamps } from '../button/shared';
 import { focusRingShadow, interactiveWebCss, useInteractiveWebCss } from '../styles/interactive-web-css';
@@ -118,7 +118,7 @@ const RadioComponent = function Radio<Value extends string = string>({
     alignItems: 'flex-start',
     gap: LABEL_GAP,
     // `opacity-50` on the whole row.
-    opacity: disabled ? 0.5 : 1,
+    opacity: disabled ? DISABLED_OPACITY : 1,
     // The `:focus-visible` ring colour, read by the adopted sheet.
     '--bloom-radio-ring': color ?? accent[500],
     ...ringOffset,

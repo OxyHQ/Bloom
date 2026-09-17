@@ -11,6 +11,7 @@ import type { WebCssStyle } from '../styles/web-view-style';
 import { webDataSet } from '../styles/web-data';
 import { RadioIndicator } from '../radio-indicator';
 import type { RadioCardProps } from './types';
+import { DISABLED_OPACITY } from '../styles/tokens';
 
 /**
  * `RadioCard` — the radio flavour of `CheckboxCard`: title and an optional
@@ -110,7 +111,7 @@ const RadioCardComponent = function RadioCard<Value extends string = string>({
     paddingTop: 12,
     paddingBottom: 12,
     backgroundColor: highlighted ? paint.backgroundHover : paint.background,
-    opacity: disabled ? 0.5 : 1,
+    opacity: disabled ? DISABLED_OPACITY : 1,
     '--bloom-radio-ring': paint.ring,
     ...ringOffset,
     ...(IS_WEB

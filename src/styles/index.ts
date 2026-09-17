@@ -18,7 +18,6 @@ export {
 } from './color-contrast';
 export { webDataSet } from './web-data';
 export { clamp, clamp01 } from './clamp';
-export { contrastRatio, relativeLuminance } from './color-contrast';
 export { mixColors, quietText, quietTextOver } from './color-contrast';
 export {
   AA_GRAPHICAL,

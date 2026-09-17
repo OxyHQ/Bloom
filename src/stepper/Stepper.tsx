@@ -10,7 +10,6 @@ import { RiSubtractLine } from '../icons/remix/RiSubtractLine';
 import { useRingOffsetStyle } from '../styles/surface-levels';
 import { interactiveWebCss, useInteractiveWebCss } from '../styles/interactive-web-css';
 import type { WebCssStyle } from '../styles/web-view-style';
-import { webDataSet } from '../styles/web-data';
 import { useTheme } from '../theme/use-theme';
 import { Text } from '../typography';
 import type { TypeScaleVariant } from '../typography/scale';

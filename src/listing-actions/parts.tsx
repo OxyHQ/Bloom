@@ -13,6 +13,7 @@ import { useImageResolver } from '../image-resolver/context';
 import { DISABLED_OPACITY, borderRadius } from '../styles/tokens';
 import { adoptStyleSheet } from '../styles/adopt-style-sheet';
 import type { WebCssStyle } from '../styles/web-view-style';
+import { isImageUrl } from '../image-resolver';
 import { webDataSet } from '../styles/web-data';
 import type { Theme } from '../theme/types';
 import { useTheme } from '../theme/use-theme';

@@ -14,6 +14,7 @@ import {
   resolveCheckboxPaint,
 } from './shared';
 import type { CheckboxCardProps } from './types';
+import { DISABLED_OPACITY } from '../styles/tokens';
 
 /**
  * `CheckboxCard`: a selectable card with the title and an optional
@@ -93,7 +94,7 @@ const CheckboxCardComponent: React.FC<CheckboxCardProps> = ({
     paddingTop: 12,
     paddingBottom: 12,
     backgroundColor: highlighted ? paint.cardBackgroundHover : paint.cardBackground,
-    opacity: disabled ? 0.5 : 1,
+    opacity: disabled ? DISABLED_OPACITY : 1,
     ...(IS_WEB
       ? {
           transitionProperty: 'background-color, border-color, color',

@@ -7,11 +7,11 @@ import { useInteractionState } from '../hooks/use-interaction-state';
 import { useRingOffsetStyle } from '../styles/surface-levels';
 import { interactiveWebCss, useInteractiveWebCss } from '../styles/interactive-web-css';
 import type { WebCssStyle } from '../styles/web-view-style';
-import { webDataSet } from '../styles/web-data';
 import { useTheme } from '../theme/use-theme';
 import { Text } from '../typography';
 import { PROPERTY_TYPE_OPTIONS, relabelOptions } from './constants';
 import type { FilterIconComponent, PropertyType, PropertyTypeOption, PropertyTypeTilesProps } from './types';
+import { DISABLED_OPACITY } from '../styles/tokens';
 
 /**
  * A multi-select grid of icon tiles, one per property type. Internal: the
@@ -106,7 +106,7 @@ function Tile({ label, icon: Icon, selected, disabled, size, onPress, testID }: 
     paddingRight: inset,
     justifyContent: 'space-between',
     gap: 8,
-    opacity: disabled ? 0.5 : 1,
+    opacity: disabled ? DISABLED_OPACITY : 1,
     '--bloom-property-tile-ring': accent[500],
     ...ringOffset,
   };

@@ -18,6 +18,7 @@ import {
   type HousingPalette,
 } from './shared';
 import type { HousingIcon } from './types';
+import { DISABLED_OPACITY } from '../styles/tokens';
 
 /**
  * Internal parts the housing cards are built from. Not published: each is a
@@ -178,7 +179,7 @@ export function HousingToggleButton({
     gap: 4,
     borderRadius: BUTTON_RADIUS,
     backgroundColor: background,
-    opacity: disabled ? 0.5 : 1,
+    opacity: disabled ? DISABLED_OPACITY : 1,
     '--bloom-housing-ring': palette.ring,
   };
 

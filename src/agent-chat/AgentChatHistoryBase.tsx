@@ -35,6 +35,7 @@ import {
   type AgentChatPalette,
 } from './shared';
 import type { AgentChatHistoryProps, AgentChatThread } from './types';
+import { DISABLED_OPACITY } from '../styles/tokens';
 
 /**
  * The chat-history rail, a card of its own
@@ -154,7 +155,7 @@ function HoverRow({
     borderRadius: ROW_RADIUS,
     ...style,
     backgroundColor: lit ? hoverBackground : 'transparent',
-    opacity: disabled ? 0.5 : 1,
+    opacity: disabled ? DISABLED_OPACITY : 1,
     '--bloom-agent-chat-ring': palette.ring,
   };
   return (
@@ -365,7 +366,7 @@ function ThreadRow({
     paddingBottom: 6,
     paddingLeft: 8,
     borderRadius: ROW_RADIUS,
-    opacity: disabled ? 0.5 : 1,
+    opacity: disabled ? DISABLED_OPACITY : 1,
     '--bloom-agent-chat-ring': palette.ring,
   };
 

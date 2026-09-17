@@ -18,13 +18,13 @@ import { adoptStyleSheet } from '../styles/adopt-style-sheet';
 import { useRingOffsetStyle } from '../styles/surface-levels';
 import { focusRingShadow } from '../styles/interactive-web-css';
 import type { WebCssStyle } from '../styles/web-view-style';
-import { webDataSet } from '../styles/web-data';
 import type { Theme } from '../theme/types';
 import { useTheme } from '../theme/use-theme';
 import { Text } from '../typography';
 import { moveItem } from '../hooks/list-reorder';
 import { slotAtPoint, sortableGridColumns } from './reorder';
 import type { SortablePhoto, SortablePhotoGridLabels, SortablePhotoGridProps } from './types';
+import { DISABLED_OPACITY } from '../styles/tokens';
 
 /**
  * An editable, reorderable grid of uploaded photos. The first photo is the
@@ -767,7 +767,7 @@ function AddTile({
     gap: 6,
     paddingLeft: 8,
     paddingRight: 8,
-    opacity: disabled ? 0.5 : 1,
+    opacity: disabled ? DISABLED_OPACITY : 1,
     '--bloom-sortable-ring': paint.ring,
     ...ringOffset,
   };

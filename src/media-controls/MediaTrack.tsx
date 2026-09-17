@@ -11,7 +11,7 @@ import {
 } from 'react-native';
 
 import { adoptStyleSheet } from '../styles/adopt-style-sheet';
-import { borderRadius } from '../styles/tokens';
+import { borderRadius, DISABLED_OPACITY } from '../styles/tokens';
 import type { WebCssStyle } from '../styles/web-view-style';
 import { webDataSet } from '../styles/web-data';
 import { clamp } from '../styles/clamp';
@@ -199,7 +199,7 @@ export function MediaTrack({
     position: 'relative',
     height: MEDIA_TRACK_HIT,
     minWidth: 0,
-    opacity: disabled ? 0.5 : 1,
+    opacity: disabled ? DISABLED_OPACITY : 1,
     '--bloom-media-ring': paint.ring,
     '--bloom-media-accent': paint.accent,
     ...(IS_WEB ? { touchAction: 'none' } : null),

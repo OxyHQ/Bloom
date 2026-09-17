@@ -12,7 +12,7 @@ import { useTheme } from '../theme/use-theme';
 import { withAlpha } from '../theme/color-utils';
 import type { Theme } from '../theme/types';
 import { Text } from '../typography';
-import { borderRadius } from '../styles/tokens';
+import { borderRadius, DISABLED_OPACITY } from '../styles/tokens';
 import { useRingOffsetStyle } from '../styles/surface-levels';
 import { focusRingShadow } from '../styles/interactive-web-css';
 import { adoptStyleSheet } from '../styles/adopt-style-sheet';
@@ -20,7 +20,6 @@ import type { WebCssStyle } from '../styles/web-view-style';
 import { webDataSet } from '../styles/web-data';
 import { clamp } from '../styles/clamp';
 import { BUTTON_SHADOW, mixColor, resolveButtonRamps } from '../button/shared';
-import { webDataSet } from '../styles/web-data';
 import { useAccessibleNameWarning } from '../hooks/use-accessible-name-warning';
 import type { RangeSliderProps, SliderProps } from './types';
 
@@ -388,7 +387,7 @@ function SliderBase({
           minWidth: 0,
           flexDirection: 'column',
           gap: 8,
-          opacity: disabled ? 0.5 : 1,
+          opacity: disabled ? DISABLED_OPACITY : 1,
         },
         style,
       ]}

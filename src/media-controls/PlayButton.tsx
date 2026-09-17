@@ -2,7 +2,7 @@ import React, { memo, useEffect, useMemo, useState } from 'react';
 import { Pressable, View } from 'react-native';
 
 import { RiPlayFill } from '../icons/remix/RiPlayFill';
-import { borderRadius } from '../styles/tokens';
+import { borderRadius, DISABLED_OPACITY } from '../styles/tokens';
 import { adoptStyleSheet } from '../styles/adopt-style-sheet';
 import type { WebCssStyle } from '../styles/web-view-style';
 import { webDataSet } from '../styles/web-data';
@@ -104,7 +104,7 @@ function PlayButtonComponent({
     alignItems: 'center',
     justifyContent: 'center',
     backgroundColor: fill,
-    opacity: disabled ? 0.5 : 1,
+    opacity: disabled ? DISABLED_OPACITY : 1,
     '--bloom-media-ring': paint.ring,
     ...(IS_WEB ? { transitionProperty: 'background-color', transitionDuration: '150ms' } : null),
   };

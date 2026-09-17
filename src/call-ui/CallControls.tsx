@@ -22,6 +22,7 @@ import {
 } from './shared';
 import { CallEndGlyph } from './glyphs';
 import type { CallControlButtonProps, CallControlKey, CallControlsProps } from './types';
+import { DISABLED_OPACITY } from '../styles/tokens';
 
 /**
  * `CallControlButton`: one round control on a call stage.
@@ -88,7 +89,7 @@ function CallControlButtonComponent({
           alignItems: 'center',
           justifyContent: 'center',
           backgroundColor: background,
-          opacity: disabled ? 0.45 : 1,
+          opacity: disabled ? DISABLED_OPACITY : 1,
         }}
       >
         <Glyph width={geometry.glyph} height={geometry.glyph} fill={foreground} />

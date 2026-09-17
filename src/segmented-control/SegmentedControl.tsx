@@ -23,7 +23,7 @@ import { Text } from '../typography';
 import type { TypeScaleFamily } from '../typography';
 import type { Theme } from '../theme/types';
 import { useInteractionState } from '../hooks/use-interaction-state';
-import { borderRadius } from '../styles/tokens';
+import { borderRadius, DISABLED_OPACITY } from '../styles/tokens';
 import { NOT_DISABLED, interactiveWebCss, useInteractiveWebCss } from '../styles/interactive-web-css';
 import type { WebCssStyle } from '../styles/web-view-style';
 import { mixColor, resolveButtonRamps } from '../button/shared';
@@ -346,7 +346,7 @@ export function SegmentedControlItem({
     height: geometry.height,
     paddingHorizontal: geometry.paddingHorizontal,
     borderRadius: borderRadius.full,
-    opacity: disabled ? 0.5 : 1,
+    opacity: disabled ? DISABLED_OPACITY : 1,
     '--bloom-segmented-ring': ctx.palette.ring,
   };
 

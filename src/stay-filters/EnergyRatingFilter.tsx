@@ -7,7 +7,7 @@ import { useInteractionState } from '../hooks/use-interaction-state';
 import { adoptStyleSheet } from '../styles/adopt-style-sheet';
 import { useRingOffsetStyle } from '../styles/surface-levels';
 import { focusRingShadow } from '../styles/interactive-web-css';
-import { borderRadius } from '../styles/tokens';
+import { borderRadius, DISABLED_OPACITY } from '../styles/tokens';
 import type { WebCssStyle } from '../styles/web-view-style';
 import type { Theme } from '../theme/types';
 import { useTheme } from '../theme/use-theme';
@@ -15,7 +15,6 @@ import { Text } from '../typography';
 import { ENERGY_RATINGS } from './constants';
 import type { EnergyRating, EnergyRatingFilterProps } from './types';
 import { contrastRatio, relativeLuminance } from '../styles/color-contrast';
-import { webDataSet } from '../styles/web-data';
 
 /**
  * An energy rating threshold, A (best) to G (worst), as seven small coloured
@@ -133,7 +132,7 @@ function Pill({ rating, paint, included, checked, disabled, name, onPress, testI
     backgroundColor: included ? paint.fill : dark ? neutral[800] : neutral[100],
     alignItems: 'center',
     justifyContent: 'center',
-    opacity: disabled ? 0.5 : 1,
+    opacity: disabled ? DISABLED_OPACITY : 1,
     '--bloom-energy-ring': accent[500],
     ...ringOffset,
   };
