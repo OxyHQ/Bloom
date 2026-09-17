@@ -132,6 +132,7 @@ export const SettingsListGroup = memo<SettingsListGroupProps>(function SettingsL
   footer,
   children,
   style,
+  variant = 'plain',
 }) {
   const theme = useTheme();
   const filteredChildren = React.Children.toArray(children).filter(Boolean);
@@ -151,7 +152,7 @@ export const SettingsListGroup = memo<SettingsListGroupProps>(function SettingsL
         the title/search). A self-margin here double-inset grouped rows on every
         screen that also applies that padding.
       */}
-      <Card variant="plain" radius="radius-16">
+      <Card variant={variant} radius="radius-16">
         {filteredChildren.map((child, index) => (
           <React.Fragment key={index}>
             {child}
