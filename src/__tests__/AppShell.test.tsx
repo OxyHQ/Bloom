@@ -96,6 +96,51 @@ describe('AppShell', () => {
   });
 });
 
+describe('AppShell scroll on web', () => {
+  /**
+   * What is pinned is the STRUCTURE the browser needs: no scroll view between
+   * the page and the document, a frame at least one viewport tall, and a
+   * sticky rail. Whether that really scrolls the document was measured in
+   * Chrome (Storybook `Blocks/App Shell`, the dashboard templates).
+   */
+  const original = ReactNative.Platform.OS;
+
+  /** Scroll views that are the PAGE's — the sidebar scrolls its own list. */
+  function pageScrollViews(screen: ReturnType<typeof renderIn>) {
+    return screen.UNSAFE_queryAllByType(ReactNative.ScrollView).filter((node) => {
+      for (let n = node.parent; n; n = n.parent) if (n.props.role === 'complementary') return false;
+      return true;
+    });
+  }
+  beforeEach(() => {
+    Object.defineProperty(ReactNative.Platform, 'OS', { value: 'web', configurable: true, writable: true });
+  });
+  afterEach(() => {
+    Object.defineProperty(ReactNative.Platform, 'OS', { value: original, configurable: true, writable: true });
+  });
+
+  it('document (default): no ScrollView, a viewport-tall frame and a sticky rail', () => {
+    setWidth(1440);
+    const screen = renderIn(<AppShell testID="shell" title="Home" sidebar={{ items: NAV }} />);
+    expect(pageScrollViews(screen)).toHaveLength(0);
+    expect(resolvedStyle(screen.getByTestId('shell').props.style)).toMatchObject({ minHeight: '100dvh' });
+    expect(resolvedStyle(screen.getByTestId('shell').props.style).overflow).toBeUndefined();
+    // The shell's first child is the wrapper holding the in-flow rail.
+    const wrapper = screen.getByTestId('shell').children[0];
+    expect(typeof wrapper === 'object' && resolvedStyle(wrapper.props.style)).toMatchObject({
+      position: 'sticky',
+      top: 12,
+      height: 'calc(100dvh - 24px)',
+    });
+  });
+
+  it('container: the page scrolls its own ScrollView', () => {
+    setWidth(1440);
+    const screen = renderIn(<AppShell testID="shell" scroll="container" title="Home" sidebar={{ items: NAV }} />);
+    expect(pageScrollViews(screen)).toHaveLength(1);
+  });
+});
+
 describe('NotificationBell', () => {
   it('shows the unread count on the glyph, and an explicit override', () => {
     setWidth(1440);

@@ -32,6 +32,16 @@ import { AppShell, NotificationBell, ProOfferCard } from '@oxy.so/bloom/app-shel
   - `overlay` — a drawer over the page on a 40% black backdrop (portaled through `OverlayRoot`, so it ranks with every other overlay).
   - `reveal` — the rail waits flat beneath the page; the page slides 272 right and rounds to 32 while the rail scales in from 0.94 (325ms). Pressing the page closes it.
 - `drawerOpen` / `onDrawerOpenChange` control it.
+
+## Scrolling on web
+
+The page scrolls the **document**, like a [`ContentPanel`](/docs/bloom/main/content-panel) page — not a scroll view inside the frame. The shell is at least one viewport tall and grows with its content; the in-flow sidebar is `position: sticky`, so it stays put while the page moves under it. That is what makes scroll restoration, the mobile address bar collapsing, anchor links and `window.scrollTo` behave as they do on any web page.
+
+- Nothing between the shell and the document may become a scroll container: a parent with `height: 100%` plus `overflow: hidden` (or `auto`) around `AppShell` pins the sidebar to a box that never scrolls. Mount it straight under the app root.
+- `reveal` clips the sliding page with `overflow: clip`, not `hidden`, for the same reason — and so the 272px slide never adds a horizontal scrollbar. The waiting rail is `position: fixed`.
+- `scroll="container"` restores the old behaviour — the shell fills its parent and the page scrolls inside its own `ScrollView` — for a shell embedded in a bounded box rather than owning the page.
+
+Native has no document: the page always scrolls its own `ScrollView`, and `scroll` is ignored.
 - `sidebar={{ variant: 'rail', … }}` keeps the 80px navigation rail in flow from `sm` instead of `lg`; below `sm` the menu button opens the drawer, which always shows the full panel.
 
 ## NotificationBell

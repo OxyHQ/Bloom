@@ -31,6 +31,29 @@ export const WEB_POSITION_FIXED = 'fixed' as ViewStyle['position'];
 export const WEB_POSITION_STICKY = 'sticky' as ViewStyle['position'];
 
 /**
+ * One viewport of height (`100dvh`), and one viewport minus a vertical inset,
+ * typed for React Native's `ViewStyle`. Same kind of gap as
+ * {@link WEB_POSITION_FIXED}: RN types lengths as a number or a percentage,
+ * while react-native-web passes any CSS length through. A percentage cannot say
+ * this in a page that scrolls the DOCUMENT — a percentage height needs a
+ * definite ancestor height, and an auto-height document-flow ancestor never has
+ * one. `dvh` rather than `vh` so a mobile browser's collapsing toolbar is not
+ * counted as viewport.
+ */
+export const WEB_VIEWPORT_HEIGHT = '100dvh' as ViewStyle['height'];
+export function webViewportHeightMinus(px: number): ViewStyle['height'] {
+  return `calc(100dvh - ${px}px)` as ViewStyle['height'];
+}
+
+/**
+ * `overflow: clip`, typed for React Native's `ViewStyle`. Clips like `hidden`
+ * without making the element a SCROLL CONTAINER — so a `position: sticky`
+ * descendant still sticks to the document instead of to a box that never
+ * scrolls.
+ */
+export const WEB_OVERFLOW_CLIP = 'clip' as ViewStyle['overflow'];
+
+/**
  * A `ViewStyle` that may ALSO carry CSS react-native-web forwards straight to the
  * DOM node but React Native does not model at all.
  *
