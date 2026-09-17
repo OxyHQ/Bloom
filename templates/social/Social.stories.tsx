@@ -21,7 +21,7 @@ import { Text } from '../../src/typography';
 import type { SidebarNavItem } from '../../src/sidebar';
 import { Search } from '../../src/search';
 import { useTheme } from '../../src/theme/use-theme';
-import { ComposeButton, FEED_WIDTH, SocialLayout } from './SocialLayout';
+import { ASIDE_WIDTH, ComposeButton, SocialLayout } from './SocialLayout';
 
 /**
  * The LAYOUT only. Every post, card and row here is a grey placeholder — the
@@ -132,7 +132,7 @@ function SideCard({ title, rows }: { title: string; rows: number }) {
   );
 }
 
-function Frame({ asideCollapse }: { asideCollapse?: 'stack' | 'hidden' }) {
+function Frame() {
   const [selected, setSelected] = useState('home');
   const [tab, setTab] = useState('for-you');
   return (
@@ -141,10 +141,13 @@ function Frame({ asideCollapse }: { asideCollapse?: 'stack' | 'hidden' }) {
       items={NAV}
       selected={selected}
       onNavigate={(item) => setSelected(item.key)}
-      logo={{ icon: <RiAsterisk width={24} height={24} fill="#0a84ff" />, wordmark: 'Feed' }}
-      account={{ name: 'Maya Collins', avatar: { initials: 'M' } }}
-      asideCollapse={asideCollapse}
-      feedHeader={<FeedTabs value={tab} onChange={setTab} />}
+      sidebar={{
+        logo: { icon: <RiAsterisk width={24} height={24} fill="#0a84ff" />, wordmark: 'Feed' },
+        account: { name: 'Maya Collins', avatar: { initials: 'M' } },
+        showSearch: false,
+        showThemeToggle: false,
+      }}
+      account={{ name: 'Maya Collins' }}
       compose={<ComposeButton onPress={() => {}} collapsed />}
       tabBar={
         <TabBarMinimizeProvider>
@@ -169,11 +172,14 @@ function Frame({ asideCollapse }: { asideCollapse?: 'stack' | 'hidden' }) {
         </View>
       }
     >
-      <View style={{ padding: 16, gap: 16 }}>
+      <View>
+        <FeedTabs value={tab} onChange={setTab} />
+        <View style={{ padding: 16, gap: 16 }}>
         <Placeholder height={120} label="Composer" />
         {Array.from({ length: 8 }, (_, i) => (
           <Placeholder key={i} height={i % 3 === 0 ? 320 : 140} label={i % 3 === 0 ? 'Post with media' : 'Post'} />
         ))}
+        </View>
       </View>
     </SocialLayout>
   );
@@ -188,8 +194,8 @@ export const Medium: Story = { render: () => <Frame /> };
 /** Below `md`: a top bar, the feed full width, the tab bar at the bottom. */
 export const Phone: Story = { render: () => <Frame /> };
 
-/** The side column dropped instead of stacked. */
-export const WithoutAside: Story = { name: 'Without aside', render: () => <Frame asideCollapse="hidden" /> };
+/** Between 500 and 990: the rail and the panel, with no side column. */
+export const NoAside: Story = { name: 'No side column', render: () => <Frame /> };
 
 /** The sidebar's compose button, which the app renders inside the rail. */
 export const Compose: Story = {
@@ -197,7 +203,7 @@ export const Compose: Story = {
     <View style={{ padding: 24, gap: 16, width: 280 }}>
       <ComposeButton onPress={() => {}} />
       <ComposeButton collapsed onPress={() => {}} />
-      <Chip size="medium">{`Feed column: ${FEED_WIDTH}px`}</Chip>
+      <Chip size="medium">{`Side column: ${ASIDE_WIDTH}px`}</Chip>
     </View>
   ),
 };
