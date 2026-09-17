@@ -23,6 +23,7 @@ export function BookingPrice({
   price,
   originalPrice,
   priceUnit,
+  priceUnitPrefix,
   priceAccessibilityLabel,
   priceVariant,
   unitVariant,
@@ -59,7 +60,7 @@ export function BookingPrice({
       </Text>
       {priceUnit ? (
         <Text variant={unitVariant} style={{ color: palette.text }}>
-          {priceUnit}
+          {priceUnitPrefix ? `${priceUnitPrefix} ${priceUnit}` : priceUnit}
         </Text>
       ) : null}
     </View>
