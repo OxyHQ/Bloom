@@ -281,4 +281,51 @@ describe('Dialog bottom placement delegates to BottomSheet', () => {
     const tree: RenderedNode | RenderedNode[] | null = result.toJSON();
     expect(countNodesByType(tree, 'Animated.ScrollView')).toBe(1);
   });
+  it('hands a scrollable={false} body a bounded height, so a nested scroller and a footer after it fit the sheet', () => {
+    let control: ReturnType<typeof useDialogControl> | undefined;
+    const flat = (style: unknown) =>
+      Array.isArray(style) ? Object.assign({}, ...style.flat(Infinity).filter(Boolean)) : (style as object);
+    const { getByTestId } = renderWithTheme(
+      <Harness>
+        {(c) => {
+          control = c;
+          return (
+            <Dialog control={c} placement="bottom" scrollable={false} contentPadding={0} testID="bounded">
+              <Text>Body</Text>
+            </Dialog>
+          );
+        }}
+      </Harness>,
+    );
+    act(() => {
+      control?.open();
+    });
+    const content = getByTestId('bounded');
+    expect(flat(content.props.style)).toMatchObject({ flex: 1, minHeight: 0 });
+    // The morph layer between the content container and the body passes it on.
+    const morph = content.children[0];
+    expect(typeof morph === 'string' ? null : flat(morph?.props.style)).toMatchObject({ flex: 1, minHeight: 0 });
+  });
+
+  it('leaves a scrolling body sized by its content', () => {
+    let control: ReturnType<typeof useDialogControl> | undefined;
+    const { getByTestId } = renderWithTheme(
+      <Harness>
+        {(c) => {
+          control = c;
+          return (
+            <Dialog control={c} placement="bottom" testID="natural">
+              <Text>Body</Text>
+            </Dialog>
+          );
+        }}
+      </Harness>,
+    );
+    act(() => {
+      control?.open();
+    });
+    const style = getByTestId('natural').props.style;
+    const flattened = Array.isArray(style) ? Object.assign({}, ...style.filter(Boolean)) : style;
+    expect(flattened.flex).toBeUndefined();
+  });
 });

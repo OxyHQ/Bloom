@@ -298,6 +298,33 @@ export * from './card';
 export * from './badge';
 export { Rating, RatingBar } from './rating';
 export type { RatingBarProps, RatingCountStyle, RatingProps, RatingSize } from './rating';
+export {
+  AmenityFilter,
+  CountFilter,
+  FilterFooter,
+  FilterSection,
+  FilterTriggerButton,
+  PriceHistogram,
+  PriceRangeFilter,
+  SegmentedFilter,
+  SwitchFilterRow,
+  ToggleChipGroup,
+} from './stay-filters';
+export type {
+  AmenityFilterProps,
+  CountFilterProps,
+  FilterFooterProps,
+  FilterIconComponent,
+  FilterOption,
+  FilterSectionProps,
+  FilterTriggerButtonProps,
+  PriceHistogramProps,
+  PriceRangeFilterProps,
+  SegmentedFilterProps,
+  SwitchFilterRowProps,
+  ToggleChipGroupProps,
+  ToggleChipOption,
+} from './stay-filters';
 export * from './chip';
 export * from './aspect-ratio';
 export * from './tabs';

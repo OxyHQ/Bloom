@@ -67,6 +67,7 @@ import { Radio, RadioGroup } from '../radio';
 import { StatBar } from '../stat-bar';
 import { Stepper } from '../stepper';
 import { RatingBar } from '../rating';
+import { AmenityFilter, CountFilter, ToggleChipGroup } from '../stay-filters';
 import {
   DropdownMenuCheckboxItem,
   DropdownMenuItem,
@@ -898,5 +899,48 @@ describe('RatingBar', () => {
     expect(el.getAttribute('aria-valuenow')).toBe('4.9');
     expect(el.getAttribute('aria-valuemin')).toBe('0');
     expect(el.getAttribute('aria-valuemax')).toBe('5');
+  });
+});
+
+describe('Stay filters', () => {
+  it('CountFilter: a named radiogroup whose pills spell the selection as aria-checked', () => {
+    const c = mount(<CountFilter title="Bedrooms" value={2} max={3} onValueChange={() => {}} disabled testID="cf" />);
+    expect(byRole(c, 'radiogroup').getAttribute('aria-label')).toBe('Bedrooms');
+    expect(allByRole(c, 'radio').map((r) => r.getAttribute('aria-checked'))).toEqual(['false', 'false', 'true', 'false']);
+    expect(byTestId(c, 'cf-2').getAttribute('aria-label')).toBe('2');
+    expect(byTestId(c, 'cf-2').getAttribute('aria-disabled')).toBe('true');
+  });
+
+  it('ToggleChipGroup: role="button" toggles use aria-pressed, inside a named group', () => {
+    const c = mount(
+      <ToggleChipGroup
+        options={[
+          { value: 'wifi', label: 'Wifi' },
+          { value: 'pool', label: 'Pool' },
+        ]}
+        value={['pool']}
+        onValueChange={() => {}}
+        accessibilityLabel="Amenities"
+        testID="tg"
+      />,
+    );
+    expect(byTestId(c, 'tg').getAttribute('aria-label')).toBe('Amenities');
+    expect(byTestId(c, 'tg-wifi').getAttribute('aria-pressed')).toBe('false');
+    expect(byTestId(c, 'tg-pool').getAttribute('aria-pressed')).toBe('true');
+    expect(byTestId(c, 'tg-pool').getAttribute('aria-label')).toBe('Pool');
+  });
+
+  it('AmenityFilter: the "Show more" disclosure emits aria-expanded', () => {
+    const c = mount(
+      <AmenityFilter
+        options={['a', 'b', 'c'].map((v) => ({ value: v, label: v }))}
+        collapsedCount={1}
+        value={[]}
+        onValueChange={() => {}}
+        accessibilityLabel="Amenities"
+        testID="af"
+      />,
+    );
+    expect(byTestId(c, 'af-toggle').getAttribute('aria-expanded')).toBe('false');
   });
 });
