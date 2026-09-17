@@ -3,6 +3,7 @@ import { View } from 'react-native';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
 import { Badge } from '../badge';
+import { useTheme } from '../theme/use-theme';
 import {
   RiSearchLine,
   RiComputerLine,
@@ -39,7 +40,7 @@ import {
   RiUserSmileLine,
 } from '../icons/remix';
 import { Sidebar, SidebarFolder, SidebarItem, SidebarModeSwitcher, SidebarPlanCard, SidebarRailItem } from './index';
-import type { SidebarAccount, SidebarMode, SidebarNavItem, SidebarPlan, SidebarTeam, SidebarTree } from './types';
+import type { SidebarAccount, SidebarLogo, SidebarMode, SidebarNavItem, SidebarPlan, SidebarTeam, SidebarTree } from './types';
 
 const meta: Meta<typeof Sidebar> = {
   title: 'Blocks/Sidebar',
@@ -207,6 +208,61 @@ export const ModeSwitcher: Story = {
       </View>
     );
   },
+};
+
+/** A demo mark: a 28px accent tile with a glyph. Pass your own SVG or image. */
+function DemoMark() {
+  const theme = useTheme();
+  return (
+    <View style={{ width: 28, height: 28, borderRadius: 8, alignItems: 'center', justifyContent: 'center', backgroundColor: theme.colors.primary }}>
+      <RiAsterisk width={18} height={18} fill="#ffffff" />
+    </View>
+  );
+}
+
+const DEMO_LOGO: SidebarLogo = { icon: <DemoMark />, wordmark: 'Oxy', href: '#home', onPress: () => {} };
+
+/**
+ * `logo`: a mark and a wordmark leading the header. The account switcher moves
+ * to its own row; collapsed, the mark stays and the wordmark folds away; the
+ * rail shows the mark only.
+ */
+export const WithLogo: Story = {
+  render: function Render() {
+    const [selected, setSelected] = useState('home');
+    return (
+      <Frame>
+        <Sidebar
+          testID="sidebar"
+          logo={DEMO_LOGO}
+          items={DEMO_NAV}
+          secondaryItems={DEMO_SECONDARY}
+          selected={selected}
+          onNavigate={(item) => setSelected(item.key)}
+          account={DEMO_ACCOUNT}
+          team={DEMO_TEAM}
+        />
+        <Sidebar defaultCollapsed logo={DEMO_LOGO} items={DEMO_NAV} secondaryItems={DEMO_SECONDARY} selected="home" team={DEMO_TEAM} />
+        <Sidebar mobile onClose={() => {}} logo={DEMO_LOGO} items={DEMO_NAV} secondaryItems={DEMO_SECONDARY} selected="home" team={DEMO_TEAM} />
+        <Sidebar
+          variant="rail"
+          logo={DEMO_LOGO}
+          items={DEMO_RAIL_NAV}
+          secondaryItems={DEMO_RAIL_SECONDARY}
+          selected="home"
+        />
+      </Frame>
+    );
+  },
+};
+
+/** A wordmark on its own (an SVG wordmark works the same). */
+export const WithWordmarkOnly: Story = {
+  render: () => (
+    <Frame>
+      <Sidebar logo={{ wordmark: 'Mention' }} items={DEMO_NAV} secondaryItems={DEMO_SECONDARY} selected="home" team={DEMO_TEAM} />
+    </Frame>
+  ),
 };
 
 export const Collapsed: Story = {

@@ -262,3 +262,42 @@ describe('Sidebar variant="rail"', () => {
     expect(onNavigate).toHaveBeenCalledWith(RAIL[1]);
   });
 });
+
+describe('Sidebar logo', () => {
+  const Mark = () => <React.Fragment />;
+
+  it('leads the header with the mark and a string wordmark, and moves the account under it', () => {
+    const onPress = jest.fn();
+    const screen = renderIn(
+      <Sidebar
+        items={ITEMS}
+        logo={{ icon: <Mark />, wordmark: 'Oxy', href: '/', onPress }}
+        account={{ name: 'Maya Collins' }}
+      />,
+    );
+    const logo = screen.getByTestId('sidebar-logo');
+    expect(logo.props.role).toBe('link');
+    expect(logo.props.accessibilityLabel).toBe('Oxy');
+    expect(resolvedStyle(screen.getByTestId('sidebar-logo-icon').props.style)).toMatchObject({ width: 36, height: 36 });
+    expect(screen.getByText('Oxy')).toBeTruthy();
+    expect(screen.getByTestId('sidebar-account')).toBeTruthy();
+    pressHost(logo);
+    expect(onPress).toHaveBeenCalledTimes(1);
+  });
+
+  it('is decoration without href or onPress', () => {
+    const screen = renderIn(<Sidebar items={ITEMS} logo={{ wordmark: 'Oxy' }} />);
+    const logo = screen.getByTestId('sidebar-logo');
+    expect(logo.props.role).toBe('img');
+    expect(logo.props.accessibilityLabel).toBe('Oxy');
+  });
+
+  it('the rail shows the mark only', () => {
+    const screen = renderIn(
+      <Sidebar variant="rail" items={ITEMS} logo={{ icon: <Mark />, wordmark: 'Oxy', accessibilityLabel: 'Oxy home' }} />,
+    );
+    expect(screen.getByTestId('sidebar-logo-icon')).toBeTruthy();
+    expect(screen.queryByText('Oxy')).toBeNull();
+    expect(screen.getByTestId('sidebar-logo').props.accessibilityLabel).toBe('Oxy home');
+  });
+});

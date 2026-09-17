@@ -33,6 +33,7 @@ import { SidebarModeSwitcher } from './SidebarModeSwitcher';
 import { SidebarPlanCard } from './SidebarPlanCard';
 import { SidebarRail } from './SidebarRail';
 import { SidebarTeamMenu } from './SidebarTeamMenu';
+import { SidebarLogoView } from './SidebarLogoView';
 import { SidebarUserMenu } from './SidebarUserMenu';
 import type { SidebarNavItem, SidebarProps } from './types';
 
@@ -153,6 +154,7 @@ const SidebarPanel: React.FC<SidebarProps> = ({
   searchLabel = 'Quick Search',
   searchPlaceholder,
   noResultsLabel = 'No results',
+  logo,
   account,
   team,
   tree,
@@ -476,7 +478,45 @@ const SidebarPanel: React.FC<SidebarProps> = ({
       />
     ) : null;
 
-  const headerRow = (
+  const accountMenu = account ? (
+    <View
+      style={{
+        minWidth: 0,
+        flexShrink: 1,
+        display: flatMobile && searchActive ? 'none' : 'flex',
+        maxWidth: 190,
+      }}
+    >
+      <SidebarUserMenu
+        account={account}
+        collapsed={collapsed}
+        suppressHover={suppressUserHover}
+        onHoverSuppressionEnd={() => setSuppressUserHover(false)}
+        avatarBackground={flat ? palette.avatarFlat : undefined}
+        testID="sidebar-account"
+      />
+    </View>
+  ) : null;
+
+  // With a logo the brand leads the header and the account switcher gets its
+  // own row under it; collapsed, the mark sits on top of the expand control.
+  const headerRow = logo ? (
+    <>
+      <View
+        style={
+          collapsed
+            ? { width: '100%', flexDirection: 'column', alignItems: 'flex-start', justifyContent: 'center', gap: 10 }
+            : { width: '100%', flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 8 }
+        }
+      >
+        <View style={{ minWidth: 0, flexShrink: 1, display: flatMobile && searchActive ? 'none' : 'flex' }}>
+          <SidebarLogoView logo={logo} collapsed={collapsed} testID="sidebar-logo" />
+        </View>
+        {headerControl}
+      </View>
+      {accountMenu}
+    </>
+  ) : (
     <View
       style={
         collapsed
@@ -484,27 +524,7 @@ const SidebarPanel: React.FC<SidebarProps> = ({
           : { width: '100%', flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }
       }
     >
-      {account ? (
-        <View
-          style={{
-            minWidth: 0,
-            flexShrink: 1,
-            display: flatMobile && searchActive ? 'none' : 'flex',
-            maxWidth: 190,
-          }}
-        >
-          <SidebarUserMenu
-            account={account}
-            collapsed={collapsed}
-            suppressHover={suppressUserHover}
-            onHoverSuppressionEnd={() => setSuppressUserHover(false)}
-            avatarBackground={flat ? palette.avatarFlat : undefined}
-            testID="sidebar-account"
-          />
-        </View>
-      ) : (
-        <View />
-      )}
+      {accountMenu ?? <View />}
       {headerControl}
     </View>
   );

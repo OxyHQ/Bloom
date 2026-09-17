@@ -16,6 +16,7 @@ export type {
   SidebarFolderProps,
   SidebarIcon,
   SidebarItemProps,
+  SidebarLogo,
   SidebarMenuGroup,
   SidebarMenuItem,
   SidebarMode,

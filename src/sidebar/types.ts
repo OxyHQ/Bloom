@@ -128,6 +128,37 @@ export interface SidebarAccountUser {
   onPress?: () => void;
 }
 
+/**
+ * The brand at the top of the sidebar. Give a mark, a wordmark or both.
+ */
+export interface SidebarLogo {
+  /**
+   * The mark (a logo glyph, an SVG, an image). Centred in a 36 × 36 box and
+   * kept while the sidebar is collapsed; size it yourself — 24–28px reads right.
+   */
+  icon?: ReactNode;
+  /**
+   * The wordmark beside the mark, hidden while collapsed. A string renders as
+   * the product name in `headline-semibold`; anything else renders as given.
+   */
+  wordmark?: ReactNode;
+  /** Link target (a real anchor on web). On native, pass `onPress` too. */
+  href?: string;
+  /** Called on press — a router's navigation to home, say. */
+  onPress?: () => void;
+  /** The logo's accessible name. Defaults to a string `wordmark`. */
+  accessibilityLabel?: string;
+}
+
+export interface SidebarLogoViewProps {
+  logo: SidebarLogo;
+  /** Collapses the wordmark, keeping the mark. */
+  collapsed?: boolean;
+  /** Renders the mark only (the navigation rail). Defaults to true. */
+  showWordmark?: boolean;
+  testID?: string;
+}
+
 /** The account switcher at the top of the rail and the menu it opens. */
 export interface SidebarAccount {
   name: string;
@@ -210,6 +241,13 @@ export interface SidebarProps {
   searchPlaceholder?: string;
   noResultsLabel?: string;
 
+  /**
+   * The brand at the top: a mark and/or a wordmark. In the panel it takes the
+   * header row beside the collapse control — the account switcher, if given
+   * too, moves to its own row under it. The rail shows the mark above its
+   * items.
+   */
+  logo?: SidebarLogo;
   account?: SidebarAccount;
   team?: SidebarTeam;
 
