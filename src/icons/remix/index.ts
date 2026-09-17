@@ -83,6 +83,7 @@ export { RiChat4Fill } from './RiChat4Fill';
 export { RiChat4Line } from './RiChat4Line';
 export { RiChatAiLine } from './RiChatAiLine';
 export { RiChatSmile2Line } from './RiChatSmile2Line';
+export { RiCheckDoubleLine } from './RiCheckDoubleLine';
 export { RiCheckFill } from './RiCheckFill';
 export { RiCheckLine } from './RiCheckLine';
 export { RiCheckboxBlankCircleLine } from './RiCheckboxBlankCircleLine';

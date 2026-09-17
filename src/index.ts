@@ -317,6 +317,29 @@ export type {
   VolumeSliderVisibility,
 } from './media-controls';
 export {
+  AvatarPresence,
+  formatUnreadCount,
+  MessageStatus,
+  PresenceDot,
+  StoryRing,
+  TypingDots,
+  UnreadBadge,
+} from './chat-indicators';
+export type {
+  AvatarPresenceProps,
+  MessageDeliveryStatus,
+  MessageStatusProps,
+  MessageStatusSize,
+  PresenceDotProps,
+  PresenceDotSize,
+  PresenceStatus,
+  StoryRingProps,
+  StoryRingState,
+  TypingDotsProps,
+  UnreadBadgeProps,
+  UnreadBadgeSize,
+} from './chat-indicators';
+export {
   AlbumCard,
   ArtistCard,
   AudiobookCard,

@@ -1,0 +1,178 @@
+---
+title: Chat Indicators
+description: Presence dots, delivery ticks, unread counts, typing dots and the story ring — the small pieces every messaging surface repeats.
+order: 63
+---
+
+# Chat Indicators
+
+```tsx
+import {
+  AvatarPresence,
+  MessageStatus,
+  PresenceDot,
+  StoryRing,
+  TypingDots,
+  UnreadBadge,
+  formatUnreadCount,
+} from '@oxy.so/bloom/chat-indicators';
+```
+
+Six pieces, none of them a layout: they sit inside a row, a header or a bubble
+that someone else owns. Everything is a PROP — no component here reads the
+clock, formats a name or decides what "recently" means.
+
+## `PresenceDot`
+
+```tsx
+<PresenceDot status="online" />
+<PresenceDot status="busy" size="large" ringColor={theme.colors.backgroundSecondary} />
+<PresenceDot status="offline" accessibilityLabel="" />   // the row already says it
+```
+
+| prop                 | decides                                                                      |
+| -------------------- | ---------------------------------------------------------------------------- |
+| `status`             | `'online'` success · `'idle'` warning · `'busy'` negative · `'offline'` hollow neutral |
+| `size`               | `'small'` 8, `'medium'` 10 (default), `'large'` 12 — the DOT, not the footprint |
+| `ringColor`          | the colour separating the dot from what is behind it; default the page background |
+| `ringWidth`          | default `2`; `0` draws no ring                                               |
+| `accessibilityLabel` | default "Online" / "Away" / "Offline" / "Busy"; `""` hides it from assistive tech |
+
+`offline` is a HOLLOW dot, not a grey one. Four states told apart by hue alone
+are four states one reader in twelve cannot tell apart at all, so the quiet one
+differs in shape too.
+
+The ring is drawn OUTSIDE the dot, so the component measures
+`size + 2 * ringWidth` (14 at the default medium). On a card, pass the card's
+own colour as `ringColor` — the default is the page background, which reads as
+a halo on a raised surface.
+
+## `AvatarPresence`
+
+```tsx
+<AvatarPresence name="Ana Restrepo" source={avatarUrl} size={44} status="online" />
+```
+
+Every `Avatar` prop passes through (`source`, `uri`, `name`, `initials`,
+`shape`, `size`, `onPress`, …) plus:
+
+| prop                | decides                                                       |
+| ------------------- | ------------------------------------------------------------- |
+| `status`            | the dot; omit it to draw the avatar alone                     |
+| `presenceSize`      | overrides the rung picked from the avatar size                |
+| `presenceRingColor` | forwarded to the dot                                          |
+| `presenceLabel`     | forwarded to the dot's `accessibilityLabel`                   |
+| `containerStyle`    | the positioning wrapper, not the avatar                       |
+
+The rung follows the avatar: `small` to 28px, `medium` to 44px, `large` above.
+The dot sits at the bottom-right corner of the avatar's own box, where the 45°
+edge of a circle passes through it — so the footprint never changes when
+someone comes online, and a list does not re-lay-out as presence arrives.
+
+## `MessageStatus`
+
+The delivery ticks on an OUTGOING message. Never draw it on an incoming one.
+
+```tsx
+<MessageStatus status="read" />
+<MessageStatus status="sent" size={12} color={onBubbleColor} />
+```
+
+| status      | glyph                  | colour        | default name |
+| ----------- | ---------------------- | ------------- | ------------ |
+| `sending`   | clock outline          | muted         | "Sending…"   |
+| `sent`      | one tick               | muted         | "Sent"       |
+| `delivered` | two ticks              | muted         | "Delivered"  |
+| `read`      | two ticks              | ACCENT        | "Read"       |
+| `failed`    | filled error circle    | negative      | "Not sent"   |
+
+`size` is `12 | 14 | 16` (default 14). `color` repaints the glyph for ticks on a
+coloured bubble — except `failed`, which stays negative: an error recoloured to
+match the bubble stops reading as an error. `label=""` hides the glyph from
+assistive tech for a bubble whose own text reports delivery.
+
+`read` and `delivered` differ by COLOUR alone, which is why the name is not
+optional — that distinction does not survive a screen reader or a red-green
+confusion, and the tick count is the same.
+
+## `UnreadBadge`
+
+```tsx
+<UnreadBadge count={3} />
+<UnreadBadge count={128} />            // "99+", named "128 unread messages"
+<UnreadBadge count={6} muted />        // notifications off
+<UnreadBadge count={2} dot />          // no number
+<UnreadBadge count={0} />              // renders nothing
+```
+
+| prop                 | decides                                                             |
+| -------------------- | ------------------------------------------------------------------- |
+| `count`              | `0` or less renders `null` (unless `dot`)                           |
+| `max`                | default `99`; above it the pill reads `"99+"`                       |
+| `dot`                | a plain dot, no number — 8 (small) or 10 (medium)                   |
+| `muted`              | neutral fill instead of the accent                                  |
+| `size`               | `'small'` 16 tall, `'medium'` 20 (default); one digit is a circle   |
+| `formatLabel`        | `(count) => string` for the accessible name — it gets the REAL count |
+| `accessibilityLabel` | replaces the composed name outright                                 |
+| `textStyle`          | the digits                                                          |
+
+The clamp is a layout constraint, not information: the drawn text says "99+"
+while the name still says "128 unread messages". The default name is English
+("1 unread message" / "3 unread messages", "Unread" for a bare dot) — translate
+it with `formatLabel`.
+
+`formatUnreadCount(count, max = 99)` is exported for the places that need the
+same string outside a badge (a tab title, a document title).
+
+## `TypingDots`
+
+```tsx
+<TypingDots />                              // decorative, inside a bubble
+<TypingDots label="Ana is typing…" />       // named, in a row
+```
+
+| prop         | decides                                              |
+| ------------ | ---------------------------------------------------- |
+| `size`       | dot diameter, default `6`                            |
+| `color`      | default the secondary text colour                    |
+| `label`      | drawn beside the dots AND used as the accessible name |
+| `labelStyle` | the label text                                       |
+
+Each dot lifts 55% of its diameter and fades from 0.45 to 1 over 900ms,
+staggered 150ms. Under reduced motion they stand still and fully opaque — the
+row still says "typing", it just stops moving. Without a `label` the component is decorative
+and hidden from assistive tech: three bouncing dots have nothing to announce.
+
+## `StoryRing`
+
+```tsx
+<StoryRing state="unseen" size={56} onPress={open} accessibilityLabel="Ana's story">
+  <Avatar name="Ana Restrepo" size={56} />
+</StoryRing>
+```
+
+| prop                 | decides                                                                 |
+| -------------------- | ----------------------------------------------------------------------- |
+| `state`              | `'unseen'` a three-stop accent gradient · `'seen'` neutral hairline · `'none'` no ring, same footprint |
+| `size`               | the AVATAR's diameter                                                   |
+| `thickness`          | ring stroke, default `2`                                                |
+| `gap`                | avatar edge to ring, default `2`                                        |
+| `colors`             | one string for a solid ring, 2+ for a gradient — overrides the state's own |
+| `badge`              | a node pinned bottom-right: an "Add" affordance, a `+ N` pill           |
+| `onPress`            | wraps it in a `button` — `accessibilityLabel` is then required          |
+
+The component measures `size + 2 * (thickness + gap)` — 68 for a 56px avatar at
+the defaults. `'none'` keeps that footprint: a row where one person has no
+story must not shift by 8px, and a list that re-lays-out as stories are read is
+worse than a ring nobody needed.
+
+A solid ring is a bordered view; only the gradient goes through
+`react-native-svg` (which `Avatar` already needs). Both platforms draw the same
+ring.
+
+## What these do not do
+
+- **No clock.** "12:41", "Yesterday", "last seen recently" arrive as strings.
+- **No press animation.** Nothing here scales under a finger.
+- **No layout.** Rows, bubbles and headers own their own geometry; these are
+  marks that sit inside one.
