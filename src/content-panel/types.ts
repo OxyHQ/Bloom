@@ -86,6 +86,19 @@ export interface ContentPanelProps {
    *   above it) must never be overlapped by an overlay sized to the whole
    *   viewport.
    */
+  /**
+   * DEFAULT `'panel'`. The edge describes the panel's OWN box, so it scrolls
+   * with the content like any other border: on a page taller than the screen
+   * you see the two side edges while scrolling and the rounded corners at the
+   * ends, which is what a long framed column looks like.
+   *
+   * `'viewport'` is the older behaviour: the frame is a screen-tall sticky
+   * rectangle, so a rounded top and bottom edge follow the viewport down the
+   * page. It reads as the panel breathing — the frame holds still while the
+   * content moves inside it, and it jumps 8px on the first scroll — which is
+   * why it is no longer the default. It remains for a consumer that wants that
+   * constant frame.
+   */
   overlaySizing?: 'viewport' | 'panel';
   /**
    * Pixels of REAL, persistent chrome the consumer has placed above the panel

@@ -9,7 +9,7 @@ import { SegmentedControl, SegmentedControlItem, SegmentedControlItemText } from
 import { useTheme } from '../../src/theme/use-theme';
 import { Text } from '../../src/typography';
 import { CASE_HISTORY, REPORTS } from './data';
-import { HousingFooter, HousingFrame, HousingHeader, PageColumn, useHousingLayout, webSticky } from './HousingHeader';
+import { HousingFrame, HousingHeader, PageColumn, useHousingLayout, webSticky } from './HousingHeader';
 
 const noop = () => undefined;
 
@@ -127,7 +127,6 @@ export function EvictionsPage() {
           ) : null}
         </View>
       </PageColumn>
-      <HousingFooter />
     </HousingFrame>
   );
 }

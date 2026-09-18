@@ -3,7 +3,7 @@ import React, { useCallback, useState } from 'react';
 import type { HomeSearchMode } from '../../src/home-search';
 import { EvictionsPage } from './EvictionsPage';
 import { ExplorePage } from './ExplorePage';
-import { HousingNavProvider, IS_WEB, type HousingPage } from './HousingHeader';
+import { HousingNavProvider, HousingPageProvider, IS_WEB, type HousingPage } from './HousingHeader';
 import { RentListingPage, SaleListingPage, StayListingPage, SwapListingPage } from './ListingPages';
 import { MyHomePage } from './MyHomePage';
 import { PublishPage } from './PublishPage';
@@ -32,6 +32,7 @@ export function HousingTemplate({ initialPage = 'explore', initialMode, initialM
 
   return (
     <HousingNavProvider value={go}>
+      <HousingPageProvider value={page}>
       {page === 'explore' ? <ExplorePage initialMode={initialMode} initialMap={initialMap} /> : null}
       {page === 'rent' ? <RentListingPage /> : null}
       {page === 'sale' ? <SaleListingPage /> : null}
@@ -41,6 +42,7 @@ export function HousingTemplate({ initialPage = 'explore', initialMode, initialM
       {page === 'evictions' ? <EvictionsPage /> : null}
       {page === 'publish' ? <PublishPage /> : null}
       {page === 'saved' ? <SavedPage /> : null}
+      </HousingPageProvider>
     </HousingNavProvider>
   );
 }

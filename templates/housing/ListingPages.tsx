@@ -87,7 +87,6 @@ import {
   nightsIn,
 } from './data';
 import {
-  HousingFooter,
   HousingFrame,
   HousingHeader,
   IS_WEB,
@@ -140,7 +139,12 @@ function ListingFrame({
   return (
     <HousingFrame testID={testID}>
       <HousingHeader maxWidth={LISTING_WIDTH} />
-      <PageColumn maxWidth={LISTING_WIDTH} style={{ paddingTop: md ? 24 : 16, paddingBottom: 48, gap: md ? 24 : 16 }}>
+      <PageColumn
+        maxWidth={LISTING_WIDTH}
+        // The mobile action bar is fixed over the page, so the column reserves
+        // its height rather than ending under it.
+        style={{ paddingTop: md ? 24 : 16, paddingBottom: bar ? 136 : 48, gap: md ? 24 : 16 }}
+      >
         <ListingHeader
           title={title}
           size={md ? 'large' : 'medium'}
@@ -175,7 +179,6 @@ function ListingFrame({
           ) : null}
         </View>
       </PageColumn>
-      <HousingFooter maxWidth={LISTING_WIDTH} bottomSpace={bar ? 88 : 0} />
       {bar ? (
         <View
           style={{ position: IS_WEB ? WEB_POSITION_FIXED : 'absolute', left: 0, right: 0, bottom: 0, zIndex: Z_INDEX.floating }}

@@ -199,6 +199,15 @@ describe('AppShell without a title', () => {
     expect(screen.getByTestId('sidebar-item-home')).toBeTruthy();
   });
 
+  it('header={null} draws NO header, menu button included — the page owns that corner', () => {
+    setWidth(700);
+    const screen = renderIn(<AppShell testID="shell" sidebar={{ items: NAV }} header={null} title="Ignored" />);
+    expect(screen.queryByTestId('shell-header')).toBeNull();
+    expect(screen.queryByTestId('shell-header-menu')).toBeNull();
+    // The drawer is still THERE — the page opens it itself.
+    expect(screen.getByTestId('shell-page')).toBeTruthy();
+  });
+
   it('AppShellMenuButton renders nothing while the sidebar is in flow', () => {
     setWidth(1440);
     const screen = renderIn(<AppShell sidebar={{ items: NAV }} header={<AppShellMenuButton testID="menu" />} />);

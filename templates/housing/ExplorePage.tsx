@@ -27,7 +27,6 @@ import {
 } from './data';
 import { FiltersDialog } from './HousingFilters';
 import {
-  HousingFooter,
   HousingFrame,
   HousingHeader,
   IS_WEB,
@@ -37,6 +36,7 @@ import {
   webSticky,
 } from './HousingHeader';
 import { DesktopModeTabs, DesktopSearchBar, MobileModeTabs, MobileSearch, useHomeSearch } from './HousingSearch';
+import { HousingWidgets } from './HousingWidgets';
 
 // ---------------------------------------------------------------------------
 //  Cards
@@ -277,7 +277,10 @@ export function ExplorePage({ initialMode = 'rent', initialMap = false }: Explor
   const split = showMap && lg;
 
   return (
-    <HousingFrame testID="housing-explore">
+    // The widgets sit beside the results — but never beside the MAP: the split
+    // view already spends the right half of the page on it, and a third column
+    // would leave the list too narrow for a card.
+    <HousingFrame testID="housing-explore" aside={split ? undefined : <HousingWidgets />}>
       <HousingHeader
         tabs={<DesktopModeTabs search={search} />}
         search={<DesktopSearchBar search={search} />}
@@ -320,7 +323,6 @@ export function ExplorePage({ initialMode = 'rent', initialMap = false }: Explor
         )}
       </PageColumn>
 
-      <HousingFooter maxWidth={split ? 1920 : 1280} />
 
       {/* The list / map switch floats over the results. */}
       <View
