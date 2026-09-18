@@ -110,6 +110,14 @@ A popover centres on its trigger by default, where a menu starts at its left edg
 
 A numeric `maxWidth` prop replaces the viewport cap.
 
+## Following the anchor (web)
+
+An open panel tracks its trigger. Bloom listens for `scroll` in the CAPTURE phase, which is the only listener that hears a scroll inside an ancestor — a panel opened from a row of a scrolling list stays on its row — plus `resize`, because the viewport is what the surface flips and clamps against.
+
+What it does NOT do is work per event. A scroll gesture dispatches a stream of events and nested scrollers dispatch one each, while the browser paints once; so the measurement is coalesced to at most one pass per animation frame, and the frame boundary is the last moment before the paint, which makes it the most recent position the panel can be given. A pass that resolves to the box the surface already holds is dropped rather than stored: the anchor and the placement keep their identity, nothing re-renders, and the listeners — registered once when the panel opens — are not detached and re-attached. Opening still measures synchronously in a layout effect, so the first painted frame is already in the right place.
+
+This is `FloatingPanel`'s behaviour, so it is every menu, popover and select's; `Tooltip` follows its trigger every frame instead, for the reason its own page gives. The cost model is pinned by `src/__tests__/floating-anchor-cost.test.tsx`, which counts measurements, commits and listener registrations in a real DOM.
+
 ## Native
 
 The popover is a bottom sheet on native: a phone has no room to float a panel beside a control, and every Bloom overlay resolving to the same sheet is what makes the native surfaces feel like one system. The sheet is the chrome (its surface, corner and drag handle), so the placement props are ignored and only the body takes the panel geometry — the same 10px inset on the sides and bottom, below the handle's clearance — so the panel parts line up exactly as they do on web. `className`, `style` and `testID` land on that body.

@@ -150,6 +150,8 @@ Verified in a real browser by `scripts/verify-submenu-flyout.mjs` — jest can s
 
 On native these are ignored. The menu is a bottom sheet, which is anchored to the screen rather than to the trigger.
 
+An open menu follows its trigger as the page scrolls, at one measurement per animation frame and no re-render when nothing moved — the same panel behaviour every anchored surface gets, described under [Popover → Following the anchor](/docs/bloom/main/popover).
+
 ## Naming a row that is not a plain string
 
 A row whose child is a string names itself. A row composed of elements does not:
