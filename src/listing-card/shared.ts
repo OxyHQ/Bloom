@@ -20,6 +20,13 @@ export const MAX_DOTS = 5;
 export const DOT_SIZE = 6;
 /** A dot at a window edge that has more photos beyond it. */
 export const DOT_EDGE_SIZE = 4;
+/**
+ * How far `hoverZoom` scales the photo under a pointer. 1.06 — enough to read
+ * as the photo coming forward, small enough that the crop barely moves and a
+ * face near an edge is not pushed out of frame. The tile clips, so nothing
+ * overflows the card.
+ */
+export const PHOTO_ZOOM_SCALE = 1.06;
 
 export interface ListingCardPaint {
   /** The placeholder behind a photo that has not loaded, and the mosaic gaps' tiles. */
@@ -209,6 +216,7 @@ export const LISTING_CARD_STYLE_ID = 'bloom-listing-card-web-css';
 const CARD = '[data-bloom-listing-card]';
 const LINK = '[data-bloom-listing-card-link]';
 const TRACK = '[data-bloom-listing-card-track]';
+const PHOTO = '[data-bloom-listing-card-photo]';
 const ARROW = '[data-bloom-listing-card-arrow]';
 const DOT = '[data-bloom-listing-card-dot]';
 const FAVORITE = '[data-bloom-favorite-button]';
@@ -262,9 +270,23 @@ ${FAVORITE}:focus-visible {
   outline: 2px solid var(--bloom-listing-card-ring, currentColor);
   outline-offset: 0;
 }
+${CARD}[data-bloom-listing-card-zoom] ${PHOTO} {
+  transition: transform 400ms cubic-bezier(0.2, 0, 0.2, 1);
+  transform-origin: center;
+}
+@media (any-hover: hover) {
+  ${CARD}[data-bloom-listing-card-zoom]:hover ${PHOTO} {
+    transform: scale(${PHOTO_ZOOM_SCALE});
+  }
+}
 @media (prefers-reduced-motion: reduce) {
   ${ARROW}, ${DOT} {
     transition: none;
+  }
+  ${CARD}[data-bloom-listing-card-zoom] ${PHOTO},
+  ${CARD}[data-bloom-listing-card-zoom]:hover ${PHOTO} {
+    transition: none;
+    transform: none;
   }
 }
 `;

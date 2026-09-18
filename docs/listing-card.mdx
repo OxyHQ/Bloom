@@ -84,6 +84,8 @@ and plural rules. Nothing here computes a price.
 | `badge`                                | top-left over the photo — a string draws the white pill, any node is placed as given                      |
 | `favorite`, `onFavoriteChange`         | the heart, top-right; drawn only when `onFavoriteChange` is given                                          |
 | `onPress`, `href`                      | see below                                                                                                  |
+| `onLongPress`, `onContextMenu`         | the press shortcut — see below                                                                             |
+| `hoverZoom`                            | web only, off by default: the photo scales 1.06 under the pointer                                          |
 | `loading`                              | a skeleton in the same geometry (`aria-busy`)                                                              |
 | `layout`                               | `'vertical'` (default, photo 20:19) or `'horizontal'` (square photo 40% wide, for lists and map sheets)   |
 | `density`                              | `'comfortable'` (default) or `'compact'`, a dense list row — see below                                    |
@@ -105,6 +107,32 @@ open-in-new-tab, copy link and middle-click work. With `onPress` as well, the
 anchor's default navigation is prevented and `onPress` runs — a router takes it.
 On native, `href` alone opens with `Linking`. With neither the card is not a
 control.
+
+**The press shortcut.** `onLongPress` fires on a long press — native, and a
+touch-and-hold on web. `onContextMenu` is its pointer spelling: a right-click on
+web, with the event defaulted for you, which is the same contract
+[`MessageBubble`](/docs/message-bubble) carries. Two props rather than one
+bridged prop, because they are two different events and an app may well want
+only one of them.
+
+Two things follow from defaulting the event. The browser's own menu — "open in
+a new tab", "copy link address" — no longer appears **on the card** while
+`onContextMenu` is set, so set it only where the shortcut is worth that. And
+neither event has a keyboard spelling or a name to announce, so whatever they
+open must be reachable another way: the heart, a row in a menu, a button on the
+detail screen. A long press is a shortcut, never the only door.
+
+**Hover zoom.** `hoverZoom` scales the photo to 1.06 while the pointer is over
+the card, 400ms, inside the tile that already clips — the photo comes forward,
+the card does not move and the grid does not reflow. It is WEB ONLY and guarded
+by `@media (any-hover: hover)`, so a touch screen reporting a hover it cannot
+deliver is left out, and it does nothing at all under
+`prefers-reduced-motion: reduce`. The compact density ignores it: a 112px
+thumbnail has nothing to come forward from.
+
+It is **off by default.** A card that grows under the pointer is a decision an
+app makes for its own grid, not one to turn on under every app already shipping
+this card.
 
 **The controls are siblings of the link, not children.** The heart and arrows are
 laid over the photo from outside the link: a button inside an anchor is invalid
@@ -189,6 +217,32 @@ A saved collection: a square cover, radius 16, with 2px seams — one photo fill
 it, two sit side by side, three put one tall photo beside two, four (or more) make
 a 2×2 of the first four. The name and `description` sit under it. `onPress` and
 `href` behave as on `ListingCard`; the name is "Coast weekends, 12 saved".
+
+| prop              | decides                                                                                  |
+| ----------------- | ---------------------------------------------------------------------------------------- |
+| `name`            | the collection's name, one line                                                          |
+| `description`     | the pre-formatted line under it ("12 saved")                                              |
+| `photos`          | up to four covers, URLs or `ImageResolver` ids                                           |
+| `icon`            | a 16px glyph left of the name — decorative                                               |
+| `color`           | the `icon`'s colour, and the empty cover's tint                                          |
+| `empty`           | what the cover holds while `photos` is empty                                             |
+| `onPress`, `href` | as on `ListingCard`                                                                      |
+| `accessibilityLabel`, `style`, `testID` | `testID` derives `-cover`, `-icon`, `-empty`                           |
+
+**The icon goes beside the name, never inside it.** A folder emoji typed into
+`name` is read out by a screen reader as its character, cannot be coloured or
+sized, and counts against the one line the name gets. `icon` is a
+[`BloomIconComponent`](/docs/icons), `aria-hidden`, drawn at 16 in `color` (or
+text-secondary), and the name keeps its own line.
+
+`color` is the caller's colour rather than a token, because a collection's
+colour is the person's choice and Bloom has no ramp for it. It paints the glyph
+and tints the cover while the collection is empty.
+
+**Empty.** With no photos the cover is the placeholder square, and `empty` is
+centred in it — a glyph, a line, an "add your first save" affordance. Without
+`empty` it is the plain square it has always been, so nothing changes for a
+caller that has not asked for one.
 
 ## Colours
 

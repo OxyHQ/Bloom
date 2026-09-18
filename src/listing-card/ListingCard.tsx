@@ -48,6 +48,7 @@ import {
   LISTING_CARD_STYLE_ID,
   PHOTO_ASPECT_RATIO,
   PHOTO_RADIUS,
+  PHOTO_ZOOM_SCALE,
   resolveListingCardPaint,
   locationText,
   resolvePhoto,
@@ -91,6 +92,21 @@ import type { ListingCardLayout, ListingCardProps } from './types';
  *
  * The overlay repeats the photo's geometry (the same width share and aspect
  * ratio) rather than measuring it, so it is right on the first frame.
+ *
+ * `hoverZoom` scales the photo to {@link PHOTO_ZOOM_SCALE} while a pointer is
+ * over the card — a CSS transform on the photo inside the clipping tile, WEB
+ * ONLY (`@media (any-hover: hover)`, so a touch screen that reports a hover it
+ * cannot deliver is excluded) and nothing at all under reduced motion. It is
+ * off by default: a card that grows under the pointer is a decision an app
+ * makes, not one Bloom makes for every app that already ships this card. The
+ * compact density ignores it — a 112px thumbnail has nothing to come forward
+ * from.
+ *
+ * `onLongPress` and `onContextMenu` are the shortcut to a sheet or a menu, and
+ * they carry `MessageBubble`'s contract verbatim: a long press on native (and
+ * on a web touch screen), right-click on web with the event defaulted. Neither
+ * has a keyboard spelling, so whatever they reach must be reachable another
+ * way.
  */
 
 const TEXT_GAP = 12;
@@ -198,6 +214,7 @@ function PhotoTrack({
                     source={{ uri }}
                     resizeMode="cover"
                     accessibilityIgnoresInvertColors
+                    {...webDataSet({ bloomListingCardPhoto: '' })}
                     style={{ width: '100%', height: '100%' }}
                   />
                 ) : null}
@@ -623,6 +640,9 @@ function ListingCardComponent(props: ListingCardProps) {
     favorite = false,
     onFavoriteChange,
     onPress,
+    onLongPress,
+    onContextMenu,
+    hoverZoom = false,
     href,
     loading = false,
     layout = 'vertical',
@@ -727,6 +747,17 @@ function ListingCardComponent(props: ListingCardProps) {
     role: href ? ('link' as const) : onPress ? ('button' as const) : undefined,
     accessibilityLabel: name,
     onPress: onPress || (!IS_WEB && href) ? handlePress : undefined,
+    onLongPress,
+    // Same shape as `MessageBubble`'s: the event is defaulted here, so the
+    // browser's own menu does not open over the card's shortcut.
+    ...(IS_WEB && onContextMenu !== undefined
+      ? {
+          onContextMenu: (event: { preventDefault?: () => void }) => {
+            event.preventDefault?.();
+            onContextMenu();
+          },
+        }
+      : null),
     testID: testID ? `${testID}-link` : undefined,
   };
 
@@ -752,7 +783,9 @@ function ListingCardComponent(props: ListingCardProps) {
 
   return (
     <View
-      {...webDataSet({ bloomListingCard: layout })}
+      {...webDataSet(
+        hoverZoom ? { bloomListingCard: layout, bloomListingCardZoom: '' } : { bloomListingCard: layout },
+      )}
       style={[{ position: 'relative' }, style]}
       testID={testID}
     >

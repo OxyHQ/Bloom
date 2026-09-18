@@ -129,6 +129,26 @@ export interface ListingCardProps {
   /** Called when the card is pressed. */
   onPress?: () => void;
   /**
+   * A long press on the card — a shortcut to a sheet or a menu ("save to a
+   * folder"). A long press has no keyboard equivalent and no name to announce,
+   * so whatever it reaches must be reachable another way too.
+   */
+  onLongPress?: () => void;
+  /**
+   * Web only — right-click, the pointer's spelling of the same shortcut. The
+   * event is defaulted for you, so the browser's own menu ("open in a new tab")
+   * does not appear on the card while this is set. Same contract as
+   * `MessageBubble`'s.
+   */
+  onContextMenu?: () => void;
+  /**
+   * Zooms the photo a little while the pointer is over the card (WEB ONLY —
+   * there is no hover on a touch screen, and no reduced-motion-safe way to do
+   * it on native). Default `false`. Skipped under
+   * `prefers-reduced-motion: reduce`.
+   */
+  hoverZoom?: boolean;
+  /**
    * The stay's URL. On web the card is a real `<a href>` (open in a new tab,
    * copy link); with `onPress` too the default navigation is prevented so a
    * router can take it. On native the card opens it with `Linking` when there is
@@ -206,6 +226,23 @@ export interface WishlistCardProps {
   onPress?: () => void;
   /** The collection's URL; a real `<a href>` on web, like `ListingCard`. */
   href?: string;
+  /**
+   * A glyph left of the name, 16px — what the collection IS ("Coast weekends"
+   * beside a heart, "Viewings booked" beside a calendar). Decorative: the name
+   * beside it is what a screen reader reads.
+   */
+  icon?: BloomIconComponent;
+  /**
+   * The `icon`'s colour, and the tint of the cover while the collection is
+   * empty. Default: the secondary text colour, and the plain placeholder.
+   */
+  color?: string;
+  /**
+   * What the cover shows while `photos` is empty — a glyph, a line of text, an
+   * "Add your first save" affordance. Without it an empty collection draws the
+   * plain placeholder square it draws today.
+   */
+  empty?: ReactNode;
   /** Replaces the composed name ("Coast weekends, 12 saved"). */
   accessibilityLabel?: string;
   style?: StyleProp<ViewStyle>;

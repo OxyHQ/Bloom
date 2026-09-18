@@ -22,15 +22,22 @@ import type { WishlistCardProps } from './types';
  * A saved collection of stays.
  *
  *   cover   a square, radius 16, 2px seams in the page colour:
+ *             0 photos  the placeholder square, holding `empty` centred
  *             1 photo   fills it
  *             2         side by side
  *             3         one tall photo left, two stacked right
  *             4+        a 2×2 (the first four)
- *   text    12 below: the name body-semibold, the description body-regular
- *           text-secondary
+ *   text    12 below: `icon` at 16 (in `color`), the name body-semibold, then
+ *           the description body-regular text-secondary
  *
  * A link on web with `href` (a real `<a>`), otherwise a button with `onPress`;
  * its name is "name, description".
+ *
+ * `icon` is DECORATIVE and sits beside the name rather than inside it — a glyph
+ * put in the `name` string is read out as its character, and cannot be coloured
+ * or sized. `color` paints that glyph and tints the empty cover; it is the
+ * caller's colour, not a token, because a collection's colour is the person's
+ * choice and Bloom has no ramp for it.
  */
 
 const SEAM = 2;
@@ -57,6 +64,9 @@ function WishlistCardComponent({
   photoVariant,
   onPress,
   href,
+  icon: Icon,
+  color,
+  empty,
   accessibilityLabel,
   style,
   testID,
@@ -67,10 +77,25 @@ function WishlistCardComponent({
   const resolver = useImageResolver();
   const uris = photos.slice(0, 4).map((photo) => resolvePhoto(photo, resolver, photoVariant));
   const count = Math.max(1, uris.length);
+  const isEmpty = uris.length === 0;
 
   const fill: ViewStyle = { flex: 1 };
   let cover: React.ReactNode;
-  if (count === 1) {
+  if (isEmpty) {
+    cover = (
+      <View
+        style={{
+          flex: 1,
+          alignItems: 'center',
+          justifyContent: 'center',
+          backgroundColor: color ?? paint.photoPlaceholder,
+        }}
+        testID={testID ? `${testID}-empty` : undefined}
+      >
+        {empty ?? null}
+      </View>
+    );
+  } else if (count === 1) {
     cover = <Tile uri={uris[0]} paint={paint} style={fill} />;
   } else if (count === 2) {
     cover = (
@@ -133,9 +158,20 @@ function WishlistCardComponent({
         {cover}
       </View>
       <View style={{ marginTop: 12, gap: 2 }}>
-        <Text variant="body-semibold" numberOfLines={1} style={{ color: paint.text }}>
-          {name}
-        </Text>
+        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+          {Icon ? (
+            <View aria-hidden style={{ flexShrink: 0 }} testID={testID ? `${testID}-icon` : undefined}>
+              <Icon width={16} height={16} fill={color ?? paint.textSecondary} />
+            </View>
+          ) : null}
+          <Text
+            variant="body-semibold"
+            numberOfLines={1}
+            style={{ flexShrink: 1, minWidth: 0, color: paint.text }}
+          >
+            {name}
+          </Text>
+        </View>
         {description ? (
           <Text variant="body-regular" numberOfLines={1} style={{ color: paint.textSecondary }}>
             {description}
