@@ -1,6 +1,7 @@
 import type { ReactNode } from 'react';
 import type { StyleProp, ViewStyle } from 'react-native';
 
+import type { BloomIconComponent } from '../icons/icon-component';
 import type { WebAriaProps } from '../styles/styled-primitives';
 
 /** A URL, or an id the registered ImageResolver turns into one. */
@@ -162,7 +163,7 @@ export interface FollowButtonProps extends ToggleBase {
 
 export interface MediaIconButtonProps extends ToggleBase {
   /** A Remix icon component. */
-  icon: React.ComponentType<{ width?: number; height?: number; fill?: string }>;
+  icon: BloomIconComponent;
   accessibilityLabel: string;
   onPress?: () => void;
   /** Glyph size. Default `24`. */

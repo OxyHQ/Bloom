@@ -5,6 +5,7 @@ import { fireEvent, render } from '@testing-library/react-native';
 import { BloomThemeProvider } from '../theme/BloomThemeProvider';
 import { useTheme } from '../theme/use-theme';
 import type { Theme } from '../theme/types';
+import type { BloomIconComponent } from '../icons/icon-component';
 import { GlyphButton } from '../button';
 import {
   GLYPH_BUTTON_GLYPH_RATIO,
@@ -46,11 +47,7 @@ function lastCall(Glyph: jest.Mock): { fill?: string; width?: number; height?: n
 
 /** A glyph that records the props the button hands it. */
 function makeGlyph() {
-  return jest.fn(() => null) as unknown as jest.Mock & React.ComponentType<{
-    width?: number;
-    height?: number;
-    fill?: string;
-  }>;
+  return jest.fn(() => null) as unknown as jest.Mock & BloomIconComponent;
 }
 
 describe('GlyphButton geometry', () => {

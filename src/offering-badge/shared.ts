@@ -1,6 +1,5 @@
-import type { ComponentType } from 'react';
-
 import { BADGE_GEOMETRY, resolveBadgePaint, type BadgeGeometry, type BadgeSize } from '../badge';
+import type { BloomIconComponent } from '../icons/icon-component';
 import { RiArrowLeftRightLine } from '../icons/remix/RiArrowLeftRightLine';
 import { RiKey2Line } from '../icons/remix/RiKey2Line';
 import { RiPriceTag3Line } from '../icons/remix/RiPriceTag3Line';
@@ -21,9 +20,7 @@ export const OFFERING_LABELS: Readonly<Record<Offering, string>> = {
   exchange: 'Swap',
 };
 
-export const OFFERING_ICONS: Readonly<
-  Record<Offering, ComponentType<{ width?: number; height?: number; fill?: string }>>
-> = {
+export const OFFERING_ICONS: Readonly<Record<Offering, BloomIconComponent>> = {
   long_term_rent: RiKey2Line,
   sale: RiPriceTag3Line,
   short_term_rent: RiSuitcaseLine,
