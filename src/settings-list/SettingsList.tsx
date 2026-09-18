@@ -2,10 +2,12 @@ import React, { memo } from 'react';
 import { View, Text, Pressable, StyleSheet } from 'react-native';
 
 import { useTheme } from '../theme/use-theme';
+import { useSurfaceFill } from '../styles/surface-levels';
 import { useInteractionState } from '../hooks/use-interaction-state';
 import { Card } from '../card';
 import { Divider } from '../divider';
 import { RiArrowRightSLine as ChevronRightIcon } from '../icons/remix/RiArrowRightSLine';
+import { SETTINGS_LIST_GROUP_TEST_ID, settingsGroupSurface } from './surface';
 import type {
   SettingsListItemProps,
   SettingsListGroupProps,
@@ -132,9 +134,21 @@ export const SettingsListGroup = memo<SettingsListGroupProps>(function SettingsL
   footer,
   children,
   style,
-  variant = 'plain',
+  variant,
 }) {
   const theme = useTheme();
+  // Which surface the group paints is a question about its PARENT, and a group
+  // cannot see its parent — so it asks the surrounding surface what colour it
+  // actually painted (`styles/surface-levels.ts`) and resolves off THAT. On the
+  // page that is `colors.card`, exactly what these groups have always painted;
+  // on anything else it is one ladder step off the real fill, which is the only
+  // answer that cannot land on its own parent. `./surface.ts` carries the rule,
+  // the measurements behind it, and why the fill rather than the rung.
+  //
+  // It is a DEFAULT, not a rule: an explicit `variant` wins, for a container
+  // Bloom does not paint and therefore cannot publish a fill for.
+  const ambientFill = useSurfaceFill();
+  const backgroundColor = settingsGroupSurface(theme, ambientFill, variant);
   const filteredChildren = React.Children.toArray(children).filter(Boolean);
 
   return (
@@ -152,7 +166,20 @@ export const SettingsListGroup = memo<SettingsListGroupProps>(function SettingsL
         the title/search). A self-margin here double-inset grouped rows on every
         screen that also applies that padding.
       */}
-      <Card variant={variant} radius="radius-16">
+      {/*
+        The surface is passed as the resolved COLOUR, not as a variant: above
+        the page it is a step off the container's own fill, which is not one of
+        `Card`'s two named surfaces. `variant` still rides along so the card's
+        other axes keep meaning what the caller asked for, and the two can never
+        disagree — `settingsGroupSurface` resolves an explicit variant to that
+        variant's own colour.
+      */}
+      <Card
+        variant={variant ?? 'plain'}
+        radius="radius-16"
+        style={{ backgroundColor }}
+        testID={SETTINGS_LIST_GROUP_TEST_ID}
+      >
         {filteredChildren.map((child, index) => (
           <React.Fragment key={index}>
             {child}

@@ -104,3 +104,34 @@ because a child deliberately overflows — opts out through `style`:
 spacing and type conventions, not requirements. A card with entirely custom
 content is a normal thing; use the parts when you want the same rhythm as every
 other card.
+
+## `Card` does not publish a surface
+
+A `ContentPanel` tells its children what they are sitting on — level 1 of the
+ladder in [Styles](/docs/bloom/main/styles), plus the colour it actually painted
+— and a `Card` deliberately does not, even though it paints the same colour. The
+difference is ownership: a panel is a surface Bloom paints and keeps painting,
+while a `Card` is a box a consumer routinely repaints through `style` /
+`className`, and a fill Bloom cannot guarantee is worse than none — every
+`TextField`, `Tabs` rail, hovered row and `SettingsListGroup` inside it would
+then step off a colour that is not there. (`ContentPanel` hits the same wall when
+it IS repainted, and answers it with an explicit `surfaceColor` prop rather than
+a guess.)
+
+So a component that needs to know what is behind it inside a card is still told:
+pass `SettingsListGroup`'s `variant`, or publish the surface yourself for a card
+you know you have not repainted. `SurfaceLevelProvider` ships on the `styles`
+subpath, not the root barrel:
+
+```tsx
+import { SurfaceLevelProvider } from '@oxy.so/bloom/styles';
+
+<Card>
+  <SurfaceLevelProvider level={1} fill={colors.card}>
+    <SettingsListGroup title="Account">…</SettingsListGroup>
+  </SurfaceLevelProvider>
+</Card>
+```
+
+Pass `fill` as well as `level`: the level says how deep the subtree is, the fill
+says what you actually painted, and it is the fill everything inside steps off.

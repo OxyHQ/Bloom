@@ -55,6 +55,7 @@ import Animated, { useAnimatedStyle, type SharedValue } from 'react-native-reani
 
 import { WEB_POSITION_FIXED } from '../styles/web-view-style';
 import { StyledView } from '../styles/styled-primitives';
+import { SurfaceLevelProvider } from '../styles/surface-levels';
 import { layerForRank, type OverlayLayer } from './stack';
 import { useOverlayLayer } from './use-overlay-layer';
 import type { OverlayRootProps, BackdropProps } from './types';
@@ -177,7 +178,39 @@ function OverlayRootView({
         style={[styles.root, { zIndex: layer.root }, style]}
         testID={testID}
       >
-        {children}
+        {/*
+          A portaled surface starts a NEW painting context: what is behind it is
+          never whatever painted the control that opened it. React context flows
+          through a portal even though the DOM does not, so without this reset a
+          dialog opened from inside a `ContentPanel` inherited "I am on a card"
+          and painted itself differently from the same dialog opened from a bare
+          screen — the surface deciding its colours from where its TRIGGER lives.
+
+          This publishes the RUNG ALONE, with no `fill`, and that is the honest
+          shape of what an `OverlayRoot` knows. It paints nothing itself — it is
+          a transparent, `box-none` full-screen layer — so it has no colour to
+          report; what it can say truthfully is "you are not on the surface your
+          trigger was on". Level 0 is the assumption that costs least when
+          nothing better arrives: the page rung, which is what every unwrapped
+          consumer already assumed and what the plain overlay bodies do paint.
+
+          The surfaces that DO know their colour say so inside this root, and
+          being nested here is what makes each of those an absolute claim rather
+          than a step off an ancestor it cannot see:
+
+            `dialog/Dialog`            level 0, fill `theme.colors.background`
+            `bottom-sheet/…Base`       level 0, fill `theme.colors.background`
+            `floating/FloatingPanel`   level 1 — the menu/popover surface
+
+          Two portaled surfaces still paint something they do not publish:
+          `SettingsModal` paints `resolveSettingsPalette(theme).full` and
+          `Tooltip` the menu palette, so content inside either reads the page
+          rung rather than their real fill. That is an approximation inherited
+          from before the ladder existed, not a claim made here — and the fix is
+          for each of them to publish its own `fill`, not for this root to guess
+          one on their behalf.
+        */}
+        <SurfaceLevelProvider level={0}>{children}</SurfaceLevelProvider>
       </StyledView>
     </OverlayLayerContext.Provider>
   );
