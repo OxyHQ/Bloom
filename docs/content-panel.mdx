@@ -156,6 +156,21 @@ Two things are worth knowing here:
 `surfaceColor` changes nothing about how the panel looks — the class still
 paints it. It only decides what the panel tells its content.
 
+### What reads it
+
+`SettingsListGroup` is the first component to stop taking a prop for this: with
+no `variant` it paints one step off the panel's published fill, so a settings
+screen reads the same on a page and inside a panel without repeating the answer
+at every group ([Settings list](/docs/bloom/main/settings-list)).
+
+A surface opened *from* the panel does not inherit it. React context reaches
+through a portal and through an RN `<Modal>` even though neither paints
+anything, so a dialog, sheet or menu would otherwise take its colours from where
+its trigger happened to live. `Dialog` and the bottom-sheet shell publish their
+own fill, `floating/FloatingPanel` publishes the menu rung, and `OverlayRoot`
+resets the ambient surface for anything portaled that does neither — so the same
+dialog paints the same way from a bare screen and from inside a panel.
+
 ## Do not put a Card immediately inside a framed panel
 
 They are both surfaces. A card filling a framed panel is two borders with a few

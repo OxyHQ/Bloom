@@ -189,11 +189,35 @@ reads the current rung's paint, `useSurfaceLevel(1)` the one above it,
 `useSurfaceFill()` just the fill. Nothing published means level 0 — the page —
 which is what every unwrapped consumer already assumed.
 
+`useSurfaceLevel(1)` is the one a component reaches for when it draws a surface
+of its own on top of whatever it landed on: it is "one legible step off my
+parent", in both modes, whether the parent is the page or a panel.
+`SettingsListGroup` paints its card that way when no `variant` is passed — with
+one exception it documents itself, that on the PAGE it takes the palette's own
+`card` token instead, which in dark separates further than the step does.
+
+**A component drawing a step should call `surfaceFillOn(theme, useSurfaceFill())`
+rather than `useSurfaceLevel(1)` when landing on its own parent would be fatal.**
+`useSurfaceLevel(1)` clamps at rung 3, so inside a rung-3 container it hands back
+rung 3 — the parent's own colour, 1.000:1. The primitive always steps.
+
 An overlay that paints the page colour publishes `level={0}`, which RESETS the
 ambient surface rather than inheriting it. That matters because a portal keeps
 React context from where it was rendered: without the reset, a dialog opened
 from inside a `ContentPanel` would tell its own content it is sitting on the
 panel's card.
+
+`OverlayRoot` publishes that reset for every portaled surface, and it publishes
+the rung ALONE — no `fill`. It paints nothing itself, so it has no fill to
+report; what it can say truthfully is "you are not on the surface your trigger
+was on". A surface inside it that knows its own colour then says so and wins:
+`Dialog` and the sheet shell publish `fill={colors.background}`, `FloatingPanel`
+publishes the menu rung. Two surfaces still paint something Bloom does not
+publish — `SettingsModal` (`resolveSettingsPalette(theme).full`) and `Tooltip`
+(the menu palette) — so content inside those reads the page rung rather than
+their real fill. That is an approximation, not a claim: they have published
+nothing since before the ladder existed, and the fix is for each to publish its
+own `fill`.
 
 ### `fill` — the rung is a derivation, the fill is a fact
 

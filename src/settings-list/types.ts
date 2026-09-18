@@ -40,10 +40,27 @@ export interface SettingsListGroupProps {
   style?: StyleProp<ViewStyle>;
   /**
    * The surface the group's card paints, named after `Card`'s own variants.
-   * `plain` (default) is the `card` colour, which reads on a page painted in
-   * `background`. `filled` is `backgroundSecondary`, for a group that sits on a
-   * surface already painted in `card` — a `ContentPanel`, a Dialog body — where a
-   * `plain` group would vanish into its parent.
+   * `plain` is the `card` colour, which reads as a raised card on a page painted
+   * in `background`; `filled` is `backgroundSecondary`.
+   *
+   * UNSET IS THE NORMAL CASE, and it is not one of these two. The group asks the
+   * surrounding surface what colour it actually painted
+   * (`styles/surface-levels.ts` `useSurfaceFill()`) and resolves off that: on the
+   * page, `card`; on anything else, one ladder step off the real fill — a step
+   * that cannot land on its own parent, whether that parent is a `ContentPanel`,
+   * a menu or a container Bloom has never heard of. `./surface.ts` carries the
+   * rule and the measurements behind it.
+   *
+   * Passing it per call site is what a whole app ends up repeating — and
+   * forgetting once renders a group invisible, which is exactly the kind of
+   * mistake a default can make impossible.
+   *
+   * Pass it only for a surface Bloom does not paint and so cannot publish a fill
+   * for — your own coloured section — where it always wins over the ambient one.
+   * If that container is yours and holds more than a settings list, publishing
+   * the surface once is better than annotating everything inside it:
+   * `<SurfaceLevelProvider level={1} fill={myColour}>` from
+   * `@oxy.so/bloom/styles`.
    */
   variant?: SettingsListGroupVariant;
 }
