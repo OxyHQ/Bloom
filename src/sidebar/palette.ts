@@ -3,6 +3,7 @@ import { useMemo } from 'react';
 import { ACCENT_TABLE, colorRamp, mixColor, resolveButtonRamps } from '../button/shared';
 import { MENU_SHADOW } from '../floating/menu-palette';
 import { PANEL_SHADOW, resolvePanelChrome } from '../styles/panel-chrome';
+import { hairlineOn } from '../styles/surface-levels';
 import type { Theme } from '../theme/types';
 import { useTheme } from '../theme/use-theme';
 import { parseRgba } from '../theme/color-utils';
@@ -38,6 +39,13 @@ export interface SidebarPalette {
   panel: string;
   panelBorder: string;
   panelShadow: string;
+  /**
+   * The DOCKED column's single edge. Not `panelBorder`: that one is white in
+   * light mode — a highlight that reads as an edge only because the card's
+   * shadow sits under it. A docked column has no shadow, so its line has to be
+   * a real hairline against both the panel fill and the page (`hairlineOn`).
+   */
+  dockedEdge: string;
   flat: string;
   rowHover: string;
   tertiary: string;
@@ -100,6 +108,7 @@ export function resolveSidebarPalette(theme: Theme): SidebarPalette {
     panel,
     panelBorder: chrome.border,
     panelShadow: chrome.shadow,
+    dockedEdge: hairlineOn(theme, panel),
     // `neutral-925` (#121212), between the 900 and 950 stops.
     flat: dark ? mixColor(n[900], n[950], 0.4) : card,
     rowHover: dark ? n[800] : n[200],

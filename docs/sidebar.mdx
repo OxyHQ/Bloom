@@ -108,7 +108,39 @@ The logo leads the header beside the collapse (or close) control; `account`, if 
 - A folder row is p 8 with a 20px folder glyph (open while expanded) and the label; its rows are py 5 / pr 8 / pl 36 with the label and a `meta` chip (radius 4, background-tertiary, px 4 / py 1, caption-1-medium), background-secondary-hover while selected or hovered. A curved 1px icon-quaternary connector drops from the folder glyph into each row. The rows' height and opacity ease open and shut together over 300ms; collapsed rows leave the tab order.
 - Quick search filters the tree too: a folder whose label matches keeps every row, otherwise only its matching rows, held open while the query is set. "No results" counts the tree.
 - The tree hides while collapsed.
-- `plan` replaces the team card: radius 12, background-tertiary (the panel colour when `flat`), py 8 / pr 12 / pl 10, a 32px avatar (initials 18.8/22.6 medium), the name (body-medium) over the plan (body-regular text-secondary), and a small secondary button (`actionLabel`, default "Upgrade"). Collapsed, only the avatar.
+- `plan` replaces the team card: radius 12, background-tertiary (the panel colour on a `plain` surface), py 8 / pr 12 / pl 10, a 32px avatar (initials 18.8/22.6 medium), the name (body-medium) over the plan (body-regular text-secondary), and a small secondary button (`actionLabel`, default "Upgrade"). Collapsed, only the avatar.
+
+## Surface and size: the app's identity
+
+Two apps with the same rows should not look like the same app. That difference is two props, not a fork of this component.
+
+```tsx
+<Sidebar surface="card" />                    {/* default: the floating panel */}
+<Sidebar surface="plain" size="large" />      {/* a social reader's nav */}
+<Sidebar surface="docked" size="small" />     {/* a workspace column */}
+```
+
+`surface` is the panel's EDGE:
+
+| surface  | what it draws                                                      |
+| -------- | ------------------------------------------------------------------ |
+| `card`   | radius 24, a hairline and the panel shadow, on the panel fill       |
+| `plain`  | no radius, no border, no shadow — the rows sit straight on the page |
+| `docked` | the panel fill, square corners, ONE hairline on the inner edge, full height |
+
+The docked edge is not the card's border: that one is white in light mode, a highlight that reads as an edge only because the card's shadow sits beneath it. A docked column has no shadow, so it takes a real hairline stepped off its own fill (`hairlineOn`).
+
+`size` moves the rows and the panel together — one rung, every measurement, in `SIDEBAR_METRICS`:
+
+| size     | square | glyph | label            | expanded | collapsed |
+| -------- | ------ | ----- | ---------------- | -------- | --------- |
+| `small`  | 30     | 18    | `body-2-medium`  | 232      | 46        |
+| `medium` | 36     | 20    | `body-medium`    | 260      | 52        |
+| `large`  | 44     | 24    | `title-3-medium` | 300      | 60        |
+
+The collapsed width is never an independent number: it is the square plus the panel's collapsed padding on both sides plus its two borders, so the icon column stays centred at every size. A row outside a sidebar takes `size` itself; inside one it inherits the panel's.
+
+`AppShell` passes both through (`sidebar={{ surface, size }}`) and treats `docked` as what it is — it gives up its left and vertical padding around that column and lets it run the full height, so the hairline is the separator instead of a gutter.
 
 ## Navigation
 
@@ -117,7 +149,7 @@ The logo leads the header beside the collapse (or close) control; `account`, if 
 
 ## Collapse
 
-`collapsed` / `defaultCollapsed` / `onCollapsedChange`. The panel morphs 260 → 52 in 300ms while labels, badges and the shortcut hint collapse (max-width, opacity, 3px blur on web) and the icons stay put. `mobile` is always expanded and shows a close button; `flat` removes the panel chrome for a rail revealed under the page (and moves the search into the header). `fluid` fills the container while expanded. Reduced motion snaps.
+`collapsed` / `defaultCollapsed` / `onCollapsedChange`. The panel morphs between the size's two widths (260 → 52 at `medium`) in 300ms while labels, badges and the shortcut hint collapse (max-width, opacity, 3px blur on web) and the icons stay put. `mobile` is always expanded and shows a close button. `fluid` fills the container while expanded. Reduced motion snaps.
 
 After expanding, the account trigger's hover pill stays off until the pointer leaves it, so a stationary pointer does not light it up.
 

@@ -372,7 +372,14 @@ const AppShellComponent: React.FC<AppShellProps> = ({
           style={[frame, doc ? { overflow: WEB_OVERFLOW_CLIP } : null, { flexDirection: 'row', backgroundColor: background }, style]}
         >
           {navInFlow && flowSidebar ? (
-            <View style={[{ paddingTop: 12, paddingBottom: 12, paddingLeft: 12, flexShrink: 0 }, doc ? stickyRail(0) : null]}>
+            <View
+              style={[
+                flowSidebar.surface === 'docked'
+                  ? { flexShrink: 0 }
+                  : { paddingTop: 12, paddingBottom: 12, paddingLeft: 12, flexShrink: 0 },
+                doc ? stickyRail(0) : null,
+              ]}
+            >
               <Sidebar {...flowSidebar} />
             </View>
           ) : null}
@@ -385,7 +392,7 @@ const AppShellComponent: React.FC<AppShellProps> = ({
               style={{ position: doc ? WEB_POSITION_FIXED : 'absolute', top: 0, bottom: 0, left: 0, width: 272, paddingTop: 12, paddingBottom: 12, paddingLeft: 6 }}
             >
               <Animated.View style={[{ height: '100%', width: 260, transformOrigin: 'left center' }, railStyle]}>
-                <Sidebar {...drawerSidebar} mobile flat onClose={() => setOpen(false)} />
+                <Sidebar {...drawerSidebar} mobile surface="plain" onClose={() => setOpen(false)} />
               </Animated.View>
             </View>
           ) : null}
@@ -569,10 +576,14 @@ const AppShellComponent: React.FC<AppShellProps> = ({
 
   const body = variant === 'split' ? splitBody : centred ? centredBody : dashboardBody;
 
+  // A DOCKED nav is flush to the window: it takes the shell's whole height and
+  // its own hairline is the separator, so the shell gives up its left and
+  // vertical padding around that column rather than framing it like a card.
+  const dockedNav = navInFlow && flowSidebar?.surface === 'docked';
   const navRegion =
     navInFlow && flowSidebar ? (
       doc ? (
-        <View style={stickyRail(gutter)}>
+        <View style={stickyRail(dockedNav ? 0 : gutter)}>
           <Sidebar {...flowSidebar} />
         </View>
       ) : (
@@ -604,8 +615,9 @@ const AppShellComponent: React.FC<AppShellProps> = ({
 
   const rowStyle: WebCssStyle = {
     flexDirection: 'row',
-    gap: columnGap,
+    gap: dockedNav ? 0 : columnGap,
     padding: gutter,
+    ...(dockedNav ? { paddingLeft: 0, paddingTop: 0, paddingBottom: 0 } : null),
     backgroundColor: background,
   };
 

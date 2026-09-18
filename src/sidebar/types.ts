@@ -62,6 +62,11 @@ export interface SidebarModeSwitcherProps {
 export interface SidebarItemProps {
   icon: SidebarIcon;
   label: string;
+  /**
+   * The row's size. Inside a `Sidebar` it is inherited from the panel — pass
+   * it only for a row standing on its own.
+   */
+  size?: SidebarSize;
   href?: string;
   badge?: ReactNode;
   selected?: boolean;
@@ -93,6 +98,33 @@ export interface SidebarRailItemProps {
  *            selected icon on a 48 × 32 pill. Navigation only
  */
 export type SidebarVariant = 'panel' | 'rail';
+
+/**
+ * The panel's own SURFACE — what the sidebar looks like as an object on the
+ * page, independent of what it contains. It is the axis two apps differ on
+ * most: the same rows read as a different product behind a different edge.
+ *
+ * - `card` (default) the floating panel: radius 24, a hairline and the panel
+ *   shadow, on the panel fill. A sidebar that sits IN the page.
+ * - `plain` no edge at all — no radius, no border, no shadow: the rows sit
+ *   straight on the page. The social/reader look, and what a revealed mobile
+ *   drawer uses.
+ * - `docked` a column flush to the window's edge: no radius, one hairline on
+ *   the INNER edge only, the panel fill, and it stretches the full height.
+ *   The workspace look (a channel list, a file tree).
+ */
+export type SidebarSurface = 'card' | 'plain' | 'docked';
+
+/**
+ * How big the rows are, and with them the panel. One axis, three rungs, every
+ * measurement in `SIDEBAR_METRICS`:
+ *
+ * - `small`  a 30px square, an 18px glyph, `body-2-medium`; 232 expanded, 46 collapsed
+ * - `medium` (default) 36 / 20 / `body-medium`; 260 expanded, 52 collapsed
+ * - `large`  44 / 24 / `title-3-medium`; 300 expanded, 60 collapsed — the
+ *   destination-first rail a social app reads with at arm's length
+ */
+export type SidebarSize = 'small' | 'medium' | 'large';
 
 /** A row in the team menu. */
 export interface SidebarMenuItem {
@@ -226,10 +258,12 @@ export interface SidebarProps {
   /** Rendered inside a mobile drawer: always expanded, close button instead of collapse. */
   mobile?: boolean;
   onClose?: () => void;
-  /** Expanded width fills the container instead of 260px (collapsed stays 60). */
+  /** Expanded width fills the container instead of the size's own width. */
   fluid?: boolean;
-  /** Removes the floating panel treatment (a sidebar revealed beneath mobile content). */
-  flat?: boolean;
+  /** The panel's edge. Defaults to `card`. */
+  surface?: SidebarSurface;
+  /** The row size, and the panel width that follows it. Defaults to `medium`. */
+  size?: SidebarSize;
 
   /** Shows `ThemeToggle` above the secondary rows. Defaults to true. */
   showThemeToggle?: boolean;
