@@ -118,12 +118,50 @@ It is a `listbox` of `option`s with `aria-selected` on the highlighted row. The
 list takes focus on web and answers ArrowDown/ArrowUp (wrapping) and Enter;
 hover moves the same highlight. The rows stay out of the tab order.
 
+**A row that cannot be chosen.** `disabled` on an item dims it to
+`tokens.DISABLED_OPACITY`, gives it `aria-disabled`, refuses press and Enter,
+keeps hover from highlighting it, and makes the arrow keys step OVER it —
+ArrowDown from the row above lands past it, and a list where every row is
+disabled leaves the highlight alone rather than parking it on a row that answers
+nothing.
+
+`disabledReason` is the line that says WHY ("Location is off"). It replaces
+`description` while the row is disabled and is read after the title, so the row
+announces "Use my location, Location is off".
+
+```tsx
+<DestinationSuggestions
+  items={[
+    {
+      id: 'here',
+      title: 'Use my location',
+      icon: RiCrosshair2Line,
+      disabled: !locationOn,
+      disabledReason: 'Location is off',
+    },
+    { id: 'lisbon', title: 'Lisbon', description: 'Portugal' },
+  ]}
+  onSelect={choose}
+/>
+```
+
+The row stays in the list rather than disappearing, and it is drawn by the list
+rather than beside it: a row that vanishes teaches nothing, and one hand-drawn
+outside the `listbox` is not an `option` — it breaks the arrow keys and the
+"2 of 5" a screen reader counts.
+
 ### GuestPicker
 
 `StepperRow`s for adults, children, infants and pets, with hairlines between
 rows. `value: { adults, children, infants, pets }`, `onChange`, `max` (one
 number or per kind), `kinds` (which rows, in order), `labels`, `descriptions`
 (`null` hides one).
+
+`decrementLabel` and `incrementLabel` name every row's `−` and `+` buttons —
+`Stepper`'s own prop names, forwarded to all of them. They default to the
+English `"Decrease"` / `"Increase"`, and they are the last two words in this
+family that a translated app could not reach. The row's title is what says
+which counter a button belongs to, so one pair covers every row.
 
 It is the ONE guests picker: the search bar's "Who" panel and `BookingCard`'s
 guests popover both use it. For the booking side:

@@ -4,6 +4,7 @@ import { Platform, Pressable, View } from 'react-native';
 import { resolveButtonRamps } from '../button/shared';
 import { RiMapPinLine } from '../icons/remix/RiMapPinLine';
 import { adoptStyleSheet } from '../styles/adopt-style-sheet';
+import { DISABLED_OPACITY } from '../styles/tokens';
 import type { WebCssStyle } from '../styles/web-view-style';
 import { webDataSet } from '../styles/web-data';
 import { useTheme } from '../theme/use-theme';
@@ -20,6 +21,13 @@ import type { DestinationSuggestionsProps } from './types';
  *
  * A `listbox` of `option`s. The list takes focus (web) and owns the arrow
  * keys; the rows stay out of the tab order.
+ *
+ * A row can be `disabled` — "Use my location" while location permission is
+ * off. It stays in the list rather than disappearing, because a row that
+ * vanishes teaches nothing: it dims to `DISABLED_OPACITY`, carries
+ * `aria-disabled`, answers no press or Enter, is never highlighted by hover, and
+ * the arrow keys step OVER it. `disabledReason` replaces its description and is
+ * read after the title, so the row says why.
  */
 
 const IS_WEB = Platform.OS === 'web';
@@ -35,6 +43,28 @@ const CSS = `
   box-shadow: inset 0 0 0 2px var(--bloom-destination-ring, currentColor);
 }
 `;
+
+/**
+ * The next row the arrow keys land on, stepping OVER every disabled one and
+ * wrapping once. `-1` when every row is disabled — the highlight then stays
+ * where it is rather than landing on a row that answers nothing. Pure.
+ */
+export function nextSelectable(
+  items: readonly { disabled?: boolean }[],
+  from: number,
+  step: 1 | -1,
+): number {
+  const count = items.length;
+  if (count === 0) return -1;
+  // From "nothing highlighted", ArrowDown starts at the top and ArrowUp at the
+  // bottom, which is what the list did before any row could be disabled.
+  const start = from < 0 ? (step === 1 ? 0 : count - 1) : (from + step + count) % count;
+  for (let i = 0; i < count; i++) {
+    const index = (start + step * i + count * count) % count;
+    if (!items[index]?.disabled) return index;
+  }
+  return -1;
+}
 
 function DestinationSuggestionsComponent({
   items,
@@ -68,13 +98,16 @@ function DestinationSuggestionsComponent({
     if (items.length === 0) return;
     if (e.key === 'ArrowDown') {
       e.preventDefault();
-      highlight(current < 0 ? 0 : (current + 1) % items.length);
+      const next = nextSelectable(items, current, 1);
+      if (next >= 0) highlight(next);
     } else if (e.key === 'ArrowUp') {
       e.preventDefault();
-      highlight(current <= 0 ? items.length - 1 : current - 1);
+      const next = nextSelectable(items, current, -1);
+      if (next >= 0) highlight(next);
     } else if (e.key === 'Enter' && current >= 0 && current < items.length) {
       e.preventDefault();
-      onSelect(items[current]!);
+      const item = items[current]!;
+      if (!item.disabled) onSelect(item);
     }
   };
 
@@ -103,17 +136,22 @@ function DestinationSuggestionsComponent({
       >
         {items.map((item, index) => {
           const Icon = item.icon ?? RiMapPinLine;
-          const selected = index === current;
+          const disabled = item.disabled === true;
+          const selected = index === current && !disabled;
+          const secondLine = disabled ? (item.disabledReason ?? item.description) : item.description;
           return (
             <Pressable
               key={item.id}
               role="option"
-              accessibilityLabel={item.description ? `${item.title}, ${item.description}` : item.title}
+              accessibilityLabel={secondLine ? `${item.title}, ${secondLine}` : item.title}
               aria-selected={selected}
-              accessibilityState={{ selected }}
+              accessibilityState={{ selected, disabled }}
+              disabled={disabled}
               focusable={false}
               onPress={() => onSelect(item)}
-              onHoverIn={() => highlight(index)}
+              onHoverIn={() => {
+                if (!disabled) highlight(index);
+              }}
               testID={testID ? `${testID}-${index}` : undefined}
               style={{
                 flexDirection: 'row',
@@ -124,6 +162,7 @@ function DestinationSuggestionsComponent({
                 paddingLeft: 12,
                 paddingRight: 12,
                 borderRadius: 16,
+                opacity: disabled ? DISABLED_OPACITY : 1,
                 backgroundColor: selected ? palette.rowHighlight : 'transparent',
               }}
             >
@@ -143,9 +182,9 @@ function DestinationSuggestionsComponent({
                 <Text variant="body-medium" numberOfLines={1} style={{ color: palette.text }}>
                   {item.title}
                 </Text>
-                {item.description ? (
+                {secondLine ? (
                   <Text variant="body-2-regular" numberOfLines={1} style={{ color: palette.textSecondary }}>
-                    {item.description}
+                    {secondLine}
                   </Text>
                 ) : null}
               </View>

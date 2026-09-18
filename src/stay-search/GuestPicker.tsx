@@ -19,6 +19,11 @@ const COUNTED: readonly GuestKind[] = ['adults', 'children'];
  * them — the one guests picker, used by the search bar's "Who" panel and the
  * booking card's guests popover alike. Then an optional note and "Close".
  *
+ * The stepper button names travel too: `decrementLabel` / `incrementLabel`
+ * reach every row, so the two words a screen reader reads on the eight buttons
+ * are translatable like everything else the family draws. Their default is
+ * `Stepper`'s own English pair.
+ *
  * Two rules:
  *  - while any child, infant or pet is counted, adults cannot go below 1 (the
  *    adults `−` disables there), and adding one of them with no adults sets
@@ -35,6 +40,8 @@ function GuestPickerComponent({
   kinds = GUEST_KINDS,
   labels,
   descriptions,
+  decrementLabel,
+  incrementLabel,
   note,
   onClose,
   closeLabel = 'Close',
@@ -71,6 +78,8 @@ function GuestPickerComponent({
             min={kind === 'adults' ? minimumAdults(value) : 0}
             max={maxFor(kind)}
             size={size}
+            decrementLabel={decrementLabel}
+            incrementLabel={incrementLabel}
             onValueChange={(n) => onChange(applyGuestCount(value, kind, n))}
             divider={index < kinds.length - 1}
             testID={testID ? `${testID}-${kind}` : undefined}

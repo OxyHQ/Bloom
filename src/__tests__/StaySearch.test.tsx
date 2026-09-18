@@ -27,8 +27,10 @@ import {
   minimumAdults,
 } from '../stay-search';
 import type { GuestCounts, StaySearchBarProps, StaySearchSegment } from '../stay-search';
+import { nextSelectable } from '../stay-search/DestinationSuggestions';
 import { resolveStaySearchPalette } from '../stay-search/palette';
 import { STAY_SEARCH_BAR_HEIGHT, STAY_SEARCH_PANEL_RADIUS } from '../stay-search/constants';
+import { DISABLED_OPACITY } from '../styles/tokens';
 
 (globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
 
@@ -424,5 +426,133 @@ describe('StaySearchStep', () => {
     expect(card.style.borderTopLeftRadius).toBe('20px');
     expect(card.querySelector('[role="heading"]')?.textContent).toBe('Where to?');
     expect(card.textContent).toContain('content');
+  });
+});
+
+// ---------------------------------------------------------------------------
+//  A destination row that cannot be chosen
+// ---------------------------------------------------------------------------
+
+describe('nextSelectable', () => {
+  const rows = (...flags: boolean[]) => flags.map((disabled) => ({ disabled }));
+
+  it('steps over disabled rows and wraps once', () => {
+    expect(nextSelectable(rows(false, true, false), 0, 1)).toBe(2);
+    expect(nextSelectable(rows(false, true, false), 2, 1)).toBe(0);
+    expect(nextSelectable(rows(false, true, false), 0, -1)).toBe(2);
+    expect(nextSelectable(rows(true, false, false), 1, -1)).toBe(2);
+  });
+
+  it('from nothing highlighted, down starts at the top and up at the bottom', () => {
+    expect(nextSelectable(rows(false, false, false), -1, 1)).toBe(0);
+    expect(nextSelectable(rows(false, false, false), -1, -1)).toBe(2);
+    expect(nextSelectable(rows(true, false, false), -1, 1)).toBe(1);
+    expect(nextSelectable(rows(false, false, true), -1, -1)).toBe(1);
+  });
+
+  it('is -1 when every row is disabled, and when there are none', () => {
+    expect(nextSelectable(rows(true, true), 0, 1)).toBe(-1);
+    expect(nextSelectable([], -1, 1)).toBe(-1);
+  });
+});
+
+describe('DestinationSuggestions — a disabled row', () => {
+  const items = [
+    { id: 'here', title: 'Use my location', description: 'Find what’s around you', disabled: true, disabledReason: 'Location is off' },
+    { id: 'b', title: 'Old Halden' },
+    { id: 'c', title: 'Solvia Bay' },
+  ];
+
+  it('dims it, marks it aria-disabled, and reads the reason after the title', () => {
+    mount(<DestinationSuggestions items={items} onSelect={() => {}} testID="ds" />);
+    const row = byTestId('ds-0');
+    expect(row.getAttribute('aria-disabled')).toBe('true');
+    expect(row.getAttribute('aria-label')).toBe('Use my location, Location is off');
+    expect(row.style.opacity).toBe(String(DISABLED_OPACITY));
+    // The reason REPLACES the description rather than joining it.
+    expect(row.textContent).toBe('Use my locationLocation is off');
+  });
+
+  it('answers neither a press nor Enter', () => {
+    const onSelect = jest.fn();
+    mount(<DestinationSuggestions items={items} onSelect={onSelect} testID="ds" />);
+    click('ds-0');
+    expect(onSelect).not.toHaveBeenCalled();
+    const list = byTestId('ds');
+    // Two `act`s: the highlight has to land before Enter reads it.
+    act(() => {
+      list.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowDown', bubbles: true }));
+    });
+    act(() => {
+      list.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', bubbles: true }));
+    });
+    // ArrowDown landed on row 1, not the disabled row 0.
+    expect(onSelect).toHaveBeenCalledWith(items[1]);
+  });
+
+  it('hover never highlights it', () => {
+    mount(<DestinationSuggestions items={items} onSelect={() => {}} testID="ds" />);
+    hover('ds-0');
+    expect(byTestId('ds-0').getAttribute('aria-selected')).toBe('false');
+    hover('ds-1');
+    expect(byTestId('ds-1').getAttribute('aria-selected')).toBe('true');
+  });
+
+  it('the arrow keys step over it in both directions', () => {
+    mount(<DestinationSuggestions items={items} onSelect={() => {}} testID="ds" />);
+    const list = byTestId('ds');
+    const key = (k: string) =>
+      act(() => {
+        list.dispatchEvent(new KeyboardEvent('keydown', { key: k, bubbles: true }));
+      });
+    const selected = () => items.map((_, i) => byTestId(`ds-${i}`).getAttribute('aria-selected'));
+    key('ArrowDown');
+    expect(selected()).toEqual(['false', 'true', 'false']);
+    key('ArrowUp');
+    // Wrapping up from row 1 skips row 0 and lands on the last row.
+    expect(selected()).toEqual(['false', 'false', 'true']);
+  });
+
+  it('a row with no disabledReason keeps its description, and an enabled row ignores the reason', () => {
+    mount(
+      <DestinationSuggestions
+        items={[
+          { id: 'a', title: 'Nearby', description: 'Around you', disabled: true },
+          { id: 'b', title: 'Lisbon', description: 'Portugal', disabledReason: 'never drawn' },
+        ]}
+        onSelect={() => {}}
+        testID="ds"
+      />,
+    );
+    expect(byTestId('ds-0').getAttribute('aria-label')).toBe('Nearby, Around you');
+    expect(byTestId('ds-1').getAttribute('aria-label')).toBe('Lisbon, Portugal');
+    expect(byTestId('ds-1').getAttribute('aria-disabled')).toBeNull();
+    expect(byTestId('ds-1').style.opacity).not.toBe(String(DISABLED_OPACITY));
+  });
+});
+
+describe('GuestPicker — the stepper button names', () => {
+  const value: GuestCounts = { adults: 2, children: 0, infants: 0, pets: 0 };
+
+  it('are the English pair by default', () => {
+    mount(<GuestPicker value={value} onChange={() => {}} kinds={['adults']} testID="gp" />);
+    expect(byTestId('gp-adults-decrement').getAttribute('aria-label')).toBe('Decrease');
+    expect(byTestId('gp-adults-increment').getAttribute('aria-label')).toBe('Increase');
+  });
+
+  it('are replaced on every row at once', () => {
+    mount(
+      <GuestPicker
+        value={value}
+        onChange={() => {}}
+        decrementLabel="Quitar uno"
+        incrementLabel="Añadir uno"
+        testID="gp"
+      />,
+    );
+    for (const kind of ['adults', 'children', 'infants', 'pets']) {
+      expect(byTestId(`gp-${kind}-decrement`).getAttribute('aria-label')).toBe('Quitar uno');
+      expect(byTestId(`gp-${kind}-increment`).getAttribute('aria-label')).toBe('Añadir uno');
+    }
   });
 });
