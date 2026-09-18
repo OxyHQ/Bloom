@@ -58,7 +58,7 @@
  * than to the ones it reads, so an omitted value runs the mapper once and
  * freezes it.
  */
-import React, { useCallback, useEffect, useLayoutEffect, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { StyleSheet, View } from 'react-native';
 import Animated, {
   Easing,
@@ -91,6 +91,7 @@ import {
 import { useMenuPalette } from './menu-palette';
 import { cx } from './shared';
 import type { FloatingPanelProps, FloatingSide } from './types';
+import { useFrameThrottle } from './use-frame-throttle';
 
 /**
  * The one node: the panel's own chrome, the caller's classes, the computed
@@ -158,6 +159,17 @@ function resolvedSide(
   return placement.top >= anchorStart ? 'bottom' : 'top';
 }
 
+/**
+ * Did the surface land in the same place? A placement is two numbers, and while
+ * the page scrolls most passes produce the two it already had — the trigger sits
+ * in a fixed header, or in an ancestor the gesture is not scrolling.
+ */
+function samePlacement(a: DropdownPlacement | null, b: DropdownPlacement | null): boolean {
+  if (a === b) return true;
+  if (!a || !b) return false;
+  return a.top === b.top && a.left === b.left;
+}
+
 /** The corner the panel grows from: the one nearest its trigger. */
 function transformOriginFor(side: FloatingSide, align: string): string {
   const cross =
@@ -201,6 +213,12 @@ export function FloatingPanel({
   // effect keyed only on `open` would measure nothing.
   const [panelNode, setPanelNode] = useState<View | null>(null);
   const [placement, setPlacement] = useState<DropdownPlacement | null>(null);
+  // What was last published, mirrored so a pass that resolves to the position
+  // the panel already holds never reaches the dispatcher. Returning the current
+  // state from a `setState` updater is not the same thing: React still
+  // re-renders once before it bails out, which on a scroll is a render per frame
+  // for a surface that did not move.
+  const published = useRef<DropdownPlacement | null>(null);
   const [phase, setPhase] = useState<Phase>(open ? 'open' : 'closed');
   const [lastOpen, setLastOpen] = useState(open);
   const reducedMotion = useReducedMotion();
@@ -208,6 +226,12 @@ export function FloatingPanel({
 
   const attach = useCallback((node: View | null) => {
     setPanelNode(node);
+  }, []);
+
+  const store = useCallback((next: DropdownPlacement | null) => {
+    if (samePlacement(published.current, next)) return;
+    published.current = next;
+    setPlacement(next);
   }, []);
 
   // `open` drives the phase; a close goes through `closing` so the exit has time
@@ -237,7 +261,11 @@ export function FloatingPanel({
     return () => clearTimeout(timer);
   }, [phase, reducedMotion, chrome.duration]);
 
-  useLayoutEffect(() => {
+  // ONE pass of the placement: two forced layout reads (`getBoundingClientRect`
+  // and the `offset*` pair) and, at most, one state update. Split out of the
+  // effect that used to own it so the listeners below can be registered once and
+  // still call the CURRENT closure.
+  const resolve = useCallback(() => {
     // While closing, the panel holds the position it was last placed at: the
     // anchor is already gone (`useAnchorRect` clears it on close) and a
     // re-resolve would snap the surface somewhere else mid-exit.
@@ -245,7 +273,7 @@ export function FloatingPanel({
     // react-native-web resolves a `View` ref to the DOM element itself. Read
     // through the one method needed rather than asserting the whole
     // `HTMLElement` interface, and capture it as a local so the narrowing holds
-    // inside `update` — a property check does not survive into a closure.
+    // below — a property check does not survive into a closure.
     const element = panelNode as unknown as {
       getBoundingClientRect?: () => DOMRect;
       offsetWidth?: number;
@@ -258,59 +286,81 @@ export function FloatingPanel({
       typeof window === 'undefined' ||
       typeof measure !== 'function'
     ) {
-      setPlacement(null);
+      store(null);
       return;
     }
 
-    const update = () => {
-      const box = measure.call(element);
-      // The LAYOUT box, not the visual one. `getBoundingClientRect` reports the
-      // TRANSFORMED rectangle, and this panel is measured while its own enter is
-      // still at `scale(0.95)` — so the rect is 5% small. `far` placements never
-      // read the extent and looked perfect; the FLIPPED and `align="end"` ones
-      // do, and were out by 5% of the surface. Measured: a 256px sub-panel read
-      // as 243.2 and flipped 12.8px over its parent. `offsetWidth`/`offsetHeight`
-      // are the untransformed border box, integer-rounded, which is the right
-      // precision for a fit/flip decision. The rect is still the fallback for a
-      // non-DOM node (a jsdom stub has neither).
-      const layoutWidth = element?.offsetWidth ?? box.width;
-      const layoutHeight = element?.offsetHeight ?? box.height;
-      // Measured BEFORE `minWidth` is applied, so the laid-out surface can only
-      // be wider than the box read here — and a wider surface wraps less, so the
-      // measured height is an upper bound. Erring that way flips early in a tie,
-      // never late. The panel's own `min-w-*` CLASS is already in the box, since
-      // a stylesheet rule applies before a layout effect can read the node.
-      const width = Math.max(layoutWidth, minWidth ?? 0);
-      // The align axis is the one `side` does not name.
-      const alignsVertically = side === 'left' || side === 'right';
-      const shiftY = alignsVertically ? alignOffset : 0;
-      const shiftX = alignsVertically ? 0 : alignOffset;
-      setPlacement(
-        resolveDropdownPlacement({
-          anchor: {
-            top: anchor.top + shiftY,
-            bottom: anchor.bottom + shiftY,
-            left: anchor.left + shiftX,
-            right: anchor.right + shiftX,
-          },
-          size: { width, height: layoutHeight },
-          viewport: { width: window.innerWidth, height: window.innerHeight },
-          offset: sideOffset,
-          gutter: VIEWPORT_GUTTER,
-          align,
-          side,
-        }),
-      );
-    };
+    const box = measure.call(element);
+    // The LAYOUT box, not the visual one. `getBoundingClientRect` reports the
+    // TRANSFORMED rectangle, and this panel is measured while its own enter is
+    // still at `scale(0.95)` — so the rect is 5% small. `far` placements never
+    // read the extent and looked perfect; the FLIPPED and `align="end"` ones
+    // do, and were out by 5% of the surface. Measured: a 256px sub-panel read
+    // as 243.2 and flipped 12.8px over its parent. `offsetWidth`/`offsetHeight`
+    // are the untransformed border box, integer-rounded, which is the right
+    // precision for a fit/flip decision. The rect is still the fallback for a
+    // non-DOM node (a jsdom stub has neither).
+    const layoutWidth = element?.offsetWidth ?? box.width;
+    const layoutHeight = element?.offsetHeight ?? box.height;
+    // Measured BEFORE `minWidth` is applied, so the laid-out surface can only
+    // be wider than the box read here — and a wider surface wraps less, so the
+    // measured height is an upper bound. Erring that way flips early in a tie,
+    // never late. The panel's own `min-w-*` CLASS is already in the box, since
+    // a stylesheet rule applies before a layout effect can read the node.
+    const width = Math.max(layoutWidth, minWidth ?? 0);
+    // The align axis is the one `side` does not name.
+    const alignsVertically = side === 'left' || side === 'right';
+    const shiftY = alignsVertically ? alignOffset : 0;
+    const shiftX = alignsVertically ? 0 : alignOffset;
+    const next = resolveDropdownPlacement({
+      anchor: {
+        top: anchor.top + shiftY,
+        bottom: anchor.bottom + shiftY,
+        left: anchor.left + shiftX,
+        right: anchor.right + shiftX,
+      },
+      size: { width, height: layoutHeight },
+      viewport: { width: window.innerWidth, height: window.innerHeight },
+      offset: sideOffset,
+      gutter: VIEWPORT_GUTTER,
+      align,
+      side,
+    });
+    // A scroll that did not move this surface resolves to the same two numbers,
+    // and storing a NEW object for them would re-render the panel and rebuild
+    // its motion style for a position it already holds. Dropping the update is
+    // what makes a settled panel free to scroll past.
+    store(next);
+  }, [store, phase, anchor, panelNode, side, align, sideOffset, alignOffset, minWidth]);
 
-    update();
-    window.addEventListener('resize', update);
-    window.addEventListener('scroll', update, true);
+  // Coalesced to one pass per frame: a scroll gesture dispatches a stream of
+  // events (one per nested scroller, several per frame) and the browser paints
+  // once between them.
+  // No cancel needed on close: `resolve` is guarded by `phase`, so a frame that
+  // lands after the panel left `'open'` either holds the exit's position or
+  // clears a placement that is already null.
+  const [schedule] = useFrameThrottle(resolve);
+
+  // Whenever an INPUT changes — the anchor moved, the side flipped, the panel
+  // node arrived — the pass runs SYNCHRONOUSLY, before paint, so the surface is
+  // never painted a frame behind the thing it is anchored to.
+  useLayoutEffect(() => {
+    resolve();
+  }, [resolve]);
+
+  // Registered ONCE per open. `schedule` is stable for the panel's whole life,
+  // so a re-measurement no longer detaches and re-attaches this pair — which it
+  // did on every scroll event, because the effect that read the anchor was also
+  // the effect that owned the listeners.
+  useEffect(() => {
+    if (phase !== 'open' || typeof window === 'undefined') return;
+    window.addEventListener('resize', schedule);
+    window.addEventListener('scroll', schedule, true);
     return () => {
-      window.removeEventListener('resize', update);
-      window.removeEventListener('scroll', update, true);
+      window.removeEventListener('resize', schedule);
+      window.removeEventListener('scroll', schedule, true);
     };
-  }, [phase, anchor, panelNode, side, align, sideOffset, alignOffset, minWidth]);
+  }, [phase, schedule]);
 
   // Where the panel ended up, which is what both the slide and the origin
   // describe. Held across the exit with the placement itself.

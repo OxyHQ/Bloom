@@ -60,6 +60,7 @@ import type {
   MenuSubProps,
   MenuSubTriggerProps,
 } from './types';
+import { useFrameThrottle } from './use-frame-throttle';
 
 /**
  * How long the panel survives after the pointer leaves the row or the panel.
@@ -233,8 +234,17 @@ function useFlyoutAnchor(
     );
   }, [ref]);
 
+  // Two `getBoundingClientRect`s per pass — the row's and the parent panel's —
+  // so the stream of events a scroll gesture dispatches is coalesced to one pass
+  // per frame, like every other anchored surface.
+  const [schedule, cancel] = useFrameThrottle(measure);
+
   useLayoutEffect(() => {
     if (!open) {
+      // Dropped in the COMMIT phase along with the box: a frame armed by the
+      // last scroll before the flyout closed would otherwise re-publish an
+      // anchor for a row that is no longer showing anything.
+      cancel();
       setAnchor(null);
       return;
     }
@@ -259,19 +269,19 @@ function useFlyoutAnchor(
       if (frame < SETTLE_FRAMES) handle = requestAnimationFrame(again);
     });
     return () => cancelAnimationFrame(handle);
-  }, [open, measure]);
+  }, [open, measure, cancel]);
 
   useEffect(() => {
     if (!open || typeof window === 'undefined') return;
     // Capture phase: a scroll inside any ancestor moves both boxes, and a
     // bubbling listener never sees a scroll on an inner container.
-    window.addEventListener('resize', measure);
-    window.addEventListener('scroll', measure, true);
+    window.addEventListener('resize', schedule);
+    window.addEventListener('scroll', schedule, true);
     return () => {
-      window.removeEventListener('resize', measure);
-      window.removeEventListener('scroll', measure, true);
+      window.removeEventListener('resize', schedule);
+      window.removeEventListener('scroll', schedule, true);
     };
-  }, [open, measure]);
+  }, [open, schedule]);
 
   return anchor;
 }
