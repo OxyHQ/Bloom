@@ -22,12 +22,14 @@
  *  - and on web the CSS variable is asserted on the SAME node as the fill,
  *    because the DOM inherits it whether or not React context agrees.
  */
-import React from 'react';
+import React, { createRef } from 'react';
 import { Platform, Text, View } from 'react-native';
-import { render } from '@testing-library/react-native';
+import { act, render } from '@testing-library/react-native';
 
+import BottomSheet, { type BottomSheetRef } from '../bottom-sheet';
 import { ContentPanel } from '../content-panel/ContentPanel';
 import { ContentPanel as ContentPanelWeb } from '../content-panel/ContentPanel.web';
+import { Dialog } from '../dialog';
 import {
   SURFACE_FILL_CSS,
   SURFACE_FILL_VAR,
@@ -186,6 +188,37 @@ describe('the ambient surface answers with the fill, not the rung', () => {
     // …and that is NOT rung 2, which assumed a parent this panel never had.
     expect(background).not.toBe(resolveSurfaceLevel(theme, 2).background);
   });
+
+  it('counts the steps the CLAMPED rung costs, not the delta asked for', () => {
+    // Rung 1 + 3 lands on rung 3, which is TWO steps up — a third step would
+    // paint a colour above the top of the ladder.
+    const theme = THEMES.dark;
+    const { toJSON } = renderIn(
+      'dark',
+      <SurfaceLevelProvider level={1} fill={theme.colors.card}>
+        <PaintProbe delta={3} />
+      </SurfaceLevelProvider>,
+    );
+    const [level, background] = probed(toJSON(), 'paint').split(':');
+    expect(level).toBe('3');
+    expect(background).toBe(surfaceFillOn(theme, surfaceFillOn(theme, theme.colors.card)));
+  });
+
+  it('answers a step DOWN from the ladder — a fill says nothing about below it', () => {
+    // "The surface under the one I am on" is the page, not the panel's card
+    // labelled rung 0.
+    const theme = THEMES.dark;
+    const { toJSON } = renderIn(
+      'dark',
+      <SurfaceLevelProvider level={1} fill={theme.colors.card}>
+        <PaintProbe delta={-1} />
+      </SurfaceLevelProvider>,
+    );
+    const [level, background] = probed(toJSON(), 'paint').split(':');
+    expect(level).toBe('0');
+    expect(background).toBe(resolveSurfaceLevel(theme, 0).background);
+    expect(background).not.toBe(theme.colors.card);
+  });
 });
 
 describe('ContentPanel publishes the colour it paints', () => {
@@ -235,6 +268,44 @@ describe('ContentPanel publishes the colour it paints', () => {
     );
     expect(probed(toJSON(), 'fill')).toBe('rgb(1 2 3)');
   });
+
+  it('stops claiming a colour when the repaint came through `surfaceStyle`', () => {
+    // The same repaint by the other door. WHICH of the two paints is a platform
+    // question — `styled()` appends the class descriptor after the style prop,
+    // so the class wins the array on native while the inline style wins the
+    // cascade on web — so the panel publishes neither exact colour.
+    const theme = THEMES.dark;
+    const { toJSON } = renderIn(
+      'dark',
+      <ContentPanel surfaceStyle={{ backgroundColor: 'rgb(4 5 6)' }}>
+        <FillProbe />
+      </ContentPanel>,
+    );
+    expect(probed(toJSON(), 'fill')).not.toBe(theme.colors.card);
+    expect(probed(toJSON(), 'fill')).toBe(resolveSurfaceLevel(theme, 1).background);
+  });
+
+  it('still publishes `colors.card` for a `surfaceStyle` that paints nothing', () => {
+    // A layout-only override is not a repaint: the panel is still `bg-card`.
+    const theme = THEMES.dark;
+    const { toJSON } = renderIn(
+      'dark',
+      <ContentPanel surfaceStyle={[{ marginTop: 8 }, null]}>
+        <FillProbe />
+      </ContentPanel>,
+    );
+    expect(probed(toJSON(), 'fill')).toBe(theme.colors.card);
+  });
+
+  it('takes `surfaceColor` over a `surfaceStyle` repaint too', () => {
+    const { toJSON } = renderIn(
+      'dark',
+      <ContentPanel surfaceStyle={{ backgroundColor: 'rgb(4 5 6)' }} surfaceColor="rgb(4 5 6)">
+        <FillProbe />
+      </ContentPanel>,
+    );
+    expect(probed(toJSON(), 'fill')).toBe('rgb(4 5 6)');
+  });
 });
 
 describe('an overlay that paints the page RESETS what the subtree is told', () => {
@@ -248,6 +319,40 @@ describe('an overlay that paints the page RESETS what the subtree is told', () =
         <SurfaceLevelProvider level={0} fill={theme.colors.background}>
           <FillProbe />
         </SurfaceLevelProvider>
+      </ContentPanel>,
+    );
+    expect(probed(toJSON(), 'fill')).toBe(theme.colors.background);
+    expect(probed(toJSON(), 'fill')).not.toBe(theme.colors.card);
+  });
+
+  // …and the same thing asserted through the REAL surfaces, because the wrap
+  // above only proves the mechanism. The reset is a line inside each overlay,
+  // and a line that no test renders is a line the next edit can delete for
+  // being decorative — which is exactly what it is not.
+  it('a BottomSheet opened inside a panel publishes the SHEET colour', () => {
+    const theme = THEMES.dark;
+    const ref = createRef<BottomSheetRef>();
+    const { toJSON } = renderIn(
+      'dark',
+      <ContentPanel>
+        <BottomSheet ref={ref}>
+          <FillProbe />
+        </BottomSheet>
+      </ContentPanel>,
+    );
+    act(() => ref.current?.present());
+    expect(probed(toJSON(), 'fill')).toBe(theme.colors.background);
+    expect(probed(toJSON(), 'fill')).not.toBe(theme.colors.card);
+  });
+
+  it('a side-sheet Dialog opened inside a panel publishes the DRAWER colour', () => {
+    const theme = THEMES.dark;
+    const { toJSON } = renderIn(
+      'dark',
+      <ContentPanel>
+        <Dialog open placement="left">
+          <FillProbe />
+        </Dialog>
       </ContentPanel>,
     );
     expect(probed(toJSON(), 'fill')).toBe(theme.colors.background);
