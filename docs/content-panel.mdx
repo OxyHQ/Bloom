@@ -48,7 +48,7 @@ the shadow is what makes it a panel lifted off it.
 | `framedFrom`       | the breakpoint it starts framing at — `500` `640` `768` `1024` |
 | `showStickyFrame`  | whether the frame persists behind sticky content           |
 | `surfaceStyle` / `surfaceClassName` | the surface itself                        |
-| `surfaceColor`     | what the panel tells its content it is painted in — only when `surfaceClassName` repainted it |
+| `surfaceColor`     | what the panel tells its content it is painted in — only when `surfaceClassName`/`surfaceStyle` repainted it |
 | `contentStyle` / `contentClassName` | the column inside it                      |
 | `maskColor`        | the colour the gutter mask fades to                        |
 | `overlaySizing`     | (web) how the mask/border overlays size themselves — see below |
@@ -136,10 +136,13 @@ Two things are worth knowing here:
   in dark mode — the rung is a computed step off the page — and chrome that took
   the rung would sit a visible shade off the column it is supposed to vanish
   into. The panel publishes the fact.
-- **`surfaceClassName` makes the panel stop claiming to know.** The override is
-  a utility Bloom cannot resolve to a colour, so the panel falls back to
-  publishing the rung alone rather than a confident wrong answer.
-  `surfaceColor` is how that caller gets the exact answer back:
+- **Repainting the surface makes the panel stop claiming to know.**
+  `surfaceClassName` is a utility Bloom cannot resolve to a colour, and a
+  `surfaceStyle` with a `backgroundColor` is the same repaint by the other door
+  — the colour is legible there, but which of the two actually paints differs by
+  platform, so the panel refuses to guess. Either way it falls back to publishing
+  the rung alone rather than a confident wrong answer. `surfaceColor` is how that
+  caller gets the exact answer back:
 
 ```tsx
 <ContentPanel surfaceClassName="bg-background" surfaceColor={colors.background} />

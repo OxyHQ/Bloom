@@ -83,7 +83,7 @@ const ContentPanelComponent: React.FC<ContentPanelProps> = ({
   useContentPanelNestingGuard();
   const panelChrome = useOptionalPanelChrome();
   // What the panel tells its subtree it is painted in (`./shared.ts`).
-  const publishedFill = usePanelSurfaceFill(surfaceClassName, surfaceColor);
+  const publishedFill = usePanelSurfaceFill(surfaceClassName, surfaceStyle, surfaceColor);
 
   // Tri-state: `undefined` → responsive (breakpoint-gated), `true` → always
   // framed, `false` → never framed (plain full-bleed). Whole literal class
