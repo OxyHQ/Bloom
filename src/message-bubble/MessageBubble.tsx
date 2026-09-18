@@ -84,6 +84,15 @@ import type { MessageBubbleProps } from './types';
  *
  * Rich media is `media`, a slot: this family owns the shell, the text and the
  * metadata and never the image decoder.
+ *
+ * THE SLOT HAS TWO FITS, and the bubble cannot tell them apart by looking.
+ * `mediaFit="bleed"` (the default) cancels the bubble's padding so a photo runs
+ * to the radius. `mediaFit="inset"` keeps it, for a block that carries no
+ * padding of its own — `PollMessage`, `LocationMessage`, `ContactMessage` are
+ * all typography, and bled they clip a question against the top edge, cut an
+ * address off at the bottom and put an avatar on the left one. The fit also
+ * decides the meta: the overlaid pill is the default over a BLED media-only
+ * bubble only, because over an inset block it lands on a line of text.
  */
 
 /** How long the jump flash stays up before it fades. */
@@ -96,6 +105,7 @@ function MessageBubbleComponent({
   text,
   children,
   media,
+  mediaFit = 'bleed',
   metaOverlay,
   tail = false,
   senderName,
@@ -221,7 +231,8 @@ function MessageBubbleComponent({
   const fill = failed ? mixColor(side.fill, paint.failed, theme.isDark ? 0.3 : 0.22) : side.fill;
   const showTail = tail && hasTail(position);
   const mediaOnly = media !== undefined && text === undefined && children === undefined && !deleted;
-  const overlayMeta = metaOverlay ?? mediaOnly;
+  const bleed = mediaFit === 'bleed';
+  const overlayMeta = metaOverlay ?? (mediaOnly && bleed);
   const hasMeta =
     !deleted &&
     (time !== undefined ||
@@ -287,10 +298,13 @@ function MessageBubbleComponent({
       {media === undefined || deleted ? null : (
         <View
           style={{
-            marginTop: forwardedFrom === undefined && senderName === undefined && replyTo === undefined ? -BUBBLE_PADDING_Y : 0,
-            marginLeft: -BUBBLE_PADDING_X,
-            marginRight: -BUBBLE_PADDING_X,
-            marginBottom: mediaOnly ? -BUBBLE_PADDING_Y : 2,
+            marginTop:
+              bleed && forwardedFrom === undefined && senderName === undefined && replyTo === undefined
+                ? -BUBBLE_PADDING_Y
+                : 0,
+            marginLeft: bleed ? -BUBBLE_PADDING_X : 0,
+            marginRight: bleed ? -BUBBLE_PADDING_X : 0,
+            marginBottom: bleed ? (mediaOnly ? -BUBBLE_PADDING_Y : 2) : 0,
             overflow: 'hidden',
           }}
         >

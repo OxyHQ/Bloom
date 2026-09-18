@@ -13,6 +13,21 @@ export type MessageDirection = 'incoming' | 'outgoing';
  */
 export type MessagePosition = 'single' | 'first' | 'middle' | 'last';
 
+/**
+ * How the `media` slot is fitted inside the bubble.
+ *
+ *   bleed   the bubble's padding is CANCELLED and the block runs to the radius
+ *           — a photo, a video, an album, a sticker: something with its own
+ *           edge, which an inset would frame twice
+ *   inset   the block keeps the bubble's padding — a poll, a place, a contact
+ *           card: typography with no padding of its own, which bled means a
+ *           question clipped against the top edge and an avatar on the left one
+ *
+ * It also decides where the meta row lands by default: over a bled block on a
+ * translucent pill, under an inset one where it cannot cover a line of text.
+ */
+export type MessageMediaFit = 'bleed' | 'inset';
+
 /** A text span the bubble hands back to the caller to render. */
 export type MessageEntityType = 'link' | 'mention' | 'hashtag';
 
@@ -76,15 +91,23 @@ export interface MessageBubbleProps {
   /** Arbitrary bubble content, in place of `text`. */
   children?: ReactNode;
   /**
-   * The rich-media slot — an image, a voice note, a file row. It is rendered
-   * ABOVE the text, edge to edge inside the bubble's radius; the bubble adds no
-   * padding around it.
+   * The rich-media slot — an image, a voice note, a file row, a poll. It is
+   * rendered ABOVE the text; `mediaFit` decides whether it bleeds to the
+   * bubble's radius or keeps its padding.
    */
   media?: ReactNode;
   /**
+   * How `media` is fitted. Default `'bleed'` — today's photo. Pass `'inset'`
+   * for a block that draws no padding of its own (`PollMessage`,
+   * `LocationMessage`, `ContactMessage`). See {@link MessageMediaFit}.
+   */
+  mediaFit?: MessageMediaFit;
+  /**
    * Floats the meta row over the media on a translucent pill instead of
-   * tucking it after the text. Defaults to true when there is `media` and no
-   * text or children.
+   * tucking it after the text. Defaults to true on a BLED media-only bubble,
+   * and false on an inset one — an inset block's last line is text, and a pill
+   * over "0 votes" or over an address is the same defect twice. Set it either
+   * way to override.
    */
   metaOverlay?: boolean;
   /** Draws the notch on the small corner. Off by default. */

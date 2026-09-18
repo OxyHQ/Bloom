@@ -3,6 +3,7 @@ import { View } from 'react-native';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
 import { RiPushpinLine } from '../icons/remix';
+import { ContactMessage, ImageMessage, LocationMessage, PollMessage } from '../message-media';
 import { BloomThemeContext, BloomThemeProvider } from '../theme/BloomThemeProvider';
 import { useTheme } from '../theme/use-theme';
 import { Text } from '../typography';
@@ -28,6 +29,7 @@ type Story = StoryObj;
 const ANA = 'https://picsum.photos/seed/ana-restrepo/120/120';
 const MARCEL = 'https://picsum.photos/seed/marcel-dube/120/120';
 const NOUR = 'https://picsum.photos/seed/nour-haddad/120/120';
+const ROOM = 'https://picsum.photos/seed/sala-verde/480/320';
 
 function Surface({ width, children }: { width: number; children: React.ReactNode }) {
   const theme = useTheme();
@@ -420,6 +422,148 @@ export const SelectionAndReactions: Story = {
               reactions={reactions}
               onToggleReaction={toggle}
               onAddReaction={() => undefined}
+            />
+          </View>
+        </Surface>
+      </BothModes>
+    );
+  },
+};
+
+// ---------------------------------------------------------------------------
+//  The media slot
+// ---------------------------------------------------------------------------
+
+const POLL_OPTIONS = [
+  { id: 'thu', label: 'Thursday after seven', votes: 5 },
+  { id: 'fri', label: 'Friday, same room', votes: 2 },
+  { id: 'sun', label: 'Sunday afternoon', votes: 1 },
+];
+
+/**
+ * What goes in `media`, and how it is fitted.
+ *
+ * A photo BLEEDS — the bubble's padding is cancelled and the frame runs to the
+ * radius. A poll, a place or a contact card is a block of typography with no
+ * padding of its own, so it is INSET: it keeps the bubble's padding and the
+ * meta row tucks under it instead of floating on top of it.
+ */
+export const MediaSlot: Story = {
+  render: function MediaSlotStory() {
+    return (
+      <BothModes>
+        <Surface width={390}>
+          <View style={{ gap: 10, paddingLeft: 8, paddingRight: 8 }}>
+            <Caption>a photo — the default, edge to edge</Caption>
+            <MessageBubble
+              direction="incoming"
+              senderName="Ana Restrepo"
+              media={<ImageMessage source={{ uri: ROOM }} aspectRatio={1.5} maxWidth={240} />}
+              time="18:02"
+            />
+            <MessageBubble
+              direction="outgoing"
+              media={<ImageMessage source={{ uri: ROOM }} aspectRatio={1.5} maxWidth={240} />}
+              text="The room on Calle Verde."
+              time="18:04"
+              status="read"
+            />
+
+            <Caption>a poll</Caption>
+            <MessageBubble
+              direction="incoming"
+              senderName="Ana Restrepo"
+              mediaFit="inset"
+              media={
+                <PollMessage
+                  tone="incoming"
+                  question="When do we rehearse?"
+                  options={POLL_OPTIONS}
+                  width={236}
+                />
+              }
+              time="18:06"
+            />
+            <MessageBubble
+              direction="outgoing"
+              mediaFit="inset"
+              media={
+                <PollMessage
+                  tone="outgoing"
+                  question="When do we rehearse?"
+                  options={POLL_OPTIONS}
+                  width={236}
+                  showResults
+                />
+              }
+              time="18:07"
+              status="read"
+            />
+
+            <Caption>a place</Caption>
+            <MessageBubble
+              direction="incoming"
+              senderName="Ana Restrepo"
+              mediaFit="inset"
+              media={
+                <LocationMessage
+                  tone="incoming"
+                  title="Sala Verde"
+                  address="Calle Verde 14, bajo — the back door is on the alley"
+                  width={236}
+                />
+              }
+              time="18:09"
+            />
+            <MessageBubble
+              direction="outgoing"
+              mediaFit="inset"
+              media={
+                <LocationMessage
+                  tone="outgoing"
+                  title="Sala Verde"
+                  address="Calle Verde 14, bajo — the back door is on the alley"
+                  width={236}
+                />
+              }
+              time="18:10"
+              status="delivered"
+            />
+
+            <Caption>a contact card</Caption>
+            <MessageBubble
+              direction="incoming"
+              senderName="Ana Restrepo"
+              mediaFit="inset"
+              media={
+                <ContactMessage
+                  tone="incoming"
+                  name="Marcel Dubé"
+                  detail="+34 600 11 22 33"
+                  avatar={MARCEL}
+                  width={236}
+                  onMessage={() => undefined}
+                  onAdd={() => undefined}
+                />
+              }
+              time="18:12"
+            />
+            <MessageBubble
+              direction="outgoing"
+              mediaFit="inset"
+              media={
+                <ContactMessage
+                  tone="outgoing"
+                  name="Marcel Dubé"
+                  detail="+34 600 11 22 33"
+                  avatar={MARCEL}
+                  width={236}
+                  onMessage={() => undefined}
+                  onAdd={() => undefined}
+                />
+              }
+              time="18:13"
+              status="read"
             />
           </View>
         </Surface>
