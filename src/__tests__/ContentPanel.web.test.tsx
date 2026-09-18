@@ -32,19 +32,20 @@ function classesFor(tree: unknown, testID: string): string {
   return classNamesOn(host.props.style).join(' ');
 }
 
-describe('ContentPanel.web overlaySizing default (viewport)', () => {
-  it('keeps the sticky/100dvh overlay sizing when overlaySizing is omitted', () => {
+describe('ContentPanel.web overlaySizing default (panel)', () => {
+  it('sizes the overlays to the panel\'s own box when overlaySizing is omitted', () => {
     const { toJSON } = renderPanel(
       <ContentPanel framed>
         <Text>content</Text>
       </ContentPanel>,
     );
+    // The frame is the panel's own rectangle, so it scrolls with the content
+    // instead of holding still while the content moves inside it.
     const tree = toJSON();
     const mask = classesFor(tree, 'content-panel-bleed-mask');
-    expect(mask).toContain('web:sticky');
-    expect(mask).toContain('h-[calc(100dvh-16px)]');
-    expect(mask).not.toContain('web:grid');
-    expect(classesFor(tree, 'content-panel-surface')).not.toContain('web:grid');
+    expect(mask).not.toContain('web:sticky');
+    expect(mask).toContain('web:[grid-area:1/1]');
+    expect(classesFor(tree, 'content-panel-surface')).toContain('web:grid');
   });
 
   it('keeps sticky sizing even when overlaySizing="viewport" is passed explicitly', () => {
@@ -122,9 +123,9 @@ describe('ContentPanel.web overlaySizing="panel"', () => {
     expect(border).toContain('border-border');
   });
 
-  it('keeps the deliberate 12px bleed halo in the default viewport mode', () => {
+  it('keeps the deliberate 12px bleed halo in viewport mode', () => {
     const { toJSON } = renderPanel(
-      <ContentPanel framed>
+      <ContentPanel framed overlaySizing="viewport">
         <Text>content</Text>
       </ContentPanel>,
     );
@@ -144,9 +145,9 @@ describe('ContentPanel.web overlaySizing="panel"', () => {
 });
 
 describe('ContentPanel.web overlayTopOffset', () => {
-  it('shifts the default viewport-mode overlays down by the offset, shrinking height and margin to match', () => {
+  it('shifts the viewport-mode overlays down by the offset, shrinking height and margin to match', () => {
     const { toJSON } = renderPanel(
-      <ContentPanel framed overlayTopOffset={64}>
+      <ContentPanel framed overlaySizing="viewport" overlayTopOffset={64}>
         <Text>content</Text>
       </ContentPanel>,
     );
@@ -161,7 +162,7 @@ describe('ContentPanel.web overlayTopOffset', () => {
 
   it('is a no-op when unset — the className-driven base values stand alone', () => {
     const { toJSON } = renderPanel(
-      <ContentPanel framed>
+      <ContentPanel framed overlaySizing="viewport">
         <Text>content</Text>
       </ContentPanel>,
     );

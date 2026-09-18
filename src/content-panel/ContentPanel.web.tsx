@@ -154,7 +154,7 @@ const ContentPanelComponent: React.FC<ContentPanelProps> = ({
   chrome = 'elevated',
   shadow,
   maskColor,
-  overlaySizing = 'viewport',
+  overlaySizing = 'panel',
   overlayTopOffset,
 }) => {
   // Dev-only invariant — must run unconditionally (before deriving any
