@@ -1,6 +1,8 @@
 import type { ReactNode } from 'react';
 import type { StyleProp, ViewStyle } from 'react-native';
 
+import type { BloomIconComponent } from '../icons/icon-component';
+
 /** Cover side in the `tile` layout: `large` 200, `medium` 160 (default), `small` 120. */
 export type MediaCardSize = 'large' | 'medium' | 'small';
 
@@ -104,7 +106,7 @@ export interface MediaCardProps extends MediaCardCommonProps, MediaCardArtworkPr
   /** Static decoration drawn over the cover, under the play button (a date leaf). */
   artworkOverlay?: ReactNode;
   /** Glyph drawn on the generated placeholder cover. */
-  placeholderIcon?: React.ComponentType<{ width?: number; height?: number; fill?: string }>;
+  placeholderIcon?: BloomIconComponent;
   /** Drawn after the title on its line (an explicit badge, a verified mark). */
   titleAccessory?: ReactNode;
   /** Words the accessory adds to the accessible name ("Explicit", "Verified"). */

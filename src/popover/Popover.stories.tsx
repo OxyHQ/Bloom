@@ -2,6 +2,8 @@ import React, { useState } from 'react';
 import { Pressable, View } from 'react-native';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
+import type { BloomIconComponent } from '../icons/icon-component';
+
 import {
   Popover,
   PopoverContent,
@@ -45,7 +47,7 @@ function PanelRow({
   label,
   onPress,
 }: {
-  icon: React.ComponentType<{ width?: number; height?: number; fill?: string }>;
+  icon: BloomIconComponent;
   label: string;
   onPress?: () => void;
 }) {

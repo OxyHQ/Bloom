@@ -1,7 +1,8 @@
-import type { ComponentType, ReactNode } from 'react';
+import type { ReactNode } from 'react';
 import type { ImageSourcePropType, StyleProp, TextStyle, ViewStyle } from 'react-native';
 
 import type { PresenceStatus } from '../chat-indicators/types';
+import type { BloomIconComponent } from '../icons/icon-component';
 
 /**
  * Every prop in this family is DATA the app already has. Nothing here reads a
@@ -12,7 +13,8 @@ import type { PresenceStatus } from '../chat-indicators/types';
  */
 
 /** A glyph component, sized and coloured by whatever draws it. */
-export type CallGlyph = ComponentType<{ width?: number; height?: number; fill?: string }>;
+/** @deprecated Use `BloomIconComponent` from `@oxy.so/bloom/icons`; this is an alias of it. */
+export type CallGlyph = BloomIconComponent;
 
 /** An avatar source: a URL, an `ImageResolver` id, or an RN image source. */
 export type CallAvatarSource = string | ImageSourcePropType | null;

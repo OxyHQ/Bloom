@@ -1,14 +1,16 @@
-import React, { forwardRef, useMemo } from 'react';
+import { forwardRef, useMemo } from 'react';
 import { View, type GestureResponderEvent, type StyleProp, type ViewStyle } from 'react-native';
 
 import { GlyphButton } from '../button';
+import type { BloomIconComponent } from '../icons/icon-component';
 import { resolveMediaControlsPaint } from '../media-controls/shared';
 import type { WebAriaProps } from '../styles/styled-primitives';
 import { useTheme } from '../theme/use-theme';
 import { Text } from '../typography';
 
 /** A glyph component (any `Ri*` icon). */
-export type PlayerGlyph = React.ComponentType<{ width?: number; height?: number; fill?: string }>;
+/** @deprecated Use `BloomIconComponent` from `@oxy.so/bloom/icons`; this is an alias of it. */
+export type PlayerGlyph = BloomIconComponent;
 
 /** The dot under an active glyph. */
 export const ACTIVE_DOT = 4;

@@ -1,5 +1,7 @@
-import type { ComponentType, ReactNode } from 'react';
+import type { ReactNode } from 'react';
 import type { ImageSourcePropType, StyleProp, ViewStyle } from 'react-native';
+
+import type { BloomIconComponent } from '../icons/icon-component';
 
 /**
  * One turn of the transcript. Bloom renders text only — reasoning and tool
@@ -127,7 +129,7 @@ export interface AgentChatAccountMenuItem {
   key: string;
   label: string;
   /** A Remix-style icon component taking `width`/`height`/`fill`. */
-  icon?: ComponentType<{ width?: number; height?: number; fill?: string }>;
+  icon?: BloomIconComponent;
   onPress?: () => void;
 }
 

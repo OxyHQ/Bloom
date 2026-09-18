@@ -2,6 +2,7 @@ import type { ComponentType, ReactNode } from 'react';
 import type { ImageSourcePropType, StyleProp, ViewStyle } from 'react-native';
 
 import type { CodeLanguage } from '../code';
+import type { BloomIconComponent } from '../icons/icon-component';
 import type { Props as IconProps } from '../icons/shared';
 
 /** A Bloom icon component (`RiFolderLine`, not `<RiFolderLine />`). */
@@ -141,7 +142,7 @@ export interface AiChatImageGenerationProps {
 export interface AiChatPanelTab {
   value: string;
   label: string;
-  icon?: ComponentType<{ width?: number; height?: number; fill?: string }>;
+  icon?: BloomIconComponent;
 }
 
 export interface AiChatPanelAction {
@@ -274,7 +275,7 @@ export interface AiChatContainerProps {
   /** The current chat crumb. */
   title: string;
   /** The project crumb's glyph. Default `RiFolderLine`. */
-  projectIcon?: ComponentType<{ width?: number; height?: number; fill?: string }>;
+  projectIcon?: BloomIconComponent;
   onProjectPress?: () => void;
   onShare?: () => void;
   onMore?: () => void;
@@ -325,7 +326,7 @@ export interface AiChatShellProps {
   /** The panel's name in the drawer header and its buttons ("Code", "Gallery"). */
   panelLabel?: string;
   /** Glyph of the header button that opens the panel drawer. Default `RiCodeSLine`. */
-  panelIcon?: ComponentType<{ width?: number; height?: number; fill?: string }>;
+  panelIcon?: BloomIconComponent;
   /** Initial panel width. Default `410`; dragging clamps it to 320–560. */
   defaultPanelWidth?: number;
   minPanelWidth?: number;

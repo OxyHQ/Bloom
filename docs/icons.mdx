@@ -62,14 +62,40 @@ type BloomIconComponent = ComponentType<{
 
 All three props are optional, which makes this the WIDEST icon a component can
 be handed: a component whose props are stricter is not assignable, on purpose.
-A component that accepts more — an `IconStyle`, a stroke width — takes `Props`
-from `@oxy.so/bloom/icons` instead.
+It is also the LEAST a part may ask for, so it is the right type wherever a part
+only sets width, height and fill — which is nearly everywhere.
 
-Twenty-six families had declared this same type under their own name
-(`SidebarIcon`, `TrackIconComponent`, `ListingFactIcon`, `InsightIcon`,
-`HousingIcon`, `PlayerGlyph`, …). Those names still work — they are aliases of
-this one, marked deprecated — so nothing needs changing; new code should reach
-for `BloomIconComponent`.
+### What this type is NOT for
+
+A part that hands its icon more than those three props takes `Props` from
+`@oxy.so/bloom/icons` instead — the full Bloom icon surface, with `style`,
+the `size` rung, `gradient` and everything `react-native-svg` accepts.
+`IconCircle` is the clear case: it sets `size` and a `color` style, so only a
+real `Ri*` icon will do and `ComponentType<Props>` says so. `ChatIconComponent`
+(`chat-indicators`) is narrower for its own reason — it adds `testID`, because
+the chat parts label their glyphs for tests.
+
+Those are deliberate and stay. Reaching for `Props` when you only set
+width/height/fill is not: it refuses a caller's own glyph for no benefit.
+
+### The per-family names still work
+
+Twenty-five families had declared this same type under their own name
+(`SidebarIcon`, `TrackIconComponent`, `ListingFactIcon`, `PlayerGlyph`,
+`BadgeIcon`, `CallGlyph`, …). Those names still work — they are `@deprecated`
+aliases of this one — so nothing needs changing; new code should reach for
+`BloomIconComponent`.
+
+That sentence is checked rather than promised. Writing the shape out again is
+never a compile error (the literal IS the type), so a family can quietly mint a
+twenty-sixth spelling and nothing goes red — which is exactly what happened to
+`PlayerGlyph`, `BadgeIcon` and `CallGlyph`: named in this page as converted
+while their own files still declared the literal.
+`src/__tests__/icon-component-type.test.ts` now parses `src/` and holds four
+properties: the shape is declared exactly once, that one declaration is
+`icons/icon-component.ts`, the alias list is an EQUALITY (dropping one breaks a
+consumer; adding one is a new name for a type that has one), and every alias
+carries `@deprecated`.
 
 ## Migrating from the retired Bloom icon set
 

@@ -1,6 +1,6 @@
-import type { ComponentType } from 'react';
 import type { StyleProp, ViewStyle, TextStyle } from 'react-native';
 
+import type { BloomIconComponent } from '../icons/icon-component';
 import type { AccentFill, AccentTone } from '../theme/accent-colors';
 
 /**
@@ -18,7 +18,8 @@ export type BadgeSize = 'small' | 'medium' | 'large' | 'label-small' | 'label-me
 export type BadgeVariant = AccentFill | 'onMedia';
 
 /** An icon component the badge draws at its own rung's size and label colour. */
-export type BadgeIcon = ComponentType<{ width?: number; height?: number; fill?: string }>;
+/** @deprecated Use `BloomIconComponent` from `@oxy.so/bloom/icons`; this is an alias of it. */
+export type BadgeIcon = BloomIconComponent;
 
 export type BadgePlacement = 'top-right' | 'top-left' | 'bottom-right' | 'bottom-left';
 
