@@ -178,6 +178,15 @@ export const BUTTON_SIZE_ALIAS: Record<ButtonSize, ButtonResolvedSize> = {
 /** The button's transition duration. */
 export const BUTTON_TRANSITION_MS = 150;
 
+/**
+ * The sliding thumb of a segmented control — the sidebar theme toggle and the
+ * sidebar's mode switcher — so the two move at one speed on one curve.
+ */
+export const SEGMENTED_THUMB_MS = 200;
+/** Control points for `Easing.bezier(...)` — the constant itself stays out of
+ * this module, which every family imports and which must not pull Reanimated in. */
+export const SEGMENTED_THUMB_EASE_BEZIER = [0.25, 0.1, 0.25, 1] as const;
+
 /** Tailwind v4 `shadow-xs`, and its dark-mode override. */
 export const BUTTON_SHADOW = {
   light: '0 1px 2px 0 rgb(0 0 0 / 0.05)',

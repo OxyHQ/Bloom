@@ -1,4 +1,4 @@
-import React, { memo, useCallback, useId, useMemo } from 'react';
+import React, { memo, useCallback, useMemo } from 'react';
 import { Linking, Platform, View, type TextStyle, type ViewStyle } from 'react-native';
 import Svg, { Circle, Defs, LinearGradient, Path, Stop } from 'react-native-svg';
 
@@ -20,6 +20,7 @@ import { StyledPressable } from '../styles/styled-primitives';
 import type { WebCssStyle } from '../styles/web-view-style';
 import { SOCIAL_COLOR_LOGOS } from './color-logos';
 import { OxyMark } from './OxyMark';
+import { useSvgIdPrefix } from './use-svg-id';
 import { SOCIAL_PROVIDERS, type SocialColorLogo, type SocialProvider } from './providers';
 import type {
   SocialBrand,
@@ -343,7 +344,7 @@ function ColorLogo({
 }) {
   // Gradient ids are per logo upstream; two buttons of one brand on a page must
   // not resolve each other's `url(#…)`, so every id is prefixed per instance.
-  const prefix = `bloom-social-${useId().replace(/[^a-zA-Z0-9]/g, '')}-`;
+  const prefix = useSvgIdPrefix('bloom-social');
   const resolveFill = (fill: string) =>
     fill.startsWith('url(#') ? `url(#${prefix}${fill.slice(5)}` : fill;
 

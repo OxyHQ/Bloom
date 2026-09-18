@@ -17,13 +17,7 @@ import Animated, {
 } from 'react-native-reanimated';
 import Svg, { Defs, LinearGradient, Rect, Stop } from 'react-native-svg';
 
-import {
-  ACCENT_TABLE,
-  BUTTON_SHADOW,
-  colorRamp,
-  mixColor,
-  resolveButtonRamps,
-} from '../button/shared';
+import { ACCENT_TABLE, BUTTON_SHADOW, SEGMENTED_THUMB_EASE_BEZIER, SEGMENTED_THUMB_MS, colorRamp, mixColor, resolveButtonRamps } from '../button/shared';
 import { useInteractionState } from '../hooks/use-interaction-state';
 import { RiMoonLine, RiSunLine } from '../icons/remix';
 import { adoptStyleSheet } from '../styles/adopt-style-sheet';
@@ -66,8 +60,8 @@ import { revealTheme, THEME_TRANSITION_DURATION, type RevealOrigin } from './vie
  */
 
 const IS_WEB = Platform.OS === 'web';
-const EASE = Easing.bezier(0.25, 0.1, 0.25, 1);
-const THUMB_MS = 200;
+const EASE = Easing.bezier(...SEGMENTED_THUMB_EASE_BEZIER);
+const THUMB_MS = SEGMENTED_THUMB_MS;
 const HOVER_MS = 150;
 
 interface TogglePalette {

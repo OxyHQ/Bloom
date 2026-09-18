@@ -1,5 +1,7 @@
-import React, { useId } from 'react';
+import React from 'react';
 import Svg, { ClipPath, Defs, G, Path } from 'react-native-svg';
+
+import { useSvgIdPrefix } from './use-svg-id';
 
 /**
  * The Oxy mark for `SocialButton` — the same drawing the Oxy SDK ships.
@@ -29,7 +31,7 @@ export interface OxyMarkProps {
 
 export function OxyMark({ size, color, letterColor }: OxyMarkProps) {
   // Two marks on one page must not resolve each other's clip path.
-  const clipId = `bloom-oxy-mark-${useId().replace(/[^a-zA-Z0-9]/g, '')}`;
+  const clipId = useSvgIdPrefix('bloom-oxy-mark');
   return (
     <Svg width={size} height={size} viewBox={OXY_MARK_VIEW_BOX} aria-hidden>
       <Defs>
