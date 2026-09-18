@@ -4,7 +4,7 @@ import { View } from 'react-native';
 import { TripCard } from '../../src/booking';
 import { Button } from '../../src/button';
 import { SavedSearchCard } from '../../src/home-search';
-import { RiChat3Line, RiMapPinLine } from '../../src/icons/remix';
+import { RiAddLine, RiChat3Line, RiMapPinLine } from '../../src/icons/remix';
 import { WishlistCard } from '../../src/listing-card';
 import { useTheme } from '../../src/theme/use-theme';
 import { Text } from '../../src/typography';
@@ -97,7 +97,13 @@ export function SavedPage() {
         <Section title="Wishlists" testID="housing-wishlists">
           <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: wishlistGap }}>
             {WISHLISTS.map(({ id, ...list }) => (
-              <WishlistCard key={id} {...list} onPress={() => go('explore')} style={{ width: wishlistWidth }} />
+              <WishlistCard
+                key={id}
+                {...list}
+                empty={<RiAddLine width={28} height={28} fill="#FFFFFF" />}
+                onPress={() => go('explore')}
+                style={{ width: wishlistWidth }}
+              />
             ))}
           </View>
         </Section>

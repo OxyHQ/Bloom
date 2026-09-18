@@ -72,6 +72,7 @@ function Results({ homes, favourites, columns }: { homes: Home[]; favourites: Fa
         <ListingCard
           key={home.id}
           {...cardProps(home)}
+          hoverZoom
           favorite={favourites.saved.has(home.id)}
           onFavoriteChange={(next) => favourites.toggle(home.id, next)}
           onPress={() => go(LISTING_PAGE_FOR_MODE[home.mode])}

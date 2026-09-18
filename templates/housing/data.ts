@@ -26,6 +26,7 @@ import {
   RiFireLine,
   RiFlowerLine,
   RiFridgeLine,
+  RiHeart3Line,
   RiHeartPulseLine,
   RiHome4Line,
   RiHomeHeartLine,
@@ -1243,10 +1244,10 @@ export const SAVED_SEARCHES = [
 ];
 
 export const WISHLISTS = [
-  { id: 'coast', name: 'Coast weekends', description: '12 saved', photos: [picsum('stay-isola-0', 600, 600), picsum('stay-brova-1', 600, 600), picsum('stay-alvora-2', 600, 600), picsum('stay-weyr-0', 600, 600)] },
-  { id: 'rent', name: 'Flats to see', description: '5 saved', photos: [picsum('rent-tilia-0', 600, 600), picsum('rent-orel-1', 600, 600), picsum('rent-heron-2', 600, 600)] },
-  { id: 'buy', name: 'Dream homes', description: '2 saved', photos: [picsum('sale-aurelle-0', 600, 600), picsum('sale-talmar-1', 600, 600)] },
-  { id: 'someday', name: 'Someday', description: '1 saved', photos: [picsum('stay-lumen-0', 600, 600)] },
+  { id: 'coast', name: 'Coast weekends', description: '12 saved', icon: RiHeart3Line, color: '#E0516B', photos: [picsum('stay-isola-0', 600, 600), picsum('stay-brova-1', 600, 600), picsum('stay-alvora-2', 600, 600), picsum('stay-weyr-0', 600, 600)] },
+  { id: 'rent', name: 'Flats to see', description: '5 saved', icon: RiKey2Line, color: '#3E7BFA', photos: [picsum('rent-tilia-0', 600, 600), picsum('rent-orel-1', 600, 600), picsum('rent-heron-2', 600, 600)] },
+  { id: 'buy', name: 'Dream homes', description: '2 saved', icon: RiHome4Line, color: '#0EA47A', photos: [picsum('sale-aurelle-0', 600, 600), picsum('sale-talmar-1', 600, 600)] },
+  { id: 'someday', name: 'Someday', description: 'Nothing saved yet', icon: RiMapPinLine, color: '#7A5AF8', photos: [] },
 ];
 
 export interface Trip {

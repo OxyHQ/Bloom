@@ -62,10 +62,12 @@ import {
   resolveListingCardPaint,
   resolvePhoto,
   resolvePriceLines,
+  LISTING_CARD_CSS,
+  PHOTO_ZOOM_SCALE,
   STATUS_WASH_OPACITY,
   statusLabelFor,
 } from '../listing-card/shared';
-import { RiDropLine, RiHotelBedLine, RiRulerLine } from '../icons/remix';
+import { RiDropLine, RiFolderLine, RiHotelBedLine, RiRulerLine } from '../icons/remix';
 import { resolveOfferingBadgePaint } from '../offering-badge/shared';
 import { colorRamp, DANGER_TABLE, resolveButtonRamps } from '../button/shared';
 
@@ -665,5 +667,173 @@ describe('ListingCard — compact density', () => {
     expect(el.getAttribute('aria-busy')).toBe('true');
     expect(getComputedStyle(el).flexDirection).toBe('row');
     expect(getComputedStyle(el.firstElementChild as HTMLElement).width).toBe('112px');
+  });
+});
+
+// ---------------------------------------------------------------------------
+//  The pointer shortcuts: hover zoom, long press, right-click
+// ---------------------------------------------------------------------------
+
+describe('ListingCard — hover zoom', () => {
+  it('marks the card for the zoom only when hoverZoom is set', async () => {
+    mount(<ListingCard {...stay} href="/s" hoverZoom testID="c" />);
+    await flushLayout();
+    expect(byTestId('c').hasAttribute('data-bloom-listing-card-zoom')).toBe(true);
+    mount(<ListingCard {...stay} href="/s" testID="c" />);
+    await flushLayout();
+    expect(byTestId('c').hasAttribute('data-bloom-listing-card-zoom')).toBe(false);
+  });
+
+  it('marks every mounted photo, so the sheet has something to scale', async () => {
+    mount(<ListingCard {...stay} href="/s" hoverZoom testID="c" />);
+    await flushLayout();
+    const photos = byTestId('c-photo').querySelectorAll('[data-bloom-listing-card-photo]');
+    expect(photos.length).toBeGreaterThan(0);
+  });
+
+  it('the compact density never takes the zoom, whatever the prop says', async () => {
+    mount(<ListingCard {...stay} href="/s" density="compact" hoverZoom testID="c" />);
+    await flushLayout();
+    expect(byTestId('c').hasAttribute('data-bloom-listing-card-zoom')).toBe(false);
+  });
+
+  /**
+   * jsdom applies no stylesheet, so the RULE is the subject: the scale is
+   * behind a hover query, and reduced motion turns it off rather than leaving
+   * it snapping. Read the sheet, because an inline style could never express
+   * either condition.
+   */
+  it('the rule is hover-gated and reduced-motion-safe', () => {
+    const zoomed = '[data-bloom-listing-card][data-bloom-listing-card-zoom]';
+    expect(LISTING_CARD_CSS).toContain(
+      `${zoomed}:hover [data-bloom-listing-card-photo] {\n    transform: scale(${PHOTO_ZOOM_SCALE});`,
+    );
+    const hoverBlock = LISTING_CARD_CSS.slice(
+      LISTING_CARD_CSS.indexOf(`${zoomed}:hover`),
+    );
+    expect(
+      LISTING_CARD_CSS.slice(0, LISTING_CARD_CSS.indexOf(`${zoomed}:hover`)),
+    ).toContain('@media (any-hover: hover)');
+    expect(hoverBlock.length).toBeGreaterThan(0);
+    const reduced = LISTING_CARD_CSS.slice(
+      LISTING_CARD_CSS.indexOf('@media (prefers-reduced-motion: reduce)'),
+    );
+    expect(reduced).toContain('data-bloom-listing-card-zoom');
+    expect(reduced).toContain('transform: none;');
+  });
+});
+
+describe('ListingCard — the press shortcut', () => {
+  it('a right-click calls onContextMenu and keeps the browser menu shut', async () => {
+    const onContextMenu = jest.fn();
+    mount(<ListingCard {...stay} href="/s" onContextMenu={onContextMenu} testID="c" />);
+    await flushLayout();
+    const event = new MouseEvent('contextmenu', { bubbles: true, cancelable: true });
+    act(() => {
+      byTestId('c-link').dispatchEvent(event);
+    });
+    expect(onContextMenu).toHaveBeenCalledTimes(1);
+    expect(event.defaultPrevented).toBe(true);
+  });
+
+  it('without onContextMenu the browser keeps its own menu', async () => {
+    mount(<ListingCard {...stay} href="/s" testID="c" />);
+    await flushLayout();
+    const event = new MouseEvent('contextmenu', { bubbles: true, cancelable: true });
+    act(() => {
+      byTestId('c-link').dispatchEvent(event);
+    });
+    expect(event.defaultPrevented).toBe(false);
+  });
+
+  it('a long press calls onLongPress and does not also open the stay', async () => {
+    const onPress = jest.fn();
+    const onLongPress = jest.fn();
+    mount(<ListingCard {...stay} onPress={onPress} onLongPress={onLongPress} testID="c" />);
+    await flushLayout();
+    const link = byTestId('c-link');
+    // Real timers, not fake ones: react-native-web's press responder schedules
+    // the long press itself, and driving it with fake timers inside `act`
+    // deadlocks the render loop.
+    await act(async () => {
+      link.dispatchEvent(new MouseEvent('mousedown', { bubbles: true, cancelable: true, button: 0 }));
+      await new Promise((resolve) => setTimeout(resolve, 700));
+    });
+    await act(async () => {
+      link.dispatchEvent(new MouseEvent('mouseup', { bubbles: true, cancelable: true, button: 0 }));
+    });
+    expect(onLongPress).toHaveBeenCalledTimes(1);
+    expect(onPress).not.toHaveBeenCalled();
+  });
+});
+
+describe('WishlistCard — icon, colour and the empty cover', () => {
+  it('draws the glyph beside the name, decorative, in `color`', () => {
+    mount(
+      <WishlistCard
+        name="Coast weekends"
+        description="12 saved"
+        photos={['https://example.test/w0.jpg']}
+        icon={RiFolderLine}
+        color="rgb(224, 81, 107)"
+        onPress={() => {}}
+        testID="w"
+      />,
+    );
+    const icon = byTestId('w-icon');
+    expect(icon.getAttribute('aria-hidden')).toBe('true');
+    const svg = icon.querySelector('svg');
+    expect(svg?.getAttribute('width')).toBe('16');
+    expect(svg?.querySelector('path')?.getAttribute('fill')).toBe('rgb(224, 81, 107)');
+    // The glyph is decorative, so the name a screen reader reads is unchanged.
+    expect(byTestId('w').getAttribute('aria-label')).toBe('Coast weekends, 12 saved');
+  });
+
+  it('no icon: nothing is drawn and the name keeps its place', () => {
+    mount(<WishlistCard name="Cabins" photos={['https://example.test/w0.jpg']} onPress={() => {}} testID="w" />);
+    expect(maybe('w-icon')).toBeNull();
+    expect(byTestId('w').textContent).toBe('Cabins');
+  });
+
+  it('the glyph falls back to the secondary text colour without `color`', () => {
+    mount(
+      <WishlistCard name="Cabins" photos={[]} icon={RiFolderLine} onPress={() => {}} testID="w" />,
+    );
+    // The attribute carries the token verbatim; `normalise` is for computed styles.
+    expect(byTestId('w-icon').querySelector('svg path')?.getAttribute('fill')).toBe(
+      theme.colors.textSecondary,
+    );
+  });
+
+  it('no photos: the cover holds `empty`, tinted by `color`', () => {
+    mount(
+      <WishlistCard
+        name="Someday"
+        photos={[]}
+        color="rgb(122, 90, 248)"
+        empty={<RiFolderLine width={28} height={28} fill="#FFFFFF" />}
+        onPress={() => {}}
+        testID="w"
+      />,
+    );
+    const slot = byTestId('w-empty');
+    expect(getComputedStyle(slot).backgroundColor).toBe('rgb(122, 90, 248)');
+    expect(slot.querySelector('svg')?.getAttribute('width')).toBe('28');
+  });
+
+  it('no photos and no `empty`: the placeholder square, as before', () => {
+    mount(<WishlistCard name="Someday" photos={[]} onPress={() => {}} testID="w" />);
+    const slot = byTestId('w-empty');
+    expect(slot.querySelector('svg')).toBeNull();
+    expect(getComputedStyle(slot).backgroundColor).toBe(
+      normalise(resolveListingCardPaint(theme).photoPlaceholder),
+    );
+  });
+
+  it('with photos there is no empty slot at all', () => {
+    mount(
+      <WishlistCard name="Cabins" photos={['https://example.test/w0.jpg']} onPress={() => {}} testID="w" />,
+    );
+    expect(maybe('w-empty')).toBeNull();
   });
 });

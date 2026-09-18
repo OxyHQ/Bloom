@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Image, View } from 'react-native';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
+import { RiHeart3Line, RiMapPinLine, RiSuitcaseLine } from '../icons/remix';
 import { useTheme } from '../theme/use-theme';
 import { Text } from '../typography';
 import { FavoriteButton } from './FavoriteButton';
@@ -263,6 +264,86 @@ export const Wishlists: Story = {
         <WishlistCard name="Cabins" description="3 saved" photos={photos('cabin', 3)} onPress={() => undefined} testID="wish-3" />
         <WishlistCard name="City breaks" description="2 saved" photos={photos('city', 2)} href="#city" testID="wish-2" />
         <WishlistCard name="Someday" description="1 saved" photos={photos('someday', 1)} onPress={() => undefined} testID="wish-1" />
+      </ListingCardGrid>
+    </Page>
+  ),
+};
+
+/**
+ * The pointer shortcuts. Hover a card to see the photo come forward (web only,
+ * and nothing under reduced motion); right-click one, or long-press on a touch
+ * screen, to reach the "save to a folder" shortcut — the last event is shown
+ * under the grid.
+ */
+export const HoverZoomAndLongPress: Story = {
+  render: function HoverZoomAndLongPressStory() {
+    const theme = useTheme();
+    const [last, setLast] = useState('nothing yet');
+    return (
+      <Page>
+        <View style={{ gap: 16 }}>
+          <Text variant="body-2-regular" style={{ color: theme.colors.textSecondary }}>
+            {`Last shortcut: ${last}`}
+          </Text>
+          <ListingCardGrid>
+            {STAYS.slice(0, 4).map(({ id, saved: _saved, ...stay }) => (
+              <ListingCard
+                key={id}
+                {...stay}
+                hoverZoom
+                href={`#stay-${id}`}
+                onLongPress={() => setLast(`long press on ${stay.title}`)}
+                onContextMenu={() => setLast(`right-click on ${stay.title}`)}
+                testID={`zoom-${id}`}
+              />
+            ))}
+          </ListingCardGrid>
+        </View>
+      </Page>
+    );
+  },
+};
+
+/** Collections with a glyph, a colour, and one that is still empty. */
+export const WishlistIdentity: Story = {
+  render: () => (
+    <Page>
+      <ListingCardGrid columns={4} columnGap={20} rowGap={32}>
+        <WishlistCard
+          name="Coast weekends"
+          description="12 saved"
+          photos={photos('coast', 4)}
+          icon={RiHeart3Line}
+          color="#E0516B"
+          onPress={() => undefined}
+          testID="ident-coast"
+        />
+        <WishlistCard
+          name="Work trips"
+          description="5 saved"
+          photos={photos('work', 2)}
+          icon={RiSuitcaseLine}
+          color="#3E7BFA"
+          onPress={() => undefined}
+          testID="ident-work"
+        />
+        <WishlistCard
+          name="Someday"
+          description="Nothing saved yet"
+          photos={[]}
+          icon={RiMapPinLine}
+          empty={<RiMapPinLine width={28} height={28} fill="#FFFFFF" />}
+          color="#7A5AF8"
+          onPress={() => undefined}
+          testID="ident-empty"
+        />
+        <WishlistCard
+          name="No glyph, no colour"
+          description="3 saved"
+          photos={photos('plain', 3)}
+          onPress={() => undefined}
+          testID="ident-plain"
+        />
       </ListingCardGrid>
     </Page>
   ),
