@@ -8,6 +8,7 @@ import {
   DateRangePicker,
   MeetingScheduler,
   RangeCalendar,
+  TimeField,
   type DateRange,
   type MeetingSchedulerDetails,
   type MeetingSchedulerHost,
@@ -152,4 +153,56 @@ export const MeetingSchedulerOpen: Story = {
       />
     </View>
   ),
+};
+
+/**
+ * The time field beside the date picker it lines up with: 24h and 12h, a
+ * 15-minute grid with bounds, both sizes, empty, and disabled. Type `930`,
+ * `9.30` or `9pm`; ArrowUp / ArrowDown step by `step`.
+ */
+export const TimeFields: Story = {
+  render: function TimeFieldStory() {
+    const [date, setDate] = useState<Date | null>(day(14));
+    const [plain, setPlain] = useState<string | null>('18:30');
+    const [twelve, setTwelve] = useState<string | null>('18:30');
+    const [booking, setBooking] = useState<string | null>(null);
+    const [small, setSmall] = useState<string | null>('07:05');
+    const row = { flexDirection: 'row', alignItems: 'center', gap: 12 } as const;
+    return (
+      <View style={{ gap: 20, padding: 24 }}>
+        <View style={row}>
+          <DatePicker value={date} onChange={setDate} />
+          <TimeField value={plain} onChange={setPlain} accessibilityLabel="Viewing time" testID="tf-24h" />
+        </View>
+        <View style={row}>
+          <TimeField
+            value={twelve}
+            onChange={setTwelve}
+            hourFormat="12h"
+            accessibilityLabel="Viewing time, 12 hour"
+            width={120}
+            testID="tf-12h"
+          />
+          <Text>{`value: ${twelve ?? 'null'}`}</Text>
+        </View>
+        <View style={row}>
+          <TimeField
+            value={booking}
+            onChange={setBooking}
+            min="09:00"
+            max="20:00"
+            step={15}
+            accessibilityLabel="Booking time"
+            testID="tf-grid"
+          />
+          <Text>{`09:00 – 20:00, every 15 min — value: ${booking ?? 'null'}`}</Text>
+        </View>
+        <View style={row}>
+          <TimeField value={small} onChange={setSmall} size="small" accessibilityLabel="Start" testID="tf-small" />
+          <TimeField value={null} onChange={() => {}} size="small" accessibilityLabel="End" testID="tf-empty" />
+          <TimeField value="12:00" onChange={() => {}} disabled accessibilityLabel="Locked" testID="tf-disabled" />
+        </View>
+      </View>
+    );
+  },
 };

@@ -6,16 +6,19 @@ order: 13
 
 # DatePicker
 
-`DatePicker`, `DateRangePicker` and `MeetingScheduler`. Bloom takes no dependency on react-aria or `@internationalized/date`, so the month layout, selection, constraints and keyboard navigation are plain TypeScript over local-midnight `Date`s. Colours come from the Bloom-derived ramps in `src/button/shared.ts`.
+`DatePicker`, `DateRangePicker`, `MeetingScheduler` and `TimeField`. Bloom takes no dependency on react-aria or `@internationalized/date`, so the month layout, selection, constraints and keyboard navigation are plain TypeScript over local-midnight `Date`s. Colours come from the Bloom-derived ramps in `src/button/shared.ts`.
 
 ```tsx
-import { DatePicker, DateRangePicker, MeetingScheduler, Calendar, RangeCalendar } from '@oxy.so/bloom/date-picker';
+import { DatePicker, DateRangePicker, MeetingScheduler, TimeField, Calendar, RangeCalendar } from '@oxy.so/bloom/date-picker';
 
 const [day, setDay] = useState<Date | null>(null);
 <DatePicker value={day} onChange={setDay} minDate={new Date()} />
 
 const [range, setRange] = useState<DateRange | null>(null);
 <DateRangePicker value={range} onChange={setRange} />
+
+const [time, setTime] = useState<string | null>('18:30');
+<TimeField value={time} onChange={setTime} step={15} accessibilityLabel="Viewing time" />
 ```
 
 ## Pickers
@@ -81,3 +84,78 @@ A range takes two presses in either order; between them the band follows the poi
 | `disabled?` | `boolean` | `false` | Blocks opening (pickers). |
 | `RangeCalendar.visibleMonths?` | `1 \| 2` | `1` | Months side by side. |
 | `defaultMonth?` | `Date` | value's month, else today's | First month shown (calendars). |
+
+## TimeField
+
+`DatePicker` is the day; `TimeField` is the hour and minute. It is a **field,
+not a fourth popover** — a viewing at 18:30 is four keystrokes, and a popover is
+the wrong instrument for four keystrokes. (`MeetingScheduler` still has the
+other shape: a fixed list of bookable slots, which is a different question —
+"which of these?" rather than "when?".)
+
+```tsx
+const [time, setTime] = useState<string | null>(null);
+<TimeField
+  value={time}
+  onChange={setTime}
+  min="09:00"
+  max="20:00"
+  step={15}
+  accessibilityLabel="Viewing time"
+/>
+```
+
+| prop | |
+| --- | --- |
+| `value` | 24h `"HH:mm"`, or `null` while empty — fully controlled |
+| `onChange` | the committed time, or `null` once emptied; never fires while typing |
+| `min`, `max` | 24h `"HH:mm"` bounds; a time outside is pulled to the bound |
+| `step` | minutes per arrow press, and the grid a typed time snaps to. Default `1` |
+| `hourFormat` | `'24h'` (default) or `'12h'` — how it is DRAWN; the value stays 24h |
+| `size` | `'small'` (96 × 32) or `'medium'` (default, 104 × 38) |
+| `disabled` | not editable, `aria-disabled`, `DISABLED_OPACITY` |
+| `accessibilityLabel` | **required** — the field draws no label, and `"--:--"` names nothing |
+| `placeholder` | default `"--:--"`, or `"--:-- --"` in 12h |
+| `width`, `style`, `testID` | |
+
+**The value is always 24h.** `hourFormat` decides what the reader sees, never
+what the caller receives, so a `TimeField` value drops straight into one of
+`MeetingScheduler`'s `timeSlots` and the app needs no locale to read it back.
+
+**It looks like the date chip because it is the same control.** Geometry,
+palette and focus behaviour are `DateChipInput`'s — the `DD/MM/YYYY` chip inside
+the pickers — so a date and a time typed beside each other line up: 1px
+`chipBorder` darkening to `chipBorderFocused` on focus (the border IS the focus
+indicator, `outline-none`), radius 10, shadow-xs, the panel fill.
+
+### Typing
+
+The field keeps its own **draft** while you type, so the text is not reformatted
+under the cursor, and commits on blur or submit. Escape reverts to the committed
+value, and so does a draft that does not parse — rather than an error the field
+has no room to draw.
+
+Parsing is deliberately forgiving, because a field that only accepts what it
+printed is a field people fight. All of these commit to `09:30`:
+
+`9:30` · `930` · `9.30` · `9 30` · `0930` · `9:3` · `9:30 am` · `9:30 a.m.`
+
+and `9` alone is `09:00`, `21:30` is `21:30`, `9pm` is `21:00`. An `am`/`pm`
+marker decides the half of the day whatever `hourFormat` says — somebody who
+typed `pm` means pm.
+
+`step` snaps a committed time to a grid counted **from midnight**, so `step={15}`
+always means :00 :15 :30 :45. Counting from `min` instead would knock the round
+times off the grid the moment a shop opened at 09:10.
+
+### Keyboard
+
+ArrowUp and ArrowDown move by `step` and commit immediately, clamped at `min`
+and `max` rather than wrapping — a wrap from `max` back to `min` reads as the
+field refusing the key. With no value yet, ArrowUp starts at `min` (or 00:00)
+and ArrowDown at `max` (or 23:59).
+
+They are a convenience **on a text box**, not a `spinbutton`: the control
+announces itself as the text field it is, named by `accessibilityLabel`, and
+every value the arrows can reach can also be typed. A `spinbutton` role would
+promise `aria-valuenow` over a value that is a string and may be empty.

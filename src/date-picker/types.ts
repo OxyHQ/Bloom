@@ -1,4 +1,4 @@
-import type { StyleProp, ViewStyle } from 'react-native';
+import type { StyleProp, TextStyle, ViewStyle } from 'react-native';
 
 /** An inclusive range of calendar days. Both ends are local-midnight `Date`s. */
 export interface DateRange {
@@ -126,8 +126,14 @@ export interface MeetingSchedulerValue {
   time: string | null;
 }
 
-/** The hour-format toggle. */
-export type MeetingSchedulerHourFormat = '12h' | '24h';
+/**
+ * How a time of day is drawn. The VALUE is always a 24h `"HH:mm"` string —
+ * this decides only what the reader sees.
+ */
+export type HourFormat = '12h' | '24h';
+
+/** The hour-format toggle. An alias of {@link HourFormat}. */
+export type MeetingSchedulerHourFormat = HourFormat;
 
 /** Fixed strings, overridable for localisation. */
 export interface MeetingSchedulerLabels {
@@ -167,5 +173,48 @@ export interface MeetingSchedulerProps extends CalendarConstraintProps {
   onOpenChange?: (open: boolean) => void;
   /** Style for the trigger button. */
   style?: StyleProp<ViewStyle>;
+  testID?: string;
+}
+
+/** `small` is a 32-tall field with body-2 text; `medium` (default) 38 with body. */
+export type TimeFieldSize = 'small' | 'medium';
+
+export interface TimeFieldProps {
+  /**
+   * The time as a 24h `"HH:mm"` string, or `null` while the field is empty.
+   * Fully controlled. The same shape `MeetingScheduler` uses, so a value drops
+   * straight into one of its `timeSlots`.
+   */
+  value: string | null;
+  /**
+   * Called with the committed time — on blur, on submit, or on an arrow key.
+   * `null` when the field has been emptied. Never called while typing.
+   */
+  onChange: (value: string | null) => void;
+  /** Earliest time, 24h `"HH:mm"`. A typed time before it is pulled up to it. */
+  min?: string;
+  /** Latest time, 24h `"HH:mm"`. A typed time after it is pulled back to it. */
+  max?: string;
+  /**
+   * Minutes one arrow press moves, and the grid a typed time snaps to. Default
+   * `1` (no snapping); pass `15` or `30` for a booking grid. Counted from
+   * midnight, so 15 always means :00 :15 :30 :45.
+   */
+  step?: number;
+  /** How the time is DRAWN. Default `'24h'`; the value stays 24h either way. */
+  hourFormat?: HourFormat;
+  /** Default `medium`. */
+  size?: TimeFieldSize;
+  disabled?: boolean;
+  /**
+   * The NAME of the time ("Viewing time", "Check-in"). Required: the field
+   * draws no label of its own, and `"--:--"` names nothing.
+   */
+  accessibilityLabel: string;
+  /** The text while empty. Default `"--:--"`, or `"--:-- --"` in 12h. */
+  placeholder?: string;
+  /** Fixed width. Default: 104 at `medium`, 96 at `small`. */
+  width?: number;
+  style?: StyleProp<TextStyle>;
   testID?: string;
 }
