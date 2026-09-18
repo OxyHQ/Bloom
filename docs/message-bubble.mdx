@@ -24,7 +24,8 @@ import {
 
 The bubble SHELL, its text and its metadata. Rich media — images, voice notes,
 files, polls — is a slot (`media`), not this family's job: pass whatever draws
-it and the bubble clips it to its own radius.
+it and the bubble clips it to its own radius. `mediaFit` says whether that
+thing bleeds to the radius or keeps the bubble's padding.
 
 Everything is a prop. No component here reads the clock: `"12:41"`,
 `"Yesterday"`, `"4 min"` and `"12.4K"` arrive already formatted, because what
@@ -42,8 +43,9 @@ counts as "today" depends on a timezone and a locale the component cannot see.
 | `direction`               | `'incoming'` a neutral surface · `'outgoing'` the theme accent fill           |
 | `position`                | `'single' \| 'first' \| 'middle' \| 'last'` — which corner is cut             |
 | `text` / `children`       | the body; `children` wins                                                     |
-| `media`                   | the rich-media slot, edge to edge inside the radius                           |
-| `metaOverlay`             | float the meta over the media on a translucent pill (default on media-only)   |
+| `media`                   | the rich-media slot, above the text                                           |
+| `mediaFit`                | `'bleed'` (default) cancels the bubble's padding · `'inset'` keeps it          |
+| `metaOverlay`             | float the meta over the media on a translucent pill (default: a BLED media-only bubble) |
 | `tail`                    | the SVG notch on the cut corner — OFF by default                              |
 | `senderName`              | the coloured name line (a group; `MessageGroup` normally draws it instead)    |
 | `senderColorSeed`         | what `senderNameColor` hashes; defaults to `senderName`                       |
@@ -80,6 +82,38 @@ lozenges. `MessageGroup` and `MessageList` compute `position` for you;
 
 `tail` draws the notch on that corner. It is off by default and drawn OUTSIDE
 the bubble box, so turning it on re-lays out nothing.
+
+### The media slot has two fits
+
+```tsx
+<MessageBubble direction="incoming" media={<ImageMessage source={photo} />} time="18:02" />
+
+<MessageBubble
+  direction="incoming"
+  mediaFit="inset"
+  media={<PollMessage tone="incoming" question="When do we rehearse?" options={options} />}
+  time="18:06"
+/>
+```
+
+`'bleed'` is the default and it is the photo: the bubble's padding is cancelled
+on all four sides and the frame runs to the radius, which is right for anything
+that owns its own edge — `ImageMessage`, `VideoMessage`, `GifMessage`,
+`MediaAlbum`, `StickerMessage`.
+
+`'inset'` is for a block that draws no padding of its own, which is every block
+made of typography: `PollMessage`, `LocationMessage` and `ContactMessage`. Bled,
+those clip the poll's question against the top of the bubble, cut the location's
+address off at the bottom and put the contact's avatar on the left edge.
+
+The fit also settles the META, and that is why it is one prop rather than two.
+The overlaid time pill is the default only on a bled media-only bubble, where it
+lands on a photo; on an inset one the last line is text — "0 votes", an address —
+and a pill on top of it is the same defect again. `metaOverlay` still overrides
+it in either direction.
+
+Pass the block `tone={direction}` as well: `message-media` derives its whole
+palette from which bubble it is drawn on.
 
 ### The meta row tucks
 

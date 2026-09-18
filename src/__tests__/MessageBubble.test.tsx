@@ -8,7 +8,7 @@
  * defect class a selectable, toggleable bubble is most exposed to.
  */
 import React from 'react';
-import { Pressable } from 'react-native';
+import { Pressable, View as RNView } from 'react-native';
 import { act } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
 
@@ -394,6 +394,100 @@ describe('the meta row', () => {
     const content = bubbleBox('outgoing').textContent ?? '';
     expect(content).toBe('This message was deleted');
     expect(content).not.toContain('09:01');
+  });
+});
+
+// ---------------------------------------------------------------------------
+//  The media slot
+// ---------------------------------------------------------------------------
+
+/**
+ * The box the bubble wraps `media` in — the one carrying the fit's margins.
+ *
+ * The marker inside it is `RNView`, the REAL react-native-web `View`, not the
+ * null-rendering `View` stub above: this reads the DOM around the slot, so the
+ * slot has to put a node in it.
+ */
+function mediaWrapper(): HTMLElement {
+  const parent = byTestId('block').parentElement;
+  if (!(parent instanceof HTMLElement)) throw new Error('No media wrapper');
+  return parent;
+}
+
+function margins(el: HTMLElement): [string, string, string, string] {
+  const s = getComputedStyle(el);
+  return [s.marginTop, s.marginRight, s.marginBottom, s.marginLeft];
+}
+
+describe('the media slot', () => {
+  // `media` holds two different kinds of thing and the bubble cannot tell them
+  // apart by looking: a photo, which owns its own edge, and a poll, a place or
+  // a contact card, which are typography with no padding of their own. Bled,
+  // the second kind clips its first line against the top of the bubble and
+  // puts its avatar on the left one, and the overlaid time pill lands on a
+  // line of text. `mediaFit` is the one switch, and it settles the meta too.
+
+  it('bleeds to the bubble edge by default, pill and all', () => {
+    mount(<MessageBubble direction="incoming" media={<RNView testID="block" />} time="12:41" />);
+    // The bubble's own padding, cancelled on all four sides.
+    expect(margins(mediaWrapper())).toEqual(['-7px', '-12px', '-7px', '-12px']);
+    // …and the meta floats over it, INSIDE the media box, on its pill.
+    expect(mediaWrapper().textContent).toContain('12:41');
+  });
+
+  it('keeps the bubble padding when inset, and tucks the time under the block', () => {
+    mount(
+      <MessageBubble
+        direction="incoming"
+        mediaFit="inset"
+        media={<RNView testID="block" />}
+        time="12:41"
+      />,
+    );
+    expect(margins(mediaWrapper())).toEqual(['0px', '0px', '0px', '0px']);
+    // The time is still drawn — just not on top of the block.
+    expect(mediaWrapper().textContent).not.toContain('12:41');
+    expect(bubbleBox('incoming').textContent).toContain('12:41');
+  });
+
+  it('insets under a sender line and beside text, where bleeding is partial', () => {
+    // Bled, the top margin is dropped when something precedes the media and the
+    // bottom one when text follows. Inset owes nothing to either.
+    mount(
+      <MessageBubble
+        direction="incoming"
+        mediaFit="inset"
+        senderName="Ana Restrepo"
+        media={<RNView testID="block" />}
+        text="Pick one."
+        time="12:41"
+      />,
+    );
+    expect(margins(mediaWrapper())).toEqual(['0px', '0px', '0px', '0px']);
+  });
+
+  it('lets the app force the meta either way', () => {
+    mount(
+      <MessageBubble
+        direction="incoming"
+        mediaFit="inset"
+        metaOverlay
+        media={<RNView testID="block" />}
+        time="12:41"
+      />,
+    );
+    expect(mediaWrapper().textContent).toContain('12:41');
+
+    mount(
+      <MessageBubble
+        direction="incoming"
+        metaOverlay={false}
+        media={<RNView testID="block" />}
+        time="12:41"
+      />,
+    );
+    expect(mediaWrapper().textContent).not.toContain('12:41');
+    expect(bubbleBox('incoming').textContent).toContain('12:41');
   });
 });
 

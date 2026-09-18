@@ -599,6 +599,7 @@ export type {
   MessageListEntry,
   MessageListItem,
   MessageListProps,
+  MessageMediaFit,
   MessagePosition,
   MessageReaction,
   MessageReplyPreview,

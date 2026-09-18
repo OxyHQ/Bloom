@@ -47,6 +47,12 @@ preset, in both modes, and is never unreadable.
 `onColor` and `bubbleColor` override the two ends for an app painting its own
 bubble; everything between them is re-derived, so the contrast guarantee holds.
 
+**The fit.** A block that is typography rather than a picture — `PollMessage`,
+`LocationMessage`, `ContactMessage` — carries no padding of its own, so the
+bubble has to keep its own around it: pass `mediaFit="inset"` to `MessageBubble`
+(`message-bubble`), which also stops the time pill floating over the block's
+last line. The default, `'bleed'`, is the photo.
+
 **`radius`.** The BUBBLE owns the corners. A photo flush with the bubble's edge
 has to take the bubble's radius on the side it touches, or the two draw two arcs
 a pixel apart. Default 16; `message-bubble` passes its own.
