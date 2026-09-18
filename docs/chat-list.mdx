@@ -316,6 +316,11 @@ follows a tab bar and the web/native fork all come from there. This only fixes
 the glyph and the name, so every messaging screen spells the action the same way
 instead of each one picking an icon. Every `Fab` prop passes through.
 
+The glyph is `RiChatNewLine`: a conversation with a plus, which is what the
+action makes. It used to be `RiEditBoxLine` — a sheet of paper with a pencil,
+the "compose a document" mark — and in a messaging app that is a different
+promise. Pass `icon` for a product that means something else by it.
+
 `extended` promotes it to the pill with `accessibilityLabel` as its text, which
 is the one place the name is also the label.
 
