@@ -1,3 +1,11 @@
 export { Rating } from './Rating';
 export { RatingBar } from './RatingBar';
-export type { RatingBarProps, RatingCountStyle, RatingProps, RatingSize } from './types';
+export { RatingInput } from './RatingInput';
+export type {
+  RatingBarProps,
+  RatingCountStyle,
+  RatingInputProps,
+  RatingInputSize,
+  RatingProps,
+  RatingSize,
+} from './types';

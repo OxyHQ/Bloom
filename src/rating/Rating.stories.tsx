@@ -1,9 +1,10 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { View } from 'react-native';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
 import { Rating } from './Rating';
 import { RatingBar } from './RatingBar';
+import { RatingInput } from './RatingInput';
 import { Text } from '../typography';
 import { useTheme } from '../theme/use-theme';
 
@@ -91,6 +92,62 @@ export const Breakdown: Story = {
             </View>
           </View>
         ))}
+      </View>
+    );
+  },
+};
+
+/**
+ * The picker: all three sizes, a chosen value, nothing chosen yet, disabled,
+ * a translated star name, and a ten-star scale. Hover a star to preview, Tab
+ * into the group and use the arrow keys, Home and End.
+ */
+export const Input: Story = {
+  render: function RatingInputStory() {
+    const theme = useTheme();
+    const [overall, setOverall] = useState<number | null>(4);
+    const [clean, setClean] = useState<number | null>(null);
+    const [outOfTen, setOutOfTen] = useState<number | null>(7);
+    return (
+      <View style={{ gap: 24, padding: 16, backgroundColor: theme.colors.background }}>
+        {(['small', 'medium', 'large'] as const).map((size) => (
+          <View key={size} style={{ gap: 8 }}>
+            <Caption>{size}</Caption>
+            <RatingInput
+              size={size}
+              value={overall}
+              onChange={setOverall}
+              accessibilityLabel="Overall rating"
+            />
+          </View>
+        ))}
+        <View style={{ gap: 8 }}>
+          <Caption>nothing chosen yet</Caption>
+          <RatingInput value={clean} onChange={setClean} accessibilityLabel="Cleanliness" />
+        </View>
+        <View style={{ gap: 8 }}>
+          <Caption>disabled</Caption>
+          <RatingInput value={3} onChange={() => {}} disabled accessibilityLabel="Overall rating" />
+        </View>
+        <View style={{ gap: 8 }}>
+          <Caption>translated star names</Caption>
+          <RatingInput
+            value={overall}
+            onChange={setOverall}
+            accessibilityLabel="Nota general"
+            formatStarLabel={(n) => (n === 1 ? '1 estrella' : `${n} estrellas`)}
+          />
+        </View>
+        <View style={{ gap: 8 }}>
+          <Caption>max 10, small</Caption>
+          <RatingInput
+            size="small"
+            max={10}
+            value={outOfTen}
+            onChange={setOutOfTen}
+            accessibilityLabel="Score out of ten"
+          />
+        </View>
       </View>
     );
   },

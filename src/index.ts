@@ -292,8 +292,15 @@ export type { BottomSheetRef, BottomSheetProps } from './bottom-sheet';
 // Data display
 export * from './card';
 export * from './badge';
-export { Rating, RatingBar } from './rating';
-export type { RatingBarProps, RatingCountStyle, RatingProps, RatingSize } from './rating';
+export { Rating, RatingBar, RatingInput } from './rating';
+export type {
+  RatingBarProps,
+  RatingCountStyle,
+  RatingInputProps,
+  RatingInputSize,
+  RatingProps,
+  RatingSize,
+} from './rating';
 export {
   ExplicitBadge,
   formatDuration,
