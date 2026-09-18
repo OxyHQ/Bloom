@@ -97,6 +97,18 @@ export interface DestinationSuggestion {
   description?: string;
   /** A Remix icon component (`RiMapPinLine`, `RiTimeLine`…). Default `RiMapPinLine`. */
   icon?: ButtonIconComponent;
+  /**
+   * The row is offered but cannot be chosen — "Use my location" while location
+   * is off. It dims, answers no press, and the arrow keys step over it.
+   */
+  disabled?: boolean;
+  /**
+   * Why it cannot be chosen ("Location is off"). Drawn in place of
+   * `description` while `disabled`, and read after the title, so the row says
+   * what is wrong rather than only looking wrong. Ignored when the row is not
+   * disabled.
+   */
+  disabledReason?: string;
 }
 
 export interface DestinationSuggestionsProps {
@@ -135,6 +147,14 @@ export interface GuestPickerProps {
   labels?: Partial<Record<GuestKind, string>>;
   /** Override descriptions (`null` hides one). */
   descriptions?: Partial<Record<GuestKind, string | null>>;
+  /**
+   * The name of every row's `−` button, which is English by default
+   * (`"Decrease"`). Same spelling as `Stepper`'s, and passed to every row — the
+   * row's own title is what says WHICH counter it belongs to.
+   */
+  decrementLabel?: string;
+  /** The name of every row's `+` button. Default `"Increase"`. */
+  incrementLabel?: string;
   /**
    * The most guests the place takes, counting adults and children (infants and
    * pets do not count). Their `+` buttons disable once the sum reaches it.

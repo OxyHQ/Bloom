@@ -436,3 +436,63 @@ function DarkCanvas() {
     </View>
   );
 }
+
+/**
+ * A row that cannot be chosen, and the stepper buttons in another language.
+ * Turn "Location" off to dim the first row: hover skips it, ArrowDown steps
+ * over it, Enter on it does nothing, and it says why.
+ */
+export const UnavailableRowAndTranslatedSteppers: Story = {
+  render: function UnavailableRowStory() {
+    const theme = useTheme();
+    const [locationOn, setLocationOn] = useState(false);
+    const [chosen, setChosen] = useState('nothing yet');
+    const [guests, setGuests] = useState<GuestCounts>({ adults: 2, children: 0, infants: 0, pets: 0 });
+    const items: DestinationSuggestion[] = [
+      {
+        id: 'nearby',
+        title: 'Use my location',
+        description: 'Find what’s around you',
+        icon: RiMapPinLine,
+        disabled: !locationOn,
+        disabledReason: 'Location is off',
+      },
+      ...SUGGESTIONS.slice(1),
+    ];
+    return (
+      <View style={{ padding: 24, gap: 24, flexDirection: 'row', flexWrap: 'wrap', alignItems: 'flex-start' }}>
+        <View style={{ gap: 12 }}>
+          <Button variant="secondary" size="small" onPress={() => setLocationOn((on) => !on)}>
+            {locationOn ? 'Turn location off' : 'Turn location on'}
+          </Button>
+          <Text variant="body-2-regular" style={{ color: theme.colors.textSecondary }}>
+            {`Chosen: ${chosen}`}
+          </Text>
+          <StaySearchPanel width={400}>
+            <DestinationSuggestions
+              items={items}
+              onSelect={(item) => setChosen(item.title)}
+              heading="Suggested destinations"
+              testID="disabled-suggestions"
+            />
+          </StaySearchPanel>
+        </View>
+        <StaySearchPanel width={400} padding={8}>
+          <View style={{ paddingLeft: 24, paddingRight: 24 }}>
+            <GuestPicker
+              value={guests}
+              onChange={setGuests}
+              max={16}
+              labels={{ adults: 'Adultos', children: 'Niños', infants: 'Bebés', pets: 'Mascotas' }}
+              descriptions={{ adults: 'Desde 13 años', children: 'De 2 a 12', infants: 'Menos de 2', pets: null }}
+              decrementLabel="Quitar uno"
+              incrementLabel="Añadir uno"
+              closeLabel="Cerrar"
+              testID="es-guests"
+            />
+          </View>
+        </StaySearchPanel>
+      </View>
+    );
+  },
+};
