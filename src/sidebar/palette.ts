@@ -1,6 +1,6 @@
 import { useMemo } from 'react';
 
-import { ACCENT_TABLE, colorRamp, mixColor, resolveButtonRamps } from '../button/shared';
+import { ACCENT_TABLE, BUTTON_SHADOW, colorRamp, mixColor, resolveButtonRamps } from '../button/shared';
 import { MENU_SHADOW } from '../floating/menu-palette';
 import { PANEL_SHADOW, resolvePanelChrome } from '../styles/panel-chrome';
 import { hairlineOn } from '../styles/surface-levels';
@@ -49,6 +49,9 @@ export interface SidebarPalette {
   flat: string;
   rowHover: string;
   tertiary: string;
+  /** Fill and shadow of a segmented control's sliding thumb (the mode switcher). */
+  segmentedThumb: string;
+  segmentedThumbShadow: string;
   tertiaryHover: string;
   searchHover: string;
   searchRing: string;
@@ -113,6 +116,8 @@ export function resolveSidebarPalette(theme: Theme): SidebarPalette {
     flat: dark ? mixColor(n[900], n[950], 0.4) : card,
     rowHover: dark ? n[800] : n[200],
     tertiary: dark ? n[800] : n[200],
+    segmentedThumb: dark ? n[700] : card,
+    segmentedThumbShadow: dark ? BUTTON_SHADOW.dark : BUTTON_SHADOW.light,
     tertiaryHover: dark ? n[700] : n[300],
     // `hover:bg-background-tertiary-hover/55` over the panel.
     searchHover: mixColor(panel, dark ? n[700] : n[300], 0.55),

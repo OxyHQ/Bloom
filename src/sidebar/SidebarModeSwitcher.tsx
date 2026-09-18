@@ -8,14 +8,13 @@ import Animated, {
   withTiming,
 } from 'react-native-reanimated';
 
-import { BUTTON_SHADOW, resolveButtonRamps } from '../button/shared';
+import { SEGMENTED_THUMB_EASE_BEZIER, SEGMENTED_THUMB_MS } from '../button/shared';
 import { useInteractionState } from '../hooks/use-interaction-state';
 import { borderRadius } from '../styles/tokens';
 import type { WebCssStyle } from '../styles/web-view-style';
-import { useTheme } from '../theme/use-theme';
 import { Text } from '../typography';
 import { useSidebarPalette } from './palette';
-import { Collapsible, IS_WEB, useSidebarWebCss } from './parts';
+import { Collapsible, IS_WEB, useSidebarWebCss, webHook } from './parts';
 import type { SidebarMode, SidebarModeSwitcherProps } from './types';
 
 /**
@@ -37,8 +36,7 @@ import type { SidebarMode, SidebarModeSwitcherProps } from './types';
 const ROW_HEIGHT = 32;
 const ROW_GAP = 4;
 const PADDING = 4;
-const THUMB_MS = 200;
-const EASE = Easing.bezier(0.25, 0.1, 0.25, 1);
+const EASE = Easing.bezier(...SEGMENTED_THUMB_EASE_BEZIER);
 
 function ModeRow({
   mode,
@@ -69,7 +67,8 @@ function ModeRow({
 
   return (
     <Pressable
-      {...(IS_WEB ? { dataSet: { bloomSidebar: 'ring' }, ...(collapsed ? { title: mode.label } : null) } : {})}
+      {...webHook('ring')}
+      {...(IS_WEB && collapsed ? { title: mode.label } : null)}
       role="radio"
       aria-checked={selected}
       accessibilityState={{ checked: selected }}
@@ -112,21 +111,21 @@ const SidebarModeSwitcherComponent: React.FC<SidebarModeSwitcherProps> = ({
   style,
   testID,
 }) => {
-  const theme = useTheme();
   const palette = useSidebarPalette();
   useSidebarWebCss();
   const reducedMotion = useReducedMotion();
-  const { neutral: n } = resolveButtonRamps(theme);
 
-  const index = Math.max(0, modes.findIndex((mode) => mode.key === value));
+  // One scan answers both questions: which row the thumb sits on, and whether
+  // there is a selected row at all.
+  const selectedIndex = modes.findIndex((mode) => mode.key === value);
+  const selectedKnown = selectedIndex !== -1;
+  const index = Math.max(0, selectedIndex);
   const offset = useSharedValue(index * (ROW_HEIGHT + ROW_GAP));
   useEffect(() => {
     const target = index * (ROW_HEIGHT + ROW_GAP);
-    offset.value = reducedMotion ? target : withTiming(target, { duration: THUMB_MS, easing: EASE });
+    offset.value = reducedMotion ? target : withTiming(target, { duration: SEGMENTED_THUMB_MS, easing: EASE });
   }, [index, reducedMotion, offset]);
   const thumbStyle = useAnimatedStyle(() => ({ transform: [{ translateY: offset.value }] }), [offset]);
-
-  const selectedKnown = modes.some((mode) => mode.key === value);
 
   return (
     <View
@@ -158,8 +157,8 @@ const SidebarModeSwitcherComponent: React.FC<SidebarModeSwitcherProps> = ({
               right: PADDING,
               height: ROW_HEIGHT,
               borderRadius: borderRadius.full,
-              backgroundColor: theme.isDark ? n[700] : theme.colors.card,
-              boxShadow: theme.isDark ? BUTTON_SHADOW.dark : BUTTON_SHADOW.light,
+              backgroundColor: palette.segmentedThumb,
+              boxShadow: palette.segmentedThumbShadow,
             },
             thumbStyle,
           ]}

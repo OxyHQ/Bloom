@@ -480,12 +480,16 @@ const SidebarPanel: React.FC<SidebarProps> = ({
     shownItems.length === 0 && shownSecondary.length === 0 && shownFolders.length === 0 && !collapsed;
   const hasTree = !!tree;
 
+  // A fresh closure here would re-render the memoised switcher on every
+  // keystroke in the quick-search field.
+  const handleModeChange = useCallback((key: string) => onModeChange?.(key), [onModeChange]);
+
   const modeSwitcher =
     modes && modes.length > 0 ? (
       <SidebarModeSwitcher
         modes={modes}
         value={mode ?? modes[0]!.key}
-        onValueChange={(key) => onModeChange?.(key)}
+        onValueChange={handleModeChange}
         collapsed={collapsed}
         accessibilityLabel={modesLabel}
         testID={testID ? `${testID}-modes` : 'sidebar-modes'}
