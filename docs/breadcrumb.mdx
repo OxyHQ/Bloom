@@ -51,7 +51,7 @@ On web an `href` item is a real `<a href>`, so middle-click and "open in new tab
 | `BreadcrumbItem.href?` | `string` | — | Makes the item a link. |
 | `BreadcrumbItem.onPress?` | `() => void` | — | Makes the item a button (or routes an `href`). |
 | `BreadcrumbItem.current?` | `boolean` | `false` | The active page. |
-| `BreadcrumbItem.icon?` | `ComponentType<{ width, height, fill }>` | — | Leading 16px icon. |
+| `BreadcrumbItem.icon?` | `BloomIconComponent` | — | Leading 16px icon. |
 | `BreadcrumbItem.leading?` | `ReactNode` | — | A node before the icon and label, gap 6 — the dashboard trail's 20px `Avatar` (`<BreadcrumbItem leading={<Avatar size="xs" color="blue" initials="B" />} href="#">Design team</BreadcrumbItem>`). Not recoloured on hover. |
 | `BreadcrumbItem.accessibilityLabel?` | `string` | string `children` | Accessible name. |
 | `BreadcrumbItem.style?` / `textStyle?` | style | — | Overrides. |

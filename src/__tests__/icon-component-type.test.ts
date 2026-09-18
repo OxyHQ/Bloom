@@ -27,7 +27,10 @@
  *      type over those three optional props exists in `src/`, and it is
  *      `icon-component.ts`. This is an EQUALITY, not a floor: there is no
  *      allow-list to append a new family to, because appending is how the
- *      first twenty-six happened.
+ *      first twenty-six happened. The props count whether they are spelled
+ *      inline or lifted to a named `interface`/`type` in the same file — the
+ *      named form is what a twenty-seventh family reaches for once the inline
+ *      form starts failing here, so it has to fail here too.
  *
  *   2. EVERY ALIAS OF IT IS DEPRECATED. A family that exports its own name for
  *      the canonical type is keeping an old spelling alive for consumers, which
@@ -93,10 +96,10 @@ function typeName(node: ts.TypeReferenceNode): string {
   return ts.isQualifiedName(name) ? name.right.text : name.text;
 }
 
-/** Is this literal exactly the three optional props, in any order? */
-function isIconShape(literal: ts.TypeLiteralNode): boolean {
+/** Is this member list exactly the three optional props, in any order? */
+function isIconShape(members: ts.NodeArray<ts.TypeElement>): boolean {
   const seen = new Set<string>();
-  for (const member of literal.members) {
+  for (const member of members) {
     if (!ts.isPropertySignature(member) || !member.questionToken) return false;
     if (!member.name || !ts.isIdentifier(member.name)) return false;
     const expected = SHAPE[member.name.text];
@@ -104,6 +107,34 @@ function isIconShape(literal: ts.TypeLiteralNode): boolean {
     seen.add(member.name.text);
   }
   return seen.size === Object.keys(SHAPE).length;
+}
+
+/**
+ * The props of a type NAMED in this file, if that name resolves to a plain set
+ * of members here. Spelling the shape inline is one way to mint a new name for
+ * the type; lifting it to `interface FooIconProps { … }` next door and writing
+ * `ComponentType<FooIconProps>` is the other, and it is the one somebody
+ * reaches for once the inline form starts failing. An `extends` clause is left
+ * alone: what it inherits is not in this file, so the members here are not the
+ * whole shape.
+ */
+function localMembers(ast: ts.SourceFile, name: string): ts.NodeArray<ts.TypeElement> | undefined {
+  let found: ts.NodeArray<ts.TypeElement> | undefined;
+  const look = (node: ts.Node): void => {
+    if (ts.isInterfaceDeclaration(node) && node.name.text === name && !node.heritageClauses) {
+      found ??= node.members;
+    }
+    if (
+      ts.isTypeAliasDeclaration(node) &&
+      node.name.text === name &&
+      ts.isTypeLiteralNode(node.type)
+    ) {
+      found ??= node.type.members;
+    }
+    ts.forEachChild(node, look);
+  };
+  look(ast);
+  return found;
 }
 
 interface Declaration {
@@ -132,12 +163,15 @@ for (const file of sourceFiles(SRC)) {
   const walk = (node: ts.Node): void => {
     if (ts.isTypeReferenceNode(node) && COMPONENT_TYPES.has(typeName(node))) {
       const [argument] = node.typeArguments ?? [];
-      if (
-        node.typeArguments?.length === 1 &&
-        argument &&
-        ts.isTypeLiteralNode(argument) &&
-        isIconShape(argument)
-      ) {
+      const members =
+        node.typeArguments?.length === 1 && argument
+          ? ts.isTypeLiteralNode(argument)
+            ? argument.members
+            : ts.isTypeReferenceNode(argument) && !argument.typeArguments
+              ? localMembers(ast, typeName(argument))
+              : undefined
+          : undefined;
+      if (members && isIconShape(members)) {
         declarations.push({
           file: rel,
           line: at(node),
