@@ -20,7 +20,7 @@
 
 ### What it is
 
-Components, hooks and design tokens published as `@oxy.so/bloom` across 160 subpath exports, shipped as `src` for Metro and as compiled CommonJS and ESM for everyone else. Web builds resolve platform forks automatically through export conditions, so a `.web.tsx` fork never reaches a native bundle.
+Components, hooks and design tokens published as `@oxy.so/bloom` across 167 subpath exports, shipped as `src` for Metro and as compiled CommonJS and ESM for everyone else. Web builds resolve platform forks automatically through export conditions, so a `.web.tsx` fork never reaches a native bundle.
 
 Styling is NativeWind classes throughout. There are no colour props and no wrapper components to theme a button, because a second way to set a colour is a second thing that can disagree.
 
@@ -151,7 +151,7 @@ Every palette is generated from a single seed colour by a dependency free colour
 
 ## Components
 
-Bloom publishes 160 subpath exports. Importing from the subpath rather than the root keeps a bundle to what it actually renders.
+Bloom publishes 167 subpath exports. Importing from the subpath rather than the root keeps a bundle to what it actually renders.
 
 | Group | Exports |
 |---|---|
@@ -167,7 +167,7 @@ Bloom publishes 160 subpath exports. Importing from the subpath rather than the 
 | Stays and booking | `listing-card`, `listing-details`, `stay-search`, `stay-filters`, `booking`, `category-bar`, `map-marker` |
 | AI and agents | `agent-chat`, `ai-chat`, `composer-panel`, `composer-loader`, `agent-thinking`, `agent-log`, `agent-progress`, `task-list`, `web-search`, `questionnaire` |
 | Identity and media | `avatar`, `avatar-group`, `hover-card`, `user-hover-card`, `image-resolver`, `image-aspect-ratio-cache`, `zoomable-image-gallery`, `zoomable-media-gallery`, `media-flight`, `media-inset-border`, `progressive-blur`, `fill` |
-| Chat | `chat-indicators` |
+| Chat | `chat-list`, `chat-screen`, `chat-composer`, `chat-people`, `chat-indicators`, `message-bubble`, `message-media`, `call-ui` |
 | Feedback | `toast`, `notification`, `notification-center`, `announcement`, `admonition`, `loading`, `skeleton`, `error-boundary`, `badge`, `chip`, `kbd`, `code`, `link-preview`, `connection-status`, `connection-dots` |
 | Motion and assets | `motion`, `animated-check`, `icon-circle`, `radio-indicator`, `icons`, `typography`, `fonts` |
 
