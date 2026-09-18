@@ -182,6 +182,25 @@ function MessageBubbleComponent({
     onContextMenu !== undefined ||
     selected !== undefined;
 
+  /**
+   * Whether the bubble CONTAINS controls of its own.
+   *
+   * A pressable bubble is a button, and on the web a button may not contain
+   * another one: a picture, a file row, a voice note's play control, a reaction
+   * chip, a retry action and a reply quote are all buttons, so a bubble holding
+   * any of them and announcing itself as one renders invalid DOM — React logs
+   * "<button> cannot contain a nested <button>" once per bubble and the inner
+   * control's own semantics are lost. Such a bubble keeps its press handlers
+   * and its accessible name, and gives up the ROLE: it is a container that
+   * happens to be pressable, which is what it actually is.
+   */
+  const holdsControls =
+    media !== undefined ||
+    (reactions !== undefined && reactions.length > 0) ||
+    onRetry !== undefined ||
+    onPressReply !== undefined ||
+    onAddReaction !== undefined;
+
   const name =
     accessibilityLabel ??
     bubbleAccessibleName({
@@ -324,7 +343,8 @@ function MessageBubbleComponent({
 
   const bubble = interactive ? (
     <Pressable
-      role="button"
+      role={holdsControls ? undefined : 'button'}
+      accessible={holdsControls ? undefined : true}
       accessibilityLabel={name}
       aria-pressed={selected === undefined ? undefined : selected}
       accessibilityState={selected === undefined ? undefined : { selected }}

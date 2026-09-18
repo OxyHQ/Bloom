@@ -8,6 +8,7 @@
  * defect class a selectable, toggleable bubble is most exposed to.
  */
 import React from 'react';
+import { Pressable } from 'react-native';
 import { act } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
 
@@ -498,6 +499,38 @@ describe('interaction', () => {
     expect(
       [...container.querySelectorAll('[role="button"]')].map((el) => el.getAttribute('aria-label')),
     ).not.toContain('Retry sending');
+  });
+
+  it('never nests a button inside the bubble it presses', () => {
+    // A pressable bubble is a button, and the web forbids a button inside one.
+    // A bubble that holds controls of its own — media, reactions, a retry, a
+    // reply quote — therefore keeps its press and gives up the role.
+    const nested = () => [...container.querySelectorAll('[role="button"] [role="button"]')];
+
+    mount(
+      <MessageBubble
+        direction="incoming"
+        text="x"
+        media={<Pressable role="button" accessibilityLabel="Photo" />}
+        onLongPress={() => undefined}
+      />,
+    );
+    expect(nested()).toEqual([]);
+
+    mount(
+      <MessageBubble
+        direction="incoming"
+        text="x"
+        reactions={[{ emoji: '👍', count: 1 }]}
+        onToggleReaction={() => undefined}
+        onLongPress={() => undefined}
+      />,
+    );
+    expect(nested()).toEqual([]);
+
+    // A plain one is still a button, because nothing inside it competes.
+    mount(<MessageBubble direction="incoming" text="x" onLongPress={() => undefined} />);
+    expect(container.querySelector('[role="button"]')?.getAttribute('aria-label')).toContain('x');
   });
 
   it('makes the reply quote pressable only when there is somewhere to go', () => {
