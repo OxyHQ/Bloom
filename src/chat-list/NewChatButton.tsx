@@ -1,7 +1,7 @@
 import React, { memo } from 'react';
 
 import { Fab } from '../fab';
-import { RiEditBoxLine } from '../icons/remix/RiEditBoxLine';
+import { RiChatNewLine } from '../icons/remix/RiChatNewLine';
 import type { NewChatButtonProps } from './types';
 
 /**
@@ -27,7 +27,7 @@ function NewChatButtonComponent({
   return (
     <Fab
       {...rest}
-      icon={icon ?? <RiEditBoxLine />}
+      icon={icon ?? <RiChatNewLine />}
       label={extended ? accessibilityLabel : undefined}
       accessibilityLabel={accessibilityLabel}
     />
