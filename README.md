@@ -20,7 +20,7 @@
 
 ### What it is
 
-Components, hooks and design tokens published as `@oxy.so/bloom` across 167 subpath exports, shipped as `src` for Metro and as compiled CommonJS and ESM for everyone else. Web builds resolve platform forks automatically through export conditions, so a `.web.tsx` fork never reaches a native bundle.
+Components, hooks and design tokens published as `@oxy.so/bloom` across 169 subpath exports, shipped as `src` for Metro and as compiled CommonJS and ESM for everyone else. Web builds resolve platform forks automatically through export conditions, so a `.web.tsx` fork never reaches a native bundle.
 
 Styling is NativeWind classes throughout. There are no colour props and no wrapper components to theme a button, because a second way to set a colour is a second thing that can disagree.
 
@@ -151,7 +151,7 @@ Every palette is generated from a single seed colour by a dependency free colour
 
 ## Components
 
-Bloom publishes 167 subpath exports. Importing from the subpath rather than the root keeps a bundle to what it actually renders.
+Bloom publishes 169 subpath exports. Importing from the subpath rather than the root keeps a bundle to what it actually renders.
 
 | Group | Exports |
 |---|---|

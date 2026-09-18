@@ -1,4 +1,4 @@
-import React, { Fragment, memo, useMemo, useState } from 'react';
+import React, { Fragment, memo, useMemo } from 'react';
 import { Image, View, type GestureResponderEvent } from 'react-native';
 
 import { GlyphButton } from '../button';
@@ -13,8 +13,6 @@ import { RiMore2Fill } from '../icons/remix/RiMore2Fill';
 import { RiMusic2Line } from '../icons/remix/RiMusic2Line';
 import { resolvePhoto } from '../listing-card/shared';
 import { useImageResolver } from '../image-resolver/context';
-import { DISABLED_OPACITY, borderRadius } from '../styles/tokens';
-import type { WebCssStyle } from '../styles/web-view-style';
 import type { WebAriaProps } from '../styles/styled-primitives';
 import { useTheme } from '../theme/use-theme';
 import { IS_WEB, resolveTrackListPaint } from './shared';
@@ -58,23 +56,6 @@ export function TrackIconButton({
 }: TrackIconButtonProps) {
   const theme = useTheme();
   const paint = useMemo(() => resolveTrackListPaint(theme), [theme]);
-  const [hovered, setHovered] = useState(false);
-  const color =
-    pressed && activeColor
-      ? activeColor
-      : hovered && !disabled
-        ? paint.text
-        : paint.textMuted;
-  const rootStyle: WebCssStyle = {
-    width: 32,
-    height: 32,
-    borderRadius: borderRadius.full,
-    alignItems: 'center',
-    justifyContent: 'center',
-    opacity: disabled ? DISABLED_OPACITY : 1,
-    '--bloom-track-ring': paint.ring,
-  };
-  const toggle = pressed !== undefined;
   return (
     <GlyphButton
       {...aria}
