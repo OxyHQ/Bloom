@@ -30,6 +30,7 @@ import { Backdrop, OverlayRoot } from '../overlay';
 import { useTheme } from '../theme/use-theme';
 import { bloomShadowStyle } from '../design-tokens/shadows';
 import { StyledView } from '../styles/styled-primitives';
+import { SurfaceLevelProvider } from '../styles/surface-levels';
 import { Context, useDialogControl } from './context';
 import { DialogBody } from './DialogContent';
 import { DialogBottomSheet } from './DialogBottomSheet';
@@ -521,6 +522,16 @@ function SideSheet({
 
   if (!mounted) return null;
 
+  // The drawer paints the PAGE colour, so it RESETS the ambient surface for its
+  // content: anything inside it that has to be opaque in "the colour I am on"
+  // gets the drawer's, not that of whatever surface it was opened from. The
+  // sheet path is covered by `BottomSheetBase`, which publishes the same way.
+  const surfaceChildren = (
+    <SurfaceLevelProvider level={0} fill={theme.colors.background}>
+      {children}
+    </SurfaceLevelProvider>
+  );
+
   return (
     // `OverlayRoot` takes this drawer's place in the open-order overlay stack.
     // It mounts here, past the `mounted` guard, so the rank tracks OPENING.
@@ -565,10 +576,10 @@ function SideSheet({
               collapse={false}
             />
             <DialogNavBarSpacer controller={headerController} header={header} />
-            <DialogHeaderProvider controller={headerController}>{children}</DialogHeaderProvider>
+            <DialogHeaderProvider controller={headerController}>{surfaceChildren}</DialogHeaderProvider>
           </View>
         ) : (
-          <View style={{ padding: contentPadding }}>{children}</View>
+          <View style={{ padding: contentPadding }}>{surfaceChildren}</View>
         )}
       </AnimatedStyledView>
     </OverlayRoot>

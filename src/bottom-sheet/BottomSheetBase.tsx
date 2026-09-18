@@ -13,6 +13,7 @@ import {
 import { Gesture, GestureDetector, type GestureType } from 'react-native-gesture-handler';
 import { adoptStyleSheet, dropStyleSheet } from '../styles/adopt-style-sheet';
 import type { WebCssStyle } from '../styles/web-view-style';
+import { SurfaceLevelProvider, surfaceFillVars } from '../styles/surface-levels';
 import { Z_INDEX } from '../styles/z-index';
 import Animated, {
     type AnimatedStyle,
@@ -644,6 +645,17 @@ export const BottomSheetBase = forwardRef((props: BottomSheetBaseProps, ref: Rea
               }
             : undefined;
 
+    // The sheet paints the PAGE colour, so it RESETS the ambient surface for
+    // everything inside it. Without this a sheet rendered inside a `ContentPanel`
+    // — web keeps React context across a portal — would tell its content it is
+    // sitting on the panel's card, and in-sheet chrome would paint the column's
+    // colour on top of the sheet's.
+    const surfaceChildren = (
+        <SurfaceLevelProvider level={0} fill={colors.background}>
+            {children}
+        </SurfaceLevelProvider>
+    );
+
     // Inner content: scrollable wraps in Animated.ScrollView, non-scrollable
     // renders children directly. In legacy mode the scrollview is also
     // wrapped in the `nativeGesture` detector for scroll/pan coordination.
@@ -663,7 +675,7 @@ export const BottomSheetBase = forwardRef((props: BottomSheetBaseProps, ref: Rea
                 }
             }}
         >
-            {children}
+            {surfaceChildren}
         </Animated.ScrollView>
     );
 
@@ -675,7 +687,7 @@ export const BottomSheetBase = forwardRef((props: BottomSheetBaseProps, ref: Rea
             // Legacy mode: native gesture wraps the scroll view to coordinate
             // with the always-active body pan.
             : <GestureDetector gesture={nativeGesture}>{scrollViewNode}</GestureDetector>)
-        : <View style={styles.nonScrollableContent}>{children}</View>;
+        : <View style={styles.nonScrollableContent}>{surfaceChildren}</View>;
 
     return (
         <Shell visible={rendered} onRequestClose={dismiss} keyboardHeight={keyboardHeight}>
@@ -707,7 +719,17 @@ export const BottomSheetBase = forwardRef((props: BottomSheetBaseProps, ref: Rea
                 <GestureDetector gesture={panGesture}>
                     <Animated.View
                         onLayout={onLayout}
-                        style={[dynamicStyles.sheet, sheetMarginStyle, sheetStyle, sheetHeightStyle, style]}
+                        style={[
+                            dynamicStyles.sheet,
+                            // `--bloom-surface` on the element that carries the
+                            // fill — web CSS under the sheet reads the sheet's
+                            // colour, not the colour of whatever it opened over.
+                            surfaceFillVars(colors.background),
+                            sheetMarginStyle,
+                            sheetStyle,
+                            sheetHeightStyle,
+                            style,
+                        ]}
                     >
                         {backgroundComponent?.({ style: styles.background })}
 

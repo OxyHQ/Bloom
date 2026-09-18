@@ -35,10 +35,12 @@ import { type StyleProp, type ViewStyle } from 'react-native';
 
 import { useOptionalPanelChrome } from '../styles/panel-chrome';
 import { StyledView } from '../styles/styled-primitives';
+import { SurfaceLevelProvider, surfaceFillVars } from '../styles/surface-levels';
 import {
   ContentPanelNestingContext,
   useContentPanelNestingGuard,
 } from './context';
+import { usePanelSurfaceFill } from './shared';
 import type { ContentPanelFramedBreakpoint, ContentPanelProps } from './types';
 
 /**
@@ -71,6 +73,7 @@ const ContentPanelComponent: React.FC<ContentPanelProps> = ({
   framedFrom = 768,
   surfaceClassName,
   surfaceStyle,
+  surfaceColor,
   chrome = 'elevated',
   shadow,
   contentClassName,
@@ -79,6 +82,8 @@ const ContentPanelComponent: React.FC<ContentPanelProps> = ({
   // Dev-only invariant — a ContentPanel must never be nested inside another.
   useContentPanelNestingGuard();
   const panelChrome = useOptionalPanelChrome();
+  // What the panel tells its subtree it is painted in (`./shared.ts`).
+  const publishedFill = usePanelSurfaceFill(surfaceClassName, surfaceStyle, surfaceColor);
 
   // Tri-state: `undefined` → responsive (breakpoint-gated), `true` → always
   // framed, `false` → never framed (plain full-bleed). Whole literal class
@@ -105,9 +110,23 @@ const ContentPanelComponent: React.FC<ContentPanelProps> = ({
 
   return (
     <ContentPanelNestingContext.Provider value={true}>
-      <StyledView className={surfaceClass} style={[chromeStyle, surfaceStyle]}>
+      <StyledView
+        className={surfaceClass}
+        style={[
+          // The surface variable rides the element that carries the fill, so
+          // the two can never disagree. A no-op on native; the provider below
+          // is what answers there. (`styles/surface-levels.ts`.)
+          surfaceFillVars(publishedFill),
+          chromeStyle,
+          surfaceStyle,
+        ]}
+      >
         <StyledView className={contentClass} style={contentStyle}>
-          {children}
+          {/* The panel is a surface: everything inside is sitting on rung 1,
+              painted in the colour this panel actually paints. */}
+          <SurfaceLevelProvider level={1} fill={publishedFill}>
+            {children}
+          </SurfaceLevelProvider>
         </StyledView>
       </StyledView>
     </ContentPanelNestingContext.Provider>

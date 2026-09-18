@@ -18,7 +18,9 @@ import {
   select,
   resolveSurfaceLevel,
   useSurfaceLevel,
+  useSurfaceFill,
   SurfaceLevelProvider,
+  surfaceFillVars,
   surfaceFillOn,
   hairlineOn,
   surfaceTextOn,
@@ -178,13 +180,93 @@ A container that PAINTS a surface publishes it, and everything inside steps off
 the right parent without being told:
 
 ```tsx
-<SurfaceLevelProvider level={1}>{children}</SurfaceLevelProvider>
+<SurfaceLevelProvider level={1} fill={colors.card}>{children}</SurfaceLevelProvider>
 ```
 
-`FloatingPanel` (so every menu, popover, select and tooltip) and `QueuePanel` do
-this. `useSurfaceLevel()` reads the current rung's paint, `useSurfaceLevel(1)`
-the one above it, `useSurfaceFill()` just the fill. Nothing published means level
-0 — the page — which is what every unwrapped consumer already assumed.
+`ContentPanel`, `FloatingPanel` (so every menu, popover, select and tooltip),
+`QueuePanel`, and every sheet and dialog surface do this. `useSurfaceLevel()`
+reads the current rung's paint, `useSurfaceLevel(1)` the one above it,
+`useSurfaceFill()` just the fill. Nothing published means level 0 — the page —
+which is what every unwrapped consumer already assumed.
+
+An overlay that paints the page colour publishes `level={0}`, which RESETS the
+ambient surface rather than inheriting it. That matters because a portal keeps
+React context from where it was rendered: without the reset, a dialog opened
+from inside a `ContentPanel` would tell its own content it is sitting on the
+panel's card.
+
+### `fill` — the rung is a derivation, the fill is a fact
+
+A rung answers from the page down, which is all a control needs to find a
+legible step off its parent. It is not enough for the other question a surface
+gets asked — **"paint yourself the same colour as me"** — because a container
+may paint something the ladder would not have chosen. `ContentPanel` is exactly
+that: it paints `bg-card`, and in dark mode `theme.colors.card` is not rung 1
+(the rung is a computed step off the page, pinned within 1.03:1 of the menu
+surface). Chrome that took the rung would sit a visible shade off the column it
+is supposed to disappear into.
+
+So a container that knows what it painted says so, and `useSurfaceFill()`
+returns that colour verbatim. Everything derived from it — the hairline, the
+raised fill, the text rungs, `useSurfaceLevel(1)` — is then computed off the
+REAL parent, which is what the relative primitives always wanted and could not
+have while the parent was inferred. A provider with no `fill` behaves exactly as
+it did.
+
+### `useSurfaceFill()` or `colors.card`?
+
+**`colors.card` is a palette token: the colour a CARD paints.** It is the right
+answer when you are drawing a card — an object that is genuinely separate from
+what is behind it.
+
+**`useSurfaceFill()` is a question about position: the colour of the surface
+underneath you.** It is the right answer for chrome that has to be OPAQUE in its
+container's own colour and otherwise not be seen — a sticky header over a
+scrolling feed, a tab bar, a search field's backing, a reply bar pinned to the
+bottom of a column. Those are the ones that were written as `bg-card` at every
+call site, and they were only ever right for as long as the container's surface
+stayed `card`; the hook is right afterwards too, and it is right inside a sheet,
+a menu or a scoped subtree where `card` never was.
+
+### `--bloom-surface` (web), for CSS that cannot call a hook
+
+The same containers write the published fill onto the element they paint:
+
+```tsx
+<View style={[surfaceFillVars(colors.card), …]}>   {/* no-op on native */}
+```
+
+so web CSS below it can follow the surface:
+
+```css
+background-color: var(--bloom-surface, var(--background));
+```
+
+```tsx
+className="bg-[var(--bloom-surface,var(--background))]"   /* web only */
+```
+
+`SURFACE_FILL_VAR` and `SURFACE_FILL_CSS` are the exported spellings. Three
+things about it are deliberate:
+
+- **The fallback is part of the reference.** The variable exists only where a
+  container published one, so outside every surface it resolves to the page.
+- **It is never declared at `:root`.** A custom property whose value is a
+  `var()` substitutes where it is DECLARED, so a root-level
+  `--bloom-surface: var(--background)` would answer for the whole document and
+  a `BloomColorScope` subtree — which paints its own `--background` — would keep
+  reading the app-wide one. Both halves of the reference above substitute at the
+  USING element, so a scope gets its own.
+- **It is web-only, and the hook is not.** Propagating a custom property to a
+  native subtree means react-native-css's `VariableContextProvider`, i.e. the
+  `nativewind` OPTIONAL peer, and a panel's surface must not depend on whether a
+  consumer installed it. Cross-platform code reads `useSurfaceFill()`; a
+  `.web.tsx` fork or a consumer stylesheet may read the variable. A
+  `var(--bloom-surface)` class in shared code would be right on web and
+  quietly wrong on native.
+
+It is the opposite number of `--bloom-ring-offset` below: a CONTAINER publishes
+this one, a CONTROL consumes that one, and they are the same colour.
 
 ### Quiet text is not a ramp stop
 

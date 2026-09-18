@@ -27,6 +27,7 @@ import { Backdrop, OverlayRoot } from '../overlay';
 import { StyledView } from '../styles/styled-primitives';
 import { Portal } from '../portal/index.web';
 import { adoptStyleSheet } from '../styles/adopt-style-sheet';
+import { SurfaceLevelProvider, surfaceFillVars } from '../styles/surface-levels';
 import { Z_INDEX } from '../styles/z-index';
 import { WEB_POSITION_FIXED, type WebCssStyle } from '../styles/web-view-style';
 import { bloomShadowStyle } from '../design-tokens/shadows';
@@ -476,7 +477,13 @@ function DialogPanel({
       description={description}
       actions={actions}
     >
-      {children}
+      {/* The dialog paints the PAGE colour, so it RESETS the ambient surface.
+          On web a portal keeps React context from where the dialog was
+          rendered, so without this a dialog opened from inside a `ContentPanel`
+          would tell its content it is sitting on the panel's card. */}
+      <SurfaceLevelProvider level={0} fill={theme.colors.background}>
+        {children}
+      </SurfaceLevelProvider>
     </DialogBody>
   );
 
@@ -505,6 +512,10 @@ function DialogPanel({
           maxHeight: `${Math.round(heightRatio * 100)}%`,
           overflow: 'hidden',
           backgroundColor: theme.colors.background,
+          // `--bloom-surface` on the element that carries the fill, so web CSS
+          // inside the dialog reads the dialog's colour and not the colour of
+          // whatever surface it was opened over.
+          ...surfaceFillVars(theme.colors.background),
           borderWidth: 1,
           borderColor: theme.isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)',
           // Design-system overlay elevation (`shadow-m`) as a `boxShadow` — RN-Web
@@ -704,6 +715,15 @@ function SheetSurface({
     if (dismissOnBackdrop) onDismiss();
   }, [dismissOnBackdrop, onDismiss]);
 
+  // The drawer paints the PAGE colour, so it RESETS the ambient surface for its
+  // content — see `DialogPanel`'s own wrap for why a portal does not do that on
+  // its own.
+  const surfaceChildren = (
+    <SurfaceLevelProvider level={0} fill={theme.colors.background}>
+      {children}
+    </SurfaceLevelProvider>
+  );
+
   return (
     <OverlayRoot style={[sheetStyles.root, containerStyle]} className={containerClassName}>
       <Backdrop
@@ -731,6 +751,7 @@ function SheetSurface({
         className={panelClassName}
         style={[
           sheetStyles.panel,
+          surfaceFillVars(theme.colors.background),
           {
             backgroundColor: theme.colors.background,
             // Above this surface's OWN backdrop, and nothing more: `OverlayRoot`
@@ -778,7 +799,7 @@ function SheetSurface({
                   description={description}
                   actions={actions}
                 >
-                  {children}
+                  {surfaceChildren}
                 </DialogBody>
               </DialogHeaderProvider>
             </ScrollView>
@@ -792,7 +813,7 @@ function SheetSurface({
               description={description}
               actions={actions}
             >
-              {children}
+              {surfaceChildren}
             </DialogBody>
           </View>
         )}
