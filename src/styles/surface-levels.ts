@@ -324,14 +324,24 @@ export function useSurfaceLevelValue(): SurfaceLevel {
  * off that colour instead of read from the ladder: one step above a real panel
  * is a step above what the panel actually painted, not a rung that assumed a
  * different parent.
+ *
+ * Two edges, both resolved by counting the steps the CLAMPED rung actually
+ * costs rather than the delta that was asked for:
+ *
+ *  - a delta that runs off the top asks for the rung it landed on, not for more
+ *    steps than the ladder has (`level 1 + 3` is rung 3, i.e. two steps);
+ *  - a NEGATIVE delta is a question about what is BELOW the published surface,
+ *    and an exact fill says nothing about that — the ladder is the only thing
+ *    that can answer, so it does, instead of clamping to the fill and labelling
+ *    it with a rung it is not.
  */
 export function useSurfaceLevel(delta: number = 0): SurfaceLevelPaint {
   const theme = useTheme();
   const { level, fill } = useContext(SurfaceLevelContext);
   const next = Math.min(3, Math.max(0, level + delta)) as SurfaceLevel;
-  const steps = Math.max(0, delta);
+  const steps = next - level;
   return useMemo(() => {
-    if (fill === null) return resolveSurfaceLevel(theme, next);
+    if (fill === null || steps < 0) return resolveSurfaceLevel(theme, next);
     let background = fill;
     for (let i = 0; i < steps; i += 1) background = surfaceFillOn(theme, background);
     return paintOn(theme, next, background);
