@@ -25,6 +25,7 @@ import { borderRadius } from '../styles/tokens';
 import type { WebCssStyle } from '../styles/web-view-style';
 import { ThemeToggle } from '../theme-toggle';
 import { Text, TYPE_SCALE } from '../typography';
+import { SidebarSizeProvider, SIDEBAR_METRICS } from './metrics';
 import { useSidebarPalette, type SidebarPalette } from './palette';
 import { Collapsible, CollapseProvider, IS_WEB, MORPH_MS, useSidebarWebCss } from './parts';
 import { SidebarFolder } from './SidebarFolder';
@@ -40,11 +41,13 @@ import type { SidebarNavItem, SidebarProps } from './types';
 /**
  * `Sidebar` — the floating app rail, expanded or collapsed.
  *
- *   panel      260 wide expanded (p12), 52 collapsed (px7 py12 — with the 1px
- *              border that leaves exactly the 36px item column; 60/px11
- *              reads loose around a pill column), radius 24,
- *              1px border-button-white, shadow-sidebar, background-secondary;
- *              `flat` drops the chrome onto background-full
+ *   panel      `size` wide expanded (p12), its collapsed width at px7 py12 —
+ *              with the 1px border that leaves exactly the size's item column
+ *              (`metrics.ts`; `medium` is the historical 260 / 52 / 36)
+ *   surface    `card` radius 24, 1px border-button-white, shadow-sidebar,
+ *              background-secondary; `plain` drops the chrome onto
+ *              background-full; `docked` keeps the fill, squares the corners
+ *              and leaves one hairline on the inner edge, full height
  *   top        scroller (−8 margin / 8 padding, so rings and the profile pill
  *              are not clipped), gap 12: account switcher + collapse control
  *              (a column, avatar last, when collapsed), quick search, nav
@@ -63,10 +66,6 @@ import type { SidebarNavItem, SidebarProps } from './types';
  */
 
 const EASE_IN_OUT = Easing.bezier(0.4, 0, 0.2, 1);
-const EXPANDED_WIDTH = 260;
-const COLLAPSED_WIDTH = 52;
-/** Horizontal padding while collapsed: (52 − 2 × 1px border − 36px column) / 2. */
-const COLLAPSED_PADDING_X = 7;
 
 function matchesQuery(label: string, query: string): boolean {
   return label.toLocaleLowerCase().includes(query);
@@ -146,7 +145,8 @@ const SidebarPanel: React.FC<SidebarProps> = ({
   mobile = false,
   onClose,
   fluid = false,
-  flat = false,
+  surface = 'card',
+  size = 'medium',
   showThemeToggle = true,
   showSearch = true,
   searchShortcutLabel = '⌘L',
@@ -165,6 +165,7 @@ const SidebarPanel: React.FC<SidebarProps> = ({
   testID,
 }) => {
   const palette = useSidebarPalette();
+  const metrics = SIDEBAR_METRICS[size];
   useSidebarWebCss();
   const reducedMotion = useReducedMotion();
 
@@ -192,8 +193,9 @@ const SidebarPanel: React.FC<SidebarProps> = ({
   }, [collapsed, reducedMotion, progress]);
 
   // `fluid` fills its container while expanded; the morph needs a number, so
-  // the last expanded width is measured.
-  const expandedWidth = useSharedValue(EXPANDED_WIDTH);
+  // the last expanded width is measured. The collapsed end is the size's own.
+  const collapsedWidth = metrics.collapsed;
+  const expandedWidth = useSharedValue(metrics.expanded);
   const onPanelLayout = useCallback(
     (event: LayoutChangeEvent) => {
       if (fluid && !collapsed) expandedWidth.value = event.nativeEvent.layout.width;
@@ -203,8 +205,8 @@ const SidebarPanel: React.FC<SidebarProps> = ({
   const panelStyle = useAnimatedStyle(() => {
     const p = progress.value;
     if (fluid && p === 0) return { width: '100%' };
-    return { width: expandedWidth.value + (COLLAPSED_WIDTH - expandedWidth.value) * p };
-  }, [progress, expandedWidth, fluid]);
+    return { width: expandedWidth.value + (collapsedWidth - expandedWidth.value) * p };
+  }, [progress, expandedWidth, fluid, collapsedWidth]);
   const navInset = useAnimatedStyle(() => {
     const inset = 2 * (1 - progress.value);
     return { paddingLeft: inset, paddingRight: inset };
@@ -299,17 +301,29 @@ const SidebarPanel: React.FC<SidebarProps> = ({
   };
 
   // ---- chrome ------------------------------------------------------------
-  const chrome: WebCssStyle = flat
-    ? { backgroundColor: palette.flat }
-    : {
-        borderRadius: 24,
-        borderWidth: 1,
-        borderColor: palette.panelBorder,
-        backgroundColor: palette.panel,
-        boxShadow: palette.panelShadow,
-      };
+  // Three surfaces, one place. `docked` keeps the panel fill and spends its
+  // edge on ONE hairline — the side facing the content — because a column
+  // flush to the window has no other edge to draw: a border all the way round
+  // would draw two lines nobody can see and one they can.
+  const chrome: WebCssStyle =
+    surface === 'plain'
+      ? { backgroundColor: palette.flat }
+      : surface === 'docked'
+        ? {
+            backgroundColor: palette.panel,
+            borderRightWidth: 1,
+            borderRightColor: palette.dockedEdge,
+          }
+        : {
+            borderRadius: 24,
+            borderWidth: 1,
+            borderColor: palette.panelBorder,
+            backgroundColor: palette.panel,
+            boxShadow: palette.panelShadow,
+          };
 
-  const flatMobile = mobile && flat;
+  const plain = surface === 'plain';
+  const flatMobile = mobile && plain;
   const searchRing = `inset 0 0 0 2px ${palette.searchRing}`;
   const placeholder = searchPlaceholder ?? (flatMobile ? 'Search...' : 'Search navigation…');
 
@@ -492,7 +506,7 @@ const SidebarPanel: React.FC<SidebarProps> = ({
         collapsed={collapsed}
         suppressHover={suppressUserHover}
         onHoverSuppressionEnd={() => setSuppressUserHover(false)}
-        avatarBackground={flat ? palette.avatarFlat : undefined}
+        avatarBackground={plain ? palette.avatarFlat : undefined}
         testID="sidebar-account"
       />
     </View>
@@ -530,6 +544,7 @@ const SidebarPanel: React.FC<SidebarProps> = ({
   );
 
   return (
+    <SidebarSizeProvider value={size}>
     <CollapseProvider value={progress}>
       <Animated.View
         role="complementary"
@@ -543,10 +558,10 @@ const SidebarPanel: React.FC<SidebarProps> = ({
             flexDirection: 'column',
             justifyContent: 'space-between',
             overflow: 'hidden',
-            paddingTop: 12,
-            paddingBottom: 12,
-            paddingLeft: collapsed ? COLLAPSED_PADDING_X : 12,
-            paddingRight: collapsed ? COLLAPSED_PADDING_X : 12,
+            paddingTop: metrics.padding,
+            paddingBottom: metrics.padding,
+            paddingLeft: collapsed ? metrics.collapsedPaddingX : metrics.padding,
+            paddingRight: collapsed ? metrics.collapsedPaddingX : metrics.padding,
           },
           chrome,
           panelStyle,
@@ -559,7 +574,7 @@ const SidebarPanel: React.FC<SidebarProps> = ({
           <View style={{ width: '100%', minHeight: 0, flexShrink: 1, gap: 12 }}>
             {headerRow}
             {modeSwitcher}
-            {showSearch && !flat ? searchButton : null}
+            {showSearch && !flatMobile ? searchButton : null}
             <ScrollView
               {...(IS_WEB ? { dataSet: { bloomSidebarScroll: 'none' } } : {})}
               style={{ flexGrow: 0, flexShrink: 1, minHeight: 0 }}
@@ -610,7 +625,7 @@ const SidebarPanel: React.FC<SidebarProps> = ({
           {modeSwitcher}
 
           <View style={{ width: '100%', gap: 12 }}>
-            {showSearch && !flat ? searchButton : null}
+            {showSearch && !flatMobile ? searchButton : null}
             <Animated.View role="navigation" style={[{ width: '100%', gap: 4 }, navInset]}>
               {nothingMatches ? (
                 <Text
@@ -634,7 +649,7 @@ const SidebarPanel: React.FC<SidebarProps> = ({
             ) : (
               <ThemeToggle
                 appearance="sidebar-segmented"
-                style={flat ? { backgroundColor: palette.panel } : undefined}
+                style={plain ? { backgroundColor: palette.panel } : undefined}
               />
             )
           ) : null}
@@ -647,20 +662,21 @@ const SidebarPanel: React.FC<SidebarProps> = ({
             <SidebarPlanCard
               plan={plan}
               collapsed={collapsed}
-              style={flat && !collapsed ? { backgroundColor: palette.panel } : undefined}
+              style={plain && !collapsed ? { backgroundColor: palette.panel } : undefined}
               testID="sidebar-plan"
             />
           ) : team ? (
             <SidebarTeamMenu
               team={team}
               collapsed={collapsed}
-              style={flat && !collapsed ? { backgroundColor: palette.panel } : undefined}
+              style={plain && !collapsed ? { backgroundColor: palette.panel } : undefined}
               testID="sidebar-team"
             />
           ) : null}
         </View>
       </Animated.View>
     </CollapseProvider>
+    </SidebarSizeProvider>
   );
 };
 

@@ -69,7 +69,7 @@ export interface AppShellProps {
    * `variant: 'rail'`); below it, the same props drive the drawer (`mobile`,
    * and `flat` for `reveal`), always as the panel.
    */
-  sidebar?: Omit<SidebarProps, 'mobile' | 'onClose' | 'flat'>;
+  sidebar?: Omit<SidebarProps, 'mobile' | 'onClose'>;
   /**
    * How the rail arrives below `navFrom`. `reveal` slides the WHOLE page
    * sideways, which only reads on a one-column page — so it applies to

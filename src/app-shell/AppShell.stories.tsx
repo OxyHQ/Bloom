@@ -606,3 +606,62 @@ export const Focus: Story = {
     );
   },
 };
+
+/**
+ * The same engine, three apps. The shell's LAYOUT (`variant`) and the nav's
+ * IDENTITY (`sidebar.surface`, `sidebar.size`) are separate axes, and it is
+ * the pair that makes an app look like itself:
+ *
+ * - a social reader — `feed` with a `plain`, `large` nav: destinations at
+ *   arm's length, no panel edge, the page background running behind them
+ * - a workspace — `dashboard` with a `docked`, `small` nav: a column flush to
+ *   the window, one hairline, rows tuned for a long list
+ * - the product dashboard — `dashboard` with the floating `card`, unchanged
+ *
+ * Read them side by side at the same width: nothing here is a one-off style,
+ * and no app has to re-implement the shell to stop looking like the last one.
+ */
+export const Identities: Story = {
+  name: 'Three identities',
+  parameters: PAGE,
+  render: () => (
+    <View style={{ flexDirection: 'row', height: 720 }}>
+      <View style={{ flex: 1, minWidth: 0 }}>
+        <AppShell
+          testID="shell-social"
+          variant="feed"
+          scroll="container"
+          sidebar={{ ...DemoSidebar(), surface: 'plain', size: 'large', showSearch: false, showThemeToggle: false }}
+          navFrom={0}
+          title="Home"
+        >
+          <Feed count={4} />
+        </AppShell>
+      </View>
+      <View style={{ flex: 1, minWidth: 0 }}>
+        <AppShell
+          testID="shell-workspace"
+          scroll="container"
+          sidebar={{ ...DemoSidebar(), surface: 'docked', size: 'small', showSearch: false }}
+          navFrom={0}
+          title="Reports"
+        >
+          <Placeholder height={240} />
+          <Placeholder height={240} />
+        </AppShell>
+      </View>
+      <View style={{ flex: 1, minWidth: 0 }}>
+        <AppShell
+          testID="shell-product"
+          scroll="container"
+          sidebar={{ ...DemoSidebar(), showSearch: false }}
+          navFrom={0}
+          title="Overview"
+        >
+          <Placeholder height={240} />
+          <Placeholder height={240} />
+        </AppShell>
+      </View>
+    </View>
+  ),
+};

@@ -5,7 +5,8 @@ import { BloomThemeProvider } from '../theme/BloomThemeProvider';
 import { buildTheme } from '../theme/build-theme';
 import { resolveButtonRamps } from '../button/shared';
 import { RiComputerLine, RiHomeFill, RiHomeLine, RiKanbanView2, RiSearchLine, RiSettings4Line } from '../icons/remix';
-import { Sidebar, SidebarFolder, SidebarItem, SidebarModeSwitcher } from '../sidebar';
+import { Sidebar, SidebarFolder, SidebarItem, SidebarModeSwitcher, SIDEBAR_METRICS } from '../sidebar';
+import { resolveSidebarPalette } from '../sidebar/palette';
 import type { SidebarMode, SidebarNavItem, SidebarTree } from '../sidebar';
 import { pressHost } from './support/press-host';
 import { resolvedStyle } from './support/rendered-style';
@@ -40,11 +41,52 @@ describe('Sidebar', () => {
     expect(panel.paddingHorizontal).toBeUndefined();
   });
 
-  it('flat drops the panel chrome', () => {
-    const screen = renderIn(<Sidebar testID="sb" flat mobile items={ITEMS} />);
+  it('surface="plain" drops the panel chrome', () => {
+    const screen = renderIn(<Sidebar testID="sb" surface="plain" mobile items={ITEMS} />);
     const panel = resolvedStyle(screen.getByTestId('sb').props.style);
     expect(panel.borderWidth).toBeUndefined();
     expect(panel.borderRadius).toBeUndefined();
+  });
+
+  it('surface="docked" squares the corners and spends its edge on the ONE hairline facing the content', () => {
+    const screen = renderIn(<Sidebar testID="sb" surface="docked" items={ITEMS} />);
+    const panel = resolvedStyle(screen.getByTestId('sb').props.style);
+    expect(panel.borderRadius).toBeUndefined();
+    expect(panel.borderWidth).toBeUndefined();
+    expect(panel.boxShadow).toBeUndefined();
+    const light = resolveSidebarPalette(buildTheme('teal', 'light'));
+    expect(panel.borderRightWidth).toBe(1);
+    expect(panel.backgroundColor).toBe(light.panel);
+    // NOT the card's white highlight edge, which has no shadow to read against.
+    expect(panel.borderRightColor).toBe(light.dockedEdge);
+    expect(panel.borderRightColor).not.toBe(light.panelBorder);
+  });
+
+  it('size drives the row, the glyph and the panel together — and the collapsed width is the square plus the panel', () => {
+    for (const [size, expected] of [
+      ['small', { padding: 6, icon: 18, square: 30, collapsed: 46, expanded: 232 }],
+      ['medium', { padding: 8, icon: 20, square: 36, collapsed: 52, expanded: 260 }],
+      ['large', { padding: 10, icon: 24, square: 44, collapsed: 60, expanded: 300 }],
+    ] as const) {
+      const metrics = SIDEBAR_METRICS[size];
+      expect(metrics.row.padding).toBe(expected.padding);
+      expect(metrics.row.icon).toBe(expected.icon);
+      expect(metrics.row.square).toBe(expected.square);
+      expect(metrics.expanded).toBe(expected.expanded);
+      // The rail is the square plus the panel's own collapsed padding and border.
+      expect(metrics.collapsed).toBe(expected.square + metrics.collapsedPaddingX * 2 + 2);
+      expect(metrics.collapsed).toBe(expected.collapsed);
+
+      const screen = renderIn(<Sidebar testID="sb" size={size} items={ITEMS} />);
+      const row = resolvedStyle(screen.getByTestId('sidebar-item-home').props.style);
+      expect(row.padding).toBe(expected.padding);
+      screen.unmount();
+    }
+  });
+
+  it('a standalone row takes its own size, and the collapsed square follows it', () => {
+    const screen = renderIn(<SidebarItem testID="row" icon={RiHomeLine} label="Home" size="large" collapsed />);
+    expect(resolvedStyle(screen.getByTestId('row').props.style)).toMatchObject({ width: 44, padding: 10 });
   });
 
   it('selected row: named link with selected state, a solid pill and no ring', () => {

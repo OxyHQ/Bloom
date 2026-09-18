@@ -267,6 +267,18 @@ overlapping another, and no console error.
 A second column on the right of the page (`dashboard` and `feed`; `split` has
 its `info` pane instead and `focus` has no second column at all). From `asideFrom` (`xl`, 1280; or `md` / `lg`) it sits beside the content at `asideWidth` (320), pinned like the sidebar — with document scroll it is sticky and scrolls its own overflow, so give it `flex: 1` content if it should fill the height. Below the breakpoint it is stacked after the content (`asideCollapse="stack"`, the default) or dropped (`"hidden"`). Under `drawer="reveal"` it slides with the page.
 
+## The nav's identity is not the shell's layout
+
+`variant` picks the LAYOUT; `sidebar.surface` and `sidebar.size` pick what the navigation looks like. They are separate axes on purpose — the same shell carries a social reader, a workspace and a product dashboard without any of them re-implementing it:
+
+```tsx
+<AppShell variant="feed" sidebar={{ items, surface: 'plain', size: 'large' }} />     {/* a reader */}
+<AppShell sidebar={{ items, surface: 'docked', size: 'small' }} />                    {/* a workspace */}
+<AppShell sidebar={{ items }} />                                                     {/* the floating card */}
+```
+
+A `docked` nav is flush to the window: the shell drops its left and vertical padding around that column, gives up the column gap and lets the nav run the full height, because the nav's own hairline is the separator. Everything else about the shell is unchanged. The surfaces and sizes themselves are in [`Sidebar`](/docs/bloom/main/sidebar).
+
 ## Opening the drawer without a title
 
 The default header renders whenever it has something to show, and below `lg` the menu button counts — so `<AppShell sidebar={…}>` with no `title` still gets a hamburger, and nothing at all while the sidebar sits in flow.

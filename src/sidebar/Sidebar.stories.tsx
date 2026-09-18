@@ -281,7 +281,7 @@ export const Collapsed: Story = {
   ),
 };
 
-/** The drawer variants: `mobile` (close button) and `mobile flat` (search in the header). */
+/** The drawer variants: `mobile` (close button) and `mobile surface="plain"` (search in the header). */
 export const Mobile: Story = {
   render: () => (
     <Frame>
@@ -296,7 +296,7 @@ export const Mobile: Story = {
       />
       <Sidebar
         mobile
-        flat
+        surface="plain"
         items={DEMO_NAV}
         secondaryItems={DEMO_SECONDARY}
         selected="calendar"
@@ -366,7 +366,7 @@ export const Tree: Story = {
           onTreeItemPress={(item) => setSelected(item.key)}
           plan={PLAN}
         />
-        <Sidebar mobile flat items={CHAT_NAV} secondaryItems={DEMO_SECONDARY} account={DEMO_ACCOUNT} tree={REPOSITORIES} selectedTreeItem={selected} plan={PLAN} />
+        <Sidebar mobile surface="plain" items={CHAT_NAV} secondaryItems={DEMO_SECONDARY} account={DEMO_ACCOUNT} tree={REPOSITORIES} selectedTreeItem={selected} plan={PLAN} />
       </Frame>
     );
   },
@@ -424,5 +424,53 @@ export const RailItems: Story = {
       <SidebarRailItem icon={RiHomeLine} activeIcon={RiHome5Fill} label="Home" selected />
       <SidebarRailItem icon={RiNotification3Line} label="Activity" badge={<Badge content={4} />} />
     </View>
+  ),
+};
+
+/**
+ * The three SURFACES, the axis two apps differ on most: the floating `card`,
+ * the `plain` column that sits straight on the page, and the `docked` one
+ * flush to the window with a single hairline facing the content.
+ */
+export const Surfaces: Story = {
+  render: () => (
+    <Frame>
+      {(['card', 'plain', 'docked'] as const).map((surface) => (
+        <Sidebar
+          key={surface}
+          surface={surface}
+          items={DEMO_NAV}
+          secondaryItems={DEMO_SECONDARY}
+          selected="calendar"
+          account={DEMO_ACCOUNT}
+          showSearch={false}
+          testID={`sidebar-${surface}`}
+        />
+      ))}
+    </Frame>
+  ),
+};
+
+/**
+ * The three SIZES: 232 / 260 / 300 expanded, a 30 / 36 / 44 square collapsed,
+ * an 18 / 20 / 24 glyph. `large` is the destination-first rail a social app
+ * reads with at arm's length.
+ */
+export const Sizes: Story = {
+  render: () => (
+    <Frame>
+      {(['small', 'medium', 'large'] as const).map((size) => (
+        <Sidebar
+          key={size}
+          size={size}
+          items={DEMO_NAV}
+          selected="calendar"
+          account={DEMO_ACCOUNT}
+          showSearch={false}
+          showThemeToggle={false}
+          testID={`sidebar-${size}`}
+        />
+      ))}
+    </Frame>
   ),
 };
