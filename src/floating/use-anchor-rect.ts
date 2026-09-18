@@ -76,15 +76,21 @@ export function useAnchorRect(
     store(rectOf(ref.current));
   }, [ref, store]);
 
-  const schedule = useFrameThrottle(measure);
+  const [schedule, cancel] = useFrameThrottle(measure);
 
   useLayoutEffect(() => {
     if (!open) {
+      // The frame a scroll armed outlives the event that armed it, so a close
+      // has to drop it in the SAME phase it clears the box — a pass that
+      // survived would re-publish the anchor of a surface that is already gone.
+      // In the commit, not in the passive cleanup below: animation frames run
+      // before the paint that the passive effects are flushed after.
+      cancel();
       store(null);
       return;
     }
     measure();
-  }, [open, measure, store]);
+  }, [open, measure, store, cancel]);
 
   useEffect(() => {
     if (!open || typeof window === 'undefined') return;

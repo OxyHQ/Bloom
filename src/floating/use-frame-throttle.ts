@@ -23,10 +23,20 @@
  * With no frame clock at all — SSR, and jest's default `node` environment — the
  * call runs SYNCHRONOUSLY. Degrading to the previous behaviour is right where
  * degrading to nothing would leave a surface that never follows its anchor.
+ *
+ * A trailing scheduler outlives the event that armed it, so it comes with a
+ * CANCEL. A surface that closes in the gap between a scroll and that scroll's
+ * frame would otherwise be measured — and re-published — after it was told to
+ * clear itself. Callers drop the frame from the COMMIT phase (the layout effect
+ * that clears the box), not from a passive cleanup: animation frames run before
+ * the paint that passive effects are flushed after, so a cancel scheduled after
+ * the paint can be one frame too late. Unmount is handled here. Both functions
+ * are stable for the component's whole life, so an effect can depend on the pair
+ * without being re-registered.
  */
-import { useCallback, useEffect, useLayoutEffect, useRef } from 'react';
+import { useCallback, useEffect, useLayoutEffect, useMemo, useRef } from 'react';
 
-export function useFrameThrottle(run: () => void): () => void {
+export function useFrameThrottle(run: () => void): [schedule: () => void, cancel: () => void] {
   const latest = useRef(run);
   const frame = useRef<number | null>(null);
 
@@ -37,17 +47,16 @@ export function useFrameThrottle(run: () => void): () => void {
     latest.current = run;
   });
 
-  useEffect(
-    () => () => {
-      if (frame.current !== null && typeof cancelAnimationFrame === 'function') {
-        cancelAnimationFrame(frame.current);
-      }
-      frame.current = null;
-    },
-    [],
-  );
+  const cancel = useCallback(() => {
+    if (frame.current !== null && typeof cancelAnimationFrame === 'function') {
+      cancelAnimationFrame(frame.current);
+    }
+    frame.current = null;
+  }, []);
 
-  return useCallback(() => {
+  useEffect(() => cancel, [cancel]);
+
+  const schedule = useCallback(() => {
     if (typeof requestAnimationFrame !== 'function') {
       latest.current();
       return;
@@ -62,4 +71,6 @@ export function useFrameThrottle(run: () => void): () => void {
       latest.current();
     });
   }, []);
+
+  return useMemo(() => [schedule, cancel], [schedule, cancel]);
 }

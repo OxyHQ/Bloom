@@ -336,7 +336,10 @@ export function FloatingPanel({
   // Coalesced to one pass per frame: a scroll gesture dispatches a stream of
   // events (one per nested scroller, several per frame) and the browser paints
   // once between them.
-  const schedule = useFrameThrottle(resolve);
+  // No cancel needed on close: `resolve` is guarded by `phase`, so a frame that
+  // lands after the panel left `'open'` either holds the exit's position or
+  // clears a placement that is already null.
+  const [schedule] = useFrameThrottle(resolve);
 
   // Whenever an INPUT changes — the anchor moved, the side flipped, the panel
   // node arrived — the pass runs SYNCHRONOUSLY, before paint, so the surface is

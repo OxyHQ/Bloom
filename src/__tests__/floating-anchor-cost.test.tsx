@@ -141,9 +141,9 @@ describe('useAnchorRect', () => {
   let anchors: Array<FloatingAnchor | null> = [];
   let node: HTMLDivElement | null = null;
 
-  function Probe() {
+  function Probe({ open = true }: { open?: boolean }) {
     const ref = useRef<HTMLDivElement | null>(null);
-    const anchor = useAnchorRect(ref as unknown as React.RefObject<View | null>, true);
+    const anchor = useAnchorRect(ref as unknown as React.RefObject<View | null>, open);
     anchors.push(anchor);
     return (
       <div
@@ -204,6 +204,26 @@ describe('useAnchorRect', () => {
 
     expect(anchors[anchors.length - 1]).not.toBe(settled);
     expect(anchors[anchors.length - 1]).toEqual({ top: 340, bottom: 360, left: 10, right: 110 });
+  });
+
+  it('stays cleared when the surface closes with a frame already scheduled', () => {
+    mount(<Probe />);
+    expect(anchors[anchors.length - 1]).not.toBeNull();
+
+    // The gesture arms a frame...
+    scroll();
+    // ...and the surface closes before that frame runs, which is every dismissal
+    // that follows a scroll: a wheel over an outside-press layer, a menu closed
+    // by the scroll it is dismissed on.
+    mount(<Probe open={false} />);
+    expect(anchors[anchors.length - 1]).toBeNull();
+
+    frame();
+
+    // `null` until measured is the hook's whole contract, and a measurement that
+    // outlived the close would hand a closed surface a box — one the panel then
+    // resolves an exit geometry against.
+    expect(anchors[anchors.length - 1]).toBeNull();
   });
 });
 
