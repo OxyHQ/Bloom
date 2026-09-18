@@ -292,19 +292,24 @@ const AppShellComponent: React.FC<AppShellProps> = ({
   // `AppShellMenuButton` in the bar; it renders itself only when there is a
   // drawer to open.)
   const menuInHeader = drawerAvailable && !showTopBar;
+  // `header={null}` is an ANSWER, not an absence: the page says it wants no
+  // header at all (it draws its own bar, or its own nav control). `??` would
+  // have taken `null` as "nothing given" and drawn the default one under the
+  // page's own — which is how a second hamburger appeared on a phone.
   const headerNode =
-    header ??
-    (title != null || breadcrumb != null || actions != null || menuInHeader ? (
-      <AppShellHeader
-        title={title}
-        breadcrumb={breadcrumb}
-        actions={actions}
-        menuOpen={isOpen}
-        showMenu={menuInHeader}
-        onMenuPress={menuInHeader ? shell.toggleDrawer : undefined}
-        testID={testID ? `${testID}-header` : undefined}
-      />
-    ) : null);
+    header !== undefined
+      ? header
+      : title != null || breadcrumb != null || actions != null || menuInHeader ? (
+        <AppShellHeader
+          title={title}
+          breadcrumb={breadcrumb}
+          actions={actions}
+          menuOpen={isOpen}
+          showMenu={menuInHeader}
+          onMenuPress={menuInHeader ? shell.toggleDrawer : undefined}
+          testID={testID ? `${testID}-header` : undefined}
+        />
+      ) : null;
 
   const fill = fixed ? { flex: 1, minHeight: 0 } : null;
   const column = (

@@ -286,6 +286,8 @@ function MyHeader() {
 
 `AppShellMenuButton` is the same button the header uses and renders nothing while the sidebar is in flow. `useAppShell()` works anywhere inside the shell (the header, the page, the aside); `drawerAvailable` says whether there is a drawer to open right now.
 
+`header={null}` means **no header**: not the default one, and not the menu button either — the page has said it owns that corner, so it also owns getting the drawer open (`useAppShell()`, an `AppShellMenuButton` of its own). Leave `header` off to get the default.
+
 ## A fixed screen
 
 `scroll="fixed"` makes the shell exactly one screen tall (`100dvh` on web, its parent on native) and scrolls nothing: the header stays, and the content column fills the height left under it (`flex: 1`). The page owns its scrolling — a chat with a pinned composer, a map, a board:

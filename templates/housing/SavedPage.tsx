@@ -9,7 +9,7 @@ import { WishlistCard } from '../../src/listing-card';
 import { useTheme } from '../../src/theme/use-theme';
 import { Text } from '../../src/typography';
 import { SAVED_SEARCHES, TRIPS, WISHLISTS } from './data';
-import { HousingFooter, HousingFrame, HousingHeader, PageColumn, useHousingLayout, useHousingNav } from './HousingHeader';
+import { HousingFrame, HousingHeader, PageColumn, useHousingLayout, useHousingNav } from './HousingHeader';
 
 const noop = () => undefined;
 
@@ -102,7 +102,6 @@ export function SavedPage() {
           </View>
         </Section>
       </PageColumn>
-      <HousingFooter />
     </HousingFrame>
   );
 }

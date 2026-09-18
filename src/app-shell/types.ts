@@ -90,6 +90,11 @@ export interface AppShellProps {
   /**
    * Replaces the whole header. Put an `AppShellMenuButton` in it to keep the
    * drawer reachable on narrow screens.
+   *
+   * `null` means NO header — the shell draws nothing at all, not even the
+   * menu button it would otherwise render for a drawer, because the page has
+   * said it owns that corner. Leave the prop off (or `undefined`) to get the
+   * default header.
    */
   header?: ReactNode;
   /**

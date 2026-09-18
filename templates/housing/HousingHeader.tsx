@@ -1,27 +1,23 @@
-import React, { createContext, forwardRef, useContext } from 'react';
-import {
-  Platform,
-  Pressable,
-  View,
-  useWindowDimensions,
-  type PressableProps,
-  type View as RNView,
-} from 'react-native';
+import React, { createContext, useCallback, useContext, useMemo, useState } from 'react';
+import { Platform, Pressable, View, useWindowDimensions } from 'react-native';
 
+import { AppShell, useAppShell } from '../../src/app-shell';
 import { Avatar } from '../../src/avatar';
 import { Button } from '../../src/button';
 import { resolveButtonRamps } from '../../src/button/shared';
 import { Divider } from '../../src/divider';
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from '../../src/dropdown-menu';
 import { resolveMenuPalette } from '../../src/floating/menu-palette';
 import { useInteractionState } from '../../src/hooks/use-interaction-state';
-import { RiGlobalLine, RiHome4Line, RiMenuLine } from '../../src/icons/remix';
+import {
+  RiAlarmWarningLine,
+  RiBookmarkLine,
+  RiCompass3Line,
+  RiGlobalLine,
+  RiHome4Line,
+  RiMegaphoneLine,
+  RiMenuLine,
+} from '../../src/icons/remix';
+import type { SidebarNavItem } from '../../src/sidebar';
 import { BREAKPOINTS } from '../../src/styles/breakpoints';
 import { WEB_POSITION_STICKY, type WebCssStyle } from '../../src/styles/web-view-style';
 import { Z_INDEX } from '../../src/styles/z-index';
@@ -37,6 +33,14 @@ import { PEOPLE } from './data';
 export type HousingPage = 'explore' | 'rent' | 'sale' | 'stay' | 'swap' | 'my-home' | 'evictions' | 'publish' | 'saved';
 
 const NavContext = createContext<(page: HousingPage) => void>(() => {});
+const PageContext = createContext<HousingPage>('explore');
+
+/** The page being shown, so the rail can mark it. */
+export const HousingPageProvider = PageContext.Provider;
+
+export function useHousingPage() {
+  return useContext(PageContext);
+}
 
 /** The template's tiny router: pages call it to move between each other. */
 export const HousingNavProvider = NavContext.Provider;
@@ -61,19 +65,90 @@ export function useHousingLayout() {
 export const IS_WEB = Platform.OS === 'web';
 
 /**
- * The page frame: edge to edge over the preview's padding, the page
- * background, at least one viewport tall. The DOCUMENT scrolls on web.
+ * What the header's nav control does to the rail. The rail's collapsed state
+ * lives in the frame, the control lives in the page's own header, and above
+ * `lg` there is no drawer to open — so the two meet here rather than through a
+ * prop threaded down every page.
  */
-export function HousingFrame({ children, testID }: { children: React.ReactNode; testID?: string }) {
+interface HousingNavControls {
+  collapsed: boolean;
+  toggle: () => void;
+}
+
+const NavControlContext = createContext<HousingNavControls | null>(null);
+
+/**
+ * The page frame — and the app's NAVIGATION. The brand lives here, in the
+ * rail's `logo`, not in the top bar: a marketplace header that repeats the mark
+ * on every page spends its most valuable corner on something the rail already
+ * says, and below `lg` the rail becomes the drawer that same corner opens.
+ *
+ * Edge to edge over the preview's padding, the page background, the DOCUMENT
+ * scrolling on web (`AppShell`'s own mode), so the rail pins itself and the
+ * pages keep their sticky headers.
+ *
+ * `aside` is the widget column: the shell keeps it beside the page from
+ * `xl` and drops it below that, where the page needs the width more than the
+ * widgets do.
+ */
+export function HousingFrame({
+  children,
+  aside,
+  testID,
+}: {
+  children: React.ReactNode;
+  aside?: React.ReactNode;
+  testID?: string;
+}) {
   const theme = useTheme();
+  const go = useHousingNav();
+  const page = useHousingPage();
+  const [collapsed, setCollapsed] = useState(false);
+  const nav = useMemo<HousingNavControls>(
+    () => ({ collapsed, toggle: () => setCollapsed((c) => !c) }),
+    [collapsed],
+  );
   const frame: WebCssStyle = {
     ...TEMPLATE_FRAME,
     backgroundColor: theme.colors.background,
-    ...(IS_WEB ? { minHeight: '100dvh' as unknown as number } : null),
   };
+
+  const items: SidebarNavItem[] = [
+    { key: 'explore', label: 'Explore', icon: RiCompass3Line, onPress: () => go('explore') },
+    { key: 'saved', label: 'Saved', icon: RiBookmarkLine, onPress: () => go('saved') },
+    { key: 'my-home', label: 'My home', icon: RiHome4Line, onPress: () => go('my-home') },
+    { key: 'evictions', label: 'Evictions', icon: RiAlarmWarningLine, onPress: () => go('evictions') },
+  ];
+  const secondaryItems: SidebarNavItem[] = [
+    { key: 'publish', label: 'List your home', icon: RiMegaphoneLine, onPress: () => go('publish') },
+  ];
+
   return (
     <View style={frame} testID={testID}>
-      {children}
+      <AppShell
+        scroll="document"
+        // The pages draw their own top bar (search, tabs, actions), so the
+        // shell's header slot stays empty rather than stacking a second one.
+        header={null}
+        sidebar={{
+          logo: { icon: <HousingMark size={28} />, wordmark: 'Homes', onPress: () => go('explore') },
+          items,
+          secondaryItems,
+          selected: page,
+          showSearch: false,
+          collapsed,
+          onCollapsedChange: setCollapsed,
+        }}
+        aside={aside}
+        asideWidth={332}
+        // 1440, not `xl`: at 1280 the rail, a 332 column and the results left
+        // the cards a single column each — the widgets have to be free width,
+        // not width the page needed.
+        asideFrom={1440}
+        asideCollapse="hidden"
+      >
+        <NavControlContext.Provider value={nav}>{children}</NavControlContext.Provider>
+      </AppShell>
     </View>
   );
 }
@@ -136,42 +211,43 @@ export function HousingMark({ size = 32 }: { size?: number }) {
   );
 }
 
-export function HousingLogo({ wordmark = true }: { wordmark?: boolean }) {
-  const theme = useTheme();
-  const go = useHousingNav();
-  return (
-    <Pressable
-      onPress={() => go('explore')}
-      accessibilityRole="link"
-      accessibilityLabel="Homes, back to explore"
-      style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}
-      testID="housing-logo"
-    >
-      <HousingMark />
-      {wordmark ? (
-        <Text variant="title-3-semibold" style={{ color: theme.colors.text }}>
-          Homes
-        </Text>
-      ) : null}
-    </Pressable>
-  );
-}
-
 // ---------------------------------------------------------------------------
-//  Account menu
+//  The nav toggle
 // ---------------------------------------------------------------------------
 
-/** The menu-and-avatar pill. Spreads the trigger's props (`asChild`). */
-const AccountPill = forwardRef<RNView, PressableProps>(function AccountPill(props, ref) {
+/**
+ * The menu-and-avatar pill: the app's one navigation control, in the corner the
+ * mark used to sit in.
+ *
+ * It TOGGLES the rail — no menu drops out of it. Below `lg` the rail is the
+ * shell's drawer, so the pill opens and closes that (`useAppShell`);
+ * from `lg` the rail is in flow and the pill collapses it to its icons and back
+ * (`HousingFrame`'s `collapsed`). One control, one thing it does, and the
+ * destinations live in the rail it opens rather than being spelled twice.
+ */
+export function NavToggle() {
   const theme = useTheme();
   const palette = resolveMenuPalette(theme).trigger;
   const { state: hovered, onIn, onOut } = useInteractionState();
+  // Always inside `HousingFrame`'s shell, so the drawer is never a question.
+  const shell = useAppShell();
+  const nav = useContext(NavControlContext);
+
+  const drawer = shell.drawerAvailable;
+  const expanded = drawer ? shell.drawerOpen : !(nav?.collapsed ?? false);
+  const onPress = useCallback(() => {
+    if (drawer) shell.toggleDrawer();
+    else nav?.toggle();
+  }, [drawer, nav, shell]);
+
   return (
     <Pressable
-      ref={ref}
-      {...props}
+      onPress={onPress}
       onHoverIn={onIn}
       onHoverOut={onOut}
+      role="button"
+      accessibilityLabel={drawer ? 'Navigation' : 'Collapse navigation'}
+      aria-expanded={expanded}
       style={{
         flexDirection: 'row',
         alignItems: 'center',
@@ -184,35 +260,11 @@ const AccountPill = forwardRef<RNView, PressableProps>(function AccountPill(prop
         borderColor: hovered ? palette.hoverBorder : palette.border,
         backgroundColor: hovered ? palette.hoverBackground : palette.background,
       }}
+      testID="housing-nav-toggle"
     >
       <RiMenuLine width={18} height={18} fill={theme.colors.text} />
       <Avatar size="sm" source={PEOPLE.you.avatar} name={PEOPLE.you.name} />
     </Pressable>
-  );
-});
-
-export function AccountMenu() {
-  const go = useHousingNav();
-  return (
-    <DropdownMenu>
-      <DropdownMenuTrigger asChild label="Account menu">
-        <AccountPill testID="housing-account" />
-      </DropdownMenuTrigger>
-      <DropdownMenuContent align="end">
-        <DropdownMenuItem onPress={() => go('explore')}>Explore</DropdownMenuItem>
-        <DropdownMenuItem onPress={() => go('saved')}>Saved</DropdownMenuItem>
-        <DropdownMenuItem onPress={() => go('my-home')}>My home</DropdownMenuItem>
-        <DropdownMenuItem onPress={() => go('evictions')}>Evictions</DropdownMenuItem>
-        <DropdownMenuSeparator />
-        <DropdownMenuItem onPress={() => go('rent')}>Example: rental</DropdownMenuItem>
-        <DropdownMenuItem onPress={() => go('sale')}>Example: sale</DropdownMenuItem>
-        <DropdownMenuItem onPress={() => go('stay')}>Example: vacation rental</DropdownMenuItem>
-        <DropdownMenuItem onPress={() => go('swap')}>Example: swap</DropdownMenuItem>
-        <DropdownMenuSeparator />
-        <DropdownMenuItem onPress={() => go('publish')}>List your home</DropdownMenuItem>
-        <DropdownMenuItem>Log out</DropdownMenuItem>
-      </DropdownMenuContent>
-    </DropdownMenu>
   );
 }
 
@@ -226,8 +278,6 @@ function HeaderActions({ listHome = true }: { listHome?: boolean }) {
         </Button>
       ) : null}
       <Button variant="ghost" size="medium" iconOnly leadingIcon={RiGlobalLine} accessibilityLabel="Language and currency" />
-      <View style={{ width: 4 }} />
-      <AccountMenu />
     </View>
   );
 }
@@ -250,11 +300,14 @@ export interface HousingHeaderProps {
 }
 
 /**
- * The marketplace top bar. From `lg`: the mark and wordmark left, `tabs`
- * centred, "List your home" and the account pill right, and `search` on a
- * second row. Below `lg`: the mark, `compact` in the middle (or the wordmark
- * when there is none), the account pill; `compactBelow` under it. A hairline
- * closes it.
+ * The marketplace top bar. The BRAND is not here — it lives in the rail
+ * (`HousingFrame` gives every page a `Sidebar` carrying the logo), so the top
+ * bar carries only what belongs to the page.
+ *
+ * From `lg`: the nav pill left, in the corner the mark used to hold, `tabs`
+ * centred, "List your home" and the globe right, and `search` on a second row.
+ * Below `lg`: the nav pill, `compact` in the middle, the page actions;
+ * `compactBelow` under it. A hairline closes it.
  */
 export function HousingHeader({ tabs, search, compact, compactBelow, maxWidth = 1280 }: HousingHeaderProps) {
   const theme = useTheme();
@@ -268,7 +321,7 @@ export function HousingHeader({ tabs, search, compact, compactBelow, maxWidth = 
         <PageColumn maxWidth={maxWidth} style={{ paddingBottom: search ? 20 : 0 }}>
           <View style={{ height: 80, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
             <View style={{ flex: 1, alignItems: 'flex-start' }}>
-              <HousingLogo />
+              <NavToggle />
             </View>
             {tabs ? <View>{tabs}</View> : null}
             <View style={{ flex: 1, alignItems: 'flex-end' }}>
@@ -282,15 +335,13 @@ export function HousingHeader({ tabs, search, compact, compactBelow, maxWidth = 
           <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
             {compact ? (
               <>
-                {md ? <HousingLogo wordmark={false} /> : null}
+                <NavToggle />
                 <View style={{ flex: 1 }}>{compact}</View>
-                {md ? <AccountMenu /> : null}
               </>
             ) : (
               <>
-                <View style={{ flex: 1, alignItems: 'flex-start' }}>
-                  <HousingLogo />
-                </View>
+                <NavToggle />
+                <View style={{ flex: 1 }} />
                 <HeaderActions listHome={md} />
               </>
             )}
@@ -299,89 +350,6 @@ export function HousingHeader({ tabs, search, compact, compactBelow, maxWidth = 
         </PageColumn>
       )}
       <Hairline />
-    </View>
-  );
-}
-
-// ---------------------------------------------------------------------------
-//  Footer
-// ---------------------------------------------------------------------------
-
-export function HousingFooter({ maxWidth = 1280, bottomSpace = 0 }: { maxWidth?: number; bottomSpace?: number }) {
-  const theme = useTheme();
-  const { md } = useHousingLayout();
-  const { neutral } = resolveButtonRamps(theme);
-  const go = useHousingNav();
-  const columns: { title: string; links: { label: string; onPress?: () => void }[] }[] = [
-    {
-      title: 'Find a home',
-      links: [
-        { label: 'Rent', onPress: () => go('explore') },
-        { label: 'Buy', onPress: () => go('explore') },
-        { label: 'Vacation rentals', onPress: () => go('explore') },
-        { label: 'Swap', onPress: () => go('explore') },
-      ],
-    },
-    {
-      title: 'Your home',
-      links: [
-        { label: 'List your home', onPress: () => go('publish') },
-        { label: 'My home', onPress: () => go('my-home') },
-        { label: 'Saved', onPress: () => go('saved') },
-      ],
-    },
-    {
-      title: 'Community',
-      links: [{ label: 'Evictions', onPress: () => go('evictions') }, { label: 'Building reviews' }, { label: 'Tenant rights' }],
-    },
-  ];
-  return (
-    <View style={{ backgroundColor: theme.isDark ? neutral[950] : neutral[50], paddingBottom: bottomSpace }} testID="housing-footer">
-      <Hairline />
-      <PageColumn maxWidth={maxWidth} style={{ paddingTop: 32, paddingBottom: 24, gap: 24 }}>
-        <View style={{ flexDirection: md ? 'row' : 'column', gap: md ? 48 : 24 }}>
-          {columns.map((column) => (
-            <View key={column.title} style={{ flex: md ? 1 : undefined, gap: 8, alignItems: 'flex-start' }}>
-              <Text variant="body-2-semibold" style={{ color: theme.colors.text }}>
-                {column.title}
-              </Text>
-              {column.links.map((link) => (
-                <Button key={link.label} variant="link" linkTone="secondary" size="small" onPress={link.onPress}>
-                  {link.label}
-                </Button>
-              ))}
-            </View>
-          ))}
-        </View>
-        <Hairline />
-        <View
-          style={{
-            flexDirection: md ? 'row' : 'column',
-            alignItems: md ? 'center' : 'flex-start',
-            justifyContent: 'space-between',
-            gap: 8,
-          }}
-        >
-          <View style={{ flexDirection: 'row', flexWrap: 'wrap', alignItems: 'center', columnGap: 16, rowGap: 4 }}>
-            <Text variant="body-2-regular" style={{ color: theme.colors.textSecondary }}>
-              © 2026 Homes
-            </Text>
-            {['Privacy', 'Terms', 'Sitemap'].map((link) => (
-              <Button key={link} variant="link" linkTone="secondary" size="small">
-                {link}
-              </Button>
-            ))}
-          </View>
-          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 16 }}>
-            <Button variant="link" linkTone="secondary" size="small" leadingIcon={RiGlobalLine}>
-              English (GB)
-            </Button>
-            <Button variant="link" linkTone="secondary" size="small">
-              € EUR
-            </Button>
-          </View>
-        </View>
-      </PageColumn>
     </View>
   );
 }

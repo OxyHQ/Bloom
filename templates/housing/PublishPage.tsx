@@ -25,7 +25,7 @@ import { useTheme } from '../../src/theme/use-theme';
 import { Text } from '../../src/typography';
 import { WizardFooter, WizardProgress } from '../../src/wizard';
 import { PUBLISH_PHOTOS, PUBLISH_STEPS, TYPE_LABELS, bathFact, bedFact, areaFact, picsum } from './data';
-import { Hairline, HousingFrame, HousingLogo, IS_WEB, PageColumn, useHousingLayout, useHousingNav, webSticky } from './HousingHeader';
+import { Hairline, HousingFrame, IS_WEB, PageColumn, useHousingLayout, useHousingNav, webSticky } from './HousingHeader';
 
 interface Draft {
   type: PropertyType | null;
@@ -250,7 +250,9 @@ export function PublishPage({ initialStep = 0 }: { initialStep?: number }) {
     <HousingFrame testID="housing-publish">
       <View style={{ backgroundColor: theme.colors.background }}>
         <PageColumn style={{ height: 72, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
-          <HousingLogo />
+          <Text variant="title-3-semibold" style={{ color: theme.colors.text }}>
+            List your home
+          </Text>
           <Button variant="secondary" size="small" onPress={() => go('explore')} testID="housing-publish-exit">
             Save and exit
           </Button>
