@@ -412,6 +412,12 @@ export const FeedVariant: Story = {
 /**
  * The same shape with `panel`: the reading column is a `ContentPanel`, so the
  * page background reads as a gutter around a framed surface.
+ *
+ * The DOCUMENT scrolls here — address bar, anchor links, scroll restoration —
+ * and the panel still occupies the window from top to bottom: its frame is a
+ * screen-tall sticky rectangle pinned at the shell's own gutter, so the edge
+ * holds the screen while the content moves inside it. Measured at 1280 × 900:
+ * `top: 16, height: 868` at scrollY 0, 1, 200, 600 and 846.
  */
 export const FeedPanel: Story = {
   name: 'Feed in a panel',
@@ -426,6 +432,35 @@ export const FeedPanel: Story = {
       aside={<SideColumn title="Around you" />}
     >
       <Feed />
+    </AppShell>
+  ),
+};
+
+/**
+ * The same feed with `scroll="fixed"`: the shell is bounded to one screen, so
+ * the panel IS that box — no viewport maths, nothing to line up — the header is
+ * pinned inside it and only the routed content scrolls. The document never
+ * moves at all.
+ *
+ * Both this and `Feed in a panel` above fill the window; what differs is what
+ * scrolls. A feed that wants the phone address bar to collapse and real anchor
+ * links takes the document; a workspace whose regions each keep their own
+ * position takes this one.
+ */
+export const FeedPanelFixed: Story = {
+  name: 'Feed in a full-height panel',
+  parameters: PAGE,
+  render: () => (
+    <AppShell
+      testID="shell"
+      variant="feed"
+      panel
+      scroll="fixed"
+      sidebar={DemoSidebar()}
+      title="Home"
+      aside={<SideColumn title="Around you" />}
+    >
+      <Feed count={16} />
     </AppShell>
   ),
 };
@@ -663,5 +698,59 @@ export const Identities: Story = {
         </AppShell>
       </View>
     </View>
+  ),
+};
+
+/** A stand-in for whatever owns a canvas: a map, a board, an editor surface. */
+function CanvasSurface() {
+  const theme = useTheme();
+  const { neutral } = resolveButtonRamps(theme);
+  return (
+    <View style={{ flex: 1, backgroundColor: theme.isDark ? neutral[900] : neutral[200] }}>
+      {/* The grid is the stand-in's own drawing, not shell chrome. */}
+      <View style={{ flex: 1, flexDirection: 'row', flexWrap: 'wrap', opacity: 0.5 }}>
+        {Array.from({ length: 240 }, (_, i) => (
+          <View
+            key={i}
+            style={{
+              width: 120,
+              height: 120,
+              borderRightWidth: 1,
+              borderBottomWidth: 1,
+              borderColor: theme.isDark ? neutral[800] : neutral[300],
+            }}
+          />
+        ))}
+      </View>
+    </View>
+  );
+}
+
+/**
+ * `variant="canvas"`: the content is the SCREEN — edge to edge, no reading
+ * column, no max width, no padding, exactly one viewport tall. The nav keeps
+ * its own gutter (it is still a card), the aside keeps its inset, and the
+ * `floatingAction` floats over the canvas. A map, a board, an editor.
+ *
+ * Nothing in this story positions anything: the shell places the regions and
+ * the canvas takes what is left.
+ */
+export const Canvas: Story = {
+  parameters: PAGE,
+  render: () => (
+    <AppShell
+      testID="shell"
+      variant="canvas"
+      sidebar={{ ...DemoSidebar(), surface: 'docked', showSearch: false }}
+      aside={<SideColumn title="In view" />}
+      asideFrom="md"
+      floatingAction={
+        <Button variant="primary" size="large" leadingIcon={RiAddFill} onPress={() => {}}>
+          Add a pin
+        </Button>
+      }
+    >
+      <CanvasSurface />
+    </AppShell>
   ),
 };

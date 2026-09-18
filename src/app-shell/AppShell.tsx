@@ -179,11 +179,15 @@ const AppShellComponent: React.FC<AppShellProps> = ({
    */
   const drawerStyle = variant === 'dashboard' ? drawer : 'overlay';
   const centred = variant === 'feed' || variant === 'focus';
+  const canvas = variant === 'canvas';
   // `focus` is a single column by definition and `split` has its `info` pane
   // instead, so neither takes an aside in EITHER position — beside or stacked.
   const hasAside = aside != null && variant !== 'focus' && variant !== 'split';
   const asideBeside = hasAside && width >= breakpointPx(asideFrom);
-  const asideStacked = hasAside && !asideBeside && asideCollapse === 'stack';
+  // A canvas has no scrolling column to stack an aside into — the screen IS the
+  // canvas — so below `asideFrom` the aside is dropped whatever `asideCollapse`
+  // says, rather than being rendered where nothing can reach it.
+  const asideStacked = hasAside && !asideBeside && asideCollapse === 'stack' && !canvas;
 
   const reducedMotion = useReducedMotion();
   const [open, setOpen] = useControllableState<boolean>({
@@ -451,6 +455,16 @@ const AppShellComponent: React.FC<AppShellProps> = ({
     );
   }
 
+  // A `panel` only FILLS when the shell was ASKED to bound it — `fixed` or
+  // `container`. With document scroll the page itself is the scroller and there
+  // is no height to fill, so the panel keeps growing with its content (and the
+  // frame is its own box, which is what stops it drifting under scroll).
+  //
+  // The test is the PROP, not the resolved mode: native resolves `document` to
+  // `container` because it has no document, and a page that asked for document
+  // scroll still wants its header to travel with the content there.
+  const panelFills = panel === true && scroll !== 'document' && mode !== 'document';
+
   // ---- the page region, per variant ---------------------------------------
   /** `feed` / `focus`: a fixed reading column, centred in what the nav leaves. */
   const centredBody = (
@@ -480,6 +494,33 @@ const AppShellComponent: React.FC<AppShellProps> = ({
           doc ? null : { alignSelf: 'stretch' },
         ]}
       >
+        {panelFills ? (
+          // A panel in a BOUNDED shell is the height of the screen and scrolls
+          // its own content: that is what makes it read as a panel — it reaches
+          // the bottom and closes there, like the rail beside it — instead of
+          // an open-ended column whose bottom edge is somewhere past the fold.
+          // The header is pinned inside it and only the routed content moves.
+          <ContentPanel
+            framedFrom={framedFrom}
+            fill
+            // The panel's box already IS the visible area here, so the frame is
+            // that box — no viewport maths, nothing to line up.
+            overlaySizing="panel"
+            surfaceStyle={{ flexGrow: 1, flexShrink: 1, flexBasis: 'auto', minHeight: 0 }}
+            contentStyle={{ flexGrow: 1, flexShrink: 1, flexBasis: 'auto', minHeight: 0 }}
+          >
+            <View style={{ flex: 1, minHeight: 0, padding: gutter, gap: 16 }}>
+              {headerNode}
+              <ScrollView
+                testID={testID ? `${testID}-page` : undefined}
+                style={{ flex: 1, minHeight: 0 }}
+                contentContainerStyle={{ gap: 16, paddingBottom: contentReserve }}
+              >
+                {children}
+              </ScrollView>
+            </View>
+          </ContentPanel>
+        ) : (
         <Scroller
           mode={mode}
           testID={testID ? `${testID}-page` : undefined}
@@ -489,6 +530,11 @@ const AppShellComponent: React.FC<AppShellProps> = ({
           {panel ? (
             <ContentPanel
               framedFrom={framedFrom}
+              // The sticky frame is pinned at the shell's OWN gutter, which is
+              // exactly where the panel starts. Left at the 8px default it
+              // would sit 8px above the panel's real top edge and snap down on
+              // the first scroll — the panel appearing to breathe.
+              overlayInset={gutter}
               // The panel's own `flex-1` (basis 0) would collapse to nothing in
               // a document-flow column, which has no free space to distribute.
               surfaceStyle={{ flexGrow: 1, flexShrink: 1, flexBasis: 'auto' }}
@@ -515,6 +561,7 @@ const AppShellComponent: React.FC<AppShellProps> = ({
           )}
           {asideStacked ? <View testID={testID ? `${testID}-aside` : undefined}>{aside}</View> : null}
         </Scroller>
+        )}
       </View>
       {asideColumn({})}
     </View>
@@ -574,7 +621,40 @@ const AppShellComponent: React.FC<AppShellProps> = ({
     </>
   );
 
-  const body = variant === 'split' ? splitBody : centred ? centredBody : dashboardBody;
+  /**
+   * `canvas`: the content IS the screen. One area, edge to edge — no reading
+   * column, no max width, no padding — with the header (if any) above it in
+   * flow, because a toolbar over a map belongs to the map. The `topBar`,
+   * `bottomBar`, `floatingAction` and `overlay` slots float over it as they do
+   * everywhere else, which is how a canvas gets its chrome without the canvas
+   * giving up its area.
+   *
+   * The shell's own padding moves OUT of the row and onto the regions here
+   * (below), so the nav is still a card with a gutter around it while the
+   * canvas runs to the window's edge. No negative margins: each region states
+   * its own inset.
+   */
+  const canvasBody = (
+    <>
+      <View
+        testID={testID ? `${testID}-page` : undefined}
+        style={{ flex: 1, minWidth: 0, minHeight: 0, backgroundColor: background }}
+      >
+        {headerNode}
+        <View style={{ flex: 1, minHeight: 0, minWidth: 0 }}>{children}</View>
+      </View>
+      {asideColumn(canvas ? { padding: gutter, paddingLeft: 0 } : {})}
+    </>
+  );
+
+  const body =
+    variant === 'split'
+      ? splitBody
+      : canvas
+        ? canvasBody
+        : centred
+          ? centredBody
+          : dashboardBody;
 
   // A DOCKED nav is flush to the window: it takes the shell's whole height and
   // its own hairline is the separator, so the shell gives up its left and
@@ -584,6 +664,11 @@ const AppShellComponent: React.FC<AppShellProps> = ({
     navInFlow && flowSidebar ? (
       doc ? (
         <View style={stickyRail(dockedNav ? 0 : gutter)}>
+          <Sidebar {...flowSidebar} />
+        </View>
+      ) : canvas && !dockedNav ? (
+        // The canvas row has no padding of its own, so the nav states its.
+        <View style={{ padding: gutter, paddingRight: 0, flexShrink: 0 }}>
           <Sidebar {...flowSidebar} />
         </View>
       ) : (
@@ -615,8 +700,10 @@ const AppShellComponent: React.FC<AppShellProps> = ({
 
   const rowStyle: WebCssStyle = {
     flexDirection: 'row',
-    gap: dockedNav ? 0 : columnGap,
-    padding: gutter,
+    gap: dockedNav || canvas ? 0 : columnGap,
+    // A canvas runs to the window's edge, so the row keeps no padding at all
+    // and each region carries its own (the nav below, the aside in `canvasBody`).
+    padding: canvas ? 0 : gutter,
     ...(dockedNav ? { paddingLeft: 0, paddingTop: 0, paddingBottom: 0 } : null),
     backgroundColor: background,
   };

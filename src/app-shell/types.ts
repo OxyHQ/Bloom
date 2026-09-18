@@ -32,8 +32,14 @@ export type AppShellDrawer = 'overlay' | 'reveal';
  * - `focus` — a single centred column of `contentWidth` and NO nav: sign-in,
  *   onboarding, a reader. It keeps the header, `topBar`, `bottomBar` and
  *   `floatingAction` slots, so a sign-up flow still gets its footer CTA.
+ * - `canvas` — the content is the SCREEN: one edge-to-edge area with no reading
+ *   column, no max width and no padding, exactly one viewport tall, and the
+ *   chrome floats over it. A map, a board, an editor, a photo viewer. Each
+ *   region keeps its own inset (the nav is still a card with a gutter around
+ *   it) so only the canvas runs to the edge. Like `split`, it never scrolls the
+ *   document — the canvas owns its own panning and zooming.
  */
-export type AppShellVariant = 'dashboard' | 'feed' | 'split' | 'focus';
+export type AppShellVariant = 'dashboard' | 'feed' | 'split' | 'focus' | 'canvas';
 
 /** Which single pane a `split` shell shows below `splitFrom`. */
 export type AppShellPane = 'list' | 'detail' | 'info';
@@ -108,7 +114,11 @@ export interface AppShellProps {
   asideWidth?: number;
   /** The breakpoint the aside sits beside the content from. Defaults to `xl` (1280). */
   asideFrom?: AppShellBreakpoint;
-  /** Below `asideFrom`: `stack` (default) renders it after the content, `hidden` drops it. */
+  /**
+   * Below `asideFrom`: `stack` (default) renders it after the content, `hidden`
+   * drops it. `canvas` always drops it — the screen is the canvas, so there is
+   * no column underneath to stack into.
+   */
   asideCollapse?: 'stack' | 'hidden';
   children?: ReactNode;
   /** The content column's max width. Defaults to 1300. */

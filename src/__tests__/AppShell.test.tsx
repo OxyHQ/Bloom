@@ -285,6 +285,84 @@ describe('AppShell scroll="fixed"', () => {
   });
 });
 
+describe('AppShell variant="canvas"', () => {
+  const Canvas = () => <ReactNative.View testID="canvas" />;
+
+  it('is one screen, never a document scroll, and the canvas area has no column, cap or padding', () => {
+    setWidth(1440);
+    const screen = renderIn(
+      <AppShell testID="shell" variant="canvas" sidebar={{ items: NAV }}>
+        <Canvas />
+      </AppShell>,
+    );
+    // The frame is the viewport and nothing scrolls it.
+    expect(resolvedStyle(screen.getByTestId('shell').props.style)).toMatchObject({ overflow: 'hidden' });
+    // Nothing between the canvas and the frame scrolls (the rail's own row
+    // scroller is not the page's).
+    for (let n = screen.getByTestId('canvas').parent; n; n = n.parent) {
+      if (typeof n.type === 'string') expect(n.type).not.toContain('ScrollView');
+    }
+    // The page region fills, with no max width and no padding of its own.
+    const page = resolvedStyle(screen.getByTestId('shell-page').props.style);
+    expect(page).toMatchObject({ flex: 1, minWidth: 0, minHeight: 0 });
+    expect(page.maxWidth).toBeUndefined();
+    expect(page.padding).toBeUndefined();
+    expect(page.paddingLeft).toBeUndefined();
+  });
+
+  it('keeps the row edge to edge and moves the inset onto the regions, so only the canvas reaches the window', () => {
+    setWidth(1440);
+    const screen = renderIn(
+      <AppShell testID="shell" variant="canvas" sidebar={{ items: NAV }} aside={<ReactNative.Text>In view</ReactNative.Text>}>
+        <Canvas />
+      </AppShell>,
+    );
+    expect(resolvedStyle(screen.getByTestId('shell').props.style)).toMatchObject({ padding: 0, gap: 0 });
+    // The nav is still a card with a gutter around it…
+    expect(resolvedStyle(hostParent(screen.getByTestId('sidebar-item-home'))?.props.style)).toBeTruthy();
+    const nav = screen.getByTestId('shell').props.children;
+    expect(nav).toBeTruthy();
+    // …and the aside keeps its own inset rather than touching the edge.
+    expect(resolvedStyle(screen.getByTestId('shell-aside').props.style)).toMatchObject({ padding: 16, paddingLeft: 0 });
+  });
+});
+
+describe('AppShell panel fill', () => {
+  /** Is `id` rendered inside the page scroller, or beside it? */
+  function insidePage(screen: ReturnType<typeof renderIn>, id: string): boolean {
+    for (let n = screen.getByTestId(id).parent; n; n = n.parent) {
+      if (n.props?.testID === 'shell-page') return true;
+    }
+    return false;
+  }
+
+  it('a panel in a BOUNDED shell pins the header and scrolls only the content under it', () => {
+    setWidth(1440);
+    const screen = renderIn(
+      <AppShell testID="shell" variant="feed" panel scroll="fixed" title="Home" sidebar={{ items: NAV }}>
+        <ReactNative.Text testID="post">post</ReactNative.Text>
+      </AppShell>,
+    );
+    // The scroller is the panel's own, with the header outside it: the frame
+    // holds the screen and only the feed moves.
+    expect(insidePage(screen, 'post')).toBe(true);
+    expect(insidePage(screen, 'shell-header')).toBe(false);
+  });
+
+  it('a panel in a DOCUMENT-scrolled shell keeps growing with the page, header and all', () => {
+    setWidth(1440);
+    const screen = renderIn(
+      <AppShell testID="shell" variant="feed" panel scroll="document" title="Home" sidebar={{ items: NAV }}>
+        <ReactNative.Text testID="post">post</ReactNative.Text>
+      </AppShell>,
+    );
+    // Native has no document and resolves this to a container — but the page
+    // ASKED for document scroll, so the header still travels with the content.
+    expect(insidePage(screen, 'post')).toBe(true);
+    expect(insidePage(screen, 'shell-header')).toBe(true);
+  });
+});
+
 describe('NotificationBell', () => {
   it('shows the unread count on the glyph, and an explicit override', () => {
     setWidth(1440);

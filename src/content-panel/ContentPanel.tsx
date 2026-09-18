@@ -71,6 +71,7 @@ const ContentPanelComponent: React.FC<ContentPanelProps> = ({
   children,
   framed,
   framedFrom = 768,
+  fill = false,
   surfaceClassName,
   surfaceStyle,
   surfaceColor,
@@ -97,7 +98,7 @@ const ContentPanelComponent: React.FC<ContentPanelProps> = ({
       : framed
         ? 'flex-1 overflow-hidden rounded-radius-28 border border-border'
         : 'flex-1';
-  const surfaceClass = [surfaceBase, surfaceClassName ?? 'bg-card'].join(' ');
+  const surfaceClass = [surfaceBase, fill ? 'min-h-0' : '', surfaceClassName ?? 'bg-card'].filter(Boolean).join(' ');
   // Native has no overlays: the surface itself carries the edge. `none` drops
   // both, `border` keeps the class-drawn hairline, `elevated` adds the lift.
   const chromeStyle =
@@ -106,7 +107,12 @@ const ContentPanelComponent: React.FC<ContentPanelProps> = ({
       : shadow || panelChrome
         ? { boxShadow: shadow ?? panelChrome?.shadow }
         : null;
-  const contentClass = ['flex-1', contentClassName].filter(Boolean).join(' ');
+  // `fill` is the panel's own height contract, and on native it is already
+  // met: both boxes are `flex: 1`, so in a bounded parent the panel reaches the
+  // bottom and a list inside it scrolls within it. What the prop adds here is
+  // `min-h-0`, so a tall child cannot push the panel past the box it was given
+  // — the same automatic-minimum-size trap as on web.
+  const contentClass = ['flex-1', fill ? 'min-h-0' : '', contentClassName].filter(Boolean).join(' ');
 
   return (
     <ContentPanelNestingContext.Provider value={true}>

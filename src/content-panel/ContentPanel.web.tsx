@@ -148,6 +148,7 @@ const ContentPanelComponent: React.FC<ContentPanelProps> = ({
   children,
   framed,
   framedFrom = 768,
+  fill = false,
   surfaceClassName,
   surfaceStyle,
   surfaceColor,
@@ -157,8 +158,8 @@ const ContentPanelComponent: React.FC<ContentPanelProps> = ({
   chrome = 'elevated',
   shadow,
   maskColor,
-  overlaySizing = 'panel',
-  overlayTopOffset,
+  overlaySizing = 'viewport',
+  overlayInset,
 }) => {
   // Dev-only invariant — must run unconditionally (before deriving any
   // mode-specific branch) so the hook order stays stable (rules of hooks).
@@ -194,6 +195,15 @@ const ContentPanelComponent: React.FC<ContentPanelProps> = ({
     : framed
       ? 'flex-1 rounded-radius-28 web:overflow-x-clip'
       : 'flex-1';
+  // `fill`: the panel takes the height its parent gives it and the CONTENT
+  // scrolls inside. `min-h-0` on both boxes is the whole trick — a flex child's
+  // automatic minimum size is its content, so without it the panel grows past
+  // the box it was told to fit and the scroller never gets a height to scroll
+  // against. The overflow goes on the content wrapper, never the surface: the
+  // surface is what the frame and the mask are drawn to, and a scrolling
+  // surface would scroll the edge with it.
+  const fillSurface = fill ? 'min-h-0' : '';
+  const fillContent = fill ? 'min-h-0 web:[overflow-y:auto]' : '';
   // `overlaySizing="panel"`: the surface becomes a single-cell CSS Grid so the
   // overlays and the content wrapper below can all be placed in that ONE cell
   // (`web:[grid-area:1/1]`) and each fill it exactly — `minmax(0,1fr)` (not
@@ -204,32 +214,36 @@ const ContentPanelComponent: React.FC<ContentPanelProps> = ({
   const gridStackClass = boundToPanel
     ? 'web:grid web:[grid-template-columns:minmax(0,1fr)] web:[grid-template-rows:minmax(0,1fr)]'
     : '';
-  const surfaceClass = [surfaceBase, gridStackClass, surfaceClassName ?? 'bg-card'].filter(Boolean).join(' ');
-  const contentClass = [contentBase, boundToPanel ? 'web:[grid-area:1/1]' : '', contentClassName]
+  const surfaceClass = [surfaceBase, fillSurface, gridStackClass, surfaceClassName ?? 'bg-card'].filter(Boolean).join(' ');
+  const contentClass = [contentBase, fillContent, boundToPanel ? 'web:[grid-area:1/1]' : '', contentClassName]
     .filter(Boolean)
     .join(' ');
 
-  // `overlayTopOffset`: the viewport-mode overlays are sized/positioned from
-  // literal Tailwind classes (`top-2`, `h-[calc(100dvh-16px)]`, a matching
-  // negative `margin-bottom`) because those values are constants known at
-  // build time. An offset is a runtime number (a consumer's measured header
-  // height), which a Tailwind arbitrary class can't express — content-scanning
-  // needs the literal class string in source, not a value computed later — so
-  // this shifts the same three properties via inline `style` instead, which
-  // has no such constraint. No-op in `panel` mode (already starts at the
-  // panel's own box) and when unset (0/undefined) — the className values are
-  // left standing on their own in both of those cases.
+  // The viewport-mode overlays are sized and positioned from literal Tailwind
+  // classes (`top-2`, `h-[calc(100dvh-16px)]`, the matching negative
+  // `margin-bottom`) because those values are constants known at build time.
+  // An INSET is a runtime number — a shell's gutter, a measured header — which
+  // a Tailwind arbitrary class cannot express (content-scanning needs the
+  // literal string in source, not a value computed later), so a non-default
+  // inset shifts the same three properties through inline `style` instead,
+  // which has no such constraint. The default (8/8) leaves the classes standing
+  // alone, and `panel` mode ignores the inset entirely — that mode already
+  // starts at the panel's own box.
+  //
   // RN's `ViewStyle.height`/`marginBottom` types only accept a number or a
-  // `${number}%` string (not an arbitrary CSS `calc()` string), because most
-  // of this type is shared with native, where `calc()` doesn't exist. This
-  // file is web-only, where it's a real, valid CSS value react-native-web
-  // passes straight through — the same reasoning `WebViewStyle`/`asViewStyle`
-  // document in OxyHQ/Mention's `types/webStyles.ts` for the identical need.
-  const topOffsetStyle = !boundToPanel && overlayTopOffset
+  // `${number}%` string, not an arbitrary CSS `calc()`, because most of that
+  // type is shared with native where `calc()` does not exist. This file is
+  // web-only, where it is a real value react-native-web passes straight
+  // through.
+  const insetTop = typeof overlayInset === 'number' ? overlayInset : (overlayInset?.top ?? PANEL_TOP_INSET);
+  const insetBottom =
+    typeof overlayInset === 'number' ? overlayInset : (overlayInset?.bottom ?? PANEL_BOTTOM_INSET);
+  const customInset = insetTop !== PANEL_TOP_INSET || insetBottom !== PANEL_BOTTOM_INSET;
+  const insetStyle = !boundToPanel && customInset
     ? ({
-        top: 8 + overlayTopOffset,
-        height: `calc(100dvh - ${16 + overlayTopOffset}px)`,
-        marginBottom: `calc(-100dvh + ${16 + overlayTopOffset}px)`,
+        top: insetTop,
+        height: `calc(100dvh - ${insetTop + insetBottom}px)`,
+        marginBottom: `calc(-100dvh + ${insetTop + insetBottom}px)`,
       } as unknown as ViewStyle)
     : undefined;
 
@@ -261,7 +275,7 @@ const ContentPanelComponent: React.FC<ContentPanelProps> = ({
                   ? `web:sticky web:top-2 z-30 h-[calc(100dvh-16px)] w-full rounded-radius-28 ${bp.overlayHidden} web:[margin-bottom:calc(-100dvh+16px)] web:[clip-path:inset(-12px)]`
                   : 'web:sticky web:top-2 z-30 h-[calc(100dvh-16px)] w-full rounded-radius-28 web:[margin-bottom:calc(-100dvh+16px)] web:[clip-path:inset(-12px)]'
             }
-            style={{ ...topOffsetStyle, boxShadow: `0 0 0 ${GUTTER_MASK_SPREAD}px ${maskColor ?? colors.background}` }}
+            style={{ ...insetStyle, boxShadow: `0 0 0 ${GUTTER_MASK_SPREAD}px ${maskColor ?? colors.background}` }}
           />
         )}
         {/* (2) Border-frame overlay — one continuous rounded border, above all.
@@ -274,7 +288,7 @@ const ContentPanelComponent: React.FC<ContentPanelProps> = ({
             // The shadow rides the SAME element as the hairline, so the lift and
             // the edge can never disagree about where the panel ends. It paints
             // outward, into the gutter the page background shows.
-            style={[topOffsetStyle, chrome === 'elevated' && (shadow || panelChrome)
+            style={[insetStyle, chrome === 'elevated' && (shadow || panelChrome)
                 ? { boxShadow: shadow ?? panelChrome?.shadow }
                 : null]}
             className={
