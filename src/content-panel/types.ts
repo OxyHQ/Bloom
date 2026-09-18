@@ -55,6 +55,22 @@ export interface ContentPanelProps {
   /** Override the surface background utility (defaults to `bg-card`). */
   surfaceClassName?: string;
   surfaceStyle?: StyleProp<ViewStyle>;
+  /**
+   * The colour this panel paints, when `surfaceClassName` has repainted it.
+   *
+   * The panel PUBLISHES its fill to everything inside it — `useSurfaceFill()`
+   * and, on web, `var(--bloom-surface)` — so in-panel chrome that has to be
+   * opaque in the panel's own colour (a sticky header, a tab rail, a reply bar)
+   * can ask instead of repeating a class. By default that colour is
+   * `theme.colors.card`, which is what the panel paints.
+   *
+   * A `surfaceClassName` override is a utility Bloom cannot resolve to a colour,
+   * so the panel stops claiming to know one rather than publishing a wrong
+   * answer — this prop is how the override says what it painted, and it is
+   * needed only then. It changes nothing about how the panel LOOKS: the class
+   * still paints the surface.
+   */
+  surfaceColor?: string;
   /** Extra utilities for the inner content wrapper. */
   contentClassName?: string;
   contentStyle?: StyleProp<ViewStyle>;

@@ -88,11 +88,13 @@ import { type StyleProp, type ViewStyle } from 'react-native';
 import { StyledView } from '../styles/styled-primitives';
 
 import { useOptionalPanelChrome } from '../styles/panel-chrome';
+import { SurfaceLevelProvider, surfaceFillVars } from '../styles/surface-levels';
 import { useTheme } from '../theme/use-theme';
 import {
   ContentPanelNestingContext,
   useContentPanelNestingGuard,
 } from './context';
+import { usePanelSurfaceFill } from './shared';
 import type { ContentPanelFramedBreakpoint, ContentPanelProps } from './types';
 
 /** Width (in px) of the sticky gutter-mask box-shadow ring. */
@@ -148,6 +150,7 @@ const ContentPanelComponent: React.FC<ContentPanelProps> = ({
   framedFrom = 768,
   surfaceClassName,
   surfaceStyle,
+  surfaceColor,
   contentClassName,
   contentStyle,
   showStickyFrame,
@@ -165,6 +168,8 @@ const ContentPanelComponent: React.FC<ContentPanelProps> = ({
   // own surface long before it had a shadow, so it must not start throwing
   // outside a provider.
   const panelChrome = useOptionalPanelChrome();
+  // What the panel tells its subtree it is painted in (`./shared.ts`).
+  const publishedFill = usePanelSurfaceFill(surfaceClassName, surfaceColor);
 
   // Tri-state: `undefined` → responsive (md:-gated), `true` → always framed,
   // `false` → never framed (full-bleed).
@@ -230,7 +235,17 @@ const ContentPanelComponent: React.FC<ContentPanelProps> = ({
 
   return (
     <ContentPanelNestingContext.Provider value={true}>
-      <StyledView testID="content-panel-surface" className={surfaceClass} style={surfaceStyle}>
+      <StyledView
+        testID="content-panel-surface"
+        className={surfaceClass}
+        style={[
+          // `--bloom-surface` rides the element that carries the fill, so CSS
+          // below the panel and `useSurfaceFill()` below the panel cannot
+          // disagree about what the panel painted.
+          surfaceFillVars(publishedFill),
+          surfaceStyle,
+        ]}
+      >
         {/* (1) Bleed-mask overlay — gutter box-shadow ring, below chrome. Not
             rendered when never-framed; `max-md:hidden` (display:none <md) when
             responsive, so the breakpoint is decided in CSS, not by remounting. */}
@@ -276,7 +291,11 @@ const ContentPanelComponent: React.FC<ContentPanelProps> = ({
             scroll/virtualizer + refetch on a breakpoint cross). Clipped to the
             rounded panel shape on web when framed. */}
         <StyledView key="content" testID="content-panel-content" className={contentClass} style={contentStyle}>
-          {children}
+          {/* The panel is a surface: everything inside is sitting on rung 1,
+              painted in the colour this panel actually paints. */}
+          <SurfaceLevelProvider level={1} fill={publishedFill}>
+            {children}
+          </SurfaceLevelProvider>
         </StyledView>
       </StyledView>
     </ContentPanelNestingContext.Provider>

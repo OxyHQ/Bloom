@@ -48,6 +48,7 @@ the shadow is what makes it a panel lifted off it.
 | `framedFrom`       | the breakpoint it starts framing at — `500` `640` `768` `1024` |
 | `showStickyFrame`  | whether the frame persists behind sticky content           |
 | `surfaceStyle` / `surfaceClassName` | the surface itself                        |
+| `surfaceColor`     | what the panel tells its content it is painted in — only when `surfaceClassName` repainted it |
 | `contentStyle` / `contentClassName` | the column inside it                      |
 | `maskColor`        | the colour the gutter mask fades to                        |
 | `overlaySizing`     | (web) how the mask/border overlays size themselves — see below |
@@ -101,6 +102,51 @@ Two columns side by side are two panels as **siblings**:
 ```
 
 A screen picks one panel per column; the sections inside it are plain views.
+
+## The panel says what colour it is, so chrome does not have to guess
+
+A panel is the surface a screen sits on, which makes it the thing in-panel
+chrome keeps asking about: a sticky header that has to be **opaque** over the
+scrolling column, a tab rail, a search field's backing, a reply bar pinned to
+the bottom. Each one only ever wanted "be the colour of the surface I am on",
+and the only way to say that used to be to repeat the panel's own `bg-card` at
+the call site — which turns one decision about the panel's surface into a sweep
+through every screen the next time it changes. Mention carries ~65 of those.
+
+So the panel publishes it. Anything inside reads it:
+
+```tsx
+import { useSurfaceFill } from '@oxy.so/bloom/styles';
+
+function StickyReplyBar() {
+  const surface = useSurfaceFill();          // the panel's fill — `colors.card`
+  return <View style={{ backgroundColor: surface }}>…</View>;
+}
+```
+
+`useSurfaceFill()` is the cross-platform answer and the one to reach for.
+[`styles`](/docs/bloom/main/styles#surface-levels) has the rest of the model:
+the rung the panel publishes with it (`1`), the derived hairline and text rungs,
+and `--bloom-surface`, the web variable the panel writes on the element it
+paints so a stylesheet can follow the surface too.
+
+Two things are worth knowing here:
+
+- **It is the panel's REAL fill, not a rung.** `theme.colors.card` is not rung 1
+  in dark mode — the rung is a computed step off the page — and chrome that took
+  the rung would sit a visible shade off the column it is supposed to vanish
+  into. The panel publishes the fact.
+- **`surfaceClassName` makes the panel stop claiming to know.** The override is
+  a utility Bloom cannot resolve to a colour, so the panel falls back to
+  publishing the rung alone rather than a confident wrong answer.
+  `surfaceColor` is how that caller gets the exact answer back:
+
+```tsx
+<ContentPanel surfaceClassName="bg-background" surfaceColor={colors.background} />
+```
+
+`surfaceColor` changes nothing about how the panel looks — the class still
+paints it. It only decides what the panel tells its content.
 
 ## Do not put a Card immediately inside a framed panel
 
