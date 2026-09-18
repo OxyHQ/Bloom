@@ -52,6 +52,28 @@ export interface ContentPanelProps {
    * For an app that wants its own elevation without giving up the hairline.
    */
   shadow?: string;
+  /**
+   * The panel is the HEIGHT OF THE SPACE IT IS GIVEN, and its content scrolls
+   * inside it — instead of the panel growing with its content while the page
+   * scrolls underneath.
+   *
+   * This is what makes a framed column read as a panel: it reaches the bottom
+   * of the screen and closes there, the way the rail beside it does. Without
+   * it, a feed taller than the window gives a panel whose top edge you see and
+   * whose bottom edge is somewhere past the fold — an open-ended column, not a
+   * surface.
+   *
+   * It needs a parent that BOUNDS it (a flex column with a real height): an
+   * `AppShell` with `scroll="fixed"` or `scroll="container"`, or any screen
+   * that is `flex: 1`. In a document-scrolled page there is no height to fill
+   * and the panel keeps growing with its content — that page wants
+   * `scroll="document"`, not this prop.
+   *
+   * On web the content wrapper becomes the scroller. On native the panel and
+   * its content are already `flex: 1`, so a `FlatList`/`ScrollView` inside
+   * fills the panel and scrolls within it.
+   */
+  fill?: boolean;
   /** Override the surface background utility (defaults to `bg-card`). */
   surfaceClassName?: string;
   surfaceStyle?: StyleProp<ViewStyle>;
@@ -89,52 +111,38 @@ export interface ContentPanelProps {
    */
   maskColor?: string;
   /**
-   * How the WEB overlays (bleed-mask, border-frame) size themselves. No-op on
-   * native (there are no overlays to size).
-   * - `'viewport'` (DEFAULT) — sized to the dynamic viewport height (`100dvh`)
-   *   and `position: sticky`-pinned, so they read as a constant frame around
-   *   the visible slice of a panel whose own DOM height can exceed one screen
-   *   — the document-scroll case (e.g. a feed whose page grows with content).
-   *   Requires the panel to sit in a document that actually scrolls; see
-   *   `ContentPanel.web.tsx`'s doc comment.
-   * - `'panel'` — sized to the panel's own real box via CSS Grid layer-
-   *   stacking (the overlays and the content wrapper all occupy the same
-   *   grid cell) instead of viewport math. The right mode for a consumer
-   *   whose own shell already bounds the panel's height (no document
-   *   scroll — a fixed app shell with its own internal scroll containers),
-   *   where anything the consumer places outside the panel (e.g. a header
-   *   above it) must never be overlapped by an overlay sized to the whole
-   *   viewport.
-   */
-  /**
-   * DEFAULT `'panel'`. The edge describes the panel's OWN box, so it scrolls
-   * with the content like any other border: on a page taller than the screen
-   * you see the two side edges while scrolling and the rounded corners at the
-   * ends, which is what a long framed column looks like.
+   * How the WEB overlays (the bleed-mask and the border frame) size themselves.
+   * No-op on native (there are no overlays to size).
    *
-   * `'viewport'` is the older behaviour: the frame is a screen-tall sticky
-   * rectangle, so a rounded top and bottom edge follow the viewport down the
-   * page. It reads as the panel breathing — the frame holds still while the
-   * content moves inside it, and it jumps 8px on the first scroll — which is
-   * why it is no longer the default. It remains for a consumer that wants that
-   * constant frame.
+   * - `'viewport'` (DEFAULT) — the frame is a SCREEN-TALL sticky rectangle:
+   *   `100dvh` minus the insets, pinned at `overlayInset`. The panel's own box
+   *   grows with its content and the document scrolls it, while the edge stays
+   *   where the screen is — so the panel reads as a surface that occupies the
+   *   window from top to bottom and the content moves inside it. This is the
+   *   mode for a page that scrolls the document.
+   * - `'panel'` — the overlays are the panel's OWN box, through CSS Grid
+   *   layer-stacking (the overlays and the content wrapper share one grid
+   *   cell). The right mode when the panel's box already IS the visible area
+   *   (`fill`, inside a shell that bounds it) or when something the consumer
+   *   placed outside the panel — a header above it — must never be painted
+   *   over by an overlay sized to the whole viewport.
    */
   overlaySizing?: 'viewport' | 'panel';
   /**
-   * Pixels of REAL, persistent chrome the consumer has placed above the panel
-   * — outside it, in normal document flow — that the viewport-mode overlays
-   * (`overlaySizing="viewport"`, the default) do not otherwise know about.
-   * No-op when `overlaySizing="panel"` (that mode already starts at the
-   * panel's own box, wherever that is) and on native (no overlays there).
+   * The gap between the VIEWPORT's edge and the sticky frame, in `'viewport'`
+   * mode. Default 8.
    *
-   * The overlays are sized/positioned off the VIEWPORT (`top: 8px`,
-   * `height: calc(100dvh - 16px)`) on the assumption that the panel begins
-   * near the true top of the screen. A consumer with its own sticky chrome
-   * above the panel (a header, say, kept sticky-pinned the same way) shifts
-   * where the panel visually starts without moving the panel's own DOM
-   * position, so the overlays would still read from viewport 0 and paint
-   * over that chrome. This shifts their `top` down and shrinks their height
-   * by the same amount, so they begin exactly where the panel visually does.
+   * **It must equal the distance from the top of the screen to the panel's own
+   * top edge.** Sticky positioning leaves an element at its static position
+   * until scrolling would push it past the inset — so a panel that starts 16px
+   * down the page with an 8px inset draws its frame at 16, then SNAPS it to 8
+   * on the first scroll. That 8px jump is the whole bug, and it reads as the
+   * panel breathing. A shell passes its own gutter here.
+   *
+   * Takes a pair when the top and the bottom differ — persistent chrome above
+   * the panel (a sticky header the consumer keeps outside it) shifts where the
+   * panel visually starts without moving its DOM position, so the frame has to
+   * start lower without also ending higher.
    */
-  overlayTopOffset?: number;
+  overlayInset?: number | { top: number; bottom: number };
 }

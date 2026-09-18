@@ -32,29 +32,19 @@ function classesFor(tree: unknown, testID: string): string {
   return classNamesOn(host.props.style).join(' ');
 }
 
-describe('ContentPanel.web overlaySizing default (panel)', () => {
-  it('sizes the overlays to the panel\'s own box when overlaySizing is omitted', () => {
+describe('ContentPanel.web overlaySizing default (viewport)', () => {
+  it('pins a screen-tall frame when overlaySizing is omitted, so the panel occupies the window while its content moves', () => {
     const { toJSON } = renderPanel(
       <ContentPanel framed>
         <Text>content</Text>
       </ContentPanel>,
     );
-    // The frame is the panel's own rectangle, so it scrolls with the content
-    // instead of holding still while the content moves inside it.
     const tree = toJSON();
     const mask = classesFor(tree, 'content-panel-bleed-mask');
-    expect(mask).not.toContain('web:sticky');
-    expect(mask).toContain('web:[grid-area:1/1]');
-    expect(classesFor(tree, 'content-panel-surface')).toContain('web:grid');
-  });
-
-  it('keeps sticky sizing even when overlaySizing="viewport" is passed explicitly', () => {
-    const { toJSON } = renderPanel(
-      <ContentPanel framed overlaySizing="viewport">
-        <Text>content</Text>
-      </ContentPanel>,
-    );
-    expect(classesFor(toJSON(), 'content-panel-border-frame')).toContain('web:sticky');
+    expect(mask).toContain('web:sticky');
+    expect(mask).toContain('h-[calc(100dvh-16px)]');
+    expect(mask).not.toContain('web:[grid-area:1/1]');
+    expect(classesFor(tree, 'content-panel-border-frame')).toContain('web:sticky');
   });
 });
 
@@ -144,25 +134,68 @@ describe('ContentPanel.web overlaySizing="panel"', () => {
   });
 });
 
-describe('ContentPanel.web overlayTopOffset', () => {
-  it('shifts the viewport-mode overlays down by the offset, shrinking height and margin to match', () => {
+describe('ContentPanel.web fill', () => {
+  it('clamps both boxes so the panel can be the height it was given, and makes the CONTENT the scroller', () => {
     const { toJSON } = renderPanel(
-      <ContentPanel framed overlaySizing="viewport" overlayTopOffset={64}>
+      <ContentPanel framed fill>
+        <Text>content</Text>
+      </ContentPanel>,
+    );
+    const tree = toJSON();
+    const surface = classesFor(tree, 'content-panel-surface');
+    const content = classesFor(tree, 'content-panel-content');
+    // `min-h-0` on both: a flex child's automatic minimum size is its content,
+    // so without it the panel grows past the box it was told to fit.
+    expect(surface).toContain('min-h-0');
+    expect(content).toContain('min-h-0');
+    // The overflow goes on the content, never the surface — the surface is what
+    // the frame and mask are drawn to, and a scrolling surface takes the edge
+    // with it.
+    expect(content).toContain('web:[overflow-y:auto]');
+    expect(surface).not.toContain('overflow-y');
+  });
+
+  it('is off by default — the panel grows with its content', () => {
+    const { toJSON } = renderPanel(
+      <ContentPanel framed>
+        <Text>content</Text>
+      </ContentPanel>,
+    );
+    const tree = toJSON();
+    expect(classesFor(tree, 'content-panel-surface')).not.toContain('min-h-0');
+    expect(classesFor(tree, 'content-panel-content')).not.toContain('web:[overflow-y:auto]');
+  });
+});
+
+describe('ContentPanel.web overlayInset', () => {
+  it('pins the frame at the inset it is given, top and bottom, so it starts where the panel really starts', () => {
+    const { toJSON } = renderPanel(
+      <ContentPanel framed overlayInset={16}>
         <Text>content</Text>
       </ContentPanel>,
     );
     const tree = toJSON();
     const mask = resolvedStyle(findHost(tree, 'content-panel-bleed-mask')?.props.style);
-    expect(mask.top).toBe(72); // 8 + 64
-    expect(mask.height).toBe('calc(100dvh - 80px)'); // 16 + 64
-    expect(mask.marginBottom).toBe('calc(-100dvh + 80px)');
-    const border = resolvedStyle(findHost(tree, 'content-panel-border-frame')?.props.style);
-    expect(border.top).toBe(72);
+    expect(mask.top).toBe(16);
+    expect(mask.height).toBe('calc(100dvh - 32px)');
+    expect(mask.marginBottom).toBe('calc(-100dvh + 32px)');
+    expect(resolvedStyle(findHost(tree, 'content-panel-border-frame')?.props.style).top).toBe(16);
   });
 
-  it('is a no-op when unset — the className-driven base values stand alone', () => {
+  it('takes a PAIR when chrome above the panel shifts where it visually starts', () => {
     const { toJSON } = renderPanel(
-      <ContentPanel framed overlaySizing="viewport">
+      <ContentPanel framed overlayInset={{ top: 72, bottom: 8 }}>
+        <Text>content</Text>
+      </ContentPanel>,
+    );
+    const mask = resolvedStyle(findHost(toJSON(), 'content-panel-bleed-mask')?.props.style);
+    expect(mask.top).toBe(72);
+    expect(mask.height).toBe('calc(100dvh - 80px)');
+  });
+
+  it('is a no-op at the default 8 — the className values stand alone', () => {
+    const { toJSON } = renderPanel(
+      <ContentPanel framed overlayInset={8}>
         <Text>content</Text>
       </ContentPanel>,
     );
@@ -173,7 +206,7 @@ describe('ContentPanel.web overlayTopOffset', () => {
 
   it('is a no-op in panel mode — that mode already starts at the panel\'s own box', () => {
     const { toJSON } = renderPanel(
-      <ContentPanel framed overlaySizing="panel" overlayTopOffset={64}>
+      <ContentPanel framed overlaySizing="panel" overlayInset={64}>
         <Text>content</Text>
       </ContentPanel>,
     );

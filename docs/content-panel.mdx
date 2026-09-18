@@ -51,28 +51,48 @@ the shadow is what makes it a panel lifted off it.
 | `surfaceColor`     | what the panel tells its content it is painted in — only when `surfaceClassName`/`surfaceStyle` repainted it |
 | `contentStyle` / `contentClassName` | the column inside it                      |
 | `maskColor`        | the colour the gutter mask fades to                        |
-| `overlaySizing`     | (web) how the mask/border overlays size themselves — see below |
+| `overlaySizing`     | (web) the screen's frame (default) or the panel's own box — see below |
+| `overlayInset`      | (web) where that sticky frame pins — match your layout's gutter |
+| `fill`              | the panel is the height it is given; its content scrolls inside |
 
-## `overlaySizing`: the panel's own box, or a constant frame
+## `overlaySizing`: the screen's frame, or the panel's own box
 
 The web overlays (the border frame and the gutter bleed-mask) default to
-**`overlaySizing="panel"`**: sized to the panel's own real box through CSS Grid
-layer-stacking. The edge behaves like any other border — it scrolls with the
-content, you see the two side edges while reading and the rounded corners at the
-ends of the page.
+**`overlaySizing="viewport"`**: a screen-tall sticky rectangle, `100dvh` minus
+the insets. The panel's own box grows with its content and the document scrolls
+it, while the edge stays where the screen is — so the panel occupies the window
+from top to bottom and the content moves inside it. That is what makes a
+document-scrolled column read as a surface rather than as an open-ended strip
+whose bottom edge is somewhere past the fold.
 
-`overlaySizing="viewport"` is the other mode: the overlays are `100dvh` and
-`position: sticky`-pinned, so a rounded top and bottom edge follow the viewport
-down the page. It was the default until it was measured against a long feed: the
-frame holds still while the content moves inside it and it jumps 8px on the
-first scroll, which reads as the panel breathing. It remains for a consumer that
-wants that constant frame — and it is also the mode `overlayTopOffset` exists
-for.
+**`overlayInset` has to match where the panel really starts.** Sticky
+positioning leaves an element at its static position until scrolling would push
+it past the inset, so a panel that begins 16px down the page with the default
+8px inset draws its frame at 16 and then SNAPS it to 8 on the first scroll. That
+8px jump is what "the panel moves when I scroll" is. Pass the gutter your
+layout uses:
 
-Panel mode is additionally the right answer whenever the consumer's OWN shell
-bounds the panel (a fixed app shell with internal scroll containers): a
-viewport-sized overlay there paints over anything placed outside the panel, such
-as a header above it.
+```tsx
+<View style={{ padding: 16 }}>
+  <ContentPanel framed overlayInset={16}>{page}</ContentPanel>
+</View>
+```
+
+`AppShell` passes its own `gutter` for you. Measured in Chrome at 1280 × 900,
+`variant="feed" panel`: the frame reports `top: 16, height: 868` at scrollY 0,
+1, 200, 600 and 846 — the same rectangle at every one — while the surface
+behind it moves from 16 to −830.
+
+An inset PAIR (`{ top, bottom }`) is for persistent chrome the consumer keeps
+outside the panel: a sticky header above it shifts where the panel visually
+starts without moving its DOM position, so the frame starts lower without also
+ending higher.
+
+`overlaySizing="panel"` is the other mode: the overlays are the panel's own box,
+through CSS Grid layer-stacking. Use it when the panel's box already IS the
+visible area (`fill`, below) or when something placed outside the panel must
+never be painted over by an overlay sized to the whole viewport — a bounded app
+shell with its own internal scrollers.
 
 ```tsx
 <View style={{ flex: 1 }}>
@@ -82,6 +102,32 @@ as a header above it.
   </ContentPanel>
 </View>
 ```
+
+## `fill`: a panel that reaches the bottom
+
+```tsx
+<AppShell scroll="fixed">        {/* something has to bound it */}
+  <ContentPanel framed fill>
+    <FlatList … />                {/* scrolls INSIDE the panel */}
+  </ContentPanel>
+</AppShell>
+```
+
+By default the panel grows with its content and the page scrolls: on a feed
+taller than the window you see the panel's top edge and its bottom edge is
+somewhere past the fold — an open-ended column, not a surface.
+
+`fill` makes the panel the height of the space it is given, with its content
+scrolling inside it. It closes at the bottom of the screen, the way the
+[`Sidebar`](/docs/bloom/main/sidebar) beside it does, and the frame never moves
+because the frame IS that box.
+
+It needs a parent that bounds it — an `AppShell` with `scroll="fixed"` or
+`scroll="container"` (which passes `fill` for you when you ask for `panel`), or
+any screen that is `flex: 1`. In a document-scrolled page there is no height to
+fill and the panel keeps growing; that page wants `scroll="document"`, not this
+prop. On web the content wrapper becomes the scroller; on native the panel is
+already `flex: 1`, so a `FlatList` inside fills it and scrolls within it.
 
 ## `framedFrom` is why the branch is not in your screen
 

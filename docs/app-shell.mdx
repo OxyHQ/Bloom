@@ -1,6 +1,6 @@
 ---
 title: AppShell
-description: Page frame with four layout variants, the sidebar and a responsive drawer, pinned top/bottom/floating slots, a breadcrumb + title header, a notification bell and a floating Pro offer card.
+description: Page frame with five layout variants, the sidebar and a responsive drawer, pinned top/bottom/floating slots, a breadcrumb + title header, a notification bell and a floating Pro offer card.
 order: 83
 ---
 
@@ -27,9 +27,9 @@ import { AppShell, NotificationBell, ProOfferCard } from '@oxy.so/bloom/app-shel
 
 ## Variants
 
-One engine, four shapes. `variant` picks the shape; everything else — the nav,
+One engine, five shapes. `variant` picks the shape; everything else — the nav,
 the drawer, the pinned regions, the slots, the sizes — works the same in all
-four.
+five.
 
 | `variant` | The page | Scroll |
 | --- | --- | --- |
@@ -37,6 +37,7 @@ four.
 | `feed` | nav + a `contentWidth` reading column CENTRED in what the nav leaves, optional `aside` beside it, optionally in a `ContentPanel` | `document` / `container` / `fixed` |
 | `split` | a list pane, a detail pane and an optional info pane, each scrolling on its own, with a draggable divider | always one screen |
 | `focus` | one centred `contentWidth` column and NO nav | `document` / `container` / `fixed` |
+| `canvas` | ONE edge-to-edge area — no column, no cap, no padding — with the chrome floating over it | always one screen |
 
 `dashboard` is what this component always was, unchanged to the pixel — the
 existing stories render byte-identically against the version before variants
@@ -62,11 +63,58 @@ aside at `y = 16` while the content moved from `16` to `-390`.
 
 `panel` wraps the centre column in a [`ContentPanel`](/docs/bloom/main/content-panel),
 so the page background reads as a gutter around a framed surface; `framedFrom`
-is forwarded. The panel's content is inset by `gutter` — without it the page sits
+is forwarded.
+
+**The panel occupies the screen either way — what differs is what scrolls.**
+
+- `scroll="document"` (the default): the page scrolls, and the panel's frame is
+  a screen-tall sticky rectangle pinned at the shell's own `gutter`, so the
+  panel reads as a surface filling the window while the content moves inside
+  it. Measured in Chrome at 1280 × 900: the frame reports `top: 16, height: 868`
+  at scrollY 0, 1, 200, 600 and 846 — the same rectangle every time — while the
+  content behind it travels from 16 to −830. (The inset is what makes that
+  true: at the 8px default the frame would sit above the panel's real top edge
+  and snap down on the first scroll.)
+- `scroll="fixed"` / `"container"`: the shell bounds the panel, so the panel IS
+  the box — it closes at the bottom like the rail beside it, the header is
+  pinned inside it, and only the routed content scrolls, under the frame. The
+  document never moves at all.
+
+Both are right; they are different apps. A feed with the address bar collapsing
+on a phone and real anchor links wants `document`; a workspace whose regions
+each keep their own position wants `fixed`. The panel's content is inset by `gutter` — without it the page sits
 ON the frame, and a radius-28 corner clips whatever is in it (the heading loses
 its first letter). So `contentWidth` is the COLUMN's width, and the reading
 measure inside a panel is that minus two gutters. Do not render your own
 `ContentPanel` inside this one; it trips the nesting guard.
+
+### `canvas`
+
+```tsx
+<AppShell
+  variant="canvas"
+  sidebar={{ ...sidebar, surface: 'docked' }}
+  aside={<PlacesInView />}
+  floatingAction={<Button variant="primary" leadingIcon={RiAddFill}>Add a pin</Button>}
+>
+  <Map />
+</AppShell>
+```
+
+The content **is** the screen: one area, edge to edge, no reading column, no max
+width, no padding, exactly one viewport tall. A map, a board, an editor, a photo
+viewer. The header (if you pass one) sits above it in flow, because a toolbar
+over a map belongs to the map; `topBar`, `bottomBar`, `floatingAction` and
+`overlay` float over it as everywhere else.
+
+The shell's padding moves OUT of the row and onto the regions, so the nav is
+still a card with a gutter around it and the aside keeps its inset while the
+canvas alone runs to the window's edge — no negative margins anywhere: each
+region states its own inset.
+
+**`canvas` never scrolls the document**, for the same reason `split` doesn't: a
+canvas that grew the page would pan the page instead of the canvas.
+`scroll="document"` resolves to `fixed`, `scroll="container"` is honoured.
 
 ### `split`
 
@@ -266,6 +314,44 @@ overlapping another, and no console error.
 
 A second column on the right of the page (`dashboard` and `feed`; `split` has
 its `info` pane instead and `focus` has no second column at all). From `asideFrom` (`xl`, 1280; or `md` / `lg`) it sits beside the content at `asideWidth` (320), pinned like the sidebar — with document scroll it is sticky and scrolls its own overflow, so give it `flex: 1` content if it should fill the height. Below the breakpoint it is stacked after the content (`asideCollapse="stack"`, the default) or dropped (`"hidden"`). Under `drawer="reveal"` it slides with the page.
+
+## Eight shells, one component
+
+The shape (`variant`), what scrolls (`scroll`), whether the column is a panel
+(`panel`) and the nav's own look (`sidebar.surface` / `sidebar.size`) are
+independent. That is the point: an app picks a row from this table and does not
+look like the app that picked the row above it.
+
+| The app | variant | scroll | nav |
+| --- | --- | --- | --- |
+| Product dashboard | `dashboard` | `document` | `card`, `medium` |
+| Social reader | `feed` + `panel` | `fixed` | `plain`, `large` |
+| Long-form feed | `feed` | `document` | `card`, `medium` |
+| Workspace (channels, files) | `dashboard` | `fixed` | `docked`, `small` |
+| Messenger | `split` | one screen | `docked`, `small` |
+| Map / board / editor | `canvas` | one screen | `docked`, `medium` |
+| Marketplace | `dashboard`, no `sidebar`, `topBar` `always` | `document` | — |
+| Sign-in, onboarding, reader | `focus` | `document` | none |
+
+```tsx
+// Social reader: a framed column that fills the screen, a nav with no edge.
+<AppShell variant="feed" panel scroll="fixed" sidebar={{ items, surface: 'plain', size: 'large' }} title="Home">
+  {feed}
+</AppShell>
+
+// Workspace: a column flush to the window, the page bounded, its own scrollers.
+<AppShell scroll="fixed" sidebar={{ items, surface: 'docked', size: 'small' }} title="Reports">
+  {report}
+</AppShell>
+
+// Marketplace: no rail at all — the navigation is the bar across the top.
+<AppShell topBar={<MarketHeader />} topBarVisibility="always" contentMaxWidth={1280}>
+  {results}
+</AppShell>
+```
+
+The stories **Three identities**, **Feed in a full-height panel** and **Canvas**
+render three of these side by side with nothing positioned by hand.
 
 ## The nav's identity is not the shell's layout
 
