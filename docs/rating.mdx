@@ -1,13 +1,13 @@
 ---
 title: Rating
-description: A compact star, value and review count, and the bar for a rating breakdown.
+description: A compact star, value and review count, the bar for a rating breakdown, and the star picker a review form is written with.
 order: 61
 ---
 
 # Rating
 
 ```tsx
-import { Rating, RatingBar } from '@oxy.so/bloom/rating';
+import { Rating, RatingBar, RatingInput } from '@oxy.so/bloom/rating';
 
 <Rating value={4.92} count={128} />                        // ★ 4.92 (128)
 <Rating value={4.81} count={214} countStyle="reviews" />   // ★ 4.81 · 214 reviews
@@ -15,7 +15,12 @@ import { Rating, RatingBar } from '@oxy.so/bloom/rating';
 
 <RatingBar label="Cleanliness" value={4.9} display="4.9" />
 <RatingBar label="5" labelWidth={12} value={0.86} max={1} display="86%" />
+
+const [stars, setStars] = useState<number | null>(null);
+<RatingInput value={stars} onChange={setStars} accessibilityLabel="Overall rating" />
 ```
+
+`Rating` shows a rating that exists; `RatingInput` is how one comes to exist.
 
 ## `Rating`
 
@@ -53,3 +58,48 @@ measurement — and a rating breakdown is not a chart: the rows do not encode
 different categories by colour, they all say "how good is this, out of 5". It is
 a `progressbar` carrying `aria-valuemin`, `aria-valuemax`, `aria-valuenow` and
 `aria-valuetext` (from `display`).
+
+## `RatingInput`
+
+The picker for a review form. Fully controlled: `value` is `1..max` or `null`
+while nothing is chosen, and `onChange` fires with the star that was chosen.
+
+| prop                 | decides                                                                                      |
+| -------------------- | -------------------------------------------------------------------------------------------- |
+| `value`              | the chosen rating, or `null` for nothing chosen yet                                          |
+| `onChange`           | called with the chosen rating; never called with the value already chosen                    |
+| `max`                | how many stars, default `5`                                                                  |
+| `size`               | `'small'` (24px star), `'medium'` (default, 32) or `'large'` (40)                            |
+| `disabled`           | no press, no keyboard, the group at `DISABLED_OPACITY`                                       |
+| `accessibilityLabel` | **required** — the name of what is being rated ("Overall rating")                            |
+| `formatStarLabel`    | each star's own name, default `"1 star"` / `"4 stars"` — translate it                        |
+| `style`, `testID`    | `testID` derives `-star-<n>`                                                                  |
+
+Chosen stars fill with the ACCENT, the rest are `RiStarLine` outlines in the
+neutral ramp — the same reasoning as [`RatingBar`](#ratingbar)'s fill: a chosen
+star is an answer somebody gave, and text-primary reads as ink rather than as
+one. Under a pointer the stars up to the hovered one fill as a preview, which
+never touches `value`.
+
+### Operating it without a mouse
+
+The group is a `radiogroup` named by `accessibilityLabel`, holding one `radio`
+per star named by `formatStarLabel`. Exactly one of N is what a rating IS, so
+`radio` is the role rather than a `slider` — and it is the only one that gives
+each star its own touch target and its own name to announce.
+
+The tab stop roves: the chosen star is the one in the tab order, or the first
+star while nothing is chosen, so one Tab reaches the group either way. Inside
+it, ArrowRight/ArrowUp, ArrowLeft/ArrowDown, Home and End move **and** choose,
+which is how an ARIA radio group behaves. The focus ring is drawn on the star.
+
+### No half stars, and no clearing
+
+Half a star doubles the keyboard stops and halves the target — 16px of a 32px
+star, under any touch floor — and the icon set has no half-star glyph, so the
+state could not be drawn honestly either. `Rating` still DISPLAYS fractional
+values (`4.92`): a display has no target and no keyboard.
+
+Clearing is left out for the reason re-choosing a [`Radio`](/docs/radio) is a
+no-op — a radio has no "off". A form that has no rating yet holds `null`; it
+does not need the group to express a state it cannot draw.

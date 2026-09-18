@@ -32,6 +32,39 @@ export interface RatingProps {
   testID?: string;
 }
 
+/** `small` is a 24px star, `medium` (default) 32, `large` 40. */
+export type RatingInputSize = 'small' | 'medium' | 'large';
+
+export interface RatingInputProps {
+  /**
+   * The chosen rating, `1..max`, or `null` while nothing is chosen. Fully
+   * controlled — the component keeps no value of its own.
+   */
+  value: number | null;
+  /** Called with the chosen rating. Never called with the value already chosen. */
+  onChange: (value: number) => void;
+  /** How many stars. Default `5`. */
+  max?: number;
+  /** Default `medium`. */
+  size?: RatingInputSize;
+  /** Disables the whole group: no press, no keyboard, dimmed. */
+  disabled?: boolean;
+  /**
+   * The NAME of what is being rated ("Overall rating", "Cleanliness").
+   * Required: the group draws nothing but stars, so nothing else can tell a
+   * screen reader which of several ratings this one is.
+   */
+  accessibilityLabel: string;
+  /**
+   * Each star's own name, which is English by default (`"1 star"`,
+   * `"4 stars"`). Pass a translated formatter.
+   */
+  formatStarLabel?: (value: number, max: number) => string;
+  style?: StyleProp<ViewStyle>;
+  /** Derives `-star-<n>` for each star. */
+  testID?: string;
+}
+
 export interface RatingBarProps {
   /** What the row measures ("Cleanliness", "5 stars"). Also the bar's accessible name. */
   label: string;
