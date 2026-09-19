@@ -59,6 +59,7 @@ import type {
   SelectTriggerProps,
   SelectValueProps,
 } from './types';
+import { useFieldMembership } from '../field/membership';
 
 /** The trigger's `offset={4}`. */
 const SELECT_OFFSET = 4;
@@ -209,7 +210,12 @@ export function SelectTrigger({
 }: SelectTriggerProps) {
   const ctx = useSelectContext();
   const palette = useMenuPalette();
-  const isDisabled = disabled === true || ctx.disabled === true;
+  // The trigger IS the select's control — see the native fork.
+  const membership = useFieldMembership({
+    accessibilityLabel: label,
+    disabled: disabled === true || ctx.disabled === true,
+  });
+  const isDisabled = membership.disabled;
   useEffect(() => {
     adoptStyleSheet(TRIGGER_STYLE_ID, TRIGGER_CSS);
   }, []);
@@ -261,10 +267,13 @@ export function SelectTrigger({
           // it rather than reopening it.
           onPress: () => (ctx.isOpen ? ctx.close() : ctx.open()),
           disabled: isDisabled,
-          accessibilityLabel: label,
+          accessibilityLabel: membership.accessibilityLabel,
           accessibilityRole: 'button',
           'aria-haspopup': SELECT_TRIGGER_POPUP,
           'aria-expanded': ctx.isOpen,
+          nativeID: membership.nativeID,
+          'aria-describedby': membership.describedBy,
+          'aria-invalid': membership.invalid || undefined,
         }}
       >
         {asChild ? children : field}

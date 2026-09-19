@@ -85,6 +85,22 @@ import { CheckboxCard } from '@oxy.so/bloom/checkbox';
 
 `title` is the accessible name and `description` the hint.
 
+## In a `Field`
+
+A checkbox inside a `Field` takes the field's id, its described-by, `aria-invalid`
+and `disabled` — and **keeps its own label as its name**, because the words beside
+the box are the ones the user reads as the control. The field's label names the
+FIELD:
+
+```tsx
+<Field label="Terms" error={errors.terms}>
+  <Checkbox label="I accept the terms" checked={ok} onCheckedChange={setOk} />
+</Field>
+```
+
+A checkbox with no label of its own falls back to the field's. Several checkboxes
+in one field is the `multiple` case — see [Field](/docs/field).
+
 ## Touch target
 
 The box is 16dp at the default size, well under what a finger needs. The pressable is grown to 44dp with `hitSlop` — the target grows, the drawing does not — and the slack is derived per size, so `large` does not overshoot into a neighbouring row.

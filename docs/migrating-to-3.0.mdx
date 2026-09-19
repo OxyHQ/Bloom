@@ -1,6 +1,6 @@
 ---
 title: Migrating to 3.0
-description: Every breaking change between @oxy.so/bloom 2.12.4 and 3.0.0 — PageHeader's floating default, the split of `transparent` into two props, and what is additive.
+description: Every breaking change between @oxy.so/bloom 2.12.4 and 3.0.0 — PageHeader's floating default, the split of `transparent` into two props, and what is additive — plus the behaviour changes each 3.x minor adds.
 order: 2
 ---
 
@@ -131,9 +131,10 @@ Nothing below removes or renames anything.
   wires `aria-describedby`, `aria-invalid`, `aria-required` and the control's
   accessible name, and gains `multiple` for a field holding several controls.
   One behaviour change worth naming: **`Field disabled` now disables a control
-  that reads the field context** (today, `TextFieldInput`). It previously only
-  dimmed the label. If you were relying on a disabled-looking field with a live
-  input, that combination no longer exists.
+  that reads the field context** — `TextFieldInput` in 3.0, and fifteen more
+  controls in 3.1 (see below). It previously only dimmed the label. If you were
+  relying on a disabled-looking field with a live input, that combination no
+  longer exists.
 - **`Label.htmlFor` accepts `null`**, meaning "this label names a group, not a
   control". Omitting it still falls back to `nativeID`.
 - **`asChild` triggers can be cancelled.** `event.preventDefault()` in the
@@ -167,3 +168,41 @@ paint. Gate: `src/__tests__/svg-absolute-fill-size.test.ts`.
 The theme, the tokens, the icon set, the typography, every other family's API,
 and the license. If your app does not render a `PageHeader`, 3.0.0 is a drop-in
 upgrade from 2.12.x.
+
+## 3.1 — the contracts reach the rest of the catalogue
+
+3.1 is additive at the type level: `tsc` will not flag anything. Two behaviour
+changes are worth reading before you upgrade a form.
+
+**1. `Field disabled` now reaches fifteen more controls.** `Checkbox`,
+`FileUpload`, `InputGroup` (including an addon's `Button`), `InputOtp`,
+`PhoneInput` (including its country picker), `Radio`, `RadioGroup`,
+`RatingInput`, `SegmentedControl`, `SelectTrigger`, `Slider`, `Stepper`,
+`Switch`, `Textarea` and `TimeField` read the field's `disabled` and combine it
+with their own using `||` — so a control inside a disabled field is inert and
+cannot opt out with `disabled={false}`. If a screen relied on a disabled-LOOKING
+field with live controls inside it, move `disabled` off the `Field` and onto the
+controls that should actually be off.
+
+**2. A control inside a labelled `Field` takes the field's label as its accessible
+name.** Previously it announced whatever its own prop said, or nothing. Two
+consequences:
+
+- A `Switch`, `Slider`, `Stepper`, `RatingInput` or `TimeField` inside a `Field`
+  no longer needs a name prop, and no longer warns without one. The name props
+  that were REQUIRED on `Stepper`, `RatingInput`, `TimeField`, `RadioGroup`,
+  `SegmentedControl` and `SelectTrigger` are optional now — passing them still
+  works and still wins.
+- If you were passing BOTH a `Field label` and a stacked control label
+  (`TextFieldInput label`, `Textarea label`), the field's is the announced one.
+  A label drawn BESIDE the control — a checkbox's caption, a radio's option text
+  — still names that control, so the announced name matches what the eye reads.
+
+**Also additive:** `useFieldMembership()` from `@oxy.so/bloom/field` for an app's
+own control; `ScreenScope` from `@oxy.so/bloom/layout` (mounted for you by every
+dialog and sheet, so a modal's chrome no longer claims the page's top edge);
+`density` inheritance in `TextField`, `Textarea` and `TimeField`; `nativeID` on
+`Switch`, `Checkbox` and `Radio`; `disabled`, `nativeID` and `testID` on
+`SegmentedControl`; `aria-describedby`/`aria-invalid` on an anchored family's
+trigger handle. Where every family stands, family by family:
+[Adoption matrix](/docs/adoption-matrix).

@@ -53,6 +53,8 @@ import type {
   TextFieldLabelProps,
   TextFieldProps,
 } from './types';
+import { useInheritedControl } from '../control-surface';
+import { useFieldMembership } from '../field/membership';
 
 interface TextFieldContextValue {
   inputRef: React.RefObject<TextInput | null>;
@@ -153,7 +155,7 @@ export function TextField({
   children,
   isInvalid: isInvalidProp = false,
   disabled: disabledProp = false,
-  size: sizeProp = 'medium',
+  size: sizeProp,
   radius = TEXT_FIELD_RADIUS,
   leadingAddon,
   style,
@@ -161,9 +163,19 @@ export function TextField({
   const theme = useTheme();
   const group = useContext(TextFieldGroupContext);
   const bare = group !== null;
-  const isInvalid = isInvalidProp || (group?.isInvalid ?? false);
-  const disabled = disabledProp || (group?.disabled ?? false);
-  const size = group?.size ?? sizeProp;
+  // The enclosing `Field`, read HERE as well as in `TextFieldInput`: the shell
+  // is what paints the disabled and invalid chrome, and a shell that waited for
+  // its input to report up would paint nothing at all around a child that is not
+  // Bloom's input. Both directions are OR, so the two readings cannot disagree.
+  const member = useFieldMembership({ disabled: disabledProp, invalid: isInvalidProp });
+  const isInvalid = member.invalid || (group?.isInvalid ?? false);
+  const disabled = member.disabled || (group?.disabled ?? false);
+  // An `InputGroup` outranks everything: its members have to be one height. Then
+  // the caller's own prop, then the container's density (`ControlSurface`), then
+  // `medium` — the precedence rule in `docs/composition.mdx`, with the group's
+  // geometry first because it is a constraint rather than a default.
+  const inheritedSize = useInheritedControl('density', sizeProp, 'medium');
+  const size = group?.size ?? inheritedSize;
   const inputRef = useRef<TextInput>(null);
   const [inputDisabled, setInputDisabled] = useState(false);
   const {

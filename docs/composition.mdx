@@ -1,6 +1,6 @@
 ---
 title: Composition
-description: How Bloom components work together — the inherited presentation contract, field membership, trigger composition, scroll ownership and edge claims — with what is done and what is not.
+description: How Bloom components work together — the inherited presentation contract, field membership, trigger composition, scroll ownership, edge claims and screen scope — with the adoption measured per family.
 order: 3
 ---
 
@@ -47,7 +47,21 @@ It renders no node of its own, so it can be dropped anywhere without moving anyt
 
 A field left `undefined` inherits rather than resetting: `<ControlSurface density="small">` inside a glass island stays glass.
 
-**Who reads it today:** `ButtonGroup` and `ButtonGroupItem`. `Button` does not — a `Button` in a floating header keeps its own chrome, which is right for a primary action in its own capsule and wrong for an icon action that should sit flush on an island. Use `ButtonGroup`/`ButtonGroupItem` for the latter. Extending this to more families is adoption work, not a gap in the contract; see [What is not done](#what-is-not-done).
+**Who reads it today:** `ButtonGroup` and `ButtonGroupItem` read `material`; `TextField`, `Textarea` and `TimeField` read `density`, and `PhoneInput` gets it by passing its `size` straight to `TextField`. `density` is `'medium' | 'small'`, which is exactly the text-field family's `size` vocabulary — so a filter row can ask for `small` once instead of writing it on five controls:
+
+```tsx
+<ControlSurface density="small">
+  <TextFieldInput label="Search" value={q} onChangeText={setQ} />
+  <Textarea label="Notes" />
+  <TimeField accessibilityLabel="From" value={from} onChange={setFrom} />
+</ControlSurface>
+```
+
+A family whose sizes are a THREE-rung scale of its own (`small | medium | large`) is deliberately not a subject: a container setting `density` could not say which rung it meant.
+
+**`Button` does not read it** — a `Button` in a floating header keeps its own chrome, which is right for a primary action in its own capsule and wrong for an icon action that should sit flush on an island. Use `ButtonGroup`/`ButtonGroupItem` for the latter.
+
+Which families read it, which are exempt and why: [Adoption matrix](/docs/adoption-matrix).
 
 Precedence is gated in both directions by `src/__tests__/ControlSurface.test.tsx`, including the assertion that the context carries exactly two fields.
 
@@ -69,22 +83,41 @@ A `Field` used to draw a label, a control and a hint, and wire none of them toge
 - **`multiple` is the several-controls case** — a radio set, a date's three boxes. The field becomes a labelled `group`, publishes no control id and describes the GROUP rather than each control: one id on three inputs is invalid HTML, and one error described by three inputs is announced three times.
 - **A floating label and a `Field` label are alternatives, not layers.** `<TextFieldInput floatingLabel>` inside a `Field label="…"` shows the same words above the box and inside it. Pick one.
 
-A control opts in by reading `useFieldControl()`:
+A control opts in with `useFieldMembership()`, which resolves the four decisions in one place:
 
 ```tsx
-const field = useFieldControl();
-<TextInput
-  nativeID={field?.controlId ?? nativeID}
-  aria-describedby={field?.describedBy}
-  aria-invalid={field?.invalid || isInvalid || undefined}
-  accessibilityLabel={field?.labelText ?? label}
-  editable={!(field?.disabled || disabled)}
+const field = useFieldMembership({ accessibilityLabel, label, disabled, invalid: isInvalid });
+
+<Pressable
+  nativeID={field.nativeID}
+  accessibilityLabel={field.accessibilityLabel}
+  aria-describedby={field.describedBy}
+  aria-invalid={field.invalid || undefined}
+  disabled={field.disabled}
 />
 ```
 
+It is a function rather than a convention because each of the four has a direction that is silently wrong the other way round:
+
+| what | direction | why |
+| --- | --- | --- |
+| the NAME | `??` — the field's, then the control's | a switch or a slider draws no words, so the field's label is the only name available |
+| `disabled`, `invalid` | `||` — both | they RESTRICT; a control that could re-enable itself inside a disabled field is the bug |
+| the ID | the caller's, then the field's | an app that wired its own association keeps it |
+| `aria-describedby` | JOINED | it is an id LIST, so the field's error is added to the control's own hint rather than replacing it |
+
+**`labelPlacement` decides which label wins.** A label drawn ABOVE the control (`TextField`, `Textarea`) is the same thing the field's label says, so the field wins. A label BESIDE the control (a checkbox's caption, a radio's option text) is the words the user reads AS the control, so it keeps its own and the field only fills a gap — otherwise a screen reader says one thing while the eye reads another.
+
 Opt-in, not magic. A child that does not read the context renders exactly as before — a container cannot give an arbitrary child behaviour by wrapping it, and one that inspected its children's types to try would be guessing.
 
-**Who reads it today:** `TextFieldInput` (both the default and floating-label renderings). Gate: `src/__tests__/FieldAssociation.test.tsx`.
+**Who reads it today:** `Checkbox`, `FileUpload`, `InputGroup`, `InputOtp`, `PhoneInput`, `Radio`, `RadioGroup`, `RatingInput`, `SegmentedControl`, `Select` (its trigger), `Slider`, `Stepper`, `Switch`, `Textarea`, `TextField`/`TextFieldInput` and `TimeField`.
+
+Two consequences worth knowing:
+
+- **A control that cannot name itself no longer needs a name prop inside a field.** `accessibilityLabel` on `Stepper`, `RatingInput` and `TimeField`, and `label` on `RadioGroup`, `SegmentedControl` and `SelectTrigger`, were required props and are now optional — with neither the prop nor a field the control announces nothing and warns once in development.
+- **A composite hands the field's state to the halves that cannot read it themselves.** `PhoneInput`'s country picker is the measured case: the number input read the field, the picker did not, so it stayed operable inside a disabled field.
+
+Gates: `src/__tests__/FieldAssociation.test.tsx` (the field publishes) and `src/__tests__/FieldMembership.test.tsx` (fifteen families apply, in both directions, and the subject list is asserted against the matrix).
 
 ## Trigger composition — `asChild`
 
@@ -106,6 +139,8 @@ Every anchored family (`Popover`, `DropdownMenu`, `ContextMenu`, `Menubar`, `Sel
   </Popover>
 </ButtonGroup>
 ```
+
+**A trigger that IS a form control carries the field's wiring too** — `nativeID`, `aria-describedby` and `aria-invalid` are part of the handle, and `SelectTrigger` passes them. The other four families deliberately do not: a `Popover` inside a `Field` is not that field's control and must not take its id, so `TriggerSlot` reads no field context itself and each family decides whether it is the control.
 
 Gate: `src/__tests__/TriggerComposition.test.tsx`.
 
@@ -144,16 +179,53 @@ The bottom edge is the tab bar and the FAB (`docs/fab.mdx`). The top edge is chr
 <ScrollView contentContainerStyle={{ paddingTop: useTopEdgeInset() }}>
 ```
 
-`BloomProvider` mounts both. A nested provider scopes a subtree to its own claims — a full-screen modal with its own header, whose content must clear the MODAL's header rather than the screen's.
+`BloomProvider` mounts both. A nested provider scopes a subtree to its own claims — which is what the next section is.
 
 A claim registers in an effect, so a reader mounted in the same commit sees `0` on its first render. `PageHeader` narrows that to one frame by claiming its resting height (safe area + 56) immediately and replacing it with the measured height when `onLayout` reports.
 
+## Screen scope — `ScreenScope`
+
+`@oxy.so/bloom/layout`
+
+A modal, a bottom sheet or a detail panel is a second SCREEN drawn over the first, and two of the contracts above are per-screen by design. Without a boundary they reach across it, in both directions and with no error either way:
+
+- A header inside a full-screen dialog **claims the top edge of the page underneath it**. Claims combine with `max`, so the page behind the modal is padded for chrome it does not have — and the padding appears and disappears with the modal, because the claim unregisters on unmount.
+- Chrome inside the sheet **reads the page's scroll offset** and follows a scroller the user is not touching. The sheet's own list scrolls and its header does not react; the page behind scrolls and it does.
+
+`ScreenScope` is the boundary: a fresh top-edge registry, a fresh bottom-edge registry and a `null` scroll offset, which is the honest value — nothing inside has said which scroller it owns yet. A scroll owner INSIDE publishes in the ordinary way and wins, because it is nearer.
+
+```tsx
+<ScreenScope>
+  <PageHeader title="Edit listing" onBack={close} />
+  <ScrollView contentContainerStyle={{ paddingTop: useTopEdgeInset() }}>…</ScrollView>
+</ScreenScope>
+```
+
+The bottom edge is scoped for the mirror reason: the bottom edge is the tab bar and the FAB, and a sheet is drawn OVER both, so a form inside it that cleared the tab bar would end in a band of empty space.
+
+**Bloom's own surfaces mount it** — `DialogBody` (so every `Dialog` placement, including the bottom-sheet one, gets it) and `BottomSheetBase`. Mount it yourself only around a surface Bloom does not own: an app's own full-screen route presented over another.
+
+Gate: `src/__tests__/ScreenScope.test.tsx`, asserting both directions — a claim inside must not escape, and the surface's own chrome must still be readable inside.
+
+## Five compositions that are not a header
+
+The contracts are worth nothing if they only work in the screen they were built for, so these five are gated together in `src/__tests__/composition-integration.test.tsx`:
+
+1. **A form in a bottom sheet** — the field's error reaches the input across the sheet boundary, `Field disabled` reaches the input, the select trigger AND the switch, the switch takes its name from the field, and submit fires once per press.
+2. **An interactive card with a secondary action** — pressing "Archive" inside a pressable row does not also open the row. (React Native does not bubble a press; a web build does bubble a click, so this half is a browser check, not this one.)
+3. **A chat composer** — two presses send twice, and a disabled bar fires nothing at all.
+4. **A data screen** — a table inside a panel inside a card keeps its own accessible name and renders its empty state; a filter in a `ControlSurface density="small"` draws the small geometry rather than merely receiving a prop.
+5. **A screen with overlaying chrome and a modal over it** — the page pads for its own chrome, the modal's chrome does not reach it, and a sheet on that screen clears nothing of the page.
+
+What that instrument cannot see is written at the top of the file: no paint, no layer order, no hit testing, no focus. Those have their own scripts in `scripts/verify-*.mjs`.
+
 ## What is not done
 
-This page describes contracts that exist and are gated. Issue #145 asks for more than that, and the rest is honest to name:
+This page describes contracts that exist and are gated, and the [adoption matrix](/docs/adoption-matrix) measures where they are read. What is still open, named rather than implied:
 
-- **No full inventory of the public API.** The matrix over every family — platforms, contexts, state families, triggers, semantics, styles, tests — has not been produced. Nothing here should be read as "the library was audited"; it was extended where the header integration needed it.
-- **State-family naming is not unified.** `value`/`defaultValue`/`onValueChange`, `checked`/`onCheckedChange` and `open`/`onOpenChange` are used consistently by the families that have them, and `useControllableState` is the shared implementation, but no sweep has been made to rename the exceptions (`onChangeText` among them, which is a React Native contract worth keeping).
-- **Only two families read `ControlSurface`, and one reads `Field`.** Every other control renders as it always did. Adoption is per-family work with its own regressions to check.
+- **Three families hand-roll the semantics of a grouped choice.** `questionnaire`, `listing-editor` and `listing-actions` write `role="radiogroup"`/`role="checkbox"` over their own cards instead of composing `RadioGroup`/`Checkbox`, so a `Field` can neither name nor disable them. Each is a redesign of an answer control rather than an import, which is why it is recorded instead of rushed. The matrix names them and the gate keeps the list from growing.
+- **Seven families reconcile a controlled/uncontrolled pair by hand** rather than through `useControllableState`. The matrix names them too; `input-otp` has a reason (it cleans and pads the string), the rest do not.
+- **State-family naming is not unified.** `value`/`defaultValue`/`onValueChange`, `checked`/`onCheckedChange` and `open`/`onOpenChange` are used consistently by the families that have them, but no sweep has been made to rename the exceptions (`onChangeText` among them, which is a React Native contract worth keeping).
 - **`BloomProvider` still imports the Expo Router adapter directly.** Decoupling the core from the router is listed in #145 §8 and is not in this change.
 - **No adaptive overflow.** Actions that do not fit are not collapsed into a menu. #145 says explicitly that this is not required for the first header, and nothing here does it.
+- **iOS and Android are not device-verified for any of this.** The instruments used are `tsc`, the jest suites and a real Chrome; a native run is not among them.

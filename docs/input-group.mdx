@@ -71,6 +71,28 @@ field, which belongs to [`Field`](/docs/bloom/main/field) or
 `InputGroup` goes *inside* a `Field` — the group is the control, the field is
 its label, hint and error.
 
+## In a `Field`
+
+A group holding a control and its addons is one control as far as a `Field` is
+concerned: the field's `disabled` and invalid state reach every member through the
+group — **including an addon's `Button`**, which reads neither the field nor the
+text-field group itself.
+
+```tsx
+<Field label="Domain" error={errors.domain} disabled={locked}>
+  <InputGroup>
+    <InputGroupAddon>https://</InputGroupAddon>
+    <TextFieldInput value={domain} onChangeText={setDomain} />
+    <InputGroupAddon divider>
+      <Button size="small" variant="ghost" onPress={check}>Check</Button>
+    </InputGroupAddon>
+  </InputGroup>
+</Field>
+```
+
+The group publishes no NAME: it does not know which of its children is the control
+the label points at, so the id stays the field's and the input's to apply.
+
 ## `divider`
 
 Use it when the addon is a distinct target — a button, a dropdown. Skip it for

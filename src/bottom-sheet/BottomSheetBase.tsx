@@ -14,6 +14,7 @@ import { Gesture, GestureDetector, type GestureType } from 'react-native-gesture
 import { adoptStyleSheet, dropStyleSheet } from '../styles/adopt-style-sheet';
 import type { WebCssStyle } from '../styles/web-view-style';
 import { SurfaceLevelProvider, surfaceFillVars } from '../styles/surface-levels';
+import { ScreenScope } from '../layout';
 import { Z_INDEX } from '../styles/z-index';
 import Animated, {
     type AnimatedStyle,
@@ -650,9 +651,13 @@ export const BottomSheetBase = forwardRef((props: BottomSheetBaseProps, ref: Rea
     // — web keeps React context across a portal — would tell its content it is
     // sitting on the panel's card, and in-sheet chrome would paint the column's
     // colour on top of the sheet's.
+    // ...and it is its own SCREEN for the same reason: a header inside the sheet
+    // must claim the sheet's top edge rather than the page's, and chrome inside
+    // it must follow the sheet's scroller rather than `window.scrollY`
+    // (`layout/screen-scope.tsx`).
     const surfaceChildren = (
         <SurfaceLevelProvider level={0} fill={colors.background}>
-            {children}
+            <ScreenScope>{children}</ScreenScope>
         </SurfaceLevelProvider>
     );
 

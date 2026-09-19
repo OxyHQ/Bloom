@@ -27,6 +27,7 @@ import { borderRadius, DISABLED_OPACITY } from '../styles/tokens';
 import { NOT_DISABLED, interactiveWebCss, useInteractiveWebCss } from '../styles/interactive-web-css';
 import type { WebCssStyle } from '../styles/web-view-style';
 import { mixColor, resolveButtonRamps } from '../button/shared';
+import { useFieldMembership } from '../field/membership';
 
 /**
  * A segmented control. Colours come from Bloom's theme through
@@ -136,6 +137,8 @@ const InternalContext = createContext<{
   size: SegmentedControlSize;
   variant: SegmentedControlVariant;
   palette: SegmentedPalette;
+  /** The group's disabled state. An item ORs it with its own. */
+  disabled: boolean;
   selectedValue: string;
   selectedPosition: { width: number; x: number } | null;
   onSelectValue: (
@@ -169,9 +172,17 @@ export function SegmentedControl<T extends string>({
   onChange,
   children,
   style,
+  disabled = false,
   accessibilityHint,
+  nativeID,
+  testID,
 }: {
-  label: string;
+  /**
+   * The control's accessible name — it is a `radiogroup`/`tablist`, and the
+   * segment texts name the OPTIONS rather than the choice. Inside a `Field` the
+   * field's label supplies it.
+   */
+  label?: string;
   type: 'tabs' | 'radio';
   /** `medium` (default); `small` and `large` step around it. */
   size?: SegmentedControlSize;
@@ -181,10 +192,28 @@ export function SegmentedControl<T extends string>({
   onChange: (value: T) => void;
   children: React.ReactNode;
   style?: StyleProp<ViewStyle>;
+  /**
+   * Disables every segment.
+   *
+   * A CONSTRAINT the group owns: an item combines it with `||`, so a segment
+   * cannot re-enable itself, and a `Field disabled` around the control reaches
+   * the segments through it.
+   */
+  disabled?: boolean;
   accessibilityHint?: string;
+  /** The group's id. Supplied by an enclosing `Field` when there is one. */
+  nativeID?: string;
+  testID?: string;
 }) {
   const theme = useTheme();
   useInteractiveWebCss(STYLE_ID, SEGMENTED_CSS);
+  // The group is ONE control made of several segments, so a `Field` names the
+  // group and disables all of it. `label` is the group's name rather than
+  // rendered text, so the field's label only fills in what is missing.
+  // `label` is a NAME rather than rendered text (the segments carry the words),
+  // so it goes in as the caller's own name and outranks the field's.
+  const field = useFieldMembership({ accessibilityLabel: label, disabled, nativeID });
+  const isDisabled = field.disabled;
   const palette = useMemo(() => resolveSegmentedPalette(theme), [theme]);
   const [selectedPosition, setSelectedPosition] = useState<{
     width: number;
@@ -197,6 +226,7 @@ export function SegmentedControl<T extends string>({
       size,
       variant,
       palette,
+      disabled: isDisabled,
       selectedValue: value,
       selectedPosition,
       onSelectValue: (
@@ -219,7 +249,7 @@ export function SegmentedControl<T extends string>({
         });
       },
     };
-  }, [value, selectedPosition, setSelectedPosition, onChange, type, size, variant, palette]);
+  }, [value, selectedPosition, setSelectedPosition, onChange, type, size, variant, palette, isDisabled]);
 
   const solid = variant === 'solid';
   const padding = solid ? TRACK_PADDING : 0;
@@ -231,8 +261,15 @@ export function SegmentedControl<T extends string>({
 
   return (
     <View
-      accessibilityLabel={label}
+      testID={testID}
+      nativeID={field.nativeID}
+      accessibilityLabel={field.accessibilityLabel}
       accessibilityHint={accessibilityHint ?? ''}
+      aria-describedby={field.describedBy}
+      aria-invalid={field.invalid || undefined}
+      // A `View`, so `aria-disabled` is the only spelling that reaches web —
+      // there is no `disabled` prop for react-native-web to derive it from.
+      aria-disabled={isDisabled || undefined}
       style={[
         {
           position: 'relative',
@@ -320,10 +357,16 @@ export function SegmentedControlItem({
     }
   }, [needsUpdate]);
 
+  // The group's `disabled` is a constraint, so it is OR-ed with the item's own
+  // — a segment cannot re-enable itself inside a disabled group, and a `Field
+  // disabled` reaches every segment through the group.
+  const isDisabled = ctx.disabled || disabled === true;
+
   const onPress = useCallback(() => {
+    if (isDisabled) return;
     ctx.onSelectValue(value, position);
     onPressProp?.();
-  }, [ctx, value, position, onPressProp]);
+  }, [isDisabled, ctx, value, position, onPressProp]);
 
   // We render the segment as a flat `Pressable` (not Bloom's `Button`)
   // for two reasons:
@@ -346,13 +389,13 @@ export function SegmentedControlItem({
     height: geometry.height,
     paddingHorizontal: geometry.paddingHorizontal,
     borderRadius: borderRadius.full,
-    opacity: disabled ? DISABLED_OPACITY : 1,
+    opacity: isDisabled ? DISABLED_OPACITY : 1,
     '--bloom-segmented-ring': ctx.palette.ring,
   };
 
   const itemContext = useMemo(
-    () => ({ active, hovered: hovered && !disabled }),
-    [active, hovered, disabled],
+    () => ({ active, hovered: hovered && !isDisabled }),
+    [active, hovered, isDisabled],
   );
 
   return (
@@ -384,7 +427,7 @@ export function SegmentedControlItem({
           ? { 'aria-selected': active }
           : { 'aria-checked': active })}
         role={itemRole}
-        disabled={disabled}
+        disabled={isDisabled}
         testID={testID}
         style={[itemStyle, style]}>
         <InternalItemContext.Provider value={itemContext}>

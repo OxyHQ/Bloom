@@ -57,6 +57,7 @@ import type {
   SelectTriggerProps,
   SelectValueProps,
 } from './types';
+import { useFieldMembership } from '../field/membership';
 
 // ---------------------------------------------------------------------------
 // Context
@@ -133,7 +134,15 @@ export function SelectTrigger({
 }: SelectTriggerProps) {
   const { control, size, disabled: rootDisabled } = useSelectContext();
   const palette = useMenuPalette();
-  const isDisabled = disabled === true || rootDisabled === true;
+  // The trigger IS the select's control, so it takes the enclosing `Field`'s id,
+  // name, description and invalid state — and the field's `disabled` on top of
+  // the two it already combines. A `Popover` trigger deliberately does not do
+  // this (`floating/types.ts`): it is not the field's control.
+  const membership = useFieldMembership({
+    accessibilityLabel: label,
+    disabled: disabled === true || rootDisabled === true,
+  });
+  const isDisabled = membership.disabled;
   const t = palette.trigger;
 
   // The same field the web fork draws — a bordered white select trigger
@@ -171,9 +180,12 @@ export function SelectTrigger({
         handle={{
           onPress: () => control.open(),
           disabled: isDisabled,
-          accessibilityLabel: label,
+          accessibilityLabel: membership.accessibilityLabel,
           accessibilityRole: 'button',
           'aria-haspopup': SELECT_TRIGGER_POPUP,
+          nativeID: membership.nativeID,
+          'aria-describedby': membership.describedBy,
+          'aria-invalid': membership.invalid || undefined,
         }}>
         {asChild ? children : field}
       </TriggerSlot>

@@ -77,6 +77,19 @@ The "Upload file" / "Upload in progress" frames, pixel-matched on web.
 
 Motion: fills and borders ease over 300ms, the ring's dash over 200ms linear, the pill over 160/300ms. Content swaps use a staggered reveal — each line rises 12px out of a 3px blur over 500ms (`cubic-bezier(0.22, 1, 0.36, 1)`), 40ms apart, and leaves with a 200ms fade. Web runs all of it as self-injected CSS on `dataSet` hooks; native drives opacity and translate with `Animated` **without the blur** (no portable blur filter). Reduced motion removes every transition.
 
+## In a `Field`
+
+The drop zone names itself with `accessibilityLabel`, or with the field's label
+when there is one — `'Upload a file'` is the last resort. The field's `disabled`
+blocks the picker whatever the caller passed, and its error is described BY the
+zone:
+
+```tsx
+<Field label="Lease agreement" error={errors.lease} description="PDF, up to 10 MB">
+  <FileUpload onPickFiles={pick} />
+</Field>
+```
+
 ## Hazards
 
 - **The progress dash is computed in real units, rather than a normalized `pathLength={100}`** — react-native-svg does not honour `pathLength` everywhere, so the length of the rounded-rect path is computed from the measured box instead. Change the inset or radius in one place only (`RING_INSET` / `RING_RADIUS`).

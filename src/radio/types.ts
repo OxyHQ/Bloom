@@ -30,6 +30,11 @@ export interface RadioProps<Value extends string = string> {
   style?: StyleProp<ViewStyle>;
   labelStyle?: StyleProp<TextStyle>;
   accessibilityLabel?: string;
+  /**
+   * The control's id. Inside a `Field` the field supplies one, so the label's
+   * `htmlFor` points at this control on web.
+   */
+  nativeID?: string;
   testID?: string;
 }
 
@@ -44,10 +49,13 @@ export interface RadioOption<Value extends string = string> {
 
 export interface RadioGroupProps<Value extends string = string> {
   /**
-   * The group's accessible name. Required: a `radiogroup` with no name announces
-   * a list of options and nothing about what is being chosen.
+   * The group's accessible name.
+   *
+   * A `radiogroup` with no name announces a list of options and nothing about
+   * what is being chosen, so this or an enclosing `Field`'s label has to supply
+   * one.
    */
-  label: string;
+  label?: string;
   /** The selected value, or `undefined` for a group with nothing chosen yet. */
   value: Value | undefined;
   /** Called with the newly chosen value. */

@@ -80,6 +80,20 @@ and never what it is. Omitting it warns once in development, dev-only and never
 throwing; an empty or whitespace-only string counts as missing, because
 `aria-label=""` is not a name.
 
+## In a `Field`
+
+`Slider` draws a track and a knob and hides its own `label` from assistive
+technology, so the name is a prop — or the enclosing field's label:
+
+```tsx
+<Field label="Maximum price" description="Per night" disabled={!hasDates}>
+  <Slider value={price} onValueChange={setPrice} min={0} max={500} />
+</Field>
+```
+
+The field also supplies the id, `aria-describedby` and `aria-invalid`, and its
+`disabled` stops the pan responder as well as dimming the track.
+
 ## When a slider is the wrong control
 
 - **The exact value matters.** Use a number input; a slider cannot be typed

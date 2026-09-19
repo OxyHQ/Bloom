@@ -5,6 +5,7 @@ import { useTheme } from '../theme/use-theme';
 import { animation } from '../styles/tokens';
 import { bloomShadowStyle } from '../design-tokens/shadows';
 import { useAccessibleNameWarning } from '../hooks/use-accessible-name-warning';
+import { useFieldMembership } from '../field/membership';
 import type { SwitchProps } from './types';
 
 const TRACK = { default: { w: 44, h: 26 }, sm: { w: 36, h: 22 } } as const;
@@ -13,9 +14,18 @@ const PADDING = 2;
 const SQUEEZE_RATIO = 0.75; // thumb height shrinks to 75% when pressed
 
 const SwitchComponent = React.forwardRef<React.ElementRef<typeof Pressable>, SwitchProps>(
-  ({ value, onValueChange, disabled, style, size = 'default', accessibilityLabel, testID }, ref) => {
+  (
+    { value, onValueChange, disabled, style, size = 'default', accessibilityLabel, nativeID, testID },
+    ref,
+  ) => {
     const theme = useTheme();
-    useAccessibleNameWarning('Switch', accessibilityLabel);
+    // A switch draws no text, so a `Field` is often the only thing that names
+    // it — and the warning has to see the RESOLVED name, or a correctly
+    // labelled switch inside a field warns anyway and the warning stops
+    // meaning anything.
+    const field = useFieldMembership({ accessibilityLabel, disabled, nativeID });
+    const isDisabled = field.disabled;
+    useAccessibleNameWarning('Switch', field.accessibilityLabel);
     const anim = useRef(new Animated.Value(value ? 1 : 0)).current;
     const pressAnim = useRef(new Animated.Value(0)).current;
 
@@ -32,18 +42,18 @@ const SwitchComponent = React.forwardRef<React.ElementRef<typeof Pressable>, Swi
     }
 
     const handlePress = useCallback(() => {
-      if (disabled) return;
+      if (isDisabled) return;
       onValueChange(!value);
-    }, [disabled, value, onValueChange]);
+    }, [isDisabled, value, onValueChange]);
 
     const onPressIn = useCallback(() => {
-      if (disabled) return;
+      if (isDisabled) return;
       Animated.spring(pressAnim, {
         toValue: 1,
         useNativeDriver: false,
         ...animation.spring.snappy,
       }).start();
-    }, [disabled, pressAnim]);
+    }, [isDisabled, pressAnim]);
 
     const onPressOut = useCallback(() => {
       Animated.spring(pressAnim, {
@@ -91,18 +101,21 @@ const SwitchComponent = React.forwardRef<React.ElementRef<typeof Pressable>, Swi
         // `createDOMProps` emits `aria-label` from it, React Native reads it
         // directly. That is NOT the rule for `accessibilityState` two lines up,
         // which reaches native alone; the state and the name differ here.
-        accessibilityLabel={accessibilityLabel}
+        accessibilityLabel={field.accessibilityLabel}
+        nativeID={field.nativeID}
+        aria-describedby={field.describedBy}
+        aria-invalid={field.invalid || undefined}
         // The disabled state has to travel on this prop, not on `aria-disabled`:
         // react-native-web's `Pressable` appends its own `aria-disabled` from
         // `disabled` AFTER spreading the caller's props, so a caller-supplied
         // one is overwritten. `handlePress` already no-ops when disabled, so
         // this only adds what was missing — the announced state, and skipping
         // the control in the tab order.
-        disabled={disabled}
+        disabled={isDisabled}
         onPress={handlePress}
         onPressIn={onPressIn}
         onPressOut={onPressOut}
-        style={[disabled && styles.disabled, style]}
+        style={[isDisabled && styles.disabled, style]}
         hitSlop={HIT_SLOP}
         testID={testID}
       >

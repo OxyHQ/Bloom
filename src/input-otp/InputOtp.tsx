@@ -24,6 +24,7 @@ import {
 } from '../text-field/shared';
 import { TYPE_SCALE } from '../typography/scale';
 import type { InputOtpProps } from './types';
+import { useFieldMembership } from '../field/membership';
 
 /**
  * `InputOtp`: one box per digit, side by side, behaving as ONE value.
@@ -185,13 +186,25 @@ export function InputOtp({
   disabled: disabledAlias,
   groupEvery,
   autoFocus = false,
-  accessibilityLabel = 'One-time code',
+  accessibilityLabel,
   style,
   testID,
 }: InputOtpProps) {
   const theme = useTheme();
   const palette = useMemo(() => resolveInputOtpPalette(theme), [theme]);
-  const disabled = isDisabled ?? disabledAlias ?? false;
+  // SEVERAL controls behind one name: the boxes are the field's `multiple` case
+  // (`docs/field.mdx`), so the GROUP takes the field's name and description and
+  // each box keeps its own name and its own `aria-invalid`. A caller's own
+  // `accessibilityLabel` still wins; `'One-time code'` is the last resort rather
+  // than a default that would outrank the field's label.
+  const membership = useFieldMembership({
+    accessibilityLabel,
+    disabled: isDisabled ?? disabledAlias ?? false,
+    invalid: isInvalid,
+  });
+  const disabled = membership.disabled;
+  const invalid = membership.invalid;
+  const groupName = membership.accessibilityLabel ?? 'One-time code';
 
   const inputsRef = useRef<Array<TextInput | null>>([]);
   const [internal, setInternal] = useState(() => clean(defaultValue, length));
@@ -259,7 +272,8 @@ export function InputOtp({
   return (
     <View
       role="group"
-      accessibilityLabel={accessibilityLabel}
+      accessibilityLabel={groupName}
+      aria-describedby={membership.describedBy}
       testID={testID}
       // No `aria-invalid` here: `group` does not support it. Each box carries
       // its own, which is where a screen reader looks anyway.
@@ -270,7 +284,7 @@ export function InputOtp({
         const paint = resolveInputOtpBoxPaint(palette, {
           hovered: hoveredIndex === index,
           focused: focusedIndex === index,
-          invalid: isInvalid,
+          invalid,
           disabled,
         });
 
@@ -302,7 +316,7 @@ export function InputOtp({
             caretHidden={false}
             editable={!disabled}
             accessibilityLabel={`Digit ${index + 1} of ${length}`}
-            aria-invalid={isInvalid || undefined}
+            aria-invalid={invalid || undefined}
             aria-disabled={disabled || undefined}
             value={digit === ' ' ? '' : digit}
             onChangeText={(text) => writeFrom(index, text)}

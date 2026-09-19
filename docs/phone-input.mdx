@@ -94,3 +94,20 @@ node scripts/generate-country-flags.mjs
 
 - Names follow `countries-list` 3.4.1 (`Czechia`, `Cabo Verde`, `Myanmar`).
 - A flag is stored as shape tuples (`flag-art.ts`), with `<g>` presentation attributes pushed down onto the shapes, so rendering parses no XML. `UM` and `US` share artwork upstream.
+
+### In a `Field`
+
+`PhoneInput` hands the field's state to BOTH halves — the number input and the
+country picker. That second half is the one that used to be missed: the input read
+the field context itself, the picker did not, so a disabled field left the country
+list operable.
+
+```tsx
+<Field label="Phone number" error={errors.phone} disabled={locked}>
+  <PhoneInput countrySelectLabel="Country" onChangeText={setPhone} />
+</Field>
+```
+
+`size` is passed straight to the `TextField` inside, which inherits density from a
+`ControlSurface` — so a small filter row makes the phone field small without a
+prop here. See [Composition](/docs/composition).

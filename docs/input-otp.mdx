@@ -59,3 +59,17 @@ Clearing a box removes its digit from the value, so later digits move left.
 - The row is a `group` named by `accessibilityLabel`; each box is named `Digit 1 of 6` and so on.
 - `aria-invalid` sits on each box, not the group — `group` does not support it.
 - Say why the code is invalid in text next to the field; the red border is not an announcement.
+
+Inside a `Field` it is the several-controls case: use `multiple`, so the field
+becomes a labelled `group`, names the box group and describes it — while each box
+keeps its own name ("Digit 3 of 6") and its own `aria-invalid`. The field's
+`disabled` freezes every box.
+
+```tsx
+<Field label="Verification code" multiple error={errors.code}>
+  <InputOtp length={6} onComplete={verify} />
+</Field>
+```
+
+`accessibilityLabel` still wins when written; `"One-time code"` is the last resort
+rather than a default, because a default would outrank the label on screen.

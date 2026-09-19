@@ -50,11 +50,23 @@ emits `aria-selected` for tabs and `aria-checked` for radios, and neither uses
 `accessibilityState` — react-native-web drops that entirely, so a control
 relying on it would announce no state at all on web.
 
-## `label` is required
+## `label` names the group, and something has to
 
-It names the group. "Light / Dark / System" without a group name announces as
-three unrelated radios; with `label="Appearance"` it announces as a choice
-about appearance.
+"Light / Dark / System" without a group name announces as three unrelated radios;
+with `label="Appearance"` it announces as a choice about appearance.
+
+The prop is optional only because an enclosing [`Field`](/docs/field) can supply
+the name instead — and the field's `disabled` then reaches every segment, which a
+segment cannot opt out of by passing `disabled={false}`. With neither the prop nor
+a field the group announces nothing.
+
+```tsx
+<Field label="Appearance" disabled={!canChange}>
+  <SegmentedControl type="radio" value={mode} onChange={setMode}>
+    …
+  </SegmentedControl>
+</Field>
+```
 
 ## Which prop decides what
 

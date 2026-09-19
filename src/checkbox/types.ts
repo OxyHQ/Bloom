@@ -22,6 +22,11 @@ export interface CheckboxProps {
   style?: StyleProp<ViewStyle>;
   labelStyle?: StyleProp<TextStyle>;
   accessibilityLabel?: string;
+  /**
+   * The control's id. Inside a `Field` the field supplies one, so the label's
+   * `htmlFor` points at this control on web.
+   */
+  nativeID?: string;
   testID?: string;
 }
 

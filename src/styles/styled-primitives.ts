@@ -73,6 +73,22 @@ export interface WebAriaProps {
    * currently needs; the union is the ARIA one, narrowed to what is spellable.
    */
   'aria-haspopup'?: 'menu' | 'listbox' | 'tree' | 'grid' | 'dialog';
+  /**
+   * The id list of the elements that DESCRIBE this control — a field's hint or
+   * its error message (`field/context.ts`).
+   *
+   * Here for the same reason as `aria-haspopup`: React Native types no such prop
+   * (there is no `accessibilityState` entry for it to fold into) while
+   * react-native-web forwards it, so web gets the association and native is
+   * unaffected. A control that needs the description READ on native carries it
+   * in its accessible name instead.
+   */
+  'aria-describedby'?: string;
+  /**
+   * Whether the control's current value is invalid. Same platform split as
+   * `aria-describedby`.
+   */
+  'aria-invalid'?: boolean;
 }
 
 /**

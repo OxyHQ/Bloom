@@ -26,6 +26,10 @@ import {
   useInheritedControl,
   type ControlMaterial,
 } from '../control-surface';
+import { BloomThemeProvider } from '../theme/BloomThemeProvider';
+import { TextField, TextFieldInput } from '../text-field';
+import { Textarea } from '../textarea';
+import { TEXT_FIELD_GEOMETRY } from '../text-field/shared';
 
 function Probe({ explicit }: { explicit?: ControlMaterial }) {
   const material = useInheritedControl('material', explicit, 'solid');
@@ -109,5 +113,94 @@ describe('the control-presentation contract', () => {
       </ControlSurface>,
     );
     expect(getByTestId('keys').props.children).toBe('density,material');
+  });
+});
+
+// ---------------------------------------------------------------------------
+//  Who READS density, measured on the geometry rather than on the prop
+// ---------------------------------------------------------------------------
+
+/**
+ * `density` is `'medium' | 'small'`, which is exactly the `size` vocabulary of
+ * the text-field family — so those three take it from the container, and the
+ * assertion is the resolved PADDING rather than the prop, because the prop
+ * being passed down is not the same claim as the control drawing smaller.
+ */
+function themed(ui: React.ReactElement) {
+  return render(
+    <BloomThemeProvider mode="light" colorPreset="teal">
+      {ui}
+    </BloomThemeProvider>,
+  );
+}
+
+/** The shell's horizontal padding, which differs per density. */
+function shellPadding(screen: ReturnType<typeof themed>, testID: string): number | undefined {
+  const flat = Object.assign({}, ...[screen.getByTestId(testID).props.style].flat(3).filter(Boolean)) as {
+    paddingHorizontal?: number;
+    paddingLeft?: number;
+  };
+  return flat.paddingHorizontal ?? flat.paddingLeft;
+}
+
+describe('density adoption', () => {
+  const small = TEXT_FIELD_GEOMETRY.small.paddingHorizontal;
+  const medium = TEXT_FIELD_GEOMETRY.medium.paddingHorizontal;
+
+  it('is worth measuring at all: the two densities draw different geometry', () => {
+    expect(small).not.toBe(medium);
+  });
+
+  it('makes a Textarea inside a small container small', () => {
+    const screen = themed(
+      <ControlSurface density="small">
+        <Textarea testID="area" label="Bio" />
+      </ControlSurface>,
+    );
+    // The shell is the second view; its padding is reduced by the ring width on
+    // both densities, so the DIFFERENCE is what identifies the density.
+    const padding = shellPadding(screen, 'area');
+    expect(padding).toBeUndefined(); // the testID is on the outer box
+    const shell = screen.UNSAFE_getAllByType(require('react-native').View)
+      .map((node: { props: { style?: unknown } }) => Object.assign({}, ...[node.props.style].flat(3).filter(Boolean)))
+      .find((style: { borderRadius?: number; paddingHorizontal?: number }) => style.paddingHorizontal !== undefined);
+    expect(shell?.paddingHorizontal).toBe(small - 2);
+  });
+
+  it('lets a Textarea keep an explicit size inside a small container', () => {
+    const screen = themed(
+      <ControlSurface density="small">
+        <Textarea testID="area" label="Bio" size="medium" />
+      </ControlSurface>,
+    );
+    const shell = screen.UNSAFE_getAllByType(require('react-native').View)
+      .map((node: { props: { style?: unknown } }) => Object.assign({}, ...[node.props.style].flat(3).filter(Boolean)))
+      .find((style: { paddingHorizontal?: number }) => style.paddingHorizontal !== undefined);
+    expect(shell?.paddingHorizontal).toBe(medium - 2);
+  });
+
+  it('makes a TextField inside a small container small, and an explicit prop still wins', () => {
+    const inherited = themed(
+      <ControlSurface density="small">
+        <TextField>
+          <TextFieldInput label="Email" value="" onChangeText={() => {}} testID="input" />
+        </TextField>
+      </ControlSurface>,
+    );
+    const explicit = themed(
+      <ControlSurface density="small">
+        <TextField size="medium">
+          <TextFieldInput label="Email" value="" onChangeText={() => {}} testID="input" />
+        </TextField>
+      </ControlSurface>,
+    );
+    // Both densities share the input's type scale, so the discriminator is the
+    // shell's own side padding, which the geometry table sets per density.
+    const paddingOf = (screen: ReturnType<typeof themed>) =>
+      screen.UNSAFE_getAllByType(require('react-native').View)
+        .map((node: { props: { style?: unknown } }) => Object.assign({}, ...[node.props.style].flat(3).filter(Boolean)))
+        .find((style: { paddingHorizontal?: number }) => style.paddingHorizontal !== undefined)?.paddingHorizontal;
+    expect(paddingOf(inherited)).toBe(small);
+    expect(paddingOf(explicit)).toBe(medium);
   });
 });

@@ -22,6 +22,7 @@ import { clamp } from '../styles/clamp';
 import { BUTTON_SHADOW, mixColor, resolveButtonRamps } from '../button/shared';
 import { useAccessibleNameWarning } from '../hooks/use-accessible-name-warning';
 import type { RangeSliderProps, SliderProps } from './types';
+import { useFieldMembership } from '../field/membership';
 
 function quantize(raw: number, min: number, max: number, step: number): number {
   if (step <= 0) return clamp(raw, min, max);
@@ -184,7 +185,7 @@ function SliderBase({
   min,
   max,
   step,
-  disabled,
+  disabled: disabledProp,
   trackHeight,
   thumbSize,
   minimumTrackTintColor,
@@ -199,6 +200,12 @@ function SliderBase({
   testID,
 }: SliderBaseProps) {
   const theme = useTheme();
+  // A slider draws no text of its own — its `label` is rendered but hidden from
+  // assistive technology, which is why the name has to be a prop. Inside a
+  // `Field` the field's label is that name (STACKED placement), and the field's
+  // `disabled` constrains the slider whatever the caller passed.
+  const field = useFieldMembership({ accessibilityLabel, label, disabled: disabledProp });
+  const disabled = field.disabled;
   const ringOffset = useRingOffsetStyle();
   React.useEffect(() => {
     adoptStyleSheet(STYLE_ID, BLOOM_SLIDER_CSS);
@@ -365,11 +372,14 @@ function SliderBase({
   return (
     <View
       testID={testID}
+      nativeID={field.nativeID}
+      aria-describedby={field.describedBy}
+      aria-invalid={field.invalid || undefined}
       {...(isRange
-        ? { accessibilityLabel: accessibilityLabel ?? label }
+        ? { accessibilityLabel: field.accessibilityLabel }
         : {
             accessibilityRole: 'adjustable' as const,
-            accessibilityLabel: accessibilityLabel ?? label,
+            accessibilityLabel: field.accessibilityLabel,
             // react-native-web reads the FLAT `aria-value*` props; it has no
             // handling for the `accessibilityValue` object at all, so this
             // rendered a `role="slider"` carrying no value whatsoever. React

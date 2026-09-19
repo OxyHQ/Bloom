@@ -167,6 +167,7 @@ export {
   useTopEdgeInset,
   ScrollOffsetProvider,
   useScrollOffset,
+  ScreenScope,
 } from './layout';
 export { Fab } from './fab';
 export type { FabProps, FabVariant, FabSize, FabPlacement } from './fab';
@@ -282,8 +283,14 @@ export * from './date-picker';
 export { Search } from './search';
 export { Label } from './label';
 export type { LabelProps } from './label';
-export { Field } from './field';
-export type { FieldProps } from './field';
+export { Field, useFieldControl, useFieldMembership } from './field';
+export type {
+  FieldControlValue,
+  FieldLabelPlacement,
+  FieldMembership,
+  FieldMembershipInput,
+  FieldProps,
+} from './field';
 export { InputGroup, InputGroupAddon } from './input-group';
 export type { InputGroupProps, InputGroupAddonProps } from './input-group';
 export { RangeSlider, Slider } from './slider';

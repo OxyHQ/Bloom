@@ -40,7 +40,7 @@ import { TextField, TextFieldInput } from '@oxy.so/bloom/text-field';
 
 ## What the wiring actually does
 
-The label, description and error are ASSOCIATED with the control, not merely stacked around it. A control opts in by reading `useFieldControl()`; Bloom's `TextFieldInput` does.
+The label, description and error are ASSOCIATED with the control, not merely stacked around it. A control opts in by reading `useFieldMembership()`, and fifteen Bloom families do.
 
 | the field publishes | the control applies |
 | --- | --- |
@@ -51,13 +51,39 @@ The label, description and error are ASSOCIATED with the control, not merely sta
 | `required` | `aria-required` |
 | `disabled` | its own disabled state |
 
-Three things worth knowing:
+Four things worth knowing:
 
 - **The ids come from `useId`** when no `nativeID` is given, so they survive SSR and hydration. An explicit `nativeID` still owns every derived id (`<id>-description`, `<id>-error`), so a form already wired by hand keeps working.
-- **The field's label wins over the control's own.** On web `aria-label` OVERRIDES a `<label for>`, and on native there is no association at all and the control must carry the name — so a control inside a field defers to the field's label text, and the visible label and the announced name cannot disagree.
-- **`disabled` is a constraint, not a default.** A control inside a disabled field is disabled and cannot opt out.
+- **The field's label wins over a label the control draws ABOVE itself.** On web `aria-label` OVERRIDES a `<label for>`, and on native there is no association at all and the control must carry the name — so a `TextFieldInput` or a `Textarea` inside a field defers to the field's label text, and the visible label and the announced name cannot disagree.
+- **A label the control draws BESIDE itself keeps winning.** A checkbox's caption and a radio's option text are the words the user reads as the control; the field's label names the FIELD. Giving the field's label to a checkbox that draws "Accept the terms" would announce one thing while the screen says another.
+- **`disabled` is a constraint, not a default.** A control inside a disabled field is disabled and cannot opt out — including the halves a composite owns, like `PhoneInput`'s country picker or an `InputGroup`'s addon button.
 
 Opt-in, not magic: a child that does not read the context renders exactly as before. A container cannot give an arbitrary child behaviour by wrapping it, and one that inspected its children's types to try would be guessing. See [Composition](/docs/composition).
+
+## Which controls read it
+
+`Checkbox`, `FileUpload`, `InputGroup`, `InputOtp`, `PhoneInput`, `Radio`,
+`RadioGroup`, `RatingInput`, `SegmentedControl`, `SelectTrigger`, `Slider`,
+`Stepper`, `Switch`, `Textarea`, `TextField`/`TextFieldInput`, `TimeField`.
+
+The practical consequence is that a control which draws no words of its own needs
+no name prop inside a field:
+
+```tsx
+<Field label="Notify members">
+  <Switch value={notify} onValueChange={setNotify} />
+</Field>
+```
+
+That switch announces "Notify members, switch, on". Outside a field it would
+announce "switch, on" and warn once in development, which is why
+`accessibilityLabel` is still the prop to reach for when there is no field.
+`label` on `RadioGroup`, `SegmentedControl` and `SelectTrigger`, and
+`accessibilityLabel` on `Stepper`, `RatingInput` and `TimeField`, were REQUIRED
+props before this and are optional now for the same reason.
+
+Which families are outside the contract, and why each one is: the
+[adoption matrix](/docs/adoption-matrix).
 
 ## One control, or several
 
@@ -110,6 +136,11 @@ up to the pixel with a `TextField` built from `TextFieldLabel` / `TextFieldHint`
 `Field` does not care what it wraps — a `TextField`, a `Switch`, a
 `SegmentedControl`, a custom control. It supplies the label/description/error
 and the id wiring; the control supplies its own role and state.
+
+The rule a control applies is one function, `useFieldMembership()` — exported
+from `@oxy.so/bloom/field` for an app's own control, so it resolves membership
+the way Bloom's fifteen do rather than by reimplementing four `??`/`||`
+decisions. [Composition](/docs/composition) has the table of directions.
 
 For the label alone, without the surrounding structure, use
 [`Label`](/docs/bloom/main/label). For a control with attached buttons or

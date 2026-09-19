@@ -26,7 +26,14 @@ export interface StepperProps {
    * number and two glyphs, so nothing else can tell a screen reader which of
    * several counters this is.
    */
-  accessibilityLabel: string;
+  /**
+   * The control's accessible name.
+   *
+   * Optional only because an enclosing `Field`'s label can supply it — with
+   * neither, the control announces nothing and warns once in development
+   * (`hooks/use-accessible-name-warning.ts`).
+   */
+  accessibilityLabel?: string;
   /** Name of the `−` button. Default `"Decrease"`. */
   decrementLabel?: string;
   /** Name of the `+` button. Default `"Increase"`. */
