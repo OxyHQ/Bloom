@@ -87,6 +87,10 @@ export function Textarea({
     invalid: isInvalid,
     required,
     nativeID,
+    // An `aria-describedby` the caller spread through `rest` is KEPT and the
+    // field's is added to it, the same way `TextFieldInput` treats it: the two
+    // are an id list, not a choice.
+    describedBy: (rest as Record<string, unknown>)['aria-describedby'] as string | undefined,
   });
   const palette = useTextFieldPalette();
   const innerRef = useRef<TextInput>(null);
