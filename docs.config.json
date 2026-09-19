@@ -6,6 +6,7 @@
   "category": "ui-library",
   "versioned": true,
   "versions": [
+    "3.0.0",
     "2.0.0",
     "1.0.0",
     "0.89.0",
@@ -251,9 +252,9 @@
     "0.1.1",
     "0.1.0"
   ],
-  "latestVersion": "2.0.0",
+  "latestVersion": "3.0.0",
   "deprecatedVersions": [],
-  "defaultVersion": "2.0.0",
+  "defaultVersion": "3.0.0",
   "docsPath": "docs/",
   "docsIgnore": [
     "superpowers"

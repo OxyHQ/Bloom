@@ -67,6 +67,9 @@ const SUBPATHS = /** @type {const} */ ([
   ['./dialog', 'dialog/index.ts'],
   ['./button', 'button/index.ts'],
   ['./button-group', 'button-group/index.ts'],
+  // The inherited control-presentation contract: what a container tells the
+  // controls inside it about material and density, and nothing else.
+  ['./control-surface', 'control-surface/index.ts'],
   // Window-edge geometry shared by every floating surface, plus the registry
   // that keeps them off each other. Platform-neutral, no native deps.
   ['./layout', 'layout/index.ts'],

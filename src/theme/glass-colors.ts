@@ -271,3 +271,83 @@ export function resolveGlassColors(fill: string): GlassColors {
     hairlineWidth: BORDER_WIDTH.hairline,
   };
 }
+
+/**
+ * The CHROME alpha — the neutral counterpart of {@link GLASS_FILL_ALPHA}.
+ *
+ * ── WHY A SECOND ALPHA AND NOT THE SAME ONE ─────────────────────────────────
+ *
+ * {@link GLASS_FILL_ALPHA} prices a BRAND fill: a `primary` button whose label
+ * is that fill's own on-colour, sitting on one of Bloom's five neutral
+ * surfaces. A page header's island is neither of those things. It is a NEUTRAL
+ * surface off the existing ladder (`styles/surface-levels`, rung 1 — the same
+ * fill a card and a menu panel paint) and it floats over content Bloom does not
+ * own: a photograph, a video still, a map, a list that scrolls under it. Its
+ * label is the theme's own `text`, not an on-fill token.
+ *
+ * So the two materials are priced against different backdrops, and the number
+ * that is right for one is wrong for the other in a measurable direction:
+ *
+ *   brand fill   backdrop ∈ Bloom's own five surfaces      worst case: light mode,
+ *                                                          a white-ish page LIFTS
+ *                                                          the pane under a white
+ *                                                          label
+ *   chrome fill  backdrop ∈ [black, white] — anything      worst case: DARK mode
+ *                                                          over a WHITE backdrop,
+ *                                                          which lifts a dark pane
+ *                                                          under a white label
+ *
+ * That is why dark carries the HIGHER alpha here and light the lower one, which
+ * is the opposite of the intuition that a dark UI can afford more transparency.
+ * A dark island has the whole luminance range above it to be washed out INTO; a
+ * light island over the same white backdrop barely moves, because it is already
+ * near white.
+ *
+ * ── WHAT THESE TWO VALUES BUY ───────────────────────────────────────────────
+ *
+ * Measured over 64 presets x the two extremes of the backdrop range, with the
+ * theme's own `text` as the label, in `theme/__tests__/glass-colors.test.ts`.
+ * The gate pins the floors EXACTLY, in both directions, so a hundredth in
+ * either direction has to be a decision:
+ *
+ *   light 0.72  worst AA ratio over the range  …pinned by the gate
+ *   dark  0.80  worst AA ratio over the range  …pinned by the gate
+ *
+ * and both remain genuinely translucent: the gate also measures how far the
+ * PAINTED pane moves between a black and a white backdrop, asserts that
+ * movement is non-zero, and asserts it is monotonic in the alpha — so an alpha
+ * quietly raised to 1.0 to buy contrast fails on the translucency side rather
+ * than passing on the legibility side.
+ */
+export const GLASS_CHROME_ALPHA = { light: 0.72, dark: 0.8 } as const;
+
+/**
+ * Resolve the pane around a NEUTRAL chrome fill — an island of controls
+ * floating over content.
+ *
+ * Both arguments are resolved colour strings the caller already holds, for the
+ * same reason {@link resolveGlassColors} takes one: the caller is the only one
+ * who knows which rung of the surface ladder its container sits on. In practice
+ * that is `resolveSurfaceLevel(theme, 1)` — `.background` for `fill`, `.border`
+ * for `hairline` — which is the fill a card and a menu panel already paint, so
+ * an island reads as Bloom chrome rather than as a fourth material.
+ *
+ * The LABEL is not returned, exactly as in `resolveGlassColors`: a neutral pane
+ * carries the theme's own `text`, and the rungs under it come from
+ * `surfaceTextOn(theme, fill)` — the caller is already holding both.
+ */
+export function resolveChromeGlassColors(
+  fill: string,
+  hairline: string,
+  isDark: boolean,
+): GlassColors {
+  return {
+    fill: withAlpha(fill, GLASS_CHROME_ALPHA[isDark ? 'dark' : 'light']),
+    // The hairline keeps a little more body than the pane it edges: it is the
+    // lip of the island, and a hairline that dissolves at the same rate as the
+    // fill stops reading as an edge at exactly the moment the fill stops
+    // reading as a surface.
+    hairline: withAlpha(hairline, Math.min(1, GLASS_CHROME_ALPHA[isDark ? 'dark' : 'light'] + 0.12)),
+    hairlineWidth: BORDER_WIDTH.hairline,
+  };
+}

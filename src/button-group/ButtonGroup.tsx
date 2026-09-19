@@ -1,10 +1,14 @@
 import React, { Children, createContext, Fragment, isValidElement, memo, useContext, useMemo } from 'react';
 import { Platform, Pressable, View, type TextStyle } from 'react-native';
 
+import { useInheritedControl } from '../control-surface';
+import { GlassIsland } from '../glass';
 import { useTheme } from '../theme/use-theme';
 import { Text } from '../typography/Typography';
 import { useInteractionState } from '../hooks/use-interaction-state';
+import { resolveSurfaceLevel } from '../styles/surface-levels';
 import { NOT_DISABLED, interactiveWebCss, useInteractiveWebCss } from '../styles/interactive-web-css';
+import { withAlpha } from '../theme/color-utils';
 import type { WebCssStyle } from '../styles/web-view-style';
 import {
   BUTTON_RADIUS,
@@ -13,14 +17,30 @@ import {
   mixColor,
   resolveButtonRamps,
 } from '../button/shared';
+import type { ControlMaterial } from '../control-surface/types';
 import type { Theme } from '../theme/types';
 import type { ButtonGroupItemProps, ButtonGroupProps, ButtonGroupSize } from './types';
 
 /**
- * A group of secondary-style buttons fused into one control — one bordered,
- * shadowed container, items divided by 1px hairlines, only the outer ends
- * rounded. Colours come from the same Bloom-derived ramps as `Button`
- * (`button/shared.ts`), and like `Button` the container is a full pill.
+ * A group of buttons the consumer has declared as ONE control.
+ *
+ * ── TWO MATERIALS, ONE GROUP ────────────────────────────────────────────────
+ *
+ * `solid` is the original: one bordered, shadowed container, items divided by
+ * 1px hairlines, only the outer ends rounded, colours from the same
+ * Bloom-derived ramps as `Button` (`button/shared.ts`).
+ *
+ * `glass` is the same group as a floating ISLAND — one translucent pane
+ * (`glass/GlassIsland`) that the items sit FLUSH on. The group owns the
+ * material and the items paint no fill of their own at rest; a second fill
+ * under a translucent pane is the thing that makes a row of controls read as a
+ * row of cards rather than as one island, and a second BLUR is not available at
+ * all on Android.
+ *
+ * Neither is a decoration a caller has to ask for by name. The variant is
+ * INHERITED from the nearest `ControlSurface`, so `<ButtonGroup>` inside a
+ * floating `PageHeader` is glass and the same group inside a card is solid,
+ * with no prop either way. An explicit `variant` still wins.
  *
  *              medium    small
  *   item h     34        30       (plus the container's 1px border = 36 / 32)
@@ -75,6 +95,43 @@ function resolveGroupPalette(theme: Theme): GroupPalette {
       };
 }
 
+/**
+ * The items' paint on a GLASS island.
+ *
+ * Every state that is not "at rest" is an alpha of the theme's own `text` — an
+ * ink wash, not a fill. That is the one recipe that works on a pane whose
+ * composited colour Bloom cannot predict: a fixed neutral tuned against the
+ * island's own fill goes invisible the moment a photograph behind it moves the
+ * pane 40 levels, while a wash of the label's colour keeps the same relation to
+ * the label at every composite.
+ *
+ * `transparent` at rest is load-bearing rather than tidy. It is what makes the
+ * island ONE pane: give the items a fill and the group is a row of chips inside
+ * a capsule, which is the shape this variant exists to stop.
+ *
+ * The disabled label is read off the island's own fill with `surfaceTextOn`
+ * rather than picked from the ramp, because a ramp stop measured against the
+ * page is not measured against this surface.
+ */
+function resolveGlassItemPalette(theme: Theme): GroupPalette {
+  const { accent } = resolveButtonRamps(theme);
+  const level = resolveSurfaceLevel(theme, 1);
+  const ink = theme.colors.text;
+  const wash = theme.isDark ? { hover: 0.12, active: 0.2 } : { hover: 0.08, active: 0.14 };
+  return {
+    // The island owns the box: the group draws neither border nor divider.
+    groupBorder: 'transparent',
+    divider: withAlpha(ink, theme.isDark ? 0.16 : 0.12),
+    background: 'transparent',
+    hover: withAlpha(ink, wash.hover),
+    active: withAlpha(ink, wash.active),
+    disabledBackground: 'transparent',
+    foreground: ink,
+    disabledForeground: level.textGraphical,
+    ring: accent[500],
+  };
+}
+
 // ---------------------------------------------------------------------------
 //  Keyboard focus on web — an inset `ring-2`. Items are react-native-web
 //  `Pressable`s, so the rules hang off a `dataSet` attribute (a class never
@@ -110,10 +167,18 @@ ${SELECTOR}${NOT_DISABLED}:focus-visible {
 
 const IS_WEB = Platform.OS === 'web';
 
-const GroupContext = createContext<{ size: ButtonGroupSize; palette: GroupPalette } | null>(null);
+interface GroupContextValue {
+  size: ButtonGroupSize;
+  material: ControlMaterial;
+  palette: GroupPalette;
+}
+
+const GroupContext = createContext<GroupContextValue | null>(null);
 
 const ButtonGroupComponent: React.FC<ButtonGroupProps> = ({
-  size = 'medium',
+  variant,
+  size: sizeProp,
+  dividers,
   children,
   accessibilityLabel,
   style,
@@ -121,9 +186,48 @@ const ButtonGroupComponent: React.FC<ButtonGroupProps> = ({
 }) => {
   const theme = useTheme();
   useInteractiveWebCss(STYLE_ID, BUTTON_GROUP_CSS);
-  const palette = useMemo(() => resolveGroupPalette(theme), [theme]);
-  const context = useMemo(() => ({ size, palette }), [size, palette]);
+  const material = useInheritedControl('material', variant, 'solid');
+  const size = useInheritedControl('density', sizeProp, 'medium');
+  const palette = useMemo(
+    () => (material === 'glass' ? resolveGlassItemPalette(theme) : resolveGroupPalette(theme)),
+    [material, theme],
+  );
+  const context = useMemo<GroupContextValue>(
+    () => ({ size, material, palette }),
+    [size, material, palette],
+  );
   const items = Children.toArray(children).filter(isValidElement);
+  const showDividers = dividers ?? material === 'solid';
+
+  const row = items.map((item, index) => (
+    <Fragment key={item.key ?? index}>
+      {/* `divide-x`: a hairline BETWEEN items, never at the ends. */}
+      {showDividers && index > 0 ? (
+        <View style={{ width: 1, backgroundColor: palette.divider }} />
+      ) : null}
+      {item}
+    </Fragment>
+  ));
+
+  if (material === 'glass') {
+    return (
+      <GroupContext.Provider value={context}>
+        {/*
+          The island mounts its own `ControlSurface` with `material: 'glass'`,
+          so an item rendered through a trigger's `asChild` — outside this
+          group's own children, in a caller's tree — still paints flush.
+        */}
+        <GlassIsland
+          role="group"
+          accessibilityLabel={accessibilityLabel}
+          style={style}
+          testID={testID}
+        >
+          {row}
+        </GlassIsland>
+      </GroupContext.Provider>
+    );
+  }
 
   return (
     <GroupContext.Provider value={context}>
@@ -146,13 +250,7 @@ const ButtonGroupComponent: React.FC<ButtonGroupProps> = ({
           style,
         ]}
       >
-        {items.map((item, index) => (
-          <Fragment key={item.key ?? index}>
-            {/* `divide-x`: a hairline BETWEEN items, never at the ends. */}
-            {index > 0 ? <View style={{ width: 1, backgroundColor: palette.divider }} /> : null}
-            {item}
-          </Fragment>
-        ))}
+        {row}
       </View>
     </GroupContext.Provider>
   );
@@ -160,21 +258,42 @@ const ButtonGroupComponent: React.FC<ButtonGroupProps> = ({
 
 const ButtonGroupItemComponent: React.FC<ButtonGroupItemProps> = ({
   onPress,
+  onLongPress,
   children,
   size: sizeProp,
+  variant,
   selected = false,
   disabled = false,
   iconOnly = false,
   leadingIcon: LeadingIcon,
   trailingIcon: TrailingIcon,
   accessibilityLabel,
+  accessibilityRole = 'button',
+  hitSlop,
+  'aria-expanded': ariaExpanded,
+  'aria-haspopup': ariaHasPopup,
   style,
   testID,
 }) => {
   const theme = useTheme();
   const group = useContext(GroupContext);
-  const palette = useMemo(() => group?.palette ?? resolveGroupPalette(theme), [group, theme]);
-  const size = sizeProp ?? group?.size ?? 'medium';
+  // An item can be rendered OUTSIDE its group's children — an anchored family's
+  // `asChild` trigger clones it into the caller's tree — so the material falls
+  // back to the inherited `ControlSurface` (which `GlassIsland` mounts) before
+  // it falls back to `solid`.
+  const inheritedMaterial = useInheritedControl('material', undefined, 'solid');
+  const inheritedDensity = useInheritedControl('density', undefined, 'medium');
+  const material = variant ?? group?.material ?? inheritedMaterial;
+  const palette = useMemo(
+    () =>
+      group && group.material === material
+        ? group.palette
+        : material === 'glass'
+          ? resolveGlassItemPalette(theme)
+          : resolveGroupPalette(theme),
+    [group, material, theme],
+  );
+  const size = sizeProp ?? group?.size ?? inheritedDensity;
   const geometry = GEOMETRY[size];
   const { state: hovered, onIn: onHoverIn, onOut: onHoverOut } = useInteractionState();
   const { state: pressed, onIn: onPressIn, onOut: onPressOut } = useInteractionState();
@@ -198,6 +317,10 @@ const ButtonGroupItemComponent: React.FC<ButtonGroupItemProps> = ({
     justifyContent: 'center',
     gap: 4,
     backgroundColor: background,
+    // On glass the island does not clip (a clipping node loses its iOS drop
+    // shadow), so the item rounds its OWN highlight. On solid the container
+    // clips and a square item is what makes the fused ends read as one pill.
+    borderRadius: material === 'glass' ? BUTTON_RADIUS : undefined,
     '--bloom-button-group-ring': palette.ring,
   };
 
@@ -208,17 +331,21 @@ const ButtonGroupItemComponent: React.FC<ButtonGroupItemProps> = ({
       {...(IS_WEB ? ({ dataSet: { bloomButtonGroupItem: '' } } as Record<string, unknown>) : {})}
       style={[containerStyle, style]}
       onPress={disabled ? undefined : onPress}
+      onLongPress={disabled ? undefined : onLongPress}
       onPressIn={disabled ? undefined : onPressIn}
       onPressOut={disabled ? undefined : onPressOut}
       onHoverIn={onHoverIn}
       onHoverOut={onHoverOut}
+      hitSlop={hitSlop}
       disabled={disabled}
-      accessibilityRole="button"
+      accessibilityRole={accessibilityRole}
       accessibilityLabel={accessibilityLabel}
       // Both spellings: react-native-web reads only `aria-pressed`, React Native
       // has no `aria-pressed` and reads `accessibilityState`.
-      accessibilityState={{ disabled, selected }}
+      accessibilityState={{ disabled, selected, expanded: ariaExpanded }}
       aria-pressed={selected}
+      aria-expanded={ariaExpanded}
+      aria-haspopup={ariaHasPopup}
       testID={testID}
     >
       {LeadingIcon ? (

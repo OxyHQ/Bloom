@@ -8,6 +8,7 @@ import {
   GLASS_BLUR_INTENSITY,
   GLASS_RIM_HIGHLIGHT,
   GLASS_SHEEN,
+  resolveChromeGlassColors,
   resolveGlassColors,
 } from '../theme/glass-colors';
 import type { GlassSurfaceProps } from './types';
@@ -54,12 +55,19 @@ let glassSheenIdCounter = 0;
 const GlassSurfaceComponent: React.FC<GlassSurfaceProps> = ({
   fill,
   radius,
+  material = 'accent',
   sheen = true,
   style,
   testID,
 }) => {
   const theme = useTheme();
-  const glass = useMemo(() => resolveGlassColors(fill), [fill]);
+  const glass = useMemo(
+    () =>
+      material === 'chrome'
+        ? resolveChromeGlassColors(fill, fill, theme.isDark)
+        : resolveGlassColors(fill),
+    [fill, material, theme.isDark],
+  );
   // Per instance, because two panes in one document would otherwise share an id
   // and the survivor of an unmount would reference a gradient that is gone. Same
   // counter shape as `AvatarRing`.

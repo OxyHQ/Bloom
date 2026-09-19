@@ -40,8 +40,10 @@ const LabelComponent = function Label({
 }: LabelProps) {
   const palette = useTextFieldPalette();
 
+  // `null` is DISTINCT from omitted: omitted falls back to the control's id,
+  // `null` says the label names a group and points at nothing.
   const webProps: Record<string, unknown> =
-    IS_WEB ? { htmlFor: htmlFor ?? nativeID } : {};
+    IS_WEB ? { htmlFor: htmlFor === null ? undefined : (htmlFor ?? nativeID) } : {};
 
   return (
     <Text

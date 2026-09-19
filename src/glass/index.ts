@@ -1,3 +1,4 @@
+export { GlassIsland } from './GlassIsland';
 export { GlassSurface } from './GlassSurface';
 export {
   GlassBlurTargetProvider,
@@ -5,6 +6,8 @@ export {
   useWindowedBlurTarget,
 } from './blur-target';
 export type {
+  GlassIslandProps,
+  GlassMaterial,
   GlassSurfaceProps,
   GlassBlurTargetProviderProps,
   GlassBlurWindowProps,

@@ -35,6 +35,7 @@ import type { ReactNode } from 'react';
 
 import { GlassBlurTargetProvider } from '../glass/blur-target';
 import { BottomEdgeProvider } from '../layout/bottom-edge';
+import { TopEdgeProvider } from '../layout/top-edge';
 import { ImageResolverProvider, type ImageResolver } from '../image-resolver';
 import { BloomHapticsProvider } from '../hooks/use-haptics';
 import { TabBarMinimizeProvider } from '../tab-bar/context';
@@ -76,7 +77,17 @@ export function BloomProvider({
                 the other.
               */}
               <BottomEdgeProvider>
-                <TabBarMinimizeProvider>{children}</TabBarMinimizeProvider>
+                {/*
+                  And the top edge's, for the same reason one edge further up: a
+                  floating `PageHeader` overlays the content rather than sitting
+                  above it, so the content has to be told how much of the edge is
+                  gone. Two registries rather than one keyed by edge, because a
+                  reader of either only ever wants one number and must not
+                  re-render when the other moves.
+                */}
+                <TopEdgeProvider>
+                  <TabBarMinimizeProvider>{children}</TabBarMinimizeProvider>
+                </TopEdgeProvider>
               </BottomEdgeProvider>
             </GlassBlurTargetProvider>
           </BloomHapticsProvider>

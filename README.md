@@ -20,7 +20,7 @@
 
 ### What it is
 
-Components, hooks and design tokens published as `@oxy.so/bloom` across 167 subpath exports, shipped as `src` for Metro and as compiled CommonJS and ESM for everyone else. Web builds resolve platform forks automatically through export conditions, so a `.web.tsx` fork never reaches a native bundle.
+Components, hooks and design tokens published as `@oxy.so/bloom` across 168 subpath exports, shipped as `src` for Metro and as compiled CommonJS and ESM for everyone else. Web builds resolve platform forks automatically through export conditions, so a `.web.tsx` fork never reaches a native bundle.
 
 Styling is NativeWind classes throughout. There are no colour props and no wrapper components to theme a button, because a second way to set a colour is a second thing that can disagree.
 
@@ -151,11 +151,11 @@ Every palette is generated from a single seed colour by a dependency free colour
 
 ## Components
 
-Bloom publishes 167 subpath exports. Importing from the subpath rather than the root keeps a bundle to what it actually renders.
+Bloom publishes 168 subpath exports. Importing from the subpath rather than the root keeps a bundle to what it actually renders.
 
 | Group | Exports |
 |---|---|
-| Providers and theme | `provider`, `theme`, `theme-toggle`, `color-presets`, `preset-vars`, `design-tokens`, `tailwind-preset`, `styles`, `hooks` |
+| Providers and theme | `provider`, `theme`, `theme-toggle`, `color-presets`, `preset-vars`, `design-tokens`, `tailwind-preset`, `styles`, `control-surface`, `hooks` |
 | App shell and navigation | `app-shell`, `page-header`, `sidebar`, `rail`, `breadcrumb`, `pagination`, `tabs`, `tab-bar`, `layout`, `content-panel` |
 | Overlays | `dialog`, `alert-dialog`, `bottom-sheet`, `popover`, `context-menu`, `dropdown-menu`, `menubar`, `tooltip`, `overlay`, `portal`, `teleport`, `surfaces`, `settings-modal` |
 | Actions | `button`, `button-group`, `social-button`, `fab`, `frosted-icon-button`, `pressable-scale`, `subtle-hover` |
@@ -175,7 +175,7 @@ Bloom publishes 167 subpath exports. Importing from the subpath rather than the 
 
 ## Documentation
 
-Component guides live in [`docs/`](./docs), one `.mdx` per family, and **they ship inside the package** at `node_modules/@oxy.so/bloom/docs/`. The copy you read there always describes the version you installed, which matters most for [migrating to 2.0](./docs/migrating-to-2.0.mdx).
+Component guides live in [`docs/`](./docs), one `.mdx` per family, and **they ship inside the package** at `node_modules/@oxy.so/bloom/docs/`. The copy you read there always describes the version you installed, which matters most for [migrating to 3.0](./docs/migrating-to-3.0.mdx).
 
 Start with [getting started](./docs/getting-started.mdx), [theme](./docs/theme.mdx) and [design tokens](./docs/design-tokens.mdx). Then per surface: [app shell](./docs/app-shell.mdx), [sidebar](./docs/sidebar.mdx), [data table](./docs/data-table.mdx), [chart cards](./docs/chart-cards.mdx), [composer panel](./docs/composer-panel.mdx), [dialog](./docs/dialog.mdx), [bottom sheet](./docs/bottom-sheet.mdx), [toast](./docs/toast.mdx), [alert](./docs/alert.mdx), [dropdown menu](./docs/dropdown-menu.mdx), [select](./docs/select.mdx), [context menu](./docs/context-menu.mdx), [button](./docs/button.mdx), [avatar](./docs/avatar.mdx), [text field](./docs/text-field.mdx), [settings list](./docs/settings-list.mdx), [tab bar](./docs/tab-bar.mdx) and [loading](./docs/loading.mdx).
 
