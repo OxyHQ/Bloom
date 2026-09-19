@@ -138,14 +138,42 @@ export const FloatingDark: Story = {
   render: Floating.render,
 };
 
+const DEEP_WATER = '#1d3b53';
+
 /**
- * Over a colour the library does not choose. The scrim is the PAGE colour, so
- * an app with a tinted screen gets a gradient that matches it rather than a
- * grey wash.
+ * Over a colour the THEME does not know about.
+ *
+ * The scrim fades content into the surface it is leaving, so its colour has to
+ * be that surface — and the header cannot read the pixel behind it. A screen
+ * that paints its own background hands it over with `scrimColor`; without one
+ * the ramp is the theme's background, which over a tinted page is a wash of the
+ * wrong hue rather than a fade.
  */
 export const FloatingOverColour: Story = {
+  // Dark, because the page colour is dark: a screen that paints a near-black
+  // surface in a LIGHT theme has a text-contrast problem of its own, and it is
+  // not the one this story is about.
+  globals: { theme: 'dark' },
   render: () => (
-    <Page fill="#1d3b53">
+    <Page fill={DEEP_WATER}>
+      <PageHeader
+        testID="header"
+        onBack={back}
+        title="Deep water"
+        scrim="always"
+        scrimColor={DEEP_WATER}
+        actions={<PageActions />}
+      />
+      <Rows count={12} />
+    </Page>
+  ),
+};
+
+/** The same screen WITHOUT `scrimColor` — the wrong-hue wash, for comparison. */
+export const FloatingScrimColourMismatch: Story = {
+  globals: { theme: 'dark' },
+  render: () => (
+    <Page fill={DEEP_WATER}>
       <PageHeader
         testID="header"
         onBack={back}

@@ -68,6 +68,8 @@ It is an opacity ramp of one flat colour, not a blur of varying intensity. `back
 
 `scrim="auto"` fades it in over `[0, scrollThreshold]`, so it appears when content starts passing under. `"always"` paints it at rest — for a header born over a photograph. `"none"` removes it and leaves legibility to the islands alone.
 
+**The colour is the PAGE's, and the header cannot read it.** The ramp's job is to fade content into the surface it is leaving, so its colour has to be that surface — `theme.colors.background` by default. A screen that paints its own background (a tinted section, a brand panel, a dark surface inside a light app) hands it over with `scrimColor`; without it the ramp is a wash of the wrong hue rather than a fade. Pass an **opaque** colour: the alpha belongs to the ramp, and a colour carrying its own would multiply with it.
+
 **The islands protect themselves; the title does not.** An island carries its own material and is legible over both ends of the backdrop range (measured, in [Glass](/docs/glass)). A title is bare text on whatever is behind it, and with `scrim="auto"` there is nothing behind it until the page scrolls. So a header that sits over a photograph **at rest** needs one of two explicit answers:
 
 - `titleReveal="onScroll"` — the photo already names the screen, and the title arrives with the scrim. This is what the hero pattern wants.
@@ -90,6 +92,7 @@ Leaving both at their defaults over a hero photo is the one combination that rea
 | `leading` | — | After the back capsule, before the title (an avatar, a logo). |
 | `actions` | — | End of the bar. Floating: wrapped in a glass `ControlSurface`. |
 | `scrim` | `'auto'` | `presentation="floating"` only. `auto` \| `always` \| `none`. |
+| `scrimColor` | `theme.colors.background` | The opaque colour the edge effect fades from. Pass it when the screen paints a background the theme does not know about. |
 | `border` | `'auto'` | `presentation="bar"` only. `auto` fades the separator in with scroll; `always`; `none`. |
 | `transparent` | `false` | `presentation="bar"` only: background and shadow fade in with scroll. It no longer hides the title. |
 | `scrollY` | — | A Reanimated `SharedValue<number>`. Omitted, the header reads `ScrollOffsetProvider`, then `window.scrollY` on web. |
@@ -190,16 +193,25 @@ Measured at 900 × 780, device scale 1, on the `teal` preset:
 | property | how | result |
 | --- | --- | --- |
 | islands, not a strip | runs of chrome ≥20px along a line through the bar | **2** light (48, 126), **3** dark (36, 70, 36) |
-| the island is translucent | the same back capsule over the page and over a photograph | moved **34** of 255 |
-| the edge ends in nothing | the vertical ramp, top to page colour | travelled **187** of 255 |
-| no horizontal cut | the largest single-row step down that ramp | **4** of 255 |
+| the island is translucent | the same back capsule over the page and over a photograph | moved **35** of 255 |
+| the edge ends in nothing | the ramp against a deliberately mismatched scrim colour | travelled **67** of 255 |
+| no horizontal cut | the largest single-row step down that ramp | **2** of 255 |
+| a matched scrim is invisible | the same ramp with `scrimColor` = the page colour | travelled **0** |
 | control | the same row sampler on `presentation="bar"` | **0** runs — a strip is one colour |
 
-Two of those readings deserve their real explanation rather than a round number. In **light** mode the sampler reports two runs, not three: the two action islands are 8px apart and their drop shadows meet in the gap, so at a 1-level tolerance the gap is not backdrop. The gap is visible; it is not *measurably* backdrop. In **dark** mode, where the shadow is weaker against a dark page, all three separate cleanly. And the island fill in light mode is the card fill over a near-white page — the same relation a `Card` has to the page, read by its hairline and shadow rather than by its fill, which is deliberate and is why it is consistent with the rest of Bloom.
+Three of those readings deserve their real explanation rather than a round number.
+
+The ramp is measured against a **deliberately mismatched** `scrimColor`, because that is the only configuration in which its shape is visible at all: a correctly configured scrim is the page's own colour, so over the page it paints nothing and its profile is a flat line. The row below it measures exactly that — the same header, the same `scrim="always"`, the colour handed over, travelling 0.
+
+In **light** mode the sampler reports two island runs, not three: the two action islands are 8px apart and their drop shadows meet in the gap, so at a 1-level tolerance the gap is not backdrop. The gap is visible; it is not *measurably* backdrop. In **dark** mode, where the shadow is weaker against a dark page, all three separate cleanly.
+
+And the island fill in light mode is the card fill over a near-white page — the same relation a `Card` has to the page, read by its hairline and shadow rather than by its fill. That is deliberate, and it is why an island reads as Bloom chrome rather than as a new material.
 
 ![The floating header over a list, light](./page-header-islands.png)
 
 ![The same header in dark mode](./page-header-islands-dark.png)
+
+![Content fading out under the edge effect as the page scrolls](./page-header-scrim.png)
 
 ![The islands over a photograph, title held back](./page-header-islands-photo.png)
 

@@ -112,8 +112,24 @@ const GlassSurfaceComponent: React.FC<GlassSurfaceProps> = ({
         content Bloom does not own.
       */}
       <View style={[StyleSheet.absoluteFill, { backgroundColor: glass.fill }]} />
+      {/*
+        The sheen's `width`/`height` are load-bearing beside `absoluteFill`: an
+        `<svg>` is a REPLACED element, so `width: auto` resolves to its intrinsic
+        size and an SVG without one falls back to CSS's 300 x 150. `left: 0;
+        right: 0` does not stretch it — the `right` is over-constrained and
+        dropped. On a surface narrower than 300 the sheen still covers, but its
+        gradient is scaled over 150px instead of the surface's own height, so
+        only the top of the ramp is ever visible; on a wider one it stops dead
+        at 300px. Native lays the host view out with flexbox and is unaffected.
+        Gate: `src/__tests__/svg-absolute-fill-size.test.ts`.
+      */}
       {sheen ? (
-        <Svg style={StyleSheet.absoluteFill} testID={testID ? `${testID}-sheen` : undefined}>
+        <Svg
+          width="100%"
+          height="100%"
+          style={StyleSheet.absoluteFill}
+          testID={testID ? `${testID}-sheen` : undefined}
+        >
           <Defs>
             {/* Top to bottom: simulated light from above. */}
             {/*

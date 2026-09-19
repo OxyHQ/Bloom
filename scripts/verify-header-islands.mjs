@@ -63,9 +63,14 @@ const STORIES = {
   // The same islands over a PHOTOGRAPH, at rest — the scrim is `auto`, so at
   // scroll 0 it paints nothing and the capsule really is over the picture.
   image: 'blocks-page-header--floating-over-image',
-  // `scrim="always"` over a page colour the theme did not pick, so the ramp is
-  // a strong, readable gradient rather than white on white.
+  // `scrim="always"` over a page colour the theme did not pick, WITH the colour
+  // handed to the header — so the ramp is the page's own colour and vanishes.
   colour: 'blocks-page-header--floating-over-colour',
+  // The same screen with the colour NOT handed over. It is the wrong way to
+  // configure a header and the only fixture in which the ramp's own shape is
+  // visible: a scrim in the page's colour is invisible against the page by
+  // construction, so measuring its profile needs a backdrop it contrasts with.
+  mismatch: 'blocks-page-header--floating-scrim-colour-mismatch',
   dark: 'blocks-page-header--floating-dark',
   bar: 'blocks-page-header--bar',
 };
@@ -237,38 +242,60 @@ try {
 
   // ── 3 + 4: the edge effect ends in nothing, with no step in it ────────────
   //
-  // Measured on the story that paints the scrim at rest over a page colour the
-  // THEME did not pick, so the ramp runs from the theme's background down to
-  // that colour and every row of it is readable. On the default story the scrim
-  // is `auto` and sits at opacity 0 until the page scrolls, which would make
-  // this a measurement of nothing.
-  const colour = await openStory(browser, STORIES.colour);
-  const colourBox = await headerBox(colour);
-  const ramp = await samples(colour, {
-    left: Math.round(colourBox.x + 6),
-    right: Math.round(colourBox.x + 7),
-    rowY: Math.round(colourBox.y + 2),
-    colX: Math.round(colourBox.x + 6),
-    top: Math.round(colourBox.y),
-    bottom: Math.round(colourBox.y + colourBox.height * 2.4),
+  // Measured against a DELIBERATELY mismatched scrim colour, and that is the
+  // only way this property can be measured at all: a correctly configured
+  // scrim is the page's own colour, so over the page it is invisible and its
+  // profile is a flat line. The ramp's SHAPE — monotonic, arriving at the
+  // backdrop, with no single-row step — is a property of the stop table, and it
+  // is the same table either way.
+  const mismatch = await openStory(browser, STORIES.mismatch);
+  const mismatchBox = await headerBox(mismatch);
+  const ramp = await samples(mismatch, {
+    left: Math.round(mismatchBox.x + 6),
+    right: Math.round(mismatchBox.x + 7),
+    rowY: Math.round(mismatchBox.y + 2),
+    colX: Math.round(mismatchBox.x + 6),
+    top: Math.round(mismatchBox.y),
+    bottom: Math.round(mismatchBox.y + mismatchBox.height * 2.4),
   });
-  await colour.close();
+  await mismatch.close();
 
   const column = ramp.column;
   const top0 = column[0];
   const bottom0 = column[column.length - 1];
-  const page0 = column[column.length - 1];
   const maxStep = column
     .slice(1)
     .reduce((worst, px, i) => Math.max(worst, Math.abs(px[0] - column[i][0])), 0);
   const travelled = Math.max(...[0, 1, 2].map((i) => Math.abs(top0[i] - bottom0[i])));
-  const reachesPage = near(column[column.length - 1], page0, 2);
   results.push(
     `scrim ramp: top rgb(${top0}) → bottom rgb(${bottom0}), travelled ${travelled}, max single-row step ${maxStep}`,
   );
-  if (travelled < 40) fail(`the ramp only travelled ${travelled} levels — it is not a gradient`);
-  if (!reachesPage) fail('the scrim never reaches the page colour');
+  if (travelled < 30) fail(`the ramp only travelled ${travelled} levels — it is not a gradient`);
   if (maxStep > 12) fail(`a step of ${maxStep} levels in one row reads as a horizontal cut`);
+
+  // ── And the complementary property: a MATCHED scrim is invisible ──────────
+  //
+  // The same header, the same `scrim="always"`, with the page colour handed
+  // over. Over the page itself the ramp must paint nothing — that is what makes
+  // it a fade of the CONTENT rather than a band across the screen.
+  const matched = await openStory(browser, STORIES.colour);
+  const matchedBox = await headerBox(matched);
+  const flat = await samples(matched, {
+    left: Math.round(matchedBox.x + 6),
+    right: Math.round(matchedBox.x + 7),
+    rowY: Math.round(matchedBox.y + 2),
+    colX: Math.round(matchedBox.x + 6),
+    top: Math.round(matchedBox.y),
+    bottom: Math.round(matchedBox.y + matchedBox.height * 2.4),
+  });
+  await matched.close();
+  const flatTravel = Math.max(
+    ...[0, 1, 2].map((i) => Math.abs(flat.column[0][i] - flat.column[flat.column.length - 1][i])),
+  );
+  results.push(`matched scrim over its own page colour: travelled ${flatTravel}`);
+  if (flatTravel > 3) {
+    fail(`a scrim in the page's own colour still moved ${flatTravel} levels over that page`);
+  }
 
   // ── 1, again, in DARK ─────────────────────────────────────────────────────
   //

@@ -135,6 +135,50 @@ describe('PageHeader, floating', () => {
     expect(scrimHeight).toBeGreaterThan(56);
   });
 
+  it('fades from the PAGE colour, and from whatever colour the screen hands it', () => {
+    // The ramp's job is to fade content into the surface it is leaving, so its
+    // colour has to be that surface — and the header cannot read the pixel
+    // behind it. Both halves are asserted: the default is the theme's, and an
+    // explicit colour reaches every stop rather than only the first.
+    const stopsOf = (tree: unknown) =>
+      hostNodes(tree)
+        .filter((n) => n.type === 'Stop')
+        .map((n) => n.props.stopColor);
+
+    const themed = renderHeader({ title: 'A', scrim: 'always' });
+    const themeBackground = stopsOf(themed.toJSON())[0];
+    expect(typeof themeBackground).toBe('string');
+    expect(stopsOf(themed.toJSON()).every((c) => c === themeBackground)).toBe(true);
+    themed.unmount();
+
+    const custom = renderHeader({ title: 'A', scrim: 'always', scrimColor: '#1d3b53' });
+    const stops = stopsOf(custom.toJSON());
+    expect(stops.length).toBeGreaterThanOrEqual(3);
+    expect(stops.every((c) => c === '#1d3b53')).toBe(true);
+    // The alpha is the RAMP's and travels in its own prop — a stop colour
+    // carrying alpha renders at full strength on native (react-native-svg drops
+    // the channel inside `stopColor`), which is the defect `GLASS_SHEEN`
+    // documents.
+    const opacities = hostNodes(custom.toJSON())
+      .filter((n) => n.type === 'Stop')
+      .map((n) => n.props.stopOpacity);
+    expect(opacities[0]).toBe(1);
+    expect(opacities[opacities.length - 1]).toBe(0);
+  });
+
+  it('sizes its gradient, because an absolutely-filling svg does not', () => {
+    // An `<svg>` is a replaced element: without a width it falls back to CSS's
+    // 300 x 150 and `left: 0; right: 0` does not stretch it. Measured in
+    // Chrome before this prop existed: a 760px header painted a 300 x 150 block
+    // with a hard vertical edge down the middle. The source scan in
+    // `svg-absolute-fill-size.test.ts` covers the whole tree; this pins the
+    // header's own.
+    const screen = renderHeader({ title: 'A', scrim: 'always' });
+    const svg = hostNodes(screen.toJSON()).find((n) => n.type === 'Svg');
+    expect(svg?.props.width).toBe('100%');
+    expect(svg?.props.height).toBe('100%');
+  });
+
   it('the scrim takes no presses, and neither do the gaps between islands', () => {
     const screen = renderHeader({
       title: 'A',

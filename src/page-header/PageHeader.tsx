@@ -120,6 +120,7 @@ function PageHeaderComponent({
   border = 'auto',
   transparent = false,
   scrim = 'auto',
+  scrimColor,
   scrollY: externalScrollY,
   scrollThreshold = DEFAULT_THRESHOLD,
   sticky = true,
@@ -337,7 +338,11 @@ function PageHeaderComponent({
       testID={testID ? `${testID}-scrim` : undefined}
     >
       <EdgeScrim
-        color={theme.colors.background}
+        // The PAGE colour by default: the scrim's job is to fade content into
+        // the surface it is leaving, so the right colour is the one that
+        // surface already is. A screen that paints its own background has to
+        // say so — the header cannot read the pixel behind it.
+        color={scrimColor ?? theme.colors.background}
         testID={testID ? `${testID}-scrim-gradient` : undefined}
       />
     </Animated.View>

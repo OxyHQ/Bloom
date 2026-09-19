@@ -46,6 +46,21 @@ import { useSvgIdPrefix } from '../styles/svg-id';
  * white-to-black wipe while every gate stayed green. The colour and the opacity
  * travel here in separate props for the same reason.
  *
+ * ── `width="100%"` IS NOT REDUNDANT ─────────────────────────────────────────
+ *
+ * An `<svg>` is a REPLACED element. With `width: auto` its used width is its
+ * INTRINSIC width, and an SVG with no intrinsic size falls back to CSS's
+ * default 300 x 150 — so `position: absolute; left: 0; right: 0` does NOT
+ * stretch it: `right` is over-constrained and dropped. Measured in Chrome
+ * before this prop existed: a 760px-wide header painted a 300 x 150 block of
+ * scrim with a hard vertical edge down the middle of the screen, over content
+ * that was otherwise untouched.
+ *
+ * Native is unaffected — react-native-svg lays its host view out with flexbox
+ * there — which is exactly why the omission survives review: it is correct on
+ * the platform most of this library is tested on. Gate:
+ * `src/__tests__/svg-absolute-fill-size.test.ts`.
+ *
  * ── THE GRADIENT ID ─────────────────────────────────────────────────────────
  *
  * From `useSvgIdPrefix`, which is `useId` with React's punctuation stripped.
@@ -81,7 +96,7 @@ export interface EdgeScrimProps {
 const EdgeScrimComponent: React.FC<EdgeScrimProps> = ({ color, testID }) => {
   const id = `${useSvgIdPrefix('bloom-page-header-scrim')}gradient`;
   return (
-    <Svg style={StyleSheet.absoluteFill} testID={testID}>
+    <Svg width="100%" height="100%" style={StyleSheet.absoluteFill} testID={testID}>
       <Defs>
         <LinearGradient id={id} x1="0" y1="0" x2="0" y2="1">
           {SCRIM_STOPS.map((stop) => (

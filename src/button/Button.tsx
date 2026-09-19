@@ -135,7 +135,16 @@ const ButtonGradientFill = memo(function ButtonGradientFill({
       pointerEvents="none"
       style={[StyleSheet.absoluteFill, { borderRadius: radius, overflow: 'hidden' }]}
     >
-      <Svg style={StyleSheet.absoluteFill}>
+      {/*
+        `width`/`height` are load-bearing beside `absoluteFill`: an `<svg>` is a
+        REPLACED element, so `width: auto` resolves to its intrinsic size and an
+        SVG without one falls back to CSS's 300 x 150 — `left: 0; right: 0` does
+        not stretch it. A button wider than 300px stopped its gradient dead at
+        300, and every narrower one scaled the vertical ramp over 150px instead
+        of its own 36, so only the top quarter of the gradient was ever visible.
+        Native is unaffected. Gate: `src/__tests__/svg-absolute-fill-size.test.ts`.
+      */}
+      <Svg width="100%" height="100%" style={StyleSheet.absoluteFill}>
         <Defs>
           <LinearGradient id={id} x1="0" y1="0" x2="0" y2="1">
             <Stop offset="0" stopColor={gradient[0]} />

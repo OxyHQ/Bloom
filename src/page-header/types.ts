@@ -116,6 +116,22 @@ export interface PageHeaderProps {
   transparent?: boolean;
   /** `presentation="floating"` only. Default `auto`. */
   scrim?: PageHeaderScrim;
+  /**
+   * The colour the edge effect fades FROM. Defaults to `theme.colors.background`
+   * — the page colour, which is what the content scrolling under the header is
+   * disappearing into.
+   *
+   * Pass it when the screen paints a background the theme does not know about:
+   * a tinted section, a brand panel, a dark surface inside a light app. The
+   * header cannot read the colour behind it, and a scrim in the theme's
+   * background over a page in some other colour is a wash of the wrong hue
+   * rather than a fade.
+   *
+   * It must be OPAQUE. The alpha is the ramp's, and a colour that brings its
+   * own would multiply with it — `rgba(0,0,0,0.5)` at the ramp's 0.86 paints
+   * 0.43 and reads as a weak, dirty veil rather than the colour you asked for.
+   */
+  scrimColor?: string;
 
   /**
    * The scroll offset driving the scrim, the separator and the shadow.

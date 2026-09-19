@@ -109,6 +109,8 @@ ignores both. Its counterpart is `scrim`:
 | `border="none"` | `scrim="none"` — no gradient; the islands carry legibility alone |
 | `transparent` | (the floating header is always transparent) |
 
+A floating header on a screen that paints its own background colour also wants `scrimColor`: the ramp fades content into the surface it is leaving, and the header cannot read the pixel behind it.
+
 ## Everything else is additive
 
 Nothing below removes or renames anything.
@@ -140,6 +142,25 @@ Nothing below removes or renames anything.
   never working.
 - **A neutral `chrome` glass role**, measured over the whole backdrop range. See
   [Glass](/docs/glass).
+
+## One fix that changes existing pixels on web
+
+`<Svg style={StyleSheet.absoluteFill}>` does not fill anything on web. An
+`<svg>` is a replaced element, so `width: auto` resolves to its intrinsic size
+and an SVG without one falls back to CSS's default 300 × 150 — `left: 0;
+right: 0` does not stretch it. Three surfaces were affected, all of them
+shipping since before 3.0:
+
+- **`Button`'s gradient** — a button wider than 300px stopped its gradient dead
+  at 300px, and every narrower one scaled the vertical ramp over 150px instead
+  of the button's own height, so only the top quarter of the gradient showed.
+- **`GlassSurface`'s sheen** — the same, on every glass surface.
+- The new header's scrim, which is how it was found.
+
+All three now declare `width="100%" height="100%"`. **Native was never
+affected** (react-native-svg lays its host view out with flexbox there), so this
+changes web pixels only, in the direction of what the component always meant to
+paint. Gate: `src/__tests__/svg-absolute-fill-size.test.ts`.
 
 ## What did not change
 
