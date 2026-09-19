@@ -1,6 +1,6 @@
 ---
 title: Icons
-description: Remix Icon, one component per glyph — how to import it, how apps migrate off the retired Bloom set, and why a wrong name is invisible to the compiler.
+description: Remix Icon, one component per glyph — how to import one glyph instead of all 461, how apps migrate off the retired Bloom set, and why a wrong name is invisible to the compiler.
 order: 66
 ---
 
@@ -16,6 +16,59 @@ import { RiNotification3Line as BellIcon } from '@oxy.so/bloom/icons';
 
 <BellIcon size="lg" fill={colors.text} />
 ```
+
+## Import one glyph, ship one glyph
+
+**Metro does not tree-shake.** `@oxy.so/bloom/icons` is a flat barrel over all
+461 glyphs, so an app that names one icon through it bundles all 461 — the
+import is a static graph edge to every one of them, and nothing downstream
+removes what the app never renders.
+
+Every glyph is therefore *also* its own subpath. The module name is the export
+name, so there is nothing new to look up:
+
+```tsx
+import { RiNotification3Line as BellIcon } from '@oxy.so/bloom/icons/RiNotification3Line';
+```
+
+Measured on a Metro bundle (`--platform ios --dev false --minify true`) built
+from two entry points that name the same 12 `Ri*` icons — the set CrowdSource's
+apps import — and differ in nothing else:
+
+| | from the barrel | by subpath |
+|---|---|---|
+| glyph modules in the bundle | 461 | 12 |
+| bytes in those modules | 318,869 | 7,406 |
+| whole bundle | 3,324,898 | 2,959,073 |
+
+**365,825 bytes, 11.0% of the bundle.** 311,463 of those are the 449 glyphs the
+app never draws; the remaining 54,362 are the two barrel modules themselves
+(`icons/index.ts`, and the 461-line `icons/remix/index.ts`) and Metro's
+per-module dependency arrays. The same shape was what pushed one app's
+JavaScript budget over by 119 KiB between Bloom 2.0.0 (338 icons) and 3.1.0
+(463): the barrel grows with the icon set whether or not an app uses any of it.
+
+### The barrel still works, and stays supported
+
+`@oxy.so/bloom/icons` is an **exact** `exports` key and the per-glyph entry is a
+**pattern** (`./icons/Ri*`); an exact key beats a pattern in every resolver that
+implements `exports`, so no existing import moves and nothing needs migrating.
+Reach for the barrel when a file genuinely wants many glyphs — a `Foundations`
+story, or the icon picker — and for the subpath everywhere else.
+
+Both shapes resolve the same four ways Bloom is consumed, verified against a
+fixture rather than assumed: Metro (the `react-native` condition, which takes
+`src/`), an ESM bundler, Node's `require`, and `tsc` under `node16`, `bundler`
+**and** the legacy `node` resolution. That last one reads `typesVersions`
+instead of `exports`, which is why the package now ships one; before it did,
+*no* Bloom subpath typechecked under `moduleResolution: "node"`.
+
+One thing the pattern deliberately cannot express: `@oxy.so/bloom/icons/index`.
+The `Ri` sits in the pattern rather than in the `*`, because a bare `./icons/*`
+would also match `index` — and the built `icons/remix/index.js` exists while
+`src/icons/remix/` holds an `index.ts` and no `index.tsx`, so that specifier
+would resolve for every consumer *except* Metro, the one that reads `src/`.
+Use `@oxy.so/bloom/icons` for the barrel.
 
 ## The naming is `Ri<Subject><Line|Fill>`
 
@@ -145,14 +198,16 @@ release blocker once got filed against the tab bar.
 It is the only gate on this class of bug, and it deliberately does **not** strip
 comments, because the comments are the surface under test.
 
-## Two import shapes are correct, one is not
+## Three import shapes are correct, one is not
 
 ```tsx
+import { RiHome5Line } from '@oxy.so/bloom/icons/RiHome5Line'; // ✅ one glyph, one module
 import * as Icons from '@oxy.so/bloom/icons';   // ✅ the subpath, as a namespace
 import { Icons } from '@oxy.so/bloom';          // ✅ the root barrel's namespace
 ```
 
-The third shape — importing `Icons` as a *named* export from the **subpath** —
+The first is the one to reach for; the other two pull the whole set in (above).
+The fourth shape — importing `Icons` as a *named* export from the **subpath** —
 is `undefined` at runtime. The subpath exports the components flat; the `Icons`
 name is assembled by the root barrel (`export * as Icons from './icons'`), so
 there is no such named export to destructure.

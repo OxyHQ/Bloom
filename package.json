@@ -1,6 +1,6 @@
 {
   "name": "@oxy.so/bloom",
-  "version": "3.1.0",
+  "version": "3.2.0",
   "packageManager": "bun@1.3.14",
   "description": "Bloom UI — Oxy ecosystem component library for React Native + Expo + Web",
   "main": "lib/commonjs/index.js",
@@ -1010,6 +1010,20 @@
       "require": {
         "types": "./lib/typescript/commonjs/icons/index.d.ts",
         "default": "./lib/commonjs/icons/index.js"
+      }
+    },
+    "./icons/Ri*": {
+      "react-native": {
+        "types": "./lib/typescript/module/icons/remix/Ri*.d.ts",
+        "default": "./src/icons/remix/Ri*.tsx"
+      },
+      "import": {
+        "types": "./lib/typescript/module/icons/remix/Ri*.d.ts",
+        "default": "./lib/module/icons/remix/Ri*.js"
+      },
+      "require": {
+        "types": "./lib/typescript/commonjs/icons/remix/Ri*.d.ts",
+        "default": "./lib/commonjs/icons/remix/Ri*.js"
       }
     },
     "./typography": {
@@ -2783,5 +2797,510 @@
     "defu": "6.1.7",
     "handlebars": "4.7.9",
     "lodash": "4.18.1"
+  },
+  "typesVersions": {
+    "*": {
+      "provider": [
+        "./lib/typescript/module/provider/index.d.ts"
+      ],
+      "surfaces": [
+        "./lib/typescript/module/surfaces/index.d.ts"
+      ],
+      "image-resolver": [
+        "./lib/typescript/module/image-resolver/index.d.ts"
+      ],
+      "image-aspect-ratio-cache": [
+        "./lib/typescript/module/image-aspect-ratio-cache/index.d.ts"
+      ],
+      "theme": [
+        "./lib/typescript/module/theme/index.d.ts"
+      ],
+      "color-presets": [
+        "./lib/typescript/module/theme/color-presets.d.ts"
+      ],
+      "preset-vars": [
+        "./lib/typescript/module/theme/preset-vars.d.ts"
+      ],
+      "design-tokens": [
+        "./lib/typescript/module/design-tokens/index.d.ts"
+      ],
+      "tailwind-preset": [
+        "./lib/typescript/module/design-tokens/tailwind-preset.d.ts"
+      ],
+      "portal": [
+        "./lib/typescript/module/portal/index.d.ts"
+      ],
+      "connection-status": [
+        "./lib/typescript/module/connection-status/index.d.ts"
+      ],
+      "overlay": [
+        "./lib/typescript/module/overlay/index.d.ts"
+      ],
+      "dialog": [
+        "./lib/typescript/module/dialog/index.d.ts"
+      ],
+      "button": [
+        "./lib/typescript/module/button/index.d.ts"
+      ],
+      "button-group": [
+        "./lib/typescript/module/button-group/index.d.ts"
+      ],
+      "control-surface": [
+        "./lib/typescript/module/control-surface/index.d.ts"
+      ],
+      "layout": [
+        "./lib/typescript/module/layout/index.d.ts"
+      ],
+      "fab": [
+        "./lib/typescript/module/fab/index.d.ts"
+      ],
+      "frosted-icon-button": [
+        "./lib/typescript/module/frosted-icon-button/index.d.ts"
+      ],
+      "divider": [
+        "./lib/typescript/module/divider/index.d.ts"
+      ],
+      "breadcrumb": [
+        "./lib/typescript/module/breadcrumb/index.d.ts"
+      ],
+      "pagination": [
+        "./lib/typescript/module/pagination/index.d.ts"
+      ],
+      "agent-limits-card": [
+        "./lib/typescript/module/agent-limits-card/index.d.ts"
+      ],
+      "carousel": [
+        "./lib/typescript/module/carousel/index.d.ts"
+      ],
+      "file-upload": [
+        "./lib/typescript/module/file-upload/index.d.ts"
+      ],
+      "social-button": [
+        "./lib/typescript/module/social-button/index.d.ts"
+      ],
+      "notification": [
+        "./lib/typescript/module/notification/index.d.ts"
+      ],
+      "announcement": [
+        "./lib/typescript/module/announcement/index.d.ts"
+      ],
+      "data-table": [
+        "./lib/typescript/module/data-table/index.d.ts"
+      ],
+      "chart-cards": [
+        "./lib/typescript/module/chart-cards/index.d.ts"
+      ],
+      "calendar": [
+        "./lib/typescript/module/calendar/index.d.ts"
+      ],
+      "stat-cards": [
+        "./lib/typescript/module/stat-cards/index.d.ts"
+      ],
+      "recent-hires-card": [
+        "./lib/typescript/module/recent-hires-card/index.d.ts"
+      ],
+      "ai-profile-card": [
+        "./lib/typescript/module/ai-profile-card/index.d.ts"
+      ],
+      "important-alerts-card": [
+        "./lib/typescript/module/important-alerts-card/index.d.ts"
+      ],
+      "patient-info-card": [
+        "./lib/typescript/module/patient-info-card/index.d.ts"
+      ],
+      "sidebar": [
+        "./lib/typescript/module/sidebar/index.d.ts"
+      ],
+      "app-shell": [
+        "./lib/typescript/module/app-shell/index.d.ts"
+      ],
+      "page-header": [
+        "./lib/typescript/module/page-header/index.d.ts"
+      ],
+      "notification-center": [
+        "./lib/typescript/module/notification-center/index.d.ts"
+      ],
+      "theme-toggle": [
+        "./lib/typescript/module/theme-toggle/index.d.ts"
+      ],
+      "settings-modal": [
+        "./lib/typescript/module/settings-modal/index.d.ts"
+      ],
+      "auth-card": [
+        "./lib/typescript/module/auth-card/index.d.ts"
+      ],
+      "agent-thinking": [
+        "./lib/typescript/module/agent-thinking/index.d.ts"
+      ],
+      "agent-log": [
+        "./lib/typescript/module/agent-log/index.d.ts"
+      ],
+      "agent-progress": [
+        "./lib/typescript/module/agent-progress/index.d.ts"
+      ],
+      "composer-loader": [
+        "./lib/typescript/module/composer-loader/index.d.ts"
+      ],
+      "composer-panel": [
+        "./lib/typescript/module/composer-panel/index.d.ts"
+      ],
+      "questionnaire": [
+        "./lib/typescript/module/questionnaire/index.d.ts"
+      ],
+      "web-search": [
+        "./lib/typescript/module/web-search/index.d.ts"
+      ],
+      "task-list": [
+        "./lib/typescript/module/task-list/index.d.ts"
+      ],
+      "agent-chat": [
+        "./lib/typescript/module/agent-chat/index.d.ts"
+      ],
+      "ai-chat": [
+        "./lib/typescript/module/ai-chat/index.d.ts"
+      ],
+      "radio-indicator": [
+        "./lib/typescript/module/radio-indicator/index.d.ts"
+      ],
+      "radio": [
+        "./lib/typescript/module/radio/index.d.ts"
+      ],
+      "error-boundary": [
+        "./lib/typescript/module/error-boundary/index.d.ts"
+      ],
+      "avatar": [
+        "./lib/typescript/module/avatar/index.d.ts"
+      ],
+      "avatar-group": [
+        "./lib/typescript/module/avatar-group/index.d.ts"
+      ],
+      "user-hover-card": [
+        "./lib/typescript/module/user-hover-card/index.d.ts"
+      ],
+      "loading": [
+        "./lib/typescript/module/loading/index.d.ts"
+      ],
+      "switch": [
+        "./lib/typescript/module/switch/index.d.ts"
+      ],
+      "toast": [
+        "./lib/typescript/module/toast/index.d.ts"
+      ],
+      "styles": [
+        "./lib/typescript/module/styles/index.d.ts"
+      ],
+      "hooks": [
+        "./lib/typescript/module/hooks/index.d.ts"
+      ],
+      "icons": [
+        "./lib/typescript/module/icons/index.d.ts"
+      ],
+      "icons/Ri*": [
+        "./lib/typescript/module/icons/remix/Ri*.d.ts"
+      ],
+      "typography": [
+        "./lib/typescript/module/typography/index.d.ts"
+      ],
+      "skeleton": [
+        "./lib/typescript/module/skeleton/index.d.ts"
+      ],
+      "grid": [
+        "./lib/typescript/module/grid/index.d.ts"
+      ],
+      "fill": [
+        "./lib/typescript/module/fill/index.d.ts"
+      ],
+      "media-inset-border": [
+        "./lib/typescript/module/media-inset-border/index.d.ts"
+      ],
+      "zoomable-media-gallery": [
+        "./lib/typescript/module/zoomable-media-gallery/index.d.ts"
+      ],
+      "zoomable-image-gallery": [
+        "./lib/typescript/module/zoomable-media-gallery/index.d.ts"
+      ],
+      "media-flight": [
+        "./lib/typescript/module/media-flight/index.d.ts"
+      ],
+      "teleport": [
+        "./lib/typescript/module/teleport/index.d.ts"
+      ],
+      "pressable-scale": [
+        "./lib/typescript/module/pressable-scale/index.d.ts"
+      ],
+      "subtle-hover": [
+        "./lib/typescript/module/subtle-hover/index.d.ts"
+      ],
+      "motion": [
+        "./lib/typescript/module/motion/index.d.ts"
+      ],
+      "animated-check": [
+        "./lib/typescript/module/animated-check/index.d.ts"
+      ],
+      "icon-circle": [
+        "./lib/typescript/module/icon-circle/index.d.ts"
+      ],
+      "connection-dots": [
+        "./lib/typescript/module/connection-dots/index.d.ts"
+      ],
+      "composition-bar": [
+        "./lib/typescript/module/composition-bar/index.d.ts"
+      ],
+      "dot-grid-meter": [
+        "./lib/typescript/module/dot-grid-meter/index.d.ts"
+      ],
+      "stat-bar": [
+        "./lib/typescript/module/stat-bar/index.d.ts"
+      ],
+      "activity-heatmap": [
+        "./lib/typescript/module/activity-heatmap/index.d.ts"
+      ],
+      "text-field": [
+        "./lib/typescript/module/text-field/index.d.ts"
+      ],
+      "segmented-control": [
+        "./lib/typescript/module/segmented-control/index.d.ts"
+      ],
+      "textarea": [
+        "./lib/typescript/module/textarea/index.d.ts"
+      ],
+      "input-otp": [
+        "./lib/typescript/module/input-otp/index.d.ts"
+      ],
+      "phone-input": [
+        "./lib/typescript/module/phone-input/index.d.ts"
+      ],
+      "table": [
+        "./lib/typescript/module/table/index.d.ts"
+      ],
+      "date-picker": [
+        "./lib/typescript/module/date-picker/index.d.ts"
+      ],
+      "search": [
+        "./lib/typescript/module/search/index.d.ts"
+      ],
+      "admonition": [
+        "./lib/typescript/module/admonition/index.d.ts"
+      ],
+      "dropdown-menu": [
+        "./lib/typescript/module/dropdown-menu/index.d.ts"
+      ],
+      "tooltip": [
+        "./lib/typescript/module/tooltip/index.d.ts"
+      ],
+      "select": [
+        "./lib/typescript/module/select/index.d.ts"
+      ],
+      "bottom-sheet": [
+        "./lib/typescript/module/bottom-sheet/index.d.ts"
+      ],
+      "context-menu": [
+        "./lib/typescript/module/context-menu/index.d.ts"
+      ],
+      "menubar": [
+        "./lib/typescript/module/menubar/index.d.ts"
+      ],
+      "popover": [
+        "./lib/typescript/module/popover/index.d.ts"
+      ],
+      "hover-card": [
+        "./lib/typescript/module/hover-card/index.d.ts"
+      ],
+      "aspect-ratio": [
+        "./lib/typescript/module/aspect-ratio/index.d.ts"
+      ],
+      "alert-dialog": [
+        "./lib/typescript/module/alert-dialog/index.d.ts"
+      ],
+      "command": [
+        "./lib/typescript/module/command/index.d.ts"
+      ],
+      "label": [
+        "./lib/typescript/module/label/index.d.ts"
+      ],
+      "kbd": [
+        "./lib/typescript/module/kbd/index.d.ts"
+      ],
+      "item": [
+        "./lib/typescript/module/item/index.d.ts"
+      ],
+      "field": [
+        "./lib/typescript/module/field/index.d.ts"
+      ],
+      "input-group": [
+        "./lib/typescript/module/input-group/index.d.ts"
+      ],
+      "slider": [
+        "./lib/typescript/module/slider/index.d.ts"
+      ],
+      "stepper": [
+        "./lib/typescript/module/stepper/index.d.ts"
+      ],
+      "rating": [
+        "./lib/typescript/module/rating/index.d.ts"
+      ],
+      "media-controls": [
+        "./lib/typescript/module/media-controls/index.d.ts"
+      ],
+      "chat-indicators": [
+        "./lib/typescript/module/chat-indicators/index.d.ts"
+      ],
+      "call-ui": [
+        "./lib/typescript/module/call-ui/index.d.ts"
+      ],
+      "chat-people": [
+        "./lib/typescript/module/chat-people/index.d.ts"
+      ],
+      "chat-screen": [
+        "./lib/typescript/module/chat-screen/index.d.ts"
+      ],
+      "chat-composer": [
+        "./lib/typescript/module/chat-composer/index.d.ts"
+      ],
+      "message-media": [
+        "./lib/typescript/module/message-media/index.d.ts"
+      ],
+      "message-bubble": [
+        "./lib/typescript/module/message-bubble/index.d.ts"
+      ],
+      "chat-list": [
+        "./lib/typescript/module/chat-list/index.d.ts"
+      ],
+      "creator-studio": [
+        "./lib/typescript/module/creator-studio/index.d.ts"
+      ],
+      "media-card": [
+        "./lib/typescript/module/media-card/index.d.ts"
+      ],
+      "media-shelf": [
+        "./lib/typescript/module/media-shelf/index.d.ts"
+      ],
+      "queue-panel": [
+        "./lib/typescript/module/queue-panel/index.d.ts"
+      ],
+      "lyrics": [
+        "./lib/typescript/module/lyrics/index.d.ts"
+      ],
+      "music-library": [
+        "./lib/typescript/module/music-library/index.d.ts"
+      ],
+      "media-player": [
+        "./lib/typescript/module/media-player/index.d.ts"
+      ],
+      "media-header": [
+        "./lib/typescript/module/media-header/index.d.ts"
+      ],
+      "track-list": [
+        "./lib/typescript/module/track-list/index.d.ts"
+      ],
+      "stay-filters": [
+        "./lib/typescript/module/stay-filters/index.d.ts"
+      ],
+      "stay-search": [
+        "./lib/typescript/module/stay-search/index.d.ts"
+      ],
+      "home-search": [
+        "./lib/typescript/module/home-search/index.d.ts"
+      ],
+      "listing-details": [
+        "./lib/typescript/module/listing-details/index.d.ts"
+      ],
+      "property-insights": [
+        "./lib/typescript/module/property-insights/index.d.ts"
+      ],
+      "booking": [
+        "./lib/typescript/module/booking/index.d.ts"
+      ],
+      "listing-actions": [
+        "./lib/typescript/module/listing-actions/index.d.ts"
+      ],
+      "listing-card": [
+        "./lib/typescript/module/listing-card/index.d.ts"
+      ],
+      "offering-badge": [
+        "./lib/typescript/module/offering-badge/index.d.ts"
+      ],
+      "category-bar": [
+        "./lib/typescript/module/category-bar/index.d.ts"
+      ],
+      "map-marker": [
+        "./lib/typescript/module/map-marker/index.d.ts"
+      ],
+      "tenancy": [
+        "./lib/typescript/module/tenancy/index.d.ts"
+      ],
+      "eviction": [
+        "./lib/typescript/module/eviction/index.d.ts"
+      ],
+      "place-reviews": [
+        "./lib/typescript/module/place-reviews/index.d.ts"
+      ],
+      "wizard": [
+        "./lib/typescript/module/wizard/index.d.ts"
+      ],
+      "sortable-media": [
+        "./lib/typescript/module/sortable-media/index.d.ts"
+      ],
+      "listing-editor": [
+        "./lib/typescript/module/listing-editor/index.d.ts"
+      ],
+      "card": [
+        "./lib/typescript/module/card/index.d.ts"
+      ],
+      "badge": [
+        "./lib/typescript/module/badge/index.d.ts"
+      ],
+      "chip": [
+        "./lib/typescript/module/chip/index.d.ts"
+      ],
+      "tabs": [
+        "./lib/typescript/module/tabs/index.d.ts"
+      ],
+      "tabs/expo-router": [
+        "./lib/typescript/module/tabs/expo-router/index.d.ts"
+      ],
+      "checkbox": [
+        "./lib/typescript/module/checkbox/index.d.ts"
+      ],
+      "accordion": [
+        "./lib/typescript/module/accordion/index.d.ts"
+      ],
+      "settings-list": [
+        "./lib/typescript/module/settings-list/index.d.ts"
+      ],
+      "link-preview": [
+        "./lib/typescript/module/link-preview/index.d.ts"
+      ],
+      "code": [
+        "./lib/typescript/module/code/index.d.ts"
+      ],
+      "fonts": [
+        "./lib/typescript/module/fonts/index.d.ts"
+      ],
+      "scroll": [
+        "./lib/typescript/module/scroll/index.d.ts"
+      ],
+      "scroll/expo-router": [
+        "./lib/typescript/module/scroll/expo-router/index.d.ts"
+      ],
+      "content-panel": [
+        "./lib/typescript/module/content-panel/index.d.ts"
+      ],
+      "list": [
+        "./lib/typescript/module/list/index.d.ts"
+      ],
+      "rail": [
+        "./lib/typescript/module/rail/index.d.ts"
+      ],
+      "tab-bar": [
+        "./lib/typescript/module/tab-bar/index.d.ts"
+      ],
+      "tab-bar/expo-router": [
+        "./lib/typescript/module/tab-bar/expo-router/index.d.ts"
+      ],
+      "progressive-blur": [
+        "./lib/typescript/module/progressive-blur/index.d.ts"
+      ]
+    }
   }
 }

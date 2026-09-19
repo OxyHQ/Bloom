@@ -1,4 +1,4 @@
-import { readFileSync } from 'node:fs';
+import { existsSync, readFileSync, readdirSync } from 'node:fs';
 import { join } from 'node:path';
 
 /**
@@ -112,6 +112,135 @@ describe('package.json#exports — react-native condition', () => {
         offenders.push(
           `${name}: react-native.types (${String(condition?.types)}) !== import.types (${String(importCondition?.types)})`,
         );
+      }
+    }
+    expect(offenders).toEqual([]);
+  });
+});
+
+/**
+ * The icon PATTERN entry, and the two properties that make it safe.
+ *
+ * `./icons` is a flat barrel over 461 glyph modules and Metro does not
+ * tree-shake, so an app that names one icon through it ships all 461. Measured
+ * on a Metro bundle for the 12 `Ri*` names CrowdSource's apps import: 318,869
+ * bytes of glyph modules from the barrel against 7,406 by subpath, 365,825
+ * bytes of bundle in all (11.0%). Figures and method: `docs/icons.mdx`.
+ * `./icons/Ri*` is the same set reachable one module at a time.
+ *
+ * The prefix is in the PATTERN, not in the `*`, and that is the load-bearing
+ * detail. A bare `./icons/*` also matches `index`, and the conditions then
+ * disagree about it: the built `icons/remix/index.js` and `index.d.ts` exist while
+ * `src/icons/remix/` holds an `index.ts` and no `index.tsx`. Every consumer
+ * but Metro would resolve `@oxy.so/bloom/icons/index`; Metro, the one that
+ * reads `src/`, would fail — and nothing else in this repo looks at a pattern
+ * target, because `existsSync` cannot be asked about a path containing a `*`.
+ *
+ * `scripts/verify-package.mjs` holds the runtime half of this (every condition
+ * expands to the same glyph names inside the real tarball). This file holds
+ * the shape.
+ */
+const ICON_PATTERN = './icons/Ri*';
+const ICONS_REMIX_DIR = join(__dirname, '..', 'icons', 'remix');
+
+describe('package.json#exports — the icon subpath pattern', () => {
+  const entry = exportsMap[ICON_PATTERN] as ExportEntry | undefined;
+
+  it('declares the pattern', () => {
+    expect(entry).toBeDefined();
+  });
+
+  it('keeps the flat barrel as an EXACT key, so no existing import moves', () => {
+    // An exact key beats a pattern in every resolver that implements
+    // `exports`, so `from '@oxy.so/bloom/icons'` is unaffected by the entry
+    // above. This is the additive half of the change, and the whole reason it
+    // is not a breaking one.
+    expect(typeof exportsMap['./icons']).toBe('object');
+  });
+
+  it('gives every condition exactly one substitution point', () => {
+    const targets: string[] = [];
+    const walk = (node: unknown): void => {
+      if (typeof node === 'string') return void targets.push(node);
+      if (typeof node === 'object' && node !== null) Object.values(node).forEach(walk);
+    };
+    walk(entry);
+    expect(targets.length).toBeGreaterThan(0);
+    for (const target of targets) {
+      expect(target.split('*')).toHaveLength(2);
+    }
+  });
+
+  it('cannot express the remix barrel, which ships as .ts and not .tsx', () => {
+    expect(existsSync(join(ICONS_REMIX_DIR, 'index.ts'))).toBe(true);
+    expect(existsSync(join(ICONS_REMIX_DIR, 'index.tsx'))).toBe(false);
+    // `index` does not start with `Ri`, so no substitution produces it.
+    expect('index'.startsWith(ICON_PATTERN.slice('./icons/'.length, -1))).toBe(false);
+  });
+
+  it('stands for every glyph on disk, and the barrel exports exactly those', () => {
+    const onDisk = readdirSync(ICONS_REMIX_DIR)
+      .filter((name) => name.endsWith('.tsx'))
+      .map((name) => name.slice(0, -'.tsx'.length))
+      .sort();
+
+    // The prefix is an invariant of the generated set, not a coincidence: a
+    // glyph added under another name would be reachable from the barrel and
+    // from nowhere else, which is the asymmetry this whole entry removes.
+    expect(onDisk.filter((name) => !name.startsWith('Ri'))).toEqual([]);
+
+    const barrel = readFileSync(join(ICONS_REMIX_DIR, 'index.ts'), 'utf8');
+    const exported = [...barrel.matchAll(/export \{ (\w+) \}/g)].map((m) => m[1]).sort();
+    expect(exported).toEqual(onDisk);
+  });
+});
+
+/**
+ * `typesVersions` — the same map again, for `moduleResolution: "node"`.
+ *
+ * node10 ignores `exports` outright. Measured on TypeScript 5.9 against a
+ * fixture, `@oxy.so/bloom/icons`, `@oxy.so/bloom/theme` and
+ * `@oxy.so/bloom/button` each reported TS2307 under it while resolving
+ * cleanly under `node16` and `bundler` — so no Bloom subpath typechecked for
+ * a consumer on that setting, and the compiler's own hint was the only thing
+ * that said so.
+ *
+ * Emitted for every subpath rather than only the icons pattern: the
+ * alternative is `@oxy.so/bloom/icons/RiAddFill` typechecking while the barrel
+ * beside it does not.
+ *
+ * TypeScript does NOT consult this field when the package has `exports` and
+ * resolution is `node16`/`nodenext`/`bundler`, so it cannot change a modern
+ * answer — which is why the equality with `import.types` below is the property
+ * worth holding: the two maps must never diverge in what they claim.
+ */
+describe('package.json#typesVersions — legacy node10 resolution', () => {
+  const typesVersions = (
+    JSON.parse(readFileSync(PKG_PATH, 'utf8')) as {
+      typesVersions?: Record<string, Record<string, string[]>>;
+    }
+  ).typesVersions;
+  const map = typesVersions?.['*'] ?? {};
+
+  it('applies to every TypeScript version', () => {
+    expect(Object.keys(typesVersions ?? {})).toEqual(['*']);
+  });
+
+  it('covers every subpath but the root, which the `types` field already answers', () => {
+    const declared = subpathEntries.map(([name]) => name).filter((name) => name !== '.');
+    const covered = Object.keys(map).map((name) => `./${name}`);
+    expect(covered.sort()).toEqual(declared.sort());
+    expect(map['.']).toBeUndefined();
+  });
+
+  it('points at the same declarations as the import condition', () => {
+    const offenders: string[] = [];
+    for (const [name, entry] of subpathEntries) {
+      if (name === '.') continue;
+      const importTypes = (entry.import as { types?: string } | undefined)?.types;
+      const legacy = map[name.slice(2)];
+      if (legacy?.length !== 1 || legacy[0] !== importTypes) {
+        offenders.push(`${name}: typesVersions ${JSON.stringify(legacy)} !== import.types ${String(importTypes)}`);
       }
     }
     expect(offenders).toEqual([]);

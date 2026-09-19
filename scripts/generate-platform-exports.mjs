@@ -23,7 +23,7 @@
  * The generated output is committed so diffs are reviewable.
  */
 
-import { existsSync, readFileSync, statSync, writeFileSync } from 'node:fs';
+import { existsSync, readdirSync, readFileSync, statSync, writeFileSync } from 'node:fs';
 import { dirname, join, relative } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -121,6 +121,28 @@ const SUBPATHS = /** @type {const} */ ([
   ['./styles', 'styles/index.ts'],
   ['./hooks', 'hooks/index.ts'],
   ['./icons', 'icons/index.ts'],
+  // PATTERN. `*` is substituted by the resolver, so this is the one export
+  // shape whose size does not grow with the number of modules behind it —
+  // which is the whole reason it exists here and nowhere else yet. `./icons`
+  // is a flat barrel over 461 glyph modules and Metro does not tree-shake, so
+  // an app naming ONE icon through the barrel ships all 461. Measured on a
+  // Metro bundle for the 12 `Ri*` names CrowdSource's apps import: 318,869
+  // bytes of glyph modules from the barrel against 7,406 by subpath, 365,825
+  // bytes of bundle in all (11.0%). Figures and method: `docs/icons.mdx`.
+  // `@oxy.so/bloom/icons/RiHeart3Line` resolves to the single file instead.
+  //
+  // `./icons` is untouched and stays first-class: an EXACT key beats a pattern
+  // in every resolver that implements `exports`, so no existing import moves.
+  //
+  // The `Ri` belongs in the pattern rather than in the `*`. A bare `./icons/*`
+  // also matches `index`, and the four targets then disagree: the built
+  // `lib/**/icons/remix/index.d.ts` and `index.js` exist, `src/icons/remix/`
+  // has an `index.ts` and no `index.tsx` — so `@oxy.so/bloom/icons/index`
+  // would type-check and bundle everywhere EXCEPT Metro, which is the one
+  // consumer that reads `src/`. Every glyph is `Ri`-prefixed (461 of 461), so
+  // moving the prefix left makes that collision unrepresentable instead of
+  // excluded by a list. The specifier a consumer writes is unchanged.
+  ['./icons/Ri*', 'icons/remix/Ri*.tsx'],
   ['./typography', 'typography/index.ts'],
   ['./skeleton', 'skeleton/index.ts'],
   ['./grid', 'grid/index.ts'],
@@ -363,6 +385,46 @@ function assertNodeSourceExists(name, paths) {
   }
 }
 
+/**
+ * Vacuity floor for a pattern subpath, and only that.
+ *
+ * Deliberately NOT the current count (461 icons): a number written here goes
+ * stale on the next glyph added, and a stale number reads as a measurement.
+ * It exists so a pattern whose folder was renamed — which resolves to nothing
+ * at all, for every consumer, with no error anywhere in this repo — cannot be
+ * emitted as a live export.
+ */
+const MIN_PATTERN_MATCHES = 100;
+
+/**
+ * A pattern entry names no file, so `existsSync` cannot check it. Expand `*`
+ * against the directory instead and assert the entry actually stands for
+ * something.
+ */
+function assertPatternExpands(name, entrySrc) {
+  const [prefix, suffix] = entrySrc.split('*');
+  if (suffix === undefined) {
+    throw new Error(`[generate-platform-exports] ${name} is a pattern but ${entrySrc} has no '*'.`);
+  }
+  // Split on the LAST slash rather than with `dirname`, which drops a path's
+  // final segment when it ends in one — `dirname('icons/remix/')` is `icons`,
+  // and the scan then reads the wrong directory and finds nothing.
+  const slash = prefix.lastIndexOf('/');
+  const dir = join(SRC, prefix.slice(0, slash + 1));
+  const base = prefix.slice(slash + 1);
+  const matches = existsSync(dir)
+    ? readdirSync(dir).filter((f) => f.startsWith(base) && f.endsWith(suffix))
+    : [];
+  if (matches.length < MIN_PATTERN_MATCHES) {
+    throw new Error(
+      `[generate-platform-exports] ${name} -> src/${entrySrc} expands to ${matches.length} ` +
+        `file(s), below the floor of ${MIN_PATTERN_MATCHES}. A pattern that matches nothing ` +
+        `resolves to nothing in every consumer and is silent here.`,
+    );
+  }
+  return matches.length;
+}
+
 // --------------------------------------------------------------------------
 //  exports map
 // --------------------------------------------------------------------------
@@ -378,6 +440,7 @@ function buildExportsField() {
 
     if (hasFork) assertWebSourceExists(name, paths);
     if (hasNodeFork) assertNodeSourceExists(name, paths);
+    if (name.includes('*')) assertPatternExpands(name, entrySrc);
 
     /** @type {Record<string, unknown>} */
     const entry = {
@@ -445,6 +508,48 @@ function buildExportsField() {
   out['./package.json'] = './package.json';
 
   return out;
+}
+
+// --------------------------------------------------------------------------
+//  typesVersions
+// --------------------------------------------------------------------------
+
+/**
+ * The same map again, for TypeScript's LEGACY `moduleResolution: "node"`.
+ *
+ * `node` (node10) ignores `exports` entirely. Measured against a fixture on
+ * TypeScript 5.9: `@oxy.so/bloom/icons`, `@oxy.so/bloom/theme` and
+ * `@oxy.so/bloom/button` all report TS2307 under it while resolving cleanly
+ * under `node16` and `bundler` — so until now NO Bloom subpath typechecked for
+ * a consumer on that setting, and the compiler's own hint ("there are types
+ * at …, but this result could not be resolved under your current
+ * moduleResolution") is the only thing that said so.
+ *
+ * `typesVersions` is the one lever node10 does read. It is emitted for every
+ * subpath rather than only for the icons pattern, because the alternative is
+ * incoherent: `@oxy.so/bloom/icons/RiAddFill` would typecheck while the barrel
+ * beside it did not.
+ *
+ * Purely additive — TypeScript does NOT consult `typesVersions` when the
+ * package has `exports` and resolution is `node16`/`nodenext`/`bundler`, so
+ * the modern paths keep resolving through the conditions above, and both
+ * behaviours are pinned in `src/__tests__/exports-map-contract.test.ts`.
+ *
+ * The target is the MODULE declaration tree, matching what the `react-native`
+ * and `import` conditions already agree on. node10 has no notion of a
+ * condition, so there is only one answer to give it.
+ *
+ * The root `.` is deliberately absent: it resolves through the top-level
+ * `types` field, which node10 does read.
+ */
+function buildTypesVersionsField() {
+  /** @type {Record<string, string[]>} */
+  const map = {};
+  for (const [name, entrySrc] of SUBPATHS) {
+    if (name === '.') continue;
+    map[name.slice(2)] = [computePaths(entrySrc).libTypesModule];
+  }
+  return { '*': map };
 }
 
 // --------------------------------------------------------------------------
@@ -536,13 +641,15 @@ function main() {
   // 2. Update `exports` in package.json.
   const pkg = JSON.parse(readFileSync(PKG_PATH, 'utf8'));
   pkg.exports = buildExportsField();
+  pkg.typesVersions = buildTypesVersionsField();
   // Remove any stale `browser` field — internal sibling imports now use
   // explicit `index.web` paths so the older Browserify-style remap is
   // unnecessary. Leaving it would just be noise.
   delete pkg.browser;
   writeFileSync(PKG_PATH, JSON.stringify(pkg, null, 2) + '\n');
   console.log(
-    `[generate-platform-exports] wrote ${SUBPATHS.length} subpaths to package.json#exports`,
+    `[generate-platform-exports] wrote ${SUBPATHS.length} subpaths to package.json#exports ` +
+      `and ${Object.keys(pkg.typesVersions['*']).length} to package.json#typesVersions`,
   );
 
   // 3. Stat package.json so the size shows up in CI logs.
