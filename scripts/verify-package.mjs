@@ -304,6 +304,116 @@ function collectTargets(node, out) {
   return out;
 }
 
+/**
+ * Every target in the manifest, grouped by the subpath that declares it.
+ *
+ * The grouping is what makes the pattern check below possible: `./icons/Ri*`
+ * names the `src/` entry Metro reads, the ESM and CJS builds, and both
+ * declaration trees — and all of them must expand to the SAME 461 glyph
+ * names. That property is only visible if they are known to belong together.
+ *
+ * `typesVersions` is folded into the same groups under the same subpath, so
+ * the legacy-resolution answer has to agree with the conditional one rather
+ * than being spot-checked on its own. Its keys carry no `./`, hence the
+ * normalisation.
+ */
+function collectTargetGroups(pkg) {
+  /** @type {Map<string, Set<string>>} */
+  const groups = new Map();
+  const add = (subpath, node) => {
+    const set = groups.get(subpath) ?? new Set();
+    collectTargets(node, set);
+    groups.set(subpath, set);
+  };
+
+  for (const [subpath, entry] of Object.entries(pkg.exports)) add(subpath, entry);
+  for (const [subpath, targets] of Object.entries(pkg.typesVersions?.['*'] ?? {})) {
+    add(subpath.startsWith('.') ? subpath : `./${subpath}`, targets);
+  }
+  return groups;
+}
+
+/**
+ * Vacuity floor for one pattern subpath. Not the current count (461 icons) —
+ * see MIN_PATTERN_MATCHES in scripts/generate-platform-exports.mjs for why a
+ * number here would go stale and then read as a measurement.
+ */
+const MIN_PATTERN_EXPANSION = 100;
+
+/**
+ * The `*` substitutions a pattern matches inside the tarball.
+ *
+ * `npm pack` has no notion of `exports`, so a pattern target is the one shape
+ * the literal check above is blind to by construction: `files.has()` is asked
+ * about a path containing a `*` and answers no, which would fail the gate for
+ * a correct package. Expanding it instead turns the same question into a
+ * stronger one — not "does this path ship" but "does every module this entry
+ * stands for ship, under every condition that names it".
+ */
+function expandPattern(pattern, files) {
+  const [prefix, suffix] = pattern.split('*');
+  const out = new Set();
+  for (const file of files) {
+    if (
+      file.length > prefix.length + suffix.length &&
+      file.startsWith(prefix) &&
+      file.endsWith(suffix)
+    ) {
+      out.add(file.slice(prefix.length, file.length - suffix.length));
+    }
+  }
+  return out;
+}
+
+/**
+ * Assert each pattern subpath resolves for the same set of names under every
+ * condition it declares.
+ *
+ * A disagreement here is the failure this is for: an icon whose `.tsx` ships
+ * but whose `.d.ts` did not get emitted resolves at runtime for Metro and
+ * breaks every consumer's typecheck — the same asymmetry that made
+ * `lib/typescript/` worth a floor of its own, one module at a time instead of
+ * a whole tree at once.
+ */
+function assertPatternsExpand(groups, files) {
+  const problems = [];
+
+  for (const [subpath, targets] of groups) {
+    const patterns = [...targets].filter((t) => t.includes('*'));
+    if (patterns.length === 0) continue;
+
+    /** @type {Map<string, Set<string>>} */
+    const expansions = new Map(patterns.map((p) => [p, expandPattern(p, files)]));
+
+    const thin = [...expansions].filter(([, names]) => names.size < MIN_PATTERN_EXPANSION);
+    if (thin.length > 0) {
+      problems.push(
+        `${subpath}: ${thin.length} of ${patterns.length} pattern target(s) match fewer than ` +
+          `${MIN_PATTERN_EXPANSION} files in the tarball — the entry resolves to nothing for ` +
+          'every consumer and nothing else in this repo says so:\n' +
+          thin.map(([p, names]) => `    - ${p} matched ${names.size}`).join('\n'),
+      );
+      continue;
+    }
+
+    const [reference, referenceNames] = [...expansions][0];
+    for (const [pattern, names] of expansions) {
+      const missing = [...referenceNames].filter((n) => !names.has(n));
+      const extra = [...names].filter((n) => !referenceNames.has(n));
+      if (missing.length === 0 && extra.length === 0) continue;
+      problems.push(
+        `${subpath}: ${pattern} expands to a different set than ${reference} ` +
+          `(${names.size} vs ${referenceNames.size}). A name that resolves under one condition ` +
+          'and not another breaks exactly one consumer toolchain, silently:\n' +
+          (missing.length > 0 ? `    missing here: ${missing.slice(0, 5).join(', ')}\n` : '') +
+          (extra.length > 0 ? `    only here: ${extra.slice(0, 5).join(', ')}\n` : ''),
+      );
+    }
+  }
+
+  return problems;
+}
+
 function packedFiles() {
   const stdout = execFileSync('npm', ['pack', '--dry-run', '--json', '--ignore-scripts'], {
     cwd: REPO_ROOT,
@@ -333,7 +443,9 @@ function packedFiles() {
 
 function main() {
   const pkg = JSON.parse(readFileSync(join(REPO_ROOT, 'package.json'), 'utf8'));
-  const targets = [...collectTargets(pkg.exports, new Set())].sort();
+  const groups = collectTargetGroups(pkg);
+  const everyTarget = [...new Set([...groups.values()].flatMap((set) => [...set]))].sort();
+  const targets = everyTarget.filter((target) => !target.includes('*'));
   const files = packedFiles();
 
   const missing = targets.filter((target) => !files.has(target));
@@ -352,6 +464,7 @@ function main() {
         'Every consumer resolves its types there — run `bun run build` and check the tsc step.',
     );
   }
+  problems.push(...assertPatternsExpand(groups, files));
   problems.push(...assertDocsShip(files));
   problems.push(...assertNodeLoadable(NODE_LOADABLE_SUBPATHS, NODE_ESM_UNRESOLVABLE_SUBPATHS));
 
@@ -366,7 +479,8 @@ function main() {
   const esmCount = NODE_LOADABLE_SUBPATHS.length - NODE_ESM_UNRESOLVABLE_SUBPATHS.size;
 
   console.log(
-    `[verify-package] ok — ${files.size} files packed, all ${targets.length} exports targets present ` +
+    `[verify-package] ok — ${files.size} files packed, all ${targets.length} literal exports targets ` +
+      `present plus ${everyTarget.length - targets.length} pattern target(s) expanded ` +
       `(${typescriptCount} in lib/typescript/), ${docCount} guides in ${DOCS_DIR}/, ` +
       `${NODE_LOADABLE_SUBPATHS.length} subpath(s) require()-able under Node ${process.version} ` +
       `(${esmCount} of them also import()-able as ESM, ` +

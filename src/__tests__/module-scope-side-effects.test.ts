@@ -114,8 +114,16 @@ function entryPoints(): string[] {
     exports: Record<string, Record<string, unknown> | string>;
   };
   const out = new Set<string>();
-  for (const entry of Object.values(pkg.exports)) {
+  for (const [subpath, entry] of Object.entries(pkg.exports)) {
     if (typeof entry === 'string') continue;
+    // A PATTERN subpath (`./icons/Ri*`) names no single file — its `*` is
+    // substituted by the resolver. Adding it would seed the walk with a path
+    // that does not exist; `reachable()` swallows the ENOENT, so the entry
+    // would inflate the count below while contributing nothing, which is
+    // exactly the shape a vacuity floor is supposed to catch. Every expansion
+    // is reached anyway: `src/icons/index.ts` is a published entry and stars
+    // the whole glyph set.
+    if (subpath.includes('*')) continue;
     const rn = entry['react-native'];
     const native =
       typeof rn === 'object' && rn !== null ? (rn as { default?: unknown }).default : rn;

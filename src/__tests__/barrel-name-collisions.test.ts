@@ -242,8 +242,17 @@ function publishedBarrels(): Array<{ rel: string; platform: Platform }> {
     exports: Record<string, Record<string, unknown> | string>;
   };
   const out = new Map<string, Platform>();
-  for (const entry of Object.values(pkg.exports)) {
+  for (const [subpath, entry] of Object.entries(pkg.exports)) {
     if (typeof entry === 'string') continue;
+    // A PATTERN subpath (`./icons/Ri*`) names no single file — `*` is
+    // substituted by the resolver, so `readFileSync` on the target throws
+    // ENOENT. Nothing is lost by skipping it: every expansion is a LEAF module
+    // exporting one glyph, and a leaf cannot offer one name from two
+    // declarations, which is the only thing this file measures. The entry's own
+    // integrity is held where it can be — `verify-package.mjs` expands it
+    // against the tarball and asserts every condition yields the same names,
+    // and `exports-map-contract.test.ts` holds its shape.
+    if (subpath.includes('*')) continue;
     const rn = entry['react-native'];
     const native = typeof rn === 'object' && rn !== null ? (rn as { default?: unknown }).default : rn;
     if (typeof native === 'string' && native.startsWith('./src/')) {
