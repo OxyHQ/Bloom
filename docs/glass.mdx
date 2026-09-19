@@ -138,3 +138,18 @@ Gate: `src/theme/__tests__/chrome-glass.test.ts`, which pins the two floors to t
 An island also mounts a `ControlSurface` with `material: 'glass'`, so controls inside it paint flush. That is the material's rule rather than a preference: a translucent pane inside a translucent pane composites two alphas and two blurs for one pane's worth of depth, and on Android the second blur is not available at all.
 
 Internal (`glass/` is not a published subpath). It is reached through `ButtonGroup`'s `glass` variant and `PageHeader`'s floating presentation.
+
+### On a device: tint, and no blur
+
+Measured on a **Pixel 8a** over a hard 10dp stripe pattern, sampling the same rows inside a chrome island and on the bare stripes beside it:
+
+| backdrop stripe | bare | inside the island |
+| --- | --- | --- |
+| white | 255 | 254 |
+| black | 0 | 210 |
+
+The backdrop contributes **44 of 255** — the pane is translucent — and the stripe **edge stays sharp**, where a blur would smear a 26px transition. That is the Android behaviour this file describes: `expo-blur` is asked for no blur method, so it paints its tint and nothing else. Nothing in `logcat` asked for one or reported a crash.
+
+The composite works out at ≈**0.83** opacity against the web pane's 0.72 plus sheen. The difference is `expo-blur`'s own tint — one `intensity` drives it together with the radius and a caller cannot decline it — which is the platform gap `GLASS_BLUR_INTENSITY` documents, appearing exactly where it said it would.
+
+The ramp `PageHeader` draws over the same material was checked for the `stopColor` alpha trap at the same time: **0 achromatic rows of 311** in both modes, so the hue survives the SVG renderer.
