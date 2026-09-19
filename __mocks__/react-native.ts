@@ -27,6 +27,11 @@ const createComponent = (name: string) => {
     if (accessibilityRole) elementProps.accessibilityRole = accessibilityRole;
     if (accessibilityState) elementProps.accessibilityState = accessibilityState;
     if (disabled != null) elementProps.disabled = disabled;
+    // Forwarded rather than swallowed: a touch target smaller than the 44pt
+    // floor is a real accessibility defect, `hitSlop` is how a control clears
+    // it, and a mock that drops the prop makes that unassertable — the control
+    // renders correctly and measures nothing.
+    if (hitSlop !== undefined) elementProps.hitSlop = hitSlop;
     if (onPress) elementProps.onPress = disabled ? undefined : onPress;
     if (style !== undefined) elementProps.style = style;
 

@@ -11,8 +11,14 @@ export interface LabelProps {
   /**
    * Web-only convenience: the `id` of the form control this label is for.
    * Defaults to `nativeID` when omitted. Ignored on native.
+   *
+   * `null` means there is NO single control to point at — a label naming a
+   * GROUP of them, which is `Field`'s `multiple` case. Without a way to say
+   * that, the `nativeID` fallback makes the label its own target: a
+   * `<label for>` pointing at the label, which focuses nothing and which
+   * nothing reports.
    */
-  htmlFor?: string;
+  htmlFor?: string | null;
   /**
    * Render a required marker (an asterisk in the theme's negative color)
    * after the label text. Defaults to `false`.

@@ -20,7 +20,7 @@ import { StyledPressable } from '../styles/styled-primitives';
 import type { WebCssStyle } from '../styles/web-view-style';
 import { SOCIAL_COLOR_LOGOS } from './color-logos';
 import { OxyMark } from './OxyMark';
-import { useSvgIdPrefix } from './use-svg-id';
+import { useSvgIdPrefix } from '../styles/svg-id';
 import { SOCIAL_PROVIDERS, type SocialColorLogo, type SocialProvider } from './providers';
 import type {
   SocialBrand,

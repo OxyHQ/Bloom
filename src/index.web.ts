@@ -160,12 +160,18 @@ export type {
 } from './surfaces/index.web';
 export * from './button/index.web';
 export * from './button-group';
+export * from './control-surface';
 export {
   EDGE_GAP,
   windowEdgeGap,
   BottomEdgeProvider,
   useBottomEdgeInset,
   useClaimBottomEdge,
+  TopEdgeProvider,
+  useClaimTopEdge,
+  useTopEdgeInset,
+  ScrollOffsetProvider,
+  useScrollOffset,
 } from './layout';
 export { Fab } from './fab/index.web';
 export type { FabProps, FabVariant, FabSize, FabPlacement } from './fab/index.web';

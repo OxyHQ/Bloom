@@ -1,16 +1,25 @@
 ---
 title: Layout
-description: Window-edge geometry — how far a floating surface sits from the edge, and what is already parked there.
+description: Window-edge geometry and screen-scope coordination — how far a floating surface sits from an edge, what is already parked there, and which scroller the chrome follows.
 order: 76
 ---
 
 # Layout
 
-Two questions every floating surface has to answer, answered once for all of
-them.
+The questions every floating surface and every piece of scroll-linked chrome has
+to answer, answered once for all of them.
 
 ```tsx
-import { EDGE_GAP, windowEdgeGap, useBottomEdgeInset, useClaimBottomEdge } from '@oxy.so/bloom/layout';
+import {
+  EDGE_GAP,
+  windowEdgeGap,
+  useBottomEdgeInset,
+  useClaimBottomEdge,
+  useTopEdgeInset,
+  useClaimTopEdge,
+  ScrollOffsetProvider,
+  useScrollOffset,
+} from '@oxy.so/bloom/layout';
 ```
 
 ## `windowEdgeGap` — how far from the edge
@@ -58,6 +67,65 @@ FAB with no tab bar, both, or a surface written later.
 
 `BloomProvider` mounts the registry. Outside one, `useBottomEdgeInset()` returns
 `0` and `useClaimBottomEdge` is a no-op, so a surface stays usable standalone.
+
+## `useTopEdgeInset` / `useClaimTopEdge` — the same thing, one edge up
+
+A header that participates in layout answers this by existing: the content
+starts where the header ends, because they are siblings in a column. A header
+that **overlays** content — [`PageHeader`](/docs/page-header)'s
+`placement="overlay"`, where the page scrolls under translucent islands —
+occupies no layout space at all, and the first item of the content lands
+underneath it.
+
+```tsx
+// The chrome that parks there — PageHeader does this for you.
+useClaimTopEdge(measuredHeight);
+
+// The content that has to clear it.
+<ScrollView contentContainerStyle={{ paddingTop: useTopEdgeInset() }}>
+```
+
+Same registry object as the bottom edge, so everything below about `max`,
+about a nested provider and about the one-frame settle applies unchanged.
+
+**The height is measured, not computed.** A subtitle, an enlarged font and a
+notch all move it, and a constant plus the insets fails silently — the content
+starts a few points under the islands and looks like a design decision.
+
+**Apply the safe area once.** The header pads itself by `insets.top`, and the
+claim already includes that padding. Adding `insets.top` again in the scroll
+container double-counts the notch.
+
+## `ScrollOffsetProvider` / `useScrollOffset` — which scroller
+
+A screen has exactly one scroll owner, and the owner publishes its offset. Chrome
+reads it. Neither imports the other, so two panels side by side — each with its
+own header and its own scroller — resolve correctly, because the provider's
+position in the tree is what pairs them.
+
+```tsx
+const scrollY = useSharedValue(0);
+const onScroll = useAnimatedScrollHandler(
+  { onScroll: (e) => { scrollY.value = e.contentOffset.y; } },
+  [scrollY],
+);
+
+<ScrollOffsetProvider value={scrollY}>
+  <PageHeader title="Inbox" />
+  <Animated.ScrollView onScroll={onScroll} scrollEventThrottle={16}>…</Animated.ScrollView>
+</ScrollOffsetProvider>
+```
+
+The context carries the **`SharedValue`**, not a number: it crosses once, at
+mount, and every subsequent frame reaches the chrome on the UI thread through
+`useAnimatedStyle`, with no React render. A context whose value changed per frame
+would re-render every consumer per frame, which is precisely the cost this
+avoids — the same reasoning as the section below.
+
+Without it, chrome falls back to `window.scrollY` on web and to nothing on
+native. That default is right for exactly one layout — a web page whose document
+*is* the scroller — and silently wrong for a desktop panel and for every native
+screen, with no error: the header simply never reacts.
 
 ## The collapse is not here, on purpose
 

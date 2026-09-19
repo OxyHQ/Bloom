@@ -67,57 +67,9 @@ import {
   type PropsWithChildren,
 } from 'react';
 
-interface BottomEdgeStore {
-  subscribe: (onChange: () => void) => () => void;
-  /**
-   * The cached total. Returns the SAME number until a claim actually changes it
-   * — `useSyncExternalStore` re-renders forever if the snapshot is recomputed
-   * per call.
-   */
-  getInset: () => number;
-  claim: (id: string, height: number) => void;
-  release: (id: string) => void;
-}
+import { createEdgeStore, NO_INSET, NO_SUBSCRIPTION, type EdgeStore } from './edge-store';
 
-function createBottomEdgeStore(): BottomEdgeStore {
-  const claims = new Map<string, number>();
-  const listeners = new Set<() => void>();
-  let inset = 0;
-
-  const recompute = () => {
-    let next = 0;
-    for (const height of claims.values()) {
-      if (height > next) next = height;
-    }
-    // Bail before notifying: a re-registration at an unchanged height (every
-    // render of a claimant whose footprint did not move) must not re-render
-    // every reader.
-    if (next === inset) return;
-    inset = next;
-    for (const listener of listeners) listener();
-  };
-
-  return {
-    subscribe(onChange) {
-      listeners.add(onChange);
-      return () => {
-        listeners.delete(onChange);
-      };
-    },
-    getInset: () => inset,
-    claim(id, height) {
-      if (claims.get(id) === height) return;
-      claims.set(id, height);
-      recompute();
-    },
-    release(id) {
-      if (!claims.delete(id)) return;
-      recompute();
-    },
-  };
-}
-
-const BottomEdgeContext = createContext<BottomEdgeStore | null>(null);
+const BottomEdgeContext = createContext<EdgeStore | null>(null);
 
 /**
  * Wrap the app once — `BloomProvider` already does. Rendering a second one
@@ -126,16 +78,11 @@ const BottomEdgeContext = createContext<BottomEdgeStore | null>(null);
  * the tab bar the modal is covering.
  */
 export function BottomEdgeProvider({ children }: PropsWithChildren) {
-  const [store] = useState(createBottomEdgeStore);
+  const [store] = useState(createEdgeStore);
   return <BottomEdgeContext.Provider value={store}>{children}</BottomEdgeContext.Provider>;
 }
 
 BottomEdgeProvider.displayName = 'BottomEdgeProvider';
-
-// Stable module-scope identities for the no-provider path. Fresh closures here
-// would resubscribe `useSyncExternalStore` on every render.
-const NO_SUBSCRIPTION = () => () => {};
-const NO_INSET = () => 0;
 
 /**
  * How much of the bottom edge is already occupied, in px.

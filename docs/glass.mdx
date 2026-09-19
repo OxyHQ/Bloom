@@ -92,3 +92,49 @@ Three things the table settles:
 
 So there is no single alpha that both matches the reference and reads as glass on a flat surface. That is a property of the material — a blur needs a backdrop — not a constant nobody has tuned yet. To make a specific surface read as glass, put something behind it.
 
+
+## The chrome role
+
+Everything above prices a **brand** fill: a `primary`-coloured pane over one of Bloom's own five neutral surfaces, labelled with that fill's on-colour. A page header's island is the other case, and almost nothing about it is the same:
+
+| | accent | chrome |
+| --- | --- | --- |
+| fill | the caller's brand token | rung 1 of the surface ladder — the fill a card and a menu panel paint |
+| label | the fill's own on-colour | the theme's own `text` |
+| backdrop | Bloom's five neutral surfaces | anything: a photograph, a video still, a map |
+| alpha | 0.85 | 0.72 light · **0.80 dark** |
+
+Inside Bloom — `theme/glass-colors.ts` is not a published subpath, for the same reason `resolveGlassColors` is not:
+
+```tsx
+import { resolveSurfaceLevel } from '../styles/surface-levels';
+import { resolveChromeGlassColors } from '../theme/glass-colors';
+
+const level = resolveSurfaceLevel(theme, 1);
+const glass = resolveChromeGlassColors(level.background, level.border, theme.isDark);
+```
+
+Both arguments are resolved colour strings the caller already holds, because the caller is the only one that knows which rung of the ladder its container sits on.
+
+**Dark carries the higher alpha**, which is the opposite of the intuition that a dark UI can afford more transparency. The worst case for each mode is the backdrop it is furthest from: a light pane is washed *down* over black and barely moves, because it is already near white; a dark pane over white has the whole luminance range above it to be washed out into.
+
+Because the backdrop is unknown, the range measured is the **whole** range — pure white and pure black. Every composite a real backdrop can produce lies between them on every channel, so a pane that clears AA at both ends clears it everywhere between.
+
+Measured over 64 presets × 2 modes × 2 endpoints × 2 platforms (512 rows), with the theme's own `text` as the label:
+
+| | failures below AA | worst ratio |
+| --- | --- | --- |
+| light | 0 / 256 | **8.23** (over black, web) |
+| dark | 0 / 256 | **6.43** (over white, web) |
+
+and the pane still moves **49.98–69.97** of 255 between a black and a white backdrop, so it is glass rather than a tinted slab. Web is the worse of the two platforms in both modes: `expo-blur`'s own tint adds body on native that CSS `backdrop-filter` does not.
+
+Gate: `src/theme/__tests__/chrome-glass.test.ts`, which pins the two floors to the hundredth and the translucency range with **literal** bounds. A floor derived from the alpha constant would move with it, so an opaque material would satisfy its own floor.
+
+## Islands
+
+`glass/GlassIsland` is the assembly: the material, the hairline, the geometry and the drop shadow, in the order that works. `GlassSurface` deliberately owns none of the last three — it clips itself, and a shadow drawn on a clipping node is clipped away on iOS — so every caller that wants a floating pane would otherwise repeat the same four steps.
+
+An island also mounts a `ControlSurface` with `material: 'glass'`, so controls inside it paint flush. That is the material's rule rather than a preference: a translucent pane inside a translucent pane composites two alphas and two blurs for one pane's worth of depth, and on Android the second blur is not available at all.
+
+Internal (`glass/` is not a published subpath). It is reached through `ButtonGroup`'s `glass` variant and `PageHeader`'s floating presentation.

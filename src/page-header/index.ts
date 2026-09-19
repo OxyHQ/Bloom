@@ -1,3 +1,11 @@
 export { PageHeader } from './PageHeader';
 
-export type { PageHeaderBorder, PageHeaderProps, PageHeaderTitleAlign } from './types';
+export type {
+  PageHeaderBorder,
+  PageHeaderPlacement,
+  PageHeaderPresentation,
+  PageHeaderProps,
+  PageHeaderScrim,
+  PageHeaderTitleAlign,
+  PageHeaderTitleReveal,
+} from './types';

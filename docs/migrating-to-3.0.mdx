@@ -1,0 +1,169 @@
+---
+title: Migrating to 3.0
+description: Every breaking change between @oxy.so/bloom 2.12.4 and 3.0.0 — PageHeader's floating default, the split of `transparent` into two props, and what is additive.
+order: 2
+---
+
+# Migrating to 3.0
+
+Bloom 3.0 is a small release with one large default change. `PageHeader` is a
+floating header now — a back capsule, islands of grouped actions and a gradient
+edge — where it used to be an opaque full-width strip. Everything else in this
+release is additive.
+
+Bloom keeps its clean-cut rule: there are no `@deprecated` aliases and no shims.
+The flat bar is still here, but you ask for it by name.
+
+## The short version
+
+1. Install `@oxy.so/bloom@^3.0.0`.
+2. Decide, per header: keep the bar (`presentation="bar"`) or take the islands.
+3. If a header used `transparent` over media, add `titleReveal="onScroll"` —
+   `transparent` no longer hides the title.
+4. Nothing else breaks. `tsc` will not catch either of the above, because both
+   are default changes rather than API removals; this guide is the checklist.
+
+## 1. `PageHeader` defaults to `presentation="floating"`
+
+A `<PageHeader>` with no `presentation` used to paint an opaque strip with a
+hairline separator and a scroll-linked shadow. It now paints nothing across the
+width: the back button sits in its own translucent capsule, the `actions` slot
+is a glass control surface, the title floats between them, and a vertical
+gradient of the page colour fades out below the whole thing.
+
+**To keep exactly what you had:**
+
+```diff
+-<PageHeader title="Order #4821" onBack={router.back} />
++<PageHeader presentation="bar" title="Order #4821" onBack={router.back} />
+```
+
+That header is byte-for-byte what it was — same background, same separator, same
+shadow, same back button, same geometry.
+
+**To take the new one**, decide who reserves the space:
+
+- `placement="inline"` (the default) leaves the header in layout, as before.
+  Nothing passes under it; the page colour shows through where the strip used to
+  be. This is the smallest step, and it is what an existing screen gets for free.
+- `placement="overlay"` floats the header over the content, which is what the
+  islands are actually for. The content then has to clear it:
+
+  ```tsx
+  import { useTopEdgeInset } from '@oxy.so/bloom/layout';
+
+  const inset = useTopEdgeInset();
+  <ScrollView contentContainerStyle={{ paddingTop: inset }}>…</ScrollView>
+  ```
+
+  `BloomProvider` already mounts the registry. Do not add `insets.top` on top of
+  the claim — the header's own safe-area padding is already in it.
+
+**Icon actions want `ButtonGroupItem`.** A `Button variant="secondary"` in a
+floating header's `actions` paints its own opaque fill, which reads as a card
+floating over the content. It still works and it is still legible; it is just
+not the shape:
+
+```diff
+ actions={
+-  <>
+-    <Button variant="secondary" iconOnly leadingIcon={RiSearchLine} accessibilityLabel="Search" />
+-    <Button variant="secondary" iconOnly leadingIcon={RiShare2Line} accessibilityLabel="Share" />
+-  </>
++  <ButtonGroup accessibilityLabel="Page actions">
++    <ButtonGroupItem iconOnly leadingIcon={RiSearchLine} accessibilityLabel="Search" />
++    <ButtonGroupItem iconOnly leadingIcon={RiShare2Line} accessibilityLabel="Share" />
++  </ButtonGroup>
+ }
+```
+
+A primary action keeps its own `Button` — an accent capsule beside the islands is
+the intended shape for Save or Done.
+
+## 2. `transparent` no longer hides the title
+
+`transparent` did two things: it faded the bar's background in with scroll, and
+it held the title back until the scroll arrived. The first is right for any
+header over media; the second is right only when something else on screen
+already names the page. A header that wanted one inherited both.
+
+They are two props now:
+
+```diff
+-<PageHeader transparent scrollThreshold={264} title="Lisbon loft" />
++<PageHeader presentation="bar" transparent titleReveal="onScroll" scrollThreshold={264} title="Lisbon loft" />
+```
+
+If your header used `transparent` and you were happy for the title to show at
+rest, drop `titleReveal` and you now get what you wanted.
+
+## 3. `border` and `transparent` are `presentation="bar"` props
+
+The floating presentation has no strip to fade and no separator to draw, so it
+ignores both. Its counterpart is `scrim`:
+
+| bar | floating |
+| --- | --- |
+| `border="auto"` | `scrim="auto"` — the gradient fades in with scroll |
+| `border="always"` | `scrim="always"` — the gradient paints at rest |
+| `border="none"` | `scrim="none"` — no gradient; the islands carry legibility alone |
+| `transparent` | (the floating header is always transparent) |
+
+A floating header on a screen that paints its own background colour also wants `scrimColor`: the ramp fades content into the surface it is leaving, and the header cannot read the pixel behind it.
+
+## Everything else is additive
+
+Nothing below removes or renames anything.
+
+- **`@oxy.so/bloom/control-surface`** — the inherited presentation contract. A
+  container declares a material and a density once; the controls inside default
+  to it. See [Composition](/docs/composition).
+- **`ButtonGroup` gains `variant`, `dividers`, and a `glass` material.** The
+  default is `solid`, which is what every existing group renders, unchanged.
+- **`ButtonGroupItem` gains `hitSlop`, `variant` and the trigger contract**
+  (`onLongPress`, `aria-expanded`, `aria-haspopup`, `accessibilityRole`), so an
+  item can be an anchored family's `asChild` trigger. `onPress` now receives the
+  press event; a `() => void` handler still type-checks.
+- **`@oxy.so/bloom/layout` gains `TopEdgeProvider` / `useTopEdgeInset` /
+  `useClaimTopEdge`** and **`ScrollOffsetProvider` / `useScrollOffset`**.
+  `BloomProvider` mounts `TopEdgeProvider` for you.
+- **`Field` associates rather than only stacking.** It generates SSR-stable ids,
+  wires `aria-describedby`, `aria-invalid`, `aria-required` and the control's
+  accessible name, and gains `multiple` for a field holding several controls.
+  One behaviour change worth naming: **`Field disabled` now disables a control
+  that reads the field context** (today, `TextFieldInput`). It previously only
+  dimmed the label. If you were relying on a disabled-looking field with a live
+  input, that combination no longer exists.
+- **`Label.htmlFor` accepts `null`**, meaning "this label names a group, not a
+  control". Omitting it still falls back to `nativeID`.
+- **`asChild` triggers can be cancelled.** `event.preventDefault()` in the
+  child's own `onPress` stops the surface opening. A fragment child now throws
+  instead of rendering a dead trigger — if you were passing one, the trigger was
+  never working.
+- **A neutral `chrome` glass role**, measured over the whole backdrop range. See
+  [Glass](/docs/glass).
+
+## One fix that changes existing pixels on web
+
+`<Svg style={StyleSheet.absoluteFill}>` does not fill anything on web. An
+`<svg>` is a replaced element, so `width: auto` resolves to its intrinsic size
+and an SVG without one falls back to CSS's default 300 × 150 — `left: 0;
+right: 0` does not stretch it. Three surfaces were affected, all of them
+shipping since before 3.0:
+
+- **`Button`'s gradient** — a button wider than 300px stopped its gradient dead
+  at 300px, and every narrower one scaled the vertical ramp over 150px instead
+  of the button's own height, so only the top quarter of the gradient showed.
+- **`GlassSurface`'s sheen** — the same, on every glass surface.
+- The new header's scrim, which is how it was found.
+
+All three now declare `width="100%" height="100%"`. **Native was never
+affected** (react-native-svg lays its host view out with flexbox there), so this
+changes web pixels only, in the direction of what the component always meant to
+paint. Gate: `src/__tests__/svg-absolute-fill-size.test.ts`.
+
+## What did not change
+
+The theme, the tokens, the icon set, the typography, every other family's API,
+and the license. If your app does not render a `PageHeader`, 3.0.0 is a drop-in
+upgrade from 2.12.x.

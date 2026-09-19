@@ -13,6 +13,7 @@ import { useReducedMotion } from 'react-native-reanimated';
 
 import { useTheme } from '../theme/use-theme';
 import { useInteractionState } from '../hooks/use-interaction-state';
+import { useFieldControl } from '../field/context';
 import { mergeRefs } from '../hooks/merge-refs';
 import {
   atoms as a,
@@ -338,7 +339,15 @@ export function TextFieldInput({
   // Read directly rather than through `useTextFieldContext`: a missing root is
   // not an error here, it is the branch below.
   const ctx = useContext(Context);
-  const inputDisabled = disabled === true || rest.editable === false;
+  // The enclosing `Field`, when there is one. This is the input's half of the
+  // association contract (`field/context.ts`): the field owns the id the label
+  // points at, which hint is currently described, the invalid state and the
+  // disabled state, and the input applies them. `disabled` combines with `||`
+  // because it is a constraint — a field that is off cannot be turned back on
+  // from inside it — while the id and the name DEFER to the field, so the
+  // visible label and the announced name cannot disagree.
+  const field = useFieldControl();
+  const inputDisabled = disabled === true || rest.editable === false || field?.disabled === true;
   const setInputDisabled = ctx?.setInputDisabled;
 
   // Report up, so the icon and suffix beside the input dim with it.
@@ -349,8 +358,16 @@ export function TextFieldInput({
   }, [setInputDisabled, inputDisabled]);
 
   if (ctx === null) {
+    // A standalone input wraps ITSELF in a field shell. The shell has to carry
+    // the enclosing `Field`'s invalid and disabled state too, or the chrome
+    // paints as if nothing were wrong while the input inside it is inert — the
+    // one arrangement where the two halves of the control disagree.
     return (
-      <TextField isInvalid={isInvalid} disabled={disabled} size={size}>
+      <TextField
+        isInvalid={isInvalid || field?.invalid === true}
+        disabled={disabled || field?.disabled === true}
+        size={size}
+      >
         <TextFieldInput
           label={label}
           placeholder={placeholder}
@@ -375,7 +392,7 @@ export function TextFieldInput({
     ),
   );
 
-  const invalid = ctx.isInvalid || isInvalid === true;
+  const invalid = ctx.isInvalid || isInvalid === true || field?.invalid === true;
   const fieldDisabled = ctx.disabled || inputDisabled;
   const state = {
     hovered: ctx.hovered,
@@ -392,12 +409,32 @@ export function TextFieldInput({
     'aria-disabled': fieldDisabled || undefined,
     'aria-invalid': invalid || undefined,
   };
+  // The enclosing `Field`'s wiring. `rest` is spread BEFORE these, so an
+  // explicit `nativeID` or `aria-describedby` on the input still wins — an app
+  // that already wired its own association keeps it.
+  const fieldProps = field
+    ? {
+        nativeID: rest.nativeID ?? field.controlId,
+        'aria-describedby': (rest as Record<string, unknown>)['aria-describedby'] ?? field.describedBy,
+        'aria-required': field.required || undefined,
+      }
+    : undefined;
+  // On web the `<label for>` already names the input, but `aria-label` would
+  // OVERRIDE it — so when the field has a text label the two must be the same
+  // string rather than two spellings of it. On native there is no association
+  // at all and this prop is the only name the control has.
+  const accessibleName = field?.labelText ?? label;
   const webDisabled = IS_WEB && fieldDisabled ? ({ disabled: true } as Record<string, unknown>) : undefined;
 
   if (floatingLabel) {
+    // The ids and the described-by still travel, so the error is announced —
+    // but a floating label inside a `Field` that also draws a label shows the
+    // same words twice, once above the box and once inside it. They are
+    // alternatives, not layers: use one or the other. `docs/field.mdx` says so
+    // where a caller will read it.
     return (
       <FloatingLabelInput
-        label={label}
+        label={accessibleName}
         value={value}
         onChangeText={onChangeText}
         onFocus={onFocus}
@@ -406,6 +443,7 @@ export function TextFieldInput({
         refs={refs}
         style={style}
         {...rest}
+        {...fieldProps}
         {...disabledProps}
         {...webDisabled}
       />
@@ -462,9 +500,10 @@ export function TextFieldInput({
         accessibilityHint={undefined}
         hitSlop={{ top: 20, bottom: 20, left: 20, right: 20 }}
         {...rest}
+        {...fieldProps}
         {...disabledProps}
         {...webDisabled}
-        accessibilityLabel={label}
+        accessibilityLabel={accessibleName}
         ref={refs}
         value={value}
         onChangeText={onChangeText}

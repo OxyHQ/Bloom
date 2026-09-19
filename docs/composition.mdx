@@ -1,0 +1,159 @@
+---
+title: Composition
+description: How Bloom components work together — the inherited presentation contract, field membership, trigger composition, scroll ownership and edge claims — with what is done and what is not.
+order: 3
+---
+
+# Composition
+
+Bloom components share tokens. Sharing tokens is not the same as working together: a control still has to be told what material the container around it is painting, a label still has to be wired to the control it names, and a header still has to know which scroller it is following. Written as props, each of those is a thing the app repeats at every call site and gets wrong at one of them.
+
+This page is the set of small, explicit contracts that answer those questions, and the rules that keep them small. Each is a context a container publishes and a component opts into. None of them is a framework, a singleton, or a component that reads its children's types to decide what to do with them.
+
+## The precedence rule
+
+Every contract on this page resolves the same way:
+
+```
+an explicit prop  >  the nearest container  >  the component's own default
+```
+
+`undefined` is the only value that defers. Passing `variant="solid"` inside a glass island paints a solid control — the container is a default, not an override, and a caller can always win.
+
+**A constraint is not a default.** Anything that RESTRICTS a control — `disabled`, a modal's inertness, the user's reduce-transparency or reduce-motion preference — travels on its own channel and combines with `||`, never `??`. The rule above is exactly wrong for those: a descendant must not be able to re-enable an action its group disabled by passing a prop.
+
+**State does not travel either.** `checked`, `selected`, a field's value, a business datum: those belong to the component that holds them. A visual context that also carried state would make every container a place state can leak from.
+
+## Control presentation — `ControlSurface`
+
+`@oxy.so/bloom/control-surface`
+
+What a container tells the controls inside it about presentation, and nothing else. Two fields, both visual configuration:
+
+| field | values | meaning |
+| --- | --- | --- |
+| `material` | `'solid'` \| `'glass'` | the surface a control CONTAINER paints |
+| `density` | `'medium'` \| `'small'` | the size controls default to |
+
+```tsx
+import { ControlSurface } from '@oxy.so/bloom/control-surface';
+
+<ControlSurface material="glass">
+  <ButtonGroup accessibilityLabel="Playback">…</ButtonGroup>
+</ControlSurface>
+```
+
+It renders no node of its own, so it can be dropped anywhere without moving anything. Bloom's own containers mount it for you — `glass/GlassIsland` does, which is why a `ButtonGroup` inside a floating `PageHeader` is glass with no prop written on it.
+
+A field left `undefined` inherits rather than resetting: `<ControlSurface density="small">` inside a glass island stays glass.
+
+**Who reads it today:** `ButtonGroup` and `ButtonGroupItem`. `Button` does not — a `Button` in a floating header keeps its own chrome, which is right for a primary action in its own capsule and wrong for an icon action that should sit flush on an island. Use `ButtonGroup`/`ButtonGroupItem` for the latter. Extending this to more families is adoption work, not a gap in the contract; see [What is not done](#what-is-not-done).
+
+Precedence is gated in both directions by `src/__tests__/ControlSurface.test.tsx`, including the assertion that the context carries exactly two fields.
+
+## Field membership — `Field`
+
+`@oxy.so/bloom/field`
+
+A `Field` used to draw a label, a control and a hint, and wire none of them together. It associates them now: the control's id, `aria-describedby` for whichever of description/error is showing, the invalid state, the required state and the disabled state.
+
+```tsx
+<Field label="Email" description="We never share it." error={emailError} required>
+  <TextFieldInput label="Email" value={email} onChangeText={setEmail} />
+</Field>
+```
+
+- **Ids come from `useId`** when no `nativeID` is given, so they survive SSR and hydration. An explicit `nativeID` still owns every derived id.
+- **The control's accessible NAME is the field's label.** On web a `<label for>` is a real association, but `aria-label` would override it; on native there is no association at all and the control must carry the name. So a control inside a field defers to the field's label text, and the visible label and the announced name cannot disagree.
+- **`disabled` is a constraint.** A control inside a disabled field is disabled, and cannot opt out.
+- **`multiple` is the several-controls case** — a radio set, a date's three boxes. The field becomes a labelled `group`, publishes no control id and describes the GROUP rather than each control: one id on three inputs is invalid HTML, and one error described by three inputs is announced three times.
+- **A floating label and a `Field` label are alternatives, not layers.** `<TextFieldInput floatingLabel>` inside a `Field label="…"` shows the same words above the box and inside it. Pick one.
+
+A control opts in by reading `useFieldControl()`:
+
+```tsx
+const field = useFieldControl();
+<TextInput
+  nativeID={field?.controlId ?? nativeID}
+  aria-describedby={field?.describedBy}
+  aria-invalid={field?.invalid || isInvalid || undefined}
+  accessibilityLabel={field?.labelText ?? label}
+  editable={!(field?.disabled || disabled)}
+/>
+```
+
+Opt-in, not magic. A child that does not read the context renders exactly as before — a container cannot give an arbitrary child behaviour by wrapping it, and one that inspected its children's types to try would be guessing.
+
+**Who reads it today:** `TextFieldInput` (both the default and floating-label renderings). Gate: `src/__tests__/FieldAssociation.test.tsx`.
+
+## Trigger composition — `asChild`
+
+Every anchored family (`Popover`, `DropdownMenu`, `ContextMenu`, `Menubar`, `Select`) takes `asChild` and merges its open handler and a11y state onto the caller's single element child. Three properties are worth knowing:
+
+- **The child's handler runs first, and can CANCEL the open.** `event.preventDefault()` in the child's `onPress` stops the surface from opening — for a trigger that has just found the form dirty, or the row it belongs to gone. It is the event's own vocabulary because both platforms hand `onPress` a React synthetic event. On web the same call also suppresses the browser's default for that click, so cancelling on an anchor child cancels its navigation too.
+- **A fragment child is refused.** `<Trigger asChild><>{control}</></Trigger>` passes every check a clone can make and then drops every prop, because a fragment has no host node. It throws now, naming the fix.
+- **`disabled` is read from BOTH sides** — the trigger's own prop and the child's — in `cloneTrigger`, not left to whatever element the caller passed.
+
+**A control used as a trigger must DECLARE the props it will be handed.** A component whose props are a closed list drops the ones it does not name, silently, because all of them are optional. `ButtonGroupItem` declares them, so this works:
+
+```tsx
+<ButtonGroup accessibilityLabel="Page actions">
+  <Popover>
+    <PopoverTrigger asChild label="More">
+      <ButtonGroupItem iconOnly leadingIcon={RiMore2Line} accessibilityLabel="More" />
+    </PopoverTrigger>
+    <PopoverContent label="More">…</PopoverContent>
+  </Popover>
+</ButtonGroup>
+```
+
+Gate: `src/__tests__/TriggerComposition.test.tsx`.
+
+## Scroll ownership — `ScrollOffsetProvider`
+
+`@oxy.so/bloom/layout`
+
+A screen has exactly one scroll owner, and the owner publishes its offset. Chrome reads it. Neither imports the other, so the provider's position in the tree is what pairs them — two panels side by side, each with its own header and its own scroller, resolve correctly.
+
+```tsx
+const scrollY = useSharedValue(0);
+const onScroll = useAnimatedScrollHandler(
+  { onScroll: (e) => { scrollY.value = e.contentOffset.y; } },
+  [scrollY],
+);
+
+<ScrollOffsetProvider value={scrollY}>
+  <PageHeader title="Inbox" />
+  <Animated.ScrollView onScroll={onScroll} scrollEventThrottle={16}>…</Animated.ScrollView>
+</ScrollOffsetProvider>
+```
+
+The context carries the `SharedValue`, not a number. It crosses once, at mount; every subsequent frame reaches the chrome on the UI thread through `useAnimatedStyle`, with no React render. A context whose value changed per frame would re-render every consumer per frame, which is the cost this exists to avoid.
+
+`PageHeader` resolves its offset as: the `scrollY` prop, then this context, then `window.scrollY` on web. Without any of the three on native it stays at rest. The context step is the one that matters for a desktop shell, where `window.scrollY` never moves and a header that followed it looked deliberately inert.
+
+## Edge claims — `TopEdgeProvider` / `BottomEdgeProvider`
+
+`@oxy.so/bloom/layout`
+
+A surface that parks at a window edge CLAIMS its footprint; a surface or a scroll container that must clear it READS the total. Claims combine with `max`, not sum — every claim is measured from the same edge, so two surfaces at that edge overlap rather than stack.
+
+The bottom edge is the tab bar and the FAB (`docs/fab.mdx`). The top edge is chrome that overlays content:
+
+```tsx
+<ScrollView contentContainerStyle={{ paddingTop: useTopEdgeInset() }}>
+```
+
+`BloomProvider` mounts both. A nested provider scopes a subtree to its own claims — a full-screen modal with its own header, whose content must clear the MODAL's header rather than the screen's.
+
+A claim registers in an effect, so a reader mounted in the same commit sees `0` on its first render. `PageHeader` narrows that to one frame by claiming its resting height (safe area + 56) immediately and replacing it with the measured height when `onLayout` reports.
+
+## What is not done
+
+This page describes contracts that exist and are gated. Issue #145 asks for more than that, and the rest is honest to name:
+
+- **No full inventory of the public API.** The matrix over every family — platforms, contexts, state families, triggers, semantics, styles, tests — has not been produced. Nothing here should be read as "the library was audited"; it was extended where the header integration needed it.
+- **State-family naming is not unified.** `value`/`defaultValue`/`onValueChange`, `checked`/`onCheckedChange` and `open`/`onOpenChange` are used consistently by the families that have them, and `useControllableState` is the shared implementation, but no sweep has been made to rename the exceptions (`onChangeText` among them, which is a React Native contract worth keeping).
+- **Only two families read `ControlSurface`, and one reads `Field`.** Every other control renders as it always did. Adoption is per-family work with its own regressions to check.
+- **`BloomProvider` still imports the Expo Router adapter directly.** Decoupling the core from the router is listed in #145 §8 and is not in this change.
+- **No adaptive overflow.** Actions that do not fit are not collapsed into a menu. #145 says explicitly that this is not required for the first header, and nothing here does it.

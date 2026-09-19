@@ -1,7 +1,7 @@
 import React from 'react';
 import Svg, { ClipPath, Defs, G, Path } from 'react-native-svg';
 
-import { useSvgIdPrefix } from './use-svg-id';
+import { useSvgIdPrefix } from '../styles/svg-id';
 
 /**
  * The Oxy mark for `SocialButton` — the same drawing the Oxy SDK ships.

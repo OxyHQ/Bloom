@@ -66,6 +66,11 @@ const DOC_ALIASES: Readonly<Record<string, string>> = {
   // `surfaces/` publishes `alert()`, `confirm()` and `prompt()`; a reader looks
   // for the function, not the store behind it.
   surfaces: 'alert',
+  // `control-surface/` publishes the inherited presentation contract, which is
+  // one of five contracts documented together in `docs/composition.mdx`.
+  // Splitting it into a page of its own would put the precedence rule in one
+  // file and the four things that obey it in another.
+  'control-surface': 'composition',
 };
 
 /** Doc subtrees that are not component documentation. */

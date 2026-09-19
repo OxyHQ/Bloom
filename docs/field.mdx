@@ -35,7 +35,45 @@ import { TextField, TextFieldInput } from '@oxy.so/bloom/text-field';
 | `error`       | the message; `null` or omitted means valid                    |
 | `required`    | the required marker and the announced requirement             |
 | `disabled`    | dims the whole group                                         |
-| `nativeID`    | the id the label and control are wired through                |
+| `multiple`    | the field holds several controls — a labelled `group`         |
+| `nativeID`    | the id the label and control are wired through; generated when omitted |
+
+## What the wiring actually does
+
+The label, description and error are ASSOCIATED with the control, not merely stacked around it. A control opts in by reading `useFieldControl()`; Bloom's `TextFieldInput` does.
+
+| the field publishes | the control applies |
+| --- | --- |
+| `controlId` | its `nativeID`, so the label's `for` points at it |
+| `describedBy` | `aria-describedby` — the description, or the error once there is one |
+| `labelText` | its accessible NAME |
+| `invalid` | `aria-invalid` |
+| `required` | `aria-required` |
+| `disabled` | its own disabled state |
+
+Three things worth knowing:
+
+- **The ids come from `useId`** when no `nativeID` is given, so they survive SSR and hydration. An explicit `nativeID` still owns every derived id (`<id>-description`, `<id>-error`), so a form already wired by hand keeps working.
+- **The field's label wins over the control's own.** On web `aria-label` OVERRIDES a `<label for>`, and on native there is no association at all and the control must carry the name — so a control inside a field defers to the field's label text, and the visible label and the announced name cannot disagree.
+- **`disabled` is a constraint, not a default.** A control inside a disabled field is disabled and cannot opt out.
+
+Opt-in, not magic: a child that does not read the context renders exactly as before. A container cannot give an arbitrary child behaviour by wrapping it, and one that inspected its children's types to try would be guessing. See [Composition](/docs/composition).
+
+## One control, or several
+
+A field with ONE control gives it the field's id and describes the error BY that control. A field with several — a radio set, a date's three boxes — must not: three inputs sharing one id is invalid HTML, and one error described by three inputs is announced three times.
+
+```tsx
+<Field label="Date of birth" multiple error={dobError}>
+  <DayInput /> <MonthInput /> <YearInput />
+</Field>
+```
+
+`multiple` makes the field a `role="group"` labelled by its own label and described by its own hint, and publishes no control id. Each control keeps its own id and its own name.
+
+## Floating labels are an alternative, not a layer
+
+`<TextFieldInput floatingLabel>` inside a `Field label="…"` shows the same words above the box and inside it. The ids and the described-by still travel, so the error is still announced — but pick one of the two labels.
 
 ## `error` is a string, not a boolean
 
