@@ -31,7 +31,7 @@ import { cx } from '../floating/shared';
 import { TriggerSlot } from '../floating/TriggerSlot';
 import type { DialogControlProps } from '../dialog/types';
 import { useInteractionState } from '../hooks/use-interaction-state';
-import { RiCheckLine as CheckIcon } from '../icons/remix';
+import { RiCheckLine as CheckIcon } from '../icons/remix/RiCheckLine';
 import {
   StyledPressable,
   StyledText,

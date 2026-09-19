@@ -40,7 +40,7 @@ import {
   useAgentLogRevealTicker,
 } from '../agent-log';
 import { resolveButtonRamps } from '../button/shared';
-import { RiArrowDownSLine } from '../icons/remix';
+import { RiArrowDownSLine } from '../icons/remix/RiArrowDownSLine';
 import { SOCIAL_PROVIDERS } from '../social-button/providers';
 import { adoptStyleSheet } from '../styles/adopt-style-sheet';
 import type { WebCssStyle } from '../styles/web-view-style';

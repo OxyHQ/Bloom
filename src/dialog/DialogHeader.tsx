@@ -22,11 +22,14 @@ import Animated, {
   type SharedValue,
 } from 'react-native-reanimated';
 
-import {
-  RiArrowLeftSLine,
-  RiMoreFill,
-  RiCloseLine,
-} from '../icons';
+// Per glyph, not through `../icons`. The barrel is a flat re-export of every
+// Remix module, and Metro does not tree-shake — so importing three names through
+// it put all 461 glyphs into every app that renders a Dialog, which is the cost
+// `./icons/Ri*` was added to remove. An app cannot opt out of what Bloom's own
+// components import, so the barrel has no place inside a shipped one.
+import { RiArrowLeftSLine } from '../icons/remix/RiArrowLeftSLine';
+import { RiMoreFill } from '../icons/remix/RiMoreFill';
+import { RiCloseLine } from '../icons/remix/RiCloseLine';
 import { FrostedIconButton } from '../frosted-icon-button';
 import { Button } from '../button';
 import { Search } from '../search';

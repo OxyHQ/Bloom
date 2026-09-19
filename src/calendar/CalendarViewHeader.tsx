@@ -3,7 +3,8 @@ import { View } from 'react-native';
 
 import { Button } from '../button';
 import { formatMonthTitle } from '../date-picker/calendar-grid';
-import { RiAddFill, RiMenuLine } from '../icons/remix';
+import { RiAddFill } from '../icons/remix/RiAddFill';
+import { RiMenuLine } from '../icons/remix/RiMenuLine';
 import { Z_INDEX } from '../styles/z-index';
 import { Text } from '../typography';
 import { CalendarViewInboxMenu } from './CalendarViewInboxMenu';

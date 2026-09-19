@@ -5,14 +5,12 @@ import { Avatar } from '../avatar';
 import { Button } from '../button';
 import { Chip } from '../chip';
 import { useControllableState } from '../hooks/use-controllable-state';
-import {
-  RiCheckLine,
-  RiCloseLine,
-  RiFlagLine,
-  RiThumbDownLine,
-  RiThumbUpFill,
-  RiThumbUpLine,
-} from '../icons/remix';
+import { RiCheckLine } from '../icons/remix/RiCheckLine';
+import { RiCloseLine } from '../icons/remix/RiCloseLine';
+import { RiFlagLine } from '../icons/remix/RiFlagLine';
+import { RiThumbDownLine } from '../icons/remix/RiThumbDownLine';
+import { RiThumbUpFill } from '../icons/remix/RiThumbUpFill';
+import { RiThumbUpLine } from '../icons/remix/RiThumbUpLine';
 import { useContainerWidth } from '../hooks/use-container-width';
 import { Rating, RatingBar } from '../rating';
 import type { WebCssStyle } from '../styles/web-view-style';

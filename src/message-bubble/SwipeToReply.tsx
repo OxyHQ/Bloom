@@ -9,7 +9,7 @@ import Animated, {
   withTiming,
 } from 'react-native-reanimated';
 
-import { RiArrowGoBackLine } from '../icons/remix';
+import { RiArrowGoBackLine } from '../icons/remix/RiArrowGoBackLine';
 import { useTheme } from '../theme/use-theme';
 import { IS_WEB, resolveMessageBubblePaint } from './shared';
 import type { MessageDirection } from './types';

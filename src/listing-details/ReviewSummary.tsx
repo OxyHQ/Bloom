@@ -3,7 +3,7 @@ import { View } from 'react-native';
 
 import { RatingBar } from '../rating';
 import { formatRatingValue } from '../rating/Rating';
-import { RiStarFill } from '../icons/remix';
+import { RiStarFill } from '../icons/remix/RiStarFill';
 import { useTheme } from '../theme/use-theme';
 import { Text } from '../typography';
 import { REVIEW_SUMMARY_WIDE_MIN_WIDTH } from './constants';

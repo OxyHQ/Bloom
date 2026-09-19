@@ -13,7 +13,7 @@ import { useReducedMotion } from 'react-native-reanimated';
 import Svg, { Defs, LinearGradient, Rect, Stop } from 'react-native-svg';
 
 import { mixColor } from '../button/shared';
-import { RiArrowDownSLine } from '../icons/remix';
+import { RiArrowDownSLine } from '../icons/remix/RiArrowDownSLine';
 import { borderRadius } from '../styles/tokens';
 import type { WebCssStyle } from '../styles/web-view-style';
 import { Tabs, TabsTrigger } from '../tabs';

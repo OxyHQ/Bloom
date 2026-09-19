@@ -11,7 +11,7 @@ import { useActiveIndex } from '../chart-cards/primitives/use-active-index';
 import { useChartCardPalette } from '../chart-cards/primitives/use-chart-palette';
 import { useChartRange } from '../chart-cards/primitives/use-chart-range';
 import { lerp, useChartProgress } from '../chart-cards/use-chart-progress';
-import { RiLineChartLine } from '../icons/remix';
+import { RiLineChartLine } from '../icons/remix/RiLineChartLine';
 import type { Theme } from '../theme/types';
 import { useTheme } from '../theme/use-theme';
 import { Text } from '../typography';

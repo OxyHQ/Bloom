@@ -2,7 +2,9 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { Platform, Pressable, View, useWindowDimensions } from 'react-native';
 
 import { Button } from '../button';
-import { RiAddFill, RiInbox2Line, RiRssFill } from '../icons/remix';
+import { RiAddFill } from '../icons/remix/RiAddFill';
+import { RiInbox2Line } from '../icons/remix/RiInbox2Line';
+import { RiRssFill } from '../icons/remix/RiRssFill';
 import { Popover, PopoverContent, PopoverTrigger } from '../popover';
 import { adoptStyleSheet } from '../styles/adopt-style-sheet';
 import type { WebCssStyle } from '../styles/web-view-style';

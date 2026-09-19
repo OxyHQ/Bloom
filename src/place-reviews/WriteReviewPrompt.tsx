@@ -2,7 +2,9 @@ import React, { memo } from 'react';
 import { View } from 'react-native';
 
 import { Button } from '../button';
-import { RiBuilding2Line, RiCloseLine, RiQuillPenLine } from '../icons/remix';
+import { RiBuilding2Line } from '../icons/remix/RiBuilding2Line';
+import { RiCloseLine } from '../icons/remix/RiCloseLine';
+import { RiQuillPenLine } from '../icons/remix/RiQuillPenLine';
 import { HousingCard, IconTile, useHousingPalette } from '../tenancy/parts';
 import { Text } from '../typography';
 import type { WriteReviewPromptProps } from './types';

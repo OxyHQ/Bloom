@@ -18,7 +18,7 @@ import {
   useAgentLogRevealTicker,
 } from '../agent-log';
 import { mixColor, resolveButtonRamps } from '../button/shared';
-import { RiArrowDownSLine } from '../icons/remix';
+import { RiArrowDownSLine } from '../icons/remix/RiArrowDownSLine';
 import { adoptStyleSheet } from '../styles/adopt-style-sheet';
 import type { WebCssStyle } from '../styles/web-view-style';
 import type { Theme } from '../theme/types';

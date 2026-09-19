@@ -9,7 +9,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '../dropdown-menu';
-import { RiMore2Fill } from '../icons/remix';
+import { RiMore2Fill } from '../icons/remix/RiMore2Fill';
 import { useTheme } from '../theme/use-theme';
 import { DataTableRowAction } from './DataTable';
 import type { DataTableRowActionsProps } from './types';

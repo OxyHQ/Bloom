@@ -14,7 +14,8 @@ import {
 import { useReducedMotion } from 'react-native-reanimated';
 
 import { Button } from '../button';
-import { RiArrowLeftSLine, RiArrowRightSLine } from '../icons/remix';
+import { RiArrowLeftSLine } from '../icons/remix/RiArrowLeftSLine';
+import { RiArrowRightSLine } from '../icons/remix/RiArrowRightSLine';
 import { useImageResolver } from '../image-resolver/context';
 import { formatRatingValue } from '../rating/Rating';
 import { Rating } from '../rating';

@@ -18,10 +18,8 @@ import { ROW_ICON_SIZE, ROW_LABEL_CLASS } from '../floating/constants';
 import { useMenuPalette } from '../floating/menu-palette';
 import { menuType, menuTypeClass } from '../floating/menu-type';
 import { cx } from '../floating/shared';
-import {
-  RiArrowDownSLine as ChevronDownIcon,
-  RiArrowUpSLine as ChevronUpIcon,
-} from '../icons/remix';
+import { RiArrowDownSLine as ChevronDownIcon } from '../icons/remix/RiArrowDownSLine';
+import { RiArrowUpSLine as ChevronUpIcon } from '../icons/remix/RiArrowUpSLine';
 import {
   StyledPressable,
   StyledText,

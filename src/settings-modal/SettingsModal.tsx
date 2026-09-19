@@ -26,7 +26,10 @@ import Animated, {
 
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-import { RiArrowLeftSLine, RiArrowRightSLine, RiCheckboxCircleFill, RiCloseLine } from '../icons/remix';
+import { RiArrowLeftSLine } from '../icons/remix/RiArrowLeftSLine';
+import { RiArrowRightSLine } from '../icons/remix/RiArrowRightSLine';
+import { RiCheckboxCircleFill } from '../icons/remix/RiCheckboxCircleFill';
+import { RiCloseLine } from '../icons/remix/RiCloseLine';
 import { VerticalFade } from './SettingsArt';
 import { Backdrop, OverlayRoot } from '../overlay';
 import type { WebCssStyle } from '../styles/web-view-style';

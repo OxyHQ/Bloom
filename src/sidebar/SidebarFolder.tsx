@@ -12,7 +12,8 @@ import Svg, { Path } from 'react-native-svg';
 
 import { useControllableState } from '../hooks/use-controllable-state';
 import { useInteractionState } from '../hooks/use-interaction-state';
-import { RiFolderLine, RiFolderOpenLine } from '../icons/remix';
+import { RiFolderLine } from '../icons/remix/RiFolderLine';
+import { RiFolderOpenLine } from '../icons/remix/RiFolderOpenLine';
 import type { WebCssStyle } from '../styles/web-view-style';
 import { Text } from '../typography';
 import { useSidebarPalette, type SidebarPalette } from './palette';

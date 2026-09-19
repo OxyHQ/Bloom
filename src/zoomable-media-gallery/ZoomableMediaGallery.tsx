@@ -29,11 +29,11 @@ import { borderRadius } from '../styles/tokens';
 import { Backdrop, OverlayRoot } from '../overlay';
 import { Portal } from '../portal';
 import { useInteractionState } from '../hooks/use-interaction-state';
-import {
-  RiArrowLeftLine,
-  RiArrowRightLine,
-  RiUpload2Line,
-} from '../icons';
+// Per glyph, not through `../icons` — see DialogHeader for why a shipped
+// component must never reach the barrel.
+import { RiArrowLeftLine } from '../icons/remix/RiArrowLeftLine';
+import { RiArrowRightLine } from '../icons/remix/RiArrowRightLine';
+import { RiUpload2Line } from '../icons/remix/RiUpload2Line';
 import { WEB_POSITION_FIXED, type WebCssStyle } from '../styles/web-view-style';
 import { MediaPoster, MediaSurface } from '../media-flight/MediaSurface';
 import {

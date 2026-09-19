@@ -4,7 +4,7 @@ import { View } from 'react-native';
 import { Button } from '../button';
 import { colorRamp, DANGER_TABLE, resolveButtonRamps } from '../button/shared';
 import { useInteractionState } from '../hooks/use-interaction-state';
-import { RiNotificationLine } from '../icons/remix';
+import { RiNotificationLine } from '../icons/remix/RiNotificationLine';
 import { NotificationCenter } from '../notification-center';
 import { Popover, PopoverContent, PopoverTrigger } from '../popover';
 import { borderRadius } from '../styles/tokens';

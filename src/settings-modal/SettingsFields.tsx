@@ -4,7 +4,7 @@ import { Platform, Pressable, StyleSheet, View, type ViewStyle } from 'react-nat
 import { borderRadius } from '../styles/tokens';
 import { webDataSet } from '../styles/web-data';
 import { Calendar } from '../date-picker';
-import { RiCalendarLine } from '../icons/remix';
+import { RiCalendarLine } from '../icons/remix/RiCalendarLine';
 import { Popover, PopoverContent, PopoverTrigger } from '../popover';
 import { TextField, TextFieldIcon, TextFieldInput } from '../text-field';
 import { Text } from '../typography';

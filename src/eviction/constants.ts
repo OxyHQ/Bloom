@@ -1,13 +1,11 @@
-import {
-  RiCalendarLine,
-  RiCloseCircleLine,
-  RiFileTextLine,
-  RiGroupLine,
-  RiHome4Line,
-  RiInformationLine,
-  RiShieldCheckLine,
-  RiTimeLine,
-} from '../icons/remix';
+import { RiCalendarLine } from '../icons/remix/RiCalendarLine';
+import { RiCloseCircleLine } from '../icons/remix/RiCloseCircleLine';
+import { RiFileTextLine } from '../icons/remix/RiFileTextLine';
+import { RiGroupLine } from '../icons/remix/RiGroupLine';
+import { RiHome4Line } from '../icons/remix/RiHome4Line';
+import { RiInformationLine } from '../icons/remix/RiInformationLine';
+import { RiShieldCheckLine } from '../icons/remix/RiShieldCheckLine';
+import { RiTimeLine } from '../icons/remix/RiTimeLine';
 import type { AccentFill, AccentTone } from '../theme/accent-colors';
 import type { HousingIcon } from '../tenancy/types';
 import type { EvictionEventKind, EvictionStatus } from './types';

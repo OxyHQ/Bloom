@@ -19,7 +19,8 @@ import Svg, { Defs, LinearGradient, Rect, Stop } from 'react-native-svg';
 
 import { ACCENT_TABLE, BUTTON_SHADOW, SEGMENTED_THUMB_EASE_BEZIER, SEGMENTED_THUMB_MS, colorRamp, mixColor, resolveButtonRamps } from '../button/shared';
 import { useInteractionState } from '../hooks/use-interaction-state';
-import { RiMoonLine, RiSunLine } from '../icons/remix';
+import { RiMoonLine } from '../icons/remix/RiMoonLine';
+import { RiSunLine } from '../icons/remix/RiSunLine';
 import { adoptStyleSheet } from '../styles/adopt-style-sheet';
 import { borderRadius } from '../styles/tokens';
 import type { WebCssStyle } from '../styles/web-view-style';

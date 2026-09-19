@@ -19,7 +19,7 @@ import { BUTTON_SHADOW, mixColor, resolveButtonRamps } from '../button/shared';
 import { ButtonGroupItem } from '../button-group';
 import { ControlSurface } from '../control-surface';
 import { GlassIsland } from '../glass';
-import { RiArrowLeftLine } from '../icons/remix';
+import { RiArrowLeftLine } from '../icons/remix/RiArrowLeftLine';
 import { useClaimTopEdge, useScrollOffset } from '../layout';
 import { BREAKPOINTS } from '../styles/breakpoints';
 import { WEB_POSITION_STICKY, type WebCssStyle } from '../styles/web-view-style';

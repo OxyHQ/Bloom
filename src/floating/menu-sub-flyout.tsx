@@ -42,7 +42,7 @@ import React, {
 import { View } from 'react-native';
 
 import { useControllableState } from '../hooks/use-controllable-state';
-import { RiArrowRightSLine as ChevronRightIcon } from '../icons/remix';
+import { RiArrowRightSLine as ChevronRightIcon } from '../icons/remix/RiArrowRightSLine';
 import { StyledView } from '../styles/styled-primitives';
 import { useMenuPalette } from './menu-palette';
 import {

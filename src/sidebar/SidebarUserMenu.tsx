@@ -3,7 +3,8 @@ import { Pressable, View, useWindowDimensions } from 'react-native';
 
 import { Button } from '../button';
 import { useInteractionState } from '../hooks/use-interaction-state';
-import { RiAddFill, RiEqualizer3Line } from '../icons/remix';
+import { RiAddFill } from '../icons/remix/RiAddFill';
+import { RiEqualizer3Line } from '../icons/remix/RiEqualizer3Line';
 import { Popover, PopoverContent, PopoverTrigger } from '../popover';
 import { BREAKPOINTS } from '../styles/breakpoints';
 import { borderRadius } from '../styles/tokens';

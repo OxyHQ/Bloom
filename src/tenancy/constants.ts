@@ -1,14 +1,12 @@
-import {
-  RiDropLine,
-  RiFilePdf2Line,
-  RiFileImageLine,
-  RiFileTextLine,
-  RiFileWord2Line,
-  RiFlashlightLine,
-  RiFridgeLine,
-  RiTempHotLine,
-  RiToolsLine,
-} from '../icons/remix';
+import { RiDropLine } from '../icons/remix/RiDropLine';
+import { RiFilePdf2Line } from '../icons/remix/RiFilePdf2Line';
+import { RiFileImageLine } from '../icons/remix/RiFileImageLine';
+import { RiFileTextLine } from '../icons/remix/RiFileTextLine';
+import { RiFileWord2Line } from '../icons/remix/RiFileWord2Line';
+import { RiFlashlightLine } from '../icons/remix/RiFlashlightLine';
+import { RiFridgeLine } from '../icons/remix/RiFridgeLine';
+import { RiTempHotLine } from '../icons/remix/RiTempHotLine';
+import { RiToolsLine } from '../icons/remix/RiToolsLine';
 import type { AccentTone } from '../theme/accent-colors';
 import type {
   HousingIcon,

@@ -14,7 +14,7 @@ import { BUTTON_SHADOW, resolveButtonRamps } from '../button/shared';
 import { Checkbox } from '../checkbox';
 import { Divider } from '../divider';
 import { useInteractionStates } from '../hooks/use-interaction-state';
-import { RiMailCheckLine } from '../icons/remix';
+import { RiMailCheckLine } from '../icons/remix/RiMailCheckLine';
 import { InputOtp } from '../input-otp';
 import { SocialButton } from '../social-button';
 import { BREAKPOINTS } from '../styles/breakpoints';

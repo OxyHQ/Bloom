@@ -16,10 +16,8 @@
 import React, { useMemo } from 'react';
 
 import { useControllableState } from '../hooks/use-controllable-state';
-import {
-  RiArrowDownSLine as ChevronBottomIcon,
-  RiArrowUpSLine as ChevronTopIcon,
-} from '../icons/remix';
+import { RiArrowDownSLine as ChevronBottomIcon } from '../icons/remix/RiArrowDownSLine';
+import { RiArrowUpSLine as ChevronTopIcon } from '../icons/remix/RiArrowUpSLine';
 import { StyledView } from '../styles/styled-primitives';
 import { useMenuPalette } from './menu-palette';
 import { ROW_ICON_SIZE } from './constants';

@@ -1,12 +1,10 @@
 import React, { memo, useMemo } from 'react';
 import { Pressable, View } from 'react-native';
 
-import {
-  RiArrowRightDownLine,
-  RiArrowRightUpLine,
-  RiPhoneLine,
-  RiVideoLine,
-} from '../icons/remix';
+import { RiArrowRightDownLine } from '../icons/remix/RiArrowRightDownLine';
+import { RiArrowRightUpLine } from '../icons/remix/RiArrowRightUpLine';
+import { RiPhoneLine } from '../icons/remix/RiPhoneLine';
+import { RiVideoLine } from '../icons/remix/RiVideoLine';
 import { useTheme } from '../theme/use-theme';
 import { Text } from '../typography';
 import {

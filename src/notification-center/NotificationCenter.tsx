@@ -6,13 +6,11 @@ import { Button } from '../button';
 import { ACCENT_TABLE, colorRamp, DANGER_TABLE, resolveButtonRamps } from '../button/shared';
 import { MENU_SHADOW } from '../floating/menu-palette';
 import { useControllableState } from '../hooks/use-controllable-state';
-import {
-  RiCheckboxCircleFill,
-  RiErrorWarningFill,
-  RiInformationFill,
-  RiNotification3Fill,
-  RiNotificationOffLine,
-} from '../icons/remix';
+import { RiCheckboxCircleFill } from '../icons/remix/RiCheckboxCircleFill';
+import { RiErrorWarningFill } from '../icons/remix/RiErrorWarningFill';
+import { RiInformationFill } from '../icons/remix/RiInformationFill';
+import { RiNotification3Fill } from '../icons/remix/RiNotification3Fill';
+import { RiNotificationOffLine } from '../icons/remix/RiNotificationOffLine';
 import {
   SegmentedControl,
   SegmentedControlItem,

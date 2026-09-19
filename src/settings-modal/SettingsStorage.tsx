@@ -16,17 +16,15 @@ import { Chip } from '../chip';
 import { FileUpload, formatFileSize } from '../file-upload';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '../dropdown-menu';
 import { useControllableState } from '../hooks/use-controllable-state';
-import {
-  RiDeleteBin6Line,
-  RiDownload2Line,
-  RiEditLine,
-  RiFileCopyLine,
-  RiFileExcel2Line,
-  RiFileTextLine,
-  RiMore2Fill,
-  RiSearchLine,
-  RiVideoLine,
-} from '../icons/remix';
+import { RiDeleteBin6Line } from '../icons/remix/RiDeleteBin6Line';
+import { RiDownload2Line } from '../icons/remix/RiDownload2Line';
+import { RiEditLine } from '../icons/remix/RiEditLine';
+import { RiFileCopyLine } from '../icons/remix/RiFileCopyLine';
+import { RiFileExcel2Line } from '../icons/remix/RiFileExcel2Line';
+import { RiFileTextLine } from '../icons/remix/RiFileTextLine';
+import { RiMore2Fill } from '../icons/remix/RiMore2Fill';
+import { RiSearchLine } from '../icons/remix/RiSearchLine';
+import { RiVideoLine } from '../icons/remix/RiVideoLine';
 import { Pagination } from '../pagination';
 import { Select, SelectContent, SelectIcon, SelectItem, SelectItemIndicator, SelectItemText, SelectTrigger, SelectValue } from '../select';
 import { borderRadius } from '../styles/tokens';

@@ -23,7 +23,8 @@ import { useReducedMotion } from 'react-native-reanimated';
 
 import { Button } from '../button';
 import { resolveButtonRamps } from '../button/shared';
-import { RiArrowLeftSLine, RiArrowRightSLine } from '../icons/remix';
+import { RiArrowLeftSLine } from '../icons/remix/RiArrowLeftSLine';
+import { RiArrowRightSLine } from '../icons/remix/RiArrowRightSLine';
 import { useInteractionState } from '../hooks/use-interaction-state';
 import { useInteractiveWebCss } from '../styles/interactive-web-css';
 import { borderRadius } from '../styles/tokens';

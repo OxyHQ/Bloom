@@ -3,7 +3,8 @@ import { Pressable, View } from 'react-native';
 
 import { Chip } from '../chip';
 import { useControllableState } from '../hooks/use-controllable-state';
-import { RiArrowDownSLine, RiArrowUpSLine } from '../icons/remix';
+import { RiArrowDownSLine } from '../icons/remix/RiArrowDownSLine';
+import { RiArrowUpSLine } from '../icons/remix/RiArrowUpSLine';
 import { useContainerWidth } from '../hooks/use-container-width';
 import { useInteractiveWebCss } from '../styles/interactive-web-css';
 import type { WebCssStyle } from '../styles/web-view-style';

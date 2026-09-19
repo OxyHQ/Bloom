@@ -1,7 +1,7 @@
 import React from 'react';
 import { useWindowDimensions } from 'react-native';
 
-import { RiSearchLine } from '../icons/remix';
+import { RiSearchLine } from '../icons/remix/RiSearchLine';
 import { BREAKPOINTS } from '../styles/breakpoints';
 import { TextField, TextFieldIcon, TextFieldInput } from '../text-field';
 import { TYPE_SCALE } from '../typography';

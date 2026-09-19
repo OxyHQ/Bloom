@@ -3,14 +3,12 @@ import { Image, View, type ViewStyle } from 'react-native';
 
 import { Avatar } from '../avatar';
 import { Button } from '../button';
-import {
-  RiArrowRightLine,
-  RiCornerDownLeftLine,
-  RiGlobalLine,
-  RiGroupLine,
-  RiNotification2Line,
-  RiTimeLine,
-} from '../icons/remix';
+import { RiArrowRightLine } from '../icons/remix/RiArrowRightLine';
+import { RiCornerDownLeftLine } from '../icons/remix/RiCornerDownLeftLine';
+import { RiGlobalLine } from '../icons/remix/RiGlobalLine';
+import { RiGroupLine } from '../icons/remix/RiGroupLine';
+import { RiNotification2Line } from '../icons/remix/RiNotification2Line';
+import { RiTimeLine } from '../icons/remix/RiTimeLine';
 import type { WebCssStyle } from '../styles/web-view-style';
 import { Text } from '../typography';
 import { useTheme } from '../theme/use-theme';

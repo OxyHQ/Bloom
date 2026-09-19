@@ -36,7 +36,7 @@ import {
   StyledText,
   StyledView,
 } from '../styles/styled-primitives';
-import { RiCheckLine as CheckIcon } from '../icons/remix';
+import { RiCheckLine as CheckIcon } from '../icons/remix/RiCheckLine';
 import { adoptStyleSheet } from '../styles/adopt-style-sheet';
 import { borderRadius } from '../styles/tokens';
 import type { WebCssStyle } from '../styles/web-view-style';

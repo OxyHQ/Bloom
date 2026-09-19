@@ -4,7 +4,7 @@ import { Image, Pressable, StyleSheet, View, type StyleProp, type ViewStyle } fr
 import { Button } from '../button';
 import { Carousel, CarouselItem } from '../carousel';
 import { useInteractionState } from '../hooks/use-interaction-state';
-import { RiLayoutGridLine } from '../icons/remix';
+import { RiLayoutGridLine } from '../icons/remix/RiLayoutGridLine';
 import { useImageResolver } from '../image-resolver/context';
 import { useInteractiveWebCss } from '../styles/interactive-web-css';
 import { borderRadius } from '../styles/tokens';

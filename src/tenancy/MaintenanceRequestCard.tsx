@@ -2,7 +2,7 @@ import React, { memo } from 'react';
 import { Image, Pressable, ScrollView, View } from 'react-native';
 
 import { Badge } from '../badge';
-import { RiChat3Line } from '../icons/remix';
+import { RiChat3Line } from '../icons/remix/RiChat3Line';
 import { useImageResolver } from '../image-resolver/context';
 import type { WebCssStyle } from '../styles/web-view-style';
 import { webDataSet } from '../styles/web-data';

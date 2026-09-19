@@ -3,7 +3,7 @@ import { Pressable, View, type LayoutChangeEvent } from 'react-native';
 
 import { Avatar } from '../avatar';
 import { useControllableState } from '../hooks/use-controllable-state';
-import { RiStarFill } from '../icons/remix';
+import { RiStarFill } from '../icons/remix/RiStarFill';
 import { useInteractiveWebCss } from '../styles/interactive-web-css';
 import type { WebCssStyle } from '../styles/web-view-style';
 import { webDataSet } from '../styles/web-data';

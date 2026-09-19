@@ -13,12 +13,10 @@ import Svg, { Path, Rect } from 'react-native-svg';
 import { useReducedMotion } from 'react-native-reanimated';
 
 import { DANGER_TABLE, colorRamp, resolveButtonRamps } from '../button/shared';
-import {
-  RiFileExcel2Line,
-  RiFileImageLine,
-  RiFileTextLine,
-  RiUploadCloud2Line,
-} from '../icons/remix';
+import { RiFileExcel2Line } from '../icons/remix/RiFileExcel2Line';
+import { RiFileImageLine } from '../icons/remix/RiFileImageLine';
+import { RiFileTextLine } from '../icons/remix/RiFileTextLine';
+import { RiUploadCloud2Line } from '../icons/remix/RiUploadCloud2Line';
 import { useInteractionState } from '../hooks/use-interaction-state';
 import { useInteractiveWebCss } from '../styles/interactive-web-css';
 import type { WebCssStyle } from '../styles/web-view-style';

@@ -1,7 +1,8 @@
 import React, { memo } from 'react';
 
 import { Button } from '../button';
-import { RiCloseLine, RiMenuLine } from '../icons/remix';
+import { RiCloseLine } from '../icons/remix/RiCloseLine';
+import { RiMenuLine } from '../icons/remix/RiMenuLine';
 import { useAppShell } from './context';
 import type { AppShellMenuButtonProps } from './types';
 

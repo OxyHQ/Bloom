@@ -42,7 +42,7 @@
  */
 import React, { useCallback, useMemo } from 'react';
 
-import { RiCheckLine as CheckIcon } from '../icons/remix';
+import { RiCheckLine as CheckIcon } from '../icons/remix/RiCheckLine';
 import { StyledText, StyledView } from '../styles/styled-primitives';
 import {
   ROW_ICON_SIZE,

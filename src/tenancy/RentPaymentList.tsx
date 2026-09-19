@@ -3,7 +3,7 @@ import { View } from 'react-native';
 
 import { Badge } from '../badge';
 import { Button } from '../button';
-import { RiDownload2Line } from '../icons/remix';
+import { RiDownload2Line } from '../icons/remix/RiDownload2Line';
 import { useContainerWidth } from '../hooks/use-container-width';
 import { resolveAccentColors } from '../theme/accent-colors';
 import { useTheme } from '../theme/use-theme';

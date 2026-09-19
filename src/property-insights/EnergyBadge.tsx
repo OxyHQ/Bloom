@@ -1,7 +1,7 @@
 import React, { memo, useMemo } from 'react';
 import { View } from 'react-native';
 
-import { RiTimeLine } from '../icons/remix';
+import { RiTimeLine } from '../icons/remix/RiTimeLine';
 import { borderRadius } from '../styles/tokens';
 import { useTheme } from '../theme/use-theme';
 import { Text } from '../typography';

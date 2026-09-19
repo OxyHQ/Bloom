@@ -3,7 +3,7 @@ import { Platform, View, type StyleProp, type ViewStyle } from 'react-native';
 
 import { Button } from '../button';
 import type { ButtonIconComponent } from '../button/types';
-import { RiCalendarLine as CalendarIcon } from '../icons/remix';
+import { RiCalendarLine as CalendarIcon } from '../icons/remix/RiCalendarLine';
 import { Popover, PopoverContent, PopoverTrigger } from '../popover';
 import { useTheme } from '../theme/use-theme';
 import { resolveCalendarPalette, type CalendarPalette } from './palette';

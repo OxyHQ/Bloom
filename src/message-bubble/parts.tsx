@@ -5,7 +5,10 @@ import Svg, { Path } from 'react-native-svg';
 import { MessageStatus } from '../chat-indicators';
 import type { MessageDeliveryStatus } from '../chat-indicators';
 import { webDataSet } from '../styles/web-data';
-import { RiAddLine, RiEyeLine, RiRefreshLine, RiShareForwardLine } from '../icons/remix';
+import { RiAddLine } from '../icons/remix/RiAddLine';
+import { RiEyeLine } from '../icons/remix/RiEyeLine';
+import { RiRefreshLine } from '../icons/remix/RiRefreshLine';
+import { RiShareForwardLine } from '../icons/remix/RiShareForwardLine';
 import { Text } from '../typography';
 import {
   QUOTE_BAR_WIDTH,

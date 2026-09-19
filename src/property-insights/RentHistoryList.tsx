@@ -2,7 +2,7 @@ import React, { memo, useMemo } from 'react';
 import { View } from 'react-native';
 
 import { Chip } from '../chip';
-import { RiHistoryLine } from '../icons/remix';
+import { RiHistoryLine } from '../icons/remix/RiHistoryLine';
 import type { AccentTone } from '../theme/accent-colors';
 import { useTheme } from '../theme/use-theme';
 import { Text } from '../typography';

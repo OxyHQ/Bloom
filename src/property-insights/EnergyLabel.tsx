@@ -2,7 +2,7 @@ import React, { memo, useMemo } from 'react';
 import { View } from 'react-native';
 import Svg, { Path } from 'react-native-svg';
 
-import { RiTimeLine } from '../icons/remix';
+import { RiTimeLine } from '../icons/remix/RiTimeLine';
 import { useContainerWidth } from '../hooks/use-container-width';
 import { useTheme } from '../theme/use-theme';
 import { Text } from '../typography';

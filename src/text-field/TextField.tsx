@@ -23,7 +23,7 @@ import {
   tokens,
   type TextStyleProp,
 } from '../styles';
-import { RiInformationFill } from '../icons/remix';
+import { RiInformationFill } from '../icons/remix/RiInformationFill';
 import { Text } from '../typography';
 import {
   SANS_FONT_FAMILY,

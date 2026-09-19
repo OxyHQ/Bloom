@@ -2,7 +2,8 @@ import React, { memo } from 'react';
 import { View, useWindowDimensions } from 'react-native';
 
 import { Button } from '../button';
-import { RiCloseLine, RiMenuLine } from '../icons/remix';
+import { RiCloseLine } from '../icons/remix/RiCloseLine';
+import { RiMenuLine } from '../icons/remix/RiMenuLine';
 import { BREAKPOINTS } from '../styles/breakpoints';
 import { useTheme } from '../theme/use-theme';
 import { Text } from '../typography';

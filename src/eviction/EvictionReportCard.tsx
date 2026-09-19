@@ -4,16 +4,14 @@ import { View } from 'react-native';
 import { Badge } from '../badge';
 import { Button } from '../button';
 import { Chip } from '../chip';
-import {
-  RiChat3Line,
-  RiCheckLine,
-  RiGroupLine,
-  RiHandHeartLine,
-  RiMapPinLine,
-  RiShareLine,
-  RiShieldCheckFill,
-  RiTimeLine,
-} from '../icons/remix';
+import { RiChat3Line } from '../icons/remix/RiChat3Line';
+import { RiCheckLine } from '../icons/remix/RiCheckLine';
+import { RiGroupLine } from '../icons/remix/RiGroupLine';
+import { RiHandHeartLine } from '../icons/remix/RiHandHeartLine';
+import { RiMapPinLine } from '../icons/remix/RiMapPinLine';
+import { RiShareLine } from '../icons/remix/RiShareLine';
+import { RiShieldCheckFill } from '../icons/remix/RiShieldCheckFill';
+import { RiTimeLine } from '../icons/remix/RiTimeLine';
 import { HousingCard, HousingToggleButton, useHousingPalette } from '../tenancy/parts';
 import { resolveAccentColors } from '../theme/accent-colors';
 import { useTheme } from '../theme/use-theme';

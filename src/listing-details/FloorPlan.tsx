@@ -3,7 +3,7 @@ import { Image, Pressable, StyleSheet, View } from 'react-native';
 
 import { resolveButtonRamps } from '../button/shared';
 import { useInteractionState } from '../hooks/use-interaction-state';
-import { RiExpandDiagonalSLine } from '../icons/remix';
+import { RiExpandDiagonalSLine } from '../icons/remix/RiExpandDiagonalSLine';
 import { useImageResolver } from '../image-resolver/context';
 import { useInteractiveWebCss } from '../styles/interactive-web-css';
 import type { WebCssStyle } from '../styles/web-view-style';

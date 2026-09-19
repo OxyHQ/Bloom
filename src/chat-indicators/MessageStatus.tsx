@@ -1,12 +1,10 @@
 import React, { memo, useMemo } from 'react';
 import { View } from 'react-native';
 
-import {
-  RiCheckDoubleLine,
-  RiCheckLine,
-  RiErrorWarningFill,
-  RiTimeLine,
-} from '../icons/remix';
+import { RiCheckDoubleLine } from '../icons/remix/RiCheckDoubleLine';
+import { RiCheckLine } from '../icons/remix/RiCheckLine';
+import { RiErrorWarningFill } from '../icons/remix/RiErrorWarningFill';
+import { RiTimeLine } from '../icons/remix/RiTimeLine';
 import { useTheme } from '../theme/use-theme';
 import { MESSAGE_STATUS_LABELS, resolveChatIndicatorPaint } from './shared';
 import type { MessageStatusProps } from './types';

@@ -1,7 +1,7 @@
 import React, { memo, useMemo } from 'react';
 import { View } from 'react-native';
 
-import { RiWalkLine } from '../icons/remix';
+import { RiWalkLine } from '../icons/remix/RiWalkLine';
 import { useTheme } from '../theme/use-theme';
 import { Text } from '../typography';
 import { resolveInsightPalette } from './shared';

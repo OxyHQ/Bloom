@@ -19,7 +19,9 @@ import Animated, {
 } from 'react-native-reanimated';
 
 import { ACCENT_TABLE, colorRamp, mixColor, resolveButtonRamps } from '../button/shared';
-import { RiArrowDownSLine, RiArrowRightLine, RiArrowRightSLine } from '../icons/remix';
+import { RiArrowDownSLine } from '../icons/remix/RiArrowDownSLine';
+import { RiArrowRightLine } from '../icons/remix/RiArrowRightLine';
+import { RiArrowRightSLine } from '../icons/remix/RiArrowRightSLine';
 import { Text, TYPE_SCALE } from '../typography';
 import { useControllableState } from '../hooks/use-controllable-state';
 import { adoptStyleSheet } from '../styles/adopt-style-sheet';

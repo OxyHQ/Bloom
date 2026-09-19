@@ -1,7 +1,8 @@
 import React, { memo } from 'react';
 import { View } from 'react-native';
 
-import { RiShieldCheckLine, RiThumbUpLine } from '../icons/remix';
+import { RiShieldCheckLine } from '../icons/remix/RiShieldCheckLine';
+import { RiThumbUpLine } from '../icons/remix/RiThumbUpLine';
 import { ReviewSummary } from '../listing-details/ReviewSummary';
 import { useHousingPalette } from '../tenancy/parts';
 import { Text } from '../typography';

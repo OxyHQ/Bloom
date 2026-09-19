@@ -9,7 +9,9 @@ import {
   DropdownMenuRadioItem,
   DropdownMenuTrigger,
 } from '../../dropdown-menu';
-import { RiArrowDownSLine, RiCalendarLine, RiCheckLine } from '../../icons/remix';
+import { RiArrowDownSLine } from '../../icons/remix/RiArrowDownSLine';
+import { RiCalendarLine } from '../../icons/remix/RiCalendarLine';
+import { RiCheckLine } from '../../icons/remix/RiCheckLine';
 import { Text } from '../../typography';
 import type { ChartRangeOption } from './use-chart-range';
 import { useChartCardPalette } from './use-chart-palette';
