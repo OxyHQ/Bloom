@@ -40,7 +40,9 @@
  * computed style of a translucent surface is not the colour anybody sees.
  */
 import { createRequire } from 'node:module';
-import { writeFileSync } from 'node:fs';
+import { existsSync, readdirSync, writeFileSync } from 'node:fs';
+import { homedir } from 'node:os';
+import { join } from 'node:path';
 
 const require = createRequire(import.meta.url);
 const puppeteer = require('/home/nate/Oxy/Homiio/node_modules/puppeteer-core');
@@ -53,9 +55,37 @@ const flag = (name, fallback) => {
 
 const URL_BASE = flag('--url', 'http://localhost:6006');
 const OUT = flag('--out', null);
-const CHROME =
-  process.env.CHROME_PATH ??
-  '/home/nate/.cache/puppeteer/chrome/linux-146.0.7680.31/chrome-linux64/chrome';
+
+/**
+ * Where Chrome is, in the order it is worth looking.
+ *
+ * The other browser scripts in this directory default to
+ * `/opt/google/chrome/chrome` and stop there, which fails with "Browser was not
+ * found at the configured executablePath" on a machine that only has the copy
+ * puppeteer downloaded. The cache path carries a version in it, so it cannot be
+ * hardcoded either — it is discovered.
+ */
+function findChrome() {
+  if (process.env.CHROME_PATH) return process.env.CHROME_PATH;
+  const candidates = ['/opt/google/chrome/chrome', '/usr/bin/google-chrome', '/usr/bin/chromium'];
+  for (const candidate of candidates) {
+    if (existsSync(candidate)) return candidate;
+  }
+  const cache = join(homedir(), '.cache', 'puppeteer', 'chrome');
+  if (existsSync(cache)) {
+    // Newest install wins; the directory name is `linux-<version>`.
+    const installs = readdirSync(cache).sort().reverse();
+    for (const install of installs) {
+      const binary = join(cache, install, 'chrome-linux64', 'chrome');
+      if (existsSync(binary)) return binary;
+    }
+  }
+  throw new Error(
+    'No Chrome found. Set CHROME_PATH, or run `npx puppeteer browsers install chrome`.',
+  );
+}
+
+const CHROME = findChrome();
 
 /** Storybook ids of the stories this reads. */
 const STORIES = {
