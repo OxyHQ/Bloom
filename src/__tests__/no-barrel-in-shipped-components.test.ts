@@ -30,16 +30,32 @@ import { join, relative } from 'node:path';
 const SRC = join(__dirname, '..');
 
 /**
- * Either barrel, at any depth: `../icons` and `../icons/remix`.
+ * Either barrel, at any depth, through any mechanism that puts it in the graph.
  *
- * BOTH spellings matter and only one of them is obvious. `./icons/index.ts` is a
- * thin re-export of `./icons/remix/index.ts`, so importing the inner one costs
- * exactly the same 461 modules — and it is the spelling 61 of Bloom's own
- * components were using, which is how this survived a first pass that only looked
- * for `../icons`. A per-glyph import (`../icons/remix/RiCloseLine`) must stay
- * unflagged, so the pattern has to end at the barrel rather than match a prefix.
+ * THE SPELLING IS THE WHOLE BUG. `./icons/index.ts` is a thin re-export of
+ * `./icons/remix/index.ts`, so the inner one costs exactly the same 461 modules
+ * while reading as if it were more specific — and it is the spelling 61 of
+ * Bloom's own components were using, which is how this survived 3.2.0 and then a
+ * first pass that looked only for `../icons`. A pattern that catches the two
+ * spellings someone already wrote is not a pattern that catches the next one, so
+ * this matches every way a barrel can be named here:
+ *
+ *   - `from '../icons'` / `from '../icons/remix'` — the two that shipped;
+ *   - the same with an explicit `/index`, which resolves identically in `src/`
+ *     (TS) and in both builds (bob appends `.js` to relative specifiers);
+ *   - `require('../icons')` and `await import('../icons')` — `require()` of a
+ *     string literal is idiomatic in this repo for optional peers, so a barrel
+ *     arriving that way is not hypothetical;
+ *   - `'@oxy.so/bloom/icons'`, the SELF-REFERENCE. It resolves — Node and Metro
+ *     both honour a package's own `exports` from inside it — and it is the
+ *     spelling every `docs/*.mdx` example uses, so it is the one most likely to
+ *     be pasted into a component.
+ *
+ * A per-glyph import must stay unflagged in every one of those forms, so each
+ * pattern ends AT the barrel rather than matching a prefix of it.
  */
-const BARREL_IMPORT = /from\s*['"](?:\.{1,2}\/)+icons(?:\/remix)?['"]/;
+const BARREL_IMPORT =
+  /\b(?:from|import|require)\s*\(?\s*['"](?:(?:\.{1,2}\/)+|@oxy\.so\/bloom\/)icons(?:\/remix)?(?:\/index)?['"]/;
 
 const EXEMPT = new Set(['index.ts', 'index.web.ts']);
 
@@ -86,7 +102,32 @@ describe('no shipped module imports the icon barrel', () => {
     // The inner barrel — the spelling that actually shipped, and the one a
     // pattern written only for `../icons` waves through.
     expect(BARREL_IMPORT.test("import { RiWalkLine } from '../icons/remix';")).toBe(true);
+    // An explicit `/index` is the same file by another name, and resolves in
+    // `src/` and in both builds.
+    expect(BARREL_IMPORT.test("import { RiWalkLine } from '../icons/index';")).toBe(true);
+    expect(BARREL_IMPORT.test("import { RiWalkLine } from '../icons/remix/index';")).toBe(true);
+    // Not every import is an `import`.
+    expect(BARREL_IMPORT.test("const Icons = require('../icons');")).toBe(true);
+    expect(BARREL_IMPORT.test("const Icons = await import('../icons/remix');")).toBe(true);
+    // The self-reference: Bloom naming its own published subpath from inside
+    // itself. It resolves, it costs the whole barrel, and it is what every doc
+    // example looks like.
+    expect(BARREL_IMPORT.test("import { RiWalkLine } from '@oxy.so/bloom/icons';")).toBe(true);
+  });
+
+  it('the matcher leaves a per-glyph import alone, in every one of those forms', () => {
+    // The negative controls are the half that stops a pattern matching
+    // EVERYTHING from passing as a pattern matching correctly — and there has to
+    // be one per mechanism, or widening the matcher is how the per-glyph imports
+    // this whole change installed start failing their own gate.
     expect(BARREL_IMPORT.test("import { RiCloseLine } from '../icons/remix/RiCloseLine';")).toBe(
+      false,
+    );
+    expect(BARREL_IMPORT.test("const { RiCloseLine } = require('../icons/remix/RiCloseLine');")).toBe(
+      false,
+    );
+    expect(BARREL_IMPORT.test("const m = await import('../icons/remix/RiCloseLine');")).toBe(false);
+    expect(BARREL_IMPORT.test("import { RiCloseLine } from '@oxy.so/bloom/icons/RiCloseLine';")).toBe(
       false,
     );
   });
