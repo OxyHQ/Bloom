@@ -20,7 +20,13 @@ export interface InputOtpProps extends ViewStyleProp {
   groupEvery?: number;
   /** Focus the first box on mount. */
   autoFocus?: boolean;
-  /** The group's accessible name, default `"One-time code"`. */
+  /**
+   * The group's accessible name.
+   *
+   * Inside a `Field` the field's label supplies it. `"One-time code"` is the
+   * last resort when neither is given — a default here would outrank the
+   * field's label, which is the one thing on screen the user can read.
+   */
   accessibilityLabel?: string;
   testID?: string;
 }

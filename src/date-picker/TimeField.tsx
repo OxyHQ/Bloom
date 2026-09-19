@@ -9,6 +9,8 @@ import { TYPE_SCALE } from '../typography';
 import { resolveCalendarPalette } from './palette';
 import { formatTime, parseTime, snapTime, stepTime } from './time';
 import type { TimeFieldProps, TimeFieldSize } from './types';
+import { useInheritedControl } from '../control-surface';
+import { useFieldMembership } from '../field/membership';
 
 /**
  * A time of day, typed. `DatePicker` is the day; this is the hour and minute,
@@ -60,8 +62,8 @@ function TimeFieldComponent({
   max,
   step = 1,
   hourFormat = '24h',
-  size = 'medium',
-  disabled = false,
+  size: sizeProp,
+  disabled: disabledProp = false,
   accessibilityLabel,
   placeholder,
   width,
@@ -69,6 +71,12 @@ function TimeFieldComponent({
   testID,
 }: TimeFieldProps) {
   const theme = useTheme();
+  // `"--:--"` names nothing, so the name is a prop — or, inside a `Field`, the
+  // field's label. The density contract supplies the size the same way: a
+  // container can ask for `small` once instead of on every control.
+  const size = useInheritedControl('density', sizeProp, 'medium');
+  const field = useFieldMembership({ accessibilityLabel, disabled: disabledProp });
+  const disabled = field.disabled;
   const palette = useMemo(() => resolveCalendarPalette(theme), [theme]);
   const config = SIZE_CONFIG[size];
 
@@ -150,7 +158,10 @@ function TimeFieldComponent({
       placeholder={placeholder ?? (hourFormat === '12h' ? '--:-- --' : '--:--')}
       placeholderTextColor={palette.secondaryText}
       inputMode={hourFormat === '12h' ? 'text' : 'numeric'}
-      accessibilityLabel={accessibilityLabel}
+      nativeID={field.nativeID}
+      accessibilityLabel={field.accessibilityLabel}
+      aria-describedby={field.describedBy}
+      aria-invalid={field.invalid || undefined}
       aria-disabled={disabled || undefined}
       style={[FIELD_TRANSITION, fieldStyle, style]}
       testID={testID}

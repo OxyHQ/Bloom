@@ -1,8 +1,8 @@
 {
   "name": "@oxy.so/bloom",
-  "version": "3.0.1",
+  "version": "3.1.0",
   "packageManager": "bun@1.3.14",
-  "description": "Bloom UI \u2014 Oxy ecosystem component library for React Native + Expo + Web",
+  "description": "Bloom UI — Oxy ecosystem component library for React Native + Expo + Web",
   "main": "lib/commonjs/index.js",
   "module": "lib/module/index.js",
   "types": "lib/typescript/commonjs/index.d.ts",
@@ -2623,6 +2623,7 @@
     "generate:theme-css": "bun scripts/generate-theme-css.ts",
     "generate:theme-golden": "bun scripts/generate-theme-golden.ts",
     "generate:tokens-json": "bun scripts/generate-design-tokens-json.ts",
+    "generate:adoption-matrix": "bun scripts/generate-adoption-matrix.ts",
     "prebuild": "node scripts/generate-platform-exports.mjs && bun scripts/generate-theme-css.ts && bun scripts/generate-design-tokens-json.ts",
     "build": "bob build",
     "postbuild": "node scripts/verify-package.mjs && node scripts/verify-build-freshness.mjs --worktree",

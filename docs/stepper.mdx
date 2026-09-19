@@ -55,7 +55,9 @@ import { Stepper, StepperRow } from '@oxy.so/bloom/stepper';
 
 ## Accessibility
 
-The stepper is a `group` named by `accessibilityLabel`. Inside it the value is
+The stepper is a `group` named by `accessibilityLabel` — or, inside a
+[`Field`](/docs/field), by the field's label, which is why the prop is optional.
+With neither it announces nothing and warns once in development. Inside it the value is
 the `adjustable` element (`role="slider"` on web) carrying `aria-valuenow`,
 `aria-valuemin`, `aria-valuemax` (omitted when unbounded) and `aria-valuetext`
 (the `formatValue` output).

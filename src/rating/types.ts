@@ -51,10 +51,13 @@ export interface RatingInputProps {
   disabled?: boolean;
   /**
    * The NAME of what is being rated ("Overall rating", "Cleanliness").
-   * Required: the group draws nothing but stars, so nothing else can tell a
-   * screen reader which of several ratings this one is.
+   *
+   * The group draws nothing but stars, so this or an enclosing `Field`'s label
+   * is the only thing that can tell a screen reader which of several ratings
+   * this one is. With neither it warns once in development
+   * (`hooks/use-accessible-name-warning.ts`).
    */
-  accessibilityLabel: string;
+  accessibilityLabel?: string;
   /**
    * Each star's own name, which is English by default (`"1 star"`,
    * `"4 stars"`). Pass a translated formatter.

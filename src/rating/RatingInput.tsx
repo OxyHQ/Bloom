@@ -11,6 +11,7 @@ import { webDataSet } from '../styles/web-data';
 import type { WebCssStyle } from '../styles/web-view-style';
 import { useTheme } from '../theme/use-theme';
 import type { RatingInputProps, RatingInputSize } from './types';
+import { useFieldMembership } from '../field/membership';
 
 /**
  * The star PICKER — `Rating`'s counterpart for a review form. `Rating` draws a
@@ -83,13 +84,17 @@ function RatingInputComponent({
   onChange,
   max = 5,
   size = 'medium',
-  disabled = false,
+  disabled: disabledProp = false,
   accessibilityLabel,
   formatStarLabel = defaultStarLabel,
   style,
   testID,
 }: RatingInputProps) {
   const theme = useTheme();
+  // A row of stars draws no words, so the `radiogroup`'s name is a prop or the
+  // enclosing `Field`'s label; the field's `disabled` freezes the whole row.
+  const field = useFieldMembership({ accessibilityLabel, disabled: disabledProp });
+  const disabled = field.disabled;
   const ringOffset = useRingOffsetStyle();
   useInteractiveWebCss(STYLE_ID, BLOOM_RATING_INPUT_CSS);
   const { accent, neutral } = useMemo(() => resolveButtonRamps(theme), [theme]);
@@ -158,8 +163,10 @@ function RatingInputComponent({
     <View
       testID={testID}
       accessibilityRole="radiogroup"
-      accessibilityLabel={accessibilityLabel}
-      aria-label={accessibilityLabel}
+      nativeID={field.nativeID}
+      accessibilityLabel={field.accessibilityLabel}
+      aria-label={field.accessibilityLabel}
+      aria-describedby={field.describedBy}
       aria-disabled={disabled || undefined}
       style={[
         {

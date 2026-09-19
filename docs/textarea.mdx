@@ -89,6 +89,26 @@ Accepts React Native's `TextInputProps` (except `multiline`, which is always on)
 - Invalid and disabled reach the input as `aria-invalid` / `aria-disabled`, the spellings react-native-web reads.
 - Invalid is also shown as text when you pass a `hint`; colour alone is not an announcement.
 
+## It reads two contracts
+
+`Textarea` takes its density from the nearest `ControlSurface` and its
+association from the nearest `Field`:
+
+```tsx
+<ControlSurface density="small">
+  <Field label="Notes" error={errors.notes} disabled={locked}>
+    <Textarea rows={4} value={notes} onChangeText={setNotes} />
+  </Field>
+</ControlSurface>
+```
+
+`size` still wins when written, because a caller always outranks a container.
+The field supplies the id, the accessible name, `aria-describedby` for whichever
+of description/error is showing, `aria-invalid` and `disabled` — and a textarea
+inside a disabled field cannot re-enable itself. Its own `label` prop is the
+STACKED kind, so it defers to the field's; do not pass both.
+See [Composition](/docs/composition) and [Field](/docs/field).
+
 ## The fill is a step off the surface
 
 `Textarea` shares `text-field`'s palette, so its shell steps off whatever surface

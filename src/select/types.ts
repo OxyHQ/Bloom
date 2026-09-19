@@ -26,7 +26,14 @@ export type SelectTriggerProps = {
    */
   asChild?: boolean;
   disabled?: boolean;
-  label: string;
+  /**
+   * The trigger's accessible name.
+   *
+   * The trigger draws the chosen value, which is not a name — "Medium" says
+   * nothing about what is medium. Inside a `Field` the field's label supplies
+   * it; with neither the trigger announces nothing.
+   */
+  label?: string;
   /**
    * Utility classes APPENDED to the part's own — never substituted for them, so
    * a single layout class cannot strip the chrome.

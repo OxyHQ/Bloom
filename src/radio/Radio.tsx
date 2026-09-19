@@ -12,6 +12,7 @@ import { resolveButtonRamps } from '../button/shared';
 import { focusRingShadow, interactiveWebCss, useInteractiveWebCss } from '../styles/interactive-web-css';
 import type { WebCssStyle } from '../styles/web-view-style';
 import { RadioIndicator } from '../radio-indicator';
+import { useFieldMembership } from '../field/membership';
 import { RadioCard } from './RadioCard';
 import type { RadioGroupProps, RadioProps } from './types';
 
@@ -96,9 +97,20 @@ const RadioComponent = function Radio<Value extends string = string>({
   style,
   labelStyle,
   accessibilityLabel,
+  nativeID,
   testID,
 }: RadioProps<Value>) {
   const theme = useTheme();
+  // ADJACENT label (see `field/membership.ts`); the field's `disabled` is a
+  // constraint, so a radio inside a disabled field cannot re-enable itself.
+  const field = useFieldMembership({
+    accessibilityLabel,
+    label,
+    labelPlacement: 'adjacent',
+    disabled,
+    nativeID,
+  });
+  const isDisabled = field.disabled;
   const ringOffset = useRingOffsetStyle();
   useInteractiveWebCss(STYLE_ID, BLOOM_RADIO_CSS);
   const sizeConfig = SIZE_CONFIG[size];
@@ -109,16 +121,16 @@ const RadioComponent = function Radio<Value extends string = string>({
     // Re-choosing the chosen option is a no-op. A radio, unlike a checkbox, has
     // no "off" — firing here would make a group's `onValueChange` report a
     // change that did not happen.
-    if (disabled || selected) return;
+    if (isDisabled || selected) return;
     onSelect(value);
-  }, [disabled, selected, onSelect, value]);
+  }, [isDisabled, selected, onSelect, value]);
 
   const rowStyle: WebCssStyle = {
     flexDirection: 'row',
     alignItems: 'flex-start',
     gap: LABEL_GAP,
     // `opacity-50` on the whole row.
-    opacity: disabled ? DISABLED_OPACITY : 1,
+    opacity: isDisabled ? DISABLED_OPACITY : 1,
     // The `:focus-visible` ring colour, read by the adopted sheet.
     '--bloom-radio-ring': color ?? accent[500],
     ...ringOffset,
@@ -129,7 +141,9 @@ const RadioComponent = function Radio<Value extends string = string>({
       {...(IS_WEB ? ({ dataSet: { bloomRadio: '' } } as Record<string, unknown>) : {})}
       style={[rowStyle, style]}
       onPress={handlePress}
-      disabled={disabled}
+      disabled={isDisabled}
+      nativeID={field.nativeID}
+      aria-describedby={field.describedBy}
       accessibilityRole="radio"
       // `aria-checked`, not `accessibilityState`: react-native-web never reads
       // the latter, so an option that set only it announced no state at all.
@@ -137,7 +151,7 @@ const RadioComponent = function Radio<Value extends string = string>({
       // this one prop is the spelling both platforms honour, and `disabled`
       // travels on the `disabled` prop, which both map.
       aria-checked={selected}
-      accessibilityLabel={accessibilityLabel ?? label}
+      accessibilityLabel={field.accessibilityLabel}
       hitSlop={HIT_SLOP}
       testID={testID}
     >
@@ -196,12 +210,21 @@ const RadioGroupComponent = function RadioGroup<Value extends string = string>({
   variant = 'default',
   testID,
 }: RadioGroupProps<Value>) {
+  // The group is one control made of several, so a `Field` around it names the
+  // GROUP and disables every option — `multiple` is the field's side of that
+  // (`docs/field.mdx`), and each radio keeps its own id and its own name.
+  // `label` here is a NAME, not rendered text — the group draws no label of its
+  // own — so it goes in as the caller's name and outranks the field's.
+  const field = useFieldMembership({ accessibilityLabel: label, disabled });
+  const isDisabled = field.disabled;
   return (
     <View
       style={[{ gap: space.sm }, style]}
       accessibilityRole="radiogroup"
-      accessibilityLabel={label}
-      aria-label={label}
+      accessibilityLabel={field.accessibilityLabel}
+      aria-label={field.accessibilityLabel}
+      aria-describedby={field.describedBy}
+      aria-invalid={field.invalid || undefined}
       testID={testID}
     >
       {options.map((option) =>
@@ -213,7 +236,7 @@ const RadioGroupComponent = function RadioGroup<Value extends string = string>({
             onSelect={onValueChange}
             title={option.label ?? option.value}
             description={option.description}
-            disabled={disabled || option.disabled === true}
+            disabled={isDisabled || option.disabled === true}
             color={color}
             testID={option.testID}
           />
@@ -226,7 +249,7 @@ const RadioGroupComponent = function RadioGroup<Value extends string = string>({
           label={option.label}
           description={option.description}
           size={size}
-          disabled={disabled || option.disabled === true}
+          disabled={isDisabled || option.disabled === true}
           color={color}
           labelStyle={labelStyle}
           testID={option.testID}

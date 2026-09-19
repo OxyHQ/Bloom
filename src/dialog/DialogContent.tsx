@@ -4,6 +4,7 @@ import { View, type GestureResponderEvent } from 'react-native';
 import { Text } from '../typography';
 
 import { useTheme } from '../theme/use-theme';
+import { ScreenScope } from '../layout';
 import { Button } from '../button';
 import type { ButtonVariant } from '../button/types';
 import { useDialogContext } from './context';
@@ -40,7 +41,10 @@ export function DialogBody({
 }) {
   const theme = useTheme();
   return (
-    <>
+    // A dialog is its own screen: chrome inside it claims THIS surface's top
+    // edge and follows THIS surface's scroller, not the page's underneath
+    // (`layout/screen-scope.tsx`).
+    <ScreenScope>
       {title ? (
         // Bloom's `Text`, not react-native's: the raw one renders in whatever
         // font the platform picks and takes no theme colour, so every dialog
@@ -74,7 +78,7 @@ export function DialogBody({
       ) : null}
       {children}
       {actions && actions.length > 0 ? <ActionRow actions={actions} /> : null}
-    </>
+    </ScreenScope>
   );
 }
 

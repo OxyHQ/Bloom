@@ -163,6 +163,19 @@ export interface TriggerHandleProps {
   accessibilityRole?: 'button';
   'aria-expanded'?: boolean;
   /**
+   * The trigger's id, so an enclosing `Field`'s label can point at it.
+   *
+   * Only a trigger that IS a form control sets it — `Select` does; a `Popover`
+   * or a `DropdownMenu` inside a field is not the field's control and must not
+   * take its id. `TriggerSlot` therefore does not read the field context
+   * itself; each family decides whether it is the control.
+   */
+  nativeID?: string;
+  /** The field's hint or error, for a trigger that is a form control. */
+  'aria-describedby'?: string;
+  /** The field's invalid state, for a trigger that is a form control. */
+  'aria-invalid'?: boolean;
+  /**
    * What this trigger OPENS. Set by each family from its own constant in
    * `floating/constants.ts`, never defaulted here — the five families open three
    * different kinds of surface.

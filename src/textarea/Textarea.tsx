@@ -19,6 +19,8 @@ import {
   resolveShellPaint,
   useTextFieldPalette,
 } from '../text-field/shared';
+import { useInheritedControl } from '../control-surface';
+import { useFieldMembership } from '../field/membership';
 import type { TextareaProps } from './types';
 
 const IS_WEB = Platform.OS === 'web';
@@ -52,7 +54,7 @@ export function Textarea({
   onChangeText,
   onFocus,
   onBlur,
-  size = 'medium',
+  size: sizeProp,
   rows = 3,
   autoResize = false,
   maxRows,
@@ -67,10 +69,25 @@ export function Textarea({
   inputStyle,
   inputRef,
   accessibilityLabel,
+  nativeID,
   testID,
   ...rest
 }: TextareaProps) {
   const theme = useTheme();
+  // The two contracts a textarea sits inside: a container's density
+  // (`ControlSurface`) and an enclosing `Field`'s association. The label is
+  // STACKED here, as it is on `TextField`, so the field's label wins — they are
+  // two spellings of one thing and rendering both is the mistake `docs/field.mdx`
+  // names.
+  const size = useInheritedControl('density', sizeProp, 'medium');
+  const field = useFieldMembership({
+    accessibilityLabel,
+    label: label ?? placeholder,
+    disabled,
+    invalid: isInvalid,
+    required,
+    nativeID,
+  });
   const palette = useTextFieldPalette();
   const innerRef = useRef<TextInput>(null);
   const { state: hovered, onIn: onHoverIn, onOut: onHoverOut } = useInteractionState();
@@ -82,7 +99,7 @@ export function Textarea({
   const [typedLength, setTypedLength] = useState(() => (defaultValue ?? '').length);
   const count = value !== undefined ? value.length : typedLength;
 
-  const state = { hovered, focused, invalid: isInvalid, disabled };
+  const state = { hovered, focused, invalid: field.invalid, disabled: field.disabled };
   const paint = resolveShellPaint(palette, state);
   const line = TEXT_FIELD_TEXT.lineHeight;
 
@@ -92,7 +109,7 @@ export function Textarea({
       fontSize: TEXT_FIELD_TEXT.fontSize,
       lineHeight: line,
       fontWeight: TEXT_FIELD_TEXT.fontWeight,
-      color: disabled ? palette.textDisabled : palette.text,
+      color: field.disabled ? palette.textDisabled : palette.text,
       paddingLeft: TEXT_FIELD_INPUT_INSET,
       paddingRight: TEXT_FIELD_INPUT_INSET,
       paddingTop: 0,
@@ -114,18 +131,16 @@ export function Textarea({
           outlineStyle: 'none',
           resize: autoResize ? 'none' : resize,
           fieldSizing: autoResize ? 'content' : undefined,
-          cursor: disabled ? 'not-allowed' : undefined,
+          cursor: field.disabled ? 'not-allowed' : undefined,
         } as unknown as TextStyle)
       : undefined,
     inputStyle,
   ]) as TextStyle;
 
-  const name = label ?? accessibilityLabel ?? placeholder;
-
   return (
     <View style={[{ width: '100%' }, style]} testID={testID}>
       {label ? (
-        <TextFieldLabel required={required} tooltip={tooltip}>
+        <TextFieldLabel required={field.required} tooltip={tooltip}>
           {label}
         </TextFieldLabel>
       ) : null}
@@ -143,24 +158,28 @@ export function Textarea({
         ]}
         {...(IS_WEB
           ? ({
-              onClick: () => innerRef.current?.focus(),
+              onClick: () => {
+                if (!field.disabled) innerRef.current?.focus();
+              },
               onMouseEnter: onHoverIn,
               onMouseLeave: onHoverOut,
             } as Record<string, unknown>)
           : {})}>
         <TextInput
           {...rest}
-          {...(IS_WEB && disabled ? ({ disabled: true } as Record<string, unknown>) : {})}
+          {...(IS_WEB && field.disabled ? ({ disabled: true } as Record<string, unknown>) : {})}
           ref={mergeRefs([innerRef, inputRef])}
           multiline
           numberOfLines={rows}
           value={value}
           defaultValue={defaultValue}
           maxLength={maxLength}
-          editable={disabled ? false : rest.editable}
-          accessibilityLabel={name}
-          aria-invalid={isInvalid || undefined}
-          aria-disabled={disabled || undefined}
+          editable={field.disabled ? false : rest.editable}
+          nativeID={field.nativeID}
+          accessibilityLabel={field.accessibilityLabel}
+          aria-describedby={field.describedBy}
+          aria-invalid={field.invalid || undefined}
+          aria-disabled={field.disabled || undefined}
           placeholder={placeholder}
           placeholderTextColor={resolvePlaceholderColor(palette, state)}
           keyboardAppearance={theme.isDark ? 'dark' : 'light'}
@@ -190,7 +209,7 @@ export function Textarea({
             marginTop: TEXT_FIELD_STACK_GAP,
           }}>
           {hint ? (
-            <TextFieldHint isInvalid={isInvalid} style={{ marginTop: 0 }}>
+            <TextFieldHint isInvalid={field.invalid} style={{ marginTop: 0 }}>
               {hint}
             </TextFieldHint>
           ) : null}
@@ -202,7 +221,7 @@ export function Textarea({
                 flexShrink: 0,
                 paddingTop: 1,
                 fontVariant: ['tabular-nums'],
-                color: isInvalid ? palette.error : palette.count,
+                color: field.invalid ? palette.error : palette.count,
               }}>
               {maxLength ? `${count}/${maxLength}` : String(count)}
             </Text>

@@ -26,7 +26,14 @@ export interface SwitchProps {
    * are not the same rule.)
    *
    * Omitting it warns once in development; see `use-accessible-name-warning`.
+   * Inside a `Field` the field's label supplies the name, so a switch in a
+   * labelled field needs nothing here and does not warn.
    */
   accessibilityLabel?: string;
+  /**
+   * The switch's id. Inside a `Field` the field supplies one, so the label's
+   * `htmlFor` points at the control on web.
+   */
+  nativeID?: string;
   testID?: string;
 }

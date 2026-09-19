@@ -11,6 +11,7 @@ import {
 } from '../text-field';
 import { CountryCodeSelect } from './CountryCodeSelect';
 import type { PhoneInputProps } from './types';
+import { useFieldMembership } from '../field/membership';
 
 /**
  * A phone number field: `Input` with a country-code `Select` in its
@@ -29,7 +30,7 @@ export function PhoneInput({
   hint,
   required,
   tooltip,
-  size = 'medium',
+  size,
   isInvalid,
   disabled,
   value,
@@ -46,6 +47,17 @@ export function PhoneInput({
   testID,
   style,
 }: PhoneInputProps) {
+  // The country select is a SECOND control inside this field, and it is the one
+  // a `Field disabled` used to miss: the number input reads the field context
+  // itself, the select does not, so the picker stayed operable inside a disabled
+  // field. Resolving membership here hands the same state to both halves.
+  const field = useFieldMembership({
+    accessibilityLabel,
+    label: label ?? 'Phone number',
+    disabled,
+    invalid: isInvalid,
+    required,
+  });
   const [text, setText] = useControllableState({
     value,
     defaultValue,
@@ -55,14 +67,14 @@ export function PhoneInput({
   return (
     <View style={[{ width: '100%' }, style]} testID={testID}>
       {label ? (
-        <TextFieldLabel required={required} tooltip={tooltip}>
+        <TextFieldLabel required={field.required} tooltip={tooltip}>
           {label}
         </TextFieldLabel>
       ) : null}
       <TextField
         size={size}
-        isInvalid={isInvalid}
-        disabled={disabled}
+        isInvalid={field.invalid}
+        disabled={field.disabled}
         leadingAddon={
           <CountryCodeSelect
             value={country}
@@ -70,15 +82,15 @@ export function PhoneInput({
             onValueChange={onCountryChange}
             countries={countries}
             label={countrySelectLabel}
-            disabled={disabled}
+            disabled={field.disabled}
           />
         }>
         <TextFieldInput
-          label={accessibilityLabel ?? label ?? 'Phone number'}
+          label={field.accessibilityLabel ?? 'Phone number'}
           placeholder={placeholder ?? null}
           value={text}
           onChangeText={setText}
-          isInvalid={isInvalid}
+          isInvalid={field.invalid}
           keyboardType="phone-pad"
           autoComplete="tel"
           textContentType="telephoneNumber"
@@ -87,7 +99,7 @@ export function PhoneInput({
         />
         {trailingIcon ? <TextFieldIcon icon={trailingIcon} position="trailing" /> : null}
       </TextField>
-      {hint ? <TextFieldHint isInvalid={isInvalid}>{hint}</TextFieldHint> : null}
+      {hint ? <TextFieldHint isInvalid={field.invalid}>{hint}</TextFieldHint> : null}
     </View>
   );
 }

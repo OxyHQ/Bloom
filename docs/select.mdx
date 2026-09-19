@@ -144,6 +144,28 @@ It used to take a render prop instead, which handed its child a `state` object w
 
 The web dropdown grows to `maxHeight` (default 240, `max-h-[240px]`) and then scrolls with the native scrollbar. Opening it scrolls the selected option into view. There are no scroll buttons by default: they appeared and disappeared as the list moved and made the panel jump in height. `SelectScrollUpButton` and `SelectScrollDownButton` stay exported for a caller composing their own content inside a `SelectScrollProvider`; on native they render nothing, since the sheet's list scrolls under the finger.
 
+## In a `Field`
+
+The trigger IS the select's control, so it takes the field's id, name, described-by
+and invalid state, and the field's `disabled` on top of the root's and its own:
+
+```tsx
+<Field label="Visibility" error={errors.visibility} disabled={locked}>
+  <Select value={visibility} onValueChange={setVisibility}>
+    <SelectTrigger>
+      <SelectValue placeholder="Choose" />
+    </SelectTrigger>
+    <SelectContent>…</SelectContent>
+  </Select>
+</Field>
+```
+
+`SelectTrigger`'s `label` is optional for that reason — the chosen value is not a
+name ("Medium" says nothing about what is medium), so either the prop or a field
+has to supply one. A `Popover` or a `DropdownMenu` inside a field deliberately
+does NOT take the field's id: it is not the field's control. See
+[Composition](/docs/composition).
+
 ## Selection state
 
 Both forks render each option as `role="radio"` with `aria-checked` — the only spelling react-native-web reads, and one React Native folds back into `accessibilityState`. `SelectItemIndicator` draws the mark — a `text-secondary` check in the row's right-hand gutter on both platforms — and the chosen row also takes the highlight wash.

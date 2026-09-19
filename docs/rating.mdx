@@ -103,3 +103,17 @@ values (`4.92`): a display has no target and no keyboard.
 Clearing is left out for the reason re-choosing a [`Radio`](/docs/radio) is a
 no-op — a radio has no "off". A form that has no rating yet holds `null`; it
 does not need the group to express a state it cannot draw.
+
+## `RatingInput` in a `Field`
+
+The stars are a `radiogroup` that draws no words, so `accessibilityLabel` is the
+name — or, inside a [`Field`](/docs/field), the field's label, which is why the
+prop is optional:
+
+```tsx
+<Field label="Cleanliness" error={errors.cleanliness}>
+  <RatingInput value={stars} onChange={setStars} />
+</Field>
+```
+
+The field's `disabled` freezes the whole row, including the hover preview.

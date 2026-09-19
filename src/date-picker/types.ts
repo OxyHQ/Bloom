@@ -207,10 +207,13 @@ export interface TimeFieldProps {
   size?: TimeFieldSize;
   disabled?: boolean;
   /**
-   * The NAME of the time ("Viewing time", "Check-in"). Required: the field
-   * draws no label of its own, and `"--:--"` names nothing.
+   * The NAME of the time ("Viewing time", "Check-in").
+   *
+   * The field draws no label of its own and `"--:--"` names nothing, so this or
+   * an enclosing `Field`'s label is the only route to a name. With neither it
+   * warns once in development (`hooks/use-accessible-name-warning.ts`).
    */
-  accessibilityLabel: string;
+  accessibilityLabel?: string;
   /** The text while empty. Default `"--:--"`, or `"--:-- --"` in 12h. */
   placeholder?: string;
   /** Fixed width. Default: 104 at `medium`, 96 at `small`. */

@@ -70,6 +70,20 @@ Omitting it warns once per component in development. The warning is dev-only
 unnamed switch still renders and still toggles. An empty or whitespace-only
 label counts as missing, because `aria-label=""` names nothing.
 
+**Inside a `Field` the field's label is that name**, so the prop is not needed
+there:
+
+```tsx
+<Field label="Push notifications">
+  <Switch value={push} onValueChange={setPush} />
+</Field>
+```
+
+The switch takes the field's label as its accessible name, its id (so a click on
+the label focuses it on web) and the field's `disabled` — which it cannot opt out
+of. The dev-only warning reads the RESOLVED name, so a switch named by its field
+does not warn. See [Field](/docs/field).
+
 ## The accessibility rule this component is the reference for
 
 `Switch` sets `role="switch"` and **`aria-checked`**, not

@@ -92,6 +92,7 @@ type StaggerState = 'shown' | 'hiding' | 'hidden';
 
 import { formatFileSize } from './shared';
 import { DISABLED_OPACITY } from '../styles/tokens';
+import { useFieldMembership } from '../field/membership';
 
 export { formatFileSize };
 
@@ -445,12 +446,19 @@ const FileUploadComponent = function FileUpload({
   maxBytes = DEFAULT_MAX_BYTES,
   renderFileIcon,
   labels: labelOverrides,
-  disabled = false,
-  accessibilityLabel = 'Upload a file',
+  disabled: disabledProp = false,
+  accessibilityLabel,
   style,
   testID,
 }: FileUploadProps) {
   const theme = useTheme();
+  // The drop zone draws a prompt but names itself with a prop, so a `Field`
+  // around it is the other place the name can come from — and the field's
+  // `disabled` blocks the picker whatever the caller passed. `'Upload a file'`
+  // stays the last resort rather than a default that would outrank a label the
+  // user can read.
+  const field = useFieldMembership({ accessibilityLabel, disabled: disabledProp });
+  const disabled = field.disabled;
   useInteractiveWebCss(STYLE_ID, BLOOM_FILE_UPLOAD_CSS);
   const reducedMotion = useReducedMotion();
   const paint = useMemo(() => resolveFileUploadPaint(theme), [theme]);
@@ -644,7 +652,10 @@ const FileUploadComponent = function FileUpload({
       ref={rootRef}
       {...webDataSet({ bloomFileUpload: busy ? 'busy' : 'idle' })}
       accessibilityRole="button"
-      accessibilityLabel={accessibilityLabel}
+      nativeID={field.nativeID}
+      accessibilityLabel={field.accessibilityLabel ?? 'Upload a file'}
+      aria-describedby={field.describedBy}
+      aria-invalid={field.invalid || undefined}
       aria-busy={busy}
       disabled={disabled}
       focusable={!blocked}

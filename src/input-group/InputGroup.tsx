@@ -24,6 +24,7 @@ import {
 } from '../text-field/shared';
 import { TextFieldGroupContext } from '../text-field/TextField';
 import type { InputGroupAddonProps, InputGroupProps } from './types';
+import { useFieldMembership } from '../field/membership';
 
 /**
  * The group is the input shell (`base/input/input.tsx`) with its adornment
@@ -149,12 +150,21 @@ InputGroupAddon.displayName = 'InputGroupAddon';
  */
 const InputGroupComponent = function InputGroup({
   children,
-  isInvalid = false,
-  disabled = false,
+  isInvalid: isInvalidProp = false,
+  disabled: disabledProp = false,
   size = 'md',
   style,
   testID,
 }: InputGroupProps) {
+  // A group holding a control and its addons is ONE control as far as a `Field`
+  // is concerned: the field's `disabled` and invalid state reach every member
+  // through the group's own contexts, including an addon's `Button`, which reads
+  // neither the field nor the text-field group. The group publishes no name — it
+  // does not know which of its children is the control the label points at, so
+  // that stays the field's `nativeID` and the input's to apply.
+  const member = useFieldMembership({ disabled: disabledProp, invalid: isInvalidProp });
+  const disabled = member.disabled;
+  const isInvalid = member.invalid;
   const cfg = SIZE_CONFIG[size];
   const { state: focused, onIn: onFocus, onOut: onBlur } = useInteractionState();
   const { state: hovered, onIn: onHoverIn, onOut: onHoverOut } =
@@ -211,6 +221,7 @@ const InputGroupComponent = function InputGroup({
           // react-native-web has no `disabled` prop to derive the attribute from
           // and never reads `accessibilityState`. React Native folds it back.
           aria-disabled={disabled || undefined}
+          aria-invalid={isInvalid || undefined}
           // Capture focus bubbling from a nested input so the whole chrome
           // reflects focus — RN-web bubbles focus/blur, native does not but a
           // nested TextInput's own focus ring is sufficient there.

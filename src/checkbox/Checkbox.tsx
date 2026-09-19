@@ -14,6 +14,7 @@ import {
   checkboxLabelLineHeight,
   resolveCheckboxPaint,
 } from './shared';
+import { useFieldMembership } from '../field/membership';
 import type { CheckboxProps } from './types';
 
 /**
@@ -89,9 +90,21 @@ const CheckboxComponent: React.FC<CheckboxProps> = ({
   style,
   labelStyle,
   accessibilityLabel,
+  nativeID,
   testID,
 }) => {
   const theme = useTheme();
+  // The label is ADJACENT — the words beside the box ARE the control, so they
+  // name it and a `Field` around it only supplies what is missing. `disabled`
+  // is the other direction: the field's constrains, so it is OR-ed in.
+  const field = useFieldMembership({
+    accessibilityLabel,
+    label,
+    labelPlacement: 'adjacent',
+    disabled,
+    nativeID,
+  });
+  const isDisabled = field.disabled;
   useInteractiveWebCss(STYLE_ID, BLOOM_CHECKBOX_CSS);
   useInteractiveWebCss(CHECKBOX_GLYPH_STYLE_ID, CHECKBOX_GLYPH_CSS);
   const { state: hovered, onIn: onHoverIn, onOut: onHoverOut } = useInteractionState();
@@ -100,13 +113,13 @@ const CheckboxComponent: React.FC<CheckboxProps> = ({
   const { state: pressed, onIn: onPressIn, onOut: onPressOut } = useInteractionState();
   const sizeConfig = CHECKBOX_SIZE_CONFIG[size];
   const paint = useMemo(() => resolveCheckboxPaint(theme, color), [theme, color]);
-  const highlighted = !disabled && (hovered || pressed);
+  const highlighted = !isDisabled && (hovered || pressed);
 
   const handlePress = useCallback(() => {
-    if (!disabled) {
+    if (!isDisabled) {
       onCheckedChange(!checked);
     }
-  }, [checked, disabled, onCheckedChange]);
+  }, [checked, isDisabled, onCheckedChange]);
 
   const hasText = Boolean(label || description);
 
@@ -135,11 +148,14 @@ const CheckboxComponent: React.FC<CheckboxProps> = ({
         : {})}
       style={[rowStyle, style]}
       onPress={handlePress}
-      onPressIn={disabled ? undefined : onPressIn}
-      onPressOut={disabled ? undefined : onPressOut}
+      onPressIn={isDisabled ? undefined : onPressIn}
+      onPressOut={isDisabled ? undefined : onPressOut}
       onHoverIn={onHoverIn}
       onHoverOut={onHoverOut}
-      disabled={disabled}
+      disabled={isDisabled}
+      nativeID={field.nativeID}
+      aria-describedby={field.describedBy}
+      aria-invalid={field.invalid || undefined}
       accessibilityRole="checkbox"
       // `aria-checked`, not `accessibilityState`: react-native-web's
       // `createDOMProps` never reads `accessibilityState`, so a checkbox that
@@ -149,7 +165,7 @@ const CheckboxComponent: React.FC<CheckboxProps> = ({
       // this one prop is the spelling both platforms honour. `disabled`
       // travels on the `disabled` prop above, which both platforms map.
       aria-checked={indeterminate ? 'mixed' : checked}
-      accessibilityLabel={accessibilityLabel ?? label}
+      accessibilityLabel={field.accessibilityLabel}
       hitSlop={{ top: slop, bottom: slop, left: slop, right: slop }}
       testID={testID}
     >
@@ -157,7 +173,7 @@ const CheckboxComponent: React.FC<CheckboxProps> = ({
         size={size}
         checked={checked}
         indeterminate={indeterminate}
-        disabled={disabled}
+        disabled={isDisabled}
         highlighted={highlighted}
         paint={paint}
         // Centre the box on the label's first line box.

@@ -77,6 +77,22 @@ that is [`RadioIndicator`](/docs/bloom/main/radio-indicator), which is
 presentational and takes `selected`. Using the indicator where you meant the
 control is how a "radio group" ends up announcing as decoration.
 
+## In a `Field`
+
+A radio set is the several-controls case, so the field is a `multiple` one: it
+becomes a labelled `group`, names the `RadioGroup` (whose own `label` is optional
+for that reason), and disables every option without any of them being able to opt
+out.
+
+```tsx
+<Field label="Billing period" multiple error={errors.period} disabled={locked}>
+  <RadioGroup value={period} onValueChange={setPeriod} options={PERIODS} />
+</Field>
+```
+
+Each radio keeps its OWN name — the option's text, which is what the user reads
+beside the dot. See [Field](/docs/field).
+
 ## Radio, Switch or Checkbox
 
 - **Radio** — one of several named options, all visible, mutually exclusive.

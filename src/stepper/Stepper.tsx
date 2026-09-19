@@ -14,6 +14,7 @@ import { useTheme } from '../theme/use-theme';
 import { Text } from '../typography';
 import type { TypeScaleVariant } from '../typography/scale';
 import type { StepperProps, StepperSize } from './types';
+import { useFieldMembership } from '../field/membership';
 
 /**
  * Bloom's numeric counter: a round `−` button, the value, a round `+` button.
@@ -77,7 +78,7 @@ function StepperComponent({
   min = 0,
   max,
   step = 1,
-  disabled = false,
+  disabled: disabledProp = false,
   size = 'medium',
   formatValue,
   accessibilityLabel,
@@ -88,7 +89,12 @@ function StepperComponent({
 }: StepperProps) {
   const theme = useTheme();
   const ringOffset = useRingOffsetStyle();
-  useAccessibleNameWarning('Stepper', accessibilityLabel);
+  // The digits are not a name, so the stepper is named by a prop or by the
+  // enclosing `Field` — and the warning has to see the resolved name, or a
+  // field-labelled stepper warns anyway.
+  const field = useFieldMembership({ accessibilityLabel, disabled: disabledProp });
+  const disabled = field.disabled;
+  useAccessibleNameWarning('Stepper', field.accessibilityLabel);
   useInteractiveWebCss(STYLE_ID, BLOOM_STEPPER_CSS);
   const { accent } = useMemo(() => resolveButtonRamps(theme), [theme]);
   const config = SIZE_CONFIG[size];
@@ -166,7 +172,9 @@ function StepperComponent({
     <View
       testID={testID}
       role="group"
-      accessibilityLabel={accessibilityLabel}
+      nativeID={field.nativeID}
+      accessibilityLabel={field.accessibilityLabel}
+      aria-describedby={field.describedBy}
       aria-disabled={disabled || undefined}
       style={[{ flexDirection: 'row', alignItems: 'center', gap: config.gap }, style]}
     >
@@ -183,7 +191,7 @@ function StepperComponent({
       />
       <View
         accessibilityRole="adjustable"
-        accessibilityLabel={accessibilityLabel}
+        accessibilityLabel={field.accessibilityLabel}
         aria-valuemin={min}
         aria-valuemax={max}
         aria-valuenow={value}

@@ -93,6 +93,20 @@ TextField parts must be rendered inside a <TextField>.
 <TextFieldHint isInvalid={isInvalid}>We never share it.</TextFieldHint>
 ```
 
+`size` is `'medium' | 'small'`, which is exactly the `density` vocabulary of the
+[control-presentation contract](/docs/composition) — so a filter row can ask once
+and every field in it draws small:
+
+```tsx
+<ControlSurface density="small">
+  <TextField>…</TextField>
+  <TextField>…</TextField>
+</ControlSurface>
+```
+
+An explicit `size` still wins, and an `InputGroup` outranks both — its members
+have to be one height.
+
 ## Leading addon (phone input)
 
 ```tsx
