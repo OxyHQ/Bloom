@@ -21,12 +21,34 @@ import { LeadScoreCard } from '@oxy.so/bloom';
 />
 ```
 
-## Nothing here is hand-rolled
+## One measured language
 
-The ring is `stat-bar`'s `MeterRing` and every factor bar is its `Meter`. That
-is not a stylistic preference: those two own the geometry, the neutral rail and
+The ring is `stat-bar`'s `MeterRing` and every factor bar is its `Meter`, and
+both fill with the ACCENT over the shared neutral rail. `NeighbourhoodScores` is
+the reference and the `BesideTheReference` story puts the two in one shot: same
+bar, same rail, same label / value / bar / description row, 24 between rows.
+
+**That is what a meter means in Bloom: how much of one thing there is.** Status
+colours say something else. A green ring claims "healthy", which is not the
+claim "82 of 100" makes, and five saturated green and red bars stacked down a
+card is a chart pretending to be a measurement — a CHART is what colours by
+WHICH datum it is (`chart-cards/palette.ts`), and these bars are all the same
+datum at different sizes.
+
+So the DIRECTION is carried by the sign, which is printed beside every bar
+(`+24`, `-9`) and announced in its `aria-valuetext`. A negative bar fills with
+the quiet graphical neutral instead of the accent — enough to see at a glance
+which factors pull down, without a second saturated colour.
+
+**That neutral is read off the RAIL, not picked.** `resolveLeadScorePaint`
+derives it with `surfaceTextOn(theme, track).textGraphical`, the rung that
+clears 3:1 against the fill it lands on. `chart-cards`' `neutralSeries` is the
+obvious candidate and is the wrong one: it is `neutral-800` in dark, which is
+the rail's own colour there, and the bar would disappear.
+
+Neither is a stylistic preference: `stat-bar` owns the geometry, the rail and
 the FLAT `aria-value*` props, and seventeen hand-rolled copies in this repo
-disagreed about all three before they existed.
+disagreed about all three before it existed.
 
 The accessibility half is the one that matters most here. react-native-web reads
 `aria-*` and never `accessibilityValue`, so a ring that set only the object
@@ -45,10 +67,20 @@ heading beside the ring does not name it either; that is a SIBLING.
 `82` of `100` is announced as a percentage, which is right by accident here and
 wrong the moment `max` is 5.
 
-## The band is a tone
+## The band is the VERDICT
+
+The hierarchy is `SleepScoreCard`'s: a quiet `body-medium` label ("Lead score")
+over a `title-1-medium` verdict ("Hot"), the trend as a quiet icon-and-label
+line under it, and the measurement as a 72 ring on the right carrying the score
+over its scale.
+
+The band's GLYPH is the one tinted mark on the card. A pill beside the word
+would say the same thing twice, and three tinted things in one header — a pill,
+a ring and a trend — is the "another product's dashboard" look this card had.
+The trend line is therefore quiet: the ARROW carries the direction.
 
 `cold` / `warm` / `hot` map to the `info` / `warning` / `success` tones in
-`LEAD_SCORE_BAND`, and every colour comes from `resolveAccentColors`. The card
+`LEAD_SCORE_BAND`, and that colour comes from `resolveAccentColors`. The card
 names no red and no orange: those would be right in one preset and wrong in the
 other sixty-three, and in dark mode they would be wrong in all of them.
 
@@ -72,6 +104,10 @@ Each factor is a signed contribution. The BAR measures the magnitude; the sign
 lives in the text beside it and in the tone of the fill — positive in the
 positive tone, negative in the negative one.
 
+The row is the reference's: the label at `body-medium` with the signed points
+right-aligned at `body-semibold` (tabular, so the column lines up), a 6-tall
+`Meter` under it, and the detail at `body-2-regular` in the secondary rung.
+
 **All the bars share one scale**: the largest absolute contribution in the set,
 floored at 1 (`factorScale`). Normalising each bar to itself would draw a `+2`
 and a `+30` at the same length, which is the one thing a row of bars is read
@@ -81,9 +117,15 @@ the sign is not carried by colour alone.
 A zero factor draws an empty bar rather than being hidden: "this counted for
 nothing" is a fact about the lead.
 
+The signed number is printed in the READING colour, not in a status one. The
+sign is what says which way it went, and a red `-9` beside a grey bar would be
+two spellings of one fact.
+
 ## The trend
 
 `trend` is a pre-formatted label plus a direction. The card does no arithmetic
 and does not know what "last period" means — a week, a quarter, since the deal
-opened — so it draws what it is handed with the direction's arrow and tone.
-`flat` is the neutral tone, not a quiet negative.
+opened — so it draws what it is handed with the direction's arrow, as a quiet
+line in the secondary rung. `LEAD_SCORE_TREND` carries the glyph and nothing
+else: the arrow is the direction, and the card keeps one tinted mark rather than
+three competing ones.

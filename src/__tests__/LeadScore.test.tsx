@@ -21,7 +21,11 @@ import {
   factorScale,
   formatContribution,
   resolveLeadScoreBand,
+  resolveLeadScorePaint,
 } from '../lead-score';
+import { resolveMeterColors } from '../stat-bar/shared';
+import { AA_GRAPHICAL } from '../styles/surface-levels';
+import { contrastRatio } from '../styles/color-contrast';
 import { BloomThemeProvider } from '../theme/BloomThemeProvider';
 import { resolveAccentColors } from '../theme/accent-colors';
 import type { Theme } from '../theme/types';
@@ -68,6 +72,17 @@ function byTestId(id: string): HTMLElement {
 }
 
 const queryTestId = (id: string) => container.querySelector(`[data-testid="${id}"]`);
+
+/**
+ * `react-native-svg` is mocked into host elements, so the arc's `testID` lands
+ * as a plain `testid` attribute rather than `data-testid`. Reading the STROKE
+ * off it is the only way to see what the ring is actually painted with.
+ */
+function ringStroke(id: string): string {
+  const el = container.querySelector(`[testid="${id}"]`);
+  if (el === null) throw new Error(`No svg element for testID "${id}"`);
+  return el.getAttribute('stroke') ?? '';
+}
 
 function normalise(color: string): string {
   const probe = document.createElement('div');
@@ -124,23 +139,43 @@ describe('the band is derived, and it is a TONE', () => {
     expect(resolveLeadScoreBand(Number.NaN, 100)).toBe('cold');
   });
 
-  it('draws the band pill in the tone PAIR, and hot is the SUCCESS tone', () => {
+  it('draws the band as the VERDICT word, in the reading colour', () => {
+    // The hierarchy every Bloom score card uses: a quiet label over a
+    // `title-1-medium` verdict. The word is not a pill, so it carries no fill
+    // and takes the text rung of the surface it lands on.
     mount(<LeadScoreCard score={91} accessibilityLabel="Lead score" testID="s" />);
-    const accent = resolveAccentColors(theme.colors, 'success', 'subtle');
-    expect(byTestId('s-band').textContent).toContain('Hot');
-    expect(getComputedStyle(byTestId('s-band')).backgroundColor).toBe(normalise(accent.background));
+    const band = byTestId('s-band');
+    expect(band.textContent).toBe('Hot');
+    const style = getComputedStyle(band);
+    expect(style.backgroundColor).toBe('rgba(0, 0, 0, 0)');
+    expect(style.color).toBe(normalise(resolveLeadScorePaint(theme, theme.colors.card).text));
+    expect(style.fontSize).toBe('24px');
 
     mount(<LeadScoreCard score={21} accessibilityLabel="Lead score" testID="s" />);
-    const cold = resolveAccentColors(theme.colors, 'info', 'subtle');
-    expect(byTestId('s-band').textContent).toContain('Cold');
-    expect(getComputedStyle(byTestId('s-band')).backgroundColor).toBe(normalise(cold.background));
+    expect(byTestId('s-band').textContent).toBe('Cold');
   });
 
   it('lets an app with its own thresholds override the band and its word', () => {
     mount(<LeadScoreCard score={21} band="hot" bandLabel="Priority" accessibilityLabel="Lead score" testID="s" />);
-    expect(byTestId('s-band').textContent).toContain('Priority');
-    const accent = resolveAccentColors(theme.colors, 'success', 'subtle');
-    expect(getComputedStyle(byTestId('s-band')).backgroundColor).toBe(normalise(accent.background));
+    expect(byTestId('s-band').textContent).toBe('Priority');
+  });
+
+  it('fills the RING with the accent, never with a status colour', () => {
+    // A green ring claims "healthy", which is a different claim from "91 of
+    // 100". The meter's own fill is the accent, and the ring must take it
+    // whatever band the score falls in.
+    for (const score of [21, 55, 91]) {
+      mount(<LeadScoreCard score={score} accessibilityLabel="Lead score" testID="s" />);
+      const meter = resolveMeterColors(theme);
+      expect([score, ringStroke('s-ring-arc')]).toEqual([score, meter.fill]);
+      expect(ringStroke('s-ring-track')).toBe(meter.track);
+      // Named negatives: the three tones this used to be painted with.
+      for (const tone of ['success', 'warning', 'info'] as const) {
+        expect(ringStroke('s-ring-arc')).not.toBe(
+          resolveAccentColors(theme.colors, tone, 'solid').background,
+        );
+      }
+    }
   });
 });
 
@@ -171,17 +206,47 @@ describe('the factors are meters, one scale for the set', () => {
     expect(factorScale([])).toBe(1);
   });
 
-  it('paints a positive factor and a negative one in different tones', () => {
+  it('fills a positive bar with the ACCENT and a negative one with the quiet neutral', () => {
+    // One measured language. Five saturated green and red bars down a card is a
+    // chart pretending to be a measurement; the SIGN carries the direction and
+    // the length carries the size.
+    for (const mode of ['light', 'dark'] as const) {
+      mount(<LeadScoreCard score={82} accessibilityLabel="Lead score" factors={FACTORS} testID="s" />, mode);
+      const paint = resolveLeadScorePaint(theme, theme.colors.card);
+      const meter = resolveMeterColors(theme);
+      const positive = getComputedStyle(byTestId('s-factor-Fits the ideal profile-fill')).backgroundColor;
+      const negative = getComputedStyle(
+        byTestId('s-factor-No decision-maker identified-fill'),
+      ).backgroundColor;
+
+      expect([mode, positive]).toEqual([mode, normalise(meter.fill)]);
+      expect([mode, negative]).toEqual([mode, normalise(paint.negativeFill)]);
+      expect(positive).not.toBe(negative);
+
+      // Neither is a status fill any more — named, so a revert goes red.
+      for (const tone of ['success', 'error'] as const) {
+        const status = normalise(resolveAccentColors(theme.colors, tone, 'solid').background);
+        expect([mode, tone, positive]).not.toEqual([mode, tone, status]);
+        expect([mode, tone, negative]).not.toEqual([mode, tone, status]);
+      }
+
+      // And the quiet fill READS on the rail it is drawn on. `neutralSeries`
+      // would not: it is `neutral-800` in dark, which is the rail's own colour.
+      expect([mode, contrastRatio(paint.negativeFill, meter.track) >= AA_GRAPHICAL]).toEqual([
+        mode,
+        true,
+      ]);
+    }
+  });
+
+  it('prints both signs in the reading colour — the number says the direction', () => {
     mount(<LeadScoreCard score={82} accessibilityLabel="Lead score" factors={FACTORS} testID="s" />);
-    const positive = resolveAccentColors(theme.colors, 'success', 'solid').background;
-    const negative = resolveAccentColors(theme.colors, 'error', 'solid').background;
-    expect(getComputedStyle(byTestId('s-factor-Fits the ideal profile-fill')).backgroundColor).toBe(
-      normalise(positive),
-    );
-    expect(
-      getComputedStyle(byTestId('s-factor-No decision-maker identified-fill')).backgroundColor,
-    ).toBe(normalise(negative));
-    expect(positive).not.toBe(negative);
+    const paint = resolveLeadScorePaint(theme, theme.colors.card);
+    for (const key of ['Fits the ideal profile', 'No decision-maker identified']) {
+      expect(getComputedStyle(byTestId(`s-factor-${key}-points`)).color).toBe(
+        normalise(paint.text),
+      );
+    }
   });
 
   it('formats a contribution the way it is drawn and announced', () => {
@@ -197,30 +262,29 @@ describe('the factors are meters, one scale for the set', () => {
 });
 
 describe('the trend', () => {
-  it('takes the direction TONE, and is absent when there is nothing to say', () => {
-    mount(
-      <LeadScoreCard
-        score={82}
-        accessibilityLabel="Lead score"
-        trend={{ label: '+8 against last week', direction: 'up' }}
-        testID="s"
-      />,
-    );
-    const up = resolveAccentColors(theme.colors, 'success', 'subtle').foreground;
-    expect(byTestId('s-trend').textContent).toBe('+8 against last week');
-    expect(getComputedStyle(byTestId('s-trend')).color).toBe(normalise(up));
-
-    mount(
-      <LeadScoreCard
-        score={82}
-        accessibilityLabel="Lead score"
-        trend={{ label: '-4 against last week', direction: 'down' }}
-        testID="s"
-      />,
-    );
-    const down = resolveAccentColors(theme.colors, 'error', 'subtle').foreground;
-    expect(getComputedStyle(byTestId('s-trend')).color).toBe(normalise(down));
-    expect(up).not.toBe(down);
+  it('is a QUIET line — the arrow carries the direction, not a status colour', () => {
+    const paint = () => resolveLeadScorePaint(theme, theme.colors.card);
+    for (const direction of ['up', 'down', 'flat'] as const) {
+      mount(
+        <LeadScoreCard
+          score={82}
+          accessibilityLabel="Lead score"
+          trend={{ label: '+8 against last week', direction }}
+          testID="s"
+        />,
+      );
+      expect(byTestId('s-trend').textContent).toBe('+8 against last week');
+      expect([direction, getComputedStyle(byTestId('s-trend')).color]).toEqual([
+        direction,
+        normalise(paint().textSecondary),
+      ]);
+      // Named negatives: the two tones the line used to be painted with.
+      for (const tone of ['success', 'error'] as const) {
+        expect(getComputedStyle(byTestId('s-trend')).color).not.toBe(
+          normalise(resolveAccentColors(theme.colors, tone, 'subtle').foreground),
+        );
+      }
+    }
 
     mount(<LeadScoreCard score={82} accessibilityLabel="Lead score" testID="s" />);
     expect(queryTestId('s-trend')).toBeNull();

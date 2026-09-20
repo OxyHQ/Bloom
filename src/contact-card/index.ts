@@ -2,6 +2,7 @@ export { ContactProfileCard } from './ContactProfileCard';
 export {
   CONTACT_AVATAR_SIZE,
   CONTACT_CHANNEL,
+  CONTACT_CHANNEL_HIT,
   CONTACT_CHANNEL_SIZE,
   CONTACT_PROFILE_PADDING,
   CONTACT_ROW_MIN_HEIGHT,

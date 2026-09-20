@@ -2,6 +2,7 @@ import React, { useContext } from 'react';
 import { View } from 'react-native';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
+import { NeighbourhoodScores } from '../property-insights';
 import { BloomThemeContext, BloomThemeProvider } from '../theme/BloomThemeProvider';
 import { useTheme } from '../theme/use-theme';
 import { Text } from '../typography';
@@ -163,5 +164,37 @@ export const BothThemes: Story = {
         trend={{ label: '+8 against last week', direction: 'up' }}
       />
     </BothModes>
+  ),
+};
+
+/**
+ * The same shot as the meters this card is built from. `NeighbourhoodScores`
+ * is the reference row: label, value right-aligned, a 6-tall accent `Meter` on
+ * the shared neutral rail, a quiet description, 24 between rows.
+ */
+export const BesideTheReference: Story = {
+  render: () => (
+    <Page>
+      <View style={{ width: '100%', maxWidth: 900, gap: 24 }}>
+        <Caption>Bloom reference — property-insights / NeighbourhoodScores</Caption>
+        <NeighbourhoodScores
+          columns={1}
+          items={[
+            { label: 'Transport', value: 8.4, description: 'Metro 4 min, 6 bus lines' },
+            { label: 'Schools', value: 6.1, description: 'Three primaries within 1 km' },
+            { label: 'Quiet', value: 4.2, description: 'A main road on the north side' },
+          ]}
+        />
+        <Caption>This family — lead-score / LeadScoreCard</Caption>
+        <LeadScoreCard
+          score={82}
+          accessibilityLabel="Lead score for Larkspur Freight"
+          valueText="82 of 100, hot"
+          factors={FACTORS}
+          trend={{ label: '+8 against last week', direction: 'up' }}
+          testID="lead-beside"
+        />
+      </View>
+    </Page>
   ),
 };

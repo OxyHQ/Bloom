@@ -5,6 +5,7 @@
  * Pure so the suite can walk the boundaries without rendering — a band that
  * flips one point early is invisible in a screenshot and obvious in a table.
  */
+import { resolveMeterColors } from '../stat-bar/shared';
 import { surfaceTextOn, hairlineOn } from '../styles/surface-levels';
 import type { Theme } from '../theme/types';
 import { LEAD_SCORE_THRESHOLDS } from './constants';
@@ -16,19 +17,32 @@ export interface LeadScorePaint {
   text: string;
   textSecondary: string;
   textTertiary: string;
-  /** The rail every factor bar sits on, and the ring's own track. */
+  /**
+   * The rail every factor bar and the ring sit on — `stat-bar`'s own, so this
+   * card's meters are the same object as every other meter in the library.
+   */
   track: string;
+  /**
+   * What a NEGATIVE contribution fills with: the graphical rung read off the
+   * RAIL, so it clears the rail it is drawn on (AA 3:1) rather than being a
+   * ramp stop picked by eye. `chart-cards`' `neutralSeries` is the obvious
+   * candidate and is the wrong one — it is `neutral-800` in dark, which is the
+   * rail's own colour there, and the bar would disappear.
+   */
+  negativeFill: string;
 }
 
 export function resolveLeadScorePaint(theme: Theme, surface: string): LeadScorePaint {
   const text = surfaceTextOn(theme, surface);
+  const track = resolveMeterColors(theme).track;
   return {
     surface,
     hairline: hairlineOn(theme, surface),
     text: text.text,
     textSecondary: text.textSecondary,
     textTertiary: text.textTertiary,
-    track: hairlineOn(theme, surface),
+    track,
+    negativeFill: surfaceTextOn(theme, track).textGraphical,
   };
 }
 

@@ -56,13 +56,25 @@ which was intended.
 
 ## The geometry
 
+It is built to the four blocks every Bloom record card is built to —
+`home-search`'s `SavedSearchCard` is the reference, and the `BesideTheReference`
+story puts the two in one shot:
+
+| block | what it holds |
+| --- | --- |
+| header | a 44 leading mark, the name at `body-semibold` (two lines), a status `Badge` opposite |
+| meta | ONE secondary line (the role and the account), then the last touch, the facts and the tags as OUTLINED chips, wrapped 6 apart |
+| facepile | the people at a company, when there are any |
+| footer | a hairline, the quiet owner label on the left, the channel controls on the right |
+
 | | comfortable | compact |
 | --- | --- | --- |
-| surface | a `Card` (`outlined`, `radius-16`, 16 padding) | none — the list owns it |
-| avatar | 48 | 36 |
-| name | `headline-semibold` | `body-semibold` |
-| facts, tags, facepile, owner | drawn | not drawn |
-| channels | in the footer, under a hairline | beside the identity |
+| surface | a `Card` (`outlined`, `radius-16`, 16 / 12 / 16 / 16) | none — the list owns it |
+| mark | 44 | 36 |
+| name | `body-semibold`, 2 lines | `body-semibold`, 1 line |
+| chips, facepile, owner | drawn | not drawn |
+| last touch | a chip in the meta row | a quiet third line |
+| channels | in the footer | beside the identity |
 | height | what it needs | at least 64 |
 
 Compact is the ROW, not a small card. It deliberately draws no surface of its
@@ -101,39 +113,73 @@ asserts the containment instead: the subject element contains no element with
 The identity block is still the largest target on either density, so scoping it
 costs nothing.
 
-## A channel is an ACTION
+## A channel is a CONTROL, not a glyph
 
-`channels` never renders an address or a number as text. Each entry becomes a
-44-wide `GlyphButton` named `"{verb} {label ?? name}"` from `CONTACT_CHANNEL` —
-"Email Nora Vance", "Call Nora Vance", "Open the website of Quillon Health".
+`channels` never renders an address or a number as text, and it never renders a
+bare icon either. Each entry is a `Button` — `variant="secondary" size="small"
+iconOnly` — the same control the reference card puts in its footer, so it
+carries the surface, the border, the hover, the disabled treatment and the
+focus ring every other Bloom action has.
 
-The verb lives in the table rather than on the entry for two reasons: a glyph
-control draws no text, so ARIA computes no name for it and one has to be built;
-and building it here means a caller cannot ship an unnamed one by forgetting a
-prop. 44 rather than the 36 a glyph needs is the touch target — a contact row is
-a column of them, and 36 is the size that is fine on a mouse and wrong on a
-thumb.
+Bare icons floating on a card surface are not an affordance anywhere else in
+this library. They shipped here once and were the single biggest reason the card
+did not read as Bloom: nothing said the glyph could be pressed, and nothing gave
+a finger anything to hit. `ContactProfileCard.test.tsx` asserts the emitted box —
+a `<button>` with a fill, a border and a height — because a glyph and a control
+both render.
+
+The control DRAWS at 32, the size a card wants, and is HIT at 44 through
+`CONTACT_CHANNEL_HIT`, the size a thumb needs. A contact list is a column of
+these, so both numbers have to be true.
+
+Each is named `"{verb} {label ?? name}"` from `CONTACT_CHANNEL` — "Email Nora
+Vance", "Call Nora Vance", "Open the website of Quillon Health". The verb lives
+in the table rather than on the entry for two reasons: an icon-only control
+draws no text, so ARIA computes no name for it and one has to be built; and
+building it here means a caller cannot ship an unnamed one by forgetting a prop.
 
 Pass `icon` on a channel to change the glyph; the KIND still decides the verb,
 so a custom glyph cannot silently change what the action announces.
 
-## Tags are read-only here
+## The meta row is one row of OUTLINED chips
 
-`tags` draws `Chip`s in a `ChipRow`, and the row's fade is set to the card's own
-fill so it does not blend into the page behind it. This card never edits a tag:
-the INPUT is `tag-field`, a family of its own.
+The last touch, the `facts` and the `tags` are all short facts about the same
+subject, so they are one wrapped row of `Chip size="medium" variant="outlined"` —
+the reference's criteria row. Three stacked quiet lines is what the card had
+before, and it is why nothing on it read as the subject.
 
-The row SCROLLS rather than wraps, which is `ChipRow`'s behaviour — five tags on
-a 320-wide card are one scrolling line, not three stacked ones.
+**Outlined, not filled.** A neutral FILLED pill reads as a disabled control:
+Bloom's filled chips are the selected state, and a card full of them says every
+fact has been switched off. Outlined at the `default` tone takes
+`colors.textSecondary` for both the label and the border, which is the pair the
+palette already ships for a quiet token.
+
+`lastTouchTone` is the one exception: with a tone the last-touch chip turns
+`subtle` in that tone, because "41 days ago" IS a state and the card is being
+asked to say so.
+
+This card never edits a tag: the INPUT is `tag-field`, a family of its own.
+
+## The leading mark is neutral
+
+`Avatar` derives a pastel tint from the name unless it is told otherwise, which
+is right in a people LIST — the colour is what tells two rows apart — and wrong
+on a record card, where the subject is already named and the tint reads as a
+status nobody set. So the mark is `color="neutral"`, the quiet disc, at 44 to
+match the reference's icon tile.
+
+The facepile under a company keeps its tints (`showInitials`): four colleagues
+with no photo would otherwise be four identical grey discs, which is the case
+the tint exists for.
 
 ## Colour
 
 Every colour is read off the fill the content actually lands on, through
 `styles/surface-levels.ts`: the card resolves against `theme.colors.card`, the
 compact row against whatever `useSurfaceFill()` reports. `lastTouch` is the
-tertiary text rung by default; with `lastTouchTone` it takes that tone's
-accent PAIR through `resolveAccentColors` — never the fill colour with an alpha
-appended to it, which is the failure `docs/badge.mdx` describes.
+quiet chip by default; with `lastTouchTone` it takes that tone's accent PAIR
+through `resolveAccentColors` — never the fill colour with an alpha appended to
+it, which is the failure `docs/badge.mdx` describes.
 
 The comfortable card publishes its own fill with `SurfaceLevelProvider`, so
 anything nested inside it (a meter, a second row, a menu) steps off the card

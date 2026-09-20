@@ -33,11 +33,20 @@ export const CONTACT_PROFILE_PADDING = 16;
 export const CONTACT_ROW_MIN_HEIGHT = 64;
 
 /**
- * The channel target, in both densities. 44 rather than the 36 a glyph needs,
- * because it is the smallest target a finger hits reliably and a contact row is
- * a list of them.
+ * The drawn size of a channel control: `Button size="small" iconOnly`, the same
+ * 32 square the reference card puts in its footer.
  */
-export const CONTACT_CHANNEL_SIZE = 44;
+export const CONTACT_CHANNEL_SIZE = 32;
 
-/** Avatar diameter per density. */
-export const CONTACT_AVATAR_SIZE = { comfortable: 48, compact: 36 } as const;
+/**
+ * What it is HIT at. 32 is the size a card wants and 44 is the size a thumb
+ * needs, and a `hitSlop` is how both are true at once — a contact list is a
+ * column of these.
+ */
+export const CONTACT_CHANNEL_HIT = { top: 6, bottom: 6, left: 6, right: 6 } as const;
+
+/**
+ * The leading mark. 44 at comfortable is the reference card's tile; 36 is the
+ * row's.
+ */
+export const CONTACT_AVATAR_SIZE = { comfortable: 44, compact: 36 } as const;

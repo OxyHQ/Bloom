@@ -1,7 +1,6 @@
 import React, { memo, useMemo } from 'react';
 import { View } from 'react-native';
 
-import { Badge } from '../badge';
 import { Card } from '../card';
 import { Meter, MeterRing } from '../stat-bar';
 import { SurfaceLevelProvider, surfaceFillVars } from '../styles/surface-levels';
@@ -10,12 +9,13 @@ import { useTheme } from '../theme/use-theme';
 import { Text } from '../typography';
 import {
   LEAD_FACTOR_BAR_HEIGHT,
-  LEAD_FACTOR_TONE,
+  LEAD_FACTOR_ROW_GAP,
   LEAD_SCORE_BAND,
   LEAD_SCORE_CARD_PADDING,
   LEAD_SCORE_RING_SIZE,
   LEAD_SCORE_RING_THICKNESS,
   LEAD_SCORE_TREND,
+  TABULAR,
 } from './constants';
 import {
   factorScale,
@@ -28,28 +28,34 @@ import type { LeadScoreCardProps } from './types';
 /**
  * How good a lead is, and WHY.
  *
- *   ring      `MeterRing` at 96 with an 8 stroke, filled in the band's tone,
- *             with the score over the scale in the middle
- *   band      a pill — `Cold` / `Warm` / `Hot` — beside the title, with the
- *             trend against the last period under it
- *   factors   one `Meter` per contribution, all measured against the widest
- *             absolute contribution in the set, positive in the positive tone
- *             and negative in the negative one, with the signed points beside
- *             the label
+ * The hierarchy is the one every Bloom score card uses (`SleepScoreCard`, and
+ * `PriceEstimate` for the figure): a quiet `body-medium` LABEL over a
+ * `title-1-medium` VERDICT, the measurement as a ring beside it, and the
+ * detail underneath.
  *
- * **Nothing here is hand-rolled.** The ring and every bar are `stat-bar`'s
- * `MeterRing` and `Meter`, which own the geometry, the track and the flat
- * `aria-value*` props — `aria-valuenow`, `aria-valuemin`, `aria-valuemax` and
- * `aria-valuetext`, because react-native-web drops `accessibilityValue`
- * entirely and a ring setting only that announces its role and no value.
+ *   header    "Lead score" (body-medium, text-secondary) over the band —
+ *             "Hot" at `title-1-medium` with the band's glyph — then the trend
+ *             as a quiet icon-and-label line; a 72 `MeterRing` on the right
+ *             carrying the score over the scale
+ *   factors   `NeighbourhoodScores`' row exactly: the label (body-medium) with
+ *             the signed points right-aligned (body-semibold, tabular), a
+ *             6-tall `Meter` under it, and the detail (body-2-regular,
+ *             text-secondary) under that; rows 24 apart
  *
- * **The card must be named by a prop.** A `progressbar` takes no name from its
- * contents, and the ring draws a bare number, so `accessibilityLabel` is
- * required at the type level rather than defaulted to something plausible.
+ * **ONE MEASURED LANGUAGE.** Every bar and the ring fill with the ACCENT over
+ * the shared neutral rail, because that is what a meter means in Bloom: how
+ * much of one thing there is. Status colours say something else — a green ring
+ * claims "healthy", which is not the claim "82 of 100" makes — and five
+ * saturated green and red bars stacked down a card is a chart pretending to be
+ * a measurement. The SIGN carries the direction: it is printed (`+24`, `-9`),
+ * and a negative bar fills with the quiet graphical neutral read off the rail
+ * rather than with error red.
  *
- * **The band is a TONE, never a colour.** `resolveAccentColors` decides what
- * "warning" looks like on this surface, in this mode, in all 64 presets; a card
- * that picked an orange would be wrong in most of them.
+ * **The card must be named by a prop.** ARIA computes no name for a
+ * `progressbar` from its contents and the ring draws a bare number, so
+ * `accessibilityLabel` is required at the type level. The ring and every bar
+ * are `stat-bar`'s, which own the geometry, the rail and the FLAT `aria-value*`
+ * props — react-native-web drops `accessibilityValue` entirely.
  */
 function LeadScoreCardComponent({
   score,
@@ -69,65 +75,64 @@ function LeadScoreCardComponent({
   const paint = useMemo(() => resolveLeadScorePaint(theme, theme.colors.card), [theme]);
   const resolvedBand = band ?? resolveLeadScoreBand(score, max);
   const bandSpec = LEAD_SCORE_BAND[resolvedBand];
-  const bandSolid = resolveAccentColors(theme.colors, bandSpec.tone, 'solid').background;
+  const BandIcon = bandSpec.icon;
+  const bandAccent = resolveAccentColors(theme.colors, bandSpec.tone, 'subtle');
   const scale = factors?.length ? factorScale(factors) : 1;
 
   const id = (part: string) => (testID ? `${testID}-${part}` : undefined);
   const TrendIcon = trend === undefined ? undefined : LEAD_SCORE_TREND[trend.direction].icon;
-  const trendColor =
-    trend === undefined
-      ? paint.textSecondary
-      : resolveAccentColors(theme.colors, LEAD_SCORE_TREND[trend.direction].tone, 'subtle').foreground;
 
   return (
     <SurfaceLevelProvider level={1} fill={paint.surface}>
       <Card
         variant="outlined"
-        radius="radius-16"
-        style={[{ padding: LEAD_SCORE_CARD_PADDING, ...surfaceFillVars(paint.surface) }, style]}
+        radius="radius-20"
+        style={[
+          {
+            paddingTop: LEAD_SCORE_CARD_PADDING,
+            paddingBottom: LEAD_SCORE_CARD_PADDING,
+            paddingLeft: LEAD_SCORE_CARD_PADDING,
+            paddingRight: LEAD_SCORE_CARD_PADDING,
+            gap: 20,
+            ...surfaceFillVars(paint.surface),
+          },
+          style,
+        ]}
         testID={testID}
       >
         <View style={{ flexDirection: 'row', alignItems: 'center', gap: 16 }}>
-          <MeterRing
-            value={score}
-            max={max}
-            size={LEAD_SCORE_RING_SIZE}
-            thickness={LEAD_SCORE_RING_THICKNESS}
-            fill={bandSolid}
-            track={paint.track}
-            accessibilityLabel={accessibilityLabel}
-            valueText={valueText}
-            testID={id('ring')}
-          >
-            <Text variant="title-2-semibold" style={{ color: paint.text }} testID={id('score')}>
-              {String(score)}
-            </Text>
-            <Text variant="caption-2-regular" style={{ color: paint.textTertiary }}>
-              {`of ${max}`}
-            </Text>
-          </MeterRing>
-
-          <View style={{ flex: 1, minWidth: 0, gap: 6 }}>
-            <Text variant="body-2-regular" style={{ color: paint.textSecondary }} testID={id('title')}>
+          <View style={{ flex: 1, minWidth: 0, gap: 2 }}>
+            <Text
+              variant="body-medium"
+              numberOfLines={1}
+              style={{ color: paint.textSecondary }}
+              testID={id('title')}
+            >
               {title}
             </Text>
-            <View style={{ flexDirection: 'row' }}>
-              <Badge
-                content={bandLabel ?? bandSpec.label}
-                icon={bandSpec.icon}
-                variant="subtle"
-                color={bandSpec.tone}
-                size="label-medium"
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+              {/* The band's glyph is the only tinted mark in the header: the
+                  word beside it is the verdict, and a pill saying the same word
+                  twice is the duplication a verdict line removes. */}
+              <BandIcon width={20} height={20} fill={bandAccent.foreground} />
+              <Text
+                variant="title-1-medium"
+                numberOfLines={1}
+                style={{ flexShrink: 1, color: paint.text }}
                 testID={id('band')}
-              />
+              >
+                {bandLabel ?? bandSpec.label}
+              </Text>
             </View>
             {trend && TrendIcon ? (
-              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
-                <TrendIcon width={14} height={14} fill={trendColor} />
+              <View
+                style={{ flexDirection: 'row', alignItems: 'center', gap: 4, marginTop: 2 }}
+              >
+                <TrendIcon width={16} height={16} fill={paint.textSecondary} />
                 <Text
-                  variant="caption-1-medium"
+                  variant="body-2-regular"
                   numberOfLines={1}
-                  style={{ color: trendColor, flexShrink: 1 }}
+                  style={{ flexShrink: 1, color: paint.textSecondary }}
                   testID={id('trend')}
                 >
                   {trend.label}
@@ -135,44 +140,61 @@ function LeadScoreCardComponent({
               </View>
             ) : null}
           </View>
+
+          <MeterRing
+            value={score}
+            max={max}
+            size={LEAD_SCORE_RING_SIZE}
+            thickness={LEAD_SCORE_RING_THICKNESS}
+            accessibilityLabel={accessibilityLabel}
+            valueText={valueText}
+            testID={id('ring')}
+          >
+            <Text
+              variant="title-3-semibold"
+              style={[{ color: paint.text }, TABULAR]}
+              testID={id('score')}
+            >
+              {String(score)}
+            </Text>
+            <Text variant="caption-2-regular" style={[{ color: paint.textTertiary }, TABULAR]}>
+              {`of ${max}`}
+            </Text>
+          </MeterRing>
         </View>
 
         {factors?.length ? (
           <View
             style={{
-              marginTop: 16,
-              paddingTop: 16,
+              paddingTop: 20,
               borderTopWidth: 1,
               borderTopColor: paint.hairline,
-              gap: 12,
+              gap: LEAD_FACTOR_ROW_GAP,
             }}
             testID={id('factors')}
           >
-            <Text variant="caption-1-semibold" style={{ color: paint.textSecondary }}>
+            <Text variant="body-medium" style={{ color: paint.textSecondary }}>
               {factorsLabel}
             </Text>
             {factors.map((factor) => {
               const positive = factor.contribution >= 0;
-              const tone = positive ? LEAD_FACTOR_TONE.positive : LEAD_FACTOR_TONE.negative;
-              const fill = resolveAccentColors(theme.colors, tone, 'solid').background;
               const points = formatContribution(factor.contribution);
               const key = factor.id ?? factor.label;
               return (
-                <View key={key} style={{ gap: 4 }}>
-                  <View style={{ flexDirection: 'row', alignItems: 'baseline', gap: 8 }}>
+                <View key={key} style={{ gap: 8 }}>
+                  <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
                     <Text
-                      variant="body-2-medium"
+                      variant="body-medium"
                       numberOfLines={1}
-                      style={{ color: paint.text, flex: 1, minWidth: 0 }}
+                      style={{ flex: 1, minWidth: 0, color: paint.text }}
                     >
                       {factor.label}
                     </Text>
                     <Text
-                      variant="body-2-semibold"
-                      style={{
-                        color: resolveAccentColors(theme.colors, tone, 'subtle').foreground,
-                        flexShrink: 0,
-                      }}
+                      variant="body-semibold"
+                      importantForAccessibility="no"
+                      accessibilityElementsHidden
+                      style={[{ color: paint.text, flexShrink: 0 }, TABULAR]}
                       testID={testID ? `${testID}-factor-${key}-points` : undefined}
                     >
                       {points}
@@ -182,14 +204,18 @@ function LeadScoreCardComponent({
                     value={Math.abs(factor.contribution)}
                     max={scale}
                     height={LEAD_FACTOR_BAR_HEIGHT}
-                    fill={fill}
-                    track={paint.track}
+                    // Positive takes the accent — the meter default, and what
+                    // every other measurement in Bloom fills with. Negative
+                    // takes the QUIET graphical neutral, read off the rail so
+                    // it clears it (`neutralSeries` is `neutral-800` in dark and
+                    // would vanish on one).
+                    fill={positive ? undefined : paint.negativeFill}
                     accessibilityLabel={factor.label}
                     valueText={`${points} points`}
                     testID={testID ? `${testID}-factor-${key}` : undefined}
                   />
                   {factor.detail ? (
-                    <Text variant="caption-1-regular" style={{ color: paint.textTertiary }}>
+                    <Text variant="body-2-regular" style={{ color: paint.textSecondary }}>
                       {factor.detail}
                     </Text>
                   ) : null}

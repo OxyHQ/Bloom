@@ -4,9 +4,9 @@ import { Pressable, View } from 'react-native';
 import { Avatar } from '../avatar';
 import { AvatarGroup } from '../avatar-group';
 import { Badge } from '../badge';
-import { GlyphButton } from '../button';
+import { Button } from '../button';
 import { Card } from '../card';
-import { Chip, ChipRow } from '../chip';
+import { Chip } from '../chip';
 import { RiTimeLine } from '../icons/remix/RiTimeLine';
 import { adoptStyleSheet } from '../styles/adopt-style-sheet';
 import { SurfaceLevelProvider, surfaceFillVars, useSurfaceFill } from '../styles/surface-levels';
@@ -17,8 +17,8 @@ import { useTheme } from '../theme/use-theme';
 import { Text } from '../typography';
 import {
   CONTACT_AVATAR_SIZE,
-  CONTACT_PROFILE_PADDING,
   CONTACT_CHANNEL,
+  CONTACT_CHANNEL_HIT,
   CONTACT_CHANNEL_SIZE,
   CONTACT_ROW_MIN_HEIGHT,
 } from './constants';
@@ -35,30 +35,38 @@ import type { ContactProfileCardProps } from './types';
 /**
  * A person or a company, as a card and as a row.
  *
- *   comfortable   a `Card` (16 padding, `radius-16`): a 48 avatar, the name with
- *                 its status pill, the meta line, the facts, the tags, the
- *                 facepile, then a hairline and the footer — the channel
- *                 actions on the left, the owner on the right.
- *   compact       no surface at all (the list owns it): 64 tall, a 36 avatar,
- *                 the name, the meta line, and the channel actions beside them.
- *                 Facts, tags, the facepile and the owner are comfortable-only —
- *                 a row that drew them would be a card with the padding removed.
+ * It is built to the same four blocks every Bloom record card is built to —
+ * `home-search`'s `SavedSearchCard` is the reference:
  *
- * A COMPANY IS THE SAME CARD. `kind="company"` squares the avatar off into a
- * squircle, reads `role` as the industry and drops `company` (a company has no
- * company); everything else — the channels, the owner, the tags, the last touch —
- * is the same data in the same slots. There is no second component to keep in
- * step.
+ *   header   a 44 leading mark, the name at `body-semibold` (two lines), and a
+ *            status `Badge` opposite it
+ *   meta     ONE secondary line — the role and the account — then the facts,
+ *            the last touch and the tags as OUTLINED `Chip`s wrapped 6 apart.
+ *            Outlined, not filled: a neutral filled pill reads as disabled, and
+ *            these are facts rather than states
+ *   footer   a hairline, then the quiet owner label on the left and the REAL
+ *            controls on the right
  *
- * **The card is not one big button.** `onPress` is bound to the IDENTITY BLOCK,
- * and the channels and `actions` sit outside it. A pressable card wrapping
- * pressable channels is a control inside a control: invalid on web (a `<button>`
- * inside a `<button>`), ambiguous everywhere. The identity block is still the
- * largest target on the row, so nothing is lost by scoping it.
+ *   compact  no surface at all (the list owns it): 64 tall, a 36 mark, the name,
+ *            one meta line, the channel controls beside them. Chips, the
+ *            facepile and the owner are comfortable-only — a row that drew them
+ *            would be a card with the padding removed.
  *
- * Every channel is an ACTION and never a string of text: a `GlyphButton` named
- * `"${verb} ${label ?? name}"` from `CONTACT_CHANNEL`, so a control that draws
- * only a glyph cannot ship unnamed.
+ * A COMPANY IS THE SAME CARD. `kind="company"` squares the mark off into a
+ * squircle so a logo reads as a logo, reads `role` as the INDUSTRY and drops
+ * `company` (a company has no company); everything else is the same data in the
+ * same slots.
+ *
+ * **Every channel is a CONTROL, not a glyph.** Each is a `Button` —
+ * `variant="secondary" size="small" iconOnly` — so it carries the surface, the
+ * border, the hover, the disabled treatment and the focus ring every other
+ * Bloom action has, named `"${verb} ${label ?? name}"` from `CONTACT_CHANNEL`.
+ * Bare icons floating on a card surface are not an affordance anywhere else in
+ * this library and were not one here.
+ *
+ * **The card is not one big button.** `onPress` is bound to the HEADER, and the
+ * channels and `actions` sit outside it — a control inside a control is invalid
+ * on web and ambiguous everywhere, and it renders fine either way.
  */
 
 /** The fill the content lands on, and everything derived from it. */
@@ -102,22 +110,15 @@ function ContactProfileCardComponent({
 
   const id = (part: string) => (testID ? `${testID}-${part}` : undefined);
   const meta = contactMetaLine({ kind, role, company });
-  const factLine = facts?.filter((fact) => fact !== '').join(' · ');
-  const touchColor =
-    lastTouchTone === undefined
-      ? paint.textTertiary
-      : resolveAccentColors(theme.colors, lastTouchTone, 'subtle').foreground;
+  const touchAccent =
+    lastTouchTone === undefined ? null : resolveAccentColors(theme.colors, lastTouchTone, 'subtle');
 
-  // The status pill sits beside the NAME on a card and on the META line in a
-  // row. At 390 a row gives the identity ~190px once three channel actions have
-  // taken theirs, and a pill beside the name there truncates both of them —
-  // measured as "Nora Van…" next to "Custo…". The second line has the room.
   const statusBadge = status ? (
     <Badge
       content={status.label}
       variant="subtle"
       color={status.tone ?? 'default'}
-      size="label-small"
+      size="label-medium"
       // The pill states a fact in one word; the LINE beside it is what gives
       // way. Without this both shrink and neither is readable.
       style={{ flexShrink: 0 }}
@@ -125,29 +126,38 @@ function ContactProfileCardComponent({
     />
   ) : null;
 
-  const identity = (
+  // The header is the reference's: mark, title, badge. At compact the badge
+  // moves down to the meta line — a row gives the identity about 150px once
+  // the channel controls have taken theirs, and a pill beside the name there
+  // truncated both ("Nora Van…" next to "Custo…").
+  const header = (
     <View
       style={{
         flexDirection: 'row',
+        alignItems: comfortable ? 'center' : 'flex-start',
         gap: 12,
         flex: 1,
         minWidth: 0,
-        alignItems: comfortable ? 'flex-start' : 'center',
       }}
     >
       <Avatar
         size={CONTACT_AVATAR_SIZE[density]}
         source={avatar}
         name={name}
+        // The quiet grey disc. The deterministic pastel tints belong to a
+        // people LIST, where colour tells two rows apart; on a record card the
+        // subject is already named and the tint is decoration that reads as a
+        // status nobody set.
+        color="neutral"
         shape={kind === 'company' ? 'squircle' : 'circle'}
         testID={id('avatar')}
       />
       <View style={{ flex: 1, minWidth: 0, gap: 2 }}>
-        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
           <Text
-            variant={comfortable ? 'headline-semibold' : 'body-semibold'}
-            numberOfLines={1}
-            style={{ color: paint.text, flexShrink: 1 }}
+            variant="body-semibold"
+            numberOfLines={comfortable ? 2 : 1}
+            style={{ flex: 1, minWidth: 0, color: paint.text }}
             testID={id('name')}
           >
             {name}
@@ -159,9 +169,9 @@ function ContactProfileCardComponent({
             {comfortable ? null : statusBadge}
             {meta ? (
               <Text
-                variant={comfortable ? 'body-2-regular' : 'caption-1-regular'}
+                variant="body-2-regular"
                 numberOfLines={1}
-                style={{ color: paint.textSecondary, flexShrink: 1 }}
+                style={{ flexShrink: 1, color: paint.textSecondary }}
                 testID={id('meta')}
               >
                 {meta}
@@ -169,29 +179,16 @@ function ContactProfileCardComponent({
             ) : null}
           </View>
         ) : null}
-        {comfortable && factLine ? (
+        {comfortable || !lastTouch ? null : (
           <Text
             variant="caption-1-regular"
-            numberOfLines={2}
-            style={{ color: paint.textTertiary }}
-            testID={id('facts')}
+            numberOfLines={1}
+            style={{ color: touchAccent?.foreground ?? paint.textTertiary }}
+            testID={id('last-touch')}
           >
-            {factLine}
+            {lastTouch}
           </Text>
-        ) : null}
-        {lastTouch ? (
-          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4, marginTop: 2 }}>
-            <RiTimeLine width={14} height={14} fill={touchColor} />
-            <Text
-              variant="caption-1-regular"
-              numberOfLines={1}
-              style={{ color: touchColor, flexShrink: 1 }}
-              testID={id('last-touch')}
-            >
-              {lastTouch}
-            </Text>
-          </View>
-        ) : null}
+        )}
       </View>
     </View>
   );
@@ -212,26 +209,29 @@ function ContactProfileCardComponent({
       ]}
       testID={id('subject')}
     >
-      {identity}
+      {header}
     </Pressable>
   ) : (
-    identity
+    header
   );
 
   const channelRow = channels?.length ? (
-    <View style={{ flexDirection: 'row', gap: 4, flexShrink: 0 }} testID={id('channels')}>
+    <View style={{ flexDirection: 'row', gap: 6, flexShrink: 0 }} testID={id('channels')}>
       {channels.map((channel, index) => {
         const spec = CONTACT_CHANNEL[channel.kind];
         return (
-          <GlyphButton
+          <Button
             key={channel.kind + String(index)}
+            variant="secondary"
+            size="small"
+            iconOnly
             icon={channel.icon ?? spec.icon}
-            size={CONTACT_CHANNEL_SIZE}
-            glyphSize={20}
             onPress={channel.onPress}
             disabled={channel.disabled}
-            hoverFill={paint.channelHover}
-            ring={paint.ring}
+            // The control DRAWS at the card's own 32 and is HIT at 44: a
+            // contact row is a column of these, and a thumb needs the second
+            // number while the card needs the first.
+            hitSlop={CONTACT_CHANNEL_HIT}
             accessibilityLabel={`${spec.verb} ${channel.label ?? name}`}
             testID={channel.testID ?? id(`channel-${channel.kind}`)}
           />
@@ -240,93 +240,93 @@ function ContactProfileCardComponent({
     </View>
   ) : null;
 
-  const header = (
-    <View style={{ flexDirection: 'row', alignItems: comfortable ? 'flex-start' : 'center', gap: 8 }}>
-      {subject}
-      {comfortable ? null : channelRow}
-      {actions ? (
-        <View style={{ flexShrink: 0 }} testID={id('actions')}>
-          {actions}
-        </View>
-      ) : null}
-    </View>
-  );
-
   if (!comfortable) {
     return (
       <View
         style={[{ minHeight: CONTACT_ROW_MIN_HEIGHT, justifyContent: 'center' }, style]}
         testID={testID}
       >
-        {header}
+        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+          {subject}
+          {channelRow}
+          {actions ? (
+            <View style={{ flexShrink: 0 }} testID={id('actions')}>
+              {actions}
+            </View>
+          ) : null}
+        </View>
       </View>
     );
   }
 
-  const footer =
-    channelRow || owner ? (
-      <View
-        style={{
-          flexDirection: 'row',
-          alignItems: 'center',
-          justifyContent: 'space-between',
-          gap: 12,
-          marginTop: 12,
-          paddingTop: 12,
-          borderTopWidth: 1,
-          borderTopColor: paint.hairline,
-        }}
-        testID={id('footer')}
+  // The meta ROW: the last touch, the facts and the tags, all as outlined
+  // chips. Three stacked quiet lines is what made this card read as something
+  // other than Bloom — every one of them is a short fact, which is what a chip
+  // row is for.
+  const chips: React.ReactNode[] = [];
+  if (lastTouch) {
+    chips.push(
+      <Chip
+        key="last-touch"
+        size="medium"
+        variant={lastTouchTone === undefined ? 'outlined' : 'subtle'}
+        color={lastTouchTone ?? 'default'}
+        startIcon={
+          <RiTimeLine
+            width={14}
+            height={14}
+            fill={touchAccent?.foreground ?? paint.textSecondary}
+          />
+        }
+        testID={id('last-touch')}
       >
-        {channelRow ?? <View />}
-        {owner ? (
-          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, flexShrink: 1 }}>
-            <Avatar size={20} source={owner.avatar} name={owner.name} />
-            <Text
-              variant="caption-1-regular"
-              numberOfLines={1}
-              style={{ color: paint.textSecondary, flexShrink: 1 }}
-              testID={id('owner')}
-            >
-              {`${owner.label ?? 'Owner'} · ${owner.name}`}
-            </Text>
-          </View>
-        ) : null}
-      </View>
-    ) : null;
+        {lastTouch}
+      </Chip>,
+    );
+  }
+  for (const fact of facts ?? []) {
+    if (fact !== '') chips.push(<Chip key={`fact-${fact}`} size="medium" variant="outlined">{fact}</Chip>);
+  }
+  for (const tag of tags ?? []) {
+    chips.push(<Chip key={`tag-${tag}`} size="medium" variant="outlined">{tag}</Chip>);
+  }
 
   return (
     <SurfaceLevelProvider level={1} fill={paint.surface}>
       <Card
         variant="outlined"
         radius="radius-16"
-        style={[{ padding: CONTACT_PROFILE_PADDING, ...surfaceFillVars(paint.surface) }, style]}
+        style={[
+          {
+            paddingTop: 16,
+            paddingBottom: 12,
+            paddingLeft: 16,
+            paddingRight: 16,
+            gap: 12,
+            ...surfaceFillVars(paint.surface),
+          },
+          style,
+        ]}
         testID={testID}
       >
-        {header}
-        {tags?.length ? (
-          // `minWidth: 0` on BOTH: a flex item's automatic minimum is its
-          // CONTENT width, so a horizontal scroller inside one widens the card
-          // and then the page — 390 became 414 before this, with the document
-          // itself scrolling sideways.
-          <View style={{ marginTop: 12, minWidth: 0 }} testID={id('tags')}>
-            <ChipRow
-              gap={6}
-              fadeColor={paint.surface}
-              accessibilityLabel="Tags"
-              style={{ minWidth: 0 }}
-            >
-              {tags.map((tag) => (
-                <Chip key={tag} size="small" variant="subtle" color="default">
-                  {tag}
-                </Chip>
-              ))}
-            </ChipRow>
+        <View style={{ flexDirection: 'row', alignItems: 'flex-start', gap: 8 }}>
+          {subject}
+          {actions ? (
+            <View style={{ flexShrink: 0 }} testID={id('actions')}>
+              {actions}
+            </View>
+          ) : null}
+        </View>
+
+        {chips.length > 0 ? (
+          <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 6 }} testID={id('chips')}>
+            {chips}
           </View>
         ) : null}
+
         {people?.length ? (
           <View
-            style={{ flexDirection: 'row', alignItems: 'center', gap: 8, marginTop: 12 }}
+            style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}
             testID={id('people')}
           >
             <AvatarGroup
@@ -344,13 +344,43 @@ function ContactProfileCardComponent({
               showInitials
             />
             {peopleLabel ? (
-              <Text variant="caption-1-regular" style={{ color: paint.textSecondary }}>
+              <Text variant="body-2-regular" style={{ color: paint.textSecondary }}>
                 {peopleLabel}
               </Text>
             ) : null}
           </View>
         ) : null}
-        {footer}
+
+        {owner || channelRow ? (
+          <View
+            style={{
+              flexDirection: 'row',
+              alignItems: 'center',
+              gap: 8,
+              paddingTop: 12,
+              borderTopWidth: 1,
+              borderTopColor: paint.hairline,
+            }}
+            testID={id('footer')}
+          >
+            {owner ? (
+              <>
+                <Avatar size={20} source={owner.avatar} name={owner.name} color="neutral" />
+                <Text
+                  variant="body-2-regular"
+                  numberOfLines={1}
+                  style={{ flex: 1, minWidth: 0, color: paint.textSecondary }}
+                  testID={id('owner')}
+                >
+                  {`${owner.label ?? 'Owner'} · ${owner.name}`}
+                </Text>
+              </>
+            ) : (
+              <View style={{ flex: 1 }} />
+            )}
+            {channelRow}
+          </View>
+        ) : null}
       </Card>
     </SurfaceLevelProvider>
   );

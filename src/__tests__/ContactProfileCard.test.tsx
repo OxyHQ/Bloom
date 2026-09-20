@@ -13,6 +13,7 @@ import { createRoot, type Root } from 'react-dom/client';
 
 jest.mock('react-native', () => jest.requireActual('react-native-web'));
 
+import { Avatar } from '../avatar';
 import { ContactProfileCard, contactMetaLine } from '../contact-card';
 import { CONTACT_ROW_MIN_HEIGHT } from '../contact-card/constants';
 import { resolveContactPaint } from '../contact-card/shared';
@@ -133,6 +134,19 @@ describe('the channels are actions, not text', () => {
     expect(container.textContent).not.toContain('@');
   });
 
+  it('draws each one as a real CONTROL, never a bare glyph on the surface', () => {
+    // The defect this replaces: three icons floating on the card with no
+    // surface, no border and no hit area. Both render; only the emitted box
+    // tells them apart.
+    mount(<ContactProfileCard {...NORA} testID="c" />);
+    const control = byTestId('c-channel-email');
+    expect(control.tagName).toBe('BUTTON');
+    const style = getComputedStyle(control);
+    expect(style.backgroundColor).not.toBe('rgba(0, 0, 0, 0)');
+    expect(Number.parseFloat(style.borderTopWidth)).toBeGreaterThan(0);
+    expect(Number.parseFloat(style.height)).toBeGreaterThanOrEqual(32);
+  });
+
   it('never nests a control inside the press target', () => {
     // The whole reason `onPress` is bound to the identity block. A `<button>`
     // inside a `<button>` is invalid on web and ambiguous on native, and it
@@ -146,10 +160,41 @@ describe('the channels are actions, not text', () => {
   });
 });
 
-describe('the last touch is read off the surface, or off the tone', () => {
-  it('is the tertiary rung of the card fill when no tone is given', () => {
+describe('the meta row is chips, and they are OUTLINED', () => {
+  it('draws the last touch, the facts and the tags as one wrapped row', () => {
+    mount(<ContactProfileCard {...NORA} facts={['Lisbon']} testID="c" />);
+    const row = byTestId('c-chips');
+    expect(getComputedStyle(row).flexWrap).toBe('wrap');
+    const words = [...row.querySelectorAll('div')].map((el) => el.textContent);
+    for (const fact of ['Last contacted 6 days ago', 'Lisbon', 'Enterprise', 'Renewal']) {
+      expect(words).toContain(fact);
+    }
+  });
+
+  it('paints an untoned chip with NO fill — a filled neutral pill reads as disabled', () => {
     mount(<ContactProfileCard {...NORA} testID="c" />);
-    const expected = surfaceTextOn(theme, theme.colors.card).textTertiary;
+    const chip = byTestId('c-last-touch');
+    const style = getComputedStyle(chip);
+    expect(style.backgroundColor).toBe('rgba(0, 0, 0, 0)');
+    // Outlined means the border carries it, and the border is the tone's TEXT
+    // member — never the fill, which is sized to carry white.
+    const neutral = resolveAccentColors(theme.colors, 'default', 'outlined');
+    expect(style.borderTopColor).toBe(normalise(neutral.border));
+    expect(Number.parseFloat(style.borderTopWidth)).toBeGreaterThan(0);
+  });
+
+  it('takes the tone PAIR when one is given, never an appended alpha', () => {
+    mount(<ContactProfileCard {...NORA} lastTouchTone="warning" testID="c" />);
+    const accent = resolveAccentColors(theme.colors, 'warning', 'subtle');
+    expect(getComputedStyle(byTestId('c-last-touch')).backgroundColor).toBe(
+      normalise(accent.background),
+    );
+  });
+
+  it('keeps the last touch a quiet LINE in a row, where there is no chip row', () => {
+    mount(<ContactProfileCard {...NORA} density="compact" testID="c" />);
+    expect(queryTestId('c-chips')).toBeNull();
+    const expected = surfaceTextOn(theme, theme.colors.background).textTertiary;
     expect(getComputedStyle(byTestId('c-last-touch')).color).toBe(normalise(expected));
     // And it is READ, not a constant: the same rung differs on another fill.
     expect(surfaceTextOn(theme, theme.colors.background).textTertiary).not.toBe(
@@ -157,31 +202,52 @@ describe('the last touch is read off the surface, or off the tone', () => {
     );
   });
 
-  it('takes the tone PAIR when one is given, never an appended alpha', () => {
-    mount(<ContactProfileCard {...NORA} lastTouchTone="warning" testID="c" />);
-    const accent = resolveAccentColors(theme.colors, 'warning', 'subtle');
-    expect(getComputedStyle(byTestId('c-last-touch')).color).toBe(normalise(accent.foreground));
-  });
-
-  it('resolves both rungs in dark mode too', () => {
+  it('resolves the chip in dark mode too', () => {
     mount(<ContactProfileCard {...NORA} testID="c" />, 'dark');
-    const expected = surfaceTextOn(theme, theme.colors.card).textTertiary;
-    expect(getComputedStyle(byTestId('c-last-touch')).color).toBe(normalise(expected));
+    expect(getComputedStyle(byTestId('c-last-touch')).backgroundColor).toBe('rgba(0, 0, 0, 0)');
+  });
+});
+
+/** The deepest painted disc inside an avatar — the initials tint. */
+function discColor(root: HTMLElement): string {
+  let found = '';
+  for (const el of root.querySelectorAll('div')) {
+    const bg = getComputedStyle(el).backgroundColor;
+    if (bg && bg !== 'rgba(0, 0, 0, 0)') found = bg;
+  }
+  return found;
+}
+
+describe('the leading mark is neutral', () => {
+  it('draws the quiet disc, not the deterministic per-name tint', () => {
+    // Both controls rendered beside the card, in the same theme, read with the
+    // same function: "neutral" is only meaningful against the tint it replaces.
+    mount(
+      <>
+        <ContactProfileCard {...NORA} testID="c" />
+        <Avatar name={NORA.name} size={44} testID="tinted" />
+        <Avatar name={NORA.name} size={44} color="neutral" testID="quiet" />
+      </>,
+    );
+    const card = discColor(byTestId('c-avatar'));
+    expect(card).not.toBe('');
+    expect(card).toBe(discColor(byTestId('quiet')));
+    expect(card).not.toBe(discColor(byTestId('tinted')));
   });
 });
 
 describe('one component, two densities', () => {
   it('draws the card furniture at comfortable', () => {
     mount(<ContactProfileCard {...NORA} testID="c" />);
-    expect(queryTestId('c-tags')).not.toBeNull();
+    expect(queryTestId('c-chips')).not.toBeNull();
     expect(queryTestId('c-owner')).not.toBeNull();
     expect(queryTestId('c-footer')).not.toBeNull();
     expect(getComputedStyle(byTestId('c')).backgroundColor).toBe(normalise(theme.colors.card));
   });
 
-  it('draws a ROW at compact: no surface, no tags, no owner, 64 tall', () => {
+  it('draws a ROW at compact: no surface, no chips, no owner, 64 tall', () => {
     mount(<ContactProfileCard {...NORA} density="compact" testID="c" />);
-    expect(queryTestId('c-tags')).toBeNull();
+    expect(queryTestId('c-chips')).toBeNull();
     expect(queryTestId('c-owner')).toBeNull();
     expect(queryTestId('c-footer')).toBeNull();
     // The list owns the surface, so the row paints none of its own.

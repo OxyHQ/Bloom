@@ -3,6 +3,7 @@ import { View } from 'react-native';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
 import { GlyphButton } from '../button';
+import { SavedSearchCard } from '../home-search';
 import { RiMore2Line } from '../icons/remix';
 import { BloomThemeContext, BloomThemeProvider } from '../theme/BloomThemeProvider';
 import { useTheme } from '../theme/use-theme';
@@ -212,5 +213,33 @@ export const BothThemes: Story = {
       <ContactProfileCard {...COMPANY} onPress={noop} />
       <ContactProfileCard {...IDRIS} density="compact" onPress={noop} />
     </BothModes>
+  ),
+};
+
+/**
+ * The same shot as the card this family is built to. `SavedSearchCard` is the
+ * reference: a 44 leading mark, a `body-semibold` title with a badge opposite,
+ * outlined chips wrapped in a row, a hairline, and a quiet label on the left of
+ * the footer with real controls on the right.
+ */
+export const BesideTheReference: Story = {
+  render: () => (
+    <Page>
+      <View style={{ width: '100%', maxWidth: 900, gap: 16 }}>
+        <Caption>Bloom reference — home-search / SavedSearchCard</Caption>
+        <SavedSearchCard
+          title="2-bed flats in Old Halden"
+          criteria={['€800 – €1,200', '2+ bedrooms', 'Lift', 'Pets allowed']}
+          newCount={12}
+          alertFrequency="Daily alerts"
+          onPress={noop}
+          onEdit={noop}
+          onDelete={noop}
+        />
+        <Caption>This family — contact-card / ContactProfileCard</Caption>
+        <ContactProfileCard {...NORA} facts={['Lisbon']} onPress={noop} testID="contact-beside" />
+        <ContactProfileCard {...COMPANY} onPress={noop} />
+      </View>
+    </Page>
   ),
 };
