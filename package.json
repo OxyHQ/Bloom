@@ -2253,6 +2253,20 @@
         "default": "./lib/commonjs/mail-compose/index.js"
       }
     },
+    "./swipe-row": {
+      "react-native": {
+        "types": "./lib/typescript/module/swipe-row/index.d.ts",
+        "default": "./src/swipe-row/index.ts"
+      },
+      "import": {
+        "types": "./lib/typescript/module/swipe-row/index.d.ts",
+        "default": "./lib/module/swipe-row/index.js"
+      },
+      "require": {
+        "types": "./lib/typescript/commonjs/swipe-row/index.d.ts",
+        "default": "./lib/commonjs/swipe-row/index.js"
+      }
+    },
     "./tenancy": {
       "react-native": {
         "types": "./lib/typescript/module/tenancy/index.d.ts",
@@ -3456,6 +3470,9 @@
       ],
       "mail-compose": [
         "./lib/typescript/module/mail-compose/index.d.ts"
+      ],
+      "swipe-row": [
+        "./lib/typescript/module/swipe-row/index.d.ts"
       ],
       "tenancy": [
         "./lib/typescript/module/tenancy/index.d.ts"

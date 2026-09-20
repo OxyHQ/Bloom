@@ -235,6 +235,7 @@ const SUBPATHS = /** @type {const} */ ([
   ['./mail-list', 'mail-list/index.ts'],
   ['./mail-thread', 'mail-thread/index.ts'],
   ['./mail-compose', 'mail-compose/index.ts'],
+  ['./swipe-row', 'swipe-row/index.ts'],
   ['./tenancy', 'tenancy/index.ts'],
   ['./eviction', 'eviction/index.ts'],
   ['./place-reviews', 'place-reviews/index.ts'],
