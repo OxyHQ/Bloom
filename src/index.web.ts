@@ -677,9 +677,27 @@ export type {
   StoriesRowProps,
   StoryEntry,
 } from './chat-list';
+// The one drag affordance every list row in this library uses
+export { SwipeRow, resolveSwipeRowPaint, swipeActionPaint, useSwipeAvailable } from './swipe-row';
+export {
+  SWIPE_ACTION_WIDTH,
+  SWIPE_ACTIVATE_OFFSET,
+  SWIPE_COMMIT_FRACTION,
+  SWIPE_ROW_RADIUS,
+  SWIPE_SNAP_DURATION,
+  SWIPE_TAP_SLOP,
+} from './swipe-row';
+export type {
+  SwipeRowAction,
+  SwipeRowActionTone,
+  SwipeRowActions,
+  SwipeRowPaint,
+  SwipeRowProps,
+} from './swipe-row';
 // Mail — the inbox, a thread, and writing a message
 export {
   DEFAULT_MAIL_STRINGS,
+  MAIL_LABEL_DOT,
   MAIL_ROW_GEOMETRY,
   MAIL_ROW_RADIUS,
   MAIL_SELECTION_BAR_HEIGHT,
@@ -689,8 +707,10 @@ export {
   MailSelectionBar,
   composeMailRowName,
   groupMailByDay,
+  labelMarks,
   mailStrings,
   resolveMailPaint,
+  toSwipeActions,
   visibleLabels,
 } from './mail-list';
 export type {
@@ -711,6 +731,7 @@ export type {
   MailSender,
   MailStrings,
   MailSummary,
+  MailSwipeActions,
 } from './mail-list';
 export {
   DEFAULT_MAIL_THREAD_STRINGS,

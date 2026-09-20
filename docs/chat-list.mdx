@@ -135,12 +135,20 @@ One list, two affordances:
   row travels with the finger and snaps open past 40% of the pane, closed below;
   while a pane is open, pressing the row closes it rather than opening the chat.
   The gesture fails on vertical travel, so a list scroll never becomes a swipe.
-- **Web** — the same actions appear as icon buttons over the right column on
-  hover and on keyboard focus, because a drag is undiscoverable with a mouse.
+  It is `SwipeRow`, the library's one drag implementation — see
+  [Swipe Row](/docs/swipe-row).
+- **A mouse** — the same actions appear as icon buttons over the right column on
+  hover and on keyboard focus, because a drag is undiscoverable with a pointer.
   They are hidden entirely under `@media (hover: none)`.
 
-`swipeEnabled` defaults to "on wherever the platform is not web"; set it to
-`false` to keep the hover buttons and drop the gesture.
+`swipeEnabled` defaults to `useSwipeAvailable()` — every touch pointer on any
+platform, which includes a web build running on a phone. Set it to `false` to
+keep the hover buttons and drop the gesture, or to `true` to force it.
+
+A swipe is not reachable by keyboard or by a screen reader. On web the hover
+buttons are that second path (they appear on `:focus-within` and are in the tab
+order); on native this family offers none, and a host that needs one should give
+the row a long-press menu of the same actions.
 
 `tone` paints the pane: `accent`, `negative` (delete), or the default neutral.
 

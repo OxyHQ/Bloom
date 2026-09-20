@@ -7,11 +7,11 @@ import { RiNotificationOffFill } from '../icons/remix/RiNotificationOffFill';
 import { RiPushpinFill } from '../icons/remix/RiPushpinFill';
 import { adoptStyleSheet } from '../styles/adopt-style-sheet';
 import type { WebCssStyle } from '../styles/web-view-style';
+import { SwipeRow, useSwipeAvailable } from '../swipe-row';
 import { useTheme } from '../theme/use-theme';
 import { Text } from '../typography';
 import { TYPE_SCALE } from '../typography/scale';
 import { ChatAvatar, ChatGlyphButton, RowLink, actionGlyphColor } from './parts';
-import { ChatSwipeRow } from './ChatSwipeRow';
 import {
   CHAT_ATTACHMENT_ICONS,
   CHAT_LIST_CSS,
@@ -47,9 +47,10 @@ import type { ChatAction, ChatListItemProps } from './types';
  * two are mutually exclusive by construction — if their message is the last one,
  * yours has no place in this row — and the badge wins.
  *
- * ACTIONS come from `swipeActions`. On touch a drag uncovers them; on web they
- * appear as icon buttons on hover and keyboard focus, over the right column,
- * because there is no drag gesture to discover there. The buttons are siblings
+ * ACTIONS come from `swipeActions`. On a touch pointer a drag uncovers them
+ * (`SwipeRow`, the library's one drag implementation); on a mouse they appear
+ * as icon buttons on hover and keyboard focus, over the right column, because
+ * there is no drag gesture to discover there. The buttons are siblings
  * of the row's link, never children of it: a button inside an anchor is invalid
  * HTML and every "Archive" click would open the conversation.
  *
@@ -85,7 +86,7 @@ function ChatListItemComponent({
   href,
   swipeActions,
   onAction,
-  swipeEnabled = !IS_WEB,
+  swipeEnabled,
   accessibilityLabel,
   labels,
   style,
@@ -97,6 +98,21 @@ function ChatListItemComponent({
   }, []);
   const paint = useMemo(() => resolveChatListPaint(theme), [theme]);
   const [pressed, setPressed] = useState(false);
+  // The drag belongs to the POINTER, not to the platform: `swipeEnabled`
+  // overrides it, and the panes take this family's own resolved pairs so they
+  // match the rest of the row exactly.
+  const swipeAvailable = useSwipeAvailable();
+  const swipePaint = useMemo(
+    () => ({
+      neutral: paint.neutralAction,
+      onNeutral: paint.onNeutralAction,
+      accent: paint.accent,
+      onAccent: paint.onAccent,
+      negative: paint.negativeFill,
+      onNegative: paint.onAccent,
+    }),
+    [paint],
+  );
 
   const text = useMemo(() => ({ ...DEFAULT_ITEM_LABELS, ...labels }), [labels]);
   const geo = CHAT_ROW_GEOMETRY[density];
@@ -344,17 +360,23 @@ function ChatListItemComponent({
     </View>
   );
 
-  if (swipeActions && swipeEnabled && (swipeActions.left?.length || swipeActions.right?.length)) {
+  if (
+    swipeActions &&
+    (swipeEnabled ?? swipeAvailable) &&
+    (swipeActions.left?.length || swipeActions.right?.length)
+  ) {
     return (
-      <ChatSwipeRow
+      <SwipeRow
         actions={swipeActions}
         onAction={onAction}
         height={geo.height}
-        paint={paint}
+        radius={CHAT_ROW_RADIUS}
+        paint={swipePaint}
+        background={paint.background}
         testID={testID ? `${testID}-swipe` : undefined}
       >
         {row}
-      </ChatSwipeRow>
+      </SwipeRow>
     );
   }
   return row;

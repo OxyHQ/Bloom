@@ -28,14 +28,21 @@ import { MailList, groupMailByDay } from '@oxy.so/bloom';
 
 | | `comfortable` | `compact` |
 | --- | --- | --- |
-| height | 88 (a floor — labels grow it) | 40, exact |
+| height | 72 (a floor) | 40, exact |
 | padding | 16 / 12 vertical | 12 / 0 |
-| avatar | 40 | 24 |
-| lines | sender, subject, snippet | one |
+| avatar | 48 | 24 |
+| lines | sender + time, then subject + snippet | one |
 
 `comfortable` is the phone inbox; `compact` is a desktop list, where the sender
 takes a 180px column that shrinks (never grows) down to 88 so a narrow pane
 gives the subject the space rather than clipping it.
+
+The phone rung is the same 72 tall with the same 48 avatar as a `chat-list` row,
+deliberately. A mail row and a conversation row are the same kind of object, and
+an inbox standing 16px taller per row than the messages screen reads as a
+different library. Two lines is what pays for it: the sender and the time share
+the first, the subject and the snippet the second, and everything that used to
+need a third line is either a mark or is said only in the row's name.
 
 There is no second row component for the desktop. Everything a compact row
 draws, a comfortable row draws too, and the whole difference is one geometry
@@ -44,7 +51,7 @@ drifts, and the two then disagree about what a starred draft looks like.
 
 ## The subject and the snippet are one `Text`
 
-On a compact row the subject and the snippet are a single string with a nested
+At BOTH densities the subject and the snippet are a single string with a nested
 span, not two flex children. Two neighbouring flex children each want to be as
 wide as their content, and with a long one the result is either a row that
 pushes the list sideways or a subject clipped to nothing while the snippet keeps
@@ -78,28 +85,76 @@ be worse than the inconsistency.
 
 A label's colour is an `AccentTone`, never a hex. The chip resolves it through
 `resolveAccentColors`, so a label reads the way a status badge reads and
-survives a preset change. `maxLabels` counts CHIPS and the overflow chip is one
-of them: at 2 with four labels the row draws one label and a `+3`, never two
-labels and a `+2` in the space of three.
+survives a preset change.
 
-## Row actions are a slot; the swipe is yours
+`maxLabels` counts MARKS, and what a mark is depends on how much line there is:
 
-`actions` describes what a row can do. `actionsPlacement` says where:
+- **One-line row** (`compact`): every mark is a chip, and the overflow chip is
+  one of them (`visibleLabels`). At 2 with four labels the row draws one label
+  and a `+3`, never two labels and a `+2` in the space of three.
+- **Two-line row** (`comfortable`): the first label keeps its name as a chip and
+  the rest become 8px dots of their own tone (`labelMarks`). A second chip costs
+  more of the subject's width than a second label is worth, and the dot still
+  says "there is another one of these". Labels past `maxLabels` are drawn
+  nowhere at all.
 
-- `hover` — the desktop rail, over the right column, revealed on hover and
-  keyboard focus. The default on web.
-- `inline` — always drawn. For a tablet list with no pointer.
+Either way `composeMailRowName` reads every label aloud, which is what makes
+dropping the names on screen a layout decision rather than a loss.
+
+## The star is drawn only where it is a control
+
+No `onStarredChange`, no star. A star that looks like a button and does nothing
+is worse than no button, and on a two-line row it is also the widest thing
+competing with the subject. The state is not lost: the row's name says "Starred"
+either way, which is the reading an 18px marker was ever going to give.
+
+## Two affordances, and neither is an icon at rest
+
+A pointer hovers; a thumb drags. Nothing is drawn inside a phone row at rest.
+
+```tsx
+<MailList
+  rowActions={[archive, snooze, remove]}            // the pointer's rail
+  rowSwipeActions={{ left: [archive], right: [snooze, remove] }}  // the thumb's
+  onMailAction={(key, id) => run(key, id)}
+/>
+```
+
+`actions` + `actionsPlacement` is the rail:
+
+- `hover` — over the right column, revealed on hover and on keyboard focus, and
+  hidden outright under `@media (hover: none)`. The default on web.
+- `inline` — always drawn. A kiosk or a tablet list with no pointer and no
+  gesture; never a phone.
 - `none` — drawn nowhere. The default on NATIVE.
 
-Bloom does not own the phone's swipe gesture here, and half-implementing one
-would give you a drag that fights whatever list container you put the rows in.
-Wrap `MailRow` in your own swipe row and feed it the SAME `actions` array — the
-labels, icons and tones are already the right shape for it, and the accessible
-name on the rail's buttons is the one your swipe pane should use too.
+`swipeActions` is the drag, through `SwipeRow` — the library's one
+implementation of that gesture, shared with `chat-list` (see
+[Swipe Row](/docs/swipe-row) for the thresholds and the pane geometry). It is on
+wherever the pointer is coarse (`useSwipeAvailable()`); `swipeEnabled` forces it
+either way.
+
+The two props are separate because they answer different questions. `actions` is
+the whole menu a pointer gets at once; a pane is ONE action a thumb reaches in
+one direction. Archive right, delete left is a convention your app owns, not one
+this family should guess from an array's order.
 
 The rail's buttons are SIBLINGS of the row's link, never children. A button
 inside an anchor is invalid HTML, and every "Archive" click would open the
 message.
+
+### Reaching the actions without a swipe
+
+A drag has no tab stop and no announced name. Three paths, and the row carries
+all of them:
+
+- **A pointer** — the rail, which appears on `:focus-within` as well as on
+  hover, so a keyboard reaches it.
+- **A touch reader** — every rail and pane action is on the row's
+  `accessibilityActions`, once per key, which is the rotor. react-native-web
+  drops that prop and rightly: there the rail is already in the tab order.
+- **A closed pane is hidden from assistive technology entirely**, rather than
+  leaving invisible buttons for the focus ring to disappear into.
 
 ## The selection bar is not a component you place
 
@@ -153,10 +208,11 @@ has to be the same sections in June and in December.
 ## Accessibility
 
 The row is ONE target with ONE composed name, and its content is hidden from
-assistive technology. A star, a paperclip, a thread count and four label chips
-are states no text on the row carries, so `composeMailRowName` says all of them
-in reading order — "Mireia Solans, Roof survey, The surveyor came back…, 14:02,
-Unread, Has attachment, 4 messages, Work".
+assistive technology. A star, a paperclip, a thread count and four labels are
+states no text on the row carries, so `composeMailRowName` says all of them in
+reading order — "Mireia Solans, Roof survey, The surveyor came back…, 14:02,
+Unread, Has attachment, 4 messages, Work". It says every label and every state
+the row decided not to draw, which is what lets the row draw fewer of them.
 
 The open row is `aria-current` on web and `accessibilityState.selected` on
 native — `aria-selected` belongs to a tab or an option, and a message row is

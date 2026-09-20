@@ -29,6 +29,11 @@ import type { MailListProps, MailListSection } from './types';
  * because "which day is that" needs a clock, and a component that reads one is
  * a component a test cannot pin.
  *
+ * ROW ACTIONS ARE TWO AFFORDANCES, ONE LIST OF KEYS. `rowActions` is the rail
+ * a pointer hovers; `rowSwipeActions` is what a drag uncovers on touch, per
+ * side. Both report through `onMailAction`, and a row's own `actions` /
+ * `swipeActions` win over the list's.
+ *
  * THE SELECTION BAR IS NOT A SECOND COMPONENT. Give the list
  * `onCheckedIdsChange` and it draws the checkboxes AND mounts the bar as soon
  * as something is checked; select-all, clear and the per-row toggles all resolve
@@ -53,7 +58,9 @@ function MailListComponent({
   bulkActions,
   onBulkAction,
   rowActions,
+  rowSwipeActions,
   actionsPlacement,
+  swipeEnabled,
   onMailPress,
   onMailLongPress,
   onMailAction,
@@ -146,12 +153,14 @@ function MailListComponent({
             ? { role: 'list' as const, accessibilityLabel: section.title }
             : null)}
         >
-          {section.mails.map(({ id, date: _date, actions, ...mail }) => (
+          {section.mails.map(({ id, date: _date, actions, swipeActions, ...mail }) => (
             <MailRow
               key={id}
               {...mail}
               actions={actions ?? rowActions}
+              swipeActions={swipeActions ?? rowSwipeActions}
               actionsPlacement={mail.actionsPlacement ?? actionsPlacement}
+              swipeEnabled={mail.swipeEnabled ?? swipeEnabled}
               density={density}
               strings={mail.strings ?? strings}
               selected={selectedId === id}

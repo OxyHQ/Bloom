@@ -4,6 +4,7 @@ import {
   Pressable,
   StyleSheet,
   View,
+  type AccessibilityActionEvent,
   type GestureResponderEvent,
   type StyleProp,
   type ViewStyle,
@@ -16,8 +17,8 @@ import { RiStarLine } from '../icons/remix/RiStarLine';
 import { webDataSet } from '../styles/web-data';
 import type { WebCssStyle } from '../styles/web-view-style';
 import { Text } from '../typography';
-import { IS_WEB, MAIL_ROW_RADIUS, type MailPaint } from './shared';
-import type { MailLabel, MailStrings } from './types';
+import { IS_WEB, MAIL_LABEL_DOT, MAIL_ROW_RADIUS, type MailPaint } from './shared';
+import type { MailAction, MailLabel, MailStrings } from './types';
 
 // ---------------------------------------------------------------------------
 //  The link that covers a row
@@ -33,6 +34,9 @@ export interface MailRowLinkProps {
   paint: MailPaint;
   /** Fires on press-in/out so the row can paint itself pressed on native. */
   onPressedChange?: (pressed: boolean) => void;
+  /** Every action the row offers, as platform accessibility actions. */
+  actions?: readonly MailAction[];
+  onAction?: (key: string) => void;
   testID?: string;
 }
 
@@ -45,6 +49,11 @@ export interface MailRowLinkProps {
  * the checkbox and the hover rail are drawn over it as their OWN targets — a
  * button inside an anchor is invalid HTML, and nesting them would make every
  * "Archive" click open the message.
+ *
+ * `actions` also reaches it as `accessibilityActions`, which is the ONLY path a
+ * screen-reader user has to a swipe: the rotor lists them on the row itself.
+ * react-native-web drops the prop, and rightly — there the rail is in the tab
+ * order and `:focus-within` reveals it.
  */
 export function MailRowLink({
   name,
@@ -54,6 +63,8 @@ export function MailRowLink({
   selected = false,
   paint,
   onPressedChange,
+  actions,
+  onAction,
   testID,
 }: MailRowLinkProps) {
   const handlePress = (event: GestureResponderEvent) => {
@@ -70,9 +81,25 @@ export function MailRowLink({
     borderRadius: MAIL_ROW_RADIUS,
     '--bloom-mail-ring': paint.accent,
   };
+  const rotor =
+    actions === undefined || actions.length === 0
+      ? null
+      : {
+          accessibilityActions: actions.map((action) => ({
+            name: action.key,
+            label: action.label,
+          })),
+          onAccessibilityAction: (event: AccessibilityActionEvent) => {
+            const match = actions.find((action) => action.key === event.nativeEvent.actionName);
+            if (match === undefined) return;
+            match.onPress?.();
+            onAction?.(match.key);
+          },
+        };
   return (
     <Pressable
       {...webDataSet({ bloomMailFocusable: '' })}
+      {...rotor}
       {...(IS_WEB && href ? { href } : null)}
       {...(IS_WEB && selected ? { 'aria-current': 'true' } : null)}
       role={href ? 'link' : interactive ? 'button' : undefined}
@@ -167,6 +194,7 @@ export function MailGlyphButton({
 
 export interface MailStarProps {
   starred: boolean;
+  /** No handler, no star: the row draws nothing rather than a dead glyph. */
   onStarredChange?: (starred: boolean) => void;
   size: number;
   glyph: number;
@@ -176,9 +204,15 @@ export interface MailStarProps {
 }
 
 /**
- * Pressable when the app can change it, a plain glyph otherwise — a star that
- * looks like a button and does nothing is worse than no button. The ON state is
- * the accent, because a star is a mark the reader made and not a status.
+ * THE STAR IS DRAWN ONLY WHERE IT IS A CONTROL. With no `onStarredChange` the
+ * row draws nothing at all: a star that looks like a button and does nothing is
+ * worse than no button, and on a two-line row it is also the widest thing
+ * competing with the subject. The state is not lost — `composeMailRowName` says
+ * "Starred" either way, which is the reading a marker of that size was ever
+ * going to give.
+ *
+ * The ON state is the accent, because a star is a mark the reader made and not
+ * a status.
  */
 export function MailStar({
   starred,
@@ -191,13 +225,7 @@ export function MailStar({
 }: MailStarProps) {
   const Icon = starred ? RiStarFill : RiStarLine;
   const color = starred ? paint.accent : paint.textGraphical;
-  if (onStarredChange === undefined) {
-    return (
-      <View aria-hidden importantForAccessibility="no-hide-descendants" testID={testID}>
-        <Icon width={glyph} height={glyph} fill={color} />
-      </View>
-    );
-  }
+  if (onStarredChange === undefined) return null;
   return (
     <MailGlyphButton
       label={starred ? strings.starred : strings.star}
@@ -272,6 +300,64 @@ export function MailLabelChips({
           {`+${overflow}`}
         </Chip>
       ) : null}
+    </View>
+  );
+}
+
+// ---------------------------------------------------------------------------
+//  Label marks — one chip, then dots
+// ---------------------------------------------------------------------------
+
+export interface MailLabelMarksProps {
+  /** The one label that keeps its name. */
+  chip?: MailLabel;
+  /** The rest, already resolved to a fill: id and colour, nothing to read. */
+  dots: readonly { id: string; color: string }[];
+  surface: string;
+  testID?: string;
+}
+
+/**
+ * What a TWO-LINE row draws for its labels: one chip and a dot per label that
+ * did not fit. Which labels those are is `labelMarks`, and it is pure.
+ *
+ * A dot is not a smaller chip. It carries no name, so it is the row saying
+ * "there is another one of these" in 8px of the label's own tone — and the
+ * row's composed name is where the names are. Hidden from assistive technology
+ * for exactly that reason, like every other glyph inside the row's content.
+ */
+export function MailLabelMarks({ chip, dots, surface, testID }: MailLabelMarksProps) {
+  if (chip === undefined && dots.length === 0) return null;
+  return (
+    <View
+      aria-hidden
+      importantForAccessibility="no-hide-descendants"
+      style={{ flexDirection: 'row', alignItems: 'center', gap: 4, flexShrink: 0 }}
+      testID={testID}
+    >
+      {chip === undefined ? null : (
+        <Chip
+          size="small"
+          variant="subtle"
+          color={chip.tone ?? 'default'}
+          surface={surface}
+          testID={testID ? `${testID}-${chip.id}` : undefined}
+        >
+          {chip.name}
+        </Chip>
+      )}
+      {dots.map((dot) => (
+        <View
+          key={dot.id}
+          style={{
+            width: MAIL_LABEL_DOT,
+            height: MAIL_LABEL_DOT,
+            borderRadius: MAIL_LABEL_DOT / 2,
+            backgroundColor: dot.color,
+          }}
+          testID={testID ? `${testID}-dot-${dot.id}` : undefined}
+        />
+      ))}
     </View>
   );
 }

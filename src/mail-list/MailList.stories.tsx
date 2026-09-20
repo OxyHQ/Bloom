@@ -7,6 +7,7 @@ import { RiDeleteBinLine } from '../icons/remix/RiDeleteBinLine';
 import { RiMailOpenLine } from '../icons/remix/RiMailOpenLine';
 import { RiSpamLine } from '../icons/remix/RiSpamLine';
 import { RiTimeLine } from '../icons/remix/RiTimeLine';
+import { ChatListItem } from '../chat-list';
 import { Sidebar } from '../sidebar';
 import type { SidebarTree } from '../sidebar/types';
 import { useTheme } from '../theme/use-theme';
@@ -15,7 +16,7 @@ import { MailList } from './MailList';
 import { MailRow } from './MailRow';
 import { MailSelectionBar } from './MailSelectionBar';
 import { groupMailByDay } from './shared';
-import type { MailAction, MailSummary } from './types';
+import type { MailAction, MailSummary, MailSwipeActions } from './types';
 
 const meta: Meta = {
   title: 'Blocks/Mail/Mail List',
@@ -34,11 +35,21 @@ const face = (seed: string) => `https://picsum.photos/seed/${seed}/160/160`;
 const DAY = 86_400_000;
 const NOW = Date.UTC(2026, 2, 14, 15, 0, 0);
 
+// The POINTER's rail: every action at once, on hover and on keyboard focus.
 const ROW_ACTIONS: MailAction[] = [
   { key: 'archive', label: 'Archive', icon: RiArchiveLine },
   { key: 'snooze', label: 'Snooze', icon: RiTimeLine },
   { key: 'delete', label: 'Delete', icon: RiDeleteBinLine, tone: 'negative' },
 ];
+
+// The THUMB's panes: one action per direction, and nothing drawn at rest.
+const ROW_SWIPE_ACTIONS: MailSwipeActions = {
+  left: [{ key: 'archive', label: 'Archive', icon: RiArchiveLine, tone: 'accent' }],
+  right: [
+    { key: 'snooze', label: 'Snooze', icon: RiTimeLine },
+    { key: 'delete', label: 'Delete', icon: RiDeleteBinLine, tone: 'negative' },
+  ],
+};
 
 const BULK_ACTIONS: MailAction[] = [
   { key: 'read', label: 'Mark as read', icon: RiMailOpenLine },
@@ -146,7 +157,17 @@ function Frame({ width, children }: { width: number; children: React.ReactNode }
 //  Stories
 // ---------------------------------------------------------------------------
 
+/**
+ * The phone inbox. No action icon is drawn in a row at rest — archive, snooze
+ * and delete are behind the drag.
+ *
+ * Nothing forces the gesture on: `useSwipeAvailable()` answers it from the
+ * POINTER, so this story swipes on a phone and in a browser emulating one, and
+ * rightly does not under a mouse — where the same actions would be the rail.
+ */
 export const Inbox: Story = {
+  // The phone inbox IS the page: no harness padding, so 390 means 390.
+  parameters: { bleed: true },
   render: () => {
     const sections = useMemo(
       () => groupMailByDay(MAIL, { now: NOW, formatDate: () => '11 March' }),
@@ -159,7 +180,8 @@ export const Inbox: Story = {
           sections={sections}
           selectedId={selected}
           onMailPress={setSelected}
-          rowActions={ROW_ACTIONS}
+          rowSwipeActions={ROW_SWIPE_ACTIONS}
+          onMailAction={() => undefined}
           onMailStarredChange={() => undefined}
           accessibilityLabel="Inbox"
           testID="inbox"
@@ -167,6 +189,47 @@ export const Inbox: Story = {
       </Frame>
     );
   },
+};
+
+/**
+ * The same row beside a conversation row, at the same width. One rhythm: the
+ * 48 avatar, the name line with the time on the right, one line under it, and a
+ * small right column — 72 tall in both families.
+ */
+export const BesideAConversation: Story = {
+  parameters: { bleed: true },
+  render: () => (
+    <Frame width={390}>
+      <View style={{ gap: 8 }}>
+        <Text variant="caption-1-semibold">Mail</Text>
+        <MailRow
+          {...MAIL[0]!}
+          onPress={() => undefined}
+          onStarredChange={() => undefined}
+          testID="beside-mail"
+        />
+        <MailRow {...MAIL[2]!} onPress={() => undefined} testID="beside-mail-read" />
+        <Text variant="caption-1-semibold">Conversations</Text>
+        <ChatListItem
+          name="Mireia Solans"
+          avatar={face('mireia')}
+          preview={{ text: 'The surveyor came back this morning' }}
+          time="14:02"
+          unreadCount={4}
+          onPress={() => undefined}
+          testID="beside-chat"
+        />
+        <ChatListItem
+          name="Tordera Studio"
+          avatar={face('tordera')}
+          preview={{ text: 'Are we still on for one o’clock?' }}
+          time="09:47"
+          onPress={() => undefined}
+          testID="beside-chat-read"
+        />
+      </View>
+    </Frame>
+  ),
 };
 
 export const CompactDesktop: Story = {

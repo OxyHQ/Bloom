@@ -9,83 +9,101 @@ import Animated, {
   withTiming,
 } from 'react-native-reanimated';
 
+import { useTheme } from '../theme/use-theme';
 import { Text } from '../typography';
-import { actionPanePaint } from './parts';
 import {
-  CHAT_ROW_RADIUS,
   SWIPE_ACTION_WIDTH,
+  SWIPE_ACTIVATE_OFFSET,
   SWIPE_COMMIT_FRACTION,
+  SWIPE_ROW_RADIUS,
+  SWIPE_SNAP_DURATION,
   SWIPE_TAP_SLOP,
-  type ChatListPaint,
-} from './shared';
-import type { ChatAction, ChatSwipeActions } from './types';
-
-export interface ChatSwipeRowProps {
-  actions: ChatSwipeActions;
-  onAction?: (key: string) => void;
-  /** The row's height, so the panes match it exactly. */
-  height: number;
-  paint: ChatListPaint;
-  /** Names the tap target that closes an open pane. Default `'Close actions'`. */
-  closeLabel?: string;
-  children: React.ReactNode;
-  testID?: string;
-}
+} from './constants';
+import { resolveSwipeRowPaint, swipeActionPaint } from './shared';
+import type { SwipeRowAction, SwipeRowProps } from './types';
 
 /**
- * The drag affordance behind a chat row, on touch.
+ * ONE drag affordance for every list row in this library.
  *
  * Dragging RIGHT uncovers `actions.left` from the left edge, dragging LEFT
  * uncovers `actions.right`. The row travels with the finger up to the pane's
- * full width (`SWIPE_ACTION_WIDTH` per action) and snaps open past
+ * full width (`actionWidth` per action) and snaps open past
  * `SWIPE_COMMIT_FRACTION` of it, closed below — so a half-hearted drag never
  * leaves a row stuck ajar. Anything under `SWIPE_TAP_SLOP` is a tap and the
  * gesture springs straight back.
  *
  * The gesture activates only past a horizontal threshold and FAILS on vertical
- * travel, so a list scroll never turns into a swipe. Panes are laid under the
+ * travel, so a list scroll never turns into a swipe. Panes are laid UNDER the
  * row and grow with it rather than sliding in from outside: the row is what
  * moves, and the action underneath is revealed, not pushed.
  *
- * WEB gets none of this. `ChatListItem` renders the same actions as hover
- * buttons there, because a drag is undiscoverable with a mouse and a
- * `pointerdown`-driven pan fights text selection.
+ * It owns the gesture and almost nothing else. It draws no row and knows no
+ * density; the one colour it insists on is the OPAQUE fill under the
+ * travelling layer, because the panes are behind the row and would otherwise
+ * read straight through it. It resolves no other row colours — the caller passes its children, and either the
+ * pane pairs it already resolved or nothing at all, in which case the panes
+ * come off the theme. That is what lets a chat row and a mail row share one
+ * implementation instead of drifting into two.
+ *
+ * WHO GETS IT is `useSwipeAvailable()`: every touch pointer, on any platform.
+ * A mouse gets whatever hover affordance the calling family draws, because a
+ * drag is undiscoverable with a pointer.
+ *
+ * A SWIPE IS NOT REACHABLE BY KEYBOARD OR BY A SCREEN READER, and this
+ * component does not pretend otherwise: while a pane is closed it is hidden
+ * from assistive technology entirely, rather than leaving invisible buttons in
+ * the tab order for focus to disappear into. The caller owes those actions a
+ * second path — a hover rail, a row menu, or `accessibilityActions` on the row
+ * itself. `mail-list` does the last two; see `docs/swipe-row.mdx`.
  *
  * Reduced motion keeps the panes and drops the SNAP animation — the row jumps
  * to its resting position instead of easing to it.
  */
-export function ChatSwipeRow({
+export function SwipeRow({
   actions,
   onAction,
   height,
   paint,
+  background,
+  radius = SWIPE_ROW_RADIUS,
+  actionWidth = SWIPE_ACTION_WIDTH,
   closeLabel = 'Close actions',
+  onOpenChange,
   children,
   testID,
-}: ChatSwipeRowProps) {
+}: SwipeRowProps) {
+  const theme = useTheme();
   const translateX = useSharedValue(0);
   const reducedMotion = useReducedMotion();
   const [open, setOpen] = useState<'left' | 'right' | null>(null);
 
+  const tones = useMemo(() => paint ?? resolveSwipeRowPaint(theme), [paint, theme]);
+  // The panes sit UNDER the row, so the travelling layer has to be opaque or
+  // they read through it.
+  const rowFill = background ?? theme.colors.background;
   const left = actions.left ?? [];
   const right = actions.right ?? [];
-  const leftWidth = left.length * SWIPE_ACTION_WIDTH;
-  const rightWidth = right.length * SWIPE_ACTION_WIDTH;
+  const leftWidth = left.length * actionWidth;
+  const rightWidth = right.length * actionWidth;
 
-  const settle = useCallback((next: 'left' | 'right' | null) => {
-    setOpen(next);
-  }, []);
+  const settle = useCallback(
+    (next: 'left' | 'right' | null) => {
+      setOpen(next);
+      onOpenChange?.(next);
+    },
+    [onOpenChange],
+  );
 
   const close = useCallback(() => {
-    translateX.value = reducedMotion ? 0 : withTiming(0, { duration: 160 });
-    setOpen(null);
-  }, [reducedMotion, translateX]);
+    translateX.value = reducedMotion ? 0 : withTiming(0, { duration: SWIPE_SNAP_DURATION });
+    settle(null);
+  }, [reducedMotion, settle, translateX]);
 
   const pan = useMemo(
     () =>
       Gesture.Pan()
-        .activeOffsetX([-12, 12])
-        .failOffsetY([-12, 12])
+        .activeOffsetX([-SWIPE_ACTIVATE_OFFSET, SWIPE_ACTIVATE_OFFSET])
+        .failOffsetY([-SWIPE_ACTIVATE_OFFSET, SWIPE_ACTIVATE_OFFSET])
         .onChange((event) => {
           'worklet';
           const next = translateX.value + event.changeX;
@@ -103,7 +121,9 @@ export function ChatSwipeRow({
           const full = opening === 'left' ? leftWidth : rightWidth;
           const commit = travelled >= full * SWIPE_COMMIT_FRACTION && full > 0;
           const target = commit ? (opening === 'left' ? leftWidth : -rightWidth) : 0;
-          translateX.value = reducedMotion ? target : withTiming(target, { duration: 160 });
+          translateX.value = reducedMotion
+            ? target
+            : withTiming(target, { duration: SWIPE_SNAP_DURATION });
           runOnJS(settle)(commit ? opening : null);
         }),
     [leftWidth, reducedMotion, rightWidth, settle, translateX],
@@ -124,7 +144,7 @@ export function ChatSwipeRow({
 
   // The buttons keep their full width and are CLIPPED by the growing pane, so
   // they are revealed in place rather than squashed as the row travels.
-  const pane = (list: readonly ChatAction[], side: 'left' | 'right') => (
+  const pane = (list: readonly SwipeRowAction[], side: 'left' | 'right') => (
     <View
       style={{
         position: 'absolute',
@@ -135,7 +155,7 @@ export function ChatSwipeRow({
       }}
     >
       {list.map((action) => {
-        const tone = actionPanePaint(action, paint);
+        const tone = swipeActionPaint(action, tones);
         const Icon = action.icon;
         return (
           <Pressable
@@ -148,8 +168,8 @@ export function ChatSwipeRow({
               close();
             }}
             style={{
-              width: SWIPE_ACTION_WIDTH,
-              height,
+              width: actionWidth,
+              alignSelf: 'stretch',
               alignItems: 'center',
               justifyContent: 'center',
               gap: 4,
@@ -171,13 +191,27 @@ export function ChatSwipeRow({
     </View>
   );
 
+  // A closed pane is 0 wide and clipped, so anything inside it is a control
+  // nobody can see. Hiding it is the difference between "unreachable" and
+  // "reachable, invisible, and it steals the focus ring".
+  const hiddenWhenClosed = (side: 'left' | 'right') =>
+    open === side
+      ? null
+      : ({ 'aria-hidden': true, importantForAccessibility: 'no-hide-descendants' } as const);
+
   return (
     <View
-      style={{ position: 'relative', height, borderRadius: CHAT_ROW_RADIUS, overflow: 'hidden' }}
+      style={{
+        position: 'relative',
+        ...(height === undefined ? null : { height }),
+        borderRadius: radius,
+        overflow: 'hidden',
+      }}
       testID={testID}
     >
       {leftWidth > 0 ? (
         <Animated.View
+          {...hiddenWhenClosed('left')}
           style={[
             { position: 'absolute', left: 0, top: 0, bottom: 0, overflow: 'hidden' },
             leftPaneStyle,
@@ -188,6 +222,7 @@ export function ChatSwipeRow({
       ) : null}
       {rightWidth > 0 ? (
         <Animated.View
+          {...hiddenWhenClosed('right')}
           style={[
             { position: 'absolute', right: 0, top: 0, bottom: 0, overflow: 'hidden' },
             rightPaneStyle,
@@ -197,11 +232,17 @@ export function ChatSwipeRow({
         </Animated.View>
       ) : null}
       <GestureDetector gesture={pan}>
-        <Animated.View style={[{ height }, rowStyle]}>
+        <Animated.View
+          style={[
+            { backgroundColor: rowFill },
+            height === undefined ? null : { height },
+            rowStyle,
+          ]}
+        >
           {children}
           {open !== null ? (
             // While a pane is open the row itself closes it rather than opening
-            // the conversation — the same rule a tap outside an open menu follows.
+            // what it points at — the same rule a tap outside an open menu follows.
             <Pressable
               role="button"
               accessibilityLabel={closeLabel}
