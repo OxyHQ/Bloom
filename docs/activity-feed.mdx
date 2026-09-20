@@ -1,0 +1,116 @@
+---
+title: ActivityFeed
+description: Everything anyone did with a customer — calls, emails, meetings, notes, stage changes and completed tasks — grouped by day, with a filter row for the kinds.
+order: 125
+---
+
+# ActivityFeed
+
+```tsx
+import { ActivityFeed, ActivityFeedFilters, ACTIVITY_FEED_KINDS } from '@oxy.so/bloom';
+
+<ActivityFeedFilters
+  kinds={ACTIVITY_FEED_KINDS}
+  selected={kinds}
+  counts={countsByKind}
+  onToggle={toggleKind}
+/>
+<ActivityFeed entries={visible} accessibilityLabel="Activity" />
+```
+
+## A feed is not a status timeline
+
+Bloom already has two timelines, and this is deliberately a third SHAPE rather
+than a third copy.
+
+`TenancyTimeline` (and `EvictionTimeline`, which is that component with a marker
+table) draws ONE PROCESS ADVANCING. Its entries are homogeneous steps of the
+same journey, each carries a state — `complete`, `current`, `upcoming` — and a
+connector runs from each marker to the next. The connector is the component's
+central claim: this step follows that one, and there are more to come.
+
+An activity feed has no such claim to make.
+
+| | timeline | feed |
+| --- | --- | --- |
+| entries | steps of one process | heterogeneous events |
+| state | complete / current / upcoming | none — it happened |
+| subject | the process | the ACTOR, a different one each time |
+| structure | a connected spine | days, and entries inside a day |
+| ordering claim | this follows that | only "same day" |
+
+So the feed's leading mark is the ACTOR's avatar with the kind on its corner,
+there is no connector and no marker state, and the only ordering statement it
+makes is the day heading. Forcing this into `TenancyTimeline` would mean giving
+every call a `state` it does not have and drawing a line between a note and a
+stage change as if one caused the other.
+
+What they do share is the `list` / `listitem` semantics and the vocabulary of a
+tone per kind — shared by convention, not by a base component neither of them
+would fit.
+
+## Grouping is by the day STRING
+
+`entry.day` is already formatted by the app ("Today", "12 March"), and
+`groupActivityByDay` buckets on that exact string in first-seen order.
+
+Bloom does no date maths here, exactly as it does no money maths in `pipeline`.
+The app has the timezone, the locale and the decision about whether today is
+called "Today"; a component that parsed a date would be guessing at all three,
+and could then disagree with the heading it drew. Entries of the same day still
+reunite if they arrive apart — the bucket is keyed, not run-length.
+
+## The geometry
+
+```
+[avatar 32 + kind mark 18]   Marta Oyeleye called Nora about the renewal
+                             Call · 14:10
+                             The body, clamped to three lines…
+                             [Show more]
+                             (Renewal likely)
+                             Logged by Marta Oyeleye
+```
+
+16 between entries, 12 between the mark and the text, and a day heading over a
+rule that runs to the edge. The kind mark is hidden from assistive technology
+(`aria-hidden` AND `accessibilityElementsHidden`): the kind's word is already in
+the meta line, and an `img` announcing "Call" a second time reads as two events.
+
+## The clamp and its reveal
+
+`bodyLines` (default 3) clamps a long body, and a `text` button reveals it.
+`bodyLines={0}` never clamps and never draws the toggle.
+
+**The reveal is offered by CHARACTER COUNT, not by measurement**, via
+`activityBodyIsLong()` and `ACTIVITY_BODY_CHARS_PER_LINE`. React Native gives no
+reliable "did this overflow" signal on both platforms: `onTextLayout` is native
+only, and a measurement pass on web lands a frame after paint. That left two
+mistakes to choose between — a toggle that appears after the text has settled,
+moving content under the reader's eyes, or one that is occasionally offered on a
+body that did fit and collapses to the same text. The second is the cheaper one,
+and this is it. An explicit newline count wins over the character heuristic, so
+a short multi-line note clamps correctly. The per-line count is calibrated on
+the NARROW reading (about 310px of text, which is what a 390 phone leaves after
+the gutters and the 32-wide actor mark), so a wide feed errs toward offering the
+reveal rather than toward a body that silently runs on.
+
+The reveal's accessible name carries the entry ("Show more: called Nora about
+the renewal"), because a column of identical "Show more" buttons is a list of
+identical buttons to a screen reader.
+
+## The filter row is a GROUP of toggles
+
+`ActivityFeedFilters` is a `ChipRow role="group"` of `Chip`s, and each chip is a
+toggle carrying `aria-pressed`.
+
+Not a `tablist` and not a `radiogroup`: the kinds COMBINE. Turning "Call" on
+does not turn "Email" off, and a `tab` or a `radio` would announce single
+selection — the opposite of what the control does. `Chip` spells the state its
+role defines, in both the `aria-*` form web reads and the `accessibilityState`
+form native reads, so the pill is a real toggle rather than a pill that looks
+selected. (`SegmentedControl` is the right control for the other question — one
+view OF the feed — and the wrong one for this.)
+
+It is CONTROLLED and filters nothing itself. Which entries reach `ActivityFeed`
+is the app's decision; a filter row that also held the answer would be a second
+source of truth for one list.

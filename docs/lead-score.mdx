@@ -1,0 +1,89 @@
+---
+title: LeadScoreCard
+description: How good a lead is and why — a score with its band drawn as a ring, the factors that make it up, and the trend against last period.
+order: 126
+---
+
+# LeadScoreCard
+
+```tsx
+import { LeadScoreCard } from '@oxy.so/bloom';
+
+<LeadScoreCard
+  score={82}
+  accessibilityLabel="Lead score for Larkspur Freight"
+  valueText="82 of 100, hot"
+  factors={[
+    { label: 'Fits the ideal profile', contribution: 24, detail: 'Logistics, 200–500 people' },
+    { label: 'No decision-maker identified', contribution: -9 },
+  ]}
+  trend={{ label: '+8 against last week', direction: 'up' }}
+/>
+```
+
+## Nothing here is hand-rolled
+
+The ring is `stat-bar`'s `MeterRing` and every factor bar is its `Meter`. That
+is not a stylistic preference: those two own the geometry, the neutral rail and
+the FLAT `aria-value*` props, and seventeen hand-rolled copies in this repo
+disagreed about all three before they existed.
+
+The accessibility half is the one that matters most here. react-native-web reads
+`aria-*` and never `accessibilityValue`, so a ring that set only the object
+announces its role and no value — in a screenshot, in a browser and in a
+prop-level test it looks perfect. `LeadScore.test.tsx` reads the emitted
+`aria-valuenow` / `aria-valuemin` / `aria-valuemax` / `aria-valuetext` instead.
+
+## The name is a required prop
+
+`accessibilityLabel` is required at the type level. ARIA computes no name for a
+`progressbar` from its contents, and the ring draws a bare number — so without
+it the card announces "progress bar, 82%" and never says whose lead it is. A
+heading beside the ring does not name it either; that is a SIBLING.
+
+`valueText` is what a screen reader says instead of the raw number: without it
+`82` of `100` is announced as a percentage, which is right by accident here and
+wrong the moment `max` is 5.
+
+## The band is a tone
+
+`cold` / `warm` / `hot` map to the `info` / `warning` / `success` tones in
+`LEAD_SCORE_BAND`, and every colour comes from `resolveAccentColors`. The card
+names no red and no orange: those would be right in one preset and wrong in the
+other sixty-three, and in dark mode they would be wrong in all of them.
+
+**`hot` is the SUCCESS tone, not the error one.** A hot lead is the good
+outcome; reading temperature as danger is exactly the confusion a tone
+vocabulary exists to prevent.
+
+The band is DERIVED from the score as a fraction of `max`
+(`LEAD_SCORE_THRESHOLDS`: warm at 0.4, hot at 0.7), so a 0–100 score and a 0–5
+one land in the same places. Boundaries are inclusive upward — exactly 0.4 is
+warm — because a score sitting on a threshold has reached it. An app with its
+own thresholds passes `band` and skips the derivation; `bandLabel` renames the
+pill without changing the tone.
+
+A non-positive `max` has no scale to divide, so the band is `cold` rather than
+`NaN`: the card renders data it did not choose instead of throwing over it.
+
+## The factors
+
+Each factor is a signed contribution. The BAR measures the magnitude; the sign
+lives in the text beside it and in the tone of the fill — positive in the
+positive tone, negative in the negative one.
+
+**All the bars share one scale**: the largest absolute contribution in the set,
+floored at 1 (`factorScale`). Normalising each bar to itself would draw a `+2`
+and a `+30` at the same length, which is the one thing a row of bars is read
+for. Each bar announces its signed value as `aria-valuetext` ("−9 points"), so
+the sign is not carried by colour alone.
+
+A zero factor draws an empty bar rather than being hidden: "this counted for
+nothing" is a fact about the lead.
+
+## The trend
+
+`trend` is a pre-formatted label plus a direction. The card does no arithmetic
+and does not know what "last period" means — a week, a quarter, since the deal
+opened — so it draws what it is handed with the direction's arrow and tone.
+`flat` is the neutral tone, not a quiet negative.
