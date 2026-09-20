@@ -1,0 +1,164 @@
+---
+title: Mail List
+description: The inbox — one row at two densities, day sections, the markers a message carries, and the bulk-selection bar the list mounts itself.
+order: 64
+---
+
+# Mail List
+
+The list half of a mail client: `MailRow` is one thread in the inbox, `MailList`
+is the screen around it, and `MailSelectionBar` is what appears when rows are
+checked.
+
+```tsx
+import { MailList, groupMailByDay } from '@oxy.so/bloom';
+
+<MailList
+  sections={groupMailByDay(mail, { now: Date.now() })}
+  selectedId={openId}
+  onMailPress={setOpenId}
+  rowActions={[{ key: 'archive', label: 'Archive', icon: RiArchiveLine }]}
+  checkedIds={checked}
+  onCheckedIdsChange={setChecked}
+  bulkActions={bulk}
+/>;
+```
+
+## Two densities, one component
+
+| | `comfortable` | `compact` |
+| --- | --- | --- |
+| height | 88 (a floor — labels grow it) | 40, exact |
+| padding | 16 / 12 vertical | 12 / 0 |
+| avatar | 40 | 24 |
+| lines | sender, subject, snippet | one |
+
+`comfortable` is the phone inbox; `compact` is a desktop list, where the sender
+takes a 180px column that shrinks (never grows) down to 88 so a narrow pane
+gives the subject the space rather than clipping it.
+
+There is no second row component for the desktop. Everything a compact row
+draws, a comfortable row draws too, and the whole difference is one geometry
+table in `shared.ts` — a density that forked into two files is a density that
+drifts, and the two then disagree about what a starred draft looks like.
+
+## The subject and the snippet are one `Text`
+
+On a compact row the subject and the snippet are a single string with a nested
+span, not two flex children. Two neighbouring flex children each want to be as
+wide as their content, and with a long one the result is either a row that
+pushes the list sideways or a subject clipped to nothing while the snippet keeps
+its full width. One string truncates where the line ends, which is the only
+behaviour that is right at every width.
+
+## Unread is the whole row
+
+`unread` moves the sender and the subject to semibold and moves every rung of
+text up one step — sender and subject to the primary colour, the snippet to the
+secondary one, the time to the accent. A read row sits on the quiet rungs.
+
+There is no dot. A dot is 8px of colour that survives neither truncation nor a
+colour-blind reader, and it has to be placed somewhere, which is how a row ends
+up with a dot, a bold name and a coloured time all saying the same thing once
+each. The weight change IS the state.
+
+Every colour comes from the fill the list was handed: the hovered row is
+`surfaceFillOn(theme, surface)`, the selected row is one step further, and the
+text rungs are `surfaceTextOn` floored against the same fill. So a list inside a
+card and a list on the page each step off their own background, and neither
+picks a ramp stop that only matches one page colour.
+
+## Labels are data, so `labels` is the data prop
+
+In this domain a "label" is a mailbox label, which is a thing the message
+carries — so `labels` is that array and the i18n strings prop is `strings`. It
+is the one place this family departs from the library's usual spelling, and it
+departs deliberately: `labels={['Work']}` reading as translation strings would
+be worse than the inconsistency.
+
+A label's colour is an `AccentTone`, never a hex. The chip resolves it through
+`resolveAccentColors`, so a label reads the way a status badge reads and
+survives a preset change. `maxLabels` counts CHIPS and the overflow chip is one
+of them: at 2 with four labels the row draws one label and a `+3`, never two
+labels and a `+2` in the space of three.
+
+## Row actions are a slot; the swipe is yours
+
+`actions` describes what a row can do. `actionsPlacement` says where:
+
+- `hover` — the desktop rail, over the right column, revealed on hover and
+  keyboard focus. The default on web.
+- `inline` — always drawn. For a tablet list with no pointer.
+- `none` — drawn nowhere. The default on NATIVE.
+
+Bloom does not own the phone's swipe gesture here, and half-implementing one
+would give you a drag that fights whatever list container you put the rows in.
+Wrap `MailRow` in your own swipe row and feed it the SAME `actions` array — the
+labels, icons and tones are already the right shape for it, and the accessible
+name on the rail's buttons is the one your swipe pane should use too.
+
+The rail's buttons are SIBLINGS of the row's link, never children. A button
+inside an anchor is invalid HTML, and every "Archive" click would open the
+message.
+
+## The selection bar is not a component you place
+
+Give `MailList` an `onCheckedIdsChange` and three things happen at once: the
+rows grow checkboxes in place of their avatars, the bar mounts the moment
+something is checked, and select-all / clear / per-row toggles all resolve
+inside the list.
+
+It is one decision because they are one feature. A bar the app had to place by
+hand is a bar the app can forget, and a selection mode with no bar is a
+selection with no way out of it — the rows stay checked and nothing on screen
+says so or offers to undo it.
+
+The bar paints the accent's SUBTLE pair, which is the one fill in the palette
+that says "a mode is on" without competing with the selected row's own fill.
+Its checkbox is `indeterminate` while some but not all rows are checked, so one
+control answers both "how many" and "press me to take the rest".
+
+## Day sections
+
+`groupMailByDay` is a pure function, not a prop.
+
+```tsx
+import { groupMailByDay } from '@oxy.so/bloom';
+
+const sections = groupMailByDay(mail, {
+  now: Date.now(),
+  formatDate: (date) => intl.format(date),
+});
+```
+
+"Today" and "Yesterday" are CALENDAR days in the reader's own time zone, not
+24-hour windows: a message from 23:50 last night is yesterday's at 00:10, which
+is what a person means by it. Mail with no `date` falls into one trailing
+untitled bucket rather than being dropped.
+
+It takes `now` and the formatter as parameters because a component that read the
+clock is a component whose sections cannot be pinned by a test — the same call
+has to be the same sections in June and in December.
+
+## What this family does not do
+
+- **It does not virtualise.** It maps every row, which is right for the few
+  hundred a mailbox screen shows. For more, render `MailRow` yourself inside
+  your own virtualised list: every row prop is on `MailSummary` and nothing here
+  holds list state.
+- **It does not format a clock or a date.** `time` arrives formatted.
+- **It does not own the mailbox tree.** That is `Sidebar`'s `tree` prop and
+  `SidebarFolder`; the `WithMailboxTree` story shows the pairing.
+
+## Accessibility
+
+The row is ONE target with ONE composed name, and its content is hidden from
+assistive technology. A star, a paperclip, a thread count and four label chips
+are states no text on the row carries, so `composeMailRowName` says all of them
+in reading order — "Mireia Solans, Roof survey, The surveyor came back…, 14:02,
+Unread, Has attachment, 4 messages, Work".
+
+The open row is `aria-current` on web and `accessibilityState.selected` on
+native — `aria-selected` belongs to a tab or an option, and a message row is
+neither. While `loading` the region is `aria-busy` and the placeholders are
+hidden, so "loading" is announced once rather than eight times.

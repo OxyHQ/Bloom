@@ -101,6 +101,7 @@ describe('the field contract', () => {
       'file-upload',
       'input-group',
       'input-otp',
+      'mail-compose',
       'phone-input',
       'radio',
       'rating',

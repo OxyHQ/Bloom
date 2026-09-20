@@ -51,6 +51,7 @@ import { Checkbox } from '../checkbox';
 import { FileUpload } from '../file-upload';
 import { InputGroup } from '../input-group';
 import { InputOtp } from '../input-otp';
+import { MailRecipientField } from '../mail-compose';
 import { Radio, RadioGroup } from '../radio';
 import { RatingInput } from '../rating';
 import { SegmentedControl, SegmentedControlItem, SegmentedControlItemText } from '../segmented-control';
@@ -201,6 +202,21 @@ const SUBJECTS: Subject[] = [
     invalid: true,
     id: true,
     lastResortName: 'Upload a file',
+  },
+  {
+    // A recipient row: chips plus ONE inline `TextInput`, which is the node the
+    // contract lands on. Its own `label` is the "To" gutter beside the input,
+    // so it is `adjacent` — the field only fills the gap when there is none.
+    name: 'mail-compose',
+    render: (p) => (
+      <MailRecipientField recipients={[]} onRecipientsChange={() => {}} {...p} />
+    ),
+    ownNameProp: 'label',
+    isInert: inputInert,
+    node: 'textInput',
+    describedBy: true,
+    invalid: true,
+    id: true,
   },
   {
     name: 'textarea',

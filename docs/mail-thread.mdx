@@ -1,0 +1,118 @@
+---
+title: Mail Thread
+description: One conversation — a collapsible message with a real header, the middle of a long thread folded behind one control, and the trimmed-content toggle.
+order: 65
+---
+
+# Mail Thread
+
+The reading half of a mail client. `MailMessage` is one message, collapsed or
+open; `MailThread` is the stack; `MailAddressLine` is a `to`/`cc` line with its
+overflow; `MailQuoteToggle` is the "show trimmed content" control.
+
+```tsx
+import { MailThread } from '@oxy.so/bloom';
+
+<MailThread
+  subject="Roof survey"
+  messages={messages}
+  quickReply={<ReplyBox />}
+/>;
+```
+
+## The body is a slot, and stays one
+
+`MailMessage` takes `children`. It renders no HTML, no rich text and no
+sanitizer, because a mail body is markup from a stranger: what is safe to render
+depends on the app's threat model, its CSP, its image proxy and whether it is on
+a device or in a browser. A component that answered that would be answering it
+wrong for two apps out of three.
+
+What Bloom owns around the slot is the frame: the header, the indent (the body
+starts under the sender's NAME, not under the avatar — `MAIL_BODY_INSET`), the
+attachment row, the three replies, and the trimmed-content toggle.
+
+## Collapsed and open share one header row
+
+Both states draw the same avatar in the same leading column at the same
+`paddingVertical`. The only thing that changes is what the text column holds and
+whether a body is drawn under it.
+
+That is the whole reason the transition does not leave a gap. A collapsed state
+written as its own compact row — its own padding, its own avatar size — jumps by
+a few pixels every time it opens, and the eye reads that as the list resettling
+rather than as the message opening. One geometry table, two states.
+
+Collapsed shows the sender, a one-line preview, a paperclip if there are
+attachments, and the time. Open shows the sender, the `to`/`cc` lines, the full
+date, the body, the toggle, the attachments and the replies.
+
+## The middle folds, not the tail
+
+A thread longer than `collapseAfter` (default 4) hides everything between the
+FIRST message and the LAST TWO behind one "N earlier messages" control.
+
+The first message is what the thread is about and the last two are what it is
+about now, so those three are the ones a reader needs. Folding from the top
+instead would hide the first, which is the one that sets the subject up.
+`collapseAfter={0}` turns folding off. The arithmetic is `collapseThread`, a
+pure function, so a test can pin which entries survive without rendering
+anything.
+
+## The newest message is open
+
+Uncontrolled, `MailThread` opens the last message and closes the rest —
+`defaultExpandedIds`. That is the arrangement a reader arriving at a thread
+wants every time, so it is the default rather than a prop the app has to
+remember. A thread that opened everything would make the reader scroll past what
+they have already read to reach what they have not; one that opened nothing
+would make every arrival a press.
+
+`expandedIds` takes it over for a deep link to one message, or an "expand all".
+
+## An address line's overflow is a control, not an ellipsis
+
+A `to` line truncated with "…" tells the reader there are more recipients and
+gives them no way to find out who. On a message they are about to reply-all to,
+that is the one fact that changes what they write. So `MailAddressLine` collapses
+the surplus into a `+3` button that reveals the rest IN PLACE, and the names
+stay selectable text either way. `maxVisible` counts names; the button is beside
+them, not one of them.
+
+It is reusable on its own — a reading pane's summary, a send confirmation — and
+it owns no state it does not have to: pass `expanded` and it is controlled.
+
+## The trimmed-content toggle
+
+The quoted tail of a message is the app's: where the quote starts, what counts
+as trimmed, and how that markup renders are questions only your parser can
+answer. Pass it as `trimmed` and this family owns the presentation.
+
+It draws as a short dotted lozenge rather than as a labelled button, because it
+sits at the end of the message's own words where a fourth labelled control would
+read as a fourth action beside Reply and Forward. Its accessible name FLIPS with
+the state — "Show trimmed content" / "Hide trimmed content" — because a toggle
+whose name does not change is a toggle a screen-reader user cannot read the
+state of.
+
+## Attachments here are not the composer's attachments
+
+A received attachment has a name, a size and a download. A pending one has a
+thumbnail, an upload ring and a remove. They are different objects with
+different affordances, so the thread draws its attachments as `Chip`s (pressable,
+outlined, a file glyph, "name · 248 KB") and `mail-compose` reuses
+`chat-composer`'s `ComposerAttachmentStrip` for the pending kind. Sharing one
+component between them would mean a strip that draws a progress ring for a file
+that finished arriving last Tuesday.
+
+## Accessibility
+
+The disclosure is a `button` carrying `aria-expanded` AND the native
+`accessibilityState.expanded` — react-native-web reads only the first and React
+Native folds the first back into the second, so both spellings are written. Its
+name is "Expand message: Mireia Solans", not "Expand": a thread of eight
+identically-named buttons is a thread a screen-reader user cannot navigate.
+
+The star, the `menu` slot and the three replies are SIBLINGS of the disclosure,
+never children. A button inside a button is invalid, and the press target would
+be ambiguous.
