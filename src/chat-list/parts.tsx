@@ -164,21 +164,6 @@ export function actionGlyphColor(action: ChatAction, paint: ChatListPaint): stri
   }
 }
 
-/** The pane fill an action's tone paints behind a swipe, and the text on it. */
-export function actionPanePaint(
-  action: ChatAction,
-  paint: ChatListPaint,
-): { background: string; foreground: string } {
-  switch (action.tone) {
-    case 'negative':
-      return { background: paint.negativeFill, foreground: paint.onAccent };
-    case 'accent':
-      return { background: paint.accent, foreground: paint.onAccent };
-    default:
-      return { background: paint.neutralAction, foreground: paint.onNeutralAction };
-  }
-}
-
 // ---------------------------------------------------------------------------
 //  The avatar slot
 // ---------------------------------------------------------------------------

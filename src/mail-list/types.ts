@@ -52,17 +52,32 @@ export interface MailAction {
 }
 
 /**
- * Where a row's `actions` are drawn.
+ * Where a row's `actions` are drawn AT REST.
  *
  * `hover` is the desktop rail: the buttons appear over the right column on
- * hover and keyboard focus. `inline` draws them always, for a tablet list with
- * no pointer. `none` draws nothing — the array is then only a description the
- * app feeds to its OWN swipe gesture.
+ * hover and keyboard focus, and are hidden outright where the pointer cannot
+ * hover. `inline` draws them always — a kiosk or a tablet list with no pointer
+ * and no gesture. `none` draws nothing.
  *
- * Defaults to `hover` on web and `none` on native, because a touch list
- * discovers its actions by dragging and Bloom does not own that gesture.
+ * Defaults to `hover` on web and `none` on native. A touch list reaches its
+ * actions by DRAGGING: pass `swipeActions`, never `inline`, or the phone row
+ * carries three icons it does not need at rest.
  */
 export type MailActionPlacement = 'hover' | 'inline' | 'none';
+
+/**
+ * The actions behind a row, per side. `left` is uncovered by dragging RIGHT and
+ * `right` by dragging left — the side names the EDGE the pane is anchored to.
+ *
+ * It is a separate prop from `actions` because they answer different questions:
+ * `actions` is the whole menu a pointer gets at once, and a pane is ONE action
+ * a thumb reaches in one direction. Archive right, delete left is a convention
+ * a mail app owns, not one this family should guess from an array's order.
+ */
+export interface MailSwipeActions {
+  left?: readonly MailAction[];
+  right?: readonly MailAction[];
+}
 
 /** Every string this family draws that is not app data. */
 export interface MailStrings {
@@ -123,7 +138,13 @@ export interface MailRowProps {
   draft?: boolean;
   /** The mailbox labels. */
   labels?: readonly MailLabel[];
-  /** How many label chips before the rest collapse into a count. Default 2. */
+  /**
+   * How many label MARKS the row draws before the rest go unsaid. Default 2.
+   *
+   * On a one-line row a mark is a chip and the overflow count is one of them
+   * (`visibleLabels`); on a two-line row the first is a chip and the rest are
+   * dots (`labelMarks`). Either way the composed name says every label.
+   */
   maxLabels?: number;
   /** The row the reading pane is showing. */
   selected?: boolean;
@@ -140,6 +161,14 @@ export interface MailRowProps {
   href?: string;
   actions?: readonly MailAction[];
   actionsPlacement?: MailActionPlacement;
+  /** What a drag uncovers on a touch pointer. */
+  swipeActions?: MailSwipeActions;
+  /**
+   * Turns the drag on or off explicitly. Defaults to `useSwipeAvailable()` —
+   * on for every touch pointer, off for a mouse, which has the rail instead.
+   */
+  swipeEnabled?: boolean;
+  /** Called with the action's `key`, from the rail, the drag or the rotor alike. */
   onAction?: (key: string) => void;
   /** Overrides the composed name. Pass it only to translate the whole sentence. */
   accessibilityLabel?: string;
@@ -188,7 +217,11 @@ export interface MailListProps {
   onBulkAction?: (key: string, ids: readonly string[]) => void;
   /** Row actions shared by every row. A row's own `actions` wins. */
   rowActions?: readonly MailAction[];
+  /** Swipe actions shared by every row. A row's own `swipeActions` wins. */
+  rowSwipeActions?: MailSwipeActions;
   actionsPlacement?: MailActionPlacement;
+  /** Turns the drag on or off for every row. */
+  swipeEnabled?: boolean;
   onMailPress?: (id: string) => void;
   onMailLongPress?: (id: string) => void;
   onMailAction?: (key: string, id: string) => void;

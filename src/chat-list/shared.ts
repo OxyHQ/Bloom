@@ -93,12 +93,8 @@ export const CHAT_ROW_GEOMETRY: Record<ChatListDensity, ChatRowGeometry> = {
 /** Corner radius of a row's hover/selected fill. */
 export const CHAT_ROW_RADIUS = 12;
 
-/** How far a row travels before the drag is committed rather than sprung back. */
-export const SWIPE_COMMIT_FRACTION = 0.4;
-/** The widest a swipe pane opens, per action. */
-export const SWIPE_ACTION_WIDTH = 76;
-/** Below this the drag reads as a tap. */
-export const SWIPE_TAP_SLOP = 10;
+// The swipe's thresholds and pane width live in `swipe-row/constants.ts` —
+// this family drags through `SwipeRow` and owns none of that geometry.
 
 // ---------------------------------------------------------------------------
 //  Attachment glyphs

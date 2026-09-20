@@ -1,0 +1,130 @@
+---
+title: Swipe Row
+description: The one drag affordance behind a list row — the panes, the thresholds, who gets the gesture at all, and the second path the actions need.
+order: 64
+---
+
+# Swipe Row
+
+`SwipeRow` is the drag behind a row. It is the library's ONE implementation of
+that gesture: `chat-list` and `mail-list` both compose it, and a third family
+that wants actions behind a row composes it too rather than writing a fourth
+pan handler.
+
+```tsx
+import { SwipeRow, useSwipeAvailable } from '@oxy.so/bloom';
+
+<SwipeRow
+  actions={{
+    left: [{ key: 'archive', label: 'Archive', icon: RiArchiveLine, tone: 'accent' }],
+    right: [
+      { key: 'snooze', label: 'Snooze', icon: RiTimeLine },
+      { key: 'delete', label: 'Delete', icon: RiDeleteBinLine, tone: 'negative' },
+    ],
+  }}
+  onAction={(key) => run(key)}
+>
+  <MyRow />
+</SwipeRow>;
+```
+
+## The sides name the EDGE, not the finger
+
+`left` is uncovered by dragging RIGHT, because the pane is anchored to the left
+edge and grows from it. `right` is uncovered by dragging left. Every mail and
+messaging convention is written that way round, and naming the panes after the
+direction of travel instead would make `left` the one on the right.
+
+## The geometry, and why each number is where it is
+
+| | |
+| --- | --- |
+| pane width | 76 per action (`actionWidth`) |
+| commits at | 40% of the pane's full width |
+| tap slop | 10 |
+| snap | 160ms, dropped under reduced motion |
+| activation | 12 horizontal; FAILS past 12 vertical |
+
+The row travels with the finger, clamped to the pane's full width, and snaps to
+whichever end is nearer once the commit fraction is crossed — so a half-hearted
+drag never leaves a row stuck ajar. Under the tap slop the whole thing is a tap
+and the row springs straight back.
+
+Activation is what keeps a list scrollable: the pan claims the touch only past
+12px of HORIZONTAL travel and fails outright past 12px of vertical, so a
+scroll that wanders sideways stays a scroll.
+
+The panes are laid UNDER the row and grow with it. The row is what moves; the
+action underneath is revealed, not pushed in from outside. Each button keeps its
+full width the whole time and is CLIPPED by the growing pane, so the label never
+squashes as the row travels.
+
+## Colour
+
+Pass nothing and the panes come from the theme: `negative` and `accent` are the
+SOLID pairs a filled button uses, `neutral` is the subtle default pair — the one
+fill that reads as a surface behind the row rather than as a second control.
+Nothing is derived, appended or eyeballed.
+
+A family that already resolved its own palette passes `paint` instead, so its
+panes match the rest of its rows exactly. That is what `chat-list` does.
+
+## Who gets the gesture
+
+`useSwipeAvailable()` — every touch pointer, on any platform:
+
+```tsx
+const swipe = useSwipeAvailable();
+return swipe ? <SwipeRow …>{row}</SwipeRow> : row;
+```
+
+It is the POINTER, not the platform. A web build runs on a phone as readily as
+on a desktop, so the question `(pointer: coarse)` answers is the right one, and
+it is a hook rather than a constant because the answer changes without a reload
+— a tablet with a keyboard folio attached and detached is the same document.
+Where there is no `matchMedia` at all (SSR, a test renderer, an old browser) it
+answers no, and the calling family's pointer affordance is what shows.
+
+## A SWIPE IS NOT REACHABLE BY KEYBOARD OR BY A SCREEN READER
+
+This is the part that is easy to ship without. A drag has no tab stop, no role
+and no announced name; a reader who cannot perform the gesture cannot archive
+the message, and nothing on the screen says an action exists.
+
+`SwipeRow` does the one thing it can do from inside: while a pane is CLOSED it
+is hidden from assistive technology entirely (`aria-hidden` plus
+`importantForAccessibility`), rather than leaving 0-wide invisible buttons in
+the tab order for the focus ring to disappear into. Opening a pane reveals it.
+
+**The second path is the caller's, and it is not optional.** The two families
+here answer it like this:
+
+- **A pointer** gets the actions as real buttons: `chat-list`'s hover rail and
+  `mail-list`'s `actions` rail. Both appear on `:focus-within` as well as on
+  hover, so they are in the tab order and a keyboard reaches them.
+- **A touch reader** gets `accessibilityActions` on the row itself — the rotor
+  path, which is the platform's own answer to "this control has actions I cannot
+  gesture for". `MailRow` passes every rail and pane action through it, once per
+  key. `chat-list` does NOT, today: on native its swipe actions are reachable by
+  the gesture alone, which is a gap recorded rather than a decision.
+
+Do not invent a third affordance for this. A row that already has a menu should
+put the same actions in it.
+
+## What it does not do
+
+- **It does not decide WHETHER to swipe.** The caller asks
+  `useSwipeAvailable()` (or is told by a prop) and renders the row bare
+  otherwise — which is what keeps a mouse from getting a gesture it cannot
+  discover.
+- **It paints exactly one colour.** Its children are the row, whole; it adds
+  the panes, the clip, the transform — and an opaque `background` under the
+  travelling layer, because the panes are BEHIND the row and a transparent row
+  lets the delete pane read through its own subject line. It defaults to the
+  theme's page colour; a row on a card passes that card's fill.
+- **It does not size the row.** Pass `height` for a fixed row and the container
+  takes it exactly; omit it and the panes stretch to whatever the child turns
+  out to be, which is what a row with a MINIMUM height needs.
+- **It does not open programmatically.** There is no `open` prop: an app that
+  opens a row nobody touched has drawn a menu, and a menu is a different
+  component.

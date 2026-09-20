@@ -7,6 +7,7 @@ import {
   surfaceTextOn,
   type SurfaceTextPaint,
 } from '../styles/surface-levels';
+import type { SwipeRowAction, SwipeRowActions } from '../swipe-row';
 import { resolveAccentColors } from '../theme/accent-colors';
 import type { Theme } from '../theme/types';
 import type { TypeScaleVariant } from '../typography/scale';
@@ -18,6 +19,7 @@ import type {
   MailListSection,
   MailStrings,
   MailSummary,
+  MailSwipeActions,
 } from './types';
 
 export const IS_WEB = Platform.OS === 'web';
@@ -73,27 +75,33 @@ export interface MailRowGeometry {
 }
 
 /**
- * 88 tall with three lines on a phone, 40 tall with one on a desktop. The
- * avatar is centred in both, so a row with no snippet is the same height as one
- * with a snippet and two labels.
+ * 72 tall with two lines on a phone, 40 tall with one on a desktop. The avatar
+ * is centred in both, so a row with no snippet is the same height as one with a
+ * snippet and a label.
+ *
+ * The phone rung is the same 72/48 as a `chat-list` row on purpose: a mail row
+ * and a conversation row are the same kind of object, and an inbox that stands
+ * 16px taller per row than the messages screen reads as a different library.
+ * Two lines is what pays for it — the sender and the time share the first, the
+ * subject and the snippet the second.
  */
 export const MAIL_ROW_GEOMETRY: Record<MailDensity, MailRowGeometry> = {
   comfortable: {
-    minHeight: 88,
+    minHeight: 72,
     paddingVertical: 12,
     paddingHorizontal: 16,
-    avatar: 40,
+    avatar: 48,
     gap: 12,
     lineGap: 2,
     glyph: 16,
     senderWidth: 0,
     senderMinWidth: 0,
     senderMaxWidth: '100%',
-    senderVariant: 'body-regular',
-    senderUnreadVariant: 'body-semibold',
-    subjectVariant: 'body-2-regular',
-    subjectUnreadVariant: 'body-2-semibold',
-    snippetVariant: 'body-2-regular',
+    senderVariant: 'headline-regular',
+    senderUnreadVariant: 'headline-semibold',
+    subjectVariant: 'body-regular',
+    subjectUnreadVariant: 'body-semibold',
+    snippetVariant: 'body-regular',
     timeVariant: 'caption-1-regular',
     action: 44,
     actionGlyph: 18,
@@ -123,6 +131,13 @@ export const MAIL_ROW_GEOMETRY: Record<MailDensity, MailRowGeometry> = {
 
 /** Corner radius of a row's hover/selected fill. A row is a surface, not a control. */
 export const MAIL_ROW_RADIUS = 10;
+
+/**
+ * The label mark a two-line row draws when there is no width for a second chip.
+ * A dot says "this one carries another label" in 8px; the row's composed name
+ * is where its NAME is, and always was.
+ */
+export const MAIL_LABEL_DOT = 8;
 
 /** The selection bar's height, per density. */
 export const MAIL_SELECTION_BAR_HEIGHT: Record<MailDensity, number> = {
@@ -175,6 +190,11 @@ export function resolveMailPaint(theme: Theme, surface: string): MailPaint {
     negative: resolveAccentColors(theme.colors, 'error', 'outlined').foreground,
     ...surfaceTextOn(theme, surface),
   };
+}
+
+/** A label dot's fill: the tone's SOLID pair, so it reads at 8px. */
+export function labelDotColor(theme: Theme, label: MailLabel): string {
+  return resolveAccentColors(theme.colors, label.tone ?? 'default', 'solid').background;
 }
 
 /** The glyph colour an action's tone paints on the row. */
@@ -234,6 +254,49 @@ export function visibleLabels(
   if (max <= 0) return { shown: [], overflow: labels.length };
   if (labels.length <= max) return { shown: labels, overflow: 0 };
   return { shown: labels.slice(0, max - 1), overflow: labels.length - (max - 1) };
+}
+
+/**
+ * The label marks a TWO-LINE row draws: one chip, then a dot per label that did
+ * not fit, `max` marks in all.
+ *
+ * A two-line row has one line for the subject and the snippet, and a second
+ * chip on it costs more width than a second label is worth. So the first label
+ * keeps its name and the rest become presence — the row still says "there are
+ * three of these" without spending the subject's width on it, and
+ * `composeMailRowName` still reads every one of them aloud.
+ *
+ * `max` counts MARKS, chip included, exactly as `maxLabels` counts chips on a
+ * one-line row: at 2 with four labels the row draws one chip and one dot. Pure.
+ */
+export function labelMarks(
+  labels: readonly MailLabel[] | undefined,
+  max: number,
+): { chip?: MailLabel; dots: readonly MailLabel[] } {
+  if (labels === undefined || labels.length === 0 || max <= 0) return { dots: [] };
+  return { chip: labels[0], dots: labels.slice(1, max) };
+}
+
+/**
+ * This family's actions as the swipe rail's, which is the same list in the one
+ * vocabulary `SwipeRow` speaks. Only the neutral tone is spelled differently —
+ * a mail action has no tone or a `'default'` one, a pane calls that `'neutral'`
+ * — and translating it here is what lets the two families share one drag
+ * implementation instead of one of them renaming its own tones. Pure.
+ */
+export function toSwipeActions(actions: MailSwipeActions): SwipeRowActions {
+  const side = (list: readonly MailAction[] | undefined): SwipeRowAction[] | undefined =>
+    list === undefined
+      ? undefined
+      : list.map((action) => ({
+          key: action.key,
+          label: action.label,
+          icon: action.icon,
+          tone:
+            action.tone === 'negative' ? 'negative' : action.tone === 'accent' ? 'accent' : 'neutral',
+          onPress: action.onPress,
+        }));
+  return { left: side(actions.left), right: side(actions.right) };
 }
 
 export interface MailRowNameInput {

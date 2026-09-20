@@ -128,6 +128,11 @@ export interface ChatPreview {
  */
 export type ChatActionTone = 'neutral' | 'accent' | 'negative';
 
+/**
+ * Structurally `SwipeRowAction` — this family drags through `SwipeRow`, and
+ * `ChatListItem` handing one array to the other is what keeps the two spellings
+ * from drifting. The names stay because they are this family's published API.
+ */
 export interface ChatAction {
   /** Stable identity, and what `onAction` reports. */
   key: string;
@@ -228,8 +233,9 @@ export interface ChatListItemProps {
   /** Called with the action's `key` when one is triggered, from either affordance. */
   onAction?: (key: string) => void;
   /**
-   * Turns the drag gesture off (the hover buttons stay). Default: on wherever
-   * the platform is not web.
+   * Turns the drag gesture on or off explicitly. It defaults to
+   * `useSwipeAvailable()` — on for every touch pointer, off for a mouse, which
+   * keeps the hover buttons instead.
    */
   swipeEnabled?: boolean;
   /**

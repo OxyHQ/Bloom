@@ -9,9 +9,16 @@ import { adoptStyleSheet } from '../styles/adopt-style-sheet';
 import { useSurfaceFill } from '../styles/surface-levels';
 import { webDataSet } from '../styles/web-data';
 import type { WebCssStyle } from '../styles/web-view-style';
+import { SwipeRow, useSwipeAvailable } from '../swipe-row';
 import { useTheme } from '../theme/use-theme';
 import { Text } from '../typography';
-import { MailGlyphButton, MailLabelChips, MailRowLink, MailStar } from './parts';
+import {
+  MailGlyphButton,
+  MailLabelChips,
+  MailLabelMarks,
+  MailRowLink,
+  MailStar,
+} from './parts';
 import {
   IS_WEB,
   MAIL_LIST_CSS,
@@ -19,19 +26,22 @@ import {
   MAIL_ROW_GEOMETRY,
   MAIL_ROW_RADIUS,
   composeMailRowName,
+  labelDotColor,
+  labelMarks,
   mailActionColor,
   mailStrings,
   resolveMailPaint,
+  toSwipeActions,
   visibleLabels,
 } from './shared';
-import type { MailRowProps } from './types';
+import type { MailAction, MailRowProps } from './types';
 
 /**
  * One message thread in the inbox.
  *
- *   comfortable  88 tall (a floor — labels grow it) · 16 padding · 40 avatar ·
- *                sender over subject over snippet, time and the paperclip on the
- *                first line, the star on the right
+ *   comfortable  72 tall · 16 padding · 48 avatar · sender and time on the
+ *                first line, subject and snippet on the second, the star on
+ *                the right where it is a control
  *   compact      40 tall · 12 padding · 24 avatar · sender, then subject and
  *                snippet on ONE baseline, then the states and the time
  *
@@ -39,19 +49,29 @@ import type { MailRowProps } from './types';
  * component for the desktop: everything a compact row draws, a comfortable row
  * draws too, and a density that forked into two files is a density that drifts.
  *
+ * TWO LINES, NOT THREE, AND NOTHING DRAWN AT REST THAT IS NOT INFORMATION.
+ * The phone row is the same 72/48 as a conversation row, so an inbox and a
+ * messages screen read as one library. What paid for the third line: the
+ * subject and the snippet share line two, the labels collapse to a chip and
+ * dots, and the star is drawn only where it is a control.
+ *
+ * THE SUBJECT AND THE SNIPPET ARE ONE `Text`, at both densities. Two
+ * neighbouring flex children each want to be as wide as their content, and the
+ * result of a long one is a row that pushes sideways or a subject clipped to
+ * nothing. One string with a nested span truncates where the line ends.
+ *
  * UNREAD IS THE WHOLE ROW, NOT A DOT. The sender and the subject go semibold
  * and every rung of text moves up to the primary colour; a read row sits on the
  * quiet rungs. That is a property of the row, so it survives truncation, a
- * narrow pane and a colour-blind reader in a way a 8px dot does not.
+ * narrow pane and a colour-blind reader in a way an 8px dot does not.
  *
- * THE SUBJECT AND THE SNIPPET ARE ONE `Text` on a compact row, deliberately.
- * Two neighbouring flex children each want to be as wide as their content, and
- * the result of a long one is a row that pushes sideways or a subject clipped
- * to nothing. One string with a nested span truncates where the line ends.
- *
- * ACTIONS are a slot, not a gesture. `actions` draws the desktop hover rail;
- * the phone's swipe is the app's, because Bloom does not own that gesture here
- * — feed the SAME array to your swipe container. See `docs/mail-list.mdx`.
+ * ACTIONS HAVE TWO AFFORDANCES AND NEITHER IS AN ICON AT REST. A touch pointer
+ * drags: `swipeActions` are the panes `SwipeRow` uncovers, the library's one
+ * drag implementation. A mouse gets `actions` as the hover rail, revealed on
+ * hover and on keyboard focus, because a drag is undiscoverable with a pointer.
+ * Both report through `onAction`, and both also reach the row's
+ * `accessibilityActions` — the rotor is the path a screen reader has to a
+ * gesture it cannot perform.
  *
  * ACCESSIBILITY: the row is ONE target with ONE composed name, and the content
  * is hidden from assistive technology. The checkbox, the star and the rail are
@@ -80,6 +100,8 @@ function MailRowComponent({
   href,
   actions,
   actionsPlacement,
+  swipeActions,
+  swipeEnabled,
   onAction,
   accessibilityLabel,
   strings,
@@ -88,6 +110,7 @@ function MailRowComponent({
 }: MailRowProps) {
   const theme = useTheme();
   const surface = useSurfaceFill();
+  const swipeAvailable = useSwipeAvailable();
   useEffect(() => {
     adoptStyleSheet(MAIL_LIST_STYLE_ID, MAIL_LIST_CSS);
   }, []);
@@ -99,6 +122,21 @@ function MailRowComponent({
   const compact = density === 'compact';
   const placement = actionsPlacement ?? (IS_WEB ? 'hover' : 'none');
   const rail = placement === 'none' ? [] : (actions ?? []);
+
+  const swipeLeft = swipeActions?.left ?? [];
+  const swipeRight = swipeActions?.right ?? [];
+  const swipeOn = (swipeEnabled ?? swipeAvailable) && swipeLeft.length + swipeRight.length > 0;
+
+  // Every action the row offers, once each, for the rotor. A key the rail and a
+  // pane share is ONE action announced once — the affordance differs, what it
+  // does does not.
+  const rotorActions: MailAction[] = [];
+  const seenActions = new Set<string>();
+  for (const action of [...(actions ?? []), ...swipeLeft, ...swipeRight]) {
+    if (seenActions.has(action.key)) continue;
+    seenActions.add(action.key);
+    rotorActions.push(action);
+  }
 
   // The three text rungs the row reads at. An unread row is at full strength on
   // every line; a read one is a step quieter on each.
@@ -125,17 +163,25 @@ function MailRowComponent({
       text,
     );
 
+  const chipSurface = selected ? paint.selected : paint.surface;
+  // One line of chips on the dense row; one chip and dots on the two-line one,
+  // where a second chip costs more width than a second label is worth.
   const { shown, overflow } = visibleLabels(labels, maxLabels);
   const chips =
     shown.length > 0 || overflow > 0 ? (
       <MailLabelChips
         labels={shown}
         overflow={overflow}
-        surface={selected ? paint.selected : paint.surface}
+        surface={chipSurface}
         strings={text}
         testID={testID ? `${testID}-labels` : undefined}
       />
     ) : null;
+  const marks = labelMarks(labels, maxLabels);
+  const labelDots = marks.dots.map((label) => ({
+    id: label.id,
+    color: labelDotColor(theme, label),
+  }));
 
   const draftPrefix: TextStyle = { color: paint.negative };
   const hasSnippet = snippet !== undefined || draft;
@@ -147,6 +193,17 @@ function MailRowComponent({
       {snippet}
     </>
   );
+  // A nested span, never a sibling: one `Text` is what truncates at the line's
+  // end instead of two children each claiming their content's width.
+  const snippetSpan = hasSnippet ? (
+    <Text
+      style={{ color: snippetColor, fontWeight: '400' }}
+      testID={testID ? `${testID}-snippet` : undefined}
+    >
+      {'  '}
+      {snippetContent}
+    </Text>
+  ) : null;
 
   const paperclip = hasAttachment ? (
     <View
@@ -250,12 +307,7 @@ function MailRowComponent({
         testID={testID ? `${testID}-subject` : undefined}
       >
         {subject}
-        {hasSnippet ? (
-          <Text style={{ color: snippetColor, fontWeight: '400' }}>
-            {'  '}
-            {snippetContent}
-          </Text>
-        ) : null}
+        {snippetSpan}
       </Text>
     </View>
   ) : (
@@ -274,39 +326,47 @@ function MailRowComponent({
         >
           {sender.name}
         </Text>
+        {threadBadge}
         <View style={{ flex: 1 }} />
         {paperclip}
         {timeText}
       </View>
       <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, minWidth: 0 }}>
+        <MailLabelMarks
+          chip={marks.chip}
+          dots={labelDots}
+          surface={chipSurface}
+          testID={testID ? `${testID}-labels` : undefined}
+        />
         <Text
           variant={unread ? geo.subjectUnreadVariant : geo.subjectVariant}
           numberOfLines={1}
-          style={{ color: subjectColor, flexShrink: 1, minWidth: 0 }}
+          style={{ color: subjectColor, flex: 1, minWidth: 0 }}
           testID={testID ? `${testID}-subject` : undefined}
         >
           {subject}
+          {snippetSpan}
         </Text>
-        {threadBadge}
-      </View>
-      <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, minWidth: 0 }}>
-        {chips}
-        {hasSnippet ? (
-          <Text
-            variant={geo.snippetVariant}
-            numberOfLines={1}
-            style={{ color: snippetColor, flexShrink: 1, minWidth: 0 }}
-            testID={testID ? `${testID}-snippet` : undefined}
-          >
-            {snippetContent}
-          </Text>
-        ) : null}
       </View>
     </View>
   );
 
   // --- the trailing controls ----------------------------------------------
-  const trailing = (
+  // The star is the only thing out here, and only where it is a control. On a
+  // one-line row the paperclip and the time keep it company, because that row
+  // has no second line to put them on.
+  const star = (
+    <MailStar
+      starred={starred}
+      onStarredChange={onStarredChange}
+      size={geo.action}
+      glyph={geo.glyph + 2}
+      paint={paint}
+      strings={text}
+      testID={testID ? `${testID}-star` : undefined}
+    />
+  );
+  const trailing = compact ? (
     <View
       style={{
         flexDirection: 'row',
@@ -316,18 +376,12 @@ function MailRowComponent({
         flexShrink: 0,
       }}
     >
-      {compact ? paperclip : null}
-      <MailStar
-        starred={starred}
-        onStarredChange={onStarredChange}
-        size={geo.action}
-        glyph={geo.glyph + 2}
-        paint={paint}
-        strings={text}
-        testID={testID ? `${testID}-star` : undefined}
-      />
-      {compact ? timeText : null}
+      {paperclip}
+      {star}
+      {timeText}
     </View>
+  ) : onStarredChange === undefined ? null : (
+    <View style={{ marginLeft: 4, flexShrink: 0 }}>{star}</View>
   );
 
   const rowStyle: WebCssStyle = {
@@ -347,7 +401,7 @@ function MailRowComponent({
         }),
   };
 
-  return (
+  const row = (
     <View
       {...webDataSet({ bloomMailRow: '', selected: String(selected) })}
       style={[rowStyle, style]}
@@ -361,6 +415,8 @@ function MailRowComponent({
         selected={selected}
         paint={paint}
         onPressedChange={setPressed}
+        actions={rotorActions}
+        onAction={onAction}
         testID={testID ? `${testID}-link` : undefined}
       />
       <View
@@ -419,6 +475,22 @@ function MailRowComponent({
         </View>
       ) : null}
     </View>
+  );
+
+  if (!swipeOn) return row;
+  return (
+    <SwipeRow
+      actions={toSwipeActions({ left: swipeLeft, right: swipeRight })}
+      onAction={onAction}
+      // No `height`: a comfortable row is a FLOOR, so the panes take whatever
+      // the row turns out to be rather than pinning it to the floor's value.
+      {...(geo.height === undefined ? null : { height: geo.height })}
+      radius={MAIL_ROW_RADIUS}
+      background={paint.surface}
+      testID={testID ? `${testID}-swipe` : undefined}
+    >
+      {row}
+    </SwipeRow>
   );
 }
 

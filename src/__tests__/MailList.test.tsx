@@ -91,6 +91,12 @@ const ROW: MailSummary = {
   time: '14:02',
 };
 
+const LABELS: MailLabel[] = [
+  { id: 'work', name: 'Work', tone: 'info' },
+  { id: 'money', name: 'Finance', tone: 'success' },
+  { id: 'q1', name: 'Q1' },
+];
+
 const ACTIONS: MailAction[] = [
   { key: 'archive', label: 'Archive', icon: RiArchiveLine },
   { key: 'delete', label: 'Delete', icon: RiDeleteBinLine, tone: 'negative' },
@@ -253,14 +259,23 @@ describe('MailRow', () => {
     expect(byTestId('r-link').getAttribute('aria-selected')).toBeNull();
   });
 
-  it('spells the star toggle with aria-pressed, and leaves it off a read-only star', () => {
+  it('spells the star toggle with aria-pressed, and draws NO star where it is not a control', () => {
     mount(<MailRow {...ROW} starred onStarredChange={() => undefined} testID="r" />);
     expect(byTestId('r-star').getAttribute('aria-pressed')).toBe('true');
     expect(byTestId('r-star').getAttribute('aria-label')).toBe('Starred');
 
+    // No handler, no glyph — and the state survives in the row's name, which is
+    // the whole reason the marker can be dropped.
     act(() => root.render(<div />));
-    mount(<MailRow {...ROW} starred testID="r" />);
-    expect(byTestId('r-star').getAttribute('role')).toBeNull();
+    mount(<MailRow {...ROW} starred onPress={() => undefined} testID="r" />);
+    expect(maybe('r-star')).toBeNull();
+    expect(byTestId('r-link').getAttribute('aria-label')).toContain('Starred');
+
+    // Both densities: the dense row keeps the star in its trailing run, and
+    // drops it there on the same rule.
+    act(() => root.render(<div />));
+    mount(<MailRow {...ROW} starred density="compact" testID="r" />);
+    expect(maybe('r-star')).toBeNull();
   });
 
   it('draws a checkbox in place of the avatar only when the list can multi-select', () => {
@@ -287,19 +302,57 @@ describe('MailRow', () => {
     expect(getComputedStyle(byTestId('r')).height).toBe('');
   });
 
-  it('keeps the compact subject and snippet inside ONE text node, so neither pushes the row', () => {
-    mount(
-      <MailRow
-        {...ROW}
-        density="compact"
-        subject={'A subject long enough to need the whole row'.repeat(3)}
-        snippet={'and a snippet just as long'.repeat(4)}
-        testID="r"
-      />,
-    );
+  it.each(['compact', 'comfortable'] as const)(
+    'keeps the subject and the snippet inside ONE text node at %s, so neither pushes the row',
+    (density) => {
+      mount(
+        <MailRow
+          {...ROW}
+          density={density}
+          subject={'A subject long enough to need the whole row'.repeat(3)}
+          snippet={'and a snippet just as long'.repeat(4)}
+          testID="r"
+        />,
+      );
+      const subject = byTestId('r-subject');
+      // The snippet is a nested SPAN of the subject, never a sibling: a sibling
+      // is a second flex child claiming its content's width.
+      expect(subject.contains(byTestId('r-snippet'))).toBe(true);
+      expect(subject.textContent).toContain('and a snippet just as long');
+    },
+  );
+
+  it('draws the phone row two lines tall, at the same 72/48 as a conversation row', () => {
+    mount(<MailRow {...ROW} labels={LABELS} testID="r" />);
+    expect(getComputedStyle(byTestId('r')).minHeight).toBe('72px');
+    expect(getComputedStyle(byTestId('r-avatar')).height).toBe('48px');
+    // Line one is the sender and the time; line two is the subject with the
+    // snippet inside it. Nothing else is a text rung.
+    const sender = byTestId('r-sender');
+    const time = byTestId('r-time');
     const subject = byTestId('r-subject');
-    expect(maybe('r-snippet')).toBeNull();
-    expect(subject.textContent).toContain('and a snippet just as long');
+    expect(sender.parentElement).toBe(time.parentElement);
+    expect(subject.parentElement).not.toBe(sender.parentElement);
+  });
+
+  it('collapses the labels to one chip and a dot per label that did not fit', () => {
+    mount(<MailRow {...ROW} labels={LABELS} maxLabels={2} testID="r" />);
+    // Two marks: the first label keeps its name, the second is 8px of its tone.
+    expect(byTestId('r-labels-work').textContent).toBe('Work');
+    expect(maybe('r-labels-money')).toBeNull();
+    const dot = byTestId('r-labels-dot-money');
+    expect(getComputedStyle(dot).width).toBe('8px');
+    expect(getComputedStyle(dot).backgroundColor).not.toBe('');
+    // And the third is silent on the row while still being announced.
+    expect(maybe('r-labels-dot-q1')).toBeNull();
+    expect(byTestId('r-link').getAttribute('aria-label')).toContain('Q1');
+  });
+
+  it('keeps chips at the dense density, where there is one line and room for them', () => {
+    mount(<MailRow {...ROW} density="compact" labels={LABELS} maxLabels={2} testID="r" />);
+    expect(byTestId('r-labels-work').textContent).toBe('Work');
+    expect(byTestId('r-labels-overflow').textContent).toBe('+2');
+    expect(maybe('r-labels-dot-money')).toBeNull();
   });
 
   it('draws the hover rail only when a placement asks for it', () => {
@@ -310,6 +363,51 @@ describe('MailRow', () => {
     mount(<MailRow {...ROW} actions={ACTIONS} actionsPlacement="inline" testID="r" />);
     expect(byTestId('r-action-archive').getAttribute('aria-label')).toBe('Archive');
     expect(byTestId('r-action-delete').getAttribute('aria-label')).toBe('Delete');
+  });
+
+  it('puts the row actions behind a DRAG, with nothing drawn in the row at rest', () => {
+    const calls: string[] = [];
+    mount(
+      <MailRow
+        {...ROW}
+        swipeActions={{ left: [ACTIONS[0]!], right: [ACTIONS[1]!] }}
+        swipeEnabled
+        onAction={(key) => calls.push(key)}
+        testID="r"
+      />,
+    );
+    // No rail: the only `actions` here are the panes'.
+    expect(maybe('r-rail')).toBeNull();
+    const archive = byTestId('r-swipe-action-archive');
+    expect(archive.getAttribute('role')).toBe('button');
+    expect(archive.getAttribute('aria-label')).toBe('Archive');
+    act(() => archive.click());
+    act(() => byTestId('r-swipe-action-delete').click());
+    expect(calls).toEqual(['archive', 'delete']);
+  });
+
+  it('hides a closed pane from assistive technology, rather than leaving it invisible in the tab order', () => {
+    mount(
+      <MailRow {...ROW} swipeActions={{ right: [ACTIONS[1]!] }} swipeEnabled testID="r" />,
+    );
+    const pane = byTestId('r-swipe-action-delete').parentElement?.parentElement;
+    expect(pane?.getAttribute('aria-hidden')).toBe('true');
+  });
+
+  it('does not wrap the row at all when the drag is off, or when no side has actions', () => {
+    mount(
+      <MailRow
+        {...ROW}
+        swipeActions={{ right: [ACTIONS[1]!] }}
+        swipeEnabled={false}
+        testID="r"
+      />,
+    );
+    expect(maybe('r-swipe')).toBeNull();
+
+    act(() => root.render(<div />));
+    mount(<MailRow {...ROW} swipeActions={{}} swipeEnabled testID="r" />);
+    expect(maybe('r-swipe')).toBeNull();
   });
 
   it('paints the selected fill as a further step off the hovered one', () => {
