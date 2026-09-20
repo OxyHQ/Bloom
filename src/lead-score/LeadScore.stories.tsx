@@ -2,7 +2,7 @@ import React, { useContext } from 'react';
 import { View } from 'react-native';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
-import { NeighbourhoodScores } from '../property-insights';
+import { SleepScoreCard } from '../chart-cards';
 import { BloomThemeContext, BloomThemeProvider } from '../theme/BloomThemeProvider';
 import { useTheme } from '../theme/use-theme';
 import { Text } from '../typography';
@@ -24,10 +24,10 @@ type Story = StoryObj;
 
 const FACTORS: LeadScoreFactor[] = [
   { label: 'Fits the ideal profile', contribution: 24, detail: 'Logistics, 200–500 people' },
-  { label: 'Opened the last five emails', contribution: 18, detail: '5 of 5 opened, 3 clicked' },
-  { label: 'Visited pricing twice this week', contribution: 12 },
-  { label: 'No decision-maker identified', contribution: -9, detail: 'Only one contact, no budget owner' },
-  { label: 'Quiet for three weeks', contribution: -6 },
+  { label: 'Opened the last five emails', contribution: 18, detail: '5 of 5, 3 clicked' },
+  { label: 'Visited pricing twice', contribution: 12, detail: 'This week' },
+  { label: 'No decision-maker', contribution: -9, detail: 'One contact, no budget owner' },
+  { label: 'Quiet for three weeks', contribution: -6, detail: 'Last reply 21 days ago' },
 ];
 
 function Page({ children }: { children: React.ReactNode }) {
@@ -69,14 +69,16 @@ function BothModes({ children }: { children: React.ReactNode }) {
 export const Hot: Story = {
   render: () => (
     <Page>
-      <LeadScoreCard
-        score={82}
-        accessibilityLabel="Lead score for Larkspur Freight"
-        valueText="82 of 100, hot"
-        factors={FACTORS}
-        trend={{ label: '+8 against last week', direction: 'up' }}
-        testID="lead-hot"
-      />
+      <View style={{ maxWidth: 420, width: '100%' }}>
+        <LeadScoreCard
+          score={82}
+          accessibilityLabel="Lead score for Larkspur Freight"
+          valueText="82 of 100, hot"
+          factors={FACTORS}
+          trend={{ label: '+8 against last week', direction: 'up' }}
+          testID="lead-hot"
+        />
+      </View>
     </Page>
   ),
 };
@@ -92,6 +94,7 @@ export const Bands: Story = {
             score={21}
             accessibilityLabel="Lead score for Meridian Tiles"
             trend={{ label: '-4 against last week', direction: 'down' }}
+            factors={FACTORS.slice(3)}
             testID="lead-cold"
           />
         </View>
@@ -100,6 +103,7 @@ export const Bands: Story = {
             score={55}
             accessibilityLabel="Lead score for Sablefield Studio"
             trend={{ label: 'No change', direction: 'flat' }}
+            factors={FACTORS.slice(1, 4)}
             testID="lead-warm"
           />
         </View>
@@ -108,6 +112,7 @@ export const Bands: Story = {
             score={91}
             accessibilityLabel="Lead score for Quillon Health"
             trend={{ label: '+12 against last week', direction: 'up' }}
+            factors={FACTORS.slice(0, 3)}
             testID="lead-hot-2"
           />
         </View>
@@ -132,7 +137,7 @@ export const NarrowAndLong: Story = {
             {
               label: 'An unusually long factor label that will certainly not fit on one line',
               contribution: 3,
-              detail: 'And a detail line underneath it that is also longer than it needs to be',
+              detail: 'And a detail that is also longer than it needs to be',
             },
             { label: 'Budget unconfirmed', contribution: -2 },
             { label: 'Counted for nothing', contribution: 0 },
@@ -149,7 +154,13 @@ export const NarrowAndLong: Story = {
 export const ScoreOnly: Story = {
   render: () => (
     <Page>
-      <LeadScoreCard score={38} accessibilityLabel="Lead score for an unnamed inbound lead" testID="lead-bare" />
+      <View style={{ maxWidth: 420, width: '100%' }}>
+        <LeadScoreCard
+          score={38}
+          accessibilityLabel="Lead score for an unnamed inbound lead"
+          testID="lead-bare"
+        />
+      </View>
     </Page>
   ),
 };
@@ -168,32 +179,38 @@ export const BothThemes: Story = {
 };
 
 /**
- * The same shot as the meters this card is built from. `NeighbourhoodScores`
- * is the reference row: label, value right-aligned, a 6-tall accent `Meter` on
- * the shared neutral rail, a quiet description, 24 between rows.
+ * The card this one is drawn to, in the same shot and at the same width.
+ * `SleepScoreCard` is the reference for a SCORE: a tinted header panel with a
+ * quiet label over a big verdict word, a large centred ring holding the number,
+ * and a separate inner panel whose rows are `mark · label · detail` on the left
+ * with the value right-aligned. No bars anywhere.
  */
 export const BesideTheReference: Story = {
   render: () => (
     <Page>
-      <View style={{ width: '100%', maxWidth: 900, gap: 24 }}>
-        <Caption>Bloom reference — property-insights / NeighbourhoodScores</Caption>
-        <NeighbourhoodScores
-          columns={1}
-          items={[
-            { label: 'Transport', value: 8.4, description: 'Metro 4 min, 6 bus lines' },
-            { label: 'Schools', value: 6.1, description: 'Three primaries within 1 km' },
-            { label: 'Quiet', value: 4.2, description: 'A main road on the north side' },
-          ]}
-        />
-        <Caption>This family — lead-score / LeadScoreCard</Caption>
-        <LeadScoreCard
-          score={82}
-          accessibilityLabel="Lead score for Larkspur Freight"
-          valueText="82 of 100, hot"
-          factors={FACTORS}
-          trend={{ label: '+8 against last week', direction: 'up' }}
-          testID="lead-beside"
-        />
+      <View style={{ flexDirection: 'row', gap: 16, flexWrap: 'wrap', alignItems: 'flex-start' }}>
+        <View style={{ flexGrow: 1, flexShrink: 1, flexBasis: 340, minWidth: 0, maxWidth: 400, gap: 12 }}>
+          <Caption>Bloom reference — chart-cards / SleepScoreCard</Caption>
+          <SleepScoreCard
+            metrics={[
+              { label: 'Duration', detail: '7h 50m', score: 32, max: 40 },
+              { label: 'Quality', detail: '88%', score: 28, max: 30 },
+              { label: 'Restfulness', detail: '4 wakes', score: 22, max: 30 },
+            ]}
+            range="29 Jun - 5 Jul"
+          />
+        </View>
+        <View style={{ flexGrow: 1, flexShrink: 1, flexBasis: 340, minWidth: 0, maxWidth: 400, gap: 12 }}>
+          <Caption>This family — lead-score / LeadScoreCard</Caption>
+          <LeadScoreCard
+            score={82}
+            accessibilityLabel="Lead score for Larkspur Freight"
+            valueText="82 of 100, hot"
+            factors={FACTORS.slice(0, 3)}
+            trend={{ label: '+8 against last week', direction: 'up' }}
+            testID="lead-beside"
+          />
+        </View>
       </View>
     </Page>
   ),

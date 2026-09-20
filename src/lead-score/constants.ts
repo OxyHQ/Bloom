@@ -1,5 +1,6 @@
 import type { TextStyle } from 'react-native';
 
+import { RADIUS } from '../design-tokens/scales';
 import { RiArrowDownLine } from '../icons/remix/RiArrowDownLine';
 import { RiArrowUpLine } from '../icons/remix/RiArrowUpLine';
 import { RiFireLine } from '../icons/remix/RiFireLine';
@@ -13,10 +14,11 @@ import type { LeadScoreBand, LeadScoreTrend } from './types';
 /**
  * The band's tone, word and glyph.
  *
- * The tone paints the band's GLYPH and nothing else — the verdict word beside
- * it is `title-1-medium` in the reading colour, the way every Bloom score card
- * draws a verdict. The measurement next to it is the accent, because that is
- * what a meter means.
+ * The tone paints the HEADER PANEL — the wash the label, the verdict and the
+ * ring sit on — and the band's glyph. The verdict word beside it is
+ * `title-1-medium` in the reading colour of that wash, the way every Bloom
+ * score card draws a verdict, and the ring is the accent, because that is what
+ * a meter means.
  *
  * `hot` is the SUCCESS tone, not the error one: a hot lead is the good outcome,
  * and reading temperature as danger is exactly the confusion a tone vocabulary
@@ -41,10 +43,9 @@ export const LEAD_SCORE_THRESHOLDS = { warm: 0.4, hot: 0.7 } as const;
 /**
  * The trend arrow's glyph, per direction.
  *
- * A glyph and no tone: the trend is a quiet icon-and-label line in the
- * secondary rung, the shape `PriceEstimate` gives its confidence note. The
- * ARROW carries the direction, and the card keeps one tinted mark (the band's
- * glyph) rather than three competing ones.
+ * A glyph and no tone: the trend is a quiet icon-and-label line under the
+ * verdict. The ARROW carries the direction, and the card keeps one tinted
+ * thing — the header wash — rather than three competing ones.
  */
 export const LEAD_SCORE_TREND: Record<LeadScoreTrend['direction'], { icon: BloomIconComponent }> = {
   up: { icon: RiArrowUpLine },
@@ -52,16 +53,29 @@ export const LEAD_SCORE_TREND: Record<LeadScoreTrend['direction'], { icon: Bloom
   flat: { icon: RiSubtractLine },
 };
 
-/** Ring geometry: 72 across with a 6 stroke, which carries a two-digit score and its scale. */
-export const LEAD_SCORE_RING_SIZE = 72;
-export const LEAD_SCORE_RING_THICKNESS = 6;
+/**
+ * Ring geometry: 132 across with a 10 stroke, CENTRED in the header panel.
+ *
+ * It is the largest thing on the card on purpose. At 72 beside the verdict it
+ * was a widget in a corner, and the number inside it — the one fact the card
+ * exists to state — was smaller than the word next to it.
+ */
+export const LEAD_SCORE_RING_SIZE = 132;
+export const LEAD_SCORE_RING_THICKNESS = 10;
 
-/** The factor rows: a 6-tall bar, and 24 between rows — `NeighbourhoodScores`' rhythm. */
-export const LEAD_FACTOR_BAR_HEIGHT = 6;
-export const LEAD_FACTOR_ROW_GAP = 24;
+/** The card's inset, and the gap between its two panels. */
+export const LEAD_SCORE_CARD_PADDING = 10;
+export const LEAD_SCORE_PANEL_GAP = 10;
 
-/** `PriceEstimate`'s card inset. */
-export const LEAD_SCORE_CARD_PADDING = 20;
+/** Both panels: the tinted header and the neutral one under it. */
+export const LEAD_SCORE_PANEL_RADIUS = RADIUS['radius-16'];
+export const LEAD_SCORE_PANEL_PADDING = 16;
+
+/** One factor row: 12 of air above and below its single line. */
+export const LEAD_FACTOR_ROW_PADDING = 12;
+/** The square mark at the head of a factor row. */
+export const LEAD_FACTOR_MARK_SIZE = 10;
+export const LEAD_FACTOR_MARK_RADIUS = RADIUS['radius-4'];
 
 /** Figures line up column-wise, so every number here is tabular. */
 export const TABULAR: TextStyle = { fontVariant: ['tabular-nums'] };
