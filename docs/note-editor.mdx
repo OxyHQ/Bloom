@@ -1,0 +1,115 @@
+---
+title: NoteEditor
+description: The chrome around a writing surface — the title and its quiet state line, and a formatting row that collapses into a menu.
+order: 107
+---
+
+# NoteEditor
+
+Everything around the writing surface, and nothing of the writing surface
+itself. Bloom does not ship a rich-text engine and this family does not pretend
+to: the editable node is the app's — a `Textarea`, a web contenteditable, a
+native rich-text view — and these two components are the chrome it sits between.
+
+```tsx
+import { NoteEditorHeader, NoteEditorToolbar, Textarea } from '@oxy.so/bloom';
+
+<NoteEditorHeader
+  title={title}
+  onTitleChange={setTitle}
+  saveState="saved"
+  edited="Edited 2 min ago"
+  wordCount={words}
+/>
+<NoteEditorToolbar actions={actions} accessibilityLabel="Formatting" />
+<Textarea label="Note body" value={body} onChangeText={setBody} rows={10} />
+```
+
+## NoteEditorHeader
+
+|  |  |
+| --- | --- |
+| title | `title-1-semibold` (24/34), borderless, multiline |
+| status line | `caption-1-regular`, 6px under the title |
+| separator | a middle dot between readings |
+
+**The title is not a `TextField`.** A form field is a box you fill in; a document
+title *is* the document. So it draws no chrome at all — no border, no fill, no
+inset — and the caret is the only thing that says it is editable. Bloom has no
+borderless large input for this, which is why the `TextInput` is written out in
+the component rather than composed.
+
+**The status line is three readings, not one string.** Save state, last edit,
+word count: each is drawn only if the app passed it, so a header with nothing to
+say about saving is one line shorter rather than one empty line taller.
+
+`saveState` has four values and two of them are the same colour as the rest of
+the line (`saved`, `saving` — a document doing what it is supposed to should not
+shout). `offline` and `error` take the tone's **text** member, via
+`resolveAccentColors(…, 'outlined').foreground` — never the fill token, which is
+sized to carry white and measures 3.6:1 as a label in dark mode. They are two
+states rather than one because they ask for different things: *keep typing* and
+*stop and look*.
+
+`disabled` dims the title; `readOnly` does not. Nothing is broken about a
+published or shared note, so it is not drawn as if it were.
+
+## NoteEditorToolbar
+
+One `ButtonGroup` of icon-only items, and — the moment they stop fitting — a `…`
+item **fused onto the end of the same group** that opens the rest as a
+`DropdownMenu`. The overflow is not a second control beside the row; it is the
+row's last item, so the toolbar stays one object at every width.
+
+**It measures itself, not the window.** `useContainerWidth` on the row, so a
+toolbar in a 420px side panel of a 1440px desktop collapses exactly as it does on
+a phone. A window-width breakpoint leaves that panel overflowing with no error.
+
+The arithmetic is `toolbarCapacity(width, size)`, exported and pure: a solid
+`ButtonGroup` is `1px border + n items + (n-1) hairlines + 1px border`, so every
+item after the first costs `item + 1`. `splitToolbarActions` then applies the two
+rules that are the whole design:
+
+- **`alwaysVisible` never collapses.** Pinned actions are drawn first and are
+  never candidates for the menu, so a toolbar whose author pinned six of them at
+  360px overflows rather than quietly hiding one. It cannot collapse what it was
+  told to keep, and pretending otherwise is worse than the overflow.
+- **The overflow button costs a slot.** As soon as anything moves to the menu,
+  one item's width goes to the `…`, so the remaining actions are measured against
+  a capacity one lower. Forgetting this is how an adaptive row ends up exactly
+  one item too wide at the width where it starts collapsing.
+
+**The first frame is un-measured and draws everything inline** — one frame, and
+the row clips rather than pushing the page. The alternative (start collapsed,
+expand) flashes a menu button on every desktop mount, which is the more visible
+wrong. `splitToolbarActions(actions, null)` is that state, spelled out.
+
+### A toggle is `active`; an action is not
+
+Setting `active` — even to `false` — makes an action a **toggle**: the item
+announces both spellings of pressed (web reads only `aria-pressed`, native only
+`accessibilityState`), and its overflow row becomes a checkable one. Leaving
+`active` undefined keeps a one-shot action (attach, link) a plain button and a
+plain menu row.
+
+## What neither of them does
+
+**Sticky.** Neither component reads scroll, and a header that measured it itself
+would follow the wrong scroller in a split view with no error. The app owns the
+sticky behaviour, and chrome that follows a scroller does it through
+`ScrollOffsetProvider` — see [Composition](/docs/composition).
+
+**Formatting.** `onPress` runs whatever the app's editor does. This family knows
+the label, the glyph and whether the state is on.
+
+## Traps
+
+- **Toolbar items are 34px tall (`medium`) or 30 (`small`)**, which is below the
+  44 a touch target wants. That is `ButtonGroup`'s scale, not this family's;
+  `hitSlop` is not the answer for adjacent items, because slop on one overlaps
+  its neighbour and the press lands on whichever the platform hit-tests first.
+- **`ButtonGroupItem` writes `aria-pressed` on every item**, including one with
+  no `active`. A non-toggle in the row therefore announces "not pressed". It is
+  the base layer's spelling and this family does not work around it.
+- **`accessibilityLabel` on the toolbar is required in substance.** A row of
+  glyphs has no name of its own, and each item is named by its `label`.

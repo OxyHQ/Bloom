@@ -1332,3 +1332,8 @@ export type {
   LeadScorePaint,
   LeadScoreTrend,
 } from './lead-score';
+// Notes and long documents
+export * from './note-card';
+export * from './note-editor';
+export * from './outline-nav';
+export * from './tag-field';

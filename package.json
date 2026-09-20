@@ -2295,6 +2295,62 @@
         "default": "./lib/commonjs/lead-score/index.js"
       }
     },
+    "./note-card": {
+      "react-native": {
+        "types": "./lib/typescript/module/note-card/index.d.ts",
+        "default": "./src/note-card/index.ts"
+      },
+      "import": {
+        "types": "./lib/typescript/module/note-card/index.d.ts",
+        "default": "./lib/module/note-card/index.js"
+      },
+      "require": {
+        "types": "./lib/typescript/commonjs/note-card/index.d.ts",
+        "default": "./lib/commonjs/note-card/index.js"
+      }
+    },
+    "./note-editor": {
+      "react-native": {
+        "types": "./lib/typescript/module/note-editor/index.d.ts",
+        "default": "./src/note-editor/index.ts"
+      },
+      "import": {
+        "types": "./lib/typescript/module/note-editor/index.d.ts",
+        "default": "./lib/module/note-editor/index.js"
+      },
+      "require": {
+        "types": "./lib/typescript/commonjs/note-editor/index.d.ts",
+        "default": "./lib/commonjs/note-editor/index.js"
+      }
+    },
+    "./tag-field": {
+      "react-native": {
+        "types": "./lib/typescript/module/tag-field/index.d.ts",
+        "default": "./src/tag-field/index.ts"
+      },
+      "import": {
+        "types": "./lib/typescript/module/tag-field/index.d.ts",
+        "default": "./lib/module/tag-field/index.js"
+      },
+      "require": {
+        "types": "./lib/typescript/commonjs/tag-field/index.d.ts",
+        "default": "./lib/commonjs/tag-field/index.js"
+      }
+    },
+    "./outline-nav": {
+      "react-native": {
+        "types": "./lib/typescript/module/outline-nav/index.d.ts",
+        "default": "./src/outline-nav/index.ts"
+      },
+      "import": {
+        "types": "./lib/typescript/module/outline-nav/index.d.ts",
+        "default": "./lib/module/outline-nav/index.js"
+      },
+      "require": {
+        "types": "./lib/typescript/commonjs/outline-nav/index.d.ts",
+        "default": "./lib/commonjs/outline-nav/index.js"
+      }
+    },
     "./card": {
       "react-native": {
         "types": "./lib/typescript/module/card/index.d.ts",
@@ -3311,6 +3367,18 @@
       ],
       "lead-score": [
         "./lib/typescript/module/lead-score/index.d.ts"
+      ],
+      "note-card": [
+        "./lib/typescript/module/note-card/index.d.ts"
+      ],
+      "note-editor": [
+        "./lib/typescript/module/note-editor/index.d.ts"
+      ],
+      "tag-field": [
+        "./lib/typescript/module/tag-field/index.d.ts"
+      ],
+      "outline-nav": [
+        "./lib/typescript/module/outline-nav/index.d.ts"
       ],
       "card": [
         "./lib/typescript/module/card/index.d.ts"

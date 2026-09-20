@@ -1,0 +1,99 @@
+---
+title: TagField
+description: Tags as an input — removable chips, a caret after them, a suggestion listbox, a ceiling, and full Field membership.
+order: 108
+---
+
+# TagField
+
+Tags as an input. A CRM's skills, a task app's labels, a document's access list
+and a notes app's tags are the same control, so **nothing in this family says
+"note"** — the day it learns about one domain it stops being usable by the other
+three.
+
+```tsx
+import { Field, TagField } from '@oxy.so/bloom';
+
+<Field label="Tags" description="Anything you will want to search for later." error={error}>
+  <TagField value={tags} onChange={setTags} suggestions={vocabulary} placeholder="Add a tag" />
+</Field>
+```
+
+## Geometry
+
+It borrows the `text-field` shell — the same fill, the same 10px radius, the same
+2px inset ring, resolved through `useTextFieldPalette()` — so a tag field in a
+form row is the same object as the text fields above it, on whatever surface it
+lands on.
+
+|  |  |
+| --- | --- |
+| min height | 36 (`medium`) / 32 (`small`), and it **grows**: chips wrap |
+| input | flexes to the end of the last line, 120 minimum |
+| suggestion row | 36 tall, one surface step off the list's fill |
+
+The input flexing to the end of the line is deliberate: a press in the empty part
+of that line lands on the caret itself, so the field needs no click-to-focus
+wrapper — which on web would be one more thing in the tab order.
+
+## It is a Field member
+
+`useFieldMembership()` resolves the four things a form asks of a control, each
+with a direction that is silently wrong the other way round: the **name** defers
+to the field (`??`), `disabled` and `invalid` **combine** with it (`||`), the
+**id** is the caller's then the field's, and `aria-describedby` is an id **list**
+so the field's error is joined to the control's own hint rather than replacing
+it. The full rule is in [Composition](/docs/composition) §Field.
+
+The label placement is `stacked`: `TagField`'s own `label` says the same thing a
+`Field`'s label above the box says, so the field wins.
+
+## The three decisions that a render tree cannot show you
+
+All of these live in `shared.ts`, pure and exported, because each fails
+**invisibly**: a duplicate that is added anyway renders a perfectly ordinary
+second chip.
+
+**A duplicate is rejected quietly.** No error, no shake, no hint. The tag is
+already there, so the field is already in the state the typist asked for, and
+telling them off for it is noise. The comparison is case-insensitive —
+"Design" and "design" are one tag to everybody except a string comparison.
+
+**Being full is the one refusal with a consequence**, so it is the one reported
+back (`onMaxReached`) and the one the hint names. At the ceiling the input stops
+accepting; it is not hidden, because a disappearing caret reads as a bug.
+
+**Suggestions exclude what is committed**, and match on a case-insensitive
+**substring** rather than a prefix: tag vocabularies are compound ("Q3 planning",
+"planning — legacy") and a prefix match hides the entry the typist was after.
+
+## Input
+
+- **A comma commits, wherever it comes from.** It is handled in the text change
+  rather than in a key event, so it works on both platforms and a pasted
+  `"a, b, c"` becomes three tags instead of one string with commas in it.
+- **Enter commits** the highlighted suggestion if there is one, otherwise the
+  typed text.
+- **Backspace on an empty caret removes the last chip**, on both platforms.
+- **Arrow keys and Escape move through the suggestions on web.** Native gets no
+  arrow keys from a soft keyboard, so the list is a press target there.
+
+The suggestion list is a real `listbox` of `option` rows with `aria-selected`,
+and the input is a `combobox` carrying `aria-expanded`, `aria-controls` and
+`aria-activedescendant`. It sits **inline under the field**, not in an overlay:
+nothing here needs to escape a clipping ancestor, and an inline list is one less
+stacking decision.
+
+## Traps
+
+- **`normalize` runs before every comparison**, so it is where any other answer
+  to "are these the same tag?" goes — case-sensitivity, diacritics folding, a
+  slug. The default only trims.
+- **`allowCreate={false}` makes it a picker**, and a picker with no `suggestions`
+  accepts nothing at all. That is the honest behaviour, not a bug to route
+  around.
+- **Each chip's × names itself** ("Remove tide"). `Chip`'s own `onClose` hardcodes
+  the name "Remove" with no subject, so the × is passed as an `endIcon` that
+  carries its own `accessibilityLabel`. Do not "simplify" it back to `onClose`.
+- **`value` is controlled.** There is no uncontrolled mode, because the
+  interesting half of this control is what the app does with the list.
