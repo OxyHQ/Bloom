@@ -32,15 +32,15 @@ The classification is an EQUALITY in `src/__tests__/adoption-matrix.test.ts`, no
 
 ## Totals
 
-- **169 families** in `src/`, **167** published (a subpath, the root barrel, or both). **33** carry a web fork.
+- **173 families** in `src/`, **171** published (a subpath, the root barrel, or both). **33** carry a web fork.
 - Docs, stories and suites are gated as a standard by `src/__tests__/family-coverage.test.ts`; the per-family counts are in the table below.
 
 | contract | applies to | reads | delegated | n/a¹ | adaptation |
 | --- | --- | --- | --- | --- | --- |
-| Field membership | 37 | 17 | 0 | 17 | 3 |
+| Field membership | 38 | 17 | 0 | 18 | 3 |
 | Control presentation | 16 | 8 | 2 | 6 | 0 |
 | Trigger composition | 10 | 8 | 0 | 2 | 0 |
-| Controlled / uncontrolled state | 39 | 31 | 0 | 1 | 7 |
+| Controlled / uncontrolled state | 40 | 32 | 0 | 1 | 7 |
 
 ## What remains — the named adaptations
 
@@ -64,6 +64,7 @@ The classification is an EQUALITY in `src/__tests__/adoption-matrix.test.ts`, no
 
 ### Field membership
 
+- `address` (does-not-apply) — writes a selection role on a ROW or a chip rather than on a form control — a list the user picks from, inside its own container, never inside a `Field`.
 - `agent-chat` (does-not-apply) — renders a bare `TextInput` deliberately — a composer or a search box that draws its own chrome and is not a form field a `Field` wraps. Wiring it to `TextFieldInput` would give it the field shell it exists not to draw.
 - `chat-composer` (does-not-apply) — renders a bare `TextInput` deliberately — a composer or a search box that draws its own chrome and is not a form field a `Field` wraps. Wiring it to `TextFieldInput` would give it the field shell it exists not to draw.
 - `chat-list` (does-not-apply) — renders a bare `TextInput` deliberately — a composer or a search box that draws its own chrome and is not a form field a `Field` wraps. Wiring it to `TextFieldInput` would give it the field shell it exists not to draw.
@@ -109,6 +110,7 @@ The classification is an EQUALITY in `src/__tests__/adoption-matrix.test.ts`, no
 | `accordion` | `@oxy.so/bloom/accordion` + barrel | universal | `accordion.mdx` | yes | 2 |  |  |  |  |
 | `activity-feed` | `@oxy.so/bloom/activity-feed` + barrel | universal | `activity-feed.mdx` | yes | 1 |  |  |  |  |
 | `activity-heatmap` | `@oxy.so/bloom/activity-heatmap` + barrel | universal | `activity-heatmap.mdx` | yes | 1 |  |  |  |  |
+| `address` | `@oxy.so/bloom/address` + barrel | universal | `address.mdx` | yes | 1 | n/a¹ |  |  |  |
 | `admonition` | `@oxy.so/bloom/admonition` + barrel | universal | `admonition.mdx` | yes | 1 |  |  |  |  |
 | `agent-chat` | `@oxy.so/bloom/agent-chat` + barrel | web fork | `agent-chat.mdx` | yes | 1 | n/a¹ |  |  | reads |
 | `agent-limits-card` | `@oxy.so/bloom/agent-limits-card` + barrel | universal | `agent-limits-card.mdx` | yes | 1 |  |  |  | reads |
@@ -178,7 +180,7 @@ The classification is an EQUALITY in `src/__tests__/adoption-matrix.test.ts`, no
 | `hooks` | `@oxy.so/bloom/hooks` + barrel | universal | `hooks.mdx` | yes | 9 |  |  |  | reads |
 | `hover-card` | `@oxy.so/bloom/hover-card` + barrel | web fork | `hover-card.mdx` | yes | 2 |  |  | reads | reads |
 | `icon-circle` | `@oxy.so/bloom/icon-circle` + barrel | universal | `icon-circle.mdx` | yes | 1 |  |  |  |  |
-| `icons` | `@oxy.so/bloom/icons` + barrel | universal | `icons.mdx` | yes | 35 |  |  |  |  |
+| `icons` | `@oxy.so/bloom/icons` + barrel | universal | `icons.mdx` | yes | 36 |  |  |  |  |
 | `image-aspect-ratio-cache` | `@oxy.so/bloom/image-aspect-ratio-cache` + barrel | universal | `image-aspect-ratio-cache.mdx` | yes | 1 |  |  |  |  |
 | `image-resolver` | `@oxy.so/bloom/image-resolver` + barrel | universal | `image-resolver.mdx` | yes | 7 |  |  |  |  |
 | `important-alerts-card` | `@oxy.so/bloom/important-alerts-card` + barrel | universal | `important-alerts-card.mdx` | yes | 1 |  |  |  |  |
@@ -215,6 +217,7 @@ The classification is an EQUALITY in `src/__tests__/adoption-matrix.test.ts`, no
 | `notification` | `@oxy.so/bloom/notification` + barrel | universal | `notification.mdx` | yes | 2 |  |  |  |  |
 | `notification-center` | `@oxy.so/bloom/notification-center` + barrel | universal | `notification-center.mdx` | yes | 2 |  |  |  | reads |
 | `offering-badge` | `@oxy.so/bloom/offering-badge` + barrel | universal | `offering-badge.mdx` | yes | 3 |  |  |  |  |
+| `order-status` | `@oxy.so/bloom/order-status` + barrel | universal | `order-status.mdx` | yes | 1 |  |  |  |  |
 | `outline-nav` | `@oxy.so/bloom/outline-nav` + barrel | universal | `outline-nav.mdx` | yes | 1 |  |  |  |  |
 | `overlay` | `@oxy.so/bloom/overlay` + barrel | universal | `overlay.mdx` | yes | 7 |  |  |  |  |
 | `page-header` | `@oxy.so/bloom/page-header` + barrel | universal | `page-header.mdx` | yes | 2 |  | reads |  |  |
@@ -226,6 +229,7 @@ The classification is an EQUALITY in `src/__tests__/adoption-matrix.test.ts`, no
 | `popover` | `@oxy.so/bloom/popover` + barrel | web fork | `popover.mdx` | yes | 6 |  |  | reads | reads |
 | `portal` | `@oxy.so/bloom/portal` + barrel | web fork | `portal.mdx` | yes | 14 |  |  |  |  |
 | `pressable-scale` | `@oxy.so/bloom/pressable-scale` + barrel | universal | `pressable-scale.mdx` | yes | 1 |  |  |  |  |
+| `price-breakdown` | `@oxy.so/bloom/price-breakdown` + barrel | universal | `price-breakdown.mdx` | yes | 1 |  |  |  | reads |
 | `progressive-blur` | `@oxy.so/bloom/progressive-blur` + barrel | web fork | `progressive-blur.mdx` | yes | 1 |  |  |  |  |
 | `property-insights` | `@oxy.so/bloom/property-insights` + barrel | universal | `property-insights.mdx` | yes | 3 |  |  |  | reads |
 | `provider` | `@oxy.so/bloom/provider` | universal | `provider.mdx` | yes | 1 |  |  |  |  |
@@ -236,6 +240,7 @@ The classification is an EQUALITY in `src/__tests__/adoption-matrix.test.ts`, no
 | `rail` | `@oxy.so/bloom/rail` + barrel | universal | `rail.mdx` | yes | 1 |  |  |  |  |
 | `rating` | `@oxy.so/bloom/rating` + barrel | universal | `rating.mdx` | yes | 3 | reads |  |  |  |
 | `recent-hires-card` | `@oxy.so/bloom/recent-hires-card` + barrel | universal | `recent-hires-card.mdx` | yes | 1 |  |  |  |  |
+| `route-stops` | `@oxy.so/bloom/route-stops` + barrel | universal | `route-stops.mdx` | yes | 1 |  |  |  |  |
 | `scroll` | `@oxy.so/bloom/scroll` + barrel | web fork | `scroll.mdx` | yes | 5 |  |  |  |  |
 | `search` | `@oxy.so/bloom/search` + barrel | universal | `search.mdx` | yes | 1 |  |  |  |  |
 | `segmented-control` | `@oxy.so/bloom/segmented-control` + barrel | universal | `segmented-control.mdx` | yes | 3 | reads |  |  |  |
@@ -252,7 +257,7 @@ The classification is an EQUALITY in `src/__tests__/adoption-matrix.test.ts`, no
 | `stay-filters` | `@oxy.so/bloom/stay-filters` + barrel | universal | `stay-filters.mdx` | yes | 4 | n/a¹ |  |  |  |
 | `stay-search` | `@oxy.so/bloom/stay-search` + barrel | universal | `stay-search.mdx` | yes | 4 |  |  |  |  |
 | `stepper` | `@oxy.so/bloom/stepper` + barrel | universal | `stepper.mdx` | yes | 3 | reads |  |  |  |
-| `styles` | `@oxy.so/bloom/styles` + barrel | universal | `styles.mdx` | yes | 47 |  |  |  |  |
+| `styles` | `@oxy.so/bloom/styles` + barrel | universal | `styles.mdx` | yes | 51 |  |  |  |  |
 | `subtle-hover` | `@oxy.so/bloom/subtle-hover` + barrel | universal | `subtle-hover.mdx` | yes | 1 |  |  |  |  |
 | `surfaces` | `@oxy.so/bloom/surfaces` + barrel | web fork | `alert.mdx` | yes | 2 |  |  |  |  |
 | `switch` | `@oxy.so/bloom/switch` + barrel | universal | `switch.mdx` | yes | 5 | reads |  |  |  |
@@ -265,7 +270,7 @@ The classification is an EQUALITY in `src/__tests__/adoption-matrix.test.ts`, no
 | `tenancy` | `@oxy.so/bloom/tenancy` + barrel | universal | `tenancy.mdx` | yes | 3 |  | n/a¹ |  |  |
 | `text-field` | `@oxy.so/bloom/text-field` + barrel | universal | `text-field.mdx` | yes | 10 | reads | reads |  |  |
 | `textarea` | `@oxy.so/bloom/textarea` + barrel | universal | `textarea.mdx` | yes | 4 | reads | reads |  | n/a¹ |
-| `theme` | `@oxy.so/bloom/theme` + barrel | web fork | `theme.mdx` | yes | 254 |  |  | n/a¹ | reads |
+| `theme` | `@oxy.so/bloom/theme` + barrel | web fork | `theme.mdx` | yes | 258 |  |  | n/a¹ | reads |
 | `theme-toggle` | `@oxy.so/bloom/theme-toggle` + barrel | universal | `theme-toggle.mdx` | yes | 1 | n/a¹ |  |  |  |
 | `toast` | `@oxy.so/bloom/toast` + barrel | universal | `toast.mdx` | yes | 17 |  |  |  |  |
 | `tooltip` | `@oxy.so/bloom/tooltip` + barrel | web fork | `tooltip.mdx` | yes | 1 |  |  |  |  |

@@ -2155,6 +2155,62 @@
         "default": "./lib/commonjs/map-marker/index.js"
       }
     },
+    "./order-status": {
+      "react-native": {
+        "types": "./lib/typescript/module/order-status/index.d.ts",
+        "default": "./src/order-status/index.ts"
+      },
+      "import": {
+        "types": "./lib/typescript/module/order-status/index.d.ts",
+        "default": "./lib/module/order-status/index.js"
+      },
+      "require": {
+        "types": "./lib/typescript/commonjs/order-status/index.d.ts",
+        "default": "./lib/commonjs/order-status/index.js"
+      }
+    },
+    "./price-breakdown": {
+      "react-native": {
+        "types": "./lib/typescript/module/price-breakdown/index.d.ts",
+        "default": "./src/price-breakdown/index.ts"
+      },
+      "import": {
+        "types": "./lib/typescript/module/price-breakdown/index.d.ts",
+        "default": "./lib/module/price-breakdown/index.js"
+      },
+      "require": {
+        "types": "./lib/typescript/commonjs/price-breakdown/index.d.ts",
+        "default": "./lib/commonjs/price-breakdown/index.js"
+      }
+    },
+    "./address": {
+      "react-native": {
+        "types": "./lib/typescript/module/address/index.d.ts",
+        "default": "./src/address/index.ts"
+      },
+      "import": {
+        "types": "./lib/typescript/module/address/index.d.ts",
+        "default": "./lib/module/address/index.js"
+      },
+      "require": {
+        "types": "./lib/typescript/commonjs/address/index.d.ts",
+        "default": "./lib/commonjs/address/index.js"
+      }
+    },
+    "./route-stops": {
+      "react-native": {
+        "types": "./lib/typescript/module/route-stops/index.d.ts",
+        "default": "./src/route-stops/index.ts"
+      },
+      "import": {
+        "types": "./lib/typescript/module/route-stops/index.d.ts",
+        "default": "./lib/module/route-stops/index.js"
+      },
+      "require": {
+        "types": "./lib/typescript/commonjs/route-stops/index.d.ts",
+        "default": "./lib/commonjs/route-stops/index.js"
+      }
+    },
     "./tenancy": {
       "react-native": {
         "types": "./lib/typescript/module/tenancy/index.d.ts",
@@ -3337,6 +3393,18 @@
       ],
       "map-marker": [
         "./lib/typescript/module/map-marker/index.d.ts"
+      ],
+      "order-status": [
+        "./lib/typescript/module/order-status/index.d.ts"
+      ],
+      "price-breakdown": [
+        "./lib/typescript/module/price-breakdown/index.d.ts"
+      ],
+      "address": [
+        "./lib/typescript/module/address/index.d.ts"
+      ],
+      "route-stops": [
+        "./lib/typescript/module/route-stops/index.d.ts"
       ],
       "tenancy": [
         "./lib/typescript/module/tenancy/index.d.ts"

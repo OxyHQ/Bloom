@@ -1,0 +1,125 @@
+---
+title: Order status
+description: Where a thing that moves through named steps is now — one timeline with a vertical and a horizontal orientation, and the compact live strip that carries the current status, an ETA and a progress measurement.
+order: 130
+---
+
+# Order status
+
+A parcel goes "picked up → in transit → out for delivery → delivered". A food order goes
+"accepted → cooking → on the way → delivered". A booking goes "requested → confirmed →
+under way → finished". Those are the same four props with different words, so they are
+one component, and nothing in its API is about parcels or food.
+
+```tsx
+import { OrderStatusBar, OrderStatusTimeline } from '@oxy.so/bloom/order-status';
+
+<OrderStatusTimeline
+  accessibilityLabel="Delivery status"
+  steps={[
+    { label: 'Picked up', timestamp: 'Mon 09:12', state: 'done' },
+    { label: 'In transit', timestamp: 'Mon 14:40', state: 'done', note: 'Left the sorting hub' },
+    { label: 'Out for delivery', timestamp: 'Today 08:05', state: 'current' },
+    { label: 'Delivered', state: 'upcoming' },
+  ]}
+/>
+
+<OrderStatusBar
+  status="Out for delivery"
+  eta="Arrives 14:35"
+  detail="Four stops away"
+  icon={RiCarLine}
+  progress={{ value: 3, max: 4, accessibilityLabel: 'Delivery progress', valueText: '3 of 4 stops' }}
+  action={<GlyphButton icon={RiPhoneLine} accessibilityLabel="Call the courier" onPress={call} />}
+/>
+```
+
+## A pipeline, not a log
+
+`OrderStatusTimeline` draws a PIPELINE: a fixed set of named steps, at most one of which
+is current, with everything before it done and everything after it upcoming. That is a
+different thing from a HISTORY of events, which is what `TenancyTimeline` and
+`EvictionTimeline` draw — an open-ended list of things that happened, each with a date
+and a source.
+
+The distinction is worth knowing because it decides what the component can offer. A
+pipeline's steps are knowable in advance, so the whole journey fits on one rail and a
+horizontal orientation means something; a log's are not, so it can only ever stack. And a
+pipeline can STOP, which is the `failed` state — a log has nothing to say about that,
+because an event that happened cannot un-happen.
+
+If what you have is a history rather than a pipeline, reach for `TenancyTimeline`. The
+geometry of the vertical orientation here is deliberately the same as that one's, so the
+two sit on a screen together without a seam.
+
+## One component, two orientations
+
+`orientation` is a prop rather than a second component because the DATA does not change
+across the switch: the same array, the same keys, the same announced tree, the same
+words. A screen that switches at a breakpoint therefore switches a string, not a
+component, and cannot lose state or drift into two half-maintained call sites.
+
+What the orientation does change:
+
+| | vertical | horizontal |
+| --- | --- | --- |
+| reading order | top to bottom | left to right |
+| `note` | drawn | **not drawn** |
+| label | body rung, one column | caption rung, centred, at most two lines |
+| width | fills its parent | each step takes an equal share |
+
+**`note` is the deliberate omission.** A rail gives each step one column's width; a
+sentence in it either clips or sets the whole rail's height from its longest entry. If
+the note matters at that breakpoint, the screen wants the vertical orientation, not a
+wider rail.
+
+Keep the labels short for the same reason. A label that wraps to two lines pushes its own
+timestamp down while its neighbours' stay up, so a rail of mixed-length labels has a
+ragged bottom edge. Two words per step is the shape this rail is drawn for.
+
+## What the marker says, and what it cannot say
+
+At `comfortable` density every marker is a 24 disc, and the four states are told apart by
+SHAPE as well as colour: `done` carries a check, `current` carries the step's own glyph
+(or nothing) inside a tinted halo, `upcoming` is a hollow ring, `failed` carries a cross.
+
+At `compact` the marker is an 8 dot and there is no room for a glyph. At that rung the
+state travels as colour plus the announced word and nothing else — so **compact is the
+wrong density for a screen where the failure is the point.**
+
+The rail between two steps fills when the LATER one is `done`, `current` or `failed`, in
+that step's own tone. The rail therefore reads as "how far it got", which is the same
+sentence in both orientations.
+
+## Accessibility
+
+The timeline is a `list` of `listitem`s. Each marker is an `img` named by its state, so a
+reader hears "Done, Picked up, 14:20" — the state first, then what it belongs to. Colour
+alone never carries the state.
+
+`OrderStatusBar`'s progress goes through `Meter`, which means it is a real `progressbar`
+with `aria-valuenow`/`min`/`max` and a required name. Give `valueText` a reading a person
+would say ("3 of 4 stops"); without it a bar at 3 of 4 is announced as "75%".
+
+## What it refuses to do
+
+**It never reads a clock and never formats a date.** `timestamp` and `eta` are strings
+the app produced. A component that formatted them would have to own a locale, a time
+zone and a "2 minutes ago" refresh loop for three different apps, and would get at least
+one of the three wrong.
+
+**It never computes the progress.** `progress.value` is a measurement the app made —
+stops completed, minutes elapsed, metres covered. The component does not infer one from
+the steps, because "how far along" is not the same question as "which step is current"
+and only the app knows which one its bar is answering.
+
+## Where it sits
+
+`OrderStatusBar` paints a surface one rung above whatever it was dropped on, with a
+hairline and a 16 radius, and publishes that surface so anything inside it steps off the
+right parent. Inside a card that already paints — a checkout summary, a detail panel —
+pass `variant="plain"` and it draws the content and no chrome.
+
+`OrderStatusTimeline` paints nothing. It reads the ambient surface for its text rungs and
+its connector, so the same timeline is legible on a page, in a card and in a sheet
+without being told which it is.
