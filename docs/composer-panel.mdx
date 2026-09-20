@@ -52,7 +52,7 @@ Both composers take the pair. `busy` **without** `onStop` draws no stop at all: 
 | `ComposerAttachments` | `ComposerPanel` with a **simulated** sequential upload queue: files arriving with `progress: 0` land one after another. For demos and prototypes — real uploads pass their own `progress` to `ComposerPanel`. |
 | `ModelPicker` | The model picker on its own (provider rail, Quick Search, effort). |
 | `ComposerPanelStatusTab` | The status tab — branch, project folder, context meter. Pass it as `status`. |
-| `ComposerPill` | The AI chat's one-row pill composer: add menu, field, a simple Models + Effort menu, mic and send / stop. |
+| `ComposerPill` | The AI chat's pill composer: add menu, field, a simple Models + Effort menu, mic and send / stop. One line at rest, growing with the draft to `maxLines`. |
 | `ComposerStatusBar` | The line under the pill: branch, a Local Folders menu, agent mode and the context meter. |
 | `COMPOSER_PANEL_PERMISSIONS`, `COMPOSER_PANEL_ADD_MENU`, `MODEL_PICKER_EFFORT_LEVELS` | The default modes, add-menu rows and effort stops, for extending rather than retyping. |
 
@@ -195,6 +195,24 @@ Every control is named: the triggers announce their current value ("Permission: 
 | `labels`, `modelPickerLabels` | objects | English | Localisation. |
 | `style`, `testID` | | | |
 
-`ComposerPill` takes the same draft, add-menu, voice and `onStop` / `busy` props, plus `models` (`string | { id, name }` entries), `model` / `defaultModel` / `onModelChange` (by **id**), the effort trio, `effortLevels`, `compactPlaceholder`, `surface` and `glass`.
+`ComposerPill` takes the same draft, add-menu, voice and `onStop` / `busy` props, plus `models` (`string | { id, name }` entries), `model` / `defaultModel` / `onModelChange` (by **id**), the effort trio, `effortLevels`, `compactPlaceholder`, `surface`, `glass` and `maxLines`.
+
+### The pill grows
+
+It is 52px at rest — the height of its controls, not of its field — and gains a
+line's height for each line the draft wraps to, up to `maxLines` (default `8`),
+after which the field scrolls inside it. Past one line the corners square off
+from a full round to 26 and the controls sit with the LAST line, where the
+caret is; centred, they would drift into the middle of the draft.
+
+`maxLines={1}` keeps the fixed single-line box the pill had before it could
+grow.
+
+**Shift+Enter breaks the line; Enter sends.** Both composers in this family
+answer Enter the same way now — `ComposerPill` used to read only the key, so
+the most-used combination in a composer sent a half-written message on a field
+that could not have held the line anyway. An input method's Enter
+(`isComposing`) is left to the input method, and neither key submits while
+`busy`.
 
 `ComposerAttachments` takes the same props plus `attachments` (required), `uploadDuration` (1100), `uploadGap` (240), `onAttachmentsChange`, `onUploadComplete`, `onAllUploaded`. `ModelPicker` takes `providers`, `value`/`defaultValue`/`onValueChange`, the effort trio, `effortLevels`, `labels`, `style`, `testID`.

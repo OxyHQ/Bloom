@@ -346,6 +346,45 @@ describe('ComposerPill', () => {
     expect(getByLabelText('Send message').props['aria-disabled']).toBe(true);
   });
 
+  /**
+   * The pill holds a paragraph.
+   *
+   * It was a fixed 52px box around a 20px field with no `multiline` — under
+   * react-native-web an `<input>`, which cannot hold a newline and cannot
+   * grow. A composer for an assistant that cannot take a paragraph is not a
+   * composer, and the Enter handler made it worse: it had no `shiftKey`
+   * clause, so the one key people use to break a line sent the half-written
+   * message. `ComposerPanelBase` has always had that clause; the two
+   * composers disagreeing about it was a difference nobody chose.
+   *
+   * The `shiftKey` half is a DOM keydown and `IS_WEB` is false under this
+   * preset, so it is pinned in `ComposerPillWeb.test.tsx`, which renders into
+   * a real document the way `ChatComposer.test.tsx` does.
+   */
+  it('grows with the draft and stops at maxLines', () => {
+    const { getByLabelText, getByTestId } = renderIn(<ComposerPill testID="pill" maxLines={3} />);
+    const field = getByLabelText('Message');
+
+    const heightAtRest = Number(resolvedStyle(getByTestId('pill').props.style).height);
+
+    act(() => {
+      fireEvent(field, 'contentSizeChange', { nativeEvent: { contentSize: { height: 40 } } });
+    });
+    const heightAtTwo = Number(resolvedStyle(getByTestId('pill').props.style).height);
+    expect(heightAtTwo).toBeGreaterThan(heightAtRest);
+
+    // Past the cap the box stops and the field scrolls instead.
+    act(() => {
+      fireEvent(field, 'contentSizeChange', { nativeEvent: { contentSize: { height: 400 } } });
+    });
+    const heightAtCap = Number(resolvedStyle(getByTestId('pill').props.style).height);
+
+    act(() => {
+      fireEvent(field, 'contentSizeChange', { nativeEvent: { contentSize: { height: 4000 } } });
+    });
+    expect(Number(resolvedStyle(getByTestId('pill').props.style).height)).toBe(heightAtCap);
+  });
+
   it('shows the model button only with models, and picks a model from its panel', () => {
     const onModelChange = jest.fn();
     const none = renderIn(<ComposerPill />);

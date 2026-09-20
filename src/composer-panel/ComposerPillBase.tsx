@@ -43,7 +43,10 @@ const EASE_OUT = Easing.bezier(0, 0, 0.58, 1);
 const GLASS_MS = 480;
 /** `max-width: 639px`. */
 const COMPACT_WIDTH = 640;
+/** The pill at one line: the field's 20px line box plus 8px padding either side, in a 52 box. */
 const PILL_HEIGHT = 52;
+/** One line of `body-regular`, which is what the field was fixed at. */
+const LINE_HEIGHT = 20;
 
 const DEFAULT_LABELS: Required<ComposerPillLabels> = {
   message: 'Message',
@@ -155,6 +158,13 @@ function ModelRow({
 }) {
   const [hovered, setHovered] = useState(false);
   const [focused, setFocused] = useState(false);
+  /**
+   * The field's measured content height, from `onContentSizeChange`.
+   *
+   * Measured rather than counted: a draft wraps, so the number of LINES is not
+   * the number of newlines, and only the field knows how its own text laid out.
+   */
+  const [contentHeight, setContentHeight] = useState(LINE_HEIGHT);
   return (
     <Pressable
       {...dataHook('bloomComposerRow')}
@@ -409,6 +419,7 @@ export function ComposerPillBase({
   inputRef,
   labels: labelOverrides,
   style,
+  maxLines = 8,
   testID,
 }: ComposerPillProps) {
   useComposerWebCss();
@@ -438,6 +449,13 @@ export function ComposerPillBase({
     },
   });
   const [focused, setFocused] = useState(false);
+  /**
+   * The field's measured content height, from `onContentSizeChange`.
+   *
+   * Measured rather than counted: a draft wraps, so the number of LINES is not
+   * the number of newlines, and only the field knows how its own text laid out.
+   */
+  const [contentHeight, setContentHeight] = useState(LINE_HEIGHT);
   const [modelWidth, setModelWidth] = useState(0);
 
   // The chat's add surface is a step lighter than the Composer Panel's:
@@ -466,21 +484,66 @@ export function ComposerPillBase({
 
   const onKeyPress = useCallback(
     (event: NativeSyntheticEvent<TextInputKeyPressEventData>) => {
-      const native: TextInputKeyPressEventData & { isComposing?: boolean } = event.nativeEvent;
-      if (!IS_WEB || native.key !== 'Enter' || native.isComposing || disabled || busy) return;
+      const native: TextInputKeyPressEventData & { shiftKey?: boolean; isComposing?: boolean } = event.nativeEvent;
+      /*
+       * Shift+Enter is a NEWLINE, not a send.
+       *
+       * This handler used to read only the key, so a person holding shift to
+       * break a line sent the half-written message instead — on a field that
+       * could not have held the line anyway. `ComposerPanelBase` has always
+       * had the clause (`… || native.shiftKey || …`); the pill did not, and
+       * the two composers disagreeing about the most-used key in a composer
+       * was a difference nobody chose.
+       */
+      if (
+        !IS_WEB
+        || native.key !== 'Enter'
+        || native.shiftKey
+        || native.isComposing
+        || disabled
+        || busy
+      ) {
+        return;
+      }
       event.preventDefault();
       submit();
     },
     [submit, disabled, busy],
   );
 
+  /*
+   * How tall the pill is: one line, or as many as the draft needs up to
+   * `maxLines`.
+   *
+   * It was `height: PILL_HEIGHT` with a `height: 20` field and no `multiline`
+   * — under react-native-web that is an `<input>`, which cannot hold a newline
+   * and cannot grow. A composer for an assistant has to hold a paragraph, so
+   * the field is multiline and the pill measures it.
+   *
+   * The radius stays at 9999 while it is one line and squares off to 26 beyond
+   * that: a fully-round multi-line box puts the first and last lines inside
+   * the curve, where the text meets the edge.
+   */
+  const lines = Math.min(maxLines, Math.max(1, Math.ceil(contentHeight / LINE_HEIGHT) || 1));
+  const fieldHeight = lines * LINE_HEIGHT;
+  /*
+   * At one line the pill is exactly what it always was. Its 52 comes from the
+   * CONTROLS — a 36px disc inside 8px padding — not from the 20px field, so
+   * growing from the field's height would have SHRUNK the resting pill to 36.
+   * Each line after the first adds its own height and nothing else moves.
+   */
+  const pillHeight = PILL_HEIGHT + (lines - 1) * LINE_HEIGHT;
+  const multiLine = lines > 1;
+
   const pillStyle: WebCssStyle = {
     width: '100%',
-    height: PILL_HEIGHT,
+    height: pillHeight,
     flexDirection: 'row',
-    alignItems: 'center',
+    // The controls sit with the LAST line once the field has grown, which is
+    // where the caret is; centred, they would drift to the middle of the draft.
+    alignItems: multiLine ? 'flex-end' : 'center',
     gap: 10,
-    borderRadius: 9999,
+    borderRadius: multiLine ? 26 : 9999,
     padding: 8,
     backgroundColor: surface ? palette.surface : 'transparent',
     boxShadow: surface ? palette.shadowXs : undefined,
@@ -488,10 +551,12 @@ export function ComposerPillBase({
   };
 
   const fieldStyle: WebCssStyle = {
-    height: 20,
+    height: fieldHeight,
     minWidth: 0,
     flex: 1,
-    ...(IS_WEB && !focused
+    // The fade that hints at overflowing text is a ONE-LINE affordance: on a
+    // grown field it would dim the end of every line.
+    ...(IS_WEB && !focused && !multiLine
       ? {
           maskImage: 'linear-gradient(to right, #000 calc(100% - 32px), transparent 100%)',
           WebkitMaskImage: 'linear-gradient(to right, #000 calc(100% - 32px), transparent 100%)',
@@ -531,9 +596,14 @@ export function ComposerPillBase({
           selectionColor={palette.accent500}
           cursorColor={palette.accent500}
           returnKeyType="send"
+          multiline
+          onContentSizeChange={(event) => setContentHeight(event.nativeEvent.contentSize.height)}
           style={{
             width: '100%',
-            height: 20,
+            height: fieldHeight,
+            // react-native-web gives a multiline field a resize grip and a
+            // scrollbar it does not need: the pill owns the height.
+            ...(IS_WEB ? { resize: 'none', overflowY: lines >= maxLines ? 'auto' : 'hidden' } : null),
             padding: 0,
             margin: 0,
             ...TYPE_SCALE['body-regular'],

@@ -395,6 +395,16 @@ export interface ComposerPillProps {
    */
   glass?: boolean;
 
+  /**
+   * How many lines the pill grows to before the field scrolls instead. Default
+   * `8`.
+   *
+   * The pill is one line at rest and measures its own content as the draft
+   * wraps — a composer for an assistant has to hold a paragraph. `1` keeps the
+   * fixed single-line box this had before it could grow.
+   */
+  maxLines?: number;
+
   /** The field itself, for focus or a scripted demo. */
   inputRef?: RefObject<TextInput | null>;
   labels?: ComposerPillLabels;
