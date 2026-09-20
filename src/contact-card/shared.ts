@@ -16,10 +16,15 @@ import type { ContactProfileCardProps } from './types';
 export interface ContactPaint {
   /** The fill the content lands on — a card's, or the ambient one at compact. */
   surface: string;
-  /** The rule between the identity block and the footer. */
+  /** The rule between the meta row and the footer. */
   hairline: string;
-  /** The wash a channel action takes under a pointer. */
-  channelHover: string;
+  /**
+   * The next fill UP: the neutral tile a leading glyph sits in, and the wash a
+   * bare press target takes under a pointer. One step, read off the real
+   * parent — the role `home-search`'s card fills with `neutral-100` /
+   * `neutral-700`.
+   */
+  tile: string;
   text: string;
   textSecondary: string;
   textTertiary: string;
@@ -31,7 +36,7 @@ export function resolveContactPaint(theme: Theme, surface: string): ContactPaint
   return {
     surface,
     hairline: hairlineOn(theme, surface),
-    channelHover: surfaceFillOn(theme, surface),
+    tile: surfaceFillOn(theme, surface),
     text: text.text,
     textSecondary: text.textSecondary,
     textTertiary: text.textTertiary,

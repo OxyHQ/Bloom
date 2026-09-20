@@ -1,7 +1,7 @@
 export { LeadScoreCard } from './LeadScoreCard';
 export {
   LEAD_FACTOR_BAR_HEIGHT,
-  LEAD_FACTOR_TONE,
+  LEAD_FACTOR_ROW_GAP,
   LEAD_SCORE_BAND,
   LEAD_SCORE_CARD_PADDING,
   LEAD_SCORE_RING_SIZE,
