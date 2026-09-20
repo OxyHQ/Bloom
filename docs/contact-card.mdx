@@ -1,0 +1,140 @@
+---
+title: ContactProfileCard
+description: A person or a company in a CRM — identity, the channels you can reach them through, the owner, the tags and the last touch — as a card and as a row.
+order: 123
+---
+
+# ContactProfileCard
+
+One component, two densities, two subjects.
+
+```tsx
+import { ContactProfileCard } from '@oxy.so/bloom';
+
+<ContactProfileCard
+  name="Nora Vance"
+  role="Head of Operations"
+  company="Larkspur Freight"
+  status={{ label: 'Customer', tone: 'success' }}
+  channels={[
+    { kind: 'email', onPress: composeEmail },
+    { kind: 'phone', onPress: dial },
+  ]}
+  owner={{ name: 'Marta Oyeleye' }}
+  tags={['Enterprise', 'Renewal Q4']}
+  lastTouch="Last contacted 6 days ago"
+  onPress={openRecord}
+/>
+```
+
+## Why it is not called `ContactCard`
+
+`listing-details` already publishes a `ContactCard`: the card a renter uses to
+reach the person LETTING a home. Two families cannot offer one name from two
+declarations — ES modules drop the name from the barrel outright when two star
+exports disagree about it, and bob's CommonJS output resolves it first-wins
+instead, so the two builds of one file would disagree about what `ContactCard`
+is (gate: `barrel-name-collisions.test.ts`).
+
+The two are genuinely different things — an ACTION card for reaching a listing's
+agent, and the RECORD of a customer — so this one is the contact's profile and
+says so. The family directory stays `contact-card`.
+
+## A company is the same card
+
+`kind="company"` does not switch components. It squares the avatar into a
+squircle so a logo reads as a logo, reads `role` as the INDUSTRY, and drops
+`company` — a company has no company. Everything else is the same slot with a
+different fact in it: `facts` carries the headcount and the sites, `people`
+carries the facepile of who works there, and the owner, the tags and the last
+touch mean exactly what they meant for a person.
+
+That is the whole reason it is a `kind` and not a `CompanyCard`. Two components
+would be the same card plus a fork, and the fork would drift — one of them would
+get the owner row, the other would get the status pill, and nothing would say
+which was intended.
+
+## The geometry
+
+| | comfortable | compact |
+| --- | --- | --- |
+| surface | a `Card` (`outlined`, `radius-16`, 16 padding) | none — the list owns it |
+| avatar | 48 | 36 |
+| name | `headline-semibold` | `body-semibold` |
+| facts, tags, facepile, owner | drawn | not drawn |
+| channels | in the footer, under a hairline | beside the identity |
+| height | what it needs | at least 64 |
+
+Compact is the ROW, not a small card. It deliberately draws no surface of its
+own: a list, a settings group or a panel is already painting one, and a row with
+a second fill inside it is the seam every list of cards ends up with. It also
+drops the tags, the facts, the facepile and the owner rather than shrinking
+them — a row that showed all of them would be a card with the padding taken
+out, which is not a different density, it is a worse card.
+
+### Where the status pill sits, and what gives way
+
+On a CARD the status pill sits beside the name. In a ROW it moves to the meta
+line, because the row does not have the width: at 390, three 44-wide channel
+actions and a 36 avatar leave the identity about 150px, and a pill beside the
+name there truncated both — measured as "Nora Van…" next to "Custo…". The pill
+itself never shrinks (it is one word, and half of it says nothing); the line
+beside it is what ellipsizes.
+
+That 150px is also the budget the `lastTouch` line is spending. A row with three
+channels at 390 will clip it to "Last contacted 6 days…". If that line matters
+more than the third action, pass two channels and put the rest behind
+`actions`.
+
+## The press target is the identity block, not the card
+
+`onPress` is bound to the avatar and the text, never to the whole surface, and
+the channel actions and the `actions` slot sit outside it.
+
+A pressable card wrapping pressable channels is a control inside a control:
+invalid on web (a `<button>` inside a `<button>`), ambiguous on native, and it
+RENDERS FINE either way — the browser does not complain in a way anyone reads,
+and a prop-level test sees two correct components. `ContactProfileCard.test.tsx`
+asserts the containment instead: the subject element contains no element with
+`role="button"`, and no button in the tree has a button ancestor.
+
+The identity block is still the largest target on either density, so scoping it
+costs nothing.
+
+## A channel is an ACTION
+
+`channels` never renders an address or a number as text. Each entry becomes a
+44-wide `GlyphButton` named `"{verb} {label ?? name}"` from `CONTACT_CHANNEL` —
+"Email Nora Vance", "Call Nora Vance", "Open the website of Quillon Health".
+
+The verb lives in the table rather than on the entry for two reasons: a glyph
+control draws no text, so ARIA computes no name for it and one has to be built;
+and building it here means a caller cannot ship an unnamed one by forgetting a
+prop. 44 rather than the 36 a glyph needs is the touch target — a contact row is
+a column of them, and 36 is the size that is fine on a mouse and wrong on a
+thumb.
+
+Pass `icon` on a channel to change the glyph; the KIND still decides the verb,
+so a custom glyph cannot silently change what the action announces.
+
+## Tags are read-only here
+
+`tags` draws `Chip`s in a `ChipRow`, and the row's fade is set to the card's own
+fill so it does not blend into the page behind it. This card never edits a tag:
+the INPUT is `tag-field`, a family of its own.
+
+The row SCROLLS rather than wraps, which is `ChipRow`'s behaviour — five tags on
+a 320-wide card are one scrolling line, not three stacked ones.
+
+## Colour
+
+Every colour is read off the fill the content actually lands on, through
+`styles/surface-levels.ts`: the card resolves against `theme.colors.card`, the
+compact row against whatever `useSurfaceFill()` reports. `lastTouch` is the
+tertiary text rung by default; with `lastTouchTone` it takes that tone's
+accent PAIR through `resolveAccentColors` — never the fill colour with an alpha
+appended to it, which is the failure `docs/badge.mdx` describes.
+
+The comfortable card publishes its own fill with `SurfaceLevelProvider`, so
+anything nested inside it (a meter, a second row, a menu) steps off the card
+rather than off the page.

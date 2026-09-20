@@ -1,0 +1,126 @@
+---
+title: Pipeline
+description: Deals and the board they move on — a deal card, a stage column with its count and total, and a board that behaves on a phone. No drag and drop, on purpose.
+order: 124
+---
+
+# Pipeline
+
+Three components: `DealCard`, `PipelineColumn`, `PipelineBoard`.
+
+```tsx
+import { DealCard, PipelineBoard } from '@oxy.so/bloom';
+
+<PipelineBoard
+  stages={stages}
+  renderStage={(stage) =>
+    dealsIn(stage.id).map((deal) => (
+      <DealCard key={deal.id} {...deal} onPress={open} onMove={askWhereTo} />
+    ))
+  }
+  accessibilityLabel="Sales pipeline"
+/>
+```
+
+## There is no drag and drop, and that is the design
+
+Moving a deal between stages is the app's TRANSACTION. It owns the optimistic
+update, the rollback when the server says no, the permission check, the audit
+entry and the undo. A board that reordered its own view and left the app to
+notice is the worst version of this: it looks like it worked.
+
+A half-built drag is also worse than none in the hand. On a touch screen a
+vertical drag inside a horizontal scroller inside a vertical page has to win
+three gesture fights, and the one that loses is usually the page scroll — the
+board that "sometimes" scrolls is the one every user learns to distrust.
+
+So the board exposes the AFFORDANCE instead:
+
+- `DealCard`'s `onMove` draws a named move action ("Move Fleet telematics
+  rollout"). What it opens is the app's — a `DropdownMenu` of stages, a
+  `BottomSheet`, an `AlertDialog` confirming a downgrade.
+- `DealCard`'s `actions` slot takes anything else, typically a menu trigger.
+
+If an app wants drag, it wraps the cards itself; nothing here is in the way.
+
+## The amount is a string
+
+`DealCardProps.amount` and `PipelineStage.total` are PRE-FORMATTED. Currency,
+locale, rounding and abbreviation are four decisions Bloom cannot make — and a
+component that guessed one would be wrong in a way nobody notices until a
+customer does.
+
+Both are drawn on one line and never wrap: `€148,` above `000` is a different
+number to a reader. The amount also does not shrink when the close date beside
+it is long; the DATE gives way instead, because a truncated date is still a
+date and a truncated amount is a lie. `Pipeline.test.tsx` reads the emitted
+`white-space` and `flex-shrink` rather than the props, since the props prove
+nothing about the DOM.
+
+## One health axis, not two
+
+`health` is `on-track` / `at-risk` / `stalled`, drawn as a tinted `Badge` with
+the tone's glyph. There is deliberately no separate "priority" flag: a
+high-priority deal that is fine needs no mark, a stalled one is already the
+loudest thing on the card, and two pills that both mean "pay attention" is the
+duplication this family exists not to ship.
+
+`stalledFor` turns the stalled state into a duration — "Stalled for 23 days" —
+and is IGNORED on every other health, because a deal that is moving has not
+stalled for anything. The rule is `dealHealthLabel()`, exported and pinned in
+both directions.
+
+`stage` is for a card drawn OUTSIDE a column — a search result, a "my deals"
+list — where the column no longer says which stage it is in.
+
+## The column
+
+`PipelineColumn` paints ONE STEP off whatever is behind it (`surfaceFillOn`) and
+publishes that fill, so the deal cards inside step off the column instead of off
+the page. The same column therefore reads on a page, inside a `ContentPanel` and
+inside a dialog without being told which one it is on; the suite asserts the step
+clears 1.1:1 in both modes, which is the smallest fill difference that reads as
+a difference.
+
+- `count` is a counter `Badge` beside the name; `total` is right-aligned on one
+  line.
+- With no children it draws its `emptyLabel` in a hairline-outlined tile rather
+  than collapsing to nothing.
+- `loading` draws three `Skeleton.Box` placeholders INSTEAD of the empty state,
+  and suppresses "load more" — asking for more of what is not there yet.
+- `onLoadMore` renders a `text` button under the cards.
+
+## The board picks its own layout
+
+`layout="auto"` (the default) measures ITSELF with `useContainerWidth`, so a
+board in a side panel behaves like a phone without asking the window how wide it
+is. At or below `singleMaxWidth` (700) it draws `single`, otherwise `board`.
+
+Before the first layout the width is unknown, and `auto` chooses `board`: a
+board scrolls, so it is merely cramped at a phone width, while `single` on a
+desktop would hide four columns behind a tab row nobody asked for.
+
+- **board** — a horizontal `ScrollView` of 288-wide columns, 12 apart. The
+  scroller is the board's own, so the page behind it does not move sideways.
+  288 is wide enough for an amount and a close date on one line at the card's
+  type ramp and narrow enough that three fit a 960 pane.
+- **single** — a scrolling tab row of stage names plus the selected column at
+  full width. `SegmentedControl` was the obvious choice and is the wrong one:
+  five stage names do not fit 390, and a segmented control that clips is worse
+  than a row that admits it scrolls. So the tabs are `Chip role="tab"` inside a
+  `ChipRow role="tablist"`, which scroll and carry `aria-selected`.
+
+The selected stage is a controlled/uncontrolled pair (`stageId`,
+`defaultStageId`, `onStageChange`) reconciled by `useControllableState` — one
+mechanism, as `docs/composition.mdx` asks.
+
+`renderStage` returns the CARDS of one stage and the board never inspects what
+comes back. The stage list is data; the cards are opaque. Nothing here reads a
+child's type to decide anything.
+
+## What to reach for instead
+
+- A list of deals as a TABLE — sorting, columns, row actions — is `data-table`,
+  not a column of cards.
+- A funnel of stage-to-stage conversion is `FunnelChartCard`; stage totals over
+  time are `StageBarsCard`. A chart is not a board and neither is a meter.

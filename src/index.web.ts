@@ -1240,3 +1240,100 @@ export * as Code from './code';
 // Fonts
 export * as Fonts from './fonts/index.web';
 export * from './creator-studio';
+
+// CRM — people and companies, deals and the board they move on, what was done
+// with a customer, and how good a lead is. Named exports rather than `export *`
+// so the barrel says what each family publishes: `chat-people` already offers a
+// `ContactRow` and `chart-cards` an `ActivityDay`, and a star export is how two
+// families come to disagree about one name without anything failing.
+export {
+  ContactProfileCard,
+  CONTACT_AVATAR_SIZE,
+  CONTACT_CHANNEL,
+  CONTACT_CHANNEL_SIZE,
+  CONTACT_PROFILE_PADDING,
+  CONTACT_ROW_MIN_HEIGHT,
+  contactMetaLine,
+  resolveContactPaint,
+} from './contact-card';
+export type {
+  ContactChannel,
+  ContactChannelKind,
+  ContactOwner,
+  ContactPaint,
+  ContactProfileCardProps,
+  ContactProfileDensity,
+  ContactProfilePerson,
+  ContactStatus,
+  ContactSubjectKind,
+} from './contact-card';
+export {
+  DealCard,
+  DEAL_CARD_PADDING,
+  DEAL_HEALTH,
+  PipelineBoard,
+  PipelineColumn,
+  PIPELINE_CARD_GAP,
+  PIPELINE_COLUMN_PADDING,
+  PIPELINE_COLUMN_WIDTH,
+  PIPELINE_SINGLE_MAX_WIDTH,
+  PIPELINE_SKELETON_CARDS,
+  dealHealthLabel,
+  dealHealthTone,
+  pipelineColumnFill,
+  resolvePipelinePaint,
+} from './pipeline';
+export type {
+  DealCardProps,
+  DealHealth,
+  DealOwner,
+  PipelineBoardLayout,
+  PipelineBoardProps,
+  PipelineColumnProps,
+  PipelinePaint,
+  PipelineStage,
+} from './pipeline';
+export {
+  ActivityFeed,
+  ActivityFeedFilters,
+  ACTIVITY_AVATAR_SIZE,
+  ACTIVITY_BODY_CHARS_PER_LINE,
+  ACTIVITY_ENTRY_GAP,
+  ACTIVITY_FEED_KIND,
+  ACTIVITY_FEED_KINDS,
+  ACTIVITY_KIND_MARK_SIZE,
+  activityBodyIsLong,
+  groupActivityByDay,
+  resolveActivityFeedPaint,
+} from './activity-feed';
+export type {
+  ActivityFeedActor,
+  ActivityFeedEntry,
+  ActivityFeedFiltersProps,
+  ActivityFeedGroup,
+  ActivityFeedKind,
+  ActivityFeedPaint,
+  ActivityFeedProps,
+} from './activity-feed';
+export {
+  LeadScoreCard,
+  LEAD_FACTOR_BAR_HEIGHT,
+  LEAD_FACTOR_TONE,
+  LEAD_SCORE_BAND,
+  LEAD_SCORE_CARD_PADDING,
+  LEAD_SCORE_RING_SIZE,
+  LEAD_SCORE_RING_THICKNESS,
+  LEAD_SCORE_THRESHOLDS,
+  LEAD_SCORE_TREND,
+  factorScale,
+  formatContribution,
+  resolveLeadScoreBand,
+  resolveLeadScorePaint,
+} from './lead-score';
+export type {
+  LeadScoreBand,
+  LeadScoreCardProps,
+  LeadScoreFactor,
+  LeadScorePaint,
+  LeadScoreTrend,
+} from './lead-score';
