@@ -16,6 +16,7 @@ import { paintToCssImage, type ButtonStatePaint } from '../button/shared';
 import { DISABLED_OPACITY } from '../styles/tokens';
 import { RiArrowUpLine } from '../icons/remix/RiArrowUpLine';
 import { RiMic2Line } from '../icons/remix/RiMic2Line';
+import { RiStopFill } from '../icons/remix/RiStopFill';
 import type { WebCssStyle } from '../styles/web-view-style';
 import { CONTROL_SIZE, TRANSITION_MS, type ComposerPalette } from './shared';
 import { dataHook, IS_WEB } from './web-hooks';
@@ -235,6 +236,59 @@ export function SendButton({
       {/* Its own positioned box, so it paints above the absolutely placed fills. */}
       <View pointerEvents="none" style={{ position: 'relative', width: 20, height: 20 }}>
         <RiArrowUpLine width={20} height={20} fill="#ffffff" />
+      </View>
+    </Pressable>
+  );
+}
+
+/**
+ * Stop — send's other state, drawn on the same disc so the action sits where the
+ * reader last pressed: the accent gradient (hover and active crossfading like
+ * send's) with a white 20px stop mark.
+ *
+ * It takes no `disabled`. The composer's `disabled` locks the draft for the
+ * whole turn, and the one thing that must stay possible for that whole turn is
+ * cancelling it.
+ */
+export function StopButton({
+  onPress,
+  label,
+  palette,
+}: {
+  onPress?: () => void;
+  label: string;
+  palette: ComposerPalette;
+}) {
+  const [hovered, setHovered] = useState(false);
+  const [pressed, setPressed] = useState(false);
+  const paint = palette.send;
+  const base = pressed ? paint.active : paint.rest;
+  const style: WebCssStyle = {
+    position: 'relative',
+    width: CONTROL_SIZE,
+    height: CONTROL_SIZE,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderRadius: 9999,
+    cursor: 'pointer',
+    '--bloom-composer-ring': palette.focusRing,
+  };
+  return (
+    <Pressable
+      {...dataHook('bloomComposerControl', 'stop')}
+      accessibilityRole="button"
+      accessibilityLabel={label}
+      onPress={onPress}
+      onPressIn={() => setPressed(true)}
+      onPressOut={() => setPressed(false)}
+      onHoverIn={() => setHovered(true)}
+      onHoverOut={() => setHovered(false)}
+      style={style}>
+      <GradientFill paint={base} />
+      <GradientFill paint={paint.hover} opacity={hovered && !pressed ? 1 : 0} />
+      {/* Its own positioned box, so it paints above the absolutely placed fills. */}
+      <View pointerEvents="none" style={{ position: 'relative', width: 20, height: 20 }}>
+        <RiStopFill width={20} height={20} fill="#ffffff" />
       </View>
     </Pressable>
   );

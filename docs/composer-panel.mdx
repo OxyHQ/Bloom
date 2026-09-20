@@ -34,6 +34,16 @@ import {
 
 The panel is UI and interaction state only. Sending, streaming, uploading and model routing belong to the consumer: `onSubmit` hands you the draft, `disabled` greys send while a turn is in flight, and each attachment's `progress` is yours to drive.
 
+## A turn in flight
+
+`busy` puts the **stop** control where send was; `onStop` is what it calls. It is the one control `disabled` does not reach — `disabled` locks the composer for the whole turn, and cancelling that turn has to stay possible for the whole of it. Enter stops submitting while `busy` too.
+
+```tsx
+<ComposerPill busy={streaming} disabled={streaming} onStop={abort} onSubmit={send} />
+```
+
+Both composers take the pair. `busy` **without** `onStop` draws no stop at all: a labelled control wired to nothing is worse than no control. It is the same shape `AgentChatComposer` already uses.
+
 ## Exports
 
 | Export | What it is |
@@ -42,7 +52,7 @@ The panel is UI and interaction state only. Sending, streaming, uploading and mo
 | `ComposerAttachments` | `ComposerPanel` with a **simulated** sequential upload queue: files arriving with `progress: 0` land one after another. For demos and prototypes — real uploads pass their own `progress` to `ComposerPanel`. |
 | `ModelPicker` | The model picker on its own (provider rail, Quick Search, effort). |
 | `ComposerPanelStatusTab` | The status tab — branch, project folder, context meter. Pass it as `status`. |
-| `ComposerPill` | The AI chat's one-row pill composer: add menu, field, a simple Models + Effort menu, mic and send. |
+| `ComposerPill` | The AI chat's one-row pill composer: add menu, field, a simple Models + Effort menu, mic and send / stop. |
 | `ComposerStatusBar` | The line under the pill: branch, a Local Folders menu, agent mode and the context meter. |
 | `COMPOSER_PANEL_PERMISSIONS`, `COMPOSER_PANEL_ADD_MENU`, `MODEL_PICKER_EFFORT_LEVELS` | The default modes, add-menu rows and effort stops, for extending rather than retyping. |
 
@@ -60,6 +70,8 @@ import { ComposerPill, ComposerStatusBar } from '@oxy.so/bloom/composer-panel';
 
 - **Pill** — 52 tall, full radius, p 8, gap 10, background-primary + shadow-xs. The add disc is a step lighter than the panel's (neutral-100 / dark 700, hovered 200 / 600) and reuses the panel's `AddMenu`. The field is body-regular with an accent-500 caret; its placeholder shortens to `compactPlaceholder` ("Ask me") under 640 wide, and unfocused on web its last 32px fade into the pill.
 - **Model menu** — a 32-tall trigger (radius 12, py 6 / pr 4 / pl 8) with a turning 18px chevron, opening a 266px panel upward: "Models" radio rows (p 8, radius 10, 14px radio, primary-hover while selected), a full-bleed divider (7 above, 12 below), "Effort *value*" (the value blurs in on change), Faster / Smarter and the six-stop slider. Choosing a model closes it; the slider leaves it open. Omit `models` to hide the button.
+- **Model identity** — `models` takes `{ id, name }` entries, the same contract as `ModelPicker`: the menu keys, matches and reports the **id** and only ever draws the `name`. A bare string is shorthand for `{ id: name, name }`, which is why the old `models={['Fable 5']}` form still behaves exactly as it did — but a routing identifier that is matched by display name is a bug waiting for two models to share a label, so pass ids where you have them.
+- **No effort axis** — `effortLevels={[]}` drops the divider and the whole effort half of the panel. A model with no stops gets the model rows alone, not an empty chip over a slider that cannot commit.
 - **Mic and send** — the panel's own controls, 8 apart after a 6px lead.
 - **`surface={false}`** inside a `ComposerLoader`, which paints the pill surface behind its light.
 - **`glass`** — the add, model and mic controls drop their fill, border and shadow over 480ms onto frosted chips (web: 6px saturated backdrop blur, a 12% / dark 6% white tint, a 155° sheen, a 0.3px conic rim; native: the tint). Pair it with an active loader.
@@ -90,6 +102,7 @@ Every text run uses the type ramp (`body-medium`, `body-2-medium`, `body-regular
 - **Add** — the plus turns 45° while open. Groups of rows (`addMenu`), each with a 20px icon or 24px artwork and an inline muted description. `onAddMenuSelect(rowId)` fires and the menu closes. `addMenu={[]}` hides the button.
 - **Permissions** — a pill that paints only on hover, press or while open; the panel lists `permissions` as radios (`aria-checked`). `onLearnMore` shows "Learn more" in the header.
 - **Model picker** — the rail browses providers (tabs, `aria-selected`) and always reopens on the chosen model's provider, keeping its mark in view. "Quick Search" (or `/` and ⌘K on web) filters every lineup; Escape clears the query, then leaves search. The selected row carries the effort chip, which opens the effort panel. Pass `providers` to `ComposerPanel` to show it.
+- **Effort is a separate axis, and an optional one.** `effortLevels={[]}` drops the chip entirely — models whose deployments cannot agree on a level have no effort to offer, and a chip over an uncommittable slider is a control wired to nothing. `effort={null}` is the other half: **no stop chosen**, the parameter left out, the model deciding. The chip then reads `labels.effortAuto` ("Auto"), the fill is empty, every tick is faded and the thumb is drawn hollow and dashed, so an absent choice never looks like the first stop. The picker reports only stops a reader actually chose — it has no way back to `null`, which stays the caller's to hold.
 
 All three panels open upward and hang from the trigger's left edge. On **web** they are `floating/FloatingPanel` on its menu surface — a 150ms fade + scale + blur, non-modal (except the model picker, which catches the outside press so a press inside its separately-portaled effort panel is not read as "outside"). On **native** each is a transparent `Modal` placed against the trigger's `measureInWindow` box (flipped when it does not fit, clamped 8px inside the window), not a bottom sheet: the effort panel opens from inside the picker, and nested `Modal`s stack where sheets do not.
 
@@ -126,7 +139,7 @@ interface ModelPickerProvider {
 
 ## State
 
-Everything is controllable and works uncontrolled: `value`/`defaultValue`, `permission`/`defaultPermission`, `model`/`defaultModel`, `effort`/`defaultEffort`, `listening`/`defaultListening`. Enter submits on web (Shift+Enter breaks the line; IME composition is respected); on native the send button submits. An uncontrolled draft clears after submit.
+Everything is controllable and works uncontrolled: `value`/`defaultValue`, `permission`/`defaultPermission`, `model`/`defaultModel`, `effort`/`defaultEffort`, `listening`/`defaultListening`. Enter submits on web (Shift+Enter breaks the line; IME composition is respected) unless `busy`; on native the send button submits. An uncontrolled draft clears after submit.
 
 ## Colours
 
@@ -155,7 +168,7 @@ State colours 150ms; chevrons and the plus 200ms; mic ↔ equalizer crossfade 28
 
 ## Accessibility
 
-Every control is named: the triggers announce their current value ("Permission: Auto", "Models: GPT-5.6 Mini", "Effort: Medium") with `aria-expanded`; permission modes and model rows are radios (`aria-checked` + `accessibilityState`); rail marks are tabs; the mic is a toggle (`aria-pressed`); send carries `aria-disabled`; the effort slider is `adjustable` with flat `aria-value*`, `aria-valuetext` (the level name), increment/decrement actions, and arrow/Home/End keys on web.
+Every control is named: the triggers announce their current value ("Permission: Auto", "Models: GPT-5.6 Mini", "Effort: Medium", "Effort: Auto" with no stop chosen) with `aria-expanded`; stop is named "Stop generating" and carries no `aria-disabled`; permission modes and model rows are radios (`aria-checked` + `accessibilityState`); rail marks are tabs; the mic is a toggle (`aria-pressed`); send carries `aria-disabled`; the effort slider is `adjustable` with flat `aria-value*`, `aria-valuetext` (the level name, or the "Auto" label with no stop chosen — where `aria-valuenow` is omitted rather than guessed), increment/decrement actions, and arrow/Home/End keys on web.
 
 ## Props
 
@@ -163,7 +176,8 @@ Every control is named: the triggers announce their current value ("Permission: 
 |------|------|---------|-------------|
 | `value` / `defaultValue` / `onValueChange` | `string` | `''` | The draft. |
 | `onSubmit` | `(value) => void` | — | Send button and Enter (web). |
-| `disabled` | `boolean` | `false` | Greys send. |
+| `onStop` / `busy` | `() => void` / `boolean` | — / `false` | Send becomes stop, outside `disabled`'s reach. No handler, no stop. |
+| `disabled` | `boolean` | `false` | Greys send. Never the stop control. |
 | `placeholder` | `string` | `'Hi, what do you need today?'` | |
 | `permissions` | `ComposerPanelPermissionOption[]` | the default four | `[]` hides the picker. |
 | `permission` / `defaultPermission` / `onPermissionChange` | `string` | first mode | |
@@ -171,13 +185,16 @@ Every control is named: the triggers announce their current value ("Permission: 
 | `addMenu` / `onAddMenuSelect` | `ComposerPanelAddMenuGroup[]` / `(id) => void` | Add + Plugins | `[]` hides the button. |
 | `providers` | `ModelPickerProvider[]` | — | Shows the model picker. |
 | `model` / `defaultModel` / `onModelChange` | `string` | first model | |
-| `effort` / `defaultEffort` / `onEffortChange` | `number` | `1` | Index into `effortLevels`. |
-| `effortLevels` | `string[]` | the default six | |
+| `effort` / `defaultEffort` | `number \| null` | `1` | Index into `effortLevels`; `null` is "no stop chosen". |
+| `onEffortChange` | `(effort: number) => void` | — | Only ever a stop a reader chose. |
+| `effortLevels` | `string[]` | the default six | `[]` drops the effort axis. |
 | `listening` / `defaultListening` / `onListeningChange` | `boolean` | `false` | Voice input toggle. |
 | `attachments` / `onRemoveAttachment` | `ComposerPanelAttachment[]` / `(id) => void` | — | |
 | `status` | `ReactNode` | — | Usually `<ComposerPanelStatusTab />`. |
 | `inputRef` | `RefObject<TextInput>` | — | The prompt field. |
 | `labels`, `modelPickerLabels` | objects | English | Localisation. |
 | `style`, `testID` | | | |
+
+`ComposerPill` takes the same draft, add-menu, voice and `onStop` / `busy` props, plus `models` (`string | { id, name }` entries), `model` / `defaultModel` / `onModelChange` (by **id**), the effort trio, `effortLevels`, `compactPlaceholder`, `surface` and `glass`.
 
 `ComposerAttachments` takes the same props plus `attachments` (required), `uploadDuration` (1100), `uploadGap` (240), `onAttachmentsChange`, `onUploadComplete`, `onAllUploaded`. `ModelPicker` takes `providers`, `value`/`defaultValue`/`onValueChange`, the effort trio, `effortLevels`, `labels`, `style`, `testID`.

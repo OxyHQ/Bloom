@@ -57,6 +57,7 @@ const DEFAULT_LABELS: Required<ModelPickerLabels> = {
   noMatches: 'No models match',
   providers: 'Providers',
   effort: 'Effort',
+  effortAuto: 'Auto',
   faster: 'Faster',
   smarter: 'Smarter',
 };
@@ -218,6 +219,11 @@ function BlurInLevel({ level, palette }: { level: string; palette: ComposerPalet
   );
 }
 
+/**
+ * The effort chip on the checked row. Drawn only where there are stops to
+ * choose from — a model with no effort axis gets no chip, rather than an empty
+ * one over a slider that cannot commit.
+ */
 function EffortMenu({
   value,
   onChange,
@@ -225,7 +231,7 @@ function EffortMenu({
   labels,
   palette,
 }: {
-  value: number;
+  value: number | null;
   onChange: (next: number) => void;
   levels: ReadonlyArray<string>;
   labels: Required<ModelPickerLabels>;
@@ -235,7 +241,7 @@ function EffortMenu({
   const triggerRef = useRef<View>(null);
   const [open, setOpen] = useState(false);
   const [hovered, setHovered] = useState(false);
-  const level = levels[value] ?? levels[DEFAULT_EFFORT] ?? '';
+  const level = value === null ? labels.effortAuto : (levels[value] ?? labels.effortAuto);
 
   const chipStyle: WebCssStyle = {
     flexShrink: 0,
@@ -314,7 +320,14 @@ function EffortMenu({
               </Text>
             </View>
             <View style={{ paddingLeft: 8, paddingRight: 8, paddingBottom: 8 }}>
-              <EffortSlider value={value} onChange={onChange} levels={levels} label={labels.effort} palette={palette} />
+              <EffortSlider
+                value={value}
+                onChange={onChange}
+                levels={levels}
+                label={labels.effort}
+                unsetLabel={labels.effortAuto}
+                palette={palette}
+              />
             </View>
           </View>
         </View>
@@ -388,7 +401,7 @@ function ModelRow({
               {searching ? <InlineAside color={palette.textTertiary}>{provider.name}</InlineAside> : null}
             </Text>
           </View>
-          {checked ? <View style={{ flexShrink: 0, flexDirection: 'row' }}>{effort}</View> : null}
+          {effort ? <View style={{ flexShrink: 0, flexDirection: 'row' }}>{effort}</View> : null}
         </View>
         <View pointerEvents="none">
           <RadioIndicator selected={checked} size={14} />
@@ -447,10 +460,13 @@ export function ModelPickerBase({
     defaultValue: defaultValue ?? providers[0]?.models[0]?.id ?? '',
     onChange: onValueChange,
   });
-  const [effortValue, setEffort] = useControllableState<number>({
+  const [effortValue, setEffort] = useControllableState<number | null>({
     value: effort,
     defaultValue: defaultEffort,
-    onChange: onEffortChange,
+    // The picker can only ever land on a stop; `null` is the caller's to hold.
+    onChange: (next) => {
+      if (next !== null) onEffortChange?.(next);
+    },
   });
 
   const selected: Match | null =
@@ -724,7 +740,7 @@ export function ModelPickerBase({
                       }
                     }}
                     effort={
-                      checked ? (
+                      checked && effortLevels.length > 0 ? (
                         <EffortMenu
                           value={effortValue}
                           onChange={setEffort}

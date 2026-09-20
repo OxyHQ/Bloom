@@ -14,7 +14,7 @@ The pieces of the AI chat and AI image generation screens. Everything is data an
 | `AiChatMobileHeader` | The in-container header below `xl` (menu button, title, panel button), wired to the shell |
 | `AiChatResizeHandle` | The grip on the chat's right edge |
 | `AiChatContainer` | The chat card: breadcrumb header, thread, composer slot, `AgentThinking` while working |
-| `AiChatThread` | The bottom-anchored, self-following scroll of turns |
+| `AiChatThread` | The bottom-anchored, self-following scroll of turns — with the follow, upward pagination and `ref` a host with history needs |
 | `AiChatUserMessage` / `AiChatAssistantMessage` | The turns, with the staggered blur-in |
 | `AiChatMessageLine`, `AiChatBulletList`, `AiChatBullet`, `AiChatStrong`, `AiChatLinkChip` | A reply's blocks and inline runs |
 | `AiChatFeedbackRow` | Like / dislike / copy with tooltips |
@@ -29,6 +29,7 @@ import { AiChatShell, AiChatContainer, AiChatMobileHeader, AiChatThread, AiChatU
 
 <AiChatShell
   sidebar={<Sidebar {...rail} />}
+  sidebarCollapsed={railOnly}
   mobileSidebar={<Sidebar {...rail} mobile flat />}
   panelLabel="Code"
   panel={(width) => <AiChatCodePanel width={width} code={file} language="tsx" />}>
@@ -37,7 +38,12 @@ import { AiChatShell, AiChatContainer, AiChatMobileHeader, AiChatThread, AiChatU
     title="coding scenario"
     header={<AiChatMobileHeader title="Agentic chat" />}
     working={working}
-    composer={<ComposerLoader active={working}><ComposerPill surface={false} glass={working} /></ComposerLoader>}>
+    background={<YourOwnField />}
+    composer={
+      <ComposerLoader active={working}>
+        <ComposerPill surface={false} glass={working} busy={working} disabled={working} onStop={stop} />
+      </ComposerLoader>
+    }>
     <AiChatThread>
       <AiChatUserMessage>update our colour tokens for dark mode</AiChatUserMessage>
       <AiChatAssistantMessage>Done — the tokens are wired.</AiChatAssistantMessage>
@@ -55,12 +61,34 @@ Give the shell a sized parent — it fills it.
 - **below xl** the panel is a right drawer — min(410, 100% − 12) wide, background-full, p 12, shadow-sidebar, a 40-tall header with the panel name and a close button — over a 40% black backdrop, sliding 300ms. `panel` receives `'100%'` there.
 - **below lg** the `mobileSidebar` rests under the workspace (272 wide, py 12 / pl 6). Opening it slides the whole workspace 272 right and rounds it to 32 while the sidebar scales from 94% and fades in (325ms `cubic-bezier(0.42, 0, 0.58, 1)`); a 10% black / 5% white veil over the workspace closes it. Opening one drawer closes the other.
 - `navOpen` / `panelOpen` are controllable. Reduced motion snaps.
+- **A collapsible rail** — `sidebarWidth` fixes the in-flow column's width, `sidebarCollapsed` narrows it to `collapsedSidebarWidth` (56: one 36px control and its gutters). Without either, the sidebar sizes itself exactly as before. The column snaps between the two widths; whatever animates inside it is the sidebar's own business.
+- **`background` and `surface`** — `background` is any node, drawn above the shell's own background-full and below the sidebar, workspace and drawers; it is never interactive. The workspace paints background-full too, so pass `surface={false}` with it (that drops both) or the layer is covered exactly where the chat sits. When the layer belongs to the chat rather than the page, put it on `AiChatContainer` instead, which is the nearer slot and needs no opt-out.
+- **What the shell publishes** — `useAiChatShell()` returns the shell's state to any descendant: `compact`, `navCollapsed`, `sidebarCollapsed`, `hasNav` / `hasPanel`, `openNav` / `closeNav` / `openPanel`, and **`navPresented`**.
+
+  `navPresented` is the one to guard a nav's accessibility with. Below `lg` a closed drawer stays **mounted** — it is translated offscreen, not removed — so everything inside `mobileSidebar` is still focusable and still read aloud unless its own tree says otherwise. The shell marks its own wrapper `aria-hidden` and `pointerEvents="none"`, which handles the pointer but not the tab order of a host's controls; read `navPresented` and skip them while it is `false`.
 
 ## Container and thread
 
 Radius 24 on background-secondary: the breadcrumb header (px 16 / pt 16, share and more glyphs 8 apart, deepening to black / white on hover), the thread, then the footer (px 10 / pt 12 / pb 10, gap 10) with `AgentThinking` (infinity) while `working` and the `composer`.
 
-The thread scrolls with a thin scrollbar, px 16 / pt 16, turns 12 apart, and is **bottom-anchored**: a short exchange sits just above the composer. It follows the newest content with a smooth scroll whenever it grows.
+`project` is **optional**: a chat that belongs to nothing draws its own crumb alone, with no folder glyph and no empty crumb.
+
+`background` is a layer filling the container, drawn **above its own surface and below every turn, header and composer**, clipped to the radius and never interactive — a host's wallpaper, gradient or animated field goes here rather than behind the container, and nothing has to reach into it. An opaque node needs nothing else; add `surface={false}` when the node is translucent and should show what the container is sitting on instead of background-secondary.
+
+The thread scrolls with a thin scrollbar, px 16 / pt 16, turns 12 apart, and is **bottom-anchored**: a short exchange sits just above the composer. It follows the newest content with a smooth scroll whenever it grows — that is the default, and every prop below is off unless asked for.
+
+| Prop | Type | Default | Description |
+|---|---|---|---|
+| `autoFollow` | `boolean` | `true` | Follow the newest turn as the content grows. |
+| `followAnimated` | `boolean` | `true` | `false` for a follow that must not be seen travelling. |
+| `followThreshold` | `number` | — | Follow only from within this many px of the bottom, measured **before** the growth. Omit and every growth follows. |
+| `onStartReached` | `() => void` | — | The reader came near the **top**. A chat pages upward, so this — not `onEndReached` — is its pagination signal. Once per approach; it re-arms when the reader leaves the zone. |
+| `onStartReachedThreshold` | `number` | `300` | How near the top, px. |
+| `maintainStartPosition` | `boolean` | `false` | The growth that answers an `onStartReached` is added to the offset, so a page landing **above** the reader does not move the turn they are on. Inert without `onStartReached` — the thread only anchors growth it asked for. |
+| `onScroll` / `scrollEventThrottle` | | `16` | The raw event. Nothing is attached at all unless something is listening. |
+| `ref` | `AiChatThreadHandle` | — | `scrollToEnd({ animated })`, `scrollToOffset({ offset, animated })`, `getScrollView()`. |
+
+**Not there:** virtualization and `scrollToIndex`. The thread is a `ScrollView`, so a long history is fully mounted, and a host jumping to a cursor measures that turn's row (`onLayout`) and calls `scrollToOffset`. `maintainStartPosition` is the web-safe half of React Native's `maintainVisibleContentPosition`, which react-native-web ignores.
 
 **Hazard (web):** react-native-web gives every view `min-height: 0`, so the usual `flexGrow: 1` + `justifyContent: 'flex-end'` content container stays the viewport's height and its children overflow it instead of scrolling — and `onContentSizeChange` never sees the growth. The thread floors its container at `minHeight: '100%'` on web instead.
 

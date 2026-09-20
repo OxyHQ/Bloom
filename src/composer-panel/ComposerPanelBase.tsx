@@ -22,7 +22,7 @@ import { useTheme } from '../theme/use-theme';
 import { TYPE_SCALE } from '../typography';
 import { AddMenu } from './AddMenu';
 import { AttachmentStrip } from './AttachmentStrip';
-import { MicButton, SendButton } from './ComposerControls';
+import { MicButton, SendButton, StopButton } from './ComposerControls';
 import { ModelPickerBase } from './ModelPickerBase';
 import { PermissionMenu } from './PermissionMenu';
 import {
@@ -48,6 +48,7 @@ const DEFAULT_LABELS: Required<ComposerPanelLabels> = {
   learnMore: 'Learn more',
   voice: 'Voice input',
   send: 'Send message',
+  stop: 'Stop generating',
   remove: 'Remove',
 };
 
@@ -107,7 +108,8 @@ function Collapse({ open, children }: { open: boolean; children: React.ReactNode
  *   body          pt 6, prompt → controls 20
  *   prompt        px 6, body-regular, grows 20px a line up to 200 then scrolls
  *   controls      left: add + permission (8 apart); right: model picker, 16,
- *                 then mic + send (8 apart)
+ *                 then mic + send (8 apart); `busy` + `onStop` puts the stop
+ *                 control where send was, outside `disabled`'s reach
  *
  * Takes its panel implementation from the family's platform binding.
  */
@@ -116,6 +118,8 @@ export function ComposerPanelBase({
   defaultValue = '',
   onValueChange,
   onSubmit,
+  onStop,
+  busy = false,
   disabled = false,
   placeholder = 'Hi, what do you need today?',
   permissions = COMPOSER_PANEL_PERMISSIONS,
@@ -188,10 +192,10 @@ export function ComposerPanelBase({
   );
 
   const submit = useCallback(() => {
-    if (disabled) return;
+    if (disabled || busy) return;
     onSubmit?.(text);
     if (value === undefined) setText('');
-  }, [disabled, onSubmit, text, value, setText]);
+  }, [disabled, busy, onSubmit, text, value, setText]);
 
   const onKeyPress = useCallback(
     (event: NativeSyntheticEvent<TextInputKeyPressEventData>) => {
@@ -310,7 +314,11 @@ export function ComposerPanelBase({
                   label={labels.voice}
                   palette={palette}
                 />
-                <SendButton disabled={disabled} onPress={submit} label={labels.send} palette={palette} />
+                {busy && onStop ? (
+                  <StopButton onPress={onStop} label={labels.stop} palette={palette} />
+                ) : (
+                  <SendButton disabled={disabled} onPress={submit} label={labels.send} palette={palette} />
+                )}
               </View>
             </View>
           </View>

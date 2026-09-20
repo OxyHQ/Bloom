@@ -231,15 +231,19 @@ function WorkSwap({ finished, onFinished }: { finished: boolean; onFinished: () 
 /** The scripted conversation: the first turn now, then one more every 2s (0.9s outside the landing thread). */
 function Thread({
   scenario,
+  stopped,
   onImageGenerated,
   onWorkingChange,
 }: {
   scenario: AiChatScenario;
+  /** The composer's stop was pressed: the scripted work ends where it is. */
+  stopped: boolean;
   onImageGenerated: () => void;
   onWorkingChange: (working: boolean) => void;
 }) {
   const [codingFinished, setCodingFinished] = useState(false);
   const finishCoding = useCallback(() => setCodingFinished(true), []);
+  const finished = codingFinished || stopped;
   const messages =
     scenario === 'image-generation'
       ? [
@@ -278,7 +282,7 @@ function Thread({
                 </AiChatUserMessage>
               ),
             },
-            { id: 'coding-work', node: <WorkSwap finished={codingFinished} onFinished={finishCoding} /> },
+            { id: 'coding-work', node: <WorkSwap finished={finished} onFinished={finishCoding} /> },
           ]
         : landingPageMessages();
 
@@ -289,7 +293,7 @@ function Thread({
     return () => clearTimeout(timer);
   }, [messages.length, scenario, visibleCount]);
 
-  const working = scenario === 'coding-scenario' && visibleCount >= messages.length && !codingFinished;
+  const working = scenario === 'coding-scenario' && visibleCount >= messages.length && !finished;
   useEffect(() => {
     onWorkingChange(working);
     return () => onWorkingChange(false);
@@ -313,6 +317,7 @@ export function AiChatTemplate({ defaultScenario }: { defaultScenario: AiChatSce
   const [scenario, setScenario] = useState<AiChatScenario>(defaultScenario);
   const [navOpen, setNavOpen] = useState(false);
   const [working, setWorking] = useState(false);
+  const [stopped, setStopped] = useState(false);
   const [generated, setGenerated] = useState<AiChatGeneration[]>([]);
   const revealTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -333,6 +338,7 @@ export function AiChatTemplate({ defaultScenario }: { defaultScenario: AiChatSce
   const selectScenario = (key: string) => {
     if ((SCENARIOS as ReadonlyArray<string>).includes(key)) {
       setScenario(key as AiChatScenario);
+      setStopped(false);
       setNavOpen(false);
     }
   };
@@ -389,14 +395,33 @@ export function AiChatTemplate({ defaultScenario }: { defaultScenario: AiChatSce
           composer={
             <>
               <ComposerLoader active={working}>
-                <ComposerPill surface={false} glass={working} models={MODELS} defaultModel="Fable 5" />
+                {/*
+                  `busy` + `onStop` is the turn-in-flight contract: send becomes
+                  the stop disc, and it answers even with the rest of the
+                  composer locked (`disabled`).
+                */}
+                <ComposerPill
+                  surface={false}
+                  glass={working}
+                  models={MODELS}
+                  defaultModel="oxy/fable-5"
+                  disabled={working}
+                  busy={working}
+                  onStop={() => setStopped(true)}
+                />
               </ComposerLoader>
               <View style={{ paddingLeft: 6, paddingRight: 6 }}>
                 <ComposerStatusBar branch="Main" folders={LOCAL_FOLDERS} mode="Agent" context={57} />
               </View>
             </>
           }>
-          <Thread key={scenario} scenario={scenario} onImageGenerated={onImageGenerated} onWorkingChange={setWorking} />
+          <Thread
+            key={scenario}
+            scenario={scenario}
+            stopped={stopped}
+            onImageGenerated={onImageGenerated}
+            onWorkingChange={setWorking}
+          />
         </AiChatContainer>
       </AiChatShell>
     </View>

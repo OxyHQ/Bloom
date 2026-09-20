@@ -88,6 +88,27 @@ describe('ComposerPanel', () => {
     expect(onSubmit).not.toHaveBeenCalled();
   });
 
+  it('turns send into stop while busy, and keeps stop live under `disabled`', () => {
+    const onStop = jest.fn();
+    const onSubmit = jest.fn();
+    const { getByLabelText, queryByLabelText } = renderIn(
+      <ComposerPanel testID="composer" busy disabled onStop={onStop} onSubmit={onSubmit} />,
+    );
+    expect(queryByLabelText('Send message')).toBeNull();
+    const stop = getByLabelText('Stop generating');
+    expect(stop.props['aria-disabled']).toBeUndefined();
+    pressHost(stop);
+    expect(onStop).toHaveBeenCalledTimes(1);
+  });
+
+  it('draws no stop without a handler, and refuses to submit while busy', () => {
+    const onSubmit = jest.fn();
+    const { getByLabelText, queryByLabelText } = renderIn(<ComposerPanel busy defaultValue="hi" onSubmit={onSubmit} />);
+    expect(queryByLabelText('Stop generating')).toBeNull();
+    pressHost(getByLabelText('Send message'));
+    expect(onSubmit).not.toHaveBeenCalled();
+  });
+
   it('opens the permission panel and picks a mode as a named radio', () => {
     const onPermissionChange = jest.fn();
     const onLearnMore = jest.fn();
@@ -202,6 +223,32 @@ describe('ModelPicker', () => {
     expect(getByTestId('picker').props.accessibilityLabel).toBe('Models: Sonnet 5');
   });
 
+  it('drops the effort axis when the model has no stops', () => {
+    const { getByTestId, queryByLabelText } = renderIn(
+      <ModelPicker testID="picker" providers={PROVIDERS} effortLevels={[]} />,
+    );
+    pressHost(getByTestId('picker'));
+    expect(queryByLabelText('OpenAI GPT-5.6 Mini')).toBeTruthy();
+    expect(queryByLabelText(/^Effort/)).toBeNull();
+  });
+
+  it('reads "no stop chosen" as Auto and commits a stop from there', () => {
+    const onEffortChange = jest.fn();
+    const { getByTestId, getByLabelText, getAllByLabelText } = renderIn(
+      <ModelPicker testID="picker" providers={PROVIDERS} effort={null} onEffortChange={onEffortChange} />,
+    );
+    pressHost(getByTestId('picker'));
+    pressHost(getByLabelText('Effort: Auto'));
+    const slider = getAllByLabelText('Effort').find((node) => node.props.accessibilityRole === 'adjustable')!;
+    // No value is reported at all — the absence is not the first stop.
+    expect(slider.props['aria-valuenow']).toBeUndefined();
+    expect(slider.props['aria-valuetext']).toBe('Auto');
+    act(() => {
+      slider.props.onAccessibilityAction({ nativeEvent: { actionName: 'increment' } });
+    });
+    expect(onEffortChange).toHaveBeenCalledWith(0);
+  });
+
   it('filters every lineup from Quick Search, naming each match’s provider', () => {
     const { getByTestId } = renderIn(<ModelPicker testID="picker" providers={PROVIDERS} />);
     pressHost(getByTestId('picker'));
@@ -312,6 +359,41 @@ describe('ComposerPill', () => {
     expect(getByLabelText('Composer 2.5').props['aria-checked']).toBe(false);
     fireEvent.press(getByLabelText('Composer 2.5'));
     expect(onModelChange).toHaveBeenCalledWith('Composer 2.5');
+  });
+
+  it('keys, matches and reports the model id, drawing only the name', () => {
+    const onModelChange = jest.fn();
+    const { getByLabelText, queryByLabelText } = renderIn(
+      <ComposerPill
+        models={[
+          { id: 'vibl/composer-2.5', name: 'Composer 2.5' },
+          { id: 'oxy/fable-5', name: 'Fable 5' },
+        ]}
+        defaultModel="oxy/fable-5"
+        onModelChange={onModelChange}
+      />,
+    );
+    // The trigger names the model, never the routing id.
+    const trigger = getByLabelText('Fable 5');
+    expect(queryByLabelText('oxy/fable-5')).toBeNull();
+    fireEvent.press(trigger);
+    fireEvent.press(getByLabelText('Composer 2.5'));
+    expect(onModelChange).toHaveBeenCalledWith('vibl/composer-2.5');
+  });
+
+  it('drops the effort half of the menu without stops', () => {
+    const { getByLabelText, queryByText } = renderIn(<ComposerPill models={['Fable 5']} effortLevels={[]} />);
+    fireEvent.press(getByLabelText('Fable 5'));
+    expect(queryByText('Models')).toBeTruthy();
+    expect(queryByText(/^Effort/)).toBeNull();
+  });
+
+  it('turns send into stop while busy, and keeps stop live under `disabled`', () => {
+    const onStop = jest.fn();
+    const { getByLabelText, queryByLabelText } = renderIn(<ComposerPill busy disabled onStop={onStop} />);
+    expect(queryByLabelText('Send message')).toBeNull();
+    pressHost(getByLabelText('Stop generating'));
+    expect(onStop).toHaveBeenCalledTimes(1);
   });
 
   it('toggles voice input on the mic', () => {

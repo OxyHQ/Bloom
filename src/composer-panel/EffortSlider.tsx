@@ -9,10 +9,13 @@ const TRACK_HEIGHT = 27;
 const THUMB_WIDTH = 21;
 
 interface EffortSliderProps {
-  value: number;
+  /** The chosen stop, or `null` for no choice yet. */
+  value: number | null;
   onChange: (value: number) => void;
   levels: ReadonlyArray<string>;
   label: string;
+  /** What `aria-valuetext` reads with no stop chosen (the "Auto" label). */
+  unsetLabel: string;
   palette: ComposerPalette;
   testID?: string;
 }
@@ -25,6 +28,11 @@ interface EffortSliderProps {
  * past the value fade their tick to 30% over 300ms; the fill follows the thumb
  * over 150ms.
  *
+ * With `value` `null` nothing is committed: the fill is empty, every tick is
+ * faded and the thumb is hollow and dashed, so "no stop chosen" cannot be read
+ * as "the first stop". The first press or key commits a stop, and there is no
+ * way back — the caller owns the `null`.
+ *
  * Drag or press anywhere on the track (PanResponder on both platforms); on web
  * the thumb is focusable and answers the arrow keys, Home and End.
  *
@@ -32,20 +40,25 @@ interface EffortSliderProps {
  * starfield, with the ticks blown off the track) has no native counterpart,
  * so at Max the slider simply rests at its last stop.
  */
-export function EffortSlider({ value, onChange, levels, label, palette, testID }: EffortSliderProps) {
+export function EffortSlider({ value, onChange, levels, label, unsetLabel, palette, testID }: EffortSliderProps) {
   const [width, setWidth] = useState(0);
   const max = Math.max(0, levels.length - 1);
-  const clamped = Math.min(Math.max(value, 0), max);
-  const fraction = max > 0 ? clamped / max : 0;
+  const chosen = value === null ? null : Math.min(Math.max(value, 0), max);
+  const fraction = chosen !== null && max > 0 ? chosen / max : 0;
   const rail = Math.max(0, width - THUMB_WIDTH);
 
-  const stateRef = useRef({ value: clamped, rail, max, onChange });
-  stateRef.current = { value: clamped, rail, max, onChange };
-  const startRef = useRef(clamped);
+  const stateRef = useRef<{ value: number | null; rail: number; max: number; onChange: (next: number) => void }>({
+    value: chosen,
+    rail,
+    max,
+    onChange,
+  });
+  stateRef.current = { value: chosen, rail, max, onChange };
+  const startRef = useRef(chosen ?? 0);
 
   const valueAt = useCallback((x: number) => {
     const s = stateRef.current;
-    if (s.rail <= 0 || s.max <= 0) return s.value;
+    if (s.rail <= 0 || s.max <= 0) return s.value ?? 0;
     const f = Math.min(Math.max((x - THUMB_WIDTH / 2) / s.rail, 0), 1);
     return Math.round(f * s.max);
   }, []);
@@ -83,11 +96,17 @@ export function EffortSlider({ value, onChange, levels, label, palette, testID }
         tabIndex: 0,
         onKeyDown: (event: { key: string; preventDefault: () => void }) => {
           const s = stateRef.current;
+          // With nothing chosen, either arrow commits the first stop.
+          const current = s.value;
           const next =
             event.key === 'ArrowRight' || event.key === 'ArrowUp'
-              ? Math.min(s.max, s.value + 1)
+              ? current === null
+                ? 0
+                : Math.min(s.max, current + 1)
               : event.key === 'ArrowLeft' || event.key === 'ArrowDown'
-                ? Math.max(0, s.value - 1)
+                ? current === null
+                  ? 0
+                  : Math.max(0, current - 1)
                 : event.key === 'Home'
                   ? 0
                   : event.key === 'End'
@@ -108,9 +127,10 @@ export function EffortSlider({ value, onChange, levels, label, palette, testID }
     height: TRACK_HEIGHT,
     borderRadius: 7,
     borderWidth: 1,
+    borderStyle: chosen === null ? 'dashed' : 'solid',
     borderColor: palette.thumbBorder,
-    backgroundColor: palette.surface,
-    boxShadow: palette.shadowXs,
+    backgroundColor: chosen === null ? 'transparent' : palette.surface,
+    boxShadow: chosen === null ? undefined : palette.shadowXs,
     '--bloom-composer-ring': palette.focusRing,
   };
 
@@ -121,12 +141,12 @@ export function EffortSlider({ value, onChange, levels, label, palette, testID }
       accessibilityLabel={label}
       aria-valuemin={0}
       aria-valuemax={max}
-      aria-valuenow={clamped}
-      aria-valuetext={levels[clamped]}
+      aria-valuenow={chosen ?? undefined}
+      aria-valuetext={chosen === null ? unsetLabel : levels[chosen]}
       accessibilityActions={[{ name: 'increment' }, { name: 'decrement' }]}
       onAccessibilityAction={(event) => {
-        if (event.nativeEvent.actionName === 'increment') commit(Math.min(max, clamped + 1));
-        if (event.nativeEvent.actionName === 'decrement') commit(Math.max(0, clamped - 1));
+        if (event.nativeEvent.actionName === 'increment') commit(chosen === null ? 0 : Math.min(max, chosen + 1));
+        if (event.nativeEvent.actionName === 'decrement') commit(chosen === null ? 0 : Math.max(0, chosen - 1));
       }}
       style={{ width: '100%' }}>
       <View
@@ -149,7 +169,7 @@ export function EffortSlider({ value, onChange, levels, label, palette, testID }
             top: 0,
             bottom: 0,
             left: 0,
-            width: fraction * rail + THUMB_WIDTH,
+            width: chosen === null ? 0 : fraction * rail + THUMB_WIDTH,
             borderRadius: 8,
             backgroundColor: palette.tertiaryHover,
           }}
@@ -175,7 +195,7 @@ export function EffortSlider({ value, onChange, levels, label, palette, testID }
                 height: 13,
                 borderRadius: 2,
                 backgroundColor: palette.iconTertiary,
-                opacity: index > clamped ? 0.3 : 1,
+                opacity: chosen === null || index > chosen ? 0.3 : 1,
               }}
             />
           ))}

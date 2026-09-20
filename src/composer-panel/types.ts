@@ -121,6 +121,8 @@ export interface ModelPickerLabels {
   providers?: string;
   /** Default `'Effort'`. */
   effort?: string;
+  /** Default `'Auto'` — the effort chip with no stop chosen. */
+  effortAuto?: string;
   /** Default `'Faster'`. */
   faster?: string;
   /** Default `'Smarter'`. */
@@ -135,12 +137,17 @@ export interface ModelPickerProps {
   /** Initial model id when uncontrolled. Defaults to the first provider's first model. */
   defaultValue?: string;
   onValueChange?: (modelId: string) => void;
-  /** Controlled effort stop, an index into `effortLevels`. */
-  effort?: number;
-  /** Initial stop when uncontrolled. Default `1` ("Medium"). */
-  defaultEffort?: number;
+  /**
+   * Controlled effort stop, an index into `effortLevels`. `null` is "no stop
+   * chosen" — the chip reads `labels.effortAuto`, the slider commits nothing and
+   * the thumb is drawn hollow, so the absence of a choice never looks like one.
+   */
+  effort?: number | null;
+  /** Initial stop when uncontrolled. Default `1` ("Medium"); `null` for no choice. */
+  defaultEffort?: number | null;
+  /** A stop the reader chose. The picker has no way back to `null`, so it never reports one. */
   onEffortChange?: (effort: number) => void;
-  /** The effort stops, "Faster" → "Smarter". Defaults to six stops. */
+  /** The effort stops, "Faster" → "Smarter". Defaults to six stops; `[]` drops the effort axis entirely. */
   effortLevels?: ReadonlyArray<string>;
   labels?: ModelPickerLabels;
   style?: StyleProp<ViewStyle>;
@@ -169,6 +176,8 @@ export interface ComposerPanelLabels {
   voice?: string;
   /** Default `'Send message'`. */
   send?: string;
+  /** Default `'Stop generating'` — send's stop state while `busy`. */
+  stop?: string;
   /** Default `'Remove'` — prefixed to the file name on a tile's dismiss. */
   remove?: string;
 }
@@ -181,7 +190,15 @@ export interface ComposerPanelProps {
   onValueChange?: (value: string) => void;
   /** Fires on the send button and on Enter (web; Shift+Enter breaks the line). */
   onSubmit?: (value: string) => void;
-  /** Greys out send while a turn is in flight. */
+  /**
+   * Stop the turn in flight. With `busy`, send becomes a stop control that
+   * ignores `disabled` — cancelling has to stay possible while typing is not.
+   * Without a handler `busy` draws no stop, so the control is never inert.
+   */
+  onStop?: () => void;
+  /** A turn is running: send becomes stop (given `onStop`) and Enter no longer submits. */
+  busy?: boolean;
+  /** Greys out send while a turn is in flight. Never reaches the stop control. */
   disabled?: boolean;
   /** Default `'Hi, what do you need today?'`. */
   placeholder?: string;
@@ -207,10 +224,11 @@ export interface ComposerPanelProps {
   model?: string;
   defaultModel?: string;
   onModelChange?: (modelId: string) => void;
-  /** Controlled effort stop. */
-  effort?: number;
-  defaultEffort?: number;
+  /** Controlled effort stop; `null` is "no stop chosen". See `ModelPicker`. */
+  effort?: number | null;
+  defaultEffort?: number | null;
   onEffortChange?: (effort: number) => void;
+  /** `[]` drops the effort axis from the picker. */
   effortLevels?: ReadonlyArray<string>;
   modelPickerLabels?: ModelPickerLabels;
 
@@ -293,6 +311,8 @@ export interface ComposerPillLabels {
   modelGroup?: string;
   /** Default `'Effort'`. */
   effort?: string;
+  /** Default `'Auto'` — the effort value with no stop chosen. */
+  effortAuto?: string;
   /** Default `'Faster'`. */
   faster?: string;
   /** Default `'Smarter'`. */
@@ -301,6 +321,8 @@ export interface ComposerPillLabels {
   voice?: string;
   /** Default `'Send message'`. */
   send?: string;
+  /** Default `'Stop generating'` — send's stop state while `busy`. */
+  stop?: string;
 }
 
 export interface ComposerPillProps {
@@ -311,7 +333,15 @@ export interface ComposerPillProps {
   onValueChange?: (value: string) => void;
   /** Fires on the send button and on Enter. */
   onSubmit?: (value: string) => void;
-  /** Greys out send (40%) while a turn is in flight. */
+  /**
+   * Stop the turn in flight. With `busy`, send becomes a stop control that
+   * ignores `disabled` — cancelling has to stay possible while typing is not.
+   * Without a handler `busy` draws no stop, so the control is never inert.
+   */
+  onStop?: () => void;
+  /** A turn is running: send becomes stop (given `onStop`) and Enter no longer submits. */
+  busy?: boolean;
+  /** Greys out send (40%) while a turn is in flight. Never reaches the stop control. */
   disabled?: boolean;
   /** Default `'Ask me anything'`. */
   placeholder?: string;
@@ -322,19 +352,30 @@ export interface ComposerPillProps {
   addMenu?: ReadonlyArray<ComposerPanelAddMenuGroup>;
   onAddMenuSelect?: (rowId: string) => void;
 
-  /** Model names for the model menu. Omit to hide the model button. */
-  models?: ReadonlyArray<string>;
-  /** Controlled model name. */
+  /**
+   * The model menu's lineup. Omit to hide the model button.
+   *
+   * `{ id, name }` entries are the identity contract `ModelPicker` uses: the
+   * menu keys, matches and reports the **id**, and draws the `name`. A bare
+   * string is shorthand for `{ id: name, name }` — kept so the display-name form
+   * still works, and the only form in which a routing id is a display string.
+   */
+  models?: ReadonlyArray<string | ModelPickerModel>;
+  /** Controlled model **id** (a string entry's id is its name). */
   model?: string;
-  /** Initial model when uncontrolled. Default the first. */
+  /** Initial model id when uncontrolled. Default the first entry's. */
   defaultModel?: string;
-  onModelChange?: (model: string) => void;
-  /** Controlled effort stop, an index into `effortLevels`. */
-  effort?: number;
-  /** Default `1` ("Medium"). */
-  defaultEffort?: number;
+  onModelChange?: (modelId: string) => void;
+  /**
+   * Controlled effort stop, an index into `effortLevels`. `null` is "no stop
+   * chosen" — the value reads `labels.effortAuto` and the thumb is drawn hollow.
+   */
+  effort?: number | null;
+  /** Default `1` ("Medium"); `null` for no choice. */
+  defaultEffort?: number | null;
+  /** A stop the reader chose. The menu has no way back to `null`, so it never reports one. */
   onEffortChange?: (effort: number) => void;
-  /** Default `MODEL_PICKER_EFFORT_LEVELS`. */
+  /** Default `MODEL_PICKER_EFFORT_LEVELS`; `[]` drops the effort half of the menu. */
   effortLevels?: ReadonlyArray<string>;
 
   /** Controlled voice-input state (the mic swaps to equalizer bars). */

@@ -39,6 +39,8 @@ const REVEAL_MS = 325;
 const REVEAL_OFFSET = 272;
 const DRAWER_EASE = Easing.bezier(0.4, 0, 0.2, 1);
 const DRAWER_MS = 300;
+/** An icon-only rail: one 36px control plus its 10px gutters. */
+const COLLAPSED_SIDEBAR_WIDTH = 56;
 
 const DEFAULT_LABELS = {
   openNavigation: 'Open navigation',
@@ -257,7 +259,9 @@ export function AiChatMobileHeader({ title, style, testID }: AiChatMobileHeaderP
  * The AI chat shell: the full AI chat
  * screen on background-full with a 12px frame.
  *
- *   lg and up   the floating `sidebar` in flow, 16 from the workspace
+ *   lg and up   the floating `sidebar` in flow, 16 from the workspace, at
+ *               `sidebarWidth` (or its own width) — `sidebarCollapsed` narrows
+ *               the column to `collapsedSidebarWidth` (56) for an icon rail
  *   workspace   the chat container flexing, then (xl and up) the `panel` 12 to
  *               its right at `panelWidth`; the resize grip on the chat's right
  *               edge trades width between them, clamped 320–560
@@ -272,9 +276,19 @@ export function AiChatMobileHeader({ title, style, testID }: AiChatMobileHeaderP
  *               over the workspace closes it
  *
  * The chat container reads the drawer controls through `AiChatMobileHeader`.
+ * Everything the shell knows — including `navPresented`, which says whether the
+ * nav is on screen at all — is published to any descendant through
+ * `useAiChatShell()`.
+ *
+ * `background` is a layer drawn above the shell's own paint and below all of
+ * it; with `surface={false}` neither the root nor the workspace paints, so the
+ * layer reaches the chat.
  */
 export function AiChatShell({
   sidebar,
+  sidebarWidth,
+  sidebarCollapsed = false,
+  collapsedSidebarWidth = COLLAPSED_SIDEBAR_WIDTH,
   mobileSidebar,
   children,
   panel,
@@ -287,6 +301,8 @@ export function AiChatShell({
   onNavOpenChange,
   panelOpen: panelOpenProp,
   onPanelOpenChange,
+  background,
+  surface = true,
   labels,
   style,
   testID,
@@ -368,10 +384,14 @@ export function AiChatShell({
       navCollapsed: !navInFlow,
       hasNav: !!mobileSidebar,
       hasPanel: !!panel,
+      // In flow it is always on screen; as a drawer, only while it is open.
+      navPresented: navInFlow ? !!sidebar : navOpen,
+      sidebarCollapsed,
       openNav: () => {
         setPanelOpen(false);
         setNavOpen(true);
       },
+      closeNav: () => setNavOpen(false),
       openPanel: () => {
         setNavOpen(false);
         setPanelOpen(true);
@@ -380,7 +400,20 @@ export function AiChatShell({
       panelIcon,
       labels: { openNavigation: l.openNavigation, openPanel: l.openPanel },
     }),
-    [wide, navInFlow, mobileSidebar, panel, setPanelOpen, setNavOpen, panelLabel, panelIcon, l],
+    [
+      wide,
+      navInFlow,
+      navOpen,
+      sidebar,
+      sidebarCollapsed,
+      mobileSidebar,
+      panel,
+      setPanelOpen,
+      setNavOpen,
+      panelLabel,
+      panelIcon,
+      l,
+    ],
   );
 
   const rootStyle: WebCssStyle = {
@@ -391,7 +424,7 @@ export function AiChatShell({
     gap: 16,
     overflow: 'hidden',
     padding: 12,
-    backgroundColor: palette.full,
+    backgroundColor: surface ? palette.full : 'transparent',
   };
 
   const veil = palette.isDark ? 'rgba(255, 255, 255, 0.05)' : 'rgba(0, 0, 0, 0.1)';
@@ -403,6 +436,11 @@ export function AiChatShell({
         testID={testID}
         onLayout={(event: LayoutChangeEvent) => setShellWidth(event.nativeEvent.layout.width)}
         style={[rootStyle, style]}>
+        {background ? (
+          <View pointerEvents="none" style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0 }}>
+            {background}
+          </View>
+        ) : null}
         {!navInFlow && mobileSidebar ? (
           <View
             aria-hidden={!navOpen}
@@ -416,7 +454,23 @@ export function AiChatShell({
           </View>
         ) : null}
 
-        {navInFlow ? <View style={{ position: 'relative', zIndex: 10, height: '100%' }}>{sidebar}</View> : null}
+        {navInFlow ? (
+          <View
+            style={{
+              position: 'relative',
+              zIndex: 10,
+              height: '100%',
+              // Untouched unless the host asked for a width: the sidebar has
+              // always sized itself.
+              ...(sidebarCollapsed
+                ? { width: collapsedSidebarWidth, flexShrink: 0, overflow: 'hidden' }
+                : sidebarWidth !== undefined
+                  ? { width: sidebarWidth, flexShrink: 0 }
+                  : null),
+            }}>
+            {sidebar}
+          </View>
+        ) : null}
 
         <Animated.View
           style={[
@@ -428,7 +482,7 @@ export function AiChatShell({
               flexDirection: 'column',
               gap: 8,
               overflow: 'hidden',
-              backgroundColor: palette.full,
+              backgroundColor: surface ? palette.full : 'transparent',
             },
             navInFlow ? null : workspaceStyle,
           ]}>

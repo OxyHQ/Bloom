@@ -17,6 +17,8 @@ export {
   AiChatUserMessage,
 } from './AiChatMessages';
 export { AiChatMobileHeader, AiChatResizeHandle, AiChatShell } from './AiChatShell';
+export { useAiChatShell } from './context';
+export type { AiChatShellState } from './context';
 export type {
   AiChatAssistantMessageProps,
   AiChatBulletListProps,
@@ -43,6 +45,7 @@ export type {
   AiChatShellLabels,
   AiChatShellProps,
   AiChatStrongProps,
+  AiChatThreadHandle,
   AiChatThreadProps,
   AiChatUserMessageProps,
 } from './types';

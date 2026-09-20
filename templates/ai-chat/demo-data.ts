@@ -1,5 +1,5 @@
 import type { AiChatGeneration } from '../../src/ai-chat';
-import type { ComposerStatusBarFolder } from '../../src/composer-panel';
+import type { ComposerStatusBarFolder, ModelPickerModel } from '../../src/composer-panel';
 import {
   RiAddFill,
   RiCustomerServiceLine,
@@ -108,7 +108,17 @@ export const PLAN: SidebarPlan = {
   actionLabel: 'Upgrade',
 };
 
-export const MODELS = ['Composer 2.5', 'GPT-5.6 Sol', 'Fable 5', 'Sonnet 5'];
+/**
+ * `{ id, name }` entries, the form to copy: the pill keys, matches and reports
+ * the routing id and only ever DRAWS the name. A bare string list still works
+ * and is shorthand for an id that happens to be its own label.
+ */
+export const MODELS: ReadonlyArray<ModelPickerModel> = [
+  { id: 'vibl/composer-2.5', name: 'Composer 2.5' },
+  { id: 'openai/gpt-5.6-sol', name: 'GPT-5.6 Sol' },
+  { id: 'oxy/fable-5', name: 'Fable 5' },
+  { id: 'anthropic/sonnet-5', name: 'Sonnet 5' },
+];
 
 export const LOCAL_FOLDERS: ComposerStatusBarFolder[] = [
   { prefix: 'users/maya/', name: 'project-sea' },

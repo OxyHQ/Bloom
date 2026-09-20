@@ -1,4 +1,5 @@
 import React from 'react';
+import { Text } from 'react-native';
 import { act, fireEvent, render } from '@testing-library/react-native';
 
 jest.mock('react-native-reanimated', () => {
@@ -27,10 +28,12 @@ import {
   AiChatStrong,
   AiChatThread,
   AiChatUserMessage,
+  useAiChatShell,
 } from '../ai-chat';
 import type { AiChatGeneration } from '../ai-chat';
 import { distributeGenerations } from '../ai-chat/AiChatGalleryPanelBase';
 import { resolveAiChatPalette } from '../ai-chat/shared';
+import { resolvedStyle } from './support/rendered-style';
 import { buildTheme } from '../theme/build-theme';
 import { BloomThemeProvider } from '../theme/BloomThemeProvider';
 import { pressHost } from './support/press-host';
@@ -208,6 +211,46 @@ describe('AiChatContainer', () => {
   });
 });
 
+describe('AiChatContainer host slots', () => {
+  it('draws the title alone when the chat belongs to no project', () => {
+    const { getByText, queryByText } = renderIn(
+      <AiChatContainer title="coding scenario" composer={null}>
+        <AiChatThread>
+          <AiChatUserMessage>hello</AiChatUserMessage>
+        </AiChatThread>
+      </AiChatContainer>,
+    );
+    expect(getByText('coding scenario')).toBeTruthy();
+    expect(queryByText('vibl')).toBeNull();
+  });
+
+  it('renders the background layer and drops its own paint on request', () => {
+    const plain = renderIn(
+      <AiChatContainer testID="chat" title="t" composer={null}>
+        <AiChatThread>turns</AiChatThread>
+      </AiChatContainer>,
+    );
+    const surfaceColor = resolvedStyle(plain.getByTestId('chat').props.style).backgroundColor;
+    expect(surfaceColor).not.toBe('transparent');
+
+    const painted = renderIn(
+      <AiChatContainer testID="chat" title="t" composer={null} background={<Text>wallpaper</Text>}>
+        <AiChatThread>turns</AiChatThread>
+      </AiChatContainer>,
+    );
+    // The layer is a slot, not an escape hatch: the surface is still painted.
+    expect(painted.getByText('wallpaper')).toBeTruthy();
+    expect(resolvedStyle(painted.getByTestId('chat').props.style).backgroundColor).toBe(surfaceColor);
+
+    const bare = renderIn(
+      <AiChatContainer testID="chat" title="t" composer={null} surface={false}>
+        <AiChatThread>turns</AiChatThread>
+      </AiChatContainer>,
+    );
+    expect(resolvedStyle(bare.getByTestId('chat').props.style).backgroundColor).toBe('transparent');
+  });
+});
+
 describe('AiChatShell', () => {
   it('shows the mobile header below xl and opens the panel drawer from it', () => {
     const { getByLabelText, getByText } = renderIn(
@@ -225,6 +268,43 @@ describe('AiChatShell', () => {
   it('names the resize separator', () => {
     const { getByLabelText } = renderIn(<AiChatResizeHandle onResize={() => {}} />);
     expect(getByLabelText('Resize panels').props.role).toBe('separator');
+  });
+
+  it('narrows the in-flow sidebar to a rail, and takes a width', () => {
+    // The test renderer's window is 750 wide — below `lg`, where the sidebar is
+    // a drawer — so the in-flow column is asserted through the collapsed state
+    // the shell publishes instead.
+    const seen: Array<{ collapsed: boolean; presented: boolean }> = [];
+    function Probe() {
+      const shell = useAiChatShell();
+      seen.push({ collapsed: !!shell?.sidebarCollapsed, presented: !!shell?.navPresented });
+      return null;
+    }
+    renderIn(
+      <AiChatShell sidebar={null} sidebarCollapsed collapsedSidebarWidth={56}>
+        <Probe />
+      </AiChatShell>,
+    );
+    expect(seen[0]).toEqual({ collapsed: true, presented: false });
+  });
+
+  it('reports the nav as presented only while the drawer is open', () => {
+    let openNav = () => {};
+    const seen: boolean[] = [];
+    function Probe() {
+      const shell = useAiChatShell();
+      seen.push(!!shell?.navPresented);
+      if (shell) openNav = shell.openNav;
+      return null;
+    }
+    renderIn(
+      <AiChatShell sidebar={null} mobileSidebar={<AiChatMobileHeader title="nav" />}>
+        <Probe />
+      </AiChatShell>,
+    );
+    expect(seen[seen.length - 1]).toBe(false);
+    act(() => openNav());
+    expect(seen[seen.length - 1]).toBe(true);
   });
 
   it('renders nothing for the mobile header outside a shell', () => {

@@ -1,5 +1,12 @@
 import type { ComponentType, ReactNode } from 'react';
-import type { ImageSourcePropType, StyleProp, ViewStyle } from 'react-native';
+import type {
+  ImageSourcePropType,
+  NativeScrollEvent,
+  NativeSyntheticEvent,
+  ScrollView,
+  StyleProp,
+  ViewStyle,
+} from 'react-native';
 
 import type { CodeLanguage } from '../code';
 import type { BloomIconComponent } from '../icons/icon-component';
@@ -270,8 +277,12 @@ export interface AiChatContainerLabels {
 }
 
 export interface AiChatContainerProps {
-  /** The project crumb, after its folder glyph. */
-  project: string;
+  /**
+   * The project crumb, after its folder glyph. Omit it for a chat that belongs
+   * to no project: the breadcrumb is then the title alone, with no empty crumb
+   * and no folder glyph.
+   */
+  project?: string;
   /** The current chat crumb. */
   title: string;
   /** The project crumb's glyph. Default `RiFolderLine`. */
@@ -289,14 +300,78 @@ export interface AiChatContainerProps {
   working?: boolean;
   /** `AgentThinking`'s label. Default `'Thinking'`. */
   workingLabel?: string;
+  /**
+   * A layer filling the container, drawn ABOVE its own surface and BELOW every
+   * turn, header and composer — a host's wallpaper, gradient or animated field.
+   * It is clipped to the container's radius and never interactive
+   * (`pointerEvents: 'none'`), so an opaque node needs nothing else.
+   *
+   * Set `surface={false}` beside it when the node is translucent and should
+   * show what the container is sitting on rather than background-secondary.
+   */
+  background?: ReactNode;
+  /**
+   * Paint the container's own background-secondary surface. Default `true`;
+   * `false` leaves the root transparent.
+   */
+  surface?: boolean;
   labels?: AiChatContainerLabels;
   style?: StyleProp<ViewStyle>;
   testID?: string;
 }
 
+/**
+ * What a `ref` on `AiChatThread` hands back: enough to drive the scroll a host
+ * cannot drive from props — a cursor jump, a restore, a follow of its own.
+ */
+export interface AiChatThreadHandle {
+  /** Jump to the newest turn. `animated` defaults to `true`. */
+  scrollToEnd: (options?: { animated?: boolean }) => void;
+  /** Scroll to an absolute offset, px from the top. `animated` defaults to `false`. */
+  scrollToOffset: (options: { offset: number; animated?: boolean }) => void;
+  /** The `ScrollView` itself, for anything this handle does not cover. */
+  getScrollView: () => ScrollView | null;
+}
+
 export interface AiChatThreadProps {
   /** The turns. The thread follows the newest one with a smooth scroll as it grows. */
   children: ReactNode;
+  /**
+   * Follow the newest turn as the content grows. Default `true` — the thread's
+   * behaviour since it shipped. `false` leaves every scroll to the host (and to
+   * the `ref`).
+   */
+  autoFollow?: boolean;
+  /** Animate the follow. Default `true`; `false` for a restore that must not be seen travelling. */
+  followAnimated?: boolean;
+  /**
+   * Follow only while the reader is within this many px of the bottom, measured
+   * before the growth. Omit to follow every growth (the default), which is what
+   * the thread has always done.
+   */
+  followThreshold?: number;
+  /**
+   * The reader came within `onStartReachedThreshold` of the top — a chat pages
+   * UPWARD, so this is its pagination signal, not `onEndReached`. It fires once
+   * per approach and re-arms when the reader leaves the zone.
+   */
+  onStartReached?: () => void;
+  /** Distance from the top that fires `onStartReached`, px. Default `300`. */
+  onStartReachedThreshold?: number;
+  /**
+   * Keep the reader on the same turn while a page lands ABOVE them: the growth
+   * that follows an `onStartReached` is added to the offset instead of moving
+   * the content under the reader. Default `false`, and inert without
+   * `onStartReached` — the thread only anchors growth it asked for.
+   *
+   * This is the web-safe half of `maintainVisibleContentPosition`, which
+   * react-native-web ignores.
+   */
+  maintainStartPosition?: boolean;
+  /** The raw scroll event, for a host tracking its own position. */
+  onScroll?: (event: NativeSyntheticEvent<NativeScrollEvent>) => void;
+  /** Default `16`. Only applied when something is listening to the scroll. */
+  scrollEventThrottle?: number;
   style?: StyleProp<ViewStyle>;
   testID?: string;
 }
@@ -317,6 +392,15 @@ export interface AiChatShellLabels {
 export interface AiChatShellProps {
   /** The floating sidebar shown from `lg` (1024). */
   sidebar: ReactNode;
+  /**
+   * The in-flow sidebar's column width from `lg` up. Omit and the sidebar sizes
+   * itself, as it always has.
+   */
+  sidebarWidth?: number;
+  /** Narrow the in-flow sidebar to `collapsedSidebarWidth` — a host's icon rail. Default `false`. */
+  sidebarCollapsed?: boolean;
+  /** The collapsed column's width. Default `56`. */
+  collapsedSidebarWidth?: number;
   /** The flat sidebar revealed under the workspace below `lg`. Default: none (no nav drawer). */
   mobileSidebar?: ReactNode;
   /** The chat container. */
@@ -337,6 +421,23 @@ export interface AiChatShellProps {
   /** Controlled panel drawer (below `xl`). */
   panelOpen?: boolean;
   onPanelOpenChange?: (open: boolean) => void;
+  /**
+   * A layer filling the shell, drawn ABOVE its own background-full and BELOW
+   * the sidebar, workspace and drawers. Not interactive
+   * (`pointerEvents: 'none'`).
+   *
+   * The workspace paints background-full of its own, so a shell background is
+   * covered wherever the chat sits: pass `surface={false}` with it, which drops
+   * the paint on both, and let the chat's own `AiChatContainer` decide what it
+   * paints. A `background` on the container is the closer slot when the layer
+   * belongs to the chat rather than to the page.
+   */
+  background?: ReactNode;
+  /**
+   * Paint the shell's own background-full, on its root and on the workspace.
+   * Default `true`; `false` leaves both transparent.
+   */
+  surface?: boolean;
   labels?: AiChatShellLabels;
   style?: StyleProp<ViewStyle>;
   testID?: string;

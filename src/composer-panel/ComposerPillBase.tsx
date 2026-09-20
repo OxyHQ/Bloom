@@ -23,7 +23,7 @@ import type { WebCssStyle } from '../styles/web-view-style';
 import { useTheme } from '../theme/use-theme';
 import { Text, TYPE_SCALE } from '../typography';
 import { AddMenu } from './AddMenu';
-import { MicButton, SendButton } from './ComposerControls';
+import { MicButton, SendButton, StopButton } from './ComposerControls';
 import { useComposerPopover } from './context';
 import { EffortSlider } from './EffortSlider';
 import {
@@ -35,7 +35,7 @@ import {
   resolveComposerPalette,
   type ComposerPalette,
 } from './shared';
-import type { ComposerPillLabels, ComposerPillProps } from './types';
+import type { ComposerPillLabels, ComposerPillProps, ModelPickerModel } from './types';
 import { dataHook, IS_WEB, useComposerWebCss } from './web-hooks';
 
 const EASE = Easing.bezier(0.25, 0.1, 0.25, 1);
@@ -53,10 +53,12 @@ const DEFAULT_LABELS: Required<ComposerPillLabels> = {
   models: 'Models',
   modelGroup: 'Model',
   effort: 'Effort',
+  effortAuto: 'Auto',
   faster: 'Faster',
   smarter: 'Smarter',
   voice: 'Voice input',
   send: 'Send message',
+  stop: 'Stop generating',
 };
 
 /**
@@ -194,7 +196,10 @@ function ModelRow({
  *
  *   models   pt 4, label → rows 6: "Models" (pl 8, body-medium secondary), then a
  *            radio row per model — p 8, radius 10, body-medium primary + 14px
- *            radio, primary-hover while selected or hovered, 4 apart
+ *            radio, primary-hover while selected or hovered, 4 apart. Rows key,
+ *            match and report by id; a string entry is its own id
+ *   effort   only with stops to choose from — no `effortLevels`, no divider and
+ *            no slider, rather than a slider that cannot commit
  *   divider  full bleed (−10 each side), 7 above, 12 below
  *   effort   "Effort <value>" (the value text-primary, blurring in on change),
  *            Faster / Smarter (body-2-medium secondary, px 8 / pt 8 / pb 3) and
@@ -204,7 +209,7 @@ function ModelRow({
  */
 function ModelMenu({
   models,
-  model,
+  modelId,
   onModelChange,
   effort,
   onEffortChange,
@@ -215,10 +220,10 @@ function ModelMenu({
   onTriggerLayout,
   testID,
 }: {
-  models: ReadonlyArray<string>;
-  model: string;
-  onModelChange: (model: string) => void;
-  effort: number;
+  models: ReadonlyArray<ModelPickerModel>;
+  modelId: string;
+  onModelChange: (modelId: string) => void;
+  effort: number | null;
   onEffortChange: (effort: number) => void;
   levels: ReadonlyArray<string>;
   labels: Required<ComposerPillLabels>;
@@ -231,6 +236,10 @@ function ModelMenu({
   const triggerRef = useRef<View>(null);
   const [open, setOpen] = useState(false);
   const [hovered, setHovered] = useState(false);
+  // An id with no entry (a model the lineup no longer carries) shows as itself
+  // rather than as an empty trigger.
+  const modelName = models.find((entry) => entry.id === modelId)?.name ?? modelId;
+  const hasEffort = levels.length > 0;
   const triggerStyle: WebCssStyle = {
     height: 32,
     flexShrink: 0,
@@ -254,7 +263,7 @@ function ModelMenu({
         testID={testID}
         {...dataHook('bloomComposerControl')}
         accessibilityRole="button"
-        accessibilityLabel={model}
+        accessibilityLabel={modelName}
         aria-expanded={open}
         aria-haspopup="dialog"
         accessibilityState={{ expanded: open }}
@@ -264,7 +273,7 @@ function ModelMenu({
         onLayout={(event) => onTriggerLayout?.(event.nativeEvent.layout.width)}
         style={triggerStyle}>
         <Text variant="body-medium" numberOfLines={1} style={{ paddingLeft: 2, paddingRight: 2, color: palette.textSecondary }}>
-          {model}
+          {modelName}
         </Text>
         <TurningChevron degrees={open ? 180 : 0} color={palette.iconSecondary} />
       </Pressable>
@@ -292,52 +301,63 @@ function ModelMenu({
             {labels.models}
           </Text>
           <View role="radiogroup" accessibilityLabel={labels.modelGroup} style={{ width: '100%', flexDirection: 'column', gap: 4 }}>
-            {models.map((name) => (
+            {models.map((entry) => (
               <ModelRow
-                key={name}
-                name={name}
-                selected={name === model}
+                key={entry.id}
+                name={entry.name}
+                selected={entry.id === modelId}
                 palette={palette}
                 onPress={() => {
-                  onModelChange(name);
+                  onModelChange(entry.id);
                   setOpen(false);
                 }}
               />
             ))}
           </View>
         </View>
-        <View style={{ height: 1, marginLeft: -10, marginRight: -10, marginTop: 7, marginBottom: 12, backgroundColor: palette.border }} />
-        <View style={{ width: '100%', flexDirection: 'column' }}>
-          <View style={{ flexDirection: 'row', alignItems: 'center', paddingLeft: 8 }}>
-            <Text variant="body-medium" style={{ color: palette.textSecondary }}>
-              {`${labels.effort} `}
-            </Text>
-            <EffortValue value={levels[effort] ?? ''} color={palette.text} />
-          </View>
-          <View style={{ width: '100%', flexDirection: 'column', gap: 4 }}>
-            <View
-              style={{
-                width: '100%',
-                flexDirection: 'row',
-                alignItems: 'center',
-                justifyContent: 'space-between',
-                paddingLeft: 8,
-                paddingRight: 8,
-                paddingTop: 8,
-                paddingBottom: 3,
-              }}>
-              <Text variant="body-2-medium" style={{ color: palette.textSecondary }}>
-                {labels.faster}
-              </Text>
-              <Text variant="body-2-medium" style={{ color: palette.textSecondary }}>
-                {labels.smarter}
-              </Text>
+        {hasEffort ? (
+          <>
+            <View style={{ height: 1, marginLeft: -10, marginRight: -10, marginTop: 7, marginBottom: 12, backgroundColor: palette.border }} />
+            <View style={{ width: '100%', flexDirection: 'column' }}>
+              <View style={{ flexDirection: 'row', alignItems: 'center', paddingLeft: 8 }}>
+                <Text variant="body-medium" style={{ color: palette.textSecondary }}>
+                  {`${labels.effort} `}
+                </Text>
+                <EffortValue value={effort === null ? labels.effortAuto : (levels[effort] ?? labels.effortAuto)} color={palette.text} />
+              </View>
+              <View style={{ width: '100%', flexDirection: 'column', gap: 4 }}>
+                <View
+                  style={{
+                    width: '100%',
+                    flexDirection: 'row',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                    paddingLeft: 8,
+                    paddingRight: 8,
+                    paddingTop: 8,
+                    paddingBottom: 3,
+                  }}>
+                  <Text variant="body-2-medium" style={{ color: palette.textSecondary }}>
+                    {labels.faster}
+                  </Text>
+                  <Text variant="body-2-medium" style={{ color: palette.textSecondary }}>
+                    {labels.smarter}
+                  </Text>
+                </View>
+                <View style={{ width: '100%', paddingLeft: 8, paddingRight: 8, paddingBottom: 8 }}>
+                  <EffortSlider
+                    value={effort}
+                    onChange={onEffortChange}
+                    levels={levels}
+                    label={labels.effort}
+                    unsetLabel={labels.effortAuto}
+                    palette={palette}
+                  />
+                </View>
+              </View>
             </View>
-            <View style={{ width: '100%', paddingLeft: 8, paddingRight: 8, paddingBottom: 8 }}>
-              <EffortSlider value={effort} onChange={onEffortChange} levels={levels} label={labels.effort} palette={palette} />
-            </View>
-          </View>
-        </View>
+          </>
+        ) : null}
       </Popover>
     </>
   );
@@ -355,7 +375,8 @@ function ModelMenu({
  *             unfocused on web, its last 32px fade into the pill
  *   model     the model menu trigger (see `ModelMenu`)
  *   controls  pl 6, gap 8: the bordered mic (dancing accent bars while
- *             listening) and the `bg-button-primary` send disc
+ *             listening) and the `bg-button-primary` send disc — which becomes
+ *             the stop disc while `busy`, outside `disabled`'s reach
  *
  * `glass` drops the add, model and mic paint (480ms) onto frosted chips, so an
  * active `ComposerLoader` behind the pill shows through them.
@@ -365,6 +386,8 @@ export function ComposerPillBase({
   defaultValue = '',
   onValueChange,
   onSubmit,
+  onStop,
+  busy = false,
   disabled = false,
   placeholder = 'Ask me anything',
   compactPlaceholder = 'Ask me',
@@ -400,15 +423,19 @@ export function ComposerPillBase({
     defaultValue: defaultListening,
     onChange: onListeningChange,
   });
-  const [modelName, setModel] = useControllableState<string>({
+  const lineup = useMemo(() => normalizeModels(models ?? []), [models]);
+  const [modelId, setModel] = useControllableState<string>({
     value: model,
-    defaultValue: defaultModel ?? models?.[0] ?? '',
+    defaultValue: defaultModel ?? lineup[0]?.id ?? '',
     onChange: onModelChange,
   });
-  const [effortValue, setEffort] = useControllableState<number>({
+  const [effortValue, setEffort] = useControllableState<number | null>({
     value: effort,
     defaultValue: defaultEffort,
-    onChange: onEffortChange,
+    // The menu can only ever land on a stop; `null` is the caller's to hold.
+    onChange: (next) => {
+      if (next !== null) onEffortChange?.(next);
+    },
   });
   const [focused, setFocused] = useState(false);
   const [modelWidth, setModelWidth] = useState(0);
@@ -433,18 +460,18 @@ export function ComposerPillBase({
   );
 
   const submit = useCallback(() => {
-    if (disabled) return;
+    if (disabled || busy) return;
     onSubmit?.(text);
-  }, [disabled, onSubmit, text]);
+  }, [disabled, busy, onSubmit, text]);
 
   const onKeyPress = useCallback(
     (event: NativeSyntheticEvent<TextInputKeyPressEventData>) => {
       const native: TextInputKeyPressEventData & { isComposing?: boolean } = event.nativeEvent;
-      if (!IS_WEB || native.key !== 'Enter' || native.isComposing || disabled) return;
+      if (!IS_WEB || native.key !== 'Enter' || native.isComposing || disabled || busy) return;
       event.preventDefault();
       submit();
     },
-    [submit, disabled],
+    [submit, disabled, busy],
   );
 
   const pillStyle: WebCssStyle = {
@@ -518,12 +545,12 @@ export function ComposerPillBase({
         />
       </View>
 
-      {models && models.length > 0 ? (
+      {lineup.length > 0 ? (
         <View style={{ position: 'relative', flexShrink: 0 }}>
           <GlassChip shown={glass && modelWidth > 0} radius={12} dark={theme.isDark} />
           <ModelMenu
-            models={models}
-            model={modelName}
+            models={lineup}
+            modelId={modelId}
             onModelChange={setModel}
             effort={effortValue}
             onEffortChange={setEffort}
@@ -547,7 +574,11 @@ export function ComposerPillBase({
             palette={controlPalette}
           />
         </View>
-        <SendButton disabled={disabled} onPress={submit} label={labels.send} palette={palette} />
+        {busy && onStop ? (
+          <StopButton onPress={onStop} label={labels.stop} palette={palette} />
+        ) : (
+          <SendButton disabled={disabled} onPress={submit} label={labels.send} palette={palette} />
+        )}
       </View>
     </View>
   );
@@ -562,5 +593,16 @@ const DEFAULT_PANEL_LABELS = {
   learnMore: 'Learn more',
   voice: 'Voice input',
   send: 'Send message',
+  stop: 'Stop generating',
   remove: 'Remove',
 };
+
+/**
+ * A bare string entry is its own id: the shorthand stays exact, and an `{ id,
+ * name }` entry keys, matches and reports by id like `ModelPicker` does.
+ */
+function normalizeModels(
+  models: ReadonlyArray<string | ModelPickerModel>,
+): ReadonlyArray<ModelPickerModel> {
+  return models.map((entry) => (typeof entry === 'string' ? { id: entry, name: entry } : entry));
+}

@@ -235,3 +235,51 @@ export const ResizeHandle: Story = {
     );
   },
 };
+
+/**
+ * The host's own layer behind the chat: `background` is drawn above the
+ * container's surface and below every turn, clipped to the same radius.
+ * `surface={false}` beside it drops the container's own paint, for a
+ * translucent layer that should show the page through.
+ *
+ * The chat has no project here either — `project` is optional, and the
+ * breadcrumb is the chat's own crumb alone rather than an empty folder.
+ */
+export const BackgroundLayer: Story = {
+  render: function Render() {
+    const { colors } = useTheme();
+    return (
+      <View style={{ width: 720, height: 460 }}>
+        <AiChatContainer
+          title="no project, own wallpaper"
+          surface={false}
+          background={
+            // Any node at all: a host's animated field, a video, a canvas. Here,
+            // two washes so the layering is visible.
+            <View style={{ width: '100%', height: '100%', backgroundColor: colors.backgroundSecondary }}>
+              <View
+                style={{
+                  position: 'absolute',
+                  left: -80,
+                  top: -80,
+                  width: 420,
+                  height: 420,
+                  borderRadius: 9999,
+                  opacity: 0.28,
+                  backgroundColor: colors.primary,
+                }}
+              />
+            </View>
+          }
+          composer={<ComposerPill surface={false} />}>
+          <AiChatThread>
+            <AiChatUserMessage>what is behind this chat?</AiChatUserMessage>
+            <AiChatAssistantMessage feedback={false}>
+              <AiChatMessageLine>Your own layer — the container never paints over it.</AiChatMessageLine>
+            </AiChatAssistantMessage>
+          </AiChatThread>
+        </AiChatContainer>
+      </View>
+    );
+  },
+};

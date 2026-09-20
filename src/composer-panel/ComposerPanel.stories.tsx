@@ -15,6 +15,7 @@ import {
   ComposerStatusBar,
   ModelPicker,
   type ComposerPanelAttachment,
+  type ModelPickerModel,
   type ModelPickerProvider,
 } from './index';
 
@@ -231,6 +232,13 @@ export const Picker: Story = {
 };
 
 const PILL_MODELS = ['Composer 2.5', 'GPT-5.6 Sol', 'Fable 5', 'Sonnet 5'];
+/** The same lineup on the identity contract: keyed and reported by id. */
+const PILL_MODELS_BY_ID: ReadonlyArray<ModelPickerModel> = [
+  { id: 'vibl/composer-2.5', name: 'Composer 2.5' },
+  { id: 'openai/gpt-5.6-sol', name: 'GPT-5.6 Sol' },
+  { id: 'oxy/fable-5', name: 'Fable 5' },
+  { id: 'anthropic/sonnet-5', name: 'Sonnet 5' },
+];
 const FOLDERS = [
   { prefix: 'users/maya/', name: 'project-sea' },
   { prefix: 'users/desktop/', name: 'vibl' },
@@ -280,4 +288,61 @@ export const PillStates: Story = {
       <ComposerPill models={PILL_MODELS} disabled defaultValue="A long message that runs past the end of the field and fades out" />
     </View>
   ),
+};
+
+/**
+ * A turn in flight: `busy` swaps send for the stop disc and `disabled` locks
+ * everything else. Stop is the one control `disabled` does not reach — the
+ * whole point of the pair is that cancelling stays possible while typing does
+ * not.
+ */
+export const BusyAndStop: Story = {
+  render: function Render() {
+    const [busy, setBusy] = useState(true);
+    return (
+      <View style={{ width: 700, gap: 16 }}>
+        <ComposerPanel
+          busy={busy}
+          disabled={busy}
+          onStop={() => setBusy(false)}
+          onSubmit={() => setBusy(true)}
+          providers={PROVIDERS}
+          defaultValue="Draft the release notes"
+        />
+        <ComposerLoader active={busy}>
+          <ComposerPill
+            surface={false}
+            glass={busy}
+            busy={busy}
+            disabled={busy}
+            onStop={() => setBusy(false)}
+            onSubmit={() => setBusy(true)}
+            models={PILL_MODELS_BY_ID}
+            defaultModel="oxy/fable-5"
+          />
+        </ComposerLoader>
+      </View>
+    );
+  },
+};
+
+/**
+ * The pill's model menu on the same identity contract as `ModelPicker`:
+ * `{ id, name }` entries, matched and reported by **id**, drawn by name. A
+ * routing id is never a display string.
+ *
+ * `effortLevels={[]}` is the model with no effort axis — the menu is the model
+ * rows alone, rather than an empty chip over a slider that cannot commit, and
+ * `effort={null}` is a model whose effort is left to it.
+ */
+export const PillModelIdentity: Story = {
+  render: function Render() {
+    const [model, setModel] = useState('oxy/fable-5');
+    return (
+      <View style={{ paddingTop: 380, width: 700, gap: 16 }}>
+        <ComposerPill models={PILL_MODELS_BY_ID} model={model} onModelChange={setModel} effort={null} />
+        <ComposerPill models={PILL_MODELS_BY_ID} model={model} onModelChange={setModel} effortLevels={[]} />
+      </View>
+    );
+  },
 };

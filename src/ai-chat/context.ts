@@ -35,7 +35,11 @@ export function useAiChatPlatform(): AiChatPlatform {
   return platform;
 }
 
-/** What `AiChatShell` hands the chat container's mobile header. */
+/**
+ * What `AiChatShell` publishes: read it with `useAiChatShell()`. The chat
+ * container's mobile header runs on it, and so does anything a host needs to
+ * know about the frame around its own nav.
+ */
 export interface AiChatShellState {
   /** Below `xl`: the panel is a drawer and the mobile header shows. */
   compact: boolean;
@@ -43,7 +47,21 @@ export interface AiChatShellState {
   navCollapsed: boolean;
   hasNav: boolean;
   hasPanel: boolean;
+  /**
+   * Whether the nav is on screen at all: `true` from `lg` up (in flow) and,
+   * below it, only while the drawer is open.
+   *
+   * A closed drawer stays MOUNTED — it is translated offscreen, not removed —
+   * so a nav rendered into `mobileSidebar` is still focusable and still read by
+   * a screen reader unless its own tree says otherwise. This is the signal to
+   * hide it by: skip the tab order and mark the subtree hidden while it is
+   * `false`.
+   */
+  navPresented: boolean;
+  /** The in-flow sidebar is narrowed to its rail width (`sidebarCollapsed`). */
+  sidebarCollapsed: boolean;
   openNav: () => void;
+  closeNav: () => void;
   openPanel: () => void;
   panelLabel: string;
   panelIcon: AiChatShellIcon;
