@@ -420,6 +420,8 @@ export function ComposerPillBase({
   labels: labelOverrides,
   style,
   maxLines = 8,
+  emptyAction,
+  onKeyPress: onKeyPressProp,
   testID,
 }: ComposerPillProps) {
   useComposerWebCss();
@@ -484,6 +486,19 @@ export function ComposerPillBase({
 
   const onKeyPress = useCallback(
     (event: NativeSyntheticEvent<TextInputKeyPressEventData>) => {
+      /*
+       * The host sees the key first, and may take it.
+       *
+       * A composer with a suggestion list over it needs the arrows, Enter and
+       * Escape to drive the list, not the field — and there was no way to ask
+       * for them, so a host could only offer a list its keyboard could not
+       * reach. It runs BEFORE the Enter rule below and a `defaultPrevented`
+       * event stops here, which is the only ordering that lets the list win
+       * Enter while the field keeps it the rest of the time.
+       */
+      onKeyPressProp?.(event);
+      if (event.defaultPrevented) return;
+
       const native: TextInputKeyPressEventData & { shiftKey?: boolean; isComposing?: boolean } = event.nativeEvent;
       /*
        * Shift+Enter is a NEWLINE, not a send.
@@ -508,7 +523,7 @@ export function ComposerPillBase({
       event.preventDefault();
       submit();
     },
-    [submit, disabled, busy],
+    [submit, disabled, busy, onKeyPressProp],
   );
 
   /*
@@ -644,8 +659,21 @@ export function ComposerPillBase({
             palette={controlPalette}
           />
         </View>
+        {/* What the trailing control is, in the order the states rank.
+         *
+         * Stop wins: a turn in flight is the one thing a person needs to be
+         * able to reach, and `StopButton` deliberately takes no `disabled`.
+         *
+         * Then `emptyAction`, if the host gave one and there is nothing to
+         * send. An assistant with a voice mode puts it here — the slot where
+         * send WOULD be, which is where the thumb already is — and it is the
+         * host's control, not a Bloom affordance, because only the host knows
+         * whether it has one. Without it the send button simply sits there
+         * disabled, as it always did. */}
         {busy && onStop ? (
           <StopButton onPress={onStop} label={labels.stop} palette={palette} />
+        ) : emptyAction !== undefined && text.trim() === '' ? (
+          emptyAction
         ) : (
           <SendButton disabled={disabled} onPress={submit} label={labels.send} palette={palette} />
         )}

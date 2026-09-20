@@ -110,3 +110,69 @@ describe('ComposerPill — Enter on web', () => {
     expect(onSubmit).not.toHaveBeenCalled();
   });
 });
+
+describe('ComposerPill — host slots', () => {
+  /**
+   * A suggestion list over the composer needs the arrows, Enter and Escape to
+   * drive the list rather than the field. Before `onKeyPress` there was no way
+   * to ask, so a host could only offer a list its keyboard could not reach.
+   */
+  it('lets the host take a key before the Enter rule', () => {
+    const onSubmit = jest.fn();
+    const seen: string[] = [];
+    mount(
+      <ComposerPill
+        defaultValue="hi"
+        onSubmit={onSubmit}
+        onKeyPress={(event) => {
+          seen.push(event.nativeEvent.key);
+          if (event.nativeEvent.key === 'Enter') event.preventDefault();
+        }}
+      />,
+    );
+
+    keyDown(field(), 'ArrowUp');
+    keyDown(field(), 'Enter');
+
+    expect(seen).toEqual(['ArrowUp', 'Enter']);
+    // The host took Enter, so the composer did not send.
+    expect(onSubmit).not.toHaveBeenCalled();
+  });
+
+  it('still sends when the host looks and does not take', () => {
+    const onSubmit = jest.fn();
+    mount(<ComposerPill defaultValue="hi" onSubmit={onSubmit} onKeyPress={() => {}} />);
+
+    keyDown(field(), 'Enter');
+
+    expect(onSubmit).toHaveBeenCalledWith('hi');
+  });
+
+  /**
+   * An assistant with a voice mode puts its call button where send would be,
+   * because that is where the thumb already is — but only while there is
+   * nothing to send, and never over a stop.
+   */
+  it('draws the host\'s empty action in place of send on an empty draft', () => {
+    mount(<ComposerPill emptyAction={<button type="button" data-testid="call" />} />);
+
+    expect(container.querySelector('[data-testid="call"]')).not.toBeNull();
+    expect(container.querySelector('[aria-label="Send message"]')).toBeNull();
+  });
+
+  it('gives the slot back to send once there is something to send', () => {
+    mount(<ComposerPill defaultValue="hi" emptyAction={<button type="button" data-testid="call" />} />);
+
+    expect(container.querySelector('[data-testid="call"]')).toBeNull();
+    expect(container.querySelector('[aria-label="Send message"]')).not.toBeNull();
+  });
+
+  it('lets a stop win over the empty action', () => {
+    mount(
+      <ComposerPill busy onStop={() => {}} emptyAction={<button type="button" data-testid="call" />} />,
+    );
+
+    expect(container.querySelector('[data-testid="call"]')).toBeNull();
+    expect(container.querySelector('[aria-label="Stop generating"]')).not.toBeNull();
+  });
+});

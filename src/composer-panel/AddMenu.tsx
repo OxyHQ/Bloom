@@ -8,6 +8,7 @@ import Animated, {
   withTiming,
 } from 'react-native-reanimated';
 
+import { RiCheckLine } from '../icons/remix/RiCheckLine';
 import { RiAddLine } from '../icons/remix/RiAddLine';
 import type { WebCssStyle } from '../styles/web-view-style';
 import { Text } from '../typography';
@@ -176,6 +177,22 @@ function AddMenuRow({
           <InlineAside color={palette.textSecondary}>{row.description}</InlineAside>
         ) : null}
       </Text>
+      {/* A row that is a SWITCH says which way it is set.
+       *
+       * The menu could only ever describe actions — id, label, icon — so a
+       * host with toggles in it (web search on, deep research off) had rows
+       * that changed something and then looked identical either way. The tick
+       * is drawn at the end, after the label has taken its width, so a long
+       * label truncates rather than pushing the state off the row. */}
+      {row.checked === undefined ? null : (
+        <View style={{ marginLeft: 'auto', paddingLeft: 8, flexShrink: 0 }}>
+          {row.checked ? (
+            <RiCheckLine testID={`bloom-row-checked-${row.id}`} width={18} height={18} fill={palette.text} />
+          ) : (
+            <View style={{ width: 18, height: 18 }} />
+          )}
+        </View>
+      )}
     </Pressable>
   );
 }

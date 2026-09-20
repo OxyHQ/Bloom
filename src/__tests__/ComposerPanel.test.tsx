@@ -145,6 +145,41 @@ describe('ComposerPanel', () => {
     expect(onAddMenuSelect).toHaveBeenCalledWith('goal');
   });
 
+  /**
+   * A menu row that is a SWITCH says which way it is set.
+   *
+   * The add menu could only describe actions — id, label, icon — so a host
+   * with toggles in it (web search on, deep research off) had rows that
+   * changed something and then looked identical either way. A row without
+   * `checked` is still an action and draws nothing extra, which is what keeps
+   * every existing menu unchanged.
+   */
+  it('ticks a menu row that is on, and leaves an action row plain', () => {
+    const { getByTestId } = renderIn(
+      <ComposerPanel
+        testID="composer"
+        addMenu={[
+          {
+            label: 'Capabilities',
+            rows: [
+              { id: 'search', label: 'Web search', checked: true },
+              { id: 'research', label: 'Deep research', checked: false },
+              { id: 'canvas', label: 'Canvas' },
+            ],
+          },
+        ]}
+      />,
+    );
+    pressHost(getByTestId('composer-add'));
+    const panel = within(getByTestId('composer-add-panel'));
+
+    // On draws the tick; off reserves the same space without one; the action
+    // row is not a switch and says nothing either way.
+    expect(panel.queryByTestId('bloom-row-checked-search')).toBeTruthy();
+    expect(panel.queryByTestId('bloom-row-checked-research')).toBeNull();
+    expect(panel.queryByTestId('bloom-row-checked-canvas')).toBeNull();
+  });
+
   it('hides the add button for an empty menu and the picker without providers', () => {
     const { queryByLabelText } = renderIn(<ComposerPanel addMenu={[]} />);
     expect(queryByLabelText('Add attachment')).toBeNull();

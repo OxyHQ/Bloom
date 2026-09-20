@@ -1,5 +1,11 @@
 import type { ComponentType, ReactNode, RefObject } from 'react';
-import type { StyleProp, TextInput, ViewStyle } from 'react-native';
+import type {
+  NativeSyntheticEvent,
+  StyleProp,
+  TextInput,
+  TextInputKeyPressEventData,
+  ViewStyle,
+} from 'react-native';
 
 import type { Props as IconProps } from '../icons/shared';
 
@@ -33,6 +39,15 @@ export interface ComposerPanelAddMenuRow {
   iconSize?: 20 | 24;
   /** Your own 24px artwork, drawn instead of `icon`. */
   image?: ReactNode;
+  /**
+   * Draw the row as a SWITCH, ticked or not, instead of an action.
+   *
+   * Omit it and the row is an action, as every row was before. A host whose
+   * menu holds toggles — web search on, deep research off — could otherwise
+   * only offer rows that changed something and then looked identical either
+   * way.
+   */
+  checked?: boolean;
 }
 
 export interface ComposerPanelAddMenuGroup {
@@ -404,6 +419,28 @@ export interface ComposerPillProps {
    * fixed single-line box this had before it could grow.
    */
   maxLines?: number;
+
+  /**
+   * Drawn where send would be, while the draft is empty and no turn is in
+   * flight.
+   *
+   * An assistant with a voice mode puts its call button here — the slot the
+   * thumb is already over. Omit it and send simply sits there disabled, as
+   * before. A stop always wins over it: a turn in flight is the one thing a
+   * person has to be able to reach.
+   */
+  emptyAction?: ReactNode;
+
+  /**
+   * The field's key events, BEFORE the composer's own Enter rule, so a host
+   * can take a key from it.
+   *
+   * Calling `preventDefault()` stops the composer acting on that key. That is
+   * what a suggestion list over the composer needs: the arrows, Enter and
+   * Escape have to drive the list rather than the field, and without this a
+   * host could only offer a list its keyboard could not reach.
+   */
+  onKeyPress?: (event: NativeSyntheticEvent<TextInputKeyPressEventData>) => void;
 
   /** The field itself, for focus or a scripted demo. */
   inputRef?: RefObject<TextInput | null>;
