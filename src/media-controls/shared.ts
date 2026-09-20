@@ -1,3 +1,4 @@
+import { surfaceFillOn, surfaceTextOn } from '../styles/surface-levels';
 import { Platform } from 'react-native';
 
 import { mixColor, resolveButtonRamps } from '../button/shared';
@@ -40,7 +41,7 @@ export interface MediaControlsPaint {
 }
 
 export function resolveMediaControlsPaint(theme: Theme): MediaControlsPaint {
-  const { accent, neutral: n } = resolveButtonRamps(theme);
+  const { accent } = resolveButtonRamps(theme);
   const dark = theme.isDark;
   const { colors } = theme;
   return {
@@ -52,11 +53,11 @@ export function resolveMediaControlsPaint(theme: Theme): MediaControlsPaint {
     inverseHover: mixColor(colors.text, colors.background, 0.16),
     onInverse: colors.background,
     text: colors.text,
-    textMuted: dark ? n[400] : n[500],
-    wash: dark ? n[800] : n[100],
-    rail: dark ? n[700] : n[200],
-    buffered: dark ? n[500] : n[300],
-    badge: dark ? n[400] : n[500],
+    textMuted: surfaceTextOn(theme, colors.background).textSecondary,
+    wash: surfaceFillOn(theme, colors.background),
+    rail: colors.contrast50,
+    buffered: colors.border,
+    badge: surfaceTextOn(theme, colors.background).textSecondary,
     onBadge: colors.background,
     ring: accent[500],
   };

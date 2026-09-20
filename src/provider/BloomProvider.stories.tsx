@@ -55,7 +55,7 @@ const resolver: ImageResolver = (id, variant) =>
 
 function Probe({ title, note, children }: { title: string; note: string; children: React.ReactNode }) {
   return (
-    <Card variant="outlined" radius="radius-16" style={{ padding: 14, gap: 8, width: 230 }}>
+    <Card appearance="outline" radius="radius-16" style={{ padding: 14, gap: 8, width: 230 }}>
       <Text style={{ fontWeight: '600' }}>{title}</Text>
       {children}
       <Text style={{ fontSize: 12, opacity: 0.7 }}>{note}</Text>
@@ -110,13 +110,11 @@ function ScrollProbe() {
 function MinimizeDriver() {
   const state = useMinimizeState();
   return (
-    <Button
-      onPress={() => {
+    <Button onPress={() => {
         const next = state.target.value === 1 ? 0 : 1;
         state.target.value = next;
         state.progress.value = withSpring(next);
-      }}
-    >
+      }}>
       Toggle minimize
     </Button>
   );
@@ -150,6 +148,7 @@ function MinimizePair({ note }: { note: string }) {
  * depth, which is the whole design: scope stops being a per-app decision.
  */
 export const Composed: Story = {
+  parameters: { controls: { disable: true } },
   render: () => (
     <BloomProvider imageResolver={resolver}>
       <View style={{ flexDirection: 'row', gap: 12, flexWrap: 'wrap', alignItems: 'flex-start' }}>
@@ -168,6 +167,7 @@ export const Composed: Story = {
  * all, which is the worse of the two.
  */
 export const WithoutIt: Story = {
+  parameters: { controls: { disable: true } },
   render: () => (
     <View style={{ flexDirection: 'row', gap: 12, flexWrap: 'wrap', alignItems: 'flex-start' }}>
       <ResolverProbe />

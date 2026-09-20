@@ -23,15 +23,16 @@ function Frame({ children, width = 400 }: { children: React.ReactNode; width?: n
   return (
     <View
       testID="frame"
-      style={{ padding: 40, gap: 12, backgroundColor: theme.colors.background, alignItems: 'flex-start' }}
+      style={{ padding: 16, maxWidth: '100%', gap: 12, backgroundColor: theme.colors.background, alignItems: 'flex-start' }}
     >
-      <View style={{ width, gap: 12 }}>{children}</View>
+      <View style={{ width, maxWidth: '100%', gap: 12 }}>{children}</View>
     </View>
   );
 }
 
 /** Every status, the avatar + presence visuals, timestamp, actions and no-close. */
 export const Matrix: Story = {
+  parameters: { controls: { disable: true } },
   render: () => (
     <Frame>
       <Notification title="New comment" description="Mia replied to your thread." timestamp="2m ago" />
@@ -66,6 +67,7 @@ export const Matrix: Story = {
 
 /** Title only — the smallest card. */
 export const TitleOnly: Story = {
+  parameters: { controls: { disable: true } },
   render: () => (
     <Frame>
       <Notification title="Saved" />
@@ -75,19 +77,16 @@ export const TitleOnly: Story = {
 
 /** 6-second auto-dismiss with the countdown bar, and the entrance after 0.3s. */
 export const AutoDismiss: Story = {
+  parameters: { controls: { disable: true } },
   render: function AutoDismissStory() {
     const [key, setKey] = useState(0);
     const [gone, setGone] = useState(false);
     return (
       <Frame>
-        <Button
-          size="small"
-          variant="secondary"
-          onPress={() => {
+        <Button size="sm" onPress={() => {
             setGone(false);
             setKey((k) => k + 1);
-          }}
-        >
+          }} appearance="outline" tone="neutral">
           Replay
         </Button>
         {gone ? null : (
@@ -103,5 +102,16 @@ export const AutoDismiss: Story = {
         )}
       </Frame>
     );
+  },
+};
+
+/** A single instance whose controls are applied directly to the rendered component. */
+export const Playground: StoryObj<typeof Notification> = {
+  args: { title: 'New comment', description: 'Mia replied to your thread.', timestamp: '2m ago', status: 'information', dismissible: true },
+  parameters: { controls: { disable: false, include: ['title', 'description', 'timestamp', 'status', 'dismissible'] } },
+  argTypes: { title: { control: 'text' }, description: { control: 'text' }, timestamp: { control: 'text' }, status: { control: 'select', options: ['neutral', 'information', 'success', 'warning', 'error'] }, dismissible: { control: 'boolean' } },
+  render: function Playground(args) {
+
+    return <View style={{ width: 440, maxWidth: '100%' }}><Notification {...args} /></View>;
   },
 };

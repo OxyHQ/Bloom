@@ -37,7 +37,7 @@ export type {
 } from './ambient-store';
 export { useNavigationTheme } from './use-navigation-theme';
 export type { NavigationTheme, NavigationThemeFont } from './use-navigation-theme';
-export type { Theme, ThemeColors, ThemeMode, ThemeGradient, ThemeGradients } from './types';
+export type { Theme, ThemeColors, ThemeMode, ThemeGradient, ThemeGradients, ThemeChartColor } from './types';
 export type {
   AppColorName,
   AppColorPreset,

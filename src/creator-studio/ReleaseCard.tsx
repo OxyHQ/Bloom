@@ -1,7 +1,7 @@
+import { surfaceFillOn } from '../styles/surface-levels';
 import React, { memo, useMemo } from 'react';
 import { Image, Pressable, StyleSheet, View } from 'react-native';
 
-import { mixColor, resolveButtonRamps } from '../button/shared';
 import { Badge } from '../badge';
 import { GlyphButton } from '../button';
 import { Chip } from '../chip';
@@ -96,8 +96,7 @@ function ReleaseCardComponent({
   useInteractiveWebCss(CREATOR_STUDIO_STYLE_ID, CREATOR_STUDIO_CSS);
   const paint = useMemo(() => resolveCreatorStudioPaint(theme), [theme]);
   const hoverSurface = useMemo(() => {
-    const { neutral: n } = resolveButtonRamps(theme);
-    return theme.isDark ? n[800] : mixColor(paint.surface, n[200], 0.5);
+    return surfaceFillOn(theme, paint.surface);
   }, [theme, paint.surface]);
   const labels = { ...RELEASE_CARD_LABELS, ...labelOverrides };
   const { state: hovered, onIn, onOut } = useInteractionState();

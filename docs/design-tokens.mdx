@@ -238,31 +238,35 @@ That question belongs to `styles/surface-levels.ts`
 container publish the rung its children sit on. It is built BESIDE the policy,
 reading `theme.colors`, and changes no preset and no token.
 
-## The neutral surface ramp
+## The tonal surface ramp
 
-`--background`, `--surface`, `--popover`, `--muted`/`--accent` and `--card` are a
-stack: several components carry meaning **only** in the step between two of them —
-an `ActivityHeatmap` empty cell, `Card variant="filled"`, a `Code` block, the
-`StatBar` and `CompositionBar` tracks, `DotGridMeter`'s off dots, a filled `Tabs`
-track, a selected `Item`, the solid `TabBar`, a plain `Card` on a panel, the
-`Toast` action, and the `Avatar`/`LinkPreviewCard` placeholders.
+The shell carries its seed hue throughout the surface, text and border families,
+using HCT chroma 28 where the gamut permits it. Monochrome seeds retain grayscale
+and their original tones. Labels and boundaries read canonical token pairs, so
+JavaScript and CSS consumers share the same palette.
 
-Those tones are owned by `SURFACE_RAMP` in `theme/color-policy.ts` rather than
-taken from Material 3's container roles. M3's ramp steps by 2 tones, which at
-these lightnesses is about **1.2 ΔE00** — below the just-noticeable difference for
-two large flat patches. Measured across all 64 presets, **4 tones (~2.4 ΔE00)** is
-the first spacing at which every pair separates.
+| Mode | Card | Page | Surface/sidebar | Popover | Muted/accent |
+| --- | --- | --- | --- | --- | --- |
+| Chromatic light | 98 | 94 | 90 | 86 | 82 |
+| Monochrome light | 100 | 96 | 92 | 88 | 84 |
+| Dark | 22 | 4 | 10 | 14 | 18 |
 
-`--background` is deliberately not part of the ramp: the page tone is every
-consuming app's page colour, so the rungs below it carry the spacing instead.
-`--card` is not either — it sits on the far side of the page in light (tone 100,
-white) and at the top of the ramp in dark, so it is expressed as the engine role
-that means exactly that in each mode.
+These are authored HCT tones. The light card stops short of white to preserve
+its hue; the rest of the chromatic light ladder shifts with it. Content-area
+keeps an intermediate tone: 96 in chromatic light, 98 in monochrome light and
+6 in dark. It is not another four-tone ladder rung.
 
-If you move any of these, measure **every** pair rather than the one you are
-fixing: the light tones 92/94/96/98/100 are exactly `--muted`, `--popover`,
-`--surface`, `--content-area` and `--card`, so any new value for one lands on
-another unless you check.
+The original low-chroma investigation found M3's two-tone container steps
+around 1.2 ΔE00, below the intended distinction between large flat surfaces;
+four-tone steps measured about 2.4 ΔE00. Those historical measurements are not
+claimed for the new chromatic palette. The current 64-preset × two-mode matrix
+measures every declared ladder neighbour in quantized HCT tone: the smallest
+actual gap is 3.68. Both foreground roles clear AA on all six surfaces, with a
+minimum measured ratio of 5.75. `tonal-surfaces.test.ts` guards these contracts.
+
+Never move just one surface without measuring its neighbours: a tone that
+separates one pair can land directly on another. The intentional sidebar/surface
+and muted/accent aliases do not represent separate elevations.
 
 ## Scales
 
@@ -276,6 +280,20 @@ another unless you check.
 - **Shadow**: `shadow-s`, `shadow-m` (web box-shadow). On native surfaces apply
   `bloomShadowStyle('s' | 'm')` (returns RN elevation/shadow props).
 
+### Chart series
+
+`--chart-1` through `--chart-9` and their `--chart-N-active` partners are
+the canonical categorical palette. `useTheme().chartColors` exposes these
+same nine `{ color, activeColor }` pairs to JavaScript. The original five
+series retain their colors; four interleaved hues extend the palette.
+Monochrome presets use nine separate grayscale steps in both modes.
+
+Chart cards read these pairs by default. Explicit series `color` and
+`activeColor` overrides still take precedence. Hand-authored themes may omit
+`chartColors`; charts then derive the same policy from the theme's primary
+color and mode. For a deliberate custom categorical palette, provide all
+nine pairs on `Theme.chartColors`.
+
 ### Type scale
 
 | Role | Size / line | Weight | Family |
@@ -288,3 +306,12 @@ another unless you check.
 | `sectionTitle` | 20 / 26 | 600 | sans |
 | `headerBold` | 28 / 34 | 700 | display |
 | `buttonLarge` | 17 / 22 | 600 | sans |
+
+### Media and creator surfaces
+
+Media, library, queue, creator and property-insight palettes resolve structural
+fills and quiet labels from the tonal surface helpers. Artwork bands preserve
+caller-supplied hues, darkened only when their paired labels require it; their
+black/white image ink is intentional. Energy bands remain categorical data
+colors with measured black/white foregrounds. They are not shell backgrounds.
+`media-semantic-palette.test.ts` checks those pairs across all presets and modes.

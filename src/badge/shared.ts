@@ -1,3 +1,5 @@
+import { resolveBloomColors } from '../appearance/colors';
+import type { BloomAppearance, BloomTone } from '../appearance';
 import { resolveButtonRamps } from '../button/shared';
 import { resolveAccentColors, type AccentTone } from '../theme/accent-colors';
 import type { Theme } from '../theme/types';
@@ -51,6 +53,10 @@ export interface BadgeGeometry {
 }
 
 export const BADGE_GEOMETRY: Readonly<Record<BadgeSize, BadgeGeometry>> = {
+  xs: { height: 14, type: 'caption-2-semibold', paddingHorizontal: 3, icon: 9, gap: 2, dotSize: 4, halo: 6, core: 3, word: false },
+  sm: { height: 17, type: 'caption-2-semibold', paddingHorizontal: 4, icon: 10, gap: 2, dotSize: 6, halo: 8, core: 4, word: false },
+  md: { height: 18, type: 'caption-1-semibold', paddingHorizontal: 4, icon: 11, gap: 2, dotSize: 8, halo: 12, core: 6, word: false },
+  lg: { height: 24, type: 'body-semibold', paddingHorizontal: 6, icon: 14, gap: 4, dotSize: 10, halo: 16, core: 8, word: false },
   small: { height: 17, type: 'caption-2-semibold', paddingHorizontal: 4, icon: 10, gap: 2, dotSize: 6, halo: 8, core: 4, word: false },
   medium: { height: 18, type: 'caption-1-semibold', paddingHorizontal: 4, icon: 11, gap: 2, dotSize: 8, halo: 12, core: 6, word: false },
   large: { height: 24, type: 'body-semibold', paddingHorizontal: 6, icon: 14, gap: 4, dotSize: 10, halo: 16, core: 8, word: false },
@@ -78,11 +84,13 @@ export interface BadgePaint {
  *                           theme, so a badge that followed the mode would go
  *                           dark-on-dark over half the images in the library
  */
-export function resolveBadgePaint(theme: Theme, tone: AccentTone, variant: BadgeVariant): BadgePaint {
+export function resolveBadgePaint(theme: Theme, tone: AccentTone | BloomTone, variant: BadgeVariant | BloomAppearance): BadgePaint {
   if (variant === 'onMedia') {
     const { neutral } = resolveButtonRamps(theme);
     return { background: neutral[50], foreground: neutral[900], border: 'transparent', shadow: 's' };
   }
-  const pair = resolveAccentColors(theme.colors, tone, variant);
+  const pair = resolveBloomColors(theme.colors, normalizeTagTone(tone), variant === 'outlined' ? 'outline' : variant);
   return { ...pair, shadow: null };
 }
+
+export function normalizeTagTone(tone: AccentTone | BloomTone): BloomTone { return tone === 'primary' ? 'accent' : tone === 'error' ? 'danger' : tone === 'default' ? 'neutral' : tone as BloomTone; }

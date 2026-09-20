@@ -1,8 +1,7 @@
+import { useArgs } from 'storybook/preview-api';
 import React, { useState } from 'react';
 import { Pressable, View } from 'react-native';
 import type { Meta, StoryObj } from '@storybook/react-vite';
-
-import type { BloomIconComponent } from '../icons/icon-component';
 
 import {
   Popover,
@@ -15,6 +14,7 @@ import {
   PopoverTrigger,
 } from './index';
 import { Avatar } from '../avatar';
+import type { BloomIconComponent } from '../icons/icon-component';
 import { Button } from '../button';
 import { useMenuPalette } from '../floating/menu-palette';
 import {
@@ -29,6 +29,7 @@ import { TextField, TextFieldInput, TextFieldLabel } from '../text-field';
 import { Text } from '../typography';
 
 const meta: Meta = {
+  component: Popover,
   title: 'Base/Popover',
 };
 
@@ -37,7 +38,7 @@ export default meta;
 type Story = StoryObj;
 
 /**
- * A menu row as the panels draw it: `flex items-center gap-2 rounded-2lg
+ * A menu row as BoardUI's panels draw it: `flex items-center gap-2 rounded-2lg
  * p-2`, a 20px secondary icon and a `text-body-medium` label, washed with the
  * dropdown hover colour. Story-local — a popover whose body is ONLY rows wants
  * `DropdownMenu`, which ships them with keyboard state and ARIA roles.
@@ -74,16 +75,17 @@ function PanelRow({
 }
 
 /**
- * The default panel: the floating surface — 266px, `rounded-2xl`, 1px
+ * The default panel: BoardUI's floating surface — 266px, `rounded-2xl`, 1px
  * `border-button-default`, `bg-background-primary-default`, `p-2.5`,
  * `shadow-dropdown` — holding a titled explanation.
  */
 export const Basic: Story = {
+  parameters: { controls: { disable: true } },
   render: () => (
     <View style={{ padding: 80, alignItems: 'flex-start' }}>
       <Popover defaultOpen>
         <PopoverTrigger asChild label="What is this?">
-          <Button variant="secondary" leadingIcon={RiInformationLine} testID="popover-trigger">
+          <Button leadingIcon={RiInformationLine} testID="popover-trigger" appearance="outline" tone="neutral">
             What is this?
           </Button>
         </PopoverTrigger>
@@ -106,17 +108,18 @@ export const Basic: Story = {
  * rows, a full-bleed `-mx-2.5` rule, and a `px-2 pb-2` footer.
  */
 export const WithHeaderAndFooter: Story = {
+  parameters: { controls: { disable: true } },
   render: () => (
     <View style={{ padding: 80, alignItems: 'flex-start' }}>
       <Popover defaultOpen>
-        <PopoverTrigger asChild label="Design team">
-          <Button variant="secondary">Design team</Button>
+        <PopoverTrigger asChild label="Board team">
+          <Button appearance="outline" tone="neutral">Board team</Button>
         </PopoverTrigger>
-        <PopoverContent label="Design team menu" align="start" testID="popover-header-footer">
+        <PopoverContent label="Board team menu" align="start" testID="popover-header-footer">
           <View style={{ gap: 7 }}>
-            <PopoverHeader leading={<Avatar name="Design team" size={32} />}>
-              <PopoverTitle>Design team</PopoverTitle>
-              <PopoverDescription>team@example.com</PopoverDescription>
+            <PopoverHeader leading={<Avatar name="Board team" size={32} />}>
+              <PopoverTitle>Board team</PopoverTitle>
+              <PopoverDescription>hi@boardui.com</PopoverDescription>
             </PopoverHeader>
             <View style={{ gap: 4 }}>
               <PanelRow icon={RiUserLine} label="Profile" />
@@ -127,7 +130,7 @@ export const WithHeaderAndFooter: Story = {
           <PanelRow icon={RiLogoutBoxRLine} label="Sign out" />
           <PopoverSeparator />
           <PopoverFooter style={{ justifyContent: 'space-between', paddingTop: 4 }}>
-            <PopoverTitle tone="secondary">Bloom</PopoverTitle>
+            <PopoverTitle tone="secondary">BoardUI</PopoverTitle>
             <PopoverDescription>v1.0.1</PopoverDescription>
           </PopoverFooter>
         </PopoverContent>
@@ -143,11 +146,12 @@ export const WithHeaderAndFooter: Story = {
  * footer (18px from the panel edge on every side).
  */
 export const RowList: Story = {
+  parameters: { controls: { disable: true } },
   render: () => (
     <View style={{ padding: 80, alignItems: 'flex-start' }}>
       <Popover defaultOpen>
         <PopoverTrigger asChild label="Account">
-          <Button variant="secondary">Account</Button>
+          <Button appearance="outline" tone="neutral">Account</Button>
         </PopoverTrigger>
         <PopoverContent label="Account menu" align="start" testID="popover-row-list">
           <View style={{ gap: 6, paddingTop: 5 }}>
@@ -162,10 +166,10 @@ export const RowList: Story = {
           </View>
           <PopoverSeparator style={{ marginTop: 14, marginBottom: 14 }} />
           <PopoverFooter>
-            <Button variant="secondary" size="small" leadingIcon={RiAddFill} style={{ flex: 1 }}>
+            <Button size="sm" leadingIcon={RiAddFill} style={{ flex: 1 }} appearance="outline" tone="neutral">
               Add user
             </Button>
-            <Button variant="secondary" size="small" leadingIcon={RiEqualizer3Line} style={{ flex: 1 }}>
+            <Button size="sm" leadingIcon={RiEqualizer3Line} style={{ flex: 1 }} appearance="outline" tone="neutral">
               Manage
             </Button>
           </PopoverFooter>
@@ -177,6 +181,7 @@ export const RowList: Story = {
 
 /** Form content: a field and a confirm row, closed from inside via `onOpenChange`. */
 export const FormContent: Story = {
+  parameters: { controls: { disable: true } },
   render: function FormPopover() {
     const [open, setOpen] = useState(true);
     const [name, setName] = useState('Q3 roadmap');
@@ -184,7 +189,7 @@ export const FormContent: Story = {
       <View style={{ padding: 80, alignItems: 'flex-start' }}>
         <Popover open={open} onOpenChange={setOpen}>
           <PopoverTrigger asChild label="Rename">
-            <Button variant="secondary">Rename</Button>
+            <Button appearance="outline" tone="neutral">Rename</Button>
           </PopoverTrigger>
           <PopoverContent label="Rename board" align="start" testID="popover-form">
             <PopoverHeader>
@@ -193,14 +198,14 @@ export const FormContent: Story = {
             <View style={{ paddingHorizontal: 8, paddingTop: 10, paddingBottom: 12, gap: 6 }}>
               <TextFieldLabel>Name</TextFieldLabel>
               <TextField>
-                <TextFieldInput label="Name" value={name} onChangeText={setName} />
+                <TextFieldInput label="Name" value={name} onValueChange={setName} />
               </TextField>
             </View>
             <PopoverFooter style={{ justifyContent: 'flex-end', gap: 10 }}>
-              <Button variant="secondary" size="small" onPress={() => setOpen(false)}>
+              <Button size="sm" onPress={() => setOpen(false)} appearance="outline" tone="neutral">
                 Cancel
               </Button>
-              <Button size="small" onPress={() => setOpen(false)}>
+              <Button size="sm" onPress={() => setOpen(false)}>
                 Save
               </Button>
             </PopoverFooter>
@@ -225,12 +230,13 @@ const PLACEMENTS = [
  * corner nearest its trigger, and flips when the named side does not fit.
  */
 export const Placements: Story = {
+  parameters: { controls: { disable: true } },
   render: () => (
     <View style={{ padding: 120, flexDirection: 'row', flexWrap: 'wrap', gap: 32, maxWidth: 1100 }}>
       {PLACEMENTS.map(({ side, align }) => (
         <Popover key={`${side}-${align}`}>
           <PopoverTrigger asChild label={`${side} ${align}`}>
-            <Button variant="secondary" testID={`placement-${side}-${align}`}>
+            <Button testID={`placement-${side}-${align}`} appearance="outline" tone="neutral">
               {`${side} / ${align}`}
             </Button>
           </PopoverTrigger>
@@ -249,14 +255,15 @@ export const Placements: Story = {
 /**
  * A caller's `className` still reaches the panel: every chrome property its
  * utilities name drops the matching inline default (`w-[200px] p-2` here, the
- * `DropdownPopover` call-site shape).
+ * BoardUI `DropdownPopover` call-site shape).
  */
 export const ClassNameOverride: Story = {
+  parameters: { controls: { disable: true } },
   render: () => (
     <View style={{ padding: 80, alignItems: 'flex-start' }}>
       <Popover defaultOpen>
         <PopoverTrigger asChild label="More">
-          <Button variant="secondary">More</Button>
+          <Button appearance="outline" tone="neutral">More</Button>
         </PopoverTrigger>
         <PopoverContent label="More actions" align="start" className="w-[200px] p-2" testID="popover-classname">
           <PanelRow icon={RiSettings3Line} label="Settings" />
@@ -319,8 +326,9 @@ function ForwardingTrigger(props: InjectedTriggerProps) {
  * The first two triggers are the same component; only `disabled` differs.
  */
 export const AsChildDisabled: Story = {
+  parameters: { controls: { disable: true } },
   render: () => (
-    <View style={{ padding: 80, flexDirection: 'row', gap: 24 }}>
+    <View style={{ padding: 24, maxWidth: '100%', flexDirection: 'row', flexWrap: 'wrap', gap: 24 }}>
       <Popover>
         <PopoverTrigger asChild label="Enabled" testID="popover-forwarding-enabled">
           <ForwardingTrigger>Enabled</ForwardingTrigger>
@@ -370,6 +378,7 @@ export const AsChildDisabled: Story = {
  * is the same pair of modes every anchored Bloom family offers.
  */
 export const Controlled: Story = {
+  parameters: { controls: { disable: true } },
   render: function ControlledPopover() {
     const [open, setOpen] = React.useState(false);
     return (
@@ -377,7 +386,7 @@ export const Controlled: Story = {
         <Text>open: {String(open)}</Text>
         <Popover open={open} onOpenChange={setOpen}>
           <PopoverTrigger asChild label="Toggle">
-            <Button variant="secondary">Toggle</Button>
+            <Button appearance="outline" tone="neutral">Toggle</Button>
           </PopoverTrigger>
           <PopoverContent label="Controlled panel" align="start">
             <PopoverHeader style={{ paddingBottom: 4 }}>
@@ -388,5 +397,15 @@ export const Controlled: Story = {
         </Popover>
       </View>
     );
+  },
+};
+
+export const Playground: StoryObj<typeof Popover> = {
+  args: { open: false },
+  parameters: { controls: { disable: false, include: ['open'] } },
+  argTypes: { open: { control: 'boolean' } },
+  render: function Playground(args) {
+    const [, updateArgs] = useArgs();
+    return <View style={{ width: 520, maxWidth: '100%' }}><Popover {...args} onOpenChange={open => updateArgs({ open })}><PopoverTrigger asChild><Button>Open details</Button></PopoverTrigger><PopoverContent><PopoverHeader><PopoverTitle>Shared controls</PopoverTitle><PopoverDescription>Change the open control or use the trigger.</PopoverDescription></PopoverHeader></PopoverContent></Popover></View>;
   },
 };

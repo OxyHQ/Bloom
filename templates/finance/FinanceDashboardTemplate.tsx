@@ -21,7 +21,7 @@ import {
 import { TransactionsTable } from './TransactionsTable';
 
 /**
- * The finance template: the floating sidebar / reveal-drawer shell, KPI
+ * The finance template: the adaptive navigation shell, KPI
  * stat cards, a full-width cash-flow sankey, a 3-up row (spending rings,
  * portfolio bubbles, daily spending heatmap) and the transactions data table.
  */

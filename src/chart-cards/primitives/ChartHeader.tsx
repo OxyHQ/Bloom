@@ -89,7 +89,7 @@ export function ChartHeadline({
               accessibilityElementsHidden={hovering}
               importantForAccessibility={hovering ? 'no-hide-descendants' : 'auto'}>
               <Chip
-                size="medium"
+                size="md"
                 testID={testID ? `${testID}-delta` : undefined}
                 style={{ backgroundColor: chip.background }}
                 textStyle={{ color: chip.foreground }}>

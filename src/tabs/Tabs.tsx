@@ -1,3 +1,4 @@
+import { webDataSet } from '../styles/web-data';
 import React, {
   createContext,
   forwardRef,
@@ -36,8 +37,6 @@ import { borderRadius } from '../styles/tokens';
 import { hairlineOn, surfaceFillOn, useSurfaceFill } from '../styles/surface-levels';
 import { interactiveWebCss, useInteractiveWebCss } from '../styles/interactive-web-css';
 import type { WebCssStyle } from '../styles/web-view-style';
-import { webDataSet } from '../styles/web-data';
-import { mixColor, resolveButtonRamps } from '../button/shared';
 import type {
   TabsContentProps,
   TabsIconComponent,
@@ -144,7 +143,7 @@ function formatCount(count: number): string {
 type ResolvedVariant = 'underline' | 'pill' | 'filled';
 
 function resolveVariant(variant: TabsVariant): ResolvedVariant {
-  return variant === 'outlined' ? 'pill' : variant;
+  return variant;
 }
 
 export interface TabsPaint {
@@ -172,63 +171,30 @@ export interface TabsPaint {
  * Every colour a strip paints, per variant. Pure — takes the theme rather than
  * calling `useTheme()`, so it can be walked over presets and modes.
  */
-export function resolveTabsPaint(
-  theme: Theme,
-  variant: TabsVariant,
-  surface: string = theme.colors.background,
-): TabsPaint {
-  const { accent, neutral: n } = resolveButtonRamps(theme);
+export function resolveTabsPaint(theme: Theme, variant: TabsVariant, surface = theme.colors.background): TabsPaint {
   const c = theme.colors;
-  const dark = theme.isDark;
-  // The rail, the hover row and the filled thumb are STEPS OFF the strip's own
-  // surface, not ramp stops. As `neutral-800` the dark rail was byte for byte
-  // the fill `queue-panel` (and every other menu-surface family) paints its
-  // panel with — ΔE 0, so a tab strip inside one had no rail at all. On the page
-  // these land within 0.04 of the colours they replaced.
-  const hairline = hairlineOn(theme, surface);
   const raised = surfaceFillOn(theme, surface);
+  const hairline = hairlineOn(theme, surface);
   const count = {
-    countSelectedBackground: dark ? mixColor(c.background, accent[800], 0.6) : accent[100],
-    countSelectedForeground: accent[600],
-    // `bg-black/10` in both modes.
-    countIdleBackground: 'rgba(0, 0, 0, 0.1)',
-    countIdleForeground: c.text,
-    separator: hairline,
-    underline: accent[600],
-    ring: accent[500],
+    countSelectedBackground: c.primarySubtle,
+    countSelectedForeground: c.primarySubtleForeground,
+    countIdleBackground: c.backgroundTertiary, countIdleForeground: c.text,
+    separator: hairline, underline: c.primary, ring: c.primary,
   };
   switch (resolveVariant(variant)) {
     case 'underline':
-      return {
-        ...count,
-        thumb: 'transparent',
-        hover: 'transparent',
-        selectedLabel: accent[600],
-        selectedIcon: accent[600],
-        idleLabel: c.text,
-        idleIcon: c.text,
-      };
+      return { ...count, thumb: 'transparent', hover: 'transparent',
+        selectedLabel: c.primarySubtleForeground, selectedIcon: c.primarySubtleForeground,
+        idleLabel: c.text, idleIcon: c.text };
     case 'pill':
-      return {
-        ...count,
-        thumb: dark ? mixColor(c.background, accent[950], 0.6) : accent[50],
-        hover: raised,
-        selectedLabel: accent[500],
-        selectedIcon: accent[500],
-        idleLabel: n[500],
-        idleIcon: n[500],
-      };
+      return { ...count, thumb: c.primarySubtle, hover: surfaceFillOn(theme, raised),
+        selectedLabel: c.primarySubtleForeground, selectedIcon: c.primarySubtleForeground,
+        idleLabel: c.textSecondary, idleIcon: c.textSecondary };
     case 'filled':
     default:
-      return {
-        ...count,
-        thumb: raised,
-        hover: dark ? mixColor(surface, n[700], 0.6) : surfaceFillOn(theme, raised),
-        selectedLabel: c.text,
-        selectedIcon: c.text,
-        idleLabel: n[500],
-        idleIcon: n[500],
-      };
+      return { ...count, thumb: raised, hover: surfaceFillOn(theme, raised),
+        selectedLabel: c.text, selectedIcon: c.text,
+        idleLabel: c.textSecondary, idleIcon: c.textSecondary };
   }
 }
 
@@ -793,7 +759,7 @@ const TabsBarComponent = forwardRef<TabsDragController, TabsProps>(function Tabs
 const TabComponent: React.FC<TabsTriggerProps> = ({
   value,
   label,
-  icon,
+  leading,
   leadingIcon: LeadingIcon,
   count,
   isFocused,
@@ -896,7 +862,7 @@ const TabComponent: React.FC<TabsTriggerProps> = ({
       <LeadingIcon width={geometry.icon} height={geometry.icon} fill={iconColor} />
     </View>
   ) : (
-    (icon ?? null)
+    (leading ?? null)
   );
 
   const showHoverLayer = !isUnderline && !isSelected && !disabled;

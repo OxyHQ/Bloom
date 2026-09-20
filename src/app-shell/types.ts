@@ -64,7 +64,7 @@ export type AppShellScroll = 'document' | 'container' | 'fixed';
  */
 export type AppShellBarVisibility = 'compact' | 'always';
 
-export interface AppShellProps {
+export interface AppShellEngineProps {
   /**
    * The layout shape. Defaults to `dashboard` — the behaviour this component
    * had before variants existed, down to the pixel.
@@ -313,3 +313,40 @@ export interface ProOfferCardProps {
   style?: StyleProp<ViewStyle>;
   testID?: string;
 }
+
+export type AppShellNavigationPlacement = 'auto' | 'bottom' | 'rail' | 'sidebar';
+export interface AppShellNavigationItem {
+  value: string;
+  label: string;
+  icon: ReactNode;
+}
+export interface AppShellNavigationProps {
+  active?: boolean;
+  navigation?: AppShellNavigationItem[];
+  value?: string;
+  onValueChange?: (value: string) => void;
+  navigationPlacement?: AppShellNavigationPlacement;
+  navigationMaterial?: 'solid' | 'translucent';
+  /** Bottom action follows scroll collapse by hiding (default), or remains visible. */
+  bottomActionBehavior?: 'hide' | 'visible';
+  /** external: the child list owns scrolling; avoids nested virtualized lists. */
+  scroll?: AppShellScroll | 'auto' | 'external';
+  /** Sidebar configuration, including card (detached, default) or docked surface. Also applies with navigation. */
+  sidebar?: Omit<SidebarProps, 'mobile' | 'onClose'>;
+  primaryAction?: import('../fab/types').FabProps;
+  title?: string;
+  breadcrumb?: ReactNode;
+  actions?: ReactNode;
+  header?: ReactNode;
+  children?: ReactNode;
+  contentMaxWidth?: number;
+  overlay?: ReactNode;
+  style?: StyleProp<ViewStyle>;
+  testID?: string;
+}
+
+
+/** Additive entry point: legacy layout variants and adaptive navigation share the same chrome. */
+export type AppShellProps = Omit<AppShellEngineProps, 'scroll'> & AppShellNavigationProps & {
+  scroll?: AppShellScroll | 'auto' | 'external';
+};

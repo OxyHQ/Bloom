@@ -159,13 +159,7 @@ function InboxBody({
           </View>
         </React.Fragment>
       ))}
-      <Button
-        variant="secondary"
-        size="small"
-        leadingIcon={RiAddFill}
-        onPress={onAddAccount}
-        style={{ width: '100%' }}
-      >
+      <Button size="sm" leadingIcon={RiAddFill} onPress={onAddAccount} style={{ width: '100%' }} appearance="subtle" tone="neutral">
         {addAccountLabel}
       </Button>
     </View>
@@ -205,14 +199,7 @@ export function CalendarViewInboxMenu({
   return (
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
-        <Button
-          variant="secondary"
-          size="medium"
-          iconOnly
-          leadingIcon={RiInbox2Line}
-          accessibilityLabel={accessibilityLabel}
-          testID={testID}
-        />
+        <Button size="md" icon={RiInbox2Line} accessibilityLabel={accessibilityLabel} testID={testID} appearance="plain" tone="neutral" />
       </PopoverTrigger>
       <PopoverContent
         label="Inbox menu"

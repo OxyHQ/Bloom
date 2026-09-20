@@ -25,6 +25,7 @@ import type { MediaSurfaceContent, MeasuredRect } from './types';
  * none` from one that merely looks like it.
  */
 const meta: Meta = {
+  parameters: { controls: { disable: true } },
   title: 'Base/Media Flight',
 };
 
@@ -170,7 +171,7 @@ function FlightDemo() {
 
       <View
         ref={targetRef}
-        style={{
+        style={{ maxWidth: '100%',
           width: 320,
           height: 200,
           borderRadius: 16,
@@ -235,6 +236,7 @@ function FlightDemo() {
 }
 
 export const FlyToAndBack: Story = {
+  parameters: { controls: { disable: true } },
   render: () => (
     <View style={{ gap: 16 }}>
       <FlightDemo />
@@ -288,6 +290,7 @@ function ClickThroughDemo() {
 }
 
 export const ClickThrough: Story = {
+  parameters: { controls: { disable: true } },
   render: () => <ClickThroughDemo />,
 };
 
@@ -339,13 +342,14 @@ function PaintLatencyDemo() {
       >
         <Text>Fly a poster the page has never requested</Text>
       </Pressable>
-      <View ref={targetRef} style={{ width: 320, height: 200 }} />
+      <View ref={targetRef} style={{ maxWidth: '100%', width: 320, height: 200 }} />
       <MediaFlightLayer />
     </View>
   );
 }
 
 export const PaintLatency: Story = {
+  parameters: { controls: { disable: true } },
   render: () => <PaintLatencyDemo />,
 };
 
@@ -495,6 +499,7 @@ function RouteChangeDemo({ reparent }: { reparent: boolean }) {
 }
 
 export const ReparentedVideo: Story = {
+  parameters: { controls: { disable: true } },
   render: () => (
     <View style={{ gap: 16 }}>
       <RouteChangeDemo reparent />
@@ -504,6 +509,7 @@ export const ReparentedVideo: Story = {
 };
 
 export const RecreatedVideo: Story = {
+  parameters: { controls: { disable: true } },
   render: () => (
     <View style={{ gap: 16 }}>
       <RouteChangeDemo reparent={false} />

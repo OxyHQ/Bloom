@@ -192,9 +192,9 @@ export const Parts: Story = {
         </View>
         <SearchResultTabs tabs={TABS} value={tab} onValueChange={setTab} />
         <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 16 }}>
-          <TopResultCard title="Paper Moons" kind="album" subtitle="Lumen Vale" cover={img('paper-moons', 200)} onPress={() => {}} onPlayPress={() => {}} style={{ width: 420 }} />
-          <TopResultCard title="Field Notes on Sound" kind="podcast" subtitle="Ines Marlow" onPress={() => {}} onPlayPress={() => {}} playing style={{ width: 420 }} />
-          <TopResultCard title="maya.k" kind="profile" onPress={() => {}} style={{ width: 420 }} />
+          <TopResultCard title="Paper Moons" kind="album" subtitle="Lumen Vale" cover={img('paper-moons', 200)} onPress={() => {}} onPlayPress={() => {}} style={{ width: '100%', maxWidth: 420 }} />
+          <TopResultCard title="Field Notes on Sound" kind="podcast" subtitle="Ines Marlow" onPress={() => {}} onPlayPress={() => {}} playing style={{ width: '100%', maxWidth: 420 }} />
+          <TopResultCard title="maya.k" kind="profile" onPress={() => {}} style={{ width: '100%', maxWidth: 420 }} />
         </View>
         <BrowseGrid title="Your own tiles" minTileWidth={200}>
           {['Mood', 'Decades', 'Charts'].map((label) => (

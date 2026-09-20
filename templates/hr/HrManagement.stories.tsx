@@ -7,16 +7,17 @@ import { HrTemplate } from './HrTemplate';
  * hires, the hiring pipeline, the team engagement radar, hires vs. attrition,
  * the team breakdown and the employees data table. Below 1280 the chart row
  * reflows to two columns (the radar spanning both), below 768 to one; below
- * 1024 the sidebar becomes the page-slide drawer.
+ * 1024 the navigation adapts to the available width.
  */
-const meta: Meta = {
+const meta: Meta<typeof HrTemplate> = {
+  component: HrTemplate,
   title: 'Templates/HR Management',
-  parameters: { layout: 'fullscreen' },
+  parameters: { layout: 'fullscreen', controls: { disable: true } },
 };
 
 export default meta;
 
-type Story = StoryObj;
+type Story = StoryObj<typeof HrTemplate>;
 
 export const Default: Story = {
   render: () => <HrTemplate />,

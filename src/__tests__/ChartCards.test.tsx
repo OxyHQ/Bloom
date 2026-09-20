@@ -21,7 +21,6 @@ import {
   yScale,
 } from '../chart-cards/geometry';
 import { resolveChartCardPalette } from '../chart-cards/palette';
-import { mixColor, resolveButtonRamps } from '../button/shared';
 
 const REVENUE: ChartCardPoint[] = [
   { label: 'Jan', current: 9840, previous: 8210 },
@@ -285,42 +284,18 @@ describe('OrdersChartCard', () => {
 });
 
 describe('chart card palette', () => {
-  it('maps the chart tokens onto the neutral ramp in both modes', () => {
-    const light = buildTheme('teal', 'light');
-    const dark = buildTheme('teal', 'dark');
-    const nl = resolveButtonRamps(light).neutral;
-    const nd = resolveButtonRamps(dark).neutral;
-    expect(resolveChartCardPalette(light)).toMatchObject({
-      surface: nl[100],
-      neutralSeries: nl[300],
-      cursor: nl[300],
-      track: nl[200],
-    });
-    const p = resolveChartCardPalette(dark);
-    expect(p).toMatchObject({
-      surface: nd[900],
-      neutralSeries: nd[800],
-      cursor: nd[700],
-      track: nd[800],
-      neutral: { background: nd[800] },
-    });
-    // The two quiet TEXT rungs are not ramp stops any more: they are read off the
-    // card's own fill, because a stop chosen against the page measured 2.42:1
-    // here. `chart-card-contrast.test.ts` walks every preset; this pins the
-    // mechanism — the rung moves when the SURFACE moves.
-    for (const [theme, palette] of [[light, resolveChartCardPalette(light)], [dark, p]] as const) {
-      // Floored over the card AND the stat tiles inset into it — in dark those
-      // two sit on opposite sides of the text, so one of them is not enough.
-      const fills = [palette.surface, palette.inner];
-      expect(palette.textSecondary).toBe(quietTextOver(fills, theme.colors.text, AA_TEXT_STRONG));
-      expect(palette.textTertiary).toBe(quietTextOver(fills, theme.colors.text, AA_TEXT));
-      expect(palette.neutral.foreground).toBe(
-        quietText(palette.neutral.background, theme.colors.text, AA_TEXT),
-      );
+  it('uses canonical surfaces and readable role pairs in both modes', () => {
+    for (const mode of ['light', 'dark'] as const) {
+      const { colors: c } = buildTheme('teal', mode);
+      const p = resolveChartCardPalette(buildTheme('teal', mode));
+      expect(p).toMatchObject({
+        surface: c.card,
+        textSecondary: quietTextOver([c.card, c.backgroundSecondary], c.text, AA_TEXT_STRONG),
+        textTertiary: quietTextOver([c.card, c.backgroundSecondary], c.text, AA_TEXT),
+        positive: { background: c.successSubtle, foreground: c.successSubtleForeground },
+        negative: { background: c.errorSubtle, foreground: c.errorSubtleForeground },
+        inner: c.backgroundSecondary,
+      });
     }
-
-    // Dark status fills are the 950 stop at 60% over the card, not a translucent string.
-    expect(p.positive.background).toMatch(/^rgb\(/);
-    expect(p.positive.background).not.toBe(mixColor(p.surface, p.surface, 0.6));
   });
 });

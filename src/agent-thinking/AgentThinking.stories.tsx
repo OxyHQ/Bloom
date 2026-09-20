@@ -11,6 +11,9 @@ const meta: Meta<typeof AgentThinking> = {
   component: AgentThinking,
   args: { variant: 'wave', label: 'Thinking', shimmer: true, showTimer: true },
   argTypes: {
+    "label": { control: 'text' },
+    "shimmer": { control: 'boolean' },
+    "showTimer": { control: 'boolean' },
     variant: { control: 'inline-radio', options: ['wave', 'spin', 'stars', 'infinity'] },
     tone: { control: 'inline-radio', options: [undefined, 'subtle', 'default', 'primary', 'accent'] },
   },
@@ -37,6 +40,7 @@ export const Playground: Story = {};
 
 /** The four curated variants, each at its default tone. */
 export const Variants: Story = {
+  parameters: { controls: { disable: true } },
   render: () => (
     <Frame testID="variants">
       <AgentThinking variant="wave" label="Thinking" />
@@ -49,6 +53,7 @@ export const Variants: Story = {
 
 /** Every variant × tone. */
 export const Tones: Story = {
+  parameters: { controls: { disable: true } },
   render: () => (
     <Frame>
       {TONES.map((tone) => (
@@ -64,6 +69,7 @@ export const Tones: Story = {
 
 /** Without the label shimmer and without the timer. */
 export const Static: Story = {
+  parameters: { controls: { disable: true } },
   render: () => (
     <Frame>
       {VARIANTS.map((variant) => (

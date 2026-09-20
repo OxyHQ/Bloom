@@ -30,8 +30,9 @@ const PEOPLE = [
 ];
 
 export const Basic: Story = {
+  parameters: { controls: { disable: true } },
   render: () => (
-    <View style={{ width: 520 }}>
+    <View style={{ width: 520, maxWidth: '100%' }}>
       <Table accessibilityLabel="Customers">
         <TableHeader>
           <TableColumn>Name</TableColumn>
@@ -70,13 +71,13 @@ function SortableTable({ size }: { size: TableSize }) {
     sort.key === key ? sort.direction : 'none';
 
   return (
-    <View style={{ width: 520 }} testID={`table-${size}`}>
+    <View style={{ width: 520, maxWidth: '100%' }} testID={`table-${size}`}>
       <Table size={size} accessibilityLabel="Customers">
         <TableHeader>
-          <TableColumn width={193} onSort={() => toggle('name')} sortDirection={direction('name')}>
+          <TableColumn onSort={() => toggle('name')} sortDirection={direction('name')}>
             Name
           </TableColumn>
-          <TableColumn width={222} onSort={() => toggle('role')} sortDirection={direction('role')}>
+          <TableColumn onSort={() => toggle('role')} sortDirection={direction('role')}>
             Role
           </TableColumn>
           <TableColumn>Status</TableColumn>
@@ -97,6 +98,7 @@ function SortableTable({ size }: { size: TableSize }) {
 
 /** Both densities, with sortable headers and a selected row — the data table's states. */
 export const Matrix: Story = {
+  parameters: { controls: { disable: true } },
   render: () => (
     <View style={{ gap: 40, alignItems: 'flex-start' }}>
       <SortableTable size="md" />
@@ -107,8 +109,9 @@ export const Matrix: Story = {
 
 /** No rows: the body shows its 160px empty band. */
 export const Empty: Story = {
+  parameters: { controls: { disable: true } },
   render: () => (
-    <View style={{ width: 520 }}>
+    <View style={{ width: 520, maxWidth: '100%' }}>
       <Table accessibilityLabel="Customers">
         <TableHeader>
           <TableColumn>Name</TableColumn>
@@ -122,8 +125,9 @@ export const Empty: Story = {
 
 /** Wider than its container: `minWidth` scrolls the table horizontally. */
 export const Scrolling: Story = {
+  parameters: { controls: { disable: true } },
   render: () => (
-    <View style={{ width: 360, borderWidth: 1, borderColor: 'rgba(0,0,0,0.08)', borderRadius: 16, paddingTop: 8, overflow: 'hidden' }}>
+    <View style={{ width: 360, maxWidth: '100%', borderWidth: 1, borderColor: 'rgba(0,0,0,0.08)', borderRadius: 16, paddingTop: 8, overflow: 'hidden' }}>
       <Table accessibilityLabel="Customers" minWidth={640}>
         <TableHeader>
           <TableColumn width={200}>Customer name</TableColumn>
@@ -144,4 +148,11 @@ export const Scrolling: Story = {
       </Table>
     </View>
   ),
+};
+
+export const Playground: Story = {
+  args: { size: 'md', accessibilityLabel: 'Customers', minWidth: 420 },
+  parameters: { controls: { disable: false, include: ['size', 'accessibilityLabel', 'minWidth'] } },
+  argTypes: { size: { control: 'select', options: ['sm', 'md'] }, accessibilityLabel: { control: 'text' }, minWidth: { control: { type: 'range', min: 280, max: 900, step: 20 } } },
+  render: args => <View style={{ width: 620, maxWidth: '100%' }}><Table {...args}><TableHeader><TableColumn>Name</TableColumn><TableColumn>Role</TableColumn><TableColumn>Status</TableColumn></TableHeader><TableBody>{PEOPLE.map(person => <TableRow key={person.id}><TableCell>{person.name}</TableCell><TableCell>{person.role}</TableCell><TableCell>{person.status}</TableCell></TableRow>)}</TableBody></Table></View>,
 };

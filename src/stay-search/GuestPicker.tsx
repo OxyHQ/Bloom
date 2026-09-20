@@ -50,7 +50,6 @@ function GuestPickerComponent({
   testID,
 }: GuestPickerProps) {
   const theme = useTheme();
-  const { neutral } = resolveButtonRamps(theme);
   const contextClose = useGuestPickerClose();
   const close = onClose ?? contextClose;
   const counted = COUNTED.reduce((sum, kind) => sum + value[kind], 0);
@@ -88,7 +87,7 @@ function GuestPickerComponent({
       })}
       {note != null ? (
         typeof note === 'string' ? (
-          <Text variant="body-2-regular" style={{ color: neutral[500], paddingTop: 8 }}>
+          <Text variant="body-2-regular" style={{ color: theme.colors.textSecondary, paddingTop: 8 }}>
             {note}
           </Text>
         ) : (

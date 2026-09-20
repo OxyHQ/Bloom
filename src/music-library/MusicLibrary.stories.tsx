@@ -105,7 +105,7 @@ function InteractivePanel({ height = 720, fullWidth = false }: { height?: number
         setSelectedId(item.id);
       }}
       renderContextMenu={contextMenu}
-      style={{ height, width: collapsed ? undefined : fullWidth ? '100%' : expanded ? 560 : 360 }}
+      style={{ height, width: collapsed ? undefined : '100%', maxWidth: fullWidth ? undefined : expanded ? 560 : 360 }}
       testID="library"
     />
   );
@@ -125,7 +125,7 @@ export const Views: Story = {
     return (
       <Page>
         {(['compact', 'list', 'grid'] as LibraryView[]).map((view) => (
-          <View key={view} style={{ gap: 8 }}>
+          <View key={view} style={{ width: '100%', maxWidth: 340, gap: 8 }}>
             <Caption>{view}</Caption>
             <LibraryPanel
               items={LIBRARY}
@@ -133,7 +133,7 @@ export const Views: Story = {
               nowPlayingId="night-drive"
               selectedId="lumen-vale"
               onCreatePress={() => {}}
-              style={{ width: 340, height: 620 }}
+              style={{ width: '100%', maxWidth: 340, height: 620 }}
               testID={`library-${view}`}
             />
           </View>
@@ -157,7 +157,7 @@ export const Filtered: Story = {
           onFilterChange={setFilter}
           sort={sort}
           onSortChange={setSort}
-          style={{ width: 360, height: 420 }}
+          style={{ width: '100%', maxWidth: 360, height: 420 }}
           testID="library-artists"
         />
         <LibraryPanel
@@ -165,14 +165,14 @@ export const Filtered: Story = {
           downloadedOnly={downloaded}
           onDownloadedOnlyChange={setDownloaded}
           query="tide"
-          style={{ width: 360, height: 420 }}
+          style={{ width: '100%', maxWidth: 360, height: 420 }}
           testID="library-downloaded"
         />
         <LibraryPanel
           items={LIBRARY}
           filter="audiobooks"
           query="zzz"
-          style={{ width: 360, height: 420 }}
+          style={{ width: '100%', maxWidth: 360, height: 420 }}
           testID="library-empty"
         />
       </Page>
@@ -203,7 +203,7 @@ export const Collapsed: Story = {
 export const Items: Story = {
   render: () => (
     <Page row={false}>
-      <View style={{ width: 360, gap: 4 }}>
+      <View style={{ width: '100%', maxWidth: 360, gap: 4 }}>
         <Caption>list — rest, selected, now playing, paused, artist, no cover</Caption>
         <LibraryItem item={LIBRARY[4]!} onPress={() => {}} />
         <LibraryItem item={LIBRARY[3]!} selected onPress={() => {}} />
@@ -215,7 +215,7 @@ export const Items: Story = {
         <LibraryItem item={LIBRARY[0]!} variant="compact" onPress={() => {}} />
         <LibraryItem item={LIBRARY[1]!} variant="compact" nowPlaying onPress={() => {}} />
       </View>
-      <View style={{ flexDirection: 'row', gap: 8 }}>
+      <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>
         {[LIBRARY[1]!, LIBRARY[2]!, LIBRARY[5]!].map((item) => (
           <View key={item.id} style={{ width: 160 }}>
             <LibraryItem item={item} variant="grid" nowPlaying={item.id === 'night-drive'} onPress={() => {}} />
@@ -245,7 +245,7 @@ export const Dark: Story = {
           items={LIBRARY}
           view="grid"
           nowPlayingId="night-drive"
-          style={{ width: 360, height: 720 }}
+          style={{ width: '100%', maxWidth: 360, height: 720 }}
         />
         <LibraryPanel items={LIBRARY} collapsed onCollapsedChange={() => {}} onCreatePress={() => {}} style={{ height: 720 }} />
       </Page>

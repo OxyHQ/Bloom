@@ -1,7 +1,7 @@
+import { surfaceFillOn } from '../styles/surface-levels';
 import React, { useEffect, useMemo } from 'react';
 import { Image, View, type StyleProp, type ViewStyle } from 'react-native';
 
-import { resolveButtonRamps } from '../button/shared';
 import { adoptStyleSheet } from '../styles/adopt-style-sheet';
 import { webDataSet } from '../styles/web-data';
 import { useImageResolver } from '../image-resolver/context';
@@ -29,7 +29,6 @@ export function Artwork({
 }) {
   const theme = useTheme();
   const resolver = useImageResolver();
-  const { neutral } = useMemo(() => resolveButtonRamps(theme), [theme]);
   const uri = source ? (isImageUrl(source) ? source : resolver?.(source)) : undefined;
   const box: ViewStyle =
     size === '100%' ? { width: '100%', aspectRatio: 1 } : { width: size, height: size };
@@ -40,7 +39,7 @@ export function Artwork({
         {
           borderRadius: radius,
           overflow: 'hidden',
-          backgroundColor: theme.isDark ? neutral[800] : neutral[100],
+          backgroundColor: surfaceFillOn(theme, theme.colors.background),
           alignItems: 'center',
           justifyContent: 'center',
         },
@@ -57,7 +56,7 @@ export function Artwork({
         />
       ) : (
         <View pointerEvents="none">
-          <RiMusic2Line width={24} height={24} fill={theme.isDark ? neutral[500] : neutral[400]} />
+          <RiMusic2Line width={24} height={24} fill={theme.colors.textSecondary} />
         </View>
       )}
     </View>

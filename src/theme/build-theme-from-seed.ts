@@ -1,3 +1,4 @@
+import { chartColorsFromTokens } from './chart-colors';
 import { generateRoleColors, type RoleColors, type SchemeVariant } from './color-engine';
 import { buildSeedScopeVars } from './color-scope/seed-scope';
 import { STATUS_COLORS } from './build-theme';
@@ -29,13 +30,13 @@ export interface SeedAccents {
  * family (primarySubtle / negative / …) reads the engine's container/error roles
  * directly — identical to the preset path.
  */
-export function buildColorsFromSeed(
+function buildSeedThemeValues(
   seed: string,
   resolved: 'light' | 'dark',
   variant?: SchemeVariant,
   contrastLevel?: number,
   accents?: SeedAccents,
-): ThemeColors {
+): Pick<Theme, 'colors' | 'chartColors'> {
   const t = buildSeedScopeVars({
     seed,
     mode: resolved,
@@ -58,7 +59,7 @@ export function buildColorsFromSeed(
     tertiarySeed: accents?.tertiarySeed,
   });
 
-  return {
+  return { chartColors: chartColorsFromTokens(t), colors: {
     background: g('background'),
     backgroundSecondary: g('surface'),
     backgroundTertiary: g('popover'),
@@ -80,8 +81,12 @@ export function buildColorsFromSeed(
 
     secondary: g('secondary'),
     secondaryForeground: g('secondary-foreground'),
+    secondarySubtle: g('secondary-subtle'),
+    secondarySubtleForeground: g('secondary-text'),
     tertiary: g('tertiary'),
     tertiaryForeground: g('tertiary-foreground'),
+    tertiarySubtle: g('tertiary-subtle'),
+    tertiarySubtleForeground: g('tertiary-text'),
 
     tint: g('primary'),
     icon: g('muted-foreground'),
@@ -119,7 +124,18 @@ export function buildColorsFromSeed(
     card: g('card'),
     shadow: isDark ? 'rgba(0, 0, 0, 0.3)' : 'rgba(0, 0, 0, 0.1)',
     overlay: 'rgba(0, 0, 0, 0.5)',
-  };
+  } };
+}
+
+/** Resolve only the color roles for consumers that do not need the full theme. */
+export function buildColorsFromSeed(
+  seed: string,
+  resolved: 'light' | 'dark',
+  variant?: SchemeVariant,
+  contrastLevel?: number,
+  accents?: SeedAccents,
+): ThemeColors {
+  return buildSeedThemeValues(seed, resolved, variant, contrastLevel, accents).colors;
 }
 
 /**
@@ -136,7 +152,7 @@ export function buildThemeFromSeed(
 ): Theme {
   return {
     mode: resolved,
-    colors: buildColorsFromSeed(seed, resolved, variant, contrastLevel, accents),
+    ...buildSeedThemeValues(seed, resolved, variant, contrastLevel, accents),
     gradients: THEME_GRADIENTS,
     isDark: resolved === 'dark',
     isLight: resolved === 'light',

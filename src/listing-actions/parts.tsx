@@ -106,7 +106,6 @@ export function StatusMessage({
   testID?: string;
 }) {
   const palette = useActionPalette();
-  const { neutral } = useMemo(() => resolveButtonRamps(palette.theme), [palette.theme]);
   return (
     <View
       testID={testID}
@@ -120,7 +119,7 @@ export function StatusMessage({
           paddingLeft: 12,
           paddingRight: 12,
           borderRadius: BOOKING_FIELD_RADIUS,
-          backgroundColor: palette.theme.isDark ? neutral[700] : neutral[100],
+          backgroundColor: palette.theme.colors.backgroundSecondary,
         },
         style,
       ]}
@@ -319,8 +318,7 @@ export function PrincipalDonut({
 }) {
   const palette = useActionPalette();
   const tones = useMemo(() => resolveDonutTones(palette.theme), [palette.theme]);
-  const { neutral } = useMemo(() => resolveButtonRamps(palette.theme), [palette.theme]);
-  const track = palette.theme.isDark ? neutral[700] : mixColor(neutral[100], neutral[200], 0.5);
+  const track = palette.theme.colors.backgroundTertiary;
   const c = size / 2;
   const outer = c;
   const inner = c - DONUT_THICKNESS;

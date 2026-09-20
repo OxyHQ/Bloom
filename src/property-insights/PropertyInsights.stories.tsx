@@ -1,5 +1,5 @@
 import React, { useRef, useState } from 'react';
-import { View } from 'react-native';
+import { View, useWindowDimensions } from 'react-native';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
 import {
@@ -254,9 +254,10 @@ const REASONS = [
 //  Frames
 // ---------------------------------------------------------------------------
 
-const BLEED = { marginTop: -24, marginLeft: -24, marginRight: -24, marginBottom: -24 };
+const BLEED = {};
 
 function Frame({ width, children, gap = 32 }: { width: number; children: React.ReactNode; gap?: number }) {
+  width = Math.min(width, useWindowDimensions().width - 32);
   const theme = useTheme();
   const gutter = width < 480 ? 16 : 24;
   return (
@@ -331,6 +332,7 @@ function LandlordContact({ testID }: { testID?: string }) {
 }
 
 function SalePage({ width }: { width: number }) {
+  width = Math.min(width, useWindowDimensions().width - 32);
   const theme = useTheme();
   const gallery = useRef<ZoomableMediaGalleryHandle>(null);
   const narrow = width < 744;
@@ -404,7 +406,7 @@ function SalePage({ width }: { width: number }) {
         ) : (
           <View style={{ flexDirection: 'row', gap: 64, alignItems: 'flex-start' }}>
             <View style={{ flex: 1, minWidth: 0 }}>{content}</View>
-            <View style={{ width: 360, paddingTop: 32 }}>
+            <View style={{ width: 360, maxWidth: '100%', paddingTop: 32 }}>
               <AgentContact testID="sale-contact" />
             </View>
           </View>
@@ -416,6 +418,7 @@ function SalePage({ width }: { width: number }) {
 }
 
 function RentalPage({ width }: { width: number }) {
+  width = Math.min(width, useWindowDimensions().width - 32);
   const theme = useTheme();
   const narrow = width < 744;
   const gutter = narrow ? 16 : 80;
@@ -456,7 +459,7 @@ function RentalPage({ width }: { width: number }) {
         ) : (
           <View style={{ flexDirection: 'row', gap: 64, alignItems: 'flex-start' }}>
             <View style={{ flex: 1, minWidth: 0 }}>{content}</View>
-            <View style={{ width: 360, paddingTop: 32 }}>
+            <View style={{ width: 360, maxWidth: '100%', paddingTop: 32 }}>
               <LandlordContact testID="rental-contact" />
             </View>
           </View>
@@ -537,19 +540,19 @@ export const Contact: Story = {
   render: () => (
     <View style={BLEED}>
       <Frame width={1040}>
-        <View style={{ flexDirection: 'row', gap: 40, alignItems: 'flex-start' }}>
-          <View style={{ flex: 1 }}>
+        <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 40, alignItems: 'flex-start' }}>
+          <View style={{ flex: 1, minWidth: 240, maxWidth: '100%' }}>
             <AgentContact testID="contact-agent" />
           </View>
-          <View style={{ flex: 1 }}>
+          <View style={{ flex: 1, minWidth: 240, maxWidth: '100%' }}>
             <LandlordContact testID="contact-landlord" />
           </View>
         </View>
-        <View style={{ flexDirection: 'row', gap: 40, alignItems: 'flex-start' }}>
-          <View style={{ flex: 1 }}>
+        <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 40, alignItems: 'flex-start' }}>
+          <View style={{ flex: 1, minWidth: 240, maxWidth: '100%' }}>
             <RevealedAgent />
           </View>
-          <View style={{ flex: 1 }}>
+          <View style={{ flex: 1, minWidth: 240, maxWidth: '100%' }}>
             <HostCard
               name="Marta"
               avatar="https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=400"
@@ -805,11 +808,11 @@ export const PartsDark: Story = {
         <NearbyPlaces items={NEARBY.slice(0, 3)} />
         <RentHistoryList items={RENT_HISTORY} />
         <FloorPlan plans={PLANS} onPressPlan={noop} />
-        <View style={{ flexDirection: 'row', gap: 40 }}>
-          <View style={{ flex: 1 }}>
+        <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 40 }}>
+          <View style={{ flex: 1, minWidth: 240, maxWidth: '100%' }}>
             <AgentContact />
           </View>
-          <View style={{ flex: 1 }}>
+          <View style={{ flex: 1, minWidth: 240, maxWidth: '100%' }}>
             <LandlordContact />
           </View>
         </View>

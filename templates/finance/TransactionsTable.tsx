@@ -175,7 +175,7 @@ const COLUMNS: DataTableColumn<Transaction>[] = [
     id: 'category',
     header: 'Category',
     cell: ({ row }) => (
-      <Chip size="medium" hue={row.category.color}>
+      <Chip size="md" hue={row.category.color}>
         {row.category.label}
       </Chip>
     ),
@@ -193,7 +193,7 @@ const COLUMNS: DataTableColumn<Transaction>[] = [
     accessor: (t) => t.amount,
     sortDescFirst: false,
     cell: ({ row }) => (
-      <Chip size="large" hue={row.amount > 0 ? 'lime' : 'gray'}>
+      <Chip size="lg" hue={row.amount > 0 ? 'lime' : 'gray'}>
         {formatAmount(row.amount)}
       </Chip>
     ),
@@ -264,7 +264,7 @@ export function TransactionsTable({ initialQuery = '' }: { initialQuery?: string
             onValueChange={filter(setAmountFilter)}
             options={AMOUNT_BUCKETS.map((b) => ({ value: b.id, label: b.label }))}
           />
-          <DataTableSearch label="Search transactions" value={query} onChangeText={filter(setQuery)} />
+          <DataTableSearch label="Search transactions" value={query} onValueChange={filter(setQuery)} />
         </>
       }
       selectable

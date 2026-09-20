@@ -1,3 +1,4 @@
+import { useArgs } from 'storybook/preview-api';
 import React, { useState } from 'react';
 import { View } from 'react-native';
 import type { Meta, StoryObj } from '@storybook/react-vite';
@@ -121,12 +122,15 @@ export const DEMO_ACCOUNT: SidebarAccount = {
   onManage: () => {},
 };
 
-function Frame({ children }: { children: React.ReactNode }) {
-  return <View style={{ height: 820, flexDirection: 'row', gap: 24 }}>{children}</View>;
+function Frame({ children, height = 820 }: { children: React.ReactNode; height?: number }) {
+  return <View style={{ maxWidth: '100%', flexDirection: 'row', flexWrap: 'wrap', alignItems: 'flex-start', gap: 24 }}>
+    {React.Children.map(children, child => <View style={{ height, maxWidth: '100%' }}>{child}</View>)}
+  </View>;
 }
 
 /** The floating rail, interactive: collapse, search (⌘L), both menus. */
 export const Default: Story = {
+  parameters: { controls: { disable: true } },
   render: function Render() {
     const [selected, setSelected] = useState('home');
     return (
@@ -153,6 +157,7 @@ export const DEMO_MODES: SidebarMode[] = [
 
 /** A mode switcher under the header (`modes`), expanded and collapsed. */
 export const WithModes: Story = {
+  parameters: { controls: { disable: true } },
   render: function Render() {
     const [mode, setMode] = useState('search');
     const [selected, setSelected] = useState('home');
@@ -189,6 +194,7 @@ export const WithModes: Story = {
 
 /** `SidebarModeSwitcher` on its own: two and three modes. */
 export const ModeSwitcher: Story = {
+  parameters: { controls: { disable: true } },
   render: function Render() {
     const [two, setTwo] = useState('search');
     const [three, setThree] = useState('chat');
@@ -228,6 +234,7 @@ const DEMO_LOGO: SidebarLogo = { icon: <DemoMark />, wordmark: 'Oxy', href: '#ho
  * rail shows the mark only.
  */
 export const WithLogo: Story = {
+  parameters: { controls: { disable: true } },
   render: function Render() {
     const [selected, setSelected] = useState('home');
     return (
@@ -258,6 +265,7 @@ export const WithLogo: Story = {
 
 /** A wordmark on its own (an SVG wordmark works the same). */
 export const WithWordmarkOnly: Story = {
+  parameters: { controls: { disable: true } },
   render: () => (
     <Frame>
       <Sidebar logo={{ wordmark: 'Mention' }} items={DEMO_NAV} secondaryItems={DEMO_SECONDARY} selected="home" team={DEMO_TEAM} />
@@ -266,6 +274,7 @@ export const WithWordmarkOnly: Story = {
 };
 
 export const Collapsed: Story = {
+  parameters: { controls: { disable: true } },
   render: () => (
     <Frame>
       <Sidebar
@@ -283,6 +292,7 @@ export const Collapsed: Story = {
 
 /** The drawer variants: `mobile` (close button) and `mobile surface="plain"` (search in the header). */
 export const Mobile: Story = {
+  parameters: { controls: { disable: true } },
   render: () => (
     <Frame>
       <Sidebar
@@ -309,6 +319,7 @@ export const Mobile: Story = {
 
 /** `SidebarItem` states on its own: rest, selected with badge, collapsed. */
 export const Items: Story = {
+  parameters: { controls: { disable: true } },
   render: () => (
     <View style={{ width: 236, gap: 4 }}>
       <SidebarItem icon={RiHomeLine} label="Home" />
@@ -352,6 +363,7 @@ const PLAN: SidebarPlan = { name: 'Design team', plan: 'Pro Plan', avatar: { ini
  * place of the team menu. Quick search filters the tree too.
  */
 export const Tree: Story = {
+  parameters: { controls: { disable: true } },
   render: function Render() {
     const [selected, setSelected] = useState('coding');
     return (
@@ -374,6 +386,7 @@ export const Tree: Story = {
 
 /** `SidebarFolder` and `SidebarPlanCard` on their own. */
 export const TreeParts: Story = {
+  parameters: { controls: { disable: true } },
   render: () => (
     <View style={{ width: 236, gap: 16 }}>
       <SidebarFolder folder={REPOSITORIES.folders[1]!} selectedItem="image" />
@@ -398,6 +411,7 @@ export const DEMO_RAIL_SECONDARY: SidebarNavItem[] = [
 
 /** `variant="rail"`: the 80px navigation rail, icon over label, items centred. */
 export const Rail: Story = {
+  parameters: { controls: { disable: true } },
   render: function Render() {
     const [selected, setSelected] = useState('home');
     return (
@@ -417,6 +431,7 @@ export const Rail: Story = {
 
 /** `SidebarRailItem` states on its own: rest, selected, selected with the filled glyph, badge. */
 export const RailItems: Story = {
+  parameters: { controls: { disable: true } },
   render: () => (
     <View style={{ width: 64, gap: 8 }}>
       <SidebarRailItem icon={RiHomeLine} label="Home" />
@@ -433,6 +448,7 @@ export const RailItems: Story = {
  * flush to the window with a single hairline facing the content.
  */
 export const Surfaces: Story = {
+  parameters: { controls: { disable: true } },
   render: () => (
     <Frame>
       {(['card', 'plain', 'docked'] as const).map((surface) => (
@@ -453,13 +469,14 @@ export const Surfaces: Story = {
 
 /**
  * The three SIZES: 232 / 260 / 300 expanded, a 30 / 36 / 44 square collapsed,
- * an 18 / 20 / 24 glyph. `large` is the destination-first rail a social app
+ * an 18 / 20 / 24 glyph. `lg` is the destination-first rail a social app
  * reads with at arm's length.
  */
 export const Sizes: Story = {
+  parameters: { controls: { disable: true } },
   render: () => (
     <Frame>
-      {(['small', 'medium', 'large'] as const).map((size) => (
+      {(['sm', 'md', 'lg'] as const).map((size) => (
         <Sidebar
           key={size}
           size={size}
@@ -473,4 +490,44 @@ export const Sizes: Story = {
       ))}
     </Frame>
   ),
+};
+
+/** Compact modes keep their icons centered at every panel size and surface. */
+export const CollapsedModes: Story = {
+  args: { size: 'md', surface: 'card' },
+  argTypes: {
+    size: { control: 'select', options: ['sm', 'md', 'lg'] },
+    surface: { control: 'select', options: ['card', 'docked'] },
+  },
+  render: function Render(args) {
+    const [collapsed, setCollapsed] = useState(true);
+    const [mode, setMode] = useState('search');
+    return <Frame><Sidebar {...args} testID="compact-sidebar" collapsed={collapsed}
+      onCollapsedChange={setCollapsed} modes={DEMO_MODES} mode={mode}
+      onModeChange={setMode} items={DEMO_NAV.slice(0, 3)}
+      showSearch={false} showThemeToggle /></Frame>;
+  },
+};
+
+/** Overflow cues update before scrolling and disappear when all rows fit. */
+export const ScrollOverflow: Story = {
+  args: { surface: 'card' },
+  argTypes: { surface: { control: 'select', options: ['card', 'docked', 'plain'] } },
+  render: function Render(args) {
+    const [selected, setSelected] = useState('home');
+    return <Frame height={320}><Sidebar {...args} testID="overflow-sidebar" style={{ height: 320 }} items={DEMO_NAV}
+      selected={selected} onNavigate={item => setSelected(item.key)} showSearch={false} showThemeToggle={false} />
+      <Sidebar {...args} testID="fitting-sidebar" style={{ height: 320 }} items={DEMO_NAV.slice(0, 2)}
+        showSearch={false} showThemeToggle={false} /></Frame>;
+  },
+};
+
+export const Playground: Story = {
+  args: { items: DEMO_NAV, selected: 'home', modes: DEMO_MODES, mode: 'search', collapsed: false, size: 'md', surface: 'card', showSearch: true, showThemeToggle: true },
+  parameters: { controls: { disable: false, include: ['selected', 'mode', 'collapsed', 'size', 'surface', 'showSearch', 'showThemeToggle'] } },
+  argTypes: { selected: { control: 'select', options: DEMO_NAV.map(item => item.key) }, mode: { control: 'select', options: ['search', 'computer'] }, collapsed: { control: 'boolean' }, size: { control: 'select', options: ['sm', 'md', 'lg'] }, surface: { control: 'select', options: ['card', 'docked', 'plain'] }, showSearch: { control: 'boolean' }, showThemeToggle: { control: 'boolean' } },
+  render: function Playground(args) {
+    const [, updateArgs] = useArgs();
+    return <View style={{ height: 700, maxWidth: '100%' }}><Sidebar {...args} style={{ height: '100%', maxWidth: '100%' }} onCollapsedChange={collapsed => updateArgs({ collapsed })} onModeChange={mode => updateArgs({ mode })} onNavigate={item => updateArgs({ selected: item.key })} /></View>;
+  },
 };

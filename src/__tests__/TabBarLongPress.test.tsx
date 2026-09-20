@@ -1,5 +1,5 @@
 import React from 'react';
-import { act, render } from '@testing-library/react-native';
+import { act, fireEvent, render } from '@testing-library/react-native';
 
 import { BloomThemeProvider } from '../theme/BloomThemeProvider';
 import { TabBar, TabBarButton } from '../tab-bar';
@@ -127,7 +127,7 @@ function renderBar(props: {
   onIndexChange?: (index: number) => void;
   onIndexLongPress?: (index: number) => void;
 }) {
-  return render(
+  const utils = render(
     <BloomThemeProvider mode="light" colorPreset="teal">
       <TabBar activeIndex={0} {...props}>
         {ITEMS.map((item, index) => (
@@ -136,6 +136,9 @@ function renderBar(props: {
       </TabBar>
     </BloomThemeProvider>,
   );
+  const host = utils.UNSAFE_root.findAll(node => typeof node.type === 'string' && typeof node.props.onLayout === 'function')[0];
+  if (host) fireEvent(host, 'layout', { nativeEvent: { layout: { width: 375, height: 58, x: 0, y: 0 } } });
+  return utils;
 }
 
 const gesturesOfKind = (kind: string) => mockGestures.filter((gesture) => gesture.kind === kind);

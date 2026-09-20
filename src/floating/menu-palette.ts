@@ -1,46 +1,8 @@
-/**
- * The menu recipe's COLOURS, resolved from Bloom's theme.
- *
- * Menus, the select and the tooltip are painted from a handful of semantic
- * tokens that all sit on a Tailwind neutral ramp. Bloom's theme carries one
- * colour per role, so each token is rebuilt through `button/shared.ts`'s ramps
- * — the same ramps `Button` and `ButtonGroup` paint from, so a menu opened
- * from a secondary button is the same white/neutral family as the button
- * itself.
- *
- *   Semantic token                      light            dark
- *   background/primary/default          card             neutral-800
- *   background/primary/hover            neutral-100      neutral-700 @60% over neutral-800
- *   background/primary/disabled         neutral-100      neutral-800
- *   border/button/default               neutral-200      neutral-700
- *   border/button/hover                 neutral-300      neutral-500
- *   dropdown-item-hover-background      neutral-100      neutral-700 @60% over neutral-800
- *   text-primary                        text             text
- *   text-secondary                      neutral-500      neutral-500
- *   text-tertiary                       neutral-400      neutral-600
- *   text-placeholder                    neutral-400      neutral-400
- *   text-disabled                       neutral-300      neutral-600 (*)
- *   text-error-primary                  red-500          red-400
- *   border-focus-ring                   accent-500       accent-500
- *   shadow-dropdown / shadow-xs         light and dark alphas
- *
- * (*) The dark `text-disabled` token is neutral-800 — the SAME colour as the
- * dark panel, so a disabled row is invisible. Bloom takes the dark
- * `text-tertiary` step instead, the colour a disabled button label uses.
- *
- * Resolved to literal colours and applied as INLINE style (or as custom
- * properties a web sheet reads), because none of these stops exists as a CSS
- * variable a class could name. A caller's `style` still overrides them.
- */
+/** Shared tonal surfaces for menus, select fields and tooltips. */
 import { useMemo } from 'react';
+import { resolveSurfaceLevel } from '../styles/surface-levels';
 
-import {
-  BUTTON_SHADOW,
-  colorRamp,
-  DANGER_TABLE,
-  mixColor,
-  resolveButtonRamps,
-} from '../button/shared';
+import { BUTTON_SHADOW } from '../button/shared';
 import type { Theme } from '../theme/types';
 import { useTheme } from '../theme/use-theme';
 
@@ -64,7 +26,7 @@ export interface MenuPalette {
   textPlaceholder: string;
   textDisabled: string;
   destructive: string;
-  /** The select trigger — a bordered white field. */
+  /** The select trigger — a bordered tonal field. */
   trigger: {
     background: string;
     hoverBackground: string;
@@ -81,58 +43,28 @@ export interface MenuPalette {
 
 export function resolveMenuPalette(theme: Theme): MenuPalette {
   const c = theme.colors;
-  const { accent, neutral: n } = resolveButtonRamps(theme);
-  const red = colorRamp(c.negative, DANGER_TABLE);
-
-  if (theme.isDark) {
-    const hover = mixColor(n[800], n[700], 0.6);
-    return {
-      surface: n[800],
-      border: n[700],
-      shadow: MENU_SHADOW.dark,
-      rowHighlight: hover,
-      text: c.text,
-      textSecondary: n[500],
-      textPlaceholder: n[400],
-      textDisabled: n[600],
-      destructive: red[400],
-      trigger: {
-        background: n[800],
-        hoverBackground: hover,
-        border: n[700],
-        hoverBorder: n[500],
-        disabledBackground: n[800],
-        disabledForeground: n[600],
-        shadow: BUTTON_SHADOW.dark,
-        ring: accent[500],
-        // Tailwind's `ring-offset` gap is `#fff` by default; on a dark page the
-        // gap takes the page colour instead of flashing white.
-        ringOffset: c.background,
-      },
-    };
-  }
-
+  const surface = resolveSurfaceLevel(theme, 1);
+  const mode = theme.isDark ? 'dark' : 'light';
   return {
-    surface: c.card,
-    border: n[200],
-    shadow: MENU_SHADOW.light,
-    rowHighlight: n[100],
-    text: c.text,
-    textSecondary: n[500],
-    textPlaceholder: n[400],
-    textDisabled: n[300],
-    destructive: red[500],
+    surface: surface.background,
+    border: surface.border,
+    shadow: MENU_SHADOW[mode],
+    rowHighlight: c.backgroundSecondary,
+    text: surface.text,
+    textSecondary: surface.textSecondary,
+    textPlaceholder: surface.textSecondary,
+    textDisabled: surface.textGraphical,
+    destructive: c.errorSubtleForeground,
     trigger: {
-      background: c.card,
-      hoverBackground: n[100],
-      border: n[200],
-      hoverBorder: n[300],
-      disabledBackground: n[100],
-      disabledForeground: n[400],
-      shadow: BUTTON_SHADOW.light,
-      ring: accent[500],
-      // Tailwind's default `ring-offset` colour is white — the light surface.
-      ringOffset: c.card,
+      background: c.backgroundSecondary,
+      hoverBackground: c.backgroundTertiary,
+      border: c.borderLight,
+      hoverBorder: c.border,
+      disabledBackground: c.backgroundSecondary,
+      disabledForeground: c.textTertiary,
+      shadow: BUTTON_SHADOW[mode],
+      ring: c.primary,
+      ringOffset: c.background,
     },
   };
 }

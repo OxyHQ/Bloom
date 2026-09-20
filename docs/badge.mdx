@@ -132,3 +132,7 @@ that control's accessible name — a screen reader user should hear
   <Pressable accessibilityLabel={`Inbox, ${unread} unread`}>…</Pressable>
 </Badge>
 ```
+
+## Compatibility
+
+The shared `size`, `tone` and `appearance` vocabulary coexists with the previously published family props. Explicit shared props take precedence over legacy spellings; existing size and state callbacks remain supported. New code should prefer the shared vocabulary.

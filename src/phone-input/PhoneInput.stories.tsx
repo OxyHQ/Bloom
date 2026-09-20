@@ -1,3 +1,4 @@
+import { useArgs } from 'storybook/preview-api';
 import React, { useState } from 'react';
 import { View } from 'react-native';
 import type { Meta, StoryObj } from '@storybook/react-vite';
@@ -8,6 +9,7 @@ import { Text } from '../typography';
 import { COUNTRIES, CountryFlag, PhoneInput, type Country } from './index';
 
 const meta: Meta = {
+  component: PhoneInput,
   title: 'Base/Input/Phone',
 };
 
@@ -17,14 +19,15 @@ type Story = StoryObj;
 
 function Page({ children, width = 280 }: { children: React.ReactNode; width?: number }) {
   return (
-    <View style={{ backgroundColor: useTheme().colors.background, padding: 40 }}>
-      <View style={{ width, gap: 20 }}>{children}</View>
+    <View style={{ backgroundColor: useTheme().colors.background, width, maxWidth: '100%' }}>
+      <View style={{ width: '100%', minWidth: 0, gap: 20 }}>{children}</View>
     </View>
   );
 }
 
 /** An empty field and a filled one. */
 export const Basic: Story = {
+  parameters: { controls: { disable: true } },
   render: () => (
     <Page>
       <PhoneInput
@@ -51,6 +54,7 @@ export const Basic: Story = {
 
 /** `medium` (36) and `small` (32). */
 export const Sizes: Story = {
+  parameters: { controls: { disable: true } },
   render: () => (
     <Page>
       <PhoneInput
@@ -61,7 +65,7 @@ export const Sizes: Story = {
       />
       <PhoneInput
         testID="phone-small"
-        size="small"
+        size="sm"
         label="Phone Number"
         placeholder="(123) 000-0000"
         trailingIcon={RiQuestionLine}
@@ -72,6 +76,7 @@ export const Sizes: Story = {
 
 /** Invalid and disabled repaint the field and hint; the select follows `disabled`. */
 export const States: Story = {
+  parameters: { controls: { disable: true } },
   render: () => (
     <Page>
       <PhoneInput
@@ -79,7 +84,7 @@ export const States: Story = {
         defaultValue="555"
         defaultCountry="GB"
         hint="Enter a valid phone number."
-        isInvalid
+        invalid
         trailingIcon={RiQuestionLine}
       />
       <PhoneInput
@@ -96,6 +101,7 @@ export const States: Story = {
 
 /** Controlled: the caller owns both the country and the number. */
 export const Controlled: Story = {
+  parameters: { controls: { disable: true } },
   render: function ControlledStory() {
     const [country, setCountry] = useState<Country>(COUNTRIES.find((c) => c.iso2 === 'JP')!);
     const [number, setNumber] = useState('');
@@ -108,7 +114,7 @@ export const Controlled: Story = {
           country={country.iso2}
           onCountryChange={(_, next) => setCountry(next)}
           value={number}
-          onChangeText={setNumber}
+          onValueChange={setNumber}
         />
         <Text variant="body-regular" style={{ color }}>
           {`+${country.dial} ${number}`}
@@ -120,6 +126,7 @@ export const Controlled: Story = {
 
 /** Every vendored flag (`country-flag-icons` 3x2), at 18 × 12. */
 export const Flags: Story = {
+  parameters: { controls: { disable: true } },
   render: function FlagsStory() {
     const color = useTheme().colors.text;
     return (
@@ -136,5 +143,16 @@ export const Flags: Story = {
         </View>
       </Page>
     );
+  },
+};
+
+/** A single instance whose controls are applied directly to the rendered component. */
+export const Playground: StoryObj<typeof PhoneInput> = {
+  args: { label: 'Phone number', placeholder: '555 0100', value: '', country: 'US', size: 'md', disabled: false, invalid: false },
+  parameters: { controls: { disable: false, include: ['label', 'placeholder', 'value', 'country', 'size', 'disabled', 'invalid'] } },
+  argTypes: { label: { control: 'text' }, placeholder: { control: 'text' }, value: { control: 'text' }, country: { control: 'select', options: ['US', 'GB', 'ES', 'RO'] }, size: { control: 'select', options: ['xs', 'sm', 'md', 'lg'] }, disabled: { control: 'boolean' }, invalid: { control: 'boolean' } },
+  render: function Playground(args) {
+    const [, updateArgs] = useArgs();
+    return <View style={{ width: 440, maxWidth: '100%' }}><PhoneInput {...args} onValueChange={next => updateArgs({ value: next })} onCountryChange={country => updateArgs({ country })} /></View>;
   },
 };

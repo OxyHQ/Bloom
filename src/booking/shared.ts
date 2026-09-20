@@ -39,20 +39,20 @@ export interface BookingPalette {
 
 export function resolveBookingPalette(theme: Theme): BookingPalette {
   const menu = resolveMenuPalette(theme);
-  const { accent, neutral: n } = resolveButtonRamps(theme);
+  const { accent } = resolveButtonRamps(theme);
   const dark = theme.isDark;
   return {
     surface: menu.surface,
     page: theme.colors.background,
     border: menu.border,
-    fieldBorder: dark ? n[600] : n[300],
+    fieldBorder: theme.colors.border,
     highlight: menu.rowHighlight,
     active: theme.colors.text,
     ring: accent[500],
     text: theme.colors.text,
     textSecondary: theme.colors.textSecondary,
     discount: resolveAccentColors(theme.colors, 'success', 'outlined').foreground,
-    tile: dark ? n[900] : n[100],
+    tile: theme.colors.backgroundSecondary,
   };
 }
 

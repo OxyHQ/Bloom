@@ -448,3 +448,71 @@ A medium secondary icon button with the unread count (16px red disc, 1.5px ring 
 280 wide, 12 from the bottom-left (`placement="inline"` renders in flow), radius 16, card-coloured hairline, the waitlist shadow; a light band across the top (default: an accent gradient; pass `backdrop` for your own, masked the same way on web), the copy, a full-width CTA with a sweeping shimmer (hidden under reduced motion) and an xs close button. It rises in after `enterDelay` (1.2s). Persisting the dismissal is the host's job.
 
 A live ray-field WebGL backdrop and animated Pro logo are brand artwork and are not included — pass `backdrop` / `logo`.
+
+## Adaptive navigation
+
+---
+
+# AppShell
+
+`AppShell` composes `Screen`, `PageHeader`, `ScreenScrollView` and navigation.
+Use `navigation={[{ value, label, icon }]}`, `value` and `onValueChange` once.
+`navigationPlacement="auto"` chooses bottom below 768, rail from 768 through 1023,
+and sidebar from 1024. Explicit `bottom`, `rail` or `sidebar` overrides that choice.
+
+`primaryAction` accepts Fab props. In bottom placement it appears beside the tab
+capsule and shares its animation; wider placements float it at the bottom-right
+of the content area, independently of the sidebar.
+`header` overrides the default header; `title`, `breadcrumb` and `actions` configure
+that default. `contentMaxWidth` defaults to 1300. `overlay` stays in the screen's
+content tree, before its chrome; dialogs and toasts should use their proper outlets.
+
+Existing `sidebar` data remains accepted and supplies mobile navigation too. An
+explicit `navigation` model wins when both are supplied. The old `drawer`,
+`drawerOpen` and `onDrawerOpenChange` API is removed: select a responsive placement
+and use a separate dialog/sheet when a secondary navigation drawer is needed.
+
+Placement follows the measured shell width (window width is only the pre-layout
+fallback). `navigationMaterial` chooses `solid` or `translucent` on the bottom bar.
+Use `scroll="external"` when the child owns scrolling. For example:
+
+```tsx
+import { AppShell } from '@oxy.so/bloom/app-shell';
+
+<AppShell navigation={items} value={selected} onValueChange={setSelected} scroll="external">
+  <VirtualList screen={{ active: focused }} data={rows} renderItem={renderRow} />
+</AppShell>
+```
+
+There is no surrounding ScrollView in this mode. Native binds the animated list;
+web retains VirtualList's document virtualizer and pins chrome within the shell
+column. Restore by passing `screen={{ active: focused, restoration }}` with the
+same list ref used by `useScrollRestoration`.
+
+## Sidebar surfaces
+
+The desktop navigation uses `Sidebar` for both `navigation` and `sidebar.items`.
+Use `sidebar={{ surface: 'card' }}` for the detached panel (the default): 12px
+space around it, 24px rounded corners, the panel hairline and shadow. Use
+`sidebar={{ surface: 'docked' }}` for a column flush with the shell: no outer
+spacing, square corners, and a separator on its inner edge. These surfaces apply
+to the expanded panel; `navigationPlacement="rail"` keeps the compact rail.
+
+```tsx
+<AppShell navigation={items} sidebar={{ surface: 'card' }} />
+<AppShell navigation={items} sidebar={{ surface: 'docked' }} />
+```
+
+Sidebar configuration (including its logo, collapse control and size) also applies
+when `navigation` supplies the items.
+
+### Responsive navigation motion
+
+The sidebar/rail change fades the existing navigation out, swaps the single
+rendered tree, then interpolates its width while revealing it. Selection remains
+controlled and reduced motion applies the new placement immediately. After the
+transition the animated width resets explicitly to `auto`: returning an empty
+style or an undefined width retained the old width in the browser, leaving a
+260px space after the sidebar itself collapsed to 52px.
+
+The adaptive entry point is selected when `navigation`, `navigationPlacement`, `primaryAction`, or `scroll="auto" | "external"` is supplied. Existing layout calls keep their `dashboard`, `feed`, `split`, `focus`, and `canvas` engine, document/container/fixed scrolling, slots and drawer behavior. Both paths render the same Sidebar, PageHeader and themed surfaces.

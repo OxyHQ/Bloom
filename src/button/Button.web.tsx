@@ -1,3 +1,4 @@
+import type { LinkButtonProps } from './types';
 import React, {
   memo,
   useCallback,
@@ -8,6 +9,7 @@ import React, {
   type ReactElement,
 } from 'react';
 
+import { useBloomAppearance } from '../appearance/context';
 import { useTheme } from '../theme/use-theme';
 import { SpinnerIcon } from '../loading/SpinnerIcon.web';
 import { flattenWebStyle } from '../styles/flatten-web-style';
@@ -19,28 +21,25 @@ import {
 import {
   BUTTON_RADIUS,
   BUTTON_SHADOW,
-  BUTTON_SIZE_ALIAS,
   BUTTON_TRANSITION_MS,
   ICON_BUTTON_ICON_SIZE,
   LINK_BUTTON_GAP,
   LINK_BUTTON_UNDERLINE_OFFSET,
-  iconOnlyWidth,
   isIconComponent,
   paintToCssImage,
   resolveButtonGeometry,
+  resolveButtonRecipe,
+  BUTTON_SIZE_ALIAS,
   resolveButtonPalette,
   resolveButtonUnderline,
   type ButtonResolvedSize,
 } from './shared';
-import type { ButtonIconComponent, ButtonProps, ButtonVariant, LinkButtonProps } from './types';
+import type { ButtonIconComponent, ButtonProps } from './types';
 
 export type {
-  ButtonProps,
-  ButtonVariant,
+  ButtonProps, LinkButtonProps,
   ButtonSize,
   ButtonIconComponent,
-  ButtonLinkTone,
-  LinkButtonProps,
 } from './types';
 
 // ---------------------------------------------------------------------------
@@ -167,15 +166,17 @@ export const BLOOM_BUTTON_CSS = interactiveWebCss({
 
 const ButtonWebComponent: React.FC<ButtonProps> = ({
   onPress,
-  onClick,
   children,
   disabled = false,
-  variant = 'primary',
-  size: sizeProp = 'medium',
+  appearance: appearanceProp,
+  variant: variantProp,
+  tone: toneProp,
+  size: sizeProp,
   style,
   textStyle,
   icon,
-  iconPosition = 'left',
+  leading,
+  trailing,
   leadingIcon: LeadingIcon,
   trailingIcon: TrailingIcon,
   iconOnly = false,
@@ -189,7 +190,6 @@ const ButtonWebComponent: React.FC<ButtonProps> = ({
   loading = false,
   loadingColor,
   accessibilityLabel,
-  'aria-label': ariaLabelProp,
   'aria-expanded': ariaExpanded,
   'aria-haspopup': ariaHasPopup,
   accessibilityHint,
@@ -204,32 +204,28 @@ const ButtonWebComponent: React.FC<ButtonProps> = ({
   title,
   autoFocus,
   tabIndex,
-  fullWidth = false,
 }) => {
   useInteractiveWebCss(STYLE_ID, BLOOM_BUTTON_CSS);
   const theme = useTheme();
   const reactId = useId();
   const resolvedId = id ?? `bloom-btn-${reactId}`;
 
-  // `size="icon"` shorthand also selects the icon variant unless the caller
-  // explicitly picked one — mirrors native + shadcn behavior.
-  const resolvedVariant: ButtonVariant =
-    sizeProp === 'icon' && variant === 'primary' ? 'icon' : variant;
-  const size: ButtonResolvedSize = BUTTON_SIZE_ALIAS[sizeProp];
+  const recipe = resolveButtonRecipe(variantProp);
+  const appearance = appearanceProp ?? recipe.appearance;
+  const { size, tone } = useBloomAppearance({ size: sizeProp ? BUTTON_SIZE_ALIAS[sizeProp] : undefined, tone: toneProp ?? (variantProp ? recipe.tone : undefined) }, { size: 'md', tone: 'accent' });
   const geometry = resolveButtonGeometry(size, textVariant);
-  const isIconVariant = resolvedVariant === 'icon';
-  const isSquare = iconOnly || isIconVariant;
-  const isLink = resolvedVariant === 'link';
-  const isText = resolvedVariant === 'text';
+  const isSquare = iconOnly || variantProp === 'icon' || sizeProp === 'icon' || (icon != null && children == null);
+  const isIconVariant = isSquare;
+  const isLink = appearance === 'plain' && (href != null || variantProp === 'link');
   const isInteractionBlocked = disabled || loading;
   const iconSize = isIconVariant ? ICON_BUTTON_ICON_SIZE[size] : geometry.iconSize;
 
   const palette = useMemo(
-    () => resolveButtonPalette(resolvedVariant, theme, linkTone),
-    [resolvedVariant, theme, linkTone],
+    () => variantProp === 'link' && appearanceProp == null && toneProp == null ? resolveButtonPalette('link', theme, linkTone) : variantProp === 'inverse' && appearanceProp == null && toneProp == null ? resolveButtonPalette('inverse', theme) : resolveButtonPalette(appearance, theme, tone),
+    [appearance, theme, tone, variantProp, appearanceProp, toneProp, linkTone],
   );
   const isGradient = palette.rest.gradient !== null;
-  const underlineMode = resolveButtonUnderline(resolvedVariant, underline);
+  const underlineMode = resolveButtonUnderline(isLink ? 'link' : 'primary', underline);
 
   const containerStyle = useMemo((): CSSProperties => {
     const shadow = palette.shadow ? BUTTON_SHADOW[theme.isDark ? 'dark' : 'light'] : 'none';
@@ -242,7 +238,6 @@ const ButtonWebComponent: React.FC<ButtonProps> = ({
       lineHeight: `${geometry.lineHeight}px`,
       fontWeight: Number(geometry.fontWeight),
       letterSpacing: geometry.letterSpacing || undefined,
-      width: fullWidth ? '100%' : undefined,
       // CSS custom props consumed by the static stylesheet — see its header.
       ['--bloom-btn-gap' as string]: `${geometry.gap}px`,
       ['--bloom-btn-ring' as string]: palette.ring,
@@ -277,18 +272,9 @@ const ButtonWebComponent: React.FC<ButtonProps> = ({
       });
     }
     if (isSquare) {
-      base.width = isIconVariant ? geometry.height : iconOnlyWidth(geometry, palette.borderWidth);
+      base.width = geometry.height;
       base.paddingLeft = 0;
       base.paddingRight = 0;
-    }
-    if (isText) {
-      // The compact inline affordance: hugs its label so an `asChild` anchor
-      // sits in running text. Same 4/8 padding as the native fork.
-      base.height = undefined;
-      base.paddingTop = 4;
-      base.paddingBottom = 4;
-      base.paddingLeft = 8;
-      base.paddingRight = 8;
     }
     if (isLink && !isSquare) {
       // LinkButton: no container at all — the label's own line box,
@@ -300,7 +286,7 @@ const ButtonWebComponent: React.FC<ButtonProps> = ({
       (base as Record<string, unknown>)['--bloom-btn-gap'] = `${LINK_BUTTON_GAP}px`;
     }
     return base;
-  }, [geometry, palette, theme.isDark, fullWidth, isSquare, isIconVariant, isText, isLink, isGradient]);
+  }, [geometry, palette, theme.isDark, isSquare, isIconVariant, isLink, isGradient]);
 
   const handleClick = useCallback(
     (event: MouseEvent<HTMLElement>) => {
@@ -308,13 +294,12 @@ const ButtonWebComponent: React.FC<ButtonProps> = ({
         event.preventDefault();
         return;
       }
-      onClick?.(event as MouseEvent<HTMLButtonElement>);
       onPress?.();
     },
-    [isInteractionBlocked, onClick, onPress],
+    [isInteractionBlocked, onPress],
   );
 
-  const ariaLabel = ariaLabelProp ?? accessibilityLabel;
+  const ariaLabel = accessibilityLabel;
   const composedClassName = ['bloom-btn']
     .concat(isLink ? ['bloom-btn--link'] : [])
     .concat(underlineMode === 'none' ? [] : [`bloom-btn--underline-${underlineMode}`])
@@ -355,7 +340,8 @@ const ButtonWebComponent: React.FC<ButtonProps> = ({
   const content = (
     <>
       {LeadingIcon ? renderIcon(LeadingIcon) : null}
-      {iconPosition === 'left' && iconNode}
+      {leading}
+      {iconNode}
       {hasLabel &&
         (typeof children === 'string' || typeof children === 'number' ? (
           <span
@@ -378,7 +364,7 @@ const ButtonWebComponent: React.FC<ButtonProps> = ({
           children
         ))}
       {isSquare && !LeadingIcon && !iconNode && children != null ? children : null}
-      {iconPosition === 'right' && iconNode}
+      {trailing}
       {!isSquare && TrailingIcon ? renderIcon(TrailingIcon) : null}
     </>
   );
@@ -441,8 +427,7 @@ const ButtonWebComponent: React.FC<ButtonProps> = ({
           return;
         }
         childProps.onClick?.(event);
-        onClick?.(event as MouseEvent<HTMLButtonElement>);
-        onPress?.();
+          onPress?.();
       },
       'aria-disabled': isInteractionBlocked || undefined,
       'aria-busy': loading || undefined,

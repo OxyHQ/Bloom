@@ -54,12 +54,14 @@ describe('CartesianPlot x-axis labels', () => {
     for (const month of MONTHS) expect(within(layer).getByText(month)).toBeTruthy();
   });
 
-  it('still reaches past the plot with the last slot, which is why the layer clips', () => {
+  it('keeps the last label inside the plot instead of cutting it at the edge', () => {
     const { getByTestId } = renderPlot();
     const layer = getByTestId('plot-x-labels');
     let slot = within(layer).getByText('Apr').parent;
     while (slot && typeof flat(slot.props.style).left !== 'number') slot = slot.parent;
     const { left, width } = flat(slot?.props.style) as { left: number; width: number };
-    expect(left + width).toBeGreaterThan(326);
+    expect(left).toBeGreaterThanOrEqual(0);
+    expect(width).toBeGreaterThan(0);
+    expect(left + width).toBeLessThanOrEqual(326);
   });
 });

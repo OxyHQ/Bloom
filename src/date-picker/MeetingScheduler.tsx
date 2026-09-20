@@ -509,16 +509,12 @@ export function MeetingScheduler({
             </>
           ) : null}
         </View>
-        <Button
-          onPress={() => {
+        <Button onPress={() => {
             // Guarded here too, not only by `disabled`: a booking needs a time.
             if (!pending?.time) return;
             setCommitted(pending);
             setOpenState(false);
-          }}
-          disabled={!pending?.time}
-          testID={testID ? `${testID}-send` : undefined}
-        >
+          }} disabled={!pending?.time} testID={testID ? `${testID}-send` : undefined}>
           {sendLabel}
         </Button>
       </View>

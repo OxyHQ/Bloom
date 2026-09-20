@@ -41,9 +41,10 @@ export default meta;
 type Story = StoryObj<typeof StatBar>;
 
 export const Light: Story = {
+  parameters: { controls: { disable: true } },
   render: () => (
     <BloomThemeProvider mode="light">
-      <View style={{ padding: 24, width: 320 }}>
+      <View style={{ padding: 24, width: 320, maxWidth: '100%' }}>
         <Demo />
       </View>
     </BloomThemeProvider>
@@ -51,11 +52,23 @@ export const Light: Story = {
 };
 
 export const Dark: Story = {
+  parameters: { controls: { disable: true } },
   render: () => (
     <BloomThemeProvider mode="dark">
-      <View style={{ padding: 24, width: 320, backgroundColor: '#000' }}>
+      <View style={{ padding: 24, width: 320, maxWidth: '100%', backgroundColor: '#000' }}>
         <Demo />
       </View>
     </BloomThemeProvider>
   ),
+};
+
+/** A single instance whose controls are applied directly to the rendered component. */
+export const Playground: StoryObj<typeof StatBar> = {
+  args: { variant: 'progress', label: 'Storage used', value: 60, max: 100 },
+  parameters: { controls: { disable: false, include: ['label', 'value', 'max'] } },
+  argTypes: { label: { control: 'text' }, value: { control: 'number' }, max: { control: 'number' } },
+  render: function Playground(args) {
+
+    return <View style={{ width: 440, maxWidth: '100%' }}><StatBar {...args} /></View>;
+  },
 };

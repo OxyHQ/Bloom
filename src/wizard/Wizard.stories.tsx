@@ -31,7 +31,7 @@ const STEPS: WizardStep[] = [
 function Frame({ width, children }: { width: number; children: React.ReactNode }) {
   const theme = useTheme();
   return (
-    <View style={{ width, borderRadius: 16, borderWidth: 1, borderColor: theme.colors.border, overflow: 'hidden' }}>
+    <View style={{ width: '100%', maxWidth: width, borderRadius: 16, borderWidth: 1, borderColor: theme.colors.border, overflow: 'hidden' }}>
       {children}
     </View>
   );
@@ -45,7 +45,7 @@ export const Playground: Story = {
     const theme = useTheme();
     const last = current === STEPS.length - 1;
     return (
-      <View style={{ gap: 32 }}>
+      <View style={{ width: '100%', gap: 32 }}>
         {[720, 375].map((width) => (
           <Frame key={width} width={width}>
             <View style={{ paddingTop: 24, paddingLeft: width < 480 ? 16 : 24, paddingRight: width < 480 ? 16 : 24, paddingBottom: 24 }}>
@@ -86,7 +86,7 @@ export const Playground: Story = {
 /** The bar at the first step, mid-flow with the current step partly done, and complete. */
 export const ProgressStates: Story = {
   render: () => (
-    <View style={{ width: 560, gap: 40 }}>
+    <View style={{ width: '100%', maxWidth: 560, gap: 40 }}>
       <WizardProgress steps={STEPS} current={0} currentProgress={0} testID="first" />
       <WizardProgress steps={STEPS} current={4} currentProgress={0.3} testID="middle" />
       <WizardProgress steps={STEPS} current={7} currentProgress={1} hideTitle testID="done" />
@@ -97,7 +97,7 @@ export const ProgressStates: Story = {
 /** The footer's states: first step (no Back), disabled Next, loading, and the last step. */
 export const FooterStates: Story = {
   render: () => (
-    <View style={{ gap: 20 }}>
+    <View style={{ width: '100%', gap: 20 }}>
       {[
         { key: 'first', props: {} },
         { key: 'disabled', props: { onBack: () => undefined, nextDisabled: true } },

@@ -22,9 +22,13 @@ export interface ThemeColors {
   /** The M3 secondary accent — a real contrast colour (no longer a mirror of primary). */
   secondary: string;
   secondaryForeground: string;
+  secondarySubtle: string;
+  secondarySubtleForeground: string;
   /** The M3 tertiary accent, completing the primary/secondary/tertiary trio. */
   tertiary: string;
   tertiaryForeground: string;
+  tertiarySubtle: string;
+  tertiarySubtleForeground: string;
 
   tint: string;
   icon: string;
@@ -84,9 +88,16 @@ export interface ThemeGradient {
 /** Map of named gradients exposed on the theme (`theme.gradients`). */
 export type ThemeGradients = Record<string, ThemeGradient>;
 
+export interface ThemeChartColor {
+  color: string;
+  activeColor: string;
+}
+
 export interface Theme {
   mode: 'light' | 'dark';
   colors: ThemeColors;
+  /** Canonical chart-1…9 pairs. Built themes always provide these; custom themes may omit them. */
+  chartColors?: readonly ThemeChartColor[];
   /** Brand-neutral named linear-gradient palettes. Theme-agnostic (same in light/dark). */
   gradients: ThemeGradients;
   isDark: boolean;

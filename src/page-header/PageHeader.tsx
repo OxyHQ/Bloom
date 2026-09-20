@@ -14,8 +14,9 @@ import Animated, {
 } from 'react-native-reanimated';
 import { SafeAreaInsetsContext } from 'react-native-safe-area-context';
 
+import { useScreenContext } from '../screen/context';
 import { Button } from '../button';
-import { BUTTON_SHADOW, mixColor, resolveButtonRamps } from '../button/shared';
+import { BUTTON_SHADOW } from '../button/shared';
 import { ButtonGroupItem } from '../button-group';
 import { ControlSurface } from '../control-surface';
 import { GlassIsland } from '../glass';
@@ -158,32 +159,25 @@ function PageHeaderComponent({
   useClaimTopEdge(overlay ? height : 0);
 
   const paint = useMemo(() => {
-    const { neutral } = resolveButtonRamps(theme);
-    return theme.isDark
-      ? {
-          background: mixColor(neutral[900], neutral[950], 0.4),
-          separator: neutral[800],
-          textSecondary: neutral[500],
-          shadow: BUTTON_SHADOW.dark,
-        }
-      : {
-          background: theme.colors.card,
-          separator: neutral[200],
-          textSecondary: neutral[500],
-          shadow: BUTTON_SHADOW.light,
-        };
+    return {
+      background: theme.colors.background,
+      separator: theme.colors.borderLight,
+      textSecondary: theme.colors.textSecondary,
+      shadow: BUTTON_SHADOW[theme.isDark ? 'dark' : 'light'],
+    };
   }, [theme]);
 
   // ── The scroll owner ──────────────────────────────────────────────────────
   //
-  // Prop, then the nearest `ScrollOffsetProvider`, then the document on web.
+  // Prop, then Screen, then the nearest ScrollOffsetProvider, then the document on web.
   // The context step is the one that matters for a Bloom composition: without
   // it a header inside a scrolling panel followed `window.scrollY`, which on a
   // desktop shell never moves, so the header looked deliberately inert.
+  const screen = useScreenContext();
   const contextScrollY = useScrollOffset();
   const internalScrollY = useSharedValue(0);
-  const scrollY = externalScrollY ?? contextScrollY ?? internalScrollY;
-  const followsWindow = !externalScrollY && !contextScrollY;
+  const scrollY = externalScrollY ?? screen?.scrollY ?? contextScrollY ?? internalScrollY;
+  const followsWindow = !externalScrollY && !screen && !contextScrollY;
 
   useEffect(() => {
     if (!isWeb || !followsWindow || typeof window === 'undefined') return undefined;
@@ -313,10 +307,10 @@ function PageHeaderComponent({
       </GlassIsland>
     ) : (
       <Button
-        variant="secondary"
-        size="medium"
-        iconOnly
-        leadingIcon={RiArrowLeftLine}
+        appearance="plain"
+        tone="neutral"
+        size="md"
+        icon={RiArrowLeftLine}
         accessibilityLabel={backLabel}
         onPress={onBack}
         testID={testID ? `${testID}-back` : undefined}
@@ -390,7 +384,7 @@ function PageHeaderComponent({
     <View
       testID={testID}
       onLayout={onContainerLayout}
-      pointerEvents={overlay ? 'box-none' : undefined}
+      pointerEvents={overlay || (floating && screen) ? 'box-none' : undefined}
       style={[
         styles.container,
         { paddingTop: padTop },

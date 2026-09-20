@@ -138,31 +138,29 @@ interface FileUploadPaint {
  *   text/error/primary         red-500        red-400
  */
 export function resolveFileUploadPaint(theme: Theme): FileUploadPaint {
-  const { accent, neutral: n } = resolveButtonRamps(theme);
-  const red = colorRamp(theme.colors.negative, DANGER_TABLE);
-  const dark = theme.isDark;
+  const c = theme.colors;
   return {
-    idleBackground: dark ? n[900] : n[100],
-    busyBackground: dark ? n[800] : theme.colors.card,
-    dash: dark ? n[700] : n[300],
-    dashActive: dark ? n[600] : n[400],
-    ringTrack: dark ? n[700] : n[200],
-    ringFill: accent[400],
-    pillBackground: accent[400],
-    pillText: '#FFFFFF',
-    discBackground: dark ? n[600] : n[300],
-    discIcon: n[400],
-    discIconHover: dark ? n[300] : n[500],
-    prompt: n[500],
-    select: accent[500],
-    hint: dark ? n[600] : n[400],
-    error: dark ? red[400] : red[500],
-    fileDiscBorder: dark ? n[700] : n[200],
-    fileDiscBackground: dark ? n[800] : theme.colors.card,
-    fileIcon: n[500],
-    fileName: theme.colors.text,
-    status: n[500],
-    ring: accent[500],
+    idleBackground: c.backgroundSecondary,
+    busyBackground: c.card,
+    dash: c.border,
+    dashActive: c.primary,
+    ringTrack: c.borderLight,
+    ringFill: c.primary,
+    pillBackground: c.primary,
+    pillText: c.primaryForeground,
+    discBackground: c.backgroundTertiary,
+    discIcon: c.textSecondary,
+    discIconHover: c.text,
+    prompt: c.textSecondary,
+    select: c.primarySubtleForeground,
+    hint: c.textSecondary,
+    error: c.errorSubtleForeground,
+    fileDiscBorder: c.borderLight,
+    fileDiscBackground: c.card,
+    fileIcon: c.textSecondary,
+    fileName: c.text,
+    status: c.textSecondary,
+    ring: c.primary,
   };
 }
 
@@ -736,7 +734,13 @@ const FileUploadComponent = function FileUpload({
         pointerEvents="none"
         style={[fill, { opacity: IS_WEB ? (busy ? 1 : 0) : busyFade }]}
       >
-        <Svg width={box.width} height={box.height} viewBox={`0 0 ${box.width} ${box.height}`}>
+        <Svg
+          width="100%"
+          height="100%"
+          preserveAspectRatio="none"
+          viewBox={`0 0 ${box.width} ${box.height}`}
+          testID={testID ? `${testID}-progress-ring` : undefined}
+        >
           <Rect
             x={RING_INSET}
             y={RING_INSET}

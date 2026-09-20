@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { ScrollView, View } from 'react-native';
+import { ScrollView, View, useWindowDimensions } from 'react-native';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
 import { Button } from '../button';
@@ -77,6 +77,7 @@ function DesktopDemo({
   width?: number;
   initialDestination?: string;
 }) {
+  const compact = useWindowDimensions().width < 700;
   const theme = useTheme();
   const [segment, setSegment] = useState<StaySearchSegment | null>(initialSegment);
   const [destination, setDestination] = useState<string | undefined>(initialDestination);
@@ -111,7 +112,7 @@ function DesktopDemo({
     );
   } else if (segment === 'checkIn' || segment === 'checkOut' || segment === 'dates') {
     panel = (
-      <StaySearchPanel padding={24} accessibilityLabel="Dates" testID="panel-dates">
+      <StaySearchPanel padding={compact ? 8 : 24} accessibilityLabel="Dates" testID="panel-dates">
         <View style={{ gap: 20 }}>
           <RangeCalendar
             value={range}
@@ -119,7 +120,7 @@ function DesktopDemo({
               setRange(next);
               if (datesMode === 'split') setSegment('checkOut');
             }}
-            visibleMonths={2}
+            visibleMonths={compact ? 1 : 2}
             defaultMonth={MONTH}
           />
           <DateFlexibilityChips value={flex} onChange={setFlex} testID="flex" />
@@ -165,7 +166,7 @@ function DesktopDemo({
  */
 export const Desktop: Story = {
   render: () => (
-    <View style={{ padding: 24 }}>
+    <View style={{ padding: 16 }}>
       <DesktopDemo />
     </View>
   ),
@@ -174,7 +175,7 @@ export const Desktop: Story = {
 /** Destination open: the raised segment, the widened search button and the suggestions panel. */
 export const DestinationOpen: Story = {
   render: () => (
-    <View style={{ padding: 24 }}>
+    <View style={{ padding: 16 }}>
       <DesktopDemo initialSegment="destination" />
     </View>
   ),
@@ -183,7 +184,7 @@ export const DestinationOpen: Story = {
 /** Check in open: a two-month `RangeCalendar` with `DateFlexibilityChips` under it, centred. */
 export const DatesOpen: Story = {
   render: () => (
-    <View style={{ padding: 24 }}>
+    <View style={{ padding: 16 }}>
       <DesktopDemo initialSegment="checkIn" initialDestination="Marrowfield" />
     </View>
   ),
@@ -192,7 +193,7 @@ export const DatesOpen: Story = {
 /** Who open: the guest picker, aligned to the right end. */
 export const GuestsOpen: Story = {
   render: () => (
-    <View style={{ padding: 24 }}>
+    <View style={{ padding: 16 }}>
       <DesktopDemo initialSegment="guests" initialDestination="Old Halden" />
     </View>
   ),
@@ -201,7 +202,7 @@ export const GuestsOpen: Story = {
 /** `datesMode="single"`: one "When" segment instead of check in / check out. */
 export const SingleDatesSegment: Story = {
   render: () => (
-    <View style={{ padding: 24 }}>
+    <View style={{ padding: 16 }}>
       <DesktopDemo datesMode="single" width={720} />
     </View>
   ),
@@ -213,7 +214,7 @@ export const States: Story = {
     const theme = useTheme();
     const segments: (StaySearchSegment | null)[] = [null, 'destination', 'checkIn', 'checkOut', 'guests'];
     return (
-      <View style={{ padding: 24, gap: 24, backgroundColor: theme.colors.background }}>
+      <View style={{ padding: 16, gap: 24, backgroundColor: theme.colors.background }}>
         {segments.map((s) => (
           <View key={s ?? 'rest'} style={{ gap: 8 }}>
             <Text variant="caption-1-medium" style={{ color: theme.colors.textSecondary }}>
@@ -226,7 +227,7 @@ export const States: Story = {
               destination="Terracina Coast"
               dates={{ checkIn: 'Oct 12', checkOut: 'Oct 16' }}
               guests="3 guests, 1 pet"
-              style={{ width: 860 }}
+              style={{ width: 860, maxWidth: '100%' }}
             />
           </View>
         ))}
@@ -242,6 +243,7 @@ export const States: Story = {
 /** The three ready panel parts, side by side. */
 export const PanelParts: Story = {
   render: function PanelPartsStory() {
+    const compact = useWindowDimensions().width < 700;
     const [guests, setGuests] = useState<GuestCounts>({ adults: 2, children: 1, infants: 0, pets: 0 });
     const [flex, setFlex] = useState('2');
     const [range, setRange] = useState<DateRange | null>({
@@ -249,7 +251,7 @@ export const PanelParts: Story = {
       end: new Date(2026, 9, 16),
     });
     return (
-      <View style={{ padding: 24, gap: 24, flexDirection: 'row', flexWrap: 'wrap', alignItems: 'flex-start' }}>
+      <View style={{ padding: 16, gap: 24, flexDirection: 'row', flexWrap: 'wrap', alignItems: 'flex-start' }}>
         <StaySearchPanel width={400}>
           <DestinationSuggestions items={SUGGESTIONS} onSelect={() => {}} heading="Suggested destinations" />
         </StaySearchPanel>
@@ -258,9 +260,9 @@ export const PanelParts: Story = {
             <GuestPicker value={guests} onChange={setGuests} max={16} />
           </View>
         </StaySearchPanel>
-        <StaySearchPanel padding={24}>
+        <StaySearchPanel padding={compact ? 8 : 24}>
           <View style={{ gap: 20 }}>
-            <RangeCalendar value={range} onChange={setRange} visibleMonths={2} defaultMonth={MONTH} />
+            <RangeCalendar value={range} onChange={setRange} visibleMonths={compact ? 1 : 2} defaultMonth={MONTH} />
             <DateFlexibilityChips value={flex} onChange={setFlex} />
           </View>
         </StaySearchPanel>
@@ -278,7 +280,7 @@ export const Compact: Story = {
   render: () => (
     <View style={{ padding: 16, gap: 16 }}>
       {[343, 560].map((width) => (
-        <View key={width} style={{ width, gap: 12 }}>
+        <View key={width} style={{ width, maxWidth: '100%', gap: 12 }}>
           <StaySearchCompact onPress={() => {}} summary="Anywhere · Any week · Add guests" onFilterPress={() => {}} testID={`compact-${width}`} />
           <StaySearchCompact onPress={() => {}} summary="Marrowfield · Oct 12 – 16 · 3 guests" />
         </View>
@@ -387,7 +389,7 @@ export const MobileFlow: Story = {
   render: function MobileFlowStory() {
     const theme = useTheme();
     return (
-      <View style={{ width: 375, height: 760, borderRadius: 16, overflow: 'hidden', borderWidth: 1, borderColor: theme.colors.border }}>
+      <View style={{ width: 375, maxWidth: '100%', height: 760, borderRadius: 16, overflow: 'hidden', borderWidth: 1, borderColor: theme.colors.border }}>
         <MobileSearchFlow />
       </View>
     );
@@ -399,7 +401,7 @@ export const MobileFlowInDialog: Story = {
   render: function MobileFlowDialogStory() {
     const control = useDialogControl();
     return (
-      <View style={{ width: 375, padding: 16 }}>
+      <View style={{ width: 375, maxWidth: '100%', padding: 16 }}>
         <StaySearchCompact onPress={() => control.open()} summary="Anywhere · Any week · Add guests" onFilterPress={() => {}} testID="compact" />
         <Dialog control={control} placement="bottom" title="Search stays">
           <View style={{ height: 640, marginLeft: -16, marginRight: -16 }}>
@@ -423,13 +425,13 @@ export const Dark: Story = {
 function DarkCanvas() {
   const theme = useTheme();
   return (
-    <View style={{ padding: 24, gap: 24, backgroundColor: theme.colors.background }}>
+    <View style={{ padding: 16, gap: 24, backgroundColor: theme.colors.background }}>
       <DesktopDemo initialSegment="guests" initialDestination="Solvia Bay" />
-      <View style={{ flexDirection: 'row', gap: 24, alignItems: 'flex-start' }}>
-        <View style={{ width: 343 }}>
+      <View style={{ width: '100%', flexDirection: 'row', flexWrap: 'wrap', gap: 24, alignItems: 'flex-start' }}>
+        <View style={{ width: 343, maxWidth: '100%' }}>
           <StaySearchCompact onPress={() => {}} summary="Anywhere · Any week · Add guests" onFilterPress={() => {}} />
         </View>
-        <View style={{ width: 375, height: 760, borderRadius: 16, overflow: 'hidden' }}>
+        <View style={{ width: 375, maxWidth: '100%', height: 760, borderRadius: 16, overflow: 'hidden' }}>
           <MobileSearchFlow />
         </View>
       </View>
@@ -460,8 +462,8 @@ export const UnavailableRowAndTranslatedSteppers: Story = {
       ...SUGGESTIONS.slice(1),
     ];
     return (
-      <View style={{ padding: 24, gap: 24, flexDirection: 'row', flexWrap: 'wrap', alignItems: 'flex-start' }}>
-        <View style={{ gap: 12 }}>
+      <View style={{ padding: 16, gap: 24, flexDirection: 'row', flexWrap: 'wrap', alignItems: 'flex-start' }}>
+        <View style={{ gap: 12, maxWidth: '100%' }}>
           <Button variant="secondary" size="small" onPress={() => setLocationOn((on) => !on)}>
             {locationOn ? 'Turn location off' : 'Turn location on'}
           </Button>

@@ -11,6 +11,7 @@ import { createRoot, type Root } from 'react-dom/client';
 jest.mock('react-native', () => jest.requireActual('react-native-web'));
 
 import { resolveButtonRamps } from '../button/shared';
+import { resolveMenuPalette } from '../floating/menu-palette';
 import { ImageResolverProvider } from '../image-resolver';
 import {
   MapAreaCircle,
@@ -84,10 +85,9 @@ function textColor(el: HTMLElement): string {
 describe('resolveMapMarkerPaint', () => {
   it.each(['light', 'dark'] as const)('inverts the active pill against the surface (%s)', (mode) => {
     mount(<></>, mode);
-    const { neutral: n } = resolveButtonRamps(theme);
     expect(paint.activeFill).toBe(theme.colors.text);
-    expect(paint.surface).toBe(mode === 'dark' ? n[800] : theme.colors.card);
-    expect(paint.activeLabel).toBe(mode === 'dark' ? n[900] : theme.colors.card);
+    expect(paint.surface).toBe(resolveMenuPalette(theme).surface);
+    expect(paint.activeLabel).toBe(theme.colors.background);
     expect(paint.visitedFill).not.toBe(paint.surface);
   });
 });

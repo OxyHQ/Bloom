@@ -134,7 +134,7 @@ const COVER_GRADIENT_FALLOFF = 0.25;
  * takes for BOTH foregrounds — the title and the muted line under it — to clear
  * AA on it; the gradient's bottom is a further 25% darker, so the text keeps its
  * contrast all the way down. Without a colour — or with one that does not parse
- * — the cover is the theme's neutral 700 → 900, which clears it in both modes.
+ * — the cover darkens the theme's background until both artwork inks clear AA.
  *
  * Checking `textMuted` too is what the previous implementation did not do, and
  * it painted a muted line at 4.18:1 over the palest artwork colours.
@@ -145,9 +145,8 @@ const COVER_GRADIENT_FALLOFF = 0.25;
  * channel; scaling keeps the channels' ratio, so a darkened teal is still teal.
  */
 export function resolveCoverTint(theme: Theme, color?: string): CoverTint {
-  const { neutral: n } = resolveButtonRamps(theme);
-  const text = n[50];
-  const textMuted = mixColor(n[50], n[300], 0.35);
+  const text = '#ffffff';
+  const textMuted = '#e5e5e5';
   const shade = color ? darkenUntilContrast(color, [text, textMuted], AA_TEXT_CONTRAST) : null;
   if (shade) {
     return {
@@ -157,7 +156,8 @@ export function resolveCoverTint(theme: Theme, color?: string): CoverTint {
       textMuted,
     };
   }
-  return { top: n[700], bottom: n[900], text, textMuted };
+  const top = darkenUntilContrast(theme.colors.background, [text, textMuted], AA_TEXT_CONTRAST)!.color;
+  return { top, bottom: darken(top, COVER_GRADIENT_FALLOFF) as string, text, textMuted };
 }
 
 // ---------------------------------------------------------------------------
@@ -198,7 +198,7 @@ export interface MediaCardPaint {
  *   rail         neutral-200 (dark neutral-700) fill      the accent
  */
 export function resolveMediaCardPaint(theme: Theme): MediaCardPaint {
-  const { accent, neutral: n } = resolveButtonRamps(theme);
+  const { accent } = resolveButtonRamps(theme);
   const { colors, isDark } = theme;
   return {
     text: colors.text,
@@ -210,7 +210,7 @@ export function resolveMediaCardPaint(theme: Theme): MediaCardPaint {
     placeholderGlyph: mixColor(colors.background, colors.text, 0.4),
     tile: mixColor(colors.background, colors.text, isDark ? 0.1 : 0.07),
     tileHover: mixColor(colors.background, colors.text, isDark ? 0.16 : 0.12),
-    rail: isDark ? n[700] : n[200],
+    rail: colors.contrast50,
     fill: accent[500],
     accent: accent[500],
     surface: colors.background,

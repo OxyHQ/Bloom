@@ -3,6 +3,8 @@ import { fireEvent, render } from '@testing-library/react-native';
 
 import { BloomThemeProvider } from '../theme/BloomThemeProvider';
 import { CheckboxCard } from '../checkbox';
+import { Path } from 'react-native-svg';
+import { buildTheme } from '../theme/build-theme';
 
 function renderWithTheme(ui: React.ReactElement) {
   return render(
@@ -49,4 +51,13 @@ describe('CheckboxCard', () => {
     fireEvent.press(card);
     expect(onCheckedChange).not.toHaveBeenCalled();
   });
+});
+
+it('uses the paired dark mark on a bright semantic selection', () => {
+  const theme = buildTheme('olive', 'dark');
+  const root = render(<BloomThemeProvider mode="dark" colorPreset="olive"><CheckboxCard title="Selection" checked onCheckedChange={() => {}} /></BloomThemeProvider>);
+  const marks = root.UNSAFE_getAllByType(Path).filter(node => node.props.strokeWidth === 2);
+  expect(marks.length).toBeGreaterThan(0);
+  expect(marks[0]!.props.stroke).toBe(theme.colors.primaryForeground);
+  expect(theme.colors.primaryForeground).toBe('rgb(0 0 0)');
 });

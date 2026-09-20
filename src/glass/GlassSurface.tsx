@@ -1,11 +1,12 @@
 import React, { memo, useMemo } from 'react';
-import { StyleSheet, View } from 'react-native';
+import { Platform, StyleSheet, View } from 'react-native';
 import { BlurView } from 'expo-blur';
 import Svg, { Defs, LinearGradient, Rect, Stop } from 'react-native-svg';
 
 import { useTheme } from '../theme/use-theme';
 import {
   GLASS_BLUR_INTENSITY,
+  GLASS_BLUR_RADIUS_PX,
   GLASS_RIM_HIGHLIGHT,
   GLASS_SHEEN,
   resolveChromeGlassColors,
@@ -85,7 +86,7 @@ const GlassSurfaceComponent: React.FC<GlassSurfaceProps> = ({
       testID={testID}
     >
       <BlurView
-        intensity={GLASS_BLUR_INTENSITY}
+        intensity={Platform.OS === 'web' ? GLASS_BLUR_RADIUS_PX / 0.2 : GLASS_BLUR_INTENSITY}
         // The material follows the SCHEME, not the tone: a light pane in dark
         // mode would be a bright card, which is the failure `frosted-icon-button`
         // documents at length.

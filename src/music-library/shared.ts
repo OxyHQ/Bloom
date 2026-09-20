@@ -1,3 +1,4 @@
+import { hairlineOn, surfaceTextOn } from '../styles/surface-levels';
 import { useCallback, useState } from 'react';
 import { Platform } from 'react-native';
 
@@ -256,14 +257,14 @@ export interface MusicLibraryPaint {
  * one page colour. Text and accents come from the neutral and accent ramps.
  */
 export function resolveMusicLibraryPaint(theme: Theme): MusicLibraryPaint {
-  const { accent, neutral: n } = resolveButtonRamps(theme);
+  const { accent } = resolveButtonRamps(theme);
   const dark = theme.isDark;
   const { background, text } = theme.colors;
   const step = (light: number, darkAlpha: number) => mixColor(background, text, dark ? darkAlpha : light);
   return {
     accent: accent[500],
     text,
-    textMuted: dark ? n[400] : n[500],
+    textMuted: surfaceTextOn(theme, step(0.03, 0.05)).textSecondary,
     surface: step(0.03, 0.05),
     hover: step(0.07, 0.1),
     selected: step(0.11, 0.16),
@@ -271,7 +272,7 @@ export function resolveMusicLibraryPaint(theme: Theme): MusicLibraryPaint {
     field: step(0.06, 0.09),
     fieldHover: step(0.1, 0.14),
     fieldFocusBorder: text,
-    divider: dark ? n[600] : n[300],
+    divider: hairlineOn(theme, step(0.03, 0.05)),
     ring: accent[500],
   };
 }

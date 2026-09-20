@@ -7,7 +7,6 @@ import { Avatar } from '../avatar';
 import { Badge } from '../badge';
 import { Button } from '../button';
 import { ButtonGroup, ButtonGroupItem } from '../button-group';
-import { resolveButtonRamps } from '../button/shared';
 import {
   RiAddFill,
   RiBookmarkLine,
@@ -34,20 +33,19 @@ const back = () => {};
 
 const HERO = 'https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?w=1200';
 
-function Page({ children, fill }: { children: React.ReactNode; fill?: string }) {
+function Page({ children, fill, inset = false }: { children: React.ReactNode; fill?: string; inset?: boolean }) {
   const theme = useTheme();
-  const { neutral } = resolveButtonRamps(theme);
   return (
     // The preview decorator pads every story by 24; a page header is edge to edge.
     <View
       style={{
         alignSelf: 'stretch',
-        marginTop: -24,
-        marginLeft: -24,
-        marginRight: -24,
-        marginBottom: -24,
+        marginTop: inset ? 0 : -24,
+        marginLeft: inset ? 0 : -24,
+        marginRight: inset ? 0 : -24,
+        marginBottom: inset ? 0 : -24,
         minHeight: 700,
-        backgroundColor: fill ?? (theme.isDark ? neutral[950] : neutral[50]),
+        backgroundColor: fill ?? theme.colors.background,
       }}
     >
       {children}
@@ -57,7 +55,6 @@ function Page({ children, fill }: { children: React.ReactNode; fill?: string }) 
 
 function Rows({ count = 30 }: { count?: number }) {
   const theme = useTheme();
-  const { neutral } = resolveButtonRamps(theme);
   return (
     <View style={{ padding: 16, gap: 12 }}>
       {Array.from({ length: count }, (_, i) => (
@@ -67,8 +64,8 @@ function Rows({ count = 30 }: { count?: number }) {
             height: 64,
             borderRadius: 16,
             borderWidth: 1,
-            borderColor: theme.isDark ? neutral[800] : neutral[200],
-            backgroundColor: theme.isDark ? neutral[900] : theme.colors.card,
+            borderColor: theme.colors.border,
+            backgroundColor: theme.colors.card,
             justifyContent: 'center',
             paddingLeft: 16,
           }}
@@ -84,11 +81,10 @@ function Rows({ count = 30 }: { count?: number }) {
 
 function LiveStatus() {
   const theme = useTheme();
-  const { neutral } = resolveButtonRamps(theme);
   return (
     <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
-      <Badge dot color="success" />
-      <Text variant="body-2-regular" style={{ color: neutral[500] }}>
+      <Badge dot tone="success" />
+      <Text variant="body-2-regular" style={{ color: theme.colors.textSecondary }}>
         Live · deployed 2 min ago
       </Text>
     </View>
@@ -96,7 +92,7 @@ function LiveStatus() {
 }
 
 function IconAction({ icon, label }: { icon: typeof RiMore2Line; label: string }) {
-  return <Button variant="secondary" size="medium" iconOnly leadingIcon={icon} accessibilityLabel={label} />;
+  return <Button appearance="outline" tone="neutral" size="md" icon={icon} accessibilityLabel={label} />;
 }
 
 /**
@@ -124,6 +120,7 @@ function PageActions() {
 
 /** Back capsule, title, one shared island of two actions and a second island. */
 export const Floating: Story = {
+  parameters: { controls: { disable: true } },
   render: () => (
     <Page>
       <PageHeader testID="header" onBack={back} title="Lisbon loft" actions={<PageActions />} />
@@ -134,6 +131,7 @@ export const Floating: Story = {
 
 /** The same header, forced dark. */
 export const FloatingDark: Story = {
+  parameters: { controls: { disable: true } },
   globals: { theme: 'dark' },
   render: Floating.render,
 };
@@ -150,6 +148,7 @@ const DEEP_WATER = '#1d3b53';
  * wrong hue rather than a fade.
  */
 export const FloatingOverColour: Story = {
+  parameters: { controls: { disable: true } },
   // Dark, because the page colour is dark: a screen that paints a near-black
   // surface in a LIGHT theme has a text-contrast problem of its own, and it is
   // not the one this story is about.
@@ -171,6 +170,7 @@ export const FloatingOverColour: Story = {
 
 /** The same screen WITHOUT `scrimColor` — the wrong-hue wash, for comparison. */
 export const FloatingScrimColourMismatch: Story = {
+  parameters: { controls: { disable: true } },
   globals: { theme: 'dark' },
   render: () => (
     <Page fill={DEEP_WATER}>
@@ -194,6 +194,7 @@ export const FloatingScrimColourMismatch: Story = {
  * screen — and it is a SEPARATE decision from the scrim's.
  */
 export const FloatingOverImage: Story = {
+  parameters: { controls: { disable: true } },
   render: () => (
     <Page>
       <View>
@@ -216,6 +217,7 @@ export const FloatingOverImage: Story = {
 
 /** A centred title stays on the container's centre whatever the two sides hold. */
 export const FloatingCentred: Story = {
+  parameters: { controls: { disable: true } },
   render: () => (
     <Page>
       <View style={{ gap: 24 }}>
@@ -235,6 +237,7 @@ export const FloatingCentred: Story = {
 
 /** `leading` sits between the back capsule and the title. */
 export const FloatingLeadingAvatar: Story = {
+  parameters: { controls: { disable: true } },
   render: () => (
     <Page>
       <PageHeader
@@ -255,8 +258,9 @@ export const FloatingLeadingAvatar: Story = {
  * unclamped centring inset asks for more room than the container has.
  */
 export const FloatingNarrow: Story = {
+  parameters: { controls: { disable: true } },
   render: () => (
-    <View style={{ width: 320, alignSelf: 'flex-start' }}>
+    <View style={{ width: 320, maxWidth: '100%', alignSelf: 'flex-start' }}>
       <Page>
         <PageHeader
           onBack={back}
@@ -292,6 +296,7 @@ function OverlayContent() {
  * `BloomProvider` in a real app.
  */
 export const OverlayPlacement: Story = {
+  parameters: { controls: { disable: true } },
   render: () => (
     <TopEdgeProvider>
       <Page>
@@ -342,6 +347,7 @@ function ScrollOwnerDemo() {
 
 /** A panel that owns its own scroller, published through `ScrollOffsetProvider`. */
 export const NestedScrollOwner: Story = {
+  parameters: { controls: { disable: true } },
   render: () => <ScrollOwnerDemo />,
 };
 
@@ -351,6 +357,7 @@ export const NestedScrollOwner: Story = {
 
 /** Bloom's original flat strip, now asked for by name. */
 export const Bar: Story = {
+  parameters: { controls: { disable: true } },
   render: () => (
     <Page>
       <PageHeader
@@ -362,7 +369,7 @@ export const Bar: Story = {
         actions={
           <>
             <IconAction icon={RiShare2Line} label="Share" />
-            <Button variant="primary" size="medium" leadingIcon={RiAddFill}>
+            <Button appearance="solid" tone="accent" size="md" leadingIcon={RiAddFill}>
               New order
             </Button>
           </>
@@ -375,6 +382,7 @@ export const Bar: Story = {
 
 /** Bar, centred title, subtitle node, and a header with no back button. */
 export const BarVariants: Story = {
+  parameters: { controls: { disable: true } },
   render: () => (
     <Page>
       <View style={{ gap: 24 }}>
@@ -406,6 +414,7 @@ export const BarVariants: Story = {
  * holds the title back.
  */
 export const BarOverImage: Story = {
+  parameters: { controls: { disable: true } },
   render: () => (
     <Page>
       <PageHeader
@@ -431,12 +440,25 @@ export const BarOverImage: Story = {
 
 /** Open at a phone viewport (390): 16px side insets below `sm`. */
 export const Phone: Story = {
+  parameters: { controls: { disable: true } },
   render: () => (
-    <View style={{ width: 390, alignSelf: 'flex-start' }}>
-      <Page>
+    <View style={{ width: 390, maxWidth: '100%', alignSelf: 'flex-start' }}>
+      <Page inset>
         <PageHeader onBack={back} title="Order #4821" subtitle="Placed today" scrim="always" actions={<PageActions />} />
         <Rows count={6} />
       </Page>
     </View>
   ),
+};
+
+export const Playground: StoryObj<typeof PageHeader> = {
+  args: { title: 'Community', subtitle: 'A shared canvas', presentation: 'floating', titleAlign: 'start', titleReveal: 'always', scrim: 'always', border: 'auto', sticky: false, onBack: () => {} },
+  parameters: { controls: { disable: false, include: ['title', 'subtitle', 'presentation', 'titleAlign', 'titleReveal', 'scrim', 'border'] } },
+  argTypes: { presentation: { control: 'select', options: ['floating','bar'] }, titleAlign: { control: 'select', options: ['start','center'] }, titleReveal: { control: 'select', options: ['always','onScroll'] }, scrim: { control: 'select', options: ['auto','always','none'] }, border: { control: 'select', options: ['auto','always','none'] }, title: { control: 'text' }, subtitle: { control: 'text' } },
+  render: function Playground(args) {
+
+    const offset = useSharedValue(0);
+    const onScroll = useAnimatedScrollHandler(event => { offset.value = event.contentOffset.y; }, [offset]);
+    return <View style={{ width: 900, maxWidth: '100%', height: 420 }}><PageHeader {...args} scrollY={offset} placement="overlay" actions={<PageActions />} /><Animated.ScrollView onScroll={onScroll} scrollEventThrottle={16} contentContainerStyle={{ paddingTop: 88 }}><Rows count={16} /></Animated.ScrollView></View>;
+  },
 };

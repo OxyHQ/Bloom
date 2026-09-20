@@ -19,7 +19,7 @@ different surfaces, and the radius scale has rungs precisely so they can differ.
 ```tsx
 import { Card, CardHeader, CardBody, CardFooter, CardTitle, CardDescription } from '@oxy.so/bloom/card';
 
-<Card variant="outlined" radius="radius-16">
+<Card appearance="outline" radius="radius-16">
   <CardHeader>
     <CardTitle>Weekly digest</CardTitle>
     <CardDescription>Sent every Monday at 09:00.</CardDescription>
@@ -28,30 +28,32 @@ import { Card, CardHeader, CardBody, CardFooter, CardTitle, CardDescription } fr
 </Card>
 ```
 
+`tone` inherits from `BloomScope` and defaults to `neutral`. Neutral solid cards use the card surface token; semantic tones use Bloom’s paired foreground and fill recipe.
+
 ## Which prop decides what
 
 | prop        | decides                                                          |
 | ----------- | ---------------------------------------------------------------- |
-| `variant`   | the preset combination of background, border and elevation        |
+| `appearance`   | the preset combination of background, border and elevation        |
 | `radius`    | the corner, as a **rung of the `RADIUS` scale** — never a number  |
 | `border`    | `none` · `hairline` (0.5px) · `thin` (1px)                        |
 | `elevation` | `none` · `s` (a subtle raise) · `m` (the overlay role)            |
 
-`variant` is only a named default for the other three. An explicit `border` or
+`appearance` is only a named default for the other three. An explicit `border` or
 `elevation` wins, in both directions — you can add a shadow to `plain` and take
-one away from `elevated`. That is deliberate: a surface that is "an outlined
+one away from `solid`. That is deliberate: a surface that is "an outlined
 card but flatter" should refine the axes rather than earn a fifth variant name.
 
 ```tsx
-<Card variant="plain" border="hairline" elevation="m" radius="radius-20" />
+<Card appearance="plain" border="hairline" elevation="m" radius="radius-20" />
 ```
 
-## Variants
+## Appearances
 
-- `plain` — the bare `card` surface: no border, no shadow.
-- `elevated` — `shadow-s`. The default.
-- `outlined` — a 1px border in the `border` role.
-- `filled` — paints from `backgroundSecondary` instead of `card`, for a surface
+- `plain` — transparent, with no border or shadow.
+- `solid` — `shadow-s`. The default.
+- `outline` — a 1px border in the `border` role.
+- `subtle` — paints from `backgroundSecondary` instead of `card`, for a surface
   that sits **on** a card rather than being one.
 
 ## `radius` is a rung, not a number

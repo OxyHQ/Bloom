@@ -43,11 +43,10 @@ const MIN_BAR = 2;
 
 function PriceHistogramComponent({ buckets, min, max, value, height = 64, style, testID }: PriceHistogramProps) {
   const theme = useTheme();
-  const { neutral } = useMemo(() => resolveButtonRamps(theme), [theme]);
   const tallest = buckets.reduce((m, n) => Math.max(m, n), 0);
   const selected = histogramSelection(buckets.length, min, max, value);
   const inColor = useMemo(() => chartHueTone(theme, 6).color, [theme]);
-  const outColor = theme.isDark ? neutral[700] : neutral[300];
+  const outColor = theme.colors.textTertiary;
 
   return (
     <View

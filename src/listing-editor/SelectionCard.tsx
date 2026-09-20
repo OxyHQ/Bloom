@@ -78,23 +78,23 @@ export interface SelectionPaint {
 }
 
 export function resolveSelectionPaint(theme: Theme): SelectionPaint {
-  const { accent, neutral: n } = resolveButtonRamps(theme);
+  const { accent } = resolveButtonRamps(theme);
   const dark = theme.isDark;
   return {
     fill: dark ? 'transparent' : theme.colors.card,
-    border: dark ? n[700] : n[200],
-    borderHover: dark ? n[500] : n[400],
+    border: theme.colors.border,
+    borderHover: theme.colors.border,
     borderSelected: theme.colors.text,
-    wash: dark ? n[900] : n[50],
-    iconTile: dark ? n[800] : n[100],
+    wash: theme.colors.backgroundSecondary,
+    iconTile: theme.colors.backgroundSecondary,
     icon: theme.colors.text,
     text: theme.colors.text,
     textSecondary: theme.colors.textSecondary,
-    indicatorRing: dark ? n[600] : n[300],
+    indicatorRing: theme.colors.border,
     page: theme.colors.background,
-    hairline: dark ? n[800] : n[200],
+    hairline: theme.colors.border,
     ring: accent[500],
-    error: theme.colors.error,
+    error: theme.colors.errorSubtleForeground,
   };
 }
 

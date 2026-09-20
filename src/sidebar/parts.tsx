@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useEffect, useMemo } from 'react';
 import { Platform, StyleSheet, View, type LayoutChangeEvent, type StyleProp, type ViewStyle } from 'react-native';
-import Animated, { useAnimatedStyle, useSharedValue, type SharedValue } from 'react-native-reanimated';
+import Animated, { Easing, useAnimatedStyle, useReducedMotion, useSharedValue, withTiming, type SharedValue } from 'react-native-reanimated';
 import Svg, { Defs, G, LinearGradient, Path, Rect, Stop } from 'react-native-svg';
 
 import { Avatar } from '../avatar';
@@ -27,6 +27,21 @@ export function useInSidebar(): boolean {
   return useContext(CollapseContext) !== null;
 }
 
+/** Share the panel's clock; standalone controls use the same reversible timing. */
+export function useSidebarCollapseProgress(collapsed: boolean): SharedValue<number> {
+  const context = useContext(CollapseContext);
+  const reducedMotion = useReducedMotion();
+  const local = useSharedValue(collapsed ? 1 : 0);
+  useEffect(() => {
+    if (!context) {
+      local.value = reducedMotion ? Number(collapsed) : withTiming(Number(collapsed), {
+        duration: MORPH_MS, easing: Easing.bezier(0.4, 0, 0.2, 1),
+      });
+    }
+  }, [collapsed, context, local, reducedMotion]);
+  return context ?? local;
+}
+
 /**
  * A `Collapsible` slot: max-width + opacity + blur(3px) collapse to
  * nothing while the icon beside it stays pinned. The natural width is measured
@@ -43,12 +58,7 @@ export function Collapsible({
   children: React.ReactNode;
   style?: StyleProp<ViewStyle>;
 }) {
-  const context = useContext(CollapseContext);
-  const local = useSharedValue(collapsed ? 1 : 0);
-  useEffect(() => {
-    if (!context) local.value = collapsed ? 1 : 0;
-  }, [collapsed, context, local]);
-  const progress = context ?? local;
+  const progress = useSidebarCollapseProgress(collapsed);
   const natural = useSharedValue(0);
   const animated = useAnimatedStyle(() => {
     const p = progress.value;

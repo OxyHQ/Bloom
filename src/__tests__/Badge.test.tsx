@@ -61,8 +61,8 @@ describe('Badge', () => {
     // `dot variant="outlined"` following the variant produced a transparent
     // circle: visually absent, with markup that reads as correct. A standalone
     // dot is the status dot, so the fill is its CENTRE, on a tint halo.
-    const core = (variant: 'outlined' | 'solid') => {
-      const { toJSON } = renderWithTheme(<Badge dot variant={variant} color="success" testID="b" />);
+    const core = (variant: 'outline' | 'solid') => {
+      const { toJSON } = renderWithTheme(<Badge dot appearance={variant} tone="success" testID="b" />);
       const halo = findHost(toJSON(), 'b');
       const children = renderedChildren(toJSON(), 'b');
       expect(children).toHaveLength(1);
@@ -71,7 +71,7 @@ describe('Badge', () => {
         core: resolvedStyle(children[0]?.props.style),
       };
     };
-    const outlined = core('outlined');
+    const outlined = core('outline');
     const solid = core('solid');
     expect(outlined.core.backgroundColor).toBe(solid.core.backgroundColor);
     expect(outlined.core.backgroundColor).not.toBe('transparent');
@@ -79,7 +79,7 @@ describe('Badge', () => {
   });
 
   it('draws a standalone dot as a 12px halo around a 6px centre at medium', () => {
-    const { toJSON } = renderWithTheme(<Badge dot color="primary" testID="b" />);
+    const { toJSON } = renderWithTheme(<Badge dot tone="accent" testID="b" />);
     const halo = resolvedStyle(findHost(toJSON(), 'b')?.props.style);
     const core = resolvedStyle(renderedChildren(toJSON(), 'b')[0]?.props.style);
     expect(halo).toMatchObject({ width: 12, height: 12, borderRadius: borderRadius.full });
@@ -88,7 +88,7 @@ describe('Badge', () => {
 
   it('keeps an attached dot a plain marker', () => {
     const { toJSON } = renderWithTheme(
-      <Badge dot color="primary">
+      <Badge dot tone="accent">
         <Text>Inbox</Text>
       </Badge>,
     );
@@ -269,8 +269,8 @@ describe('Badge', () => {
   });
 
   it('grows with size rather than clipping the label', () => {
-    const small = renderWithTheme(<Badge content="x" size="small" testID="b" />);
-    const large = renderWithTheme(<Badge content="x" size="large" testID="b" />);
+    const small = renderWithTheme(<Badge content="x" size="sm" testID="b" />);
+    const large = renderWithTheme(<Badge content="x" size="lg" testID="b" />);
     const smallHeight = resolvedStyle(small.getByTestId('b').props.style).height;
     const largeHeight = resolvedStyle(large.getByTestId('b').props.style).height;
     expect(Number(largeHeight)).toBeGreaterThan(Number(smallHeight));

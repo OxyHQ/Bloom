@@ -1,0 +1,7 @@
+/* Canvas layout is owned by Storybook, never duplicated in a provider. */
+html, body, #storybook-root { min-height: 100%; }
+body { margin: 0; }
+#storybook-root { width: 100%; min-width: 0; }
+[data-bloom-story-layout] { box-sizing: border-box; }
+/* Layout wrappers can shrink with the canvas without constraining portals. */
+[data-bloom-story-layout] > * { min-width: 0; max-width: 100%; }

@@ -74,7 +74,8 @@ function TimeFieldComponent({
   // `"--:--"` names nothing, so the name is a prop — or, inside a `Field`, the
   // field's label. The density contract supplies the size the same way: a
   // container can ask for `small` once instead of on every control.
-  const size = useInheritedControl('density', sizeProp, 'medium');
+  const density = useInheritedControl('density', sizeProp === 'small' ? 'sm' : sizeProp === 'medium' ? 'md' : undefined, 'md');
+  const size = density === 'sm' ? 'small' : 'medium';
   const field = useFieldMembership({ accessibilityLabel, disabled: disabledProp });
   const disabled = field.disabled;
   const palette = useMemo(() => resolveCalendarPalette(theme), [theme]);

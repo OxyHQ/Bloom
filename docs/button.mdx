@@ -1,318 +1,37 @@
 ---
 title: Button
-description: The all-purpose Bloom button — variants, sizes, loading state, icons.
-order: 10
+description: A shared action recipe across platforms.
+order: 12
 ---
 
 # Button
 
-The all-purpose Bloom button. Variants for primary/secondary/ghost/destructive actions plus inverse/icon/text/link, four sizes, loading state, sized icon components, and full accessibility props.
-
-Both forks read ONE table — `src/button/shared.ts` — for geometry and every state's colours, so native and web cannot drift apart.
-
-## Basic
-
 ```tsx
-import { Button } from '@oxy.so/bloom';
+import { Button } from '@oxy.so/bloom/button';
+import { RiAddLine } from '@oxy.so/bloom/icons';
 
-<Button onPress={save}>Save</Button>
+<Button tone="action" appearance="solid" onPress={save}>Save</Button>
+<Button tone="neutral" appearance="subtle" onPress={cancel}>Cancel</Button>
+<Button tone="danger" onPress={remove}>Delete</Button>
+<Button tone="action" icon={RiAddLine} accessibilityLabel="Add item" onPress={add} />
+<Button tone="action" leadingIcon={RiAddLine} size="lg">Add item</Button>
+<Button href="/help" tone="accent" appearance="plain">Read the guide</Button>
 ```
 
-## Variants
+`size` (`xs`, `sm`, `md`, `lg`) and `tone` inherit from `BloomScope`; defaults are `md` and `accent`. `appearance` defaults to `solid`. Appearance controls fill and border, independently of semantic tone. Filled accent and status buttons retain Bloom’s subtle vertical gradient: ramp 500 → 600 at rest, 400 → 500 on hover and 600 → 700 when pressed. Native SVG and web CSS paint the same stops; `support` and `action` preserve their authored semantic fill/foreground pairs; neutral solid buttons retain a gentle gradient between the shared secondary and tertiary surfaces. Outline, subtle and plain appearances use their semantic flat fills.
 
-```tsx
-<Button variant="primary">Primary</Button>
-<Button variant="secondary">Secondary</Button>
-<Button variant="ghost">Ghost</Button>
-<Button variant="destructive">Delete</Button>
-<Button variant="inverse">Inverse</Button>
-<Button variant="text">Text</Button>
-```
+The Color roles prototype assigns `accent` to identity and links, `support` to contextual emphasis, and `action` to the main CTA. Use `tone="action"` for a task’s Create/Send/Save button and keep secondary controls neutral. `tone="support" appearance="subtle"` can emphasize a related option when that distinction has meaning; it is not a replacement for every secondary button. All eight tones remain available through the shared contract.
 
-| Variant | Paint |
-|---|---|
-| `primary` | Top-to-bottom gradient of `primary` (500 → 600). Hover lightens it (400 → 500), press deepens it (600 → 700). Label `primaryForeground`. xs drop shadow. |
-| `destructive` | The same recipe on `negative` / `negativeForeground`. |
-| `secondary` / `outline` | `card` surface, 1px `border`, `text` label, xs drop shadow; hover/press step the surface and border toward the label colour. |
-| `ghost` | The `primarySubtle` tint with its `primarySubtleForeground` label — the policy's own legibility-checked pair; hover/press deepen the tint. |
-| `icon` | `secondary`'s surface as a fixed square (border included), glyph 20 / 16 at medium / small; disabled dims the whole control to 0.6. |
-| `inverse` | White surface, black label — for use over media. |
-| `text` | Borderless `primary` label on a compact 4/8 padding with a hover wash (Bloom-only). |
-| `link` | No container at all — label only, `accent-600` (`linkTone="secondary"`: secondary text), underline (offset 3) on hover, `accent-800` while held. |
+An `icon` without children makes a square action. Labelled actions use `leadingIcon` and `trailingIcon`, each an icon component receiving width, height and fill. `leading` and `trailing` are custom content slots.
 
-### Which variant for which job
+`loading` blocks activation while preserving the mounted label's width. `disabled` also blocks activation. A control drawing no text needs `accessibilityLabel`. Native touch targets retain the padding around compact visuals; web has real button, anchor and form semantics (`type="submit"` or `"reset"`). Activation is always `onPress`.
 
-The variants overlap, and five families answered the overlap with their own
-component rather than with this list. So, explicitly:
+The pressable is the parent's layout child: `className` and `style` are applied there, without an extra wrapper. Web styles flatten RN style arrays and register their interaction CSS using constructed stylesheets. `asChild` composes an existing web link; disabled state guards the composed handler.
 
-| You want | Use |
-|---|---|
-| The action of the screen | `primary` |
-| A second action beside it | `secondary` |
-| A THIRD, still accent-coloured, action | `ghost` |
-| A destructive action | `destructive` |
-| A neutral ⋯ / × / clear / toggle GLYPH | **`GlyphButton`** (below) |
-| A neutral icon button WITH a surface | `icon` |
-| A transparent LABELLED button | `text` |
-| An action inside running copy | `link` + `linkTone` + `underline` |
+`CloseButton` remains a semantic dismiss control with a required accessible name and sizes `xs | sm | md | lg`.
 
-**`ghost` is not the transparent one.** It paints an accent WASH at rest
-(`accent-100`, dark `accent-900`) with an accent label, and that is the whole
-point of it: it is the low-emphasis member of the ACCENT family. A neutral ⋯ or
-× in it lands tinted, and a destructive action in it draws a RED label on a BLUE
-fill — which is what `track-list`'s selection bar shipped before this was
-written down.
+See [Component contract](./appearance.mdx) for inheritance and [Migration](./coherent-system-migration.mdx) for the clean API cut.
 
-**The neutral transparent icon button is `GlyphButton`**, not a `Button`
-variant: it takes an arbitrary diameter, where `Button iconOnly` is pinned to
-the four heights in the size table.
+## Compatibility
 
-The accent and neutral ramps are rebuilt around the theme colours in OKLCH (`button/shared.ts`), since Bloom presets carry one `primary` rather than a Tailwind ramp. There is NO press scale — a press is the active paint alone — and disabled buttons take their own paint instead of an opacity dip (`icon` excepted).
-
-On web the state colours arrive as `--bloom-btn-*` custom properties and are declared only in the adopted stylesheet — an inline `background-color` would silence the `:hover` rule. The gradient variants cross-fade their hover gradient in through `::before`, because `background-image` does not transition. On native the gradient is a `react-native-svg` layer; every gradient stop is an opaque composite, since react-native-svg drops alpha in `stopColor`.
-
-## Sizes
-
-```tsx
-<Button size="xs">Xs</Button>
-<Button size="small">Small</Button>
-<Button size="medium">Medium</Button>
-<Button size="large">Large</Button>
-```
-
-| | xs | small | medium | large |
-|---|---|---|---|---|
-| height | 24 | 32 | 36 | 44 |
-| radius | full pill | full pill | full pill | full pill |
-| padding-x | 8 | 8 | 8 | 12 |
-| gap | 2 | 2 | 2 | 2 |
-| icon | 14 | 18 | 20 | 20 |
-| text (`TYPE_SCALE`, Inter) | `caption-1-semibold` | `body-medium` | `body-medium` | `headline-medium` |
-| icon-only | 24 × 24 | 32 × 32 | 36 × (36 + 2 × border) | 44 × 44 |
-
-`large` extends the ramp to the 44 dp touch floor. Bloom keeps every button-like control a full pill. Height is fixed and the label's line box is centred inside it, so a bordered variant measures the same as a filled one. A medium icon-only button is NOT forced square — its width is content (8 + 20 + 8) plus the border, so a `secondary` one is 38 × 36; small and xs are forced squares. `text` / `link` drop the fixed height on web so the control hugs its label and sits inline.
-
-Native adds vertical `hitSlop` to bring every size up to a 44 dp touch target; horizontal slop is zero, so two buttons in a row cannot steal each other's presses. On web `hitSlop` does not exist and the target is the box.
-
-## Loading
-
-```tsx
-const [busy, setBusy] = useState(false);
-
-<Button
-  loading={busy}
-  onPress={async () => {
-    setBusy(true);
-    try { await submit(); } finally { setBusy(false); }
-  }}
->
-  Submit
-</Button>
-```
-
-When `loading` is true, a centered spinner appears, children stay in the layout (hidden) so width doesn't jump, presses are blocked, and the button keeps its resting paint. `loadingColor` overrides the spinner color (defaults to the label color).
-
-## With icons
-
-Pass icon COMPONENTS, not elements — the button sizes and colours them for the current size and state:
-
-```tsx
-import { RiAddLine, RiArrowRightLine } from '@oxy.so/bloom/icons';
-
-<Button leadingIcon={RiAddLine}>New</Button>
-<Button leadingIcon={RiAddLine} trailingIcon={RiArrowRightLine}>Both sides</Button>
-<Button iconOnly leadingIcon={RiAddLine} accessibilityLabel="New" />
-```
-
-Use Remix icons (`RiAddLine`, `RiArrowRightLine`, `RiDeleteBinLine`…). `iconOnly` renders the icon-only shape from the table above and drops the label — name it with `accessibilityLabel`. `icon` takes either a component (sized like `leadingIcon`) or a pre-rendered node, which the button does not size.
-
-## IconButton, LinkButton, CloseButton
-
-Three more companions to `Button` (a fourth, `GlyphButton`, has its own section
-below), exported from the same family:
-
-```tsx
-<IconButton icon={RiMore2Line} accessibilityLabel="More" />          // 36, glyph 20
-<IconButton icon={RiMore2Line} size="small" accessibilityLabel="More" /> // 32, glyph 16
-
-<LinkButton trailingIcon={RiArrowRightSLine}>Browse components</LinkButton>
-<LinkButton variant="secondary" href="/docs">Docs</LinkButton>
-
-<CloseButton size="md" accessibilityLabel="Close" onPress={close} />
-```
-
-- `IconButton` is `<Button variant="icon">` and still accepts every `Button` prop (existing call sites keep working).
-- `LinkButton` is `<Button variant="link">`; its `variant` is the link COLOUR (`primary` | `secondary`). Sizes medium / small / xs use `body-medium` / `body-medium` / `caption-1-semibold` with 20 / 18 / 14 icons and a 4px gap.
-- `href` (any `Button`) renders a real `<a href>` on web and drops the `href` while disabled; on native a press opens the URL unless `onPress` is set.
-- `CloseButton` is a round `background/tertiary` disc (16 / 20 / 24 / 32) with a two-stroke X drawn per size in its own viewBox, so the stroke is a literal pixel value (1.6 / 2 / 2 / 2.5); the glyph turns `text/primary` on hover (held press on native). The control draws no text, so `accessibilityLabel` is required.
-
-## Inline text actions
-
-```tsx
-// The underline IS the affordance, at the reading colour: a "Clear all",
-// a "Show more", a price row's label, a listing's "128 reviews".
-<Button variant="link" linkTone="text" underline="rest" textVariant="body-semibold">
-  Clear all
-</Button>
-
-// The underline as the pointer cue, in the accent (the `link` default).
-<Button variant="link">Learn more</Button>
-```
-
-| Prop | Values | Default |
-|---|---|---|
-| `underline` | `rest` · `hover` · `none` | `hover` for `link`, `none` otherwise |
-| `linkTone` | `primary` (accent-600) · `secondary` (neutral-500) · `text` (the reading colour) | `primary` |
-| `textVariant` | any `TYPE_SCALE` step | the size's own step |
-
-`linkTone="text"` is `colors.text` at rest, `colors.textSecondary` under a
-pointer or a press, `colors.textTertiary` disabled — the tone for an action that
-sits inside a sentence and must not read as the accent. It is the only tone
-whose HOVER changes the label colour; on web that arrives as
-`--bloom-btn-fg-hover` and the hover rule falls back to the rest colour for
-every other variant.
-
-`underline="hover"` is web-only by nature: native dispatches no hover, so the
-underline never appears there. Reach for `rest` when the underline has to be
-visible on a phone.
-
-`textVariant` replaces the four TYPE fields the size picked (size, line height,
-weight, tracking) and nothing else — the height, padding, gap and icon size stay
-the size's. Use it rather than `textStyle`: a `lineHeight` NUMBER in a style
-object is CSS's unitless multiplier on web, so a ramp step passed that way
-renders at twenty times its size.
-
-`numberOfLines={1}` truncates a label with an ellipsis instead of clipping it
-(`.bloom-btn` is `white-space: nowrap; overflow: hidden`, so a long label was
-cut with nothing to say so). Native honours any count; web honours `1`.
-
-`accessibilityRole` overrides the announced role — `link` with no `href`, for a
-control that navigates through the app's own router. Prefer `href`, which
-renders a real anchor and is the only spelling middle-click and copy-link
-understand.
-
-## GlyphButton
-
-The round glyph-only control at an ARBITRARY size — the neutral, transparent
-⋯ / × / shuffle / clear affordance.
-
-```tsx
-import { GlyphButton } from '@oxy.so/bloom/button';
-
-<GlyphButton icon={RiMoreFill} accessibilityLabel="More options" onPress={open} />
-<GlyphButton size={40} icon={RiShuffleLine} accessibilityLabel="Shuffle"
-             pressed={shuffle} onPress={() => setShuffle(!shuffle)} />
-```
-
-|  | off | on (`pressed`) |
-|---|---|---|
-| rest | `color` — `textSecondary` | `activeColor` — the accent |
-| hover / press | `hoverColor` — `text` | `activeHoverColor` — `activeColor` |
-| fill | `fill` — none | the same |
-| fill, hover / press | `hoverFill` — the neutral wash (neutral-100, dark 800) | the same |
-
-All four corners are spellable because the on-state and the hover state are
-independent: a player's lit shuffle still brightens under the cursor.
-
-- **`size`** is the diameter (default 36); the glyph is **0.6 × the box**
-  (`GLYPH_BUTTON_GLYPH_RATIO`), and **`glyphSize`** overrides it. Across the five
-  family-local copies this replaced the ratio ran 0.50 to 0.75; 0.6 is the middle
-  of that range, and every call site that measured differently passes its own.
-- **`pressed`** makes it a TOGGLE and emits `aria-pressed` AND
-  `accessibilityState.selected` — react-native-web drops `accessibilityState`,
-  React Native has no `aria-pressed`. Leave it undefined for a plain button:
-  `aria-pressed="false"` on one announces a state nobody set.
-- **`accessibilityLabel` is required** — the control draws no text, so nothing
-  else can name it.
-- **`ring`** is the focus ring's colour (default the accent). Pass a light one on
-  a surface Bloom does not own — artwork, a player bar — or the ring disappears
-  exactly where a keyboard user needs it.
-- **`disabled`** blocks the press, sets `aria-disabled` and
-  `accessibilityState.disabled`, and dims the control to `disabledOpacity`
-  (0.5).
-- **`children`** replaces `icon` with a node you paint yourself; as a FUNCTION it
-  is handed the resolved foreground, so a text glyph still follows hover and the
-  toggle. **`grow`** turns the box into a minimum width for exactly that case.
-- **`decoration`** is an extra absolutely-positioned layer over the box — the
-  media player's 4px active dot. The family owns its geometry.
-
-Colour change only, 150ms, no scale. Focus is a 2px ring at a 2px offset, on
-`:focus-visible` so a mouse press leaves none behind.
-
-## Disabled
-
-```tsx
-<Button disabled>Can't click me</Button>
-```
-
-`disabled` blocks presses and switches to the variant's disabled paint.
-
-## Props
-
-| Prop | Type | Default | Description |
-|------|------|---------|-------------|
-| `onPress?` | `() => void` | — | Press handler. |
-| `children?` | `React.ReactNode` | — | Button label. Strings are auto-wrapped in `Text`. |
-| `disabled?` | `boolean` | `false` | Blocks presses, disabled paint. |
-| `variant?` | `'primary' \| 'secondary' \| 'ghost' \| 'destructive' \| 'outline' \| 'inverse' \| 'icon' \| 'text' \| 'link'` | `'primary'` | Visual style. |
-| `size?` | `'xs' \| 'small' \| 'medium' \| 'large'` (+ `sm \| md \| lg \| icon`) | `'medium'` | Height, radius, padding, type and icon size. |
-| `leadingIcon?` | `BloomIconComponent` | — | Icon component before the label, sized by the button. |
-| `trailingIcon?` | `BloomIconComponent` | — | Icon component after the label. |
-| `iconOnly?` | `boolean` | `false` | Square icon-only button. |
-| `icon?` | `React.ReactNode \| ComponentType` | — | Icon component (sized) or pre-rendered node next to the label. |
-| `linkTone?` | `'primary' \| 'secondary' \| 'text'` | `'primary'` | Colour of the `link` variant; `text` is the reading colour. |
-| `underline?` | `'rest' \| 'hover' \| 'none'` | `hover` for `link`, else `none` | When the label carries its underline. |
-| `textVariant?` | `TypeScaleVariant` | the size's step | Override the label's type-ramp step. |
-| `numberOfLines?` | `number` | — | Truncate the label. Web honours `1`. |
-| `accessibilityRole?` | `'button' \| 'link'` | derived from `href` | Override the announced role. |
-| `href?` | `string` | — | Renders an anchor on web; opens the URL on native. `target` / `rel` pass through on web. |
-| `iconPosition?` | `'left' \| 'right'` | `'left'` | Which side of the label `icon` goes. |
-| `loading?` | `boolean` | `false` | Show centered spinner, block presses. |
-| `loadingColor?` | `string` | label color | Override the spinner color. |
-| `style?` | `StyleProp<ViewStyle>` | — | Outer container style. |
-| `textStyle?` | `StyleProp<TextStyle>` | — | Label style. |
-| `accessibilityLabel?` | `string` | — | Required for icon-only buttons. |
-| `accessibilityHint?` | `string` | — | |
-| `hitSlop?` | `{ top, bottom, left, right }` | — | Expand the touch target. |
-| `testID?` | `string` | — | RN testing id. |
-| `className?` | `string` | — | NativeWind class. |
-
-## Recipes
-
-### Destructive confirmation
-
-```tsx
-<Button variant="destructive" onPress={destroy}>
-  Delete forever
-</Button>
-```
-
-For most destructive actions, prefer a `<Dialog>` with `color: 'destructive'` actions over a destructive button in the main flow.
-
-### Submit button with promise
-
-```tsx
-const [busy, setBusy] = useState(false);
-
-<Button
-  loading={busy}
-  onPress={async () => {
-    setBusy(true);
-    try { await save(form); toast.success('Saved'); }
-    catch (err) { toast.error(extractErrorMessage(err)); }
-    finally { setBusy(false); }
-  }}
->
-  Save changes
-</Button>
-```
-
-### Icon button row
-
-```tsx
-<View style={{ flexDirection: 'row', gap: 4 }}>
-  <Button variant="secondary" iconOnly leadingIcon={RiBold} accessibilityLabel="Bold" />
-  <Button variant="secondary" iconOnly leadingIcon={RiItalic} accessibilityLabel="Italic" />
-  <Button variant="secondary" iconOnly leadingIcon={RiLink} accessibilityLabel="Link" />
-</View>
-```
+The shared `size`, `tone` and `appearance` vocabulary coexists with the previously published family props. Explicit shared props take precedence over legacy spellings; existing size and state callbacks remain supported. New code should prefer the shared vocabulary.

@@ -18,6 +18,7 @@ import { render } from '@testing-library/react-native';
 
 import { BloomThemeProvider } from '../theme/BloomThemeProvider';
 import { Card } from '../card';
+import { buildTheme } from '../theme/build-theme';
 import { RADIUS, BORDER_WIDTH } from '../design-tokens/scales';
 import { SHADOW_BOX } from '../design-tokens/shadows';
 import { SettingsListGroup, SettingsListItem } from '../settings-list';
@@ -65,6 +66,12 @@ function roundedNode(node: unknown): HostNode {
 }
 
 describe('Card axes', () => {
+  it('keeps the existing outlined preset opaque while explicit appearance wins', () => {
+    const opaque = renderWithTheme(<Card variant="outlined" testID="c" />);
+    expect(chromeOf(opaque.toJSON(), 'c').backgroundColor).toBe(buildTheme('oxy', 'light').colors.card);
+    const outline = renderWithTheme(<Card variant="outlined" appearance="outline" testID="c" />);
+    expect(chromeOf(outline.toJSON(), 'c').backgroundColor).toBe('transparent');
+  });
   it('takes its corner from a RADIUS rung, not a free number', () => {
     const { toJSON } = renderWithTheme(
       <Card radius="radius-20" testID="c">
@@ -82,14 +89,14 @@ describe('Card axes', () => {
 
   it.each([
     ['plain', undefined, 'none'],
-    ['elevated', undefined, SHADOW_BOX.s],
-    ['outlined', 1, 'none'],
-    ['filled', undefined, 'none'],
+    ['solid', undefined, SHADOW_BOX.s],
+    ['outline', 1, 'none'],
+    ['subtle', undefined, 'none'],
   ] as const)(
     'variant %s resolves to border %s / shadow %s',
     (variant, borderWidth, shadow) => {
       const { toJSON } = renderWithTheme(
-        <Card variant={variant} testID="c">
+        <Card appearance={variant} testID="c">
           {null}
         </Card>,
       );
@@ -101,7 +108,7 @@ describe('Card axes', () => {
 
   it('lets an explicit axis beat the variant default, in both directions', () => {
     const added = renderWithTheme(
-      <Card variant="plain" border="hairline" elevation="m" testID="c">
+      <Card appearance="plain" border="hairline" elevation="m" testID="c">
         {null}
       </Card>,
     );
@@ -110,7 +117,7 @@ describe('Card axes', () => {
     expect(addedStyle.boxShadow).toBe(SHADOW_BOX.m);
 
     const removed = renderWithTheme(
-      <Card variant="elevated" elevation="none" testID="c">
+      <Card appearance="solid" elevation="none" testID="c">
         {null}
       </Card>,
     );
@@ -119,12 +126,12 @@ describe('Card axes', () => {
 
   it('paints filled from backgroundSecondary and every other variant from card', () => {
     const filled = renderWithTheme(
-      <Card variant="filled" testID="c">
+      <Card appearance="subtle" testID="c">
         {null}
       </Card>,
     );
     const outlined = renderWithTheme(
-      <Card variant="outlined" testID="c">
+      <Card appearance="outline" testID="c">
         {null}
       </Card>,
     );

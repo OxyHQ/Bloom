@@ -58,7 +58,7 @@ export const AREA_BORDER_WIDTH = 1.5;
 /** Pure, so it can be walked over presets and modes. */
 export function resolveMapMarkerPaint(theme: Theme): MapMarkerPaint {
   const menu = resolveMenuPalette(theme);
-  const { accent, neutral: n } = resolveButtonRamps(theme);
+  const { accent } = resolveButtonRamps(theme);
   // `error`, not `negative` — the same red as the listing card's heart: dark
   // mode's `negative` is a pale tint for text and reads salmon on a pill.
   const red = colorRamp(theme.colors.error, DANGER_TABLE);
@@ -69,15 +69,15 @@ export function resolveMapMarkerPaint(theme: Theme): MapMarkerPaint {
     hoverBorder: menu.trigger.hoverBorder,
     hoverSurface: menu.trigger.hoverBackground,
     label: menu.text,
-    labelSecondary: dark ? n[400] : n[500],
+    labelSecondary: theme.colors.textSecondary,
     activeFill: theme.colors.text,
-    activeLabel: dark ? n[900] : theme.colors.card,
-    visitedFill: dark ? n[900] : n[100],
-    visitedBorder: dark ? n[700] : n[200],
-    visitedLabel: dark ? n[400] : n[500],
+    activeLabel: theme.colors.background,
+    visitedFill: theme.colors.backgroundSecondary,
+    visitedBorder: theme.colors.border,
+    visitedLabel: theme.colors.textSecondary,
     heart: red[500],
     activeHeart: dark ? red[700] : red[400],
-    placeholder: dark ? n[700] : n[100],
+    placeholder: theme.colors.backgroundTertiary,
     ring: accent[500],
     area: dark ? accent[400] : accent[500],
   };

@@ -8,16 +8,17 @@ import { MedicalProfileTemplate } from './MedicalProfileTemplate';
  * with notifications, six medical cards (patient, steps, sleep score, most
  * active days, activity rings, important alerts) and the patients table.
  * Cards flow one per row, two from 768, three from 1280; below 1024 the
- * sidebar becomes the reveal drawer.
+ * navigation adapts to the available width.
  */
-const meta: Meta = {
+const meta: Meta<typeof MedicalProfileTemplate> = {
+  component: MedicalProfileTemplate,
   title: 'Templates/Medical Profile',
-  parameters: { layout: 'fullscreen' },
+  parameters: { layout: 'fullscreen', controls: { disable: true } },
 };
 
 export default meta;
 
-type Story = StoryObj;
+type Story = StoryObj<typeof MedicalProfileTemplate>;
 
 /** The Figma frame: today (Jul 10) selected, the 29 Jun - 5 Jul week, page 1 of the roster. */
 export const Default: Story = {

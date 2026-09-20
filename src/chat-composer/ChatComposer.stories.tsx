@@ -215,13 +215,13 @@ function Surface({ children, width }: { children: React.ReactNode; width?: numbe
 function BothModes({ children, width }: { children: React.ReactNode; width?: number }) {
   const preset = useContext(BloomThemeContext)?.colorPreset;
   return (
-    <View style={{ flexDirection: 'row', flexWrap: 'wrap' }}>
-      <View style={{ minWidth: 360, flexGrow: 1, flexBasis: 360 }}>
+    <View style={{ width: '100%', flexDirection: 'row', flexWrap: 'wrap' }}>
+      <View style={{ minWidth: 0, maxWidth: '100%', flexShrink: 1, flexGrow: 1, flexBasis: 360 }}>
         <BloomThemeProvider mode="light" colorPreset={preset}>
           <Surface width={width}>{children}</Surface>
         </BloomThemeProvider>
       </View>
-      <View style={{ minWidth: 360, flexGrow: 1, flexBasis: 360 }}>
+      <View style={{ minWidth: 0, maxWidth: '100%', flexShrink: 1, flexGrow: 1, flexBasis: 360 }}>
         <BloomThemeProvider mode="dark" colorPreset={preset}>
           <Surface width={width}>{children}</Surface>
         </BloomThemeProvider>

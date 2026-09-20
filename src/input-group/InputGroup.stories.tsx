@@ -8,6 +8,13 @@ import { Button } from '../button';
 import { Kbd } from '../kbd';
 
 const meta: Meta = {
+  argTypes: {
+    "invalid": { control: 'boolean' },
+    "disabled": { control: 'boolean' },
+    "size": { control: 'select', options: ["xs","sm","md","lg"] }
+  },
+  component: InputGroup,
+  parameters: { controls: { disable: true } },
   title: 'Base/Input Group',
 };
 
@@ -16,13 +23,14 @@ export default meta;
 type Story = StoryObj;
 
 export const TextAddons: Story = {
+  parameters: { controls: { disable: true } },
   render: () => {
     const [v, setV] = useState('');
     return (
-      <View style={{ width: 360 }}>
+      <View style={{ maxWidth: '100%', width: 360 }}>
         <InputGroup>
           <InputGroupAddon>https://</InputGroupAddon>
-          <TextFieldInput label="Domain" value={v} onChangeText={setV} placeholder="oxy" />
+          <TextFieldInput label="Domain" value={v} onValueChange={setV} placeholder="oxy" />
           <InputGroupAddon>.so</InputGroupAddon>
         </InputGroup>
       </View>
@@ -31,14 +39,15 @@ export const TextAddons: Story = {
 };
 
 export const ButtonAddon: Story = {
+  parameters: { controls: { disable: true } },
   render: () => {
     const [v, setV] = useState('');
     return (
-      <View style={{ width: 360 }}>
+      <View style={{ maxWidth: '100%', width: 360 }}>
         <InputGroup>
-          <TextFieldInput label="Invite" value={v} onChangeText={setV} placeholder="email" />
+          <TextFieldInput label="Invite" value={v} onValueChange={setV} placeholder="email" />
           <InputGroupAddon divider noPadding>
-            <Button variant="ghost" size="small" onPress={() => {}}>
+            <Button size="sm" onPress={() => {}} appearance="subtle" tone="accent">
               Send
             </Button>
           </InputGroupAddon>
@@ -49,12 +58,13 @@ export const ButtonAddon: Story = {
 };
 
 export const ShortcutHint: Story = {
+  parameters: { controls: { disable: true } },
   render: () => {
     const [v, setV] = useState('');
     return (
-      <View style={{ width: 360 }}>
+      <View style={{ maxWidth: '100%', width: 360 }}>
         <InputGroup>
-          <TextFieldInput label="Search" value={v} onChangeText={setV} placeholder="Search…" />
+          <TextFieldInput label="Search" value={v} onValueChange={setV} placeholder="Search…" />
           <InputGroupAddon>
             <Kbd size="sm">⌘K</Kbd>
           </InputGroupAddon>

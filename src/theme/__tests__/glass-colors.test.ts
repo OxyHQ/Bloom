@@ -26,6 +26,7 @@
  * Both replacements are mutation-verified in the same commit.
  */
 import { readFileSync } from 'node:fs';
+import tonalPrimaryFailures from './__fixtures__/tonal-glass-primary-failures.json';
 
 import { APP_COLOR_PRESETS, type AppColorName } from '../color-presets';
 import { buildTheme } from '../build-theme';
@@ -211,9 +212,11 @@ describe('glass surface legibility', () => {
   // CSS string; that was measurement drift, never the shipped baseline. With
   // 16 curated recipes moved the oracle to 38/340: the original 30 rows stayed
   // unchanged and all eight additions belonged to those recipe IDs. The next
-  // 30 three-seed combinations add 35/300 without changing either baseline.
+  // 30 three-seed combinations added 35/300 without changing either baseline.
+  // Approved chroma28 surfaces remeasure those cohorts as 28/180, 36/340
+  // and 31/300: 67/640 total, with the exact row names frozen below.
 
-  it('costs EXACTLY 73 of Button primary\'s 640 rows, split from the shipped baseline', () => {
+  it('costs EXACTLY 67 of Button primary\'s 640 rows, split from the shipped baseline', () => {
     const failures: Array<{ where: string; ratio: number }> = [];
     let rows = 0;
     for (const preset of PRESETS) {
@@ -230,22 +233,23 @@ describe('glass surface legibility', () => {
     expect(rows).toBe(PRESETS.length * MODES.length * SURFACE_KEYS.length);
     // The count is exact, not a ceiling. A palette change that fixes some of
     // these fails here too, which is the point: somebody has to look.
-    expect(failures).toHaveLength(73);
-    // Both earlier matrices stay pinned independently of the 30 additions.
+    expect(failures).toHaveLength(67);
+    expect(failures.map(({ where }) => where)).toEqual(tonalPrimaryFailures);
+    // Each historical preset cohort is remeasured independently after tonal surfaces.
     expect(
       failures.filter(({ where }) => LEGACY_PRESETS.has(where.split('/')[0] as AppColorName)),
-    ).toHaveLength(30);
+    ).toHaveLength(28);
     expect(
       failures.filter(({ where }) => SHIPPED_1_0_1_PRESETS.has(where.split('/')[0] as AppColorName)),
-    ).toHaveLength(38);
+    ).toHaveLength(36);
     expect(
       failures.filter(({ where }) => !SHIPPED_1_0_1_PRESETS.has(where.split('/')[0] as AppColorName)),
-    ).toHaveLength(35);
+    ).toHaveLength(31);
     // …and the shortfall is BOUNDED. Every failure is a near miss, not a
     // control nobody can read. Without this the count alone would tolerate 38
     // rows at 1.05.
     const worst = Math.min(...failures.map((f) => f.ratio));
-    expect(worst).toBeCloseTo(4.17, 2);
+    expect(worst).toBeCloseTo(4.21, 2);
     expect(worst).toBeGreaterThan(4.0);
     expect(Math.max(...failures.map((f) => f.ratio))).toBeLessThan(AA);
   });
@@ -420,12 +424,12 @@ describe('glass surface legibility', () => {
       }
     }
     expect(rows).toBe(PRESETS.length * MODES.length * TONES.length * SURFACE_KEYS.length);
-    expect(onFillFailures).toBe(577);
-    expect(textFailures).toBe(3232);
-    expect(shippedOnFillFailures).toBe(305);
-    expect(shippedTextFailures).toBe(1714);
-    expect(newOnFillFailures).toBe(272);
-    expect(newTextFailures).toBe(1518);
+    expect(onFillFailures).toBe(480);
+    expect(textFailures).toBe(2577);
+    expect(shippedOnFillFailures).toBe(258);
+    expect(shippedTextFailures).toBe(1377);
+    expect(newOnFillFailures).toBe(222);
+    expect(newTextFailures).toBe(1200);
   });
 
   // ── STILL GLASS, MEASURED DIRECTLY ───────────────────────────────────────
@@ -517,7 +521,7 @@ describe('glass surface legibility', () => {
     expect(widest).toBeGreaterThan(1);
   });
 
-  it('states the blur radius once, and both platforms read it from there', () => {
+  it('retains web blur while capping the native material tint budget', () => {
     // The web filter is the reference's verbatim — a blur and NOTHING else. An
     // added `saturate()` (expo-blur's, not the reference's) is visibly
     // different over a colourful backdrop, so it is asserted absent rather than
@@ -525,7 +529,7 @@ describe('glass surface legibility', () => {
     expect(GLASS_BLUR_FILTER).toBe(`blur(${GLASS_BLUR_RADIUS_PX}px)`);
     expect(GLASS_BLUR_FILTER).not.toContain('saturate');
     expect(GLASS_BLUR_RADIUS_PX).toBe(10);
-    expect(GLASS_BLUR_INTENSITY * 0.2).toBe(GLASS_BLUR_RADIUS_PX);
+    expect(GLASS_BLUR_INTENSITY).toBe(30);
   });
 
   it('builds the web sheen gradient from the same stops the native Svg uses', () => {

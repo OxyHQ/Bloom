@@ -74,6 +74,8 @@ export interface ChatScreenPaint {
   textTertiary: string;
   accentColor: string;
   onAccent: string;
+  /** Exact opaque outgoing message fill. */
+  outgoingSurface: string;
   /** A 10%-ish accent wash — an action tile, a role badge. */
   accentSubtle: string;
   /**
@@ -109,34 +111,31 @@ export function resolveChatScreenPaint(theme: Theme): ChatScreenPaint {
     isDark: dark,
     accent,
     neutral: n,
-    surface: dark ? n[900] : c.card,
-    surfaceSubtle: dark ? n[800] : n[100],
+    surface: c.card,
+    surfaceSubtle: c.backgroundSecondary,
     page: c.background,
-    border: dark ? n[800] : n[200],
+    border: c.border,
     text: c.text,
-    textSecondary: dark ? n[400] : n[500],
-    textTertiary: dark ? n[600] : n[400],
+    textSecondary: c.textSecondary,
+    textTertiary: c.textTertiary,
     accentColor: dark ? accent[400] : accent[600],
     onAccent: c.primaryForeground,
-    accentSubtle: dark ? mixColor(n[900], accent[500], 0.24) : mixColor(c.card, accent[500], 0.14),
+    outgoingSurface: c.primary,
+    accentSubtle: c.primarySubtle,
     accentTrack: dark ? accent[800] : accent[200],
     destructive: dark ? red[400] : red[600],
-    destructiveSubtle: dark
-      ? mixColor(n[900], red[500], 0.2)
-      : mixColor(c.card, red[500], 0.1),
+    destructiveSubtle: c.errorSubtle,
     floatingSurface: menu.surface,
     floatingBorder: menu.border,
     floatingShadow: menu.shadow,
-    // The ink is a NEUTRAL step, never the accent: a wallpaper tinted with the
-    // brand colour competes with the outgoing bubble, which IS the brand colour.
-    patternTint: dark ? n[700] : n[300],
-    // Both stops move AWAY from the page, never toward the card: lighter than
-    // the page in dark, darker than it in light. A gradient that brightened a
-    // light page brought its lightest pixel onto the incoming bubble's own
-    // colour — measured as 16 of 32 themes separating WORSE than no wallpaper at
-    // all (`ChatBackgroundContrast.test.ts` pins the corrected range).
+    // Decorations stay below the bubble lightness range: darken the page in
+    // both modes. Brightening the near-black tonal page approaches its cards.
+    patternTint: dark ? '#000000' : c.backgroundTertiary,
+    // Darkening the page preserves bubble separation in both modes. The old
+    // light recipe brightened into cards (16/32 regressions); the later dark
+    // recipe did the same once the tonal page moved close to black.
     gradient: dark
-      ? [mixColor(c.background, accent[800], 0.5), c.background, mixColor(c.background, n[800], 0.5)]
+      ? [mixColor(c.background, '#000000', 0.5), c.background, mixColor(c.background, '#000000', 0.8)]
       : [mixColor(c.background, accent[300], 0.3), c.background, mixColor(c.background, n[300], 0.35)],
     // NOT white/black. Dimming a light wallpaper toward WHITE puts its lightest
     // possible pixel exactly on the card colour — a white incoming bubble over a
@@ -161,8 +160,9 @@ export function useChatScreenPaint(): ChatScreenPaint {
  * the date pill and the jump buttons are all OPAQUE, so the wallpaper never gets
  * between a fill and its own text — what it can do is stop a bubble being told
  * apart from the page behind it. So the number to measure is the SEPARATION
- * between a surface and the worst pixel the wallpaper can put behind it, and for
- * that you need the extremes, not an average.
+ * between a surface and sampled wallpaper endpoints. For a continuous photo,
+ * a bubble luminance between those endpoints can still match a pixel exactly;
+ * endpoint ratios are NOT a full-range worst-case guarantee.
  *
  * `image` is the interesting case: a consumer photo has no knowable extremes, so
  * the dimming overlay supplies them. White and black dimmed toward
@@ -240,7 +240,7 @@ function extremesOf(colors: string[]): { lightest: string; darkest: string } {
 
 /**
  * The two opaque bubble fills a wallpaper is measured AGAINST: an incoming
- * bubble (the chrome surface) and an outgoing one (the accent fill).
+ * bubble (colors.card) and an outgoing one (colors.primary).
  *
  * Named here rather than inside the gate so the table in `docs/chat-screen.mdx`
  * and the number the test asserts come from ONE definition — a gate that picks
@@ -248,13 +248,13 @@ function extremesOf(colors: string[]): { lightest: string; darkest: string } {
  *
  * The FLOATING surfaces (the date pill, the two jump buttons) are deliberately
  * NOT in this set, and that is not an exemption: their separation from a
- * wallpaper reaches 1.00 in the worst case — a dark patterned wallpaper is the
- * pill's own surface colour — which is exactly why every one of them carries a
- * 1px `floatingBorder` hairline. A bubble has no such rule to fall back on, so
- * it is the thing the extremes have to clear.
+ * wallpaper historically reached 1.00 on dark patterns, which is why each
+ * carries a 1px `floatingBorder` hairline. These samples measure bubble fills
+ * independently of borders; image endpoints cannot guarantee separation for
+ * every intermediate photo pixel (see the recorded limitation in the gate).
  */
 export function chatBackgroundReferenceSurfaces(paint: ChatScreenPaint): string[] {
-  return [paint.surface, paint.accent[500]];
+  return [paint.surface, paint.outgoingSurface];
 }
 
 /** A URL/URI string that needs no `ImageResolver`. */

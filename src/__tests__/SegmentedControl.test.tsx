@@ -11,7 +11,7 @@
  * only that would announce nothing at all on web.
  */
 import React from 'react';
-import { render, fireEvent } from '@testing-library/react-native';
+import { render, fireEvent, act } from '@testing-library/react-native';
 
 import { BloomThemeProvider } from '../theme/BloomThemeProvider';
 import {
@@ -19,6 +19,7 @@ import {
   SegmentedControlItem,
   SegmentedControlItemText,
 } from '../segmented-control';
+import { GestureDetector } from 'react-native-gesture-handler';
 import { pressHost } from './support/press-host';
 
 function renderControl(
@@ -28,7 +29,7 @@ function renderControl(
 ) {
   return render(
     <BloomThemeProvider mode="light" colorPreset="oxy">
-      <SegmentedControl label="Section" type={type} value={value} onChange={onChange}>
+      <SegmentedControl label="Section" type={type} value={value} onValueChange={onChange}>
         <SegmentedControlItem value="a" testID="a">
           <SegmentedControlItemText>A</SegmentedControlItemText>
         </SegmentedControlItem>
@@ -39,6 +40,12 @@ function renderControl(
     </BloomThemeProvider>,
   );
 }
+
+jest.mock('react-native-reanimated', () => ({
+  __esModule: true,
+  ...jest.requireActual('../../__mocks__/react-native-reanimated'),
+  ReduceMotion: { System: 'system', Always: 'always', Never: 'never' },
+}));
 
 describe('SegmentedControl', () => {
   it('announces radio segments as checked / unchecked', () => {
@@ -96,5 +103,49 @@ describe('SegmentedControl', () => {
       ),
     ).toThrow(/must be used within a SegmentedControl/);
     spy.mockRestore();
+  });
+});
+
+describe('SegmentedControl dragging', () => {
+  function setup(disabled = false) {
+    const onChange = jest.fn();
+    const ui = render(<BloomThemeProvider mode="light" colorPreset="oxy">
+      <SegmentedControl label="Drag" type="radio" value="a" onValueChange={onChange}>
+        {['a', 'b', 'c'].map(value => <SegmentedControlItem key={value} value={value} testID={value} disabled={disabled && value === 'b'}><SegmentedControlItemText>{value}</SegmentedControlItemText></SegmentedControlItem>)}
+      </SegmentedControl>
+    </BloomThemeProvider>);
+    for (const [index] of ['a', 'b', 'c'].entries()) {
+      const item = ui.UNSAFE_getAllByType(SegmentedControlItem)[index]!;
+      const wrapper = item.find(node => typeof node.props.onLayout === 'function');
+      fireEvent(wrapper, 'layout', { nativeEvent: { layout: { x: 4 + index * 102, width: 100, height: 28, y: 4 } } });
+    }
+    const handlers = ui.UNSAFE_getByType(GestureDetector).props.gesture.__handlers;
+    return { ...ui, handlers, onChange };
+  }
+  it('measures without changing value and commits only on release', () => {
+    const { handlers, onChange, getByTestId } = setup();
+    expect(onChange).not.toHaveBeenCalled();
+    act(() => { handlers.onBegin({ x: 54 }); handlers.onStart({}); handlers.onUpdate({ x: 258 }); });
+    expect(onChange).not.toHaveBeenCalled();
+    expect(getByTestId('a').props['aria-checked']).toBe(true);
+    act(() => { handlers.onEnd({}, true); handlers.onFinalize({}); });
+    expect(onChange.mock.calls).toEqual([['c']]);
+    fireEvent.press(getByTestId('c'));
+    expect(onChange).toHaveBeenCalledTimes(1);
+    expect(getByTestId('a').props['aria-checked']).toBe(true);
+  });
+  it('ignores disabled origins and cancellation', () => {
+    const { handlers, onChange } = setup(true);
+    act(() => { handlers.onBegin({ x: 156 }); handlers.onStart({}); handlers.onUpdate({ x: 258 }); handlers.onEnd({}, true); handlers.onFinalize({}); });
+    expect(onChange).not.toHaveBeenCalled();
+    act(() => { handlers.onBegin({ x: 54 }); handlers.onStart({}); handlers.onUpdate({ x: 258 }); handlers.onFinalize({}); });
+    expect(onChange).not.toHaveBeenCalled();
+  });
+  it('skips disabled destinations and ignores releasing on the current value', () => {
+    const { handlers, onChange } = setup(true);
+    act(() => { handlers.onBegin({ x: 54 }); handlers.onStart({}); handlers.onUpdate({ x: 160 }); handlers.onEnd({}, true); });
+    expect(onChange).toHaveBeenLastCalledWith('c');
+    act(() => { handlers.onBegin({ x: 258 }); handlers.onStart({}); handlers.onUpdate({ x: -100 }); handlers.onEnd({}, true); });
+    expect(onChange).toHaveBeenCalledTimes(1);
   });
 });

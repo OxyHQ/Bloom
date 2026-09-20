@@ -1,3 +1,4 @@
+import type { BloomAppearance, BloomSize, BloomTone } from '../appearance';
 import type { StyleProp, ViewStyle, TextStyle } from 'react-native';
 
 import type { BloomIconComponent } from '../icons/icon-component';
@@ -9,7 +10,7 @@ import type { AccentFill, AccentTone } from '../theme/accent-colors';
  * carrying an optional leading icon). `shared.ts` has the table and why the two
  * families differ in more than height.
  */
-export type BadgeSize = 'small' | 'medium' | 'large' | 'label-small' | 'label-medium';
+export type BadgeSize = BloomSize | 'small' | 'medium' | 'large' | 'label-small' | 'label-medium';
 
 /**
  * The three accent fills, plus `onMedia`: a light pill with a shadow that reads
@@ -24,6 +25,9 @@ export type BadgeIcon = BloomIconComponent;
 export type BadgePlacement = 'top-right' | 'top-left' | 'bottom-right' | 'bottom-left';
 
 export interface BadgeProps {
+  appearance?: BloomAppearance;
+  tone?: BloomTone;
+
   /** Text or number to display in the badge. */
   content?: string | number;
   /** How loudly the badge is painted. */

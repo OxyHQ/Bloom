@@ -1,11 +1,10 @@
 import React, { useState } from 'react';
-import { Image, Platform, View, useWindowDimensions, type ViewStyle } from 'react-native';
+import { Image, View, useWindowDimensions, type ViewStyle } from 'react-native';
 
 import { AppShell, NotificationBell } from '../../src/app-shell';
 import { Avatar } from '../../src/avatar';
 import { Breadcrumb, BreadcrumbItem } from '../../src/breadcrumb';
 import { Button } from '../../src/button';
-import { resolveButtonRamps } from '../../src/button/shared';
 import type { ButtonIconComponent } from '../../src/button/types';
 import type { DataTableRowActionItem } from '../../src/data-table';
 import {
@@ -41,7 +40,6 @@ import {
 import type { NotificationCenterItem } from '../../src/notification-center';
 import type { SidebarAccount, SidebarNavItem, SidebarTeam } from '../../src/sidebar';
 import { BREAKPOINTS } from '../../src/styles/breakpoints';
-import type { WebCssStyle } from '../../src/styles/web-view-style';
 import { useTheme } from '../../src/theme/use-theme';
 import { Text } from '../../src/typography';
 
@@ -218,8 +216,8 @@ export const NOTIFICATIONS: NotificationCenterItem[] = [
     unread: true,
     avatar: { source: assetUri(liviaSaris), name: 'Livia Saris' },
     actions: [
-      { id: 'reply', label: 'Reply', variant: 'primary' },
-      { id: 'view', label: 'View thread', variant: 'secondary' },
+      { id: 'reply', label: 'Reply', appearance: 'solid', tone: 'accent' },
+      { id: 'view', label: 'View thread', appearance: 'outline', tone: 'neutral' },
     ],
   },
   {
@@ -232,7 +230,7 @@ export const NOTIFICATIONS: NotificationCenterItem[] = [
     unread: true,
     status: 'success',
     icon: RiDownloadCloud2Line,
-    actions: [{ id: 'download', label: 'Download', variant: 'secondary' }],
+    actions: [{ id: 'download', label: 'Download', appearance: 'outline', tone: 'neutral' }],
   },
   {
     id: 'project-invite',
@@ -254,7 +252,7 @@ export const NOTIFICATIONS: NotificationCenterItem[] = [
     timestamp: 'Mon',
     unread: true,
     avatar: { source: assetUri(jaydonAminoff), name: 'Jaydon Aminoff' },
-    actions: [{ id: 'review', label: 'Review changes', variant: 'secondary' }],
+    actions: [{ id: 'review', label: 'Review changes', appearance: 'outline', tone: 'neutral' }],
   },
   {
     id: 'security-check',
@@ -277,8 +275,8 @@ export const NOTIFICATIONS: NotificationCenterItem[] = [
     status: 'error',
     icon: RiGitPullRequestLine,
     actions: [
-      { id: 'retry', label: 'Retry', variant: 'primary' },
-      { id: 'logs', label: 'View logs', variant: 'secondary' },
+      { id: 'retry', label: 'Retry', appearance: 'solid', tone: 'accent' },
+      { id: 'logs', label: 'View logs', appearance: 'outline', tone: 'neutral' },
     ],
   },
 ];
@@ -288,15 +286,13 @@ export const NOTIFICATIONS: NotificationCenterItem[] = [
 //  `MedicalShell`, and their identical `*-header.tsx`)
 // ---------------------------------------------------------------------------
 
-/**
- * The template spans the preview edge to edge — bleeding over the preview
- * decorator's 24px padding on web — and scrolls the DOCUMENT, the way an app
- * page does: `AppShell` grows the page and pins its own rail.
- */
-export const TEMPLATE_FRAME: WebCssStyle =
-  Platform.OS === 'web'
-    ? { alignSelf: 'stretch', marginTop: -24, marginBottom: -24, marginLeft: -24, marginRight: -24 }
-    : { flex: 1, width: '100%' };
+/** Fill the host canvas without escaping its bounds (Canvas, docs or an app). */
+export const TEMPLATE_FRAME: ViewStyle = {
+  flex: 1,
+  width: '100%',
+  minWidth: 0,
+  minHeight: 0,
+};
 
 export interface DashboardShellProps {
   /** Sidebar row selected on mount (`home`; HR passes a key no row has). */
@@ -314,7 +310,7 @@ export interface DashboardShellProps {
 }
 
 /**
- * The floating sidebar (a page-slide reveal drawer below `lg`), the
+ * The adaptive navigation (bottom, rail, then sidebar), the
  * Design team › Maya › page trail, the title with the notification bell,
  * Filters and the primary action, and the 1300px content column.
  */
@@ -332,7 +328,7 @@ export function DashboardShell({
     <View style={TEMPLATE_FRAME}>
       <AppShell
         testID={testID}
-        drawer="reveal"
+        navigationPlacement="auto"
         sidebar={{
           items: NAV_ITEMS,
           secondaryItems: SECONDARY_ITEMS,
@@ -358,10 +354,10 @@ export function DashboardShell({
         actions={
           <>
             <NotificationBell notifications={NOTIFICATIONS} unreadCount={5} width={430} />
-            <Button variant="secondary" size="medium" leadingIcon={RiFilter3Fill}>
+            <Button size="md" leadingIcon={RiFilter3Fill} appearance="subtle" tone="neutral">
               Filters
             </Button>
-            <Button variant="primary" size="medium" leadingIcon={RiAddFill}>
+            <Button size="md" leadingIcon={RiAddFill} appearance="solid" tone="action">
               {primaryAction}
             </Button>
           </>
@@ -482,14 +478,13 @@ export function CellText({ children }: { children: string }) {
 /** Name over a secondary line (an employee's role). */
 export function NameLines({ name, detail }: { name: string; detail?: string }) {
   const theme = useTheme();
-  const { neutral } = resolveButtonRamps(theme);
   return (
     <View style={{ minWidth: 0, flexShrink: 1 }}>
       <Text numberOfLines={1} variant="body-medium" style={{ color: theme.colors.text }}>
         {name}
       </Text>
       {detail != null ? (
-        <Text numberOfLines={1} variant="body-2-medium" style={{ color: neutral[500] }}>
+        <Text numberOfLines={1} variant="body-2-medium" style={{ color: theme.colors.textSecondary }}>
           {detail}
         </Text>
       ) : null}
@@ -514,7 +509,6 @@ export function PersonAvatar({
 /** `size-8 rounded-lg bg-background-tertiary-default`, a 16px `foreground-icon-primary` glyph. */
 export function IconTile({ icon: Icon, label }: { icon: ButtonIconComponent; label: string }) {
   const theme = useTheme();
-  const { neutral: n } = resolveButtonRamps(theme);
   return (
     <View
       accessibilityLabel={label}
@@ -525,7 +519,7 @@ export function IconTile({ icon: Icon, label }: { icon: ButtonIconComponent; lab
         borderRadius: 8,
         alignItems: 'center',
         justifyContent: 'center',
-        backgroundColor: theme.isDark ? n[800] : n[200],
+        backgroundColor: theme.colors.backgroundTertiary,
       }}
     >
       <Icon width={16} height={16} fill={theme.colors.text} />

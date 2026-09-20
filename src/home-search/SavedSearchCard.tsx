@@ -68,7 +68,7 @@ function SavedSearchCardComponent({
 }: SavedSearchCardProps) {
   const theme = useTheme();
   const palette = useStaySearchPalette();
-  const { accent, neutral } = useMemo(() => resolveButtonRamps(theme), [theme]);
+  const { accent } = useMemo(() => resolveButtonRamps(theme), [theme]);
   const hover = useInteractionState();
   const hasNew = newCount > 0;
 
@@ -169,7 +169,7 @@ function SavedSearchCardComponent({
           gap: 8,
           paddingTop: 12,
           borderTopWidth: 1,
-          borderTopColor: theme.isDark ? neutral[800] : neutral[200],
+          borderTopColor: theme.colors.border,
         }}
       >
         {alertFrequency ? (

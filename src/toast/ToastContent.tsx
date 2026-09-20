@@ -11,8 +11,9 @@
  * 1px border/button/default, card surface, `shadow-dropdown`, padding 16, a 40px
  * tinted status disc with a 20px Remix glyph, body-medium title, body-regular
  * description, small `Button`s for the actions and an xs CloseButton at
- * top 12 / right 12. Two toast-only departures:
+ * top 12 / right 12. Toast-only adaptations:
  *
+ * - Title-only messages use 12px vertical padding and a 28px disc.
  * - The right padding is a 44px close-button lane ONLY when a close
  *   button renders. `closeButton` defaults to false for toasts, and a one-line
  *   `toast('Saved')` with a permanently empty 28px lane reads as misaligned.
@@ -116,6 +117,7 @@ export function ToastContent({
   // Only the built-in button is absolutely placed; a caller `close` node stays in the row.
   const showsClose = Boolean(dismissible && !close && closeButton);
   const titleOnly = !description && !action && !cancel;
+  const visualSize = titleOnly ? 28 : G.visual;
   const hasVisual = Boolean(variant || icon || isLoading);
 
   const surfaceStyle: WebCssStyle | undefined = unstyled
@@ -124,6 +126,8 @@ export function ToastContent({
         backgroundColor: colors.surface,
         borderColor: colors.border,
         boxShadow: colors.shadow,
+        paddingTop: titleOnly ? 12 : G.padding,
+        paddingBottom: titleOnly ? 12 : G.padding,
         paddingRight: showsClose ? G.paddingRight : G.padding,
       };
 
@@ -145,7 +149,7 @@ export function ToastContent({
       <View
         style={[
           unstyled ? undefined : styles.row,
-          // A title on its own centres against the 40px disc instead of hugging
+          // A title on its own centres against its compact disc instead of hugging
           // its top and leaving an empty band where a description would sit.
           !unstyled && titleOnly ? styles.rowCentered : undefined,
           backgroundComponent ? styles.aboveBackground : undefined,
@@ -157,6 +161,7 @@ export function ToastContent({
           icon={icon}
           icons={icons}
           isLoading={isLoading}
+          size={visualSize}
           colors={colors}
           unstyled={unstyled}
         />
@@ -232,7 +237,7 @@ export function ToastContent({
           onDismiss={onDismiss}
           // Title-only: the ✕ centres on the row like the title does.
           buttonStyle={[
-            titleOnly ? { top: hasVisual ? (G.visual - CLOSE_XS) / 2 : 0 } : undefined,
+            titleOnly ? { top: hasVisual ? (visualSize - CLOSE_XS) / 2 : 0 } : undefined,
             styleOverrides?.closeButton,
           ]}
         />
@@ -244,7 +249,7 @@ export function ToastContent({
 ToastContent.displayName = 'ToastContent';
 
 /**
- * The leading visual: a 40px status disc holding the variant glyph (or
+ * The leading visual: a content-sized status disc holding the variant glyph (or
  * the spinner). A per-toast `icon` or an outlet `icons` override replaces the
  * GLYPH and keeps the disc. A variant-less toast with no `icon` has no leading
  * visual at all — it must never fall back to `info`.
@@ -254,6 +259,7 @@ function ToastLeadingVisual({
   icon,
   icons,
   isLoading,
+  size,
   colors,
   unstyled,
 }: {
@@ -261,6 +267,7 @@ function ToastLeadingVisual({
   icon: ToastProps['icon'];
   icons: ToastIcons;
   isLoading: boolean;
+  size: number;
   colors: ToastColors;
   unstyled: boolean;
 }) {
@@ -280,7 +287,7 @@ function ToastLeadingVisual({
   if (unstyled) {
     return <>{glyph}</>;
   }
-  return <View style={[styles.disc, { backgroundColor: colors.iconBackground }]}>{glyph}</View>;
+  return <View style={[styles.disc, { width: size, height: size, borderRadius: size / 2, backgroundColor: colors.iconBackground }]}>{glyph}</View>;
 }
 
 function ToastActionButton({
@@ -295,13 +302,7 @@ function ToastActionButton({
   textStyle?: StyleProp<TextStyle>;
 }) {
   return (
-    <Button
-      size="small"
-      variant={variant}
-      onPress={action.onClick}
-      style={buttonStyle}
-      textStyle={textStyle}
-    >
+    <Button size="sm" appearance={variant === 'primary' ? 'solid' : 'subtle'} tone={variant === 'primary' ? 'accent' : 'neutral'} onPress={action.onClick} style={buttonStyle} textStyle={textStyle}>
       {action.label}
     </Button>
   );

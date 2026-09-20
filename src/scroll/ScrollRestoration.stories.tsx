@@ -133,7 +133,7 @@ function Navigator() {
 
   return (
     <View style={{ gap: 12, alignItems: 'flex-start' }}>
-      <Card variant="outlined" radius="radius-16" style={{ padding: 14, gap: 6, maxWidth: 430 }}>
+      <Card appearance="outline" radius="radius-16" style={{ padding: 14, gap: 6, maxWidth: 430 }}>
         <Text style={{ fontWeight: '600' }}>Scroll one screen, switch, switch back.</Text>
         <Text style={{ fontSize: 13, opacity: 0.75 }}>
           The offset comes back because it is keyed on the CONTENT the screen shows, not on the
@@ -144,22 +144,16 @@ function Navigator() {
       </Card>
 
       <View style={{ flexDirection: 'row', gap: 8, flexWrap: 'wrap' }}>
-        <Button variant={active === 'feed' ? 'primary' : 'secondary'} onPress={() => setActive('feed')}>
+        <Button appearance={active === 'feed' ? 'solid' : 'outline'} tone={active === 'feed' ? 'accent' : 'neutral'} onPress={() => setActive('feed')}>
           Feed
         </Button>
-        <Button
-          variant={active === 'profile' ? 'primary' : 'secondary'}
-          onPress={() => setActive('profile')}
-        >
+        <Button appearance={active === 'profile' ? 'solid' : 'outline'} tone={active === 'profile' ? 'accent' : 'neutral'} onPress={() => setActive('profile')}>
           Profile
         </Button>
-        <Button
-          variant="secondary"
-          onPress={() => {
+        <Button onPress={() => {
             setProfileVisit((visit) => visit + 1);
             setActive('profile');
-          }}
-        >
+          }} appearance="outline" tone="neutral">
           New profile
         </Button>
       </View>
@@ -181,6 +175,7 @@ function Navigator() {
  * the RESET half. Returning to the same profile again restores it instead.
  */
 export const RestoresAnOffset: Story = {
+  parameters: { controls: { disable: true } },
   render: () => (
     <ScrollRestorationProvider adapter={storyAdapter}>
       <Navigator />

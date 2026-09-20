@@ -35,7 +35,6 @@ import {
 } from '../agent-chat';
 import type { AgentChatMessageData, AgentChatThread } from '../agent-chat';
 import { formatAgo, relativeTime, resolveAgentChatPalette, shortModel } from '../agent-chat/shared';
-import { resolveButtonRamps } from '../button/shared';
 import { buildTheme } from '../theme/build-theme';
 import { pressHost } from './support/press-host';
 import { resolvedStyle } from './support/rendered-style';
@@ -75,25 +74,19 @@ describe('agent-chat formatting', () => {
     expect(shortModel('claude')).toBe('claude');
   });
 
-  it('resolves semantic tokens onto the ramps, light and dark', () => {
-    const light = buildTheme('teal', 'light');
-    const dark = buildTheme('teal', 'dark');
-    const nl = resolveButtonRamps(light).neutral;
-    const nd = resolveButtonRamps(dark).neutral;
-    expect(resolveAgentChatPalette(light)).toMatchObject({
-      chatSurface: nl[100],
-      rowHover: nl[200],
-      card: light.colors.card,
-      separator: nl[200],
-      textTertiary: nl[400],
-    });
-    expect(resolveAgentChatPalette(dark)).toMatchObject({
-      chatSurface: nd[900],
-      rowHover: nd[800],
-      card: nd[800],
-      separator: nd[800],
-      textTertiary: nd[600],
-    });
+  it('uses canonical surface and foreground roles in both modes', () => {
+    for (const mode of ['light', 'dark'] as const) {
+      const theme = buildTheme('teal', mode);
+      expect(resolveAgentChatPalette(theme)).toMatchObject({
+        chatSurface: theme.colors.backgroundSecondary,
+        rowHover: theme.colors.backgroundTertiary,
+        card: theme.colors.card,
+        separator: theme.colors.borderLight,
+        textSecondary: theme.colors.textSecondary,
+        textTertiary: theme.colors.textTertiary,
+        textError: theme.colors.errorSubtleForeground,
+      });
+    }
   });
 });
 

@@ -3,7 +3,6 @@ import { Platform, Pressable, View } from 'react-native';
 
 import { Avatar } from '../avatar';
 import { Button } from '../button';
-import { mixColor, resolveButtonRamps } from '../button/shared';
 import { Chip } from '../chip';
 import { RiArrowLeftLine } from '../icons/remix/RiArrowLeftLine';
 import { RiArrowRightLine } from '../icons/remix/RiArrowRightLine';
@@ -33,11 +32,8 @@ import type { RecentHire, RecentHiresCardProps } from './types';
  *   pagination  8 under the grid: two small secondary buttons, gap 8, each
  *               half the width (arrow-left leading / arrow-right trailing)
  *
- *                                 light         dark
- *   background-secondary          neutral-100   neutral-900
- *   background-inner              white (card)  neutral-800 @60%
- *   background-recent-hire-role   neutral-100   neutral-900 @60% over inner
- *   text-secondary                neutral-500   neutral-500
+ *   surface/inset/role use card / backgroundSecondary / backgroundTertiary;
+ *   secondary labels use the authored textSecondary role in both modes.
  */
 
 const IS_WEB = Platform.OS === 'web';
@@ -62,11 +58,10 @@ interface RecentHiresPalette {
 
 export function resolveRecentHiresPalette(theme: Theme): RecentHiresPalette {
   const surfaces = resolveDashboardSurfaces(theme);
-  const { neutral: n } = resolveButtonRamps(theme);
   return {
     surface: surfaces.secondary,
     inner: surfaces.inner,
-    role: theme.isDark ? mixColor(surfaces.inner, n[900], 0.6) : n[100],
+    role: theme.colors.backgroundTertiary,
     text: surfaces.text,
     textSecondary: surfaces.textSecondary,
     cardShadow: surfaces.cardShadow,
@@ -131,7 +126,7 @@ function HireCard({
         </View>
       </View>
       <Chip
-        size="small"
+        size="sm"
         style={{ alignSelf: 'stretch', justifyContent: 'center', backgroundColor: palette.role }}
         textStyle={{ color: palette.textSecondary }}
         testID={testID ? `${testID}-role` : undefined}
@@ -249,26 +244,10 @@ const RecentHiresCardComponent: React.FC<RecentHiresCardProps> = ({
       </View>
 
       <View style={{ marginTop: 8, width: '100%', flexDirection: 'row', alignItems: 'center', gap: 8 }}>
-        <Button
-          variant="secondary"
-          size="small"
-          leadingIcon={RiArrowLeftLine}
-          onPress={onPreviousPress}
-          disabled={previousDisabled}
-          style={{ flex: 1 }}
-          testID={testID ? `${testID}-previous` : undefined}
-        >
+        <Button size="sm" leadingIcon={RiArrowLeftLine} onPress={onPreviousPress} disabled={previousDisabled} style={{ flex: 1 }} testID={testID ? `${testID}-previous` : undefined} appearance="subtle" tone="neutral">
           {previousLabel}
         </Button>
-        <Button
-          variant="secondary"
-          size="small"
-          trailingIcon={RiArrowRightLine}
-          onPress={onNextPress}
-          disabled={nextDisabled}
-          style={{ flex: 1 }}
-          testID={testID ? `${testID}-next` : undefined}
-        >
+        <Button size="sm" trailingIcon={RiArrowRightLine} onPress={onNextPress} disabled={nextDisabled} style={{ flex: 1 }} testID={testID ? `${testID}-next` : undefined} appearance="subtle" tone="neutral">
           {nextLabel}
         </Button>
       </View>

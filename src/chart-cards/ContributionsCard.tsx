@@ -82,9 +82,9 @@ export function useContributionTiers(color?: string): readonly [string, string, 
   return useMemo(() => {
     const r = color ? colorRamp(color, ACCENT_TABLE) : resolveButtonRamps(theme).accent;
     return theme.isDark
-      ? [palette.neutralSeries, r[950], r[800], r[700], r[600], r[500]]
-      : [palette.neutralSeries, r[200], r[400], r[500], r[600], r[700]];
-  }, [color, theme, palette.neutralSeries]);
+      ? [palette.track, r[950], r[800], r[700], r[600], r[500]]
+      : [palette.track, r[200], r[400], r[500], r[600], r[700]];
+  }, [color, theme, palette.track]);
 }
 
 /**
@@ -440,7 +440,7 @@ export function ContributionsCard({
               type="radio"
               variant="plain"
               value={selectedId}
-              onChange={select}>
+              onValueChange={select}>
               {periods.map((p) => (
                 <SegmentedControlItem key={p.id} value={p.id} testID={testID ? `${testID}-period-${p.id}` : undefined}>
                   <SegmentedControlItemText>{p.label}</SegmentedControlItemText>

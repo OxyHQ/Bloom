@@ -9,6 +9,10 @@ import { Text } from '../typography';
 import { ControlSurface } from './index';
 
 const meta: Meta<typeof ControlSurface> = {
+  argTypes: {
+    "material": { control: 'select', options: ["solid","glass"] },
+    "density": { control: 'select', options: ["sm","md"] }
+  },
   title: 'Foundations/Control Surface',
   component: ControlSurface,
 };
@@ -42,6 +46,7 @@ function Actions() {
  * intent, the container declares the material.
  */
 export const Inheritance: Story = {
+  parameters: { controls: { disable: true } },
   render: () => (
     <View style={{ gap: 24, alignItems: 'flex-start' }}>
       <View style={{ gap: 8 }}>
@@ -57,9 +62,9 @@ export const Inheritance: Story = {
       </View>
 
       <View style={{ gap: 8 }}>
-        <Caption>Glass container, explicit `variant="solid"` — the caller still wins.</Caption>
+        <Caption>Glass container, explicit `material="solid"` — the caller still wins.</Caption>
         <ControlSurface material="glass">
-          <ButtonGroup variant="solid" accessibilityLabel="Page actions">
+          <ButtonGroup material="solid" accessibilityLabel="Page actions">
             <ButtonGroupItem iconOnly leadingIcon={RiSearchLine} accessibilityLabel="Search" />
             <ButtonGroupItem iconOnly leadingIcon={RiShare2Line} accessibilityLabel="Share" />
           </ButtonGroup>
@@ -71,18 +76,19 @@ export const Inheritance: Story = {
 
 /** Density travels the same way, and a nested surface inherits what it leaves undefined. */
 export const Density: Story = {
+  parameters: { controls: { disable: true } },
   render: () => (
     <View style={{ gap: 24, alignItems: 'flex-start' }}>
       <View style={{ gap: 8 }}>
-        <Caption>`density="small"` — 30px items.</Caption>
-        <ControlSurface density="small">
+        <Caption>`density="sm"` — 30px items.</Caption>
+        <ControlSurface density="sm">
           <Actions />
         </ControlSurface>
       </View>
       <View style={{ gap: 8 }}>
-        <Caption>Glass outside, `density="small"` inside: still glass, now small.</Caption>
+        <Caption>Glass outside, `density="sm"` inside: still glass, now small.</Caption>
         <ControlSurface material="glass">
-          <ControlSurface density="small">
+          <ControlSurface density="sm">
             <Actions />
           </ControlSurface>
         </ControlSurface>
@@ -96,7 +102,9 @@ export const Density: Story = {
  * nothing behind it to blur; over a picture the material does its work.
  */
 export const OverContent: Story = {
-  render: () => (
+  args: { material: "glass" },
+  parameters: { controls: { include: ["material","density"] } },
+  render: (args) => (
     <View
       style={{
         padding: 24,
@@ -106,7 +114,7 @@ export const OverContent: Story = {
         backgroundColor: '#2b4a63',
       }}
     >
-      <ControlSurface material="glass">
+      <ControlSurface {...args} >
         <Actions />
       </ControlSurface>
       <Text variant="body-medium" style={{ color: 'rgba(255,255,255,0.86)' }}>

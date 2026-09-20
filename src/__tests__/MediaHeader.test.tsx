@@ -13,6 +13,7 @@ jest.mock('react-native', () => jest.requireActual('react-native-web'));
 
 import { BloomThemeProvider } from '../theme/BloomThemeProvider';
 import { buildTheme } from '../theme/build-theme';
+import { surfaceFillOn } from '../styles/surface-levels';
 import { APP_COLOR_PRESETS } from '../theme/color-presets';
 import { srgbToOklch } from '../theme/color-space';
 import { parseRgba } from '../theme/color-utils';
@@ -160,7 +161,7 @@ describe('resolveMediaHeaderPaint', () => {
     expect(p.onBandMuted).not.toBe(p.onBand);
   });
 
-  it('falls back to a neutral band when the artwork colour is absent or unparsable', () => {
+  it('falls back to a theme surface when the artwork colour is absent or unparsable', () => {
     for (const mode of ['light', 'dark'] as const) {
       const t = buildTheme('teal', mode);
       const none = resolveMediaHeaderPaint(t);
@@ -171,8 +172,7 @@ describe('resolveMediaHeaderPaint', () => {
       expect(junk.bandTop).toBe(none.bandTop);
       expect(real.fallback).toBe(false);
       expect(real.bandTop).not.toBe(none.bandTop);
-      // Neutral: next to no chroma.
-      expect(srgbToOklch(parseRgba(none.bandTop)!).c).toBeLessThan(0.02);
+      expect(none.bandTop).toBe(surfaceFillOn(t, t.colors.background));
     }
   });
 

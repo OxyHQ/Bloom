@@ -1,3 +1,5 @@
+import type { BloomSize, BloomTone } from '../appearance';
+import type { ButtonIconComponent } from '../button/types';
 import type { StyleProp, ViewStyle } from 'react-native';
 
 /**
@@ -10,24 +12,15 @@ import type { StyleProp, ViewStyle } from 'react-native';
  * A raw pixel `number` is also accepted for an exact diameter; the icon box is
  * derived as `round(size * 0.56)` (min 16px) and the blur radius scales with it.
  */
-export type FrostedIconButtonSize = 'sm' | 'md';
+export type FrostedIconButtonSize = BloomSize;
 
 export interface FrostedIconButtonProps {
   /** Press handler. */
   onPress?: () => void;
 
-  /**
-   * The icon to render, centered inside the circle. Typically a Bloom icon
-   * element (`<Icons.RiArrowLeftLine />` — icon exports carry
-   * their full style and corner suffix). If the icon does not set its own `fill`,
-   * the button injects the theme-aware icon color (foreground when frosted,
-   * `primaryForeground` when `active`) as a fallback so a bare icon is colored
-   * correctly out of the box; an explicit `fill` on the icon always wins.
-   *
-   * `children` is accepted as an alias — if both are given, `icon` wins.
-   */
-  icon?: React.ReactNode;
-  children?: React.ReactNode;
+  /** Icon component; Bloom supplies its size and resolved foreground. */
+  icon?: ButtonIconComponent;
+  tone?: BloomTone;
 
   /**
    * Solid "on" state for toggles. When true the button drops its translucency
@@ -35,7 +28,8 @@ export interface FrostedIconButtonProps {
    * `primaryForeground`), so an enabled toggle reads unmistakably as active.
    * Exposed to assistive tech as `aria-pressed` (web) / the selected a11y state.
    */
-  active?: boolean;
+  checked?: boolean;
+  onCheckedChange?: (checked: boolean) => void;
 
   disabled?: boolean;
 

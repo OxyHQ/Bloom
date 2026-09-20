@@ -15,7 +15,7 @@ import {
   agentProgressShimmerCss,
   shimmerStrength,
 } from '../agent-progress/AgentProgressLoadingText';
-import { BUTTON_SHADOW, resolveButtonRamps } from '../button/shared';
+import { BUTTON_SHADOW } from '../button/shared';
 import { buildTheme } from '../theme/build-theme';
 import { pressHost } from './support/press-host';
 import { resolvedStyle } from './support/rendered-style';
@@ -53,7 +53,6 @@ describe('AgentProgress', () => {
     jest.spyOn(Reanimated, 'useReducedMotion').mockReturnValue(true);
     const { getByTestId } = renderProgress(<AgentProgress />);
     const theme = buildTheme('teal', 'light');
-    const { neutral } = resolveButtonRamps(theme);
     const card = resolvedStyle(getByTestId('agent-progress').props.style);
     expect(card).toMatchObject({
       width: 341,
@@ -63,7 +62,7 @@ describe('AgentProgress', () => {
       overflow: 'hidden',
       height: 235,
       backgroundColor: theme.colors.card,
-      borderColor: hex(neutral[200]),
+      borderColor: hex(theme.colors.borderLight),
       boxShadow: BUTTON_SHADOW.light,
     });
     expect(agentProgressExpandedHeight(0)).toBe(45);
@@ -72,10 +71,10 @@ describe('AgentProgress', () => {
 
   it('paints the dark tokens: neutral-800 surface, neutral-700 border, dark shadow', () => {
     const { getByTestId } = renderProgress(<AgentProgress />, 'dark');
-    const { neutral } = resolveButtonRamps(buildTheme('teal', 'dark'));
+    const theme = buildTheme('teal', 'dark');
     expect(resolvedStyle(getByTestId('agent-progress').props.style)).toMatchObject({
-      backgroundColor: neutral[800],
-      borderColor: hex(neutral[700]),
+      backgroundColor: theme.colors.card,
+      borderColor: hex(theme.colors.borderLight),
       boxShadow: BUTTON_SHADOW.dark,
     });
   });

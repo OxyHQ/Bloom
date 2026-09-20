@@ -94,10 +94,11 @@ Rules that apply to every card:
 
 ## Series colours from the theme
 
-The `chart-n` tokens are Tailwind hues (lime, blue, purple, pink, yellow, emerald, sky, teal, indigo), 400 as
-the fill and 500 as `-active` (stroke, hover, active dot). `palette.ts#CHART_HUES` holds them in OKLCH;
-`chartHueTone(theme, n)` keeps Tailwind's lightness and re-anchors chroma and hue on `theme.colors.primary`
-(measured from blue-500), so any preset rotates all hues together.
+The nine canonical `chart-n` / `chart-n-active` pairs come from the colour policy and
+are exposed as `theme.chartColors`. The first five fills retain their established
+hues; four additional hues are interleaved. Monochrome presets use separated tones.
+`chartHueTone(theme, n)` reads that same pair, so JS charts and CSS tokens agree.
+Hand-authored themes without `chartColors` use the same policy from their primary.
 
 - Default series order: `useChartTones()`, then `resolveTone(tones, index, color, activeColor)`.
 - A specific token (e.g. `chart-9`): `chartHueTone(theme, 9)`.
@@ -134,3 +135,10 @@ the header, cursor, active dots, legend and tiles:
 - A chip hidden while hovering is excluded from default queries — use `{ includeHiddenElements: true }`.
 - Then run `family-layout`, `aria-state-source-census`, `classname-interop`, `web-css-style`, `root-barrel-graph`,
   `reanimated-deps`, and `bunx tsc --noEmit -p .`, and check the story in light + dark with hover.
+
+Structural fills, hover states, borders and labels read canonical surface and
+text roles, including neutral Sankey nodes and idle chart segments. Intentional
+data encodings retain ramps: Contributions maps magnitude to accent intensity;
+stat-card categorical hues and ProOffer artwork gradients retain their color
+scales. Stage glyphs choose black or white for AA against their actual series
+fill, including caller-provided colors; they are not shell text.

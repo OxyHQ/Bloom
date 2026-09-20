@@ -13,8 +13,7 @@ import {
 
 import { Avatar } from '../avatar';
 import { Badge } from '../badge';
-import { mixColor, resolveButtonRamps } from '../button/shared';
-import { purpleChip, violetBase } from '../chart-cards/ai-profile-hues';
+import { violetBase } from '../chart-cards/ai-profile-hues';
 import { ContributionsGrid } from '../chart-cards/ContributionsCard';
 import { TABULAR } from '../chart-cards/primitives/ChartHeader';
 import { groupThousands } from '../chart-cards/primitives/format';
@@ -32,7 +31,7 @@ import type { AiProfileCardPeriod, AiProfileCardProps } from './types';
  * a count-up contributions headline, stat tiles and the contributions
  * heatmap.
  *
- *   card      radius 24, 1px border-ai-profile-card (neutral-200 / 800), no
+ *   card      radius 24, 1px borderLight, no
  *             fill, clips its children
  *   cover     absolute over the top 165px, top corners 23, background-tertiary
  *             under the photo, `object-position: 50% 45%`
@@ -51,10 +50,8 @@ import type { AiProfileCardPeriod, AiProfileCardProps } from './types';
  *             plain segmented switcher; the heatmap (38 columns, violet) — 13px
  *             cells in a horizontal scroller below 640px
  *
- *                         light          dark
- *   background-tertiary   neutral-200    neutral-800
- *   background-secondary  neutral-100    neutral-900
- *   status-purple         purple-100/600 purple-900@50% / 300
+ * Surfaces and text follow canonical theme roles; the delta chip uses the
+ * support pair. The contributions heatmap retains its data hue.
  */
 
 const COVER_HEIGHT = 165;
@@ -180,16 +177,14 @@ function AiProfileCardComponent({
   const wide = viewport >= BREAKPOINTS.sm;
 
   const colors = useMemo(() => {
-    const { neutral: n } = resolveButtonRamps(theme);
-    // `background-full` — what the unfilled card sits on — for the chip's mix.
-    const page = theme.isDark ? mixColor(n[900], n[950], 0.4) : theme.colors.card;
+    const c = theme.colors;
     return {
-      border: theme.isDark ? n[800] : n[200],
-      tertiary: theme.isDark ? n[800] : n[200],
-      secondary: theme.isDark ? n[900] : n[100],
+      border: c.borderLight,
+      tertiary: c.backgroundTertiary,
+      secondary: c.backgroundSecondary,
       text: theme.colors.text,
-      textSecondary: n[500],
-      chip: purpleChip(theme, page),
+      textSecondary: c.textSecondary,
+      chip: { background: c.secondarySubtle, foreground: c.secondarySubtleForeground },
       grid: color ?? violetBase(theme),
     };
   }, [theme, color]);
@@ -340,7 +335,7 @@ function AiProfileCardComponent({
               />
               {delta != null ? (
                 <Chip
-                  size="medium"
+                  size="md"
                   testID={testID ? `${testID}-delta` : undefined}
                   style={{ alignSelf: 'center', backgroundColor: colors.chip.background }}
                   textStyle={{ color: colors.chip.foreground }}>
@@ -398,7 +393,7 @@ function AiProfileCardComponent({
                 type="radio"
                 variant="plain"
                 value={selectedPeriod}
-                onChange={setPeriod}>
+                onValueChange={setPeriod}>
                 {periods.map((p) => (
                   <SegmentedControlItem
                     key={p.id}

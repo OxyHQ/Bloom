@@ -5,7 +5,7 @@ import { resolveButtonRamps } from '../button/shared';
 import { oklchToSrgb, srgbToOklch, srgbToRgbString, type Oklch } from '../theme/color-space';
 import { parseRgba } from '../theme/color-utils';
 import { quietTextOver } from '../styles/color-contrast';
-import { AA_TEXT } from '../styles/surface-levels';
+import { AA_TEXT, resolveSurfaceLevel, surfaceFillOn, hairlineOn } from '../styles/surface-levels';
 import type { Theme } from '../theme/types';
 import type { EnergyClass } from './types';
 import { contrastRatio, relativeLuminance } from '../styles/color-contrast';
@@ -47,7 +47,7 @@ export interface InsightPalette {
 
 export function resolveInsightPalette(theme: Theme): InsightPalette {
   const c = theme.colors;
-  const { accent, neutral: n } = resolveButtonRamps(theme);
+  const { accent } = resolveButtonRamps(theme);
   const dark = theme.isDark;
   return {
     text: c.text,
@@ -55,16 +55,16 @@ export function resolveInsightPalette(theme: Theme): InsightPalette {
     // `theme.colors.textTertiary` is the theme's ONE quiet-text token, which is
     // floored against the page — and this family paints quiet labels on `card`
     // too. Read the rung off the card so the harder of the two surfaces decides.
-    muted: quietTextOver([c.background, dark ? n[900] : c.card], c.text, AA_TEXT),
-    hairline: dark ? n[800] : n[200],
-    track: dark ? n[800] : n[100],
-    bar: dark ? n[700] : n[300],
+    muted: quietTextOver([c.background, resolveSurfaceLevel(theme, 1).background], c.text, AA_TEXT),
+    hairline: hairlineOn(theme, c.background),
+    track: surfaceFillOn(theme, c.background),
+    bar: c.textSecondary,
     accent: c.primary,
     band: dark ? accent[800] : accent[200],
     bandSoft: dark ? accent[900] : accent[100],
-    iconSurface: dark ? n[800] : n[100],
+    iconSurface: surfaceFillOn(theme, c.background),
     surface: c.background,
-    card: dark ? n[900] : c.card,
+    card: resolveSurfaceLevel(theme, 1).background,
     ring: accent[500],
   };
 }
@@ -132,7 +132,6 @@ export const ENERGY_LIGHTNESS_CHROMA: readonly (readonly [l: number, c: number])
  * The same in both modes: the scale is a standard, not a surface.
  */
 export function resolveEnergyTones(theme: Theme): EnergyTone[] {
-  const { neutral: n } = resolveButtonRamps(theme);
   const hue = (color: string, fallback: number) => toOklch(color)?.h ?? fallback;
   const green = hue(theme.colors.success, 150);
   const amber = hue(theme.colors.warning, 70);
@@ -143,7 +142,7 @@ export function resolveEnergyTones(theme: Theme): EnergyTone[] {
     const t = i < 4 ? i / 4 : (i - 4) / 2;
     return fitRgb(lerpOklch({ l, c, h: from }, { l, c, h: to }, t));
   });
-  const dark = n[950];
+  const dark = '#000000';
   return fills.map((fill) => ({
     fill,
     foreground: contrastRatio(fill, '#ffffff') >= contrastRatio(fill, dark) ? '#fff' : dark,

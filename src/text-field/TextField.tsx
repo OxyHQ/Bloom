@@ -1,3 +1,5 @@
+import { normalizeBloomSize } from '../appearance/legacy';
+import { useBloomAppearance } from '../appearance';
 import { createContext, useContext, useEffect, useMemo, useRef, useState } from 'react';
 import {
   type AccessibilityProps,
@@ -58,7 +60,7 @@ import { useFieldMembership } from '../field/membership';
 
 interface TextFieldContextValue {
   inputRef: React.RefObject<TextInput | null>;
-  isInvalid: boolean;
+  invalid: boolean;
   /** Disabled by the root's `disabled` OR by the input reporting itself disabled. */
   disabled: boolean;
   /** Lets the input report `disabled` / `editable={false}` up to its siblings. */
@@ -99,7 +101,7 @@ Context.displayName = 'BloomTextFieldContext';
  */
 export interface TextFieldGroupContextValue {
   size: TextFieldSize;
-  isInvalid: boolean;
+  invalid: boolean;
   disabled: boolean;
 }
 export const TextFieldGroupContext = createContext<TextFieldGroupContextValue | null>(null);
@@ -153,7 +155,8 @@ const MULTILINE_MIN_HEIGHT = 3 * TEXT_FIELD_TEXT.lineHeight + 16;
 
 export function TextField({
   children,
-  isInvalid: isInvalidProp = false,
+  invalid: invalidNew,
+  isInvalid,
   disabled: disabledProp = false,
   size: sizeProp,
   radius = TEXT_FIELD_RADIUS,
@@ -161,20 +164,22 @@ export function TextField({
   style,
 }: TextFieldProps) {
   const theme = useTheme();
+  const invalidProp = invalidNew ?? isInvalid ?? false;
   const group = useContext(TextFieldGroupContext);
   const bare = group !== null;
   // The enclosing `Field`, read HERE as well as in `TextFieldInput`: the shell
   // is what paints the disabled and invalid chrome, and a shell that waited for
   // its input to report up would paint nothing at all around a child that is not
   // Bloom's input. Both directions are OR, so the two readings cannot disagree.
-  const member = useFieldMembership({ disabled: disabledProp, invalid: isInvalidProp });
-  const isInvalid = member.invalid || (group?.isInvalid ?? false);
+  const member = useFieldMembership({ disabled: disabledProp, invalid: invalidProp });
+  const invalid = member.invalid || (group?.invalid ?? false);
   const disabled = member.disabled || (group?.disabled ?? false);
   // An `InputGroup` outranks everything: its members have to be one height. Then
   // the caller's own prop, then the container's density (`ControlSurface`), then
   // `medium` — the precedence rule in `docs/composition.mdx`, with the group's
   // geometry first because it is a constraint rather than a default.
-  const inheritedSize = useInheritedControl('density', sizeProp, 'medium');
+  const { size: scopedSize } = useBloomAppearance({ size: normalizeBloomSize(sizeProp) }, { size: 'md', tone: 'neutral' });
+  const inheritedSize = useInheritedControl('density', normalizeBloomSize(sizeProp), scopedSize);
   const size = group?.size ?? inheritedSize;
   const inputRef = useRef<TextInput>(null);
   const [inputDisabled, setInputDisabled] = useState(false);
@@ -204,7 +209,7 @@ export function TextField({
       onFocus,
       onBlur,
       addonFocused,
-      isInvalid,
+      invalid,
       disabled: resolvedDisabled,
       setInputDisabled,
       size,
@@ -212,7 +217,7 @@ export function TextField({
       radius,
       bare,
     }),
-    [inputRef, hovered, onHoverIn, onHoverOut, focused, onFocus, onBlur, addonFocused, isInvalid, resolvedDisabled, size, palette, radius, bare],
+    [inputRef, hovered, onHoverIn, onHoverOut, focused, onFocus, onBlur, addonFocused, invalid, resolvedDisabled, size, palette, radius, bare],
   );
 
   return (
@@ -336,9 +341,11 @@ export function TextFieldInput({
   label,
   placeholder,
   value,
+  onValueChange: onValueChangeProp,
   onChangeText,
   onFocus,
   onBlur,
+  invalid: invalidNew,
   isInvalid,
   disabled,
   size,
@@ -348,6 +355,8 @@ export function TextFieldInput({
   ...rest
 }: TextFieldInputProps) {
   const theme = useTheme();
+  const invalidProp = invalidNew ?? isInvalid;
+  const onValueChange = onValueChangeProp ?? onChangeText;
   // Read directly rather than through `useTextFieldContext`: a missing root is
   // not an error here, it is the branch below.
   const ctx = useContext(Context);
@@ -376,7 +385,7 @@ export function TextFieldInput({
     // one arrangement where the two halves of the control disagree.
     return (
       <TextField
-        isInvalid={isInvalid || field?.invalid === true}
+        invalid={invalidProp || field?.invalid === true}
         disabled={disabled || field?.disabled === true}
         size={size}
       >
@@ -384,8 +393,8 @@ export function TextFieldInput({
           label={label}
           placeholder={placeholder}
           value={value}
-          onChangeText={onChangeText}
-          isInvalid={isInvalid}
+          onValueChange={onValueChange}
+          invalid={invalidProp}
           disabled={disabled}
           floatingLabel={floatingLabel}
           style={style}
@@ -404,7 +413,7 @@ export function TextFieldInput({
     ),
   );
 
-  const invalid = ctx.isInvalid || isInvalid === true || field?.invalid === true;
+  const invalid = ctx.invalid || invalidProp === true || field?.invalid === true;
   const fieldDisabled = ctx.disabled || inputDisabled;
   const state = {
     hovered: ctx.hovered,
@@ -448,10 +457,10 @@ export function TextFieldInput({
       <FloatingLabelInput
         label={accessibleName}
         value={value}
-        onChangeText={onChangeText}
+        onValueChange={onValueChange}
         onFocus={onFocus}
         onBlur={onBlur}
-        isInvalid={invalid}
+        invalid={invalid}
         refs={refs}
         style={style}
         {...rest}
@@ -518,7 +527,7 @@ export function TextFieldInput({
         accessibilityLabel={accessibleName}
         ref={refs}
         value={value}
-        onChangeText={onChangeText}
+        onChangeText={onValueChange}
         onFocus={(e) => {
           ctx.onFocus();
           onFocus?.(e);
@@ -550,8 +559,8 @@ type FloatingLabelInputProps = Omit<
 > & {
   label: string;
   value?: string;
-  onChangeText?: (value: string) => void;
-  isInvalid?: boolean;
+  onValueChange?: (value: string) => void;
+  invalid?: boolean;
   refs: (instance: TextInput | null) => void;
 };
 
@@ -575,10 +584,10 @@ type FloatingLabelInputProps = Omit<
 function FloatingLabelInput({
   label,
   value,
-  onChangeText,
+  onValueChange,
   onFocus,
   onBlur,
-  isInvalid,
+  invalid: invalidProp,
   refs,
   style,
   ...rest
@@ -589,7 +598,7 @@ function FloatingLabelInput({
 
   const hasValue = (value?.length ?? 0) > 0;
   const floated = ctx.focused || hasValue;
-  const invalid = ctx.isInvalid || isInvalid === true;
+  const invalid = ctx.invalid || invalidProp === true;
   const palette = ctx.palette;
 
   const progress = useRef(new Animated.Value(floated ? 1 : 0)).current;
@@ -679,7 +688,7 @@ function FloatingLabelInput({
         accessibilityLabel={label}
         ref={refs}
         value={value}
-        onChangeText={onChangeText}
+        onChangeText={onValueChange}
         onFocus={(e) => {
           ctx.onFocus();
           onFocus?.(e);
@@ -748,11 +757,13 @@ export function TextFieldLabel({
  */
 export function TextFieldHint({
   children,
-  isInvalid = false,
+  invalid: invalidProp,
+  isInvalid,
   nativeID,
   style,
 }: TextFieldHintProps) {
   const theme = useTheme();
+  const invalid = invalidProp ?? isInvalid ?? false;
   const palette = useTextFieldPalette();
   return (
     <Text
@@ -762,7 +773,7 @@ export function TextFieldHint({
         {
           paddingTop: 1,
           marginTop: TEXT_FIELD_STACK_GAP,
-          color: isInvalid ? palette.error : palette.hint,
+          color: invalid ? palette.error : palette.hint,
         },
         style,
       ]}>
@@ -779,7 +790,7 @@ export function TextFieldHint({
 export function TextFieldIcon({ icon: Comp, position = 'leading' }: TextFieldIconProps) {
   const ctx = useTextFieldContext();
   const color = resolveIconColor(ctx.palette, {
-    invalid: ctx.isInvalid,
+    invalid: ctx.invalid,
     disabled: ctx.disabled,
   });
 
@@ -862,13 +873,13 @@ export function TextFieldGhost({
         a.z_10,
         platform({
           native: {
-            paddingLeft: TEXT_FIELD_GEOMETRY.medium.paddingHorizontal + textOffset,
+            paddingLeft: TEXT_FIELD_GEOMETRY.md.paddingHorizontal + textOffset,
           },
           web: {
             paddingLeft: textOffset,
           },
         }),
-        web({ paddingRight: TEXT_FIELD_GEOMETRY.medium.paddingHorizontal }),
+        web({ paddingRight: TEXT_FIELD_GEOMETRY.md.paddingHorizontal }),
         a.overflow_hidden,
         a.max_w_full,
       ]}

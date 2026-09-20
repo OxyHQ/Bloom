@@ -1,13 +1,13 @@
 import React, { memo, useCallback, useEffect, useId, useMemo, useState } from 'react';
 import { StyleSheet, View, type LayoutChangeEvent } from 'react-native';
 
-import { BUTTON_SHADOW, resolveButtonRamps } from '../button/shared';
+import { BUTTON_SHADOW } from '../button/shared';
 import { adoptStyleSheet } from '../styles/adopt-style-sheet';
 import type { WebCssStyle } from '../styles/web-view-style';
 import { useTheme } from '../theme/use-theme';
 import {
   COMPOSER_LOADER_FADE_MS,
-  DEFAULT_COMPOSER_LOADER_COLORS,
+  resolveComposerLoaderColors,
   PILL_RADIUS,
   blurFilterId,
   composerLoaderGeometry,
@@ -43,7 +43,7 @@ export const COMPOSER_LOADER_WEB_CSS = `
 function ComposerLoaderComponent({
   children,
   active = true,
-  colors = DEFAULT_COMPOSER_LOADER_COLORS,
+  colors,
   speed = 4.5,
   intensity = 0.7,
   bloom = 16,
@@ -91,14 +91,13 @@ function ComposerLoaderComponent({
     [box.w, box.h, arc, line, bloom, bloomStrength, bloomOnly, taper, reverse, offset, radius],
   );
 
-  const [c0, c1, c2, c3] = colors;
+  const [c0, c1, c2, c3] = colors ?? resolveComposerLoaderColors(theme);
   const cornerRadius = radius ?? PILL_RADIUS;
   const direction = reverse ? 'reverse' : 'normal';
-  const { neutral } = resolveButtonRamps(theme);
 
   const surfaceStyle: WebCssStyle = {
     borderRadius: cornerRadius,
-    backgroundColor: theme.isDark ? neutral[800] : theme.colors.card,
+    backgroundColor: theme.colors.card,
     boxShadow: BUTTON_SHADOW[theme.isDark ? 'dark' : 'light'],
   };
   const clipStyle: WebCssStyle = {

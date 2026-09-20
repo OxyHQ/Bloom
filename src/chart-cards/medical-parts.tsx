@@ -3,7 +3,6 @@ import { Animated, Easing, Platform, Pressable, View, type StyleProp, type ViewS
 import { useReducedMotion } from 'react-native-reanimated';
 import Svg, { Path } from 'react-native-svg';
 
-import { mixColor, resolveButtonRamps } from '../button/shared';
 import { adoptStyleSheet } from '../styles/adopt-style-sheet';
 import type { WebCssStyle } from '../styles/web-view-style';
 import { useTheme } from '../theme/use-theme';
@@ -45,20 +44,12 @@ export function useMedicalPalette(): MedicalPalette {
   const theme = useTheme();
   const palette = useChartCardPalette();
   return useMemo(() => {
-    const { neutral: n, accent } = resolveButtonRamps(theme);
-    return theme.isDark
-      ? {
-          secondaryHover: n[800],
-          buttonBorderHover: n[500],
-          cellHover: mixColor(palette.inner, n[700], 0.6),
-          focusRing: accent[500],
-        }
-      : {
-          secondaryHover: n[200],
-          buttonBorderHover: n[300],
-          cellHover: n[100],
-          focusRing: accent[500],
-        };
+    return {
+      secondaryHover: theme.colors.backgroundTertiary,
+      buttonBorderHover: theme.colors.border,
+      cellHover: theme.colors.contrast50,
+      focusRing: theme.colors.primary,
+    };
   }, [theme, palette.inner]);
 }
 

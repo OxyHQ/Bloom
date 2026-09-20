@@ -6,6 +6,11 @@ import { AgentLimitsCard } from './index';
 import type { AgentLimitsContext, AgentLimitsUsageLimit } from './types';
 
 const meta: Meta<typeof AgentLimitsCard> = {
+  argTypes: {
+    "plan": { control: 'text' },
+    "expanded": { control: 'boolean' },
+    "defaultExpanded": { control: 'boolean' }
+  },
   title: 'Blocks/Agent Limits',
   component: AgentLimitsCard,
 };
@@ -67,21 +72,24 @@ const LIMITS: AgentLimitsUsageLimit[] = [
 
 /** Press "Context window" to grow the breakdown; press a group to list its members. */
 export const Basic: Story = {
-  render: () => (
-    <View style={{ width: 360 }}>
-      <AgentLimitsCard context={CONTEXT} plan="Max (5x)" limits={LIMITS} />
+  args: { plan: "Max (5x)" },
+  parameters: { controls: { include: ["plan","expanded","defaultExpanded"] } },
+  render: (args) => (
+    <View style={{ maxWidth: '100%', width: 360 }}>
+      <AgentLimitsCard {...args} context={CONTEXT}  limits={LIMITS} />
     </View>
   ),
 };
 
 /** Collapsed and expanded side by side, with the plan arrow. */
 export const States: Story = {
+  parameters: { controls: { disable: true } },
   render: () => (
     <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 24, alignItems: 'flex-start' }}>
-      <View style={{ width: 360 }}>
+      <View style={{ maxWidth: '100%', width: 360 }}>
         <AgentLimitsCard context={CONTEXT} plan="Max (5x)" limits={LIMITS} testID="collapsed" />
       </View>
-      <View style={{ width: 360 }}>
+      <View style={{ maxWidth: '100%', width: 360 }}>
         <AgentLimitsCard
           context={CONTEXT}
           plan="Max (5x)"
@@ -97,8 +105,9 @@ export const States: Story = {
 
 /** Either section on its own. */
 export const Sections: Story = {
+  parameters: { controls: { disable: true } },
   render: () => (
-    <View style={{ gap: 24, width: 360 }}>
+    <View style={{ maxWidth: '100%', gap: 24, width: 360 }}>
       <AgentLimitsCard context={CONTEXT} />
       <AgentLimitsCard plan="Pro" limits={LIMITS.slice(0, 2)} onPlanPress={() => {}} />
     </View>

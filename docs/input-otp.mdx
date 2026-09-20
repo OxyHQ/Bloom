@@ -18,10 +18,10 @@ import { InputOtp } from '@oxy.so/bloom/input-otp';
 
 The `InputOtp` look, coloured by Bloom's theme:
 
-- Each box is **48 × 48**, radius 10, a 1px `neutral-200` border (`neutral-700` in dark) on the card surface, with the `shadow-xs` drop shadow.
+- Each box is **48 × 48**, radius 10, a 1px semantic hairline on the shared secondary surface, with the `shadow-xs` drop shadow.
 - Digits are **mono**, 18/26 medium, centred, with tabular numerals, so a row of `1`s and `8`s stays optically even.
 - Boxes sit **8px** apart; `groupEvery={3}` adds **12px** more before each group (`000 000`).
-- **Hover** darkens the border to `neutral-300`. **Focus** paints the border and a 2px ring outside it in the accent (`primary`) — on every focus, since a text input is `:focus-visible` on a click too.
+- **Hover** emphasizes the semantic border. **Focus** paints the border and a 2px ring outside it in the accent (`primary`) — on every focus, since a text input is `:focus-visible` on a click too.
 - **Invalid** gives every box a red border, a red tint and red digits; focus still wins over the red border.
 - **Disabled** dims the fill and the digits and drops the shadow.
 
@@ -47,7 +47,7 @@ Clearing a box removes its digit from the value, so later digits move left.
 | `value?` / `defaultValue?` | `string` | Controlled / initial code. |
 | `onChange?` | `(value: string) => void` | Every change. |
 | `onComplete?` | `(value: string) => void` | Once the last box is filled. |
-| `isInvalid?` | `boolean` | Error paint and `aria-invalid` on every box. |
+| `invalid?` | `boolean` | Error paint and `aria-invalid` on every box. |
 | `isDisabled?` / `disabled?` | `boolean` | Disable every box. |
 | `groupEvery?` | `number` | Gap between groups. |
 | `autoFocus?` | `boolean` | Focus the first box on mount. |

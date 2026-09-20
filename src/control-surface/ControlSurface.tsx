@@ -18,7 +18,7 @@ import type { ControlSurfaceProps } from './types';
  * ```
  *
  * A field left `undefined` INHERITS rather than resetting, so a nested
- * `<ControlSurface density="small">` inside a glass island stays glass. The
+ * `<ControlSurface density="sm">` inside a glass island stays glass. The
  * full precedence rule is in `control-surface/context.ts`.
  */
 const ControlSurfaceComponent: React.FC<ControlSurfaceProps> = ({
@@ -30,7 +30,7 @@ const ControlSurfaceComponent: React.FC<ControlSurfaceProps> = ({
   const value = useMemo(
     () => ({
       material: material ?? inherited?.material ?? 'solid',
-      density: density ?? inherited?.density ?? 'medium',
+      density: (density === 'small' ? 'sm' : density === 'medium' ? 'md' : density) ?? inherited?.density ?? 'md',
     }),
     [material, density, inherited?.material, inherited?.density],
   );

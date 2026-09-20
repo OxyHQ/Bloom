@@ -1,12 +1,12 @@
 import { Platform } from 'react-native';
 
-import { neutralRamp } from '../button/shared';
 import { parseRgba } from '../theme/color-utils';
 import type { WebCssStyle } from '../styles/web-view-style';
 import type { MediaArtist, RepeatMode, SleepTimerValue, TransportControlsSize } from './types';
 import {
   AA_TEXT_CONTRAST,
   contrastRatio,
+  darken,
   darkenUntilContrast,
   relativeLuminance,
 } from '../styles/color-contrast';
@@ -101,9 +101,9 @@ export function resolveArtworkTint(
   return shade ? { background: shade.color, darkened: shade.amount } : { background: null, darkened: 0 };
 }
 
-/** The dark surface the full-screen gradient ends on: neutral-950 tinted by the theme text. */
+/** Legacy text-only helper: a dark theme-linked artwork fallback. New players use background directly. */
 export function immersiveBase(themeText: string): string {
-  return neutralRamp(themeText)[950];
+  return darken(themeText, 0.94) ?? '#000000';
 }
 
 /** A top-to-bottom gradient: `background-image` on web, the native CSS-gradient style elsewhere. */

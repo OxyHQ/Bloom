@@ -31,11 +31,12 @@ export function PhoneInput({
   required,
   tooltip,
   size,
+  invalid: invalidProp,
   isInvalid,
   disabled,
   value,
   defaultValue = '',
-  onChangeText,
+  onValueChange,
   country,
   defaultCountry = 'US',
   onCountryChange,
@@ -51,17 +52,18 @@ export function PhoneInput({
   // a `Field disabled` used to miss: the number input reads the field context
   // itself, the select does not, so the picker stayed operable inside a disabled
   // field. Resolving membership here hands the same state to both halves.
+  const invalid = invalidProp ?? isInvalid;
   const field = useFieldMembership({
     accessibilityLabel,
     label: label ?? 'Phone number',
     disabled,
-    invalid: isInvalid,
+    invalid: invalid,
     required,
   });
   const [text, setText] = useControllableState({
     value,
     defaultValue,
-    onChange: onChangeText,
+    onChange: onValueChange,
   });
 
   return (
@@ -73,7 +75,7 @@ export function PhoneInput({
       ) : null}
       <TextField
         size={size}
-        isInvalid={field.invalid}
+        invalid={field.invalid}
         disabled={field.disabled}
         leadingAddon={
           <CountryCodeSelect
@@ -90,7 +92,7 @@ export function PhoneInput({
           placeholder={placeholder ?? null}
           value={text}
           onChangeText={setText}
-          isInvalid={field.invalid}
+          invalid={field.invalid}
           keyboardType="phone-pad"
           autoComplete="tel"
           textContentType="telephoneNumber"
@@ -99,7 +101,7 @@ export function PhoneInput({
         />
         {trailingIcon ? <TextFieldIcon icon={trailingIcon} position="trailing" /> : null}
       </TextField>
-      {hint ? <TextFieldHint isInvalid={field.invalid}>{hint}</TextFieldHint> : null}
+      {hint ? <TextFieldHint invalid={field.invalid}>{hint}</TextFieldHint> : null}
     </View>
   );
 }

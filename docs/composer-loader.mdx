@@ -43,7 +43,7 @@ Under reduced motion the band stops (web: `animation: none`; native: no clock), 
 |------|------|---------|-------------|
 | `children` | `ReactNode` | — | The composer. |
 | `active?` | `boolean` | `true` | Show the light; fades in/out over 450ms. |
-| `colors?` | `[string, string, string, string]` | `#5eead4 #46baec #e633a4 #00faa7` | Gradient left → right. Any colour string. |
+| `colors?` | `[string, string, string, string]` | Theme primary / support / action foreground roles | Gradient left → right. Any colour string. |
 | `speed?` | `number` | `4.5` | Seconds per lap. |
 | `intensity?` | `number` | `0.7` | Overall light opacity. |
 | `bloom?` | `number` | `16` | How far the bloom bleeds inward, px. `0` drops the layer. |
@@ -60,8 +60,10 @@ Under reduced motion the band stops (web: `animation: none`; native: no clock), 
 | `style?` | `StyleProp<ViewStyle>` | — | Outer wrapper. |
 | `testID?` | `string` | — | Also derives `-surface` and `-light`. |
 
-The default colours are an iridescent set, kept literal on purpose: they are the effect's identity, not a theme role. Pass `colors` to tint it to a brand.
+The default colours follow the current preset and mode: `primarySubtleForeground`, `secondarySubtleForeground`, `tertiarySubtleForeground`, then primary again to close the moving band. Both platforms use `resolveComposerLoaderColors(theme)`. Pass `colors` for an explicit override.
 
 ## Accessibility
 
 The surface and the light are decorative (`aria-hidden`, `pointerEvents="none"`); only the children are exposed. Announce the busy state from the composer itself (for example on its send / stop button).
+
+`DEFAULT_COMPOSER_LOADER_COLORS` remains exported as a deprecated legacy rainbow for callers that pass it explicitly via `colors`. It is no longer the component default; prefer `resolveComposerLoaderColors(theme)` for theme-aware values.

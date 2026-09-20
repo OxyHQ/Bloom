@@ -1,5 +1,6 @@
-import React, { useMemo, useState } from 'react';
-import { View } from 'react-native';
+import React, { useEffect, useMemo, useState } from 'react';
+import { View, useWindowDimensions } from 'react-native';
+import { SettingsModalContext, settingsLayoutFor } from './context';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
 import { Button } from '../button';
@@ -216,7 +217,7 @@ function GeneralDemo() {
   const [provider, setProvider] = useState('github');
   const [destination, setDestination] = useState('inside');
   const toggle = (key: keyof typeof toggles, label: string) => (
-    <Switch value={toggles[key]} onValueChange={(v) => setToggles((t) => ({ ...t, [key]: v }))} accessibilityLabel={label} />
+    <Switch checked={toggles[key]} onCheckedChange={(v) => setToggles((t) => ({ ...t, [key]: v }))} accessibilityLabel={label} />
   );
   return (
     <SettingsGeneralPage
@@ -224,7 +225,7 @@ function GeneralDemo() {
         title: 'Ultra $149/mo',
         description: 'You are on 7x more usage than Regular.',
         action: (
-          <Button variant="secondary" size="small">
+          <Button size="sm" appearance="outline" tone="neutral">
             Upgrade to Max
           </Button>
         ),
@@ -238,7 +239,7 @@ function GeneralDemo() {
               label: 'Limits',
               description: 'You are on 7x more usage than Premium',
               control: (
-                <Button variant="secondary" size="small">
+                <Button size="sm" appearance="outline" tone="neutral">
                   Manage limits
                 </Button>
               ),
@@ -318,10 +319,10 @@ function ProfileDemo() {
         {
           key: 'account',
           rows: [
-            { key: 'account', label: 'Connected account', control: <Button variant="secondary" size="small" leadingIcon={RiExternalLinkLine}>Manage</Button> },
-            { key: 'public', label: 'Public profile', description: 'When enabled your profile page will be visible to anyone', control: <Switch value={publicProfile} onValueChange={setPublicProfile} accessibilityLabel="Public profile" /> },
+            { key: 'account', label: 'Connected account', control: <Button size="sm" leadingIcon={RiExternalLinkLine} appearance="outline" tone="neutral">Manage</Button> },
+            { key: 'public', label: 'Public profile', description: 'When enabled your profile page will be visible to anyone', control: <Switch checked={publicProfile} onCheckedChange={setPublicProfile} accessibilityLabel="Public profile" /> },
             { key: 'device', label: 'Device ID', control: <SettingsValueField muted>593e2611-b9e3-44e2-1289-ab3f9d21</SettingsValueField> },
-            { key: 'logout', label: 'Log out from all devices', control: <Button variant="secondary" size="small" leadingIcon={RiLogoutCircleLine}>Logout</Button> },
+            { key: 'logout', label: 'Log out from all devices', control: <Button size="sm" leadingIcon={RiLogoutCircleLine} appearance="outline" tone="neutral">Logout</Button> },
           ],
         },
       ]}
@@ -389,13 +390,16 @@ function usePages(): Record<string, SettingsModalPage> {
 
 /** The realistic flow: a button opens the modal through `useDialogControl()`. */
 export const Playground: Story = {
-  render: function PlaygroundStory() {
+  args: { defaultPage: 'general' },
+  parameters: { controls: { disable: false, include: ['defaultPage'] } },
+  argTypes: { defaultPage: { control: 'select', options: ['general', 'profile', 'tools', 'storage'] } },
+  render: function PlaygroundStory(args) {
     const control = useDialogControl();
     const pages = usePages();
     return (
       <View style={{ padding: 24 }}>
         <Button onPress={() => control.open()}>Open settings</Button>
-        <SettingsModal control={control} groups={GROUPS} pages={pages} testID="settings" />
+        <SettingsModal {...args} control={control} groups={GROUPS} pages={pages} testID="settings" />
       </View>
     );
   },
@@ -403,37 +407,48 @@ export const Playground: Story = {
 
 function OpenOn({ page }: { page: string }) {
   const pages = usePages();
-  const [open, setOpen] = useState(true);
+  const control = useDialogControl();
+  useEffect(() => { control.open(); }, [control.open]);
   return (
     <View style={{ padding: 24 }}>
-      <Button onPress={() => setOpen(true)}>Open settings</Button>
-      <SettingsModal open={open} onClose={() => setOpen(false)} groups={GROUPS} pages={pages} defaultPage={page} testID="settings" />
+      <Button onPress={() => control.open()}>Open settings</Button>
+      <SettingsModal control={control} groups={GROUPS} pages={pages} defaultPage={page} testID="settings" />
     </View>
   );
 }
 
-export const General: Story = { render: () => <OpenOn page="general" /> };
-export const Profile: Story = { render: () => <OpenOn page="profile" /> };
-export const Tools: Story = { render: () => <OpenOn page="tools" /> };
-export const Storage: Story = { render: () => <OpenOn page="storage" /> };
+export const General: Story = {
+  parameters: { controls: { disable: true } }, render: () => <OpenOn page="general" /> };
+export const Profile: Story = {
+  parameters: { controls: { disable: true } }, render: () => <OpenOn page="profile" /> };
+export const Tools: Story = {
+  parameters: { controls: { disable: true } }, render: () => <OpenOn page="tools" /> };
+export const Storage: Story = {
+  parameters: { controls: { disable: true } }, render: () => <OpenOn page="storage" /> };
 
 /** The pages outside the shell, at the modal's 533px content width. */
 export const Pages: Story = {
-  render: () => (
-    <View style={{ padding: 24, gap: 40 }}>
-      {[<GeneralDemo key="g" />, <ProfileDemo key="p" />, <ToolsDemo key="t" />, <StorageDemo key="s" />].map((page, i) => (
-        <View key={i} style={{ width: 533 }} testID={`page-${i}`}>
-          {page}
-        </View>
-      ))}
-    </View>
-  ),
+  parameters: { controls: { disable: true } },
+  render: function PagesStory() {
+    const { width } = useWindowDimensions();
+    // Isolated pages need the same responsive layout context as the modal shell.
+    return <SettingsModalContext.Provider value={{ layout: settingsLayoutFor(width), showSaved: () => {}, close: () => {} }}>
+      <View style={{ padding: 16, maxWidth: '100%', gap: 40 }}>
+        {[<GeneralDemo key="g" />, <ProfileDemo key="p" />, <ToolsDemo key="t" />, <StorageDemo key="s" />].map((page, i) => (
+          <View key={i} style={{ width: 533, maxWidth: '100%' }} testID={`page-${i}`}>
+            {page}
+          </View>
+        ))}
+      </View>
+    </SettingsModalContext.Provider>;
+  },
 };
 
 /** Row chrome on its own: the hairline stops 12px from the left and skips the last row. */
 export const Rows: Story = {
+  parameters: { controls: { disable: true } },
   render: () => (
-    <View style={{ padding: 24, width: 581 }}>
+    <View style={{ padding: 24, width: 581, maxWidth: '100%' }}>
       <SettingsCard testID="card">
         <SettingsRow label="Email">
           <SettingsValueField icon={RiMailLine}>hi@example.com</SettingsValueField>

@@ -106,13 +106,13 @@ function Surface({ children }: { children: React.ReactNode }) {
 function BothModes({ children, min = 380 }: { children: React.ReactNode; min?: number }) {
   const preset = useContext(BloomThemeContext)?.colorPreset;
   return (
-    <View style={{ flexDirection: 'row', flexWrap: 'wrap' }}>
-      <View style={{ minWidth: min, flexGrow: 1, flexBasis: min }}>
+    <View style={{ width: '100%', flexDirection: 'row', flexWrap: 'wrap' }}>
+      <View style={{ minWidth: 0, maxWidth: '100%', flexShrink: 1, flexGrow: 1, flexBasis: min }}>
         <BloomThemeProvider mode="light" colorPreset={preset}>
           <Surface>{children}</Surface>
         </BloomThemeProvider>
       </View>
-      <View style={{ minWidth: min, flexGrow: 1, flexBasis: min }}>
+      <View style={{ minWidth: 0, maxWidth: '100%', flexShrink: 1, flexGrow: 1, flexBasis: min }}>
         <BloomThemeProvider mode="dark" colorPreset={preset}>
           <Surface>{children}</Surface>
         </BloomThemeProvider>
@@ -302,7 +302,7 @@ export const Stories: Story = {
     }));
     return (
       <View style={{ flexDirection: 'row', gap: 24, padding: 24, flexWrap: 'wrap' }}>
-        <View style={{ width: 390, height: 760 }}>
+        <View style={{ width: '100%', maxWidth: 390, height: 760 }}>
           <StoryViewer
             stories={stories}
             index={index}
@@ -324,7 +324,7 @@ export const Stories: Story = {
             testID="story"
           />
         </View>
-        <View style={{ width: 390, height: 760 }}>
+        <View style={{ width: '100%', maxWidth: 390, height: 760 }}>
           <StoryViewer
             stories={stories.slice(0, 3)}
             index={0}

@@ -37,7 +37,7 @@ describe('the Storybook Tailwind pipeline is wired', () => {
   it('registers @tailwindcss/vite in the Storybook Vite config', () => {
     const main = read('.storybook/main.ts');
     expect(main).toContain("from '@tailwindcss/vite'");
-    expect(main).toContain('plugins: [tailwindcss()]');
+    expect(main).toMatch(/plugins:\s*\[[\s\S]*?tailwindcss\(\)/);
   });
 
   it('compiles the same stylesheet a consumer compiles', () => {

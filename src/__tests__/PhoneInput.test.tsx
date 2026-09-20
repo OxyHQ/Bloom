@@ -118,19 +118,23 @@ describe('CountryFlag', () => {
 });
 
 describe('TextField leadingAddon', () => {
-  it.each(['medium', 'small'] as const)('%s: pl-1 and the size’s right padding, addon 2px before the input', (size) => {
+  it.each(['md', 'sm'] as const)('%s: pl-1 and the size’s right padding, addon 2px before the input', (size) => {
     const root = renderLight(
       <TextField size={size} leadingAddon={<View testID="addon" />}>
-        <TextFieldInput label="Phone Number" value="" onChangeText={() => {}} />
+        <TextFieldInput label="Phone Number" value="" onValueChange={() => {}} />
       </TextField>,
     );
     const shell = shellStyle(root);
     expect(shell.paddingLeft).toBe(4);
-    expect(shell.paddingRight).toBe(size === 'medium' ? 8 : 6);
+    expect(shell.paddingRight).toBe(size === 'md' ? 8 : 6);
     expect(shell.paddingHorizontal).toBeUndefined();
     expect(TEXT_FIELD_ADDON_PADDING).toEqual({
-      medium: { paddingLeft: 4, paddingRight: 8 },
+      xs: { paddingLeft: 4, paddingRight: 4 },
+      lg: { paddingLeft: 4, paddingRight: 10 },
+      md: { paddingLeft: 4, paddingRight: 8 },
+      sm: { paddingLeft: 4, paddingRight: 6 },
       small: { paddingLeft: 4, paddingRight: 6 },
+      medium: { paddingLeft: 4, paddingRight: 8 },
     });
     let slot = root.getByTestId('addon').parent!;
     while (resolvedStyle(slot.props.style).marginRight === undefined) slot = slot.parent!;
@@ -144,7 +148,7 @@ describe('TextField leadingAddon', () => {
   it('keeps the plain side padding without an addon', () => {
     const root = renderLight(
       <TextField>
-        <TextFieldInput label="Phone Number" value="" onChangeText={() => {}} />
+        <TextFieldInput label="Phone Number" value="" onValueChange={() => {}} />
       </TextField>,
     );
     expect(shellStyle(root).paddingHorizontal).toBe(8);
@@ -207,7 +211,7 @@ describe('PhoneInput', () => {
 
   it('types into an uncontrolled value and reports it', () => {
     const onChangeText = jest.fn();
-    const root = renderLight(<PhoneInput label="Phone Number" onChangeText={onChangeText} />);
+    const root = renderLight(<PhoneInput label="Phone Number" onValueChange={onChangeText} />);
     fireEvent.changeText(root.getByLabelText('Phone Number'), '415 555 0132');
     expect(onChangeText).toHaveBeenCalledWith('415 555 0132');
     expect(root.getByLabelText('Phone Number').props.value).toBe('415 555 0132');

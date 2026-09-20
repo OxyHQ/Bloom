@@ -3,7 +3,6 @@ import type { TextStyle } from 'react-native';
 import {
   ACCENT_TABLE,
   colorRamp,
-  resolveButtonRamps,
   type Ramp,
   type RampStop,
   type RampTable,
@@ -154,9 +153,7 @@ export function resolveAvatarTint(theme: Theme, color: AvatarColor): AvatarTint 
     }
     case 'neutral':
     default: {
-      const { neutral: n } = resolveButtonRamps(theme);
-      const background = theme.isDark ? n[800] : n[300];
-      return { background, foreground: legibleStop(n, background, 500) };
+      return { background: theme.colors.backgroundTertiary, foreground: theme.colors.textSecondary };
     }
   }
 }

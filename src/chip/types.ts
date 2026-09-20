@@ -1,3 +1,4 @@
+import type { BloomAppearance, BloomSize, BloomTone } from '../appearance';
 import type { StyleProp, ViewStyle, TextStyle } from 'react-native';
 
 import type { AccentFill, AccentTone } from '../theme/accent-colors';
@@ -7,7 +8,7 @@ import type { AccentFill, AccentTone } from '../theme/accent-colors';
  * used to stop at 28, which is why five families drew their own pill. The table
  * is in `shared.ts`.
  */
-export type ChipSize = 'small' | 'medium' | 'large' | 'xl' | '2xl';
+export type ChipSize = BloomSize | 'small' | 'medium' | 'large' | 'xl' | '2xl';
 
 /**
  * The three accent fills, plus `inverted`: a hairline pill on the page that
@@ -31,6 +32,15 @@ export type ChipHue = 'lime' | 'rose' | 'yellow' | 'cyan' | 'blue' | 'purple' | 
 export type ChipRole = 'button' | 'radio' | 'tab';
 
 export interface ChipProps {
+  appearance?: BloomAppearance;
+  tone?: BloomTone;
+  checked?: boolean;
+  onCheckedChange?: (checked: boolean) => void;
+  leading?: React.ReactNode;
+  trailing?: React.ReactNode;
+  leadingIcon?: import("../icons/icon-component").BloomIconComponent;
+  trailingIcon?: import("../icons/icon-component").BloomIconComponent;
+
   /** Text content of the chip. */
   children?: React.ReactNode;
   /**

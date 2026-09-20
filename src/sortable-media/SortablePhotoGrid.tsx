@@ -149,18 +149,18 @@ function resolveGridPaint(theme: Theme): GridPaint {
   const menu = resolveMenuPalette(theme);
   const dark = theme.isDark;
   return {
-    placeholder: dark ? mixColor(n[800], n[700], 0.6) : n[100],
+    placeholder: theme.colors.backgroundTertiary,
     scrim: n[950],
     onMedia: n[50],
     surface: menu.surface,
     surfaceText: menu.text,
     surfaceShadow: menu.shadow,
-    addBorder: dark ? n[600] : n[300],
-    addHover: dark ? n[900] : n[50],
+    addBorder: theme.colors.border,
+    addHover: theme.colors.backgroundSecondary,
     addIcon: theme.colors.textSecondary,
     text: theme.colors.text,
     textSecondary: theme.colors.textSecondary,
-    slotBorder: dark ? n[600] : n[300],
+    slotBorder: theme.colors.border,
     ring: accent[500],
   };
 }

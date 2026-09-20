@@ -2,7 +2,7 @@ import { Platform } from 'react-native';
 
 import { ACCENT_TABLE, colorRamp, DANGER_TABLE, mixColor, resolveButtonRamps } from '../button/shared';
 import type { AccentTone } from '../theme/accent-colors';
-import { surfaceTextOn } from '../styles/surface-levels';
+import { surfaceTextOn, resolveSurfaceLevel, surfaceFillOn, hairlineOn } from '../styles/surface-levels';
 import type { Theme } from '../theme/types';
 import type {
   CreatorOption,
@@ -55,27 +55,27 @@ export interface CreatorStudioPaint {
  *   error        danger ramp on `error` 600 / dark 400; surface 50 / 950 at 50%
  */
 export function resolveCreatorStudioPaint(theme: Theme): CreatorStudioPaint {
-  const { accent, neutral: n } = resolveButtonRamps(theme);
+  const { accent } = resolveButtonRamps(theme);
   const dark = theme.isDark;
   const red = colorRamp(theme.colors.error, DANGER_TABLE);
   const rose = colorRamp(theme.colors.negative, DANGER_TABLE);
   const green = colorRamp(theme.colors.success, ACCENT_TABLE);
-  const surface = dark ? n[900] : n[100];
+  const surface = resolveSurfaceLevel(theme, 1).background;
   const quiet = surfaceTextOn(theme, surface);
   return {
     surface,
-    inner: dark ? mixColor(surface, n[800], 0.6) : theme.colors.card,
-    border: dark ? n[800] : n[200],
+    inner: surfaceFillOn(theme, surface),
+    border: hairlineOn(theme, surface),
     text: theme.colors.text,
     // Read off THIS card's fill, not off a ramp stop chosen against the page —
     // the same copy of `neutral-400`/`neutral-500` that put chart-card captions
     // at 2.42:1. `surfaceTextOn` floors them on `surface`.
     textSecondary: quiet.textSecondary,
     textTertiary: quiet.textTertiary,
-    track: dark ? n[800] : n[200],
-    ring: dark ? n[700] : n[300],
-    placeholder: dark ? n[800] : n[200],
-    placeholderIcon: dark ? n[500] : n[400],
+    track: surfaceFillOn(theme, surface),
+    ring: theme.colors.primary,
+    placeholder: surfaceFillOn(theme, surface),
+    placeholderIcon: surfaceTextOn(theme, surfaceFillOn(theme, surface)).textSecondary,
     accent: dark ? accent[400] : accent[500],
     onAccent: theme.colors.primaryForeground,
     positive: dark ? green[400] : green[700],

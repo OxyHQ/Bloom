@@ -272,7 +272,7 @@ export const Narrow390: Story = {
     const [tracks] = useLikes(PLAYLIST);
     const player = usePlayer('p2');
     return (
-      <View style={{ width: 390 }}>
+      <View style={{ width: '100%', maxWidth: 390 }}>
         <Page>
           <Heading>Late Night Drive</Heading>
           <TrackList tracks={tracks} {...player} menuItems={menuFor()} showDownloaded testID="narrow" />
@@ -348,7 +348,7 @@ export const Episodes: Story = {
         <Heading>Field Notes</Heading>
         <EpisodeList {...props} width={900} testID="episodes" />
         <View style={{ height: 32 }} />
-        <View style={{ width: 390 }}>
+        <View style={{ width: '100%', maxWidth: 390 }}>
           <EpisodeList {...props} width={390} testID="episodes-narrow" />
         </View>
       </Page>

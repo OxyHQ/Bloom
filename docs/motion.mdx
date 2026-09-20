@@ -81,3 +81,25 @@ Jest and `tsc` catch none of these. Verify in a real **foregrounded** tab — a
 hidden tab freezes plain CSS transitions too, which mimics "the class didn't
 apply". Read the class attribute, or set `transitionProperty: 'none'` before
 reading computed styles.
+
+### Static Storybook and Reanimated's CommonJS bridge
+
+A live Vite preview can animate correctly while its static build crashes in
+Reanimated's DOM updater at `Object.keys(node.props)`. Measured here: the static
+bundle left the optional `require('react-native-web/dist/exports/StyleSheet/compiler/createReactDOMStyle')`
+in Reanimated's ESM `webUtils.web` module. The browser's missing `require` was
+swallowed by its `try/catch`, leaving the DOM compiler undefined; a DOM element
+then reached the legacy component-props branch. Dev `optimizeDeps` had converted
+the same call successfully. Storybook's `build.commonjsOptions` now enables
+`transformMixedEsModules` and converts `try/catch` requires only for installed
+`react-native-web/dist/*` modules. Other optional-peer boundaries remain intact.
+The source gate guards that wiring; emitted bundle inspection and a real static
+open-overlay check are required to verify it. Reanimated remains the real package.
+
+The same static audit exposed a separate Expo bootstrap omission: `expo-image`
+read `globalThis.expo.NativeModule` after tree shaking discarded the empty web
+`ensureNativeModulesAreInstalled` bridge and its polyfill import. Expo marks the
+polyfill as side-effectful but not that bridge. Storybook narrowly marks the real
+`expo-modules-core/src/ensureNativeModulesAreInstalled.ts` module as side-effectful;
+it neither mocks Expo nor creates a replacement global. A minimal production
+bundle confirmed the installer precedes the first NativeModule read.

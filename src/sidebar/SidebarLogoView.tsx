@@ -35,7 +35,7 @@ const SidebarLogoViewComponent: React.FC<SidebarLogoViewProps> = ({
   const label = accessibilityLabel ?? (typeof wordmark === 'string' ? wordmark : undefined);
 
   const content = (
-    <View style={{ flexDirection: 'row', alignItems: 'center', gap: icon != null && wordmark != null ? 8 : 0, minWidth: 0 }}>
+    <View style={{ flexDirection: 'row', alignItems: 'center', minWidth: 0 }}>
       {icon != null ? (
         <View
           style={{ width: SIDEBAR_LOGO_SIZE, height: SIDEBAR_LOGO_SIZE, alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}
@@ -46,7 +46,7 @@ const SidebarLogoViewComponent: React.FC<SidebarLogoViewProps> = ({
       ) : null}
       {wordmark != null && showWordmark ? (
         <Collapsible collapsed={collapsed}>
-          <View style={{ minHeight: SIDEBAR_LOGO_SIZE, justifyContent: 'center' }} testID={testID ? `${testID}-wordmark` : undefined}>
+          <View style={{ minHeight: SIDEBAR_LOGO_SIZE, paddingLeft: icon != null ? 8 : 0, justifyContent: 'center' }} testID={testID ? `${testID}-wordmark` : undefined}>
             {typeof wordmark === 'string' ? (
               <Text variant="headline-semibold" numberOfLines={1} style={{ color: palette.text }}>
                 {wordmark}

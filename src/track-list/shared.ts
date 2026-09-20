@@ -1,6 +1,7 @@
+import { surfaceFillOn, hairlineOn, surfaceTextOn } from '../styles/surface-levels';
 import { Platform, type ViewProps } from 'react-native';
 
-import { mixColor, resolveButtonRamps } from '../button/shared';
+import { resolveButtonRamps } from '../button/shared';
 import { resolveMenuPalette } from '../floating/menu-palette';
 import { BREAKPOINTS } from '../styles/breakpoints';
 import type { Theme } from '../theme/types';
@@ -113,24 +114,24 @@ export interface TrackListPaint {
 }
 
 export function resolveTrackListPaint(theme: Theme): TrackListPaint {
-  const { accent, neutral: n } = resolveButtonRamps(theme);
+  const { accent } = resolveButtonRamps(theme);
   const dark = theme.isDark;
   const menu = resolveMenuPalette(theme);
   return {
     text: theme.colors.text,
-    textMuted: dark ? n[400] : n[500],
+    textMuted: surfaceTextOn(theme, theme.colors.background).textSecondary,
     accent: dark ? accent[400] : accent[600],
-    rowHover: dark ? n[800] : n[100],
-    rowSelected: dark ? n[700] : n[200],
-    rowSelectedHover: dark ? mixColor(n[700], n[600], 0.5) : mixColor(n[200], n[300], 0.5),
-    hairline: dark ? n[800] : n[200],
-    coverPlaceholder: dark ? n[800] : n[100],
+    rowHover: surfaceFillOn(theme, theme.colors.background),
+    rowSelected: theme.colors.contrast50,
+    rowSelectedHover: surfaceFillOn(theme, surfaceFillOn(theme, theme.colors.background)),
+    hairline: hairlineOn(theme, theme.colors.background),
+    coverPlaceholder: surfaceFillOn(theme, theme.colors.background),
     ring: accent[500],
     dragSurface: menu.surface,
     dragShadow: dark
       ? '0 8px 24px rgba(0, 0, 0, 0.45), 0 1px 2px rgba(0, 0, 0, 0.3)'
       : '0 8px 24px rgba(0, 0, 0, 0.12), 0 1px 2px rgba(0, 0, 0, 0.06)',
-    rail: dark ? n[700] : n[200],
+    rail: theme.colors.contrast50,
     panel: menu.surface,
     panelBorder: menu.border,
     panelShadow: dark

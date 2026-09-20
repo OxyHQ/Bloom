@@ -7,7 +7,7 @@
  */
 import type { ComponentType } from 'react';
 
-import { BUTTON_SHADOW, mixColor, resolveButtonPalette, resolveButtonRamps } from '../button/shared';
+import { BUTTON_SHADOW, resolveButtonPalette } from '../button/shared';
 import type { ButtonPalette } from '../button/shared';
 import { MENU_SHADOW } from '../floating/menu-palette';
 import type { Props as IconProps } from '../icons/shared';
@@ -82,7 +82,7 @@ export interface ComposerPalette {
   shadowPicker: string;
   /** Provider marks: black at 30% as exported, inverted in dark. */
   logo: string;
-  /** `bg-button-primary`, every state. */
+  /** Main task action, every state. */
   send: ButtonPalette;
 }
 
@@ -93,55 +93,40 @@ export function withAlpha(color: string, alpha: number): string {
   return `rgba(${rgba.r}, ${rgba.g}, ${rgba.b}, ${alpha})`;
 }
 
-/**
- *   Token                                 light          dark
- *   background-primary-default            card           neutral-800
- *   background-primary-hover              neutral-100    neutral-700 @60% over neutral-800
- *   background-secondary-default          neutral-100    neutral-900
- *   background-tertiary-default / hover   200 / 300      800 / 700
- *   border-button-default                 neutral-200    neutral-700
- *   border-checkbox-default               neutral-300    neutral-700
- *   text-secondary / icon-secondary       neutral-500    neutral-500
- *   text-tertiary / icon-tertiary         neutral-400    neutral-600
- *   composer-panel-tab-background         neutral-200    neutral-700 @50% (transparent)
- *   composer-panel-add-background / hover 200 / 300      700 / 600
- *   composer-panel-tile-border            neutral-200    white @14% over neutral-800
- *   composer-panel-rail-background        neutral-100    neutral-900 @50% over neutral-800
- */
+/** Canonical surfaces and foregrounds follow the preset's authored role pairs. */
 export function resolveComposerPalette(theme: Theme): ComposerPalette {
-  const { accent, neutral: n } = resolveButtonRamps(theme);
+  const c = theme.colors;
   const dark = theme.isDark;
-  const surface = dark ? n[800] : theme.colors.card;
   return {
-    surface,
-    hover: dark ? mixColor(n[800], n[700], 0.6) : n[100],
-    secondary: dark ? n[900] : n[100],
-    tertiary: dark ? n[800] : n[200],
-    tertiaryHover: dark ? n[700] : n[300],
-    border: dark ? n[700] : n[200],
-    thumbBorder: dark ? n[700] : n[300],
-    text: theme.colors.text,
-    textSecondary: n[500],
-    textTertiary: dark ? n[600] : n[400],
-    iconPrimary: theme.colors.text,
-    iconSecondary: n[500],
-    iconTertiary: dark ? n[600] : n[400],
-    tab: dark ? withAlpha(n[700], 0.5) : n[200],
-    add: dark ? n[700] : n[200],
-    addHover: dark ? n[600] : n[300],
-    tileBorder: dark ? mixColor(n[800], '#ffffff', 0.14) : n[200],
-    rail: dark ? mixColor(n[800], n[900], 0.5) : n[100],
-    ringTrack: n[300],
-    ringArc: n[500],
-    accent400: accent[400],
-    accent500: accent[500],
-    focusRing: accent[500],
+    surface: c.card,
+    hover: c.backgroundSecondary,
+    secondary: c.backgroundSecondary,
+    tertiary: c.backgroundTertiary,
+    tertiaryHover: c.backgroundSecondary,
+    border: c.borderLight,
+    thumbBorder: c.border,
+    text: c.text,
+    textSecondary: c.textSecondary,
+    textTertiary: c.textTertiary,
+    iconPrimary: c.text,
+    iconSecondary: c.textSecondary,
+    iconTertiary: c.textTertiary,
+    tab: c.backgroundTertiary,
+    add: c.backgroundTertiary,
+    addHover: c.backgroundSecondary,
+    tileBorder: c.borderLight,
+    rail: c.backgroundSecondary,
+    ringTrack: c.borderLight,
+    ringArc: c.textSecondary,
+    accent400: c.primary,
+    accent500: c.primarySubtleForeground,
+    focusRing: c.primary,
     shadowXs: dark ? BUTTON_SHADOW.dark : BUTTON_SHADOW.light,
     shadowDropdown: dark ? MENU_SHADOW.dark : MENU_SHADOW.light,
     shadowCard: '0 1px 0.5px 0 rgba(0, 0, 0, 0.02), 0 4px 2px 0 rgba(0, 0, 0, 0.02)',
     shadowPicker: '0 1px 2px 0 rgba(0, 0, 0, 0.04), 0 4px 8px 0 rgba(0, 0, 0, 0.02)',
     logo: dark ? 'rgba(255, 255, 255, 0.3)' : 'rgba(0, 0, 0, 0.3)',
-    send: resolveButtonPalette('primary', theme),
+    send: resolveButtonPalette('solid', theme, 'action'),
   };
 }
 

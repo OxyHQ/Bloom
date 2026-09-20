@@ -1,3 +1,4 @@
+import { surfaceFillOn, hairlineOn, surfaceTextOn } from '../styles/surface-levels';
 /**
  * What every file of the `chat-composer` family paints from: the palette
  * resolved onto Bloom's ramps, the geometry the parts share, the default data
@@ -100,21 +101,22 @@ export function withAlpha(color: string, alpha: number): string {
 }
 
 export function resolveChatComposerPalette(theme: Theme): ChatComposerPalette {
-  const { accent, neutral: n } = resolveButtonRamps(theme);
+  const { accent } = resolveButtonRamps(theme);
   const dark = theme.isDark;
-  const surface = dark ? n[800] : theme.colors.card;
+  const surface = theme.colors.card;
+  const textPaint = surfaceTextOn(theme, surface);
   return {
     surface,
     page: theme.colors.background,
-    hover: dark ? mixColor(n[800], n[700], 0.6) : n[100],
-    hoverStrong: dark ? n[700] : n[200],
-    inset: dark ? mixColor(n[800], n[900], 0.6) : n[100],
-    border: dark ? n[700] : n[200],
+    hover: surfaceFillOn(theme, surface),
+    hoverStrong: hairlineOn(theme, surface),
+    inset: theme.colors.backgroundSecondary,
+    border: hairlineOn(theme, surface),
     text: theme.colors.text,
-    textSecondary: n[500],
-    textPlaceholder: dark ? n[600] : n[400],
+    textSecondary: textPaint.textSecondary,
+    textPlaceholder: textPaint.textTertiary,
     iconPrimary: theme.colors.text,
-    iconSecondary: n[500],
+    iconSecondary: textPaint.textSecondary,
     accent: accent[500],
     // A tint of the PAGE toward the accent, so a banner rail's wash keeps its
     // own surface's luminance instead of being an alpha of an unknown backdrop.

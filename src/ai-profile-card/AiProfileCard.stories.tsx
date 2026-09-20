@@ -9,6 +9,23 @@ import { AiProfileCard } from './index';
 import type { AiProfileCardStat } from './types';
 
 const meta: Meta<typeof AiProfileCard> = {
+  argTypes: {
+    "name": { control: 'text' },
+    "handle": { control: 'text' },
+    "badge": { control: 'text' },
+    "initials": { control: 'text' },
+    "contributionsLabel": { control: 'text' },
+    "contributions": { control: 'number' },
+    "countUpDuration": { control: 'number' },
+    "delta": { control: 'text' },
+    "activityLabel": { control: 'text' },
+    "period": { control: 'text' },
+    "defaultPeriod": { control: 'text' },
+    "columns": { control: 'number' },
+    "color": { control: 'text' },
+    "animateIn": { control: 'boolean' },
+    "activeCell": { control: 'number' }
+  },
   title: 'Blocks/AI Profile Card',
   component: AiProfileCard,
 };
@@ -50,15 +67,15 @@ const CELLS = cells(38);
 const COVER = 'https://images.unsplash.com/photo-1614728263952-84ea256f9679?w=1400&h=340&fit=crop';
 
 const Frame = ({ children, width = 680 }: { children: React.ReactNode; width?: number }) => (
-  <View style={{ padding: 40, width: width + 80 }}>{children}</View>
+  <View style={{ maxWidth: '100%', padding: 40, width: width + 80 }}>{children}</View>
 );
 
 const actions = (
   <>
-    <Button variant="secondary" size="small" leadingIcon={RiShare2Line}>
+    <Button size="sm" leadingIcon={RiShare2Line} appearance="outline" tone="neutral">
       Share
     </Button>
-    <Button variant="secondary" size="small" leadingIcon={RiEditBoxLine}>
+    <Button size="sm" leadingIcon={RiEditBoxLine} appearance="outline" tone="neutral">
       Edit
     </Button>
   </>
@@ -66,19 +83,21 @@ const actions = (
 
 /** Cover, overlapping avatar, count-up headline, tiles and the heatmap popping in. */
 export const Default: Story = {
-  render: function Render() {
+  args: { name: "Maya Collins", handle: "@maya", badge: "PRO", contributions: 7462, delta: "+14.8%" },
+  parameters: { controls: { include: ["name","handle","badge","contributions","delta","initials","contributionsLabel","countUpDuration","activityLabel","defaultPeriod","columns","color","animateIn","activeCell"] } },
+  render: function Render(args) {
     const [period, setPeriod] = useState('weekly');
     return (
       <Frame>
-        <AiProfileCard
+        <AiProfileCard {...args}
           testID="profile"
-          name="Maya Collins"
-          handle="@maya"
-          badge="PRO"
+
+
+
           coverSource={COVER}
           actions={actions}
-          contributions={7462}
-          delta="+14.8%"
+
+
           stats={STATS}
           cells={CELLS}
           period={period}
@@ -91,13 +110,15 @@ export const Default: Story = {
 
 /** No photo (the tertiary band), no actions, badge or chip; the number shows at once; no pop-in. */
 export const Minimal: Story = {
-  render: () => (
+  args: { name: "Maya Collins", contributions: 958, countUpDuration: 0, animateIn: false },
+  parameters: { controls: { include: ["name","contributions","countUpDuration","animateIn","handle","badge","initials","contributionsLabel","delta","activityLabel","period","defaultPeriod","columns","color","activeCell"] } },
+  render: (args) => (
     <Frame>
-      <AiProfileCard
-        name="Maya Collins"
-        contributions={958}
-        countUpDuration={0}
-        animateIn={false}
+      <AiProfileCard {...args}
+
+
+
+
         stats={STATS.slice(0, 2)}
         cells={CELLS}
         periods={[]}
@@ -108,19 +129,21 @@ export const Minimal: Story = {
 
 /** Below 640 the tiles go two by two and the heatmap scrolls sideways with 13px cells (resize the viewport). */
 export const Phone: Story = {
-  render: () => (
+  args: { name: "Maya Collins", handle: "@maya", badge: "PRO", contributions: 7462, delta: "+14.8%", color: "#10b981" },
+  parameters: { controls: { include: ["name","handle","badge","contributions","delta","color","initials","contributionsLabel","countUpDuration","activityLabel","period","defaultPeriod","columns","animateIn","activeCell"] } },
+  render: (args) => (
     <Frame width={358}>
-      <AiProfileCard
-        name="Maya Collins"
-        handle="@maya"
-        badge="PRO"
+      <AiProfileCard {...args}
+
+
+
         coverSource={COVER}
         actions={actions}
-        contributions={7462}
-        delta="+14.8%"
+
+
         stats={STATS}
         cells={CELLS}
-        color="#10b981"
+
       />
     </Frame>
   ),

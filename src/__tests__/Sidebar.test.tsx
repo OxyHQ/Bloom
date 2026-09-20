@@ -3,7 +3,8 @@ import { fireEvent, render } from '@testing-library/react-native';
 
 import { BloomThemeProvider } from '../theme/BloomThemeProvider';
 import { buildTheme } from '../theme/build-theme';
-import { resolveButtonRamps } from '../button/shared';
+import { APP_COLOR_NAMES } from '../theme/color-presets';
+import { parseRgba } from '../theme/color-utils';
 import { RiComputerLine, RiHomeFill, RiHomeLine, RiKanbanView2, RiSearchLine, RiSettings4Line } from '../icons/remix';
 import { Sidebar, SidebarFolder, SidebarItem, SidebarModeSwitcher, SIDEBAR_METRICS } from '../sidebar';
 import { resolveSidebarPalette } from '../sidebar/palette';
@@ -25,18 +26,46 @@ function renderIn(ui: React.ReactElement, mode: 'light' | 'dark' = 'light') {
 }
 
 describe('Sidebar', () => {
+  it('uses canonical surfaces and paired selected colours in every preset and mode', () => {
+    const luminance = (color: string) => {
+      const rgba = parseRgba(color)!;
+      const linear = [rgba.r, rgba.g, rgba.b].map(value => {
+        const channel = value / 255;
+        return channel <= 0.04045 ? channel / 12.92 : ((channel + 0.055) / 1.055) ** 2.4;
+      });
+      return linear[0]! * 0.2126 + linear[1]! * 0.7152 + linear[2]! * 0.0722;
+    };
+    for (const preset of APP_COLOR_NAMES) for (const mode of ['light', 'dark'] as const) {
+      const theme = buildTheme(preset, mode);
+      const palette = resolveSidebarPalette(theme);
+      expect(palette.panel).toBe(theme.colors.backgroundSecondary);
+      expect(palette.panelBorder).toBe(theme.colors.borderLight);
+      expect(palette.selected).toBe(theme.colors.primary);
+      expect(palette.selectedForeground).toBe(theme.colors.primaryForeground);
+      expect(palette.badgePrimary).toBe(theme.colors.secondary);
+      expect(palette.badgePrimaryForeground).toBe(theme.colors.secondaryForeground);
+      expect(palette.avatar.pink).toEqual({ background: theme.colors.tertiarySubtle, foreground: theme.colors.tertiarySubtleForeground });
+      for (const [fill, foreground] of [[palette.selected, palette.selectedForeground], [palette.badgePrimary, palette.badgePrimaryForeground]]) {
+        const a = luminance(fill!); const b = luminance(foreground!);
+        expect((Math.max(a, b) + 0.05) / (Math.min(a, b) + 0.05)).toBeGreaterThanOrEqual(4.5);
+      }
+    }
+  });
+
   it('keeps the floating panel geometry and tokens', () => {
     const screen = renderIn(<Sidebar testID="sb" items={ITEMS} selected="home" />, 'dark');
-    const { neutral } = resolveButtonRamps(buildTheme('teal', 'dark'));
+    const { colors } = buildTheme('teal', 'dark');
     const panel = resolvedStyle(screen.getByTestId('sb').props.style);
     expect(panel).toMatchObject({
+      height: '100%',
+      flexShrink: 0,
       borderRadius: 24,
       borderWidth: 1,
       paddingTop: 12,
       paddingLeft: 12,
       paddingRight: 12,
-      backgroundColor: neutral[900],
-      borderColor: neutral[800],
+      backgroundColor: colors.backgroundSecondary,
+      borderColor: colors.borderLight,
     });
     expect(panel.paddingHorizontal).toBeUndefined();
   });
@@ -55,18 +84,20 @@ describe('Sidebar', () => {
     expect(panel.borderWidth).toBeUndefined();
     expect(panel.boxShadow).toBeUndefined();
     const light = resolveSidebarPalette(buildTheme('teal', 'light'));
+    expect(panel.height).toBe('100%');
+    expect(panel.flexShrink).toBe(0);
     expect(panel.borderRightWidth).toBe(1);
     expect(panel.backgroundColor).toBe(light.panel);
-    // NOT the card's white highlight edge, which has no shadow to read against.
+    // Docked chrome uses the shared hairline against the panel surface.
     expect(panel.borderRightColor).toBe(light.dockedEdge);
     expect(panel.borderRightColor).not.toBe(light.panelBorder);
   });
 
   it('size drives the row, the glyph and the panel together — and the collapsed width is the square plus the panel', () => {
     for (const [size, expected] of [
-      ['small', { padding: 6, icon: 18, square: 30, collapsed: 46, expanded: 232 }],
-      ['medium', { padding: 8, icon: 20, square: 36, collapsed: 52, expanded: 260 }],
-      ['large', { padding: 10, icon: 24, square: 44, collapsed: 60, expanded: 300 }],
+      ['sm', { padding: 6, icon: 18, square: 30, collapsed: 46, expanded: 232 }],
+      ['md', { padding: 8, icon: 20, square: 36, collapsed: 52, expanded: 260 }],
+      ['lg', { padding: 10, icon: 24, square: 44, collapsed: 60, expanded: 300 }],
     ] as const) {
       const metrics = SIDEBAR_METRICS[size];
       expect(metrics.row.padding).toBe(expected.padding);
@@ -85,7 +116,7 @@ describe('Sidebar', () => {
   });
 
   it('a standalone row takes its own size, and the collapsed square follows it', () => {
-    const screen = renderIn(<SidebarItem testID="row" icon={RiHomeLine} label="Home" size="large" collapsed />);
+    const screen = renderIn(<SidebarItem testID="row" icon={RiHomeLine} label="Home" size="lg" collapsed />);
     expect(resolvedStyle(screen.getByTestId('row').props.style)).toMatchObject({ width: 44, padding: 10 });
   });
 
@@ -129,6 +160,20 @@ describe('Sidebar', () => {
     const collapsed = screen.getByTestId('sidebar-collapse');
     expect(collapsed.props.accessibilityLabel).toBe('Expand sidebar');
     expect(collapsed.props['aria-expanded']).toBe(false);
+  });
+
+  it.each([false, true])('an empty header has no phantom account gap (collapsed=%s)', (collapsed) => {
+    const screen = renderIn(<Sidebar collapsed={collapsed} showSearch={false} showThemeToggle={false} />);
+    expect(resolvedStyle(screen.getByTestId('sidebar-header').props.style).height).toBe(20);
+  });
+
+  it.each([false, true])('preserves the account header endpoints (collapsed=%s)', (collapsed) => {
+    const screen = renderIn(<Sidebar collapsed={collapsed} account={{ name: 'Alex' }} />);
+    expect(resolvedStyle(screen.getByTestId('sidebar-header').props.style).height).toBe(collapsed ? 62 : 32);
+    expect(resolvedStyle(screen.getByTestId('sidebar-header-control').props.style)).toMatchObject({
+      top: collapsed ? 0 : 6, width: collapsed ? 36 : 20,
+    });
+    expect(resolvedStyle(screen.getByTestId('sidebar-theme-morph').props.style).height).toBe(collapsed ? 36 : 40);
   });
 
   it('mobile shows a close button and never collapses', () => {
@@ -180,18 +225,35 @@ describe('SidebarModeSwitcher', () => {
 
   it('keeps the track geometry: p4, 32px rows 4 apart, a 32px thumb on the tertiary track', () => {
     const screen = renderIn(<SidebarModeSwitcher testID="modes" modes={MODES} value="computer" onValueChange={() => {}} />, 'dark');
-    const { neutral } = resolveButtonRamps(buildTheme('teal', 'dark'));
+    const { colors } = buildTheme('teal', 'dark');
     expect(resolvedStyle(screen.getByTestId('modes').props.style)).toMatchObject({
       padding: 4,
       gap: 4,
       borderRadius: 20,
-      backgroundColor: neutral[800],
+      backgroundColor: colors.backgroundTertiary,
     });
     expect(resolvedStyle(screen.getByTestId('modes-computer').props.style)).toMatchObject({ height: 32 });
     expect(resolvedStyle(screen.getByTestId('modes-thumb', { includeHiddenElements: true }).props.style)).toMatchObject({
       height: 32,
-      backgroundColor: neutral[700],
+      backgroundColor: colors.card,
     });
+  });
+
+  it.each([['sm', 30], ['md', 36], ['lg', 44]] as const)('keeps collapsed %s modes square and inside the panel', (size, square) => {
+    const onModeChange = jest.fn();
+    const screen = renderIn(<Sidebar testID="sb" size={size} collapsed modes={MODES} mode="computer" onModeChange={onModeChange} />);
+    const track = resolvedStyle(screen.getByTestId('sb-modes').props.style);
+    const row = resolvedStyle(screen.getByTestId('sb-modes-computer').props.style);
+    const thumb = resolvedStyle(screen.getByTestId('sb-modes-thumb', { includeHiddenElements: true }).props.style);
+    expect(track).toMatchObject({ padding: 4, alignSelf: 'stretch', marginLeft: -4, marginRight: -4 });
+    expect(row).toMatchObject({ height: square, gap: 0 });
+    expect(thumb.height).toBe(square);
+    const column = SIDEBAR_METRICS[size].collapsed - 2 - 2 * SIDEBAR_METRICS[size].collapsedPaddingX;
+    const trackWidth = column - (track.marginLeft as number) - (track.marginRight as number);
+    expect(trackWidth - 2 * (track.padding as number)).toBe(thumb.height);
+    expect(trackWidth).toBeLessThan(SIDEBAR_METRICS[size].collapsed - 2);
+    pressHost(screen.getByTestId('sb-modes-search'));
+    expect(onModeChange).toHaveBeenCalledWith('search');
   });
 
   it('renders under the Sidebar header from `modes`, defaulting to the first mode', () => {
@@ -283,7 +345,7 @@ describe('Sidebar variant="rail"', () => {
   });
 
   it('selected item: named link, selected state, accent pill and the active glyph', () => {
-    const { accent } = resolveButtonRamps(buildTheme('teal', 'light'));
+    const { colors } = buildTheme('teal', 'light');
     const screen = renderIn(<Sidebar variant="rail" items={RAIL} selected="home" />);
     const home = screen.getByTestId('sidebar-item-home');
     expect(home.props.role).toBe('link');
@@ -291,9 +353,10 @@ describe('Sidebar variant="rail"', () => {
     expect(home.props.accessibilityState).toEqual({ selected: true });
     expect(resolvedStyle(home.props.style)).toMatchObject({ minHeight: 64, borderRadius: 20 });
     const indicator = screen.getByTestId('sidebar-item-home-indicator');
-    expect(resolvedStyle(indicator.props.style)).toMatchObject({ width: 48, height: 32, backgroundColor: accent[500] });
+    expect(resolvedStyle(indicator.props.style)).toMatchObject({ width: 48, height: 32, backgroundColor: colors.primary });
     expect(screen.UNSAFE_getByType(RiHomeFill)).toBeTruthy();
-    expect(screen.UNSAFE_queryByType(RiHomeLine)).toBeNull();
+    expect(resolvedStyle(screen.getByTestId('sidebar-item-home-inactive-glyph', { includeHiddenElements: true }).props.style).opacity).toBe(0);
+    expect(resolvedStyle(screen.getByTestId('sidebar-item-home-active-glyph', { includeHiddenElements: true }).props.style).opacity).toBe(1);
     expect(resolvedStyle(screen.getByTestId('sidebar-item-board-indicator').props.style).backgroundColor).toBe('transparent');
   });
 

@@ -1,3 +1,4 @@
+import { surfaceFillOn } from '../styles/surface-levels';
 import React, { memo, useMemo, useState } from 'react';
 import { Pressable, View } from 'react-native';
 
@@ -26,12 +27,12 @@ function DeviceRow({
 }) {
   const theme = useTheme();
   const palette = useMemo(() => resolveMenuPalette(theme), [theme]);
-  const { accent, neutral } = useMemo(() => resolveButtonRamps(theme), [theme]);
+  const { accent } = useMemo(() => resolveButtonRamps(theme), [theme]);
   const [hovered, setHovered] = useState(false);
   const Glyph = DEVICE_GLYPHS[device.kind];
   const disabled = !!device.disabled;
   const accentText = theme.isDark ? accent[400] : accent[600];
-  const iconWell = current ? (theme.isDark ? accent[950] : accent[50]) : theme.isDark ? neutral[700] : neutral[100];
+  const iconWell = current ? (theme.isDark ? accent[950] : accent[50]) : surfaceFillOn(theme, theme.colors.background);
 
   const secondary = current ? currentLabel : device.description;
   const content = (

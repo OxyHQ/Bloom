@@ -28,16 +28,16 @@ function renderWithTheme(ui: React.ReactElement) {
 
 describe('Switch', () => {
   it('announces its state through aria-checked, the spelling both platforms read', () => {
-    const off = renderWithTheme(<Switch value={false} onValueChange={() => {}} testID="s" />);
+    const off = renderWithTheme(<Switch checked={false} onCheckedChange={() => {}} testID="s" />);
     expect(off.getByTestId('s').props['aria-checked']).toBe(false);
 
-    const on = renderWithTheme(<Switch value onValueChange={() => {}} testID="s" />);
+    const on = renderWithTheme(<Switch checked onCheckedChange={() => {}} testID="s" />);
     expect(on.getByTestId('s').props['aria-checked']).toBe(true);
   });
 
   it('carries the switch role', () => {
     const { getByTestId } = renderWithTheme(
-      <Switch value={false} onValueChange={() => {}} testID="s" />,
+      <Switch checked={false} onCheckedChange={() => {}} testID="s" />,
     );
     expect(getByTestId('s').props.role).toBe('switch');
   });
@@ -45,7 +45,7 @@ describe('Switch', () => {
   it('toggles to the opposite of its current value', () => {
     const onValueChange = jest.fn();
     const { getByTestId } = renderWithTheme(
-      <Switch value onValueChange={onValueChange} testID="s" />,
+      <Switch checked onCheckedChange={onValueChange} testID="s" />,
     );
     fireEvent.press(getByTestId('s'));
     expect(onValueChange).toHaveBeenCalledWith(false);
@@ -54,7 +54,7 @@ describe('Switch', () => {
   it('does not fire when disabled, and says so on the prop Pressable owns', () => {
     const onValueChange = jest.fn();
     const { getByTestId } = renderWithTheme(
-      <Switch value={false} onValueChange={onValueChange} disabled testID="s" />,
+      <Switch checked={false} onCheckedChange={onValueChange} disabled testID="s" />,
     );
     // The state must travel on `disabled`: react-native-web's Pressable appends
     // its own `aria-disabled` AFTER the caller's props, so a hand-written one is
@@ -67,12 +67,12 @@ describe('Switch', () => {
 
 describe('Search', () => {
   it('shows no clear button for an empty query', () => {
-    const { queryByTestId } = renderWithTheme(<Search value="" onChangeText={() => {}} />);
+    const { queryByTestId } = renderWithTheme(<Search value="" onValueChange={() => {}} />);
     expect(queryByTestId('searchTextInputClearBtn')).toBeNull();
   });
 
   it('shows the clear button once there is something to clear', () => {
-    const { getByTestId } = renderWithTheme(<Search value="bloom" onChangeText={() => {}} />);
+    const { getByTestId } = renderWithTheme(<Search value="bloom" onValueChange={() => {}} />);
     expect(getByTestId('searchTextInputClearBtn')).toBeTruthy();
   });
 
@@ -81,18 +81,18 @@ describe('Search', () => {
     // state and leave the list filtered by a query the field no longer shows.
     const onClearText = jest.fn();
     const { getByTestId } = renderWithTheme(
-      <Search value="bloom" onChangeText={() => {}} onClearText={onClearText} />,
+      <Search value="bloom" onValueChange={() => {}} onClearText={onClearText} />,
     );
     fireEvent.press(getByTestId('searchTextInputClearBtn'));
     expect(onClearText).toHaveBeenCalledTimes(1);
   });
 
   it('labels itself Search by default and takes an override', () => {
-    const fallback = renderWithTheme(<Search value="" onChangeText={() => {}} />);
+    const fallback = renderWithTheme(<Search value="" onValueChange={() => {}} />);
     expect(fallback.getAllByPlaceholderText('Search').length).toBeGreaterThan(0);
 
     const custom = renderWithTheme(
-      <Search value="" label="Find a person" onChangeText={() => {}} />,
+      <Search value="" label="Find a person" onValueChange={() => {}} />,
     );
     expect(custom.getAllByPlaceholderText('Find a person').length).toBeGreaterThan(0);
   });

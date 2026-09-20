@@ -10,7 +10,7 @@ import {
 } from 'react-native';
 
 import { Button } from '../button';
-import { BUTTON_SHADOW, resolveButtonRamps } from '../button/shared';
+import { BUTTON_SHADOW } from '../button/shared';
 import { Checkbox } from '../checkbox';
 import { Divider } from '../divider';
 import { useInteractionStates } from '../hooks/use-interaction-state';
@@ -122,45 +122,22 @@ interface AuthPalette {
   ring: string;
 }
 
-/**
- * Palette tokens, mapped onto Bloom's ramps:
- *
- *                               light         dark
- *   card surface                card          neutral-900 (background-secondary)
- *   border-button-default       neutral-200   neutral-700
- *   media panel                 neutral-100   neutral-900
- *   text-secondary              neutral-500   neutral-500
- *   text-tertiary               neutral-400   neutral-600
- *   foreground-icon-primary     text          text
- *   link / pressed              accent-600 / accent-800
- */
+/** Canonical surface, text and link roles; provider branding stays separate. */
 function resolveAuthPalette(theme: Theme): AuthPalette {
-  const { accent, neutral: n } = resolveButtonRamps(theme);
-  const shared = {
-    text: theme.colors.text,
-    textSecondary: n[500],
-    icon: theme.colors.text,
-    link: accent[600],
-    linkPressed: accent[800],
-    ring: accent[500],
+  const c = theme.colors;
+  return {
+    surface: c.card,
+    border: c.borderLight,
+    mediaSurface: c.backgroundSecondary,
+    shadow: theme.isDark ? BUTTON_SHADOW.dark : BUTTON_SHADOW.light,
+    text: c.text,
+    textSecondary: c.textSecondary,
+    textTertiary: c.textTertiary,
+    icon: c.text,
+    link: c.primarySubtleForeground,
+    linkPressed: c.primarySubtleForeground,
+    ring: c.primary,
   };
-  return theme.isDark
-    ? {
-        ...shared,
-        surface: n[900],
-        border: n[700],
-        mediaSurface: n[900],
-        shadow: BUTTON_SHADOW.dark,
-        textTertiary: n[600],
-      }
-    : {
-        ...shared,
-        surface: theme.colors.card,
-        border: n[200],
-        mediaSurface: n[100],
-        shadow: BUTTON_SHADOW.light,
-        textTertiary: n[400],
-      };
 }
 
 // ---------------------------------------------------------------------------
@@ -260,7 +237,7 @@ function AuthField({
           testID={testID}
           label={label}
           value={value}
-          onChangeText={onChangeText}
+          onValueChange={onChangeText}
           placeholder={placeholder}
           secureTextEntry={secure}
           autoComplete={autoComplete}
@@ -495,7 +472,7 @@ function AuthCardComponent({
           <View
             style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
             <Checkbox
-              size="small"
+              size="sm"
               label="Remember me"
               checked={remember}
               onCheckedChange={setRemember}
@@ -510,13 +487,7 @@ function AuthCardComponent({
           </View>
         )}
 
-        <Button
-          testID={testID ? `${testID}-submit` : undefined}
-          variant="primary"
-          size="medium"
-          fullWidth
-          style={{ alignSelf: 'stretch' }}
-          onPress={submit}>
+        <Button testID={testID ? `${testID}-submit` : undefined} size="md" style={{ width: "100%" }} onPress={submit} appearance="solid" tone="action">
           {copy.cta}
         </Button>
 

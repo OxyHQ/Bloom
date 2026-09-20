@@ -56,14 +56,14 @@ describe('missing accessible name guard', () => {
   const noop = () => {};
 
   it('warns when a Switch is mounted with no label', () => {
-    mount(<Switch value onValueChange={noop} />);
+    mount(<Switch checked onCheckedChange={noop} />);
 
     expect(bloomWarnings('Switch')).toHaveLength(1);
   });
 
   /** Mutation: drop the `missing` guard and this warns. */
   it('stays silent when a Switch is named', () => {
-    mount(<Switch value onValueChange={noop} accessibilityLabel="Notifications" />);
+    mount(<Switch checked onCheckedChange={noop} accessibilityLabel="Notifications" />);
 
     expect(bloomWarnings('Switch')).toHaveLength(0);
   });
@@ -80,13 +80,13 @@ describe('missing accessible name guard', () => {
     ['empty', ''],
     ['whitespace', '   '],
   ])('warns for a label that is %s, which names nothing', (_kind, label) => {
-    mount(<Switch value onValueChange={noop} accessibilityLabel={label} />);
+    mount(<Switch checked onCheckedChange={noop} accessibilityLabel={label} />);
 
     expect(bloomWarnings('Switch')).toHaveLength(1);
   });
 
   it('names the component and states the fix', () => {
-    mount(<Switch value onValueChange={noop} />);
+    mount(<Switch checked onCheckedChange={noop} />);
 
     const message = bloomWarnings('Switch')[0]?.[0];
     // The consumer's own tree is the only place this is fixable, so the message
@@ -105,9 +105,9 @@ describe('missing accessible name guard', () => {
   it('warns once for a screen full of unnamed switches', () => {
     mount(
       <>
-        <Switch value onValueChange={noop} />
-        <Switch value={false} onValueChange={noop} />
-        <Switch value onValueChange={noop} />
+        <Switch checked onCheckedChange={noop} />
+        <Switch checked={false} onCheckedChange={noop} />
+        <Switch checked onCheckedChange={noop} />
       </>,
     );
 
@@ -117,7 +117,7 @@ describe('missing accessible name guard', () => {
   it('latches per component, so a second unnamed control still speaks', () => {
     mount(
       <>
-        <Switch value onValueChange={noop} />
+        <Switch checked onCheckedChange={noop} />
         <Slider value={40} min={0} max={100} onValueChange={noop} />
         <DotGridMeter filled={3} total={10} />
       </>,
@@ -149,7 +149,7 @@ describe('missing accessible name guard', () => {
     const previous = process.env.NODE_ENV;
     process.env.NODE_ENV = 'production';
     try {
-      mount(<Switch value onValueChange={noop} />);
+      mount(<Switch checked onCheckedChange={noop} />);
     } finally {
       process.env.NODE_ENV = previous;
     }

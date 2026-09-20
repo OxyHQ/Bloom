@@ -1,3 +1,5 @@
+import { useBloomAppearance } from '../appearance';
+import { normalizeTagTone } from './shared';
 import React, { memo, useMemo } from 'react';
 import { View, type ViewStyle, type TextStyle } from 'react-native';
 
@@ -47,9 +49,11 @@ const PLACEMENT_CONFIG = {
 
 const BadgeComponent: React.FC<BadgeProps> = ({
   content,
-  variant = 'solid',
-  color = 'error',
-  size = 'medium',
+  variant: variantProp = 'solid',
+  appearance,
+  tone: toneProp,
+  color,
+  size: sizeProp,
   icon: Icon,
   dot = false,
   max,
@@ -61,16 +65,21 @@ const BadgeComponent: React.FC<BadgeProps> = ({
   testID,
 }) => {
   const theme = useTheme();
+  const scoped = useBloomAppearance({ size: ['xs','sm','md','lg'].includes(sizeProp ?? '') ? sizeProp as import('../appearance').BloomSize : undefined, tone: toneProp ?? (color ? normalizeTagTone(color) : undefined) }, {size: 'md', tone: 'danger'});
+  const size = sizeProp ?? scoped.size;
+  const tone = scoped.tone;
+  const variant = appearance ?? variantProp;
+
   // A dot has no label to make legible, so it always paints the tone's FILL. It
   // used to follow the variant, which made `dot variant="outlined"` a fully
   // transparent circle — visually absent, with markup that looks correct.
   const paint = useMemo(
-    () => resolveBadgePaint(theme, color, dot ? 'solid' : variant),
-    [theme, color, dot, variant],
+    () => resolveBadgePaint(theme, tone, dot ? 'solid' : variant),
+    [theme, tone, dot, variant],
   );
   // The status dot's halo is the same tone's tint — the recipe's `subtle` pair,
   // so it follows the preset and mode exactly as a subtle badge does.
-  const halo = useMemo(() => resolveBadgePaint(theme, color, 'subtle').background, [theme, color]);
+  const halo = useMemo(() => resolveBadgePaint(theme, tone, 'subtle').background, [theme, tone]);
   const geometry = BADGE_GEOMETRY[size];
   const attached = Boolean(children);
 

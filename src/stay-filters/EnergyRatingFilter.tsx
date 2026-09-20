@@ -70,7 +70,6 @@ export interface EnergyRatingPaint {
 /** The seven fills, A → G, each with its legible letter colour. Pure. */
 export function resolveEnergyRatingPaint(theme: Theme): Record<EnergyRating, EnergyRatingPaint> {
   const c = theme.colors;
-  const { neutral } = resolveButtonRamps(theme);
   // The theme's status colours are the 500 stops of their ramps.
   const { success, warning, error } = c;
   const fills: string[] = [
@@ -83,7 +82,7 @@ export function resolveEnergyRatingPaint(theme: Theme): Record<EnergyRating, Ene
     error,
   ];
   const light = '#ffffff';
-  const dark = neutral[950];
+  const dark = theme.colors.backgroundTertiary;
   const out = {} as Record<EnergyRating, EnergyRatingPaint>;
   ENERGY_RATINGS.forEach((rating, i) => {
     const fill = fills[i] as string;
@@ -115,10 +114,10 @@ interface PillProps {
 function Pill({ rating, paint, included, checked, disabled, name, onPress, testID }: PillProps) {
   const theme = useTheme();
   const ringOffset = useRingOffsetStyle();
-  const { accent, neutral } = useMemo(() => resolveButtonRamps(theme), [theme]);
+  const { accent } = useMemo(() => resolveButtonRamps(theme), [theme]);
   const hover = useInteractionState();
   const dark = theme.isDark;
-  const border = checked ? theme.colors.text : hover.state && !disabled ? (dark ? neutral[500] : neutral[400]) : 'transparent';
+  const border = checked ? theme.colors.text : hover.state && !disabled ? (theme.colors.border) : 'transparent';
 
   const style: WebCssStyle = {
     height: ENERGY_PILL_HEIGHT,
@@ -129,7 +128,7 @@ function Pill({ rating, paint, included, checked, disabled, name, onPress, testI
     borderRadius: borderRadius.full,
     borderWidth: 2,
     borderColor: border,
-    backgroundColor: included ? paint.fill : dark ? neutral[800] : neutral[100],
+    backgroundColor: included ? paint.fill : theme.colors.backgroundSecondary,
     alignItems: 'center',
     justifyContent: 'center',
     opacity: disabled ? DISABLED_OPACITY : 1,

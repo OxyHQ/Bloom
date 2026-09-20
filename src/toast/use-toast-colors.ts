@@ -16,7 +16,7 @@
  * widens the glyph colour to the border and title as well. Exactly like sonner.
  *
  * NOTHING HERE MAY REACH FOR A BRAND TOKEN. `success` / `error` / `warning` /
- * `info` are STATUS colours; `primarySubtle` / `negativeSubtle` are BRAND pairs.
+ * `info` are STATUS colours; `primarySubtle` is the BRAND pair; `negativeSubtle` aliases error.
  * Mixing the families is what made `toast.success('Saved')` render as a
  * brand-purple card, and what made a success icon flip from green to purple when
  * `richColors` was switched on. `richColors` means "show the status colour more

@@ -1,26 +1,9 @@
-import { mixColor, resolveButtonRamps } from '../button/shared';
 import { oklchToSrgb, srgbToOklch, srgbToRgbString } from '../theme/color-space';
 import { parseRgba } from '../theme/color-utils';
 import type { Theme } from '../theme/types';
 import type { CalendarViewEventColor, CalendarViewFeedColor } from './types';
 
-/**
- * Semantic calendar tokens, resolved through the ramps `Button` derives from
- * Bloom's theme.
- *
- *                          light          dark                 Token
- *   month card, pills      neutral-100    neutral-900          background-secondary-default
- *   in-month day, panels   card           neutral-800          background-primary-default
- *   out-of-month day       neutral-200    neutral-800          background-tertiary-default
- *   dense grid lines       neutral-200    neutral-800          separator-border(-strong)
- *   panel border           neutral-200    neutral-700          border-button-default
- *   feed row hover         neutral-100    neutral-700 @60%     background-primary-hover
- *   chevron hover          neutral-200    neutral-800          background-secondary-hover
- *   title / day            text           text                 text-primary
- *   secondary text, icons  neutral-500    neutral-500          text-secondary, icon-secondary
- *   focus ring             accent-500     accent-500           border-focus-ring
- *   day shadow             0 1 1 /.05     0 1 1 /.14           shadow-card
- */
+/** Surface and text slots read canonical theme roles; fixed shadow geometry is unchanged. */
 export interface CalendarViewPalette {
   card: string;
   pill: string;
@@ -48,55 +31,20 @@ export interface CalendarViewPalette {
 }
 
 export function resolveCalendarViewPalette(theme: Theme): CalendarViewPalette {
-  const { accent, neutral: n } = resolveButtonRamps(theme);
   const c = theme.colors;
-  const shared = {
-    text: c.text,
-    textSecondary: n[500],
-    iconPrimary: c.text,
-    iconSecondary: n[500],
-    ring: accent[500],
-    // A fixed spread, raw in both modes.
+  return {
+    card: c.backgroundSecondary, pill: c.backgroundSecondary,
+    dayCurrent: c.card, dayOutside: c.backgroundTertiary,
+    denseDayCurrent: c.card, denseDayOutside: c.backgroundSecondary,
+    gridLine: c.borderLight, panel: c.card, panelBorder: c.border,
+    rowHover: c.backgroundSecondary, secondaryHover: c.backgroundTertiary,
+    detailRow: c.backgroundSecondary, infoChip: c.backgroundTertiary,
+    text: c.text, textSecondary: c.textSecondary, iconPrimary: c.text,
+    iconSecondary: c.textSecondary, ring: c.primary, isDark: theme.isDark,
     shadowDetails: '0px 1px 2px 0px rgba(0,0,0,0.04), 0px 7px 8px 0px rgba(0,0,0,0.04)',
-    isDark: theme.isDark,
+    shadowCard: theme.isDark ? '0 1px 1px 0 rgb(0 0 0 / 0.14)' : '0 1px 1px 0 rgb(0 0 0 / 0.05)',
+    shadowDropdown: theme.isDark ? '0 1px 1px 0 rgb(0 0 0 / 0.14), 0 4px 4px 0 rgb(0 0 0 / 0.10)' : '0 1px 1px 0 rgb(0 0 0 / 0.04), 0 4px 4px 0 rgb(0 0 0 / 0.02)',
   };
-  return theme.isDark
-    ? {
-        ...shared,
-        card: n[900],
-        pill: n[900],
-        dayCurrent: n[800],
-        dayOutside: n[800],
-        denseDayCurrent: n[900],
-        denseDayOutside: n[900],
-        gridLine: n[800],
-        panel: n[800],
-        panelBorder: n[700],
-        rowHover: mixColor(n[800], n[700], 0.6),
-        secondaryHover: n[800],
-        detailRow: n[900],
-        infoChip: n[800],
-        shadowCard: '0 1px 1px 0 rgb(0 0 0 / 0.14)',
-        shadowDropdown: '0 1px 1px 0 rgb(0 0 0 / 0.14), 0 4px 4px 0 rgb(0 0 0 / 0.10)',
-      }
-    : {
-        ...shared,
-        card: n[100],
-        pill: n[100],
-        dayCurrent: c.card,
-        dayOutside: n[200],
-        denseDayCurrent: c.card,
-        denseDayOutside: n[100],
-        gridLine: n[200],
-        panel: c.card,
-        panelBorder: n[200],
-        rowHover: n[100],
-        secondaryHover: n[200],
-        detailRow: n[100],
-        infoChip: n[200],
-        shadowCard: '0 1px 1px 0 rgb(0 0 0 / 0.05)',
-        shadowDropdown: '0 1px 1px 0 rgb(0 0 0 / 0.04), 0 4px 4px 0 rgb(0 0 0 / 0.02)',
-      };
 }
 
 // ---------------------------------------------------------------------------

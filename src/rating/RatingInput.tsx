@@ -1,7 +1,6 @@
 import React, { memo, useCallback, useMemo, useState } from 'react';
 import { Platform, Pressable, View } from 'react-native';
 
-import { resolveButtonRamps } from '../button/shared';
 import { RiStarFill } from '../icons/remix/RiStarFill';
 import { RiStarLine } from '../icons/remix/RiStarLine';
 import { focusRingShadow, interactiveWebCss, useInteractiveWebCss } from '../styles/interactive-web-css';
@@ -97,7 +96,6 @@ function RatingInputComponent({
   const disabled = field.disabled;
   const ringOffset = useRingOffsetStyle();
   useInteractiveWebCss(STYLE_ID, BLOOM_RATING_INPUT_CSS);
-  const { accent, neutral } = useMemo(() => resolveButtonRamps(theme), [theme]);
   const config = SIZE_CONFIG[size];
   const [hovered, setHovered] = useState<number | null>(null);
 
@@ -150,12 +148,12 @@ function RatingInputComponent({
   // The roving tab stop: the chosen star, or the first one while nothing is
   // chosen, so a keyboard reaches the group in one Tab either way.
   const tabStop = chosen ?? 1;
-  const emptyColor = theme.isDark ? neutral[600] : neutral[300];
+  const emptyColor = theme.colors.border;
 
   const starStyle: WebCssStyle = {
     padding: 2,
     borderRadius: 6,
-    '--bloom-rating-input-ring': accent[500],
+    '--bloom-rating-input-ring': theme.colors.primary,
     ...ringOffset,
   };
 
@@ -208,7 +206,7 @@ function RatingInputComponent({
             <Glyph
               width={config.star}
               height={config.star}
-              fill={filled ? accent[500] : emptyColor}
+              fill={filled ? theme.colors.primary : emptyColor}
             />
           </Pressable>
         );

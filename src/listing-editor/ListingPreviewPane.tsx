@@ -47,7 +47,6 @@ function ListingPreviewPaneComponent({
   testID,
 }: ListingPreviewPaneProps) {
   const theme = useTheme();
-  const { neutral } = useMemo(() => resolveButtonRamps(theme), [theme]);
   const [mode, setMode] = useControllableState<ListingPreviewMode>({
     value: modeProp,
     defaultValue: defaultMode,
@@ -65,7 +64,7 @@ function ListingPreviewPaneComponent({
           paddingLeft: 20,
           paddingRight: 20,
           borderRadius: 20,
-          backgroundColor: theme.isDark ? neutral[900] : neutral[50],
+          backgroundColor: theme.colors.backgroundSecondary,
         },
         style,
       ]}
@@ -115,9 +114,8 @@ function ListingPreviewPaneComponent({
 function PagePreview({ listing }: { listing: ListingPreviewData }) {
   const theme = useTheme();
   const resolver = useImageResolver();
-  const { neutral } = useMemo(() => resolveButtonRamps(theme), [theme]);
   const cover = listing.photos[0] ? resolvePhoto(listing.photos[0], resolver, listing.photoVariant) : undefined;
-  const hairline = theme.isDark ? neutral[700] : neutral[200];
+  const hairline = theme.colors.border;
 
   return (
     <View
@@ -131,7 +129,7 @@ function PagePreview({ listing }: { listing: ListingPreviewData }) {
         overflow: 'hidden',
       }}
     >
-      <View style={{ width: '100%', aspectRatio: 4 / 3, backgroundColor: theme.isDark ? neutral[800] : neutral[100] }}>
+      <View style={{ width: '100%', aspectRatio: 4 / 3, backgroundColor: theme.colors.backgroundSecondary }}>
         {cover ? (
           <Image source={{ uri: cover }} resizeMode="cover" style={{ width: '100%', height: '100%' }} />
         ) : null}

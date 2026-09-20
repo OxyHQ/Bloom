@@ -19,6 +19,7 @@ const config: StorybookConfig = {
   typescript: {
     reactDocgen: 'react-docgen-typescript',
     reactDocgenTypescriptOptions: {
+      tsconfigPath: path.resolve(__dirname, 'tsconfig.json'),
       shouldExtractLiteralValuesFromEnum: true,
       shouldRemoveUndefinedFromOptional: true,
       propFilter: (prop) =>
@@ -60,7 +61,33 @@ const config: StorybookConfig = {
    */
   async viteFinal(viteConfig) {
     return mergeConfig(viteConfig, {
-      plugins: [tailwindcss()],
+      plugins: [
+        tailwindcss(),
+        {
+          name: 'bloom-expo-web-bootstrap',
+          // Expo's web bridge is an empty exported function plus a side-effect
+          // polyfill import. Its package marks only the latter as side-effectful,
+          // allowing production tree shaking to drop the bridge and installer.
+          transform(code: string, id: string) {
+            if (/\/expo-modules-core\/src\/ensureNativeModulesAreInstalled\.ts$/.test(id.split('?')[0]!)) {
+              return { code, map: null, moduleSideEffects: true };
+            }
+            return null;
+          },
+        },
+      ],
+      build: {
+        commonjsOptions: {
+          // Reanimated's webUtils is ESM with optional RNW compiler requires.
+          // Dev optimizeDeps transforms them, but a static build otherwise
+          // leaves browser `require` calls inside swallowed try/catch blocks.
+          // Its DOM updater then falls through to Object.keys(node.props).
+          transformMixedEsModules: true,
+          // Resolve only the installed RNW internals; preserve optional-peer
+          // try/catch boundaries elsewhere in the graph.
+          ignoreTryCatch: (id: string) => !id.startsWith('react-native-web/dist/'),
+        },
+      },
       resolve: {
         alias: [
           {

@@ -1,3 +1,4 @@
+import type { BloomAppearance, BloomTone, BloomSize } from '../appearance/types';
 import type { ComponentType, ReactNode } from 'react';
 import type { GestureResponderEvent, StyleProp, ViewStyle, TextStyle } from 'react-native';
 import type { WebAriaProps } from '../styles/styled-primitives';
@@ -63,7 +64,7 @@ export type ButtonVariant =
  * height. The aliases exist so web consumers migrating from shadcn keep their
  * call sites unchanged. `xs` (24px) is the compact tier.
  */
-export type ButtonSize =
+export type ButtonSize = BloomSize
   | 'xs'
   | 'small'
   | 'medium'
@@ -74,6 +75,10 @@ export type ButtonSize =
   | 'icon';
 
 export interface ButtonProps {
+  appearance?: BloomAppearance;
+  tone?: BloomTone;
+  leading?: ReactNode;
+  trailing?: ReactNode;
   onPress?: () => void;
   children?: React.ReactNode;
   disabled?: boolean;
@@ -285,7 +290,7 @@ export interface LinkButtonProps extends Omit<ButtonProps, 'variant' | 'linkTone
 export interface CloseButtonProps {
   onPress?: () => void;
   /** `2xs` 16 · `xs` 20 (default) · `sm` 24 · `md` 32. */
-  size?: '2xs' | 'xs' | 'sm' | 'md';
+  size?: '2xs' | 'xs' | 'sm' | 'md' | 'lg';
   disabled?: boolean;
   /** Required — the control draws no text. */
   accessibilityLabel: string;

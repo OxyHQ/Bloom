@@ -1,5 +1,6 @@
 import React, { memo } from 'react';
 import { Pressable, View, type GestureResponderEvent } from 'react-native';
+import Animated, { useAnimatedStyle } from 'react-native-reanimated';
 
 import { useInteractionState } from '../hooks/use-interaction-state';
 import type { WebCssStyle } from '../styles/web-view-style';
@@ -7,7 +8,7 @@ import { Text } from '../typography';
 import { useSidebarMetrics } from './metrics';
 import { useSidebarPalette } from './palette';
 import { borderRadius } from '../styles/tokens';
-import { Collapsible, IS_WEB, useInSidebar, useSidebarWebCss } from './parts';
+import { Collapsible, IS_WEB, useInSidebar, useSidebarCollapseProgress, useSidebarWebCss } from './parts';
 import type { SidebarItemProps } from './types';
 
 /**
@@ -16,7 +17,7 @@ import type { SidebarItemProps } from './types';
  *   row        the size's inset, full pill, label/badge space-between;
  *              full width expanded, the size's square collapsed
  *   content    the size's glyph + 8 gap + its label step (no wrap) —
- *              `medium` is 20 and `body-medium` (`metrics.ts`)
+ *              `md` is 20 and `body-medium` (`metrics.ts`)
  *   rest       icon-secondary / text-secondary; hover background-secondary-hover
  *   selected   solid accent-500 fill with the primary foreground; no
  *              gradient, ring or top highlight
@@ -41,6 +42,9 @@ const SidebarItemComponent: React.FC<SidebarItemProps> = ({
   useSidebarWebCss();
   const { state: hovered, onIn, onOut } = useInteractionState();
   const inSidebar = useInSidebar();
+  const progress = useSidebarCollapseProgress(collapsed);
+  const itemGap = metrics.row.gap;
+  const contentStyle = useAnimatedStyle(() => ({ gap: itemGap * (1 - progress.value) }), [progress, itemGap]);
   const foreground = selected ? palette.selectedForeground : palette.textSecondary;
 
   const rowStyle: WebCssStyle = {
@@ -85,7 +89,7 @@ const SidebarItemComponent: React.FC<SidebarItemProps> = ({
       style={[rowStyle, style]}
       testID={testID}
     >
-      <View style={{ flexDirection: 'row', alignItems: 'center', gap: metrics.row.gap, minWidth: 0, flexShrink: 1 }}>
+      <Animated.View style={[{ flexDirection: 'row', alignItems: 'center', minWidth: 0, flexShrink: 1 }, contentStyle]}>
         <View style={{ flexShrink: 0 }}>
           <Icon width={metrics.row.icon} height={metrics.row.icon} fill={foreground} />
         </View>
@@ -94,7 +98,7 @@ const SidebarItemComponent: React.FC<SidebarItemProps> = ({
             {label}
           </Text>
         </Collapsible>
-      </View>
+      </Animated.View>
       {badge != null ? <Collapsible collapsed={collapsed}>{badge}</Collapsible> : null}
     </Pressable>
   );

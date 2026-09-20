@@ -130,13 +130,13 @@ export function resolveCallPaint(theme: Theme, accentColor?: string): CallPaint 
 
     surface: c.background,
     surfaceRaised: c.card,
-    border: dark ? n[700] : n[200],
+    border: c.border,
     text: c.text,
     textSecondary: c.textSecondary,
     negative: dark ? red[400] : red[500],
     accent: accent[500],
     onAccent: c.primaryForeground,
-    rowSelected: dark ? mixColor(c.background, n[700], 0.6) : n[100],
+    rowSelected: c.backgroundSecondary,
   };
 }
 

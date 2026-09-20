@@ -1,3 +1,5 @@
+import { useBloomAppearance } from '../appearance';
+import { normalizeTagTone } from './shared';
 import React, { forwardRef, memo, useMemo } from 'react';
 import {
   View,
@@ -102,17 +104,25 @@ const IS_WEB = Platform.OS === 'web';
 const ChipComponent = forwardRef<View, ChipProps>(function ChipComponent(
   {
     children,
-    variant = 'subtle',
-    color = 'default',
+    variant: variantProp = 'subtle',
+    appearance,
+    tone: toneProp,
+    color,
     hue,
     surface,
-    size = 'medium',
-    startIcon,
-    endIcon,
+    size: sizeProp,
+    startIcon: startIconProp,
+    leading,
+    leadingIcon: LeadingIcon,
+    endIcon: endIconProp,
+    trailing,
+    trailingIcon: TrailingIcon,
     onPress,
     onClose,
     closeLabel,
-    selected = false,
+    selected: selectedProp,
+    checked,
+    onCheckedChange,
     role = 'button',
     disabled = false,
     tabIndex,
@@ -125,6 +135,14 @@ const ChipComponent = forwardRef<View, ChipProps>(function ChipComponent(
   ref,
 ) {
   const theme = useTheme();
+  const scoped = useBloomAppearance({ size: ['xs','sm','md','lg'].includes(sizeProp ?? '') ? sizeProp as import('../appearance').BloomSize : undefined, tone: toneProp ?? (color ? normalizeTagTone(color) : undefined) }, {size: 'md', tone: 'neutral'});
+  const size = sizeProp ?? scoped.size;
+  const tone = scoped.tone;
+  const variant = appearance ?? variantProp;
+  const selected = checked ?? selectedProp ?? false;
+  const startIcon = leading ?? (LeadingIcon ? <LeadingIcon /> : startIconProp);
+  const endIcon = trailing ?? (TrailingIcon ? <TrailingIcon /> : endIconProp);
+
   useInteractiveWebCss(STYLE_ID, BLOOM_CHIP_CSS);
   // No press scale, like `Button`: a press is the background change alone,
   // which is also the one press affordance that reads under a mouse.
@@ -134,8 +152,8 @@ const ChipComponent = forwardRef<View, ChipProps>(function ChipComponent(
   // re-render every chip in a tag list on pointer move for nothing.
   const { state: hovered, onIn: onHoverIn, onOut: onHoverOut } = useInteractionState();
   const paint = useMemo(
-    () => resolveChipPaint(theme, { tone: color, variant, selected, hue, surface }),
-    [theme, color, variant, selected, hue, surface],
+    () => resolveChipPaint(theme, { tone, variant, selected, hue, surface }),
+    [theme, tone, variant, selected, hue, surface],
   );
   const ring = useMemo(() => resolveChipRing(theme), [theme]);
   const geometry = CHIP_GEOMETRY[size];
@@ -216,7 +234,7 @@ const ChipComponent = forwardRef<View, ChipProps>(function ChipComponent(
     </>
   );
 
-  if (onPress) {
+  if (onPress || onCheckedChange) {
     // Both spellings of the state, because neither platform reads the other's
     // and there is no single prop that serves both: react-native-web ignores
     // `accessibilityState`, while React Native has no `aria-pressed` at all
@@ -268,7 +286,11 @@ const ChipComponent = forwardRef<View, ChipProps>(function ChipComponent(
           pressed && !disabled && { backgroundColor: paint.pressedBackground },
           style,
         ]}
-        onPress={onPress}
+        onPress={(event) => {
+          if (disabled) return;
+          onCheckedChange?.(!selected);
+          onPress?.();
+        }}
         onPressIn={onPressIn}
         onPressOut={onPressOut}
         {...(paint.hoveredBorder ? { onHoverIn, onHoverOut } : null)}

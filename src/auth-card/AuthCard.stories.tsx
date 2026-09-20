@@ -7,6 +7,16 @@ import { AuthCard, AuthMediaCarousel } from './index';
 import type { AuthMediaSlide } from './types';
 
 const meta: Meta<typeof AuthCard> = {
+  argTypes: {
+    "mode": { control: 'select', options: ["signin","signup","verify"] },
+    "email": { control: 'text' },
+    "codeLength": { control: 'number' },
+    "layout": { control: 'select', options: ["stacked","inline","grid"] },
+    "centered": { control: 'boolean' },
+    "confirmPassword": { control: 'boolean' },
+    "switchHref": { control: 'text' },
+    "forgotPasswordHref": { control: 'text' }
+  },
   title: 'Blocks/Auth Card',
   component: AuthCard,
 };
@@ -24,76 +34,90 @@ const SLIDES: AuthMediaSlide[] = [
 
 function Page({ children }: { children: React.ReactNode }) {
   return (
-    <View style={{ padding: 40, alignItems: 'center', width: '100%' }}>{children}</View>
+    <View style={{ alignItems: 'center', width: '100%', minWidth: 0 }}>{children}</View>
   );
 }
 
 /** Sign in, stacked providers — the default. */
 export const SignIn: Story = {
-  render: () => (
+  args: { headingLevel: 2 },
+  parameters: { controls: { include: ["headingLevel","mode","email","codeLength","layout","centered","confirmPassword","switchHref","forgotPasswordHref"] } },
+  render: (args) => (
     <Page>
-      <AuthCard testID="auth" headingLevel={2} onSubmit={(values) => console.log(values)} />
+      <AuthCard {...args} testID="auth"  onSubmit={(values) => console.log(values)} />
     </Page>
   ),
 };
 
 /** Icon-only providers side by side, wrapping. */
 export const Inline: Story = {
-  render: () => (
+  args: { layout: "inline", headingLevel: 2 },
+  parameters: { controls: { include: ["layout","headingLevel","mode","email","codeLength","centered","confirmPassword","switchHref","forgotPasswordHref"] } },
+  render: (args) => (
     <Page>
-      <AuthCard testID="auth" layout="inline" providers={['google', 'apple', 'github', 'x']} headingLevel={2} />
+      <AuthCard {...args} testID="auth"  providers={['google', 'apple', 'github', 'x']}  />
     </Page>
   ),
 };
 
 /** Icon-only providers across equal columns. */
 export const Grid: Story = {
-  render: () => (
+  args: { layout: "grid", headingLevel: 2 },
+  parameters: { controls: { include: ["layout","headingLevel","mode","email","codeLength","centered","confirmPassword","switchHref","forgotPasswordHref"] } },
+  render: (args) => (
     <Page>
-      <AuthCard testID="auth" layout="grid" headingLevel={2} />
+      <AuthCard {...args} testID="auth"   />
     </Page>
   ),
 };
 
 export const SignUp: Story = {
-  render: () => (
+  args: { mode: "signup", headingLevel: 2 },
+  parameters: { controls: { include: ["mode","headingLevel","email","codeLength","layout","centered","confirmPassword","switchHref","forgotPasswordHref"] } },
+  render: (args) => (
     <Page>
-      <AuthCard testID="auth" mode="signup" headingLevel={2} />
+      <AuthCard {...args} testID="auth"   />
     </Page>
   ),
 };
 
 /** Stacked password pair, terms moved under the card through `footnote`. */
 export const SignUpConfirmPassword: Story = {
-  render: () => (
+  args: { mode: "signup", confirmPassword: true, layout: "grid", headingLevel: 2, footnote: "By creating an account you agree to our Terms of Service and Privacy Policy." },
+  parameters: { controls: { include: ["mode","confirmPassword","layout","headingLevel","footnote","email","codeLength","centered","switchHref","forgotPasswordHref"] } },
+  render: (args) => (
     <Page>
-      <AuthCard
+      <AuthCard {...args}
         testID="auth"
-        mode="signup"
-        confirmPassword
-        layout="grid"
-        headingLevel={2}
-        footnote="By creating an account you agree to our Terms of Service and Privacy Policy."
+
+
+
+
+
       />
     </Page>
   ),
 };
 
 export const Verify: Story = {
-  render: () => (
+  args: { mode: "verify", email: "ada@company.com", headingLevel: 2 },
+  parameters: { controls: { include: ["mode","email","headingLevel","codeLength","layout","centered","confirmPassword","switchHref","forgotPasswordHref"] } },
+  render: (args) => (
     <Page>
-      <AuthCard testID="auth" mode="verify" email="ada@company.com" headingLevel={2} />
+      <AuthCard {...args} testID="auth"    />
     </Page>
   ),
 };
 
 export const CenteredWithLogo: Story = {
-  render: () => (
+  args: { centered: true, headingLevel: 2 },
+  parameters: { controls: { include: ["centered","headingLevel","mode","email","codeLength","layout","confirmPassword","switchHref","forgotPasswordHref"] } },
+  render: (args) => (
     <Page>
-      <AuthCard
+      <AuthCard {...args}
         testID="auth"
-        centered
-        headingLevel={2}
+
+
         logo={
           <View
             style={{
@@ -116,14 +140,16 @@ export const CenteredWithLogo: Story = {
 
 /** Two columns from `md`; the carousel cycles shrink → hold → slide → grow. */
 export const SplitWithCarousel: Story = {
-  render: () => (
+  args: { centered: true, headingLevel: 2, footnote: "By continuing you agree to our Terms of Service and Privacy Policy." },
+  parameters: { controls: { include: ["centered","headingLevel","footnote","mode","email","codeLength","layout","confirmPassword","switchHref","forgotPasswordHref"] } },
+  render: (args) => (
     <Page>
-      <AuthCard
+      <AuthCard {...args}
         testID="auth"
-        centered
-        headingLevel={2}
+
+
         media={<AuthMediaCarousel slides={SLIDES} />}
-        footnote="By continuing you agree to our Terms of Service and Privacy Policy."
+
       />
     </Page>
   ),
@@ -131,12 +157,14 @@ export const SplitWithCarousel: Story = {
 
 /** Every provider the card knows. */
 export const AllProviders: Story = {
-  render: () => (
+  args: { layout: "inline", headingLevel: 2 },
+  parameters: { controls: { include: ["layout","headingLevel","mode","email","codeLength","centered","confirmPassword","switchHref","forgotPasswordHref"] } },
+  render: (args) => (
     <Page>
-      <AuthCard
+      <AuthCard {...args}
         testID="auth"
-        layout="inline"
-        headingLevel={2}
+
+
         providers={['google', 'apple', 'github', 'gitlab', 'microsoft', 'x', 'facebook', 'linkedin', 'discord']}
       />
     </Page>

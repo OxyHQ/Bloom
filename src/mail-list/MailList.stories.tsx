@@ -1,5 +1,5 @@
 import React, { useMemo, useState } from 'react';
-import { View } from 'react-native';
+import { View, useWindowDimensions } from 'react-native';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
 import { RiArchiveLine } from '../icons/remix/RiArchiveLine';
@@ -278,6 +278,7 @@ export const BulkSelection: Story = {
 
 export const WithMailboxTree: Story = {
   render: () => {
+    const { width } = useWindowDimensions();
     const tree: SidebarTree = {
       label: 'Mailboxes',
       folders: [
@@ -306,10 +307,10 @@ export const WithMailboxTree: Story = {
     };
     const [selected, setSelected] = useState<string | undefined>('roof');
     return (
-      <View style={{ flexDirection: 'row', height: 520 }}>
+      <View style={{ flexDirection: 'row', width: '100%', height: 520 }}>
         {/* The mailbox tree is `Sidebar`'s `tree` prop — this family never grew
             one of its own. */}
-        <Sidebar tree={tree} selectedTreeItem="inbox" />
+        <Sidebar tree={tree} selectedTreeItem="inbox" collapsed={width < 700} />
         <View style={{ flex: 1, minWidth: 0 }}>
           <Frame width={680}>
             <MailList

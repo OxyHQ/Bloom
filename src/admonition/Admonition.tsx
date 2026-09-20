@@ -79,9 +79,9 @@ AdmonitionText.displayName = 'AdmonitionText';
 export function AdmonitionButton({
   children,
   ...props
-}: Omit<ButtonProps, 'size' | 'variant'>) {
+}: Omit<ButtonProps, 'size'>) {
   return (
-    <BaseButton size="small" {...props}>
+    <BaseButton size="sm" {...props}>
       {children}
     </BaseButton>
   );

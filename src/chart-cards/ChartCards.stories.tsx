@@ -7,6 +7,17 @@ import { OrdersChartCard, RevenueChartCard } from './index';
 import type { ChartCardPoint } from './types';
 
 const meta: Meta<typeof RevenueChartCard> = {
+  argTypes: {
+    "title": { control: 'text' },
+    "currentLabel": { control: 'text' },
+    "previousLabel": { control: 'text' },
+    "totalComparisonLabel": { control: 'text' },
+    "pointComparisonLabel": { control: 'text' },
+    "color": { control: 'text' },
+    "activeColor": { control: 'text' },
+    "previousColor": { control: 'text' },
+    "activeIndex": { control: 'number' }
+  },
   title: 'Charts/Revenue & Orders',
   component: RevenueChartCard,
 };
@@ -54,10 +65,11 @@ const DECLINE: ChartCardPoint[] = REVENUE.map((p) => ({ label: p.label, current:
 const FLAT: ChartCardPoint[] = ORDERS.map((p) => ({ label: p.label, current: p.current, previous: p.current }));
 
 const Frame = ({ children, width = 560 }: { children: React.ReactNode; width?: number }) => (
-  <View style={{ padding: 40, gap: 24, width: width + 80 }}>{children}</View>
+  <View style={{ maxWidth: '100%', gap: 24, width }}>{children}</View>
 );
 
 export const Revenue: Story = {
+  parameters: { controls: { disable: true } },
   render: () => (
     <Frame>
       <RevenueChartCard testID="revenue" data={REVENUE} />
@@ -66,6 +78,7 @@ export const Revenue: Story = {
 };
 
 export const Orders: Story = {
+  parameters: { controls: { disable: true } },
   render: () => (
     <Frame>
       <OrdersChartCard testID="orders" data={ORDERS} />
@@ -75,8 +88,9 @@ export const Orders: Story = {
 
 /** Both cards in a dashboard row layout: a row of `flex-1` cards. */
 export const DashboardRow: Story = {
+  parameters: { controls: { disable: true } },
   render: () => (
-    <View style={{ padding: 40, flexDirection: 'row', gap: 16, width: 1160 }}>
+    <View style={{ maxWidth: '100%', flexDirection: 'row', flexWrap: 'wrap', gap: 16, width: 1160 }}>
       <RevenueChartCard data={REVENUE} style={{ flex: 1 }} />
       <OrdersChartCard data={ORDERS} style={{ flex: 1 }} />
     </View>
@@ -85,9 +99,11 @@ export const DashboardRow: Story = {
 
 /** July hovered: the headline swaps to the month, the cursor and active dot / band show. */
 export const Hovered: Story = {
-  render: () => (
+  args: { activeIndex: 6 },
+  parameters: { controls: { include: ["activeIndex","title","currentLabel","previousLabel","totalComparisonLabel","pointComparisonLabel","color","activeColor","previousColor"] } },
+  render: (args) => (
     <Frame>
-      <RevenueChartCard testID="revenue" data={REVENUE} activeIndex={6} />
+      <RevenueChartCard {...args} testID="revenue" data={REVENUE}  />
       <OrdersChartCard testID="orders" data={ORDERS} activeIndex={6} />
     </Frame>
   ),
@@ -95,6 +111,7 @@ export const Hovered: Story = {
 
 /** The three delta chips: rising (lime), falling (rose), flat (neutral). */
 export const Deltas: Story = {
+  parameters: { controls: { disable: true } },
   render: () => (
     <Frame>
       <RevenueChartCard data={REVENUE} />
@@ -106,6 +123,7 @@ export const Deltas: Story = {
 
 /** Below the `sm` breakpoint the legend drops under the headline; month labels thin out. */
 export const Narrow: Story = {
+  parameters: { controls: { disable: true } },
   render: () => (
     <Frame width={320}>
       <RevenueChartCard data={REVENUE} />
@@ -116,15 +134,17 @@ export const Narrow: Story = {
 
 /** Every label and formatter is a prop. */
 export const CustomLabels: Story = {
-  render: () => (
+  args: { title: "Ingresos", currentLabel: "Este año", previousLabel: "Año pasado", totalComparisonLabel: "el año pasado", pointComparisonLabel: "un año antes" },
+  parameters: { controls: { include: ["title","currentLabel","previousLabel","totalComparisonLabel","pointComparisonLabel","color","activeColor","previousColor","activeIndex"] } },
+  render: (args) => (
     <Frame>
-      <RevenueChartCard
+      <RevenueChartCard {...args}
         data={REVENUE}
-        title="Ingresos"
-        currentLabel="Este año"
-        previousLabel="Año pasado"
-        totalComparisonLabel="el año pasado"
-        pointComparisonLabel="un año antes"
+
+
+
+
+
         getPointTitle={(point) => point.label.toUpperCase()}
         formatValue={(v) => `${Math.round(v).toLocaleString('es-ES')} €`}
         formatAxisValue={(v) => `${Math.round(v / 1000)}k €`}
@@ -135,12 +155,13 @@ export const CustomLabels: Story = {
 
 /** Swapping the data morphs every point / bar to its new value over 450ms. */
 export const LiveData: Story = {
+  parameters: { controls: { disable: true } },
   render: function LiveData() {
     const [alt, setAlt] = useState(false);
     return (
       <Frame>
         <View style={{ flexDirection: 'row' }}>
-          <Button variant="secondary" size="small" onPress={() => setAlt((v) => !v)}>
+          <Button size="sm" onPress={() => setAlt((v) => !v)} appearance="outline" tone="neutral">
             {alt ? 'Show this year' : 'Show a weaker year'}
           </Button>
         </View>

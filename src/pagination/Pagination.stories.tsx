@@ -1,3 +1,4 @@
+import { useArgs } from 'storybook/preview-api';
 import React, { useState } from 'react';
 import { View } from 'react-native';
 import type { Meta, StoryObj } from '@storybook/react-vite';
@@ -16,7 +17,7 @@ type Story = StoryObj<typeof Pagination>;
 function Controlled({ initial, totalPages, width = 620 }: { initial: number; totalPages: number; width?: number }) {
   const [page, setPage] = useState(initial);
   return (
-    <View style={{ width }}>
+    <View style={{ width, maxWidth: '100%' }}>
       <Pagination page={page} totalPages={totalPages} onChange={setPage} />
     </View>
   );
@@ -24,6 +25,7 @@ function Controlled({ initial, totalPages, width = 620 }: { initial: number; tot
 
 /** Interactive: click pages, Previous and Next. */
 export const Basic: Story = {
+  parameters: { controls: { disable: true } },
   render: () => <Controlled initial={1} totalPages={10} />,
 };
 
@@ -33,6 +35,7 @@ export const Basic: Story = {
  * 420px (icon-only Previous/Next, no siblings).
  */
 export const Matrix: Story = {
+  parameters: { controls: { disable: true } },
   render: () => (
     <View style={{ gap: 16 }}>
       <Controlled initial={1} totalPages={10} />
@@ -42,4 +45,14 @@ export const Matrix: Story = {
       <Controlled initial={5} totalPages={10} width={360} />
     </View>
   ),
+};
+
+export const Playground: StoryObj<typeof Pagination> = {
+  args: { page: 1, totalPages: 10, siblingCount: 1 },
+  parameters: { controls: { disable: false, include: ['page', 'totalPages', 'siblingCount'] } },
+  argTypes: { page: { control: { type: 'number', min: 1 } }, totalPages: { control: { type: 'number', min: 2 } }, siblingCount: { control: { type: 'number', min: 0, max: 3 } } },
+  render: function Playground(args) {
+    const [, updateArgs] = useArgs();
+    return <View style={{ width: 520, maxWidth: '100%' }}><Pagination {...args} onChange={page => updateArgs({ page })} /></View>;
+  },
 };

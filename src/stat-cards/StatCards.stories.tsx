@@ -74,6 +74,7 @@ const frame = { padding: 40, width: '100%' as const, maxWidth: 1200 };
 
 /** The compact dashboard row: icon tile, label, value and a delta chip. */
 export const Plain: Story = {
+  parameters: { controls: { disable: true } },
   render: () => (
     <View style={frame}>
       <StatCards testID="stat-cards" stats={PLAIN_STATS} />
@@ -83,6 +84,7 @@ export const Plain: Story = {
 
 /** Gradient tiles, info tooltips, display-size values and the footer band. */
 export const Footer: Story = {
+  parameters: { controls: { disable: true } },
   render: () => (
     <View style={frame}>
       <StatCards testID="stat-cards" variant="footer" stats={FOOTER_STATS} />
@@ -92,6 +94,7 @@ export const Footer: Story = {
 
 /** `columns={2}` keeps the grid two-up at every width (split layouts, docs previews). */
 export const TwoColumns: Story = {
+  parameters: { controls: { disable: true } },
   render: () => (
     <View style={[frame, { maxWidth: 720 }]}>
       <StatCards stats={PLAIN_STATS} columns={2} />
@@ -101,6 +104,7 @@ export const TwoColumns: Story = {
 
 /** `count` renders the first N; a short last row keeps the grid's columns. */
 export const Count: Story = {
+  parameters: { controls: { disable: true } },
   render: () => (
     <View style={frame}>
       <StatCards variant="footer" stats={FOOTER_STATS} count={3} columns={2} />
@@ -110,6 +114,7 @@ export const Count: Story = {
 
 /** Every footer tone, the neutral delta, a custom caption, and no hint. */
 export const Tones: Story = {
+  parameters: { controls: { disable: true } },
   render: () => (
     <View style={[frame, { gap: 16 }]}>
       <StatCards
@@ -125,9 +130,20 @@ export const Tones: Story = {
           caption: i === 5 ? 'From last quarter' : undefined,
         }))}
       />
-      <View style={{ width: 280 }}>
+      <View style={{ width: 280, maxWidth: '100%' }}>
         <StatCard stat={PLAIN_STATS[0]!} />
       </View>
     </View>
   ),
+};
+
+/** A single instance whose controls are applied directly to the rendered component. */
+export const Playground: StoryObj<typeof StatCards> = {
+  args: { stats: FOOTER_STATS, variant: 'footer', count: 4, columns: 2 },
+  parameters: { controls: { disable: false, include: ['variant', 'count', 'columns'] } },
+  argTypes: { variant: { control: 'select', options: ['plain', 'footer'] }, count: { control: 'number' }, columns: { control: 'select', options: [1, 2, 4] } },
+  render: function Playground(args) {
+
+    return <View style={{ width: 960, maxWidth: '100%' }}><StatCards {...args} /></View>;
+  },
 };

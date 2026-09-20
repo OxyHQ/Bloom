@@ -35,6 +35,7 @@
  * this file via the `"browser"` export condition in `package.json`.
  */
 import * as React from 'react';
+import { useScreenWindowScroll } from '../screen/use-screen-window-scroll';
 import { type CSSProperties } from 'react';
 import { StyleSheet, View } from 'react-native';
 import { useWindowVirtualizer } from '@tanstack/react-virtual';
@@ -245,10 +246,14 @@ function VirtualListWebInner<T>(
   );
 }
 
-const VirtualList = React.forwardRef(VirtualListWebInner) as <T>(
-  props: VirtualListProps<T> & { ref?: React.Ref<VirtualListHandle> },
-) => React.ReactElement;
-
+const PlainVirtualList = React.forwardRef(VirtualListWebInner) as <T>(props: VirtualListProps<T> & { ref?: React.Ref<VirtualListHandle> }) => React.ReactElement;
+function ScreenVirtualList<T>({ forwardedRef, ...props }: VirtualListProps<T> & { forwardedRef: React.ForwardedRef<VirtualListHandle> }) {
+  const binding = useScreenWindowScroll(props.screen);
+  const padding = StyleSheet.flatten(props.contentContainerStyle);
+  return <PlainVirtualList {...props} ref={forwardedRef} style={[props.style, props.screen?.restoration?.restorePending ? { opacity: 0 } : null]} contentContainerStyle={[props.contentContainerStyle, { paddingTop: binding.contentInsets.top + Number(padding?.paddingTop ?? padding?.padding ?? 0), paddingBottom: binding.contentInsets.bottom + Number(padding?.paddingBottom ?? padding?.padding ?? 0) }]} />;
+}
+const VirtualList = React.forwardRef(function VirtualList<T>(props: VirtualListProps<T>, ref: React.ForwardedRef<VirtualListHandle>) {
+  return props.screen ? <ScreenVirtualList {...props} forwardedRef={ref} /> : <PlainVirtualList {...props} ref={ref} />;
+}) as <T>(props: VirtualListProps<T> & { ref?: React.Ref<VirtualListHandle> }) => React.ReactElement;
 export default VirtualList;
-
 export { VirtualList };

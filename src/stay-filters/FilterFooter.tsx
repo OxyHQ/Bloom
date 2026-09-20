@@ -31,7 +31,6 @@ function FilterFooterComponent({
   testID,
 }: FilterFooterProps) {
   const theme = useTheme();
-  const { neutral } = useMemo(() => resolveButtonRamps(theme), [theme]);
 
   return (
     <View
@@ -47,7 +46,7 @@ function FilterFooterComponent({
           paddingLeft: 24,
           paddingRight: 24,
           borderTopWidth: 1,
-          borderTopColor: theme.isDark ? neutral[800] : neutral[200],
+          borderTopColor: theme.colors.border,
           backgroundColor: theme.colors.background,
         },
         style,

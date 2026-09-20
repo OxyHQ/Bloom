@@ -21,6 +21,7 @@ import {
 
 const meta: Meta = {
   title: 'Foundations/Typography',
+  component: Text,
 };
 
 export default meta;
@@ -28,6 +29,7 @@ export default meta;
 type Story = StoryObj;
 
 export const Headings: Story = {
+  parameters: { controls: { disable: true } },
   render: () => (
     <View style={{ gap: 8, maxWidth: 560 }}>
       <H1>Heading one</H1>
@@ -46,6 +48,7 @@ export const Headings: Story = {
  * second way to ask for a heading is the ambiguity Bloom removes.
  */
 export const Prose: Story = {
+  parameters: { controls: { disable: true } },
   render: () => (
     <View style={{ gap: 12, maxWidth: 560 }}>
       <H2>Device sessions</H2>
@@ -71,6 +74,7 @@ export const Prose: Story = {
 
 /** Every variant beside the base `Text`, for size and colour comparison. */
 export const Scale: Story = {
+  parameters: { controls: { disable: true } },
   render: () => (
     <View style={{ gap: 6, maxWidth: 560 }}>
       <Lead>Lead — an intro paragraph</Lead>
@@ -91,6 +95,7 @@ export const Scale: Story = {
  * (quotation) instead of `className`.
  */
 export const Quotation: Story = {
+  parameters: { controls: { disable: true } },
   render: () => (
     <View style={{ gap: 12, maxWidth: 560 }}>
       <Blockquote>The rule is a real border, on every platform.</Blockquote>
@@ -101,4 +106,11 @@ export const Quotation: Story = {
       </Blockquote>
     </View>
   ),
+};
+
+export const Playground: StoryObj<typeof Text> = {
+  args: { children: 'A shared language for every screen.', variant: 'body-medium', numberOfLines: 2, selectable: true },
+  parameters: { controls: { disable: false, include: ['children', 'variant', 'numberOfLines', 'selectable'] } },
+  argTypes: { children: { control: 'text' }, variant: { control: 'select', options: ['body-medium', 'body-regular', 'headline-medium', 'title-2-semibold', 'caption-1-medium'] }, numberOfLines: { control: { type: 'number', min: 1, max: 10 } }, selectable: { control: 'boolean' } },
+  render: args => <View style={{ width: 520, maxWidth: '100%' }}><Text {...args} /></View>,
 };

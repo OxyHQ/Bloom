@@ -41,7 +41,6 @@ function WizardFooterComponent({
   testID,
 }: WizardFooterProps) {
   const theme = useTheme();
-  const { neutral } = useMemo(() => resolveButtonRamps(theme), [theme]);
   const [width, setWidth] = useState(0);
   const narrow = width > 0 && width < NARROW;
   const inset = narrow ? 16 : 24;
@@ -56,7 +55,7 @@ function WizardFooterComponent({
     paddingLeft: inset,
     paddingRight: inset,
     borderTopWidth: 1,
-    borderTopColor: theme.isDark ? neutral[800] : neutral[200],
+    borderTopColor: theme.colors.border,
     backgroundColor: theme.colors.background,
     ...(IS_WEB && sticky ? { position: WEB_POSITION_STICKY, bottom: 0, zIndex: 1 } : null),
   };

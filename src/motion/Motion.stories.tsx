@@ -6,6 +6,7 @@ import type { Meta, StoryObj } from '@storybook/react-vite';
 import { ScaleAndFadeIn, ScaleAndFadeOut, ScreenTransition, ShrinkAndPop } from './index';
 
 const meta: Meta = {
+  parameters: { controls: { disable: true } },
   title: 'Foundations/Motion',
 };
 
@@ -44,6 +45,7 @@ const card = {
 } as const;
 
 export const ScaleAndFade: Story = {
+  parameters: { controls: { disable: true } },
   render: () => (
     <Toggle>
       <Animated.View entering={ScaleAndFadeIn} exiting={ScaleAndFadeOut} style={card}>
@@ -54,6 +56,7 @@ export const ScaleAndFade: Story = {
 };
 
 export const Pop: Story = {
+  parameters: { controls: { disable: true } },
   render: () => (
     <Toggle>
       <Animated.View entering={ScaleAndFadeIn} exiting={ShrinkAndPop} style={card}>
@@ -64,6 +67,7 @@ export const Pop: Story = {
 };
 
 export const Transition: Story = {
+  parameters: { controls: { disable: true } },
   render: () => {
     function Demo() {
       const [forward, setForward] = useState(true);

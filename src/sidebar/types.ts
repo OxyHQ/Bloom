@@ -1,6 +1,6 @@
-import type { ComponentType, ReactNode } from 'react';
-import type { StyleProp, ViewStyle } from 'react-native';
+import type { ReactNode } from 'react';
 import type { BloomIconComponent } from '../icons/icon-component';
+import type { StyleProp, ViewStyle } from 'react-native';
 
 /** A Remix-style icon: `width` / `height` / `fill`. */
 /** @deprecated Use `BloomIconComponent` from `@oxy.so/bloom/icons`; this is an alias of it. */
@@ -119,12 +119,12 @@ export type SidebarSurface = 'card' | 'plain' | 'docked';
  * How big the rows are, and with them the panel. One axis, three rungs, every
  * measurement in `SIDEBAR_METRICS`:
  *
- * - `small`  a 30px square, an 18px glyph, `body-2-medium`; 232 expanded, 46 collapsed
- * - `medium` (default) 36 / 20 / `body-medium`; 260 expanded, 52 collapsed
- * - `large`  44 / 24 / `title-3-medium`; 300 expanded, 60 collapsed — the
+ * - `sm`  a 30px square, an 18px glyph, `body-2-medium`; 232 expanded, 46 collapsed
+ * - `md` (default) 36 / 20 / `body-medium`; 260 expanded, 52 collapsed
+ * - `lg`  44 / 24 / `title-3-medium`; 300 expanded, 60 collapsed — the
  *   destination-first rail a social app reads with at arm's length
  */
-export type SidebarSize = 'small' | 'medium' | 'large';
+export type SidebarSize = 'sm' | 'md' | 'lg' | 'small' | 'medium' | 'large';
 
 /** A row in the team menu. */
 export interface SidebarMenuItem {
@@ -262,7 +262,7 @@ export interface SidebarProps {
   fluid?: boolean;
   /** The panel's edge. Defaults to `card`. */
   surface?: SidebarSurface;
-  /** The row size, and the panel width that follows it. Defaults to `medium`. */
+  /** The row size, and the panel width that follows it. Defaults to `md`. */
   size?: SidebarSize;
 
   /** Shows `ThemeToggle` above the secondary rows. Defaults to true. */

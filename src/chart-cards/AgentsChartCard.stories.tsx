@@ -5,6 +5,21 @@ import type { Meta, StoryObj } from '@storybook/react-vite';
 import { AgentsChartCard, type AgentsPoint } from './AgentsChartCard';
 
 const meta: Meta<typeof AgentsChartCard> = {
+  argTypes: {
+    "title": { control: 'text' },
+    "headline": { control: 'number' },
+    "range": { control: 'text' },
+    "prevRangeLabel": { control: 'text' },
+    "nextRangeLabel": { control: 'text' },
+    "startLabel": { control: 'text' },
+    "endLabel": { control: 'text' },
+    "trackHeight": { control: 'number' },
+    "maxBarHeight": { control: 'number' },
+    "max": { control: 'number' },
+    "color": { control: 'text' },
+    "activeColor": { control: 'text' },
+    "activeIndex": { control: 'number' }
+  },
   title: 'Charts/Agents Chart',
   component: AgentsChartCard,
 };
@@ -48,7 +63,7 @@ function month(m: number): { data: AgentsPoint[]; headline: number } {
 const MAX = 158 / 5;
 
 const Frame = ({ children, width = 680 }: { children: React.ReactNode; width?: number }) => (
-  <View style={{ padding: 40, gap: 24, width: width + 80 }}>{children}</View>
+  <View style={{ maxWidth: '100%', gap: 24, width }}>{children}</View>
 );
 
 function Switchable({ testID, width }: { testID?: string; width?: number }) {
@@ -70,6 +85,7 @@ function Switchable({ testID, width }: { testID?: string; width?: number }) {
 
 /** December, per the design; the chevrons page months (the label rolls, the bars rise again). Hover a day. */
 export const Default: Story = {
+  parameters: { controls: { disable: true } },
   render: () => (
     <Frame>
       <Switchable testID="agents" />
@@ -79,34 +95,40 @@ export const Default: Story = {
 
 /** Dec 12 hovered (controlled): the bar darkens, the header shows the day. */
 export const Hovered: Story = {
-  render: () => (
+  args: { range: "December", activeIndex: 11 },
+  parameters: { controls: { include: ["range","activeIndex","title","headline","prevRangeLabel","nextRangeLabel","startLabel","endLabel","trackHeight","maxBarHeight","color","activeColor"] } },
+  render: (args) => (
     <Frame>
-      <AgentsChartCard {...month(11)} max={MAX} range="December" activeIndex={11} />
+      <AgentsChartCard {...args} {...month(11)} max={MAX}   />
     </Frame>
   ),
 };
 
 /** An idle day hovered: the 4px stub takes the cursor colour. */
 export const IdleDayHovered: Story = {
-  render: () => (
+  args: { range: "December", activeIndex: 3 },
+  parameters: { controls: { include: ["range","activeIndex","title","headline","prevRangeLabel","nextRangeLabel","startLabel","endLabel","trackHeight","maxBarHeight","color","activeColor"] } },
+  render: (args) => (
     <Frame>
-      <AgentsChartCard {...month(11)} max={MAX} range="December" activeIndex={3} />
+      <AgentsChartCard {...args} {...month(11)} max={MAX}   />
     </Frame>
   ),
 };
 
 /** A phone-width column, no pill, custom colours and axis labels. */
 export const Narrow: Story = {
-  render: () => (
+  args: { title: "Runs", color: "#fdba74", activeColor: "#f97316", startLabel: "May 1", endLabel: "May 30" },
+  parameters: { controls: { include: ["title","color","activeColor","startLabel","endLabel","headline","range","prevRangeLabel","nextRangeLabel","trackHeight","maxBarHeight","max","activeIndex"] } },
+  render: (args) => (
     <Frame width={358}>
-      <AgentsChartCard
+      <AgentsChartCard {...args}
         {...month(4)}
-        title="Runs"
+
         format={(v) => `${v} runs`}
-        color="#fdba74"
-        activeColor="#f97316"
-        startLabel="May 1"
-        endLabel="May 30"
+
+
+
+
       />
     </Frame>
   ),

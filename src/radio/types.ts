@@ -1,6 +1,8 @@
+import type { BloomSize } from '../appearance';
+import type { BloomTone } from '../appearance';
 import type { StyleProp, ViewStyle, TextStyle } from 'react-native';
 
-export type RadioSize = 'small' | 'medium' | 'large';
+export type RadioSize = BloomSize;
 
 /**
  * One option in a {@link RadioGroupProps} group.
@@ -12,11 +14,13 @@ export type RadioSize = 'small' | 'medium' | 'large';
 export interface RadioProps<Value extends string = string> {
   /** The value this option stands for. */
   value: Value;
-  /** Whether this option is the selected one. */
-  selected: boolean;
-  /** Called with `value` when the option is chosen. Selecting the already-selected
+  /** Whether this option is the checked one. */
+  checked?: boolean;
+  selected?: boolean;
+  /** Called with `value` when the option is chosen. Selecting the already-checked
    * option is a no-op — a radio, unlike a checkbox, cannot be un-chosen. */
-  onSelect: (value: Value) => void;
+  onValueChange?: (value: Value) => void;
+  onSelect?: (value: Value) => void;
   /** Optional label text. */
   label?: string;
   /** Optional description shown below the label. */
@@ -25,8 +29,8 @@ export interface RadioProps<Value extends string = string> {
   size?: RadioSize;
   /** Whether the option is disabled. */
   disabled?: boolean;
-  /** Colour of the selected indicator. Uses the theme primary by default. */
-  color?: string;
+  /** Colour of the checked indicator. Uses the theme primary by default. */
+  tone?: BloomTone;
   style?: StyleProp<ViewStyle>;
   labelStyle?: StyleProp<TextStyle>;
   accessibilityLabel?: string;
@@ -59,15 +63,16 @@ export interface RadioGroupProps<Value extends string = string> {
   /** The selected value, or `undefined` for a group with nothing chosen yet. */
   value: Value | undefined;
   /** Called with the newly chosen value. */
-  onValueChange: (value: Value) => void;
+  onValueChange?: (value: Value) => void;
+  onSelect?: (value: Value) => void;
   /** The options, in order. */
   options: ReadonlyArray<RadioOption<Value>>;
   /** Size preset, applied to every option. */
   size?: RadioSize;
   /** Disables every option. An option may also disable itself. */
   disabled?: boolean;
-  /** Colour of the selected indicator. Uses the theme primary by default. */
-  color?: string;
+  /** Colour of the checked indicator. Uses the theme primary by default. */
+  tone?: BloomTone;
   style?: StyleProp<ViewStyle>;
   labelStyle?: StyleProp<TextStyle>;
   /**
@@ -82,18 +87,20 @@ export interface RadioGroupProps<Value extends string = string> {
 export interface RadioCardProps<Value extends string = string> {
   /** The value this card stands for. */
   value: Value;
-  /** Whether this card is the selected one. */
-  selected: boolean;
+  /** Whether this card is the checked one. */
+  checked?: boolean;
+  selected?: boolean;
   /** Called with `value` when the card is chosen. Re-choosing it is a no-op. */
-  onSelect: (value: Value) => void;
+  onValueChange?: (value: Value) => void;
+  onSelect?: (value: Value) => void;
   /** The card's title (one line); also its accessible name. */
   title: string;
   /** Optional one-line description under the title. */
   description?: string;
   /** Dims the whole card and stops it selecting. */
   disabled?: boolean;
-  /** Accent for the selected dot. Uses the theme primary by default. */
-  color?: string;
+  /** Accent for the checked dot. Uses the theme primary by default. */
+  tone?: BloomTone;
   style?: StyleProp<ViewStyle>;
   accessibilityLabel?: string;
   testID?: string;

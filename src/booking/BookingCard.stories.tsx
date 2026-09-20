@@ -241,7 +241,7 @@ export const BookingBarPhone: Story = {
     const theme = useTheme();
     return (
       <View style={{ backgroundColor: theme.colors.background, padding: 24, gap: 24, alignItems: 'flex-start' }}>
-        <View style={{ width: 375, gap: 16 }}>
+        <View style={{ width: 375, maxWidth: '100%', gap: 16 }}>
           <BookingBar
             price="$180"
             priceUnit="night"
@@ -297,7 +297,7 @@ export const TripCards: Story = {
           />
         </View>
         <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 16 }}>
-          <View style={{ width: 320 }}>
+          <View style={{ width: 320, maxWidth: '100%' }}>
             <TripCard
               image={PHOTOS.dunes}
               title="Dune house near Ras Meridia"
@@ -312,7 +312,7 @@ export const TripCards: Story = {
               onPress={() => undefined}
             />
           </View>
-          <View style={{ width: 320 }}>
+          <View style={{ width: 320, maxWidth: '100%' }}>
             <TripCard
               title="Garden studio in Aldercombe"
               subtitle="Hosted by Pim"
@@ -333,8 +333,8 @@ export const Dark: Story = {
     const theme = useTheme();
     return (
       <View style={{ backgroundColor: theme.colors.background, padding: 24, gap: 24, alignItems: 'flex-start' }}>
-        <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 24, alignItems: 'flex-start' }}>
-          <View style={{ width: 372 }}>
+        <View style={{ width: '100%', flexDirection: 'row', flexWrap: 'wrap', gap: 24, alignItems: 'flex-start' }}>
+          <View style={{ width: 372, maxWidth: '100%' }}>
             <BookingCard
               price="$162"
               originalPrice="$180"
@@ -356,7 +356,7 @@ export const Dark: Story = {
               footer={<ReportLink />}
             />
           </View>
-          <View style={{ width: 360, gap: 16 }}>
+          <View style={{ width: 360, maxWidth: '100%', gap: 16 }}>
             <TripCard
               image={PHOTOS.coast}
               title="Harbour loft in Porto Lume"
@@ -369,7 +369,7 @@ export const Dark: Story = {
             <PriceBreakdown rows={BREAKDOWN.rows} total={BREAKDOWN.total} />
           </View>
         </View>
-        <View style={{ width: 375 }}>
+        <View style={{ width: 375, maxWidth: '100%' }}>
           <BookingBar price="$180" priceUnit="night" dates="Oct 12 – 17" onPressDates={() => undefined} />
         </View>
       </View>

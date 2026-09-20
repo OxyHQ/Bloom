@@ -4,7 +4,7 @@ import { act, fireEvent, render } from '@testing-library/react-native';
 import { BloomThemeProvider } from '../theme/BloomThemeProvider';
 import { useTheme } from '../theme/use-theme';
 import type { Theme } from '../theme/types';
-import { BUTTON_SHADOW, DANGER_TABLE, colorRamp, mixColor, resolveButtonRamps } from '../button/shared';
+import { BUTTON_SHADOW } from '../button/shared';
 import { InputOtp } from '../input-otp';
 import { resolveInputOtpBoxPaint, resolveInputOtpPalette } from '../input-otp/InputOtp';
 import { resolvedStyle } from './support/rendered-style';
@@ -37,41 +37,18 @@ const values = (root: ReturnType<typeof render>, length = 6) =>
 const key = (k: string) => ({ nativeEvent: { key: k }, preventDefault: () => {} });
 
 describe('InputOtp palette (design tokens)', () => {
-  it('light', () => {
-    const theme = captureTheme('light');
-    const { accent, neutral: n } = resolveButtonRamps(theme);
-    const red = colorRamp(theme.colors.negative, DANGER_TABLE);
-    expect(resolveInputOtpPalette(theme)).toEqual({
-      background: theme.colors.card,
-      backgroundDisabled: n[100],
-      backgroundInvalid: red[100],
-      border: n[200],
-      borderHover: n[300],
-      borderInvalid: red[500],
-      ring: accent[500],
-      text: theme.colors.text,
-      textDisabled: n[400],
-      textInvalid: red[600],
-      shadow: BUTTON_SHADOW.light,
-    });
-  });
-
-  it('dark', () => {
-    const theme = captureTheme('dark');
-    const { accent, neutral: n } = resolveButtonRamps(theme);
-    const red = colorRamp(theme.colors.negative, DANGER_TABLE);
-    expect(resolveInputOtpPalette(theme)).toEqual({
-      background: n[800],
-      backgroundDisabled: n[800],
-      backgroundInvalid: mixColor(theme.colors.background, red[950], 0.6),
-      border: n[700],
-      borderHover: n[500],
-      borderInvalid: red[400],
-      ring: accent[500],
-      text: theme.colors.text,
-      textDisabled: n[600],
-      textInvalid: red[400],
-      shadow: BUTTON_SHADOW.dark,
+  it.each(['light', 'dark'] as const)('inherits field surfaces and error pairs in %s', mode => {
+    const theme = captureTheme(mode);
+    const c = theme.colors;
+    expect(resolveInputOtpPalette(theme)).toMatchObject({
+      background: c.backgroundSecondary,
+      backgroundInvalid: c.errorSubtle,
+      border: c.borderLight,
+      borderInvalid: c.errorSubtleForeground,
+      ring: c.primary,
+      text: c.text,
+      textInvalid: c.errorSubtleForeground,
+      shadow: BUTTON_SHADOW[mode],
     });
   });
 
@@ -134,7 +111,7 @@ describe('InputOtp', () => {
 
   it('invalid and disabled reach every box as ARIA state', () => {
     const p = resolveInputOtpPalette(captureTheme('light'));
-    const invalid = renderWithTheme(<InputOtp isInvalid length={2} />);
+    const invalid = renderWithTheme(<InputOtp invalid length={2} />);
     expect(box(invalid, 1, 2).props['aria-invalid']).toBe(true);
     expect(resolvedStyle(box(invalid, 1, 2).props.style).borderColor).toBe(p.borderInvalid);
     const disabled = renderWithTheme(<InputOtp disabled length={2} />);

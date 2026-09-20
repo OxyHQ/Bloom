@@ -65,6 +65,10 @@ const SUBPATHS = /** @type {const} */ ([
   // Shared overlay plumbing (OverlayRoot + Backdrop) for portaled surfaces.
   ['./overlay', 'overlay/index.ts'],
   ['./dialog', 'dialog/index.ts'],
+  ['./appearance', 'appearance/index.ts'],
+  ['./control-surface', 'control-surface/index.ts'],
+  ['./screen', 'screen/index.ts'],
+  ['./bottom-bar', 'bottom-bar/index.ts'],
   ['./button', 'button/index.ts'],
   ['./button-group', 'button-group/index.ts'],
   // The inherited control-presentation contract: what a container tells the
@@ -278,6 +282,8 @@ const SUBPATHS = /** @type {const} */ ([
  * if you remove a fork delete the entry here and re-run the script.
  */
 const WEB_FORKED_SUBPATHS = new Set([
+  './bottom-bar',
+  './app-shell',
   '.',
   './connection-status',
   './media-flight',
@@ -589,6 +595,10 @@ function buildTypesVersionsField() {
  * two barrels that must agree on every line drift the moment one is edited.
  */
 const WEB_BARRELS = /** @type {const} */ ([
+  { source: 'button/index.ts', children: ['Button'] },
+  { source: 'fab/index.ts', children: ['Fab'] },
+  { source: 'bottom-bar/index.ts', children: ['BottomBar'] },
+  { source: 'app-shell/index.ts', children: ['../bottom-bar', '../fab'] },
   {
     source: 'index.ts',
     // Every web-forked subpath except the root itself.
@@ -628,11 +638,13 @@ function buildWebBarrel(originalSource, sourceRelPath, children) {
   const transformed = originalSource
     .split('\n')
     .map((line) => {
-      const match = line.match(/from '\.\/([a-z-]+)'(\s*;?\s*)$/);
+      const match = line.match(/from '((?:\.\.\/|\.\/)[A-Za-z-]+)'(\s*;?\s*)$/);
       if (!match) return line;
-      const folder = match[1];
+      const specifier = match[1];
+      const folder = specifier.replace(/^\.\//, '');
       if (!children.includes(folder)) return line;
-      return line.replace(`from './${folder}'`, `from './${folder}/index.web'`);
+      const isFile = existsSync(join(SRC, dirname(sourceRelPath), `${folder}.web.tsx`)) || existsSync(join(SRC, dirname(sourceRelPath), `${folder}.web.ts`));
+      return line.replace(`from '${specifier}'`, `from '${specifier}${isFile ? '.web' : '/index.web'}'`);
     })
     .join('\n');
 

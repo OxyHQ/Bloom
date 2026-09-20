@@ -54,7 +54,7 @@ describe('ThemeToggle', () => {
   });
 
   it('segmented: a named group of two pressed-state segments; the selected one is inert', () => {
-    const screen = renderToggle(<ThemeToggle appearance="sidebar-segmented" testID="seg" />);
+    const screen = renderToggle(<ThemeToggle variant="sidebar-segmented" testID="seg" />);
     const group = screen.getByTestId('seg');
     expect(group.props.role).toBe('group');
     expect(group.props.accessibilityLabel).toBe('Theme');
@@ -72,7 +72,7 @@ describe('ThemeToggle', () => {
 
   it('the caller style repaints the segmented track', () => {
     const screen = renderToggle(
-      <ThemeToggle appearance="sidebar-segmented" testID="seg" style={{ backgroundColor: 'red' }} />,
+      <ThemeToggle variant="sidebar-segmented" testID="seg" style={{ backgroundColor: 'red' }} />,
     );
     expect(resolvedStyle(screen.getByTestId('seg').props.style).backgroundColor).toBe('red');
   });

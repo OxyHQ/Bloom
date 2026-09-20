@@ -1,3 +1,4 @@
+import type { BloomSize } from '../appearance';
 import type { StyleProp, ViewStyle } from 'react-native';
 
 export interface InputGroupAddonProps {
@@ -26,6 +27,7 @@ export interface InputGroupProps {
    */
   children: React.ReactNode;
   /** Invalid state — renders the error-colored border. */
+  invalid?: boolean;
   isInvalid?: boolean;
   /** Disabled styling. */
   disabled?: boolean;
@@ -33,7 +35,7 @@ export interface InputGroupProps {
    * `sm` is the `small` input (32 tall), `md` the `medium` (36, the
    * default), `lg` extends the ramp (44).
    */
-  size?: 'sm' | 'md' | 'lg';
+  size?: BloomSize | 'small' | 'medium' | 'large' | 'default';
   style?: StyleProp<ViewStyle>;
   testID?: string;
 }

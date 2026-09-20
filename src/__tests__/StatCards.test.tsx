@@ -92,3 +92,12 @@ describe('StatCards', () => {
     expect(queryByText('Orders')).toBeNull();
   });
 });
+
+
+it.each(['light', 'dark'] as const)('dashboard chrome and status pairs follow canonical roles in %s', (mode) => {
+  const theme = buildTheme('teal', mode);
+  const c = theme.colors;
+  expect(resolveDashboardSurfaces(theme)).toMatchObject({ secondary: c.card, inner: c.backgroundSecondary, primary: c.card, buttonBorder: c.borderLight, textSecondary: c.textSecondary, iconSecondary: c.textSecondary, focusRing: c.primary });
+  expect(statusPair(theme, 'lime', c.card)).toEqual({ background: c.successSubtle, foreground: c.successSubtleForeground });
+  expect(statusPair(theme, 'rose', c.card)).toEqual({ background: c.errorSubtle, foreground: c.errorSubtleForeground });
+});

@@ -21,6 +21,13 @@ import {
 } from './index';
 
 const meta: Meta = {
+  argTypes: {
+    "value": { control: 'text' },
+    "defaultValue": { control: 'text' },
+    "label": { control: 'text' }
+  },
+  component: Menubar,
+  parameters: { controls: { disable: true } },
   title: 'Base/Menubar',
 };
 
@@ -29,6 +36,7 @@ export default meta;
 type Story = StoryObj;
 
 export const Basic: Story = {
+  parameters: { controls: { disable: true } },
   render: function BasicMenubar() {
     const [last, setLast] = useState('idle');
     return (
@@ -60,7 +68,7 @@ export const Basic: Story = {
                 </MenubarSubContent>
               </MenubarSub>
               <MenubarSeparator />
-              <MenubarItem variant="destructive" onPress={() => setLast('close')}>
+              <MenubarItem tone="danger" onPress={() => setLast('close')}>
                 Close window
               </MenubarItem>
             </MenubarContent>
@@ -99,6 +107,7 @@ export const Basic: Story = {
  * state write rather than a close followed by an open.
  */
 export const Controlled: Story = {
+  parameters: { controls: { disable: true } },
   render: function ControlledMenubar() {
     const [open, setOpen] = useState<string | undefined>('view');
     const [dense, setDense] = useState(false);

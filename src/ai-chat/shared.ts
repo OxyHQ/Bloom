@@ -2,11 +2,7 @@ import { useEffect, useMemo } from 'react';
 import { Platform } from 'react-native';
 
 import {
-  ACCENT_TABLE,
   BUTTON_SHADOW,
-  colorRamp,
-  DANGER_TABLE,
-  mixColor,
   resolveButtonRamps,
   type Ramp,
 } from '../button/shared';
@@ -14,28 +10,7 @@ import { adoptStyleSheet } from '../styles/adopt-style-sheet';
 import type { Theme } from '../theme/types';
 import { useTheme } from '../theme/use-theme';
 
-/**
- * What every `ai-chat` part paints from: semantic tokens resolved onto
- * Bloom's ramps. (Code colours live in the `code` family.)
- *
- *   Token                                 light          dark
- *   background-full                      card           neutral-925 (900→950 @40%)
- *   background-primary-default           card           neutral-800
- *   background-primary-hover             neutral-100    neutral-700 @60% over the surface
- *   background-secondary-default         neutral-100    neutral-900
- *   background-secondary-hover           neutral-200    neutral-800
- *   background-tertiary-default          neutral-200    neutral-800
- *   border-button-default                neutral-200    neutral-700
- *   text-primary                         text           text
- *   text-secondary / icon-secondary      neutral-500    neutral-500
- *   text-tertiary                        neutral-400    neutral-600
- *   foreground-icon-primary              neutral-950    neutral-50
- *   foreground-icon-quaternary           neutral-300    neutral-700
- *   foreground-icon-hover                black          white
- *
- * Hardcoded hues follow the theme (`stat-cards/tones` recipe): emerald →
- * `success`, red → `negative`, indigo → the accent.
- */
+/** Shared semantic surfaces and foreground pairs; code colours belong to `code`. */
 export interface AiChatPalette {
   isDark: boolean;
   full: string;
@@ -53,11 +28,11 @@ export interface AiChatPalette {
   iconHover: string;
   ring: string;
   neutral: Ramp;
-  /** `text-emerald-700` — additions. */
+  /** Semantic success foreground for additions. */
   addition: string;
-  /** `text-red-600` — deletions. */
+  /** Semantic error foreground for deletions. */
   deletion: string;
-  /** `bg-indigo-100` / `text-indigo-500` — the link chip. */
+  /** Paired accent surface and foreground for the link chip. */
   linkChipBackground: string;
   linkChipText: string;
   shadowXs: string;
@@ -66,31 +41,30 @@ export interface AiChatPalette {
 }
 
 export function resolveAiChatPalette(theme: Theme): AiChatPalette {
-  const { accent, neutral: n } = resolveButtonRamps(theme);
-  const success = colorRamp(theme.colors.success, ACCENT_TABLE);
-  const red = colorRamp(theme.colors.negative, DANGER_TABLE);
+  const { neutral: n } = resolveButtonRamps(theme);
+  const c = theme.colors;
   const dark = theme.isDark;
   return {
     isDark: dark,
-    full: dark ? mixColor(n[900], n[950], 0.4) : theme.colors.card,
-    primary: dark ? n[800] : theme.colors.card,
-    secondary: dark ? n[900] : n[100],
-    secondaryHover: dark ? n[800] : n[200],
-    tertiary: dark ? n[800] : n[200],
-    border: dark ? n[700] : n[200],
+    full: c.background,
+    primary: c.card,
+    secondary: c.backgroundSecondary,
+    secondaryHover: c.backgroundTertiary,
+    tertiary: c.backgroundTertiary,
+    border: c.borderLight,
     text: theme.colors.text,
-    textSecondary: n[500],
-    textTertiary: dark ? n[600] : n[400],
-    iconPrimary: dark ? n[50] : n[950],
-    iconSecondary: n[500],
-    iconQuaternary: dark ? n[700] : n[300],
-    iconHover: dark ? '#ffffff' : '#000000',
-    ring: accent[500],
+    textSecondary: c.textSecondary,
+    textTertiary: c.textTertiary,
+    iconPrimary: c.text,
+    iconSecondary: c.textSecondary,
+    iconQuaternary: c.textTertiary,
+    iconHover: c.text,
+    ring: c.primary,
     neutral: n,
-    addition: success[700],
-    deletion: red[600],
-    linkChipBackground: accent[100],
-    linkChipText: accent[500],
+    addition: c.successSubtleForeground,
+    deletion: c.errorSubtleForeground,
+    linkChipBackground: c.primarySubtle,
+    linkChipText: c.primarySubtleForeground,
     shadowXs: dark ? BUTTON_SHADOW.dark : BUTTON_SHADOW.light,
     shadowCard: dark ? '0 1px 1px 0 rgba(0, 0, 0, 0.14)' : '0 1px 1px 0 rgba(0, 0, 0, 0.05)',
     shadowSidebar: dark
@@ -99,9 +73,9 @@ export function resolveAiChatPalette(theme: Theme): AiChatPalette {
   };
 }
 
-/** `background-primary-hover` over a known surface (dark mode's hover is translucent). */
-export function primaryHoverOver(palette: AiChatPalette, surface: string): string {
-  return palette.isDark ? mixColor(surface, palette.neutral[700], 0.6) : palette.neutral[100];
+/** Canonical hover surface, shared across modes. */
+export function primaryHoverOver(palette: AiChatPalette, _surface: string): string {
+  return palette.secondaryHover;
 }
 
 export function useAiChatPalette(): AiChatPalette {
@@ -241,11 +215,15 @@ export const AI_CHAT_WEB_CSS = `
 [data-bloom-ai-chat-dragging="on"] { cursor: col-resize; user-select: none; }
 [data-bloom-ai-chat-chip] {
   display: inline-flex;
+  max-width: calc(100% - 4px);
+  box-sizing: border-box;
   align-items: center;
   justify-content: center;
   gap: 2px;
   vertical-align: middle;
 }
+[data-bloom-ai-chat-chip] > svg { flex-shrink: 0; }
+[data-bloom-ai-chat-chip] > [dir] { min-width: 0; overflow-wrap: anywhere; }
 @media (prefers-reduced-motion: reduce) {
   [data-bloom-ai-chat-control],
   [data-bloom-ai-chat-tile] [data-bloom-ai-chat-scrim],

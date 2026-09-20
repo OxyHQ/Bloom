@@ -1,49 +1,23 @@
 import { isValidElement, type ReactNode } from 'react';
 
+import { resolveBloomColors } from '../appearance/colors';
+import type { BloomAppearance, BloomTone } from '../appearance/types';
+
 import { borderRadius } from '../styles/tokens';
 import { parseRgba, withAlpha } from '../theme/color-utils';
 import { TYPE_SCALE, type TypeScaleStyle, type TypeScaleVariant } from '../typography/scale';
 import { oklchToSrgb, srgbToOklch, srgbToRgbString, type Oklch } from '../theme/color-space';
 import type { Theme } from '../theme/types';
-import type {
-  ButtonIconComponent,
-  ButtonLinkTone,
-  ButtonSize,
-  ButtonUnderline,
-  ButtonVariant,
-} from './types';
+import type { ButtonIconComponent, ButtonSize, ButtonVariant, ButtonLinkTone, ButtonUnderline } from './types';
 
-/**
- * The geometry and palette both `Button` forks paint from. One table, read by
- * `Button.tsx` and `Button.web.tsx`, so the two forks cannot drift apart.
- *
- *                 xs                  small          medium         large
- *   height        24                  32             36             44
- *   padding-x     8                   8              8              12
- *   gap           2                   2              2              2
- *   icon          14                  18             20             20
- *   label px      2                   2              4              4
- *   text          caption-1-semibold  body-medium    body-medium    headline-medium
- *   icon-only     24×24               32×32          36 × (36+border) 44×44
- *
- * Medium icon-only is NOT forced square: its width comes from the
- * content (8 + 20 + 8) plus the border, so a bordered (secondary) medium
- * icon-only button is 38 × 36. Small and xs force `size-8` / `size-6`.
- *
- * `large` extends the ramp to the 44pt touch floor so existing
- * `size="large"` call sites keep their height.
- *
- * Every size is a full pill ({@link BUTTON_RADIUS}), so an icon-only button
- * is a circle.
- *
- * Height is FIXED, not a floor: the label's line box is centred inside it, so
- * the 1px border of `secondary` cannot grow the box the way padding did.
+/** Geometry shared by web and native: xs 24, sm 32, md 36, lg 44.
+ * Icon actions are squares; native expands compact touch targets with hitSlop.
  */
 
 /** Every size is a full pill. */
 export const BUTTON_RADIUS = borderRadius.full;
 
-export type ButtonResolvedSize = 'xs' | 'small' | 'medium' | 'large';
+export type ButtonResolvedSize = 'xs' | 'sm' | 'md' | 'lg';
 
 export interface ButtonGeometry {
   height: number;
@@ -59,7 +33,6 @@ export interface ButtonGeometry {
   fontWeight: TypeScaleStyle['fontWeight'];
   letterSpacing: number;
   /** Icon-only width grows with the border (content-derived), vs forced square. */
-  iconOnlyGrowsWithBorder: boolean;
 }
 
 function typeFields(type: TypeScaleVariant) {
@@ -86,7 +59,7 @@ export function resolveButtonGeometry(
   return textVariant ? { ...base, ...typeFields(textVariant) } : base;
 }
 
-export const BUTTON_GEOMETRY: Record<ButtonResolvedSize, ButtonGeometry> = {
+const CANONICAL_BUTTON_GEOMETRY: Record<ButtonResolvedSize, ButtonGeometry> = {
   xs: {
     height: 24,
     paddingHorizontal: 8,
@@ -94,36 +67,34 @@ export const BUTTON_GEOMETRY: Record<ButtonResolvedSize, ButtonGeometry> = {
     iconSize: 14,
     labelPaddingHorizontal: 2,
     ...typeFields('caption-1-semibold'),
-    iconOnlyGrowsWithBorder: false,
   },
-  small: {
+  sm: {
     height: 32,
     paddingHorizontal: 8,
     gap: 2,
     iconSize: 18,
     labelPaddingHorizontal: 2,
     ...typeFields('body-medium'),
-    iconOnlyGrowsWithBorder: false,
   },
-  medium: {
+  md: {
     height: 36,
     paddingHorizontal: 8,
     gap: 2,
     iconSize: 20,
     labelPaddingHorizontal: 4,
     ...typeFields('body-medium'),
-    iconOnlyGrowsWithBorder: true,
   },
-  large: {
+  lg: {
     height: 44,
     paddingHorizontal: 12,
     gap: 2,
     iconSize: 20,
     labelPaddingHorizontal: 4,
     ...typeFields('headline-medium'),
-    iconOnlyGrowsWithBorder: false,
   },
 };
+export const BUTTON_GEOMETRY = { ...CANONICAL_BUTTON_GEOMETRY, small: CANONICAL_BUTTON_GEOMETRY.sm, medium: CANONICAL_BUTTON_GEOMETRY.md, large: CANONICAL_BUTTON_GEOMETRY.lg };
+
 
 /**
  * The `icon` variant. It keeps a fixed square (`size-9` / `size-8`, border
@@ -131,9 +102,9 @@ export const BUTTON_GEOMETRY: Record<ButtonResolvedSize, ButtonGeometry> = {
  */
 export const ICON_BUTTON_ICON_SIZE: Record<ButtonResolvedSize, number> = {
   xs: 14,
-  small: 16,
-  medium: 20,
-  large: 20,
+  sm: 16,
+  md: 20,
+  lg: 20,
 };
 
 /**
@@ -143,37 +114,24 @@ export const ICON_BUTTON_ICON_SIZE: Record<ButtonResolvedSize, number> = {
 export const LINK_BUTTON_GAP = 4;
 export const LINK_BUTTON_UNDERLINE_OFFSET = 3;
 
-/** Width of an icon-only button at a size, given the variant's border width. */
-export function iconOnlyWidth(geometry: ButtonGeometry, borderWidth: number): number {
-  return geometry.iconOnlyGrowsWithBorder ? geometry.height + 2 * borderWidth : geometry.height;
-}
 
 /**
  * A round background/tertiary disc with a hand-drawn two-stroke X in its own
  * viewBox, so the stroke is a true pixel value at every size.
  */
-export type CloseButtonSize = '2xs' | 'xs' | 'sm' | 'md';
+export type CloseButtonSize = '2xs' | 'xs' | 'sm' | 'md' | 'lg';
 
 export const CLOSE_BUTTON_GEOMETRY: Record<
   CloseButtonSize,
   { box: number; glyph: number; stroke: number; inset: number }
 > = {
-  '2xs': { box: 16, glyph: 6.8, stroke: 1.6, inset: 0.57 },
+  '2xs': { box: 18, glyph: 9, stroke: 2, inset: 2 },
   xs: { box: 20, glyph: 10.8, stroke: 2, inset: 2 },
   sm: { box: 24, glyph: 12.6, stroke: 2, inset: 2 },
   md: { box: 32, glyph: 16.2, stroke: 2.5, inset: 2 },
+  lg: { box: 44, glyph: 20, stroke: 2.5, inset: 2 },
 };
 
-export const BUTTON_SIZE_ALIAS: Record<ButtonSize, ButtonResolvedSize> = {
-  xs: 'xs',
-  small: 'small',
-  medium: 'medium',
-  large: 'large',
-  sm: 'small',
-  md: 'medium',
-  lg: 'large',
-  icon: 'medium',
-};
 
 /** The button's transition duration. */
 export const BUTTON_TRANSITION_MS = 150;
@@ -340,190 +298,111 @@ export function mixColor(base: string, top: string, alpha: number): string {
   return `rgb(${ch(b.r, t.r)} ${ch(b.g, t.g)} ${ch(b.b, t.b)})`;
 }
 
-function gradientState(
-  top: string,
-  bottom: string,
-  foreground: string,
-): ButtonStatePaint {
+/** Original Bloom filled surface: the gradient is material, independent of the API names. */
+function gradientPaint(top: string, bottom: string, foreground: string): ButtonStatePaint {
   return { background: top, gradient: [top, bottom], border: TRANSPARENT, foreground };
 }
 
-function solidState(background: string, border: string, foreground: string): ButtonStatePaint {
-  return { background, gradient: null, border, foreground };
+/** Shared semantic recipe. Color and fill are independent axes. */
+export const BUTTON_SIZE_ALIAS: Record<ButtonSize, ButtonResolvedSize> = { xs: 'xs', sm: 'sm', md: 'md', lg: 'lg', small: 'sm', medium: 'md', large: 'lg', icon: 'md' };
+
+export function resolveButtonRecipe(variant: ButtonVariant | undefined): { appearance: BloomAppearance; tone: BloomTone } {
+  switch (variant) {
+    case 'secondary': case 'outline': case 'icon': return { appearance: 'outline', tone: 'neutral' };
+    case 'ghost': return { appearance: 'subtle', tone: 'accent' };
+    case 'text': case 'link': return { appearance: 'plain', tone: 'accent' };
+    case 'destructive': return { appearance: 'solid', tone: 'danger' };
+    case 'inverse': return { appearance: 'solid', tone: 'neutral' };
+    default: return { appearance: 'solid', tone: 'accent' };
+  }
 }
 
-/** `bg-button-primary` / `bg-button-danger`, with their disabled gradients. */
-function filledPalette(
-  ramp: Ramp,
-  onFill: string,
-  disabled: { top: string; bottom: string; foreground: string },
-): ButtonPalette {
-  return {
-    rest: gradientState(ramp[500], ramp[600], onFill),
-    hover: gradientState(ramp[400], ramp[500], onFill),
-    active: gradientState(ramp[600], ramp[700], onFill),
-    disabled: gradientState(disabled.top, disabled.bottom, disabled.foreground),
-    borderWidth: 0,
-    shadow: true,
-    ring: ramp[500],
+/** Legacy variants remain accepted; new appearance/tone are the shared contract. */
+export function resolveButtonPalette(appearance: BloomAppearance | ButtonVariant, theme: Theme, tone: BloomTone | ButtonLinkTone = 'accent'): ButtonPalette {
+  const legacy = !['solid', 'subtle', 'outline', 'plain'].includes(appearance);
+  const recipe = resolveButtonRecipe(legacy ? appearance as ButtonVariant : undefined);
+  const resolvedTone: BloomTone = tone === 'primary' ? 'accent' : tone === 'secondary' || tone === 'text' ? 'neutral' : tone;
+  const palette = resolveCanonicalButtonPalette(legacy ? recipe.appearance : appearance as BloomAppearance, theme, legacy && tone === 'accent' ? recipe.tone : resolvedTone);
+  if (appearance === 'link' && tone === 'text') return { ...palette,
+    rest: { ...palette.rest, foreground: theme.colors.text },
+    hover: { ...palette.hover, foreground: theme.colors.textSecondary, background: 'transparent' },
+    active: { ...palette.active, foreground: theme.colors.textSecondary, background: 'transparent' },
   };
+  if (appearance === 'link') return { ...palette, hover: { ...palette.hover, foreground: palette.rest.foreground, background: 'transparent' }, active: { ...palette.active, foreground: palette.rest.foreground, background: 'transparent' } };
+  if (appearance === 'inverse') return { ...palette,
+    rest: { ...palette.rest, gradient: null, background: theme.colors.text, foreground: theme.colors.background },
+    hover: { ...palette.hover, gradient: null, background: theme.colors.textSecondary, foreground: theme.colors.background },
+    active: { ...palette.active, gradient: null, background: theme.colors.text, foreground: theme.colors.background },
+  };
+  return palette;
 }
 
-/**
- * Resolve every state's paint for a variant.
- *
- * Pure — takes the theme rather than calling `useTheme()`, so it can be walked
- * over every preset × mode without rendering.
- *
- * Bloom's variants:
- *   primary              → primary (accent gradient)
- *   destructive          → danger (negative gradient)
- *   secondary | outline  → secondary (bordered surface)
- *   icon                 → secondary surface, dimmed when disabled
- *   ghost                → ghost (tinted accent)
- *   inverse              → white surface, black label (over media)
- *   link                 → label only; `linkTone` primary | secondary
- *   text                 → borderless accent label with a hover wash
- */
-export function resolveButtonPalette(
-  variant: ButtonVariant,
+export function resolveCanonicalButtonPalette(
+  appearance: BloomAppearance,
   theme: Theme,
-  linkTone: ButtonLinkTone = 'primary',
+  tone: BloomTone = 'accent',
 ): ButtonPalette {
   const c = theme.colors;
-  const dark = theme.isDark;
-  const { accent, neutral: n } = resolveButtonRamps(theme);
-
-  switch (variant) {
-    case 'primary':
-      return filledPalette(
-        accent,
-        c.primaryForeground,
-        dark
-          ? { top: n[700], bottom: n[800], foreground: n[500] }
-          : { top: n[200], bottom: n[300], foreground: n[400] },
-      );
-    case 'destructive': {
-      const red = colorRamp(c.negative, DANGER_TABLE);
-      return filledPalette(
-        red,
-        c.negativeForeground,
-        dark
-          ? { top: red[900], bottom: red[950], foreground: red[400] }
-          : { top: red[100], bottom: red[200], foreground: red[300] },
-      );
-    }
-    case 'icon': {
-      // The secondary surface, `foreground-icon-primary` glyph, and a
-      // disabled state that dims the whole control to 0.6 over
-      // `icon-button-disabled-foreground` (neutral-300 / dark neutral-500).
-      const secondary = resolveButtonPalette('secondary', theme);
-      return {
-        ...secondary,
-        disabled: { ...secondary.disabled, foreground: dark ? n[500] : n[300] },
-        disabledOpacity: 0.6,
-      };
-    }
-    case 'secondary':
-    case 'outline':
-      return dark
-        ? {
-            rest: solidState(n[800], n[700], c.text),
-            // `color-mix(neutral-700 60%, transparent)` — translucent.
-            hover: solidState(withAlpha(n[700], 0.6), n[500], c.text),
-            active: solidState(n[800], n[600], c.text),
-            disabled: solidState(n[800], n[700], n[600]),
-            borderWidth: 1,
-            shadow: true,
-            ring: accent[500],
-          }
-        : {
-            rest: solidState(c.card, n[200], c.text),
-            hover: solidState(n[100], n[300], c.text),
-            active: solidState(n[200], n[400], c.text),
-            disabled: solidState(n[100], n[200], n[400]),
-            borderWidth: 1,
-            shadow: true,
-            ring: accent[500],
-          };
-    case 'ghost':
-      return dark
-        ? {
-            rest: solidState(accent[900], TRANSPARENT, accent[300]),
-            hover: solidState(accent[800], TRANSPARENT, accent[300]),
-            active: solidState(accent[700], TRANSPARENT, accent[300]),
-            disabled: solidState(n[800], TRANSPARENT, n[600]),
-            borderWidth: 0,
-            shadow: false,
-            ring: accent[500],
-          }
-        : {
-            rest: solidState(accent[100], TRANSPARENT, accent[700]),
-            hover: solidState(accent[200], TRANSPARENT, accent[700]),
-            active: solidState(accent[300], TRANSPARENT, accent[700]),
-            disabled: solidState(accent[50], TRANSPARENT, accent[300]),
-            borderWidth: 0,
-            shadow: false,
-            ring: accent[500],
-          };
-    case 'inverse':
-      return {
-        rest: solidState('#FFFFFF', TRANSPARENT, '#000000'),
-        hover: solidState('rgb(247 247 247)', TRANSPARENT, '#000000'),
-        active: solidState('rgb(235 235 235)', TRANSPARENT, '#000000'),
-        disabled: solidState('rgb(247 247 247)', TRANSPARENT, 'rgb(161 161 161)'),
-        borderWidth: 0,
-        shadow: true,
-        ring: accent[500],
-      };
-    case 'link':
-      // No surface in any state — the underline is the hover cue and only
-      // the press darkens the label.
-      if (linkTone === 'text') {
-        // The READING colour. The one tone whose hover changes the FOREGROUND,
-        // which is why both forks paint `palette.hover.foreground` rather than
-        // assuming it equals the rest colour.
-        return {
-          rest: solidState(TRANSPARENT, TRANSPARENT, c.text),
-          hover: solidState(TRANSPARENT, TRANSPARENT, c.textSecondary),
-          active: solidState(TRANSPARENT, TRANSPARENT, c.textSecondary),
-          disabled: solidState(TRANSPARENT, TRANSPARENT, c.textTertiary),
-          borderWidth: 0,
-          shadow: false,
-          ring: accent[500],
-        };
-      }
-      return linkTone === 'secondary'
-        ? {
-            rest: solidState(TRANSPARENT, TRANSPARENT, n[500]),
-            hover: solidState(TRANSPARENT, TRANSPARENT, n[500]),
-            active: solidState(TRANSPARENT, TRANSPARENT, c.text),
-            disabled: solidState(TRANSPARENT, TRANSPARENT, dark ? n[600] : n[400]),
-            borderWidth: 0,
-            shadow: false,
-            ring: accent[500],
-          }
-        : {
-            rest: solidState(TRANSPARENT, TRANSPARENT, accent[600]),
-            hover: solidState(TRANSPARENT, TRANSPARENT, accent[600]),
-            active: solidState(TRANSPARENT, TRANSPARENT, accent[800]),
-            disabled: solidState(TRANSPARENT, TRANSPARENT, dark ? n[600] : n[400]),
-            borderWidth: 0,
-            shadow: false,
-            ring: accent[500],
-          };
-    case 'text':
-    default:
-      return {
-        rest: solidState(TRANSPARENT, TRANSPARENT, accent[500]),
-        hover: solidState(dark ? n[800] : n[100], TRANSPARENT, accent[500]),
-        active: solidState(dark ? n[700] : n[200], TRANSPARENT, accent[500]),
-        disabled: solidState(TRANSPARENT, TRANSPARENT, dark ? n[600] : n[400]),
-        borderWidth: 0,
-        shadow: false,
-        ring: accent[500],
-      };
+  const neutralDisabled = appearance === 'solid'
+    ? gradientPaint(c.backgroundSecondary, c.backgroundTertiary, c.textTertiary)
+    : { background: appearance === 'subtle' ? c.backgroundTertiary : TRANSPARENT,
+        gradient: null, border: appearance === 'outline' ? c.border : TRANSPARENT,
+        foreground: c.textTertiary };
+  if (tone === 'neutral') {
+    // Adjacent semantic surfaces retain the gentle material gradient while
+    // following the palette's actual neutral hue, rather than a rebuilt ramp.
+    const rest = appearance === 'solid'
+      ? gradientPaint(c.backgroundSecondary, c.backgroundTertiary, c.text)
+      : { background: appearance === 'subtle' ? c.backgroundTertiary : TRANSPARENT,
+          gradient: null, border: appearance === 'outline' ? c.border : TRANSPARENT,
+          foreground: appearance === 'plain' ? c.textSecondary : c.text };
+    const hover = appearance === 'solid'
+      ? gradientPaint(c.card, c.backgroundSecondary, c.text)
+      : { ...rest, background: c.backgroundSecondary, foreground: c.text };
+    const active = appearance === 'solid'
+      ? gradientPaint(c.backgroundTertiary, c.backgroundSecondary, c.text)
+      : { ...hover, background: c.backgroundTertiary };
+    return { rest, hover, active, disabled: neutralDisabled, disabledOpacity: 0.5,
+      borderWidth: appearance === 'outline' ? 1 : 0, shadow: appearance === 'solid', ring: c.primary };
   }
+  // Support/action are authored semantic pairs. Keep their exact fill rather
+  // than rebuilding a primary-style ramp and invalidating the paired on-color.
+  // Existing tones retain their established gradient material.
+  if (appearance === 'solid' && tone !== 'support' && tone !== 'action') {
+    const { accent } = resolveButtonRamps(theme);
+    const semantic = resolveBloomColors(theme.colors, tone, 'solid');
+    const ramp = tone === 'accent' ? accent : tone === 'danger'
+      ? colorRamp(theme.colors.negative, DANGER_TABLE)
+      : colorRamp(semantic.background, ACCENT_TABLE);
+    const foreground = tone === 'danger' ? theme.colors.negativeForeground : semantic.foreground;
+    const disabled = tone === 'danger'
+      ? theme.isDark
+        ? gradientPaint(ramp[900], ramp[950], ramp[400])
+        : gradientPaint(ramp[100], ramp[200], ramp[300])
+      : neutralDisabled;
+    return {
+      rest: gradientPaint(ramp[500], ramp[600], foreground),
+      hover: gradientPaint(ramp[400], ramp[500], foreground),
+      active: gradientPaint(ramp[600], ramp[700], foreground),
+      disabled,
+      borderWidth: 0,
+      shadow: true,
+      ring: ramp[500],
+    };
+  }
+  const rest = { ...resolveBloomColors(theme.colors, tone, appearance), gradient: null };
+  const subtle = resolveBloomColors(theme.colors, tone, 'subtle');
+  const hover = appearance === 'plain' || appearance === 'outline'
+    ? { ...rest, background: subtle.background }
+    : rest;
+  return {
+    rest, hover, active: hover,
+    disabled: neutralDisabled,
+    disabledOpacity: 0.5,
+    borderWidth: appearance === 'outline' ? 1 : 0,
+    shadow: appearance === 'solid',
+    ring: tone === 'support' ? theme.colors.secondary : tone === 'action' ? theme.colors.tertiary : theme.colors.primary,
+  };
 }
 
 /** `linear-gradient(180deg, top, bottom)`, or a flat one for a solid state. */
@@ -541,12 +420,11 @@ export interface CloseButtonPaint {
 
 /** `background-tertiary` disc, `foreground-icon-secondary` X, `text-primary` on hover. */
 export function resolveCloseButtonPaint(theme: Theme): CloseButtonPaint {
-  const { accent, neutral: n } = resolveButtonRamps(theme);
   return {
-    background: theme.isDark ? n[800] : n[200],
-    foreground: n[500],
+    background: theme.colors.backgroundTertiary,
+    foreground: theme.colors.textSecondary,
     foregroundHover: theme.colors.text,
-    ring: accent[500],
+    ring: theme.colors.primary,
   };
 }
 
@@ -607,14 +485,13 @@ export interface GlyphButtonPaint {
  * accent wash, which is what makes a ⋯ or a × land tinted.
  */
 export function resolveGlyphButtonPaint(theme: Theme): GlyphButtonPaint {
-  const { accent, neutral: n } = resolveButtonRamps(theme);
   return {
     color: theme.colors.textSecondary,
     hoverColor: theme.colors.text,
-    activeColor: accent[500],
+    activeColor: theme.colors.primary,
     fill: TRANSPARENT,
-    hoverFill: theme.isDark ? n[800] : n[100],
-    ring: accent[500],
+    hoverFill: theme.colors.backgroundSecondary,
+    ring: theme.colors.primary,
   };
 }
 

@@ -1,3 +1,5 @@
+import { normalizeBloomSize } from '../appearance/legacy';
+import { useBloomAppearance } from '../appearance';
 import React, { useMemo, useRef, useState } from 'react';
 import { Platform, StyleSheet, TextInput, type TextStyle, View } from 'react-native';
 
@@ -51,6 +53,7 @@ export function Textarea({
   placeholder,
   value,
   defaultValue,
+  onValueChange: onValueChangeProp,
   onChangeText,
   onFocus,
   onBlur,
@@ -61,7 +64,8 @@ export function Textarea({
   resize = 'vertical',
   maxLength,
   showCount = false,
-  isInvalid = false,
+  invalid: invalidProp,
+  isInvalid,
   disabled = false,
   required = false,
   tooltip = false,
@@ -73,18 +77,21 @@ export function Textarea({
   testID,
   ...rest
 }: TextareaProps) {
+  const invalid = invalidProp ?? isInvalid ?? false;
+  const onValueChange = onValueChangeProp ?? onChangeText;
   const theme = useTheme();
   // The two contracts a textarea sits inside: a container's density
   // (`ControlSurface`) and an enclosing `Field`'s association. The label is
   // STACKED here, as it is on `TextField`, so the field's label wins — they are
   // two spellings of one thing and rendering both is the mistake `docs/field.mdx`
   // names.
-  const size = useInheritedControl('density', sizeProp, 'medium');
+  const { size: scopedSize } = useBloomAppearance({ size: normalizeBloomSize(sizeProp) }, { size: 'md', tone: 'neutral' });
+  const size = useInheritedControl('density', normalizeBloomSize(sizeProp), scopedSize);
   const field = useFieldMembership({
     accessibilityLabel,
     label: label ?? placeholder,
     disabled,
-    invalid: isInvalid,
+    invalid: invalid,
     required,
     nativeID,
     // An `aria-describedby` the caller spread through `rest` is KEPT and the
@@ -189,7 +196,7 @@ export function Textarea({
           keyboardAppearance={theme.isDark ? 'dark' : 'light'}
           onChangeText={(next) => {
             if (showCount && value === undefined) setTypedLength(next.length);
-            onChangeText?.(next);
+            onValueChange?.(next);
           }}
           onFocus={(e) => {
             onFocusIn();
@@ -213,7 +220,7 @@ export function Textarea({
             marginTop: TEXT_FIELD_STACK_GAP,
           }}>
           {hint ? (
-            <TextFieldHint isInvalid={field.invalid} style={{ marginTop: 0 }}>
+            <TextFieldHint invalid={field.invalid} style={{ marginTop: 0 }}>
               {hint}
             </TextFieldHint>
           ) : null}

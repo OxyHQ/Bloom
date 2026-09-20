@@ -9,14 +9,8 @@ import { getByRole, getByText, getByLabelText, fireEvent } from '@testing-librar
 import '@testing-library/jest-dom';
 
 import { BloomThemeProvider } from '../theme/BloomThemeProvider';
-import {
-  Button,
-  OutlineButton,
-  LinkButton,
-  DestructiveButton,
-} from '../button/Button.web';
+import { Button, LinkButton, BLOOM_BUTTON_CSS } from '../button/Button.web';
 import { BUTTON_RADIUS, LINK_BUTTON_UNDERLINE_OFFSET } from '../button/shared';
-import { BLOOM_BUTTON_CSS } from '../button/Button.web';
 
 // react-dom 19 logs a guard unless this flag is set in test environments.
 (globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
@@ -73,18 +67,16 @@ describe('Button.web', () => {
     expect(onSubmit).toHaveBeenCalledTimes(1);
   });
 
-  it('fires both onClick and onPress on click', () => {
-    const onClick = jest.fn();
+  it('fires one universal activation on click', () => {
     const onPress = jest.fn();
     const c = mount(
-      <Button onClick={onClick} onPress={onPress}>
+      <Button onPress={onPress}>
         Go
       </Button>,
     );
     act(() => {
       fireEvent.click(getByRole(c, 'button'));
     });
-    expect(onClick).toHaveBeenCalledTimes(1);
     expect(onPress).toHaveBeenCalledTimes(1);
   });
 
@@ -186,18 +178,18 @@ describe('Button.web', () => {
 
   describe('web variants', () => {
     it('OutlineButton renders a button', () => {
-      const c = mount(<OutlineButton>Outline</OutlineButton>);
+      const c = mount(<Button appearance="outline" tone="neutral">Outline</Button>);
       expect(getByRole(c, 'button', { name: 'Outline' }).tagName).toBe('BUTTON');
     });
 
     it('LinkButton renders with the link modifier class', () => {
-      const c = mount(<LinkButton>Link</LinkButton>);
-      expect(getByRole(c, 'button', { name: 'Link' })).toHaveClass('bloom-btn--link');
+      const c = mount(<Button href="#" appearance="plain" tone="accent">Link</Button>);
+      expect(getByRole(c, 'link', { name: 'Link' })).toHaveClass('bloom-btn--link');
     });
 
     it('LinkButton is a bare label: no height, no padding, 4px gap', () => {
-      const c = mount(<LinkButton>Link</LinkButton>);
-      const el = getByRole(c, 'button', { name: 'Link' });
+      const c = mount(<Button href="#" appearance="plain" tone="accent">Link</Button>);
+      const el = getByRole(c, 'link', { name: 'Link' });
       expect(el.style.height).toBe('');
       expect(el.style.paddingLeft).toBe('0px');
       expect(el.style.getPropertyValue('--bloom-btn-gap')).toBe('4px');
@@ -206,10 +198,10 @@ describe('Button.web', () => {
     it('href renders a real anchor, and drops the href while disabled', () => {
       const c = mount(
         <>
-          <LinkButton href="/docs">Docs</LinkButton>
-          <LinkButton href="/off" disabled>
+          <Button href="/docs" appearance="plain" tone="accent">Docs</Button>
+          <Button href="/off" disabled appearance="plain" tone="accent">
             Off
-          </LinkButton>
+          </Button>
         </>,
       );
       const link = getByRole(c, 'link', { name: 'Docs' });
@@ -221,7 +213,7 @@ describe('Button.web', () => {
     });
 
     it('DestructiveButton renders a button', () => {
-      const c = mount(<DestructiveButton>Delete</DestructiveButton>);
+      const c = mount(<Button appearance="solid" tone="danger">Delete</Button>);
       expect(getByRole(c, 'button', { name: 'Delete' }).tagName).toBe('BUTTON');
     });
   });
@@ -348,7 +340,7 @@ describe('Button.web', () => {
 
     it('size="icon" selects the icon variant', () => {
       const c = mount(
-        <Button size="icon" accessibilityLabel="icon">
+        <Button size="md" accessibilityLabel="icon">
           x
         </Button>,
       );
@@ -414,14 +406,14 @@ describe('Button.web', () => {
   describe('geometry', () => {
     const GEOMETRY = [
       { size: 'xs', height: '24px' },
-      { size: 'small', height: '32px' },
-      { size: 'medium', height: '36px' },
-      { size: 'large', height: '44px' },
+      { size: 'sm', height: '32px' },
+      { size: 'md', height: '36px' },
+      { size: 'lg', height: '44px' },
     ] as const;
 
     it.each(GEOMETRY)('$size matches the native table', ({ size, height }) => {
       const c = mount(
-        <Button size={size} variant="secondary">
+        <Button size={size} appearance="outline" tone="neutral">
           Save changes
         </Button>,
       );
@@ -431,7 +423,7 @@ describe('Button.web', () => {
     });
 
     it.each(GEOMETRY)('$size icon variant is an unpadded square', ({ size, height }) => {
-      const c = mount(<Button size={size} variant="icon" aria-label="Act" />);
+      const c = mount(<Button size={size} icon={() => null} accessibilityLabel="Act" appearance="outline" tone="neutral" />);
       const btn = getByRole(c, 'button', { name: 'Act' });
       expect(btn.style.width).toBe(height);
       expect(btn.style.height).toBe(height);
@@ -439,13 +431,15 @@ describe('Button.web', () => {
     });
   });
 
-  describe('gradient paint', () => {
-    it('paints primary as a gradient through custom properties, never inline background', () => {
+  describe('shared semantic paint', () => {
+    it('paints through custom properties so interaction rules can override the fill', () => {
       const c = mount(<Button>Go</Button>);
       const btn = getByRole(c, 'button', { name: 'Go' });
       expect(btn).toHaveClass('bloom-btn--gradient');
-      expect(btn.style.getPropertyValue('--bloom-btn-bg-image')).toMatch(/^linear-gradient\(180deg/);
-      expect(btn.style.getPropertyValue('--bloom-btn-bg-image-hover')).toMatch(/^linear-gradient/);
+      expect(btn.style.getPropertyValue('--bloom-btn-bg-image')).toContain('linear-gradient');
+      expect(btn.style.getPropertyValue('--bloom-btn-bg-image-hover')).not.toBe(btn.style.getPropertyValue('--bloom-btn-bg-image'));
+      expect(btn.style.getPropertyValue('--bloom-btn-bg-image-active')).not.toBe(btn.style.getPropertyValue('--bloom-btn-bg-image'));
+      expect(btn.style.getPropertyValue('--bloom-btn-bg')).not.toBe('');
       expect(btn.style.backgroundColor).toBe('');
     });
 
@@ -454,17 +448,15 @@ describe('Button.web', () => {
       expect(getByRole(c, 'button', { name: 'Go' }).style.getPropertyValue('--bloom-btn-press-scale')).toBe('1');
     });
 
-    it('does not paint solid variants with a gradient', () => {
-      const c = mount(<Button variant="secondary">Cancel</Button>);
+    it('keeps outline appearances flat', () => {
+      const c = mount(<Button appearance="outline" tone="neutral">Cancel</Button>);
       expect(getByRole(c, 'button', { name: 'Cancel' })).not.toHaveClass('bloom-btn--gradient');
     });
 
     it('iconOnly sizes the icon component and drops the label', () => {
       const Glyph = jest.fn((props: { width?: number }) => <svg data-width={props.width} />);
       const c = mount(
-        <Button size="xs" iconOnly leadingIcon={Glyph} aria-label="Add">
-          Add
-        </Button>,
+        <Button size="xs" icon={Glyph} accessibilityLabel="Add" />,
       );
       const btn = getByRole(c, 'button', { name: 'Add' });
       expect(btn.textContent).toBe('');

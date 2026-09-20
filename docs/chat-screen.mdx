@@ -162,47 +162,53 @@ inside it.
 
 ### Measured contrast
 
-A bubble is an OPAQUE fill, so the wallpaper never gets between a fill and its
-own label — **bubble text contrast is a property of the bubble**, and it does not
-move with the wallpaper. What a wallpaper CAN do is stop a bubble being told
-apart from the page. So the number that matters is the SEPARATION between a
-bubble fill and the worst pixel a variant can paint behind it, and that needs the
-extremes, not an average.
+A bubble is an opaque fill: its label contrast does not move with the
+wallpaper. Wallpaper separation is a different measurement, between that fill
+and the background behind it. **Checking the darkest and lightest endpoints
+of a photograph does not cover all its pixels**: an intermediate pixel can
+have exactly the bubble's luminance.
 
-Measured over 16 presets × light and dark (32 themes), against an incoming bubble
-(the chrome surface) and an outgoing one (accent-500):
+Measured over the 16 named presets × light and dark in
+`ChatBackgroundContrast.test.ts`, against actual incoming `colors.card` and
+outgoing `colors.primary` fills:
 
 | what                                          | worst  | best  |
 | --------------------------------------------- | ------ | ----- |
-| incoming bubble text over its own fill        | 13.82  | —     |
-| outgoing bubble text over its own fill        | 4.55   | —     |
-| date-pill text over the pill                  | 4.71   | —     |
-| bubble ↔ `plain` wallpaper (the baseline)     | 1.07   | 1.11  |
-| bubble ↔ `pattern` wallpaper                  | 1.07   | 1.11  |
-| bubble ↔ `gradient` wallpaper                 | 1.07   | 1.11  |
-| bubble ↔ `image` wallpaper (dimmed)           | 1.12   | 1.24  |
+| incoming bubble text over its own fill         | 9.47   | —     |
+| outgoing bubble text over its own fill         | 4.55   | —     |
+| date-pill text over the pill                   | 8.84   | —     |
+| bubble ↔ `plain` wallpaper endpoints           | 1.10   | 1.57  |
+| bubble ↔ `pattern` wallpaper endpoints         | 1.10   | 1.57  |
+| bubble ↔ `gradient` wallpaper endpoints        | 1.10   | 1.57  |
+| bubble ↔ `image` wallpaper endpoints (dimmed)   | 1.17   | 1.65  |
 
-Both text figures clear WCAG AA (the incoming one clears AAA). **No variant
-separates worse than the bare page**, and the dimmed image variant separates
-BETTER than it — that is what the dim is for, not taste. The figures are pinned
-as equalities in `ChatBackgroundContrast.test.ts`, so a recipe change goes red in
-either direction.
+Opaque bubble labels clear AA; incoming text clears AAA. Generated pattern and
+gradient endpoints retain at least the bare-page separation. The image case
+has a recorded limitation: `yellow/dark` has poorer endpoint separation than
+the plain page, and **all 16 dark themes have an image luminance interval that
+contains a bubble fill's luminance**. A photograph can therefore produce
+separation **1.00** at an intermediate pixel. The test pins both named sets and
+the endpoint ranges as equalities; it does not assert full-image separation.
+The default dim remains `0.55` light / `0.62` dark, preserving photo visibility.
+Caller-supplied stops, ink, opacity or images need their own visual check.
 
-Two decisions fall out of the measurement, and both are counter-intuitive:
+Historical hazards remain relevant:
 
-- **The image dim is toward a mid-light neutral, not toward white.** White
-  dimmed toward white is white, which is the card colour — a white incoming
-  bubble over a bright photo then separated by exactly **1.00**, i.e. not at all.
-  The gate keeps that as a negative control.
-- **The gradient's stops move AWAY from the page, never toward the card**:
-  darker than the page in light, lighter in dark. The first recipe brightened a
-  light page and put its lightest pixel onto the incoming bubble's own colour —
-  16 of 32 themes separated worse than no wallpaper at all.
+- White dimmed toward white stays white: for the monochrome light card this
+  removes the incoming bubble edge completely (**1.00**). The negative control
+  retains that case; the light image dim uses a mid-light neutral instead.
+- The original gradient brightened a light page toward the incoming card;
+  **16 of 32 themes** then separated worse than the page. With the current tonal
+  ladder, dark pattern ink and gradient stops must also move darker, away from
+  the raised card. Reusing the old dark brightening direction reduced separation.
+- Before the tonal ladder and exact-primary migration, measured incoming text
+  was **13.82**, pill text **4.71**, generated endpoints **1.07–1.11**, and image
+  endpoints **1.12–1.24**. The former image-is-safer claim covered endpoints only;
+  it never proved a continuous photograph could not match a bubble.
 
-The floating surfaces (the date pill, the two jump buttons) are deliberately NOT
-in that measurement: their separation reaches 1.00 in the worst case — a dark
-patterned wallpaper IS the pill's own surface colour — which is exactly why every
-one of them carries a 1px hairline. A bubble has no such rule to fall back on.
+Floating date and jump controls carry a 1px hairline because wallpaper can
+match their surface. Their old measured separation of **1.00** on a dark
+pattern remains the reason for that border; it is not a bubble-text failure.
 
 ## `ScrollToBottomButton` and `JumpToMentionButton`
 

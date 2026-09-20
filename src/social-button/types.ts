@@ -6,8 +6,8 @@ import type { SocialProvider } from './providers';
 /** A built-in provider, or `custom` for anything else (see {@link SocialBrandConfig}). */
 export type SocialBrand = SocialProvider | 'custom';
 
-/** `medium` 36 tall × 300 wide, `small` 32 × 250 — `Button`'s medium and small heights. */
-export type SocialButtonSize = 'medium' | 'small';
+/** `md` 36 tall × 300 wide, `sm` 32 × 250 — `Button`'s medium and small heights. */
+export type SocialButtonSize = 'md' | 'sm';
 
 /**
  * - `colorful` (default) fills with the brand colour, a white glyph on it.
@@ -41,7 +41,7 @@ export interface SocialButtonProps {
   brand: SocialBrand;
   /** Required when `brand="custom"`; ignored otherwise. */
   config?: SocialBrandConfig;
-  /** Defaults to `'medium'`. */
+  /** Defaults to `'md'`. */
   size?: SocialButtonSize;
   /** Defaults to `'colorful'`. */
   appearance?: SocialButtonAppearance;

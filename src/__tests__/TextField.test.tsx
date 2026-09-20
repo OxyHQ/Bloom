@@ -8,7 +8,6 @@ import { act, render } from '@testing-library/react-native';
 import { BloomThemeProvider } from '../theme/BloomThemeProvider';
 import { useTheme } from '../theme/use-theme';
 import type { Theme } from '../theme/types';
-import { DANGER_TABLE, colorRamp, mixColor, resolveButtonRamps } from '../button/shared';
 import {
   TextField,
   TextFieldHint,
@@ -61,57 +60,18 @@ function findChrome(root: ReturnType<typeof render>) {
 }
 
 describe('TextField palette (input tokens)', () => {
-  it('maps the light tokens onto the neutral and danger ramps', () => {
-    const theme = captureTheme('light');
-    const { neutral: n } = resolveButtonRamps(theme);
-    const red = colorRamp(theme.colors.negative, DANGER_TABLE);
-    const surface = theme.colors.background;
+  it.each(['light', 'dark'] as const)('uses paired semantic paint on the parent surface (%s)', mode => {
+    const theme = captureTheme(mode);
+    const c = theme.colors;
+    const surface = c.background;
     const background = surfaceFillOn(theme, surface);
     expect(resolveTextFieldPalette(theme)).toEqual({
-      background,
-      backgroundDisabled: mixColor(surface, background, 0.5),
-      backgroundInvalid: red[100],
-      ringHover: hairlineOn(theme, background),
-      ringFocus: n[400],
-      text: theme.colors.text,
-      textDisabled: n[300],
-      placeholder: surfaceTextOn(theme, background).textTertiary,
-      placeholderInvalid: red[400],
-      icon: surfaceTextOn(theme, background).textTertiary,
-      iconDisabled: n[300],
-      iconInvalid: red[600],
-      hint: surfaceTextOn(theme, surface).textTertiary,
-      error: red[500],
-      infoIcon: n[300],
-      count: surfaceTextOn(theme, background).textTertiary,
-    });
-  });
-
-  it('maps the dark tokens, compositing the color-mix ones over the surface', () => {
-    const theme = captureTheme('dark');
-    expect(theme.isDark).toBe(true);
-    const { neutral: n } = resolveButtonRamps(theme);
-    const red = colorRamp(theme.colors.negative, DANGER_TABLE);
-    const surface = theme.colors.background;
-    const background = surfaceFillOn(theme, surface);
-    const disabledBg = mixColor(surface, background, 0.3);
-    expect(resolveTextFieldPalette(theme)).toEqual({
-      background,
-      backgroundDisabled: disabledBg,
-      backgroundInvalid: mixColor(surface, red[950], 0.6),
-      ringHover: hairlineOn(theme, background),
-      ringFocus: n[600],
-      text: theme.colors.text,
-      textDisabled: mixColor(disabledBg, n[500], 0.4),
-      placeholder: surfaceTextOn(theme, background).textTertiary,
-      placeholderInvalid: red[400],
-      icon: surfaceTextOn(theme, background).textTertiary,
-      iconDisabled: n[600],
-      iconInvalid: red[400],
-      hint: surfaceTextOn(theme, surface).textTertiary,
-      error: red[400],
-      infoIcon: n[700],
-      count: surfaceTextOn(theme, background).textTertiary,
+      background, backgroundDisabled: background, backgroundInvalid: c.errorSubtle,
+      ringHover: c.border, ringFocus: c.primary, text: c.text, textDisabled: c.textTertiary,
+      placeholder: surfaceTextOn(theme, background).textTertiary, placeholderInvalid: c.errorSubtleForeground,
+      icon: c.textSecondary, iconDisabled: c.textTertiary, iconInvalid: c.errorSubtleForeground,
+      hint: surfaceTextOn(theme, surface).textTertiary, error: c.errorSubtleForeground,
+      infoIcon: c.textSecondary, count: surfaceTextOn(theme, background).textTertiary,
     });
   });
 
@@ -163,10 +123,10 @@ describe('TextField palette (input tokens)', () => {
 });
 
 describe('TextField geometry', () => {
-  it.each(['medium', 'small'] as const)('%s: the input is the shell height, 14/20, 4px inset', (size) => {
+  it.each(['md', 'sm'] as const)('%s: the input is the shell height, 14/20, 4px inset', (size) => {
     const root = renderWithTheme(
       <TextField size={size}>
-        <TextFieldInput label="Email" value="" onChangeText={() => {}} />
+        <TextFieldInput label="Email" value="" onValueChange={() => {}} />
       </TextField>,
     );
     const input = flat(root.getByLabelText('Email').props.style);
@@ -180,15 +140,17 @@ describe('TextField geometry', () => {
   });
 
   it('pins the geometry numbers', () => {
-    expect(TEXT_FIELD_GEOMETRY).toEqual({
-      medium: { height: 36, paddingHorizontal: 8 },
-      small: { height: 32, paddingHorizontal: 6 },
+    expect(TEXT_FIELD_GEOMETRY).toMatchObject({
+      xs: { height: 28, paddingHorizontal: 4 },
+      lg: { height: 44, paddingHorizontal: 10 },
+      md: { height: 36, paddingHorizontal: 8 },
+      sm: { height: 32, paddingHorizontal: 6 },
     });
   });
 
   it('keeps a caller paddingRight over the base (longhand, not paddingHorizontal)', () => {
     const root = renderWithTheme(
-      <TextFieldInput label="Search" value="" onChangeText={() => {}} style={{ paddingRight: 24 }} />,
+      <TextFieldInput label="Search" value="" onValueChange={() => {}} style={{ paddingRight: 24 }} />,
     );
     const input = flat(root.getByLabelText('Search').props.style);
     expect(input.paddingRight).toBe(24);
@@ -200,14 +162,14 @@ describe('TextField states', () => {
   it('paints the rest shell and placeholder', () => {
     const theme = captureTheme('light');
     const p = resolveTextFieldPalette(theme);
-    const root = renderWithTheme(<TextFieldInput label="Email" value="" onChangeText={() => {}} />);
+    const root = renderWithTheme(<TextFieldInput label="Email" value="" onValueChange={() => {}} />);
     expect(findChrome(root)).toMatchObject({ backgroundColor: p.background, borderColor: TRANSPARENT });
     expect(root.getByLabelText('Email').props.placeholderTextColor).toBe(p.placeholder);
   });
 
   it('focus rings the shell and darkens the placeholder', () => {
     const p = resolveTextFieldPalette(captureTheme('light'));
-    const root = renderWithTheme(<TextFieldInput label="Email" value="" onChangeText={() => {}} />);
+    const root = renderWithTheme(<TextFieldInput label="Email" value="" onValueChange={() => {}} />);
     act(() => {
       root.getByLabelText('Email').props.onFocus({});
     });
@@ -218,9 +180,9 @@ describe('TextField states', () => {
   it('invalid tints the shell, reddens placeholder and icon, and sets aria-invalid', () => {
     const p = resolveTextFieldPalette(captureTheme('light'));
     const root = renderWithTheme(
-      <TextField isInvalid>
+      <TextField invalid>
         <TextFieldIcon icon={MagnifyingGlassIcon} />
-        <TextFieldInput label="Email" value="" onChangeText={() => {}} />
+        <TextFieldInput label="Email" value="" onValueChange={() => {}} />
       </TextField>,
     );
     expect(findChrome(root).backgroundColor).toBe(p.backgroundInvalid);
@@ -235,7 +197,7 @@ describe('TextField states', () => {
     const root = renderWithTheme(
       <TextField disabled>
         <TextFieldIcon icon={MagnifyingGlassIcon} />
-        <TextFieldInput label="Email" value="x" onChangeText={() => {}} />
+        <TextFieldInput label="Email" value="x" onValueChange={() => {}} />
       </TextField>,
     );
     const input = root.getByLabelText('Email');
@@ -251,7 +213,7 @@ describe('TextField states', () => {
     const root = renderWithTheme(
       <TextField>
         <TextFieldIcon icon={MagnifyingGlassIcon} />
-        <TextFieldInput label="Email" value="x" onChangeText={() => {}} editable={false} />
+        <TextFieldInput label="Email" value="x" onValueChange={() => {}} editable={false} />
       </TextField>,
     );
     expect(findChrome(root).backgroundColor).toBe(p.backgroundDisabled);
@@ -277,7 +239,7 @@ describe('TextFieldLabel and TextFieldHint', () => {
     const root = renderWithTheme(
       <>
         <TextFieldHint>Helpful</TextFieldHint>
-        <TextFieldHint isInvalid>Broken</TextFieldHint>
+        <TextFieldHint invalid>Broken</TextFieldHint>
       </>,
     );
     expect(flat(root.getByText('Helpful').props.style)).toMatchObject({

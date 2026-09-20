@@ -24,7 +24,7 @@ describe('TextFieldInput floatingLabel', () => {
   it('renders the floating label text inside the field', () => {
     const { toJSON } = renderWithTheme(
       <TextField>
-        <TextFieldInput floatingLabel label="Email" value="" onChangeText={() => {}} />
+        <TextFieldInput floatingLabel label="Email" value="" onValueChange={() => {}} />
       </TextField>,
     );
     // The visual label renders in an animated text node; assert it lands in the
@@ -35,7 +35,7 @@ describe('TextFieldInput floatingLabel', () => {
   it('drives accessibilityLabel from the label', () => {
     const { getByLabelText } = renderWithTheme(
       <TextField>
-        <TextFieldInput floatingLabel label="Email" value="" onChangeText={() => {}} />
+        <TextFieldInput floatingLabel label="Email" value="" onValueChange={() => {}} />
       </TextField>,
     );
     expect(getByLabelText('Email')).toBeTruthy();
@@ -44,7 +44,7 @@ describe('TextFieldInput floatingLabel', () => {
   it('suppresses the native placeholder (the floating label replaces it)', () => {
     const { getByLabelText } = renderWithTheme(
       <TextField>
-        <TextFieldInput floatingLabel label="Email" value="" onChangeText={() => {}} />
+        <TextFieldInput floatingLabel label="Email" value="" onValueChange={() => {}} />
       </TextField>,
     );
     const input = getByLabelText('Email');
@@ -53,7 +53,7 @@ describe('TextFieldInput floatingLabel', () => {
 
   it('self-wraps in a TextField when rendered without a root', () => {
     const { getByLabelText, toJSON } = renderWithTheme(
-      <TextFieldInput floatingLabel label="Standalone" value="" onChangeText={() => {}} />,
+      <TextFieldInput floatingLabel label="Standalone" value="" onValueChange={() => {}} />,
     );
     expect(getByLabelText('Standalone')).toBeTruthy();
     expect(JSON.stringify(toJSON())).toContain('Standalone');
@@ -66,7 +66,7 @@ describe('TextFieldInput floatingLabel', () => {
           floatingLabel
           label="Email"
           value="nate@oxy.so"
-          onChangeText={() => {}}
+          onValueChange={() => {}}
         />
       </TextField>,
     );
@@ -78,7 +78,7 @@ describe('TextFieldInput default (non-floating) is unchanged', () => {
   it('falls back to the label as the placeholder when none is given', () => {
     const { getByLabelText } = renderWithTheme(
       <TextField>
-        <TextFieldInput label="Username" value="" onChangeText={() => {}} />
+        <TextFieldInput label="Username" value="" onValueChange={() => {}} />
       </TextField>,
     );
     // Default variant keeps the existing behavior: placeholder defaults to label.
@@ -92,7 +92,7 @@ describe('TextFieldInput default (non-floating) is unchanged', () => {
           label="Username"
           placeholder="oxylander"
           value=""
-          onChangeText={() => {}}
+          onValueChange={() => {}}
         />
       </TextField>,
     );
@@ -138,7 +138,7 @@ describe('TextField context', () => {
     const { getByLabelText } = renderWithTheme(
       <TextField>
         <TextFieldIcon icon={MagnifyingGlassIcon} />
-        <TextFieldInput label="Domain" value="" onChangeText={() => {}} />
+        <TextFieldInput label="Domain" value="" onValueChange={() => {}} />
         <TextFieldSuffix label="domain">.oxy.so</TextFieldSuffix>
       </TextField>,
     );
@@ -153,7 +153,7 @@ describe('TextField context', () => {
     const { getByLabelText, getByText, toJSON } = renderWithTheme(
       <>
         <TextFieldLabel>Workspace</TextFieldLabel>
-        <TextFieldInput label="Slug" value="" onChangeText={() => {}} />
+        <TextFieldInput label="Slug" value="" onValueChange={() => {}} />
         <TextFieldGhost value="oxy.so">acme.</TextFieldGhost>
       </>,
     );

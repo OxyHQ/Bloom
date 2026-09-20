@@ -7,6 +7,7 @@ import { Text } from '../typography';
 import { Divider } from '../divider';
 
 const meta: Meta = {
+  parameters: { controls: { disable: true } },
   title: 'Base/Virtual List',
 };
 
@@ -47,8 +48,9 @@ function RowView({ item }: { item: Row }) {
  * average of a bimodal set.
  */
 export const Basic: Story = {
+  parameters: { controls: { disable: true } },
   render: () => (
-    <View style={{ width: 420, height: 360 }}>
+    <View style={{ maxWidth: '100%', width: 420, height: 360 }}>
       <VirtualList<Row>
         data={ROWS}
         keyExtractor={(item) => item.id}
@@ -64,8 +66,9 @@ export const Basic: Story = {
  * unstyled empty list is indistinguishable from a list that failed to load.
  */
 export const Slots: Story = {
+  parameters: { controls: { disable: true } },
   render: () => (
-    <View style={{ width: 420, height: 320 }}>
+    <View style={{ maxWidth: '100%', width: 420, height: 320 }}>
       <VirtualList<Row>
         data={ROWS.slice(0, 4)}
         keyExtractor={(item) => item.id}
@@ -80,8 +83,9 @@ export const Slots: Story = {
 
 /** Nothing to show. */
 export const Empty: Story = {
+  parameters: { controls: { disable: true } },
   render: () => (
-    <View style={{ width: 420, height: 200 }}>
+    <View style={{ maxWidth: '100%', width: 420, height: 200 }}>
       <VirtualList<Row>
         data={[]}
         keyExtractor={(item) => item.id}
@@ -98,10 +102,11 @@ export const Empty: Story = {
  * guards on its own loading flag rather than assuming one call per page.
  */
 export const InfiniteScroll: Story = {
+  parameters: { controls: { disable: true } },
   render: function InfiniteScrollStory() {
     const [count, setCount] = useState(20);
     return (
-      <View style={{ width: 420, height: 360, gap: 8 }}>
+      <View style={{ maxWidth: '100%', width: 420, height: 360, gap: 8 }}>
         <Text>{count} rows loaded</Text>
         <VirtualList<Row>
           data={ROWS.slice(0, count)}

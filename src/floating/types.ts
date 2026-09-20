@@ -260,6 +260,7 @@ export interface MenuRowProps {
   inset?: boolean;
   /** `'destructive'` paints the row in the theme's negative colour. */
   variant?: 'default' | 'destructive';
+  tone?: 'neutral' | 'danger';
   /**
    * Keep the menu open after activation. Defaults to `false` — every menu row
    * dismisses, which is what both shadcn and Bloom's previous menus did.

@@ -1,3 +1,4 @@
+import { surfaceFillOn, hairlineOn, surfaceTextOn } from '../styles/surface-levels';
 import { Platform, type DimensionValue } from 'react-native';
 
 import { ACCENT_TABLE, colorRamp, mixColor, resolveButtonRamps } from '../button/shared';
@@ -143,8 +144,7 @@ const NAME_STOPS_DARK = [400, 300, 200, 100] as const;
 export function senderNameColor(seed: string, theme: Theme): string {
   const hue = CHART_TONE_ORDER[hashSeed(seed) % CHART_TONE_ORDER.length];
   const ramp = colorRamp(chartHueTone(theme, hue ?? 2).color, ACCENT_TABLE);
-  const { neutral: n } = resolveButtonRamps(theme);
-  const surface = theme.isDark ? n[800] : theme.colors.card;
+  const surface = theme.colors.card;
   const stops = theme.isDark ? NAME_STOPS_DARK : NAME_STOPS_LIGHT;
   for (const stop of stops) {
     if (contrastRatio(surface, ramp[stop]) >= AA) return ramp[stop];
@@ -368,14 +368,14 @@ export interface MessageBubblePaint {
 }
 
 export function resolveMessageBubblePaint(theme: Theme): MessageBubblePaint {
-  const { accent, neutral: n } = resolveButtonRamps(theme);
+  const { accent } = resolveButtonRamps(theme);
   const { colors } = theme;
   const dark = theme.isDark;
   const background = colors.background;
 
-  const outgoingFill = dark ? accent[600] : accent[500];
-  const onOutgoing = onFill(outgoingFill, theme, n[950]);
-  const incomingFill = dark ? n[800] : colors.card;
+  const outgoingFill = colors.primary;
+  const onOutgoing = colors.primaryForeground;
+  const incomingFill = colors.card;
   const onIncoming = colors.text;
 
   const outgoing: BubbleSidePaint = {
@@ -393,11 +393,11 @@ export function resolveMessageBubblePaint(theme: Theme): MessageBubblePaint {
     fill: incomingFill,
     // Light mode only: a card on a near-white page needs an edge, a neutral-800
     // bubble on a neutral-950 page already has one.
-    border: dark ? undefined : n[200],
+    border: dark ? undefined : colors.borderLight,
     text: onIncoming,
-    meta: dark ? n[400] : n[500],
+    meta: surfaceTextOn(theme, incomingFill).textTertiary,
     accent: dark ? accent[400] : accent[600],
-    quoteFill: dark ? mixColor(incomingFill, n[50], 0.08) : mixColor(incomingFill, n[900], 0.05),
+    quoteFill: surfaceFillOn(theme, incomingFill),
     overlayFill: 'rgba(0, 0, 0, 0.45)',
     overlayText: 'rgb(255 255 255)',
   };
@@ -410,18 +410,18 @@ export function resolveMessageBubblePaint(theme: Theme): MessageBubblePaint {
     highlightBand: mixColor(background, accent[500], dark ? 0.34 : 0.24),
     failed: colors.error,
     failedFill: mixColor(background, colors.error, dark ? 0.22 : 0.1),
-    pillFill: dark ? n[800] : n[200],
-    pillText: dark ? n[300] : n[600],
+    pillFill: colors.backgroundSecondary,
+    pillText: colors.textSecondary,
     unread: dark ? accent[400] : accent[600],
     unreadLine: dark ? mixColor(background, accent[400], 0.4) : mixColor(background, accent[600], 0.35),
-    reactionFill: dark ? n[700] : n[100],
-    reactionText: dark ? n[100] : n[700],
-    reactionMineFill: dark ? mixColor(n[900], accent[500], 0.28) : mixColor(background, accent[500], 0.14),
-    reactionMineText: dark ? accent[300] : accent[700],
+    reactionFill: colors.backgroundTertiary,
+    reactionText: colors.text,
+    reactionMineFill: colors.primarySubtle,
+    reactionMineText: colors.primarySubtleForeground,
     reactionMineBorder: dark ? accent[600] : accent[300],
     reactionRing: background,
     focusRing: accent[500],
-    muted: dark ? n[400] : n[500],
+    muted: colors.textSecondary,
   };
 }
 

@@ -68,11 +68,11 @@ export function resolveChatPeoplePaint(theme: Theme): ChatPeoplePaint {
   return {
     surface: c.background,
     surfaceRaised: c.card,
-    rowHighlight: dark ? mixColor(c.background, n[700], 0.55) : n[100],
-    border: dark ? n[700] : n[200],
+    rowHighlight: c.backgroundSecondary,
+    border: c.border,
     text: c.text,
     textSecondary: c.textSecondary,
-    textTertiary: dark ? n[600] : n[400],
+    textTertiary: c.textTertiary,
     accent: accent[500],
     onAccent: c.primaryForeground,
     accentSubtle: dark ? mixColor(c.background, accent[500], 0.22) : mixColor(c.background, accent[500], 0.12),
@@ -82,7 +82,7 @@ export function resolveChatPeoplePaint(theme: Theme): ChatPeoplePaint {
     ownerSubtle: dark
       ? mixColor(c.background, amber[500], 0.22)
       : mixColor(c.background, amber[500], 0.16),
-    chip: dark ? n[800] : n[100],
+    chip: c.backgroundTertiary,
     onChip: c.text,
     railText: c.textSecondary,
     railActive: accent[500],

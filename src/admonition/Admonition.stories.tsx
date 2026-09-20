@@ -13,6 +13,9 @@ import {
 } from './index';
 
 const meta: Meta<typeof Admonition> = {
+  argTypes: {
+    "type": { control: 'select', options: ["info","tip","warning","error","apology"] }
+  },
   title: 'Base/Admonition',
   component: Admonition,
 };
@@ -26,8 +29,9 @@ type Story = StoryObj<typeof Admonition>;
  * only prop that decides anything, so an admonition never needs a colour prop.
  */
 export const Types: Story = {
+  parameters: { controls: { disable: true } },
   render: () => (
-    <View style={{ gap: 12, width: 460 }}>
+    <View style={{ maxWidth: '100%', gap: 12, width: 460 }}>
       <Admonition type="info">
         Your session is signed in on three devices.
       </Admonition>
@@ -53,8 +57,9 @@ export const Types: Story = {
  * so the icon stays in step with the border without being told twice.
  */
 export const WithAction: Story = {
+  parameters: { controls: { disable: true } },
   render: () => (
-    <View style={{ width: 460 }}>
+    <View style={{ maxWidth: '100%', width: 460 }}>
       <AdmonitionRoot type="warning">
         <AdmonitionRow>
           <AdmonitionIcon />
@@ -68,4 +73,9 @@ export const WithAction: Story = {
       </AdmonitionRoot>
     </View>
   ),
+};
+
+/** Edit the props in Controls; interactive state stays in sync. */
+export const Playground: Story = {
+  args: { type: 'info', children: 'Your changes are saved.' },
 };

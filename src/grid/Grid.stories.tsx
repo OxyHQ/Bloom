@@ -7,6 +7,7 @@ import { Text } from '../typography';
 import { useTheme } from '../theme';
 
 const meta: Meta = {
+  parameters: { controls: { disable: true } },
   title: 'Base/Grid',
 };
 
@@ -37,8 +38,9 @@ function Cell({ label }: { label: string }) {
  * is why a `Col` outside a `Row` has no gutter rather than a wrong one.
  */
 export const Halves: Story = {
+  parameters: { controls: { disable: true } },
   render: () => (
-    <View style={{ width: 420 }}>
+    <View style={{ maxWidth: '100%', width: 420 }}>
       <Grid.Row gap={12}>
         <Grid.Col width={1 / 2}>
           <Cell label="1/2" />
@@ -53,8 +55,9 @@ export const Halves: Story = {
 
 /** Uneven splits — the fractions are yours to choose and need not be equal. */
 export const Uneven: Story = {
+  parameters: { controls: { disable: true } },
   render: () => (
-    <View style={{ width: 420, gap: 12 }}>
+    <View style={{ maxWidth: '100%', width: 420, gap: 12 }}>
       <Grid.Row gap={12}>
         <Grid.Col width={2 / 3}>
           <Cell label="2/3" />
@@ -80,8 +83,9 @@ export const Uneven: Story = {
 
 /** `gap={0}` collapses the gutters without changing the fractions. */
 export const NoGap: Story = {
+  parameters: { controls: { disable: true } },
   render: () => (
-    <View style={{ width: 420 }}>
+    <View style={{ maxWidth: '100%', width: 420 }}>
       <Grid.Row>
         <Grid.Col width={1 / 3}>
           <Cell label="1/3" />

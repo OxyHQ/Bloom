@@ -8,6 +8,7 @@ import { Text } from '../typography';
 import { useTheme } from '../theme';
 
 const meta: Meta = {
+  parameters: { controls: { disable: true } },
   title: 'Foundations/Design Tokens',
 };
 
@@ -29,13 +30,14 @@ function Caption({ children }: { children: React.ReactNode }) {
  * "tinted" control ends up drawn at contrast 1.00, invisible and valid.
  */
 export const Colors: Story = {
+  parameters: { controls: { disable: true } },
   render: function ColorsStory() {
     const { colors } = useTheme();
     const entries = Object.entries(colors).filter(
       (entry): entry is [string, string] => typeof entry[1] === 'string',
     );
     return (
-      <View style={{ width: 820, flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>
+      <View style={{ maxWidth: '100%', width: 820, flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>
         {entries.map(([name, value]) => (
           <View key={name} style={{ width: 160, gap: 4 }}>
             <View
@@ -62,6 +64,7 @@ export const Colors: Story = {
  * instead of seven hundred.
  */
 export const Radius: Story = {
+  parameters: { controls: { disable: true } },
   render: function RadiusStory() {
     const { colors } = useTheme();
     return (
@@ -89,6 +92,7 @@ export const Radius: Story = {
 
 /** The spacing ramp, drawn to scale. */
 export const Spacing: Story = {
+  parameters: { controls: { disable: true } },
   render: function SpacingStory() {
     const { colors } = useTheme();
     return (
@@ -111,6 +115,7 @@ export const Spacing: Story = {
  * hand-rolled is a third one that will not match either.
  */
 export const Elevation: Story = {
+  parameters: { controls: { disable: true } },
   render: function ElevationStory() {
     const { colors } = useTheme();
     return (
@@ -140,8 +145,9 @@ export const Elevation: Story = {
  * with body leading.
  */
 export const Type: Story = {
+  parameters: { controls: { disable: true } },
   render: () => (
-    <View style={{ width: 620, gap: 12 }}>
+    <View style={{ maxWidth: '100%', width: 620, gap: 12 }}>
       {Object.entries(TYPOGRAPHY).map(([name, role]) => (
         <View key={name} style={{ gap: 2 }}>
           <Text

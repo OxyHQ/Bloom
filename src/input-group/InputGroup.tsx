@@ -1,3 +1,5 @@
+import { normalizeBloomSize } from '../appearance/legacy';
+import { useBloomAppearance, type BloomSize } from '../appearance';
 import React, {
   Children,
   createContext,
@@ -45,10 +47,11 @@ import { useFieldMembership } from '../field/membership';
  * A `TextFieldInput` (or a `Search`) inside renders BARE through
  * `TextFieldGroupContext`: the group paints the one shell, the field draws none.
  */
-const SIZE_CONFIG: Record<NonNullable<InputGroupProps['size']>, { height: number; paddingHorizontal: number; field: TextFieldSize }> = {
-  sm: { height: TEXT_FIELD_GEOMETRY.small.height, paddingHorizontal: TEXT_FIELD_GEOMETRY.small.paddingHorizontal, field: 'small' },
-  md: { height: TEXT_FIELD_GEOMETRY.medium.height, paddingHorizontal: TEXT_FIELD_GEOMETRY.medium.paddingHorizontal, field: 'medium' },
-  lg: { height: 44, paddingHorizontal: 10, field: 'medium' },
+const SIZE_CONFIG: Record<BloomSize, { height: number; paddingHorizontal: number; field: TextFieldSize }> = {
+  xs: { ...TEXT_FIELD_GEOMETRY.xs, field: 'xs' },
+  sm: { height: TEXT_FIELD_GEOMETRY.sm.height, paddingHorizontal: TEXT_FIELD_GEOMETRY.sm.paddingHorizontal, field: 'sm' },
+  md: { height: TEXT_FIELD_GEOMETRY.md.height, paddingHorizontal: TEXT_FIELD_GEOMETRY.md.paddingHorizontal, field: 'md' },
+  lg: { ...TEXT_FIELD_GEOMETRY.lg, field: 'lg' },
 };
 
 /** `pl-1`: how close a padding-less addon sits to the shell's edge. */
@@ -57,7 +60,7 @@ const ADDON_EDGE_INSET = 4;
 const DIVIDER_GAP = 8;
 
 interface InputGroupContextValue {
-  size: 'sm' | 'md' | 'lg';
+  size: BloomSize;
   palette: TextFieldPalette;
   disabled: boolean;
 }
@@ -143,16 +146,17 @@ InputGroupAddon.displayName = 'InputGroupAddon';
  *   <InputGroupAddon>https://</InputGroupAddon>
  *   <TextFieldInput label="Domain" value={v} onChangeText={setV} />
  *   <InputGroupAddon divider>
- *     <Button size="small" variant="ghost" onPress={go}>Go</Button>
+ *     <Button size="sm" variant="ghost" onPress={go}>Go</Button>
  *   </InputGroupAddon>
  * </InputGroup>
  * ```
  */
 const InputGroupComponent = function InputGroup({
   children,
-  isInvalid: isInvalidProp = false,
+  invalid: invalidNew,
+  isInvalid,
   disabled: disabledProp = false,
-  size = 'md',
+  size: sizeProp,
   style,
   testID,
 }: InputGroupProps) {
@@ -162,9 +166,10 @@ const InputGroupComponent = function InputGroup({
   // neither the field nor the text-field group. The group publishes no name — it
   // does not know which of its children is the control the label points at, so
   // that stays the field's `nativeID` and the input's to apply.
-  const member = useFieldMembership({ disabled: disabledProp, invalid: isInvalidProp });
+  const { size } = useBloomAppearance({size: normalizeBloomSize(sizeProp)}, {size: 'md', tone: 'neutral'});
+  const member = useFieldMembership({ disabled: disabledProp, invalid: invalidNew ?? isInvalid });
   const disabled = member.disabled;
-  const isInvalid = member.invalid;
+  const invalid = member.invalid;
   const cfg = SIZE_CONFIG[size];
   const { state: focused, onIn: onFocus, onOut: onBlur } = useInteractionState();
   const { state: hovered, onIn: onHoverIn, onOut: onHoverOut } =
@@ -174,7 +179,7 @@ const InputGroupComponent = function InputGroup({
   const { backgroundColor, borderColor } = resolveShellPaint(palette, {
     hovered,
     focused,
-    invalid: isInvalid,
+    invalid: invalid,
     disabled,
   });
 
@@ -183,8 +188,8 @@ const InputGroupComponent = function InputGroup({
     [size, palette, disabled],
   );
   const fieldCtx = useMemo(
-    () => ({ size: cfg.field, isInvalid, disabled }),
-    [cfg.field, isInvalid, disabled],
+    () => ({ size: cfg.field, invalid, disabled }),
+    [cfg.field, invalid, disabled],
   );
 
   // Addons before the first non-addon child are leading; the rest trail.
@@ -221,7 +226,7 @@ const InputGroupComponent = function InputGroup({
           // react-native-web has no `disabled` prop to derive the attribute from
           // and never reads `accessibilityState`. React Native folds it back.
           aria-disabled={disabled || undefined}
-          aria-invalid={isInvalid || undefined}
+          aria-invalid={invalid || undefined}
           // Capture focus bubbling from a nested input so the whole chrome
           // reflects focus — RN-web bubbles focus/blur, native does not but a
           // nested TextInput's own focus ring is sufficient there.

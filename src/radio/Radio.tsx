@@ -1,3 +1,6 @@
+import { normalizeBloomSize } from '../appearance/legacy';
+import { useBloomAppearance } from '../appearance';
+import { resolveBloomColors } from '../appearance/colors';
 import React, { memo, useCallback, useMemo } from 'react';
 import { View, Platform, Pressable } from 'react-native';
 
@@ -32,9 +35,10 @@ const SIZE_CONFIG: Record<
   NonNullable<RadioProps['size']>,
   { indicator: number; label: TypeScaleVariant; description: TypeScaleVariant }
 > = {
-  small: { indicator: 14, label: 'body-2-medium', description: 'body-2-regular' },
-  medium: { indicator: 16, label: 'body-medium', description: 'body-regular' },
-  large: { indicator: 20, label: 'headline-medium', description: 'body-regular' },
+  xs: { indicator: 12, label: 'caption-1-medium', description: 'caption-1-regular' },
+  sm: { indicator: 14, label: 'body-2-medium', description: 'body-2-regular' },
+  md: { indicator: 16, label: 'body-medium', description: 'body-regular' },
+  lg: { indicator: 20, label: 'headline-medium', description: 'body-regular' },
 };
 
 /** The `gap-2` between the dot and its label, at every size. */
@@ -87,19 +91,23 @@ const IS_WEB = Platform.OS === 'web';
 
 const RadioComponent = function Radio<Value extends string = string>({
   value,
+  checked: checkedProp,
   selected,
+  onValueChange: onValueChangeProp,
   onSelect,
   label,
   description,
-  size = 'medium',
+  size: sizeProp,
   disabled = false,
-  color,
+  tone: toneProp,
   style,
   labelStyle,
   accessibilityLabel,
   nativeID,
   testID,
 }: RadioProps<Value>) {
+  const onValueChange = onValueChangeProp ?? onSelect;
+  const checked = checkedProp ?? selected ?? false;
   const theme = useTheme();
   // ADJACENT label (see `field/membership.ts`); the field's `disabled` is a
   // constraint, so a radio inside a disabled field cannot re-enable itself.
@@ -112,18 +120,21 @@ const RadioComponent = function Radio<Value extends string = string>({
   });
   const isDisabled = field.disabled;
   const ringOffset = useRingOffsetStyle();
+  const { size: scopedSize, tone } = useBloomAppearance({ size: normalizeBloomSize(sizeProp), tone: toneProp }, { size: 'md', tone: 'accent' });
+  const size = scopedSize;
+  const { background: color, foreground } = resolveBloomColors(theme.colors, tone, 'solid');
   useInteractiveWebCss(STYLE_ID, BLOOM_RADIO_CSS);
   const sizeConfig = SIZE_CONFIG[size];
-  const { accent, neutral } = useMemo(() => resolveButtonRamps(theme), [theme]);
+  const { accent } = useMemo(() => resolveButtonRamps(theme), [theme]);
   const hasText = Boolean(label || description);
 
   const handlePress = useCallback(() => {
     // Re-choosing the chosen option is a no-op. A radio, unlike a checkbox, has
     // no "off" — firing here would make a group's `onValueChange` report a
     // change that did not happen.
-    if (isDisabled || selected) return;
-    onSelect(value);
-  }, [isDisabled, selected, onSelect, value]);
+    if (isDisabled || checked) return;
+    onValueChange?.(value);
+  }, [isDisabled, checked, onValueChange, value]);
 
   const rowStyle: WebCssStyle = {
     flexDirection: 'row',
@@ -150,7 +161,7 @@ const RadioComponent = function Radio<Value extends string = string>({
       // React Native folds `aria-checked` back into `accessibilityState`, so
       // this one prop is the spelling both platforms honour, and `disabled`
       // travels on the `disabled` prop, which both map.
-      aria-checked={selected}
+      aria-checked={checked}
       accessibilityLabel={field.accessibilityLabel}
       hitSlop={HIT_SLOP}
       testID={testID}
@@ -163,7 +174,7 @@ const RadioComponent = function Radio<Value extends string = string>({
           marginTop: hasText ? (TYPE_SCALE[sizeConfig.label].lineHeight - sizeConfig.indicator) / 2 : 0,
         }}
       >
-        <RadioIndicator selected={selected} size={sizeConfig.indicator} selectedColor={color} />
+        <RadioIndicator selected={checked} size={sizeConfig.indicator} selectedColor={color} selectedForeground={foreground} />
       </View>
 
       {hasText && (
@@ -176,7 +187,7 @@ const RadioComponent = function Radio<Value extends string = string>({
           {description && (
             <Text
               variant={sizeConfig.description}
-              style={{ color: neutral[500], marginTop: label ? DESCRIPTION_GAP : 0 }}
+              style={{ color: theme.colors.textSecondary, marginTop: label ? DESCRIPTION_GAP : 0 }}
             >
               {description}
             </Text>
@@ -200,16 +211,18 @@ export const Radio = memo(RadioComponent) as typeof RadioComponent;
 const RadioGroupComponent = function RadioGroup<Value extends string = string>({
   label,
   value,
-  onValueChange,
+  onValueChange: onValueChangeProp,
+  onSelect,
   options,
-  size = 'medium',
+  size: sizeProp,
   disabled = false,
-  color,
+  tone: toneProp,
   style,
   labelStyle,
   variant = 'default',
   testID,
 }: RadioGroupProps<Value>) {
+  const onValueChange = onValueChangeProp ?? onSelect;
   // The group is one control made of several, so a `Field` around it names the
   // GROUP and disables every option — `multiple` is the field's side of that
   // (`docs/field.mdx`), and each radio keeps its own id and its own name.
@@ -217,6 +230,8 @@ const RadioGroupComponent = function RadioGroup<Value extends string = string>({
   // own — so it goes in as the caller's name and outranks the field's.
   const field = useFieldMembership({ accessibilityLabel: label, disabled });
   const isDisabled = field.disabled;
+  const { size: scopedSize, tone } = useBloomAppearance({size: normalizeBloomSize(sizeProp), tone: toneProp}, {size: 'md', tone: 'accent'});
+  const size = scopedSize;
   return (
     <View
       style={[{ gap: space.sm }, style]}
@@ -232,25 +247,25 @@ const RadioGroupComponent = function RadioGroup<Value extends string = string>({
           <RadioCard
             key={option.value}
             value={option.value}
-            selected={option.value === value}
-            onSelect={onValueChange}
+            checked={option.value === value}
+            onValueChange={onValueChange}
             title={option.label ?? option.value}
             description={option.description}
             disabled={isDisabled || option.disabled === true}
-            color={color}
+            tone={tone}
             testID={option.testID}
           />
         ) : (
         <Radio
           key={option.value}
           value={option.value}
-          selected={option.value === value}
-          onSelect={onValueChange}
+          checked={option.value === value}
+          onValueChange={onValueChange}
           label={option.label}
           description={option.description}
           size={size}
           disabled={isDisabled || option.disabled === true}
-          color={color}
+          tone={tone}
           labelStyle={labelStyle}
           testID={option.testID}
         />

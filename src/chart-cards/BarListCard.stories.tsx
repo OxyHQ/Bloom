@@ -6,6 +6,15 @@ import { RiComputerLine, RiSmartphoneLine, RiTabletLine } from '../icons/remix';
 import { BarListCard, type BarListTab } from './BarListCard';
 
 const meta: Meta<typeof BarListCard> = {
+  argTypes: {
+    "title": { control: 'text' },
+    "metricLabel": { control: 'text' },
+    "metric": { control: 'select', options: ["value","share"] },
+    "color": { control: 'text' },
+    "mono": { control: 'boolean' },
+    "limit": { control: 'number' },
+    "defaultTab": { control: 'text' }
+  },
   title: 'Charts/Bar List',
   component: BarListCard,
 };
@@ -72,11 +81,12 @@ const PAGES = [
 ];
 
 const Frame = ({ children, width = 480 }: { children: React.ReactNode; width?: number }) => (
-  <View style={{ padding: 40, gap: 24, width: width + 80 }}>{children}</View>
+  <View style={{ maxWidth: '100%', gap: 24, width }}>{children}</View>
 );
 
 /** Tabbed lists; the strip scrolls and fades its hidden edge when the tabs outgrow the card. */
 export const Tabbed: Story = {
+  parameters: { controls: { disable: true } },
   render: () => (
     <Frame>
       <BarListCard testID="barlist" tabs={TABS} />
@@ -86,41 +96,49 @@ export const Tabbed: Story = {
 
 /** A long list: past `limit` rows it fades out behind the "more" pill, which grows the rest in. */
 export const Overflow: Story = {
-  render: () => (
+  args: { defaultTab: "browsers" },
+  parameters: { controls: { include: ["defaultTab","title","metricLabel","metric","color","mono","limit"] } },
+  render: (args) => (
     <Frame>
-      <BarListCard testID="barlist" tabs={TABS} defaultTab="browsers" />
+      <BarListCard {...args} testID="barlist" tabs={TABS}  />
     </Frame>
   ),
 };
 
 /** One list with a title, raw values instead of shares. */
 export const SingleList: Story = {
-  render: () => (
+  args: { title: "Top pages", metricLabel: "Views", metric: "value" },
+  parameters: { controls: { include: ["title","metricLabel","metric","color","mono","limit","defaultTab"] } },
+  render: (args) => (
     <Frame>
-      <BarListCard testID="barlist" title="Top pages" metricLabel="Views" metric="value" items={PAGES} />
+      <BarListCard {...args} testID="barlist"    items={PAGES} />
     </Frame>
   ),
 };
 
 /** The single-ink look. */
 export const Mono: Story = {
-  render: () => (
+  args: { mono: true, defaultTab: "browsers" },
+  parameters: { controls: { include: ["mono","defaultTab","title","metricLabel","metric","color","limit"] } },
+  render: (args) => (
     <Frame>
-      <BarListCard testID="barlist" tabs={TABS} mono defaultTab="browsers" />
+      <BarListCard {...args} testID="barlist" tabs={TABS}   />
     </Frame>
   ),
 };
 
 /** Per-row colours and a custom card tint; `<0.5%` for a sliver. */
 export const Colors: Story = {
-  render: () => (
+  args: { title: "Referrers", metricLabel: "Sessions", color: "#f97316", limit: 10 },
+  parameters: { controls: { include: ["title","metricLabel","color","limit","metric","mono","defaultTab"] } },
+  render: (args) => (
     <Frame>
-      <BarListCard
+      <BarListCard {...args}
         testID="barlist"
-        title="Referrers"
-        metricLabel="Sessions"
-        color="#f97316"
-        limit={10}
+
+
+
+
         items={[
           { label: 'google.com', value: 8120 },
           { label: 'github.com', value: 2310, color: '#8b5cf6' },
@@ -134,9 +152,11 @@ export const Colors: Story = {
 
 /** A phone-width card: the tab strip scrolls under the caption. */
 export const Narrow: Story = {
-  render: () => (
+  args: { metricLabel: "Sessions" },
+  parameters: { controls: { include: ["metricLabel","title","metric","color","mono","limit","defaultTab"] } },
+  render: (args) => (
     <Frame width={320}>
-      <BarListCard tabs={TABS} metricLabel="Sessions" />
+      <BarListCard {...args} tabs={TABS}  />
     </Frame>
   ),
 };

@@ -72,7 +72,7 @@ import type { ContactProfileCardProps } from './types';
  * same slots.
  *
  * **Every channel is a labelled CONTROL.** Each is a `Button` —
- * `variant="secondary" size="small"` with the kind's glyph and its ACTION word
+ * `appearance="solid" tone="neutral" size="small"` with the kind's glyph and its ACTION word
  * — so it carries the surface, the border, the hover, the disabled treatment
  * and the focus ring every other Bloom action has. It drops to `iconOnly` only
  * where the card is too narrow to carry the words, and it is NAMED
@@ -249,7 +249,7 @@ function ContactProfileCardComponent({
         return (
           <Button
             key={channel.kind + String(index)}
-            variant="secondary"
+            appearance="solid" tone="neutral"
             size="small"
             iconOnly={!labelled}
             leadingIcon={channel.icon ?? spec.icon}

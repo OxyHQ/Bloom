@@ -1,3 +1,5 @@
+import { useContext } from 'react';
+import { BloomAppearanceContext } from '../appearance/context';
 import React, { memo, useMemo, useRef, useState } from 'react';
 import { View, Image, StyleSheet, Pressable, Platform } from 'react-native';
 import type { TextStyle } from 'react-native';
@@ -193,7 +195,8 @@ const AvatarComponent: React.FC<AvatarProps> = ({
   const { state: pressed, onIn: onPressIn, onOut: onPressOut } = useInteractionState();
   const theme = useTheme();
   const placeholderConfig = useAvatarPlaceholder();
-  const size = resolveAvatarSize(sizeProp);
+  const scope = useContext(BloomAppearanceContext);
+  const size = resolveAvatarSize(sizeProp ?? scope.size);
   const radius = size / 2;
   // `null` means "a circle", which is drawn with borderRadius and never reaches
   // the SVG renderer. Memoised so an inline `shape={{ d: … }}` object literal

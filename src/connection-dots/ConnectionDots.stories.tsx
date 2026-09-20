@@ -8,6 +8,11 @@ import { RiUserLine as PersonIcon } from '../icons/remix/RiUserLine';
 import { RiLockLine as LockIcon } from '../icons/remix/RiLockLine';
 
 const meta: Meta<typeof ConnectionDots> = {
+  argTypes: {
+    "dotCount": { control: 'number' },
+    "dotSize": { control: 'number' },
+    "reducedMotion": { control: 'boolean' }
+  },
   title: 'Base/Connection Dots',
   component: ConnectionDots,
 };
@@ -17,6 +22,7 @@ export default meta;
 type Story = StoryObj<typeof ConnectionDots>;
 
 export const Basic: Story = {
+  parameters: { controls: { disable: true } },
   render: () => (
     <View style={{ padding: 24 }}>
       <ConnectionDots
@@ -29,25 +35,29 @@ export const Basic: Story = {
 };
 
 export const ManyDots: Story = {
-  render: () => (
+  args: { dotCount: 10, dotSize: 5 },
+  parameters: { controls: { include: ["dotCount","dotSize","reducedMotion"] } },
+  render: (args) => (
     <View style={{ padding: 24 }}>
-      <ConnectionDots
+      <ConnectionDots {...args}
         left={<IconCircle icon={PersonIcon} size="lg" />}
         right={<IconCircle icon={LockIcon} size="lg" />}
-        dotCount={10}
-        dotSize={5}
+
+
       />
     </View>
   ),
 };
 
 export const ReducedMotion: Story = {
-  render: () => (
+  args: { reducedMotion: true },
+  parameters: { controls: { include: ["reducedMotion","dotCount","dotSize"] } },
+  render: (args) => (
     <View style={{ padding: 24 }}>
-      <ConnectionDots
+      <ConnectionDots {...args}
         left={<IconCircle icon={PersonIcon} size="lg" />}
         right={<IconCircle icon={LockIcon} size="lg" />}
-        reducedMotion
+
       />
     </View>
   ),

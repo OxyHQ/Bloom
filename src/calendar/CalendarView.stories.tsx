@@ -17,6 +17,14 @@ import {
 import type { CalendarViewEvent, CalendarViewFeedAccount, CalendarViewParticipant } from './types';
 
 const meta: Meta<typeof CalendarView> = {
+  argTypes: {
+    "compact": { control: 'boolean' },
+    "title": { control: 'text' },
+    "newEventLabel": { control: 'text' },
+    "monthSwitcherWidth": { control: 'number' },
+    "locale": { control: 'text' },
+    "gmtLabel": { control: 'text' }
+  },
   title: 'Blocks/Calendar',
   component: CalendarView,
   parameters: { layout: 'fullscreen' },
@@ -193,15 +201,17 @@ function Page({ children }: { children: React.ReactNode }) {
 
 /** The template: breadcrumb, header, and August 2026 with Figma's events. Press a chip, the inbox, or the month title. */
 export const Demo: Story = {
-  render: () => (
+  args: { gmtLabel: "GMT+2" },
+  parameters: { controls: { include: ["gmtLabel","compact","title","newEventLabel","monthSwitcherWidth","locale"] } },
+  render: (args) => (
     <Page>
-      <CalendarView
+      <CalendarView {...args}
         testID="calendar"
         defaultMonth={AUGUST}
         events={EVENTS}
         breadcrumb={BREADCRUMB}
         inboxAccounts={FEEDS}
-        gmtLabel="GMT+2"
+
         onNewEvent={() => {}}
         onMenuPress={() => {}}
       />
@@ -211,40 +221,47 @@ export const Demo: Story = {
 
 /** No breadcrumb, no inbox — the smallest header. */
 export const Minimal: Story = {
-  render: () => (
+  args: { headingLevel: 2 },
+  parameters: { controls: { include: ["headingLevel","compact","title","newEventLabel","monthSwitcherWidth","locale","gmtLabel"] } },
+  render: (args) => (
     <Page>
-      <CalendarView defaultMonth={AUGUST} events={EVENTS} headingLevel={2} />
+      <CalendarView {...args} defaultMonth={AUGUST} events={EVENTS}  />
     </Page>
   ),
 };
 
 /** `compact` pins the day cards to 76px for embedded previews. */
 export const Compact: Story = {
-  render: () => (
+  args: { compact: true, headingLevel: 2 },
+  parameters: { controls: { include: ["compact","headingLevel","title","newEventLabel","monthSwitcherWidth","locale","gmtLabel"] } },
+  render: (args) => (
     <Page>
-      <CalendarView defaultMonth={AUGUST} events={EVENTS} inboxAccounts={FEEDS} compact headingLevel={2} />
+      <CalendarView {...args} defaultMonth={AUGUST} events={EVENTS} inboxAccounts={FEEDS}   />
     </Page>
   ),
 };
 
 /** A month with nothing in it. */
 export const EmptyMonth: Story = {
-  render: () => (
+  args: { headingLevel: 2 },
+  parameters: { controls: { include: ["headingLevel","compact","title","newEventLabel","monthSwitcherWidth","locale","gmtLabel"] } },
+  render: (args) => (
     <Page>
-      <CalendarView defaultMonth={day(2, 1)} events={[]} headingLevel={2} />
+      <CalendarView {...args} defaultMonth={day(2, 1)} events={[]}  />
     </Page>
   ),
 };
 
 /** The grid alone, with August 20 pulsing (press "Pulse again" to replay). */
 export const Highlight: Story = {
+  parameters: { controls: { disable: true } },
   render: function Render() {
     const [highlighted, setHighlighted] = useState<Date | null>(day(8, 20));
     return (
       <Page>
         <View style={{ gap: 12 }}>
           <View style={{ alignSelf: 'flex-start' }}>
-            <Button variant="secondary" size="small" onPress={() => setHighlighted(new Date(day(8, 20)))}>
+            <Button size="sm" onPress={() => setHighlighted(new Date(day(8, 20)))} appearance="outline" tone="neutral">
               Pulse again
             </Button>
           </View>
@@ -263,6 +280,7 @@ export const Highlight: Story = {
 
 /** The month switcher closed; press the title to enlarge it into a day grid. */
 export const MonthSwitcher: Story = {
+  parameters: { controls: { disable: true } },
   render: function Render() {
     const [month, setMonth] = useState(AUGUST);
     const [picked, setPicked] = useState<Date | null>(null);
@@ -286,6 +304,7 @@ export const MonthSwitcher: Story = {
 
 /** The inbox button; press it for the subscribed-feeds panel. */
 export const InboxMenu: Story = {
+  parameters: { controls: { disable: true } },
   render: () => (
     <Page>
       <View style={{ padding: 40, paddingLeft: 320, height: 560 }}>
@@ -299,6 +318,7 @@ export const InboxMenu: Story = {
 
 /** The details panel standalone: Figma's example, a timed event with only a time, and an all-day event. */
 export const EventDetails: Story = {
+  parameters: { controls: { disable: true } },
   render: () => (
     <Page>
       <View

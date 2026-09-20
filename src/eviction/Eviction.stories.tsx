@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View } from 'react-native';
+import { View, useWindowDimensions } from 'react-native';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
 import { SegmentedControl, SegmentedControlItem, SegmentedControlItemText } from '../segmented-control';
@@ -125,6 +125,7 @@ const HISTORY: EvictionEvent[] = [
 // ---------------------------------------------------------------------------
 
 function Page({ width, children }: { width: number; children: React.ReactNode }) {
+  width = Math.min(width, useWindowDimensions().width - 32);
   const theme = useTheme();
   return (
     <View style={{ width: '100%', minHeight: '100%', alignItems: 'flex-start', backgroundColor: theme.colors.background }}>
@@ -158,6 +159,7 @@ function useAttending() {
 // ---------------------------------------------------------------------------
 
 function EvictionList({ width }: { width: number }) {
+  width = Math.min(width, useWindowDimensions().width - 32);
   const theme = useTheme();
   const [tab, setTab] = useState<'upcoming' | 'past'>('upcoming');
   const attend = useAttending();
@@ -194,7 +196,7 @@ function EvictionList({ width }: { width: number }) {
       </SegmentedControl>
       <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap, alignItems: 'flex-start' }}>
         {shown.map(({ id, past: _past, ...report }) => (
-          <View key={id} style={{ width: cardWidth }}>
+          <View key={id} style={{ width: cardWidth, maxWidth: '100%' }}>
             <EvictionReportCard
               {...report}
               {...(report.status === 'scheduled' || report.status === 'postponed'
@@ -236,6 +238,7 @@ export const ListNarrowDark: Story = {
 // ---------------------------------------------------------------------------
 
 function ReportDetail({ width }: { width: number }) {
+  width = Math.min(width, useWindowDimensions().width - 32);
   const theme = useTheme();
   const attend = useAttending();
   const wide = width >= 900;
@@ -261,7 +264,7 @@ function ReportDetail({ width }: { width: number }) {
     <Page width={width}>
       {wide ? (
         <View style={{ flexDirection: 'row', alignItems: 'flex-start', gap: 40 }}>
-          <View style={{ width: 460 }}>{card}</View>
+          <View style={{ width: 460, maxWidth: '100%' }}>{card}</View>
           <View style={{ flex: 1, minWidth: 0 }}>{history}</View>
         </View>
       ) : (
@@ -302,7 +305,7 @@ function Statuses() {
     <Page width={1280}>
       <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 16, alignItems: 'flex-start' }}>
         {STATUSES.map((status) => (
-          <View key={status} style={{ width: 280 }}>
+          <View key={status} style={{ width: 280, maxWidth: '100%' }}>
             <EvictionReportCard
               date="Tuesday, 23 September"
               time="09:00"

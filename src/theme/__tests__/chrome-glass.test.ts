@@ -164,10 +164,10 @@ describe('chrome glass, over content Bloom does not own', () => {
 
     // The two floors, to the hundredth, each in the direction its mode can
     // least afford: a light pane washed out over black, a dark pane over white.
-    expect(worst.light.ratio).toBeCloseTo(8.23, 2);
-    expect(worst.light.row).toContain('/light/black/web');
-    expect(worst.dark.ratio).toBeCloseTo(6.43, 2);
-    expect(worst.dark.row).toContain('/dark/white/web');
+    expect(worst.light.ratio).toBeCloseTo(7.84, 2);
+    expect(worst.light.row).toBe('sky/light/black/web 7.84');
+    expect(worst.dark.ratio).toBeCloseTo(6.47, 2);
+    expect(worst.dark.row).toBe('graphite/dark/white/web 6.47');
   });
 
   it('is still GLASS — the painted pane moves with the backdrop', () => {

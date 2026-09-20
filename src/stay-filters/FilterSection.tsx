@@ -29,7 +29,6 @@ function FilterSectionComponent({
   testID,
 }: FilterSectionProps) {
   const theme = useTheme();
-  const { neutral } = useMemo(() => resolveButtonRamps(theme), [theme]);
   const name = accessibilityLabel ?? (typeof title === 'string' ? title : undefined);
 
   return (
@@ -42,7 +41,7 @@ function FilterSectionComponent({
           paddingTop: 32,
           paddingBottom: 32,
           borderBottomWidth: divider ? 1 : 0,
-          borderBottomColor: theme.isDark ? neutral[800] : neutral[200],
+          borderBottomColor: theme.colors.border,
         },
         style,
       ]}

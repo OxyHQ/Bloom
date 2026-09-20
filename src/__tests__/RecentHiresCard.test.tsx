@@ -5,7 +5,6 @@ import { BloomThemeProvider } from '../theme/BloomThemeProvider';
 import { buildTheme } from '../theme/build-theme';
 import { RecentHiresCard, type RecentHire } from '../recent-hires-card';
 import { resolveRecentHiresPalette } from '../recent-hires-card/RecentHiresCard';
-import { mixColor, resolveButtonRamps } from '../button/shared';
 import { resolvedStyle } from './support/rendered-style';
 
 const HIRES: RecentHire[] = [
@@ -68,12 +67,12 @@ describe('RecentHiresCard', () => {
     });
   });
 
-  it('tints the role chip background-recent-hire-role: neutral-100 light, neutral-900 @60% over the tile dark', () => {
+  it('uses the canonical tertiary surface for role chips in both modes', () => {
     const light = buildTheme('teal', 'light');
     const dark = buildTheme('teal', 'dark');
-    expect(resolveRecentHiresPalette(light).role).toBe(resolveButtonRamps(light).neutral[100]);
+    expect(resolveRecentHiresPalette(light).role).toBe(light.colors.backgroundTertiary);
     const darkPalette = resolveRecentHiresPalette(dark);
-    expect(darkPalette.role).toBe(mixColor(darkPalette.inner, resolveButtonRamps(dark).neutral[900], 0.6));
+    expect(darkPalette.role).toBe(dark.colors.backgroundTertiary);
 
     const { getByTestId } = renderIn(<RecentHiresCard testID="card" count={56} hires={HIRES} />);
     const chip = resolvedStyle(getByTestId('card-hire-1-role').props.style);
@@ -112,4 +111,10 @@ describe('RecentHiresCard', () => {
     expect(resolvedStyle(getByTestId('card').props.style).height).toBeUndefined();
     expect(queryByTestId('card-hire-3')).toBeNull();
   });
+});
+
+
+it.each(['light', 'dark'] as const)('RecentHires shares card and inset roles in %s', (mode) => {
+  const theme = buildTheme('teal', mode);
+  expect(resolveRecentHiresPalette(theme)).toMatchObject({ surface: theme.colors.card, inner: theme.colors.backgroundSecondary, textSecondary: theme.colors.textSecondary, ring: theme.colors.primary });
 });

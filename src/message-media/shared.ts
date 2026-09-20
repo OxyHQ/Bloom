@@ -1,6 +1,6 @@
 import { Platform } from 'react-native';
 
-import { colorRamp, mixColor, neutralRamp, resolveButtonRamps, ACCENT_TABLE } from '../button/shared';
+import { colorRamp, mixColor, resolveButtonRamps, ACCENT_TABLE } from '../button/shared';
 import { formatFileSize } from '../file-upload/shared';
 import { contrastRatio, relativeLuminance } from '../styles/color-contrast';
 import type { Theme } from '../theme/types';
@@ -132,9 +132,8 @@ export interface MessageMediaPaint {
 
 /** The bubble fill for a tone — the one both this family and the shell agree on. */
 export function resolveBubbleColor(theme: Theme, tone: MessageTone): string {
-  const { neutral } = resolveButtonRamps(theme);
   if (tone === 'outgoing') return theme.colors.primary;
-  return theme.isDark ? neutral[800] : neutral[100];
+  return theme.colors.card;
 }
 
 /**
@@ -150,7 +149,7 @@ export function resolveMessageMediaPaint(
   onColor?: string,
   bubbleColor?: string,
 ): MessageMediaPaint {
-  const { accent, neutral } = resolveButtonRamps(theme);
+  const { accent } = resolveButtonRamps(theme);
   const { colors } = theme;
   const dark = theme.isDark;
   const bubble = bubbleColor ?? resolveBubbleColor(theme, tone);
@@ -180,10 +179,10 @@ export function resolveMessageMediaPaint(
     border: mixColor(bubble, text, 0.14),
     wash: mixColor(bubble, text, 0.08),
     washStrong: mixColor(bubble, text, 0.16),
-    placeholder: dark ? neutral[700] : neutral[200],
+    placeholder: mixColor(bubble, text, 0.16),
     scrim: 'rgba(0, 0, 0, 0.45)',
     onScrim: '#ffffff',
-    spoilerScrim: dark ? neutral[700] : neutral[300],
+    spoilerScrim: mixColor(bubble, text, 0.22),
     danger: outgoing ? text : danger,
     correct: outgoing ? text : correct,
     live: ensureContrast(bubble, colors.error, AA_LARGE),
@@ -225,7 +224,7 @@ const FILE_KIND_COLORS: Record<FileKind, (theme: Theme) => string> = {
   video: (t) => t.colors.primary,
   image: (t) => colorRamp(t.colors.primary, ACCENT_TABLE)[400],
   code: (t) => t.colors.tertiary,
-  other: (t) => neutralRamp(t.colors.text)[t.isDark ? 400 : 500],
+  other: (t) => t.colors.textSecondary,
 };
 
 // ---------------------------------------------------------------------------

@@ -79,12 +79,11 @@ interface CarouselPaint {
  *   dot hover    border/button/active          neutral-400  (dark neutral-600)
  */
 export function resolveCarouselPaint(theme: Theme): CarouselPaint {
-  const { accent, neutral: n } = resolveButtonRamps(theme);
-  const dark = theme.isDark;
+  const { accent } = resolveButtonRamps(theme);
   return {
     dotActive: theme.colors.text,
-    dot: dark ? n[800] : n[200],
-    dotHover: dark ? n[600] : n[400],
+    dot: theme.colors.backgroundSecondary,
+    dotHover: theme.colors.textSecondary,
     ring: accent[500],
   };
 }
@@ -405,24 +404,8 @@ const CarouselComponent = function Carousel({
     >
       {showArrows && count > 0 ? (
         <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'flex-end', gap: 8 }}>
-          <Button
-            variant="secondary"
-            size="small"
-            iconOnly
-            leadingIcon={RiArrowLeftSLine}
-            accessibilityLabel={previousLabel}
-            disabled={atStart}
-            onPress={() => scrollToIndex(active - 1)}
-          />
-          <Button
-            variant="secondary"
-            size="small"
-            iconOnly
-            leadingIcon={RiArrowRightSLine}
-            accessibilityLabel={nextLabel}
-            disabled={atEnd}
-            onPress={() => scrollToIndex(active + 1)}
-          />
+          <Button size="sm" icon={RiArrowLeftSLine} accessibilityLabel={previousLabel} disabled={atStart} onPress={() => scrollToIndex(active - 1)} appearance="subtle" tone="neutral" />
+          <Button size="sm" icon={RiArrowRightSLine} accessibilityLabel={nextLabel} disabled={atEnd} onPress={() => scrollToIndex(active + 1)} appearance="subtle" tone="neutral" />
         </View>
       ) : null}
 

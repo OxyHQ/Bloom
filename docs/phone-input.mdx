@@ -39,13 +39,13 @@ const [number, setNumber] = useState('');
   country={country.iso2}
   onCountryChange={(iso2, next) => setCountry(next)}
   value={number}
-  onChangeText={setNumber}
+  onValueChange={setNumber}
 />;
 
 const e164 = `+${country.dial}${number.replace(/\D/g, '')}`;
 ```
 
-`defaultCountry` (default `US`) and `defaultValue` are the uncontrolled spellings. Formatting and validation are the caller's: `PhoneInput` does not reformat what is typed. `isInvalid` and `hint` paint the error state as on any `TextField`; `disabled` disables the select too.
+`defaultCountry` (default `US`) and `defaultValue` are the uncontrolled spellings. Formatting and validation are the caller's: `PhoneInput` does not reformat what is typed. `invalid` and `hint` paint the error state as on any `TextField`; `disabled` disables the select too.
 
 ## Look
 
@@ -53,7 +53,7 @@ Dimensions:
 
 | part | value |
 | --- | --- |
-| field | `TextField` with a leading addon: 36 tall, `pl-1 pr-2` (`small`: 32, `pl-1 pr-1.5`) |
+| field | `TextField` with a leading addon: 36 tall, `pl-1 pr-2` (`sm`: 32, `pl-1 pr-1.5`) |
 | trigger | the select trigger's own chrome (card fill, `neutral-200` hairline, xs shadow, 6px gap) at `rounded-lg px-1.5 py-1` — 8px corner, 30px tall. A control INSIDE an input, so not a pill. |
 | trigger value | 18 × 12 flag (2px corner), 5px, `+dial` in `body-medium` `text-secondary`, 16px chevron |
 | list (web) | 220px wide, `p-2`, 16px corner, 4px below the trigger, scrolls past 240px, opens scrolled to the chosen country |
@@ -68,7 +68,7 @@ import { CountryCodeSelect, CountryFlag, COUNTRIES, findCountry } from '@oxy.so/
 import { TextField, TextFieldInput } from '@oxy.so/bloom/text-field';
 
 <TextField leadingAddon={<CountryCodeSelect value={iso2} onValueChange={setIso2} />}>
-  <TextFieldInput label="Phone" value={number} onChangeText={setNumber} />
+  <TextFieldInput label="Phone" value={number} onValueChange={setNumber} />
 </TextField>
 
 <CountryFlag iso2="JP" size={24} accessibilityLabel="Japan" />

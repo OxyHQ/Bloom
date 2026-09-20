@@ -36,7 +36,9 @@ function Surface({ width, children }: { width: number; children: React.ReactNode
   return (
     <View
       style={{
-        width,
+        width: '100%',
+        maxWidth: width,
+        minWidth: 0,
         backgroundColor: theme.colors.background,
         borderRadius: 16,
         overflow: 'hidden',

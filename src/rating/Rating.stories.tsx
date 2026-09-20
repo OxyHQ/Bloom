@@ -30,7 +30,7 @@ export const Matrix: Story = {
   render: function RatingMatrix() {
     const theme = useTheme();
     return (
-      <View style={{ gap: 20, padding: 16, backgroundColor: theme.colors.background }}>
+      <View style={{ gap: 20, padding: 16, width: '100%', maxWidth: '100%', backgroundColor: theme.colors.background }}>
         {(['medium', 'small'] as const).map((size) => (
           <View key={size} style={{ gap: 12 }}>
             <Caption>{size}</Caption>
@@ -68,9 +68,9 @@ export const Breakdown: Story = {
       ['1', 0],
     ];
     return (
-      <View style={{ gap: 24, padding: 16, backgroundColor: theme.colors.background }}>
+      <View style={{ gap: 24, padding: 16, width: '100%', maxWidth: '100%', backgroundColor: theme.colors.background }}>
         {[300, 560].map((width) => (
-          <View key={width} style={{ width, gap: 16 }}>
+          <View key={width} style={{ width, maxWidth: '100%', gap: 16 }}>
             <Caption>{`${width} wide`}</Caption>
             <Rating value={4.81} count={214} countStyle="reviews" />
             <View style={{ gap: 12 }}>
@@ -109,7 +109,7 @@ export const Input: Story = {
     const [clean, setClean] = useState<number | null>(null);
     const [outOfTen, setOutOfTen] = useState<number | null>(7);
     return (
-      <View style={{ gap: 24, padding: 16, backgroundColor: theme.colors.background }}>
+      <View style={{ gap: 24, padding: 16, width: '100%', maxWidth: '100%', backgroundColor: theme.colors.background }}>
         {(['small', 'medium', 'large'] as const).map((size) => (
           <View key={size} style={{ gap: 8 }}>
             <Caption>{size}</Caption>

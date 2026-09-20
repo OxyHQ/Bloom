@@ -74,19 +74,16 @@ All of it snaps under the OS reduced-motion setting.
 
 ## Colour
 
-| | light | dark | Token |
-|---|---|---|---|
-| card | neutral-100 | neutral-900 | `background-secondary-default` |
-| label, legend | neutral-500 | neutral-500 | `text-secondary` |
-| caption, ticks | neutral-400 | neutral-600 | `text-tertiary` |
-| last year | neutral-300 | neutral-800 | `chart-neutral` |
-| line cursor | neutral-300 | neutral-700 | `chart-cursor` |
-| bar cursor | neutral-200 | neutral-800 | `chart-track` |
-| rising delta | success 200 / 800 | success 950 at 60% / 500 | `status-lime` |
-| falling delta | negative 200 / 800 | negative 950 at 60% / 500 | `status-rose` |
-| flat delta | neutral-200 / 500 | neutral-800 / 500 | `background-tertiary` / `text-secondary` |
+Cards read `theme.colors.card`; labels and ticks use the semantic text roles.
+Delta badges consume the paired `successSubtle`/`successSubtleForeground` and
+`errorSubtle`/`errorSubtleForeground` colours. Inset tiles use the surface role.
 
-The series hues — lime (`chart-2`) for revenue, indigo (`chart-9-active`) for orders — keep Tailwind's lightness and take their chroma ratio and hue distance from `blue-500` re-anchored on the theme's `primary`: a Tailwind-blue brand reproduces those hues exactly, any other preset rotates both hues with it. A chart hue is data, not status, so it does not follow `success` (whose deep green would paint a heavy teal line). The delta chips are status and do.
+Series read `theme.chartColors`, generated from the same `--chart-1` through
+`--chart-9` tokens as CSS, each with a matching `-active` token. The original
+five series remain stable; four additional hues are interleaved. Monochrome
+presets separate series by lightness. Revenue uses series 2 and orders series 9.
+Explicit series colours still take precedence. Data categories are independent
+of success/warning/error; only delta and status indicators use status colours.
 
 ## Accessibility
 
@@ -147,7 +144,7 @@ Hovering clears whenever recharts reports no active tooltip: over the axes the c
 
 ## Colour
 
-Series tones follow the `CHART_TONES` order — `chart-2` lime, `chart-6` blue, `chart-5` purple, `chart-3` pink, `chart-8` yellow, `chart-7` emerald, `chart-4` sky, `chart-1` teal — 400 as the fill, 500 as `-active`, each re-anchored on the theme's `primary` like the dashboard cards (a Tailwind-blue brand reproduces those tones exactly). A series `color` overrides; without an `activeColor` it is darkened 18% towards black (`color-mix(… 82%, black)`).
+Series use the canonical nine-colour palette in token order. A series `color` overrides it; without an `activeColor`, the supplied colour is darkened 18% towards black.
 
 | | light | dark | Token |
 |---|---|---|---|

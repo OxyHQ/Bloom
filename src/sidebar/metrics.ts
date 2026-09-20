@@ -1,3 +1,4 @@
+import { useBloomAppearance } from '../appearance';
 import { createContext, useContext } from 'react';
 
 import type { TypeScaleVariant } from '../typography/scale';
@@ -48,17 +49,20 @@ function size(expanded: number, padding: number, icon: number, label: TypeScaleV
 }
 
 /**
- * The three row sizes. `medium` is what this sidebar has always drawn, to the
+ * The three row sizes. `md` is what this sidebar has always drawn, to the
  * pixel — 260 expanded, 52 collapsed, a 36px square, a 20px glyph and a
  * `body-medium` label.
  */
 export const SIDEBAR_METRICS: Record<SidebarSize, SidebarMetrics> = {
+  sm: size(232, 6, 18, 'body-2-medium'),
+  md: size(260, 8, 20, 'body-medium'),
+  lg: size(300, 10, 24, 'title-3-medium'),
   small: size(232, 6, 18, 'body-2-medium'),
   medium: size(260, 8, 20, 'body-medium'),
   large: size(300, 10, 24, 'title-3-medium'),
 };
 
-const SizeContext = createContext<SidebarSize>('medium');
+const SizeContext = createContext<SidebarSize | null>(null);
 
 /** A `Sidebar` publishes its size so a row inside it does not take one. */
 export const SidebarSizeProvider = SizeContext.Provider;
@@ -66,5 +70,7 @@ export const SidebarSizeProvider = SizeContext.Provider;
 /** The enclosing sidebar's size, or the row's own when it names one. */
 export function useSidebarMetrics(own?: SidebarSize): SidebarMetrics {
   const inherited = useContext(SizeContext);
-  return SIDEBAR_METRICS[own ?? inherited];
+  const canonical = own === 'small' ? 'sm' : own === 'medium' ? 'md' : own === 'large' ? 'lg' : own;
+  const {size} = useBloomAppearance({size: canonical}, {size: 'md', tone: 'neutral'});
+  return SIDEBAR_METRICS[own ?? inherited ?? (size === 'xs' ? 'sm' : size)];
 }

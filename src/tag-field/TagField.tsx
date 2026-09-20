@@ -1,3 +1,4 @@
+import { normalizeBloomSize } from '../appearance/legacy';
 import React, { useCallback, useId, useMemo, useRef, useState } from 'react';
 import {
   Platform,
@@ -152,7 +153,7 @@ export function TagField({
   // The size vocabulary IS the density pair, so a `ControlSurface density="small"`
   // around a filter row reaches this field exactly as it reaches the text fields
   // beside it — `docs/composition.mdx` §Control presentation.
-  const size = useInheritedControl('density', sizeProp, 'medium');
+  const size = useInheritedControl('density', normalizeBloomSize(sizeProp), 'md');
   const palette = useTextFieldPalette();
   const menu = useMenuPalette();
   const labels = { ...DEFAULT_LABELS, ...labelsProp };

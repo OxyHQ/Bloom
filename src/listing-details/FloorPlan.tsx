@@ -65,7 +65,7 @@ function PlanTile({ plan, uri, name, aspectRatio, onPress, testID }: PlanTilePro
     aspectRatio,
     borderRadius: 16,
     borderWidth: 1,
-    borderColor: onPress && hovered ? n[400] : palette.cardBorder,
+    borderColor: onPress && hovered ? theme.colors.border : palette.cardBorder,
     backgroundColor: n[50],
     overflow: 'hidden',
     '--bloom-listing-ring': palette.ring,

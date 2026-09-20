@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
-import { View } from 'react-native';
+import { View, useWindowDimensions } from 'react-native';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
 import { Button } from '../button';
@@ -21,6 +21,18 @@ import {
 import { useAgentChatPalette } from './shared';
 
 const meta: Meta = {
+  argTypes: {
+    "status": { control: 'select', options: ["error","ready","submitted","streaming"] },
+    "error": { control: 'boolean' },
+    "title": { control: 'text' },
+    "value": { control: 'text' },
+    "model": { control: 'text' },
+    "provider": { control: 'text' },
+    "activeThreadId": { control: 'text' },
+    "showHistory": { control: 'boolean' }
+  },
+  component: AgentChat,
+  parameters: { controls: { disable: true } },
   title: 'Blocks/Agent Chat',
 };
 
@@ -99,7 +111,7 @@ const ACCOUNT: Pick<
 function Page({ children, height = 760, width = 1400, testID }: { children: React.ReactNode; height?: number; width?: number; testID?: string }) {
   const { colors } = useTheme();
   return (
-    <View testID={testID} style={{ width, height, padding: 12, backgroundColor: colors.background }}>
+    <View testID={testID} style={{ width, maxWidth: '100%', height, padding: 12, backgroundColor: colors.background }}>
       {children}
     </View>
   );
@@ -108,7 +120,7 @@ function Page({ children, height = 760, width = 1400, testID }: { children: Reac
 function Pad({ children, width = 480, testID }: { children: React.ReactNode; width?: number; testID?: string }) {
   const { colors } = useTheme();
   return (
-    <View testID={testID} style={{ padding: 40, width, gap: 24, backgroundColor: colors.background }}>
+    <View testID={testID} style={{ width, maxWidth: '100%', gap: 24, backgroundColor: colors.background }}>
       {children}
     </View>
   );
@@ -196,6 +208,7 @@ function useDemoChat(initial: AgentChatMessageData[] = [], initialThreads: Agent
 
 /** The full workspace, streaming scripted answers: type, pick a suggestion, stop, browse history. */
 export const Demo: Story = {
+  parameters: { controls: { disable: true } },
   render: function Render() {
     const chat = useDemoChat();
     return (
@@ -227,6 +240,7 @@ export const Demo: Story = {
 
 /** A settled conversation with history: hover a reply for its actions, scroll to frost the header. */
 export const Conversation: Story = {
+  parameters: { controls: { disable: true } },
   render: () => (
     <Page testID="agent-chat-conversation">
       <AgentChat
@@ -251,6 +265,7 @@ export const Conversation: Story = {
 
 /** Nothing sent yet: the prompt centred in the empty card, three suggestions. */
 export const Empty: Story = {
+  parameters: { controls: { disable: true } },
   render: () => (
     <Page testID="agent-chat-empty">
       <AgentChat testID="chat" messages={[]} provider="Anthropic" model="claude-sonnet-4.5" />
@@ -260,6 +275,7 @@ export const Empty: Story = {
 
 /** Sent, nothing streamed yet: the wave "Thinking" indicator and the composer light band. */
 export const Thinking: Story = {
+  parameters: { controls: { disable: true } },
   render: () => (
     <Page testID="agent-chat-thinking">
       <AgentChat
@@ -274,6 +290,7 @@ export const Thinking: Story = {
 
 /** Mid-reply: the last message's actions stay hidden until it settles. */
 export const Streaming: Story = {
+  parameters: { controls: { disable: true } },
   render: () => (
     <Page testID="agent-chat-streaming">
       <AgentChat
@@ -291,6 +308,7 @@ export const Streaming: Story = {
 
 /** The request failed. */
 export const ErrorState: Story = {
+  parameters: { controls: { disable: true } },
   name: 'Error',
   render: () => (
     <Page testID="agent-chat-error">
@@ -306,6 +324,7 @@ export const ErrorState: Story = {
 
 /** `emptyState` replaces the whole card body — an "Add an API key" notice. */
 export const SetupNotice: Story = {
+  parameters: { controls: { disable: true } },
   render: function Render() {
     const { colors, isDark } = useTheme();
     return (
@@ -328,7 +347,7 @@ export const SetupNotice: Story = {
                 <Text variant="body-regular" style={{ color: '#737373' }}>
                   The chat is wired up and ready. It needs a model provider key before it can answer.
                 </Text>
-                <Button variant="primary" size="medium" onPress={() => {}}>
+                <Button size="md" onPress={() => {}} appearance="solid" tone="accent">
                   Skip, show me the demo
                 </Button>
               </View>
@@ -342,6 +361,7 @@ export const SetupNotice: Story = {
 
 /** The rail alone: active, unread, hover a row for its menu; the account menu opens upward. */
 export const History: Story = {
+  parameters: { controls: { disable: true } },
   render: function Render() {
     const chat = useDemoChat();
     return (
@@ -365,18 +385,21 @@ export const History: Story = {
 
 /** No chats yet (export disabled) and a mid-stream rail (rows and "New chat" disabled). */
 export const HistoryStates: Story = {
-  render: () => (
-    <Page height={420} width={580} testID="agent-chat-history-states">
-      <View style={{ flexDirection: 'row', gap: 16, height: '100%' }}>
-        <AgentChatHistory threads={[]} onNewChat={() => {}} onExport={() => {}} {...ACCOUNT} />
-        <AgentChatHistory threads={THREADS.slice(0, 3)} activeId="t1" disabled onExport={() => {}} {...ACCOUNT} />
+  parameters: { controls: { disable: true } },
+  render: function HistoryStatesDemo() {
+    const compact = useWindowDimensions().width < 620;
+    return <Page height={compact ? 840 : 420} width={580} testID="agent-chat-history-states">
+      <View style={{ flexDirection: compact ? 'column' : 'row', gap: 16, height: '100%' }}>
+        <View style={{ flex: 1, minHeight: 0 }}><AgentChatHistory threads={[]} onNewChat={() => {}} onExport={() => {}} {...ACCOUNT} /></View>
+        <View style={{ flex: 1, minHeight: 0 }}><AgentChatHistory threads={THREADS.slice(0, 3)} activeId="t1" disabled onExport={() => {}} {...ACCOUNT} /></View>
       </View>
-    </Page>
-  ),
+    </Page>;
+  },
 };
 
 /** The composer: empty, filled, with a model, and busy (stop + light band). */
 export const Composer: Story = {
+  parameters: { controls: { disable: true } },
   render: function Render() {
     const [text, setText] = useState('');
     const palette = useAgentChatPalette();
@@ -394,6 +417,7 @@ export const Composer: Story = {
 
 /** Header actions, enabled and disabled (no chat open). */
 export const Actions: Story = {
+  parameters: { controls: { disable: true } },
   render: () => (
     <Pad testID="agent-chat-actions">
       <View style={{ flexDirection: 'row', gap: 24 }}>
@@ -412,6 +436,7 @@ export const Actions: Story = {
 
 /** One of each turn; hover the reply for copy / read aloud / timestamp. */
 export const Messages: Story = {
+  parameters: { controls: { disable: true } },
   render: () => (
     <Pad width={640} testID="agent-chat-messages">
       <AgentChatMessage role="user" text={'Write a product update\nin three sentences'} />

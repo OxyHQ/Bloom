@@ -118,6 +118,8 @@ export function HomeSearchBar<K extends string = string>({
   const theme = useTheme();
   const palette = useStaySearchPalette();
   const { accent } = useMemo(() => resolveButtonRamps(theme), [theme]);
+  const [barWidth, setBarWidth] = useState<number | null>(null);
+  const compact = barWidth !== null && barWidth < 640;
   const [hovered, setHovered] = useState<K | null>(null);
   const rootRef = useRef<View>(null);
   const open = activeSegment !== null;
@@ -170,6 +172,7 @@ export function HomeSearchBar<K extends string = string>({
   return (
     <View
       ref={rootRef}
+      onLayout={(event) => setBarWidth(event.nativeEvent.layout.width)}
       testID={testID}
       // react-native-web gives every View `z-index: 0`, so the root is its own
       // stacking context: the panel's z-index only competes INSIDE it. Lift the
@@ -225,8 +228,8 @@ export function HomeSearchBar<K extends string = string>({
             minWidth: 0,
             alignSelf: 'stretch',
             justifyContent: 'center',
-            paddingLeft: index === 0 ? 32 : 24,
-            paddingRight: isLast ? 8 : 16,
+            paddingLeft: compact ? 12 : index === 0 ? 32 : 24,
+            paddingRight: compact ? 4 : isLast ? 8 : 16,
             borderRadius: borderRadius.full,
           };
 
@@ -286,13 +289,13 @@ export function HomeSearchBar<K extends string = string>({
                     variant="primary"
                     size="large"
                     icon={RiSearchLine}
-                    iconOnly={!open}
+                    iconOnly={!open || compact}
                     onPress={onSearch}
                     accessibilityLabel={searchLabel}
                     testID={testID ? `${testID}-search` : undefined}
                     style={{ marginRight: STAY_SEARCH_BUTTON_INSET - 1, flexShrink: 0 }}
                   >
-                    {open ? searchLabel : undefined}
+                    {open && !compact ? searchLabel : undefined}
                   </Button>
                 ) : null}
               </View>

@@ -14,7 +14,7 @@ import type { ReactNode } from 'react';
 export type ControlMaterial = 'solid' | 'glass';
 
 /** The size a container asks the controls inside it for. */
-export type ControlDensity = 'medium' | 'small';
+export type ControlDensity = 'xs' | 'sm' | 'md' | 'lg';
 
 /**
  * What a container tells the controls inside it about presentation — and
@@ -35,6 +35,6 @@ export interface ControlSurfaceProps {
   /** The material controls inside should default to. Inherited when omitted. */
   material?: ControlMaterial;
   /** The density controls inside should default to. Inherited when omitted. */
-  density?: ControlDensity;
+  density?: ControlDensity | 'small' | 'medium';
   children?: ReactNode;
 }

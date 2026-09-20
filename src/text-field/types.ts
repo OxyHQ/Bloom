@@ -8,14 +8,15 @@ export type { TextFieldSize } from './shared';
 
 export type TextFieldProps = React.PropsWithChildren<
   {
-    isInvalid?: boolean;
+    invalid?: boolean;
+  isInvalid?: boolean;
     /**
      * Paint the whole field disabled: the dimmed fill,
      * no ring, dimmed adornments, and a non-editable input. An input with
      * `disabled` or `editable={false}` reports the same state up on its own.
      */
     disabled?: boolean;
-    /** Two heights: `medium` 36 (default), `small` 32. */
+    /** Two heights: `md` 36 (default), `sm` 32. */
     size?: TextFieldSize;
     /** Corner radius of the chrome, default `10`. A large value (999) reads as a pill. */
     radius?: number;
@@ -36,7 +37,9 @@ export type TextFieldInputProps = Omit<
 > & {
   label: string;
   value?: string;
-  onChangeText?: (value: string) => void;
+  onValueChange?: (value: string) => void;
+    onChangeText?: (value: string) => void;
+  invalid?: boolean;
   isInvalid?: boolean;
   /** Disable the input; the field around it paints disabled. */
   disabled?: boolean;
@@ -72,7 +75,8 @@ export type TextFieldLabelProps = React.PropsWithChildren<
 export type TextFieldHintProps = React.PropsWithChildren<
   {
     /** Paint the hint in the error colour. */
-    isInvalid?: boolean;
+    invalid?: boolean;
+  isInvalid?: boolean;
     nativeID?: string;
   } & TextStyleProp
 >;

@@ -125,6 +125,7 @@ export function createMenuRows(prefix: string, createSub: MenuSubFactory): MenuR
     trailing,
     inset = false,
     variant = 'default',
+    tone,
     keepOpen = false,
     accessibilityLabel,
     className,
@@ -143,7 +144,7 @@ export function createMenuRows(prefix: string, createSub: MenuSubFactory): MenuR
       <MenuRowShell
         role="menuitem"
         disabled={disabled}
-        destructive={variant === 'destructive'}
+        destructive={tone === 'danger' || (tone === undefined && variant === 'destructive')}
         inset={inset}
         leading={leading}
         trailing={trailing}

@@ -13,7 +13,6 @@ import Animated, {
 import Svg, { Defs, LinearGradient, Mask, Rect, Stop } from 'react-native-svg';
 
 import { Button, CloseButton } from '../button';
-import { ACCENT_TABLE, colorRamp, resolveButtonRamps } from '../button/shared';
 import { BREAKPOINTS } from '../styles/breakpoints';
 import { WEB_POSITION_FIXED, type WebCssStyle } from '../styles/web-view-style';
 import { Z_INDEX } from '../styles/z-index';
@@ -28,7 +27,7 @@ import type { ProOfferCardProps } from './types';
  *   card       280 wide (full width minus 12 each side under `sm`), 12 from
  *              the bottom-left, radius 16, 1px border-button-white,
  *              background-secondary, p16, gap 12, shadow-waitlist
- *   backdrop   a light band across the top (default: accent-200 → accent-100 →
+ *   backdrop   a tonal band across the top (card → raised surface →
  *              clear, diagonal, 70%), masked from opaque at 38% to clear
  *   copy       mark, then title body-medium / description body-2-regular
  *              secondary, 4 apart
@@ -135,16 +134,14 @@ const ProOfferCardComponent: React.FC<ProOfferCardProps> = ({
   const reducedMotion = useReducedMotion();
   const [ctaWidth, setCtaWidth] = useState(0);
   const palette = useMemo(() => {
-    const { neutral: n } = resolveButtonRamps(theme);
-    const accent = colorRamp(theme.colors.primary, ACCENT_TABLE);
     return {
-      surface: theme.isDark ? n[900] : n[100],
-      border: theme.isDark ? n[800] : theme.colors.card,
+      surface: theme.colors.backgroundSecondary,
+      border: theme.colors.borderLight,
       shadow: theme.isDark ? WAITLIST_SHADOW.dark : WAITLIST_SHADOW.light,
-      from: accent[200],
-      via: accent[100],
+      from: theme.colors.card,
+      via: theme.colors.backgroundTertiary,
       text: theme.colors.text,
-      secondary: n[500],
+      secondary: theme.colors.textSecondary,
     };
   }, [theme]);
 
@@ -223,7 +220,7 @@ const ProOfferCardComponent: React.FC<ProOfferCardProps> = ({
         style={{ width: '100%' }}
         onLayout={(event: LayoutChangeEvent) => setCtaWidth(event.nativeEvent.layout.width)}
       >
-        <Button variant="primary" size="medium" fullWidth style={{ width: '100%' }} onPress={onCtaPress}>
+        <Button size="md" style={{ width: "100%" }} onPress={onCtaPress} appearance="solid" tone="accent">
           {ctaLabel}
         </Button>
         <View

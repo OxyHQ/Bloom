@@ -6,6 +6,17 @@ import { LineChartCard } from './LineChartCard';
 import type { LinePoint, LineRange } from './LineChartCard';
 
 const meta: Meta<typeof LineChartCard> = {
+  argTypes: {
+    "shape": { control: 'select', options: ["curved","sharp"] },
+    "title": { control: 'text' },
+    "headline": { control: 'number' },
+    "delta": { control: 'number' },
+    "defaultRange": { control: 'text' },
+    "rangesLabel": { control: 'text' },
+    "color": { control: 'text' },
+    "activeColor": { control: 'text' },
+    "activeIndex": { control: 'number' }
+  },
   title: 'Charts/Line Chart',
   component: LineChartCard,
 };
@@ -43,11 +54,12 @@ const RANGES: LineRange[] = [
 ];
 
 const Frame = ({ children, width = 480 }: { children: React.ReactNode; width?: number }) => (
-  <View style={{ padding: 40, gap: 24, width: width + 80 }}>{children}</View>
+  <View style={{ maxWidth: '100%', gap: 24, width }}>{children}</View>
 );
 
 /** The home dashboard's revenue card: curved line over a gradient, Weekly / Monthly / Yearly. */
 export const Curved: Story = {
+  parameters: { controls: { disable: true } },
   render: () => (
     <Frame>
       <LineChartCard testID="line" ranges={RANGES} />
@@ -57,15 +69,18 @@ export const Curved: Story = {
 
 /** Straight segments between the points. */
 export const Sharp: Story = {
-  render: () => (
+  args: { shape: "sharp" },
+  parameters: { controls: { include: ["shape","title","headline","delta","defaultRange","rangesLabel","color","activeColor","activeIndex"] } },
+  render: (args) => (
     <Frame>
-      <LineChartCard testID="line" shape="sharp" ranges={RANGES} />
+      <LineChartCard {...args} testID="line"  ranges={RANGES} />
     </Frame>
   ),
 };
 
 /** July hovered (controlled): month name, its value, cursor rule and the pulsing dot; the chip hides. */
 export const Hovered: Story = {
+  parameters: { controls: { disable: true } },
   render: () => (
     <Frame>
       <LineChartCard ranges={RANGES} activeIndex={6} />
@@ -76,6 +91,7 @@ export const Hovered: Story = {
 
 /** A falling period selected, and a card without a switcher. */
 export const Variants: Story = {
+  parameters: { controls: { disable: true } },
   render: () => (
     <Frame>
       <LineChartCard ranges={RANGES} defaultRange="yearly" />
@@ -90,6 +106,7 @@ export const Variants: Story = {
  * keeps one row.
  */
 export const Narrow: Story = {
+  parameters: { controls: { disable: true } },
   render: () => (
     <Frame width={420}>
       <LineChartCard ranges={RANGES} />

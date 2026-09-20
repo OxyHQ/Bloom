@@ -12,6 +12,7 @@ import { argbFromHex, argbFromRgb } from '../color-engine';
 import { Cam16 } from '../color-engine/cam16';
 import { Hct } from '../color-engine/hct';
 import { getResolvedTokens } from '../token-registry';
+import { isColourlessSeed } from '../color-policy';
 
 const ORIGINAL_NAMES = [
   'teal',
@@ -387,7 +388,7 @@ describe('single declarative colour preset registry', () => {
     }
   });
 
-  it('keeps large generated surfaces neutral rather than pastel', () => {
+  it('keeps large surfaces tonal for coloured seeds and achromatic for colourless seeds', () => {
     const surfaceTokens = ['--background', '--surface', '--popover', '--muted'] as const;
     let measured = 0;
     for (const name of APP_COLOR_NAMES) {
@@ -396,7 +397,12 @@ describe('single declarative colour preset registry', () => {
         for (const token of surfaceTokens) {
           const value = tokens[token];
           if (value === undefined) throw new Error(`${name}/${mode} has no ${token}`);
-          expect(hctOf(value).chroma).toBeLessThanOrEqual(6);
+          const chroma = hctOf(value).chroma;
+          // Approved chroma-28 surfaces replace the historical <=6 neutral
+          // policy. sRGB gamut limits pale/dark ends; quantization adds noise.
+          const colourless = isColourlessSeed(APP_COLOR_PRESETS[name].hex);
+          expect(chroma).toBeLessThanOrEqual(colourless ? 3 : 30);
+          if (!colourless && token === '--surface') expect(chroma).toBeGreaterThan(8);
           measured += 1;
         }
       }

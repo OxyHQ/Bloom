@@ -7,27 +7,36 @@ import { confirm } from '../surfaces';
 import { Button } from '../button';
 import { Text } from '../typography';
 
-const meta: Meta = {
+const meta: Meta<typeof AlertDialog> = {
+  argTypes: {
+    "visible": { control: 'boolean' },
+    "title": { control: 'text' },
+    "description": { control: 'text' },
+    "confirmLabel": { control: 'text' },
+    "cancelLabel": { control: 'text' },
+    "destructive": { control: 'boolean' },
+    "hideCancel": { control: 'boolean' },
+    "dismissible": { control: 'boolean' }
+  },
+  component: AlertDialog,
   title: 'Base/Alert Dialog',
 };
 
 export default meta;
 
-type Story = StoryObj;
+type Story = StoryObj<Partial<React.ComponentProps<typeof AlertDialog>>>;
 
 export const Declarative: Story = {
-  render: () => {
+  args: { title: 'Delete this app?', description: 'This permanently removes the application and all of its credentials.', confirmLabel: 'Delete', destructive: true },
+  parameters: { controls: { include: ['title', 'description', 'confirmLabel', 'destructive'] } },
+  render: (args) => {
     const [open, setOpen] = useState(false);
     return (
       <View style={{ padding: 40 }}>
         <Button onPress={() => setOpen(true)}>Delete app</Button>
-        <AlertDialog
+        <AlertDialog {...args} title={String(args.title ?? 'Delete this app?')}
           visible={open}
           onClose={() => setOpen(false)}
-          title="Delete this app?"
-          description="This permanently removes the application and all of its credentials. This cannot be undone."
-          confirmLabel="Delete"
-          destructive
           onConfirm={() => {}}
         />
       </View>
@@ -44,8 +53,7 @@ function ImperativeDemo() {
     // over the original's buttons, so the confirm is unclickable. Jest cannot see
     // it (both copies' markup is valid); a real browser click can.
     <View style={{ padding: 40, gap: 12 }}>
-      <Button
-        onPress={async () => {
+      <Button onPress={async () => {
           const ok = await confirm({
             title: 'Sign out everywhere?',
             description: 'You will need to sign in again on all devices.',
@@ -62,5 +70,6 @@ function ImperativeDemo() {
 }
 
 export const ImperativeConfirm: Story = {
+  parameters: { controls: { disable: true } },
   render: () => <ImperativeDemo />,
 };

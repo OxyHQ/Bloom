@@ -1,8 +1,8 @@
+import { surfaceFillOn } from '../styles/surface-levels';
 import React, { useMemo } from 'react';
 import { View } from 'react-native';
 
 import { Button } from '../button';
-import { resolveButtonRamps } from '../button/shared';
 import { RiMusic2Line } from '../icons/remix/RiMusic2Line';
 import { borderRadius } from '../styles/tokens';
 import { useTheme } from '../theme/use-theme';
@@ -26,7 +26,6 @@ export function TrackListEmpty({
 }: TrackListEmptyProps) {
   const theme = useTheme();
   const paint = useMemo(() => resolveTrackListPaint(theme), [theme]);
-  const { neutral } = resolveButtonRamps(theme);
   return (
     <View
       style={[
@@ -48,7 +47,7 @@ export function TrackListEmpty({
           width: 64,
           height: 64,
           borderRadius: borderRadius.full,
-          backgroundColor: theme.isDark ? neutral[800] : neutral[200],
+          backgroundColor: surfaceFillOn(theme, theme.colors.background),
           alignItems: 'center',
           justifyContent: 'center',
           marginBottom: 16,

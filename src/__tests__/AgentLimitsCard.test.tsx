@@ -4,7 +4,7 @@ import { render, within } from '@testing-library/react-native';
 import { BloomThemeProvider } from '../theme/BloomThemeProvider';
 import { AgentLimitsCard } from '../agent-limits-card';
 import type { AgentLimitsContext, AgentLimitsUsageLimit } from '../agent-limits-card';
-import { ACCENT_TABLE, colorRamp, resolveButtonRamps } from '../button/shared';
+import { ACCENT_TABLE, colorRamp } from '../button/shared';
 import { buildTheme } from '../theme/build-theme';
 import { pressHost } from './support/press-host';
 import { resolvedStyle } from './support/rendered-style';
@@ -215,14 +215,14 @@ describe('AgentLimitsCard', () => {
     const light = renderCard(<AgentLimitsCard testID="card" limits={LIMITS} />, 'light');
     const lightTheme = buildTheme('teal', 'light');
     expect(resolvedStyle(light.getByTestId('card').props.style).backgroundColor).toBe(
-      resolveButtonRamps(lightTheme).neutral[100],
+      lightTheme.colors.card,
     );
     light.unmount();
 
     const dark = renderCard(<AgentLimitsCard testID="card" limits={LIMITS} />, 'dark');
     const darkTheme = buildTheme('teal', 'dark');
     expect(resolvedStyle(dark.getByTestId('card').props.style).backgroundColor).toBe(
-      resolveButtonRamps(darkTheme).neutral[900],
+      darkTheme.colors.card,
     );
   });
 });

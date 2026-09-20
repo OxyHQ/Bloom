@@ -259,3 +259,8 @@ export const Linking = {
   }),
   getInitialURL: () => Promise.resolve(null),
 };
+
+export const Keyboard = {
+  addListener: jest.fn((_name: string, _listener: () => void) => ({ remove: jest.fn() })),
+  dismiss: jest.fn(),
+};

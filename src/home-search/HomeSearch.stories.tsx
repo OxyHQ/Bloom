@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { ScrollView, View } from 'react-native';
+import { ScrollView, View, useWindowDimensions } from 'react-native';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
 import { Button } from '../button';
@@ -164,11 +164,12 @@ function LocationPanel({ api, next, heading }: { api: SearchApi; next: () => voi
 }
 
 function DatesPanel({ api }: { api: SearchApi }) {
+  const compact = useWindowDimensions().width < 700;
   const { state, set } = api;
   return (
-    <StaySearchPanel padding={24} accessibilityLabel="Dates" testID="panel-dates">
+    <StaySearchPanel padding={compact ? 8 : 24} accessibilityLabel="Dates" testID="panel-dates">
       <View style={{ gap: 20 }}>
-        <RangeCalendar value={state.range} onChange={(range) => set({ range })} visibleMonths={2} defaultMonth={MONTH} />
+        <RangeCalendar value={state.range} onChange={(range) => set({ range })} visibleMonths={compact ? 1 : 2} defaultMonth={MONTH} />
         <DateFlexibilityChips value={state.flex} onChange={(flex) => set({ flex })} />
       </View>
     </StaySearchPanel>
@@ -459,7 +460,7 @@ export const ModeTabs: Story = {
           <SearchModeTabs variant="segmented" value={b} onValueChange={setB} labels={{ stays: 'Holidays' }} testID="segmented" />
         </View>
         {caption('segmented · three modes')}
-        <View style={{ width: 343 }}>
+        <View style={{ width: 343, maxWidth: '100%' }}>
           <SearchModeTabs variant="segmented" modes={['rent', 'buy', 'stays']} value={c} onValueChange={setC} />
         </View>
       </View>
@@ -771,7 +772,7 @@ export const SaveButton: Story = {
   render: function SaveButtonStory() {
     const [saved, setSaved] = useState(false);
     return (
-      <View style={{ padding: 24, gap: 12, flexDirection: 'row', alignItems: 'center' }}>
+      <View style={{ padding: 24, gap: 12, flexDirection: 'row', flexWrap: 'wrap', alignItems: 'center' }}>
         <SaveSearchButton saved={saved} onSavedChange={setSaved} testID="save" />
         <SaveSearchButton saved onSavedChange={() => {}} />
         <SaveSearchButton saved={false} onSavedChange={() => {}} disabled />

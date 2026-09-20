@@ -1,3 +1,4 @@
+import { useBloomAppearance } from '../appearance';
 import React, {
   Children,
   createContext,
@@ -9,7 +10,6 @@ import React, {
 import { Platform, Pressable, ScrollView, View, type TextStyle, type ViewStyle } from 'react-native';
 import Svg, { Path } from 'react-native-svg';
 
-import { resolveButtonRamps } from '../button/shared';
 import { adoptStyleSheet } from '../styles/adopt-style-sheet';
 import type { WebCssStyle } from '../styles/web-view-style';
 import { useTheme } from '../theme/use-theme';
@@ -40,16 +40,8 @@ import type {
  * No radius, no outer border — the table sits inside a surface that owns
  * those (a data table wraps it in a `rounded-2xl border` card).
  *
- * Colours are semantic tokens resolved through the ramps `Button`
- * derives from Bloom's theme (`button/shared.ts`):
- *
- *                     light        dark
- *   header surface    neutral-100  neutral-900   background-secondary-default
- *   hairlines         neutral-200  neutral-800   separator-border
- *   header text       neutral-400  neutral-600   text-tertiary
- *   cell text         text         text          text-primary
- *   sorted chevron    neutral-500  neutral-500   text-secondary
- *   selected row      neutral-100  neutral-900   background-secondary-default
+ * Headers, selections and separators read the shared tonal surface roles.
+ * Header labels retain the theme's readable secondary foreground.
  *
  * React Native has no table layout, so the auto column sizing of an HTML table
  * cannot be ported: every row is a flex row, and a column takes a fixed `width`
@@ -74,26 +66,16 @@ interface TablePalette {
 }
 
 function resolveTablePalette(theme: Theme): TablePalette {
-  const { accent, neutral: n } = resolveButtonRamps(theme);
-  return theme.isDark
-    ? {
-        headerBackground: n[900],
-        hairline: n[800],
-        headerText: n[600],
-        text: theme.colors.text,
-        sortActive: n[500],
-        selectedRow: n[900],
-        ring: accent[500],
-      }
-    : {
-        headerBackground: n[100],
-        hairline: n[200],
-        headerText: n[400],
-        text: theme.colors.text,
-        sortActive: n[500],
-        selectedRow: n[100],
-        ring: accent[500],
-      };
+  const c = theme.colors;
+  return {
+    headerBackground: c.backgroundSecondary,
+    hairline: c.borderLight,
+    headerText: c.textSecondary,
+    text: c.text,
+    sortActive: c.textSecondary,
+    selectedRow: c.backgroundSecondary,
+    ring: c.primary,
+  };
 }
 
 const GEOMETRY = {
@@ -248,7 +230,7 @@ function indexChildren(children: React.ReactNode): React.ReactNode {
 }
 
 export function Table({
-  size = 'md',
+  size: sizeProp,
   children,
   accessibilityLabel,
   minWidth,
@@ -256,6 +238,8 @@ export function Table({
   containerStyle,
   testID,
 }: TableProps) {
+  const {size: inheritedSize} = useBloomAppearance({size: sizeProp}, {size: 'md', tone: 'neutral'});
+  const size: NonNullable<TableProps['size']> = inheritedSize === 'xs' || inheritedSize === 'sm' ? 'sm' : 'md';
   const theme = useTheme();
   const palette = useMemo(() => resolveTablePalette(theme), [theme]);
   const columns = readColumns(children);

@@ -47,10 +47,31 @@ import { SankeyChartCard } from '@oxy.so/bloom/chart-cards';
 
 - recharts' props: `nodeWidth` 12, `nodePadding` 14, `linkCurvature` 0.55, 32 iterations, `sort={false}`, margin top/bottom 2, left 88 and right 150 for the labels. Justified: every sink sits in the last column.
 - Nodes: rounded 5 only on their outward side (sources left, sinks right, pass-through square), so ribbons meet a flat edge (`sankeyNodePath`).
-- Ribbons: one cubic per link stroked at its thickness, stroke-opacity 0.32 at rest; neutral ink ×1.6 (capped 0.85).
+- Ribbons: closed cubic bands with value-proportional vertical thickness, fill-opacity 0.32 at rest; neutral ink ×1.6 (capped 0.85).
 - Labels (Bloom `Text` over the SVG, placed on recharts' baselines — `svg-text.ts`): sources right-aligned 8px left of the node, name `body-2-medium` text-primary over its value `caption-1` text-tertiary (a node under 26px keeps the name only); sinks 8px right, `"Name · 22%"`, the share in text-tertiary. Pass-through nodes are unlabelled.
 - Neutral: light neutral-400 (hover 500), dark neutral-300 (hover 100).
 
 ## Hover
 
-Web hover, native press-and-scrub (letting go clears). The pointer is hit-tested in `hitTestSankey`: nodes first (they paint on top), then the topmost ribbon whose stroke contains the point. A node lifts its ribbons to 0.7, fades the rest to 0.08 and every unconnected node to 35%; a link isolates itself and its two ends. The node fill steps to its `-active` colour. Opacities ease over 200ms and the fill over 150ms (`use-eased-values.ts` — react-native-svg can't CSS-transition presentation attributes); snaps under reduced motion.
+Web hover, native press-and-scrub (letting go clears). The pointer is hit-tested in `hitTestSankey`: nodes first (they paint on top), then the topmost ribbon whose filled band contains the point. A node lifts its ribbons to 0.7, fades the rest to 0.08 and every unconnected node to 35%; a link isolates itself and its two ends. The node fill steps to its `-active` colour. Opacities ease over 200ms and the fill over 150ms (`use-eased-values.ts` — react-native-svg can't CSS-transition presentation attributes); snaps under reduced motion.
+
+
+## Narrow cards
+
+Below 440px of measured plot width, labels stay beside their nodes in proportional
+left and right gutters (starting at 24% and 32%, widening for measured whole words while preserving ribbon space). Full names wrap at their regular 13px text
+size; values and sink percentages sit on a separate line. The flow retains the
+remaining width and its quantitative proportions.
+
+The plot grows when the labels need more vertical room. Their actual rendered
+heights refine the initial estimate, and labels are arranged around node centres
+without overlapping. Subtle leaders connect any displaced label to its node.
+No categories are removed or replaced by a separate legend. Wider cards retain
+the original side labels and fixed height. Layout follows the card's available
+width rather than the window.
+
+
+Ribbons use closed filled bands between each node's top and bottom link edges.
+Their vertical thickness represents value; a narrow, steep curve cannot create
+the side protrusions of an oversized SVG stroke. Pointer hit testing follows the
+same filled boundaries.

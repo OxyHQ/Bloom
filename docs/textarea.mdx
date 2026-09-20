@@ -16,7 +16,7 @@ import { Textarea } from '@oxy.so/bloom/textarea';
   hint="Markdown is fine."
   placeholder="Tell us about yourself"
   value={bio}
-  onChangeText={setBio}
+  onValueChange={setBio}
 />
 ```
 
@@ -24,7 +24,7 @@ import { Textarea } from '@oxy.so/bloom/textarea';
 
 The `Textarea`'s geometry:
 
-|              | `medium` (default) | `small` |
+|              | `md` (default) | `sm` |
 |--------------|--------------------|---------|
 | shell padding | 8 all round       | 6 × 8   |
 | text inset   | 4 each side        | 4 each side |
@@ -42,7 +42,7 @@ The label (14/20 medium, optional `required` asterisk and `tooltip` glyph) sits 
 <Textarea
   label="Prompt"
   value={prompt}
-  onChangeText={setPrompt}
+  onValueChange={setPrompt}
   autoResize
   rows={1}
   maxRows={6}
@@ -70,13 +70,13 @@ Accepts React Native's `TextInputProps` (except `multiline`, which is always on)
 | `label?` | `string` | Visible label and the accessible name. |
 | `hint?` | `string` | Caption under the field. |
 | `placeholder?` | `string` | Also the fallback name when there is no `label` or `accessibilityLabel`. |
-| `value?` / `defaultValue?` / `onChangeText?` | | Controlled or uncontrolled. |
-| `size?` | `'medium' \| 'small'` | Shell insets. Default `medium`. |
+| `value?` / `defaultValue?` / `onValueChange?` | | Controlled or uncontrolled. |
+| `size?` | `'md' \| 'sm'` | Shell insets. Default `md`. |
 | `rows?` | `number` | Resting height in lines. Default `3`. |
 | `autoResize?` / `maxRows?` | `boolean` / `number` | Grow with the content up to `maxRows`. |
 | `resize?` | `'none' \| 'vertical'` | Web grab handle. Default `vertical`; forced `none` under `autoResize`. |
 | `maxLength?` / `showCount?` | `number` / `boolean` | Limit and counter. |
-| `isInvalid?` | `boolean` | Red tint, red hint and counter, `aria-invalid`. |
+| `invalid?` | `boolean` | Red tint, red hint and counter, `aria-invalid`. |
 | `disabled?` | `boolean` | Non-editable, dimmed, `aria-disabled`; a real `disabled` textarea on web. |
 | `required?` / `tooltip?` | `boolean` | Label asterisk / info glyph. |
 | `style?` | `StyleProp<ViewStyle>` | The whole field (label, shell, footer). |
@@ -114,3 +114,7 @@ See [Composition](/docs/composition) and [Field](/docs/field).
 `Textarea` shares `text-field`'s palette, so its shell steps off whatever surface
 it lands on — see [TextField](/docs/bloom/main/text-field) and
 [Styles → Surface levels](/docs/bloom/main/styles).
+
+## Compatibility
+
+The shared `size`, `tone` and `appearance` vocabulary coexists with the previously published family props. Explicit shared props take precedence over legacy spellings; existing size and state callbacks remain supported. New code should prefer the shared vocabulary.

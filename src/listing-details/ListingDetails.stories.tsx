@@ -1,5 +1,5 @@
 import React, { useMemo, useRef, useState } from 'react';
-import { View } from 'react-native';
+import { View, useWindowDimensions } from 'react-native';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
 import { Badge } from '../badge';
@@ -163,9 +163,10 @@ const noop = () => {};
 // ---------------------------------------------------------------------------
 
 /** The preview decorator pads every story by 24; a page is edge to edge. */
-const BLEED = { marginTop: -24, marginLeft: -24, marginRight: -24, marginBottom: -24 };
+const BLEED = {};
 
 function Frame({ width, children, padded = true }: { width: number; children: React.ReactNode; padded?: boolean }) {
+  width = Math.min(width, useWindowDimensions().width - 32);
   const theme = useTheme();
   return (
     // `padded={false}` cancels the preview decorator's 24px padding, for full-bleed parts.
@@ -224,6 +225,7 @@ function HeaderActions({ compact = false }: { compact?: boolean }) {
 // ---------------------------------------------------------------------------
 
 function ListingPage({ width }: { width: number }) {
+  width = Math.min(width, useWindowDimensions().width - 32);
   const theme = useTheme();
   const gallery = useRef<ZoomableMediaGalleryHandle>(null);
   const narrow = width < 744;
@@ -555,7 +557,7 @@ export const PartsDark: Story = {
           <ListingHighlights items={HIGHLIGHTS} />
           <AmenityList items={AMENITIES} limit={10} total={42} onShowAll={noop} />
           <ReviewSummary rating={4.92} title="Loved by guests" description="128 reviews" categories={CATEGORIES} distribution={DISTRIBUTION} />
-          <View style={{ flexDirection: 'row', gap: 48 }}>
+          <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 48 }}>
             <ReviewCard {...REVIEWS[0]!} numberOfLines={3} style={{ flex: 1 }} />
             <HostCard
               name="Marta"

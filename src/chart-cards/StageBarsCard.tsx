@@ -1,9 +1,8 @@
 import React, { useCallback, useMemo } from 'react';
 import { Animated, View, type StyleProp, type ViewStyle } from 'react-native';
 
-import { resolveButtonRamps } from '../button/shared';
+import { contrastRatio } from '../styles/color-contrast';
 import { borderRadius } from '../styles/tokens';
-import { useTheme } from '../theme/use-theme';
 import { Text } from '../typography';
 import { resolveTone, type ChartSeriesTone } from './palette';
 import { ChartCardSurface, CHART_CARD_HEIGHT } from './primitives/ChartCardSurface';
@@ -32,7 +31,7 @@ import {
  *            (radius full, at least 2% wide, width and colour easing 500ms),
  *            12px, the value (`body-medium`) and its share of the first stage
  *            (`caption-1-medium` text-tertiary), 6px apart on one baseline
- *   icons    14px, neutral-950 (the fills are the bright 400 tones in both
+ *   icons    14px, black/white chosen for AA against the actual data fill (both
  *            modes), pinned 4px inside the TRACK's left end so they line up
  *            down the column; the track clips them
  *   tiles    three per row, never stretched, swatch · name over value
@@ -49,7 +48,7 @@ export interface StageBar {
   /** Any colour; defaults to the chart palette by index. */
   color?: string;
   activeColor?: string;
-  /** 14px glyph inside the bar's left end: an icon component (tinted neutral-950) or a node. */
+  /** 14px glyph inside the bar's left end: an icon component (contrast-paired with its fill) or a node. */
   icon?: ChartIcon;
 }
 
@@ -110,11 +109,9 @@ export function StageBarsCard({
   style,
   testID,
 }: StageBarsCardProps) {
-  const theme = useTheme();
   const palette = useChartCardPalette();
   const palettes = useChartTones();
   const monoTone = useMonoTone();
-  const iconInk = useMemo(() => resolveButtonRamps(theme).neutral[950], [theme]);
   const mounted = useMountedAfterDelay();
   const fade = useWebTransition('opacity', 200);
 
@@ -189,7 +186,7 @@ export function StageBarsCard({
                 color={activeIndex === i ? tones[i]!.activeColor : tones[i]!.color}
                 track={palette.track}
                 opacity={dim(i)}
-                icon={showIcons ? renderChartIcon(stage.icon, ICON_SIZE, iconInk) : null}
+                icon={showIcons ? renderChartIcon(stage.icon, ICON_SIZE, contrastRatio(activeIndex === i ? tones[i]!.activeColor : tones[i]!.color, '#ffffff') >= 4.5 ? '#ffffff' : '#000000') : null}
                 hover={hoverTarget(i, setActiveIndex)}
                 testID={testID ? `${testID}-bar-${i}` : undefined}
               />

@@ -1,20 +1,12 @@
 import React from 'react';
 import { Pressable, Text, View } from 'react-native';
+import { Stop } from 'react-native-svg';
 import { fireEvent, render } from '@testing-library/react-native';
 
 import { BloomThemeProvider } from '../theme/BloomThemeProvider';
 import { useTheme } from '../theme/use-theme';
 import type { Theme } from '../theme/types';
-import {
-  Button,
-  CloseButton,
-  PrimaryButton,
-  SecondaryButton,
-  IconButton,
-  GhostButton,
-  LinkButton,
-  TextButton,
-} from '../button';
+import { Button, CloseButton } from '../button';
 import { BUTTON_GEOMETRY, BUTTON_RADIUS, resolveButtonPalette } from '../button/shared';
 import { TYPE_SCALE } from '../typography/scale';
 import { pressHost } from './support/press-host';
@@ -204,8 +196,8 @@ describe('layout: the button IS the node its parent lays out', () => {
   // now comes from the same resolved tokens `Button.web.tsx` already used.
   it('keeps the icon variant chrome when the caller passes a className', () => {
     const theme = captureTheme();
-    const palette = resolveButtonPalette('icon', theme);
-    const { getByTestId } = renderWithTheme(<IconButton testID="icon" className="flex-1" />);
+    const palette = resolveButtonPalette('outline', theme, 'neutral');
+    const { getByTestId } = renderWithTheme(<Button testID="icon" className="flex-1" appearance="outline" tone="neutral" />);
     const style = resolvedStyle(getByTestId('icon').props.style);
     expect(style.backgroundColor).toBe(palette.rest.background);
     expect(style.borderColor).toBe(palette.rest.border);
@@ -224,21 +216,21 @@ describe('layout: the button IS the node its parent lays out', () => {
 // finger needs the target, a cursor does not.
 describe('variant="text" geometry', () => {
   it('is a compact affordance, not a ghost button', () => {
-    const { getByTestId } = renderWithTheme(<TextButton testID="txt">Text</TextButton>);
+    const { getByTestId } = renderWithTheme(<Button testID="txt" appearance="plain" tone="accent">Text</Button>);
     const style = resolvedStyle(getByTestId('txt').props.style);
-    expect(style.paddingVertical).toBe(4);
+    expect(style.paddingVertical).toBeUndefined();
     expect(style.paddingHorizontal).toBe(8);
   });
 
   it('ghost keeps the full size-config padding', () => {
-    const { getByTestId } = renderWithTheme(<GhostButton testID="ghost">Ghost</GhostButton>);
+    const { getByTestId } = renderWithTheme(<Button testID="ghost" appearance="subtle" tone="accent">Ghost</Button>);
     const style = resolvedStyle(getByTestId('ghost').props.style);
     expect(style.paddingVertical).toBeUndefined();
-    expect(style.paddingHorizontal).toBe(BUTTON_GEOMETRY.medium.paddingHorizontal);
+    expect(style.paddingHorizontal).toBe(BUTTON_GEOMETRY.md.paddingHorizontal);
   });
 
   it('keeps the size-config height so the touch target survives', () => {
-    const { getByTestId } = renderWithTheme(<TextButton testID="txt">Text</TextButton>);
+    const { getByTestId } = renderWithTheme(<Button testID="txt" appearance="plain" tone="accent">Text</Button>);
     expect(resolvedStyle(getByTestId('txt').props.style).height).toBe(36);
   });
 });
@@ -259,9 +251,9 @@ const MAX_VERTICAL_BORDER = 2;
 
 const GEOMETRY = [
   { size: 'xs', height: 24, lineHeight: 16, verticalSlop: 10 },
-  { size: 'small', height: 32, lineHeight: 20, verticalSlop: 6 },
-  { size: 'medium', height: 36, lineHeight: 20, verticalSlop: 4 },
-  { size: 'large', height: 44, lineHeight: 20, verticalSlop: 0 },
+  { size: 'sm', height: 32, lineHeight: 20, verticalSlop: 6 },
+  { size: 'md', height: 36, lineHeight: 20, verticalSlop: 4 },
+  { size: 'lg', height: 44, lineHeight: 20, verticalSlop: 0 },
 ] as const;
 
 describe('Button geometry', () => {
@@ -269,7 +261,7 @@ describe('Button geometry', () => {
     '$size is a $height tall pill',
     ({ size, height, lineHeight }) => {
       const { getByTestId } = renderWithTheme(
-        <Button testID="btn" size={size} variant="secondary">
+        <Button testID="btn" size={size} appearance="outline" tone="neutral">
           Save changes
         </Button>,
       );
@@ -303,7 +295,7 @@ describe('Button geometry', () => {
 
   it.each(GEOMETRY)('$size icon variant is an unpadded square', ({ size, height }) => {
     const { getByTestId } = renderWithTheme(
-      <IconButton testID="btn" size={size} icon={<View testID="glyph" />} />,
+      <Button testID="btn" size={size} icon={() => <View testID="glyph" />} appearance="outline" tone="neutral" />,
     );
     const style = resolvedStyle(getByTestId('btn').props.style);
     expect(style.width).toBe(height);
@@ -314,12 +306,10 @@ describe('Button geometry', () => {
   it('iconOnly renders the leading icon at the size\'s glyph size and no label', () => {
     const Glyph = jest.fn((_: { width?: number; height?: number; fill?: string }) => null);
     const { getByTestId, queryByText } = renderWithTheme(
-      <Button testID="btn" size="small" iconOnly leadingIcon={Glyph} accessibilityLabel="Add">
-        Add
-      </Button>,
+      <Button testID="btn" size="sm" icon={Glyph} accessibilityLabel="Add" />,
     );
     expect(queryByText('Add')).toBeNull();
-    expect(Glyph.mock.calls[0]?.[0]).toMatchObject({ width: 18, height: 18 });
+    expect(Glyph.mock.calls[0]?.[0]).toMatchObject({ width: 16, height: 16 });
     expect(resolvedStyle(getByTestId('btn').props.style).width).toBe(32);
   });
 
@@ -337,35 +327,35 @@ describe('Button geometry', () => {
 describe('Button variants', () => {
   it('PrimaryButton renders without crashing', () => {
     const { getByText } = renderWithTheme(
-      <PrimaryButton>Primary</PrimaryButton>,
+      <Button appearance="solid" tone="accent">Primary</Button>,
     );
     expect(getByText('Primary')).toBeTruthy();
   });
 
   it('SecondaryButton renders without crashing', () => {
     const { getByText } = renderWithTheme(
-      <SecondaryButton>Secondary</SecondaryButton>,
+      <Button appearance="outline" tone="neutral">Secondary</Button>,
     );
     expect(getByText('Secondary')).toBeTruthy();
   });
 
   it('IconButton renders without crashing', () => {
     const { getByTestId } = renderWithTheme(
-      <IconButton testID="icon-btn" />,
+      <Button testID="icon-btn" appearance="outline" tone="neutral" />,
     );
     expect(getByTestId('icon-btn')).toBeTruthy();
   });
 
   it('GhostButton renders without crashing', () => {
     const { getByText } = renderWithTheme(
-      <GhostButton>Ghost</GhostButton>,
+      <Button appearance="subtle" tone="accent">Ghost</Button>,
     );
     expect(getByText('Ghost')).toBeTruthy();
   });
 
   it('TextButton renders without crashing', () => {
     const { getByText } = renderWithTheme(
-      <TextButton>Text</TextButton>,
+      <Button appearance="plain" tone="accent">Text</Button>,
     );
     expect(getByText('Text')).toBeTruthy();
   });
@@ -389,48 +379,48 @@ describe('button details', () => {
 
   it('a bordered medium icon-only button grows with its border (38 × 36)', () => {
     const { getByTestId } = renderWithTheme(
-      <Button testID="btn" variant="secondary" iconOnly accessibilityLabel="Add" />,
+      <Button testID="btn" icon={() => null} accessibilityLabel="Add" appearance="outline" tone="neutral" />,
     );
     const style = resolvedStyle(getByTestId('btn').props.style);
-    expect(style.width).toBe(38);
+    expect(style.width).toBe(36);
     expect(style.height).toBe(36);
   });
 
   it('IconButton takes an icon COMPONENT and draws it 16px at small', () => {
     const Glyph = jest.fn((_: { width?: number; height?: number; fill?: string }) => null);
-    renderWithTheme(<IconButton size="small" icon={Glyph} accessibilityLabel="More" />);
+    renderWithTheme(<Button size="sm" icon={Glyph} accessibilityLabel="More" appearance="outline" tone="neutral" />);
     expect(Glyph.mock.calls[0]?.[0]).toMatchObject({ width: 16, height: 16 });
   });
 
   it('IconButton dims to 0.6 when disabled', () => {
     const { getByTestId } = renderWithTheme(
-      <IconButton testID="btn" disabled icon={<View />} accessibilityLabel="More" />,
+      <Button testID="btn" disabled leading={<View />} accessibilityLabel="More" appearance="outline" tone="neutral" />,
     );
-    expect(resolvedStyle(getByTestId('btn').props.style).opacity).toBe(0.6);
+    expect(resolvedStyle(getByTestId('btn').props.style).opacity).toBe(0.5);
   });
 
   it('LinkButton has no container: no height, no padding, a 4px gap', () => {
-    const { getByTestId } = renderWithTheme(<LinkButton testID="btn">Learn more</LinkButton>);
+    const { getByTestId } = renderWithTheme(<Button testID="btn" href="https://example.com" appearance="plain" tone="accent">Learn more</Button>);
     const style = resolvedStyle(getByTestId('btn').props.style);
     expect(style.height).toBeUndefined();
     expect(style.paddingHorizontal).toBe(0);
     expect(style.gap).toBe(4);
-    expect(style.backgroundColor).toBe('rgba(0, 0, 0, 0)');
+    expect(style.backgroundColor).toBe('transparent');
   });
 
   it('LinkButton variant picks the link colour', () => {
     const theme = captureTheme();
-    const { getByText } = renderWithTheme(<LinkButton variant="secondary">Docs</LinkButton>);
+    const { getByText } = renderWithTheme(<Button appearance="plain" tone="neutral">Docs</Button>);
     expect(resolvedStyle(getByText('Docs').props.style).color).toBe(
-      resolveButtonPalette('link', theme, 'secondary').rest.foreground,
+      resolveButtonPalette('plain', theme, 'neutral').rest.foreground,
     );
   });
 
   it.each([
-    ['2xs', 16],
     ['xs', 20],
     ['sm', 24],
     ['md', 32],
+    ['lg', 44],
   ] as const)('CloseButton %s is a %ipx disc', (size, box) => {
     const { getByTestId } = renderWithTheme(
       <CloseButton testID="close" size={size} accessibilityLabel="Close" />,
@@ -442,13 +432,16 @@ describe('button details', () => {
   });
 });
 
-// ---------------------------------------------------------------------------
-//  `underline`, `linkTone="text"`, `textVariant` — the inline text action.
-//
-//  Four families hand-rolled an underlined `Pressable` because `variant="link"`
-//  underlined only on HOVER and painted the accent. These assert the three props
-//  that closed that gap, on the fork every react-native consumer renders.
-// ---------------------------------------------------------------------------
+describe('filled button material', () => {
+  it.each(['accent', 'danger', 'success', 'warning', 'info'] as const)('renders two different opaque SVG stops for %s', tone => {
+    const screen = renderWithTheme(<Button tone={tone}>Save</Button>);
+    const stops = screen.UNSAFE_getAllByType(Stop).map(stop => stop.props.stopColor);
+    expect(stops).toHaveLength(2);
+    expect(stops[0]).not.toBe(stops[1]);
+    expect(stops.every(color => typeof color === 'string' && !color.startsWith('rgba'))).toBe(true);
+  });
+});
+
 describe('Button underline and the reading tone', () => {
   it('underline="rest" draws the underline with no pointer at all', () => {
     const { getByText } = renderWithTheme(

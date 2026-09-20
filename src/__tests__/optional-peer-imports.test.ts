@@ -136,7 +136,9 @@ const VARIABLE_REQUIRE_ALLOWED: { file: string; why: string }[] = [
 
 function sourceFiles(dir: string, out: string[] = []): string[] {
   for (const entry of readdirSync(dir)) {
-    if (entry === '__tests__' || entry === 'node_modules') continue;
+    // Stories are development entrypoints excluded by Bob and the package build;
+    // their Storybook preview hooks are not consumer runtime dependencies.
+    if (entry === '__tests__' || entry === 'node_modules' || /\.stories\.tsx?$/.test(entry)) continue;
     const full = join(dir, entry);
     if (statSync(full).isDirectory()) {
       sourceFiles(full, out);

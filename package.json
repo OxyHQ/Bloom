@@ -239,6 +239,67 @@
         "default": "./lib/commonjs/dialog/index.js"
       }
     },
+    "./appearance": {
+      "react-native": {
+        "types": "./lib/typescript/module/appearance/index.d.ts",
+        "default": "./src/appearance/index.ts"
+      },
+      "import": {
+        "types": "./lib/typescript/module/appearance/index.d.ts",
+        "default": "./lib/module/appearance/index.js"
+      },
+      "require": {
+        "types": "./lib/typescript/commonjs/appearance/index.d.ts",
+        "default": "./lib/commonjs/appearance/index.js"
+      }
+    },
+    "./control-surface": {
+      "react-native": {
+        "types": "./lib/typescript/module/control-surface/index.d.ts",
+        "default": "./src/control-surface/index.ts"
+      },
+      "import": {
+        "types": "./lib/typescript/module/control-surface/index.d.ts",
+        "default": "./lib/module/control-surface/index.js"
+      },
+      "require": {
+        "types": "./lib/typescript/commonjs/control-surface/index.d.ts",
+        "default": "./lib/commonjs/control-surface/index.js"
+      }
+    },
+    "./screen": {
+      "react-native": {
+        "types": "./lib/typescript/module/screen/index.d.ts",
+        "default": "./src/screen/index.ts"
+      },
+      "import": {
+        "types": "./lib/typescript/module/screen/index.d.ts",
+        "default": "./lib/module/screen/index.js"
+      },
+      "require": {
+        "types": "./lib/typescript/commonjs/screen/index.d.ts",
+        "default": "./lib/commonjs/screen/index.js"
+      }
+    },
+    "./bottom-bar": {
+      "react-native": {
+        "types": "./lib/typescript/module/bottom-bar/index.d.ts",
+        "default": "./src/bottom-bar/index.ts"
+      },
+      "browser": {
+        "types": "./lib/typescript/module/bottom-bar/index.web.d.ts",
+        "import": "./lib/module/bottom-bar/index.web.js",
+        "require": "./lib/commonjs/bottom-bar/index.web.js"
+      },
+      "import": {
+        "types": "./lib/typescript/module/bottom-bar/index.d.ts",
+        "default": "./lib/module/bottom-bar/index.js"
+      },
+      "require": {
+        "types": "./lib/typescript/commonjs/bottom-bar/index.d.ts",
+        "default": "./lib/commonjs/bottom-bar/index.js"
+      }
+    },
     "./button": {
       "react-native": {
         "types": "./lib/typescript/module/button/index.d.ts",
@@ -270,20 +331,6 @@
       "require": {
         "types": "./lib/typescript/commonjs/button-group/index.d.ts",
         "default": "./lib/commonjs/button-group/index.js"
-      }
-    },
-    "./control-surface": {
-      "react-native": {
-        "types": "./lib/typescript/module/control-surface/index.d.ts",
-        "default": "./src/control-surface/index.ts"
-      },
-      "import": {
-        "types": "./lib/typescript/module/control-surface/index.d.ts",
-        "default": "./lib/module/control-surface/index.js"
-      },
-      "require": {
-        "types": "./lib/typescript/commonjs/control-surface/index.d.ts",
-        "default": "./lib/commonjs/control-surface/index.js"
       }
     },
     "./layout": {
@@ -594,6 +641,11 @@
       "react-native": {
         "types": "./lib/typescript/module/app-shell/index.d.ts",
         "default": "./src/app-shell/index.ts"
+      },
+      "browser": {
+        "types": "./lib/typescript/module/app-shell/index.web.d.ts",
+        "import": "./lib/module/app-shell/index.web.js",
+        "require": "./lib/commonjs/app-shell/index.web.js"
       },
       "import": {
         "types": "./lib/typescript/module/app-shell/index.d.ts",
@@ -3063,14 +3115,23 @@
       "dialog": [
         "./lib/typescript/module/dialog/index.d.ts"
       ],
+      "appearance": [
+        "./lib/typescript/module/appearance/index.d.ts"
+      ],
+      "control-surface": [
+        "./lib/typescript/module/control-surface/index.d.ts"
+      ],
+      "screen": [
+        "./lib/typescript/module/screen/index.d.ts"
+      ],
+      "bottom-bar": [
+        "./lib/typescript/module/bottom-bar/index.d.ts"
+      ],
       "button": [
         "./lib/typescript/module/button/index.d.ts"
       ],
       "button-group": [
         "./lib/typescript/module/button-group/index.d.ts"
-      ],
-      "control-surface": [
-        "./lib/typescript/module/control-surface/index.d.ts"
       ],
       "layout": [
         "./lib/typescript/module/layout/index.d.ts"

@@ -6,6 +6,14 @@ import { Button } from '../button';
 import { AgentProgress, AgentProgressLoadingText } from './index';
 
 const meta: Meta<typeof AgentProgress> = {
+  argTypes: {
+    "stepDuration": { control: 'number' },
+    "completionDelay": { control: 'number' },
+    "paused": { control: 'boolean' },
+    "completedCount": { control: 'number' },
+    "minimized": { control: 'boolean' },
+    "defaultMinimized": { control: 'boolean' }
+  },
   title: 'Blocks/Agent Progress',
   component: AgentProgress,
 };
@@ -20,6 +28,7 @@ const Frame = ({ children }: { children: React.ReactNode }) => (
 
 /** The coding workflow demo, 3s per step, restarting when it finishes. */
 export const Default: Story = {
+  parameters: { controls: { disable: true } },
   render: function Render() {
     const [run, setRun] = useState(0);
     return (
@@ -32,35 +41,41 @@ export const Default: Story = {
 
 /** Faster clock, for watching every transition. */
 export const Fast: Story = {
-  render: () => (
+  args: { stepDuration: 1500 },
+  parameters: { controls: { include: ["stepDuration","completionDelay","paused","completedCount","minimized","defaultMinimized"] } },
+  render: (args) => (
     <Frame>
-      <AgentProgress stepDuration={1500} />
+      <AgentProgress {...args}  />
     </Frame>
   ),
 };
 
 /** Starts minimized: the 44px bar with the current step. Hover to reveal the expand glyph. */
 export const Minimized: Story = {
-  render: () => (
+  args: { defaultMinimized: true, stepDuration: 4000 },
+  parameters: { controls: { include: ["defaultMinimized","stepDuration","completionDelay","paused","completedCount","minimized"] } },
+  render: (args) => (
     <Frame>
-      <AgentProgress defaultMinimized stepDuration={4000} />
+      <AgentProgress {...args}   />
     </Frame>
   ),
 };
 
 /** Controlled progress, as a real agent would drive it. */
 export const Controlled: Story = {
-  render: function Render() {
+  args: { stepDuration: 5000 },
+  parameters: { controls: { include: ["stepDuration","completionDelay","paused","minimized","defaultMinimized"] } },
+  render: function Render(args) {
     const steps = ['Plan the change', 'Edit the files', 'Run the tests'];
     const [done, setDone] = useState(1);
     return (
       <Frame>
-        <AgentProgress steps={steps} completedCount={done} stepDuration={5000} />
+        <AgentProgress {...args} steps={steps} completedCount={done}  />
         <View style={{ flexDirection: 'row', gap: 8 }}>
-          <Button variant="secondary" size="small" onPress={() => setDone((d) => Math.max(0, d - 1))}>
+          <Button size="sm" onPress={() => setDone((d) => Math.max(0, d - 1))} appearance="outline" tone="neutral">
             Back
           </Button>
-          <Button variant="secondary" size="small" onPress={() => setDone((d) => Math.min(steps.length, d + 1))}>
+          <Button size="sm" onPress={() => setDone((d) => Math.min(steps.length, d + 1))} appearance="outline" tone="neutral">
             Complete step
           </Button>
         </View>
@@ -71,6 +86,7 @@ export const Controlled: Story = {
 
 /** Static states, frozen (paused before the clock starts). */
 export const States: Story = {
+  parameters: { controls: { disable: true } },
   render: () => (
     <Frame>
       <AgentProgress paused completedCount={2} testID="progress-mid" />
@@ -88,6 +104,7 @@ export const States: Story = {
 
 /** The shimmering label on its own ("Generating image"). */
 export const LoadingText: Story = {
+  parameters: { controls: { disable: true } },
   render: () => (
     <Frame>
       <AgentProgressLoadingText testID="shimmer">Generating image</AgentProgressLoadingText>

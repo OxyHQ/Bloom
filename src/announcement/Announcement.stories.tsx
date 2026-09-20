@@ -8,6 +8,11 @@ import { RiSparklingFill } from '../icons/remix/RiSparklingFill';
 import { Announcement } from './index';
 
 const meta: Meta<typeof Announcement> = {
+  argTypes: {
+    "dismissible": { control: 'boolean' },
+    "closeLabel": { control: 'text' },
+    "introDelay": { control: 'number' }
+  },
   title: 'Base/Announcement',
   component: Announcement,
 };
@@ -32,6 +37,7 @@ function Frame({ children }: { children: React.ReactNode }) {
 
 /** The full event card, then each optional part removed. */
 export const Matrix: Story = {
+  parameters: { controls: { disable: true } },
   render: () => (
     <Frame>
       <Announcement
@@ -50,20 +56,22 @@ export const Matrix: Story = {
 
 /** Dismiss plays the blur + scale-down exit; Replay runs the entrance after 0.4s. */
 export const Dismissible: Story = {
-  render: function DismissibleStory() {
+  args: { title: "Upgrade to Pro", description: "Unlock unlimited projects and priority support.", actionLabel: "Upgrade now", dismissible: true },
+  parameters: { controls: { include: ["title","description","actionLabel","dismissible","closeLabel"] } },
+  render: function DismissibleStory(args) {
     const [key, setKey] = useState(0);
     return (
       <Frame>
-        <Button size="small" variant="secondary" onPress={() => setKey((k) => k + 1)}>
+        <Button size="sm" onPress={() => setKey((k) => k + 1)} appearance="outline" tone="neutral">
           Replay
         </Button>
-        <Announcement
+        <Announcement {...args}
           key={key}
-          title="Upgrade to Pro"
-          description="Unlock unlimited projects and priority support."
-          actionLabel="Upgrade now"
+
+
+
           onAction={noop}
-          dismissible
+
           introDelay={key === 0 ? undefined : 0.4}
         />
       </Frame>

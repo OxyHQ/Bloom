@@ -9,12 +9,10 @@
  *   shadow   0 1px 0 (the seat), 0 1px 12px (the soft body), 0 0 1px (the edge
  *            definition that keeps the hairline from disappearing on a
  *            same-coloured background)
- *   border   the CARD colour in light mode — a panel on a tinted page reads as
- *            a lighter edge, not a grey line — and neutral-800 in dark
+ *   border   the canonical subtle border role in both modes
  */
 import { useContext } from 'react';
 
-import { resolveButtonRamps } from '../button/shared';
 import { BloomThemeContext } from '../theme/BloomThemeProvider';
 import type { Theme } from '../theme/types';
 
@@ -33,11 +31,10 @@ export interface PanelChrome {
 }
 
 export function resolvePanelChrome(theme: Theme): PanelChrome {
-  const { neutral: n } = resolveButtonRamps(theme);
   const dark = theme.isDark;
   return {
-    surface: dark ? n[900] : n[100],
-    border: dark ? n[800] : theme.colors.card,
+    surface: theme.colors.backgroundSecondary,
+    border: theme.colors.borderLight,
     shadow: dark ? PANEL_SHADOW.dark : PANEL_SHADOW.light,
   };
 }

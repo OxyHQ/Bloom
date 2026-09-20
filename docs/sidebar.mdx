@@ -104,7 +104,7 @@ The logo leads the header beside the collapse (or close) control; `account`, if 
 />
 ```
 
-- With a `tree` the header and quick search stay put and only the rows scroll (hidden scrollbar): the primary rows, then 24 below them the tree — its label (body-medium text-secondary) and, 10 below, the folders 4 apart. The footer gains 12 on top.
+- The header, collapse control, mode switcher and quick search stay fixed; only destination rows scroll (hidden scrollbar). With a `tree`: the primary rows, then 24 below them the tree — its label (body-medium text-secondary) and, 10 below, the folders 4 apart. The footer gains 12 on top.
 - A folder row is p 8 with a 20px folder glyph (open while expanded) and the label; its rows are py 5 / pr 8 / pl 36 with the label and a `meta` chip (radius 4, background-tertiary, px 4 / py 1, caption-1-medium), background-secondary-hover while selected or hovered. A curved 1px icon-quaternary connector drops from the folder glyph into each row. The rows' height and opacity ease open and shut together over 300ms; collapsed rows leave the tab order.
 - Quick search filters the tree too: a folder whose label matches keeps every row, otherwise only its matching rows, held open while the query is set. "No results" counts the tree.
 - The tree hides while collapsed.
@@ -116,8 +116,8 @@ Two apps with the same rows should not look like the same app. That difference i
 
 ```tsx
 <Sidebar surface="card" />                    {/* default: the floating panel */}
-<Sidebar surface="plain" size="large" />      {/* a social reader's nav */}
-<Sidebar surface="docked" size="small" />     {/* a workspace column */}
+<Sidebar surface="plain" size="lg" />      {/* a social reader's nav */}
+<Sidebar surface="docked" size="sm" />     {/* a workspace column */}
 ```
 
 `surface` is the panel's EDGE:
@@ -134,9 +134,9 @@ The docked edge is not the card's border: that one is white in light mode, a hig
 
 | size     | square | glyph | label            | expanded | collapsed |
 | -------- | ------ | ----- | ---------------- | -------- | --------- |
-| `small`  | 30     | 18    | `body-2-medium`  | 232      | 46        |
-| `medium` | 36     | 20    | `body-medium`    | 260      | 52        |
-| `large`  | 44     | 24    | `title-3-medium` | 300      | 60        |
+| `sm`  | 30     | 18    | `body-2-medium`  | 232      | 46        |
+| `md` | 36     | 20    | `body-medium`    | 260      | 52        |
+| `lg`  | 44     | 24    | `title-3-medium` | 300      | 60        |
 
 The collapsed width is never an independent number: it is the square plus the panel's collapsed padding on both sides plus its two borders, so the icon column stays centred at every size. A row outside a sidebar takes `size` itself; inside one it inherits the panel's.
 
@@ -149,7 +149,7 @@ The collapsed width is never an independent number: it is the square plus the pa
 
 ## Collapse
 
-`collapsed` / `defaultCollapsed` / `onCollapsedChange`. The panel morphs between the size's two widths (260 → 52 at `medium`) in 300ms while labels, badges and the shortcut hint collapse (max-width, opacity, 3px blur on web) and the icons stay put. `mobile` is always expanded and shows a close button. `fluid` fills the container while expanded. Reduced motion snaps.
+`collapsed` / `defaultCollapsed` / `onCollapsedChange`. The panel morphs between the size's two widths (260 → 52 at `md`) in 300ms while labels, badges and the shortcut hint collapse (max-width, opacity, 3px blur on web) and the icons stay put. `mobile` is always expanded and shows a close button. `fluid` fills the container while expanded. Reduced motion snaps.
 
 After expanding, the account trigger's hover pill stays off until the pointer leaves it, so a stationary pointer does not light it up.
 
@@ -163,4 +163,32 @@ Both menus are `Popover`s: beside the rail (team bottom-aligned, account top-ali
 
 ## Colour
 
-Panel background-secondary with a card-coloured hairline and a three-layer sidebar shadow; rows and chips from the neutral ramp; the selected row from the accent ramp (500 → 600). Initials tints: `neutral`, `blue` (accent), `lime` (success), `pink` (the accent rotated to pink).
+Panel `backgroundSecondary` (`--surface`) with `borderLight` and the existing three-layer shadow. Rows use `backgroundTertiary`; selected navigation uses the paired `primary`/`primaryForeground` roles, and its badge uses `secondary`/`secondaryForeground`. Initials retain the public names `neutral`, `blue`, `lime`, and `pink`: their colours now come from neutral, primary, success, and tertiary semantic pairs respectively, rather than generated ramps or rotated hues.
+
+### Mode switcher in a collapsed panel
+
+Collapsed modes use the sidebar's icon-square size: 30/36/44px for `sm/md/lg`.
+The track adds 4px around those squares and stays centered, extending into the
+panel's horizontal inset. Its selected thumb remains square, the glyph stays
+centered, and hidden labels leave no gap. Expanded mode rows retain their 32px
+height.
+
+### Scroll overflow cues
+
+Each internal scroll region paints a 40px fade in its own surface color at an
+edge only when more content exists beyond it. The initial content and viewport
+measurements reveal the bottom cue before the first scroll. At the top there is
+no top fade; at the bottom there is no bottom fade. Content that fits has neither.
+Resizing or filtering updates these cues without changing content padding.
+The decorative overlays ignore pointer input and are excluded from accessibility.
+
+### Collapse motion
+
+Panel width and horizontal padding, navigation gaps, labels, mode-switcher
+geometry, header controls and footer surfaces follow the same 300ms collapse
+progress. Reversing the control continues from its current position. Reduced
+motion applies the target layout immediately. Mode selection has its own
+indicator timing; its position is calculated from the current animated row
+height so selection and collapse can happen together.
+
+The panel scroll viewport extends behind the bottom half of the last fixed header control (up to 20px). The top fade begins there, while compensating content padding preserves the initial row spacing. Fixed controls remain above the fade and available throughout scrolling.

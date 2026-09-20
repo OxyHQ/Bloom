@@ -60,24 +60,23 @@ const PANEL_AMBIENT = {
 
 export function resolveStaySearchPalette(theme: Theme): StaySearchPalette {
   const c = theme.colors;
-  const { neutral: n } = resolveButtonRamps(theme);
   const menu = resolveMenuPalette(theme);
   const mode = theme.isDark ? 'dark' : 'light';
 
   return {
     barSurface: menu.surface,
-    barSurfaceOpen: theme.isDark ? n[900] : n[100],
+    barSurfaceOpen: theme.colors.backgroundSecondary,
     border: menu.border,
     barShadow: STAY_SEARCH_BAR_SHADOW[mode],
     segmentHover: menu.rowHighlight,
-    segmentHoverOpen: theme.isDark ? n[800] : n[200],
-    segmentActive: theme.isDark ? n[700] : c.card,
+    segmentHoverOpen: c.backgroundTertiary,
+    segmentActive: c.card,
     segmentActiveShadow: STAY_SEARCH_SEGMENT_SHADOW[mode],
-    separator: theme.isDark ? n[700] : n[200],
+    separator: theme.colors.border,
     text: c.text,
     textSecondary: c.textSecondary,
     placeholder: c.textSecondary,
-    tile: theme.isDark ? n[700] : n[100],
+    tile: theme.colors.backgroundSecondary,
     rowHighlight: menu.rowHighlight,
     panelSurface: menu.surface,
     panelBorder: menu.border,

@@ -1,8 +1,8 @@
+import { boundedLabelSlot } from './svg-text';
 import React, { useCallback, useMemo } from 'react';
 import { Platform, StyleSheet, View, type StyleProp, type TextStyle, type ViewStyle } from 'react-native';
 import Svg, { Circle, G, Line, Path } from 'react-native-svg';
 
-import { resolveButtonRamps } from '../button/shared';
 import type { WebCssStyle } from '../styles/web-view-style';
 import { parseRgba } from '../theme/color-utils';
 import { useTheme } from '../theme/use-theme';
@@ -149,20 +149,22 @@ export function defaultRadarScoreCaption(score: number): string {
 }
 
 function AxisLabel({
+  plotWidth,
   x,
   y,
   anchor,
   children,
 }: {
+  plotWidth: number;
   x: number;
   y: number;
   anchor: 'start' | 'middle' | 'end';
   children: React.ReactNode;
 }) {
-  const left = anchor === 'start' ? x : anchor === 'end' ? x - LABEL_SLOT : x - LABEL_SLOT / 2;
+  const slot = boundedLabelSlot(plotWidth, x, anchor, LABEL_SLOT);
   const align = anchor === 'start' ? 'flex-start' : anchor === 'end' ? 'flex-end' : 'center';
   return (
-    <View pointerEvents="none" style={{ position: 'absolute', left, top: y, width: LABEL_SLOT, alignItems: align }}>
+    <View pointerEvents="none" style={{ position: 'absolute', ...slot, top: y, alignItems: align }}>
       {children}
     </View>
   );
@@ -276,9 +278,9 @@ export function RadarChartCard({
   const labelEase = useWebTransition('color', 150);
   const cardShadow = theme.isDark ? '0 1px 1px 0 rgb(0 0 0 / 0.14)' : '0 1px 1px 0 rgb(0 0 0 / 0.05)';
   // `bg-background-inner-default backdrop-blur-[2px]`: in dark mode the inner surface is
-  // neutral-800 at 60%, so the polygon under the disc shows through, softened.
+  // canonical inner surface at 60%, so the polygon shows through, softened.
   const discStyle = useMemo<WebCssStyle>(() => {
-    const n800 = parseRgba(resolveButtonRamps(theme).neutral[800]);
+    const n800 = parseRgba(palette.inner);
     const backgroundColor = theme.isDark && n800 ? `rgba(${n800.r}, ${n800.g}, ${n800.b}, 0.6)` : palette.inner;
     return Platform.OS === 'web'
       ? { backgroundColor, backdropFilter: 'blur(2px)', WebkitBackdropFilter: 'blur(2px)' }
@@ -406,8 +408,8 @@ export function RadarChartCard({
                 const nameColor = { color: active ? palette.text : palette.textTertiary };
                 if (!isScore) {
                   return (
-                    <AxisLabel key={`label-${i}`} x={at.x} y={at.y + 4 - BASELINE_12} anchor={anchor}>
-                      <Text numberOfLines={1} style={[AXIS_TYPE, nameColor, labelEase]}>
+                    <AxisLabel plotWidth={width} key={`label-${i}`} x={at.x} y={at.y + 4 - BASELINE_12} anchor={anchor}>
+                      <Text numberOfLines={1} style={[AXIS_TYPE, nameColor, labelEase, { maxWidth: '100%' }]}>
                         {String(row.label)}
                       </Text>
                     </AxisLabel>
@@ -420,16 +422,16 @@ export function RadarChartCard({
                 const alert = alertBelow !== undefined && value < alertBelow;
                 return (
                   <React.Fragment key={`label-${i}`}>
-                    <AxisLabel x={at.x} y={at.y + base - BASELINE_11} anchor={anchor}>
-                      <Text numberOfLines={1} style={[SCORE_NAME_TYPE, nameColor, labelEase]}>
+                    <AxisLabel plotWidth={width} x={at.x} y={at.y + base - BASELINE_11} anchor={anchor}>
+                      <Text numberOfLines={1} style={[SCORE_NAME_TYPE, nameColor, labelEase, { maxWidth: '100%' }]}>
                         {String(row.label)}
                       </Text>
                     </AxisLabel>
-                    <AxisLabel x={at.x} y={at.y + base + 17 - BASELINE_16} anchor={anchor}>
+                    <AxisLabel plotWidth={width} x={at.x} y={at.y + base + 17 - BASELINE_16} anchor={anchor}>
                       <Text
                         numberOfLines={1}
                         testID={testID ? `${testID}-score-${i}` : undefined}
-                        style={[SCORE_VALUE_TYPE, { color: alert ? palette.negative.foreground : palette.text }, TABULAR]}>
+                        style={[SCORE_VALUE_TYPE, { maxWidth: '100%', color: alert ? palette.negative.foreground : palette.text }, TABULAR]}>
                         {format(value)}
                       </Text>
                     </AxisLabel>
@@ -489,7 +491,7 @@ export function RadarChartCard({
             <ChartLegend
               items={legendItems}
               testID={testID ? `${testID}-legend` : undefined}
-              style={{ height: 32, width: 'auto', flexShrink: 0, justifyContent: 'flex-end', columnGap: 12 }}
+              style={{ minHeight: 32, width: 'auto', maxWidth: '100%', flexShrink: 1, justifyContent: 'flex-end', columnGap: 12 }}
             />
           ) : undefined
         }

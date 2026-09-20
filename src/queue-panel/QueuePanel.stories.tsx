@@ -105,7 +105,7 @@ function InteractiveQueue({
       testID="queue"
       variant={variant}
       width={width}
-      style={{ height }}
+      style={{ height, maxWidth: '100%' }}
       nowPlaying={nowPlaying}
       playing={playing}
       queue={queue}
@@ -149,16 +149,16 @@ export const States: Story = {
   render: () => (
     <Canvas>
       <View style={{ flexDirection: 'row', gap: 16, flexWrap: 'wrap', alignItems: 'flex-start' }}>
-        <QueuePanel style={{ height: 260 }} nowPlaying={NOW} playing={false} onClose={() => {}} />
-        <QueuePanel style={{ height: 300 }} onClose={() => {}} />
+        <QueuePanel style={{ height: 260, maxWidth: '100%' }} nowPlaying={NOW} playing={false} onClose={() => {}} />
+        <QueuePanel style={{ height: 300, maxWidth: '100%' }} onClose={() => {}} />
         <QueuePanel
-          style={{ height: 300 }}
+          style={{ height: 300, maxWidth: '100%' }}
           queue={QUEUE.slice(0, 2)}
           onClose={() => {}}
           labels={{ queueTab: 'Up next', recentTab: 'History', nextInQueue: 'Added by you' }}
         />
       </View>
-      <View style={{ width: 360 }}>
+      <View style={{ width: '100%', maxWidth: 360 }}>
         <Text variant="caption-1-medium">RecentlyPlayedList on its own, and empty</Text>
         <RecentlyPlayedList items={RECENT} currentId="now" onPlay={() => {}} />
         <RecentlyPlayedList items={[]} />
@@ -211,7 +211,7 @@ function DarkCanvas() {
       }}
     >
       <InteractiveQueue height={720} />
-      <View style={{ width: 390 }}>
+      <View style={{ width: '100%', maxWidth: 390 }}>
         <InteractiveQueue variant="sheet" height={720} initialTab="recent" />
       </View>
     </View>

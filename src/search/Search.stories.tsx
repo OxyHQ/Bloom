@@ -1,3 +1,4 @@
+import { useArgs } from 'storybook/preview-api';
 import React, { useState } from 'react';
 import { View } from 'react-native';
 import type { Meta, StoryObj } from '@storybook/react-vite';
@@ -21,11 +22,12 @@ type Story = StoryObj<typeof Search>;
  * three apps ended up with three different clear buttons.
  */
 export const Basic: Story = {
+  parameters: { controls: { disable: true } },
   render: function BasicStory() {
     const [value, setValue] = useState('');
     return (
-      <View style={{ width: 380 }}>
-        <Search value={value} onChangeText={setValue} onClearText={() => setValue('')} />
+      <View style={{ width: 380, maxWidth: '100%' }}>
+        <Search value={value} onValueChange={setValue} onClearText={() => setValue('')} />
       </View>
     );
   },
@@ -37,15 +39,16 @@ export const Basic: Story = {
  * drop the results, not just the text.
  */
 export const Filtering: Story = {
+  parameters: { controls: { disable: true } },
   render: function FilteringStory() {
     const ALL = ['Nate', 'Bloom', 'Homiio', 'Mention', 'Allo', 'Mercaria'];
     const [value, setValue] = useState('m');
     const shown = ALL.filter((x) => x.toLowerCase().includes(value.toLowerCase()));
     return (
-      <View style={{ width: 380, gap: 12 }}>
+      <View style={{ width: 380, maxWidth: '100%', gap: 12 }}>
         <Search
           value={value}
-          onChangeText={setValue}
+          onValueChange={setValue}
           onClearText={() => setValue('')}
           label="Search apps"
         />
@@ -62,17 +65,29 @@ export const Filtering: Story = {
 
 /** A custom `label` replaces both the floating label and the placeholder. */
 export const CustomLabel: Story = {
+  parameters: { controls: { disable: true } },
   render: function CustomLabelStory() {
     const [value, setValue] = useState('');
     return (
-      <View style={{ width: 380 }}>
+      <View style={{ width: 380, maxWidth: '100%' }}>
         <Search
           value={value}
-          onChangeText={setValue}
+          onValueChange={setValue}
           onClearText={() => setValue('')}
           label="Find a conversation"
         />
       </View>
     );
+  },
+};
+
+/** A single instance whose controls are applied directly to the rendered component. */
+export const Playground: StoryObj<typeof Search> = {
+  args: { label: 'Find a conversation', value: '' },
+  parameters: { controls: { disable: false, include: ['label', 'value'] } },
+  argTypes: { label: { control: 'text' }, value: { control: 'text' } },
+  render: function Playground(args) {
+    const [, updateArgs] = useArgs();
+    return <View style={{ width: 440, maxWidth: '100%' }}><Search {...args} onValueChange={next => updateArgs({ value: next })} onClearText={() => updateArgs({ value: '' })} /></View>;
   },
 };

@@ -82,7 +82,7 @@ export function resolveListingCardPaint(theme: Theme): ListingCardPaint {
   const red = colorRamp(theme.colors.error, DANGER_TABLE);
   const menu = resolveMenuPalette(theme);
   return {
-    photoPlaceholder: theme.isDark ? mixColor(n[800], n[700], 0.6) : n[100],
+    photoPlaceholder: theme.colors.backgroundTertiary,
     onMedia: n[50],
     scrim: n[950],
     favorite: red[500],

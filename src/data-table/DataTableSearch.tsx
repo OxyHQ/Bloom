@@ -19,7 +19,7 @@ const SEARCH_WIDTH = 153;
 export function DataTableSearch({
   label,
   value,
-  onChangeText,
+  onValueChange,
   placeholder = 'Search',
   testID,
 }: DataTableSearchProps) {
@@ -35,7 +35,7 @@ export function DataTableSearch({
         label={label}
         placeholder={placeholder}
         value={value}
-        onChangeText={onChangeText}
+        onValueChange={onValueChange}
         style={TYPE_SCALE['body-medium']}
         testID={testID}
       />

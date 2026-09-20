@@ -10,7 +10,6 @@ import { createRoot, type Root } from 'react-dom/client';
 
 jest.mock('react-native', () => jest.requireActual('react-native-web'));
 
-import { resolveButtonRamps } from '../button/shared';
 import {
   BudgetPicker,
   HOME_SEARCH_SEGMENTS,
@@ -370,12 +369,11 @@ describe('PropertyTypePicker', () => {
     expect(group.querySelectorAll('[role="button"]')).toHaveLength(8);
     expect(byTestId('t-other').textContent).toBe('Other');
     const house = byTestId('t-house');
-    const { neutral } = resolveButtonRamps(theme);
     expect(house.getAttribute('aria-pressed')).toBe('true');
     expect(house.style.borderTopLeftRadius).toBe('12px');
     expect(house.style.borderTopWidth).toBe('2px');
     expect(house.style.borderTopColor).toBe(borderCss(theme.colors.text));
-    expect(house.style.backgroundColor).toBe(css(neutral[100]));
+    expect(house.style.backgroundColor).toBe(css(theme.colors.backgroundTertiary));
     expect(byTestId('t-room').style.borderTopWidth).toBe('1px');
     click('t-studio');
     click('t-apartment');

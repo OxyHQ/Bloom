@@ -1,3 +1,5 @@
+import { useBloomAppearance } from '../appearance';
+import { resolveBloomColors } from '../appearance/colors';
 import React, {
   memo,
   useCallback,
@@ -13,7 +15,6 @@ import { pressedSurface } from '../theme/press-colors';
 import { interactiveWebCss, useInteractiveWebCss } from '../styles/interactive-web-css';
 import { flattenWebStyle } from '../styles/flatten-web-style';
 import {
-  applyIconColor,
   resolveFrostedPalette,
   resolveFrostedSize,
 } from './shared';
@@ -80,11 +81,12 @@ const BLOOM_FROSTED_ICON_BUTTON_CSS = interactiveWebCss({
 const FrostedIconButtonWebComponent: React.FC<FrostedIconButtonProps> = ({
   onPress,
   onClick,
-  icon,
-  children,
-  active = false,
+  icon: Icon,
+  tone: toneProp,
+  checked = false,
+  onCheckedChange,
   disabled = false,
-  size = 'md',
+  size: sizeProp,
   accessibilityLabel,
   'aria-label': ariaLabelProp,
   accessibilityHint,
@@ -97,16 +99,19 @@ const FrostedIconButtonWebComponent: React.FC<FrostedIconButtonProps> = ({
 }) => {
   useInteractiveWebCss(STYLE_ID, BLOOM_FROSTED_ICON_BUTTON_CSS);
   const theme = useTheme();
+  const {size: inheritedSize, tone} = useBloomAppearance({size: typeof sizeProp === 'number' ? undefined : sizeProp, tone: toneProp}, {size: 'md', tone: 'accent'});
+  const size = typeof sizeProp === 'number' ? sizeProp : inheritedSize;
+  const activePaint = resolveBloomColors(theme.colors, tone, 'solid');
   const reactId = useId();
   const resolvedId = id ?? `bloom-frosted-icon-btn-${reactId}`;
 
   const geo = useMemo(() => resolveFrostedSize(size), [size]);
   const palette = useMemo(
-    () => resolveFrostedPalette(theme.colors, theme.isDark),
-    [theme.colors, theme.isDark],
+    () => ({ ...resolveFrostedPalette(theme.colors, theme.isDark), activeSurface: activePaint.background, activeIcon: activePaint.foreground, focusRing: activePaint.background }),
+    [theme.colors, theme.isDark, activePaint.background, activePaint.foreground],
   );
 
-  const iconColor = active ? palette.activeIcon : palette.icon;
+  const iconColor = checked ? palette.activeIcon : palette.icon;
   const blur = `blur(${geo.blur}px)`;
 
   const containerStyle = useMemo((): CSSProperties => {
@@ -114,22 +119,22 @@ const FrostedIconButtonWebComponent: React.FC<FrostedIconButtonProps> = ({
       width: geo.diameter,
       height: geo.diameter,
       borderRadius: borderRadius.full,
-      ['--bloom-frosted-bg' as string]: active ? palette.activeSurface : palette.surface,
+      ['--bloom-frosted-bg' as string]: checked ? palette.activeSurface : palette.surface,
       ['--bloom-frosted-border' as string]: palette.ring,
       color: iconColor,
       // Real CSS backdrop blur so the chip frosts over content behind it. The
       // solid `active` state drops the blur. Both prefixed forms for Safari.
-      backdropFilter: active ? 'none' : blur,
-      WebkitBackdropFilter: active ? 'none' : blur,
+      backdropFilter: checked ? 'none' : blur,
+      WebkitBackdropFilter: checked ? 'none' : blur,
       // Soft shadow kept in BOTH modes so the chip has an edge on a solid bg.
       boxShadow: `0 2px 8px ${palette.shadow}`,
       // An ACTIVE chip's hover pair IS its rest pair — the "hover does not repaint
       // the solid on-state" rule, moved from the selector into the value.
-      ['--bloom-frosted-hover-bg' as string]: active ? palette.activeSurface : palette.surfaceHover,
-      ['--bloom-frosted-hover-ring' as string]: active ? palette.ring : palette.ringHover,
+      ['--bloom-frosted-hover-bg' as string]: checked ? palette.activeSurface : palette.surfaceHover,
+      ['--bloom-frosted-hover-ring' as string]: checked ? palette.ring : palette.ringHover,
       // Stepped from `surfaceHover`, because a press on web is always also a
       // hover — see the note in `FrostedIconButton.tsx`.
-      ['--bloom-frosted-press-bg' as string]: active
+      ['--bloom-frosted-press-bg' as string]: checked
         ? pressedSurface(theme.colors, palette.activeSurface, palette.activeIcon)
         : pressedSurface(theme.colors, palette.surfaceHover, theme.colors.text),
       ['--bloom-frosted-ring' as string]: palette.focusRing,
@@ -137,7 +142,7 @@ const FrostedIconButtonWebComponent: React.FC<FrostedIconButtonProps> = ({
     };
   }, [
     geo.diameter,
-    active,
+    checked,
     theme.colors,
     palette.activeIcon,
     palette.activeSurface,
@@ -158,9 +163,10 @@ const FrostedIconButtonWebComponent: React.FC<FrostedIconButtonProps> = ({
         return;
       }
       onClick?.(event);
+      onCheckedChange?.(!checked);
       onPress?.();
     },
-    [disabled, onClick, onPress],
+    [disabled, onClick, onPress, onCheckedChange, checked],
   );
 
   const ariaLabel = ariaLabelProp ?? accessibilityLabel;
@@ -172,7 +178,6 @@ const FrostedIconButtonWebComponent: React.FC<FrostedIconButtonProps> = ({
   // the raw DOM `style` object so an array form never leaks numeric keys onto
   // the element's CSSStyleDeclaration. See `flattenWebStyle` for the rationale.
   const resolvedStyle = flattenWebStyle(style);
-  const content = icon ?? children;
 
   return (
     <button
@@ -184,12 +189,12 @@ const FrostedIconButtonWebComponent: React.FC<FrostedIconButtonProps> = ({
       disabled={disabled}
       aria-disabled={disabled || undefined}
       aria-label={ariaLabel}
-      aria-pressed={active}
-      data-active={active || undefined}
+      aria-pressed={checked}
+      data-active={checked || undefined}
       title={title ?? accessibilityHint}
       data-testid={testID}
     >
-      {content != null && (
+      {Icon != null && (
         <span
           style={{
             display: 'inline-flex',
@@ -199,7 +204,7 @@ const FrostedIconButtonWebComponent: React.FC<FrostedIconButtonProps> = ({
             height: geo.iconBox,
           }}
         >
-          {applyIconColor(content, iconColor)}
+          {Icon ? <Icon width={geo.iconBox} height={geo.iconBox} fill={iconColor} /> : null}
         </span>
       )}
     </button>

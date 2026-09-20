@@ -81,12 +81,12 @@ interface TileProps {
 function Tile({ label, icon: Icon, selected, disabled, size, onPress, testID }: TileProps) {
   const theme = useTheme();
   const ringOffset = useRingOffsetStyle();
-  const { accent, neutral } = useMemo(() => resolveButtonRamps(theme), [theme]);
+  const { accent } = useMemo(() => resolveButtonRamps(theme), [theme]);
   const hover = useInteractionState();
   const press = useInteractionState();
   const dark = theme.isDark;
   const text = theme.colors.text;
-  const tint = dark ? neutral[800] : neutral[100];
+  const tint = theme.colors.backgroundTertiary;
   const active = !disabled;
   const border = selected ? 2 : 1;
   const { minHeight, padding } = TILE_GEOMETRY[size];
@@ -98,7 +98,7 @@ function Tile({ label, icon: Icon, selected, disabled, size, onPress, testID }: 
     minHeight,
     borderRadius: PROPERTY_TILE_RADIUS,
     borderWidth: border,
-    borderColor: selected || (hover.state && active) ? text : dark ? neutral[700] : neutral[200],
+    borderColor: selected || (hover.state && active) ? text : theme.colors.border,
     backgroundColor: selected || (press.state && active) ? tint : 'transparent',
     paddingTop: inset,
     paddingBottom: inset,

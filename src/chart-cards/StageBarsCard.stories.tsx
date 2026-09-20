@@ -6,6 +6,16 @@ import { RiBuilding2Line, RiEyeLine, RiFlashlightLine, RiGroupLine, RiUserAddLin
 import { StageBarsCard, type StageBar, type StageBarsRange } from './StageBarsCard';
 
 const meta: Meta<typeof StageBarsCard> = {
+  argTypes: {
+    "title": { control: 'text' },
+    "mono": { control: 'boolean' },
+    "showIcons": { control: 'boolean' },
+    "headline": { control: 'number' },
+    "delta": { control: 'number' },
+    "range": { control: 'text' },
+    "defaultRange": { control: 'text' },
+    "activeIndex": { control: 'number' }
+  },
   title: 'Charts/Stage Bars',
   component: StageBarsCard,
 };
@@ -33,11 +43,12 @@ const RANGES: StageBarsRange[] = [
 ];
 
 const Frame = ({ children, width = 480 }: { children: React.ReactNode; width?: number }) => (
-  <View style={{ padding: 40, gap: 24, width: width + 80 }}>{children}</View>
+  <View style={{ maxWidth: '100%', gap: 24, width }}>{children}</View>
 );
 
 /** Default look: palette pills with icons, a period dropdown, the tile grid. */
 export const Default: Story = {
+  parameters: { controls: { disable: true } },
   render: () => (
     <Frame>
       <StageBarsCard testID="stage" ranges={RANGES} />
@@ -47,15 +58,18 @@ export const Default: Story = {
 
 /** Single ink, no icons, a static pill and a flat delta. */
 export const Mono: Story = {
-  render: () => (
+  args: { mono: true, showIcons: false, range: "Last 30 days", delta: 0 },
+  parameters: { controls: { include: ["mono","showIcons","range","delta","title","headline","defaultRange","activeIndex"] } },
+  render: (args) => (
     <Frame>
-      <StageBarsCard testID="stage" mono showIcons={false} stages={STAGES} range="Last 30 days" delta={0} />
+      <StageBarsCard {...args} testID="stage"   stages={STAGES}   />
     </Frame>
   ),
 };
 
 /** "Active" hovered (controlled): header, darker pill, dimmed rows and tiles. */
 export const Hovered: Story = {
+  parameters: { controls: { disable: true } },
   render: () => (
     <Frame>
       <StageBarsCard testID="stage" ranges={RANGES} activeIndex={2} />
@@ -66,12 +80,14 @@ export const Hovered: Story = {
 
 /** Three stages with custom colours: the card keeps its 329px floor and centres the rows. */
 export const FewStages: Story = {
-  render: () => (
+  args: { title: "Checkout", range: "This week" },
+  parameters: { controls: { include: ["title","range","mono","showIcons","headline","defaultRange","activeIndex"] } },
+  render: (args) => (
     <Frame>
-      <StageBarsCard
-        title="Checkout"
+      <StageBarsCard {...args}
+
         delta={-0.034}
-        range="This week"
+
         stages={[
           { label: 'Cart', value: 920, color: '#f97316' },
           { label: 'Payment', value: 610 },
@@ -84,6 +100,7 @@ export const FewStages: Story = {
 
 /** A phone-width card. */
 export const Narrow: Story = {
+  parameters: { controls: { disable: true } },
   render: () => (
     <Frame width={320}>
       <StageBarsCard ranges={RANGES} />

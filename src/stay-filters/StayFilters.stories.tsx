@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { ScrollView, View } from 'react-native';
+import { ScrollView, View, useWindowDimensions } from 'react-native';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
 import { Dialog, useDialogControl } from '../dialog';
@@ -247,6 +247,7 @@ export const FiltersDialogOpen: Story = {
 
 /** The body inline in a fixed-width frame, so wide and narrow sit side by side without a dialog. */
 function Panel({ width }: { width: number }) {
+  width = Math.min(width, useWindowDimensions().width - 32);
   const theme = useTheme();
   const { state, set, reset } = useFilterState({ ...INITIAL, price: [95, 380], bedrooms: 2, amenities: ['wifi', 'kitchen'] });
   return (
@@ -288,7 +289,7 @@ export const Section: Story = {
     const theme = useTheme();
     const [on, setOn] = useState(true);
     return (
-      <View style={{ width: 560 }}>
+      <View style={{ width: 560, maxWidth: '100%' }}>
         <FilterSection title="Heading only">
           <View style={{ height: 40, borderRadius: 12, backgroundColor: theme.colors.contrast50 }} />
         </FilterSection>
@@ -308,7 +309,7 @@ export const PriceRange: Story = {
   render: function PriceRangeStory() {
     const [value, setValue] = useState<[number, number]>([80, 340]);
     return (
-      <View style={{ width: 560, gap: 32 }}>
+      <View style={{ width: 560, maxWidth: '100%', gap: 32 }}>
         <PriceRangeFilter
           buckets={BUCKETS}
           min={PRICE_MIN}
@@ -327,7 +328,7 @@ export const PriceRange: Story = {
 /** `PriceHistogram` alone at three ranges: all, a middle slice, nothing selected. */
 export const Histogram: Story = {
   render: () => (
-    <View style={{ width: 480, gap: 24 }}>
+    <View style={{ width: 480, maxWidth: '100%', gap: 24 }}>
       <PriceHistogram buckets={BUCKETS} min={PRICE_MIN} max={PRICE_MAX} value={[PRICE_MIN, PRICE_MAX]} />
       <PriceHistogram buckets={BUCKETS} min={PRICE_MIN} max={PRICE_MAX} value={[120, 300]} />
       <PriceHistogram buckets={BUCKETS} min={PRICE_MIN} max={PRICE_MAX} value={[PRICE_MIN, PRICE_MIN]} height={40} />
@@ -340,7 +341,7 @@ export const Segmented: Story = {
   render: function SegmentedStory() {
     const [value, setValue] = useState<PlaceType>('any');
     return (
-      <View style={{ width: 560 }}>
+      <View style={{ width: 560, maxWidth: '100%' }}>
         <SegmentedFilter options={PLACE_TYPES} value={value} onValueChange={setValue} accessibilityLabel="Type of place" />
       </View>
     );
@@ -357,7 +358,7 @@ export const Counts: Story = {
     const [beds, setBeds] = useState<number | null>(null);
     const [guests, setGuests] = useState(2);
     return (
-      <View style={{ width: 560, gap: 24 }}>
+      <View style={{ width: 560, maxWidth: '100%', gap: 24 }}>
         <CountFilter title="Bedrooms" value={bedrooms} onValueChange={setBedrooms} testID="bedrooms" />
         <CountFilter title="Beds" value={beds} onValueChange={setBeds} testID="beds" />
         <CountFilter title="Bathrooms" value={1} onValueChange={() => {}} disabled />
@@ -372,7 +373,7 @@ export const Amenities: Story = {
   render: function AmenitiesStory() {
     const [value, setValue] = useState<Amenity[]>(['wifi', 'fireplace']);
     return (
-      <View style={{ width: 560 }}>
+      <View style={{ width: 560, maxWidth: '100%' }}>
         <AmenityFilter options={AMENITIES} value={value} onValueChange={setValue} accessibilityLabel="Amenities" testID="amenities" />
       </View>
     );
@@ -385,7 +386,7 @@ export const Switches: Story = {
     const [a, setA] = useState(true);
     const [b, setB] = useState(false);
     return (
-      <View style={{ width: 560, gap: 24 }}>
+      <View style={{ width: 560, maxWidth: '100%', gap: 24 }}>
         <SwitchFilterRow title="Instant Book" description="Listings you can book without waiting for host approval" value={a} onValueChange={setA} />
         <SwitchFilterRow title="Self check-in" description="Easy access to the property once you arrive" value={b} onValueChange={setB} />
         <SwitchFilterRow title="Allows pets" value={false} onValueChange={() => {}} disabled />
@@ -397,7 +398,7 @@ export const Switches: Story = {
 /** `FilterFooter` at rest, loading, and with nothing to clear. */
 export const Footer: Story = {
   render: () => (
-    <View style={{ width: 560, gap: 16 }}>
+    <View style={{ width: 560, maxWidth: '100%', gap: 16 }}>
       <FilterFooter resultsLabel="Show 1,000+ places" onApply={() => {}} onClear={() => {}} />
       <FilterFooter resultsLabel="Show 214 places" loading onApply={() => {}} onClear={() => {}} />
       <FilterFooter resultsLabel="Show 1,000+ places" clearDisabled onApply={() => {}} onClear={() => {}} />
@@ -412,7 +413,7 @@ export const Trigger: Story = {
     return (
       <View style={{ gap: 16 }}>
         {sizes.map((size) => (
-          <View key={size} style={{ flexDirection: 'row', gap: 24, alignItems: 'center' }}>
+          <View key={size} style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 24, alignItems: 'center' }}>
             <FilterTriggerButton size={size} />
             <FilterTriggerButton size={size} count={3} />
             <FilterTriggerButton size={size} count={12} />
@@ -648,6 +649,7 @@ export const HousingFiltersRent: Story = {
 };
 
 function HousingPanel({ kind, width }: { kind: 'buy' | 'rent'; width: number }) {
+  width = Math.min(width, useWindowDimensions().width - 32);
   const theme = useTheme();
   const [state, setState] = useState<HousingFilterState>(() => ({
     ...housingInitial(kind),
@@ -695,7 +697,7 @@ export const SalePriceScale: Story = {
     const [log, setLog] = useState<[number, number]>([200_000, 650_000]);
     const [linear, setLinear] = useState<[number, number]>([200_000, 650_000]);
     return (
-      <View style={{ width: 560, gap: 32 }}>
+      <View style={{ width: 560, maxWidth: '100%', gap: 32 }}>
         <Text variant="caption-1-medium" style={{ color: theme.colors.textSecondary }}>
           scale="log", step 5,000
         </Text>
@@ -715,10 +717,10 @@ export const PropertyTypes: Story = {
     const [value, setValue] = useState<PropertyType[]>(['apartment', 'studio']);
     return (
       <View style={{ gap: 32 }}>
-        <View style={{ width: 560 }}>
+        <View style={{ width: 560, maxWidth: '100%' }}>
           <PropertyTypeFilter value={value} onValueChange={setValue} testID="types" />
         </View>
-        <View style={{ width: 327 }}>
+        <View style={{ width: 327, maxWidth: '100%' }}>
           <PropertyTypeFilter value={value} onValueChange={setValue} />
         </View>
       </View>
@@ -731,7 +733,7 @@ export const Features: Story = {
   render: function FeaturesStory() {
     const [value, setValue] = useState<HousingFeature[]>(['elevator', 'pets']);
     return (
-      <View style={{ width: 560, gap: 40 }}>
+      <View style={{ width: 560, maxWidth: '100%', gap: 40 }}>
         <FeatureFilter value={value} onValueChange={setValue} testID="features" />
         <FeatureFilter variant="checkboxes" value={value} onValueChange={setValue} />
       </View>
@@ -744,7 +746,7 @@ export const EnergyRatings: Story = {
   render: function EnergyStory() {
     const [value, setValue] = useState<EnergyRating | null>('C');
     return (
-      <View style={{ width: 400, gap: 32 }}>
+      <View style={{ width: 400, maxWidth: '100%', gap: 32 }}>
         <EnergyRatingFilter value={null} onValueChange={() => {}} />
         <EnergyRatingFilter value={value} onValueChange={setValue} testID="energy" />
         <EnergyRatingFilter value="A" onValueChange={() => {}} />
@@ -763,7 +765,7 @@ export const AreaAvailabilityFloor: Story = {
     const [date, setDate] = useState<Date | null>(new Date(2026, 10, 1));
     const [floors, setFloors] = useState<FloorOption[]>(['middle', 'elevator']);
     return (
-      <View style={{ width: 560 }}>
+      <View style={{ width: 560, maxWidth: '100%' }}>
         <FilterSection title="Area">
           <View style={{ gap: 24 }}>
             <AreaRangeFilter value={open} onValueChange={setOpen} testID="area-fields" />

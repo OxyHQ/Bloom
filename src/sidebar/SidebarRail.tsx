@@ -1,9 +1,10 @@
 import React from 'react';
-import { ScrollView, View } from 'react-native';
+import { View } from 'react-native';
 
 import { Badge } from '../badge';
 import { useSidebarPalette } from './palette';
 import { IS_WEB } from './parts';
+import { SidebarScrollArea } from './SidebarScrollArea';
 import { SidebarLogoView } from './SidebarLogoView';
 import { SidebarRailItem } from './SidebarRailItem';
 import type { SidebarNavItem, SidebarProps } from './types';
@@ -52,7 +53,7 @@ export function SidebarRail({
             <Badge
               content={item.badge}
               style={{ backgroundColor: isSelected ? palette.badgePrimary : palette.badgeNeutral }}
-              textStyle={{ color: isSelected ? '#ffffff' : palette.textSecondary }}
+              textStyle={{ color: isSelected ? palette.badgePrimaryForeground : palette.textSecondary }}
             />
           ) : undefined
         }
@@ -81,7 +82,9 @@ export function SidebarRail({
           <SidebarLogoView logo={logo} showWordmark={false} testID="sidebar-logo" />
         </View>
       ) : null}
-      <ScrollView
+      <SidebarScrollArea
+        fadeColor={palette.flat}
+        testID={testID ? `${testID}-scroll` : 'sidebar-rail-scroll'}
         {...(IS_WEB ? { dataSet: { bloomSidebarScroll: 'none' } } : {})}
         style={{ flex: 1 }}
         contentContainerStyle={{
@@ -98,7 +101,7 @@ export function SidebarRail({
         <View role="navigation" style={{ width: '100%', gap: 8 }}>
           {items.map(renderItem)}
         </View>
-      </ScrollView>
+      </SidebarScrollArea>
       {secondaryItems.length > 0 ? (
         <View
           role="navigation"

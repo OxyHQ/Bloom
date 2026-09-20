@@ -27,7 +27,7 @@ export const Matrix: Story = {
     const [b, setB] = useState(9);
     const [c, setC] = useState(4);
     return (
-      <View style={{ gap: 20, padding: 16, backgroundColor: theme.colors.background }}>
+      <View style={{ gap: 20, padding: 16, width: '100%', maxWidth: '100%', backgroundColor: theme.colors.background }}>
         {(['medium', 'small'] as const).map((size) => (
           <View key={size} style={{ gap: 12 }}>
             <Text variant="caption-1-medium" style={{ color: theme.colors.textSecondary }}>
@@ -63,8 +63,8 @@ export const GuestPicker: Story = {
     const [infants, setInfants] = useState(0);
     const [pets, setPets] = useState(0);
     return (
-      <View style={{ padding: 16, backgroundColor: theme.colors.background }}>
-        <View style={{ width: 360, paddingLeft: 24, paddingRight: 24, borderRadius: 16, backgroundColor: theme.colors.card }}>
+      <View style={{ padding: 16, width: '100%', maxWidth: '100%', backgroundColor: theme.colors.background }}>
+        <View style={{ width: 360, maxWidth: '100%', paddingLeft: 24, paddingRight: 24, borderRadius: 16, backgroundColor: theme.colors.card }}>
           <StepperRow title="Adults" description="Ages 13 or above" value={adults} onValueChange={setAdults} min={1} max={16} divider />
           <StepperRow title="Children" description="Ages 2 – 12" value={children} onValueChange={setChildren} max={15} divider />
           <StepperRow title="Infants" description="Under 2" value={infants} onValueChange={setInfants} max={5} divider />
@@ -82,9 +82,9 @@ export const NarrowAndWide: Story = {
     const [bedrooms, setBedrooms] = useState(0);
     const [beds, setBeds] = useState(1);
     return (
-      <View style={{ gap: 24, padding: 16, backgroundColor: theme.colors.background }}>
+      <View style={{ gap: 24, padding: 16, width: '100%', maxWidth: '100%', backgroundColor: theme.colors.background }}>
         {[280, 560].map((width) => (
-          <View key={width} style={{ width }}>
+          <View key={width} style={{ width, maxWidth: '100%' }}>
             <StepperRow
               size="small"
               title="Bedrooms"

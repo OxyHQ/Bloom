@@ -2,7 +2,6 @@ import React, { memo, useCallback, useMemo } from 'react';
 import { Platform, View, type AccessibilityActionEvent } from 'react-native';
 
 import { Button } from '../button';
-import { resolveButtonRamps } from '../button/shared';
 import { webDataSet } from '../styles/web-data';
 import { useAccessibleNameWarning } from '../hooks/use-accessible-name-warning';
 import { RiAddLine } from '../icons/remix/RiAddLine';
@@ -96,7 +95,6 @@ function StepperComponent({
   const disabled = field.disabled;
   useAccessibleNameWarning('Stepper', field.accessibilityLabel);
   useInteractiveWebCss(STYLE_ID, BLOOM_STEPPER_CSS);
-  const { accent } = useMemo(() => resolveButtonRamps(theme), [theme]);
   const config = SIZE_CONFIG[size];
 
   const canDecrement = !disabled && value > min;
@@ -164,7 +162,7 @@ function StepperComponent({
     borderRadius: 8,
     alignItems: 'center',
     justifyContent: 'center',
-    '--bloom-stepper-ring': accent[500],
+    '--bloom-stepper-ring': theme.colors.primary,
     ...ringOffset,
   };
 

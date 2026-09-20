@@ -4,7 +4,7 @@ import { mixColor, resolveButtonRamps } from '../button/shared';
 import { oklchToSrgb, srgbToOklch, srgbToRgbString } from '../theme/color-space';
 import { parseRgba } from '../theme/color-utils';
 import { quietTextOver } from '../styles/color-contrast';
-import { AA_TEXT } from '../styles/surface-levels';
+import { AA_TEXT, resolveSurfaceLevel, surfaceFillOn, hairlineOn, surfaceTextOn } from '../styles/surface-levels';
 import type { Theme } from '../theme/types';
 import type { TypeScaleVariant } from '../typography/scale';
 import { TYPE_SCALE } from '../typography/scale';
@@ -108,12 +108,12 @@ export function resolveMediaHeaderPaint(
   theme: Theme,
   artworkColor?: string | null,
 ): MediaHeaderPaint {
-  const { accent, neutral: n } = resolveButtonRamps(theme);
+  const { accent } = resolveButtonRamps(theme);
   const { colors } = theme;
   const dark = theme.isDark;
   const tinted = tintArtworkColor(artworkColor, dark);
   const fallback = tinted === null;
-  const bandTop = tinted ?? (dark ? n[800] : n[200]);
+  const bandTop = tinted ?? (surfaceFillOn(theme, colors.background));
   const bandBottom = mixColor(colors.background, bandTop, 0.55);
 
   const onBand = readableOn([bandTop, bandBottom], [colors.text, colors.background]);
@@ -139,17 +139,17 @@ export function resolveMediaHeaderPaint(
     text: colors.text,
     // Floored on `card` — the harder of the two fills this label lands on. As
     // `neutral-500` it measured 4.38:1 on the light card.
-    textMuted: quietTextOver([colors.background, dark ? n[900] : n[100]], colors.text, AA_TEXT),
-    wash: dark ? n[800] : n[100],
-    border: dark ? n[600] : n[300],
+    textMuted: quietTextOver([colors.background, resolveSurfaceLevel(theme, 1).background], colors.text, AA_TEXT),
+    wash: surfaceFillOn(theme, colors.background),
+    border: hairlineOn(theme, colors.background),
     borderHover: colors.text,
-    card: dark ? n[900] : n[100],
+    card: resolveSurfaceLevel(theme, 1).background,
     accent: accent[500],
     onAccent: colors.primaryForeground,
     ring: accent[500],
-    placeholder: dark ? n[800] : n[200],
-    placeholderGlyph: dark ? n[500] : n[400],
-    rail: dark ? n[700] : n[200],
+    placeholder: surfaceFillOn(theme, colors.background),
+    placeholderGlyph: surfaceTextOn(theme, surfaceFillOn(theme, colors.background)).textSecondary,
+    rail: colors.contrast50,
     coverShadow: dark ? '0 8px 24px rgba(0, 0, 0, 0.5)' : '0 8px 24px rgba(0, 0, 0, 0.18)',
   };
 }

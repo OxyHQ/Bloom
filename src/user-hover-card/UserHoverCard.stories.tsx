@@ -48,11 +48,7 @@ const STATS = [
 function DemoFollowButton({ initial = false }: { initial?: boolean }) {
   const [following, setFollowing] = React.useState(initial);
   return (
-    <Button
-      size="small"
-      variant={following ? 'secondary' : 'primary'}
-      onPress={() => setFollowing((value) => !value)}
-    >
+    <Button size="sm" appearance={following ? 'outline' : 'solid'} tone={following ? 'neutral' : 'accent'} onPress={() => setFollowing((value) => !value)}>
       {following ? 'Following' : 'Follow'}
     </Button>
   );
@@ -159,6 +155,7 @@ function MatrixGrid() {
 }
 
 export const Matrix: Story = {
+  parameters: { controls: { disable: true } },
   render: () => <MatrixGrid />,
 };
 
@@ -170,6 +167,7 @@ function DarkSurface({ children }: { children: React.ReactNode }) {
 }
 
 export const Dark: Story = {
+  parameters: { controls: { disable: true } },
   render: (_args, context) => (
     <BloomThemeProvider
       mode="dark"
@@ -221,6 +219,7 @@ function FooterSlotStory() {
 }
 
 export const WithFooter: Story = {
+  parameters: { controls: { disable: true } },
   render: () => <FooterSlotStory />,
   name: 'With footer slot (chart)',
 };
@@ -293,6 +292,7 @@ function BothSlotsStory() {
 }
 
 export const WithBadge: Story = {
+  parameters: { controls: { disable: true } },
   render: () => <BothSlotsStory />,
   name: 'With badge slot (pressable) + footer',
 };

@@ -37,6 +37,7 @@ const Frame = ({ children, width = 480 }: { children: React.ReactNode; width?: n
 
 /** The dashboard card: count, team switcher, four people, Previous / Next. */
 export const Default: Story = {
+  parameters: { controls: { disable: true } },
   render: () => (
     <Frame>
       <RecentHiresCard testID="hires" count={56} teamLabel="Design team" hires={HIRES} />
@@ -46,6 +47,7 @@ export const Default: Story = {
 
 /** Paging through two sets; initials avatars where there is no photo, and the ends disable their button. */
 export const Paging: Story = {
+  parameters: { controls: { disable: true } },
   render: function Paging() {
     const [page, setPage] = useState(0);
     return (
@@ -66,14 +68,26 @@ export const Paging: Story = {
 
 /** The HR grid's narrower column, and a phone-width card. */
 export const Widths: Story = {
+  parameters: { controls: { disable: true } },
   render: () => (
     <View style={{ padding: 40, gap: 24 }}>
-      <View style={{ width: 362 }}>
+      <View style={{ width: 362, maxWidth: '100%' }}>
         <RecentHiresCard count={56} teamLabel="Design team" hires={HIRES} />
       </View>
-      <View style={{ width: 342 }}>
+      <View style={{ width: 342, maxWidth: '100%' }}>
         <RecentHiresCard count="1,204" hires={MORE.slice(0, 3)} height="auto" />
       </View>
     </View>
   ),
+};
+
+/** A single instance whose controls are applied directly to the rendered component. */
+export const Playground: StoryObj<typeof RecentHiresCard> = {
+  args: { hires: HIRES, count: 56, teamLabel: 'Design team' },
+  parameters: { controls: { disable: false, include: ['count', 'teamLabel', 'previousDisabled', 'nextDisabled'] } },
+  argTypes: { count: { control: 'number' }, teamLabel: { control: 'text' }, previousDisabled: { control: 'boolean' }, nextDisabled: { control: 'boolean' } },
+  render: function Playground(args) {
+
+    return <View style={{ width: 440, maxWidth: '100%' }}><RecentHiresCard {...args} /></View>;
+  },
 };

@@ -1,3 +1,4 @@
+import { useBloomAppearance } from '../appearance';
 import React, { Children, createContext, Fragment, isValidElement, memo, useContext, useMemo } from 'react';
 import { Platform, Pressable, View, type TextStyle } from 'react-native';
 
@@ -14,8 +15,6 @@ import {
   BUTTON_RADIUS,
   BUTTON_SHADOW,
   BUTTON_TRANSITION_MS,
-  mixColor,
-  resolveButtonRamps,
 } from '../button/shared';
 import type { ControlMaterial } from '../control-surface/types';
 import type { Theme } from '../theme/types';
@@ -37,10 +36,10 @@ import type { ButtonGroupItemProps, ButtonGroupProps, ButtonGroupSize } from './
  * row of cards rather than as one island, and a second BLUR is not available at
  * all on Android.
  *
- * Neither is a decoration a caller has to ask for by name. The variant is
+ * Neither is a decoration a caller has to ask for by name. The material is
  * INHERITED from the nearest `ControlSurface`, so `<ButtonGroup>` inside a
  * floating `PageHeader` is glass and the same group inside a card is solid,
- * with no prop either way. An explicit `variant` still wins.
+ * with no prop either way. An explicit `material` still wins.
  *
  *              medium    small
  *   item h     34        30       (plus the container's 1px border = 36 / 32)
@@ -51,9 +50,9 @@ import type { ButtonGroupItemProps, ButtonGroupProps, ButtonGroupSize } from './
  */
 
 const GEOMETRY = {
-  medium: { height: 34, paddingHorizontal: 12, iconSize: 20 },
-  small: { height: 30, paddingHorizontal: 10, iconSize: 18 },
-} as const satisfies Record<ButtonGroupSize, { height: number; paddingHorizontal: number; iconSize: number }>;
+  md: { height: 34, paddingHorizontal: 12, iconSize: 20 },
+  sm: { height: 30, paddingHorizontal: 10, iconSize: 18 },
+} as const satisfies Record<'sm' | 'md', { height: number; paddingHorizontal: number; iconSize: number }>;
 
 interface GroupPalette {
   groupBorder: string;
@@ -68,31 +67,47 @@ interface GroupPalette {
 }
 
 function resolveGroupPalette(theme: Theme): GroupPalette {
-  const { accent, neutral: n } = resolveButtonRamps(theme);
-  return theme.isDark
-    ? {
-        groupBorder: mixColor(n[800], n[600], 0.6),
-        divider: n[700],
-        background: n[800],
-        // `color-mix(neutral-700 60%, transparent)` over the group's own surface.
-        hover: mixColor(n[800], n[700], 0.6),
-        active: n[800],
-        disabledBackground: n[800],
-        foreground: theme.colors.text,
-        disabledForeground: n[600],
-        ring: accent[500],
-      }
-    : {
-        groupBorder: n[200],
-        divider: n[200],
-        background: theme.colors.card,
-        hover: n[100],
-        active: n[200],
-        disabledBackground: n[100],
-        foreground: theme.colors.text,
-        disabledForeground: n[400],
-        ring: accent[500],
-      };
+  const c = theme.colors;
+  return { groupBorder: c.border, divider: c.borderLight, background: c.card,
+    hover: c.backgroundSecondary, active: c.backgroundTertiary,
+    disabledBackground: c.backgroundSecondary, foreground: c.text,
+    disabledForeground: c.textTertiary, ring: c.primary };
+}
+
+/**
+ * The items' paint on a GLASS island.
+ *
+ * Every state that is not "at rest" is an alpha of the theme's own `text` — an
+ * ink wash, not a fill. That is the one recipe that works on a pane whose
+ * composited colour Bloom cannot predict: a fixed neutral tuned against the
+ * island's own fill goes invisible the moment a photograph behind it moves the
+ * pane 40 levels, while a wash of the label's colour keeps the same relation to
+ * the label at every composite.
+ *
+ * `transparent` at rest is load-bearing rather than tidy. It is what makes the
+ * island ONE pane: give the items a fill and the group is a row of chips inside
+ * a capsule, which is the shape this material exists to stop.
+ *
+ * The disabled label is read off the island's own fill with `surfaceTextOn`
+ * rather than picked from the ramp, because a ramp stop measured against the
+ * page is not measured against this surface.
+ */
+function resolveGlassItemPalette(theme: Theme): GroupPalette {
+  const level = resolveSurfaceLevel(theme, 1);
+  const ink = theme.colors.text;
+  const wash = theme.isDark ? { hover: 0.12, active: 0.2 } : { hover: 0.08, active: 0.14 };
+  return {
+    // The island owns the box: the group draws neither border nor divider.
+    groupBorder: 'transparent',
+    divider: withAlpha(ink, theme.isDark ? 0.16 : 0.12),
+    background: 'transparent',
+    hover: withAlpha(ink, wash.hover),
+    active: withAlpha(ink, wash.active),
+    disabledBackground: 'transparent',
+    foreground: ink,
+    disabledForeground: level.textGraphical,
+    ring: theme.colors.primary,
+  };
 }
 
 /**
@@ -113,24 +128,7 @@ function resolveGroupPalette(theme: Theme): GroupPalette {
  * rather than picked from the ramp, because a ramp stop measured against the
  * page is not measured against this surface.
  */
-function resolveGlassItemPalette(theme: Theme): GroupPalette {
-  const { accent } = resolveButtonRamps(theme);
-  const level = resolveSurfaceLevel(theme, 1);
-  const ink = theme.colors.text;
-  const wash = theme.isDark ? { hover: 0.12, active: 0.2 } : { hover: 0.08, active: 0.14 };
-  return {
-    // The island owns the box: the group draws neither border nor divider.
-    groupBorder: 'transparent',
-    divider: withAlpha(ink, theme.isDark ? 0.16 : 0.12),
-    background: 'transparent',
-    hover: withAlpha(ink, wash.hover),
-    active: withAlpha(ink, wash.active),
-    disabledBackground: 'transparent',
-    foreground: ink,
-    disabledForeground: level.textGraphical,
-    ring: accent[500],
-  };
-}
+
 
 // ---------------------------------------------------------------------------
 //  Keyboard focus on web — an inset `ring-2`. Items are react-native-web
@@ -176,6 +174,7 @@ interface GroupContextValue {
 const GroupContext = createContext<GroupContextValue | null>(null);
 
 const ButtonGroupComponent: React.FC<ButtonGroupProps> = ({
+  material: materialProp,
   variant,
   size: sizeProp,
   dividers,
@@ -186,8 +185,10 @@ const ButtonGroupComponent: React.FC<ButtonGroupProps> = ({
 }) => {
   const theme = useTheme();
   useInteractiveWebCss(STYLE_ID, BUTTON_GROUP_CSS);
-  const material = useInheritedControl('material', variant, 'solid');
-  const size = useInheritedControl('density', sizeProp, 'medium');
+  const material = useInheritedControl('material', materialProp ?? variant, 'solid');
+  const { size: scopedSize } = useBloomAppearance({ size: sizeProp === 'small' ? 'sm' : sizeProp === 'medium' ? 'md' : sizeProp }, { size: 'md', tone: 'neutral' });
+  const inheritedSize = useInheritedControl('density', sizeProp === 'small' ? 'sm' : sizeProp === 'medium' ? 'md' : sizeProp, scopedSize === 'xs' || scopedSize === 'sm' ? 'sm' : 'md');
+  const size = inheritedSize === 'xs' || inheritedSize === 'sm' ? 'sm' : 'md';
   const palette = useMemo(
     () => (material === 'glass' ? resolveGlassItemPalette(theme) : resolveGroupPalette(theme)),
     [material, theme],
@@ -261,8 +262,11 @@ const ButtonGroupItemComponent: React.FC<ButtonGroupItemProps> = ({
   onLongPress,
   children,
   size: sizeProp,
+  material: materialProp,
   variant,
+  checked: checkedProp,
   selected,
+  onCheckedChange,
   disabled = false,
   iconOnly = false,
   leadingIcon: LeadingIcon,
@@ -282,8 +286,9 @@ const ButtonGroupItemComponent: React.FC<ButtonGroupItemProps> = ({
   // back to the inherited `ControlSurface` (which `GlassIsland` mounts) before
   // it falls back to `solid`.
   const inheritedMaterial = useInheritedControl('material', undefined, 'solid');
-  const inheritedDensity = useInheritedControl('density', undefined, 'medium');
-  const material = variant ?? group?.material ?? inheritedMaterial;
+  const { size: scopedSize } = useBloomAppearance({ size: sizeProp === 'small' ? 'sm' : sizeProp === 'medium' ? 'md' : sizeProp }, { size: 'md', tone: 'neutral' });
+  const inheritedDensity = useInheritedControl('density', undefined, scopedSize === 'xs' || scopedSize === 'sm' ? 'sm' : 'md');
+  const material = materialProp ?? variant ?? group?.material ?? inheritedMaterial;
   const palette = useMemo(
     () =>
       group && group.material === material
@@ -293,7 +298,9 @@ const ButtonGroupItemComponent: React.FC<ButtonGroupItemProps> = ({
           : resolveGroupPalette(theme),
     [group, material, theme],
   );
-  const size = sizeProp ?? group?.size ?? inheritedDensity;
+  const rawSize = sizeProp ?? group?.size ?? inheritedDensity;
+  const size = rawSize === 'small' || rawSize === 'xs' ? 'sm' : rawSize === 'medium' || rawSize === 'lg' ? 'md' : rawSize;
+  const checked = checkedProp ?? selected;
   const geometry = GEOMETRY[size];
   const { state: hovered, onIn: onHoverIn, onOut: onHoverOut } = useInteractionState();
   const { state: pressed, onIn: onPressIn, onOut: onPressOut } = useInteractionState();
@@ -302,7 +309,7 @@ const ButtonGroupItemComponent: React.FC<ButtonGroupItemProps> = ({
     ? palette.disabledBackground
     : pressed
       ? palette.active
-      : hovered || selected === true
+      : hovered || checked
         ? palette.hover
         : palette.background;
   const foreground = disabled ? palette.disabledForeground : palette.foreground;
@@ -330,7 +337,7 @@ const ButtonGroupItemComponent: React.FC<ButtonGroupItemProps> = ({
     <Pressable
       {...(IS_WEB ? ({ dataSet: { bloomButtonGroupItem: '' } } as Record<string, unknown>) : {})}
       style={[containerStyle, style]}
-      onPress={disabled ? undefined : onPress}
+      onPress={disabled ? undefined : (event) => { onCheckedChange?.(!checked); onPress?.(event); }}
       onLongPress={disabled ? undefined : onLongPress}
       onPressIn={disabled ? undefined : onPressIn}
       onPressOut={disabled ? undefined : onPressOut}
@@ -342,14 +349,8 @@ const ButtonGroupItemComponent: React.FC<ButtonGroupItemProps> = ({
       accessibilityLabel={accessibilityLabel}
       // Both spellings: react-native-web reads only `aria-pressed`, React Native
       // has no `aria-pressed` and reads `accessibilityState`.
-      //
-      // `selected` is UNDEFINED, not false, on an item that is not a toggle —
-      // an action in a toolbar (attach, link) is pressed and done, and
-      // `aria-pressed="false"` on it makes a screen reader announce "not
-      // pressed", which says it has a state it does not have. Only an item
-      // whose caller passed the prop carries the attribute.
-      accessibilityState={{ disabled, selected, expanded: ariaExpanded }}
-      aria-pressed={selected}
+      accessibilityState={{ disabled, selected: checked, expanded: ariaExpanded }}
+      aria-pressed={checked}
       aria-expanded={ariaExpanded}
       aria-haspopup={ariaHasPopup}
       testID={testID}

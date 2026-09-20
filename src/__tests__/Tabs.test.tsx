@@ -6,7 +6,6 @@ import { act, fireEvent, render } from '@testing-library/react-native';
 import { BloomThemeProvider } from '../theme/BloomThemeProvider';
 import { Tabs, TabsTrigger } from '../tabs';
 import { resolveTabsPaint, type TabsDragController } from '../tabs/Tabs';
-import { resolveButtonRamps } from '../button/shared';
 import { TYPE_SCALE } from '../typography/scale';
 import type { Theme } from '../theme/types';
 import { pressHost } from './support/press-host';
@@ -96,7 +95,7 @@ describe('Tabs', () => {
   });
 
   it('draws the pill variants\' indicator as a full-height pill thumb, not an underline', () => {
-    for (const variant of ['pill', 'filled', 'outlined'] as const) {
+    for (const variant of ['pill', 'filled'] as const) {
       const { getByTestId, unmount } = renderWithTheme(<Bar value="a" variant={variant} />);
       const thumb = flattenStyle(getByTestId('tabs-indicator').props.style);
       expect(thumb.top).toBe(0);
@@ -707,13 +706,13 @@ describe('Tabs', () => {
         return captured;
       }
 
-      it.each([false, true])('maps tokens onto the ramps (dark=%s)', (isDark) => {
+      it.each([false, true])('maps tokens onto canonical roles (dark=%s)', (isDark) => {
         const theme = themeFor(isDark);
-        const { accent, neutral: n } = resolveButtonRamps(theme);
+        const c = theme.colors;
 
         const underline = resolveTabsPaint(theme, 'underline');
-        expect(underline.underline).toBe(accent[600]);
-        expect(underline.selectedLabel).toBe(accent[600]);
+        expect(underline.underline).toBe(c.primary);
+        expect(underline.selectedLabel).toBe(c.primarySubtleForeground);
         expect(underline.idleLabel).toBe(theme.colors.text);
         // The rail is a STEP off the strip's surface, not a ramp stop. As
         // `neutral-800` it was the exact fill a menu-surface panel paints, so a
@@ -722,23 +721,21 @@ describe('Tabs', () => {
         expect(resolveTabsPaint(theme, 'underline', '#123456').separator).not.toBe(
           underline.separator,
         );
-        expect(underline.countSelectedForeground).toBe(accent[600]);
-        expect(underline.countIdleBackground).toBe('rgba(0, 0, 0, 0.1)');
-        if (!isDark) expect(underline.countSelectedBackground).toBe(accent[100]);
+        expect(underline.countSelectedForeground).toBe(c.primarySubtleForeground);
+        expect(underline.countIdleBackground).toBe(c.backgroundTertiary);
+        if (!isDark) expect(underline.countSelectedBackground).toBe(c.primarySubtle);
 
         const pill = resolveTabsPaint(theme, 'pill');
-        expect(pill.selectedLabel).toBe(accent[500]);
-        expect(pill.idleLabel).toBe(n[500]);
-        expect(pill.hover).toBe(surfaceFillOn(theme, theme.colors.background));
-        if (!isDark) expect(pill.thumb).toBe(accent[50]);
+        expect(pill.selectedLabel).toBe(c.primarySubtleForeground);
+        expect(pill.idleLabel).toBe(c.textSecondary);
+        expect(pill.hover).toBe(surfaceFillOn(theme, surfaceFillOn(theme, theme.colors.background)));
+        if (!isDark) expect(pill.thumb).toBe(c.primarySubtle);
 
         const filled = resolveTabsPaint(theme, 'filled');
         expect(filled.thumb).toBe(surfaceFillOn(theme, theme.colors.background));
         expect(filled.selectedLabel).toBe(theme.colors.text);
 
 
-        // `outlined` is a legacy alias for the accent pill.
-        expect(resolveTabsPaint(theme, 'outlined')).toEqual(pill);
       });
     });
   });

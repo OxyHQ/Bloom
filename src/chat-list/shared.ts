@@ -162,7 +162,7 @@ export interface ChatListPaint {
  * colour. Text, accents and the destructive tone come from the ramps.
  */
 export function resolveChatListPaint(theme: Theme): ChatListPaint {
-  const { accent, neutral: n } = resolveButtonRamps(theme);
+  const { accent } = resolveButtonRamps(theme);
   const dark = theme.isDark;
   const { background, text } = theme.colors;
   const step = (light: number, darkAlpha: number) =>
@@ -179,12 +179,12 @@ export function resolveChatListPaint(theme: Theme): ChatListPaint {
     background,
     hover: step(0.06, 0.09),
     selected: step(0.1, 0.14),
-    heading: dark ? n[400] : n[500],
-    divider: dark ? n[700] : n[200],
+    heading: theme.colors.textSecondary,
+    divider: theme.colors.border,
     negative: dark ? danger[400] : danger[600],
     negativeFill: dark ? danger[700] : danger[500],
-    neutralAction: dark ? n[700] : n[300],
-    onNeutralAction: dark ? n[100] : n[700],
+    neutralAction: theme.colors.backgroundTertiary,
+    onNeutralAction: theme.colors.text,
     ring: accent[500],
     placeholder: step(0.11, 0.16),
   };

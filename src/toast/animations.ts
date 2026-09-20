@@ -87,7 +87,7 @@ import type {
  * babel plugin too.
  */
 const EASE_OUT_QUART = Easing.bezier(0.165, 0.84, 0.44, 1);
-const EASE_IN_OUT_CUBIC = Easing.bezier(0.645, 0.045, 0.355, 1);
+
 
 export type ToastEnterDriver = 'imperative' | 'layoutAnimation';
 
@@ -111,8 +111,9 @@ const ENTER_TRANSLATE_Y: Record<ToastPosition, number> = {
   center: 50,
 };
 
-/** A lone row leaves the screen entirely; a stacked one only slides by `stackGap`. */
-const EXIT_TRANSLATE_Y_SINGLE = 150;
+/** Exit stays near its resting slot instead of throwing the card offscreen. */
+const EXIT_TRANSLATE_Y_SINGLE = 12;
+const EXIT_DURATION = 180;
 
 /**
  * Bounded so an animated `gap` cannot grow the cache without limit. The natural
@@ -190,21 +191,24 @@ export function getToastExitAnimation({
       if (isHiddenByLimit) {
         return new Keyframe({
           from: { opacity: 1 },
-          to: { opacity: 0, easing: EASE_IN_OUT_CUBIC },
-        }).duration(ENTERING_ANIMATION_DURATION);
+          50: { opacity: 0.35 },
+          to: { opacity: 0 },
+        }).duration(EXIT_DURATION);
       }
 
-      const distance = isSingle ? EXIT_TRANSLATE_Y_SINGLE : stackGap;
+      const distance = isSingle ? EXIT_TRANSLATE_Y_SINGLE : Math.min(EXIT_TRANSLATE_Y_SINGLE, Math.max(0, stackGap));
       const translateY = position === 'top-center' ? -distance : distance;
 
       return (
         new Keyframe({
           from: { opacity: 1, transform: [{ translateY: 0 }] },
-          to: { opacity: 0, transform: [{ translateY }], easing: EASE_IN_OUT_CUBIC },
+          // Explicit stops keep the deceleration on web too: custom bezier
+          // factories have no recognised CSS easing name without the plugin.
+          50: { opacity: 0.35, transform: [{ translateY: translateY * 0.75 }] },
+          to: { opacity: 0, transform: [{ translateY }] },
         })
-          // Matches the store's overlay teardown delay, which is also
-          // ENTERING_ANIMATION_DURATION — a longer exit would be cut off.
-          .duration(ENTERING_ANIMATION_DURATION)
+          // Finishes within the store's 300ms overlay teardown grace period.
+          .duration(EXIT_DURATION)
       );
     },
   );

@@ -38,6 +38,8 @@ jest.mock(
 
 // Imported AFTER the mock is registered.
 import { BloomProvider } from '../provider';
+import { useScrollRestorationContext } from '../scroll/context';
+import type { ScrollRouterAdapter } from '../scroll/types';
 import { useImageResolver } from '../image-resolver';
 import { useScrollRestoration } from '../scroll/index.web';
 
@@ -88,6 +90,18 @@ describe('BloomProvider (web)', () => {
     expect(resolved).toBe('file-id:avatar');
 
     if (mounted) unmount(mounted);
+  });
+
+  it('uses the explicitly supplied router adapter', () => {
+    const adapter: ScrollRouterAdapter = {
+      useScreenContentId: () => 'explicit',
+      useScreenFocusEffect: () => {},
+    };
+    let observed: ScrollRouterAdapter | undefined;
+    function Probe() { observed = useScrollRestorationContext().adapter; return null; }
+    const mounted = render(createElement(BloomProvider, { fonts: false, scrollAdapter: adapter, children: createElement(Probe) }));
+    expect(observed).toBe(adapter);
+    unmount(mounted);
   });
 
   // Vacuity guard: proves the assertion above is actually load-bearing. If the

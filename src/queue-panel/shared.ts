@@ -1,3 +1,4 @@
+import { surfaceFillOn, surfaceTextOn } from '../styles/surface-levels';
 import { Platform } from 'react-native';
 
 import { resolveButtonRamps } from '../button/shared';
@@ -64,19 +65,19 @@ export interface QueuePanelPaint {
 /** Every colour the family paints, from the theme. The panel is the menu surface family. */
 export function resolveQueuePanelPaint(theme: Theme): QueuePanelPaint {
   const menu = resolveMenuPalette(theme);
-  const { accent, neutral: n } = resolveButtonRamps(theme);
+  const { accent } = resolveButtonRamps(theme);
   const dark = theme.isDark;
   return {
     surface: menu.surface,
     border: menu.border,
     rowHover: menu.rowHighlight,
-    buttonHover: dark ? n[600] : n[200],
-    dragSurface: dark ? n[700] : theme.colors.card,
+    buttonHover: surfaceFillOn(theme, menu.surface),
+    dragSurface: surfaceFillOn(theme, menu.surface),
     dragShadow: dark
       ? '0 8px 24px rgba(0, 0, 0, 0.45)'
       : '0 8px 24px rgba(0, 0, 0, 0.12), 0 1px 2px rgba(0, 0, 0, 0.06)',
-    placeholder: dark ? n[700] : n[100],
-    placeholderGlyph: dark ? n[400] : n[400],
+    placeholder: surfaceFillOn(theme, menu.surface),
+    placeholderGlyph: surfaceTextOn(theme, surfaceFillOn(theme, menu.surface)).textSecondary,
     text: theme.colors.text,
     textSecondary: menu.textSecondary,
     accent: dark ? accent[400] : accent[600],

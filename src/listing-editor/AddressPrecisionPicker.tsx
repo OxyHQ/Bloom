@@ -64,13 +64,13 @@ interface MapPaint {
 }
 
 function resolveMapPaint(theme: Theme): MapPaint {
-  const { accent, neutral: n } = resolveButtonRamps(theme);
+  const { accent } = resolveButtonRamps(theme);
   const dark = theme.isDark;
-  const ground = dark ? n[800] : n[100];
+  const ground = theme.colors.backgroundSecondary;
   return {
     ground,
-    block: dark ? mixColor(n[800], n[700], 0.5) : n[200],
-    road: dark ? n[900] : n[50],
+    block: theme.colors.backgroundTertiary,
+    road: theme.colors.background,
     accent: accent[500],
     accentWash: mixColor(ground, accent[500], 0.2),
     pin: theme.colors.text,

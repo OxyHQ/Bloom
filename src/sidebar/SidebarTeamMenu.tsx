@@ -1,5 +1,5 @@
 import React, { memo, useEffect, useState } from 'react';
-import { Pressable, View, useWindowDimensions, type GestureResponderEvent } from 'react-native';
+import { Pressable, View, StyleSheet, useWindowDimensions, type GestureResponderEvent } from 'react-native';
 import Animated, {
   Easing,
   useAnimatedStyle,
@@ -24,8 +24,12 @@ import {
   menuPanelStyle,
   SidebarAvatarView,
   useSidebarWebCss,
+  useSidebarCollapseProgress,
+  useInSidebar,
 } from './parts';
 import type { SidebarMenuGroup, SidebarMenuItem, SidebarTeamMenuProps } from './types';
+
+const AnimatedPressable = Animated.createAnimatedComponent(Pressable);
 
 /**
  * The team card at the foot of the rail and the
@@ -152,38 +156,23 @@ const SidebarTeamMenuComponent: React.FC<SidebarTeamMenuProps> = ({ team, collap
   }, [open, reducedMotion, turn]);
   const chevronStyle = useAnimatedStyle(() => ({ transform: [{ rotate: `${turn.value}deg` }] }), [turn]);
 
-  const cardStyle: WebCssStyle = collapsed
-    ? {
-        width: 36,
-        height: 36,
-        flexDirection: 'row',
-        alignItems: 'center',
-        justifyContent: 'flex-start',
-        overflow: 'hidden',
-        borderRadius: borderRadius.full,
-        borderWidth: 2,
-        borderColor: hovered ? palette.teamHoverBorder : 'transparent',
-        backgroundColor: 'transparent',
-        '--bloom-sidebar-ring': palette.ring,
-        '--bloom-sidebar-ring-offset': palette.panel,
-      }
-    : {
-        width: '100%',
-        flexDirection: 'row',
-        alignItems: 'center',
-        justifyContent: 'space-between',
-        overflow: 'hidden',
-        borderRadius: 12,
-        borderWidth: 2,
-        borderColor: hovered ? palette.teamHoverBorder : 'transparent',
-        backgroundColor: palette.tertiary,
-        paddingTop: 8,
-        paddingBottom: 8,
-        paddingLeft: 10,
-        paddingRight: 16,
-        '--bloom-sidebar-ring': palette.ring,
-        '--bloom-sidebar-ring-offset': palette.panel,
-      };
+  const progress = useSidebarCollapseProgress(collapsed);
+  const inSidebar = useInSidebar();
+  const naturalWidth = useSharedValue(0);
+  const expandedHeight = team.email ? 60 : 52;
+  const geometry = useAnimatedStyle(() => {
+    const p = progress.value;
+    const height = expandedHeight + (36 - expandedHeight) * p;
+    return { width: inSidebar ? '100%' : naturalWidth.value > 0 ? naturalWidth.value + (36 - naturalWidth.value) * p : p === 1 ? 36 : '100%',
+      height,
+      borderRadius: height / 2, paddingLeft: 10 * (1 - p), paddingRight: 16 * (1 - p) };
+  }, [progress, expandedHeight, inSidebar, naturalWidth]);
+  const fill = useAnimatedStyle(() => ({ opacity: 1 - progress.value }), [progress]);
+  const cardStyle: WebCssStyle = {
+    width: '100%', flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
+    overflow: 'hidden', borderWidth: 2, borderColor: hovered ? palette.teamHoverBorder : 'transparent',
+    '--bloom-sidebar-ring': palette.ring, '--bloom-sidebar-ring-offset': palette.panel,
+  };
 
   const identity = (
     <>
@@ -203,19 +192,21 @@ const SidebarTeamMenuComponent: React.FC<SidebarTeamMenuProps> = ({ team, collap
 
   return (
     <Popover open={open} onOpenChange={setOpen}>
-      <PopoverTrigger asChild label={team.name} style={collapsed ? undefined : { alignSelf: 'stretch' }}>
-        <Pressable
+      <PopoverTrigger asChild label={team.name} style={{ alignSelf: 'stretch' }}>
+        <AnimatedPressable
           {...(IS_WEB ? { dataSet: { bloomSidebar: 'offset' } } : {})}
           accessibilityLabel={team.name}
           onHoverIn={onIn}
           onHoverOut={onOut}
-          style={[cardStyle, style]}
+          onLayout={(event) => { if (progress.value === 0) naturalWidth.value = event.nativeEvent.layout.width; }}
+          style={[cardStyle, style, { backgroundColor: 'transparent' }, geometry]}
           testID={testID}
         >
-          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, minWidth: 0, flexShrink: 1 }}>
+          <Animated.View pointerEvents="none" style={[StyleSheet.absoluteFill, { backgroundColor: StyleSheet.flatten(style)?.backgroundColor ?? palette.tertiary }, fill]} />
+          <View style={{ flexDirection: 'row', alignItems: 'center', minWidth: 0, flexShrink: 1 }}>
             <SidebarAvatarView avatar={team.avatar} size="md" palette={palette} />
             <Collapsible collapsed={collapsed}>
-              <View style={{ justifyContent: 'center', alignItems: 'flex-start' }}>
+              <View style={{ paddingLeft: 8, justifyContent: 'center', alignItems: 'flex-start' }}>
                 <Text variant="body-medium" numberOfLines={1} style={{ color: palette.text }}>
                   {team.name}
                 </Text>
@@ -244,7 +235,7 @@ const SidebarTeamMenuComponent: React.FC<SidebarTeamMenuProps> = ({ team, collap
               </Animated.View>
             </View>
           </Collapsible>
-        </Pressable>
+        </AnimatedPressable>
       </PopoverTrigger>
       <PopoverContent
         label={`${team.name} menu`}

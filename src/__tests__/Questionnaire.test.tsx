@@ -5,7 +5,6 @@ import { BloomThemeProvider } from '../theme/BloomThemeProvider';
 import { Questionnaire } from '../questionnaire';
 import type { QuestionnaireQuestion } from '../questionnaire';
 import { resolveQuestionnairePalette } from '../questionnaire/Questionnaire';
-import { resolveButtonRamps } from '../button/shared';
 import { buildTheme } from '../theme/build-theme';
 import { pressHost } from './support/press-host';
 import { resolvedStyle } from './support/rendered-style';
@@ -180,15 +179,20 @@ describe('Questionnaire', () => {
     expect(getByText('Tests?')).toBeTruthy();
   });
 
-  it('maps the tokens onto the theme ramps in both modes', () => {
-    const light = buildTheme('teal', 'light');
-    const dark = buildTheme('teal', 'dark');
-    const l = resolveQuestionnairePalette(light);
-    const d = resolveQuestionnairePalette(dark);
-    const ln = resolveButtonRamps(light).neutral;
-    const dn = resolveButtonRamps(dark).neutral;
-    expect(l).toMatchObject({ surface: light.colors.card, rowBorder: ln[200], rowHover: ln[100], key: ln[100], keyRaised: ln[200] });
-    expect(d).toMatchObject({ surface: dn[800], rowBorder: dn[700], rowBorderHover: dn[500], key: dn[700], keyRaised: dn[600] });
-    expect(l.ring).toBe(resolveButtonRamps(light).accent[500]);
+  it('uses canonical roles in both modes', () => {
+    for (const mode of ['light', 'dark'] as const) {
+      const theme = buildTheme('teal', mode);
+      expect(resolveQuestionnairePalette(theme)).toMatchObject({
+        surface: theme.colors.card,
+        rowBorder: theme.colors.borderLight,
+        rowBorderHover: theme.colors.border,
+        rowHover: theme.colors.backgroundSecondary,
+        key: theme.colors.backgroundSecondary,
+        keyRaised: theme.colors.backgroundTertiary,
+        ring: theme.colors.primary,
+        pillSelected: theme.colors.primarySubtle,
+        pillLabelSelected: theme.colors.primarySubtleForeground,
+      });
+    }
   });
 });

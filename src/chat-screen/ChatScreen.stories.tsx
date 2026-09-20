@@ -120,13 +120,13 @@ function Surface({ children, padded = true }: { children: React.ReactNode; padde
 function BothModes({ children }: { children: React.ReactNode }) {
   const preset = useContext(BloomThemeContext)?.colorPreset;
   return (
-    <View style={{ flexDirection: 'row', flexWrap: 'wrap' }}>
-      <View style={{ minWidth: 380, flexGrow: 1, flexBasis: 380 }}>
+    <View style={{ width: '100%', flexDirection: 'row', flexWrap: 'wrap' }}>
+      <View style={{ minWidth: 0, maxWidth: '100%', flexShrink: 1, flexGrow: 1, flexBasis: 380 }}>
         <BloomThemeProvider mode="light" colorPreset={preset}>
           <Surface>{children}</Surface>
         </BloomThemeProvider>
       </View>
-      <View style={{ minWidth: 380, flexGrow: 1, flexBasis: 380 }}>
+      <View style={{ minWidth: 0, maxWidth: '100%', flexShrink: 1, flexGrow: 1, flexBasis: 380 }}>
         <BloomThemeProvider mode="dark" colorPreset={preset}>
           <Surface>{children}</Surface>
         </BloomThemeProvider>
@@ -305,6 +305,7 @@ function PersonPanel({ variant }: { variant: 'pane' | 'screen' }) {
   return (
     <ChatInfoPanel
       variant={variant}
+      style={{ maxWidth: '100%' }}
       title="Contact info"
       onClose={() => {}}
       avatarSource={AVATAR_ANA}
@@ -326,6 +327,7 @@ function GroupPanel({ variant }: { variant: 'pane' | 'screen' }) {
   return (
     <ChatInfoPanel
       variant={variant}
+      style={{ maxWidth: '100%' }}
       title="Group info"
       onClose={() => {}}
       coverSource={AVATAR_GROUP}
@@ -428,7 +430,7 @@ function ComposerStub() {
 export const FullScreenWide: Story = {
   name: 'Full screen — 1280 with info pane',
   render: () => (
-    <View style={{ width: 1280, height: 820 }}>
+    <View style={{ width: '100%', maxWidth: 1280, height: 820 }}>
       <ChatSplitLayout list={<ConversationListStub />} info={<GroupPanel variant="pane" />}>
         <Conversation />
       </ChatSplitLayout>
@@ -442,7 +444,7 @@ export const FullScreenNarrow: Story = {
   render: () => (
     <View style={{ flexDirection: 'row', gap: 20, padding: 20, flexWrap: 'wrap' }}>
       {(['conversation', 'list', 'info'] as const).map((pane) => (
-        <View key={pane} style={{ width: 390, height: 780, overflow: 'hidden', borderRadius: 16 }}>
+        <View key={pane} style={{ width: '100%', maxWidth: 390, height: 780, overflow: 'hidden', borderRadius: 16 }}>
           <ChatSplitLayout
             pane={pane}
             compact
@@ -581,7 +583,7 @@ export const Wallpapers: Story = {
       <BothModes>
         <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 12 }}>
           {variants.map((variant) => (
-            <View key={variant} style={{ width: 320, gap: 6 }}>
+            <View key={variant} style={{ width: '100%', maxWidth: 320, gap: 6 }}>
               <Caption>{variant}</Caption>
               <View style={{ height: 260, borderRadius: 16, overflow: 'hidden' }}>
                 <ChatBackground

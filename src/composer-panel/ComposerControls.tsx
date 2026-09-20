@@ -189,7 +189,7 @@ function GradientFill({ paint, opacity = 1 }: { paint: ButtonStatePaint; opacity
 /**
  * Send (`bg-button-primary` disc): the accent gradient, its hover
  * gradient crossfading in over 150ms, the active gradient while held; disabled
- * paints the disabled gradient at the disabled opacity (200ms). White 20px arrow.
+ * paints the disabled gradient at the disabled opacity (200ms). Its 20px arrow uses the paired foreground.
  */
 export function SendButton({
   disabled,
@@ -235,7 +235,7 @@ export function SendButton({
       {disabled ? null : <GradientFill paint={paint.hover} opacity={hovered && !pressed ? 1 : 0} />}
       {/* Its own positioned box, so it paints above the absolutely placed fills. */}
       <View pointerEvents="none" style={{ position: 'relative', width: 20, height: 20 }}>
-        <RiArrowUpLine width={20} height={20} fill="#ffffff" />
+        <RiArrowUpLine width={20} height={20} fill={(hovered && !pressed && !disabled ? paint.hover : base).foreground} />
       </View>
     </Pressable>
   );

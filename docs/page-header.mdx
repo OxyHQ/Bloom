@@ -53,7 +53,7 @@ actions={
       <ButtonGroupItem iconOnly leadingIcon={RiSearchLine} accessibilityLabel="Search" />
       <ButtonGroupItem iconOnly leadingIcon={RiShare2Line} accessibilityLabel="Share" />
     </ButtonGroup>
-    <Button variant="primary" size="medium">Save</Button>
+    <Button appearance="solid" tone="accent" size="md">Save</Button>
   </>
 }
 ```
@@ -95,7 +95,7 @@ Leaving both at their defaults over a hero photo is the one combination that rea
 | `scrimColor` | `theme.colors.background` | The opaque colour the edge effect fades from. Pass it when the screen paints a background the theme does not know about. |
 | `border` | `'auto'` | `presentation="bar"` only. `auto` fades the separator in with scroll; `always`; `none`. |
 | `transparent` | `false` | `presentation="bar"` only: background and shadow fade in with scroll. It no longer hides the title. |
-| `scrollY` | — | A Reanimated `SharedValue<number>`. Omitted, the header reads `ScrollOffsetProvider`, then `window.scrollY` on web. |
+| `scrollY` | — | A Reanimated `SharedValue<number>`. Omitted, the header reads its `Screen` offset, then `ScrollOffsetProvider`, then `window.scrollY` on web. |
 | `scrollThreshold` | `20` | The offset over which the scroll-linked paint arrives. Over a hero, use the hero height minus the bar. |
 | `sticky` | `true` | Web, `placement="inline"`: `position: sticky; top: 0`. No effect on native or on an overlay. |
 | `safeArea` | native `true`, web `false` | Pads the top by the safe-area inset (read from `SafeAreaInsetsContext`; no provider → 0). |
@@ -141,8 +141,9 @@ Apply the safe area **once**: the header pads itself by `insets.top` on native, 
 Everything scroll-linked interpolates over `[0, scrollThreshold]` of the resolved offset. The header resolves it in this order:
 
 1. the `scrollY` prop,
-2. the nearest `ScrollOffsetProvider` (`@oxy.so/bloom/layout`),
-3. `window.scrollY` — **web only**.
+2. the enclosing `Screen` offset,
+3. the nearest `ScrollOffsetProvider` (`@oxy.so/bloom/layout`),
+4. `window.scrollY` — **web only**.
 
 On native with none of the three, the header stays at rest.
 
@@ -215,52 +216,7 @@ And the island fill in light mode is the card fill over a near-white page — th
 
 ![The islands over a photograph, title held back](./page-header-islands-photo.png)
 
-### Android, on a device
-
-Run on a **Pixel 8a** (Android, `akita`) through Expo Go SDK 56, against the
-**published** `@oxy.so/bloom@3.0.0` from npm rather than a local build — which is
-what makes it a consumer's result rather than a rehearsal of one.
-
-| property | result |
-| --- | --- |
-| the edge ramp, light | rgb(231,224,231) → rgb(29,59,83), travelled **202** of 255 |
-| the edge ramp, dark | rgb(18,17,22) → rgb(29,59,83), travelled **61** of 255 |
-| no horizontal cut | largest single-row step **1**, monotonic, in both modes |
-| the ramp is CHROMATIC | **0 achromatic rows of 311**, in both modes |
-| a matched `scrimColor` | travelled **1** over its own page colour |
-| the island is translucent | the back capsule reads 244 over the page, **215** over a photograph |
-| the island does NOT blur | see below |
-
-The third row is the one worth having. `react-native-svg` reads `stopColor` for
-its RGB and **discards any alpha inside it**, which once painted an Android pane
-as a white-to-black wipe with R=G=B on every row while every gate stayed green
-(the mechanism is on `GLASS_SHEEN` in `theme/glass-colors.ts`). Counting
-achromatic rows is the direct refutation, and there are none: the ramp carries
-the page's hue all the way down.
-
-**No blur, measured rather than asserted.** Over a hard 10dp stripe pattern,
-sampled at the same rows inside the back capsule and on the bare stripes beside
-it:
-
-| backdrop stripe | bare | inside the island |
-| --- | --- | --- |
-| white | 255 | **254** |
-| black | 0 | **210** |
-
-Two things follow. The backdrop contributes **44 of 255** — about 17%, so the
-pane really is translucent. And the stripe EDGE stays sharp inside the island: a
-blur would smear a 26px transition, and there is none. That is tint only, which
-is the documented Android behaviour, and nothing in `logcat` asked for a blur
-method or reported a crash across five screens in both modes.
-
-The native pane is slightly more opaque than the web one (≈0.83 against 0.72),
-and that is `expo-blur`'s own tint, which one `intensity` drives together with
-the radius and which a caller cannot decline — the difference
-`GLASS_BLUR_INTENSITY` documents, showing up where it said it would.
-
-**iOS is still not verified on a device.** The material is `expo-blur` there
-too and unchanged from the `GlassSurface` the library already shipped, but
-nothing in this change has been run on an iPhone.
+**Not verified on a device.** Every number above is Chrome on Linux. iOS and Android have not been run for this change: the material is `expo-blur` on both and is unchanged from the `GlassSurface` the library already shipped, but the geometry, the safe-area padding, the top-edge claim and the scroll linkage have only been exercised in jest and in a browser. Android additionally paints **no blur at all** here, by the design described above, so what a device would show is the tint, the hairline, the sheen and the rim.
 
 ## Not included
 
@@ -278,7 +234,7 @@ nothing in this change has been run on an iPhone.
 
 **`border` and `transparent` apply to `presentation="bar"` only.** They are ignored by the floating presentation, which has no strip and no separator; `scrim` is its counterpart.
 
-**Icon actions want `ButtonGroupItem`.** A `Button variant="secondary"` in a floating header's actions paints its own opaque fill, which reads as a card floating over the content. It still works; it is just not the shape the islands are for.
+**Icon actions want `ButtonGroupItem`.** A `Button appearance="outline" tone="neutral"` in a floating header's actions paints its own opaque fill, which reads as a card floating over the content. It still works; it is just not the shape the islands are for.
 
 ## Migrating from app headers
 

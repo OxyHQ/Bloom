@@ -8,6 +8,11 @@ import { FileUpload } from './index';
 import type { FileUploadFile } from './types';
 
 const meta: Meta<typeof FileUpload> = {
+  argTypes: {
+    "progress": { control: 'number' },
+    "maxBytes": { control: 'number' },
+    "disabled": { control: 'boolean' }
+  },
   title: 'Base/File Upload',
   component: FileUpload,
 };
@@ -23,7 +28,7 @@ const PHOTO: FileUploadFile = { name: 'team-offsite-photo-with-a-very-long-file-
 function Frame({ children }: { children: React.ReactNode }) {
   const theme = useTheme();
   return (
-    <View testID="frame" style={{ padding: 40, gap: 32, width: 613, backgroundColor: theme.colors.background }}>
+    <View testID="frame" style={{ maxWidth: 533, gap: 32, width: '100%', minWidth: 0, backgroundColor: theme.colors.background }}>
       {children}
     </View>
   );
@@ -35,6 +40,7 @@ function Frame({ children }: { children: React.ReactNode }) {
  * or a file over 8 MB for the rejection message.
  */
 export const Default: Story = {
+  parameters: { controls: { disable: true } },
   render: function DefaultStory() {
     const [last, setLast] = useState<string | null>(null);
     return (
@@ -48,6 +54,7 @@ export const Default: Story = {
 
 /** Every phase, held still: idle, uploading at 0 / 42 / 88%, complete, and each file-type icon. */
 export const States: Story = {
+  parameters: { controls: { disable: true } },
   render: () => (
     <Frame>
       <FileUpload file={null} testID="idle" />
@@ -62,6 +69,7 @@ export const States: Story = {
 
 /** Custom extensions, size limit and Spanish copy. */
 export const CustomRules: Story = {
+  parameters: { controls: { disable: true } },
   render: () => (
     <Frame>
       <FileUpload
@@ -87,6 +95,7 @@ export const CustomRules: Story = {
  * `progress` + `file` are fed back.
  */
 export const Controlled: Story = {
+  parameters: { controls: { disable: true } },
   render: function ControlledStory() {
     const [file, setFile] = useState<FileUploadFile | null>(null);
     const [progress, setProgress] = useState(0);
@@ -126,4 +135,10 @@ export const Controlled: Story = {
       </Frame>
     );
   },
+};
+
+/** Edit the props in Controls; interactive state stays in sync. */
+export const Playground: Story = {
+  args: { disabled: false },
+  render: (args) => <View style={{ width: 420, maxWidth: '100%' }}><FileUpload {...args} /></View>,
 };

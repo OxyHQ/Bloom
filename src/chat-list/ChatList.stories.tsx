@@ -255,7 +255,9 @@ function Surface({ children, width }: { children: React.ReactNode; width?: numbe
   return (
     <View
       style={{
-        width,
+        width: '100%',
+        maxWidth: width,
+        minWidth: 0,
         backgroundColor: theme.colors.background,
         borderRadius: width === undefined ? 0 : 20,
         overflow: 'hidden',
@@ -305,7 +307,7 @@ function ConversationsScreen({ width = 390 }: { width?: number }) {
   const density = width < 380 ? 'compact' : 'comfortable';
 
   return (
-    <View style={{ width, height: 760, backgroundColor: theme.colors.background }}>
+    <View style={{ width: '100%', maxWidth: width, height: 760, backgroundColor: theme.colors.background }}>
       <ScrollView>
         <ChatList
           sections={SECTIONS}
@@ -382,7 +384,7 @@ function PaneAndDetail({
     <View
       style={{
         flexDirection: 'row',
-        width: 760,
+        width: '100%', maxWidth: 760,
         height: 620,
         borderRadius: 20,
         overflow: 'hidden',
@@ -393,7 +395,7 @@ function PaneAndDetail({
     >
       <View
         style={{
-          width: 360,
+          width: '100%', maxWidth: 360,
           borderRightWidth: 1,
           borderRightColor: theme.colors.border,
         }}

@@ -231,6 +231,7 @@ describe('BloomIconComponent has one home', () => {
       'CallGlyph',
       'CategoryBarIcon',
       'ChartIconComponent',
+      'ChatComposerIcon',
       'CreatorStudioIcon',
       'DataTableIconComponent',
       'HousingIcon',

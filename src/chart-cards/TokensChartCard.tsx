@@ -14,7 +14,6 @@ import {
 import { useReducedMotion } from 'react-native-reanimated';
 import Svg, { ClipPath, Defs, G, Line, LinearGradient, Path, Rect, Stop } from 'react-native-svg';
 
-import { resolveButtonRamps } from '../button/shared';
 import { Chip } from '../chip';
 import { useTheme } from '../theme/use-theme';
 import { Text } from '../typography';
@@ -203,11 +202,10 @@ export function TokensChartCard({
   const reveal = useReveal(reducedMotion);
 
   const colors = useMemo(() => {
-    const { neutral: n } = resolveButtonRamps(theme);
     return {
       line: color ?? purpleStop(theme, 400),
       dot: activeColor ?? purpleStop(theme, 500),
-      idle: n[400],
+      idle: theme.colors.textTertiary,
       chip: purpleChip(theme, palette.surface),
     };
   }, [theme, color, activeColor, palette.surface]);
@@ -304,7 +302,7 @@ export function TokensChartCard({
             </FadeOnChange>
             {delta !== undefined ? (
               <Chip
-                size="medium"
+                size="md"
                 testID={testID ? `${testID}-delta` : undefined}
                 style={{ alignSelf: 'center', backgroundColor: colors.chip.background }}
                 textStyle={{ color: colors.chip.foreground }}>

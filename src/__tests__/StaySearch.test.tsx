@@ -10,7 +10,6 @@ import { createRoot, type Root } from 'react-dom/client';
 
 jest.mock('react-native', () => jest.requireActual('react-native-web'));
 
-import { resolveButtonRamps } from '../button/shared';
 import { resolveMenuPalette } from '../floating/menu-palette';
 import { BloomThemeProvider } from '../theme/BloomThemeProvider';
 import { useTheme } from '../theme/use-theme';
@@ -234,10 +233,9 @@ describe('StaySearchBar', () => {
 
   it('paints the dark palette from the neutral ramp', () => {
     mount(<ControlledBar initial="guests" />, 'dark');
-    const { neutral } = resolveButtonRamps(theme);
     const bar = byTestId('bar').firstElementChild as HTMLElement;
-    expect(bar.style.backgroundColor).toBe(css(neutral[900]));
-    expect((byTestId('bar-guests').parentElement as HTMLElement).style.backgroundColor).toBe(css(neutral[700]));
+    expect(bar.style.backgroundColor).toBe(css(theme.colors.backgroundSecondary));
+    expect((byTestId('bar-guests').parentElement as HTMLElement).style.backgroundColor).toBe(css(theme.colors.card));
   });
 });
 

@@ -324,12 +324,10 @@ function HeaderOverflowMenu({
       <PopoverTrigger asChild label="More">
         <FrostedIconButton
           size="sm"
-          icon={
-            <RiMoreFill
+          icon={(iconProps) => <RiMoreFill {...iconProps}
               size="md"
               fill={onImage ? ON_IMAGE_TEXT : undefined}
-            />
-          }
+            />}
         />
       </PopoverTrigger>
       <PopoverContent
@@ -339,7 +337,7 @@ function HeaderOverflowMenu({
           <Item
             key={action.accessibilityLabel}
             title={action.accessibilityLabel}
-            leading={action.icon}
+            leading={<action.icon />}
             density="compact"
             disabled={action.disabled}
             onPress={() => {
@@ -505,7 +503,7 @@ export const DialogNavHeader = memo(function DialogNavHeader({
     <FrostedIconButton
       onPress={onDismiss}
       accessibilityLabel="Close"
-      icon={<RiCloseLine size="md" fill={iconFill} />}
+      icon={(iconProps) => <RiCloseLine {...iconProps} size="md" fill={iconFill} />}
     />
   );
 
@@ -520,14 +518,7 @@ export const DialogNavHeader = memo(function DialogNavHeader({
           <HeaderTrailingActions actions={config.actions} onImage={onImage} />
         ) : null}
         {config.primaryAction ? (
-          <Button
-            variant="primary"
-            size="small"
-            onPress={config.primaryAction.onPress}
-            disabled={config.primaryAction.disabled || config.primaryAction.loading}
-            loading={config.primaryAction.loading}
-            accessibilityLabel={config.primaryAction.label}
-          >
+          <Button size="sm" onPress={config.primaryAction.onPress} disabled={config.primaryAction.disabled || config.primaryAction.loading} loading={config.primaryAction.loading} accessibilityLabel={config.primaryAction.label} appearance="solid" tone="accent">
             {config.primaryAction.label}
           </Button>
         ) : null}
@@ -546,7 +537,7 @@ export const DialogNavHeader = memo(function DialogNavHeader({
       <FrostedIconButton
         onPress={config.onBack}
         accessibilityLabel="Go back"
-        icon={<RiArrowLeftSLine size="md" fill={iconFill} />}
+        icon={(iconProps) => <RiArrowLeftSLine {...iconProps} size="md" fill={iconFill} />}
       />
     ) : hasRichTrailing && config.showClose !== false ? (
       closeButton
@@ -660,10 +651,10 @@ export const DialogLargeTitle = memo(function DialogLargeTitle({
           <View style={hasLargeTitle ? styles.extraRow : undefined}>
             <Search
               value={config.search.value}
-              onChangeText={config.search.onChangeText}
+              onValueChange={config.search.onValueChange}
               label={config.search.placeholder ?? 'Search'}
               onSubmitEditing={config.search.onSubmit}
-              onClearText={() => config.search?.onChangeText('')}
+              onClearText={() => config.search?.onValueChange('')}
             />
           </View>
         ) : null}
@@ -672,11 +663,11 @@ export const DialogLargeTitle = memo(function DialogLargeTitle({
             <SegmentedControl
               label={config.title ?? 'View'}
               type="tabs"
-              size="small"
+              size="sm"
               // The segmented control sizes to its segments; the header tabs span the row.
               style={{ alignSelf: 'stretch' }}
               value={config.segments.value}
-              onChange={config.segments.onChange}
+              onValueChange={config.segments.onChange}
             >
               {config.segments.items.map((item) => (
                 <SegmentedControlItem key={item.key} value={item.key}>

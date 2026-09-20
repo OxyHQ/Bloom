@@ -136,7 +136,7 @@ export interface PageHeaderProps {
   /**
    * The scroll offset driving the scrim, the separator and the shadow.
    *
-   * Resolution order: this prop, then the nearest `ScrollOffsetProvider`
+   * Resolution order: this prop, then the enclosing `Screen` offset, then the nearest `ScrollOffsetProvider`
    * (`@oxy.so/bloom/layout`) — which is how a header inside a Bloom scroll
    * composition gets it with no wiring — then, on web only, `window.scrollY`.
    * On native with none of the three, the header stays at rest.

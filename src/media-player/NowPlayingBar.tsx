@@ -1,7 +1,7 @@
+import { hairlineOn } from '../styles/surface-levels';
 import React, { memo, useMemo, useState } from 'react';
 import { useWindowDimensions, View, type LayoutChangeEvent } from 'react-native';
 
-import { resolveButtonRamps } from '../button/shared';
 import { RiFullscreenLine } from '../icons/remix/RiFullscreenLine';
 import { RiMicLine } from '../icons/remix/RiMicLine';
 import { RiPlayListLine } from '../icons/remix/RiPlayListLine';
@@ -93,7 +93,6 @@ function NowPlayingBarComponent({
   const layout = nowPlayingBarLayout(width);
   const labels = { ...DEFAULT_LABELS, ...labelOverrides };
   const paint = useMemo(() => resolveMediaControlsPaint(theme), [theme]);
-  const { neutral } = useMemo(() => resolveButtonRamps(theme), [theme]);
   const id = (part: string) => (testID ? `${testID}-${part}` : undefined);
   const casting = !!deviceName;
   const narrow = layout === 'narrow';
@@ -125,7 +124,7 @@ function NowPlayingBarComponent({
           paddingRight: 16,
           backgroundColor: theme.colors.background,
           borderTopWidth: 1,
-          borderTopColor: theme.isDark ? neutral[800] : neutral[200],
+          borderTopColor: hairlineOn(theme, theme.colors.background),
         },
         style,
       ]}

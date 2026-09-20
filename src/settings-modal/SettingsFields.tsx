@@ -59,12 +59,12 @@ export function SettingsTextField({
 
   return (
     <View style={styles.field}>
-      <TextField size="small" disabled={disabled}>
+      <TextField size="sm" disabled={disabled}>
         {icon ? <TextFieldIcon icon={icon} /> : null}
         <TextFieldInput
           label={label}
           value={draft}
-          onChangeText={setDraft}
+          onValueChange={setDraft}
           onSubmitEditing={commit}
           onBlur={commit}
           placeholder={placeholder}

@@ -39,30 +39,26 @@ import { Notification } from '@oxy.so/bloom/notification';
 
 | Part | Value |
 |---|---|
-| card | radius 16, 1px border/button/default, card surface (dark `neutral-800`), `shadow-dropdown`, padding 16 / right 44, gap 12 |
+| card | radius 16, 1px border/button/default, canonical `card` surface in both modes, `shadow-dropdown`, padding 16 / right 44, gap 12 |
 | visual | 40px full-round disc, 20px Remix fill glyph — or a 40px `Avatar` with a 12px presence dot (2px card-coloured ring) |
 | header | wraps; title body-medium text/primary, timestamp body-regular text/tertiary, gap 8 × 2 |
 | description | body-regular text/secondary; content column gap 4 |
-| actions | margin-top 6, gap 8, `Button size="small"` — first `secondary`, the rest `primary` unless `variant` is set |
+| actions | margin-top 6, gap 8, `Button size="sm"` — first `appearance="subtle" tone="neutral"`, the rest `appearance="solid" tone="accent"`, unless action props override them |
 | close | `CloseButton` xs (20px disc) at top 12 / right 12 |
-| countdown | 3px accent-600 bar along the bottom edge, shrinking linearly over `autoDismissDuration` |
+| countdown | 3px primary-colour bar along the bottom edge, shrinking linearly over `autoDismissDuration` |
 
 Buttons are full pills (Bloom's rule for button-like controls); everything else
 keeps the radii listed above.
 
 ## Status colours
 
-| `status` | disc | glyph |
-|---|---|---|
-| `neutral` (default) | background/tertiary | text/secondary, `RiNotification3Fill` |
-| `information` | `info` 100 / dark 800 @ 50% | `info` 600 / dark 300, `RiInformationFill` |
-| `success` | `success` ramp, same stops | `RiCheckboxCircleFill` |
-| `warning` (Bloom addition) | `warning` ramp, same stops | `RiAlertFill` |
-| `error` | `error` on the red ramp, same stops | `RiErrorWarningFill` |
+Status discs use the canonical subtle/foreground pairs through
+`resolveAccentColors`: information → info, success → success, warning → warning,
+error → error. Neutral uses the muted surface/text pair. These retain status
+meaning independently of the identity and action colours.
 
-Hues are Bloom's STATUS roles through the shared ramp recipe (`button/shared.ts`),
-never a brand pair. Presence: `online` success-500, `busy` error-500, `offline`
-neutral-400 (dark 600).
+Presence reads success for online, error for busy, and tertiary text for offline.
+The card, description and timestamp use the shared card and text roles.
 
 ## Props
 

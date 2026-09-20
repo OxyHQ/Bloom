@@ -15,6 +15,7 @@ import { createRoot, type Root } from 'react-dom/client';
 jest.mock('react-native', () => jest.requireActual('react-native-web'));
 
 import { Avatar } from '../avatar';
+import { resolveButtonPalette } from '../button/shared';
 import {
   CONTACT_AVATAR_SIZE,
   CONTACT_CONTENT_TOP,
@@ -222,8 +223,12 @@ describe('the channels are LABELLED actions, not glyphs', () => {
     const control = byTestId('c-channel-email');
     expect(control.tagName).toBe('BUTTON');
     const style = getComputedStyle(control);
-    expect(style.backgroundColor).not.toBe('rgba(0, 0, 0, 0)');
-    expect(Number.parseFloat(style.borderTopWidth)).toBeGreaterThan(0);
+    // The shared Button paints its neutral surface with a gradient. The
+    // element's backgroundColor alone does not describe that painted fill.
+    // Jest resolves Button.tsx here; SVG is a shape mock, so inspect the
+    // declared opaque stops. Browser painting is checked separately.
+    const stops = [...control.querySelectorAll('stop')].map((stop) => stop.getAttribute('stop-color'));
+    expect(stops).toEqual(resolveButtonPalette('solid', theme, 'neutral').rest.gradient);
     expect(Number.parseFloat(style.height)).toBeGreaterThanOrEqual(32);
   });
 

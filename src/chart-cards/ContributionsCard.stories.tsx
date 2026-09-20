@@ -7,6 +7,17 @@ import type { ContributionsPeriod, ContributionsStat } from './ContributionsCard
 import { contributionCellsFromDays, hashContributionCell, type ContributionCell } from './contributions-cells';
 
 const meta: Meta<typeof ContributionsCard> = {
+  argTypes: {
+    "title": { control: 'text' },
+    "total": { control: 'number' },
+    "delta": { control: 'number' },
+    "columns": { control: 'number' },
+    "color": { control: 'text' },
+    "defaultPeriod": { control: 'text' },
+    "activityLabel": { control: 'text' },
+    "animateIn": { control: 'boolean' },
+    "activeCell": { control: 'number' }
+  },
   title: 'Charts/Contributions Card',
   component: ContributionsCard,
 };
@@ -53,40 +64,48 @@ const STATS: ContributionsStat[] = [
 ];
 
 const Frame = ({ children, width = 720 }: { children: React.ReactNode; width?: number }) => (
-  <View style={{ padding: 40, gap: 24, width: width + 80 }}>{children}</View>
+  <View style={{ maxWidth: '100%', gap: 24, width }}>{children}</View>
 );
 
 /** The card: header + chip, four stat cards, the Weekly / Monthly / Yearly control, the year grid. */
 export const Default: Story = {
-  render: () => (
+  args: { total: 958, delta: 0.148 },
+  parameters: { controls: { include: ["total","delta","title","columns","color","defaultPeriod","activityLabel","animateIn","activeCell"] } },
+  render: (args) => (
     <Frame>
-      <ContributionsCard testID="contrib" total={958} delta={0.148} stats={STATS} cells={CELLS} />
+      <ContributionsCard {...args} testID="contrib"   stats={STATS} cells={CELLS} />
     </Frame>
   ),
 };
 
 /** A hovered day (controlled): the tooltip above the cell. */
 export const Hovered: Story = {
-  render: () => (
+  args: { total: 958, delta: 0.148 },
+  parameters: { controls: { include: ["total","delta","title","columns","color","defaultPeriod","activityLabel","animateIn"] } },
+  render: (args) => (
     <Frame>
       <View style={{ height: 40 }} />
-      <ContributionsCard total={958} delta={0.148} stats={STATS} cells={CELLS} activeCell={3 * 7 + 2} />
+      <ContributionsCard {...args}   stats={STATS} cells={CELLS} activeCell={3 * 7 + 2} />
     </Frame>
   ),
 };
 
 /** Cells pop in on mount in a scattered order (reload the story to replay). */
 export const AnimateIn: Story = {
-  render: () => (
+  args: { total: 958, delta: 0.148, animateIn: true },
+  parameters: { controls: { include: ["total","delta","animateIn","title","columns","color","defaultPeriod","activityLabel","activeCell"] } },
+  render: (args) => (
     <Frame>
-      <ContributionsCard total={958} delta={0.148} stats={STATS} cells={CELLS} animateIn />
+      <ContributionsCard {...args}   stats={STATS} cells={CELLS}  />
     </Frame>
   ),
 };
 
 /** Periods that carry their own data; a custom ramp colour and a falling delta. */
 export const Periods: Story = {
-  render: () => {
+  args: { color: "#10b981" },
+  parameters: { controls: { include: ["color","title","total","delta","columns","defaultPeriod","activityLabel","animateIn","activeCell"] } },
+  render: (args) => {
     const periods: ContributionsPeriod[] = [
       { id: 'weekly', label: 'Weekly', total: 958, delta: 0.148 },
       { id: 'monthly', label: 'Monthly', cells: demoCells(37, 2025).map((c) => ({ ...c, tier: undefined, count: c.count * 2 })), total: 4120, delta: -0.032 },
@@ -94,7 +113,7 @@ export const Periods: Story = {
     ];
     return (
       <Frame>
-        <ContributionsCard stats={STATS} cells={CELLS} periods={periods} color="#10b981" />
+        <ContributionsCard {...args} stats={STATS} cells={CELLS} periods={periods}  />
       </Frame>
     );
   },
@@ -102,7 +121,9 @@ export const Periods: Story = {
 
 /** Real per-day data folded into the grid with `contributionCellsFromDays`, no stats. */
 export const FromDays: Story = {
-  render: () => {
+  args: { title: "Commits in 2025", delta: 0.021 },
+  parameters: { controls: { include: ["title","delta","total","columns","color","defaultPeriod","activityLabel","animateIn","activeCell"] } },
+  render: (args) => {
     const days = Array.from({ length: 365 }, (_, i) => {
       const d = new Date(Date.UTC(2025, 0, 1 + i));
       const iso = d.toISOString().slice(0, 10);
@@ -111,7 +132,7 @@ export const FromDays: Story = {
     });
     return (
       <Frame>
-        <ContributionsCard title="Commits in 2025" cells={contributionCellsFromDays(days, 2025)} delta={0.021} />
+        <ContributionsCard {...args}  cells={contributionCellsFromDays(days, 2025)}  />
       </Frame>
     );
   },
@@ -119,6 +140,7 @@ export const FromDays: Story = {
 
 /** The bare grid at 38 columns (the AI profile). */
 export const Grid: Story = {
+  parameters: { controls: { disable: true } },
   render: () => (
     <Frame width={600}>
       <ContributionsGrid testID="grid" cells={demoCells(38)} columns={38} />

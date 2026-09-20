@@ -15,7 +15,7 @@ export function useChartCardPalette(): ChartCardPalette {
   return useMemo(() => resolveChartCardPalette(theme), [theme]);
 }
 
-/** The eight default series tones, in `CHART_TONES` order, on the current theme. */
+/** The nine canonical series tones, in token order, on the current theme. */
 export function useChartTones(): ChartSeriesTone[] {
   const theme = useTheme();
   return useMemo(() => resolveChartTones(theme), [theme]);

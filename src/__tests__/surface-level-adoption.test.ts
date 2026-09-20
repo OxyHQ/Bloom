@@ -160,12 +160,11 @@ describe('quiet text is read off the surface it lands on', () => {
  * every assertion below walks both.
  */
 /**
- * The sampled presets where `backgroundSecondary` FAILS the JND against the menu
- * surface in dark. An equality: `mint`, the one preset missing from this list,
- * clears the floor by a hundredth — a scrape rather than a margin — so a change
- * that moves either way has to be read rather than absorbed.
+ * Exact negative-control failures under the tonal policy: mono and purple still
+ * miss the menu JND in dark. The other sampled presets now clear it; preserving
+ * an equality makes improvements and regressions equally visible.
  */
-const FAILS_IN_DARK = ['blue', 'mono', 'purple', 'teal', 'yellow'];
+const FAILS_IN_DARK = ['mono', 'purple'];
 
 describe('a settings group resolves a surface it cannot see', () => {
   it('never lands on the surface behind it, at any rung', () => {
@@ -209,19 +208,9 @@ describe('a settings group resolves a surface it cannot see', () => {
   });
 
   it('is a step and not `backgroundSecondary`, which is calibrated on `card` alone', () => {
-    // The negative control for the choice, as a fact about the palette. On the
-    // menu surface `FloatingPanel` and `QueuePanel` publish, `backgroundSecondary`
-    // measures 1.086-1.106 in DARK — failing the JND on 52 of the full 64 presets
-    // and on every preset sampled here — while clearing it in LIGHT on all of
-    // them (1.221-1.230). That split is the whole reason a suite pinned to one
-    // mode could not see this.
-    //
-    // Pinned as a NAMED SET, not as a floor: "at least one preset fails" erodes
-    // to nothing, and an IMPROVEMENT has to be looked at too — if
-    // `backgroundSecondary` ever clears the floor on the menu surface in dark,
-    // the reason this default is a step needs restating, not silently keeping.
-    // One sampled preset does clear it, and naming it is the point: it is a
-    // scrape, not a margin.
+    // A fixed backgroundSecondary is not a parent-aware step. Under the tonal
+    // policy it still fails for the named dark presets, while the chosen step
+    // must clear the same unchanged JND in every sampled preset and mode.
     const failsInDark: string[] = [];
     const clearsInLight: string[] = [];
     const stepFails: string[] = [];

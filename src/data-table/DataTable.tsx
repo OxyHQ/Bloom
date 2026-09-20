@@ -1,3 +1,4 @@
+import { useBloomAppearance } from '../appearance';
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
   Platform,
@@ -11,7 +12,7 @@ import {
 import Svg, { Path } from 'react-native-svg';
 
 import { Button } from '../button';
-import { resolveButtonPalette, resolveButtonRamps } from '../button/shared';
+import { resolveButtonPalette } from '../button/shared';
 import { Checkbox } from '../checkbox';
 import { useControllableState } from '../hooks/use-controllable-state';
 import { Pagination } from '../pagination';
@@ -77,10 +78,8 @@ interface DataTablePalette {
 }
 
 function resolveDataTablePalette(theme: Theme): DataTablePalette {
-  const { neutral: n } = resolveButtonRamps(theme);
-  return theme.isDark
-    ? { border: n[800], separator: n[800], textTertiary: n[600], text: theme.colors.text }
-    : { border: n[200], separator: n[200], textTertiary: n[400], text: theme.colors.text };
+  const c = theme.colors;
+  return { border: c.borderLight, separator: c.borderLight, textTertiary: c.textSecondary, text: c.text };
 }
 
 /** `inset`: the rows' `pl-3` gutter. */
@@ -140,7 +139,7 @@ export function DataTable<T>({
   defaultPage = 1,
   onPageChange,
   size: sizeProp,
-  defaultSize = 'md',
+  defaultSize,
   onSizeChange,
   showSizeToggle = false,
   sizeToggleLabels = DEFAULT_SIZE_LABELS,
@@ -151,12 +150,13 @@ export function DataTable<T>({
   style,
   testID,
 }: DataTableProps<T>) {
+  const {size: scopedSize} = useBloomAppearance({size: defaultSize}, {size: 'md', tone: 'neutral'});
   const theme = useTheme();
   const palette = useMemo(() => resolveDataTablePalette(theme), [theme]);
 
   const [size, setSize] = useControllableState<DataTableSize>({
     value: sizeProp,
-    defaultValue: defaultSize,
+    defaultValue: scopedSize === 'xs' || scopedSize === 'sm' ? 'sm' : 'md',
     onChange: onSizeChange,
   });
   const [sort, setSort] = useControllableState<DataTableSort | null>({
@@ -477,7 +477,7 @@ export function DataTable<T>({
             label={sizeToggleAccessibilityLabel}
             type="radio"
             value={size}
-            onChange={setSize}
+            onValueChange={setSize}
           >
             <SegmentedControlItem value="md">
               <SegmentedControlItemText>{sizeToggleLabels.md}</SegmentedControlItemText>
@@ -531,14 +531,13 @@ function SortButton({
   onPress: () => void;
 }) {
   const theme = useTheme();
-  const { accent, neutral } = useMemo(() => resolveButtonRamps(theme), [theme]);
   const hook: WebDataSet = IS_WEB ? { dataSet: { bloomTableSort: '' } } : {};
   const sortProps: WebSortProps = { 'aria-sort': direction };
   const ring: WebCssStyle = {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 2,
-    '--bloom-table-ring': accent[500],
+    '--bloom-table-ring': theme.colors.primary,
   };
   return (
     <Pressable
@@ -556,7 +555,7 @@ function SortButton({
       ) : (
         label
       )}
-      <SortGlyph direction={direction} color={direction === 'none' ? color : neutral[500]} />
+      <SortGlyph direction={direction} color={direction === 'none' ? color : theme.colors.textSecondary} />
     </Pressable>
   );
 }
@@ -602,7 +601,7 @@ export function DataTableRowAction({
 
   const activeStyle = useMemo((): WebCssStyle | ViewStyle | undefined => {
     if (!active) return undefined;
-    const paint = resolveButtonPalette('secondary', theme).active;
+    const paint = resolveButtonPalette('plain', theme, 'neutral').active;
     return IS_WEB
       ? {
           '--bloom-btn-bg': paint.background,
@@ -618,15 +617,7 @@ export function DataTableRowAction({
   const fill = IS_WEB ? 'currentColor' : theme.colors.text;
 
   const button = (
-    <Button
-      {...buttonProps}
-      variant="secondary"
-      size="small"
-      iconOnly
-      accessibilityLabel={accessibilityLabel ?? label}
-      icon={<Icon width={ROW_ACTION_ICON_SIZE} height={ROW_ACTION_ICON_SIZE} fill={fill} />}
-      style={[activeStyle, style]}
-    />
+    <Button {...buttonProps} size="sm" accessibilityLabel={accessibilityLabel ?? label} leading={<Icon width={ROW_ACTION_ICON_SIZE} height={ROW_ACTION_ICON_SIZE} fill={fill} />} style={[activeStyle, style]} appearance="plain" tone="neutral" />
   );
 
   if (!tooltip || !IS_WEB) return button;

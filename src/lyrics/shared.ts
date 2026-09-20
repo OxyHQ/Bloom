@@ -1,6 +1,7 @@
+import { resolveSurfaceLevel } from '../styles/surface-levels';
 import { Platform } from 'react-native';
 
-import { mixColor, resolveButtonRamps } from '../button/shared';
+import { mixColor } from '../button/shared';
 import { parseRgba } from '../theme/color-utils';
 import type { Theme } from '../theme/types';
 import type { TypeScaleVariant } from '../typography/scale';
@@ -184,7 +185,7 @@ function paletteFrom(background: string, foreground: string, fromArtwork: boolea
  * as far as it takes for white to keep AAA on it, under white text. Black
  * clears any light foreground, so a pale colour just lands deeper.
  *
- * Without one: the neutral surface (`neutral-100` light, `neutral-900` dark)
+ * Without one: the parent-aware level-one surface
  * under the theme's text colour.
  *
  * Either way upcoming lines are the text colour mixed toward the background no
@@ -202,8 +203,7 @@ function paletteFrom(background: string, foreground: string, fromArtwork: boolea
 export function resolveLyricsPalette(theme: Theme, artworkColor?: string | null): LyricsPalette {
   const shade = artworkColor ? darkenUntilContrast(artworkColor, WHITE, AAA_TEXT_CONTRAST) : null;
   if (shade) return paletteFrom(shade.color, WHITE, true);
-  const { neutral } = resolveButtonRamps(theme);
-  return paletteFrom(theme.isDark ? neutral[900] : neutral[100], theme.colors.text, false);
+  return paletteFrom(resolveSurfaceLevel(theme, 1).background, theme.colors.text, false);
 }
 
 // ---------------------------------------------------------------------------

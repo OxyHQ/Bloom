@@ -30,6 +30,8 @@ export type VirtualListSlot =
  * explicitly (no index signature, no `any`).
  */
 export interface VirtualListProps<T> {
+  /** Opt into the nearest Screen geometry/motion without wrapping this list in a ScrollView. */
+  screen?: import('../screen/types').ScreenScrollOptions;
   /** Row data. */
   data?: readonly T[] | null;
   /** Renders one row. */

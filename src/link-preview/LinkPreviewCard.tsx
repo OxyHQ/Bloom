@@ -99,7 +99,7 @@ const LinkPreviewCardComponent: React.FC<LinkPreviewCardProps> = ({
 
   return (
     <Card
-      variant="outlined"
+      appearance="outline"
       radius="radius-20"
       className={className}
       style={style}

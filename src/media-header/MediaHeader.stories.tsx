@@ -565,7 +565,7 @@ export const ActionControls: Story = {
     return (
       <Page>
         <View style={{ padding: 16, gap: 16 }}>
-          <View style={{ flexDirection: 'row', gap: 16, alignItems: 'center' }}>
+          <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 16, alignItems: 'center' }}>
             <ShuffleButton shuffle={false} onShuffleChange={() => {}} />
             <ShuffleButton shuffle={shuffle} onShuffleChange={setShuffle} testID="shuffle-on" />
             <DownloadButton state="idle" onPress={() => {}} />

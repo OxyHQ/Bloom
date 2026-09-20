@@ -91,8 +91,8 @@ import { withAlpha } from './color-utils';
  * in light mode that means lighter — which is the direction a white label can
  * least afford. Measured over 64 presets x 2 modes x 5 Bloom surfaces:
  *
- *   `Button` primary     73 of 640 rows fall below WCAG AA, in the band
- *                        4.17..4.50, ALL of them in LIGHT mode, across 27
+ *   `Button` primary     67 of 640 rows fall below WCAG AA, in the band
+ *                        4.21..4.50, ALL of them in LIGHT mode, across 27
  *                        presets (acid-canopy, arctic-signal, blue, bronze-neon,
  *                        clay-current, copper-field, electric-tide, faircoin,
  *                        green, lagoon, lavender, malachite-rush,
@@ -101,11 +101,12 @@ import { withAlpha } from './color-utils';
  *                        sky, solar-flux, viridian-orbit, yellow).
  *   `Button` destructive 0 of 640. Worst 5.32.
  *
- * As a SOLID fill all 1280 Button rows pass. The 1.0.1 catalog retains its exact
- * 38/340 failure set (including the original 18 presets' 30/180); the 30 new
- * three-seed combinations add 35/300 and do not worsen the 4.17 floor.
+ * As a SOLID fill all 1280 Button rows pass. Approved chroma 28 surfaces move
+ * the earlier 73/640 baseline to 67/640. Historical cohorts now measure 36/340
+ * (including the original 18 presets' 28/180) plus 31/300 additions.
  *
- * The alpha at which the failures reach zero is **0.89** (worst 4.52), and the
+ * In the historical low-chroma sweep, failures reached zero at **0.89**
+ * (worst 4.52), and the
  * curve between is steep: 0.86 -> 49 rows, 0.87 -> 26, 0.88 -> 8, 0.89 -> 0.
  * So AA compliance costs four hundredths of alpha. 0.85 is kept because it is
  * the reference's own value and matching the reference is the requirement;
@@ -178,7 +179,7 @@ export function glassSheenCss(stop: GlassSheenStop): string {
  */
 export const GLASS_RIM_HIGHLIGHT = 'inset 0 1px 0 0 rgba(255, 255, 255, 0.2)';
 
-/** The reference's `blur(10px)` — the radius of the material, on both platforms. */
+/** The reference's pure CSS `blur(10px)`, retained on web. */
 export const GLASS_BLUR_RADIUS_PX = 10;
 
 /**
@@ -203,28 +204,19 @@ export const GLASS_BLUR_FILTER = `blur(${GLASS_BLUR_RADIUS_PX}px)`;
 export const GLASS_SHEEN_GRADIENT = `linear-gradient(180deg, ${glassSheenCss(GLASS_SHEEN.top)}, ${glassSheenCss(GLASS_SHEEN.middle)} ${GLASS_SHEEN.middleStop * 100}%, ${glassSheenCss(GLASS_SHEEN.bottom)})`;
 
 /**
- * Intensity handed to `expo-blur`'s `BlurView` on NATIVE, derived from
- * {@link GLASS_BLUR_RADIUS_PX} through the `intensity * 0.2` px radius its web
- * build computes.
+ * Native expo-blur intensity is capped at 30 to preserve saturated backdrops.
+ * Its unavoidable neutral tint is intensity/100 * 0.78; CSS blur has no tint.
+ * With the approved chroma 28 surfaces, intensity 50 caused a 6.478/255 maximum
+ * painted-channel divergence. Intensity 30 reduces that to 3.887/255 without
+ * changing fill alpha 0.85, sheen, hairline, or the web's 10px blur.
  *
- * KNOWN PLATFORM DIFFERENCE, stated rather than papered over: `expo-blur` cannot
- * be asked for a blur radius WITHOUT also painting a tint of its own — one
- * `intensity` drives both, at `intensity/100 * 0.78` — whereas CSS
- * `backdrop-filter` is a pure blur. So the native pane carries one extra neutral
- * layer the web pane does not.
- *
- * At 0.85 that extra layer is almost nothing, and the measurement says so: it
- * sits UNDER a fill that already covers 85%, so it can only tint the 15% that
- * gets through. Across the whole matrix the worst per-channel difference
- * between the web pane and the native pane is **2.35** of 255, and the two
- * legibility floors are 4.17 (web) and 4.19 (native).
- *
- * That is a real change from the 0.25 material, where the same layer moved the
- * two stacks visibly apart — the more opaque the fill, the less the platform
- * difference can matter. It is measured on every release rather than assumed,
- * because it is the kind of gap that widens the moment the alpha moves.
+ * This deliberately trades native blur strength for closer material colour.
+ * The web intensity-to-radius approximation would be 6px, not 10px; actual
+ * native blur remains platform-dependent. The gate keeps the original <4
+ * colour-gap ceiling and >1 nonzero-tint discriminator; it does not claim
+ * equivalent spatial blur or replace real-device verification.
  */
-export const GLASS_BLUR_INTENSITY = GLASS_BLUR_RADIUS_PX / 0.2;
+export const GLASS_BLUR_INTENSITY = 30;
 
 export interface GlassColors {
   /** The translucent pane — the caller's brand fill at {@link GLASS_FILL_ALPHA}. */
@@ -259,9 +251,10 @@ export interface GlassColors {
  * backdrop takes its luminance from the page, so it needed the page's reading
  * colour. At 0.85 the pane is the fill, so it takes the fill's own label: on
  * the complete 3840-row matrix (64 presets x 2 modes x 6 tones x 5 surfaces),
- * `colors.text` fails AA on 3232 rows (worst 1.21) against the on-fill token's
- * 577 (worst 4.17). The 1.0.1 baseline remains 1714/2040 versus 305/2040;
- * the 30 additions contribute 1518/1800 versus 272/1800. The gate re-measures
+ * `colors.text` now fails AA on 2577 rows against the on-fill token's 480.
+ * The 1.0.1 cohort measures 1377/2040 versus 258/2040; the 30 additions
+ * contribute 1200/1800 versus 222/1800. Before chroma 28, those totals were
+ * 3232 versus 577 (historical worst 1.21 versus 4.17). The gate re-measures
  * and pins both on every alpha or surface change.
  */
 export function resolveGlassColors(fill: string): GlassColors {

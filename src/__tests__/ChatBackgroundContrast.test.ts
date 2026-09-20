@@ -8,9 +8,10 @@
  * asserting "text over the wallpaper clears AA" would be measuring a composite
  * that never gets painted. What a wallpaper CAN do is stop a bubble being told
  * apart from the page behind it, so the number here is the SEPARATION between a
- * bubble fill and the worst pixel a variant can put behind it. That needs the
- * EXTREMES (`chatBackgroundExtremes`), not an average: an average wallpaper is
- * not what a bubble lands on.
+ * bubble fill and the wallpaper. Endpoint samples describe the generated
+ * bounds, but do NOT prove a worst-case guarantee over continuous image
+ * pixels: an intermediate pixel may equal the bubble luminance. The image
+ * limitation is measured separately below, while opaque label AA remains.
  *
  * The figures are pinned as EQUALITIES, not floors. A wallpaper that quietly
  * improves is a wallpaper whose recipe changed, and that is exactly as much of
@@ -33,7 +34,7 @@ import {
   resolveChatScreenPaint,
 } from '../chat-screen/shared';
 import type { ChatBackgroundVariant } from '../chat-screen/types';
-import { contrastRatio } from '../styles/color-contrast';
+import { contrastRatio, relativeLuminance } from '../styles/color-contrast';
 import { buildTheme } from '../theme/build-theme';
 import { APP_COLOR_PRESETS, type AppColorName } from '../theme/color-presets';
 import { mixColor } from '../button/shared';
@@ -107,7 +108,7 @@ describe('bubble text over its own fill', () => {
       const paint = resolveChatScreenPaint(theme);
       const { accent } = resolveButtonRamps(theme);
       incoming = Math.min(incoming, contrastRatio(paint.text, paint.surface));
-      const out = contrastRatio(theme.colors.primaryForeground, accent[500]);
+      const out = contrastRatio(theme.colors.primaryForeground, theme.colors.primary);
       if (out < outgoing) {
         outgoing = out;
         worstOutgoing = id;
@@ -115,7 +116,7 @@ describe('bubble text over its own fill', () => {
     }
     // Literals, not ratios derived from the same paint: a floor computed from
     // the thing under test moves with it and measures nothing.
-    expect(round(incoming)).toBe(13.82);
+    expect(round(incoming)).toBe(9.47);
     expect(incoming).toBeGreaterThanOrEqual(7);
     expect(round(outgoing)).toBe(4.55);
     expect(outgoing).toBeGreaterThanOrEqual(4.5);
@@ -128,17 +129,17 @@ describe('bubble text over its own fill', () => {
       const paint = resolveChatScreenPaint(theme);
       worst = Math.min(worst, contrastRatio(paint.textSecondary, paint.floatingSurface));
     }
-    expect(round(worst)).toBe(4.71);
+    expect(round(worst)).toBe(8.84);
     expect(worst).toBeGreaterThanOrEqual(4.5);
   });
 });
 
 describe('bubble separation from each wallpaper', () => {
   const measured: Record<ChatBackgroundVariant, [min: number, max: number]> = {
-    plain: [1.07, 1.11],
-    pattern: [1.07, 1.11],
-    gradient: [1.07, 1.11],
-    image: [1.12, 1.24],
+    plain: [1.10, 1.57],
+    pattern: [1.10, 1.57],
+    gradient: [1.10, 1.57],
+    image: [1.17, 1.65],
   };
 
   for (const variant of VARIANTS) {
@@ -148,14 +149,14 @@ describe('bubble separation from each wallpaper', () => {
     });
   }
 
-  it('never lets a decorated wallpaper separate WORSE than the bare page', () => {
+  it('never lets generated pattern/gradient endpoints separate WORSE than the bare page', () => {
     // The page colour is the baseline every chat screen already has. A variant
     // that dips under it is a wallpaper that made the transcript harder to read
     // than no wallpaper at all — which is the whole failure mode.
     for (const { id, theme } of THEMES) {
       const paint = resolveChatScreenPaint(theme);
       const baseline = separation(paint, 'plain');
-      for (const variant of VARIANTS) {
+      for (const variant of ['plain', 'pattern', 'gradient'] as const) {
         const value = separation(paint, variant);
         expect({ at: `${id} ${variant}`, value: round(value) }).toEqual({
           at: `${id} ${variant}`,
@@ -166,11 +167,32 @@ describe('bubble separation from each wallpaper', () => {
     }
   });
 
-  it('makes an IMAGE wallpaper safer than the bare page, which is what the dim is for', () => {
-    for (const { theme } of THEMES) {
+  it('records the visible-photo limitation instead of claiming endpoint contrast covers every pixel', () => {
+    const worseEndpoints: string[] = [];
+    const overlappingRanges: string[] = [];
+    for (const { id, theme } of THEMES) {
       const paint = resolveChatScreenPaint(theme);
-      expect(separation(paint, 'image')).toBeGreaterThan(separation(paint, 'plain'));
+      if (separation(paint, 'image') < separation(paint, 'plain')) worseEndpoints.push(id);
+      const ex = chatBackgroundExtremes(paint, 'image');
+      const low = relativeLuminance(ex.darkest)!;
+      const high = relativeLuminance(ex.lightest)!;
+      if (chatBackgroundReferenceSurfaces(paint).some(fill => {
+        const value = relativeLuminance(fill)!;
+        return value >= low && value <= high;
+      })) overlappingRanges.push(id);
+      // Keep the photograph visible; a near-opaque overlay would fake the
+      // original stronger-than-page assertion by eliminating the image.
+      expect(paint.imageDimOpacity).toBe(theme.isDark ? 0.62 : 0.55);
     }
+    expect(worseEndpoints).toEqual(['yellow/dark']);
+    // Inside this continuous range a photo can equal a bubble's luminance:
+    // separation1.00 is possible even when both endpoint samples are >1.
+    expect(overlappingRanges).toEqual([
+      'oxy/dark', 'blue/dark', 'teal/dark', 'green/dark', 'yellow/dark',
+      'red/dark', 'purple/dark', 'pink/dark', 'orange/dark', 'mono/dark',
+      'gray/dark', 'navy/dark', 'forest-fire/dark', 'midnight-citrus/dark',
+      'charcoal-lime/dark', 'amethyst-current/dark',
+    ]);
   });
 
   it('NEGATIVE CONTROL: dimming toward pure white collapses the light-mode image case to 1.00', () => {

@@ -31,7 +31,7 @@ import {
 } from './marketing-data';
 
 /**
- * The marketing dashboard template: the floating sidebar / reveal-drawer
+ * The marketing dashboard template: the adaptive navigation
  * shell, KPI stat cards, a 3-up row (acquisition funnel, spend-by-channel
  * half gauge, traffic sources bar list), a 2-up row (ad spend vs. ROAS combo,
  * visitors-by-channel area, both with stat tiles) and the campaigns data

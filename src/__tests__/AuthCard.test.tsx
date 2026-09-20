@@ -5,7 +5,7 @@ import { act, fireEvent, render } from '@testing-library/react-native';
 import { AuthCard, AuthMediaCarousel } from '../auth-card';
 import { AUTH_CARD_WEB_CSS } from '../auth-card/AuthCard';
 
-import { resolveButtonPalette, resolveButtonRamps } from '../button/shared';
+import { resolveButtonPalette } from '../button/shared';
 import { BloomThemeProvider } from '../theme/BloomThemeProvider';
 import { buildTheme } from '../theme/build-theme';
 import { resolvedStyle } from './support/rendered-style';
@@ -40,22 +40,22 @@ describe('AuthCard', () => {
     withViewport(1024);
     const { getByTestId } = renderCard(<AuthCard testID="auth" />);
     const card = resolvedStyle(getByTestId('auth').props.style);
-    const { neutral } = resolveButtonRamps(buildTheme('teal', 'light'));
+    const { colors } = buildTheme('teal', 'light');
     expect(card).toMatchObject({
       maxWidth: 400,
       borderRadius: 24,
       borderWidth: 1,
-      borderColor: neutral[200],
+      borderColor: colors.borderLight,
       padding: 32,
     });
   });
 
-  it('paints the dark card on background-secondary (neutral-900) with a neutral-700 hairline', () => {
+  it('paints the dark card with canonical card and hairline roles', () => {
     const { getByTestId } = renderCard(<AuthCard testID="auth" />, 'dark');
-    const { neutral } = resolveButtonRamps(buildTheme('teal', 'dark'));
+    const { colors } = buildTheme('teal', 'dark');
     expect(resolvedStyle(getByTestId('auth').props.style)).toMatchObject({
-      backgroundColor: neutral[900],
-      borderColor: neutral[700],
+      backgroundColor: colors.card,
+      borderColor: colors.borderLight,
     });
   });
 
@@ -113,7 +113,7 @@ describe('AuthCard', () => {
 
   it('paints the provider button as the secondary button surface', () => {
     const { getByTestId } = renderCard(<AuthCard testID="auth" providers={['github']} />);
-    const palette = resolveButtonPalette('secondary', buildTheme('teal', 'light'));
+    const palette = resolveButtonPalette('outline', buildTheme('teal', 'light'), 'neutral');
     expect(resolvedStyle(getByTestId('auth-provider-github').props.style)).toMatchObject({
       backgroundColor: palette.rest.background,
       borderColor: palette.rest.border,

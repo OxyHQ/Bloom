@@ -2,43 +2,14 @@ import { useEffect, useMemo } from 'react';
 import { Platform } from 'react-native';
 
 import {
-  colorRamp,
-  DANGER_TABLE,
-  mixColor,
   resolveButtonPalette,
-  resolveButtonRamps,
   type ButtonPalette,
 } from '../button/shared';
 import { adoptStyleSheet } from '../styles/adopt-style-sheet';
 import type { Theme } from '../theme/types';
 import { useTheme } from '../theme/use-theme';
 
-/**
- * The palette and geometry every agent-chat part paints from — semantic
- * tokens resolved onto Bloom's ramps (`button/shared`):
- *
- *   Token                                 light            dark
- *   background-secondary-default          neutral-100      neutral-900     chat + rail cards
- *   background-secondary-hover            neutral-200      neutral-800     rail rows
- *   background-tertiary-default           neutral-200      neutral-800     row menu trigger hover
- *   background-primary-default            card             neutral-800     composer pill, bubbles, pills
- *   background-primary-hover  (on card)   neutral-100      neutral-700@60% over neutral-800
- *   background-primary-hover  (on chat)   neutral-100      neutral-700@60% over neutral-900
- *   ai-chat-composer-add-background       neutral-100      neutral-700
- *   ai-chat-composer-add-hover-background neutral-200      neutral-600
- *   text-primary                          text             text
- *   text-secondary                        neutral-500      neutral-500
- *   text-tertiary                         neutral-400      neutral-600
- *   text-error-primary                    red-500          red-400
- *   foreground-icon-primary               neutral-950      neutral-50
- *   foreground-icon-secondary             neutral-500      neutral-500
- *   foreground-icon-tertiary              neutral-400      neutral-600
- *   separator-border                      neutral-200      neutral-800
- *   border-focus-ring                     accent-500       accent-500
- *   shadow-card                           0 1 1 / .05      0 1 1 / .14
- *   shadow-xs                             0 1 2 / .05      0 1 2 / .18
- *   header frost                          white / 20%      black / 20%
- */
+/** Shared semantic surfaces, text and action roles for every agent-chat part. */
 export interface AgentChatPalette {
   isDark: boolean;
   chatSurface: string;
@@ -67,35 +38,34 @@ export interface AgentChatPalette {
 }
 
 export function resolveAgentChatPalette(theme: Theme): AgentChatPalette {
-  const { accent, neutral: n } = resolveButtonRamps(theme);
-  const red = colorRamp(theme.colors.negative, DANGER_TABLE);
+  const c = theme.colors;
   const dark = theme.isDark;
-  const card = dark ? n[800] : theme.colors.card;
-  const chatSurface = dark ? n[900] : n[100];
+  const card = c.card;
+  const chatSurface = c.backgroundSecondary;
   return {
     isDark: dark,
     chatSurface,
-    rowHover: dark ? n[800] : n[200],
-    tertiary: dark ? n[800] : n[200],
+    rowHover: c.backgroundTertiary,
+    tertiary: c.backgroundTertiary,
     card,
-    cardHover: dark ? mixColor(card, n[700], 0.6) : n[100],
-    chatHover: dark ? mixColor(chatSurface, n[700], 0.6) : n[100],
-    addBackground: dark ? n[700] : n[100],
-    addHover: dark ? n[600] : n[200],
+    cardHover: c.backgroundSecondary,
+    chatHover: c.backgroundTertiary,
+    addBackground: c.backgroundSecondary,
+    addHover: c.backgroundTertiary,
     text: theme.colors.text,
-    textSecondary: n[500],
-    textTertiary: dark ? n[600] : n[400],
-    textError: dark ? red[400] : red[500],
-    iconPrimary: dark ? n[50] : n[950],
-    iconSecondary: n[500],
-    iconTertiary: dark ? n[600] : n[400],
-    separator: dark ? n[800] : n[200],
-    ring: accent[500],
-    accent500: accent[500],
+    textSecondary: c.textSecondary,
+    textTertiary: c.textTertiary,
+    textError: c.errorSubtleForeground,
+    iconPrimary: c.text,
+    iconSecondary: c.textSecondary,
+    iconTertiary: c.textTertiary,
+    separator: c.borderLight,
+    ring: c.primary,
+    accent500: c.primarySubtleForeground,
     shadowCard: dark ? '0 1px 1px 0 rgba(0, 0, 0, 0.14)' : '0 1px 1px 0 rgba(0, 0, 0, 0.05)',
     shadowXs: dark ? '0 1px 2px 0 rgba(0, 0, 0, 0.18)' : '0 1px 2px 0 rgba(0, 0, 0, 0.05)',
     frost: dark ? 'rgba(0, 0, 0, 0.2)' : 'rgba(255, 255, 255, 0.2)',
-    primary: resolveButtonPalette('primary', theme),
+    primary: resolveButtonPalette('solid', theme, 'action'),
   };
 }
 

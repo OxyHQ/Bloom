@@ -12,7 +12,6 @@ import { createRoot, type Root } from 'react-dom/client';
 
 jest.mock('react-native', () => jest.requireActual('react-native-web'));
 
-import { resolveButtonRamps } from '../button/shared';
 import { RiWifiLine } from '../icons/remix/RiWifiLine';
 import { BloomThemeProvider } from '../theme/BloomThemeProvider';
 import type { Theme } from '../theme/types';
@@ -146,8 +145,8 @@ describe('FilterSection', () => {
     expect(cs.paddingTop).toBe('32px');
     expect(cs.paddingBottom).toBe('32px');
     expect(cs.borderBottomWidth).toBe('1px');
-    const { neutral } = resolveButtonRamps(theme);
-    expect(cs.borderBottomColor).toBe(normalise(neutral[200]));
+
+    expect(cs.borderBottomColor).toBe(normalise(theme.colors.border));
 
     mount(<FilterSection title="Last" divider={false} testID="s" />);
     expect(getComputedStyle(byTestId('s')).borderBottomWidth).toBe('0px');
@@ -170,8 +169,8 @@ describe('PriceHistogram', () => {
       expect(h.getAttribute('aria-hidden')).toBe('true');
       const bars = [0, 1, 2, 3].map((i) => byTestId(`h-bar-${i}`));
       expect(bars.map((b) => getComputedStyle(b).height)).toEqual(['20px', '80px', '40px', '0px']);
-      const { neutral } = resolveButtonRamps(theme);
-      const out = normaliseBg(mode === 'dark' ? neutral[700] : neutral[300]);
+
+      const out = normaliseBg(theme.colors.textTertiary);
       const inRange = normaliseBg(chartHueTone(theme, 6).color);
       expect(bars.map(bg)).toEqual([out, inRange, inRange, out]);
       expect(getComputedStyle(bars[1] as HTMLElement).borderTopLeftRadius).toBe('3px');
@@ -333,8 +332,8 @@ describe('CountFilter', () => {
       normalise(theme.colors.background),
     );
     expect(bg(off)).toBe('rgba(0, 0, 0, 0)');
-    const { neutral } = resolveButtonRamps(theme);
-    expect(getComputedStyle(off).borderTopColor).toBe(normalise(mode === 'dark' ? neutral[700] : neutral[200]));
+
+    expect(getComputedStyle(off).borderTopColor).toBe(normalise(theme.colors.border));
     expect(getComputedStyle(on).height).toBe('40px');
     expect(getComputedStyle(on).borderTopLeftRadius).toBe('9999px');
   });

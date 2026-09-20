@@ -50,21 +50,23 @@ double-counts the home indicator and strands a band of dead space.
 
 ## `useBottomEdgeInset` / `useClaimBottomEdge` — what is already there
 
-Knowing where the edge is does not tell a FAB that a tab bar is already parked
-on it. A surface that parks there **claims** its footprint; a surface that wants
-to avoid it **reads** the total.
+The registry remains a low-level geometry API for independently positioned surfaces.
+A surface **claims** its footprint; another surface can **read** the occupied extent.
+`Fab` no longer reads this registry: it is a static action positioned by `Screen`
+or beside navigation by `BottomBar`.
 
 ```tsx
 // The surface that parks there — a floating tab bar.
 useClaimBottomEdge(gap + barHeight);
 
-// The surface that avoids it — Bloom's Fab does this for you.
+// A custom independently anchored surface that avoids the claimed region.
 const occupied = useBottomEdgeInset();
 <View style={{ position: 'absolute', bottom: windowEdgeGap(insets.bottom) + occupied }} />
 ```
 
-Neither imports the other, so any combination composes: a tab bar with no FAB, a
-FAB with no tab bar, both, or a surface written later.
+Claims remain independent of their readers. For built-in screen composition, use
+`Screen` and `BottomBar`: the owner reserves geometry and renders the FAB as a
+sibling of the navigation capsule, above their shared blur.
 
 `BloomProvider` mounts the registry. Outside one, `useBottomEdgeInset()` returns
 `0` and `useClaimBottomEdge` is a no-op, so a surface stays usable standalone.
@@ -179,10 +181,12 @@ A collapse is **motion**, and motion that must stay locked to a reanimated
 animation has to travel as a shared value on the UI thread. React state is the
 wrong transport for it at any width, so it is not offered here.
 
-The **app** owns that signal. Mention drives its header, its tab bar and its FAB
-from one `SharedValue` through `useAnimatedStyle`, and everything moves together
-because nothing crosses a thread. This registry stays what it is good at:
-**geometry** — where things are, not when they move.
+`Screen` now owns the coordinated signal locally. `useScreen()` exposes
+`collapseProgress`; `AppShell` passes it to `BottomBar.minimizeProgress`, and
+`BottomBar` animates its navigation and action together. Custom chrome reads the
+same shared value. The historical workaround in Mention did this at app level;
+the shared composition now supplies that ownership. The registry still carries
+**geometry**, never animated collapse or a React boolean mirror.
 
 ## Things that are easy to get wrong
 
@@ -192,7 +196,8 @@ strand a reader at twice the height, floating mid-screen.
 
 **A z-index cannot substitute for the offset.** A tab bar host is typically the
 last sibling of the app shell, so it paints over every descendant no matter what
-they claim. The FAB has to be somewhere *else*, not merely on top.
+they claim. A separate anchored action must avoid that band; the current BottomBar instead
+places the action beside navigation in the same host, above their blur.
 
 **A modal surface should not read the registry.** A detached `BottomSheet`
 renders above the tab bar and covers it; offsetting it by a bar it is already

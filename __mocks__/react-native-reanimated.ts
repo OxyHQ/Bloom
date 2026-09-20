@@ -5,7 +5,10 @@
 // desync those reads. Back it with a ref so identity is preserved per call site.
 const { useRef } = require('react') as typeof import('react');
 
+export const ReduceMotion = { System: 'system', Always: 'always', Never: 'never' } as const;
+
 const Reanimated = {
+  ReduceMotion,
   useSharedValue: (init: unknown) => {
     const ref = useRef<{ value: unknown } | null>(null);
     if (ref.current === null) ref.current = { value: init };

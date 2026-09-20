@@ -147,3 +147,7 @@ The `:focus-visible` ring is the accent ramp's 500, the colour every other ring 
 ## A pill does not shrink
 
 In a flex row of chips — a filter bar, a tag list — each pill keeps its size and the row overflows, rather than every label squeezing into an ellipsis to make room. Inside one pill, the label yields first: a chip narrower than its own text ellipsises rather than spilling past its radius.
+
+## Compatibility
+
+The shared `size`, `tone` and `appearance` vocabulary coexists with the previously published family props. Explicit shared props take precedence over legacy spellings; existing size and state callbacks remain supported. New code should prefer the shared vocabulary.

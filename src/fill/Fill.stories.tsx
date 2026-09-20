@@ -24,9 +24,10 @@ type Story = StoryObj<typeof Fill>;
  * height. A `Fill` in a zero-height parent is invisible, not broken.
  */
 export const Scrim: Story = {
+  parameters: { controls: { disable: true } },
   render: () => {
     return (
-      <View style={{ width: 320, height: 180, borderRadius: 12, overflow: 'hidden' }}>
+      <View style={{ maxWidth: '100%', width: 320, height: 180, borderRadius: 12, overflow: 'hidden' }}>
         <View style={{ flex: 1, backgroundColor: 'steelblue' }} />
         <Fill style={{ backgroundColor: 'rgba(0,0,0,0.45)' }} />
         <Fill style={{ alignItems: 'center', justifyContent: 'center' }}>
@@ -41,11 +42,12 @@ export const Scrim: Story = {
 
 /** Two fills stack in source order — the later one paints above. */
 export const Stacked: Story = {
+  parameters: { controls: { disable: true } },
   render: function StackedStory() {
     const { colors } = useTheme();
     return (
       <View
-        style={{
+        style={{ maxWidth: '100%',
           width: 320,
           height: 140,
           backgroundColor: colors.backgroundSecondary,

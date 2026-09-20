@@ -11,7 +11,7 @@ const meta: Meta<typeof Questionnaire> = {
   component: Questionnaire,
   decorators: [
     (Story) => (
-      <View style={{ padding: 40, width: 560 }}>
+      <View style={{ padding: 40, width: 560, maxWidth: '100%' }}>
         <Story />
       </View>
     ),
@@ -67,6 +67,7 @@ export const SingleSelect: Story = {
 
 /** Remembered answers: ticked rows, a filled "Other", a lifted pick. */
 export const Answered: Story = {
+  parameters: { controls: { disable: true } },
   render: () => (
     <View style={{ gap: 24 }}>
       <Questionnaire
@@ -113,6 +114,7 @@ export const CustomLabels: Story = {
 
 /** A realistic thread: the card sits under the agent's message and reports the answers. */
 export const Demo: Story = {
+  parameters: { controls: { disable: true } },
   render: function DemoStory() {
     const [done, setDone] = useState<QuestionnaireAnswers | null>(null);
     const [dismissed, setDismissed] = useState(false);

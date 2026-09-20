@@ -1,11 +1,12 @@
 import React, { memo, useEffect } from 'react';
-import { Pressable, View } from 'react-native';
+import { Pressable } from 'react-native';
 import Animated, {
   Easing,
   useAnimatedStyle,
   useReducedMotion,
   useSharedValue,
   withTiming,
+  type SharedValue,
 } from 'react-native-reanimated';
 
 import { SEGMENTED_THUMB_EASE_BEZIER, SEGMENTED_THUMB_MS } from '../button/shared';
@@ -14,7 +15,8 @@ import { borderRadius } from '../styles/tokens';
 import type { WebCssStyle } from '../styles/web-view-style';
 import { Text } from '../typography';
 import { useSidebarPalette } from './palette';
-import { Collapsible, IS_WEB, useSidebarWebCss, webHook } from './parts';
+import { useSidebarMetrics } from './metrics';
+import { Collapsible, IS_WEB, useInSidebar, useSidebarCollapseProgress, useSidebarWebCss, webHook } from './parts';
 import type { SidebarMode, SidebarModeSwitcherProps } from './types';
 
 /**
@@ -33,6 +35,7 @@ import type { SidebarMode, SidebarModeSwitcherProps } from './types';
  * two read as one family. A `radiogroup`: each row is a `radio`.
  */
 
+const AnimatedPressable = Animated.createAnimatedComponent(Pressable);
 const ROW_HEIGHT = 32;
 const ROW_GAP = 4;
 const PADDING = 4;
@@ -42,12 +45,18 @@ function ModeRow({
   mode,
   selected,
   collapsed,
+  progress,
+  compactSquare,
+  compactIcon,
   onSelect,
   testID,
 }: {
   mode: SidebarMode;
   selected: boolean;
   collapsed: boolean;
+  progress: SharedValue<number>;
+  compactSquare: number;
+  compactIcon: number;
   onSelect: (key: string) => void;
   testID?: string;
 }) {
@@ -56,17 +65,27 @@ function ModeRow({
   const Icon = mode.icon;
   const foreground = selected ? palette.text : palette.textSecondary;
 
+  const geometry = useAnimatedStyle(() => ({
+    height: ROW_HEIGHT + (compactSquare - ROW_HEIGHT) * progress.value,
+    gap: 4 * (1 - progress.value),
+  }), [progress, compactSquare]);
+  const iconBox = useAnimatedStyle(() => {
+    const side = ROW_HEIGHT + (compactSquare - ROW_HEIGHT) * progress.value;
+    return { width: side, height: side };
+  }, [progress, compactSquare]);
+  const glyphStyle = useAnimatedStyle(() => ({
+    transform: [{ scale: 1 + (compactIcon / 18 - 1) * progress.value }],
+  }), [progress, compactIcon]);
   const rowStyle: WebCssStyle = {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 4,
-    height: ROW_HEIGHT,
+
     borderRadius: borderRadius.full,
     '--bloom-sidebar-ring': palette.ring,
   };
 
   return (
-    <Pressable
+    <AnimatedPressable
       {...webHook('ring')}
       {...(IS_WEB && collapsed ? { title: mode.label } : null)}
       role="radio"
@@ -76,12 +95,12 @@ function ModeRow({
       onHoverIn={onIn}
       onHoverOut={onOut}
       onPress={() => onSelect(mode.key)}
-      style={rowStyle}
+      style={[rowStyle, geometry]}
       testID={testID}
     >
-      <View style={{ width: ROW_HEIGHT, height: ROW_HEIGHT, alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-        <Icon width={18} height={18} fill={foreground} />
-      </View>
+      <Animated.View style={[{ alignItems: 'center', justifyContent: 'center', flexShrink: 0 }, iconBox]}>
+        <Animated.View style={glyphStyle}><Icon width={18} height={18} fill={foreground} /></Animated.View>
+      </Animated.View>
       <Collapsible collapsed={collapsed} style={{ flex: 1, minWidth: 0 }}>
         <Text variant="body-2-medium" numberOfLines={1} style={{ color: foreground }}>
           {mode.label}
@@ -98,7 +117,7 @@ function ModeRow({
           </Text>
         </Collapsible>
       ) : null}
-    </Pressable>
+    </AnimatedPressable>
   );
 }
 
@@ -114,33 +133,47 @@ const SidebarModeSwitcherComponent: React.FC<SidebarModeSwitcherProps> = ({
   const palette = useSidebarPalette();
   useSidebarWebCss();
   const reducedMotion = useReducedMotion();
+  const metrics = useSidebarMetrics();
+  const progress = useSidebarCollapseProgress(collapsed);
+  const inSidebar = useInSidebar();
+  const compactSquare = metrics.row.square;
+  const compactIcon = metrics.row.icon;
+  // Grow into the panel inset continuously while its content column narrows.
+  const trackStyle = useAnimatedStyle(() => ({
+    marginLeft: inSidebar ? -PADDING * progress.value : 0,
+    marginRight: inSidebar ? -PADDING * progress.value : 0,
+    borderRadius: (ROW_HEIGHT + (compactSquare - ROW_HEIGHT) * progress.value + PADDING * 2) / 2,
+  }), [progress, compactSquare, inSidebar]);
 
   // One scan answers both questions: which row the thumb sits on, and whether
   // there is a selected row at all.
   const selectedIndex = modes.findIndex((mode) => mode.key === value);
   const selectedKnown = selectedIndex !== -1;
   const index = Math.max(0, selectedIndex);
-  const offset = useSharedValue(index * (ROW_HEIGHT + ROW_GAP));
+  const selectedPosition = useSharedValue(index);
   useEffect(() => {
-    const target = index * (ROW_HEIGHT + ROW_GAP);
-    offset.value = reducedMotion ? target : withTiming(target, { duration: SEGMENTED_THUMB_MS, easing: EASE });
-  }, [index, reducedMotion, offset]);
-  const thumbStyle = useAnimatedStyle(() => ({ transform: [{ translateY: offset.value }] }), [offset]);
+    selectedPosition.value = reducedMotion ? index : withTiming(index, { duration: SEGMENTED_THUMB_MS, easing: EASE });
+  }, [index, reducedMotion, selectedPosition]);
+  const thumbStyle = useAnimatedStyle(() => {
+    const height = ROW_HEIGHT + (compactSquare - ROW_HEIGHT) * progress.value;
+    return { height, transform: [{ translateY: selectedPosition.value * (height + ROW_GAP) }] };
+  }, [progress, compactSquare, selectedPosition]);
 
   return (
-    <View
+    <Animated.View
       role="radiogroup"
       accessibilityLabel={accessibilityLabel}
       testID={testID}
       style={[
         {
           position: 'relative',
-          width: '100%',
+          width: inSidebar ? undefined : collapsed ? compactSquare + PADDING * 2 : '100%',
+          alignSelf: inSidebar ? 'stretch' : 'center',
           padding: PADDING,
           gap: ROW_GAP,
-          borderRadius: (ROW_HEIGHT + PADDING * 2) / 2,
           backgroundColor: palette.tertiary,
         },
+        trackStyle,
         style,
       ]}
     >
@@ -155,7 +188,6 @@ const SidebarModeSwitcherComponent: React.FC<SidebarModeSwitcherProps> = ({
               top: PADDING,
               left: PADDING,
               right: PADDING,
-              height: ROW_HEIGHT,
               borderRadius: borderRadius.full,
               backgroundColor: palette.segmentedThumb,
               boxShadow: palette.segmentedThumbShadow,
@@ -170,11 +202,14 @@ const SidebarModeSwitcherComponent: React.FC<SidebarModeSwitcherProps> = ({
           mode={mode}
           selected={mode.key === value}
           collapsed={collapsed}
+          progress={progress}
+          compactSquare={compactSquare}
+          compactIcon={compactIcon}
           onSelect={onValueChange}
           testID={testID ? `${testID}-${mode.key}` : undefined}
         />
       ))}
-    </View>
+    </Animated.View>
   );
 };
 

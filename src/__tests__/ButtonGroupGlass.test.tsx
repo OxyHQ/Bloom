@@ -1,6 +1,6 @@
 /**
- * The GLASS variant of `ButtonGroup`, and the property that makes it a
- * variant rather than a second component: the group owns ONE material and the
+ * The GLASS material of `ButtonGroup`, and the property that makes it a
+ * material rather than a second component: the group owns ONE material and the
  * items paint none.
  *
  * The defect this exists to catch is not a crash and not a wrong colour — it is
@@ -38,7 +38,7 @@ const hairlineCount = (tree: unknown) =>
 describe('ButtonGroup, glass', () => {
   it('paints ONE material for the whole group and none on the items', () => {
     const { getByTestId, toJSON } = renderWithTheme(
-      <ButtonGroup variant="glass" accessibilityLabel="Actions" testID="group">
+      <ButtonGroup material="glass" accessibilityLabel="Actions" testID="group">
         <ButtonGroupItem testID="a" iconOnly accessibilityLabel="Search" />
         <ButtonGroupItem testID="b" iconOnly accessibilityLabel="Share" />
       </ButtonGroup>,
@@ -50,7 +50,7 @@ describe('ButtonGroup, glass', () => {
 
   it('keeps the group a named group, and draws no hairline between items by default', () => {
     const { getByTestId, toJSON } = renderWithTheme(
-      <ButtonGroup variant="glass" accessibilityLabel="Actions" testID="group">
+      <ButtonGroup material="glass" accessibilityLabel="Actions" testID="group">
         <ButtonGroupItem testID="a" iconOnly accessibilityLabel="Search" />
         <ButtonGroupItem testID="b" iconOnly accessibilityLabel="Share" />
       </ButtonGroup>,
@@ -72,7 +72,7 @@ describe('ButtonGroup, glass', () => {
     // sentence in a doc with nothing behind it.
     const group = (dividers: boolean) =>
       renderWithTheme(
-        <ButtonGroup variant="glass" dividers={dividers} testID="group" accessibilityLabel="Actions">
+        <ButtonGroup material="glass" dividers={dividers} testID="group" accessibilityLabel="Actions">
           <ButtonGroupItem testID="a" iconOnly accessibilityLabel="Search" />
           <ButtonGroupItem testID="b" iconOnly accessibilityLabel="Share" />
         </ButtonGroup>,
@@ -83,7 +83,7 @@ describe('ButtonGroup, glass', () => {
 
   it('does not clip — an island that clips loses its shadow on iOS', () => {
     const { getByTestId } = renderWithTheme(
-      <ButtonGroup variant="glass" accessibilityLabel="Actions" testID="group">
+      <ButtonGroup material="glass" accessibilityLabel="Actions" testID="group">
         <ButtonGroupItem testID="a" iconOnly accessibilityLabel="Search" />
       </ButtonGroup>,
     );
@@ -102,10 +102,10 @@ describe('ButtonGroup, glass', () => {
     expect(resolvedStyle(getByTestId('a').props.style).backgroundColor).toBe('transparent');
   });
 
-  it('lets an explicit variant override the surface it sits in', () => {
+  it('lets an explicit material override the surface it sits in', () => {
     const { getByTestId, toJSON } = renderWithTheme(
       <ControlSurface material="glass">
-        <ButtonGroup variant="solid" accessibilityLabel="Actions" testID="group">
+        <ButtonGroup material="solid" accessibilityLabel="Actions" testID="group">
           <ButtonGroupItem testID="a" iconOnly accessibilityLabel="Search" />
         </ButtonGroup>
       </ControlSurface>,
@@ -115,10 +115,10 @@ describe('ButtonGroup, glass', () => {
     expect(resolvedStyle(getByTestId('a').props.style).backgroundColor).not.toBe('transparent');
   });
 
-  it('leaves the solid variant exactly as it was', () => {
+  it('leaves the solid material exactly as it was', () => {
     // The regression this pins: `solid` is what every existing call site
     // renders, and it must not acquire a material, lose its hairlines or stop
-    // clipping because a second variant arrived.
+    // clipping because a second material arrived.
     const { getByTestId, toJSON } = renderWithTheme(
       <ButtonGroup testID="group" accessibilityLabel="Align">
         <ButtonGroupItem testID="a">Left</ButtonGroupItem>
@@ -132,4 +132,17 @@ describe('ButtonGroup, glass', () => {
     expect(resolvedStyle(getByTestId('a').props.style).backgroundColor).not.toBe('transparent');
     expect(resolvedStyle(getByTestId('a').props.style).borderRadius).toBeUndefined();
   });
+});
+
+it('inherits compact density while explicit group and item sizes win', () => {
+  const screen = renderWithTheme(<ControlSurface material="glass" density="sm">
+    <ButtonGroup accessibilityLabel="Inherited"><ButtonGroupItem testID="inherited">A</ButtonGroupItem></ButtonGroup>
+    <ButtonGroup size="md" accessibilityLabel="Override">
+      <ButtonGroupItem testID="group-size">B</ButtonGroupItem>
+      <ButtonGroupItem size="sm" testID="item-size">C</ButtonGroupItem>
+    </ButtonGroup>
+  </ControlSurface>);
+  expect(resolvedStyle(screen.getByTestId('inherited').props.style).height).toBe(30);
+  expect(resolvedStyle(screen.getByTestId('group-size').props.style).height).toBe(34);
+  expect(resolvedStyle(screen.getByTestId('item-size').props.style).height).toBe(30);
 });

@@ -1,3 +1,4 @@
+import { useArgs } from 'storybook/preview-api';
 import React, { useState, type PropsWithChildren } from 'react';
 import { ScrollView, Text, View } from 'react-native';
 import type { Meta, StoryObj } from '@storybook/react-vite';
@@ -129,11 +130,13 @@ function DefaultScreen() {
 
 /** Five destinations, controlled selection, scrolling content beside it. */
 export const Default: Story = {
+  parameters: { controls: { disable: true } },
   render: () => <DefaultScreen />,
 };
 
 /** No `activeId` names an item — every item renders in its inactive state. */
 export const NoSelection: Story = {
+  parameters: { controls: { disable: true } },
   render: () => {
     const items = useDemoItems();
     return (
@@ -147,6 +150,7 @@ export const NoSelection: Story = {
 
 /** A narrower column via the `width` prop. */
 export const CustomWidth: Story = {
+  parameters: { controls: { disable: true } },
   render: () => {
     const items = useDemoItems();
     const [activeId, setActiveId] = useState('home');
@@ -156,5 +160,15 @@ export const CustomWidth: Story = {
         <Feed />
       </Screen>
     );
+  },
+};
+
+export const Playground: StoryObj<typeof Rail> = {
+  args: { items: [{ id: 'home', label: 'Home', icon: <Icons.RiHomeLine /> }, { id: 'search', label: 'Search', icon: <Icons.RiSearchLine /> }], activeId: 'home', width: 80 },
+  parameters: { controls: { disable: false, include: ['activeId', 'width'] } },
+  argTypes: { activeId: { control: 'select', options: ['home','search'] }, width: { control: { type: 'range', min: 64, max: 120 } } },
+  render: function Playground(args) {
+    const [, updateArgs] = useArgs();
+    return <View style={{ width: 520, maxWidth: '100%' }}><Screen><Rail {...args} onSelect={activeId => updateArgs({ activeId })} /><Feed /></Screen></View>;
   },
 };

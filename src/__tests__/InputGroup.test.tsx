@@ -48,9 +48,9 @@ describe('InputGroup', () => {
 
   it('renders a field inside it bare: one shell, the group\'s', () => {
     const { toJSON } = renderWithTheme(
-      <InputGroup isInvalid testID="group">
+      <InputGroup invalid testID="group">
         <InputGroupAddon>https://</InputGroupAddon>
-        <TextFieldInput label="Domain" value="" onChangeText={() => {}} />
+        <TextFieldInput label="Domain" value="" onValueChange={() => {}} />
       </InputGroup>,
     );
     // Count every node painting the 2px ring border: only the group's own shell.

@@ -1,4 +1,3 @@
-import { resolveButtonRamps } from '../button/shared';
 import { adoptStyleSheet } from '../styles/adopt-style-sheet';
 import type { Theme } from '../theme/types';
 
@@ -39,8 +38,7 @@ export interface MeterColors {
 }
 
 export function resolveMeterColors(theme: Theme): MeterColors {
-  const { accent, neutral: n } = resolveButtonRamps(theme);
-  return { fill: accent[500], track: theme.isDark ? n[700] : n[200] };
+  return { fill: theme.colors.primary, track: theme.colors.backgroundTertiary };
 }
 
 /** `value` clamped into `[0, max]`, with a non-finite `value` read as 0. */

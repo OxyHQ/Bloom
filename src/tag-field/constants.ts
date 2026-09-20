@@ -38,6 +38,10 @@ export const TAG_FIELD_INPUT_MIN_WIDTH = 120;
 export const TAG_CHIP_RUNG: Readonly<Record<TagFieldSize, ChipSize>> = {
   medium: 'large',
   small: 'medium',
+  xs: 'small',
+  sm: 'medium',
+  md: 'large',
+  lg: 'xl',
 };
 
 /* -------------------------------------------------------------------------- */

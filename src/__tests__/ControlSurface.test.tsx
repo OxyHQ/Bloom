@@ -33,7 +33,7 @@ import { TEXT_FIELD_GEOMETRY } from '../text-field/shared';
 
 function Probe({ explicit }: { explicit?: ControlMaterial }) {
   const material = useInheritedControl('material', explicit, 'solid');
-  const density = useInheritedControl('density', undefined, 'medium');
+  const density = useInheritedControl('density', undefined, 'md');
   return <Text testID="probe">{`${material}/${density}`}</Text>;
 }
 
@@ -45,7 +45,7 @@ function RawProbe() {
 describe('the control-presentation contract', () => {
   it('falls back to the component default with no container', () => {
     const { getByTestId } = render(<Probe />);
-    expect(getByTestId('probe').props.children).toBe('solid/medium');
+    expect(getByTestId('probe').props.children).toBe('solid/md');
   });
 
   it('reports NO container rather than inventing one', () => {
@@ -58,11 +58,11 @@ describe('the control-presentation contract', () => {
 
   it('inherits the nearest container', () => {
     const { getByTestId } = render(
-      <ControlSurface material="glass" density="small">
+      <ControlSurface material="glass" density="sm">
         <Probe />
       </ControlSurface>,
     );
-    expect(getByTestId('probe').props.children).toBe('glass/small');
+    expect(getByTestId('probe').props.children).toBe('glass/sm');
   });
 
   it('lets an explicit prop WIN over the container', () => {
@@ -71,21 +71,21 @@ describe('the control-presentation contract', () => {
         <Probe explicit="solid" />
       </ControlSurface>,
     );
-    expect(getByTestId('probe').props.children).toBe('solid/medium');
+    expect(getByTestId('probe').props.children).toBe('solid/md');
   });
 
   it('inherits the field a nested container left undefined', () => {
     // The nesting rule: `undefined` defers, it does not reset. A
-    // `<ControlSurface density="small">` inside a glass island must not turn
+    // `<ControlSurface density="sm">` inside a glass island must not turn
     // the island's controls solid on its way past.
     const { getByTestId } = render(
       <ControlSurface material="glass">
-        <ControlSurface density="small">
+        <ControlSurface density="sm">
           <Probe />
         </ControlSurface>
       </ControlSurface>,
     );
-    expect(getByTestId('probe').props.children).toBe('glass/small');
+    expect(getByTestId('probe').props.children).toBe('glass/sm');
   });
 
   it('lets the INNER container win over the outer on a field both set', () => {
@@ -96,7 +96,7 @@ describe('the control-presentation contract', () => {
         </ControlSurface>
       </ControlSurface>,
     );
-    expect(getByTestId('probe').props.children).toBe('solid/medium');
+    expect(getByTestId('probe').props.children).toBe('solid/md');
   });
 
   it('carries presentation only — a constraint has no channel here', () => {

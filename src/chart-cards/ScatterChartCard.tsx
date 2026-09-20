@@ -1,3 +1,4 @@
+import { boundedLabelSlot } from './svg-text';
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
   Platform,
@@ -406,12 +407,11 @@ export function ScatterChartCard({
                   pointerEvents="none"
                   style={{
                     position: 'absolute',
-                    left: box.left - TICK_SIZE - Y_TICK_MARGIN - LABEL_SLOT,
+                    ...boundedLabelSlot(size.width, box.left - TICK_SIZE - Y_TICK_MARGIN, 'end', LABEL_SLOT),
                     top: textTopForBaseline(tick.y + 0.355 * 12, TICK_TYPE),
-                    width: LABEL_SLOT,
-                    alignItems: 'flex-end',
+                        alignItems: 'flex-end',
                   }}>
-                  <Text numberOfLines={1} style={[TICK_TYPE, tickColor]}>
+                  <Text numberOfLines={1} style={[TICK_TYPE, tickColor, { maxWidth: '100%' }]}>
                     {compactNumber(tick.value)}
                   </Text>
                 </View>
@@ -425,15 +425,14 @@ export function ScatterChartCard({
                     pointerEvents="none"
                     style={{
                       position: 'absolute',
-                      left: (placed?.tickCoord ?? sx(v)) - LABEL_SLOT / 2,
+                      ...boundedLabelSlot(size.width, placed?.tickCoord ?? size.width / 2, 'middle', LABEL_SLOT),
                       top: xLabelTop,
-                      width: LABEL_SLOT,
-                      alignItems: 'center',
+                            alignItems: 'center',
                       opacity: placed ? 1 : 0,
                     }}>
                     <Text
                       numberOfLines={1}
-                      style={[TICK_TYPE, tickColor]}
+                      style={[TICK_TYPE, tickColor, { maxWidth: '100%' }]}
                       onLayout={(event) => {
                         const w = event.nativeEvent.layout.width;
                         setLabelWidths((prev) => (prev[key] === w ? prev : { ...prev, [key]: w }));

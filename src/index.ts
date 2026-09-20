@@ -11,12 +11,8 @@
 //         from its `.native` files. Both ship Apple-only native modules, and the
 //         "a consumer that never imports @oxy.so/bloom/tab-bar never reaches
 //         them" rule in AGENTS.md is true only while this stays off the barrel.
-//       · `./provider` — statically imports `expo-router` (via
-//         `scroll/expo-router`). `BloomProvider` is expo-router-only BY
-//         CONSTRUCTION; a Vite/SPA consumer composes `BloomThemeProvider` +
-//         `ScrollRestorationProvider` itself. `theme/adaptive-colors.ts` also
-//         names expo-router, but through the optional-`require` boundary, which
-//         links nothing.
+//       · `./provider` remains an explicit subpath. BloomProvider is universal;
+//         router restoration is supplied explicitly.
 //       · `./zoomable-media-gallery` and `./media-flight` — both reach
 //         `expo-image` through the shared `media-flight/MediaSurface`.
 //     Gate: `src/__tests__/root-barrel-graph.test.ts`.
@@ -153,6 +149,9 @@ export type {
   SurfaceConfirmOptions,
   SurfacePromptOptions,
 } from './surfaces';
+export * from './appearance';
+export * from './screen';
+export * from './bottom-bar';
 export * from './button';
 export * from './button-group';
 export * from './control-surface';
@@ -170,7 +169,7 @@ export {
   ScreenScope,
 } from './layout';
 export { Fab } from './fab';
-export type { FabProps, FabVariant, FabSize, FabPlacement } from './fab';
+export type { FabProps, FabVariant, FabSize, FabPlacement, FabMinimizeBehavior } from './fab';
 export { FrostedIconButton } from './frosted-icon-button';
 export type { FrostedIconButtonProps, FrostedIconButtonSize } from './frosted-icon-button';
 export * from './divider';

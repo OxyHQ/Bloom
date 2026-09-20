@@ -17,6 +17,7 @@ import { render } from '@testing-library/react-native';
 
 import { BloomThemeProvider } from '../theme/BloomThemeProvider';
 import { Loading } from '../loading';
+import { SpinnerIcon } from '../loading/SpinnerIcon';
 import { Admonition, AdmonitionRoot, AdmonitionText } from '../admonition';
 import { useTheme } from '../theme/use-theme';
 import { findHost, hostNodes, resolvedStyle } from './support/rendered-style';
@@ -59,6 +60,10 @@ function themeColors() {
 }
 
 describe('Loading', () => {
+  it.each([['small', 20], ['medium', 24], ['large', 44]] as const)('retains the %s public size geometry', (size, pixels) => {
+    const view = renderWithTheme(<Loading size={size} />);
+    expect(view.UNSAFE_getByType(SpinnerIcon).props.size).toBe(pixels);
+  });
   it('shows its text only when there is text to show', () => {
     const withText = renderWithTheme(<Loading text="Loading posts" />);
     expect(withText.getByText('Loading posts')).toBeTruthy();

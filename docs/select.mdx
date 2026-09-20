@@ -107,13 +107,13 @@ It used to take a render prop instead, which handed its child a `state` object w
 ```tsx
 <Select value={status} onValueChange={setStatus}>
   <SelectTrigger label="Purchase status">
-    <SelectValue leading={(item) => item && <Badge dot color={(item as Status).tone} />} />
+    <SelectValue leading={(item) => item && <Badge dot tone={(item as Status).tone} />} />
     <SelectIcon />
   </SelectTrigger>
   <SelectContent
     items={STATUSES}
     renderItem={(item) => (
-      <SelectItem value={item.value} label={item.label} leading={<Badge dot color={item.tone} />}>
+      <SelectItem value={item.value} label={item.label} leading={<Badge dot tone={item.tone} />}>
         <SelectItemText>{item.label}</SelectItemText>
       </SelectItem>
     )}

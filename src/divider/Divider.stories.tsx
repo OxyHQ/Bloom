@@ -6,6 +6,14 @@ import { Divider } from './index';
 import { Text } from '../typography';
 
 const meta: Meta<typeof Divider> = {
+  argTypes: {
+    "variant": { control: 'select', options: ["single","fill","double"] },
+    "align": { control: 'select', options: ["end","start","center"] },
+    "color": { control: 'text' },
+    "thickness": { control: 'number' },
+    "vertical": { control: 'boolean' },
+    "spacing": { control: 'number' }
+  },
   title: 'Base/Divider',
   component: Divider,
 };
@@ -20,10 +28,12 @@ type Story = StoryObj<typeof Divider>;
  * each had a slightly different colour.
  */
 export const Horizontal: Story = {
-  render: () => (
-    <View style={{ width: 360 }}>
+  args: { spacing: 12 },
+  parameters: { controls: { include: ["spacing","variant","align","color","thickness","vertical"] } },
+  render: (args) => (
+    <View style={{ maxWidth: '100%', width: 360 }}>
       <Text>Above</Text>
-      <Divider spacing={12} />
+      <Divider {...args}  />
       <Text>Below</Text>
     </View>
   ),
@@ -33,8 +43,9 @@ export const Horizontal: Story = {
  * The three treatments, empty and with content in every alignment.
  */
 export const Variants: Story = {
+  parameters: { controls: { disable: true } },
   render: () => (
-    <View style={{ width: 620, gap: 16 }}>
+    <View style={{ maxWidth: '100%', width: 620, gap: 16 }}>
       <Divider />
       <Divider variant="double" />
       <Divider variant="fill" />
@@ -54,6 +65,7 @@ export const Variants: Story = {
  * it fills the cross axis, it does not invent one.
  */
 export const Vertical: Story = {
+  parameters: { controls: { disable: true } },
   render: () => (
     <View style={{ flexDirection: 'row', alignItems: 'center', height: 40 }}>
       <Text>Drafts</Text>
@@ -71,8 +83,9 @@ export const Vertical: Story = {
  * looks wrong" cases are margin, not weight.
  */
 export const ThicknessAndColor: Story = {
+  parameters: { controls: { disable: true } },
   render: () => (
-    <View style={{ width: 360, gap: 4 }}>
+    <View style={{ maxWidth: '100%', width: 360, gap: 4 }}>
       <Divider />
       <Divider thickness={2} />
       <Divider thickness={4} color="tomato" />

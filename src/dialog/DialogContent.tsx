@@ -6,7 +6,7 @@ import { Text } from '../typography';
 import { useTheme } from '../theme/use-theme';
 import { ScreenScope } from '../layout';
 import { Button } from '../button';
-import type { ButtonVariant } from '../button/types';
+import type { ButtonProps } from '../button/types';
 import { useDialogContext } from './context';
 import type { DialogAction, DialogActionColor } from './types';
 
@@ -125,24 +125,15 @@ function ActionButton({ action }: { action: DialogAction }) {
   // other button in the library: the gradient/secondary/danger recipe,
   // its states and its focus ring, rather than a private pill.
   return (
-    <Button
-      variant={ACTION_VARIANT[color]}
-      size="large"
-      disabled={action.disabled}
-      onPress={() => handlePress()}
-      accessibilityLabel={action.label}
-      testID={action.testID}
-      fullWidth
-      style={{ alignSelf: 'stretch' }}
-    >
+    <Button {...ACTION_APPEARANCE[color]} size="lg" disabled={action.disabled} onPress={() => handlePress()} accessibilityLabel={action.label} testID={action.testID} style={{ width: "100%" }}>
       {action.label}
     </Button>
   );
 }
 
-/** `DialogAction.color` → the `Button` variant that paints it. */
-const ACTION_VARIANT: Record<DialogActionColor, ButtonVariant> = {
-  default: 'primary',
-  cancel: 'secondary',
-  destructive: 'destructive',
+/** Dialog actions use the same semantic recipe as standalone buttons. */
+const ACTION_APPEARANCE: Record<DialogActionColor, Pick<ButtonProps, 'appearance' | 'tone'>> = {
+  default: { appearance: 'solid', tone: 'accent' },
+  cancel: { appearance: 'subtle', tone: 'neutral' },
+  destructive: { appearance: 'solid', tone: 'danger' },
 };

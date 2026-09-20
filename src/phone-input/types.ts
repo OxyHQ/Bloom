@@ -52,8 +52,9 @@ export interface PhoneInputProps {
   required?: boolean;
   /** Show the info glyph after the label. */
   tooltip?: boolean;
-  /** `medium` 36 (default) or `small` 32. */
+  /** `md` 36 (default) or `sm` 32. */
   size?: TextFieldSize;
+  invalid?: boolean;
   isInvalid?: boolean;
   disabled?: boolean;
 
@@ -61,7 +62,7 @@ export interface PhoneInputProps {
   value?: string;
   /** Initial number when uncontrolled. */
   defaultValue?: string;
-  onChangeText?: (value: string) => void;
+  onValueChange?: (value: string) => void;
 
   /** Selected ISO code (controlled). */
   country?: string;

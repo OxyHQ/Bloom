@@ -116,14 +116,7 @@ function RowButton({
   onPress?: () => void;
 }) {
   return (
-    <Button
-      variant="secondary"
-      size="xs"
-      iconOnly
-      icon={<Icon width={ROW_BUTTON_ICON} height={ROW_BUTTON_ICON} fill={palette.iconSecondary} />}
-      accessibilityLabel={label}
-      onPress={onPress}
-    />
+    <Button size="xs" leading={<Icon width={ROW_BUTTON_ICON} height={ROW_BUTTON_ICON} fill={palette.iconSecondary} />} accessibilityLabel={label} onPress={onPress} appearance="plain" tone="neutral" />
   );
 }
 
@@ -219,11 +212,7 @@ export function CalendarViewEventDetails({
             }}
           >
             <InfoChip palette={palette}>{event.meeting.code}</InfoChip>
-            <Button
-              variant="primary"
-              size="xs"
-              onPress={onJoinMeeting ? () => onJoinMeeting(event) : undefined}
-            >
+            <Button size="xs" onPress={onJoinMeeting ? () => onJoinMeeting(event) : undefined} appearance="solid" tone="accent">
               Join
             </Button>
           </View>

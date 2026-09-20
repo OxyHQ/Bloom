@@ -488,7 +488,7 @@ export function SettingsStoragePage({
                   label="Search files"
                   placeholder="Search"
                   value={query}
-                  onChangeText={(text) => {
+                  onValueChange={(text) => {
                     setQuery(text);
                     setPage(1);
                   }}
@@ -564,7 +564,7 @@ export function SettingsStoragePage({
                         </Text>
                       </View>
                       <View style={[styles.cell, styles.sizeCol]}>
-                        <Chip size="large" style={{ backgroundColor: palette.secondary }} textStyle={{ color: palette.text }}>
+                        <Chip size="lg" style={{ backgroundColor: palette.secondary }} textStyle={{ color: palette.text }}>
                           {file.sizeLabel ?? formatFileSize(file.size)}
                         </Chip>
                       </View>
@@ -572,14 +572,7 @@ export function SettingsStoragePage({
                   )}
                   <View style={[styles.cell, compact ? null : styles.actionsCol, styles.actions]}>
                     <HoverTooltip label="Delete file">
-                      <Button
-                        variant="secondary"
-                        size="small"
-                        iconOnly
-                        leadingIcon={RiDeleteBin6Line}
-                        accessibilityLabel={`Delete ${file.name}`}
-                        onPress={() => deleteFile(file.id)}
-                      />
+                      <Button size="sm" icon={RiDeleteBin6Line} accessibilityLabel={`Delete ${file.name}`} onPress={() => deleteFile(file.id)} appearance="plain" tone="neutral" />
                     </HoverTooltip>
                     <RowMoreMenu file={file} actions={fileActions} onAction={onFileAction} />
                   </View>

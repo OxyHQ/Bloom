@@ -83,6 +83,25 @@ const heightOf = (
   return allToastHeights[id] || ESTIMATED_TOAST_HEIGHT;
 };
 
+/** Visual row height while stacked; measurements always remain intrinsic. */
+export const calculateToastVisibleHeight = ({
+  index, numberOfToasts, enableStacking, position, allToastHeights,
+  orderedToastIds, isExpanded,
+}: {
+  index: number;
+  numberOfToasts: number;
+  enableStacking: boolean;
+  position: ToastPosition;
+  allToastHeights: Record<string | number, number>;
+  orderedToastIds: Array<string | number>;
+  isExpanded: boolean;
+}): number => {
+  const natural = heightOf(allToastHeights, orderedToastIds[index]);
+  if (!enableStacking || isExpanded) return natural;
+  const front = position === 'top-center' ? 0 : numberOfToasts - 1;
+  return Math.min(natural, heightOf(allToastHeights, orderedToastIds[front]));
+};
+
 export const calculateToastPosition = ({
   index,
   numberOfToasts,
@@ -114,7 +133,9 @@ export const calculateToastPosition = ({
       : 0;
 
   if (effectiveEnableStacking) {
-    const currentHeight = heightOf(allToastHeights, orderedToastIds[index]);
+    const currentHeight = calculateToastVisibleHeight({
+      index, numberOfToasts, enableStacking, position, allToastHeights, orderedToastIds, isExpanded,
+    });
 
     if (position === 'top-center') {
       const frontHeight = heightOf(allToastHeights, orderedToastIds[0]);

@@ -1,11 +1,12 @@
 import React, { memo } from 'react';
-import { View } from 'react-native';
+import { View, StyleSheet } from 'react-native';
+import Animated, { useAnimatedStyle, useSharedValue } from 'react-native-reanimated';
 
 import { Button } from '../button';
 import { borderRadius } from '../styles/tokens';
 import { Text } from '../typography';
 import { useSidebarPalette } from './palette';
-import { SidebarAvatarView } from './parts';
+import { Collapsible, IS_WEB, SidebarAvatarView, useSidebarCollapseProgress, useInSidebar } from './parts';
 import type { SidebarPlanCardProps } from './types';
 
 /**
@@ -21,6 +22,16 @@ import type { SidebarPlanCardProps } from './types';
  */
 function SidebarPlanCardComponent({ plan, collapsed = false, style, testID }: SidebarPlanCardProps) {
   const palette = useSidebarPalette();
+  const progress = useSidebarCollapseProgress(collapsed);
+  const inSidebar = useInSidebar();
+  const naturalWidth = useSharedValue(0);
+  const geometry = useAnimatedStyle(() => ({
+    width: inSidebar ? '100%' : naturalWidth.value > 0 ? naturalWidth.value + (36 - naturalWidth.value) * progress.value : progress.value === 1 ? 36 : '100%',
+    height: 56 - 20 * progress.value,
+    paddingLeft: 10 - 8 * progress.value,
+    paddingRight: 12 - 10 * progress.value,
+  }), [progress, inSidebar, naturalWidth]);
+  const fill = useAnimatedStyle(() => ({ opacity: 1 - progress.value }), [progress]);
   const avatar = plan.avatar ?? { initials: plan.name.slice(0, 1).toUpperCase(), color: 'blue' as const };
 
   const avatarNode = avatar.source ? (
@@ -50,17 +61,12 @@ function SidebarPlanCardComponent({ plan, collapsed = false, style, testID }: Si
     </View>
   );
 
-  if (collapsed) {
-    return (
-      <View testID={testID} accessibilityLabel={`${plan.name}, ${plan.plan}`} style={[{ width: 36, height: 36, alignItems: 'center', justifyContent: 'center' }, style]}>
-        {avatarNode}
-      </View>
-    );
-  }
 
   return (
-    <View
+    <Animated.View
+      accessibilityLabel={collapsed ? `${plan.name}, ${plan.plan}` : undefined}
       testID={testID}
+      onLayout={(event) => { if (progress.value === 0) naturalWidth.value = event.nativeEvent.layout.width; }}
       style={[
         {
           width: '100%',
@@ -68,17 +74,17 @@ function SidebarPlanCardComponent({ plan, collapsed = false, style, testID }: Si
           alignItems: 'center',
           justifyContent: 'space-between',
           borderRadius: 12,
-          backgroundColor: palette.tertiary,
-          paddingTop: 8,
-          paddingBottom: 8,
-          paddingRight: 12,
-          paddingLeft: 10,
+          overflow: 'hidden',
         },
         style,
+        { backgroundColor: 'transparent' },
+        geometry,
       ]}>
-      <View style={{ minWidth: 0, flexShrink: 1, flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+      <Animated.View pointerEvents="none" style={[StyleSheet.absoluteFill, { borderRadius: 12, backgroundColor: StyleSheet.flatten(style)?.backgroundColor ?? palette.tertiary }, fill]} />
+      <View style={{ minWidth: 0, flexShrink: 1, flexDirection: 'row', alignItems: 'center' }}>
         {avatarNode}
-        <View style={{ minWidth: 0, flexShrink: 1, flexDirection: 'column', alignItems: 'flex-start', justifyContent: 'center' }}>
+        <Collapsible collapsed={collapsed}>
+        <View style={{ paddingLeft: 8, minWidth: 0, flexShrink: 1, flexDirection: 'column', alignItems: 'flex-start', justifyContent: 'center' }}>
           <Text variant="body-medium" numberOfLines={1} style={{ color: palette.text }}>
             {plan.name}
           </Text>
@@ -86,11 +92,16 @@ function SidebarPlanCardComponent({ plan, collapsed = false, style, testID }: Si
             {plan.plan}
           </Text>
         </View>
+        </Collapsible>
       </View>
-      <Button variant="secondary" size="small" onPress={plan.onAction}>
+      <View pointerEvents={collapsed ? 'none' : 'auto'} aria-hidden={collapsed} accessibilityElementsHidden={collapsed} importantForAccessibility={collapsed ? 'no-hide-descendants' : 'auto'} {...(IS_WEB && collapsed ? { inert: true } : {})}>
+      <Collapsible collapsed={collapsed}>
+      <Button size="sm" onPress={plan.onAction} appearance="subtle" tone="neutral">
         {plan.actionLabel ?? 'Upgrade'}
       </Button>
-    </View>
+      </Collapsible>
+      </View>
+    </Animated.View>
   );
 }
 

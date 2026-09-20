@@ -28,7 +28,7 @@ import { Button } from '@oxy.so/bloom/button';
 
 <DropdownMenu>
   <DropdownMenuTrigger asChild label="Open menu">
-    <Button variant="secondary">Open menu</Button>
+    <Button appearance="outline" tone="neutral">Open menu</Button>
   </DropdownMenuTrigger>
 
   <DropdownMenuContent>
@@ -40,7 +40,7 @@ import { Button } from '@oxy.so/bloom/button';
     </DropdownMenuItem>
     <DropdownMenuItem disabled>Billing</DropdownMenuItem>
     <DropdownMenuSeparator />
-    <DropdownMenuItem variant="destructive" onPress={signOut}>
+    <DropdownMenuItem tone="danger" onPress={signOut}>
       Sign out
     </DropdownMenuItem>
   </DropdownMenuContent>
@@ -55,7 +55,7 @@ A row dismisses the menu after it fires. Pass `keepOpen` to a row that should no
 
 ```tsx
 <DropdownMenuTrigger asChild label="Actions">
-  <Button variant="icon" onPress={track}>…</Button>
+  <Button onPress={track} appearance="outline" tone="neutral">…</Button>
 </DropdownMenuTrigger>
 ```
 

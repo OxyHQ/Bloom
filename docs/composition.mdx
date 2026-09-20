@@ -18,7 +18,7 @@ Every contract on this page resolves the same way:
 an explicit prop  >  the nearest container  >  the component's own default
 ```
 
-`undefined` is the only value that defers. Passing `variant="solid"` inside a glass island paints a solid control — the container is a default, not an override, and a caller can always win.
+`undefined` is the only value that defers. Passing `material="solid"` inside a glass island paints a solid control — the container is a default, not an override, and a caller can always win.
 
 **A constraint is not a default.** Anything that RESTRICTS a control — `disabled`, a modal's inertness, the user's reduce-transparency or reduce-motion preference — travels on its own channel and combines with `||`, never `??`. The rule above is exactly wrong for those: a descendant must not be able to re-enable an action its group disabled by passing a prop.
 
@@ -33,7 +33,7 @@ What a container tells the controls inside it about presentation, and nothing el
 | field | values | meaning |
 | --- | --- | --- |
 | `material` | `'solid'` \| `'glass'` | the surface a control CONTAINER paints |
-| `density` | `'medium'` \| `'small'` | the size controls default to |
+| `density` | `'md'` \| `'sm'` (also `'medium'` \| `'small'`) | the size controls default to |
 
 ```tsx
 import { ControlSurface } from '@oxy.so/bloom/control-surface';
@@ -47,7 +47,7 @@ It renders no node of its own, so it can be dropped anywhere without moving anyt
 
 A field left `undefined` inherits rather than resetting: `<ControlSurface density="small">` inside a glass island stays glass.
 
-**Who reads it today:** `ButtonGroup` and `ButtonGroupItem` read `material`; `TextField`, `Textarea` and `TimeField` read `density`, and `PhoneInput` gets it by passing its `size` straight to `TextField`. `density` is `'medium' | 'small'`, which is exactly the text-field family's `size` vocabulary — so a filter row can ask for `small` once instead of writing it on five controls:
+**Who reads it today:** `ButtonGroup` and `ButtonGroupItem` read `material`; `TextField`, `Textarea` and `TimeField` read `density`, and `PhoneInput` gets it by passing its `size` straight to `TextField`. `density` accepts `'medium' | 'small'` alongside `'md' | 'sm'`; legacy form sizes retain their public spellings — so a filter row can ask for `small` once instead of writing it on five controls:
 
 ```tsx
 <ControlSurface density="small">
@@ -165,7 +165,7 @@ const onScroll = useAnimatedScrollHandler(
 
 The context carries the `SharedValue`, not a number. It crosses once, at mount; every subsequent frame reaches the chrome on the UI thread through `useAnimatedStyle`, with no React render. A context whose value changed per frame would re-render every consumer per frame, which is the cost this exists to avoid.
 
-`PageHeader` resolves its offset as: the `scrollY` prop, then this context, then `window.scrollY` on web. Without any of the three on native it stays at rest. The context step is the one that matters for a desktop shell, where `window.scrollY` never moves and a header that followed it looked deliberately inert.
+`PageHeader` resolves its offset as: the `scrollY` prop, then the nearest `Screen`, then this context, then `window.scrollY` on web. Without any of the three on native it stays at rest. The context step is the one that matters for a desktop shell, where `window.scrollY` never moves and a header that followed it looked deliberately inert.
 
 ## Edge claims — `TopEdgeProvider` / `BottomEdgeProvider`
 
@@ -173,7 +173,7 @@ The context carries the `SharedValue`, not a number. It crosses once, at mount; 
 
 A surface that parks at a window edge CLAIMS its footprint; a surface or a scroll container that must clear it READS the total. Claims combine with `max`, not sum — every claim is measured from the same edge, so two surfaces at that edge overlap rather than stack.
 
-The bottom edge is the tab bar and the FAB (`docs/fab.mdx`). The top edge is chrome that overlays content:
+`BottomBar` coordinates its navigation and lateral FAB footprint (`docs/bottom-bar.mdx`). The top edge is chrome that overlays content:
 
 ```tsx
 <ScrollView contentContainerStyle={{ paddingTop: useTopEdgeInset() }}>

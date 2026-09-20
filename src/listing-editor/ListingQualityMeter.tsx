@@ -81,14 +81,14 @@ interface QualityPaint {
 }
 
 function resolveQualityPaint(theme: Theme): QualityPaint {
-  const { accent, neutral: n } = resolveButtonRamps(theme);
+  const { accent } = resolveButtonRamps(theme);
   const dark = theme.isDark;
   return {
     text: theme.colors.text,
     textSecondary: theme.colors.textSecondary,
-    done: theme.colors.success,
-    todo: n[400],
-    wash: dark ? n[900] : n[50],
+    done: theme.colors.successSubtleForeground,
+    todo: theme.colors.textSecondary,
+    wash: theme.colors.backgroundSecondary,
     ring: accent[500],
   };
 }

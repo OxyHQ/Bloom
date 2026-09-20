@@ -1,3 +1,4 @@
+import { useArgs } from 'storybook/preview-api';
 import React, { useState } from 'react';
 import { View } from 'react-native';
 import type { Meta, StoryObj } from '@storybook/react-vite';
@@ -7,6 +8,7 @@ import { Text } from '../typography';
 import { RiChat3Line, RiHome5Line, RiSettings3Line } from '../icons/remix';
 
 const meta: Meta = {
+  component: Tabs,
   title: 'Base/Tabs',
 };
 
@@ -31,10 +33,11 @@ const PANELS: Record<string, string> = {
  * differently.
  */
 export const Basic: Story = {
+  parameters: { controls: { disable: true } },
   render: function BasicStory() {
     const [value, setValue] = useState('posts');
     return (
-      <View style={{ width: 420, gap: 12 }}>
+      <View style={{ width: 420, maxWidth: '100%', gap: 12 }}>
         <Tabs value={value} onValueChange={setValue}>
           <TabsTrigger value="posts" label="Posts" />
           <TabsTrigger value="replies" label="Replies" />
@@ -52,10 +55,11 @@ export const Basic: Story = {
  * belongs on the thing that is unread.
  */
 export const WithCounts: Story = {
+  parameters: { controls: { disable: true } },
   render: function WithCountsStory() {
     const [value, setValue] = useState('inbox');
     return (
-      <View style={{ width: 420 }}>
+      <View style={{ width: 420, maxWidth: '100%' }}>
         <Tabs value={value} onValueChange={setValue}>
           <TabsTrigger value="inbox" label="Inbox" count={12} />
           <TabsTrigger value="drafts" label="Drafts" count={3} />
@@ -71,10 +75,11 @@ export const WithCounts: Story = {
  * the current state — 16px on the underline strip.
  */
 export const WithIcons: Story = {
+  parameters: { controls: { disable: true } },
   render: function WithIconsStory() {
     const [value, setValue] = useState('overview');
     return (
-      <View style={{ width: 520 }}>
+      <View style={{ width: 520, maxWidth: '100%' }}>
         <Tabs value={value} onValueChange={setValue}>
           <TabsTrigger value="overview" label="Overview" count={12} />
           <TabsTrigger value="activity" label="Activity" count={3} />
@@ -90,10 +95,11 @@ export const WithIcons: Story = {
  * triggers; an idle trigger shows a hover layer.
  */
 export const Pill: Story = {
+  parameters: { controls: { disable: true } },
   render: function PillStory() {
     const [value, setValue] = useState('changes');
     return (
-      <View style={{ width: 520 }}>
+      <View style={{ width: 520, maxWidth: '100%' }}>
         <Tabs variant="pill" value={value} onValueChange={setValue}>
           <TabsTrigger value="changes" label="Changes" leadingIcon={RiChat3Line} />
           <TabsTrigger value="browser" label="Browser" leadingIcon={RiHome5Line} />
@@ -106,10 +112,11 @@ export const Pill: Story = {
 
 /** `filled` — a gray pill: a quieter neutral pill for scope/filter rows. */
 export const Filled: Story = {
+  parameters: { controls: { disable: true } },
   render: function FilledStory() {
     const [value, setValue] = useState('all');
     return (
-      <View style={{ width: 520 }}>
+      <View style={{ width: 520, maxWidth: '100%' }}>
         <Tabs variant="filled" value={value} onValueChange={setValue}>
           <TabsTrigger value="all" label="All" />
           <TabsTrigger value="tools" label="Tools" leadingIcon={RiHome5Line} />
@@ -122,11 +129,12 @@ export const Filled: Story = {
 
 /** Every variant, sharing one selection. `outlined` is an alias of `pill`. */
 export const Variants: Story = {
+  parameters: { controls: { disable: true } },
   render: function VariantsStory() {
     const [value, setValue] = useState('one');
     return (
-      <View style={{ width: 420, gap: 24 }}>
-        {(['underline', 'pill', 'filled', 'outlined'] as const).map((variant) => (
+      <View style={{ width: 420, maxWidth: '100%', gap: 24 }}>
+        {(['underline', 'pill', 'filled'] as const).map((variant) => (
           <Tabs key={variant} variant={variant} value={value} onValueChange={setValue}>
             <TabsTrigger value="one" label="One" leadingIcon={RiHome5Line} />
             <TabsTrigger value="two" label="Two" count={4} />
@@ -140,10 +148,11 @@ export const Variants: Story = {
 
 /** A disabled trigger dims to 50% and ignores presses, on every variant. */
 export const Disabled: Story = {
+  parameters: { controls: { disable: true } },
   render: function DisabledStory() {
     const [value, setValue] = useState('a');
     return (
-      <View style={{ width: 420, gap: 24 }}>
+      <View style={{ width: 420, maxWidth: '100%', gap: 24 }}>
         {(['underline', 'pill', 'filled'] as const).map((variant) => (
           <Tabs key={variant} variant={variant} value={value} onValueChange={setValue}>
             <TabsTrigger value="a" label="Active" />
@@ -162,10 +171,11 @@ export const Disabled: Story = {
  * selected before the user has selected anything.
  */
 export const NoSelection: Story = {
+  parameters: { controls: { disable: true } },
   render: function NoSelectionStory() {
     const [value, setValue] = useState<string | undefined>(undefined);
     return (
-      <View style={{ width: 420, gap: 12 }}>
+      <View style={{ width: 420, maxWidth: '100%', gap: 12 }}>
         <Tabs
           value={value}
           hasSelection={value != null}
@@ -183,15 +193,26 @@ export const NoSelection: Story = {
 
 /** `fullWidth` spreads the triggers across the container rather than hugging their labels. */
 export const FullWidth: Story = {
+  parameters: { controls: { disable: true } },
   render: function FullWidthStory() {
     const [value, setValue] = useState('a');
     return (
-      <View style={{ width: 420 }}>
+      <View style={{ width: 420, maxWidth: '100%' }}>
         <Tabs fullWidth value={value} onValueChange={setValue}>
           <TabsTrigger value="a" label="Overview" />
           <TabsTrigger value="b" label="Activity" />
         </Tabs>
       </View>
     );
+  },
+};
+
+export const Playground: StoryObj<typeof Tabs> = {
+  args: { value: 'posts', variant: 'underline', fullWidth: true },
+  parameters: { controls: { disable: false, include: ['value', 'variant', 'fullWidth'] } },
+  argTypes: { value: { control: 'select', options: ['posts','replies','media'] }, variant: { control: 'select', options: ['underline','pill','filled'] }, fullWidth: { control: 'boolean' } },
+  render: function Playground(args) {
+    const [, updateArgs] = useArgs();
+    return <View style={{ width: 520, maxWidth: '100%' }}><View style={{ gap: 16 }}><Tabs {...args} onValueChange={value => updateArgs({ value })}>{Object.keys(PANELS).map(value => <TabsTrigger key={value} value={value} label={value} />)}</Tabs><Text>{PANELS[args.value ?? 'posts']}</Text></View></View>;
   },
 };

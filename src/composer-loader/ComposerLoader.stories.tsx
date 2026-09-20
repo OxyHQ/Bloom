@@ -9,6 +9,22 @@ import { useTheme } from '../theme/use-theme';
 import { ComposerLoader } from './index';
 
 const meta: Meta<typeof ComposerLoader> = {
+  argTypes: {
+    "active": { control: 'boolean' },
+    "speed": { control: 'number' },
+    "intensity": { control: 'number' },
+    "bloom": { control: 'number' },
+    "bloomStrength": { control: 'number' },
+    "arc": { control: 'number' },
+    "reverse": { control: 'boolean' },
+    "radius": { control: 'number' },
+    "line": { control: 'number' },
+    "bloomOnly": { control: 'boolean' },
+    "surface": { control: 'boolean' },
+    "taper": { control: 'number' },
+    "blend": { control: 'select', options: ["color","overlay","normal","multiply","screen","darken","lighten","color-dodge","color-burn","hard-light","soft-light","difference","exclusion","hue","saturation","luminosity"] },
+    "offset": { control: 'number' }
+  },
   title: 'Blocks/Composer Loader',
   component: ComposerLoader,
 };
@@ -17,7 +33,7 @@ export default meta;
 
 type Story = StoryObj<typeof ComposerLoader>;
 
-const WIDTH = 520;
+const WIDTH = 600;
 
 /** An empty 52px pill — what the loader wraps in this demo. */
 function Pill({ height = 52 }: { height?: number }) {
@@ -34,9 +50,11 @@ function Label({ children }: { children: string }) {
 }
 
 export const Default: Story = {
-  render: () => (
-    <View style={{ padding: 40, width: WIDTH + 80 }}>
-      <ComposerLoader active testID="loader">
+  args: { active: true },
+  parameters: { controls: { include: ["active","speed","intensity","bloom","bloomStrength","arc","reverse","radius","line","bloomOnly","surface","taper","blend","offset"] } },
+  render: (args) => (
+    <View style={{ width: '100%', maxWidth: WIDTH }}>
+      <ComposerLoader {...args}  testID="loader">
         <Pill />
       </ComposerLoader>
     </View>
@@ -45,8 +63,9 @@ export const Default: Story = {
 
 /** Every prop `ComposerLoader` exposes, one row each. */
 export const Variants: Story = {
+  parameters: { controls: { disable: true } },
   render: () => (
-    <View style={{ padding: 40, gap: 24, width: WIDTH + 80 }}>
+    <View style={{ gap: 24, width: '100%', maxWidth: WIDTH }}>
       <View>
         <Label>default</Label>
         <ComposerLoader active>
@@ -110,12 +129,13 @@ export const Variants: Story = {
 
 /** The realistic use: a composer that lights up while waiting for a reply. */
 export const WithComposer: Story = {
+  parameters: { controls: { disable: true } },
   render: function Render() {
     const theme = useTheme();
     const [busy, setBusy] = useState(false);
     const [value, setValue] = useState('Summarise the release notes');
     return (
-      <View style={{ padding: 40, width: WIDTH + 80 }}>
+      <View style={{ width: '100%', maxWidth: WIDTH }}>
         <ComposerLoader active={busy}>
           <View
             style={{
@@ -135,15 +155,9 @@ export const WithComposer: Story = {
               onChangeText={setValue}
               placeholder="Ask anything"
               accessibilityLabel="Message"
-              style={{ flex: 1, color: theme.colors.text, fontSize: 14, lineHeight: 20 }}
+              style={{ flex: 1, minWidth: 0, color: theme.colors.text, fontSize: 14, lineHeight: 20 }}
             />
-            <Button
-              variant="primary"
-              size="small"
-              icon={RiArrowUpLine}
-              accessibilityLabel={busy ? 'Stop' : 'Send'}
-              onPress={() => setBusy((b) => !b)}
-            />
+            <Button size="sm" icon={RiArrowUpLine} accessibilityLabel={busy ? 'Stop' : 'Send'} onPress={() => setBusy((b) => !b)} appearance="solid" tone="accent" />
           </View>
         </ComposerLoader>
       </View>

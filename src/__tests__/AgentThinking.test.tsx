@@ -4,7 +4,6 @@ import { act, render } from '@testing-library/react-native';
 
 import { AgentThinking } from '../agent-thinking';
 import { dotOpacities } from '../agent-thinking/AgentThinking';
-import { resolveButtonRamps } from '../button/shared';
 import { BloomThemeProvider } from '../theme/BloomThemeProvider';
 import { buildTheme } from '../theme/build-theme';
 import { adoptStyleSheet } from '../styles/adopt-style-sheet';
@@ -77,16 +76,15 @@ describe('AgentThinking', () => {
 
   it('colours by tone: default text-secondary, stars subtle, accent the accent-500', () => {
     const theme = buildTheme('teal', 'light');
-    const { neutral, accent } = resolveButtonRamps(theme);
     const color = (ui: React.ReactElement) => {
       const { getByTestId, unmount } = renderThinking(ui);
       const value = resolvedStyle(getByTestId('t-label', { includeHiddenElements: true }).props.style).color;
       unmount();
       return value;
     };
-    expect(color(<AgentThinking testID="t" />)).toBe(neutral[500]);
-    expect(color(<AgentThinking testID="t" variant="stars" />)).toBe(neutral[400]);
-    expect(color(<AgentThinking testID="t" tone="accent" />)).toBe(accent[500]);
+    expect(color(<AgentThinking testID="t" />)).toBe(theme.colors.textSecondary);
+    expect(color(<AgentThinking testID="t" variant="stars" />)).toBe(theme.colors.textTertiary);
+    expect(color(<AgentThinking testID="t" tone="accent" />)).toBe(theme.colors.primarySubtleForeground);
     expect(color(<AgentThinking testID="t" tone="primary" />)).toBe(theme.colors.text);
   });
 

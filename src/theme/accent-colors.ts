@@ -38,7 +38,7 @@ import type { ThemeColors } from './types';
  * the only member with no hue, which is why it reads from the neutral surface
  * and text roles rather than from a `*Subtle` family.
  */
-export type AccentTone = 'default' | 'primary' | 'success' | 'warning' | 'error' | 'info';
+export type AccentTone = 'default' | 'primary' | 'secondary' | 'tertiary' | 'success' | 'warning' | 'error' | 'info';
 
 /**
  * How loudly it speaks: a full fill, a translucent tint, or an outline on the
@@ -86,6 +86,10 @@ function tonePalette(colors: ThemeColors, tone: AccentTone): TonePalette {
         tint: colors.primarySubtle,
         accent: colors.primarySubtleForeground,
       };
+    case 'secondary':
+      return { fill: colors.secondary, fillForeground: colors.secondaryForeground, tint: colors.secondarySubtle, accent: colors.secondarySubtleForeground };
+    case 'tertiary':
+      return { fill: colors.tertiary, fillForeground: colors.tertiaryForeground, tint: colors.tertiarySubtle, accent: colors.tertiarySubtleForeground };
     case 'success':
       return {
         fill: colors.success,

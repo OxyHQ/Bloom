@@ -1,3 +1,4 @@
+import type { LinkButtonProps } from './types';
 import React, { useMemo, memo, type ComponentType } from 'react';
 import {
   ActivityIndicator,
@@ -13,6 +14,7 @@ import {
 import Svg, { Defs, LinearGradient, Rect, Stop } from 'react-native-svg';
 import { styled } from 'react-native-css';
 
+import { useBloomAppearance } from '../appearance/context';
 import { useTheme } from '../theme/use-theme';
 import { Text } from '../typography/Typography';
 import { useInteractionState } from '../hooks/use-interaction-state';
@@ -20,25 +22,23 @@ import {
   BUTTON_GEOMETRY,
   BUTTON_RADIUS,
   BUTTON_SHADOW,
-  BUTTON_SIZE_ALIAS,
   ICON_BUTTON_ICON_SIZE,
   LINK_BUTTON_GAP,
-  iconOnlyWidth,
   isIconComponent,
+  resolveButtonRecipe,
+  BUTTON_SIZE_ALIAS,
+  resolveButtonGeometry,
   resolveButtonPalette,
   resolveButtonUnderline,
   type ButtonGradient,
   type ButtonResolvedSize,
 } from './shared';
-import type { ButtonProps, ButtonVariant, LinkButtonProps } from './types';
+import type { ButtonProps } from './types';
 
 export type {
-  ButtonProps,
-  ButtonVariant,
+  ButtonProps, LinkButtonProps,
   ButtonSize,
   ButtonIconComponent,
-  ButtonLinkTone,
-  LinkButtonProps,
 } from './types';
 
 /**
@@ -64,9 +64,9 @@ export type {
  */
 const SIZE_HIT_SLOP = {
   xs: { top: 10, bottom: 10, left: 0, right: 0 },
-  small: { top: 6, bottom: 6, left: 0, right: 0 },
-  medium: { top: 4, bottom: 4, left: 0, right: 0 },
-  large: { top: 0, bottom: 0, left: 0, right: 0 },
+  sm: { top: 6, bottom: 6, left: 0, right: 0 },
+  md: { top: 4, bottom: 4, left: 0, right: 0 },
+  lg: { top: 0, bottom: 0, left: 0, right: 0 },
 } as const satisfies Record<ButtonResolvedSize, NonNullable<ButtonProps['hitSlop']>>;
 
 /** A link hugs its 16–20px line box, so it needs the most vertical slack. */
@@ -74,9 +74,9 @@ const LINK_HIT_SLOP = { top: 12, bottom: 12, left: 0, right: 0 } as const;
 
 const SQUARE_HIT_SLOP = {
   xs: { top: 10, bottom: 10, left: 10, right: 10 },
-  small: { top: 6, bottom: 6, left: 6, right: 6 },
-  medium: { top: 4, bottom: 4, left: 4, right: 4 },
-  large: { top: 0, bottom: 0, left: 0, right: 0 },
+  sm: { top: 6, bottom: 6, left: 6, right: 6 },
+  md: { top: 4, bottom: 4, left: 4, right: 4 },
+  lg: { top: 0, bottom: 0, left: 0, right: 0 },
 } as const satisfies Record<ButtonResolvedSize, NonNullable<ButtonProps['hitSlop']>>;
 
 // ---------------------------------------------------------------------------
@@ -161,12 +161,15 @@ const ButtonComponent: React.FC<ButtonProps> = ({
   onPress,
   children,
   disabled = false,
-  variant: variantProp = 'primary',
-  size: sizeProp = 'medium',
+  appearance: appearanceProp,
+  variant: variantProp,
+  tone: toneProp,
+  size: sizeProp,
   style,
   textStyle,
   icon,
-  iconPosition = 'left',
+  leading,
+  trailing,
   leadingIcon: LeadingIcon,
   trailingIcon: TrailingIcon,
   iconOnly = false,
@@ -187,23 +190,20 @@ const ButtonComponent: React.FC<ButtonProps> = ({
   'aria-haspopup': ariaHasPopup,
 }) => {
   const theme = useTheme();
-  // The shadcn `size="icon"` shorthand also selects the icon variant unless an
-  // explicit variant was given by the caller.
-  const variant: ButtonVariant =
-    sizeProp === 'icon' && variantProp === 'primary' ? 'icon' : variantProp;
-  const size: ButtonResolvedSize = BUTTON_SIZE_ALIAS[sizeProp];
-  const geometry = BUTTON_GEOMETRY[size];
-  const isIconVariant = variant === 'icon';
-  const isSquare = iconOnly || isIconVariant;
-  const isText = variant === 'text';
-  const isLink = variant === 'link';
+  const recipe = resolveButtonRecipe(variantProp);
+  const appearance = appearanceProp ?? recipe.appearance;
+  const { size, tone } = useBloomAppearance({ size: sizeProp ? BUTTON_SIZE_ALIAS[sizeProp] : undefined, tone: toneProp ?? (variantProp ? recipe.tone : undefined) }, { size: 'md', tone: 'accent' });
+  const geometry = resolveButtonGeometry(size, textVariant);
+  const isSquare = iconOnly || variantProp === 'icon' || sizeProp === 'icon' || (icon != null && children == null);
+  const isIconVariant = isSquare;
+  const isLink = appearance === 'plain' && (href != null || variantProp === 'link');
   const isInteractionBlocked = disabled || loading;
   const iconSize = isIconVariant ? ICON_BUTTON_ICON_SIZE[size] : geometry.iconSize;
   const palette = useMemo(
-    () => resolveButtonPalette(variant, theme, linkTone),
-    [variant, theme, linkTone],
+    () => variantProp === 'link' && appearanceProp == null && toneProp == null ? resolveButtonPalette('link', theme, linkTone) : variantProp === 'inverse' && appearanceProp == null && toneProp == null ? resolveButtonPalette('inverse', theme) : resolveButtonPalette(appearance, theme, tone),
+    [appearance, theme, tone, variantProp, appearanceProp, toneProp, linkTone],
   );
-  const underlineMode = resolveButtonUnderline(variant, underline);
+  const underlineMode = resolveButtonUnderline(isLink ? 'link' : 'primary', underline);
 
   // Pressed state drives the ACTIVE palette. Tracked through state rather than
   // Pressable's function-form `style`, which NativeWind's css-interop swallows
@@ -253,12 +253,8 @@ const ButtonComponent: React.FC<ButtonProps> = ({
       styles.opacity = palette.disabledOpacity;
     }
     if (isSquare) {
-      styles.width = isIconVariant ? geometry.height : iconOnlyWidth(geometry, palette.borderWidth);
+      styles.width = geometry.height;
       styles.paddingHorizontal = 0;
-    }
-    if (isText) {
-      styles.paddingVertical = 4;
-      styles.paddingHorizontal = 8;
     }
     if (isLink && !isSquare) {
       // LinkButton: no container — the label's own line box and a 4px
@@ -269,7 +265,7 @@ const ButtonComponent: React.FC<ButtonProps> = ({
       styles.borderRadius = 4;
     }
     return styles;
-  }, [geometry, palette, paint, theme.isDark, disabled, isSquare, isIconVariant, isText, isLink]);
+  }, [geometry, palette, paint, theme.isDark, disabled, isSquare, isIconVariant, isLink]);
 
   // The type ramp step (size, line height, tracking, weight) comes from the
   // typography `Text` through `variant`; only the padding and colour are ours.
@@ -302,7 +298,8 @@ const ButtonComponent: React.FC<ButtonProps> = ({
       {LeadingIcon ? (
         <LeadingIcon width={iconSize} height={iconSize} fill={paint.foreground} />
       ) : null}
-      {iconPosition === 'left' && iconNode}
+      {leading}
+      {iconNode}
       {!isSquare && children != null && (
         <Text
           variant={textVariant ?? geometry.type}
@@ -312,7 +309,7 @@ const ButtonComponent: React.FC<ButtonProps> = ({
           {children}
         </Text>
       )}
-      {iconPosition === 'right' && iconNode}
+      {trailing}
       {!isSquare && TrailingIcon ? (
         <TrailingIcon width={iconSize} height={iconSize} fill={paint.foreground} />
       ) : null}
@@ -355,13 +352,14 @@ const ButtonComponent: React.FC<ButtonProps> = ({
       {loading ? (
         <>
           <View
+            pointerEvents="none"
             style={styles.loadingHiddenContent}
             importantForAccessibility="no-hide-descendants"
             accessibilityElementsHidden
           >
             {content}
           </View>
-          <View style={styles.loadingOverlay}>
+          <View pointerEvents="none" style={styles.loadingOverlay}>
             <ActivityIndicator size="small" color={loadingColor ?? paint.foreground} />
           </View>
         </>
@@ -378,13 +376,11 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     opacity: 0,
-    pointerEvents: 'none',
   },
   loadingOverlay: {
     ...StyleSheet.absoluteFill,
     alignItems: 'center',
     justifyContent: 'center',
-    pointerEvents: 'none',
   },
 });
 

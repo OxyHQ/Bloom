@@ -68,7 +68,7 @@ const COLUMNS: DataTableColumn<Patient>[] = [
     header: 'Status',
     flex: 1,
     cell: ({ row }) => (
-      <Chip size="medium" hue={row.status.hue}>
+      <Chip size="md" hue={row.status.hue}>
         {row.status.label}
       </Chip>
     ),
@@ -80,7 +80,7 @@ const COLUMNS: DataTableColumn<Patient>[] = [
     cell: ({ row }) => (
       <View style={{ flexDirection: 'row', flexWrap: 'wrap', alignItems: 'center', gap: 6, minWidth: 0 }}>
         {row.conditions.map((condition) => (
-          <Chip key={condition} size="medium" hue="gray">
+          <Chip key={condition} size="md" hue="gray">
             {condition}
           </Chip>
         ))}
@@ -148,7 +148,7 @@ export function PatientsTable({ testID }: { testID?: string }) {
             onValueChange={filter(setConditionFilter)}
             options={[{ value: 'all', label: 'All conditions' }, ...CONDITIONS.map((c) => ({ value: c, label: c }))]}
           />
-          <DataTableSearch label="Search patients" value={query} onChangeText={filter(setQuery)} />
+          <DataTableSearch label="Search patients" value={query} onValueChange={filter(setQuery)} />
         </>
       }
       selectable

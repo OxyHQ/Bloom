@@ -1,0 +1,56 @@
+---
+title: Component contract
+description: One vocabulary for controls and one owner for screen composition.
+order: 1
+---
+
+# Component contract
+
+Bloom separates **size**, **tone**, and **appearance**. A size describes a component's relative scale, not a universal pixel height: a badge and a button serve different purposes. Each family publishes the meaningful subset of the common vocabulary.
+
+| Axis | Values | Purpose |
+| --- | --- | --- |
+| `size` | `xs`, `sm`, `md`, `lg` | Component scale |
+| `tone` | `neutral`, `accent`, `support`, `action`, `success`, `warning`, `danger`, `info` | Semantic intent |
+| `appearance` | `solid`, `subtle`, `outline`, `plain` | Fill and border treatment |
+
+Structural options remain specific to their components. A tab indicator's `variant`, for example, describes its structure rather than its semantic color.
+
+## Color roles
+
+The approved **Color roles** Storybook prototype separates three jobs: `accent` carries product identity, links and active navigation; `support` gives related information and secondary surfaces a quieter tint; `action` marks the principal task, such as Create, Send, Generate or Save. `neutral` remains the default choice for ordinary supporting controls. Status tones retain their existing meanings.
+
+Choose one main action for each task area. Use `support` with `appearance="subtle"` for contextual emphasis, rather than tinting every button. These are theme roles with paired foreground colors: `support` resolves the secondary pair and `action` the tertiary pair. Their hues follow the selected preset and mode, not a hard-coded prototype color.
+
+## Visual scopes
+
+```tsx
+import { BloomScope } from '@oxy.so/bloom/appearance';
+import { Button } from '@oxy.so/bloom/button';
+
+<BloomScope size="lg" tone="action">
+  <Button>Save</Button>
+  <Button tone="danger" appearance="outline">Delete</Button>
+  <BloomScope size="sm">
+    <Button tone="neutral" appearance="plain">Secondary action</Button>
+  </BloomScope>
+</BloomScope>
+```
+
+Explicit props win over the nearest scope, which wins over the family's defaults. A nested scope inherits unspecified values. Scopes render no layout node and never carry actions, selection, disabled state, or screen geometry. `appearance` remains explicit so a scope cannot silently turn every control into a filled primary action.
+
+## Actions and icons
+
+`onPress` activates an action. `href` gives a button real link semantics on web. `disabled` blocks activation; `loading` preserves layout while blocking repeated presses. `accessibilityLabel` names icon-only controls.
+
+`icon` is an icon component for an icon-only action. `leadingIcon` and `trailingIcon` are icon components on labelled controls; Bloom supplies size and color. `leading` and `trailing` accept custom composed content. Use logical leading/trailing positions rather than left/right.
+
+## Values
+
+Boolean controls use `checked` and `onCheckedChange`. Fields and selections use `value` and `onValueChange`, delivering the semantic value rather than a platform event. Validation is `invalid`. Platform event handlers are separate from the value contract.
+
+## Screens
+
+`Screen` owns a continuous page surface and the geometry shared by its content and chrome. `ScreenScrollView` binds normal content; external scrollers use `useScreenScroll`. `AppShell` adapts navigation to its available width, with an explicit `navigationPlacement` override.
+
+`BottomBar` places navigation and its action side by side. `Fab` is the action itself; its parent owns positioning. Do not reproduce bottom offsets or independent minimize animations in an application.

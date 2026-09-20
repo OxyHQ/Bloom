@@ -1,3 +1,4 @@
+import { useArgs } from 'storybook/preview-api';
 import React, { useState } from 'react';
 import { View } from 'react-native';
 import type { Meta, StoryObj } from '@storybook/react-vite';
@@ -20,6 +21,7 @@ import {
 } from './index';
 
 const meta: Meta = {
+  component: Select,
   title: 'Base/Select',
 };
 
@@ -89,6 +91,7 @@ function UncontrolledSelect() {
 }
 
 export const Basic: Story = {
+  parameters: { controls: { disable: true } },
   render: () => <BasicSelect />,
 };
 
@@ -136,6 +139,7 @@ function StateSelect({
  * offset. Every trigger is a full pill.
  */
 export const States: Story = {
+  parameters: { controls: { disable: true } },
   render: () => (
     <View style={{ width: 220, gap: 16 }}>
       <StateSelect testID="select-md" initial="apple" />
@@ -153,6 +157,7 @@ export const States: Story = {
  * `text-disabled`. Click the trigger to open.
  */
 export const OpenList: Story = {
+  parameters: { controls: { disable: true } },
   render: () => (
     <View style={{ width: 220, paddingBottom: 280 }}>
       <StateSelect testID="select-open" initial="banana" disabledOption="cherry" />
@@ -162,6 +167,7 @@ export const OpenList: Story = {
 
 /** The `sm` density: 13px type and `px-2 py-1.5` option rows. */
 export const Small: Story = {
+  parameters: { controls: { disable: true } },
   render: () => (
     <View style={{ width: 180, paddingBottom: 240 }}>
       <StateSelect testID="select-small" size="sm" initial="banana" disabledOption="cherry" />
@@ -170,10 +176,12 @@ export const Small: Story = {
 };
 
 export const WithPlaceholder: Story = {
+  parameters: { controls: { disable: true } },
   render: () => <UncontrolledSelect />,
 };
 
 export const Composition: Story = {
+  parameters: { controls: { disable: true } },
   render: () => (
     <View style={{ gap: 16 }}>
       <BasicSelect />
@@ -188,6 +196,7 @@ export const Composition: Story = {
  * is what keeps `SelectContent`'s flat `items` API.
  */
 export const Grouped: Story = {
+  parameters: { controls: { disable: true } },
   render: function GroupedSelect() {
     const [value, setValue] = useState<string>('cherry');
     return (
@@ -228,6 +237,7 @@ export const Grouped: Story = {
  * into view; on native the sheet's own list scrolls.
  */
 export const Scrollable: Story = {
+  parameters: { controls: { disable: true } },
   render: function ScrollableSelect() {
     const [value, setValue] = useState<string>('option-0');
     return (
@@ -275,19 +285,20 @@ const ADMISSIONS: (MarkedOption & { icon: typeof RiWalkLine })[] = [
  * trigger's mark follows the value. `DataTableSelect` is this, packaged.
  */
 export const LeadingMarks: Story = {
+  parameters: { controls: { disable: true } },
   render: function LeadingMarksDemo() {
     const theme = useTheme();
     const [status, setStatus] = useState('waiting');
     const [admission, setAdmission] = useState('outpatient');
     const iconFill = theme.colors.textSecondary;
     return (
-      <View style={{ flexDirection: 'row', gap: 16, alignItems: 'flex-start' }}>
+      <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 16, alignItems: 'flex-start' }}>
         {(['md', 'sm'] as const).map((size) => (
           <View key={size} style={{ width: size === 'md' ? 142 : 132 }}>
             <Select value={status} onValueChange={setStatus} size={size}>
               <SelectTrigger label={`Status (${size})`}>
                 <SelectValue
-                  leading={(item) => (item ? <Badge dot color={(item as (typeof STATUSES)[number]).tone} /> : null)}
+                  leading={(item) => (item ? <Badge dot tone={(item as (typeof STATUSES)[number]).tone} /> : null)}
                 />
                 <SelectIcon />
               </SelectTrigger>
@@ -295,7 +306,7 @@ export const LeadingMarks: Story = {
                 label="Status"
                 items={STATUSES}
                 renderItem={(item) => (
-                  <SelectItem value={item.value} label={item.label} leading={<Badge dot color={item.tone} />}>
+                  <SelectItem value={item.value} label={item.label} leading={<Badge dot tone={item.tone} />}>
                     <SelectItemText>{item.label}</SelectItemText>
                   </SelectItem>
                 )}
@@ -331,5 +342,15 @@ export const LeadingMarks: Story = {
         </View>
       </View>
     );
+  },
+};
+
+export const Playground: StoryObj<typeof Select> = {
+  args: { value: 'apple', disabled: false },
+  parameters: { controls: { disable: false, include: ['value', 'disabled'] } },
+  argTypes: { value: { control: 'select', options: ['apple','banana','cherry','durian','elderberry'] }, disabled: { control: 'boolean' } },
+  render: function Playground(args) {
+    const [, updateArgs] = useArgs();
+    return <View style={{ width: 520, maxWidth: '100%' }}><Select {...args} onValueChange={value => updateArgs({ value })}><SelectTrigger label="Pick a fruit"><SelectValue placeholder="Pick a fruit" /><SelectIcon /></SelectTrigger><SelectContent label="Pick a fruit" items={FRUITS} renderItem={item => <SelectItem value={item.value} label={item.label}><SelectItemIndicator /><SelectItemText>{item.label}</SelectItemText></SelectItem>} /></Select></View>;
   },
 };

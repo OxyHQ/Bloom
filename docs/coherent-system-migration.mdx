@@ -1,0 +1,58 @@
+---
+title: Coherent system migration
+description: Shared component contracts and composition alongside the current APIs.
+order: 2
+---
+
+# Coherent system migration
+
+This integration adds a shared vocabulary while retaining the current Button, field, Chip, Badge and AppShell APIs. The table shows the preferred spellings for new code, not a list of removed props. Explicit shared props win over compatibility presets. Existing AppShell variants, slots and drawer behavior remain supported; passing a navigation model selects the adaptive composition.
+
+| Previous usage | Replacement |
+| --- | --- |
+| `size="small/medium/large"`, duplicate aliases | `size="sm/md/lg"` |
+| Button `variant="primary"` | `appearance="solid" tone="accent"` |
+| Button `variant="secondary"` | `appearance="outline" tone="neutral"` |
+| Button `variant="destructive"` | `appearance="solid" tone="danger"` |
+| Button `variant="ghost"` | `appearance="subtle"` |
+| Button `variant="text/link"` | `appearance="plain"`; add `href` for navigation |
+| `PrimaryButton`, `SecondaryButton`, `GhostButton`, `OutlineButton`, `TextButton`, `DestructiveButton`, `LinkButton` | `Button` with explicit semantic props |
+| `IconButton`, `iconOnly`, `size="icon"` | `Button icon={IconComponent}` with no children |
+| `InverseButton` | Explicit scoped colors or a themed surface; no implicit white control over unknown media |
+| Button `onClick` | `onPress` |
+| Button `aria-label` | `accessibilityLabel` |
+| Button `fullWidth` | `style={{ width: '100%' }}` or layout class |
+| Icon elements in managed icon slots | Icon components; custom nodes go in `leading` / `trailing` |
+| Semantic badge/chip `color` | `tone`; `default → neutral`, `primary → accent`, `error → danger` |
+| Badge/chip `variant` | `appearance`; `outlined → outline` |
+| `isInvalid` | `invalid` |
+| Field `onChangeText` | `onValueChange` |
+| Switch `value/onValueChange` | `checked/onCheckedChange` |
+| Radio/RadioCard `selected/onSelect` | `checked/onValueChange`; selection callback receives the option value |
+| SegmentedControl `onChange` | `onValueChange` |
+| DataTableSearch `onChangeText` | `onValueChange` |
+| Chip / ButtonGroupItem `selected`; FrostedIconButton `active` | `checked`; optionally use `onCheckedChange` for a controlled toggle. `onPress` remains the action callback |
+| Card `variant="elevated/filled/outlined/plain"` | `appearance="solid/subtle/outline/plain"`; `elevation` remains an independent override |
+| FrostedIconButton icon element or `children` alias | `icon={IconComponent}`; size and active-state `tone` inherit from `BloomScope` |
+| Menu item `variant="default/destructive"` | `tone="neutral/danger"` |
+| ButtonGroup / ButtonGroupItem `variant="solid/glass"` | `material="solid/glass"`; the shared island and inherited control surface are preserved |
+| ControlSurface `density="medium/small"` | `density="md/sm"`; item heights remain 34/30 |
+| ThemeToggle `appearance`, `ThemeToggleAppearance` | Structural `variant`, `ThemeToggleVariant` |
+| FAB `placement/offset/zIndex/minimizeBehavior` | Still supported; prefer parent composition with `Screen` / `BottomBar` for new screens |
+| Implicit Expo Router root | Universal `BloomProvider` from the provider subpath; explicit `scrollAdapter` |
+| Sidebar `flat` | `surface="plain"`; choose `surface="card"` for a detached rounded panel or `surface="docked"` for an edge-attached square column |
+| AppShell `drawer`, `drawerOpen`, `onDrawerOpenChange` | `navigationPlacement="auto"` or explicit `bottom` / `rail` / `sidebar`; existing drawer state remains supported |
+| AppShell with an already scrolling list | `scroll="external"`; `VirtualList screen={{ active, restoration }}` |
+| FAB `variant`, numeric `size`, icon element | Still supported alongside `tone` / `appearance` and `size="xs/sm/md/lg"` |
+
+The shared vocabulary is `size: xs|sm|md|lg`, `tone: neutral|accent|support|action|success|warning|danger|info`, and `appearance: solid|subtle|outline|plain`. `BloomScope` inherits size and tone only; component props win. Appearance, interaction state, callbacks and navigation selection stay local. Visual sizes remain family-specific. Do not mechanically apply the control scale to image aspect ratios, chart data, typography roles, or platform-native props such as `ActivityIndicator.size`.
+
+## Navigation
+
+`AppShell` accepts a destination model with `value`, `label`, and `icon`, a selected `value`, and `onValueChange`. `navigationPlacement="auto"` chooses bottom navigation below 768, rail from 768 through 1023, and sidebar from 1024. Breakpoints use the measured shell width. Set `bottom`, `rail`, or `sidebar` to override. `primaryAction` takes Fab props and travels with the navigation. `navigationMaterial` selects `solid` or `translucent`. For a standalone screen, `Screen.primaryAction` takes a React node; when using a BottomBar directly, supply `action={<Fab ... />}`.
+
+AppShell persists around route Screens: routes inherit navigation motion and bottom clearance while keeping independent scroll offsets. A covering modal uses `Screen navigationScope="isolated"`. Use one scroller per content region. `ScreenScrollView` is for normal content; virtualized lists bind to the screen without being wrapped in another scroll view. `Screen active={focused}` or `AppShell active={focused}` disables retained background scroll writers; `headerHeight` / `bottomBarHeight` declare custom initial footprints. Geometry reserves the expanded chrome footprint; the visible collapse runs on shared animated values.
+
+## Verification
+
+Review `Templates/Coherent system` stories **Feed**, **Form**, **Desktop**, and **Surfaces**, plus `Foundations/Screen / Continuous Content` alongside the component stories. Verify narrow/wide containers, both color modes, disabled/loading controls, nested scopes and long lists. The browser verifies DOM and web behavior; native safe areas, keyboard and gestures require an iOS/Android run before release.

@@ -100,7 +100,7 @@ export interface ChatIndicatorPaint {
 }
 
 export function resolveChatIndicatorPaint(theme: Theme): ChatIndicatorPaint {
-  const { accent, neutral: n } = resolveButtonRamps(theme);
+  const { accent } = resolveButtonRamps(theme);
   const { colors } = theme;
   const dark = theme.isDark;
   const success = colorRamp(colors.success, ACCENT_TABLE);
@@ -108,18 +108,18 @@ export function resolveChatIndicatorPaint(theme: Theme): ChatIndicatorPaint {
     online: dark ? success[400] : success[600],
     idle: colors.warning,
     busy: colors.error,
-    offline: dark ? n[500] : n[400],
+    offline: colors.textTertiary,
     surface: colors.background,
     accent: accent[500],
     onAccent: colors.primaryForeground,
-    mutedFill: dark ? n[700] : n[200],
-    onMuted: dark ? n[100] : n[700],
-    tick: dark ? n[400] : n[500],
+    mutedFill: colors.backgroundTertiary,
+    onMuted: colors.text,
+    tick: colors.textSecondary,
     tickRead: dark ? accent[400] : accent[600],
     failed: colors.error,
     text: colors.text,
     textMuted: colors.textSecondary,
-    ringSeen: dark ? n[700] : n[300],
+    ringSeen: colors.border,
     ringUnseen: [accent[300], accent[500], dark ? accent[800] : accent[700]] as const,
   };
 }

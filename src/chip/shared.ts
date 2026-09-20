@@ -1,4 +1,5 @@
-import { resolveButtonRamps } from '../button/shared';
+import { resolveBloomColors } from '../appearance/colors';
+import type { BloomAppearance, BloomTone } from '../appearance';
 import { TYPE_SCALE, type TypeScaleVariant } from '../typography/scale';
 import { resolveAccentColors, type AccentTone } from '../theme/accent-colors';
 import { pressedSurface } from '../theme/press-colors';
@@ -46,6 +47,10 @@ function rung(
 }
 
 export const CHIP_GEOMETRY: Readonly<Record<ChipSize, ChipGeometry>> = {
+  xs: rung(20, 'caption-2-semibold', 4, 3),
+  sm: rung(24, 'caption-1-medium', 6, 4),
+  md: rung(24, 'body-medium', 6, 4),
+  lg: rung(28, 'body-medium', 6, 4),
   small: rung(24, 'caption-1-medium', 6, 4),
   medium: rung(24, 'body-medium', 6, 4),
   large: rung(28, 'body-medium', 6, 4),
@@ -87,10 +92,9 @@ export function resolveChipPaint(
     selected,
     hue,
     surface,
-  }: { tone: AccentTone; variant: ChipVariant; selected: boolean; hue?: ChipHue; surface?: string },
+  }: { tone: AccentTone | BloomTone; variant: ChipVariant | BloomAppearance; selected: boolean; hue?: ChipHue; surface?: string },
 ): ChipPaint {
   if (variant === 'inverted') {
-    const { neutral } = resolveButtonRamps(theme);
     const text = theme.colors.text;
     if (selected) {
       const pressed = pressedSurface(theme.colors, text, theme.colors.background);
@@ -106,23 +110,23 @@ export function resolveChipPaint(
     return {
       background: 'transparent',
       foreground: text,
-      border: theme.isDark ? neutral[700] : neutral[200],
+      border: theme.colors.borderLight,
       borderWidth: 1,
-      pressedBackground: theme.isDark ? neutral[800] : neutral[100],
+      pressedBackground: theme.colors.backgroundSecondary,
       hoveredBorder: text,
     };
   }
 
   const colors =
     !hue || selected
-      ? resolveAccentColors(theme.colors, selected ? 'primary' : tone, variant)
+      ? resolveBloomColors(theme.colors, selected ? 'accent' : normalizeTagTone(tone), variant === 'outlined' ? 'outline' : variant)
       : { ...resolveChipHueColors(theme, hue, surface), border: 'transparent' };
 
   return {
     background: colors.background,
     foreground: colors.foreground,
     border: colors.border,
-    borderWidth: variant === 'outlined' && !(hue && !selected) ? 1 : 0,
+    borderWidth: (variant === 'outlined' || variant === 'outline') && !(hue && !selected) ? 1 : 0,
     // All three fills go through the one resolver and land somewhere different
     // because their REST surfaces do: `solid` keeps its tone and gains a state
     // layer of its own label colour, `subtle` deepens the tint AND its alpha
@@ -134,7 +138,7 @@ export function resolveChipPaint(
 
 /** The keyboard focus ring every Bloom control draws: the accent ramp's 500. */
 export function resolveChipRing(theme: Theme): string {
-  return resolveButtonRamps(theme).accent[500];
+  return theme.colors.primary;
 }
 
 export interface ChipRowScroll {
@@ -160,3 +164,5 @@ export function chipRowOverflow({ x, viewport, content }: ChipRowScroll): {
   if (viewport <= 0 || content <= viewport + 1) return { previous: false, next: false };
   return { previous: x > 1, next: x < content - viewport - 1 };
 }
+
+export function normalizeTagTone(tone: AccentTone | BloomTone): BloomTone { return tone === 'primary' ? 'accent' : tone === 'error' ? 'danger' : tone === 'default' ? 'neutral' : tone as BloomTone; }

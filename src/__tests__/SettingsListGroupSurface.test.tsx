@@ -156,19 +156,9 @@ describe.each(MODES)('the default resolves off the real surface (%s)', (mode) =>
 });
 
 /**
- * THE REGRESSION GATE, and it is dark-only by nature.
- *
- * `FloatingPanel` (every popover, dropdown, context menu, hover card, select and
- * menu flyout) and `QueuePanel` publish level 1 with no exact fill, so the
- * surface behind a group there is the ladder's rung 1 — the menu surface, not
- * `colors.card`. The first version of this default answered that case with
- * `backgroundSecondary`, which is calibrated against `card` and measures
- * 1.086–1.106 against the menu surface in DARK — failing the just-noticeable
- * floor on 52 of the 64 presets, i.e. the disappearance the whole design exists
- * to prevent, reappearing one container over. In LIGHT the same choice measures
- * 1.221–1.230 and looks fine, which is exactly why a suite pinned to one mode
- * could not see it. The failing presets are pinned by name in
- * `surface-level-adoption.test.ts`; `teal`, rendered here, is one of them.
+ * Rendered groups must separate from the actual menu fill in both modes. The
+ * tonal policy improved teal's old fixed-token negative control; mono remains
+ * a failing dark case, pinned alongside purple in surface-level-adoption.
  */
 describe.each(MODES)('a group on the menu surface separates from it (%s)', (mode) => {
   const theme = buildTheme('teal', mode);
@@ -183,11 +173,9 @@ describe.each(MODES)('a group on the menu surface separates from it (%s)', (mode
   });
 
   it('and `backgroundSecondary` — the answer this replaced — would not, in dark', () => {
-    // The negative control, stated as a fact about the palette rather than about
-    // the component: it is WHY the default is a step and not a second token. It
-    // fails in both directions — if `backgroundSecondary` ever starts clearing
-    // the floor on the menu surface in dark, this rationale is stale.
-    const measured = contrastRatio(theme.colors.backgroundSecondary, menuSurface);
+    const negativeTheme = buildTheme('mono', mode);
+    const negativeMenu = resolveSurfaceLevel(negativeTheme, 1).background;
+    const measured = contrastRatio(negativeTheme.colors.backgroundSecondary, negativeMenu);
     if (mode === 'dark') expect(measured).toBeLessThan(FILL_JND);
     else expect(measured).toBeGreaterThanOrEqual(FILL_JND);
   });

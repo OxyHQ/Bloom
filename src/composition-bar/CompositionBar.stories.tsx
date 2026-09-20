@@ -26,6 +26,10 @@ function Demo() {
 }
 
 const meta: Meta<typeof CompositionBar> = {
+  argTypes: {
+    "selectedKey": { control: 'text' },
+    "hintLabel": { control: 'text' }
+  },
   title: 'Charts/Composition Bar',
   component: CompositionBar,
 };
@@ -35,9 +39,10 @@ export default meta;
 type Story = StoryObj<typeof CompositionBar>;
 
 export const Light: Story = {
+  parameters: { controls: { disable: true } },
   render: () => (
     <BloomThemeProvider mode="light">
-      <View style={{ padding: 24, width: 360 }}>
+      <View style={{ maxWidth: '100%', padding: 24, width: 360 }}>
         <Demo />
       </View>
     </BloomThemeProvider>
@@ -45,9 +50,10 @@ export const Light: Story = {
 };
 
 export const Dark: Story = {
+  parameters: { controls: { disable: true } },
   render: () => (
     <BloomThemeProvider mode="dark">
-      <View style={{ padding: 24, width: 360, backgroundColor: '#000' }}>
+      <View style={{ maxWidth: '100%', padding: 24, width: 360, backgroundColor: '#000' }}>
         <Demo />
       </View>
     </BloomThemeProvider>
@@ -55,14 +61,16 @@ export const Dark: Story = {
 };
 
 export const Empty: Story = {
-  render: () => (
+  args: { hintLabel: "No data yet" },
+  parameters: { controls: { include: ["hintLabel"] } },
+  render: (args) => (
     <BloomThemeProvider mode="light">
-      <View style={{ padding: 24, width: 360 }}>
-        <CompositionBar
+      <View style={{ maxWidth: '100%', padding: 24, width: 360 }}>
+        <CompositionBar {...args}
           categories={[]}
           selectedKey={null}
           onSelect={() => {}}
-          hintLabel="No data yet"
+
         />
       </View>
     </BloomThemeProvider>

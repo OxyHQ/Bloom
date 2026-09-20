@@ -27,6 +27,7 @@ import { RadioIndicator } from '@oxy.so/bloom/radio-indicator';
 | `selected`      | filled or hollow                                |
 | `size`          | the diameter (16); the dot and hairline scale   |
 | `selectedColor` | the accent the selected gradient is built from  |
+| `selectedForeground` | foreground paired with a supplied selected fill |
 | `borderColor`   | the ring when not                               |
 
 `pressed` is still accepted and ignored: there is no pressed paint.
@@ -56,12 +57,12 @@ a table row, a settings row with its own affordances.
 
 ## The dot colour is derived, not white
 
-When `selectedColor` is the theme primary, the dot uses the preset's readable
+When `selectedColor` is omitted, the dot uses the preset's readable
 foreground — dark on a yellow primary, light on a blue one. A hardcoded white
 dot disappears on a light accent, which is the same class of failure as
 appending alpha to a token: correct markup, invisible control.
 
-A caller-supplied `selectedColor` falls back to white, because Bloom cannot
+Shared radio controls pass `selectedForeground` with their semantic fill. A caller-supplied `selectedColor` without that foreground falls back to white, because Bloom cannot
 know the right contrast for an arbitrary colour. If you pass one, check it.
 
 ## Selected drops the border

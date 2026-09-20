@@ -7,6 +7,9 @@ import { useTheme } from '../theme/use-theme';
 import { AspectRatio } from './index';
 
 const meta: Meta<typeof AspectRatio> = {
+  argTypes: {
+    "ratio": { control: 'number' }
+  },
   title: 'Base/Aspect Ratio',
   component: AspectRatio,
 };
@@ -34,6 +37,7 @@ function Well({ ratio, label }: { ratio: number; label: string }) {
 }
 
 export const Ratios: Story = {
+  parameters: { controls: { disable: true } },
   render: () => (
     <View style={{ gap: 16, padding: 24 }}>
       <Well ratio={16 / 9} label="16 / 9" />
@@ -48,12 +52,13 @@ export const Ratios: Story = {
  * media well from jumping as an image loads.
  */
 export const FillsParentWidth: Story = {
+  parameters: { controls: { disable: true } },
   render: function Responsive() {
     const theme = useTheme();
     return (
-      <View style={{ padding: 24, gap: 16 }}>
+      <View style={{ width: '100%', maxWidth: 488, padding: 24, gap: 16 }}>
         {[200, 320, 440].map((width) => (
-          <View key={width} style={{ width }}>
+          <View key={width} style={{ width, maxWidth: '100%' }}>
             <AspectRatio
               ratio={16 / 9}
               style={{
@@ -62,11 +67,17 @@ export const FillsParentWidth: Story = {
                 alignItems: 'center',
                 justifyContent: 'center',
               }}>
-              <Text>{width}px wide</Text>
+              <Text>Up to {width}px wide</Text>
             </AspectRatio>
           </View>
         ))}
       </View>
     );
   },
+};
+
+/** Edit the props in Controls; interactive state stays in sync. */
+export const Playground: Story = {
+  args: { ratio: 1.7777777778 },
+  render: (args) => <View style={{ width: 360, maxWidth: '100%' }}><AspectRatio {...args} style={{ backgroundColor: 'steelblue', alignItems: 'center', justifyContent: 'center' }}><Text>Media placeholder</Text></AspectRatio></View>,
 };

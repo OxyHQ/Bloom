@@ -84,7 +84,7 @@ describe('SocialButton — colour recipe', () => {
     for (const mode of ['light', 'dark'] as const) {
       const theme = themeFor(mode);
       const paint = resolveSocialButtonPaint('google', 'colorful', theme);
-      const primary = resolveButtonPalette('primary', theme);
+      const primary = resolveButtonPalette('solid', theme, 'accent');
       expect(paint.rest.gradient).toEqual(primary.rest.gradient);
       expect(paint.hover.gradient).toEqual(primary.hover.gradient);
       expect(paint.active.gradient).toEqual(primary.active.gradient);
@@ -95,7 +95,7 @@ describe('SocialButton — colour recipe', () => {
   it('paints white as the secondary button and black as neutral-950/800/900', () => {
     const theme = themeFor('light');
     const white = resolveSocialButtonPaint('github', 'white', theme);
-    const secondary = resolveButtonPalette('secondary', theme);
+    const secondary = resolveButtonPalette('outline', theme, 'neutral');
     expect(white.rest.background).toBe(secondary.rest.background);
     expect(white.hover.border).toBe(secondary.hover.border);
     expect(white.borderWidth).toBe(1);
@@ -134,7 +134,7 @@ describe('SocialButton — render', () => {
   });
 
   it('small is 250 × 32 with 10px padding; fullWidth fills', () => {
-    const small = renderWithTheme(<SocialButton testID="b" brand="slack" size="small" />);
+    const small = renderWithTheme(<SocialButton testID="b" brand="slack" size="sm" />);
     expect(flat(small.getByTestId('b').props.style)).toMatchObject({ height: 32, width: 250, paddingLeft: 10 });
     const full = renderWithTheme(<SocialButton testID="b" brand="slack" fullWidth />);
     expect(flat(full.getByTestId('b').props.style).width).toBe('100%');

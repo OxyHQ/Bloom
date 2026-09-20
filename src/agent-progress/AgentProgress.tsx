@@ -17,7 +17,7 @@ import Animated, {
 } from 'react-native-reanimated';
 import Svg, { Circle, G, Path, Rect } from 'react-native-svg';
 
-import { BUTTON_SHADOW, mixColor, resolveButtonRamps } from '../button/shared';
+import { BUTTON_SHADOW } from '../button/shared';
 import { useControllableState } from '../hooks/use-controllable-state';
 import { adoptStyleSheet } from '../styles/adopt-style-sheet';
 import type { WebCssStyle } from '../styles/web-view-style';
@@ -133,28 +133,13 @@ function hex(color: string): string {
   return `#${h(c.r)}${h(c.g)}${h(c.b)}`;
 }
 
-/**
- * Semantic tokens onto Bloom's ramps:
- *
- *                                   light          dark
- *   background-primary-default      card           neutral-800
- *   border-button-default           neutral-200    neutral-700
- *   background-quaternary-default   neutral-300    neutral-700
- *   foreground-icon-secondary       neutral-500    neutral-500
- *   text-secondary                  neutral-500    neutral-500
- *   text-primary                    text           text
- *   agent-progress-ring             neutral-700    white 50% (over the neutral-700 track)
- */
+/** Canonical theme surfaces, foregrounds and focus roles. */
 function resolvePalette(theme: Theme): ProgressPalette {
-  const { neutral: n } = resolveButtonRamps(theme);
+  const c = theme.colors;
   return {
-    surface: theme.isDark ? n[800] : theme.colors.card,
-    border: hex(theme.isDark ? n[700] : n[200]),
-    quaternary: hex(theme.isDark ? n[700] : n[300]),
-    iconSecondary: hex(n[500]),
-    textSecondary: n[500],
-    textPrimary: theme.colors.text,
-    ring: hex(theme.isDark ? mixColor(n[700], '#ffffff', 0.5) : n[700]),
+    surface: c.card, border: hex(c.borderLight), quaternary: hex(c.backgroundTertiary),
+    iconSecondary: hex(c.textSecondary), textSecondary: c.textSecondary,
+    textPrimary: c.text, ring: hex(c.textSecondary),
     shadow: BUTTON_SHADOW[theme.isDark ? 'dark' : 'light'],
   };
 }

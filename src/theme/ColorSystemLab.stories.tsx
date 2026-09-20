@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Image, Pressable, StyleSheet, Text, View } from 'react-native';
 import Svg, { Circle, Line, Path } from 'react-native-svg';
 import type { Meta, StoryObj } from '@storybook/react-vite';
+import { Button } from '../button/index.web';
 import { defaultAvatarSource } from '../avatar/default-avatar';
 import {
   COLOR_PRESET_FAMILY_REGISTRY,
@@ -637,6 +638,9 @@ function ColorSystemLab() {
             The same Mention structure applied to {COLOR_RECIPES.length} dynamic recipes. Large
             surfaces stay neutral while identity and action carry the saturated colour.
           </Text>
+          <Button href="./?path=/story/foundations-color-roles-in-context--first-direction" target="_top" appearance="outline" tone="neutral" style={{ alignSelf: 'flex-start' }}>
+            Open colour roles in context
+          </Button>
         </View>
         <View style={styles.legend}>
           <View style={styles.legendItem}>
@@ -822,6 +826,7 @@ function ColorSystemLab() {
 }
 
 export const Playground: Story = {
+  parameters: { controls: { disable: true } },
   render: () => <ColorSystemLab />,
 };
 
@@ -842,7 +847,7 @@ const styles = StyleSheet.create({
     gap: 24,
   },
   labHeading: {
-    maxWidth: 760,
+    maxWidth: '100%',
     gap: 8,
   },
   labEyebrow: {
@@ -863,9 +868,10 @@ const styles = StyleSheet.create({
     color: '#625B54',
     fontSize: 16,
     lineHeight: 24,
-    maxWidth: 680,
+    maxWidth: '100%',
   },
   legend: {
+    maxWidth: '100%',
     gap: 10,
     padding: 16,
     borderRadius: 16,
@@ -882,6 +888,7 @@ const styles = StyleSheet.create({
     borderRadius: 5,
   },
   legendText: {
+    flexShrink: 1,
     color: '#4C4640',
     fontSize: 12,
     lineHeight: 16,
@@ -996,7 +1003,7 @@ const styles = StyleSheet.create({
     gap: 16,
   },
   recipeIntroCopy: {
-    maxWidth: 760,
+    maxWidth: '100%',
     gap: 4,
   },
   recipeTitle: {
@@ -1011,6 +1018,7 @@ const styles = StyleSheet.create({
     lineHeight: 21,
   },
   rulePill: {
+    maxWidth: '100%',
     paddingHorizontal: 14,
     paddingVertical: 9,
     borderRadius: 999,
@@ -1067,6 +1075,7 @@ const styles = StyleSheet.create({
   },
   previewLabelRow: {
     flexDirection: 'row',
+    flexWrap: 'wrap',
     alignItems: 'baseline',
     justifyContent: 'space-between',
     gap: 16,

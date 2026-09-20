@@ -23,7 +23,7 @@ const [time, setTime] = useState<string | null>('18:30');
 
 ## Pickers
 
-A secondary `Button` trigger (calendar icon + value, 38 tall, full pill) opens Bloom's `Popover`: on web an anchored panel 4px below the trigger, aligned to its end, radius 24, `background-secondary-default`, `shadow-dropdown`; on native a bottom sheet.
+An outlined neutral `Button` trigger (calendar icon + value, 38 tall, full pill) opens Bloom's `Popover`: on web an anchored panel 4px below the trigger, aligned to its end, radius 24, `background-secondary-default`, `shadow-dropdown`; on native a bottom sheet.
 
 The choice is **pending until Apply**. Pressing days or presets, or typing in the `DD/MM/YYYY` chips, only moves the pending value; Cancel restores the committed one, and every open starts again from it. `onChange` fires on Apply.
 

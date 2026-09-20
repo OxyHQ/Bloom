@@ -198,7 +198,7 @@ describe('RadarChartCard', () => {
 
   it('puts the legend in the header for `top`, and tiles under the chart', () => {
     const top = renderCard(<RadarChartCard testID="radar" data={DATA} series={BOTH} legend="top" />);
-    expect(resolvedStyle(top.getByTestId('radar-legend').props.style)).toMatchObject({ height: 32, columnGap: 12 });
+    expect(resolvedStyle(top.getByTestId('radar-legend').props.style)).toMatchObject({ minHeight: 32, columnGap: 12, maxWidth: '100%', flexShrink: 1 });
     top.unmount();
 
     const tiles = renderCard(<RadarChartCard testID="radar" data={DATA} series={DESKTOP} tiles activeIndex={1} />);

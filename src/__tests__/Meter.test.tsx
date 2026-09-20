@@ -13,7 +13,6 @@ import { createRoot, type Root } from 'react-dom/client';
 
 jest.mock('react-native', () => jest.requireActual('react-native-web'));
 
-import { resolveButtonRamps } from '../button/shared';
 import { Meter, MeterRing, meterFraction, meterValue, resolveMeterColors } from '../stat-bar';
 import { BloomThemeProvider } from '../theme/BloomThemeProvider';
 import type { Theme } from '../theme/types';
@@ -87,17 +86,12 @@ describe('meterValue / meterFraction', () => {
 });
 
 describe('resolveMeterColors', () => {
-  it('is the accent over neutral-200, neutral-700 in dark', () => {
-    // Pinned against the ramps rather than restated as hex, so a preset change
-    // moves both together — and pinned to the STOPS, so the unification that
-    // produced them (seven families at 200/700, two at 200/800, one at 300/700
-    // and one at 100/800) cannot drift back apart one family at a time.
+  it('pairs the primary fill with the semantic tertiary track in both modes', () => {
     for (const mode of ['light', 'dark'] as const) {
       mount(<Meter value={1} max={2} accessibilityLabel="Probe" testID="m" />, mode);
-      const { accent, neutral } = resolveButtonRamps(theme);
       const colors = resolveMeterColors(theme);
-      expect(colors.fill).toBe(accent[500]);
-      expect(colors.track).toBe(mode === 'dark' ? neutral[700] : neutral[200]);
+      expect(colors.fill).toBe(theme.colors.primary);
+      expect(colors.track).toBe(theme.colors.backgroundTertiary);
     }
   });
 

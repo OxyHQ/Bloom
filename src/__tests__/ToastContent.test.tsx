@@ -189,11 +189,19 @@ describe('ToastContent', () => {
           : {};
 
     const discsOf = ({ UNSAFE_root }: ReturnType<typeof renderContent>) =>
-      UNSAFE_root.findAll((n) => hostName(n) === 'View' && flat(n.props.style).width === 40);
+      UNSAFE_root.findAll((n) => hostName(n) === 'View' && [28, 40].includes(flat(n.props.style).width as number));
 
-    it('puts a variant glyph in a 40px status disc, and a plain toast has none', () => {
+    it('puts a variant glyph in a status disc, and a plain toast has none', () => {
       expect(discsOf(renderContent({ variant: 'success' }))).toHaveLength(1);
       expect(discsOf(renderContent())).toHaveLength(0);
+    });
+
+    it.each([{}, { description: 'More detail' }, { action: { label: 'Undo', onClick: jest.fn() } }])('adapts density to the content: %p', (content) => {
+      const rendered = renderContent({ variant: 'success', ...content });
+      const detailed = 'description' in content || 'action' in content;
+      expect(flat(discsOf(rendered)[0]?.props.style)).toMatchObject({ width: detailed ? 40 : 28, height: detailed ? 40 : 28 });
+      const surface = rendered.UNSAFE_root.findAll((n) => hostName(n) === 'View' && flat(n.props.style).borderRadius === 16)[0];
+      expect(flat(surface?.props.style)).toMatchObject({ paddingTop: detailed ? 16 : 12, paddingBottom: detailed ? 16 : 12 });
     });
 
     it('keeps the disc for the spinner and for a caller icon', () => {
@@ -226,8 +234,8 @@ describe('ToastContent', () => {
       const [withIcon] = pressablesOf(
         renderContent({ dismissible: true, closeButton: true, variant: 'success' }),
       );
-      // With the 40px disc: (40 − 20) / 2.
-      expect(flat(withIcon?.props.style)).toMatchObject({ top: 10 });
+      // With the compact 28px disc: (28 − 20) / 2.
+      expect(flat(withIcon?.props.style)).toMatchObject({ top: 4 });
     });
   });
 

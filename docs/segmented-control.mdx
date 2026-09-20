@@ -16,7 +16,7 @@ import {
   SegmentedControlItemText,
 } from '@oxy.so/bloom/segmented-control';
 
-<SegmentedControl label="Appearance" type="radio" value={mode} onChange={setMode}>
+<SegmentedControl label="Appearance" type="radio" value={mode} onValueChange={setMode}>
   <SegmentedControlItem value="light">
     <SegmentedControlItemText>Light</SegmentedControlItemText>
   </SegmentedControlItem>
@@ -75,13 +75,13 @@ a field the group announces nothing.
 | `label`    | the accessible name of the whole group          |
 | `type`     | radio group vs tab list (see above)             |
 | `value`    | the selected segment — fully controlled         |
-| `onChange` | receives the pressed segment's `value`          |
-| `size`     | `small` (32) · `medium` (36, default) · `large` (44) |
+| `onValueChange` | receives the pressed segment's `value`          |
+| `size`     | `sm` (32) · `md` (36, default) · `lg` (44) |
 | `variant`  | `solid` (track + sliding thumb) or `plain`      |
 
 ## What it looks like
 
-A segmented control, in Bloom's colours. `medium` is the default control:
+A segmented control, in Bloom's colours. `md` is the default control:
 28-tall segments with 10px side padding on a 4px-padded track, 2px apart.
 
 - **Track** neutral-100 (dark: neutral-925); **thumb** the card surface (dark:
@@ -91,7 +91,7 @@ A segmented control, in Bloom's colours. `medium` is the default control:
   is regular weight in neutral-500 and turns primary on hover.
 - Track and thumb are full pills, like `Button`.
 - `variant="plain"` draws no track, padding or thumb.
-- Text is Inter from the type ramp: `body` (`body-2` at `small`), `-medium` when selected and `-regular` when not.
+- Text is Inter from the type ramp: `body` (`body-2` at `sm`), `-medium` when selected and `-regular` when not.
 - Disabled segments sit at 50%; keyboard focus rings the segment (2px).
 
 The control hugs its segments. To fill a row, stretch it (`style={{ alignSelf:
@@ -105,3 +105,16 @@ active from context. Passing one is a type error.
 - More than about four options, or long labels: a [`Select`](/docs/bloom/main/select).
 - A view of the same subject with real panels underneath: [`Tabs`](/docs/bloom/main/tabs).
 - A single on/off: [`Switch`](/docs/bloom/main/switch).
+
+## Drag selection
+
+Drag horizontally to move the thumb continuously across measured segment widths.
+Selection commits once on release; disabled items are skipped and cancellation
+returns to the controlled value. Vertical movement remains available to scrolling.
+Taps and keyboard activation preserve radio/tab semantics. Settling respects the
+system reduced-motion preference. Native apps mount `GestureHandlerRootView` at
+the application root, as for BottomBar. The plain variant also accepts dragging.
+
+## Compatibility
+
+The shared `size`, `tone` and `appearance` vocabulary coexists with the previously published family props. Explicit shared props take precedence over legacy spellings; existing size and state callbacks remain supported. New code should prefer the shared vocabulary.

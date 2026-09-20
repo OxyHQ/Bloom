@@ -24,13 +24,13 @@ import { ButtonGroup, ButtonGroupItem } from '@oxy.so/bloom/button-group';
 ## Materials
 
 ```tsx
-<ButtonGroup variant="glass" accessibilityLabel="Page actions">
+<ButtonGroup material="glass" accessibilityLabel="Page actions">
   <ButtonGroupItem iconOnly leadingIcon={RiSearchLine} accessibilityLabel="Search" />
   <ButtonGroupItem iconOnly leadingIcon={RiShare2Line} accessibilityLabel="Share" />
 </ButtonGroup>
 ```
 
-The variant is **inherited** when you do not name it: a `ButtonGroup` inside a floating [`PageHeader`](/docs/page-header)'s `actions` is glass with no prop written on it, and the same group inside a card is solid without one either. An explicit `variant` still wins. The rule and its limits are in [Composition](/docs/composition).
+The material is **inherited** when you do not name it: a `ButtonGroup` inside a floating [`PageHeader`](/docs/page-header)'s `actions` is glass with no prop written on it, and the same group inside a card is solid without one either. An explicit `material` still wins. The rule and its limits are in [Composition](/docs/composition).
 
 On glass:
 
@@ -57,12 +57,14 @@ The item announces its own expanded state on both platforms. A control whose pro
 
 ## Selection
 
-`selected` paints an item with its hover fill and announces it as pressed (`aria-pressed` on web, `accessibilityState.selected` on native). Drive it from state for single- or multi-select toolbars; leave every item unselected for a pure action row. For an animated thumb, use `SegmentedControl`.
+Use `checked` with `onCheckedChange` for a controlled boolean toggle. `onPress` receives the original press event and can be composed with a toggle callback; disabled items call neither.
+
+`checked` paints an item with its hover fill and announces it as pressed (`aria-pressed` on web, `accessibilityState.selected` on native). Drive it from state for single- or multi-select toolbars; leave every item unselected for a pure action row. For an animated thumb, use `SegmentedControl`.
 
 ```tsx
 <ButtonGroup accessibilityLabel="Range">
   {ranges.map((range) => (
-    <ButtonGroupItem key={range} selected={value === range} onPress={() => setValue(range)}>
+    <ButtonGroupItem key={range} checked={value === range} onPress={() => setValue(range)}>
       {range}
     </ButtonGroupItem>
   ))}
@@ -71,7 +73,7 @@ The item announces its own expanded state on both platforms. A control whose pro
 
 ## Sizes and icons
 
-| | medium | small |
+| | md | sm |
 |---|---|---|
 | item height | 34 | 30 |
 | padding-x | 12 | 10 |
@@ -83,16 +85,20 @@ Text is `body-medium` (Inter 14/20 500) through Bloom's typography `Text` — a 
 
 | Prop | Type | Default | Description |
 |------|------|---------|-------------|
-| `ButtonGroup.variant?` | `'solid' \| 'glass'` | inherited, then `'solid'` | The material the group paints. |
-| `ButtonGroup.size?` | `'medium' \| 'small'` | inherited, then `'medium'` | Size for every item. |
+| `ButtonGroup.material?` | `'solid' \| 'glass'` | inherited, then `'solid'` | The material the group paints. |
+| `ButtonGroup.size?` | `'md' \| 'sm'` | inherited, then `'md'` | Size for every item. |
 | `ButtonGroup.dividers?` | `boolean` | `solid` → `true`, `glass` → `false` | Hairlines between items. |
 | `ButtonGroup.accessibilityLabel?` | `string` | — | Names the group. |
 | `ButtonGroupItem.onPress?` | `(event) => void` | — | Press handler. Receives the event, so a composed trigger handler can `preventDefault()` it. |
-| `ButtonGroupItem.selected?` | `boolean` | `false` | Hover fill + pressed state. |
+| `ButtonGroupItem.checked?` | `boolean` | `false` | Hover fill + pressed state. |
 | `ButtonGroupItem.disabled?` | `boolean` | `false` | Disabled paint, blocks presses. |
 | `ButtonGroupItem.iconOnly?` | `boolean` | `false` | Square icon-only item. |
 | `ButtonGroupItem.leadingIcon?` / `trailingIcon?` | `BloomIconComponent` | — | Icon components. |
-| `ButtonGroupItem.size?` | `'medium' \| 'small'` | group size | Per-item override. |
-| `ButtonGroupItem.variant?` | `'solid' \| 'glass'` | group material | Per-item override. Rarely needed — the group owns it. |
+| `ButtonGroupItem.size?` | `'md' \| 'sm'` | group size | Per-item override. |
+| `ButtonGroupItem.material?` | `'solid' \| 'glass'` | group material | Per-item override. Rarely needed — the group owns it. |
 | `ButtonGroupItem.hitSlop?` | `number \| {top,bottom,left,right}` | — | Extra touch area. NOT defaulted: items in a group are adjacent, so slop on one overlaps its neighbour. Use it for an item that stands alone in its own island. |
 | `ButtonGroupItem.onLongPress?` / `aria-expanded` / `aria-haspopup` / `accessibilityRole` | | — | The trigger contract, set by an anchored family. |
+
+## Compatibility
+
+The shared `size`, `tone` and `appearance` vocabulary coexists with the previously published family props. Explicit shared props take precedence over legacy spellings; existing size and state callbacks remain supported. New code should prefer the shared vocabulary.

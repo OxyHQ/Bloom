@@ -1,6 +1,5 @@
 import React, { useCallback, useMemo } from 'react';
 
-import { resolveButtonRamps } from '../button/shared';
 import { useControllableState } from '../hooks/use-controllable-state';
 import {
   Select,
@@ -59,10 +58,9 @@ export function CountryCodeSelect({
   disabled,
 }: CountryCodeSelectProps) {
   const theme = useTheme();
-  const { neutral: n } = resolveButtonRamps(theme);
   // `text-text-secondary` (value) and `text-text-tertiary` (row dial codes).
-  const secondary = n[500];
-  const tertiary = theme.isDark ? n[600] : n[400];
+  const secondary = theme.colors.textSecondary;
+  const tertiary = theme.colors.textSecondary;
 
   const onChange = useCallback(
     (next: string) => {

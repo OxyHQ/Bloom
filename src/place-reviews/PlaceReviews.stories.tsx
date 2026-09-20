@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View } from 'react-native';
+import { View, useWindowDimensions } from 'react-native';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
 import {
@@ -95,6 +95,7 @@ const REVIEWS: Review[] = [
 // ---------------------------------------------------------------------------
 
 function Page({ width, children }: { width: number; children: React.ReactNode }) {
+  width = Math.min(width, useWindowDimensions().width - 32);
   const theme = useTheme();
   return (
     <View style={{ width: '100%', minHeight: '100%', alignItems: 'flex-start', backgroundColor: theme.colors.background }}>
@@ -116,6 +117,7 @@ function Page({ width, children }: { width: number; children: React.ReactNode })
 }
 
 function ReviewsSection({ width }: { width: number }) {
+  width = Math.min(width, useWindowDimensions().width - 32);
   const theme = useTheme();
   const wide = width >= 900;
   const [helpful, setHelpful] = useState<Record<string, boolean>>({});
@@ -144,7 +146,7 @@ function ReviewsSection({ width }: { width: number }) {
       ) : null}
       <View style={wide ? { flexDirection: 'row', flexWrap: 'wrap', gap: 24, alignItems: 'flex-start' } : { gap: 16 }}>
         {REVIEWS.map(({ id, ...review }) => (
-          <View key={id} style={wide ? { width: (width - 160 - 24) / 2 } : undefined}>
+          <View key={id} style={wide ? { width: (width - 160 - 24) / 2, maxWidth: '100%' } : undefined}>
             <PlaceReviewCard
               {...review}
               helpful={helpful[id] ?? false}
@@ -187,7 +189,7 @@ export const Prompt: Story = {
   render: () => (
     <Page width={900}>
       <WriteReviewPrompt buildingTitle="Calle del Olmo 14" onStart={noop} />
-      <View style={{ width: 343 }}>
+      <View style={{ width: 343, maxWidth: '100%' }}>
         <WriteReviewPrompt buildingTitle="Calle del Olmo 14" onStart={noop} onDismiss={noop} />
       </View>
     </Page>

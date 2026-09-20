@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { View } from 'react-native';
 
-import { resolveButtonRamps } from '../button/shared';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -40,7 +39,6 @@ export function DataTableRowActions({
 }: DataTableRowActionsProps) {
   const theme = useTheme();
   const [open, setOpen] = useState(false);
-  const { neutral } = resolveButtonRamps(theme);
   const menuName = `${menuLabel} for ${name}`;
 
   return (
@@ -64,7 +62,7 @@ export function DataTableRowActions({
                   accessibilityLabel={label}
                   className="px-2 py-1.5"
                   onPress={onPress}
-                  leading={<Icon width={MENU_ICON_SIZE} height={MENU_ICON_SIZE} fill={neutral[500]} />}
+                  leading={<Icon width={MENU_ICON_SIZE} height={MENU_ICON_SIZE} fill={theme.colors.textSecondary} />}
                 >
                   {label}
                 </DropdownMenuItem>

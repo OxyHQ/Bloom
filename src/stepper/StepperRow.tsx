@@ -1,7 +1,6 @@
 import React, { memo, useMemo } from 'react';
 import { View } from 'react-native';
 
-import { resolveButtonRamps } from '../button/shared';
 import { useTheme } from '../theme/use-theme';
 import { Text } from '../typography';
 import { Stepper } from './Stepper';
@@ -24,7 +23,6 @@ function StepperRowComponent({
   ...stepper
 }: StepperRowProps) {
   const theme = useTheme();
-  const { neutral } = useMemo(() => resolveButtonRamps(theme), [theme]);
   const name = accessibilityLabel ?? (typeof title === 'string' ? title : '');
 
   return (
@@ -39,7 +37,7 @@ function StepperRowComponent({
           borderBottomWidth: divider ? 1 : 0,
           // neutral-700 in dark, not 800: 800 is the floating surface (a popover, a
           // sheet) these rows usually sit on, where an 800 hairline disappears.
-          borderBottomColor: theme.isDark ? neutral[700] : neutral[200],
+          borderBottomColor: theme.colors.borderLight,
         },
         style,
       ]}

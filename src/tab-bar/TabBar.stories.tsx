@@ -1,3 +1,4 @@
+import { useArgs } from 'storybook/preview-api';
 import React, { useState, type PropsWithChildren } from 'react';
 import { Pressable, ScrollView, Text, View } from 'react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
@@ -245,11 +246,13 @@ function ThemeOverrideScreen() {
 
 /** Four tabs, controlled highlight, floating over scrollable content. */
 export const Default: Story = {
+  parameters: { controls: { disable: true } },
   render: () => <DefaultScreen />,
 };
 
 /** The Revolut-style minimize: the shared progress value driven by a scroll handler. */
 export const MinimizeOnScroll: Story = {
+  parameters: { controls: { disable: true } },
   render: () => (
     <TabBarMinimizeProvider>
       <MinimizeScreen />
@@ -259,10 +262,22 @@ export const MinimizeOnScroll: Story = {
 
 /** No tab selected (`activeIndex` naming no tab): the highlight fades out in place. */
 export const NoSelection: Story = {
+  parameters: { controls: { disable: true } },
   render: () => <NoSelectionScreen />,
 };
 
 /** A partial `theme` override on top of the token-derived defaults. */
 export const ThemeOverride: Story = {
+  parameters: { controls: { disable: true } },
   render: () => <ThemeOverrideScreen />,
+};
+
+export const Playground: Story = {
+  args: { activeIndex: 0, material: 'translucent', haptics: false, blur: true, maxWidth: 420 },
+  parameters: { controls: { disable: false, include: ['activeIndex', 'material', 'haptics', 'blur', 'maxWidth'] } },
+  argTypes: { activeIndex: { control: { type: 'number', min: -1, max: 3 } }, material: { control: 'select', options: ['solid', 'translucent'] }, haptics: { control: 'boolean' }, blur: { control: 'boolean' }, maxWidth: { control: { type: 'range', min: 240, max: 640 } } },
+  render: function Playground(args) {
+    const [, updateArgs] = useArgs();
+    return <GestureHandlerRootView style={{ width: 640, maxWidth: '100%', height: 180 }}><TabBar {...args} onIndexChange={activeIndex => updateArgs({ activeIndex })}>{ITEMS.map((item, index) => <TabBarButton key={item.name} item={item} index={index} />)}</TabBar></GestureHandlerRootView>;
+  },
 };

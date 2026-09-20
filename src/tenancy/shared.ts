@@ -52,24 +52,24 @@ export interface HousingPalette {
 
 export function resolveHousingPalette(theme: Theme): HousingPalette {
   const menu = resolveMenuPalette(theme);
-  const { accent, neutral: n } = resolveButtonRamps(theme);
+  const { accent } = resolveButtonRamps(theme);
   const dark = theme.isDark;
   return {
     surface: menu.surface,
     border: menu.border,
-    hairline: dark ? n[700] : n[200],
+    hairline: theme.colors.border,
     highlight: menu.rowHighlight,
-    tile: dark ? n[700] : n[100],
-    track: dark ? n[700] : n[200],
-    markerRing: dark ? n[500] : n[300],
+    tile: theme.colors.backgroundSecondary,
+    track: theme.colors.backgroundTertiary,
+    markerRing: theme.colors.border,
     ring: accent[500],
     text: theme.colors.text,
     textSecondary: theme.colors.textSecondary,
     shadow: menu.shadow,
     toggleOn: theme.colors.primary,
     toggleOnForeground: theme.colors.primaryForeground,
-    toggleOff: dark ? n[700] : n[100],
-    toggleOffHover: dark ? n[600] : n[200],
+    toggleOff: theme.colors.backgroundTertiary,
+    toggleOffHover: theme.colors.backgroundSecondary,
   };
 }
 

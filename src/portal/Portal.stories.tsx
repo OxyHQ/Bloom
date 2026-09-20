@@ -25,6 +25,7 @@ type Story = StoryObj;
  * clip entirely — which is why menus, tooltips and sheets are portaled.
  */
 export const EscapingAClip: Story = {
+  parameters: { controls: { disable: true } },
   render: function EscapingAClipStory() {
     const { colors } = useTheme();
     const [open, setOpen] = useState(true);
@@ -48,11 +49,11 @@ export const EscapingAClip: Story = {
       <PortalProvider>
         <View style={{ gap: 12 }}>
           <Button onPress={() => setOpen((v) => !v)}>{open ? 'Hide' : 'Show'}</Button>
-          <View style={{ flexDirection: 'row', gap: 24 }}>
+          <View style={{ flexDirection: 'row', flexWrap: 'wrap', maxWidth: '100%', gap: 24 }}>
             <View style={{ gap: 6 }}>
               <Text style={{ fontSize: 12, opacity: 0.7 }}>inline — clipped</Text>
               <Card
-                variant="outlined"
+                appearance="outline"
                 radius="radius-16"
                 style={{ width: 260, height: 110, padding: 12, overflow: 'hidden' }}
               >
@@ -64,7 +65,7 @@ export const EscapingAClip: Story = {
             <View style={{ gap: 6 }}>
               <Text style={{ fontSize: 12, opacity: 0.7 }}>portaled — escapes</Text>
               <Card
-                variant="outlined"
+                appearance="outline"
                 radius="radius-16"
                 style={{ width: 260, height: 110, padding: 12, overflow: 'hidden' }}
               >
@@ -72,7 +73,7 @@ export const EscapingAClip: Story = {
                 {open ? (
                   <Portal>
                     <OverlayRoot>
-                      <View style={{ position: 'absolute', top: 220, left: 320 }}>{panel}</View>
+                      <View style={{ position: 'absolute', bottom: 24, left: 24, right: 24, alignItems: 'flex-start' }}>{panel}</View>
                     </OverlayRoot>
                   </Portal>
                 ) : null}
@@ -91,14 +92,15 @@ export const EscapingAClip: Story = {
  * does not replace the first and unmounting one removes only that one.
  */
 export const ManyAtOnce: Story = {
+  parameters: { controls: { disable: true } },
   render: function ManyAtOnceStory() {
     const [ids, setIds] = useState<number[]>([1, 2, 3]);
     return (
       <PortalProvider>
-        <View style={{ gap: 12, width: 420 }}>
+        <View style={{ gap: 12, width: 420, maxWidth: '100%' }}>
           <View style={{ flexDirection: 'row', gap: 8 }}>
             <Button onPress={() => setIds((v) => [...v, (v[v.length - 1] ?? 0) + 1])}>Add</Button>
-            <Button variant="secondary" onPress={() => setIds((v) => v.slice(0, -1))}>
+            <Button onPress={() => setIds((v) => v.slice(0, -1))} appearance="outline" tone="neutral">
               Remove last
             </Button>
           </View>
@@ -107,7 +109,7 @@ export const ManyAtOnce: Story = {
               <Text>portalled #{id}</Text>
             </Portal>
           ))}
-          <Card variant="outlined" radius="radius-16" style={{ padding: 12, gap: 4 }}>
+          <Card appearance="outline" radius="radius-16" style={{ padding: 12, gap: 4 }}>
             <Text style={{ fontSize: 12, opacity: 0.7 }}>outlet ↓</Text>
             <PortalOutlet />
           </Card>
@@ -125,15 +127,16 @@ export const ManyAtOnce: Story = {
  * while the content is still on screen.
  */
 export const WebPortsToTheDocument: Story = {
+  parameters: { controls: { disable: true } },
   render: () => (
     <PortalProvider>
-      <View style={{ gap: 8, width: 420 }}>
+      <View style={{ gap: 8, width: 420, maxWidth: '100%' }}>
         <Text>
           On web the content below is attached to `document.body`, not to the outlet.
         </Text>
         <Portal>
           <View style={{ position: 'absolute', top: 24, right: 24 }}>
-            <Card variant="elevated" radius="radius-12" style={{ padding: 12 }}>
+            <Card appearance="solid" radius="radius-12" style={{ padding: 12 }}>
               <Text>Top-right of the document</Text>
             </Card>
           </View>

@@ -430,7 +430,7 @@ function MockTabBar() {
 function Phone({ children, height = 844 }: { children: React.ReactNode; height?: number }) {
   const theme = useTheme();
   return (
-    <View style={{ width: 390, height, overflow: 'hidden', backgroundColor: theme.colors.background }}>
+    <View style={{ width: '100%', maxWidth: 390, height, overflow: 'hidden', backgroundColor: theme.colors.background }}>
       {children}
     </View>
   );
@@ -577,7 +577,7 @@ export const Devices: Story = {
       <View style={{ padding: 24, gap: 24, backgroundColor: theme.colors.background, alignItems: 'flex-start' }}>
         <View
           style={{
-            width: 320,
+            width: '100%', maxWidth: 320,
             padding: 10,
             borderRadius: 16,
             borderWidth: 1,
@@ -587,7 +587,7 @@ export const Devices: Story = {
         >
           <DevicePicker current={device} devices={DEVICES} onSelect={setDevice} onHelpPress={noop} />
         </View>
-        <View style={{ width: 390, gap: 8 }}>
+        <View style={{ width: '100%', maxWidth: 390, gap: 8 }}>
           <ConnectBanner deviceName="Living Room Speaker" onPress={noop} />
           <ConnectBanner deviceName="Den TV" kind="tv" />
         </View>

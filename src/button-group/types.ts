@@ -4,8 +4,8 @@ import type { ControlMaterial } from '../control-surface/types';
 import type { ButtonIconComponent } from '../button/types';
 import type { WebAriaProps } from '../styles/styled-primitives';
 
-/** The two group sizes: 34px (`medium`) and 30px (`small`) items. */
-export type ButtonGroupSize = 'medium' | 'small';
+/** The two group sizes: 34px (`md`) and 30px (`sm`) items. */
+export type ButtonGroupSize = 'md' | 'sm' | 'medium' | 'small';
 
 export interface ButtonGroupProps {
   /**
@@ -14,14 +14,15 @@ export interface ButtonGroupProps {
    *
    * Omitted, it is INHERITED from the nearest `ControlSurface` — which is what a
    * `PageHeader`'s action slot mounts — and falls back to `solid`. So a group in
-   * a floating header needs no variant written on it, and the same group in a
+   * a floating header needs no material written on it, and the same group in a
    * card is solid without one either. Precedence and its limits:
    * `docs/composition.mdx`.
    */
+  material?: ControlMaterial;
   variant?: ControlMaterial;
   /**
    * Size for every item that does not set its own. Inherited from the nearest
-   * `ControlSurface` when omitted, then `medium`.
+   * `ControlSurface` when omitted, then `md`.
    */
   size?: ButtonGroupSize;
   /**
@@ -53,15 +54,12 @@ export interface ButtonGroupItemProps {
   /** Overrides the group's size. */
   size?: ButtonGroupSize;
   /** Overrides the group's material. Rarely needed; the group owns it. */
+  material?: ControlMaterial;
   variant?: ControlMaterial;
-  /**
-   * Highlights the item like its hover state and announces it as pressed.
-   *
-   * Leave it UNSET on an item that is not a toggle: an action that fires and is
-   * done has no pressed state, and `aria-pressed="false"` on it announces one.
-   * `false` means "a toggle, currently off"; `undefined` means "not a toggle".
-   */
+  /** Highlights the item like its hover state and announces it as pressed. */
+  checked?: boolean;
   selected?: boolean;
+  onCheckedChange?: (checked: boolean) => void;
   disabled?: boolean;
   /** Square item showing only `leadingIcon` — name it with `accessibilityLabel`. */
   iconOnly?: boolean;

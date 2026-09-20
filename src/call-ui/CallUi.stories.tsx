@@ -130,13 +130,13 @@ function Surface({ children, pad = 20 }: { children: React.ReactNode; pad?: numb
 function BothModes({ children, min = 380 }: { children: React.ReactNode; min?: number }) {
   const preset = useContext(BloomThemeContext)?.colorPreset;
   return (
-    <View style={{ flexDirection: 'row', flexWrap: 'wrap' }}>
-      <View style={{ minWidth: min, flexGrow: 1, flexBasis: min }}>
+    <View style={{ width: '100%', flexDirection: 'row', flexWrap: 'wrap' }}>
+      <View style={{ minWidth: 0, maxWidth: '100%', flexShrink: 1, flexGrow: 1, flexBasis: min }}>
         <BloomThemeProvider mode="light" colorPreset={preset}>
           <Surface>{children}</Surface>
         </BloomThemeProvider>
       </View>
-      <View style={{ minWidth: min, flexGrow: 1, flexBasis: min }}>
+      <View style={{ minWidth: 0, maxWidth: '100%', flexShrink: 1, flexGrow: 1, flexBasis: min }}>
         <BloomThemeProvider mode="dark" colorPreset={preset}>
           <Surface>{children}</Surface>
         </BloomThemeProvider>
@@ -155,7 +155,7 @@ function Caption({ children }: { children: string }) {
 }
 
 function Phone({ children }: { children: React.ReactNode }) {
-  return <View style={{ width: 390, height: 760, alignSelf: 'center' }}>{children}</View>;
+  return <View style={{ width: '100%', maxWidth: 390, height: 760, alignSelf: 'center' }}>{children}</View>;
 }
 
 // ---------------------------------------------------------------------------
@@ -197,7 +197,7 @@ export const VoiceCall: Story = {
 /** The same call on a desktop pane, with a caller-supplied artwork hue. */
 export const VoiceCallWide: Story = {
   render: () => (
-    <View style={{ width: 1280, height: 720, alignSelf: 'center' }}>
+    <View style={{ width: '100%', maxWidth: 1280, height: 720, alignSelf: 'center' }}>
       <CallScreen
         mode="voice"
         name="Saturday planning"
@@ -267,7 +267,7 @@ export const VideoCall: Story = {
 /** The video call on a wide pane. */
 export const VideoCallWide: Story = {
   render: () => (
-    <View style={{ width: 1280, height: 720, alignSelf: 'center' }}>
+    <View style={{ width: '100%', maxWidth: 1280, height: 720, alignSelf: 'center' }}>
       <CallScreen
         mode="video"
         name="Ito Nakamura"
@@ -351,7 +351,7 @@ export const IncomingBanner: Story = {
 export const IncomingScreens: Story = {
   render: () => (
     <View style={{ flexDirection: 'row', gap: 24, padding: 24, flexWrap: 'wrap' }}>
-      <View style={{ width: 390, height: 760 }}>
+      <View style={{ width: '100%', maxWidth: 390, height: 760 }}>
         <IncomingCallScreen
           name="Ana Restrepo"
           avatar={PHOTO('ana', 400, 400)}
@@ -363,7 +363,7 @@ export const IncomingScreens: Story = {
           testID="incoming-buttons"
         />
       </View>
-      <View style={{ width: 390, height: 760 }}>
+      <View style={{ width: '100%', maxWidth: 390, height: 760 }}>
         <IncomingCallScreen
           name="Lucía Ferrer"
           avatar={PHOTO('lucia', 400, 400)}
@@ -384,7 +384,7 @@ export const GroupGrids: Story = {
   render: () => (
     <View style={{ padding: 24, gap: 24, flexDirection: 'row', flexWrap: 'wrap' }}>
       {[2, 4, 6, 9].map((count) => (
-        <View key={count} style={{ width: 330, gap: 8 }}>
+        <View key={count} style={{ width: '100%', maxWidth: 330, gap: 8 }}>
           <Caption>{`${count} participants`}</Caption>
           <GroupCallGrid
             participants={group(count)}
@@ -394,11 +394,11 @@ export const GroupGrids: Story = {
           />
         </View>
       ))}
-      <View style={{ width: 330, gap: 8 }}>
+      <View style={{ width: '100%', maxWidth: 330, gap: 8 }}>
         <Caption>12 participants, 9-up (8 faces + overflow)</Caption>
         <GroupCallGrid participants={group(12)} width={330} testID="grid-12" />
       </View>
-      <View style={{ width: 330, gap: 8 }}>
+      <View style={{ width: '100%', maxWidth: 330, gap: 8 }}>
         <Caption>spotlight</Caption>
         <GroupCallGrid
           participants={group(6)}

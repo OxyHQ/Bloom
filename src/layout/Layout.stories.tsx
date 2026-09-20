@@ -1,111 +1,26 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { View, Text } from 'react-native';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import { SafeAreaInsetsContext } from 'react-native-safe-area-context';
-
-import { BottomEdgeProvider } from './bottom-edge';
+import { BottomEdgeProvider, useBottomEdgeInset } from './bottom-edge';
+import { BottomBar } from '../bottom-bar';
 import { Fab } from '../fab';
-import * as Icons from '../icons';
-import { TabBar, TabBarButton } from '../tab-bar';
-import type { TabBarItem } from '../tab-bar/types';
+import { RiAddLine, RiHomeLine, RiSearchLine } from '../icons';
 
-/**
- * The bottom edge, rendered — which is the point. Jest sees that the FAB's
- * `bottom` is a bigger number; only a browser shows you that the pill is clear
- * of the gesture handle and that the FAB is above the bar rather than inside its
- * blur band.
- *
- * Both stories render the SAME tree under a simulated gesture-navigation inset.
- * The only difference is whether the registry is mounted, so the frame is a
- * before/after of the bug this family was written for.
- */
-const ITEMS: TabBarItem[] = [
-  { name: 'home', label: 'Home', icon: <Icons.RiHomeLine size="lg" /> },
-  { name: 'search', label: 'Search', icon: <Icons.RiSearchLine size="lg" /> },
-  { name: 'you', label: 'You', icon: <Icons.RiUserFollowLine size="lg" /> },
-];
-
-/** An Android device navigating by gestures — the band the handle is drawn in. */
-const GESTURE_HANDLE_INSET = 24;
-
-function Phone({ children }: { children: React.ReactNode }) {
-  return (
-    <SafeAreaInsetsContext.Provider
-      value={{ top: 0, right: 0, bottom: GESTURE_HANDLE_INSET, left: 0 }}
-    >
-      <View
-        style={{
-          width: 320,
-          height: 560,
-          borderRadius: 28,
-          overflow: 'hidden',
-          borderWidth: 1,
-          borderColor: '#888',
-          backgroundColor: '#f4f4f5',
-          justifyContent: 'flex-end',
-        }}
-      >
-        {children}
-        {/* The OS gesture handle, drawn where Android draws it: inside the
-            reserved band. Anything overlapping this bar is on top of a system
-            control. */}
-        <View style={{ height: GESTURE_HANDLE_INSET, alignItems: 'center', justifyContent: 'center' }}>
-          <View style={{ width: 108, height: 4, borderRadius: 2, backgroundColor: '#111' }} />
-        </View>
-      </View>
-    </SafeAreaInsetsContext.Provider>
-  );
+function Footprint() {
+  const occupied = useBottomEdgeInset();
+  return <Text>Reserved bottom edge: {occupied}px (including the safe area once)</Text>;
 }
-
-function Screen() {
-  return (
-    <>
-      <Fab
-        placement="bottom-right"
-        onPress={() => {}}
-        accessibilityLabel="Compose"
-        icon={<Icons.RiAddLine size="lg" fill="#fff" />}
-      />
-      <TabBar activeIndex={0} onIndexChange={() => {}}>
-        {ITEMS.map((item, index) => (
-          <TabBarButton key={item.name} item={item} index={index} />
-        ))}
-      </TabBar>
-    </>
-  );
+function LayoutDemo({ inset = 24 }: { inset?: number }) {
+  const [value, setValue] = useState('home');
+  return <SafeAreaInsetsContext.Provider value={{top:0,right:0,bottom:inset,left:0}}>
+    <BottomEdgeProvider><View style={{ maxWidth: '100%',height:480,width:360,justifyContent:'space-between'}}>
+      <Footprint />
+      <BottomBar items={[{name:'home',label:'Home',icon:<RiHomeLine />},{name:'search',label:'Search',icon:<RiSearchLine />}]} value={value} onValueChange={setValue} action={<Fab icon={RiAddLine} accessibilityLabel="Compose" />} />
+    </View></BottomEdgeProvider>
+  </SafeAreaInsetsContext.Provider>;
 }
-
-const meta: Meta<typeof BottomEdgeProvider> = {
-  title: 'Foundations/Bottom Edge',
-  component: BottomEdgeProvider,
-};
-
+const meta = { title: 'Foundations/Layout', component: LayoutDemo, args: {inset:24}, argTypes: {inset:{control:{type:'range',min:0,max:48}}} } satisfies Meta<typeof LayoutDemo>;
 export default meta;
-type Story = StoryObj<typeof BottomEdgeProvider>;
-
-/** The FAB reads the bar's claim and stacks above it. */
-export const Registered: Story = {
-  render: () => (
-    <Phone>
-      <BottomEdgeProvider>
-        <Screen />
-      </BottomEdgeProvider>
-    </Phone>
-  ),
-};
-
-/**
- * The same tree with no registry — how it shipped. The FAB anchors 16px off the
- * edge and lands behind the bar, inside its blur band. No z-index fixes it: the
- * bar is the last sibling and paints over everything before it.
- */
-export const Unregistered: Story = {
-  render: () => (
-    <Phone>
-      <Screen />
-      <Text style={{ position: 'absolute', top: 8, left: 12, fontSize: 11 }}>
-        no BottomEdgeProvider
-      </Text>
-    </Phone>
-  ),
-};
+type Story = StoryObj<typeof LayoutDemo>;
+export const BottomEdge: Story = {};

@@ -12,6 +12,7 @@ import type { BloomIconComponent } from '../icons/icon-component';
  * published shape. A mail message handing its attachment glyph to this strip
  * was the case that found it.
  */
+/** @deprecated Use `BloomIconComponent` from `@oxy.so/bloom/icons`; this is an alias of it. */
 export type ChatComposerIcon = BloomIconComponent;
 
 /** Props shared by every part: a style escape hatch and a test handle. */

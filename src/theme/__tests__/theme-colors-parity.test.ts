@@ -64,6 +64,10 @@ describe.each(APP_COLOR_NAMES)('engine-backed theme.colors (%s)', (preset: AppCo
       const field: Array<[keyof ThemeColors, string]> = [
         ['primary', '--primary'],
         ['secondary', '--secondary'],
+        ['secondarySubtle', '--secondary-subtle'],
+        ['secondarySubtleForeground', '--secondary-text'],
+        ['tertiarySubtle', '--tertiary-subtle'],
+        ['tertiarySubtleForeground', '--tertiary-text'],
         ['card', '--card'],
         ['background', '--background'],
         ['border', '--border'],

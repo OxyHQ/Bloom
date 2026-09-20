@@ -5,7 +5,7 @@ import { resolvedStyle } from './support/rendered-style';
 import { BloomThemeProvider } from '../theme/BloomThemeProvider';
 import { SankeyChartCard } from '../chart-cards/SankeyChartCard';
 import type { SankeyLinkDatum, SankeyNodeDatum } from '../chart-cards/SankeyChartCard';
-import { hitTestSankey, layoutSankey, sankeyLinkPath, sankeyNodePath } from '../chart-cards/sankey-layout';
+import { hitTestSankey, layoutSankey, placeSankeyLabels, sankeyLinkPath, sankeyRibbonPath, sankeyNodePath } from '../chart-cards/sankey-layout';
 
 // Demo week. Every expected pixel was read off recharts 3.10's SVG for that
 // card at 480 wide (448 × 344 plot).
@@ -59,7 +59,7 @@ describe('sankey layout matches recharts', () => {
 
   it('hit-tests nodes first, then the topmost ribbon', () => {
     expect(hitTestSankey(layout, 94, 165)).toEqual({ type: 'node', index: 1 });
-    expect(hitTestSankey(layout, 193, 220)).toEqual({ type: 'link', index: 14 });
+    expect(hitTestSankey(layout, 193, 220)).toEqual({ type: 'link', index: 5 });
     expect(hitTestSankey(layout, 20, 20)).toBeNull();
   });
 });
@@ -103,8 +103,8 @@ describe('SankeyChartCard', () => {
     act(() => {
       fireEvent(surface, 'pointerMove', { nativeEvent: { offsetX: 193, offsetY: 220 } });
     });
-    expect(getByText('Admin → Messaging')).toBeTruthy();
-    expect(getByTestId('sankey-headline').props.children).toBe('3.2h');
+    expect(getByText('Meetings → Video calls')).toBeTruthy();
+    expect(getByTestId('sankey-headline').props.children).toBe('9.6h');
     act(() => {
       fireEvent(surface, 'pointerLeave');
     });
@@ -117,9 +117,9 @@ describe('SankeyChartCard', () => {
     );
     layoutPlot(getByTestId);
     const paths = UNSAFE_getAllByType('Path' as never) as unknown as { props: Record<string, unknown> }[];
-    const ribbons = paths.filter((p) => p.props.fill === 'none');
-    expect(ribbons[5]!.props.strokeOpacity).toBe(0.7);
-    expect(ribbons[0]!.props.strokeOpacity).toBe(0.08);
+    const ribbons = paths.filter((p) => p.props.fillOpacity !== undefined);
+    expect(ribbons[5]!.props.fillOpacity).toBe(0.7);
+    expect(ribbons[0]!.props.fillOpacity).toBe(0.08);
     const groups = UNSAFE_getAllByType('G' as never) as unknown as { props: Record<string, unknown> }[];
     const opacities = groups.map((g) => g.props.opacity).filter((o) => o !== undefined);
     expect(opacities.slice(0, 5)).toEqual([0.35, 1, 0.35, 0.35, 0.35]);
@@ -130,5 +130,72 @@ describe('SankeyChartCard', () => {
       <SankeyChartCard testID="sankey" nodes={NODES} links={LINKS} ranges={[{ id: 'a', label: 'Half', links: LINKS.map((l) => ({ ...l, value: l.value / 2 })) }]} />,
     );
     expect(getByTestId('sankey-headline').props.children).toBe('43h');
+  });
+});
+
+
+describe('Sankey narrow cards', () => {
+  it.each([288, 358])('keeps full adjacent labels and readable flow at %ipx', width => {
+    const { getByTestId, getByText, queryByTestId, UNSAFE_getAllByType } = renderCard(<SankeyChartCard testID="sankey" nodes={NODES} links={LINKS} />);
+    fireEvent(getByTestId('sankey-plot'), 'layout', { nativeEvent: { layout: { width, height: 352, x: 0, y: 0 } } });
+    expect(queryByTestId('sankey-legend')).toBeNull();
+    for (const [index, name] of NAMES.entries()) {
+      expect(getByText(name)).toBeTruthy();
+      expect(getByTestId(`sankey-label-${index}`).props.numberOfLines).toBeUndefined();
+      expect(resolvedStyle(getByTestId(`sankey-label-${index}`).props.style).fontSize).toBe(13);
+      const labelBox = resolvedStyle(getByTestId(`sankey-label-box-${index}`).props.style);
+      expect(labelBox.width).toBeGreaterThan(50);
+      expect(labelBox.top).toBeGreaterThanOrEqual(0);
+    }
+    expect(getByText('32h')).toBeTruthy();
+    const plotStyle = resolvedStyle(getByTestId('sankey-plot').props.style);
+    expect(plotStyle.flex).toBeUndefined();
+    expect(plotStyle.flexBasis).toBe('auto');
+    expect(plotStyle.flexShrink).toBe(0);
+    const paths = UNSAFE_getAllByType(require('react-native-svg').Path);
+    const firstRibbon = paths.find(path => path.props.fillOpacity !== undefined)!;
+    const start = Number(resolvedStyle(getByTestId('sankey-label-box-0').props.style).width) + 20;
+    const end = width - Number(resolvedStyle(getByTestId('sankey-label-box-5').props.style).width) - 20;
+    expect(firstRibbon.props.d).toMatch(new RegExp(`^M${start},`));
+    expect(firstRibbon.props.d).toContain(` L${end},`);
+    expect(firstRibbon.props.d).toMatch(/ Z$/);
+    expect(end - start).toBeGreaterThan(100);
+  });
+
+  it('grows the plot for measured wrapped names and restores desktop on resize', () => {
+    const { getByTestId, queryByTestId } = renderCard(<SankeyChartCard testID="sankey" nodes={NODES} links={LINKS} />);
+    fireEvent(getByTestId('sankey-plot'), 'layout', { nativeEvent: { layout: { width: 288, height: 352 } } });
+    for (let index = 5; index < NODES.length; index++) {
+      fireEvent(getByTestId(`sankey-label-box-${index}`), 'layout', { nativeEvent: { layout: { height: 100 } } });
+    }
+    expect(resolvedStyle(getByTestId('sankey-plot').props.style).height).toBeGreaterThanOrEqual(7 * 108);
+    layoutPlot(getByTestId);
+    expect(queryByTestId('sankey-label-box-0')).toBeNull();
+    expect(resolvedStyle(getByTestId('sankey').props.style).height).toBe(480);
+  });
+
+  it('packs small neighbouring nodes without overlapping full labels', () => {
+    const labels = [{ index: 0, center: 6, height: 60 }, { index: 1, center: 22, height: 80 }, { index: 2, center: 198, height: 40 }];
+    const tops = placeSankeyLabels(labels, 220);
+    expect(tops[0]).toBeGreaterThanOrEqual(0);
+    expect(tops[1]! - (tops[0]! + 60)).toBeGreaterThanOrEqual(8);
+    expect(tops[2]! - (tops[1]! + 80)).toBeGreaterThanOrEqual(8);
+    expect(tops[2]! + 40).toBeLessThanOrEqual(220);
+  });
+});
+
+
+describe('Sankey filled ribbons', () => {
+  const link = { index: 0, source: 0, target: 1, value: 20, sourceX: 0, targetX: 40, sourceControlX: 22, targetControlX: 18, sourceY: 30, targetY: 130, width: 60 };
+  it('joins node top/bottom edges with a closed band even when thicker than its span', () => {
+    expect(sankeyRibbonPath(link)).toBe('M0,0 C22,0 18,100 40,100 L40,160 C18,160 22,60 0,60 Z');
+  });
+  it('hit-tests the filled band, excluding the former steep stroke bulges', () => {
+    const layout = { nodes: [], links: [link] };
+    expect(hitTestSankey(layout, 20, 80)).toEqual({ type: 'link', index: 0 });
+    expect(hitTestSankey(layout, 20, 109)).toEqual({ type: 'link', index: 0 });
+    expect(hitTestSankey(layout, 20, 115)).toBeNull();
+    expect(hitTestSankey(layout, -1, 30)).toBeNull();
+    expect(hitTestSankey(layout, 41, 130)).toBeNull();
   });
 });

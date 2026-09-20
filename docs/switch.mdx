@@ -14,8 +14,8 @@ intent you confirm later with a Save button.
 import { Switch } from '@oxy.so/bloom/switch';
 
 <Switch
-  value={pushEnabled}
-  onValueChange={setPushEnabled}
+  checked={pushEnabled}
+  onCheckedChange={setPushEnabled}
   accessibilityLabel="Push notifications"
 />
 ```
@@ -24,10 +24,10 @@ import { Switch } from '@oxy.so/bloom/switch';
 
 | prop                 | decides                                       |
 | -------------------- | --------------------------------------------- |
-| `value`              | on or off — the component is fully controlled  |
-| `onValueChange`      | receives the **opposite** of the current value |
+| `checked`              | on or off — the component is fully controlled  |
+| `onCheckedChange`      | receives the **opposite** of the current value |
 | `disabled`           | dims it and takes it out of the tab order      |
-| `size`               | `default` (44×26) or `sm` (36×22)              |
+| `size`               | `xs` (30×18), `sm` (36×22), `md` (44×26), `lg` (52×30)              |
 | `accessibilityLabel` | what it announces as — see below               |
 
 There is no uncontrolled mode. A switch whose state the caller does not own is a
@@ -52,8 +52,8 @@ So the row below needs the label even though the words are already on screen:
   title="Push notifications"
   rightElement={
     <Switch
-      value={push}
-      onValueChange={setPush}
+      checked={push}
+      onCheckedChange={setPush}
       accessibilityLabel="Push notifications"
     />
   }
@@ -102,3 +102,7 @@ silently overwritten.
 
 Neither of these is visible to a prop-level test. Assert the rendered
 attribute.
+
+## Compatibility
+
+The shared `size`, `tone` and `appearance` vocabulary coexists with the previously published family props. Explicit shared props take precedence over legacy spellings; existing size and state callbacks remain supported. New code should prefer the shared vocabulary.

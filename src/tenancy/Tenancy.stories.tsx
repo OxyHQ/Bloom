@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View } from 'react-native';
+import { View, useWindowDimensions } from 'react-native';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
 import { Button } from '../button';
@@ -74,6 +74,7 @@ const LEASE_TIMELINE: TenancyTimelineEvent[] = [
 // ---------------------------------------------------------------------------
 
 function Page({ width, children }: { width: number; children: React.ReactNode }) {
+  width = Math.min(width, useWindowDimensions().width - 32);
   const theme = useTheme();
   return (
     <View style={{ width: '100%', minHeight: '100%', alignItems: 'flex-start', backgroundColor: theme.colors.background }}>
@@ -121,6 +122,7 @@ function LeaseActions() {
 // ---------------------------------------------------------------------------
 
 function TenantDashboard({ width }: { width: number }) {
+  width = Math.min(width, useWindowDimensions().width - 32);
   const theme = useTheme();
   const wide = width >= 1000;
   const lease = (
@@ -253,6 +255,7 @@ export const TenantDashboardNarrowDark: Story = {
 // ---------------------------------------------------------------------------
 
 function LandlordView({ width }: { width: number }) {
+  width = Math.min(width, useWindowDimensions().width - 32);
   const wide = width >= 1000;
   return (
     <Page width={width}>
@@ -366,7 +369,7 @@ export const MaintenanceStages: Story = {
     <Page width={1280}>
       <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 16 }}>
         {STAGES.map((stage, index) => (
-          <View key={stage} style={{ width: 280 }}>
+          <View key={stage} style={{ width: 280, maxWidth: '100%' }}>
             <MaintenanceRequestCard
               title={['No power in the hallway', 'Washing machine drains slowly', 'Boiler pressure keeps dropping', 'Dripping shower tap'][index]!}
               category={(['electrical', 'appliances', 'heating', 'plumbing'] as const)[index]!}
@@ -391,10 +394,10 @@ export const Payments: Story = {
   render: () => (
     <Page width={1280}>
       <RentPaymentList paidThisYear="€9,800" outstanding="€0" payments={PAYMENTS} />
-      <View style={{ width: 375 }}>
+      <View style={{ width: 375, maxWidth: '100%' }}>
         <RentPaymentList paidThisYear="€9,800" outstanding="€550" outstandingTone="error" payments={PAYMENTS} />
       </View>
-      <View style={{ width: 375 }}>
+      <View style={{ width: 375, maxWidth: '100%' }}>
         <RentPaymentList title="Rent payments" payments={[]} />
       </View>
     </Page>
@@ -405,10 +408,10 @@ export const Payments: Story = {
 export const Documents: Story = {
   render: () => (
     <Page width={1280}>
-      <View style={{ width: 720 }}>
+      <View style={{ width: 720, maxWidth: '100%' }}>
         <DocumentList documents={DOCUMENTS} />
       </View>
-      <View style={{ width: 375 }}>
+      <View style={{ width: 375, maxWidth: '100%' }}>
         <DocumentList documents={DOCUMENTS} />
       </View>
     </Page>
@@ -418,7 +421,7 @@ export const Documents: Story = {
 function TimelineDemo() {
   const [compact, setCompact] = useState(false);
   return (
-    <View style={{ width: 420, gap: 16 }}>
+    <View style={{ width: 420, maxWidth: '100%', gap: 16 }}>
       <Button variant="secondary" size="small" onPress={() => setCompact((c) => !c)}>
         {compact ? 'Comfortable' : 'Compact'}
       </Button>

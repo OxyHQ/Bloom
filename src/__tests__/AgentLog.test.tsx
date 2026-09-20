@@ -13,7 +13,6 @@ import {
   AgentLogWorkingRow,
   useAgentLogRevealTicker,
 } from '../agent-log';
-import { resolveButtonRamps } from '../button/shared';
 import { BloomThemeProvider } from '../theme/BloomThemeProvider';
 import { buildTheme } from '../theme/build-theme';
 import { adoptStyleSheet } from '../styles/adopt-style-sheet';
@@ -79,7 +78,7 @@ describe('AgentLog', () => {
     );
     const trunk = resolvedStyle(getByTestId('agent-log-row-trunk', { includeHiddenElements: true }).props.style);
     expect(trunk).toMatchObject({ width: 1, top: 8, bottom: 0, left: 0, transformOrigin: 'top' });
-    expect(trunk.backgroundColor).toBe(resolveButtonRamps(theme).neutral[300]);
+    expect(trunk.backgroundColor).toBe(theme.colors.border);
     unmount();
 
     const last = renderLog(
@@ -96,7 +95,7 @@ describe('AgentLog', () => {
     const { getByTestId } = renderLog(<AgentLogGuideBridge height={6} offset={7} reduce />, 'dark');
     const bridge = resolvedStyle(getByTestId('agent-log-guide-bridge', { includeHiddenElements: true }).props.style);
     expect(bridge).toMatchObject({ top: -6, height: 6, left: 7, width: 1 });
-    expect(bridge.backgroundColor).toBe(resolveButtonRamps(theme).neutral[700]);
+    expect(bridge.backgroundColor).toBe(theme.colors.border);
   });
 
   it('settles a reveal and reports it once', () => {
@@ -132,7 +131,7 @@ describe('AgentLog', () => {
       </Text>,
     );
     expect(resolvedStyle(getByText('Reading files').props.style).color).toBe(
-      resolveButtonRamps(theme).neutral[500],
+      theme.colors.textSecondary,
     );
   });
 

@@ -15,6 +15,7 @@ import { Card } from '../card';
 import { useTheme } from '../theme';
 
 const meta: Meta = {
+  parameters: { controls: { disable: true } },
   title: 'Foundations/Image Aspect Ratio Cache',
 };
 
@@ -40,7 +41,7 @@ const WIDTH = 260;
 
 function Row({ label, children }: { label: string; children: React.ReactNode }) {
   return (
-    <Card variant="outlined" radius="radius-16" style={{ padding: 16, gap: 10, width: WIDTH + 32 }}>
+    <Card appearance="outline" radius="radius-16" style={{ padding: 16, gap: 10, width: WIDTH + 32, maxWidth: '100%' }}>
       <Text style={{ fontWeight: '600' }}>{label}</Text>
       {children}
     </Card>
@@ -52,7 +53,7 @@ function Unreserved({ uris }: { uris: string[] }) {
   return (
     <View style={{ gap: 8 }}>
       {uris.map((uri) => (
-        <Image key={uri} source={{ uri }} style={{ width: WIDTH }} resizeMode="cover" />
+        <Image key={uri} source={{ uri }} style={{ width: WIDTH, maxWidth: '100%' }} resizeMode="cover" />
       ))}
       <Text style={{ fontSize: 12, opacity: 0.7 }}>
         Nothing below these images can hold its position.
@@ -74,7 +75,7 @@ function Reserved({ uris }: { uris: string[] }) {
       {uris.map((uri) => {
         const ratio = getAspectRatio(uri) ?? DEFAULT_ASPECT_RATIO;
         return (
-          <View key={uri} style={{ width: WIDTH, aspectRatio: ratio }}>
+          <View key={uri} style={{ width: WIDTH, maxWidth: '100%', aspectRatio: ratio }}>
             <Image source={{ uri }} style={{ width: '100%', height: '100%' }} resizeMode="cover" />
           </View>
         );
@@ -99,13 +100,14 @@ function Reserved({ uris }: { uris: string[] }) {
  * on the very first frame rather than settling into place.
  */
 export const ReflowVersusReserved: Story = {
+  parameters: { controls: { disable: true } },
   render: function ReflowStory() {
     const [run, setRun] = useState(0);
     const uris = photos(`bloom-${run}`);
     return (
       <View style={{ gap: 12 }}>
         <Button onPress={() => setRun((n) => n + 1)}>Load again (new, uncached images)</Button>
-        <View style={{ flexDirection: 'row', gap: 16, alignItems: 'flex-start' }}>
+        <View style={{ flexDirection: 'row', flexWrap: 'wrap', maxWidth: '100%', gap: 16, alignItems: 'flex-start' }}>
           <Row label="No reservation — reflows">
             <Unreserved key={run} uris={uris} />
           </Row>
@@ -124,12 +126,13 @@ export const ReflowVersusReserved: Story = {
  * default" want different behaviour, and only the first should settle.
  */
 export const KnownVersusGuessed: Story = {
+  parameters: { controls: { disable: true } },
   render: function KnownStory() {
     const { colors } = useTheme();
     const [, force] = useState(0);
     const uris = photos('known', 3);
     return (
-      <View style={{ gap: 8, width: 420 }}>
+      <View style={{ maxWidth: '100%', gap: 8, width: 420 }}>
         <Button onPress={() => { for (const u of uris) void fetchAspectRatio(u).then(() => force((n) => n + 1)); }}>
           Measure them
         </Button>
@@ -162,16 +165,17 @@ export const KnownVersusGuessed: Story = {
  * is right on frame one, which no amount of caching after the fact achieves.
  */
 export const SeededFromTheApi: Story = {
+  parameters: { controls: { disable: true } },
   render: function SeededStory() {
     const uri = 'https://picsum.photos/seed/seeded/900/300';
     // Pretend the API told us: 900 × 300.
     setAspectRatio(uri, 900 / 300);
     return (
-      <View style={{ gap: 8, width: 420 }}>
+      <View style={{ maxWidth: '100%', gap: 8, width: 420 }}>
         <Text style={{ fontSize: 12, opacity: 0.7 }}>
           Ratio seeded before render: {getAspectRatio(uri)?.toFixed(3)}
         </Text>
-        <View style={{ width: 400, aspectRatio: getAspectRatio(uri) ?? DEFAULT_ASPECT_RATIO }}>
+        <View style={{ maxWidth: '100%', width: 400, aspectRatio: getAspectRatio(uri) ?? DEFAULT_ASPECT_RATIO }}>
           <Image source={{ uri }} style={{ width: '100%', height: '100%' }} resizeMode="cover" />
         </View>
       </View>

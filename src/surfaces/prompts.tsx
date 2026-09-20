@@ -163,7 +163,7 @@ function PromptSurface({
         label={options.inputLabel ?? options.title}
         placeholder={options.placeholder}
         value={value}
-        onChangeText={setValue}
+        onValueChange={setValue}
         autoFocus
         returnKeyType="done"
         onSubmitEditing={onSubmit}

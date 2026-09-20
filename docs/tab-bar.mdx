@@ -298,6 +298,8 @@ The gesture joins the bar's gesture race only when you pass the prop. Without it
 
 ## Laying out around the bar
 
+For a complete screen, prefer `AppShell` or `Screen` with `BottomBar`: navigation and the primary action share one row, blur and motion signal. The standalone `TabBar` below remains useful for custom compositions. `embedded` removes its positioning and safe-area ownership; `minimizeProgress` can share a screen motion value. Width is measured from the actual parent on layout.
+
 The bar floats over your content (`position: absolute`), so nothing accounts for it. `useTabBarFootprint()` returns the space it physically occupies above the bottom of the window — its own height plus its own bottom offset, and nothing else:
 
 ```tsx
@@ -315,9 +317,6 @@ export default function Feed() {
         // The last row clears the pill by 12pt — that gap is yours, not Bloom's.
         contentContainerStyle={{ paddingBottom: footprint + 12 }}
       />
-      {/* A FAB anchored by `bottom` already carries its own gap: sit it right
-          on top of the footprint. */}
-      <Fab style={{ position: 'absolute', right: 16, bottom: footprint }} />
     </>
   );
 }

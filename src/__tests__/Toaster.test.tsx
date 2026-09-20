@@ -454,6 +454,28 @@ describe('ToastOutlet', () => {
     expect(toastStore.getSnapshot().toastHeights[id]).toBe(84);
   });
 
+  it('clips mixed-height rear viewports without overwriting intrinsic measurements', () => {
+    const rendered = renderOutlet({ enableStacking: true, duration: Infinity });
+    show(() => {
+      toast('Tall rear', { id: 'tall', description: 'Long content' });
+      toast('Short front', { id: 'short' });
+      toastStore.setToastHeight('tall', 180);
+      toastStore.setToastHeight('short', 54);
+    });
+    const measuredRows = rendered.UNSAFE_root.findAll(node =>
+      hostName(node) === 'Animated.View' && typeof node.props.onLayout === 'function');
+    const rear = measuredRows[0]!;
+    expect(flattenStyle(rear.props.style).flexShrink).toBe(0);
+    expect(flattenStyle(rear.parent!.props.style)).toMatchObject({ maxHeight: 54, overflow: 'hidden' });
+    expect(toastStore.getSnapshot().toastHeights.tall).toBe(180);
+    show(() => toastStore.expand());
+    // The Reanimated mock reads styles only during React render, not when the
+    // layout effect updates a shared value. Flush that style read explicitly.
+    rendered.rerender(<BloomThemeProvider mode="light" colorPreset="teal"><ToastOutlet enableStacking duration={Infinity} /></BloomThemeProvider>);
+    expect(flattenStyle(rear.parent!.props.style)).toMatchObject({ maxHeight: 180, overflow: 'visible' });
+    expect(toastStore.getSnapshot().toastHeights.tall).toBe(180);
+  });
+
   it('ignores a zero height so an unmeasured row keeps the estimate', () => {
     const rendered = renderOutlet();
     let id: string | number = '';
