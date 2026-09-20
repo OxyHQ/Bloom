@@ -96,6 +96,11 @@ const CAST_EXEMPTIONS = [
   'dialog/Dialog.web.tsx',
   // DOM mouse handlers, applied only under `Platform.OS === 'web'`.
   'text-field/TextField.tsx',
+  // The same shell handlers as `TextField`, plus the two web-only attributes a
+  // combobox's own option needs: `tabIndex={-1}` (react-native has no such prop
+  // and `focusable={false}` does not reach the DOM through `Pressable`) and an
+  // `onMouseDown` that keeps the press from blurring the caret.
+  'tag-field/TagField.tsx',
 ];
 
 /** A line that is only a comment — the rule's own prose quotes what it forbids. */
