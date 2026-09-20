@@ -12,6 +12,23 @@ export const IS_WEB = Platform.OS === 'web';
 //  each chose their own padding is the gap the expansion appears to leave.
 // ---------------------------------------------------------------------------
 
+/**
+ * The width a message needs before its reply actions keep their words. Under
+ * it the group is glyphs, named by `accessibilityLabel` — measured at 390,
+ * where three labelled actions ran past the card's own edge.
+ */
+export const MAIL_REPLY_LABELS_FROM = 320;
+
+/**
+ * Whether a message this wide keeps the WORDS on its reply actions. `null` is
+ * the frame before the first layout, and it keeps them: a group that started
+ * as glyphs and grew labels flickers on every mount, where one that starts with
+ * labels and drops them only ever does so on a narrow screen, once.
+ */
+export function replyLabelsFit(width: number | null): boolean {
+  return width === null || width >= MAIL_REPLY_LABELS_FROM;
+}
+
 export const MAIL_THREAD_GEOMETRY = {
   /** The message's own horizontal padding. */
   paddingHorizontal: 16,

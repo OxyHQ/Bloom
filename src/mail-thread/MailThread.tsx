@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { Pressable, View } from 'react-native';
 
+import { Button } from '../button';
 import { Divider } from '../divider';
 import { useControllableState } from '../hooks/use-controllable-state';
 import { MailLabelChips, MailStar } from '../mail-list/parts';
@@ -89,21 +90,6 @@ export function MailThread({
 
   const { shown, overflow } = visibleLabels(labels, 3);
 
-  const revealStyle: WebCssStyle = {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-    alignSelf: 'flex-start',
-    marginLeft: MAIL_BODY_INSET,
-    paddingTop: 6,
-    paddingBottom: 6,
-    paddingLeft: 12,
-    paddingRight: 12,
-    borderRadius: 999,
-    backgroundColor: paint.hover,
-    '--bloom-mail-ring': paint.accent,
-  };
-
   return (
     <View
       accessibilityLabel={accessibilityLabel ?? subject}
@@ -172,19 +158,20 @@ export function MailThread({
               testID={testID ? `${testID}-message-${entry.message.id}` : undefined}
             />
           ) : (
-            <Pressable
+            // The fold is a CONTROL, so it is Bloom's control: a hand-drawn
+            // pill here was a shape the library does not otherwise use, and it
+            // carried its own focus ring, its own fill and its own hover.
+            <Button
               key="earlier"
-              {...webDataSet({ bloomMailThreadFocusable: '' })}
-              role="button"
-              accessibilityLabel={text.earlierMessages(entry.count)}
+              variant="secondary"
+              size="small"
               onPress={() => setRevealed(true)}
-              style={revealStyle}
+              accessibilityLabel={text.earlierMessages(entry.count)}
+              style={{ alignSelf: 'flex-start', marginLeft: MAIL_BODY_INSET }}
               testID={testID ? `${testID}-earlier` : undefined}
             >
-              <Text variant="body-2-medium" style={{ color: paint.textSecondary }}>
-                {text.earlierMessages(entry.count)}
-              </Text>
-            </Pressable>
+              {text.earlierMessages(entry.count)}
+            </Button>
           ),
         )}
       </View>

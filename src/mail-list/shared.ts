@@ -66,16 +66,23 @@ export interface MailRowGeometry {
   snippetVariant: TypeScaleVariant;
   timeVariant: TypeScaleVariant;
   /**
-   * The round action buttons — the star, and the rail. `comfortable` is a TOUCH
-   * target and so is 44; `compact` is a pointer-only density where 44 would not
-   * fit a 40-tall row at all.
+   * The round action buttons of the hover RAIL, which floats over the row and
+   * so may be a full touch target: 44 on `comfortable`, 28 on the pointer-only
+   * `compact`, where 44 would not fit a 40-tall row at all.
    */
   action: number;
   actionGlyph: number;
+  /**
+   * The star DRAWN inside the row's own right column, which is a different
+   * number from `action`: a 44 control in flow there sets the row's height
+   * (a two-line row measured 88 because of it). `hitSlop` grows the target back
+   * to `MAIL_TOUCH_TARGET` without the drawing claiming the space.
+   */
+  starControl: number;
 }
 
 /**
- * 72 tall with two lines on a phone, 40 tall with one on a desktop. The avatar
+ * 64 tall with two lines on a phone, 40 tall with one on a desktop. The avatar
  * is centred in both, so a row with no snippet is the same height as one with a
  * snippet and a label.
  *
@@ -87,11 +94,15 @@ export interface MailRowGeometry {
  */
 export const MAIL_ROW_GEOMETRY: Record<MailDensity, MailRowGeometry> = {
   comfortable: {
-    minHeight: 72,
+    // 64, not the chat row's 72: a mail row carries no presence dot, no typing
+    // line and no delivery ticks, so the same 72 left a band of empty pixels
+    // under every second line. The two lines, the 40 mark and 12/14 of inset
+    // are what close it without the text touching the row's edge.
+    minHeight: 64,
     paddingVertical: 12,
-    paddingHorizontal: 16,
-    avatar: 48,
-    gap: 12,
+    paddingHorizontal: 14,
+    avatar: 40,
+    gap: 10,
     lineGap: 2,
     glyph: 16,
     senderWidth: 0,
@@ -105,6 +116,7 @@ export const MAIL_ROW_GEOMETRY: Record<MailDensity, MailRowGeometry> = {
     timeVariant: 'caption-1-regular',
     action: 44,
     actionGlyph: 18,
+    starControl: 24,
   },
   compact: {
     minHeight: 40,
@@ -126,11 +138,18 @@ export const MAIL_ROW_GEOMETRY: Record<MailDensity, MailRowGeometry> = {
     timeVariant: 'caption-2-regular',
     action: 28,
     actionGlyph: 16,
+    starControl: 24,
   },
 };
 
 /** Corner radius of a row's hover/selected fill. A row is a surface, not a control. */
 export const MAIL_ROW_RADIUS = 10;
+
+/**
+ * The touch target every row control is grown to with `hitSlop`, whatever it
+ * DRAWS. Drawing at 44 instead would make the control set the row's height.
+ */
+export const MAIL_TOUCH_TARGET = 44;
 
 /**
  * The label mark a two-line row draws when there is no width for a second chip.
@@ -272,8 +291,14 @@ export function visibleLabels(
 export function labelMarks(
   labels: readonly MailLabel[] | undefined,
   max: number,
+  named = true,
 ): { chip?: MailLabel; dots: readonly MailLabel[] } {
   if (labels === undefined || labels.length === 0 || max <= 0) return { dots: [] };
+  // `named: false` is the two-line row: a named chip there sits on the subject's
+  // own line and takes width from the thing the row is read for. The label is
+  // still announced — `composeMailRowName` says all of them — so the dot is a
+  // reminder, not the only carrier.
+  if (!named) return { dots: labels.slice(0, max) };
   return { chip: labels[0], dots: labels.slice(1, max) };
 }
 

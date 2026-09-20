@@ -1,10 +1,18 @@
-import type { ComponentType, ReactNode, RefObject } from 'react';
+import type { ReactNode, RefObject } from 'react';
 import type { StyleProp, TextInput, ViewStyle } from 'react-native';
 
-import type { Props as IconProps } from '../icons/shared';
+import type { BloomIconComponent } from '../icons/icon-component';
 
-/** Every glyph slot in this family takes a Bloom icon component. */
-export type ChatComposerIcon = ComponentType<IconProps>;
+/**
+ * Every glyph slot in this family takes a Bloom icon component.
+ *
+ * It is `BloomIconComponent` — width, height, fill — and not the full Remix
+ * prop set: those three are all this family ever passes, and demanding the
+ * whole set made the type reject any icon component written to Bloom's own
+ * published shape. A mail message handing its attachment glyph to this strip
+ * was the case that found it.
+ */
+export type ChatComposerIcon = BloomIconComponent;
 
 /** Props shared by every part: a style escape hatch and a test handle. */
 interface PartProps {
@@ -235,9 +243,18 @@ export interface ComposerBannerProps extends PartProps {
 export interface ComposerAttachmentStripProps extends PartProps {
   attachments: ReadonlyArray<ChatComposerAttachment>;
   onRemove?: (id: string) => void;
+  /**
+   * Opens a tile. A composer's attachments are things you are about to send,
+   * so they only need removing; the same strip in a READ-ONLY place — a mail
+   * message's attachments — is a list you open. With this the tile is a named
+   * button; without it the tile stays decoration, as it was.
+   */
+  onOpen?: (id: string) => void;
   /** Tile edge. Default `56`. */
   size?: number;
   removeLabel?: (attachment: ChatComposerAttachment) => string;
+  /** Names an openable tile. Defaults to the attachment's own name. */
+  openLabel?: (attachment: ChatComposerAttachment) => string;
   accessibilityLabel?: string;
 }
 

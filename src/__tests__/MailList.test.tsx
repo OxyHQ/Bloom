@@ -322,25 +322,30 @@ describe('MailRow', () => {
     },
   );
 
-  it('draws the phone row two lines tall, at the same 72/48 as a conversation row', () => {
+  it('draws the phone row two lines tall at 64/40, with the time and the states in their own column', () => {
     mount(<MailRow {...ROW} labels={LABELS} testID="r" />);
-    expect(getComputedStyle(byTestId('r')).minHeight).toBe('72px');
-    expect(getComputedStyle(byTestId('r-avatar')).height).toBe('48px');
-    // Line one is the sender and the time; line two is the subject with the
-    // snippet inside it. Nothing else is a text rung.
+    // 64, not the conversation row's 72: a mail row carries no presence dot,
+    // no typing line and no delivery ticks, and the same height left a band of
+    // empty pixels under the second line.
+    expect(getComputedStyle(byTestId('r')).minHeight).toBe('64px');
+    expect(getComputedStyle(byTestId('r-avatar')).height).toBe('40px');
+    // Line one is the sender ALONE and line two is the subject with the snippet
+    // inside it: the time is not strung along a text line but sits in the right
+    // column, which is the shape `chat-list` draws.
     const sender = byTestId('r-sender');
     const time = byTestId('r-time');
     const subject = byTestId('r-subject');
-    expect(sender.parentElement).toBe(time.parentElement);
+    expect(sender.parentElement).not.toBe(time.parentElement);
     expect(subject.parentElement).not.toBe(sender.parentElement);
   });
 
-  it('collapses the labels to one chip and a dot per label that did not fit', () => {
+  it('collapses the labels to a dot each on the two-line row, and keeps the names on the dense one', () => {
     mount(<MailRow {...ROW} labels={LABELS} maxLabels={2} testID="r" />);
-    // Two marks: the first label keeps its name, the second is 8px of its tone.
-    expect(byTestId('r-labels-work').textContent).toBe('Work');
-    expect(maybe('r-labels-money')).toBeNull();
-    const dot = byTestId('r-labels-dot-money');
+    // No named chip on this row: it would sit on the subject's own line and
+    // take width from the thing the row is read for. Every label is a dot, and
+    // every one of them is still in the row's composed name.
+    expect(maybe('r-labels-work')).toBeNull();
+    const dot = byTestId('r-labels-dot-work');
     expect(getComputedStyle(dot).width).toBe('8px');
     expect(getComputedStyle(dot).backgroundColor).not.toBe('');
     // And the third is silent on the row while still being announced.

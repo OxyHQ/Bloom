@@ -20,7 +20,14 @@ import { createRoot, type Root } from 'react-dom/client';
 jest.mock('react-native', () => jest.requireActual('react-native-web'));
 
 import { BloomThemeProvider } from '../theme/BloomThemeProvider';
-import { MailAddressLine, MailMessage, MailQuoteToggle, MailThread } from '../mail-thread';
+import {
+  MailAddressLine,
+  MailMessage,
+  MailQuoteToggle,
+  MailThread,
+  MAIL_REPLY_LABELS_FROM,
+  replyLabelsFit,
+} from '../mail-thread';
 import {
   DEFAULT_MAIL_THREAD_STRINGS,
   MAIL_BODY_INSET,
@@ -220,7 +227,7 @@ describe('MailMessage', () => {
     expect(maybe('m-forward')).toBeNull();
   });
 
-  it('names an attachment chip with its size, and marks the collapsed row', () => {
+  it('draws its attachments on the library\'s own tile, named with the size, and marks the collapsed row', () => {
     mount(
       <MailMessage
         {...message('m1')}
@@ -230,13 +237,30 @@ describe('MailMessage', () => {
     );
     expect(maybe('m-attachment-marker')).not.toBeNull();
     click(byTestId('m-toggle'));
-    expect(byTestId('m-attachment-a1').getAttribute('aria-label')).toBe('survey.pdf · 1.2 MB');
+    // The tiles come from `chat-composer`'s strip — one implementation of a
+    // file tile in the library, not a row of chips drawn again here.
+    const strip = byTestId('m-attachments');
+    expect(strip).not.toBeNull();
+    const tile = strip.querySelector('[role="button"]');
+    expect(tile?.getAttribute('aria-label')).toBe('survey.pdf · 1.2 MB');
+    // The tile's one line is the NAME; a column of sizes names no file.
+    expect(strip.textContent).toContain('survey.pdf');
   });
 });
 
 // ---------------------------------------------------------------------------
 //  MailAddressLine and MailQuoteToggle
 // ---------------------------------------------------------------------------
+
+describe('replyLabelsFit', () => {
+  it('keeps the words until the message is too narrow for them, and through the first frame', () => {
+    // Measured at 390: three labelled actions ran past the card's own edge.
+    expect(replyLabelsFit(null)).toBe(true);
+    expect(replyLabelsFit(MAIL_REPLY_LABELS_FROM)).toBe(true);
+    expect(replyLabelsFit(MAIL_REPLY_LABELS_FROM - 1)).toBe(false);
+    expect(replyLabelsFit(310)).toBe(false);
+  });
+});
 
 describe('MailAddressLine', () => {
   it('collapses the surplus into a control that reveals the rest in place', () => {
