@@ -2239,6 +2239,62 @@
         "default": "./lib/commonjs/listing-editor/index.js"
       }
     },
+    "./contact-card": {
+      "react-native": {
+        "types": "./lib/typescript/module/contact-card/index.d.ts",
+        "default": "./src/contact-card/index.ts"
+      },
+      "import": {
+        "types": "./lib/typescript/module/contact-card/index.d.ts",
+        "default": "./lib/module/contact-card/index.js"
+      },
+      "require": {
+        "types": "./lib/typescript/commonjs/contact-card/index.d.ts",
+        "default": "./lib/commonjs/contact-card/index.js"
+      }
+    },
+    "./pipeline": {
+      "react-native": {
+        "types": "./lib/typescript/module/pipeline/index.d.ts",
+        "default": "./src/pipeline/index.ts"
+      },
+      "import": {
+        "types": "./lib/typescript/module/pipeline/index.d.ts",
+        "default": "./lib/module/pipeline/index.js"
+      },
+      "require": {
+        "types": "./lib/typescript/commonjs/pipeline/index.d.ts",
+        "default": "./lib/commonjs/pipeline/index.js"
+      }
+    },
+    "./activity-feed": {
+      "react-native": {
+        "types": "./lib/typescript/module/activity-feed/index.d.ts",
+        "default": "./src/activity-feed/index.ts"
+      },
+      "import": {
+        "types": "./lib/typescript/module/activity-feed/index.d.ts",
+        "default": "./lib/module/activity-feed/index.js"
+      },
+      "require": {
+        "types": "./lib/typescript/commonjs/activity-feed/index.d.ts",
+        "default": "./lib/commonjs/activity-feed/index.js"
+      }
+    },
+    "./lead-score": {
+      "react-native": {
+        "types": "./lib/typescript/module/lead-score/index.d.ts",
+        "default": "./src/lead-score/index.ts"
+      },
+      "import": {
+        "types": "./lib/typescript/module/lead-score/index.d.ts",
+        "default": "./lib/module/lead-score/index.js"
+      },
+      "require": {
+        "types": "./lib/typescript/commonjs/lead-score/index.d.ts",
+        "default": "./lib/commonjs/lead-score/index.js"
+      }
+    },
     "./card": {
       "react-native": {
         "types": "./lib/typescript/module/card/index.d.ts",
@@ -3243,6 +3299,18 @@
       ],
       "listing-editor": [
         "./lib/typescript/module/listing-editor/index.d.ts"
+      ],
+      "contact-card": [
+        "./lib/typescript/module/contact-card/index.d.ts"
+      ],
+      "pipeline": [
+        "./lib/typescript/module/pipeline/index.d.ts"
+      ],
+      "activity-feed": [
+        "./lib/typescript/module/activity-feed/index.d.ts"
+      ],
+      "lead-score": [
+        "./lib/typescript/module/lead-score/index.d.ts"
       ],
       "card": [
         "./lib/typescript/module/card/index.d.ts"

@@ -114,7 +114,13 @@ function ChipRowComponent({
       role={role}
       accessibilityLabel={accessibilityLabel}
       aria-disabled={disabled || undefined}
-      style={[{ position: 'relative' }, style]}
+      // `minWidth: 0` is not decoration: a flex item's automatic minimum size is
+      // its CONTENT's width, so a row of pills wider than the screen widens the
+      // COLUMN it sits in and the page scrolls sideways instead of the row.
+      // Measured at a 390 viewport: a parent 1552px wide. It belongs here
+      // rather than at each call site — every consumer of a sideways scroller
+      // inherits the same trap, and three of them had already worked around it.
+      style={[{ position: 'relative', minWidth: 0 }, style]}
       testID={testID}
     >
       <ScrollView
@@ -129,6 +135,7 @@ function ChipRowComponent({
         // is not clipped by the scroller and the row still lines up.
         style={{
           flexGrow: 0,
+          minWidth: 0,
           marginTop: -ringInset,
           marginBottom: -ringInset,
           marginLeft: -ringInset,

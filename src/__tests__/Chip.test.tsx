@@ -275,6 +275,18 @@ describe('ChipRow', () => {
     expect(row.contains(byTestId('row-any'))).toBe(true);
   });
 
+  it('cannot widen the column it sits in — the row scrolls, not the page', () => {
+    // A flex item's automatic minimum size is its content's width, so without
+    // `min-width: 0` a row of pills wider than the screen pushes its PARENT
+    // wide and the document scrolls sideways. Measured at 390: 1552px.
+    mount(
+      <ChipRow testID="row">
+        <Chip onPress={() => {}}>All</Chip>
+      </ChipRow>,
+    );
+    expect(byTestId('row').style.minWidth).toBe('0px');
+  });
+
   it('shows no fade until there is something behind it', () => {
     // jsdom lays nothing out, so every measurement is 0 — which is exactly the
     // first-render state the fade must not appear in.
