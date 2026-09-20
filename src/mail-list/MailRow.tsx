@@ -177,7 +177,7 @@ function MailRowComponent({
         testID={testID ? `${testID}-labels` : undefined}
       />
     ) : null;
-  const marks = labelMarks(labels, maxLabels);
+  const marks = labelMarks(labels, maxLabels, compact);
   const labelDots = marks.dots.map((label) => ({
     id: label.id,
     color: labelDotColor(theme, label),
@@ -326,10 +326,6 @@ function MailRowComponent({
         >
           {sender.name}
         </Text>
-        {threadBadge}
-        <View style={{ flex: 1 }} />
-        {paperclip}
-        {timeText}
       </View>
       <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, minWidth: 0 }}>
         <MailLabelMarks
@@ -359,15 +355,32 @@ function MailRowComponent({
     <MailStar
       starred={starred}
       onStarredChange={onStarredChange}
-      size={geo.action}
+      size={geo.starControl}
       glyph={geo.glyph + 2}
       paint={paint}
       strings={text}
       testID={testID ? `${testID}-star` : undefined}
     />
   );
+  // The right column is the list row's own shape, the one `chat-list` draws:
+  // the TIME on top and the STATES under it, never strung along the text lines.
+  // A subject that grows pushes nothing around, because nothing shares its line.
+  //
+  // It is a SIBLING of the row's link rather than part of the content, so the
+  // star inside it is a real button — a button inside an anchor is invalid HTML
+  // and every star press would open the thread. Everything else in here is
+  // hidden from assistive technology; the row's composed name already says it.
+  const states = paperclip || threadBadge || onStarredChange !== undefined ? (
+    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
+      {paperclip}
+      {threadBadge}
+      {onStarredChange === undefined ? (starred ? star : null) : star}
+    </View>
+  ) : null;
+
   const trailing = compact ? (
     <View
+      pointerEvents="box-none"
       style={{
         flexDirection: 'row',
         alignItems: 'center',
@@ -376,12 +389,23 @@ function MailRowComponent({
         flexShrink: 0,
       }}
     >
-      {paperclip}
-      {star}
+      {states}
       {timeText}
     </View>
-  ) : onStarredChange === undefined ? null : (
-    <View style={{ marginLeft: 4, flexShrink: 0 }}>{star}</View>
+  ) : timeText === null && states === null ? null : (
+    <View
+      pointerEvents="box-none"
+      style={{
+        alignItems: 'flex-end',
+        justifyContent: 'center',
+        gap: geo.lineGap + 2,
+        marginLeft: geo.gap,
+        flexShrink: 0,
+      }}
+    >
+      {timeText}
+      {states}
+    </View>
   );
 
   const rowStyle: WebCssStyle = {

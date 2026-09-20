@@ -17,7 +17,7 @@ import { RiStarLine } from '../icons/remix/RiStarLine';
 import { webDataSet } from '../styles/web-data';
 import type { WebCssStyle } from '../styles/web-view-style';
 import { Text } from '../typography';
-import { IS_WEB, MAIL_LABEL_DOT, MAIL_ROW_RADIUS, type MailPaint } from './shared';
+import { IS_WEB, MAIL_LABEL_DOT, MAIL_ROW_RADIUS, MAIL_TOUCH_TARGET, type MailPaint } from './shared';
 import type { MailAction, MailLabel, MailStrings } from './types';
 
 // ---------------------------------------------------------------------------
@@ -154,6 +154,14 @@ export function MailGlyphButton({
   testID,
 }: MailGlyphButtonProps) {
   const [active, setActive] = useState(false);
+  // The DRAWN control and the TOUCH target are two numbers. A 44-tall button in
+  // the row's right column sets the row's height — a list of two-line rows came
+  // out at 88 because of it — so the glyph is drawn at `size` and the target is
+  // grown back to 44 with `hitSlop`. That is safe here and nowhere near an
+  // adjacent control: the star is the only button in the column, and it sits
+  // ABOVE the row's link, so the slop takes the press from the link rather than
+  // from another button.
+  const slop = Math.max(0, Math.round((MAIL_TOUCH_TARGET - size) / 2));
   const buttonStyle: WebCssStyle = {
     width: size,
     height: size,
@@ -176,6 +184,7 @@ export function MailGlyphButton({
         ? null
         : { 'aria-pressed': pressed, accessibilityState: { selected: pressed } })}
       onPress={onPress}
+      hitSlop={{ top: slop, bottom: slop, left: slop, right: slop }}
       onHoverIn={() => setActive(true)}
       onHoverOut={() => setActive(false)}
       onPressIn={() => setActive(true)}

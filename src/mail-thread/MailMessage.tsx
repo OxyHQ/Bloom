@@ -2,7 +2,10 @@ import React, { useEffect, useMemo } from 'react';
 import { Pressable, View } from 'react-native';
 
 import { Avatar } from '../avatar';
-import { Button } from '../button';
+import { ButtonGroup, ButtonGroupItem } from '../button-group';
+import { Card } from '../card';
+import { useContainerWidth } from '../hooks/use-container-width';
+import { ComposerAttachmentStrip } from '../chat-composer';
 import { Chip } from '../chip';
 import { useControllableState } from '../hooks/use-controllable-state';
 import { RiAttachment2 } from '../icons/remix/RiAttachment2';
@@ -27,6 +30,7 @@ import {
   MAIL_THREAD_STYLE_ID,
   addressName,
   mailThreadStrings,
+  replyLabelsFit,
 } from './shared';
 import type { MailMessageProps } from './types';
 
@@ -98,6 +102,7 @@ export function MailMessage({
   });
 
   const geo = MAIL_THREAD_GEOMETRY;
+  const { width, onLayout } = useContainerWidth();
   const name = addressName(sender);
   const stamp = open ? (date ?? time) : (time ?? date);
   const hasAttachments = (attachments ?? []).length > 0;
@@ -123,17 +128,23 @@ export function MailMessage({
       : { key: 'forward', label: text.forward, icon: RiShareForwardLine, onPress: onForward },
   ].filter((entry): entry is NonNullable<typeof entry> => entry !== null);
 
+  // An OPEN message is a surface, and Bloom's surface is a `Card` — the card
+  // fill, the hairline, the radius scale — not a grey wash painted by hand. A
+  // COLLAPSED one paints nothing, so a thread reads as one list with a card
+  // opened inside it rather than as a column of blocks.
+  // Three labelled actions need about 320 of the message's own width; under
+  // that the group keeps the glyphs and drops the words, which is what
+  // `ButtonGroupItem` is built for — the accessible name is the label either
+  // way, so nothing is lost by the labels going.
+  const compactReplies = !replyLabelsFit(width);
+  const Shell = open ? Card : View;
+  const shellProps = open
+    ? { variant: 'outlined' as const, radius: 'radius-16' as const, testID }
+    : { testID };
   return (
-    <View
-      style={[
-        {
-          borderRadius: geo.radius,
-          backgroundColor: open ? paint.hover : 'transparent',
-          paddingBottom: open ? geo.paddingVertical : 0,
-        },
-        style,
-      ]}
-      testID={testID}
+    <Shell
+      {...shellProps}
+      style={[open ? { paddingBottom: geo.paddingVertical } : null, style]}
     >
       <View
         style={{
@@ -246,6 +257,9 @@ export function MailMessage({
 
       {open ? (
         <View
+          // The BODY is what measures itself, not the card: the reply group
+          // lives in here, and `Card` has no `onLayout` of its own to borrow.
+          onLayout={onLayout}
           style={{
             paddingLeft: MAIL_BODY_INSET,
             paddingRight: geo.paddingHorizontal,
@@ -263,56 +277,42 @@ export function MailMessage({
             </MailQuoteToggle>
           )}
           {hasAttachments ? (
-            <View
-              role="list"
+            <ComposerAttachmentStrip
+              // The tile's one line is the NAME: a column of "1.2 MB" says
+              // nothing about which file it is. The size travels in the
+              // accessible name instead, where it costs no width.
+              attachments={(attachments ?? []).map((attachment) => ({
+                id: attachment.id,
+                name: attachment.name,
+                icon: attachment.icon,
+              }))}
+              openLabel={(tile) => {
+                const size = (attachments ?? []).find((entry) => entry.id === tile.id)?.size;
+                return size === undefined ? tile.name : `${tile.name} · ${size}`;
+              }}
+              onOpen={(id) => (attachments ?? []).find((entry) => entry.id === id)?.onPress?.()}
               accessibilityLabel={text.attachments}
-              style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}
               testID={testID ? `${testID}-attachments` : undefined}
-            >
-              {(attachments ?? []).map((attachment) => {
-                const Glyph = attachment.icon ?? RiFileTextLine;
-                const label =
-                  attachment.size === undefined
-                    ? attachment.name
-                    : `${attachment.name} · ${attachment.size}`;
-                return (
-                  <Chip
-                    key={attachment.id}
-                    size="xl"
-                    variant="outlined"
-                    color="default"
-                    surface={paint.hover}
-                    onPress={attachment.onPress}
-                    accessibilityLabel={label}
-                    startIcon={
-                      <Glyph width={16} height={16} fill={paint.textSecondary} />
-                    }
-                    testID={testID ? `${testID}-attachment-${attachment.id}` : undefined}
-                  >
-                    {label}
-                  </Chip>
-                );
-              })}
-            </View>
+            />
           ) : null}
           {replies.length > 0 ? (
-            <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>
+            <ButtonGroup accessibilityLabel={text.attachments} style={{ alignSelf: 'flex-start' }}>
               {replies.map((reply) => (
-                <Button
+                <ButtonGroupItem
                   key={reply.key}
-                  variant="secondary"
-                  size="small"
-                  icon={reply.icon}
+                  leadingIcon={reply.icon}
+                  iconOnly={compactReplies}
+                  accessibilityLabel={reply.label}
                   onPress={reply.onPress}
                   testID={testID ? `${testID}-${reply.key}` : undefined}
                 >
                   {reply.label}
-                </Button>
+                </ButtonGroupItem>
               ))}
-            </View>
+            </ButtonGroup>
           ) : null}
         </View>
       ) : null}
-    </View>
+    </Shell>
   );
 }

@@ -6,7 +6,7 @@
  * helper is how two composers end up with rings that close at different angles.
  */
 import React from 'react';
-import { Image, ScrollView, View } from 'react-native';
+import { Image, Pressable, ScrollView, View } from 'react-native';
 import Svg, { Path } from 'react-native-svg';
 
 import { ringPath } from '../composer-panel/shared';
@@ -33,12 +33,16 @@ function Tile({
   size,
   onRemove,
   removeLabel,
+  onOpen,
+  openLabel,
   testID,
 }: {
   attachment: ChatComposerAttachment;
   size: number;
   onRemove?: (id: string) => void;
   removeLabel: (attachment: ChatComposerAttachment) => string;
+  onOpen?: (id: string) => void;
+  openLabel?: (attachment: ChatComposerAttachment) => string;
   testID?: string;
 }) {
   const theme = useTheme();
@@ -60,6 +64,19 @@ function Tile({
         ? attachment.source
         : resolveImage?.(attachment.source, 'thumb');
 
+  // The box is a button only where the caller gave it something to do. A tile
+  // that is `role="button"` with no handler announces an action that is not
+  // there, and one that opens on press without a role is unreachable.
+  const Box = onOpen === undefined ? View : Pressable;
+  const boxProps =
+    onOpen === undefined
+      ? {}
+      : {
+          role: 'button' as const,
+          accessibilityLabel: (openLabel ?? ((a: ChatComposerAttachment) => a.name))(attachment),
+          onPress: () => onOpen(attachment.id),
+        };
+
   return (
     <View style={{ width: size, gap: 4 }} testID={testID}>
       {/* The clipped box and the ring are SIBLINGS, never nested. Inside the
@@ -69,7 +86,8 @@ function Tile({
           photo. The symptom is a ring that stops three quarters of the way
           round while the dash arithmetic says it is complete. */}
       <View style={{ position: 'relative', width: size, height: size }}>
-        <View
+        <Box
+          {...boxProps}
           style={{
             width: size,
             height: size,
@@ -90,7 +108,7 @@ function Tile({
           ) : (
             <Glyph width={22} height={22} fill={palette.iconSecondary} />
           )}
-        </View>
+        </Box>
         {uploading ? (
           <View
             {...dataHook('bloomChatComposerRing')}
@@ -140,8 +158,10 @@ function Tile({
 export function ComposerAttachmentStrip({
   attachments,
   onRemove,
+  onOpen,
   size = TILE,
   removeLabel = defaultRemoveLabel,
+  openLabel,
   style,
   testID,
   accessibilityLabel = 'Attachments',
@@ -173,6 +193,8 @@ export function ComposerAttachmentStrip({
           size={size}
           onRemove={onRemove}
           removeLabel={removeLabel}
+          onOpen={onOpen}
+          openLabel={openLabel}
           testID={testID ? `${testID}-${attachment.id}` : undefined}
         />
       ))}
