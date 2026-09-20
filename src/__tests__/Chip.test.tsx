@@ -275,6 +275,20 @@ describe('ChipRow', () => {
     expect(row.contains(byTestId('row-any'))).toBe(true);
   });
 
+  it('names the close button after the chip, not "Remove" five times', () => {
+    mount(
+      <ChipRow testID="row">
+        <Chip onClose={() => {}}>Furnished</Chip>
+        <Chip onClose={() => {}} closeLabel="Clear the date filter">
+          {'Oct 3 – 9'}
+        </Chip>
+      </ChipRow>,
+    );
+    const names = [...container.querySelectorAll('[role="button"]')].map((n) => n.getAttribute('aria-label'));
+    expect(names).toContain('Remove Furnished');
+    expect(names).toContain('Clear the date filter');
+  });
+
   it('cannot widen the column it sits in — the row scrolls, not the page', () => {
     // A flex item's automatic minimum size is its content's width, so without
     // `min-width: 0` a row of pills wider than the screen pushes its PARENT

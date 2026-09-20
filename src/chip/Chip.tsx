@@ -111,6 +111,7 @@ const ChipComponent = forwardRef<View, ChipProps>(function ChipComponent(
     endIcon,
     onPress,
     onClose,
+    closeLabel,
     selected = false,
     role = 'button',
     disabled = false,
@@ -183,11 +184,16 @@ const ChipComponent = forwardRef<View, ChipProps>(function ChipComponent(
     [geometry],
   );
 
+  // A row of removable chips is a row of buttons all called "Remove" otherwise,
+  // and a screen reader reading them in sequence says the same word five times
+  // with no way to tell which pill goes. The chip names it from its own label
+  // when that label is words; `closeLabel` is for the rest.
+  const removeLabel = closeLabel ?? (typeof children === 'string' ? `Remove ${children}` : 'Remove');
   const closeButton = onClose ? (
     <Pressable
       onPress={onClose}
       hitSlop={{ top: 6, bottom: 6, left: 6, right: 6 }}
-      accessibilityLabel="Remove"
+      accessibilityLabel={removeLabel}
       accessibilityRole="button"
       style={iconSlotStyle}
     >

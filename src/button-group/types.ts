@@ -54,7 +54,13 @@ export interface ButtonGroupItemProps {
   size?: ButtonGroupSize;
   /** Overrides the group's material. Rarely needed; the group owns it. */
   variant?: ControlMaterial;
-  /** Highlights the item like its hover state and announces it as pressed. */
+  /**
+   * Highlights the item like its hover state and announces it as pressed.
+   *
+   * Leave it UNSET on an item that is not a toggle: an action that fires and is
+   * done has no pressed state, and `aria-pressed="false"` on it announces one.
+   * `false` means "a toggle, currently off"; `undefined` means "not a toggle".
+   */
   selected?: boolean;
   disabled?: boolean;
   /** Square item showing only `leadingIcon` — name it with `accessibilityLabel`. */
