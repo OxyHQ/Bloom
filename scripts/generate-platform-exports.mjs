@@ -227,6 +227,11 @@ const SUBPATHS = /** @type {const} */ ([
   ['./offering-badge', 'offering-badge/index.ts'],
   ['./category-bar', 'category-bar/index.ts'],
   ['./map-marker', 'map-marker/index.ts'],
+  // Commerce: the four things a maps, a courier and a food app all need.
+  ['./order-status', 'order-status/index.ts'],
+  ['./price-breakdown', 'price-breakdown/index.ts'],
+  ['./address', 'address/index.ts'],
+  ['./route-stops', 'route-stops/index.ts'],
   ['./tenancy', 'tenancy/index.ts'],
   ['./eviction', 'eviction/index.ts'],
   ['./place-reviews', 'place-reviews/index.ts'],

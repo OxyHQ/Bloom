@@ -1,0 +1,93 @@
+---
+title: Address
+description: An address as a row — a glyph or an avatar, two lines, a trailing action, a selected state and a provenance flavour expressed as data — plus the sectioned list they live in.
+order: 132
+---
+
+# Address
+
+What a result list is made of. The text INPUT is not here: an app searches with `search`
+or `text-field` and renders what comes back as these rows.
+
+```tsx
+import { AddressList, AddressRow } from '@oxy.so/bloom/address';
+
+<AddressList
+  variant="picker"
+  accessibilityLabel="Delivery address"
+  selectedId={selected}
+  onSelect={setSelected}
+  sections={[
+    { title: 'Saved', entries: [
+      { id: 'home', kind: 'saved', title: 'Home', subtitle: 'Carrer de l’Om 14, 3r 2a', badge: <Badge content="Default" variant="subtle" size="label-small" /> },
+    ] },
+    { title: 'Recent', entries: [
+      { id: 'r1', kind: 'recent', title: 'Plaça de les Bruixes 2', meta: '1.2 km' },
+    ] },
+  ]}
+/>
+```
+
+## The flavour is data
+
+`kind` is `place | saved | recent | suggestion`, and it chooses the default glyph and
+nothing else. There is no `SavedAddressRow`, `RecentAddressRow` and `SuggestionRow`,
+because a picker list, a checkout summary and a search result list all draw the same row
+and differ only in what they put in it.
+
+An app whose provenance is not one of those four passes `icon`. An app that wants a face
+or a map thumbnail passes `leading`.
+
+## `leading` is read for presence
+
+- omitted → the glyph tile
+- a node → that node instead
+- **`null` → no media at all**
+
+The last one is the shape `RouteStops` needs: the marker column outside the row is already
+the gutter, so the row must not draw a tile of its own. It is a presence check rather than
+a `??`, so `leading={null}` cannot be silently answered with the tile.
+
+## It is `Item`, filled in
+
+`AddressRow` is Bloom's `Item` with an address's slots filled: the row, the press target,
+the density rungs, the selected wash, the disabled opacity and the ARIA role translation
+are all `Item`'s, and this family owns no second copy of any of them. What it adds is the
+leading tile, the badge beside the title, the `meta`/`action` pairing in the trailing
+slot, and an accessible name assembled from the row's own text in reading order.
+
+If a row needs something `Item` does not do, that is a report about `Item`, not a fork
+here.
+
+## The variant is the announced tree
+
+`AddressList`'s `variant` is not a style.
+
+| variant | container | row |
+| --- | --- | --- |
+| `list` | one `list` per section, named by its header | a `listitem` wrapping a button |
+| `picker` | a `radiogroup`, one `group` per section | a `radio` carrying `aria-checked` |
+
+**The picker is a radio group rather than the listbox ARIA would suggest, and that is a
+platform decision.** React Native's `Role` has no `listbox`; `radiogroup` and `radio` exist
+on both platforms and say exactly the right thing — pick one of these. A role that reached
+only web would be the silent half of an accessibility bug, correct in the browser and
+absent on the device.
+
+## Loading and empty
+
+`loading` draws `loadingRows` placeholder rows at the row's own geometry, on a container
+marked `aria-busy` so a reader is told to wait rather than told nothing. The empty block
+is a glyph, a title and an optional line; `empty` replaces the whole thing when an app
+wants an action in it.
+
+Empty is measured across ALL sections: a list whose sections exist but hold nothing is
+empty, which is what a search with a stale section header would otherwise render as a
+column of headings over nothing.
+
+## Naming
+
+The announced name defaults to the title, the subtitle and the meta joined in reading
+order, so a row reads as one utterance instead of three. Pass `accessibilityLabel` when
+the visible text is not the sentence you want announced — a title that is an abbreviation,
+a meta that is a distance a reader does not need.

@@ -338,6 +338,7 @@ export const CLASSIFICATION: Record<string, Record<string, Classification>> = {
     'chat-people': { verdict: 'does-not-apply', reason: SELECTION_ROW },
     'stay-filters': { verdict: 'does-not-apply', reason: SELECTION_ROW },
     'map-marker': { verdict: 'does-not-apply', reason: SELECTION_ROW },
+    address: { verdict: 'does-not-apply', reason: SELECTION_ROW },
     'composer-panel': {
       verdict: 'does-not-apply',
       reason:

@@ -1,0 +1,104 @@
+---
+title: Route stops
+description: An origin, a destination and what is between them — the connector line, a swap for the two-stop case, add and remove, and a "stop reached" state so the same component works while a journey is in progress.
+order: 133
+---
+
+# Route stops
+
+```tsx
+import { RouteStops } from '@oxy.so/bloom/route-stops';
+
+<RouteStops
+  stops={stops}
+  onPressStop={openPlacePicker}
+  onSwap={swap}
+  onAddStop={addStop}
+  onRemoveStop={removeStop}
+/>
+```
+
+## One component for planning and for travelling
+
+`state` (`pending | current | reached`) is what makes a route being PLANNED and a route
+being TRAVELLED the same component. A planner leaves every stop `pending`; a journey in
+progress marks the ones behind it `reached` and the one it is heading for `current`. The
+markers and the rail change, the layout does not, and an app does not swap components
+half way through a trip.
+
+## The marker column is two half-lines
+
+Each stop's marker sits between two `flex: 1` rails inside a 24 column. That is the whole
+alignment mechanism, and it is worth stating because it is what this family does INSTEAD
+of measuring anything:
+
+- the marker centres itself in whatever height the row turns out to be — with a subtitle,
+  with a badge, with a wrapped line, with none of those;
+- the half-rail below one row meets the half-rail above the next exactly, because both
+  are the same computed colour and both end at the row boundary;
+- nothing is nudged, offset or measured, so a row that changes height cannot break the
+  line.
+
+The first row's upper rail and the last row's lower rail are transparent rather than
+absent, so every marker sits at the same place in its row.
+
+## Shape says which stop, colour says how far
+
+| stop | shape |
+| --- | --- |
+| origin | a 12 ring, 3px |
+| between | an 8 dot |
+| destination | a 12 square, 3 radius — an end, not another dot |
+
+`reached` and `current` paint the accent; `pending` paints the graphical rung (the one the
+surface ladder sizes for a line or a glyph, so it clears 3:1 on whatever is behind it).
+
+**The current stop also GROWS**, by 6 (compact 4), and wears its 3px tint ring outside its
+own diameter. A halo drawn inside an 8px dot is two pixels of fill, and it shipped that
+way for one screenshot: the current stop and the one before it were the same dot, so the
+only thing saying which was which was a colour they shared.
+
+The rail fills behind the journey on the same rule the order-status rail uses: travelled
+when the stop BELOW it is reached or current.
+
+## Swap is offered for exactly two stops
+
+With three or more there is no single swap to make, so the control is not drawn. A control
+that silently meant something different at three stops would be worse than no control —
+and "reverse the whole route" is a different action with a different name, which an app
+can put in its own menu.
+
+The swap button lives in a column beside the list, centred against the whole of it, so
+with two stops it lands between them without a magic offset.
+
+## Every word is in one prop
+
+`labels` carries all of it — `origin`, `destination`, `stop(position)`, `swap`,
+`addStop`, `remove(stop)` and the three `state` words. It is one prop rather than nine
+because all of it is copy an app localises and none of it is layout.
+
+`remove` is a FUNCTION of the stop, because "Remove" on five buttons in one list names
+nothing: the default is `Remove ${stop.title}`.
+
+## Accessibility
+
+The stops are a `list` of `listitem`s named as one. Each row's announced name carries its
+POSITION and its STATE before its text — "Destination, not reached, Home, Carrer de l’Om
+14" — because the shape and the colour that say both of those things on screen say
+nothing at all to a screen reader.
+
+**Where that name lands depends on whether the row is a control, and it is one place or
+the other, never both.** A row with `onPressStop` is a button and carries the name itself.
+A read-only row is not a control: `Item`'s non-pressable branch renders `role="none"`,
+which is the one element assistive technology is told to ignore, so the name goes on the
+`listitem` instead. Naming both would announce every stop twice.
+
+Swap and add sit OUTSIDE the list, which is right: they act on the list rather than being
+members of it, so a reader moving through the stops is not interrupted by them.
+
+## Rows are `AddressRow`
+
+Each stop is an `AddressRow` with `leading={null}` — same press target, same density
+rungs, same disabled opacity, same trailing `meta`/`action` pairing. A stop's `action` is
+drawn before the remove affordance, so an app can add its own control per stop without
+losing removal.

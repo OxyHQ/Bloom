@@ -1,0 +1,102 @@
+---
+title: Price breakdown
+description: What a price is made of — line items, discounts, an "estimated" or "pending" number, a total that is visually the answer, and a collapsed summary that expands.
+order: 131
+---
+
+# Price breakdown
+
+A shipping quote, a restaurant bill and a service invoice are the same object: some
+charges, some credits, and the number they come to.
+
+```tsx
+import { PriceSummary } from '@oxy.so/bloom/price-breakdown';
+
+<PriceSummary
+  lines={[
+    { label: 'Collection and delivery', sublabel: '18 km, one helper', amount: '€34.00' },
+    { label: 'Stairs', amount: '€8.00', info: 'Charged per floor above the second when there is no lift.' },
+    { label: 'First trip discount', amount: '−€5.00', tone: 'discount' },
+    { label: 'VAT', amount: '€8.72', tone: 'muted' },
+  ]}
+  total={{ label: 'Total', amount: '€45.72' }}
+/>
+```
+
+## Amounts are strings, and that is the whole contract
+
+**Nothing in this family parses, adds, negates, rounds or formats a number.** Every
+`amount` — each line's and the total's — is drawn exactly as it arrives.
+
+That is not laziness, it is the only correct division. Currency, locale, the position of
+the symbol, the decimal separator, the grouping, how a credit is signed and how a total
+is rounded are all decisions an app makes with information this component does not have.
+A component that formatted them would be right for one app and quietly wrong for the next
+two — and "quietly" is the problem: a mis-formatted price still renders.
+
+In particular, **`tone="discount"` colours a credit; it does not create one.** Pass
+`"−€5.00"`, not `"5.00"`.
+
+## The three tones
+
+| tone | what it is for |
+| --- | --- |
+| `default` | everything, **including a fee** |
+| `discount` | money coming back — the success rung, which is the tone's SUBTLE foreground rather than its fill |
+| `muted` | the lines a reader scans past: a tax line, a rounding line |
+
+A fee is deliberately not a tone of its own. A fee is a line with a label and an amount,
+and giving it a colour would be this component deciding what an app's fees mean.
+
+## Not final yet
+
+`state` says whether the number is the answer.
+
+- `estimated` — a real number that can still move (a distance-based charge before the
+  route is fixed). Drawn, with "Estimated" under it.
+- `pending` — no number yet. The amount cell draws `pendingPlaceholder` (`—`) and
+  "Pending" under it.
+
+The caveat sits **under the amount**, not after the label, because it is a fact about the
+NUMBER. `stateLabels` replaces the two words.
+
+## The disclosure folds the lines, never the total
+
+With `collapsible`, the itemisation is what hides and the total stays on screen. That is
+the right way round: the number a reader came for should not be the thing they have to
+open a disclosure to see, and a summary that collapsed to nothing would be a row that
+says "prices" and nothing else.
+
+The trigger is a `text` `Button` carrying `aria-expanded`, so it announces the state of
+the thing it controls on both platforms. It is controllable (`expanded` /
+`onExpandedChange`) and uncontrolled (`defaultExpanded`) through the usual pair.
+
+## Geometry
+
+- a line is **32 tall minimum**, whether or not it carries the info affordance — the info
+  glyph is a 32 round target, and a column that grew only on the lines that happened to
+  have an explanation read as ragged
+- amounts are **tabular figures**, right-aligned; a price column of proportional digits
+  does not line up, and a column that does not line up cannot be scanned
+- the total is **`title-3-semibold` on both sides** — a type step above the charges rather
+  than the same size in bold, so a reader scanning for the number finds it without
+  reading a single line
+- the rule above the total is the surface's own hairline, read off whatever the summary
+  was dropped on
+
+## The info affordance
+
+`info` takes any node and shows it in a `Popover` anchored to a 32 glyph after the label.
+A string is wrapped in `Text` for you. Name it with `infoAccessibilityLabel` when
+"About <label>" is not the right sentence — the control draws no text of its own.
+
+The 32 target is smaller than the 44 a primary control gets. That is a deliberate
+exception for an optional secondary affordance inside a text row: a 44 target would set
+the height of every line in the breakdown, and a price column with 44-tall rows reads as
+a settings list rather than a bill.
+
+## PriceSummaryLine on its own
+
+`PriceSummaryLine` is exported so a screen that arranges its own charges — a checkout with
+a rule in the middle, a bill split across two cards — draws the same row without
+reimplementing the tone, the state caption or the tabular alignment.
