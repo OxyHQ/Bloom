@@ -1,0 +1,123 @@
+---
+title: Mail Compose
+description: Writing a message — recipients as chips inside a Field contract, the cc/bcc reveal, and a frame that is a sheet on a phone and a docked panel on a desktop.
+order: 66
+---
+
+# Mail Compose
+
+`MailRecipientField` is one addressing row, `MailComposeHeader` is the block of
+them plus the subject, and `MailComposeSurface` is the frame around the whole
+thing.
+
+```tsx
+import { MailComposeHeader, MailComposeSurface } from '@oxy.so/bloom';
+
+<MailComposeSurface
+  variant="docked"
+  header={<MailComposeHeader to={to} onToChange={setTo} subject={subject} onSubjectChange={setSubject} />}
+  attachments={pending}
+  onAttachmentRemove={remove}
+  toolbar={<NoteEditorToolbar {...editor} />}
+  onSend={send}
+  onAttach={pick}
+  onDiscard={discard}
+  onClose={close}
+>
+  <YourEditor />
+</MailComposeSurface>;
+```
+
+## What this family does NOT write
+
+- **A rich-text engine.** `children` is a slot. The body is your editor.
+- **A formatting toolbar.** `toolbar` is a slot, and the toolbar Bloom ships is
+  `note-editor`'s `NoteEditorToolbar`. A second one grown here would be a second
+  one to keep in step with the first, in a library where the whole point is that
+  there is one of each thing.
+- **An attachment strip.** `attachments` goes to `chat-composer`'s
+  `ComposerAttachmentStrip`, imported rather than rebuilt. A pending attachment
+  is a pending attachment: a thumbnail, an upload ring and a remove, with the
+  ring drawn from ONE rounded-rect path helper. Two strips mean two rings that
+  close at different angles.
+- **An overlay.** There is no `position: fixed` here and no portal. See below.
+- **An address parser.** `onSubmit` hands you the typed string. Only the app
+  knows its directory and its address grammar.
+
+## The surface positions nothing
+
+`variant="sheet"` draws no frame at all — no surface, no border, no radius —
+because whatever presented it already did. Mount it as a `Dialog`'s child in its
+sheet placement, or inside a `BottomSheet`, or as a full-screen route.
+
+`variant="docked"` is the desktop panel: it paints the card rung, its own
+hairline and its own radius, and it publishes that fill with
+`SurfaceLevelProvider` so the chips, hairlines and quiet text inside it step off
+what is really behind them. WHERE it sits is your shell's decision.
+
+A compose window that placed itself would fight the app's layout in one app out
+of three, and Bloom already owns exactly one overlay stack — this is not a
+second one.
+
+`minimized` collapses a docked panel to its title bar. It is ignored by `sheet`,
+where there is nothing to minimise into.
+
+## `MailRecipientField` is a `Field` member
+
+It calls `useFieldMembership()`, which is the only supported way to join a
+`Field` — the four decisions it resolves each have a direction that is silently
+wrong the other way round (`composition.mdx` §Field).
+
+The choice this family makes is `labelPlacement: 'adjacent'`. The "To" in the
+gutter is the words the reader reads AS the control, so it keeps its own name
+and an enclosing `Field` only fills a gap. A `stacked` control would announce
+the field's label while the eye reads "To", which is exactly the disagreement
+that rule exists to prevent.
+
+Invalidity COMBINES, it does not replace: `recipientsInvalid(recipients, own)`
+is `own || any recipient invalid`. A field told it is invalid stays invalid
+however good its recipients look, and a good field holding one rejected address
+is not a good field. The chip that is wrong paints the error tone through
+`resolveAccentColors`, so the `Field`'s error text and the chip that caused it
+say the same thing.
+
+## Why this is not the generic tag input
+
+A recipient is a PERSON: a face, a name, an address and a verdict on whether
+that address will deliver. A tag has none of those four, and a tag field that
+grew them would be a contact picker wearing a tag field's name.
+
+What the two share is the part worth sharing — they are both built on `Chip` and
+they both answer the `Field` contract the same way — so if they ever converge,
+unifying them is a rename rather than a rewrite. Until then they are two things.
+
+## The cc/bcc reveal is not a plain toggle
+
+`copiesOpen(visible, cc, bcc)` forces the rows open whenever a cc or a bcc
+arrives non-empty, whatever the reveal last said. A reply-all whose copies were
+hidden is a message going to people the writer cannot see, and that is not a
+state `MailComposeHeader` will render.
+
+## Every row is a gutter, not a box
+
+The four rows — `To`, `Cc`, `Bcc`, `Subject` — share one label column
+(`MAIL_COMPOSE_GEOMETRY.gutter`) and one hairline, so the chips and the subject
+sit on a single left margin.
+
+This is deliberately not four `TextField`s. A stack of bordered boxes draws five
+rectangles where the writer is filling in one form, and the recipient chips
+would then be a control inside a box inside a box. `TextField`'s chrome is right
+for a field in a form and wrong for a mail header, which is the only place in
+this family where a base-layer control was passed over on purpose.
+
+## Known gaps
+
+- `Chip`'s remove button is named "Remove" and takes no per-chip name, so a
+  recipient chip's remove announces "Remove" rather than "Remove Mireia Solans".
+  Closing it means a `closeLabel` prop on `Chip`, which is a base-layer change
+  this family did not make. `MailComposeStrings.removeRecipient` is here and
+  ready for it.
+- The suggestion list renders inline under the row, not in a floating surface.
+  Anchoring it would make the field a `Popover` owner, and a popover inside a
+  docked panel inside a dialog is a stacking question worth answering once, on
+  purpose, rather than in passing here.
