@@ -163,6 +163,11 @@ export function MailRecipientField({
                 surface={surface}
                 disabled={field.disabled}
                 accessibilityLabel={name}
+                // `Chip` names its own close button after the label; a
+                // recipient's label is a person, so the app's own wording wins
+                // ("Remove Mireia Solans", not "Remove Mireia Solans" spelled
+                // by a component that cannot be translated with the rest).
+                closeLabel={text.removeRecipient(name)}
                 startIcon={
                   <Avatar source={recipient.avatar ?? null} name={name} size={20} />
                 }

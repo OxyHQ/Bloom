@@ -2211,6 +2211,48 @@
         "default": "./lib/commonjs/route-stops/index.js"
       }
     },
+    "./mail-list": {
+      "react-native": {
+        "types": "./lib/typescript/module/mail-list/index.d.ts",
+        "default": "./src/mail-list/index.ts"
+      },
+      "import": {
+        "types": "./lib/typescript/module/mail-list/index.d.ts",
+        "default": "./lib/module/mail-list/index.js"
+      },
+      "require": {
+        "types": "./lib/typescript/commonjs/mail-list/index.d.ts",
+        "default": "./lib/commonjs/mail-list/index.js"
+      }
+    },
+    "./mail-thread": {
+      "react-native": {
+        "types": "./lib/typescript/module/mail-thread/index.d.ts",
+        "default": "./src/mail-thread/index.ts"
+      },
+      "import": {
+        "types": "./lib/typescript/module/mail-thread/index.d.ts",
+        "default": "./lib/module/mail-thread/index.js"
+      },
+      "require": {
+        "types": "./lib/typescript/commonjs/mail-thread/index.d.ts",
+        "default": "./lib/commonjs/mail-thread/index.js"
+      }
+    },
+    "./mail-compose": {
+      "react-native": {
+        "types": "./lib/typescript/module/mail-compose/index.d.ts",
+        "default": "./src/mail-compose/index.ts"
+      },
+      "import": {
+        "types": "./lib/typescript/module/mail-compose/index.d.ts",
+        "default": "./lib/module/mail-compose/index.js"
+      },
+      "require": {
+        "types": "./lib/typescript/commonjs/mail-compose/index.d.ts",
+        "default": "./lib/commonjs/mail-compose/index.js"
+      }
+    },
     "./tenancy": {
       "react-native": {
         "types": "./lib/typescript/module/tenancy/index.d.ts",
@@ -3405,6 +3447,15 @@
       ],
       "route-stops": [
         "./lib/typescript/module/route-stops/index.d.ts"
+      ],
+      "mail-list": [
+        "./lib/typescript/module/mail-list/index.d.ts"
+      ],
+      "mail-thread": [
+        "./lib/typescript/module/mail-thread/index.d.ts"
+      ],
+      "mail-compose": [
+        "./lib/typescript/module/mail-compose/index.d.ts"
       ],
       "tenancy": [
         "./lib/typescript/module/tenancy/index.d.ts"

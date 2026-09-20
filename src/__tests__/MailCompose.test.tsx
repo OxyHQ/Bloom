@@ -146,7 +146,10 @@ describe('MailRecipientField', () => {
         testID="rf"
       />,
     );
-    const remove = byTestId('rf-chip-mireia').querySelector('[aria-label="Remove"]');
+    // The chip names its close button after what it holds — a row of
+    // recipients whose buttons are all called "Remove" gives a screen reader
+    // no way to say which one goes.
+    const remove = byTestId('rf-chip-mireia').querySelector('[aria-label="Remove Mireia Solans"]');
     if (!(remove instanceof HTMLElement)) throw new Error('no remove control');
     click(remove);
     expect(seen[seen.length - 1]?.map((r: MailRecipient) => r.id)).toEqual(['pere']);
