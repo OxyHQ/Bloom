@@ -12,21 +12,38 @@ import {
 import { Chip } from '../chip';
 import { useInheritedControl } from '../control-surface';
 import { useFieldMembership } from '../field/membership';
-import { RiCloseLine } from '../icons/remix/RiCloseLine';
+import { DEFAULT_SIDE_OFFSET } from '../floating/constants';
+import { useMenuPalette } from '../floating/menu-palette';
 import { useInteractionState } from '../hooks/use-interaction-state';
-import { surfaceFillOn, useSurfaceFill } from '../styles/surface-levels';
+import { atoms as a, android, web } from '../styles';
+import type { WebCssStyle } from '../styles/web-view-style';
 import {
   resolvePlaceholderColor,
   resolveShellPaint,
   SANS_FONT_FAMILY,
   TEXT_FIELD_GEOMETRY,
+  TEXT_FIELD_INPUT_INSET,
   TEXT_FIELD_RADIUS,
   TEXT_FIELD_RING_WIDTH,
+  TEXT_FIELD_STACK_GAP,
   TEXT_FIELD_TEXT,
+  TEXT_FIELD_WEB_TRANSITION,
   useTextFieldPalette,
 } from '../text-field/shared';
-import { useTheme } from '../theme/use-theme';
 import { Text } from '../typography';
+import {
+  TAG_CHIP_RUNG,
+  TAG_FIELD_GAP,
+  TAG_FIELD_INPUT_MIN_WIDTH,
+  TAG_FIELD_LIST_GAP,
+  TAG_FIELD_LIST_PADDING,
+  TAG_FIELD_LIST_RADIUS,
+  TAG_FIELD_OPTION_GAP,
+  TAG_FIELD_OPTION_MIN_HEIGHT,
+  TAG_FIELD_OPTION_PADDING,
+  TAG_FIELD_OPTION_RADIUS,
+  TAG_FIELD_SHELL_INSET,
+} from './constants';
 import { commitTag, filterSuggestions, normalizeTag } from './shared';
 import type { TagFieldLabels, TagFieldProps } from './types';
 
@@ -34,12 +51,26 @@ import type { TagFieldLabels, TagFieldProps } from './types';
  * Tags as an input: the committed ones as removable chips, a caret after them,
  * and the vocabulary offered underneath.
  *
- *   shell       the `text-field` shell — same fill, same 10px radius, same 2px
- *               inset ring, so a tag field in a form row is the same object as
- *               the text fields above it
- *   min height  36 (`medium`) / 32 (`small`), and it GROWS: the chips wrap
- *   input       flexes to the end of the last line, 120 minimum, so a press in
- *               the empty part of that line lands on the caret itself
+ * THE FIELD IS A `text-field` BOX, not something that resembles one. The fill,
+ * the 10px radius, the 2px inset ring, the hover and focus rings, the invalid
+ * tint and the disabled tint are all `text-field/shared.ts`'s, resolved through
+ * `useTextFieldPalette()` for the surface this field actually lands on. The one
+ * thing that is copied rather than reused is the chrome ELEMENT — `TextField`
+ * paints its shell as an absolutely positioned overlay that is not exported as
+ * a part, and it has to be an overlay rather than a border on the flex box: a
+ * 2px border would take its width out of the content box and make an empty tag
+ * field 40 tall beside a 36-tall text field in the same form.
+ *
+ *   shell       `TEXT_FIELD_GEOMETRY[size]` — 36 (`medium`) / 32 (`small`) when
+ *               empty, to the pixel, and it GROWS as the chips wrap
+ *   chips       `Chip` at the rung that fills the shell's inner height, `subtle`
+ *               in the field's tone — the pill `mail-compose` puts a chosen
+ *               recipient in, without the avatar
+ *   input       flexes to the end of the last line, 120 minimum, and keeps its
+ *               placeholder whenever it is empty, so the field reads as a field
+ *               rather than as a box with pills in it
+ *   list        the menu vocabulary (`floating/`): panel surface, hairline,
+ *               dropdown shadow, 16px corner, 36-tall rows on a 10px corner
  *
  * **It is a `Field` member.** `useFieldMembership()` resolves the four things a
  * form asks of a control, each with a direction that is silently wrong the other
@@ -75,6 +106,20 @@ const LIST_ROLE: Record<string, unknown> = IS_WEB
   ? { role: 'listbox' }
   : { accessibilityRole: 'list' };
 
+/**
+ * `TextField`'s own input reset: react-native-web paints the browser's focus
+ * outline on the `<input>` itself, which would sit INSIDE the shell's ring and
+ * give the control two focus indicators.
+ */
+const WEB_INPUT_OUTLINE_RESET: TextStyle | undefined = IS_WEB
+  ? ({ outlineWidth: 0, outlineStyle: 'none' } as unknown as TextStyle)
+  : undefined;
+
+/** `disabled:cursor-not-allowed`, as `TextField` spells it. */
+const WEB_INPUT_DISABLED_CURSOR: TextStyle | undefined = IS_WEB
+  ? ({ cursor: 'not-allowed' } as unknown as TextStyle)
+  : undefined;
+
 const DEFAULT_LABELS: Required<TagFieldLabels> = {
   remove: (tag) => `Remove ${tag}`,
   full: (max) => `${max} maximum`,
@@ -104,13 +149,12 @@ export function TagField({
   style,
   testID,
 }: TagFieldProps) {
-  const theme = useTheme();
   // The size vocabulary IS the density pair, so a `ControlSurface density="small"`
   // around a filter row reaches this field exactly as it reaches the text fields
   // beside it — `docs/composition.mdx` §Control presentation.
   const size = useInheritedControl('density', sizeProp, 'medium');
   const palette = useTextFieldPalette();
-  const surface = useSurfaceFill();
+  const menu = useMenuPalette();
   const labels = { ...DEFAULT_LABELS, ...labelsProp };
   const inputRef = useRef<TextInput | null>(null);
   const reactId = useId();
@@ -230,73 +274,91 @@ export function TagField({
   );
 
   const geometry = TEXT_FIELD_GEOMETRY[size];
-  const shell = resolveShellPaint(palette, {
+  const state = {
     hovered,
     focused,
     invalid: field.invalid,
     disabled: field.disabled,
-  });
-  const placeholderColor = resolvePlaceholderColor(palette, {
-    hovered,
-    focused,
-    invalid: field.invalid,
-    disabled: field.disabled,
-  });
-
-  // The highlighted row is one surface step off the list's own fill — the same
-  // move every raised surface in Bloom makes, rather than a ramp stop that is
-  // only right on one page colour.
-  const optionActive = surfaceFillOn(theme, palette.background);
+  };
+  const shell = resolveShellPaint(palette, state);
+  const placeholderColor = resolvePlaceholderColor(palette, state);
 
   const hint = full && max !== undefined ? labels.full(max) : undefined;
   const hintId = hint ? `${nativeID ?? reactId}-hint` : undefined;
   const describedBy = [field.describedBy, hintId].filter(Boolean).join(' ') || undefined;
 
+  const listPanel: WebCssStyle = {
+    marginTop: DEFAULT_SIDE_OFFSET,
+    padding: TAG_FIELD_LIST_PADDING,
+    gap: TAG_FIELD_LIST_GAP,
+    borderRadius: TAG_FIELD_LIST_RADIUS,
+    borderWidth: 1,
+    borderColor: menu.border,
+    backgroundColor: menu.surface,
+    boxShadow: menu.shadow,
+    overflow: 'hidden',
+  };
+
   return (
     <View style={style} testID={testID}>
       <View
-        onPointerEnter={IS_WEB ? onHoverIn : undefined}
-        onPointerLeave={IS_WEB ? onHoverOut : undefined}
         style={{
+          position: 'relative',
           minHeight: geometry.height,
-          paddingVertical: 4,
+          paddingVertical: TAG_FIELD_SHELL_INSET,
           paddingHorizontal: geometry.paddingHorizontal,
-          borderRadius: TEXT_FIELD_RADIUS,
-          borderWidth: TEXT_FIELD_RING_WIDTH,
           flexDirection: 'row',
           alignItems: 'center',
           flexWrap: 'wrap',
-          gap: 6,
-          backgroundColor: shell.backgroundColor,
-          borderColor: shell.borderColor,
+          gap: TAG_FIELD_GAP,
         }}
+        // `TextField`'s own shell handlers: the whole box is the hit area for
+        // the caret, and hover lights the ring.
+        {...(IS_WEB
+          ? ({
+              onClick: () => inputRef.current?.focus(),
+              onMouseOver: onHoverIn,
+              onMouseOut: onHoverOut,
+            } as Record<string, unknown>)
+          : undefined)}
         testID={testID ? `${testID}-shell` : undefined}
       >
+        {/*
+          The shell's fill and ring, as `TextField`'s `Chrome` paints them: an
+          overlay UNDER the content rather than a border on the flex box, so the
+          2px ring costs the chips and the caret no room and an empty tag field
+          is exactly the rung an empty text field is.
+        */}
+        <View
+          pointerEvents="none"
+          style={[
+            a.z_10,
+            a.absolute,
+            a.inset_0,
+            {
+              borderRadius: TEXT_FIELD_RADIUS,
+              borderWidth: TEXT_FIELD_RING_WIDTH,
+              ...shell,
+            },
+            TEXT_FIELD_WEB_TRANSITION,
+          ]}
+        />
         {value.map((tag) => (
           <Chip
             key={tag}
-            size="medium"
+            size={TAG_CHIP_RUNG[size]}
             variant="subtle"
             color={tone}
             surface={shell.backgroundColor}
-            endIcon={
-              field.disabled ? undefined : (
-                <Pressable
-                  onPress={() => remove(tag)}
-                  hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
-                  accessibilityRole="button"
-                  // `Chip`'s own `onClose` names its × "Remove" with no
-                  // subject, so the × is passed as an end icon that names
-                  // itself. The 14px glyph reaches a 38pt target through
-                  // `hitSlop`, which a bounding box does not show.
-                  accessibilityLabel={labels.remove(tag)}
-                  style={{ alignItems: 'center', justifyContent: 'center' }}
-                  testID={testID ? `${testID}-remove-${tag}` : undefined}
-                >
-                  <RiCloseLine width={14} height={14} fill={theme.colors.textSecondary} />
-                </Pressable>
-              )
-            }
+            disabled={field.disabled}
+            style={a.z_20}
+            // `Chip` owns the close button — its glyph, its slot, its hit slop
+            // and, since `closeLabel`, its NAME. A row of pills whose buttons
+            // are all called "Remove" gives a screen reader no way to say which
+            // one it is about; the tag is the subject.
+            closeLabel={labels.remove(tag)}
+            onClose={field.disabled ? undefined : () => remove(tag)}
+            testID={testID ? `${testID}-chip-${tag}` : undefined}
           >
             {tag}
           </Chip>
@@ -313,7 +375,10 @@ export function TagField({
             setActiveIndex(-1);
           }}
           editable={!field.disabled && !full}
-          placeholder={value.length === 0 || focused ? placeholder : undefined}
+          // Whenever the caret is empty, not only when the field is: a box of
+          // chips with no visible caret and no prompt does not read as an input
+          // at all, which is what made this control a container with pills in it.
+          placeholder={text === '' ? placeholder : undefined}
           placeholderTextColor={placeholderColor}
           blurOnSubmit={false}
           autoCorrect={false}
@@ -329,22 +394,32 @@ export function TagField({
           aria-activedescendant={listOpen && activeIndex >= 0 ? `${listId}-${activeIndex}` : undefined}
           aria-autocomplete="list"
           style={[
+            a.relative,
+            a.z_20,
             {
               flex: 1,
-              minWidth: 120,
-              height: geometry.height - 8,
+              minWidth: TAG_FIELD_INPUT_MIN_WIDTH,
+              // The caret's line IS a chip's line, so a chip and the text being
+              // typed after it sit on one baseline.
+              height: geometry.height - 2 * TAG_FIELD_SHELL_INSET,
               color: field.disabled ? palette.textDisabled : palette.text,
               fontFamily: SANS_FONT_FAMILY,
               fontSize: TEXT_FIELD_TEXT.fontSize,
-              lineHeight: TEXT_FIELD_TEXT.lineHeight,
-              padding: 0,
+              fontWeight: TEXT_FIELD_TEXT.fontWeight,
+              // The same `pl-1` the text field's own control carries, so the
+              // caret of an empty tag field starts where its neighbour's does.
+              paddingLeft: TEXT_FIELD_INPUT_INSET,
+              paddingRight: 0,
+              paddingTop: 0,
+              paddingBottom: 0,
+              textAlignVertical: 'center',
             },
-            // The SHELL carries the focus ring, exactly as `TextField`'s does.
-            // Left alone, the browser draws its own outline around the caret
-            // INSIDE the shell and the control has two focus indicators.
-            IS_WEB
-              ? ({ outlineWidth: 0, outlineStyle: 'none' } as unknown as TextStyle)
-              : undefined,
+            // A single-line iOS `TextInput` with a `lineHeight` sits its glyphs
+            // low, so the 20px line box is web's alone.
+            web({ lineHeight: TEXT_FIELD_TEXT.lineHeight }),
+            android({ includeFontPadding: false }),
+            WEB_INPUT_OUTLINE_RESET,
+            field.disabled ? WEB_INPUT_DISABLED_CURSOR : undefined,
           ]}
           testID={testID ? `${testID}-input` : undefined}
         />
@@ -354,7 +429,7 @@ export function TagField({
         <Text
           nativeID={hintId}
           variant="caption-1-medium"
-          style={{ color: palette.hint, marginTop: 4 }}
+          style={{ paddingTop: 1, marginTop: TEXT_FIELD_STACK_GAP, color: palette.hint }}
           testID={testID ? `${testID}-hint` : undefined}
         >
           {hint}
@@ -366,51 +441,76 @@ export function TagField({
           nativeID={listId}
           {...LIST_ROLE}
           accessibilityLabel={labels.suggestions}
-          style={{
-            marginTop: 6,
-            borderRadius: TEXT_FIELD_RADIUS,
-            borderWidth: 1,
-            borderColor: palette.ringHover,
-            backgroundColor: palette.background,
-            overflow: 'hidden',
-          }}
+          style={listPanel}
           testID={testID ? `${testID}-suggestions` : undefined}
         >
-          {offered.map((suggestion, index) => (
-            <Pressable
-              key={suggestion.value}
-              nativeID={`${listId}-${index}`}
-              role="option"
-              aria-selected={index === activeIndex}
-              accessibilityState={{ selected: index === activeIndex }}
-              accessibilityLabel={suggestion.label ?? suggestion.value}
-              onPress={() => {
-                if (add(suggestion.value)) setText('');
-                setActiveIndex(-1);
-                inputRef.current?.focus();
-              }}
-              onHoverIn={() => setActiveIndex(index)}
-              style={{
-                flexDirection: 'row',
-                alignItems: 'center',
-                justifyContent: 'space-between',
-                gap: 8,
-                minHeight: 36,
-                paddingHorizontal: 10,
-                backgroundColor: index === activeIndex ? optionActive : 'transparent',
-              }}
-              testID={testID ? `${testID}-suggestion-${suggestion.value}` : undefined}
-            >
-              <Text variant="body-2-regular" numberOfLines={1} style={{ color: palette.text, flexShrink: 1 }}>
-                {suggestion.label ?? suggestion.value}
-              </Text>
-              {suggestion.meta !== undefined ? (
-                <Text variant="caption-1-regular" style={{ color: palette.count }}>
-                  {suggestion.meta}
+          {offered.map((suggestion, index) => {
+            const active = index === activeIndex;
+            const row: WebCssStyle = {
+              flexDirection: 'row',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              gap: TAG_FIELD_OPTION_GAP,
+              minHeight: TAG_FIELD_OPTION_MIN_HEIGHT,
+              padding: TAG_FIELD_OPTION_PADDING,
+              borderRadius: TAG_FIELD_OPTION_RADIUS,
+              backgroundColor: active ? menu.rowHighlight : 'transparent',
+              cursor: 'pointer',
+            };
+            return (
+              <Pressable
+                key={suggestion.value}
+                nativeID={`${listId}-${index}`}
+                {...(IS_WEB
+                  ? ({
+                      // The combobox holds focus and points at the active row
+                      // with `aria-activedescendant`; an option that is its own
+                      // tab stop would take the caret away from the text being
+                      // typed. `focusable={false}` does NOT do it —
+                      // react-native-web's `Pressable` still emits
+                      // `tabindex="0"` — so it is the web attribute, spelled
+                      // the way `Chip`'s roving row spells it.
+                      tabIndex: -1,
+                      // AND the press must not move focus. A mousedown on the
+                      // row blurs the caret, `focused` goes false, the list
+                      // unmounts under the pointer and the click that would
+                      // have chosen the suggestion lands on nothing: measured
+                      // in Chrome, every suggestion was unclickable while the
+                      // keyboard path worked perfectly. Preventing the
+                      // mousedown's default keeps the caret; the click still
+                      // fires.
+                      onMouseDown: (event: { preventDefault: () => void }) =>
+                        event.preventDefault(),
+                    } as Record<string, unknown>)
+                  : null)}
+                role="option"
+                aria-selected={active}
+                accessibilityState={{ selected: active }}
+                accessibilityLabel={suggestion.label ?? suggestion.value}
+                onPress={() => {
+                  if (add(suggestion.value)) setText('');
+                  setActiveIndex(-1);
+                  inputRef.current?.focus();
+                }}
+                onHoverIn={() => setActiveIndex(index)}
+                style={row}
+                testID={testID ? `${testID}-suggestion-${suggestion.value}` : undefined}
+              >
+                <Text
+                  variant="body-medium"
+                  numberOfLines={1}
+                  style={{ color: menu.text, flexShrink: 1 }}
+                >
+                  {suggestion.label ?? suggestion.value}
                 </Text>
-              ) : null}
-            </Pressable>
-          ))}
+                {suggestion.meta !== undefined ? (
+                  <Text variant="caption-1-medium" style={{ color: menu.textSecondary }}>
+                    {suggestion.meta}
+                  </Text>
+                ) : null}
+              </Pressable>
+            );
+          })}
         </View>
       ) : null}
     </View>

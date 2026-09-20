@@ -21,20 +21,37 @@ import { Field, TagField } from '@oxy.so/bloom';
 
 ## Geometry
 
-It borrows the `text-field` shell — the same fill, the same 10px radius, the same
-2px inset ring, resolved through `useTextFieldPalette()` — so a tag field in a
-form row is the same object as the text fields above it, on whatever surface it
-lands on.
+**The field IS a `text-field` box, not something that resembles one.** The fill,
+the 10px radius, the 2px inset ring, the hover and focus rings, the invalid tint
+and the disabled tint are all `text-field/shared.ts`'s, resolved through
+`useTextFieldPalette()` for the surface this field actually lands on. An empty
+`TagField` and an empty `TextFieldInput` in the same form are the same object.
 
 |  |  |
 | --- | --- |
-| min height | 36 (`medium`) / 32 (`small`), and it **grows**: chips wrap |
-| input | flexes to the end of the last line, 120 minimum |
-| suggestion row | 36 tall, one surface step off the list's fill |
+| height, empty | 36 (`medium`) / 32 (`small`) — the text field's rung, exactly |
+| shell inset | 4 above and below the chips; it **grows** as they wrap |
+| chips | `Chip` at the rung that fills that inner height: 28 (`large`) / 24 |
+| input | flexes to the end of the last line, 120 minimum, caret at 8 + 4 |
+| suggestion panel | the menu surface: 16px corner, hairline, dropdown shadow |
+| suggestion row | 36 tall on a 10px corner, the menu row highlight when active |
+
+**The ring is an OVERLAY, not a border on the flex box.** `TextField` paints its
+shell as an absolutely positioned child and this field copies that element,
+because a 2px border would take its width out of the content box: with the chips
+and the caret inside it, an empty tag field came out 40 tall beside a 36-tall
+text field in the same form. That chrome is the one thing here that is copied
+rather than reused — `text-field` exports its palette and its geometry, but not
+the shell as a part.
 
 The input flexing to the end of the line is deliberate: a press in the empty part
-of that line lands on the caret itself, so the field needs no click-to-focus
-wrapper — which on web would be one more thing in the tab order.
+of that line lands on the caret itself. The whole shell is a hit area for it too,
+through the same web `onClick` the text field's shell carries.
+
+**The placeholder is drawn whenever the CARET is empty**, not only when the
+field is. A box of chips with no visible caret and no prompt does not read as an
+input at all, which is how this control once came to look like a container with
+pills in it.
 
 ## It is a Field member
 
@@ -80,9 +97,13 @@ accepting; it is not hidden, because a disappearing caret reads as a bug.
 
 The suggestion list is a real `listbox` of `option` rows with `aria-selected`,
 and the input is a `combobox` carrying `aria-expanded`, `aria-controls` and
-`aria-activedescendant`. It sits **inline under the field**, not in an overlay:
-nothing here needs to escape a clipping ancestor, and an inline list is one less
-stacking decision.
+`aria-activedescendant`. It is painted in the **menu vocabulary** — the panel
+surface, hairline and dropdown shadow of `floating/menu-palette.ts`, the 16px
+panel corner and the 36-tall rows on a 10px corner every Bloom menu and select
+draws — so a consumer reads it as the same kind of surface a `DropdownMenu`
+opens. It sits **inline under the field** rather than in an overlay: nothing here
+needs to escape a clipping ancestor, and an inline list is one less stacking
+decision.
 
 ## Traps
 
@@ -92,8 +113,18 @@ stacking decision.
 - **`allowCreate={false}` makes it a picker**, and a picker with no `suggestions`
   accepts nothing at all. That is the honest behaviour, not a bug to route
   around.
-- **Each chip's × names itself** ("Remove tide"). `Chip`'s own `onClose` hardcodes
-  the name "Remove" with no subject, so the × is passed as an `endIcon` that
-  carries its own `accessibilityLabel`. Do not "simplify" it back to `onClose`.
+- **Each chip's × is `Chip`'s own**, named after the tag through `closeLabel`
+  (`labels.remove`). A row of removable pills whose buttons are all called
+  "Remove" gives a screen reader no way to say which one it is about. The ×
+  therefore carries a NAME rather than a testID of its own — find it the way
+  `mail-compose`'s suite does, inside `<testID>-chip-<tag>` by its label.
+- **A suggestion row must not take focus, twice over.** It is `tabIndex={-1}`,
+  because the combobox holds focus and points at the active row with
+  `aria-activedescendant`; and it cancels the mousedown's default, because
+  otherwise the press blurs the caret, `focused` goes false, the list unmounts
+  under the pointer and the click lands on nothing. Measured in Chrome: every
+  suggestion unclickable while the keyboard path worked perfectly. Neither is
+  visible in a render tree, and `focusable={false}` does NOT do the first one —
+  react-native-web's `Pressable` still emits `tabindex="0"`.
 - **`value` is controlled.** There is no uncontrolled mode, because the
   interesting half of this control is what the app does with the list.

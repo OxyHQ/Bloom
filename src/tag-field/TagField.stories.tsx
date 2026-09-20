@@ -3,6 +3,8 @@ import { View } from 'react-native';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
 import { Button } from '../button';
+import { SelectedChipsRow } from '../chat-people';
+import type { PersonSummary } from '../chat-people';
 import { Field } from '../field';
 import { TextFieldInput } from '../text-field';
 import { Text } from '../typography';
@@ -55,6 +57,69 @@ export const Basic: Story = {
           testID="tags"
         />
         <Text variant="caption-1-regular">{tags.join(' · ') || 'no tags'}</Text>
+      </Page>
+    );
+  },
+};
+
+
+/** Three people, no photographs: the chips are what is being compared. */
+const PICKED: PersonSummary[] = [
+  { id: 'ana', name: 'Ana Restrepo' },
+  { id: 'marcel', name: 'Marcel Dubé' },
+  { id: 'tova', name: 'Tova Lindqvist' },
+];
+
+function Pair({ label, children }: { label: string; children: React.ReactNode }) {
+  return (
+    <View style={{ gap: 6 }}>
+      <Text variant="caption-1-medium">{label}</Text>
+      <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 12, alignItems: 'flex-start' }}>
+        {React.Children.map(children, (child) => (
+          <View style={{ flexGrow: 1, flexBasis: 260, minWidth: 0 }}>{child}</View>
+        ))}
+      </View>
+    </View>
+  );
+}
+
+/**
+ * The proof that it is one library: a `TagField` next to the plain
+ * `TextFieldInput` whose shell it borrows, and next to the pill a picked person
+ * wears in `chat-people`. Empty, filled, invalid and disabled — the two boxes
+ * are the same object at every one of them.
+ */
+export const BesideItsNeighbours: Story = {
+  render: function NeighboursStory() {
+    const [tags, setTags] = useState<string[]>(['field notes', 'tide', 'autumn']);
+    return (
+      <Page width={860}>
+        <Pair label="Empty — the same rung, the same corner, the same fill">
+          <TagField value={[]} onChange={() => {}} placeholder="Add a tag" label="Tags" testID="empty" />
+          <TextFieldInput label="Notebook" placeholder="Notebook" testID="plain" />
+        </Pair>
+        <Pair label="Filled">
+          <TagField
+            value={tags}
+            onChange={(next) => setTags([...next])}
+            suggestions={VOCABULARY}
+            placeholder="Add a tag"
+            label="Tags"
+            testID="filled"
+          />
+          <TextFieldInput label="Notebook" defaultValue="Field notes" testID="plain-filled" />
+        </Pair>
+        <Pair label="The same chosen-thing pill, outside a field">
+          <SelectedChipsRow people={PICKED} layout="wrap" onRemove={() => undefined} />
+        </Pair>
+        <Pair label="Invalid">
+          <TagField value={['tide']} onChange={() => {}} invalid placeholder="Add a tag" label="Tags" />
+          <TextFieldInput label="Notebook" defaultValue="Field notes" isInvalid />
+        </Pair>
+        <Pair label="Disabled">
+          <TagField value={['tide']} onChange={() => {}} disabled placeholder="Add a tag" label="Tags" />
+          <TextFieldInput label="Notebook" defaultValue="Field notes" disabled />
+        </Pair>
       </Page>
     );
   },

@@ -17,8 +17,25 @@ jest.mock('react-native', () => jest.requireActual('react-native-web'));
 
 import { BloomThemeProvider } from '../theme/BloomThemeProvider';
 import { Field } from '../field';
+import { TextFieldInput } from '../text-field';
 import { TagField } from '../tag-field';
 import { commitTag, filterSuggestions, isDuplicate, normalizeTag, toSuggestion } from '../tag-field/shared';
+import { resolveMenuPalette } from '../floating/menu-palette';
+import { resolveAccentColors } from '../theme/accent-colors';
+import { buildTheme } from '../theme/build-theme';
+import { resolveTextFieldPalette } from '../text-field/shared';
+
+/** The theme every mount below is painted in. */
+const THEME = buildTheme('teal', 'light');
+const FIELD = resolveTextFieldPalette(THEME);
+const MENU = resolveMenuPalette(THEME);
+
+/** `rgb(226 229 229)` and `rgb(226, 229, 229)` are the same colour. */
+function rgb(value: string): number[] {
+  const parts = value.match(/[\d.]+/g);
+  if (!parts) throw new Error(`Not a colour: ${value}`);
+  return parts.slice(0, 3).map(Number);
+}
 
 (globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
 
@@ -59,6 +76,27 @@ function maybe(id: string): HTMLElement | null {
 
 function input(id = 'tags-input'): HTMLInputElement {
   return byTestId(id) as HTMLInputElement;
+}
+
+/**
+ * The shell's chrome — the absolutely positioned fill-and-ring `TextField`
+ * paints its own shell with. It carries no testID because it is not a part a
+ * caller addresses; it is the first child of the shell, under the content.
+ */
+function chrome(id = 'tags'): HTMLElement {
+  const el = byTestId(`${id}-shell`).firstElementChild;
+  if (!(el instanceof HTMLElement)) throw new Error('No chrome under the shell');
+  return el;
+}
+
+/**
+ * One chip's × — `Chip`'s own close button, which carries a NAME rather than a
+ * testID of its own (`closeLabel`). Found the way `MailCompose.test.tsx` finds
+ * a recipient's.
+ */
+function closeButton(tag: string, id = 'tags'): HTMLElement | null {
+  const el = byTestId(`${id}-chip-${tag}`).querySelector(`[aria-label="Remove ${tag}"]`);
+  return el instanceof HTMLElement ? el : null;
 }
 
 /** Type into the real DOM input, the way a user does. */
@@ -149,6 +187,141 @@ describe('the rules that fail invisibly', () => {
 //  The rendered control
 // ---------------------------------------------------------------------------
 
+describe('it IS a text field, not a lookalike', () => {
+  it('is exactly the rung an empty text field is, and the ring costs the content no room', () => {
+    mount(
+      <>
+        <Harness label="Tags" placeholder="Add a tag" />
+        <TextFieldInput label="Notebook" testID="plain" />
+      </>,
+    );
+    const shell = getComputedStyle(byTestId('tags-shell'));
+    // 4 + 28 + 4 = the 36 the text field beside it is. The three numbers are
+    // asserted together because only their SUM is the property that matters.
+    expect(shell.minHeight).toBe('36px');
+    expect(shell.paddingTop).toBe('4px');
+    expect(getComputedStyle(input()).height).toBe('28px');
+    expect(getComputedStyle(byTestId('plain')).height).toBe('36px');
+    // The ring is an OVERLAY. A 2px border on the flex box would take its width
+    // out of the content and make this field 40 tall beside a 36 one.
+    expect(shell.borderTopWidth).toBe('0px');
+    expect(getComputedStyle(chrome()).position).toBe('absolute');
+    expect(getComputedStyle(chrome()).borderTopWidth).toBe('2px');
+    // And the caret starts where the plain field's does: 8 on the shell + 4 on
+    // the control.
+    expect(shell.paddingLeft).toBe('8px');
+    expect(getComputedStyle(input()).paddingLeft).toBe('4px');
+  });
+
+  it('paints the text-field shell: its fill, its 10px corner, its ring on focus', () => {
+    mount(<Harness label="Tags" placeholder="Add a tag" />);
+    const rest = getComputedStyle(chrome());
+    expect(rgb(rest.backgroundColor)).toEqual(rgb(FIELD.background));
+    expect(rest.borderTopLeftRadius).toBe('10px');
+    // No ring at rest — the fill is the field.
+    expect(rest.borderTopColor).toBe('rgba(0, 0, 0, 0)');
+    focus();
+    expect(rgb(getComputedStyle(chrome()).borderTopColor)).toEqual(rgb(FIELD.ringFocus));
+  });
+
+  it('takes the invalid and the disabled fill from the same table', () => {
+    mount(<Harness label="Tags" invalid />);
+    expect(rgb(getComputedStyle(chrome()).backgroundColor)).toEqual(rgb(FIELD.backgroundInvalid));
+    mount(<Harness label="Tags" disabled />);
+    expect(rgb(getComputedStyle(chrome()).backgroundColor)).toEqual(rgb(FIELD.backgroundDisabled));
+    // Neither state draws a ring: the tinted fill carries them.
+    expect(getComputedStyle(chrome()).borderTopColor).toBe('rgba(0, 0, 0, 0)');
+  });
+
+  it('keeps a placeholder while there are chips, so the caret is visible', () => {
+    mount(<Harness initial={['tide']} placeholder="Add a tag" label="Tags" />);
+    expect(input().placeholder).toBe('Add a tag');
+  });
+});
+
+describe('the chips are Bloom chosen-thing pills', () => {
+  it('fills the shell line and is painted by the accent recipe, not by hand', () => {
+    mount(<Harness initial={['tide']} label="Tags" />);
+    const chip = getComputedStyle(byTestId('tags-chip-tide'));
+    // The rung that fills the shell's inner height: a chip sits on the caret's
+    // own line rather than floating in the box.
+    expect(chip.height).toBe('28px');
+    expect(chip.borderTopLeftRadius).toBe('9999px');
+    const paint = resolveAccentColors(THEME.colors, 'default', 'subtle');
+    expect(rgb(chip.backgroundColor)).toEqual(rgb(paint.background));
+  });
+
+  it('lets the field name the × in its own words', () => {
+    // `Chip` already names its close button after the label, so a default-only
+    // assertion would pass with the `closeLabel` wiring cut out entirely.
+    mount(<Harness initial={['tide']} labels={{ remove: (tag) => `Etikett ${tag} entfernen` }} />);
+    expect(
+      byTestId('tags-chip-tide').querySelector('[aria-label="Etikett tide entfernen"]'),
+    ).not.toBeNull();
+  });
+
+  it('takes the field tone', () => {
+    mount(<Harness initial={['tide']} tone="primary" label="Tags" />);
+    const paint = resolveAccentColors(THEME.colors, 'primary', 'subtle');
+    expect(rgb(getComputedStyle(byTestId('tags-chip-tide')).backgroundColor)).toEqual(
+      rgb(paint.background),
+    );
+  });
+});
+
+describe('the suggestion list speaks the menu vocabulary', () => {
+  const VOCAB = ['tide', 'autumn'];
+
+  it('is the menu surface, hairline and corner, with menu rows in it', () => {
+    mount(<Harness suggestions={VOCAB} label="Tags" />);
+    focus();
+    const list = getComputedStyle(byTestId('tags-suggestions'));
+    expect(rgb(list.backgroundColor)).toEqual(rgb(MENU.surface));
+    expect(rgb(list.borderTopColor)).toEqual(rgb(MENU.border));
+    expect(list.borderTopWidth).toBe('1px');
+    expect(list.borderTopLeftRadius).toBe('16px');
+    expect(list.padding).toBe('8px');
+
+    const row = getComputedStyle(byTestId('tags-suggestion-tide'));
+    expect(row.minHeight).toBe('36px');
+    expect(row.borderTopLeftRadius).toBe('10px');
+    expect(row.padding).toBe('8px');
+  });
+
+  it('highlights the active row with the menu row highlight', () => {
+    mount(<Harness suggestions={VOCAB} label="Tags" />);
+    focus();
+    expect(getComputedStyle(byTestId('tags-suggestion-tide')).backgroundColor).toBe(
+      'rgba(0, 0, 0, 0)',
+    );
+    key(input(), 'ArrowDown');
+    expect(rgb(getComputedStyle(byTestId('tags-suggestion-tide')).backgroundColor)).toEqual(
+      rgb(MENU.rowHighlight),
+    );
+  });
+
+  it('keeps every option out of the tab order — the combobox holds focus', () => {
+    mount(<Harness suggestions={VOCAB} label="Tags" />);
+    focus();
+    expect(byTestId('tags-suggestion-tide').getAttribute('tabindex')).toBe('-1');
+  });
+
+  it('refuses the mousedown that would blur the caret out from under the press', () => {
+    // Measured in Chrome: a mousedown on a row blurs the input, `focused` goes
+    // false, the list unmounts under the pointer and the click lands on
+    // nothing — every suggestion unclickable while the keyboard path worked.
+    // jsdom does not move focus on mousedown, so what is asserted here is the
+    // mechanism itself: the row cancels that default.
+    mount(<Harness suggestions={VOCAB} label="Tags" />);
+    focus();
+    const event = new MouseEvent('mousedown', { bubbles: true, cancelable: true });
+    act(() => {
+      byTestId('tags-suggestion-tide').dispatchEvent(event);
+    });
+    expect(event.defaultPrevented).toBe(true);
+  });
+});
+
 describe('committing and removing', () => {
   it('commits on Enter and clears the caret', () => {
     mount(<Harness label="Tags" />);
@@ -177,9 +350,12 @@ describe('committing and removing', () => {
 
   it('names each × with its own tag, and removing one keeps the others', () => {
     mount(<Harness initial={['tide', 'autumn']} label="Tags" />);
-    const remove = byTestId('tags-remove-tide');
-    expect(remove.getAttribute('aria-label')).toBe('Remove tide');
-    click(remove);
+    const remove = closeButton('tide');
+    expect(remove).not.toBeNull();
+    // Both chips carry a × ; a row of buttons all called "Remove" gives a
+    // screen reader no way to say which pill it is about.
+    expect(closeButton('autumn')).not.toBeNull();
+    click(remove!);
     expect(byTestId('tags-shell').textContent).not.toContain('tide');
     expect(byTestId('tags-shell').textContent).toContain('autumn');
   });
@@ -196,7 +372,7 @@ describe('committing and removing', () => {
 
   it('draws no × at all while disabled', () => {
     mount(<Harness initial={['tide']} disabled label="Tags" />);
-    expect(maybe('tags-remove-tide')).toBeNull();
+    expect(closeButton('tide')).toBeNull();
     expect(input().getAttribute('aria-disabled')).toBe('true');
   });
 });
@@ -314,7 +490,7 @@ describe('field membership', () => {
     expect(input().getAttribute('aria-disabled')).toBe('true');
     // Not only announced: the caret is not typeable either.
     expect(input().readOnly).toBe(true);
-    expect(maybe('tags-remove-a')).toBeNull();
+    expect(closeButton('a')).toBeNull();
   });
 
   it('keeps its OWN name outside a field, and a caller\'s always wins', () => {
