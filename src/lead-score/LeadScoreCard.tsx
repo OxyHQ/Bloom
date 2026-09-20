@@ -2,23 +2,27 @@ import React, { memo, useMemo } from 'react';
 import { View } from 'react-native';
 
 import { Card } from '../card';
-import { Meter, MeterRing } from '../stat-bar';
+import { MeterRing } from '../stat-bar';
 import { SurfaceLevelProvider, surfaceFillVars } from '../styles/surface-levels';
 import { resolveAccentColors } from '../theme/accent-colors';
 import { useTheme } from '../theme/use-theme';
 import { Text } from '../typography';
 import {
-  LEAD_FACTOR_BAR_HEIGHT,
-  LEAD_FACTOR_ROW_GAP,
+  LEAD_FACTOR_MARK_RADIUS,
+  LEAD_FACTOR_MARK_SIZE,
+  LEAD_FACTOR_ROW_PADDING,
   LEAD_SCORE_BAND,
   LEAD_SCORE_CARD_PADDING,
+  LEAD_SCORE_PANEL_GAP,
+  LEAD_SCORE_PANEL_PADDING,
+  LEAD_SCORE_PANEL_RADIUS,
   LEAD_SCORE_RING_SIZE,
   LEAD_SCORE_RING_THICKNESS,
   LEAD_SCORE_TREND,
   TABULAR,
 } from './constants';
 import {
-  factorScale,
+  factorLine,
   formatContribution,
   resolveLeadScoreBand,
   resolveLeadScorePaint,
@@ -28,34 +32,33 @@ import type { LeadScoreCardProps } from './types';
 /**
  * How good a lead is, and WHY.
  *
- * The hierarchy is the one every Bloom score card uses (`SleepScoreCard`, and
- * `PriceEstimate` for the figure): a quiet `body-medium` LABEL over a
- * `title-1-medium` VERDICT, the measurement as a ring beside it, and the
- * detail underneath.
+ * It is drawn the way Bloom draws a score — `chart-cards`' `SleepScoreCard` is
+ * the register, and the `BesideTheReference` story puts the two in one shot:
+ * TWO PANELS inside one card, the verdict on a tinted one and the breakdown on
+ * a neutral one.
  *
- *   header    "Lead score" (body-medium, text-secondary) over the band —
- *             "Hot" at `title-1-medium` with the band's glyph — then the trend
- *             as a quiet icon-and-label line; a 72 `MeterRing` on the right
- *             carrying the score over the scale
- *   factors   `NeighbourhoodScores`' row exactly: the label (body-medium) with
- *             the signed points right-aligned (body-semibold, tabular), a
- *             6-tall `Meter` under it, and the detail (body-2-regular,
- *             text-secondary) under that; rows 24 apart
+ *   header   a panel washed in the band's tone: the quiet `body-medium` label
+ *            ("Lead score") over the `title-1-medium` verdict ("Hot") with the
+ *            band's glyph, the trend as a quiet icon-and-label line, and then
+ *            the ring — 132 across, CENTRED, with the score at
+ *            `display-4-medium` inside it
+ *   factors  a neutral panel, padded on the LEFT only so the rules run to its
+ *            right edge: one row per factor — a small mark, the label and its
+ *            detail as one reading line, and the signed contribution
+ *            right-aligned and tabular, with a hairline under every row but the
+ *            last
  *
- * **ONE MEASURED LANGUAGE.** Every bar and the ring fill with the ACCENT over
- * the shared neutral rail, because that is what a meter means in Bloom: how
- * much of one thing there is. Status colours say something else — a green ring
- * claims "healthy", which is not the claim "82 of 100" makes — and five
- * saturated green and red bars stacked down a card is a chart pretending to be
- * a measurement. The SIGN carries the direction: it is printed (`+24`, `-9`),
- * and a negative bar fills with the quiet graphical neutral read off the rail
- * rather than with error red.
+ * **THERE ARE NO BARS.** Five of them down a card is a chart pretending to be a
+ * measurement, and it is the single thing that made this card read as another
+ * product's dashboard. A contribution is a NUMBER, it is printed, and the mark
+ * beside it says which way it pulls. The one measurement here is the score, and
+ * it is a ring, because there is one of it.
  *
  * **The card must be named by a prop.** ARIA computes no name for a
  * `progressbar` from its contents and the ring draws a bare number, so
- * `accessibilityLabel` is required at the type level. The ring and every bar
- * are `stat-bar`'s, which own the geometry, the rail and the FLAT `aria-value*`
- * props — react-native-web drops `accessibilityValue` entirely.
+ * `accessibilityLabel` is required at the type level. The ring is `stat-bar`'s,
+ * which owns the geometry and the FLAT `aria-value*` props — react-native-web
+ * drops `accessibilityValue` entirely.
  */
 function LeadScoreCardComponent({
   score,
@@ -72,12 +75,14 @@ function LeadScoreCardComponent({
   testID,
 }: LeadScoreCardProps) {
   const theme = useTheme();
-  const paint = useMemo(() => resolveLeadScorePaint(theme, theme.colors.card), [theme]);
   const resolvedBand = band ?? resolveLeadScoreBand(score, max);
   const bandSpec = LEAD_SCORE_BAND[resolvedBand];
   const BandIcon = bandSpec.icon;
+  const paint = useMemo(
+    () => resolveLeadScorePaint(theme, theme.colors.card, bandSpec.tone),
+    [theme, bandSpec.tone],
+  );
   const bandAccent = resolveAccentColors(theme.colors, bandSpec.tone, 'subtle');
-  const scale = factors?.length ? factorScale(factors) : 1;
 
   const id = (part: string) => (testID ? `${testID}-${part}` : undefined);
   const TrendIcon = trend === undefined ? undefined : LEAD_SCORE_TREND[trend.direction].icon;
@@ -93,136 +98,184 @@ function LeadScoreCardComponent({
             paddingBottom: LEAD_SCORE_CARD_PADDING,
             paddingLeft: LEAD_SCORE_CARD_PADDING,
             paddingRight: LEAD_SCORE_CARD_PADDING,
-            gap: 20,
+            gap: LEAD_SCORE_PANEL_GAP,
             ...surfaceFillVars(paint.surface),
           },
           style,
         ]}
         testID={testID}
       >
-        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 16 }}>
-          <View style={{ flex: 1, minWidth: 0, gap: 2 }}>
-            <Text
-              variant="body-medium"
-              numberOfLines={1}
-              style={{ color: paint.textSecondary }}
-              testID={id('title')}
-            >
-              {title}
-            </Text>
-            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
-              {/* The band's glyph is the only tinted mark in the header: the
-                  word beside it is the verdict, and a pill saying the same word
-                  twice is the duplication a verdict line removes. */}
-              <BandIcon width={20} height={20} fill={bandAccent.foreground} />
-              <Text
-                variant="title-1-medium"
-                numberOfLines={1}
-                style={{ flexShrink: 1, color: paint.text }}
-                testID={id('band')}
-              >
-                {bandLabel ?? bandSpec.label}
-              </Text>
-            </View>
-            {trend && TrendIcon ? (
-              <View
-                style={{ flexDirection: 'row', alignItems: 'center', gap: 4, marginTop: 2 }}
-              >
-                <TrendIcon width={16} height={16} fill={paint.textSecondary} />
-                <Text
-                  variant="body-2-regular"
-                  numberOfLines={1}
-                  style={{ flexShrink: 1, color: paint.textSecondary }}
-                  testID={id('trend')}
-                >
-                  {trend.label}
-                </Text>
-              </View>
-            ) : null}
-          </View>
-
-          <MeterRing
-            value={score}
-            max={max}
-            size={LEAD_SCORE_RING_SIZE}
-            thickness={LEAD_SCORE_RING_THICKNESS}
-            accessibilityLabel={accessibilityLabel}
-            valueText={valueText}
-            testID={id('ring')}
+        {/* The tinted panel is a SURFACE of its own: everything inside it reads
+            its text rungs off the wash, not off the card. */}
+        <SurfaceLevelProvider level={2} fill={paint.header}>
+          <View
+            testID={id('header')}
+            style={{
+              borderRadius: LEAD_SCORE_PANEL_RADIUS,
+              backgroundColor: paint.header,
+              paddingTop: LEAD_SCORE_PANEL_PADDING,
+              paddingBottom: LEAD_SCORE_PANEL_PADDING,
+              paddingLeft: LEAD_SCORE_PANEL_PADDING,
+              paddingRight: LEAD_SCORE_PANEL_PADDING,
+              gap: 12,
+              ...surfaceFillVars(paint.header),
+            }}
           >
-            <Text
-              variant="title-3-semibold"
-              style={[{ color: paint.text }, TABULAR]}
-              testID={id('score')}
-            >
-              {String(score)}
-            </Text>
-            <Text variant="caption-2-regular" style={[{ color: paint.textTertiary }, TABULAR]}>
-              {`of ${max}`}
-            </Text>
-          </MeterRing>
-        </View>
+            <View style={{ flexDirection: 'row', alignItems: 'flex-start', gap: 8 }}>
+              <View style={{ flex: 1, minWidth: 0, gap: 2 }}>
+                <Text
+                  variant="body-medium"
+                  numberOfLines={1}
+                  style={{ color: paint.headerText.textSecondary }}
+                  testID={id('title')}
+                >
+                  {title}
+                </Text>
+                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+                  <BandIcon width={20} height={20} fill={bandAccent.foreground} />
+                  <Text
+                    variant="title-1-medium"
+                    numberOfLines={1}
+                    style={{ flexShrink: 1, color: paint.headerText.text }}
+                    testID={id('band')}
+                  >
+                    {bandLabel ?? bandSpec.label}
+                  </Text>
+                </View>
+                {trend && TrendIcon ? (
+                  <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
+                    <TrendIcon width={16} height={16} fill={paint.headerText.textSecondary} />
+                    <Text
+                      variant="body-2-regular"
+                      numberOfLines={1}
+                      style={{ flexShrink: 1, color: paint.headerText.textSecondary }}
+                      testID={id('trend')}
+                    >
+                      {trend.label}
+                    </Text>
+                  </View>
+                ) : null}
+              </View>
+            </View>
+
+            <View style={{ alignItems: 'center' }}>
+              <MeterRing
+                value={score}
+                max={max}
+                size={LEAD_SCORE_RING_SIZE}
+                thickness={LEAD_SCORE_RING_THICKNESS}
+                fill={paint.fill}
+                track={paint.track}
+                accessibilityLabel={accessibilityLabel}
+                valueText={valueText}
+                testID={id('ring')}
+              >
+                <Text
+                  variant="display-4-medium"
+                  style={[{ color: paint.headerText.text }, TABULAR]}
+                  testID={id('score')}
+                >
+                  {String(score)}
+                </Text>
+              </MeterRing>
+            </View>
+          </View>
+        </SurfaceLevelProvider>
 
         {factors?.length ? (
-          <View
-            style={{
-              paddingTop: 20,
-              borderTopWidth: 1,
-              borderTopColor: paint.hairline,
-              gap: LEAD_FACTOR_ROW_GAP,
-            }}
-            testID={id('factors')}
-          >
-            <Text variant="body-medium" style={{ color: paint.textSecondary }}>
-              {factorsLabel}
-            </Text>
-            {factors.map((factor) => {
-              const positive = factor.contribution >= 0;
-              const points = formatContribution(factor.contribution);
-              const key = factor.id ?? factor.label;
-              return (
-                <View key={key} style={{ gap: 8 }}>
-                  <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+          <SurfaceLevelProvider level={2} fill={paint.panel}>
+            <View
+              testID={id('factors')}
+              style={{
+                borderRadius: LEAD_SCORE_PANEL_RADIUS,
+                backgroundColor: paint.panel,
+                // Padded on the LEFT only, so every rule runs to the panel's
+                // right edge and stays inset on the left.
+                paddingLeft: LEAD_SCORE_PANEL_PADDING,
+                ...surfaceFillVars(paint.panel),
+              }}
+            >
+              {factorsLabel ? (
+                <Text
+                  variant="body-2-medium"
+                  numberOfLines={1}
+                  style={{
+                    color: paint.panelText.textSecondary,
+                    paddingTop: LEAD_FACTOR_ROW_PADDING,
+                    paddingBottom: LEAD_FACTOR_ROW_PADDING,
+                    paddingRight: LEAD_SCORE_PANEL_PADDING,
+                    borderBottomWidth: 1,
+                    borderBottomColor: paint.rowRule,
+                  }}
+                  testID={id('factors-label')}
+                >
+                  {factorsLabel}
+                </Text>
+              ) : null}
+              {factors.map((factor, index) => {
+                const positive = factor.contribution >= 0;
+                const points = formatContribution(factor.contribution);
+                const key = factor.id ?? factor.label;
+                return (
+                  <View
+                    key={key}
+                    testID={testID ? `${testID}-factor-${key}` : undefined}
+                    style={{
+                      flexDirection: 'row',
+                      alignItems: 'center',
+                      justifyContent: 'space-between',
+                      gap: 8,
+                      paddingTop: LEAD_FACTOR_ROW_PADDING,
+                      paddingBottom: LEAD_FACTOR_ROW_PADDING,
+                      paddingRight: LEAD_SCORE_PANEL_PADDING,
+                      borderBottomWidth: index < factors.length - 1 ? 1 : 0,
+                      borderBottomColor: paint.rowRule,
+                    }}
+                  >
+                    <View
+                      style={{
+                        flexDirection: 'row',
+                        alignItems: 'center',
+                        gap: 8,
+                        flexShrink: 1,
+                        minWidth: 0,
+                      }}
+                    >
+                      {/* The mark is the only thing carrying the sign
+                          graphically: the accent for a factor that pushes the
+                          score up, the quiet graphical neutral for one that
+                          pulls it down. */}
+                      <View
+                        style={{
+                          width: LEAD_FACTOR_MARK_SIZE,
+                          height: LEAD_FACTOR_MARK_SIZE,
+                          flexShrink: 0,
+                          borderRadius: LEAD_FACTOR_MARK_RADIUS,
+                          backgroundColor: positive ? paint.fill : paint.negativeMark,
+                        }}
+                        testID={testID ? `${testID}-factor-${key}-mark` : undefined}
+                      />
+                      <Text
+                        variant="body-regular"
+                        numberOfLines={1}
+                        style={{ flexShrink: 1, color: paint.panelText.textSecondary }}
+                      >
+                        {factorLine(factor.label, factor.detail)}
+                      </Text>
+                    </View>
                     <Text
                       variant="body-medium"
                       numberOfLines={1}
-                      style={{ flex: 1, minWidth: 0, color: paint.text }}
-                    >
-                      {factor.label}
-                    </Text>
-                    <Text
-                      variant="body-semibold"
-                      importantForAccessibility="no"
-                      accessibilityElementsHidden
-                      style={[{ color: paint.text, flexShrink: 0 }, TABULAR]}
+                      style={[{ flexShrink: 0, color: paint.panelText.text }, TABULAR]}
                       testID={testID ? `${testID}-factor-${key}-points` : undefined}
                     >
                       {points}
                     </Text>
                   </View>
-                  <Meter
-                    value={Math.abs(factor.contribution)}
-                    max={scale}
-                    height={LEAD_FACTOR_BAR_HEIGHT}
-                    // Positive takes the accent — the meter default, and what
-                    // every other measurement in Bloom fills with. Negative
-                    // takes the QUIET graphical neutral, read off the rail so
-                    // it clears it (`neutralSeries` is `neutral-800` in dark and
-                    // would vanish on one).
-                    fill={positive ? undefined : paint.negativeFill}
-                    accessibilityLabel={factor.label}
-                    valueText={`${points} points`}
-                    testID={testID ? `${testID}-factor-${key}` : undefined}
-                  />
-                  {factor.detail ? (
-                    <Text variant="body-2-regular" style={{ color: paint.textSecondary }}>
-                      {factor.detail}
-                    </Text>
-                  ) : null}
-                </View>
-              );
-            })}
-          </View>
+                );
+              })}
+            </View>
+          </SurfaceLevelProvider>
         ) : null}
       </Card>
     </SurfaceLevelProvider>

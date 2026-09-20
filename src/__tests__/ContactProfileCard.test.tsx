@@ -1,11 +1,12 @@
 /**
  * @jest-environment jsdom
  *
- * `ContactProfileCard` through the REAL react-native-web, so every assertion reads the
- * emitted DOM rather than the props that were passed in. Three of the four
- * properties below are invisible to a prop-level test: what a glyph action is
- * NAMED, whether a control ended up inside another control, and which colour a
- * quiet line resolved to on the surface it landed on.
+ * `ContactProfileCard` through the REAL react-native-web, so every assertion
+ * reads the emitted DOM rather than the props that were passed in. Most of what
+ * this file pins is invisible to a prop-level test: what a glyph action is
+ * NAMED, whether a control ended up inside another control, which colour a
+ * quiet line resolved to on the surface it landed on, and in what ORDER the
+ * card states the record — the numbers before the labels, not after them.
  */
 import React from 'react';
 import { act } from 'react';
@@ -14,10 +15,20 @@ import { createRoot, type Root } from 'react-dom/client';
 jest.mock('react-native', () => jest.requireActual('react-native-web'));
 
 import { Avatar } from '../avatar';
-import { ContactProfileCard, contactMetaLine } from '../contact-card';
+import {
+  CONTACT_AVATAR_SIZE,
+  CONTACT_CONTENT_TOP,
+  CONTACT_COVER_HEIGHT,
+  CONTACT_NARROW_WIDTH,
+  ContactProfileCard,
+  contactActionsAreLabelled,
+  contactCoverWash,
+  contactMetaLine,
+  contactStatRows,
+} from '../contact-card';
 import { CONTACT_ROW_MIN_HEIGHT } from '../contact-card/constants';
 import { resolveContactPaint } from '../contact-card/shared';
-import { surfaceTextOn } from '../styles/surface-levels';
+import { surfaceFillOn, surfaceTextOn } from '../styles/surface-levels';
 import { BloomThemeProvider } from '../theme/BloomThemeProvider';
 import { resolveAccentColors } from '../theme/accent-colors';
 import type { Theme } from '../theme/types';
@@ -70,6 +81,11 @@ function normalise(color: string): string {
   return probe.style.color;
 }
 
+/** True when `a` comes before `b` in the document. */
+function precedes(a: Element, b: Element): boolean {
+  return (a.compareDocumentPosition(b) & Node.DOCUMENT_POSITION_FOLLOWING) !== 0;
+}
+
 const noop = () => undefined;
 
 const NORA = {
@@ -81,6 +97,11 @@ const NORA = {
     { kind: 'phone' as const, onPress: noop },
   ],
   owner: { name: 'Marta Oyeleye' },
+  headline: { label: 'Open pipeline', value: '€248,000', delta: '+2 deals' },
+  stats: [
+    { value: '4', label: 'Open deals' },
+    { value: '€62k', label: 'Avg deal' },
+  ],
   tags: ['Enterprise', 'Renewal'],
   lastTouch: 'Last contacted 6 days ago',
 };
@@ -90,6 +111,20 @@ describe('the identity', () => {
     mount(<ContactProfileCard {...NORA} testID="c" />);
     expect(byTestId('c-name').textContent).toBe('Nora Vance');
     expect(byTestId('c-meta').textContent).toBe('Head of Operations · Larkspur Freight');
+  });
+
+  it('puts the name at TITLE weight over the identity line', () => {
+    // The register this card is drawn in: a record's subject is the largest
+    // text on it. At `body-semibold` (14) the name was the same size as its own
+    // footer, which renders fine and says the card is a settings row.
+    mount(<ContactProfileCard {...NORA} testID="c" />);
+    const name = Number.parseFloat(getComputedStyle(byTestId('c-name')).fontSize);
+    const meta = Number.parseFloat(getComputedStyle(byTestId('c-meta')).fontSize);
+    expect(name).toBe(20);
+    expect(name).toBeGreaterThan(meta);
+    // In a ROW it is the list-item size again — a row is not a small card.
+    mount(<ContactProfileCard {...NORA} density="compact" testID="c" />);
+    expect(getComputedStyle(byTestId('c-name')).fontSize).toBe('14px');
   });
 
   it('drops the company for a COMPANY subject — a company has no company', () => {
@@ -125,19 +160,64 @@ describe('the identity', () => {
   });
 });
 
-describe('the channels are actions, not text', () => {
-  it('names each one with the kind VERB and the subject', () => {
+describe('the card opens with a cover band, and the mark hangs off it', () => {
+  it('paints the band with the tone PAIR, and starts the content half a mark up it', () => {
     mount(<ContactProfileCard {...NORA} testID="c" />);
-    expect(byTestId('c-channel-email').getAttribute('aria-label')).toBe('Email Nora Vance');
+    const cover = byTestId('c-cover');
+    expect(getComputedStyle(cover).height).toBe(`${CONTACT_COVER_HEIGHT}px`);
+    expect(getComputedStyle(cover).backgroundColor).toBe(normalise(contactCoverWash(theme)));
+    expect(getComputedStyle(cover).position).toBe('absolute');
+
+    // No negative margins anywhere: the band is absolute and the content simply
+    // starts below its top, so the mark overlaps it and everything under the
+    // mark stacks in normal flow.
+    expect(getComputedStyle(byTestId('c-content')).paddingTop).toBe(`${CONTACT_CONTENT_TOP}px`);
+    expect(CONTACT_CONTENT_TOP + CONTACT_AVATAR_SIZE.comfortable).toBeGreaterThan(
+      CONTACT_COVER_HEIGHT,
+    );
+    expect(getComputedStyle(byTestId('c-content')).marginTop).not.toContain('-');
+  });
+
+  it('takes the tone it is given, and an IMAGE when there is one', () => {
+    mount(<ContactProfileCard {...NORA} coverTone="warning" testID="c" />);
+    expect(getComputedStyle(byTestId('c-cover')).backgroundColor).toBe(
+      normalise(contactCoverWash(theme, 'warning')),
+    );
+    expect(getComputedStyle(byTestId('c-cover')).backgroundColor).not.toBe(
+      normalise(contactCoverWash(theme, 'primary')),
+    );
+    expect(queryTestId('c-cover-image')).toBeNull();
+
+    mount(<ContactProfileCard {...NORA} coverSource="https://example.invalid/c.png" testID="c" />);
+    expect(queryTestId('c-cover-image')).not.toBeNull();
+  });
+
+  it('draws the mark at 72 on the card and 36 in a row, and no band in a row', () => {
+    mount(<ContactProfileCard {...NORA} testID="c" />);
+    expect(getComputedStyle(byTestId('c-avatar')).width).toBe(
+      `${CONTACT_AVATAR_SIZE.comfortable}px`,
+    );
+    mount(<ContactProfileCard {...NORA} density="compact" testID="c" />);
+    expect(getComputedStyle(byTestId('c-avatar')).width).toBe(`${CONTACT_AVATAR_SIZE.compact}px`);
+    expect(queryTestId('c-cover')).toBeNull();
+  });
+});
+
+describe('the channels are LABELLED actions, not glyphs', () => {
+  it('carries the action word AND the full name', () => {
+    mount(<ContactProfileCard {...NORA} testID="c" />);
+    const email = byTestId('c-channel-email');
+    // The label is what a pointer reads; the NAME is what a screen reader
+    // reads, and it survives the label being dropped on a narrow card.
+    expect(email.textContent).toContain('Email');
+    expect(email.getAttribute('aria-label')).toBe('Email Nora Vance');
+    expect(byTestId('c-channel-phone').textContent).toContain('Call');
     expect(byTestId('c-channel-phone').getAttribute('aria-label')).toBe('Call Nora Vance');
     // The email address itself is never drawn: a channel is a thing you DO.
     expect(container.textContent).not.toContain('@');
   });
 
   it('draws each one as a real CONTROL, never a bare glyph on the surface', () => {
-    // The defect this replaces: three icons floating on the card with no
-    // surface, no border and no hit area. Both render; only the emitted box
-    // tells them apart.
     mount(<ContactProfileCard {...NORA} testID="c" />);
     const control = byTestId('c-channel-email');
     expect(control.tagName).toBe('BUTTON');
@@ -145,6 +225,23 @@ describe('the channels are actions, not text', () => {
     expect(style.backgroundColor).not.toBe('rgba(0, 0, 0, 0)');
     expect(Number.parseFloat(style.borderTopWidth)).toBeGreaterThan(0);
     expect(Number.parseFloat(style.height)).toBeGreaterThanOrEqual(32);
+  });
+
+  it('drops the label only where the card is too narrow to carry it', () => {
+    // A pure rule, walked at its boundary: `onLayout` never fires in jsdom, and
+    // a threshold exercised only in a browser is a threshold nothing pins.
+    expect(contactActionsAreLabelled(CONTACT_NARROW_WIDTH)).toBe(true);
+    expect(contactActionsAreLabelled(CONTACT_NARROW_WIDTH - 1)).toBe(false);
+    expect(contactActionsAreLabelled(320)).toBe(false);
+    // Unmeasured is the caller not having constrained the card.
+    expect(contactActionsAreLabelled(null)).toBe(true);
+  });
+
+  it('draws a row’s channels as glyphs whatever the width — a row has no room for words', () => {
+    mount(<ContactProfileCard {...NORA} density="compact" testID="c" />);
+    const email = byTestId('c-channel-email');
+    expect(email.textContent).toBe('');
+    expect(email.getAttribute('aria-label')).toBe('Email Nora Vance');
   });
 
   it('never nests a control inside the press target', () => {
@@ -160,11 +257,74 @@ describe('the channels are actions, not text', () => {
   });
 });
 
-describe('the meta row is chips, and they are OUTLINED', () => {
-  it('draws the last touch, the facts and the tags as one wrapped row', () => {
+describe('the numbers are a figure and TILES', () => {
+  it('draws the figure at title size with a TINTED delta beside it', () => {
+    mount(<ContactProfileCard {...NORA} testID="c" />);
+    expect(byTestId('c-headline-value').textContent).toBe('€248,000');
+    expect(getComputedStyle(byTestId('c-headline-value')).fontSize).toBe('24px');
+    const delta = resolveAccentColors(theme.colors, 'success', 'subtle');
+    expect(getComputedStyle(byTestId('c-delta')).backgroundColor).toBe(
+      normalise(delta.background),
+    );
+  });
+
+  it('paints a tile on the next fill UP from the card, value over label', () => {
+    // The step is READ off the card, never a ramp stop: the same tile is drawn
+    // on white in light and on a dark card in dark, and `neutral-100` is only
+    // right for one of them.
+    for (const mode of ['light', 'dark'] as const) {
+      mount(<ContactProfileCard {...NORA} testID="c" />, mode);
+      const tile = byTestId('c-stat-0');
+      const expected = surfaceFillOn(theme, theme.colors.card);
+      expect([mode, getComputedStyle(tile).backgroundColor]).toEqual([mode, normalise(expected)]);
+      expect([mode, getComputedStyle(tile).backgroundColor]).not.toEqual([
+        mode,
+        normalise(theme.colors.card),
+      ]);
+      const lines = [...tile.querySelectorAll('div')].map((el) => el.textContent);
+      expect(lines).toContain('4');
+      expect(lines).toContain('Open deals');
+      // And its text is read off the TILE, which is not the card.
+      const label = [...tile.querySelectorAll('div')].find((el) => el.textContent === 'Open deals');
+      expect([mode, getComputedStyle(label!).color]).toEqual([
+        mode,
+        normalise(surfaceTextOn(theme, expected).textSecondary),
+      ]);
+    }
+  });
+
+  it('lays the tiles out in one row when the card is wide and in pairs when it is not', () => {
+    expect(contactStatRows(4, true)).toEqual([[0, 1, 2, 3]]);
+    expect(contactStatRows(4, false)).toEqual([[0, 1], [2, 3]]);
+    expect(contactStatRows(3, false)).toEqual([[0, 1], [2]]);
+    expect(contactStatRows(0, true)).toEqual([]);
+  });
+
+  it('states the numbers BEFORE the labels', () => {
+    // The order is the claim: a record is read for its figures, and the chips
+    // are what is left over. A wall of chips where the tiles are is the card
+    // this replaced.
+    mount(<ContactProfileCard {...NORA} testID="c" />);
+    expect(precedes(byTestId('c-headline'), byTestId('c-stats'))).toBe(true);
+    expect(precedes(byTestId('c-stats'), byTestId('c-chips'))).toBe(true);
+  });
+
+  it('draws no tiles at all in a ROW, and none when there are no numbers', () => {
+    mount(<ContactProfileCard {...NORA} density="compact" testID="c" />);
+    expect(queryTestId('c-stats')).toBeNull();
+    expect(queryTestId('c-headline')).toBeNull();
+    mount(<ContactProfileCard name="Sofia Renard" testID="c" />);
+    expect(queryTestId('c-stats')).toBeNull();
+  });
+});
+
+describe('the chips are ONE line, after the tiles', () => {
+  it('holds the last touch, the facts and the tags, and does not wrap', () => {
     mount(<ContactProfileCard {...NORA} facts={['Lisbon']} testID="c" />);
     const row = byTestId('c-chips');
-    expect(getComputedStyle(row).flexWrap).toBe('wrap');
+    // A `ChipRow` scrolls rather than wrapping: the leftovers of a record take
+    // one line, or they take the card over.
+    expect(getComputedStyle(row).flexWrap).not.toBe('wrap');
     const words = [...row.querySelectorAll('div')].map((el) => el.textContent);
     for (const fact of ['Last contacted 6 days ago', 'Lisbon', 'Enterprise', 'Renewal']) {
       expect(words).toContain(fact);
@@ -225,8 +385,8 @@ describe('the leading mark is neutral', () => {
     mount(
       <>
         <ContactProfileCard {...NORA} testID="c" />
-        <Avatar name={NORA.name} size={44} testID="tinted" />
-        <Avatar name={NORA.name} size={44} color="neutral" testID="quiet" />
+        <Avatar name={NORA.name} size={72} testID="tinted" />
+        <Avatar name={NORA.name} size={72} color="neutral" testID="quiet" />
       </>,
     );
     const card = discColor(byTestId('c-avatar'));
@@ -239,14 +399,18 @@ describe('the leading mark is neutral', () => {
 describe('one component, two densities', () => {
   it('draws the card furniture at comfortable', () => {
     mount(<ContactProfileCard {...NORA} testID="c" />);
+    expect(queryTestId('c-cover')).not.toBeNull();
+    expect(queryTestId('c-stats')).not.toBeNull();
     expect(queryTestId('c-chips')).not.toBeNull();
     expect(queryTestId('c-owner')).not.toBeNull();
     expect(queryTestId('c-footer')).not.toBeNull();
     expect(getComputedStyle(byTestId('c')).backgroundColor).toBe(normalise(theme.colors.card));
   });
 
-  it('draws a ROW at compact: no surface, no chips, no owner, 64 tall', () => {
+  it('draws a ROW at compact: no surface, no cover, no tiles, no owner, 64 tall', () => {
     mount(<ContactProfileCard {...NORA} density="compact" testID="c" />);
+    expect(queryTestId('c-cover')).toBeNull();
+    expect(queryTestId('c-stats')).toBeNull();
     expect(queryTestId('c-chips')).toBeNull();
     expect(queryTestId('c-owner')).toBeNull();
     expect(queryTestId('c-footer')).toBeNull();

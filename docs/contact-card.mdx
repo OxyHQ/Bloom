@@ -1,6 +1,6 @@
 ---
 title: ContactProfileCard
-description: A person or a company in a CRM — identity, the channels you can reach them through, the owner, the tags and the last touch — as a card and as a row.
+description: A person or a company in a CRM — identity, the numbers the record is read for, the channels you can reach them through, and the tags — as a card and as a row.
 order: 123
 ---
 
@@ -19,6 +19,13 @@ import { ContactProfileCard } from '@oxy.so/bloom';
   channels={[
     { kind: 'email', onPress: composeEmail },
     { kind: 'phone', onPress: dial },
+  ]}
+  headline={{ label: 'Open pipeline', value: '€248,000', delta: '+2 deals' }}
+  stats={[
+    { value: '4', label: 'Open deals' },
+    { value: '€62k', label: 'Avg deal' },
+    { value: '6 days', label: 'Last touch' },
+    { value: '3h', label: 'Replies in' },
   ]}
   owner={{ name: 'Marta Oyeleye' }}
   tags={['Enterprise', 'Renewal Q4']}
@@ -45,118 +52,126 @@ says so. The family directory stays `contact-card`.
 `kind="company"` does not switch components. It squares the avatar into a
 squircle so a logo reads as a logo, reads `role` as the INDUSTRY, and drops
 `company` — a company has no company. Everything else is the same slot with a
-different fact in it: `facts` carries the headcount and the sites, `people`
+different fact in it: `stats` carries the headcount and the deal count, `people`
 carries the facepile of who works there, and the owner, the tags and the last
 touch mean exactly what they meant for a person.
 
 That is the whole reason it is a `kind` and not a `CompanyCard`. Two components
-would be the same card plus a fork, and the fork would drift — one of them would
-get the owner row, the other would get the status pill, and nothing would say
-which was intended.
+would be the same card plus a fork, and the fork would drift.
 
 ## The geometry
 
-It is built to the four blocks every Bloom record card is built to —
-`home-search`'s `SavedSearchCard` is the reference, and the `BesideTheReference`
-story puts the two in one shot:
+It is drawn the way Bloom draws a RECORD — `ai-profile-card` is the register,
+and the `BesideTheReference` story puts the two in one shot at the same width:
 
 | block | what it holds |
 | --- | --- |
-| header | a 44 leading mark, the name at `body-semibold` (two lines), a status `Badge` opposite |
-| meta | ONE secondary line (the role and the account), then the last touch, the facts and the tags as OUTLINED chips, wrapped 6 apart |
-| facepile | the people at a company, when there are any |
-| footer | a hairline, the quiet owner label on the left, the channel controls on the right |
+| cover | a band across the top of the card: the caller's image, or an accent wash in `coverTone` |
+| mark | the 72 avatar, hanging half off the band's bottom edge, with the channel actions opposite it |
+| identity | the name at `title-2-medium`, then ONE line — the role and the account — with the status `Badge` beside it |
+| figure | a quiet `body-medium` label over the `headline` number at `title-1-medium`, with a tinted delta `Chip` |
+| tiles | one `stats` tile per number: the value over what it counts |
+| tags | ONE scrolling `ChipRow` — the last touch, the `facts`, the `tags` |
+| footer | the facepile, and the owner as a quiet attribution line |
 
 | | comfortable | compact |
 | --- | --- | --- |
-| surface | a `Card` (`outlined`, `radius-16`, 16 / 12 / 16 / 16) | none — the list owns it |
-| mark | 44 | 36 |
-| name | `body-semibold`, 2 lines | `body-semibold`, 1 line |
-| chips, facepile, owner | drawn | not drawn |
-| last touch | a chip in the meta row | a quiet third line |
-| channels | in the footer | beside the identity |
+| surface | a `Card` (`outlined`, `radius-20`) | none — the list owns it |
+| cover | 96 tall | none |
+| mark | 72, overlapping the cover | 36, inside the press target |
+| name | `title-2-medium`, 2 lines | `body-semibold`, 1 line |
+| figure, tiles, chips, facepile, owner | drawn | not drawn |
+| last touch | the first chip in the row | a quiet third line |
+| channels | labelled, beside the mark | glyphs, beside the identity |
 | height | what it needs | at least 64 |
 
-Compact is the ROW, not a small card. It deliberately draws no surface of its
-own: a list, a settings group or a panel is already painting one, and a row with
-a second fill inside it is the seam every list of cards ends up with. It also
-drops the tags, the facts, the facepile and the owner rather than shrinking
-them — a row that showed all of them would be a card with the padding taken
-out, which is not a different density, it is a worse card.
+Compact is the ROW, not a small card. It deliberately draws no surface and no
+cover: a list, a settings group or a panel is already painting one, and a row
+with a band across it is a card with the padding taken out — which is not a
+different density, it is a worse card.
 
-### Where the status pill sits, and what gives way
+### There are no negative margins in the overlap
 
-On a CARD the status pill sits beside the name. In a ROW it moves to the meta
-line, because the row does not have the width: at 390, three 44-wide channel
-actions and a 36 avatar leave the identity about 150px, and a pill beside the
-name there truncated both — measured as "Nora Van…" next to "Custo…". The pill
-itself never shrinks (it is one word, and half of it says nothing); the line
-beside it is what ellipsizes.
+The cover is absolutely positioned across the top of the card and the content
+block simply starts `CONTACT_COVER_HEIGHT - CONTACT_AVATAR_OVERLAP` down. The
+mark is therefore the first thing in normal flow, it overlaps the band by half
+its own height, and everything under it stacks without an offset. Pulling the
+mark up with a margin would have been one number that every later block had to
+know about.
 
-That 150px is also the budget the `lastTouch` line is spending. A row with three
-channels at 390 will clip it to "Last contacted 6 days…". If that line matters
-more than the third action, pass two channels and put the rest behind
-`actions`.
+## The card measures ITSELF
+
+`CONTACT_NARROW_WIDTH` (480) is compared against the card's OWN laid-out width,
+through `useContainerWidth` on the content block — not against the window. The
+same card is 358 wide in a phone column and 900 wide in a record pane, and the
+window cannot tell those apart.
+
+Under it, two things change together: the channel actions drop their labels to
+glyphs, and the tiles stack two by two. They are one threshold rather than two
+because a card too narrow for four tiles is too narrow for three labelled
+buttons beside a 72 mark.
+
+Before the first layout the width is unknown and the labels are ON
+(`contactActionsAreLabelled(null)`). That is the better of the two guesses: an
+unmeasured card is one a caller has not constrained.
+
+## A channel is a labelled CONTROL
+
+Each entry in `channels` is a `Button` — `variant="secondary" size="small"` with
+the kind's glyph and its ACTION word ("Email", "Call", "Meet") — so it carries
+the surface, the border, the hover, the disabled treatment and the focus ring
+every other Bloom action has. Bare icons floating on a card surface are not an
+affordance anywhere else in this library.
+
+**The label and the NAME are different things.** The label is dropped on a
+narrow card; the name never is. Every control is named `"{verb} {label ?? name}"`
+from `CONTACT_CHANNEL` — "Email Nora Vance", "Open the website of Quillon
+Health" — so an `iconOnly` channel is still named, and a caller cannot ship an
+unnamed one by forgetting a prop. Pass `icon` on a channel to change the glyph;
+the KIND still decides the verb and the word.
+
+The control DRAWS at 32, the size a card wants, and is HIT at 44 through
+`CONTACT_CHANNEL_HIT`, the size a thumb needs.
 
 ## The press target is the identity block, not the card
 
-`onPress` is bound to the avatar and the text, never to the whole surface, and
-the channel actions and the `actions` slot sit outside it.
+`onPress` is bound to the text (and, in a row, the mark with it), never to the
+whole surface; the channels and the `actions` slot sit outside it.
 
 A pressable card wrapping pressable channels is a control inside a control:
-invalid on web (a `<button>` inside a `<button>`), ambiguous on native, and it
-RENDERS FINE either way — the browser does not complain in a way anyone reads,
-and a prop-level test sees two correct components. `ContactProfileCard.test.tsx`
-asserts the containment instead: the subject element contains no element with
-`role="button"`, and no button in the tree has a button ancestor.
+invalid on web, ambiguous on native, and it RENDERS FINE either way — a
+prop-level test sees two correct components. `ContactProfileCard.test.tsx`
+asserts the containment instead.
 
-The identity block is still the largest target on either density, so scoping it
-costs nothing.
+## The numbers come before the labels
 
-## A channel is a CONTROL, not a glyph
+`headline` and `stats` are the shape of the card; the chips are what is left
+over. That order is the claim the card makes, and the suite asserts it by
+document position rather than by looking at the styles — a record is read for
+its figures.
 
-`channels` never renders an address or a number as text, and it never renders a
-bare icon either. Each entry is a `Button` — `variant="secondary" size="small"
-iconOnly` — the same control the reference card puts in its footer, so it
-carries the surface, the border, the hover, the disabled treatment and the
-focus ring every other Bloom action has.
+A tile is the value over what it counts, on the next fill UP from the card
+(`surfaceFillOn`), with its own text rungs read off that tile — `neutral-100` is
+right on white and invisible on a dark card, which is why nothing here names a
+ramp stop.
 
-Bare icons floating on a card surface are not an affordance anywhere else in
-this library. They shipped here once and were the single biggest reason the card
-did not read as Bloom: nothing said the glyph could be pressed, and nothing gave
-a finger anything to hit. `ContactProfileCard.test.tsx` asserts the emitted box —
-a `<button>` with a fill, a border and a height — because a glyph and a control
-both render.
+**`stat-cards` could not express this tile.** `StatCard` is a 132-tall KPI card
+with a mandatory icon tile and a mandatory delta chip, and `StatCards` picks its
+column count from the WINDOW width, so four of them inside a 420-wide record
+card is not a layout that exists. The tile here is `ai-profile-card`'s — value
+over label, a rounded inset panel — on Bloom's radius scale rather than that
+card's raw 10. If the two are ever unified, this is the tile to lift.
 
-The control DRAWS at 32, the size a card wants, and is HIT at 44 through
-`CONTACT_CHANNEL_HIT`, the size a thumb needs. A contact list is a column of
-these, so both numbers have to be true.
+## The chips are ONE line
 
-Each is named `"{verb} {label ?? name}"` from `CONTACT_CHANNEL` — "Email Nora
-Vance", "Call Nora Vance", "Open the website of Quillon Health". The verb lives
-in the table rather than on the entry for two reasons: an icon-only control
-draws no text, so ARIA computes no name for it and one has to be built; and
-building it here means a caller cannot ship an unnamed one by forgetting a prop.
+The last touch, the `facts` and the `tags` are one `ChipRow`, which SCROLLS
+rather than wrapping. A wrapping wall of pills is what the tiles replaced; the
+leftovers of a record take one line, or they take the card over.
 
-Pass `icon` on a channel to change the glyph; the KIND still decides the verb,
-so a custom glyph cannot silently change what the action announces.
-
-## The meta row is one row of OUTLINED chips
-
-The last touch, the `facts` and the `tags` are all short facts about the same
-subject, so they are one wrapped row of `Chip size="medium" variant="outlined"` —
-the reference's criteria row. Three stacked quiet lines is what the card had
-before, and it is why nothing on it read as the subject.
-
-**Outlined, not filled.** A neutral FILLED pill reads as a disabled control:
-Bloom's filled chips are the selected state, and a card full of them says every
-fact has been switched off. Outlined at the `default` tone takes
-`colors.textSecondary` for both the label and the border, which is the pair the
-palette already ships for a quiet token.
-
-`lastTouchTone` is the one exception: with a tone the last-touch chip turns
-`subtle` in that tone, because "41 days ago" IS a state and the card is being
-asked to say so.
+`lastTouchTone` is the one exception to the outline: with a tone the last-touch
+chip turns `subtle` in that tone, because "41 days ago" IS a state and the card
+is being asked to say so. Everything else is `variant="outlined"` — a neutral
+FILLED pill reads as a disabled control.
 
 This card never edits a tag: the INPUT is `tag-field`, a family of its own.
 
@@ -165,8 +180,7 @@ This card never edits a tag: the INPUT is `tag-field`, a family of its own.
 `Avatar` derives a pastel tint from the name unless it is told otherwise, which
 is right in a people LIST — the colour is what tells two rows apart — and wrong
 on a record card, where the subject is already named and the tint reads as a
-status nobody set. So the mark is `color="neutral"`, the quiet disc, at 44 to
-match the reference's icon tile.
+status nobody set. So the mark is `color="neutral"`.
 
 The facepile under a company keeps its tints (`showInitials`): four colleagues
 with no photo would otherwise be four identical grey discs, which is the case
@@ -176,11 +190,10 @@ the tint exists for.
 
 Every colour is read off the fill the content actually lands on, through
 `styles/surface-levels.ts`: the card resolves against `theme.colors.card`, the
-compact row against whatever `useSurfaceFill()` reports. `lastTouch` is the
-quiet chip by default; with `lastTouchTone` it takes that tone's accent PAIR
-through `resolveAccentColors` — never the fill colour with an alpha appended to
-it, which is the failure `docs/badge.mdx` describes.
+compact row against whatever `useSurfaceFill()` reports, and a tile against the
+step above whichever of those it is. The cover wash and the delta pill come from
+`resolveAccentColors` — the tone's PAIR, never the fill colour with an alpha
+appended to it, which is the failure `docs/badge.mdx` describes.
 
 The comfortable card publishes its own fill with `SurfaceLevelProvider`, so
-anything nested inside it (a meter, a second row, a menu) steps off the card
-rather than off the page.
+anything nested inside it steps off the card rather than off the page.

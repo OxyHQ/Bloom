@@ -1,6 +1,6 @@
 ---
 title: LeadScoreCard
-description: How good a lead is and why — a score with its band drawn as a ring, the factors that make it up, and the trend against last period.
+description: How good a lead is and why — the verdict and the score on a tinted panel, and the factors that make it up on a neutral one.
 order: 126
 ---
 
@@ -15,46 +15,102 @@ import { LeadScoreCard } from '@oxy.so/bloom';
   valueText="82 of 100, hot"
   factors={[
     { label: 'Fits the ideal profile', contribution: 24, detail: 'Logistics, 200–500 people' },
-    { label: 'No decision-maker identified', contribution: -9 },
+    { label: 'No decision-maker', contribution: -9, detail: 'One contact, no budget owner' },
   ]}
   trend={{ label: '+8 against last week', direction: 'up' }}
 />
 ```
 
-## One measured language
+## Two panels in one card
 
-The ring is `stat-bar`'s `MeterRing` and every factor bar is its `Meter`, and
-both fill with the ACCENT over the shared neutral rail. `NeighbourhoodScores` is
-the reference and the `BesideTheReference` story puts the two in one shot: same
-bar, same rail, same label / value / bar / description row, 24 between rows.
+It is drawn the way Bloom draws a SCORE — `chart-cards`' `SleepScoreCard` is the
+register, and the `BesideTheReference` story puts the two in one shot at the
+same width:
 
-**That is what a meter means in Bloom: how much of one thing there is.** Status
-colours say something else. A green ring claims "healthy", which is not the
-claim "82 of 100" makes, and five saturated green and red bars stacked down a
-card is a chart pretending to be a measurement — a CHART is what colours by
-WHICH datum it is (`chart-cards/palette.ts`), and these bars are all the same
-datum at different sizes.
+| panel | what it holds |
+| --- | --- |
+| header | washed in the band's tone: the quiet `body-medium` label over the `title-1-medium` verdict with the band's glyph, the trend as a quiet icon-and-label line, and the ring — 132 across, CENTRED, the score at `display-4-medium` inside it |
+| factors | neutral, padded on the LEFT only so the rules run to its right edge: one row per factor — a 10 mark, the label and its detail as one reading line, and the signed contribution right-aligned and tabular |
 
-So the DIRECTION is carried by the sign, which is printed beside every bar
-(`+24`, `-9`) and announced in its `aria-valuetext`. A negative bar fills with
-the quiet graphical neutral instead of the accent — enough to see at a glance
-which factors pull down, without a second saturated colour.
+The card itself is 10 padding and a 10 gap; both panels take `radius-16` inside
+its `radius-20`.
 
-**That neutral is read off the RAIL, not picked.** `resolveLeadScorePaint`
-derives it with `surfaceTextOn(theme, track).textGraphical`, the rung that
-clears 3:1 against the fill it lands on. `chart-cards`' `neutralSeries` is the
-obvious candidate and is the wrong one: it is `neutral-800` in dark, which is
-the rail's own colour there, and the bar would disappear.
+## There are no bars
 
-Neither is a stylistic preference: `stat-bar` owns the geometry, the rail and
-the FLAT `aria-value*` props, and seventeen hand-rolled copies in this repo
-disagreed about all three before it existed.
+Every factor used to be a `Meter`. Five bars stacked down a card is a chart
+pretending to be a measurement — a CHART colours by WHICH datum it is, and these
+are all the same datum at different sizes — and it was the single thing that
+made this card read as a dashboard from another product rather than as Bloom.
 
-The accessibility half is the one that matters most here. react-native-web reads
-`aria-*` and never `accessibilityValue`, so a ring that set only the object
-announces its role and no value — in a screenshot, in a browser and in a
-prop-level test it looks perfect. `LeadScore.test.tsx` reads the emitted
-`aria-valuenow` / `aria-valuemin` / `aria-valuemax` / `aria-valuetext` instead.
+A contribution is a NUMBER. It is printed (`+24`, `-9`), it is tabular so the
+column lines up, and the MARK beside the label says which way it pulls: the
+accent for a factor that pushes the score up, the quiet graphical neutral for
+one that pulls it down. Five bars also announced `progressbar` five more times;
+`LeadScore.test.tsx` now asserts that the card emits exactly ONE, and that it is
+the ring.
+
+The one measurement on the card is the score, and it is a ring, because there is
+one of it.
+
+## The ring
+
+`MeterRing` from `stat-bar` owns the geometry and the FLAT `aria-value*` props.
+The arc is the meter's own accent fill whatever band the score falls in: that is
+what a meter means in Bloom — how much of one thing there is. A green ring
+claims "healthy", which is not the claim "82 of 100" makes.
+
+**The TRACK is read off the header wash, not from `stat-bar`'s default rail.**
+That rail is a neutral computed for the page; on a tinted panel it reads as a
+foreign grey ring rather than as the empty part of this one. `resolveLeadScorePaint`
+takes it from `hairlineOn(theme, header)`.
+
+It is 132 across, centred, with the number at `display-4-medium` — larger than
+the verdict word beside it. At 72 in a corner it was a widget, and the one fact
+the card exists to state was smaller than the label.
+
+## The tint is FLATTENED before anything is derived from it
+
+The header is `resolveAccentColors(colors, tone, 'subtle').background` —
+composited over the card, not painted raw.
+
+The `*Subtle` members are `rgba()` on purpose, and painting one renders
+correctly. What does not work is DERIVING off it: every reader in
+`styles/color-contrast.ts` treats a colour as opaque, so a text rung or a
+hairline read from `rgba(16 185 129 / 0.24)` is computed against solid emerald
+and lands on a panel that is nothing like it. Measured here before the flatten:
+the header's secondary label came back at **1.96:1** against its own panel in
+dark mode, and the card rendered perfectly.
+
+So `flattenOver` composites the tint ONCE (parse-and-re-emit, the same move
+`chip/hue-colors.ts` makes for a translucent hue), the panel paints the
+flattened colour, and every rung is read off that — the two can then never
+disagree. Flattened, the worst secondary label over the whole
+`preset × mode × band` sweep measures 6.1:1.
+
+Both panels publish themselves with `SurfaceLevelProvider` and
+`surfaceFillVars`, so anything nested inside either one steps off the right
+parent.
+
+## The band is the VERDICT, and it is the tint
+
+`cold` / `warm` / `hot` map to the `info` / `warning` / `success` tones in
+`LEAD_SCORE_BAND`. The tone paints the header wash and the band's glyph; the
+word beside it is the reading colour of that wash. A pill saying the same word
+would say it twice.
+
+**`hot` is the SUCCESS tone, not the error one.** A hot lead is the good
+outcome; reading temperature as danger is exactly the confusion a tone
+vocabulary exists to prevent.
+
+The band is DERIVED from the score as a fraction of `max`
+(`LEAD_SCORE_THRESHOLDS`: warm at 0.4, hot at 0.7), so a 0–100 score and a 0–5
+one land in the same places. Boundaries are inclusive upward — exactly 0.4 is
+warm — because a score sitting on a threshold has reached it. An app with its
+own thresholds passes `band`, which moves the WASH with it; `bandLabel` renames
+the verdict without changing the tone.
+
+A non-positive `max` has no scale to divide, so the band is `cold` rather than
+`NaN`: the card renders data it did not choose instead of throwing over it.
 
 ## The name is a required prop
 
@@ -67,65 +123,31 @@ heading beside the ring does not name it either; that is a SIBLING.
 `82` of `100` is announced as a percentage, which is right by accident here and
 wrong the moment `max` is 5.
 
-## The band is the VERDICT
-
-The hierarchy is `SleepScoreCard`'s: a quiet `body-medium` label ("Lead score")
-over a `title-1-medium` verdict ("Hot"), the trend as a quiet icon-and-label
-line under it, and the measurement as a 72 ring on the right carrying the score
-over its scale.
-
-The band's GLYPH is the one tinted mark on the card. A pill beside the word
-would say the same thing twice, and three tinted things in one header — a pill,
-a ring and a trend — is the "another product's dashboard" look this card had.
-The trend line is therefore quiet: the ARROW carries the direction.
-
-`cold` / `warm` / `hot` map to the `info` / `warning` / `success` tones in
-`LEAD_SCORE_BAND`, and that colour comes from `resolveAccentColors`. The card
-names no red and no orange: those would be right in one preset and wrong in the
-other sixty-three, and in dark mode they would be wrong in all of them.
-
-**`hot` is the SUCCESS tone, not the error one.** A hot lead is the good
-outcome; reading temperature as danger is exactly the confusion a tone
-vocabulary exists to prevent.
-
-The band is DERIVED from the score as a fraction of `max`
-(`LEAD_SCORE_THRESHOLDS`: warm at 0.4, hot at 0.7), so a 0–100 score and a 0–5
-one land in the same places. Boundaries are inclusive upward — exactly 0.4 is
-warm — because a score sitting on a threshold has reached it. An app with its
-own thresholds passes `band` and skips the derivation; `bandLabel` renames the
-pill without changing the tone.
-
-A non-positive `max` has no scale to divide, so the band is `cold` rather than
-`NaN`: the card renders data it did not choose instead of throwing over it.
+react-native-web reads `aria-*` and never `accessibilityValue`, so a ring that
+set only the object announces its role and no value — in a screenshot, in a
+browser and in a prop-level test it looks perfect. `LeadScore.test.tsx` reads
+the emitted attributes instead.
 
 ## The factors
 
-Each factor is a signed contribution. The BAR measures the magnitude; the sign
-lives in the text beside it and in the tone of the fill — positive in the
-positive tone, negative in the negative one.
+Each factor is a signed contribution. `factorLine` joins the label and its
+`detail` into ONE string, because the row truncates as a sentence: two
+independently shrinking texts drop the label to "Fits the ide…" while the detail
+beside it still has room.
 
-The row is the reference's: the label at `body-medium` with the signed points
-right-aligned at `body-semibold` (tabular, so the column lines up), a 6-tall
-`Meter` under it, and the detail at `body-2-regular` in the secondary rung.
+A zero factor draws a row with `0` in it rather than being hidden: "this counted
+for nothing" is a fact about the lead. The signed number is printed in the
+READING colour, not a status one — the sign is what says which way it went, and
+a red `-9` beside a grey mark would be two spellings of one fact.
 
-**All the bars share one scale**: the largest absolute contribution in the set,
-floored at 1 (`factorScale`). Normalising each bar to itself would draw a `+2`
-and a `+30` at the same length, which is the one thing a row of bars is read
-for. Each bar announces its signed value as `aria-valuetext` ("−9 points"), so
-the sign is not carried by colour alone.
-
-A zero factor draws an empty bar rather than being hidden: "this counted for
-nothing" is a fact about the lead.
-
-The signed number is printed in the READING colour, not in a status one. The
-sign is what says which way it went, and a red `-9` beside a grey bar would be
-two spellings of one fact.
+`factorsLabel` is the panel's header row, above the first factor and sharing its
+rule.
 
 ## The trend
 
 `trend` is a pre-formatted label plus a direction. The card does no arithmetic
 and does not know what "last period" means — a week, a quarter, since the deal
 opened — so it draws what it is handed with the direction's arrow, as a quiet
-line in the secondary rung. `LEAD_SCORE_TREND` carries the glyph and nothing
-else: the arrow is the direction, and the card keeps one tinted mark rather than
-three competing ones.
+line on the wash. `LEAD_SCORE_TREND` carries the glyph and nothing else: the
+arrow is the direction, and the card keeps one tinted thing rather than three
+competing ones.
