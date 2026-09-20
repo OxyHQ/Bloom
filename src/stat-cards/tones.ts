@@ -2,7 +2,6 @@ import {
   ACCENT_TABLE,
   DANGER_TABLE,
   colorRamp,
-  mixColor,
   resolveButtonRamps,
   type Ramp,
 } from '../button/shared';
@@ -116,38 +115,19 @@ export function toneColor(theme: Theme, tone: DashboardTone, stop: ToneStop): st
   return roleRamp(theme, tone)[stop];
 }
 
-/**
- * The `status-lime` / `status-rose` pair over a known surface:
- * light `200` fill with `800` text, dark `950` at 60% with `500` text.
- */
+/** Canonical status pairs; the foreground is authored with its subtle fill. */
 export function statusPair(
   theme: Theme,
   tone: 'lime' | 'rose',
-  surface: string,
+  _surface: string,
 ): { background: string; foreground: string } {
-  const ramp = roleRamp(theme, tone);
-  return theme.isDark
-    ? { background: mixColor(surface, ramp[950], 0.6), foreground: ramp[500] }
-    : { background: ramp[200], foreground: ramp[800] };
+  const c = theme.colors;
+  return tone === 'lime'
+    ? { background: c.successSubtle, foreground: c.successSubtleForeground }
+    : { background: c.errorSubtle, foreground: c.errorSubtleForeground };
 }
 
-/**
- * The surface tokens a dashboard card is built from, on Bloom's ramps:
- *
- *                               light          dark
- *   background-secondary        neutral-100    neutral-900
- *   background-inner            white (card)   neutral-800 @60% over the card
- *   background-primary          white (card)   neutral-800
- *   stat-card-icon-background   white (card)   neutral-800
- *   avatar-neutral-background   neutral-300    neutral-800
- *   border-button-default       neutral-200    neutral-700
- *   text-primary                text           text
- *   text-secondary              neutral-500    neutral-500
- *   foreground-icon-primary     text           text
- *   foreground-icon-secondary   neutral-500    neutral-500
- *   border-focus-ring           accent-500     accent-500
- *   shadow-card                 0 1 1 black/5  0 1 1 black/14
- */
+/** Shared dashboard chrome follows canonical theme roles, independent of data hues. */
 export interface DashboardSurfaces {
   secondary: string;
   inner: string;
@@ -163,20 +143,18 @@ export interface DashboardSurfaces {
 }
 
 export function resolveDashboardSurfaces(theme: Theme): DashboardSurfaces {
-  const { accent, neutral: n } = resolveButtonRamps(theme);
-  const secondary = theme.isDark ? n[900] : n[100];
-  const white = theme.colors.card;
+  const c = theme.colors;
   return {
-    secondary,
-    inner: theme.isDark ? mixColor(secondary, n[800], 0.6) : white,
-    primary: theme.isDark ? n[800] : white,
-    iconTile: theme.isDark ? n[800] : white,
-    avatarNeutral: theme.isDark ? n[800] : n[300],
-    buttonBorder: theme.isDark ? n[700] : n[200],
-    text: theme.colors.text,
-    textSecondary: n[500],
-    iconSecondary: n[500],
-    focusRing: accent[500],
+    secondary: c.card,
+    inner: c.backgroundSecondary,
+    primary: c.card,
+    iconTile: c.backgroundTertiary,
+    avatarNeutral: c.backgroundTertiary,
+    buttonBorder: c.borderLight,
+    text: c.text,
+    textSecondary: c.textSecondary,
+    iconSecondary: c.textSecondary,
+    focusRing: c.primary,
     cardShadow: theme.isDark ? '0 1px 1px 0 rgb(0 0 0 / 0.14)' : '0 1px 1px 0 rgb(0 0 0 / 0.05)',
   };
 }

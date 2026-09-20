@@ -73,15 +73,15 @@ const restRing = (btn: HTMLElement): string => btn.style.getPropertyValue('--blo
 
 describe('FrostedIconButton.web', () => {
   it('renders a real <button> with the accessible label', () => {
-    const c = mount(<FrostedIconButton accessibilityLabel="Back" icon={<span>x</span>} />);
+    const c = mount(<FrostedIconButton accessibilityLabel="Back" icon={(iconProps) => <span {...iconProps}>x</span>} />);
     const btn = getByRole(c, 'button', { name: 'Back' });
     expect(btn.tagName).toBe('BUTTON');
     expect(btn).toHaveClass('bloom-frosted-icon-btn');
   });
 
   it('self-injects its interaction stylesheet once', () => {
-    mount(<FrostedIconButton accessibilityLabel="Back" icon={<span>x</span>} />);
-    mount(<FrostedIconButton accessibilityLabel="Fwd" icon={<span>y</span>} />);
+    mount(<FrostedIconButton accessibilityLabel="Back" icon={(iconProps) => <span {...iconProps}>x</span>} />);
+    mount(<FrostedIconButton accessibilityLabel="Fwd" icon={(iconProps) => <span {...iconProps}>y</span>} />);
     expect(document.querySelectorAll('#bloom-frosted-icon-button-web-css')).toHaveLength(1);
   });
 
@@ -90,7 +90,7 @@ describe('FrostedIconButton.web', () => {
   // LIGHT tint that reads as a distinct, clearly-lighter circle on rgb(11,11,15).
   describe('reads on a solid dark background (nothing behind it)', () => {
     it('uses a low-opacity LIGHT tint distinguishable from the page', () => {
-      const c = mount(<FrostedIconButton accessibilityLabel="Back" icon={<span>x</span>} />);
+      const c = mount(<FrostedIconButton accessibilityLabel="Back" icon={(iconProps) => <span {...iconProps}>x</span>} />);
       const btn = getByRole(c, 'button');
       const surface = restSurface(btn);
 
@@ -114,7 +114,7 @@ describe('FrostedIconButton.web', () => {
     });
 
     it('renders a hairline ring and a shadow that survive dark mode', () => {
-      const c = mount(<FrostedIconButton accessibilityLabel="Back" icon={<span>x</span>} />);
+      const c = mount(<FrostedIconButton accessibilityLabel="Back" icon={(iconProps) => <span {...iconProps}>x</span>} />);
       const btn = getByRole(c, 'button');
       // Ring: a translucent border COLOR is present as a per-instance token.
       expect(restRing(btn)).toMatch(/^rgba\(/);
@@ -133,14 +133,14 @@ describe('FrostedIconButton.web', () => {
     it('emits a real CSS backdrop-filter blur when frosted (and drops it when active)', () => {
       const frosted = renderToStaticMarkup(
         <BloomThemeProvider mode="dark" colorPreset="blue">
-          <FrostedIconButton accessibilityLabel="Back" icon={<span>x</span>} />
+          <FrostedIconButton accessibilityLabel="Back" icon={(iconProps) => <span {...iconProps}>x</span>} />
         </BloomThemeProvider>,
       );
       expect(frosted).toMatch(/backdrop-filter:\s*blur\(\d+px\)/);
 
       const active = renderToStaticMarkup(
         <BloomThemeProvider mode="dark" colorPreset="blue">
-          <FrostedIconButton accessibilityLabel="Back" active icon={<span>x</span>} />
+          <FrostedIconButton accessibilityLabel="Back" checked icon={(iconProps) => <span {...iconProps}>x</span>} />
         </BloomThemeProvider>,
       );
       // Active is solid: no blur (either absent or explicitly "none").
@@ -150,7 +150,7 @@ describe('FrostedIconButton.web', () => {
 
   describe('active (solid "on") state', () => {
     it('fills opaque (no rgba alpha), drops the blur, and sets aria-pressed', () => {
-      const c = mount(<FrostedIconButton accessibilityLabel="Mute" active icon={<span>x</span>} />);
+      const c = mount(<FrostedIconButton accessibilityLabel="Mute" checked icon={(iconProps) => <span {...iconProps}>x</span>} />);
       const btn = getByRole(c, 'button');
       // Opaque solid fill — an `rgb(...)` (not translucent `rgba`).
       expect(restSurface(btn)).toMatch(/^rgb\(/);
@@ -162,7 +162,7 @@ describe('FrostedIconButton.web', () => {
     });
 
     it('reports aria-pressed=false when not active', () => {
-      const c = mount(<FrostedIconButton accessibilityLabel="Mute" icon={<span>x</span>} />);
+      const c = mount(<FrostedIconButton accessibilityLabel="Mute" icon={(iconProps) => <span {...iconProps}>x</span>} />);
       expect(getByRole(c, 'button')).toHaveAttribute('aria-pressed', 'false');
     });
   });
@@ -170,7 +170,7 @@ describe('FrostedIconButton.web', () => {
   describe('icon color', () => {
     it('injects the theme icon color as a fallback fill on a bare icon', () => {
       const c = mount(
-        <FrostedIconButton accessibilityLabel="Back" icon={<svg data-testid="ic" />} />,
+        <FrostedIconButton accessibilityLabel="Back" icon={(iconProps) => <svg {...iconProps} data-testid="ic" />} />,
       );
       const icon = c.querySelector('[data-testid="ic"]');
       expect(icon?.getAttribute('fill')).toMatch(/^rgb/);
@@ -180,7 +180,7 @@ describe('FrostedIconButton.web', () => {
       const c = mount(
         <FrostedIconButton
           accessibilityLabel="Back"
-          icon={<svg data-testid="ic" fill="rgb(1, 2, 3)" />}
+          icon={(iconProps) => <svg {...iconProps} data-testid="ic" fill="rgb(1, 2, 3)" />}
         />,
       );
       expect(c.querySelector('[data-testid="ic"]')?.getAttribute('fill')).toBe('rgb(1, 2, 3)');
@@ -190,7 +190,7 @@ describe('FrostedIconButton.web', () => {
   describe('light theme', () => {
     it('uses a subtle DARK tint (base near-black) distinguishable from a white page', () => {
       const c = mount(
-        <FrostedIconButton accessibilityLabel="Back" icon={<span>x</span>} />,
+        <FrostedIconButton accessibilityLabel="Back" icon={(iconProps) => <span {...iconProps}>x</span>} />,
         'light',
       );
       const surface = restSurface(getByRole(c, 'button'));
@@ -212,7 +212,7 @@ describe('FrostedIconButton.web', () => {
           accessibilityLabel="Back"
           onClick={onClick}
           onPress={onPress}
-          icon={<span>x</span>}
+          icon={(iconProps) => <span {...iconProps}>x</span>}
         />,
       );
       act(() => {
@@ -225,7 +225,7 @@ describe('FrostedIconButton.web', () => {
     it('does not fire handlers when disabled', () => {
       const onPress = jest.fn();
       const c = mount(
-        <FrostedIconButton accessibilityLabel="Back" disabled onPress={onPress} icon={<span>x</span>} />,
+        <FrostedIconButton accessibilityLabel="Back" disabled onPress={onPress} icon={(iconProps) => <span {...iconProps}>x</span>} />,
       );
       const btn = getByRole(c, 'button');
       expect(btn).toBeDisabled();
@@ -236,9 +236,9 @@ describe('FrostedIconButton.web', () => {
     });
 
     it('applies preset sizes (md = 36px, sm = 32px)', () => {
-      const c = mount(<FrostedIconButton accessibilityLabel="Back" size="md" icon={<span>x</span>} />);
+      const c = mount(<FrostedIconButton accessibilityLabel="Back" size="md" icon={(iconProps) => <span {...iconProps}>x</span>} />);
       expect(getByRole(c, 'button').style.width).toBe('36px');
-      const c2 = mount(<FrostedIconButton accessibilityLabel="Back" size="sm" icon={<span>x</span>} />);
+      const c2 = mount(<FrostedIconButton accessibilityLabel="Back" size="sm" icon={(iconProps) => <span {...iconProps}>x</span>} />);
       expect(getByRole(c2, 'button').style.width).toBe('32px');
     });
 
@@ -247,7 +247,7 @@ describe('FrostedIconButton.web', () => {
       const c = mount(
         <FrostedIconButton
           accessibilityLabel="Back"
-          icon={<span>x</span>}
+          icon={(iconProps) => <span {...iconProps}>x</span>}
           style={[{ marginTop: 8 }, showBorder && { borderColor: 'rgb(9, 9, 9)' }]}
         />,
       );

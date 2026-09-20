@@ -1,3 +1,4 @@
+import { boundedLabelSlot } from '../svg-text';
 import React, { useCallback, useMemo, useState } from 'react';
 import {
   Platform,
@@ -229,12 +230,11 @@ export function CartesianPlot({
               pointerEvents="none"
               style={{
                 position: 'absolute',
-                left: box.left - TICK_SIZE - Y_TICK_MARGIN - LABEL_SLOT,
+                ...boundedLabelSlot(size.width, box.left - TICK_SIZE - Y_TICK_MARGIN, 'end', LABEL_SLOT),
                 top: tick.y + Y_LABEL_TOP_OFFSET,
-                width: LABEL_SLOT,
                 alignItems: 'flex-end',
               }}>
-              <Text numberOfLines={1} style={[Y_TICK_TYPE, tickColor]}>
+              <Text numberOfLines={1} style={[Y_TICK_TYPE, tickColor, { maxWidth: '100%' }]}>
                 {formatYTick(tick.value)}
               </Text>
             </View>
@@ -248,15 +248,14 @@ export function CartesianPlot({
                 pointerEvents="none"
                 style={{
                   position: 'absolute',
-                  left: (placed?.tickCoord ?? labelX(i, box)) - LABEL_SLOT / 2,
+                  ...boundedLabelSlot(size.width, placed?.tickCoord ?? size.width / 2, 'middle', LABEL_SLOT),
                   top: box.bottom + X_LABEL_TOP_OFFSET,
-                  width: LABEL_SLOT,
-                  alignItems: 'center',
+                    alignItems: 'center',
                   opacity: placed ? 1 : 0,
                 }}>
                 <Text
                   numberOfLines={1}
-                  style={[X_TICK_TYPE, tickColor]}
+                  style={[X_TICK_TYPE, tickColor, { maxWidth: '100%' }]}
                   onLayout={(event) => {
                     const w = event.nativeEvent.layout.width;
                     setLabelWidths((prev) => (prev[key] === w ? prev : { ...prev, [key]: w }));

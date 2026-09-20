@@ -1,3 +1,4 @@
+import { useArgs } from 'storybook/preview-api';
 import React, { useState } from 'react';
 import { View } from 'react-native';
 import type { Meta, StoryObj } from '@storybook/react-vite';
@@ -5,10 +6,19 @@ import type { Meta, StoryObj } from '@storybook/react-vite';
 import { RiCheckLine } from '../icons/remix';
 import { Text } from '../typography';
 import { useTheme } from '../theme/use-theme';
-import type { AccentFill, AccentTone } from '../theme/accent-colors';
+import type { BloomAppearance, BloomTone } from '../appearance';
 import { Chip, type ChipHue } from './index';
 
 const meta: Meta<typeof Chip> = {
+  argTypes: {
+    "appearance": { control: 'select', options: ["solid","subtle","outline","plain"] },
+    "tone": { control: 'select', options: ['neutral', 'accent', 'support', 'action', 'success', 'warning', 'danger', 'info'] },
+    "hue": { control: 'select', options: ["neutral","blue","lime","rose","yellow","cyan","purple","gray","soft"] },
+    "surface": { control: 'text' },
+    "size": { control: 'select', options: ["xs","sm","md","lg"] },
+    "checked": { control: 'boolean' },
+    "disabled": { control: 'boolean' }
+  },
   title: 'Base/Chip',
   component: Chip,
 };
@@ -17,8 +27,8 @@ export default meta;
 
 type Story = StoryObj<typeof Chip>;
 
-const TONES: AccentTone[] = ['default', 'primary', 'success', 'warning', 'error', 'info'];
-const FILLS: AccentFill[] = ['solid', 'subtle', 'outlined'];
+const TONES: BloomTone[] = ['neutral', 'accent', 'support', 'action', 'success', 'warning', 'danger', 'info'];
+const FILLS: BloomAppearance[] = ['solid', 'subtle', 'outline'];
 
 /**
  * Tone × fill. The colours come from `theme/accent-colors.ts`, the one resolver
@@ -28,12 +38,13 @@ const FILLS: AccentFill[] = ['solid', 'subtle', 'outlined'];
  * and unreadable.
  */
 export const Tones: Story = {
+  parameters: { controls: { disable: true } },
   render: () => (
     <View style={{ gap: 12 }}>
       {FILLS.map((variant) => (
         <View key={variant} style={{ flexDirection: 'row', gap: 8, flexWrap: 'wrap' }}>
           {TONES.map((color) => (
-            <Chip key={color} variant={variant} color={color} testID={`chip-${variant}-${color}`}>
+            <Chip key={color} appearance={variant} tone={color} testID={`chip-${variant}-${color}`}>
               {`${variant}/${color}`}
             </Chip>
           ))}
@@ -52,11 +63,12 @@ const HUES: ChipHue[] = ['lime', 'rose', 'yellow', 'cyan', 'blue', 'purple', 'ne
  * the page background; `surface` names another one.
  */
 export const Hues: Story = {
+  parameters: { controls: { disable: true } },
   render: function HueChips() {
     const theme = useTheme();
     return (
       <View style={{ gap: 12, padding: 16, backgroundColor: theme.colors.background }}>
-        {(['medium', 'large', 'small'] as const).map((size) => (
+        {(['md', 'lg', 'sm'] as const).map((size) => (
           <View key={size} style={{ flexDirection: 'row', gap: 8, flexWrap: 'wrap' }}>
             {HUES.map((hue) => (
               <Chip key={hue} size={size} hue={hue} testID={`chip-hue-${size}-${hue}`}>
@@ -71,28 +83,30 @@ export const Hues: Story = {
 };
 
 export const Sizes: Story = {
+  parameters: { controls: { disable: true } },
   render: () => (
     <View style={{ flexDirection: 'row', gap: 8, alignItems: 'center' }}>
-      <Chip size="small">Small</Chip>
-      <Chip size="medium">Medium</Chip>
-      <Chip size="large">Large</Chip>
+      <Chip size="sm">Small</Chip>
+      <Chip size="md">Medium</Chip>
+      <Chip size="lg">Large</Chip>
     </View>
   ),
 };
 
 /** Icons inside the pill are sized to the pill, not to whatever was passed. */
 export const WithIcons: Story = {
+  parameters: { controls: { disable: true } },
   render: function IconChips() {
     const theme = useTheme();
     return (
       <View style={{ flexDirection: 'row', gap: 8, alignItems: 'center' }}>
-        <Chip size="small" startIcon={<RiCheckLine width={16} height={16} fill={theme.colors.text} />}>
+        <Chip size="sm" leading={<RiCheckLine width={16} height={16} fill={theme.colors.text} />}>
           Small
         </Chip>
-        <Chip size="medium" startIcon={<RiCheckLine width={16} height={16} fill={theme.colors.text} />}>
+        <Chip size="md" leading={<RiCheckLine width={16} height={16} fill={theme.colors.text} />}>
           Medium
         </Chip>
-        <Chip size="large" startIcon={<RiCheckLine width={16} height={16} fill={theme.colors.text} />}>
+        <Chip size="lg" leading={<RiCheckLine width={16} height={16} fill={theme.colors.text} />}>
           Large
         </Chip>
       </View>
@@ -108,6 +122,7 @@ export const WithIcons: Story = {
  * keyboard-only, so a mouse click leaves none.
  */
 export const Selectable: Story = {
+  parameters: { controls: { disable: true } },
   render: function SelectableChips() {
     const [selected, setSelected] = useState<string[]>(['news']);
     const toggle = (id: string) =>
@@ -122,8 +137,8 @@ export const Selectable: Story = {
             <Chip
               key={id}
               testID={`chip-${id}`}
-              variant="subtle"
-              selected={selected.includes(id)}
+              appearance="subtle"
+              checked={selected.includes(id)}
               onPress={() => toggle(id)}>
               {id}
             </Chip>
@@ -139,20 +154,21 @@ export const Selectable: Story = {
  * control inside the pill; `onPress` makes the body pressable.
  */
 export const Removable: Story = {
+  parameters: { controls: { disable: true } },
   render: function RemovableChips() {
     const [tags, setTags] = useState(['design', 'react-native', 'accessibility']);
     return (
-      <View style={{ flexDirection: 'row', gap: 8, flexWrap: 'wrap', width: 380 }}>
+      <View style={{ maxWidth: '100%', flexDirection: 'row', gap: 8, flexWrap: 'wrap', width: 380 }}>
         {tags.map((tag) => (
           <Chip
             key={tag}
-            color="primary"
-            variant="subtle"
+            tone="accent"
+            appearance="subtle"
             onClose={() => setTags((t) => t.filter((x) => x !== tag))}>
             {tag}
           </Chip>
         ))}
-        {tags.length === 0 ? <Chip variant="outlined">nothing left</Chip> : null}
+        {tags.length === 0 ? <Chip appearance="outline">nothing left</Chip> : null}
       </View>
     );
   },
@@ -164,6 +180,7 @@ export const Removable: Story = {
  * into an ellipsis.
  */
 export const DoesNotShrink: Story = {
+  parameters: { controls: { disable: true } },
   render: () => (
     <View style={{ width: 240, flexDirection: 'row', gap: 8, overflow: 'hidden' }}>
       <Chip>A long-ish label</Chip>
@@ -174,14 +191,21 @@ export const DoesNotShrink: Story = {
 };
 
 export const Disabled: Story = {
+  parameters: { controls: { disable: true } },
   render: () => (
     <View style={{ flexDirection: 'row', gap: 8 }}>
       <Chip disabled onPress={() => {}}>
         Disabled
       </Chip>
-      <Chip disabled variant="solid" color="primary" onPress={() => {}}>
+      <Chip disabled appearance="solid" tone="accent" onPress={() => {}}>
         Disabled
       </Chip>
     </View>
   ),
+};
+
+/** Edit the props in Controls; interactive state stays in sync. */
+export const Playground: Story = {
+  args: { children: 'Notifications', size: 'md', tone: 'accent', appearance: 'subtle', checked: false, disabled: false },
+  render: function PlaygroundChip(args) { const [, updateArgs] = useArgs(); return <Chip {...args} onCheckedChange={(checked) => updateArgs({ checked })} />; },
 };

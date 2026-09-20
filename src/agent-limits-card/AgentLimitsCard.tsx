@@ -18,7 +18,7 @@ import Animated, {
   withTiming,
 } from 'react-native-reanimated';
 
-import { ACCENT_TABLE, colorRamp, mixColor, resolveButtonRamps } from '../button/shared';
+import { ACCENT_TABLE, colorRamp, resolveButtonRamps } from '../button/shared';
 import { RiArrowDownSLine, RiArrowRightLine, RiArrowRightSLine } from '../icons/remix';
 import { Text, TYPE_SCALE } from '../typography';
 import { useControllableState } from '../hooks/use-controllable-state';
@@ -129,49 +129,16 @@ function chartPalette(accent400: string): string[] {
   });
 }
 
-/**
- * Semantic tokens onto Bloom's ramps (`button/shared`):
- *
- *                              light           dark
- *   background-secondary       neutral-100     neutral-900
- *   background-secondary-hover neutral-200     neutral-800
- *   text-primary               text            text
- *   text-secondary             neutral-500     neutral-500
- *   text-tertiary              neutral-400     neutral-600
- *   separator-border-strong    neutral-200     neutral-700 @60% over the card
- *   chart-track                neutral-200     neutral-800
- *   chart-cursor (deferred)    neutral-300     neutral-700
- *   chart-6 (limit fill)       accent-400      accent-400
- *   border-focus-ring          accent-500      accent-500
- */
+/** Canonical theme surfaces, foregrounds and focus roles. */
 function resolvePalette(theme: Theme): CardPalette {
-  const { accent, neutral: n } = resolveButtonRamps(theme);
-  const shared = {
-    text: theme.colors.text,
-    textSecondary: n[500],
-    limitFill: accent[400],
-    ring: accent[500],
-    chart: chartPalette(colorRamp(theme.colors.primary, ACCENT_TABLE)[400]),
+  const c = theme.colors;
+  return {
+    text: c.text, textSecondary: c.textSecondary, textTertiary: c.textTertiary,
+    limitFill: resolveButtonRamps(theme).accent[400], ring: c.primary,
+    chart: chartPalette(colorRamp(c.primary, ACCENT_TABLE)[400]),
+    surface: c.card, hover: c.backgroundSecondary,
+    separator: c.borderLight, track: c.backgroundTertiary, deferred: c.border,
   };
-  return theme.isDark
-    ? {
-        ...shared,
-        surface: n[900],
-        hover: n[800],
-        textTertiary: n[600],
-        separator: mixColor(n[900], n[700], 0.6),
-        track: n[800],
-        deferred: n[700],
-      }
-    : {
-        ...shared,
-        surface: n[100],
-        hover: n[200],
-        textTertiary: n[400],
-        separator: n[200],
-        track: n[200],
-        deferred: n[300],
-      };
 }
 
 // ---------------------------------------------------------------------------

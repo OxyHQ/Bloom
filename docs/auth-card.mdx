@@ -65,12 +65,12 @@ Fills its (positioned) parent and advances on its own, every `interval` ms (3200
 
 | Part | Value |
 | --- | --- |
-| Card | max 400 (split 880), radius 24, 1px `border-button-default`, `shadow-xs`; padding 24, 32 from `sm` (640) |
-| Surface | light `card`; dark neutral-900 (`background-secondary`) |
+| Card | max 400 (split 880), radius 24, 1px `colors.borderLight`, `shadow-xs`; padding 24, 32 from `sm` (640) |
+| Surface | `colors.card` in both modes |
 | Mark | 20 below |
 | Heading | `title-2-medium` / `body-regular` text-secondary, 6 apart |
-| Form | 24 below the heading, fields 16 apart; CTA primary medium, full width |
-| Links | `body-medium` accent-600 (accent-800 pressed), underlined on hover, offset 3 |
+| Form | 24 below the heading, fields 16 apart; CTA `tone="action"`, `size="md"`, full width |
+| Links | `body-medium` `colors.primarySubtleForeground` (including pressed), underlined on hover, offset 3 |
 | Divider | 20 above and below |
 | Footer | 24 below, centred |
 
@@ -85,3 +85,5 @@ Fills its (positioned) parent and advances on its own, every `interval` ms (3200
 - Provider buttons and the CTA are full pills (Bloom's button radius rule).
 - The default sign-up description is generic ("Start building in a couple of minutes.").
 - `translateZ` has no React Native equivalent: the carousel expresses the depth as the projection it produces (`perspective(850) translateX(t·k) scale(k)`, k = 850/1070), which is exact and runs on native.
+
+The auth palette reads `card`, `backgroundSecondary`, `borderLight`, `textSecondary`, and `textTertiary` directly from the theme. Focus uses `primary`; links use its legible subtle foreground. The submit action uses `tone="action"`; social-provider logos retain their own brand colors.

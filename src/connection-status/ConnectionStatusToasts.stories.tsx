@@ -22,6 +22,7 @@ import { useConnectionStatusToasts } from './shared';
  * buttons cannot reach: the browser's own signal, which is what ships.
  */
 const meta: Meta = {
+  parameters: { controls: { disable: true } },
   title: 'Base/Connection Status Toasts',
 };
 
@@ -34,7 +35,7 @@ const RECONNECTING_DELAY_MS = 1500;
 
 function Legend({ children }: { children: React.ReactNode }) {
   return (
-    <Card variant="outlined" radius="radius-16" style={{ padding: 16, gap: 8, maxWidth: 420 }}>
+    <Card appearance="outline" radius="radius-16" style={{ padding: 16, gap: 8, maxWidth: 420 }}>
       {children}
     </Card>
   );
@@ -77,6 +78,7 @@ function SignalDemo() {
  * outage ends when the network says so, not when the user swipes it away.
  */
 export const Signal: Story = {
+  parameters: { controls: { disable: true } },
   render: () => <SignalDemo />,
 };
 
@@ -93,6 +95,7 @@ export const Signal: Story = {
  * in the fork, never in what the user sees.
  */
 export const DeviceSignal: Story = {
+  parameters: { controls: { disable: true } },
   render: () => (
     <View style={{ gap: 12, alignItems: 'flex-start' }}>
       <Legend>

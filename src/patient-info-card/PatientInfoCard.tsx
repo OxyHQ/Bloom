@@ -67,15 +67,7 @@ function PatientInfoCardComponent({
         />
         {hideAddPhoto ? null : (
           <View style={styles.addPhoto}>
-            <Button
-              testID={testID ? `${testID}-add-photo` : undefined}
-              variant="secondary"
-              size="xs"
-              iconOnly
-              leadingIcon={RiAddLine}
-              accessibilityLabel={addPhotoLabel}
-              onPress={onAddPhoto}
-            />
+            <Button testID={testID ? `${testID}-add-photo` : undefined} size="xs" icon={RiAddLine} accessibilityLabel={addPhotoLabel} onPress={onAddPhoto} appearance="subtle" tone="neutral" />
           </View>
         )}
       </View>

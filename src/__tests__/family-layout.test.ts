@@ -37,6 +37,8 @@ const SKIP = new Set(['__tests__']);
  * entry here has to be argued for, and a stale one fails.
  */
 const FACTORY_BARRELS = [
+  'app-shell/index.ts',
+  'app-shell/index.web.ts',
   'alert-dialog/index.ts',
   'alert-dialog/index.web.ts',
   'command/index.ts',

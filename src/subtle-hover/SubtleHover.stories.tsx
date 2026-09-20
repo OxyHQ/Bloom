@@ -1,5 +1,6 @@
+import { Text } from '../typography';
 import React from 'react';
-import { Pressable, Text, View } from 'react-native';
+import { Pressable, View } from 'react-native';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
 import { useInteractionState } from '../hooks/use-interaction-state';
@@ -47,10 +48,12 @@ function HoverRow({ label }: { label: string }) {
 }
 
 export const GroupHover: Story = {
+  parameters: { controls: { disable: true } },
   render: () => <HoverRow label="Hover me (web, group-hover)" />,
 };
 
 export const Stack: Story = {
+  parameters: { controls: { disable: true } },
   render: () => (
     <View style={{ gap: 4 }}>
       <HoverRow label="Inbox" />
@@ -66,6 +69,7 @@ export const Stack: Story = {
  * is opted in so the same wash shows on native surfaces too.
  */
 export const CoordinatedThread: Story = {
+  parameters: { controls: { disable: true } },
   render: () => {
     function Thread() {
       const { state: hovered, onIn, onOut } = useInteractionState();
@@ -90,5 +94,16 @@ export const CoordinatedThread: Story = {
       );
     }
     return <Thread />;
+  },
+};
+
+/** A single instance whose controls are applied directly to the rendered component. */
+export const Playground: StoryObj<typeof SubtleHover> = {
+  args: { active: true },
+  parameters: { controls: { disable: false, include: ['active'] } },
+  argTypes: { active: { control: 'boolean' } },
+  render: function Playground(args) {
+
+    return <View style={{ width: 440, maxWidth: '100%' }}><View style={{ height: 72, justifyContent: 'center', padding: 16 }}><SubtleHover {...args} /><Text>Hover surface preview</Text></View></View>;
   },
 };

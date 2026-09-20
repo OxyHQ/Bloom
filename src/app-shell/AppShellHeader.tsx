@@ -46,16 +46,7 @@ const AppShellHeaderComponent: React.FC<AppShellHeaderProps> = ({
       >
         <View style={{ minWidth: 0, flexDirection: 'row', alignItems: 'center', gap: 6 }}>
           {showMenu ? (
-            <Button
-              variant="secondary"
-              size="medium"
-              iconOnly
-              leadingIcon={menuOpen ? RiCloseLine : RiMenuLine}
-              accessibilityLabel="Open navigation"
-              aria-expanded={menuOpen}
-              onPress={onMenuPress}
-              testID={testID ? `${testID}-menu` : undefined}
-            />
+            <Button size="md" icon={menuOpen ? RiCloseLine : RiMenuLine} accessibilityLabel="Open navigation" aria-expanded={menuOpen} onPress={onMenuPress} testID={testID ? `${testID}-menu` : undefined} appearance="plain" tone="neutral" />
           ) : null}
           <Text
             role="heading"

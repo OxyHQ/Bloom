@@ -2,7 +2,7 @@ import type { ComponentType, ReactNode } from 'react';
 import type { StyleProp, ViewStyle } from 'react-native';
 
 import type { ButtonProps } from '../button/types';
-import type { AccentTone } from '../theme/accent-colors';
+import type { BloomTone } from '../appearance';
 import type { TableColumnLayout, TableSize } from '../table/types';
 
 /** The table's two densities, `md` ("Normal") and `sm` ("Compact"). */
@@ -206,7 +206,7 @@ export interface DataTableSearchProps {
   /** Accessible name, e.g. `"Search customers"`. */
   label: string;
   value?: string;
-  onChangeText?: (text: string) => void;
+  onValueChange?: (text: string) => void;
   /** Default `"Search"`. */
   placeholder?: string;
   testID?: string;
@@ -221,7 +221,7 @@ export interface DataTableSelectOption extends DataTableOption {
    * A status dot (`Badge dot`): `green` is `success`, `yellow` is `warning`,
    * `indigo` is `info`.
    */
-  dot?: AccentTone;
+  dot?: BloomTone;
   /** An 18px icon in `foreground-icon-secondary`. */
   icon?: DataTableIconComponent;
 }

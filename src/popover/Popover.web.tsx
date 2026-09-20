@@ -1,22 +1,28 @@
 /**
  * `Popover` — WEB. An anchored panel positioned, portaled, ranked and dismissed
  * by `floating/FloatingPanel`, which is also what the three menu families
- * render. The popover's own contribution is its defaults: it centres on its
- * trigger (shadcn's `align="center"`), it is padded because its body is
- * arbitrary content rather than rows, and it does not take the trigger's width
- * as a floor — a menu wants to be at least as wide as what opened it, a popover
- * wants to be as wide as its content.
+ * render. The popover's own contribution is its panel: BoardUI's floating
+ * surface (`surface.ts` — 266px, `rounded-2xl`, 1px `border-button-default`,
+ * `bg-background-primary-default`, `p-2.5`, `shadow-dropdown`), resolved from
+ * the theme ramps and applied inline ahead of the caller's `style`. It centres
+ * on its trigger by default (shadcn's `align="center"`) and does not take the
+ * trigger's width as a floor.
  */
 import React, { useCallback, useMemo, useRef } from 'react';
-import type { View } from 'react-native';
+import { useWindowDimensions, type View } from 'react-native';
 
-import { POPOVER_CLASS, POPOVER_TRIGGER_POPUP } from '../floating/constants';
+import { POPOVER_TRIGGER_POPUP } from '../floating/constants';
 import { FloatingPanel } from '../floating/FloatingPanel';
-import { cx } from '../floating/shared';
+import { useMenuPalette } from '../floating/menu-palette';
 import { TriggerSlot } from '../floating/TriggerSlot';
 import { useAnchorRect } from '../floating/use-anchor-rect';
 import { useControllableState } from '../hooks/use-controllable-state';
 import { PopoverProvider, usePopover } from './context';
+import {
+  classChromeOverrides,
+  POPOVER_SIDE_OFFSET,
+  resolvePopoverSurfaceStyle,
+} from './surface';
 import type { PopoverContentProps, PopoverProps, PopoverTriggerProps } from './types';
 
 export function Popover({ children, open, defaultOpen = false, onOpenChange }: PopoverProps) {
@@ -67,7 +73,7 @@ export function PopoverContent({
   label = 'Popover',
   side,
   align = 'center',
-  sideOffset,
+  sideOffset = POPOVER_SIDE_OFFSET,
   alignOffset,
   dismissible,
   minWidth,
@@ -79,6 +85,18 @@ export function PopoverContent({
   const popover = usePopover();
   const anchor = useAnchorRect(popover.anchorRef, popover.open);
   const close = useCallback(() => popover.setOpen(false), [popover]);
+  const palette = useMenuPalette();
+  const { width: viewportWidth } = useWindowDimensions();
+  const overridden = useMemo(() => classChromeOverrides(className), [className]);
+  const chrome = useMemo(
+    () =>
+      resolvePopoverSurfaceStyle(
+        palette,
+        overridden,
+        maxWidth === undefined ? viewportWidth : undefined,
+      ),
+    [palette, overridden, maxWidth, viewportWidth],
+  );
 
   return (
     <FloatingPanel
@@ -94,14 +112,10 @@ export function PopoverContent({
       minWidth={minWidth}
       maxWidth={maxWidth}
       onDismiss={close}
-      // `w-72 p-4` — shadcn's popover is a FIXED 288px card with a 16px inset,
-      // not a shrink-wrap around its content. A caller whose body is a row list
-      // rather than prose overrides them, which is exactly what a shadcn call
-      // site does with `className="w-[200px] p-0"` and what
-      // `DialogHeader` does here — its rows have to reach the panel edge to show
-      // a full-width highlight.
-      className={cx(POPOVER_CLASS, className)}
-      style={style}
+      className={className}
+      // The resolved panel FIRST, so the caller's `style` overrides any of it;
+      // properties the caller's `className` names were already left out.
+      style={[chrome, style]}
       testID={testID}>
       {children}
     </FloatingPanel>

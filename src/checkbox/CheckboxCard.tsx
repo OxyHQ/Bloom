@@ -1,3 +1,5 @@
+import { useBloomAppearance } from '../appearance';
+import { resolveBloomColors } from '../appearance/colors';
 import React, { memo, useCallback, useMemo } from 'react';
 import { Platform, Pressable, View } from 'react-native';
 
@@ -62,15 +64,17 @@ const CheckboxCardComponent: React.FC<CheckboxCardProps> = ({
   description,
   disabled = false,
   indeterminate = false,
-  color,
+  tone: toneProp,
   style,
   accessibilityLabel,
   testID,
 }) => {
   const theme = useTheme();
+  const { tone } = useBloomAppearance({ tone: toneProp }, {size: 'md', tone: 'accent'});
+  const { background: color, foreground } = resolveBloomColors(theme.colors, tone, 'solid');
   useInteractiveWebCss(CHECKBOX_GLYPH_STYLE_ID, CHECKBOX_GLYPH_CSS);
   useInteractiveWebCss(CARD_STYLE_ID, CARD_CSS);
-  const paint = useMemo(() => resolveCheckboxPaint(theme, color), [theme, color]);
+  const paint = useMemo(() => resolveCheckboxPaint(theme, color, foreground), [theme, color, foreground]);
   const { state: hovered, onIn: onHoverIn, onOut: onHoverOut } = useInteractionState();
   const { state: pressed, onIn: onPressIn, onOut: onPressOut } = useInteractionState();
   const highlighted = !disabled && (hovered || pressed);
@@ -132,7 +136,7 @@ const CheckboxCardComponent: React.FC<CheckboxCardProps> = ({
       </View>
       <View style={{ flexShrink: 0, flexDirection: 'row', alignItems: 'center', paddingTop: 4, paddingBottom: 4 }}>
         <CheckboxGlyph
-          size="medium"
+          size="md"
           checked={checked}
           indeterminate={indeterminate}
           // The checkbox gets the card's state, so a disabled card's box is

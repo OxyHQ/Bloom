@@ -5,7 +5,6 @@ import { act, fireEvent, render } from '@testing-library/react-native';
 
 import { BloomThemeProvider } from '../theme/BloomThemeProvider';
 import { buildTheme } from '../theme/build-theme';
-import { resolveButtonRamps } from '../button/shared';
 import { RiSchoolLine, RiSettings6Line, RiToolsFill } from '../icons/remix';
 import {
   SettingsCard,
@@ -145,9 +144,9 @@ describe('SettingsModal shell', () => {
     const { getByTestId } = renderWithTheme(<Controlled />);
     flush();
     const theme = buildTheme('teal', 'light');
-    const { neutral } = resolveButtonRamps(theme);
+    const { colors } = theme;
     const row = resolvedStyle(getByTestId('settings-nav-general').props.style);
-    expect(row).toMatchObject({ padding: 8, borderRadius: 10, gap: 8, backgroundColor: neutral[200] });
+    expect(row).toMatchObject({ padding: 8, borderRadius: 10, gap: 8, backgroundColor: colors.backgroundTertiary });
     expect(resolvedStyle(getByTestId('settings-nav-profile').props.style).backgroundColor).toBe('transparent');
   });
 
@@ -296,24 +295,24 @@ describe('SettingsServerList', () => {
 });
 
 describe('palette and helpers', () => {
-  it('resolves the surfaces from the theme ramps, light and dark', () => {
+  it('resolves the surfaces from the canonical roles, light and dark', () => {
     const light = buildTheme('teal', 'light');
     const dark = buildTheme('teal', 'dark');
-    const nl = resolveButtonRamps(light).neutral;
-    const nd = resolveButtonRamps(dark).neutral;
+    const nl = light.colors;
+    const nd = dark.colors;
     expect(resolveSettingsPalette(light)).toMatchObject({
-      full: light.colors.card,
-      secondary: nl[100],
-      secondaryHover: nl[200],
-      tertiary: nl[200],
-      separator: nl[200],
+      full: light.colors.background,
+      secondary: nl.backgroundSecondary,
+      secondaryHover: nl.backgroundTertiary,
+      tertiary: nl.backgroundTertiary,
+      separator: nl.borderLight,
     });
     expect(resolveSettingsPalette(dark)).toMatchObject({
-      primary: nd[800],
-      secondary: nd[900],
-      secondaryHover: nd[800],
-      separator: nd[800],
-      borderButton: nd[700],
+      primary: nd.card,
+      secondary: nd.backgroundSecondary,
+      secondaryHover: nd.backgroundTertiary,
+      separator: nd.borderLight,
+      borderButton: nd.border,
     });
   });
 });

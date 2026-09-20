@@ -1,195 +1,57 @@
 import React from 'react';
 import { View } from 'react-native';
 import type { Meta, StoryObj } from '@storybook/react-vite';
-
-import { Button, IconButton, LinkButton } from './Button';
+import { Button } from './Button';
 import { CloseButton } from './CloseButton';
-import { Text as BloomText } from '../typography';
-import {
-  RiAddLine as Plus,
-  RiArrowRightLine as ArrowRight,
-  RiDeleteBinLine as Trash,
-  RiMore2Line,
-} from '../icons/remix';
+import { BloomScope } from '../appearance';
+import { RiAddLine, RiArrowRightLine } from '../icons/remix';
 
-const meta: Meta<typeof Button> = {
-  title: 'Base/Button',
-  component: Button,
-  args: {
-    children: 'Button',
-    onPress: () => {},
-  },
+const meta = {
+  title: 'Base/Button', component: Button,
+  parameters: { controls: { include: ['children', 'appearance', 'tone', 'size', 'disabled', 'loading', 'loadingColor', 'href'] } },
+  args: { children: 'Save', appearance: 'solid', tone: 'accent', size: 'md', disabled: false, loading: false, onPress: () => {} },
   argTypes: {
-    variant: {
-      control: 'select',
-      options: ['primary', 'secondary', 'ghost', 'destructive', 'outline', 'inverse', 'icon', 'text', 'link'],
-    },
-    size: {
-      control: 'select',
-      options: ['xs', 'small', 'medium', 'large'],
-    },
-    disabled: { control: 'boolean' },
-    iconOnly: { control: 'boolean' },
-    loading: { control: 'boolean' },
+    children: { control: 'text' },
+    "loadingColor": { control: 'text' },
+    "href": { control: 'text' },
+    "target": { control: 'text' },
+    "rel": { control: 'text' },
+    "type": { control: 'select', options: ["button","submit","reset"] },
+    "asChild": { control: 'boolean' },
+    "name": { control: 'text' },
+    "value": { control: 'text' },
+    "title": { control: 'text' },
+    "autoFocus": { control: 'boolean' },
+    "tabIndex": { control: 'number' },
+    appearance: { control: 'select', options: ['solid', 'subtle', 'outline', 'plain'] },
+    tone: { control: 'select', options: ['neutral', 'accent', 'support', 'action', 'success', 'warning', 'danger', 'info'] },
+    size: { control: 'select', options: ['xs', 'sm', 'md', 'lg'] },
+    disabled: { control: 'boolean' }, loading: { control: 'boolean' },
   },
-};
-
+} satisfies Meta<typeof Button>;
 export default meta;
-
 type Story = StoryObj<typeof Button>;
-
-export const Basic: Story = {
-  args: { children: 'Save' },
-};
-
-export const Primary: Story = {
-  args: { variant: 'primary', children: 'Primary' },
-};
-
-export const Secondary: Story = {
-  args: { variant: 'secondary', children: 'Secondary' },
-};
-
-export const Ghost: Story = {
-  args: { variant: 'ghost', children: 'Ghost' },
-};
-
-export const TextOnly: Story = {
-  args: { variant: 'text', children: 'Text button' },
-  name: 'Text',
-};
-
-export const Inverse: Story = {
-  args: { variant: 'inverse', children: 'Inverse' },
-};
-
-export const Variants: Story = {
-  render: () => (
-    <View style={{ gap: 12, alignItems: 'flex-start' }}>
-      <Button variant="primary">Primary</Button>
-      <Button variant="secondary">Secondary</Button>
-      <Button variant="ghost">Ghost</Button>
-      <Button variant="destructive">Danger</Button>
-      <Button variant="inverse">Inverse</Button>
-      <Button variant="text">Text</Button>
-    </View>
-  ),
-};
-
-export const Sizes: Story = {
-  render: () => (
-    <View style={{ gap: 12, alignItems: 'flex-start' }}>
-      <Button size="xs">Xs</Button>
-      <Button size="small">Small</Button>
-      <Button size="medium">Medium</Button>
-      <Button size="large">Large</Button>
-    </View>
-  ),
-};
-
-export const Loading: Story = {
-  args: { loading: true, children: 'Submitting' },
-};
-
-export const Disabled: Story = {
-  args: { disabled: true, children: 'Disabled' },
-};
-
-export const Composition: Story = {
-  render: () => (
-    <View style={{ flexDirection: 'row', gap: 12, flexWrap: 'wrap' }}>
-      <Button variant="primary">Save</Button>
-      <Button variant="secondary">Cancel</Button>
-    </View>
-  ),
-};
-
-const MATRIX_VARIANTS = ['primary', 'secondary', 'ghost', 'destructive'] as const;
-const MATRIX_SIZES = ['medium', 'small', 'xs'] as const;
-
-/** Type × Size matrix: label, icons, icon-only, disabled. */
+export const Basic: Story = {};
 export const Matrix: Story = {
-  render: () => (
-    <View style={{ gap: 24 }}>
-      {MATRIX_VARIANTS.map((variant) => (
-        <View key={variant} style={{ gap: 10 }}>
-          <BloomText variant="caption-1-semibold" style={{ textTransform: 'capitalize' }}>
-            {variant}
-          </BloomText>
-          {MATRIX_SIZES.map((size) => (
-            <View
-              key={size}
-              style={{ flexDirection: 'row', gap: 12, alignItems: 'center', flexWrap: 'wrap' }}
-            >
-              <Button variant={variant} size={size}>
-                Button
-              </Button>
-              <Button variant={variant} size={size} leadingIcon={Plus} trailingIcon={ArrowRight}>
-                Button
-              </Button>
-              <Button
-                variant={variant}
-                size={size}
-                iconOnly
-                leadingIcon={variant === 'destructive' ? Trash : Plus}
-                accessibilityLabel="Add"
-              />
-              <Button variant={variant} size={size} disabled leadingIcon={Plus}>
-                Disabled
-              </Button>
-              <Button variant={variant} size={size} loading>
-                Loading
-              </Button>
-            </View>
-          ))}
-        </View>
-      ))}
-    </View>
-  ),
+  parameters: { controls: { disable: true } },
+  render: () => <View style={{gap: 20}}>{(['solid','subtle','outline','plain'] as const).map(appearance =>
+    <View key={appearance} style={{flexDirection:'row', gap:12, flexWrap:'wrap'}}>
+      {(['neutral', 'accent', 'support', 'action', 'success', 'warning', 'danger', 'info'] as const).map(tone =>
+        <Button key={tone} appearance={appearance} tone={tone} leadingIcon={RiAddLine}>{tone}</Button>)}
+    </View>)}</View>,
 };
-
-/** `CloseButton`: 2xs · xs · sm · md. */
+export const Sizes: Story = {
+  parameters: { controls: { disable: true } }, render: () => <View style={{gap:12,alignItems:'flex-start'}}>{(['xs','sm','md','lg'] as const).map(size => <Button key={size} size={size}>{size}</Button>)}</View> };
+export const Loading: Story = { args: { loading: true } };
+export const Disabled: Story = { args: { disabled: true } };
+export const Icon: Story = { args: { icon: RiAddLine, accessibilityLabel: 'Add item', children: undefined } };
+export const Link: Story = { args: { href: '#', appearance: 'plain', children: 'Learn more', trailingIcon: RiArrowRightLine } };
+export const Inherited: Story = {
+  parameters: { controls: { disable: true } },
+  render: () => <BloomScope size="lg" tone="success"><View style={{gap:12,alignItems:'flex-start'}}>
+    <Button>Inherited</Button><Button tone="danger" size="sm">Explicit override</Button>
+    <BloomScope size="xs"><Button>Nested size, inherited tone</Button></BloomScope>
+  </View></BloomScope>,
+};
 export const CloseButtons: Story = {
-  render: () => (
-    <View style={{ flexDirection: 'row', gap: 12, alignItems: 'center' }}>
-      {(['2xs', 'xs', 'sm', 'md'] as const).map((size) => (
-        <CloseButton key={size} size={size} accessibilityLabel="Close" onPress={() => {}} />
-      ))}
-    </View>
-  ),
-};
-
-/** `IconButton`: the secondary square at medium (36 · 20) and small (32 · 16). */
-export const IconButtons: Story = {
-  render: () => (
-    <View style={{ flexDirection: 'row', gap: 12, alignItems: 'center' }}>
-      <IconButton icon={RiMore2Line} accessibilityLabel="More" />
-      <IconButton icon={RiMore2Line} size="small" accessibilityLabel="More" />
-      <IconButton icon={RiMore2Line} disabled accessibilityLabel="More" />
-      <IconButton icon={RiMore2Line} size="small" disabled accessibilityLabel="More" />
-    </View>
-  ),
-};
-
-/** `LinkButton`: primary and secondary at every size, disabled, and an anchor. */
-export const LinkButtons: Story = {
-  render: () => (
-    <View style={{ gap: 12 }}>
-      {(['primary', 'secondary'] as const).map((variant) => (
-        <View key={variant} style={{ flexDirection: 'row', gap: 16, alignItems: 'center' }}>
-          {(['medium', 'small', 'xs'] as const).map((size) => (
-            <LinkButton key={size} variant={variant} size={size} trailingIcon={ArrowRight}>
-              Learn more
-            </LinkButton>
-          ))}
-          <LinkButton variant={variant} disabled>
-            Disabled
-          </LinkButton>
-          <LinkButton variant={variant} href="#">
-            Anchor
-          </LinkButton>
-        </View>
-      ))}
-    </View>
-  ),
-};
+  parameters: { controls: { disable: true } }, render: () => <View style={{flexDirection:'row',gap:16}}>{(['xs','sm','md','lg'] as const).map(size => <CloseButton key={size} size={size} accessibilityLabel="Close" />)}</View> };

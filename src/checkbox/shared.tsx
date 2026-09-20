@@ -8,7 +8,6 @@ import {
   ACCENT_TABLE,
   BUTTON_SHADOW,
   colorRamp,
-  mixColor,
   resolveButtonRamps,
 } from '../button/shared';
 import type { TypeScaleVariant } from '../typography';
@@ -29,9 +28,10 @@ export const CHECKBOX_SIZE_CONFIG: Record<
   CheckboxSize,
   { box: number; gap: number; label: TypeScaleVariant; description: TypeScaleVariant }
 > = {
-  small: { box: 14, gap: 6, label: 'body-2-medium', description: 'body-2-regular' },
-  medium: { box: 16, gap: 8, label: 'body-medium', description: 'body-regular' },
-  large: { box: 20, gap: 8, label: 'headline-medium', description: 'body-regular' },
+  xs: { box: 12, gap: 4, label: 'caption-1-medium', description: 'caption-1-regular' },
+  sm: { box: 14, gap: 6, label: 'body-2-medium', description: 'body-2-regular' },
+  md: { box: 16, gap: 8, label: 'body-medium', description: 'body-regular' },
+  lg: { box: 20, gap: 8, label: 'headline-medium', description: 'body-regular' },
 };
 
 /** `rounded-sm` — Tailwind v4's 4px. */
@@ -57,11 +57,10 @@ const CHECK_PATH_LENGTH = 11.1;
 
 /**
  * `ring-2 ring-border-focus-ring ring-offset-2`: a 2px accent ring
- * outside a 2px offset. Tailwind's `ring-offset-color` defaults to `#fff` and
- * it is never overridden, so the offset is white in BOTH modes — measured on the
- * rendered component, dark included.
+ * outside a 2px offset. The gap follows the scoped page token on web,
+ * including dark mode, instead of introducing a white halo.
  */
-export const FOCUS_RING_OFFSET_COLOR = '#FFFFFF';
+export const FOCUS_RING_OFFSET_COLOR = 'var(--background)';
 
 export interface CheckboxPaint {
   surface: string;
@@ -90,26 +89,25 @@ export interface CheckboxPaint {
  * A caller `color` replaces the accent ramp; the mark on it falls back to white
  * because Bloom cannot know the contrast of an arbitrary colour.
  */
-export function resolveCheckboxPaint(theme: Theme, color?: string): CheckboxPaint {
-  const { accent, neutral: n } = resolveButtonRamps(theme);
+export function resolveCheckboxPaint(theme: Theme, color?: string, foreground?: string): CheckboxPaint {
+  const { accent } = resolveButtonRamps(theme);
   const ramp = color ? colorRamp(color, ACCENT_TABLE) : accent;
   const dark = theme.isDark;
   return {
-    surface: dark ? n[800] : theme.colors.card,
-    border: dark ? n[700] : n[300],
-    borderHover: dark ? n[500] : n[400],
+    surface: theme.colors.card,
+    border: theme.colors.border,
+    borderHover: theme.colors.border,
     shadow: BUTTON_SHADOW[dark ? 'dark' : 'light'],
     gradient: [ramp[500], ramp[600]],
     gradientHover: [ramp[400], ramp[500]],
     markedShadow: `inset 0 2px 0 0 rgba(255, 255, 255, 0.25), inset 0 0 0 1px ${ramp[500]}`,
-    mark: color == null ? theme.colors.primaryForeground : '#FFFFFF',
+    mark: foreground ?? (color == null ? theme.colors.primaryForeground : '#FFFFFF'),
     ring: ramp[500],
     text: theme.colors.text,
-    description: n[500],
-    cardBorder: dark ? n[700] : n[200],
-    cardBackground: dark ? n[800] : theme.colors.card,
-    // Dark `color-mix(in srgb, neutral-700 60%, transparent)` over the page.
-    cardBackgroundHover: dark ? mixColor(theme.colors.background, n[700], 0.6) : n[100],
+    description: theme.colors.textSecondary,
+    cardBorder: theme.colors.borderLight,
+    cardBackground: theme.colors.card,
+    cardBackgroundHover: theme.colors.backgroundSecondary,
   };
 }
 
@@ -260,7 +258,7 @@ export interface CheckboxGlyphProps {
  *              highlight + inset 1px accent-500 edge, 2px rounded stroke.
  *              Hover: accent-400 → accent-500.
  *   disabled   the BOX at 50% opacity.
- *   focus      2px accent ring outside a 2px white offset, on the box.
+ *   focus      2px accent ring outside a 2px scoped page offset, on the box.
  */
 export function CheckboxGlyph({
   size,

@@ -12,7 +12,7 @@ export interface InputOtpProps extends ViewStyleProp {
   /** Fires once the last box is filled. */
   onComplete?: (value: string) => void;
   /** Paint every box invalid. */
-  isInvalid?: boolean;
+  invalid?: boolean;
   /** Disable every box. `disabled` is an alias. */
   isDisabled?: boolean;
   disabled?: boolean;

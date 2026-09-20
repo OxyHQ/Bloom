@@ -2,7 +2,7 @@ import type React from 'react';
 import type { StyleProp, ViewStyle } from 'react-native';
 
 import type { AvatarProps } from '../avatar';
-import type { ButtonVariant } from '../button';
+import type { ButtonProps } from '../button';
 
 /**
  * `warning` is Bloom's addition to `neutral | information | success | error`,
@@ -28,8 +28,9 @@ export type NotificationAvatar = Omit<AvatarProps, 'size'> & {
 export interface NotificationAction {
   label: React.ReactNode;
   onPress?: () => void;
-  /** Defaults to `secondary` for the first action and `primary` after it. */
-  variant?: ButtonVariant;
+  /** Defaults to `subtle` for the first action and `solid` after it. */
+  appearance?: ButtonProps['appearance'];
+  tone?: ButtonProps['tone'];
 }
 
 export interface NotificationProps {

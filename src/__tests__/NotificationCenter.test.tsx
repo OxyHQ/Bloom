@@ -5,7 +5,6 @@ import { BloomThemeProvider } from '../theme/BloomThemeProvider';
 import { buildTheme } from '../theme/build-theme';
 import { NotificationCenter } from '../notification-center';
 import type { NotificationCenterItem } from '../notification-center';
-import { resolveButtonRamps } from '../button/shared';
 import { resolvedStyle } from './support/rendered-style';
 
 const ITEMS: NotificationCenterItem[] = [
@@ -18,7 +17,7 @@ const ITEMS: NotificationCenterItem[] = [
     timestamp: '2m',
     unread: true,
     avatar: { initials: 'LS', name: 'Livia Saris', color: 'pink' },
-    actions: [{ id: 'reply', label: 'Reply', variant: 'primary' }],
+    actions: [{ id: 'reply', label: 'Reply', appearance: 'solid', tone: 'accent' }],
   },
   { id: 'b', category: 'system', group: 'Today', title: 'Backup', description: 'Ready', timestamp: '18m', unread: true, status: 'success' },
   { id: 'c', category: 'activity', group: 'Today', title: 'Joined', description: 'Sea', timestamp: '1h' },
@@ -52,13 +51,13 @@ describe('NotificationCenter', () => {
     });
   });
 
-  it('paints the neutral tokens from the ramps in dark mode', () => {
+  it('paints the neutral canonical tokens in dark mode', () => {
     const screen = renderCenter(<NotificationCenter testID="nc" notifications={ITEMS} />, 'dark');
-    const { neutral } = resolveButtonRamps(buildTheme('teal', 'dark'));
+    const { colors } = buildTheme('teal', 'dark');
     const section = resolvedStyle(screen.getByTestId('nc').props.style);
-    expect(section.backgroundColor).toBe(neutral[900]);
-    expect(section.borderColor).toBe(neutral[700]);
-    expect(resolvedStyle(screen.getByTestId('notification-a').props.style).backgroundColor).toBe(neutral[800]);
+    expect(section.backgroundColor).toBe(colors.backgroundSecondary);
+    expect(section.borderColor).toBe(colors.border);
+    expect(resolvedStyle(screen.getByTestId('notification-a').props.style).backgroundColor).toBe(colors.card);
   });
 
   it('counts unread, names the unread dot, and marks all read', () => {

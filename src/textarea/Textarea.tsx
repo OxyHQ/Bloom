@@ -1,3 +1,4 @@
+import { useBloomAppearance } from '../appearance';
 import React, { useMemo, useRef, useState } from 'react';
 import { Platform, StyleSheet, TextInput, type TextStyle, View } from 'react-native';
 
@@ -49,17 +50,17 @@ export function Textarea({
   placeholder,
   value,
   defaultValue,
-  onChangeText,
+  onValueChange,
   onFocus,
   onBlur,
-  size = 'medium',
+  size: sizeProp,
   rows = 3,
   autoResize = false,
   maxRows,
   resize = 'vertical',
   maxLength,
   showCount = false,
-  isInvalid = false,
+  invalid = false,
   disabled = false,
   required = false,
   tooltip = false,
@@ -71,6 +72,7 @@ export function Textarea({
   ...rest
 }: TextareaProps) {
   const theme = useTheme();
+  const {size} = useBloomAppearance({size: sizeProp}, {size: 'md', tone: 'neutral'});
   const palette = useMemo(() => resolveTextFieldPalette(theme), [theme]);
   const innerRef = useRef<TextInput>(null);
   const { state: hovered, onIn: onHoverIn, onOut: onHoverOut } = useInteractionState();
@@ -82,7 +84,7 @@ export function Textarea({
   const [typedLength, setTypedLength] = useState(() => (defaultValue ?? '').length);
   const count = value !== undefined ? value.length : typedLength;
 
-  const state = { hovered, focused, invalid: isInvalid, disabled };
+  const state = { hovered, focused, invalid: invalid, disabled };
   const paint = resolveShellPaint(palette, state);
   const line = TEXT_FIELD_TEXT.lineHeight;
 
@@ -159,14 +161,14 @@ export function Textarea({
           maxLength={maxLength}
           editable={disabled ? false : rest.editable}
           accessibilityLabel={name}
-          aria-invalid={isInvalid || undefined}
+          aria-invalid={invalid || undefined}
           aria-disabled={disabled || undefined}
           placeholder={placeholder}
           placeholderTextColor={resolvePlaceholderColor(palette, state)}
           keyboardAppearance={theme.isDark ? 'dark' : 'light'}
           onChangeText={(next) => {
             if (showCount && value === undefined) setTypedLength(next.length);
-            onChangeText?.(next);
+            onValueChange?.(next);
           }}
           onFocus={(e) => {
             onFocusIn();
@@ -190,7 +192,7 @@ export function Textarea({
             marginTop: TEXT_FIELD_STACK_GAP,
           }}>
           {hint ? (
-            <TextFieldHint isInvalid={isInvalid} style={{ marginTop: 0 }}>
+            <TextFieldHint invalid={invalid} style={{ marginTop: 0 }}>
               {hint}
             </TextFieldHint>
           ) : null}
@@ -202,7 +204,7 @@ export function Textarea({
                 flexShrink: 0,
                 paddingTop: 1,
                 fontVariant: ['tabular-nums'],
-                color: isInvalid ? palette.error : palette.count,
+                color: invalid ? palette.error : palette.count,
               }}>
               {maxLength ? `${count}/${maxLength}` : String(count)}
             </Text>

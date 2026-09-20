@@ -5,6 +5,12 @@ import type { Meta, StoryObj } from '@storybook/react-vite';
 import { Label } from './Label';
 
 const meta: Meta<typeof Label> = {
+  argTypes: {
+    "htmlFor": { control: 'text' },
+    "required": { control: 'boolean' },
+    "disabled": { control: 'boolean' },
+    "size": { control: 'select', options: ["xs","sm","md"] }
+  },
   title: 'Base/Label',
   component: Label,
 };
@@ -22,6 +28,7 @@ export const Required: Story = {
 };
 
 export const Sizes: Story = {
+  parameters: { controls: { disable: true } },
   render: () => (
     <View style={{ gap: 8 }}>
       <Label size="xs">Extra small</Label>

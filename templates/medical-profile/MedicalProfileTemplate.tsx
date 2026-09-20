@@ -25,7 +25,7 @@ import { PatientsTable } from './PatientsTable';
 const WEEK_RANGE = weekLabel(0);
 
 /**
- * The medical profile template: the floating sidebar with the reveal drawer
+ * The medical profile template: the adaptive navigation shell
  * below `lg`, the breadcrumb + title header, six 330px cards — one column,
  * two from `md`, three from `xl` — and the patients table.
  *

@@ -5,6 +5,16 @@ import type { Meta, StoryObj } from '@storybook/react-vite';
 import { FunnelChartCard, type FunnelRange, type FunnelStage } from './FunnelChartCard';
 
 const meta: Meta<typeof FunnelChartCard> = {
+  argTypes: {
+    "shape": { control: 'select', options: ["curved","sharp"] },
+    "mono": { control: 'boolean' },
+    "title": { control: 'text' },
+    "headline": { control: 'number' },
+    "delta": { control: 'number' },
+    "range": { control: 'text' },
+    "defaultRange": { control: 'text' },
+    "activeIndex": { control: 'number' }
+  },
   title: 'Charts/Funnel Chart',
   component: FunnelChartCard,
 };
@@ -30,11 +40,12 @@ const RANGES: FunnelRange[] = [
 ];
 
 const Frame = ({ children, width = 480 }: { children: React.ReactNode; width?: number }) => (
-  <View style={{ padding: 40, gap: 24, width: width + 80 }}>{children}</View>
+  <View style={{ maxWidth: '100%', gap: 24, width }}>{children}</View>
 );
 
 /** Default look: S-curve bands with layered edges, a period dropdown, one tile per stage. */
 export const Curved: Story = {
+  parameters: { controls: { disable: true } },
   render: () => (
     <Frame>
       <FunnelChartCard testID="funnel" ranges={RANGES} />
@@ -44,15 +55,18 @@ export const Curved: Story = {
 
 /** Straight trapezoids over a faint backing band. */
 export const Sharp: Story = {
-  render: () => (
+  args: { shape: "sharp" },
+  parameters: { controls: { include: ["shape","mono","title","headline","delta","range","defaultRange","activeIndex"] } },
+  render: (args) => (
     <Frame>
-      <FunnelChartCard testID="funnel" shape="sharp" ranges={RANGES} />
+      <FunnelChartCard {...args} testID="funnel"  ranges={RANGES} />
     </Frame>
   ),
 };
 
 /** Single ink, a static pill and a falling delta. */
 export const Mono: Story = {
+  parameters: { controls: { disable: true } },
   render: () => (
     <Frame>
       <FunnelChartCard testID="funnel" mono stages={STAGES} range="Last 30 days" delta={-0.02} />
@@ -63,6 +77,7 @@ export const Mono: Story = {
 
 /** "Started" hovered (controlled): its band darkens, every other column fades. */
 export const Hovered: Story = {
+  parameters: { controls: { disable: true } },
   render: () => (
     <Frame>
       <FunnelChartCard ranges={RANGES} activeIndex={1} />
@@ -73,12 +88,14 @@ export const Hovered: Story = {
 
 /** Six stages in a narrow card: pills that do not fit their column are dropped, tiles go two per row below `sm`. */
 export const ManyStages: Story = {
-  render: () => (
+  args: { title: "Acquisition funnel", range: "Q3", delta: 0.11 },
+  parameters: { controls: { include: ["title","range","delta","shape","mono","headline","defaultRange","activeIndex"] } },
+  render: (args) => (
     <Frame width={360}>
-      <FunnelChartCard
-        title="Acquisition funnel"
-        range="Q3"
-        delta={0.11}
+      <FunnelChartCard {...args}
+
+
+
         format={(v) => (v >= 1000 ? `${Math.round(v / 100) / 10}K` : String(v))}
         stages={[
           { label: 'Impressions', value: 48200 },

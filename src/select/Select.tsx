@@ -1,3 +1,4 @@
+import { useBloomAppearance } from '../appearance';
 import React, {
   createContext,
   useCallback,
@@ -87,7 +88,9 @@ function useSelectContext(): SelectContextValue {
 // Select
 // ---------------------------------------------------------------------------
 
-export function Select({ children, value, onValueChange, disabled, size = 'md' }: SelectProps) {
+export function Select({ children, value, onValueChange, disabled, size: sizeProp }: SelectProps) {
+  const {size: inheritedSize} = useBloomAppearance({size: sizeProp}, {size: 'md', tone: 'neutral'});
+  const size = inheritedSize === 'xs' || inheritedSize === 'sm' ? 'sm' : 'md';
   const control = useDialogControl();
   const valueStoreState = useState<unknown>(undefined);
 

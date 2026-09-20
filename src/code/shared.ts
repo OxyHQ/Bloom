@@ -5,8 +5,6 @@ import {
   ACCENT_TABLE,
   BUTTON_SHADOW,
   colorRamp,
-  DANGER_TABLE,
-  mixColor,
   resolveButtonRamps,
 } from '../button/shared';
 import { adoptStyleSheet } from '../styles/adopt-style-sheet';
@@ -21,26 +19,7 @@ export const IS_WEB = Platform.OS === 'web';
 /** `fontFamilies.mono` on web (the CSS variable), the registered face on native. */
 export const MONO_FAMILY = IS_WEB ? 'var(--bloom-font-mono)' : 'JetBrains Mono';
 
-/**
- * What the code family paints from, on Bloom's ramps:
- *
- *   role                    light           dark
- *   card surface            card            neutral-925 (the page)
- *   card border / rules     neutral-200     neutral-800
- *   plain, names            neutral-500     neutral-500
- *   punctuation, numbers    neutral-400     neutral-600
- *   strings, comments       neutral-500     neutral-500
- *   keywords, operators     success-500 turned to lime (Tailwind's emerald → lime offset) (`#7ccf00`)
- *   class names, tags       success-500     success-500   (`#00bc7d`)
- *   constants, numbers      accent-500      accent-500    (`#2b7fff`)
- *   language chip           purple 50 / 100 / 500   purple-950 @50% / 800 / 400
- *   additions / deletions   success-700 / negative-600
- *   copied check            success-500
- *   inline code             text
- *
- * Purple has no theme role, so it keeps Tailwind's offset from `blue-500`,
- * measured from the theme's primary (Tailwind's own value on a blue preset).
- */
+/** Canonical card, text, support-chip and status roles; syntax hues retain their data recipe. */
 export interface CodePalette {
   isDark: boolean;
   surface: string;
@@ -67,16 +46,6 @@ export interface CodePalette {
   inline: string;
 }
 
-const BLUE_500: Oklch = { l: 0.623, c: 0.214, h: 259.815 };
-const PURPLE: Record<50 | 100 | 400 | 500 | 800 | 950, Oklch> = {
-  50: { l: 0.977, c: 0.014, h: 308.299 },
-  100: { l: 0.946, c: 0.033, h: 307.174 },
-  400: { l: 0.714, c: 0.203, h: 305.504 },
-  500: { l: 0.627, c: 0.265, h: 303.9 },
-  800: { l: 0.438, c: 0.218, h: 303.724 },
-  950: { l: 0.291, c: 0.149, h: 302.717 },
-};
-
 function toRgb({ l, c, h }: Oklch): string {
   let chroma = c;
   for (let i = 0; i < 24; i++) {
@@ -86,19 +55,6 @@ function toRgb({ l, c, h }: Oklch): string {
     chroma *= 0.9;
   }
   return srgbToRgbString(oklchToSrgb({ l, c: chroma, h }));
-}
-
-function purple(theme: Theme, stop: keyof typeof PURPLE): string {
-  const rgba = parseRgba(theme.colors.primary);
-  const target = PURPLE[stop];
-  if (!rgba) return toRgb(target);
-  const base = srgbToOklch(rgba);
-  const lightness = stop <= 100 ? target.l : base.l + (target.l - BLUE_500.l);
-  return toRgb({
-    l: Math.min(0.99, Math.max(0.05, lightness)),
-    c: base.c * (target.c / BLUE_500.c),
-    h: (((base.h + (target.h - BLUE_500.h)) % 360) + 360) % 360,
-  });
 }
 
 /** Tailwind `emerald-500` → `lime-500`: the keyword hue keeps this offset from the class-name hue. */
@@ -117,33 +73,33 @@ function limeFrom(success: string): string {
 }
 
 export function resolveCodePalette(theme: Theme): CodePalette {
-  const { accent, neutral: n } = resolveButtonRamps(theme);
+  const { accent } = resolveButtonRamps(theme);
   const success = colorRamp(theme.colors.success, ACCENT_TABLE);
-  const red = colorRamp(theme.colors.negative, DANGER_TABLE);
   const dark = theme.isDark;
-  const page = dark ? mixColor(n[900], n[950], 0.4) : theme.colors.card;
+  const c = theme.colors;
+  const page = c.card;
   return {
     isDark: dark,
     surface: page,
-    border: dark ? n[800] : n[200],
-    plain: n[500],
-    punctuation: dark ? n[600] : n[400],
-    string: n[500],
+    border: c.borderLight,
+    plain: c.textSecondary,
+    punctuation: c.textTertiary,
+    string: c.textSecondary,
     keyword: limeFrom(success[500]),
     className: success[500],
     constant: accent[500],
-    lineNumber: dark ? n[600] : n[400],
-    chipBackground: dark ? mixColor(page, purple(theme, 950), 0.5) : purple(theme, 50),
-    chipBorder: dark ? purple(theme, 800) : purple(theme, 100),
-    chipText: dark ? purple(theme, 400) : purple(theme, 500),
-    filename: n[500],
-    addition: success[700],
-    deletion: red[600],
-    confirm: success[500],
-    icon: n[500],
-    iconHover: dark ? '#ffffff' : '#000000',
-    controlHover: dark ? mixColor(page, n[700], 0.6) : n[100],
-    ring: accent[500],
+    lineNumber: c.textTertiary,
+    chipBackground: c.secondarySubtle,
+    chipBorder: c.borderLight,
+    chipText: c.secondarySubtleForeground,
+    filename: c.textSecondary,
+    addition: c.successSubtleForeground,
+    deletion: c.errorSubtleForeground,
+    confirm: c.successSubtleForeground,
+    icon: c.textSecondary,
+    iconHover: c.text,
+    controlHover: c.backgroundSecondary,
+    ring: c.primary,
     shadow: dark ? BUTTON_SHADOW.dark : BUTTON_SHADOW.light,
     inline: theme.colors.text,
   };

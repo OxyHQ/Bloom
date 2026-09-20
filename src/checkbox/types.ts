@@ -1,6 +1,8 @@
+import type { BloomSize } from '../appearance';
+import type { BloomTone } from '../appearance';
 import type { StyleProp, ViewStyle, TextStyle } from 'react-native';
 
-export type CheckboxSize = 'small' | 'medium' | 'large';
+export type CheckboxSize = BloomSize;
 
 export interface CheckboxProps {
   /** Whether the checkbox is checked. */
@@ -18,7 +20,7 @@ export interface CheckboxProps {
   /** Whether the checkbox is in an indeterminate state. */
   indeterminate?: boolean;
   /** Semantic color when checked. Uses theme primary by default. */
-  color?: string;
+  tone?: BloomTone;
   style?: StyleProp<ViewStyle>;
   labelStyle?: StyleProp<TextStyle>;
   accessibilityLabel?: string;
@@ -39,7 +41,7 @@ export interface CheckboxCardProps {
   /** Whether the checkbox is in an indeterminate state. */
   indeterminate?: boolean;
   /** Accent for the checked box. Uses the theme primary by default. */
-  color?: string;
+  tone?: BloomTone;
   style?: StyleProp<ViewStyle>;
   accessibilityLabel?: string;
   testID?: string;

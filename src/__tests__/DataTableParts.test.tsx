@@ -109,7 +109,7 @@ describe('DataTableFilter', () => {
 describe('DataTableSearch', () => {
   it('is a labelled input that reports its text', () => {
     const onChangeText = jest.fn();
-    const { UNSAFE_getByType } = wrap(<DataTableSearch label="Search customers" value="" onChangeText={onChangeText} />);
+    const { UNSAFE_getByType } = wrap(<DataTableSearch label="Search customers" value="" onValueChange={onChangeText} />);
     const input = UNSAFE_getByType(TextInput);
     expect(input.props.placeholder).toBe('Search');
     fireEvent.changeText(input, 'ann');

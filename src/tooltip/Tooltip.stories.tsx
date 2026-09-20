@@ -1,3 +1,4 @@
+import { useArgs } from 'storybook/preview-api';
 import React, { useState } from 'react';
 import { Pressable, View } from 'react-native';
 import type { Meta, StoryObj } from '@storybook/react-vite';
@@ -6,6 +7,7 @@ import { Tooltip, TooltipTrigger, TooltipTextBubble } from './index';
 import { Text } from '../typography';
 
 const meta: Meta = {
+  component: Tooltip,
   title: 'Base/Tooltip',
 };
 
@@ -25,10 +27,11 @@ type Story = StoryObj;
  * next tap.
  */
 export const Basic: Story = {
+  parameters: { controls: { disable: true } },
   render: function BasicStory() {
     const [visible, setVisible] = useState(false);
     return (
-      <View style={{ width: 320, paddingTop: 60, alignItems: 'flex-start' }}>
+      <View style={{ width: 320, maxWidth: '100%', paddingTop: 60, alignItems: 'flex-start' }}>
         <Tooltip visible={visible} onVisibleChange={setVisible}>
           <TooltipTrigger>
             <Pressable
@@ -52,10 +55,11 @@ export const Basic: Story = {
  * top of the viewport still renders somewhere readable.
  */
 export const Position: Story = {
+  parameters: { controls: { disable: true } },
   render: function PositionStory() {
     const [open, setOpen] = useState<'top' | 'bottom' | null>(null);
     return (
-      <View style={{ width: 320, paddingVertical: 80, gap: 60 }}>
+      <View style={{ width: 320, maxWidth: '100%', paddingVertical: 80, gap: 60 }}>
         {(['top', 'bottom'] as const).map((position) => (
           <Tooltip
             key={position}
@@ -78,10 +82,11 @@ export const Position: Story = {
 
 /** Several lines: each child becomes its own line in the bubble. */
 export const MultiLine: Story = {
+  parameters: { controls: { disable: true } },
   render: function MultiLineStory() {
     const [visible, setVisible] = useState(true);
     return (
-      <View style={{ width: 320, paddingTop: 60, alignItems: 'flex-start' }}>
+      <View style={{ width: 320, maxWidth: '100%', paddingTop: 60, alignItems: 'flex-start' }}>
         <Tooltip visible={visible} onVisibleChange={setVisible}>
           <TooltipTrigger>
             <Pressable onPress={() => setVisible((value) => !value)}>
@@ -105,9 +110,10 @@ export const MultiLine: Story = {
  * 10px from the trigger.
  */
 export const Sizes: Story = {
+  parameters: { controls: { disable: true } },
   render: function SizesStory() {
     return (
-      <View style={{ paddingVertical: 80, paddingHorizontal: 60, flexDirection: 'row', gap: 120 }}>
+      <View style={{ paddingVertical: 80, paddingHorizontal: 40, maxWidth: '100%', flexDirection: 'row', flexWrap: 'wrap', columnGap: 64, rowGap: 120 }}>
         {(['sm', 'md'] as const).map((size) =>
           (['top', 'bottom'] as const).map((position) => (
             <View key={`${size}-${position}`} style={{ alignItems: 'flex-start' }}>
@@ -134,9 +140,10 @@ export const Sizes: Story = {
  * trigger's measured box, re-measured on scroll and resize.)
  */
 export const AnchoredToTrigger: Story = {
+  parameters: { controls: { disable: true } },
   render: function AnchoredStory() {
     return (
-      <View style={{ width: 560, paddingVertical: 80, gap: 80 }}>
+      <View style={{ width: 560, maxWidth: '100%', paddingVertical: 80, gap: 80 }}>
         <View style={{ flexDirection: 'row', justifyContent: 'flex-end' }}>
           <Tooltip position="top" visible onVisibleChange={() => {}}>
             <TooltipTrigger>
@@ -155,5 +162,15 @@ export const AnchoredToTrigger: Story = {
         </View>
       </View>
     );
+  },
+};
+
+export const Playground: StoryObj<typeof Tooltip> = {
+  args: { visible: false, position: 'top' },
+  parameters: { controls: { disable: false, include: ['visible', 'position'] } },
+  argTypes: { visible: { control: 'boolean' }, position: { control: 'select', options: ['top','bottom'] } },
+  render: function Playground(args) {
+    const [, updateArgs] = useArgs();
+    return <View style={{ width: 520, maxWidth: '100%' }}><View style={{ paddingVertical: 72, alignItems: 'center' }}><Tooltip {...args} onVisibleChange={visible => updateArgs({ visible })}><TooltipTrigger><Pressable accessibilityRole="button" accessibilityLabel="Preview tooltip" onHoverIn={() => updateArgs({ visible: true })} onHoverOut={() => updateArgs({ visible: false })} onFocus={() => updateArgs({ visible: true })} onBlur={() => updateArgs({ visible: false })} onPress={() => updateArgs({ visible: !args.visible })}><Text>Hover, focus or tap</Text></Pressable></TooltipTrigger><TooltipTextBubble>Copies the link to your clipboard</TooltipTextBubble></Tooltip></View></View>;
   },
 };

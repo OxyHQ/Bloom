@@ -9,6 +9,9 @@ import { RiLockLine as LockIcon } from '../icons/remix/RiLockLine';
 import { RiShieldLine as ShieldIcon } from '../icons/remix/RiShieldLine';
 
 const meta: Meta<typeof IconCircle> = {
+  argTypes: {
+    "size": { control: 'select', options: ["xs","sm","md","lg","2xs","xl","2xl","3xl"] }
+  },
   title: 'Base/Icon Circle',
   component: IconCircle,
 };
@@ -24,6 +27,7 @@ type Story = StoryObj<typeof IconCircle>;
  * mistake that produced a chip drawn at contrast 1.00.
  */
 export const Sizes: Story = {
+  parameters: { controls: { disable: true } },
   render: () => (
     <View style={{ flexDirection: 'row', gap: 24, alignItems: 'center' }}>
       <IconCircle icon={BellIcon} size="lg" />
@@ -34,8 +38,9 @@ export const Sizes: Story = {
 
 /** Where it is normally used: the header of an empty state or a consent step. */
 export const InAHeader: Story = {
+  parameters: { controls: { disable: true } },
   render: () => (
-    <View style={{ width: 320, alignItems: 'center', gap: 12 }}>
+    <View style={{ maxWidth: '100%', width: 320, alignItems: 'center', gap: 12 }}>
       <IconCircle icon={ShieldIcon} />
       <Text style={{ fontSize: 17, fontWeight: '600' }}>Nothing shared yet</Text>
       <Text style={{ textAlign: 'center' }}>
@@ -51,6 +56,7 @@ export const InAHeader: Story = {
  * together or not at all.
  */
 export const CustomTone: Story = {
+  parameters: { controls: { disable: true } },
   render: () => (
     <View style={{ flexDirection: 'row', gap: 24 }}>
       <IconCircle
@@ -65,4 +71,9 @@ export const CustomTone: Story = {
       />
     </View>
   ),
+};
+
+/** Edit the props in Controls; interactive state stays in sync. */
+export const Playground: Story = {
+  args: { icon: BellIcon, size: 'lg' },
 };

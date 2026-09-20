@@ -6,7 +6,7 @@ order: 27
 
 # Pagination
 
-A controlled page selector: Previous and Next are Bloom's own secondary small `Button`, with a window of page numbers between them. Colours come from the ramps in `src/button/shared.ts`.
+A controlled page selector: Previous and Next are Bloom's own plain neutral small `Button`, with a window of page numbers between them. Colours come from the ramps in `src/button/shared.ts`.
 
 ```tsx
 import { Pagination } from '@oxy.so/bloom/pagination';
@@ -33,7 +33,7 @@ page 10 of 10  1 … 6 7 8 9 10
 | | |
 |---|---|
 | row | space-between, gap 8 |
-| Previous / Next | `Button` secondary, `small` (32), Remix `RiArrowLeftLine` / `RiArrowRightLine`; disabled at either end |
+| Previous / Next | `Button` plain neutral, `sm` (32), Remix `RiArrowLeftLine` / `RiArrowRightLine`; disabled at either end |
 | page cell | 32×32 circle, `body-medium` (Inter 14/20 500), gap 2 |
 | current | card surface (dark: neutral-800), 1px neutral-200 border (dark: neutral-700), shadow-xs, text colour |
 | other pages | text-secondary (neutral-500); hover neutral-200 fill (dark: neutral-800) and the text colour |

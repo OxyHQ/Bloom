@@ -20,7 +20,7 @@ type Story = StoryObj;
 function Sample({ label }: { label: string }) {
   const { colors } = useTheme();
   return (
-    <Card variant="outlined" radius="radius-16" style={{ padding: 16, gap: 10, width: 220 }}>
+    <Card appearance="outline" radius="radius-16" style={{ padding: 16, gap: 10, width: 220 }}>
       <Text style={{ fontWeight: '600', color: colors.text }}>{label}</Text>
       <Text style={{ color: colors.textSecondary }}>Secondary text</Text>
       <View style={{ flexDirection: 'row', gap: 6 }}>
@@ -38,7 +38,7 @@ function Sample({ label }: { label: string }) {
           />
         ))}
       </View>
-      <Button size="small">Primary</Button>
+      <Button size="sm">Primary</Button>
     </Card>
   );
 }
@@ -60,8 +60,9 @@ function Sample({ label }: { label: string }) {
  * branch rather than nesting it inside an app-providers component.
  */
 export const Modes: Story = {
+  parameters: { controls: { disable: true } },
   render: () => (
-    <View style={{ flexDirection: 'row', gap: 16 }}>
+    <View style={{ flexDirection: 'row', flexWrap: 'wrap', maxWidth: '100%', gap: 16 }}>
       {(['light', 'dark'] as const).map((mode) => (
         <BloomThemeProvider key={mode} mode={mode} colorPreset="oxy">
           <View style={{ padding: 16 }}>
@@ -79,8 +80,9 @@ export const Modes: Story = {
  * shows up here instead of silently missing.
  */
 export const Presets: Story = {
+  parameters: { controls: { disable: true } },
   render: () => (
-    <View style={{ width: 820, flexDirection: 'row', flexWrap: 'wrap', gap: 16 }}>
+    <View style={{ width: 820, maxWidth: '100%', flexDirection: 'row', flexWrap: 'wrap', gap: 16 }}>
       {Object.keys(APP_COLOR_PRESETS).map((preset) => (
         <BloomThemeProvider
           key={preset}
@@ -102,8 +104,9 @@ export const Presets: Story = {
  * root: the alias substitutes where it is DECLARED, not where it is read.
  */
 export const Scoped: Story = {
+  parameters: { controls: { disable: true } },
   render: () => (
-    <View style={{ flexDirection: 'row', gap: 16 }}>
+    <View style={{ flexDirection: 'row', flexWrap: 'wrap', maxWidth: '100%', gap: 16 }}>
       <Sample label="app theme" />
       <BloomColorScope colorPreset="pink">
         <Sample label="scoped: pink" />

@@ -231,7 +231,7 @@ function RowMenu({
           </DropdownMenuItem>
         ) : null}
         {onDelete ? (
-          <DropdownMenuItem className={DENSE_ROW_CLASS} variant="destructive" onPress={onDelete}>
+          <DropdownMenuItem className={DENSE_ROW_CLASS} tone="danger" onPress={onDelete}>
             {labels.delete}
           </DropdownMenuItem>
         ) : null}

@@ -19,7 +19,6 @@ import {
   yScale,
 } from '../chart-cards/geometry';
 import { resolveChartCardPalette } from '../chart-cards/palette';
-import { mixColor, resolveButtonRamps } from '../button/shared';
 
 const REVENUE: ChartCardPoint[] = [
   { label: 'Jan', current: 9840, previous: 8210 },
@@ -283,30 +282,16 @@ describe('OrdersChartCard', () => {
 });
 
 describe('chart card palette', () => {
-  it('maps the chart tokens onto the neutral ramp in both modes', () => {
-    const light = buildTheme('teal', 'light');
-    const dark = buildTheme('teal', 'dark');
-    const nl = resolveButtonRamps(light).neutral;
-    const nd = resolveButtonRamps(dark).neutral;
-    expect(resolveChartCardPalette(light)).toMatchObject({
-      surface: nl[100],
-      textSecondary: nl[500],
-      textTertiary: nl[400],
-      neutralSeries: nl[300],
-      cursor: nl[300],
-      track: nl[200],
-    });
-    const p = resolveChartCardPalette(dark);
-    expect(p).toMatchObject({
-      surface: nd[900],
-      textTertiary: nd[600],
-      neutralSeries: nd[800],
-      cursor: nd[700],
-      track: nd[800],
-      neutral: { background: nd[800], foreground: nd[500] },
-    });
-    // Dark status fills are the 950 stop at 60% over the card, not a translucent string.
-    expect(p.positive.background).toMatch(/^rgb\(/);
-    expect(p.positive.background).not.toBe(mixColor(p.surface, p.surface, 0.6));
+  it('uses canonical surfaces and readable role pairs in both modes', () => {
+    for (const mode of ['light', 'dark'] as const) {
+      const { colors: c } = buildTheme('teal', mode);
+      const p = resolveChartCardPalette(buildTheme('teal', mode));
+      expect(p).toMatchObject({
+        surface: c.card, textSecondary: c.textSecondary, textTertiary: c.textTertiary,
+        positive: { background: c.successSubtle, foreground: c.successSubtleForeground },
+        negative: { background: c.errorSubtle, foreground: c.errorSubtleForeground },
+        inner: c.backgroundSecondary,
+      });
+    }
   });
 });

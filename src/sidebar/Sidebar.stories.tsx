@@ -1,9 +1,13 @@
+import { useArgs } from 'storybook/preview-api';
 import React, { useState } from 'react';
 import { View } from 'react-native';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
 import { Badge } from '../badge';
+import { useTheme } from '../theme/use-theme';
 import {
+  RiSearchLine,
+  RiComputerLine,
   RiAddFill,
   RiAsterisk,
   RiBankCardLine,
@@ -36,8 +40,8 @@ import {
   RiShieldUserLine,
   RiUserSmileLine,
 } from '../icons/remix';
-import { Sidebar, SidebarFolder, SidebarItem, SidebarPlanCard, SidebarRailItem } from './index';
-import type { SidebarAccount, SidebarNavItem, SidebarPlan, SidebarTeam, SidebarTree } from './types';
+import { Sidebar, SidebarFolder, SidebarItem, SidebarModeSwitcher, SidebarPlanCard, SidebarRailItem } from './index';
+import type { SidebarAccount, SidebarLogo, SidebarMode, SidebarNavItem, SidebarPlan, SidebarTeam, SidebarTree } from './types';
 
 const meta: Meta<typeof Sidebar> = {
   title: 'Blocks/Sidebar',
@@ -118,12 +122,15 @@ export const DEMO_ACCOUNT: SidebarAccount = {
   onManage: () => {},
 };
 
-function Frame({ children }: { children: React.ReactNode }) {
-  return <View style={{ height: 820, flexDirection: 'row', gap: 24 }}>{children}</View>;
+function Frame({ children, height = 820 }: { children: React.ReactNode; height?: number }) {
+  return <View style={{ maxWidth: '100%', flexDirection: 'row', flexWrap: 'wrap', alignItems: 'flex-start', gap: 24 }}>
+    {React.Children.map(children, child => <View style={{ height, maxWidth: '100%' }}>{child}</View>)}
+  </View>;
 }
 
 /** The floating rail, interactive: collapse, search (⌘L), both menus. */
 export const Default: Story = {
+  parameters: { controls: { disable: true } },
   render: function Render() {
     const [selected, setSelected] = useState('home');
     return (
@@ -142,7 +149,132 @@ export const Default: Story = {
   },
 };
 
+/** Search / Computer: the modes a sidebar switches between. */
+export const DEMO_MODES: SidebarMode[] = [
+  { key: 'search', label: 'Search', icon: RiSearchLine, shortcut: '⌥⌃1' },
+  { key: 'computer', label: 'Computer', icon: RiComputerLine, shortcut: '⌥⌃2' },
+];
+
+/** A mode switcher under the header (`modes`), expanded and collapsed. */
+export const WithModes: Story = {
+  parameters: { controls: { disable: true } },
+  render: function Render() {
+    const [mode, setMode] = useState('search');
+    const [selected, setSelected] = useState('home');
+    return (
+      <Frame>
+        <Sidebar
+          testID="sidebar"
+          modes={DEMO_MODES}
+          mode={mode}
+          onModeChange={setMode}
+          items={DEMO_NAV}
+          secondaryItems={DEMO_SECONDARY}
+          selected={selected}
+          onNavigate={(item) => setSelected(item.key)}
+          account={DEMO_ACCOUNT}
+          team={DEMO_TEAM}
+        />
+        <Sidebar
+          collapsed
+          modes={DEMO_MODES}
+          mode={mode}
+          onModeChange={setMode}
+          items={DEMO_NAV}
+          secondaryItems={DEMO_SECONDARY}
+          selected={selected}
+          onNavigate={(item) => setSelected(item.key)}
+          account={DEMO_ACCOUNT}
+          team={DEMO_TEAM}
+        />
+      </Frame>
+    );
+  },
+};
+
+/** `SidebarModeSwitcher` on its own: two and three modes. */
+export const ModeSwitcher: Story = {
+  parameters: { controls: { disable: true } },
+  render: function Render() {
+    const [two, setTwo] = useState('search');
+    const [three, setThree] = useState('chat');
+    return (
+      <View testID="mode-switchers" style={{ width: 236, gap: 24, padding: 12 }}>
+        <SidebarModeSwitcher testID="modes-two" modes={DEMO_MODES} value={two} onValueChange={setTwo} />
+        <SidebarModeSwitcher
+          testID="modes-three"
+          modes={[
+            { key: 'chat', label: 'Chat', icon: RiSearchLine },
+            { key: 'agents', label: 'Agents', icon: RiComputerLine },
+            { key: 'search', label: 'Search', icon: RiSearchLine },
+          ]}
+          value={three}
+          onValueChange={setThree}
+        />
+      </View>
+    );
+  },
+};
+
+/** A demo mark: a 28px accent tile with a glyph. Pass your own SVG or image. */
+function DemoMark() {
+  const theme = useTheme();
+  return (
+    <View style={{ width: 28, height: 28, borderRadius: 8, alignItems: 'center', justifyContent: 'center', backgroundColor: theme.colors.primary }}>
+      <RiAsterisk width={18} height={18} fill="#ffffff" />
+    </View>
+  );
+}
+
+const DEMO_LOGO: SidebarLogo = { icon: <DemoMark />, wordmark: 'Oxy', href: '#home', onPress: () => {} };
+
+/**
+ * `logo`: a mark and a wordmark leading the header. The account switcher moves
+ * to its own row; collapsed, the mark stays and the wordmark folds away; the
+ * rail shows the mark only.
+ */
+export const WithLogo: Story = {
+  parameters: { controls: { disable: true } },
+  render: function Render() {
+    const [selected, setSelected] = useState('home');
+    return (
+      <Frame>
+        <Sidebar
+          testID="sidebar"
+          logo={DEMO_LOGO}
+          items={DEMO_NAV}
+          secondaryItems={DEMO_SECONDARY}
+          selected={selected}
+          onNavigate={(item) => setSelected(item.key)}
+          account={DEMO_ACCOUNT}
+          team={DEMO_TEAM}
+        />
+        <Sidebar defaultCollapsed logo={DEMO_LOGO} items={DEMO_NAV} secondaryItems={DEMO_SECONDARY} selected="home" team={DEMO_TEAM} />
+        <Sidebar mobile onClose={() => {}} logo={DEMO_LOGO} items={DEMO_NAV} secondaryItems={DEMO_SECONDARY} selected="home" team={DEMO_TEAM} />
+        <Sidebar
+          variant="rail"
+          logo={DEMO_LOGO}
+          items={DEMO_RAIL_NAV}
+          secondaryItems={DEMO_RAIL_SECONDARY}
+          selected="home"
+        />
+      </Frame>
+    );
+  },
+};
+
+/** A wordmark on its own (an SVG wordmark works the same). */
+export const WithWordmarkOnly: Story = {
+  parameters: { controls: { disable: true } },
+  render: () => (
+    <Frame>
+      <Sidebar logo={{ wordmark: 'Mention' }} items={DEMO_NAV} secondaryItems={DEMO_SECONDARY} selected="home" team={DEMO_TEAM} />
+    </Frame>
+  ),
+};
+
 export const Collapsed: Story = {
+  parameters: { controls: { disable: true } },
   render: () => (
     <Frame>
       <Sidebar
@@ -158,8 +290,9 @@ export const Collapsed: Story = {
   ),
 };
 
-/** The drawer variants: `mobile` (close button) and `mobile flat` (search in the header). */
+/** The drawer variants: `mobile` (close button) and `mobile surface="plain"` (search in the header). */
 export const Mobile: Story = {
+  parameters: { controls: { disable: true } },
   render: () => (
     <Frame>
       <Sidebar
@@ -173,7 +306,7 @@ export const Mobile: Story = {
       />
       <Sidebar
         mobile
-        flat
+        surface="plain"
         items={DEMO_NAV}
         secondaryItems={DEMO_SECONDARY}
         selected="calendar"
@@ -186,6 +319,7 @@ export const Mobile: Story = {
 
 /** `SidebarItem` states on its own: rest, selected with badge, collapsed. */
 export const Items: Story = {
+  parameters: { controls: { disable: true } },
   render: () => (
     <View style={{ width: 236, gap: 4 }}>
       <SidebarItem icon={RiHomeLine} label="Home" />
@@ -229,6 +363,7 @@ const PLAN: SidebarPlan = { name: 'Design team', plan: 'Pro Plan', avatar: { ini
  * place of the team menu. Quick search filters the tree too.
  */
 export const Tree: Story = {
+  parameters: { controls: { disable: true } },
   render: function Render() {
     const [selected, setSelected] = useState('coding');
     return (
@@ -243,7 +378,7 @@ export const Tree: Story = {
           onTreeItemPress={(item) => setSelected(item.key)}
           plan={PLAN}
         />
-        <Sidebar mobile flat items={CHAT_NAV} secondaryItems={DEMO_SECONDARY} account={DEMO_ACCOUNT} tree={REPOSITORIES} selectedTreeItem={selected} plan={PLAN} />
+        <Sidebar mobile surface="plain" items={CHAT_NAV} secondaryItems={DEMO_SECONDARY} account={DEMO_ACCOUNT} tree={REPOSITORIES} selectedTreeItem={selected} plan={PLAN} />
       </Frame>
     );
   },
@@ -251,6 +386,7 @@ export const Tree: Story = {
 
 /** `SidebarFolder` and `SidebarPlanCard` on their own. */
 export const TreeParts: Story = {
+  parameters: { controls: { disable: true } },
   render: () => (
     <View style={{ width: 236, gap: 16 }}>
       <SidebarFolder folder={REPOSITORIES.folders[1]!} selectedItem="image" />
@@ -275,6 +411,7 @@ export const DEMO_RAIL_SECONDARY: SidebarNavItem[] = [
 
 /** `variant="rail"`: the 80px navigation rail, icon over label, items centred. */
 export const Rail: Story = {
+  parameters: { controls: { disable: true } },
   render: function Render() {
     const [selected, setSelected] = useState('home');
     return (
@@ -294,6 +431,7 @@ export const Rail: Story = {
 
 /** `SidebarRailItem` states on its own: rest, selected, selected with the filled glyph, badge. */
 export const RailItems: Story = {
+  parameters: { controls: { disable: true } },
   render: () => (
     <View style={{ width: 64, gap: 8 }}>
       <SidebarRailItem icon={RiHomeLine} label="Home" />
@@ -302,4 +440,94 @@ export const RailItems: Story = {
       <SidebarRailItem icon={RiNotification3Line} label="Activity" badge={<Badge content={4} />} />
     </View>
   ),
+};
+
+/**
+ * The three SURFACES, the axis two apps differ on most: the floating `card`,
+ * the `plain` column that sits straight on the page, and the `docked` one
+ * flush to the window with a single hairline facing the content.
+ */
+export const Surfaces: Story = {
+  parameters: { controls: { disable: true } },
+  render: () => (
+    <Frame>
+      {(['card', 'plain', 'docked'] as const).map((surface) => (
+        <Sidebar
+          key={surface}
+          surface={surface}
+          items={DEMO_NAV}
+          secondaryItems={DEMO_SECONDARY}
+          selected="calendar"
+          account={DEMO_ACCOUNT}
+          showSearch={false}
+          testID={`sidebar-${surface}`}
+        />
+      ))}
+    </Frame>
+  ),
+};
+
+/**
+ * The three SIZES: 232 / 260 / 300 expanded, a 30 / 36 / 44 square collapsed,
+ * an 18 / 20 / 24 glyph. `lg` is the destination-first rail a social app
+ * reads with at arm's length.
+ */
+export const Sizes: Story = {
+  parameters: { controls: { disable: true } },
+  render: () => (
+    <Frame>
+      {(['sm', 'md', 'lg'] as const).map((size) => (
+        <Sidebar
+          key={size}
+          size={size}
+          items={DEMO_NAV}
+          selected="calendar"
+          account={DEMO_ACCOUNT}
+          showSearch={false}
+          showThemeToggle={false}
+          testID={`sidebar-${size}`}
+        />
+      ))}
+    </Frame>
+  ),
+};
+
+/** Compact modes keep their icons centered at every panel size and surface. */
+export const CollapsedModes: Story = {
+  args: { size: 'md', surface: 'card' },
+  argTypes: {
+    size: { control: 'select', options: ['sm', 'md', 'lg'] },
+    surface: { control: 'select', options: ['card', 'docked'] },
+  },
+  render: function Render(args) {
+    const [collapsed, setCollapsed] = useState(true);
+    const [mode, setMode] = useState('search');
+    return <Frame><Sidebar {...args} testID="compact-sidebar" collapsed={collapsed}
+      onCollapsedChange={setCollapsed} modes={DEMO_MODES} mode={mode}
+      onModeChange={setMode} items={DEMO_NAV.slice(0, 3)}
+      showSearch={false} showThemeToggle /></Frame>;
+  },
+};
+
+/** Overflow cues update before scrolling and disappear when all rows fit. */
+export const ScrollOverflow: Story = {
+  args: { surface: 'card' },
+  argTypes: { surface: { control: 'select', options: ['card', 'docked', 'plain'] } },
+  render: function Render(args) {
+    const [selected, setSelected] = useState('home');
+    return <Frame height={320}><Sidebar {...args} testID="overflow-sidebar" style={{ height: 320 }} items={DEMO_NAV}
+      selected={selected} onNavigate={item => setSelected(item.key)} showSearch={false} showThemeToggle={false} />
+      <Sidebar {...args} testID="fitting-sidebar" style={{ height: 320 }} items={DEMO_NAV.slice(0, 2)}
+        showSearch={false} showThemeToggle={false} /></Frame>;
+  },
+};
+
+export const Playground: Story = {
+  args: { items: DEMO_NAV, selected: 'home', modes: DEMO_MODES, mode: 'search', collapsed: false, size: 'md', surface: 'card', showSearch: true, showThemeToggle: true },
+  parameters: { controls: { disable: false, include: ['selected', 'mode', 'collapsed', 'size', 'surface', 'showSearch', 'showThemeToggle'] } },
+  argTypes: { selected: { control: 'select', options: DEMO_NAV.map(item => item.key) }, mode: { control: 'select', options: ['search', 'computer'] }, collapsed: { control: 'boolean' }, size: { control: 'select', options: ['sm', 'md', 'lg'] }, surface: { control: 'select', options: ['card', 'docked', 'plain'] }, showSearch: { control: 'boolean' }, showThemeToggle: { control: 'boolean' } },
+  render: function Playground(args) {
+    const [, updateArgs] = useArgs();
+    return <View style={{ height: 700, maxWidth: '100%' }}><Sidebar {...args} style={{ height: '100%', maxWidth: '100%' }} onCollapsedChange={collapsed => updateArgs({ collapsed })} onModeChange={mode => updateArgs({ mode })} onNavigate={item => updateArgs({ selected: item.key })} /></View>;
+  },
 };

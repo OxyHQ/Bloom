@@ -2,7 +2,7 @@ import React from 'react';
 import { fireEvent, render } from '@testing-library/react-native';
 import { resolvedStyle } from './support/rendered-style';
 
-import { resolveButtonRamps } from '../button/shared';
+import { contrastRatio } from '../styles/color-contrast';
 import { RiEyeLine } from '../icons/remix';
 import { BloomThemeProvider } from '../theme/BloomThemeProvider';
 import { buildTheme } from '../theme/build-theme';
@@ -64,7 +64,8 @@ describe('StageBarsCard', () => {
     expect(resolvedStyle(getByTestId('stage-bar-2-fill').props.style).backgroundColor).toBe(tones[2]!.color);
     const icons = UNSAFE_getAllByType(RiEyeLine as never) as unknown as Node[];
     expect(icons).toHaveLength(1);
-    expect(icons[0]!.props).toMatchObject({ width: 14, height: 14, fill: resolveButtonRamps(theme).neutral[950] });
+    expect(icons[0]!.props).toMatchObject({ width: 14, height: 14 });
+    expect(contrastRatio(icons[0]!.props.fill as string, tones[0]!.color)).toBeGreaterThanOrEqual(4.5);
   });
 
   it('hides icons with showIcons={false}', () => {

@@ -4,39 +4,33 @@ import type { StyleProp, ViewStyle } from 'react-native';
 import type { NotificationCenterItem, NotificationCenterTab } from '../notification-center/types';
 import type { SidebarProps } from '../sidebar/types';
 
-/**
- * How the sidebar reaches a narrow screen (below `lg`):
- *
- * - `overlay`  a drawer over the page with a 40% black backdrop
- * - `reveal`   the sidebar waits beneath the page, which slides 272px right and
- *              rounds its corner to 32 as the rail scales in from 0.94
- */
-export type AppShellDrawer = 'overlay' | 'reveal';
-
+export type AppShellNavigationPlacement = 'auto' | 'bottom' | 'rail' | 'sidebar';
+export interface AppShellNavigationItem {
+  value: string;
+  label: string;
+  icon: ReactNode;
+}
 export interface AppShellProps {
-  /**
-   * The rail. Rendered in flow at `lg` and up (`sm` and up with
-   * `variant: 'rail'`); below it, the same props drive the drawer (`mobile`,
-   * and `flat` for `reveal`), always as the panel.
-   */
-  sidebar?: Omit<SidebarProps, 'mobile' | 'onClose' | 'flat'>;
-  drawer?: AppShellDrawer;
-  /** Heading over the content. */
+  active?: boolean;
+  navigation?: AppShellNavigationItem[];
+  value?: string;
+  onValueChange?: (value: string) => void;
+  navigationPlacement?: AppShellNavigationPlacement;
+  navigationMaterial?: 'solid' | 'translucent';
+  /** Bottom action follows scroll collapse by hiding (default), or remains visible. */
+  bottomActionBehavior?: 'hide' | 'visible';
+  /** external: the child list owns scrolling; avoids nested virtualized lists. */
+  scroll?: 'auto' | 'external';
+  /** Sidebar configuration, including card (detached, default) or docked surface. Also applies with navigation. */
+  sidebar?: Omit<SidebarProps, 'mobile' | 'onClose'>;
+  primaryAction?: import('../fab/types').FabProps;
   title?: string;
-  /** Breadcrumb trail above the heading (a `Breadcrumb`). */
   breadcrumb?: ReactNode;
-  /** Header actions on the right (`NotificationBell`, buttons). */
   actions?: ReactNode;
-  /** Replaces the whole header. */
   header?: ReactNode;
   children?: ReactNode;
-  /** The content column's max width. Defaults to 1300. */
   contentMaxWidth?: number;
-  /** Floating extras rendered last, e.g. a `ProOfferCard`. */
   overlay?: ReactNode;
-  /** Controlled drawer state (below `lg`). */
-  drawerOpen?: boolean;
-  onDrawerOpenChange?: (open: boolean) => void;
   style?: StyleProp<ViewStyle>;
   testID?: string;
 }

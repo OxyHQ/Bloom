@@ -2,7 +2,7 @@
  * `Divider` exists so nothing in the library draws a separator by hand. The
  * things worth pinning are the ones a hand-rolled copy always gets wrong: the
  * colour comes from ONE derived source (the separator stop on the
- * theme-tinted neutral ramp) rather than a literal, and the vertical form
+ * canonical border role) rather than a literal, and the vertical form
  * STRETCHES to its parent's height instead of inventing one — a vertical
  * divider with a hardcoded height is the usual reason a toolbar rule is the
  * wrong length. Plus the three treatments and their content layout.
@@ -13,7 +13,7 @@ import { render } from '@testing-library/react-native';
 import { BloomThemeProvider } from '../theme/BloomThemeProvider';
 import { Divider } from '../divider';
 import { useTheme } from '../theme/use-theme';
-import { resolveButtonRamps } from '../button/shared';
+import type { ThemeColors } from '../theme/types';
 import { borderRadius } from '../styles/tokens';
 import { renderedChildren, resolvedStyle } from './support/rendered-style';
 
@@ -25,11 +25,11 @@ function renderWithTheme(ui: React.ReactElement, mode: 'light' | 'dark' = 'light
   );
 }
 
-/** The neutral ramp as the active theme resolves it. */
+/** The canonical colors as the active theme resolves them. */
 function neutral(mode: 'light' | 'dark') {
-  let captured: ReturnType<typeof resolveButtonRamps>['neutral'] | null = null;
+  let captured: ThemeColors | null = null;
   function Probe() {
-    captured = resolveButtonRamps(useTheme()).neutral;
+    captured = useTheme().colors;
     return null;
   }
   renderWithTheme(<Probe />, mode);
@@ -37,11 +37,11 @@ function neutral(mode: 'light' | 'dark') {
 }
 
 describe('Divider', () => {
-  it('takes its colour from the separator stop: neutral-200 light, neutral-800 dark', () => {
+  it('takes its colour from the canonical separator in both modes', () => {
     const light = renderWithTheme(<Divider testID="d" />);
-    expect(resolvedStyle(light.getByTestId('d').props.style).backgroundColor).toBe(neutral('light')[200]);
+    expect(resolvedStyle(light.getByTestId('d').props.style).backgroundColor).toBe(neutral('light').borderLight);
     const dark = renderWithTheme(<Divider testID="d" />, 'dark');
-    expect(resolvedStyle(dark.getByTestId('d').props.style).backgroundColor).toBe(neutral('dark')[800]);
+    expect(resolvedStyle(dark.getByTestId('d').props.style).backgroundColor).toBe(neutral('dark').borderLight);
   });
 
   it('lays out horizontally by default: full width, 1px, thickness as height', () => {
@@ -78,9 +78,9 @@ describe('Divider', () => {
   it('draws the empty double (8px, top + bottom hairline) and fill (8px pill) strips', () => {
     const n = neutral('light');
     const double = resolvedStyle(renderWithTheme(<Divider variant="double" testID="d" />).getByTestId('d').props.style);
-    expect(double).toMatchObject({ height: 8, borderTopWidth: 1, borderBottomWidth: 1, borderTopColor: n[200] });
+    expect(double).toMatchObject({ height: 8, borderTopWidth: 1, borderBottomWidth: 1, borderTopColor: n.borderLight });
     const fill = resolvedStyle(renderWithTheme(<Divider variant="fill" testID="d" />).getByTestId('d').props.style);
-    expect(fill).toMatchObject({ height: 8, borderRadius: borderRadius.full, backgroundColor: n[100] });
+    expect(fill).toMatchObject({ height: 8, borderRadius: borderRadius.full, backgroundColor: n.backgroundSecondary });
   });
 
   it('places content between two flexible lines, dropping the line on the aligned side', () => {
@@ -111,7 +111,7 @@ describe('Divider', () => {
       fontSize: 14,
       lineHeight: 20,
       fontWeight: '500',
-      color: neutral('light')[500],
+      color: neutral('light').textSecondary,
     });
   });
 });

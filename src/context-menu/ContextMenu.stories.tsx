@@ -19,6 +19,8 @@ import {
 } from './index';
 
 const meta: Meta = {
+  component: ContextMenu,
+  parameters: { controls: { disable: true } },
   title: 'Base/Context Menu',
 };
 
@@ -31,14 +33,15 @@ type Story = StoryObj;
  * THE CURSOR, so the anchor is the click point rather than the trigger's box.
  */
 export const Basic: Story = {
+  parameters: { controls: { disable: true } },
   render: function BasicContextMenu() {
     const [last, setLast] = useState('idle');
     return (
-      <View style={{ padding: 60, gap: 16 }}>
+      <View style={{ width: 320, maxWidth: '100%', gap: 16 }}>
         <Text testID="result">last: {last}</Text>
         <ContextMenu>
           <ContextMenuTrigger label="Post actions" testID="context-trigger">
-            <Card style={{ width: 320, height: 160, justifyContent: 'center' }}>
+            <Card style={{ maxWidth: '100%', width: 320, height: 160, justifyContent: 'center' }}>
               <Text style={{ textAlign: 'center' }}>Right-click or long-press me</Text>
             </Card>
           </ContextMenuTrigger>
@@ -53,7 +56,7 @@ export const Basic: Story = {
             </ContextMenuItem>
             <ContextMenuItem onPress={() => setLast('pin')}>Pin to profile</ContextMenuItem>
             <ContextMenuSeparator />
-            <ContextMenuItem variant="destructive" onPress={() => setLast('delete')}>
+            <ContextMenuItem tone="danger" onPress={() => setLast('delete')}>
               Delete
             </ContextMenuItem>
           </ContextMenuContent>
@@ -65,13 +68,14 @@ export const Basic: Story = {
 
 /** The same row vocabulary the other two menu families publish. */
 export const WithSelectionAndSubmenu: Story = {
+  parameters: { controls: { disable: true } },
   render: function RichContextMenu() {
     const [pinned, setPinned] = useState(false);
     return (
-      <View style={{ padding: 60 }}>
+      <View style={{ width: 320, maxWidth: '100%' }}>
         <ContextMenu>
           <ContextMenuTrigger label="Message actions">
-            <Card style={{ width: 320, height: 120, justifyContent: 'center' }}>
+            <Card style={{ maxWidth: '100%', width: 320, height: 120, justifyContent: 'center' }}>
               <Text style={{ textAlign: 'center' }}>Right-click or long-press me</Text>
             </Card>
           </ContextMenuTrigger>

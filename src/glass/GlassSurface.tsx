@@ -1,13 +1,15 @@
 import React, { memo, useMemo } from 'react';
-import { StyleSheet, View } from 'react-native';
+import { Platform, StyleSheet, View } from 'react-native';
 import { BlurView } from 'expo-blur';
 import Svg, { Defs, LinearGradient, Rect, Stop } from 'react-native-svg';
 
 import { useTheme } from '../theme/use-theme';
 import {
   GLASS_BLUR_INTENSITY,
+  GLASS_BLUR_RADIUS_PX,
   GLASS_RIM_HIGHLIGHT,
   GLASS_SHEEN,
+  resolveChromeGlassColors,
   resolveGlassColors,
 } from '../theme/glass-colors';
 import type { GlassSurfaceProps } from './types';
@@ -54,12 +56,19 @@ let glassSheenIdCounter = 0;
 const GlassSurfaceComponent: React.FC<GlassSurfaceProps> = ({
   fill,
   radius,
+  material = 'accent',
   sheen = true,
   style,
   testID,
 }) => {
   const theme = useTheme();
-  const glass = useMemo(() => resolveGlassColors(fill), [fill]);
+  const glass = useMemo(
+    () =>
+      material === 'chrome'
+        ? resolveChromeGlassColors(fill, fill, theme.isDark)
+        : resolveGlassColors(fill),
+    [fill, material, theme.isDark],
+  );
   // Per instance, because two panes in one document would otherwise share an id
   // and the survivor of an unmount would reference a gradient that is gone. Same
   // counter shape as `AvatarRing`.
@@ -77,7 +86,7 @@ const GlassSurfaceComponent: React.FC<GlassSurfaceProps> = ({
       testID={testID}
     >
       <BlurView
-        intensity={GLASS_BLUR_INTENSITY}
+        intensity={Platform.OS === 'web' ? GLASS_BLUR_RADIUS_PX / 0.2 : GLASS_BLUR_INTENSITY}
         // The material follows the SCHEME, not the tone: a light pane in dark
         // mode would be a bright card, which is the failure `frosted-icon-button`
         // documents at length.
@@ -104,8 +113,24 @@ const GlassSurfaceComponent: React.FC<GlassSurfaceProps> = ({
         content Bloom does not own.
       */}
       <View style={[StyleSheet.absoluteFill, { backgroundColor: glass.fill }]} />
+      {/*
+        The sheen's `width`/`height` are load-bearing beside `absoluteFill`: an
+        `<svg>` is a REPLACED element, so `width: auto` resolves to its intrinsic
+        size and an SVG without one falls back to CSS's 300 x 150. `left: 0;
+        right: 0` does not stretch it — the `right` is over-constrained and
+        dropped. On a surface narrower than 300 the sheen still covers, but its
+        gradient is scaled over 150px instead of the surface's own height, so
+        only the top of the ramp is ever visible; on a wider one it stops dead
+        at 300px. Native lays the host view out with flexbox and is unaffected.
+        Gate: `src/__tests__/svg-absolute-fill-size.test.ts`.
+      */}
       {sheen ? (
-        <Svg style={StyleSheet.absoluteFill} testID={testID ? `${testID}-sheen` : undefined}>
+        <Svg
+          width="100%"
+          height="100%"
+          style={StyleSheet.absoluteFill}
+          testID={testID ? `${testID}-sheen` : undefined}
+        >
           <Defs>
             {/* Top to bottom: simulated light from above. */}
             {/*

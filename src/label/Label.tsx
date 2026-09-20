@@ -1,3 +1,4 @@
+import { useBloomAppearance } from '../appearance';
 import React, { memo, useMemo } from 'react';
 import { Platform } from 'react-native';
 
@@ -35,10 +36,12 @@ const LabelComponent = function Label({
   htmlFor,
   required = false,
   disabled = false,
-  size = 'sm',
+  size: sizeProp,
   style,
   testID,
 }: LabelProps) {
+  const {size: inheritedSize} = useBloomAppearance({size: sizeProp}, {size: 'sm', tone: 'neutral'});
+  const size: NonNullable<LabelProps['size']> = inheritedSize === 'lg' ? 'md' : inheritedSize;
   const theme = useTheme();
   const palette = useMemo(() => resolveTextFieldPalette(theme), [theme]);
 

@@ -55,16 +55,7 @@ export const Search = forwardRef<TextInput, SearchProps>(
               a.pr_sm,
               { left: 'auto' },
             ]}>
-            <Button
-              testID="searchTextInputClearBtn"
-              onPress={onClearText}
-              accessibilityLabel="Clear search query"
-              hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
-              variant="ghost"
-              size="small"
-              icon={<X fill={theme.colors.textSecondary} size="xs" />}
-              style={{ padding: 4, minHeight: 0 }}
-            />
+            <Button testID="searchTextInputClearBtn" onPress={onClearText} accessibilityLabel="Clear search query" hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }} size="sm" leading={<X fill={theme.colors.textSecondary} size="xs" />} style={{ padding: 4, minHeight: 0 }} appearance="subtle" tone="accent" />
           </View>
         )}
       </View>

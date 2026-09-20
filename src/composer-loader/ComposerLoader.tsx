@@ -12,11 +12,11 @@ import Animated, {
 } from 'react-native-reanimated';
 import Svg, { Defs, FeGaussianBlur, Filter, LinearGradient, Rect, Stop } from 'react-native-svg';
 
-import { BUTTON_SHADOW, resolveButtonRamps } from '../button/shared';
+import { BUTTON_SHADOW } from '../button/shared';
 import { useTheme } from '../theme/use-theme';
 import {
   COMPOSER_LOADER_FADE_MS,
-  DEFAULT_COMPOSER_LOADER_COLORS,
+  resolveComposerLoaderColors,
   PILL_RADIUS,
   blurFilterId,
   composerLoaderGeometry,
@@ -96,7 +96,7 @@ const LoaderStroke = memo(function LoaderStroke({
 function ComposerLoaderComponent({
   children,
   active = true,
-  colors = DEFAULT_COMPOSER_LOADER_COLORS,
+  colors,
   speed = 4.5,
   intensity = 0.7,
   bloom = 16,
@@ -172,14 +172,13 @@ function ComposerLoaderComponent({
   }, [active, reducedMotion, fade]);
   const fadeStyle = useAnimatedStyle(() => ({ opacity: fade.value }), [fade]);
 
-  const [c0, c1, c2, c3] = colors;
+  const [c0, c1, c2, c3] = colors ?? resolveComposerLoaderColors(theme);
   const cornerRadius = radius ?? PILL_RADIUS;
-  const { neutral } = resolveButtonRamps(theme);
 
   const surfaceStyle: ViewStyle = {
     borderRadius: cornerRadius,
     // `bg-background-primary-default shadow-xs`.
-    backgroundColor: theme.isDark ? neutral[800] : theme.colors.card,
+    backgroundColor: theme.colors.card,
     boxShadow: BUTTON_SHADOW[theme.isDark ? 'dark' : 'light'],
   };
 

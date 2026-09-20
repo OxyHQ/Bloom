@@ -424,17 +424,13 @@ export function CalendarViewMonthGrid({
 
   const detailsStyle: WebCssStyle | undefined = Platform.select<WebCssStyle | undefined>({
     web: {
+      // The event-details surface is BoardUI's popover panel with its own
+      // width, a 20px corner and Figma's deeper shadow; border, surface and
+      // `p-2.5` are the popover's defaults.
       width: 302,
       overflow: 'visible',
       borderRadius: 20,
-      borderWidth: 1,
-      borderColor: palette.panelBorder,
-      backgroundColor: palette.panel,
       boxShadow: palette.shadowDetails,
-      paddingTop: 10,
-      paddingBottom: 10,
-      paddingLeft: 10,
-      paddingRight: 10,
     },
     default: undefined,
   });

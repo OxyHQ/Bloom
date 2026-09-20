@@ -29,6 +29,7 @@ Give it a height (it fills `100%`); its width is its own.
 | export | |
 | --- | --- |
 | `Sidebar` | the rail |
+| `SidebarModeSwitcher` | a vertical segmented control of icon + label modes (Search / Computer); the `modes` prop renders it under the header |
 | `SidebarItem` | one navigation row, a full pill: rest / hover / selected (solid accent fill with the primary foreground — no gradient, ring or highlight), optional badge, `collapsed` 36px square |
 | `SidebarUserMenu` | the account trigger (2px hover pill outside its box) and its menu |
 | `SidebarAccountMenuContent` | that menu's body, for another trigger |
@@ -37,6 +38,42 @@ Give it a height (it fills `100%`); its width is its own.
 | `SidebarPlanCard` | the plan card (avatar, name, plan, action) |
 | `SidebarRailItem` | one `rail` destination: icon on a 48 × 32 pill over a 10px label |
 | `SIDEBAR_RAIL_WIDTH` | the rail's width (80) |
+
+## Logo
+
+```tsx
+<Sidebar
+  logo={{ icon: <OxyMark width={28} height={28} />, wordmark: 'Oxy', href: '/', onPress: () => router.push('/') }}
+  items={items}
+  account={account}
+/>
+```
+
+- `icon` — the mark, centred in a 36 × 36 box (the collapsed column), so it stays put while the sidebar collapses. Size it yourself; 24–28px reads right.
+- `wordmark` — beside the mark, folded away while collapsed. A string renders as the product name in `headline-semibold`; pass an SVG or image for a drawn wordmark.
+- `href` makes it a real anchor on web; `onPress` a button (with both, `onPress` wins so a router can navigate — pass it on native, where there is no anchor). With neither it is decoration, named by `accessibilityLabel` or a string `wordmark`.
+- Give a mark, a wordmark or both. Wordmark only disappears when collapsed.
+
+The logo leads the header beside the collapse (or close) control; `account`, if given too, moves to its own row under it. Collapsed, the mark sits above the expand control. `variant="rail"` shows the mark only, centred above the items.
+
+## Modes
+
+```tsx
+<Sidebar
+  modes={[
+    { key: 'search', label: 'Search', icon: RiSearchLine, shortcut: '⌥⌃1' },
+    { key: 'computer', label: 'Computer', icon: RiComputerLine, shortcut: '⌥⌃2' },
+  ]}
+  mode={mode}
+  onModeChange={setMode}
+  items={items}
+/>
+```
+
+- A switch between whole sidebar modes, rendered under the header and above quick search. Standalone it is `SidebarModeSwitcher` (`modes`, `value`, `onValueChange`).
+- Track p4, radius 20, background-tertiary (neutral-200 / neutral-800). Rows are 32 tall and 4 apart: an 18px icon in a 32 box, 4 gap, `body-2-medium`. The selected row's 32px pill — card / neutral-700 with shadow-xs, the sidebar theme toggle's thumb — slides 200ms ease between rows, instantly under reduced motion.
+- Rest is text-secondary, selected text-primary. On web a `shortcut` hint (`caption-2`, text-tertiary) appears at the row's end on hover.
+- Collapsed, labels and hints collapse and the icons stay pinned. It is a `radiogroup` of `radio` rows, named `"Mode"` unless `modesLabel` / `accessibilityLabel` says otherwise. The keyboard shortcuts themselves are the app's to bind.
 
 ## Rail
 
@@ -67,11 +104,43 @@ Give it a height (it fills `100%`); its width is its own.
 />
 ```
 
-- With a `tree` the header and quick search stay put and only the rows scroll (hidden scrollbar): the primary rows, then 24 below them the tree — its label (body-medium text-secondary) and, 10 below, the folders 4 apart. The footer gains 12 on top.
+- The header, collapse control, mode switcher and quick search stay fixed; only destination rows scroll (hidden scrollbar). With a `tree`: the primary rows, then 24 below them the tree — its label (body-medium text-secondary) and, 10 below, the folders 4 apart. The footer gains 12 on top.
 - A folder row is p 8 with a 20px folder glyph (open while expanded) and the label; its rows are py 5 / pr 8 / pl 36 with the label and a `meta` chip (radius 4, background-tertiary, px 4 / py 1, caption-1-medium), background-secondary-hover while selected or hovered. A curved 1px icon-quaternary connector drops from the folder glyph into each row. The rows' height and opacity ease open and shut together over 300ms; collapsed rows leave the tab order.
 - Quick search filters the tree too: a folder whose label matches keeps every row, otherwise only its matching rows, held open while the query is set. "No results" counts the tree.
 - The tree hides while collapsed.
-- `plan` replaces the team card: radius 12, background-tertiary (the panel colour when `flat`), py 8 / pr 12 / pl 10, a 32px avatar (initials 18.8/22.6 medium), the name (body-medium) over the plan (body-regular text-secondary), and a small secondary button (`actionLabel`, default "Upgrade"). Collapsed, only the avatar.
+- `plan` replaces the team card: radius 12, background-tertiary (the panel colour on a `plain` surface), py 8 / pr 12 / pl 10, a 32px avatar (initials 18.8/22.6 medium), the name (body-medium) over the plan (body-regular text-secondary), and a small secondary button (`actionLabel`, default "Upgrade"). Collapsed, only the avatar.
+
+## Surface and size: the app's identity
+
+Two apps with the same rows should not look like the same app. That difference is two props, not a fork of this component.
+
+```tsx
+<Sidebar surface="card" />                    {/* default: the floating panel */}
+<Sidebar surface="plain" size="lg" />      {/* a social reader's nav */}
+<Sidebar surface="docked" size="sm" />     {/* a workspace column */}
+```
+
+`surface` is the panel's EDGE:
+
+| surface  | what it draws                                                      |
+| -------- | ------------------------------------------------------------------ |
+| `card`   | radius 24, a hairline and the panel shadow, on the panel fill       |
+| `plain`  | no radius, no border, no shadow — the rows sit straight on the page |
+| `docked` | the panel fill, square corners, ONE hairline on the inner edge, full height |
+
+The docked edge is not the card's border: that one is white in light mode, a highlight that reads as an edge only because the card's shadow sits beneath it. A docked column has no shadow, so it takes a real hairline stepped off its own fill (`hairlineOn`).
+
+`size` moves the rows and the panel together — one rung, every measurement, in `SIDEBAR_METRICS`:
+
+| size     | square | glyph | label            | expanded | collapsed |
+| -------- | ------ | ----- | ---------------- | -------- | --------- |
+| `sm`  | 30     | 18    | `body-2-medium`  | 232      | 46        |
+| `md` | 36     | 20    | `body-medium`    | 260      | 52        |
+| `lg`  | 44     | 24    | `title-3-medium` | 300      | 60        |
+
+The collapsed width is never an independent number: it is the square plus the panel's collapsed padding on both sides plus its two borders, so the icon column stays centred at every size. A row outside a sidebar takes `size` itself; inside one it inherits the panel's.
+
+`AppShell` passes both through (`sidebar={{ surface, size }}`) and treats `docked` as what it is — it gives up its left and vertical padding around that column and lets it run the full height, so the hairline is the separator instead of a gutter.
 
 ## Navigation
 
@@ -80,7 +149,7 @@ Give it a height (it fills `100%`); its width is its own.
 
 ## Collapse
 
-`collapsed` / `defaultCollapsed` / `onCollapsedChange`. The panel morphs 260 → 52 in 300ms while labels, badges and the shortcut hint collapse (max-width, opacity, 3px blur on web) and the icons stay put. `mobile` is always expanded and shows a close button; `flat` removes the panel chrome for a rail revealed under the page (and moves the search into the header). `fluid` fills the container while expanded. Reduced motion snaps.
+`collapsed` / `defaultCollapsed` / `onCollapsedChange`. The panel morphs between the size's two widths (260 → 52 at `md`) in 300ms while labels, badges and the shortcut hint collapse (max-width, opacity, 3px blur on web) and the icons stay put. `mobile` is always expanded and shows a close button. `fluid` fills the container while expanded. Reduced motion snaps.
 
 After expanding, the account trigger's hover pill stays off until the pointer leaves it, so a stationary pointer does not light it up.
 
@@ -94,4 +163,32 @@ Both menus are `Popover`s: beside the rail (team bottom-aligned, account top-ali
 
 ## Colour
 
-Panel background-secondary with a card-coloured hairline and a three-layer sidebar shadow; rows and chips from the neutral ramp; the selected row from the accent ramp (500 → 600). Initials tints: `neutral`, `blue` (accent), `lime` (success), `pink` (the accent rotated to pink).
+Panel `backgroundSecondary` (`--surface`) with `borderLight` and the existing three-layer shadow. Rows use `backgroundTertiary`; selected navigation uses the paired `primary`/`primaryForeground` roles, and its badge uses `secondary`/`secondaryForeground`. Initials retain the public names `neutral`, `blue`, `lime`, and `pink`: their colours now come from neutral, primary, success, and tertiary semantic pairs respectively, rather than generated ramps or rotated hues.
+
+### Mode switcher in a collapsed panel
+
+Collapsed modes use the sidebar's icon-square size: 30/36/44px for `sm/md/lg`.
+The track adds 4px around those squares and stays centered, extending into the
+panel's horizontal inset. Its selected thumb remains square, the glyph stays
+centered, and hidden labels leave no gap. Expanded mode rows retain their 32px
+height.
+
+### Scroll overflow cues
+
+Each internal scroll region paints a 40px fade in its own surface color at an
+edge only when more content exists beyond it. The initial content and viewport
+measurements reveal the bottom cue before the first scroll. At the top there is
+no top fade; at the bottom there is no bottom fade. Content that fits has neither.
+Resizing or filtering updates these cues without changing content padding.
+The decorative overlays ignore pointer input and are excluded from accessibility.
+
+### Collapse motion
+
+Panel width and horizontal padding, navigation gaps, labels, mode-switcher
+geometry, header controls and footer surfaces follow the same 300ms collapse
+progress. Reversing the control continues from its current position. Reduced
+motion applies the target layout immediately. Mode selection has its own
+indicator timing; its position is calculated from the current animated row
+height so selection and collapse can happen together.
+
+The panel scroll viewport extends behind the bottom half of the last fixed header control (up to 20px). The top fade begins there, while compensating content padding preserves the initial row spacing. Fixed controls remain above the fade and available throughout scrolling.

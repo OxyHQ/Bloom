@@ -97,7 +97,7 @@ With `inset`, give columns `flex` shares (`flex: 1.4` for the first, `1` for the
 
 ## `DataTableRowAction`
 
-A small icon button under a 200ms `md` tooltip: Bloom's secondary `Button`, 32×32 with a 16px glyph — a full pill, per Bloom's radius rule. `label` is both its accessible name and the tooltip's text; `accessibilityLabel` overrides the name (e.g. "More actions for John Clarkson" with the tooltip "More actions"). `active` paints the pressed state while a menu it opened is showing. It forwards the props an anchored family's `asChild` trigger merges in, so it is the trigger of a row's `DropdownMenu`:
+A small icon button under a 200ms `md` tooltip: Bloom's plain neutral `Button`, 32×32 with a 16px glyph — a full pill, per Bloom's radius rule. `label` is both its accessible name and the tooltip's text; `accessibilityLabel` overrides the name (e.g. "More actions for John Clarkson" with the tooltip "More actions"). `active` paints the pressed state while a menu it opened is showing. It forwards the props an anchored family's `asChild` trigger merges in, so it is the trigger of a row's `DropdownMenu`:
 
 ```tsx
 <DropdownMenu open={open} onOpenChange={setOpen}>
@@ -126,7 +126,7 @@ import {
 toolbar={<>
   <DataTableFilter label="Filter by region" value={region} onValueChange={setRegion}
     options={[{ value: 'all', label: 'All regions' }, …]} />
-  <DataTableSearch label="Search customers" value={query} onChangeText={setQuery} />
+  <DataTableSearch label="Search customers" value={query} onValueChange={setQuery} />
 </>}
 
 { id: 'purchase', header: 'Purchase', cell: ({ row, size }) => (

@@ -6,6 +6,9 @@ import { Kbd } from './Kbd';
 import { Text } from '../typography';
 
 const meta: Meta<typeof Kbd> = {
+  argTypes: {
+    "size": { control: 'select', options: ["sm","md"] }
+  },
   title: 'Base/Kbd',
   component: Kbd,
 };
@@ -19,6 +22,7 @@ export const Single: Story = {
 };
 
 export const Combo: Story = {
+  parameters: { controls: { disable: true } },
   render: () => (
     <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
       <Kbd>⌘</Kbd>
@@ -28,6 +32,7 @@ export const Combo: Story = {
 };
 
 export const Sizes: Story = {
+  parameters: { controls: { disable: true } },
   render: () => (
     <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
       <Kbd size="sm">Esc</Kbd>
@@ -38,6 +43,7 @@ export const Sizes: Story = {
 
 /** A quick-search hint: the shortcut beside a muted label. */
 export const SearchHint: Story = {
+  parameters: { controls: { disable: true } },
   render: () => (
     <View testID="kbd-matrix" style={{ padding: 24, gap: 12, alignItems: 'flex-start' }}>
       <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>

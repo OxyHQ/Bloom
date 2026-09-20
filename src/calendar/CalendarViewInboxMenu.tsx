@@ -157,13 +157,7 @@ function InboxBody({
           </View>
         </React.Fragment>
       ))}
-      <Button
-        variant="secondary"
-        size="small"
-        leadingIcon={RiAddFill}
-        onPress={onAddAccount}
-        style={{ width: '100%' }}
-      >
+      <Button size="sm" leadingIcon={RiAddFill} onPress={onAddAccount} style={{ width: '100%' }} appearance="subtle" tone="neutral">
         {addAccountLabel}
       </Button>
     </View>
@@ -188,23 +182,14 @@ export function CalendarViewInboxMenu({
     if (IS_WEB) adoptStyleSheet(CSS_ID, FEED_CSS);
   }, []);
 
-  // Web: the panel chrome, inline so it wins over the popover's default
-  // card. Native: the sheet is the chrome.
+  // Web: the popover's own panel IS this menu's chrome (266 wide, `rounded-2xl`,
+  // border, surface, `p-2.5`, `shadow-dropdown`); only the height bound is the
+  // menu's. Native: the sheet is the chrome.
   const panelStyle: WebCssStyle | undefined = Platform.select<WebCssStyle | undefined>({
     web: {
       width: PANEL_WIDTH,
       maxWidth: viewport.width - 32,
       maxHeight: viewport.height - 32,
-      overflow: 'hidden',
-      borderRadius: 16,
-      borderWidth: 1,
-      borderColor: palette.panelBorder,
-      backgroundColor: palette.panel,
-      boxShadow: palette.shadowDropdown,
-      paddingTop: 10,
-      paddingBottom: 10,
-      paddingLeft: 10,
-      paddingRight: 10,
     },
     default: undefined,
   });
@@ -212,14 +197,7 @@ export function CalendarViewInboxMenu({
   return (
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
-        <Button
-          variant="secondary"
-          size="medium"
-          iconOnly
-          leadingIcon={RiInbox2Line}
-          accessibilityLabel={accessibilityLabel}
-          testID={testID}
-        />
+        <Button size="md" icon={RiInbox2Line} accessibilityLabel={accessibilityLabel} testID={testID} appearance="plain" tone="neutral" />
       </PopoverTrigger>
       <PopoverContent
         label="Inbox menu"

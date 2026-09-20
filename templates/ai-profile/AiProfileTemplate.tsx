@@ -6,7 +6,7 @@ import { AppShell } from '../../src/app-shell';
 import { Button } from '../../src/button';
 import { AgentsChartCard } from '../../src/chart-cards/AgentsChartCard';
 import { TokensChartCard } from '../../src/chart-cards/TokensChartCard';
-import { RiEditBoxLine, RiMenuLine, RiShare2Line } from '../../src/icons/remix';
+import { RiEditBoxLine, RiShare2Line } from '../../src/icons/remix';
 import { BREAKPOINTS } from '../../src/styles/breakpoints';
 import { ACCOUNT, NAV_ITEMS, SECONDARY_ITEMS, TEAM, TEMPLATE_FRAME } from '../shared/dashboard';
 import {
@@ -20,16 +20,12 @@ import {
 } from './demo-data';
 
 /**
- * The AI profile template: the floating sidebar with the reveal drawer
- * below `lg`, and one centred 680px column — the profile card, the agents bar
- * chart and the tokens line chart, 16 apart. The page pads 12, 24 from `sm`;
- * below `lg` a hamburger sits 12 inside the profile card's top-left corner.
+ * The AI profile template: adaptive bottom, rail and sidebar navigation, and one centred 680px column — the profile card, the agents bar
+ * chart and the tokens line chart, 16 apart. The page pads 12, 24 from `sm`.
  */
 export function AiProfileTemplate({ initialMonth = 11 }: { initialMonth?: number }) {
   const { width } = useWindowDimensions();
-  const wide = width >= BREAKPOINTS.lg;
   const small = width >= BREAKPOINTS.sm;
-  const [navOpen, setNavOpen] = useState(false);
   const [selected, setSelected] = useState('profile');
   const [month, setMonth] = useState(initialMonth);
   const agents = useMemo(() => agentsFor(month), [month]);
@@ -38,7 +34,7 @@ export function AiProfileTemplate({ initialMonth = 11 }: { initialMonth?: number
     <View style={TEMPLATE_FRAME}>
       <AppShell
         testID="ai-profile"
-        drawer="reveal"
+        navigationPlacement="auto"
         sidebar={{
           items: NAV_ITEMS,
           secondaryItems: SECONDARY_ITEMS,
@@ -47,8 +43,6 @@ export function AiProfileTemplate({ initialMonth = 11 }: { initialMonth?: number
           account: ACCOUNT,
           team: TEAM,
         }}
-        drawerOpen={navOpen}
-        onDrawerOpenChange={setNavOpen}
         // `max-w-[680px]` inside the page's 24px `sm:p-6`: the shell pads 12, the
         // column adds the other 12 on each side.
         contentMaxWidth={small ? 704 : 680}
@@ -76,28 +70,16 @@ export function AiProfileTemplate({ initialMonth = 11 }: { initialMonth?: number
               cells={CELLS}
               actions={
                 <>
-                  <Button variant="secondary" size="small" leadingIcon={RiShare2Line}>
+                  <Button size="sm" leadingIcon={RiShare2Line} appearance="subtle" tone="neutral">
                     Share
                   </Button>
-                  <Button variant="secondary" size="small" leadingIcon={RiEditBoxLine}>
+                  <Button size="sm" leadingIcon={RiEditBoxLine} appearance="solid" tone="action">
                     Edit
                   </Button>
                 </>
               }
             />
-            {!wide ? (
-              <Button
-                variant="secondary"
-                size="medium"
-                iconOnly
-                leadingIcon={RiMenuLine}
-                accessibilityLabel="Open navigation"
-                aria-expanded={navOpen}
-                onPress={() => setNavOpen(true)}
-                style={{ position: 'absolute', top: 12, left: 12, zIndex: 1 }}
-                testID="ai-profile-menu"
-              />
-            ) : null}
+
           </View>
           <AgentsChartCard
             testID="ai-profile-agents"

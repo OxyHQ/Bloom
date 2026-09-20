@@ -15,7 +15,6 @@ import Animated, {
   withTiming,
 } from 'react-native-reanimated';
 
-import { resolveButtonRamps } from '../button/shared';
 import { useControllableState } from '../hooks/use-controllable-state';
 import { RiArrowDownSLine } from '../icons/remix/RiArrowDownSLine';
 import { RadioIndicator } from '../radio-indicator';
@@ -348,7 +347,7 @@ function ModelMenu({
  *
  *   pill      52 tall, full radius, p 8, gap 10; background-primary + shadow-xs
  *             (`surface`)
- *   add       36 disc on the chat's add surface (neutral-100 / dark 700, one step
+ *   add       36 disc on the chat's semantic add surface (one step
  *             darker hovered) whose plus turns 45° while the 361px menu is open
  *   field     20 tall, flex 1, body-regular text-primary, accent-500 caret,
  *             placeholder text-tertiary ("Ask me anything", "Ask me" under 640);
@@ -413,15 +412,13 @@ export function ComposerPillBase({
   const [focused, setFocused] = useState(false);
   const [modelWidth, setModelWidth] = useState(0);
 
-  // The chat's add surface is a step lighter than the Composer Panel's:
-  // `ai-chat-composer-add-background` neutral-100 / dark 700, hovered 200 / dark 600.
+  // The add control shares the canonical inset and hover surfaces.
   const addPalette: ComposerPalette = useMemo(() => {
     if (glass) return { ...palette, add: 'transparent', addHover: 'transparent' };
-    const { neutral: n } = resolveButtonRamps(theme);
     return {
       ...palette,
-      add: theme.isDark ? n[700] : n[100],
-      addHover: theme.isDark ? n[600] : n[200],
+      add: theme.colors.backgroundSecondary,
+      addHover: theme.colors.backgroundTertiary,
     };
   }, [palette, glass, theme]);
   const controlPalette: ComposerPalette = useMemo(

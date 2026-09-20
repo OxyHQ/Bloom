@@ -219,14 +219,7 @@ export function AiChatMobileHeader({ title, style, testID }: AiChatMobileHeaderP
       ]}>
       <View style={{ minWidth: 0, flexShrink: 1, flexDirection: 'row', alignItems: 'center', gap: 8 }}>
         {shell.navCollapsed && shell.hasNav ? (
-          <Button
-            variant="secondary"
-            size="medium"
-            iconOnly
-            icon={RiMenuLine}
-            accessibilityLabel={shell.labels.openNavigation}
-            onPress={shell.openNav}
-          />
+          <Button size="md" icon={RiMenuLine} accessibilityLabel={shell.labels.openNavigation} onPress={shell.openNav} appearance="plain" tone="neutral" />
         ) : null}
         <Text
           variant="headline-medium"
@@ -236,14 +229,7 @@ export function AiChatMobileHeader({ title, style, testID }: AiChatMobileHeaderP
         </Text>
       </View>
       {shell.hasPanel ? (
-        <Button
-          variant="secondary"
-          size="medium"
-          iconOnly
-          icon={shell.panelIcon}
-          accessibilityLabel={shell.labels.openPanel(shell.panelLabel)}
-          onPress={shell.openPanel}
-        />
+        <Button size="md" icon={shell.panelIcon} accessibilityLabel={shell.labels.openPanel(shell.panelLabel)} onPress={shell.openPanel} appearance="plain" tone="neutral" />
       ) : null}
     </View>
   );
@@ -504,14 +490,7 @@ export function AiChatShell({
                 <Text variant="headline-medium" style={{ color: palette.text }}>
                   {panelLabel}
                 </Text>
-                <Button
-                  variant="secondary"
-                  size="medium"
-                  iconOnly
-                  icon={RiCloseLine}
-                  accessibilityLabel={l.closePanel(panelLabel)}
-                  onPress={() => setPanelOpen(false)}
-                />
+                <Button size="md" icon={RiCloseLine} accessibilityLabel={l.closePanel(panelLabel)} onPress={() => setPanelOpen(false)} appearance="plain" tone="neutral" />
               </View>
               <View style={{ minHeight: 0, flex: 1 }}>{panel('100%')}</View>
             </Animated.View>

@@ -39,7 +39,6 @@ import {
   useAgentLogMotion,
   useAgentLogRevealTicker,
 } from '../agent-log';
-import { resolveButtonRamps } from '../button/shared';
 import { RiArrowDownSLine } from '../icons/remix';
 import { SOCIAL_PROVIDERS } from '../social-button/providers';
 import { adoptStyleSheet } from '../styles/adopt-style-sheet';
@@ -104,50 +103,16 @@ export interface WebSearchPalette {
   accent: string;
 }
 
-/**
- * Semantic tokens onto Bloom's ramps (`button/shared`):
- *
- *                                light          dark
- *   text-primary                 text           text
- *   text-secondary               neutral-500    neutral-500
- *   text-tertiary                neutral-400    neutral-600
- *   foreground-icon-secondary    neutral-500    neutral-500
- *   foreground-icon-quaternary   neutral-300    neutral-700
- *   border-button-default        neutral-200    neutral-700   (mark ring)
- *   background-primary-default   card           neutral-800   (mark disc)
- *   background-quaternary        neutral-300    neutral-700   (no-mark dot)
- *   background-secondary         neutral-100    neutral-900   (link hover)
- *   border-focus-ring            accent-500     accent-500
- *   accent-500 (Google's mark)   accent-500     accent-500
- */
+/** Canonical theme surfaces, foregrounds and focus roles. */
 export function resolveWebSearchPalette(theme: Theme): WebSearchPalette {
-  const { accent, neutral: n } = resolveButtonRamps(theme);
-  const shared = {
-    textPrimary: theme.colors.text,
-    textSecondary: n[500],
-    iconSecondary: n[500],
-    ring: accent[500],
-    accent: accent[500],
+  const c = theme.colors;
+  return {
+    textPrimary: c.text, textSecondary: c.textSecondary, textTertiary: c.textTertiary,
+    iconSecondary: c.textSecondary, iconQuaternary: c.textTertiary,
+    ring: c.primary, accent: c.primary,
+    markBorder: c.borderLight, markSurface: c.card, markDot: c.textTertiary,
+    rowHover: c.backgroundSecondary,
   };
-  return theme.isDark
-    ? {
-        ...shared,
-        textTertiary: n[600],
-        iconQuaternary: n[700],
-        markBorder: n[700],
-        markSurface: n[800],
-        markDot: n[700],
-        rowHover: n[900],
-      }
-    : {
-        ...shared,
-        textTertiary: n[400],
-        iconQuaternary: n[300],
-        markBorder: n[200],
-        markSurface: theme.colors.card,
-        markDot: n[300],
-        rowHover: n[100],
-      };
 }
 
 // ---------------------------------------------------------------------------

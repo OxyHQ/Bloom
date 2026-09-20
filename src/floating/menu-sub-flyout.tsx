@@ -77,8 +77,8 @@ const CLOSE_DELAY_MS = 300;
  * How many animation frames `useFlyoutAnchor` keeps re-measuring after a flyout
  * opens.
  *
- * Long enough to outlast the parent panel's own enter (`PANEL_MOTION_DURATION`,
- * ~12 frames at 60Hz) with room for a slower machine, and cheap because a
+ * Long enough to outlast the parent panel's own enter (`MENU_MOTION_DURATION`,
+ * ~9 frames at 60Hz) with room for a slower machine, and cheap because a
  * settled box re-measures to the identical value and sets no state.
  */
 const SETTLE_FRAMES = 20;
@@ -184,7 +184,7 @@ function focusFirstItem(node: DomNode | null): void {
  *
  * Taking the horizontal axis off the panel also makes {@link MENU_SUB_SIDE_OFFSET}
  * mean the gap you actually see, with no dependence on the panel's inset: change
- * `PANEL_CLASS`'s padding and the gap does not move.
+ * `MENU_PANEL_CLASS`'s padding and the gap does not move.
  *
  * The panel is found with `closest`, so a sub-menu nested inside a sub-menu
  * anchors to ITS parent rather than to the root. If there is no panel ancestor

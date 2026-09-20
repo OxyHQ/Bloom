@@ -106,7 +106,7 @@ function employeeColumns(): DataTableColumn<Employee>[] {
       id: 'department',
       header: 'Department',
       cell: ({ row }) => (
-        <Chip size="medium" hue={row.department.color}>
+        <Chip size="md" hue={row.department.color}>
           {row.department.label}
         </Chip>
       ),
@@ -124,7 +124,7 @@ function employeeColumns(): DataTableColumn<Employee>[] {
       accessor: (e) => e.salary,
       sortDescFirst: false,
       cell: ({ row }) => (
-        <Chip size="large" hue="gray">
+        <Chip size="lg" hue="gray">
           {formatSalary(row.salary)}
         </Chip>
       ),
@@ -195,7 +195,7 @@ export function EmployeesTable() {
             onValueChange={filter(setSalaryFilter)}
             options={SALARY_BUCKETS.map((b) => ({ value: b.id, label: b.label }))}
           />
-          <DataTableSearch label="Search employees" value={query} onChangeText={filter(setQuery)} />
+          <DataTableSearch label="Search employees" value={query} onValueChange={filter(setQuery)} />
         </>
       }
       selectable

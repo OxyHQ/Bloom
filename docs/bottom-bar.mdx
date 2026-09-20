@@ -1,0 +1,33 @@
+# BottomBar
+
+`BottomBar` composes navigation and an optional action in a single bottom region.
+Its blur paints behind both siblings. The action is outside the navigation's
+scrub detector, so pressing it never selects a tab.
+
+```tsx
+import { BottomBar } from '@oxy.so/bloom/bottom-bar';
+import { Fab } from '@oxy.so/bloom/fab';
+import * as Icons from '@oxy.so/bloom/icons';
+
+<BottomBar
+  items={items}
+  value={destination}
+  onValueChange={setDestination}
+  action={<Fab icon={Icons.RiAddLine} accessibilityLabel="Compose" onPress={compose} />}
+/>
+```
+
+Items use `TabBarItem` (`name`, `label`, `icon`). The bar measures the space its
+parent provides, reserves room for the action, and keeps navigation targets at
+least 44 points wide with horizontal overflow for many destinations. An explicit
+`minimizeProgress` shared value synchronizes navigation and row geometry with
+screen chrome; otherwise it reads the nearest `TabBarMinimizeProvider`.
+
+The root occupies its expanded footprint, including the bottom safe area.
+`Screen.bottomBar` positions it and reserves that footprint for scrolling content.
+`actionBehavior="hide"` (the default) fades out the accessory and releases its width and gap while minimizing, centering the navigation. Upward scroll brings it back. `visible` keeps the accessory available. An action without navigation always stays visible. Hidden accessories are removed from hit testing and accessibility; web also marks the subtree inert to prevent keyboard focus. Reduced motion snaps the geometry. Native keyboard visibility hides
+this bottom region. `material="solid"` removes blur; `translucent` uses the
+available platform material. `maxWidth` defaults to 560 points.
+
+The universal entry uses no Apple-only peers. The specialized `tab-bar` subpath
+continues to provide its native enhancements independently.

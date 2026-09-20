@@ -1,10 +1,12 @@
+import { useBloomAppearance } from '../appearance';
+import { resolveBloomColors } from '../appearance/colors';
 import React, { memo, useCallback, useMemo } from 'react';
 import { Platform, Pressable, View } from 'react-native';
 
 import { useTheme } from '../theme/use-theme';
 import { Text } from '../typography';
 import { useInteractionState } from '../hooks/use-interaction-state';
-import { mixColor, resolveButtonRamps } from '../button/shared';
+import { resolveButtonRamps } from '../button/shared';
 import { useInteractiveWebCss } from '../styles/interactive-web-css';
 import type { WebCssStyle } from '../styles/web-view-style';
 import { FOCUS_RING_OFFSET_COLOR, webDataSet } from '../checkbox/shared';
@@ -58,41 +60,41 @@ ${CARD} {
 
 const RadioCardComponent = function RadioCard<Value extends string = string>({
   value,
-  selected,
-  onSelect,
+  checked,
+  onValueChange,
   title,
   description,
   disabled = false,
-  color,
+  tone: toneProp,
   style,
   accessibilityLabel,
   testID,
 }: RadioCardProps<Value>) {
   const theme = useTheme();
+  const { tone } = useBloomAppearance({ tone: toneProp }, {size: 'md', tone: 'accent'});
+  const { background: color, foreground } = resolveBloomColors(theme.colors, tone, 'solid');
   useInteractiveWebCss(STYLE_ID, CARD_CSS);
   const { state: hovered, onIn: onHoverIn, onOut: onHoverOut } = useInteractionState();
   const { state: pressed, onIn: onPressIn, onOut: onPressOut } = useInteractionState();
   const highlighted = !disabled && (hovered || pressed);
 
   const paint = useMemo(() => {
-    const { accent, neutral: n } = resolveButtonRamps(theme);
-    const dark = theme.isDark;
+    const { accent } = resolveButtonRamps(theme);
     return {
-      border: dark ? n[700] : n[200],
-      background: dark ? n[800] : theme.colors.card,
-      // Dark `color-mix(in srgb, neutral-700 60%, transparent)` over the page.
-      backgroundHover: dark ? mixColor(theme.colors.background, n[700], 0.6) : n[100],
+      border: theme.colors.borderLight,
+      background: theme.colors.card,
+        backgroundHover: theme.colors.backgroundSecondary,
       title: theme.colors.text,
-      description: n[500],
+      description: theme.colors.textSecondary,
       ring: color ?? accent[500],
     };
   }, [theme, color]);
 
   const handlePress = useCallback(() => {
     // A radio has no "off": re-choosing the chosen card is a no-op.
-    if (disabled || selected) return;
-    onSelect(value);
-  }, [disabled, selected, onSelect, value]);
+    if (disabled || checked) return;
+    onValueChange(value);
+  }, [disabled, checked, onValueChange, value]);
 
   const cardStyle: WebCssStyle = {
     flexDirection: 'row',
@@ -131,7 +133,7 @@ const RadioCardComponent = function RadioCard<Value extends string = string>({
       disabled={disabled}
       accessibilityRole="radio"
       // `aria-checked` is the one spelling both platforms honour — see `Radio`.
-      aria-checked={selected}
+      aria-checked={checked}
       accessibilityLabel={accessibilityLabel ?? title}
       accessibilityHint={description}
       testID={testID}
@@ -151,7 +153,7 @@ const RadioCardComponent = function RadioCard<Value extends string = string>({
           {...webDataSet({ bloomRadioCardDot: '' })}
           style={{ borderRadius: DOT_SIZE / 2 }}
         >
-          <RadioIndicator selected={selected} size={DOT_SIZE} selectedColor={color} />
+          <RadioIndicator selected={checked} size={DOT_SIZE} selectedColor={color} selectedForeground={foreground} />
         </View>
       </View>
     </Pressable>

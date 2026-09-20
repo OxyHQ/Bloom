@@ -7,6 +7,16 @@ import type { ComboPoint, ComboRange, ComboSeries } from './ComboChartCard';
 import { formatNumber } from './primitives/format';
 
 const meta: Meta<typeof ComboChartCard> = {
+  argTypes: {
+    "title": { control: 'text' },
+    "headline": { control: 'number' },
+    "delta": { control: 'number' },
+    "range": { control: 'text' },
+    "defaultRange": { control: 'text' },
+    "tiles": { control: 'boolean' },
+    "headlineFrom": { control: 'select', options: ["bar","line"] },
+    "activeIndex": { control: 'number' }
+  },
   title: 'Charts/Combo Chart',
   component: ComboChartCard,
 };
@@ -48,11 +58,12 @@ const RANGES: ComboRange[] = [
 ];
 
 const Frame = ({ children, width = 480 }: { children: React.ReactNode; width?: number }) => (
-  <View style={{ padding: 40, gap: 24, width: width + 80 }}>{children}</View>
+  <View style={{ maxWidth: '100%', gap: 24, width }}>{children}</View>
 );
 
 /** Bars on the left axis, the line on the right, a period dropdown. */
 export const Default: Story = {
+  parameters: { controls: { disable: true } },
   render: () => (
     <Frame>
       <ComboChartCard testID="combo" bar={BAR} line={LINE} ranges={RANGES} />
@@ -62,15 +73,18 @@ export const Default: Story = {
 
 /** Stat tiles under a 196px plot: the bar total and the line average. */
 export const Tiles: Story = {
-  render: () => (
+  args: { tiles: true },
+  parameters: { controls: { include: ["tiles","title","headline","delta","range","defaultRange","headlineFrom","activeIndex"] } },
+  render: (args) => (
     <Frame>
-      <ComboChartCard testID="combo" bar={BAR} line={LINE} ranges={RANGES} tiles />
+      <ComboChartCard {...args} testID="combo" bar={BAR} line={LINE} ranges={RANGES}  />
     </Frame>
   ),
 };
 
 /** July hovered (controlled): its bar darkens, the rest dim, the line dot pulses, the tiles follow. */
 export const Hovered: Story = {
+  parameters: { controls: { disable: true } },
   render: () => (
     <Frame>
       <ComboChartCard bar={BAR} line={LINE} ranges={RANGES} activeIndex={6} />
@@ -81,6 +95,7 @@ export const Hovered: Story = {
 
 /** The line as the headline, a static pill, and a custom caption. */
 export const HeadlineFromLine: Story = {
+  parameters: { controls: { disable: true } },
   render: () => (
     <Frame>
       <ComboChartCard bar={BAR} line={LINE} data={YEAR} headlineFrom="line" range="This year" />
@@ -98,9 +113,11 @@ export const HeadlineFromLine: Story = {
 
 /** Phone width: month labels thin out, tiles go two per row. */
 export const Narrow: Story = {
-  render: () => (
+  args: { tiles: true },
+  parameters: { controls: { include: ["tiles","title","headline","delta","range","defaultRange","headlineFrom","activeIndex"] } },
+  render: (args) => (
     <Frame width={320}>
-      <ComboChartCard bar={BAR} line={LINE} ranges={RANGES} tiles />
+      <ComboChartCard {...args} bar={BAR} line={LINE} ranges={RANGES}  />
     </Frame>
   ),
 };

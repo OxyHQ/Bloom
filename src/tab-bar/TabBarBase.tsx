@@ -15,18 +15,20 @@
  */
 import {
   Children,
+  Fragment,
   createContext,
   useCallback,
   useContext,
   useEffect,
   useMemo,
+  useState,
   type ComponentType,
+  type ComponentProps,
 } from 'react';
 import {
   Platform,
   Pressable,
   StyleSheet,
-  useWindowDimensions,
   View,
   type ViewStyle,
 } from 'react-native';
@@ -49,6 +51,8 @@ import { useHaptics } from '../hooks/use-haptics';
 import { useClaimBottomEdge } from '../layout/bottom-edge';
 import { windowEdgeGap } from '../layout/edge';
 import type { ProgressiveBlurProps } from '../progressive-blur/types';
+import { useTheme } from '../theme/use-theme';
+import { SolidTabBarSurface } from './surface-solid';
 import { setMinimized, useMinimizeState } from './context';
 import {
   BAR_MARGIN,
@@ -79,7 +83,9 @@ import type { TabBarButtonProps, TabBarProps, TabBarTheme } from './types';
  * its own `isFocused` for tinting and has no highlight to drive).
  */
 type BarContextValue = {
+  scrollable: boolean;
   /** Live highlight position, in tab units. Fractional while scrubbing. */
+  progress: SharedValue<number>;
   slideIndex: SharedValue<number>;
   /**
    * Highlight visibility, 0–1. Below 1 only when the bar has NO selection (an
@@ -105,6 +111,11 @@ type BarContextValue = {
 
 const BarContext = createContext<BarContextValue | null>(null);
 
+function OptionalGesture({ enabled, children, ...props }: ComponentProps<typeof GestureDetector> & { enabled: boolean }) {
+  return enabled ? <GestureDetector {...props}>{children}</GestureDetector> : <Fragment>{children}</Fragment>;
+}
+
+
 interface TabBarBodyProps extends TabBarProps {
   Surface: ComponentType<TabBarSurfaceProps>;
   Blur: ComponentType<ProgressiveBlurProps>;
@@ -126,13 +137,18 @@ function TabBarBody({
   haptics = true,
   blur = true,
   maxWidth,
+  embedded = false,
+  scrollable = false,
+  material = 'translucent',
+  minimizeProgress,
+  onLayout,
   style,
   ...viewProps
 }: TabBarBodyProps) {
   const insets = useSafeAreaInsets();
-  const { width: windowWidth } = useWindowDimensions();
+  const [containerWidth, setContainerWidth] = useState(0);
   const minimized = useMinimizeState();
-  const progress = minimized.progress;
+  const progress = minimizeProgress ?? minimized.progress;
   const tabCount = Math.max(Children.count(children), 1);
 
   // Is a tab selected at all?
@@ -161,7 +177,8 @@ function TabBarBody({
   const highlightOpacity = useSharedValue(hasSelection ? 1 : 0);
   const isDragging = useSharedValue(false);
   const lastTicked = useSharedValue(-1);
-  const theme = useTabBarTheme(themeOverrides);
+  const { colors } = useTheme();
+  const theme = useTabBarTheme(material === 'solid' ? { ...themeOverrides, solidFallback: themeOverrides?.solidFallback ?? colors.backgroundSecondary } : themeOverrides);
   const impact = useHaptics();
 
   // The pill's OUTER width (the box the animated minimize inset is applied
@@ -175,7 +192,8 @@ function TabBarBody({
   // the whole window. Each expanded slot gets at most a comfortable 88pt; more
   // tabs naturally grow the pill until it reaches the available width. An
   // explicit `maxWidth` remains an additional ceiling, never a width request.
-  const availableWidth = windowWidth - BAR_MARGIN * 2;
+  const availableWidth = Math.max(0, containerWidth - (embedded ? 0 : BAR_MARGIN * 2));
+  const minimizeInset = embedded ? 0 : Math.min(MINIMIZED_INSET, Math.max(0, (availableWidth - tabCount * 44 - ROW_PAD_H * 2) / 2));
   const contentWidth = tabCount * MAX_EXPANDED_ITEM_WIDTH + ROW_PAD_H * 2;
   const barOuterWidth = Math.min(availableWidth, contentWidth, maxWidth ?? Infinity);
 
@@ -281,7 +299,7 @@ function TabBarBody({
       const sideInset = interpolate(
         minimizedValue,
         [0, 1],
-        [0, MINIMIZED_INSET],
+        [0, minimizeInset],
         Extrapolation.CLAMP,
       );
       // `event.x` is measured from the left edge of the view the detector is
@@ -382,6 +400,7 @@ function TabBarBody({
     return Gesture.Race(pan, tap, longPress);
   }, [
     barOuterWidth,
+    minimizeInset,
     tabCount,
     selectIndex,
     hasLongPress,
@@ -426,9 +445,9 @@ function TabBarBody({
     // leaving the highlight narrower than the tab it sits under. Static styles
     // are unaffected — they take RNW's own StyleSheet path, which does handle
     // the shorthand — so this only bites inside a mapper.
-    const inset = interpolate(progress.value, [0, 1], [0, MINIMIZED_INSET], Extrapolation.CLAMP);
+    const inset = interpolate(progress.value, [0, 1], [0, minimizeInset], Extrapolation.CLAMP);
     return { height, marginLeft: inset, marginRight: inset };
-  }, [progress]);
+  }, [progress, minimizeInset]);
 
   // The capsule shape lives on the surface itself: iOS 26 glass renders its own
   // native corner configuration (true squircle + rim lighting). Clipping a
@@ -441,7 +460,7 @@ function TabBarBody({
       Extrapolation.CLAMP,
     );
     return { borderRadius: height / 2 };
-  }, [progress]);
+  }, [progress, minimizeInset]);
 
   // One shared highlight that slides between tabs (transform-only → GPU). All
   // geometry derives from shared values, never from layout callbacks.
@@ -461,7 +480,7 @@ function TabBarBody({
     const sideInset = interpolate(
       progress.value,
       [0, 1],
-      [0, MINIMIZED_INSET],
+      [0, minimizeInset],
       Extrapolation.CLAMP,
     );
     // Same `barOuterWidth` the scrub worklet resolves an index from — see the
@@ -480,11 +499,11 @@ function TabBarBody({
       opacity: highlightOpacity.value,
       transform: [{ translateX: ROW_PAD_H + itemWidth * slideIndex.value }],
     };
-  }, [progress, slideIndex, highlightOpacity, barOuterWidth, tabCount]);
+  }, [progress, slideIndex, highlightOpacity, barOuterWidth, tabCount, minimizeInset]);
 
   // Shared with `useTabBarFootprint`, so a consumer accounting for the bar in
   // its own layout can never drift from where the bar actually sits.
-  const bottomOffset = windowEdgeGap(insets.bottom);
+  const bottomOffset = embedded ? 0 : windowEdgeGap(insets.bottom);
 
   // Publish what the bar occupies so anything else at this edge stacks above it
   // rather than behind it. Same number `useTabBarFootprint` reports, derived from
@@ -492,7 +511,7 @@ function TabBarBody({
   // where the bar actually sits. The EXPANDED height on purpose: the bar
   // minimizes on scroll and re-expands, so claiming the minimized height would
   // drop a FAB onto the pill the moment the user scrolled back up.
-  useClaimBottomEdge(bottomOffset + EXPANDED_HEIGHT);
+  useClaimBottomEdge(embedded ? 0 : bottomOffset + EXPANDED_HEIGHT);
 
   // How centring and the animated inset compose: centring is STATIC and belongs
   // to the wrap, the inset stays ANIMATED on the pill inside it. The wrap is
@@ -509,12 +528,13 @@ function TabBarBody({
   const constrainedWrapStyle: ViewStyle | null =
     barOuterWidth === availableWidth ? null : { width: barOuterWidth, alignSelf: 'center' };
   const barContext = useMemo(
-    () => ({ slideIndex, highlightOpacity, isDragging, theme, activeIndex, driven, selectIndex }),
-    [slideIndex, highlightOpacity, isDragging, theme, activeIndex, driven, selectIndex],
+    () => ({ scrollable, progress, slideIndex, highlightOpacity, isDragging, theme, activeIndex, driven, selectIndex }),
+    [scrollable, progress, slideIndex, highlightOpacity, isDragging, theme, activeIndex, driven, selectIndex],
   );
 
+  const ResolvedSurface = material === 'solid' ? SolidTabBarSurface : Surface;
   return (
-    <View {...viewProps} pointerEvents="box-none" style={[styles.root, style]}>
+    <View {...viewProps} onLayout={(event) => { setContainerWidth(event.nativeEvent.layout.width); onLayout?.(event); }} pointerEvents="box-none" style={[embedded ? { width: '100%' } : styles.root, style]}>
       {/* Progressive blur rising from the screen's bottom edge behind the pill.
           Rendered CONDITIONALLY, and as nothing at all when off: the band is
           full-bleed and 114pt tall at a zero bottom inset, so it blurs whatever
@@ -523,7 +543,7 @@ function TabBarBody({
           rect — that exists to do nothing. Stays full-bleed under `maxWidth`:
           it is the screen-edge scrim content dissolves into, not part of the
           pill. */}
-      {blur !== false && (
+      {!embedded && blur !== false && (
         <Blur
           direction="bottom"
           intensity={typeof blur === 'object' ? blur.intensity : undefined}
@@ -536,10 +556,10 @@ function TabBarBody({
           }}
         />
       )}
-      <View pointerEvents="box-none" style={[styles.barWrap, { marginBottom: bottomOffset }, constrainedWrapStyle]}>
-        <GestureDetector gesture={gesture}>
+      <View pointerEvents="box-none" style={[embedded ? undefined : styles.barWrap, { marginBottom: bottomOffset }, constrainedWrapStyle]}>
+        <OptionalGesture enabled={!scrollable} gesture={gesture}>
           <Animated.View style={barStyle}>
-            <Surface theme={theme} style={shapeStyle} />
+            <ResolvedSurface theme={theme} style={shapeStyle} />
             <Animated.View
               style={[styles.highlight, { backgroundColor: theme.highlight }, highlightStyle]}
             />
@@ -547,7 +567,7 @@ function TabBarBody({
               <BarContext.Provider value={barContext}>{children}</BarContext.Provider>
             </View>
           </Animated.View>
-        </GestureDetector>
+        </OptionalGesture>
       </View>
     </View>
   );
@@ -571,8 +591,8 @@ function TabBarButtonBody({
   ...pressableProps
 }: TabBarButtonBodyProps) {
   const minimized = useMinimizeState();
-  const progress = minimized.progress;
   const bar = useContext(BarContext);
+  const progress = bar?.progress ?? minimized.progress;
   // Resolved outside the bar too, so a standalone button still themes itself.
   const standaloneTheme = useTabBarTheme();
   const theme = bar?.theme ?? standaloneTheme;
@@ -692,7 +712,7 @@ function TabBarButtonBody({
         // one tap produced `PRESSABLE selectIndex(1)` AND `GESTURE tap
         // selectIndex(1)` ~600ms apart on a busy JS thread — so there, and only
         // there, this press stands down.
-        if (isFocused === undefined && Platform.OS !== 'android') bar?.selectIndex(index);
+        if (isFocused === undefined && (bar?.scrollable || Platform.OS !== 'android')) bar?.selectIndex(index);
         onPress?.(event);
       }}
       // `Pressable`'s `style` also accepts a function of the press state; both

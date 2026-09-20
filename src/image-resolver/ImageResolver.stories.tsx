@@ -9,6 +9,7 @@ import { Text } from '../typography';
 import { Card } from '../card';
 
 const meta: Meta = {
+  parameters: { controls: { disable: true } },
   title: 'Foundations/Image Resolver',
 };
 
@@ -43,9 +44,9 @@ const resolver: ImageResolver = (id, variant) => {
 
 function Case({ title, note, children }: { title: string; note: string; children: React.ReactNode }) {
   return (
-    <Card variant="outlined" radius="radius-16" style={{ padding: 16, gap: 10, width: 260 }}>
+    <Card appearance="outline" radius="radius-16" style={{ padding: 16, gap: 10, width: 260, maxWidth: '100%' }}>
       <Text style={{ fontWeight: '600' }}>{title}</Text>
-      <View style={{ flexDirection: 'row', gap: 12, alignItems: 'center' }}>{children}</View>
+      <View style={{ flexDirection: 'row', flexWrap: 'wrap', maxWidth: '100%', gap: 12, alignItems: 'center' }}>{children}</View>
       <Text style={{ fontSize: 12, opacity: 0.7 }}>{note}</Text>
     </Card>
   );
@@ -63,9 +64,10 @@ function Case({ title, note, children }: { title: string; note: string; children
  * single most common way avatars break across the ecosystem.
  */
 export const SourceVersusUri: Story = {
+  parameters: { controls: { disable: true } },
   render: () => (
     <ImageResolverProvider value={resolver}>
-      <View style={{ flexDirection: 'row', gap: 16 }}>
+      <View style={{ flexDirection: 'row', flexWrap: 'wrap', maxWidth: '100%', gap: 16 }}>
         <Case
           title="source — correct"
           note="A bare file id resolves through the app's ImageResolver."
@@ -89,9 +91,10 @@ export const SourceVersusUri: Story = {
  * one of them works with a file id.
  */
 export const PassThrough: Story = {
+  parameters: { controls: { disable: true } },
   render: () => (
     <ImageResolverProvider value={resolver}>
-      <View style={{ flexDirection: 'row', gap: 16 }}>
+      <View style={{ flexDirection: 'row', flexWrap: 'wrap', maxWidth: '100%', gap: 16 }}>
         <Case title="file id" note="Resolved.">
           <Avatar source="file_xyz789" name="Grace" size={64} />
         </Case>
@@ -113,9 +116,10 @@ export const PassThrough: Story = {
  * square below is the variant the resolver was actually asked for.
  */
 export const Variants: Story = {
+  parameters: { controls: { disable: true } },
   render: () => (
     <ImageResolverProvider value={resolver}>
-      <View style={{ flexDirection: 'row', gap: 16, alignItems: 'center' }}>
+      <View style={{ flexDirection: 'row', flexWrap: 'wrap', maxWidth: '100%', gap: 16, alignItems: 'center' }}>
         <Avatar source="file_v" name="A" size={48} />
         <Avatar source="file_v" variant="w320" name="A" size={64} />
         <Avatar source="file_v" variant="full" name="A" size={80} />
@@ -130,6 +134,7 @@ export const Variants: Story = {
  * letters.
  */
 export const ThroughAvatarGroup: Story = {
+  parameters: { controls: { disable: true } },
   render: () => (
     <ImageResolverProvider value={resolver}>
       <View style={{ gap: 16 }}>
@@ -157,10 +162,11 @@ export const ThroughAvatarGroup: Story = {
  * Register one provider at the app root.
  */
 export const NoProvider: Story = {
+  parameters: { controls: { disable: true } },
   render: function NoProviderStory() {
     const [withProvider, setWithProvider] = useState(false);
     const avatars = (
-      <View style={{ flexDirection: 'row', gap: 12 }}>
+      <View style={{ flexDirection: 'row', flexWrap: 'wrap', maxWidth: '100%', gap: 12 }}>
         {['file_1', 'file_2', 'file_3'].map((id) => (
           <Avatar key={id} source={id} name={id.slice(-1)} size={56} />
         ))}

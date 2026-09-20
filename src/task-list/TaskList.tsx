@@ -17,7 +17,6 @@ import {
   useAgentLogMotion,
   useAgentLogRevealTicker,
 } from '../agent-log';
-import { mixColor, resolveButtonRamps } from '../button/shared';
 import { RiArrowDownSLine } from '../icons/remix';
 import { adoptStyleSheet } from '../styles/adopt-style-sheet';
 import type { WebCssStyle } from '../styles/web-view-style';
@@ -75,46 +74,15 @@ export interface TaskListPalette {
   ring: string;
 }
 
-/**
- * Semantic tokens mapped onto Bloom's ramps (`button/shared`):
- *
- *                                  light                   dark
- *   text-primary                   text                    text
- *   text-secondary                 neutral-500             neutral-500
- *   foreground-icon-secondary      neutral-500             neutral-500
- *   foreground-icon-tertiary       neutral-400             neutral-600
- *   border-button-default/50       neutral-200 @50% over   neutral-700 @50% over
- *                                  the chip surface        the chip surface
- *   border-button-hover            neutral-300             neutral-500
- *   background-secondary-default   neutral-100             neutral-900
- *   background-tertiary-default    neutral-200             neutral-800
- *   border-focus-ring              accent-500              accent-500
- */
+/** Canonical theme surfaces, foregrounds and focus roles. */
 export function resolveTaskListPalette(theme: Theme): TaskListPalette {
-  const { accent, neutral: n } = resolveButtonRamps(theme);
-  const shared = {
-    textPrimary: theme.colors.text,
-    textSecondary: n[500],
-    iconSecondary: n[500],
-    ring: accent[500],
+  const c = theme.colors;
+  return {
+    textPrimary: c.text, textSecondary: c.textSecondary,
+    iconSecondary: c.textSecondary, iconTertiary: c.textTertiary, ring: c.primary,
+    chipBorder: c.borderLight, chipBorderHover: c.border,
+    chipSurface: c.backgroundSecondary, chipSurfaceHover: c.backgroundTertiary,
   };
-  return theme.isDark
-    ? {
-        ...shared,
-        iconTertiary: n[600],
-        chipBorder: mixColor(n[900], n[700], 0.5),
-        chipBorderHover: n[500],
-        chipSurface: n[900],
-        chipSurfaceHover: n[800],
-      }
-    : {
-        ...shared,
-        iconTertiary: n[400],
-        chipBorder: mixColor(n[100], n[200], 0.5),
-        chipBorderHover: n[300],
-        chipSurface: n[100],
-        chipSurfaceHover: n[200],
-      };
 }
 
 // ---------------------------------------------------------------------------

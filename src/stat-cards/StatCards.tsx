@@ -88,7 +88,7 @@ const DELTA_ICONS = {
 } as const;
 
 /** Delta colours onto Bloom's `Chip` tones. */
-const CHIP_TONES = { lime: 'success', rose: 'error', neutral: 'default' } as const;
+const CHIP_TONES = { lime: 'success', rose: 'danger', neutral: 'neutral' } as const;
 
 let gradientIdCounter = 0;
 
@@ -122,7 +122,7 @@ function DeltaPill({
   delta: string;
   deltaColor: StatCardsDeltaColor;
   surfaces: DashboardSurfaces;
-  /** What the pill sits on — the dark status fill is 60% over it. */
+  /** The containing surface, retained for the shared status-pair call. */
   surface: string;
   testID?: string;
 }) {
@@ -332,9 +332,9 @@ function StatCardComponent({ stat, variant = 'plain', style, testID }: StatCardP
             {stat.value}
           </Text>
           <Chip
-            size="medium"
-            variant="subtle"
-            color={CHIP_TONES[stat.deltaColor]}
+            size="md"
+            appearance="subtle"
+            tone={CHIP_TONES[stat.deltaColor]}
             // `Chip` pins itself to `flex-start`; the row centres it on the value.
             style={styles.chip}
             testID={testID ? `${testID}-delta` : undefined}

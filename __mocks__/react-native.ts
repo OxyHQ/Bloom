@@ -27,6 +27,8 @@ const createComponent = (name: string) => {
     if (accessibilityRole) elementProps.accessibilityRole = accessibilityRole;
     if (accessibilityState) elementProps.accessibilityState = accessibilityState;
     if (disabled != null) elementProps.disabled = disabled;
+    // Preserve the touch-target prop so accessibility target coverage is measurable.
+    if (hitSlop !== undefined) elementProps.hitSlop = hitSlop;
     if (onPress) elementProps.onPress = disabled ? undefined : onPress;
     if (style !== undefined) elementProps.style = style;
 
@@ -253,4 +255,9 @@ export const Linking = {
     remove: jest.fn(),
   }),
   getInitialURL: () => Promise.resolve(null),
+};
+
+export const Keyboard = {
+  addListener: jest.fn((_name: string, _listener: () => void) => ({ remove: jest.fn() })),
+  dismiss: jest.fn(),
 };

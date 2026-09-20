@@ -66,6 +66,8 @@ const DOC_ALIASES: Readonly<Record<string, string>> = {
   // `surfaces/` publishes `alert()`, `confirm()` and `prompt()`; a reader looks
   // for the function, not the store behind it.
   surfaces: 'alert',
+  // Material inheritance is documented with the composition contracts.
+  'control-surface': 'composition',
 };
 
 /** Doc subtrees that are not component documentation. */

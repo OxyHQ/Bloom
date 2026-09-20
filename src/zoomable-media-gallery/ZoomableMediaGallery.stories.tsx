@@ -26,6 +26,7 @@ import type {
  * dependency array is ever dropped again these stories freeze visibly.
  */
 const meta: Meta = {
+  component: ZoomableMediaGallery,
   title: 'Base/Zoomable Media Gallery',
 };
 
@@ -146,18 +147,22 @@ function GalleryDemo({
 }
 
 export const SingleImage: Story = {
+  parameters: { controls: { disable: true } },
   render: () => <GalleryDemo items={[FOREST]} />,
 };
 
 export const MultipleImages: Story = {
+  parameters: { controls: { disable: true } },
   render: () => <GalleryDemo items={IMAGES} />,
 };
 
 export const ThumbnailIndicator: Story = {
+  parameters: { controls: { disable: true } },
   render: () => <GalleryDemo items={IMAGES} indicatorVariant="thumbnails" />,
 };
 
 export const SquareCorners: Story = {
+  parameters: { controls: { disable: true } },
   render: () => <GalleryDemo items={IMAGES} cornerRadius={0} />,
 };
 
@@ -167,5 +172,16 @@ export const SquareCorners: Story = {
  * just another page.
  */
 export const MixedMedia: Story = {
+  parameters: { controls: { disable: true } },
   render: () => <GalleryDemo items={MIXED} indicatorVariant="thumbnails" />,
+};
+
+export const Playground: StoryObj<typeof ZoomableMediaGallery> = {
+  args: { cornerRadius: 12, indicatorVariant: 'dots' },
+  parameters: { controls: { disable: false, include: ['cornerRadius', 'indicatorVariant'] } },
+  argTypes: { cornerRadius: { control: { type: 'range', min: 0, max: 40 } }, indicatorVariant: { control: 'select', options: ['dots','thumbnails'] } },
+  render: function Playground(args) {
+
+    return <View style={{ width: 520, maxWidth: '100%' }}><GalleryDemo {...args} items={IMAGES} /></View>;
+  },
 };

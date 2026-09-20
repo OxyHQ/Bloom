@@ -8,6 +8,23 @@ import { useDialogControl } from './context';
 import { alert } from '../surfaces';
 
 const meta: Meta<typeof Dialog> = {
+  argTypes: {
+    "open": { control: 'boolean' },
+    "title": { control: 'text' },
+    "description": { control: 'text' },
+    "width": { control: 'number' },
+    "maxWidth": { control: 'number' },
+    "maxHeightRatio": { control: 'number' },
+    "showHandle": { control: 'boolean' },
+    "startOpen": { control: 'boolean' },
+    "scrollable": { control: 'boolean' },
+    "contentPadding": { control: 'number' },
+    "dismissOnBackdrop": { control: 'boolean' },
+    "morph": { control: 'boolean' },
+    "panelClassName": { control: 'text' },
+    "containerClassName": { control: 'text' },
+    "label": { control: 'text' }
+  },
   title: 'Base/Dialog',
   component: Dialog,
 };
@@ -42,7 +59,7 @@ function CustomChildrenDemo() {
       <Dialog control={control} title="Custom body">
         <View style={{ gap: 12 }}>
           <Text>Render any JSX inside the dialog body.</Text>
-          <Button variant="secondary" onPress={() => control.close()}>
+          <Button onPress={() => control.close()} appearance="outline" tone="neutral">
             Done
           </Button>
         </View>
@@ -53,14 +70,12 @@ function CustomChildrenDemo() {
 
 function AlertDemo() {
   return (
-    <Button
-      onPress={() =>
+    <Button onPress={() =>
         alert('Delete project?', 'This action cannot be undone.', [
           { text: 'Cancel', style: 'cancel' },
           { text: 'Delete', style: 'destructive' },
         ])
-      }
-    >
+      }>
       Trigger alert()
     </Button>
   );
@@ -105,7 +120,7 @@ function SideSheetDemo({ placement }: { placement: 'left' | 'right' }) {
       <Dialog control={control} placement={placement} title="Store menu">
         <View style={{ gap: 12 }}>
           <Text>An anchored drawer, blurred and dimmed behind.</Text>
-          <Button variant="secondary" onPress={() => control.close()}>
+          <Button onPress={() => control.close()} appearance="outline" tone="neutral">
             Done
           </Button>
         </View>
@@ -115,30 +130,37 @@ function SideSheetDemo({ placement }: { placement: 'left' | 'right' }) {
 }
 
 export const Basic: Story = {
+  parameters: { controls: { disable: true } },
   render: () => <DeclarativeDemo />,
 };
 
 export const SideSheetLeft: Story = {
+  parameters: { controls: { disable: true } },
   render: () => <SideSheetDemo placement="left" />,
 };
 
 export const SideSheetRight: Story = {
+  parameters: { controls: { disable: true } },
   render: () => <SideSheetDemo placement="right" />,
 };
 
 export const CustomChildren: Story = {
+  parameters: { controls: { disable: true } },
   render: () => <CustomChildrenDemo />,
 };
 
 export const AlertHelper: Story = {
+  parameters: { controls: { disable: true } },
   render: () => <AlertDemo />,
 };
 
 export const ThreeAction: Story = {
+  parameters: { controls: { disable: true } },
   render: () => <ThreeActionDemo />,
 };
 
 export const Composition: Story = {
+  parameters: { controls: { disable: true } },
   render: () => (
     <View style={{ gap: 12, alignItems: 'flex-start' }}>
       <DeclarativeDemo />
@@ -146,4 +168,14 @@ export const Composition: Story = {
       <AlertDemo />
     </View>
   ),
+};
+
+/** Controls configure the next presentation; dismissal stays imperative. */
+export const Playground: Story = {
+  args: { title: 'Review changes', description: 'Everything is ready to save.', width: 440, showHandle: true, dismissOnBackdrop: true, scrollable: true },
+  parameters: { controls: { include: ['title', 'description', 'width', 'showHandle', 'dismissOnBackdrop', 'scrollable'] } },
+  render: function PlaygroundDialog(args) {
+    const control = useDialogControl();
+    return <><Button onPress={() => control.open()}>Open dialog</Button><Dialog {...args} control={control} actions={[{ label: 'Done', color: 'default' }, { label: 'Cancel', color: 'cancel' }]} /></>;
+  },
 };

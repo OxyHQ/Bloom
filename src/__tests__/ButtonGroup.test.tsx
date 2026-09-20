@@ -36,7 +36,7 @@ describe('ButtonGroup', () => {
 
   it('sizes items from the group: 34 medium, 30 small', () => {
     const { getByTestId } = renderWithTheme(
-      <ButtonGroup size="small">
+      <ButtonGroup size="sm">
         <ButtonGroupItem testID="item">One</ButtonGroupItem>
         <ButtonGroupItem testID="icon" iconOnly accessibilityLabel="Add" />
       </ButtonGroup>,
@@ -49,7 +49,7 @@ describe('ButtonGroup', () => {
     const onPress = jest.fn();
     const { getByTestId } = renderWithTheme(
       <ButtonGroup>
-        <ButtonGroupItem testID="item" selected onPress={onPress}>
+        <ButtonGroupItem testID="item" checked onPress={onPress}>
           Week
         </ButtonGroupItem>
       </ButtonGroup>,
@@ -65,7 +65,7 @@ describe('ButtonGroup', () => {
     const { getByTestId } = renderWithTheme(
       <ButtonGroup>
         <ButtonGroupItem testID="rest">A</ButtonGroupItem>
-        <ButtonGroupItem testID="selected" selected>
+        <ButtonGroupItem testID="selected" checked>
           B
         </ButtonGroupItem>
         <ButtonGroupItem testID="disabled" disabled>

@@ -50,17 +50,17 @@ const FAMILIES = [
   },
   {
     name: 'Fab',
-    styleId: 'bloom-fab-web-css',
-    selector: '.bloom-fab',
-    varPrefix: 'bloom-fab',
-    element: <Fab accessibilityLabel="Compose" icon={<span />} />,
+    styleId: 'bloom-button-web-css',
+    selector: '.bloom-btn',
+    varPrefix: 'bloom-btn',
+    element: <Fab accessibilityLabel="Compose" icon={() => <span />} />,
   },
   {
     name: 'FrostedIconButton',
     styleId: 'bloom-frosted-icon-button-web-css',
     selector: '.bloom-frosted-icon-btn',
     varPrefix: 'bloom-frosted',
-    element: <FrostedIconButton accessibilityLabel="Back" icon={<span />} />,
+    element: <FrostedIconButton accessibilityLabel="Back" icon={() => <span />} />,
   },
   {
     name: 'Chip',

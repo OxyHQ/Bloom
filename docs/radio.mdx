@@ -33,19 +33,19 @@ import { RadioGroup } from '@oxy.so/bloom/radio';
 | `label` (group)           | the accessible name of the whole group — required    |
 | `value` / `onValueChange` | the selection; the group is fully controlled         |
 | `options`                 | the choices, each with its own `label`/`description` |
-| `size`                    | `small` · `medium` · `large`                         |
+| `size`                    | `sm` · `md` · `lg`                         |
 | `disabled`                | the whole group, or one option via its `disabled`    |
 
 ## What it looks like
 
 The dot is [`RadioIndicator`](/docs/bloom/main/radio-indicator); the row puts an 8px gap between it and the label.
 
-|       | `small` | `medium` | `large` |
+|       | `sm` | `md` | `lg` |
 | ----- | ------- | -------- | ------- |
 | dot   | 14      | 16       | 20      |
 | label | `body-2-medium` 13/18 | `body-medium` 14/20 | `headline-medium` 16/22 |
 
-`small` is the `sm` size and `medium` the `md` size; `large` extends the ramp — the same rungs as `Checkbox`, so a form mixing the two lines up. A disabled option dims the whole row to 50%. On web, keyboard focus draws a `ring-2 ring-offset-2` around the dot: a 2px accent ring outside a 2px white offset (white in dark mode too — Tailwind's default offset colour). Text is Inter from Bloom's type ramp. There is no hover or press paint and no press scale — selection is the only thing that animates.
+`sm` is the `sm` size and `md` the `md` size; `lg` extends the ramp — the same rungs as `Checkbox`, so a form mixing the two lines up. A disabled option dims the whole row to 50%. On web, keyboard focus draws a `ring-2 ring-offset-2` around the dot: a 2px accent ring outside a 2px offset matching the scoped page background. Text is Inter from Bloom's type ramp. There is no hover or press paint and no press scale — selection is the only thing that animates.
 
 ## Cards
 
@@ -74,7 +74,7 @@ tapping the words does nothing — which reads as an unresponsive control.
 
 If you need the dot alone — inside a custom row, a card selector, a table cell —
 that is [`RadioIndicator`](/docs/bloom/main/radio-indicator), which is
-presentational and takes `selected`. Using the indicator where you meant the
+presentational and takes `checked`. Using the indicator where you meant the
 control is how a "radio group" ends up announcing as decoration.
 
 ## Radio, Switch or Checkbox

@@ -52,29 +52,20 @@ describe('WebSearch', () => {
     jest.useRealTimers();
   });
 
-  it('maps tokens onto the ramps in both modes', () => {
-    const light = buildTheme('teal', 'light');
-    const dark = buildTheme('teal', 'dark');
-    const l = resolveButtonRamps(light);
-    const d = resolveButtonRamps(dark);
-    expect(resolveWebSearchPalette(light)).toMatchObject({
-      textSecondary: l.neutral[500],
-      textTertiary: l.neutral[400],
-      iconQuaternary: l.neutral[300],
-      markBorder: l.neutral[200],
-      markSurface: light.colors.card,
-      markDot: l.neutral[300],
-      rowHover: l.neutral[100],
-      ring: l.accent[500],
-    });
-    expect(resolveWebSearchPalette(dark)).toMatchObject({
-      textTertiary: d.neutral[600],
-      iconQuaternary: d.neutral[700],
-      markBorder: d.neutral[700],
-      markSurface: d.neutral[800],
-      markDot: d.neutral[700],
-      rowHover: d.neutral[900],
-    });
+  it('uses canonical roles in both modes', () => {
+    for (const mode of ['light', 'dark'] as const) {
+      const theme = buildTheme('teal', mode);
+      expect(resolveWebSearchPalette(theme)).toMatchObject({
+        textSecondary: theme.colors.textSecondary,
+        textTertiary: theme.colors.textTertiary,
+        iconQuaternary: theme.colors.textTertiary,
+        markBorder: theme.colors.borderLight,
+        markSurface: theme.colors.card,
+        markDot: theme.colors.textTertiary,
+        rowHover: theme.colors.backgroundSecondary,
+        ring: theme.colors.primary,
+      });
+    }
   });
 
   it('paces units: heading, step, its sources a 900ms beat later, then each dwell; Working trails until done', () => {

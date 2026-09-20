@@ -1,3 +1,5 @@
+import { useBloomAppearance } from '../appearance';
+import { resolveBloomColors } from '../appearance/colors';
 import React, { memo, useMemo, type ComponentType } from 'react';
 import {
   Animated,
@@ -17,7 +19,6 @@ import { pressedSurface } from '../theme/press-colors';
 import { usePressAnimation } from '../hooks/use-press-animation';
 import { useInteractionState } from '../hooks/use-interaction-state';
 import {
-  applyIconColor,
   resolveFrostedPalette,
   resolveFrostedSize,
 } from './shared';
@@ -67,11 +68,12 @@ const AnimatedPressable = Animated.createAnimatedComponent(StyledPressable);
 
 const FrostedIconButtonComponent: React.FC<FrostedIconButtonProps> = ({
   onPress,
-  icon,
-  children,
-  active = false,
+  icon: Icon,
+  tone: toneProp,
+  checked = false,
+  onCheckedChange,
   disabled = false,
-  size = 'md',
+  size: sizeProp,
   accessibilityLabel,
   accessibilityHint,
   style,
@@ -80,10 +82,13 @@ const FrostedIconButtonComponent: React.FC<FrostedIconButtonProps> = ({
   hitSlop,
 }) => {
   const theme = useTheme();
+  const {size: inheritedSize, tone} = useBloomAppearance({size: typeof sizeProp === 'number' ? undefined : sizeProp, tone: toneProp}, {size: 'md', tone: 'accent'});
+  const size = typeof sizeProp === 'number' ? sizeProp : inheritedSize;
+  const activePaint = resolveBloomColors(theme.colors, tone, 'solid');
   const geo = useMemo(() => resolveFrostedSize(size), [size]);
   const palette = useMemo(
-    () => resolveFrostedPalette(theme.colors, theme.isDark),
-    [theme.colors, theme.isDark],
+    () => ({ ...resolveFrostedPalette(theme.colors, theme.isDark), activeSurface: activePaint.background, activeIcon: activePaint.foreground, focusRing: activePaint.background }),
+    [theme.colors, theme.isDark, activePaint.background, activePaint.foreground],
   );
 
   const { scaleAnim, onPressIn: onScalePressIn, onPressOut: onScalePressOut } =
@@ -113,14 +118,14 @@ const FrostedIconButtonComponent: React.FC<FrostedIconButtonProps> = ({
   // the frosted surface is a tint of — so the composite is that tint at a higher
   // alpha, which is the right answer over arbitrary media and needs no fourth
   // palette member.
-  const restSurface = active ? palette.activeSurface : palette.surface;
+  const restSurface = checked ? palette.activeSurface : palette.surface;
   const surface = held
-    ? active
+    ? checked
       ? pressedSurface(theme.colors, palette.activeSurface, palette.activeIcon)
       : pressedSurface(theme.colors, palette.surfaceHover, theme.colors.text)
     : restSurface;
   const ring = held ? palette.ringHover : palette.ring;
-  const iconColor = active ? palette.activeIcon : palette.icon;
+  const iconColor = checked ? palette.activeIcon : palette.icon;
 
   const containerStyle = useMemo((): ViewStyle => {
     return {
@@ -149,7 +154,6 @@ const FrostedIconButtonComponent: React.FC<FrostedIconButtonProps> = ({
     };
   }, [geo.diameter, ring, palette.shadow]);
 
-  const content = icon ?? children;
 
   return (
     <AnimatedPressable
@@ -175,13 +179,13 @@ const FrostedIconButtonComponent: React.FC<FrostedIconButtonProps> = ({
       // button announces the same state whichever fork a bundler picks.
       // Both spellings are needed: react-native-web ignores
       // `accessibilityState`, React Native has no `aria-pressed`.
-      accessibilityState={{ disabled, selected: active }}
-      aria-pressed={active}
+      accessibilityState={{ disabled, selected: checked }}
+      aria-pressed={checked}
       testID={testID}
     >
       {/* Clip layer: blur (frosted only) + translucent/solid tint, rounded. */}
       <View style={[StyleSheet.absoluteFill, styles.clip]}>
-        {!active && (
+        {!checked && (
           <BlurView
             intensity={BLUR_INTENSITY}
             tint={theme.isDark ? 'dark' : 'light'}
@@ -195,7 +199,7 @@ const FrostedIconButtonComponent: React.FC<FrostedIconButtonProps> = ({
         )}
         <View style={[StyleSheet.absoluteFill, { backgroundColor: surface }]} />
       </View>
-      {content != null && (
+      {Icon != null && (
         <View
           style={{
             width: geo.iconBox,
@@ -204,7 +208,7 @@ const FrostedIconButtonComponent: React.FC<FrostedIconButtonProps> = ({
             justifyContent: 'center',
           }}
         >
-          {applyIconColor(content, iconColor)}
+          {Icon ? <Icon width={geo.iconBox} height={geo.iconBox} fill={iconColor} /> : null}
         </View>
       )}
     </AnimatedPressable>

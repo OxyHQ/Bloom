@@ -41,6 +41,8 @@ const AA = 4.5;
 const TONES: readonly AccentTone[] = [
   'default',
   'primary',
+  'secondary',
+  'tertiary',
   'success',
   'warning',
   'error',

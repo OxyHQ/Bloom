@@ -10,32 +10,34 @@ A labelled pill. A filter you can toggle, a tag you can remove, or a static toke
 
 `Chip` is what shadcn calls `Badge`. Bloom's own [`Badge`](/docs/bloom/main/design-tokens) is a different component — a counter or a dot that rides on another control — so if you are porting a `<Badge>Draft</Badge>` from shadcn, this is the one you want.
 
+For a controlled toggle, pass `checked` and `onCheckedChange`. The callback receives the next boolean. `onPress` remains available for ordinary actions and runs alongside the toggle callback when both are supplied; disabled controls call neither.
+
 ## Basic
 
 ```tsx
 import { Chip } from '@oxy.so/bloom/chip';
 
 <Chip>Draft</Chip>
-<Chip variant="solid" color="success">Published</Chip>
-<Chip variant="subtle" color="warning">Needs review</Chip>
+<Chip appearance="solid" tone="success">Published</Chip>
+<Chip appearance="subtle" tone="warning">Needs review</Chip>
 ```
 
 ## Tone and fill
 
-`color` picks the tone (`default`, `primary`, `success`, `warning`, `error`, `info`) and `variant` picks how loudly it is painted (`solid`, `subtle`, `outlined` — default `subtle`, a tinted chip). shadcn's four badge variants map onto that pair: `default` is `solid` + `primary`, `secondary` is `subtle` + `default`, `destructive` is `solid` + `error`, and `outline` is `outlined` + `default`.
+`tone` picks the tone (`neutral`, `accent`, `success`, `warning`, `danger`, `info`) and `appearance` picks how loudly it is painted (`solid`, `subtle`, `outline` — default `subtle`, a tinted chip). shadcn's four badge variants map onto that pair: `neutral` is `solid` + `accent`, `secondary` is `subtle` + `neutral`, `destructive` is `solid` + `danger`, and `outline` is `outline` + `neutral`.
 
 Both come from `theme/accent-colors.ts`, the one resolver `Chip` and `Badge` share. Never derive a tint yourself by appending alpha to a token — an accent resolves to `rgb(...)`, so the appended-hex form parses back fully opaque and paints the label on its own colour at contrast 1.00.
 
 ## Data hues
 
-Chip has a second colour system beside the status tones: DATA hues, for a category, a department, an objective. `hue` paints one of them instead of `color` + `variant`:
+Chip has a second colour system beside the status tones: DATA hues, for a category, a department, an objective. `hue` paints one of them instead of `tone` + `appearance`:
 
 ```tsx
 import { Chip, resolveChipHueColors, type ChipHue } from '@oxy.so/bloom/chip';
 
-<Chip size="medium" hue="lime">Shipped</Chip>
-<Chip size="large" hue="gray">$1.290</Chip>
-<Chip size="small" hue="purple">Design</Chip>
+<Chip size="md" hue="lime">Shipped</Chip>
+<Chip size="lg" hue="gray">$1.290</Chip>
+<Chip size="sm" hue="purple">Design</Chip>
 ```
 
 | hue | light | dark | theme source |
@@ -45,24 +47,24 @@ import { Chip, resolveChipHueColors, type ChipHue } from '@oxy.so/bloom/chip';
 | `yellow` | 200 / 800 | 950 at 60% / 500 | `warning` ramp |
 | `cyan` | 200 / 800 | 950 at 60% / 400 | `info` ramp |
 | `blue` | 200 / 800 | 950 at 60% / 300 | accent ramp |
-| `purple` | 100 / 600 | 900 at 50% / 300 | Tailwind purple re-anchored on `primary` — the same stops `AiProfileCard`'s delta chips use |
+| `purple` | 100 / 600 | 900 at 50% / 300 | Tailwind purple re-anchored on `accent` — the same stops `AiProfileCard`'s delta chips use |
 | `neutral` | neutral-200 / neutral-500 | neutral-800 / neutral-500 | `background-tertiary` / `text-secondary` |
 | `gray` | neutral-100 / text | neutral-900 / text | `background-secondary` / `text-primary` |
 | `soft` | neutral-100 / neutral-500 | neutral-900 / neutral-500 | `background-secondary` / `text-secondary` |
 
-The hues sit BESIDE the accent recipe, not inside it: `resolveAccentColors` is untouched, and a chip without `hue` paints exactly as before. While `hue` is set, `color` and `variant` are ignored (no border); `selected` still promotes a pressable chip to the brand tone.
+The hues sit BESIDE the accent recipe, not inside it: `resolveAccentColors` is untouched, and a chip without `hue` paints exactly as before. While `hue` is set, `tone` and `appearance` are ignored (no border); `checked` still promotes a pressable chip to the brand tone.
 
 **The dark fills are translucent** (`color-mix(… 60%, transparent)`), so what paints depends on what the chip sits on. They are pre-mixed over `surface` — by default the page background (`background-full`: the card colour, dark neutral-925), where a dashboard table's chips typically sit. A chip on a card in dark mode should pass that card's colour as `surface`, or its fill reads a shade off. `resolveChipHueColors(theme, hue, surface?)` returns the same pair for a caller painting its own element.
 
 ## Filter pills
 
 ```tsx
-<Chip variant="subtle" selected={active} onPress={toggle}>
+<Chip appearance="subtle" checked={active} onPress={toggle}>
   Music
 </Chip>
 ```
 
-`selected` promotes the chip to the brand tone rather than to a colour system of its own, and announces as `aria-pressed`. On web a keyboard user gets a `:focus-visible` ring — keyboard-only, so a mouse click does not leave one behind.
+`checked` promotes the chip to the brand tone rather than to a colour system of its own, and announces as `aria-pressed`. On web a keyboard user gets a `:focus-visible` ring — keyboard-only, so a mouse click does not leave one behind.
 
 ## Removable
 
@@ -74,7 +76,7 @@ The close affordance is its own control inside the pill, with its own label and 
 
 ## Sizes and icons
 
-`size` is `small` (`caption-1-medium`, 24 tall), `medium` (default, `body-medium`, 24 tall) or `large` (`body-medium`, 28 tall), all with 6px side padding and set in Inter through the typography `Text`. The close glyph is Remix `close-line` at 16. `startIcon` and `endIcon` take any node, and both are sized to the pill rather than to whatever was passed — an icon in a `small` chip and the same icon in a `large` one come out proportional.
+`size` is `sm` (`caption-1-medium`, 24 tall), `md` (default, `body-medium`, 24 tall) or `lg` (`body-medium`, 28 tall), all with 6px side padding and set in Inter through the typography `Text`. The close glyph is Remix `close-line` at 16. `leading` and `trailing` take any node, and both are sized to the pill rather than to whatever was passed — an icon in a `sm` chip and the same icon in a `lg` one come out proportional.
 
 ## A pill does not shrink
 

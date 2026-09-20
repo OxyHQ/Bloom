@@ -1,45 +1,27 @@
 import { useMemo } from 'react';
 
-import { ACCENT_TABLE, colorRamp, mixColor, resolveButtonRamps } from '../button/shared';
+import { BUTTON_SHADOW } from '../button/shared';
+import { resolveAccentColors } from '../theme/accent-colors';
 import { MENU_SHADOW } from '../floating/menu-palette';
+import { PANEL_SHADOW, resolvePanelChrome } from '../styles/panel-chrome';
+import { hairlineOn } from '../styles/surface-levels';
 import type { Theme } from '../theme/types';
 import { useTheme } from '../theme/use-theme';
-import { parseRgba } from '../theme/color-utils';
-import { oklchToSrgb, srgbToOklch, srgbToRgbString } from '../theme/color-space';
 import type { SidebarAvatarColor } from './types';
 
-/**
- * Sidebar tokens, built on Bloom's ramps.
- *
- *                                      light              dark
- *   background-secondary (panel)       neutral-100        neutral-900
- *   background-secondary-hover (row)   neutral-200        neutral-800
- *   background-tertiary (search, team) neutral-200        neutral-800
- *   background-tertiary-hover          neutral-300        neutral-700
- *   background-full (flat)             card               neutral-925
- *   background-primary (menu panel)    card               neutral-800
- *   background-primary-hover (menu)    neutral-100        neutral-700 @60%
- *   border-button-white (panel edge)   card               zinc-800 ≈ neutral-800
- *   border-button-default (menu edge)  neutral-200        neutral-700
- *   border-button-hover (team card)    neutral-300        neutral-500
- *   border-button-active (search ring) neutral-400        neutral-600
- *   border-sidebar-profile-hover       neutral-300        neutral-600
- *   text-primary                       text               text
- *   text-secondary / icon-secondary    neutral-500        neutral-500
- *   text-tertiary / icon-tertiary      neutral-400        neutral-600
- *   badge-neutral-background           neutral-200        neutral-800
- *   team-menu-count bg / fg            neutral-200 / 500  neutral-700 / 400
- *   avatar-neutral-background          neutral-300        neutral-800
- *   selected nav                       accent-500 solid fill, primary-foreground label
- *                                      (Bloom: no gradient, ring or highlight; pill)
- */
+/** Sidebar chrome reads the same semantic roles as consumer surfaces. */
 export interface SidebarPalette {
   panel: string;
   panelBorder: string;
   panelShadow: string;
+  /** Docked panels have no shadow, so their single edge uses the shared hairline resolver. */
+  dockedEdge: string;
   flat: string;
   rowHover: string;
   tertiary: string;
+  /** Fill and shadow of a segmented control's sliding thumb (the mode switcher). */
+  segmentedThumb: string;
+  segmentedThumbShadow: string;
   tertiaryHover: string;
   searchHover: string;
   searchRing: string;
@@ -52,6 +34,7 @@ export interface SidebarPalette {
   selectedForeground: string;
   badgeNeutral: string;
   badgePrimary: string;
+  badgePrimaryForeground: string;
   teamHoverBorder: string;
   profileHoverBorder: string;
   ring: string;
@@ -70,66 +53,59 @@ export interface SidebarPalette {
 }
 
 /** `shadow-sidebar`, light and dark. */
-export const SIDEBAR_SHADOW = {
-  light: '0 1px 0 0 rgba(0, 0, 0, 0.0196), 0 1px 12px 0 rgba(0, 0, 0, 0.0588), 0 0 1px 0 rgba(0, 0, 0, 0.3216)',
-  dark: '0 1px 0 0 rgba(0, 0, 0, 0.1), 0 1px 12px 0 rgba(0, 0, 0, 0.16), 0 0 1px 0 rgba(0, 0, 0, 0.42)',
-} as const;
-
-/** Tailwind `pink-500` sits this far round the OKLCH hue wheel from `blue-500`. */
-const PINK_HUE_OFFSET = 354.308 - 259.815;
-
-function rotateHue(color: string, degrees: number): string {
-  const rgba = parseRgba(color);
-  if (!rgba) return color;
-  const { l, c, h } = srgbToOklch(rgba);
-  return srgbToRgbString(oklchToSrgb({ l, c, h: (((h + degrees) % 360) + 360) % 360 }));
-}
+/**
+ * The panel edge, now shared with the framed `ContentPanel` — see
+ * `styles/panel-chrome.ts`. Kept exported under its own name because it is
+ * public API of this family.
+ */
+export const SIDEBAR_SHADOW = PANEL_SHADOW;
 
 export function resolveSidebarPalette(theme: Theme): SidebarPalette {
-  const { accent, neutral: n } = resolveButtonRamps(theme);
-  const success = colorRamp(theme.colors.success, ACCENT_TABLE);
-  const pink = colorRamp(rotateHue(theme.colors.primary, PINK_HUE_OFFSET), ACCENT_TABLE);
-  const dark = theme.isDark;
-  const panel = dark ? n[900] : n[100];
-  const card = theme.colors.card;
+  const { colors: c, isDark: dark } = theme;
+  const chrome = resolvePanelChrome(theme);
+  const primary = resolveAccentColors(c, 'primary', 'subtle');
+  const success = resolveAccentColors(c, 'success', 'subtle');
+  const tertiary = resolveAccentColors(c, 'tertiary', 'subtle');
   return {
-    panel,
-    panelBorder: dark ? n[800] : card,
-    panelShadow: dark ? SIDEBAR_SHADOW.dark : SIDEBAR_SHADOW.light,
-    // `neutral-925` (#121212), between the 900 and 950 stops.
-    flat: dark ? mixColor(n[900], n[950], 0.4) : card,
-    rowHover: dark ? n[800] : n[200],
-    tertiary: dark ? n[800] : n[200],
-    tertiaryHover: dark ? n[700] : n[300],
-    // `hover:bg-background-tertiary-hover/55` over the panel.
-    searchHover: mixColor(panel, dark ? n[700] : n[300], 0.55),
-    searchRing: dark ? n[600] : n[400],
-    text: theme.colors.text,
-    textSecondary: n[500],
-    textTertiary: dark ? n[600] : n[400],
-    selected: accent[500],
-    selectedForeground: theme.colors.primaryForeground,
-    badgeNeutral: dark ? n[800] : n[200],
-    badgePrimary: accent[400],
-    teamHoverBorder: dark ? n[500] : n[300],
-    profileHoverBorder: dark ? n[600] : n[300],
-    ring: accent[500],
+    panel: chrome.surface,
+    panelBorder: chrome.border,
+    panelShadow: chrome.shadow,
+    dockedEdge: hairlineOn(theme, chrome.surface),
+    flat: c.background,
+    rowHover: c.backgroundTertiary,
+    tertiary: c.backgroundTertiary,
+    segmentedThumb: c.card,
+    segmentedThumbShadow: dark ? BUTTON_SHADOW.dark : BUTTON_SHADOW.light,
+    tertiaryHover: c.card,
+    searchHover: c.card,
+    searchRing: c.border,
+    text: c.text,
+    textSecondary: c.textSecondary,
+    textTertiary: c.textTertiary,
+    selected: c.primary,
+    selectedForeground: c.primaryForeground,
+    badgeNeutral: c.backgroundTertiary,
+    badgePrimary: c.secondary,
+    badgePrimaryForeground: c.secondaryForeground,
+    teamHoverBorder: c.border,
+    profileHoverBorder: c.border,
+    ring: c.primary,
     menu: {
-      surface: dark ? n[800] : card,
-      border: dark ? n[700] : n[200],
+      surface: c.card,
+      border: c.border,
       shadow: dark ? MENU_SHADOW.dark : MENU_SHADOW.light,
-      rowHover: dark ? mixColor(n[800], n[700], 0.6) : n[100],
-      countBackground: dark ? n[700] : n[200],
-      countForeground: dark ? n[400] : n[500],
+      rowHover: c.backgroundTertiary,
+      countBackground: c.backgroundTertiary,
+      countForeground: c.textSecondary,
     },
     avatar: {
-      neutral: { background: dark ? n[800] : n[300], foreground: n[500] },
-      blue: { background: accent[300], foreground: accent[900] },
-      lime: { background: success[200], foreground: success[700] },
-      pink: { background: pink[200], foreground: pink[500] },
+      neutral: { background: c.backgroundTertiary, foreground: c.textSecondary },
+      blue: { background: primary.background, foreground: primary.foreground },
+      lime: { background: success.background, foreground: success.foreground },
+      pink: { background: tertiary.background, foreground: tertiary.foreground },
     },
-    avatarFlat: dark ? n[900] : n[200],
-    iconQuaternary: dark ? n[700] : n[300],
+    avatarFlat: c.backgroundSecondary,
+    iconQuaternary: c.border,
   };
 }
 

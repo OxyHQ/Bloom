@@ -43,6 +43,12 @@ const meta: Meta<typeof AvatarGroup> = {
   title: 'Base/Avatar Group',
   component: AvatarGroup,
   argTypes: {
+    "layout": { control: 'select', options: ["stack","row","cluster"] },
+    "variant": { control: 'text' },
+    "total": { control: 'number' },
+    "spacing": { control: 'number' },
+    "ringColor": { control: 'text' },
+    "showInitials": { control: 'boolean' },
     size: { control: { type: 'number', min: 16, max: 96, step: 4 } },
     max: { control: { type: 'number', min: 1, max: 10, step: 1 } },
     overlap: { control: { type: 'number', min: 0, max: 48, step: 1 } },
@@ -133,11 +139,13 @@ function HoverCardStory() {
 }
 
 export const HoverCard: Story = {
+  parameters: { controls: { disable: true } },
   render: () => <HoverCardStory />,
   name: 'Hover card (web)',
 };
 
 export const Sizes: Story = {
+  parameters: { controls: { disable: true } },
   render: () => (
     <View style={{ gap: 16 }}>
       <AvatarGroup items={ITEMS} size={24} max={5} />
@@ -153,6 +161,7 @@ export const Sizes: Story = {
  * ring — the "top tokens" / adjacent-icons strip. Still collapses to `+N`.
  */
 export const RowLayout: Story = {
+  parameters: { controls: { disable: true } },
   render: () => (
     <View style={{ gap: 16 }}>
       <AvatarGroup layout="row" items={WITH_PHOTOS} size={28} max={4} />
@@ -178,6 +187,7 @@ const MANY: AvatarGroupItem[] = Array.from({ length: 25 }, (_, i) => ({
  * so the packing reads clearly. Shown at counts 3, 4, 5, 6, 8, 12, and 20.
  */
 export const ClusterLayout: Story = {
+  parameters: { controls: { disable: true } },
   render: () => (
     <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 24, alignItems: 'center' }}>
       {[3, 4, 5, 6, 8, 12, 20].map((count) => (
@@ -201,6 +211,7 @@ export const ClusterLayout: Story = {
  * behind", then 3 and 4).
  */
 export const ClusterWithPhotos: Story = {
+  parameters: { controls: { disable: true } },
   render: () => (
     <View style={{ flexDirection: 'row', gap: 24, alignItems: 'center' }}>
       {[2, 3, 4].map((count) => (
@@ -222,9 +233,11 @@ export const ClusterWithPhotos: Story = {
  * "+N" bubble as the last (smallest) cluster member.
  */
 export const ClusterOverflow: Story = {
-  render: () => (
+  args: { layout: "cluster", size: 140, max: 20, showInitials: true },
+  parameters: { controls: { include: ["layout","size","max","showInitials","variant","total","spacing","ringColor","overlap","hoverCard"] } },
+  render: (args) => (
     <View style={{ flexDirection: 'row', gap: 24, alignItems: 'center' }}>
-      <AvatarGroup layout="cluster" items={MANY} size={140} max={20} showInitials />
+      <AvatarGroup {...args}  items={MANY}    />
       <Text>25 members, max 20 → cap + &quot;+N&quot;</Text>
     </View>
   ),

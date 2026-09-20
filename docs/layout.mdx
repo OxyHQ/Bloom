@@ -10,7 +10,8 @@ Two questions every floating surface has to answer, answered once for all of
 them.
 
 ```tsx
-import { EDGE_GAP, windowEdgeGap, useBottomEdgeInset, useClaimBottomEdge } from '@oxy.so/bloom/layout';
+import { EDGE_GAP, windowEdgeGap, useBottomEdgeInset, useClaimBottomEdge,
+  TopEdgeProvider, useTopEdgeInset, useClaimTopEdge, ScrollOffsetProvider, useScrollOffset } from '@oxy.so/bloom/layout';
 ```
 
 ## `windowEdgeGap` — how far from the edge
@@ -40,24 +41,85 @@ double-counts the home indicator and strands a band of dead space.
 
 ## `useBottomEdgeInset` / `useClaimBottomEdge` — what is already there
 
-Knowing where the edge is does not tell a FAB that a tab bar is already parked
-on it. A surface that parks there **claims** its footprint; a surface that wants
-to avoid it **reads** the total.
+The registry remains a low-level geometry API for independently positioned surfaces.
+A surface **claims** its footprint; another surface can **read** the occupied extent.
+`Fab` no longer reads this registry: it is a static action positioned by `Screen`
+or beside navigation by `BottomBar`.
 
 ```tsx
 // The surface that parks there — a floating tab bar.
 useClaimBottomEdge(gap + barHeight);
 
-// The surface that avoids it — Bloom's Fab does this for you.
+// A custom independently anchored surface that avoids the claimed region.
 const occupied = useBottomEdgeInset();
 <View style={{ position: 'absolute', bottom: windowEdgeGap(insets.bottom) + occupied }} />
 ```
 
-Neither imports the other, so any combination composes: a tab bar with no FAB, a
-FAB with no tab bar, both, or a surface written later.
+Claims remain independent of their readers. For built-in screen composition, use
+`Screen` and `BottomBar`: the owner reserves geometry and renders the FAB as a
+sibling of the navigation capsule, above their shared blur.
 
 `BloomProvider` mounts the registry. Outside one, `useBottomEdgeInset()` returns
 `0` and `useClaimBottomEdge` is a no-op, so a surface stays usable standalone.
+
+## `useTopEdgeInset` / `useClaimTopEdge` — the same thing, one edge up
+
+A header that participates in layout answers this by existing: the content
+starts where the header ends, because they are siblings in a column. A header
+that **overlays** content — [`PageHeader`](/docs/page-header)'s
+`placement="overlay"`, where the page scrolls under translucent islands —
+occupies no layout space at all, and the first item of the content lands
+underneath it.
+
+```tsx
+// The chrome that parks there — PageHeader does this for you.
+useClaimTopEdge(measuredHeight);
+
+// The content that has to clear it.
+<ScrollView contentContainerStyle={{ paddingTop: useTopEdgeInset() }}>
+```
+
+Same registry object as the bottom edge, so everything below about `max`,
+about a nested provider and about the one-frame settle applies unchanged.
+
+**The height is measured, not computed.** A subtitle, an enlarged font and a
+notch all move it, and a constant plus the insets fails silently — the content
+starts a few points under the islands and looks like a design decision.
+
+**Apply the safe area once.** The header pads itself by `insets.top`, and the
+claim already includes that padding. Adding `insets.top` again in the scroll
+container double-counts the notch.
+
+## `ScrollOffsetProvider` / `useScrollOffset` — which scroller
+
+A screen has exactly one scroll owner, and the owner publishes its offset. Chrome
+reads it. Neither imports the other, so two panels side by side — each with its
+own header and its own scroller — resolve correctly, because the provider's
+position in the tree is what pairs them.
+
+```tsx
+const scrollY = useSharedValue(0);
+const onScroll = useAnimatedScrollHandler(
+  { onScroll: (e) => { scrollY.value = e.contentOffset.y; } },
+  [scrollY],
+);
+
+<ScrollOffsetProvider value={scrollY}>
+  <PageHeader title="Inbox" />
+  <Animated.ScrollView onScroll={onScroll} scrollEventThrottle={16}>…</Animated.ScrollView>
+</ScrollOffsetProvider>
+```
+
+The context carries the **`SharedValue`**, not a number: it crosses once, at
+mount, and every subsequent frame reaches the chrome on the UI thread through
+`useAnimatedStyle`, with no React render. A context whose value changed per frame
+would re-render every consumer per frame, which is precisely the cost this
+avoids — the same reasoning as the section below.
+
+Without it, chrome falls back to `window.scrollY` on web and to nothing on
+native. That default is right for exactly one layout — a web page whose document
+*is* the scroller — and silently wrong for a desktop panel and for every native
+screen, with no error: the header simply never reacts.
 
 ## The collapse is not here, on purpose
 
@@ -77,10 +139,12 @@ A collapse is **motion**, and motion that must stay locked to a reanimated
 animation has to travel as a shared value on the UI thread. React state is the
 wrong transport for it at any width, so it is not offered here.
 
-The **app** owns that signal. Mention drives its header, its tab bar and its FAB
-from one `SharedValue` through `useAnimatedStyle`, and everything moves together
-because nothing crosses a thread. This registry stays what it is good at:
-**geometry** — where things are, not when they move.
+`Screen` now owns the coordinated signal locally. `useScreen()` exposes
+`collapseProgress`; `AppShell` passes it to `BottomBar.minimizeProgress`, and
+`BottomBar` animates its navigation and action together. Custom chrome reads the
+same shared value. The historical workaround in Mention did this at app level;
+the shared composition now supplies that ownership. The registry still carries
+**geometry**, never animated collapse or a React boolean mirror.
 
 ## Things that are easy to get wrong
 
@@ -90,7 +154,8 @@ strand a reader at twice the height, floating mid-screen.
 
 **A z-index cannot substitute for the offset.** A tab bar host is typically the
 last sibling of the app shell, so it paints over every descendant no matter what
-they claim. The FAB has to be somewhere *else*, not merely on top.
+they claim. A separate anchored action must avoid that band; the current BottomBar instead
+places the action beside navigation in the same host, above their blur.
 
 **A modal surface should not read the registry.** A detached `BottomSheet`
 renders above the tab bar and covers it; offsetting it by a bar it is already

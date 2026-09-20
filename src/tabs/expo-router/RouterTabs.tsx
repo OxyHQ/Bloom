@@ -239,7 +239,7 @@ export function RouterTabs({
           key={item.value}
           value={item.value}
           label={item.label}
-          icon={item.icon}
+          leading={item.icon}
           leadingIcon={item.leadingIcon}
           count={item.count}
           disabled={item.disabled}

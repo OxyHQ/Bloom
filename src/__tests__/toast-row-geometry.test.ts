@@ -5,6 +5,7 @@ import {
 } from '../toast/constants';
 import {
   calculateStackScaleX,
+  calculateToastVisibleHeight,
   calculateToastPosition,
   getOrderedToastIds,
 } from '../toast/row-geometry';
@@ -153,8 +154,8 @@ describe('calculateToastPosition', () => {
   describe('stacking on', () => {
     it.each([
       [0, 0],
-      [1, -2],
-      [2, -4],
+      [1, 8],
+      [2, 16],
     ])('top-center index %i tucks behind the front row at %i', (
       index,
       expected,
@@ -300,4 +301,24 @@ describe('calculateStackScaleX', () => {
       scaleAt({ index: 1, rowWidth: desktopWindowWidth }),
     );
   });
+});
+
+
+describe('mixed-height stack clipping', () => {
+  it.each<ToastPosition>(['top-center', 'bottom-center', 'bottom-right', 'center'])(
+    'bounds tall rear rows to the front while retaining intrinsic expansion (%s)', position => {
+      const top = position === 'top-center';
+      const config = {
+        index: top ? 1 : 0, numberOfToasts: 2, enableStacking: true, position,
+        allToastHeights: { short: 54, tall: 180 },
+        orderedToastIds: top ? ['short', 'tall'] : ['tall', 'short'], isExpanded: false,
+      };
+      expect(calculateToastVisibleHeight(config)).toBe(54);
+      expect(calculateToastVisibleHeight({ ...config, isExpanded: true })).toBe(180);
+      expect(calculateToastVisibleHeight({ ...config, enableStacking: false })).toBe(180);
+      const offset = calculateToastPosition({ ...config, gap: 8, stackGap: 8 });
+      expect(offset).toBe(position === 'center' ? -35 : top ? 8 : -8);
+      expect(config.allToastHeights.tall).toBe(180);
+    },
+  );
 });

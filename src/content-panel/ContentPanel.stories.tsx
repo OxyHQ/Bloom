@@ -7,6 +7,15 @@ import { Text } from '../typography';
 import { Divider } from '../divider';
 
 const meta: Meta<typeof ContentPanel> = {
+  argTypes: {
+    "framed": { control: 'boolean' },
+    "surfaceClassName": { control: 'text' },
+    "contentClassName": { control: 'text' },
+    "showStickyFrame": { control: 'boolean' },
+    "maskColor": { control: 'text' },
+    "overlaySizing": { control: 'select', options: ["viewport","panel"] },
+    "overlayTopOffset": { control: 'number' }
+  },
   title: 'Base/Content Panel',
   component: ContentPanel,
 };
@@ -36,8 +45,9 @@ function Body() {
  * a border a few pixels from the screen edge, which reads as a rendering bug.
  */
 export const Plain: Story = {
+  parameters: { controls: { disable: true } },
   render: () => (
-    <View style={{ width: 720 }}>
+    <View style={{ maxWidth: '100%', width: 720 }}>
       <ContentPanel>
         <Body />
       </ContentPanel>
@@ -51,9 +61,11 @@ export const Plain: Story = {
  * without the caller branching on width itself.
  */
 export const Framed: Story = {
-  render: () => (
-    <View style={{ width: 720 }}>
-      <ContentPanel framed framedFrom={640}>
+  args: { framed: true, framedFrom: 640 },
+  parameters: { controls: { include: ["framed","framedFrom","surfaceClassName","contentClassName","showStickyFrame","maskColor","overlaySizing","overlayTopOffset"] } },
+  render: (args) => (
+    <View style={{ maxWidth: '100%', width: 720 }}>
+      <ContentPanel {...args}  >
         <Body />
       </ContentPanel>
     </View>
@@ -77,13 +89,15 @@ export const Framed: Story = {
  * `"panel"` sizes them to the panel's own real box instead.
  */
 export const ExternalHeaderBoundedShell: Story = {
-  render: () => (
-    <View style={{ width: 720, height: 480, flexDirection: 'column' }}>
+  args: { framed: true, overlaySizing: "panel" },
+  parameters: { controls: { include: ["framed","overlaySizing","surfaceClassName","contentClassName","showStickyFrame","maskColor","overlayTopOffset"] } },
+  render: (args) => (
+    <View style={{ maxWidth: '100%', width: 720, height: 480, flexDirection: 'column' }}>
       <View style={{ height: 56, justifyContent: 'center' }}>
         <Text style={{ fontSize: 16, fontWeight: '700' }}>External header (outside the panel)</Text>
       </View>
       <View style={{ flex: 1 }}>
-        <ContentPanel framed overlaySizing="panel">
+        <ContentPanel {...args}  >
           <Body />
         </ContentPanel>
       </View>
@@ -92,8 +106,9 @@ export const ExternalHeaderBoundedShell: Story = {
 };
 
 export const SideBySide: Story = {
+  parameters: { controls: { disable: true } },
   render: () => (
-    <View style={{ width: 900, flexDirection: 'row', gap: 16 }}>
+    <View style={{ maxWidth: '100%', width: 900, flexDirection: 'row', gap: 16 }}>
       <View style={{ flex: 2 }}>
         <ContentPanel framed framedFrom={500}>
           <Body />

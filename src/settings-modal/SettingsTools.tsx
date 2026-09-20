@@ -348,7 +348,7 @@ function ServerRow({
             {server.tools?.map((tool) => (
               <Chip
                 key={tool}
-                size="small"
+                size="sm"
                 style={{ backgroundColor: palette.secondary }}
                 textStyle={{ color: palette.textSecondary }}
               >
@@ -569,8 +569,8 @@ export function SettingsToolsPage({
             description="Wait indefinitely to authenticate when prompted. When off, skip authentication prompts after 30 seconds."
           >
             <Switch
-              value={waitForAuthentication}
-              onValueChange={onWaitForAuthenticationChange}
+              checked={waitForAuthentication}
+              onCheckedChange={onWaitForAuthenticationChange}
               accessibilityLabel="Wait for MCP authentication"
             />
           </SettingsRow>
@@ -597,7 +597,7 @@ export function SettingsToolsPage({
         description="Configured in the dashboard"
         inset={8}
         action={
-          <Button variant="secondary" size="small" onPress={onManageTeam}>
+          <Button size="sm" onPress={onManageTeam} appearance="subtle" tone="neutral">
             Manage
           </Button>
         }
@@ -615,7 +615,7 @@ export function SettingsToolsPage({
                 cloud.
               </Text>
             </View>
-            <Button variant="secondary" size="small" onPress={onConfigureTeam}>
+            <Button size="sm" onPress={onConfigureTeam} appearance="subtle" tone="neutral">
               Configure Team MCP Servers
             </Button>
           </View>

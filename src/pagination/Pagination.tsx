@@ -8,7 +8,7 @@ import { useInteractionState } from '../hooks/use-interaction-state';
 import { interactiveWebCss, useInteractiveWebCss } from '../styles/interactive-web-css';
 import type { WebCssStyle } from '../styles/web-view-style';
 import { Button } from '../button';
-import { BUTTON_SHADOW, resolveButtonRamps } from '../button/shared';
+import { BUTTON_SHADOW } from '../button/shared';
 import { RiArrowLeftLine as ArrowLeft } from '../icons/remix/RiArrowLeftLine';
 import { RiArrowRightLine as ArrowRight } from '../icons/remix/RiArrowRightLine';
 import type { Theme } from '../theme/types';
@@ -19,7 +19,7 @@ import type { PaginationProps } from './types';
  * in `button/shared.ts`.
  *
  *   row        Previous · pages · Next, space-between, gap 8
- *   prev/next  Bloom `Button` secondary, small (32), Remix arrow-left/right-line
+ *   prev/next  Bloom `Button` plain neutral, small (32), Remix arrow-left/right-line
  *   pages      gap 2; each cell 32×32, body-medium (Inter 14/20 500)
  *   current    card surface, 1px border/button/default, shadow-xs, text-primary
  *   inactive   text-secondary; hover background/secondary/hover, text-primary
@@ -82,28 +82,10 @@ interface PaginationPalette {
 }
 
 function resolvePaginationPalette(theme: Theme): PaginationPalette {
-  const { accent, neutral: n } = resolveButtonRamps(theme);
-  return theme.isDark
-    ? {
-        currentBackground: n[800],
-        currentBorder: n[700],
-        primary: theme.colors.text,
-        secondary: n[500],
-        tertiary: n[600],
-        hover: n[800],
-        shadow: BUTTON_SHADOW.dark,
-        ring: accent[500],
-      }
-    : {
-        currentBackground: theme.colors.card,
-        currentBorder: n[200],
-        primary: theme.colors.text,
-        secondary: n[500],
-        tertiary: n[400],
-        hover: n[200],
-        shadow: BUTTON_SHADOW.light,
-        ring: accent[500],
-      };
+  const c = theme.colors;
+  return { currentBackground: c.card, currentBorder: c.border, primary: c.text,
+    secondary: c.textSecondary, tertiary: c.textTertiary, hover: c.backgroundTertiary,
+    shadow: theme.isDark ? BUTTON_SHADOW.dark : BUTTON_SHADOW.light, ring: c.primary };
 }
 
 const STYLE_ID = 'bloom-pagination-web-css';
@@ -231,15 +213,7 @@ const PaginationComponent: React.FC<PaginationProps> = ({
         style,
       ]}
     >
-      <Button
-        variant="secondary"
-        size="small"
-        iconOnly={compact}
-        leadingIcon={ArrowLeft}
-        accessibilityLabel={compact ? previousLabel : undefined}
-        disabled={page <= 1}
-        onPress={() => onChange(page - 1)}
-      >
+      <Button size="sm" icon={ArrowLeft} accessibilityLabel={compact ? previousLabel : undefined} disabled={page <= 1} onPress={() => onChange(page - 1)} appearance="plain" tone="neutral">
         {compact ? undefined : previousLabel}
       </Button>
 
@@ -268,16 +242,7 @@ const PaginationComponent: React.FC<PaginationProps> = ({
         )}
       </View>
 
-      <Button
-        variant="secondary"
-        size="small"
-        iconOnly={compact}
-        leadingIcon={compact ? ArrowRight : undefined}
-        trailingIcon={compact ? undefined : ArrowRight}
-        accessibilityLabel={compact ? nextLabel : undefined}
-        disabled={page >= totalPages}
-        onPress={() => onChange(page + 1)}
-      >
+      <Button size="sm" icon={compact ? ArrowRight : undefined} trailingIcon={compact ? undefined : ArrowRight} accessibilityLabel={compact ? nextLabel : undefined} disabled={page >= totalPages} onPress={() => onChange(page + 1)} appearance="plain" tone="neutral">
         {compact ? undefined : nextLabel}
       </Button>
     </View>

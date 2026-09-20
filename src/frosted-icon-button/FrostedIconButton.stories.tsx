@@ -10,12 +10,15 @@ const meta: Meta<typeof FrostedIconButton> = {
   component: FrostedIconButton,
   args: {
     accessibilityLabel: 'Back',
-    icon: <Icons.RiArrowLeftSLine size="md" />,
+    icon: Icons.RiArrowLeftSLine,
     onPress: () => {},
   },
   argTypes: {
-    size: { control: 'select', options: ['sm', 'md'] },
-    active: { control: 'boolean' },
+    "tone": { control: 'select', options: ['neutral', 'accent', 'support', 'action', 'success', 'warning', 'danger', 'info'] },
+    "title": { control: 'text' },
+    "type": { control: 'select', options: ["button","submit","reset"] },
+    size: { control: 'select', options: ['xs', 'sm', 'md', 'lg'] },
+    checked: { control: 'boolean' },
     disabled: { control: 'boolean' },
   },
 };
@@ -37,7 +40,7 @@ export const OnSolidDark: Story = {
 export const Active: Story = {
   render: (args) => (
     <View style={{ padding: 40, backgroundColor: 'rgb(11, 11, 15)' }}>
-      <FrostedIconButton {...args} active />
+      <FrostedIconButton {...args} checked />
     </View>
   ),
 };
@@ -47,7 +50,7 @@ export const OverImage: Story = {
   render: (args) => (
     <ImageBackground
       source={{ uri: 'https://picsum.photos/600/300' }}
-      style={{ width: 320, height: 180, padding: 16, justifyContent: 'flex-start' }}
+      style={{ maxWidth: '100%', width: 320, height: 180, padding: 16, justifyContent: 'flex-start' }}
     >
       <FrostedIconButton {...args} />
     </ImageBackground>

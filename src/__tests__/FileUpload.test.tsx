@@ -1,5 +1,5 @@
 import React from 'react';
-import { act, render } from '@testing-library/react-native';
+import { act, fireEvent, render } from '@testing-library/react-native';
 
 import { BloomThemeProvider } from '../theme/BloomThemeProvider';
 import { FileUpload, formatFileSize } from '../file-upload';
@@ -53,6 +53,13 @@ describe('formatFileSize', () => {
 describe('FileUpload', () => {
   afterEach(() => {
     jest.useRealTimers();
+  });
+
+  it('sizes the progress SVG from its container before measurement and updates its geometry after layout', () => {
+    const screen = renderWithTheme(<FileUpload testID="zone" />);
+    expect(screen.getByTestId('zone-progress-ring').props).toMatchObject({ width: '100%', height: '100%', preserveAspectRatio: 'none' });
+    fireEvent(screen.getByTestId('zone'), 'layout', { nativeEvent: { layout: { x: 0, y: 0, width: 358, height: 164 } } });
+    expect(screen.getByTestId('zone-progress-ring').props).toMatchObject({ width: '100%', height: '100%', viewBox: '0 0 358 164' });
   });
 
   it('renders the idle zone as a named button with the allowed types and limit', () => {
@@ -195,9 +202,9 @@ describe('resolveFileUploadPaint', () => {
     // Idle and busy fills differ in both modes (the fill cross-fade has to show).
     expect(light.idleBackground).not.toBe(light.busyBackground);
     expect(dark.idleBackground).not.toBe(dark.busyBackground);
-    // The ring and pill share accent-400; the pill label is white.
+    // The ring and pill share the primary fill and its paired foreground.
     expect(light.ringFill).toBe(light.pillBackground);
-    expect(light.pillText).toBe('#FFFFFF');
+    expect(light.pillText).toBe(theme(false).colors.primaryForeground);
     // Hover darkens the icon in light and lightens it in dark.
     expect(light.discIconHover).not.toBe(light.discIcon);
     expect(dark.discIconHover).not.toBe(dark.discIcon);

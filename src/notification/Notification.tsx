@@ -27,7 +27,7 @@ import type {
 
 /**
  * `Notification`: geometry is fixed to the pixel (see `shared.ts`); colours
- * come from Bloom's theme through the button ramp recipe.
+ * come from Bloom's paired semantic roles.
  *
  * A self-contained card: it owns its dismissal (exit animation, then unmount,
  * then `onDismiss`), its optional auto-dismiss countdown and its optional
@@ -253,12 +253,7 @@ function NotificationComponent({
             }}
           >
             {actions.map((action, index) => (
-              <Button
-                key={index}
-                size="small"
-                variant={action.variant ?? (index === 0 ? 'secondary' : 'primary')}
-                onPress={action.onPress}
-              >
+              <Button key={index} size="sm" appearance={action.appearance ?? (index === 0 ? 'subtle' : 'solid')} tone={action.tone ?? (index === 0 ? 'neutral' : 'accent')} onPress={action.onPress}>
                 {action.label}
               </Button>
             ))}

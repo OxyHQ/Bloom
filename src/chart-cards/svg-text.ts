@@ -23,3 +23,13 @@ export function textTopForBaseline(baseline: number, type: Pick<TextStyle, 'font
 export function svgTextType(variant: TypeScaleVariant): TextStyle {
   return { ...TYPE_SCALE[variant], letterSpacing: 0 };
 }
+
+/** Keep the label's layout box inside its plot without moving its text anchor.
+ * Empty, invisible label slots still contribute to document scroll width on web.
+ */
+export function boundedLabelSlot(plotWidth: number, anchorX: number, anchor: 'start' | 'middle' | 'end', preferredWidth: number): { left: number; width: number } {
+  const x = Math.max(0, Math.min(plotWidth, anchorX));
+  const room = anchor === 'start' ? plotWidth - x : anchor === 'end' ? x : 2 * Math.min(x, plotWidth - x);
+  const width = Math.max(0, Math.min(preferredWidth, room));
+  return { left: anchor === 'start' ? x : anchor === 'end' ? x - width : x - width / 2, width };
+}

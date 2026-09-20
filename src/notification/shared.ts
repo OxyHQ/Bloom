@@ -1,10 +1,4 @@
-import {
-  ACCENT_TABLE,
-  DANGER_TABLE,
-  colorRamp,
-  mixColor,
-  resolveButtonRamps,
-} from '../button/shared';
+import { resolveAccentColors } from '../theme/accent-colors';
 import type { Theme } from '../theme/types';
 import type { NotificationPresence, NotificationStatus } from './types';
 
@@ -74,17 +68,6 @@ export interface NotificationPaint {
 }
 
 /**
- * A tinted status disc: `<hue>-100` behind `<hue>-600` in light mode;
- * `<hue>-800` at 50% over the card behind `<hue>-300` in dark mode.
- */
-function tinted(theme: Theme, color: string, danger: boolean, surface: string): NotificationStatusPaint {
-  const ramp = colorRamp(color, danger ? DANGER_TABLE : ACCENT_TABLE);
-  return theme.isDark
-    ? { background: mixColor(surface, ramp[800], 0.5), foreground: ramp[300] }
-    : { background: ramp[100], foreground: ramp[600] };
-}
-
-/**
  * Every colour the card paints. Pure — takes the theme, so it can be walked over
  * every preset × mode without rendering.
  *
@@ -94,29 +77,22 @@ function tinted(theme: Theme, color: string, danger: boolean, surface: string): 
  * text/secondary glyph.
  */
 export function resolveNotificationPaint(theme: Theme): NotificationPaint {
-  const { accent, neutral: n } = resolveButtonRamps(theme);
   const c = theme.colors;
-  const dark = theme.isDark;
-  const surface = dark ? n[800] : c.card;
   return {
-    surface,
-    border: dark ? n[700] : n[200],
-    shadow: NOTIFICATION_SHADOW[dark ? 'dark' : 'light'],
+    surface: c.card,
+    border: c.borderLight,
+    shadow: NOTIFICATION_SHADOW[theme.isDark ? 'dark' : 'light'],
     title: c.text,
-    timestamp: dark ? n[600] : n[400],
-    description: n[500],
-    countdown: accent[600],
-    presence: {
-      online: colorRamp(c.success, ACCENT_TABLE)[500],
-      busy: colorRamp(c.error, DANGER_TABLE)[500],
-      offline: dark ? n[600] : n[400],
-    },
+    timestamp: c.textTertiary,
+    description: c.textSecondary,
+    countdown: c.primary,
+    presence: { online: c.success, busy: c.error, offline: c.textTertiary },
     status: {
-      neutral: { background: dark ? n[800] : n[200], foreground: n[500] },
-      information: tinted(theme, c.info, false, surface),
-      success: tinted(theme, c.success, false, surface),
-      warning: tinted(theme, c.warning, false, surface),
-      error: tinted(theme, c.error, true, surface),
+      neutral: resolveAccentColors(c, 'default', 'subtle'),
+      information: resolveAccentColors(c, 'info', 'subtle'),
+      success: resolveAccentColors(c, 'success', 'subtle'),
+      warning: resolveAccentColors(c, 'warning', 'subtle'),
+      error: resolveAccentColors(c, 'error', 'subtle'),
     },
   };
 }

@@ -14,9 +14,9 @@ it wraps one.
 ```tsx
 import { Badge } from '@oxy.so/bloom/badge';
 
-<Badge content="Beta" color="info" variant="subtle" />
+<Badge content="Beta" tone="info" appearance="subtle" />
 
-<Badge content={5} color="error">
+<Badge content={5} tone="danger">
   <IconCircle icon={BellIcon} />
 </Badge>
 ```
@@ -27,9 +27,9 @@ Geometry is a standard counter badge; colours stay on Bloom's accent recipe.
 
 | size | height | text | padding-x |
 | ---- | ------ | ---- | --------- |
-| `small` | 17 | `caption-2-semibold` (11/15), tracking 0 | 4 |
-| `medium` | 18 | `caption-1-semibold` (12/16), tracking 0 | 4 |
-| `large` | 24 | `body-semibold` (14/20) | 6 |
+| `sm` | 17 | `caption-2-semibold` (11/15), tracking 0 | 4 |
+| `md` | 18 | `caption-1-semibold` (12/16), tracking 0 | 4 |
+| `lg` | 24 | `body-semibold` (14/20) | 6 |
 
 Every label is Bloom's typography `Text` on a `TYPE_SCALE` step, so it is set in Inter on both platforms.
 
@@ -38,7 +38,7 @@ its height, so a single digit is a circle rather than a pill narrower than it is
 tall.
 
 A **standalone** `dot` is a status dot: a solid centre on a tinted halo —
-12 / 6 at `medium` (8 / 4 `small`, 16 / 8 `large`). The halo is the tone's
+12 / 6 at `md` (8 / 4 `sm`, 16 / 8 `lg`). The halo is the tone's
 `subtle` tint from the same recipe, so it follows the preset and mode like a
 subtle badge. An **attached** dot (one wrapping a child) stays a plain 6 / 8 / 10
 marker: a halo over the child's corner reads as a second ring on the icon.
@@ -48,14 +48,14 @@ marker: a halo over the child's corner reads as a second ring on the icon.
 | prop        | decides                                                     |
 | ----------- | ----------------------------------------------------------- |
 | `content`   | the label; absent, the badge draws nothing                   |
-| `color`     | the semantic tone                                            |
-| `variant`   | how loudly it is painted — `solid` · `subtle` · `outlined`   |
+| `tone`     | the semantic tone                                            |
+| `appearance`   | how loudly it is painted — `solid` · `subtle` · `outline`   |
 | `dot`       | drops the label entirely for a presence marker               |
 | `max`       | caps a number and appends a plus                             |
 | `invisible` | hides the badge **without unmounting the child**             |
 | `placement` | which corner, when it wraps a child                          |
 
-`color` and `variant` are resolved together through `resolveAccentColors`,
+`tone` and `appearance` are resolved together through `resolveAccentColors`,
 which reads the `*Subtle` / `*SubtleForeground` pairs. That is why a subtle
 badge is legible rather than one colour on the same colour — a tone lightened
 by appending alpha to a token would not be. Concretely: an accent token
@@ -79,8 +79,8 @@ is. Unmounting the badge is fine; unmounting the wrapper reflows the row.
 ```
 
 **`dot`** — a dot has no label to make legible, so it always paints the tone's
-**fill** (the centre, for a standalone status dot), whatever the `variant`. Following the variant made
-`dot variant="outlined"` a fully transparent circle: visually absent, with
+**fill** (the centre, for a standalone status dot), whatever the `appearance`. Following the variant made
+`dot variant="outline"` a fully transparent circle: visually absent, with
 markup that reads as correct.
 
 ## Accessibility

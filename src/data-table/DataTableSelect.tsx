@@ -2,7 +2,6 @@ import React from 'react';
 import { Platform, View } from 'react-native';
 
 import { Badge } from '../badge';
-import { resolveButtonRamps } from '../button/shared';
 import { useControllableState } from '../hooks/use-controllable-state';
 import {
   Select,
@@ -39,7 +38,7 @@ function OptionMark({ option, color }: { option: DataTableSelectOption; color: s
     const Icon = option.icon;
     return <Icon width={OPTION_ICON_SIZE} height={OPTION_ICON_SIZE} fill={color} />;
   }
-  if (option.dot) return <Badge dot color={option.dot} />;
+  if (option.dot) return <Badge dot tone={option.dot} />;
   return null;
 }
 
@@ -61,7 +60,6 @@ export function DataTableSelect({
   testID,
 }: DataTableSelectProps) {
   const theme = useTheme();
-  const { neutral } = resolveButtonRamps(theme);
   const [value, setValue] = useControllableState<string | undefined>({
     value: valueProp,
     defaultValue,
@@ -80,14 +78,14 @@ export function DataTableSelect({
           className={current?.icon ? 'pl-2' : undefined}
           style={[{ width }, SHRINK_TO_CONTENT]}
         >
-          <SelectValue leading={current ? <OptionMark option={current} color={neutral[500]} /> : null} />
+          <SelectValue leading={current ? <OptionMark option={current} color={theme.colors.textSecondary} /> : null} />
           <SelectIcon />
         </SelectTrigger>
         <SelectContent<DataTableSelectOption>
           label={label}
           items={[...options]}
           renderItem={(item) => (
-            <SelectItem value={item.value} label={item.label} leading={<OptionMark option={item} color={neutral[500]} />}>
+            <SelectItem value={item.value} label={item.label} leading={<OptionMark option={item} color={theme.colors.textSecondary} />}>
               <SelectItemText>{item.label}</SelectItemText>
             </SelectItem>
           )}

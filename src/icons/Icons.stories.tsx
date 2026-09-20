@@ -10,6 +10,7 @@ import { Search } from '../search';
 import { useTheme } from '../theme';
 
 const meta: Meta = {
+  parameters: { controls: { disable: true } },
   title: 'Foundations/Icons',
 };
 
@@ -59,6 +60,7 @@ function Cell({ name, Icon }: { name: string; Icon: IconComponent }) {
  * `Text`, so an icon beside a label needs to be told both.
  */
 export const Browser: Story = {
+  parameters: { controls: { disable: true } },
   render: function BrowserStory() {
     const entries = useIconEntries();
     const [query, setQuery] = useState('');
@@ -67,8 +69,8 @@ export const Browser: Story = {
       : entries;
 
     return (
-      <View style={{ width: 820, gap: 12 }}>
-        <Search value={query} onChangeText={setQuery} onClearText={() => setQuery('')} />
+      <View style={{ maxWidth: '100%', width: 820, gap: 12 }}>
+        <Search value={query} onValueChange={setQuery} onClearText={() => setQuery('')} />
         <Text>
           {filtered.length} of {entries.length} icons
         </Text>
@@ -84,6 +86,7 @@ export const Browser: Story = {
 
 /** The size ramp, on one glyph, so the steps are comparable. */
 export const Sizes: Story = {
+  parameters: { controls: { disable: true } },
   render: function SizesStory() {
     const { colors } = useTheme();
     const Bell = RemixIcons.RiNotification3Line;
@@ -106,6 +109,7 @@ export const Sizes: Story = {
  * tab bar uses both for the same subject.
  */
 export const LineAndFill: Story = {
+  parameters: { controls: { disable: true } },
   render: function LineAndFillStory() {
     const { colors } = useTheme();
     return (
@@ -129,6 +133,7 @@ export const LineAndFill: Story = {
  * Filter by either name to review a mapping decision against its drawing.
  */
 export const Migration: Story = {
+  parameters: { controls: { disable: true } },
   render: function MigrationStory() {
     const { colors } = useTheme();
     const [query, setQuery] = useState('');
@@ -138,8 +143,8 @@ export const Migration: Story = {
     });
 
     return (
-      <View style={{ width: 820, gap: 12 }}>
-        <Search value={query} onChangeText={setQuery} onClearText={() => setQuery('')} />
+      <View style={{ maxWidth: '100%', width: 820, gap: 12 }}>
+        <Search value={query} onValueChange={setQuery} onClearText={() => setQuery('')} />
         <Text>{rows.length} mappings</Text>
         <View style={{ flexDirection: 'row', flexWrap: 'wrap' }}>
           {rows.map(([from, to]) => {

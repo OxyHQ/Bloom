@@ -14,6 +14,20 @@ export interface GlassBlurWindowProps {
   children?: ReactNode;
 }
 
+/**
+ * Which of the two glass ROLES a pane paints.
+ *
+ * `accent` is a brand fill over one of Bloom's own neutral surfaces — a
+ * `primary` control, labelled with that fill's own on-colour. `chrome` is a
+ * neutral surface off the ladder (`styles/surface-levels`) over content Bloom
+ * does NOT own — a page header's island — labelled with the theme's own `text`.
+ *
+ * They carry different alphas because they are priced against different
+ * backdrops, and in opposite directions; the measurement is on
+ * {@link ../theme/glass-colors#GLASS_CHROME_ALPHA}.
+ */
+export type GlassMaterial = 'accent' | 'chrome';
+
 export interface GlassSurfaceProps {
   /**
    * The OPAQUE brand fill the pane is tinted with — `theme.colors.primary`,
@@ -36,6 +50,14 @@ export interface GlassSurfaceProps {
    */
   radius: number;
   /**
+   * Which role's alpha to apply to `fill`. Default `accent`.
+   *
+   * A pane cannot infer this from the colour it is given — `chrome`'s fill is a
+   * neutral that in light mode IS `colors.card`, which an accent pane could
+   * legitimately be asked to paint too.
+   */
+  material?: GlassMaterial;
+  /**
    * Whether to paint the sheen — the top-lit gradient that separates glass from
    * flat tinted plastic.
    *
@@ -46,6 +68,29 @@ export interface GlassSurfaceProps {
    */
   sheen?: boolean;
   /** Extra style for the clipped layer stack (rarely needed). */
+  style?: StyleProp<ViewStyle>;
+  testID?: string;
+}
+
+export interface GlassIslandProps {
+  children?: ReactNode;
+  /**
+   * Corner radius. A full pill by default — an island is a capsule, and a
+   * capsule of icon-only controls is what makes the row read as separated
+   * groups rather than as one bar.
+   */
+  radius?: number;
+  /**
+   * `'group'` when the island holds several RELATED actions the consumer has
+   * declared as one group. Omitted for a single control in its own capsule: a
+   * group of one is noise for a screen reader, and the control already names
+   * itself.
+   */
+  role?: 'group';
+  /** Names the group. Required by `role="group"` to be worth announcing. */
+  accessibilityLabel?: string;
+  /** Forwarded to the material. See {@link GlassSurfaceProps.sheen}. */
+  sheen?: boolean;
   style?: StyleProp<ViewStyle>;
   testID?: string;
 }

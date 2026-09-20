@@ -6,6 +6,9 @@ import { Accordion, AccordionItem, AccordionTrigger, AccordionContent } from './
 import { Text } from '../typography';
 
 const meta: Meta<typeof Accordion> = {
+  argTypes: {
+    "type": { control: 'select', options: ["single","multiple"] }
+  },
   title: 'Base/Accordion',
   component: Accordion,
 };
@@ -37,11 +40,13 @@ const SECTIONS = [
  * is a single string, and `undefined` means everything is closed.
  */
 export const Single: Story = {
-  render: function SingleStory() {
+  args: { type: "single" },
+  parameters: { controls: { include: ["type"] } },
+  render: function SingleStory(args) {
     const [value, setValue] = useState<string | string[] | undefined>('account');
     return (
-      <View style={{ width: 420 }}>
-        <Accordion type="single" value={value} onValueChange={setValue}>
+      <View style={{ maxWidth: '100%', width: 420 }}>
+        <Accordion {...args}  value={value} onValueChange={setValue}>
           {SECTIONS.map((s) => (
             <AccordionItem key={s.value} value={s.value}>
               <AccordionTrigger>{s.title}</AccordionTrigger>
@@ -62,14 +67,16 @@ export const Single: Story = {
  * catch for you: the value must match `type`.
  */
 export const Multiple: Story = {
-  render: function MultipleStory() {
+  args: { type: "multiple" },
+  parameters: { controls: { include: ["type"] } },
+  render: function MultipleStory(args) {
     const [value, setValue] = useState<string | string[] | undefined>([
       'account',
       'sessions',
     ]);
     return (
-      <View style={{ width: 420 }}>
-        <Accordion type="multiple" value={value} onValueChange={setValue}>
+      <View style={{ maxWidth: '100%', width: 420 }}>
+        <Accordion {...args}  value={value} onValueChange={setValue}>
           {SECTIONS.map((s) => (
             <AccordionItem key={s.value} value={s.value}>
               <AccordionTrigger>{s.title}</AccordionTrigger>
@@ -86,11 +93,13 @@ export const Multiple: Story = {
 
 /** A disabled item keeps its place in the list and refuses to open. */
 export const DisabledItem: Story = {
-  render: function DisabledStory() {
+  args: { type: "single" },
+  parameters: { controls: { include: ["type"] } },
+  render: function DisabledStory(args) {
     const [value, setValue] = useState<string | string[] | undefined>(undefined);
     return (
-      <View style={{ width: 420 }}>
-        <Accordion type="single" value={value} onValueChange={setValue}>
+      <View style={{ maxWidth: '100%', width: 420 }}>
+        <Accordion {...args}  value={value} onValueChange={setValue}>
           <AccordionItem value="open">
             <AccordionTrigger>Available</AccordionTrigger>
             <AccordionContent>
@@ -114,11 +123,13 @@ export const DisabledItem: Story = {
  * truncated anything taller — this story is tall enough to have shown it.
  */
 export const LongContent: Story = {
-  render: function LongStory() {
+  args: { type: "single" },
+  parameters: { controls: { include: ["type"] } },
+  render: function LongStory(args) {
     const [value, setValue] = useState<string | string[] | undefined>('long');
     return (
-      <View style={{ width: 420 }}>
-        <Accordion type="single" value={value} onValueChange={setValue}>
+      <View style={{ maxWidth: '100%', width: 420 }}>
+        <Accordion {...args}  value={value} onValueChange={setValue}>
           <AccordionItem value="long">
             <AccordionTrigger>Release notes</AccordionTrigger>
             <AccordionContent>

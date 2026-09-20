@@ -18,7 +18,6 @@ import Animated, {
 } from 'react-native-reanimated';
 
 import { AgentThinking } from '../agent-thinking';
-import { resolveButtonRamps } from '../button/shared';
 import { adoptStyleSheet } from '../styles/adopt-style-sheet';
 import type { WebCssStyle } from '../styles/web-view-style';
 import type { Theme } from '../theme/types';
@@ -63,17 +62,11 @@ const IS_WEB = Platform.OS === 'web';
 //  Palette
 // ---------------------------------------------------------------------------
 
-/**
- *                          light          dark
- *   foreground-icon-quat.  neutral-300    neutral-700   (the guide)
- *   text-secondary         neutral-500    neutral-500
- *   text-primary           text           text
- */
+/** Canonical theme surfaces, foregrounds and focus roles. */
 function resolveLogPalette(theme: Theme) {
-  const { neutral } = resolveButtonRamps(theme);
   return {
-    guide: theme.isDark ? neutral[700] : neutral[300],
-    textSecondary: neutral[500],
+    guide: theme.colors.border,
+    textSecondary: theme.colors.textSecondary,
     textPrimary: theme.colors.text,
   };
 }

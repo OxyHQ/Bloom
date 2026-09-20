@@ -2,7 +2,6 @@ import React, { memo, useMemo, useState } from 'react';
 import { View } from 'react-native';
 
 import { Button } from '../button';
-import { colorRamp, DANGER_TABLE, resolveButtonRamps } from '../button/shared';
 import { useInteractionState } from '../hooks/use-interaction-state';
 import { RiNotificationLine } from '../icons/remix';
 import { NotificationCenter } from '../notification-center';
@@ -38,11 +37,11 @@ const NotificationBellComponent: React.FC<NotificationBellProps> = ({
   const { state: hovered, onIn, onOut } = useInteractionState();
   const unread = unreadCount ?? notifications.filter((item) => item.unread).length;
   const palette = useMemo(() => {
-    const { neutral: n } = resolveButtonRamps(theme);
     return {
-      badge: colorRamp(theme.colors.negative, DANGER_TABLE)[600],
+      badge: theme.colors.error,
+      badgeForeground: theme.colors.errorForeground,
       // `border-background-primary-default`: the secondary button's own fill.
-      ring: theme.isDark ? n[800] : theme.colors.card,
+      ring: theme.colors.card,
     };
   }, [theme]);
 
@@ -54,14 +53,7 @@ const NotificationBellComponent: React.FC<NotificationBellProps> = ({
         {...({ onPointerEnter: onIn, onPointerLeave: onOut })}
       >
         <PopoverTrigger asChild label={accessibilityLabel}>
-          <Button
-            variant="secondary"
-            size="medium"
-            iconOnly
-            leadingIcon={RiNotificationLine}
-            accessibilityLabel={accessibilityLabel}
-            testID={testID}
-          />
+          <Button size="md" icon={RiNotificationLine} accessibilityLabel={accessibilityLabel} testID={testID} appearance="plain" tone="neutral" />
         </PopoverTrigger>
         {unread > 0 ? (
           <View
@@ -81,7 +73,7 @@ const NotificationBellComponent: React.FC<NotificationBellProps> = ({
               backgroundColor: palette.badge,
             }}
           >
-            <Text style={{ width: 16, textAlign: 'center', fontSize: 10, lineHeight: 16, fontWeight: '700', color: '#ffffff' }}>
+            <Text style={{ width: 16, textAlign: 'center', fontSize: 10, lineHeight: 16, fontWeight: '700', color: palette.badgeForeground }}>
               {unread}
             </Text>
           </View>

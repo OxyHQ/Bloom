@@ -8,6 +8,9 @@ import { createRoot, type Root } from 'react-dom/client';
 import { getByText, queryByText } from '@testing-library/dom';
 import '@testing-library/jest-dom';
 
+import { BloomThemeProvider } from '../theme/BloomThemeProvider';
+import { Screen, useScreen } from '../screen';
+import type { ScreenContextValue } from '../screen/context';
 import { VirtualList } from '../list/index.web';
 
 // `@tanstack/react-virtual` measures rows via ResizeObserver + getBoundingClientRect,
@@ -124,4 +127,33 @@ describe('VirtualList (web)', () => {
     expect(getByText(c, 'Thunk header')).toBeTruthy();
     expect(getByText(c, 'Only row')).toBeTruthy();
   });
+});
+
+it('binds the document to the focused Screen without a nested scroll element', () => {
+  let state: ScreenContextValue | undefined;
+  function Probe() { state = useScreen(); return null; }
+  const renderList = (active: boolean) => <BloomThemeProvider fonts={false}><Screen documentScroll><Probe /><VirtualList screen={{ active }} data={[]} /></Screen></BloomThemeProvider>;
+  mount(renderList(true));
+  act(() => { Object.defineProperty(window, 'scrollY', { configurable: true, value: 120 }); window.dispatchEvent(new Event('scroll')); });
+  expect(state?.scrollY.value).toBe(120);
+  mount(renderList(false));
+  act(() => { Object.defineProperty(window, 'scrollY', { configurable: true, value: 240 }); window.dispatchEvent(new Event('scroll')); });
+  expect(state?.scrollY.value).toBe(120);
+  Object.defineProperty(window, 'scrollY', { configurable: true, value: 0 });
+});
+
+it('drives persistent shell navigation from the focused route Screen only', () => {
+  const states: Record<string, ScreenContextValue> = {};
+  function Probe({ name }: { name: string }) { states[name] = useScreen(); return null; }
+  const ui = (focused: boolean) => <BloomThemeProvider fonts={false}><Screen navigationScope="shared"><Probe name="shell" /><Screen active={focused}><Probe name="route" /><VirtualList screen={{}} data={[]} /></Screen></Screen></BloomThemeProvider>;
+  mount(ui(true));
+  act(() => { Object.defineProperty(window, 'scrollY', { configurable: true, value: 120 }); window.dispatchEvent(new Event('scroll')); });
+  expect(states.route!.scrollY.value).toBe(120);
+  expect(states.shell!.scrollY.value).toBe(0);
+  expect(states.shell!.collapseProgress.value).toBe(1);
+  mount(ui(false));
+  act(() => { Object.defineProperty(window, 'scrollY', { configurable: true, value: 0 }); window.dispatchEvent(new Event('scroll')); });
+  expect(states.shell!.collapseProgress.value).toBe(1);
+  expect(states.route!.scrollY.value).toBe(120);
+  Object.defineProperty(window, 'scrollY', { configurable: true, value: 0 });
 });

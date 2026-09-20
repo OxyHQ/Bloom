@@ -31,14 +31,14 @@ export function resolveChipHueColors(
   hue: ChipHue,
   surface: string = chipPageSurface(theme),
 ): { background: string; foreground: string } {
-  const { accent, neutral: n } = resolveButtonRamps(theme);
+  const { accent } = resolveButtonRamps(theme);
   switch (hue) {
     case 'neutral':
-      return { background: theme.isDark ? n[800] : n[200], foreground: n[500] };
+      return { background: theme.colors.backgroundTertiary, foreground: theme.colors.textSecondary };
     case 'gray':
-      return { background: theme.isDark ? n[900] : n[100], foreground: theme.colors.text };
+      return { background: theme.colors.backgroundSecondary, foreground: theme.colors.text };
     case 'soft':
-      return { background: theme.isDark ? n[900] : n[100], foreground: n[500] };
+      return { background: theme.colors.backgroundSecondary, foreground: theme.colors.textSecondary };
     case 'purple':
       return purpleChip(theme, surface);
     default: {
@@ -58,8 +58,7 @@ const HUE_TONE = {
   cyan: 'sky',
 } as const;
 
-/** `bg-background-full`: white (the card colour), dark neutral-925. */
+/** Actual page behind data-category chips. */
 export function chipPageSurface(theme: Theme): string {
-  const { neutral: n } = resolveButtonRamps(theme);
-  return theme.isDark ? mixColor(n[900], n[950], 0.4) : theme.colors.card;
+  return theme.colors.background;
 }

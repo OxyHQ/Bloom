@@ -16,6 +16,7 @@ type Story = StoryObj<typeof Breadcrumb>;
 
 /** A link with an icon, a button, and the current page. Hover the first two. */
 export const Basic: Story = {
+  parameters: { controls: { disable: true } },
   render: () => (
     <Breadcrumb>
       <BreadcrumbItem icon={HomeIcon} href="#home">
@@ -29,6 +30,7 @@ export const Basic: Story = {
 
 /** Every item shape, and a trail long enough to scroll inside a narrow container. */
 export const Matrix: Story = {
+  parameters: { controls: { disable: true } },
   render: () => (
     <View style={{ gap: 20, alignItems: 'flex-start' }}>
       <Breadcrumb>

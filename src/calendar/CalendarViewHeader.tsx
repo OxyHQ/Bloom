@@ -72,14 +72,7 @@ export function CalendarViewHeader({
           }}
         >
           {onMenuPress && !isLg ? (
-            <Button
-              variant="secondary"
-              size="medium"
-              iconOnly
-              leadingIcon={RiMenuLine}
-              accessibilityLabel="Open navigation"
-              onPress={onMenuPress}
-            />
+            <Button size="md" icon={RiMenuLine} accessibilityLabel="Open navigation" onPress={onMenuPress} appearance="plain" tone="neutral" />
           ) : null}
           <Text
             role="heading"
@@ -133,7 +126,7 @@ export function CalendarViewHeader({
               locale={locale}
               testID={testID ? `${testID}-switcher` : undefined}
             />
-            <Button variant="primary" size="medium" leadingIcon={RiAddFill} onPress={onNewEvent}>
+            <Button size="md" leadingIcon={RiAddFill} onPress={onNewEvent} appearance="solid" tone="accent">
               {newEventLabel}
             </Button>
           </View>

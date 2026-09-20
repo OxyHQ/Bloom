@@ -164,3 +164,6 @@ export function useInteractiveWebCss(styleId: string, css: string): void {
     adoptStyleSheet(styleId, css);
   }, [styleId, css]);
 }
+
+/** Ambient surface behind a control's focus ring. */
+export const RING_OFFSET_VAR = '--bloom-ring-offset';

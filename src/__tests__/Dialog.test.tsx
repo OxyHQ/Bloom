@@ -128,10 +128,10 @@ describe('Dialog nav header (rich fields)', () => {
       title: 'Rich title',
       primaryAction: { label: 'Save', onPress: jest.fn() },
       actions: [
-        { icon: <Text>·</Text>, accessibilityLabel: 'Share', onPress: jest.fn() },
-        { icon: <Text>·</Text>, accessibilityLabel: 'Star', onPress: jest.fn() },
+        { icon: () => <Text>·</Text>, accessibilityLabel: 'Share', onPress: jest.fn() },
+        { icon: () => <Text>·</Text>, accessibilityLabel: 'Star', onPress: jest.fn() },
       ],
-      search: { value: '', onChangeText: jest.fn(), placeholder: 'Find items' },
+      search: { value: '', onValueChange: jest.fn(), placeholder: 'Find items' },
       segments: {
         items: [
           { key: 'all', label: 'All' },
@@ -164,10 +164,10 @@ describe('Dialog nav header (rich fields)', () => {
     const { getByLabelText } = openHeader({
       title: 'T',
       actions: [
-        { icon: <Text>a</Text>, accessibilityLabel: 'A1', onPress: jest.fn() },
-        { icon: <Text>b</Text>, accessibilityLabel: 'A2', onPress: jest.fn() },
-        { icon: <Text>c</Text>, accessibilityLabel: 'A3', onPress: jest.fn() },
-        { icon: <Text>d</Text>, accessibilityLabel: 'A4', onPress: jest.fn() },
+        { icon: () => <Text>a</Text>, accessibilityLabel: 'A1', onPress: jest.fn() },
+        { icon: () => <Text>b</Text>, accessibilityLabel: 'A2', onPress: jest.fn() },
+        { icon: () => <Text>c</Text>, accessibilityLabel: 'A3', onPress: jest.fn() },
+        { icon: () => <Text>d</Text>, accessibilityLabel: 'A4', onPress: jest.fn() },
       ],
     });
     // 4 actions > the inline max (3): the first two stay inline + a "More" trigger.

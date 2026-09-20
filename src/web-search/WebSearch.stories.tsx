@@ -21,7 +21,7 @@ type Story = StoryObj<typeof WebSearch>;
 function Frame({ children, testID }: { children: React.ReactNode; testID?: string }) {
   const { colors } = useTheme();
   return (
-    <View testID={testID} style={{ padding: 40, width: 560, gap: 40, backgroundColor: colors.background }}>
+    <View testID={testID} style={{ padding: 40, width: 560, maxWidth: '100%', gap: 40, backgroundColor: colors.background }}>
       {children}
     </View>
   );
@@ -61,6 +61,7 @@ const STEPS: WebSearchStep[] = [
 
 /** Every unit revealed: heading, trail, both sources rows. Press "Sources" to fly the marks out. */
 export const Settled: Story = {
+  parameters: { controls: { disable: true } },
   render: () => (
     <Frame testID="settled">
       <WebSearch testID="ws" steps={STEPS} revealed={99} />
@@ -70,6 +71,7 @@ export const Settled: Story = {
 
 /** The streaming demo: units land on a fixed pacing, the newest step shimmers, "Working" trails. */
 export const Streaming: Story = {
+  parameters: { controls: { disable: true } },
   render: function Render() {
     const [run, setRun] = useState(0);
     const [done, setDone] = useState(false);
@@ -77,14 +79,10 @@ export const Streaming: Story = {
       <Frame testID="streaming">
         <WebSearch key={run} testID="ws" steps={STEPS} onComplete={() => setDone(true)} />
         <View style={{ flexDirection: 'row', gap: 8 }}>
-          <Button
-            size="small"
-            variant="secondary"
-            onPress={() => {
+          <Button size="sm" onPress={() => {
               setDone(false);
               setRun((n) => n + 1);
-            }}
-          >
+            }} appearance="outline" tone="neutral">
             {done ? 'Replay' : 'Restart'}
           </Button>
         </View>
@@ -95,16 +93,17 @@ export const Streaming: Story = {
 
 /** Driven by `revealed`, mid-run: the newest step shimmers and the indicator trails the heading's edge. */
 export const Controlled: Story = {
+  parameters: { controls: { disable: true } },
   render: function Render() {
     const [revealed, setRevealed] = useState(3);
     return (
       <Frame testID="controlled">
         <WebSearch testID="ws" steps={STEPS} revealed={revealed} working="Reading sources" />
         <View style={{ flexDirection: 'row', gap: 8 }}>
-          <Button size="small" variant="secondary" onPress={() => setRevealed((n) => Math.max(0, n - 1))}>
+          <Button size="sm" onPress={() => setRevealed((n) => Math.max(0, n - 1))} appearance="outline" tone="neutral">
             Back
           </Button>
-          <Button size="small" variant="secondary" onPress={() => setRevealed((n) => n + 1)}>
+          <Button size="sm" onPress={() => setRevealed((n) => n + 1)} appearance="outline" tone="neutral">
             Next unit
           </Button>
         </View>
@@ -115,6 +114,7 @@ export const Controlled: Story = {
 
 /** No heading: the trail starts on its own guide and the indicator sits on the glyphs' edge. */
 export const WithoutHeading: Story = {
+  parameters: { controls: { disable: true } },
   render: () => (
     <Frame testID="no-heading">
       <WebSearch testID="ws" steps={STEPS.slice(1)} revealed={3} working="Reading sources" />
@@ -125,6 +125,7 @@ export const WithoutHeading: Story = {
 
 /** Glyph kinds: brand marks (colour, and monochrome that follows the text), a supplied icon, none. */
 export const Glyphs: Story = {
+  parameters: { controls: { disable: true } },
   render: () => (
     <Frame testID="glyphs">
       <WebSearch
@@ -153,9 +154,21 @@ export const Glyphs: Story = {
 
 /** Reduced motion: everything lands settled, no shimmer, no flights. */
 export const ReducedMotion: Story = {
+  parameters: { controls: { disable: true } },
   render: () => (
     <Frame testID="reduced">
       <WebSearch testID="ws" steps={STEPS} reduce />
     </Frame>
   ),
+};
+
+/** A single instance whose controls are applied directly to the rendered component. */
+export const Playground: StoryObj<typeof WebSearch> = {
+  args: { steps: STEPS, run: false, revealed: 8 },
+  parameters: { controls: { disable: false, include: ['run', 'revealed'] } },
+  argTypes: { run: { control: 'boolean' }, revealed: { if: { arg: 'run', truthy: false }, control: { type: 'number', min: 0, max: 12 } } },
+  render: function Playground(args) {
+
+    return <View style={{ width: 440, maxWidth: '100%' }}><WebSearch {...args} revealed={args.run ? undefined : args.revealed} /></View>;
+  },
 };

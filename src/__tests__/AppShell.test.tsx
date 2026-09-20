@@ -1,7 +1,10 @@
+import { Stop } from 'react-native-svg';
+import { contrastRatio, mixColors } from '../styles/color-contrast';
 import React from 'react';
 import * as ReactNative from 'react-native';
-import { fireEvent, render } from '@testing-library/react-native';
+import { fireEvent, render, within } from '@testing-library/react-native';
 
+import { ScreenScrollView } from '../screen';
 import { BloomThemeProvider } from '../theme/BloomThemeProvider';
 import { PortalOutlet, PortalProvider } from '../portal';
 import { AppShell, AppShellHeader, NotificationBell, ProOfferCard } from '../app-shell';
@@ -44,55 +47,55 @@ describe('AppShellHeader', () => {
 });
 
 describe('AppShell', () => {
-  it('wide: the rail is in flow and there is no menu button', () => {
+  const navigation = [{ value: 'home', label: 'Home', icon: <RiHomeLine /> }];
+  it.each([[767, 'bottom'], [768, 'rail'], [1023, 'rail'], [1024, 'sidebar']] as const)('chooses navigation at width %s', (width, placement) => {
+    setWidth(width);
+    const screen = renderIn(<AppShell testID="shell" navigation={navigation} value="home" />);
+    expect(screen.getByTestId(`shell-navigation-${placement}`)).toBeTruthy();
+  });
+  it('uses measured column width and leaves external list scrolling to the child', () => {
     setWidth(1440);
-    const screen = renderIn(<AppShell testID="shell" title="Home" sidebar={{ items: NAV }} />);
-    expect(screen.getByTestId('sidebar-item-home')).toBeTruthy();
-    expect(screen.queryByTestId('shell-header-menu')).toBeNull();
-    expect(resolvedStyle(screen.getByTestId('shell').props.style)).toMatchObject({ padding: 12, gap: 16 });
+    const screen = renderIn(<AppShell testID="shell" navigation={navigation} scroll="external"><ReactNative.View testID="list" /></AppShell>);
+    fireEvent(screen.getByTestId('shell'), 'layout', { nativeEvent: { layout: { width: 600 } } });
+    expect(screen.getByTestId('shell-navigation-bottom')).toBeTruthy();
+    expect(screen.getByTestId('list')).toBeTruthy();
+    expect(screen.UNSAFE_queryAllByType(ScreenScrollView)).toHaveLength(0);
   });
-
-  it('rail variant: in flow from sm, and below it the drawer opens the panel', () => {
-    setWidth(700);
-    const wide = renderIn(<AppShell testID="shell" title="Home" sidebar={{ variant: 'rail', items: NAV }} />);
-    expect(resolvedStyle(wide.getByTestId('sidebar-item-home').props.style)).toMatchObject({ minHeight: 64 });
-    expect(wide.queryByTestId('shell-header-menu')).toBeNull();
-    wide.unmount();
-
-    setWidth(500);
-    const narrow = renderIn(<AppShell testID="shell" title="Home" sidebar={{ variant: 'rail', items: NAV }} />);
-    expect(narrow.queryByTestId('sidebar-item-home')).toBeNull();
-    fireEvent.press(narrow.getByTestId('shell-header-menu'));
-    expect(narrow.getByTestId('sidebar-close')).toBeTruthy();
-    expect(resolvedStyle(narrow.getByTestId('sidebar-item-home').props.style).minHeight).toBeUndefined();
+  it('honors explicit placement and forwards selection', () => {
+    setWidth(390);
+    const onValueChange = jest.fn();
+    const screen = renderIn(<AppShell testID="shell" navigation={navigation} value="other" navigationPlacement="sidebar" onValueChange={onValueChange} />);
+    fireEvent.press(screen.getByLabelText('Home'));
+    expect(onValueChange).toHaveBeenCalledWith('home');
   });
-
-  it('narrow overlay: the menu button opens the drawer, the close button shuts it', () => {
-    setWidth(700);
-    const screen = renderIn(<AppShell testID="shell" title="Home" sidebar={{ items: NAV }} />);
-    expect(screen.queryByTestId('sidebar-item-home')).toBeNull();
-    fireEvent.press(screen.getByTestId('shell-header-menu'));
-    expect(screen.getByTestId('sidebar-item-home')).toBeTruthy();
-    fireEvent.press(screen.getByTestId('sidebar-close'));
-    expect(screen.queryByTestId('sidebar-item-home')).toBeNull();
+  it.each(['card', 'docked'] as const)('preserves the %s sidebar surface with either navigation API', surface => {
+    setWidth(1440);
+    for (const navigationProps of [{ navigation }, { sidebar: { items: NAV } }]) {
+      const screen = renderIn(<AppShell {...navigationProps} testID="surface-shell" navigationPlacement="sidebar" sidebar={{ ...navigationProps.sidebar, surface }} />);
+      const gutter = surface === 'card' ? 12 : 0;
+      expect(resolvedStyle(screen.getByTestId('surface-shell-navigation-sidebar').props.style)).toMatchObject({
+        paddingTop: gutter, paddingBottom: gutter, paddingLeft: gutter, paddingRight: gutter,
+      });
+      const panelStyle = resolvedStyle(screen.getByTestId('surface-shell-sidebar').props.style);
+      expect(panelStyle.borderRadius ?? 0).toBe(surface === 'card' ? 24 : 0);
+      expect(screen.getByTestId('sidebar-item-home')).toBeTruthy();
+      screen.unmount();
+    }
   });
-
-  it('narrow reveal: the rail is mounted flat beneath and the veil closes it', () => {
-    setWidth(700);
-    const onDrawerOpenChange = jest.fn();
-    const screen = renderIn(
-      <AppShell
-        testID="shell"
-        drawer="reveal"
-        title="Home"
-        sidebar={{ items: NAV }}
-        drawerOpen
-        onDrawerOpenChange={onDrawerOpenChange}
-      />,
-    );
+  it('floats the desktop action over content rather than beneath the sidebar', () => {
+    setWidth(1440);
+    const onPress = jest.fn();
+    const screen = renderIn(<AppShell testID="action-shell" navigation={navigation} primaryAction={{ icon: RiHomeLine, accessibilityLabel: 'Create', onPress }} />);
+    const nav = within(screen.getByTestId('action-shell-navigation-sidebar'));
+    expect(nav.queryByLabelText('Create')).toBeNull();
+    const contentChrome = within(screen.getByTestId('action-shell-screen-bottom'));
+    fireEvent.press(contentChrome.getByLabelText('Create'));
+    expect(onPress).toHaveBeenCalledTimes(1);
+  });
+  it('retains sidebar data on wide screens', () => {
+    setWidth(1440);
+    const screen = renderIn(<AppShell testID="shell" sidebar={{ items: NAV }} />);
     expect(screen.getByTestId('sidebar-item-home')).toBeTruthy();
-    fireEvent.press(screen.getByTestId('shell-veil'));
-    expect(onDrawerOpenChange).toHaveBeenCalledWith(false);
   });
 });
 
@@ -131,4 +134,18 @@ describe('ProOfferCard', () => {
     fireEvent.press(dismiss);
     expect(onDismiss).toHaveBeenCalledTimes(1);
   });
+});
+
+it('keeps Pro Offer copy readable across its painted dark gradient', () => {
+  const screen = render(<BloomThemeProvider mode="dark" colorPreset="olive"><ProOfferCard testID="tonal-offer" title="Upgrade" description="More room for your work" ctaLabel="Get Pro" placement="inline" enterDelay={0} /></BloomThemeProvider>);
+  const base = resolvedStyle(screen.getByTestId('tonal-offer').props.style).backgroundColor as string;
+  const stops = screen.UNSAFE_getAllByType(Stop).slice(0, 2);
+  expect(stops).toHaveLength(2);
+  for (const stop of stops) {
+    const painted = mixColors(base, stop.props.stopColor, stop.props.stopOpacity);
+    for (const label of ['Upgrade', 'More room for your work']) {
+      const ink = resolvedStyle(screen.getByText(label).props.style).color as string;
+      expect(contrastRatio(ink, painted)).toBeGreaterThanOrEqual(4.5);
+    }
+  }
 });

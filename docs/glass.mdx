@@ -14,16 +14,16 @@ order: 90
 
 The glass is the sheen, not the wash. What reads as glass is the rim, the vertical gradient and the hairline; the 15% of the backdrop that shows through is a hint of depth, not the effect itself.
 
-**One measured cost, stated because it is real.** The 15% bleed moves the pane toward the surface under it, which in light mode means lighter — the one direction a white label cannot afford. Of `primary`'s 640 preset × mode × surface combinations, **73 fall below WCAG AA**, in the band 4.17–4.50, all in light mode, on `acid-canopy`, `arctic-signal`, `blue`, `bronze-neon`, `clay-current`, `copper-field`, `electric-tide`, `faircoin`, `green`, `lagoon`, `lavender`, `malachite-rush`, `midnight-citrus`, `mint`, `olive`, `orange`, `pacific-flare`, `pine`, `plum`, `pumpkin`, `reef-pulse`, `rose`, `saffron-depth`, `sky`, `solar-flux`, `viridian-orbit` and `yellow`. Both solid Button fills pass all 1,280 rows; glass `destructive` is also unaffected (0/640, worst 5.32). The alpha at which the failures reach zero remains 0.89.
+**One measured cost, stated because it is real.** The 15% bleed moves the pane toward the surface under it, which in light mode means lighter — the one direction a white label cannot afford. Of `primary`'s 640 preset × mode × surface combinations, **67 fall below WCAG AA**, in the band 4.21–4.50, all in light mode, on `acid-canopy`, `arctic-signal`, `blue`, `bronze-neon`, `clay-current`, `copper-field`, `electric-tide`, `faircoin`, `green`, `lagoon`, `lavender`, `malachite-rush`, `midnight-citrus`, `mint`, `olive`, `orange`, `pacific-flare`, `pine`, `plum`, `pumpkin`, `reef-pulse`, `rose`, `saffron-depth`, `sky`, `solar-flux`, `viridian-orbit` and `yellow`. Both solid Button fills pass all 1,280 rows; glass `destructive` is also unaffected (0/640, worst 5.32). The earlier low-chroma sweep reached zero failures at alpha 0.89; that historical sweep is retained below. The approved tonal surfaces improve the alpha 0.85 count from 73 to 67; the exact 67 row names are pinned in `tonal-glass-primary-failures.json`.
 
-The 1.0.1 catalog remains exactly 38/340, including the original 18-preset oracle at 30/180. The 30 new three-seed combinations contribute 35/300 and do not lower the existing 4.17 floor. These cohorts are asserted independently, so an unchanged total cannot hide a regression moving from one into the other.
+The 1.0.1 cohort now measures 36/340, including the original 18-preset cohort at 28/180; the 30 additions contribute 31/300. Before the approved tonal surfaces these counts were 38/340, 30/180 and 35/300. The current worst ratio improves from 4.17 to 4.21. These cohorts are asserted independently, so an unchanged total cannot hide a regression moving from one into the other.
 
 If your app runs one of those 27 presets in light mode and needs AA on its primary button, use `variant="inverse"` for that call site, or raise `GLASS_FILL_ALPHA`.
 
 Over a retained black/mid-grey/white media sample, **50 of 384** preset × mode × backdrop rows fall below AA, worst 3.61 (`destructive`: 0). The 1.0.1 catalog remains 25/204; the additions contribute 25/180, worst 4.17. That is a sample rather than a promise about arbitrary pixels. If a CTA must be legible over an image, `variant="inverse"` is opaque and backdrop-independent:
 
 ```tsx
-<Button variant="inverse">Comprar</Button>
+<Button appearance="solid" tone="neutral">Comprar</Button>
 ```
 
 `secondary`, `outline`, `ghost`, `text`, `link` and `icon` are unchanged: they have no fill for the tint to replace.
@@ -66,6 +66,8 @@ node scripts/measure-glass-alpha.mjs --url http://localhost:6006 --image docs/gl
 
 Measured in Chrome off painted pixels, with the label removed from the measurement clones so a white glyph cannot be mistaken for backdrop:
 
+**Historical low-chroma surface sweep:** these measurements predate the approved tonal shell. The current alpha 0.85 primary count is 67/640; the other sweep rows have not been remeasured.
+
 | alpha | backdrop response | blur delta over a photo (max/mean) | blur delta on a flat page | `primary` rows < AA | `destructive` rows < AA |
 | --- | --- | --- | --- | --- | --- |
 | 0.91 | 23.0 | 11 / 2.9 | 1 | 0 / 640 | 0 / 640 |
@@ -92,3 +94,23 @@ Three things the table settles:
 
 So there is no single alpha that both matches the reference and reads as glass on a flat surface. That is a property of the material — a blur needs a backdrop — not a constant nobody has tuned yet. To make a specific surface read as glass, put something behind it.
 
+
+### Tonal-shell material verification
+
+The approved chroma28 shell retains the web's 10px blur and fill alpha 0.85. Native
+expo-blur intensity is now 30 instead of 50: its unavoidable neutral tint otherwise
+produced a 6.478/255 painted-channel gap against web on saturated surfaces. The
+new maximum is 3.887/255, inside the unchanged <4 gate and still measurably nonzero.
+This reduces native blur strength; it does not claim equal spatial blur across
+platforms. Sheen, fill opacity and hairline remain unchanged. Device blur behavior
+is subject to the Android topology limitations documented above.
+
+Across 3840 preset/mode/tone/surface combinations, on-fill labels now fail AA in 480
+cases and page-text labels in 2577. The earlier catalog contributes 258 and 1377;
+the additional 30 presets contribute 222 and 1200. Exact equality gates retain these
+measured limitations rather than reducing the AA requirement.
+
+Chrome islands retain zero AA failures over the black/white backdrop endpoints:
+the new light minimum is 7.84 (`sky/light/black/web`), and dark 6.47
+(`graphite/dark/white/web`). Previously pinned floors were 8.23 and 6.43. These
+are measured at unchanged chrome alphas 0.72/0.80 and now pin exact named rows.

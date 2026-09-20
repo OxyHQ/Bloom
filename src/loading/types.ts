@@ -1,8 +1,9 @@
+import type { BloomSize, BloomTone } from '../appearance';
 import type { ReactNode } from 'react';
 import type { ViewStyle, TextStyle } from 'react-native';
 
 export type LoadingVariant = 'spinner' | 'top' | 'inline';
-export type LoadingSize = 'small' | 'medium' | 'large';
+export type LoadingSize = BloomSize;
 
 interface BaseLoadingProps {
   /** Variant type */
@@ -11,6 +12,7 @@ interface BaseLoadingProps {
   size?: LoadingSize;
   /** Custom color (defaults to theme primary) */
   color?: string;
+  tone?: BloomTone;
   /** NativeWind className for spinner color (e.g. "text-primary"). Overrides color prop. */
   className?: string;
   /** Custom container style */

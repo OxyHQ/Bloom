@@ -14,7 +14,6 @@ import Animated, {
   withTiming,
 } from 'react-native-reanimated';
 
-import { resolveButtonRamps } from '../button/shared';
 import { adoptStyleSheet } from '../styles/adopt-style-sheet';
 import { withAlpha } from '../theme/color-utils';
 import type { Theme } from '../theme/types';
@@ -55,24 +54,17 @@ const VARIANT_TONE: Record<AgentThinkingVariant, AgentThinkingTone> = {
   infinity: 'default',
 };
 
-/**
- *                  light          dark
- *   subtle         neutral-400    neutral-600   (text-tertiary)
- *   default        neutral-500    neutral-500   (text-secondary)
- *   primary        text           text          (text-primary)
- *   accent         accent-500     accent-500    (blue-500)
- */
+/** Canonical theme surfaces, foregrounds and focus roles. */
 function resolveTone(theme: Theme, tone: AgentThinkingTone): string {
-  const { accent, neutral } = resolveButtonRamps(theme);
   switch (tone) {
     case 'subtle':
-      return theme.isDark ? neutral[600] : neutral[400];
+      return theme.colors.textTertiary;
     case 'primary':
       return theme.colors.text;
     case 'accent':
-      return accent[500];
+      return theme.colors.primarySubtleForeground;
     default:
-      return neutral[500];
+      return theme.colors.textSecondary;
   }
 }
 

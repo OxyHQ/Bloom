@@ -1,8 +1,11 @@
+import type { BloomSize } from '../appearance';
 import type { StyleProp, ViewStyle, TextStyle } from 'react-native';
 
-import type { AccentFill, AccentTone } from '../theme/accent-colors';
+import type { BloomAppearance, BloomTone } from '../appearance';
 
-export type ChipSize = 'small' | 'medium' | 'large';
+import type { Props as SVGIconProps } from '../icons/shared';
+
+export type ChipSize = BloomSize;
 
 /**
  * Data hues: a category, a department, an objective — colours that carry
@@ -16,16 +19,16 @@ export interface ChipProps {
   /**
    * How loudly the chip is painted. `subtle` used to be spelled `soft` here and
    * `subtle` on `Badge` — one concept, two names, resolved by the shared
-   * {@link AccentFill}.
+   * {@link BloomAppearance}.
    */
-  variant?: AccentFill;
+  appearance?: BloomAppearance;
   /** Semantic color. */
-  color?: AccentTone;
+  tone?: BloomTone;
   /**
-   * Paints the chip in one of the data hues instead of `color` +
-   * `variant` (both are ignored while it is set; `selected` still promotes the
+   * Paints the chip in one of the data hues instead of `tone` +
+   * `appearance` (both are ignored while it is set; `checked` still promotes the
    * chip to the brand tone). Pair it with a size for the right emphasis:
-   * `bold` is `medium`, `subtle` is `large`, `caption` is `small`.
+   * `bold` is `md`, `subtle` is `lg`, `caption` is `sm`.
    */
   hue?: ChipHue;
   /**
@@ -36,15 +39,18 @@ export interface ChipProps {
   /** Size preset. */
   size?: ChipSize;
   /** Icon rendered before the label. */
-  startIcon?: React.ReactNode;
+  leadingIcon?: React.ComponentType<SVGIconProps>;
+  trailingIcon?: React.ComponentType<SVGIconProps>;
+  leading?: React.ReactNode;
   /** Icon or close button rendered after the label. */
-  endIcon?: React.ReactNode;
+  trailing?: React.ReactNode;
   /** Called when the chip is pressed. Makes the chip interactive. */
   onPress?: () => void;
   /** Called when the close/end icon is pressed. */
   onClose?: () => void;
   /** Whether the chip is in a selected state. */
-  selected?: boolean;
+  checked?: boolean;
+  onCheckedChange?: (checked: boolean) => void;
   /** Whether the chip is disabled. */
   disabled?: boolean;
   style?: StyleProp<ViewStyle>;

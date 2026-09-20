@@ -3,7 +3,7 @@ import { View } from 'react-native';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
 import { Avatar } from '../avatar';
-import { resolveButtonRamps, colorRamp, ACCENT_TABLE } from '../button/shared';
+import { colorRamp, ACCENT_TABLE } from '../button/shared';
 import { Chip, type ChipHue } from '../chip';
 import {
   RiAlarmWarningLine,
@@ -33,6 +33,19 @@ import {
 } from './index';
 
 const meta: Meta<typeof DataTable> = {
+  argTypes: {
+    "selectable": { control: 'boolean' },
+    "selectAllLabel": { control: 'text' },
+    "pageSize": { control: 'number' },
+    "page": { control: 'number' },
+    "defaultPage": { control: 'number' },
+    "size": { control: 'select', options: ["sm","md"] },
+    "defaultSize": { control: 'select', options: ["sm","md"] },
+    "showSizeToggle": { control: 'boolean' },
+    "sizeToggleAccessibilityLabel": { control: 'text' },
+    "minWidth": { control: 'number' },
+    "layout": { control: 'select', options: ["inset","table"] }
+  },
   title: 'Blocks/Data Table',
   component: DataTable,
 };
@@ -173,19 +186,18 @@ function CustomerAvatar({ customer, size }: { customer: Customer; size: DataTabl
   const theme = useTheme();
   const px = size === 'sm' ? 20 : 24;
   if (customer.avatar) return <Avatar size={px} source={customer.avatar} />;
-  const { neutral } = resolveButtonRamps(theme);
   const blue = colorRamp(theme.colors.info, ACCENT_TABLE);
   const blueTone = customer.initialsColor === 'blue';
   return (
     <Avatar
       size={px}
-      placeholderColor={blueTone ? blue[300] : theme.isDark ? neutral[800] : neutral[200]}
+      placeholderColor={blueTone ? blue[300] : theme.colors.backgroundTertiary}
       placeholderIcon={
         <Text
           style={
             size === 'sm'
-              ? { fontSize: 10, lineHeight: 15, fontWeight: '600', color: blueTone ? blue[900] : neutral[500] }
-              : { ...TYPE_SCALE['caption-1-semibold'], letterSpacing: 0, color: blueTone ? blue[900] : neutral[500] }
+              ? { fontSize: 10, lineHeight: 15, fontWeight: '600', color: blueTone ? blue[900] : theme.colors.textSecondary }
+              : { ...TYPE_SCALE['caption-1-semibold'], letterSpacing: 0, color: blueTone ? blue[900] : theme.colors.textSecondary }
           }
         >
           {initialsOf(customer.name)}
@@ -242,7 +254,7 @@ function buildColumns(): DataTableColumn<Customer>[] {
       header: 'Status',
       basis: 168,
       cell: ({ row, size }) => (
-        <Chip size={size === 'sm' ? 'small' : 'medium'} hue={row.status.hue}>
+        <Chip size={size === 'sm' ? 'sm' : 'md'} hue={row.status.hue}>
           {row.status.label}
         </Chip>
       ),
@@ -265,7 +277,7 @@ function buildColumns(): DataTableColumn<Customer>[] {
       basis: 140,
       accessor: (c) => c.price,
       cell: ({ row, size }) => (
-        <Chip size={size === 'sm' ? 'small' : 'large'} hue="gray">
+        <Chip size={size === 'sm' ? 'sm' : 'lg'} hue="gray">
           {formatPrice(row.price)}
         </Chip>
       ),
@@ -350,7 +362,7 @@ function CustomersDataTable({
               onValueChange={filter(setRegionFilter)}
               options={[{ value: 'all', label: 'All regions' }, ...REGIONS.map((r) => ({ value: r, label: r }))]}
             />
-            <DataTableSearch label="Search customers" value={query} onChangeText={filter(setQuery)} />
+            <DataTableSearch label="Search customers" value={query} onValueChange={filter(setQuery)} />
           </>
         }
         selectable
@@ -370,13 +382,14 @@ function CustomersDataTable({
 }
 
 /** Paints the theme's page colour behind a story, so dark mode reads as dark. */
-function Page({ children, padding = 40 }: { children: React.ReactNode; padding?: number }) {
+function Page({ children, padding = 0 }: { children: React.ReactNode; padding?: number }) {
   const theme = useTheme();
-  return <View style={{ padding, backgroundColor: theme.colors.background }}>{children}</View>;
+  return <View style={{ width: '100%', minWidth: 0, padding, backgroundColor: theme.colors.background }}>{children}</View>;
 }
 
 /** An advanced data table: filters, search, sortable columns, row selection, row actions, pagination and the density toggle. */
 export const Customers: Story = {
+  parameters: { controls: { disable: true } },
   render: () => (
     <Page padding={40}>
       <CustomersDataTable testID="dt" />
@@ -386,6 +399,7 @@ export const Customers: Story = {
 
 /** The landing-collage crop: five rows a page, no density control. */
 export const FiveRows: Story = {
+  parameters: { controls: { disable: true } },
   render: () => (
     <Page padding={40}>
       <CustomersDataTable testID="dt5" pageSize={5} showSizeToggle={false} />
@@ -400,6 +414,7 @@ export const FiveRows: Story = {
  * sorted header's label in the primary text colour. Sort a column to see it.
  */
 export const Inset: Story = {
+  parameters: { controls: { disable: true } },
   render: () => (
     <Page padding={40}>
       <CustomersDataTable testID="dt-inset" layout="inset" showSizeToggle={false} />
@@ -409,6 +424,7 @@ export const Inset: Story = {
 
 /** A search with no match: the 160px empty band, and no pagination footer (the surface drops its bottom padding). */
 export const Empty: Story = {
+  parameters: { controls: { disable: true } },
   render: () => (
     <Page padding={40}>
       <CustomersDataTable testID="dt-empty" initialQuery="zzz" showSizeToggle={false} />
@@ -418,6 +434,7 @@ export const Empty: Story = {
 
 /** Below 640px the toolbar stacks and its controls scroll sideways; the table scrolls horizontally past its 1000px minimum. */
 export const Narrow: Story = {
+  parameters: { controls: { disable: true } },
   render: () => (
     <Page padding={16}>
       <CustomersDataTable testID="dt-narrow" width={375} showSizeToggle={false} />
@@ -439,25 +456,26 @@ const ADMISSIONS: DataTableSelectOption[] = [
  * `DataTableRowActions`.
  */
 export const Parts: Story = {
+  parameters: { controls: { disable: true } },
   render: function PartsDemo() {
     const [region, setRegion] = useState('all');
     const [query, setQuery] = useState('');
     return (
       <Page>
         <View style={{ gap: 16, alignItems: 'flex-start' }} testID="dt-parts">
-          <View style={{ flexDirection: 'row', gap: 16, alignItems: 'center' }}>
+          <View style={{ flexDirection: 'row', flexWrap: 'wrap', maxWidth: '100%', gap: 16, alignItems: 'center' }}>
             <DataTableSelect label="Purchase status" defaultValue="waiting" options={PURCHASES} width={142} />
             <DataTableSelect label="Purchase status (compact)" defaultValue="completed" options={PURCHASES} width={132} size="sm" />
             <DataTableSelect label="Admission status" defaultValue="outpatient" options={ADMISSIONS} width={150} />
           </View>
-          <View style={{ flexDirection: 'row', gap: 10, alignItems: 'center' }}>
+          <View style={{ flexDirection: 'row', flexWrap: 'wrap', maxWidth: '100%', gap: 10, alignItems: 'center' }}>
             <DataTableFilter
               label="Filter by region"
               value={region}
               onValueChange={setRegion}
               options={[{ value: 'all', label: 'All regions' }, ...REGIONS.map((r) => ({ value: r, label: r }))]}
             />
-            <DataTableSearch label="Search customers" value={query} onChangeText={setQuery} />
+            <DataTableSearch label="Search customers" value={query} onValueChange={setQuery} />
           </View>
           <View style={{ width: 140 }}>
             <DataTableRowActions name="John Clarkson" actions={ROW_ACTIONS} menu={MORE_MENU_ACTIONS} />
@@ -478,10 +496,12 @@ const PEOPLE: Person[] = [
 
 /** The generic API with nothing but accessors: default text cells, sorting, no toolbar, no selection. */
 export const Minimal: Story = {
-  render: () => (
+  args: { selectable: false, defaultSize: 'md', showSizeToggle: true, pageSize: 5, layout: 'inset' },
+  parameters: { controls: { include: ["selectable","defaultSize","showSizeToggle","pageSize","layout","selectAllLabel","page","defaultPage","size","sizeToggleAccessibilityLabel","minWidth"] } },
+  render: (args) => (
     <Page>
-      <View style={{ width: 600 }}>
-      <DataTable
+      <View style={{ maxWidth: '100%', width: 600 }}>
+      <DataTable {...args}
         accessibilityLabel="People"
         rows={PEOPLE}
         getRowId={(p) => p.id}

@@ -1,0 +1,61 @@
+---
+title: Screen
+description: Continuous content with coordinated header, scrolling and bottom chrome.
+---
+
+# Screen
+
+`Screen` owns a continuous page canvas. `header` and `bottomBar` overlay the content;
+`ScreenScrollView` reserves their measured footprints, adding its own content padding.
+Safe-area padding belongs to the chrome, so it is included exactly once in those measurements.
+
+```tsx
+import { Screen, ScreenScrollView } from '@oxy.so/bloom/screen';
+
+<Screen header={<PageHeader title="Inbox" />} bottomBar={<Navigation />}>
+  <ScreenScrollView><Messages /></ScreenScrollView>
+</Screen>
+```
+
+`PageHeader` automatically reads its enclosing screen's offset. `useScreen()` exposes
+`scrollY` and `collapseProgress` to coordinated chrome. Pass `collapseProgress` as
+`BottomBar`'s `minimizeProgress`; navigation and the lateral action then move together.
+
+For a virtualized list, call `useScreenScroll({ active, handler })`, bind `onScroll`,
+and apply `contentInsets.top`/`bottom` to its content container. `handler` accepts a
+processed Reanimated handler, preserving drag and momentum subscriptions. Only the
+active binding drives chrome. Set `active={false}` on retained background lists.
+Nested `Screen`s keep scroll offsets local. Under AppShell they inherit navigation motion and bottom clearance; `navigationScope="isolated"` creates an independent modal scope. Do not place several active scrollers
+in one screen; designate the primary list explicitly.
+
+`ScreenScrollView` forwards its ref. Scroll restoration remains the independent
+`useScrollRestoration` binding: pass it as `restoration={binding}` and pass the same ref. Pending restored content
+stays laid out with opacity zero; native offset recording is forwarded automatically. Web restoration observes the actual DOM scroller itself.
+
+The shell does not choose a router or create overlay outlets. Measurements settle
+on layout; content footprint stays expanded while visual chrome contracts, avoiding
+scroll-range changes during animation.
+
+For a standalone action, `primaryAction={<Fab ... />}` anchors a static action
+inside the screen. With navigation, pass the action to `BottomBar.action` instead.
+`headerHeight` and `bottomBarHeight` declare initial footprints for custom chrome;
+defaults match Bloom's 56-point header and 58-point bottom bar plus safe area.
+Measured heights replace those estimates. Custom chrome should declare its height
+to prevent the first layout changing the content's padding.
+
+`documentScroll` enables web sticky chrome for a document virtualizer.
+`VirtualList screen={{ active, restoration }}` connects both platforms to the
+screen without a surrounding ScrollView. Use `useScreenWindowScroll` for another
+window virtualizer; `useScreenScroll` remains the animated native/container binding.
+
+When navigation retains whole screens, set `Screen active={focused}` (or
+`AppShell active={focused}`). That boundary disables every descendant scroll
+writer; an explicitly isolated modal keeps its own navigation scope. During restoration,
+offsets update the header but do not trigger a new collapse. On native, showing
+the keyboard hides bottom chrome and releases its reserved content footprint;
+hiding it restores the previous footprint.
+
+AppShell establishes `navigationScope="shared"`. Route Screens use the default
+`inherit`: their local header offset is independent, while the focused list owns
+the shared navigation progress. Set every retained route's `active` explicitly;
+use `navigationScope="isolated"` for modal screens that cover the shell navigation.

@@ -23,7 +23,7 @@ function Bomb({ armed }: { armed: boolean }) {
 function Harness({ children }: { children: (armed: boolean) => React.ReactNode }) {
   const [armed, setArmed] = useState(false);
   return (
-    <View style={{ width: 420, gap: 12 }}>
+    <View style={{ maxWidth: '100%', width: 420, gap: 12 }}>
       <Pressable onPress={() => setArmed((value) => !value)}>
         <Text>{armed ? 'Disarm' : 'Throw'}</Text>
       </Pressable>
@@ -39,6 +39,7 @@ function Harness({ children }: { children: (armed: boolean) => React.ReactNode }
  * which is the thing it was meant to prevent.
  */
 export const Default: Story = {
+  parameters: { controls: { disable: true } },
   render: () => (
     <Harness>
       {(armed) => (
@@ -56,6 +57,7 @@ export const Default: Story = {
  * boundary's message is read by someone who does not know what a boundary is.
  */
 export const Worded: Story = {
+  parameters: { controls: { disable: true } },
   render: () => (
     <Harness>
       {(armed) => (
@@ -77,6 +79,7 @@ export const Worded: Story = {
  * honest move is to stop offering the button and point somewhere else.
  */
 export const CustomFallback: Story = {
+  parameters: { controls: { disable: true } },
   render: () => (
     <Harness>
       {(armed) => (

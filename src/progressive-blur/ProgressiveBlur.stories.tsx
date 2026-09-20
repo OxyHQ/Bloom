@@ -38,8 +38,9 @@ function Content() {
  * natively. Nothing at the call site changes.
  */
 export const Bottom: Story = {
+  parameters: { controls: { disable: true } },
   render: () => (
-    <View style={{ width: 360, height: 260, overflow: 'hidden' }}>
+    <View style={{ width: 360, maxWidth: '100%', height: 260, overflow: 'hidden' }}>
       <Content />
       <ProgressiveBlur
         direction="bottom"
@@ -51,8 +52,9 @@ export const Bottom: Story = {
 
 /** Anchored to the top, for a transparent header. */
 export const Top: Story = {
+  parameters: { controls: { disable: true } },
   render: () => (
-    <View style={{ width: 360, height: 260, overflow: 'hidden' }}>
+    <View style={{ width: 360, maxWidth: '100%', height: 260, overflow: 'hidden' }}>
       <Content />
       <ProgressiveBlur
         direction="top"
@@ -68,8 +70,9 @@ export const Top: Story = {
  * very high value turns the strip into an opaque band that reads as a bug.
  */
 export const Intensities: Story = {
+  parameters: { controls: { disable: true } },
   render: () => (
-    <View style={{ flexDirection: 'row', gap: 16 }}>
+    <View style={{ flexDirection: 'row', flexWrap: 'wrap', maxWidth: '100%', gap: 16 }}>
       {[3, 10, 30].map((intensity) => (
         <View key={intensity} style={{ width: 200, height: 200, overflow: 'hidden' }}>
           <Content />
@@ -82,4 +85,14 @@ export const Intensities: Story = {
       ))}
     </View>
   ),
+};
+
+export const Playground: StoryObj<typeof ProgressiveBlur> = {
+  args: { direction: 'bottom', intensity: 70 },
+  parameters: { controls: { disable: false, include: ['direction', 'intensity'] } },
+  argTypes: { direction: { control: 'select', options: ['top','bottom'] }, intensity: { control: { type: 'range', min: 0, max: 100 } } },
+  render: function Playground(args) {
+
+    return <View style={{ width: 520, maxWidth: '100%' }}><View style={{ height: 260, overflow: 'hidden' }}><Content /><ProgressiveBlur {...args} style={{ position: 'absolute', left: 0, right: 0, ...(args.direction === 'top' ? { top: 0 } : { bottom: 0 }), height: 100 }} /></View></View>;
+  },
 };

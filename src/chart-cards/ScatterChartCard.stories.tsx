@@ -6,6 +6,15 @@ import { ScatterChartCard } from './ScatterChartCard';
 import type { ScatterPoint, ScatterRange, ScatterSeries } from './ScatterChartCard';
 
 const meta: Meta<typeof ScatterChartCard> = {
+  argTypes: {
+    "title": { control: 'text' },
+    "bubble": { control: 'boolean' },
+    "headline": { control: 'number' },
+    "delta": { control: 'number' },
+    "range": { control: 'text' },
+    "defaultRange": { control: 'text' },
+    "tiles": { control: 'boolean' }
+  },
   title: 'Charts/Scatter Chart',
   component: ScatterChartCard,
 };
@@ -51,11 +60,12 @@ const RANGES: ScatterRange[] = [
 const PLAIN: ScatterSeries[] = SERIES.map((s) => ({ ...s, points: s.points.map(({ z: _z, ...p }) => p) }));
 
 const Frame = ({ children, width = 480 }: { children: React.ReactNode; width?: number }) => (
-  <View style={{ padding: 40, gap: 24, width: width + 80 }}>{children}</View>
+  <View style={{ maxWidth: '100%', gap: 24, width }}>{children}</View>
 );
 
 /** Bubbles sized by `z`, a period dropdown, the legend of averages. */
 export const Bubble: Story = {
+  parameters: { controls: { disable: true } },
   render: () => (
     <Frame>
       <ScatterChartCard testID="scatter" ranges={RANGES} />
@@ -65,24 +75,29 @@ export const Bubble: Story = {
 
 /** No `z`: plain 64px² dots. A static pill. */
 export const Scatter: Story = {
-  render: () => (
+  args: { range: "This quarter", delta: 0.068 },
+  parameters: { controls: { include: ["range","delta","title","bubble","headline","defaultRange","tiles"] } },
+  render: (args) => (
     <Frame>
-      <ScatterChartCard testID="scatter" series={PLAIN} range="This quarter" delta={0.068} />
+      <ScatterChartCard {...args} testID="scatter" series={PLAIN}   />
     </Frame>
   ),
 };
 
 /** Axis captions and stat tiles; hovering a tile focuses its series. */
 export const Tiles: Story = {
-  render: () => (
+  args: { tiles: true },
+  parameters: { controls: { include: ["tiles","title","bubble","headline","delta","range","defaultRange"] } },
+  render: (args) => (
     <Frame>
-      <ScatterChartCard testID="scatter" ranges={RANGES} tiles axisLabels={['Seats', 'MRR']} />
+      <ScatterChartCard {...args} testID="scatter" ranges={RANGES}  axisLabels={['Seats', 'MRR']} />
     </Frame>
   ),
 };
 
 /** A hovered point (controlled): header "Juno · 68", the other series dimmed. */
 export const Hovered: Story = {
+  parameters: { controls: { disable: true } },
   render: () => (
     <Frame>
       <ScatterChartCard ranges={RANGES} activePoint={{ series: 1, index: 3 }} />
@@ -93,17 +108,19 @@ export const Hovered: Story = {
 
 /** Custom colours and formatters, a falling delta. */
 export const Custom: Story = {
-  render: () => (
+  args: { title: "Response time vs load", range: "Today" },
+  parameters: { controls: { include: ["title","range","bubble","headline","defaultRange","tiles"] } },
+  render: (args) => (
     <Frame>
-      <ScatterChartCard
-        title="Response time vs load"
+      <ScatterChartCard {...args}
+
         series={[
           { label: 'EU', color: '#f97316', points: points([[120, 42], [340, 55], [610, 71], [880, 96], [1150, 140]], ['a', 'b', 'c', 'd', 'e']) },
           { label: 'US', points: points([[90, 38], [300, 47], [540, 63], [790, 82], [1210, 118]], ['f', 'g', 'h', 'i', 'j']) },
         ]}
         format={(v) => `${Math.round(v)}ms`}
         formatX={(v) => `${v} rps`}
-        range="Today"
+
         delta={-0.12}
       />
     </Frame>
@@ -112,6 +129,7 @@ export const Custom: Story = {
 
 /** A phone-width card. */
 export const Narrow: Story = {
+  parameters: { controls: { disable: true } },
   render: () => (
     <Frame width={320}>
       <ScatterChartCard ranges={RANGES} />

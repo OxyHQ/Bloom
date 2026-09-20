@@ -6,6 +6,7 @@ import { Code, CodeBlock, CodeLines, Pre } from './index';
 import { Text } from '../typography';
 
 const meta: Meta = {
+  parameters: { controls: { disable: true } },
   title: 'Base/Code',
 };
 
@@ -43,8 +44,9 @@ export default function DashboardPage({ wide = true }: { wide?: boolean }) {
  * than as decoration.
  */
 export const Inline: Story = {
+  parameters: { controls: { disable: true } },
   render: () => (
-    <View style={{ width: 420, gap: 12 }}>
+    <View style={{ maxWidth: '100%', width: 420, gap: 12 }}>
       <Text>
         Pass <Code>variant="outlined"</Code> to draw the border, and{' '}
         <Code>radius</Code> to pick the rung.
@@ -61,8 +63,9 @@ export const Inline: Story = {
  * copy button over numbered, highlighted lines that scroll sideways.
  */
 export const Block: Story = {
+  parameters: { controls: { disable: true } },
   render: () => (
-    <View style={{ width: 560 }}>
+    <View style={{ maxWidth: '100%', width: 560 }}>
       <CodeBlock code={TOGGLE} language="tsx" filename="theme-toggle.tsx" additions={156} deletions={23} highlight={['nextTheme']} />
     </View>
   ),
@@ -70,8 +73,9 @@ export const Block: Story = {
 
 /** A narrow card: long lines scroll instead of reflowing; `wrap` soft-wraps them instead. */
 export const LongLines: Story = {
+  parameters: { controls: { disable: true } },
   render: () => (
-    <View style={{ width: 380, gap: 16 }}>
+    <View style={{ maxWidth: '100%', width: 380, gap: 16 }}>
       <CodeBlock code={COMPONENT} language="tsx" filename="page.tsx" />
       <CodeBlock code={COMPONENT} language="tsx" filename="page.tsx (wrap)" wrap />
     </View>
@@ -80,8 +84,9 @@ export const LongLines: Story = {
 
 /** No header content, no chrome above the code. A language the highlighter does not know renders plain. */
 export const Plain: Story = {
+  parameters: { controls: { disable: true } },
   render: () => (
-    <View style={{ width: 420, gap: 16 }}>
+    <View style={{ maxWidth: '100%', width: 420, gap: 16 }}>
       <CodeBlock code={`bun add @oxy.so/bloom\nbun run build`} copyable={false} lineNumbers={false} />
       <CodeBlock code={`[package]\nname = "bloom"\nversion = "1.0.0"`} language="toml" filename="Cargo.toml" />
     </View>
@@ -94,8 +99,9 @@ export const Plain: Story = {
  * command is a command someone will copy wrong.
  */
 export const Preformatted: Story = {
+  parameters: { controls: { disable: true } },
   render: () => (
-    <View style={{ width: 420, gap: 16 }}>
+    <View style={{ maxWidth: '100%', width: 420, gap: 16 }}>
       <Pre>{`bun add @oxy.so/bloom
 bun run build
 bun run test`}</Pre>
@@ -107,8 +113,9 @@ bun run test`}</Pre>
 
 /** `CodeLines` bare, at the panel size (`md`, 13/23), soft-wrapping. */
 export const Lines: Story = {
+  parameters: { controls: { disable: true } },
   render: () => (
-    <View style={{ width: 400 }}>
+    <View style={{ maxWidth: '100%', width: 400 }}>
       <CodeLines code={COMPONENT} language="tsx" size="md" wrap />
     </View>
   ),

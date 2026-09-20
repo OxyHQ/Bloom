@@ -2,7 +2,6 @@ import React, { useMemo } from 'react';
 import { StyleSheet, View, type StyleProp, type ViewStyle } from 'react-native';
 import Svg, { Path } from 'react-native-svg';
 
-import { mixColor, resolveButtonRamps } from '../button/shared';
 import { useTheme } from '../theme/use-theme';
 import { Text } from '../typography';
 import { chartHueTone, resolveTone, type ChartHue } from './palette';
@@ -126,8 +125,7 @@ export function SleepScoreCard({
     [metrics, theme, palettes],
   );
   const separator = useMemo(() => {
-    const { neutral: n } = resolveButtonRamps(theme);
-    return theme.isDark ? mixColor(palette.inner, n[700], 0.6) : n[200];
+    return theme.colors.contrast50;
   }, [theme, palette.inner]);
 
   const [activeIndex, setActiveIndex] = useActiveIndex(metrics.length, controlledIndex, onActiveIndexChange);

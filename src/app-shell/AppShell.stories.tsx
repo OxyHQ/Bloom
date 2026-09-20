@@ -1,10 +1,9 @@
 import React, { useState } from 'react';
-import { View } from 'react-native';
+import { View, useWindowDimensions } from 'react-native';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
 import { Breadcrumb, BreadcrumbItem } from '../breadcrumb';
 import { Button } from '../button';
-import { resolveButtonRamps } from '../button/shared';
 import { RiAddFill, RiFilter3Fill, RiHomeLine } from '../icons/remix';
 import { DEMO_NOTIFICATIONS } from '../notification-center/NotificationCenter.stories';
 import {
@@ -19,7 +18,18 @@ import { useTheme } from '../theme/use-theme';
 import { AppShell, AppShellHeader, NotificationBell, ProOfferCard } from './index';
 
 const meta: Meta<typeof AppShell> = {
+  argTypes: {
+    "active": { control: 'boolean' },
+    "value": { control: 'text' },
+    "navigationPlacement": { control: 'select', options: ["auto","bottom","rail","sidebar"] },
+    "navigationMaterial": { control: 'select', options: ["solid","translucent"] },
+    "bottomActionBehavior": { control: 'select', options: ["visible","hide"] },
+    "scroll": { control: 'select', options: ["auto","external"] },
+    "title": { control: 'text' },
+    "contentMaxWidth": { control: 'number' }
+  },
   title: 'Blocks/App Shell',
+  parameters: { layout: 'fullscreen' },
   component: AppShell,
 };
 
@@ -29,15 +39,14 @@ type Story = StoryObj<typeof AppShell>;
 
 function Placeholder({ height }: { height: number }) {
   const theme = useTheme();
-  const { neutral } = resolveButtonRamps(theme);
   return (
     <View
       style={{
         height,
         borderRadius: 16,
         borderWidth: 1,
-        borderColor: theme.isDark ? neutral[800] : neutral[200],
-        backgroundColor: theme.isDark ? neutral[900] : neutral[100],
+        borderColor: theme.colors.border,
+        backgroundColor: theme.colors.backgroundSecondary,
       }}
     />
   );
@@ -57,29 +66,34 @@ function Trail() {
 }
 
 function Actions() {
+  const compact = useWindowDimensions().width < 600;
   return (
     <>
       <NotificationBell notifications={DEMO_NOTIFICATIONS} testID="bell" />
-      <Button variant="secondary" size="medium" leadingIcon={RiFilter3Fill}>
-        Filters
+      <Button size="md" icon={compact ? RiFilter3Fill : undefined} leadingIcon={compact ? undefined : RiFilter3Fill} accessibilityLabel="Filters" appearance="outline" tone="neutral">
+        {compact ? undefined : 'Filters'}
       </Button>
-      <Button variant="primary" size="medium" leadingIcon={RiAddFill}>
-        Create ticket
+      <Button size="md" icon={compact ? RiAddFill : undefined} leadingIcon={compact ? undefined : RiAddFill} accessibilityLabel="Create ticket" appearance="solid" tone="accent">
+        {compact ? undefined : 'Create ticket'}
       </Button>
     </>
   );
 }
 
-function Shell({ drawer, rail = false }: { drawer: 'overlay' | 'reveal'; rail?: boolean }) {
+function Shell({ rail = false, args }: { rail?: boolean; args?: React.ComponentProps<typeof AppShell> }) {
   const [selected, setSelected] = useState('home');
+  const compact = useWindowDimensions().width < 600;
+  const [collapsed, setCollapsed] = useState(true);
   const [offer, setOffer] = useState(true);
   return (
     <View style={{ width: '100%', height: 860 }}>
-      <AppShell
+      <AppShell {...args}
         testID="shell"
-        drawer={drawer}
+        navigationPlacement={rail ? 'rail' : args?.navigationPlacement ?? 'auto'}
         sidebar={{
           variant: rail ? 'rail' : 'panel',
+          collapsed: compact ? collapsed : undefined,
+          onCollapsedChange: setCollapsed,
           items: rail ? DEMO_RAIL_NAV : DEMO_NAV,
           secondaryItems: rail ? DEMO_RAIL_SECONDARY : DEMO_SECONDARY,
           selected,
@@ -87,8 +101,8 @@ function Shell({ drawer, rail = false }: { drawer: 'overlay' | 'reveal'; rail?: 
           account: DEMO_ACCOUNT,
           team: DEMO_TEAM,
         }}
-        title="Welcome Maya"
-        breadcrumb={<Trail />}
+        title={args?.title ?? "Welcome Maya"}
+        breadcrumb={compact ? undefined : <Trail />}
         actions={<Actions />}
         overlay={
           offer ? (
@@ -119,36 +133,44 @@ function Shell({ drawer, rail = false }: { drawer: 'overlay' | 'reveal'; rail?: 
 
 /** The starter frame: rail in flow at lg+, an overlay drawer below. */
 export const Default: Story = {
-  render: () => <Shell drawer="overlay" />,
+  args: { title: 'Welcome Maya' },
+  parameters: { controls: { include: ['title', 'navigationPlacement'] } },
+  render: (args) => <Shell args={args} />,
 };
 
-/** The dashboard template frame: below lg the page slides aside to reveal the rail. */
-export const Reveal: Story = {
-  render: () => <Shell drawer="reveal" />,
+/** Full panel navigation at all widths, using the current placement API. */
+export const Panel: Story = {
+  args: { title: 'Welcome Maya', navigationPlacement: 'sidebar' },
+  parameters: { controls: { include: ['title', 'navigationPlacement'] } },
+  render: (args) => <Shell args={args} />,
 };
 
 /** The navigation rail in flow from `sm`; below it the drawer opens the full panel. */
 export const Rail: Story = {
-  render: () => <Shell drawer="overlay" rail />,
+  parameters: { controls: { disable: true } },
+  render: () => <Shell rail />,
 };
 
 export const Header: Story = {
+  parameters: { controls: { disable: true } },
   render: () => (
-    <View style={{ width: 900 }}>
+    <View style={{ maxWidth: '100%', width: 900 }}>
       <AppShellHeader testID="header" title="Welcome Maya" breadcrumb={<Trail />} actions={<Actions />} />
     </View>
   ),
 };
 
 export const Bell: Story = {
+  parameters: { controls: { disable: true } },
   render: () => (
-    <View style={{ width: 900, height: 760, alignItems: 'flex-end' }}>
+    <View style={{ maxWidth: '100%', width: 900, height: 760, alignItems: 'flex-end' }}>
       <NotificationBell notifications={DEMO_NOTIFICATIONS} testID="bell" />
     </View>
   ),
 };
 
 export const ProOffer: Story = {
+  parameters: { controls: { disable: true } },
   render: () => (
     <ProOfferCard
       placement="inline"

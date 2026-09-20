@@ -6,6 +6,11 @@ import { Button } from '../button';
 import { ActivityRingsCard, type ActivityRing } from './ActivityRingsCard';
 
 const meta: Meta<typeof ActivityRingsCard> = {
+  argTypes: {
+    "title": { control: 'text' },
+    "height": { control: 'number' },
+    "activeIndex": { control: 'number' }
+  },
   title: 'Charts/Activity Rings',
   component: ActivityRingsCard,
 };
@@ -43,11 +48,12 @@ const DAYS: { title: string; rings: ActivityRing[] }[] = [
 ];
 
 const Frame = ({ children, width = 480 }: { children: React.ReactNode; width?: number }) => (
-  <View style={{ padding: 40, gap: 24, width: width + 80 }}>{children}</View>
+  <View style={{ maxWidth: '100%', gap: 24, width }}>{children}</View>
 );
 
 /** Three goal rings under their stat tiles; hover a ring to focus it. */
 export const Default: Story = {
+  parameters: { controls: { disable: true } },
   render: () => (
     <Frame>
       <ActivityRingsCard testID="activity" rings={RINGS} />
@@ -57,9 +63,11 @@ export const Default: Story = {
 
 /** Exercise hovered (controlled): the ring darkens, the others and their tiles dim. */
 export const Hovered: Story = {
-  render: () => (
+  args: { activeIndex: 1 },
+  parameters: { controls: { include: ["activeIndex","title","height"] } },
+  render: (args) => (
     <Frame>
-      <ActivityRingsCard rings={RINGS} activeIndex={1} />
+      <ActivityRingsCard {...args} rings={RINGS}  />
     </Frame>
   ),
 };
@@ -72,7 +80,7 @@ function DayPicker() {
       <ActivityRingsCard testID="activity" title={current.title} rings={current.rings} />
       <View style={{ flexDirection: 'row', gap: 8 }}>
         {DAYS.map((d, i) => (
-          <Button key={d.title} size="small" variant={i === day ? 'primary' : 'secondary'} onPress={() => setDay(i)}>
+          <Button key={d.title} size="sm" appearance={i === day ? 'solid' : 'outline'} tone={i === day ? 'accent' : 'neutral'} onPress={() => setDay(i)}>
             {i === 0 ? 'No day' : d.title.replace('Activity for ', '')}
           </Button>
         ))}
@@ -83,6 +91,7 @@ function DayPicker() {
 
 /** Picking a day sweeps the rings to that day's goals over 200ms. */
 export const SelectedDay: Story = {
+  parameters: { controls: { disable: true } },
   render: () => (
     <Frame>
       <DayPicker />
@@ -92,6 +101,7 @@ export const SelectedDay: Story = {
 
 /** A narrow column: the rings keep their 200 viewBox and scale to fit. */
 export const Narrow: Story = {
+  parameters: { controls: { disable: true } },
   render: () => (
     <Frame width={300}>
       <ActivityRingsCard rings={RINGS} />

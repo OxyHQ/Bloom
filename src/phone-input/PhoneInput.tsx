@@ -29,12 +29,12 @@ export function PhoneInput({
   hint,
   required,
   tooltip,
-  size = 'medium',
-  isInvalid,
+  size,
+  invalid,
   disabled,
   value,
   defaultValue = '',
-  onChangeText,
+  onValueChange,
   country,
   defaultCountry = 'US',
   onCountryChange,
@@ -49,7 +49,7 @@ export function PhoneInput({
   const [text, setText] = useControllableState({
     value,
     defaultValue,
-    onChange: onChangeText,
+    onChange: onValueChange,
   });
 
   return (
@@ -61,7 +61,7 @@ export function PhoneInput({
       ) : null}
       <TextField
         size={size}
-        isInvalid={isInvalid}
+        invalid={invalid}
         disabled={disabled}
         leadingAddon={
           <CountryCodeSelect
@@ -77,8 +77,8 @@ export function PhoneInput({
           label={accessibilityLabel ?? label ?? 'Phone number'}
           placeholder={placeholder ?? null}
           value={text}
-          onChangeText={setText}
-          isInvalid={isInvalid}
+          onValueChange={setText}
+          invalid={invalid}
           keyboardType="phone-pad"
           autoComplete="tel"
           textContentType="telephoneNumber"
@@ -87,7 +87,7 @@ export function PhoneInput({
         />
         {trailingIcon ? <TextFieldIcon icon={trailingIcon} position="trailing" /> : null}
       </TextField>
-      {hint ? <TextFieldHint isInvalid={isInvalid}>{hint}</TextFieldHint> : null}
+      {hint ? <TextFieldHint invalid={invalid}>{hint}</TextFieldHint> : null}
     </View>
   );
 }

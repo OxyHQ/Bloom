@@ -39,7 +39,8 @@ function TeleportDemo() {
   );
 }
 
-export const MoveBetweenHosts: Story = { render: () => <TeleportDemo /> };
+export const MoveBetweenHosts: Story = {
+  parameters: { controls: { disable: true } }, render: () => <TeleportDemo /> };
 
 const styles = StyleSheet.create({
   page: { gap: 16, padding: 16 },

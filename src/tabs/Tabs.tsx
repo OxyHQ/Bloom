@@ -35,7 +35,6 @@ import { useInteractionState } from '../hooks/use-interaction-state';
 import { borderRadius } from '../styles/tokens';
 import { interactiveWebCss, useInteractiveWebCss } from '../styles/interactive-web-css';
 import type { WebCssStyle } from '../styles/web-view-style';
-import { mixColor, resolveButtonRamps } from '../button/shared';
 import type {
   TabsContentProps,
   TabsIconComponent,
@@ -142,7 +141,7 @@ function formatCount(count: number): string {
 type ResolvedVariant = 'underline' | 'pill' | 'filled';
 
 function resolveVariant(variant: TabsVariant): ResolvedVariant {
-  return variant === 'outlined' ? 'pill' : variant;
+  return variant;
 }
 
 export interface TabsPaint {
@@ -171,51 +170,27 @@ export interface TabsPaint {
  * calling `useTheme()`, so it can be walked over presets and modes.
  */
 export function resolveTabsPaint(theme: Theme, variant: TabsVariant): TabsPaint {
-  const { accent, neutral: n } = resolveButtonRamps(theme);
   const c = theme.colors;
-  const dark = theme.isDark;
   const count = {
-    countSelectedBackground: dark ? mixColor(c.background, accent[800], 0.6) : accent[100],
-    countSelectedForeground: accent[600],
-    // `bg-black/10` in both modes.
-    countIdleBackground: 'rgba(0, 0, 0, 0.1)',
-    countIdleForeground: c.text,
-    separator: dark ? n[800] : n[200],
-    underline: accent[600],
-    ring: accent[500],
+    countSelectedBackground: c.primarySubtle,
+    countSelectedForeground: c.primarySubtleForeground,
+    countIdleBackground: c.backgroundTertiary, countIdleForeground: c.text,
+    separator: c.borderLight, underline: c.primary, ring: c.primary,
   };
   switch (resolveVariant(variant)) {
     case 'underline':
-      return {
-        ...count,
-        thumb: 'transparent',
-        hover: 'transparent',
-        selectedLabel: accent[600],
-        selectedIcon: accent[600],
-        idleLabel: c.text,
-        idleIcon: c.text,
-      };
+      return { ...count, thumb: 'transparent', hover: 'transparent',
+        selectedLabel: c.primarySubtleForeground, selectedIcon: c.primarySubtleForeground,
+        idleLabel: c.text, idleIcon: c.text };
     case 'pill':
-      return {
-        ...count,
-        thumb: dark ? mixColor(c.background, accent[950], 0.6) : accent[50],
-        hover: dark ? n[800] : n[100],
-        selectedLabel: accent[500],
-        selectedIcon: accent[500],
-        idleLabel: n[500],
-        idleIcon: n[500],
-      };
+      return { ...count, thumb: c.primarySubtle, hover: c.backgroundSecondary,
+        selectedLabel: c.primarySubtleForeground, selectedIcon: c.primarySubtleForeground,
+        idleLabel: c.textSecondary, idleIcon: c.textSecondary };
     case 'filled':
     default:
-      return {
-        ...count,
-        thumb: dark ? n[800] : n[200],
-        hover: dark ? mixColor(c.background, n[700], 0.6) : n[100],
-        selectedLabel: c.text,
-        selectedIcon: c.text,
-        idleLabel: n[500],
-        idleIcon: n[500],
-      };
+      return { ...count, thumb: c.backgroundTertiary, hover: c.backgroundSecondary,
+        selectedLabel: c.text, selectedIcon: c.text,
+        idleLabel: c.textSecondary, idleIcon: c.textSecondary };
   }
 }
 
@@ -783,7 +758,7 @@ const TabsBarComponent = forwardRef<TabsDragController, TabsProps>(function Tabs
 const TabComponent: React.FC<TabsTriggerProps> = ({
   value,
   label,
-  icon,
+  leading,
   leadingIcon: LeadingIcon,
   count,
   isFocused,
@@ -886,7 +861,7 @@ const TabComponent: React.FC<TabsTriggerProps> = ({
       <LeadingIcon width={geometry.icon} height={geometry.icon} fill={iconColor} />
     </View>
   ) : (
-    (icon ?? null)
+    (leading ?? null)
   );
 
   const showHoverLayer = !isUnderline && !isSelected && !disabled;

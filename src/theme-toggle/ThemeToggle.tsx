@@ -22,18 +22,16 @@ import {
   BUTTON_SHADOW,
   colorRamp,
   mixColor,
-  resolveButtonRamps,
 } from '../button/shared';
 import { useInteractionState } from '../hooks/use-interaction-state';
 import { RiMoonLine, RiSunLine } from '../icons/remix';
 import { adoptStyleSheet } from '../styles/adopt-style-sheet';
 import { borderRadius } from '../styles/tokens';
 import type { WebCssStyle } from '../styles/web-view-style';
-import { withAlpha } from '../theme/color-utils';
 import type { Theme } from '../theme/types';
 import { useBloomTheme } from '../theme/use-theme';
 import { Text } from '../typography';
-import type { ThemeToggleAppearance, ThemeToggleProps } from './types';
+import type { ThemeToggleVariant, ThemeToggleProps } from './types';
 import { revealTheme, THEME_TRANSITION_DURATION, type RevealOrigin } from './view-transition';
 
 /**
@@ -49,17 +47,9 @@ import { revealTheme, THEME_TRANSITION_DURATION, type RevealOrigin } from './vie
  *                      icon 16; a 32px thumb with shadow-xs slides 36px (200ms)
  *   glass-segmented    no track; black / white literals (landing nav skin)
  *
- * Tokens:
- *
- *                                      light            dark
- *   background-secondary (segmented)   neutral-100      neutral-900
- *   background-primary   (its thumb)   card             neutral-800
- *   theme-toggle-sidebar-background    neutral-200      neutral-800
- *   theme-toggle-sidebar-selected      card             neutral-700
- *   background-secondary-hover         neutral-200      neutral-800
- *   foreground-icon-primary            text             text
- *   foreground-icon-secondary          neutral-500      neutral-500
- *   background-tertiary (switch off)   neutral-200      neutral-800
+ * Neutral tracks, thumbs and labels use canonical surface/text roles; the
+ * active switch keeps its accent gradient and the explicit glass landing skin
+ * keeps its backdrop-dependent material colours.
  *
  * On web the change is revealed as a growing circle from the pointer
  * (`view-transition.ts`); natively, and under reduced motion, it is immediate.
@@ -76,8 +66,8 @@ interface TogglePalette {
   text: string;
   hover: string;
   ring: string;
-  track: Record<Exclude<ThemeToggleAppearance, 'sidebar'>, string>;
-  thumb: Record<Exclude<ThemeToggleAppearance, 'sidebar'>, string>;
+  track: Record<Exclude<ThemeToggleVariant, 'sidebar'>, string>;
+  thumb: Record<Exclude<ThemeToggleVariant, 'sidebar'>, string>;
   thumbShadow: string;
   switchOff: string;
   switchOn: readonly [string, string];
@@ -96,35 +86,33 @@ function mix(a: string, b: string, weightOfA: number): string {
 }
 
 export function resolveThemeTogglePalette(theme: Theme): TogglePalette {
-  const { accent, neutral: n } = resolveButtonRamps(theme);
+  const c = theme.colors;
   const text = theme.colors.text;
   const dark = theme.isDark;
   const ramp = colorRamp(theme.colors.primary, ACCENT_TABLE);
   return {
-    icon: n[500],
+    icon: c.textSecondary,
     iconActive: text,
-    text: n[500],
-    hover: dark ? n[800] : n[200],
-    ring: accent[500],
+    text: c.textSecondary,
+    hover: c.backgroundTertiary,
+    ring: c.primary,
     track: {
-      segmented: dark ? n[900] : n[100],
-      'sidebar-segmented': dark ? n[800] : n[200],
+      segmented: c.backgroundSecondary,
+      'sidebar-segmented': c.backgroundTertiary,
       'glass-segmented': 'transparent',
     },
     thumb: {
-      segmented: dark ? n[800] : theme.colors.card,
-      'sidebar-segmented': dark ? n[700] : theme.colors.card,
+      segmented: c.card,
+      'sidebar-segmented': c.card,
       'glass-segmented': dark ? '#2e2e33' : '#ffffff',
     },
     thumbShadow: dark ? BUTTON_SHADOW.dark : BUTTON_SHADOW.light,
-    switchOff: dark ? n[800] : n[200],
+    switchOff: c.backgroundTertiary,
     switchOn: [ramp[500], ramp[600]],
     switchOnShadow: `inset 0 1px 0 0 rgba(255, 255, 255, 0.25), inset 0 0 0 0.5px ${ramp[500]}`,
-    // `control-indicator-background` → `-subtle`: white → neutral-100 in both modes.
-    switchThumb: ['#ffffff', n[100]],
-    chipOff: dark
-      ? { border: withAlpha(n[700], 0.5), from: n[800], to: n[800] }
-      : { border: withAlpha(n[200], 0.5), from: '#ffffff', to: n[100] },
+    // Adjacent surfaces retain the raised indicator's gentle gradient.
+    switchThumb: [c.card, c.backgroundSecondary],
+    chipOff: { border: c.borderLight, from: c.card, to: c.backgroundSecondary },
     chipOn: {
       border: ramp[600],
       from: mix(ramp[500], ramp[600], 0.63),
@@ -356,7 +344,7 @@ function SegmentButton({
 
 const ThemeToggleComponent: React.FC<ThemeToggleProps> = ({
   collapsed = false,
-  appearance = 'sidebar',
+  variant = 'sidebar',
   transitionDuration = THEME_TRANSITION_DURATION,
   style,
   testID,
@@ -381,10 +369,10 @@ const ThemeToggleComponent: React.FC<ThemeToggleProps> = ({
     [setMode, transitionDuration],
   );
 
-  if (appearance !== 'sidebar') {
+  if (variant !== 'sidebar') {
     return (
       <SegmentedToggle
-        appearance={appearance}
+        variant={variant}
         dark={dark}
         palette={palette}
         reducedMotion={reducedMotion}
@@ -420,7 +408,7 @@ const ThemeToggleComponent: React.FC<ThemeToggleProps> = ({
 };
 
 function SegmentedToggle({
-  appearance,
+  variant,
   dark,
   palette,
   reducedMotion,
@@ -428,7 +416,7 @@ function SegmentedToggle({
   style,
   testID,
 }: {
-  appearance: Exclude<ThemeToggleAppearance, 'sidebar'>;
+  variant: Exclude<ThemeToggleVariant, 'sidebar'>;
   dark: boolean;
   palette: TogglePalette;
   reducedMotion: boolean;
@@ -436,7 +424,7 @@ function SegmentedToggle({
   style?: StyleProp<ViewStyle>;
   testID?: string;
 }) {
-  const glass = appearance === 'glass-segmented';
+  const glass = variant === 'glass-segmented';
   const progress = useSharedValue(dark ? 1 : 0);
   useEffect(() => {
     progress.value = reducedMotion ? (dark ? 1 : 0) : withTiming(dark ? 1 : 0, { duration: THUMB_MS, easing: EASE });
@@ -458,7 +446,7 @@ function SegmentedToggle({
           gap: 4,
           padding: 4,
           borderRadius: borderRadius.full,
-          backgroundColor: palette.track[appearance],
+          backgroundColor: palette.track[variant],
           zIndex: glass ? 10 : undefined,
         },
         style,
@@ -476,7 +464,7 @@ function SegmentedToggle({
             width: 32,
             height: 32,
             borderRadius: borderRadius.full,
-            backgroundColor: palette.thumb[appearance],
+            backgroundColor: palette.thumb[variant],
             boxShadow: palette.thumbShadow,
           },
           thumbStyle,

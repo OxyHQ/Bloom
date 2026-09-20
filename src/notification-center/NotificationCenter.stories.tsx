@@ -1,3 +1,4 @@
+import { useArgs } from 'storybook/preview-api';
 import React from 'react';
 import { View } from 'react-native';
 import type { Meta, StoryObj } from '@storybook/react-vite';
@@ -34,8 +35,8 @@ export const DEMO_NOTIFICATIONS: NotificationCenterItem[] = [
     unread: true,
     avatar: { initials: 'LS', name: 'Livia Saris', color: 'pink' },
     actions: [
-      { id: 'reply', label: 'Reply', variant: 'primary' },
-      { id: 'view', label: 'View thread', variant: 'secondary' },
+      { id: 'reply', label: 'Reply', appearance: 'solid', tone: 'accent' },
+      { id: 'view', label: 'View thread', appearance: 'outline', tone: 'neutral' },
     ],
   },
   {
@@ -48,7 +49,7 @@ export const DEMO_NOTIFICATIONS: NotificationCenterItem[] = [
     unread: true,
     status: 'success',
     icon: RiDownloadCloud2Line,
-    actions: [{ id: 'download', label: 'Download', variant: 'secondary' }],
+    actions: [{ id: 'download', label: 'Download', appearance: 'outline', tone: 'neutral' }],
   },
   {
     id: 'project-invite',
@@ -69,7 +70,7 @@ export const DEMO_NOTIFICATIONS: NotificationCenterItem[] = [
     description: 'Pull request #284 updates the notification preferences flow.',
     timestamp: 'Mon',
     avatar: { initials: 'JA', name: 'Jaydon Aminoff', color: 'blue' },
-    actions: [{ id: 'review', label: 'Review changes', variant: 'secondary' }],
+    actions: [{ id: 'review', label: 'Review changes', appearance: 'outline', tone: 'neutral' }],
   },
   {
     id: 'security-check',
@@ -92,15 +93,16 @@ export const DEMO_NOTIFICATIONS: NotificationCenterItem[] = [
     status: 'error',
     icon: RiGitPullRequestLine,
     actions: [
-      { id: 'retry', label: 'Retry', variant: 'primary' },
-      { id: 'logs', label: 'View logs', variant: 'secondary' },
+      { id: 'retry', label: 'Retry', appearance: 'solid', tone: 'accent' },
+      { id: 'logs', label: 'View logs', appearance: 'outline', tone: 'neutral' },
     ],
   },
 ];
 
 export const Default: Story = {
+  parameters: { controls: { disable: true } },
   render: () => (
-    <View style={{ width: 430 }}>
+    <View style={{ width: 430, maxWidth: '100%' }}>
       <NotificationCenter testID="center" notifications={DEMO_NOTIFICATIONS} />
     </View>
   ),
@@ -108,8 +110,9 @@ export const Default: Story = {
 
 /** Every disc tone, with and without an explicit icon. */
 export const Statuses: Story = {
+  parameters: { controls: { disable: true } },
   render: () => (
-    <View style={{ width: 430 }}>
+    <View style={{ width: 430, maxWidth: '100%' }}>
       <NotificationCenter
         notifications={(['neutral', 'information', 'success', 'error'] as const).map((status) => ({
           id: status,
@@ -127,8 +130,9 @@ export const Statuses: Story = {
 };
 
 export const Empty: Story = {
+  parameters: { controls: { disable: true } },
   render: () => (
-    <View style={{ width: 430 }}>
+    <View style={{ width: 430, maxWidth: '100%' }}>
       <NotificationCenter testID="center" notifications={[]} />
     </View>
   ),
@@ -136,9 +140,21 @@ export const Empty: Story = {
 
 /** The Mentions tab selected, from `defaultTab`. */
 export const MentionsTab: Story = {
+  parameters: { controls: { disable: true } },
   render: () => (
-    <View style={{ width: 430 }}>
+    <View style={{ width: 430, maxWidth: '100%' }}>
       <NotificationCenter notifications={DEMO_NOTIFICATIONS} defaultTab="mentions" />
     </View>
   ),
+};
+
+/** A single instance whose controls are applied directly to the rendered component. */
+export const Playground: StoryObj<typeof NotificationCenter> = {
+  args: { notifications: DEMO_NOTIFICATIONS, title: 'Notifications', tab: 'all' },
+  parameters: { controls: { disable: false, include: ['title', 'tab'] } },
+  argTypes: { title: { control: 'text' }, tab: { control: 'select', options: ['all', 'mentions', 'system'] } },
+  render: function Playground(args) {
+    const [, updateArgs] = useArgs();
+    return <View style={{ width: 440, maxWidth: '100%' }}><NotificationCenter {...args} onTabChange={next => updateArgs({ tab: next })} /></View>;
+  },
 };

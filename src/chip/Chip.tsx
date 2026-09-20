@@ -11,7 +11,8 @@ import { useTheme } from '../theme/use-theme';
 import { Text } from '../typography/Typography';
 import { TYPE_SCALE, type TypeScaleVariant } from '../typography/scale';
 import { borderRadius } from '../styles/tokens';
-import { resolveAccentColors } from '../theme/accent-colors';
+import { resolveBloomColors } from '../appearance/colors';
+import { useBloomAppearance } from '../appearance';
 import { resolveChipHueColors } from './hue-colors';
 import { pressedSurface } from '../theme/press-colors';
 import { useInteractionState } from '../hooks/use-interaction-state';
@@ -34,9 +35,10 @@ import type { ChipProps } from './types';
 const CLOSE_ICON = 16;
 
 const SIZE_CONFIG = {
-  small: { height: 24, type: 'caption-1-medium', paddingHorizontal: 6, iconGap: 4 },
-  medium: { height: 24, type: 'body-medium', paddingHorizontal: 6, iconGap: 4 },
-  large: { height: 28, type: 'body-medium', paddingHorizontal: 6, iconGap: 4 },
+  xs: { height: 20, type: 'caption-2-semibold', paddingHorizontal: 4, iconGap: 3 },
+  sm: { height: 24, type: 'caption-1-medium', paddingHorizontal: 6, iconGap: 4 },
+  md: { height: 24, type: 'body-medium', paddingHorizontal: 6, iconGap: 4 },
+  lg: { height: 28, type: 'body-medium', paddingHorizontal: 6, iconGap: 4 },
 } as const satisfies Record<string, { height: number; type: TypeScaleVariant; paddingHorizontal: number; iconGap: number }>;
 
 // ---------------------------------------------------------------------------
@@ -87,16 +89,19 @@ const IS_WEB = Platform.OS === 'web';
 
 const ChipComponent: React.FC<ChipProps> = ({
   children,
-  variant = 'subtle',
-  color = 'default',
+  appearance = 'subtle',
+  tone: toneProp,
   hue,
   surface,
-  size = 'medium',
-  startIcon,
-  endIcon,
+  size: sizeProp,
+  leading,
+  leadingIcon: LeadingIcon,
+  trailingIcon: TrailingIcon,
+  trailing,
   onPress,
   onClose,
-  selected = false,
+  checked = false,
+  onCheckedChange,
   disabled = false,
   style,
   textStyle,
@@ -104,6 +109,8 @@ const ChipComponent: React.FC<ChipProps> = ({
   testID,
 }) => {
   const theme = useTheme();
+  const { size: scopedSize, tone } = useBloomAppearance({size: sizeProp, tone: toneProp}, {size: 'md', tone: 'neutral'});
+  const size = scopedSize;
   useInteractiveWebCss(STYLE_ID, BLOOM_CHIP_CSS);
   // No press scale, like `Button`: a press is the background change alone,
   // which is also the one press affordance that reads under a mouse.
@@ -111,10 +118,10 @@ const ChipComponent: React.FC<ChipProps> = ({
   // Selection promotes the chip to the brand tone \u2014 the filter-pill behaviour \u2014
   // rather than to a second colour system of its own.
   const colors = useMemo(() => {
-    if (!hue || selected) return resolveAccentColors(theme.colors, selected ? 'primary' : color, variant);
+    if (!hue || checked) return resolveBloomColors(theme.colors, checked ? 'accent' : tone, appearance);
     const pair = resolveChipHueColors(theme, hue, surface);
     return { ...pair, border: 'transparent' };
-  }, [theme, hue, surface, selected, color, variant]);
+  }, [theme, hue, surface, checked, tone, appearance]);
   const sizeConfig = SIZE_CONFIG[size];
   // All three fills go through the one resolver and land somewhere different
   // because their REST surfaces do: `solid` keeps its tone and gains a state
@@ -130,7 +137,7 @@ const ChipComponent: React.FC<ChipProps> = ({
     borderRadius: borderRadius.full,
     paddingHorizontal: sizeConfig.paddingHorizontal,
     backgroundColor: colors.background,
-    borderWidth: variant === 'outlined' && !(hue && !selected) ? 1 : 0,
+    borderWidth: appearance === 'outline' && !(hue && !checked) ? 1 : 0,
     borderColor: colors.border,
     flexDirection: 'row',
     alignItems: 'center',
@@ -146,7 +153,7 @@ const ChipComponent: React.FC<ChipProps> = ({
     // property because the value is a resolved theme token the static sheet
     // cannot know; native has no such style key and ignores it.
     '--bloom-chip-ring': colors.foreground,
-  }), [sizeConfig, colors, variant, hue, selected]);
+  }), [sizeConfig, colors, appearance, hue, checked]);
 
   const labelStyle = useMemo((): TextStyle => ({
     color: colors.foreground,
@@ -177,7 +184,7 @@ const ChipComponent: React.FC<ChipProps> = ({
 
   const content = (
     <>
-      {startIcon != null ? <View style={iconSlotStyle}>{startIcon}</View> : null}
+      {LeadingIcon ? <LeadingIcon width={iconSlotStyle.width as number} height={iconSlotStyle.height as number} fill={colors.foreground} /> : leading != null ? <View style={iconSlotStyle}>{leading}</View> : null}
       {typeof children === 'string' ? (
         <Text variant={sizeConfig.type} numberOfLines={1} style={[labelStyle, textStyle]}>
           {children}
@@ -185,12 +192,12 @@ const ChipComponent: React.FC<ChipProps> = ({
       ) : (
         children
       )}
-      {endIcon != null ? <View style={iconSlotStyle}>{endIcon}</View> : null}
+      {TrailingIcon ? <TrailingIcon width={iconSlotStyle.width as number} height={iconSlotStyle.height as number} fill={colors.foreground} /> : trailing != null ? <View style={iconSlotStyle}>{trailing}</View> : null}
       {closeButton}
     </>
   );
 
-  if (onPress) {
+  if (onPress || onCheckedChange) {
     return (
       <Pressable
         // The DOM hook the adopted sheet above hangs off.
@@ -216,7 +223,7 @@ const ChipComponent: React.FC<ChipProps> = ({
           pressed && !disabled && { backgroundColor: pressedBackground },
           style,
         ]}
-        onPress={onPress}
+        onPress={() => { if (disabled) return; onCheckedChange?.(!checked); onPress?.(); }}
         onPressIn={onPressIn}
         onPressOut={onPressOut}
         disabled={disabled}
@@ -226,11 +233,11 @@ const ChipComponent: React.FC<ChipProps> = ({
         // there is no single prop that serves both here: react-native-web
         // ignores `accessibilityState`, while React Native has no
         // `aria-pressed` at all (its `AccessibilityState` is
-        // disabled/selected/checked/busy/expanded). `aria-pressed` is also
+        // disabled/checked/checked/busy/expanded). `aria-pressed` is also
         // the state ARIA defines for a toggle with `role="button"` —
-        // `aria-selected` would be invalid on that role.
-        accessibilityState={{ disabled, selected }}
-        aria-pressed={selected}
+        // `aria-checked` would be invalid on that role.
+        accessibilityState={{ disabled, selected: checked }}
+        aria-pressed={checked}
         testID={testID}
       >
         {content}

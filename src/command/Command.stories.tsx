@@ -9,6 +9,15 @@ import { RiUserLine as PersonIcon } from '../icons/remix/RiUserLine';
 import { RiSettings3Line as GearIcon } from '../icons/remix/RiSettings3Line';
 
 const meta: Meta = {
+  argTypes: {
+    "visible": { control: 'boolean' },
+    "placeholder": { control: 'text' },
+    "emptyText": { control: 'text' },
+    "query": { control: 'text' },
+    "maxListHeight": { control: 'number' }
+  },
+  component: Command,
+  parameters: { controls: { disable: true } },
   title: 'Base/Command',
 };
 
@@ -17,6 +26,7 @@ export default meta;
 type Story = StoryObj;
 
 export const Basic: Story = {
+  parameters: { controls: { disable: true } },
   render: () => {
     const [open, setOpen] = useState(false);
     const items: CommandItem[] = [

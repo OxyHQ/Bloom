@@ -1,3 +1,4 @@
+import { chartColorsFromTokens } from './chart-colors';
 import { Platform } from 'react-native';
 import { APP_COLOR_PRESETS, type AppColorName } from './color-presets';
 import { generateRoleColors, type RoleColors } from './color-engine';
@@ -5,7 +6,7 @@ import type { ExplicitAccents } from './preset-vars';
 import { getAdaptiveColors } from './adaptive-colors';
 import { getResolvedTokens } from './token-registry';
 import { THEME_GRADIENTS } from './gradients';
-import type { Theme, ThemeColors } from './types';
+import type { Theme } from './types';
 
 /**
  * Status colors used across the design system. Independent of the accent
@@ -34,7 +35,7 @@ function buildColorsFromPreset(
   preset: AppColorName,
   resolved: 'light' | 'dark',
   accents?: ExplicitAccents,
-): ThemeColors {
+): Pick<Theme, 'colors' | 'chartColors'> {
   const t = getResolvedTokens(preset, resolved, accents);
   const isDark = resolved === 'dark';
 
@@ -53,14 +54,14 @@ function buildColorsFromPreset(
     tertiarySeed: accents?.tertiaryHex ?? config.tertiaryHex,
   });
 
-  return {
+  return { chartColors: chartColorsFromTokens(t), colors: {
     background: g('background'),
     backgroundSecondary: g('surface'),
     backgroundTertiary: g('popover'),
 
     text: g('foreground'),
     textSecondary: g('muted-foreground'),
-    textTertiary: r.outline,
+    textTertiary: g('muted-foreground'),
 
     border: g('border'),
     borderLight: g('input'),
@@ -76,8 +77,12 @@ function buildColorsFromPreset(
     // and tertiary completes primary/secondary/tertiary.
     secondary: g('secondary'),
     secondaryForeground: g('secondary-foreground'),
+    secondarySubtle: g('secondary-subtle'),
+    secondarySubtleForeground: g('secondary-text'),
     tertiary: g('tertiary'),
     tertiaryForeground: g('tertiary-foreground'),
+    tertiarySubtle: g('tertiary-subtle'),
+    tertiarySubtleForeground: g('tertiary-text'),
 
     tint: g('primary'),
     icon: g('muted-foreground'),
@@ -128,7 +133,7 @@ function buildColorsFromPreset(
     card: g('card'),
     shadow: isDark ? 'rgba(0, 0, 0, 0.3)' : 'rgba(0, 0, 0, 0.1)',
     overlay: 'rgba(0, 0, 0, 0.5)',
-  };
+  } };
 }
 
 /**
@@ -143,7 +148,7 @@ export function buildTheme(
   isAdaptive: boolean = false,
   accents?: ExplicitAccents,
 ): Theme {
-  const base = buildColorsFromPreset(preset, resolved, accents);
+  const { colors: base, chartColors } = buildColorsFromPreset(preset, resolved, accents);
   const adaptive = isAdaptive && Platform.OS !== 'web' ? getAdaptiveColors() : undefined;
   // The platform palette OVERLAYS the preset one rather than replacing it. Every
   // field the platform answers still wins, byte for byte; the tinted status
@@ -154,6 +159,7 @@ export function buildTheme(
   return {
     mode: resolved,
     colors,
+    chartColors,
     gradients: THEME_GRADIENTS,
     isDark: resolved === 'dark',
     isLight: resolved === 'light',

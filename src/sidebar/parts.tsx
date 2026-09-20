@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useEffect, useMemo } from 'react';
 import { Platform, StyleSheet, View, type LayoutChangeEvent, type StyleProp, type ViewStyle } from 'react-native';
-import Animated, { useAnimatedStyle, useSharedValue, type SharedValue } from 'react-native-reanimated';
+import Animated, { Easing, useAnimatedStyle, useReducedMotion, useSharedValue, withTiming, type SharedValue } from 'react-native-reanimated';
 import Svg, { Defs, G, LinearGradient, Path, Rect, Stop } from 'react-native-svg';
 
 import { Avatar } from '../avatar';
@@ -27,6 +27,21 @@ export function useInSidebar(): boolean {
   return useContext(CollapseContext) !== null;
 }
 
+/** Share the panel's clock; standalone controls use the same reversible timing. */
+export function useSidebarCollapseProgress(collapsed: boolean): SharedValue<number> {
+  const context = useContext(CollapseContext);
+  const reducedMotion = useReducedMotion();
+  const local = useSharedValue(collapsed ? 1 : 0);
+  useEffect(() => {
+    if (!context) {
+      local.value = reducedMotion ? Number(collapsed) : withTiming(Number(collapsed), {
+        duration: MORPH_MS, easing: Easing.bezier(0.4, 0, 0.2, 1),
+      });
+    }
+  }, [collapsed, context, local, reducedMotion]);
+  return context ?? local;
+}
+
 /**
  * A `Collapsible` slot: max-width + opacity + blur(3px) collapse to
  * nothing while the icon beside it stays pinned. The natural width is measured
@@ -43,12 +58,7 @@ export function Collapsible({
   children: React.ReactNode;
   style?: StyleProp<ViewStyle>;
 }) {
-  const context = useContext(CollapseContext);
-  const local = useSharedValue(collapsed ? 1 : 0);
-  useEffect(() => {
-    if (!context) local.value = collapsed ? 1 : 0;
-  }, [collapsed, context, local]);
-  const progress = context ?? local;
+  const progress = useSidebarCollapseProgress(collapsed);
   const natural = useSharedValue(0);
   const animated = useAnimatedStyle(() => {
     const p = progress.value;
@@ -225,18 +235,15 @@ export function ChevronUpDownSmall({ color, size = 16 }: { color: string; size?:
   );
 }
 
-/** Popover chrome for both sidebar menus: `w-[265px] rounded-2xl border p-2.5 shadow-dropdown`. */
-export function menuPanelStyle(palette: SidebarPalette): ViewStyle {
-  return {
-    width: 265,
-    padding: 10,
-    borderRadius: 16,
-    borderWidth: 1,
-    borderColor: palette.menu.border,
-    backgroundColor: palette.menu.surface,
-    boxShadow: palette.menu.shadow,
-  };
+/** The width both sidebar menus give their popover: `w-[265px]`. */
+export function menuPanelStyle(_palette?: SidebarPalette): ViewStyle {
+  // `w-[265px]` is the only thing these menus say differently from the popover
+  // panel itself — radius, border, surface, `p-2.5` and `shadow-dropdown` are
+  // `Popover`'s own defaults now (`popover/surface.ts`).
+  return MENU_PANEL;
 }
+
+const MENU_PANEL: ViewStyle = { width: 265 };
 
 /** Full-bleed menu divider: `-mx-2.5 h-px bg-border-button-default`. */
 export function MenuDivider({ palette, spacing }: { palette: SidebarPalette; spacing: number }) {

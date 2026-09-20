@@ -1,6 +1,6 @@
 import type { TextStyle } from 'react-native';
 
-import { ACCENT_TABLE, colorRamp, resolveButtonRamps, type RampTable } from '../button/shared';
+import { ACCENT_TABLE, colorRamp, type RampTable } from '../button/shared';
 import { TYPE_SCALE } from '../typography/scale';
 import { parseRgba } from '../theme/color-utils';
 import { srgbToOklch } from '../theme/color-space';
@@ -109,8 +109,7 @@ export function resolveAvatarTint(theme: Theme, color: AvatarColor): AvatarTint 
     }
     case 'neutral':
     default: {
-      const { neutral: n } = resolveButtonRamps(theme);
-      return { background: theme.isDark ? n[800] : n[300], foreground: n[500] };
+      return { background: theme.colors.backgroundTertiary, foreground: theme.colors.textSecondary };
     }
   }
 }

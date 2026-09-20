@@ -16,6 +16,7 @@ import { Loading } from '../loading';
 import { useTheme } from '../theme';
 
 const meta: Meta = {
+  parameters: { controls: { disable: true } },
   title: 'Foundations/Hooks',
 };
 
@@ -25,7 +26,7 @@ type Story = StoryObj;
 
 function Panel({ title, children }: { title: string; children: React.ReactNode }) {
   return (
-    <Card variant="outlined" radius="radius-16" style={{ padding: 16, gap: 10, width: 420 }}>
+    <Card appearance="outline" radius="radius-16" style={{ maxWidth: '100%', padding: 16, gap: 10, width: 420 }}>
       <Text style={{ fontWeight: '600' }}>{title}</Text>
       {children}
     </Card>
@@ -42,6 +43,7 @@ function Panel({ title, children }: { title: string; children: React.ReactNode }
  * total: the component renders unstyled and nothing errors.
  */
 export const InteractionState: Story = {
+  parameters: { controls: { disable: true } },
   render: function InteractionStateStory() {
     const { colors } = useTheme();
     const { state: pressed, onIn, onOut } = useInteractionState();
@@ -93,6 +95,7 @@ export const InteractionState: Story = {
  * user cannot tell whether anything happened.
  */
 export const DelayedLoading: Story = {
+  parameters: { controls: { disable: true } },
   render: function DelayedLoadingStory() {
     const [run, setRun] = useState(0);
     return (
@@ -115,6 +118,7 @@ function Settling() {
  * scroll offset or a typed query.
  */
 export const ThrottledValue: Story = {
+  parameters: { controls: { disable: true } },
   render: function ThrottledValueStory() {
     const [value, setValue] = useState(0);
     const throttled = useThrottledValue(value, 500);
@@ -136,12 +140,13 @@ export const ThrottledValue: Story = {
  * scaling continuously.
  */
 export const Gutters: Story = {
+  parameters: { controls: { disable: true } },
   render: function GuttersStory() {
     const { colors } = useTheme();
     const gutters = useGutters(['base']);
     const wide = useGutters(['wide']);
     return (
-      <View style={{ gap: 16, width: 420 }}>
+      <View style={{ maxWidth: '100%', gap: 16, width: 420 }}>
         <Panel title="useGutters(['base'])">
           <View style={{ ...gutters, backgroundColor: colors.primarySubtle, borderRadius: 8 }}>
             <Text>paddingLeft {gutters.paddingLeft} · paddingTop {gutters.paddingTop}</Text>

@@ -1,8 +1,8 @@
-import React, { memo, useMemo } from 'react';
+import { useBloomAppearance } from '../appearance';
+import React, { memo } from 'react';
 import { View } from 'react-native';
 
 import { useTheme } from '../theme/use-theme';
-import { resolveButtonRamps } from '../button/shared';
 import { Text, TYPE_SCALE } from '../typography';
 import { borderRadius } from '../styles/tokens';
 import type { KbdProps } from './types';
@@ -32,15 +32,15 @@ const PADDING_HORIZONTAL = 4;
 
 const KbdComponent = function Kbd({
   children,
-  size = 'md',
+  size: sizeProp,
   style,
   textStyle,
   testID,
 }: KbdProps) {
+  const {size: inheritedSize} = useBloomAppearance({size: sizeProp}, {size: 'md', tone: 'neutral'});
+  const size: NonNullable<KbdProps['size']> = inheritedSize === 'xs' || inheritedSize === 'sm' ? 'sm' : 'md';
   const theme = useTheme();
   const cfg = SIZE_CONFIG[size];
-  const { neutral: n } = useMemo(() => resolveButtonRamps(theme), [theme]);
-  const dark = theme.isDark;
 
   return (
     <View
@@ -55,7 +55,7 @@ const KbdComponent = function Kbd({
           paddingRight: PADDING_HORIZONTAL,
           paddingTop: cfg.paddingVertical,
           paddingBottom: cfg.paddingVertical,
-          backgroundColor: dark ? n[700] : n[300],
+          backgroundColor: theme.colors.backgroundTertiary,
         },
         style,
       ]}
@@ -66,7 +66,7 @@ const KbdComponent = function Kbd({
           {
             ...cfg.type,
             letterSpacing: 0,
-            color: dark ? n[400] : n[500],
+            color: theme.colors.textSecondary,
             textAlign: 'center',
           },
           textStyle,

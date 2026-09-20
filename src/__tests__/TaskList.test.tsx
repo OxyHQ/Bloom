@@ -3,7 +3,6 @@ import { Text as RNText } from 'react-native';
 import { act, render } from '@testing-library/react-native';
 import type { ReactTestInstance } from 'react-test-renderer';
 
-import { mixColor, resolveButtonRamps } from '../button/shared';
 import { TaskList } from '../task-list';
 import type { TaskListTask } from '../task-list';
 import { resolveTaskListPalette } from '../task-list/TaskList';
@@ -60,26 +59,18 @@ describe('TaskList', () => {
     jest.useRealTimers();
   });
 
-  it('maps design tokens onto the ramps in both modes', () => {
-    const light = buildTheme('teal', 'light');
-    const dark = buildTheme('teal', 'dark');
-    const l = resolveButtonRamps(light).neutral;
-    const d = resolveButtonRamps(dark).neutral;
-    expect(resolveTaskListPalette(light)).toMatchObject({
-      textSecondary: l[500],
-      iconTertiary: l[400],
-      chipSurface: l[100],
-      chipSurfaceHover: l[200],
-      chipBorder: mixColor(l[100], l[200], 0.5),
-      chipBorderHover: l[300],
-    });
-    expect(resolveTaskListPalette(dark)).toMatchObject({
-      iconTertiary: d[600],
-      chipSurface: d[900],
-      chipSurfaceHover: d[800],
-      chipBorder: mixColor(d[900], d[700], 0.5),
-      chipBorderHover: d[500],
-    });
+  it('uses canonical roles in both modes', () => {
+    for (const mode of ['light', 'dark'] as const) {
+      const theme = buildTheme('teal', mode);
+      expect(resolveTaskListPalette(theme)).toMatchObject({
+        textSecondary: theme.colors.textSecondary,
+        iconTertiary: theme.colors.textTertiary,
+        chipSurface: theme.colors.backgroundSecondary,
+        chipSurfaceHover: theme.colors.backgroundTertiary,
+        chipBorder: theme.colors.borderLight,
+        chipBorderHover: theme.colors.border,
+      });
+    }
   });
 
   it('reveals a header a tick ahead of its steps, and swaps the running title once they land', () => {

@@ -28,8 +28,9 @@ const DETAILS: PatientInfoCardDetail[] = [
 
 /** Initials disc, the `+` photo button, and four detail rows. */
 export const Default: Story = {
+  parameters: { controls: { disable: true } },
   render: () => (
-    <View style={{ padding: 40, width: 360 }}>
+    <View style={{ padding: 40, width: 360, maxWidth: '100%' }}>
       <PatientInfoCard testID="patient" name="Maya Collins" initials="M" details={DETAILS} />
     </View>
   ),
@@ -37,8 +38,9 @@ export const Default: Story = {
 
 /** A photo, no `+` button, and fewer rows (the rows keep their height; the card does not shrink). */
 export const WithPhoto: Story = {
+  parameters: { controls: { disable: true } },
   render: () => (
-    <View style={{ padding: 40, width: 360 }}>
+    <View style={{ padding: 40, width: 360, maxWidth: '100%' }}>
       <PatientInfoCard
         name="Aspen Lubin"
         avatarSource="https://i.pravatar.cc/132?img=47"
@@ -47,4 +49,15 @@ export const WithPhoto: Story = {
       />
     </View>
   ),
+};
+
+/** A single instance whose controls are applied directly to the rendered component. */
+export const Playground: StoryObj<typeof PatientInfoCard> = {
+  args: { name: 'Maya Collins', initials: 'MC', details: DETAILS, hideAddPhoto: false },
+  parameters: { controls: { disable: false, include: ['name', 'initials', 'hideAddPhoto'] } },
+  argTypes: { name: { control: 'text' }, initials: { control: 'text' }, hideAddPhoto: { control: 'boolean' } },
+  render: function Playground(args) {
+
+    return <View style={{ width: 440, maxWidth: '100%' }}><PatientInfoCard {...args} /></View>;
+  },
 };

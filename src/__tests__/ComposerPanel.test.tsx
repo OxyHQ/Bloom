@@ -12,8 +12,10 @@ import {
   ModelPicker,
 } from '../composer-panel';
 import type { ComposerPanelAttachment, ModelPickerProvider } from '../composer-panel';
-import { resolveButtonRamps } from '../button/shared';
+import { resolveComposerPalette } from '../composer-panel/shared';
 import { buildTheme } from '../theme/build-theme';
+import { SendButton } from '../composer-panel/ComposerControls';
+import { RiArrowUpLine } from '../icons';
 import { pressHost } from './support/press-host';
 import { resolvedStyle } from './support/rendered-style';
 
@@ -61,11 +63,11 @@ describe('ComposerPanel', () => {
     });
   });
 
-  it('paints the card neutral-800 in dark mode', () => {
+  it('paints the card with the canonical card role in dark mode', () => {
     const { getByTestId } = renderIn(<ComposerPanel testID="composer" />, 'dark');
-    const { neutral } = resolveButtonRamps(buildTheme('teal', 'dark'));
+    const { colors } = buildTheme('teal', 'dark');
     const card = getByTestId('composer').children[0] as unknown as { props: { style: unknown } };
-    expect(resolvedStyle(card.props.style).backgroundColor).toBe(neutral[800]);
+    expect(resolvedStyle(card.props.style).backgroundColor).toBe(colors.card);
   });
 
   it('submits the draft from send and clears it when uncontrolled', () => {
@@ -350,4 +352,29 @@ describe('ComposerStatusBar', () => {
     fireEvent.press(getByLabelText('users/desktop/vibl'));
     expect(onFolderChange).toHaveBeenCalledWith('vibl');
   });
+});
+
+
+it.each(['light', 'dark'] as const)('composer reads canonical foreground and surface roles in %s mode', (mode) => {
+  const theme = buildTheme('teal', mode);
+  const c = theme.colors;
+  expect(resolveComposerPalette(theme)).toMatchObject({
+    surface: c.card, secondary: c.backgroundSecondary, tertiary: c.backgroundTertiary,
+    border: c.borderLight, textSecondary: c.textSecondary, textTertiary: c.textTertiary,
+    iconSecondary: c.textSecondary, iconTertiary: c.textTertiary, focusRing: c.primary,
+    accent500: c.primarySubtleForeground,
+  });
+});
+
+ it('pairs the send arrow with each action paint state', () => {
+  const palette = resolveComposerPalette(buildTheme('teal', 'light'));
+  const { getByLabelText, UNSAFE_getByType, rerender } = renderIn(<SendButton disabled={false} onPress={() => {}} label="Send" palette={palette} />);
+  const arrow = () => UNSAFE_getByType(RiArrowUpLine).props.fill;
+  expect(arrow()).toBe(palette.send.rest.foreground);
+  fireEvent(getByLabelText('Send'), 'hoverIn');
+  expect(arrow()).toBe(palette.send.hover.foreground);
+  fireEvent(getByLabelText('Send'), 'pressIn');
+  expect(arrow()).toBe(palette.send.active.foreground);
+  rerender(<BloomThemeProvider mode="light" colorPreset="teal"><SendButton disabled onPress={() => {}} label="Send" palette={palette} /></BloomThemeProvider>);
+  expect(arrow()).toBe(palette.send.disabled.foreground);
 });

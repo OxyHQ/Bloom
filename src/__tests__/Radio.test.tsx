@@ -49,7 +49,7 @@ describe('Radio', () => {
   it('reports its value when chosen', () => {
     const onSelect = jest.fn();
     const { getByLabelText } = renderWithTheme(
-      <Radio value="daily" selected={false} onSelect={onSelect} label="Daily" />,
+      <Radio value="daily" checked={false} onValueChange={onSelect} label="Daily" />,
     );
     fireEvent.press(getByLabelText('Daily'));
     expect(onSelect).toHaveBeenCalledWith('daily');
@@ -61,7 +61,7 @@ describe('Radio', () => {
     // a reducer would otherwise re-run its effects on every stray tap.
     const onSelect = jest.fn();
     const { getByLabelText } = renderWithTheme(
-      <Radio value="daily" selected onSelect={onSelect} label="Daily" />,
+      <Radio value="daily" checked onValueChange={onSelect} label="Daily" />,
     );
     fireEvent.press(getByLabelText('Daily'));
     expect(onSelect).not.toHaveBeenCalled();
@@ -70,7 +70,7 @@ describe('Radio', () => {
   it('does not fire when disabled', () => {
     const onSelect = jest.fn();
     const { getByLabelText } = renderWithTheme(
-      <Radio value="daily" selected={false} onSelect={onSelect} label="Daily" disabled />,
+      <Radio value="daily" checked={false} onValueChange={onSelect} label="Daily" disabled />,
     );
     fireEvent.press(getByLabelText('Daily'));
     expect(onSelect).not.toHaveBeenCalled();
@@ -80,8 +80,8 @@ describe('Radio', () => {
     const { getByText } = renderWithTheme(
       <Radio
         value="weekly"
-        selected={false}
-        onSelect={() => {}}
+        checked={false}
+        onValueChange={() => {}}
         label="Weekly"
         description="Every Monday"
       />,
@@ -181,7 +181,7 @@ describe('RadioCard', () => {
   it('selects its value when pressed, and re-choosing is a no-op', () => {
     const onSelect = jest.fn();
     const { getByLabelText, rerender } = renderWithTheme(
-      <RadioCard value="pro" title="Pro" description="Unlimited." selected={false} onSelect={onSelect} />,
+      <RadioCard value="pro" title="Pro" description="Unlimited." checked={false} onValueChange={onSelect} />,
     );
     const card = getByLabelText('Pro');
     expect(card.props.accessibilityRole).toBe('radio');
@@ -192,7 +192,7 @@ describe('RadioCard', () => {
     onSelect.mockClear();
     rerender(
       <BloomThemeProvider mode="light" colorPreset="teal">
-        <RadioCard value="pro" title="Pro" selected onSelect={onSelect} />
+        <RadioCard value="pro" title="Pro" checked onValueChange={onSelect} />
       </BloomThemeProvider>,
     );
     fireEvent.press(getByLabelText('Pro'));

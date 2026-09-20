@@ -31,6 +31,13 @@ function sampleData(days: number, endKey: string): ActivityHeatmapDay[] {
 const DATA = sampleData(364, END_DATE);
 
 const meta: Meta<typeof ActivityHeatmap> = {
+  argTypes: {
+    "numDays": { control: 'number' },
+    "endDate": { control: 'text' },
+    "emptyColor": { control: 'text' },
+    "cellSize": { control: 'number' },
+    "gap": { control: 'number' }
+  },
   title: 'Charts/Activity Heatmap',
   component: ActivityHeatmap,
 };
@@ -40,6 +47,7 @@ export default meta;
 type Story = StoryObj<typeof ActivityHeatmap>;
 
 export const Light: Story = {
+  parameters: { controls: { disable: true } },
   render: () => (
     <BloomThemeProvider mode="light">
       <View style={{ padding: 24 }}>
@@ -56,6 +64,7 @@ export const Light: Story = {
 };
 
 export const Dark: Story = {
+  parameters: { controls: { disable: true } },
   render: () => (
     <BloomThemeProvider mode="dark">
       <View style={{ padding: 24, backgroundColor: '#000' }}>
@@ -72,16 +81,18 @@ export const Dark: Story = {
 };
 
 export const CustomScale: Story = {
-  render: () => (
+  args: { numDays: 140, cellSize: 14, gap: 4 },
+  parameters: { controls: { include: ["numDays","cellSize","gap","emptyColor"] } },
+  render: (args) => (
     <BloomThemeProvider mode="dark">
       <View style={{ padding: 24, backgroundColor: '#000' }}>
         <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-          <ActivityHeatmap
+          <ActivityHeatmap {...args}
             data={DATA}
             endDate={END_DATE}
-            numDays={140}
-            cellSize={14}
-            gap={4}
+
+
+
             // One colour per threshold, PLUS one for "positive but below the
             // first" — pass five here and `#7DF3BD` would never paint, which is
             // the bug the defaults used to have.
@@ -95,6 +106,7 @@ export const CustomScale: Story = {
 
 /** Demonstrates the `bucketByDay` helper grouping raw timestamps. */
 export const FromRawEvents: Story = {
+  parameters: { controls: { disable: true } },
   render: () => {
     const events = DATA.flatMap((d) => Array.from({ length: d.count }, () => ({ at: d.date })));
     const bucketed = bucketByDay(events, (e) => e.at);
@@ -108,4 +120,9 @@ export const FromRawEvents: Story = {
       </BloomThemeProvider>
     );
   },
+};
+
+export const Playground: Story = {
+  args: { data: DATA, endDate: END_DATE, numDays: 90, cellSize: 10, gap: 3 },
+  parameters: { controls: { include: ['numDays', 'endDate', 'cellSize', 'gap'] } },
 };

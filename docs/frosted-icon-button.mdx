@@ -14,19 +14,23 @@ mute toggle on a video, a back button over a hero image.
 import { FrostedIconButton } from '@oxy.so/bloom/frosted-icon-button';
 
 <FrostedIconButton
-  icon={<CloseIcon />}
+  icon={CloseIcon}
   accessibilityLabel="Close"
   onPress={close}
 />
 ```
+
+The icon is a component receiving `width`, `height` and `fill`; `children` is not an icon alias. Size and tone inherit from `BloomScope`; `tone` controls the solid active state.
+
+For a controlled toggle, pass `checked` and `onCheckedChange`. The callback receives the next boolean. `onPress` remains available for ordinary actions and runs alongside the toggle callback when both are supplied; disabled controls call neither.
 
 ## Which prop decides what
 
 | prop       | decides                                             |
 | ---------- | ---------------------------------------------------- |
 | `icon`     | the glyph                                            |
-| `size`     | `sm` · `md`, or a number                             |
-| `active`   | a persistent on state, for a toggle                  |
+| `size`     | `xs` · `sm` · `md` · `lg`, or a number                             |
+| `checked`   | a persistent on state, for a toggle                  |
 | `disabled` | dims and disables                                    |
 | `hitSlop`  | the touch target beyond the drawn circle             |
 

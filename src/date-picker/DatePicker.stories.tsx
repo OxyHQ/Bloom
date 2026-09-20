@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Text, View } from 'react-native';
+import { Text, View, useWindowDimensions } from 'react-native';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
 import {
@@ -15,6 +15,13 @@ import {
 } from './index';
 
 const meta: Meta<typeof DatePicker> = {
+  argTypes: {
+    "placeholder": { control: 'text' },
+    "disabled": { control: 'boolean' },
+    "open": { control: 'boolean' },
+    "defaultOpen": { control: 'boolean' },
+    "locale": { control: 'text' }
+  },
   title: 'Base/Date Picker',
   component: DatePicker,
 };
@@ -26,11 +33,12 @@ type Story = StoryObj<typeof DatePicker>;
 const day = (d: number, month = 8) => new Date(2026, month, d);
 
 export const Basic: Story = {
+  parameters: { controls: { disable: true } },
   render: () => {
     function Demo() {
       const [value, setValue] = useState<Date | null>(null);
       return (
-        <View style={{ padding: 40, alignItems: 'flex-start', minHeight: 520 }}>
+        <View style={{ alignItems: 'flex-start', minHeight: 520 }}>
           <DatePicker value={value} onChange={setValue} testID="date-picker" />
         </View>
       );
@@ -41,8 +49,9 @@ export const Basic: Story = {
 
 /** Trigger states: empty, committed, disabled. */
 export const Triggers: Story = {
+  parameters: { controls: { disable: true } },
   render: () => (
-    <View style={{ padding: 40, flexDirection: 'row', gap: 16, alignItems: 'flex-start' }}>
+    <View style={{ flexDirection: 'row', flexWrap: 'wrap', maxWidth: '100%', gap: 16, alignItems: 'flex-start' }}>
       <DatePicker />
       <DatePicker defaultValue={day(16)} />
       <DatePicker disabled />
@@ -52,20 +61,23 @@ export const Triggers: Story = {
 
 /** The popup open on a committed day, with the days before the 3rd disabled. */
 export const Open: Story = {
-  render: () => (
-    <View style={{ padding: 40, paddingLeft: 400, alignItems: 'flex-start', minHeight: 520 }}>
-      <DatePicker defaultValue={day(16)} minDate={day(3)} defaultOpen testID="date-picker" />
+  args: { defaultOpen: true },
+  parameters: { controls: { include: ["defaultOpen","placeholder","disabled","open","locale"] } },
+  render: (args) => (
+    <View style={{ alignItems: 'flex-start', minHeight: 520 }}>
+      <DatePicker {...args} defaultValue={day(16)} minDate={day(3)}  testID="date-picker" />
     </View>
   ),
 };
 
 /** The month panel on its own: selected day, disabled days, keyboard-navigable grid. */
 export const InlineCalendar: Story = {
+  parameters: { controls: { disable: true } },
   render: () => {
     function Demo() {
       const [value, setValue] = useState<Date | null>(day(16));
       return (
-        <View style={{ padding: 40, gap: 12, alignItems: 'flex-start' }}>
+        <View style={{ gap: 12, alignItems: 'flex-start' }}>
           <Calendar value={value} onChange={setValue} minDate={day(3)} testID="calendar" />
           <Text>{value?.toDateString()}</Text>
         </View>
@@ -75,14 +87,16 @@ export const InlineCalendar: Story = {
   },
 };
 
-/** Two months with a committed range — the range band, edges and row ends. */
+/** Two months on desktop, one on phones; selection and keyboard navigation stay shared. */
 export const InlineRange: Story = {
+  parameters: { controls: { disable: true } },
   render: () => {
     function Demo() {
       const [value, setValue] = useState<DateRange | null>({ start: day(9), end: day(22) });
+      const { width } = useWindowDimensions();
       return (
-        <View style={{ padding: 40, alignItems: 'flex-start' }}>
-          <RangeCalendar value={value} onChange={setValue} visibleMonths={2} testID="range" />
+        <View style={{ alignItems: 'flex-start' }}>
+          <RangeCalendar value={value} onChange={setValue} visibleMonths={width < 700 ? 1 : 2} testID="range" />
         </View>
       );
     }
@@ -91,8 +105,9 @@ export const InlineRange: Story = {
 };
 
 export const RangePicker: Story = {
+  parameters: { controls: { disable: true } },
   render: () => (
-    <View style={{ padding: 40, width: 920, alignItems: 'flex-end', minHeight: 520 }}>
+    <View style={{ maxWidth: '100%', width: 920, alignItems: 'flex-end', minHeight: 520 }}>
       <DateRangePicker defaultValue={{ start: day(9), end: day(22) }} defaultOpen testID="range-picker" />
     </View>
   ),
@@ -114,11 +129,12 @@ const MEETING: MeetingSchedulerDetails = {
 
 /** The scheduler's trigger — the pickers' trigger with a chevron. */
 export const MeetingSchedulerTrigger: Story = {
+  parameters: { controls: { disable: true } },
   render: () => {
     function Demo() {
       const [value, setValue] = useState<MeetingSchedulerValue | null>(null);
       return (
-        <View style={{ padding: 40, gap: 12, alignItems: 'flex-start', minHeight: 560 }}>
+        <View style={{ gap: 12, alignItems: 'flex-start', minHeight: 560 }}>
           <MeetingScheduler
             host={HOST}
             meeting={MEETING}
@@ -140,8 +156,9 @@ export const MeetingSchedulerTrigger: Story = {
  * and "Send meeting", and the timezone / day chip / 12h-24h toggle / slot list.
  */
 export const MeetingSchedulerOpen: Story = {
+  parameters: { controls: { disable: true } },
   render: () => (
-    <View style={{ padding: 40, paddingLeft: 760, alignItems: 'flex-start', minHeight: 560 }}>
+    <View style={{ alignItems: 'flex-start', minHeight: 560 }}>
       <MeetingScheduler
         host={HOST}
         meeting={MEETING}
@@ -152,4 +169,13 @@ export const MeetingSchedulerOpen: Story = {
       />
     </View>
   ),
+};
+
+export const Playground: Story = {
+  args: { disabled: false },
+  parameters: { controls: { include: ['placeholder', 'disabled', 'locale'] } },
+  render: function PlaygroundDate(args) {
+    const [value, setValue] = useState<Date | null>(null);
+    return <DatePicker {...args} value={value} onChange={setValue} />;
+  },
 };

@@ -1,3 +1,4 @@
+import { useArgs } from 'storybook/preview-api';
 import React, { useState } from 'react';
 import { View } from 'react-native';
 import type { Meta, StoryObj } from '@storybook/react-vite';
@@ -7,6 +8,15 @@ import { useTheme } from '../theme/use-theme';
 import { Checkbox, CheckboxCard } from './index';
 
 const meta: Meta<typeof Checkbox> = {
+  argTypes: {
+    "checked": { control: 'boolean' },
+    "label": { control: 'text' },
+    "description": { control: 'text' },
+    "size": { control: 'select', options: ["xs","sm","md","lg"] },
+    "disabled": { control: 'boolean' },
+    "indeterminate": { control: 'boolean' },
+    "tone": { control: 'select', options: ['neutral', 'accent', 'support', 'action', 'success', 'warning', 'danger', 'info'] }
+  },
   title: 'Base/Checkbox',
   component: Checkbox,
 };
@@ -23,12 +33,13 @@ const noop = () => {};
  * focus ring around the box.
  */
 export const Matrix: Story = {
+  parameters: { controls: { disable: true } },
   render: function CheckboxMatrix() {
     const theme = useTheme();
     return (
     <View style={{ gap: 16, padding: 16, backgroundColor: theme.colors.background }}>
-      {(['small', 'medium', 'large'] as const).map((size) => (
-        <View key={size} style={{ flexDirection: 'row', alignItems: 'center', gap: 24 }}>
+      {(['sm', 'md', 'lg'] as const).map((size) => (
+        <View key={size} style={{ flexDirection: 'row', flexWrap: 'wrap', maxWidth: '100%', alignItems: 'center', gap: 24 }}>
           <Checkbox size={size} checked={false} onCheckedChange={noop} accessibilityLabel="Unchecked" />
           <Checkbox size={size} checked onCheckedChange={noop} accessibilityLabel="Checked" />
           <Checkbox size={size} checked={false} indeterminate onCheckedChange={noop} accessibilityLabel="Mixed" />
@@ -45,16 +56,18 @@ export const Matrix: Story = {
 
 /** Controlled: `checked` + `onCheckedChange` are both required. */
 export const Basic: Story = {
-  render: function BasicCheckbox() {
+  args: { label: "Email me about new sign-ins" },
+  parameters: { controls: { include: ["label","description","size","disabled","indeterminate","tone"] } },
+  render: function BasicCheckbox(args) {
     const [checked, setChecked] = useState(false);
     return (
       <View style={{ gap: 12 }}>
         <Text>checked: {String(checked)}</Text>
-        <Checkbox
+        <Checkbox {...args}
           testID="checkbox-basic"
           checked={checked}
           onCheckedChange={setChecked}
-          label="Email me about new sign-ins"
+
         />
       </View>
     );
@@ -63,15 +76,17 @@ export const Basic: Story = {
 
 /** A description turns the row into a two-line control; the whole row is the hit target. */
 export const WithDescription: Story = {
-  render: function DescribedCheckbox() {
+  args: { label: "Share usage data", description: "Crash reports and performance timings. Never message content." },
+  parameters: { controls: { include: ["label","description","size","disabled","indeterminate","tone"] } },
+  render: function DescribedCheckbox(args) {
     const [checked, setChecked] = useState(true);
     return (
       <View style={{ maxWidth: 360 }}>
-        <Checkbox
+        <Checkbox {...args}
           checked={checked}
           onCheckedChange={setChecked}
-          label="Share usage data"
-          description="Crash reports and performance timings. Never message content."
+
+
         />
       </View>
     );
@@ -79,13 +94,14 @@ export const WithDescription: Story = {
 };
 
 export const Sizes: Story = {
+  parameters: { controls: { disable: true } },
   render: function SizedCheckboxes() {
     const [checked, setChecked] = useState(true);
     return (
       <View style={{ gap: 12 }}>
-        <Checkbox checked={checked} onCheckedChange={setChecked} size="small" label="Small" />
-        <Checkbox checked={checked} onCheckedChange={setChecked} size="medium" label="Medium" />
-        <Checkbox checked={checked} onCheckedChange={setChecked} size="large" label="Large" />
+        <Checkbox checked={checked} onCheckedChange={setChecked} size="sm" label="Small" />
+        <Checkbox checked={checked} onCheckedChange={setChecked} size="md" label="Medium" />
+        <Checkbox checked={checked} onCheckedChange={setChecked} size="lg" label="Large" />
       </View>
     );
   },
@@ -99,6 +115,7 @@ export const Sizes: Story = {
  * the icon set has no minus, and a rule is what the state means.
  */
 export const Indeterminate: Story = {
+  parameters: { controls: { disable: true } },
   render: function IndeterminateCheckbox() {
     const [items, setItems] = useState([true, false, true]);
     const allChecked = items.every(Boolean);
@@ -129,6 +146,7 @@ export const Indeterminate: Story = {
 };
 
 export const Disabled: Story = {
+  parameters: { controls: { disable: true } },
   render: () => (
     <View style={{ gap: 12 }}>
       <Checkbox checked={false} onCheckedChange={() => {}} disabled label="Disabled, unchecked" />
@@ -143,10 +161,11 @@ export const Disabled: Story = {
  * browser to see the `:focus-visible` ring.
  */
 export const Bare: Story = {
+  parameters: { controls: { disable: true } },
   render: function BareCheckboxes() {
     const [checked, setChecked] = useState([false, true, false]);
     return (
-      <View style={{ flexDirection: 'row', gap: 24 }}>
+      <View style={{ flexDirection: 'row', flexWrap: 'wrap', maxWidth: '100%', gap: 24 }}>
         {checked.map((value, i) => (
           <Checkbox
             key={i}
@@ -169,11 +188,12 @@ export const Bare: Story = {
  * around its box.
  */
 export const Cards: Story = {
+  parameters: { controls: { disable: true } },
   render: function CheckboxCards() {
     const theme = useTheme();
     const [on, setOn] = useState({ digest: true, mentions: false, product: true });
     return (
-      <View style={{ width: 400, gap: 8, padding: 16, backgroundColor: theme.colors.background }}>
+      <View style={{ maxWidth: '100%', width: 400, gap: 8, padding: 16, backgroundColor: theme.colors.background }}>
         <CheckboxCard
           title="Weekly digest"
           description="A summary of activity every Monday."
@@ -201,4 +221,10 @@ export const Cards: Story = {
       </View>
     );
   },
+};
+
+/** Edit the props in Controls; interactive state stays in sync. */
+export const Playground: Story = {
+  args: { label: 'Send me updates', checked: false, disabled: false, indeterminate: false, size: 'md', tone: 'accent' },
+  render: function PlaygroundCheckbox(args) { const [, updateArgs] = useArgs(); return <Checkbox {...args} onCheckedChange={(checked) => updateArgs({ checked })} />; },
 };

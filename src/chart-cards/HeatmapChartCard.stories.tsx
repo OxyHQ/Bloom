@@ -6,6 +6,17 @@ import { HeatmapChartCard } from './HeatmapChartCard';
 import type { HeatmapRange, HeatmapRow } from './HeatmapChartCard';
 
 const meta: Meta<typeof HeatmapChartCard> = {
+  argTypes: {
+    "title": { control: 'text' },
+    "color": { control: 'text' },
+    "activeColor": { control: 'text' },
+    "max": { control: 'number' },
+    "headline": { control: 'number' },
+    "delta": { control: 'number' },
+    "range": { control: 'text' },
+    "defaultRange": { control: 'text' },
+    "columnLabelEvery": { control: 'number' }
+  },
   title: 'Charts/Heatmap Chart',
   component: HeatmapChartCard,
 };
@@ -41,11 +52,12 @@ const RANGES: HeatmapRange[] = [
 ];
 
 const Frame = ({ children, width = 480 }: { children: React.ReactNode; width?: number }) => (
-  <View style={{ padding: 40, gap: 24, width: width + 80 }}>{children}</View>
+  <View style={{ maxWidth: '100%', gap: 24, width }}>{children}</View>
 );
 
 /** Weekday × hour, a period dropdown, the Less → More legend. */
 export const Default: Story = {
+  parameters: { controls: { disable: true } },
   render: () => (
     <Frame>
       <HeatmapChartCard testID="heatmap" columns={COLUMNS} ranges={RANGES} />
@@ -55,6 +67,7 @@ export const Default: Story = {
 
 /** A hovered cell (controlled): ring, active colour, darkened row + column labels, header swap. */
 export const Hovered: Story = {
+  parameters: { controls: { disable: true } },
   render: () => (
     <Frame>
       <HeatmapChartCard columns={COLUMNS} ranges={RANGES} activeCell={{ row: 3, col: 7 }} />
@@ -64,14 +77,16 @@ export const Hovered: Story = {
 
 /** Region × month with a custom accent, a fixed `max`, a static pill and a falling delta. */
 export const CustomAccent: Story = {
-  render: () => (
+  args: { title: "Orders", range: "2024", color: "#f97316", max: 100 },
+  parameters: { controls: { include: ["title","range","color","max","activeColor","headline","defaultRange","columnLabelEvery"] } },
+  render: (args) => (
     <Frame>
-      <HeatmapChartCard
-        title="Orders"
-        range="2024"
+      <HeatmapChartCard {...args}
+
+
         delta={-0.021}
-        color="#f97316"
-        max={100}
+
+
         columns={['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']}
         rows={['North America', 'Europe', 'Asia', 'LATAM'].map((label, r) => ({
           label,
@@ -85,10 +100,12 @@ export const CustomAccent: Story = {
 
 /** 24 hourly columns: every other label shows. */
 export const DenseColumns: Story = {
-  render: () => (
+  args: { range: "Last 7 days" },
+  parameters: { controls: { include: ["range","title","color","activeColor","max","headline","delta","defaultRange","columnLabelEvery"] } },
+  render: (args) => (
     <Frame>
-      <HeatmapChartCard
-        range="Last 7 days"
+      <HeatmapChartCard {...args}
+
         columns={Array.from({ length: 24 }, (_, h) => String(h).padStart(2, '0'))}
         rows={ROWS.map((row) => ({ label: row.label, values: row.values.flatMap((v) => [v, Math.round(v * 0.8)]) }))}
       />
@@ -98,6 +115,7 @@ export const DenseColumns: Story = {
 
 /** A phone-width card. */
 export const Narrow: Story = {
+  parameters: { controls: { disable: true } },
   render: () => (
     <Frame width={320}>
       <HeatmapChartCard columns={COLUMNS} ranges={RANGES} />

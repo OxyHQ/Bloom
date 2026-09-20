@@ -25,7 +25,7 @@ jest.mock('react-native-reanimated', () => {
 });
 
 import { BloomThemeProvider } from '../theme/BloomThemeProvider';
-import { ComposerLoader, DEFAULT_COMPOSER_LOADER_COLORS } from '../composer-loader';
+import { ComposerLoader, resolveComposerLoaderColors } from '../composer-loader';
 import {
   TAPER_STEPS,
   composerLoaderGeometry,
@@ -33,7 +33,7 @@ import {
   gradientMidColor,
 } from '../composer-loader/shared';
 import { COMPOSER_LOADER_WEB_CSS } from '../composer-loader/ComposerLoader.web';
-import { BUTTON_SHADOW, resolveButtonRamps } from '../button/shared';
+import { BUTTON_SHADOW } from '../button/shared';
 import { buildTheme } from '../theme/build-theme';
 import { resolvedStyle } from './support/rendered-style';
 
@@ -135,8 +135,8 @@ describe('dashOffsetAt (the CSS animation, as a function of time)', () => {
 
 describe('gradientMidColor', () => {
   it('blends the two middle stops, never washing to white', () => {
-    expect(gradientMidColor(DEFAULT_COMPOSER_LOADER_COLORS[1], DEFAULT_COMPOSER_LOADER_COLORS[2])).toBe(
-      'rgb(150,119,200)',
+    expect(gradientMidColor('rgb(0, 100, 200)', 'rgb(100, 200, 0)')).toBe(
+      'rgb(50,150,100)',
     );
   });
 });
@@ -167,7 +167,7 @@ describe('ComposerLoader (native)', () => {
     );
     const theme = buildTheme('teal', 'dark');
     expect(resolvedStyle(getByTestId('cl-surface', HIDDEN).props.style)).toMatchObject({
-      backgroundColor: resolveButtonRamps(theme).neutral[800],
+      backgroundColor: theme.colors.card,
       boxShadow: BUTTON_SHADOW.dark,
     });
   });
@@ -228,5 +228,23 @@ describe('ComposerLoader (web CSS)', () => {
     expect(COMPOSER_LOADER_WEB_CSS).toMatch(
       /prefers-reduced-motion: reduce\)[^}]*\.bloom-composer-loader-rect \{ animation: none !important; \}/,
     );
+  });
+});
+
+describe('loader theme palette', () => {
+  it('follows the preset and mode through canonical roles', () => {
+    const teal = buildTheme('teal', 'light');
+    const blue = buildTheme('blue', 'light');
+    const dark = buildTheme('teal', 'dark');
+    for (const theme of [teal, blue, dark]) {
+      expect(resolveComposerLoaderColors(theme)).toEqual([
+        theme.colors.primarySubtleForeground,
+        theme.colors.secondarySubtleForeground,
+        theme.colors.tertiarySubtleForeground,
+        theme.colors.primarySubtleForeground,
+      ]);
+    }
+    expect(resolveComposerLoaderColors(teal)).not.toEqual(resolveComposerLoaderColors(blue));
+    expect(resolveComposerLoaderColors(teal)).not.toEqual(resolveComposerLoaderColors(dark));
   });
 });

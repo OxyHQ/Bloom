@@ -58,7 +58,7 @@ import { ComposerPill, ComposerStatusBar } from '@oxy.so/bloom/composer-panel';
 <ComposerStatusBar branch="Main" folders={folders} mode="Agent" context={57} />
 ```
 
-- **Pill** — 52 tall, full radius, p 8, gap 10, background-primary + shadow-xs. The add disc is a step lighter than the panel's (neutral-100 / dark 700, hovered 200 / 600) and reuses the panel's `AddMenu`. The field is body-regular with an accent-500 caret; its placeholder shortens to `compactPlaceholder` ("Ask me") under 640 wide, and unfocused on web its last 32px fade into the pill.
+- **Pill** — 52 tall, full radius, p 8, gap 10, background-primary + shadow-xs. The add disc follows the tertiary surface (secondary on hover) and reuses the panel's `AddMenu`. The field is body-regular with an primary-subtle-foreground caret; its placeholder shortens to `compactPlaceholder` ("Ask me") under 640 wide, and unfocused on web its last 32px fade into the pill.
 - **Model menu** — a 32-tall trigger (radius 12, py 6 / pr 4 / pl 8) with a turning 18px chevron, opening a 266px panel upward: "Models" radio rows (p 8, radius 10, 14px radio, primary-hover while selected), a full-bleed divider (7 above, 12 below), "Effort *value*" (the value blurs in on change), Faster / Smarter and the six-stop slider. Choosing a model closes it; the slider leaves it open. Omit `models` to hide the button.
 - **Mic and send** — the panel's own controls, 8 apart after a 6px lead.
 - **`surface={false}`** inside a `ComposerLoader`, which paints the pill surface behind its light.
@@ -130,22 +130,21 @@ Everything is controllable and works uncontrolled: `value`/`defaultValue`, `perm
 
 ## Colours
 
-From the theme through `button/shared` ramps:
+The palette reads canonical theme roles in both modes; it does not reconstruct surfaces or text colors from neutral ramp indices.
 
-| Token | light | dark |
-|---|---|---|
-| card, panels, mic | `colors.card` | neutral-800 |
-| hover / selected row | neutral-100 | neutral-700 at 60% over neutral-800 |
-| panel hairline, mic border | neutral-200 | neutral-700 |
-| status tab | neutral-200 | neutral-700 at 50% (translucent) |
-| add button / hover | neutral-200 / 300 | neutral-700 / 600 |
-| tile border | neutral-200 | white at 14% over neutral-800 |
-| rail | neutral-100 | neutral-900 at 50% over neutral-800 |
-| effort chip / hover | neutral-200 / 300 | neutral-800 / 700 |
-| effort track / fill | neutral-100 / 300 | neutral-900 / 700 |
-| secondary / tertiary text | neutral-500 / 400 | neutral-500 / 600 |
-| send | `bg-button-primary` accent gradient; disabled gradient at 40% | same |
-| upload ring / percentage | accent-400 / accent-500 | same |
+| Element | Role |
+|---|---|
+| Card, panels, mic | `colors.card` |
+| Hover, secondary surfaces, rail | `colors.backgroundSecondary` |
+| Status tab, add disc, tertiary surfaces | `colors.backgroundTertiary` |
+| Panel/tile hairline | `colors.borderLight` |
+| Thumb border | `colors.border` |
+| Secondary / tertiary text and icons | `colors.textSecondary` / `colors.textTertiary` |
+| Send | Shared Button `solid` / `action` recipe |
+| Upload ring, focus ring | `colors.primary` |
+| Upload percentage, caret | `colors.primarySubtleForeground` |
+
+Provider marks and shadows retain their existing branding and geometry. The action role only promotes Send; ordinary composer controls remain neutral.
 
 ## Motion
 

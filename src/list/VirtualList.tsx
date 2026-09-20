@@ -19,7 +19,9 @@
  * an identical, generic, strongly-typed surface.
  */
 import * as React from 'react';
-import { FlatList, type ListRenderItemInfo } from 'react-native';
+import Animated from 'react-native-reanimated';
+import { useScreenScroll } from '../screen/use-screen-scroll';
+import { FlatList, StyleSheet, type ListRenderItemInfo } from 'react-native';
 
 import type {
   VirtualListHandle,
@@ -27,13 +29,15 @@ import type {
   VirtualListSlot,
 } from './types';
 
+const AnimatedFlatList = Animated.createAnimatedComponent(FlatList) as unknown as typeof FlatList;
+
 function renderSlot(slot: VirtualListSlot): React.ReactElement | null {
   if (!slot) return null;
   return typeof slot === 'function' ? slot() : slot;
 }
 
 function VirtualListNativeInner<T>(
-  props: VirtualListProps<T>,
+  props: VirtualListProps<T> & { screenBinding?: ReturnType<typeof useScreenScroll> },
   ref: React.ForwardedRef<VirtualListHandle>,
 ) {
   const {
@@ -82,7 +86,7 @@ function VirtualListNativeInner<T>(
   );
 
   return (
-    <FlatList<T>
+    <AnimatedFlatList<T>
       ref={listRef}
       data={data ?? undefined}
       renderItem={renderFlatItem}
@@ -91,6 +95,8 @@ function VirtualListNativeInner<T>(
       ListEmptyComponent={renderSlot(ListEmptyComponent)}
       ListFooterComponent={renderSlot(ListFooterComponent)}
       style={style}
+      onScroll={props.screenBinding?.onScroll}
+      scrollEventThrottle={16}
       contentContainerStyle={contentContainerStyle}
       onEndReached={onEndReached ? () => onEndReached() : undefined}
       onEndReachedThreshold={onEndReachedThreshold}
@@ -105,10 +111,14 @@ function VirtualListNativeInner<T>(
   );
 }
 
-const VirtualList = React.forwardRef(VirtualListNativeInner) as <T>(
-  props: VirtualListProps<T> & { ref?: React.Ref<VirtualListHandle> },
-) => React.ReactElement;
-
+const PlainVirtualList = React.forwardRef(VirtualListNativeInner) as <T>(props: VirtualListProps<T> & { screenBinding?: ReturnType<typeof useScreenScroll>; ref?: React.Ref<VirtualListHandle> }) => React.ReactElement;
+function ScreenVirtualList<T>({ forwardedRef, ...props }: VirtualListProps<T> & { forwardedRef: React.ForwardedRef<VirtualListHandle> }) {
+  const binding = useScreenScroll(props.screen);
+  const padding = StyleSheet.flatten(props.contentContainerStyle);
+  return <PlainVirtualList {...props} ref={forwardedRef} screenBinding={binding} style={[props.style, props.screen?.restoration?.restorePending ? { opacity: 0 } : null]} contentContainerStyle={[props.contentContainerStyle, { paddingTop: binding.contentInsets.top + Number(padding?.paddingTop ?? padding?.padding ?? 0), paddingBottom: binding.contentInsets.bottom + Number(padding?.paddingBottom ?? padding?.padding ?? 0) }]} />;
+}
+const VirtualList = React.forwardRef(function VirtualList<T>(props: VirtualListProps<T>, ref: React.ForwardedRef<VirtualListHandle>) {
+  return props.screen ? <ScreenVirtualList {...props} forwardedRef={ref} /> : <PlainVirtualList {...props} ref={ref} />;
+}) as <T>(props: VirtualListProps<T> & { ref?: React.Ref<VirtualListHandle> }) => React.ReactElement;
 export default VirtualList;
-
 export { VirtualList };

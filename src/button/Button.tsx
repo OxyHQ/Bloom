@@ -13,6 +13,7 @@ import {
 import Svg, { Defs, LinearGradient, Rect, Stop } from 'react-native-svg';
 import { styled } from 'react-native-css';
 
+import { useBloomAppearance } from '../appearance/context';
 import { useTheme } from '../theme/use-theme';
 import { Text } from '../typography/Typography';
 import { useInteractionState } from '../hooks/use-interaction-state';
@@ -20,24 +21,19 @@ import {
   BUTTON_GEOMETRY,
   BUTTON_RADIUS,
   BUTTON_SHADOW,
-  BUTTON_SIZE_ALIAS,
   ICON_BUTTON_ICON_SIZE,
   LINK_BUTTON_GAP,
-  iconOnlyWidth,
   isIconComponent,
   resolveButtonPalette,
   type ButtonGradient,
   type ButtonResolvedSize,
 } from './shared';
-import type { ButtonProps, ButtonVariant, LinkButtonProps } from './types';
+import type { ButtonProps } from './types';
 
 export type {
   ButtonProps,
-  ButtonVariant,
   ButtonSize,
   ButtonIconComponent,
-  ButtonLinkTone,
-  LinkButtonProps,
 } from './types';
 
 /**
@@ -63,9 +59,9 @@ export type {
  */
 const SIZE_HIT_SLOP = {
   xs: { top: 10, bottom: 10, left: 0, right: 0 },
-  small: { top: 6, bottom: 6, left: 0, right: 0 },
-  medium: { top: 4, bottom: 4, left: 0, right: 0 },
-  large: { top: 0, bottom: 0, left: 0, right: 0 },
+  sm: { top: 6, bottom: 6, left: 0, right: 0 },
+  md: { top: 4, bottom: 4, left: 0, right: 0 },
+  lg: { top: 0, bottom: 0, left: 0, right: 0 },
 } as const satisfies Record<ButtonResolvedSize, NonNullable<ButtonProps['hitSlop']>>;
 
 /** A link hugs its 16–20px line box, so it needs the most vertical slack. */
@@ -73,9 +69,9 @@ const LINK_HIT_SLOP = { top: 12, bottom: 12, left: 0, right: 0 } as const;
 
 const SQUARE_HIT_SLOP = {
   xs: { top: 10, bottom: 10, left: 10, right: 10 },
-  small: { top: 6, bottom: 6, left: 6, right: 6 },
-  medium: { top: 4, bottom: 4, left: 4, right: 4 },
-  large: { top: 0, bottom: 0, left: 0, right: 0 },
+  sm: { top: 6, bottom: 6, left: 6, right: 6 },
+  md: { top: 4, bottom: 4, left: 4, right: 4 },
+  lg: { top: 0, bottom: 0, left: 0, right: 0 },
 } as const satisfies Record<ButtonResolvedSize, NonNullable<ButtonProps['hitSlop']>>;
 
 // ---------------------------------------------------------------------------
@@ -132,7 +128,7 @@ const ButtonGradientFill = memo(function ButtonGradientFill({
       pointerEvents="none"
       style={[StyleSheet.absoluteFill, { borderRadius: radius, overflow: 'hidden' }]}
     >
-      <Svg style={StyleSheet.absoluteFill}>
+      <Svg width="100%" height="100%" style={StyleSheet.absoluteFill}>
         <Defs>
           <LinearGradient id={id} x1="0" y1="0" x2="0" y2="1">
             <Stop offset="0" stopColor={gradient[0]} />
@@ -149,16 +145,16 @@ const ButtonComponent: React.FC<ButtonProps> = ({
   onPress,
   children,
   disabled = false,
-  variant: variantProp = 'primary',
-  size: sizeProp = 'medium',
+  appearance = 'solid',
+  tone: toneProp,
+  size: sizeProp,
   style,
   textStyle,
   icon,
-  iconPosition = 'left',
+  leading,
+  trailing,
   leadingIcon: LeadingIcon,
   trailingIcon: TrailingIcon,
-  iconOnly = false,
-  linkTone = 'primary',
   href,
   loading = false,
   loadingColor,
@@ -171,21 +167,16 @@ const ButtonComponent: React.FC<ButtonProps> = ({
   'aria-haspopup': ariaHasPopup,
 }) => {
   const theme = useTheme();
-  // The shadcn `size="icon"` shorthand also selects the icon variant unless an
-  // explicit variant was given by the caller.
-  const variant: ButtonVariant =
-    sizeProp === 'icon' && variantProp === 'primary' ? 'icon' : variantProp;
-  const size: ButtonResolvedSize = BUTTON_SIZE_ALIAS[sizeProp];
+  const { size, tone } = useBloomAppearance({ size: sizeProp, tone: toneProp }, { size: 'md', tone: 'accent' });
   const geometry = BUTTON_GEOMETRY[size];
-  const isIconVariant = variant === 'icon';
-  const isSquare = iconOnly || isIconVariant;
-  const isText = variant === 'text';
-  const isLink = variant === 'link';
+  const isSquare = icon != null && children == null;
+  const isIconVariant = isSquare;
+  const isLink = href != null && appearance === 'plain';
   const isInteractionBlocked = disabled || loading;
   const iconSize = isIconVariant ? ICON_BUTTON_ICON_SIZE[size] : geometry.iconSize;
   const palette = useMemo(
-    () => resolveButtonPalette(variant, theme, linkTone),
-    [variant, theme, linkTone],
+    () => resolveButtonPalette(appearance, theme, tone),
+    [appearance, theme, tone],
   );
 
   // Pressed state drives the ACTIVE palette. Tracked through state rather than
@@ -227,12 +218,8 @@ const ButtonComponent: React.FC<ButtonProps> = ({
       styles.opacity = palette.disabledOpacity;
     }
     if (isSquare) {
-      styles.width = isIconVariant ? geometry.height : iconOnlyWidth(geometry, palette.borderWidth);
+      styles.width = geometry.height;
       styles.paddingHorizontal = 0;
-    }
-    if (isText) {
-      styles.paddingVertical = 4;
-      styles.paddingHorizontal = 8;
     }
     if (isLink && !isSquare) {
       // LinkButton: no container — the label's own line box and a 4px
@@ -243,7 +230,7 @@ const ButtonComponent: React.FC<ButtonProps> = ({
       styles.borderRadius = 4;
     }
     return styles;
-  }, [geometry, palette, paint, theme.isDark, disabled, isSquare, isIconVariant, isText, isLink]);
+  }, [geometry, palette, paint, theme.isDark, disabled, isSquare, isIconVariant, isLink]);
 
   // The type ramp step (size, line height, tracking, weight) comes from the
   // typography `Text` through `variant`; only the padding and colour are ours.
@@ -273,13 +260,14 @@ const ButtonComponent: React.FC<ButtonProps> = ({
       {LeadingIcon ? (
         <LeadingIcon width={iconSize} height={iconSize} fill={paint.foreground} />
       ) : null}
-      {iconPosition === 'left' && iconNode}
+      {leading}
+      {iconNode}
       {!isSquare && children != null && (
         <Text variant={geometry.type} style={[computedTextStyle, textStyle]}>
           {children}
         </Text>
       )}
-      {iconPosition === 'right' && iconNode}
+      {trailing}
       {!isSquare && TrailingIcon ? (
         <TrailingIcon width={iconSize} height={iconSize} fill={paint.foreground} />
       ) : null}
@@ -320,13 +308,14 @@ const ButtonComponent: React.FC<ButtonProps> = ({
       {loading ? (
         <>
           <View
+            pointerEvents="none"
             style={styles.loadingHiddenContent}
             importantForAccessibility="no-hide-descendants"
             accessibilityElementsHidden
           >
             {content}
           </View>
-          <View style={styles.loadingOverlay}>
+          <View pointerEvents="none" style={styles.loadingOverlay}>
             <ActivityIndicator size="small" color={loadingColor ?? paint.foreground} />
           </View>
         </>
@@ -343,68 +332,13 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     opacity: 0,
-    pointerEvents: 'none',
   },
   loadingOverlay: {
     ...StyleSheet.absoluteFill,
     alignItems: 'center',
     justifyContent: 'center',
-    pointerEvents: 'none',
   },
 });
 
 export const Button = memo(ButtonComponent);
 Button.displayName = 'Button';
-
-export const PrimaryButton = memo((props: Omit<ButtonProps, 'variant'>) => (
-  <Button {...props} variant="primary" />
-));
-PrimaryButton.displayName = 'PrimaryButton';
-
-export const SecondaryButton = memo((props: Omit<ButtonProps, 'variant'>) => (
-  <Button {...props} variant="secondary" />
-));
-SecondaryButton.displayName = 'SecondaryButton';
-
-export const IconButton = memo((props: Omit<ButtonProps, 'variant'>) => (
-  <Button {...props} variant="icon" />
-));
-IconButton.displayName = 'IconButton';
-
-export const GhostButton = memo((props: Omit<ButtonProps, 'variant'>) => (
-  <Button {...props} variant="ghost" />
-));
-GhostButton.displayName = 'GhostButton';
-
-export const InverseButton = memo((props: Omit<ButtonProps, 'variant'>) => (
-  <Button {...props} variant="inverse" />
-));
-InverseButton.displayName = 'InverseButton';
-
-export const TextButton = memo((props: Omit<ButtonProps, 'variant'>) => (
-  <Button {...props} variant="text" />
-));
-TextButton.displayName = 'TextButton';
-
-// Web/shadcn-aligned variants. On native they normalize to existing primitives
-// (`outline → secondary`, `link → text`, `destructive → primary` tinted with the
-// negative token) inside `Button`, so these stay API-parallel with the web fork.
-export const OutlineButton = memo((props: Omit<ButtonProps, 'variant'>) => (
-  <Button {...props} variant="outline" />
-));
-OutlineButton.displayName = 'OutlineButton';
-
-/**
- * `LinkButton`: an inline text action — no fill, no border, the label
- * (plus icons) in the accent or secondary colour. `variant` is its colour; pass
- * `href` to open a URL.
- */
-export const LinkButton = memo(({ variant = 'primary', ...props }: LinkButtonProps) => (
-  <Button {...props} variant="link" linkTone={variant} />
-));
-LinkButton.displayName = 'LinkButton';
-
-export const DestructiveButton = memo((props: Omit<ButtonProps, 'variant'>) => (
-  <Button {...props} variant="destructive" />
-));
-DestructiveButton.displayName = 'DestructiveButton';

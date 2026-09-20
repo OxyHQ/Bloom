@@ -100,20 +100,11 @@ describe('chart card formatting', () => {
 });
 
 describe('chart series tones', () => {
-  const withPrimary = (primary: string): Theme => {
+  it('uses the canonical theme chart pairs instead of reconstructing Tailwind hues', () => {
     const theme = buildTheme('teal', 'light');
-    return { ...theme, colors: { ...theme.colors, primary } };
-  };
-  const channels = (rgb: string) => (rgb.match(/\d+(\.\d+)?/g) ?? []).slice(0, 3).map(Number);
-
-  it('reproduces the expected hues exactly on a Tailwind blue-500 primary', () => {
-    // blue-500 #2b7fff → lime-400 #9ae600, blue-400 #51a2ff, purple-400 #c27aff.
-    const theme = withPrimary('rgb(43, 127, 255)');
-    const near = (actual: string, expected: number[]) =>
-      channels(actual).forEach((c, i) => expect(Math.abs(c - expected[i]!)).toBeLessThanOrEqual(6));
-    near(chartHueTone(theme, 2).color, [154, 230, 0]);
-    near(chartHueTone(theme, 6).color, [81, 162, 255]);
-    near(chartHueTone(theme, 5).color, [194, 122, 255]);
+    for (const hue of [2, 6, 5] as const) {
+      expect(chartHueTone(theme, hue)).toEqual(theme.chartColors![hue - 1]);
+    }
   });
 
   it('lets an explicit colour win, darkening it for the hover step', () => {

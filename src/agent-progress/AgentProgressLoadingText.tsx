@@ -2,7 +2,6 @@ import React, { memo, useEffect, useMemo, useState } from 'react';
 import { Platform, Text as RNText } from 'react-native';
 import { useReducedMotion } from 'react-native-reanimated';
 
-import { resolveButtonRamps } from '../button/shared';
 import { adoptStyleSheet } from '../styles/adopt-style-sheet';
 import { parseRgba } from '../theme/color-utils';
 import { useTheme } from '../theme/use-theme';
@@ -94,7 +93,7 @@ function AgentProgressLoadingTextComponent({
 }: AgentProgressLoadingTextProps) {
   const theme = useTheme();
   const reducedMotion = useReducedMotion();
-  const base = resolveButtonRamps(theme).neutral[500];
+  const base = theme.colors.textSecondary;
   const highlight = theme.colors.text;
   const key = shimmerKey(base, highlight);
 

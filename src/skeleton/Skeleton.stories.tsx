@@ -5,6 +5,7 @@ import type { Meta, StoryObj } from '@storybook/react-vite';
 import * as Skeleton from './index';
 
 const meta: Meta = {
+  component: Skeleton.Box,
   title: 'Base/Skeleton',
 };
 
@@ -18,8 +19,9 @@ type Story = StoryObj;
  * `import * as Skeleton` rather than as top-level exports.
  */
 export const Primitives: Story = {
+  parameters: { controls: { disable: true } },
   render: () => (
-    <View style={{ gap: 16, width: 320 }}>
+    <View style={{ gap: 16, width: 320, maxWidth: '100%' }}>
       <Skeleton.Text style={{ width: 200 }} />
       <Skeleton.Circle size={48} />
       <Skeleton.Pill size={20} />
@@ -34,8 +36,9 @@ export const Primitives: Story = {
  * a skeleton earns its cost by holding the layout the real row will take.
  */
 export const FeedRow: Story = {
+  parameters: { controls: { disable: true } },
   render: () => (
-    <View style={{ gap: 20, width: 360 }}>
+    <View style={{ gap: 20, width: 360, maxWidth: '100%' }}>
       {[0, 1, 2].map((i) => (
         <Skeleton.Row key={i} style={{ gap: 12 }}>
           <Skeleton.Circle size={40} />
@@ -56,6 +59,7 @@ export const FeedRow: Story = {
  * full-strength pulse reads as a second, competing animation.
  */
 export const Blend: Story = {
+  parameters: { controls: { disable: true } },
   render: () => (
     <View style={{ flexDirection: 'row', gap: 32 }}>
       <Skeleton.Col style={{ gap: 12 }}>
@@ -68,4 +72,14 @@ export const Blend: Story = {
       </Skeleton.Col>
     </View>
   ),
+};
+
+export const Playground: StoryObj<typeof Skeleton.Box> = {
+  args: { width: 280, height: 80, blend: false },
+  parameters: { controls: { disable: false, include: ['width', 'height', 'blend'] } },
+  argTypes: { width: { control: { type: 'range', min: 20, max: 400 } }, height: { control: { type: 'range', min: 8, max: 200 } }, blend: { control: 'boolean' } },
+  render: function Playground(args) {
+
+    return <View style={{ width: 520, maxWidth: '100%' }}><Skeleton.Box {...args} /></View>;
+  },
 };

@@ -12,10 +12,6 @@ import { useTheme } from '../theme/use-theme';
 import type { Theme } from '../theme/types';
 import {
   BUTTON_SHADOW,
-  DANGER_TABLE,
-  colorRamp,
-  mixColor,
-  resolveButtonRamps,
 } from '../button/shared';
 import {
   MONO_FONT_FAMILY,
@@ -91,36 +87,18 @@ export interface InputOtpPalette {
 /** Resolve the OTP box's tokens against a Bloom theme. Pure. */
 export function resolveInputOtpPalette(theme: Theme): InputOtpPalette {
   const c = theme.colors;
-  const { accent, neutral: n } = resolveButtonRamps(theme);
-  const red = colorRamp(c.negative, DANGER_TABLE);
-
-  if (theme.isDark) {
-    return {
-      background: n[800],
-      backgroundDisabled: n[800],
-      backgroundInvalid: mixColor(c.background, red[950], 0.6),
-      border: n[700],
-      borderHover: n[500],
-      borderInvalid: red[400],
-      ring: accent[500],
-      text: c.text,
-      textDisabled: n[600],
-      textInvalid: red[400],
-      shadow: BUTTON_SHADOW.dark,
-    };
-  }
   return {
-    background: c.card,
-    backgroundDisabled: n[100],
-    backgroundInvalid: red[100],
-    border: n[200],
-    borderHover: n[300],
-    borderInvalid: red[500],
-    ring: accent[500],
+    background: c.backgroundSecondary,
+    backgroundDisabled: c.backgroundSecondary,
+    backgroundInvalid: c.errorSubtle,
+    border: c.borderLight,
+    borderHover: c.border,
+    borderInvalid: c.errorSubtleForeground,
+    ring: c.primary,
     text: c.text,
-    textDisabled: n[400],
-    textInvalid: red[600],
-    shadow: BUTTON_SHADOW.light,
+    textDisabled: c.textTertiary,
+    textInvalid: c.errorSubtleForeground,
+    shadow: BUTTON_SHADOW[theme.isDark ? 'dark' : 'light'],
   };
 }
 
@@ -180,7 +158,7 @@ export function InputOtp({
   defaultValue = '',
   onChange,
   onComplete,
-  isInvalid = false,
+  invalid = false,
   isDisabled,
   disabled: disabledAlias,
   groupEvery,
@@ -270,7 +248,7 @@ export function InputOtp({
         const paint = resolveInputOtpBoxPaint(palette, {
           hovered: hoveredIndex === index,
           focused: focusedIndex === index,
-          invalid: isInvalid,
+          invalid: invalid,
           disabled,
         });
 
@@ -302,7 +280,7 @@ export function InputOtp({
             caretHidden={false}
             editable={!disabled}
             accessibilityLabel={`Digit ${index + 1} of ${length}`}
-            aria-invalid={isInvalid || undefined}
+            aria-invalid={invalid || undefined}
             aria-disabled={disabled || undefined}
             value={digit === ' ' ? '' : digit}
             onChangeText={(text) => writeFrom(index, text)}

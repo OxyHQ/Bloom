@@ -1,5 +1,6 @@
 import React, { memo, useState } from 'react';
 import { Pressable, View, useWindowDimensions } from 'react-native';
+import Animated, { useAnimatedStyle } from 'react-native-reanimated';
 
 import { Button } from '../button';
 import { useInteractionState } from '../hooks/use-interaction-state';
@@ -18,8 +19,11 @@ import {
   menuPanelStyle,
   SidebarAvatarView,
   useSidebarWebCss,
+  useSidebarCollapseProgress,
 } from './parts';
 import type { SidebarAccount, SidebarAccountUser, SidebarUserMenuProps } from './types';
+
+const AnimatedPressable = Animated.createAnimatedComponent(Pressable);
 
 /**
  * The account switcher at the top of the rail.
@@ -115,34 +119,20 @@ export function SidebarAccountMenuContent({
         <View style={{ width: '100%', flexDirection: 'row', alignItems: 'center', gap: 12, paddingLeft: 8, paddingRight: 8, paddingBottom: 8 }}>
           {account.onAddUser ? (
             <View style={{ flex: 1 }}>
-              <Button
-                variant="secondary"
-                size="small"
-                leadingIcon={RiAddFill}
-                fullWidth
-                style={{ width: '100%' }}
-                onPress={() => {
+              <Button size="sm" leadingIcon={RiAddFill} style={{ width: "100%" }} onPress={() => {
                   account.onAddUser?.();
                   onSelect();
-                }}
-              >
+                }} appearance="subtle" tone="neutral">
                 {account.addUserLabel ?? 'Add user'}
               </Button>
             </View>
           ) : null}
           {account.onManage ? (
             <View style={{ flex: 1 }}>
-              <Button
-                variant="secondary"
-                size="small"
-                leadingIcon={RiEqualizer3Line}
-                fullWidth
-                style={{ width: '100%' }}
-                onPress={() => {
+              <Button size="sm" leadingIcon={RiEqualizer3Line} style={{ width: "100%" }} onPress={() => {
                   account.onManage?.();
                   onSelect();
-                }}
-              >
+                }} appearance="subtle" tone="neutral">
                 {account.manageLabel ?? 'Manage'}
               </Button>
             </View>
@@ -168,12 +158,15 @@ const SidebarUserMenuComponent: React.FC<SidebarUserMenuProps> = ({
   const narrow = width < BREAKPOINTS.sm;
   const { state: hovered, onIn, onOut } = useInteractionState();
 
+  const progress = useSidebarCollapseProgress(collapsed);
+  const triggerGeometry = useAnimatedStyle(() => ({ paddingLeft: 2 * progress.value, paddingRight: 2 * progress.value }), [progress]);
+  const hoverGeometry = useAnimatedStyle(() => ({ left: -6 + 3 * progress.value, right: -6 + 3 * progress.value }), [progress]);
   const triggerStyle: WebCssStyle = {
     position: 'relative',
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: collapsed ? 'center' : 'flex-start',
-    width: collapsed ? 36 : undefined,
+    justifyContent: 'flex-start',
+    alignSelf: 'flex-start',
     minWidth: 0,
     borderRadius: borderRadius.full,
     '--bloom-sidebar-ring': palette.ring,
@@ -183,7 +176,7 @@ const SidebarUserMenuComponent: React.FC<SidebarUserMenuProps> = ({
   return (
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild label={account.name}>
-        <Pressable
+        <AnimatedPressable
           {...(IS_WEB ? { dataSet: { bloomSidebar: 'offset' } } : {})}
           accessibilityLabel={account.name}
           onHoverIn={onIn}
@@ -191,23 +184,22 @@ const SidebarUserMenuComponent: React.FC<SidebarUserMenuProps> = ({
             onOut();
             if (suppressHover) onHoverSuppressionEnd?.();
           }}
-          style={triggerStyle}
+          style={[triggerStyle, triggerGeometry]}
           testID={testID}
         >
           {/* The hover pill: a 2px outline drawn outside the box, so it never shifts layout. */}
-          <View
+          <Animated.View
             pointerEvents="none"
             testID={testID ? `${testID}-pill` : undefined}
-            style={{
+            style={[{
               position: 'absolute',
               top: -5,
               bottom: -5,
-              left: collapsed ? -3 : -6,
-              right: collapsed ? -3 : -6,
+
               borderRadius: borderRadius.full,
               borderWidth: 2,
               borderColor: hovered && !suppressHover ? palette.profileHoverBorder : 'transparent',
-            }}
+            }, hoverGeometry]}
           />
           <SidebarAvatarView avatar={account.avatar} size="md" palette={palette} background={avatarBackground} />
           <Collapsible collapsed={collapsed}>
@@ -218,7 +210,7 @@ const SidebarUserMenuComponent: React.FC<SidebarUserMenuProps> = ({
               <ChevronUpDownSmall color={palette.textTertiary} />
             </View>
           </Collapsible>
-        </Pressable>
+        </AnimatedPressable>
       </PopoverTrigger>
       <PopoverContent
         label="Account menu"

@@ -5,7 +5,6 @@ import { act, fireEvent, render } from '@testing-library/react-native';
 import { BloomThemeProvider } from '../theme/BloomThemeProvider';
 import { Tabs, TabsTrigger } from '../tabs';
 import { resolveTabsPaint, type TabsDragController } from '../tabs/Tabs';
-import { resolveButtonRamps } from '../button/shared';
 import { TYPE_SCALE } from '../typography/scale';
 import type { Theme } from '../theme/types';
 import { pressHost } from './support/press-host';
@@ -95,7 +94,7 @@ describe('Tabs', () => {
   });
 
   it('draws the pill variants\' indicator as a full-height pill thumb, not an underline', () => {
-    for (const variant of ['pill', 'filled', 'outlined'] as const) {
+    for (const variant of ['pill', 'filled'] as const) {
       const { getByTestId, unmount } = renderWithTheme(<Bar value="a" variant={variant} />);
       const thumb = flattenStyle(getByTestId('tabs-indicator').props.style);
       expect(thumb.top).toBe(0);
@@ -706,32 +705,30 @@ describe('Tabs', () => {
         return captured;
       }
 
-      it.each([false, true])('maps tokens onto the ramps (dark=%s)', (isDark) => {
+      it.each([false, true])('maps tokens onto canonical roles (dark=%s)', (isDark) => {
         const theme = themeFor(isDark);
-        const { accent, neutral: n } = resolveButtonRamps(theme);
+        const c = theme.colors;
 
         const underline = resolveTabsPaint(theme, 'underline');
-        expect(underline.underline).toBe(accent[600]);
-        expect(underline.selectedLabel).toBe(accent[600]);
+        expect(underline.underline).toBe(c.primary);
+        expect(underline.selectedLabel).toBe(c.primarySubtleForeground);
         expect(underline.idleLabel).toBe(theme.colors.text);
-        expect(underline.separator).toBe(isDark ? n[800] : n[200]);
-        expect(underline.countSelectedForeground).toBe(accent[600]);
-        expect(underline.countIdleBackground).toBe('rgba(0, 0, 0, 0.1)');
-        if (!isDark) expect(underline.countSelectedBackground).toBe(accent[100]);
+        expect(underline.separator).toBe(c.borderLight);
+        expect(underline.countSelectedForeground).toBe(c.primarySubtleForeground);
+        expect(underline.countIdleBackground).toBe(c.backgroundTertiary);
+        if (!isDark) expect(underline.countSelectedBackground).toBe(c.primarySubtle);
 
         const pill = resolveTabsPaint(theme, 'pill');
-        expect(pill.selectedLabel).toBe(accent[500]);
-        expect(pill.idleLabel).toBe(n[500]);
-        expect(pill.hover).toBe(isDark ? n[800] : n[100]);
-        if (!isDark) expect(pill.thumb).toBe(accent[50]);
+        expect(pill.selectedLabel).toBe(c.primarySubtleForeground);
+        expect(pill.idleLabel).toBe(c.textSecondary);
+        expect(pill.hover).toBe(c.backgroundSecondary);
+        if (!isDark) expect(pill.thumb).toBe(c.primarySubtle);
 
         const filled = resolveTabsPaint(theme, 'filled');
-        expect(filled.thumb).toBe(isDark ? n[800] : n[200]);
+        expect(filled.thumb).toBe(c.backgroundTertiary);
         expect(filled.selectedLabel).toBe(theme.colors.text);
-        if (!isDark) expect(filled.hover).toBe(n[100]);
+        if (!isDark) expect(filled.hover).toBe(c.backgroundSecondary);
 
-        // `outlined` is a legacy alias for the accent pill.
-        expect(resolveTabsPaint(theme, 'outlined')).toEqual(pill);
       });
     });
   });

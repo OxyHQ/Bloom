@@ -1,0 +1,91 @@
+---
+title: Composition
+description: Inherited control materials, scroll ownership and edge claims.
+order: 3
+---
+
+# Composition
+
+Bloom components share tokens. Sharing tokens is not the same as working together: a control still has to be told what material the container around it is painting, a label still has to be wired to the control it names, and a header still has to know which scroller it is following. Written as props, each of those is a thing the app repeats at every call site and gets wrong at one of them.
+
+This page is the set of small, explicit contracts that answer those questions, and the rules that keep them small. Each is a context a container publishes and a component opts into. None of them is a framework, a singleton, or a component that reads its children's types to decide what to do with them.
+
+## The precedence rule
+
+Every contract on this page resolves the same way:
+
+```
+an explicit prop  >  the nearest container  >  the component's own default
+```
+
+`undefined` is the only value that defers. Passing `material="solid"` inside a glass island paints a solid control — the container is a default, not an override, and a caller can always win.
+
+**A constraint is not a default.** Anything that RESTRICTS a control — `disabled`, a modal's inertness, the user's reduce-transparency or reduce-motion preference — travels on its own channel and combines with `||`, never `??`. The rule above is exactly wrong for those: a descendant must not be able to re-enable an action its group disabled by passing a prop.
+
+**State does not travel either.** `checked`, `selected`, a field's value, a business datum: those belong to the component that holds them. A visual context that also carried state would make every container a place state can leak from.
+
+## Control presentation — `ControlSurface`
+
+`@oxy.so/bloom/control-surface`
+
+What a container tells the controls inside it about presentation, and nothing else. Two fields, both visual configuration:
+
+| field | values | meaning |
+| --- | --- | --- |
+| `material` | `'solid'` \| `'glass'` | the surface a control CONTAINER paints |
+| `density` | `'md'` \| `'sm'` | the size controls default to |
+
+```tsx
+import { ControlSurface } from '@oxy.so/bloom/control-surface';
+
+<ControlSurface material="glass">
+  <ButtonGroup accessibilityLabel="Playback">…</ButtonGroup>
+</ControlSurface>
+```
+
+It renders no node of its own, so it can be dropped anywhere without moving anything. Bloom's own containers mount it for you — `glass/GlassIsland` does, which is why a `ButtonGroup` inside a floating `PageHeader` is glass with no prop written on it.
+
+A field left `undefined` inherits rather than resetting: `<ControlSurface density="sm">` inside a glass island stays glass.
+
+**Who reads it today:** `ButtonGroup` and `ButtonGroupItem`. `Button` does not — a `Button` in a floating header keeps its own chrome, which is right for a primary action in its own capsule and wrong for an icon action that should sit flush on an island. Use `ButtonGroup`/`ButtonGroupItem` for the latter. Extending this to more families is adoption work, not a gap in the contract.
+
+Precedence is gated in both directions by `src/__tests__/ControlSurface.test.tsx`, including the assertion that the context carries exactly two fields.
+
+## Scroll ownership — `ScrollOffsetProvider`
+
+`@oxy.so/bloom/layout`
+
+A screen has exactly one scroll owner, and the owner publishes its offset. Chrome reads it. Neither imports the other, so the provider's position in the tree is what pairs them — two panels side by side, each with its own header and its own scroller, resolve correctly.
+
+```tsx
+const scrollY = useSharedValue(0);
+const onScroll = useAnimatedScrollHandler(
+  { onScroll: (e) => { scrollY.value = e.contentOffset.y; } },
+  [scrollY],
+);
+
+<ScrollOffsetProvider value={scrollY}>
+  <PageHeader title="Inbox" />
+  <Animated.ScrollView onScroll={onScroll} scrollEventThrottle={16}>…</Animated.ScrollView>
+</ScrollOffsetProvider>
+```
+
+The context carries the `SharedValue`, not a number. It crosses once, at mount; every subsequent frame reaches the chrome on the UI thread through `useAnimatedStyle`, with no React render. A context whose value changed per frame would re-render every consumer per frame, which is the cost this exists to avoid.
+
+`PageHeader` resolves its offset as: the `scrollY` prop, then the nearest `Screen`, then this context, then `window.scrollY` on web. Without any of the three on native it stays at rest. The context step is the one that matters for a desktop shell, where `window.scrollY` never moves and a header that followed it looked deliberately inert.
+
+## Edge claims — `TopEdgeProvider` / `BottomEdgeProvider`
+
+`@oxy.so/bloom/layout`
+
+A surface that parks at a window edge CLAIMS its footprint; a surface or a scroll container that must clear it READS the total. Claims combine with `max`, not sum — every claim is measured from the same edge, so two surfaces at that edge overlap rather than stack.
+
+`BottomBar` coordinates its navigation and lateral FAB footprint (`docs/bottom-bar.mdx`). The top edge is chrome that overlays content:
+
+```tsx
+<ScrollView contentContainerStyle={{ paddingTop: useTopEdgeInset() }}>
+```
+
+`BloomProvider` mounts both. A nested provider scopes a subtree to its own claims — a full-screen modal with its own header, whose content must clear the MODAL's header rather than the screen's.
+
+A claim registers in an effect, so a reader mounted in the same commit sees `0` on its first render. `PageHeader` narrows that to one frame by claiming its resting height (safe area + 56) immediately and replacing it with the measured height when `onLayout` reports.

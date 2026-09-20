@@ -1,15 +1,16 @@
 import React from 'react';
-import { View } from 'react-native';
 import type { Decorator, Preview } from '@storybook/react-vite';
 
 // The compiled Tailwind/NativeWind stylesheet. This import is what makes every
 // `className` in the library resolve to a rule — see `.storybook/tailwind.css`
 // for why the harness is useless, not merely incomplete, without it.
 import './tailwind.css';
+import './preview.css';
 
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 
 import { BloomThemeProvider } from '../src/theme';
+import { APP_COLOR_PRESETS, type AppColorName } from '../src/theme/color-presets';
 import { SurfaceProvider } from '../src/surfaces';
 import { PortalProvider, PortalOutlet } from '../src/portal';
 
@@ -42,36 +43,36 @@ import { PortalProvider, PortalOutlet } from '../src/portal';
  * is synchronous (`applyFontFaces()` during render, `font-display: swap`), so
  * there is no render cost to pay for the coverage.
  *
- * The padded container gives stories breathing room and a consistent
- * background that respects the active theme.
+ * Storybook owns canvas padding through `parameters.layout`. Fullscreen
+ * templates receive a bounded viewport; docs and component stories stay in flow.
  */
 const withProviders: Decorator = (Story, context) => {
   const mode = (context.globals.theme as 'light' | 'dark' | 'system') ?? 'light';
-  const colorPreset =
-    (context.globals.colorPreset as
-      | 'oxy'
-      | 'mention'
-      | 'allo'
-      | 'homiio'
-      | 'tnp'
-      | undefined) ?? 'oxy';
+  const requestedPreset = context.globals.colorPreset as AppColorName;
+  const colorPreset = Object.prototype.hasOwnProperty.call(APP_COLOR_PRESETS, requestedPreset) ? requestedPreset : 'oxy';
 
   return (
     <SafeAreaProvider>
       <BloomThemeProvider mode={mode} colorPreset={colorPreset}>
         <PortalProvider>
           <SurfaceProvider>
-            <View
+            <div
+              data-bloom-story-layout={context.parameters.layout ?? 'padded'}
+              data-bloom-story-view={context.viewMode}
               style={{
-                padding: 24,
-                minHeight: '100%',
-                alignItems: 'flex-start',
-                justifyContent: 'flex-start',
-                gap: 16,
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: context.parameters.layout === 'fullscreen' ? 'stretch' : 'flex-start',
+                width: '100%',
+                minWidth: 0,
+                minHeight: 0,
+                ...(context.parameters.layout === 'fullscreen'
+                  ? { height: context.viewMode === 'docs' ? 'min(760px, 80vh)' : '100dvh' }
+                  : {}),
               }}
             >
               <Story />
-            </View>
+            </div>
             <PortalOutlet />
           </SurfaceProvider>
         </PortalProvider>
@@ -83,7 +84,10 @@ const withProviders: Decorator = (Story, context) => {
 const preview: Preview = {
   decorators: [withProviders],
   parameters: {
+    layout: 'padded',
     controls: {
+      expanded: true,
+      sort: 'requiredFirst',
       matchers: {
         color: /(background|color)$/i,
         date: /Date$/i,
@@ -114,10 +118,10 @@ const preview: Preview = {
       },
     },
   },
+  initialGlobals: { theme: 'light', colorPreset: 'oxy' },
   globalTypes: {
     theme: {
       description: 'Theme mode for Bloom components',
-      defaultValue: 'light',
       toolbar: {
         title: 'Theme',
         icon: 'circlehollow',
@@ -130,17 +134,12 @@ const preview: Preview = {
     },
     colorPreset: {
       description: 'Bloom color preset',
-      defaultValue: 'oxy',
       toolbar: {
         title: 'Color',
         icon: 'paintbrush',
-        items: [
-          { value: 'oxy', title: 'Oxy' },
-          { value: 'mention', title: 'Mention' },
-          { value: 'allo', title: 'Allo' },
-          { value: 'homiio', title: 'Homiio' },
-          { value: 'tnp', title: 'TNP' },
-        ],
+        items: Object.entries(APP_COLOR_PRESETS).map(([value, preset]) => ({
+          value, title: preset.name,
+        })),
         dynamicTitle: true,
       },
     },

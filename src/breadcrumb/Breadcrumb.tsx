@@ -11,12 +11,11 @@ import Svg, { Path } from 'react-native-svg';
 
 import { useTheme } from '../theme/use-theme';
 import { Text } from '../typography/Typography';
-import { withAlpha } from '../theme/color-utils';
 import { borderRadius } from '../styles/tokens';
 import { useInteractionState } from '../hooks/use-interaction-state';
 import { interactiveWebCss, useInteractiveWebCss } from '../styles/interactive-web-css';
 import type { WebCssStyle } from '../styles/web-view-style';
-import { BUTTON_TRANSITION_MS, resolveButtonRamps } from '../button/shared';
+import { BUTTON_TRANSITION_MS } from '../button/shared';
 import type { Theme } from '../theme/types';
 import type { BreadcrumbItemProps, BreadcrumbProps } from './types';
 
@@ -47,10 +46,8 @@ interface BreadcrumbPalette {
 }
 
 function resolveBreadcrumbPalette(theme: Theme): BreadcrumbPalette {
-  const { accent, neutral: n } = resolveButtonRamps(theme);
-  return theme.isDark
-    ? { tertiary: n[600], secondary: n[500], hover: withAlpha(n[700], 0.6), ring: accent[500] }
-    : { tertiary: n[400], secondary: n[500], hover: n[100], ring: accent[500] };
+  const c = theme.colors;
+  return { tertiary: c.textSecondary, secondary: c.text, hover: c.backgroundSecondary, ring: c.primary };
 }
 
 const STYLE_ID = 'bloom-breadcrumb-web-css';

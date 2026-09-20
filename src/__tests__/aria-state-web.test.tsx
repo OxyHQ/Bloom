@@ -194,14 +194,14 @@ describe('Checkbox (the reported defect)', () => {
 
 describe('Switch', () => {
   it('emits role="switch" with aria-checked', () => {
-    const c = mount(<Switch value onValueChange={() => {}} testID="sw" />);
+    const c = mount(<Switch checked onCheckedChange={() => {}} testID="sw" />);
     const el = byTestId(c, 'sw');
     expect(el.getAttribute('role')).toBe('switch');
     expect(el.getAttribute('aria-checked')).toBe('true');
   });
 
   it('emits aria-checked="false" when off', () => {
-    const c = mount(<Switch value={false} onValueChange={() => {}} testID="sw" />);
+    const c = mount(<Switch checked={false} onCheckedChange={() => {}} testID="sw" />);
     expect(byTestId(c, 'sw').getAttribute('aria-checked')).toBe('false');
   });
 
@@ -210,7 +210,7 @@ describe('Switch', () => {
     // `disabled` to its Pressable, so web announced a disabled switch as
     // operable. react-native-web overwrites a caller's `aria-disabled` on a
     // Pressable, so the prop is the only route.
-    const c = mount(<Switch value onValueChange={() => {}} disabled testID="sw" />);
+    const c = mount(<Switch checked onCheckedChange={() => {}} disabled testID="sw" />);
     expect(byTestId(c, 'sw').getAttribute('aria-disabled')).toBe('true');
   });
 
@@ -225,7 +225,7 @@ describe('Switch', () => {
     // react-native-web's `createDOMProps` falls back to it when `aria-label` is
     // absent, so the one React Native spelling reaches both platforms.
     const c = mount(
-      <Switch value onValueChange={() => {}} accessibilityLabel="Notifications" testID="sw" />,
+      <Switch checked onCheckedChange={() => {}} accessibilityLabel="Notifications" testID="sw" />,
     );
     expect(byTestId(c, 'sw').getAttribute('aria-label')).toBe('Notifications');
   });
@@ -262,7 +262,7 @@ describe('role="button" toggles use aria-pressed', () => {
   // components keep `accessibilityState={{selected}}` for native alongside it.
   it('Chip emits aria-pressed when selected', () => {
     const c = mount(
-      <Chip onPress={() => {}} selected testID="chip">
+      <Chip onPress={() => {}} checked testID="chip">
         Filter
       </Chip>,
     );
@@ -271,7 +271,7 @@ describe('role="button" toggles use aria-pressed', () => {
 
   it('Chip emits aria-pressed="false" when unselected', () => {
     const c = mount(
-      <Chip onPress={() => {}} selected={false} testID="chip">
+      <Chip onPress={() => {}} checked={false} testID="chip">
         Filter
       </Chip>,
     );
@@ -280,7 +280,7 @@ describe('role="button" toggles use aria-pressed', () => {
 
   it('FrostedIconButton emits aria-pressed, matching its .web fork', () => {
     const c = mount(
-      <FrostedIconButton accessibilityLabel="Back" icon={<Text>x</Text>} active testID="fib" />,
+      <FrostedIconButton accessibilityLabel="Back" icon={(iconProps) => <Text {...iconProps}>x</Text>} checked testID="fib" />,
     );
     expect(byTestId(c, 'fib').getAttribute('aria-pressed')).toBe('true');
   });
@@ -349,7 +349,7 @@ describe('Item selection is spelled per its role', () => {
 describe('SegmentedControl spells the active state for its role', () => {
   it('type="tabs" emits aria-selected on role="tab"', () => {
     const c = mount(
-      <SegmentedControl label="View" type="tabs" value="one" onChange={() => {}}>
+      <SegmentedControl label="View" type="tabs" value="one" onValueChange={() => {}}>
         <SegmentedControlItem value="one" testID="seg-one">
           <Text>One</Text>
         </SegmentedControlItem>
@@ -367,7 +367,7 @@ describe('SegmentedControl spells the active state for its role', () => {
     // ARIA gives `radio` a checked state; `aria-selected` is invalid there, so
     // one blanket spelling for both modes would be wrong for this one.
     const c = mount(
-      <SegmentedControl label="View" type="radio" value="two" onChange={() => {}}>
+      <SegmentedControl label="View" type="radio" value="two" onValueChange={() => {}}>
         <SegmentedControlItem value="one" testID="seg-one">
           <Text>One</Text>
         </SegmentedControlItem>
@@ -495,7 +495,7 @@ describe('TabBar', () => {
 describe('Radio', () => {
   it('emits role="radio" with aria-checked', () => {
     const c = mount(
-      <Radio value="daily" selected onSelect={() => {}} label="Daily" testID="r" />,
+      <Radio value="daily" checked onValueChange={() => {}} label="Daily" testID="r" />,
     );
     const el = byTestId(c, 'r');
     expect(el.getAttribute('role')).toBe('radio');
@@ -504,14 +504,14 @@ describe('Radio', () => {
 
   it('emits aria-checked="false" when not chosen — absent is not the same as false', () => {
     const c = mount(
-      <Radio value="daily" selected={false} onSelect={() => {}} label="Daily" testID="r" />,
+      <Radio value="daily" checked={false} onValueChange={() => {}} label="Daily" testID="r" />,
     );
     expect(byTestId(c, 'r').getAttribute('aria-checked')).toBe('false');
   });
 
   it('emits aria-disabled when disabled', () => {
     const c = mount(
-      <Radio value="daily" selected onSelect={() => {}} label="Daily" disabled testID="r" />,
+      <Radio value="daily" checked onValueChange={() => {}} label="Daily" disabled testID="r" />,
     );
     expect(byTestId(c, 'r').getAttribute('aria-disabled')).toBe('true');
   });

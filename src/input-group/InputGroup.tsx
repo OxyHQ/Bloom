@@ -1,3 +1,4 @@
+import { useBloomAppearance, type BloomSize } from '../appearance';
 import React, {
   Children,
   createContext,
@@ -46,9 +47,10 @@ import type { InputGroupAddonProps, InputGroupProps } from './types';
  * `TextFieldGroupContext`: the group paints the one shell, the field draws none.
  */
 const SIZE_CONFIG: Record<NonNullable<InputGroupProps['size']>, { height: number; paddingHorizontal: number; field: TextFieldSize }> = {
-  sm: { height: TEXT_FIELD_GEOMETRY.small.height, paddingHorizontal: TEXT_FIELD_GEOMETRY.small.paddingHorizontal, field: 'small' },
-  md: { height: TEXT_FIELD_GEOMETRY.medium.height, paddingHorizontal: TEXT_FIELD_GEOMETRY.medium.paddingHorizontal, field: 'medium' },
-  lg: { height: 44, paddingHorizontal: 10, field: 'medium' },
+  xs: { ...TEXT_FIELD_GEOMETRY.xs, field: 'xs' },
+  sm: { height: TEXT_FIELD_GEOMETRY.sm.height, paddingHorizontal: TEXT_FIELD_GEOMETRY.sm.paddingHorizontal, field: 'sm' },
+  md: { height: TEXT_FIELD_GEOMETRY.md.height, paddingHorizontal: TEXT_FIELD_GEOMETRY.md.paddingHorizontal, field: 'md' },
+  lg: { ...TEXT_FIELD_GEOMETRY.lg, field: 'lg' },
 };
 
 /** `pl-1`: how close a padding-less addon sits to the shell's edge. */
@@ -57,7 +59,7 @@ const ADDON_EDGE_INSET = 4;
 const DIVIDER_GAP = 8;
 
 interface InputGroupContextValue {
-  size: 'sm' | 'md' | 'lg';
+  size: BloomSize;
   palette: TextFieldPalette;
   disabled: boolean;
 }
@@ -144,19 +146,20 @@ InputGroupAddon.displayName = 'InputGroupAddon';
  *   <InputGroupAddon>https://</InputGroupAddon>
  *   <TextFieldInput label="Domain" value={v} onChangeText={setV} />
  *   <InputGroupAddon divider>
- *     <Button size="small" variant="ghost" onPress={go}>Go</Button>
+ *     <Button size="sm" variant="ghost" onPress={go}>Go</Button>
  *   </InputGroupAddon>
  * </InputGroup>
  * ```
  */
 const InputGroupComponent = function InputGroup({
   children,
-  isInvalid = false,
+  invalid = false,
   disabled = false,
-  size = 'md',
+  size: sizeProp,
   style,
   testID,
 }: InputGroupProps) {
+  const {size} = useBloomAppearance({size: sizeProp}, {size: 'md', tone: 'neutral'});
   const theme = useTheme();
   const cfg = SIZE_CONFIG[size];
   const { state: focused, onIn: onFocus, onOut: onBlur } = useInteractionState();
@@ -167,7 +170,7 @@ const InputGroupComponent = function InputGroup({
   const { backgroundColor, borderColor } = resolveShellPaint(palette, {
     hovered,
     focused,
-    invalid: isInvalid,
+    invalid: invalid,
     disabled,
   });
 
@@ -176,8 +179,8 @@ const InputGroupComponent = function InputGroup({
     [size, palette, disabled],
   );
   const fieldCtx = useMemo(
-    () => ({ size: cfg.field, isInvalid, disabled }),
-    [cfg.field, isInvalid, disabled],
+    () => ({ size: cfg.field, invalid, disabled }),
+    [cfg.field, invalid, disabled],
   );
 
   // Addons before the first non-addon child are leading; the rest trail.

@@ -3,7 +3,7 @@ import { ScrollView, View, type ViewStyle } from 'react-native';
 
 import { Avatar } from '../avatar';
 import { Button } from '../button';
-import { ACCENT_TABLE, colorRamp, DANGER_TABLE, resolveButtonRamps } from '../button/shared';
+import { resolveAccentColors } from '../theme/accent-colors';
 import { MENU_SHADOW } from '../floating/menu-palette';
 import { useControllableState } from '../hooks/use-controllable-state';
 import {
@@ -19,8 +19,6 @@ import {
   SegmentedControlItemText,
 } from '../segmented-control';
 import { borderRadius } from '../styles/tokens';
-import { parseRgba, withAlpha } from '../theme/color-utils';
-import { oklchToSrgb, srgbToOklch, srgbToRgbString } from '../theme/color-space';
 import type { Theme } from '../theme/types';
 import { useTheme } from '../theme/use-theme';
 import { Text } from '../typography';
@@ -95,57 +93,21 @@ interface CenterPalette {
   avatar: Record<NotificationCenterAvatarColor, { background: string; foreground: string }>;
 }
 
-/**
- * Tailwind `pink-500` sits 95.1° of OKLCH hue past `blue-500`; the pink
- * avatar keeps that distance from the theme's accent, so a blue preset gives
- * that pink and any other preset rotates with it.
- */
-const PINK_HUE_OFFSET = 354.308 - 259.815;
-
-function rotateHue(color: string, degrees: number): string {
-  const rgba = parseRgba(color);
-  if (!rgba) return color;
-  const { l, c, h } = srgbToOklch(rgba);
-  return srgbToRgbString(oklchToSrgb({ l, c, h: (((h + degrees) % 360) + 360) % 360 }));
-}
-
 export function resolveNotificationCenterPalette(theme: Theme): CenterPalette {
-  const { accent, neutral: n } = resolveButtonRamps(theme);
-  const info = colorRamp(theme.colors.info, ACCENT_TABLE);
-  const success = colorRamp(theme.colors.success, ACCENT_TABLE);
-  const error = colorRamp(theme.colors.negative, DANGER_TABLE);
-  const pink = colorRamp(rotateHue(theme.colors.primary, PINK_HUE_OFFSET), ACCENT_TABLE);
-  const dark = theme.isDark;
-  const disc = (ramp: typeof info) =>
-    dark
-      ? { background: withAlpha(ramp[800], 0.5), foreground: ramp[300] }
-      : { background: ramp[100], foreground: ramp[600] };
+  const c = theme.colors;
+  const pair = (tone: 'primary' | 'info' | 'success' | 'error' | 'tertiary') => {
+    const { background, foreground } = resolveAccentColors(c, tone, 'subtle');
+    return { background, foreground };
+  };
+  const neutral = { background: c.backgroundTertiary, foreground: c.textSecondary };
   return {
-    section: dark ? n[900] : theme.colors.card,
-    border: dark ? n[700] : n[200],
-    shadow: dark ? MENU_SHADOW.dark : MENU_SHADOW.light,
-    well: dark ? n[900] : n[100],
-    card: dark ? n[800] : theme.colors.card,
-    text: theme.colors.text,
-    textSecondary: n[500],
-    textTertiary: dark ? n[600] : n[400],
-    icon: n[500],
-    countBackground: dark ? n[800] : n[200],
-    unread: accent[500],
-    status: {
-      neutral: { background: dark ? n[800] : n[200], foreground: n[500] },
-      information: disc(info),
-      success: disc(success),
-      error: disc(error),
-    },
-    // Avatar tints: neutral bg avatar-neutral (300 / primary surface),
-    // blue 300/900, lime 200/700, pink 200/500.
-    avatar: {
-      neutral: { background: dark ? n[800] : n[300], foreground: n[500] },
-      blue: { background: accent[300], foreground: accent[900] },
-      lime: { background: success[200], foreground: success[700] },
-      pink: { background: pink[200], foreground: pink[500] },
-    },
+    section: c.backgroundSecondary, border: c.border,
+    shadow: theme.isDark ? MENU_SHADOW.dark : MENU_SHADOW.light,
+    well: c.backgroundSecondary, card: c.card, text: c.text,
+    textSecondary: c.textSecondary, textTertiary: c.textTertiary, icon: c.textSecondary,
+    countBackground: c.backgroundTertiary, unread: c.primary,
+    status: { neutral, information: pair('info'), success: pair('success'), error: pair('error') },
+    avatar: { neutral, blue: pair('primary'), lime: pair('success'), pink: pair('tertiary') },
   };
 }
 
@@ -305,7 +267,7 @@ const NotificationCenterComponent: React.FC<NotificationCenterProps> = ({
               {unreadCount === 0 ? 'No unread notifications' : `${unreadCount} unread`}
             </Text>
           </View>
-          <Button variant="ghost" size="small" onPress={markAllRead} disabled={unreadCount === 0}>
+          <Button size="sm" onPress={markAllRead} disabled={unreadCount === 0} appearance="subtle" tone="accent">
             Mark all read
           </Button>
         </View>
@@ -314,7 +276,7 @@ const NotificationCenterComponent: React.FC<NotificationCenterProps> = ({
           label="Notification category"
           type="tabs"
           value={activeTab}
-          onChange={setTab}
+          onValueChange={setTab}
           style={{ alignSelf: 'stretch', width: '100%' }}
         >
           {TABS.map(({ id, label }) => (
@@ -429,15 +391,10 @@ const NotificationCenterComponent: React.FC<NotificationCenterProps> = ({
                             }}
                           >
                             {item.actions.map((action) => (
-                              <Button
-                                key={action.id}
-                                size="small"
-                                variant={action.variant ?? 'secondary'}
-                                onPress={() => {
+                              <Button key={action.id} size="sm" appearance={action.appearance ?? 'subtle'} tone={action.tone ?? 'neutral'} onPress={() => {
                                   setReadIds((current) => new Set(current).add(item.id));
                                   onAction?.(item.id, action.id);
-                                }}
-                              >
+                                }}>
                                 {action.label}
                               </Button>
                             ))}

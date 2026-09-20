@@ -56,7 +56,7 @@ The group renders a rounded card on iOS-style platforms and on web. The first it
 <SettingsListItem
   icon={<MoonIcon />}
   title="Dark mode"
-  rightElement={<Switch value={darkMode} onValueChange={setDarkMode} />}
+  rightElement={<Switch checked={darkMode} onCheckedChange={setDarkMode} />}
 />
 ```
 
@@ -95,9 +95,9 @@ When `rightElement` is set, the chevron is hidden automatically (you can overrid
   title="Notifications"
   footer="Push notifications require an enabled device permission."
 >
-  <SettingsListItem title="Marketing emails" rightElement={<Switch value={mktg} onValueChange={setMktg} />} />
+  <SettingsListItem title="Marketing emails" rightElement={<Switch checked={mktg} onCheckedChange={setMktg} />} />
   <SettingsListDivider />
-  <SettingsListItem title="Product updates" rightElement={<Switch value={prod} onValueChange={setProd} />} />
+  <SettingsListItem title="Product updates" rightElement={<Switch checked={prod} onCheckedChange={setProd} />} />
 </SettingsListGroup>
 ```
 

@@ -1,5 +1,4 @@
 import React, { useMemo, useState } from 'react';
-import { resolveButtonRamps } from '../../src/button/shared';
 import type { ButtonIconComponent } from '../../src/button/types';
 import { Chip, type ChipHue } from '../../src/chip';
 import {
@@ -143,9 +142,8 @@ export const CAMPAIGNS: Campaign[] = (() => {
 /** `<span className="text-body-medium text-text-tertiary">$0</span>`. */
 function ZeroSpend() {
   const theme = useTheme();
-  const { neutral: n } = resolveButtonRamps(theme);
   return (
-    <Text variant="body-medium" style={{ color: theme.isDark ? n[600] : n[400] }}>
+    <Text variant="body-medium" style={{ color: theme.colors.textTertiary }}>
       $0
     </Text>
   );
@@ -180,7 +178,7 @@ const COLUMNS: DataTableColumn<Campaign>[] = [
     id: 'objective',
     header: 'Objective',
     cell: ({ row }) => (
-      <Chip size="medium" hue={row.objective.color}>
+      <Chip size="md" hue={row.objective.color}>
         {row.objective.label}
       </Chip>
     ),
@@ -199,7 +197,7 @@ const COLUMNS: DataTableColumn<Campaign>[] = [
     sortDescFirst: false,
     cell: ({ row }) =>
       row.spend > 0 ? (
-        <Chip size="large" hue="gray">
+        <Chip size="lg" hue="gray">
           {`$${row.spend.toLocaleString('en-US')}`}
         </Chip>
       ) : (
@@ -272,7 +270,7 @@ export function CampaignsTable({ initialQuery = '' }: { initialQuery?: string })
             onValueChange={filter(setSpendFilter)}
             options={SPEND_BUCKETS.map((b) => ({ value: b.id, label: b.label }))}
           />
-          <DataTableSearch label="Search campaigns" value={query} onChangeText={filter(setQuery)} />
+          <DataTableSearch label="Search campaigns" value={query} onValueChange={filter(setQuery)} />
         </>
       }
       selectable

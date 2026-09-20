@@ -28,7 +28,6 @@ import Animated, {
 } from 'react-native-reanimated';
 
 import { Button, CloseButton } from '../button';
-import { mixColor, resolveButtonRamps } from '../button/shared';
 import {
   CHECKBOX_GLYPH_CSS,
   CHECKBOX_GLYPH_STYLE_ID,
@@ -61,9 +60,9 @@ import type {
  *             (0 4px 2px 2% over 0 1px 0.5px 5%)
  *   prompt    body-medium text, inset 2px left, 28px right when dismissable;
  *             20px circular dismiss 12/12 from the corner
- *   rows      radius 16, 1px border neutral-200 (dark 700), padding 9/19/9/11
+ *   rows      radius 16, 1px borderLight, padding 9/19/9/11
  *             inside the border (a 60px row for title + description), gap 16,
- *             8 between rows; body-medium title over body-regular neutral-500
+ *             8 between rows; body-medium title over body-regular textSecondary
  *   multiple  Bloom's 16px `CheckboxGlyph` in a 4px vertical inset, hovering
  *             with its ROW; Next advances
  *   single    body-2-medium number key (radius 4, px 5 py 2) that steps one tone
@@ -111,26 +110,16 @@ interface QuestionnairePalette {
   checkbox: CheckboxPaint;
 }
 
-/** Semantic tokens onto Bloom's ramps. Pure, so a test can walk it. */
+/** Canonical role palette. Pure, so a test can walk it. */
 export function resolveQuestionnairePalette(theme: Theme): QuestionnairePalette {
-  const { accent, neutral: n } = resolveButtonRamps(theme);
-  const dark = theme.isDark;
-  const surface = dark ? n[800] : theme.colors.card;
+  const c = theme.colors;
   return {
-    surface,
-    text: theme.colors.text,
-    textSecondary: n[500],
-    textTertiary: dark ? n[600] : n[400],
-    rowBorder: dark ? n[700] : n[200],
-    rowBorderHover: dark ? n[500] : n[300],
-    rowHover: dark ? mixColor(surface, n[700], 0.6) : n[100],
-    rowActive: dark ? n[800] : n[200],
-    key: dark ? n[700] : n[100],
-    keyRaised: dark ? n[600] : n[200],
-    ring: accent[500],
-    pillSelected: dark ? mixColor(surface, accent[950], 0.6) : accent[50],
-    pillHover: dark ? n[800] : n[100],
-    pillLabelSelected: accent[500],
+    surface: c.card, text: c.text, textSecondary: c.textSecondary, textTertiary: c.textTertiary,
+    rowBorder: c.borderLight, rowBorderHover: c.border,
+    rowHover: c.backgroundSecondary, rowActive: c.backgroundTertiary,
+    key: c.backgroundSecondary, keyRaised: c.backgroundTertiary, ring: c.primary,
+    pillSelected: c.primarySubtle, pillHover: c.backgroundSecondary,
+    pillLabelSelected: c.primarySubtleForeground,
     checkbox: resolveCheckboxPaint(theme),
   };
 }
@@ -345,7 +334,7 @@ function CheckboxRow({
       <OptionText label={option.label} description={option.description} palette={palette} />
       <View style={{ flexShrink: 0, flexDirection: 'row', alignItems: 'center', paddingTop: 4, paddingBottom: 4 }}>
         <CheckboxGlyph
-          size="medium"
+          size="md"
           checked={checked}
           indeterminate={false}
           disabled={false}
@@ -428,7 +417,7 @@ function OtherToggle({
       style={{ flexShrink: 0, flexDirection: 'row', alignItems: 'center', paddingTop: 4, paddingBottom: 4 }}
     >
       <CheckboxGlyph
-          size="medium"
+          size="md"
           checked={checked}
           indeterminate={false}
           disabled={false}
@@ -1188,21 +1177,10 @@ function QuestionnaireComponent({
           testID={testID ? `${testID}-step` : undefined}
         />
         <View style={{ flexDirection: 'row', flexShrink: 0, alignItems: 'center', justifyContent: 'flex-end', gap: 8 }}>
-          <Button
-            variant="secondary"
-            size="small"
-            disabled={step === 0}
-            onPress={() => goTo(step - 1)}
-            testID={testID ? `${testID}-previous` : undefined}
-          >
+          <Button size="sm" disabled={step === 0} onPress={() => goTo(step - 1)} testID={testID ? `${testID}-previous` : undefined} appearance="subtle" tone="neutral">
             {text.previous}
           </Button>
-          <Button
-            variant="primary"
-            size="small"
-            onPress={() => finish(answersRef.current)}
-            testID={testID ? `${testID}-next` : undefined}
-          >
+          <Button size="sm" onPress={() => finish(answersRef.current)} testID={testID ? `${testID}-next` : undefined} appearance="solid" tone="accent">
             {isLast ? text.complete : text.next}
           </Button>
         </View>

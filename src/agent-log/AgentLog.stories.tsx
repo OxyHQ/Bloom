@@ -3,7 +3,6 @@ import { View } from 'react-native';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
 import { Button } from '../button';
-import { resolveButtonRamps } from '../button/shared';
 import { useTheme } from '../theme/use-theme';
 import { Text } from '../typography';
 import {
@@ -17,6 +16,7 @@ import {
 } from './index';
 
 const meta: Meta = {
+  parameters: { controls: { disable: true } },
   title: 'Blocks/Agent Log',
 };
 
@@ -28,7 +28,7 @@ type Story = StoryObj;
 function Frame({ children, testID }: { children: React.ReactNode; testID?: string }) {
   const { colors } = useTheme();
   return (
-    <View testID={testID} style={{ padding: 40, width: 480, backgroundColor: colors.background }}>
+    <View testID={testID} style={{ maxWidth: '100%', padding: 40, width: 480, backgroundColor: colors.background }}>
       {children}
     </View>
   );
@@ -47,7 +47,7 @@ const NESTED = ['packages/ui/src/button.tsx', 'packages/ui/src/chip.tsx'];
 
 function StepText({ label, active }: { label: string; active: boolean }) {
   // The step text: `py-1 text-body-regular text-text-secondary`.
-  const secondary = resolveButtonRamps(useTheme()).neutral[500];
+  const secondary = useTheme().colors.textSecondary;
   return (
     <Text variant="body-regular" style={{ paddingTop: 4, paddingBottom: 4, color: secondary }}>
       {active ? <AgentLogShimmerText>{label}</AgentLogShimmerText> : label}
@@ -103,12 +103,13 @@ function Transcript({ reduce: forceReduce }: { reduce?: boolean }) {
 
 /** A realistic streaming transcript: units arrive on the ticker, the guide draws alongside. */
 export const Streaming: Story = {
+  parameters: { controls: { disable: true } },
   render: function Render() {
     const [run, setRun] = useState(0);
     return (
       <Frame>
         <View style={{ marginBottom: 16, alignItems: 'flex-start' }}>
-          <Button variant="secondary" size="small" onPress={() => setRun((n) => n + 1)}>
+          <Button size="sm" onPress={() => setRun((n) => n + 1)} appearance="outline" tone="neutral">
             Replay
           </Button>
         </View>
@@ -120,6 +121,7 @@ export const Streaming: Story = {
 
 /** The settled transcript (reduced motion): every row, guide fully drawn, nested bridge. */
 export const Settled: Story = {
+  parameters: { controls: { disable: true } },
   render: () => (
     <Frame testID="settled">
       <Transcript reduce />
@@ -129,12 +131,13 @@ export const Settled: Story = {
 
 /** The pieces on their own: a working row, the shimmer, and a bare reveal. */
 export const Pieces: Story = {
+  parameters: { controls: { disable: true } },
   render: function Render() {
     const [run, setRun] = useState(0);
     return (
       <Frame>
         <View style={{ gap: 12, alignItems: 'flex-start' }}>
-          <Button variant="secondary" size="small" onPress={() => setRun((n) => n + 1)}>
+          <Button size="sm" onPress={() => setRun((n) => n + 1)} appearance="outline" tone="neutral">
             Replay reveal
           </Button>
           <AgentLogReveal key={run}>

@@ -1,5 +1,5 @@
 import React from 'react';
-import { act, render } from '@testing-library/react-native';
+import { act, fireEvent, render } from '@testing-library/react-native';
 import type { ReactTestInstance } from 'react-test-renderer';
 
 import { BloomThemeProvider } from '../theme/BloomThemeProvider';
@@ -181,6 +181,9 @@ function renderBar(props: {
   items?: TabBarItem[];
 }) {
   const utils = render(<Tree {...props} />);
+  const host = utils.UNSAFE_root.findAll(node => typeof node.type === 'string' && typeof node.props.onLayout === 'function')[0];
+  if (!host) throw new Error('missing measured bar host');
+  fireEvent(host, 'layout', { nativeEvent: { layout: { width: mockWindowWidth, height: 58, x: 0, y: 0 } } });
   return { ...utils, resettle: () => utils.rerender(<Tree {...props} />) };
 }
 

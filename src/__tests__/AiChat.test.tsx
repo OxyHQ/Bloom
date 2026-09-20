@@ -236,10 +236,18 @@ describe('AiChatShell', () => {
 describe('palette', () => {
   it('resolves distinct surfaces in both modes', () => {
     for (const mode of ['light', 'dark'] as const) {
-      const p = resolveAiChatPalette(buildTheme('blue', mode));
+      const theme = buildTheme('blue', mode);
+      const p = resolveAiChatPalette(theme);
       expect(new Set([p.full, p.secondary, p.tertiary]).size).toBe(3);
-      // The card is the page in light mode and a lifted surface in dark.
-      expect(p.primary === p.full).toBe(mode === 'light');
+      expect(p).toMatchObject({
+        full: theme.colors.background,
+        primary: theme.colors.card,
+        secondary: theme.colors.backgroundSecondary,
+        tertiary: theme.colors.backgroundTertiary,
+        textSecondary: theme.colors.textSecondary,
+        linkChipBackground: theme.colors.primarySubtle,
+        linkChipText: theme.colors.primarySubtleForeground,
+      });
     }
   });
 });

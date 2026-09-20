@@ -1,3 +1,4 @@
+import type { BloomAppearance, BloomTone } from '../appearance';
 import type { StyleProp, ViewStyle, TextStyle } from 'react-native';
 
 import type { RADIUS } from '../design-tokens/scales';
@@ -6,12 +7,12 @@ import type { ShadowRole } from '../design-tokens/shadows';
 /**
  * The preset combination of background + border + elevation.
  *
- * Each variant is only a NAMED DEFAULT for the three independent axes below —
+ * Each appearance is only a NAMED DEFAULT for the three independent axes below —
  * `plain` is the base surface and the other three add one axis each — so a
  * surface that needs an unusual combination refines it with `border` /
- * `elevation` instead of asking for a new variant.
+ * `elevation` instead of asking for a new appearance.
  */
-export type CardVariant = 'plain' | 'elevated' | 'outlined' | 'filled';
+
 
 /**
  * A rung of the `RADIUS` scale. Deliberately not a number: a card, a settings
@@ -28,13 +29,14 @@ export type CardBorder = 'none' | 'hairline' | 'thin';
 
 export interface CardProps {
   children?: React.ReactNode;
-  /** Preset background + border + elevation. Default `elevated`. */
-  variant?: CardVariant;
+  /** Preset background + border + elevation. Default `solid` with small elevation. */
+  appearance?: BloomAppearance;
+  tone?: BloomTone;
   /** Corner rung. Default `radius-12`. */
   radius?: CardRadius;
-  /** Overrides the variant's elevation. */
+  /** Overrides the appearance's elevation. */
   elevation?: CardElevation;
-  /** Overrides the variant's border width. */
+  /** Overrides the appearance's border width. */
   border?: CardBorder;
   style?: StyleProp<ViewStyle>;
   className?: string;

@@ -12,7 +12,7 @@ import {
 import { useReducedMotion } from 'react-native-reanimated';
 
 import { Avatar } from '../avatar';
-import { mixColor, resolveButtonRamps } from '../button/shared';
+import { resolveButtonRamps } from '../button/shared';
 import {
   MENU_MOTION_BLUR,
   MENU_MOTION_DURATION,
@@ -87,17 +87,16 @@ interface HoverCardPalette {
 
 export function resolveUserHoverCardPalette(theme: Theme): HoverCardPalette {
   const menu = resolveMenuPalette(theme);
-  const { accent, neutral: n } = resolveButtonRamps(theme);
-  const dark = theme.isDark;
+  const { accent } = resolveButtonRamps(theme);
   return {
     surface: menu.surface,
     border: menu.border,
     shadow: menu.shadow,
     text: menu.text,
     textSecondary: menu.textSecondary,
-    tile: dark ? n[900] : n[100],
-    cover: dark ? n[700] : n[200],
-    skeleton: dark ? mixColor(n[800], n[700], 0.6) : n[100],
+    tile: theme.colors.backgroundSecondary,
+    cover: theme.colors.backgroundTertiary,
+    skeleton: theme.colors.backgroundTertiary,
     verified: accent[500],
   };
 }

@@ -51,7 +51,7 @@ export function PeriodChartHeader({
             label={rangesLabel}
             type="radio"
             value={rangeId ?? ranges[0]!.id}
-            onChange={(id) => onRangeChange?.(id)}>
+            onValueChange={(id) => onRangeChange?.(id)}>
             {ranges.map((range) => (
               <SegmentedControlItem
                 key={range.id}

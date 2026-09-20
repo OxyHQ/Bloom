@@ -74,8 +74,9 @@ a body-medium title over a body-regular description, small `Button`s for
 `cancel` (secondary, first) and `action` (primary, after) — in that order — and
 an xs `CloseButton` at top 12 / right 12.
 
-Two departures from `Notification`, both because the toast engine owns them:
+Toasts adapt this geometry to their content:
 
+- A title without description or actions uses 12px vertical padding and a 28px status disc (20px glyph). Its height remains content-driven, so long titles and larger text can wrap. Description and action toasts retain the full geometry above.
 - The 44px close-button lane on the right is reserved **only when the close
   button renders** (`closeButton` defaults to `false`); otherwise the right
   padding is 16.
@@ -308,3 +309,27 @@ Reach for `toast()` for passive feedback (the user doesn't have to react). Use [
 
 Upgrading from 0.50.x? `show`, `api`, `DURATION`, `type Toast` and the composition
 exports were removed. The default position is `bottom-right`.
+
+
+### Mixed-height stacks
+
+Collapsed rear cards expose only their stack edge, even when their descriptions,
+actions or custom content are taller than the front card. Their viewport is capped
+at the front card height; their content keeps its natural size and measurement.
+Expanding animates that viewport back to the full height, without scaling text.
+The front card keeps its shadow. `MixedHeightStack` in Storybook covers short,
+multiline, action and custom rows together.
+
+### Exit motion
+
+Default exits fade over 180ms and travel at most 12px. Explicit intermediate
+keyframes preserve deceleration on web without relying on an unnamed easing.
+The exiting anchor wraps a separate stack-transform node: applying both to one
+node resets its stack offset and scale when Reanimated clones it for exit.
+Measured failure: an older row jumped from y=693 to y=751, onto the front row,
+before fading. The nested transform keeps its original position throughout exit.
+
+`scripts/verify-toast-exits.mjs` checks manual dismissal and automatic expiry in
+stacked and unstacked Storybook stories, sampling every frame for position/width
+jumps and eventual removal. Set `STORYBOOK_URL`, `CHROME_PATH` and, when needed,
+`PUPPETEER_MODULE` to use the local browser setup.

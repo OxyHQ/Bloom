@@ -2,7 +2,6 @@ import React, { memo, useMemo } from 'react';
 import { Animated, View } from 'react-native';
 
 import { useTheme } from '../theme/use-theme';
-import { resolveButtonRamps } from '../button/shared';
 import { Button, CloseButton } from '../button';
 import { Text } from '../typography';
 import { RiShieldStarFill } from '../icons/remix/RiShieldStarFill';
@@ -59,14 +58,12 @@ function AnnouncementComponent({
 }: AnnouncementProps) {
   const theme = useTheme();
   const paint = useMemo(() => {
-    const { neutral: n } = resolveButtonRamps(theme);
-    const dark = theme.isDark;
     return {
-      surface: dark ? n[800] : theme.colors.card,
-      border: dark ? n[700] : n[200],
-      icon: n[500],
+      surface: theme.colors.card,
+      border: theme.colors.borderLight,
+      icon: theme.colors.textSecondary,
       title: theme.colors.text,
-      description: n[500],
+      description: theme.colors.textSecondary,
     };
   }, [theme]);
   const motion = useCardMotion({
@@ -120,7 +117,7 @@ function AnnouncementComponent({
       </View>
 
       {actionLabel ? (
-        <Button variant="secondary" size="small" onPress={onAction} fullWidth style={{ width: '100%' }}>
+        <Button size="sm" onPress={onAction} style={{ width: "100%" }} appearance="subtle" tone="neutral">
           {actionLabel}
         </Button>
       ) : null}

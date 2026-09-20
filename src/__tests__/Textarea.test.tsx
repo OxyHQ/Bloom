@@ -60,7 +60,7 @@ describe('Textarea', () => {
   });
 
   it('small keeps px-1.5 py-2', () => {
-    const root = renderWithTheme(<Textarea label="Bio" size="small" rows={2} />);
+    const root = renderWithTheme(<Textarea label="Bio" size="sm" rows={2} />);
     expect(resolvedStyle(root.UNSAFE_getByType(TextInput).props.style).height).toBe(40);
     expect(shellStyle(root)).toMatchObject({ paddingHorizontal: 4, paddingVertical: 6 });
   });
@@ -81,7 +81,7 @@ describe('Textarea', () => {
     });
     expect(shellStyle(rest).borderColor).toBe(p.ringFocus);
 
-    const invalid = renderWithTheme(<Textarea label="Bio" isInvalid hint="Too short" />);
+    const invalid = renderWithTheme(<Textarea label="Bio" invalid hint="Too short" />);
     expect(shellStyle(invalid).backgroundColor).toBe(p.backgroundInvalid);
     expect(invalid.UNSAFE_getByType(TextInput).props['aria-invalid']).toBe(true);
     expect(resolvedStyle(invalid.getByText('Too short').props.style).color).toBe(p.error);
@@ -101,7 +101,7 @@ describe('Textarea', () => {
   });
 
   it('counts a controlled value without maxLength', () => {
-    const root = renderWithTheme(<Textarea label="Bio" showCount value="abc" onChangeText={() => {}} />);
+    const root = renderWithTheme(<Textarea label="Bio" showCount value="abc" onValueChange={() => {}} />);
     expect(root.getByText('3')).toBeTruthy();
   });
 });

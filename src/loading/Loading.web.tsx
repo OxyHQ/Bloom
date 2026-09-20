@@ -1,3 +1,5 @@
+import { resolveBloomColors } from '../appearance/colors';
+import { useBloomAppearance } from '../appearance';
 import React, { memo, useMemo } from 'react';
 import { View, Text, StyleSheet, type DimensionValue } from 'react-native';
 
@@ -14,14 +16,16 @@ import type {
 } from './types';
 
 const SIZE_CONFIG = {
-  small: { spinner: 20, text: 13 },
-  medium: { spinner: 24, text: 15 },
-  large: { spinner: 44, text: 16 },
+  xs: { spinner: 16, text: 12 },
+  sm: { spinner: 20, text: 13 },
+  md: { spinner: 24, text: 15 },
+  lg: { spinner: 44, text: 16 },
 } as const;
 
 const SpinnerLoading: React.FC<SpinnerLoadingProps> = ({
-  size = 'medium',
+  size: sizeProp,
   color,
+  tone: toneProp,
   className,
   text,
   textStyle,
@@ -32,9 +36,10 @@ const SpinnerLoading: React.FC<SpinnerLoadingProps> = ({
   testID,
 }) => {
   const theme = useTheme();
+  const {size, tone} = useBloomAppearance({size: sizeProp, tone: toneProp}, {size: 'md', tone: 'accent'});
   const sizeConfig = SIZE_CONFIG[size];
   const effectiveIconSize = iconSize ?? sizeConfig.spinner;
-  const spinnerColor = className ? 'currentColor' : (color ?? theme.colors.primary);
+  const spinnerColor = className ? 'currentColor' : (color ?? resolveBloomColors(theme.colors, tone, 'solid').background);
   const textColor = color ?? theme.colors.textSecondary;
 
   return (
@@ -68,8 +73,9 @@ const SpinnerLoading: React.FC<SpinnerLoadingProps> = ({
  * `translateY`.
  */
 const TopLoading: React.FC<TopLoadingProps> = ({
-  size = 'medium',
+  size: sizeProp,
   color,
+  tone: toneProp,
   style,
   showLoading = true,
   iconSize,
@@ -78,10 +84,11 @@ const TopLoading: React.FC<TopLoadingProps> = ({
   testID,
 }) => {
   const theme = useTheme();
+  const {size, tone} = useBloomAppearance({size: sizeProp, tone: toneProp}, {size: 'md', tone: 'accent'});
   const sizeConfig = SIZE_CONFIG[size];
   const effectiveIconSize = iconSize ?? sizeConfig.spinner;
   const targetHeight = Math.max(0, effectiveIconSize + sizeConfig.spinner + heightOffset);
-  const spinnerColor = color ?? theme.colors.primary;
+  const spinnerColor = color ?? resolveBloomColors(theme.colors, tone, 'solid').background;
 
   const duration = animation.duration.slow;
   // `cubic-bezier(0.33, 1, 0.68, 1)` is the standard CSS approximation of
@@ -124,8 +131,9 @@ const TopLoading: React.FC<TopLoadingProps> = ({
 };
 
 const InlineLoading: React.FC<InlineLoadingProps> = ({
-  size = 'small',
+  size: sizeProp,
   color,
+  tone: toneProp,
   text,
   style,
   textStyle,
@@ -133,13 +141,14 @@ const InlineLoading: React.FC<InlineLoadingProps> = ({
   testID,
 }) => {
   const theme = useTheme();
+  const {size, tone} = useBloomAppearance({size: sizeProp, tone: toneProp}, {size: 'md', tone: 'accent'});
   const sizeConfig = SIZE_CONFIG[size];
-  const spinnerColor = color ?? theme.colors.primary;
+  const spinnerColor = color ?? resolveBloomColors(theme.colors, tone, 'solid').background;
   const textColor = theme.colors.textSecondary;
 
   return (
     <View style={[styles.inlineContainer, style]} testID={testID}>
-      {spinnerIcon ?? <SpinnerIcon size={SIZE_CONFIG.small.spinner} color={spinnerColor} />}
+      {spinnerIcon ?? <SpinnerIcon size={sizeConfig.spinner} color={spinnerColor} />}
       {text && (
         <Text
           style={[

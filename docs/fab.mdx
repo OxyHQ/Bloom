@@ -1,79 +1,34 @@
----
-title: Fab
-description: The floating action button — one per screen, for the screen's primary action.
-order: 43
----
-
 # Fab
 
-A floating button for the **one** thing a screen is mostly for: compose on a
-feed, add on a list, new message in an inbox.
+`Fab` is a prominent action built on `Button`. It shares color, focus, loading,
+press and accessibility behavior. Its parent owns placement.
 
 ```tsx
 import { Fab } from '@oxy.so/bloom/fab';
+import * as Icons from '@oxy.so/bloom/icons';
 
-<Fab
-  icon={<PencilIcon />}
-  accessibilityLabel="New post"
-  onPress={compose}
-/>
-
-<Fab
-  icon={<PencilIcon />}
-  label="New post"
-  placement="bottom-right"
-  onPress={compose}
-/>
+<Fab icon={Icons.RiAddLine} accessibilityLabel="Create post" onPress={createPost} />
+<Fab icon={Icons.RiAddLine} label="Compose" tone="action" appearance="solid" />
 ```
 
-## Which prop decides what
+`size` is `xs | sm | md | lg` (40, 48, 56, 64 points; default `md`).
+`size` and `tone` inherit from `BloomScope`. `tone` defaults to `action`;
+`appearance` defaults to `solid` and also accepts `subtle`, `outline`, `plain`.
+Icon props take a component, which receives its size and foreground color.
+Icon-only actions require `accessibilityLabel`; labeled actions use their label.
 
-| prop               | decides                                                    |
-| ------------------ | ---------------------------------------------------------- |
-| `icon`             | the glyph                                                   |
-| `label`            | makes it an extended FAB with visible text                  |
-| `variant`          | `primary` · `secondary` · `tertiary` · `surface`            |
-| `size`             | `small` · `medium` · `large`, or a number                   |
-| `placement`        | which corner it floats in, or `static` to place it yourself |
-| `offset`           | distance from the edges                                     |
-| `minimizeBehavior` | `none` · `hide` · `collapse` with the nearest Bloom tab bar |
+An explicit tone wins over `BloomScope`, which wins over the `action` default. A utility such as “Back to top” can use `tone="neutral" appearance="subtle"`. The Color roles prototype demonstrates an action Fab alongside accent navigation and subtle support surfaces.
 
-## An icon-only FAB needs `accessibilityLabel`
+Use `AppShell.primaryAction` to coordinate a screen action with navigation, or
+`BottomBar.action` for a custom bottom composition. A standalone Fab stays in
+normal flow and accepts the usual `style` and `className` layout overrides.
 
-Without it the button announces as "button" and nothing else. A pencil is not
-self-describing to a screen reader, and it is not always self-describing on
-screen either — which is what `label` is for.
+## Migration
 
-## One per screen
-
-A FAB claims the corner and floats above the content. Two of them are two
-primary actions, which means neither is primary, and they compete for the same
-thumb position. If a screen has several important actions, the FAB takes the
-most common one and the rest go in the content or a menu.
-
-On web, a bottom placement stays inside the content column with sticky
-positioning. The column must fill the available height, use flex-column layout,
-and render the FAB last. This keeps it at the bottom with short content and in
-view while the document scrolls, without escaping over a side rail. Top
-placements remain absolute within their positioned container.
-
-## Following a Bloom tab bar
-
-The FAB automatically clears the bottom-edge footprint claimed by Bloom's tab
-bar and follows its compact height when it minimizes. An extended FAB can also
-react to that state:
-
-```tsx
-<Fab label="Compose" minimizeBehavior="collapse" {...props} />
-<Fab label="Compose" minimizeBehavior="hide" {...props} />
-```
-
-`collapse` smoothly retracts the label and horizontal space while retaining the
-icon-only action. `hide` removes the whole action. The default is `none`, which
-preserves the full FAB.
-
-## `placement="static"` when something else owns the position
-
-A FAB inside a custom positioned container can use `static` to turn off Bloom's
-anchoring. Do not use it merely to avoid a Bloom tab bar; bottom-edge clearance
-and `minimizeBehavior` already cover that case.
+Remove `placement`, `offset`, `zIndex`, and `minimizeBehavior`. Position the action
+through `AppShell`/`BottomBar`; the bottom accessory hides on downward scroll
+and returns upward by default. Set `actionBehavior="visible"` on `BottomBar`
+or `bottomActionBehavior="visible"` on `AppShell` to keep it visible. Replace `variant="primary"` with `tone="action"` for the main task (or `accent` when retaining brand emphasis), `variant="surface"`
+with `tone="neutral" appearance="subtle"`. The shared `support` and `action` roles resolve the secondary and tertiary color pairs. Choose them by intent: contextual support or the main task. Replace `small/medium/large` with `sm/md/lg`, and numeric size
+with a preset plus a deliberate style override if needed. Replace icon elements
+with icon components and remove the `children` alias.

@@ -6,8 +6,6 @@ import { resolvedStyle } from './support/rendered-style';
 import { AiProfileCard } from '../ai-profile-card';
 import type { AiProfileCardStat } from '../ai-profile-card';
 import { Button } from '../button';
-import { mixColor, resolveButtonRamps } from '../button/shared';
-import { purpleChip } from '../chart-cards/ai-profile-hues';
 import { BloomThemeProvider } from '../theme/BloomThemeProvider';
 import { buildTheme } from '../theme/build-theme';
 
@@ -39,11 +37,11 @@ describe('AiProfileCard', () => {
     const { getByTestId } = renderCard(
       <AiProfileCard testID="card" name="Maya Collins" contributions={7462} countUpDuration={0} cells={CELLS} coverSource="https://example.com/cover.png" />,
     );
-    const { neutral: n } = resolveButtonRamps(buildTheme('teal', 'light'));
+    const theme = buildTheme('teal', 'light');
     expect(resolvedStyle(getByTestId('card').props.style)).toMatchObject({
       borderRadius: 24,
       borderWidth: 1,
-      borderColor: n[200],
+      borderColor: theme.colors.borderLight,
       overflow: 'hidden',
     });
     expect(resolvedStyle(getByTestId('card-cover').props.style)).toMatchObject({
@@ -52,7 +50,7 @@ describe('AiProfileCard', () => {
       height: 165,
       borderTopLeftRadius: 23,
       borderTopRightRadius: 23,
-      backgroundColor: n[200],
+      backgroundColor: theme.colors.backgroundTertiary,
     });
     expect(getByTestId('card-cover-image', { includeHiddenElements: true })).toBeTruthy();
     expect(resolvedStyle(getByTestId('card-content').props.style)).toMatchObject({
@@ -102,7 +100,7 @@ describe('AiProfileCard', () => {
         delta="+14.8%"
         stats={STATS}
         cells={CELLS}
-        actions={<Button variant="secondary" size="small">Share</Button>}
+        actions={<Button size="sm" appearance="outline" tone="neutral">Share</Button>}
       />,
     );
     expect(getByText('Maya Collins')).toBeTruthy();
@@ -112,7 +110,7 @@ describe('AiProfileCard', () => {
     expect(resolvedStyle(getByTestId('card-actions').props.style)).toMatchObject({ position: 'absolute', top: -34, right: 4, gap: 10 });
     expect(getByTestId('card-headline').props.children).toBe('$7,462');
     expect(resolvedStyle(getByTestId('card-delta').props.style).backgroundColor).toBe(
-      purpleChip(theme, theme.colors.card).background,
+      theme.colors.secondarySubtle,
     );
     for (const stat of STATS) {
       expect(getByText(stat.value)).toBeTruthy();
@@ -122,7 +120,7 @@ describe('AiProfileCard', () => {
       borderRadius: 10,
       paddingTop: 10,
       paddingLeft: 10,
-      backgroundColor: resolveButtonRamps(theme).neutral[100],
+      backgroundColor: theme.colors.backgroundSecondary,
     });
   });
 
@@ -161,15 +159,14 @@ describe('AiProfileCard', () => {
   it('paints the dark border, tiles and chip over the page', () => {
     viewport(1440);
     const theme = buildTheme('teal', 'dark');
-    const { neutral: n } = resolveButtonRamps(theme);
     const { getByTestId } = renderCard(
       <AiProfileCard testID="card" name="M" contributions={1} countUpDuration={0} delta="+1%" stats={STATS} cells={CELLS} />,
       'dark',
     );
-    expect(resolvedStyle(getByTestId('card').props.style).borderColor).toBe(n[800]);
-    expect(resolvedStyle(getByTestId('card-stat-0').props.style).backgroundColor).toBe(n[900]);
+    expect(resolvedStyle(getByTestId('card').props.style).borderColor).toBe(theme.colors.borderLight);
+    expect(resolvedStyle(getByTestId('card-stat-0').props.style).backgroundColor).toBe(theme.colors.backgroundSecondary);
     expect(resolvedStyle(getByTestId('card-delta').props.style).backgroundColor).toBe(
-      purpleChip(theme, mixColor(n[900], n[950], 0.4)).background,
+      theme.colors.secondarySubtle,
     );
   });
 });

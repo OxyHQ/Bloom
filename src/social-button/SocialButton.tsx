@@ -1,3 +1,4 @@
+import { useBloomAppearance } from '../appearance';
 import React, { memo, useCallback, useId, useMemo } from 'react';
 import { Linking, Platform, View, type TextStyle, type ViewStyle } from 'react-native';
 import Svg, { Circle, Defs, LinearGradient, Path, Stop } from 'react-native-svg';
@@ -65,8 +66,8 @@ import type {
 const IS_WEB = Platform.OS === 'web';
 
 export const SOCIAL_BUTTON_GEOMETRY = {
-  medium: { height: 36, width: 300, paddingHorizontal: 12, glyph: 18 },
-  small: { height: 32, width: 250, paddingHorizontal: 10, glyph: 16 },
+  md: { height: 36, width: 300, paddingHorizontal: 12, glyph: 18 },
+  sm: { height: 32, width: 250, paddingHorizontal: 10, glyph: 16 },
 } as const satisfies Record<
   SocialButtonSize,
   { height: number; width: number; paddingHorizontal: number; glyph: number }
@@ -94,12 +95,12 @@ const DARK_INVERTED_BRANDS: ReadonlySet<SocialBrand> = new Set<SocialBrand>(['ap
  * Native only — react-native-web drops `hitSlop`.
  */
 const HIT_SLOP = {
-  medium: { top: 4, bottom: 4, left: 0, right: 0 },
-  small: { top: 6, bottom: 6, left: 0, right: 0 },
+  md: { top: 4, bottom: 4, left: 0, right: 0 },
+  sm: { top: 6, bottom: 6, left: 0, right: 0 },
 } as const;
 const SQUARE_HIT_SLOP = {
-  medium: { top: 4, bottom: 4, left: 4, right: 4 },
-  small: { top: 6, bottom: 6, left: 6, right: 6 },
+  md: { top: 4, bottom: 4, left: 4, right: 4 },
+  sm: { top: 6, bottom: 6, left: 6, right: 6 },
 } as const;
 
 type Gradient = readonly [top: string, bottom: string];
@@ -201,7 +202,7 @@ export function resolveSocialButtonPaint(
   const fill = brandFill(brand, customColor);
 
   if (appearance === 'white') {
-    const p = resolveButtonPalette('secondary', theme);
+    const p = resolveButtonPalette('outline', theme, 'neutral');
     const state = (s: typeof p.rest): SocialStatePaint => ({
       background: s.background,
       gradient: null,
@@ -244,7 +245,7 @@ export function resolveSocialButtonPaint(
 
   if (fill === null) {
     // Google: the primary button itself, gradient states included.
-    const p = resolveButtonPalette('primary', theme);
+    const p = resolveButtonPalette('solid', theme, 'accent');
     const state = (s: typeof p.rest): SocialStatePaint => ({
       background: s.background,
       gradient: s.gradient,
@@ -380,7 +381,7 @@ function ColorLogo({
 const SocialButtonComponent: React.FC<SocialButtonProps> = ({
   brand,
   config,
-  size = 'medium',
+  size: scopedSizeProp,
   appearance = 'colorful',
   iconOnly = false,
   fullWidth = false,
@@ -396,6 +397,8 @@ const SocialButtonComponent: React.FC<SocialButtonProps> = ({
   accessibilityHint,
   testID,
 }) => {
+  const {size: inheritedSize} = useBloomAppearance({size: scopedSizeProp}, {size: 'md', tone: 'accent'});
+  const size = inheritedSize === 'xs' || inheritedSize === 'sm' ? 'sm' : 'md';
   const theme = useTheme();
   useInteractiveWebCss(STYLE_ID, SOCIAL_BUTTON_CSS);
   const { state: hovered, onIn: onHoverIn, onOut: onHoverOut } = useInteractionState();

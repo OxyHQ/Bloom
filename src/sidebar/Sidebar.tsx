@@ -1,7 +1,7 @@
+import { useBloomAppearance } from '../appearance';
 import React, { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
   Pressable,
-  ScrollView,
   TextInput,
   View,
   type LayoutChangeEvent,
@@ -22,31 +22,38 @@ import { useInteractionState } from '../hooks/use-interaction-state';
 import { RiCloseLine, RiSearchLine, RiSideBarFill } from '../icons/remix';
 import { Kbd } from '../kbd';
 import { borderRadius } from '../styles/tokens';
+import { Z_INDEX } from '../styles/z-index';
 import type { WebCssStyle } from '../styles/web-view-style';
 import { ThemeToggle } from '../theme-toggle';
 import { Text, TYPE_SCALE } from '../typography';
+import { SidebarSizeProvider, SIDEBAR_METRICS } from './metrics';
 import { useSidebarPalette, type SidebarPalette } from './palette';
 import { Collapsible, CollapseProvider, IS_WEB, MORPH_MS, useSidebarWebCss } from './parts';
 import { SidebarFolder } from './SidebarFolder';
 import { SidebarItem } from './SidebarItem';
+import { SidebarModeSwitcher } from './SidebarModeSwitcher';
 import { SidebarPlanCard } from './SidebarPlanCard';
 import { SidebarRail } from './SidebarRail';
+import { SidebarScrollArea } from './SidebarScrollArea';
 import { SidebarTeamMenu } from './SidebarTeamMenu';
+import { SidebarLogoView } from './SidebarLogoView';
 import { SidebarUserMenu } from './SidebarUserMenu';
 import type { SidebarNavItem, SidebarProps } from './types';
 
 /**
  * `Sidebar` — the floating app rail, expanded or collapsed.
  *
- *   panel      260 wide expanded (p12), 52 collapsed (px7 py12 — with the 1px
- *              border that leaves exactly the 36px item column; 60/px11
- *              reads loose around a pill column), radius 24,
- *              1px border-button-white, shadow-sidebar, background-secondary;
- *              `flat` drops the chrome onto background-full
- *   top        scroller (−8 margin / 8 padding, so rings and the profile pill
- *              are not clipped), gap 12: account switcher + collapse control
- *              (a column, avatar last, when collapsed), quick search, nav
- *              (px2 expanded, gap 4)
+ *   panel      `size` wide expanded (p12), its collapsed width at px7 py12 —
+ *              with the 1px border that leaves exactly the size's item column
+ *              (`metrics.ts`; `md` is the historical 260 / 52 / 36)
+ *   surface    `card` radius 24, 1px border-button-white, shadow-sidebar,
+ *              background-secondary; `plain` drops the chrome onto
+ *              background-full; `docked` keeps the fill, squares the corners
+ *              and leaves one hairline on the inner edge, full height
+ *   top        fixed account/logo + collapse control, modes and quick search,
+ *              gap 12; destinations alone scroll below (px2 expanded, gap 4).
+ *              The viewport overlaps half the last control, at most 20px,
+ *              with matching content padding and 8px side room for rings.
  *   bottom     gap 12: theme toggle (segmented expanded, icon collapsed),
  *              secondary rows, team card
  *   search     pill button p8 gap8 on background-tertiary (hover tertiary-hover
@@ -60,11 +67,9 @@ import type { SidebarNavItem, SidebarProps } from './types';
  * collapse through `Collapsible` — the icons never move. Reduced motion snaps.
  */
 
+const AnimatedPressable = Animated.createAnimatedComponent(Pressable);
+
 const EASE_IN_OUT = Easing.bezier(0.4, 0, 0.2, 1);
-const EXPANDED_WIDTH = 260;
-const COLLAPSED_WIDTH = 52;
-/** Horizontal padding while collapsed: (52 − 2 × 1px border − 36px column) / 2. */
-const COLLAPSED_PADDING_X = 7;
 
 function matchesQuery(label: string, query: string): boolean {
   return label.toLocaleLowerCase().includes(query);
@@ -120,7 +125,7 @@ function SearchField({
         testID="sidebar-search-input"
       />
       <CloseButton
-        size="2xs"
+        size="xs"
         accessibilityLabel="Clear navigation search"
         onPress={() => onDismiss(true)}
         style={{ backgroundColor: palette.tertiaryHover }}
@@ -132,6 +137,10 @@ function SearchField({
 const SidebarPanel: React.FC<SidebarProps> = ({
   items = [],
   secondaryItems = [],
+  modes,
+  mode,
+  onModeChange,
+  modesLabel,
   selected,
   onNavigate,
   collapsed: collapsedProp,
@@ -140,7 +149,8 @@ const SidebarPanel: React.FC<SidebarProps> = ({
   mobile = false,
   onClose,
   fluid = false,
-  flat = false,
+  surface = 'card',
+  size: sizeProp,
   showThemeToggle = true,
   showSearch = true,
   searchShortcutLabel = '⌘L',
@@ -148,6 +158,7 @@ const SidebarPanel: React.FC<SidebarProps> = ({
   searchLabel = 'Quick Search',
   searchPlaceholder,
   noResultsLabel = 'No results',
+  logo,
   account,
   team,
   tree,
@@ -158,6 +169,9 @@ const SidebarPanel: React.FC<SidebarProps> = ({
   testID,
 }) => {
   const palette = useSidebarPalette();
+  const {size: scopedSize} = useBloomAppearance({size: sizeProp}, {size: 'md', tone: 'neutral'});
+  const size = scopedSize === 'xs' ? 'sm' : scopedSize;
+  const metrics = SIDEBAR_METRICS[size];
   useSidebarWebCss();
   const reducedMotion = useReducedMotion();
 
@@ -169,6 +183,7 @@ const SidebarPanel: React.FC<SidebarProps> = ({
   const collapsed = mobile ? false : collapsedState;
 
   const [searchActive, setSearchActive] = useState(false);
+  const [headerOverlap, setHeaderOverlap] = useState(10);
   const [query, setQuery] = useState('');
   const [suppressUserHover, setSuppressUserHover] = useState(false);
   const searchFieldRef = useRef<View>(null);
@@ -184,28 +199,61 @@ const SidebarPanel: React.FC<SidebarProps> = ({
     progress.value = reducedMotion ? target : withTiming(target, { duration: MORPH_MS, easing: EASE_IN_OUT });
   }, [collapsed, reducedMotion, progress]);
 
+  const searchGapStyle = useAnimatedStyle(() => ({ gap: 8 * (1 - progress.value) }), [progress]);
+
   // `fluid` fills its container while expanded; the morph needs a number, so
-  // the last expanded width is measured.
-  const expandedWidth = useSharedValue(EXPANDED_WIDTH);
+  // the last expanded width is measured. The collapsed end is the size's own.
+  const collapsedWidth = metrics.collapsed;
+  const expandedWidth = useSharedValue(metrics.expanded);
+  useEffect(() => {
+    if (!fluid) expandedWidth.value = metrics.expanded;
+  }, [fluid, metrics.expanded, expandedWidth]);
   const onPanelLayout = useCallback(
     (event: LayoutChangeEvent) => {
-      if (fluid && !collapsed) expandedWidth.value = event.nativeEvent.layout.width;
+      if (fluid && !collapsed && progress.value === 0) expandedWidth.value = event.nativeEvent.layout.width;
     },
-    [fluid, collapsed, expandedWidth],
+    [fluid, collapsed, expandedWidth, progress],
   );
+  const expandedPadding = metrics.padding;
+  const collapsedPadding = metrics.collapsedPaddingX;
   const panelStyle = useAnimatedStyle(() => {
     const p = progress.value;
-    if (fluid && p === 0) return { width: '100%' };
-    return { width: expandedWidth.value + (COLLAPSED_WIDTH - expandedWidth.value) * p };
-  }, [progress, expandedWidth, fluid]);
+    const padding = expandedPadding + (collapsedPadding - expandedPadding) * p;
+    return {
+      width: fluid && p === 0 ? '100%' : expandedWidth.value + (collapsedWidth - expandedWidth.value) * p,
+      paddingLeft: padding, paddingRight: padding,
+    };
+  }, [progress, expandedWidth, fluid, collapsedWidth, expandedPadding, collapsedPadding]);
   const navInset = useAnimatedStyle(() => {
     const inset = 2 * (1 - progress.value);
     return { paddingLeft: inset, paddingRight: inset };
   }, [progress]);
   const sideBarIconStyle = useAnimatedStyle(
-    () => ({ transform: [{ scaleX: progress.value >= 0.5 ? 1 : -1 }] }),
+    () => ({ transform: [{ scaleX: 2 * progress.value - 1 }] }),
     [progress],
   );
+
+  const hasLogo = !!logo;
+  const hasAccount = !!account;
+  const headerGeometry = useAnimatedStyle(() => ({
+    height: hasLogo ? 36 + 30 * progress.value : hasAccount ? 32 + 30 * progress.value : 20,
+  }), [progress, hasLogo, hasAccount]);
+  const headerIdentityGeometry = useAnimatedStyle(() => ({
+    top: hasLogo ? 0 : 30 * progress.value,
+    right: (hasLogo ? 28 : 20) * (1 - progress.value),
+  }), [progress, hasLogo]);
+  const headerControlGeometry = useAnimatedStyle(() => {
+    const p = progress.value;
+    return {
+      left: `${100 * (1 - p)}%` as `${number}%`,
+      width: 20 + 16 * p,
+      top: hasLogo ? 8 + 38 * p : hasAccount ? 6 * (1 - p) : 0,
+      transform: [{ translateX: -20 * (1 - p) }],
+    };
+  }, [progress, hasLogo, hasAccount]);
+  const themeGeometry = useAnimatedStyle(() => ({ height: 40 - 4 * progress.value }), [progress]);
+  const themeExpandedStyle = useAnimatedStyle(() => ({ opacity: 1 - progress.value }), [progress]);
+  const themeCollapsedStyle = useAnimatedStyle(() => ({ opacity: progress.value }), [progress]);
 
   // ---- search ------------------------------------------------------------
   const activateSearch = useCallback(() => {
@@ -283,7 +331,7 @@ const SidebarPanel: React.FC<SidebarProps> = ({
             <Badge
               content={item.badge}
               style={{ backgroundColor: isSelected ? palette.badgePrimary : palette.badgeNeutral }}
-              textStyle={{ color: isSelected ? '#ffffff' : palette.textSecondary }}
+              textStyle={{ color: isSelected ? palette.badgePrimaryForeground : palette.textSecondary }}
             />
           ) : undefined
         }
@@ -292,17 +340,29 @@ const SidebarPanel: React.FC<SidebarProps> = ({
   };
 
   // ---- chrome ------------------------------------------------------------
-  const chrome: WebCssStyle = flat
-    ? { backgroundColor: palette.flat }
-    : {
-        borderRadius: 24,
-        borderWidth: 1,
-        borderColor: palette.panelBorder,
-        backgroundColor: palette.panel,
-        boxShadow: palette.panelShadow,
-      };
+  // Three surfaces, one place. `docked` keeps the panel fill and spends its
+  // edge on ONE hairline — the side facing the content — because a column
+  // flush to the window has no other edge to draw: a border all the way round
+  // would draw two lines nobody can see and one they can.
+  const chrome: WebCssStyle =
+    surface === 'plain'
+      ? { backgroundColor: palette.flat }
+      : surface === 'docked'
+        ? {
+            backgroundColor: palette.panel,
+            borderRightWidth: 1,
+            borderRightColor: palette.dockedEdge,
+          }
+        : {
+            borderRadius: 24,
+            borderWidth: 1,
+            borderColor: palette.panelBorder,
+            backgroundColor: palette.panel,
+            boxShadow: palette.panelShadow,
+          };
 
-  const flatMobile = mobile && flat;
+  const plain = surface === 'plain';
+  const flatMobile = mobile && plain;
   const searchRing = `inset 0 0 0 2px ${palette.searchRing}`;
   const placeholder = searchPlaceholder ?? (flatMobile ? 'Search...' : 'Search navigation…');
 
@@ -368,7 +428,7 @@ const SidebarPanel: React.FC<SidebarProps> = ({
       accessibilityLabel={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
       aria-expanded={!collapsed}
       onPress={toggleCollapse}
-      style={collapsed ? { width: 36, alignItems: 'center', justifyContent: 'center' } : undefined}
+      style={{ width: '100%', alignItems: 'center', justifyContent: 'center' }}
       testID="sidebar-collapse"
     >
       <Animated.View style={sideBarIconStyle}>
@@ -407,7 +467,7 @@ const SidebarPanel: React.FC<SidebarProps> = ({
       />
     </View>
   ) : (
-    <Pressable
+    <AnimatedPressable
       ref={searchTriggerRef}
       {...(IS_WEB ? { dataSet: { bloomSidebar: 'ring' }, ...(collapsed ? { title: searchLabel } : null) } : {})}
       role="button"
@@ -415,34 +475,35 @@ const SidebarPanel: React.FC<SidebarProps> = ({
       onPress={activateSearch}
       onHoverIn={searchHover.onIn}
       onHoverOut={searchHover.onOut}
-      style={
+      style={[
         {
           flexDirection: 'row',
           alignItems: 'center',
-          gap: 8,
-          padding: 8,
+          padding: metrics.row.padding,
           overflow: 'hidden',
           borderRadius: borderRadius.full,
           backgroundColor: searchHover.state ? palette.searchHover : palette.tertiary,
           '--bloom-sidebar-ring': palette.ring,
-        } as WebCssStyle
-      }
+        } as WebCssStyle, searchGapStyle,
+      ]}
       testID="sidebar-search"
     >
-      <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, minWidth: 0, flex: collapsed ? undefined : 1 }}>
-        <RiSearchLine width={20} height={20} fill={palette.textSecondary} />
+      <Animated.View style={[{ flexDirection: 'row', alignItems: 'center', minWidth: 0, flex: 1 }, searchGapStyle]}>
+        <View style={{ flexShrink: 0 }}>
+          <RiSearchLine width={metrics.row.icon} height={metrics.row.icon} fill={palette.textSecondary} />
+        </View>
         <Collapsible collapsed={collapsed}>
           <Text variant="body-medium" numberOfLines={1} style={{ color: palette.textSecondary }}>
             {searchLabel}
           </Text>
         </Collapsible>
-      </View>
+      </Animated.View>
       {searchShortcutLabel ? (
         <Collapsible collapsed={collapsed}>
           <Kbd>{searchShortcutLabel}</Kbd>
         </Collapsible>
       ) : null}
-    </Pressable>
+    </AnimatedPressable>
   );
 
   // A folder matching the query keeps every row; otherwise only its matching rows.
@@ -459,40 +520,70 @@ const SidebarPanel: React.FC<SidebarProps> = ({
     shownItems.length === 0 && shownSecondary.length === 0 && shownFolders.length === 0 && !collapsed;
   const hasTree = !!tree;
 
-  const headerRow = (
+  // A fresh closure here would re-render the memoised switcher on every
+  // keystroke in the quick-search field.
+  const handleModeChange = useCallback((key: string) => onModeChange?.(key), [onModeChange]);
+
+  const modeSwitcher =
+    modes && modes.length > 0 ? (
+      <SidebarModeSwitcher
+        modes={modes}
+        value={mode ?? modes[0]!.key}
+        onValueChange={handleModeChange}
+        collapsed={collapsed}
+        accessibilityLabel={modesLabel}
+        testID={testID ? `${testID}-modes` : 'sidebar-modes'}
+      />
+    ) : null;
+
+  const accountMenu = account ? (
     <View
-      style={
-        collapsed
-          ? { width: '100%', flexDirection: 'column-reverse', alignItems: 'flex-start', justifyContent: 'center', gap: 10 }
-          : { width: '100%', flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }
-      }
+      style={{
+        minWidth: 0,
+        flexShrink: 1,
+        display: flatMobile && searchActive ? 'none' : 'flex',
+        maxWidth: 190,
+      }}
     >
-      {account ? (
-        <View
-          style={{
-            minWidth: 0,
-            flexShrink: 1,
-            display: flatMobile && searchActive ? 'none' : 'flex',
-            maxWidth: 190,
-          }}
-        >
-          <SidebarUserMenu
-            account={account}
-            collapsed={collapsed}
-            suppressHover={suppressUserHover}
-            onHoverSuppressionEnd={() => setSuppressUserHover(false)}
-            avatarBackground={flat ? palette.avatarFlat : undefined}
-            testID="sidebar-account"
-          />
-        </View>
-      ) : (
-        <View />
-      )}
-      {headerControl}
+      <SidebarUserMenu
+        account={account}
+        collapsed={collapsed}
+        suppressHover={suppressUserHover}
+        onHoverSuppressionEnd={() => setSuppressUserHover(false)}
+        avatarBackground={plain ? palette.avatarFlat : undefined}
+        testID="sidebar-account"
+      />
     </View>
+  ) : null;
+
+  // Keep the same children mounted while the header changes from a row to a
+  // column. Numeric positions share the panel clock, including reversals.
+  const headerRow = mobile ? (
+    <>
+      <View style={{ width: '100%', flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 8 }}>
+        {logo ? <View style={{ minWidth: 0, flexShrink: 1, display: flatMobile && searchActive ? 'none' : 'flex' }}>
+          <SidebarLogoView logo={logo} collapsed={false} testID="sidebar-logo" />
+        </View> : accountMenu ?? <View />}
+        {headerControl}
+      </View>
+      {logo ? accountMenu : null}
+    </>
+  ) : (
+    <>
+      <Animated.View testID="sidebar-header" style={[{ width: '100%', position: 'relative' }, headerGeometry]}>
+        {logo || account ? <Animated.View style={[{ position: 'absolute', left: 0, minWidth: 0 }, headerIdentityGeometry]}>
+          {logo ? <SidebarLogoView logo={logo} collapsed={collapsed} testID="sidebar-logo" /> : accountMenu}
+        </Animated.View> : null}
+        <Animated.View testID="sidebar-header-control" style={[{ position: 'absolute', height: 20 }, headerControlGeometry]}>
+          {headerControl}
+        </Animated.View>
+      </Animated.View>
+      {logo ? accountMenu : null}
+    </>
   );
 
   return (
+    <SidebarSizeProvider value={size}>
     <CollapseProvider value={progress}>
       <Animated.View
         role="complementary"
@@ -506,98 +597,76 @@ const SidebarPanel: React.FC<SidebarProps> = ({
             flexDirection: 'column',
             justifyContent: 'space-between',
             overflow: 'hidden',
-            paddingTop: 12,
-            paddingBottom: 12,
-            paddingLeft: collapsed ? COLLAPSED_PADDING_X : 12,
-            paddingRight: collapsed ? COLLAPSED_PADDING_X : 12,
+            paddingTop: metrics.padding,
+            paddingBottom: metrics.padding,
           },
           chrome,
           panelStyle,
           style,
         ]}
       >
-        {hasTree ? (
-          // With a tree the header and search stay put; only the rows scroll,
-          // 24 between the primary rows and the tree section.
-          <View style={{ width: '100%', minHeight: 0, flexShrink: 1, gap: 12 }}>
+        <View style={{ width: '100%', minHeight: 0, flexShrink: 1 }}>
+          {/* Fixed chrome shares the panel's morph, never the destination scroll.
+              The viewport reaches half a control behind it, so rows dissolve
+              before reaching the controls while the first row retains its gap. */}
+          <View
+            testID={`${testID ?? 'sidebar'}-fixed-header`}
+            pointerEvents="box-none"
+            onLayout={(event) => setHeaderOverlap(Math.min(20, event.nativeEvent.layout.height / 2))}
+            style={{ width: '100%', flexShrink: 0, gap: 12, zIndex: Z_INDEX.floating }}
+          >
             {headerRow}
-            {showSearch && !flat ? searchButton : null}
-            <ScrollView
-              {...(IS_WEB ? { dataSet: { bloomSidebarScroll: 'none' } } : {})}
-              style={{ flexGrow: 0, flexShrink: 1, minHeight: 0 }}
-              contentContainerStyle={{ gap: 24 }}
-              showsVerticalScrollIndicator={false}
-            >
-              {shownItems.length > 0 ? (
-                <View role="navigation" style={{ width: '100%', gap: 4 }}>
-                  {shownItems.map(renderRow)}
-                </View>
-              ) : null}
-              {tree && !collapsed && shownFolders.length > 0 ? (
-                <View style={{ width: '100%', gap: 10 }}>
-                  <Text variant="body-medium" style={{ color: palette.textSecondary }}>
-                    {tree.label}
+            {modeSwitcher}
+            {showSearch && !flatMobile ? searchButton : null}
+          </View>
+          <SidebarScrollArea
+            fadeColor={plain ? palette.flat : palette.panel}
+            testID={`${testID ?? 'sidebar'}-scroll`}
+            {...(IS_WEB ? { dataSet: { bloomSidebarScroll: 'none' } } : {})}
+            style={{ marginTop: -headerOverlap, marginBottom: -8, marginLeft: -8, marginRight: -8, flexGrow: 0, flexShrink: 1, minHeight: 0 }}
+            contentContainerStyle={{ paddingTop: headerOverlap + 12, paddingBottom: 8, paddingLeft: 8, paddingRight: 8, gap: hasTree ? 24 : 0 }}
+            showsVerticalScrollIndicator={false}
+          >
+            {shownItems.length > 0 || !hasTree ? (
+              <Animated.View role="navigation" style={[{ width: '100%', gap: 4 }, !hasTree && navInset]}>
+                {nothingMatches && !hasTree ? (
+                  <Text variant="body-regular" style={{ paddingLeft: 8, paddingRight: 8, paddingTop: 12, paddingBottom: 12, color: palette.textTertiary }}>
+                    {noResultsLabel}
                   </Text>
-                  <View role="navigation" accessibilityLabel={tree.label} style={{ width: '100%', gap: 4 }}>
-                    {shownFolders.map((folder) => (
-                      <SidebarFolder
-                        key={folder.key}
-                        folder={folder}
-                        forceOpen={normalized.length > 0}
-                        selectedItem={selectedTreeItem}
-                        onItemPress={onTreeItemPress}
-                        testID={`sidebar-folder-${folder.key}`}
-                      />
-                    ))}
-                  </View>
+                ) : shownItems.map(renderRow)}
+              </Animated.View>
+            ) : null}
+            {tree && !collapsed && shownFolders.length > 0 ? (
+              <View style={{ width: '100%', gap: 10 }}>
+                <Text variant="body-medium" style={{ color: palette.textSecondary }}>{tree.label}</Text>
+                <View role="navigation" accessibilityLabel={tree.label} style={{ width: '100%', gap: 4 }}>
+                  {shownFolders.map((folder) => (
+                    <SidebarFolder key={folder.key} folder={folder} forceOpen={normalized.length > 0}
+                      selectedItem={selectedTreeItem} onItemPress={onTreeItemPress} testID={`sidebar-folder-${folder.key}`} />
+                  ))}
                 </View>
-              ) : null}
-              {nothingMatches ? (
-                <Text variant="body-regular" style={{ paddingLeft: 8, paddingRight: 8, color: palette.textTertiary }}>
-                  {noResultsLabel}
-                </Text>
-              ) : null}
-            </ScrollView>
-          </View>
-        ) : (
-        /* The scroller clips on every side, so it is padded out by 8 and pulled
-            back with a matching negative margin: the selected row's ring, the
-            profile's hover pill and focus rings all land inside the clip. */
-        <ScrollView
-          style={{ marginTop: -8, marginBottom: -8, marginLeft: -8, marginRight: -8, flexGrow: 0, flexShrink: 1, minHeight: 0 }}
-          contentContainerStyle={{ padding: 8, gap: 12 }}
-          showsVerticalScrollIndicator={false}
-        >
-          {headerRow}
-
-          <View style={{ width: '100%', gap: 12 }}>
-            {showSearch && !flat ? searchButton : null}
-            <Animated.View role="navigation" style={[{ width: '100%', gap: 4 }, navInset]}>
-              {nothingMatches ? (
-                <Text
-                  variant="body-regular"
-                  style={{ paddingLeft: 8, paddingRight: 8, paddingTop: 12, paddingBottom: 12, color: palette.textTertiary }}
-                >
-                  {noResultsLabel}
-                </Text>
-              ) : (
-                shownItems.map(renderRow)
-              )}
-            </Animated.View>
-          </View>
-        </ScrollView>
-        )}
+              </View>
+            ) : null}
+            {nothingMatches && hasTree ? (
+              <Text variant="body-regular" style={{ paddingLeft: 8, paddingRight: 8, color: palette.textTertiary }}>{noResultsLabel}</Text>
+            ) : null}
+          </SidebarScrollArea>
+        </View>
 
         <View style={{ width: '100%', flexShrink: 0, gap: 12, paddingTop: hasTree ? 12 : 0 }}>
           {showThemeToggle ? (
-            collapsed ? (
-              <ThemeToggle collapsed />
-            ) : (
-              <ThemeToggle
-                appearance="sidebar-segmented"
-                style={flat ? { backgroundColor: palette.panel } : undefined}
-              />
-            )
+            <Animated.View testID="sidebar-theme-morph" style={[{ position: 'relative', overflow: 'hidden' }, themeGeometry]}>
+              <Animated.View pointerEvents={collapsed ? 'none' : 'auto'} aria-hidden={collapsed} accessibilityElementsHidden={collapsed} importantForAccessibility={collapsed ? 'no-hide-descendants' : 'auto'}
+                {...(IS_WEB && collapsed ? { inert: true } : {})}
+                style={[{ position: 'absolute', left: 0, top: 0 }, themeExpandedStyle]}>
+                <ThemeToggle variant="sidebar-segmented" style={plain ? { backgroundColor: palette.panel } : undefined} />
+              </Animated.View>
+              <Animated.View pointerEvents={collapsed ? 'auto' : 'none'} aria-hidden={!collapsed} accessibilityElementsHidden={!collapsed} importantForAccessibility={collapsed ? 'auto' : 'no-hide-descendants'}
+                {...(IS_WEB && !collapsed ? { inert: true } : {})}
+                style={[{ position: 'absolute', left: 0, top: 0 }, themeCollapsedStyle]}>
+                <ThemeToggle collapsed />
+              </Animated.View>
+            </Animated.View>
           ) : null}
           {shownSecondary.length > 0 ? (
             <View role="navigation" style={{ width: '100%', gap: 4 }}>
@@ -608,20 +677,21 @@ const SidebarPanel: React.FC<SidebarProps> = ({
             <SidebarPlanCard
               plan={plan}
               collapsed={collapsed}
-              style={flat && !collapsed ? { backgroundColor: palette.panel } : undefined}
+              style={plain ? { backgroundColor: palette.panel } : undefined}
               testID="sidebar-plan"
             />
           ) : team ? (
             <SidebarTeamMenu
               team={team}
               collapsed={collapsed}
-              style={flat && !collapsed ? { backgroundColor: palette.panel } : undefined}
+              style={plain ? { backgroundColor: palette.panel } : undefined}
               testID="sidebar-team"
             />
           ) : null}
         </View>
       </Animated.View>
     </CollapseProvider>
+    </SidebarSizeProvider>
   );
 };
 

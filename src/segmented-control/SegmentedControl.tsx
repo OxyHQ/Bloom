@@ -1,3 +1,4 @@
+import { useBloomAppearance, type BloomSize } from '../appearance';
 import {
   createContext,
   useCallback,
@@ -8,6 +9,7 @@ import {
   useState,
 } from 'react';
 import {
+  type GestureResponderEvent,
   Platform,
   Pressable,
   type PressableProps,
@@ -16,7 +18,8 @@ import {
   View,
   type ViewStyle,
 } from 'react-native';
-import Animated, { Easing, LinearTransition } from 'react-native-reanimated';
+import Animated, { Easing, ReduceMotion, runOnJS, useAnimatedStyle, useSharedValue, withTiming, type SharedValue } from 'react-native-reanimated';
+import { Gesture, GestureDetector } from 'react-native-gesture-handler';
 
 import { useTheme } from '../theme/use-theme';
 import { Text } from '../typography';
@@ -26,11 +29,9 @@ import { useInteractionState } from '../hooks/use-interaction-state';
 import { borderRadius } from '../styles/tokens';
 import { NOT_DISABLED, interactiveWebCss, useInteractiveWebCss } from '../styles/interactive-web-css';
 import type { WebCssStyle } from '../styles/web-view-style';
-import { mixColor, resolveButtonRamps } from '../button/shared';
 
 /**
- * A segmented control. Colours come from Bloom's theme through
- * `button/shared.ts` ramps.
+ * A segmented control using Bloom's canonical surface and text roles.
  *
  *              small    medium   large
  *   segment h  24       28       36
@@ -38,11 +39,11 @@ import { mixColor, resolveButtonRamps } from '../button/shared';
  *   text       body-2   body     body     (-medium selected, -regular not)
  *   control h  32       36       44       (4px track padding, 2px gap)
  *
- *   track      neutral-100 (dark: neutral-925)
- *   thumb      surface (dark: neutral-800), shadow-2xs, slides under the
+ *   track      backgroundSecondary
+ *   thumb      card, shadow-2xs, slides under the
  *              selected segment over 200ms `ease`
  *   selected   medium weight, primary text
- *   unselected regular weight, neutral-500; hover → primary text (200ms)
+ *   unselected regular weight, textSecondary; hover → primary text (200ms)
  *   disabled   50% opacity
  *   focus      2px accent ring on the segment
  *
@@ -52,13 +53,14 @@ import { mixColor, resolveButtonRamps } from '../button/shared';
  * segment reads through its text weight and colour alone.
  */
 
-type SegmentedControlSize = 'small' | 'medium' | 'large';
+type SegmentedControlSize = BloomSize;
 type SegmentedControlVariant = 'solid' | 'plain';
 
 const GEOMETRY = {
-  small: { height: 24, paddingHorizontal: 8, type: 'body-2' },
-  medium: { height: 28, paddingHorizontal: 10, type: 'body' },
-  large: { height: 36, paddingHorizontal: 12, type: 'body' },
+  xs: { height: 20, paddingHorizontal: 6, type: 'caption-1' },
+  sm: { height: 24, paddingHorizontal: 8, type: 'body-2' },
+  md: { height: 28, paddingHorizontal: 10, type: 'body' },
+  lg: { height: 36, paddingHorizontal: 12, type: 'body' },
 } as const satisfies Record<SegmentedControlSize, { height: number; paddingHorizontal: number; type: TypeScaleFamily }>;
 
 /** Track padding. */
@@ -80,25 +82,14 @@ interface SegmentedPalette {
 }
 
 function resolveSegmentedPalette(theme: Theme): SegmentedPalette {
-  const { accent, neutral: n } = resolveButtonRamps(theme);
-  return theme.isDark
-    ? {
-        // `neutral-925` (#121212), between the 900 and 950 stops.
-        track: mixColor(n[900], n[950], 0.4),
-        thumb: n[800],
-        thumbShadow: '0 1px 0 0 rgba(0, 0, 0, 0.16)',
-        selectedText: theme.colors.text,
-        text: n[500],
-        ring: accent[500],
-      }
-    : {
-        track: n[100],
-        thumb: theme.colors.card,
-        thumbShadow: '0 1px 0 0 rgba(0, 0, 0, 0.05)',
-        selectedText: theme.colors.text,
-        text: n[500],
-        ring: accent[500],
-      };
+  return {
+    track: theme.colors.backgroundSecondary,
+    thumb: theme.colors.card,
+    thumbShadow: theme.isDark ? '0 1px 0 0 rgba(0, 0, 0, 0.16)' : '0 1px 0 0 rgba(0, 0, 0, 0.05)',
+    selectedText: theme.colors.text,
+    text: theme.colors.textSecondary,
+    ring: theme.colors.primary,
+  };
 }
 
 // ---------------------------------------------------------------------------
@@ -131,7 +122,12 @@ ${SEGMENT}${NOT_DISABLED}:focus-visible {
 }`,
 });
 
+type SegmentPosition = { value: string; x: number; width: number; disabled: boolean };
+
 const InternalContext = createContext<{
+  register: (segment: SegmentPosition) => () => void;
+  suppressPress: () => boolean;
+  allowKeyboardPress: () => void;
   type: 'tabs' | 'radio';
   size: SegmentedControlSize;
   variant: SegmentedControlVariant;
@@ -150,7 +146,7 @@ const InternalContext = createContext<{
  *
  * @example
  * ```tsx
- * <SegmentedControl label="Example" type="radio" value={value} onChange={setValue}>
+ * <SegmentedControl label="Example" type="radio" value={value} onValueChange={setValue}>
  *   <SegmentedControlItem value="one">
  *     <SegmentedControlItemText>One</SegmentedControlItemText>
  *   </SegmentedControlItem>
@@ -163,10 +159,10 @@ const InternalContext = createContext<{
 export function SegmentedControl<T extends string>({
   label,
   type = 'radio',
-  size = 'medium',
+  size: sizeProp,
   variant = 'solid',
   value,
-  onChange,
+  onValueChange,
   children,
   style,
   accessibilityHint,
@@ -178,12 +174,13 @@ export function SegmentedControl<T extends string>({
   /** `solid` (default) draws the track and sliding thumb; `plain` draws neither. */
   variant?: SegmentedControlVariant;
   value: T;
-  onChange: (value: T) => void;
+  onValueChange: (value: T) => void;
   children: React.ReactNode;
   style?: StyleProp<ViewStyle>;
   accessibilityHint?: string;
 }) {
   const theme = useTheme();
+  const {size} = useBloomAppearance({size: sizeProp}, {size: 'md', tone: 'neutral'});
   useInteractiveWebCss(STYLE_ID, SEGMENTED_CSS);
   const palette = useMemo(() => resolveSegmentedPalette(theme), [theme]);
   const [selectedPosition, setSelectedPosition] = useState<{
@@ -191,8 +188,79 @@ export function SegmentedControl<T extends string>({
     x: number;
   } | null>(null);
 
+  const segments = useSharedValue<SegmentPosition[]>([]);
+  const dragging = useSharedValue(false);
+  const originEnabled = useSharedValue(false);
+  const thumbX = useSharedValue(0);
+  const thumbWidth = useSharedValue(0);
+  const candidate = useSharedValue('');
+  const suppressUntil = useRef(0);
+  const [release, setRelease] = useState(0);
+  const register = useCallback((segment: SegmentPosition) => {
+    segments.value = [...segments.value.filter(item => item.value !== segment.value), segment].sort((a, b) => a.x - b.x);
+    return () => { segments.value = segments.value.filter(item => item.value !== segment.value); };
+  }, [segments]);
+  useLayoutEffect(() => {
+    if (!selectedPosition || dragging.value) return;
+    const config = { duration: TRANSITION_MS, easing: Easing.bezier(0.25, 0.1, 0.25, 1), reduceMotion: ReduceMotion.System };
+    thumbX.value = withTiming(selectedPosition.x, config);
+    thumbWidth.value = withTiming(selectedPosition.width, config);
+  }, [selectedPosition, release, dragging, thumbX, thumbWidth]);
+  const markDrag = useCallback(() => { suppressUntil.current = Date.now() + 500; }, []);
+  const finishDrag = useCallback((next: string, commit: boolean) => {
+    suppressUntil.current = Date.now() + 250;
+    if (commit && next !== value && segments.value.some(item => item.value === next && !item.disabled)) onValueChange(next as T);
+    // Also settle when a controlled parent rejects the proposed value.
+    setRelease(count => count + 1);
+  }, [onValueChange, segments, value]);
+  const gesture = useMemo(() => Gesture.Pan()
+    .activeOffsetX([-6, 6])
+    .failOffsetY([-14, 14])
+    .onBegin(event => {
+      const origin = segments.value.find(item => event.x >= item.x && event.x <= item.x + item.width);
+      originEnabled.value = !!origin && !origin.disabled;
+    })
+    .onStart(() => {
+      if (!originEnabled.value) return;
+      dragging.value = true;
+      candidate.value = '';
+      runOnJS(markDrag)();
+    })
+    .onUpdate(event => {
+      if (!dragging.value) return;
+      const enabled = segments.value.filter(item => !item.disabled);
+      if (!enabled.length) return;
+      let left = enabled[0]!;
+      let right = enabled[enabled.length - 1]!;
+      for (let index = 0; index < enabled.length; index++) {
+        const item = enabled[index]!;
+        const center = item.x + item.width / 2;
+        if (center <= event.x) left = item;
+        if (center >= event.x) { right = item; break; }
+      }
+      const start = left.x + left.width / 2;
+      const end = right.x + right.width / 2;
+      const progress = end === start ? 0 : Math.max(0, Math.min(1, (event.x - start) / (end - start)));
+      thumbX.value = left.x + (right.x - left.x) * progress;
+      thumbWidth.value = left.width + (right.width - left.width) * progress;
+      candidate.value = progress < 0.5 ? left.value : right.value;
+    })
+    .onEnd((_event, success) => {
+      if (!dragging.value) return;
+      dragging.value = false;
+      runOnJS(finishDrag)(candidate.value, success);
+    })
+    .onFinalize(() => {
+      if (!dragging.value) return;
+      dragging.value = false;
+      runOnJS(finishDrag)('', false);
+    }), [segments, originEnabled, dragging, candidate, thumbX, thumbWidth, markDrag, finishDrag]);
+
   const contextValue = useMemo(() => {
     return {
+      register,
+      suppressPress: () => dragging.value || Date.now() < suppressUntil.current,
+      allowKeyboardPress: () => { suppressUntil.current = 0; },
       type,
       size,
       variant,
@@ -203,8 +271,8 @@ export function SegmentedControl<T extends string>({
         val: string,
         position: { width: number; x: number } | null,
       ) => {
-        onChange(val as T);
-        if (position) setSelectedPosition(position);
+        onValueChange(val as T);
+        // Selection geometry follows the controlled value's item layout effect.
       },
       updatePosition: (position: { width: number; x: number }) => {
         setSelectedPosition(currPos => {
@@ -219,7 +287,7 @@ export function SegmentedControl<T extends string>({
         });
       },
     };
-  }, [value, selectedPosition, setSelectedPosition, onChange, type, size, variant, palette]);
+  }, [value, selectedPosition, setSelectedPosition, onValueChange, type, size, variant, palette, register, dragging]);
 
   const solid = variant === 'solid';
   const padding = solid ? TRACK_PADDING : 0;
@@ -230,6 +298,7 @@ export function SegmentedControl<T extends string>({
   const height = GEOMETRY[size].height + padding * 2;
 
   return (
+    <GestureDetector gesture={gesture} touchAction="pan-y">
     <View
       accessibilityLabel={label}
       accessibilityHint={accessibilityHint ?? ''}
@@ -250,8 +319,8 @@ export function SegmentedControl<T extends string>({
       role={type === 'tabs' ? 'tablist' : 'radiogroup'}>
       {solid && selectedPosition !== null && (
         <SegmentedThumb
-          x={selectedPosition.x}
-          width={selectedPosition.width}
+          x={thumbX}
+          width={thumbWidth}
           palette={palette}
         />
       )}
@@ -259,6 +328,7 @@ export function SegmentedControl<T extends string>({
         {children}
       </InternalContext.Provider>
     </View>
+    </GestureDetector>
   );
 }
 
@@ -320,10 +390,15 @@ export function SegmentedControlItem({
     }
   }, [needsUpdate]);
 
-  const onPress = useCallback(() => {
+  useLayoutEffect(() => {
+    if (position) return ctx.register({ value, ...position, disabled: !!disabled });
+  }, [ctx.register, value, position, disabled]);
+
+  const onPress = useCallback((event?: GestureResponderEvent) => {
+    if (disabled || ((event?.nativeEvent as { detail?: number } | undefined)?.detail !== 0 && ctx.suppressPress())) return;
     ctx.onSelectValue(value, position);
     onPressProp?.();
-  }, [ctx, value, position, onPressProp]);
+  }, [ctx, value, position, onPressProp, disabled]);
 
   // We render the segment as a flat `Pressable` (not Bloom's `Button`)
   // for two reasons:
@@ -364,12 +439,12 @@ export function SegmentedControlItem({
           width: evt.nativeEvent.layout.width,
         };
         if (!ctx.selectedPosition && active) {
-          ctx.onSelectValue(value, measuredPosition);
+          ctx.updatePosition(measuredPosition);
         }
         setPosition(measuredPosition);
       }}>
       <Pressable
-        {...(IS_WEB ? ({ dataSet: { bloomSegmentedItem: '' } } as Record<string, unknown>) : {})}
+        {...(IS_WEB ? ({ dataSet: { bloomSegmentedItem: '' }, onKeyDown: ctx.allowKeyboardPress } as Record<string, unknown>) : {})}
         onPress={onPress}
         onHoverIn={onHoverIn}
         onHoverOut={onHoverOut}
@@ -442,8 +517,8 @@ function SegmentedThumb({
   width,
   palette,
 }: {
-  x: number;
-  width: number;
+  x: SharedValue<number>;
+  width: SharedValue<number>;
   palette: SegmentedPalette;
 }) {
   const base: ViewStyle = {
@@ -451,28 +526,14 @@ function SegmentedThumb({
     top: TRACK_PADDING,
     bottom: TRACK_PADDING,
     left: 0,
-    width,
     borderRadius: borderRadius.full,
     backgroundColor: palette.thumb,
     boxShadow: palette.thumbShadow,
   };
 
-  if (IS_WEB) {
-    const webStyle: WebCssStyle = {
-      ...base,
-      transform: [{ translateX: x }],
-      transitionProperty: 'transform, width',
-      transitionDuration: `${TRANSITION_MS}ms`,
-      transitionTimingFunction: 'ease',
-    };
-    return <View pointerEvents="none" style={webStyle} />;
-  }
-
-  return (
-    <Animated.View
-      pointerEvents="none"
-      layout={LinearTransition.duration(TRANSITION_MS).easing(Easing.bezier(0.25, 0.1, 0.25, 1))}
-      style={[base, { left: x }]}
-    />
-  );
+  const animatedStyle = useAnimatedStyle(() => ({
+    width: width.value,
+    transform: [{ translateX: x.value }],
+  }), [x, width]);
+  return <Animated.View pointerEvents="none" style={[base, animatedStyle]} />;
 }

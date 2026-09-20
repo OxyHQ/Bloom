@@ -7,6 +7,7 @@ import { Text } from '../typography';
 import { Card } from '../card';
 
 const meta: Meta = {
+  parameters: { controls: { disable: true } },
   title: 'Foundations/Fonts',
 };
 
@@ -19,7 +20,7 @@ const PANGRAM = 'Sphinx of black quartz, judge my vow.';
 
 function Specimen({ name, stack }: { name: string; stack: string }) {
   return (
-    <Card variant="outlined" radius="radius-16" style={{ padding: 16, gap: 8, width: 620 }}>
+    <Card appearance="outline" radius="radius-16" style={{ maxWidth: '100%', padding: 16, gap: 8, width: 620 }}>
       <Text style={{ fontSize: 12, opacity: 0.7 }}>
         {name} · var({fontCssVars[name as keyof typeof fontCssVars]})
       </Text>
@@ -42,6 +43,7 @@ function Specimen({ name, stack }: { name: string; stack: string }) {
  * loading — which is a real failure, not a styling preference.
  */
 export const Specimens: Story = {
+  parameters: { controls: { disable: true } },
   render: () => (
     <View style={{ gap: 16 }}>
       {Object.entries(fontFamilies).map(([name, stack]) => (
@@ -57,8 +59,9 @@ export const Specimens: Story = {
  * and it is also exactly why a missing face is invisible.
  */
 export const Fallbacks: Story = {
+  parameters: { controls: { disable: true } },
   render: () => (
-    <View style={{ gap: 12, width: 620 }}>
+    <View style={{ maxWidth: '100%', gap: 12, width: 620 }}>
       {Object.entries(fontFamilies).map(([name, stack]) => (
         <View key={name} style={{ gap: 4 }}>
           <Text style={{ fontWeight: '600' }}>{name}</Text>
@@ -91,8 +94,9 @@ export const Fallbacks: Story = {
  * almost right.
  */
 export const Weights: Story = {
+  parameters: { controls: { disable: true } },
   render: () => (
-    <View style={{ gap: 8, width: 620 }}>
+    <View style={{ maxWidth: '100%', gap: 8, width: 620 }}>
       {(['400', '500', '600', '700'] as const).map((weight) => (
         <Text key={weight} style={{ fontFamily: fontFamilies.sans, fontSize: 20, fontWeight: weight }}>
           {weight} — {PANGRAM}

@@ -1,3 +1,4 @@
+import { boundedLabelSlot } from './svg-text';
 import React, { useCallback, useMemo, useState } from 'react';
 import {
   Platform,
@@ -311,12 +312,11 @@ export function StepsCard({
                 pointerEvents="none"
                 style={{
                   position: 'absolute',
-                  left: (i + 0.5) * band - LABEL_SLOT / 2,
+                  ...boundedLabelSlot(size.width, (i + 0.5) * band, 'middle', LABEL_SLOT),
                   top: plotBottom + LABEL_TOP,
-                  width: LABEL_SLOT,
                   alignItems: 'center',
                 }}>
-                <Text numberOfLines={1} style={[TICK_TYPE, { color: palette.textSecondary }]}>
+                <Text numberOfLines={1} style={[TICK_TYPE, { maxWidth: '100%', color: palette.textSecondary }]}>
                   {d.label}
                 </Text>
               </View>

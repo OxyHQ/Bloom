@@ -82,14 +82,14 @@ describe('Card axes', () => {
 
   it.each([
     ['plain', undefined, 'none'],
-    ['elevated', undefined, SHADOW_BOX.s],
-    ['outlined', 1, 'none'],
-    ['filled', undefined, 'none'],
+    ['solid', undefined, SHADOW_BOX.s],
+    ['outline', 1, 'none'],
+    ['subtle', undefined, 'none'],
   ] as const)(
     'variant %s resolves to border %s / shadow %s',
     (variant, borderWidth, shadow) => {
       const { toJSON } = renderWithTheme(
-        <Card variant={variant} testID="c">
+        <Card appearance={variant} testID="c">
           {null}
         </Card>,
       );
@@ -101,7 +101,7 @@ describe('Card axes', () => {
 
   it('lets an explicit axis beat the variant default, in both directions', () => {
     const added = renderWithTheme(
-      <Card variant="plain" border="hairline" elevation="m" testID="c">
+      <Card appearance="plain" border="hairline" elevation="m" testID="c">
         {null}
       </Card>,
     );
@@ -110,7 +110,7 @@ describe('Card axes', () => {
     expect(addedStyle.boxShadow).toBe(SHADOW_BOX.m);
 
     const removed = renderWithTheme(
-      <Card variant="elevated" elevation="none" testID="c">
+      <Card appearance="solid" elevation="none" testID="c">
         {null}
       </Card>,
     );
@@ -119,12 +119,12 @@ describe('Card axes', () => {
 
   it('paints filled from backgroundSecondary and every other variant from card', () => {
     const filled = renderWithTheme(
-      <Card variant="filled" testID="c">
+      <Card appearance="subtle" testID="c">
         {null}
       </Card>,
     );
     const outlined = renderWithTheme(
-      <Card variant="outlined" testID="c">
+      <Card appearance="outline" testID="c">
         {null}
       </Card>,
     );

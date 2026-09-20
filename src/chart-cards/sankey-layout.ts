@@ -382,6 +382,12 @@ export function sankeyLinkPath(link: SankeyLinkPath): string {
   return `M${link.sourceX},${link.sourceY} C${link.sourceControlX},${link.sourceY} ${link.targetControlX},${link.targetY} ${link.targetX},${link.targetY}`;
 }
 
+/** A closed band: unlike a thick stroke it cannot bulge past the node edges. */
+export function sankeyRibbonPath(link: SankeyLinkPath): string {
+  const half = Math.max(1, link.width) / 2;
+  return `M${link.sourceX},${link.sourceY - half} C${link.sourceControlX},${link.sourceY - half} ${link.targetControlX},${link.targetY - half} ${link.targetX},${link.targetY - half} L${link.targetX},${link.targetY + half} C${link.targetControlX},${link.targetY + half} ${link.sourceControlX},${link.sourceY + half} ${link.sourceX},${link.sourceY + half} Z`;
+}
+
 /**
  * The node outline: rounded (radius ≤ 5) only on its outward side, so a
  * ribbon meets a square edge. Sources round on the left, sinks on the right.
@@ -406,14 +412,15 @@ export function sankeyNodePath(x: number, y: number, w: number, h: number, round
 
 /**
  * What the pointer is over: a node (drawn on top) first, then the topmost
- * link whose stroked ribbon contains the point. Ribbons are hit-tested against
- * the cubic's centre line, with the half-width measured perpendicular to it.
+ * link whose filled ribbon contains the point. Its two cubic edges are vertical
+ * translations of the centre line, so test the vertical half-width, not the
+ * perpendicular stroke width (which incorrectly includes steep-curve bulges).
  */
 export function hitTestSankey(
   layout: SankeyLayout,
   px: number,
   py: number,
-  strokeWidthOf: (link: SankeyLinkPath) => number = (l) => Math.max(1, l.width),
+  bandWidthOf: (link: SankeyLinkPath) => number = (l) => Math.max(1, l.width),
 ): { type: 'node' | 'link'; index: number } | null {
   for (let i = layout.nodes.length - 1; i >= 0; i--) {
     const n = layout.nodes[i]!;
@@ -432,11 +439,29 @@ export function hitTestSankey(
     }
     const t = (lo + hi) / 2;
     const y = cubicValue(l.sourceY, l.sourceY, l.targetY, l.targetY, t);
-    const u = 1 - t;
-    const dx = 3 * u * u * (l.sourceControlX - l.sourceX) + 6 * u * t * (l.targetControlX - l.sourceControlX) + 3 * t * t * (l.targetX - l.targetControlX);
-    const dy = 6 * u * t * (l.targetY - l.sourceY);
-    const slope = dx === 0 ? 0 : dy / dx;
-    if (Math.abs(py - y) <= (strokeWidthOf(l) / 2) * Math.sqrt(1 + slope * slope)) return { type: 'link', index: l.index };
+    if (Math.abs(py - y) <= bandWidthOf(l) / 2) return { type: 'link', index: l.index };
   }
   return null;
+}
+
+/** Pack one column's full labels around node centres without overlap. */
+export function placeSankeyLabels(
+  labels: readonly { index: number; center: number; height: number }[],
+  height: number,
+  gap = 8,
+): Record<number, number> {
+  const ordered = [...labels].sort((a, b) => a.center - b.center);
+  const tops: Record<number, number> = {};
+  let next = 0;
+  for (const label of ordered) {
+    tops[label.index] = Math.max(next, label.center - label.height / 2);
+    next = tops[label.index]! + label.height + gap;
+  }
+  let bottom = height;
+  for (let index = ordered.length - 1; index >= 0; index--) {
+    const label = ordered[index]!;
+    tops[label.index] = Math.min(tops[label.index]!, bottom - label.height);
+    bottom = tops[label.index]! - gap;
+  }
+  return tops;
 }

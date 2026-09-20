@@ -59,7 +59,9 @@ import {
   toastDefaults,
 } from './constants';
 import { useDynamicToastContext, useToastContext } from './context';
-import { calculateStackScaleX } from './row-geometry';
+import { calculateStackScaleX, calculateToastVisibleHeight } from './row-geometry';
+import { NOTIFICATION_GEOMETRY } from '../notification/shared';
+import { space } from '../styles/tokens';
 import { isStackHovered } from './use-stack-hover';
 import { useAnimatedTarget } from './use-animated-target';
 import { ToastContent } from './ToastContent';
@@ -242,6 +244,28 @@ export const ToastRow = React.forwardRef<ToastRef, ToastRowProps>(
       { duration: STACKING_ANIMATION_DURATION, easing: easeOutQuartFn },
     );
 
+    // Keep the measured child intrinsic. Only its viewport changes height, so a
+    // tall description/custom row cannot protrude behind a shorter front card.
+    const visibleHeight = useAnimatedTarget(calculateToastVisibleHeight({
+      index, numberOfToasts, enableStacking, position,
+      allToastHeights: toastHeights, orderedToastIds, isExpanded,
+    }), { duration: STACKING_ANIMATION_DURATION, easing: easeOutQuartFn });
+    const naturalHeight = toastHeights[id];
+    const surfaceStyle = StyleSheet.flatten([mergedStyles.toast, style]);
+    const inset = jsx || unstyled ? 0 : space.lg;
+    const leftMargin = surfaceStyle?.marginLeft ?? surfaceStyle?.marginHorizontal ?? inset;
+    const insetLeft = typeof leftMargin === 'number' ? leftMargin : 0;
+    const rightMargin = surfaceStyle?.marginRight ?? surfaceStyle?.marginHorizontal ?? inset;
+    const insetRight = typeof rightMargin === 'number' ? rightMargin : 0;
+    const viewportStyle = useAnimatedStyle(() => {
+      const constrained = naturalHeight !== undefined && visibleHeight.value < naturalHeight - 0.5;
+      return {
+        // maxHeight (not a text transform) clips without squashing typography.
+        maxHeight: naturalHeight === undefined ? undefined : visibleHeight.value,
+        overflow: constrained ? 'hidden' : 'visible',
+      };
+    }, [visibleHeight, naturalHeight]);
+
     const stackTransformStyle = useAnimatedStyle(
       () => ({
         transform: [
@@ -413,16 +437,20 @@ export const ToastRow = React.forwardRef<ToastRef, ToastRowProps>(
     const stackZIndex =
       position === 'top-center' ? -(index + 1) : -(numberOfToasts - index);
 
+    // Exit owns a separate anchor. Its keyframe resets transform, so placing
+    // stackTransformStyle on that node loses the departing row's offset/scale.
+    // Keeping the stack transform inside also preserves it in the web exit clone.
     return (
       <Animated.View
+        exiting={exiting}
         pointerEvents="box-none"
         style={[
           styles.anchor,
           anchorFor(position),
           { zIndex: stackZIndex },
-          stackTransformStyle,
         ]}
       >
+        <Animated.View style={stackTransformStyle}>
         <ToastSwipeHandler
           onRemove={onRemove}
           onBegin={onSwipeBegin}
@@ -437,10 +465,17 @@ export const ToastRow = React.forwardRef<ToastRef, ToastRowProps>(
         >
           <Animated.View style={rowStyle}>
             <Animated.View
+              style={[{
+                marginLeft: insetLeft,
+                marginRight: insetRight,
+                borderRadius: surfaceStyle?.borderRadius ?? NOTIFICATION_GEOMETRY.radius,
+              }, viewportStyle]}
+            >
+            <Animated.View
+              style={{ flexShrink: 0, marginLeft: -Number(insetLeft), marginRight: -Number(insetRight) }}
               ref={measuredRef}
               onLayout={handleLayout}
               entering={entering}
-              exiting={exiting}
             >
               {jsx ?? (
                 <ToastContent
@@ -479,8 +514,10 @@ export const ToastRow = React.forwardRef<ToastRef, ToastRowProps>(
                 />
               )}
             </Animated.View>
+            </Animated.View>
           </Animated.View>
         </ToastSwipeHandler>
+        </Animated.View>
       </Animated.View>
     );
   },

@@ -6,6 +6,11 @@ import { ButtonGroup, ButtonGroupItem } from './index';
 import { RiAddLine as Plus, RiArrowLeftLine as ArrowLeft, RiArrowRightLine as ArrowRight } from '../icons/remix';
 
 const meta: Meta<typeof ButtonGroup> = {
+  argTypes: {
+    "material": { control: 'select', options: ["solid","glass"] },
+    "size": { control: 'select', options: ["sm","md"] },
+    "dividers": { control: 'boolean' }
+  },
   title: 'Base/Button Group',
   component: ButtonGroup,
 };
@@ -15,6 +20,7 @@ export default meta;
 type Story = StoryObj<typeof ButtonGroup>;
 
 export const Basic: Story = {
+  parameters: { controls: { disable: true } },
   render: () => (
     <ButtonGroup accessibilityLabel="Alignment">
       <ButtonGroupItem>Left</ButtonGroupItem>
@@ -24,12 +30,12 @@ export const Basic: Story = {
   ),
 };
 
-function SelectableGroup({ size }: { size: 'medium' | 'small' }) {
+function SelectableGroup({ size }: { size: 'md' | 'sm' }) {
   const [selected, setSelected] = useState('week');
   return (
     <ButtonGroup size={size} accessibilityLabel="Range">
       {['day', 'week', 'month'].map((value) => (
-        <ButtonGroupItem key={value} selected={selected === value} onPress={() => setSelected(value)}>
+        <ButtonGroupItem key={value} checked={selected === value} onPress={() => setSelected(value)}>
           {value[0]?.toUpperCase() + value.slice(1)}
         </ButtonGroupItem>
       ))}
@@ -39,9 +45,10 @@ function SelectableGroup({ size }: { size: 'medium' | 'small' }) {
 
 /** Every shape, at both sizes. */
 export const Matrix: Story = {
+  parameters: { controls: { disable: true } },
   render: () => (
     <View style={{ gap: 20, alignItems: 'flex-start' }}>
-      {(['medium', 'small'] as const).map((size) => (
+      {(['md', 'sm'] as const).map((size) => (
         <View key={size} style={{ gap: 12, alignItems: 'flex-start' }}>
           <ButtonGroup size={size} accessibilityLabel="Alignment">
             <ButtonGroupItem>Left</ButtonGroupItem>
@@ -60,6 +67,21 @@ export const Matrix: Story = {
           <SelectableGroup size={size} />
         </View>
       ))}
+    </View>
+  ),
+};
+
+/** One pane with flush item hit targets; no nested material or default divider. */
+export const Glass: Story = {
+  args: { material: "glass" },
+  parameters: { controls: { include: ["material","size","dividers"] } },
+  render: (args) => (
+    <View style={{ padding: 24, alignItems: 'flex-start', backgroundColor: '#dcece6' }}>
+      <ButtonGroup {...args}  accessibilityLabel="Floating actions">
+        <ButtonGroupItem iconOnly leadingIcon={ArrowLeft} accessibilityLabel="Back" />
+        <ButtonGroupItem leadingIcon={Plus}>Add</ButtonGroupItem>
+        <ButtonGroupItem iconOnly leadingIcon={ArrowRight} accessibilityLabel="Next" />
+      </ButtonGroup>
     </View>
   ),
 };

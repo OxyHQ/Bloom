@@ -19,6 +19,20 @@ import {
 } from './index';
 
 const meta: Meta<typeof ComposerPanel> = {
+  argTypes: {
+    "value": { control: 'text' },
+    "defaultValue": { control: 'text' },
+    "disabled": { control: 'boolean' },
+    "placeholder": { control: 'text' },
+    "permission": { control: 'text' },
+    "defaultPermission": { control: 'text' },
+    "model": { control: 'text' },
+    "defaultModel": { control: 'text' },
+    "effort": { control: 'number' },
+    "defaultEffort": { control: 'number' },
+    "listening": { control: 'boolean' },
+    "defaultListening": { control: 'boolean' }
+  },
   title: 'Blocks/Composer Panel',
   component: ComposerPanel,
 };
@@ -117,6 +131,7 @@ function Frame({ children, width = 640 }: { children: React.ReactNode; width?: n
 
 /** The new composer with permissions dropdown: status tab, add, permissions, model, mic, send. */
 export const Default: Story = {
+  parameters: { controls: { disable: true } },
   render: () => {
     const [value, setValue] = useState('');
     return (
@@ -137,6 +152,7 @@ export const Default: Story = {
 
 /** Every tile state: landed image, landed documents, and rings at 0 / 35 / 100. */
 export const Attachments: Story = {
+  parameters: { controls: { disable: true } },
   render: () => {
     const [files, setFiles] = useState<ComposerPanelAttachment[]>([
       { id: 'photo', name: 'sunset.png', kind: 'image', src: PHOTO },
@@ -163,6 +179,7 @@ export const Attachments: Story = {
 
 /** The new composer with attachments: files land one after another with the simulated queue. */
 export const UploadQueue: Story = {
+  parameters: { controls: { disable: true } },
   render: () => {
     const [files, setFiles] = useState<ComposerPanelAttachment[]>([
       { id: 'photo', name: 'sunset.png', kind: 'image', src: PHOTO, progress: 0 },
@@ -185,16 +202,18 @@ export const UploadQueue: Story = {
 
 /** A turn in flight: send greyed out, the mic listening. */
 export const Disabled: Story = {
-  render: () => (
+  args: { disabled: true, defaultListening: true, defaultValue: "Summarise the Q3 numbers and draft the board update.", defaultModel: "anthropic/opus-5", defaultPermission: "plan" },
+  parameters: { controls: { include: ["disabled","defaultListening","defaultValue","defaultModel","defaultPermission","value","placeholder","permission","model","effort","defaultEffort","listening"] } },
+  render: (args) => (
     <Frame>
-      <ComposerPanel
+      <ComposerPanel {...args}
         testID="composer"
-        disabled
-        defaultListening
-        defaultValue="Summarise the Q3 numbers and draft the board update."
+
+
+
         providers={PROVIDERS}
-        defaultModel="anthropic/opus-5"
-        defaultPermission="plan"
+
+
         status={STATUS}
       />
     </Frame>
@@ -203,6 +222,7 @@ export const Disabled: Story = {
 
 /** No status tab, no model catalogue, no add menu: just the prompt, permissions, mic and send. */
 export const Minimal: Story = {
+  parameters: { controls: { disable: true } },
   render: () => (
     <Frame width={480}>
       <ComposerPanel testID="composer" addMenu={[]} />
@@ -212,6 +232,7 @@ export const Minimal: Story = {
 
 /** The model picker on its own. */
 export const Picker: Story = {
+  parameters: { controls: { disable: true } },
   render: () => {
     const [model, setModel] = useState('openai/gpt-5.6-mini');
     const [effort, setEffort] = useState(1);
@@ -243,8 +264,9 @@ const FOLDERS = [
  * agent mode and the context meter.
  */
 export const Pill: Story = {
+  parameters: { controls: { disable: true } },
   render: () => (
-    <View style={{ paddingTop: 380, width: 700, gap: 10 }}>
+    <View style={{ maxWidth: '100%', paddingTop: 380, width: 700, gap: 10 }}>
       <ComposerPill testID="pill" models={PILL_MODELS} defaultModel="Fable 5" />
       <View style={{ paddingLeft: 6, paddingRight: 6 }}>
         <ComposerStatusBar branch="Main" folders={FOLDERS} mode="Agent" context={57} testID="status" />
@@ -255,12 +277,13 @@ export const Pill: Story = {
 
 /** Glass: inside a lit `ComposerLoader`, the controls sit on frosted chips over the light. */
 export const PillGlass: Story = {
+  parameters: { controls: { disable: true } },
   render: function Render() {
     const [working, setWorking] = useState(true);
     return (
-      <View style={{ width: 700, gap: 16 }}>
+      <View style={{ maxWidth: '100%', width: 700, gap: 16 }}>
         <View style={{ alignSelf: 'flex-start' }}>
-          <Button variant="secondary" size="small" onPress={() => setWorking((w) => !w)}>
+          <Button size="sm" onPress={() => setWorking((w) => !w)} appearance="outline" tone="neutral">
             {working ? 'Stop working' : 'Start working'}
           </Button>
         </View>
@@ -274,8 +297,9 @@ export const PillGlass: Story = {
 
 /** Listening and disabled states. */
 export const PillStates: Story = {
+  parameters: { controls: { disable: true } },
   render: () => (
-    <View style={{ width: 520, gap: 16 }}>
+    <View style={{ maxWidth: '100%', width: 520, gap: 16 }}>
       <ComposerPill models={PILL_MODELS} defaultListening />
       <ComposerPill models={PILL_MODELS} disabled defaultValue="A long message that runs past the end of the field and fades out" />
     </View>

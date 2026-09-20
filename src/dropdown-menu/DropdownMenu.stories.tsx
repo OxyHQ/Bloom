@@ -30,6 +30,12 @@ import {
 } from './index';
 
 const meta: Meta = {
+  argTypes: {
+    "open": { control: 'boolean' },
+    "defaultOpen": { control: 'boolean' }
+  },
+  component: DropdownMenu,
+  parameters: { controls: { disable: true } },
   title: 'Base/Dropdown',
 };
 
@@ -49,6 +55,7 @@ function SecondaryPersonIcon() {
  * label, a full-bleed separator, a `text-disabled` row and a destructive row.
  */
 export const Basic: Story = {
+  parameters: { controls: { disable: true } },
   render: () => (
     <View style={{ padding: 80 }}>
       <DropdownMenu>
@@ -71,7 +78,7 @@ export const Basic: Story = {
             <DropdownMenuItem disabled>Billing</DropdownMenuItem>
           </DropdownMenuGroup>
           <DropdownMenuSeparator />
-          <DropdownMenuItem variant="destructive">Sign out</DropdownMenuItem>
+          <DropdownMenuItem tone="danger">Sign out</DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>
     </View>
@@ -83,6 +90,7 @@ export const Basic: Story = {
  * `Item`, which is the only spelling react-native-web reads.
  */
 export const Selection: Story = {
+  parameters: { controls: { disable: true } },
   render: function SelectionMenu() {
     const [showGrid, setShowGrid] = useState(true);
     const [showRuler, setShowRuler] = useState(false);
@@ -95,7 +103,7 @@ export const Selection: Story = {
         </Text>
         <DropdownMenu>
           <DropdownMenuTrigger asChild label="View options">
-            <Button variant="secondary">View options</Button>
+            <Button appearance="outline" tone="neutral">View options</Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent>
             <DropdownMenuLabel>Show</DropdownMenuLabel>
@@ -133,11 +141,12 @@ export const Selection: Story = {
  * enter and leave it; Escape closes the sub before the menu.
  */
 export const Submenu: Story = {
+  parameters: { controls: { disable: true } },
   render: () => (
     <View style={{ padding: 80 }}>
       <DropdownMenu>
         <DropdownMenuTrigger asChild label="Share">
-          <Button variant="secondary">Share</Button>
+          <Button appearance="outline" tone="neutral">Share</Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent>
           <DropdownMenuItem testID="plain-item">Copy link</DropdownMenuItem>
@@ -173,11 +182,12 @@ export const Submenu: Story = {
  * mechanism between the pointer and the assertion.
  */
 export const SiblingSubmenus: Story = {
+  parameters: { controls: { disable: true } },
   render: () => (
     <View style={{ padding: 80 }}>
       <DropdownMenu>
         <DropdownMenuTrigger asChild label="Share">
-          <Button variant="secondary">Share</Button>
+          <Button appearance="outline" tone="neutral">Share</Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent>
           <DropdownMenuSub>
@@ -206,6 +216,7 @@ const SUBMENU_LAYOUT_SHIFT_PX = 120;
  * then opens the flyout. The browser gate drives both halves.
  */
 export const SubmenuLayoutShiftDoesNotOpen: Story = {
+  parameters: { controls: { disable: true } },
   render: function SubmenuLayoutShiftFixture() {
     const [shifted, setShifted] = useState(false);
     const [submenuOpen, setSubmenuOpen] = useState(false);
@@ -214,7 +225,7 @@ export const SubmenuLayoutShiftDoesNotOpen: Story = {
       <View style={{ minHeight: 420, padding: 80 }}>
         <DropdownMenu defaultOpen>
           <DropdownMenuTrigger asChild label="Layout intent fixture">
-            <Button variant="secondary">Layout intent fixture</Button>
+            <Button appearance="outline" tone="neutral">Layout intent fixture</Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent>
             <DropdownMenuItem
@@ -258,6 +269,7 @@ export const SubmenuLayoutShiftDoesNotOpen: Story = {
  * own, exactly as a root dropdown flips above its trigger.
  */
 export const SubmenuWithNoRoomToTheRight: Story = {
+  parameters: { controls: { disable: true } },
   render: () => (
     <View
       style={{
@@ -268,7 +280,7 @@ export const SubmenuWithNoRoomToTheRight: Story = {
       }}>
       <DropdownMenu>
         <DropdownMenuTrigger asChild label="Share">
-          <Button variant="secondary">Share</Button>
+          <Button appearance="outline" tone="neutral">Share</Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end">
           <DropdownMenuItem testID="plain-item">Copy link</DropdownMenuItem>
@@ -287,16 +299,17 @@ export const SubmenuWithNoRoomToTheRight: Story = {
 
 /** Anchored to the right edge of its trigger. */
 export const AlignEnd: Story = {
+  parameters: { controls: { disable: true } },
   render: () => (
     <View style={{ padding: 80, alignItems: 'flex-end' }}>
       <DropdownMenu>
         <DropdownMenuTrigger asChild label="Actions">
-          <Button variant="secondary">Actions</Button>
+          <Button appearance="outline" tone="neutral">Actions</Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end">
           <DropdownMenuItem>Rename</DropdownMenuItem>
           <DropdownMenuItem>Duplicate</DropdownMenuItem>
-          <DropdownMenuItem variant="destructive">Delete</DropdownMenuItem>
+          <DropdownMenuItem tone="danger">Delete</DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>
     </View>

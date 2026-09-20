@@ -6,6 +6,17 @@ import { EarningsChartCard } from './EarningsChartCard';
 import type { EarningsPoint, EarningsRange } from './EarningsChartCard';
 
 const meta: Meta<typeof EarningsChartCard> = {
+  argTypes: {
+    "title": { control: 'text' },
+    "headline": { control: 'number' },
+    "delta": { control: 'number' },
+    "defaultRange": { control: 'text' },
+    "rangesLabel": { control: 'text' },
+    "yMax": { control: 'number' },
+    "color": { control: 'text' },
+    "activeColor": { control: 'text' },
+    "activeIndex": { control: 'number' }
+  },
   title: 'Charts/Earnings Chart',
   component: EarningsChartCard,
 };
@@ -45,11 +56,12 @@ const RANGES: EarningsRange[] = [
 ];
 
 const Frame = ({ children, width = 480 }: { children: React.ReactNode; width?: number }) => (
-  <View style={{ padding: 40, gap: 24, width: width + 80 }}>{children}</View>
+  <View style={{ maxWidth: '100%', gap: 24, width }}>{children}</View>
 );
 
 /** "Earned so far": bars in full-height tracks, Figma ticks, Weekly / Monthly / Yearly. */
 export const Default: Story = {
+  parameters: { controls: { disable: true } },
   render: () => (
     <Frame>
       <EarningsChartCard testID="earn" ranges={RANGES} yTicks={Y_TICKS} yMax={Y_MAX} />
@@ -59,15 +71,18 @@ export const Default: Story = {
 
 /** June hovered (controlled): the outline around its track, the darker bar, the month in the header. */
 export const Hovered: Story = {
-  render: () => (
+  args: { activeIndex: 5 },
+  parameters: { controls: { include: ["activeIndex","title","headline","delta","defaultRange","rangesLabel","color","activeColor"] } },
+  render: (args) => (
     <Frame>
-      <EarningsChartCard ranges={RANGES} yTicks={Y_TICKS} yMax={Y_MAX} activeIndex={5} />
+      <EarningsChartCard {...args} ranges={RANGES} yTicks={Y_TICKS} yMax={Y_MAX}  />
     </Frame>
   ),
 };
 
 /** Recharts' nice ticks when no Figma ticks are given, and the card without a switcher. */
 export const AutoAxis: Story = {
+  parameters: { controls: { disable: true } },
   render: () => (
     <Frame>
       <EarningsChartCard ranges={RANGES} defaultRange="yearly" />
@@ -78,10 +93,11 @@ export const AutoAxis: Story = {
 
 /** The dashboard's wide slot (`xl:w-[673px]`), and a narrower card (the header stacks on the viewport, not the card). */
 export const Widths: Story = {
+  parameters: { controls: { disable: true } },
   render: () => (
     <Frame width={673}>
       <EarningsChartCard ranges={RANGES} yTicks={Y_TICKS} yMax={Y_MAX} />
-      <View style={{ width: 420 }}>
+      <View style={{ maxWidth: '100%', width: 420 }}>
         <EarningsChartCard ranges={RANGES} yTicks={Y_TICKS} yMax={Y_MAX} />
       </View>
     </Frame>

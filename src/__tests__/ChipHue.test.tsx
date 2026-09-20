@@ -91,7 +91,7 @@ describe('Chip hue', () => {
   }
 
   it('paints the fill and the label from the hue, over `color` and `variant`, with no border', () => {
-    const { getByTestId, getByText, theme } = renderChip({ hue: 'purple', color: 'error', variant: 'outlined', children: 'Design' });
+    const { getByTestId, getByText, theme } = renderChip({ hue: 'purple', tone: 'danger', appearance: 'outline', children: 'Design' });
     const expected = resolveChipHueColors(theme, 'purple');
     const box = resolvedStyle(getByTestId('chip').props.style);
     expect(box.backgroundColor).toBe(expected.background);
@@ -108,7 +108,7 @@ describe('Chip hue', () => {
 
   it('still lets `selected` promote a pressable chip to the brand tone', () => {
     const plain = renderChip({ hue: 'lime', children: 'Music', onPress: () => {} });
-    const selected = renderChip({ hue: 'lime', children: 'Music', onPress: () => {}, selected: true });
+    const selected = renderChip({ hue: 'lime', children: 'Music', onPress: () => {}, checked: true });
     const plainBg = resolvedStyle(plain.getByTestId('chip').props.style).backgroundColor;
     const selectedBg = resolvedStyle(selected.getByTestId('chip').props.style).backgroundColor;
     expect(plainBg).toBe(resolveChipHueColors(plain.theme, 'lime').background);
@@ -116,7 +116,7 @@ describe('Chip hue', () => {
   });
 
   it('leaves a chip without `hue` on the accent recipe', () => {
-    const { getByTestId, theme } = renderChip({ color: 'success', variant: 'subtle', children: 'Live' });
+    const { getByTestId, theme } = renderChip({ tone: 'success', appearance: 'subtle', children: 'Live' });
     expect(resolvedStyle(getByTestId('chip').props.style).backgroundColor).not.toBe(resolveChipHueColors(theme, 'lime').background);
   });
 });

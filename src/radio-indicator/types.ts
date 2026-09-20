@@ -14,7 +14,9 @@ export interface RadioIndicatorProps {
   size?: number;
   /** Accent the selected gradient is built around (defaults to theme.colors.primary) */
   selectedColor?: string;
-  /** Border color when unselected (defaults to the neutral-300 stop; neutral-700 in dark) */
+  /** Foreground paired with selectedColor; shared tonal controls pass this with the fill. */
+  selectedForeground?: string;
+  /** Border color when unselected (defaults to the semantic border) */
   borderColor?: string;
   /** Custom style */
   style?: StyleProp<ViewStyle>;

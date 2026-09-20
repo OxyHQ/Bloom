@@ -27,6 +27,7 @@ import {
 import type { AiChatGeneration } from './types';
 
 const meta: Meta = {
+  parameters: { controls: { disable: true } },
   title: 'Blocks/AI Chat',
 };
 
@@ -69,8 +70,9 @@ const ARTWORK = {
 
 /** Turns in a thread: the user card, and replies built from lines, bullets, a link chip and a code card. */
 export const Messages: Story = {
+  parameters: { controls: { disable: true } },
   render: () => (
-    <View style={{ width: 718, gap: 12 }}>
+    <View style={{ maxWidth: '100%', width: 718, gap: 12 }}>
       <AiChatUserMessage>
         <AiChatMessageLine>
           make detail screens like this for the home and medical templates:{' '}
@@ -99,16 +101,18 @@ export const Messages: Story = {
 
 /** Like, dislike and copy; hover for the tooltips, copy for the check and "Copied!". */
 export const FeedbackRow: Story = {
+  parameters: { controls: { disable: true } },
   render: () => <AiChatFeedbackRow />,
 };
 
 /** The generation frame: the dot wave and countdown for four seconds, then the radial reveal and the feedback row. */
 export const ImageGeneration: Story = {
+  parameters: { controls: { disable: true } },
   render: function Render() {
     const [run, setRun] = useState(0);
     return (
-      <View style={{ width: 400, gap: 16 }}>
-        <Button variant="secondary" size="small" onPress={() => setRun((n) => n + 1)}>
+      <View style={{ maxWidth: '100%', width: 400, gap: 16 }}>
+        <Button size="sm" onPress={() => setRun((n) => n + 1)} appearance="outline" tone="neutral">
           Generate again
         </Button>
         <AiChatImageGeneration key={run} source={ARTWORK} alt="A blue gradient" />
@@ -119,14 +123,16 @@ export const ImageGeneration: Story = {
 
 /** The frame held mid-generation (`ready={false}`). */
 export const ImageGenerating: Story = {
+  parameters: { controls: { disable: true } },
   render: () => <AiChatImageGeneration source={ARTWORK} alt="A blue gradient" ready={false} />,
 };
 
 /** The changes / code panel with its summary card and a soft-wrapping, numbered code view. */
 export const CodePanel: Story = {
+  parameters: { controls: { disable: true } },
   render: () => (
-    <View style={{ height: 640 }}>
-      <AiChatCodePanel
+    <View style={{ height: 640, width: 410, maxWidth: '100%' }}>
+      <AiChatCodePanel width="100%"
         code={PANEL_CODE}
         language="tsx"
         changeCount={12}
@@ -156,20 +162,18 @@ const WALL: AiChatGeneration[] = [
  * generation" pins a new image at the top-left.
  */
 export const GalleryPanel: Story = {
+  parameters: { controls: { disable: true } },
   render: function Render() {
     const [generated, setGenerated] = useState<AiChatGeneration[]>([]);
     return (
       <View style={{ gap: 16 }}>
-        <Button
-          variant="secondary"
-          size="small"
-          onPress={() =>
+        <Button size="sm" onPress={() =>
             setGenerated((list) => [{ id: `new-${list.length}`, prompt: 'Fresh generation', source: ARTWORK, aspectRatio: 449 / 600 }, ...list])
-          }>
+          } appearance="outline" tone="neutral">
           Land a generation
         </Button>
-        <View style={{ height: 640 }}>
-          <AiChatGalleryPanel generations={WALL} generated={generated} />
+        <View style={{ height: 640, width: 410, maxWidth: '100%' }}>
+          <AiChatGalleryPanel width="100%" generations={WALL} generated={generated} />
         </View>
       </View>
     );
@@ -178,14 +182,15 @@ export const GalleryPanel: Story = {
 
 /** The chat container: breadcrumb header, a thread, and the glass composer lit while `working`. */
 export const Container: Story = {
+  parameters: { controls: { disable: true } },
   render: function Render() {
     const [working, setWorking] = useState(false);
     return (
       <View style={{ gap: 16 }}>
-        <Button variant="secondary" size="small" onPress={() => setWorking((w) => !w)}>
+        <Button size="sm" onPress={() => setWorking((w) => !w)} appearance="outline" tone="neutral">
           {working ? 'Stop working' : 'Start working'}
         </Button>
-        <View style={{ width: 718, height: 640 }}>
+        <View style={{ maxWidth: '100%', width: 718, height: 640 }}>
           <AiChatContainer
             project="vibl coding project"
             title="coding scenario"
@@ -222,13 +227,14 @@ export const Container: Story = {
 
 /** The resize grip on its own: hover the strip for the grip, drag it to report the distance. */
 export const ResizeHandle: Story = {
+  parameters: { controls: { disable: true } },
   render: function Render() {
     const [dx, setDx] = useState(0);
     const { colors } = useTheme();
     return (
       <View style={{ gap: 12 }}>
         <Text variant="body-medium">{`dx: ${Math.round(dx)}`}</Text>
-        <View style={{ position: 'relative', width: 320, height: 240, borderRadius: 24, backgroundColor: colors.backgroundSecondary }}>
+        <View style={{ maxWidth: '100%', position: 'relative', width: 320, height: 240, borderRadius: 24, backgroundColor: colors.backgroundSecondary }}>
           <AiChatResizeHandle onResize={setDx} onResizeEnd={() => {}} />
         </View>
       </View>

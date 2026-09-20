@@ -1,3 +1,5 @@
+import { useBloomAppearance } from '../appearance';
+import { resolveBloomColors } from '../appearance/colors';
 import React, { memo, useCallback, useMemo } from 'react';
 import { Platform, Pressable, View } from 'react-native';
 
@@ -82,16 +84,19 @@ const CheckboxComponent: React.FC<CheckboxProps> = ({
   onCheckedChange,
   label,
   description,
-  size = 'medium',
+  size: sizeProp,
   disabled = false,
   indeterminate = false,
-  color,
+  tone: toneProp,
   style,
   labelStyle,
   accessibilityLabel,
   testID,
 }) => {
   const theme = useTheme();
+  const { size: scopedSize, tone } = useBloomAppearance({ size: sizeProp, tone: toneProp }, { size: 'md', tone: 'accent' });
+  const size = scopedSize;
+  const { background: color, foreground } = resolveBloomColors(theme.colors, tone, 'solid');
   useInteractiveWebCss(STYLE_ID, BLOOM_CHECKBOX_CSS);
   useInteractiveWebCss(CHECKBOX_GLYPH_STYLE_ID, CHECKBOX_GLYPH_CSS);
   const { state: hovered, onIn: onHoverIn, onOut: onHoverOut } = useInteractionState();
@@ -99,7 +104,7 @@ const CheckboxComponent: React.FC<CheckboxProps> = ({
   // only other state the design defines. No press scale.
   const { state: pressed, onIn: onPressIn, onOut: onPressOut } = useInteractionState();
   const sizeConfig = CHECKBOX_SIZE_CONFIG[size];
-  const paint = useMemo(() => resolveCheckboxPaint(theme, color), [theme, color]);
+  const paint = useMemo(() => resolveCheckboxPaint(theme, color, foreground), [theme, color, foreground]);
   const highlighted = !disabled && (hovered || pressed);
 
   const handlePress = useCallback(() => {

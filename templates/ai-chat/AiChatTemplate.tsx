@@ -26,7 +26,7 @@ import { ComposerLoader } from '../../src/composer-loader';
 import { ComposerPill, ComposerStatusBar } from '../../src/composer-panel';
 import { RiCodeSLine, RiGalleryLine } from '../../src/icons/remix';
 import { Sidebar } from '../../src/sidebar';
-import { WEB_POSITION_FIXED, type WebCssStyle } from '../../src/styles/web-view-style';
+import { TEMPLATE_FRAME } from '../shared/dashboard';
 import {
   ACCOUNT,
   CODING_RESPONSE_CODE,
@@ -348,14 +348,11 @@ export function AiChatTemplate({ defaultScenario }: { defaultScenario: AiChatSce
     plan: PLAN,
   };
 
-  // The template fills the viewport, over the preview decorator's padding.
-  const frame: WebCssStyle = { position: WEB_POSITION_FIXED, top: 0, left: 0, right: 0, bottom: 0 };
-
   return (
-    <View style={frame}>
+    <View style={TEMPLATE_FRAME}>
       <AiChatShell
         sidebar={<Sidebar {...sidebarProps} />}
-        mobileSidebar={<Sidebar {...sidebarProps} mobile flat />}
+        mobileSidebar={<Sidebar {...sidebarProps} mobile surface="plain" />}
         navOpen={navOpen}
         onNavOpenChange={setNavOpen}
         panelLabel={image ? 'Gallery' : 'Code'}

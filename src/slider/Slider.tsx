@@ -1,3 +1,5 @@
+import { useBloomAppearance } from '../appearance';
+import { resolveBloomColors } from '../appearance/colors';
 import React, { memo, useCallback, useMemo, useRef, useState } from 'react';
 import {
   PanResponder,
@@ -94,22 +96,22 @@ function webTransition(properties: string): WebCssStyle {
 }
 
 function resolveSliderPaint(theme: Theme) {
-  const { accent, neutral: n } = resolveButtonRamps(theme);
+  const { accent } = resolveButtonRamps(theme);
   const dark = theme.isDark;
   return {
-    rail: dark ? n[800] : n[200],
-    railHover: dark ? n[700] : n[300],
+    rail: theme.colors.backgroundSecondary,
+    railHover: theme.colors.backgroundTertiary,
     fillTop: accent[500],
     fillBottom: accent[600],
     // accent-600 → accent-700 mix (`rgb(4 80 226 / 0.16)`).
     fillShadow: `inset 0 1px 0 rgba(255, 255, 255, 0.24), 0 1px 2px ${withAlpha(mixColor(accent[700], accent[600], 0.16), 0.16)}`,
-    thumbBorder: dark ? n[700] : n[200],
-    thumbBorderHover: dark ? n[500] : n[300],
+    thumbBorder: theme.colors.borderLight,
+    thumbBorderHover: theme.colors.border,
     thumbBorderDrag: accent[500],
-    thumb: '#FFFFFF',
+    thumb: theme.colors.card,
     thumbShadow: '0 2px 4px rgba(0, 0, 0, 0.1), inset 0 1px 0 rgba(255, 255, 255, 0.8)',
     thumbShadowDrag: `0 3px 8px ${withAlpha(accent[600], 0.22)}`,
-    surface: dark ? n[800] : theme.colors.card,
+    surface: theme.colors.card,
     bubbleShadow: BUTTON_SHADOW[dark ? 'dark' : 'light'],
     bubbleShadowLifted: dark
       ? '0 1px 1px 0 rgba(0, 0, 0, 0.14), 0 4px 4px 0 rgba(0, 0, 0, 0.1)'
@@ -630,8 +632,10 @@ const SliderComponent = function Slider({
   max = 100,
   step = 1,
   disabled = false,
-  trackHeight = 6,
-  thumbSize = 20,
+  size: sizeProp,
+  tone: toneProp,
+  trackHeight: trackHeightProp,
+  thumbSize: thumbSizeProp,
   minimumTrackTintColor,
   maximumTrackTintColor,
   thumbTintColor,
@@ -642,6 +646,12 @@ const SliderComponent = function Slider({
   accessibilityLabel,
   testID,
 }: SliderProps) {
+  const theme = useTheme();
+  const {size, tone} = useBloomAppearance({size: sizeProp, tone: toneProp}, {size: 'md', tone: 'accent'});
+  const geometry = {xs: [4, 14], sm: [4, 16], md: [6, 20], lg: [8, 24]} as const;
+  const trackHeight = trackHeightProp ?? geometry[size][0];
+  const thumbSize = thumbSizeProp ?? geometry[size][1];
+  const toneColor = tone === 'accent' ? undefined : resolveBloomColors(theme.colors, tone, 'solid').background;
   useAccessibleNameWarning('Slider', accessibilityLabel ?? label);
   const values = useMemo(() => [value], [value]);
   const format = useMemo(
@@ -659,9 +669,9 @@ const SliderComponent = function Slider({
       disabled={disabled}
       trackHeight={trackHeight}
       thumbSize={thumbSize}
-      minimumTrackTintColor={minimumTrackTintColor}
+      minimumTrackTintColor={minimumTrackTintColor ?? toneColor}
       maximumTrackTintColor={maximumTrackTintColor}
-      thumbTintColor={thumbTintColor}
+      thumbTintColor={thumbTintColor ?? toneColor}
       label={label}
       showTooltip={showTooltip}
       formatValue={format}
@@ -684,8 +694,10 @@ const RangeSliderComponent = function RangeSlider({
   max = 100,
   step = 1,
   disabled = false,
-  trackHeight = 6,
-  thumbSize = 20,
+  size: sizeProp,
+  tone: toneProp,
+  trackHeight: trackHeightProp,
+  thumbSize: thumbSizeProp,
   minimumTrackTintColor,
   maximumTrackTintColor,
   thumbTintColor,
@@ -697,6 +709,12 @@ const RangeSliderComponent = function RangeSlider({
   accessibilityLabel,
   testID,
 }: RangeSliderProps) {
+  const theme = useTheme();
+  const {size, tone} = useBloomAppearance({size: sizeProp, tone: toneProp}, {size: 'md', tone: 'accent'});
+  const geometry = {xs: [4, 14], sm: [4, 16], md: [6, 20], lg: [8, 24]} as const;
+  const trackHeight = trackHeightProp ?? geometry[size][0];
+  const thumbSize = thumbSizeProp ?? geometry[size][1];
+  const toneColor = tone === 'accent' ? undefined : resolveBloomColors(theme.colors, tone, 'solid').background;
   const values = useMemo(() => [value[0], value[1]], [value]);
   return (
     <SliderBase
@@ -713,9 +731,9 @@ const RangeSliderComponent = function RangeSlider({
       disabled={disabled}
       trackHeight={trackHeight}
       thumbSize={thumbSize}
-      minimumTrackTintColor={minimumTrackTintColor}
+      minimumTrackTintColor={minimumTrackTintColor ?? toneColor}
       maximumTrackTintColor={maximumTrackTintColor}
-      thumbTintColor={thumbTintColor}
+      thumbTintColor={thumbTintColor ?? toneColor}
       label={label}
       showTooltip={showTooltip}
       formatValue={formatValue}

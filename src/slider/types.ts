@@ -1,6 +1,9 @@
+import type { BloomSize, BloomTone } from '../appearance';
 import type { StyleProp, ViewStyle } from 'react-native';
 
 export interface SliderProps {
+  size?: BloomSize;
+  tone?: BloomTone;
   /** Current value (controlled). */
   value: number;
   /** Fired continuously as the user drags / steps the thumb. */

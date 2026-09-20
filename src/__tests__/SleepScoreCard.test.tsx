@@ -4,7 +4,6 @@ import { resolvedStyle } from './support/rendered-style';
 
 import { BloomThemeProvider } from '../theme/BloomThemeProvider';
 import { buildTheme } from '../theme/build-theme';
-import { resolveButtonRamps } from '../button/shared';
 import { SleepScoreCard, defaultSleepScoreLabel, type SleepMetric } from '../chart-cards/SleepScoreCard';
 import { pieSectorAngles, sectorPath } from '../chart-cards/polar-geometry';
 
@@ -73,7 +72,7 @@ describe('SleepScoreCard', () => {
     expect(resolvedStyle(getByTestId('sleep-metrics').props.style)).toMatchObject({ borderRadius: 10, paddingLeft: 10 });
     const first = resolvedStyle(getByTestId('sleep-metric-0').props.style);
     expect(first).toMatchObject({ borderBottomWidth: 1, paddingRight: 10, paddingTop: 8, paddingBottom: 8, flex: 1 });
-    expect(first.borderBottomColor).toBe(resolveButtonRamps(buildTheme('teal', 'light')).neutral[200]);
+    expect(first.borderBottomColor).toBe(buildTheme('teal', 'light').colors.contrast50);
     expect(resolvedStyle(getByTestId('sleep-metric-2').props.style).borderBottomWidth).toBe(0);
   });
 

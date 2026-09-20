@@ -1,64 +1,38 @@
 ---
 title: BloomProvider
-description: The one root a consuming app mounts — and why the outlets are deliberately not in it.
-order: 56
+description: Universal application state with an explicit router adapter.
 ---
 
 # BloomProvider
 
-The single root that composes Bloom's app-wide **state** providers, so none of
-them lands at the wrong depth.
+Mount one `BloomProvider` above every render branch, including loading UI. It
+composes theme, image resolution, haptics and scroll storage without importing a
+router. It is exported from both `@oxy.so/bloom` and `@oxy.so/bloom/provider`.
+Without `scrollAdapter`, automatic route restoration is inactive.
 
 ```tsx
 import { BloomProvider } from '@oxy.so/bloom/provider';
+import { expoRouterScrollAdapter } from '@oxy.so/bloom/scroll/expo-router';
 
-export default function RootLayout() {
-  return (
-    <BloomProvider>
-      <Stack />
-    </BloomProvider>
-  );
-}
+<BloomProvider scrollAdapter={expoRouterScrollAdapter}>
+  <App />
+</BloomProvider>
 ```
 
-## Why one root rather than several
+Keep the adapter reference stable. Vite and other router integrations supply their
+own `ScrollRouterAdapter`; Expo consumers now pass the adapter explicitly instead
+of receiving an implicit router dependency.
 
-Depth is not a detail for these. Mounted too low:
+Visual hosts (`ToastOutlet`, `SurfaceHost`, portal/dialog outlets) stay outside the
+provider: their position determines stacking, and mounting duplicate outlets draws
+duplicate surfaces. `Screen` scopes coordinated geometry and motion locally.
 
-- `useScrollRestoration()` **throws** for anything rendered beside it;
-- `useMinimizeState()` silently hands out a private fallback, so two parts of
-  the app disagree about the same state and neither errors.
+The original depth hazards remain: `useScrollRestoration()` throws outside its
+provider, and legacy `useMinimizeState()` creates a private fallback without its
+provider. Mounting providers beneath a sibling scroll region recreates those
+failures. New screen chrome uses the local `Screen` shared values, rather than
+sharing one global motion state across retained routes. `useTheme()` also throws
+outside its provider, including an early-return splash branch on cold start.
 
-One root removes the chance to get that wrong.
-
-## Expo/expo-router apps only
-
-`BloomProvider` binds the scroll store to `expoRouterScrollAdapter`, so it is
-expo-router-only **by construction** — which is also why the family is not on
-the root barrel: importing it would drag `expo-router` into every consumer's
-graph, and Metro does not tree-shake, so an unmet peer is a build failure
-rather than a degradation.
-
-A Vite/SPA consumer mounts the pieces instead: `BloomThemeProvider` plus
-`<ScrollRestorationProvider adapter={…}>` with its own router adapter.
-
-## The OUTLETS are deliberately not in it
-
-`ToastOutlet`, `PortalProvider`/`PortalOutlet`, `SurfaceHost` and the dialog
-hosts stay out. Where an outlet sits in the tree is an app decision — it has to
-paint over the app's own chrome — and **a second mount duplicates every
-surface**. Adding one here would silently double the toasts of any app that
-already mounts its own.
-
-That failure is quiet: two identical toasts read as a double-fire in your own
-code, not as two outlets.
-
-## Where the theme provider goes
-
-Above **every** render branch, including the splash/loading one.
-
-`useTheme()` throws outside `BloomThemeProvider`, and the classic way to hit
-that is an `appIsReady` early-return in `app/_layout.tsx` that renders a splash
-screen *before* the providers mount. It fails at runtime only — `tsc` and the
-build stay green — and only on a cold start. Verify in a real browser after any
-theming migration.
+`PortalProvider`/`PortalOutlet` are native infrastructure; the web portal uses its
+own DOM implementation. Choose outlet placement deliberately and mount each once.

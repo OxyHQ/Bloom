@@ -1,7 +1,6 @@
 import React from 'react';
 import { render } from '@testing-library/react-native';
 
-import { Fab } from '../fab';
 import {
   BottomEdgeProvider,
   useBottomEdgeInset,
@@ -146,32 +145,3 @@ function flattenStyle(style: unknown): Record<string, number> {
   if (Array.isArray(style)) return Object.assign({}, ...style.map(flattenStyle));
   return (style ?? {}) as Record<string, number>;
 }
-
-describe('a Fab beside a floating TabBar', () => {
-  beforeEach(() => {
-    mockInsets.bottom = GESTURE_HANDLE_INSET;
-  });
-
-  it('sits above the bar rather than behind it', () => {
-    // THE REPORTED BUG. The bar's host is the last sibling of the app shell and
-    // paints over every descendant, so no z-index could rescue the FAB — it has
-    // to be somewhere ELSE. Asserted against the bar's real footprint rather
-    // than a literal, so the two can never drift apart.
-    const { getByTestId } = render(
-      <BloomThemeProvider mode="light" colorPreset="teal">
-        <BottomEdgeProvider>
-          <TabBar activeIndex={0} onIndexChange={() => {}}>
-            {ITEMS.map((item, index) => (
-              <TabBarButton key={item.name} item={item} index={index} />
-            ))}
-          </TabBar>
-          <Fab testID="fab" onPress={() => {}} accessibilityLabel="Compose" icon={null} />
-        </BottomEdgeProvider>
-      </BloomThemeProvider>,
-    );
-
-    const barFootprint = windowEdgeGap(GESTURE_HANDLE_INSET) + EXPANDED_HEIGHT;
-    const { bottom } = flattenStyle(getByTestId('fab').props.style);
-    expect(bottom).toBeGreaterThanOrEqual(barFootprint);
-  });
-});

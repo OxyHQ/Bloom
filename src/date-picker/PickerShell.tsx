@@ -77,16 +77,7 @@ export function PickerShell({
   return (
     <Popover open={open} onOpenChange={disabled ? undefined : onOpenChange}>
       <PopoverTrigger asChild disabled={disabled}>
-        <Button
-          variant="secondary"
-          size="medium"
-          leadingIcon={CalendarIcon}
-          trailingIcon={trailingIcon}
-          disabled={disabled}
-          accessibilityLabel={`${accessibilityLabel}, ${triggerText}`}
-          style={[{ height: TRIGGER_HEIGHT }, style]}
-          testID={testID}
-        >
+        <Button size="md" leadingIcon={CalendarIcon} trailingIcon={trailingIcon} disabled={disabled} accessibilityLabel={`${accessibilityLabel}, ${triggerText}`} style={[{ height: TRIGGER_HEIGHT }, style]} testID={testID} appearance="outline" tone="neutral">
           {triggerText}
         </Button>
       </PopoverTrigger>
@@ -117,7 +108,7 @@ export function PickerActions({
 }) {
   return (
     <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
-      <Button variant="secondary" onPress={onCancel} testID={testID ? `${testID}-cancel` : undefined}>
+      <Button onPress={onCancel} testID={testID ? `${testID}-cancel` : undefined} appearance="subtle" tone="neutral">
         Cancel
       </Button>
       <Button onPress={onApply} disabled={applyDisabled} testID={testID ? `${testID}-apply` : undefined}>

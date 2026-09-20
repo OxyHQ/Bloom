@@ -6,6 +6,15 @@ import { SankeyChartCard } from './SankeyChartCard';
 import type { SankeyLinkDatum, SankeyNodeDatum, SankeyRange } from './SankeyChartCard';
 
 const meta: Meta<typeof SankeyChartCard> = {
+  argTypes: {
+    "title": { control: 'text' },
+    "headline": { control: 'number' },
+    "delta": { control: 'number' },
+    "range": { control: 'text' },
+    "defaultRange": { control: 'text' },
+    "linkColor": { control: 'select', options: ["source","target"] },
+    "height": { control: 'number' }
+  },
   title: 'Charts/Sankey Chart',
   component: SankeyChartCard,
 };
@@ -70,11 +79,12 @@ const RANGES: SankeyRange[] = [
 ];
 
 const Frame = ({ children, width = 480 }: { children: React.ReactNode; width?: number }) => (
-  <View style={{ padding: 40, gap: 24, width: width + 80 }}>{children}</View>
+  <View style={{ maxWidth: '100%', gap: 24, width }}>{children}</View>
 );
 
 /** The card: coloured sources, neutral sinks, a period dropdown, column captions. */
 export const Default: Story = {
+  parameters: { controls: { disable: true } },
   render: () => (
     <Frame>
       <SankeyChartCard testID="sankey" nodes={NODES} ranges={RANGES} axisLabels={['Category', 'App']} />
@@ -84,14 +94,16 @@ export const Default: Story = {
 
 /** Ribbons take their sink's colour instead, a static pill and a delta chip. */
 export const TargetColoured: Story = {
-  render: () => (
+  args: { linkColor: "target", range: "This week", delta: 0.042 },
+  parameters: { controls: { include: ["linkColor","range","delta","title","headline","defaultRange","height"] } },
+  render: (args) => (
     <Frame>
-      <SankeyChartCard
+      <SankeyChartCard {...args}
         nodes={NODES.map((n, i) => (i < 5 ? { name: n.name, color: 'neutral' } : { name: n.name }))}
         links={LINKS}
-        linkColor="target"
-        range="This week"
-        delta={0.042}
+
+
+
       />
     </Frame>
   ),
@@ -99,15 +111,18 @@ export const TargetColoured: Story = {
 
 /** Hovered node (controlled): its ribbons lift, unconnected nodes fade, the header swaps. */
 export const HoveredNode: Story = {
-  render: () => (
+  args: { delta: 0.12 },
+  parameters: { controls: { include: ["delta","title","headline","range","defaultRange","linkColor","height"] } },
+  render: (args) => (
     <Frame>
-      <SankeyChartCard nodes={NODES} ranges={RANGES} activeItem={{ type: 'node', index: 1 }} delta={0.12} />
+      <SankeyChartCard {...args} nodes={NODES} ranges={RANGES} activeItem={{ type: 'node', index: 1 }}  />
     </Frame>
   ),
 };
 
 /** Hovered link (controlled): the one ribbon and its two ends. */
 export const HoveredLink: Story = {
+  parameters: { controls: { disable: true } },
   render: () => (
     <Frame>
       <SankeyChartCard nodes={NODES} ranges={RANGES} activeItem={{ type: 'link', index: 5 }} />
@@ -117,13 +132,15 @@ export const HoveredLink: Story = {
 
 /** Three columns: pass-through nodes stay square on both sides; palette colours by index; small nodes drop the value line. */
 export const ThreeColumns: Story = {
-  render: () => (
+  args: { title: "Signups", range: "Q3", height: 400 },
+  parameters: { controls: { include: ["title","range","height","headline","delta","defaultRange","linkColor"] } },
+  render: (args) => (
     <Frame>
-      <SankeyChartCard
-        title="Signups"
+      <SankeyChartCard {...args}
+
         format={(v) => v.toLocaleString('en-US')}
-        range="Q3"
-        height={400}
+
+
         nodes={[
           { name: 'Organic' },
           { name: 'Paid' },
@@ -145,4 +162,17 @@ export const ThreeColumns: Story = {
       />
     </Frame>
   ),
+};
+
+/** Phone width with full names; widen the frame to compare both label layouts. */
+export const NarrowMobile: StoryObj<React.ComponentProps<typeof SankeyChartCard> & { frameWidth: number }> = {
+  args: {
+    frameWidth: 300,
+    title: 'Weekly allocation',
+    nodes: [{ name: 'Product engineering and research', hue: 7 }, { name: 'Customer support and operations', hue: 5 }, { name: 'Documentation and knowledge sharing', color: 'neutral' }, { name: 'Planning and collaboration', color: 'neutral' }],
+    links: [{ source: 'Product engineering and research', target: 'Documentation and knowledge sharing', value: 24 }, { source: 'Product engineering and research', target: 'Planning and collaboration', value: 16 }, { source: 'Customer support and operations', target: 'Documentation and knowledge sharing', value: 12 }, { source: 'Customer support and operations', target: 'Planning and collaboration', value: 8 }],
+  },
+  argTypes: { frameWidth: { control: { type: 'range', min: 240, max: 800, step: 20 } } },
+  parameters: { controls: { include: ['frameWidth', 'title', 'height'] } },
+  render: ({ frameWidth, ...args }) => <View style={{ width: frameWidth, maxWidth: '100%' }}><SankeyChartCard {...args} /></View>,
 };

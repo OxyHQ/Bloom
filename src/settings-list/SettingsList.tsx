@@ -151,7 +151,7 @@ export const SettingsListGroup = memo<SettingsListGroupProps>(function SettingsL
         the title/search). A self-margin here double-inset grouped rows on every
         screen that also applies that padding.
       */}
-      <Card variant="plain" radius="radius-16">
+      <Card appearance="plain" radius="radius-16">
         {filteredChildren.map((child, index) => (
           <React.Fragment key={index}>
             {child}

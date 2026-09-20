@@ -21,8 +21,8 @@ export type TextareaProps = Omit<
     placeholder?: string;
     value?: string;
     defaultValue?: string;
-    onChangeText?: (value: string) => void;
-    /** Two insets: `medium` (default) or `small`. */
+    onValueChange?: (value: string) => void;
+    /** Two insets: `md` (default) or `sm`. */
     size?: TextFieldSize;
     /** Resting height in lines, default `3`. Also the floor when `autoResize` is on. */
     rows?: number;
@@ -36,7 +36,7 @@ export type TextareaProps = Omit<
     maxLength?: number;
     /** Show the character counter under the field (`12/280` with `maxLength`). */
     showCount?: boolean;
-    isInvalid?: boolean;
+    invalid?: boolean;
     disabled?: boolean;
     /** Append the required asterisk to the label. */
     required?: boolean;

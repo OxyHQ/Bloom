@@ -9,9 +9,8 @@ import type { StyleProp, ViewStyle, TextStyle } from 'react-native';
  * - `pill` — a sliding accent-tinted pill behind the selected trigger.
  * - `filled` — the same, with a neutral pill and a text-primary label.
  *   Quieter, for scope/filter rows.
- * - `outlined` — kept for existing call sites; renders as `pill`.
  */
-export type TabsVariant = 'underline' | 'pill' | 'filled' | 'outlined';
+export type TabsVariant = 'underline' | 'pill' | 'filled';
 
 /**
  * A Remix-style icon component (`RiSettings3Line`, not `<RiSettings3Line />`),
@@ -80,7 +79,7 @@ export interface TabsTriggerProps {
    * A pre-rendered node before the label. The caller sizes and colours it; prefer
    * {@link TabsTriggerProps.leadingIcon}, which follows the selection.
    */
-  icon?: React.ReactNode;
+  leading?: React.ReactNode;
   /**
    * Icon component before the label — 16px on `underline`, 20px on the pill
    * variants — painted in the label's colour for the current state. Wins over

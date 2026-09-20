@@ -1,7 +1,7 @@
 import type { ComponentType } from 'react';
 import type { StyleProp, ViewStyle } from 'react-native';
 
-import type { ButtonVariant } from '../button/types';
+import type { ButtonProps } from '../button/types';
 
 export type NotificationCenterTab = 'all' | 'mentions' | 'system';
 export type NotificationCenterCategory = Exclude<NotificationCenterTab, 'all'> | 'activity';
@@ -30,8 +30,9 @@ export interface NotificationCenterAvatar {
 export interface NotificationCenterAction {
   id: string;
   label: string;
-  /** Any `Button` variant. Defaults to `secondary`. */
-  variant?: ButtonVariant;
+  /** Any `Button` appearance. Defaults to `subtle`. */
+  appearance?: ButtonProps['appearance'];
+  tone?: ButtonProps['tone'];
 }
 
 export interface NotificationCenterItem {

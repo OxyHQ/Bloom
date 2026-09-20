@@ -98,7 +98,7 @@ function customerColumns(): DataTableColumn<Customer>[] {
       id: 'status',
       header: 'Status',
       cell: ({ row }) => (
-        <Chip size="medium" hue={row.status.color}>
+        <Chip size="md" hue={row.status.color}>
           {row.status.label}
         </Chip>
       ),
@@ -116,7 +116,7 @@ function customerColumns(): DataTableColumn<Customer>[] {
       accessor: (c) => c.price,
       sortDescFirst: false,
       cell: ({ row }) => (
-        <Chip size="large" hue="gray">
+        <Chip size="lg" hue="gray">
           {formatPrice(row.price)}
         </Chip>
       ),
@@ -184,7 +184,7 @@ export function CustomersTable() {
             onValueChange={filter(setRegionFilter)}
             options={[{ value: 'all', label: 'All regions' }, ...REGIONS.map((r) => ({ value: r, label: r }))]}
           />
-          <DataTableSearch label="Search customers" value={query} onChangeText={filter(setQuery)} />
+          <DataTableSearch label="Search customers" value={query} onValueChange={filter(setQuery)} />
         </>
       }
       selectable

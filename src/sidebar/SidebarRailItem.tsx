@@ -1,4 +1,5 @@
-import React, { memo } from 'react';
+import React, { memo, useEffect } from 'react';
+import Animated, { Easing, interpolateColor, useAnimatedStyle, useReducedMotion, useSharedValue, withTiming } from 'react-native-reanimated';
 import { Pressable, View, type GestureResponderEvent } from 'react-native';
 
 import { useInteractionState } from '../hooks/use-interaction-state';
@@ -13,6 +14,8 @@ import type { SidebarRailItemProps } from './types';
 const INDICATOR_WIDTH = 48;
 const INDICATOR_HEIGHT = 32;
 const ICON_SIZE = 22;
+const AnimatedText = Animated.createAnimatedComponent(Text);
+const SELECTION_DURATION = 220;
 
 /**
  * A navigation rail destination: the icon over its label, stacked and centred.
@@ -41,7 +44,16 @@ const SidebarRailItemComponent: React.FC<SidebarRailItemProps> = ({
   const palette = useSidebarPalette();
   useSidebarWebCss();
   const { state: hovered, onIn, onOut } = useInteractionState();
-  const Glyph = selected && ActiveIcon ? ActiveIcon : Icon;
+  const SelectedGlyph = ActiveIcon ?? Icon;
+  const reducedMotion = useReducedMotion();
+  const selection = useSharedValue(selected ? 1 : 0);
+  useEffect(() => {
+    selection.value = reducedMotion ? (selected ? 1 : 0) : withTiming(selected ? 1 : 0, { duration: SELECTION_DURATION, easing: Easing.bezier(0.2, 0, 0, 1) });
+  }, [selected, reducedMotion, selection]);
+  const indicatorStyle = useAnimatedStyle(() => ({ backgroundColor: interpolateColor(selection.value, [0, 1], [hovered ? palette.rowHover : 'transparent', palette.selected]) }), [selection, hovered, palette.rowHover, palette.selected]);
+  const inactiveStyle = useAnimatedStyle(() => ({ opacity: 1 - selection.value }), [selection]);
+  const activeStyle = useAnimatedStyle(() => ({ opacity: selection.value }), [selection]);
+  const labelStyle = useAnimatedStyle(() => ({ color: interpolateColor(selection.value, [0, 1], [palette.textSecondary, palette.text]) }), [selection, palette.textSecondary, palette.text]);
 
   const webProps: Record<string, unknown> = IS_WEB
     ? {
@@ -80,43 +92,42 @@ const SidebarRailItemComponent: React.FC<SidebarRailItemProps> = ({
       ]}
       testID={testID}
     >
-      <View
-        style={{
+      <Animated.View
+        style={[{
           width: INDICATOR_WIDTH,
           height: INDICATOR_HEIGHT,
           alignItems: 'center',
           justifyContent: 'center',
           borderRadius: borderRadius.full,
-          backgroundColor: selected ? palette.selected : hovered ? palette.rowHover : 'transparent',
-        }}
+        }, indicatorStyle]}
         testID={testID ? `${testID}-indicator` : undefined}
       >
-        <Glyph
-          width={ICON_SIZE}
-          height={ICON_SIZE}
-          fill={selected ? palette.selectedForeground : palette.textSecondary}
-        />
+        <Animated.View testID={testID ? `${testID}-inactive-glyph` : undefined} pointerEvents="none" aria-hidden accessibilityElementsHidden style={[{ position: 'absolute', width: ICON_SIZE, height: ICON_SIZE }, inactiveStyle]}>
+          <Icon width={ICON_SIZE} height={ICON_SIZE} fill={palette.textSecondary} />
+        </Animated.View>
+        <Animated.View testID={testID ? `${testID}-active-glyph` : undefined} pointerEvents="none" aria-hidden accessibilityElementsHidden style={[{ position: 'absolute', width: ICON_SIZE, height: ICON_SIZE }, activeStyle]}>
+          <SelectedGlyph width={ICON_SIZE} height={ICON_SIZE} fill={palette.selectedForeground} />
+        </Animated.View>
         {badge != null ? (
           <View pointerEvents="none" style={{ position: 'absolute', top: -6, left: INDICATOR_WIDTH - 16 }}>
             {badge}
           </View>
         ) : null}
-      </View>
-      <Text
+      </Animated.View>
+      <AnimatedText
         variant="caption-2-regular"
         numberOfLines={1}
-        style={{
+        style={[{
           maxWidth: '100%',
           fontSize: 10,
           lineHeight: 14,
           letterSpacing: 0,
           textAlign: 'center',
           fontWeight: selected ? '500' : '400',
-          color: selected ? palette.text : palette.textSecondary,
-        }}
+        }, labelStyle]}
       >
         {label}
-      </Text>
+      </AnimatedText>
     </Pressable>
   );
 };

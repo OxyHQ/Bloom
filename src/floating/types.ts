@@ -122,10 +122,11 @@ export interface FloatingPanelProps extends FloatingPositionProps {
   testID?: string;
   children?: React.ReactNode;
   /**
-   * Which chrome and motion the panel wears. `'popover'` (the default) is the
-   * original panel; `'menu'` and `'listbox'` are the menu recipe — the
-   * `p-2.5` action menu and the `p-2` select listbox — painted from
-   * `menu-palette.ts`, on a 150ms fade + scale + blur with no slide.
+   * Which chrome the panel wears; all three run the same 150ms fade + scale +
+   * blur. `'menu'` and `'listbox'` are the menu recipe — the `p-2.5` action
+   * menu and the `p-2` select listbox — painted from `menu-palette.ts`.
+   * `'popover'` (the default) paints NOTHING itself: `Popover` resolves its
+   * panel inline (`popover/surface.ts`) and passes it as `style`.
    */
   surface?: 'popover' | 'menu' | 'listbox';
 }
@@ -245,7 +246,7 @@ export interface MenuRowProps {
   /** Indent to line up with the rows that carry a checkbox or radio indicator. */
   inset?: boolean;
   /** `'destructive'` paints the row in the theme's negative colour. */
-  variant?: 'default' | 'destructive';
+  tone?: 'neutral' | 'danger';
   /**
    * Keep the menu open after activation. Defaults to `false` — every menu row
    * dismisses, which is what both shadcn and Bloom's previous menus did.

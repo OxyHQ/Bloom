@@ -1,9 +1,12 @@
 import type { ReactNode } from 'react';
+import type { ScrollRouterAdapter } from '../scroll/types';
 import { type ImageResolver } from '../image-resolver';
 import { type BloomThemeProviderProps } from '../theme';
 
 export interface BloomProviderProps extends Omit<BloomThemeProviderProps, 'children'> {
   children: ReactNode;
+  /** Stable router adapter; omitted means automatic restoration is inactive. */
+  scrollAdapter?: ScrollRouterAdapter;
   /**
    * Resolves bare media identifiers (Oxy file ids) to loadable URLs for every
    * Bloom surface that takes a `source` — `<Avatar>`, image galleries, cards.

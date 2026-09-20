@@ -135,7 +135,7 @@ describe('ContributionsCard', () => {
     const lt = buildTheme('teal', 'light');
     const lr = resolveButtonRamps(lt).accent;
     expect([0, 1, 2, 3, 4, 5].map((i) => resolvedStyle(light.getByTestId(`g-cell-${i}`).props.style).backgroundColor)).toEqual([
-      resolveChartCardPalette(lt).neutralSeries, lr[200], lr[400], lr[500], lr[600], lr[700],
+      resolveChartCardPalette(lt).track, lr[200], lr[400], lr[500], lr[600], lr[700],
     ]);
     expect(resolvedStyle(light.getByTestId('g-cell-0').props.style)).toMatchObject({ borderRadius: 3, aspectRatio: 1 });
     light.unmount();

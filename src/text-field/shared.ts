@@ -1,13 +1,8 @@
+import type { BloomSize } from '../appearance';
 import { Platform, type ViewStyle } from 'react-native';
 
 import type { WebCssStyle } from '../styles/web-view-style';
 
-import {
-  DANGER_TABLE,
-  colorRamp,
-  mixColor,
-  resolveButtonRamps,
-} from '../button/shared';
 import type { Theme } from '../theme/types';
 import { TYPE_SCALE } from '../typography/scale';
 
@@ -31,7 +26,7 @@ import { TYPE_SCALE } from '../typography/scale';
  * NEUTRAL, not the accent; the accent ring belongs to the OTP boxes.
  */
 
-export type TextFieldSize = 'medium' | 'small';
+export type TextFieldSize = BloomSize;
 
 export interface TextFieldGeometry {
   height: number;
@@ -39,8 +34,10 @@ export interface TextFieldGeometry {
 }
 
 export const TEXT_FIELD_GEOMETRY: Record<TextFieldSize, TextFieldGeometry> = {
-  medium: { height: 36, paddingHorizontal: 8 },
-  small: { height: 32, paddingHorizontal: 6 },
+  xs: { height: 28, paddingHorizontal: 4 },
+  lg: { height: 44, paddingHorizontal: 10 },
+  md: { height: 36, paddingHorizontal: 8 },
+  sm: { height: 32, paddingHorizontal: 6 },
 };
 
 /**
@@ -52,8 +49,10 @@ export const TEXT_FIELD_ADDON_PADDING: Record<
   TextFieldSize,
   { paddingLeft: number; paddingRight: number }
 > = {
-  medium: { paddingLeft: 4, paddingRight: 8 },
-  small: { paddingLeft: 4, paddingRight: 6 },
+  xs: { paddingLeft: 4, paddingRight: 4 },
+  lg: { paddingLeft: 4, paddingRight: 10 },
+  md: { paddingLeft: 4, paddingRight: 8 },
+  sm: { paddingLeft: 4, paddingRight: 6 },
 };
 
 /** `rounded-2lg`. */
@@ -140,54 +139,28 @@ export { TRANSPARENT as TEXT_FIELD_TRANSPARENT };
  * (`.dark`). Pure, so it can be walked over every preset × mode without
  * rendering.
  *
- * The dark `color-mix(... N%, transparent)` tokens are composited over
- * the theme's page background, which is what they sit on there
- * (`background-full`).
+ * Surfaces and their foregrounds come from the shared tonal policy.
+ * Invalid fields use the semantic error tint and its paired foreground.
  */
 export function resolveTextFieldPalette(theme: Theme): TextFieldPalette {
   const c = theme.colors;
-  const { neutral: n } = resolveButtonRamps(theme);
-  const red = colorRamp(c.negative, DANGER_TABLE);
-
-  if (theme.isDark) {
-    const backgroundDisabled = mixColor(c.background, n[800], 0.3);
-    return {
-      background: n[800],
-      backgroundDisabled,
-      backgroundInvalid: mixColor(c.background, red[950], 0.6),
-      ringHover: n[500],
-      ringFocus: n[600],
-      text: c.text,
-      textDisabled: mixColor(backgroundDisabled, n[500], 0.4),
-      placeholder: n[600],
-      placeholderInvalid: red[400],
-      icon: n[600],
-      iconDisabled: n[600],
-      iconInvalid: red[400],
-      hint: n[500],
-      error: red[400],
-      infoIcon: n[700],
-      count: n[600],
-    };
-  }
-
   return {
-    background: n[200],
-    backgroundDisabled: n[100],
-    backgroundInvalid: red[100],
-    ringHover: n[300],
-    ringFocus: n[400],
+    background: c.backgroundSecondary,
+    backgroundDisabled: c.backgroundSecondary,
+    backgroundInvalid: c.errorSubtle,
+    ringHover: c.border,
+    ringFocus: c.primary,
     text: c.text,
-    textDisabled: n[300],
-    placeholder: n[400],
-    placeholderInvalid: red[400],
-    icon: n[400],
-    iconDisabled: n[300],
-    iconInvalid: red[600],
-    hint: n[500],
-    error: red[500],
-    infoIcon: n[300],
-    count: n[400],
+    textDisabled: c.textTertiary,
+    placeholder: c.textSecondary,
+    placeholderInvalid: c.errorSubtleForeground,
+    icon: c.textSecondary,
+    iconDisabled: c.textTertiary,
+    iconInvalid: c.errorSubtleForeground,
+    hint: c.textSecondary,
+    error: c.errorSubtleForeground,
+    infoIcon: c.textSecondary,
+    count: c.textSecondary,
   };
 }
 

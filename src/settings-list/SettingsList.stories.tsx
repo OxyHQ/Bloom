@@ -10,6 +10,7 @@ import {
 } from './SettingsList';
 
 const meta: Meta = {
+  component: SettingsListItem,
   title: 'Base/Settings List',
 };
 
@@ -19,7 +20,7 @@ type Story = StoryObj;
 
 function BasicList() {
   return (
-    <View style={{ width: 360 }}>
+    <View style={{ width: 360, maxWidth: '100%' }}>
       <SettingsListGroup title="Account">
         <SettingsListItem
           title="Profile"
@@ -45,14 +46,14 @@ function WithToggles() {
   const [notifs, setNotifs] = useState(true);
   const [dark, setDark] = useState(false);
   return (
-    <View style={{ width: 360 }}>
+    <View style={{ width: 360, maxWidth: '100%' }}>
       <SettingsListGroup title="Preferences" footer="Changes apply immediately.">
         <SettingsListItem
           title="Push notifications"
           rightElement={
             <Switch
-              value={notifs}
-              onValueChange={setNotifs}
+              checked={notifs}
+              onCheckedChange={setNotifs}
               accessibilityLabel="Push notifications"
             />
           }
@@ -60,7 +61,7 @@ function WithToggles() {
         />
         <SettingsListItem
           title="Dark mode"
-          rightElement={<Switch value={dark} onValueChange={setDark} accessibilityLabel="Dark mode" />}
+          rightElement={<Switch checked={dark} onCheckedChange={setDark} accessibilityLabel="Dark mode" />}
           showChevron={false}
         />
       </SettingsListGroup>
@@ -70,7 +71,7 @@ function WithToggles() {
 
 function DescriptionList() {
   return (
-    <View style={{ width: 360 }}>
+    <View style={{ width: 360, maxWidth: '100%' }}>
       <SettingsListGroup title="Security">
         <SettingsListItem
           title="Two-factor authentication"
@@ -88,23 +89,37 @@ function DescriptionList() {
 }
 
 export const Basic: Story = {
+  parameters: { controls: { disable: true } },
   render: () => <BasicList />,
 };
 
 export const WithRightElements: Story = {
+  parameters: { controls: { disable: true } },
   render: () => <WithToggles />,
 };
 
 export const WithDescriptions: Story = {
+  parameters: { controls: { disable: true } },
   render: () => <DescriptionList />,
 };
 
 export const Composition: Story = {
+  parameters: { controls: { disable: true } },
   render: () => (
-    <View style={{ gap: 24, width: 360 }}>
+    <View style={{ gap: 24, width: 360, maxWidth: '100%' }}>
       <DescriptionList />
       <SettingsListDivider />
       <WithToggles />
     </View>
   ),
+};
+
+export const Playground: StoryObj<typeof SettingsListItem> = {
+  args: { title: 'Profile', description: 'Manage your profile', value: 'Personal', showChevron: true, disabled: false, destructive: false },
+  parameters: { controls: { disable: false, include: ['title', 'description', 'value', 'showChevron', 'disabled', 'destructive'] } },
+  argTypes: { title: { control: 'text' }, description: { control: 'text' }, value: { control: 'text' }, showChevron: { control: 'boolean' }, disabled: { control: 'boolean' }, destructive: { control: 'boolean' } },
+  render: function Playground(args) {
+
+    return <View style={{ width: 520, maxWidth: '100%' }}><SettingsListGroup title="Account"><SettingsListItem {...args} onPress={() => {}} /></SettingsListGroup></View>;
+  },
 };

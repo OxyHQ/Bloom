@@ -4,7 +4,6 @@ import { Platform, View, type ViewStyle } from 'react-native';
 import { useTheme } from '../theme/use-theme';
 import { Text } from '../typography/Typography';
 import { borderRadius } from '../styles/tokens';
-import { resolveButtonRamps } from '../button/shared';
 import type { Theme } from '../theme/types';
 import type { DividerAlign, DividerProps } from './types';
 
@@ -29,10 +28,8 @@ interface DividerPalette {
 }
 
 function resolveDividerPalette(theme: Theme): DividerPalette {
-  const { neutral: n } = resolveButtonRamps(theme);
-  return theme.isDark
-    ? { line: n[800], fill: n[900], label: n[500] }
-    : { line: n[200], fill: n[100], label: n[500] };
+  const c = theme.colors;
+  return { line: c.borderLight, fill: c.backgroundSecondary, label: c.textSecondary };
 }
 
 const JUSTIFY: Record<DividerAlign, ViewStyle['justifyContent']> = {

@@ -1,4 +1,5 @@
 import type { ReactNode } from 'react';
+import type { ButtonIconComponent } from '../button/types';
 import type { GestureResponderEvent, StyleProp, ViewStyle } from 'react-native';
 
 import type { ResponsiveDialogPlacement } from './placement';
@@ -88,7 +89,7 @@ export interface DialogHeaderConfig {
    * its overflow-menu row text.
    */
   actions?: Array<{
-    icon: ReactNode;
+    icon: ButtonIconComponent;
     accessibilityLabel: string;
     onPress: () => void;
     disabled?: boolean;
@@ -102,7 +103,7 @@ export interface DialogHeaderConfig {
    */
   search?: {
     value: string;
-    onChangeText: (text: string) => void;
+    onValueChange: (text: string) => void;
     placeholder?: string;
     onSubmit?: () => void;
   };

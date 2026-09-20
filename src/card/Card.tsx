@@ -1,3 +1,6 @@
+import { CardForegroundContext } from './context';
+import { useBloomAppearance, type BloomAppearance } from '../appearance';
+import { resolveBloomColors } from '../appearance/colors';
 /**
  * `Card` — THE card-shaped surface. One place decides what "a card" is made of:
  * the `card` background role, a border colour and width, an elevation, a corner
@@ -10,15 +13,15 @@
  * not in what a card IS — so the axes are props drawn from the token scales
  * rather than more variants:
  *
- *   variant   the preset (`plain` is the bare surface; the other three add one axis)
+ *   appearance the preset (`plain` is the bare surface; the other three add one axis)
  *   radius    a rung of `RADIUS` — never a free number
  *   border    `none` | `hairline` (0.5px) | `thin` (1px)
  *   elevation `none` | `s` | `m`, resolved through the platform-forked `bloomShadowStyle`
  *
- * An explicit axis prop wins over the variant's default, so no combination
- * requires a new variant name.
+ * An explicit axis prop wins over the appearance's default, so no combination
+ * requires a new appearance name.
  */
-import React, { memo, useMemo } from 'react';
+import React, { memo, useMemo, useContext } from 'react';
 import { Text, View, type ViewStyle } from 'react-native';
 
 import { useTheme } from '../theme/use-theme';
@@ -29,7 +32,6 @@ import { StyledPressable, StyledView } from '../styles/styled-primitives';
 import { space } from '../styles/tokens';
 import type {
   CardProps,
-  CardVariant,
   CardBorder,
   CardElevation,
   CardHeaderProps,
@@ -46,19 +48,20 @@ const BORDER_PX: Record<Exclude<CardBorder, 'none'>, number> = {
 };
 
 /** What each preset means on the two axes an explicit prop can override. */
-const VARIANT_DEFAULTS: Record<CardVariant, { border: CardBorder; elevation: CardElevation }> = {
+const VARIANT_DEFAULTS: Record<BloomAppearance, { border: CardBorder; elevation: CardElevation }> = {
   plain: { border: 'none', elevation: 'none' },
   // `shadow-s` IS the "subtle raise — cards, chips" role, and the token is
   // already platform-forked, so a hand-rolled `Platform.OS` branch would be one
   // more copy of the split with slightly different numbers.
-  elevated: { border: 'none', elevation: 's' },
-  outlined: { border: 'thin', elevation: 'none' },
-  filled: { border: 'none', elevation: 'none' },
+  solid: { border: 'none', elevation: 's' },
+  outline: { border: 'thin', elevation: 'none' },
+  subtle: { border: 'none', elevation: 'none' },
 };
 
 const CardRootComponent: React.FC<CardProps> = ({
   children,
-  variant = 'elevated',
+  appearance = 'solid',
+  tone: toneProp,
   radius = 'radius-12',
   elevation,
   border,
@@ -71,6 +74,8 @@ const CardRootComponent: React.FC<CardProps> = ({
   testID,
 }) => {
   const theme = useTheme();
+  const {tone} = useBloomAppearance({tone: toneProp}, {size: 'md', tone: 'neutral'});
+  const paint = resolveBloomColors(theme.colors, tone, appearance);
   // Drive the press-opacity via state instead of Pressable's function-form
   // `style`, which NativeWind v4's css-interop swallows (dropping the base
   // container style: background, radius, border, shadow).
@@ -78,20 +83,20 @@ const CardRootComponent: React.FC<CardProps> = ({
     useInteractionState();
 
   const containerStyle = useMemo((): ViewStyle => {
-    const defaults = VARIANT_DEFAULTS[variant];
+    const defaults = VARIANT_DEFAULTS[appearance];
     const resolvedBorder = border ?? defaults.border;
     const resolvedElevation = elevation ?? defaults.elevation;
 
     const base: ViewStyle = {
       backgroundColor:
-        variant === 'filled' ? theme.colors.backgroundSecondary : theme.colors.card,
+        tone === 'neutral' && appearance === 'solid' ? theme.colors.card : tone === 'neutral' && appearance === 'subtle' ? theme.colors.backgroundSecondary : paint.background,
       borderRadius: RADIUS[radius],
       overflow: 'hidden',
     };
 
     if (resolvedBorder !== 'none') {
       base.borderWidth = BORDER_PX[resolvedBorder];
-      base.borderColor = theme.colors.border;
+      base.borderColor = tone === 'neutral' ? theme.colors.border : paint.border;
     }
 
     if (resolvedElevation !== 'none') {
@@ -99,7 +104,9 @@ const CardRootComponent: React.FC<CardProps> = ({
     }
 
     return base;
-  }, [variant, radius, border, elevation, theme]);
+  }, [appearance, tone, paint, radius, border, elevation, theme]);
+
+  const content = <CardForegroundContext.Provider value={tone === 'neutral' ? undefined : paint.foreground}>{children}</CardForegroundContext.Provider>;
 
   if (onPress) {
     return (
@@ -120,7 +127,7 @@ const CardRootComponent: React.FC<CardProps> = ({
         accessibilityState={{ disabled }}
         testID={testID}
       >
-        {children}
+        {content}
       </StyledPressable>
     );
   }
@@ -132,7 +139,7 @@ const CardRootComponent: React.FC<CardProps> = ({
       accessibilityLabel={accessibilityLabel}
       testID={testID}
     >
-      {children}
+      {content}
     </StyledView>
   );
 };
@@ -187,13 +194,14 @@ const CardFooterComponent: React.FC<CardFooterProps> = ({ children, style }) => 
 
 const CardTitleComponent: React.FC<CardTitleProps> = ({ children, style, numberOfLines }) => {
   const theme = useTheme();
+  const foreground = useContext(CardForegroundContext);
   return (
     <Text
       style={[
         {
           fontSize: 17,
           fontWeight: '600',
-          color: theme.colors.text,
+          color: foreground ?? theme.colors.text,
           lineHeight: 22,
         },
         style,
@@ -211,12 +219,13 @@ const CardDescriptionComponent: React.FC<CardDescriptionProps> = ({
   numberOfLines,
 }) => {
   const theme = useTheme();
+  const foreground = useContext(CardForegroundContext);
   return (
     <Text
       style={[
         {
           fontSize: 14,
-          color: theme.colors.textSecondary,
+          color: foreground ?? theme.colors.textSecondary,
           lineHeight: 20,
         },
         style,

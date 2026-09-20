@@ -65,18 +65,18 @@ describe('Pagination', () => {
     expect(resolvedStyle(other.props.style).backgroundColor).toBe('transparent');
   });
 
-  it('steps with small secondary Previous / Next buttons, each disabled at its end', () => {
+  it('steps with small plain Previous / Next buttons, each disabled at its end', () => {
     const buttons = (page: number, onChange = jest.fn()) => {
       const { UNSAFE_root } = renderWithTheme(
         <Pagination page={page} totalPages={3} onChange={onChange} />,
       );
       // The outermost element `Pagination` rendered with Button's props.
       const find = (label: string) =>
-        UNSAFE_root.find((node) => node.props.variant === 'secondary' && node.props.children === label).props;
+        UNSAFE_root.find((node) => node.props.appearance === 'plain' && node.props.tone === 'neutral' && node.props.children === label).props;
       return { previous: find('Previous'), next: find('Next'), onChange };
     };
     const first = buttons(1);
-    expect(first.previous).toMatchObject({ variant: 'secondary', size: 'small', disabled: true, children: 'Previous' });
+    expect(first.previous).toMatchObject({ appearance: 'plain', tone: 'neutral', size: 'sm', disabled: true, children: 'Previous' });
     expect(first.next).toMatchObject({ disabled: false, children: 'Next' });
     expect(buttons(3).next.disabled).toBe(true);
 

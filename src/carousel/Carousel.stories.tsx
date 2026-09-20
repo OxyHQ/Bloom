@@ -4,10 +4,17 @@ import type { Meta, StoryObj } from '@storybook/react-vite';
 
 import { Text } from '../typography';
 import { useTheme } from '../theme/use-theme';
-import { resolveButtonRamps } from '../button/shared';
 import { Carousel, CarouselItem } from './index';
 
 const meta: Meta<typeof Carousel> = {
+  argTypes: {
+    "showArrows": { control: 'boolean' },
+    "showDots": { control: 'boolean' },
+    "align": { control: 'select', options: ["start","center"] },
+    "gap": { control: 'number' },
+    "previousLabel": { control: 'text' },
+    "nextLabel": { control: 'text' }
+  },
   title: 'Base/Carousel',
   component: Carousel,
 };
@@ -18,15 +25,14 @@ type Story = StoryObj<typeof Carousel>;
 
 function Slide({ label, height = 160 }: { label: string; height?: number }) {
   const theme = useTheme();
-  const { neutral: n } = resolveButtonRamps(theme);
   return (
     <View
       style={{
         height,
         borderRadius: 12,
         borderWidth: 1,
-        borderColor: theme.isDark ? n[700] : n[200],
-        backgroundColor: theme.isDark ? n[900] : n[100],
+        borderColor: theme.colors.border,
+        backgroundColor: theme.colors.backgroundSecondary,
         alignItems: 'center',
         justifyContent: 'center',
       }}
@@ -39,14 +45,15 @@ function Slide({ label, height = 160 }: { label: string; height?: number }) {
 function Frame({ children, width = 440 }: { children: React.ReactNode; width?: number }) {
   const theme = useTheme();
   return (
-    <View testID="frame" style={{ padding: 40, backgroundColor: theme.colors.background }}>
-      <View style={{ width }}>{children}</View>
+    <View testID="frame" style={{ width, maxWidth: '100%', minWidth: 0, backgroundColor: theme.colors.background }}>
+      <View style={{ width: '100%', minWidth: 0 }}>{children}</View>
     </View>
   );
 }
 
 /** One slide in view, arrows and dots — the default. */
 export const Default: Story = {
+  parameters: { controls: { disable: true } },
   render: () => (
     <Frame>
       <Carousel accessibilityLabel="Gallery">
@@ -62,9 +69,11 @@ export const Default: Story = {
 
 /** Narrower slides peek the next one; `align="center"` rests each in the middle. */
 export const PeekCentered: Story = {
-  render: () => (
+  args: { align: "center", gap: 12 },
+  parameters: { controls: { include: ["align","gap","showArrows","showDots","previousLabel","nextLabel"] } },
+  render: (args) => (
     <Frame>
-      <Carousel accessibilityLabel="Peek gallery" align="center" gap={12}>
+      <Carousel {...args} accessibilityLabel="Peek gallery"  >
         {[1, 2, 3, 4, 5].map((i) => (
           <CarouselItem key={i} width={300}>
             <Slide label={`Card ${i}`} height={140} />
@@ -77,6 +86,7 @@ export const PeekCentered: Story = {
 
 /** Mixed widths: positions are measured, not derived. */
 export const MixedWidths: Story = {
+  parameters: { controls: { disable: true } },
   render: () => (
     <Frame>
       <Carousel accessibilityLabel="Mixed widths">
@@ -92,6 +102,7 @@ export const MixedWidths: Story = {
 
 /** No arrows, dots only; and arrows only. A single slide shows no dots. */
 export const Controls: Story = {
+  parameters: { controls: { disable: true } },
   render: function ControlsStory() {
     const [index, setIndex] = useState(0);
     return (

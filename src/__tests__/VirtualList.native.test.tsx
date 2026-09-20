@@ -1,7 +1,10 @@
 import React from 'react';
-import { Text } from 'react-native';
+import { Text, FlatList } from 'react-native';
 import { render } from '@testing-library/react-native';
 
+import { Screen } from '../screen';
+import { BloomThemeProvider } from '../theme/BloomThemeProvider';
+import { resolvedStyle } from './support/rendered-style';
 import { VirtualList, type VirtualListHandle } from '../list';
 
 interface Row {
@@ -44,6 +47,11 @@ describe('VirtualList (native)', () => {
 
     expect(getByText('Nothing here')).toBeTruthy();
     expect(queryByText('Alpha')).toBeNull();
+  });
+
+  it('binds screen geometry without adding a ScrollView', () => {
+    const tree = render(<BloomThemeProvider fonts={false}><Screen header={<Text>Header</Text>} headerHeight={80}><VirtualList screen={{}} testID="list" data={[]} contentContainerStyle={{ paddingBottom: 12 }} /></Screen></BloomThemeProvider>);
+    expect(resolvedStyle(tree.UNSAFE_getByType(FlatList).props.contentContainerStyle)).toMatchObject({ paddingTop: 80, paddingBottom: 28 });
   });
 
   it('exposes an imperative scroll handle via ref', () => {

@@ -2,7 +2,6 @@ import React from 'react';
 import { act, fireEvent, render } from '@testing-library/react-native';
 import { resolvedStyle } from './support/rendered-style';
 
-import { resolveButtonRamps } from '../button/shared';
 import { BloomThemeProvider } from '../theme/BloomThemeProvider';
 import { buildTheme } from '../theme/build-theme';
 import { purpleChip, purpleStop } from '../chart-cards/ai-profile-hues';
@@ -98,7 +97,7 @@ describe('TokensChartCard', () => {
     expect(getByTestId('tokens-run-0').props).toMatchObject({ d: RECHARTS.run0, stroke: purpleStop(theme, 400), strokeWidth: 2 });
     expect(getByTestId('tokens-idle-3').props).toMatchObject({
       d: RECHARTS.idle3,
-      stroke: resolveButtonRamps(theme).neutral[400],
+      stroke: theme.colors.textTertiary,
       strokeDasharray: '5 5',
     });
     expect(getByTestId('tokens-run-12').props.d).toBe(RECHARTS.run12);
@@ -129,7 +128,7 @@ describe('TokensChartCard', () => {
     expect(onActiveIndexChange).toHaveBeenLastCalledWith(null);
     expect(queryByTestId('tokens-cursor')).toBeNull();
 
-    // An idle day: the dot is neutral-400.
+    // An idle day: the dot uses semantic tertiary ink.
     act(() => {
       fireEvent(surface, 'pointerMove', { nativeEvent: { offsetX: 164, offsetY: 150 } });
     });

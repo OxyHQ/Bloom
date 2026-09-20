@@ -67,6 +67,7 @@ const RadioIndicatorComponent: React.FC<RadioIndicatorProps> = ({
   selected,
   size = DEFAULT_SIZE,
   selectedColor,
+  selectedForeground,
   borderColor,
   style,
   testID,
@@ -84,14 +85,14 @@ const RadioIndicatorComponent: React.FC<RadioIndicatorProps> = ({
   }, [selected, progress]);
 
   const paint = useMemo(() => {
-    const { accent, neutral: n } = resolveButtonRamps(theme);
+    const { accent } = resolveButtonRamps(theme);
     const ramp = selectedColor ? colorRamp(selectedColor, ACCENT_TABLE) : accent;
     const dark = theme.isDark;
     // The hairlines are 1px at 16 and 0.875px at 14: they scale.
     const unit = size / DEFAULT_SIZE;
     return {
-      surface: dark ? n[800] : theme.colors.card,
-      border: borderColor ?? (dark ? n[700] : n[300]),
+      surface: theme.colors.card,
+      border: borderColor ?? (theme.colors.border),
       borderWidth: unit,
       shadow: BUTTON_SHADOW[dark ? 'dark' : 'light'],
       top: ramp[500],
@@ -100,9 +101,9 @@ const RadioIndicatorComponent: React.FC<RadioIndicatorProps> = ({
       // The dot sits on the accent. On the theme primary it takes the preset's
       // readable foreground (white on blue, dark on yellow); a caller colour
       // falls back to white, since Bloom cannot know its contrast.
-      dot: selectedColor == null ? theme.colors.primaryForeground : '#FFFFFF',
+      dot: selectedForeground ?? (selectedColor == null ? theme.colors.primaryForeground : '#FFFFFF'),
     };
-  }, [theme, selectedColor, borderColor, size]);
+  }, [theme, selectedColor, selectedForeground, borderColor, size]);
 
   // `size-1.5` in a `size-4` and `size-[5px]` in a `size-3.5`.
   const dotSize = Math.round(size * 0.375);

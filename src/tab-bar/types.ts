@@ -80,6 +80,13 @@ export type TabBarTheme = {
 };
 
 export type TabBarProps = ViewProps & {
+  /** Inline layout for coordinated navigation compositions. */
+  embedded?: boolean;
+  /** Prefer horizontal scrolling over scrub gestures when targets overflow. */
+  scrollable?: boolean;
+  material?: 'solid' | 'translucent';
+  /** One motion signal shared with screen chrome. */
+  minimizeProgress?: SharedValue<number>;
   /**
    * CONTROLLED path — the index of the focused tab. The bar owns the sliding
    * highlight and springs it here whenever this changes. Use this when there is

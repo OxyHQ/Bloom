@@ -16,6 +16,8 @@ export interface FrostedGeometry {
 
 const SIZE_CONFIG: Record<FrostedIconButtonSize, FrostedGeometry> = {
   // 32px (`h-8`) — dense.
+  xs: { diameter: 28, iconBox: 16, blur: 8 },
+  lg: { diameter: 44, iconBox: 24, blur: 14 },
   sm: { diameter: 32, iconBox: 18, blur: 10 },
   // 36px (`h-9`) — the default comfortable header/overlay action.
   md: { diameter: 36, iconBox: 20, blur: 12 },

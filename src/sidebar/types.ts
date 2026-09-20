@@ -35,9 +35,36 @@ export interface SidebarNavItem {
   onPress?: () => void;
 }
 
+/** One mode of a {@link SidebarModeSwitcherProps.modes} switcher. */
+export interface SidebarMode {
+  key: string;
+  label: string;
+  icon: SidebarIcon;
+  /** A shortcut hint shown on hover (web), e.g. `⌥⌃1`. */
+  shortcut?: string;
+}
+
+export interface SidebarModeSwitcherProps {
+  modes: ReadonlyArray<SidebarMode>;
+  /** Key of the selected mode. */
+  value: string;
+  onValueChange: (key: string) => void;
+  /** Collapses the labels and hints, leaving the icons. */
+  collapsed?: boolean;
+  /** The radio group's accessible name. Defaults to `"Mode"`. */
+  accessibilityLabel?: string;
+  style?: StyleProp<ViewStyle>;
+  testID?: string;
+}
+
 export interface SidebarItemProps {
   icon: SidebarIcon;
   label: string;
+  /**
+   * The row's size. Inside a `Sidebar` it is inherited from the panel — pass
+   * it only for a row standing on its own.
+   */
+  size?: SidebarSize;
   href?: string;
   badge?: ReactNode;
   selected?: boolean;
@@ -69,6 +96,33 @@ export interface SidebarRailItemProps {
  *            selected icon on a 48 × 32 pill. Navigation only
  */
 export type SidebarVariant = 'panel' | 'rail';
+
+/**
+ * The panel's own SURFACE — what the sidebar looks like as an object on the
+ * page, independent of what it contains. It is the axis two apps differ on
+ * most: the same rows read as a different product behind a different edge.
+ *
+ * - `card` (default) the floating panel: radius 24, a hairline and the panel
+ *   shadow, on the panel fill. A sidebar that sits IN the page.
+ * - `plain` no edge at all — no radius, no border, no shadow: the rows sit
+ *   straight on the page. The social/reader look, and what a revealed mobile
+ *   drawer uses.
+ * - `docked` a column flush to the window's edge: no radius, one hairline on
+ *   the INNER edge only, the panel fill, and it stretches the full height.
+ *   The workspace look (a channel list, a file tree).
+ */
+export type SidebarSurface = 'card' | 'plain' | 'docked';
+
+/**
+ * How big the rows are, and with them the panel. One axis, three rungs, every
+ * measurement in `SIDEBAR_METRICS`:
+ *
+ * - `sm`  a 30px square, an 18px glyph, `body-2-medium`; 232 expanded, 46 collapsed
+ * - `md` (default) 36 / 20 / `body-medium`; 260 expanded, 52 collapsed
+ * - `lg`  44 / 24 / `title-3-medium`; 300 expanded, 60 collapsed — the
+ *   destination-first rail a social app reads with at arm's length
+ */
+export type SidebarSize = 'sm' | 'md' | 'lg';
 
 /** A row in the team menu. */
 export interface SidebarMenuItem {
@@ -104,6 +158,37 @@ export interface SidebarAccountUser {
   avatar?: SidebarAvatar;
   selected?: boolean;
   onPress?: () => void;
+}
+
+/**
+ * The brand at the top of the sidebar. Give a mark, a wordmark or both.
+ */
+export interface SidebarLogo {
+  /**
+   * The mark (a logo glyph, an SVG, an image). Centred in a 36 × 36 box and
+   * kept while the sidebar is collapsed; size it yourself — 24–28px reads right.
+   */
+  icon?: ReactNode;
+  /**
+   * The wordmark beside the mark, hidden while collapsed. A string renders as
+   * the product name in `headline-semibold`; anything else renders as given.
+   */
+  wordmark?: ReactNode;
+  /** Link target (a real anchor on web). On native, pass `onPress` too. */
+  href?: string;
+  /** Called on press — a router's navigation to home, say. */
+  onPress?: () => void;
+  /** The logo's accessible name. Defaults to a string `wordmark`. */
+  accessibilityLabel?: string;
+}
+
+export interface SidebarLogoViewProps {
+  logo: SidebarLogo;
+  /** Collapses the wordmark, keeping the mark. */
+  collapsed?: boolean;
+  /** Renders the mark only (the navigation rail). Defaults to true. */
+  showWordmark?: boolean;
+  testID?: string;
 }
 
 /** The account switcher at the top of the rail and the menu it opens. */
@@ -143,6 +228,16 @@ export interface SidebarProps {
   variant?: SidebarVariant;
   /** Primary navigation rows. */
   items?: SidebarNavItem[];
+  /**
+   * A mode switcher under the header (Search / Computer): a vertical segmented
+   * control of icon + label rows. Rendered when given; see `SidebarModeSwitcher`.
+   */
+  modes?: ReadonlyArray<SidebarMode>;
+  /** Key of the selected mode. */
+  mode?: string;
+  onModeChange?: (key: string) => void;
+  /** The mode group's accessible name. Defaults to `"Mode"`. */
+  modesLabel?: string;
   /** Rows pinned to the bottom above the team card (Support, Settings). */
   secondaryItems?: SidebarNavItem[];
   /** Key of the selected row. */
@@ -161,10 +256,12 @@ export interface SidebarProps {
   /** Rendered inside a mobile drawer: always expanded, close button instead of collapse. */
   mobile?: boolean;
   onClose?: () => void;
-  /** Expanded width fills the container instead of 260px (collapsed stays 60). */
+  /** Expanded width fills the container instead of the size's own width. */
   fluid?: boolean;
-  /** Removes the floating panel treatment (a sidebar revealed beneath mobile content). */
-  flat?: boolean;
+  /** The panel's edge. Defaults to `card`. */
+  surface?: SidebarSurface;
+  /** The row size, and the panel width that follows it. Defaults to `md`. */
+  size?: SidebarSize;
 
   /** Shows `ThemeToggle` above the secondary rows. Defaults to true. */
   showThemeToggle?: boolean;
@@ -178,6 +275,13 @@ export interface SidebarProps {
   searchPlaceholder?: string;
   noResultsLabel?: string;
 
+  /**
+   * The brand at the top: a mark and/or a wordmark. In the panel it takes the
+   * header row beside the collapse control — the account switcher, if given
+   * too, moves to its own row under it. The rail shows the mark above its
+   * items.
+   */
+  logo?: SidebarLogo;
   account?: SidebarAccount;
   team?: SidebarTeam;
 

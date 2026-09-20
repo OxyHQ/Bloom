@@ -5,6 +5,16 @@ import type { Meta, StoryObj } from '@storybook/react-vite';
 import { StepsCard, type StepsPoint } from './StepsCard';
 
 const meta: Meta<typeof StepsCard> = {
+  argTypes: {
+    "title": { control: 'text' },
+    "headline": { control: 'number' },
+    "totalSuffix": { control: 'text' },
+    "pointSuffix": { control: 'text' },
+    "range": { control: 'text' },
+    "color": { control: 'text' },
+    "activeColor": { control: 'text' },
+    "activeIndex": { control: 'number' }
+  },
   title: 'Charts/Steps',
   component: StepsCard,
 };
@@ -42,7 +52,7 @@ function weekLabel(offset: number) {
 }
 
 const Frame = ({ children, width = 360 }: { children: React.ReactNode; width?: number }) => (
-  <View style={{ padding: 40, gap: 24, width: width + 80 }}>{children}</View>
+  <View style={{ maxWidth: '100%', gap: 24, width }}>{children}</View>
 );
 
 function Weekly({ testID, width }: { testID?: string; width?: number }) {
@@ -62,6 +72,7 @@ function Weekly({ testID, width }: { testID?: string; width?: number }) {
 
 /** A week of steps; the chevrons page through weeks (the label rolls, the bars morph). */
 export const Default: Story = {
+  parameters: { controls: { disable: true } },
   render: () => (
     <Frame>
       <Weekly testID="steps" />
@@ -71,15 +82,18 @@ export const Default: Story = {
 
 /** Thursday hovered (controlled): the header rolls to the day, its bar darkens inside an outline. */
 export const Hovered: Story = {
-  render: () => (
+  args: { activeIndex: 3 },
+  parameters: { controls: { include: ["activeIndex","title","headline","totalSuffix","pointSuffix","color","activeColor"] } },
+  render: (args) => (
     <Frame>
-      <StepsCard data={weekData(0)} range={weekLabel(0)} activeIndex={3} />
+      <StepsCard {...args} data={weekData(0)} range={weekLabel(0)}  />
     </Frame>
   ),
 };
 
 /** The widest dashboard column: bars cap at 50px. A static pill and a custom colour. */
 export const Wide: Story = {
+  parameters: { controls: { disable: true } },
   render: () => (
     <Frame width={440}>
       <StepsCard data={weekData(2)} range="This week" />
