@@ -63,6 +63,13 @@ export interface ChipProps {
   onPress?: () => void;
   /** Called when the close/end icon is pressed. */
   onClose?: () => void;
+  /**
+   * Names the close button. Defaults to `"Remove <label>"` when the chip's
+   * label is a string, and to `"Remove"` when it is not — a row of removable
+   * chips whose buttons are all called "Remove" gives a screen reader no way to
+   * say which one it is about.
+   */
+  closeLabel?: string;
   /** Whether the chip is in a selected state. */
   selected?: boolean;
   /**

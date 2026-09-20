@@ -377,8 +377,23 @@ export const CLASSIFICATION: Record<string, Record<string, Classification>> = {
       reason:
         'the mortgage calculator\u2019s term picker is a hand-written `radiogroup`; it sits beside `TextFieldInput`s that DO read the contract, so one form has two association models.',
     },
+    'note-card': {
+      verdict: 'does-not-apply',
+      reason:
+        'the `checkbox` role is on the CARD (bulk selection in a list) and on read-only checklist PREVIEW rows. Neither is a form control: a note card is never inside a `Field`, and the preview rows take no press at all.',
+    },
+    'note-editor': {
+      verdict: 'does-not-apply',
+      reason:
+        'the raw `TextInput` is a DOCUMENT TITLE — it draws no box, no label and no hint, because the words are the document rather than a value being collected. A `Field` around it would put a form label above a heading.',
+    },
   },
   'control-surface': {
+    'note-editor': {
+      verdict: 'delegated',
+      reason:
+        'the toolbar passes `size` straight to `ButtonGroup`, which reads the contract \u2014 so a `ControlSurface` reaches the formatting row without this family reading anything.',
+    },
     'phone-input': {
       verdict: 'delegated',
       reason:

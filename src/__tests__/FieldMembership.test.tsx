@@ -59,6 +59,7 @@ import { Slider } from '../slider';
 import { Stepper } from '../stepper';
 import { Switch } from '../switch';
 import { Textarea } from '../textarea';
+import { TagField } from '../tag-field';
 import { TextField, TextFieldInput } from '../text-field';
 import { TimeField } from '../date-picker';
 
@@ -216,6 +217,16 @@ const SUBJECTS: Subject[] = [
     render: (p) => <TimeField testID={TID} value={null} onChange={() => {}} {...p} />,
     ownNameProp: 'accessibilityLabel',
     isInert: inputInert,
+    describedBy: true,
+    invalid: true,
+    id: true,
+  },
+  {
+    name: 'tag-field',
+    render: (p) => <TagField testID="shell" value={[]} onChange={() => {}} {...p} />,
+    ownNameProp: 'accessibilityLabel',
+    isInert: inputInert,
+    node: 'textInput',
     describedBy: true,
     invalid: true,
     id: true,

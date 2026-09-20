@@ -109,6 +109,7 @@ describe('the field contract', () => {
       'slider',
       'stepper',
       'switch',
+      'tag-field',
       'text-field',
       'textarea',
     ]);

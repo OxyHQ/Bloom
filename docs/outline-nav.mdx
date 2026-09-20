@@ -1,0 +1,85 @@
+---
+title: OutlineNav
+description: A document's table of contents — a real nested list, aria-current on the heading the reader is at, and a compact form that drops levels rather than squeezing them.
+order: 109
+---
+
+# OutlineNav
+
+The document's own table of contents: the headings, nested, with the one the
+reader is at marked and a bar saying how far through they are.
+
+```tsx
+import { OutlineNav } from '@oxy.so/bloom';
+
+<OutlineNav
+  headings={headings}
+  activeId={active}
+  onSelect={(heading) => scrollTo(heading.id)}
+/>
+```
+
+## Geometry
+
+|  | `full` | `compact` |
+| --- | --- | --- |
+| row height | 36 | 44 |
+| title | drawn | none |
+| progress bar | `Meter`, 4 | `Meter`, 3 |
+| levels | all | down to `compactMaxLevel` (default 2) |
+| indent | 14 per level | 14 per level, of the levels it draws |
+| rail | 2px down the left of every row, painted only on the current one |
+
+`compact` **drops** the deep levels rather than squeezing them. Below level two,
+an indent on a 360px screen is a few pixels nobody reads, so the honest compact
+form is a shorter list of full-width rows at a touch size — not the same list
+with the indent scaled down.
+
+## It is a real list
+
+`role="list"` with `role="listitem"` children, one list **nested inside another**
+for each level. A screen reader then announces "list, 3 items… list, 2 items" and
+the reader knows the shape of the document. A flat list of rows with a left
+padding looks identical and says nothing — which is exactly why this is the part
+worth a gate rather than a glance.
+
+The indent is carried by the nested list, not by a per-row padding, so the indent
+and the structure are the same fact and cannot disagree.
+
+**The tree is built from the order, not from the arithmetic.** Real documents
+skip levels (1, 3, 3 is ordinary), so a heading's parent is the nearest preceding
+heading with a *smaller* level. A document that opens at level 3 and only later
+has a level 1 gets two roots, in order, rather than a lost subtree.
+`buildOutlineTree` is exported and pure.
+
+## `aria-current`, not `aria-selected`
+
+The reader is **at** the current heading; they did not choose it out of a set. So
+it is `aria-current="location"` on web, with `accessibilityState.selected` for
+native, and the row takes the tone's colour and the painted rail.
+
+## This component does not jump
+
+`onSelect` emits the heading and the **app** scrolls. A table of contents that
+scrolled something itself would have to guess which scroller, and in a split view
+it would guess wrong with no error — see [Composition](/docs/composition) §Scroll
+ownership.
+
+The same reasoning applies to `progress`: without it, progress is derived from
+`activeId`'s position in the list, which is right for a jump list and wrong for a
+continuous scroll. A screen that measures scroll passes its own value.
+`outlineProgress` puts the **first** heading at `1/n` rather than 0 — a reader who
+has reached the first heading has read something — and an empty outline at 0,
+which is the honest answer rather than a guess.
+
+## Traps
+
+- **The progress bar is a `Meter`**, so it is a real `progressbar` with a name
+  and a `valueText` ("Heading 4 of 10"). Never hand-roll the bar; `hideProgress`
+  is there for a screen that has its own.
+- **Headings truncate to one line.** A TOC that wrapped would reflow every time
+  the active row changed weight.
+- **`compactMaxLevel` is about the COMPACT form only.** `full` always draws
+  everything; if you want a shortened full outline, shorten `headings`.
+- **Row heights are 36 in `full`** because it is the pointer variant of a side
+  column. On a touch screen use `compact`, which is 44.

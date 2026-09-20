@@ -1,0 +1,131 @@
+---
+title: NoteCard
+description: One note as a preview — two densities, a tinted wash, a checklist body and the bulk-selection state a notes app lives in.
+order: 106
+---
+
+# NoteCard
+
+A note, previewed. It is the cell of a board, the row of a list, and the thing a
+bulk action is applied to — one component, because those are the same note.
+
+```tsx
+import { NoteCard } from '@oxy.so/bloom';
+
+<NoteCard
+  title="Harbour walk — what to bring"
+  excerpt="Slack water is at 06:40, which gives us about forty minutes…"
+  tags={['field notes', 'tide']}
+  meta={{ edited: '2 min ago', notebook: 'Field notes', attachments: 2 }}
+  pinned
+  onPress={open}
+/>
+```
+
+## The two densities are one component
+
+|  | `grid` | `row` |
+| --- | --- | --- |
+| padding | 16 | 12 |
+| radius | `radius-12` | `radius-8` |
+| title | 2 lines | 1 line |
+| excerpt | 4 lines | 1 line |
+| checklist preview | 4 items | 2 items |
+| tags | their own row | folded into the metadata line |
+| metadata | last line | inline after the excerpt |
+| min height | — | 72 |
+
+`grid` is the board: a masonry cell where the body is what you are scanning.
+`row` is the list: the title is what you are scanning and everything else is a
+trail after it.
+
+They are a `density` prop rather than two components on purpose. Everything but
+the arrangement — which fields are drawn, how the tone is composited, what
+selection means — is the same decision, and two components is where two answers
+to one of those grow.
+
+## Selection is two different things, so it has two spellings
+
+`selected` on its own means **this is the note you are reading**: the card takes
+the tone's edge and announces `aria-current`. The reader did not choose it out of
+a set; they are at it.
+
+`selectable` turns the list into **bulk selection**: the card IS a checkbox —
+`role="checkbox"`, both spellings of `checked`, a box in the leading slot, and a
+press toggles instead of opening. `onPress` is not called while `selectable` is
+set, which is the whole point of the mode.
+
+**A card with no handler and no `selectable` is not a control at all** — it
+renders as a plain `View` with the composed name and no role. A `Pressable` with
+its handlers left off still lands in the tab order and still announces "button",
+and neither is true of the thing on screen.
+
+The box in the leading slot is `checkbox/shared`'s own `CheckboxGlyph`, hidden
+from assistive technology and non-interactive: the CARD carries the role and the
+press, so the box is the drawing of that state rather than a second control to
+tab to.
+
+## A checklist note previews as a checklist
+
+Pass `checklist` and it replaces `excerpt`. Flattened into text, a checklist
+reads as a paragraph of fragments — "Finish part two Borrow the essays Return the
+overdue ones" — which is worse than no preview.
+
+The rows are read-only. Each announces its own state (`role="checkbox"`,
+`aria-checked`, `aria-disabled`) and is named by its text, because a tick with no
+name is a decoration. `checklistTotal` is what the "+N more" line counts against,
+so a card can be handed the first four items of nine.
+
+## The tone is composited, never appended
+
+`tone` is one of Bloom's accent tones and there is no hex here on purpose: a note
+colour picked by eye is the one that disappears in dark mode.
+
+The mechanism is the part worth knowing. `resolveAccentColors(colors, tone,
+'subtle')` returns a **translucent** tint (`rgba(…, 0.13)` light, `0.24` dark).
+Measuring a quiet text rung against that string reads the channels and ignores
+the alpha, so the contrast you compute is not the contrast the reader gets. So
+`shared.ts` flattens the tint over the surface the card actually landed on
+(`useSurfaceFill()`), and every rung — title, excerpt, metadata — is measured
+against the **composite**. `resolveNoteCardPaint` is pure, so the suite walks it
+over both modes.
+
+The same trap catches the TAG PILLS one component down, which is why
+`noteTagVariant()` exists: the neutral tone's tint IS `contrast50`, the colour a
+`tone="default"` card already painted, so a `subtle` pill on one is a label
+floating on nothing at contrast 1.00. Those pills are drawn `outlined` instead —
+the edge does what the fill cannot.
+
+The same flattening does selection: the selected card is its own tone laid on
+once more, which is why selection reads on a tinted card and on an untinted one
+with one rule rather than two.
+
+## What it owns, and what it does not
+
+**Owns:** its geometry, its wash, which quiet rung each line sits at, the
+composed accessible name, and the fact that a press in selection mode toggles.
+
+**Does not own:** the layout of the board (give the cell a width — `grid` fills
+it), the relative-time vocabulary (`meta.edited` is drawn as given), what a
+notebook is, or whether a locked note's excerpt should be hidden. That last one
+is the app's: `meta.locked` draws the marker and hides nothing, because Bloom
+cannot know whether the excerpt it was handed is already redacted.
+
+**The notebook TREE is not here either.** It already exists as `Sidebar`'s `tree`
+prop and `SidebarFolder`; a second one would be a second answer.
+
+## Traps
+
+- **A 2px selected border must not move the content.** It does not: the padding
+  gives the pixel back. If you restyle the card, keep that — a border that grows
+  the box reflows the whole board on selection.
+- **`tone` and `selected` compose.** A selected `error` note keeps its own edge
+  colour and deepens by one surface step rather than by the tone laid twice —
+  laying an OPAQUE tint over itself is a no-op, which is exactly what `default`
+  did. Check both in dark mode if you add a tone.
+- **The card publishes its surface.** Anything you put inside it through a
+  slot will step off the card's real fill, tint included, because the card mounts
+  `SurfaceLevelProvider` with the composited colour.
+- **`loading` renders `NoteCardSkeleton`**, which is also exported on its own —
+  a list that knows it is fetching ten notes should render ten skeletons rather
+  than construct ten empty note objects to satisfy a required `title`.

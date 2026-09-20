@@ -262,7 +262,7 @@ const ButtonGroupItemComponent: React.FC<ButtonGroupItemProps> = ({
   children,
   size: sizeProp,
   variant,
-  selected = false,
+  selected,
   disabled = false,
   iconOnly = false,
   leadingIcon: LeadingIcon,
@@ -302,7 +302,7 @@ const ButtonGroupItemComponent: React.FC<ButtonGroupItemProps> = ({
     ? palette.disabledBackground
     : pressed
       ? palette.active
-      : hovered || selected
+      : hovered || selected === true
         ? palette.hover
         : palette.background;
   const foreground = disabled ? palette.disabledForeground : palette.foreground;
@@ -342,6 +342,12 @@ const ButtonGroupItemComponent: React.FC<ButtonGroupItemProps> = ({
       accessibilityLabel={accessibilityLabel}
       // Both spellings: react-native-web reads only `aria-pressed`, React Native
       // has no `aria-pressed` and reads `accessibilityState`.
+      //
+      // `selected` is UNDEFINED, not false, on an item that is not a toggle —
+      // an action in a toolbar (attach, link) is pressed and done, and
+      // `aria-pressed="false"` on it makes a screen reader announce "not
+      // pressed", which says it has a state it does not have. Only an item
+      // whose caller passed the prop carries the attribute.
       accessibilityState={{ disabled, selected, expanded: ariaExpanded }}
       aria-pressed={selected}
       aria-expanded={ariaExpanded}

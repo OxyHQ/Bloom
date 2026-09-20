@@ -61,6 +61,22 @@ describe('ButtonGroup', () => {
     expect(item.props.accessibilityState).toMatchObject({ selected: true });
   });
 
+  it('an item that is not a toggle carries NO pressed state', () => {
+    // `aria-pressed="false"` on a plain action announces a state it does not
+    // have — "not pressed" on an attach button that fires and is done.
+    const screen = renderWithTheme(
+      <ButtonGroup accessibilityLabel="Format">
+        <ButtonGroupItem testID="action" onPress={() => {}}>Attach</ButtonGroupItem>
+        <ButtonGroupItem testID="off" selected={false} onPress={() => {}}>Bold</ButtonGroupItem>
+      </ButtonGroup>,
+    );
+    const action = screen.getByTestId('action');
+    expect(action.props['aria-pressed']).toBeUndefined();
+    expect(action.props.accessibilityState?.selected).toBeUndefined();
+    // A toggle that is OFF still says so.
+    expect(screen.getByTestId('off').props['aria-pressed']).toBe(false);
+  });
+
   it('paints a selected item like its hover state, and a disabled one differently', () => {
     const { getByTestId } = renderWithTheme(
       <ButtonGroup>
