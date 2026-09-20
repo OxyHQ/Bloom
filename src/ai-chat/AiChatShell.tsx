@@ -42,6 +42,34 @@ const DRAWER_MS = 300;
 /** An icon-only rail: one 36px control plus its 10px gutters. */
 const COLLAPSED_SIDEBAR_WIDTH = 56;
 
+// --- Nav drawer swipe ------------------------------------------------------
+//
+// The numbers the claim is made of. They are deliberately strict: the gesture
+// lives on the shell's ROOT, which is the whole screen below `lg`, so every
+// touch the chat, the thread and a host's own content receive passes through
+// them first.
+
+/**
+ * The strip at the shell's left edge an OPENING drag has to start in. Wide
+ * enough for a thumb landing on the frame (the root's own 12px padding plus the
+ * container's edge), narrow enough that nothing a host draws is inside it.
+ */
+const NAV_EDGE_WIDTH = 24;
+/** Horizontal travel before the drag is a swipe rather than a slipped tap. */
+const NAV_SWIPE_SLOP = 12;
+/**
+ * How many times more horizontal than vertical the drag must be. 2 is a ±26°
+ * cone around the horizontal: a vertical scroll of the thread never enters it,
+ * and neither does the diagonal that starts most scrolls.
+ */
+const NAV_SWIPE_RATIO = 2;
+/** px/ms — a flick past this settles in its own direction whatever the distance. */
+const NAV_SWIPE_FLICK = 0.3;
+/** A settle never runs shorter than this, so the last few px are still seen. */
+const NAV_SETTLE_MIN_MS = 120;
+
+const clamp01 = (value: number) => (value < 0 ? 0 : value > 1 ? 1 : value);
+
 const DEFAULT_LABELS = {
   openNavigation: 'Open navigation',
   closeNavigation: 'Close navigation',
@@ -273,7 +301,9 @@ export function AiChatMobileHeader({ title, style, testID }: AiChatMobileHeaderP
  *               pl 6); opening it slides the whole workspace 272 right and rounds
  *               it to 32 while the sidebar scales up from 94% and fades in (325ms
  *               `cubic-bezier(0.42, 0, 0.58, 1)`); a 10% black (5% white) veil
- *               over the workspace closes it
+ *               over the workspace closes it, and so does dragging it back — a
+ *               drag in from the left edge opens it (`navSwipeEnabled`), the
+ *               drawer following the finger and settling on release
  *
  * The chat container reads the drawer controls through `AiChatMobileHeader`.
  * Everything the shell knows — including `navPresented`, which says whether the
@@ -299,6 +329,7 @@ export function AiChatShell({
   maxPanelWidth = 560,
   navOpen: navOpenProp,
   onNavOpenChange,
+  navSwipeEnabled = true,
   panelOpen: panelOpenProp,
   onPanelOpenChange,
   background,
@@ -327,6 +358,9 @@ export function AiChatShell({
   });
   const navOpen = navOpenState && !navInFlow && !!mobileSidebar;
   const panelOpen = panelOpenState && !wide && !!panel;
+  // The swipe's handlers are built once and read the drawer's state from here.
+  const navOpenRef = useRef(navOpen);
+  navOpenRef.current = navOpen;
 
   const [panelWidth, setPanelWidth] = useState(defaultPanelWidth);
   const [dragging, setDragging] = useState(false);
@@ -350,10 +384,37 @@ export function AiChatShell({
 
   // Push drawer.
   const reveal = useSharedValue(navOpen ? 1 : 0);
+  /**
+   * Where `reveal` was last sent. The swipe writes it before it commits the
+   * state change, so the effect below does not restart an animation the
+   * gesture has already aimed — a drag released back where it started changes
+   * no state at all, and would otherwise leave `reveal` stranded mid-travel.
+   */
+  const revealTarget = useRef(navOpen ? 1 : 0);
   useEffect(() => {
     const target = navOpen ? 1 : 0;
+    if (revealTarget.current === target) return;
+    revealTarget.current = target;
     reveal.value = reducedMotion ? target : withTiming(target, { duration: REVEAL_MS, easing: REVEAL_EASE });
   }, [navOpen, reducedMotion, reveal]);
+  /**
+   * Land the drawer open or closed, animating from wherever it is now.
+   * `duration` is what a swipe shortens when there is little left to travel;
+   * reduced motion snaps, exactly as the effect above does.
+   */
+  const settleNav = useCallback(
+    (open: boolean, duration: number = REVEAL_MS) => {
+      const target = open ? 1 : 0;
+      revealTarget.current = target;
+      reveal.value = reducedMotion ? target : withTiming(target, { duration, easing: REVEAL_EASE });
+      // A drag that ends where it began animates back and changes nothing:
+      // a controlled host must not be told the drawer opened and closed.
+      if (open === navOpenRef.current) return;
+      if (open) setPanelOpen(false);
+      setNavOpen(open);
+    },
+    [reducedMotion, reveal, setNavOpen, setPanelOpen],
+  );
   const railStyle = useAnimatedStyle(
     () => ({ opacity: reveal.value, transform: [{ scale: 0.94 + 0.06 * reveal.value }] }),
     [reveal],
@@ -363,6 +424,94 @@ export function AiChatShell({
     [reveal],
   );
   const veilStyle = useAnimatedStyle(() => ({ opacity: reveal.value }), [reveal]);
+
+  // The edge swipe. Armed only where there IS a drawer: below `lg`, with a
+  // `mobileSidebar`, and only while the host allows it.
+  const navSwipeArmed = navSwipeEnabled && !navInFlow && !!mobileSidebar;
+  const swipe = useRef({ armed: false, blocked: false, from: 0, settle: settleNav });
+  swipe.current.armed = navSwipeArmed;
+  // A drag over the panel drawer's backdrop belongs to the panel.
+  swipe.current.blocked = panelOpen;
+  swipe.current.settle = settleNav;
+
+  /**
+   * Opening and closing the nav drawer with the finger.
+   *
+   * It sits on the shell's ROOT rather than on the workspace, because below
+   * `lg` the root's own 12px frame is part of the edge a thumb lands on and a
+   * touch there never reaches the workspace at all.
+   *
+   * **What it claims.** Never a touch START — every press inside the shell
+   * still reaches the control under it. On MOVE, all of:
+   *
+   * - the drag is at least `NAV_SWIPE_SLOP` across and `NAV_SWIPE_RATIO` times
+   *   more horizontal than vertical, so the thread's scroll keeps every
+   *   vertical and near-vertical drag;
+   * - one finger only (a two-finger zoom in a code block is not a swipe);
+   * - **closed:** it started inside `NAV_EDGE_WIDTH` of the left edge and is
+   *   travelling right — a horizontal drag in the middle of the screen stays
+   *   the content's, which is where a carousel or a scrolling code block is;
+   * - **open:** it is travelling left, from anywhere. The veil is over the
+   *   whole workspace by then and a press on it already closes the drawer, so
+   *   there is nothing underneath to take the drag from.
+   *
+   * `gestureState.x0` is NOT the start of the gesture — PanResponder fills it
+   * in at GRANT, which for a move-claimed responder is after the fact. The
+   * start is recovered as `moveX - dx`, both of which the capture phase has
+   * already updated by the time the claim runs.
+   *
+   * **On web** only a real touch is claimed (`nativeEvent.type`, which
+   * react-native-web sets from the DOM event it synthesised the touch from).
+   * A mouse drag from the edge is not a gesture anyone performs on purpose and
+   * claiming it would cancel a selection that began at the edge. Nothing here
+   * sets `touch-action` either: that would have to go on an ancestor of the
+   * whole workspace and would take horizontal panning away from every
+   * scroller inside it.
+   */
+  const navSwipe = useMemo(
+    () =>
+      PanResponder.create({
+        onStartShouldSetPanResponder: () => false,
+        onMoveShouldSetPanResponder: (event, gesture) => {
+          const state = swipe.current;
+          if (!state.armed) return false;
+          // `type` is react-native-web's own addition to the touch it makes of
+          // a DOM event; native carries no such field, hence the cast.
+          const domType = (event.nativeEvent as { type?: string }).type ?? '';
+          if (IS_WEB && !domType.startsWith('touch')) return false;
+          if (gesture.numberActiveTouches > 1) return false;
+          const { dx, dy } = gesture;
+          if (Math.abs(dx) < NAV_SWIPE_SLOP) return false;
+          if (Math.abs(dx) < Math.abs(dy) * NAV_SWIPE_RATIO) return false;
+          if (navOpenRef.current) return dx < 0;
+          if (state.blocked) return false;
+          return dx > 0 && gesture.moveX - dx <= NAV_EDGE_WIDTH;
+        },
+        onPanResponderGrant: () => {
+          swipe.current.from = navOpenRef.current ? 1 : 0;
+        },
+        // `dx` is measured from the GRANT, not from the touch, so the drawer
+        // picks up under the finger where the claim was made.
+        onPanResponderMove: (_event, gesture) => {
+          reveal.value = clamp01(swipe.current.from + gesture.dx / REVEAL_OFFSET);
+        },
+        onPanResponderRelease: (_event, gesture) => {
+          const progress = clamp01(swipe.current.from + gesture.dx / REVEAL_OFFSET);
+          const open =
+            Math.abs(gesture.vx) >= NAV_SWIPE_FLICK ? gesture.vx > 0 : progress >= 0.5;
+          const remaining = Math.abs((open ? 1 : 0) - progress);
+          swipe.current.settle(
+            open,
+            Math.max(NAV_SETTLE_MIN_MS, Math.round(REVEAL_MS * remaining)),
+          );
+        },
+        // Whatever took the gesture away, the drawer goes back where it was.
+        onPanResponderTerminate: () => swipe.current.settle(swipe.current.from === 1),
+        // Nothing takes the drag off us once the drawer is following the finger.
+        onPanResponderTerminationRequest: () => false,
+      }),
+    [reveal],
+  );
 
   // Panel drawer.
   const drawer = useSharedValue(panelOpen ? 1 : 0);
@@ -433,6 +582,7 @@ export function AiChatShell({
     <AiChatShellContext.Provider value={shellState}>
       <View
         {...dataHook('bloomAiChatDragging', dragging ? 'on' : '')}
+        {...(navSwipeArmed ? navSwipe.panHandlers : null)}
         testID={testID}
         onLayout={(event: LayoutChangeEvent) => setShellWidth(event.nativeEvent.layout.width)}
         style={[rootStyle, style]}>

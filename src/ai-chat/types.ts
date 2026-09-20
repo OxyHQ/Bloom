@@ -418,6 +418,19 @@ export interface AiChatShellProps {
   /** Controlled nav drawer (below `lg`). */
   navOpen?: boolean;
   onNavOpenChange?: (open: boolean) => void;
+  /**
+   * Open the nav drawer by dragging in from the left edge, and close it by
+   * dragging the open drawer back. Default `true` — a drawer that cannot be
+   * swiped is a drawer with no way to open it on touch but the one button.
+   *
+   * It is armed only where there is a drawer to open: below `lg`, and only
+   * with a `mobileSidebar`. An opening drag has to start within 24px of the
+   * left edge and be clearly horizontal before it is claimed, so a vertical
+   * scroll and a horizontal drag in the middle of the screen both stay with
+   * the content. Turn it off for a host whose own content wants the left edge
+   * below `lg`.
+   */
+  navSwipeEnabled?: boolean;
   /** Controlled panel drawer (below `xl`). */
   panelOpen?: boolean;
   onPanelOpenChange?: (open: boolean) => void;
