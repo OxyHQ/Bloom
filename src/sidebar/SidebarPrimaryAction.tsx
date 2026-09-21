@@ -20,8 +20,7 @@ export function SidebarPrimaryAction({ action, collapsed = false, rail = false, 
   return <Animated.View style={[{ flexShrink: 0, width: '100%', paddingTop: 12 }, inset]}>
     <Fab
       testID={testID ?? 'sidebar-primary-action'}
-      size={diameter}
-      iconSize={26}
+      size="md"
       icon={action.icon}
       label={action.label}
       collapsed={rail || collapsed}

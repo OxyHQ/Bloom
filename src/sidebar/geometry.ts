@@ -1,8 +1,9 @@
+import { FAB_METRICS } from '../fab/constants';
 import { createContext, useContext } from 'react';
 import type { SidebarMetrics } from './metrics';
 import type { SidebarSurface } from './types';
 
-export const SIDEBAR_ACTION_DIAMETER = 50;
+export const SIDEBAR_ACTION_DIAMETER = FAB_METRICS.md.diameter;
 
 /** The lane is shared by every collapsed control, independently of row height. */
 export function resolveSidebarGeometry(metrics: SidebarMetrics, surface: SidebarSurface, hasAction: boolean, hasTree = false) {

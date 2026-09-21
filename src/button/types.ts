@@ -93,6 +93,8 @@ export interface ButtonProps {
    * which the button sizes and colours like `leadingIcon`.
    */
   icon?: React.ReactNode | ButtonIconComponent;
+  /** Explicit glyph dimensions; otherwise follows the button size. */
+  iconSize?: number;
   iconPosition?: 'left' | 'right';
 
   /**

@@ -119,8 +119,34 @@ it.each([['native', Fab], ['web', WebFab]] as const)('%s supports a larger glyph
   const tree = themed(<Action icon={Glyph} label="Compose" size={50} iconSize={26} collapsed testID="sized-fab" />);
   const host = platform === 'web' ? tree.UNSAFE_root.findByProps({ 'data-testid': 'sized-fab' }) : tree.getByTestId('sized-fab');
   const style = resolvedStyle(host.props.style);
-  expect(tree.getByTestId('sized-glyph').props).toMatchObject({ width: 26, height: 26 });
+  expect(tree.getByTestId('sized-glyph', { includeHiddenElements: true }).props).toMatchObject({ width: 26, height: 26 });
   expect(style.height).toBe(50);
   expect(style.minWidth).toBe(50);
   expect(Number(style.paddingLeft) + 26 + Number(style.paddingRight)).toBe(50);
+});
+
+it.each([['native', Fab], ['web', WebFab]] as const)('%s shares the default 50/26 geometry for component and element icons', (platform, Action) => {
+  const Glyph = (props: { width?: number; height?: number }) => <Text testID="default-glyph" {...props}>+</Text>;
+  const ui = (element: boolean) => <BloomThemeProvider fonts={false}><Action icon={element ? <Glyph /> : Glyph} accessibilityLabel="Create" testID="default-fab" /></BloomThemeProvider>;
+  const tree = render(ui(false));
+  for (const element of [false, true]) {
+    tree.rerender(ui(element));
+    const host = platform === 'web' ? tree.UNSAFE_root.findByProps({ 'data-testid': 'default-fab' }) : tree.getByTestId('default-fab');
+    expect(resolvedStyle(host.props.style)).toMatchObject({ width: 50, height: 50 });
+    expect(tree.getByTestId('default-glyph', { includeHiddenElements: true }).props).toMatchObject({ width: 26, height: 26 });
+  }
+});
+
+it.each([['native', Fab], ['web', WebFab]] as const)('%s paints legacy element icons with the button foreground unless explicitly colored', (platform, Action) => {
+  const Glyph = (props: { fill?: string; color?: string }) => <Text testID="painted-glyph" {...props}>+</Text>;
+  const ui = (icon: React.ReactElement) => <BloomThemeProvider mode="light" colorPreset="teal" fonts={false}><Action icon={icon} accessibilityLabel="Create" /></BloomThemeProvider>;
+  const tree = render(ui(<Glyph />));
+  const glyph = () => tree.getByTestId('painted-glyph', { includeHiddenElements: true });
+  const expected = platform === 'web' ? 'currentColor' : resolveButtonPalette('solid', buildTheme('teal', 'light'), 'action').rest.foreground;
+  expect(glyph().props.fill).toBe(expected);
+  tree.rerender(ui(<Glyph fill="#ff0000" />));
+  expect(glyph().props.fill).toBe('#ff0000');
+  tree.rerender(ui(<Glyph color="#00ff00" />));
+  expect(glyph().props.color).toBe('#00ff00');
+  expect(glyph().props.fill).toBeUndefined();
 });

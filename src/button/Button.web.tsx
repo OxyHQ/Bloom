@@ -175,6 +175,7 @@ const ButtonWebComponent: React.FC<ButtonProps> = ({
   style,
   textStyle,
   icon,
+  iconSize: iconSizeProp,
   leading,
   trailing,
   leadingIcon: LeadingIcon,
@@ -218,7 +219,7 @@ const ButtonWebComponent: React.FC<ButtonProps> = ({
   const isIconVariant = isSquare;
   const isLink = appearance === 'plain' && (href != null || variantProp === 'link');
   const isInteractionBlocked = disabled || loading;
-  const iconSize = isIconVariant ? ICON_BUTTON_ICON_SIZE[size] : geometry.iconSize;
+  const iconSize = typeof iconSizeProp === 'number' && Number.isFinite(iconSizeProp) && iconSizeProp > 0 ? iconSizeProp : isIconVariant ? ICON_BUTTON_ICON_SIZE[size] : geometry.iconSize;
 
   const palette = useMemo(
     () => variantProp === 'link' && appearanceProp == null && toneProp == null ? resolveButtonPalette('link', theme, linkTone) : variantProp === 'inverse' && appearanceProp == null && toneProp == null ? resolveButtonPalette('inverse', theme) : resolveButtonPalette(appearance, theme, tone),
