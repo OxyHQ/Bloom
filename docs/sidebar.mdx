@@ -27,7 +27,7 @@ Give it a height (it fills `100%`); its width is its own.
 ## Primary action
 
 Use `primaryAction` for the sidebar's main command. Bloom reuses `Fab` with its action tone and controlled `collapsed` state,
-56px tall and full-width when expanded, a 56px circle when collapsed or in
+50px tall and full-width when expanded, a 50px circle with a 26px glyph when collapsed or in
 `variant="rail"`. It stays outside the scrolling destinations so long navigation
 lists do not push it out of reach. The expanded label follows the sidebar's existing
 collapse animation and reduced-motion setting; the button keeps one focus target.
@@ -157,10 +157,10 @@ The docked edge is not the card's border: that one is white in light mode, a hig
 | size     | square | glyph | label            | expanded | collapsed |
 | -------- | ------ | ----- | ---------------- | -------- | --------- |
 | `sm`  | 30     | 18    | `body-2-medium`  | 232      | 46        |
-| `md` | 36     | 20    | `body-medium`    | 260      | 52        |
+| `md` | 40     | 22    | `headline-medium` | 260      | 56        |
 | `lg`  | 44     | 24    | `title-3-medium` | 300      | 60        |
 
-The table describes a card without a primary action. Runtime collapsed width is the icon lane plus 7px padding on each side and the borders actually painted: card adds2px, docked1px, plain0px. The lane is the row square, or at least56px when `primaryAction` is present (total72/71/70px respectively). Navigation and search retain their30/36/44px circles, centred in the wider lane; their icons are not enlarged. Logo, collapse control, modes, theme and account controls share that centre. Expanded navigation retains its2px inset, and the primary action uses the same edges. A row outside a sidebar takes `size` itself; inside one it inherits the panel's.
+The table describes a card without a primary action. Runtime collapsed width is the icon lane plus 7px padding on each side and the borders actually painted: card adds2px, docked1px, plain0px. The lane is the row square, or at least50px when `primaryAction` is present (total66/65/64px respectively). Navigation and search retain their30/40/44px circles, centred in the wider lane; their icons are not enlarged. Logo, collapse control, modes, theme and account controls share that centre. Expanded navigation retains its2px inset, and the primary action uses the same edges. A row outside a sidebar takes `size` itself; inside one it inherits the panel's.
 
 `AppShell` passes both through (`sidebar={{ surface, size }}`) and treats `docked` as what it is — it gives up its left and vertical padding around that column and lets it run the full height, so the hairline is the separator instead of a gutter.
 
@@ -189,7 +189,7 @@ Panel `backgroundSecondary` (`--surface`) with `borderLight` and the existing th
 
 ### Mode switcher in a collapsed panel
 
-Collapsed modes use the sidebar's icon-square size: 30/36/44px for `sm/md/lg`.
+Collapsed modes use the sidebar's icon-square size: 30/40/44px for `sm/md/lg`.
 The track adds 4px around those squares and stays centered, extending into the
 panel's horizontal inset. Its selected thumb remains square, the glyph stays
 centered, and hidden labels leave no gap. Expanded mode rows retain their 32px

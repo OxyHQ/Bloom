@@ -531,3 +531,7 @@ one gutter on each side (32px total at gutter16), leaving scrolling content
 visible beside it. Both document and bounded panel layouts use this separation.
 The real-browser mask check also asserts the header’s left/right edges match the
 panel at rest and during scroll.
+
+`navigationGap` controls the space between the sidebar and content independently of
+`gutter` and the aside gap. The social template uses `navigationGap={0}` to bring
+plain navigation up to the reading panel while retaining the panel frame insets.

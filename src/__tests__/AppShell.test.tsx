@@ -506,6 +506,15 @@ describe('AppShell variant="feed"', () => {
     expect(resolvedStyle(group?.props.style)).toMatchObject({ flexGrow: 0, flexBasis: 896, maxWidth: 896 });
   });
 
+  it('can close the navigation gap without changing panel and aside insets', () => {
+    setWidth(1440);
+    const screen = renderIn(<AppShell testID="shell" variant="feed" navigationGap={0} gutter={16}
+      contentWidth={600} asideWidth={280} sidebar={{ items: NAV }} aside={<ReactNative.Text>Context</ReactNative.Text>} />);
+    expect(resolvedStyle(screen.getByTestId('shell').props.style)).toMatchObject({ padding: 16, gap: 0 });
+    const group = hostParent(screen.getByTestId('shell-content'));
+    expect(resolvedStyle(group?.props.style).gap).toBe(16);
+  });
+
   it('below asideFrom the side column stacks under the content instead', () => {
     setWidth(1100);
     const screen = renderIn(

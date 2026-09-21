@@ -54,6 +54,7 @@ function SocialLayout({ showRightColumn = true, centerWidth = 620, rightColumnWi
       variant="feed"
       scroll="document"
       navigationAlign="content"
+      navigationGap={0}
       navigation={compact ? destinations.filter(item => ['home', 'explore', 'notifications', 'saved', 'profile'].includes(item.value)) : destinations}
       primaryAction={compact ? { accessibilityLabel: 'New post', icon: <RiQuillPenLine />, onPress: onNewPost } : undefined}
       value={selected}

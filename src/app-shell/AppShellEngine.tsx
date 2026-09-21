@@ -97,6 +97,7 @@ function Scroller({
 const AppShellComponent: React.FC<AppShellEngineProps> = ({
   variant = 'dashboard',
   navigationAlign = 'edge',
+  navigationGap,
   sidebar,
   drawer = 'overlay',
   title,
@@ -701,7 +702,7 @@ const AppShellComponent: React.FC<AppShellEngineProps> = ({
   const rowStyle: WebCssStyle = {
     flexDirection: 'row',
     ...(contentAligned ? { justifyContent: 'center' } : {}),
-    gap: dockedNav || canvas ? 0 : columnGap,
+    gap: dockedNav || canvas ? 0 : Math.max(0, navigationGap ?? columnGap),
     // A canvas runs to the window's edge, so the row keeps no padding at all
     // and each region carries its own (the nav below, the aside in `canvasBody`).
     padding: canvas ? 0 : gutter,

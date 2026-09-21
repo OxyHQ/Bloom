@@ -21,6 +21,7 @@ export function SidebarPrimaryAction({ action, collapsed = false, rail = false, 
     <Fab
       testID={testID ?? 'sidebar-primary-action'}
       size={diameter}
+      iconSize={26}
       icon={action.icon}
       label={action.label}
       collapsed={rail || collapsed}

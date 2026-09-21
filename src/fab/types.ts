@@ -11,6 +11,8 @@ export type FabMinimizeBehavior = 'none' | 'hide' | 'collapse';
 /** A prominent action. Screen/BottomBar own placement unless explicitly supplied. */
 export interface FabProps extends Omit<ButtonProps, 'children' | 'leadingIcon' | 'trailingIcon' | 'leading' | 'trailing' | 'size' | 'variant'> {
   label?: string;
+  /** Glyph dimensions in points; defaults to the selected size’s icon scale. */
+  iconSize?: number;
   /** Animate the extended label away while retaining the action and accessible name. */
   collapsed?: boolean;
   children?: ReactNode;

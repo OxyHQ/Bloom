@@ -2,7 +2,7 @@ import { createContext, useContext } from 'react';
 import type { SidebarMetrics } from './metrics';
 import type { SidebarSurface } from './types';
 
-export const SIDEBAR_ACTION_DIAMETER = 56;
+export const SIDEBAR_ACTION_DIAMETER = 50;
 
 /** The lane is shared by every collapsed control, independently of row height. */
 export function resolveSidebarGeometry(metrics: SidebarMetrics, surface: SidebarSurface, hasAction: boolean, hasTree = false) {

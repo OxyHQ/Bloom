@@ -11,7 +11,7 @@ import * as Icons from '@oxy.so/bloom/icons';
 <Fab icon={Icons.RiAddLine} label="Compose" tone="action" appearance="solid" />
 ```
 
-`size` is `xs | sm | md | lg` (40, 48, 56, 64 points; default `md`).
+`size` is `xs | sm | md | lg` (40, 48, 56, 64 points; default `md`). `iconSize` optionally sets the glyph dimensions independently; for example, `size={50} iconSize={26}`. The collapsed circle keeps its requested diameter and adjusts its padding around the glyph.
 `size` and `tone` inherit from `BloomScope`. `tone` defaults to `action`;
 `appearance` defaults to `solid` and also accepts `subtle`, `outline`, `plain`.
 Icon props take a component, which receives its size and foreground color.

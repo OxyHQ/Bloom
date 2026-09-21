@@ -113,3 +113,14 @@ it('honors reduced motion without starting a label timing animation', () => {
     tree.unmount();
   } finally { reduced.mockRestore(); timing.mockRestore(); }
 });
+
+it.each([['native', Fab], ['web', WebFab]] as const)('%s supports a larger glyph without widening the collapsed circle', (platform, Action) => {
+  const Glyph = (props: { width?: number; height?: number }) => <Text testID="sized-glyph" {...props}>+</Text>;
+  const tree = themed(<Action icon={Glyph} label="Compose" size={50} iconSize={26} collapsed testID="sized-fab" />);
+  const host = platform === 'web' ? tree.UNSAFE_root.findByProps({ 'data-testid': 'sized-fab' }) : tree.getByTestId('sized-fab');
+  const style = resolvedStyle(host.props.style);
+  expect(tree.getByTestId('sized-glyph').props).toMatchObject({ width: 26, height: 26 });
+  expect(style.height).toBe(50);
+  expect(style.minWidth).toBe(50);
+  expect(Number(style.paddingLeft) + 26 + Number(style.paddingRight)).toBe(50);
+});

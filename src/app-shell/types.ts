@@ -155,6 +155,8 @@ export interface AppShellEngineProps {
   contentWidth?: number;
   /** edge keeps navigation at the shell edge; content centers it with the reading column and aside. */
   navigationAlign?: 'edge' | 'content';
+  /** Gap between the in-flow navigation and content. Defaults to the column gap. */
+  navigationGap?: number;
   /**
    * The space between the shell's edge and its regions. Default 12 for
    * `dashboard` (which also keeps its historical 16 column gap, so existing

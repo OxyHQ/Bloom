@@ -96,7 +96,7 @@ describe('Sidebar', () => {
   it('size drives the row, the glyph and the panel together — and the collapsed width is the square plus the panel', () => {
     for (const [size, expected] of [
       ['sm', { padding: 6, icon: 18, square: 30, collapsed: 46, expanded: 232 }],
-      ['md', { padding: 8, icon: 20, square: 36, collapsed: 52, expanded: 260 }],
+      ['md', { padding: 9, icon: 22, square: 40, collapsed: 56, expanded: 260 }],
       ['lg', { padding: 10, icon: 24, square: 44, collapsed: 60, expanded: 300 }],
     ] as const) {
       const metrics = SIDEBAR_METRICS[size];
@@ -128,7 +128,7 @@ describe('Sidebar', () => {
     expect(home.props.accessibilityLabel).toBe('Home');
     expect(home.props.accessibilityState).toEqual({ selected: true });
     const style = resolvedStyle(home.props.style);
-    expect(style).toMatchObject({ paddingLeft: 8, paddingRight: 8, borderRadius: 9999 });
+    expect(style).toMatchObject({ paddingLeft: 9, paddingRight: 9, borderRadius: 9999 });
     expect(style.boxShadow).toBeUndefined();
     expect(screen.getByTestId('sidebar-item-board').props.accessibilityState).toEqual({ selected: false });
   });
@@ -267,9 +267,9 @@ describe('SidebarModeSwitcher', () => {
 });
 
 describe('SidebarItem', () => {
-  it('standalone collapsed is the 36px square', () => {
+  it('standalone collapsed is the 40px square', () => {
     const screen = renderIn(<SidebarItem testID="row" icon={RiHomeLine} label="Home" collapsed />);
-    expect(resolvedStyle(screen.getByTestId('row').props.style)).toMatchObject({ width: 36 });
+    expect(resolvedStyle(screen.getByTestId('row').props.style)).toMatchObject({ width: 40 });
   });
 });
 
@@ -384,7 +384,7 @@ describe('Sidebar logo', () => {
     const logo = screen.getByTestId('sidebar-logo');
     expect(logo.props.role).toBe('link');
     expect(logo.props.accessibilityLabel).toBe('Oxy');
-    expect(resolvedStyle(screen.getByTestId('sidebar-logo-icon').props.style)).toMatchObject({ width: 40, height: 36 });
+    expect(resolvedStyle(screen.getByTestId('sidebar-logo-icon').props.style)).toMatchObject({ width: 44, height: 36 });
     expect(screen.getByText('Oxy')).toBeTruthy();
     expect(screen.getByTestId('sidebar-account')).toBeTruthy();
     pressHost(logo);

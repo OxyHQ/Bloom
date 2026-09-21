@@ -11,7 +11,7 @@ const surfaces = ['plain', 'card', 'docked'] as const;
 for (const size of sizes) for (const surface of surfaces) for (const action of [false, true]) {
   it(`${size}/${surface}/action=${action}: retains circular rows and one shared compact centre`, () => {
     const metrics = SIDEBAR_METRICS[size];
-    const lane = action ? 56 : metrics.row.square;
+    const lane = action ? 50 : metrics.row.square;
     const border = surface === 'card' ? 2 : surface === 'docked' ? 1 : 0;
     const tree = render(<BloomThemeProvider fonts={false}><Sidebar testID="geometry" size={size} surface={surface} collapsed
       items={[{ key: 'home', label: 'Home', icon: RiHome5Line }]}
@@ -32,8 +32,8 @@ for (const size of sizes) for (const surface of surfaces) for (const action of [
     expect(Number(search.marginLeft) + Number(search.paddingLeft) + metrics.row.icon / 2).toBe(lane / 2);
     if (action) {
       const fab = resolvedStyle(tree.getByTestId('geometry-primary-action').props.style);
-      expect(fab.height).toBe(56);
-      expect(fab.minWidth).toBe(56);
+      expect(fab.height).toBe(50);
+      expect(fab.minWidth).toBe(50);
     }
   });
 }

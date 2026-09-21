@@ -49,16 +49,15 @@ function size(expanded: number, padding: number, icon: number, label: TypeScaleV
 }
 
 /**
- * The three row sizes. `md` is what this sidebar has always drawn, to the
- * pixel — 260 expanded, 52 collapsed, a 36px square, a 20px glyph and a
- * `body-medium` label.
+ * The three row sizes. `md` balances compact controls with readable labels — 260 expanded, 56 collapsed, a 40px square, a 22px glyph and a
+ * `headline-medium` label.
  */
 export const SIDEBAR_METRICS: Record<SidebarSize, SidebarMetrics> = {
   sm: size(232, 6, 18, 'body-2-medium'),
-  md: size(260, 8, 20, 'body-medium'),
+  md: size(260, 9, 22, 'headline-medium'),
   lg: size(300, 10, 24, 'title-3-medium'),
   small: size(232, 6, 18, 'body-2-medium'),
-  medium: size(260, 8, 20, 'body-medium'),
+  medium: size(260, 9, 22, 'headline-medium'),
   large: size(300, 10, 24, 'title-3-medium'),
 };
 

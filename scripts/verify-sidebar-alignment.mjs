@@ -17,10 +17,16 @@ try {
   await page.waitForSelector('[aria-label="New post"]');
   const expanded = await page.evaluate(() => {
     const row = document.querySelector('[data-testid="sidebar-item-home"]').getBoundingClientRect();
-    const fab = document.querySelector('[aria-label="New post"]').getBoundingClientRect();
-    return { rowLeft: row.left, rowRight: row.right, fabLeft: fab.left, fabRight: fab.right, height: fab.height };
+    const fabNode = document.querySelector('[aria-label="New post"]');
+    const fab = fabNode.getBoundingClientRect();
+    const glyph = fabNode.querySelector('svg').getBoundingClientRect();
+    const nav = document.querySelector('[data-testid="social-navigation"]').getBoundingClientRect();
+    const panel = document.querySelector('[data-testid="content-panel-bleed-mask"]').getBoundingClientRect();
+    return { iconSize: glyph.width, navigationGap: panel.left - nav.right, rowLeft: row.left, rowRight: row.right, fabLeft: fab.left, fabRight: fab.right, height: fab.height };
   });
-  assert.equal(expanded.height, 56, 'Sidebar Fab uses the 56px diameter');
+  assert.equal(expanded.iconSize, 26);
+  assert(Math.abs(expanded.navigationGap) <= 1, 'Social navigation meets the panel without an extra gap');
+  assert.equal(expanded.height, 50, 'Sidebar Fab uses the 50px diameter');
   assert(Math.abs(expanded.rowLeft - expanded.fabLeft) <= 1 && Math.abs(expanded.rowRight - expanded.fabRight) <= 1, JSON.stringify(expanded));
   await page.click('[aria-label="Collapse sidebar"]');
   await new Promise(resolve => setTimeout(resolve, 400));
@@ -32,8 +38,8 @@ try {
     return { itemWidth: item.width, itemHeight: item.height, center: sidebar.left + sidebar.width / 2, centers: selectors.map(selector => { const rect = document.querySelector(selector).getBoundingClientRect(); return rect.left + rect.width / 2; }), width: fab.width, height: fab.height };
   });
   assert(Math.abs(collapsed.itemWidth - collapsed.itemHeight) <= 1, `Collapsed navigation must remain circular: ${JSON.stringify(collapsed)}`);
-  assert.equal(collapsed.width, 56);
-  assert.equal(collapsed.height, 56);
+  assert.equal(collapsed.width, 50);
+  assert.equal(collapsed.height, 50);
   for (const center of collapsed.centers) assert(Math.abs(center - collapsed.center) <= 1, JSON.stringify(collapsed));
   console.log('Social sidebar expanded/collapsed:', { expanded, collapsed });
   for (const hasAction of [true, false]) for (const size of ['sm', 'md', 'lg']) for (const surface of ['plain', 'card', 'docked']) {
@@ -49,8 +55,8 @@ try {
       const rows = [...root.querySelectorAll('[data-testid^="sidebar-item-"]')].map(el => { const r = el.getBoundingClientRect(); return { width: r.width, height: r.height }; });
       return { rows, center: rect.left + rect.width / 2, width: fab?.width, height: fab?.height, centers: targets.map(el => { const r = el.getBoundingClientRect(); return { id: el.closest('[data-testid]')?.getAttribute('data-testid'), center: r.left + r.width / 2 }; }) };
     });
-    assert.equal(geometry.width, hasAction ? 56 : undefined, `${size}/${surface} ${JSON.stringify(geometry)}`);
-    assert.equal(geometry.height, hasAction ? 56 : undefined);
+    assert.equal(geometry.width, hasAction ? 50 : undefined, `${size}/${surface} ${JSON.stringify(geometry)}`);
+    assert.equal(geometry.height, hasAction ? 50 : undefined);
     for (const row of geometry.rows) assert(Math.abs(row.width - row.height) <= 1, `${size}/${surface}: navigation must remain circular ${JSON.stringify(row)}`);
     assert(geometry.centers.length >= 4, 'Header and destinations are present');
     for (const item of geometry.centers) assert(Math.abs(item.center - geometry.center) <= 1, `${size}/${surface} ${JSON.stringify(geometry)}`);
