@@ -40,7 +40,7 @@ function Placeholder({ compact = false }: { compact?: boolean }) {
   return <View accessible={false} aria-hidden style={{ height: compact ? 104 : 260, borderRadius: 16, backgroundColor: colors.backgroundSecondary }} />;
 }
 
-function SocialLayout({ showRightColumn = true, centerWidth = 620, rightColumnWidth = 350, framedContent = true, tallContext = false, gutter = 16, onNewPost }: {
+function SocialLayout({ showRightColumn = true, centerWidth = 620, rightColumnWidth = 350, framedContent = true, tallContext = false, gutter = 8, onNewPost }: {
   showRightColumn?: boolean; centerWidth?: number; rightColumnWidth?: number; framedContent?: boolean; tallContext?: boolean; gutter?: number; onNewPost: () => void;
 }) {
   const { colors } = useTheme();
@@ -93,7 +93,7 @@ function SocialLayout({ showRightColumn = true, centerWidth = 620, rightColumnWi
 const meta = {
   title: 'Templates/Social', component: SocialLayout,
   parameters: { layout: 'fullscreen', bloomScroll: 'document' },
-  args: { onNewPost: fn(), showRightColumn: true, centerWidth: 620, rightColumnWidth: 350, framedContent: true, tallContext: false, gutter: 16 },
+  args: { onNewPost: fn(), showRightColumn: true, centerWidth: 620, rightColumnWidth: 350, framedContent: true, tallContext: false, gutter: 8 },
   argTypes: {
     onNewPost: { control: false, description: 'Primary sidebar action; opens the app composer. Logged in this layout-only story.' },
     gutter: { control: { type: 'range', min: 8, max: 40, step: 4 }, description: 'Shared gutter for the panel frame, mask and sticky header.' },

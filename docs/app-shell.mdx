@@ -535,3 +535,8 @@ panel at rest and during scroll.
 `navigationGap` controls the space between the sidebar and content independently of
 `gutter` and the aside gap. The social template uses `navigationGap={0}` to bring
 plain navigation up to the reading panel while retaining the panel frame insets.
+
+A document-scrolling, content-aligned shell with a plain sidebar and no top bar
+has no root padding. The sidebar spans the viewport; the reading/context group
+owns the vertical gutter, which still supplies the panel mask and header inset.
+The social template uses an 8px gutter, matching the compact framed layout.

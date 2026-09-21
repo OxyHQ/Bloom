@@ -472,6 +472,8 @@ const AppShellComponent: React.FC<AppShellEngineProps> = ({
   // ---- the page region, per variant ---------------------------------------
   /** `feed` / `focus`: a fixed reading column, centred in what the nav leaves. */
   const contentAligned = navigationAlign === 'content' && centred;
+  // Plain navigation belongs to the viewport; only the reading surfaces are inset.
+  const plainDocumentFrame = doc && contentAligned && flowSidebar?.surface === 'plain' && !topBarNode;
   const readingGroupWidth = contentWidth + (asideBeside ? asideWidth + columnGap : 0);
   const centredBody = (
     <View
@@ -488,6 +490,7 @@ const AppShellComponent: React.FC<AppShellEngineProps> = ({
           // grows the page, the aside is sticky). Bounded: they stretch.
           alignItems: doc ? 'flex-start' : 'stretch',
           ...(contentAligned ? { flexGrow: 0, flexBasis: readingGroupWidth, maxWidth: readingGroupWidth } : {}),
+          ...(plainDocumentFrame ? { paddingTop: gutter, paddingBottom: gutter } : {}),
         },
         fill,
       ]}
@@ -664,7 +667,7 @@ const AppShellComponent: React.FC<AppShellEngineProps> = ({
   const navRegion =
     navInFlow && flowSidebar ? (
       doc ? (
-        <View testID={testID ? `${testID}-navigation` : undefined} style={stickyRail(dockedNav ? 0 : gutter)}>
+        <View testID={testID ? `${testID}-navigation` : undefined} style={stickyRail(dockedNav || plainDocumentFrame ? 0 : gutter)}>
           <Sidebar {...flowSidebar} />
         </View>
       ) : canvas && !dockedNav ? (
@@ -705,7 +708,7 @@ const AppShellComponent: React.FC<AppShellEngineProps> = ({
     gap: dockedNav || canvas ? 0 : Math.max(0, navigationGap ?? columnGap),
     // A canvas runs to the window's edge, so the row keeps no padding at all
     // and each region carries its own (the nav below, the aside in `canvasBody`).
-    padding: canvas ? 0 : gutter,
+    padding: canvas || plainDocumentFrame ? 0 : gutter,
     ...(dockedNav ? { paddingLeft: 0, paddingTop: 0, paddingBottom: 0 } : null),
     backgroundColor: background,
   };

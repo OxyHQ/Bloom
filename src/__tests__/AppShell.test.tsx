@@ -515,6 +515,17 @@ describe('AppShell variant="feed"', () => {
     expect(resolvedStyle(group?.props.style).gap).toBe(16);
   });
 
+  it('keeps a plain centered document shell flush while insetting only its reading group', () => {
+    jest.replaceProperty(ReactNative.Platform, 'OS', 'web');
+    setWidth(1440);
+    const screen = renderIn(<AppShell testID="shell" variant="feed" scroll="document" navigationAlign="content"
+      sidebar={{ items: NAV, surface: 'plain' }} gutter={8} panel><ReactNative.Text>Body</ReactNative.Text></AppShell>);
+    expect(resolvedStyle(screen.getByTestId('shell').props.style).padding).toBe(0);
+    expect(resolvedStyle(screen.getByTestId('shell-navigation').props.style).top).toBe(0);
+    const group = hostParent(screen.getByTestId('shell-content'));
+    expect(resolvedStyle(group?.props.style)).toMatchObject({ paddingTop: 8, paddingBottom: 8 });
+  });
+
   it('below asideFrom the side column stacks under the content instead', () => {
     setWidth(1100);
     const screen = renderIn(

@@ -22,8 +22,12 @@ try {
     const glyph = fabNode.querySelector('svg').getBoundingClientRect();
     const nav = document.querySelector('[data-testid="social-navigation"]').getBoundingClientRect();
     const panel = document.querySelector('[data-testid="content-panel-bleed-mask"]').getBoundingClientRect();
-    return { iconSize: glyph.width, navigationGap: panel.left - nav.right, rowLeft: row.left, rowRight: row.right, fabLeft: fab.left, fabRight: fab.right, height: fab.height };
+    return { rootPadding: getComputedStyle(document.querySelector('[data-testid="social"]')).padding, navTop: nav.top, navHeight: nav.height, viewportHeight: innerHeight, panelTop: panel.top, iconSize: glyph.width, navigationGap: panel.left - nav.right, rowLeft: row.left, rowRight: row.right, fabLeft: fab.left, fabRight: fab.right, height: fab.height };
   });
+  assert.equal(expanded.rootPadding, '0px');
+  assert.equal(expanded.navTop, 0);
+  assert.equal(expanded.navHeight, expanded.viewportHeight);
+  assert.equal(expanded.panelTop, 8);
   assert.equal(expanded.iconSize, 26);
   assert(Math.abs(expanded.navigationGap) <= 1, 'Social navigation meets the panel without an extra gap');
   assert.equal(expanded.height, 50, 'Sidebar Fab uses the 50px diameter');
@@ -42,7 +46,7 @@ try {
   assert.equal(collapsed.height, 50);
   for (const center of collapsed.centers) assert(Math.abs(center - collapsed.center) <= 1, JSON.stringify(collapsed));
   console.log('Social sidebar expanded/collapsed:', { expanded, collapsed });
-  for (const hasAction of [true, false]) for (const size of ['sm', 'md', 'lg']) for (const surface of ['plain', 'card', 'docked']) {
+  if (!process.argv.includes('--shell-only')) for (const hasAction of [true, false]) for (const size of ['sm', 'md', 'lg']) for (const surface of ['plain', 'card', 'docked']) {
     url.searchParams.set('id', hasAction ? 'blocks-sidebar--primary-action' : 'blocks-sidebar--playground');
     url.searchParams.set('args', `size:${size};surface:${surface};collapsed:!true`);
     await page.goto(url.href, { waitUntil: 'networkidle0' });
