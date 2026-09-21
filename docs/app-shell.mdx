@@ -520,3 +520,14 @@ The navigation convenience entry point is selected when `navigation`, `navigatio
 For a centered feed whose navigation belongs beside the reading column, use
 `navigationAlign="content"`. The shell centers navigation, content and the visible
 aside as one group; `"edge"` preserves the existing edge-aligned layout.
+
+
+### Header width inside a panel
+
+In a centered `panel` layout, the header spans the full ContentPanel width. The
+shell applies `gutter` to the body only; PageHeader owns the insets of its title
+and action islands. Padding a shared header/body wrapper shortened the scrim by
+one gutter on each side (32px total at gutter16), leaving scrolling content
+visible beside it. Both document and bounded panel layouts use this separation.
+The real-browser mask check also asserts the header’s left/right edges match the
+panel at rest and during scroll.

@@ -256,3 +256,10 @@ Mention, Allo and Homiio each hand-roll a `Header` with an `options` object. The
 | Homiio `scrollY` | `scrollY`, or a `ScrollOffsetProvider` around the screen |
 | Homiio `useSafeAreaInsets().top` | `safeArea` (default on native) |
 | Mention `options.headerTitleStyle` | pass a node `title` |
+
+
+The default scrim and bar background inherit the containing surface’s published
+fill (`SurfaceLevelProvider` / `ContentPanel`), falling back to the page
+background outside a surface. An explicit `scrimColor` still overrides the fade.
+The header’s outer box should span that surface; its own title/action padding
+provides the interior spacing.

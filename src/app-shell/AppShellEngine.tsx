@@ -515,12 +515,12 @@ const AppShellComponent: React.FC<AppShellEngineProps> = ({
             surfaceStyle={{ flexGrow: 1, flexShrink: 1, flexBasis: 'auto', minHeight: 0 }}
             contentStyle={{ flexGrow: 1, flexShrink: 1, flexBasis: 'auto', minHeight: 0 }}
           >
-            <View style={{ flex: 1, minHeight: 0, padding: gutter, gap: 16 }}>
+            <View style={{ flex: 1, minHeight: 0 }}>
               {headerNode}
               <ScrollView
                 testID={testID ? `${testID}-page` : undefined}
                 style={{ flex: 1, minHeight: 0 }}
-                contentContainerStyle={{ gap: 16, paddingBottom: contentReserve }}
+                contentContainerStyle={{ gap: 16, paddingLeft: gutter, paddingRight: gutter, paddingTop: gutter, paddingBottom: gutter + contentReserve }}
               >
                 {children}
               </ScrollView>
@@ -546,16 +546,10 @@ const AppShellComponent: React.FC<AppShellEngineProps> = ({
               surfaceStyle={{ flexGrow: 1, flexShrink: 1, flexBasis: 'auto' }}
               contentStyle={{ flexGrow: 1, flexShrink: 1, flexBasis: 'auto' }}
             >
-              {/*
-                The panel's content is inset by the gutter. Without it the page
-                sits ON the frame: a radius-28 corner CLIPS whatever is in it
-                (the heading loses its first letter) and every card butts
-                against the border with no edge of its own. So `contentWidth` is
-                the COLUMN's width and the reading measure inside a panel is
-                that minus two gutters.
-              */}
-              <View style={[{ gap: 16, padding: gutter }, fill]}>
-                {headerNode}
+              {/* Header chrome spans the panel. Its own title/action insets
+                  belong to PageHeader; only the body receives the gutter. */}
+              {headerNode}
+              <View style={[{ gap: 16, paddingLeft: gutter, paddingRight: gutter, paddingTop: gutter, paddingBottom: gutter }, fill]}>
                 {children}
               </View>
             </ContentPanel>

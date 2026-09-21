@@ -13,6 +13,7 @@ import { SafeAreaInsetsContext } from 'react-native-safe-area-context';
 
 import { BloomThemeProvider } from '../theme/BloomThemeProvider';
 import { PageHeader } from '../page-header';
+import { SurfaceLevelProvider } from '../styles/surface-levels';
 import type { PageHeaderProps } from '../page-header';
 import { resolvedStyle } from './support/rendered-style';
 
@@ -220,6 +221,23 @@ describe('PageHeader', () => {
     held.unmount();
     const arrived = renderBar({ title: 'A', titleReveal: 'onScroll', scrollY: { value: 20 } as never });
     expect(opacity(arrived.getByTestId('h-title-block'))).toBe(1);
+  });
+
+  it('inherits the containing surface for both the scrim and bar, including fill changes', () => {
+    const tree = (fill: string) => <BloomThemeProvider mode="light" colorPreset="teal">
+      <SurfaceLevelProvider level={1} fill={fill}>
+        <PageHeader testID="floating" title="Feed" />
+        <PageHeader testID="bar" title="Feed" presentation="bar" />
+      </SurfaceLevelProvider>
+    </BloomThemeProvider>;
+    const screen = render(tree('#e4edcf'));
+    const stops = () => screen.getByTestId('floating-scrim-gradient').findAll(node => node.props.stopColor !== undefined);
+    expect(stops().length).toBeGreaterThan(0);
+    expect(stops().every(node => node.props.stopColor === '#e4edcf')).toBe(true);
+    expect(resolvedStyle(screen.getByTestId('bar-background').props.style).backgroundColor).toBe('#e4edcf');
+    screen.rerender(tree('#d3dabc'));
+    expect(stops().every(node => node.props.stopColor === '#d3dabc')).toBe(true);
+    expect(resolvedStyle(screen.getByTestId('bar-background').props.style).backgroundColor).toBe('#d3dabc');
   });
 
   it('separator and background follow the theme ramps in light and dark', () => {

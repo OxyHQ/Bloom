@@ -14,6 +14,7 @@ import Animated, {
 } from 'react-native-reanimated';
 import { SafeAreaInsetsContext } from 'react-native-safe-area-context';
 
+import { useSurfaceFill } from '../styles/surface-levels';
 import { useScreenContext } from '../screen/context';
 import { Button } from '../button';
 import { BUTTON_SHADOW } from '../button/shared';
@@ -133,6 +134,7 @@ function PageHeaderComponent({
   const floating = presentation === 'floating';
   const overlay = placement === 'overlay';
   const theme = useTheme();
+  const surfaceFill = useSurfaceFill() ?? theme.colors.background;
   const insets = useContext(SafeAreaInsetsContext) ?? NO_INSETS;
   const padTop = (safeArea ?? !isWeb) ? insets.top : 0;
 
@@ -160,12 +162,12 @@ function PageHeaderComponent({
 
   const paint = useMemo(() => {
     return {
-      background: theme.colors.background,
+      background: surfaceFill,
       separator: theme.colors.borderLight,
       textSecondary: theme.colors.textSecondary,
       shadow: BUTTON_SHADOW[theme.isDark ? 'dark' : 'light'],
     };
-  }, [theme]);
+  }, [theme, surfaceFill]);
 
   // ── The scroll owner ──────────────────────────────────────────────────────
   //
@@ -332,11 +334,9 @@ function PageHeaderComponent({
       testID={testID ? `${testID}-scrim` : undefined}
     >
       <EdgeScrim
-        // The PAGE colour by default: the scrim's job is to fade content into
-        // the surface it is leaving, so the right colour is the one that
-        // surface already is. A screen that paints its own background has to
-        // say so — the header cannot read the pixel behind it.
-        color={scrimColor ?? theme.colors.background}
+        // Fade into the containing surface (ContentPanel publishes its fill),
+        // falling back to the page. Explicit scrimColor remains an override.
+        color={scrimColor ?? surfaceFill}
         testID={testID ? `${testID}-scrim-gradient` : undefined}
       />
     </Animated.View>

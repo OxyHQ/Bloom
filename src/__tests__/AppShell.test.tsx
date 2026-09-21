@@ -347,6 +347,22 @@ describe('AppShell panel fill', () => {
     return false;
   }
 
+  it.each(['document', 'fixed'] as const)('%s panel gives only the body a horizontal gutter', (scroll) => {
+    setWidth(1440);
+    const screen = renderIn(<AppShell testID="shell" variant="feed" panel scroll={scroll} gutter={24}
+      header={<ReactNative.View testID="full-header" />}>
+      <ReactNative.Text testID="body">Body</ReactNative.Text>
+    </AppShell>);
+    const parentStyle = resolvedStyle(hostParent(screen.getByTestId('full-header'))?.props.style);
+    expect(parentStyle.padding ?? 0).toBe(0);
+    expect(parentStyle.paddingLeft ?? parentStyle.paddingHorizontal ?? 0).toBe(0);
+    expect(parentStyle.paddingRight ?? parentStyle.paddingHorizontal ?? 0).toBe(0);
+    const bodyStyle = scroll === 'fixed'
+      ? resolvedStyle(screen.getByTestId('shell-page').props.contentContainerStyle)
+      : resolvedStyle(hostParent(screen.getByTestId('body'))?.props.style);
+    expect(bodyStyle).toMatchObject({ paddingLeft: 24, paddingRight: 24, paddingTop: 24, paddingBottom: 24 });
+  });
+
   it('a panel in a BOUNDED shell pins the header and scrolls only the content under it', () => {
     setWidth(1440);
     const screen = renderIn(

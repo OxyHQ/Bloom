@@ -23,6 +23,7 @@ try {
         const titleRect = title.getBoundingClientRect();
         let header = title;
         while (header && getComputedStyle(header).position !== 'sticky') header = header.parentElement;
+        const headerRect = header?.getBoundingClientRect();
         const image = new Image(); image.src = 'data:image/png;base64,' + png; await image.decode();
         const canvas = document.createElement('canvas'); canvas.width = image.width; canvas.height = image.height;
         const ctx = canvas.getContext('2d'); ctx.drawImage(image, 0, 0);
@@ -30,12 +31,12 @@ try {
         const samples = [1, innerHeight - 2].map(y => [...ctx.getImageData(x, y, 1, 1).data].slice(0, 3));
         ctx.fillStyle = getComputedStyle(document.querySelector('[data-testid="social-screen"]')).backgroundColor;
         ctx.fillRect(0, 0, 1, 1); const expected = [...ctx.getImageData(0, 0, 1, 1).data].slice(0, 3);
-        return { y: scrollY, maskTop: mask.top, maskBottom: mask.bottom, headerTop: header?.getBoundingClientRect().top, titleTop: titleRect.top, titleBottom: titleRect.bottom, samples, expected };
+        return { y: scrollY, maskTop: mask.top, maskBottom: mask.bottom, headerTop: headerRect?.top, headerLeft: headerRect?.left, headerRight: headerRect?.right, maskLeft: mask.left, maskRight: mask.right, titleTop: titleRect.top, titleBottom: titleRect.bottom, samples, expected };
       }, png);
       const paintMatches = result.samples.every(rgb => rgb.every((v, i) => Math.abs(v - result.expected[i]) <= 2));
-      if (!paintMatches || result.titleTop < result.maskTop || result.titleBottom > result.maskBottom || (offset > 0 && Math.abs(result.headerTop - gutter) > 1)) failures.push(`${mode} gutter=${gutter} offset=${offset}: ${JSON.stringify(result)}`);
+      if (Math.abs(result.headerLeft - result.maskLeft) > 1 || Math.abs(result.headerRight - result.maskRight) > 1 || !paintMatches || result.titleTop < result.maskTop || result.titleBottom > result.maskBottom || (offset > 0 && Math.abs(result.headerTop - gutter) > 1)) failures.push(`${mode} gutter=${gutter} offset=${offset}: ${JSON.stringify(result)}`);
     }
-    console.log(`${mode} gutter=${gutter}: checked top/bottom pixels and header at 0, 360, 800px`);
+    console.log(`${mode} gutter=${gutter}: checked top/bottom pixels, full-width header and insets at 0, 360, 800px`);
   }
 } finally { await browser.close(); }
 if (failures.length) { console.error(failures.join('\n')); process.exitCode = 1; }
