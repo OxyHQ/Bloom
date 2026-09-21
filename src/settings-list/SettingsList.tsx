@@ -19,6 +19,7 @@ import type {
 export const SettingsListItem = memo<SettingsListItemProps>(function SettingsListItem({
   icon,
   title,
+  titleNumberOfLines = 1,
   description,
   value,
   rightElement,
@@ -59,7 +60,7 @@ export const SettingsListItem = memo<SettingsListItemProps>(function SettingsLis
       <View style={styles.textContainer}>
         <Text
           style={[styles.title, { color: titleColor }]}
-          numberOfLines={1}
+          numberOfLines={titleNumberOfLines === 0 ? undefined : titleNumberOfLines}
         >
           {title}
         </Text>

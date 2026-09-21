@@ -2235,6 +2235,34 @@
         "default": "./lib/commonjs/place-card/index.js"
       }
     },
+    "./place-details": {
+      "react-native": {
+        "types": "./lib/typescript/module/place-details/index.d.ts",
+        "default": "./src/place-details/index.ts"
+      },
+      "import": {
+        "types": "./lib/typescript/module/place-details/index.d.ts",
+        "default": "./lib/module/place-details/index.js"
+      },
+      "require": {
+        "types": "./lib/typescript/commonjs/place-details/index.d.ts",
+        "default": "./lib/commonjs/place-details/index.js"
+      }
+    },
+    "./place-list": {
+      "react-native": {
+        "types": "./lib/typescript/module/place-list/index.d.ts",
+        "default": "./src/place-list/index.ts"
+      },
+      "import": {
+        "types": "./lib/typescript/module/place-list/index.d.ts",
+        "default": "./lib/module/place-list/index.js"
+      },
+      "require": {
+        "types": "./lib/typescript/commonjs/place-list/index.d.ts",
+        "default": "./lib/commonjs/place-list/index.js"
+      }
+    },
     "./map-controls": {
       "react-native": {
         "types": "./lib/typescript/module/map-controls/index.d.ts",
@@ -3782,6 +3810,12 @@
       ],
       "place-card": [
         "./lib/typescript/module/place-card/index.d.ts"
+      ],
+      "place-details": [
+        "./lib/typescript/module/place-details/index.d.ts"
+      ],
+      "place-list": [
+        "./lib/typescript/module/place-list/index.d.ts"
       ],
       "map-controls": [
         "./lib/typescript/module/map-controls/index.d.ts"

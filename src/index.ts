@@ -1254,6 +1254,74 @@ export type {
   PlaceOpenState,
   PlaceStat,
 } from './place-card';
+export {
+  PlaceAmenities,
+  PlaceHours,
+  PlaceInfoList,
+  PlacePopularTimes,
+  PlaceTransit,
+} from './place-details';
+export {
+  PLACE_BUSY_LABELS,
+  PLACE_DETAILS_GEOMETRY,
+  PLACE_INFO_ACTION_LABELS,
+  PLACE_INFO_ACTION_ICON,
+  PLACE_TRANSIT_MODE_ICON,
+  PLACE_TRANSIT_MODE_LABELS,
+} from './place-details';
+export {
+  busyTrendLabel,
+  describeBusyChart,
+  describeDeparture,
+  describeHoursDay,
+  describeInfoItem,
+  describeTransitStop,
+  formatHoursDay,
+  infoActionWord,
+  resolvePlaceDetailsPaint,
+} from './place-details';
+export type {
+  HoursFormat,
+  PlaceAmenitiesLayout,
+  PlaceAmenitiesProps,
+  PlaceAmenity,
+  PlaceBusyHour,
+  PlaceBusyTrend,
+  PlaceDetailsGeometry,
+  PlaceDetailsPaint,
+  PlaceHoursDay,
+  PlaceHoursInterval,
+  PlaceHoursProps,
+  PlaceInfoAction,
+  PlaceInfoItem,
+  PlaceInfoListProps,
+  PlacePopularTimesDay,
+  PlacePopularTimesProps,
+  PlaceTransitDeparture,
+  PlaceTransitMode,
+  PlaceTransitProps,
+  PlaceTransitStop,
+} from './place-details';
+export { PlaceList, PlaceListCard } from './place-list';
+export {
+  DEFAULT_PLACE_LIST_LABELS,
+  PLACE_LIST_GEOMETRY,
+  PLACE_LIST_VISIBILITY_ICON,
+  PLACE_LIST_VISIBILITY_LABELS,
+  composePlaceListName,
+  placeListCountLabel,
+  placeListSharedWithLabel,
+  resolvePlaceListPaint,
+} from './place-list';
+export type {
+  PlaceListCardProps,
+  PlaceListGeometry,
+  PlaceListLabels,
+  PlaceListPaint,
+  PlaceListPlace,
+  PlaceListProps,
+  PlaceListVisibility,
+} from './place-list';
 export { MapCompass, MapControls, MapLayerPicker } from './map-controls';
 export { MAP_CONTROL_BOX, MAP_CONTROLS_GEOMETRY } from './map-controls';
 export type {
