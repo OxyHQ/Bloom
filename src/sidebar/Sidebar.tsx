@@ -163,6 +163,8 @@ const SidebarPanel: React.FC<SidebarProps> = ({
   showSearch = true,
   searchShortcutLabel = '⌘L',
   searchShortcut = true,
+  searchQuery,
+  onSearchQueryChange,
   searchLabel = 'Quick Search',
   searchPlaceholder,
   noResultsLabel = 'No results',
@@ -193,7 +195,7 @@ const SidebarPanel: React.FC<SidebarProps> = ({
 
   const [searchActive, setSearchActive] = useState(false);
   const [headerOverlap, setHeaderOverlap] = useState(10);
-  const [query, setQuery] = useState('');
+  const [query, setQuery] = useControllableState<string>({ value: searchQuery, defaultValue: '', onChange: onSearchQueryChange });
   const [suppressUserHover, setSuppressUserHover] = useState(false);
   const searchFieldRef = useRef<View>(null);
   const searchTriggerRef = useRef<View>(null);
@@ -666,7 +668,10 @@ const SidebarPanel: React.FC<SidebarProps> = ({
             ) : null}
             {tree && !collapsed && shownFolders.length > 0 ? (
               <View style={{ width: '100%', gap: 10 }}>
-                <Text variant="body-medium" style={{ color: palette.textSecondary }}>{tree.label}</Text>
+                <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
+                  <Text variant="body-medium" style={{ color: palette.textSecondary }}>{tree.label}</Text>
+                  {tree.actions}
+                </View>
                 <View role="navigation" accessibilityLabel={tree.label} style={{ width: '100%', gap: 4 }}>
                   {shownFolders.map((folder) => (
                     <SidebarFolder key={folder.key} folder={folder} forceOpen={normalized.length > 0}

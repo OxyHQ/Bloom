@@ -61,7 +61,8 @@ function TreeRow({
 }) {
   const { state: hovered, onIn, onOut } = useInteractionState();
   const style: WebCssStyle = {
-    width: '100%',
+    flex: 1,
+    minWidth: 0,
     flexDirection: 'row',
     alignItems: 'center',
     gap: 10,
@@ -74,6 +75,8 @@ function TreeRow({
     '--bloom-sidebar-ring': palette.ring,
   };
   return (
+    <View style={{ flexDirection: 'row', alignItems: 'center', width: '100%' }}
+      onPointerEnter={item.onPrefetch} onTouchStart={item.onPrefetch}>
     <Pressable
       {...(IS_WEB
         ? {
@@ -88,7 +91,9 @@ function TreeRow({
       focusable={focusable}
       onHoverIn={onIn}
       onHoverOut={onOut}
+      onLongPress={item.onLongPress}
       onPress={(event: GestureResponderEvent) => {
+        item.onPrefetch?.();
         if (!onPress) return;
         if (IS_WEB && item.href) event.preventDefault();
         onPress(item, folder);
@@ -116,6 +121,8 @@ function TreeRow({
         </View>
       ) : null}
     </Pressable>
+    {item.actions}
+    </View>
   );
 }
 
@@ -148,9 +155,9 @@ function SidebarFolderComponent({
   const reducedMotion = useReducedMotion();
   const { state: hovered, onIn, onOut } = useInteractionState();
   const [isOpen, setOpen] = useControllableState<boolean>({
-    value: open,
+    value: open ?? folder.open,
     defaultValue: folder.defaultOpen ?? false,
-    onChange: onOpenChange,
+    onChange: onOpenChange ?? folder.onOpenChange,
   });
   const expanded = forceOpen || isOpen;
   const Icon = expanded ? RiFolderOpenLine : RiFolderLine;
@@ -176,7 +183,8 @@ function SidebarFolderComponent({
   );
 
   const rowStyle: WebCssStyle = {
-    width: '100%',
+    flex: 1,
+    minWidth: 0,
     flexDirection: 'row',
     alignItems: 'center',
     gap: 8,
@@ -188,6 +196,7 @@ function SidebarFolderComponent({
 
   return (
     <View testID={testID} style={[{ width: '100%', flexDirection: 'column' }, style]}>
+      <View style={{ flexDirection: 'row', alignItems: 'center' }}>
       <Pressable
         {...(IS_WEB ? { dataSet: { bloomSidebar: 'ring' } } : {})}
         role="button"
@@ -205,9 +214,14 @@ function SidebarFolderComponent({
           {folder.label}
         </Text>
       </Pressable>
+      {folder.actions}
+      </View>
       <Animated.View
         aria-hidden={!expanded}
         pointerEvents={expanded ? 'auto' : 'none'}
+        accessibilityElementsHidden={!expanded}
+        importantForAccessibility={expanded ? 'auto' : 'no-hide-descendants'}
+        {...(IS_WEB && !expanded ? { inert: true } : {})}
         style={[{ overflow: 'hidden' }, clipStyle]}>
         <View onLayout={onContentLayout} style={{ position: 'relative', width: '100%', flexDirection: 'column', gap: 2, paddingTop: 2 }}>
           <TreeConnector count={folder.items.length} color={palette.iconQuaternary} />

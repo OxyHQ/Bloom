@@ -243,3 +243,13 @@ mounted while collapsed, but is hidden from focus, pointers and accessibility an
 contracts with the panel's animation. `variant="rail"` omits this expanded content.
 Quick search only filters built-in rows/tree; use `showSearch={false}` when the
 application supplies its own search destination.
+
+### Live application trees
+
+`searchQuery` / `onSearchQueryChange` control the built-in search and let a host
+filter additional content or load more history. Uncontrolled search is unchanged.
+Tree folders accept `open` / `onOpenChange` for persisted disclosure. Folder and
+item `actions` render beside their press targets, so menus never navigate or
+toggle the containing row. Items expose `onPrefetch` (pointer/touch entry and
+selection) and `onLongPress`; retain a keyboard-accessible menu for touch actions.
+Collapsed folders remove both rows and action slots from interaction.

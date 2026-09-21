@@ -290,6 +290,8 @@ export interface AiChatContainerProps {
   onProjectPress?: () => void;
   onShare?: () => void;
   onMore?: () => void;
+  /** Custom breadcrumb actions, replacing the default share/more controls. */
+  actions?: ReactNode;
   /** Rendered above the breadcrumb — the shell's `AiChatMobileHeader`. */
   header?: ReactNode;
   /** The thread — usually an `AiChatThread`. */

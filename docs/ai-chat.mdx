@@ -149,3 +149,7 @@ Portaled menus/dialogs take priority over shell dismissal and focus containment.
 Native uses the shared accessibility-focus hook on entry; automatic native
 return to an arbitrary caller's opener is not available without a trigger ref.
 No device-runtime verification is implied by the Android back-handler tests.
+
+`AiChatContainer.actions` composes real menu triggers or other chat actions in
+the breadcrumb action row, replacing the default share/more controls. Use it
+with `AiChatMobileHeader` to preserve the template layout without a second toolbar.

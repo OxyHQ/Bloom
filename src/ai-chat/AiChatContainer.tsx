@@ -47,6 +47,7 @@ export function AiChatContainer({
   onProjectPress,
   onShare,
   onMore,
+  actions,
   header,
   children,
   composer,
@@ -82,7 +83,7 @@ export function AiChatContainer({
         </View>
       ) : null}
       {header}
-      {title != null || project != null || onShare || onMore ? <View
+      {title != null || project != null || onShare || onMore || actions != null ? <View
         style={{
           width: '100%',
           flexDirection: 'row',
@@ -104,8 +105,10 @@ export function AiChatContainer({
           </Breadcrumb> : null}
         </View>
         <View style={{ flexShrink: 0, flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+          {actions ?? <>
           {onShare ? <GlyphAction icon={RiShare2Line} label={l.share} onPress={onShare} palette={palette} /> : null}
           {onMore ? <GlyphAction icon={RiMoreFill} label={l.more} onPress={onMore} palette={palette} /> : null}
+          </>}
         </View>
       </View> : null}
 

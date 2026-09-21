@@ -298,6 +298,9 @@ export interface SidebarProps {
   showThemeToggle?: boolean;
   /** Quick search over the rows. Defaults to true. */
   showSearch?: boolean;
+  /** Controlled quick-search text; also lets app-owned content filter the same query. */
+  searchQuery?: string;
+  onSearchQueryChange?: (query: string) => void;
   /** Shortcut hint on the quick-search button. Defaults to "⌘L". */
   searchShortcutLabel?: string;
   /** Binds ⌘L / Ctrl+L on web. Defaults to true. */
@@ -334,6 +337,11 @@ export interface SidebarProps {
 
 /** A row under a tree folder. */
 export interface SidebarTreeItem {
+  /** Secondary controls beside the row, never nested inside its press target. */
+  actions?: ReactNode;
+  /** Warm navigation data on hover/touch and before selection. */
+  onPrefetch?: () => void;
+  onLongPress?: () => void;
   key: string;
   label: string;
   /** A short chip on the right, e.g. a relative time (`34m`, `now`). */
@@ -343,6 +351,10 @@ export interface SidebarTreeItem {
 }
 
 export interface SidebarTreeFolder {
+  /** Secondary controls beside the disclosure, such as edit/create menus. */
+  actions?: ReactNode;
+  open?: boolean;
+  onOpenChange?: (open: boolean) => void;
   key: string;
   label: string;
   items: ReadonlyArray<SidebarTreeItem>;
@@ -351,6 +363,8 @@ export interface SidebarTreeFolder {
 }
 
 export interface SidebarTree {
+  /** Collection actions, e.g. create a project, beside the section label. */
+  actions?: ReactNode;
   /** The section label, e.g. `Repositories`. */
   label: string;
   folders: ReadonlyArray<SidebarTreeFolder>;

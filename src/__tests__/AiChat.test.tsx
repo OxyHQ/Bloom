@@ -368,3 +368,13 @@ describe('AiChatShell sidebar width ownership', () => {
     } finally { dimensions.mockRestore(); }
   });
 });
+
+describe('AiChatContainer composed actions', () => {
+  it('renders custom actions instead of default glyphs without requiring a title', () => {
+    const screen = renderIn(<AiChatContainer actions={<Text>Chat menu</Text>} onMore={jest.fn()} onShare={jest.fn()}><Text>Thread</Text></AiChatContainer>);
+    expect(screen.getByText('Chat menu')).toBeTruthy();
+    expect(screen.queryByLabelText('More options')).toBeNull();
+    expect(screen.queryByLabelText('Share chat')).toBeNull();
+    expect(screen.queryByLabelText('Chat location')).toBeNull();
+  });
+});

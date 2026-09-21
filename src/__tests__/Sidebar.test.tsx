@@ -1,4 +1,5 @@
 import React from 'react';
+import { Pressable, Text } from 'react-native';
 import { fireEvent, render } from '@testing-library/react-native';
 
 import { BloomThemeProvider } from '../theme/BloomThemeProvider';
@@ -423,5 +424,34 @@ describe('Sidebar logo', () => {
     expect(screen.getByTestId('sidebar-logo-icon')).toBeTruthy();
     expect(screen.queryByText('Oxy')).toBeNull();
     expect(screen.getByTestId('sidebar-logo').props.accessibilityLabel).toBe('Oxy home');
+  });
+});
+
+
+describe('Sidebar application tree', () => {
+  it('uses controlled search to filter real tree data and reports edits', () => {
+    const changed = jest.fn();
+    const screen = renderIn(<Sidebar searchQuery="older" onSearchQueryChange={changed}
+      tree={{ label: 'History', folders: [{ key: 'all', label: 'Chats', items: [
+        { key: 'old', label: 'Older chat' }, { key: 'new', label: 'Newest chat' },
+      ] }] }} />);
+    expect(screen.getByLabelText('Older chat')).toBeTruthy();
+    expect(screen.queryByLabelText('Newest chat')).toBeNull();
+    pressHost(screen.getByTestId('sidebar-search'));
+    fireEvent.changeText(screen.getByTestId('sidebar-search-input'), 'newest');
+    expect(changed).toHaveBeenCalledWith('newest');
+  });
+  it('keeps actions separate from selection and forwards prefetch/long press and controlled disclosure', () => {
+    const select = jest.fn(), prefetch = jest.fn(), action = jest.fn(), expand = jest.fn(), longPress = jest.fn();
+    const folder = { key: 'project', label: 'Project', open: true, onOpenChange: expand,
+      actions: <Pressable accessibilityLabel="Edit project" onPress={action}><Text>Edit</Text></Pressable>,
+      items: [{ key: 'chat', label: 'Chat', onPrefetch: prefetch, onLongPress: longPress,
+        actions: <Pressable accessibilityLabel="Chat actions" onPress={action}><Text>More</Text></Pressable> }] };
+    const screen = renderIn(<SidebarFolder folder={folder} onItemPress={select} />);
+    expect(prefetch).not.toHaveBeenCalled();
+    fireEvent(screen.getByLabelText('Chat'), 'longPress'); expect(longPress).toHaveBeenCalledTimes(1);
+    pressHost(screen.getByLabelText('Chat actions')); expect(action).toHaveBeenCalledTimes(1); expect(select).not.toHaveBeenCalled();
+    pressHost(screen.getByLabelText('Chat')); expect(prefetch).toHaveBeenCalledTimes(1); expect(select).toHaveBeenCalledTimes(1);
+    pressHost(screen.getByLabelText('Project')); expect(expand).toHaveBeenCalledWith(false);
   });
 });
