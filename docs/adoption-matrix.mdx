@@ -32,7 +32,7 @@ The classification is an EQUALITY in `src/__tests__/adoption-matrix.test.ts`, no
 
 ## Totals
 
-- **199 families** in `src/`, **197** published (a subpath, the root barrel, or both). **35** carry a web fork.
+- **201 families** in `src/`, **199** published (a subpath, the root barrel, or both). **35** carry a web fork.
 - Docs, stories and suites are gated as a standard by `src/__tests__/family-coverage.test.ts`; the per-family counts are in the table below.
 
 | contract | applies to | reads | delegated | n/a¹ | adaptation |
@@ -40,7 +40,7 @@ The classification is an EQUALITY in `src/__tests__/adoption-matrix.test.ts`, no
 | Field membership | 45 | 21 | 0 | 19 | 5 |
 | Control presentation | 17 | 8 | 2 | 7 | 0 |
 | Trigger composition | 10 | 8 | 0 | 2 | 0 |
-| Controlled / uncontrolled state | 45 | 36 | 1 | 1 | 7 |
+| Controlled / uncontrolled state | 46 | 37 | 1 | 1 | 7 |
 
 ## What remains — the named adaptations
 
@@ -148,7 +148,7 @@ The classification is an EQUALITY in `src/__tests__/adoption-matrix.test.ts`, no
 | `carrier-quote` | `@oxy.so/bloom/carrier-quote` + barrel | universal | `carrier-quote.mdx` | yes | 1 | n/a¹ |  |  | reads |
 | `cart-panel` | `@oxy.so/bloom/cart-panel` + barrel | universal | `cart-panel.mdx` | yes | 1 |  |  |  |  |
 | `category-bar` | `@oxy.so/bloom/category-bar` + barrel | universal | `category-bar.mdx` | yes | 2 |  |  |  |  |
-| `chart-cards` | `@oxy.so/bloom/chart-cards` + barrel | universal | `chart-cards.mdx` | yes | 29 |  |  |  | **adaptation** |
+| `chart-cards` | `@oxy.so/bloom/chart-cards` + barrel | universal | `chart-cards.mdx` | yes | 30 |  |  |  | **adaptation** |
 | `chat-composer` | `@oxy.so/bloom/chat-composer` + barrel | universal | `chat-composer.mdx` | yes | 2 | n/a¹ | n/a¹ |  | reads |
 | `chat-indicators` | `@oxy.so/bloom/chat-indicators` + barrel | universal | `chat-indicators.mdx` | yes | 1 |  |  |  |  |
 | `chat-list` | `@oxy.so/bloom/chat-list` + barrel | universal | `chat-list.mdx` | yes | 2 | n/a¹ |  |  | **adaptation** |
@@ -194,7 +194,7 @@ The classification is an EQUALITY in `src/__tests__/adoption-matrix.test.ts`, no
 | `hooks` | `@oxy.so/bloom/hooks` + barrel | universal | `hooks.mdx` | yes | 9 |  |  |  | reads |
 | `hover-card` | `@oxy.so/bloom/hover-card` + barrel | web fork | `hover-card.mdx` | yes | 2 |  |  | reads | reads |
 | `icon-circle` | `@oxy.so/bloom/icon-circle` + barrel | universal | `icon-circle.mdx` | yes | 1 |  |  |  |  |
-| `icons` | `@oxy.so/bloom/icons` + barrel | universal | `icons.mdx` | yes | 43 |  |  |  |  |
+| `icons` | `@oxy.so/bloom/icons` + barrel | universal | `icons.mdx` | yes | 45 |  |  |  |  |
 | `image-aspect-ratio-cache` | `@oxy.so/bloom/image-aspect-ratio-cache` + barrel | universal | `image-aspect-ratio-cache.mdx` | yes | 1 |  |  |  |  |
 | `image-resolver` | `@oxy.so/bloom/image-resolver` + barrel | universal | `image-resolver.mdx` | yes | 7 |  |  |  |  |
 | `important-alerts-card` | `@oxy.so/bloom/important-alerts-card` + barrel | universal | `important-alerts-card.mdx` | yes | 1 |  |  |  |  |
@@ -250,7 +250,9 @@ The classification is an EQUALITY in `src/__tests__/adoption-matrix.test.ts`, no
 | `payment-status` | `@oxy.so/bloom/payment-status` + barrel | universal | `payment-status.mdx` | yes | 1 |  |  |  |  |
 | `phone-input` | `@oxy.so/bloom/phone-input` | universal | `phone-input.mdx` | yes | 2 | reads | delegated |  | reads |
 | `pipeline` | `@oxy.so/bloom/pipeline` + barrel | universal | `pipeline.mdx` | yes | 1 |  |  |  | reads |
-| `place-card` | `@oxy.so/bloom/place-card` + barrel | universal | `place-card.mdx` | yes | 1 |  | n/a¹ |  |  |
+| `place-card` | `@oxy.so/bloom/place-card` + barrel | universal | `place-card.mdx` | yes | 2 |  | n/a¹ |  |  |
+| `place-details` | `@oxy.so/bloom/place-details` + barrel | universal | `place-details.mdx` | yes | 1 |  |  |  | reads |
+| `place-list` | `@oxy.so/bloom/place-list` + barrel | universal | `place-list.mdx` | yes | 1 |  |  |  |  |
 | `place-reviews` | `@oxy.so/bloom/place-reviews` + barrel | universal | `place-reviews.mdx` | yes | 1 |  |  |  | reads |
 | `popover` | `@oxy.so/bloom/popover` + barrel | web fork | `popover.mdx` | yes | 7 |  |  | reads | reads |
 | `portal` | `@oxy.so/bloom/portal` + barrel | web fork | `portal.mdx` | yes | 15 |  |  |  |  |
@@ -299,7 +301,7 @@ The classification is an EQUALITY in `src/__tests__/adoption-matrix.test.ts`, no
 | `tenancy` | `@oxy.so/bloom/tenancy` + barrel | universal | `tenancy.mdx` | yes | 3 |  | n/a¹ |  |  |
 | `text-field` | `@oxy.so/bloom/text-field` + barrel | universal | `text-field.mdx` | yes | 13 | reads | reads |  |  |
 | `textarea` | `@oxy.so/bloom/textarea` + barrel | universal | `textarea.mdx` | yes | 4 | reads | reads |  | n/a¹ |
-| `theme` | `@oxy.so/bloom/theme` + barrel | web fork | `theme.mdx` | yes | 282 |  |  | n/a¹ | reads |
+| `theme` | `@oxy.so/bloom/theme` + barrel | web fork | `theme.mdx` | yes | 283 |  |  | n/a¹ | reads |
 | `theme-toggle` | `@oxy.so/bloom/theme-toggle` + barrel | universal | `theme-toggle.mdx` | yes | 1 | n/a¹ |  |  |  |
 | `toast` | `@oxy.so/bloom/toast` + barrel | universal | `toast.mdx` | yes | 17 |  |  |  |  |
 | `tooltip` | `@oxy.so/bloom/tooltip` + barrel | web fork | `tooltip.mdx` | yes | 1 |  |  |  |  |

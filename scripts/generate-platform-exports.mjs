@@ -234,6 +234,8 @@ const SUBPATHS = /** @type {const} */ ([
   ['./category-bar', 'category-bar/index.ts'],
   ['./map-marker', 'map-marker/index.ts'],
   ['./place-card', 'place-card/index.ts'],
+  ['./place-details', 'place-details/index.ts'],
+  ['./place-list', 'place-list/index.ts'],
   ['./map-controls', 'map-controls/index.ts'],
   // Drawn ON the map: the blue dot and its heading cone, the guidance while it
   // is happening, and the credit and scale the data's licence requires.

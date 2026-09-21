@@ -5,6 +5,16 @@ export interface SettingsListItemProps {
   icon?: React.ReactNode;
   /** Primary label */
   title: string;
+  /**
+   * How many lines the title may take before it truncates. Default `1`.
+   *
+   * One line is right for a setting, whose title is a NOUN ("Language",
+   * "Notifications") and whose value sits on the right. It is wrong for a row
+   * whose title is the CONTENT — a postal address, a full file name — where
+   * the tail that gets cut is the part that identifies it. `0` never
+   * truncates.
+   */
+  titleNumberOfLines?: number;
   /** Secondary description text below title */
   description?: string;
   /** Right-side value text (e.g. "English", "On") */
