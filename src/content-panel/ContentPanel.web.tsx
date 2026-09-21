@@ -8,8 +8,8 @@
  *
  *  1. BLEED-MASK overlay (`z-30`): a `box-shadow` ring in the GUTTER color
  *     (Bloom `background` token) drawn OVER content that bleeds into the thin
- *     lateral gutter / rounded corners. The clip keeps a 12px horizontal halo
- *     off the side columns and covers the full declared vertical insets. It sits below opaque chrome (headers/banners),
+ *     lateral gutter / rounded corners. The clip stays within the panel’s horizontal bounds
+ *     and covers the full declared vertical insets. It sits below opaque chrome (headers/banners),
  *     so it only masks the content's bleed, never the chrome. No border.
  *     (`clip-path` lives in the adopted sheet — RN-web drops it from `style`.)
  *
@@ -44,8 +44,9 @@
  * "100% of my own height" at all).
  *
  * The bleed-mask's `clip-path` also changes with the mode, not just its box
- * size: viewport mode retains a 12px horizontal halo, while the vertical
- * halo and shadow expand to cover overlayInset. The old fixed inset(-12px)
+ * size: viewport mode clips flush horizontally, while the vertical
+ * halo and shadow expand to cover overlayInset. A former 12px horizontal halo
+ * painted over a neighbouring sidebar Fab when navigationGap was zero. The old fixed inset(-12px)
  * leaked a 4px strip with a 16px gutter and could not cover a 72px header
  * inset. GUTTER_MASK_SPREAD (40px) remains the minimum shadow spread. A document-scroll
  * consumer has nothing else positioned right above/below the panel for that
@@ -148,7 +149,7 @@ const RESPONSIVE_WEB: Record<
 };
 
 // The mask must reach the viewport edges for arbitrary shell gutters. Keep
-// horizontal bleed narrow so adjacent columns are never painted over. CSS owns
+// horizontal bleed at zero so adjacent columns are never painted over. CSS owns
 // responsive framing, including the sticky inset inherited by PageHeader.
 adoptStyleSheet('bloom-content-panel-insets', `
 [data-bloom-panel] { --bloom-panel-sticky-top: 0px; }
@@ -158,7 +159,7 @@ adoptStyleSheet('bloom-content-panel-insets', `
 @media (min-width: 768px) { [data-bloom-panel="768"] { --bloom-panel-sticky-top: var(--bloom-panel-inset-top); } }
 @media (min-width: 1024px) { [data-bloom-panel="1024"] { --bloom-panel-sticky-top: var(--bloom-panel-inset-top); } }
 [data-bloom-panel-mask="viewport"] {
-  clip-path: inset(calc(-1 * max(12px, var(--bloom-panel-inset-top))) -12px calc(-1 * max(12px, var(--bloom-panel-inset-bottom))) -12px);
+  clip-path: inset(calc(-1 * max(12px, var(--bloom-panel-inset-top))) 0px calc(-1 * max(12px, var(--bloom-panel-inset-bottom))) 0px);
 }
 `);
 

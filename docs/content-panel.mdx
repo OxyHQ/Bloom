@@ -228,8 +228,11 @@ genuinely separate objects.
 ## Shared document insets
 
 The viewport mask covers the complete `overlayInset`, including asymmetric top
-and bottom values. Its horizontal halo stays 12px so it does not cover adjacent
-columns. The previous fixed 12px vertical clip exposed a 4px strip of scrolling
+and bottom values. It clips flush to the horizontal panel bounds. The former
+12px horizontal halo painted over 5px of the adjacent 50px sidebar Fab when
+`navigationGap={0}`: the Fab’s measured bounds were correct, but its right edge
+was hidden under the mask. `scripts/verify-sidebar-fab-visibility.mjs` checks
+both painted edges in light/dark mode before and after document scroll. The previous fixed 12px vertical clip exposed a 4px strip of scrolling
 content with a 16px gutter; increasing only the shadow could not repair that clip.
 
 `ContentPanel` also publishes its framed top edge through
