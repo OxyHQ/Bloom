@@ -2487,6 +2487,48 @@
         "default": "./lib/commonjs/vehicle-picker/index.js"
       }
     },
+    "./payment-method": {
+      "react-native": {
+        "types": "./lib/typescript/module/payment-method/index.d.ts",
+        "default": "./src/payment-method/index.ts"
+      },
+      "import": {
+        "types": "./lib/typescript/module/payment-method/index.d.ts",
+        "default": "./lib/module/payment-method/index.js"
+      },
+      "require": {
+        "types": "./lib/typescript/commonjs/payment-method/index.d.ts",
+        "default": "./lib/commonjs/payment-method/index.js"
+      }
+    },
+    "./card-form": {
+      "react-native": {
+        "types": "./lib/typescript/module/card-form/index.d.ts",
+        "default": "./src/card-form/index.ts"
+      },
+      "import": {
+        "types": "./lib/typescript/module/card-form/index.d.ts",
+        "default": "./lib/module/card-form/index.js"
+      },
+      "require": {
+        "types": "./lib/typescript/commonjs/card-form/index.d.ts",
+        "default": "./lib/commonjs/card-form/index.js"
+      }
+    },
+    "./payment-status": {
+      "react-native": {
+        "types": "./lib/typescript/module/payment-status/index.d.ts",
+        "default": "./src/payment-status/index.ts"
+      },
+      "import": {
+        "types": "./lib/typescript/module/payment-status/index.d.ts",
+        "default": "./lib/module/payment-status/index.js"
+      },
+      "require": {
+        "types": "./lib/typescript/commonjs/payment-status/index.d.ts",
+        "default": "./lib/commonjs/payment-status/index.js"
+      }
+    },
     "./mail-list": {
       "react-native": {
         "types": "./lib/typescript/module/mail-list/index.d.ts",
@@ -3794,6 +3836,15 @@
       ],
       "vehicle-picker": [
         "./lib/typescript/module/vehicle-picker/index.d.ts"
+      ],
+      "payment-method": [
+        "./lib/typescript/module/payment-method/index.d.ts"
+      ],
+      "card-form": [
+        "./lib/typescript/module/card-form/index.d.ts"
+      ],
+      "payment-status": [
+        "./lib/typescript/module/payment-status/index.d.ts"
       ],
       "mail-list": [
         "./lib/typescript/module/mail-list/index.d.ts"

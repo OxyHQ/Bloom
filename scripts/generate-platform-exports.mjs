@@ -258,6 +258,10 @@ const SUBPATHS = /** @type {const} */ ([
   ['./shipment-request', 'shipment-request/index.ts'],
   ['./carrier-quote', 'carrier-quote/index.ts'],
   ['./vehicle-picker', 'vehicle-picker/index.ts'],
+  // Taking the money: the saved method, entering a new card, and the verdict.
+  ['./payment-method', 'payment-method/index.ts'],
+  ['./card-form', 'card-form/index.ts'],
+  ['./payment-status', 'payment-status/index.ts'],
   ['./mail-list', 'mail-list/index.ts'],
   ['./mail-thread', 'mail-thread/index.ts'],
   ['./mail-compose', 'mail-compose/index.ts'],

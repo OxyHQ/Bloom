@@ -1,0 +1,169 @@
+---
+title: Payment method
+description: A way to pay, as a row and as a choice — the neutral mark, the masked identifier, the default, the expired and declined states, and the list they live in.
+order: 137
+---
+
+# Payment method
+
+Bloom had a basket, a quote and a total, and nothing that takes money. This is the
+first half of that: the methods a person has already saved, as a row you can read and
+as a choice you can make.
+
+```tsx
+import { PaymentMethodList } from '@oxy.so/bloom/payment-method';
+
+<PaymentMethodList
+  variant="picker"
+  accessibilityLabel="Pay with"
+  selectedId={selected}
+  onSelect={setSelected}
+  onAdd={openAddSheet}
+  methods={[
+    { id: 'a', scheme: 'Aurora', masked: '•••• 4417', expiry: 'Expires 09/29', isDefault: true },
+    { id: 'b', kind: 'account', scheme: 'Direct debit', masked: '•••• •••• 8842' },
+  ]}
+/>
+```
+
+## Bloom never draws a brand's logo
+
+The mark is a plate the shape of a card, a **neutral glyph** on it, and the scheme's
+**name as text**. That is the whole mark, and it is deliberate rather than unfinished:
+
+- the names are trademarks, and the artwork is licensed per scheme, per territory and
+  per acquirer. A library shipping twelve logos would be answering a question that
+  belongs to the app and its processor.
+- the set changes. A scheme launches, an acquirer drops one, a region gets a local
+  network, and a hardcoded list is wrong the day after it ships.
+
+An app that **has** the rights passes `image`, and it is drawn inside the plate at the
+plate's geometry. Everything else — the shape, the size, the state tint, the layout of
+the row — stays Bloom's. The escape hatch belongs to the app because the rights do.
+
+Bloom also ships **no scheme table**: no names, no prefixes, no ranges. `scheme` on a row
+is a string the app wrote. `card-form` takes the same position, at more length.
+
+## Nothing here is sensitive
+
+`masked` is a string the app already masked — `'•••• 4417'`, `'ES•• •••• 8842'`,
+`'€18.40 left'`. There is no prop that takes a full number, nothing in this family
+unmasks, parses, stores, logs or transmits anything, and `expiry` is words the app
+formatted.
+
+Whether a date is in the past is the app's finding, not this component's: nothing here
+reads a clock. Report it through `state`.
+
+## The kind is data
+
+`kind` is `card | account | wallet | cash`, and it chooses the default glyph and nothing
+else. There is no `SavedCardRow`, `BankAccountRow` and `WalletRow`, because a checkout
+picker, a settings list and a receipt all draw the same row and differ only in what they
+put in it. An app whose kinds are not those four passes `icon`.
+
+## The state is three, and the third is the point
+
+`ok | expired | declined`. `expired` paints the warning tone, `declined` the error tone,
+and both draw a line under the row — the state's own word, or the app's sentence through
+`stateMessage`, which is where a bank's reason belongs.
+
+They are STATES rather than tones because a picker and a settings screen must not
+disagree about what colour a declined card is. The mapping is `PAYMENT_METHOD_STATE_TONE`,
+in one place.
+
+## The variant is the announced tree
+
+- `list` — a `list` of `listitem`s, each wrapping a button. A reader is MANAGING these.
+- `picker` — a `radiogroup` of `radio`s carrying `aria-checked`. A reader is CHOOSING one.
+
+Both roles exist on both platforms, which is why the picker is a radio group rather than
+the listbox ARIA would suggest: React Native has no `listbox`, and a role that reaches
+one platform is the silent half of an accessibility bug.
+
+### The picker is a `Field` member, not a hand-rolled radiogroup
+
+`PaymentMethodList` resolves `useFieldMembership()` the way `RadioGroup` does, so a
+`Field` around it names the group, describes it with its error, marks it invalid and
+freezes every row — and a row inside a disabled field cannot re-enable itself, because
+`disabled` combines with `||` rather than deferring.
+
+```tsx
+<Field label="Pay with" description="Charged when the order is dispatched." multiple>
+  <PaymentMethodList variant="picker" methods={methods} selectedId={id} onSelect={setId} />
+</Field>
+```
+
+`multiple`, because the field holds several controls: a single-control field publishes
+one control id, and one id on four radios is invalid HTML.
+
+`accessibilityLabel` is the caller's and wins; the field's label is next; `"Payment
+methods"` is a LAST resort rather than a default, because a default would outrank the one
+string on screen the user can read.
+
+The composition page names three families that write `role="radiogroup"` over their own
+cards and stop there — a group nothing can name or disable. Writing the role is the easy
+half.
+
+### A disabled row keeps its handler
+
+It is handed `disabled` instead, so `Item` renders a real disabled control that still
+announces itself as a radio and as unavailable. Withholding the press handler would have
+made the row a plain `View`: present, silent, and gone from the choice.
+
+## The add row is not one of the choices
+
+"Add a payment method" is an action, so `onAdd` draws it OUTSIDE the `radiogroup`. A
+button among the radios would be announced as part of the choice and counted in "3 of 4".
+It is drawn under the empty state too, which is exactly when a reader needs it.
+
+## It is `Item`, filled in
+
+`PaymentMethodRow` is Bloom's `Item` with a payment method's slots filled: the row, the
+press target, the density rungs, the selected wash, the disabled opacity and the ARIA role
+translation are all `Item`'s, and this family owns no second copy of any of them. What it
+adds is the plate, the scheme/masked pairing on the title line, the default `Badge`, the
+state line and the `RadioIndicator`.
+
+It is `address`'s `AddressRow` one family over, and knowingly so — same base, same
+trailing-action rule, same geometry column so a checkout stacking an address row and a
+payment row does not step sideways between them. The two differ in three things worth the
+separate component:
+
+- the leading media is a **card-shaped plate**, not a round tile, and it carries a state
+  tint.
+- the title line is a **pair** — a name and a masked identifier in tabular figures — not
+  one string.
+- the selection control sits **inside** the press target, where `AddressRow`'s `action` is
+  deliberately split OUT of it.
+
+If a row needs something `Item` does not do, that is a report about `Item`, not a fork
+here.
+
+## Geometry
+
+```
+plate       40 × 28, radius 6 · compact 32 × 22, radius 5
+glyph       18 · compact 14
+title       Item's title rung; the masked identifier in body-2 TABULAR figures
+line 2      the expiry, secondary
+line 3      the state's words, in the state's own colour
+dot         16 · compact 14 — RadioIndicator, never a hand-drawn circle
+rows        4 apart
+```
+
+40 wide is the leading column the rest of the library already uses. 28 tall against it is
+the ratio that reads as a card rather than an app tile, and it is the one measurement here
+that is about shape rather than size.
+
+## The trailing action splits out of a pressable row
+
+A pressable row is a real `<button>` on web, so a control cannot live inside it: a button
+in a button is invalid HTML and a web click on the inner control also fires the row. A row
+with both `onPress` and `action` draws them side by side. The selection dot is not a
+control — it draws no press target — so it stays inside.
+
+## Reuse
+
+`PaymentMethodMark` is the whole mark, and `card-form` uses it for the scheme it detects.
+Use it anywhere a method has to be identified without a row: a receipt line, a
+confirmation screen, a settings header.
