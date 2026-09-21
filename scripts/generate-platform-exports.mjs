@@ -169,6 +169,8 @@ const SUBPATHS = /** @type {const} */ ([
   ['./motion', 'motion/index.ts'],
   ['./animated-check', 'animated-check/index.ts'],
   ['./icon-circle', 'icon-circle/index.ts'],
+  // Nothing to show, said once — the base block a dozen families hand-rolled.
+  ['./empty-state', 'empty-state/index.ts'],
   ['./connection-dots', 'connection-dots/index.ts'],
   ['./composition-bar', 'composition-bar/index.ts'],
   ['./dot-grid-meter', 'dot-grid-meter/index.ts'],
@@ -236,6 +238,11 @@ const SUBPATHS = /** @type {const} */ ([
   // Commerce: the four things a maps, a courier and a food app all need.
   ['./order-status', 'order-status/index.ts'],
   ['./price-breakdown', 'price-breakdown/index.ts'],
+  // Checkout: review and confirm, the delivery window, and the screen that
+  // says it is placed.
+  ['./checkout-summary', 'checkout-summary/index.ts'],
+  ['./delivery-slot', 'delivery-slot/index.ts'],
+  ['./order-confirmation', 'order-confirmation/index.ts'],
   // Ordering food: the vendor, the dish and the basket.
   ['./vendor-card', 'vendor-card/index.ts'],
   ['./menu-item', 'menu-item/index.ts'],

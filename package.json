@@ -1284,6 +1284,20 @@
         "default": "./lib/commonjs/icon-circle/index.js"
       }
     },
+    "./empty-state": {
+      "react-native": {
+        "types": "./lib/typescript/module/empty-state/index.d.ts",
+        "default": "./src/empty-state/index.ts"
+      },
+      "import": {
+        "types": "./lib/typescript/module/empty-state/index.d.ts",
+        "default": "./lib/module/empty-state/index.js"
+      },
+      "require": {
+        "types": "./lib/typescript/commonjs/empty-state/index.d.ts",
+        "default": "./lib/commonjs/empty-state/index.js"
+      }
+    },
     "./connection-dots": {
       "react-native": {
         "types": "./lib/typescript/module/connection-dots/index.d.ts",
@@ -2261,6 +2275,48 @@
       "require": {
         "types": "./lib/typescript/commonjs/price-breakdown/index.d.ts",
         "default": "./lib/commonjs/price-breakdown/index.js"
+      }
+    },
+    "./checkout-summary": {
+      "react-native": {
+        "types": "./lib/typescript/module/checkout-summary/index.d.ts",
+        "default": "./src/checkout-summary/index.ts"
+      },
+      "import": {
+        "types": "./lib/typescript/module/checkout-summary/index.d.ts",
+        "default": "./lib/module/checkout-summary/index.js"
+      },
+      "require": {
+        "types": "./lib/typescript/commonjs/checkout-summary/index.d.ts",
+        "default": "./lib/commonjs/checkout-summary/index.js"
+      }
+    },
+    "./delivery-slot": {
+      "react-native": {
+        "types": "./lib/typescript/module/delivery-slot/index.d.ts",
+        "default": "./src/delivery-slot/index.ts"
+      },
+      "import": {
+        "types": "./lib/typescript/module/delivery-slot/index.d.ts",
+        "default": "./lib/module/delivery-slot/index.js"
+      },
+      "require": {
+        "types": "./lib/typescript/commonjs/delivery-slot/index.d.ts",
+        "default": "./lib/commonjs/delivery-slot/index.js"
+      }
+    },
+    "./order-confirmation": {
+      "react-native": {
+        "types": "./lib/typescript/module/order-confirmation/index.d.ts",
+        "default": "./src/order-confirmation/index.ts"
+      },
+      "import": {
+        "types": "./lib/typescript/module/order-confirmation/index.d.ts",
+        "default": "./lib/module/order-confirmation/index.js"
+      },
+      "require": {
+        "types": "./lib/typescript/commonjs/order-confirmation/index.d.ts",
+        "default": "./lib/commonjs/order-confirmation/index.js"
       }
     },
     "./vendor-card": {
@@ -3451,6 +3507,9 @@
       "icon-circle": [
         "./lib/typescript/module/icon-circle/index.d.ts"
       ],
+      "empty-state": [
+        "./lib/typescript/module/empty-state/index.d.ts"
+      ],
       "connection-dots": [
         "./lib/typescript/module/connection-dots/index.d.ts"
       ],
@@ -3648,6 +3707,15 @@
       ],
       "price-breakdown": [
         "./lib/typescript/module/price-breakdown/index.d.ts"
+      ],
+      "checkout-summary": [
+        "./lib/typescript/module/checkout-summary/index.d.ts"
+      ],
+      "delivery-slot": [
+        "./lib/typescript/module/delivery-slot/index.d.ts"
+      ],
+      "order-confirmation": [
+        "./lib/typescript/module/order-confirmation/index.d.ts"
       ],
       "vendor-card": [
         "./lib/typescript/module/vendor-card/index.d.ts"

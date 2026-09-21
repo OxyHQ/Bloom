@@ -97,6 +97,7 @@ describe('the field contract', () => {
     expect(READERS).toEqual([
       'checkbox',
       'date-picker',
+      'delivery-slot',
       'field',
       'file-upload',
       'input-group',

@@ -48,6 +48,7 @@ jest.mock('react-native', () => {
 import { BloomThemeProvider } from '../theme/BloomThemeProvider';
 import { Field } from '../field';
 import { Checkbox } from '../checkbox';
+import { DeliverySlotPicker } from '../delivery-slot';
 import { FileUpload } from '../file-upload';
 import { InputGroup } from '../input-group';
 import { InputOtp } from '../input-otp';
@@ -246,6 +247,28 @@ const SUBJECTS: Subject[] = [
     describedBy: true,
     invalid: true,
     id: true,
+  },
+  {
+    // The picker is TWO radio groups inside one field (the days, and the
+    // windows). The windows group is the one the contract lands on; it carries
+    // the name, so it is found by that rather than by a testID one node up.
+    // Dropped inside a `Field` the picker renders no second field of its own.
+    name: 'delivery-slot',
+    render: (p) => (
+      <DeliverySlotPicker
+        days={[{ id: 'fri', weekday: 'Fri', day: '24' }]}
+        day="fri"
+        windows={[{ id: 'w1', label: '17:00 - 19:00' }]}
+        value="w1"
+        onValueChange={() => {}}
+        {...p}
+      />
+    ),
+    ownNameProp: 'label',
+    isInert: viewInert,
+    node: 'byName',
+    describedBy: true,
+    invalid: true,
   },
   {
     name: 'select',
