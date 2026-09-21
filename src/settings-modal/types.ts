@@ -73,6 +73,8 @@ export interface SettingsModalProps {
   /** Page selected every time the modal opens. Defaults to the first navigable row. */
   defaultPage?: string;
   onPageChange?: (page: string) => void;
+  /** Compact layout: start at the section list (default) or open the selected page directly. Resets on each open. */
+  initialView?: 'navigation' | 'page';
   labels?: SettingsModalLabels;
   testID?: string;
 }

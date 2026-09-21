@@ -59,7 +59,7 @@ const control = useDialogControl();
 
 ## Driving it
 
-Drive it like `Dialog`: **`control` from `useDialogControl()`** is the preferred path (`control.open()` / `control.close()`), and `open` + `onClose` is the controlled alternative (in controlled mode `onClose` is a close *request* — backdrop, close button, Escape, Android back — and you flip `open`). The page shown on every open is `defaultPage` (or the first rail row with a `page`); `page` + `onPageChange` control it.
+Drive it like `Dialog`: **`control` from `useDialogControl()`** is the preferred path (`control.open()` / `control.close()`), and `open` + `onClose` is the controlled alternative (in controlled mode `onClose` is a close *request* — backdrop, close button, Escape, Android back — and you flip `open`). On compact screens, `initialView="page"` opens the selected page directly (useful for deep links); the default `"navigation"` opens the section list. Back returns to the list in either case. The choice resets on each open and leaves desktop navigation unchanged. The page shown on every open is `defaultPage` (or the first rail row with a `page`); `page` + `onPageChange` control it.
 
 Rail rows with a `page` navigate; rows without one call their `onPress` (or are static). The Storage page sets `compactTitle` — its page already reserves headroom for the upload badge, so the title row's bottom padding drops from 12 to 6.
 
@@ -112,7 +112,6 @@ All surfaces come from the theme ramps (`button/shared`): background/secondary i
 
 ## Known gaps
 
-- The 871px panel does not reflow on phones; it caps at the viewport minus 32.
 - Bespoke file-type illustrations aren't included; the default is the Remix document / spreadsheet / video glyph. Pass `renderFileIcon` for artwork.
 - The Storage search uses `TextField`'s own tertiary fill — `TextField` owns its shell paint.
 - The panel's 4px blur during open/close is web-only; native fades and scales.

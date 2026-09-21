@@ -133,6 +133,7 @@ export function SettingsModal({
   page: controlledPage,
   defaultPage,
   onPageChange,
+  initialView = 'navigation',
   labels,
   testID,
 }: SettingsModalProps) {
@@ -156,7 +157,9 @@ export function SettingsModal({
   const insets = useSafeAreaInsets();
 
   // `compact` layout is two levels: the section list, then a page pushed over it.
-  const [compactPageOpen, setCompactPageOpen] = useState(false);
+  const [compactPageOpen, setCompactPageOpen] = useState(initialView === 'page');
+  const initialViewRef = useRef(initialView);
+  initialViewRef.current = initialView;
 
   const onCloseRef = useRef(onClose);
   onCloseRef.current = onClose;
@@ -167,7 +170,7 @@ export function SettingsModal({
 
   const show = useCallback(() => {
     setInternalPage(defaultPageRef.current);
-    setCompactPageOpen(false);
+    setCompactPageOpen(initialViewRef.current === 'page');
     setMounted(true);
     setOpenCount((count) => count + 1);
   }, []);

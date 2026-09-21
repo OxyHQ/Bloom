@@ -31,6 +31,7 @@ import { View, type LayoutChangeEvent } from 'react-native';
 import { SafeAreaInsetsContext } from 'react-native-safe-area-context';
 
 import { WEB_POSITION_FIXED, WEB_POSITION_STICKY, type WebCssStyle } from '../styles/web-view-style';
+import { BottomBarSlotContext } from '../layout/bottom-bar-slot';
 import { useClaimBottomEdge } from '../layout/bottom-edge';
 import { Z_INDEX } from '../styles/z-index';
 
@@ -98,7 +99,7 @@ const AppShellBottomBarComponent: React.FC<AppShellBottomBarProps> = ({
       onLayout={onLayout}
       style={[anchorBottom(doc), { paddingBottom: insets.bottom }]}
     >
-      {children}
+      <BottomBarSlotContext.Provider value={insets.bottom}>{children}</BottomBarSlotContext.Provider>
     </View>
   );
 };

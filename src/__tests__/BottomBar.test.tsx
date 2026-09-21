@@ -3,6 +3,10 @@ import { View, Text, Keyboard } from 'react-native';
 import { act, render } from '@testing-library/react-native';
 import { BottomBarBase } from '../bottom-bar/BottomBarBase';
 import type { TabBarProps, TabBarButtonProps } from '../tab-bar/types';
+import * as SafeArea from 'react-native-safe-area-context';
+import { BottomBarSlotContext } from '../layout/bottom-bar-slot';
+import { useClaimBottomEdge } from '../layout/bottom-edge';
+jest.mock('../layout/bottom-edge', () => ({ useClaimBottomEdge: jest.fn() }));
 import { resolvedStyle } from './support/rendered-style';
 const Navigation = jest.fn((props: TabBarProps) => <View testID="navigation">{props.children}</View>);
 const Item = ({ item }: TabBarButtonProps) => <Text>{item.label}</Text>;
@@ -64,4 +68,29 @@ it.each(['above','beside'] as const)('honors explicit action placement %s indepe
   const view = render(<BottomBarBase Navigation={Navigation} Item={Item} Blur={Blur} items={items} value="home" onValueChange={() => {}} actionPlacement={actionPlacement} action={<Text>Compose</Text>} testID="bar" />);
   act(() => view.getByTestId('bar-row').props.onLayout({nativeEvent:{layout:{width:100,height:58}}}));
   expect(resolvedStyle(view.getByTestId('bar-action').props.style).position).toBe(actionPlacement==='above'?'absolute':undefined);
+});
+
+it('forwards continuous pager selection and semantic long presses after item changes', () => {
+  const activeProgress = { value: 0.4 } as NonNullable<TabBarProps['activeProgress']>;
+  const onValueLongPress = jest.fn();
+  const view = render(<BottomBarBase Navigation={Navigation} Item={Item} Blur={Blur} items={items} value="home" onValueChange={() => {}} activeProgress={activeProgress} onValueLongPress={onValueLongPress} />);
+  let props = Navigation.mock.calls[Navigation.mock.calls.length - 1]![0];
+  expect(props.activeProgress).toBe(activeProgress);
+  props.onIndexLongPress?.(1);
+  expect(onValueLongPress).toHaveBeenLastCalledWith('search');
+  view.rerender(<BottomBarBase Navigation={Navigation} Item={Item} Blur={Blur} items={[...items].reverse()} value="home" onValueChange={() => {}} activeProgress={activeProgress} onValueLongPress={onValueLongPress} />);
+  props = Navigation.mock.calls[Navigation.mock.calls.length - 1]![0];
+  props.onIndexLongPress?.(1);
+  expect(onValueLongPress).toHaveBeenLastCalledWith('home');
+});
+it.each([0, 34])('applies inset %s once and lets a shell own the sole measured claim', inset => {
+  const safeArea = jest.spyOn(SafeArea, 'useSafeAreaInsets').mockReturnValue({ top: 0, left: 0, right: 0, bottom: inset });
+  const props = { Navigation, Item, Blur, items, value: 'home', onValueChange: () => {}, testID: 'bar' };
+  const view = render(<BottomBarSlotContext.Provider value={undefined}><BottomBarBase {...props} /></BottomBarSlotContext.Provider>);
+  const standaloneHeight = Number(resolvedStyle(view.getByTestId('bar').props.style).height);
+  expect(useClaimBottomEdge).toHaveBeenLastCalledWith(standaloneHeight);
+  view.rerender(<BottomBarSlotContext.Provider value={inset}><BottomBarBase {...props} /></BottomBarSlotContext.Provider>);
+  expect(Number(resolvedStyle(view.getByTestId('bar').props.style).height) + inset).toBe(standaloneHeight);
+  expect(useClaimBottomEdge).toHaveBeenLastCalledWith(0);
+  safeArea.mockRestore();
 });

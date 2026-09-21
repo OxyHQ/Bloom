@@ -186,6 +186,15 @@ describe('Sidebar', () => {
     expect(resolvedStyle(screen.getByTestId('sidebar-theme-morph').props.style).height).toBe(collapsed ? 36 : 40);
   });
 
+  it('honours showSearch=false in the plain mobile drawer and keeps dismissal reachable', () => {
+    const onClose = jest.fn();
+    const screen = renderIn(<Sidebar surface="plain" mobile showSearch={false} items={ITEMS} onClose={onClose} />);
+    expect(screen.queryByLabelText('Search')).toBeNull();
+    expect(screen.queryByLabelText('Filter navigation')).toBeNull();
+    pressHost(screen.getByLabelText('Close sidebar'));
+    expect(onClose).toHaveBeenCalledTimes(1);
+  });
+
   it('mobile shows a close button and never collapses', () => {
     const onClose = jest.fn();
     const screen = renderIn(<Sidebar mobile defaultCollapsed items={ITEMS} onClose={onClose} />);

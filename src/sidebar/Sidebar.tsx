@@ -388,7 +388,7 @@ const SidebarPanel: React.FC<SidebarProps> = ({
     setSuppressUserHover(expanding);
   };
 
-  const headerControl = flatMobile ? (
+  const headerControl = flatMobile && showSearch ? (
     <View
       ref={searchFieldRef}
       style={{

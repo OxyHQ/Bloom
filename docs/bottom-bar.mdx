@@ -33,3 +33,9 @@ The universal entry uses no Apple-only peers. The specialized `tab-bar` subpath
 continues to provide its native enhancements independently.
 
 `actionPlacement="auto"` (default) moves the action above and to the right when placing it beside the tabs would leave less than 56 points per destination. `beside` retains the horizontal arrangement; `above` always lifts it. The action uses the same scroll-driven visibility in both placements. Its measured height plus a 10-point gap joins the reserved footprint, so the final content remains reachable.
+
+## Pager and shell composition
+
+`activeProgress` accepts a shared continuous item index from a swipe pager. `value` remains the settled semantic destination; use an unmatched value when a pushed route has no selection. `onValueLongPress(value)` handles destination actions such as account switching.
+
+Inside an `AppShell` bottom-bar slot, the shell owns measurement and the bottom safe area. `BottomBar` automatically consumes that ownership, so the inset is applied once. Standalone bars retain their own edge claim and inset.

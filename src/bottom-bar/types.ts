@@ -7,6 +7,10 @@ export interface BottomBarProps {
   items: TabBarItem[];
   value: string;
   onValueChange: (value: string) => void;
+  /** Optional continuous selection supplied by a swipe pager, in item-index space. */
+  activeProgress?: SharedValue<number>;
+  /** Long press on a destination (for example an account switcher). */
+  onValueLongPress?: (value: string) => void;
   /** Static action sibling; outside the navigation scrub detector. */
   action?: ReactNode;
   /** Auto places the action above navigation when side-by-side targets would be cramped. */

@@ -212,6 +212,43 @@ describe('SettingsModal responsive layout', () => {
     expect(getByTestId('settings-rail')).toBeTruthy();
   });
 
+  it('opens a deep-linked page on compact screens, backs to navigation, and resets on reopen', () => {
+    setWindow(375, 812);
+    const props = { groups: GROUPS, pages: PAGES, page: 'general', testID: 'settings' };
+    const { getByTestId, queryByText, rerender } = renderWithTheme(
+      <SettingsModal {...props} open initialView="page" />,
+    );
+    flush();
+    expect(queryByText('general body')).toBeTruthy();
+    pressHost(getByTestId('settings-back'));
+    expect(queryByText('general body')).toBeNull();
+    const renderModal = (open: boolean, initialView: 'navigation' | 'page') => (
+      <BloomThemeProvider mode="light" colorPreset="teal">
+        <SettingsModal {...props} open={open} initialView={initialView} />
+      </BloomThemeProvider>
+    );
+    rerender(renderModal(false, 'page'));
+    flush();
+    rerender(renderModal(true, 'page'));
+    flush();
+    expect(queryByText('general body')).toBeTruthy();
+    rerender(renderModal(false, 'navigation'));
+    flush();
+    rerender(renderModal(true, 'navigation'));
+    flush();
+    expect(queryByText('general body')).toBeNull();
+    expect(getByTestId('settings-rail')).toBeTruthy();
+  });
+
+  it('retains the desktop rail when initialView requests a page', () => {
+    const { getByTestId, getByText } = renderWithTheme(
+      <SettingsModal open initialView="page" groups={GROUPS} pages={PAGES} testID="settings" />,
+    );
+    flush();
+    expect(getByTestId('settings-rail')).toBeTruthy();
+    expect(getByText('general body')).toBeTruthy();
+  });
+
   it('stacks a row control under its label when it cannot fit beside it (compact)', () => {
     setWindow(375, 812);
     const pages = {

@@ -1,8 +1,9 @@
-import { useRef, useState, type ComponentType } from 'react';
+import { useContext, useRef, useState, type ComponentType } from 'react';
 import { View, ScrollView, Keyboard, Platform } from 'react-native';
 import { useEffect } from 'react';
 import Animated, { useAnimatedReaction, useAnimatedStyle, interpolate, runOnJS, useReducedMotion } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { BottomBarSlotContext } from '../layout/bottom-bar-slot';
 import { useClaimBottomEdge } from '../layout/bottom-edge';
 import { FAB_METRICS } from '../fab/constants';
 import { windowEdgeGap } from '../layout/edge';
@@ -17,7 +18,7 @@ interface Props extends BottomBarProps {
   Item: ComponentType<TabBarButtonProps>;
   Blur: ComponentType<ProgressiveBlurProps>;
 }
-export function BottomBarBase({ Navigation, Item, Blur, items, value, onValueChange, action,
+export function BottomBarBase({ Navigation, Item, Blur, items, value, onValueChange, activeProgress, onValueLongPress, action,
   actionPlacement = 'auto', actionBehavior = 'hide', material = 'translucent', minimizeProgress, blur = true, maxWidth = 560, style, testID }: Props) {
   const insets = useSafeAreaInsets();
   const minimize = useMinimizeState();
@@ -45,14 +46,15 @@ export function BottomBarBase({ Navigation, Item, Blur, items, value, onValueCha
     node.inert = actionHidden;
   }, [actionHidden]);
   const [keyboardVisible, setKeyboardVisible] = useState(false);
-  const bottom = windowEdgeGap(insets.bottom);
+  const suppliedBottomInset = useContext(BottomBarSlotContext);
+  const bottom = Math.max(0, windowEdgeGap(insets.bottom) - (suppliedBottomInset ?? 0));
   useEffect(() => {
     if (Platform.OS === 'web') return;
     const show = Keyboard.addListener('keyboardDidShow', () => setKeyboardVisible(true));
     const hide = Keyboard.addListener('keyboardDidHide', () => setKeyboardVisible(false));
     return () => { show.remove(); hide.remove(); };
   }, []);
-  useClaimBottomEdge(keyboardVisible ? 0 : bottom + footprint);
+  useClaimBottomEdge(keyboardVisible || suppliedBottomInset !== undefined ? 0 : bottom + footprint);
   const rowStyle = useAnimatedStyle(() => ({
     height: interpolate(reducedMotion ? Number(progress.value > 0.01) : progress.value, [0, 1], [EXPANDED_HEIGHT, MINIMIZED_HEIGHT], 'clamp'),
   }), [progress, reducedMotion]);
@@ -70,6 +72,7 @@ export function BottomBarBase({ Navigation, Item, Blur, items, value, onValueCha
     {blur && material === 'translucent' && <Blur direction="bottom" style={{ position: 'absolute', left: 0, right: 0, bottom: 0, height: bottom + footprint + BLUR_BLEED }} />}
     <Animated.View testID={testID ? `${testID}-row` : undefined} onLayout={event => setRowWidth(event.nativeEvent.layout.width)} pointerEvents="box-none" style={[{ justifyContent: items.length ? 'center' : 'flex-end', alignSelf: 'center', width: '100%', maxWidth, paddingLeft: 12, paddingRight: 12, marginBottom: bottom, flexDirection: 'row', alignItems: 'center' }, rowStyle]}>
       {items.length > 0 && <View testID={testID ? `${testID}-navigation` : undefined} style={{ width: navigationWidth, minWidth: 0 }}><ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ minWidth: '100%' }}><View style={{ width: Math.max(navigationWidth, items.length * 44 + 8) }}><Navigation scrollable={navigationWidth > 0 && navigationWidth < items.length * 44 + 8} embedded blur={false} material={material} minimizeProgress={progress}
+        activeProgress={activeProgress} onIndexLongPress={index => { if (items[index]) onValueLongPress?.(items[index].name); }}
         activeIndex={items.findIndex(item => item.name === value)} onIndexChange={index => { if (items[index]) onValueChange(items[index].name); }}>
         {items.map((item, index) => <Item key={item.name} item={item} index={index} />)}
       </Navigation></View></ScrollView></View>}
