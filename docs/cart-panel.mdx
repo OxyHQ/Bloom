@@ -1,0 +1,76 @@
+---
+title: Cart Panel
+description: The basket — the vendor it belongs to, lines with their options and a stepper, a minimum-order warning, a tip picker, a promo code field, and the totals drawn by price-breakdown.
+order: 136
+---
+
+# Cart Panel
+
+`@oxy.so/bloom/cart-panel`
+
+What is in the basket, and what it costs.
+
+```tsx
+import { CartPanel } from '@oxy.so/bloom/cart-panel';
+
+<CartPanel
+  vendorName="Fig & Ember"
+  vendorPhoto="fig-ember-cover"
+  vendorMeta="25–35 min · €1.90 delivery"
+  lines={lines}
+  onLineQuantityChange={setQuantity}
+  onLineRemove={remove}
+  tip={{ options: TIPS, value: tip, onValueChange: setTip }}
+  promo={{ value: code, onChangeText: setCode, onApply: apply, applied }}
+  summary={{ lines: priceLines, total: { label: 'Total', amount: '€52.00' } }}
+  onCheckout={checkout}
+/>
+```
+
+The family also publishes its parts — `CartLine`, `CartTipPicker`, `CartPromoField` — for a screen that arranges them itself.
+
+## It is content, not a surface
+
+Inline in a desktop sidebar it is dropped in a `Card`; on a phone it is what a `BottomSheet` holds. It paints no background of its own and claims no edge, so the same tree works in both. Every colour it *does* paint is read **relative to whatever it was dropped on** (`styles/surface-levels.ts`): a hairline picked for a card disappears on a sheet, and a panel that hardcoded one would be right in exactly one of the two places it ships.
+
+## There is one breakdown, and it is `PriceSummary`
+
+`summary` is handed straight to `price-breakdown`'s `PriceSummary`: subtotal, delivery, service, discount, tip and total are `PriceLine`s the app formatted. Nothing in this family adds anything up — the minimum-order `message` is a sentence the app wrote, not a subtraction performed here.
+
+**A note on the duplicate that exists.** `booking/PriceBreakdown` and `price-breakdown/PriceSummary` are the same idea in two spellings: rows with a label and a right-aligned tabular amount, a discount tone, a hairline, a bold total, and no arithmetic in either. `PriceSummary` is the later and larger one — it has the estimated/pending states, the per-line info popover, the collapsible disclosure and the surface-relative paint — so it is the one this family composes, and `booking`'s is the one to fold in. A third was never an option.
+
+## A basket belongs to one vendor
+
+Which is why the vendor is a header and not a field on every line. Switching vendor is a different action — it empties the basket — and this component does not offer it.
+
+## The stepper does not remove
+
+`CartLine`'s stepper has a floor of **1**, and removing is its own control with its own accessible name. A stepper that deletes the line when you press `−` once too often is a destructive action hiding behind an arithmetic one, and it has no label saying so.
+
+The line is never pressable, which is what lets its controls live inside it: a pressable `Item` is a real `<button>` on web, and a control inside one is invalid HTML whose click also fires the row. Editing a line's options is `MenuItemOptions` in a sheet, opened from the dish rather than from a row that is mostly controls.
+
+## The promo field has two states, not one
+
+While `applied` is set the input is **replaced** by a removable pill. A field still holding a code that has already been accepted invites a reader to press Apply again and wonder why nothing happened. Apply is disabled while the field is blank — an action that can only fail teaches a reader to distrust it — and whether a code is *valid* is the app's to say, which it says by handing back `error` or `applied`.
+
+Both states are a `Field`, so the rejection message is wired to the input through `aria-describedby` and the group paints invalid, rather than a red line sitting nearby with no association.
+
+## The tip is a `SegmentedControl`
+
+`type="radio"`, at the `large` rung — which is 44 tall, the floor a touch target has. It is already a `radiogroup` of `radio`s that reads a `Field`, slides its thumb and carries one focus ring; a row of pills would be a second grouped-choice control with the same meaning, and the one thing it could not do is announce "2 of 4".
+
+Every amount is a label the app formatted. A percentage and a fixed amount are the same thing here, and "No tip" is an option like any other rather than a state this component invents.
+
+## The shortfall sits above the totals
+
+Not at the top. Read before there is a total to compare it to, "€4.50 more to reach the €14 minimum" is a sentence about nothing; beside the number it is about, it is the reason checkout is blocked. It is an `Admonition` in the warning tone, with an optional `Meter` under it — never a bar drawn by hand.
+
+## Order tracking is not here
+
+Once the order is placed it belongs to `order-status`: `OrderStatusTimeline` for the steps and `OrderStatusBar` for the live line with its ETA. This family draws no second timeline, and the courier's own card is not one of its components — the `AfterCheckout` story composes one from `Avatar` and `Card` to show the seam.
+
+## Traps
+
+- **Every amount is a string.** `price` on a line is the line's own total, already multiplied by `quantity` **by the app**. Nothing here multiplies, converts or rounds.
+- **The empty basket hides everything after the lines.** No tip picker, no promo field, no totals and no checkout button — each of them would be a control acting on nothing.
+- **`CartLine` takes the line's fields, not the entry.** `CartLineEntry` carries the `id` the panel keys and reports by; the standalone component takes the rest, so a caller cannot pass an id that reaches nothing.

@@ -32,7 +32,7 @@ The classification is an EQUALITY in `src/__tests__/adoption-matrix.test.ts`, no
 
 ## Totals
 
-- **186 families** in `src/`, **184** published (a subpath, the root barrel, or both). **35** carry a web fork.
+- **189 families** in `src/`, **187** published (a subpath, the root barrel, or both). **35** carry a web fork.
 - Docs, stories and suites are gated as a standard by `src/__tests__/family-coverage.test.ts`; the per-family counts are in the table below.
 
 | contract | applies to | reads | delegated | n/a¹ | adaptation |
@@ -145,6 +145,7 @@ The classification is an EQUALITY in `src/__tests__/adoption-matrix.test.ts`, no
 | `card` | `@oxy.so/bloom/card` + barrel | universal | `card.mdx` | yes | 3 |  |  |  |  |
 | `carousel` | `@oxy.so/bloom/carousel` + barrel | universal | `carousel.mdx` | yes | 1 |  |  |  |  |
 | `carrier-quote` | `@oxy.so/bloom/carrier-quote` + barrel | universal | `carrier-quote.mdx` | yes | 1 | n/a¹ |  |  | reads |
+| `cart-panel` | `@oxy.so/bloom/cart-panel` + barrel | universal | `cart-panel.mdx` | yes | 1 |  |  |  |  |
 | `category-bar` | `@oxy.so/bloom/category-bar` + barrel | universal | `category-bar.mdx` | yes | 2 |  |  |  |  |
 | `chart-cards` | `@oxy.so/bloom/chart-cards` + barrel | universal | `chart-cards.mdx` | yes | 29 |  |  |  | **adaptation** |
 | `chat-composer` | `@oxy.so/bloom/chat-composer` + barrel | universal | `chat-composer.mdx` | yes | 2 | n/a¹ | n/a¹ |  | reads |
@@ -203,7 +204,7 @@ The classification is an EQUALITY in `src/__tests__/adoption-matrix.test.ts`, no
 | `link-preview` | `@oxy.so/bloom/link-preview` + barrel | universal | `link-preview.mdx` | yes | 2 |  |  |  |  |
 | `list` | `@oxy.so/bloom/list` + barrel | web fork | `list.mdx` | yes | 2 |  |  |  |  |
 | `listing-actions` | `@oxy.so/bloom/listing-actions` + barrel | universal | `listing-actions.mdx` | yes | 2 | **adaptation** |  |  | reads |
-| `listing-card` | `@oxy.so/bloom/listing-card` + barrel | universal | `listing-card.mdx` | yes | 3 |  |  |  |  |
+| `listing-card` | `@oxy.so/bloom/listing-card` + barrel | universal | `listing-card.mdx` | yes | 4 |  |  |  |  |
 | `listing-details` | `@oxy.so/bloom/listing-details` + barrel | universal | `listing-details.mdx` | yes | 4 |  |  |  | reads |
 | `listing-editor` | `@oxy.so/bloom/listing-editor` + barrel | universal | `listing-editor.mdx` | yes | 1 | **adaptation** |  |  | reads |
 | `loading` | `@oxy.so/bloom/loading` + barrel | web fork | `loading.mdx` | yes | 2 |  |  |  |  |
@@ -220,6 +221,7 @@ The classification is an EQUALITY in `src/__tests__/adoption-matrix.test.ts`, no
 | `media-inset-border` | `@oxy.so/bloom/media-inset-border` + barrel | universal | `media-inset-border.mdx` | yes | 1 |  |  |  |  |
 | `media-player` | `@oxy.so/bloom/media-player` + barrel | universal | `media-player.mdx` | yes | 3 |  |  |  |  |
 | `media-shelf` | `@oxy.so/bloom/media-shelf` + barrel | universal | `media-shelf.mdx` | yes | 1 |  |  |  |  |
+| `menu-item` | `@oxy.so/bloom/menu-item` + barrel | universal | `menu-item.mdx` | yes | 1 |  |  |  |  |
 | `menubar` | `@oxy.so/bloom/menubar` + barrel | web fork | `menubar.mdx` | yes | 2 |  |  | reads | reads |
 | `message-bubble` | `@oxy.so/bloom/message-bubble` + barrel | universal | `message-bubble.mdx` | yes | 1 |  |  |  |  |
 | `message-media` | `@oxy.so/bloom/message-media` + barrel | universal | `message-media.mdx` | yes | 1 | n/a¹ |  |  |  |
@@ -243,7 +245,7 @@ The classification is an EQUALITY in `src/__tests__/adoption-matrix.test.ts`, no
 | `popover` | `@oxy.so/bloom/popover` + barrel | web fork | `popover.mdx` | yes | 7 |  |  | reads | reads |
 | `portal` | `@oxy.so/bloom/portal` + barrel | web fork | `portal.mdx` | yes | 15 |  |  |  |  |
 | `pressable-scale` | `@oxy.so/bloom/pressable-scale` + barrel | universal | `pressable-scale.mdx` | yes | 1 |  |  |  |  |
-| `price-breakdown` | `@oxy.so/bloom/price-breakdown` + barrel | universal | `price-breakdown.mdx` | yes | 1 |  |  |  | reads |
+| `price-breakdown` | `@oxy.so/bloom/price-breakdown` + barrel | universal | `price-breakdown.mdx` | yes | 2 |  |  |  | reads |
 | `progressive-blur` | `@oxy.so/bloom/progressive-blur` + barrel | web fork | `progressive-blur.mdx` | yes | 1 |  |  |  |  |
 | `property-insights` | `@oxy.so/bloom/property-insights` + barrel | universal | `property-insights.mdx` | yes | 4 |  |  |  | reads |
 | `provider` | `@oxy.so/bloom/provider` | universal | `provider.mdx` | yes | 1 |  |  |  |  |
@@ -295,6 +297,7 @@ The classification is an EQUALITY in `src/__tests__/adoption-matrix.test.ts`, no
 | `typography` | `@oxy.so/bloom/typography` + barrel | universal | `typography.mdx` | yes | 7 |  |  |  |  |
 | `user-hover-card` | `@oxy.so/bloom/user-hover-card` + barrel | universal | `user-hover-card.mdx` | yes | 4 |  |  |  |  |
 | `vehicle-picker` | `@oxy.so/bloom/vehicle-picker` + barrel | universal | `vehicle-picker.mdx` | yes | 1 | **adaptation** |  |  |  |
+| `vendor-card` | `@oxy.so/bloom/vendor-card` + barrel | universal | `vendor-card.mdx` | yes | 1 |  |  |  |  |
 | `web-search` | `@oxy.so/bloom/web-search` + barrel | universal | `web-search.mdx` | yes | 1 |  |  |  |  |
 | `wizard` | `@oxy.so/bloom/wizard` + barrel | universal | `wizard.mdx` | yes | 1 |  |  |  |  |
 | `zoomable-media-gallery` | `@oxy.so/bloom/zoomable-media-gallery` | universal | `zoomable-media-gallery.mdx` | yes | 2 |  |  |  |  |
