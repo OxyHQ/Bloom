@@ -188,7 +188,8 @@ export interface AppShellEngineProps {
    * gutters.
    */
   panel?: boolean;
-  /** Forwarded to that `ContentPanel`: the width it starts being framed at. */
+  /** Optional independent framing breakpoint. By default a shell with navigation
+   * frames its panel exactly while the sidebar/rail is in flow. */
   framedFrom?: ContentPanelFramedBreakpoint;
 
   // -- split -----------------------------------------------------------------

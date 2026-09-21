@@ -170,6 +170,11 @@ const AppShellComponent: React.FC<AppShellEngineProps> = ({
   // `focus` is the one shape with no navigation at all.
   const hasNav = variant !== 'focus' && sidebar != null;
   const navInFlow = hasNav && wide;
+  // One responsive owner: a shell panel follows its in-flow navigation unless
+  // the caller explicitly requests an independent framing breakpoint.
+  const managedPanel = panel === true && hasNav && framedFrom === undefined;
+  const compactPanel = managedPanel && !navInFlow;
+  const panelFramed = managedPanel ? navInFlow : undefined;
   const flowSidebar = sidebar ? { ...sidebar, variant: navVariant } : undefined;
   // The drawer always opens the full panel, whatever the in-flow variant.
   const drawerSidebar = sidebar ? { ...sidebar, variant: 'panel' as const } : undefined;
@@ -489,8 +494,8 @@ const AppShellComponent: React.FC<AppShellEngineProps> = ({
           // Document scroll: each column carries its own height (the centre
           // grows the page, the aside is sticky). Bounded: they stretch.
           alignItems: doc ? 'flex-start' : 'stretch',
-          ...(contentAligned ? { flexGrow: 0, flexBasis: readingGroupWidth, maxWidth: readingGroupWidth } : {}),
-          ...(plainDocumentFrame ? { paddingTop: gutter, paddingBottom: gutter } : {}),
+          ...(contentAligned ? { flexGrow: compactPanel ? 1 : 0, flexBasis: compactPanel ? 'auto' : readingGroupWidth, maxWidth: compactPanel ? undefined : readingGroupWidth } : {}),
+          ...(plainDocumentFrame ? { paddingTop: compactPanel ? 0 : gutter, paddingBottom: compactPanel ? 0 : gutter } : {}),
         },
         fill,
       ]}
@@ -500,7 +505,7 @@ const AppShellComponent: React.FC<AppShellEngineProps> = ({
         style={[
           // `flexBasis` is the reading width and `flexShrink: 1` is what keeps a
           // 600px column inside a 360px phone — a `width` would overflow.
-          { flexGrow: 0, flexShrink: 1, flexBasis: contentWidth, maxWidth: contentWidth, minWidth: 0 },
+          { flexGrow: compactPanel ? 1 : 0, flexShrink: 1, flexBasis: compactPanel ? 'auto' : contentWidth, maxWidth: compactPanel ? undefined : contentWidth, minWidth: 0 },
           doc ? null : { alignSelf: 'stretch' },
         ]}
       >
@@ -511,6 +516,7 @@ const AppShellComponent: React.FC<AppShellEngineProps> = ({
           // an open-ended column whose bottom edge is somewhere past the fold.
           // The header is pinned inside it and only the routed content moves.
           <ContentPanel
+            framed={panelFramed}
             framedFrom={framedFrom}
             fill
             // The panel's box already IS the visible area here, so the frame is
@@ -539,6 +545,7 @@ const AppShellComponent: React.FC<AppShellEngineProps> = ({
         >
           {panel ? (
             <ContentPanel
+              framed={panelFramed}
               framedFrom={framedFrom}
               // The sticky frame is pinned at the shell's OWN gutter, which is
               // exactly where the panel starts. Left at the 8px default it

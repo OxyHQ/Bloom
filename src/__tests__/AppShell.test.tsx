@@ -8,6 +8,7 @@ import { PortalOutlet, PortalProvider } from '../portal';
 import { AppShell, AppShellHeader, AppShellMenuButton, NotificationBell, ProOfferCard, useAppShell } from '../app-shell';
 import { RiHomeLine } from '../icons/remix';
 import type { NotificationCenterItem } from '../notification-center';
+import { ContentPanel } from '../content-panel';
 import { resolvedStyle } from './support/rendered-style';
 import { resolveScrollMode } from '../app-shell/layout';
 
@@ -524,6 +525,20 @@ describe('AppShell variant="feed"', () => {
     expect(resolvedStyle(screen.getByTestId('shell-navigation').props.style).top).toBe(0);
     const group = hostParent(screen.getByTestId('shell-content'));
     expect(resolvedStyle(group?.props.style)).toMatchObject({ paddingTop: 8, paddingBottom: 8 });
+  });
+
+  it.each([
+    { width: 699, framedFrom: undefined, expected: false },
+    { width: 700, framedFrom: undefined, expected: true },
+    { width: 767, framedFrom: undefined, expected: true },
+    { width: 699, framedFrom: 640 as const, expected: undefined },
+  ])('coordinates panel framing with navigation, respecting overrides: %j', ({ width, framedFrom, expected }) => {
+    jest.replaceProperty(ReactNative.Platform, 'OS', 'web');
+    setWidth(width);
+    const screen = renderIn(<AppShell variant="feed" panel navFrom={700} framedFrom={framedFrom}
+      sidebar={{ items: NAV, variant: 'rail' }}><ReactNative.Text>Body</ReactNative.Text></AppShell>);
+    const panel = screen.UNSAFE_root.findByType((ContentPanel as unknown as { type: React.ComponentType }).type);
+    expect(panel.props.framed).toBe(expected);
   });
 
   it('below asideFrom the side column stacks under the content instead', () => {

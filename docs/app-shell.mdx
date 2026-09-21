@@ -62,8 +62,15 @@ in Chrome at 1440: after scrolling 406px the nav stayed at `y = 121` and the
 aside at `y = 16` while the content moved from `16` to `-390`.
 
 `panel` wraps the centre column in a [`ContentPanel`](/docs/bloom/main/content-panel),
-so the page background reads as a gutter around a framed surface; `framedFrom`
-is forwarded.
+so the page background reads as a gutter around a framed surface. With navigation,
+its frame follows the same breakpoint as the in-flow sidebar/rail. Once navigation
+moves to the bottom, the reading column fills the compact layout. An explicit
+`framedFrom` overrides this coordination; a panel without navigation retains
+ContentPanel’s own responsive default.
+
+This prevents a frameless panel beside a still-visible rail: the social template
+uses 700px for both, instead of independently changing the panel at 768px. Resizing
+keeps the same content node mounted and does not replace the document scroller.
 
 **The panel occupies the screen either way — what differs is what scrolls.**
 
