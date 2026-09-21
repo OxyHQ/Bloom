@@ -1,0 +1,121 @@
+---
+title: Carrier quote
+description: A carrier's offer on a job, and the offers together — the identity, the price, the window and the ETA, the cheapest and fastest marks, and the empty and loading states of a list that is still filling up.
+order: 135
+---
+
+# Carrier quote
+
+```tsx
+import { CarrierQuoteCard, CarrierQuoteList } from '@oxy.so/bloom/carrier-quote';
+
+<CarrierQuoteList
+  quotes={quotes}
+  selectedId={accepted}
+  onAccept={accept}
+  onMessage={openThread}
+  onDecline={decline}
+/>
+```
+
+## The card is a record of a person
+
+An offer is a **person with a number attached**, so the card is drawn in the
+register Bloom draws a person in — the same blocks in the same order as a contact
+record, with the price where a record puts its headline figure:
+
+```
+mark      the 48 avatar
+identity  the name at title-3-semibold with the verified glyph, then ONE meta
+          line: the list's marks, the rating, the jobs done, the trade line
+headline  the price at title-1-medium in tabular figures, right-aligned
+tiles     pick-up, arrival, vehicle — value over label, on the next fill up
+message   what the carrier wrote, three lines then truncated
+price     the itemisation, collapsed, through PriceSummary
+footer    decline · message · accept, over a hairline
+```
+
+`density="compact"` is a **list row**, not a card with the padding taken out: 64
+tall, a 36 mark, the name, one meta line, the price at the end, and no tiles or
+breakdown at all — a list that draws a card per row has stopped being a list.
+
+**The marks sit on the meta line, never beside the name.** A pill states a fact
+in one word and must not shrink; the name beside it is what gives way, and at 390
+that left `Maris…` next to a full-width `Cheapest`.
+
+### The card is not one big button
+
+`onPressCarrier` is bound to the **identity block**; the three actions sit outside
+it. A control inside a control is invalid on web and ambiguous everywhere, and it
+renders perfectly well either way, which is why it needs saying.
+
+### The actions never lose their names
+
+Each action is a `Button`. Under 420 of the card's **own** width they drop to
+`iconOnly`, and each one is named `"<action> <carrier>"` whichever way it is
+drawn — losing the label must not lose the name. The same measurement stacks the
+tiles two by two, because a card too narrow for three tiles is too narrow for
+three labelled buttons beside a 48 mark.
+
+## The marks belong to the SET
+
+`cheapest` and `fastest` are statements about a group of offers. A card handed
+one out of context is claiming something it cannot know, so it does not derive
+them: `CarrierQuoteList` computes them with `markCarrierQuotes` and passes them
+down.
+
+They are derived from `priceValue` and `etaMinutes` — **numbers the app supplies
+for comparison and this family never draws.** Money arrives here as a
+pre-formatted string (`price`, `priceNote`, every `priceLines` amount) and
+nothing in this family parses, sums, converts or rounds it; the numeric fields
+exist only so the list can ask which of two is smaller.
+
+**Every offer tied at a minimum is marked.** Two offers at the same price are
+both the cheapest; picking one of them would be this component inventing a
+tie-break the app never asked for, and marking neither would hide a true
+statement.
+
+**A quote with no number cannot be marked, and sorts last.** Within that group
+the caller's own order is kept — there is nothing left to sort on, and
+re-shuffling a group of equals makes a list jump for no visible reason.
+`sortCarrierQuotes` is stable for the same reason.
+
+`rating` sorts high-first; price and ETA sort low-first. That is the only place
+the direction differs, and it is a property of what the number means.
+
+## The list's two non-list states
+
+- **loading** draws placeholder cards of the same height, inside an
+  `aria-busy` group. Not a spinner: the answer arriving is a list, and a list is
+  what should be reserved for it.
+- **empty** draws a tinted glyph disc over one line of explanation and the
+  caller's own action. An empty offers list is a **wait**, not a failure, so the
+  default copy says what happens next rather than what went wrong. Pass
+  `emptyTitle` / `emptyDescription` when it is a failure.
+
+## Traps
+
+- **There is no head until there is a list.** "0 offers" over a control that can
+  reorder nothing is chrome for a list that does not exist yet, and the empty
+  state already says the same thing in words a reader can act on.
+- **`quotes.length` is the count, not `ordered.length`.** The heading counts what
+  the caller has, which is the same number either way today — but it is the
+  caller's set that a "3 offers" line is about.
+- **The sort is uncontrolled by default.** Pass `sort` + `onSortChange` to own
+  it; `sortOptions={[]}` draws no control at all, which is right for a list of
+  two.
+- **`selected` moves a pixel of border and gives it back.** The chosen card takes
+  a 2px accent border and drops its own inset by one, so nothing inside it moves
+  when it is chosen.
+- **`vehicleIcon` has no default.** A marketplace routing five bodies has five
+  glyphs, and Bloom's icon set has no generic one that is honest about all of
+  them, so a caller that names none gets no glyph rather than the wrong vehicle.
+- **A tile the quote does not answer is not drawn.** A tile holding an em dash is
+  a slot that failed to load.
+
+## Tracking is not here
+
+Once an offer is accepted the job is tracked with
+[`order-status`](/docs/order-status) — `OrderStatusBar` for the live line and
+`OrderStatusTimeline` for what has happened. This family draws no timeline; the
+`EndToEnd` story shows the three families in one screen.
