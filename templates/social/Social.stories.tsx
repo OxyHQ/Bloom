@@ -24,8 +24,8 @@ function Placeholder({ compact = false }: { compact?: boolean }) {
   return <View accessible={false} aria-hidden style={{ height: compact ? 104 : 260, borderRadius: 16, backgroundColor: colors.backgroundSecondary }} />;
 }
 
-function SocialLayout({ showRightColumn = true, centerWidth = 620, framedContent = true, tallContext = false, gutter = 16 }: {
-  showRightColumn?: boolean; centerWidth?: number; framedContent?: boolean; tallContext?: boolean; gutter?: number;
+function SocialLayout({ showRightColumn = true, centerWidth = 620, rightColumnWidth = 350, framedContent = true, tallContext = false, gutter = 16 }: {
+  showRightColumn?: boolean; centerWidth?: number; rightColumnWidth?: number; framedContent?: boolean; tallContext?: boolean; gutter?: number;
 }) {
   const { colors } = useTheme();
   const [selected, setSelected] = useState('home');
@@ -41,13 +41,13 @@ function SocialLayout({ showRightColumn = true, centerWidth = 620, framedContent
       onValueChange={setSelected}
       navFrom={700}
       navExpandedFrom={1100}
-      sidebar={{ surface: 'plain', size: 'lg', searchShortcut: false, logo: { wordmark: 'Social', accessibilityLabel: 'Social home', onPress: () => setSelected('home') } }}
+      sidebar={{ surface: 'plain', size: 'lg', style: { justifyContent: 'center' }, searchShortcut: false, logo: { wordmark: 'Social', accessibilityLabel: 'Social home', onPress: () => setSelected('home') } }}
       contentWidth={centerWidth}
       gutter={gutter}
       panel={framedContent}
       header={<PageHeader title={title} presentation="floating" />}
       asideFrom={1180}
-      asideWidth={268}
+      asideWidth={rightColumnWidth}
       asideCollapse="hidden"
       aside={showRightColumn ? <View role="complementary" accessibilityLabel="Context column" style={{ paddingTop: 24, paddingBottom: 24, gap: 32 }}>
         <Text variant="headline-semibold">Contexto</Text>
@@ -73,11 +73,12 @@ function SocialLayout({ showRightColumn = true, centerWidth = 620, framedContent
 const meta = {
   title: 'Templates/Social', component: SocialLayout,
   parameters: { layout: 'fullscreen', bloomScroll: 'document' },
-  args: { showRightColumn: true, centerWidth: 620, framedContent: true, tallContext: false, gutter: 16 },
+  args: { showRightColumn: true, centerWidth: 620, rightColumnWidth: 350, framedContent: true, tallContext: false, gutter: 16 },
   argTypes: {
     gutter: { control: { type: 'range', min: 8, max: 40, step: 4 }, description: 'Shared gutter for the panel frame, mask and sticky header.' },
     framedContent: { control: 'boolean', description: 'Wrap the reading column in Bloom’s tonal ContentPanel.' },
     showRightColumn: { control: 'boolean', description: 'Show the contextual column from 1180px.' },
+    rightColumnWidth: { control: { type: 'range', min: 280, max: 400, step: 10 }, description: 'Width reserved for widgets beside the reading column.' },
     centerWidth: { control: { type: 'range', min: 480, max: 650, step: 10 }, description: 'Maximum reading width; contracts on smaller screens.' },
     tallContext: { control: 'boolean', description: 'Verify a context column taller than the viewport still uses document scroll.' },
   },
