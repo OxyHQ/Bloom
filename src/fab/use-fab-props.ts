@@ -2,7 +2,7 @@ import { cloneElement, createElement, isValidElement, useMemo } from 'react';
 import { Platform, type ViewStyle } from 'react-native';
 import { useBloomAppearance } from '../appearance/context';
 import type { BloomSize, BloomTone } from '../appearance/types';
-import { resolveButtonGeometry, resolveButtonPalette } from '../button/shared';
+import { resolveButtonPalette } from '../button/shared';
 import { useTheme } from '../theme/use-theme';
 import { FAB_METRICS } from './constants';
 import { FabLabel } from './FabLabel';
@@ -50,5 +50,5 @@ export function useFabProps({ label, children, icon, iconSize, size, collapsed =
       Object.assign(position, { position: 'absolute', [bottom ? 'bottom' : 'top']: offset + (bottom ? bottomInset : 0), [right ? 'right' : 'left']: offset });
     }
   }
-  return { ...props, ...resolved, appearance, icon: resolvedIcon, iconSize: glyphSize, trailing: label ? createElement(FabLabel, { label, collapsed: labelCollapsed, color: foreground, variant: resolveButtonGeometry(resolved.size, props.textVariant).type, style: [labelStyle, textStyle], testID: props.testID ? `${props.testID}-label` : undefined }) : undefined, accessibilityLabel: props.accessibilityLabel ?? label, textStyle: [labelStyle, textStyle], style: [{ height: diameter, minHeight: diameter, ...(label ? { width: 'auto', minWidth: diameter, paddingLeft: Math.max(0, (diameter - glyphSize) / 2), paddingRight: Math.max(0, (diameter - glyphSize) / 2), gap: 0 } : { width: diameter }), ...position, ...(zIndex == null ? {} : { zIndex }), ...(hidden ? { display: 'none' } : {}) }, style] };
+  return { ...props, ...resolved, appearance, icon: resolvedIcon, iconSize: glyphSize, trailing: label ? createElement(FabLabel, { label, collapsed: labelCollapsed, color: foreground, variant: props.textVariant ?? FAB_METRICS[resolved.size].labelVariant, style: [labelStyle, textStyle], testID: props.testID ? `${props.testID}-label` : undefined }) : undefined, accessibilityLabel: props.accessibilityLabel ?? label, textStyle: [labelStyle, textStyle], style: [{ height: diameter, minHeight: diameter, ...(label ? { width: 'auto', minWidth: diameter, paddingLeft: Math.max(0, (diameter - glyphSize) / 2), paddingRight: Math.max(0, (diameter - glyphSize) / 2), gap: 0 } : { width: diameter }), ...position, ...(zIndex == null ? {} : { zIndex }), ...(hidden ? { display: 'none' } : {}) }, style] };
 }

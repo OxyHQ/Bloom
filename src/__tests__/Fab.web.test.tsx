@@ -43,8 +43,8 @@ describe('Fab.web', () => {
   it('renders an accessible static action', () => {
     const c = mount(<Fab icon={Icon} accessibilityLabel="Create" />);
     const button = getByRole(c, 'button', { name: 'Create' });
-    expect(button.style.height).toBe('56px');
-    expect(button.style.width).toBe('56px');
+    expect(button.style.height).toBe('50px');
+    expect(button.style.width).toBe('50px');
     expect(button.style.position).not.toBe('fixed');
     expect(button.style.bottom).toBe('');
   });

@@ -1,7 +1,11 @@
 import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 
-const storySource = readFileSync(resolve(__dirname, '..', 'ColorSystemLab.stories.tsx'), 'utf8');
+const storySource = [
+  resolve(__dirname, '..', 'ColorSystemLab.stories.tsx'),
+  resolve(__dirname, '../../../templates/social/SocialContent.tsx'),
+  resolve(__dirname, '../../../templates/social/SocialTemplate.tsx'),
+].map(file => readFileSync(file, 'utf8')).join('\n');
 
 const SPANISH_UI_WORDS = new Set([
   'accion',

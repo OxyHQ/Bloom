@@ -422,20 +422,33 @@ describe('DownloadButton', () => {
 });
 
 describe('FollowButton', () => {
-  it('is an outline pill toggle: label flips, name and pressed state carry the meaning', () => {
+  it('keeps its name and toggle semantics in icon-only mode without activating a parent', () => {
+    const parent = jest.fn();
+    const onFollowChange = jest.fn();
+    mount(<div onClick={parent}><FollowButton following iconOnly tone="action" onFollowChange={onFollowChange} testID="f" /></div>);
+    const el = byTestId('f');
+    expect(el.getAttribute('aria-label')).toBe('Follow');
+    expect(el.getAttribute('aria-pressed')).toBe('true');
+    expect(el.textContent).toBe('');
+    act(() => el.click());
+    expect(onFollowChange).toHaveBeenCalledWith(false);
+    expect(parent).not.toHaveBeenCalled();
+  });
+
+  it('is a surface button toggle: label flips, name and pressed state carry the meaning', () => {
     const onFollowChange = jest.fn();
     mount(<FollowButton following={false} onFollowChange={onFollowChange} testID="f" />);
     const el = byTestId('f');
     expect(el.getAttribute('aria-label')).toBe('Follow');
     expect(el.getAttribute('aria-pressed')).toBe('false');
-    expect(el.textContent).toBe('Follow');
-    expect(el.style.borderTopWidth || el.style.borderWidth).toContain('1px');
+    expect(el.textContent).toContain('Follow');
+    expect(el.style.borderTopWidth || el.style.borderWidth || '0px').toBe('0px');
     expect(el.style.height).toBe('32px');
     act(() => el.click());
     expect(onFollowChange).toHaveBeenCalledWith(true);
 
     mount(<FollowButton following onFollowChange={onFollowChange} label="Save" followingLabel="Saved" testID="f" />);
-    expect(byTestId('f').textContent).toBe('Saved');
+    expect(byTestId('f').textContent).toContain('Saved');
     expect(byTestId('f').getAttribute('aria-label')).toBe('Save');
     expect(byTestId('f').getAttribute('aria-pressed')).toBe('true');
   });

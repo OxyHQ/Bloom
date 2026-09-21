@@ -19,7 +19,7 @@ try {
       const png = await page.screenshot({ encoding: 'base64' });
       const result = await page.evaluate(async (png) => {
         const mask = document.querySelector('[data-testid="content-panel-bleed-mask"]').getBoundingClientRect();
-        const title = document.querySelector('[data-testid="social-content"] [role="heading"]');
+        const title = document.querySelector('[data-testid="social-header-title-block"]');
         const titleRect = title.getBoundingClientRect();
         let header = title;
         while (header && getComputedStyle(header).position !== 'sticky') header = header.parentElement;

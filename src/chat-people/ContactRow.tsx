@@ -59,6 +59,7 @@ function ContactRowComponent(props: ContactRowProps) {
     onPress,
     disabled = false,
     size = 'medium',
+    horizontalInset = 10,
     style,
     textStyle,
     testID,
@@ -136,9 +137,9 @@ function ContactRowComponent(props: ContactRowProps) {
     backgroundColor:
       (hovered && pressable) || (checkboxRow && selected) ? paint.rowHighlight : 'transparent',
     paddingTop: 8,
-    paddingRight: 10,
+    paddingRight: horizontalInset,
     paddingBottom: 8,
-    paddingLeft: 10,
+    paddingLeft: horizontalInset,
     opacity: disabled ? DISABLED_OPACITY : 1,
   };
 
@@ -200,6 +201,7 @@ function ContactRowComponent(props: ContactRowProps) {
             size="small"
             disabled={disabled}
             onPress={onAction}
+            accessibilityLabel={`${actionLabel} ${name}`}
             testID={testID ? `${testID}-action` : undefined}
           >
             {actionLabel}

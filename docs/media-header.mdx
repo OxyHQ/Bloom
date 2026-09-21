@@ -98,7 +98,7 @@ Each control draws only when its handler is given.
 | Play (56, accent) | `playing`, `onPlayPress`, `playSubject`, `playDisabled` | "Play Lanterns…" / "Pause Lanterns…" |
 | Shuffle | `shuffle`, `onShuffleChange` | toggle "Shuffle", `aria-pressed`; accent with a dot when on |
 | Heart | `liked`, `onLikedChange` | `LikeButton` |
-| Outline pill | `following`, `onFollowChange`, `followLabel`, `followingLabel` | toggle named by `followLabel` in both states, `aria-pressed` |
+| Follow surface | `following`, `onFollowChange`, `followLabel`, `followingLabel` | toggle named by `followLabel` in both states, `aria-pressed` |
 | Download | `download` (`'idle' \| 'downloading' \| 'downloaded'`), `downloadProgress`, `onDownloadPress` | "Download", `aria-pressed` once downloaded, `aria-busy` plus a named `progressbar` while downloading |
 | More | `onMorePress`, or `more` to replace it | "More options" |
 | Search (right) | `onSearchPress`, `searchLabel` | "Search in playlist" |
@@ -181,3 +181,5 @@ Hover states (the edit overlay, underlined links, row washes) are web affordance
 `textMuted` is floored with `quietTextOver` against both the page and the card it
 paints on. As `neutral-500` it measured 4.38:1 on the light card. See
 [Styles → Quiet text](/docs/bloom/main/styles).
+
+`FollowButton` composes Bloom `Button` with a subtle surface. `tone="support"` (the default) uses the secondary palette; `tone="action"` uses the tertiary palette shared with FAB. `iconOnly` shows follow/following icons while retaining the accessible name and pressed state. Its two labels (or icons) slide and fade over 180 ms without changing width; reduced motion switches immediately.

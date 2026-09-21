@@ -80,6 +80,22 @@ describe('AppShell', () => {
     expect(screen.queryByTestId('sidebar-item-home')).toBeNull();
   });
 
+  it('compact feed reveals navigation without replacing its document content', () => {
+    setWidth(390);
+    const onDrawerOpenChange = jest.fn();
+    const screen = renderIn(
+      <AppShell testID="feed" variant="feed" drawer="reveal" scroll="document"
+        navFrom={700} sidebar={{ items: NAV }} drawerOpen onDrawerOpenChange={onDrawerOpenChange}>
+        <ReactNative.Text>Feed content</ReactNative.Text>
+      </AppShell>,
+    );
+    expect(screen.getByTestId('feed-reveal-page')).toBeTruthy();
+    expect(screen.getByText('Feed content')).toBeTruthy();
+    expect(screen.getByTestId('sidebar-item-home')).toBeTruthy();
+    fireEvent.press(screen.getByTestId('feed-veil'));
+    expect(onDrawerOpenChange).toHaveBeenCalledWith(false);
+  });
+
   it('narrow reveal: the rail is mounted flat beneath and the veil closes it', () => {
     setWidth(700);
     const onDrawerOpenChange = jest.fn();
@@ -348,7 +364,7 @@ describe('AppShell panel fill', () => {
     return false;
   }
 
-  it.each(['document', 'fixed'] as const)('%s panel gives only the body a horizontal gutter', (scroll) => {
+  it.each(['document', 'fixed'] as const)('%s panel leaves content spacing to its screen', (scroll) => {
     setWidth(1440);
     const screen = renderIn(<AppShell testID="shell" variant="feed" panel scroll={scroll} gutter={24}
       header={<ReactNative.View testID="full-header" />}>
@@ -361,7 +377,10 @@ describe('AppShell panel fill', () => {
     const bodyStyle = scroll === 'fixed'
       ? resolvedStyle(screen.getByTestId('shell-page').props.contentContainerStyle)
       : resolvedStyle(hostParent(screen.getByTestId('body'))?.props.style);
-    expect(bodyStyle).toMatchObject({ paddingLeft: 24, paddingRight: 24, paddingTop: 24, paddingBottom: 24 });
+    expect(bodyStyle.paddingLeft ?? 0).toBe(0);
+    expect(bodyStyle.paddingRight ?? 0).toBe(0);
+    expect(bodyStyle.paddingTop ?? 0).toBe(0);
+    expect(bodyStyle.paddingBottom ?? 0).toBe(0);
   });
 
   it('a panel in a BOUNDED shell pins the header and scrolls only the content under it', () => {

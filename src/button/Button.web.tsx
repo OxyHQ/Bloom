@@ -168,6 +168,8 @@ const ButtonWebComponent: React.FC<ButtonProps> = ({
   onPress,
   children,
   disabled = false,
+  pressed: togglePressed,
+  stopPropagation = false,
   appearance: appearanceProp,
   variant: variantProp,
   tone: toneProp,
@@ -291,13 +293,14 @@ const ButtonWebComponent: React.FC<ButtonProps> = ({
 
   const handleClick = useCallback(
     (event: MouseEvent<HTMLElement>) => {
+      if (stopPropagation) event.stopPropagation();
       if (isInteractionBlocked) {
         event.preventDefault();
         return;
       }
       onPress?.();
     },
-    [isInteractionBlocked, onPress],
+    [isInteractionBlocked, onPress, stopPropagation],
   );
 
   const ariaLabel = accessibilityLabel;
@@ -413,6 +416,7 @@ const ButtonWebComponent: React.FC<ButtonProps> = ({
       onClick?: (event: MouseEvent<HTMLElement>) => void;
       'aria-disabled'?: boolean;
       'aria-busy'?: boolean;
+      'aria-pressed'?: boolean;
       'aria-label'?: string;
       title?: string;
       id?: string;
@@ -423,6 +427,7 @@ const ButtonWebComponent: React.FC<ButtonProps> = ({
       className: [composedClassName, childProps.className].filter(Boolean).join(' '),
       style: { ...containerStyle, ...resolvedStyle, ...childProps.style },
       onClick: (event: MouseEvent<HTMLElement>) => {
+        if (stopPropagation) event.stopPropagation();
         if (isInteractionBlocked) {
           event.preventDefault();
           return;
@@ -432,6 +437,7 @@ const ButtonWebComponent: React.FC<ButtonProps> = ({
       },
       'aria-disabled': isInteractionBlocked || undefined,
       'aria-busy': loading || undefined,
+      'aria-pressed': togglePressed,
       'aria-label': ariaLabel ?? childProps['aria-label'],
       title: title ?? childProps.title,
       id: childProps.id ?? resolvedId,
@@ -453,6 +459,7 @@ const ButtonWebComponent: React.FC<ButtonProps> = ({
         onClick={handleClick}
         aria-disabled={isInteractionBlocked || undefined}
         aria-busy={loading || undefined}
+        aria-pressed={togglePressed}
         aria-label={ariaLabel}
         title={title ?? accessibilityHint}
         tabIndex={tabIndex}
@@ -476,6 +483,7 @@ const ButtonWebComponent: React.FC<ButtonProps> = ({
       disabled={disabled && !loading}
       aria-disabled={isInteractionBlocked || undefined}
       aria-busy={loading || undefined}
+      aria-pressed={togglePressed}
       aria-label={ariaLabel}
       // Forwarded from an anchored family's `asChild` trigger — see
       // `ButtonProps['aria-expanded']`.

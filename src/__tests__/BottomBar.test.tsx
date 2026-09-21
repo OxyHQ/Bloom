@@ -46,3 +46,22 @@ it.each(['standalone', 'visible'] as const)('keeps a %s action available while m
   expect(action.props.pointerEvents).toBe('auto');
   expect(resolvedStyle(action.props.style).opacity).toBe(1);
 });
+
+it('lifts the action when measured width cannot fit comfortable targets and reserves its measured height', () => {
+  const destinations = [...items, {name:'saved',label:'Saved',icon:null}, {name:'profile',label:'Profile',icon:null}];
+  const view = render(<BottomBarBase Navigation={Navigation} Item={Item} Blur={Blur} items={destinations} value="home" onValueChange={() => {}} action={<Text>Compose</Text>} testID="bar" />);
+  const heightBefore = Number(resolvedStyle(view.getByTestId('bar').props.style).height);
+  act(() => view.getByTestId('bar-row').props.onLayout({nativeEvent:{layout:{width:280,height:58}}}));
+  const actionBefore = view.getByTestId('bar-action');
+  expect(resolvedStyle(actionBefore.props.style)).toMatchObject({position:'absolute',bottom:'100%',right:12,marginBottom:10,marginLeft:0});
+  act(() => view.getByTestId('bar-action-content').props.onLayout({nativeEvent:{layout:{width:50,height:64}}}));
+  expect(Number(resolvedStyle(view.getByTestId('bar').props.style).height)).toBe(heightBefore+64+10);
+  act(() => view.getByTestId('bar-row').props.onLayout({nativeEvent:{layout:{width:500,height:58}}}));
+  expect(view.getByTestId('bar-action')).toBe(actionBefore);
+  expect(resolvedStyle(actionBefore.props.style).position).toBeUndefined();
+});
+it.each(['above','beside'] as const)('honors explicit action placement %s independently of available width', actionPlacement => {
+  const view = render(<BottomBarBase Navigation={Navigation} Item={Item} Blur={Blur} items={items} value="home" onValueChange={() => {}} actionPlacement={actionPlacement} action={<Text>Compose</Text>} testID="bar" />);
+  act(() => view.getByTestId('bar-row').props.onLayout({nativeEvent:{layout:{width:100,height:58}}}));
+  expect(resolvedStyle(view.getByTestId('bar-action').props.style).position).toBe(actionPlacement==='above'?'absolute':undefined);
+});

@@ -9,6 +9,8 @@ export interface BottomBarProps {
   onValueChange: (value: string) => void;
   /** Static action sibling; outside the navigation scrub detector. */
   action?: ReactNode;
+  /** Auto places the action above navigation when side-by-side targets would be cramped. */
+  actionPlacement?: 'auto' | 'beside' | 'above';
   /** Hide the accessory while minimizing, returning on upward scroll. Default hide; standalone actions remain visible. */
   actionBehavior?: 'hide' | 'visible';
   material?: 'solid' | 'translucent';

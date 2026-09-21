@@ -1,5 +1,6 @@
-import React, { memo } from 'react';
+import React, { memo, useEffect } from 'react';
 import { Pressable, View, type GestureResponderEvent } from 'react-native';
+import Animated, { useAnimatedStyle, useReducedMotion, useSharedValue, withTiming } from 'react-native-reanimated';
 import Svg, { Circle } from 'react-native-svg';
 
 import { useInteractionState } from '../hooks/use-interaction-state';
@@ -8,9 +9,13 @@ import { RiDownload2Line } from '../icons/remix/RiDownload2Line';
 import { RiListUnordered } from '../icons/remix/RiListUnordered';
 import { RiListView } from '../icons/remix/RiListView';
 import { RiMoreFill } from '../icons/remix/RiMoreFill';
+import { RiUserAddLine } from '../icons/remix/RiUserAddLine';
+import { RiUserFollowLine } from '../icons/remix/RiUserFollowLine';
+import { resolveButtonPalette } from '../button/shared';
+import { useTheme } from '../theme/use-theme';
 import { RiSearchLine } from '../icons/remix/RiSearchLine';
 import { RiShuffleLine } from '../icons/remix/RiShuffleLine';
-import { GlyphButton } from '../button';
+import { Button, GlyphButton } from '../button';
 import { LikeButton } from '../media-controls/LikeButton';
 import { PlayButton } from '../media-controls/PlayButton';
 import { borderRadius, DISABLED_OPACITY } from '../styles/tokens';
@@ -266,7 +271,7 @@ export const DownloadButton = memo(DownloadButtonComponent);
 DownloadButton.displayName = 'DownloadButton';
 
 /**
- * The outline pill: "Follow" → "Following", "Save" → "Saved". A toggle with
+ * The shared Button surface: "Follow" → "Following", "Save" → "Saved". A toggle with
  * one name (`label`) and `aria-pressed`.
  */
 function FollowButtonComponent({
@@ -275,50 +280,46 @@ function FollowButtonComponent({
   label = 'Follow',
   followingLabel = 'Following',
   color,
+  tone = 'support',
+  iconOnly = false,
   size = 'small',
   disabled = false,
   style,
   testID,
 }: FollowButtonProps) {
-  const paint = useMediaHeaderPaint();
-  const { state: hovered, onIn, onOut } = useInteractionState();
-  const fg = color ?? paint.text;
-  const active = hovered && !disabled;
-  const root: WebCssStyle = {
-    height: size === 'medium' ? 36 : 32,
-    paddingLeft: 16,
-    paddingRight: 16,
-    borderRadius: borderRadius.full,
-    borderWidth: 1,
-    borderColor: active ? fg : color ? fg : paint.border,
-    alignItems: 'center',
-    justifyContent: 'center',
-    opacity: disabled ? DISABLED_OPACITY : 1,
-    '--bloom-media-header-ring': paint.ring,
-    ...(IS_WEB ? { transitionProperty: 'border-color', transitionDuration: '150ms' } : null),
-  };
+  const theme = useTheme();
+  const reducedMotion = useReducedMotion();
+  const progress = useSharedValue(Number(following));
+  useEffect(() => {
+    progress.value = reducedMotion ? Number(following) : withTiming(Number(following), { duration: 180 });
+  }, [following, progress, reducedMotion]);
+  const idleLabelStyle = useAnimatedStyle(() => ({ opacity: 1 - progress.value, transform: [{ translateY: -8 * progress.value }] }), [progress]);
+  const followedLabelStyle = useAnimatedStyle(() => ({ opacity: progress.value, transform: [{ translateY: 8 * (1 - progress.value) }] }), [progress]);
+  const labelColor = color ?? resolveButtonPalette('subtle', theme, tone).rest.foreground;
+  const visual = (
+    <View pointerEvents="none" aria-hidden accessibilityElementsHidden importantForAccessibility="no-hide-descendants"
+      style={{ height: 20, overflow: 'hidden', ...(iconOnly ? { width: 20 } : {}), justifyContent: 'center' }}>
+      {!iconOnly && <View style={{ height: 0, overflow: 'hidden' }}>
+        <Text variant="body-semibold">{label}</Text>
+        <Text variant="body-semibold">{followingLabel}</Text>
+      </View>}
+      <Animated.View testID={testID ? `${testID}-idle-label` : undefined}
+        style={[{ position: 'absolute', left: 0, right: 0, alignItems: 'center' }, idleLabelStyle]}>
+        {iconOnly ? <RiUserAddLine width={20} height={20} fill={labelColor} />
+          : <Text variant="body-semibold" style={{ color: labelColor }} numberOfLines={1}>{label}</Text>}
+      </Animated.View>
+      <Animated.View testID={testID ? `${testID}-following-label` : undefined}
+        style={[{ position: 'absolute', left: 0, right: 0, alignItems: 'center' }, followedLabelStyle]}>
+        {iconOnly ? <RiUserFollowLine width={20} height={20} fill={labelColor} />
+          : <Text variant="body-semibold" style={{ color: labelColor }} numberOfLines={1}>{followingLabel}</Text>}
+      </Animated.View>
+    </View>
+  );
   return (
-    <Pressable
-      {...webData({ bloomMediaHeaderPress: '' })}
-      role="button"
-      accessibilityLabel={label}
-      aria-pressed={following}
-      aria-disabled={disabled || undefined}
-      accessibilityState={{ selected: following, disabled }}
-      disabled={disabled}
-      onHoverIn={onIn}
-      onHoverOut={onOut}
-      onPress={(event) => {
-        stop(event);
-        onFollowChange(!following);
-      }}
-      style={[root, style]}
-      testID={testID}
-    >
-      <Text variant="body-semibold" style={{ color: fg }} numberOfLines={1}>
-        {following ? followingLabel : label}
-      </Text>
-    </Pressable>
+    <Button appearance="subtle" tone={tone} size={size} iconOnly={iconOnly}
+      pressed={following} stopPropagation accessibilityLabel={label} disabled={disabled}
+      onPress={() => onFollowChange(!following)} trailing={visual}
+      style={style} testID={testID} />
   );
 }
 

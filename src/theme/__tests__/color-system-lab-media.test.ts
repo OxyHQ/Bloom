@@ -2,6 +2,7 @@ import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 
 const storySource = readFileSync(resolve(__dirname, '..', 'ColorSystemLab.stories.tsx'), 'utf8');
+const contentSource = readFileSync(resolve(__dirname, '../../../templates/social/SocialContent.tsx'), 'utf8');
 
 function mediaViolations(source: string): string[] {
   const violations: string[] = [];
@@ -16,10 +17,12 @@ function mediaViolations(source: string): string[] {
 describe('Color System Playground media ownership', () => {
   it('uses local avatar fallback and deterministic illustrations without remote media', () => {
     expect(storySource).toContain("title: 'Foundations/Color System Playground'");
-    expect((storySource.match(/<Image\b/g) ?? []).length).toBeGreaterThanOrEqual(5);
-    expect((storySource.match(/source=\{defaultAvatarSource\}/g) ?? []).length).toBeGreaterThanOrEqual(5);
-    expect((storySource.match(/<PostIllustration\b/g) ?? []).length).toBe(3);
-    expect(mediaViolations(storySource)).toEqual([]);
+    expect((contentSource.match(/<(?:Avatar|ContactRow)\b/g) ?? []).length).toBeGreaterThanOrEqual(3);
+    expect((contentSource.match(/(?:source|avatar)=\{defaultAvatarSource\}/g) ?? []).length).toBeGreaterThanOrEqual(3);
+    expect((contentSource.match(/<PostIllustration\b/g) ?? []).length).toBe(3);
+    expect(mediaViolations(storySource + contentSource)).toEqual([]);
+    expect(storySource).toContain('<SocialTemplate');
+    expect(storySource).not.toContain('function ThemePreview');
   });
 
   it('detects both a hardcoded Oxy CDN value and a raw remote Image source', () => {

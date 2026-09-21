@@ -89,10 +89,10 @@ keeps the same content node mounted and does not replace the document scroller.
 
 Both are right; they are different apps. A feed with the address bar collapsing
 on a phone and real anchor links wants `document`; a workspace whose regions
-each keep their own position wants `fixed`. The panel's content is inset by `gutter` — without it the page sits
-ON the frame, and a radius-28 corner clips whatever is in it (the heading loses
-its first letter). So `contentWidth` is the COLUMN's width, and the reading
-measure inside a panel is that minus two gutters. Do not render your own
+each keep their own position wants `fixed`. The panel adds no content padding:
+`gutter` controls the outside frame, while each screen owns its title and body
+insets. `contentWidth` is the full column width. Only measured bottom chrome
+clearance is reserved automatically. Do not render your own
 `ContentPanel` inside this one; it trips the nesting guard.
 
 ### `canvas`
@@ -540,7 +540,7 @@ aside as one group; `"edge"` preserves the existing edge-aligned layout.
 ### Header width inside a panel
 
 In a centered `panel` layout, the header spans the full ContentPanel width. The
-shell applies `gutter` to the body only; PageHeader owns the insets of its title
+shell leaves body padding to the screen; PageHeader owns the insets of its title
 and action islands. Padding a shared header/body wrapper shortened the scrim by
 one gutter on each side (32px total at gutter16), leaving scrolling content
 visible beside it. Both document and bounded panel layouts use this separation.
@@ -555,3 +555,5 @@ A document-scrolling, content-aligned shell with a plain sidebar and no top bar
 has no root padding. The sidebar spans the viewport; the reading/context group
 owns the vertical gutter, which still supplies the panel mask and header inset.
 The social template uses an 8px gutter, matching the compact framed layout.
+
+A feed can use `drawer="reveal"` on compact screens: the page slides aside to reveal the same sidebar, as in AI Chat. Its document scroll and desktop column layout remain unchanged. Put `AppShellMenuButton` in a custom header’s `leading` slot; it hides automatically when navigation is in flow.

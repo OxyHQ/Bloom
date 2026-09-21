@@ -41,6 +41,17 @@ afterEach(() => {
 });
 
 describe('Button.web', () => {
+  it('announces toggle state and isolates an embedded action when requested', () => {
+    const parent = jest.fn();
+    const onPress = jest.fn();
+    const c = mount(<div onClick={parent}><Button pressed stopPropagation onPress={onPress}>Follow</Button></div>);
+    const button = getByRole(c, 'button', { name: 'Follow' });
+    expect(button).toHaveAttribute('aria-pressed', 'true');
+    act(() => fireEvent.click(button));
+    expect(onPress).toHaveBeenCalledTimes(1);
+    expect(parent).not.toHaveBeenCalled();
+  });
+
   it('renders a real <button> element', () => {
     const c = mount(<Button>Click me</Button>);
     const btn = getByRole(c, 'button', { name: 'Click me' });

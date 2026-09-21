@@ -78,8 +78,8 @@ export interface AppShellEngineProps {
   sidebar?: Omit<SidebarProps, 'mobile' | 'onClose'>;
   /**
    * How the rail arrives below `navFrom`. `reveal` slides the WHOLE page
-   * sideways, which only reads on a one-column page — so it applies to
-   * `variant: 'dashboard'` and the other three always take the overlay drawer.
+   * sideways for dashboard and compact feed layouts. Feed desktop columns
+   * retain their normal layout. Other variants use the overlay drawer.
    */
   drawer?: AppShellDrawer;
   /**

@@ -1,6 +1,7 @@
 import type { ReactNode } from 'react';
 import type { StyleProp, ViewStyle } from 'react-native';
 
+import type { BloomTone } from '../appearance';
 import type { BloomIconComponent } from '../icons/icon-component';
 import type { WebAriaProps } from '../styles/styled-primitives';
 
@@ -149,6 +150,10 @@ export interface DownloadButtonProps extends ToggleBase {
 }
 
 export interface FollowButtonProps extends ToggleBase {
+  /** Shared Button tone. Defaults to support (secondary). */
+  tone?: BloomTone;
+  /** Compact toggle with icons and the same accessible name. */
+  iconOnly?: boolean;
   following: boolean;
   onFollowChange: (following: boolean) => void;
   /** Default `"Follow"`. The name in both states. */

@@ -25,3 +25,13 @@ with every cover generated as a gradient SVG data URI, so nothing loads over the
 network.
 
 Typecheck: `bunx tsc --noEmit -p templates`.
+
+## Shared social example
+
+`social/SocialTemplate.tsx` owns the real AppShell composition used by both
+Templates/Social and Foundations/Color System Playground. `SocialContent.tsx`
+provides local demo posts, widgets and the Mention mark using Bloom controls
+and theme/surface hooks. The playground changes Storybook's theme globals; it
+does not maintain a separate app mockup or manually paint a second palette.
+The posts and widgets preserve the original playground content; the composer
+opens a Bloom dialog with a local draft.

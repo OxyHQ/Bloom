@@ -338,7 +338,8 @@ function PageHeaderComponent({
 
   const containerWeb: WebCssStyle | null =
     isWeb && sticky && !overlay
-      ? { position: WEB_POSITION_STICKY, top: WEB_SURFACE_STICKY_TOP, zIndex: Z_INDEX.floating }
+      ? { position: WEB_POSITION_STICKY, top: WEB_SURFACE_STICKY_TOP, zIndex: Z_INDEX.floating,
+          transitionProperty: 'top', transitionDuration: 'var(--bloom-panel-inset-duration, 0ms)', transitionTimingFunction: 'ease-in-out' }
       : null;
 
   const chrome = floating ? (

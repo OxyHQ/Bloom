@@ -1,3 +1,4 @@
+import { StyledView } from '../styles/styled-primitives';
 import { SurfaceLevelProvider } from '../styles/surface-levels';
 import React, { memo, useEffect, useMemo, useRef, useState } from 'react';
 import { Platform, Pressable, ScrollView, View, useWindowDimensions } from 'react-native';
@@ -181,13 +182,9 @@ const AppShellComponent: React.FC<AppShellEngineProps> = ({
   // The drawer always opens the full panel, whatever the in-flow variant.
   const drawerSidebar = sidebar ? { ...sidebar, variant: 'panel' as const } : undefined;
 
-  /**
-   * `reveal` slides the WHOLE PAGE 272px sideways to uncover the rail, which is
-   * a statement about a page that is one column. A centred reading column would
-   * slide out of its own centring, and a split's panes would each leave their
-   * divider behind — so the other three shapes always get the overlay drawer.
-   */
-  const drawerStyle = variant === 'dashboard' ? drawer : 'overlay';
+  // A feed may reveal its navigation while compact; its desktop column layout
+  // remains on the normal path below.
+  const drawerStyle = variant === 'dashboard' || variant === 'feed' ? drawer : 'overlay';
   const centred = variant === 'feed' || variant === 'focus';
   const canvas = variant === 'canvas';
   // `focus` is a single column by definition and `split` has its `info` pane
@@ -207,6 +204,18 @@ const AppShellComponent: React.FC<AppShellEngineProps> = ({
   });
   const drawerAvailable = hasNav && !wide;
   const isOpen = open && drawerAvailable;
+
+  useEffect(() => {
+    if (Platform.OS !== 'web' || !isOpen || drawerStyle !== 'reveal') return;
+    const dismiss = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') { event.preventDefault(); setOpen(false); }
+    };
+    document.addEventListener('keydown', dismiss);
+    return () => document.removeEventListener('keydown', dismiss);
+  }, [isOpen, drawerStyle, setOpen]);
+
+  const feedRevealAvailable = variant === 'feed' && drawerStyle === 'reveal' && drawerAvailable;
+  const feedRevealed = feedRevealAvailable && isOpen;
 
   const shell = useMemo(
     () => ({
@@ -269,7 +278,7 @@ const AppShellComponent: React.FC<AppShellEngineProps> = ({
     <SurfaceLevelProvider level={compactPanel ? 1 : 0} fill={compactPanel ? theme.colors.card : background}>
       {showBottomBar ? (
         <AppShellBottomBar
-          doc={doc}
+          doc={doc && !feedRevealAvailable}
           onHeightChange={setBottomBarHeight}
           testID={testID ? `${testID}-bottom-bar` : undefined}
         >
@@ -278,7 +287,7 @@ const AppShellComponent: React.FC<AppShellEngineProps> = ({
       ) : null}
       {showFloatingAction ? (
         <AppShellFloatingAction
-          doc={doc}
+          doc={doc && !feedRevealAvailable}
           offset={bottomEdge + gutter}
           gutter={gutter}
           placement={floatingActionPlacement}
@@ -368,17 +377,33 @@ const AppShellComponent: React.FC<AppShellEngineProps> = ({
     const target = isOpen && drawerStyle === 'reveal' ? 1 : 0;
     reveal.value = reducedMotion ? target : withTiming(target, { duration: REVEAL_MS, easing: REVEAL_EASE });
   }, [isOpen, drawerStyle, reducedMotion, reveal]);
+  const feedPageStyle = useAnimatedStyle(() => ({
+    transform: reveal.value === 0 ? [] : [{ translateX: (REVEAL_OFFSET + 12) * reveal.value }],
+  }), [reveal]);
+
+  const feedChromeTransition: WebCssStyle = Platform.OS === 'web'
+    ? { '--bloom-panel-inset-duration': reducedMotion ? '0ms' : `${REVEAL_MS}ms` } : {};
+  const feedInsetsStyle = useAnimatedStyle(() => ({
+    paddingTop: 12 * reveal.value,
+    paddingBottom: 12 * reveal.value,
+  }), [reveal]);
+  const feedBarsStyle = useAnimatedStyle(() => ({
+    top: 12 * reveal.value,
+    bottom: 12 * reveal.value,
+    borderRadius: 28 * reveal.value,
+  }), [reveal]);
+
   const railStyle = useAnimatedStyle(
     () => ({ opacity: reveal.value, transform: [{ scale: 0.94 + 0.06 * reveal.value }] }),
     [reveal],
   );
   const pageStyle = useAnimatedStyle(
-    () => ({ transform: [{ translateX: REVEAL_OFFSET * reveal.value }], borderRadius: 32 * reveal.value }),
+    () => ({ transform: reveal.value === 0 ? [] : [{ translateX: REVEAL_OFFSET * reveal.value }], borderRadius: 32 * reveal.value }),
     [reveal],
   );
   const veilStyle = useAnimatedStyle(() => ({ opacity: reveal.value }), [reveal]);
 
-  if (drawerStyle === 'reveal') {
+  if (drawerStyle === 'reveal' && variant === 'dashboard') {
     return (
       <AppShellProvider value={shell}>
         <View
@@ -533,7 +558,7 @@ const AppShellComponent: React.FC<AppShellEngineProps> = ({
               <ScrollView
                 testID={testID ? `${testID}-page` : undefined}
                 style={{ flex: 1, minHeight: 0 }}
-                contentContainerStyle={{ gap: 16, paddingLeft: gutter, paddingRight: gutter, paddingTop: gutter, paddingBottom: gutter + contentReserve }}
+                contentContainerStyle={{ paddingBottom: contentReserve }}
               >
                 {children}
               </ScrollView>
@@ -548,24 +573,27 @@ const AppShellComponent: React.FC<AppShellEngineProps> = ({
         >
           {panel ? (
             <ContentPanel
-              framed={panelFramed}
+              framed={feedRevealed || panelFramed}
+              chrome={feedRevealed ? "none" : undefined}
               framedFrom={framedFrom}
               // The sticky frame is pinned at the shell's OWN gutter, which is
               // exactly where the panel starts. Left at the 8px default it
               // would sit 8px above the panel's real top edge and snap down on
               // the first scroll — the panel appearing to breathe.
-              overlayInset={gutter}
+              overlayInset={feedRevealed ? 12 : gutter}
               // The panel's own `flex-1` (basis 0) would collapse to nothing in
               // a document-flow column, which has no free space to distribute.
               surfaceStyle={{ flexGrow: 1, flexShrink: 1, flexBasis: 'auto' }}
               contentStyle={{ flexGrow: 1, flexShrink: 1, flexBasis: 'auto' }}
             >
               {/* Header chrome spans the panel. Its own title/action insets
-                  belong to PageHeader; only the body receives the gutter. */}
+                  belong to PageHeader; the screen owns all body padding. */}
               {headerNode}
-              <View style={[{ gap: 16, paddingLeft: gutter, paddingRight: gutter, paddingTop: gutter, paddingBottom: gutter + contentReserve }, fill]}>
+              <View style={[{ paddingBottom: contentReserve }, fill]}>
                 {children}
               </View>
+              {feedRevealed && <StyledView pointerEvents="none" className="absolute inset-0 z-20"
+                style={{ backgroundColor: theme.isDark ? 'rgba(255, 255, 255, 0.05)' : 'rgba(0, 0, 0, 0.1)' }} />}
             </ContentPanel>
           ) : (
             <View style={[{ gap: 16 }, fill]}>
@@ -722,6 +750,43 @@ const AppShellComponent: React.FC<AppShellEngineProps> = ({
     ...(dockedNav ? { paddingLeft: 0, paddingTop: 0, paddingBottom: 0 } : null),
     backgroundColor: background,
   };
+
+  if (variant === 'feed' && drawerStyle === 'reveal' && drawerAvailable) {
+    return (
+      <AppShellProvider value={shell}>
+        <View testID={testID} onLayout={onLayout}
+          style={[frame, { overflow: doc ? WEB_OVERFLOW_CLIP : 'hidden', backgroundColor: background }, style]}>
+          <View aria-hidden={!isOpen} pointerEvents={isOpen ? 'auto' : 'none'}
+            style={{ position: doc ? WEB_POSITION_FIXED : 'absolute', top: 0, bottom: 0, left: 0, width: 272, paddingTop: 12, paddingBottom: 12, paddingLeft: 6 }}>
+            <Animated.View style={[{ height: '100%', width: 260, transformOrigin: 'left center' }, railStyle]}>
+              {drawerSidebar && <Sidebar {...drawerSidebar} mobile surface="plain" onClose={() => setOpen(false)} />}
+            </Animated.View>
+          </View>
+          <Animated.View testID={testID ? `${testID}-reveal-page` : undefined}
+            style={[{ flexGrow: 1, minWidth: 0, overflow: doc ? WEB_OVERFLOW_CLIP : 'hidden', backgroundColor: background }, feedChromeTransition, feedPageStyle, feedInsetsStyle]}>
+            {topBarNode}
+            <StyledView className={doc ? undefined : "flex-1 min-h-0"}>
+              <View style={[rowStyle, { flexGrow: 1, minWidth: 0 }]}>{body}</View>
+            </StyledView>
+            <Animated.View pointerEvents={isOpen ? 'auto' : 'none'}
+              style={[{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0 }, veilStyle]}>
+              <Pressable role="button" accessibilityLabel="Close navigation" focusable={isOpen}
+                onPress={() => setOpen(false)} testID={testID ? `${testID}-veil` : undefined}
+                style={{ flex: 1 }} />
+            </Animated.View>
+          </Animated.View>
+          <Animated.View pointerEvents={isOpen ? 'none' : 'box-none'}
+            testID={testID ? `${testID}-reveal-bars` : undefined}
+            style={[{ position: doc ? WEB_POSITION_FIXED : 'absolute', left: 0, right: 0, overflow: 'hidden' }, feedPageStyle, feedBarsStyle]}>
+            {bars}
+            {isOpen && <StyledView pointerEvents="none" className="absolute bottom-0 left-0 right-0"
+              style={{ height: contentReserve, backgroundColor: theme.isDark ? 'rgba(255, 255, 255, 0.05)' : 'rgba(0, 0, 0, 0.1)' }} />}
+          </Animated.View>
+          {overlay}
+        </View>
+      </AppShellProvider>
+    );
+  }
 
   // The top bar is a SIBLING above the columns, so it spans the shell edge to
   // edge without escaping the frame's padding. Without one the root stays the

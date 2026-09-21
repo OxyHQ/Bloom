@@ -75,6 +75,10 @@ export type ButtonSize = BloomSize
   | 'icon';
 
 export interface ButtonProps {
+  /** Toggle state, announced on web and native. Omit for ordinary actions. */
+  pressed?: boolean;
+  /** Keep an embedded action from also activating its parent. Default false. */
+  stopPropagation?: boolean;
   appearance?: BloomAppearance;
   tone?: BloomTone;
   leading?: ReactNode;

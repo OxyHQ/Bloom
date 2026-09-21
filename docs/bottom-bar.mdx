@@ -31,3 +31,5 @@ available platform material. `maxWidth` defaults to 560 points.
 
 The universal entry uses no Apple-only peers. The specialized `tab-bar` subpath
 continues to provide its native enhancements independently.
+
+`actionPlacement="auto"` (default) moves the action above and to the right when placing it beside the tabs would leave less than 56 points per destination. `beside` retains the horizontal arrangement; `above` always lifts it. The action uses the same scroll-driven visibility in both placements. Its measured height plus a 10-point gap joins the reserved footprint, so the final content remains reachable.

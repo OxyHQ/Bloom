@@ -106,7 +106,7 @@ type ButtonPressableProps = Pick<
   | 'onPressIn'
   | 'onPressOut'
   | 'testID'
-> & { style?: StyleProp<ViewStyle>; 'aria-expanded'?: boolean };
+> & { style?: StyleProp<ViewStyle>; 'aria-expanded'?: boolean; 'aria-pressed'?: boolean };
 
 const ButtonPressable: ComponentType<ButtonPressableProps> = Pressable;
 
@@ -161,6 +161,8 @@ const ButtonComponent: React.FC<ButtonProps> = ({
   onPress,
   children,
   disabled = false,
+  pressed: togglePressed,
+  stopPropagation = false,
   appearance: appearanceProp,
   variant: variantProp,
   tone: toneProp,
@@ -328,7 +330,10 @@ const ButtonComponent: React.FC<ButtonProps> = ({
         baseStyles,
         style,
       ]}
-      onPress={handlePress}
+      onPress={handlePress ? event => {
+        if (stopPropagation) event.stopPropagation();
+        handlePress();
+      } : undefined}
       onPressIn={handlePressIn}
       onPressOut={handlePressOut}
       onHoverIn={isInteractionBlocked ? undefined : onHoveredIn}
@@ -341,6 +346,8 @@ const ButtonComponent: React.FC<ButtonProps> = ({
       // `aria-busy` matches what `Button.web.tsx` emits; react-native-web never
       // reads `accessibilityState`, React Native folds `aria-busy` back into it.
       aria-busy={loading || undefined}
+      aria-pressed={togglePressed}
+      accessibilityState={{ disabled: isInteractionBlocked, busy: loading, ...(togglePressed === undefined ? {} : { selected: togglePressed }) }}
       // Forwarded from an anchored family's `asChild` trigger — see
       // `ButtonProps['aria-expanded']`.
       aria-expanded={ariaExpanded}
