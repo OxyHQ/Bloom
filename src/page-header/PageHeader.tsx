@@ -10,6 +10,8 @@ import Animated, {
   Extrapolation,
   interpolate,
   useAnimatedStyle,
+  useAnimatedReaction,
+  runOnJS,
   useSharedValue,
 } from 'react-native-reanimated';
 import { SafeAreaInsetsContext } from 'react-native-safe-area-context';
@@ -113,6 +115,7 @@ function PageHeaderComponent({
   titleAlign = 'start',
   headingLevel = 1,
   titleReveal = 'always',
+  titleRevealOffset = 0,
   presentation = 'floating',
   placement = 'inline',
   onBack,
@@ -191,7 +194,15 @@ function PageHeaderComponent({
     return () => window.removeEventListener('scroll', onScroll);
   }, [isWeb, followsWindow, internalScrollY]);
 
-  const threshold = Math.max(1, scrollThreshold);
+  const threshold = Math.max(1, Number.isFinite(scrollThreshold) ? scrollThreshold : DEFAULT_THRESHOLD);
+  const revealOffset = Math.max(0, Number.isFinite(titleRevealOffset) ? titleRevealOffset : 0);
+  const [titleHidden, setTitleHidden] = useState(() => titleReveal === 'onScroll' && scrollY.value <= revealOffset);
+  useEffect(() => { setTitleHidden(titleReveal === 'onScroll' && scrollY.value <= revealOffset); }, [titleReveal, scrollY, revealOffset]);
+  useAnimatedReaction(
+    () => titleReveal === 'onScroll' && scrollY.value <= revealOffset,
+    (hidden, previous) => { if (hidden !== previous) runOnJS(setTitleHidden)(hidden); },
+    [titleReveal, scrollY, revealOffset],
+  );
 
   const shadowStyle = useAnimatedStyle(() => ({
     opacity: interpolate(scrollY.value, [0, threshold], [0, 1], Extrapolation.CLAMP),
@@ -218,8 +229,8 @@ function PageHeaderComponent({
     opacity:
       titleReveal === 'always'
         ? 1
-        : interpolate(scrollY.value, [0, threshold], [0, 1], Extrapolation.CLAMP),
-  }), [scrollY, threshold, titleReveal]);
+        : Math.min(1, Math.max(0, (scrollY.value - revealOffset) / threshold)),
+  }), [scrollY, threshold, titleReveal, revealOffset]);
 
   const borderStyle = useAnimatedStyle(() => ({
     opacity:
@@ -253,6 +264,11 @@ function PageHeaderComponent({
   const titleBlock =
     title != null || subtitle != null ? (
       <Animated.View
+        aria-hidden={titleHidden}
+        accessibilityElementsHidden={titleHidden}
+        importantForAccessibility={titleHidden ? 'no-hide-descendants' : 'auto'}
+        pointerEvents={titleHidden ? 'none' : 'auto'}
+        {...(isWeb && titleHidden ? { inert: true } : {})}
         style={[
           styles.titleBlock,
           centered ? styles.titleBlockCentered : styles.titleBlockStart,

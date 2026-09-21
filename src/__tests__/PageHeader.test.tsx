@@ -217,10 +217,23 @@ describe('PageHeader', () => {
     expect(opacity(kept.getByTestId('h-title-block'))).toBe(1);
     kept.unmount();
     const held = renderBar({ title: 'A', titleReveal: 'onScroll', scrollY: { value: 0 } as never });
-    expect(opacity(held.getByTestId('h-title-block'))).toBe(0);
+    expect(opacity(held.getByTestId('h-title-block', { includeHiddenElements: true }))).toBe(0);
     held.unmount();
     const arrived = renderBar({ title: 'A', titleReveal: 'onScroll', scrollY: { value: 20 } as never });
     expect(opacity(arrived.getByTestId('h-title-block'))).toBe(1);
+  });
+
+  it('delays both title lines independently of the scrim and hides them from accessibility at rest', () => {
+    for (const [offset, expected] of [[20, 0], [99, 0], [100, 0], [110, 0.5], [120, 1]] as const) {
+      const tree = renderBar({ title: 'Library', subtitle: 'Saved items', presentation: 'floating', titleReveal: 'onScroll', titleRevealOffset: 100, scrollThreshold: 20, scrollY: { value: offset } as never });
+      const block = tree.getByTestId('h-title-block', { includeHiddenElements: true });
+      expect(opacity(block)).toBe(expected);
+      if (offset === 20) expect(opacity(tree.getByTestId('h-scrim'))).toBe(1);
+      expect(block.props['aria-hidden']).toBe(expected === 0);
+      expect(block.props.pointerEvents).toBe(expected === 0 ? 'none' : 'auto');
+      expect(tree.getByTestId('h-subtitle', { includeHiddenElements: true })).toBeTruthy();
+      tree.unmount();
+    }
   });
 
   it('inherits the containing surface for both the scrim and bar, including fill changes', () => {

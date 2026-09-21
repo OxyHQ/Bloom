@@ -1,3 +1,4 @@
+import { SurfaceLevelProvider } from '../styles/surface-levels';
 import React, { memo, useEffect, useMemo, useRef, useState } from 'react';
 import { Platform, Pressable, ScrollView, View, useWindowDimensions } from 'react-native';
 import Animated, {
@@ -264,7 +265,7 @@ const AppShellComponent: React.FC<AppShellEngineProps> = ({
       : 0;
 
   const bars = (
-    <>
+    <SurfaceLevelProvider level={compactPanel ? 1 : 0} fill={compactPanel ? theme.colors.card : background}>
       {showBottomBar ? (
         <AppShellBottomBar
           doc={doc}
@@ -286,7 +287,7 @@ const AppShellComponent: React.FC<AppShellEngineProps> = ({
           {floatingAction}
         </AppShellFloatingAction>
       ) : null}
-    </>
+    </SurfaceLevelProvider>
   );
 
   const topBarNode = showTopBar ? (
@@ -541,7 +542,7 @@ const AppShellComponent: React.FC<AppShellEngineProps> = ({
           mode={mode}
           testID={testID ? `${testID}-page` : undefined}
           style={{}}
-          contentStyle={{ paddingBottom: contentReserve }}
+          contentStyle={{ paddingBottom: panel ? 0 : contentReserve }}
         >
           {panel ? (
             <ContentPanel
@@ -560,7 +561,7 @@ const AppShellComponent: React.FC<AppShellEngineProps> = ({
               {/* Header chrome spans the panel. Its own title/action insets
                   belong to PageHeader; only the body receives the gutter. */}
               {headerNode}
-              <View style={[{ gap: 16, paddingLeft: gutter, paddingRight: gutter, paddingTop: gutter, paddingBottom: gutter }, fill]}>
+              <View style={[{ gap: 16, paddingLeft: gutter, paddingRight: gutter, paddingTop: gutter, paddingBottom: gutter + contentReserve }, fill]}>
                 {children}
               </View>
             </ContentPanel>

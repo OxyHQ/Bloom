@@ -79,6 +79,8 @@ export interface PageHeaderProps {
   headingLevel?: 1 | 2 | 3 | 4 | 5 | 6;
   /** Default `always`. */
   titleReveal?: PageHeaderTitleReveal;
+  /** Scroll distance before title and subtitle begin revealing. Default0; fade spans scrollThreshold. */
+  titleRevealOffset?: number;
 
   /** Default `floating`. */
   presentation?: PageHeaderPresentation;

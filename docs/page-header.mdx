@@ -263,3 +263,10 @@ fill (`SurfaceLevelProvider` / `ContentPanel`), falling back to the page
 background outside a surface. An explicit `scrimColor` still overrides the fade.
 The header’s outer box should span that surface; its own title/action padding
 provides the interior spacing.
+
+
+### Reveal after an in-content heading
+
+`titleReveal="onScroll" titleRevealOffset={headingHeight}` holds both title and subtitle until that scroll distance, then fades them in across `scrollThreshold` (default20px). The scrim remains independent. Hidden header titles leave the accessibility tree until they start appearing; back and action islands remain available.
+
+Measure the in-content heading block with its `onLayout` and pass its height as `titleRevealOffset` when it is the first block below the header. For later headings include the preceding content height. `Screen` and `ScreenScrollView` supply the shared offset; no consumer scroll listener is needed. See **Blocks / Page Header / Reveal After Content Heading** for the complete live composition. The default offset0 preserves existing reveal timing.

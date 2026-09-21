@@ -1,3 +1,4 @@
+import { useSurfaceFill } from '../styles/surface-levels';
 /**
  * Ported from expo-glass-tabs v0.1.1 — src/progressive-blur.tsx
  * (MIT © 2026 David Mokos).
@@ -5,7 +6,6 @@
 import { View } from 'react-native';
 
 import type { WebCssStyle } from '../styles/web-view-style';
-import { useTheme } from '../theme/use-theme';
 import {
   buildMaskGradient,
   buildTailGradient,
@@ -42,7 +42,7 @@ export function ProgressiveBlur({
   direction = 'top',
   ...rest
 }: ProgressiveBlurProps) {
-  const { colors } = useTheme();
+  const surfaceFill = useSurfaceFill();
 
   const filter = `blur(${intensity * WEB_BLUR_PER_INTENSITY}px)`;
   const mask = buildMaskGradient(direction);
@@ -55,7 +55,7 @@ export function ProgressiveBlur({
     WebkitBackdropFilter: filter,
     maskImage: mask,
     WebkitMaskImage: mask,
-    backgroundImage: buildTailGradient(colors.background, direction),
+    backgroundImage: buildTailGradient(surfaceFill, direction),
   };
 
   return <View {...rest} style={[webStyle, style]} />;

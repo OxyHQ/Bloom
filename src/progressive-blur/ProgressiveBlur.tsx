@@ -1,3 +1,4 @@
+import { useSurfaceFill } from '../styles/surface-levels';
 /**
  * Ported from expo-glass-tabs v0.1.1 — src/progressive-blur.tsx
  * (MIT © 2026 David Mokos).
@@ -31,7 +32,8 @@ export function ProgressiveBlur({
   direction = 'top',
   ...rest
 }: ProgressiveBlurProps) {
-  const { colors, isDark } = useTheme();
+  const { isDark } = useTheme();
+  const surfaceFill = useSurfaceFill();
   const anchor = direction === 'top' ? styles.anchorTop : styles.anchorBottom;
 
   return (
@@ -47,7 +49,7 @@ export function ProgressiveBlur({
       <View
         style={[
           StyleSheet.absoluteFill,
-          { experimental_backgroundImage: buildTailGradient(colors.background, direction) },
+          { experimental_backgroundImage: buildTailGradient(surfaceFill, direction) },
         ]}
       />
     </View>

@@ -1,4 +1,5 @@
-import React from 'react';
+import React, { useState } from 'react';
+import { Screen } from '../screen';
 import { Image, ScrollView, View } from 'react-native';
 import Animated, { useAnimatedScrollHandler, useSharedValue } from 'react-native-reanimated';
 import type { Meta, StoryObj } from '@storybook/react-vite';
@@ -460,5 +461,27 @@ export const Playground: StoryObj<typeof PageHeader> = {
     const offset = useSharedValue(0);
     const onScroll = useAnimatedScrollHandler(event => { offset.value = event.contentOffset.y; }, [offset]);
     return <View style={{ width: 900, maxWidth: '100%', height: 420 }}><PageHeader {...args} scrollY={offset} placement="overlay" actions={<PageActions />} /><Animated.ScrollView onScroll={onScroll} scrollEventThrottle={16} contentContainerStyle={{ paddingTop: 88 }}><Rows count={16} /></Animated.ScrollView></View>;
+  },
+};
+
+/** The shared Screen signal takes over only after the in-content heading leaves. */
+export const RevealAfterContentHeading: Story = {
+  args: { title: 'Library', subtitle: 'Everything you have saved', scrollThreshold: 20 },
+  parameters: { bloomScroll: 'document', controls: { disable: false, include: ['title', 'subtitle', 'scrollThreshold'] } },
+  argTypes: { title: { control: 'text' }, subtitle: { control: 'text' }, scrollThreshold: { control: { type: 'range', min: 1, max: 100 } } },
+  render: function RevealAfterContentHeading(args) {
+    const [headingHeight, setHeadingHeight] = useState(140);
+    const theme = useTheme();
+    return <View style={{ flex: 1, minHeight: 0, width: '100%', backgroundColor: theme.colors.background }}>
+      <Screen documentScroll header={<PageHeader {...args} testID="revealed-header" onBack={back} sticky={false} titleReveal="onScroll" titleRevealOffset={headingHeight} actions={<PageActions />} />}>
+        <View testID="reveal-content">
+          <View testID="content-heading" onLayout={event => setHeadingHeight(event.nativeEvent.layout.height)} style={{ padding: 24, gap: 8 }}>
+            <Text variant="title-1-bold" role="heading" aria-level={1}>{args.title}</Text>
+            <Text style={{ color: theme.colors.textSecondary }}>{args.subtitle}</Text>
+          </View>
+          <Rows count={30} />
+        </View>
+      </Screen>
+    </View>;
   },
 };

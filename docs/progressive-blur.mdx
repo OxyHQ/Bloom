@@ -10,6 +10,10 @@ A blur that is strongest at one edge and fades to nothing. Put it behind a
 floating tab bar or a transparent header so scrolling content dissolves rather
 than hitting a hard blur boundary halfway up a word.
 
+The tint follows the nearest published surface fill (`SurfaceLevelProvider`),
+falling back to the theme background outside a surface. A blur inside a tonal
+panel therefore fades into that panel's color.
+
 ```tsx
 import { ProgressiveBlur } from '@oxy.so/bloom/progressive-blur';
 

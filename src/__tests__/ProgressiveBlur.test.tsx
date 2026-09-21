@@ -10,6 +10,9 @@ import { render } from '@testing-library/react-native';
 
 import { BloomThemeProvider } from '../theme/BloomThemeProvider';
 import { ProgressiveBlur } from '../progressive-blur';
+import { ProgressiveBlur as WebProgressiveBlur } from '../progressive-blur/ProgressiveBlur.web';
+import { SurfaceLevelProvider } from '../styles/surface-levels';
+import { buildTailGradient } from '../progressive-blur/shared';
 import { hostNodes, resolvedStyle } from './support/rendered-style';
 
 function renderWithTheme(ui: React.ReactElement) {
@@ -21,6 +24,12 @@ function renderWithTheme(ui: React.ReactElement) {
 }
 
 describe('ProgressiveBlur', () => {
+  it.each([ProgressiveBlur, WebProgressiveBlur])('fades into the enclosing surface fill', Blur => {
+    const tree = renderWithTheme(<SurfaceLevelProvider level={1} fill="#abc123"><Blur direction="bottom" /></SurfaceLevelProvider>);
+    const gradients = hostNodes(tree.toJSON()).map(node => resolvedStyle(node.props.style))
+      .map(style => style.backgroundImage ?? style.experimental_backgroundImage).filter(Boolean);
+    expect(gradients).toContain(buildTailGradient('#abc123', 'bottom'));
+  });
   it('stacks several layers rather than drawing one blur with a hard edge', () => {
     const { UNSAFE_root } = renderWithTheme(<ProgressiveBlur />);
     const layers = UNSAFE_root.findAllByType('BlurView' as never);
