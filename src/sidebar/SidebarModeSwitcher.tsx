@@ -15,6 +15,7 @@ import { borderRadius } from '../styles/tokens';
 import type { WebCssStyle } from '../styles/web-view-style';
 import { Text } from '../typography';
 import { useSidebarPalette } from './palette';
+import { useSidebarGeometry } from './geometry';
 import { useSidebarMetrics } from './metrics';
 import { Collapsible, IS_WEB, useInSidebar, useSidebarCollapseProgress, useSidebarWebCss, webHook } from './parts';
 import type { SidebarMode, SidebarModeSwitcherProps } from './types';
@@ -48,6 +49,8 @@ function ModeRow({
   progress,
   compactSquare,
   compactIcon,
+  expandedLane,
+  collapsedLane,
   onSelect,
   testID,
 }: {
@@ -57,6 +60,8 @@ function ModeRow({
   progress: SharedValue<number>;
   compactSquare: number;
   compactIcon: number;
+  expandedLane: number;
+  collapsedLane: number;
   onSelect: (key: string) => void;
   testID?: string;
 }) {
@@ -68,11 +73,13 @@ function ModeRow({
   const geometry = useAnimatedStyle(() => ({
     height: ROW_HEIGHT + (compactSquare - ROW_HEIGHT) * progress.value,
     gap: 4 * (1 - progress.value),
-  }), [progress, compactSquare]);
+    marginLeft: (collapsedLane - compactSquare) / 2 * progress.value,
+    marginRight: (collapsedLane - compactSquare) / 2 * progress.value,
+  }), [progress, compactSquare, collapsedLane]);
   const iconBox = useAnimatedStyle(() => {
     const side = ROW_HEIGHT + (compactSquare - ROW_HEIGHT) * progress.value;
-    return { width: side, height: side };
-  }, [progress, compactSquare]);
+    return { width: expandedLane + (compactSquare - expandedLane) * progress.value, height: side };
+  }, [progress, compactSquare, expandedLane, collapsedLane]);
   const glyphStyle = useAnimatedStyle(() => ({
     transform: [{ scale: 1 + (compactIcon / 18 - 1) * progress.value }],
   }), [progress, compactIcon]);
@@ -136,6 +143,9 @@ const SidebarModeSwitcherComponent: React.FC<SidebarModeSwitcherProps> = ({
   const metrics = useSidebarMetrics();
   const progress = useSidebarCollapseProgress(collapsed);
   const inSidebar = useInSidebar();
+  const geometry = useSidebarGeometry();
+  const expandedLane = geometry ? geometry.expandedLane - PADDING * 2 : ROW_HEIGHT;
+  const collapsedLane = geometry?.collapsedLane ?? metrics.row.square;
   const compactSquare = metrics.row.square;
   const compactIcon = metrics.row.icon;
   // Grow into the panel inset continuously while its content column narrows.
@@ -156,8 +166,8 @@ const SidebarModeSwitcherComponent: React.FC<SidebarModeSwitcherProps> = ({
   }, [index, reducedMotion, selectedPosition]);
   const thumbStyle = useAnimatedStyle(() => {
     const height = ROW_HEIGHT + (compactSquare - ROW_HEIGHT) * progress.value;
-    return { height, transform: [{ translateY: selectedPosition.value * (height + ROW_GAP) }] };
-  }, [progress, compactSquare, selectedPosition]);
+    return { height, left: PADDING + (collapsedLane - compactSquare) / 2 * progress.value, right: PADDING + (collapsedLane - compactSquare) / 2 * progress.value, transform: [{ translateY: selectedPosition.value * (height + ROW_GAP) }] };
+  }, [progress, compactSquare, selectedPosition, collapsedLane]);
 
   return (
     <Animated.View
@@ -205,6 +215,8 @@ const SidebarModeSwitcherComponent: React.FC<SidebarModeSwitcherProps> = ({
           progress={progress}
           compactSquare={compactSquare}
           compactIcon={compactIcon}
+          expandedLane={expandedLane}
+          collapsedLane={collapsedLane}
           onSelect={onValueChange}
           testID={testID ? `${testID}-${mode.key}` : undefined}
         />

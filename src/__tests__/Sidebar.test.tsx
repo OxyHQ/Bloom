@@ -110,14 +110,15 @@ describe('Sidebar', () => {
 
       const screen = renderIn(<Sidebar testID="sb" size={size} items={ITEMS} />);
       const row = resolvedStyle(screen.getByTestId('sidebar-item-home').props.style);
-      expect(row.padding).toBe(expected.padding);
+      expect(row.paddingLeft).toBe(expected.padding);
+      expect(row.height).toBe(expected.square);
       screen.unmount();
     }
   });
 
   it('a standalone row takes its own size, and the collapsed square follows it', () => {
     const screen = renderIn(<SidebarItem testID="row" icon={RiHomeLine} label="Home" size="lg" collapsed />);
-    expect(resolvedStyle(screen.getByTestId('row').props.style)).toMatchObject({ width: 44, padding: 10 });
+    expect(resolvedStyle(screen.getByTestId('row').props.style)).toMatchObject({ width: 44, height: 44, paddingLeft: 10, paddingRight: 10 });
   });
 
   it('selected row: named link with selected state, a solid pill and no ring', () => {
@@ -127,7 +128,7 @@ describe('Sidebar', () => {
     expect(home.props.accessibilityLabel).toBe('Home');
     expect(home.props.accessibilityState).toEqual({ selected: true });
     const style = resolvedStyle(home.props.style);
-    expect(style).toMatchObject({ padding: 8, borderRadius: 9999 });
+    expect(style).toMatchObject({ paddingLeft: 8, paddingRight: 8, borderRadius: 9999 });
     expect(style.boxShadow).toBeUndefined();
     expect(screen.getByTestId('sidebar-item-board').props.accessibilityState).toEqual({ selected: false });
   });
@@ -383,7 +384,7 @@ describe('Sidebar logo', () => {
     const logo = screen.getByTestId('sidebar-logo');
     expect(logo.props.role).toBe('link');
     expect(logo.props.accessibilityLabel).toBe('Oxy');
-    expect(resolvedStyle(screen.getByTestId('sidebar-logo-icon').props.style)).toMatchObject({ width: 36, height: 36 });
+    expect(resolvedStyle(screen.getByTestId('sidebar-logo-icon').props.style)).toMatchObject({ width: 40, height: 36 });
     expect(screen.getByText('Oxy')).toBeTruthy();
     expect(screen.getByTestId('sidebar-account')).toBeTruthy();
     pressHost(logo);

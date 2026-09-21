@@ -15,6 +15,7 @@ import { BREAKPOINTS } from '../styles/breakpoints';
 import { borderRadius } from '../styles/tokens';
 import type { WebCssStyle } from '../styles/web-view-style';
 import { Text } from '../typography';
+import { useSidebarGeometry } from './geometry';
 import { useSidebarPalette, type SidebarPalette } from './palette';
 import {
   ChevronDownSmall,
@@ -158,6 +159,8 @@ const SidebarTeamMenuComponent: React.FC<SidebarTeamMenuProps> = ({ team, collap
 
   const progress = useSidebarCollapseProgress(collapsed);
   const inSidebar = useInSidebar();
+  const lane = useSidebarGeometry();
+  const compactPadding = lane ? Math.max(0, (lane.collapsedLane - 32) / 2) : 2;
   const naturalWidth = useSharedValue(0);
   const expandedHeight = team.email ? 60 : 52;
   const geometry = useAnimatedStyle(() => {
@@ -165,8 +168,8 @@ const SidebarTeamMenuComponent: React.FC<SidebarTeamMenuProps> = ({ team, collap
     const height = expandedHeight + (36 - expandedHeight) * p;
     return { width: inSidebar ? '100%' : naturalWidth.value > 0 ? naturalWidth.value + (36 - naturalWidth.value) * p : p === 1 ? 36 : '100%',
       height,
-      borderRadius: height / 2, paddingLeft: 10 * (1 - p), paddingRight: 16 * (1 - p) };
-  }, [progress, expandedHeight, inSidebar, naturalWidth]);
+      borderRadius: height / 2, paddingLeft: 10 + (compactPadding - 10) * p, paddingRight: 16 + (compactPadding - 16) * p };
+  }, [progress, expandedHeight, inSidebar, naturalWidth, compactPadding]);
   const fill = useAnimatedStyle(() => ({ opacity: 1 - progress.value }), [progress]);
   const cardStyle: WebCssStyle = {
     width: '100%', flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',

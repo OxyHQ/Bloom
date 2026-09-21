@@ -5,6 +5,7 @@ import Animated, { useAnimatedStyle } from 'react-native-reanimated';
 import { useInteractionState } from '../hooks/use-interaction-state';
 import type { WebCssStyle } from '../styles/web-view-style';
 import { Text } from '../typography';
+import { useSidebarGeometry } from './geometry';
 import { useSidebarMetrics } from './metrics';
 import { useSidebarPalette } from './palette';
 import { borderRadius } from '../styles/tokens';
@@ -25,6 +26,8 @@ import type { SidebarItemProps } from './types';
  * The label and badge sit in collapse slots, so the icon stays pinned while the
  * rail morphs. With `href` the row is a link (a real anchor on web).
  */
+const AnimatedPressable = Animated.createAnimatedComponent(Pressable);
+
 const SidebarItemComponent: React.FC<SidebarItemProps> = ({
   icon: Icon,
   label,
@@ -43,6 +46,11 @@ const SidebarItemComponent: React.FC<SidebarItemProps> = ({
   const { state: hovered, onIn, onOut } = useInteractionState();
   const inSidebar = useInSidebar();
   const progress = useSidebarCollapseProgress(collapsed);
+  const lane = useSidebarGeometry()?.collapsedLane ?? metrics.row.square;
+  const horizontalInset = useAnimatedStyle(() => {
+    const margin = (lane - metrics.row.square) / 2 * progress.value;
+    return { marginLeft: margin, marginRight: margin };
+  }, [progress, lane, metrics.row.square]);
   const itemGap = metrics.row.gap;
   const contentStyle = useAnimatedStyle(() => ({ gap: itemGap * (1 - progress.value) }), [progress, itemGap]);
   const foreground = selected ? palette.selectedForeground : palette.textSecondary;
@@ -52,7 +60,11 @@ const SidebarItemComponent: React.FC<SidebarItemProps> = ({
     alignItems: 'center',
     justifyContent: 'space-between',
     overflow: 'hidden',
-    padding: metrics.row.padding,
+    height: metrics.row.square,
+    paddingLeft: metrics.row.padding,
+    paddingRight: metrics.row.padding,
+    paddingTop: metrics.row.padding,
+    paddingBottom: metrics.row.padding,
     borderRadius: borderRadius.full,
     // In a sidebar the row stretches with the panel, which morphs between the
     // size's two widths, so the row's width animates with it; standalone,
@@ -73,7 +85,7 @@ const SidebarItemComponent: React.FC<SidebarItemProps> = ({
     : {};
 
   return (
-    <Pressable
+    <AnimatedPressable
       {...webProps}
       role={href ? 'link' : 'button'}
       accessibilityLabel={label}
@@ -86,7 +98,7 @@ const SidebarItemComponent: React.FC<SidebarItemProps> = ({
         if (IS_WEB && href) event.preventDefault();
         onPress();
       }}
-      style={[rowStyle, style]}
+      style={[rowStyle, horizontalInset, style]}
       testID={testID}
     >
       <Animated.View style={[{ flexDirection: 'row', alignItems: 'center', minWidth: 0, flexShrink: 1 }, contentStyle]}>
@@ -100,7 +112,7 @@ const SidebarItemComponent: React.FC<SidebarItemProps> = ({
         </Collapsible>
       </Animated.View>
       {badge != null ? <Collapsible collapsed={collapsed}>{badge}</Collapsible> : null}
-    </Pressable>
+    </AnimatedPressable>
   );
 };
 

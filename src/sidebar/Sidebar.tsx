@@ -28,6 +28,7 @@ import { Z_INDEX } from '../styles/z-index';
 import type { WebCssStyle } from '../styles/web-view-style';
 import { ThemeToggle } from '../theme-toggle';
 import { Text, TYPE_SCALE } from '../typography';
+import { resolveSidebarGeometry, SidebarGeometryProvider } from './geometry';
 import { SidebarSizeProvider, SIDEBAR_METRICS } from './metrics';
 import { useSidebarPalette, type SidebarPalette } from './palette';
 import { Collapsible, CollapseProvider, IS_WEB, MORPH_MS, useSidebarWebCss } from './parts';
@@ -208,7 +209,8 @@ const SidebarPanel: React.FC<SidebarProps> = ({
 
   // `fluid` fills its container while expanded; the morph needs a number, so
   // the last expanded width is measured. The collapsed end is the size's own.
-  const collapsedWidth = metrics.collapsed;
+  const geometry = useMemo(() => resolveSidebarGeometry(metrics, surface, Boolean(primaryAction), Boolean(tree)), [metrics, surface, primaryAction, tree]);
+  const { collapsedWidth, collapsedLane, expandedInset } = geometry;
   const expandedWidth = useSharedValue(metrics.expanded);
   useEffect(() => {
     if (!fluid) expandedWidth.value = metrics.expanded;
@@ -230,9 +232,15 @@ const SidebarPanel: React.FC<SidebarProps> = ({
     };
   }, [progress, expandedWidth, fluid, collapsedWidth, expandedPadding, collapsedPadding]);
   const navInset = useAnimatedStyle(() => {
-    const inset = 2 * (1 - progress.value);
+    const inset = expandedInset * (1 - progress.value);
     return { paddingLeft: inset, paddingRight: inset };
-  }, [progress]);
+  }, [progress, expandedInset]);
+  const searchInset = useAnimatedStyle(() => {
+    const start = metrics.row.padding + expandedInset;
+    const end = metrics.row.padding;
+    const padding = start + (end - start) * progress.value;
+    return { paddingLeft: padding, paddingRight: padding, marginLeft: (collapsedLane - metrics.row.square) / 2 * progress.value, marginRight: (collapsedLane - metrics.row.square) / 2 * progress.value };
+  }, [progress, metrics.row.square, metrics.row.padding, metrics.row.icon, expandedInset, collapsedLane]);
   const sideBarIconStyle = useAnimatedStyle(
     () => ({ transform: [{ scaleX: 2 * progress.value - 1 }] }),
     [progress],
@@ -251,11 +259,11 @@ const SidebarPanel: React.FC<SidebarProps> = ({
     const p = progress.value;
     return {
       left: `${100 * (1 - p)}%` as `${number}%`,
-      width: 20 + 16 * p,
+      width: 20 + (collapsedLane - 20) * p,
       top: hasLogo ? 8 + 38 * p : hasAccount ? 6 * (1 - p) : 0,
       transform: [{ translateX: -20 * (1 - p) }],
     };
-  }, [progress, hasLogo, hasAccount]);
+  }, [progress, hasLogo, hasAccount, collapsedLane]);
   const themeGeometry = useAnimatedStyle(() => ({ height: 40 - 4 * progress.value }), [progress]);
   const themeExpandedStyle = useAnimatedStyle(() => ({ opacity: 1 - progress.value }), [progress]);
   const themeCollapsedStyle = useAnimatedStyle(() => ({ opacity: progress.value }), [progress]);
@@ -484,12 +492,14 @@ const SidebarPanel: React.FC<SidebarProps> = ({
         {
           flexDirection: 'row',
           alignItems: 'center',
-          padding: metrics.row.padding,
+          height: metrics.row.square,
+          paddingTop: metrics.row.padding,
+          paddingBottom: metrics.row.padding,
           overflow: 'hidden',
           borderRadius: borderRadius.full,
           backgroundColor: searchHover.state ? palette.searchHover : palette.tertiary,
           '--bloom-sidebar-ring': palette.ring,
-        } as WebCssStyle, searchGapStyle,
+        } as WebCssStyle, searchGapStyle, searchInset,
       ]}
       testID="sidebar-search"
     >
@@ -589,6 +599,7 @@ const SidebarPanel: React.FC<SidebarProps> = ({
 
   return (
     <SidebarSizeProvider value={size}>
+    <SidebarGeometryProvider value={geometry}>
     <CollapseProvider value={progress}>
       <Animated.View
         role="complementary"
@@ -669,15 +680,15 @@ const SidebarPanel: React.FC<SidebarProps> = ({
               </Animated.View>
               <Animated.View pointerEvents={collapsed ? 'auto' : 'none'} aria-hidden={!collapsed} accessibilityElementsHidden={!collapsed} importantForAccessibility={collapsed ? 'auto' : 'no-hide-descendants'}
                 {...(IS_WEB && !collapsed ? { inert: true } : {})}
-                style={[{ position: 'absolute', left: 0, top: 0 }, themeCollapsedStyle]}>
-                <ThemeToggle collapsed />
+                style={[{ position: 'absolute', left: 0, right: 0, top: 0 }, themeCollapsedStyle]}>
+                <ThemeToggle collapsed style={{ alignSelf: 'center' }} />
               </Animated.View>
             </Animated.View>
           ) : null}
           {shownSecondary.length > 0 ? (
-            <View role="navigation" style={{ width: '100%', gap: 4 }}>
+            <Animated.View role="navigation" style={[{ width: '100%', gap: 4 }, navInset]}>
               {shownSecondary.map(renderRow)}
-            </View>
+            </Animated.View>
           ) : null}
           {plan ? (
             <SidebarPlanCard
@@ -697,6 +708,7 @@ const SidebarPanel: React.FC<SidebarProps> = ({
         </View>
       </Animated.View>
     </CollapseProvider>
+    </SidebarGeometryProvider>
     </SidebarSizeProvider>
   );
 };

@@ -1,10 +1,12 @@
 import React, { memo } from 'react';
+import Animated, { useAnimatedStyle } from 'react-native-reanimated';
+import { useSidebarGeometry } from './geometry';
 import { Pressable, View, type GestureResponderEvent } from 'react-native';
 
 import type { WebCssStyle } from '../styles/web-view-style';
 import { Text } from '../typography';
 import { useSidebarPalette } from './palette';
-import { Collapsible, IS_WEB, useSidebarWebCss } from './parts';
+import { Collapsible, IS_WEB, useSidebarCollapseProgress, useSidebarWebCss } from './parts';
 import type { SidebarLogoViewProps } from './types';
 
 /** The mark's box: the collapsed column's width, and the header row's height. */
@@ -30,6 +32,11 @@ const SidebarLogoViewComponent: React.FC<SidebarLogoViewProps> = ({
   testID,
 }) => {
   const palette = useSidebarPalette();
+  const geometry = useSidebarGeometry();
+  const progress = useSidebarCollapseProgress(collapsed);
+  const expandedLane = geometry?.expandedLane ?? SIDEBAR_LOGO_SIZE;
+  const collapsedLane = geometry?.collapsedLane ?? SIDEBAR_LOGO_SIZE;
+  const markStyle = useAnimatedStyle(() => ({ width: expandedLane + (collapsedLane - expandedLane) * progress.value }), [progress, expandedLane, collapsedLane]);
   useSidebarWebCss();
   const { icon, wordmark, href, onPress, accessibilityLabel } = logo;
   const label = accessibilityLabel ?? (typeof wordmark === 'string' ? wordmark : undefined);
@@ -37,12 +44,12 @@ const SidebarLogoViewComponent: React.FC<SidebarLogoViewProps> = ({
   const content = (
     <View style={{ flexDirection: 'row', alignItems: 'center', minWidth: 0 }}>
       {icon != null ? (
-        <View
-          style={{ width: SIDEBAR_LOGO_SIZE, height: SIDEBAR_LOGO_SIZE, alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}
+        <Animated.View
+          style={[{ height: SIDEBAR_LOGO_SIZE, alignItems: 'center', justifyContent: 'center', flexShrink: 0 }, markStyle]}
           testID={testID ? `${testID}-icon` : undefined}
         >
           {icon}
-        </View>
+        </Animated.View>
       ) : null}
       {wordmark != null && showWordmark ? (
         <Collapsible collapsed={collapsed}>

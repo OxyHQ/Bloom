@@ -60,7 +60,7 @@ function SocialLayout({ showRightColumn = true, centerWidth = 620, rightColumnWi
       onValueChange={setSelected}
       navFrom={700}
       navExpandedFrom={1100}
-      sidebar={{ primaryAction: { label: 'New post', icon: RiQuillPenLine, onPress: onNewPost }, surface: 'plain', size: 'lg', style: { justifyContent: 'center' }, searchShortcut: false, logo: { wordmark: 'Social', accessibilityLabel: 'Social home', onPress: () => setSelected('home') } }}
+      sidebar={{ primaryAction: { label: 'New post', icon: RiQuillPenLine, onPress: onNewPost }, surface: 'plain', size: 'md', style: { justifyContent: 'center' }, searchShortcut: false, logo: { wordmark: 'Social', accessibilityLabel: 'Social home', onPress: () => setSelected('home') } }}
       contentWidth={centerWidth}
       gutter={gutter}
       panel={framedContent}

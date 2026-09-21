@@ -5,6 +5,7 @@ import Animated, { useAnimatedStyle, useSharedValue } from 'react-native-reanima
 import { Button } from '../button';
 import { borderRadius } from '../styles/tokens';
 import { Text } from '../typography';
+import { useSidebarGeometry } from './geometry';
 import { useSidebarPalette } from './palette';
 import { Collapsible, IS_WEB, SidebarAvatarView, useSidebarCollapseProgress, useInSidebar } from './parts';
 import type { SidebarPlanCardProps } from './types';
@@ -24,13 +25,15 @@ function SidebarPlanCardComponent({ plan, collapsed = false, style, testID }: Si
   const palette = useSidebarPalette();
   const progress = useSidebarCollapseProgress(collapsed);
   const inSidebar = useInSidebar();
+  const lane = useSidebarGeometry();
+  const compactPadding = lane ? Math.max(0, (lane.collapsedLane - 32) / 2) : 2;
   const naturalWidth = useSharedValue(0);
   const geometry = useAnimatedStyle(() => ({
     width: inSidebar ? '100%' : naturalWidth.value > 0 ? naturalWidth.value + (36 - naturalWidth.value) * progress.value : progress.value === 1 ? 36 : '100%',
     height: 56 - 20 * progress.value,
-    paddingLeft: 10 - 8 * progress.value,
-    paddingRight: 12 - 10 * progress.value,
-  }), [progress, inSidebar, naturalWidth]);
+    paddingLeft: 10 + (compactPadding - 10) * progress.value,
+    paddingRight: 12 + (compactPadding - 12) * progress.value,
+  }), [progress, inSidebar, naturalWidth, compactPadding]);
   const fill = useAnimatedStyle(() => ({ opacity: 1 - progress.value }), [progress]);
   const avatar = plan.avatar ?? { initials: plan.name.slice(0, 1).toUpperCase(), color: 'blue' as const };
 

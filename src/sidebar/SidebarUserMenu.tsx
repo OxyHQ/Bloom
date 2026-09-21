@@ -11,6 +11,7 @@ import { BREAKPOINTS } from '../styles/breakpoints';
 import { borderRadius } from '../styles/tokens';
 import type { WebCssStyle } from '../styles/web-view-style';
 import { Text } from '../typography';
+import { useSidebarGeometry } from './geometry';
 import { useSidebarPalette, type SidebarPalette } from './palette';
 import {
   ChevronUpDownSmall,
@@ -160,7 +161,10 @@ const SidebarUserMenuComponent: React.FC<SidebarUserMenuProps> = ({
   const { state: hovered, onIn, onOut } = useInteractionState();
 
   const progress = useSidebarCollapseProgress(collapsed);
-  const triggerGeometry = useAnimatedStyle(() => ({ paddingLeft: 2 * progress.value, paddingRight: 2 * progress.value }), [progress]);
+  const lane = useSidebarGeometry();
+  const startPadding = lane ? Math.max(0, (lane.expandedLane - 32) / 2) : 0;
+  const endPadding = lane ? Math.max(0, (lane.collapsedLane - 32) / 2) : 2;
+  const triggerGeometry = useAnimatedStyle(() => ({ paddingLeft: startPadding + (endPadding - startPadding) * progress.value, paddingRight: startPadding + (endPadding - startPadding) * progress.value }), [progress, startPadding, endPadding]);
   const hoverGeometry = useAnimatedStyle(() => ({ left: -6 + 3 * progress.value, right: -6 + 3 * progress.value }), [progress]);
   const triggerStyle: WebCssStyle = {
     position: 'relative',

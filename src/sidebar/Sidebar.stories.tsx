@@ -1,3 +1,4 @@
+import { RiAddLine } from '../icons/remix/RiAddLine';
 import { useArgs } from 'storybook/preview-api';
 import React, { useState } from 'react';
 import { View } from 'react-native';
@@ -529,5 +530,16 @@ export const Playground: Story = {
   render: function Playground(args) {
     const [, updateArgs] = useArgs();
     return <View style={{ height: 700, maxWidth: '100%' }}><Sidebar {...args} style={{ height: '100%', maxWidth: '100%' }} onCollapsedChange={collapsed => updateArgs({ collapsed })} onModeChange={mode => updateArgs({ mode })} onNavigate={item => updateArgs({ selected: item.key })} /></View>;
+  },
+};
+
+/** Every fixed and scrolling control uses the same compact icon lane. */
+export const PrimaryAction: Story = {
+  args: { ...Playground.args, logo: DEMO_LOGO, items: DEMO_NAV.slice(0, 3), secondaryItems: DEMO_SECONDARY, primaryAction: { label: 'New post', icon: RiAddLine, onPress: () => {} } },
+  parameters: Playground.parameters,
+  argTypes: Playground.argTypes,
+  render: function PrimaryAction(args) {
+    const [, updateArgs] = useArgs();
+    return <View style={{ height: 900, maxWidth: '100%' }}><Sidebar {...args} testID="action-sidebar" style={{ height: '100%', maxWidth: '100%' }} onCollapsedChange={collapsed => updateArgs({ collapsed })} onModeChange={mode => updateArgs({ mode })} onNavigate={item => updateArgs({ selected: item.key })} /></View>;
   },
 };
