@@ -1,0 +1,82 @@
+---
+title: Job board
+description: Work a courier can take — what a job pays, where it starts and ends, how long the offer stands, and the board it sits on with the four filters that matter, a sort, a refresh and an empty state.
+order: 137
+---
+
+# Job board
+
+```tsx
+import { JobBoard, JobCard } from '@oxy.so/bloom/job-board';
+
+<JobBoard
+  jobs={jobs}
+  payBands={payBands}
+  onTake={take}
+  onPass={hide}
+  onRefresh={pull}
+/>
+```
+
+`JobCard` is one piece of work. `JobBoard` is the work on offer, filtered, ordered and counted.
+
+## It is the offer card seen from the other side
+
+`carrier-quote`'s `CarrierQuoteCard` is a carrier saying what they would charge to move something. This is the same object read by the person who would move it: the same blocks in the same order, the same tile row, the same 420 threshold at which the actions drop their labels, the same footer over a hairline. Both were built from the same measurements on purpose — a courier app shows one of these on the board and the other in the customer's app, and two different geometries would make them look like two products.
+
+What differs is only whose number the headline is, and what stands where the person does:
+
+| | `CarrierQuoteCard` | `JobCard` |
+| --- | --- | --- |
+| the mark | the carrier's 48 avatar | the 48 vehicle tile |
+| the identity | the carrier's name and rating | what is being moved |
+| the headline | the price asked | the pay offered |
+| the middle | three tiles | the route, then three tiles |
+| the footer | decline · message · accept | pass · take |
+
+## The geometry
+
+- **Card.** Outlined, radius 20, 16 inset, 16 between blocks. Chosen, it takes a 2px border and gives the pixel back out of its own inset, so nothing inside moves.
+- **Mark.** 48 comfortable, 36 compact, radius 12, at the surface's next fill up. It carries the glyph for `vehicleKind`, or `vehicleIcon` when the app names one. With neither it is the route glyph — a marketplace that routes five bodies has five glyphs, and guessing between them is worse than not drawing one.
+- **Tiles.** Distance, time, window. One row over 420, two columns under it, an odd tile keeping its half.
+- **Compact.** 64 tall, the mark, the load, one meta line, the pay. No route, no tiles, no breakdown: that density is a LIST ROW, and a list row that drew a route would be a card with the padding taken out.
+
+## The route is `RouteStops`, not a second pin column
+
+`pickup`, `via` and `dropoff` become that family's stops, at its `compact` density. It already owns the marker shapes, the connector that fills behind a journey, the position words and the announced name; a second column drawn here would be a fourth marker vocabulary in one library.
+
+## What a job is CLOSED does not remove it
+
+`state` is `open`, `taken` or `expired`. A closed job keeps its place, dims to the disabled opacity, and says which of the two happened — as a `Badge` beside the load and again where the take action was. The take action is GONE rather than greyed out: a dimmed primary button invites a press that can never succeed.
+
+This is the one behaviour the board exists to get right. A row that vanishes under a thumb is indistinguishable from a mis-tap, and the reader is left unsure whether they took the job or lost it. `filterJobOffers` answers the reader's four questions and nothing else, so nothing about a job's state can make it disappear.
+
+## The filters
+
+Four independent questions, combined with AND, each a sideways-scrolling `ChipRow`:
+
+| | reads | default bands |
+| --- | --- | --- |
+| distance | `distanceKm` | `JOB_DISTANCE_BANDS` — any, 3, 10, 25 km |
+| pay | `payValue` | **none** |
+| when | `startsInMinutes` | `JOB_WHEN_BANDS` — any, hour, 4 hours, today |
+| vehicle | `vehicleKind` | the five `vehicle-picker` knows |
+
+**`payBands` has no default and will not get one.** A band is words plus an amount, and the amount is a currency. A kilometre and a minute are nobody's; twenty euros is somebody's.
+
+**A filter cannot exclude what it cannot measure.** A job with no `distanceKm` survives every distance band; one with no `payValue` survives every pay floor. Treating a missing value as zero is how a filter hides work from a courier because the app omitted a field.
+
+**Vehicle is a set of toggles, not a radiogroup.** A courier with a van can take a bike job, and "van or box truck" is a sentence the board has to be able to say. Pressing the only selected vehicle clears the dimension.
+
+## The order
+
+`sortJobOffers` is stable, and PAY sorts high first while distance, start and expiry sort low first — a courier scanning for money wants the biggest number and scanning for distance wants the smallest, so one direction would be wrong three times. A job with no number for the current key goes LAST, keeping the caller's order inside that group: there is nothing left to sort it on, and re-shuffling a group of equals makes a board jump for no visible reason.
+
+## Traps
+
+- **Money is never parsed.** `pay`, `payNote` and every `payLines` amount are drawn exactly as given. `payValue` is a separate number for ordering and the pay filter, and it is never drawn. Nothing here adds, converts or rounds.
+- **The card is not one big button.** `onPressJob` is bound to the load block; the actions sit outside it. A control inside a control is invalid on web and renders fine either way.
+- **The actions lose their labels, never their names.** Under 420 each drops to a glyph and keeps `"<action> <load>"`.
+- **`disabled` is a constraint, not a default.** It combines with the job's own state, so a caller cannot re-enable a job the marketplace has already given away.
+- **The refresh control does not spin.** Bloom draws no press animations; while `refreshing` it is inert, because a second pull would race the first.
+- **The empty state offers the undo it caused.** With a filter narrowed and no `emptyAction`, the clear control is drawn there.

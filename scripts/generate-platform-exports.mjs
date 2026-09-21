@@ -264,6 +264,11 @@ const SUBPATHS = /** @type {const} */ ([
   ['./payment-method', 'payment-method/index.ts'],
   ['./card-form', 'card-form/index.ts'],
   ['./payment-status', 'payment-status/index.ts'],
+  // Fulfilment: the same marketplace from the side of the person who does the
+  // work — the board of jobs, what the work paid, and the proof it happened.
+  ['./job-board', 'job-board/index.ts'],
+  ['./earnings', 'earnings/index.ts'],
+  ['./proof-of-delivery', 'proof-of-delivery/index.ts'],
   ['./mail-list', 'mail-list/index.ts'],
   ['./mail-thread', 'mail-thread/index.ts'],
   ['./mail-compose', 'mail-compose/index.ts'],

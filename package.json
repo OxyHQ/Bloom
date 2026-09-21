@@ -2557,6 +2557,48 @@
         "default": "./lib/commonjs/payment-status/index.js"
       }
     },
+    "./job-board": {
+      "react-native": {
+        "types": "./lib/typescript/module/job-board/index.d.ts",
+        "default": "./src/job-board/index.ts"
+      },
+      "import": {
+        "types": "./lib/typescript/module/job-board/index.d.ts",
+        "default": "./lib/module/job-board/index.js"
+      },
+      "require": {
+        "types": "./lib/typescript/commonjs/job-board/index.d.ts",
+        "default": "./lib/commonjs/job-board/index.js"
+      }
+    },
+    "./earnings": {
+      "react-native": {
+        "types": "./lib/typescript/module/earnings/index.d.ts",
+        "default": "./src/earnings/index.ts"
+      },
+      "import": {
+        "types": "./lib/typescript/module/earnings/index.d.ts",
+        "default": "./lib/module/earnings/index.js"
+      },
+      "require": {
+        "types": "./lib/typescript/commonjs/earnings/index.d.ts",
+        "default": "./lib/commonjs/earnings/index.js"
+      }
+    },
+    "./proof-of-delivery": {
+      "react-native": {
+        "types": "./lib/typescript/module/proof-of-delivery/index.d.ts",
+        "default": "./src/proof-of-delivery/index.ts"
+      },
+      "import": {
+        "types": "./lib/typescript/module/proof-of-delivery/index.d.ts",
+        "default": "./lib/module/proof-of-delivery/index.js"
+      },
+      "require": {
+        "types": "./lib/typescript/commonjs/proof-of-delivery/index.d.ts",
+        "default": "./lib/commonjs/proof-of-delivery/index.js"
+      }
+    },
     "./mail-list": {
       "react-native": {
         "types": "./lib/typescript/module/mail-list/index.d.ts",
@@ -3879,6 +3921,15 @@
       ],
       "payment-status": [
         "./lib/typescript/module/payment-status/index.d.ts"
+      ],
+      "job-board": [
+        "./lib/typescript/module/job-board/index.d.ts"
+      ],
+      "earnings": [
+        "./lib/typescript/module/earnings/index.d.ts"
+      ],
+      "proof-of-delivery": [
+        "./lib/typescript/module/proof-of-delivery/index.d.ts"
       ],
       "mail-list": [
         "./lib/typescript/module/mail-list/index.d.ts"
